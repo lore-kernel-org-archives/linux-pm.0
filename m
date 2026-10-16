@@ -1,175 +1,210 @@
-Received: from smtpbgeu1.qq.com (smtpbgeu1.qq.com [52.59.177.22])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 979DF346A0C;
-	Fri, 16 Oct 2026 07:23:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.59.177.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE40242E8FA;
+	Fri, 16 Oct 2026 07:43:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792135407; cv=none; b=gspP0Tp/5we5Ygf4+qqG5wsApWkSmHKVGBtVqDYmGFVWBhJmJDib4LAdzsmg0231PjxWYTJfMNLQxGtpLQ1rD3VhejoJONM90q/ueuW1azQ++3cPh8xRFWP66t2hgBecSFJWCGP190AX09PnV09UnLph45gzdNLLsmMCXGFi9lA=
+	t=1792136603; cv=none; b=Nbyt88eCpQUnqAPcuyzedJEoe2CK6FthhtMkuwaVgohdJdY13Gw4DOiFJ+uGhl6xHtQ8GhSia21f3GCLgbvBno9QUQ82X3EV9N2vTzeMBsfCKuBgTjoqLdf9h5zZ3kT2gytLOIF0zBVDcsvyuQEZ7/U3jW06zCx6Yq3DraYVq/Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792135407; c=relaxed/simple;
-	bh=Fnsui3PlbcaixNQ4vqlonQ61DbXao20gBaaEXYCb4WA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=o8lO3soXagLSgeZK1Sa+2PWarsRtoHH3lUNjfXS4bGSIBRo7B5sbmnizT8XR5YOThLtHbxk85ZmkiDSLmR3z3hCJkdEFYUPmFKsnrYzo5VBXV1mWe+TZ6DEnnwsRCSC27YN35OrS116CiFL6MYMkisJN81/WfgB9o1Dk7IX/FeU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=fJLgk2Y9; arc=none smtp.client-ip=52.59.177.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	s=arc-20240116; t=1792136603; c=relaxed/simple;
+	bh=q8QMU2g/5rxzERHN7LI3nwwsBxoze8z/SfHcGmxNnh0=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=s2TmOoBEBLoZ6YGulIC/2kUBtIWSW+FESkZACQGAbYGqiyXvG3CPULsjwSu5trNvS0APTkofoQZN9BTmSZFAmoiT3E+qlkJjwR2FsJOhjEqxyMIFb74vBini7osvBb78hfVWZZAZPVclk0ElsH06j6eA7lD52WuUGTrnygHrlWE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rEs2Uoe4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="fJLgk2Y9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1792135361;
-	bh=idnwnnaMWLUiVW27yfjxXo4AL8hev6zUmPFBKigDCtE=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=fJLgk2Y9PwKYrzt5n4EfEjEme1AdfV++1f1MkVRvwtiNtLLz8/wyAcM8r8Jq5WkM+
-	 IoRVQS7D48W1+3027X1OofcPnd+RhzCPwiaSVQYf74J5Ja6Dnre1jeuCsMHHALFyHM
-	 nvuQniwDcoJTRY+KWDbUa3UCn5YFHP4/5iXDkLes=
-X-QQ-mid: zesmtpip2t1792135342td7ce2847
-X-QQ-Originating-IP: ZI24zA/GpPR8bf+XnsilAI7oWLs1kgHyGd914T96prc=
-Received: from localhost.localdomain ( [localhost])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Fri, 16 Oct 2026 15:22:19 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 9258648051972908772
-EX-QQ-RecipientCnt: 10
-From: Wentao Guan <guanwentao@uniontech.com>
-To: kprateek.nayak@amd.com
-Cc: guanwentao@uniontech.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	ray.huang@amd.com,
-	ronforever@outlook.com,
-	scardracs@disroot.org,
-	stable@vger.kernel.org,
-	superm1@kernel.org,
-	mario.limonciello@amd.com
-Subject: Re: [PATCH v3] cpufreq/amd-pstate: Skip auto_sel write when it already matches the mode
-Date: Fri, 16 Oct 2026 15:22:18 +0800
-Message-Id: <20261016072218.303219-1-guanwentao@uniontech.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <5469c745-7b9e-4a71-8d04-8716c5af840e@amd.com>
-References: <5469c745-7b9e-4a71-8d04-8716c5af840e@amd.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rEs2Uoe4"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 6C8BBC2BCF4;
+	Fri, 16 Oct 2026 07:43:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1792136602;
+	bh=q8QMU2g/5rxzERHN7LI3nwwsBxoze8z/SfHcGmxNnh0=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=rEs2Uoe4LIYA1xAIfnDcNGymY71RX5okyxRWmQwx3g7KD65ve7kDOfhebnJcNl1FU
+	 0juE32ehlgRFM1njeVtheUTVn7hKzfiqPxp/effvSQS23NbaelYfTuZpmztkNKxKU+
+	 0iu5eBcMXZ4HATG9UJJM8zoJg2a6XJv2JjK5rKk44k60KaNKXJH//VlBSZnTm21O3n
+	 T9gcUkJBAHfkrb4hLc0My7tFHcMw+CXO4+RDJZ2LylgwvJ3qorlIL76TJA/JYRox8z
+	 pbvw2gsHVoZyiljief91wcv9PapO1CggzOi2EaqNXFofzMNnVPfmRoGop/N7vJGcMP
+	 HZXTl316POr0w==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45FA9CCA464;
+	Fri, 16 Oct 2026 07:43:22 +0000 (UTC)
+From: Haoning CHENG via B4 Relay <devnull+Haoning.CHENG.cn.bosch.com@kernel.org>
+Subject: [PATCH RESEND v11 0/3] thermal: imx: Add calibration offset
+ support
+Date: Fri, 16 Oct 2026 15:43:17 +0800
+Message-Id: <20261016-b4-symana21-11221-imx-thermal-support-upstream-6-18-v11-0-b80952ad27d6@cn.bosch.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrgz:qybglogicsvrgz3a-0
-X-QQ-XMAILINFO: OJqK+P4eZhTxBDMgGX/1aU+2ioZ57Z6nQV7+tGOsU2uzsgeop8Oy4hTa
-	CuD0LNsqWvNl58NSIVAFmvOpNPeZwuy03DU/uXz+DDPTspKFxP7u4Xfvme9sIq50dA0PXAJ
-	E65iH1E+USSM+p17KmUq1cJHDB7MEIY9dPTTI/+Z8EhgcAoiFqzHPdBWYOROKXdzADrWpli
-	sLZJzt+Gjvu8Pz/W/Mtx2fOoWncloqWOxN26U39LW9RkrLtsYpqhKFJeqlTK1vq2H55d7x1
-	DEFVQH36ixmeDewMG3kuxS9CzNM1yoBW67lawbgnCfgn2kqlFcrtu8hncqrSmyo7FHcJDUS
-	NSkRVs3IVf7XT8lRbRaILUDT32Xot10fH6FgirKzCAizCv4BHjnpuzgRrp+uITy6l6amJrn
-	b935LE5GoIjOS8+atseurkbJHKGsvRONMuRODJfSJqaGoF8THUE7MXLnmxa3Uf220VPiULB
-	XpaubnxM2b5o/V+RkD0p3Y0rBm8wL5PDiOEgDmxjewNs0UN2ijBfIz3mEmM02f1JDW6VK5X
-	4SDyvT4pl9wiUd0tew0d3fwMJaIemzCaTSYgpqlB3jD4RsDrazsy8XZsIluv0sUGjnOA7fQ
-	N62NjzClTVDq1NxU6cE+OlCKQeh76HYnR1rYT3IeoD9lk9uScgpv+nbFTvRv1z6N8dGOWQy
-	f10JeXNi+hP8wrUuHR+aTK7auG2xm/NfGJGj2xEKTaGF7oBZAZb3purBQBjso+rei8tbWZA
-	b/BEuOs5TpnP2Ht7ttwBjA3bAgae07reti1nO/b7IEm/j30xfN7FE8bx+t/BAm9TzSpPb1E
-	hAHcGTKt7oRT/sW8CUMt436OlFfT/AM/YDzHXkMY4XLNZ3b4fND3xW4NB+CwpRnX84I5EEt
-	SpZYC70R5W6llQIZjr+QRU/jHEkIm+4tqbQQNgsOhK37LYUVnVN8dkL+NC/Z65ynQ3HeprQ
-	UVfMyI1m7kJ+DW/iu8QLbomnz3g+r/ogjfJd1cHOD3TenGCmCpbMM3bGzvFjXfVyhuIfH40
-	akq4GOsAsZD3lEQ/P6H0/QuRt1v6gmnF0gEmAypWApjsRT6J4OC0bM1F4GvODaoaxFlmBeW
-	CURIrsTFBsxNPdwWrac+BUPwTU4NtA8LLM2cdX1esZDZuatG2QX9ZOpyMHSSZb5RE2BmPzN
-	PmKyKkIRgCY6AbE=
-X-QQ-XMRINFO: OD9hHCdaPRBwH5bRRRw8tsiH4UAatJqXfg==
-X-QQ-RECHKSPAM: 0
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, Haoning CHENG <Haoning.CHENG@cn.bosch.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+ Frank Li <Frank.Li@nxp.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792136598; l=7208;
+ i=Haoning.CHENG@cn.bosch.com; s=20260709; h=from:subject:message-id;
+ bh=q8QMU2g/5rxzERHN7LI3nwwsBxoze8z/SfHcGmxNnh0=;
+ b=f8P8IxutGqzvXkCQeSo8Aw7wZw9ob5Wj1VTpJ55ru1Q0rqQjav8jiufy/YhFfGs3JZmj8S1WX
+ QvRJ/QoInmwDjEHlPR0wrce3G1GLWcSoN2AFy1axDLlqaiE4r+sozhA
+X-Developer-Key: i=Haoning.CHENG@cn.bosch.com; a=ed25519;
+ pk=glQGwad/fosRS5gZUJYbLDPPLGe7rFTrTV2VxY/ySdc=
+X-Endpoint-Received: by B4 Relay for Haoning.CHENG@cn.bosch.com/20260709
+ with auth_id=860
+X-Original-From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+Reply-To: Haoning.CHENG@cn.bosch.com
 
-Hi,
+The TEMPMON sensor reading may deviate from the theoretical SoC
+junction temperature. This series adds an optional DT property to
+specify a calibration offset and implements the corresponding
+support in the imx_thermal driver.
 
->On 10/16/2026 11:21 AM, Wentao Guan wrote:
->> Hi,
->> 
->>> Since commit 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active
->>> mode on shared memory systems"), shmem_init_perf() programs
->>> AUTONOMOUS_SELECTION_ENABLE unconditionally, including in active mode.
->>>
->>> Platforms that exclusively support autonomous selection report this field
->>> as an Integer of 1, as required by the ACPI specification, instead of as a
->>> register descriptor.  cppc_get_reg_val() reads such a field back
->>> successfully, but cppc_set_reg_val() rejects the write with -EOPNOTSUPP
->>> because the entry is not an ACPI_TYPE_BUFFER.
->>>
->>> shmem_init_perf() propagates that error, so every amd_pstate_epp_cpu_init()
->>> fails, cpufreq_register_driver() ends up with an empty policy list and
->>> returns -ENODEV, and amd-pstate refuses to load at all:
->>>
->>>   amd_pstate: failed to set auto_sel, ret: -95
->>>   amd_pstate: Failed to initialize CPU 0: -95
->>>   ...
->>>   amd_pstate: failed to register with return -19
->>>
->>> Skip the write when the register already holds the value the requested mode
->>> needs.  Active and guided mode are fixed on these platforms, which report
->>> auto_sel as 1, while passive mode still fails to load on a platform that
->>> cannot disable autonomous selection, exactly as it did before the
->>> offending commit.
->>>
->>> Fixes: 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active mode on shared memory systems")
->>> Cc: stable@vger.kernel.org
->>> Reviewed-by: K Prateek Nayak <kprateek.nayak@amd.com>
->>> Tested-by: K Prateek Nayak <kprateek.nayak@amd.com>
->>> Tested-by: LFRon <ronforever@outlook.com>
->>> Signed-off-by: Wentao Guan <guanwentao@uniontech.com>
->>> ---
->>> changelog v3:
->>> Include the K Prateek Nayak reviews to remove that ternary op base on current
->>> condition now have.
->>>
->>> v2 link:
->>> https://lore.kernel.org/stable/c3eb86bd-70a6-4bb2-8eff-b2a3c0817514@amd.com/#R
->>> changelog v2:
->>> Accecpt and tested the K Prateek Nayak reviews.
->>> v1 link:
->>> https://lore.kernel.org/stable/20260918054808.48999-1-guanwentao@uniontech.com/#R
->>> ---
->>> ---
->>> drivers/cpufreq/amd-pstate.c | 6 ++++--
->>> 1 file changed, 4 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
->>> index 80d99ba1902c9..2d1f5292d1738 100644
->>> --- a/drivers/cpufreq/amd-pstate.c
->>> +++ b/drivers/cpufreq/amd-pstate.c
->>> @@ -532,8 +532,10 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
->>>  		return 0;
->>>  	}
->>>
->>> -	ret = cppc_set_auto_sel(cpudata->cpu,
->>> -			(cppc_state == AMD_PSTATE_PASSIVE) ? 0 : 1);
->>> +	if ((cppc_state != AMD_PSTATE_PASSIVE) == auto_sel)
->>> +		return 0;
->>> +
->>> +	ret = cppc_set_auto_sel(cpudata->cpu, !auto_sel);
->>>
->>>  	if (ret)
->>>  		pr_warn("failed to set auto_sel, ret: %d\n", ret);
->>> --
->>> 2.30.2
->> 
->> Ping? Nearly a month passed, anything update?
->
->On a similar issue here
->https://lore.kernel.org/all/851316da-2cfa-4a22-947c-1838532d05cf@amd.com/
->Mario had recently pointed out that this might be a BIOS issue on
->systems that may have MSR interface but running an old BIOS that does
->not advertise the CPUID bit.
-Seem same issue.
+Patch 1 documents the new fsl,temp-calibration-offset-millicelsius
+property in the i.MX thermal DT binding. The offset is determined
+through thermal characterization by comparing the sensor output
+against the calculated junction temperature, and is limited to
+±20 °C.
 
->
->Could you please share your system details here and check if you are
->running the latest BIOS from your vendor?
+Patch 2 fixes the i.MX7D alarm temperature conversion to use
+ceiling division (DIV_ROUND_UP() for non-negative, plain /
+for negative) and clamp() to stay within the 9-bit register range.
 
-Emmm, the user report that dmesg showed running on this laptop:
-DMI: METAPHYUNI MetamechBook01/MetamechBook01, BIOS AHP958_V00.01_T015A5ME1 02/22/2024
-which vendor not ship new BIOS,
-but it is verified in AMD Advantage: https://www.amd.com/en/gaming/laptops/advantage-premium.html ...
+Patch 3 reads this property in the imx_thermal driver and applies
+the offset symmetrically: it is added when reporting temperature to
+the thermal framework and subtracted when programming hardware alarm
+thresholds (to keep trip point semantics consistent). Out-of-range
+values are rejected with -EINVAL at probe time. When the property
+is absent, the default offset is 0.
 
-He also helped me to test the kernel patch.
+Signed-off-by: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+---
+Changes in v11:
+- Cover letter and patch 3: removed the claim that the TEMPMON sensor
+  deviation exists "at the die level without board influence". The
+  commit messages now describe what the offset does without speculating
+  on the origin of the residual error.
+- No code or binding changes.
+- Link to v10: https://patch.msgid.link/20260720-b4-symana21-11221-imx-thermal-support-upstream-6-18-v10-0-f8c3dcd9a57e@cn.bosch.com
 
-BRs
-Wentao Guan
+Changes in v10:
+- Rephrase the series to describe the offset as sensor calibration
+  toward the theoretical junction temperature, reverting the v9
+  terminology that characterized it as a board-specific die-to-package-
+  surface conversion. Hardware characterization confirmed the deviation
+  exists at the die level, independent of board influence.
+- dt-bindings: update the property description to state the offset
+  corrects the TEMPMON sensor reading toward the theoretical junction
+  temperature
+- driver commit message: replace package-surface estimate wording with
+  calibrated correction toward junction temperature
+- Link to v9: https://patch.msgid.link/20260717-b4-symana21-11221-imx-thermal-support-upstream-6-18-v9-0-75f4af8974f4@cn.bosch.com
+
+Changes in v9:
+- Rephrase the series to clarify that the offset converts the internal
+  TEMPMON reading to a package-surface temperature estimate, rather than
+  calibrating the sensor for better die temperature accuracy (Frieder)
+- dt-bindings: update the property description to explicitly state it is
+  a board-specific conversion offset, not a sensor calibration
+- driver commit message: distinguish die temperature from package-surface
+  temperature in the symmetric offset mechanism explanation
+- Pick up Reviewed-by tags from Frank Li (patches 2,3) and Lukasz Luba
+  (patches 1,2,3)
+- Link to v8: https://patch.msgid.link/20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-0-d54d8690e16e@cn.bosch.com
+
+Changes in v8:
+- binding: s/behaviour/behavior/ (Lukasz)
+- New prep patch: use ceiling division (DIV_ROUND_UP() for non-negative, plain /
+  for negative) and clamp() for i.MX7D, extracted into a separate patch (Frank)
+- driver commit message: add offset mechanism explanation with a +3000 m°C calculation example (Lukasz)
+- probe: reject out-of-range offset with -EINVAL instead of silently clamping (Lukasz)
+- prep patch: handle negative alarm_temp with plain division (C rounds toward zero)
+- Link to v7: https://patch.msgid.link/20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v7-0-09b6b7669be1@cn.bosch.com
+
+Changes in v7:
+- Align the author name with the Signed-off-by trailer.
+- Link to v6: https://patch.msgid.link/20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v6-0-88a378faeca5@cn.bosch.com
+
+Changes in v6:
+- Align the author name with the Signed-off-by trailer.
+- Link to v5: https://patch.msgid.link/20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v5-0-69405c306c6b@cn.bosch.com
+
+Changes in v5:
+- Move calibration offset application out of c2 initialization, instead
+  apply it in imx_get_temp(), imx_set_alarm_temp() and imx_set_panic_temp()
+  for consistent style across i.MX6 and i.MX7D
+- Subtract calibration offset from alarm_temp before the if-else block in
+  imx_set_alarm_temp(), simplifying both SoC branches (Frank's suggestion)
+- Link to v4: https://patch.msgid.link/20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v4-0-1fef97d1c750@cn.bosch.com
+
+Changes in v4:
+- dt-bindings: drop maxItems to allow minimum/maximum constraints for
+  temp-calibration-offset-millicelsius
+- Link to v3: https://patch.msgid.link/20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v3-0-db9fc2947c55@cn.bosch.com
+
+Changes in v3:
+- dt-bindings: add minimum/maximum (-28580/+28580) for
+  temp-calibration-offset-millicelsius, as suggested by Conor Dooley
+- Link to v2: https://patch.msgid.link/20260709-b4-symana21-11221-imx-thermal-support-upstream-6-18-v2-0-00ff72495e24@cn.bosch.com
+
+Changes in v2:
+- dt-bindings: Removed explicit `$ref: /schemas/types.yaml#/definitions/int32`
+  for fsl,temp-calibration-offset-millicelsius; the `-millicelsius` suffix
+  already resolves to int32-array via property-units.yaml (Rob).
+- dt-bindings: Fixed example indentation.
+- driver: Replaced C integer division (/) with DIV_ROUND_CLOSEST() in
+  imx_set_alarm_temp() to prevent off-by-one alarm threshold mismatch that
+  could cause IRQ storms on i.MX7D.
+- driver: Added clamp() bounds check for alarm_value [0, 0x1ff] to avoid
+  corrupting adjacent register fields (PANIC_ALARM).
+- Link to v1: https://patch.msgid.link/20260709-b4-symana21-11221-imx-thermal-support-upstream-6-18-v1-0-00f88f42930b@cn.bosch.com
+
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Zhang Rui <rui.zhang@intel.com>
+To: Lukasz Luba <lukasz.luba@arm.com>
+To: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Shawn Guo <shawnguo@kernel.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+To: Pengutronix Kernel Team <kernel@pengutronix.de>
+To: Fabio Estevam <festevam@gmail.com>
+Cc: linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+Cc: imx@lists.linux.dev
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+
+---
+Haoning CHENG (3):
+      dt-bindings: thermal: imx: Document calibration offset property
+      thermal/drivers/imx: Fix rounding and clamp for i.MX7D alarm
+      thermal/drivers/imx: Add calibration offset support
+
+ .../devicetree/bindings/thermal/imx-thermal.yaml   | 12 +++++++
+ drivers/thermal/imx_thermal.c                      | 39 ++++++++++++++++++++--
+ 2 files changed, 48 insertions(+), 3 deletions(-)
+---
+base-commit: c50a940dcde35c647e097e89a9150003abd48329
+change-id: 20260709-b4-symana21-11221-imx-thermal-support-upstream-6-18-a084984deb76
+
+Best regards,
+--
+Haoning Cheng <Haoning.CHENG@cn.bosch.com>
+-- 
+Haoning Cheng <Haoning.CHENG@cn.bosch.com>
+
+
