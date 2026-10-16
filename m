@@ -1,125 +1,152 @@
-Received: from mail-dy1-f177.google.com (mail-dy1-f177.google.com [74.125.82.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtpbguseast1.qq.com (smtpbguseast1.qq.com [54.204.34.129])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20DAD1D432D
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 05:43:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADEDA1E260C;
+	Fri, 16 Oct 2026 05:52:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.204.34.129
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792129397; cv=none; b=e2tNT1boKgROe48gH2OqDTEFmHg18sThaY9eFKe975bGGm4eYiqT+uXSk1FHcLUIOFyy96ElYD0J7PJHtRM7h76O0nVloI2Gu57pfXogrKblY36OgOJ2ROshEM2T8RI0wLaHKVJcGioNlz+FgFR7/76mat8D6EslkTMZwXf27Ag=
+	t=1792129971; cv=none; b=jMZdSOJlIHmgmCIkCwsVBq7uNyAVH7lj2GmqsW2YVVDdmBVlYLDqOIpmuv1ErpvTPPr61J71YczVn3SYoda6VXM8JSI7PR5RVhlafCyttLJaLamb1UwKe/9pmQbmElLquzehH/AsaVUKjbLy3lry7MMcsEd+ZRzS8EiAnYy+wR4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792129397; c=relaxed/simple;
-	bh=NEakvsaOGnuVnV0CYglxQUSvVlGwlWIB3RhWn5msuzE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Nb5zolzfMCw365wagGJws5HUQ1vkO0qxcbBvsUsePNARFMfK7q/72olcrQKwIMJehokSH8SLgU1aGxfhGpgw45AX1YEFpMbGv+uHoPxYmFWYJVsJb/tFo+JgClcRaypBPJCZJNkQ+siG45hOc8d2+HRbLpZ7Tt2C/IHLiIFZDf0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=a+yNGKcb; arc=none smtp.client-ip=74.125.82.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1792129971; c=relaxed/simple;
+	bh=NADZTaYXyQNPpcWo5h/7WJa/jrNFw/QeJt5uX3c9SAU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=KQymGWcdKssF4+C4Xi3uw++aoSz9m0DFBXTFnKNJIKpSM5jyx+4hpsM0PgVRrrGONS5WQvQEM58Z7tZUOp126XqH0NuGwSn8It59QLOwneEau2tkaqWJnRy1QKMvMhm8elNrU836icL1B/vVjdpdk6kcUeEa40QFppN3Ry4gjQI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=h8cyG2G3; arc=none smtp.client-ip=54.204.34.129
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="a+yNGKcb"
-Received: by mail-dy1-f177.google.com with SMTP id 5a478bee46e88-30b6dad2382so14518216eec.0
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 22:43:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1792129395; x=1792734195; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=SoitKqT2YG6pddF7f7ztD4Qh7MmMeAXctnSL8wVenKQ=;
-        b=a+yNGKcbV7xAHAZsqbeq0Kp2lN9fMoAsp2eeMjUMPYbanavFsJAVdhyFdHTM8V+UGZ
-         dG3MmwHPs2E1gzi9mHSbXbaiOt6gwLtHjg2CtqEY6wK0I2zft7wOrsk9nJpbtUaT1DIZ
-         3rITIRjfiiFqstxtUYY36WPrr4uuF9y4JUR0ZrZcrwsw15B5PNyugvHceiWL2khpgmgw
-         /pEmU3Ojc0Y1ibqgtLqUvCycO93mbQrWNy3vFcVtVQobwSz61I9sa2qE8U48TU+tJbwb
-         J/RdqtrsBiVW63yHff2/C5Yr26+4GviRgMROovKSb8RicQWQRhdP/7BwIKUUaM7kkVxc
-         l8JA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792129395; x=1792734195;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=SoitKqT2YG6pddF7f7ztD4Qh7MmMeAXctnSL8wVenKQ=;
-        b=VIm3VLzHgbZV2QNaSU8ZBmtRos9tWwvkwFF4pxlx9VRd6lcqtK4BQEjmxuD8DyHhDF
-         pfm4DPQ1iYqpwU05gF5SFpbFwwbOYReZf5JI40LiAYf0ZA7T1xxpTX+ytC0fXXL1t+Bl
-         e/wXQ8xx1ysFVfGe20pg5htW7kSGEkw8zfMhBbaFbtRW1G+eQjhd3TOMGyrS05PySAVF
-         uqk58600geLPFx1ME0dRyMZo7NcYld1b4x8lNGc1KarObgZBjzdp7m0dJAqhsM1pELAM
-         +CYlXYad0YYLsDSFIzqmsq99u/lH5tLl9HSAZU+fMXn2F+YTvRvP5kUQPphI41Bz2e8c
-         fxIQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxZWbOzHT+CROwume1RMChYCBFT7PC5RUvwo1QHBqoAn1hqbVTA8ppHGyrnQr62PgIPOdogGB9eow==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLp/43uyoFyx+gXrSe2HnEtmsd2zpnkyyne/Rn8jaEzLlHvvBrn
-	LSrCY/9NLMA0tuzDEd8So2o8j9TmrGyClATNYkCNtUkgEk7aKjLeSjOjDa18TY8DAHQ=
-X-Gm-Gg: AYBFou0MIAR/adDp5DKLUVynka8ujuszPlIavjgjDemEbu28mi2LvAcMLZ9MIzQ6BmV
-	3Bs4z7We81WEmMrCcoBYwy0VJdUp+efLL/uty0javiouujTaaWYHqrH0FywfSHZRNm204XVXp5S
-	FW/PHhXZdMTVyp+s18HfKPwiVIiU+H2T2tgQi6gzUnN+9HA6CGAFEgIgXCVpm88k80reUqxrt1k
-	cc8y9Jb8Y2t++ZFhWJGcDqanCr51YXGllTEpP9jVK4/GarOXfH0rntLMEMA2nC6HPmHMe7+VSAk
-	n+dyEE5TW29aty3JopVknjZY0bUHC7/eeNLpUU2IoJClmvDyF3m4ugKlB6oHwPuZznTPsjxS5b1
-	Xzcn81U/NKTfYIgp75KbOKuTS0io7sZxqdOS1qdmIEjFRMB1E37VJesOugEKlar1HuO+OGnGt4z
-	90dyVTvGAvlSbFnKJBcWdEXdh6y5o1Z2uxMUnpsw9IoLHqbj8uMnYu/PigGoFR8k9O+0EBtn8h
-X-Received: by 2002:a05:7300:87:b0:360:c266:cddf with SMTP id 5a478bee46e88-360c266d46amr1079687eec.5.1792129394732;
-        Thu, 15 Oct 2026 22:43:14 -0700 (PDT)
-Received: from localhost ([122.172.82.240])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36082a7b33bsm5889667eec.24.2026.10.15.22.43.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Oct 2026 22:43:13 -0700 (PDT)
-Date: Fri, 16 Oct 2026 11:13:10 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: Huacai Chen <chenhuacai@loongson.cn>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Xuerui Wang <kernel@xen0n.name>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Hongliang Wang <wanghongliang@loongson.cn>
-Subject: Re: [PATCH V2 0/5] cpufreq: loongson3: Fix wrong behaviors on
- multi-node servers
-Message-ID: <atG5bnTzhSKljwH9@vireshk-B250M-D3H>
-References: <20260828031201.1500767-1-chenhuacai@loongson.cn>
- <4db03770-b410-4298-9e32-d497278e9cfa@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="h8cyG2G3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1792129924;
+	bh=04uaEat7Rr9Fh2I5vVv7mmMDg23ieCg9+MlV7gYX9Hk=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version;
+	b=h8cyG2G3v3vkRH9Y6L7nxZGaRVCGovRDobwT3LSscZtaM5IqDD56cWArZArXGMm06
+	 on5Vj2RXLpnbeVflJ7q64JmEN+bF6mgDq8qqsFREOZgTpaGMaoFjaXCxSDAwtmaJ0M
+	 ALIO9L3ZmVLXtOXG27YbK8wxGvu0W2J9/FPS01sg=
+X-QQ-mid: zesmtpip4t1792129900tca8e34c7
+X-QQ-Originating-IP: zPMoIHAwRxYqDbLfIG4E73d8/iPU3SU/e4u7IJwVImk=
+Received: from localhost.localdomain ( [localhost])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Fri, 16 Oct 2026 13:51:38 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 1068374382040432612
+EX-QQ-RecipientCnt: 9
+From: Wentao Guan <guanwentao@uniontech.com>
+To: kprateek.nayak@amd.com
+Cc: guanwentao@uniontech.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	ray.huang@amd.com,
+	ronforever@outlook.com,
+	scardracs@disroot.org,
+	stable@vger.kernel.org,
+	superm1@kernel.org
+Subject: Re: [PATCH v3] cpufreq/amd-pstate: Skip auto_sel write when it already matches the mode
+Date: Fri, 16 Oct 2026 13:51:36 +0800
+Message-Id: <20261016055136.286138-1-guanwentao@uniontech.com>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20260918090909.86544-1-guanwentao@uniontech.com>
+References: <20260918090909.86544-1-guanwentao@uniontech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4db03770-b410-4298-9e32-d497278e9cfa@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrgz:qybglogicsvrgz3a-0
+X-QQ-XMAILINFO: Mr5D3cXX4TfKS5Ud28CIOpDrNTNhokKRjd6UvOqkZ+Ff428Ur5wwXahD
+	hToEbrwevxIiOSSJg1fPuia5kp2IP2BDHKBxuNs8NggCI29lfjjfLr8P7jweomQEtVNNNwf
+	463wF4diL+bDCEB62lTHxPDcDDlgWyPYXKla/BOjpt58o72nzzbzvf3lQupKNlxy7/+KVxF
+	C7SNqYhh8gsnQfMezZX+iXWRh9oZHYzZoItUQz9iNqyqgQrjnpD+fm29IPwX7z452xYB6i2
+	/6iLdaTV2bO88WJ6thSZCWv/loSohxd0NHYFbG5uBKhf9CIgJ6o36ZeCY62TqjLySFQ4ETg
+	17JPLUUaPPUBXfE3/k7jIXpJmFNwcwgB4SOtNqRsScqzhebO66eRsnV3db3VT2V+3Q/bYD4
+	ztPmckKfdlJX/cNHIUBJGy+EjplXVx4PaPnX4vDw6xhFeVQffxFajeutiMq4q0F7txpBPlx
+	LGXVeZ8tVlRQg3DK/xD1/2hbkD6jDUvOiwiSi58bxHduz16Oyo1eehXibKt7RET/Pk7CM3H
+	Ez5uLytspRiDrLoSSoQqNtPh82McI2rSFIpdrlRajUWdSyoxR++EoKIZ+D6nZiTa/0IaTlO
+	wKHbBUGidiwImf1QqJznlk19/Hag9abX2m1ogxxvdiXdHu3yX+m39aIA0knyXBy+dTMWPva
+	FJ1O1uG58k6nNbaUDHSkz27TjU2nUgkYLmCAThg2Z/vI0x5twq+7fTHlIoF7slAONKAutwe
+	0cDuQIJ7yr9DvXq93e803LAU5PZ+FfEoavvaZ0tZ6Zmh24SYqXzlPun0/qE9XFTxHXaqXZZ
+	hGEuznr2fJePQ12Cv1Ljf3LKxEUd9wr5Fo+ks+sxY51Alk3eDbRuYPADa4thk+fhtzSJ9UZ
+	8j9c+ju0vL4HG2AeaEp7uZddDjI1WGEJSNgsCX8GD8TLOVnVYiV/bEPlAe6DwIsPXVTjYF2
+	PEoU6GaiYoTnaoNx2FD9z0D6+xYqgpi4DYs8oDEydoQR9pZPnVSE+Ml+hpCWQjysMi7oQiD
+	QDacGUEhZM9BiTF7rfHGV2QxL7c59MsX9BYo93/RTR8g7Vypb/V8yVRyxBZB6i334SQtzTW
+	b39dZPUEnMM
+X-QQ-XMRINFO: MPJ6Tf5t3I/ylTmHUqvI8+Wpn+Gzalws3A==
+X-QQ-RECHKSPAM: 0
 
-On 01-09-26, 16:01, Zhongqiu Han wrote:
-> On 8/28/2026 11:11 AM, Huacai Chen wrote:
-> > Our server productions (e.g. Loongson-3D6000/3E6000) can have multiple
-> > nodes in one package and SMC mailboxes are also per-node. However, the
-> > current driver has wrong behaviors on multi-node servers, including: id
-> > field in smc_message is too narrow, mutex is not per-node, IOCSR read/
-> > write can only perform on the current node, etc. This series fix all the
-> > above problems.
-> > 
-> > V1 -> V2:
-> > 1. Fix typos and add Fixes tags.
-> > 2. Fix loongson3_cpufreq_get() return values.
-> > 3. Use nid_to_addrbase() rather than hard code.
-> > 4. Guard some code with CONFIG_SMP to avoid build errors.
-> > 
-> > Hongliang Wang & Huacai Chen (5):
-> >    cpufreq: loongson3: Make this drvier depend on MACH_LOONGSON64
-> >    cpufreq: loongson3: Adjust the width of id and val in smc_message
-> >    cpufreq: loongson3: Replace per-package mutex with per-node
-> >    cpufreq: loongson3: Use global physical CPU ID in get/target callbacks
-> >    cpufreq: loongson3: Replace IOCSR read/write with MMIO ones
-> > 
-> > Signed-off-by: Hongliang Wang <wanghongliang@loongson.cn>
-> > Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
-> > ---
-> >   drivers/cpufreq/Kconfig             |  1 +
-> >   drivers/cpufreq/loongson3_cpufreq.c | 72 ++++++++++++++++++++++++-------------
-> >   2 files changed, 48 insertions(+), 25 deletions(-)
+Hi,
+
+> Since commit 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active
+> mode on shared memory systems"), shmem_init_perf() programs
+> AUTONOMOUS_SELECTION_ENABLE unconditionally, including in active mode.
 > 
-> The whole series looks good to me.
+> Platforms that exclusively support autonomous selection report this field
+> as an Integer of 1, as required by the ACPI specification, instead of as a
+> register descriptor.  cppc_get_reg_val() reads such a field back
+> successfully, but cppc_set_reg_val() rejects the write with -EOPNOTSUPP
+> because the entry is not an ACPI_TYPE_BUFFER.
 > 
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> shmem_init_perf() propagates that error, so every amd_pstate_epp_cpu_init()
+> fails, cpufreq_register_driver() ends up with an empty policy list and
+> returns -ENODEV, and amd-pstate refuses to load at all:
+> 
+>   amd_pstate: failed to set auto_sel, ret: -95
+>   amd_pstate: Failed to initialize CPU 0: -95
+>   ...
+>   amd_pstate: failed to register with return -19
+> 
+> Skip the write when the register already holds the value the requested mode
+> needs.  Active and guided mode are fixed on these platforms, which report
+> auto_sel as 1, while passive mode still fails to load on a platform that
+> cannot disable autonomous selection, exactly as it did before the
+> offending commit.
+> 
+> Fixes: 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active mode on shared memory systems")
+> Cc: stable@vger.kernel.org
+> Reviewed-by: K Prateek Nayak <kprateek.nayak@amd.com>
+> Tested-by: K Prateek Nayak <kprateek.nayak@amd.com>
+> Tested-by: LFRon <ronforever@outlook.com>
+> Signed-off-by: Wentao Guan <guanwentao@uniontech.com>
+> ---
+> changelog v3:
+> Include the K Prateek Nayak reviews to remove that ternary op base on current
+> condition now have.
+> 
+> v2 link:
+> https://lore.kernel.org/stable/c3eb86bd-70a6-4bb2-8eff-b2a3c0817514@amd.com/#R
+> changelog v2:
+> Accecpt and tested the K Prateek Nayak reviews.
+> v1 link:
+> https://lore.kernel.org/stable/20260918054808.48999-1-guanwentao@uniontech.com/#R
+> ---
+> ---
+> drivers/cpufreq/amd-pstate.c | 6 ++++--
+> 1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 80d99ba1902c9..2d1f5292d1738 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -532,8 +532,10 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
+>  		return 0;
+>  	}
+> 
+> -	ret = cppc_set_auto_sel(cpudata->cpu,
+> -			(cppc_state == AMD_PSTATE_PASSIVE) ? 0 : 1);
+> +	if ((cppc_state != AMD_PSTATE_PASSIVE) == auto_sel)
+> +		return 0;
+> +
+> +	ret = cppc_set_auto_sel(cpudata->cpu, !auto_sel);
+> 
+>  	if (ret)
+>  		pr_warn("failed to set auto_sel, ret: %d\n", ret);
+> --
+> 2.30.2
 
-Sorry for the delay.
+Ping? Nearly a month passed, anything update?
 
-Applied. Thanks.
-
--- 
-viresh
+BRs
+Wentao Guan
