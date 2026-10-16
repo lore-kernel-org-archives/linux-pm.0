@@ -1,120 +1,108 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 818CC3B14BC;
-	Fri, 16 Oct 2026 10:13:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68E0246DFFC
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 10:15:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792145609; cv=none; b=i1UrB1z/cjhOovh06S2CjjczER0dhAi+umdcm/ocjiKHr4G9TFE7ROUC73P4sIqmezQVJqSGK0S6AkTpf7PAjS0B99SbEf1zGxdxXjpC+C6cc7NGbLucnTHJMQECjSh1g2KamFfJW4ilIoJA4Q1egPjQaai1s5O9+YNvXv3qahw=
+	t=1792145729; cv=none; b=FhqTEV+hWk9mgoHxtjh9GQGT7Jbvs8ccPSWHn55Href3caiI/OKvbfbDHMprn5YgTfXgDhK6VbfQMigzRPe8LQjiYZKo+/2zIt5Mcm9vgEhxD+hb/X0VWFBLgFzKWTvsyudIIa7hc7ZambbRAQqsIfY1eUgsbYIyvO7w1Vwebic=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792145609; c=relaxed/simple;
-	bh=WQgfGoL4GDK3dJgHpQLbCjihbdF9lp2UKZlbahoF450=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hlDIVoLZs5x3hbkOG8n1HZcxqHj1Q5JOEhRnIWsA2UNOf8Fwd1MasusVdycuw7N/DUXykR/cBt5YiIzUXNyYWpv5b2MDp81XAbzsJT3eYPLVBeq/lcWMCkF4The3/6djUDWcrwfpRhr9U1JxltWVZlXbXNzbQLE6oZ8vLotDaJA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MHfbgzlU; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792145729; c=relaxed/simple;
+	bh=WsYQRqZVkYfAC0uocIQCG3hADVXXJg52uM4QwsZS/VM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GuRIJkkRmWNj9+FcXmOgI0nu6fpGAviL2A36w+l43siawf0pNYzx0We8VKj4QS3ZUq2Sdh1zKtrU41m3+Sl7EFuj4aNndzvLD129lnwWAVxliJig5EUEXTtb18p93drmHrDInTayR77C9cL4clJi/7J6wBxyffhjDKV5N639CUM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AKoqBIgm; arc=none smtp.client-ip=209.85.216.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MHfbgzlU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CE061F000C4;
-	Fri, 16 Oct 2026 10:13:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792145607;
-	bh=WyVgdQOJ2lLJ0wl//yOKImwK8hAJpf48U17WojJT4FU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=MHfbgzlUIZRJdPWIE0no3IgTioOtANvbTrN96zf1hnfZNjewVLMpiT2SGNze7NNxb
-	 p4MphMQmmT1pBOQKJrhfmwDL5MpVE0/fmHeUTfXXp1VvrwyWoDKXBF5/uw02dBnDUo
-	 8/CF4tYHbvQ367xcSrBdSgnEgRMv+lMfBbhDAk976/x5JCVLhkeV9Tt7LXQ9l2tYsY
-	 5+4OuMqsQ5QbEDOhW+O6tYGQiBrBWkmJggXEulgYHSz+ui0XQNVW0/jJtmrs01CUjO
-	 WFhuMvak/6KMPYsH6waYO23tMb5Vtx74F56BzklZBf2n9AGQUsu8c4FwmRrgwQ/nEc
-	 qXIbidDQLhUgQ==
-Date: Fri, 16 Oct 2026 11:13:22 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Philip Radford <philip.radford@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	Sudeep Holla <sudeep.holla@kernel.org>, arm-scmi@vger.kernel.org,
-	linux-pm@vger.kernel.org, james.quinlan@broadcom.com,
-	f.fainelli@gmail.com, vincent.guittot@linaro.org,
-	etienne.carriere@st.com, peng.fan@oss.nxp.com, michal.simek@amd.com,
-	quic_sibis@quicinc.com, dan.carpenter@linaro.org, d-gole@ti.com,
-	souvik.chakravarty@arm.com,
-	Cristian Marussi <cristian.marussi@arm.com>
-Subject: Re: [PATCH v9 05/13] firmware: arm_scmi: Add SCMIv4.0 Powercap FCs
- support
-Message-ID: <20261016-admirable-modern-bandicoot-d7cc15@sudeepholla>
-References: <20260909220437.1254412-1-philip.radford@arm.com>
- <20260909220437.1254412-6-philip.radford@arm.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AKoqBIgm"
+Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-398b3c37877so3185287a91.0
+        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 03:15:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792145728; x=1792750528; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=NAuVFfQbxwKnXcYGVkoP45E/v8P/ovYGz0j3wut9/Dk=;
+        b=AKoqBIgmkLYHjn5ao/RjNfFOX3sQMl+3sMGm0ruT8Jg1ALj7kVRxUXbsmvbMQO+lFB
+         bcyDtU8xUUTIBzbPzH5ULFv+jkuO47jY5LnZj35LoyeYYm5sVo56ovPtmyh4RntCDxaX
+         L2EqEbhM177a0JkYiPQDpWe+d75UGMJrwP2UtF7nKPKg5bpyVoXPHbx2uUUxs1BwA4qY
+         R/CGs/FfdQff0OpO26X9K3ttXdKxhlr69RDbyQjv9MPxb3jcFckFLPNxJ0WJRIWua6Z/
+         InhzoWEAL/BDWTr/urERwVN76McNdaCwRLjUtUmOnHeO0gCU5wwDalBNPfShmfoK4Ect
+         9JPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792145728; x=1792750528;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=NAuVFfQbxwKnXcYGVkoP45E/v8P/ovYGz0j3wut9/Dk=;
+        b=o+BwC9KqwsF2ZuTphXac92AROg3/pRvRenJr6jzWfju4eM+MQ+tQ6jDP3cfjLVbpYm
+         ImaC6L69vcmDAne/yt9X+5GEFUvZdBdhgYT6D5hDe/WcW3bgEnjDkS3dnGoJjypH0mYk
+         7vNSDUpHjiHDhqqSYXljL/yoAEUpVvvmKegKg6eXvQCNhUPCRQC9pkuKd59dUNQOa3fd
+         TuS8+wIQnA7/p+jXl6txpvvQz/h0rcCzkt81Ros3WJD2BqBQPUgDgFM6LuQUZ8MloAHv
+         ANVCe4Ar5DoxcOKmJlGAkC9iYs1tgpq9yNz1xqWwHxW05lWTXXemV2+jREbd+jIU5OGD
+         eiCg==
+X-Gm-Message-State: AFq9FYKdpKsYG8XaJMKTij95+CYEzEtej008mof52i4p7+AoRRxwmfsn
+	ZnRBH1ggmMveVH44XJzKMOiOIf+S3zUzLwziyCzwxhgb+wLwTftqjG4I
+X-Gm-Gg: AYBFou0CyGYG3eqESZ+TqlbdsLZRWcoV5ZwDmEXDttLWvmpvlqRn7YPEMwwIHKVrdJI
+	AqcCuO5048tfLIiP53zXotiFFY3JquTjPQdKrolxZPl9d34tdMM8UoA01nGjgVzRi9vwwPifswD
+	OMtpd324K54+tfUvtoAnbTOM7MzBUVQ6sVTfhqXV43IC5qgoH5WVMlBSRzF9cyegw9NfdYcO/T6
+	UkJ4Q4Vh41LBj+srWNoProNKVV+IRqVqO7JLw5iubgz+FoKc/r5dcNA0NPCInJ+JOT2z7Lpt8ZA
+	kgqWQ1+m3PDtNsmYJp0I/p6PY5lPMl/mv0XYfI1400rr6hRTaYt+GhoYjW6q/H1SY/6hVMbR+kn
+	XY3jkgKeRF3darP5wjMFyi0eRx31ltCdo+icXyRY231GarIvQx0Ys46u4fjxE2ArQ1OPM9g5vKV
+	9gatm001tAV3YhafSGx1s9ndAEkSys+9h+4C9J4I2DL2XVB3i7xvcXyEN6KOSyY/EI4A+hdFFNE
+	lIHNTISmxsNFAOyRWFV1NSi1ahKLCpWYFVLSp4FeRTE+VnxhZ/PPz1r8orSmOdb73uqlWqX5A==
+X-Received: by 2002:a17:90b:1b0d:b0:3ac:4e18:237c with SMTP id 98e67ed59e1d1-3ac4e182f22mr10046820a91.0.1792145727646;
+        Fri, 16 Oct 2026 03:15:27 -0700 (PDT)
+Received: from localhost.localdomain ([2405:201:301c:f8cd:1467:1666:71b7:b993])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ac94748c6csm8733304a91.10.2026.10.16.03.15.25
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Fri, 16 Oct 2026 03:15:27 -0700 (PDT)
+From: Aryan Sinha <sinha.aryan03@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Aryan Sinha <sinha.aryan03@gmail.com>
+Subject: [PATCH] power: supply: sgm41542: Use secs_to_jiffies()
+Date: Fri, 16 Oct 2026 15:45:19 +0530
+Message-ID: <20261016101521.14140-1-sinha.aryan03@gmail.com>
+X-Mailer: git-send-email 2.46.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260909220437.1254412-6-philip.radford@arm.com>
+Content-Transfer-Encoding: 8bit
 
-On Wed, Sep 09, 2026 at 10:04:29PM +0000, Philip Radford wrote:
-> From: Cristian Marussi <cristian.marussi@arm.com>
-> 
-> Add support for new SCMIv4.0 Powercap Fastchannels.
-> 
-> Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
-> [Philip: removed reference to old versioning logic]
-> Signed-off-by: Philip Radford <philip.radford@arm.com>
-> ---
->  drivers/firmware/arm_scmi/powercap.c | 331 ++++++++++++++++++---------
->  1 file changed, 229 insertions(+), 102 deletions(-)
-> 
+Both watchdog kicks are a flat five seconds written the long way. Use
+secs_to_jiffies() from the same header instead.
 
-[...]
+Signed-off-by: Aryan Sinha <sinha.aryan03@gmail.com>
+---
+ drivers/power/supply/sgm41542_charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> +static int
-> +scmi_powercap_xfer_avg_interval_get_v3(const struct scmi_protocol_handle *ph,
-> +				       u32 domain_id, u32 cpl_id, u32 *ivl)
-> +{
-> +	int ret;
-> +	struct scmi_xfer *t;
-> +	struct scmi_msg_powercap_cap_or_cai_get_v3 *msg;
-> +
-> +	ret = ph->xops->xfer_get_init(ph, POWERCAP_CAI_GET, sizeof(*msg),
-> +				      sizeof(u32), &t);
-> +	if (ret)
-> +		return ret;
-> +
-> +	msg = t->tx.buf;
-> +	msg->domain_id = cpu_to_le32(domain_id);
-> +	msg->cpli = cpu_to_le32(cpl_id);
-
-Is this inconsistent with scmi_powercap_xfer_cap_{g,s}et_v3() which IMO
-correctly uses pc->cpli[cpl_id].id instead of cpl_id or am I just confusing
-the flow ? The spec is clear that it must be concurrent power limit identifier.
-
-
-[...]
-
-> +static int
-> +scmi_powercap_xfer_avg_interval_set_v3(const struct scmi_protocol_handle *ph,
-> +				       u32 domain_id, u32 cpl_id, u32 ivl)
->  {
->  	int ret;
->  	struct scmi_xfer *t;
-> -	struct scmi_msg_powercap_set_cap_or_pai *msg;
-> +	struct scmi_msg_powercap_cai_set *msg;
->  
-> -	ret = ph->xops->xfer_get_init(ph, POWERCAP_PAI_SET,
-> -				      sizeof(*msg), 0, &t);
-> +	ret = ph->xops->xfer_get_init(ph, POWERCAP_CAI_SET, sizeof(*msg), 0, &t);
->  	if (ret)
->  		return ret;
->  
->  	msg = t->tx.buf;
->  	msg->domain_id = cpu_to_le32(domain_id);
->  	msg->flags = cpu_to_le32(0);
-> -	msg->value = cpu_to_le32(pai);
-> +	msg->cai = cpu_to_le32(ivl);
-> +	msg->cpli = cpu_to_le32(cpl_id);
-
-Ditto here.
-
+diff --git a/drivers/power/supply/sgm41542_charger.c b/drivers/power/supply/sgm41542_charger.c
+index 888096252..118b4c700 100644
+--- a/drivers/power/supply/sgm41542_charger.c
++++ b/drivers/power/supply/sgm41542_charger.c
+@@ -468,7 +468,7 @@ static int sgm4154x_set_watchdog_timer(struct sgm4154x_device *sgm, u8 time)
+ 		if (!sgm->watchdog_enable)
+ 			queue_delayed_work(sgm->sgm_monitor_wq,
+ 					   &sgm->sgm_delay_work,
+-					   msecs_to_jiffies(1000 * 5));
++					   secs_to_jiffies(5));
+ 		sgm->watchdog_enable = true;
+ 	} else {
+ 		sgm->watchdog_enable = false;
+@@ -970,7 +970,7 @@ static void sgm_charger_work(struct work_struct *work)
+ 	if (sgm->watchdog_enable)
+ 		queue_delayed_work(sgm->sgm_monitor_wq,
+ 				   &sgm->sgm_delay_work,
+-				   msecs_to_jiffies(1000 * 5));
++				   secs_to_jiffies(5));
+ }
+ 
+ static void sgm4154x_disable_irq_wake(void *data)
 -- 
-Regards,
-Sudeep
+2.46.0
+
