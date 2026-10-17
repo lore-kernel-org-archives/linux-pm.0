@@ -1,31 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5158F3A1A38;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38942370ACE;
 	Sat, 17 Oct 2026 21:56:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792274196; cv=none; b=CfHA4XcBb0VA00q12GghGusOHOXY8vbWIU2k11V85xRnxZDJ1jnDk05sO9L40ADaNtkXwGAgzBYVFc5qYnxwN9yjgrTEfjVmRDjF7gsh/Ykacj9+au0bS8Hd7NCs+EkDakjMnU7QKLkKFSCJCVzF/0JfRt9qeZAmJPyH3GbJfFI=
+	t=1792274196; cv=none; b=Q0tzKC1jaathEJ7JeKgWwXe9bag4VpB0EvCdxSMwzmYFCfbgfcxXwKMaMoYGS2HShRaThjlFOT1PF7o3clo7ugpXAZqHh1l2XJWg+OCvt+4tJzf7a7+uI+VJy88Zroc562LxY+TMs0DwRW5xCIWcM1D40VHQC5aT1H07A9q4G74=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1792274196; c=relaxed/simple;
-	bh=vaZ7b5n1bK7SXCra/rZmIr85JIgToMGZRxxhQ6UwYZA=;
+	bh=0lUe5T1XZ01SOdlOpCK/Au+YgH0QhIr/tZVkgK+z3oc=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=WYy14TglfV8/CPLhmHNu8pYAu0rlfbGtDH3JUoMJVi/Vtr187GckfbCnbUI4KkXJLmivo5/r2JSiwBtZOtIlgOqylv5oeY2/+S5gvJAUBIy34/PZ0NvLufKvdhXvwnV7agLUvdzJ5eFgH1fX1Qvq8s/2xX4mAUMWov7QG29t20Q=
+	 MIME-Version:Content-Type; b=WG26tlRgnr6B54SOAYK8nXCwAEVPROVd2ZNy2UVOwFpSxDst2bpAdY+0REV3a9SWouR2faMzGtQtpqji+HrS8AKOs+O1Ksej7MCXsLIvsf7hdZuqD1SwZquuDIeKuuRZ2Q4Q/Ma7/WbyD5bJIEjQCVRPsbQuugMnoFhCFNdDylU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 096DA1F000C8;
-	Sat, 17 Oct 2026 21:56:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2A0A1F000C4;
+	Sat, 17 Oct 2026 21:56:34 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 7B7661824B7; Sat, 17 Oct 2026 23:56:33 +0200 (CEST)
+	id 6D97C1824B5; Sat, 17 Oct 2026 23:56:33 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: sre@kernel.org, Joonhoe Kim <26rote@gmail.com>
-Cc: konrad.dybcio@oss.qualcomm.com, kamal.wadhwa@oss.qualcomm.com, 
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <20261012130053.442-1-26rote@gmail.com>
-References: <20261012130053.442-1-26rote@gmail.com>
-Subject: Re: [PATCH v2] power: supply: qcom_battmgr: report the USB type
- from USB_ADAP_TYPE
-Message-Id: <179227419349.76434.7052897282112702545.b4-ty@b4>
+To: Tzung-Bi Shih <tzungbi@kernel.org>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
+ Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>, 
+ Andrew Pam <andrew@fastmailteam.com>
+Cc: Guenter Roeck <groeck@chromium.org>, 
+ Matt DeVillier <matt.devillier@gmail.com>, chrome-platform@lists.linux.dev, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ stable@vger.kernel.org
+In-Reply-To: <20261005043418.243937-1-andrew@fastmailteam.com>
+References: <20261005043418.243937-1-andrew@fastmailteam.com>
+Subject: Re: [PATCH v2] power: supply: cros_charge-control: restore EC
+ state on resume
+Message-Id: <179227419343.76434.11850314972338032002.b4-ty@b4>
 Date: Sat, 17 Oct 2026 23:56:33 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -38,22 +42,27 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.16.0
 
 
-On Mon, 12 Oct 2026 22:00:53 +0900, Joonhoe Kim wrote:
-> On SM8350 and SM8550 class firmware the USB power supply reads its
-> usb_type from the USB_TYPE property. On a Kaanapali (SM8850) tablet that
-> property is 1 (SDP) whatever is plugged in, while USB_ADAP_TYPE reports
-> the adapter, using the same numbering as POWER_SUPPLY_USB_TYPE_*:
+On Mon, 05 Oct 2026 15:34:18 +1100, Andrew Pam wrote:
+> The EC resets its charge control configuration when the AP powers off,
+> so configured sustainer thresholds and charge behaviour are lost across
+> hibernation.
 > 
->   PC port                  USB_TYPE 1   USB_ADAP_TYPE 1 (SDP)
->   USB-C dock, 5 V PD       USB_TYPE 1   USB_ADAP_TYPE 6 (PD)
->   65 W PPS charger         USB_TYPE 1   USB_ADAP_TYPE 8 (PD_PPS)
+> Nothing notices the reset. Commit 4fc88ba435da ("power: supply:
+> cros_charge-control: adopt EC charge state on probe"), in the
+> power-supply tree, made the driver adopt the EC's charge state, but only
+> at probe, and a resume is not a probe. Sysfs therefore keeps reporting
+> the configured values while the EC charges the battery to full. On a
+> Framework Laptop 16 (Ryzen AI 300, charge control command version 3)
+> with charge_control_end_threshold set to 80, a hibernate and resume
+> cycle leaves the attribute still reading 80 while the battery charges
+> past it to 100%.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: qcom_battmgr: report the USB type from USB_ADAP_TYPE
-      commit: a49f86cd1333c6e12fd37bc0b3234ace10072553
+[1/1] power: supply: cros_charge-control: restore EC state on resume
+      commit: 1f2a40f954c848dff9d8bb6d81e404f9e47f0e81
 
 Best regards,
 -- 
