@@ -1,97 +1,107 @@
-Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA82A48381C
-	for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 11:17:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.117.254.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87C79296BD2;
+	Sat, 17 Oct 2026 13:07:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792235878; cv=none; b=UHk4g9+sJuQpmxS/pC0bLbsI8OvwPuf+ZROuF+6SVX+YIYlVbCL9PcRBrJFHGL5DloOpqi2FIEMGfEOHobdiUKvyQuD3THLEZlluUheC+xLcsMh7BwkmhqGGhfvuDBrzr9ieMRl6mdi11RAYXz7HcjwjQ2OQMbXk+ViU4407yNg=
+	t=1792242438; cv=none; b=JPtMlIZVoiGvPa9gnFcLcZ5rhxv6sRBlfxi7/B+v1aCZoc6l1PLpNkYI65cWwMBznYZQytTzF9NBu/yrx2ArvgGJ9s8dHLTn79VJlVVNlmuht55ZWp/55pOY2/GEiygeVxF69pDxPhxQVJo6GSah+2+J7XeDU4khmxps13Jo/fI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792235878; c=relaxed/simple;
-	bh=qnaU4A9xveettmpS+vopSNolBG6QJGbtDjGNYstTtWY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DtYW8l2KpVbjMZn7vZlF/iVuPLoAX2fVZZYT/Lr9N4DigYh9FdMVqsINsTnh7r6rdazDK7Vmamq+NrDriGlE0hUlOtEFnVeHdO2vweDGNs+Ynt4A6pgD4SkB4WfgoTvOySDknl5jzzvO6jKreMJ68IMp/ZicT6ifL6QIrKTJ9Kg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; spf=pass smtp.mailfrom=sang-engineering.com; dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b=c/d1+QMq; arc=none smtp.client-ip=194.117.254.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
+	s=arc-20240116; t=1792242438; c=relaxed/simple;
+	bh=wHaKnXk5dvgTuwSxeYuX3VMmbmmXSlzEXrIjK9mY2zY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=BGRLHxObpp3xHcxg6Z6+RTVLBgZNiuJ4IYFP+tlh8G4RH//ttqaZOz2RqtBYLn0QbTal/z18DxC+87KBvU0KoY0fwOeW9hA90gkTrQfPbtv1kdE/QcabUSurZ6qY9XWAm3BubLOq1tAT600kGN1vJVuhobbMRR2+MQI/sZUH4fM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=A2DvF9JC; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="c/d1+QMq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	sang-engineering.com; h=date:from:to:cc:subject:message-id
-	:references:mime-version:content-type:in-reply-to; s=k1; bh=wxuk
-	6IDriLl7MXn594d/LjgaXzjR4puXOU8/hIVUu9c=; b=c/d1+QMqtQyDgaUoeZH6
-	ERLHM6l26dA0mOpWZEIpoRWkLzN0XWkgma+AeD36oEsGg5o3EfdzYX5Cp5/eNCqE
-	ZGY2axdqXfL48EsScQ63GecPZRcY7sZ6nUlB2Ylr+CW2IR6OMwsXSXGgTNRJT6i6
-	v52jeP409R6LS0ERvQhF/AyWBv3jip8SDH3HXI7EHBbo73+SA7EPdLrAnkKd/4OI
-	2tk5DWbM+4MdAIO2pKaKElHilapT8folp/DDiZ+nSbrNrg9um27iF3PT18TrOrkd
-	Goa+tyLk8oU1lkUEPPKeBlEYpwLrTxeJn8LfXnneWZvqJuroxZ71FbAstfVgUiPd
-	ZA==
-Received: (qmail 984 invoked from network); 17 Oct 2026 13:17:42 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 17 Oct 2026 13:17:42 +0200
-X-UD-Smtp-Session: l3s3148p1@5eDrbQdeOsMujnuO
-Date: Sat, 17 Oct 2026 13:17:41 +0200
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	=?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH v4 0/8] R-Car X5H Ironhide CPG/MDLC SCMI remapping support
-Message-ID: <atNZVWSjJV8GiK9n@shikoro>
-References: <cover.1792163045.git.geert+renesas@glider.be>
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="A2DvF9JC"
+Received: from mail01.layka.lan (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id 40EEC82C23;
+	Sat, 17 Oct 2026 15:07:08 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DnvE_HUi_Gul; Sat, 17 Oct 2026 15:07:07 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1792242427; bh=wHaKnXk5dvgTuwSxeYuX3VMmbmmXSlzEXrIjK9mY2zY=;
+	h=From:To:Cc:Subject:Date;
+	b=A2DvF9JCal/FBlUICLtwz77n9zvowQnZ11u+0QB79EIYLf17317AyTKXac3d6Nqbz
+	 lfFqtLplYNaRxpXTZaq6oFKNUvOpNAwU7e3FYzpjedKoUhx1m8kQ+hCUpqtHZlPDvH
+	 eUCph3XMim3Sb9HaV8W7dL9EYDbhMyqxkzckkWQe6HIY8uhazuJNouiIKgP0gOc+27
+	 nHXATJM/2Nd/uV+Mrz0heTdPhYVl3o/IW5MfDldHmVdtEbOoQuEfwlv5XI2rNt8nEh
+	 oxtqi1xY4D2U8OTxZw6MFhdTrcwSHJL1AVAT0seaS9E0mkziKOIpIH1B/a8n7CI2p6
+	 iqw51HdmA5u3g==
+From: =?UTF-8?q?Ali=20Ahmet=20Memi=C5=9F?= <aliamemis@disroot.org>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>,
+	Rong Zhang <i@rong.moe>,
+	Len Brown <lenb@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Ike Panhc <ikepanhc@gmail.com>,
+	"Derek J . Clark" <derekjohn.clark@gmail.com>,
+	Mark Pearson <mpearson-lenovo@squebb.ca>,
+	Armin Wolf <W_Armin@gmx.de>,
+	Charis Stratakis <c.stratakis@proton.me>,
+	Avraham Hollander <anhollander516@gmail.com>,
+	=?UTF-8?q?Jeffrey=20W=C3=A4lti?= <jeffrey@waelti.dev>,
+	Rick <rickk1166@gmail.com>,
+	linux-acpi@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org,
+	acpica-devel@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/4] ACPI: Serialize battery, INT3403 _TMP and ideapad methods
+Date: Sat, 17 Oct 2026 16:06:33 +0300
+Message-ID: <20261017130652.318778-1-aliamemis@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1792163045.git.geert+renesas@glider.be>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi Geert,
+On ThinkPad P1 Gen2 and P53, INT3403 _TMP switches the EC page selector
+without taking the mutex the battery methods use.  On some Lenovo
+IdeaPad and Yoga models, the battery _BIX and the ideapad GBMD take the
+EC mutex and a serialized method in opposite order and deadlock until
+an AML mutex times out.
 
-thank you very much for this update!
+As discussed in [1], add exclusive variants of the AML evaluation
+helpers and use them for the battery, INT3403 _TMP and ideapad methods.
+Patches 2-4 depend on patch 1.
 
-> During last OSSJ/LPC, Marek Vasut pondered if we could keep our own ID
+Changes in v2:
+- Merge the follow-up series [2] and drop its EC query and UCSI patches
+  until they are shown to help
+- Add acpi_execute_simple_method_exclusive() for _BTP and ideapad
+- Make the helpers wrappers that take the lock around the existing ones
+- Join lines up to 100 columns, add a Link: for Suggested-by:
 
-Well, it is not the last LPC anymore ;) Time flies...
+Link: https://lore.kernel.org/all/CAJZ5v0gS4agVUkCO6M=VW4Wi2y1-s+k23bpzmX9aAZ0Rsv4z9Q@mail.gmail.com/ [1]
+Link: https://lore.kernel.org/all/20261014190544.150093-1-aliamemis@disroot.org/ [2]
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=221065
+v1: https://lore.kernel.org/all/20261014132703.93355-1-aliamemis@disroot.org/
 
-> This series consists of four parts:
->   A. Patches 1-2 prepare and add SCMI remapping support to the R-Car X5H
->      CPG clock driver,
->   B. Patches 3-6 fix and add new interfaces needed for remapping in the
->      R-Car X5H MDLC pmdomain driver,
->   C. Patch 7 adds SCMI remapping support to the R-Car X5H MDLC pmdomain
->      driver,
->   D. Patch 8 enables more SCMI protocols on R-Car X5H Ironhide.
+Ali Ahmet Memiş (4):
+  ACPI: utils: Add exclusive AML evaluation helpers
+  ACPI: battery: Evaluate battery methods exclusively
+  thermal: intel: int340x: Evaluate _TMP exclusively
+  platform/x86: ideapad-laptop: Evaluate ACPI methods exclusively
 
-I rebased my I2C branch to it, enabled the debug output and can confirm
-that the clocks and resets are now mapped and I2C still works fine. So,
-for the whole series:
+ drivers/acpi/battery.c                        | 12 +++---
+ drivers/acpi/utils.c                          | 41 +++++++++++++++++++
+ drivers/platform/x86/lenovo/ideapad-laptop.c  | 12 ++++--
+ .../int340x_thermal/int340x_thermal_zone.c    |  6 ++-
+ include/acpi/acpi_bus.h                       |  7 ++++
+ 5 files changed, 66 insertions(+), 12 deletions(-)
 
-Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-The branch is here:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/x5h/i2c-experimental
-
-All the best,
-
-   Wolfram
+base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
+-- 
+2.55.0
 
