@@ -1,43 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A0063AFB07;
-	Sat, 17 Oct 2026 16:45:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D26E2F7F09;
+	Sat, 17 Oct 2026 17:01:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792255558; cv=none; b=gxKk4MhsfHpLvh97toZ8w7Xg1WMuyqjuz2dSIhnWIoNqZqHfEbimz9TRqI1ebx37dRjoSXy10NCzuDvWYItrlV24aZECiswZ3PQOPKHT+tnlRVf4Fl7Y/n7SbS1JZmzehk2c2s8M8vL5iglkiljFp7UH4VWPNBv3A+G7MbnYSzA=
+	t=1792256499; cv=none; b=QMJStu4q4kDs6UTPH3/VfB3jbTLgRFoGjqS9Wcl0GvN4/vPtlDbVLTsw0KNCYnhAMrT95zYAaiBbm0utQQLuPuEeFZRPnjI0i/gw84KpQWvTdvwUocYDlU+xM7+moFCongzqKOf67/Kn6OjYbHT7dFV+sCZoiXxyHyFLh+7lj50=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792255558; c=relaxed/simple;
-	bh=Mjlqhejdm5FrIoQnX4RxPMoWRM+ithZztKzW6RzU6YQ=;
+	s=arc-20240116; t=1792256499; c=relaxed/simple;
+	bh=2M8Z37PGiNANIsasjU4e1kZ9u/GJ4FFqIX0MuMfc0Wc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hOybA4f7884JaDVMNdwCfKFRLaF5DQGAkVO595YL4ZaT4/CkhsurKTOvrnD2p9eU+VAriPJVIdaxTM5x3h8RvgCkFynT8dtP+y56dOlF4aFC7DGeBKwQYilZ9VFvvtK0pxI8kWf18dSLnlxQSdLqaGRY7hJqfKRYebV2EDc2zko=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F0CXq2ao; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=mMFfaxpdoKqKEIkC41dktmQFNrePEvC9pRoNKSqWCibmwsORsW9rAQB4iRpe9aYLeo3HK/QSwPQJ11zqZKRh0dSgID8wyKopoJurgvB76dS7vTKeV90jW7JKi7DNDqxSfELwD88uNrRfKyIxu38KV5LG+Vez2Qeh5OS5Tce338s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uti611E7; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F0CXq2ao"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4BFF21F000C5;
-	Sat, 17 Oct 2026 16:45:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uti611E7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A78BD1F000C5;
+	Sat, 17 Oct 2026 17:01:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792255557;
-	bh=Mjlqhejdm5FrIoQnX4RxPMoWRM+ithZztKzW6RzU6YQ=;
+	s=k20260515; t=1792256497;
+	bh=0mpsN5T94ZvmjEYWIHni//CidEPD9YSQXWSdV5pQRYU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=F0CXq2ao5qFmoPcNyzSoEHf/bicGi+RHQM3oVStbqWXJM/q/Hhdg8MtapXqAEYF5B
-	 C8/8qmu/CnD+69f+tOCC88Lk7wST3vd1KeSalwReMCM/wNmRAPJQQCUqm/PkhtiWW1
-	 qh2DF7zA41EYaM3wVw+mmPf9H6BLG6I5V4RM0IAaoxaJuzPrGcK1lkTe2MurkcztPY
-	 7v8w9ZEz9j8RvTnES4PHgQYMmVBptj2GnrkHOS4PnTbe41ikkeIkResNNxA9Tao+Nm
-	 7Mwor6cDaha4+CSA6W3AROYcRNltzW/DYwFa/Wklx+fV4yz0ijEekbhUkRkEUseiuj
-	 hdd0pIW6g2rdQ==
-Date: Sat, 17 Oct 2026 18:45:53 +0200
+	b=Uti611E7TG6YYKLZ/XHgnHirC/P5Zy7US6Znl4ZwphdER3a+IB1wLyH1jH6tWjlBZ
+	 GgKInUd11xxI0xOAvO/Tf5jRz7f1lshi7/GWX5IQJNVWs8xiT5pqDz4VkrMaiHOY3g
+	 AtigQtR42lSI0Mopj7mjIIC2GEeVWBnc5h8m3dKfAT/6mn6b0M/QNECAw4E4D2iSWY
+	 4SRvuG2drUjDRWGYva9x9hZm7dsVspGRdSJSpF5gSOPpfIMvyBEklWqC8l5LkA+kC2
+	 RpZ+McMs6h7baRJwsWudSICtk4mzc3S1B/GHUj2gmpjtYrwrowba47VSfVY1BWS7TT
+	 zfGvwObZxDaoA==
+Date: Sat, 17 Oct 2026 19:01:31 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
-Cc: Ilia Lin <ilia.lin@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+To: Demeter Barna <me@fromdisposition.org>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
 	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: cpufreq: qcom-nvmem: Allow generic OPP
- tables
-Message-ID: <20261017-calm-tangerine-marmot-2e8bfc@quoll>
-References: <20261015-opp-v1-1-f18fb6f9bae1@oss.qualcomm.com>
+Subject: Re: [PATCH 1/2] dt-bindings: interconnect: qcom,msm8998-bwmon: Add
+ SM8350 CPU and LLCC BWMON
+Message-ID: <20261017-fast-sloppy-angelfish-cdd8da@quoll>
+References: <20261016-sm8350-bwmon-v1-0-562fe403bf6b@fromdisposition.org>
+ <20261016-sm8350-bwmon-v1-1-562fe403bf6b@fromdisposition.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,15 +47,19 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261015-opp-v1-1-f18fb6f9bae1@oss.qualcomm.com>
+In-Reply-To: <20261016-sm8350-bwmon-v1-1-562fe403bf6b@fromdisposition.org>
 
-On Thu, Oct 15, 2026 at 04:25:28PM +0530, Varadarajan Narayanan wrote:
-> The OPP table node-name pattern also matches peripheral OPP tables on
-> supported SoCs. However, it only handles Qualcomm CPU and level OPP
-> compatibles, causing unevaluatedProperties errors for generic
-> operating-points-v2 tables.
+On Fri, Oct 16, 2026 at 06:13:51AM +0000, Demeter Barna wrote:
+> Document the SM8350 CPU BWMON, compatible with the SDM845 one (v4),
+> and the LLCC BWMON, compatible with the SC7280 one (v5).
+> 
+> Assisted-by: LLM
+> Signed-off-by: Demeter Barna <me@fromdisposition.org>
+> ---
+>  Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
 
-But the select should not select them. How can I reproduce the issue?
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
