@@ -1,125 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mta1.migadu.com (out-153.mta1.migadu.com [95.215.58.153])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 991C43C768E
-	for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 19:28:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD5AA4CF46B
+	for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 21:30:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.153
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792265300; cv=none; b=r3b2mVaXgYgS8Q3qis3HOyWfdg2EGo2THc/tFsl1ZBpEK01C2KWyCzdLvNxX4wFPv45zKQUsb+Gp/6D5oVfbZp+bsYu4+MNIq6XKluyK7lGynk9DxXOhATMMChnraab3GEfHhpbnV+Mf5yL8BFNOfsWyHCWU8yYEC9o0SdGGKeA=
+	t=1792272653; cv=none; b=o06hy/Q72J4ym7Yjlb3T8Qu1ZWFCE5cqiGmDHV6wPKRUwqsT15PSQhJrBxeY/7TkGNThtNUaUCa6Ayg20JjYTWjR/JFt5lroklexI8i/Vjw+eNgTCoc9NhuqUNlZqwQQC5XHMp1QW+xIqRvn3GmtjmR9VqB0tqhdtWhvtNn5vPo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792265300; c=relaxed/simple;
-	bh=OsgQcZ4/PBulHvbVN8F9jYjhZtgg6w0doOwZJAIXBuE=;
-	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=ZGpJfZvS0TS0m9aOoy8E/XjUvzJvYC1xWNKXc0Uk18IEZS0Y1xIevWztTU0Z8VyGZ9jBoW7nKrtAc+LBXFT7HQUd/CVKNFOAgqkdV8rMO3q6DM0jVS2X8Owii3ti1QDChKKRfh3pbqJbF0H0zHkfMxZcTNlvbPbFe9q0sSjb0+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GLliXN/T; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1792272653; c=relaxed/simple;
+	bh=oFKzuUCJrKx39ZMIlQ2/kgBJRP6R7Lq8f0WtyI+Xr90=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CO0qhNT3TjbNQHcMRPMe6qe8K7TGKTPOwRjvI95uIbL8bgm7bSOZJD4lNLaqas1/rOX8BuyzG6eOluv4/mqnFvhGt5utCT/+AFz9LwA2XToZ6picwBKSYl1L//G/W0gNBCey4K0q/vm7SDVOhWYxJKixdrgXjApYMUlpX57suJ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool; spf=pass smtp.mailfrom=packett.cool; dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b=XjjbILmE; arc=none smtp.client-ip=95.215.58.153
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=packett.cool
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GLliXN/T"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ED658C2BCF5
-	for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 19:28:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1792265300;
-	bh=OsgQcZ4/PBulHvbVN8F9jYjhZtgg6w0doOwZJAIXBuE=;
-	h=From:To:Subject:Date:From;
-	b=GLliXN/TwQ4vmL2IshN5oMOXrTZNQ3VkOTCoOlkdmsugHrRC3ueokhs5PBe7rLA0b
-	 LSD4Th+x0ftiGw3RQM3vCGhDBiUnL5zLMkuM1cehk86NPbFFs1DAufVkqNVRLxYDC8
-	 EqqXHo6tqjj1Da2R+yRPwy7oMC3ruhnVzG0iRn88DRSzdhCGotduKMp5MQnm9mH5mR
-	 DcSaH4e9LunD2zR7lgeEW9Y2edHAG82t3o8BKNkqEBBmzvp3a058Jjuo5V7k6M2pbW
-	 APK5e/1deYbqduJZozaafpRGFAL4WF/L8+VoZfnCDngUmsx9kHLHK8GB7YN+Z0f0DI
-	 Cm5M1gB1Hp48w==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id D3A9AC41613; Sat, 17 Oct 2026 19:28:19 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 222146] New: 6.18: AMD (Ryzen 5): cannot select existing
- energy_performance_preference
-Date: Sat, 17 Oct 2026 19:28:19 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: new
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: steffen@sdaoden.eu
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version rep_platform
- op_sys bug_status bug_severity priority component assigned_to reporter
- cf_regression
-Message-ID: <bug-222146-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b="XjjbILmE"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=oFKzuUCJrKx39ZMIlQ2/kgBJRP6R7Lq8f0WtyI+Xr90=;
+ c=simple/simple; d=packett.cool;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1792272646; v=1; x=1792877446;
+ b=XjjbILmEv+znvTWFogSTQRgR80z2Xr6J0Mspw8g+8NgPV+vqwXJHrJ8y6LU1+0iO3lAOUplv
+ 3sio0cDIMMJ3lK9dV2WE26vlcmvxOhtwbCWYjl7kuFe8unHyNR4LSCKgADs2FfBpW8wrqr3zepO
+ Ic+C6Wrjhcwj6i4+AmwBx3Cw4TLVPc14jscvVt3JBllwb6sbkYMBozi2ZQ4pmKcXuIhqoBw0tb/
+ GUXTZnaiGU8/h19e5Wo83TDK+rgWzwHkoY78S/3jlfl52bysFKxWSRjfekwwQNtE2Byig3hilNv
+ 8w4WYbz7jzm2TLqz1DRScJ5vQeAjEDIoGlzNJO08QSRZw==
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 4b86bf520d346430;
+	Sat, 17 Oct 2026 21:30:18 +0000
+X-Mizu-Trace-ID: 4b86bf520d346430
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <748ec3d0-2eb6-454b-b0ce-36c04d7bf844@packett.cool>
+Date: Sat, 17 Oct 2026 18:30:08 -0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/4] dt-bindings: arm: psci: Add skip-suspend-mode-switch
+ property
+To: Reza Kurniawan <imkyufie@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, Alejandro Tafalla <atafalla@dnyon.com>
+References: <20261017-psci-fix-v1-0-dedae27e4a31@gmail.com>
+ <20261017-psci-fix-v1-1-dedae27e4a31@gmail.com>
+Content-Language: en-US
+From: Val Packett <val@packett.cool>
+In-Reply-To: <20261017-psci-fix-v1-1-dedae27e4a31@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D222146
 
-            Bug ID: 222146
-           Summary: 6.18: AMD (Ryzen 5): cannot select existing
-                    energy_performance_preference
-           Product: Power Management
-           Version: 2.5
-          Hardware: All
-                OS: Linux
-            Status: NEW
-          Severity: normal
-          Priority: P3
-         Component: cpufreq
-          Assignee: linux-pm@vger.kernel.org
-          Reporter: steffen@sdaoden.eu
-        Regression: No
+On 10/17/26 1:41 PM, Reza Kurniawan wrote:
+> From: Alejandro Tafalla <atafalla@dnyon.com>
+>
+> On some SoCs (e.g. Qualcomm MSM8917 and MSM8937), PSCI_FEATURES reports
+> that OS-initiated mode is supported, but every PSCI_SET_SUSPEND_MODE
+> call is rejected with NOT_SUPPORTED.
+>
+> PSCI provides no call to read back the current suspend mode, so the OS
+> cannot tell which mode the firmware is operating in or why the switch
+> is rejected.
+>
+> Add an optional flag that tells the OS not to issue
+> PSCI_SET_SUSPEND_MODE on such firmware.
+>
+> Signed-off-by: Alejandro Tafalla <atafalla@dnyon.com>
+> [Reza Kurniawan: split out the patch, rewrote the property description,
+>   renamed the property]
+> Co-developed-by: Reza Kurniawan <imkyufie@gmail.com>
+> Signed-off-by: Reza Kurniawan <imkyufie@gmail.com>
+> ---
+>   Documentation/devicetree/bindings/arm/psci.yaml | 13 +++++++++++++
+>   1 file changed, 13 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/arm/psci.yaml b/Documentation/devicetree/bindings/arm/psci.yaml
+> index 0d04389c81..7777077dd0 100644
+> --- a/Documentation/devicetree/bindings/arm/psci.yaml
+> +++ b/Documentation/devicetree/bindings/arm/psci.yaml
+> @@ -98,6 +98,19 @@ properties:
+>         [1] Kernel documentation - ARM idle states bindings
+>           Documentation/devicetree/bindings/cpu/idle-states.yaml
+>   
+> +  skip-suspend-mode-switch:
+> +    $ref: /schemas/types.yaml#/definitions/flag
+> +    description: |
+> +      Do not issue PSCI_SET_SUSPEND_MODE.
+> +
+> +      Some firmware advertises support for OS-initiated mode but rejects
+> +      every suspend mode switch with NOT_SUPPORTED. Since PSCI cannot report
+> +      the current mode, the OS cannot verify the state the firmware is in.
+> +
+> +      This property is an assertion that the firmware works correctly without
+> +      a mode switch. This is a workaround for non-compliant firmware, only set
+> +      it on firmware known to behave this way.
 
-Hello!  I sail 6.18.newest and since some weeks (possibly: since "custom",
-whatever this is, is listed) my self-knitted "cpupower" shell script fails =
-like
-so:
+"for devices that ship with firmware known to …" would be better 
+phrasing imo, "set it on firmware" might sound like it's implying things 
+that aren't actually happening
 
-  /root/bin/cpupower.sh: 1: echo: echo: I/O error
-  ERR:CPU 0: write for energy_performance_preference=3Dbalance_performance =
-failed
 
-Ie it cannot set that even though it is reported to exist (the script refet=
-ches
-what is available after settings are changed):
+Thanks,
+~val
 
-  CPU 0: freq: 406477-3201000; scaling: 406477-3201000; boost:0; gov: power=
-save
-(performance powersave); energy: performance (default performance
-balance_performance balance_power power custom)
-
-On the terminal:
-
-  #?0|lecce:~# cat
-/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_available_preferenc=
-es
-  default performance balance_performance balance_power power custom
-  #?0|lecce:~# echo balance_performance >
-/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
-  -su: echo: write error: Device or resource busy
-  #?1|lecce:~# cat
-/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
-  performance
-
-It works when i switch to all-performance, when i build, for example:
-
-  CPU 0: freq: 406477-4979334; scaling: 406477-4979334; boost:1; gov:
-performance (performance powersave); energy: performance (performance)
-
-And it worked everwhere just smoothly before.
-
-Thanks again, a lot.  I love it!
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
