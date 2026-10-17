@@ -1,98 +1,139 @@
-Received: from mail-dl1-f52.google.com (mail-dl1-f52.google.com [74.125.82.52])
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 197F62F1FF4
-	for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 13:08:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 746DB311C2D;
+	Sat, 17 Oct 2026 13:09:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792242501; cv=none; b=dPS/PF2K3344wgmg0yXdThKCzjeP9PPVa+4VE10eQNZ2qSgrIfgQ6wqSZRguiKCymwOnXzO8n6FJ8AH+wxwC5Ow3X5FQOv6/YHoRTNBsJ4DqkngE2Y0Ap9cOKU5PaL0SJbdO+SNh9NQn6jWBqYREIl6H+m+1L9V4tIGTXoOTkfA=
+	t=1792242543; cv=none; b=BYJGfwv9easjFXGHg7FH5nFeYN9x8or1eBpAWV/ruvuQQ/uZyffl0uBy9iuEsJGMRmM1X/O9ndmdsE1MPKv7gYEkW6i1UUXCXnmqKuYxUE70pi+O8I36WCImTDc8BmXSDKZDBHYnPXKolpxs1dCC9w6bCnVuMXXouXr3i4RUOsc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792242501; c=relaxed/simple;
-	bh=Z/5JBeqwPxSZ0TpSsf5O+k1fvGG7B04vtfTOruv2JxA=;
+	s=arc-20240116; t=1792242543; c=relaxed/simple;
+	bh=OaL1Gpxuch1Zw2DJv3JbxCry//JaeMv/NYthqYMb10k=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NyE52d9aOGw02y8IN/efvm6xiKHyOIw8p1KGQykyaD4wf+IhmMPq60pJ/93JcD5XCk25fLL89C0R/kXJ0wUetz+a6v8sChiolYmpAjp+ZthpPFijDWu5yT8wuAoTvywfvSt4T6CF/v0oleheYmDr8J3Vjr5g/38uPJIFRjOCqZY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VXl2HU6b; arc=none smtp.client-ip=74.125.82.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=KZSglxtDKS8UBhdqwWTB6rr3qqbRiH9h03go1g6QV/zEWeON1BLlwwyiY8bXQgaHHmpUhrjwyz9uXAimifiGG7fTBfp2I8GMT6kC+s5QC38yUkbDLSx+eJzlL7TX7NrXOVnveNslZMUamWFGhb02IHXgoGEfr/lWPPuLZmRgvxw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=PjvIZyRT; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VXl2HU6b"
-Received: by mail-dl1-f52.google.com with SMTP id a92af1059eb24-15943c9be84so48368c88.3
-        for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 06:08:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792242498; x=1792847298; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Z/5JBeqwPxSZ0TpSsf5O+k1fvGG7B04vtfTOruv2JxA=;
-        b=VXl2HU6bjknN1IMUfwiSPFCo4VVowwrSEmRotFX6qrdkgbsozOl3Sgewo2O/cYYsXg
-         Pkc55EjKirp/4gxCfW7/bybcVFjy/TgoKYkAKf1yvgMlb2Ir8ikM85CcQInSJwJ52Ckw
-         gHWUDuLm8EdyOQTVT6oM2XaqeKWqBK3Eusu+kBT0D9jWULFuVqhAvjf4AMFJCVjm3cJz
-         9O6oO9PfUW8EK9WwFnQZHdvfq68nOFTWlL0Xx3ZRGePCm2uKpj/QEiu7qAn5mZvLV89A
-         VqZ7tpokdg3y4NHKeIXL5h7ZQ+YTV6kBu4k6EAtGzUYxAFjXZxmERJea60rAaaKFh1LN
-         WGiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792242498; x=1792847298;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Z/5JBeqwPxSZ0TpSsf5O+k1fvGG7B04vtfTOruv2JxA=;
-        b=VhCndl6Xquu8s5lHfZnBX8xoWcQ1yM2Ds8+Jc+OIQTE5uuIkQL/DjXl2v4JZLR4gyH
-         wW1oIDE99N3rrmaJ+8kahgtNnMT2qCcyh4pno1t52V2mC3UOy04Ktl55J+ImlWVMbZIC
-         +n0P0QAsUNUz+Yy1WcDLv7YDQUpCa9YFu3w+ZTU1hNnjeRLHwX+fGKwJMUUdrrRmUr5F
-         lWUM3SC5KOeo1OefWFGtDnc/Slfx7Gc5YIFOt7yM97PyvjxPp884c3jWewcsQmFx/MqK
-         2TX7Wq2j72UWOSmn2jREZbqSh2Rk/4N54xefBFVzpyynRT6b2mOh6lTSHrVtgKLAHvrD
-         tqYA==
-X-Forwarded-Encrypted: i=1; AKwUvBxI6i3wMkguaRUyZ07qNJk8QRh9Ei7pRzH6L7ThNlxRMaH2nREFwer8qNiZmoGJCnU1wWzkbWaEQA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ6lzGy6Rws0L32UTZLQAimikGkOYunqbFyvqoSV8kor4LpCleK
-	R9JTiXK3ihWNHemSCxC2oU+fmqOdHX8c03w0oEu5gXonIUrQt8mxEE8P
-X-Gm-Gg: AYBFou2HlgtZg+vTPyWlQ8jgWV65e6MYiwYz0irjM59+oHQM8qSD3VrOk1RGeDZTkT/
-	E7nVZr/pglbaIpHCr8kSbwHEzNBU1vq5SEI4riE4Tm1RAJoMC67z6M4Bq9+NDm5I+6RbeNBGbuR
-	EqtfN600hlwiCo5f4L2LjkUZH1kcwKs6AkspEYXgAyHXzC2bLlJKwE/KErHRggYs29nwYUkG21w
-	YLKUouDRvVSaJIY0lQqjvycmPPr8wBpJitw9lx6QlSJq0aVZ+qkQWtXXdZNadFzE6v2ZdHOOGxK
-	/8XdZCytrmlQ/wQR5i7PSkAaTttpKyNSx7DmAzEGhY85BZXU0ZMuOn8Lgak/adWpZh3Kx8E7Nd5
-	TzBDn4s1a5ZxeMJg1JnwFgX+szOEE2JeaP39aVhGmd8gXGFc4MDd5fe1mB5J7W1V2bsiKRRcCSv
-	9iCLGt1AVpUXC+vBtx7/quakuStWJ0JeR/iILpO3PYRFvzITUGca1qJoniz4I6FNyKfd/nfkW6m
-	E/4ASgFBmRvlpi6l/b1H6M8jAzK021FhHNe8QuiTvEd2PQHORIRD/pSZ5dv1S0ULJaE4iBXK9Pz
-	xgRinvmxve0js9lZtQ==
-X-Received: by 2002:a05:7023:a5c:10b0:183:d275:cf76 with SMTP id a92af1059eb24-18511adbd46mr5910454c88.2.1792242497725;
-        Sat, 17 Oct 2026 06:08:17 -0700 (PDT)
-Received: from cachyos-aura ([45.112.151.53])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1831b75be5esm18903260c88.16.2026.10.17.06.08.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 17 Oct 2026 06:08:17 -0700 (PDT)
-From: Navon John Lukose <navonjohnlukose@gmail.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	Lukas Wunner <lukas@wunner.de>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	Mario Limonciello <Mario.Limonciello@amd.com>,
-	=?UTF-8?q?Francisco=20Beltr=C3=A1n=20Millal=C3=A9n?= <fbeltranmillalen@gmail.com>,
-	linux-pci@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="PjvIZyRT"
+Received: from mail01.layka.lan (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id F161180B1E;
+	Sat, 17 Oct 2026 15:08:59 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YrlJ5mjOseF5; Sat, 17 Oct 2026 15:08:59 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1792242539; bh=OaL1Gpxuch1Zw2DJv3JbxCry//JaeMv/NYthqYMb10k=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=PjvIZyRTSucaESfB+opgxBkKNeKBI4a05ggPy1BVJ8cu5nA1bZRkSSt/fmjEKCiM5
+	 Dt+C9gqg8eGo90EuWaTUcrKmfhOSTdZ0rtD1t9idRKBU4xq7UbRZbCFhjjyvxpk4Mw
+	 yox2jhdHo6zEgg4fpyFyAbZvu8LgZWSbQWEYYrKywl13saMrwe8ieJDNlyx7/Efy7g
+	 rMpADffL6+WrFs7JpJnGAl/AfiSgq1L/+Fyh/PUTJcwfywUytg477bny/6iNtsQvHD
+	 zom7UptKEzG+L7Prlw9wxqXV1fFwOVK5rEpVN2HxwQCqvPrQ8epvyetoCxq+7E562C
+	 rTMHvc85Ne75g==
+From: =?UTF-8?q?Ali=20Ahmet=20Memi=C5=9F?= <aliamemis@disroot.org>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>,
+	Rong Zhang <i@rong.moe>,
+	Len Brown <lenb@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Ike Panhc <ikepanhc@gmail.com>,
+	"Derek J . Clark" <derekjohn.clark@gmail.com>,
+	Mark Pearson <mpearson-lenovo@squebb.ca>,
+	Armin Wolf <W_Armin@gmx.de>,
+	Charis Stratakis <c.stratakis@proton.me>,
+	Avraham Hollander <anhollander516@gmail.com>,
+	=?UTF-8?q?Jeffrey=20W=C3=A4lti?= <jeffrey@waelti.dev>,
+	Rick <rickk1166@gmail.com>,
+	linux-acpi@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] PCI/PM: Skip the suspend_noirq config save if runtime-suspended
-Date: Sat, 17 Oct 2026 18:38:06 +0530
-Message-ID: <20261017130806.305673-1-navonjohnlukose@gmail.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261016214123.GA1884818@bhelgaas>
-References: <20261016214123.GA1884818@bhelgaas>
+	platform-driver-x86@vger.kernel.org,
+	acpica-devel@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 4/4] platform/x86: ideapad-laptop: Evaluate ACPI methods exclusively
+Date: Sat, 17 Oct 2026 16:08:46 +0300
+Message-ID: <20261017130847.319661-1-aliamemis@disroot.org>
+In-Reply-To: <20261017130652.318778-1-aliamemis@disroot.org>
+References: <20261017130652.318778-1-aliamemis@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On Fri, Oct 16, 2026 at 04:41:23PM -0500, Bjorn Helgaas wrote:
-> pci_pm_freeze() doesn't call pci_save_state() itself, so I guess it's
-> the combination of pci_pm_freeze() and pci_pm_freeze_noirq(), where if
-> not runtime-suspended, pci_pm_freeze() clears dev->state_saved so
-> pci_pm_freeze_noirq() will call pci_save_state()?
+On some Lenovo IdeaPad and Yoga models, the battery _BIX takes the EC
+AML mutex and then calls the serialized RDER through RDIF, while GBMD
+calls RDER first and then takes the EC mutex. When the two run
+interleaved they deadlock until the mutex acquisition in RDER times
+out, and GBMD returns garbage that is reported as both charge types
+being enabled.
 
-Yes, that's what I meant.
+Evaluate all methods with the exclusive helpers, so that GBMD never runs
+interleaved with the battery methods.
 
-Thanks,
-Navon
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=221065
+Link: https://lore.kernel.org/all/58586fa666f09c209f9d7fe8c692a8bdda6d4410.camel@rong.moe/
+Signed-off-by: Ali Ahmet Memiş <aliamemis@disroot.org>
+---
+ drivers/platform/x86/lenovo/ideapad-laptop.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/platform/x86/lenovo/ideapad-laptop.c b/drivers/platform/x86/lenovo/ideapad-laptop.c
+index 8213524504ee..1335f4e48870 100644
+--- a/drivers/platform/x86/lenovo/ideapad-laptop.c
++++ b/drivers/platform/x86/lenovo/ideapad-laptop.c
+@@ -297,12 +297,16 @@ static void ideapad_shared_exit(struct ideapad_private *priv)
+ #define IDEAPAD_EC_POLL_MIN_US 150
+ #define IDEAPAD_EC_POLL_MAX_US 300
+ 
++/*
++ * On some models GBMD and the battery _BIX take the EC mutex and a
++ * serialized method in opposite order, so evaluate all methods exclusively.
++ */
+ static int eval_int(acpi_handle handle, const char *name, unsigned long *res)
+ {
+ 	unsigned long long result;
+ 	acpi_status status;
+ 
+-	status = acpi_evaluate_integer(handle, (char *)name, NULL, &result);
++	status = acpi_evaluate_integer_exclusive(handle, (char *)name, NULL, &result);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+@@ -324,7 +328,7 @@ static int eval_int_with_arg(acpi_handle handle, const char *name, unsigned long
+ 	in_obj.type = ACPI_TYPE_INTEGER;
+ 	in_obj.integer.value = arg;
+ 
+-	status = acpi_evaluate_integer(handle, (char *)name, &params, &result);
++	status = acpi_evaluate_integer_exclusive(handle, (char *)name, &params, &result);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+@@ -336,7 +340,7 @@ static int eval_int_with_arg(acpi_handle handle, const char *name, unsigned long
+ 
+ static int exec_simple_method(acpi_handle handle, const char *name, unsigned long arg)
+ {
+-	acpi_status status = acpi_execute_simple_method(handle, (char *)name, arg);
++	acpi_status status = acpi_execute_simple_method_exclusive(handle, (char *)name, arg);
+ 
+ 	return ACPI_FAILURE(status) ? -EIO : 0;
+ }
+@@ -394,7 +398,7 @@ static int eval_vpcw(acpi_handle handle, unsigned long cmd, unsigned long data)
+ 	in_obj[1].type = ACPI_TYPE_INTEGER;
+ 	in_obj[1].integer.value = data;
+ 
+-	status = acpi_evaluate_object(handle, "VPCW", &params, NULL);
++	status = acpi_evaluate_object_exclusive(handle, "VPCW", &params, NULL);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+-- 
+2.55.0
+
