@@ -1,93 +1,136 @@
-Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
+Received: from sender5-pp-g121.zoho.com (sender5-pp-g121.zoho.com [165.173.182.121])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3E373C0A03;
-	Sat, 17 Oct 2026 17:34:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792258447; cv=none; b=e4Uwz6PXNJmhKhvGT5EA0ZiQM4hLV8K1xblfRVgyttb2N9fK5YE7AQojh27aCrql44sHtlPHAnHiT9x5CFWCdsNAwgGDzrPqgp/U4PU+BoavhuPwjTtTOymTPgn35wrNBljaHjrp3FcxtxO/dJBJT57qnB4O/yEsVgxzysj3c5Y=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792258447; c=relaxed/simple;
-	bh=TV5zdFiWq79YVW8YRJIsDSfsy5MxTfr/dcP3g07JtKY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uSxeZ4mLSyIw94NazeyVNc7Q5eINbG9qrgOjrTNaUR2qixB6rkEccIpxtseHe94hBfmzlfO+5thwFzKiknHcRFX5tJTxX6uGuFnG0nA/lisJpfst3uVim3FjDfuE6s3XmNUQnVNnDRJE8jKiQkxhQuZsL3E9PEYhDLLBq12rsGk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=Ef+FvwkV; arc=none smtp.client-ip=80.241.56.161
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8660D3A8753;
+	Sat, 17 Oct 2026 18:11:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.121
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792260713; cv=pass; b=Rn8dbsuFKyjnAKZ64B3vBHPssa/jCgvxTNXuiDrvvZlmyoGD8RkMvrnw5cg4swg3HykHEYzVCr15gURHgYKEPZ8FfWqV7ZxdzQEKZCiG14KeeTfRpT+oMsnV+ojg36FFBrH+vkpAl0ADsWneo0wj381fn074CWheufulErI4UC8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792260713; c=relaxed/simple;
+	bh=5l5M7ldOOho0U6i23M9DnNdlicXGb3Nb1ghmEMt8/U4=;
+	h=Message-ID:Subject:From:To:Cc:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=FaKFP2ttTRZNp53m67zps3tWxVIqFmaVvP6+KwTaZoBDRgtdCgnY/h9T7huUcPHyCH/nDYKwcFtIOPHs+zHOXzeooz5pg5nEK4xuaZ0A3rQhSJVAsEZX+jRtwWVWsTHxiJeVo7PSo6OZREtuRGIRtVk3XKtP7h4PHt7Ci/4xTHY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rong.moe; spf=pass smtp.mailfrom=rong.moe; dkim=pass (2048-bit key) header.d=rong.moe header.i=i@rong.moe header.b=ZYXDcXFo; arc=pass smtp.client-ip=165.173.182.121
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rong.moe
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rong.moe
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="Ef+FvwkV"
-Received: from smtp1.mailbox.org (smtp1.mailbox.org [IPv6:2001:67c:2050:b231:465::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4j6TSV0mK2zKmy7;
-	Sat, 17 Oct 2026 19:34:02 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1792258442;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=flMBGY41EGoDAI7ETuBnT4GorZ4XpKflNGkIAnWjCZo=;
-	b=Ef+FvwkVgR1R1J47Lb1BrSoIDlUiMg0nlJQy3kcjnzuFdESYRY8UPC9BXAIC9uRxpIoN0x
-	xgJeIL1jUgnt/B1/fG8dXbzvJg3fanJlzRqMKJbHIbizCVkIbohYG6JLDD9W+RxZJ5XZ4T
-	2bH6Pnex+Bzk4QprghZLsa9eUbDQUoDxqWqNJTPAVx1G5j6DFoXy7p1Lp9H3u4pv0AHn6y
-	qR6RjY6RnXZwOpF2xT3E7aFwcZ6W1OzF2SCNEhavKrxLud/Z/V/4MarYfPPMK7SN3jVkkB
-	42o/kFKnKkezR5P+SC2ReZfbEawiBMyi6NA/cmz4OdAgbPiHNgjQ76I3hPbvuw==
-Message-ID: <51d8ba05-76e5-45ab-91da-3c6cb02505d7@mailbox.org>
-Date: Sat, 17 Oct 2026 19:28:10 +0200
+	dkim=pass (2048-bit key) header.d=rong.moe header.i=i@rong.moe header.b="ZYXDcXFo"
+ARC-Seal: i=1; a=rsa-sha256; t=1792260679; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=Wf+3gtGnX2BD3aq5epxTIQG0hxG7Z8TSLxvVyOV81A2RIPnCG4qRFAahj29OQGuBng27ZDAYK+kIO6RzmKfFxdpLTDAAzOtPezcR4V2VB6BBvMAarDsy5KmTtBU029u8QJcjmnbtrrfujlhunvo3gjTTYWWwRZExDYAGrDcOLTQ=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1792260679; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=iZK1SzhVJ5iudhiM9HkFHjn0doBDMU5UNoZ2IvM49WI=; 
+	b=D6/ptZnSEnbCpm/KHOd20Uh6NesV0FrJIcs9oDvjG2kxS3jzz+iTclbsTfP4NKvs7sujyHsZiy8bHjZnyTMwUX56vqcz5uXpuGM+wkl5Y/kYxt/5qMEkxJtuzzRLcFNUbOp9I+6r6kDnZ6bNu+Swo9FMv7tQiVcrLPV+ew0NVKY=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=rong.moe;
+	spf=pass  smtp.mailfrom=i@rong.moe;
+	dmarc=pass header.from=<i@rong.moe>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1792260679;
+	s=zmail2048; d=rong.moe; i=i@rong.moe;
+	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:In-Reply-To:Content-Type:Content-Transfer-Encoding:Date:Date:MIME-Version:Message-Id:Reply-To;
+	bh=iZK1SzhVJ5iudhiM9HkFHjn0doBDMU5UNoZ2IvM49WI=;
+	b=ZYXDcXFosSsyV0TToby0jFyjWHW63hXO80ZfalAodoQT/ef3Jr4co7o+yDN01q5r
+	PbwmuyePR+pX6Td4NNrtUUcbdBEk0iFGyBrdm/duWWM8OxvnDBXH4he4atxoRLw05iA
+	GHLkHcmVyKol2OT61uhFCwSqfXLUBV5+k0yaKA9GQ/hsPegr5pQvQ1g4VXXnHEUBm1L
+	LN14mkYvAe/gwwKP51sXPj6ahbWcTRZywbO/f+082U0pOCbaiSSrm+Fls/BW4ssKJEN
+	q6ejcCxoXxne7GSNQVYtNXnoQKQ796hHCDo5mK/xAE+TcaBGKhbiNLinVY5h4HeS5X8
+	LCEoEsC1Ag==
+Received: by smtp.zohomail.com with SMTPS id 17922606761881015.7789796070091;
+	Sat, 17 Oct 2026 11:11:16 -0700 (PDT)
+Message-ID: <d0da648567bc15ccac06d9429b46142e241df1a8.camel@rong.moe>
+Subject: Re: [PATCH v2 0/4] ACPI: Serialize battery, INT3403 _TMP and
+ ideapad methods
+From: Rong Zhang <i@rong.moe>
+To: Ali Ahmet =?gb2312?Q?Memi=810=946?= <aliamemis@disroot.org>, "Rafael J
+ . Wysocki" <rafael@kernel.org>
+Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>, Len Brown
+ <lenb@kernel.org>,  Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui
+ <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,  Ilpo
+ =?ISO-8859-1?Q?J=E4rvinen?=	 <ilpo.jarvinen@linux.intel.com>, Ike Panhc
+ <ikepanhc@gmail.com>, "Derek J . Clark" <derekjohn.clark@gmail.com>, Mark
+ Pearson <mpearson-lenovo@squebb.ca>, Armin Wolf	 <W_Armin@gmx.de>, Charis
+ Stratakis <c.stratakis@proton.me>, Avraham Hollander	
+ <anhollander516@gmail.com>, Jeffrey =?ISO-8859-1?Q?W=E4lti?=	
+ <jeffrey@waelti.dev>, Rick <rickk1166@gmail.com>,
+ linux-acpi@vger.kernel.org, 	linux-pm@vger.kernel.org,
+ platform-driver-x86@vger.kernel.org, 	acpica-devel@lists.linux.dev,
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20261017130652.318778-1-aliamemis@disroot.org>
+References: <20261017130652.318778-1-aliamemis@disroot.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Date: Sun, 18 Oct 2026 02:06:08 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/8] clk: renesas: r8a78000: Add clk_hw to clk_map
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
- Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>,
- Philipp Zabel <p.zabel@pengutronix.de>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Marek Vasut <marek.vasut+renesas@mailbox.org>,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
- Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
- =?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>,
- Sudeep Holla <sudeep.holla@kernel.org>,
- Cristian Marussi <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Cc: devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-References: <cover.1792163045.git.geert+renesas@glider.be>
- <1d7da50cfb58232c6dd4c4afefb938fd7e62fdcd.1792163045.git.geert+renesas@glider.be>
-Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <1d7da50cfb58232c6dd4c4afefb938fd7e62fdcd.1792163045.git.geert+renesas@glider.be>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: 19b5cfb291ce5ddd7a6
-X-MBO-RS-META: rcst5wwoaupxhedzsu64aao9k3oaqo6b
+User-Agent: Evolution 3.56.2-10+b1 
+X-ZohoMailClient: External
 
-On 10/16/26 5:55 PM, Geert Uytterhoeven wrote:
+Hi Ali,
 
-[...]
+On Sat, 2026-10-17 at 16:06 +0300, Ali Ahmet Memi=C5=9F wrote:
+> On ThinkPad P1 Gen2 and P53, INT3403 _TMP switches the EC page selector
+> without taking the mutex the battery methods use.  On some Lenovo
+> IdeaPad and Yoga models, the battery _BIX and the ideapad GBMD take the
+> EC mutex and a serialized method in opposite order and deadlock until
+> an AML mutex times out.
+>=20
+> As discussed in [1], add exclusive variants of the AML evaluation
+> helpers and use them for the battery, INT3403 _TMP=C2=A0
+>=20
 
->   static int r8a78000_cpg_probe(struct platform_device *pdev)
->   {
->   	struct device *dev = &pdev->dev;
->   	struct r8a78000_cpg_priv *priv;
-> -	const struct clk_map *map;
-> -	int ret;
-> +	const struct clk_map_in *map;
+int3403_add() seems to be another call site of INT3403 _TMP, but PATCH 3
+didn't touch it. Is it intended?
 
-Super-nitpick, use reverse xmas tree ordering here if there will be V5.
+> and ideapad methods.
+> Patches 2-4 depend on patch 1.
+>=20
+> Changes in v2:
+> - Merge the follow-up series [2] and drop its EC query and UCSI patches
+>   until they are shown to help
+> - Add acpi_execute_simple_method_exclusive() for _BTP and ideapad
+> - Make the helpers wrappers that take the lock around the existing ones
 
->   	map = of_device_get_match_data(dev);
->   	if (!map)
-[...]
+You dropped Hans' R-b from PATCH 1 due to the massive change. The next
+time you do the similar, please add a note to the changelog.
+
+> - Join lines up to 100 columns, add a Link: for Suggested-by:
+>=20
+> Link: https://lore.kernel.org/all/CAJZ5v0gS4agVUkCO6M=3DVW4Wi2y1-s+k23bpz=
+mX9aAZ0Rsv4z9Q@mail.gmail.com/ [1]
+> Link: https://lore.kernel.org/all/20261014190544.150093-1-aliamemis@disro=
+ot.org/ [2]
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D221065
+> v1: https://lore.kernel.org/all/20261014132703.93355-1-aliamemis@disroot.=
+org/
+
+The series is now neat to me.
+
+With int3403_add() fixed (or explained), for the series:
+
+   Reviewed-by: Rong Zhang <i@rong.moe>
+
+Thanks,
+Rong
+
+>=20
+> Ali Ahmet Memi=C5=9F (4):
+>   ACPI: utils: Add exclusive AML evaluation helpers
+>   ACPI: battery: Evaluate battery methods exclusively
+>   thermal: intel: int340x: Evaluate _TMP exclusively
+>   platform/x86: ideapad-laptop: Evaluate ACPI methods exclusively
+>=20
+>  drivers/acpi/battery.c                        | 12 +++---
+>  drivers/acpi/utils.c                          | 41 +++++++++++++++++++
+>  drivers/platform/x86/lenovo/ideapad-laptop.c  | 12 ++++--
+>  .../int340x_thermal/int340x_thermal_zone.c    |  6 ++-
+>  include/acpi/acpi_bus.h                       |  7 ++++
+>  5 files changed, 66 insertions(+), 12 deletions(-)
+>=20
+>=20
+> base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
