@@ -1,136 +1,135 @@
-Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF56642AFBF
-	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 04:30:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 496702ECD32
+	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 06:58:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792297843; cv=none; b=r8schsTI8rBiO4YOustWsNqBn4LZ8vkwhgdX66MsgDhWKney9QeaxpBRSE1ajokjmgkX4uTMvhNWnYZS4ReL2OaRAir6/08a0Mv7KB+8WFXRkpanThSLQSfEfcVVrrkl7ZJplP/VEo9jXqN2JKvYM0FXJtOAGxH0kI6doWYSv/E=
+	t=1792306685; cv=none; b=B/wK5c9LfLMYGGSVMyFznWZC/Z65H/c90Hisp+HXdG1gLajF5URnRhULX/2tT/4v12/3txepAsJqzxay8aoPWcwnR2Mq4GNo9uH5lrOwWVE5SOmpo1N1kZmavBVFrBpFJj7jjW+4rWZ/7DEaHnIQe3/1gQvLMdo6YAVYh+VpfN4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792297843; c=relaxed/simple;
-	bh=V1PrfALe+dXwVq1n5n/hITI7hGqfkZud86/hme5sr+Y=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=o1CfKTghIctc8x4XoVQR+uO3FlfCEyuJB/Wh3gEbi1V/vJFdYYwSrVtFjb019L8SFx0voHeaux4H2tPeApVIEGPeELL/5U7NqWiMoHllhbstY861NFsvT50vZhJeRpZwL+bkuHp05dCfJz6tv8jM1TmzEPfN46DJZ+ok5+ENEs0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AiDHFkgK; arc=none smtp.client-ip=209.85.216.52
+	s=arc-20240116; t=1792306685; c=relaxed/simple;
+	bh=n8drFyWUqlZVAL8+M5tEtJElOJELGas4rwhBBwINCmM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NbhmWXdzQHWVXIw/Ib3YrWZuMpwj5M0WLwghEOB4tjm1wy0X6RcnB6zCkc8qS8eOzP7EKrFkApZ9R0hPgbfBMKun1g0mlgJJxOb8bxAVgc/J0kljAwwych3OdmWc+vSqnvF+F9TaDG6ktrYJGMPv3l8m87SqyeJl+61c2Lgejv4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eSms8ek1; arc=none smtp.client-ip=209.85.128.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AiDHFkgK"
-Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-398b3c37877so675745a91.0
-        for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 21:30:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eSms8ek1"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4a16d39964bso850765e9.0
+        for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 23:58:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792297839; x=1792902639; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=JyrovHosLdX2LQj1aC6ideMoPUaKKiI6CstREEz9Rbg=;
-        b=AiDHFkgKgTtqrGV/pACAL8QeR3YGPRzDSBXywJIF6f9wfJDwzDVmmEddWI7PaShnbd
-         FJfNZegkH5+dPNJ0D8nk1v3ZdwFxch0q52MQT7/hYQzyhKQq8jtd82zlF4CXxVfXvKWx
-         wn/g2h7k6n3MM0gnrZfZZdFggOZ11slw9R33iORWeRbQ0My5xTBsVB5ECIduL/NyMhdy
-         1Q00tCIjUUfK0Ay+r5X2L0USJGGMG8XD3vngyUm5DXHkKDsKws6P0oH64zx+5+w06cMz
-         DmRGB3zUPzZZUFx2DwV8xDpbIr9dTUFzO6V6bKQfAJb7I8814WTsxNtOT2k/98ojtfz7
-         zWPQ==
+        d=gmail.com; s=20251104; t=1792306681; x=1792911481; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=HwdW3HA63E3gYfbgiIewlrhU22u3aiecjGG8syRP8fE=;
+        b=eSms8ek10e1ts2UMABu16BnWjGJQ8utmiRRW93n/jY25Vx03qJ8EHqvMfsJEDy7urr
+         KN/Gja38Idv5A4NzoyXPBRwvcmV85egLD2eVpC1RcZXIL6NIGRStMD5a6jBn6yemTuCk
+         ZF6HTwNQcjGnLCjeiTSOeo8BO11gBnehZgTeM7vdi1Vbv7Iqb5cnL81iN11vw4GMSGci
+         Zlxdm+x/SMk8Ks3wPp6FYoD72L+ixXWFnGWvAPiCXLUN9HZoZMeVIuuaRkKD0/T42bCP
+         75nypM7wffTg7wU3gttJNZaw93/oCVyZncvycqYQ//MM5pK3oU+EkQS1KcfSMxe2v4cU
+         m4wQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792297839; x=1792902639;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1792306681; x=1792911481;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=JyrovHosLdX2LQj1aC6ideMoPUaKKiI6CstREEz9Rbg=;
-        b=CQFEDpgwH18ZK2KfUMe0Mk3WydGDuYK0IyxiQGwxDpriONbCzPzoc+Koysx9FFJgZ3
-         MLrrTl2nNjkMqqnqKqXGPPzkTwSiRDSyhxtNen78bzR5AyAXM3xi4s+SLYnUrIygZxil
-         6GE+7A732eMek253LFNbMR46FHluWUZF9/zzWurx3c1UCqrCcPXTvi23flFv8XtZdbfC
-         Fb4rxgHkmrvSC2vzZyjHkHc5qz4fEx0p8kl8gOfaQ0HMIZwDynsMVw3iUYzeloRm4CLK
-         eIlmuNotogCot1gy1xZEz8LkVy/N3WOs66qNpCt9c5SegoSgVoNnHdbv8oJHFgLYxUTF
-         iVHQ==
-X-Forwarded-Encrypted: i=1; AKwUvByaJpSGcw9SZDE+AY2+u64tbJyXvJrEQNnU77W9SBvXwRHJgvQF5WQATG0xHbCL2qj4JY4YoFySNQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJtct4mpA9tx7CAlmHemvvxNs1gEzUDO0Knkpe+BjmIODK1b5/a
-	AU5zD2GLkgb2Gf/yQFfOqnMJV6GuB2D31Adadp1PfsavQeYjN4RUa4rY
-X-Gm-Gg: AYBFou3bICRP9iQaXrj4p4epBaN9sPVKIkLDBfDhC/BLMglC38Lu9iIGMRJEFCZaQv/
-	8o2XJp8uH5ZRdh5YbelPfI2bWN7JJOc2J9YjN8UKR2n6CUejWamxmLDQArGkQ10VGjLm95nntgh
-	XSOuNB/1xh9KntWbxqGjFFQP/CiANi+uj1n3SFUFSK5kKQ1oWQthyKtquR3mZJylVMu4wHZlk6k
-	N+aQjqZ6qcic+h8te1X1xSDDXuZ+B3FrF9MI4+K966j9oL6n7VmtVNNAfE/E9xgRrAylrocDl/x
-	TTfN7pQ21xBPMnexsi1q3ZwqUs2FzoXdaRddcieShgUtGDQvW0nJEUGwAQiyC/pXg9iuhKllVyk
-	sHlt6c0v9eMg6AinqK+crYk1JemfXgeZgklzoMNc1oJ5Z3y8/GfkdQ+RTtSIplV3wjOJg2KGvr0
-	PDzhSik5tj7Ve2FX8lqhw1mHRswCocNq1r9Ok2kBw2AhojwDcTolPICbkAFg+N3Tw=
-X-Received: by 2002:a17:90b:380b:b0:39e:59a0:46b5 with SMTP id 98e67ed59e1d1-3acef14451fmr3843389a91.24.1792297839161;
-        Sat, 17 Oct 2026 21:30:39 -0700 (PDT)
-Received: from [127.0.0.2] ([2404:c0:7618:4e1c:8841:a092:12c2:47d7])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3acc9e47588sm5885369a91.1.2026.10.17.21.30.31
+        bh=HwdW3HA63E3gYfbgiIewlrhU22u3aiecjGG8syRP8fE=;
+        b=HVEHqYcAuScl1QxY+Pey9mdVEF5ZC1srsSZzYTSwcdZl+bFbeec7pYpfcGwPJfj7Kw
+         zcNk7lyQH+pGsz+H69KYKrFyPfpiIJ3PETFinyVl/blOn9MELlcQ1hNyoDHiNzvJExLa
+         VnTMCWx6g/CzAUBe7Pquwr0u8nVrz/NrEP02HCLdaKBwuKo3tUHCybntN7ak6KqUdCPS
+         iC5FUaPyN6zBKXR1ZdwTCEpJDEtrkqjPFhrPYkQ2FYUR6BmZ8wguftejQoLKnpd7wOJi
+         pUYKf3twE/6PkurXiunqU7CsezB2MCgGVuiIESS3LxhUnPeL3UsKEZzuuWF7Q/44VNTR
+         pi0w==
+X-Forwarded-Encrypted: i=1; AKwUvBxD5j4GUnp72U3DCPQifJaulzfaCRs/guU5nn3Futy7dvzjCuNCBEYXGGGK/UO5H0ifr1vXpWBJiA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJBaewoAi7wDde69tfhjSj1WDPB4DtZj6RhiSuKJt9/rALPkZmp
+	bt8SNBa8BmHyV4ZJdd/wZuQGfWcx6X+SNQmqVM/EGkp3ysxZ7YnSjn+b
+X-Gm-Gg: AYBFou0mdxkdhmkWoHznh1sNOM8teZco8/ibzxZwdaVcBFQa071T7/FRHg1hv0RdYgh
+	5nXEVMKXQI3hE2EHPnXN+Lriw63w5EczrM30pqrbWUSyp0sdpmdyPbmBuQc5ks+jigf1mAj1x8R
+	CM2K1Cxse2/DWA67JJpa0JqA93TtptZtSB7t7cE0vmNVN41E6Cvibynez57FiQCcbB0gvNeBCnh
+	Dni11tlQwYw8XuXMAPltnIHTqQ5mTL9sCf3ZisR8eA3jqTM9SASyDd7J8MPtmN0IWXqnLlk8C3n
+	GV0BtJXqqyrYJCpjewBlAW4GAMW+UtF/A+u10vuATAl2Gui28h+9Ivf3lMKuwnVc72rSn1GjXPp
+	QT4kkHZKUeykc7IVSwwsChthHmx31xwOai9PTKoDCQuT87CI/cK3XvDi0mY/fNwHCF2K2t+a9px
+	yFcg6OC3w922cDvs5oxV0unl6aE8W4Bo1KH+9SUahuqvPB/WaBw3LdTwxItSiTWOV7EppvBlhaB
+	R8tZ1sV9ywaFG620CEwzbTofw==
+X-Received: by 2002:a05:6000:2882:b0:48a:f5c5:d077 with SMTP id ffacd0b85a97d-48e07b9ca18mr8627716f8f.2.1792306681279;
+        Sat, 17 Oct 2026 23:58:01 -0700 (PDT)
+Received: from scheduler.schedules ([85.100.66.184])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48dfd4c5942sm22345732f8f.16.2026.10.17.23.57.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 17 Oct 2026 21:30:38 -0700 (PDT)
-From: Reza Kurniawan <imkyufie@gmail.com>
-Date: Sun, 18 Oct 2026 04:29:24 +0000
-Subject: [PATCH v2 4/4] arm64: dts: qcom: msm8917: Use a shallower cluster
- state to fix unresponsive idle
+        Sat, 17 Oct 2026 23:58:00 -0700 (PDT)
+Date: Sun, 18 Oct 2026 09:57:57 +0300
+From: Kayra Cizmeci <kayracizmeci@gmail.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
+	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
+	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
+	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
+	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
+	pierre.gondois@arm.com, sshegde@linux.ibm.com
+Subject: Re: [PATCH 07/18] sched/fair: Add push task mechanism for fair
+Message-ID: <atRseHwvpRJGtjIy@scheduler.schedules>
+References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
+ <20261002154415.2270586-8-vincent.guittot@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261018-psci-fix-v2-4-35f65b59eb9a@gmail.com>
-References: <20261018-psci-fix-v2-0-35f65b59eb9a@gmail.com>
-In-Reply-To: <20261018-psci-fix-v2-0-35f65b59eb9a@gmail.com>
-To: Mark Rutland <mark.rutland@arm.com>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Christian Loehle <christian.loehle@arm.com>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
- Val Packett <val@packett.cool>
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, Reza Kurniawan <imkyufie@gmail.com>
-X-Mailer: b4 0.15.2
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261002154415.2270586-8-vincent.guittot@linaro.org>
 
-MSM8917 is a single cluster SoC, so powering down the cluster means
-powering down the whole system. This causes two problems:
+On Fri, Oct 02, 2026 at 05:44:04PM +0200, Vincent Guittot wrote:
+> +static void __fair_add_pushable_task(struct rq *rq, struct task_struct *p)
+> +{
+> +	plist_del(&p->pushable_tasks, &rq->cfs.pushable_tasks);
+> +	plist_node_init(&p->pushable_tasks, p->prio);
+> +	plist_add(&p->pushable_tasks, &rq->cfs.pushable_tasks);
+> +}
+> +
+> +static void fair_add_pushable_prev(struct rq *rq, struct task_struct *prev, struct task_struct *next)
+> +{
+> +	if (sched_push_task_enabled() && fair_check_pushable_task(rq, prev, next))
+> +		__fair_add_pushable_task(rq, prev);
+> +}
+> +
+>  /*
+>   * select_task_rq_fair: Select a target runqueue for the task.
+>   * There are 2 ways to select the target runqueue:
+> @@ -10272,6 +10426,12 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev, struct t
+>  	cfs_rq->curr = NULL;
+>  	if (se->on_rq)
+>  		__enqueue_entity(cfs_rq, se);
+> +
+> +	/*
+> +	 * The previous task might be eligible for being pushed on another cpu
+> +	 * if it is still active.
+> +	 */
+> +	fair_add_pushable_prev(rq, prev, next);
+>  }
+>  
+>  /*
 
-1. The system becomes unresponsive, even to common interrupts. Waking it
-   requires an interrupt from the MPM (MSM Power Manager) or scheduling
-   the MPM to wake the system later. Linux currently has no way of doing
-   the latter, so the cluster may never resume operation.
 
-2. Entering power collapse blanks the screen. When the state is entered
-   and exited repeatedly, this shows up as visible flicker.
 
-Even if MPM scheduling were implemented, the second problem would remain
-and it wouldn't fix the system being unresponsive at idle.
+Re-reviewed this :-)
 
-Replace the idle state with PSCI mode 4 (dubbed GDHS downstream), which
-is less aggressive and can wake up from conventional interrupt sources.
+On our rq, we have a fair task TA that holds M mutex. we have a RT task TB blocked on M. 
+we enter __schedule() and from there pick_next_task(). it chooses TB as next, but it adds 
+TA to the pushable task list. then we enter the proxy exec path. 
+donor is set to TB. but when we enter find_proxy_task(), next is changed to
+TA. so right now, TA is on the push list even if its still curr.
 
-Signed-off-by: Reza Kurniawan <imkyufie@gmail.com>
----
- arch/arm64/boot/dts/qcom/msm8917.dtsi | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+(With the whole series applied.)
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8917.dtsi b/arch/arm64/boot/dts/qcom/msm8917.dtsi
-index f0771187d0..7730977e6e 100644
---- a/arch/arm64/boot/dts/qcom/msm8917.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8917.dtsi
-@@ -112,10 +112,10 @@ core3 {
- 		domain-idle-states {
- 			cluster_sleep_0: cluster-sleep-0 {
- 				compatible = "domain-idle-state";
--				arm,psci-suspend-param = <0x41000053>;
--				entry-latency-us = <700>;
--				exit-latency-us = <1000>;
--				min-residency-us = <6500>;
-+				arm,psci-suspend-param = <0x41000043>;
-+				entry-latency-us = <240>;
-+				exit-latency-us = <280>;
-+				min-residency-us = <806>;
- 			};
- 		};
- 
+Am I missing something? Should curr not be pushed?
 
--- 
-2.55.0
+Thanks,
 
+
+Kayra
