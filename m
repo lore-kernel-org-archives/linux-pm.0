@@ -1,121 +1,172 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7568C3DBD76;
-	Sun, 18 Oct 2026 20:21:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 247BE320CD3;
+	Sun, 18 Oct 2026 21:15:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792354862; cv=none; b=grVE+b9cgq/bJ6vHSHw28Hac79hMGAqKlBkLf9L5tVNmWWv04eUUvFB8J1WRka/YZk8/Xq7krVLpH9NzCnkCkp3BYiroGuWgv1dpATTPeL1CVizbpQ8dXb2p5uK3HL5yOUu9yBVcQPj2nLWf5w59H5qpeVj+dr98nmoV590/+30=
+	t=1792358155; cv=none; b=e/eYPFn5q9T+hunovi4mk4TrKxXe9BVuslTaxCzVxPIjB3AxZ8l9w9zGGTumRefiwJcyzHAAmzW8JsOUvs9MJnXuD3QfroMGrrQmygUa9tL2xj0d1ux6sX6V2NuInkLj9plukV2f7WOl7NVV54n+0Jc8OpzmxKRI6OdtfyQn4Oo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792354862; c=relaxed/simple;
-	bh=ytUJ1qQODw6q6S66trjDvYnTe6DClcfAtKnyEJUGY+U=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=k/0+tICogdy1aRODdMzm4T7GY2iQ0a/XbtV8BjeyjcZ7jSXXPo8kh2jkrPGkJgsewDHjoeIU4JVEq1JysqFXTboXAZ+hHABYPnmc/dKX1fwtwjFuQLh56SUVbdk44W02fTEB9x98VN5Iaml3VN+Z4eqQAKL/s3Ie0AwU5Tn+U3U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DN42uhjs; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792358155; c=relaxed/simple;
+	bh=SGfNfIbXDV5poBCxPEVtJwdyIWlBIUfO05lhjNt71rg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=YYGT0vSRhp6KWjzWnKrRFOfIDXT1MqdSxS5V0Wr/4ybABKXIK3M92ramc6zkima3KsfQr8pnAP1Yv92kYrRBJjkaBjrmCkfIO8ngI4ARalGG0cZIOBWlJcXPdK0EXgR2b4WDBrb5Ib2NzOKtZnYGs3JVkwcZVUL6r+ndm+QBaQQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OFe5GbUS; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DN42uhjs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF8DC1F000C4;
-	Sun, 18 Oct 2026 20:20:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792354861;
-	bh=K3vg7IqzjZiEQ62NPia2RyXT3ORHAoyMO+p50jGOtZw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=DN42uhjssBH86VQizcq5jBM/pAM5XiupkNkSlWnHTZxjUsb17kYByLHKkxkkceroo
-	 Ospc1wcLZnHmMoXh1HlQRyFFxqPGFFU7JM6McYvhA5pIvd4QC5En9m+/bv78D9AbM4
-	 VSPnCQY3CvOQ+E5u0Pq585FUTBtl5lnIZ1dxUDGTy676NAnSUxOUA5bOZo8mAE6hG8
-	 tERVSLls3RlCTRXt2jduw6obubdpKJzCfP8d2e6wSMtNZ496KeFMxiUHml7n0uGFBG
-	 fZhlV6uCZfK7c7TdDI5YZs421v85yOpSn6eua6appsTGcMuVrwpQLq8WjwkwY3t3/e
-	 5xeOZjueFgFRA==
-Date: Sun, 18 Oct 2026 21:20:53 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Fabrice Gasnier <fabrice.gasnier@foss.st.com>
-Cc: Brian Norris <briannorris@chromium.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, <linux-pm@vger.kernel.org>,
- <linux-iio@vger.kernel.org>, Andy Shevchenko <andy@kernel.org>, Alexandre
- Torgue <alexandre.torgue@foss.st.com>, Nuno =?UTF-8?B?U8Oh?=
- <nuno.sa@analog.com>, <linux-stm32@st-md-mailman.stormreply.com>, David
- Lechner <dlechner@baylibre.com>, Maxime Coquelin
- <mcoquelin.stm32@gmail.com>, <linux-kernel@vger.kernel.org>, Fabrice
- Gasnier <fabrice.gasnier@st.com>, <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 5/5] iio: adc: stm32-adc: Drop runtime_idle()
-Message-ID: <20261018212053.66b7ba14@jic23-hlaptop>
-In-Reply-To: <39d56818-922f-488e-842d-19a194654921@foss.st.com>
-References: <20261002230714.507921-1-briannorris@chromium.org>
-	<20261002160309.5.Ica1e32ae51d7975844386684d2b6a097f3ca9122@changeid>
-	<39d56818-922f-488e-842d-19a194654921@foss.st.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OFe5GbUS"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 99268C2BCF7;
+	Sun, 18 Oct 2026 21:15:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1792358154;
+	bh=SGfNfIbXDV5poBCxPEVtJwdyIWlBIUfO05lhjNt71rg=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=OFe5GbUSRQ56PbwnR1x1+Qy1BOSZ0GKT1W7RTN/Xu3JvBlMW3NnjVZxsnClUJthya
+	 +DO0jG9fcj8e1orvRaJhqvmpFuDM5/dBQZ2cgGWbw1EBt5gqJLD3DVluL3LdrZKP+n
+	 2nMLN7flPVYlvTuX4Ds7ngRX6Lq4lP0C07s+HisaH2NdCzI6kdYYqFAr27Bj2XMZUB
+	 3oP6n/7lAxjZxu/53bdSZ1SkKKSbibX8HCu7+pnXi5lCUCGnDP8DuI9QBxsHWlF4lz
+	 2ckT/b/vzIy0F6r6xQDSrv1I6+JQHKWMJelabeeX9kqNrNezgPvU/VvxkjPAB7XCxm
+	 ALSifxkpKHq/A==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AEE7CCF2C4;
+	Sun, 18 Oct 2026 21:15:54 +0000 (UTC)
+From: Rinat Muhamedgaliev via B4 Relay <devnull+rinat.muhamedgaliev.gmail.com@kernel.org>
+Date: Mon, 19 Oct 2026 00:15:54 +0300
+Subject: [PATCH v6] power: supply: bq27xxx: detect bq27541 behind bq27411
+ compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20261019-master-v6-1-c4b36129721e@gmail.com>
+References: <20261019-master-v6-0-c4b36129721e@gmail.com>
+In-Reply-To: <20261019-master-v6-0-c4b36129721e@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: pali@kernel.org, sre@kernel.org, afd@ti.com, 
+ konrad.dybcio@oss.qualcomm.com, david@ixit.cz, krzk@kernel.org, 
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792358153; l=3244;
+ i=rinat.muhamedgaliev@gmail.com; s=default; h=from:subject:message-id;
+ bh=dnSe8ElLLTi2cXIlSrqfQn/BXIYt61P1i6EIAmfkKr8=;
+ b=/ST+FNyeZG01G+kV01s7Im7B+oRn2yOXN6CpWOAVIHy0oGmRrpBYE2GaLOyvqv2qUzCd9DZvA
+ ej56nyWnGxVACFTtwpDPi73XzotMWN+jR9NVOwCTIyZWd9cKy/mRVi6
+X-Developer-Key: i=rinat.muhamedgaliev@gmail.com; a=ed25519;
+ pk=qkYQO8LRlRErWiLzlpK8jHbRIxv8+7v06+ytcxX8mec=
+X-Endpoint-Received: by B4 Relay for rinat.muhamedgaliev@gmail.com/default
+ with auth_id=1072
+X-Original-From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+Reply-To: rinat.muhamedgaliev@gmail.com
 
-On Tue, 6 Oct 2026 14:42:51 +0200
-Fabrice Gasnier <fabrice.gasnier@foss.st.com> wrote:
+From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 
-> On 10/3/26 01:03, Brian Norris wrote:
-> > This runtime_idle() implementation was added in commit c537d3457542 ("iio:
-> > adc: stm32-adc: fix runtime autosuspend delay when slow polling"), to work
-> > around a suboptimal behavior in the runtime PM core. It should no longer
-> > be necessary as of "PM: runtime: Propagate last_busy from dependent to
-> > dependency".
-> > 
-> > Cc: Jonathan Cameron <jic23@kernel.org>
-> > Cc: Fabrice Gasnier <fabrice.gasnier@st.com>
-> > Cc: Ulf Hansson <ulfh@kernel.org>
-> > Signed-off-by: Brian Norris <briannorris@chromium.org>
-> > ---
-> > I do not have these devices to test. I have tested other drivers, and I've
-> > verified this behavior in unit tests as well.  
-> 
-> Hi Brian,
-> 
-> I've been able to reproduce on stm32 earlier behavior by applying this patch only.
-> With the full series, so far, everything seems fine from my point of view.
-> 
-> I haven't deeply inspected all the series, at least for the stm32-adc driver, you can add my:
-> 
-> Tested-by: Fabrice Gasnier <fabrice.gasnier@foss.st.com>
-> 
-I'm fine with this going through whatever tree you like
-Acked-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
+OnePlus 6 and 6T replacement battery packs may contain either a bq27411
+or a bq27541 fuel gauge at I2C address 0x55. The device tree currently
+identifies the gauge as bq27411, but a bq27541 uses a different register
+map and then reports invalid battery values.
 
-It seems unlikely to cause merge conflicts with other changes
-to that driver, but might be worth an immutable branch, just in case.
+Read the DeviceType control subcommand when probing a bq27411. Keep the
+existing profile for DeviceType 0x0421, but select the bq27541 profile
+for DeviceType 0x0541. This retains the established DT ABI and supports
+replacement packs without introducing a generic compatible.
 
-> Thanks,
-> Best Regards,
-> Fabrice
-> 
-> > 
-> >  drivers/iio/adc/stm32-adc-core.c | 9 +--------
-> >  1 file changed, 1 insertion(+), 8 deletions(-)
-> > 
-> > diff --git a/drivers/iio/adc/stm32-adc-core.c b/drivers/iio/adc/stm32-adc-core.c
-> > index a42d82d61cb8..e9e113a46ccf 100644
-> > --- a/drivers/iio/adc/stm32-adc-core.c
-> > +++ b/drivers/iio/adc/stm32-adc-core.c
-> > @@ -836,17 +836,10 @@ static int stm32_adc_core_runtime_resume(struct device *dev)
-> >  	return stm32_adc_core_hw_start(dev);
-> >  }
-> >  
-> > -static int stm32_adc_core_runtime_idle(struct device *dev)
-> > -{
-> > -	pm_runtime_mark_last_busy(dev);
-> > -
-> > -	return 0;
-> > -}
-> > -
-> >  static DEFINE_RUNTIME_DEV_PM_OPS(stm32_adc_core_pm_ops,
-> >  				stm32_adc_core_runtime_suspend,
-> >  				stm32_adc_core_runtime_resume,
-> > -				stm32_adc_core_runtime_idle);
-> > +				NULL);
-> >  
-> >  static const struct stm32_adc_priv_cfg stm32f4_adc_priv_cfg = {
-> >  	.regs = &stm32f4_adc_common_regs,  
-> 
+Tested on OnePlus 6T (fajita) with DeviceType 0x0541: voltage, state of
+charge, and temperature were reported correctly. Testing on hardware with
+DeviceType 0x0421 would be appreciated.
+
+Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+---
+ drivers/power/supply/bq27xxx_battery_i2c.c | 57 ++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index 94b00bb89c17..0b957888ad2b 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -16,6 +16,11 @@
+ static DEFINE_IDR(battery_id);
+ static DEFINE_MUTEX(battery_mutex);
+ 
++#define BQ27XXX_REG_CTRL		0x00
++#define BQ27XXX_DEVICE_TYPE		0x0001
++#define BQ27411_DEVICE_TYPE		0x0421
++#define BQ27541_DEVICE_TYPE		0x0541
++
+ static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
+ {
+ 	struct bq27xxx_device_info *di = data;
+@@ -136,6 +141,46 @@ static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
+ 	return 0;
+ }
+ 
++static int bq27xxx_battery_i2c_check_device_type(struct bq27xxx_device_info *di)
++{
++	enum bq27xxx_chip detected_chip;
++	int expected_type;
++	int ret;
++
++	ret = di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_DEVICE_TYPE,
++			    false);
++	if (ret < 0)
++		return ret;
++
++	ret = di->bus.read(di, BQ27XXX_REG_CTRL, false);
++	if (ret < 0)
++		return ret;
++
++	switch (ret) {
++	case BQ27411_DEVICE_TYPE:
++		detected_chip = BQ27411;
++		break;
++	case BQ27541_DEVICE_TYPE:
++		detected_chip = BQ27541;
++		break;
++	default:
++		dev_err(di->dev, "unrecognized DeviceType 0x%04x\n", ret);
++		return -ENODEV;
++	}
++
++	if (detected_chip == di->chip)
++		return 0;
++
++	expected_type = di->chip == BQ27411 ? BQ27411_DEVICE_TYPE :
++		BQ27541_DEVICE_TYPE;
++	dev_warn(di->dev,
++		 "detected DeviceType 0x%04x instead of expected 0x%04x\n",
++		 ret, expected_type);
++	di->chip = detected_chip;
++
++	return 0;
++}
++
+ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 				     const struct i2c_device_id *id)
+ {
+@@ -169,6 +214,18 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
+ 	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+ 
++	/* BQ27411 and BQ27541 may be interchanged in replacement battery packs. */
++	switch (di->chip) {
++	case BQ27411:
++	case BQ27541:
++		ret = bq27xxx_battery_i2c_check_device_type(di);
++		if (ret)
++			goto err_failed;
++		break;
++	default:
++		break;
++	}
++
+ 	ret = bq27xxx_battery_setup(di);
+ 	if (ret)
+ 		goto err_failed;
+
+-- 
+2.56.0
+
 
