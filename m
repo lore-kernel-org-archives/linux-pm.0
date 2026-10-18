@@ -1,186 +1,112 @@
-Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com [209.85.222.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BB3C18859B
-	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 02:04:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23E9635E1B0;
+	Sun, 18 Oct 2026 03:57:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792289043; cv=none; b=DOFXHkscoes1uCrVuGmLPW8mMaPWflVywiNh5qx91sZGMf/CzNPBb0aRRxOi2Ymzdp+L1lY/HHzAiRnP8QW4fcvNmBsvFWbLlkB2Q38aPLEyP5n6DK02NUO5cLBMRxLMELeq4ugNzVxMRYzkHVJktQc49JrUB0ywoky1kUMxKZE=
+	t=1792295880; cv=none; b=E1nEO6Ar/eOwEHce50CsXa8Og5EYoW4Xo1u646ATplhZCl3NNKVYHjZ8JhyFVxxmKciA/7euVYnJUk4IIcezjH4wgfvSL1HuXEBoIETbgbDd4D3t/6lb+cQLfyrc8qX8OiiV95JWUD4wvFsmkC/d0PKzzhmr7BYZyXs1a9Q4RJU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792289043; c=relaxed/simple;
-	bh=k711JYjJ7+6BTD3xUFd6EggIC11D/1ItC0j0I71VNUU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RK7i8VpFJZ5Kzp/dRQX4JRHiokSn6AOVHM7Bujr5ZsYGkGRiOe/O5gfhq8KVBhkFF+LWy36jic1aMK385X4giWJ2miw7mZNs7qbuXlzv1SA6XMneSs+zdO3msfpxNNU1r6sACUfxI6Xql0IX8mYj3Vyww8q2Tl+mcnm8YvQXrMU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=O1DQP59x; arc=none smtp.client-ip=209.85.222.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1792295880; c=relaxed/simple;
+	bh=aPysawF4KEDPHI2m90iC+9ZugE4OYOZ33lJ5R+Li8Ew=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=cp0ZMBmODVRl9zk1mFFWGTP87EH/Pgo9F2Zz6K/M67iuT9gqrQScCu0tUH7HLHKs1mSv7OayeAyekjC2x9wav/NIruhpUAd5JJU6HK9FLwuubPgUvV7eXpiV5aP+yDi8x+L+qIlzd5jOxMqZmVkkPbztfPViNdV53BQ2ArkxOUg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dnKU69RU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O1DQP59x"
-Received: by mail-qk1-f181.google.com with SMTP id af79cd13be357-93e63522076so78451585a.1
-        for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 19:04:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792289041; x=1792893841; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wHi6g0wrwMF4gUfLle6SGkdX2pS0qJWckA2P3X8qxW0=;
-        b=O1DQP59xSYUpzXUKB4dUT4G2oa3e3KvZiIxifCn2fkVaXgJ4vjW2xaYPnVd172cg0j
-         QYkYcv7mBcpWewV3IoztPWKPdOIWOzUTLiL+WboY24wI746z9cpZJjKo1osNz+3scm7i
-         ohndF+bphOyonH3st8PeTmdfvf3xvwpDv68WN6XUpxm5LXsAJmSo6OWJPrX78qEvgtBU
-         oM94P5+F3FRRNxaAdxLFW3nxzHQGBtIAmuhLAlhmgq6mHtWtUuJGB5apHI4C5WXtjwPq
-         Zu3B2fMGtzl9/33Nop+fHgKVIgbsqKTIes2xdjyb3Wm+FU12b2erqu3Xhr+byiqzH3zi
-         qTyA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792289041; x=1792893841;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=wHi6g0wrwMF4gUfLle6SGkdX2pS0qJWckA2P3X8qxW0=;
-        b=HAR4ikuvjuYmkG3ieAAl9ZcDZIV3yQfVQ7GI5kfDou6WfYTxHWZXkLwA9n93HUwwkJ
-         2MayC5R+WsK1eGBjoPkjtgxcGXcGjSBPBwq2VJGaXjOZ/+9hbuOmlq9T9Q2ZwQbEgEUy
-         /JGaD+gidB/EKSa1hk9Qzn6ArrJiHkgIawNVuOg42qJq+L3EZ0XLHl6Y2UnQjMEyfA5F
-         tZ7p6MyTh0yTjrVdEitz3Hacviapf1UZUr66ro1IPQ9rJc2QHZAiyBGiGNuqYDjsDEr0
-         9eBGleab/RhZtAEVfFv4unToMoVCT2mL+O6PmSZ7gg8Zf9n1aKHonqqorigyOWZTQY7O
-         CDUQ==
-X-Gm-Message-State: AFq9FYIzEXl1JEDbEmMH7NitxGP19FAia28wQnBerVYEHiezGiqEqLtY
-	LEZGDXjktTaReJ6DIuVWSeDuHamC0zsMszHCxsaGXTNiIAGVioJtYKE=
-X-Gm-Gg: AYBFou0QcXMNcvfu26Pl6Vf+wEUKZikVbzyavrYD3OLDv5vmdc4wr3tjbn81n3JwCMh
-	GA39QW77b27w4DWBCjHp3ZUwro4wdbV1REz4lOlk7iZNl/oUsxLv4hUJVnTBNGkC5a029fPrIqj
-	ols8L4DdoL2duCdy4Cs9Sqf6D26BNTUl6sFUKMNEJ772LzBUs657mmyxYPu23tZ27GQRR25XtXW
-	QobOBgImXg3K8I8u3VqEedrF3elGQw9//BCg6KPu0Sk5UdJNlbXe3gGGUabsy/ZPYx5eKqxhVKV
-	ErbBIKFfZCHN/J4pKWCEzkSJebrbWdadbj5tRW2sG1zUbpKHi3gYe99JWMIKek3G7nfUHVlcopo
-	uZzxqvd6jhHVeO3H57FqvjZbsC/CulfX/XjDV5a+hv1bdGSApurJdC1Z3/9JtKyqtdGOchgpn9N
-	AgTFccva7c66P71e2ZUE/aNrjbqwEo23V8DTRcNQkvTyw6MVTN3H7A8jOQ/AX3jmHuL924uCzWA
-	65AYlUYCqjzMc6gZFD9OfYxpPDTvusGmv76B7PdjdSe8HRWt/U9jOUiDe0YJaQ65OHcEyZHLES/
-	zoU4UpoOELJxO9wUzm5yPGITn8n4
-X-Received: by 2002:a05:620a:2552:b0:93f:953:9a1d with SMTP id af79cd13be357-93f29db4fc0mr716733685a.67.1792289041164;
-        Sat, 17 Oct 2026 19:04:01 -0700 (PDT)
-Received: from i4-gl-tmk5904-1.ad.psu.edu ([130.203.156.90])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-93f1fb55fdcsm505611385a.39.2026.10.17.19.04.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 17 Oct 2026 19:04:00 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Ijae Kim <ae878000@gmail.com>
-Subject: [PATCH v2] power: supply: act8945a: Disable status work on removal
-Date: Sat, 17 Oct 2026 22:03:57 -0400
-Message-ID: <20261018020357.3845586-1-mhun512@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dnKU69RU"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9CA21C2BCC7;
+	Sun, 18 Oct 2026 03:57:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1792295879;
+	bh=aPysawF4KEDPHI2m90iC+9ZugE4OYOZ33lJ5R+Li8Ew=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=dnKU69RUMJaGfnTcdOnXpSHLmYCZxnzZYZVmT2p0xJvQKmqtucsmDTeNmvKUs6QZO
+	 fOSffKg8ytgjk3lwoVT47qa4LO6WAb9pvWozTUsZq3ueAppX8rMZmUdTLfCUigQj3L
+	 bHu7mFSAJSrz/IamePuMK4CqKU4xpMpbmCoMOToHtuIwhhxZuThdhbWR621URURgnX
+	 sIq8RjeH2D+x3mQDfFKe/zX52G8eblM3PG7yO3r1UbnoNpwimD70Tww/fJKEnBt8IK
+	 VwB0bB4lN11Vu++lTJQDuz9lRcNb7wYXdi6OxQAr+fzG2WC5Dl7diO/7QvjezwZXhq
+	 mCULIp2XST6Rg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67590CCF2C9;
+	Sun, 18 Oct 2026 03:57:59 +0000 (UTC)
+From: Igor Velkov via B4 Relay <devnull+iav.iav.lv@kernel.org>
+Date: Sun, 18 Oct 2026 03:57:53 +0000
+Subject: [PATCH v2] power: supply: gpio-charger: Report discharging without
+ input power
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261018-gpio-charger-offline-v2-1-482795f9e27c@iav.lv>
+X-B4-Tracking: v=1; b=H4sIAMBD1GoC/4WNQQ7CIBBFr9LM2jFAwBJX3sN0gXWgkzTQgCGah
+ ruLvYDL93/++zsUykwFrsMOmSoXTrGDOg0wLy4GQn52BiXURQphMWycsFc5UMbk/cqRcPZGGq2
+ cFOShT7dMnt+H9j51Xri8Uv4cL1X+0j/CKlHiaEctHsZYLdSNXT2vFabW2hew+H1ItQAAAA==
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Igor Velkov <iav@iav.lv>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1919; i=iav@iav.lv;
+ h=from:subject:message-id;
+ bh=0JI2YVyIf0wi7lB7au0hHSHWHOT1281rV/OhX2yynHo=;
+ b=owGbwMvMwCVmNH1q96v4SmbG02pJDFlXnA8eqtu6MN44cF1weuyG0myFRFnhzbMvu3rFTBD83
+ 1pb/Fupo5SFQYyLQVZMkWXCIY1bGUuu/vX3MH8AM4eVCWQIAxenAExEZjfD/0rGvRtE1j399Dg2
+ sH13ki/7TL6de9kXxRdo+hhFiZzVO8DIsPpx84ayxTcj8hr9gg/feRDOt96ntP398Yl8n5PPTGK
+ sZQcA
+X-Developer-Key: i=iav@iav.lv; a=openpgp;
+ fpr=90C228DA68A4D5FD4F4837E03297958BEA5F7903
+X-Endpoint-Received: by B4 Relay for iav@iav.lv/default with auth_id=1060
+X-Original-From: Igor Velkov <iav@iav.lv>
+Reply-To: iav@iav.lv
 
-Clearing init_done does not synchronize with either status interrupt. A
-handler can observe init_done set, be delayed, and schedule the status
-work after cancel_work_sync() has returned. The work can then access the
-power supply after its managed cleanup.
+From: Igor Velkov <iav@iav.lv>
 
-Use disable_work_sync() to reject subsequent queueing and drain any
-existing execution. The charger allocation remains valid until both
-managed IRQs have been released, so a late handler can safely attempt to
-queue the disabled work.
+The status property follows only the charge-status GPIO. Without input
+power a charger such as the BQ24133 releases its open-drain STAT pin,
+and depending on the board the GPIO then reads as charging.
 
-Replace init_done with the work item's disable state. Initialize and
-disable the work before act8945a_charger_config(), which registers the
-LBO interrupt, and enable it only after probe initialization succeeds.
-This keeps both status IRQs from queueing work before the power supply
-is ready, including on probe failure.
+On Kobol Helios64 the board runs from its battery after a mains loss,
+and the charger reports online 0 with status "Charging".
 
-This issue was identified as part of our ongoing research while
-reviewing kernel code.
+Report "Discharging" whenever the online GPIO is present and inactive.
 
-Fixes: a09209acd6a8 ("power: supply: act8945a_charger: Add status change update support")
+Fixes: df68c44c720a ("power: supply: gpio-charger: Add support for charger status.")
 Assisted-by: LLM
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+Signed-off-by: Igor Velkov <iav@iav.lv>
 ---
 Changes in v2:
-- Remove init_done and all accesses to it, as requested by Sebastian
-  Reichel.
-- Initialize the work before either IRQ is requested and keep it disabled
-  until probe initialization succeeds, preserving the probe-time gate.
+- Report "Discharging" instead of "Not charging" without input power (Sebastian)
+- Add Fixes tag (Sebastian)
+- Link to v1: https://lore.kernel.org/r/20261008-gpio-charger-offline-v1-1-78740b558402@iav.lv
+---
+ drivers/power/supply/gpio-charger.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Compile-tested with GCC 15, W=1 (x86_64), with OF, OF_IRQ and
-GPIOLIB enabled. No runtime testing.
+diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
+index 2504190eba82..1dad49acc424 100644
+--- a/drivers/power/supply/gpio-charger.c
++++ b/drivers/power/supply/gpio-charger.c
+@@ -101,7 +101,10 @@ static int gpio_charger_get_property(struct power_supply *psy,
+ 		val->intval = gpiod_get_value_cansleep(gpio_charger->gpiod);
+ 		break;
+ 	case POWER_SUPPLY_PROP_STATUS:
+-		if (gpiod_get_value_cansleep(gpio_charger->charge_status))
++		/* Without input power the battery discharges, whatever the status pin says */
++		if (gpio_charger->gpiod && !gpiod_get_value_cansleep(gpio_charger->gpiod))
++			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
++		else if (gpiod_get_value_cansleep(gpio_charger->charge_status))
+ 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
+ 		else
+ 			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
 
-v1: https://lore.kernel.org/r/179211805459.3650807.8742309660995961596.G171@gmail.com/
-Review: https://lore.kernel.org/r/atPtc_jKLo8RhAMU@venus/
+---
+base-commit: a90ee4305c4a5df72c11b31dacfdc76e00fcf78a
+change-id: 20261008-gpio-charger-offline-cf51542a10ef
 
- drivers/power/supply/act8945a_charger.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index 7e4b087..7d47052 100644
---- a/drivers/power/supply/act8945a_charger.c
-+++ b/drivers/power/supply/act8945a_charger.c
-@@ -14,6 +14,7 @@
- #include <linux/power_supply.h>
- #include <linux/regmap.h>
- #include <linux/gpio/consumer.h>
-+#include <linux/workqueue.h>
- 
- static const char *act8945a_charger_model = "ACT8945A";
- static const char *act8945a_charger_manufacturer = "Active-semi";
-@@ -78,7 +79,6 @@ struct act8945a_charger {
- 	struct regmap *regmap;
- 	struct work_struct work;
- 
--	bool init_done;
- 	struct gpio_desc *lbo_gpio;
- 	struct gpio_desc *chglev_gpio;
- };
-@@ -444,8 +444,7 @@ static irqreturn_t act8945a_status_changed(int irq, void *dev_id)
- {
- 	struct act8945a_charger *charger = dev_id;
- 
--	if (charger->init_done)
--		schedule_work(&charger->work);
-+	schedule_work(&charger->work);
- 
- 	return IRQ_HANDLED;
- }
-@@ -587,6 +586,10 @@ static int act8945a_charger_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
-+	/* Keep status IRQs from queueing work until probe has completed. */
-+	INIT_WORK(&charger->work, act8945a_work);
-+	disable_work(&charger->work);
-+
- 	ret = act8945a_charger_config(&pdev->dev, charger);
- 	if (ret)
- 		return ret;
-@@ -625,13 +628,11 @@ static int act8945a_charger_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, charger);
- 
--	INIT_WORK(&charger->work, act8945a_work);
--
- 	ret = act8945a_enable_interrupt(charger);
- 	if (ret)
- 		return -EIO;
- 
--	charger->init_done = true;
-+	enable_work(&charger->work);
- 
- 	return 0;
- }
-@@ -640,8 +641,7 @@ static void act8945a_charger_remove(struct platform_device *pdev)
- {
- 	struct act8945a_charger *charger = platform_get_drvdata(pdev);
- 
--	charger->init_done = false;
--	cancel_work_sync(&charger->work);
-+	disable_work_sync(&charger->work);
- }
- 
- static struct platform_driver act8945a_charger_driver = {
-
-base-commit: 238650ef6c7c7cca08e032527329424c9fbd70e5
+Best regards,
 -- 
-2.53.0
+Igor Velkov <iav@iav.lv>
+
+
