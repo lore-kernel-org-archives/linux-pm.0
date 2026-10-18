@@ -1,37 +1,37 @@
 Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2274E49A3CF;
-	Sun, 18 Oct 2026 12:22:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C2CC3AFB18;
+	Sun, 18 Oct 2026 12:24:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792326171; cv=none; b=OTvrC/vu7cpdgGYMWE7/YdZMW8O9P7/y2nXxGPZ8Rxrn2mgPwcpVFYfVWSTKQGSl0BuOlDxttdT02KPA1x+bYNTak6i0WLEGo2okZWm/wN97+nX+0L2c06r/PzCBLeQ3OXgXWivRC4R1Vh78UC4aLaqOLVcf6HgFNqa5frNak4I=
+	t=1792326242; cv=none; b=rb19/8AX2vUM1F+jdFY3bbY1CmbfogH17bKX9Gk3M38Y5A1FjIIfQlGQt1SZ77ze4FDkDKOCEBNV6ckOOcoxhHVrDFYq3hs6aW7pBO706M5YZof5sJ7cnzKoQAJv4j2cNDx1UKzi7P9PvxK6d4XmJnKXQW9Zm6vfYv6aQzIo8GA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792326171; c=relaxed/simple;
-	bh=PRHywdbP7dqEbq07ja7zg1qLti4n15HuEnR2MmqnSus=;
+	s=arc-20240116; t=1792326242; c=relaxed/simple;
+	bh=LC9roefQGdqOuXRvNPJd9fVIE9ORPK+Pcq4mi1yoc9s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=pOE2BSZNG3LRjYCYqfqtSucraSk1TWnPxdgLEB1wJoPLvuWg85gKRCcrd8TmDBHNC9UPoMTcQN7i2KR5SZGTGEJ95ZfCt/JyqM/8zCgGhCyifRCwE9eHHXpssCvlavFsz1LU1/voCNBHUZmT8ieem7aJbV95yF60aRjdsmoGotI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=anbVoMjS; arc=none smtp.client-ip=178.21.23.139
+	 MIME-Version:Content-Type; b=QTyzavoHTIFQj7zaonaKxaukQmNAv2RPItzJmWDkELSy4lFyyPvtzOOUVTdB8anD7O2nbrzV/4aNp4V1uLjhZRrD9MjO8U0xO9B7Yz7NbzSgmMoD+ioH1Mcgzg0TkYMTuFwQkFIWS5MKQ9uz/xiKKYCF3EpOEZAhaoAcIW2M+JQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=ACquAOX4; arc=none smtp.client-ip=178.21.23.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="anbVoMjS"
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="ACquAOX4"
 Received: from mail01.layka.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 92EE280B60;
-	Sun, 18 Oct 2026 14:22:38 +0200 (CEST)
+	by disroot.org (Postfix) with ESMTP id 9B70A80A5B;
+	Sun, 18 Oct 2026 14:23:59 +0200 (CEST)
 X-Virus-Scanned: SPAM Filter at disroot.org
 Received: from layka.disroot.org ([127.0.0.1])
  by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3mYQffHhEH2i; Sun, 18 Oct 2026 14:22:37 +0200 (CEST)
+ id ffbvdOvjqr9P; Sun, 18 Oct 2026 14:23:58 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1792326157; bh=PRHywdbP7dqEbq07ja7zg1qLti4n15HuEnR2MmqnSus=;
+	t=1792326238; bh=LC9roefQGdqOuXRvNPJd9fVIE9ORPK+Pcq4mi1yoc9s=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=anbVoMjScvyQkjNnCrqgo4xz6Cp3iNJRF3JqRMdhfH2IV1wbSrrTi7zlLR308Yf9Y
-	 JM9ueOxI4dc/5J+LaofNmkjE3Wxq+CSMqPdT7w+6Ofsvr4NrfZ8RvLXjKm7AYf0eMZ
-	 /cSFzNWcYshcc3SW2YnrqDNaMfVdUy30IBeeOkiOeDwxtpYToZWEyV/AT/rTWlaMy0
-	 MEeUVqz2PbTCnleHm/NQFVidlT+3uWFC/2pcwV2RzU7EAofrLMfMbtmNqiyji9J58p
-	 L5phxQs+vv4b2PWf8R2c1QIbK/UNr0ANthZvrKFB0nPFOfOLsNMPzY//GcVsaaCmkU
-	 F12aS13cMsOGw==
+	b=ACquAOX4OiwnUvvxjM7pnBVKnSCBTZSGWlqi2RZfGG/PvqhJIbRASqKGIA0Gs5AAl
+	 OjbSGPP1VgfoddGq9RdytAtVtqHeAjfrNzPcibhSkCmlfjfG65pT3EN3fz8wSVBTCw
+	 qPiBdaWqwDWJ19CuAuB3KsxfDN2Ne4vNLxgovTJw3LX4pvCvJUFZrM2EdNZ7hL9zEf
+	 C3xhvs306YVGPXAcK2mCXnoE4rDJQkG94srIL8VSCVC1HrvEdzrwnowEaK9J2EN5Oe
+	 IFKvCL7I/PIh49Zg9p8D+iUnILCIROuy/MebSOrMVaj7pELD47u7RoZm12EIC2DXmV
+	 qkid9RkhPk5dQ==
 From: =?UTF-8?q?Ali=20Ahmet=20Memi=C5=9F?= <aliamemis@disroot.org>
 To: "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>,
@@ -53,11 +53,10 @@ Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>,
 	linux-pm@vger.kernel.org,
 	platform-driver-x86@vger.kernel.org,
 	acpica-devel@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v3 3/4] thermal: intel: int340x: Evaluate _TMP exclusively
-Date: Sun, 18 Oct 2026 15:22:19 +0300
-Message-ID: <20261018122220.678822-4-aliamemis@disroot.org>
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 4/4] platform/x86: ideapad-laptop: Evaluate ACPI methods exclusively
+Date: Sun, 18 Oct 2026 15:23:48 +0300
+Message-ID: <20261018122348.679126-1-aliamemis@disroot.org>
 In-Reply-To: <20261018122220.678822-1-aliamemis@disroot.org>
 References: <20261018122220.678822-1-aliamemis@disroot.org>
 Precedence: bulk
@@ -69,70 +68,73 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On ThinkPad P1 Gen2 and P53, INT3403 _TMP switches the EC page selector
-without taking the mutex the battery methods use, so it must not run
-interleaved with them.
+On some Lenovo IdeaPad and Yoga models, the battery _BIX takes the EC
+AML mutex and then calls the serialized RDER through RDIF, while GBMD
+calls RDER first and then takes the EC mutex. When the two run
+interleaved they deadlock until the mutex acquisition in RDER times
+out, and GBMD returns garbage that is reported as both charge types
+being enabled.
 
-Evaluate _TMP with acpi_evaluate_integer_exclusive(), also where int3403
-and processor_thermal probe for it.
+Evaluate all methods with the exclusive helpers, so that GBMD never runs
+interleaved with the battery methods.
 
-Fixes: d33e89d12295 ("thermal: core: Suspend thermal zones later and resume them earlier")
-Reported-by: Charis Stratakis <c.stratakis@proton.me>
-Closes: https://lore.kernel.org/all/37N_jFulf7n-Z55NfKfE71C_wVPxYvZ0xD_iRUg2fXu7TypDiF5PStQ6siSfVBih6fThg5WoPes8U5ZQpfVm_teMFcUGXFxz2DdMbfSWuws=@proton.me/
-Cc: stable@vger.kernel.org
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=221065
+Link: https://lore.kernel.org/all/58586fa666f09c209f9d7fe8c692a8bdda6d4410.camel@rong.moe/
 Signed-off-by: Ali Ahmet Memiş <aliamemis@disroot.org>
-Reviewed-by: Hans de Goede <johannes.goede@oss.qualcomm.com>
 Reviewed-by: Rong Zhang <i@rong.moe>
 ---
- drivers/thermal/intel/int340x_thermal/int3403_thermal.c     | 3 +--
- .../thermal/intel/int340x_thermal/int340x_thermal_zone.c    | 6 +++++-
- .../intel/int340x_thermal/processor_thermal_device.c        | 2 +-
- 3 files changed, 7 insertions(+), 4 deletions(-)
+ drivers/platform/x86/lenovo/ideapad-laptop.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3403_thermal.c b/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-index 264c9bc8e645..2262de1e14d9 100644
---- a/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-@@ -217,8 +217,7 @@ static int int3403_add(struct platform_device *pdev)
- 	}
+diff --git a/drivers/platform/x86/lenovo/ideapad-laptop.c b/drivers/platform/x86/lenovo/ideapad-laptop.c
+index 8213524504ee..1335f4e48870 100644
+--- a/drivers/platform/x86/lenovo/ideapad-laptop.c
++++ b/drivers/platform/x86/lenovo/ideapad-laptop.c
+@@ -297,12 +297,16 @@ static void ideapad_shared_exit(struct ideapad_private *priv)
+ #define IDEAPAD_EC_POLL_MIN_US 150
+ #define IDEAPAD_EC_POLL_MAX_US 300
  
- 
--	status = acpi_evaluate_integer(priv->adev->handle, "_TMP",
--				       NULL, &tmp);
-+	status = acpi_evaluate_integer_exclusive(priv->adev->handle, "_TMP", NULL, &tmp);
- 	if (ACPI_FAILURE(status)) {
- 		status = acpi_evaluate_integer(priv->adev->handle, "PTYP",
- 				       NULL, &priv->type);
-diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-index 965700ee6962..9451fea1f65c 100644
---- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-+++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-@@ -18,7 +18,11 @@ static int int340x_thermal_get_zone_temp(struct thermal_zone_device *zone,
- 	unsigned long long tmp;
++/*
++ * On some models GBMD and the battery _BIX take the EC mutex and a
++ * serialized method in opposite order, so evaluate all methods exclusively.
++ */
+ static int eval_int(acpi_handle handle, const char *name, unsigned long *res)
+ {
+ 	unsigned long long result;
  	acpi_status status;
  
--	status = acpi_evaluate_integer(d->adev->handle, "_TMP", NULL, &tmp);
-+	/*
-+	 * On some ThinkPads _TMP switches the EC page selector without
-+	 * taking the mutex the battery methods use.
-+	 */
-+	status = acpi_evaluate_integer_exclusive(d->adev->handle, "_TMP", NULL, &tmp);
+-	status = acpi_evaluate_integer(handle, (char *)name, NULL, &result);
++	status = acpi_evaluate_integer_exclusive(handle, (char *)name, NULL, &result);
  	if (ACPI_FAILURE(status))
  		return -EIO;
  
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index f80dbe2ca7e4..0ece3d131588 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -283,7 +283,7 @@ int proc_thermal_add(struct device *dev, struct proc_thermal_device *proc_priv)
- 	if (ret)
- 		return ret;
+@@ -324,7 +328,7 @@ static int eval_int_with_arg(acpi_handle handle, const char *name, unsigned long
+ 	in_obj.type = ACPI_TYPE_INTEGER;
+ 	in_obj.integer.value = arg;
  
--	status = acpi_evaluate_integer(adev->handle, "_TMP", NULL, &tmp);
-+	status = acpi_evaluate_integer_exclusive(adev->handle, "_TMP", NULL, &tmp);
- 	if (ACPI_FAILURE(status)) {
- 		/* there is no _TMP method, add local method */
- 		if (intel_tcc_get_tjmax(-1) > 0)
+-	status = acpi_evaluate_integer(handle, (char *)name, &params, &result);
++	status = acpi_evaluate_integer_exclusive(handle, (char *)name, &params, &result);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+@@ -336,7 +340,7 @@ static int eval_int_with_arg(acpi_handle handle, const char *name, unsigned long
+ 
+ static int exec_simple_method(acpi_handle handle, const char *name, unsigned long arg)
+ {
+-	acpi_status status = acpi_execute_simple_method(handle, (char *)name, arg);
++	acpi_status status = acpi_execute_simple_method_exclusive(handle, (char *)name, arg);
+ 
+ 	return ACPI_FAILURE(status) ? -EIO : 0;
+ }
+@@ -394,7 +398,7 @@ static int eval_vpcw(acpi_handle handle, unsigned long cmd, unsigned long data)
+ 	in_obj[1].type = ACPI_TYPE_INTEGER;
+ 	in_obj[1].integer.value = data;
+ 
+-	status = acpi_evaluate_object(handle, "VPCW", &params, NULL);
++	status = acpi_evaluate_object_exclusive(handle, "VPCW", &params, NULL);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
 -- 
 2.55.0
 
