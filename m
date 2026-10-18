@@ -1,37 +1,66 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23E9635E1B0;
-	Sun, 18 Oct 2026 03:57:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2059240B11F
+	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 04:29:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792295880; cv=none; b=E1nEO6Ar/eOwEHce50CsXa8Og5EYoW4Xo1u646ATplhZCl3NNKVYHjZ8JhyFVxxmKciA/7euVYnJUk4IIcezjH4wgfvSL1HuXEBoIETbgbDd4D3t/6lb+cQLfyrc8qX8OiiV95JWUD4wvFsmkC/d0PKzzhmr7BYZyXs1a9Q4RJU=
+	t=1792297803; cv=none; b=bldWvb4TW4KIJ/Ry2x8YYJFbR/syTIQ81PvpJ1kOTf8+9kfMwv8uQLPm1frGKhxOAqF6AbC0zGtaigeiGcbPWoT3cipHUKWEdmt+PmgAJj52jtkRi4r63hyQY0DnYpZgepItltWVv+tnmjCZDH8ZwKYywf31MWH9jzsbyt4hskY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792295880; c=relaxed/simple;
-	bh=aPysawF4KEDPHI2m90iC+9ZugE4OYOZ33lJ5R+Li8Ew=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=cp0ZMBmODVRl9zk1mFFWGTP87EH/Pgo9F2Zz6K/M67iuT9gqrQScCu0tUH7HLHKs1mSv7OayeAyekjC2x9wav/NIruhpUAd5JJU6HK9FLwuubPgUvV7eXpiV5aP+yDi8x+L+qIlzd5jOxMqZmVkkPbztfPViNdV53BQ2ArkxOUg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dnKU69RU; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1792297803; c=relaxed/simple;
+	bh=Anss7133/aANMPtcn5QRXQaxDH/4VeyG3Fgcsy6YMc4=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=hJaDCk+3br+Vh5NGfDARj8nvEy8jjuWjhm4hj3uxIZ/qACcRpHbMmCywKjvMMWlI2UqYEZCpOLpwvCNX4cFT+a+o7w4JLMhNBt8f8fms00GwPIsT1alr+Ko6VBL5JAJVNNxg942Oempbl2uH8tBsji9gEbmcoiB7dIoYrgv9/Ek=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bbJtyab6; arc=none smtp.client-ip=209.85.216.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dnKU69RU"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 9CA21C2BCC7;
-	Sun, 18 Oct 2026 03:57:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1792295879;
-	bh=aPysawF4KEDPHI2m90iC+9ZugE4OYOZ33lJ5R+Li8Ew=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=dnKU69RUMJaGfnTcdOnXpSHLmYCZxnzZYZVmT2p0xJvQKmqtucsmDTeNmvKUs6QZO
-	 fOSffKg8ytgjk3lwoVT47qa4LO6WAb9pvWozTUsZq3ueAppX8rMZmUdTLfCUigQj3L
-	 bHu7mFSAJSrz/IamePuMK4CqKU4xpMpbmCoMOToHtuIwhhxZuThdhbWR621URURgnX
-	 sIq8RjeH2D+x3mQDfFKe/zX52G8eblM3PG7yO3r1UbnoNpwimD70Tww/fJKEnBt8IK
-	 VwB0bB4lN11Vu++lTJQDuz9lRcNb7wYXdi6OxQAr+fzG2WC5Dl7diO/7QvjezwZXhq
-	 mCULIp2XST6Rg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67590CCF2C9;
-	Sun, 18 Oct 2026 03:57:59 +0000 (UTC)
-From: Igor Velkov via B4 Relay <devnull+iav.iav.lv@kernel.org>
-Date: Sun, 18 Oct 2026 03:57:53 +0000
-Subject: [PATCH v2] power: supply: gpio-charger: Report discharging without
- input power
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bbJtyab6"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-3ac91ac8924so676263a91.1
+        for <linux-pm@vger.kernel.org>; Sat, 17 Oct 2026 21:29:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792297797; x=1792902597; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=VWSV2lYeWe6uhtDKhgh0Nkoh2az0FS4A25FIOTm7cLg=;
+        b=bbJtyab60pRpfxg2B0XuPjmJrIruUt6Dq3k25lsiQSFIjD5OaOQTdlME1k67VsWjho
+         +kj7ftF8WBjhxabYEodLwoPGSZnRYLm5aZstMbMhxCLyHYebf3Sp0eTNYGqohVEHmzWo
+         trVh5sjLSBoTYSgMjy3mo2tCnTv3OzqF+oL0R4sXKTFI94F4sb75bCOcrrXGCKv5Usmd
+         CmUwk/acpeF7KwjCBbxD8Qi2UxA5L9+Wbe+DKBgf5yKCMuohpEfQFTlGZh4Adty2d8xj
+         JSAmU9mVqech7nH08lWEMfGxVk96sXSmX15b4f2+CFMr2G4C5wsndrxlmAZPikfb7ugj
+         Ul9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792297797; x=1792902597;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=VWSV2lYeWe6uhtDKhgh0Nkoh2az0FS4A25FIOTm7cLg=;
+        b=RVb8i95G4EdJP9Zb8NlCkJRJu+Sbl+69x3/dSS9MtPnpuw2PA0Rucr/RPYvv9+FgS4
+         2kUcN2eah7tZ8qqpqR3KNQoOmJqX1ANZOnosIJPoM9KZe46OtvKfgfj4oSmptpFG3V8u
+         xzP73k+LAugT8u9SCzzWfL6mKPZyPqbwBaJrWCoXNWC7y9zIGB1MdeebwazcSK2hi7Yw
+         iGG38MPjLwBO2L2ucc/98QxApRDyX695nxIY+RZUvzJLD22RxKQ8oECltaamHeRXSLh+
+         dGc7080y/W5faPCvAfsQq3GNEeSe8Shx8X4ym2u2/apYdu3B4qGbl5mHAsOWlEgCurwV
+         7Rpg==
+X-Forwarded-Encrypted: i=1; AKwUvBw6mAXtPm4EDeJWTBwACTk+IPOptnDRLuWIClEEUDgdWeCFXqMcO3b7z0itBRCc6Q9ndUC6M6lUtQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIHrJxDiNfb9olS5MSLstnDateUlKR7D06CXBUKZ9VQw0AZFBpk
+	/y4DhxwFLdkzZkncd5lkNYDT4OkcZdQhDIY+bqtYp5F36mu5xEE8v9Em
+X-Gm-Gg: AYBFou3diFWC+IGBFKuz9w1Nd68QeWL8Lmh1tFQS/etzuesTQ0F/kUS8smGNP54WaL7
+	cBNh17lsx3kTvOG4Rb+NkK9d10BCdTA/vgq3iitAR6wNB+HopVJsLRe61oRuKycXDHWVvBML3VS
+	NP93/dUFKM/HN2jTtXZ759Mh2UW6eDP0nLOK8EXJNd+VVaykFsC4eT4hC1It0avN6Dta7/Cvo3A
+	cGqSDelAXpnzZw70MGC/vsbvV1TL8LegjOLPhse4s7Eh3t0IdBjkDomFaGBbtp9G9h1NmXzUMKY
+	sC7+v4TMHu2uCttlm5ah5TqSSUbEz6hJ+NeinU3JBWyLjY9ACLamzne589OMDtm48SK8Y5XAzFF
+	G20ONs/ad8BPBwSyMvEielzW2+Vv9vyG7TVJ5hP2DRXKXnls8eQoT7W3v/XWZ/DoFBwOvotjbeh
+	ONdfRPGLk85hJTgDqpJ/cEwPkjn06Nyzaj+f9Tr812uW/89RkIeObwML0CNhysQIk=
+X-Received: by 2002:a17:90b:5610:b0:3ac:8897:7b88 with SMTP id 98e67ed59e1d1-3acef5f43f0mr3344212a91.58.1792297797308;
+        Sat, 17 Oct 2026 21:29:57 -0700 (PDT)
+Received: from [127.0.0.2] ([2404:c0:7618:4e1c:8841:a092:12c2:47d7])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3acc9e47588sm5885369a91.1.2026.10.17.21.29.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 17 Oct 2026 21:29:56 -0700 (PDT)
+From: Reza Kurniawan <imkyufie@gmail.com>
+Subject: [PATCH v2 0/4] Fix PSCI on MSM8917 and MSM8937
+Date: Sun, 18 Oct 2026 04:29:20 +0000
+Message-Id: <20261018-psci-fix-v2-0-35f65b59eb9a@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,73 +69,75 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261018-gpio-charger-offline-v2-1-482795f9e27c@iav.lv>
-X-B4-Tracking: v=1; b=H4sIAMBD1GoC/4WNQQ7CIBBFr9LM2jFAwBJX3sN0gXWgkzTQgCGah
- ruLvYDL93/++zsUykwFrsMOmSoXTrGDOg0wLy4GQn52BiXURQphMWycsFc5UMbk/cqRcPZGGq2
- cFOShT7dMnt+H9j51Xri8Uv4cL1X+0j/CKlHiaEctHsZYLdSNXT2vFabW2hew+H1ItQAAAA==
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Igor Velkov <iav@iav.lv>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1919; i=iav@iav.lv;
- h=from:subject:message-id;
- bh=0JI2YVyIf0wi7lB7au0hHSHWHOT1281rV/OhX2yynHo=;
- b=owGbwMvMwCVmNH1q96v4SmbG02pJDFlXnA8eqtu6MN44cF1weuyG0myFRFnhzbMvu3rFTBD83
- 1pb/Fupo5SFQYyLQVZMkWXCIY1bGUuu/vX3MH8AM4eVCWQIAxenAExEZjfD/0rGvRtE1j399Dg2
- sH13ki/7TL6de9kXxRdo+hhFiZzVO8DIsPpx84ayxTcj8hr9gg/feRDOt96ntP398Yl8n5PPTGK
- sZQcA
-X-Developer-Key: i=iav@iav.lv; a=openpgp;
- fpr=90C228DA68A4D5FD4F4837E03297958BEA5F7903
-X-Endpoint-Received: by B4 Relay for iav@iav.lv/default with auth_id=1060
-X-Original-From: Igor Velkov <iav@iav.lv>
-Reply-To: iav@iav.lv
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/0WNQQ7CIBBFr9LMWgxQQ40r79F0gTBtx9jSQCWah
+ rsLNcblm7z/ZoOAnjDApdrAY6RAbs4gDxWYUc8DMrKZQXKpBBc1W4Ih1tOLnbU03CqpVK8h64v
+ HfN5Tbffl8Lzd0axlX4yRwur8e/8VRfF+2eafjYJxZtFqlA2edC2uw6TpcTRugi6l9AH3CMdds
+ gAAAA==
+X-Change-ID: 20261013-psci-fix-8a2c0d6266fa
+To: Mark Rutland <mark.rutland@arm.com>, 
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, 
+ Christian Loehle <christian.loehle@arm.com>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+ Val Packett <val@packett.cool>
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-arm-msm@vger.kernel.org, Alejandro Tafalla <atafalla@dnyon.com>, 
+ Reza Kurniawan <imkyufie@gmail.com>
+X-Mailer: b4 0.15.2
 
-From: Igor Velkov <iav@iav.lv>
+PSCI on Qualcomm MSM8917 and MSM8937 advertises support for OS-initiated
+mode through PSCI_FEATURES, but rejects every PSCI_SET_SUSPEND_MODE call
+with NOT_SUPPORTED. The cpuidle-psci-domain driver treats this as a
+fatal error, so probe fails and the CPU PM domain topology is never
+registered:
 
-The status property follows only the charge-status GPIO. Without input
-power a charger such as the BQ24133 releases its open-drain STAT pin,
-and depending on the board the GPIO then reads as charging.
+  psci-cpuidle-domain psci: probe with driver psci-cpuidle-domain failed
+  with error -95
 
-On Kobol Helios64 the board runs from its battery after a mains loss,
-and the charger reports online 0 with status "Charging".
+This series adds a "skip-suspend-mode-switch" property to the PSCI node.
+When present, cpuidle-psci-domain does not call psci_set_osi_mode() and
+continues with the topology it has already built.
 
-Report "Discharging" whenever the online GPIO is present and inactive.
+Skipping the switch is expected to be safe on these platforms since it
+matches the behavior of the downstream kernel, which manages the
+cluster power level in addition to the CPU power level, just as Linux
+does when OSI is supported.
 
-Fixes: df68c44c720a ("power: supply: gpio-charger: Add support for charger status.")
-Assisted-by: LLM
-Signed-off-by: Igor Velkov <iav@iav.lv>
+Additionally, it also adds the property to the PSCI node for both
+platforms. For MSM8917, additional change is added to fix the system
+being unresponsive at idle.
+
 ---
 Changes in v2:
-- Report "Discharging" instead of "Not charging" without input power (Sebastian)
-- Add Fixes tag (Sebastian)
-- Link to v1: https://lore.kernel.org/r/20261008-gpio-charger-offline-v1-1-78740b558402@iav.lv
----
- drivers/power/supply/gpio-charger.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-index 2504190eba82..1dad49acc424 100644
---- a/drivers/power/supply/gpio-charger.c
-+++ b/drivers/power/supply/gpio-charger.c
-@@ -101,7 +101,10 @@ static int gpio_charger_get_property(struct power_supply *psy,
- 		val->intval = gpiod_get_value_cansleep(gpio_charger->gpiod);
- 		break;
- 	case POWER_SUPPLY_PROP_STATUS:
--		if (gpiod_get_value_cansleep(gpio_charger->charge_status))
-+		/* Without input power the battery discharges, whatever the status pin says */
-+		if (gpio_charger->gpiod && !gpiod_get_value_cansleep(gpio_charger->gpiod))
-+			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-+		else if (gpiod_get_value_cansleep(gpio_charger->charge_status))
- 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
- 		else
- 			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+- Small phrase change in the property description
+- Added property check in psci_1_0_init()
+- Link to v1: https://patch.msgid.link/20261017-psci-fix-v1-0-dedae27e4a31@gmail.com
 
 ---
-base-commit: a90ee4305c4a5df72c11b31dacfdc76e00fcf78a
-change-id: 20261008-gpio-charger-offline-cf51542a10ef
+Alejandro Tafalla (2):
+      dt-bindings: arm: psci: Add skip-suspend-mode-switch property
+      cpuidle: psci: Allow skipping the suspend mode switch
+
+Reza Kurniawan (2):
+      arm64: dts: qcom: Skip suspend mode switch on MSM8917 and MSM8937
+      arm64: dts: qcom: msm8917: Use a shallower cluster state to fix unresponsive idle
+
+ Documentation/devicetree/bindings/arm/psci.yaml | 13 +++++++++++++
+ arch/arm64/boot/dts/qcom/msm8917.dtsi           |  9 +++++----
+ arch/arm64/boot/dts/qcom/msm8937.dtsi           |  1 +
+ drivers/cpuidle/cpuidle-psci-domain.c           | 16 ++++++++++------
+ drivers/firmware/psci/psci.c                    |  6 ++++--
+ 5 files changed, 33 insertions(+), 12 deletions(-)
+---
+base-commit: 2efb7a11f1aa4d2dc285fe2680cca22cb9f72f64
+change-id: 20261013-psci-fix-8a2c0d6266fa
 
 Best regards,
--- 
-Igor Velkov <iav@iav.lv>
-
+--  
+Reza Kurniawan <imkyufie@gmail.com>
 
