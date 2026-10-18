@@ -1,106 +1,234 @@
-Received: from outbound.soverin.net (outbound.soverin.net [185.233.34.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender6-op-o11.zoho.com (sender6-op-o11.zoho.com [165.173.180.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27D7641B8DC;
-	Sun, 18 Oct 2026 09:57:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.233.34.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792317436; cv=none; b=IPfppmUEHnDDj7pBnq8vVYt4GqdAkjaYxRgmRaXBvJ0+89N8m432Fvq/Tn0PwHpyNfJncXsIHM06cmSVL3vXtX9c+EU0RQQf9IwDL040lhkjcmDE9XCxqOiDscWe4oGoUnFSV4TaDGyYmbLodKhrtxiB2tPG38Z7S1cuEFpB+vQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792317436; c=relaxed/simple;
-	bh=rUea3DCws+rncFslxzgZpDb9Tfn9iGN2SBnMV6j5Qaw=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To; b=h8RSdv0rPk+7EDK5F2B7/LIKySU8OO7X641GuRYEcRXevvM2lLIESVdOQNZlFN6M24g2j0SPqNQDgAvCVyUsIMf2El6pzqdv9bDpop96otfg+LtYK7uoS5jJCpDxByy+AC4sJSGcdPvzXy261KaKa4apbS6dG1YTc675/RO+LKM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=izzo.pro; spf=pass smtp.mailfrom=izzo.pro; dkim=pass (2048-bit key) header.d=izzo.pro header.i=@izzo.pro header.b=Vfc2Wfe6; dkim=pass (2048-bit key) header.d=izzo.pro header.i=@izzo.pro header.b=epYghd1M; arc=none smtp.client-ip=185.233.34.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=izzo.pro
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=izzo.pro
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B1172D0C8F;
+	Sun, 18 Oct 2026 10:19:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.180.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792318791; cv=pass; b=p6sEwDLGYh15TvX2ixZ0P8Zj9uT2w8PT9oE4dF4+0PIIDXrj8/7N9PMKhBWdKW18+IMkDmXPycsuVsdZl3MCWR5qTs1lySksJv0bhrXbP9C08ePlKVhW4Rp3VhRbRhQtZGEZyEYdLCHUfxxvilDSL1hLA2N80smxvDQef7+rWjs=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792318791; c=relaxed/simple;
+	bh=v+ywTi8+59OlpvWWnXjhz0LVaofyKglkoov1piRqIpQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Mdk7f+eNoRnMWWUq1T4ZPKaKu4ZSAfeGrGhriGrdtCpkKSpbE2YBxa1aH8swfbs+lVq/R73A3uI3Kj56NzS2djirge4ooqCBs/tMWui4J/RnNuGkHuTkNwbsWB+vRtQJboASKl/7/7vqcfYV9l4qpiMpVc6qSmiWmIhBYyHQTtI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=GTbCTdVY; arc=pass smtp.client-ip=165.173.180.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=izzo.pro header.i=@izzo.pro header.b="Vfc2Wfe6";
-	dkim=pass (2048-bit key) header.d=izzo.pro header.i=@izzo.pro header.b="epYghd1M"
-Received: from smtp.soverin.net (unknown [10.102.10.155])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by outbound.soverin.net (Postfix) with ESMTPS id 4j6v2V0tTLzxKM;
-	Sun, 18 Oct 2026 09:46:26 +0000 (UTC)
-Received: from smtp.soverin.net (smtp.soverin.net [10.102.10.155]) by soverin.net (Postfix) with ESMTPSA id 4j6v2T57PVzTD5;
-	Sun, 18 Oct 2026 09:46:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=izzo.pro; s=soverin;
-	t=1792316786; bh=rUea3DCws+rncFslxzgZpDb9Tfn9iGN2SBnMV6j5Qaw=;
-	h=Date:Cc:Subject:From:To:From;
-	b=Vfc2Wfe6XQNccEdPYy9OGKWtLN8vVwQ3yo9ORxrxb0ogkB1acdLxHXnt8Ra8YVL/F
-	 o3UlR+5NzW8fdC6zgaGcFGxT7zMcIoUroPIqM8L9//W+OsNLvyZP+QYF7LCLlSGZ5+
-	 U+BD6sKMMS/SGTQ/NzNqoZNQKwjMgZsv2B9tzJf6D5eF6OmGTsfnvZGyC1Hq9aDZYe
-	 a4/0LGhFnIJqsRSK+Y18NycNDcRkf49vxlcbUn27ENsFf1+4GG7cGiSvw4WR8w2imo
-	 hNgxvzzaZPIuiUi1coOh9NtN0Gzfwuph6vaJMnl82MQpdTCXFfAqU2MDU8Ql+lOTO+
-	 wxJ9kENAKPM3Q==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=izzo.pro; s=soverin1;
-	t=1792316786;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=rUea3DCws+rncFslxzgZpDb9Tfn9iGN2SBnMV6j5Qaw=;
-	b=epYghd1MqXCj0kUjrB767RqUtXb99Ix2y+PbjqhEMVn7btg8WUEerNabZcLZUIRPKcKCK+
-	82fQqBnowC7Ypilk+iy2XejoS5UgjY9KA1tN6wUeVH2+K83VvGuez3SDyth38t4UQrPe0n
-	HkkaC1X4MRvQ8dfFm5lJtNnMOSpjr4AMeZ/pdWOEBZdXowtSQotDF027J7yxhe6hc8yEEQ
-	425x07CQ3e4XoTlT3hbgWq79YteelQSgKpO5HxG0A04/Q/459Gvuv5NqwECFfiQkwT4Zp+
-	p5zYgYwJkjEubyy8gUOOz1oGn6gEeDdL9h3uO2on91ejEqupDpIvXy+N3Delxg==
-X-CM-Envelope: MS4xfM6vEoJgHLzdsND58SmvowWoa9xq77oOqkuzd6aACLrW8IxVx21AvrT1+viWelsOqikY1d4Tx9NKltMe6o983L2Mw1Obx+Y4zrLUjmAMDQ855f3Nq5QJ MZZ5GCkP3OGFz5sfa3vt3g+0WbmdisCqvIVT1sQ1o6R7tFp11NVWY4/BfnLFiRBQ98fRX1VM7tLkJiunEaSrg1thuB78nnJ6ptI2HcJ7W8zseP+G+gzGPUB5 T2h6e3W1PUFQSxZQAMJTYzeNXGR8gqs/4P2ssHBstiA0TC5S9BHKZhF7A/Gv3W+IKHfNV+zpaJ51L7dgmAUx4w2X4LmGu2fXT77wPLFlKr8BHn0WOxO8xvfK 214y+QSwrtG26CyC9tBjTqLpJQcGWtH6EgNd15WgYrJ7vKyY9a2ioSuefUtM4SRWxUqH8CCR/HTj61hFfHf1w5jml8tw/Ry6I6Da40pIIJYZNmneFoPvJNxP pQ2ym/Iih1SdVCpc
-X-Soverin-Id: 01a14e67-c168-71c1-8639-4924ddc596e7
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="GTbCTdVY"
+ARC-Seal: i=1; a=rsa-sha256; t=1792318787; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=a3QNF5ESUz5G5dt97L+lutm7ANzfOM8XT35f6WaTzWeEKAk3c1GW3vtgj25W7imOBnK3HAlIf3weLO57Cdh+/mMpFrTLupA6BKCywQ1MLKX7dHNRJNPFlCZJOrRk12lTfaBRiQY9pkwu5Ai5U3yMtiMBzbAZst/4NEUGdJRnHDs=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1792318787; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=VBJvKmB+ztjPP6MHZCt4WWZ0Vw3J6gEDSdIBKXDhVac=; 
+	b=Zlb/rtOmFyiipyxIXDZ3MDuEuwS68Fr4E5/S/8Z+aUvwiLiASW8zFw48PYijGwuxbGz7cVR/NOXbKXbrvO6sJU//JanVbE1YPfdvaHBkWHQrsUWq76bFiOV5kGNPtC9g4vB8MCfTNgGfiYQ8/lZnRMnCUgtBkNlrmPbJ9wSHFfI=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1792318787;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=VBJvKmB+ztjPP6MHZCt4WWZ0Vw3J6gEDSdIBKXDhVac=;
+	b=GTbCTdVY3RhkJBuEdnK0VjahQRdQ7tCUEMGNW/9Wznrj60dSgu6Zy5tlqeoBuGoe
+	HaYCFB7VvW4Sz0/y/FBFqadp72WRRUzbo9KyWUWVrbvQ7F76ZEMZ/Y3hILkF9jhAQBN
+	t4fU91dpc+BVda3hzrWrf383QqT1JggElWdkT57M=
+Received: by smtp.zohomail.com with SMTPS id 1792318784821792.2592897543716;
+	Sun, 18 Oct 2026 03:19:44 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id 704431800D8; Sun, 18 Oct 2026 12:19:41 +0200 (CEST)
+Date: Sun, 18 Oct 2026 12:19:41 +0200
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Myeonghun Pak <mhun512@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Ijae Kim <ae878000@gmail.com>
+Subject: Re: [PATCH v2] power: supply: act8945a: Disable status work on
+ removal
+Message-ID: <atSacKtZ3e4YtVBy@venus>
+References: <20261018020357.3845586-1-mhun512@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="vdbkogyuqrd7jrg7"
+Content-Disposition: inline
+In-Reply-To: <20261018020357.3845586-1-mhun512@gmail.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/292.311.61
+X-ZohoMailClient: External
+
+
+--vdbkogyuqrd7jrg7
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 18 Oct 2026 11:46:25 +0200
-Message-Id: <DM7V9WDDVQ2I.3THP2TDPTP994@izzo.pro>
-Cc: <federico@izzo.pro>, <luca.weiss@fairphone.com>, <val@packet.cool>,
- <~postmarketos/upstreaming@lists.sr.ht>, <phone-devel@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [RFC] power: supply: qcom_battmgr: implement battery charge control
- on kodiak phones
-From: "Federico Amedeo Izzo" <federico@izzo.pro>
-To: <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>
-X-Spampanel-Class: ham
+Subject: Re: [PATCH v2] power: supply: act8945a: Disable status work on
+ removal
+MIME-Version: 1.0
 
-Hello,
+Hi,
 
-I want to implement battery charge control support on two kodiak phones:
-motorola-dubai and fairphone-fp5. I kindly ask your feedback on my=20
-implementation proposal below.
+On Sat, Oct 17, 2026 at 10:03:57PM -0400, Myeonghun Pak wrote:
+> Clearing init_done does not synchronize with either status interrupt. A
+> handler can observe init_done set, be delayed, and schedule the status
+> work after cancel_work_sync() has returned. The work can then access the
+> power supply after its managed cleanup.
+>=20
+> Use disable_work_sync() to reject subsequent queueing and drain any
+> existing execution. The charger allocation remains valid until both
+> managed IRQs have been released, so a late handler can safely attempt to
+> queue the disabled work.
+>=20
+> Replace init_done with the work item's disable state. Initialize and
+> disable the work before act8945a_charger_config(), which registers the
+> LBO interrupt, and enable it only after probe initialization succeeds.
+> This keeps both status IRQs from queueing work before the power supply
+> is ready, including on probe failure.
+>=20
+> This issue was identified as part of our ongoing research while
+> reviewing kernel code.
+>=20
+> Fixes: a09209acd6a8 ("power: supply: act8945a_charger: Add status change =
+update support")
+> Assisted-by: LLM
+> Co-developed-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+> ---
 
-This feature also known as "charging limit" or "battery health" lets the us=
-er
-limit the battery charging range to 0-80% tipically, in order to extend the
-lifetime of the battery. It can also be used with a lower range 0-50% to
-prevent battery degradation on devices always connected to a charger.
+Having a closer look at how the work is being used: Instead of doing
+all this complex stuff this should just use a threaded interrupt and
+completley get rid of the worker. I.e.:
 
-Newer SoCs like SM8550 and X1E80100 implement charge control in the battmgr
-firmware, but kodiak (SM8350 in qcom-battmgr.c) does not support that (I tr=
-ied
-using the same property ID as newer SoCs with no luck.
+1. get rid of init_done (done in your version)
+2. switch from devm_request_irq to devm_request_threaded_irq
+3. move the act8945a_lbo_detect IRQ request after power-supply
+   registration to avoid problems with spurious interrupts
+4. move act8945a_set_supply_type + power_supply_changed calls from
+   act8945a_work into act8945a_status_changed
+5. completley remove charger->work
+6. drop empty act8945a_charger_remove()
 
-Looking at downstream implementations, both dubai and fp5 implement the abi=
-lity
-to stop and start the charge with custom extensions to the battmgr firmware=
-,
-while the actual charge control logic is implemented in a kernel driver (du=
-bai)
-or in a userspace java service (fp5).
+It results in less and simpler code.
 
-My plan is to expose the start/stop firmware capability of the two phones u=
-sing
-the charge_behaviour sysfs property, then implement the charge control logi=
-c
-(start/stop charge depending on current level vs thresholds) in the qcom-ba=
-ttmgr
-driver itself and expose the sysfs properties charge_control_start/end_thre=
-shold
-to let userspace change the thresholds. The scope of this "software"
-implementation would be limited to SM8350 in qcom-battmgr as later SoCs can
-already do this in firmware.
+Greetings,
 
-Best regards,
-Federico Amedeo Izzo
+-- Sebastian
+
+> Changes in v2:
+> - Remove init_done and all accesses to it, as requested by Sebastian
+>   Reichel.
+> - Initialize the work before either IRQ is requested and keep it disabled
+>   until probe initialization succeeds, preserving the probe-time gate.
+>=20
+> Compile-tested with GCC 15, W=3D1 (x86_64), with OF, OF_IRQ and
+> GPIOLIB enabled. No runtime testing.
+>=20
+> v1: https://lore.kernel.org/r/179211805459.3650807.8742309660995961596.G1=
+71@gmail.com/
+> Review: https://lore.kernel.org/r/atPtc_jKLo8RhAMU@venus/
+>=20
+>  drivers/power/supply/act8945a_charger.c | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supp=
+ly/act8945a_charger.c
+> index 7e4b087..7d47052 100644
+> --- a/drivers/power/supply/act8945a_charger.c
+> +++ b/drivers/power/supply/act8945a_charger.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/power_supply.h>
+>  #include <linux/regmap.h>
+>  #include <linux/gpio/consumer.h>
+> +#include <linux/workqueue.h>
+> =20
+>  static const char *act8945a_charger_model =3D "ACT8945A";
+>  static const char *act8945a_charger_manufacturer =3D "Active-semi";
+> @@ -78,7 +79,6 @@ struct act8945a_charger {
+>  	struct regmap *regmap;
+>  	struct work_struct work;
+> =20
+> -	bool init_done;
+>  	struct gpio_desc *lbo_gpio;
+>  	struct gpio_desc *chglev_gpio;
+>  };
+> @@ -444,8 +444,7 @@ static irqreturn_t act8945a_status_changed(int irq, v=
+oid *dev_id)
+>  {
+>  	struct act8945a_charger *charger =3D dev_id;
+> =20
+> -	if (charger->init_done)
+> -		schedule_work(&charger->work);
+> +	schedule_work(&charger->work);
+> =20
+>  	return IRQ_HANDLED;
+>  }
+> @@ -587,6 +586,10 @@ static int act8945a_charger_probe(struct platform_de=
+vice *pdev)
+>  		return -EINVAL;
+>  	}
+> =20
+> +	/* Keep status IRQs from queueing work until probe has completed. */
+> +	INIT_WORK(&charger->work, act8945a_work);
+> +	disable_work(&charger->work);
+> +
+>  	ret =3D act8945a_charger_config(&pdev->dev, charger);
+>  	if (ret)
+>  		return ret;
+> @@ -625,13 +628,11 @@ static int act8945a_charger_probe(struct platform_d=
+evice *pdev)
+> =20
+>  	platform_set_drvdata(pdev, charger);
+> =20
+> -	INIT_WORK(&charger->work, act8945a_work);
+> -
+>  	ret =3D act8945a_enable_interrupt(charger);
+>  	if (ret)
+>  		return -EIO;
+> =20
+> -	charger->init_done =3D true;
+> +	enable_work(&charger->work);
+> =20
+>  	return 0;
+>  }
+> @@ -640,8 +641,7 @@ static void act8945a_charger_remove(struct platform_d=
+evice *pdev)
+>  {
+>  	struct act8945a_charger *charger =3D platform_get_drvdata(pdev);
+> =20
+> -	charger->init_done =3D false;
+> -	cancel_work_sync(&charger->work);
+> +	disable_work_sync(&charger->work);
+>  }
+> =20
+>  static struct platform_driver act8945a_charger_driver =3D {
+>=20
+> base-commit: 238650ef6c7c7cca08e032527329424c9fbd70e5
+> --=20
+> 2.53.0
+
+--vdbkogyuqrd7jrg7
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmrUnTUACgkQ2O7X88g7
++ppUSQ/7BeXj7VAfv76OqCz/1Relb5Y+CP1hcM4UWXsnofxLFj4u84EXca2bZriu
+CloxTDvUib1Pm5IWFRgQXTpL5SHY9ruvMepmDUex2dTGwoM+c2ChaedZB8OyfA/d
+8zinglt6kniRgUJlRHUwnYuVpJQSS0E13q0HYCYHcOdLQxZsfkjoi16NeEUv74ZH
+GU2dmJ6Z1I43hwUWFtR7Xz0yHn9QDogCT3zGfQ4oRAgvUogoJx8/FKwrOx1inPYi
+ksSbqGR9wh3iI8u3h4ijdqY/NvdzfQkOkAswKez5cU19ikvIejgGbzialrUcUtxM
+yNIoxJkf0boTDaBVhGAwS/JdOelz/VjiBjhZRa4goHEGdllQ7TeJ1vpjq1D08l4P
+/QDzDYJ2U3MFQ3+NJlJ7RUdDGgrf++QKJwtMNdI6xIOEytXlPCVDcFljbXyGsshM
+ec4rg9akJJdg45PUH+3frqIkPacZRFul4wud4uLylwIrU9WL9bPikOAIdtG8svQo
+TbnHJ5ZkqYDTS40tsyuW53Czyx67Kg7khiIE5LXH/R7XLW9uPF+67UDTaHJMVCva
+HjCxhKl24qzDLXyDGdLxb0wlfpTGsqpv7YLGFbWQjaoSuuuBA0yINPXXPK4V4YIv
+HJ7azxMkwdzAfN79U/iZlLZZEjQzT+GJTOtcLxSsX+g+kNBcWCo=
+=xjGk
+-----END PGP SIGNATURE-----
+
+--vdbkogyuqrd7jrg7--
