@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CC2439447C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CCCE3C109E;
 	Sun, 18 Oct 2026 23:03:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792364620; cv=none; b=eNj4wcikIjhDx8ZtHZwU6CaABnV3T//PUizBpqJjKyCdwBECzcdmYKr5sk0Ih/eVUaO6GDN8mgLBzHubG6QQsnq0yZ6FbXs9HtNwJ9ioY5f5yLyL0jvIi0epNtB5aEUK3dbSTXKfBgTWYRiG3IPyt03XL1/nnE2EB3yTzW5lTiI=
+	t=1792364620; cv=none; b=qofeLMrJWwLE+U33eVvPSE2kJuvCPW8p404kbH2074ZNlSeGjJDj1aJwGnJie/0xWvJ/xvVS2UwdClP1sAzqDsh9x3XUqlwFPVkhDV7ipG8jC3U7TSYCr9Pofx/N+Hi1T/cXA3sGIag6CSS7XkeOf2fpSSmGz6UthLU4lVFwv1s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1792364620; c=relaxed/simple;
-	bh=NvIjxg/fWYFUncGbu5m+1h4xWTuPzwp7dT1mrszFrq0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZljCe14GxGYe8avLZHxUeSflz0RUOQcLnuppz+sNltK2rXT0w1XYOj4HaWJnaWbEK5R1mX7O8kENdvGWsP9Zp10EC4U2i3CyuVbBrQHNMKGytutac+1R6jiHtmZxeJzY8YpISg8o5Mdo7GSo/hVsiEP5Yn7Venz506XSDDQglMw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=br/t0mJ2; arc=none smtp.client-ip=10.30.226.201
+	bh=xhHIDgUN1ghkEHSn+/XgpbvkEmRa63Vg2fDE1cxwOP8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=q5Euzj3h0QzYpR6VpQwP1F1sZ/s1tAshE3I//5mvNO4i8+A4+i4MwOFt7m4rCFGRx1bnEjufCZZXQ8LcyMi4ER58k6EF0qWVmYvUculjOwVvDfuxQYEy6ofvb5Tv+oNyWGvYb36K/J+7Pxb9S8CDeNB0CtFcF5HMR1F73hFOQDw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Z8ZbzLPI; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="br/t0mJ2"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 23BC3C2BCF7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z8ZbzLPI"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 17EDEC2BCC7;
 	Sun, 18 Oct 2026 23:03:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1792364620;
-	bh=NvIjxg/fWYFUncGbu5m+1h4xWTuPzwp7dT1mrszFrq0=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=br/t0mJ2jCBR1hCwRRhSyjL+TfNLmuf8SBeZoHRb2GslshwTU/atUIH/GeV1ASK/Y
-	 1fXhZtO1gMcofawPIntLLEdNGyM3aW9Y/cx/XeNHj/4yP0ZyEBb+g0HVbT2Xe6E2xs
-	 Wmi3m6qmRH6r/2AoPg06ezTSY5OwDAgN9Y2uaSjpz0EEy9Yq8lDsxQ+/M9eZ/ILwkL
-	 yTFEK96l20wUZb+2su8sn0Qwjc0Ln8eoBmSAO0ADNsykpq5uRfcBsvyj0p3p2OzRp/
-	 Waz66nq7QNonKNdbRHjQxK6Kcv95X2+9WK8HEAIzce6sViQUf9sCU4MgiIMLrXYDDM
-	 nYSjSFmR9qbUA==
+	bh=xhHIDgUN1ghkEHSn+/XgpbvkEmRa63Vg2fDE1cxwOP8=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=Z8ZbzLPIXAslQEeJni39s5feCjMrClAMkRO65kxfLV79XhoFIdyQTXd0/t9YhQ5pL
+	 3yRMJNI68MoQRP2S3C8aC9NE7OuaXUJusq6SM4rKcysmNSC4+B2265WDJY+qaxRDwI
+	 BBTJGq+lTN0B5WDvTb9or+Tcq0GhQWUD3PPU8NtKKoKX7m7JY81J/1gmbJtYEjFa0A
+	 igafdRQODwGBvTFkROOqHDKWeEsr26YGzkX14Jax1Ipt3kLrHlmYt4pdS2oW8LZq7+
+	 SbO3CkLSf2/qD1oEqflB6/UutDuRs9Za9HIG8s+07iwevVJ2OSVByg7Lv6lVbiLaCT
+	 A2FPDJaZF8ODg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05713CCA490;
-	Sun, 18 Oct 2026 23:03:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9D53CCF2D4;
+	Sun, 18 Oct 2026 23:03:39 +0000 (UTC)
 From: Rinat Muhamedgaliev via B4 Relay <devnull+rinat.muhamedgaliev.gmail.com@kernel.org>
-Date: Mon, 19 Oct 2026 02:03:39 +0300
-Subject: [PATCH v7] power: supply: bq27xxx: detect bq27541 behind bq27411
- compatible
+Subject: [PATCH v7] bq27xxx: support interchangeable OnePlus 6/6T fuel
+ gauges
+Date: Mon, 19 Oct 2026 02:03:38 +0300
+Message-Id: <20261019-master-v7-0-a1fc488d9c77@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,20 +41,23 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261019-master-v7-1-a1fc488d9c77@gmail.com>
-References: <20261019-master-v7-0-a1fc488d9c77@gmail.com>
-In-Reply-To: <20261019-master-v7-0-a1fc488d9c77@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/12OS47CMBBEr4K8HjNu49hjVtwDsfCnk/RokiA7R
+ CCUuxOD+GiW1V2vqq4sYyLMbLu6soQTZRr6RZivFQut6xvkFBfNpJBaWGl45/KIifsoXB2tthp
+ rtpiPCWs634P2h4fOJ/+LYSx0cXiXkfvk+tCW05Coof77EVf+LeVxSJf7kkmVnGfpz7N0Uhy4q
+ GQwGwxgtNk1naO/dRg6Vkqn6oWBgDdWccGFR9BKQYgR/mP6E7MvTC9YUH6jQVojAT+xeZ5vwjM
+ vZzwBAAA=
+X-Change-ID: 20260927-master-bd0afd9696ef
 To: linux-pm@vger.kernel.org
 Cc: pali@kernel.org, sre@kernel.org, afd@ti.com, 
  konrad.dybcio@oss.qualcomm.com, david@ixit.cz, krzk@kernel.org, 
  linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792364618; l=3405;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792364618; l=1970;
  i=rinat.muhamedgaliev@gmail.com; s=default; h=from:subject:message-id;
- bh=u6AybZx90IGQ0lK+NcGvrAL8vA4kcBYcEKv9GZFRxvU=;
- b=Rj7mh+r7Fgm4ai3tRsy/ikhnOQvtT0L9fdt2i+andL5pq+MUibtwVXMc7mNX0ASKsWqSzamJ4
- uiDy6cWkBgiBSuBPltqeWP5XUvKxMq/Xtz1/YBYddmmmebvu1qwnHGN
+ bh=xhHIDgUN1ghkEHSn+/XgpbvkEmRa63Vg2fDE1cxwOP8=;
+ b=q1vv3FtlbzSP9Lcv1IcVmIP0lNRubhiqrWaAMbm7UqF/Rgd0AhwgmtCBWIPzPMpHGrhsNnAnY
+ wJyN9KuYseHDvxRwxLEt6tJ4zTzm1I8Rjz6kavdu5u7M483TbCGRmLC
 X-Developer-Key: i=rinat.muhamedgaliev@gmail.com; a=ed25519;
  pk=qkYQO8LRlRErWiLzlpK8jHbRIxv8+7v06+ytcxX8mec=
 X-Endpoint-Received: by B4 Relay for rinat.muhamedgaliev@gmail.com/default
@@ -62,121 +65,52 @@ X-Endpoint-Received: by B4 Relay for rinat.muhamedgaliev@gmail.com/default
 X-Original-From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 Reply-To: rinat.muhamedgaliev@gmail.com
 
-From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+OnePlus 6 and 6T replacement battery packs can contain either a bq27411 or a
+bq27541 fuel gauge. The latter requires a different register map and produces
+invalid battery readings when interpreted as a bq27411.
 
-OnePlus 6 and 6T replacement battery packs may contain either a bq27411
-or a bq27541 fuel gauge at I2C address 0x55. The device tree currently
-identifies the gauge as bq27411, but a bq27541 uses a different register
-map and then reports invalid battery values.
+The I2C driver reads DeviceType while probing either of those compatible
+devices and selects the matching profile.
 
-Read the DeviceType control subcommand when probing a bq27411. Keep the
-existing profile for DeviceType 0x0421, but select the bq27541 profile
-for DeviceType 0x0541. This retains the established DT ABI and supports
-replacement packs without introducing a generic compatible.
+The bq27541 path was tested on a OnePlus 6T with DeviceType 0x0541. It
+reported 4.338 V, 100% capacity, 27.8 C, and Full/Good battery status.
+Testing on an OnePlus 6 or 6T whose fuel gauge reports DeviceType 0x0421
+(bq27411) would be appreciated.
 
-Tested on OnePlus 6T (fajita) with DeviceType 0x0541: voltage, state of
-charge, and temperature were reported correctly. Testing on hardware with
-DeviceType 0x0421 would be appreciated.
+Changes in v7:
+- Determine the expected DeviceType through an extensible chip switch.
+- Mark the probe-time list for extension with DeviceType-capable fuel gauges.
+- Link to v6: https://patch.msgid.link/20261019-master-v6-0-c4b36129721e@gmail.com
 
-Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+Changes in v6:
+- Compare the detected model with the compatible-selected model.
+- Support both BQ27411-to-BQ27541 and BQ27541-to-BQ27411 detection.
+- Document the pair of models checked at probe time.
+- Link to v5: https://patch.msgid.link/20261018-master-v5-0-0be16441cdd1@gmail.com
+
+Changes in v5:
+- Report detected and expected DeviceType values instead of hard-coding chip names.
+- Describe an unknown DeviceType as unrecognized.
+- Link to v4: https://patch.msgid.link/20260928-master-v4-1-052c73ec1767@gmail.com
+
+Changes in v4:
+- Drop the generic compatible and binding update.
+- Keep the established OnePlus DTS unchanged.
+- Detect bq27541 from DeviceType in the bq27411 probe path.
+- Send as a new thread.
+
 ---
+Rinat Muhamedgaliev (1):
+      power: supply: bq27xxx: detect bq27541 behind bq27411 compatible
+
  drivers/power/supply/bq27xxx_battery_i2c.c | 67 ++++++++++++++++++++++++++++++
  1 file changed, 67 insertions(+)
+---
+base-commit: 830b3c68c1fb1e9176028d02ef86f3cf76aa2476
+change-id: 20260927-master-bd0afd9696ef
 
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 94b00bb89c17..a9982953e4f2 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -16,6 +16,11 @@
- static DEFINE_IDR(battery_id);
- static DEFINE_MUTEX(battery_mutex);
- 
-+#define BQ27XXX_REG_CTRL		0x00
-+#define BQ27XXX_DEVICE_TYPE		0x0001
-+#define BQ27411_DEVICE_TYPE		0x0421
-+#define BQ27541_DEVICE_TYPE		0x0541
-+
- static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
- {
- 	struct bq27xxx_device_info *di = data;
-@@ -136,6 +141,56 @@ static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
- 	return 0;
- }
- 
-+static int bq27xxx_battery_i2c_check_device_type(struct bq27xxx_device_info *di)
-+{
-+	enum bq27xxx_chip detected_chip;
-+	int expected_type;
-+	int ret;
-+
-+	switch (di->chip) {
-+	case BQ27411:
-+		expected_type = BQ27411_DEVICE_TYPE;
-+		break;
-+	case BQ27541:
-+		expected_type = BQ27541_DEVICE_TYPE;
-+		break;
-+	default:
-+		dev_warn(di->dev, "expected DeviceType undefined\n");
-+		return 0;
-+	}
-+
-+	ret = di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_DEVICE_TYPE,
-+			    false);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.read(di, BQ27XXX_REG_CTRL, false);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (ret) {
-+	case BQ27411_DEVICE_TYPE:
-+		detected_chip = BQ27411;
-+		break;
-+	case BQ27541_DEVICE_TYPE:
-+		detected_chip = BQ27541;
-+		break;
-+	default:
-+		dev_err(di->dev, "unrecognized DeviceType 0x%04x\n", ret);
-+		return -ENODEV;
-+	}
-+
-+	if (detected_chip == di->chip)
-+		return 0;
-+
-+	dev_warn(di->dev,
-+		 "detected DeviceType 0x%04x instead of expected 0x%04x\n",
-+		 ret, expected_type);
-+	di->chip = detected_chip;
-+
-+	return 0;
-+}
-+
- static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 				     const struct i2c_device_id *id)
- {
-@@ -169,6 +224,18 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
- 	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
- 
-+	/* Add fuel gauges with supported DeviceType reporting to this list. */
-+	switch (di->chip) {
-+	case BQ27411:
-+	case BQ27541:
-+		ret = bq27xxx_battery_i2c_check_device_type(di);
-+		if (ret)
-+			goto err_failed;
-+		break;
-+	default:
-+		break;
-+	}
-+
- 	ret = bq27xxx_battery_setup(di);
- 	if (ret)
- 		goto err_failed;
-
--- 
-2.56.0
+Best regards,
+--  
+Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 
 
