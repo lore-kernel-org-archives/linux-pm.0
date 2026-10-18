@@ -1,36 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EDD43FE64A;
-	Sun, 18 Oct 2026 22:20:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CC2439447C;
+	Sun, 18 Oct 2026 23:03:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792362046; cv=none; b=UDtcoONHjO3DWSrz+X00QUL+4mQ4OjzXZR8+nr8rFNIu7z58LzGGxVzqErlXwmGAyr5TGK8SKZRMc0bvePQpAiuc81sjQ4tUUzYMIZSGPeZMsivrNd16d/vtS16khURPaqy24dLele4imZomUMijVszWrTtjFU0uOle4YTVhgyU=
+	t=1792364620; cv=none; b=eNj4wcikIjhDx8ZtHZwU6CaABnV3T//PUizBpqJjKyCdwBECzcdmYKr5sk0Ih/eVUaO6GDN8mgLBzHubG6QQsnq0yZ6FbXs9HtNwJ9ioY5f5yLyL0jvIi0epNtB5aEUK3dbSTXKfBgTWYRiG3IPyt03XL1/nnE2EB3yTzW5lTiI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792362046; c=relaxed/simple;
-	bh=pc5DL6Ipj+12s6VkC7/qjpwpDNT1m8xY2XPopt3dY1I=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=RYBivS5xl0bYnnGMd50evBn+wQ+xcYH4IvMFjfIY14uTo98C9zoCTLHJmGlk1Xfd4Xf1Pf4cEssgtLYuBcFqaJJGmnTogEGTfSu18UHAAOMU4pQqzPiL745/mvJdXHNpgoDXeTF8NIgI1K+QB+NwsljK4z2UjPmN6SALbtursBQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QRvez5sx; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1792364620; c=relaxed/simple;
+	bh=NvIjxg/fWYFUncGbu5m+1h4xWTuPzwp7dT1mrszFrq0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ZljCe14GxGYe8avLZHxUeSflz0RUOQcLnuppz+sNltK2rXT0w1XYOj4HaWJnaWbEK5R1mX7O8kENdvGWsP9Zp10EC4U2i3CyuVbBrQHNMKGytutac+1R6jiHtmZxeJzY8YpISg8o5Mdo7GSo/hVsiEP5Yn7Venz506XSDDQglMw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=br/t0mJ2; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QRvez5sx"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2B1DDC2BCF7;
-	Sun, 18 Oct 2026 22:20:46 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="br/t0mJ2"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 23BC3C2BCF7;
+	Sun, 18 Oct 2026 23:03:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1792362046;
-	bh=pc5DL6Ipj+12s6VkC7/qjpwpDNT1m8xY2XPopt3dY1I=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=QRvez5sxYPa2ATV4smpO45pvIr78zUFNImqvhMXpm3npygZJecL+8NSth/pm+/1Sn
-	 vYzDE4yn7jAp10U0dwuaO8C0OsOvvQHwb+BOkBpzJn4FCJkAiNrwhCKGQHxqaOiIjH
-	 iO3ICjbaVgkcy7ur65MCELvj5H2AGsmOcAFZ553lKb8nrFg3D0cY6GfygM644RQe5j
-	 cUJvUyByIUQUXUDFv7+wtxkj8qWIpQh38arxQyzXZ0LgpvOBg+AHTJ+EU/qYpfsAmo
-	 vkwGvpi3rLNOvlMlIX5Vun2A8Iynfytrfy5Q84VcdvH8UnvZSCZ8EMAVEfx3ZijMzx
-	 JjTIkx7KkLhHA==
+	s=k20201202; t=1792364620;
+	bh=NvIjxg/fWYFUncGbu5m+1h4xWTuPzwp7dT1mrszFrq0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=br/t0mJ2jCBR1hCwRRhSyjL+TfNLmuf8SBeZoHRb2GslshwTU/atUIH/GeV1ASK/Y
+	 1fXhZtO1gMcofawPIntLLEdNGyM3aW9Y/cx/XeNHj/4yP0ZyEBb+g0HVbT2Xe6E2xs
+	 Wmi3m6qmRH6r/2AoPg06ezTSY5OwDAgN9Y2uaSjpz0EEy9Yq8lDsxQ+/M9eZ/ILwkL
+	 yTFEK96l20wUZb+2su8sn0Qwjc0Ln8eoBmSAO0ADNsykpq5uRfcBsvyj0p3p2OzRp/
+	 Waz66nq7QNonKNdbRHjQxK6Kcv95X2+9WK8HEAIzce6sViQUf9sCU4MgiIMLrXYDDM
+	 nYSjSFmR9qbUA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 145FCCCF2C9;
-	Sun, 18 Oct 2026 22:20:46 +0000 (UTC)
-From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Sun, 18 Oct 2026 17:20:34 -0500
-Subject: [PATCH] thermal: tegra: Add Tegra210B01 Support
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05713CCA490;
+	Sun, 18 Oct 2026 23:03:40 +0000 (UTC)
+From: Rinat Muhamedgaliev via B4 Relay <devnull+rinat.muhamedgaliev.gmail.com@kernel.org>
+Date: Mon, 19 Oct 2026 02:03:39 +0300
+Subject: [PATCH v7] power: supply: bq27xxx: detect bq27541 behind bq27411
+ compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,271 +41,142 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261018-t210b01-thermal-v1-1-af15746d86a3@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQqAIBBA0avIrBN0sISuEi3MphooC5UIpLsnL
- d/i/wKJIlOCXhSIdHPiM1ToRoDfXFhJ8lwNqLBTVhuZUatJaZk3iofbJaKlzi8zttZAra5ICz/
- /cRjf9wNRmrJbYQAAAA==
-X-Change-ID: 20260714-t210b01-thermal-227e6cfd2574
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, 
- Thierry Reding <thierry.reding@kernel.org>, 
- Jonathan Hunter <jonathanh@nvidia.com>
-Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Srikar Srimath Tirumala <srikars@nvidia.com>, 
- Eugene Vernik <crimsonslayer76@gmail.com>, 
- Aaron Kling <webgeek1234@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792362045; l=8514;
- i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=tasHCnJCsRYbeWivlJvsHpb3bzuaoA6s/dlDC0QLHE8=;
- b=cu6omQ6B4u1Lx3XbAu0A4hkEOuNQzHB6vuHd9TmEv3j/xfc5IAD1DUSL1bFCnVPauRsq735xe
- QLo3u/Ynt3+Chb8FUHtwb4P3tgekHKV1neMPZdYI5wWL96KD/DrqX7P
-X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
- pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
-X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
- auth_id=342
-X-Original-From: Aaron Kling <webgeek1234@gmail.com>
-Reply-To: webgeek1234@gmail.com
+Message-Id: <20261019-master-v7-1-a1fc488d9c77@gmail.com>
+References: <20261019-master-v7-0-a1fc488d9c77@gmail.com>
+In-Reply-To: <20261019-master-v7-0-a1fc488d9c77@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: pali@kernel.org, sre@kernel.org, afd@ti.com, 
+ konrad.dybcio@oss.qualcomm.com, david@ixit.cz, krzk@kernel.org, 
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792364618; l=3405;
+ i=rinat.muhamedgaliev@gmail.com; s=default; h=from:subject:message-id;
+ bh=u6AybZx90IGQ0lK+NcGvrAL8vA4kcBYcEKv9GZFRxvU=;
+ b=Rj7mh+r7Fgm4ai3tRsy/ikhnOQvtT0L9fdt2i+andL5pq+MUibtwVXMc7mNX0ASKsWqSzamJ4
+ uiDy6cWkBgiBSuBPltqeWP5XUvKxMq/Xtz1/YBYddmmmebvu1qwnHGN
+X-Developer-Key: i=rinat.muhamedgaliev@gmail.com; a=ed25519;
+ pk=qkYQO8LRlRErWiLzlpK8jHbRIxv8+7v06+ytcxX8mec=
+X-Endpoint-Received: by B4 Relay for rinat.muhamedgaliev@gmail.com/default
+ with auth_id=1072
+X-Original-From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+Reply-To: rinat.muhamedgaliev@gmail.com
 
-From: Aaron Kling <webgeek1234@gmail.com>
+From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 
-Add Tegra210B01 SOC_THERM configuration. There are two main differences
-from the original Tegra210:
+OnePlus 6 and 6T replacement battery packs may contain either a bq27411
+or a bq27541 fuel gauge at I2C address 0x55. The device tree currently
+identifies the gauge as bq27411, but a bq27541 uses a different register
+map and then reports invalid battery values.
 
-* There is no mem thermal sensor
-* Pdiv and pdiv_ate differ
+Read the DeviceType control subcommand when probing a bq27411. Keep the
+existing profile for DeviceType 0x0421, but select the bq27541 profile
+for DeviceType 0x0541. This retains the established DT ABI and supports
+replacement packs without introducing a generic compatible.
 
-Based-on: https://gitlab.com/nvidia/nv-tegra/linux-5.10/-/commit/b15149a15154e6b2fc827f4f169e37c9e5b389d9
-Based-on-patch-by: Srikar Srimath Tirumala <srikars@nvidia.com>
-Co-developed-by: Eugene Vernik <crimsonslayer76@gmail.com>
-Signed-off-by: Eugene Vernik <crimsonslayer76@gmail.com>
-Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
+Tested on OnePlus 6T (fajita) with DeviceType 0x0541: voltage, state of
+charge, and temperature were reported correctly. Testing on hardware with
+DeviceType 0x0421 would be appreciated.
+
+Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 ---
-thermal: tegra: Add Tegra210B01 Support
----
- drivers/thermal/tegra/soctherm.c          |   4 +
- drivers/thermal/tegra/soctherm.h          |   1 +
- drivers/thermal/tegra/tegra210-soctherm.c | 133 ++++++++++++++++++++++++++++++
- 3 files changed, 138 insertions(+)
+ drivers/power/supply/bq27xxx_battery_i2c.c | 67 ++++++++++++++++++++++++++++++
+ 1 file changed, 67 insertions(+)
 
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index d8e988a0d43e9..95451d1bd4e62 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -2082,6 +2082,10 @@ static const struct of_device_id tegra_soctherm_of_match[] = {
- 		.compatible = "nvidia,tegra210-soctherm",
- 		.data = &tegra210_soctherm,
- 	},
-+	{
-+		.compatible = "nvidia,tegra210b01-soctherm",
-+		.data = &tegra210b01_soctherm,
-+	},
- #endif
- 	{ },
- };
-diff --git a/drivers/thermal/tegra/soctherm.h b/drivers/thermal/tegra/soctherm.h
-index aa4af9268b05d..4bc1e44e28827 100644
---- a/drivers/thermal/tegra/soctherm.h
-+++ b/drivers/thermal/tegra/soctherm.h
-@@ -156,6 +156,7 @@ extern const struct tegra_soctherm_soc tegra132_soctherm;
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index 94b00bb89c17..a9982953e4f2 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -16,6 +16,11 @@
+ static DEFINE_IDR(battery_id);
+ static DEFINE_MUTEX(battery_mutex);
  
- #ifdef CONFIG_ARCH_TEGRA_210_SOC
- extern const struct tegra_soctherm_soc tegra210_soctherm;
-+extern const struct tegra_soctherm_soc tegra210b01_soctherm;
- #endif
- 
- #endif
-diff --git a/drivers/thermal/tegra/tegra210-soctherm.c b/drivers/thermal/tegra/tegra210-soctherm.c
-index f6e1493f0202f..b4f2c7837fd69 100644
---- a/drivers/thermal/tegra/tegra210-soctherm.c
-+++ b/drivers/thermal/tegra/tegra210-soctherm.c
-@@ -44,6 +44,14 @@ static const struct tegra_tsensor_configuration tegra210_tsensor_config = {
- 	.tsample_ate = 480,
- };
- 
-+static const struct tegra_tsensor_configuration tegra210b01_tsensor_config = {
-+	.tall = 16300,
-+	.tiddq_en = 1,
-+	.ten_count = 1,
-+	.tsample = 240,
-+	.tsample_ate = 480,
-+};
++#define BQ27XXX_REG_CTRL		0x00
++#define BQ27XXX_DEVICE_TYPE		0x0001
++#define BQ27411_DEVICE_TYPE		0x0421
++#define BQ27541_DEVICE_TYPE		0x0541
 +
- static const struct tegra_tsensor_group tegra210_tsensor_group_cpu = {
- 	.id = TEGRA124_SOCTHERM_SENSOR_CPU,
- 	.name = "cpu",
-@@ -63,6 +71,25 @@ static const struct tegra_tsensor_group tegra210_tsensor_group_cpu = {
- 	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
- };
+ static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
+ {
+ 	struct bq27xxx_device_info *di = data;
+@@ -136,6 +141,56 @@ static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
+ 	return 0;
+ }
  
-+static const struct tegra_tsensor_group tegra210b01_tsensor_group_cpu = {
-+	.id = TEGRA124_SOCTHERM_SENSOR_CPU,
-+	.name = "cpu",
-+	.sensor_temp_offset = SENSOR_TEMP1,
-+	.sensor_temp_mask = SENSOR_TEMP1_CPU_TEMP_MASK,
-+	.pdiv = 12,
-+	.pdiv_ate = 6,
-+	.pdiv_mask = SENSOR_PDIV_CPU_MASK,
-+	.pllx_hotspot_diff = 10,
-+	.pllx_hotspot_mask = SENSOR_HOTSPOT_CPU_MASK,
-+	.thermtrip_any_en_mask = TEGRA210_THERMTRIP_ANY_EN_MASK,
-+	.thermtrip_enable_mask = TEGRA210_THERMTRIP_CPU_EN_MASK,
-+	.thermtrip_threshold_mask = TEGRA210_THERMTRIP_CPU_THRESH_MASK,
-+	.thermctl_isr_mask = THERM_IRQ_CPU_MASK,
-+	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_CPU,
-+	.thermctl_lvl0_up_thresh_mask = TEGRA210_THERMCTL_LVL0_UP_THRESH_MASK,
-+	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
-+};
++static int bq27xxx_battery_i2c_check_device_type(struct bq27xxx_device_info *di)
++{
++	enum bq27xxx_chip detected_chip;
++	int expected_type;
++	int ret;
 +
- static const struct tegra_tsensor_group tegra210_tsensor_group_gpu = {
- 	.id = TEGRA124_SOCTHERM_SENSOR_GPU,
- 	.name = "gpu",
-@@ -82,6 +109,25 @@ static const struct tegra_tsensor_group tegra210_tsensor_group_gpu = {
- 	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
- };
++	switch (di->chip) {
++	case BQ27411:
++		expected_type = BQ27411_DEVICE_TYPE;
++		break;
++	case BQ27541:
++		expected_type = BQ27541_DEVICE_TYPE;
++		break;
++	default:
++		dev_warn(di->dev, "expected DeviceType undefined\n");
++		return 0;
++	}
++
++	ret = di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_DEVICE_TYPE,
++			    false);
++	if (ret < 0)
++		return ret;
++
++	ret = di->bus.read(di, BQ27XXX_REG_CTRL, false);
++	if (ret < 0)
++		return ret;
++
++	switch (ret) {
++	case BQ27411_DEVICE_TYPE:
++		detected_chip = BQ27411;
++		break;
++	case BQ27541_DEVICE_TYPE:
++		detected_chip = BQ27541;
++		break;
++	default:
++		dev_err(di->dev, "unrecognized DeviceType 0x%04x\n", ret);
++		return -ENODEV;
++	}
++
++	if (detected_chip == di->chip)
++		return 0;
++
++	dev_warn(di->dev,
++		 "detected DeviceType 0x%04x instead of expected 0x%04x\n",
++		 ret, expected_type);
++	di->chip = detected_chip;
++
++	return 0;
++}
++
+ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 				     const struct i2c_device_id *id)
+ {
+@@ -169,6 +224,18 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
+ 	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
  
-+static const struct tegra_tsensor_group tegra210b01_tsensor_group_gpu = {
-+	.id = TEGRA124_SOCTHERM_SENSOR_GPU,
-+	.name = "gpu",
-+	.sensor_temp_offset = SENSOR_TEMP1,
-+	.sensor_temp_mask = SENSOR_TEMP1_GPU_TEMP_MASK,
-+	.pdiv = 12,
-+	.pdiv_ate = 6,
-+	.pdiv_mask = SENSOR_PDIV_GPU_MASK,
-+	.pllx_hotspot_diff = 5,
-+	.pllx_hotspot_mask = SENSOR_HOTSPOT_GPU_MASK,
-+	.thermtrip_any_en_mask = TEGRA210_THERMTRIP_ANY_EN_MASK,
-+	.thermtrip_enable_mask = TEGRA210_THERMTRIP_GPU_EN_MASK,
-+	.thermtrip_threshold_mask = TEGRA210_THERMTRIP_GPUMEM_THRESH_MASK,
-+	.thermctl_isr_mask = THERM_IRQ_GPU_MASK,
-+	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_GPU,
-+	.thermctl_lvl0_up_thresh_mask = TEGRA210_THERMCTL_LVL0_UP_THRESH_MASK,
-+	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
-+};
++	/* Add fuel gauges with supported DeviceType reporting to this list. */
++	switch (di->chip) {
++	case BQ27411:
++	case BQ27541:
++		ret = bq27xxx_battery_i2c_check_device_type(di);
++		if (ret)
++			goto err_failed;
++		break;
++	default:
++		break;
++	}
 +
- static const struct tegra_tsensor_group tegra210_tsensor_group_pll = {
- 	.id = TEGRA124_SOCTHERM_SENSOR_PLLX,
- 	.name = "pll",
-@@ -99,6 +145,23 @@ static const struct tegra_tsensor_group tegra210_tsensor_group_pll = {
- 	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
- };
- 
-+static const struct tegra_tsensor_group tegra210b01_tsensor_group_pll = {
-+	.id = TEGRA124_SOCTHERM_SENSOR_PLLX,
-+	.name = "pll",
-+	.sensor_temp_offset = SENSOR_TEMP2,
-+	.sensor_temp_mask = SENSOR_TEMP2_PLLX_TEMP_MASK,
-+	.pdiv = 12,
-+	.pdiv_ate = 6,
-+	.pdiv_mask = SENSOR_PDIV_PLLX_MASK,
-+	.thermtrip_any_en_mask = TEGRA210_THERMTRIP_ANY_EN_MASK,
-+	.thermtrip_enable_mask = TEGRA210_THERMTRIP_TSENSE_EN_MASK,
-+	.thermtrip_threshold_mask = TEGRA210_THERMTRIP_TSENSE_THRESH_MASK,
-+	.thermctl_isr_mask = THERM_IRQ_TSENSE_MASK,
-+	.thermctl_lvl0_offset = THERMCTL_LEVEL0_GROUP_TSENSE,
-+	.thermctl_lvl0_up_thresh_mask = TEGRA210_THERMCTL_LVL0_UP_THRESH_MASK,
-+	.thermctl_lvl0_dn_thresh_mask = TEGRA210_THERMCTL_LVL0_DN_THRESH_MASK,
-+};
-+
- static const struct tegra_tsensor_group tegra210_tsensor_group_mem = {
- 	.id = TEGRA124_SOCTHERM_SENSOR_MEM,
- 	.name = "mem",
-@@ -125,6 +188,12 @@ static const struct tegra_tsensor_group *tegra210_tsensor_groups[] = {
- 	&tegra210_tsensor_group_mem,
- };
- 
-+static const struct tegra_tsensor_group *tegra210b01_tsensor_groups[] = {
-+	&tegra210b01_tsensor_group_cpu,
-+	&tegra210b01_tsensor_group_gpu,
-+	&tegra210b01_tsensor_group_pll,
-+};
-+
- static const struct tegra_tsensor tegra210_tsensors[] = {
- 	{
- 		.name = "cpu0",
-@@ -193,6 +262,58 @@ static const struct tegra_tsensor tegra210_tsensors[] = {
- 	},
- };
- 
-+static const struct tegra_tsensor tegra210b01_tsensors[] = {
-+	{
-+		.name = "cpu0",
-+		.base = 0xc0,
-+		.config = &tegra210b01_tsensor_config,
-+		.calib_fuse_offset = 0x098,
-+		.fuse_corr_alpha = 1085000,
-+		.fuse_corr_beta = 3244200,
-+		.group = &tegra210b01_tsensor_group_cpu,
-+	}, {
-+		.name = "cpu1",
-+		.base = 0xe0,
-+		.config = &tegra210b01_tsensor_config,
-+		.calib_fuse_offset = 0x084,
-+		.fuse_corr_alpha = 1126200,
-+		.fuse_corr_beta = -67500,
-+		.group = &tegra210b01_tsensor_group_cpu,
-+	}, {
-+		.name = "cpu2",
-+		.base = 0x100,
-+		.config = &tegra210b01_tsensor_config,
-+		.calib_fuse_offset = 0x088,
-+		.fuse_corr_alpha = 1098400,
-+		.fuse_corr_beta = 2251100,
-+		.group = &tegra210b01_tsensor_group_cpu,
-+	}, {
-+		.name = "cpu3",
-+		.base = 0x120,
-+		.config = &tegra210b01_tsensor_config,
-+		.calib_fuse_offset = 0x12c,
-+		.fuse_corr_alpha = 1108000,
-+		.fuse_corr_beta = 602700,
-+		.group = &tegra210b01_tsensor_group_cpu,
-+	}, {
-+		.name = "gpu",
-+		.base = 0x180,
-+		.config = &tegra210b01_tsensor_config,
-+		.calib_fuse_offset = 0x154,
-+		.fuse_corr_alpha = 1074300,
-+		.fuse_corr_beta = 2734900,
-+		.group = &tegra210b01_tsensor_group_gpu,
-+	}, {
-+		.name = "pllx",
-+		.base = 0x1a0,
-+		.config = &tegra210b01_tsensor_config,
-+		.calib_fuse_offset = 0x160,
-+		.fuse_corr_alpha = 1039700,
-+		.fuse_corr_beta = 6829100,
-+		.group = &tegra210b01_tsensor_group_pll,
-+	},
-+};
-+
- /*
-  * Mask/shift bits in FUSE_TSENSOR_COMMON and
-  * FUSE_TSENSOR_COMMON, which are described in
-@@ -230,3 +351,15 @@ const struct tegra_soctherm_soc tegra210_soctherm = {
- 	.use_ccroc = false,
- 	.thermtrips = tegra210_tsensor_thermtrips,
- };
-+
-+const struct tegra_soctherm_soc tegra210b01_soctherm = {
-+	.tsensors = tegra210b01_tsensors,
-+	.num_tsensors = ARRAY_SIZE(tegra210b01_tsensors),
-+	.ttgs = tegra210b01_tsensor_groups,
-+	.num_ttgs = ARRAY_SIZE(tegra210b01_tsensor_groups),
-+	.tfuse = &tegra210_soctherm_fuse,
-+	.thresh_grain = TEGRA210_THRESH_GRAIN,
-+	.bptt = TEGRA210_BPTT,
-+	.use_ccroc = false,
-+	.thermtrips = tegra210_tsensor_thermtrips,
-+};
+ 	ret = bq27xxx_battery_setup(di);
+ 	if (ret)
+ 		goto err_failed;
 
----
-base-commit: 49362394dad7df66c274c867a271394c10ca2bb8
-change-id: 20260714-t210b01-thermal-227e6cfd2574
-
-Best regards,
 -- 
-Aaron Kling <webgeek1234@gmail.com>
+2.56.0
 
 
