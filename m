@@ -1,100 +1,122 @@
-Received: from mail.unwrap.rs (mail.unwrap.rs [172.232.15.166])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE517286A5;
-	Sun, 18 Oct 2026 16:40:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=172.232.15.166
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792341640; cv=none; b=V0ERtia9+oIDeu6JbGyZ8ifYERAGS07PdOAAXVaZx+SLKFk7Cb7YPqcN82en+9DPuCHDh8MYuynVmAQQ34RADi6d3vVYvvJ86qbsMu19ml+EXRKH4WLu6p8AgrOAP2cCi8U+8Z8W700QL/XjkDDMoi6T9xubwI/Q5GFkuDCbK1g=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792341640; c=relaxed/simple;
-	bh=srs7dtHAwwNYQ2JL1zx6Oix5Hvf9coSfZJceTwN2lUo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CATewN9LN3GyS0ygUudtFnkAMawVsL8SFmpB6zgQy7yn85MTsLblMsDARNmwYRLomHYr0DDbj243m8yQHfjI/HOVwvTlK/Ky0/PsR1Aklx6eRYPkmgHKwg68riNPKu0aHVbNq6Fep6JrPYUZfq3BzrKs8To468Y2maAUBJ5SBwI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=unwrap.rs; spf=pass smtp.mailfrom=unwrap.rs; dkim=pass (2048-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b=PSoKXqHm; dkim=permerror (0-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b=SM7wkrlC; arc=none smtp.client-ip=172.232.15.166
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=unwrap.rs
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unwrap.rs
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE9983FF1CB
+	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 16:45:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.174
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792341951; cv=pass; b=EOjxnDsbszbuQTHWXp9IzyGLk1Kk4sMi5nvfvKthBA6QPuH27Z4TK0Nt8Zj0zcOyxTy5GDceaOnCTW9MigcpOAXgiVRCusXk0AuYagCHH1OHTH7klE+sD1NELx+IFKTN2IoiqKN9w1hcQG1k4oyQSM0RHvsD9YhFnlqbHlVNuIE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792341951; c=relaxed/simple;
+	bh=/OOWdJntfE5bSPgQas5XocqfmzGwqA/LTtLzB3LqaWc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=k+z/FWVqhcR+eB3bDCciAsKqvHunr8yzp8fvIli2TCFMvzuMui1xmxCM2lqoIOFCxb8NM5yUbBoWlDItD+ZMTXkDwKNUh3x0jB5vWkm+yjIwqRbFgNAbGgm/NlPcV9DGJZj6oOd6DthKbWbNnYYUcL5vMjJrGruqK+XeBmv6U44=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Nv3K/sH8; arc=pass smtp.client-ip=74.125.82.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b="PSoKXqHm";
-	dkim=permerror (0-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b="SM7wkrlC"
-DKIM-Signature: v=1; a=rsa-sha256; s=202503r; d=unwrap.rs; c=relaxed/relaxed; r=y;
-	h=Message-ID:Date:Subject:To:From:Content-Type; t=1792341631; bh=pCKsnZzzQU
-	klhIVb1fk/+cwj/EuYdFTeu++dyamkAVY=; b=PSoKXqHmBchRCTMc5+EKjF5dszSgV+ObJ01Y1
-	BAjc9Ii87VIbx0NlAar2sTTxyfAcYX7ck8cM5QMyeheO25w9t7ZF0XvwrTQVw4Eo15lafzGKmlg
-	RptQrdteUh79Q1sgaNkaoXdNNTmQsEswA2fKewCD7LgErpMSkAyeSfxb7TOdiRLNWAY9ZbLWbko
-	cVvXzWlv9BkVU/6e5IovnFjuPBsWEuc8JkWh6uHZdNEJNWSAQANdHr7Rt9n384XQe0+41e1DEck
-	FmkLyoYts751EH4HDHiFKccZuoWdh3Gw4XyC6C4LQHQnh2hOOvYcfOWDOBA7iwZyTO1a8Z2L1TL
-	6jihA==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202503e; d=unwrap.rs; c=relaxed/relaxed;
-	h=Message-ID:Date:Subject:To:From:Content-Type; t=1792341631; bh=pCKsnZzzQU
-	klhIVb1fk/+cwj/EuYdFTeu++dyamkAVY=; b=SM7wkrlCJ4TS0vGLHKaAH6kK113CTacLkka6r
-	vH10j+teN56a6F9VhL7f2pbvgDZFH8tv6Gcm3R/BoklHv9DBw==;
-From: Cole Leavitt <cole@unwrap.rs>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Cole Leavitt <cole@unwrap.rs>,
-	Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Josh Poimboeuf <jpoimboe@kernel.org>,
-	Jiri Kosina <jikos@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] PM: hibernate: Don't lose create_image() errors to arch_resume_nosmt()
-Date: Sun, 18 Oct 2026 12:39:42 -0400
-Message-ID: <20261018164004.132785-1-cole@unwrap.rs>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nv3K/sH8"
+Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-33bb5afa736so159744eec.1
+        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 09:45:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792341949; cv=none;
+        d=google.com; s=arc-20260327;
+        b=J7Zvl0ZLbD8S77/IbciTwvMiND4lp162ISO55kgmYDIzerK5CjtIppwuoBmVFHmvOG
+         Vto+rtwvdROqm2gn+iOtP+oquyWr0YjjN94xh7g/sGQmrJpPWn8lwlS3hbGCYQ0xUenF
+         UbmKEZu/A2CSe9lcjjHgcEgQp/YpqLrYkqG0tY3tWhTWNqpKYhNz432U+fOwAgw2gb+u
+         IMEIoLCqhcdh332YqGNx60P/YnyCkeUont8DEg/N6ehJhJO2ccFB6UdfxawbOHeZYKjY
+         sxjEEMZ+8GqBTaYshWgPEfVtp3NnEBxmZDtnO0t2kM4T2mw0QCXdhsoZT40OXnoW7XWl
+         4eIQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=K2nyBACqj6iF5BhULoV19NEeW9GfDUgukWkDmcax0/M=;
+        fh=GfZ/HFc1i/rujbyVcYblu5fbklbUXFkUy5cYwKjhM4A=;
+        b=PuN5hXM+ysMDdpMSN93Z3XShLXTWi5FWmGOI7FjGg5uRwfHPiHtldBd8W2kPKCx6TX
+         VrA+Rr+Q/19VuINloRidKBEu3jOnRVyzRNTXFVh+N3rFgerkTdxA4Vjia2wAufzXjQYF
+         Dod1iau6y6Wc66qP2Xp/PY3C0ebDy8gMXFl8DmywgVPopqVl/OS5EfgQGsN6/Ln7cQoz
+         nthA8Pv7RgShhDPH5jKWRE/uOPmWuw9AJlxBDfc2GfdnvAt6JMDJWuSgqdikCk1wStOm
+         +4ANGs7sQ68tARuxpCEtyaDFlZMqObYuR8odtjdg2XZO4cGCDBtjjj46Qj5agtEIe3q+
+         PPhg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792341949; x=1792946749; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=K2nyBACqj6iF5BhULoV19NEeW9GfDUgukWkDmcax0/M=;
+        b=Nv3K/sH8UnvwWvtM3sr3/+P+ruMxGMzdB4HYLJI09AkMPwv579mlchpUfe9OttkPEi
+         ZIsW0tKMG66LBRnYVWBZ5QwXP0XBKa+x52ZvULtYmdGHOijWPbdBmQktChMl8pdpiHIJ
+         Iok9gU2/CYuAToJsm7u3olkJJ1RCrw0BPzar3OPMKtCtbtyQ4gskxSXyC0/o9zPN34ZJ
+         2m+r4e8hMrfRuC+g8vXRx2aQbE2rWyRcQpJzdnEbsxU5ehCuFH+50VrDmh4ggsA7kl74
+         CQIKvAFiG4Nsz+gPRZ96dlCEhNMD5f/8pgr0HCb2bnw0PfpTGTjYvFOaVjJjMNyZf8YQ
+         0Wyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792341949; x=1792946749;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=K2nyBACqj6iF5BhULoV19NEeW9GfDUgukWkDmcax0/M=;
+        b=Er782hsURFhLN9OTyAs0gNlbS6FAJY9xwMYbczSf/co1Y1zN8iHFiTVw2au807sGk3
+         8r9cyDJEkkbbYUbngIcpsONSzvtzfnnIMVFTVGziHTlV8VrVhDKu/uvTNpAZnQbcDDYj
+         d8W08r8aX7ayiLMJJpU3XSKOuYj5s/7U06UNqaVDT8rk0smrz4TO56HhNAAsbtfeDOvu
+         oJbuvW0o5VO1Z4Tohx7j+CD8nWadX4gRusrNvKbClFMjNJCEZXYaH8rKLZjhmk4tcxL3
+         +EnnPMNwZZQ0Fyi1JUn3JAvXxsKI7D+9gVhi+WjAPR3LCDxbq/J4YomwEp3O4+C1oSxv
+         /lOQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwFo6otup4Sh5v3Y7h/zP55Srv17TzRME2T63KQ4AhHyN3r1YFyA/ZerboopKzDN3zZxkV6Jl5YGA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIhBQAMK/9Wx0SGSnNYLhEiK6blj+xhpH5cO27ZZBdFNXd4vorQ
+	fI+lefxbRaBY91TiNPmYn2d+Q46y0Ht/bCzcTQrRzGI6G3VmEUPyaAju/Wm56rOBU1zOE2aXzUt
+	srzLMMSppbGTzHTwRRueeOlY7Bl4druWXkw==
+X-Gm-Gg: AYBFou3N51mWnxnFHfrsQqCOtLc+fn19j+jgxQGnQb+alkw/f5d7IzGY9f1cxfqzzNv
+	ywpQ/OnyKU9UChU/a2J8iE7G1QeGvQSab9SKq7RCkQ6YgNmYS3fYcWZ3ZdZ6KlpjBfPFN4JE1O1
+	OZNSUNP3hkjXnFaRlQxuYQoRDRnQoWtYw1FKNfLTd8c971v1yNKNBqzd7DSh/rgaMBgBeYSGffc
+	r6YwGACZB0Y3adaAPcgFlGH5WhgLrQ1Nk4i6omvZ2P6xQSzzRkp6NHOhG7wkFvblX44xYl+O2wA
+	wlgs3Fgc90lwMdkxugLEzR9BsX7LMk5UiBeybtfvZEh2YUowAgos5v69OO8VN1cMyQI5iqK1iXF
+	zmagLbCIiraBG+VINImhaKRO6hAWP7vpszIGBUThXsjjPJcMyyQNxhoLRfzvo59p8mA/w1y/N1O
+	did05mkEcCtEfigcYaJADEgJDBggf4H4VuoUbI5vsBMM5xSyxJV1E=
+X-Received: by 2002:a05:7301:1c99:b0:358:c9f3:b055 with SMTP id
+ 5a478bee46e88-361a02b6dfamr10734323eec.1.1792341948734; Sun, 18 Oct 2026
+ 09:45:48 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20261018163719.81691-1-ojeda@kernel.org>
+In-Reply-To: <20261018163719.81691-1-ojeda@kernel.org>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Sun, 18 Oct 2026 18:45:36 +0200
+X-Gm-Features: AclHuK-IVlxiwyPmjYT3Tt3VR7rUJ4jd9dZdNoJBNKLdaTx_K8cRCnx26TODSAQ
+Message-ID: <CANiq72mMpqFFkS9DQJonCZ=-0ck43SNKPXUPMpAtQrQiezjYOA@mail.gmail.com>
+Subject: Re: [PATCH] rust: cpufreq: fix `undocumented_unsafe_blocks` in `PolicyCpu::from_cpu()`
+To: Miguel Ojeda <ojeda@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+	Danilo Krummrich <dakr@kernel.org>, Daniel Almeida <daniel.almeida@collabora.com>, 
+	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
+	=?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+	rust-for-linux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-create_image() calls arch_resume_nosmt() on every path that returns
-with in_suspend cleared and assigns its return value to error.  That
-includes the error paths taken when pm_sleep_disable_secondary_cpus()
-or syscore_suspend() fails, which jump to Enable_cpus/Enable_irqs.
+On Sun, Oct 18, 2026 at 6:37=E2=80=AFPM Miguel Ojeda <ojeda@kernel.org> wro=
+te:
+>
+> +        let ptr =3D NonNull::new(
+> +            // SAFETY: It is safe to call `cpufreq_cpu_get` for any vali=
+d CPU.
+> +            unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) },
+> +        )
+> +        .ok_or(ENODEV)?;
 
-When SMT is not disabled (for example on CPUs without SMT, where
-cpu_smt_control is CPU_SMT_NOT_SUPPORTED), arch_resume_nosmt() returns
-0, so the failure is lost:  create_image() returns 0 with in_suspend
-unset, hibernation_snapshot() treats that as a successful restore and
-hibernate() reports success to user space although no image was
-created.  A wakeup event that aborts image creation in syscore_suspend()
-is thus indistinguishable from resuming a hibernation image.
+The other option is to split the statements in two, which probably
+looks better, but this shows how to do it without changing the shape
+of the code.
 
-Only call arch_resume_nosmt() when image creation succeeded.  Failures
-now propagate, so a wakeup event that makes syscore_suspend() fail
-returns -EBUSY to user space, like wakeup aborts in freeze_processes()
-and dpm_suspend() already do.
-
-Fixes: ec527c318036 ("x86/power: Fix 'nosmt' vs hibernation triple fault during resume")
-Cc: stable@vger.kernel.org
-Signed-off-by: Cole Leavitt <cole@unwrap.rs>
----
-
-Notes:
-    Tested on a Lenovo ThinkPad P16 Gen 3 (Core Ultra 9 275HX, JHL9580
-    Barlow Ridge host, I226 Ethernet), in daily use since 2026-09-17.
-
- kernel/power/hibernate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index c13f68ab7f6e..f53f844114a1 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -380,7 +380,7 @@ static int create_image(int platform_mode)
- 	pm_sleep_enable_secondary_cpus();
- 
- 	/* Allow architectures to do nosmt-specific post-resume dances */
--	if (!in_suspend)
-+	if (!in_suspend && !error)
- 		error = arch_resume_nosmt();
- 
-  Platform_finish:
-
-base-commit: 32c52ec87d6245ee2d12ed5dd509e40062939b50
--- 
-2.54.0
-
+Cheers,
+Miguel
