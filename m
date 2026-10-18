@@ -1,110 +1,128 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A6BF4D4889;
-	Sun, 18 Oct 2026 21:15:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D250C4D0CC4
+	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 21:17:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792358155; cv=none; b=qkHu8RmA+D2WQZIzfcgjnzsoQjiDoFD5C1Xa5kd1+71CXc8ojb9L3b1Iij2MrpG4v3KV7s02ly+Ri07nSGfFd0T1ZlerqjCK8ir5ZbKpZukespBIhZl9fnBgc2rP+NlylS7B83e/0EBP1fcSYNVnP0EOrkr3yQUK95iMBwqM/pc=
+	t=1792358266; cv=none; b=hEVpL9QqnIsZANSwKCzcs2yU8Ue17KY2RnrT4DKOnQNHIcDaGRiTGQBPPW3nDnVmyKinZqSTSlsoUDTdoAzNb+d+opVtVlyOApxwcw4NIDWu1vzOhGfBqPQ2Vm2QlGJM869ItzexwRuLjK+5+3KNAmP2G3z1SO5q4WlY0TxkA0c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792358155; c=relaxed/simple;
-	bh=SHrvdvbxCKtRIdlifie6qEUHDb0k2UQIfxEZWKPC62g=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=cgiZNO5q/O+6mKi0aRywMm8Ss59bwWk7mMJiky7pBzCmA6Wfpg8gRJfSF/eciIDJffYJE9d6B6tv/Vwh+EdyQV/udfJrfXRoRMSdJaGx7+rIWGVq/6ZVcBKEDLGeS/61qY9JtBFEbrBZ9XeNVUppy0lh6iGzORbu4ZEU2dyXUoE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uxg9HCWU; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1792358266; c=relaxed/simple;
+	bh=oJEJ/2UvHm34t5TUeLcPO/mcihueJYmt1u78ZSVmhEY=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=g5TZJbAppl3m2IPR0mTSCEA52uAKK446p57RxwCahGm9ELcywVASb4hJasZJ5tMvp2U5hJecfyQiTE0fSMn9n78tlFmosNVRaaxM3sASQE6lEttd5O/CK23peEZbLFavdqM+ZNPf8S2PMMrzlvdPbakpUAQl2RnyZwe8ogkH9gc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KnddboBt; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uxg9HCWU"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 9099BC2BCC7;
-	Sun, 18 Oct 2026 21:15:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KnddboBt"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 2D75CC2BCC7
+	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 21:17:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1792358154;
-	bh=SHrvdvbxCKtRIdlifie6qEUHDb0k2UQIfxEZWKPC62g=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=Uxg9HCWUUJYrOdLo6pVwOAESu5vgvo3q9LHnsZqqOurDxIspXloh9em6YwYxS5nSt
-	 lhyPgG134cDR1tJNtCAKXVGMn2isPf+Jf/qPZTkNpZuj6H6W9/3rHwG6TJuV+z0Kzd
-	 f99GdNTKsupq1ifLbjurzKbYXBaYlGAGpddX6C9EVd6oZ/hG6/TguFCXaSqcVhVH5Q
-	 EsGV6POdmnAv3jTvK9+TmuDAGl5RfiLaSrL/ROIMqhMdPI5JrR2I0FyGhyzIH3Onqn
-	 FuPAqjeWzLtG7fu4dwGYbcSIYpLKckGw7ZTr82/Fynuic8u03gwR/r6OTABbPpnDOJ
-	 hCfgbLpAPz3sA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BDA9CCA490;
-	Sun, 18 Oct 2026 21:15:54 +0000 (UTC)
-From: Rinat Muhamedgaliev via B4 Relay <devnull+rinat.muhamedgaliev.gmail.com@kernel.org>
-Subject: [PATCH v6] bq27xxx: support interchangeable OnePlus 6/6T fuel
- gauges
-Date: Mon, 19 Oct 2026 00:15:53 +0300
-Message-Id: <20261019-master-v6-0-c4b36129721e@gmail.com>
+	s=k20201202; t=1792358266;
+	bh=oJEJ/2UvHm34t5TUeLcPO/mcihueJYmt1u78ZSVmhEY=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=KnddboBteimqPFn83GaafsNQOhKdP0x62gUs75SbN99EI/r8BuV1R2YjblnQbVSkT
+	 EJRTgSyEv2d8C5QhWssBGyzPkIRRli3QswXlg7vh31IdIOdyNF23gpdVnk2o63cH02
+	 Myyq6cbILO/1cODySgJDUjjijSw14IlDi+USP6FgBm11Mw87gTvNgJI+xC7M/PzNRJ
+	 +kKY3uMCV7oJfHQZasS+co4VSYYGTs0uPAvA78DDZF1xPqGizI7N6A7pDN4QTuic27
+	 Dl2Ml0jdoBI58Ilzqa+vpobRD7KbStDs8C3849bUezzZgU58lrQEz01Kb/B0kV4k4y
+	 P+FKNeCAfn4yw==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 0BE0EC41612; Sun, 18 Oct 2026 21:17:46 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 222146] 6.18: AMD (Ryzen 5): cannot select existing
+ energy_performance_preference
+Date: Sun, 18 Oct 2026 21:17:45 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: steffen@sdaoden.eu
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: INSUFFICIENT_DATA
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-222146-137361-kirKnEuC1B@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-222146-137361@https.bugzilla.kernel.org/>
+References: <bug-222146-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/02OzQ6CMBCEX8X0bLXFUsST72E89GeBNVJMi42G8
- O5SCOpxduebmYEE8AiBnDYD8RAxYOcmIbcbYhrlaqBoJ00ylklWZgVtVejBU22ZqmwpSwkVmcw
- PDxW+5qDLddHhqW9g+kQnh1YBqPbKmSadOo81uv0Sl/4Nhr7z73lJFClnLT2upVFQTlmemeIAh
- heyONetwvvOdC1JpTH/YpzxH5ZTRpkGLoXgxlr+j43j+AFKnswsBQEAAA==
-X-Change-ID: 20260927-master-bd0afd9696ef
-To: linux-pm@vger.kernel.org
-Cc: pali@kernel.org, sre@kernel.org, afd@ti.com, 
- konrad.dybcio@oss.qualcomm.com, david@ixit.cz, krzk@kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792358153; l=1717;
- i=rinat.muhamedgaliev@gmail.com; s=default; h=from:subject:message-id;
- bh=SHrvdvbxCKtRIdlifie6qEUHDb0k2UQIfxEZWKPC62g=;
- b=iBOg7Z4TxpAdOSuJt3HRuvXtiybtz8yJk/g8EgW9pH067j+70MW//oHEMpOPbET61hTGpcari
- fupeyxW2YSBDXaSd2NhcrcOHELpDkXKTUhgjVPUNG7ihFQDA1DvrXhp
-X-Developer-Key: i=rinat.muhamedgaliev@gmail.com; a=ed25519;
- pk=qkYQO8LRlRErWiLzlpK8jHbRIxv8+7v06+ytcxX8mec=
-X-Endpoint-Received: by B4 Relay for rinat.muhamedgaliev@gmail.com/default
- with auth_id=1072
-X-Original-From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
-Reply-To: rinat.muhamedgaliev@gmail.com
 
-OnePlus 6 and 6T replacement battery packs can contain either a bq27411 or a
-bq27541 fuel gauge. The latter requires a different register map and produces
-invalid battery readings when interpreted as a bq27411.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D222146
 
-The I2C driver reads DeviceType while probing either of those compatible
-devices and selects the matching profile.
+--- Comment #2 from Steffen Nurpmeso (steffen@sdaoden.eu) ---
+(for your possible interest)
 
-The bq27541 path was tested on a OnePlus 6T with DeviceType 0x0541. It
-reported 4.338 V, 100% capacity, 27.8 C, and Full/Good battery status.
-Testing on an OnePlus 6 or 6T whose fuel gauge reports DeviceType 0x0421
-(bq27411) would be appreciated.
+What do you mean by "kernel not supported"?  I use the latest LTS, just like
+AlpineLinux.  And it all worked until a few versions back?
 
-Changes in v6:
-- Compare the detected model with the compatible-selected model.
-- Support both BQ27411-to-BQ27541 and BQ27541-to-BQ27411 detection.
-- Document the pair of models checked at probe time.
-- Link to v5: https://patch.msgid.link/20261018-master-v5-0-0be16441cdd1@gmail.com
+(I mean, it is not something "terrible", i just thought i report the proble=
+m,
+because it is a "detoriation of state" that lasts for now several kernel
+updates.)
 
-Changes in v5:
-- Report detected and expected DeviceType values instead of hard-coding chip names.
-- Describe an unknown DeviceType as unrecognized.
-- Link to v4: https://patch.msgid.link/20260928-master-v4-1-052c73ec1767@gmail.com
+lscpu nonetheless and in short is
 
-Changes in v4:
-- Drop the generic compatible and binding update.
-- Keep the established OnePlus DTS unchanged.
-- Detect bq27541 from DeviceType in the bq27411 probe path.
-- Send as a new thread.
+Vendor ID:                   AuthenticAMD
+  Model name:                AMD Ryzen 5 220 w/ Radeon 740M Graphics
+    CPU family:              25
+    Model:                   124
+    Thread(s) per core:      1
+    Core(s) per socket:      6
+    Socket(s):               1
+    Stepping:                0
+    Microcode version:       0xa70c00a
+    Frequency boost:         enabled
+    CPU(s) scaling MHz:      39%
+    CPU max MHz:             3201.0000
+    CPU min MHz:             406.4770
 
----
-Rinat Muhamedgaliev (1):
-      power: supply: bq27xxx: detect bq27541 behind bq27411 compatible
-
- drivers/power/supply/bq27xxx_battery_i2c.c | 57 ++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
----
-base-commit: 830b3c68c1fb1e9176028d02ef86f3cf76aa2476
-change-id: 20260927-master-bd0afd9696ef
-
-Best regards,
---  
-Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+CPU(s):                      12
+  On-line CPU(s) list:       0-10:2
+  Off-line CPU(s) list:      1-11:2
 
 
+# bin/cpupower.sh
+CPU 0: freq: 406477-3201000; scaling: 406477-640200; boost:0; gov: powersave
+(performance powersave); energy: performance (default performance
+balance_performance balance_power power custom)
+CPU 2: freq: 406477-3201000; scaling: 406477-640200; boost:0; gov: powersave
+(performance powersave); energy: performance (default performance
+balance_performance balance_power power custom)
+CPU 4: freq: 406477-3201000; scaling: 406477-640200; boost:0; gov: powersave
+(performance powersave); energy: performance (default performance
+balance_performance balance_power power custom)
+CPU 6: freq: 406477-3201000; scaling: 406477-640200; boost:0; gov: powersave
+(performance powersave); energy: performance (default performance
+balance_performance balance_power power custom)
+CPU 8: freq: 406477-3201000; scaling: 406477-640200; boost:0; gov: powersave
+(performance powersave); energy: performance (default performance
+balance_performance balance_power power custom)
+CPU 10: freq: 406477-3201000; scaling: 406477-640200; boost:0; gov: powersa=
+ve
+(performance powersave); energy: performance (default performance
+balance_performance balance_power power custom)
+P-
+
+
+(energy "should" be "power" in this state, and was until a few weeks ago.)
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
