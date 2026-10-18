@@ -1,120 +1,159 @@
-Received: from mail-vk1-f174.google.com (mail-vk1-f174.google.com [209.85.221.174])
+Received: from mail-yw1-f181.google.com (mail-yw1-f181.google.com [209.85.128.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2221F4C4F41
-	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 13:52:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.174
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792331524; cv=none; b=tR+y0hhj3550aPRkTtd6zujyeY/i3o2L1tItSOBKUoyhRklOKXx9h+KvcsUoVtDYRG4Oj6dkF8qx1nDFgA+CaRYSonKaEvgbiGkhYwXulA3yC01bjRLVUW6DIxLjY+KoZAlF+T78/QPE6NLNKQhwo6BpBXL+7NyyEkjmonQ6dCg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792331524; c=relaxed/simple;
-	bh=rCFulCS196Fw/DBDyF9OMjFHIxiu7hy/WMzgUHoLoLs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YhbVjv5NplMN1izrxe3fUvtkewKYo/mQAFKuUaCxdvApbnJAsYut30RYslYn+2KNBz2yKSPtPBeuW7RMZjNojhZ5aqQ7QUgM4c9oRKo3UmuTcXOSKb5i+XqWshbwyhGyIoOsQNKU2+JGXnwjkIBYt7TeoD0xTKH4lXsYNHgBkmU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58C8249F108
+	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 14:54:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.181
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792335266; cv=pass; b=RT8CF2ycEC+6hwaLTwY4dwl4zbtZYqaZlzq7y9qs0PR3FTro4NexoQst69PNy3sVjBOB3OXSJykvdVT7SxCz3806ENJsOj6jGw/xwfMtUFqgnbSyP0Nm2loCG+da8KyahZx24q6wD7SquUUARPFOqwDraZHQsn/yjM3ihQTEpD8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792335266; c=relaxed/simple;
+	bh=us5iu7Xf4jbhJWzNY5zatJGie2iJ2wd4i8aHGpW0qSs=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=R8KnBxdtohY5SKEJIavLA3/kqUkpj+gMYvgyBl97NcGnypWN2+uyBBCCMjh8nRR0G6dBwNkwCr8N+pQphofrgx7f3fURXmZy1jbRrOQtWj9U0X0rE4dbv86DeL9bbtDID+zxDDiVsEAtWmz3Tq8pnOWYAAHJ59HVA6Z+QQQPoq4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LC6ffU6w; arc=pass smtp.client-ip=209.85.128.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f174.google.com with SMTP id 71dfb90a1353d-5d4d307fab6so652525e0c.1
-        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 06:52:00 -0700 (PDT)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LC6ffU6w"
+Received: by mail-yw1-f181.google.com with SMTP id 00721157ae682-8aea7b7ca0cso9016357b3.2
+        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 07:54:25 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792335264; cv=none;
+        d=google.com; s=arc-20260327;
+        b=AR9WYMATx3TiOw4A6vtrdUuthe3MbWgyeePN5AO2yj+mOKdv107DPDXsuAJY0pUveY
+         AYWnOBGMynxRZKzGW01F+9gGL0ARRIWWtWXJJaVRs6b3UycVSjq63KQgYvvtzjfLMUBg
+         lbI9qccC1AjyAPY0CBWs8luuNKlFcbSxe944fS1OsHL5OB8lB3Qykz+m6pAXJyoLkhVy
+         N0BlfjxwE4d1AqItJbnKnn8M9URxdrG4MJ5DVTnU8t+ZenDYpOZF3z0fE9yh2fMTJer8
+         jigNWpmnyMcQylr8SVyr+JrsimS3Vmfg5WJnLEjEZsXZgz6oSah5tXx1TB3Y5YcsY9Ok
+         bsmA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :mime-version:dkim-signature;
+        bh=27GANpvUaytbvILRLXHlHUpLnChBxOoM+toFOE7EJG0=;
+        fh=geD9gkR/r4riHqB9aFPfrK3DjRT6BqaJXHhYNkUNIys=;
+        b=fiVsCJ1KUmUS+0M6kJy61v6dJbnhXXUuPkKBdjwzd91myqBRwips9QjwoG9BO/b/1P
+         5lAZc5+0zcVLcsVB1BQGib47yjxHqxITIOL3OebLmcITFtM/c5wVgto1kx/M51U7aMc6
+         QOd18He3zn6TH7Yl334Fe47ZGwa5yP0MpK4EVYiKCA+i970+yKSAjSGX5Skn1O0SUyxc
+         jh43Q3ruLR0StG6WXOesEY44wVwoN8par5KhYykAFlobOBtnbcv77jfJXljNzB/nBJkP
+         rFI6pdyMu5mj5PZeJjLdjQnBm2hG5fEISUsv7ietJMyNOb1L9mSFnGH/auy0S38xVT/1
+         3skQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792335264; x=1792940064; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=27GANpvUaytbvILRLXHlHUpLnChBxOoM+toFOE7EJG0=;
+        b=LC6ffU6wm6TWGaxhjR4boPQaPY2zXc2utXfHb1HoHKRwvhis6tnyY8z73VSpYVK7K2
+         kwblqhGHKb84lWPjUIREhiWQ41sAfFUvQ6SK35kpWqY9PGiDtfNZbHhnxv9W7Z+vs9iO
+         ELa72neDlS7HxtRlkaiVFfcBro3eY+9KKJTXebrL4MW/7xbPFbb4IGzmsP7iOiOqUkk0
+         WagLLMkPMjoBexSr/IkmnekeP1oANR8O4LJ56D3zERpU3EhMNPvup9yTwix7tU5T8fei
+         3RmXOcYdqQIef7eeCscwl72aoRKIzsDpMKX3cOztLKql2Iz+2mhmv8hN+cNyhFXQEgBJ
+         Uc4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792331520; x=1792936320;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20260707; t=1792335264; x=1792940064;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=fhGyumamsbJwvfAtfGydBWyfBrT9VHxtfq0yzwmUVgA=;
-        b=NxEFBtHSQHbOsxWpQyIco4zem/bLUvJ/B48kuv6nlpO5zRXftVeMslasWM2VZS0scR
-         qgrtfMp9BFnrmbcPmu0rmDQtSCCTfmafQ8TE2nVRt2jfDVzdSHeEPRK8kunpB9WEBquy
-         ZbDoNcr17JaceLC4/RcERS5CXPQGHUhwEqljgZ1vZuGwPUQPF7QpFbNVFIIq2zFZhoq1
-         JXUqldvywVCVs2NbTd7eUBSE4jFXFJRgavbY10I25qeHWr96bAXLtOatqOq6lgF3hNO6
-         exq5U9jnCSmH9X3TVZrNiQj9ed+OmDj/kukrLqLwv9WscJBN1REXG4z9cBrTVUrwHkrh
-         3IbA==
-X-Forwarded-Encrypted: i=1; AKwUvBwiI4kmjIARMHEjr8HNxpl79IF5uhDi+3HvfBfSQyYJ1LIlk871JIbn43DiueR6PIV+txFxM7mI3Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKrVDiWgrHv6yvtbtuJfkLfw8TH14yPF0p6ZQhHTdaP1tpNZWzq
-	jPvGjVGZbu7LCD1eFJYM8XjN+isULOwr3UgmJGUmNjSXBnREgTCOvWix3UQQY9xC
-X-Gm-Gg: AYBFou2LhzpxKBqfWw8iJTg88/M0IONWMekSnBx2OwAR9kHIWqSYfvpWKQAsOo1+YMi
-	ts7lqCK6iIcXmGdkfCAXqx2jtbBuOi9T6pQfyXjfWA8nKeIrq/c9ga7roApfptuDdISSeaqiyR2
-	vD41tX5BLfK8dP8d//nIVRMEBJ/NaXIaYHYhNAAlVQxQdUyJjUiqZZ5UG+YM2MPJ6+8Yek1IFts
-	/27E7XU0EmWRguHEFnoXuFiIPYFH5Jaq/khh5M4UsCl/pOlDZIJAtQGlXxWLuEQfIcr8av9BuK2
-	T9xG1ksfJdZiMFHHnaH25OHNxIsvzEjKMOgukaSZfb0jHwVt0hMRG9PmmziK9lzaMZFyEkIqmMl
-	kO/CuqZqEll+8yBeJ60njgxpLcRMbKZ/+9k1uy/+hxaQanZqSSPttwo7k1bvxJchpqlxYAcWsOF
-	DEky3Epzb6aVspHssGiAPI8A6Epws3bigFPCwYX7hlIgAHSKqnaWtZTf3ZEHfrUbUXHuuzR1ala
-	Ceo2NYmJXoDcWXfOIeeGdafMyzzqUrQpMKr
-X-Received: by 2002:a05:6122:32c6:b0:5ea:bfba:f540 with SMTP id 71dfb90a1353d-5eabfbaf8efmr479914e0c.1.1792331519929;
-        Sun, 18 Oct 2026 06:51:59 -0700 (PDT)
-Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com. [209.85.217.42])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5ea9b518bc8sm7057374e0c.11.2026.10.18.06.51.58
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 18 Oct 2026 06:51:58 -0700 (PDT)
-Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-7c2f48f3a96so172290137.1
-        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 06:51:58 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwKik6gtfIKV4JPwLC6rsxHDXJURxoUU/fr8zaRcSi4n39WPVZxQQRFsPg8uJTS4pp3hKK+Wcx15A==@vger.kernel.org
-X-Received: by 2002:a05:6102:5249:b0:7cc:2a3c:9a33 with SMTP id
- ada2fe7eead31-7cc36b49079mr1291606137.34.1792331517781; Sun, 18 Oct 2026
- 06:51:57 -0700 (PDT)
+        bh=27GANpvUaytbvILRLXHlHUpLnChBxOoM+toFOE7EJG0=;
+        b=KTxhuQbmZePPNMJGB8NN7tZeu2CjGgsUeQ3k6/s8/ouIV6/3C4jPA6xWs9w+uqPFj6
+         TxAFfKuaPhDdEGpa3gRFAkgntPvsF6vopyYPvdXty6tH8r1ROjf5nrnBrXGSfqufLVhf
+         kBUIlJDkT2qlaT4/pp+YfZ2wXJ87HAhIE9+G8WlH0w528JMPRG4AnZ0yhTbAmz0e+TXu
+         CLDaK031JdWkfzkXO38QDGbMbIXDQMuH/cIZ1g5hbneOJCAcuIUhEnuwBpdEh7tnvF/H
+         gzw3B66KToTq55YE0h6meX2k8huonZexj6hJmvc2yK0viRXYNfjKp/HV8xFDnwDDCXQj
+         LKaQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxPFbSCOirh6jgbtG7GLkEaVa2N8/B5MmQy+EGh1sp82RfwLK8SSuh5Vn94xyNGHqstu+vTiCWKaQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYK3dd6b8vsjIgrwUSJ9boCN9dcsIIuvUG42S7kICgtvdlOb2lX8
+	VJiF2OoSr5Dng36W1JjRG+Qq+M1LGlDMfNx/Rao4TCzl+quz2Cwij+4qXzVXNkYS0KBhAa34ALi
+	qGdS/eKfgeSfdNs7yLA9qwgAuSeRRfa4=
+X-Gm-Gg: AYBFou1PawVmwMUgJaj+U54pRsTsdZz8VvvkSISf3Sln2g5N3djkRiMDXWP46nMadIy
+	V0VbSbOg6v70k8OUPDcTel2C1/y2IVB5c/gWe/Kw9DtgpZvXE+W0m5jwNa77EsxyOP0+DJmMygK
+	nQ+YDyRq0TaYHwMFmL/mPVL9Fbf8EeCljNnDO1eP/ioDkjCWJcaBEk4vEqOSWFjRE4/Xn9N3sYE
+	8luf50xjKdQIG1iJhj6J7ILwGdR3hfY0Umk49NnyHWGbcT7KU42F5EK8KsNENIbOjuMjg5zXK4p
+	KGFMKiPDcY/kL497DA81JXOOnpsySYLiL+Tn3gsgQ+5zc7bc2ApJ
+X-Received: by 2002:a05:690c:c58d:b0:8b0:f116:11fe with SMTP id
+ 00721157ae682-8b0f21b53ddmr11613087b3.50.1792335263774; Sun, 18 Oct 2026
+ 07:54:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1792163045.git.geert+renesas@glider.be> <1d7da50cfb58232c6dd4c4afefb938fd7e62fdcd.1792163045.git.geert+renesas@glider.be>
- <51d8ba05-76e5-45ab-91da-3c6cb02505d7@mailbox.org>
-In-Reply-To: <51d8ba05-76e5-45ab-91da-3c6cb02505d7@mailbox.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sun, 18 Oct 2026 15:51:45 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVzX8fd4NDQi8ow0m+48g8p-LBHMysFi+fOqp1oDtT8LQ@mail.gmail.com>
-X-Gm-Features: AclHuK8HjL2MgNJEhgQ8UPYzZV_qfVLea-QA-Rw_khapKdsDEf1HaCakMPT5y5o
-Message-ID: <CAMuHMdVzX8fd4NDQi8ow0m+48g8p-LBHMysFi+fOqp1oDtT8LQ@mail.gmail.com>
-Subject: Re: [PATCH v4 1/8] clk: renesas: r8a78000: Add clk_hw to clk_map
-To: Marek Vasut <marek.vasut@mailbox.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>, 
-	Vinod Koul <vkoul@kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, 
-	=?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>, 
-	Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+From: Zhang DM <jixianqiang1540@gmail.com>
+Date: Sun, 18 Oct 2026 22:54:11 +0800
+X-Gm-Features: AclHuK8ilgUfNnbLioZxoVOUsVo2jNQ8742md6YglSbmB-20JRYe7veeKgjVBvg
+Message-ID: <CAKtWk0YJS_+Wonysfo1DB41stP30FMm824vdp5DTjO=bVT_oLw@mail.gmail.com>
+Subject: Re: [PATCH v1 1/4] platform profile: Separate handler locking from
+ sysfs lifetime
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Marek,
+Hi Daniel,
 
-On Sat, 17 Oct 2026 at 19:34, Marek Vasut <marek.vasut@mailbox.org> wrote:
-> On 10/16/26 5:55 PM, Geert Uytterhoeven wrote:
->
-> [...]
->
-> >   static int r8a78000_cpg_probe(struct platform_device *pdev)
-> >   {
-> >       struct device *dev = &pdev->dev;
-> >       struct r8a78000_cpg_priv *priv;
-> > -     const struct clk_map *map;
-> > -     int ret;
-> > +     const struct clk_map_in *map;
->
-> Super-nitpick, use reverse xmas tree ordering here if there will be V5.
+Confirming the lock/lifetime inversion this series fixes is reachable in
+production: we hit it as a hard, SIGKILL-immune D-state wedge, 3/3 boots,
+on 7.3.0-rc6 (AMD Zen, CachyOS build of stock rc6) =E2=80=94 three days aft=
+er v1
+was posted.
 
-I believe that's already the case. What am I missing?
+Trigger and cycle, matching your 1/4 analysis exactly:
 
->
-> >       map = of_device_get_match_data(dev);
-> >       if (!map)
+  Writing `dynamic` to policyX/energy_performance_preference runs
+  store_energy_performance_preference under down_write(&policy->rwsem)
+  (cpufreq core store wrapper, guard(cpufreq_policy_write)). On the
+  non-dynamic->dynamic transition, amd_pstate_set_dynamic_epp() calls
+  platform_profile_register() from under that rwsem. platform_profile_
+  register() holds profile_lock across device_register(), sysfs_notify()
+  and sysfs_update_group(); the update removes/recreates the
+  `platform_profile` attribute, and kernfs_drain() then waits for the
+  =E2=86=93 the repo goes public now. please add reference to the draft
+                                       22:45
+ =E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=
+=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=
+=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=
+=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=
+=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=
+=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=
+=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=
+=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=
+=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=
+=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=
+=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=
+=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=
+=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=
+=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80=E2=96=80
+  immediately before the update wakes inotify watchers of
+  /sys/firmware/acpi/platform_profile (asusd here) that enter the file
+  inside the window. The store never returns, policy->rwsem stays
+  write-held, and every cpufreq/platform_profile/power_supply sysfs user
+  wedges in TASK_UNINTERRUPTIBLE. Same cycle exists in
+  platform_profile_remove().
 
-Gr{oetje,eeting}s,
+So: ABBA between profile_lock and the kernfs active-ref drain, exactly as
+described in your patch; we believe 1/4 is the right fix (separate
+registration lock, unlink under profile_lock before device_unregister,
+drop the mutex before anything that can drain active refs).
 
-                        Geert
+Secondary ask, for amd-pstate (not your patch's problem, but it is why
+this bug is so destructive here): amd_pstate_set_dynamic_epp()/
+clear_dynamic_epp() do blocking device/sysfs registration plus
+power_supply_(un)reg_notifier from inside the cpufreq store callback,
+i.e. long, lock-heavy work under a hot per-policy rwsem. Deferring that
+registration to a workqueue (or to cpu init/exit) would take
+policy->rwsem out of the blast radius.
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Evidence: reproduced 3/3 boots with a concurrent platform_profile
+watcher at register time, 0/1 without; lockdep is off in this config
+(no splat). Full write-up, public in ZhangDM-520/system-tuning:
+  attribution (source <-> vmlinux mapping):
+    https://github.com/ZhangDM-520/system-tuning/blob/master/docs/research/=
+2026-10-17-epp-deadlock-kernel-attribution.md
+  boot journals and initial forensics:
+    https://github.com/ZhangDM-520/system-tuning/blob/master/docs/research/=
+2026-10-17-boot-epp-deadlock-report.md
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks,
+ZhangDM
