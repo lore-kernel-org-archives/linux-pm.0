@@ -1,122 +1,124 @@
-Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp-190d.mail.infomaniak.ch (smtp-190d.mail.infomaniak.ch [185.125.25.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE9983FF1CB
-	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 16:45:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.174
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792341951; cv=pass; b=EOjxnDsbszbuQTHWXp9IzyGLk1Kk4sMi5nvfvKthBA6QPuH27Z4TK0Nt8Zj0zcOyxTy5GDceaOnCTW9MigcpOAXgiVRCusXk0AuYagCHH1OHTH7klE+sD1NELx+IFKTN2IoiqKN9w1hcQG1k4oyQSM0RHvsD9YhFnlqbHlVNuIE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792341951; c=relaxed/simple;
-	bh=/OOWdJntfE5bSPgQas5XocqfmzGwqA/LTtLzB3LqaWc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=k+z/FWVqhcR+eB3bDCciAsKqvHunr8yzp8fvIli2TCFMvzuMui1xmxCM2lqoIOFCxb8NM5yUbBoWlDItD+ZMTXkDwKNUh3x0jB5vWkm+yjIwqRbFgNAbGgm/NlPcV9DGJZj6oOd6DthKbWbNnYYUcL5vMjJrGruqK+XeBmv6U44=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Nv3K/sH8; arc=pass smtp.client-ip=74.125.82.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45DCE44C65C
+	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 18:53:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.25.13
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792349602; cv=none; b=KHmy1z/NVfjS2uwQ6eB22rjzieZ7u+CJwCU/x+DhJ8peqVyIJ0IJrE73L8asZdJFBfJnwloWMslq8NOFSHi455tpRmYp6bIkPWY/4GYrc8rY/1bHlBCPvTIsqFcKqKy0KGQtQCtZF3Ge9OwPpMnfroDYrZqEY/6BYh9TevkRJcI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792349602; c=relaxed/simple;
+	bh=lX+5dhgX4NC37aSTPQkLBUr6y8jXX7ECoAi6+Pd+qxw=;
+	h=Subject:Message-ID:Date:From:To:Cc:References:In-Reply-To:
+	 MIME-Version:Content-Type; b=VlSIuEpfhV3ZC0TqZpzAnWZuMn1u6pe7Vh3lEKSo/tyjQ2/dKQKoNnnn9kSDptlCPaTGxooGHM18SmOzjlSW7QNZmpeFv+4uZrrcAw43r4PJO/j6JSbYyG0VNAGSqIYRiFQnAwem3T01Zs+sQKhxJJfHD5MMp6TTB3ZWwlXMJuU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=snyders.xyz; spf=pass smtp.mailfrom=snyders.xyz; dkim=pass (2048-bit key) header.d=snyders.xyz header.i=@snyders.xyz header.b=fKXTOTVT; arc=none smtp.client-ip=185.125.25.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=snyders.xyz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=snyders.xyz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nv3K/sH8"
-Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-33bb5afa736so159744eec.1
-        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 09:45:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792341949; cv=none;
-        d=google.com; s=arc-20260327;
-        b=J7Zvl0ZLbD8S77/IbciTwvMiND4lp162ISO55kgmYDIzerK5CjtIppwuoBmVFHmvOG
-         Vto+rtwvdROqm2gn+iOtP+oquyWr0YjjN94xh7g/sGQmrJpPWn8lwlS3hbGCYQ0xUenF
-         UbmKEZu/A2CSe9lcjjHgcEgQp/YpqLrYkqG0tY3tWhTWNqpKYhNz432U+fOwAgw2gb+u
-         IMEIoLCqhcdh332YqGNx60P/YnyCkeUont8DEg/N6ehJhJO2ccFB6UdfxawbOHeZYKjY
-         sxjEEMZ+8GqBTaYshWgPEfVtp3NnEBxmZDtnO0t2kM4T2mw0QCXdhsoZT40OXnoW7XWl
-         4eIQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=K2nyBACqj6iF5BhULoV19NEeW9GfDUgukWkDmcax0/M=;
-        fh=GfZ/HFc1i/rujbyVcYblu5fbklbUXFkUy5cYwKjhM4A=;
-        b=PuN5hXM+ysMDdpMSN93Z3XShLXTWi5FWmGOI7FjGg5uRwfHPiHtldBd8W2kPKCx6TX
-         VrA+Rr+Q/19VuINloRidKBEu3jOnRVyzRNTXFVh+N3rFgerkTdxA4Vjia2wAufzXjQYF
-         Dod1iau6y6Wc66qP2Xp/PY3C0ebDy8gMXFl8DmywgVPopqVl/OS5EfgQGsN6/Ln7cQoz
-         nthA8Pv7RgShhDPH5jKWRE/uOPmWuw9AJlxBDfc2GfdnvAt6JMDJWuSgqdikCk1wStOm
-         +4ANGs7sQ68tARuxpCEtyaDFlZMqObYuR8odtjdg2XZO4cGCDBtjjj46Qj5agtEIe3q+
-         PPhg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792341949; x=1792946749; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=K2nyBACqj6iF5BhULoV19NEeW9GfDUgukWkDmcax0/M=;
-        b=Nv3K/sH8UnvwWvtM3sr3/+P+ruMxGMzdB4HYLJI09AkMPwv579mlchpUfe9OttkPEi
-         ZIsW0tKMG66LBRnYVWBZ5QwXP0XBKa+x52ZvULtYmdGHOijWPbdBmQktChMl8pdpiHIJ
-         Iok9gU2/CYuAToJsm7u3olkJJ1RCrw0BPzar3OPMKtCtbtyQ4gskxSXyC0/o9zPN34ZJ
-         2m+r4e8hMrfRuC+g8vXRx2aQbE2rWyRcQpJzdnEbsxU5ehCuFH+50VrDmh4ggsA7kl74
-         CQIKvAFiG4Nsz+gPRZ96dlCEhNMD5f/8pgr0HCb2bnw0PfpTGTjYvFOaVjJjMNyZf8YQ
-         0Wyg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792341949; x=1792946749;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=K2nyBACqj6iF5BhULoV19NEeW9GfDUgukWkDmcax0/M=;
-        b=Er782hsURFhLN9OTyAs0gNlbS6FAJY9xwMYbczSf/co1Y1zN8iHFiTVw2au807sGk3
-         8r9cyDJEkkbbYUbngIcpsONSzvtzfnnIMVFTVGziHTlV8VrVhDKu/uvTNpAZnQbcDDYj
-         d8W08r8aX7ayiLMJJpU3XSKOuYj5s/7U06UNqaVDT8rk0smrz4TO56HhNAAsbtfeDOvu
-         oJbuvW0o5VO1Z4Tohx7j+CD8nWadX4gRusrNvKbClFMjNJCEZXYaH8rKLZjhmk4tcxL3
-         +EnnPMNwZZQ0Fyi1JUn3JAvXxsKI7D+9gVhi+WjAPR3LCDxbq/J4YomwEp3O4+C1oSxv
-         /lOQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwFo6otup4Sh5v3Y7h/zP55Srv17TzRME2T63KQ4AhHyN3r1YFyA/ZerboopKzDN3zZxkV6Jl5YGA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIhBQAMK/9Wx0SGSnNYLhEiK6blj+xhpH5cO27ZZBdFNXd4vorQ
-	fI+lefxbRaBY91TiNPmYn2d+Q46y0Ht/bCzcTQrRzGI6G3VmEUPyaAju/Wm56rOBU1zOE2aXzUt
-	srzLMMSppbGTzHTwRRueeOlY7Bl4druWXkw==
-X-Gm-Gg: AYBFou3N51mWnxnFHfrsQqCOtLc+fn19j+jgxQGnQb+alkw/f5d7IzGY9f1cxfqzzNv
-	ywpQ/OnyKU9UChU/a2J8iE7G1QeGvQSab9SKq7RCkQ6YgNmYS3fYcWZ3ZdZ6KlpjBfPFN4JE1O1
-	OZNSUNP3hkjXnFaRlQxuYQoRDRnQoWtYw1FKNfLTd8c971v1yNKNBqzd7DSh/rgaMBgBeYSGffc
-	r6YwGACZB0Y3adaAPcgFlGH5WhgLrQ1Nk4i6omvZ2P6xQSzzRkp6NHOhG7wkFvblX44xYl+O2wA
-	wlgs3Fgc90lwMdkxugLEzR9BsX7LMk5UiBeybtfvZEh2YUowAgos5v69OO8VN1cMyQI5iqK1iXF
-	zmagLbCIiraBG+VINImhaKRO6hAWP7vpszIGBUThXsjjPJcMyyQNxhoLRfzvo59p8mA/w1y/N1O
-	did05mkEcCtEfigcYaJADEgJDBggf4H4VuoUbI5vsBMM5xSyxJV1E=
-X-Received: by 2002:a05:7301:1c99:b0:358:c9f3:b055 with SMTP id
- 5a478bee46e88-361a02b6dfamr10734323eec.1.1792341948734; Sun, 18 Oct 2026
- 09:45:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=snyders.xyz header.i=@snyders.xyz header.b="fKXTOTVT"
+Received: from smtp-3-0000.mail.infomaniak.ch (smtp-3-0000.mail.infomaniak.ch [10.4.36.107])
+	by smtp-4-3000.mail.infomaniak.ch (Postfix) with ESMTPS id 4j76zw4jR8zNkJ;
+	Sun, 18 Oct 2026 20:45:00 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=snyders.xyz;
+	s=20251118; t=1792349100;
+	bh=tiVAKs4hM0hfl1tlMLQJmGB+/I9Qxi99EZnZZxfXMO8=;
+	h=Subject:Date:From:To:Cc:Reply-To:References:In-Reply-To:From;
+	b=fKXTOTVT9AfcYa40wbFClGkXyXf356KfNsB4NIJlm5PEBu+/hAtcrvdqUJLnzWqV6
+	 6pXK9n9EU9LDaFGQW4+WaE1RHrksbFN+UfFkbcdqSn4z6+UveCs0pSL1TLiIswDwpX
+	 A7q+55UPaouvvOgZcbjeBmjfj7To1047RrKPjbeVE2Xy+7mDbnhXNU4E+xn4dj9Y4/
+	 LlpH03MFdpceC3OlbQNkeaXjIMGUTDZtRj1EMW+2S1PWWxHgEtV99MPMQBRqnQ4aAf
+	 27DQJ3R0AocSK5LODIoM1ZlL/RL3sTR02q843Ff50RcXIpnz8dFaUc+YyYIksc493r
+	 uZGDMd1/Ez+OQ==
+Received: from unknown by smtp-3-0000.mail.infomaniak.ch (Postfix) with ESMTPA id 4j76zv3jBbzB73;
+	Sun, 18 Oct 2026 20:44:59 +0200 (CEST)
+Subject: Re: [PATCH v3 2/2] power: supply: qcom_smbx: add SMB5 support
+Message-ID: <7e5c96b8-e1ae-4819-874f-db818061be58@mail.infomaniak.com>
+Date: Sun, 18 Oct 2026 20:44:59 +0200
+From: Robin Snyders <robin@snyders.xyz>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Casey Connolly <casey.connolly@linaro.org>, Sebastian Reichel
+ <sre@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+ <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Selvaraj
+ <foss@joelselvaraj.com>, linux-arm-msm@vger.kernel.org,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Robin Snyders <robin@snyders.xyz>
+Reply-To: Robin Snyders <robin@snyders.xyz>
+X-WS-Location: eJxzKUpMKykGAAfpAmU-
+References: <20260813-submit-qcom-smbx-send-v1-v3-0-27be0091d7c7@snyders.xyz>
+ <20260813-submit-qcom-smbx-send-v1-v3-2-27be0091d7c7@snyders.xyz>
+ <hryxv7fl3alrhnekb7bqn5zgexdyv3p6ndug7kp3uqxsiiwmsv@wtvg3za3qspu>
+In-Reply-To: <hryxv7fl3alrhnekb7bqn5zgexdyv3p6ndug7kp3uqxsiiwmsv@wtvg3za3qspu>
+X-Mailer: Infomaniak Workspace (1.3.1376)
+X-WS-User-Origin: eyJpdiI6ImtobERxMUZTdUNyZ1Q5QjFtTFlaaWc9PSIsInZhbHVlIjoiOWVGVCtlblA3am9VcGRhbktlQUliUT09IiwibWFjIjoiZmM1NzU0YmZiMWJhMzM3MDNkZjk1NzYzODExNjQwNjczZTc3OGNkZWMwYTllYzNjY2ZmZDUwNDA5ZDcyZjdlZCIsInRhZyI6IiJ9
+X-WS-User-Mbox: eyJpdiI6Im1LVzkyZWVkWTBsOGJKOVZYZUljS2c9PSIsInZhbHVlIjoiL2d5d3Rab3pySDkwT1QzZzl0RFJRZz09IiwibWFjIjoiZWZiZTFjMmFhMThjNzI3Y2I3ZTE3NGQxNGI2YzVhMjBmNmQ1NmE2YmRkNjdmOTRhYzNkYzA1ZGZlMDc5NGVkZCIsInRhZyI6IiJ9
+X-WS-LOCALE: fr_FR
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261018163719.81691-1-ojeda@kernel.org>
-In-Reply-To: <20261018163719.81691-1-ojeda@kernel.org>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Sun, 18 Oct 2026 18:45:36 +0200
-X-Gm-Features: AclHuK-IVlxiwyPmjYT3Tt3VR7rUJ4jd9dZdNoJBNKLdaTx_K8cRCnx26TODSAQ
-Message-ID: <CANiq72mMpqFFkS9DQJonCZ=-0ck43SNKPXUPMpAtQrQiezjYOA@mail.gmail.com>
-Subject: Re: [PATCH] rust: cpufreq: fix `undocumented_unsafe_blocks` in `PolicyCpu::from_cpu()`
-To: Miguel Ojeda <ojeda@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, Daniel Almeida <daniel.almeida@collabora.com>, 
-	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
-	=?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
-	rust-for-linux@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
+X-Infomaniak-Routing: alpha
 
-On Sun, Oct 18, 2026 at 6:37=E2=80=AFPM Miguel Ojeda <ojeda@kernel.org> wro=
-te:
->
-> +        let ptr =3D NonNull::new(
-> +            // SAFETY: It is safe to call `cpufreq_cpu_get` for any vali=
-d CPU.
-> +            unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) },
-> +        )
-> +        .ok_or(ENODEV)?;
+Hi Dmitry,
 
-The other option is to split the statements in two, which probably
-looks better, but this shows how to do it without changing the shape
-of the code.
+Sorry for the long delay in getting back to you on this.
 
-Cheers,
-Miguel
+On Thu, Aug 13, 2026 at 06:52:24PM +0300, Dmitry Baryshkov wrote:
+> I remember that in SMB2 case the TCPM and charger drivers were
+> programming the registers from the same block. Is there no such conflict
+> on the SMB5 platforms?
+
+On PM8150B the register sets are disjoint. The charger node sits at
+0x1000, the dedicated Type-C port at 0x1500 and the PD PHY at 0x1700.
+With SMB5, qcom_smbx only writes the charger core (0x1042, 0x1061,
+0x1070), DCDC (0x1108, 0x110b), USB input / BC1.2 (0x1340-0x1380) and
+the watchdog/AICL timer (0x1651-0x1661) blocks. qcom_pmic_typec writes
+are all in 0x1544-0x1560, and the PD PHY stays in its 0x1700 block.
+
+The one name that looks like an overlap is TYPE_C_CFG, but on SMB5
+that is offset 0x358, i.e. 0x1358 in the USB input peripheral, and not
+the Type-C port register at 0x1544. The driver only clears
+APSD_START_ON_CC_BIT there, so that BC1.2 detection is not started
+directly from CC state while TCPM owns the port.
+
+By design, the SMB5 path also leaves Type-C power role and VBUS control
+to TCPM and the qcom_usb_vbus regulator. It does not touch OTG/VBUS
+boost, and it only clears the HVDCP modes so stale firmware settings
+cannot raise VBUS.
+
+> Have you tested that this doesn't break the USB-C
+> dongles being connected to the device?
+
+Yes. I validated the exact v4 driver on a OnePlus 7T Pro (PM8150B,
+6.16-based board tree; the only other change was an
+unrelated SLPI debug parameter in qcom_q6v5_pas.c) with TCPM
+managing the port, in both plug orientations:
+
+- Powered dock: the phone became data host and power sink (USB PD,
+  usb_vbus disabled). The USB 2/3 hubs, an RTL8153 Ethernet adapter
+  and a mass storage device enumerated, and a 64 MiB read gave the
+  same hash every time. The charger stayed online, health Good.
+
+- The same dock with its external power removed: the phone stayed
+  data host and switched to power source, with usb_vbus enabled. The
+  hubs, Ethernet adapter and storage re-enumerated and worked, and
+  the storage hash matched. The SMB5 charger correctly reported
+  offline/discharging.
+
+- Then back to a PC cable without rebooting: device/sink roles
+  returned, usb_vbus was disabled, USB gadget networking and SSH
+  worked again, and the charger resumed charging at its 500 mA
+  limit.
+
+None of these transitions produced an oops, lockdep splat, UVLO, OCP
+or OVP event. Ethernet traffic (no cable at hand) and visual
+DisplayPort output were not part of that run.
+
+I'll repeat this on the exact v5 tree before sending it, and summarize
+the register ownership and these results in the v5 changelog.
+
+Thanks,
+Robin
