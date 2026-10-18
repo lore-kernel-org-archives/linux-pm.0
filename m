@@ -1,51 +1,47 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail.unwrap.rs (mail.unwrap.rs [172.232.15.166])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB6DC3DB31E;
-	Sun, 18 Oct 2026 16:37:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE517286A5;
+	Sun, 18 Oct 2026 16:40:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=172.232.15.166
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792341459; cv=none; b=jQFhEPQm+4Sr1+qCdUCxnfbLUFdd5XP7R2q9Sl45ep7rrZIyXsQ1J1U01jowk0bc9vyNB0qHnQnTqoRJEcJWyagd5JKOTbqJVejoFRevzKh79OxOAq7FS4I2i7BEgPlIsxZ5JRxNINm4+KMTjF1fY+EQy7ZSGGpbb5HXeAnO3ks=
+	t=1792341640; cv=none; b=V0ERtia9+oIDeu6JbGyZ8ifYERAGS07PdOAAXVaZx+SLKFk7Cb7YPqcN82en+9DPuCHDh8MYuynVmAQQ34RADi6d3vVYvvJ86qbsMu19ml+EXRKH4WLu6p8AgrOAP2cCi8U+8Z8W700QL/XjkDDMoi6T9xubwI/Q5GFkuDCbK1g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792341459; c=relaxed/simple;
-	bh=LhLriU2jTVBhkvGlqF8Mt9Nl2w5WiVn28qIQFmEsZDw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=avahiHb0+FVMwG4VLV5y7uy6EGY20g6JACzTQLrARVuUfYscxkcnMNX3cZkI9g6wiuP1WYs0MnAhzSLd7+bIijzZS03uNIqdMqZvSeL6qmaNuNDfYXp7G0DljThmpmkxy9drDFJxfllgRjSMTzoRySqyM5X5YNx0/04b9HK9rJ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IQP9Rdim; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792341640; c=relaxed/simple;
+	bh=srs7dtHAwwNYQ2JL1zx6Oix5Hvf9coSfZJceTwN2lUo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CATewN9LN3GyS0ygUudtFnkAMawVsL8SFmpB6zgQy7yn85MTsLblMsDARNmwYRLomHYr0DDbj243m8yQHfjI/HOVwvTlK/Ky0/PsR1Aklx6eRYPkmgHKwg68riNPKu0aHVbNq6Fep6JrPYUZfq3BzrKs8To468Y2maAUBJ5SBwI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=unwrap.rs; spf=pass smtp.mailfrom=unwrap.rs; dkim=pass (2048-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b=PSoKXqHm; dkim=permerror (0-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b=SM7wkrlC; arc=none smtp.client-ip=172.232.15.166
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=unwrap.rs
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unwrap.rs
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IQP9Rdim"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F0761F000C4;
-	Sun, 18 Oct 2026 16:37:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792341449;
-	bh=xOpqNbkQdHQ0X8bWSJqa/bsHNtJiN9L+QaclF1tobZ8=;
-	h=From:To:Cc:Subject:Date;
-	b=IQP9RdimAxtyz7C2HTtvOFiHt8GTvRdXe00w4C5efYphFnCiO1CXCzCgUCHzIpyfl
-	 ux4zF68QnU0Ssyos1SeOD5ubtc68/OYy7jYjtZY7dVvrzv91PVTqLtFJvc28cislWS
-	 48DVbIv4AYAqiqM+NSXvHIBr5sdnY5JsOUrpvcAZeaHpjZbF9KGiOo2Kf+8n2mdalo
-	 Rr2qUpWX1dnsMdKIsTWHORLBMfZ22ZTlvK82gZg8wSZsovcT1URKFiMQp5yS9Db/oo
-	 Udv5lSXVEeoMWazsCwGjCdPPEA+2NjFGlsAAfxdYsWxrIR5hLtbjlcylAxkDaXj+jJ
-	 uKWU1ULVisv8g==
-From: Miguel Ojeda <ojeda@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Miguel Ojeda <ojeda@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	Boqun Feng <boqun@kernel.org>,
-	Gary Guo <gary@garyguo.net>,
-	=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>,
-	Trevor Gross <tmgross@umich.edu>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Daniel Almeida <daniel.almeida@collabora.com>,
-	Tamir Duberstein <tamird@kernel.org>,
-	Alexandre Courbot <acourbot@nvidia.com>,
-	=?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>,
-	rust-for-linux@vger.kernel.org
-Subject: [PATCH] rust: cpufreq: fix `undocumented_unsafe_blocks` in `PolicyCpu::from_cpu()`
-Date: Sun, 18 Oct 2026 18:37:19 +0200
-Message-ID: <20261018163719.81691-1-ojeda@kernel.org>
+	dkim=pass (2048-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b="PSoKXqHm";
+	dkim=permerror (0-bit key) header.d=unwrap.rs header.i=@unwrap.rs header.b="SM7wkrlC"
+DKIM-Signature: v=1; a=rsa-sha256; s=202503r; d=unwrap.rs; c=relaxed/relaxed; r=y;
+	h=Message-ID:Date:Subject:To:From:Content-Type; t=1792341631; bh=pCKsnZzzQU
+	klhIVb1fk/+cwj/EuYdFTeu++dyamkAVY=; b=PSoKXqHmBchRCTMc5+EKjF5dszSgV+ObJ01Y1
+	BAjc9Ii87VIbx0NlAar2sTTxyfAcYX7ck8cM5QMyeheO25w9t7ZF0XvwrTQVw4Eo15lafzGKmlg
+	RptQrdteUh79Q1sgaNkaoXdNNTmQsEswA2fKewCD7LgErpMSkAyeSfxb7TOdiRLNWAY9ZbLWbko
+	cVvXzWlv9BkVU/6e5IovnFjuPBsWEuc8JkWh6uHZdNEJNWSAQANdHr7Rt9n384XQe0+41e1DEck
+	FmkLyoYts751EH4HDHiFKccZuoWdh3Gw4XyC6C4LQHQnh2hOOvYcfOWDOBA7iwZyTO1a8Z2L1TL
+	6jihA==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202503e; d=unwrap.rs; c=relaxed/relaxed;
+	h=Message-ID:Date:Subject:To:From:Content-Type; t=1792341631; bh=pCKsnZzzQU
+	klhIVb1fk/+cwj/EuYdFTeu++dyamkAVY=; b=SM7wkrlCJ4TS0vGLHKaAH6kK113CTacLkka6r
+	vH10j+teN56a6F9VhL7f2pbvgDZFH8tv6Gcm3R/BoklHv9DBw==;
+From: Cole Leavitt <cole@unwrap.rs>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Cole Leavitt <cole@unwrap.rs>,
+	Pavel Machek <pavel@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	Jiri Kosina <jikos@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] PM: hibernate: Don't lose create_image() errors to arch_resume_nosmt()
+Date: Sun, 18 Oct 2026 12:39:42 -0400
+Message-ID: <20261018164004.132785-1-cole@unwrap.rs>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -54,49 +50,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-For Rust <= 1.86, Clippy triggers after commit 02c5d7bfa872 ("rust:
-cpufreq: reject NULL from cpufreq_cpu_get()"):
+create_image() calls arch_resume_nosmt() on every path that returns
+with in_suspend cleared and assigns its return value to error.  That
+includes the error paths taken when pm_sleep_disable_secondary_cpus()
+or syscore_suspend() fails, which jump to Enable_cpus/Enable_irqs.
 
-    warning: unsafe block missing a safety comment
-       --> rust/kernel/cpufreq.rs:700:26
-        |
-    700 |             NonNull::new(unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) }).ok_or(ENODEV)?;
-        |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        |
-        = help: consider adding a safety comment on the preceding line
-        = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#undocumented_unsafe_blocks
-        = note: requested on the command line with `-W clippy::undocumented-unsafe-blocks`
+When SMT is not disabled (for example on CPUs without SMT, where
+cpu_smt_control is CPU_SMT_NOT_SUPPORTED), arch_resume_nosmt() returns
+0, so the failure is lost:  create_image() returns 0 with in_suspend
+unset, hibernation_snapshot() treats that as a successful restore and
+hibernate() reports success to user space although no image was
+created.  A wakeup event that aborts image creation in syscore_suspend()
+is thus indistinguishable from resuming a hibernation image.
 
-Thus clean it up.
+Only call arch_resume_nosmt() when image creation succeeded.  Failures
+now propagate, so a wakeup event that makes syscore_suspend() fail
+returns -EBUSY to user space, like wakeup aborts in freeze_processes()
+and dpm_suspend() already do.
 
-Fixes: 02c5d7bfa872 ("rust: cpufreq: reject NULL from cpufreq_cpu_get()")
-Assisted-by: LLM
-Signed-off-by: Miguel Ojeda <ojeda@kernel.org>
+Fixes: ec527c318036 ("x86/power: Fix 'nosmt' vs hibernation triple fault during resume")
+Cc: stable@vger.kernel.org
+Signed-off-by: Cole Leavitt <cole@unwrap.rs>
 ---
- rust/kernel/cpufreq.rs | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
-index b75d692846a2..5f5beedec88b 100644
---- a/rust/kernel/cpufreq.rs
-+++ b/rust/kernel/cpufreq.rs
-@@ -695,9 +695,11 @@ fn clear_data<T: ForeignOwnable>(&mut self) -> Option<T> {
- 
- impl<'a> PolicyCpu<'a> {
-     fn from_cpu(cpu: CpuId) -> Result<Self> {
--        // SAFETY: It is safe to call `cpufreq_cpu_get` for any valid CPU.
--        let ptr =
--            NonNull::new(unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) }).ok_or(ENODEV)?;
-+        let ptr = NonNull::new(
-+            // SAFETY: It is safe to call `cpufreq_cpu_get` for any valid CPU.
-+            unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) },
-+        )
-+        .ok_or(ENODEV)?;
- 
-         Ok(Self(
-             // SAFETY: `ptr` is non-NULL and `cpufreq_cpu_get()` took a reference on it, so it is
+Notes:
+    Tested on a Lenovo ThinkPad P16 Gen 3 (Core Ultra 9 275HX, JHL9580
+    Barlow Ridge host, I226 Ethernet), in daily use since 2026-09-17.
 
-base-commit: 2efb7a11f1aa4d2dc285fe2680cca22cb9f72f64
+ kernel/power/hibernate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index c13f68ab7f6e..f53f844114a1 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -380,7 +380,7 @@ static int create_image(int platform_mode)
+ 	pm_sleep_enable_secondary_cpus();
+ 
+ 	/* Allow architectures to do nosmt-specific post-resume dances */
+-	if (!in_suspend)
++	if (!in_suspend && !error)
+ 		error = arch_resume_nosmt();
+ 
+  Platform_finish:
+
+base-commit: 32c52ec87d6245ee2d12ed5dd509e40062939b50
 -- 
-2.56.0
+2.54.0
 
