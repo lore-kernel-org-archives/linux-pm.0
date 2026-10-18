@@ -1,175 +1,230 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from ixit.cz (ixit.cz [84.42.129.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2D2E346AED
-	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 21:25:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0401939E164;
+	Sun, 18 Oct 2026 22:17:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=84.42.129.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792358714; cv=none; b=OeKZX26Tx6kxwBQk63nnzDTYGqr1nDKY7Ohevxc1dvrG2c2PMXZXMmSIwPJ5EHr4tzfBnIzROI/EfYigvL2hULQiehrFpMQXsXNC7mqvIQaYAsf9pZUh4nKP7ishbtyHdxdhtFhZlznQcj6TPDGpn55AlgK2svpszvEaOXMgMHc=
+	t=1792361830; cv=none; b=uTKZFBSxhvNRD3U1qfcaoZBjNdCbF6WF4lxzh5gBgrv980dEGBF7JXkJ72Lxw4PcQyjA3Mj10tNDnKohWy0nE5LOYutxmzeWDMxAG5lF1gCi/boT74bJeqqmo77TeqgjaD+B9k1MU0oePokQsaiDsFMaXMDlAq2HCp+OaszK5BM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792358714; c=relaxed/simple;
-	bh=EoIQigilf4qWtB6I3ofCQHfnw8IvdafcRor5iIpoidY=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Yc+rL6VG9qzalHB4TbJabT5/fgNHtanBdXhNtW7a3PNGCe8GIH8APyTiTI3T0K5+vH7NCoQAUMvk6s/42LLhYy/AoGJG8Y8zaWnc2GcH/mSr9vHSl2IJgNDNm3eSsJDaYpZYTQDF+PExMEK0ZlDe+lgZrH3Af7O4TcM7ZnyiKGE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EBWEyrx2; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1792361830; c=relaxed/simple;
+	bh=SvhNGhOEbCTd8VfY9SRoWVjGv4wCDw0h+B6OWIL6QdE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jqIRZLtSHiV0UPLjcOZHaFLT1s4oZzaQJDqkBDjJzHrQq/dhmgWinGos+I91cQOQCsXmer0sSBGuatIIy6TDMBNA+5XwHCD5FVO1sIVibzkjHYFMbP8ijMr5hMISDyZsz+xUpXmUzqb06Lk+v7bYURNEw1xkG6R+CK1y1tptTKY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=Wnwi0Rbc; arc=none smtp.client-ip=84.42.129.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EBWEyrx2"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 6CAA2C2BCC7
-	for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 21:25:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1792358714;
-	bh=EoIQigilf4qWtB6I3ofCQHfnw8IvdafcRor5iIpoidY=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=EBWEyrx2jGBOha5SEw5SgeBNcyoChM67qdMqARp/f6jvlQN7/DKlxqYNpxpiVcVvr
-	 lWRct5pHBjLJ35BAS1mdcSHrvN1XtnF31cNiufA+LFtW1LAZExNRvoKxDOT1XdXWHs
-	 SIJEBKGxjPXqh4QEF8IBVxF2+M1m37aCEdnRS/npLnM2rAEvD2mtiRa5MBMeTzFP0G
-	 7c7nhnEp+P/TXVXuUm4rYh9ta9c450OQfxC1I/Gcmzc/WaXQ1QzsJ/JdXRT43TwtwP
-	 kr769+rPSxjepkULt/m27O7B5cLQwDF2h35Yzto8E98A+j7OrXm/Qoo10ZUQuzbZLa
-	 1LAmHD0LiYyLg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 4DA33C41612; Sun, 18 Oct 2026 21:25:14 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 222146] 6.18: AMD (Ryzen 5): cannot select existing
- energy_performance_preference
-Date: Sun, 18 Oct 2026 21:25:14 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: steffen@sdaoden.eu
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: INSUFFICIENT_DATA
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-222146-137361-LZU6ExyLqC@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-222146-137361@https.bugzilla.kernel.org/>
-References: <bug-222146-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="Wnwi0Rbc"
+Received: from [IPV6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e] (unknown [IPv6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ixit.cz (Postfix) with ESMTPSA id CF04E53402B0;
+	Mon, 19 Oct 2026 00:17:05 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
+	t=1792361826;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=oD9Nnq+2dQo6ClH+FSfZOnSV+NNBLuALLaa9RbVSkNk=;
+	b=Wnwi0Rbcg+FJs3nGVruAOKye+iDKCItS2U4DnQzZdXxRE4nJ4tiYoiDLNGlOb2LypsmJ8+
+	vOdU1ZVr7fEa/23DmxttHTwtfChzfSCJZfuGf90v/Jyhro2Dv0ySYbiX8J3GqyoXKwT6iH
+	25qhq7vUuYk8ouE+mv/Pih4QnP9tFp4=
+Message-ID: <923282d7-cc31-400e-89e7-f3646edd06c8@ixit.cz>
+Date: Mon, 19 Oct 2026 00:17:05 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6] power: supply: bq27xxx: detect bq27541 behind bq27411
+ compatible
+To: rinat.muhamedgaliev@gmail.com, linux-pm@vger.kernel.org
+Cc: pali@kernel.org, sre@kernel.org, afd@ti.com,
+ konrad.dybcio@oss.qualcomm.com, krzk@kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20261019-master-v6-0-c4b36129721e@gmail.com>
+ <20261019-master-v6-1-c4b36129721e@gmail.com>
+Content-Language: en-US, cs-CZ
+From: David Heidelberg <david@ixit.cz>
+Autocrypt: addr=david@ixit.cz; keydata=
+ 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
+In-Reply-To: <20261019-master-v6-1-c4b36129721e@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D222146
+On 18/10/2026 23:15, Rinat Muhamedgaliev via B4 Relay wrote:
+> From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+> 
+> OnePlus 6 and 6T replacement battery packs may contain either a bq27411
+> or a bq27541 fuel gauge at I2C address 0x55. The device tree currently
+> identifies the gauge as bq27411, but a bq27541 uses a different register
+> map and then reports invalid battery values.
+> 
+> Read the DeviceType control subcommand when probing a bq27411. Keep the
+> existing profile for DeviceType 0x0421, but select the bq27541 profile
+> for DeviceType 0x0541. This retains the established DT ABI and supports
+> replacement packs without introducing a generic compatible.
+> 
+> Tested on OnePlus 6T (fajita) with DeviceType 0x0541: voltage, state of
+> charge, and temperature were reported correctly. Testing on hardware with
+> DeviceType 0x0421 would be appreciated.
+> 
+> Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+> ---
+>   drivers/power/supply/bq27xxx_battery_i2c.c | 57 ++++++++++++++++++++++++++++++
+>   1 file changed, 57 insertions(+)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index 94b00bb89c17..0b957888ad2b 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -16,6 +16,11 @@
+>   static DEFINE_IDR(battery_id);
+>   static DEFINE_MUTEX(battery_mutex);
+>   
+> +#define BQ27XXX_REG_CTRL		0x00
+> +#define BQ27XXX_DEVICE_TYPE		0x0001
+> +#define BQ27411_DEVICE_TYPE		0x0421
+> +#define BQ27541_DEVICE_TYPE		0x0541
+> +
+>   static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
+>   {
+>   	struct bq27xxx_device_info *di = data;
+> @@ -136,6 +141,46 @@ static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
+>   	return 0;
+>   }
+>   
+> +static int bq27xxx_battery_i2c_check_device_type(struct bq27xxx_device_info *di)
+> +{
+> +	enum bq27xxx_chip detected_chip;
+> +	int expected_type;
+> +	int ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_DEVICE_TYPE,
+> +			    false);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = di->bus.read(di, BQ27XXX_REG_CTRL, false);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	switch (ret) {
+> +	case BQ27411_DEVICE_TYPE:
+> +		detected_chip = BQ27411;
+> +		break;
+> +	case BQ27541_DEVICE_TYPE:
+> +		detected_chip = BQ27541;
+> +		break;
+> +	default:
+> +		dev_err(di->dev, "unrecognized DeviceType 0x%04x\n", ret);
+> +		return -ENODEV;
+> +	}
+> +
+> +	if (detected_chip == di->chip)
+> +		return 0;
+> +
+> +	expected_type = di->chip == BQ27411 ? BQ27411_DEVICE_TYPE :
+> +		BQ27541_DEVICE_TYPE;
 
---- Comment #3 from Steffen Nurpmeso (steffen@sdaoden.eu) ---
-merde, of course you can have full lscpu or whatever you want!!
-Thanks, indeed.
-(I was only sad because of that AMD "territorial pissing" as via
-  lid_exists() {
-        if [ -z "$LID" ]; then
-                # Documentation/firmware-guide/acpi/acpi-lid.rst
-                LID=3D/proc/acpi/button/lid/LID0/state
-                [ -f "$LID" ] && return 0
-                # amd ryzen 5 220, linux 6.18
-                LID=3D/proc/acpi/button/lid/LID/state
-                [ -f "$LID" ] && return 0
-                LID=3D.
-        fi
-        [ "$LID" !=3D . ]
-  }
-Cool that really someone deals with bugzilla!!!)
+This is not that generic, I would go for extensible design, something like:
+
+switch (di->chip) {
+case BQ27411:
+     expected_type = BQ27411_DEVICE_TYPE
+case BQ27541:
+     expected_type = BQ27541_DEVICE_TYPE
+default:
+     dev_warn(di->dev, "expected chip undefined\n");
+}
 
 
-Architecture:                x86_64
-  CPU op-mode(s):            32-bit, 64-bit
-  Address sizes:             48 bits physical, 48 bits virtual
-  Byte Order:                Little Endian
-CPU(s):                      12
-  On-line CPU(s) list:       0-10:2
-  Off-line CPU(s) list:      1-11:2
-Vendor ID:                   AuthenticAMD
-  Model name:                AMD Ryzen 5 220 w/ Radeon 740M Graphics
-    CPU family:              25
-    Model:                   124
-    Thread(s) per core:      1
-    Core(s) per socket:      6
-    Socket(s):               1
-    Stepping:                0
-    Microcode version:       0xa70c00a
-    Frequency boost:         enabled
-    CPU(s) scaling MHz:      39%
-    CPU max MHz:             3201.0000
-    CPU min MHz:             406.4770
-    BogoMIPS:                6390.28
-    Flags:                   fpu vme de pse tsc msr pae mce cx8 apic sep mt=
-rr
-pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_=
-opt
-pdpe1gb rdtscp lm constant_tsc rep
-                             _good amd_lbr_v2 nopl xtopology nonstop_tsc cp=
-uid
-extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse=
-4_2
-x2apic movbe popcnt aes xsave avx
-                              f16c rdrand lahf_lm cmp_legacy svm extapic
-cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topo=
-ext
-perfctr_core perfctr_nb bpext perfctr_l
-                             lc mwaitx cpuid_fault cpb cat_l3 cdp_l3 hw_pst=
-ate
-ssbd mba perfmon_v2 ibrs ibpb stibp ibrs_enhanced vmmcall fsgsbase bmi1 avx2
-smep bmi2 erms invpcid cqm rdt_a av
-                             x512f avx512dq rdseed adx smap avx512ifma
-clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1
-xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm
-                             _mbm_local avx512_bf16 clzero irperf xsaveerptr
-rdpru wbnoinvd cppc arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean
-flushbyasid decodeassists pausefilter pf
-                             threshold vgif x2avic v_spec_ctrl vnmi avx512v=
-bmi
-umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg
-avx512_vpopcntdq rdpid overflow_recov
-                              succor smca fsrm flush_l1d amd_lbr_pmc_freeze
-Virtualization features:
-  Virtualization:            AMD-V
-Caches (sum of all):
-  L1d:                       192 KiB (6 instances)
-  L1i:                       192 KiB (6 instances)
-  L2:                        6 MiB (6 instances)
-  L3:                        16 MiB (1 instance)
-NUMA:
-  NUMA node(s):              1
-  NUMA node0 CPU(s):         0-10:2
-Vulnerabilities:
-  Gather data sampling:      Not affected
-  Ghostwrite:                Not affected
-  Indirect target selection: Not affected
-  Itlb multihit:             Not affected
-  L1tf:                      Not affected
-  Mds:                       Not affected
-  Meltdown:                  Not affected
-  Mmio stale data:           Not affected
-  Old microcode:             Not affected
-  Reg file data sampling:    Not affected
-  Retbleed:                  Not affected
-  Spec rstack overflow:      Vulnerable
-  Spec store bypass:         Mitigation; Speculative Store Bypass disabled =
-via
-prctl
-  Spectre v1:                Mitigation; usercopy/swapgs barriers and __user
-pointer sanitization
-  Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB
-conditional; STIBP always-on; PBRSB-eIBRS Not affected; BHI Not affected
-  Srbds:                     Not affected
-  Tsa:                       Mitigation; Clear CPU buffers
-  Tsx async abort:           Not affected
-  Vmscape:                   Mitigation; IBPB before exit to userspace
+> +	dev_warn(di->dev,
+> +		 "detected DeviceType 0x%04x instead of expected 0x%04x\n",
+> +		 ret, expected_type);
+> +	di->chip = detected_chip;
+> +
+> +	return 0;
+> +}
+> +
+>   static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>   				     const struct i2c_device_id *id)
+>   {
+> @@ -169,6 +214,18 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>   	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
+>   	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+>   
+> +	/* BQ27411 and BQ27541 may be interchanged in replacement battery packs. */
 
---=20
-You may reply to this email to add a comment.
+We can see this from the code. The comment should imply the list should be 
+extended with devices which can be detected over i2c.
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+For all devices supporting reporting it's ID - if we can check at boot it's 
+really reporting, it brings the value - e.g. broken or different device will not 
+show 0 or 100% of battery charge, but fail to load.
+
+Otherwise IMHO looks good.
+Thanks
+
+> +	switch (di->chip) {
+> +	case BQ27411:
+> +	case BQ27541:
+> +		ret = bq27xxx_battery_i2c_check_device_type(di);
+> +		if (ret)
+> +			goto err_failed;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+>   	ret = bq27xxx_battery_setup(di);
+>   	if (ret)
+>   		goto err_failed;
+> 
+
