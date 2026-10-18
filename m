@@ -1,36 +1,37 @@
 Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B44D47532E;
-	Sun, 18 Oct 2026 12:22:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 585EA476059;
+	Sun, 18 Oct 2026 12:22:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792326156; cv=none; b=RlmQuZAXj5JMVaMS0gjxwB2MJPx2MfCe4NQBjAgXmRLFyaKa1iCdHj17do9rmPn7T+TzF5Mjq1lmLwxJ7hKIOUZ3n6of76gLYPttELNUQyNSnZb0r2G+djanjbK/wQZVS/tSQbBj+/347Qc8Qz6q89XoE913bCrafzxmm+tLGW4=
+	t=1792326156; cv=none; b=kBT13tVN0hrLVPbLVt+UmXkrOfrM5gk6a9zIJUqaIXoPEkgT9HCOqnAwIhTJz1UIBk6+6sCpNvqx01Oat7UXZcB6rjhfXPbayrd5TF4Xgwnek1z0GkkxQuJhlYds0B8gyLbWNhZgX30rSXG295GiNk+waY8cjb/NhZyKEGRvpCo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1792326156; c=relaxed/simple;
-	bh=88MdtRV5c1OfblwXIh5USkyoQj5IG6VXjRd0Ceysiaw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fsnzwulFXzIMbAuRewK2hng49eg02SqAWarQsgkoi6k/QLOuIjpvxy8KngGyk/uH/zdoZZLDjKLzmRyVwIEEk2NadCk9D2n5T12bcKbWEoVlei9c9YNvGoTPaZHML8LpkYI1U+VTVPsWE4rZjCt+bBL1ZtFGcpjsn6pf1YfoxZU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=I6XMtjHT; arc=none smtp.client-ip=178.21.23.139
+	bh=obptXnKJfo9G8MUS1THB+vW0v6eRQjK4F3RSahuS4b4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=oL8A5rrGS8il6m+uHF5cedrCXzLcQUIwU8iJH+HGeloQttrpOIwbRPYRb+tPwAoFFl3u+v3hnqTU7I77fcNXtnl17LecublsHA2IyvpKcVQTOl/bjPPej7SsNaBAwC0dKCDnhiK0/Iq/qjkTLp+E34+aDl9kgjlQRh4Hc3Q/keM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=JqwmJnS4; arc=none smtp.client-ip=178.21.23.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="I6XMtjHT"
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="JqwmJnS4"
 Received: from mail01.layka.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 3D43D810E5;
-	Sun, 18 Oct 2026 14:22:31 +0200 (CEST)
+	by disroot.org (Postfix) with ESMTP id A4F3880847;
+	Sun, 18 Oct 2026 14:22:32 +0200 (CEST)
 X-Virus-Scanned: SPAM Filter at disroot.org
 Received: from layka.disroot.org ([127.0.0.1])
  by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KMPTO3mHBsKi; Sun, 18 Oct 2026 14:22:30 +0200 (CEST)
+ id moFbRbfDAkZh; Sun, 18 Oct 2026 14:22:31 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1792326150; bh=88MdtRV5c1OfblwXIh5USkyoQj5IG6VXjRd0Ceysiaw=;
-	h=From:To:Cc:Subject:Date;
-	b=I6XMtjHTKOLL0VYiLG8rfZ5X10zDZyRwfkRBAT/ElCdNyf10aAL+CUV1EDQhnYFkg
-	 7CvYWSkkD/q3ZvpM+9infGhG1Tl5jWfFR7V0G6X4YWu1+YaiPV7KIUfmIVu4JTMsGK
-	 YO7wTtk8Ex3zgihiZF7wFJYcxUoXOyKZYdsnfMmYTbqsdD0hesiYVWqUx6R4NoplUZ
-	 HobKpFe00mJI99rGxpirlJr2JaFppAEKGie4oJf75PMJH1CCYshkH2EFPDy4gJGkmY
-	 Bpy2rEQo64dhMn1wn38znjECmHa5zKuvh6EPhRLI6cbknqltH15micq+UnWG4wrJlM
-	 NPxviXV6mlGXw==
+	t=1792326151; bh=obptXnKJfo9G8MUS1THB+vW0v6eRQjK4F3RSahuS4b4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=JqwmJnS4TS8dGh0S3qGtqzY79aet4ZZmtGZYlfdlWjB0nvMm+5GcRB8yEea8gFYlh
+	 Y8RKhcodrVIwWVSGHGCBv29ovAx37GCyAEH7MgVZ2/Spoe4nXVVp7L68RWJdhSN5aT
+	 GTFwoIc8FEomTw/bdqAG+KXsltymghAhEEc86PhHmx4T3ys7Oz3pbgQc9jpBemgdCZ
+	 mIKL2ES9ZNrfkhdpW0JBUc0qLYtmRroET9QKmVff76ATQWVCuDnH2fOreCMojXso4a
+	 ajbvrI1y7i4By9ll7bv4lXt4nwO1TP337BxduT/R0zEGhu/KmWcAY8XwGA5lu/THsK
+	 i3uePnJA1XGPw==
 From: =?UTF-8?q?Ali=20Ahmet=20Memi=C5=9F?= <aliamemis@disroot.org>
 To: "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>,
@@ -52,10 +53,13 @@ Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>,
 	linux-pm@vger.kernel.org,
 	platform-driver-x86@vger.kernel.org,
 	acpica-devel@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 0/4] ACPI: Serialize battery, INT3403 _TMP and ideapad methods
-Date: Sun, 18 Oct 2026 15:22:16 +0300
-Message-ID: <20261018122220.678822-1-aliamemis@disroot.org>
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v3 1/4] ACPI: utils: Add exclusive AML evaluation helpers
+Date: Sun, 18 Oct 2026 15:22:17 +0300
+Message-ID: <20261018122220.678822-2-aliamemis@disroot.org>
+In-Reply-To: <20261018122220.678822-1-aliamemis@disroot.org>
+References: <20261018122220.678822-1-aliamemis@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,51 +69,124 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On ThinkPad P1 Gen2 and P53, INT3403 _TMP switches the EC page selector
-without taking the mutex the battery methods use.  On some Lenovo
-IdeaPad and Yoga models, the battery _BIX and the ideapad GBMD take the
-EC mutex and a serialized method in opposite order and deadlock until
-an AML mutex times out.
+ACPICA drops the interpreter lock while AML waits, for example around EC
+accesses, so two methods can run interleaved. Some firmware relies on
+methods not interleaving, for instance by switching an EC page selector
+without taking the AML mutex that the other users of that page hold.
 
-As discussed in [1], add exclusive variants of the AML evaluation
-helpers and use them for the battery, INT3403 _TMP and ideapad methods.
-Patches 2-4 depend on patch 1.
+Add acpi_evaluate_object_exclusive(), acpi_evaluate_integer_exclusive()
+and acpi_execute_simple_method_exclusive() which serialize the
+evaluation under a global mutex, for callers that are known to be
+affected.
 
-Changes in v3:
-- Also evaluate _TMP exclusively where int3403 and processor_thermal
-  probe for it
+Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
+Link: https://lore.kernel.org/all/CAJZ5v0gS4agVUkCO6M=VW4Wi2y1-s+k23bpzmX9aAZ0Rsv4z9Q@mail.gmail.com/
+Cc: stable@vger.kernel.org
+Signed-off-by: Ali Ahmet Memiş <aliamemis@disroot.org>
+Reviewed-by: Rong Zhang <i@rong.moe>
+---
+ drivers/acpi/utils.c    | 41 +++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_bus.h |  7 +++++++
+ 2 files changed, 48 insertions(+)
 
-Changes in v2:
-- Merge the follow-up series [2] and drop its EC query and UCSI patches
-  until they are shown to help
-- Add acpi_execute_simple_method_exclusive() for _BTP and ideapad
-- Make the helpers wrappers that take the lock around the existing ones
-- Join lines up to 100 columns, add a Link: for Suggested-by:
-- Drop Hans' Reviewed-by from patch 1 due to the rework
-
-Link: https://lore.kernel.org/all/CAJZ5v0gS4agVUkCO6M=VW4Wi2y1-s+k23bpzmX9aAZ0Rsv4z9Q@mail.gmail.com/ [1]
-Link: https://lore.kernel.org/all/20261014190544.150093-1-aliamemis@disroot.org/ [2]
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=221065
-v2: https://lore.kernel.org/all/20261017130652.318778-1-aliamemis@disroot.org/
-v1: https://lore.kernel.org/all/20261014132703.93355-1-aliamemis@disroot.org/
-
-Ali Ahmet Memiş (4):
-  ACPI: utils: Add exclusive AML evaluation helpers
-  ACPI: battery: Evaluate battery methods exclusively
-  thermal: intel: int340x: Evaluate _TMP exclusively
-  platform/x86: ideapad-laptop: Evaluate ACPI methods exclusively
-
- drivers/acpi/battery.c                        | 12 +++---
- drivers/acpi/utils.c                          | 41 +++++++++++++++++++
- drivers/platform/x86/lenovo/ideapad-laptop.c  | 12 ++++--
- .../intel/int340x_thermal/int3403_thermal.c   |  3 +-
- .../int340x_thermal/int340x_thermal_zone.c    |  6 ++-
- .../processor_thermal_device.c                |  2 +-
- include/acpi/acpi_bus.h                       |  7 ++++
- 7 files changed, 68 insertions(+), 15 deletions(-)
-
-
-base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
+diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+index d499b72574ab..ea8cb876c12d 100644
+--- a/drivers/acpi/utils.c
++++ b/drivers/acpi/utils.c
+@@ -10,6 +10,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/types.h>
+@@ -243,6 +244,28 @@ acpi_extract_package(union acpi_object *package,
+ 
+ EXPORT_SYMBOL(acpi_extract_package);
+ 
++static DEFINE_MUTEX(acpi_exclusive_eval_lock);
++
++/**
++ * acpi_evaluate_object_exclusive - Evaluate an object without interleaving
++ * @handle: ACPI handle of the object or its scope.
++ * @pathname: Path of the object relative to @handle.
++ * @arguments: Arguments to pass, or NULL.
++ * @buffer: Buffer for the return value, or NULL.
++ *
++ * Same as acpi_evaluate_object(), but serialized with other exclusive
++ * evaluations.  Use it only for methods known to break when interleaved.
++ */
++acpi_status acpi_evaluate_object_exclusive(acpi_handle handle, acpi_string pathname,
++					   struct acpi_object_list *arguments,
++					   struct acpi_buffer *buffer)
++{
++	guard(mutex)(&acpi_exclusive_eval_lock);
++
++	return acpi_evaluate_object(handle, pathname, arguments, buffer);
++}
++EXPORT_SYMBOL_GPL(acpi_evaluate_object_exclusive);
++
+ acpi_status
+ acpi_evaluate_integer(acpi_handle handle,
+ 		      acpi_string pathname,
+@@ -277,6 +300,16 @@ acpi_evaluate_integer(acpi_handle handle,
+ 
+ EXPORT_SYMBOL(acpi_evaluate_integer);
+ 
++acpi_status acpi_evaluate_integer_exclusive(acpi_handle handle, acpi_string pathname,
++					    struct acpi_object_list *arguments,
++					    unsigned long long *data)
++{
++	guard(mutex)(&acpi_exclusive_eval_lock);
++
++	return acpi_evaluate_integer(handle, pathname, arguments, data);
++}
++EXPORT_SYMBOL_GPL(acpi_evaluate_integer_exclusive);
++
+ int acpi_get_local_u64_address(acpi_handle handle, u64 *addr)
+ {
+ 	acpi_status status;
+@@ -685,6 +718,14 @@ acpi_status acpi_execute_simple_method(acpi_handle handle, char *method,
+ }
+ EXPORT_SYMBOL(acpi_execute_simple_method);
+ 
++acpi_status acpi_execute_simple_method_exclusive(acpi_handle handle, char *method, u64 arg)
++{
++	guard(mutex)(&acpi_exclusive_eval_lock);
++
++	return acpi_execute_simple_method(handle, method, arg);
++}
++EXPORT_SYMBOL_GPL(acpi_execute_simple_method_exclusive);
++
+ /**
+  * acpi_evaluate_ej0: Evaluate _EJ0 method for hotplug operations
+  * @handle: ACPI device handle
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index a10a591c18b2..8b1d329455f7 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -32,6 +32,12 @@ acpi_status
+ acpi_evaluate_integer(acpi_handle handle,
+ 		      acpi_string pathname,
+ 		      struct acpi_object_list *arguments, unsigned long long *data);
++acpi_status acpi_evaluate_object_exclusive(acpi_handle handle, acpi_string pathname,
++					   struct acpi_object_list *arguments,
++					   struct acpi_buffer *buffer);
++acpi_status acpi_evaluate_integer_exclusive(acpi_handle handle, acpi_string pathname,
++					    struct acpi_object_list *arguments,
++					    unsigned long long *data);
+ bool acpi_evaluate_reference(acpi_handle handle, acpi_string pathname,
+ 			     struct acpi_object_list *arguments,
+ 			     struct acpi_handle_list *list);
+@@ -48,6 +54,7 @@ acpi_evaluate_ost(acpi_handle handle, u32 source_event, u32 status_code,
+ bool acpi_has_method(acpi_handle handle, char *name);
+ acpi_status acpi_execute_simple_method(acpi_handle handle, char *method,
+ 				       u64 arg);
++acpi_status acpi_execute_simple_method_exclusive(acpi_handle handle, char *method, u64 arg);
+ acpi_status acpi_evaluate_ej0(acpi_handle handle);
+ acpi_status acpi_evaluate_lck(acpi_handle handle, int lock);
+ acpi_status acpi_evaluate_reg(acpi_handle handle, u8 space_id, u32 function);
 -- 
 2.55.0
 
