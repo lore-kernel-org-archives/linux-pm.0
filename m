@@ -1,46 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0295D4C8474;
-	Mon, 19 Oct 2026 14:01:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD13D63DB5C;
+	Mon, 19 Oct 2026 14:06:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418498; cv=none; b=DlWFdHhZIelrn4n1G33zBVLKjNmfyN4vx7n9QvGAmAT5KL9h2ds2+04KcDZ94aig3a/fBq3yqbbdwxsAVmguXeQq6CnTgXb+LSO2JlvGS0RlfFXSPyth6FnIEJkfNh7Izi59yQ4xWNSb5QQvg0yScGpQ4zPrPCuWaCeItcejFq0=
+	t=1792418780; cv=none; b=dGO97a490W0hLQqSSQljlSwt1XyZpLug0Fvt71r3yEWB/hJN1AoyHROPCC9/CdsYE+3k2TaPE7TDGK5z+xdcEaQ9SgJkMh9gz4Du1c9vGZG4eEcvXTQCSb/N7g54I5ohJMj0l/SxXjQB0HxSoqBfQNb9IBbfzg6PwQ3x+pbycQQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418498; c=relaxed/simple;
-	bh=pevl2x+Sn9X3Q1eeZFj4P3E3HsMDmNjoMM46qKfxo+U=;
+	s=arc-20240116; t=1792418780; c=relaxed/simple;
+	bh=OdyJJ1TcH/KZ4hEhPE5KC/X/gh+QKeYAIqXRnwqShK4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ElRlpeVRhgq/6fQtDRObDRljRTtKhbwgpeursQpoEI/MrhsTkr6R3yoykbW+OFemg9RzptIKV5kS2J62bjifeKoyIqxMUaOFh2yFDUmCrqqkWD4oOd37+iazCqsX6TN17+h5pU7cgp3hdzuPtF4tOmcz7mnxIjhjNSHBtlaxy4w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KY+YqmQi; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=iHfnXxcfsMS4pZViGtPc/Jsdpru8DaRayFuFh57QIKxIUfF/Hg5nDO/UvOVCpjrv78Lly1yoZSgO5tlDwLY1I34+gTIMZjnmU6yjeQ8nwYRBb/nw/cbmYc+SaEjEV+HbuNtT0toAGH0X8RdV6xO3V+6PfT6kiwdqN9DSOBO7OoE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Srvi2mhU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KY+YqmQi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BDBE61F000CB;
-	Mon, 19 Oct 2026 14:01:34 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Srvi2mhU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA28C1F000C5;
+	Mon, 19 Oct 2026 14:06:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418495;
-	bh=voAvVSk4YB+tIdoJj1CiH8tlxU0aSwXAsmGz8e3GhrA=;
+	s=k20260515; t=1792418777;
+	bh=hwkb0P5SDw7wfm5aToOfwjRzuJMunmkgoeXbZNqeC08=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=KY+YqmQij6N712OhXheZT12pHfyISXnJIqNJSOoz2zJstfxBR8kPZqs77LwQXHkpz
-	 D8JH+aFBacEEi09dTsDkIsd30ij3FLaZHXgblHYAtM79XKGj/qKkNxLJAevAVBHiAZ
-	 nuyIFvooGJCUY2kw2qbIe3iPwwOM0XQaCwa64+wEOV5i2307kf8QGDxNX5dNlWbBhn
-	 wv2RznOklEi9XKu+FXJoAFGMTCA6yuF3b7jIK53c5z9R/1E/9DYxTQglprQpKqdWmD
-	 tGpOs3wdLhODE6zWobrbFTIPtXFYiVD0ZAwWoIpnVxoFfoxpPJZz8gy/38c2IQIRhQ
-	 w50uoU1Umr8hQ==
+	b=Srvi2mhUIm6m9XCLAMlQ7hegr2sDlxkLrin06uiCJKi9D8Itp9qBdqkx1G+3IYpkQ
+	 uc2/72Abd2z8kcsbmLM5RtyOMyQq/VSvyOX/rElbWU6PTlmqzrIp7B9YrTr2zZfRya
+	 TO+qboFzcNPYfW/qHqJDO7Cvndl6xSGD1bUUOAALjdLPhsI2+jNiKT1O4H67YvrP7y
+	 ihUF1tfwGIKyxSkMWmu2/zouaZL0fIbw5oHMmpy3+RifVqDYUfpAi8XbULJTCo0I/9
+	 Cwc35nEJywbsbN9KyeTqmvvJxi7/so1Us66UuhgmLc3+3gdx1K4mWAt3ChKq8ziypA
+	 KkCY2oJYfPcgg==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Praveen Talari <praveen.talari@oss.qualcomm.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	Sasha Levin <sashal@kernel.org>,
-	vireshk@kernel.org,
-	nm@ti.com,
-	sboyd@kernel.org,
+	sre@kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-6.1] opp: Use clk_get_optional() to avoid leaving opp_table->clk as an error pointer
-Date: Mon, 19 Oct 2026 09:49:40 -0400
-Message-ID: <20261019135441.1420968-289-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-5.10] power: reset: piix4-poweroff: add missing MODULE_DEVICE_TABLE()
+Date: Mon, 19 Oct 2026 09:53:00 -0400
+Message-ID: <20261019135441.1420968-489-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -56,570 +53,362 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Praveen Talari <praveen.talari@oss.qualcomm.com>
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 
-[ Upstream commit 84f05af0975c9f9c8ffee0361d6f7cbb1f289231 ]
+[ Upstream commit ffefc5d9a052f67bc87b57d1107fd7cc1fa1a3d4 ]
 
-_update_opp_table_clk() uses clk_get(dev, NULL) to acquire the
-device's clock. On platforms where the perf domain device has no
-Linux clock and is instead managed entirely by firmware via
-devm_pm_opp_of_add_table() (through
-of_genpd_add_provider_simple()/onecell()), clk_get() returns
--ENOENT. That case is treated as valid (the OPP table can still
-have entries sourced from firmware), but opp_table->clk is left
-holding ERR_PTR(-ENOENT) rather than being reset to NULL:
+The driver has a match table for the pci bus wired into its driver
+structure, but the table is not exported with MODULE_DEVICE_TABLE().
 
-	opp_table->clk = clk_get(dev, NULL);
-	ret = PTR_ERR_OR_ZERO(opp_table->clk);
-	...
-	if (ret == -ENOENT) {
-		opp_table->clk_count = 1;
-		return opp_table;   /* opp_table->clk is still ERR_PTR(-ENOENT) */
-	}
+Add the missing MODULE_DEVICE_TABLE() entry so module alias information
+is generated for automatic module loading.
 
-Consumers that only check IS_ERR(opp_table->clk) treat this as a
-valid clk and pass it straight into the clk consumer API. In
-particular, dev_pm_opp_set_rate() calls
-clk_round_rate(opp_table->clk, target_freq), and clk_round_rate()
-only guards against a NULL clk, so it dereferences the error pointer
-to read clk->exclusive_count and crashes:
+This is a source-level fix.  It does not claim dynamic hardware
+reproduction; the evidence is the driver-owned match table, its use by
+the driver registration structure, and the missing module alias
+publication.
 
-  Unable to handle kernel NULL pointer dereference at virtual
-  address 000000000000002e
-  ...
-  pc : clk_round_rate+0x3c/0x188
-  ...
-  Call trace:
-   clk_round_rate+0x3c/0x188 (P)
-   dev_pm_opp_set_rate+0x114/0x33c
-
-Rather than teaching every clk consumer API to special-case
-ERR_PTR(-ENOENT), fix it at the source: use clk_get_optional()
-instead of clk_get() in _update_opp_table_clk(), which already
-translates -ENOENT into a NULL clk. This documents that the clock is
-genuinely optional for such devices, and keeps opp_table->clk holding
-either a valid clk or NULL, never a lingering -ENOENT error pointer.
-_opp_config_clk_single() is only wired up via opp_table->config_clks
-when a clk was actually found, and every other opp_table->clk
-consumer already tolerates NULL through the standard clk API (which
-treats a NULL clk as a no-op), so no other call site needs to change.
-
-Suggested-by: Sebastian Reichel <sre@kernel.org>
-Reviewed-by: Sebastian Reichel <sre@kernel.org>
-Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Link: https://patch.msgid.link/20260704152336.51384-1-pengpeng@iscas.ac.cn
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-I have enough to decide: the crash path is in this 6.12 tree, the fix is
-small, and it should apply cleanly. Full analysis follows.
+This tree is **7.3.0-rc4** (`v7.3-rc4-27-gf0100363d8c37`). The driver
+has been present since v4.10; the change is a one-line
+`MODULE_DEVICE_TABLE()` addition so the existing PCI ID can autoload the
+module.
 
-===============================================================
-PHASE 1: COMMIT MESSAGE FORENSICS
-===============================================================
+## Phase 1: Commit message forensics
 
-**Step 1.1: PARSE THE SUBJECT LINE**
+**Step 1.1: Subject line**
+Record: **[power/reset: piix4-poweroff] [add] [export the existing PCI
+match table via MODULE_DEVICE_TABLE() so the module can autoload]**
 
-Record: **[opp] [Use] Use `clk_get_optional()` so `opp_table->clk` is
-never left as `ERR_PTR(-ENOENT)`.** Subsystem is the OPP core
-(`drivers/opp/`). “Use X to avoid Y” is a correctness fix, not a
-feature.
-
-**Step 1.2: PARSE ALL COMMIT MESSAGE TAGS**
-
+**Step 1.2: Tags**
 Record:
-- **Suggested-by:** Sebastian Reichel `<sre@kernel.org>` (linux-pm /
-  power maintainer)
-- **Reviewed-by:** Sebastian Reichel `<sre@kernel.org>`
-- **Signed-off-by:** Praveen Talari `<praveen.talari@oss.qualcomm.com>`
-  (author)
-- **Signed-off-by:** Viresh Kumar `<viresh.kumar@linaro.org>` (OPP
-  maintainer; applied the patch)
-- **No Fixes:** tag (expected for this review pipeline)
-- **No Cc: stable@vger.kernel.org** (expected; not a negative)
-- **No Reported-by / Tested-by / Link / Acked-by**
-- Pipeline markers (`[Upstream commit …]`, Sasha Levin SOB) ignored per
-  instructions
+- **Fixes:** none (expected for this review path)
+- **Reported-by / Tested-by / Reviewed-by / Acked-by:** none
+- **Link:**
+  `https://patch.msgid.link/20260704152336.51384-1-pengpeng@iscas.ac.cn`
+- **Cc: stable:** none (expected)
+- **Signed-off-by:** Pengpeng Hou (author); Sebastian Reichel (power-
+  supply maintainer)
+- No syzbot, no CVE, no kernel test robot
 
-Upstream SHA (from public history, **not** in this tree):
-`84f05af0975c9f9c8ffee0361d6f7cbb1f289231`.
-
-**Step 1.3: ANALYZE THE COMMIT BODY TEXT**
-
+**Step 1.3: Body**
 Record:
-- **Bug:** `_update_opp_table_clk()` treats `clk_get()` returning
-  `-ENOENT` as valid (firmware-managed / clockless OPP tables) but
-  leaves `opp_table->clk = ERR_PTR(-ENOENT)`.
-- **Symptom:** kernel oops. `dev_pm_opp_set_rate()` calls
-  `clk_round_rate(opp_table->clk, …)`. `clk_round_rate()` only NULL-
-  checks, then reads `clk->exclusive_count`. Error pointer wraps to a
-  low address (`000000000000002e` in the report).
-- **Stack:** `clk_round_rate` ← `dev_pm_opp_set_rate`
-- **Trigger:** platforms whose perf-domain / OPP device has no Linux
-  clock (`devm_pm_opp_of_add_table()` via
-  `of_genpd_add_provider_simple()`/`onecell()`), then a consumer calls
-  `dev_pm_opp_set_rate()`.
-- **Root cause:** consumers use `IS_ERR()` (true for `-ENOENT`) vs clk
-  APIs that only accept NULL as “no clock”.
-- **Fix:** `clk_get_optional()` maps `-ENOENT` → NULL at the source.
+- **Bug:** `piix4_poweroff_ids[]` is wired into `pci_driver.id_table`
+  but not published with `MODULE_DEVICE_TABLE()`, so modpost does not
+  emit PCI aliases.
+- **Symptom:** when `CONFIG_POWER_RESET_PIIX4_POWEROFF=m`, userspace
+  (udev/modprobe) cannot match PCI `8086:7113` to the module, so the
+  driver is not autoloaded and `pm_power_off` is never installed.
+- **Version info:** none in the message. Driver added in 2016
+  (`29676833df1d9`, first in v4.10-rc1).
+- **Root cause:** missing module-alias publication, not a runtime logic
+  error. Author states this is a **source-level** finding, not a
+  hardware repro.
 
-**Step 1.4: DETECT HIDDEN BUG FIXES**
+**Step 1.4: Hidden bug fix?**
+Record: **Not hidden.** The message names the autoload failure directly.
+It is a real functional bug even without a crash report.
 
-Record: **Not hidden.** Explicit crash fix with a stack trace. Not
-cleanup/refactor-only.
+## Phase 2: Diff analysis
 
-===============================================================
-PHASE 2: DIFF ANALYSIS - LINE BY LINE
-===============================================================
-
-**Step 2.1: INVENTORY THE CHANGES**
-
+**Step 2.1: Inventory**
 Record:
-- **File:** `drivers/opp/core.c` only (`+24 / -30` upstream)
-- **Function:** `_update_opp_table_clk()`
-- **Scope:** single-file surgical fix
+- **File:** `drivers/power/reset/piix4-poweroff.c` — **+1 / −0**
+- **Function:** none; one statement after `piix4_poweroff_ids[]`
+- **Scope:** single-file, surgical
 
-**Step 2.2: UNDERSTAND THE CODE FLOW CHANGE**
-
-Record (this tree’s `_update_opp_table_clk` at
-`drivers/opp/core.c:1511`):
-
-**Before:**
-1. `opp_table->clk = clk_get(dev, NULL)`
-2. Success (`ret == 0`): set `config_clks = _opp_config_clk_single`,
-   `clk_count = 1`
-3. `-ENOENT`: set `clk_count = 1`, **leave `clk` as
-   `ERR_PTR(-ENOENT)`**, return the table
-4. Other errors: `dev_pm_opp_put_opp_table()`, `dev_err_probe()`, return
-   `ERR_PTR(ret)`
-
-**After:**
-1. `opp_table->clk = clk_get_optional(dev, NULL)` (`-ENOENT` becomes
-   NULL)
-2. `IS_ERR(clk)`: put table, `dev_err_probe()`, return `ERR_CAST(clk)`
-   (real errors, e.g. `-EPROBE_DEFER`)
-3. If `clk` is non-NULL: set `config_clks`
-4. Always `clk_count = 1` and return the table (clock present **or**
-   optional-absent)
-
-**Step 2.3: IDENTIFY THE BUG MECHANISM**
-
-Record: **[Memory safety / NULL-vs-ERR_PTR] [Logic / correctness]**
-
-Mechanism: `ERR_PTR(-ENOENT)` is not NULL. `clk_round_rate()` in this
-tree (`drivers/clk/clk.c:1799`) does `if (!clk) return 0;` then
-`clk->exclusive_count`. `ERR_PTR(-2)` plus `offsetof(struct clk,
-exclusive_count)` wraps to `0x2e`, matching the oops.
-`_find_current_opp` and table release already use
-`!IS_ERR(opp_table->clk)` and therefore skip the error pointer;
-`dev_pm_opp_set_rate()` does not.
-
-**Step 2.4: ASSESS THE FIX QUALITY**
-
+**Step 2.2: Code flow**
 Record:
-- **Quality:** obviously correct. `clk_get_optional()` is the documented
-  helper for this case (`include/linux/clk.h:1195`). `config_clks` is
-  still only set when a real clk exists — same as before.
-- **Surgical:** one helper, no API change.
-- **Regression risk (low):**
-  - After NULL, early-return `!IS_ERR(opp_table->clk)` is true, so later
-    lookups do not retry `clk_get`. Previously `-ENOENT` was `IS_ERR`
-    and would retry. Correct for “no clock” devices.
-  - `_find_current_opp` may now call `clk_get_rate(NULL)` (returns 0)
-    instead of skipping. Lowest available OPP vs first list entry;
-    acceptable.
-  - Error path uses `opp_table->clk` **after**
-    `dev_pm_opp_put_opp_table()`. Old code saved `ret` first.
-    Theoretical UAF if the last ref frees the table before the
-    `PTR_ERR`/`ERR_CAST`. Mainline accepted this; not the common
-    `-ENOENT` success path.
+- **Before:** PCI ID table exists and is used for matching **after** the
+  module is loaded (`id_table = piix4_poweroff_ids`). No
+  `MODULE_DEVICE_TABLE`, so no `modules.alias` entry.
+- **After:** `MODULE_DEVICE_TABLE(pci, piix4_poweroff_ids)` creates the
+  alias symbol that `scripts/mod/file2alias.c` (`do_pci_entry`) turns
+  into `MODULE_ALIAS("pci:v00008086d00007113...")`.
+- **Path affected:** module metadata / autoload only. Probe, remove, and
+  `piix4_poweroff()` are unchanged.
 
-===============================================================
-PHASE 3: GIT HISTORY INVESTIGATION
-===============================================================
+**Step 2.3: Bug mechanism**
+Record: **[Hardware enablement / missing module alias]** — match table
+present, alias not exported. Same class as adding a PCI ID for autoload.
+Not UAF, leak, race, or crash.
 
-**Step 3.1: BLAME THE CHANGED LINES**
+**Step 2.4: Fix quality**
+Record: **Obviously correct.** Canonical one-macro fix used across
+`drivers/power/reset/`. No API, locking, or control-flow change.
+**Regression risk: negligible** (build-time alias only).
 
+## Phase 3: Git history
+
+**Step 3.1: Blame**
+Record: ID table introduced in **`29676833df1d9`** (“power: reset: Add
+Intel PIIX4 poweroff driver”, Paul Burton, 2016-09-28). **`git describe
+--contains`:** `v4.10-rc1~120^2~15`. The table never had
+`MODULE_DEVICE_TABLE` until this commit. Bug is old, not recent churn.
+
+**Step 3.2: Fixes: tag**
+Record: **No Fixes: tag.** Buggy pattern is the original driver, not a
+later regression. Introducing commit is an ancestor of this tree.
+
+**Step 3.3: File history**
+Record: Only a handful of commits on this file (`29676833df1d9` add,
+SPDX, email, `MODULE_DESCRIPTION`, then this). **Standalone**, not patch
+2/N. Sibling same-day commit `9da4152d376ca` (cw2015) is a parallel
+autoload fix, not a prerequisite.
+
+**Step 3.4: Author**
+Record: Pengpeng Hou is not the subsystem maintainer; they have a series
+of missing-`MODULE_DEVICE_TABLE` fixes (rtc, vdpa, watchdog, hwmon,
+fbdev, this driver). Applied by **Sebastian Reichel**, power-
+supply/reset maintainer.
+
+**Step 3.5: Dependencies**
+Record: **None.** Only needs `piix4_poweroff_ids` and
+`MODULE_DEVICE_TABLE()`, both present here for years. Applies
+standalone.
+
+## Phase 4: Mailing list / external research
+
+**Step 4.1: Original discussion**
 Record:
-- `_update_opp_table_clk` introduced in `32439ac7535a8` (“opp: Defer
-  acquiring the clk until OPPs are added”, 2021-02-02).
-- `-ENOENT` treated as valid in `d4a4c7a41153d` (“opp: Don't ignore
-  clk_get() errors other than -ENOENT”, 2021-02-02) — **this is the
-  commit that left the error pointer in the table**.
-- ENOENT comment / `clk_count = 1` / `config_clks` wiring from
-  `2083da24eb56ce` (“OPP: Allow multiple clocks for a device”,
-  2022-06-10).
-- `dev_pm_opp_set_rate()` dropped its `IS_ERR(clk)` guard in
-  `1d3c42cabbd35` (“opp: No need to check clk for errors”, 2021-01-20) —
-  “Clock is not optional for users who call into
-  `dev_pm_opp_set_rate()`”, which is false for firmware-managed clocks.
+- **Lore/msgid:**
+  `https://patch.msgid.link/20260704152336.51384-1-pengpeng@iscas.ac.cn`
+- **`b4 dig -a`:** **v1 only** (2026-07-04). No v2/v3.
+- Maintainer reply 2026-07-21: **“Applied, thanks!”** (no requested
+  changes).
+- **No NAK, no stable nomination, no flagged risk.**
+- lore.kernel.org HTTP fetch returned **403**; thread recovered via
+  **`b4 dig -m`**.
 
-Bug present since ~v5.12, definitely in 6.12.
+**Step 4.2: Recipients (`b4 dig -w`)**
+Record: To Sebastian Reichel (`sre@kernel.org`); Cc `linux-
+pm@vger.kernel.org`, `linux-kernel@vger.kernel.org`. Right maintainer
+and list.
 
-**Step 3.2: FOLLOW THE FIXES: TAG**
+**Step 4.3: Bug report**
+Record: **No user/syzbot/bugzilla report.** Evidence is the source
+mismatch (table used, not exported).
 
-Record: **No Fixes: tag.** Introducers `d4a4c7a41153d` and
-`1d3c42cabbd35` **are both ancestors of HEAD**.
+**Step 4.4: Series**
+Record: Standalone 1/1. Parallel same-author autoload patches in other
+drivers; this patch does not depend on them.
 
-**Step 3.3: CHECK FILE HISTORY FOR RELATED CHANGES**
+**Step 4.5: Stable list**
+Record: **`site:lore.kernel.org/stable` search returned no hits.**
+WebFetch to lore/stable also 403. **No evidence this was rejected for
+stable.**
 
-Record: Recent `drivers/opp/core.c` work is other OPP fixes (level,
-bandwidth, genpd). No later local rewrite of `_update_opp_table_clk`.
-**Standalone**, not “patch X/Y”.
+## Phase 5: Semantic / call-chain analysis
 
-**Step 3.4: CHECK THE AUTHOR'S OTHER COMMITS**
+**Step 5.1: Functions**
+Record: **No function body changed.** New use of `MODULE_DEVICE_TABLE`
+next to `piix4_poweroff_ids`. Related runtime functions:
+`piix4_poweroff_probe`, `piix4_poweroff_remove`, `piix4_poweroff`.
 
-Record: Praveen Talari has **no** prior commits in `drivers/opp/` on
-this tree. Viresh Kumar (OPP maintainer) signed off and applied it.
-Sebastian Reichel suggested and reviewed.
+**Step 5.2: Callers**
+Record: `piix4_poweroff_probe` / `remove` only via `module_pci_driver`.
+`piix4_poweroff` assigned to `pm_power_off` in probe. No other in-tree
+callers (`git grep`).
 
-**Step 3.5: CHECK FOR DEPENDENT/PREREQUISITE COMMITS**
+**Step 5.3: Callees**
+Record: Probe uses `pci_request_region`, `pci_resource_start`. Poweroff
+path uses PIO and `pci_bus_write_config_dword`. Unchanged by this patch.
 
+**Step 5.4: Reachability**
+Record: Userspace-reachable: PCI enumerate → autoload → probe →
+`pm_power_off`. `reboot(LINUX_REBOOT_CMD_POWER_OFF)` then runs the
+handler. **Without aliases, the module never loads**, so power-off via
+this southbridge never registers. Config: `POWER_RESET_PIIX4_POWEROFF`
+is **tristate**, `depends on PCI && HAS_IOPORT && (MIPS ||
+COMPILE_TEST)` — mainly **MIPS Malta / QEMU Malta**.
+
+**Step 5.5: Similar patterns**
+Record: Same one-line fix already used in this directory (`gpio-
+poweroff`, `keystone-reset`, `regulator-poweroff`, `at91-poweroff`, `zx-
+reboot`, etc.). Established, not novel.
+
+## Phase 6: This checkout
+
+**Step 6.1: Buggy code in this tree?**
+Record: **Yes.** File exists; pre-image at `ffefc5d9a052f^` has the ID
+table and **no** `MODULE_DEVICE_TABLE`. Bug since **v4.10**. Current
+tree already contains the fix (`git merge-base --is-ancestor
+ffefc5d9a052f HEAD` succeeded). That is expected for a mainline checkout
+of the originating commit, not a reason to treat the bug as absent from
+this lineage.
+
+**Step 6.2: Backport difficulty**
+Record: **Clean apply** onto any tree that still has the original ID-
+table block (verbatim in this file since 2016 aside from nearby module
+macros). No refactor of this driver.
+
+**Step 6.3: Related fixes already here?**
+Record: **No earlier autoload fix** on this file. `b498ddb6f283c` only
+added `MODULE_DESCRIPTION()`.
+
+## Phase 7: Subsystem context
+
+**Step 7.1:**
+Record: **[drivers/power/reset] [PERIPHERAL]** — platform power-off, not
+mm/VFS/net core. Still the whole purpose of this driver.
+
+**Step 7.2:**
+Record: Subsystem is active overall; **this file is mature and almost
+untouched**. Long-standing omission, not a new-code fix.
+
+## Phase 8: Impact and risk
+
+**Step 8.1: Who is affected**
+Record: **Config- and platform-specific:**
+`CONFIG_POWER_RESET_PIIX4_POWEROFF=m` on MIPS (Malta/QEMU) with Intel
+PIIX4 PM **8086:7113**. Built-in (`=y`) already works without aliases.
+Distros that ship this as a module are the users who benefit.
+
+**Step 8.2: Trigger**
+Record: Boot with the PCI device present and the driver as a module,
+without a manual `modprobe`. Common for modular distro kernels; **not**
+a race. Unprivileged users do not need to trigger it for it to matter —
+missing autoload means **power-off never gets hooked**.
+
+**Step 8.3: Failure mode**
+Record: **[Module never loads → `pm_power_off` not set by this driver →
+`poweroff` does not cut board/QEMU power]**
+**Severity: MEDIUM** (functional, not oops/corruption). For this driver
+that *is* the user-visible bug.
+
+**Step 8.4: Risk vs benefit**
 Record:
-- `clk_get_optional()` exists here: `60b8f0ddf1a92` (2019-02-06),
-  `include/linux/clk.h:1203`.
-- Function body in this tree **matches** the patch’s “before” hunk.
-  **Standalone apply.**
+- **Benefit:** medium for the small MIPS Malta/QEMU population (driver
+  actually loads).
+- **Risk:** very low (one metadata macro).
+- **Ratio:** favorable. Same bar as PCI ID additions, which stable
+  explicitly allows.
 
-===============================================================
-PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
-===============================================================
+## Phase 9: Synthesis
 
-**Step 4.1: FIND THE ORIGINAL PATCH DISCUSSION**
+**Step 9.1: Evidence**
 
-Record:
-- `b4 dig -c 84f05af0975c9f9c8ffee0361d6f7cbb1f289231` → https://patch.m
-  sgid.link/20260727-fix_ptr_check_on_clk-v4-1-
-  97969fa7826a@oss.qualcomm.com
-- **v1:** guard `clk_round_rate()` against error pointers (and a
-  `drivers/clk/clk.c` change)
-- **v2:** per Reichel, fix OPP core with `clk_get_optional()`; drop clk-
-  core change
-- **v3:** add OPP maintainers
-- **v4:** rebase; drop local `ret` (applied)
-- Applied version is v4 (latest). No NAK. Viresh: “Applied. Thanks.”
-  (only nit: extra `---` in the changelog)
+**For:**
+- Real autoload bug: ID table used, not exported.
+- One line, canonical, maintainer-applied v1.
+- Driver in this tree since v4.10; no extra commits required.
+- Device-ID / hardware-enablement exception: userspace cannot bind the
+  existing PCI ID.
+- Zero runtime behavior change once the module is loaded.
+- Same fix already used throughout `drivers/power/reset/`.
 
-**Step 4.2: CHECK WHO REVIEWED THE PATCH**
+**Against:**
+- Not a crash, UAF, deadlock, or security hole.
+- Niche (`MIPS || COMPILE_TEST`), old PIIX4/Malta.
+- No hardware repro, no `Reported-by`.
+- Only matters for `=m`, not `=y`.
 
-Record (`b4 dig -w`): Viresh Kumar, Nishanth Menon, Stephen Boyd (OPP
-maintainers), Konrad Dybcio, Sebastian Reichel, linux-pm, linux-kernel,
-clk maintainer Boyd. Right audience.
+**Unresolved:** lore.kernel.org HTTP 403 (thread still obtained via `b4
+dig`); no stable-list thread found.
 
-**Step 4.3: SEARCH FOR THE BUG REPORT**
+**Step 9.2: Stable rules**
+1. Obviously correct and tested? **PASS** — one well-known macro;
+   maintainer applied v1.
+2. Real bug affecting users? **PASS** — modular autoload/power-off fails
+   on matching PCI.
+3. Important (crash/security/corruption/deadlock)? **PASS via device-ID
+   exception** — enables existing hardware; failure mode is “power-off
+   driver never attaches,” which is this driver’s job. Not a panic.
+4. Small and contained? **PASS** — +1 line, one file.
+5. No new features/APIs? **PASS** — publishes an ID table that already
+   exists.
+6. Can apply to this tree? **PASS** — file and table match the pre-
+   image; no missing helpers.
 
-Record: No syzbot/bugzilla. Concrete oops in the message from a Qualcomm
-engineer. Real hardware, not theoretical.
+**Step 9.3: Exception category**
+Record: **Device ID / module autoload (hardware enablement).** Closest
+documented exception: new device IDs on an existing driver. Here the ID
+is already in the driver; only the userspace alias was missing.
 
-**Step 4.4: CHECK FOR RELATED PATCHES AND SERIES**
+**Step 9.4: Decision**
+The local 7.3-rc4 tree has this driver and the long-standing omission.
+The patch is a zero-risk, one-line autoload fix that makes the existing
+PCI match actually load the module. That is appropriate to take into
+this tree’s stable-style line.
 
-Record: Single-patch series. v1’s clk-core change was dropped; this does
-not depend on other patches.
+### What it solves for users of this tree
+With `CONFIG_POWER_RESET_PIIX4_POWEROFF=m`, udev cannot load
+`piix4-poweroff` for Intel 82371AB PM (`8086:7113`). Probe never runs,
+`pm_power_off` is not set, and Malta/QEMU-style power-off does not work
+unless the module is loaded by hand. `MODULE_DEVICE_TABLE(pci,
+piix4_poweroff_ids)` is the required alias export.
 
-**Step 4.5: CHECK STABLE MAILING LIST HISTORY**
-
-Record: **UNVERIFIED** for lore.kernel.org/stable (HTTP 403). No
-evidence this was rejected for stable.
-
-===============================================================
-PHASE 5: CODE SEMANTIC ANALYSIS
-===============================================================
-
-**Step 5.1: IDENTIFY KEY FUNCTIONS IN THE DIFF**
-
-Record: `_update_opp_table_clk()` only.
-
-**Step 5.2: TRACE CALLERS**
-
-Record:
-- Only caller: `_add_opp_table_indexed()` (`core.c:1623`)
-- DT path `_of_add_table_indexed()` uses `getclk=true` (`of.c:1150`) —
-  **every** `dev_pm_opp_of_add_table()` / `devm_pm_opp_of_add_table()` /
-  genpd `of_genpd_add_provider_simple()` that adds an OPP table
-- Also `dev_pm_opp_add_dynamic()` (`core.c:2894`, getclk=true)
-- Crash consumer: `dev_pm_opp_set_rate()` (`core.c:1352`) — used by
-  Qualcomm UART/SPI/MMC/GPU/Venus, Tegra, cpufreq-dt,
-  panfrost/panthor/lima, etc.
-
-**Step 5.3: TRACE CALLEES**
-
-Record: `clk_get` → `clk_get_optional`; on hard error
-`dev_pm_opp_put_opp_table` + `dev_err_probe`. No new locks/allocs.
-
-**Step 5.4: FOLLOW THE CALL CHAIN**
-
-Record: Device probe (`dev_pm_opp_of_add_table`) →
-`_update_opp_table_clk` stores `ERR_PTR(-ENOENT)` → later
-`dev_pm_opp_set_rate` from driver/cpufreq/devfreq → oops. **Reachable
-from normal device operation**, not a debug-only path.
-
-Verified clk NULL-safety in this tree:
-- `clk_round_rate`: NULL → 0 (`clk.c:1804`)
-- `clk_get_rate`: NULL → 0 (`clk.c:2005`)
-- `clk_set_rate`: NULL → 0 (`clk.c:2600`)
-- `__clk_put`: NULL returns immediately (`clk.c:4748`)
-
-**Step 5.5: SEARCH FOR SIMILAR PATTERNS**
-
-Record: Other `opp_table->clk` users already use `!IS_ERR()`
-(`_find_current_opp`, kref release). `set_rate` is the one that passes
-the error pointer into clk APIs. Fixing storage is the right place (as
-Reichel requested).
-
-===============================================================
-PHASE 6: CROSS-REFERENCING AGAINST THE LOCAL TREE
-===============================================================
-
-**Step 6.1: DOES THE BUGGY CODE EXIST IN THIS TREE?**
-
-Record: **Yes.** Local tree is **6.12.111** (`pending-6.12`,
-`p-6.12-2-gd38d58a4e0359`). `_update_opp_table_clk` still uses
-`clk_get(dev, NULL)` and the `-ENOENT` early return
-(`core.c:1526-1551`). `git merge-base --is-ancestor
-84f05af0975c9f9c8ffee0361d6f7cbb1f289231 HEAD` failed (not present). Bug
-since ~2021.
-
-**Step 6.2: CHECK FOR BACKPORT COMPLICATIONS**
-
-Record: **Clean apply.** Function text matches the patch context; only
-surrounding line numbers differ. `clk_get_optional()` already in
-`include/linux/clk.h`.
-
-**Step 6.3: CHECK IF RELATED FIXES ARE ALREADY HERE**
-
-Record: `d4a4c7a41153d` (ENOENT allowed) and `1d3c42cabbd35` (set_rate
-dropped IS_ERR) are here. No `clk_get_optional` OPP commit. **No
-alternate fix.**
-
-===============================================================
-PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
-===============================================================
-
-**Step 7.1: IDENTIFY THE SUBSYSTEM AND ITS CRITICALITY**
-
-Record: **OPP core** (`drivers/opp/`) — **IMPORTANT**. Shared by
-cpufreq, devfreq, DRM, MMC, serial, genpd performance states. Not
-staging.
-
-**Step 7.2: ASSESS SUBSYSTEM ACTIVITY**
-
-Record: Mature (OPP since well before 6.12) with ongoing correctness
-fixes. This bug is old, not a brand-new subsystem.
-
-===============================================================
-PHASE 8: IMPACT AND RISK ASSESSMENT
-===============================================================
-
-**Step 8.1: DETERMINE WHO IS AFFECTED**
-
-Record: **Config/driver-specific:** `CONFIG_PM_OPP` plus devices with an
-OPP table and **no** unnamed Linux clock, that then call
-`dev_pm_opp_set_rate()`. Includes firmware-managed perf domains
-(Qualcomm-class, genpd OPP). Not every box, but production SoCs.
-
-**Step 8.2: DETERMINE THE TRIGGER CONDITIONS**
-
-Record: Probe adds OPP table (`getclk=true`); `clk_get` → `-ENOENT`;
-later `dev_pm_opp_set_rate()`. Common on clockless firmware DVFS, not
-every boot on x86. Not a syzbot/unprivileged syscall primitive;
-driver/cpufreq context.
-
-**Step 8.3: DETERMINE THE FAILURE MODE SEVERITY**
-
-Record: **Kernel oops / NULL deref** in `clk_round_rate`. **Severity:
-CRITICAL** (crash; can strand DVFS/device).
-
-**Step 8.4: CALCULATE RISK-BENEFIT RATIO**
-
-Record:
-- **Benefit: HIGH** — prevents a real oops on clockless OPP devices;
-  6.12 LTS includes those platforms.
-- **Risk: LOW** — ~50-line rewrite of one helper; `clk_get_optional`
-  long-standing; success path equivalent except NULL vs ERR_PTR; clk
-  APIs already NULL-safe.
-- **Ratio: strongly favors backport.**
-
-===============================================================
-PHASE 9: FINAL SYNTHESIS
-===============================================================
-
-**Step 9.1: COMPILE THE EVIDENCE**
-
-**FOR:**
-- Real oops with stack trace (`clk_round_rate` ← `dev_pm_opp_set_rate`)
-- Buggy pattern present in **this** 6.12 tree
-- Small, obviously correct, no new API
-- `clk_get_optional` already here
-- Reviewed by Reichel; applied by Viresh
-- Clean apply; no missing prerequisites
-
-**AGAINST:**
-- Affects firmware-managed / clockless OPP devices, not every machine
-- Error-path `opp_table->clk` after put is slightly sloppier than the
-  old local `ret` (not the crash path being fixed)
-- No Fixes:/Cc:stable (irrelevant per pipeline rules)
-
-**UNRESOLVED:**
-- Could not fetch lore.kernel.org/stable (403)
-- Could not fetch v1 body (403/404); changelog is enough
-- Exact Qualcomm SoC in the oops not named in the v4 mail
-
-**Step 9.2: APPLY THE STABLE RULES CHECKLIST**
-
-1. Obviously correct and tested? **PASS** — helper does exactly this;
-   maintainer review + apply
-2. Fixes a real bug that affects users? **PASS** — oops on clockless OPP
-   + `set_rate`
-3. Important issue? **PASS** — kernel crash (CRITICAL)
-4. Small and contained? **PASS** — one function, one file
-5. No new features or APIs? **PASS**
-6. Can apply to the local tree? **PASS** — body matches;
-   `clk_get_optional` present
-
-**Step 9.3: CHECK FOR EXCEPTION CATEGORIES**
-
-Record: Not a device-ID/quirk/DT/build/docs exception. Ordinary crash
-fix; does not need an exception.
-
-**Step 9.4: MAKE YOUR DECISION**
-
-This is a real NULL-deref oops in OPP core that 6.12 still has. The fix
-maps “no clock” to NULL the way the clk API already documents, is tiny,
-and applies cleanly here. That is appropriate for this stable tree.
+### Risk vs benefit
+Benefit is restoring the driver’s purpose on modular MIPS configs. Risk
+is essentially none: no runtime path, lock, or ABI change.
 
 ---
 
-### What the commit solves (for this tree)
+**Verification:**
+- **[Phase 1]** Parsed message/tags: no Fixes/Reported-by/Cc:stable;
+  Link msgid; SOBs Hou + Reichel
+- **[Phase 2]** Diff: +1 line `MODULE_DEVICE_TABLE(pci,
+  piix4_poweroff_ids)` in `piix4-poweroff.c`
+- **[Phase 2]** Confirmed `MODULE_DEVICE_TABLE` in
+  `include/linux/module.h` creates the alias symbol;
+  `scripts/mod/file2alias.c` `do_pci_entry` emits `pci:v...d...` aliases
+- **[Phase 3]** `git blame`: ID table from `29676833df1d9` (Paul Burton,
+  2016); MDT line from `ffefc5d9a052f`
+- **[Phase 3]** `git describe --contains 29676833df1d9` →
+  `v4.10-rc1~120^2~15`
+- **[Phase 3]** `git log --oneline --
+  drivers/power/reset/piix4-poweroff.c`: no other autoload fix
+- **[Phase 3]** `git merge-base --is-ancestor ffefc5d9a052f HEAD` → yes
+  (commit is in this tree)
+- **[Phase 3]** Pre-image `git show ffefc5d9a052f^:...` matches the
+  patch context exactly
+- **[Phase 4]** `b4 dig -c ffefc5d9a052f`: msgid
+  `20260704152336.51384-1-pengpeng@iscas.ac.cn`
+- **[Phase 4]** `b4 dig -a`: v1 only
+- **[Phase 4]** `b4 dig -w`: To Sebastian Reichel; Cc linux-pm, linux-
+  kernel
+- **[Phase 4]** `b4 dig -m /tmp/piix4-mdt.mbox`: maintainer “Applied,
+  thanks!”; no NAK/stable discussion
+- **[Phase 4]** lore HTTP 403; stable web search: no hits —
+  **UNVERIFIED: full lore HTML; verified via mbox**
+- **[Phase 5]** `git grep piix4_poweroff`: only this file; probe sets
+  `pm_power_off`
+- **[Phase 6]** `git describe HEAD` → `v7.3-rc4-27-gf0100363d8c37`;
+  `make kernelversion` → `7.3.0-rc4`
+- **[Phase 6]** Kconfig: tristate, `depends on PCI && HAS_IOPORT &&
+  (MIPS || COMPILE_TEST)`
+- **[Phase 6]** `PCI_DEVICE_ID_INTEL_82371AB_3` = `0x7113` in
+  `include/linux/pci_ids.h`
+- **[Phase 8]** Failure mode: missing autoload → power-off handler never
+  registered; MEDIUM, not oops
 
-On 6.12.111, `_update_opp_table_clk()` still does `clk_get(dev, NULL)`
-and, on `-ENOENT`, keeps `opp_table->clk` as `ERR_PTR(-ENOENT)` while
-treating the table as valid. `dev_pm_opp_set_rate()` then passes that
-into `clk_round_rate()`, which only rejects NULL, and the kernel oopses.
-That is exactly the path firmware-managed / genpd OPP devices take when
-they have no Linux clock.
-
-### Stable rules / risk
-
-Meets the stable criteria: real crash, small, no new API, prerequisites
-already in 6.12. Benefit is avoiding an oops; risk is a one-function
-change whose success path is equivalent except storing NULL instead of
-an error pointer (what clk consumers already expect).
-
-### Verification
-
-- **[Phase 1]** Parsed tags: Suggested-by/Reviewed-by Reichel; SOB
-  Talari + Viresh; no Fixes/Cc:stable
-- **[Phase 1]** Body: oops at `clk_round_rate` ← `dev_pm_opp_set_rate`,
-  address `0x2e`
-- **[Phase 2]** Diff: only `_update_opp_table_clk`; `clk_get` →
-  `clk_get_optional`; `-ENOENT` → NULL; `config_clks` only if clk non-
-  NULL
-- **[Phase 2]** `clk_round_rate` in this tree: NULL check only, then
-  `clk->exclusive_count` (`clk.c:1804-1809`)
-- **[Phase 3]** Blame: `-ENOENT` keep-table from `d4a4c7a41153d` (in
-  tree); set_rate dropped IS_ERR in `1d3c42cabbd35` (in tree)
-- **[Phase 3]** `clk_get_optional` from `60b8f0ddf1a92` (2019), present
-- **[Phase 3]** `git merge-base --is-ancestor 84f05af HEAD` → not in
-  tree
-- **[Phase 4]** `b4 dig -c 84f05af` → v4 msgid
-  `20260727-fix_ptr_check_on_clk-v4-1-97969fa7826a@oss.qualcomm.com`
-- **[Phase 4]** `b4 dig -a`: v1→v4; v2 switched to source fix per
-  Reichel
-- **[Phase 4]** `b4 dig -w`: OPP maintainers + linux-pm on To/Cc
-- **[Phase 4]** mbox: Viresh “Applied. Thanks.”; no NAK
-- **[Phase 5]** Caller: `_add_opp_table_indexed` ← DT add with
-  `getclk=true`; crash via `dev_pm_opp_set_rate`
-- **[Phase 5]** clk_get_rate/set_rate/put NULL-safe in this tree
-- **[Phase 6]** `git describe` / Makefile: 6.12.111; buggy `clk_get` +
-  `-ENOENT` block at `core.c:1526-1551`
-- **[Phase 8]** Failure mode: oops, CRITICAL
-- **UNVERIFIED:** stable@ lore (403); exact crash SoC; whether later
-  mainline fixed the post-put `opp_table->clk` read
+**UNVERIFIED:** Direct lore.kernel.org page content (403). Does not
+change the verdict; mbox has the full v1 + apply mail.
 
 **YES**
 
- drivers/opp/core.c | 54 +++++++++++++++++++++-------------------------
- 1 file changed, 24 insertions(+), 30 deletions(-)
+ drivers/power/reset/piix4-poweroff.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index a179d57a5a150..a41ad136e90e0 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1579,8 +1579,6 @@ static struct opp_table *_update_opp_table_clk(struct device *dev,
- 					       struct opp_table *opp_table,
- 					       bool getclk)
- {
--	int ret;
--
- 	/*
- 	 * Return early if we don't need to get clk or we have already done it
- 	 * earlier.
-@@ -1589,39 +1587,35 @@ static struct opp_table *_update_opp_table_clk(struct device *dev,
- 	    opp_table->clks)
- 		return opp_table;
+diff --git a/drivers/power/reset/piix4-poweroff.c b/drivers/power/reset/piix4-poweroff.c
+index e6822c0210000..1a6f3d22d2974 100644
+--- a/drivers/power/reset/piix4-poweroff.c
++++ b/drivers/power/reset/piix4-poweroff.c
+@@ -96,6 +96,7 @@ static const struct pci_device_id piix4_poweroff_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB_3) },
+ 	{ 0 },
+ };
++MODULE_DEVICE_TABLE(pci, piix4_poweroff_ids);
  
--	/* Find clk for the device */
--	opp_table->clk = clk_get(dev, NULL);
-+	/*
-+	 * There are few platforms which don't want the OPP core to manage
-+	 * device's clock settings. In such cases neither the platform
-+	 * provides the clks explicitly to us, nor the DT contains a valid
-+	 * clk entry. The OPP nodes in DT may still contain "opp-hz" property
-+	 * though, which we need to parse and allow the platform to find an
-+	 * OPP based on freq later on.
-+	 *
-+	 * This is a simple solution to take care of such corner cases, i.e.
-+	 * make the clk_count 1, which lets us allocate space for frequency
-+	 * in opp->rates and also parse the entries in DT. Use
-+	 * clk_get_optional() instead of clk_get() so opp_table->clk stays
-+	 * NULL for such devices, instead of holding an ERR_PTR(-ENOENT) that
-+	 * consumers must remember to special-case.
-+	 */
-+	opp_table->clk = clk_get_optional(dev, NULL);
- 
--	ret = PTR_ERR_OR_ZERO(opp_table->clk);
--	if (!ret) {
--		opp_table->config_clks = _opp_config_clk_single;
--		opp_table->clk_count = 1;
--		return opp_table;
-+	if (IS_ERR(opp_table->clk)) {
-+		dev_pm_opp_put_opp_table(opp_table);
-+		dev_err_probe(dev, PTR_ERR(opp_table->clk), "Couldn't find clock\n");
-+		return ERR_CAST(opp_table->clk);
- 	}
- 
--	if (ret == -ENOENT) {
--		/*
--		 * There are few platforms which don't want the OPP core to
--		 * manage device's clock settings. In such cases neither the
--		 * platform provides the clks explicitly to us, nor the DT
--		 * contains a valid clk entry. The OPP nodes in DT may still
--		 * contain "opp-hz" property though, which we need to parse and
--		 * allow the platform to find an OPP based on freq later on.
--		 *
--		 * This is a simple solution to take care of such corner cases,
--		 * i.e. make the clk_count 1, which lets us allocate space for
--		 * frequency in opp->rates and also parse the entries in DT.
--		 */
--		opp_table->clk_count = 1;
--
--		dev_dbg(dev, "%s: Couldn't find clock: %d\n", __func__, ret);
--		return opp_table;
--	}
-+	if (opp_table->clk)
-+		opp_table->config_clks = _opp_config_clk_single;
- 
--	dev_pm_opp_put_opp_table(opp_table);
--	dev_err_probe(dev, ret, "Couldn't find clock\n");
-+	opp_table->clk_count = 1;
- 
--	return ERR_PTR(ret);
-+	return opp_table;
- }
- 
- /*
+ static struct pci_driver piix4_poweroff_driver = {
+ 	.name		= "piix4-poweroff",
 -- 
 2.53.0
 
