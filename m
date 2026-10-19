@@ -1,79 +1,80 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1792436898;
-	b=xz+z+pMwwlDWghscMOZ3zIfnkxunIqiQm5kI57wsKyAiIEECVd0WH6J/nDYEzuL3BT44
-	 4FKRirRV1BBwcl+LBluPpXWoqor9Eo1TtID5kkmLYQDadCigO4b8D+GWO/ZlswSQL+uvj
-	 eK+0F5rw1sky2A2T0+Ua3NvZvBec5saK49ErhDz2JEVrr8FrPpB3tO2ES4HoFy4+6doDA
-	 TFJ2X8+LUADGcvwEdf3fC6DLQvAY6IAjYRhacfcBAxMDH/TLu8vVtF9lyomBtZil2uBwT
-	 idOHOAGJ2KwckiCW0SAJkxHtaYUmjCwqOmqTW+PycnvCf43KoPZLmRcETYaYYaPL2kw==
+	b=m4UIYKoY4Md3kj58hf1DKMWEdcX3syj+0DAGq37qKp1fKEkyOnloqM9uEgjlMTiW973p
+	 zla0rqPmwPB+HV9RnNYxA3fy0dV6uxbNu7HxU5hv6DMKp5hW2WKhd6kOeSCyB8nQ+75mk
+	 mOvR8W3Xr+c5cMTyeHpqNWW/yVu2qO1hy7VBfEtXyx4P49nRiWgXsCEexN84A987rVuys
+	 crqim3qB4QZNsX/VgKDhfBG54SsjpKQiaFCc8xVIp1muZeMi/5Z8wifWLL8J9RENqwZqC
+	 dWxIUvj+ES/WjhYQ75tKSXi1LGcC24SAPGUfq/PeVqikb5FWETTfohCvYTW9on+OJrg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1792436898;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=GtqT5jKayZCyLMZzwi+S2xzw/Yyak4R2T3ZqqCXNvwg=;
-	b=ECmmSq7LbJR9WDWRgvCZxKH0WLSdNgWxInL2E/yLdMPOaYqWWLr8LoM9L1ZKiBHFRSVD
-	 rhxkLq9mgyZ6Jmi3i6XqjktkckzQxFWccRQ3hZ+0rK6eaCgmGvghGTizNOj00kcBWIezZ
-	 dI4oy+ANP7m2J+HtVqaQd7/HNaSJNPt3xNMwJLXfxupfsUEr4AYE//B8liOvkARK2WkyD
-	 6bO6lfjtZxUDqKqoWGJnazTKuVshb0gkSJxzzDXtsqzUH9xjW8ff2xgSgTnHmUHnW5PKe
-	 Fxh9n2/cIg5e7nUobWEi0LfdE9JOUX+p3AHDH2PGA9n4BATAEOupMKEbY27a5wEj/jQ==
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=8F60DGjKx7m9cj1oGlVJjVJk5368qBtW3tXs28RxwAA=;
+	b=eO0VuaaBbReS6NSZSQ4IrPmyc+LsfnoL/QWPYAYkzJ3vbt9wkBloPGwovdn9rhhlf/vE
+	 rWJOloqtl03H4kDChj+IzEt40cPypYqAivJMlWaZ5/8A/ZRrx6r2LsqjdB3ddktLp7Dgh
+	 y6R1z1odrV7jkF47O3TF3bpm4quPZBIOvRI1sOeSXV+6kZ46o+rsJ3nkbMlHNlGNRfvLf
+	 duvosA3yB7zsnlNJ9ZYfm8LXE103GP0QR9KzvLIwBhzU2q0tBUubjrff/fwPKn3VIz44q
+	 bHLDlDZpOR0Yc3yk0mFUjJLhrTTuS56NiFAkQ9nCIjtiYZdW/Y9osH+8bouvrAojhjA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YvrlmbS9;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+SosaJH;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F80606A319;
-	Mon, 19 Oct 2026 19:08:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 995AB606A31E;
+	Mon, 19 Oct 2026 19:08:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YvrlmbS9
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+SosaJH
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1792436897;
-	b=bLV1zn+qCRFcE0/U+CBs0HPI1yXRtglx2pfpiiI6gicWL0eWF8BC9PxsLf/dzYPLPZmd
-	 ZmM8rlm2ChwRm/LzHRNeU3cPf1rQpxZMIj0r8XNOyj8muLFTOioGimGCzWuIM4Pm8UZ9z
-	 wK+b3ag3DY6Dim5vs9+BT4jted+3HGHy4RgMNPMAJguFZcmHIHcG0bg6lx1EJ/K+zaBZ/
-	 74zT6WH+AQPGgAdyfIRh87fJPI1OaHaIXq/FoutghLVRX25x5NpNaUX1TIwjUmYupAIKc
-	 vZhCkLY//yuEqKAJGLSXNGD5mW5NxH2Afidg/OQ3RJ/iEMjFAZ76RORkX4pLn2E3PPg==
+	t=1792436898;
+	b=F5bWtYWWTiNodaVlaZfjIKTD8mBaxe+6CoH+CtJQTxktogAwqxSwOVgdQ5ZEsRH+EAmd
+	 ws4FZNLMa3rRydgtBK9g8YQYGs+/5cdJNo08mMEjBdau3hZAvf7dy7k04pelvdtxY0iFl
+	 NXcl4nAD/8GcTGTduTJD+XzCW/JvT0h7zWLAQYJ3MQeIOkRbmajGz4I55oyl2GZYdj40o
+	 2fV2nseone3cGUZ03lkxvA7hVMWdyIZXWBKTiGp8iB/dCm5mId+xxrLkXvxsuUySzFmGz
+	 QbLSf6C/rVc/rbobCEvtop0fAlWu5rzclmCSx54E4QaO1KqcknxzqqfhNBo2IcgI3EA==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792436897;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=GtqT5jKayZCyLMZzwi+S2xzw/Yyak4R2T3ZqqCXNvwg=;
-	b=QsUVzRHto4W4vUqEco1hn/Av0NHLq/HjuuHH+JOSVFAAxuqcTUoctGGXf0JMsMBQHynK
-	 abKB6NlnfaWPSWdVhdvb7S6UpAnLyCrU1ZcEUYNK30crB2cxrHxAOfyX+iq9J3vkdiMqI
-	 c9+hzFedOBafNxQiV4JuC2IaK5J09v3aScIiosS1T0c6nUPebLYbJBwCva10cD2Oiow64
-	 2HGH8As6HrTKFc3ZSfyPp2NavxJyTKLFVg4Woxsuj4i3Vbh/fdISlqTL444FzKKnfSqpt
-	 I/uozYs1UjfHYYAYt9yGaaDr14pFDPC2AfSCyrJkxhzBh3ouhBeIMfliJCyEz4kyp+g==
+	c=relaxed/relaxed; t=1792436898;
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=8F60DGjKx7m9cj1oGlVJjVJk5368qBtW3tXs28RxwAA=;
+	b=lsCR353rNZ0Kw5K6hLJ0Otw8z4LZm+85Ie1WsQagUZvO3OQfp4Ft4X82uMbZcMhL73eb
+	 3wIqWqr2hpNpAdhelT7UVJrLoZvyUVSTbxdQG7oJEiZS+pQYsPn8i3zajaRxTm9RzEbJl
+	 sRmw3TqnU9lseStk2MDVNNm051HmA8WLue5w3ejffKs06svpAkTasKzDa4ZP5mk2z9eG4
+	 Q4O4n1N5eSy20qFViS+ljRojs6E8H3uVEUkuJ7i5NSOiIW4lZHI6vUIEdEkrNW0fNsgSe
+	 r3HWK0i1nZQH3qVQb8DT2MMUNw/8XE+rvv1u05qFWXLi4hnRKZ9PfNP/Is5vlrwL/pg==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 41EF41F000C4;
+	by smtp.kernel.org (Postfix) with ESMTPS id 41F071F000C5;
 	Mon, 19 Oct 2026 19:08:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792436897;
-	bh=GtqT5jKayZCyLMZzwi+S2xzw/Yyak4R2T3ZqqCXNvwg=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=YvrlmbS9oKdXNXS/WEJD+5dMO+1zc5mEV4Ej2X96Y1pnazlSYZoSHiDq4r6SPkE/3
-	 IvxBcXQzQrmOgAZb0JNYT603fTw3H7j4n9AozyRPKT+FA7mNzZEBspI+j6QMeL5Grf
-	 pHDm++FVrYviGkWrfFJrskwWLwim3n+gogLkElaVC1ayZagVTi3EZvcIaw9JFavSqD
-	 2Oj+uak3bVa5KdGOAJKOMmekpmWlrzTBnpFFCRdbGEqI3lVYW9D/4i9xGeI4/FVcNj
-	 3l/lppdv7NDHwqtkWoQLEWvHCafSAZ32TTOYdZy/pawPmcf+EZb0+08fgsBQJGdRVZ
-	 rzgNCxVWCitNw==
+	s=k20260515; t=1792436898;
+	bh=8F60DGjKx7m9cj1oGlVJjVJk5368qBtW3tXs28RxwAA=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=F+SosaJHDOTGvqMdPkH2NDIlyg152UMlXUFCd8J9/bTuP5HiQjQt1yYADdfFKJdUL
+	 96XDSTpNj7kSr2C1YZvwAavYC+rguP5h6/4T3MbiXy6qnzkuVEo9he7Vzw8FmgqdCB
+	 9ZFcSJZBQGNK0Ry9pm6Qr8jdb1eXmfsB5dVh9XiX+HKL7bI5eAxOxAVreA31pA5NBS
+	 uwfUMRP6psru4+yVl1q9R2tujp8QYujKYlw5Chu6uxAtFZTDsieYffEMitfvlit20j
+	 MXRdfgoUUB4iRLJYrlZ0oocVjuYCv4bOFuMufJxclXz4VUUVlapNUErvnyg7gORlsE
+	 j+v6kNrRBjJhA==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 9BC6E4060D;
+	by lkml.kernel.org (Postfix) with ESMTP id 95102400AB;
 	Mon, 19 Oct 2026 19:08:16 +0000 (UTC)
 From: Rinat Muhamedgaliev via B4 Relay <devnull+rinat.muhamedgaliev.gmail.com@kernel.org>
-Date: Mon, 19 Oct 2026 22:08:16 +0300
-Subject: [PATCH v8] power: supply: bq27xxx: detect bq27541 behind bq27411
- compatible
+Subject: [PATCH v8] bq27xxx: support interchangeable OnePlus 6/6T fuel
+ gauges
+Date: Mon, 19 Oct 2026 22:08:15 +0300
+Message-Id: <20261019-master-v8-0-2517e41c8992@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,145 +85,77 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261019-master-v8-1-2517e41c8992@gmail.com>
-References: <20261019-master-v8-0-2517e41c8992@gmail.com>
-In-Reply-To: <20261019-master-v8-0-2517e41c8992@gmail.com>
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/23OwVLDIBAG4FfpcBZlKYHgyffoeIBlk+CYxIGYq
+ dPJuwvttGrH4w/77b8nlilFyux5d2KJ1pjjPJXQPuwYDm7qicdQMpNCamGl4aPLCyXug3BdsNp
+ q6lgZ/kjUxeN50eH1kvOnfyNcqq4T3mXiPrkJh/o0p9jH6emyrv4PMS9z+jpfsqq651raXktXx
+ YGLRqLZE4LR5qUfXXx/xHlktXRtbgwE/LCGCy48gVYKMAS4Z/o3szemC0Pl9xqkNRLonpn/mSn
+ MQYeqbYNF8+fIbdu+AXijMnRzAQAA
+X-Change-ID: 20260927-master-bd0afd9696ef
 To: linux-pm@vger.kernel.org
 Cc: pali@kernel.org, sre@kernel.org, afd@ti.com, 
  konrad.dybcio@oss.qualcomm.com, david@ixit.cz, krzk@kernel.org, 
  linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792436896; l=3577;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792436896; l=1896;
  i=rinat.muhamedgaliev@gmail.com; s=default; h=from:subject:message-id;
- bh=3741MIanP4eFbNiDO101+hIyxN0viS5/BgzVbL3dkKk=;
- b=icd4FdYOvvtF0nDiVUfRgQBEguyYF8F9b5Li4YWGRUthZ7ALJJFjXznzxol7XHQlLHKx8W53k
- DDTMgr8NLuHBV/sv1jZ9mFJxxduTgrMkGtwkC3aEAB46LBD+NKs6k5L
+ bh=CD8dFs9AlJtwpKfUnsvq0wg/Q2D+U0BfFeHkOTnO1ao=;
+ b=0PD716yO6KNtHjWDCzFcCPrl+bGIv771UFfFBdxZ+zubSRm7gaQ+5S4MRostIbW2Fl+A5BbGC
+ EEJiTt3pvN9D+iaKVJCoQ4xxhmVmd2VXUMumhnPc8HUNN1UFBrXxeoK
 X-Developer-Key: i=rinat.muhamedgaliev@gmail.com; a=ed25519;
  pk=qkYQO8LRlRErWiLzlpK8jHbRIxv8+7v06+ytcxX8mec=
 X-Endpoint-Received: by B4 Relay for rinat.muhamedgaliev@gmail.com/default
  with auth_id=1072
 X-Original-From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 Reply-To: rinat.muhamedgaliev@gmail.com
-Content-Transfer-Encoding: 8bit
 
-From: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+OnePlus 6 and 6T battery packs can contain either a bq27411 or a bq27541
+fuel gauge. The two chips require different register maps.
 
-OnePlus 6 and 6T replacement battery packs may contain either a bq27411
-or a bq27541 fuel gauge at I2C address 0x55. The device tree currently
-identifies the gauge as bq27411, but a bq27541 uses a different register
-map and then reports invalid battery values.
+The DeviceType check now lives in the bus-neutral battery core, where it
+uses the existing register-map and control-register helpers. For bq27411
+and bq27541, it compares the type selected by the compatible with the
+reported type and chooses the detected profile.
 
-During setup, query the DeviceType control subcommand for bq27411 and
-bq27541. Keep the profile whose DeviceType matches the compatible, or
-switch to the profile returned by the fuel gauge. This retains the
-established DT ABI and supports replacement packs without introducing a
-generic compatible.
+Tested on a OnePlus 6T with DeviceType 0x0541 (bq27541): 4.338 V, 100%
+capacity, 27.8 C, and Full/Good status. Testing on DeviceType 0x0421
+(bq27411) hardware would be appreciated.
 
-Keep this logic in the bus-neutral core so it uses the existing register
-maps and control-register access helpers.
+Changes in v8:
+- Move DeviceType detection to the bus-neutral battery core.
+- Use the existing register map and control-command definitions.
+- Link to v7: https://patch.msgid.link/20261019-master-v7-0-a1fc488d9c77@gmail.com
 
-Tested on OnePlus 6T (fajita) with DeviceType 0x0541: voltage, state of
-charge, and temperature were reported correctly. Testing on hardware with
-DeviceType 0x0421 would be appreciated.
+Changes in v7:
+- Determine the expected DeviceType through an extensible chip switch.
+- Mark the probe-time list for extension with DeviceType-capable fuel gauges.
+- Link to v6: https://patch.msgid.link/20261019-master-v6-0-c4b36129721e@gmail.com
 
-Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+Changes in v6:
+- Compare the detected model with the compatible-selected model.
+- Support both BQ27411-to-BQ27541 and BQ27541-to-BQ27411 detection.
+
+Changes in v5:
+- Report detected and expected DeviceType values instead of hard-coding chip names.
+- Describe an unknown DeviceType as unrecognized.
+
+Changes in v4:
+- Drop the generic compatible and binding update.
+- Keep the established OnePlus DTS unchanged.
+
 ---
+Rinat Muhamedgaliev (1):
+      power: supply: bq27xxx: detect bq27541 behind bq27411 compatible
+
  drivers/power/supply/bq27xxx_battery.c | 61 ++++++++++++++++++++++++++++++++++
  1 file changed, 61 insertions(+)
+---
+base-commit: 830b3c68c1fb1e9176028d02ef86f3cf76aa2476
+change-id: 20260927-master-bd0afd9696ef
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 8bf048fbd36a..57b51348ff2b 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -86,6 +86,10 @@
- #define BQ27XXX_SET_CFGUPDATE		0x13
- #define BQ27XXX_SOFT_RESET		0x42
- #define BQ27XXX_RESET			0x41
-+#define BQ27XXX_DEVICE_TYPE		0x0001
-+
-+#define BQ27411_DEVICE_TYPE		0x0421
-+#define BQ27541_DEVICE_TYPE		0x0541
- 
- #define BQ27XXX_RS			(20) /* Resistor sense mOhm */
- #define BQ27XXX_POWER_CONSTANT		(29200) /* 29.2 µV^2 * 1000 */
-@@ -1141,6 +1145,56 @@ static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
- 	return ret;
- }
- 
-+static int bq27xxx_battery_check_device_type(struct bq27xxx_device_info *di)
-+{
-+	enum bq27xxx_chip detected_chip;
-+	int expected_type;
-+	int ret;
-+
-+	/* Add fuel gauges with supported DeviceType reporting to this list. */
-+	switch (di->chip) {
-+	case BQ27411:
-+		expected_type = BQ27411_DEVICE_TYPE;
-+		break;
-+	case BQ27541:
-+		expected_type = BQ27541_DEVICE_TYPE;
-+		break;
-+	default:
-+		return 0;
-+	}
-+
-+	ret = bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_DEVICE_TYPE,
-+			    false);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = bq27xxx_read(di, BQ27XXX_REG_CTRL, false);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (ret) {
-+	case BQ27411_DEVICE_TYPE:
-+		detected_chip = BQ27411;
-+		break;
-+	case BQ27541_DEVICE_TYPE:
-+		detected_chip = BQ27541;
-+		break;
-+	default:
-+		dev_err(di->dev, "unrecognized DeviceType 0x%04x\n", ret);
-+		return -ENODEV;
-+	}
-+
-+	if (detected_chip == di->chip)
-+		return 0;
-+
-+	dev_warn(di->dev,
-+		 "detected DeviceType 0x%04x instead of expected 0x%04x\n",
-+		 ret, expected_type);
-+	di->chip = detected_chip;
-+
-+	return 0;
-+}
-+
- static inline int bq27xxx_read_block(struct bq27xxx_device_info *di, int reg_index,
- 				     u8 *data, int len)
- {
-@@ -2089,10 +2143,17 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
- 		.of_node = di->dev->of_node,
- 		.drv_data = di,
- 	};
-+	int ret;
- 
- 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
- 	mutex_init(&di->lock);
- 
-+	di->regs       = bq27xxx_chip_data[di->chip].regs;
-+
-+	ret = bq27xxx_battery_check_device_type(di);
-+	if (ret)
-+		return ret;
-+
- 	di->regs       = bq27xxx_chip_data[di->chip].regs;
- 	di->unseal_key = bq27xxx_chip_data[di->chip].unseal_key;
- 	di->dm_regs    = bq27xxx_chip_data[di->chip].dm_regs;
-
--- 
-2.56.0
+Best regards,
+--  
+Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
 
 
