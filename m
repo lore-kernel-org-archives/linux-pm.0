@@ -1,64 +1,62 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792422197;
-	b=ALxeiZosGsLFQU0kmZd6sj5kcYYQjb5awlOMVA3eTn57LSSDCkdbAgCOnIaSygCIStmN
-	 MpLYyesfm789+4phzqGT2KoIi/FK5cguVT9r8hP02DseOFQxxN1NhxMHhIA+h4kp9WYgO
-	 WjncD3yi977MTA3RitAhNKo335TWcDGBIwHCg19kR6jQnptqHbXd9n1AfEzduv7n6XHRQ
-	 fRmrxADGPmNEAAkkJ9kDGzfPxJjGu7vjLKrqHP2dETHn/eGLRu3PtPumTt1s97PFvtcj6
-	 kouGliwioi9gfEIXitmtGJjpUpLMqOlg8tdBixvNbkKjFfJzB9e8abd4vV8H14/40wQ==
+	t=1792422187;
+	b=MzMZgt/b7FdUepFae74X5hEkRNHr4JfzRyKxsmymyaP+mPQM6HSdfVFFzKjhTx/5oUSB
+	 kEnI32TNdZ+n7WOdEPAzL0yyyVrj+BGJoQW7xIpW8V3h+ThAcshbc9cIaimfLkw7q1lto
+	 k8I/XnynYKhLB7DZ4yCvlMcWSYTkS7KjyfyfDlfRL/UNPg/cnGAfuWeMCS6ioht+VWSCe
+	 Tv339t6i4kO/xGIsJaqX6CVpHLN8n1DM6WQXSCCn5kAv9JslK23QToG7cAwp9hS8z4ECo
+	 WIt8Akx24nNM3Xv4JuN/8Jtlvkar7XzCeFrI67OT21fijLqSX/IWtQa6V/fMwblaBEw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792422197;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792422187;
 	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 X-Mailer:In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=4I3Pxc/iTGzWoeyx6YQ4e7tLw46TYqzKa0lkzB2yq7s=;
-	b=ngGqkae1B9JcBrh5lTzDDIFGAi7Grub4K3rcTjeOXVYBEFWuDp+9SI3dncoR7bSLyUot
-	 UFOFeok8pnL5un5RyRRgF+vh/RUdoRIS6K1/YLONwHCdw4k7Y1FYCao7wRDmbCuP/T8eo
-	 KYpvu9VmDiRhlyljm0KqKyEzybptxX71k15WKfXOGDbu6aC2zguCojK++1UzDnAv+C97N
-	 RZUozpfoZW8ZkniiavjQNI0biIhNJcBin77vZGR7bbo/sy0HVoNUibFU4WBKb5gitAQUq
-	 sS6ZRmJP0bg96VlrdOUWhAsMuPLxCLBPaachOd/xaoTXaRGnYtgKXZebjIKRQQdmH7g==
+	bh=jvM4A5YXiBPXAabIRMTdMXOmDGWVTcobd/NhQ8DKoaE=;
+	b=Yv+2RWav1r88CzCRYma1DwUE57qE7j9UUDVuldIya2qoIaJy9yyaYWoMLmcSeBwPwjAA
+	 SNgeXaBKY/g+C0D6s3cnEdMLWk51VfWmz3mC5P2BFSq64KSm2A1hiFwaflKxzrWUK1yyb
+	 bpQJVhzc73ualjNsfaGBU3Rh5PyBC+oznjgytVXdgE+rNaRlIigjYKbo9V6LEJzM/YIkW
+	 um23mfi+unac56SilTfuqCWJJmCHlgMArlLe8It7l9m/2XXmwGoPaTHYD6LZQH8SBT/ZF
+	 hQvuJm9ittg3D6jevluC/eakhIVI7Z1y+8rsGxnbnrCLMm9Kunbg9Ec64Y0wdYIS1gQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nF5bVqZi;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ILqrdwTD;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
 Received: from aws-us-west-2-korg-listserv-1.web.codeaurora.org (ip-10-30-226-211.us-west-2.compute.internal [10.30.226.211])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 586C8607D378
-	for <linux-pm.vger.kernel.org@localhost.mlmmj>; Mon, 19 Oct 2026 15:03:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 55829607D357
+	for <linux-pm.vger.kernel.org@localhost.mlmmj>; Mon, 19 Oct 2026 15:03:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nF5bVqZi
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ILqrdwTD
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EE3A6513CA
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 15:03:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A1716513D0
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 15:03:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792422197; cv=none; b=GHc42Tbrf5wzx1mxvCRI0m0NKpB4AZ3nrv5UUu89llciJkFuFBLz+EuMRkz4rD7m9uqU82tkMb67vmp3aNHyh70OGFNi9h6EBxKWxPfwBjBFJXpOSokSSQ8mdOdm30ROqY9hMUB/2iXs4hhElYvCD5skstSmeIY7B4fO0H+TU98=
+	t=1792422187; cv=none; b=g9ZW9edtjzgTxeZPcYu0m28Nbvuude5FkQWz2UuME/zIqDHXAVAAmQxAiJp1i8YnAc+eq+vA3hotlANj91aSUkwEUI3oWzAA7Orx8bd8bsC7VDsNT3PgTA4lFmAgge482bn8bOiR7EixRJZFn30mWO8jjbjuPC/j4Mx7pzbDRLM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792422197; c=relaxed/simple;
-	bh=ofk+NHDAznG++QEUMvGhFz2SwKjQfABNO2faCGIpDaI=;
+	s=arc-20240116; t=1792422187; c=relaxed/simple;
+	bh=ZG0bnqHHB9Gg6LLkimATobkXLlM9opage0Q6cR4DPW8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qw2Wyj5j+W+L9jeiy2PkgrdYzCBGcQ8advnqce77ebHRjEWAKfQTdu3AAJ0SieOBecdTr8vrW0ggdeIPFTbqY+LGsURNy59KQRKhodDF5baD5SY2en0fckE8RHorkoWRBk9er1iNSDDafPQ87ZDktWVlaaD2muZn607EPFGVjvI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nF5bVqZi; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E124D1F000C5;
-	Mon, 19 Oct 2026 15:03:14 +0000 (UTC)
+	 MIME-Version; b=mrn615aO4xLAyEFgQt+Dbkd+eLtaaespeDDszA93TnYkFfhxQ+9RW66QuieKST3oPmsgM24BbeZOas1CyPppzZYh0hxmVswq7IEFXQCmjFYk80b136ANF7EWS7j80omUvtDQ15kCaYGPPywIYZ5Wok0UXVQAiiI5GYjNYGYE7Dk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ILqrdwTD; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AE2B1F000C5;
+	Mon, 19 Oct 2026 15:03:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792422196;
-	bh=4I3Pxc/iTGzWoeyx6YQ4e7tLw46TYqzKa0lkzB2yq7s=;
+	s=k20260515; t=1792422186;
+	bh=jvM4A5YXiBPXAabIRMTdMXOmDGWVTcobd/NhQ8DKoaE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=nF5bVqZibnjfsH5YQ9qXviPtbyL7ynxUf+d820xfm4ZsK3DOb5XjigZK1HEr3WW6A
-	 47Uenh40P5vzKmq6ViZ9KauByMBdEKlbm793JuaINZRZuP8TVbTUrNfuDG4CJUA7J+
-	 MnMXkfuASAiIhGWWZ26safpzdRwcS4a3TElE/YOpNnkjlLWBW/EDCLJDxF1O3vEjEu
-	 6RrHo2aRimRHCGQodyV7ut8Wkd2ZiIgT2pCVUKSRpzFTBqiYjJpDo9SUzNqePoYS5T
-	 SSFbQT3NoGXvLKLV0N9A2cLQgCaRCCfoBfPdMTV8kgO566Owou/bYMQJGPOJg0Vkek
-	 6zDscVONi+zSA==
+	b=ILqrdwTDkTOk1eYcKRFWxZaWxYmkhGD8VO3vk4xAOoZXpGQ0hJqYleYE6qFRhCotI
+	 r32QD3TtC1E/0GabFkDmOYbiaT9Gj4aE6fXctzmKD9XbJkoutzxLGq5Q/0tCUHoqjI
+	 2MVff3vrXw9RkjJBJ3KLdIGJjz2FQQ7/ejJz3oywZutkwo3sD4HJ6UEESHTucptZoD
+	 uFgtGAslWC81GZOW7n4uC6C2k16N0LFhM0UiUptmwN1lU51Eb14Fbu4nu416gxt7An
+	 HuXWsZr49bE1EkEES6up+7yjeHKaz3SyTy42T9gQnITwII00+rF5LZvDFZMBXhi4D0
+	 qnz3dmENwqqGg==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
-Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Len Brown <len.brown@intel.com>
-Subject: [PATCH 21/23] tools/power turbostat: Add rugged Panther Lake support
-Date: Mon, 19 Oct 2026 10:38:54 -0400
-Message-ID: <b52633e96ce7b5cd3dcbedf938b506db750aa5eb.1792420722.git.len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Subject: [PATCH 14/23] tools/power turbostat: Dump RDT CPUID.7 Support
+Date: Mon, 19 Oct 2026 10:38:47 -0400
+Message-ID: <890265c019317ce56219013d41cb73d4e664d623.1792420722.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
 References: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
@@ -75,39 +73,70 @@ Reply-To: Len Brown <lenb@kernel.org>
 Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+From: Len Brown <len.brown@intel.com>
 
-Add CPU model for rugged Panther Lake to the platform and perf model
-tables. It uses the same cores as Panther Lake, so use the same settings.
+Show both Symmetric and Asymmetric RDT bits.
 
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Co-developed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 2 ++
- 1 file changed, 2 insertions(+)
+ tools/power/x86/turbostat/turbostat.c | 31 ++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 12 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 6ee32fa15c68..c8215c9fadca 100644
+index cacdf4c9c5d7..02d566f0de1a 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1247,6 +1247,7 @@ static const struct platform_data turbostat_pdata[] = {
- 	{ INTEL_ARROWLAKE, &adl_features },
- 	{ INTEL_LUNARLAKE_M, &lnl_features },
- 	{ INTEL_PANTHERLAKE_L, &lnl_features },
-+	{ INTEL_PANTHERLAKE_R, &lnl_features },
- 	{ INTEL_NOVALAKE, &lnl_features },
- 	{ INTEL_NOVALAKE_L, &lnl_features },
- 	{ INTEL_WILDCATLAKE_L, &lnl_features },
-@@ -1344,6 +1345,7 @@ static struct perf_model_support turbostat_perf_model_support[] = {
- 	{ INTEL_ARROWLAKE, { PCE(0x00, 0xFF), PCE(0x00, 0x5F)}, { PCE(0x00, 0x07), PCE(0x00, 0x02)}, {} },
+@@ -8327,9 +8327,6 @@ void decode_feature_control_msr(void)
+ 	if (no_msr)
+ 		return;
  
- 	{ INTEL_PANTHERLAKE_L, { PCE(0x00, 0xFF), PCE(0x00, 0x5F)}, { PCE(0x01, 0xFF), PCE(0x01, 0xBF)}, {} },
-+	{ INTEL_PANTHERLAKE_R, { PCE(0x00, 0xFF), PCE(0x00, 0x5F)}, { PCE(0x01, 0xFF), PCE(0x01, 0xBF)}, {} },
- 	{ INTEL_WILDCATLAKE_L, { PCE(0x00, 0xFF), PCE(0x00, 0x5F)}, { PCE(0x01, 0xFF), PCE(0x01, 0xBF)}, {} },
+-	if (quiet)
+-		return;
+-
+ 	get_msr(master_cpu, MSR_IA32_FEAT_CTL, &msr);
+ 	fprintf(outf, "cpu%d: MSR_IA32_FEATURE_CONTROL: 0x%08llx (%sLocked %s)\n",
+ 		master_cpu, msr, msr & FEAT_CTL_LOCKED ? "" : "UN-", msr & (1 << 18) ? "SGX" : "");
+@@ -9200,21 +9197,31 @@ void process_cpuid()
+ 		decode_misc_enable_msr();
  
- 	{ INTEL_NOVALAKE, { PCE(0x00, 0xFF), PCE(0x00, 0x5F)}, { PCE(0x01, 0xFF), PCE(0x01, 0xBF)}, {} },
+ 	if (max_level >= 0x7) {
+-		int has_sgx;
++		eax = ebx = ecx = edx = 0;
++		__cpuid_count(0x7, 0, eax, ebx, ecx, edx);
+ 
+-		ecx = 0;
++		is_hybrid = !!(edx & (1 << 15));
+ 
+-		__cpuid_count(0x7, 0, eax, ebx, ecx, edx);
++		if (!quiet) {
++			int has_sgx, has_rdt_m, has_rdt_a, has_ardt_m, has_ardt_a;
+ 
+-		has_sgx = ebx & (1 << 2);
++			has_sgx = ebx & (1 << 2);
++			has_rdt_m = ebx & (1 << 12);
++			has_rdt_a = ebx & (1 << 15);
+ 
+-		is_hybrid = !!(edx & (1 << 15));
++			eax = ebx = ecx = edx = 0;
++			__cpuid_count(0x7, 1, eax, ebx, ecx, edx);
+ 
+-		if (!quiet)
+-			fprintf(outf, "CPUID(7): %sSGX %sHybrid\n", has_sgx ? "" : "No-", is_hybrid ? "" : "No-");
++			has_ardt_m = ecx & (1 << 0);
++			has_ardt_a = ecx & (1 << 1);
+ 
+-		if (has_sgx)
+-			decode_feature_control_msr();
++			fprintf(outf, "CPUID(7): %sSGX %sRDT_M %sRDT_A %sARDT_M %sARDT_A %sHybrid\n",
++				has_sgx ? "" : "No-", has_rdt_m ? "" : "No-", has_rdt_a ? "" : "No-", has_ardt_m ? "" : "No-", has_ardt_a ? "" : "No-",
++				is_hybrid ? "" : "No-");
++
++			if (has_sgx)
++				decode_feature_control_msr();
++		}
+ 	}
+ 
+ 	if (max_level >= 0x15) {
 -- 
 2.45.2
 
