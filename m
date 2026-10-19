@@ -1,53 +1,53 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792430351;
-	b=F/EmHjWxaZ518S5k2WDQR9a0pUjSqAQ7ArNv+2gk+iZlYtUmHHDp8SNkJKoV26YjPDTy
-	 OOL5nSPeBcsPMExDcb8O0NidvjMuSM8fYh/ry29Rw5Lr8WqCxutFhUWjJcMISUCXk3sjY
-	 d4SQDwYUhyMt/X/9Df0htvAamhOisbmLqIeb65Pj9IqCScLXpXGgUTHBIPIrC1+hHbmBC
-	 mZIHh5zbC87fPcdKNvl1did+65m17rpcdQh900HckrBZFwQi7yS0KpIIqx1R67Knd+jJJ
-	 GzAX0G5Tpn80J7y+ciTrnMT9IYCDJFTeRu/owryD0EfudG2tDuSokkyOdukeY4i27vQ==
+	t=1792430673;
+	b=wJtjXlMfZSRlcTi0C7KH7tI1sxypHx63VNXesxXxF6KUfQdCkUWjsM8xDiwpzUkkGzUM
+	 Xms5KMA7taMe7/S/C0eyEfqstXjDWQvGBClMj4SB6lnVb/5Z0J6naDPOvxK1ZtidFb7cp
+	 WjEln8p7Roa5QXWSDE2PF5P14kKc7ijxF2dmkg2sMJsokOMCrebJExrQ+d9tFV3/PV7Zn
+	 QeCSfaZq6xleH+pG53VgPmJ6MviHADgm9ae0ZZGFCHq4PlqdNx5Tznjlrht9RiulTDk33
+	 /iC0SPz4Y9YyLOinVeZMCfE0T/rv18Fl/uwuA7ozROXsDf5lflDDhUmEAdGRKWt6sUA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792430351;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792430673;
 	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
 	 MIME-Version:From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=HOGnm7X9nMlXyGl5n2SGeHSm4rPfGqodKOsi9mGsl6s=;
-	b=4MVen5hi42B8iy3YP1ytAENtiWr27O7hgzVLr8TRr3gLYRUSjSJMmQH62jnrYxTerbtr
-	 gIT6R02994R3QZNVi5skfecvMl467PTKHRYELb7TQF0GV5zk+5sfzNVv6pYA9I1MtQWwN
-	 SxfzlmTeUePikSHyvfL03o/f+ecEAwxrDKCgvcIfZjyjCMAKMRPRIjmwHXQV1LaYZst4U
-	 mRxwbT5PHY1oDUV13WbfQZb4c5CNKsQkXRgaQDtoCLM2UIoa7fT5IzWljtK/8XPy3w1b8
-	 BijWji0Nr0ZBAZU6U0ydlK/UhmzN8+tjR48jtORmhbekjP6ShcBSb3kgqMBrnBgNV/w==
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=VbQFUmpVnS2uBP54GsmECYZ69JwncdeB9sR1ssSj0uY=;
+	b=CaJkZsaEWLLRnImkoiEGAcSVtOxjMFyapGtnOzxkYWNhXsPZusrG9Mf9PSbh9+AjYun7
+	 c4mIyXViFBWap3AwWv7m3dNpmagCqtyrqpYE8mPRvE3WbFBz3kPHjj8YzlwJljREB4/tT
+	 t7M9WSL/3QLdsQryvRZo98qaRiOSGmExTCxajf4+u/kNayLYO4LyLERW+RDi2TXLKStLk
+	 yvlL567n+ZOFpJXEYdlrdZB40TGqVA8eElmylqiX2icNBumVLs02Z4tbCU941BIy7eoGU
+	 HLtH3Yb6h/v3LD1ajRIA04y8ymXU4jy27JDPijZIXM4prw5RbyGyvlj9u76m0zBSa+w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CoqUZAEn;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dfB1FRPp;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5883606A31F
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 17:19:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0E9C606A32E
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 17:24:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CoqUZAEn
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A60BE1F000C7
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 17:19:10 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dfB1FRPp
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 872371F000C5
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 17:24:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792430350;
-	bh=HOGnm7X9nMlXyGl5n2SGeHSm4rPfGqodKOsi9mGsl6s=;
+	s=k20260515; t=1792430672;
+	bh=VbQFUmpVnS2uBP54GsmECYZ69JwncdeB9sR1ssSj0uY=;
 	h=From:Date:Subject:To:Cc;
-	b=CoqUZAEn8v9tNv4iJNFDOm/FmxFd7FMuhrDGbhecfdEgCFj3H+bVxoAPloz323qLi
-	 jFH/usXrcSjlqm3LPZegCJ+UVrabuKwWSyvLma3pCCQFioACgAyz5ocsbihCbIbPMs
-	 M8h9//XGmVPygX8f5gyDIQUSHvadhhhiGvzkcoW2NSPAfRJiJzi/jAv6wGDSq+/s9w
-	 s89JB+MVIlfc6kRiB1zzk1mcZoTTHxbJe62xqiGlTQxfElM4h8N936B20ba0vvtmtr
-	 VkDvdXHwCBcqK41by+/+fcMsO2FvnYSNPBM/LJyW8Ys/ysmcw41XNHGj92pAIv92RE
-	 rUWB1CofxsJQw==
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5bcdae234ecso1992520e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 10:19:10 -0700 (PDT)
-X-Gm-Message-State: AFq9FYLPuw0b0mvXyn0gdQp7clzV4B3KnkhktVHIJQTTLwektdUgX+WO
-	9CC1XVR5YHuIJ1sqJ6KYu+cYZhQXx+BJQnqMBhjy6V72b5x7ltEY/SwHQrFPR3ZCD20q11JUOOE
-	mu36x2KalD381cnNod+CBmGODpGlmmJI=
-X-Received: by 2002:a05:6512:10c1:b0:5ba:3d48:e47e with SMTP id
- 2adb3069b0e04-5be50a4fff1mr2435955e87.37.1792430348950; Mon, 19 Oct 2026
- 10:19:08 -0700 (PDT)
+	b=dfB1FRPpnxUJAt98M1HewsdEkq9qSLBUbtGMiK9MKIBUtauuKAfXTJ/ojG1MMYdCm
+	 6Ntahcsdla+x6i7DwLSCIfhPNkvRcJafuI1m54F0KSRNqp4xCbRyBPlVPL9+PWxz0t
+	 CQuTKghnPtsfJ0fa6yf0hJqatFQyLW9Jq4B4JYxvOIYYuUiS4nek0gUt+gGGCbSbjW
+	 nzJF1tdO/6lodCOJf6H9JqIXUj5WLYjS9aAMABZiozkQVnHciAMOUSdq0cP4QJHmWs
+	 YDRXkob9IM6tDsEamOkrniSjJIVSHDxOAF2uMjaIDKxn1cjBIpmtgaM7DChu4nvuDI
+	 UuCczTfCHTzrg==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5bcb0f245e0so1645551e87.3
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 10:24:32 -0700 (PDT)
+X-Gm-Message-State: AFq9FYK1ZP909IIX9LXW1wUHPZzjVUKpdF567XLstWmWF71VV6SXAJ4a
+	DS8WPSVlRwar0Zaavg2kQlzujYddvAJ7yU73NULH+irPTIFhJiSuvalyh5Ra+gUH6jiLXwZ4AyA
+	n16UUo+08ouDdfF95X3S53wBZgb2gdpw=
+X-Received: by 2002:a05:6512:b8e:b0:5b8:99a2:9f2d with SMTP id
+ 2adb3069b0e04-5be50a6c238mr2508131e87.17.1792430670925; Mon, 19 Oct 2026
+ 10:24:30 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,354 +58,308 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 19 Oct 2026 19:16:52 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0igpXbgU7i0x87GZwhAOmMXeT4A4fnKC7y0MPB_CSv6eg@mail.gmail.com>
-X-Gm-Features: AclHuK8jHNDT0xYIiv-DmntIJkyG5ionc-8qiQX7w2p--t26cIUWuyToVOA7oAA
-Message-ID: <CAJZ5v0igpXbgU7i0x87GZwhAOmMXeT4A4fnKC7y0MPB_CSv6eg@mail.gmail.com>
-Subject: [GIT PULL] Power management updates for 7.4-rc1
+Date: Mon, 19 Oct 2026 19:22:14 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hEkwqD4znFgQBtXskpiXXo52gNp=KbzbeqOW9g=ZGpuw@mail.gmail.com>
+X-Gm-Features: AclHuK-hjvdOv5ET-k1v1tBSwNWdfBk7MUhJOylL6EX5mT0pXoyicdLFn4TInr4
+Message-ID: <CAJZ5v0hEkwqD4znFgQBtXskpiXXo52gNp=KbzbeqOW9g=ZGpuw@mail.gmail.com>
+Subject: [GIT PULL] Thermal control updates for 7.4-rc1
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	ACPI Devel Maling List <linux-acpi@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Mario Limonciello <superm1@kernel.org>, Christian Loehle <christian.loehle@arm.com>
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Lukasz Luba <lukasz.luba@arm.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
 Hi Linus,
 
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-7.4-rc1
+ thermal-7.4-rc1
 
-with top-most commit 6c326a54b0738ec3b2cc89e1da953a3586c6a8c4
+with top-most commit 503bb6e70bbf6304b8113373d09dfffcc4aa9183
 
- Merge branches 'pm-sleep', 'pm-em', 'pm-cpu', 'pm-misc' and 'pm-tools'
+ Merge branch 'thermal-drivers'
 
-on top of commit 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
+on top of commit ec0d89150a9381d591344a9f6f5428655c227a7f
 
- Linux 7.3-rc7
+ thermal: gov_step_wise: Fix stale mitigation vote with non-zero lower boun=
+ds
 
-to receive power management updates for 7.4-rc1.
+to receive thermal control updates for 7.4-rc1.
 
-This time, the most visible part are the ACPI CPPC updates from
-Christian Loehle, including CPPC cpufreq driver changes, even though
-updates of cpufreq drivers proper are still the largest topic group.
-However, the updates of cpufreq drivers depend on the ACPI CPPC updates,
-so they should really be counted together and that is well over 1/2 of
-the total commit count.
+These are mostly updates of thermal drivers including a new Exynos ACPM
+thermal driver for Google GS101, new Renesas RZ/G3L thermal sensor support,
+new Qualcomm MSM8952 TSENS support, new Qualcomm PMAU0102 Master BandGap
+temperature monitor support in DT bindings, and new rugged Panther Lake
+support in intel_tcc_cooling.  Moreover, the AN7583 driver is extended
+to register separate thermal zones for bandgap, GbE and CPU (its DT
+bindings are updated accordingly).
 
-Interestingly enough, almost all of the updates included here are fixes
-or cleanups, with some new feature support in the amd-pstate cpufreq driver
-and IPQ9650 support in the qcom-nvmem cpufreq driver.  The runtime PM
-documentation improvements from Brian Norris can also be mostly regarded
-as fixes, but a new kunit test goes along with them.
+There are also multiple fixes and assorted cleanups, as usual.
 
 Specifics:
 
- - Fix multiple issues related to input validation, synchronization,
-   access safety, memory layout and register field validation, and error
-   handling in the ACPI CPPC library (Christian Loehle and Sumit Gupta)
+ - Make the Intel powerclamp thermal driver reject invalid window_size
+   values, drop redundant clamp() from duration_set() in it, and
+   simplify 4 functions in it (Thorsten Blum)
 
- - Select the frequency-invariance callback per CPU in the CPPC cpufreq
-   driver and create the FIE worker before enabling PCC callbacks in it
-   to avoid queueing work through a missing worker and dereferencing a
-   NULL pointer (Christian Loehle)
+ - Add rugged Panther Lake support to the intel_tcc_cooling thermal
+   driver (Srinivas Pandruvada)
 
- - Update the CPPC cpufreq driver entry in MAINTAINERS and add a new
-   entry for the ACPI CPPC library (Christian Loehle)
+ - Fix temperature selection around 0 C in the int340x thermal driver,
+   drop redundant else from proc_thermal_add() in it, and simplify
+   slider_def_*_set() in it (Thorsten Blum)
 
- - Minor fixes in various cpufreq drivers (Alexander Koskovich, Daniel
-   Schwierzeck, Frank Zhang, Haotian Zhang, Kathiravan Thirumoorthy,
-   Sumeet Pawnikar, and Xueqin Luo)
+ - Drop unbalanced paren from cpu-idle-cooling.rst (Manuel Ebner)
 
- - Fix wrong behaviors on multi-node servers in the Loongson cpufreq
-   driver (Huacai Chen)
+ - Use %pe to print error pointers symbolically in the thermal control
+   code and fix assorted typos in comments in it (Sumeet Pawnikar and
+   Hemanth Selam)
 
- - Reject NULL from cpufreq_cpu_get() in the Rust code (Mehmet Koseoglu)
+ - Add the Exynos ACPM thermal driver for Google GS101, along with
+   DT bindings and a MAINTAINERS entry (Tudor Ambarus)
 
- - Add suspend OPP to mediatek cpufreq driver and DT (Ryan Brue)
+ - Add Renesas RZ/G3L thermal sensor support and DT bindings, and move
+   default calibration values to per-SoC match data (Biju Das)
 
- - Fixups for a few bugs identified by Sashiko in the amd-pstate cpufreq
-   driver (Mario Limoncielloi, Wentao Guan)
+ - Add Qualcomm MSM8952 TSENS support and the corresponding DT binding
+   compatible (Muzaffer Kadir)
 
- - Initial support for maximum frequency capacity handling on Zen6
-   client in amd-pstate (Mario Limonciello)
+ - Document the Qualcomm PMAU0102 Master BandGap temperature monitor
+   compatible in the DT bindings (Dhruvin Rajpura)
 
- - Fix for amd-pstate-ut with 'Requested CPU Min frequency' BIOS option
-   (K Prateek Nayak)
+ - Extend the QCom TSENS v2 trip temperature limits to the hardware
+   range of -204=C2=B0C to +204=C2=B0C to prevent interrupt storms when ope=
+rating
+   beyond the previous software limits (Priyansh Jain)
 
- - New Zen6 tuning values for EPP in amd-pstate (Mario Limonciello,
-   Vishal Badole)
+ - Fix temperature threshold map indexing in the QCom SPMI temperature
+   alarm driver to prevent out-of-bounds reads (Georgi Djakov)
 
- - amd-pstate documentation fix (Karl Mehltretter)
+ - Describe the additional bus clock required by the Amlogic T7 thermal
+   sensor and switch the driver to the clk_bulk API to manage multiple
+   clocks (Ronald Claveau)
 
- - Restrict deferred downscaling to low load for shared policies in the
-   conservative cpufreq governor to avoid undesirable CPU frequency
-   reduction in some cases (Shengming Hu)
+ - Request the Airoha EN7581 IRQ after thermal zone registration to
+   prevent the interrupt handler from accessing an unregistered or
+   already freed thermal zone (Vitaliy Sochnev)
 
- - Serialize sugov_start() against rate limit updates in the schedutil
-   cpufreq governor to avoid using a stale rate limit value (Hui Su)
+ - Fix the Airoha AN7583 ADC mux field mapping, serialize access to the
+   shared ADC, and verify mux selection to avoid invalid temperature
+   readings and spurious critical shutdowns (Vitaliy Sochnev)
 
- - Prevent cpuidle governors menu and teo from returning idle state 0
-   after it has been disabled (Xueqin Luo)
+ - Register separate thermal zones for the AN7583 bandgap, GbE and CPU
+   sensors, and update the DT bindings to use one thermal sensor cell
+   to select the sensor (Vitaliy Sochnev)
 
- - Replace min_t() with the better alternatives in the intel_idle driver
-   and make it use 2-argument strscpy() (Andy Shevchenko)
+ - Fix signed integer overflow in the Renesas RZ/G3E temperature-to-code
+   conversion, preserve compare interrupt state across runtime PM,
+   and prevent overlapping temperature conversions (Ovidiu Panait)
 
- - Fix two repeated phrase instances in cpuidle (Hemanth Selam, Syazwina
-   Fazrul)
+ - Remove redundant trip window validation and runtime PM
+   pm_runtime_mark_last_busy() calls from the Renesas RZ/G3E driver
+   (Ovidiu Panait)
 
- - Add rugged Panther Lake support to the intel_rapl power capping
-   driver and make it use %pe for printing error pointers (Srinivas
-   Pandruvada and Sumeet Pawnikar)
+ - Propagate reset assertion failures from Renesas RZ/G3E suspend and
+   attempt to restore power if the sensor was active (Pengpeng Hou)
 
- - Update and improve runtime PM documentation and add a kunit test for
-   supplier idle/suspend (Brian Norris)
+ - Stop the TI bandgap alert IRQ before removing sensor interfaces and
+   cancel pending alert work to prevent use-after-free on driver removal
+   (Weigang He)
 
- - Add a pm_runtime_dont_use_autosuspend() call to pm_runtime_reinit()
-   to ensure autosuspend disabling on driver teardown (Joshua Crofts)
+ - Validate Spreadtrum sensor IDs read from the device tree before using
+   them for register offsets and array indexing (Weigang He)
 
- - Ignore page-zero RAM in E820 checksum during hibernation on x86 to
-   avoid rejecting images created after kexec() (Matthias Goergens)
+ - Convert the TI OMAP bandgap DT bindings to schema and document the
+   DRA752 compatible and thermal sensor cells (Bhargav Joshi)
 
- - Add resume event mapping for PMSG_POWEROFF to the PM core to allow it
-   to carry out device shutdown in the future (Mario Limonciello)
+ - Use DT property helpers matching the signed temperature and unsigned
+   hysteresis types defined by the thermal zone bindings (Rob Herring)
 
- - Add DPM watchdog to prepare/late/early/noirq/complete phases of
-   device suspend and resume (Mayank Rungta)
+ - Reuse common error handling code in the power allocator governor
+   bind callback (Markus Elfring)
 
- - Update swsusp.txt references to swsusp.rst in hibernation
-   documentation (Li Jun)
+ - Constify the thermal zone device operations in the i.MX9 driver
+   (Christophe JAILLET)
 
- - Fix use-after-free of perf domain in netlink doit handlers for energy
-   models (Fan Wu)
+ - Fix kernel-doc parameter names and firmware node references in the
+   cooling device registration helpers (Aryan Sinha)
 
- - Add synchronize_rcu() back to cpu_pm_unregister_notifier() after it
-   was removed inadvertently in previous development cycles to avoid
-   use-after-free (Bradley Morgan)
+ - Correct the documented return value of ti_bandgap_get_sensor_data()
+   to describe validation errors and potentially NULL stored data
+   (Karl Mehltretter)
 
- - Unregister CPU PM notifier outside the timer lock in the timer-ti-dm
-   clocksource driver (Bradley Morgan)
+ - Ensure NUL-termination when copying the cooling device command-line
+   argument in tmon and fix the associated string truncation warning
+   (Florian Fainelli)
 
- - Fix typo "sucessfully" in a comment in pm_clk_add_clk() kerneldoc
-   comment and typo "hierachy" in a comment in pm-graph (Hemanth Selam)
+ - Fix undefined behavior caused by a signed shift in the tmon thermal
+   zone binding display (Liu Jing)
 
- - Fix the return value in dev_pm_opp_get_of_node() kernel-doc (Karl
-   Mehltretter)
+ - Fix wording in tmon comments (Hemanth Selam)
+
+ - Simplify cpufreq_set_cur_state() in the cpufreq_cooling thermal
+   control driver (Thorsten Blum)
 
 Thanks!
 
 
 ---------------
 
-Alexander Koskovich (1):
-      cpufreq: Add Milos to cpufreq-dt-platdev blocklist
+Aryan Sinha (1):
+      thermal/fw: Fix kernel-doc parameter names
 
-Andy Shevchenko (2):
-      intel_idle: Replace min_t() with the better alternatives
-      intel_idle: Use 2-argument strscpy()
+Bhargav Joshi (1):
+      dt-bindings: thermal: ti,omap-bandgap: Convert to DT schema
 
-Bradley Morgan (2):
-      clocksource/drivers/timer-ti-dm: Unregister CPU PM notifier
-outside of the timer lock
-      PM: CPU: Restore synchronize_rcu() to cpu_pm_unregister_notifier()
+Biju Das (3):
+      dt-bindings: thermal: r9a08g045-tsu: Document RZ/G3L TSU
+      thermal/drivers/renesas/rzg3s: Convert calibration defaults to
+per-SoC match data
+      thermal/drivers/renesas/rzg3s: Add RZ/G3L TSU support
 
-Brian Norris (14):
-      PM: runtime: Only queue an idle check for RPM-linked suppliers
-      PM: runtime: Add kunit test for supplier idle/suspend
-      PM: runtime: kerneldoc fixes
-      PM: runtime: Improve set_{status,active,suspended} docs
-      PM: runtime: kerneldoc wording improvements
-      PM: runtime: Pull API docs from kerneldoc
-      PM: core: Document struct dev_pm_info with kerneldoc
-      PM: runtime: Correct pm_runtime_autosuspend_expiration() doc
-      PM: runtime: More kerneldoc formatting
-      PM: runtime: Misc improvements to runtime_pm.rst
-      PM: runtime: Add "Section" hyperlinks
-      PM: runtime: Clarify ->runtime_idle() callback return value handling
-      PM: runtime: Clarify driver callback expectations and structure Section 2
-      PM: runtime: Expand introduction with core concepts and structure
+Christophe JAILLET (1):
+      thermal/drivers/imx9: Constify struct thermal_zone_device_ops
 
-Christian Loehle (21):
-      ACPI: CPPC: Validate the _CPC package header
-      ACPI: CPPC: Validate _CPC entry and control semantics
-      ACPI: CPPC: Propagate performance-control write errors
-      ACPI: CPPC: Serialize PCC single-register payload updates
-      ACPI: CPPC: Serialize PCC EPP payload updates
-      ACPI: CPPC: Release CPC descriptors through kobject
-      ACPI: CPPC: Release PCC data after probe failures
-      ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
-      ACPI: CPPC: Reject direct reads of write-only controls
-      ACPI: CPPC: Validate and access PCC register layouts
-      ACPI: CPPC: Validate SystemIO register layouts
-      ACPI: CPPC: Validate PCC overlaps across processors
-      ACPI: CPPC: Validate SystemIO overlaps across processors
-      ACPI: CPPC: Clear Performance Limited without a stale read
-      ACPI: CPPC: Validate FFH register fields before hardware access
-      ACPI: CPPC: Propagate errors from cross-CPU FFH calls
-      ACPI: CPPC: Accept requests to retain immutable autonomous selection
-      cpufreq: CPPC: Select the frequency-invariance callback per CPU
-      cpufreq: CPPC: Create the FIE worker before enabling PCC callbacks
-      MAINTAINERS: cpufreq: Replace CPPC reviewer
-      MAINTAINERS: ACPI: Add a separate CPPC entry
+Dhruvin Rajpura (1):
+      dt-bindings: thermal: qcom,pm8775-mbg-tm: Document PMAU0102
 
-Daniel Schwierzeck (1):
-      cpufreq: airoha: fix probe failure with correct error check
+Florian Fainelli (1):
+      tools/thermal/tmon: Fix string truncation warning in optarg copy
 
-Fan Wu (1):
-      PM: EM: Fix use-after-free of perf domain in netlink doit handlers
+Georgi Djakov (1):
+      thermal/drivers/qcom-spmi-temp-alarm: Fix temp_map indexing
 
-Frank Zhang (1):
-      rust: rcpufreq_dt: add module alias
+Hemanth Selam (2):
+      tools/thermal: Fix typo "binded" in comments
+      thermal: fix assorted typos in comments
 
-Haotian Zhang (1):
-      cpufreq: qcom-cpufreq-hw: fix device node refcount leak in phandle parsing
+Karl Mehltretter (1):
+      thermal: ti-soc-thermal: Fix the return value in
+ti_bandgap_get_sensor_data() kernel-doc
 
-Hemanth Selam (3):
-      cpuidle: tegra: fix repeated word 'that' in comment
-      tools: power: pm-graph: fix typo "hierachy" in comment
-      PM: clk: fix typo "sucessfully" in comment
+Liu Jing (1):
+      tools/thermal/tmon: Fix signed shift UB in binding display
 
-Huacai Chen (5):
-      cpufreq: loongson3: Make this driver depend on MACH_LOONGSON64
-      cpufreq: loongson3: Adjust the width of id and val in smc_message
-      cpufreq: loongson3: Replace per-package mutex with per-node
-      cpufreq: loongson3: Use global physical CPU ID in get/target callbacks
-      cpufreq: loongson3: Replace IOCSR read/write with MMIO ones
+Manuel Ebner (1):
+      thermal: docs: cpu-idle-cooling.rst: Drop unbalanced paren
 
-Hui Su (1):
-      cpufreq: schedutil: Serialize sugov_start() against rate limit updates
+Markus Elfring (1):
+      thermal: gov_power_allocator: Use common error handling code in
+power_allocator_bind()
 
-Joshua Crofts (1):
-      PM: runtime: call pm_runtime_dont_use_autosuspend() on reinit()
+Muzaffer Kadir (2):
+      dt-bindings: thermal: tsens: Add MSM8952
+      thermal/qcom/tsens: Add support for MSM8952 tsens
 
-K Prateek Nayak (1):
-      cpufreq/amd-pstate-ut: Fix amd_pstate_ut_check_freq failure with
-'Requested CPU Min frequency' BIOS option
+Ovidiu Panait (5):
+      drivers/thermal/renesas/rzg3e: Fix signed integer overflow in
+temp_to_code()
+      thermal/drivers/renesas/rzg3e: Fix runtime PM handling of compare irq
+      thermal/drivers/renesas/rzg3e: Fix race between set_trips() and get_t=
+emp()
+      thermal/drivers/renesas/rzg3e: Remove unneeded low/high check in
+set_trips()
+      thermal/drivers/renesas/rzg3e: Remove redundant
+pm_runtime_mark_last_busy() calls
 
-Karl Mehltretter (2):
-      cpufreq/amd-pstate: Remove obsolete amd_dynamic_epp documentation
-      OPP: Fix the return value in dev_pm_opp_get_of_node() kernel-doc
+Pengpeng Hou (1):
+      thermal/drivers/rzg3e: Propagate reset assertion failure from suspend
 
-Kathiravan Thirumoorthy (1):
-      cpufreq: qcom-nvmem: Add IPQ9650 support
+Priyansh Jain (1):
+      thermal/drivers/qcom/tsens: Widen temperature limits to match
+hardware range
 
-Li Jun (1):
-      PM: hibernate: docs: update swsusp.txt references to swsusp.rst
+Rob Herring (Arm) (2):
+      thermal: of: Match trip property helper types
+      thermal: of: Match trip property helper types
 
-Mario Limonciello (11):
-      cpufreq/amd-pstate: Show a warning if missing EPP tunings
-      cpufreq/amd-pstate: Fix TOCTOU when changing driver mode via sysfs
-      ACPI: CPPC: Refactor boost ratio handling
-      cpufreq/acpi-cpufreq: Use amd_get_boost_ratio()
-      cpufreq/amd-pstate: Get Highest Freq for a CPU
-      cpufreq: amd-pstate: Restore previous mode when changing driver mode fails
-      cpufreq: amd-pstate: Propagate cppc_set_auto_sel() errors on mode change
-      cpufreq: amd-pstate-ut: Fix max_freq and EPP test failures on Zen6
-      cpufreq/amd-pstate: Add per SoC and per core type EPP tuning values
-      cpufreq/amd-pstate: Add EPP tunings for Zen6 client platforms
-      PM: sleep: Add resume event mapping for PMSG_POWEROFF
-
-Matthias Goergens (1):
-      x86/hibernate: Ignore page-zero RAM in E820 checksum
-
-Mayank Rungta (1):
-      PM: sleep: Add DPM watchdog to prepare/late/early/noirq/complete phases
-
-Mehmet Koseoglu (1):
-      rust: cpufreq: reject NULL from cpufreq_cpu_get()
-
-Ryan Brue (2):
-      cpufreq: mediatek: Enter system sleep at the suspend OPP
-      arm64: dts: mediatek: mt8173: Mark the lowest CPU OPPs for suspend
-
-Shengming Hu (1):
-      cpufreq: conservative: Restrict deferred downscaling to low load
+Ronald Claveau (2):
+      dt-bindings: thermal: amlogic: describe bus clock for t7-thermal
+      thermal/drivers/amlogic: Switch to clk_bulk API to support multiple c=
+locks
 
 Srinivas Pandruvada (1):
-      powercap: intel_rapl: Add rugged Panther Lake support
+      thermal: intel: intel_tcc_cooling: Add rugged Panther Lake support
 
 Sumeet Pawnikar (2):
-      powercap: intel_rapl: Use %pe to print error pointers symbolically
-      cpufreq: Use %pe to print error pointers symbolically
+      thermal: gov_power_allocator: Fix NULL pointer dereference in update_=
+tz()
+      thermal: Use %pe to print error pointers symbolically
 
-Sumit Gupta (1):
-      ACPI: CPPC: Keep Performance Limited clearable on NVIDIA T41
+Thorsten Blum (10):
+      thermal: intel: powerclamp: Reject invalid window_size values
+      thermal: intel: int340x: Drop redundant else in proc_thermal_add()
+      thermal: intel: powerclamp: Drop redundant clamp() in duration_set()
+      thermal: intel: powerclamp: Simplify check_invalid()
+      thermal: intel: int340x: Fix temperature selection around 0 C
+      thermal: intel: powerclamp: Simplify idle_inject_update()
+      thermal: intel: powerclamp: Simplify duration_get()
+      thermal: intel: powerclamp: Simplify max_idle_set()
+      thermal: intel: int340x: soc_slider: Simplify slider_def_*_set()
+      thermal/cpufreq_cooling: Simplify cpufreq_set_cur_state()
 
-Syazwina Fazrul (1):
-      Documentation: power/cpuidle: Fix repeating phrase
+Tudor Ambarus (3):
+      dt-bindings: thermal: Add Google GS101 TMU
+      thermal/drivers/samsung: Add Exynos ACPM TMU driver GS101
+      MAINTAINERS: Add entry for Samsung Exynos ACPM thermal driver
 
-Vishal Badole (1):
-      cpufreq: amd-pstate: Update Zen6 client EPP tuning values
+Vitaliy Sochnev (5):
+      thermal/drivers/airoha: Request the EN7581 IRQ after zone registratio=
+n
+      thermal/drivers/airoha: Fix AN7583 ADC mux field mapping
+      thermal/drivers/airoha: Serialise access to the shared ADC
+      dt-bindings: arm: airoha: Use one thermal sensor cell for AN7583
+      thermal/drivers/airoha: Register a thermal zone per AN7583 sensor
 
-Wentao Guan (1):
-      cpufreq/amd-pstate: Skip auto_sel write when it already matches the mode
-
-Xueqin Luo (6):
-      cpuidle: menu: Do not return a disabled idle state
-      cpuidle: teo: Do not return a disabled idle state
-      cpufreq/amd-pstate: Restore previous EPP if profile_name allocation fails
-      cpufreq: sparc-us2e: fix frequency table index copy-paste error
-      cpufreq: tegra194: fix double-pointer error in get_cpu_ndiv
-      cpufreq: sti: avoid NULL dereference in dev_err()
+Weigang He (2):
+      thermal/drivers/ti-soc-thermal: Cancel pending alert work on remove
+      thermal/drivers/sprd: validate the sensor id from the device tree
 
 ---------------
 
- Documentation/ABI/testing/sysfs-devices-system-cpu |   16 +-
- Documentation/admin-guide/kernel-parameters.txt    |    7 -
- Documentation/admin-guide/pm/amd-pstate.rst        |    6 -
- Documentation/admin-guide/pm/cpuidle.rst           |    2 +-
- Documentation/power/runtime_pm.rst                 |  595 ++----
- Documentation/power/userland-swsusp.rst            |    4 +-
- MAINTAINERS                                        |   13 +-
- arch/arm64/boot/dts/mediatek/mt8173.dtsi           |    2 +
- arch/arm64/kernel/topology.c                       |   14 +-
- arch/x86/kernel/acpi/cppc.c                        |  180 +-
- arch/x86/power/hibernate.c                         |   51 +-
- drivers/acpi/cppc_acpi.c                           | 2209 +++++++++++++++++---
- drivers/acpi/riscv/cppc.c                          |   26 +-
- drivers/acpi/utils.c                               |   13 +-
- drivers/base/power/clock_ops.c                     |    2 +-
- drivers/base/power/main.c                          |   32 +-
- drivers/base/power/runtime-test.c                  |   57 +
- drivers/base/power/runtime.c                       |  109 +-
- drivers/clocksource/timer-ti-dm.c                  |    9 +-
- drivers/cpufreq/Kconfig                            |    1 +
- drivers/cpufreq/acpi-cpufreq.c                     |   17 +-
- drivers/cpufreq/airoha-cpufreq.c                   |    2 +-
- drivers/cpufreq/amd-pstate-ut.c                    |   77 +-
- drivers/cpufreq/amd-pstate.c                       |  347 ++-
- drivers/cpufreq/amd-pstate.h                       |   60 +
- drivers/cpufreq/bmips-cpufreq.c                    |    4 +-
- drivers/cpufreq/cppc_cpufreq.c                     |   74 +-
- drivers/cpufreq/cpufreq-dt-platdev.c               |    2 +
- drivers/cpufreq/cpufreq_conservative.c             |    8 +-
- drivers/cpufreq/cpufreq_governor.c                 |   29 +-
- drivers/cpufreq/cpufreq_governor.h                 |    2 +
- drivers/cpufreq/loongson3_cpufreq.c                |   73 +-
- drivers/cpufreq/mediatek-cpufreq.c                 |    2 +
- drivers/cpufreq/qcom-cpufreq-hw.c                  |    3 +
- drivers/cpufreq/qcom-cpufreq-nvmem.c               |    9 +
- drivers/cpufreq/qoriq-cpufreq.c                    |    3 +-
- drivers/cpufreq/rcpufreq_dt.rs                     |    1 +
- drivers/cpufreq/s3c64xx-cpufreq.c                  |    5 +-
- drivers/cpufreq/sparc-us2e-cpufreq.c               |   11 +-
- drivers/cpufreq/sti-cpufreq.c                      |    4 +-
- drivers/cpufreq/tegra194-cpufreq.c                 |    2 +-
- drivers/cpuidle/cpuidle-tegra.c                    |    2 +-
- drivers/cpuidle/governors/menu.c                   |    8 +-
- drivers/cpuidle/governors/teo.c                    |   11 +
- drivers/idle/intel_idle.c                          |   12 +-
- drivers/opp/of.c                                   |    2 +-
- drivers/powercap/intel_rapl_msr.c                  |    5 +-
- include/acpi/cppc_acpi.h                           |   32 +-
- include/linux/pm.h                                 |   93 +
- include/linux/pm_runtime.h                         |  409 ++--
- kernel/cpu_pm.c                                    |    9 +-
- kernel/power/em_netlink.c                          |  122 +-
- kernel/power/em_netlink.h                          |    8 +-
- kernel/power/energy_model.c                        |    8 +-
- kernel/sched/cpufreq_schedutil.c                   |   14 +-
- rust/kernel/cpufreq.rs                             |   22 +-
- tools/power/pm-graph/sleepgraph.py                 |    2 +-
- 57 files changed, 3470 insertions(+), 1372 deletions(-)
+ .../bindings/arm/airoha,en7581-chip-scu.yaml       |   3 +-
+ .../bindings/thermal/amlogic,thermal.yaml          |  29 +-
+ .../bindings/thermal/google,gs101-tmu-top.yaml     |  69 +++
+ .../bindings/thermal/qcom,pm8775-mbg-tm.yaml       |   7 +-
+ .../devicetree/bindings/thermal/qcom-tsens.yaml    |   1 +
+ .../bindings/thermal/renesas,r9a08g045-tsu.yaml    |   4 +-
+ .../bindings/thermal/ti,omap-bandgap.yaml          | 177 ++++++
+ .../devicetree/bindings/thermal/ti_soc_thermal.txt |  88 ---
+ .../driver-api/thermal/cpu-idle-cooling.rst        |   2 +-
+ MAINTAINERS                                        |   8 +
+ drivers/thermal/airoha_thermal.c                   | 179 ++++--
+ drivers/thermal/amlogic_thermal.c                  |  14 +-
+ drivers/thermal/cpufreq_cooling.c                  |  14 +-
+ drivers/thermal/devfreq_cooling.c                  |   4 +-
+ drivers/thermal/gov_power_allocator.c              |  18 +-
+ drivers/thermal/imx91_thermal.c                    |   2 +-
+ .../int340x_thermal/processor_thermal_device.c     |  14 +-
+ .../int340x_thermal/processor_thermal_soc_slider.c |  28 +-
+ drivers/thermal/intel/intel_powerclamp.c           |  64 +-
+ drivers/thermal/intel/intel_tcc_cooling.c          |   1 +
+ drivers/thermal/qcom/qcom-spmi-adc-tm5.c           |   4 +-
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c        |   8 +-
+ drivers/thermal/qcom/tsens-v1.c                    |  41 ++
+ drivers/thermal/qcom/tsens-v2.c                    |   4 +-
+ drivers/thermal/qcom/tsens.c                       |   3 +
+ drivers/thermal/qcom/tsens.h                       |   2 +-
+ drivers/thermal/renesas/rzg3e_thermal.c            |  45 +-
+ drivers/thermal/renesas/rzg3s_thermal.c            |  38 +-
+ drivers/thermal/samsung/Kconfig                    |  19 +
+ drivers/thermal/samsung/Makefile                   |   2 +
+ drivers/thermal/samsung/acpm-tmu.c                 | 651 +++++++++++++++++=
+++++
+ drivers/thermal/sprd_thermal.c                     |   6 +
+ drivers/thermal/thermal_core.c                     |   2 +-
+ drivers/thermal/thermal_fw.c                       |   8 +-
+ drivers/thermal/thermal_of.c                       |  15 +-
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  22 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   4 +
+ include/uapi/linux/thermal.h                       |   8 +-
+ tools/thermal/tmon/sysfs.c                         |   2 +-
+ tools/thermal/tmon/tmon.c                          |   4 +-
+ tools/thermal/tmon/tmon.h                          |   2 +-
+ tools/thermal/tmon/tui.c                           |   2 +-
+ 42 files changed, 1331 insertions(+), 287 deletions(-)
