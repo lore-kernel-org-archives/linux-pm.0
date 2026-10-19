@@ -1,63 +1,62 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792422195;
-	b=WSZI8yEP6wMropVPFTnEj4sM6f2eT6d6u2y6gCkCr9k2IDM/iuDGXQA3EsPK08pyjXhZ
-	 heEu8fAMZJwndcOmgBsk9mUzQHzC0jWtf0Utj6aGJtNa2OdjbIK4CVfhwYsIKrUtJSloD
-	 fvEtnCB2xy6cxhydq4HE/Bihq+g4lPenWJx7ntcvbJZYjYhDYfkCEz0YJ8bUKYHfIkUsu
-	 4jdjWJbr6rNqVSne3uCi0O+SMxeZUoD7z5Tegy/zmxe7nQybEAzG514Ui04ik7YkDq3qD
-	 lXyaeQpM1IGxaFINLHrfXRbjZTBM9Gi/w/abH+ydKiyyXyTH26387T0abUpXBdX5Hbg==
+	t=1792422183;
+	b=CNh1ofRwsYk/x5XE+I019Xrz6cc6lCE7rp/g4+pQoSW1Z5/L2s9cSgzuaQFayEr+xPLX
+	 DbCxiD4aPrLXVDAy9XScLw5wVVZN0FLfxcla7h+FAswrC/ln3SnZY5JYoXwSdhMJOd72w
+	 n1RMjmt3EkMb08fVY3tjah/8nc0zQEHcXnzc2w64cRU8dw+PoKHaCAkrPJEIkDBIx1MAK
+	 CTMF48I844O5utBFAV96JuwelHiUrkOqxyMZ/DOphzQ9RRV4uFfBBKaBgcjleRgezUYuv
+	 L7Js8mniX2HiMmLEWp/8dcDN+opVxwkC+xN46w150dSF3Y3VKyD/p6HbV9n7gXd2J+w==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792422195;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792422183;
 	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 X-Mailer:In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=nJLb9fH+PaZzuCvW09mr0Pe1+PTegGXJsbTj1YNUQLo=;
-	b=pNTERKiNltbtxJbb+OFiVFaCU6CHNnanooIOeJSSY3zSeZfhJoVja8u2XTfNI+K2tkhY
-	 HofWr7M3dN7Q5kKgPYHvDEb9EhBYPCxinlmcj7fAW7SUziknShQoPzIFDMouNKRDrVYVj
-	 9I83iSguTYUb7pFMTLsZdxB2mUKnwUGHhhkammGYIx+BWBe/JSbj+DK7uSTbIzyfSVA3/
-	 uKKr4vJmMK7BgXabreVZiT/5vdwMRiSp5DqgWWBP6e5skpvadzUif6QNgs7uilUfqF5ix
-	 zEVeZwcu0x+XwrP2KUmYnInirE00G3v68Yw6h9w6BqbuL1UEM1Rlwiex/kbR/L4ETqg==
+	bh=a3lwkt1ZohAGOrSqwAYzmQWTtjwFrpyeZEK1Hc5Oasc=;
+	b=U0b5b2MgB+lYGsWF/3xt174krr0kJvbE77t2eaQGik8a/Zy3n2W07+XpV8kBbWBD1VPX
+	 kuRTKQe9UBLIvqij50rNCEgYi13RKSxlU+camfjXNcL/O78TsB5vdRtRkxDiw0Dzx82Es
+	 CWeb103hvXOaX4PFTaVko5qdAZWq4KwsbNZO5ibBn0uGEjY0NzLBb9BhTdpejyUtrohoF
+	 viYiW1U7MCSfzwZWfLF1IRSd9CiO4yM7XmOj8lC4Wn9jhqr1RIa1h+hX7Oiy+v3w8Tg68
+	 QmGWI6ZSb8B7ioTca5sQCOAqDZf1sXoivpUhZRsPZySpDPY82LRLlRob2j0qaZRRpXQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WXyvnZmu;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dglvHI59;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
 Received: from aws-us-west-2-korg-listserv-1.web.codeaurora.org (ip-10-30-226-211.us-west-2.compute.internal [10.30.226.211])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7E898607D374
-	for <linux-pm.vger.kernel.org@localhost.mlmmj>; Mon, 19 Oct 2026 15:03:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7C911607BF3E
+	for <linux-pm.vger.kernel.org@localhost.mlmmj>; Mon, 19 Oct 2026 15:03:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WXyvnZmu
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dglvHI59
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D9966513CA
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 15:03:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 750246513E4
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 15:03:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792422195; cv=none; b=Z+bb5h4upjFc6rNQdITEDqdGm+c88cKIj2aMAz8KqFg49NnKbMmU0Wj7uSzsUe1PsfkzS9JDn4u5skoLBk/QMVeOG7thrOxJ8KZYbfMM1MiXHGFlsB/l2gIK5T29M1LhgxaaJFnHlpU03XzxxWTPYPETsGiLxE9sxVLNUeWXIy0=
+	t=1792422183; cv=none; b=iMw7vXJRlqy85LgVR6FUCdA5qwPQyCv9t9IR3o51+SgspaAs5iSaEGcW5xU58as6ChgOaoyCHa3jnLk7t+R0B6kHx/IgOGQvRe5hGysdtzXQQM9AEQXaX3XUmRj4es3qvA+/f/0apNsCHf5eNOHpPpzMputMjCcaQ6nvu4vtlFk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792422195; c=relaxed/simple;
-	bh=VLANT82rVBGXsKKxumi15+JLMb/yb2Ob4kg9oJWjrNY=;
+	s=arc-20240116; t=1792422183; c=relaxed/simple;
+	bh=qFkUrCbvxzxjQfNec1sJhbiDhIPgsOrSs2G9kbqtinE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eHLJtRNZv9ZR34JSJR4ZmqLE6OWDC8CDGzazYtdxp7mbjCmwZjok5ZniTZRqp7McmDDG8WmouHMQA+fXPCHj2rTzLvWpPi8eBY1Zd/A8fCKBDg44mhZhpS6yI7VkV1IOa66iEZ1LT/S/NPsj/R4lklDy7FR19XyXWJzgqd9B0Ns=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WXyvnZmu; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6EEED1F000C4;
-	Mon, 19 Oct 2026 15:03:13 +0000 (UTC)
+	 MIME-Version; b=CHbYSRMPgFztamq5ymHTskK5cxbswne/eDP0y5ZsXu6MDg6BO+mdtN3O7dq5EPRJBRYE1JsfzOKxs0WL2XLzxbWuKxCEcIbyz6VvvuETnHMipGkfzFVnbbCN5+J62Hs3bXCZRDlJdjF+ija+9wKgqev8FPt3x/1E/bty4bI9zNs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dglvHI59; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62E941F000C7;
+	Mon, 19 Oct 2026 15:03:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792422194;
-	bh=nJLb9fH+PaZzuCvW09mr0Pe1+PTegGXJsbTj1YNUQLo=;
+	s=k20260515; t=1792422182;
+	bh=a3lwkt1ZohAGOrSqwAYzmQWTtjwFrpyeZEK1Hc5Oasc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=WXyvnZmuQj8l/98V3Jb/+x1Wch4Zjxr36I2icFI8URTh9XAMljmu6tzmt7QG5ROuF
-	 naWhl+VjVM+i+XGCWB1IKQo5HsGuKShUKXaT6erxJo1cX9KA+Ssucs67NBQ7OaTWg5
-	 y7D3XKZYav7JTOCZ5iNeAOE/JXBsX46Fp/F76TCNub+LqHbeVH8r9nfBc0q4Q5nfrF
-	 L7ThU73RA0UuaYo1LXs2xiE9BX3AVBTREEhU4puIQKXsYTvZDAuXUURcPlt5y8+Spz
-	 1jRAlWy4ceC0fBFd8YGTIEXwtuF0q0xPmF31nV+QPiH8VBUSimXaJg1mVnlXDW3+Ws
-	 Bffn/32k81Jow==
+	b=dglvHI59T8pQRPm/jp32ev29pjOP0os/b5K9RMW8vZ+QvWUDywwZE4cQAivRJfAgu
+	 MmvSC6iWRou4duW+mry5UfBlEm2oJfsZJHTd7sbEoLPAUqDoBEi7mXDuYPZJ6B/YMP
+	 Vwq4GkwRiqRTVD2ZXaUJVUCRT4kCJwOb9wuaznLFsekSsLObPpBGX5rkyAN1ATH8Sf
+	 3EIlypRuqdGXtezhg3EqkoeYtkpmBgnMHR3yLi4w82JjXj+/uWdeeRZPLO8ViBbL1Z
+	 mAbAzbWnpJ7e2EF0f/2eyeJ0cNsNamdbyjz5/VimzV/WocWs0wHUO7470cq3q/1s1O
+	 OuTNP00uljioQ==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
-Cc: Hemanth Selam <hemanth.selam@gmail.com>,
-	Len Brown <len.brown@intel.com>
-Subject: [PATCH 20/23] tools/power turbostat: Fix comment typo
-Date: Mon, 19 Oct 2026 10:38:53 -0400
-Message-ID: <1ab9dde1c8a8a01bf91dd148f29a5161caaf52c1.1792420722.git.len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Subject: [PATCH 11/23] tools/power turbostat: Fix typo: MHz, not Mhz
+Date: Mon, 19 Oct 2026 10:38:44 -0400
+Message-ID: <501c340739775ae01139b02ff50d392d0ca20e6f.1792420722.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
 References: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
@@ -74,30 +73,53 @@ Reply-To: Len Brown <lenb@kernel.org>
 Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-From: Hemanth Selam <hemanth.selam@gmail.com>
+From: Len Brown <len.brown@intel.com>
 
-Spell "instead" properly in comment.
+The SI symbol for megahertz capitalizes
+both the SI prefix ('M') and the unit symbol ('Hz').
 
-Assisted-by: Cursor:claude-opus-5
-Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
+Assisted-by: Claude:claude-sonnet-4.6
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
+ tools/power/x86/turbostat/turbostat.8 | 4 ++--
  tools/power/x86/turbostat/turbostat.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
+index 344ede2f8546..830c9f094765 100644
+--- a/tools/power/x86/turbostat/turbostat.8
++++ b/tools/power/x86/turbostat/turbostat.8
+@@ -269,7 +269,7 @@ Periodic output goes to stdout, by default, unless --out is used to specify an o
+ The 5-second interval can be changed with the "-i sec" option.
+ .nf
+ sudo turbostat --quiet --show CPU,frequency
+-	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMhz
++	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMHz
+ 	-	-	524	12.48	4198	3096	74.53	3800
+ 	0	0	4	0.09	4081	3096	98.88	3800
+ 	0	4	1	0.02	4063	3096
+@@ -279,7 +279,7 @@ sudo turbostat --quiet --show CPU,frequency
+ 	2	6	3	0.08	4159	3096
+ 	3	3	1	0.04	4046	3096	99.66
+ 	3	7	0	0.01	3989	3096
+-	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMhz
++	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMHz
+ 	-	-	525	12.52	4198	3096	74.54	3800
+ 	0	0	4	0.10	4051	3096	99.49	3800
+ 	0	4	2	0.04	3993	3096
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 0fce1f3a937f..6ee32fa15c68 100644
+index cab144d1d5ec..3248a6a60732 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -10543,7 +10543,7 @@ void pmt_init(void)
- 			 * Set the scope to CPU, even though CWF report the counter per module.
- 			 * CPUs inside the same module will read from the same location, instead of reporting zeros.
- 			 *
--			 * CWF with newer firmware might require a PMT_TYPE_XTAL_TIME intead of PMT_TYPE_TCORE_CLOCK.
-+			 * CWF with newer firmware might require a PMT_TYPE_XTAL_TIME instead of PMT_TYPE_TCORE_CLOCK.
- 			 */
- 			pmt_add_counter(PMT_CWF_MC1E_GUID, seq, "CPU%c1e", PMT_TYPE_TCORE_CLOCK,
- 					PMT_COUNTER_CWF_MC1E_LSB, PMT_COUNTER_CWF_MC1E_MSB, offset, SCOPE_CPU, FORMAT_DELTA, cpu_num, PMT_OPEN_TRY);
+@@ -658,7 +658,7 @@ double slm_bclk(void)
+ 	freq = slm_freq_table[i];
+ 
+ 	if (!quiet)
+-		fprintf(outf, "SLM BCLK: %.1f Mhz\n", freq);
++		fprintf(outf, "SLM BCLK: %.1f MHz\n", freq);
+ 
+ 	return freq;
+ }
 -- 
 2.45.2
 
