@@ -1,252 +1,165 @@
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44BC44C8465;
-	Mon, 19 Oct 2026 14:43:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6233A470851
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 14:49:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792420982; cv=none; b=Vo8L/TNs0dxY5UhnkDpunqdbV8J+oIOZIAtvMhj2dvoPUkvgbWUlkgY8SVltWUg0wd2PkgKIGtY1i596rucT7OVLLNmdpM3p0DWU5P8TR4DTcGnvntbX8KtswyIHxG7baRsbWP0TZ0+wZyyC1yIrngJwTZhUWY+Ddywp8d1VXXQ=
+	t=1792421388; cv=none; b=UuELNr6XmbThqG5KXUt9jSO8BmvaQZdwYcM+Oh2h18CcQd2QjQQUhPlnZXeNGeQ+g4dkzTAFjff+X4ZIioD+jYgm5spaIg7UdlqSt8GBOuJh++704PNF9GA2Qo35Vmov/uz/aIInYMyVbFZ7k13kMv+0O+cSyVtLbOcgKpHuHFo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792420982; c=relaxed/simple;
-	bh=WBjydfmSdmjAb4yteidOozxR8jQfv722RUew5WbpzPQ=;
+	s=arc-20240116; t=1792421388; c=relaxed/simple;
+	bh=+GAH88BEs7qm1uxKmCt5sqiNxC6fTV5X/ULDPMR+7kA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YD/umZe5l1jW/g0ROoe449sRAGtc+ObLEUu5fgdiu9lejMQLV8OgEQOgTTRO5s7XCwiWXZz+vxZ9l3O7e6rULPBeEsCAIAX5rvJuDiqZyoJSt+PsOtMqhBNPQOvi1F5UdOLhEIGvykFDidQLqhLrAFrY7wL+PU+XhT0QGdUQ6Ks=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=DYaxapsY; arc=none smtp.client-ip=213.167.242.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=KBY6HwscwURm1YzGjysEUXN5D141dbJWysQL2xWf4ehXbIEmBb61V2i7SG+2PdQ4VJRo81CkHzTkJblJ1Oh9tScHzuE7ByxFMD+8r7xRGZEffSJXnNyvAA/xMaM8sHOGcHnsRgiq/2w8UEFTdSAAwEimjT3MprtsjP78I9COlWU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=c6cdbxuj; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Iq+Dj/Ww; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="DYaxapsY"
-Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 82FE334;
-	Mon, 19 Oct 2026 16:40:51 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1792420851;
-	bh=WBjydfmSdmjAb4yteidOozxR8jQfv722RUew5WbpzPQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=DYaxapsYKK7FHJTSj6LUPZ5UXAa5DA0aKXN77z1fFVichWqH7BG5XIeHnMXlYcsDV
-	 //y/szcLEdtUj8rWXnT8a9VT6JQPgl6wh+0q77PxPxJu4Qb07dpSLSV8I9suIznrAM
-	 m420vPm6rZ0LL3AyoIT8ed5hJrOFKJS3xkVxZ88g=
-Date: Mon, 19 Oct 2026 17:42:56 +0300
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	=?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH v4 1/8] clk: renesas: r8a78000: Add clk_hw to clk_map
-Message-ID: <20261019144256.GC763679@killaraus.ideasonboard.com>
-References: <cover.1792163045.git.geert+renesas@glider.be>
- <1d7da50cfb58232c6dd4c4afefb938fd7e62fdcd.1792163045.git.geert+renesas@glider.be>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="c6cdbxuj";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Iq+Dj/Ww"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69JE0HoZ2971440
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 14:49:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=5Ep23zikX9zOjtrHbiPT8GoS
+	ROPPec2bJyAV/PUp9eo=; b=c6cdbxujjpe6oL35xeCwG/aSWiCenA7WxK7b6rFm
+	wQVfB9E1mGFkd6FzjQLvHW0aTVculCKYVeEXVsdqoiIgYaDGgThpK3W6h5dGHuTt
+	5cK+kdguJrob7SVYmVJHrb50b+oVC53kFu3QSsFPbkVzAxyisKtOjVNU5DTTCjTC
+	l5wwQYAr1UckCtJ27bR6RFuPDPxFtKy+7b9YivJULiqVX6ZPU83CVz+EifXSpxDI
+	YIvRyTvtecb7LGKb+LKDzlEIhPLKKRigfUUUyCBEIfkTVbGCqYVoQzXhUo8uqtTe
+	U4ZxVeCxzfrHo9zz4XRnLFZKWrRuIQ+yh6kh0uJXl+rMeA==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hdf3x9rvd-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 14:49:46 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93909014c85so498112485a.0
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 07:49:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1792421386; x=1793026186; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5Ep23zikX9zOjtrHbiPT8GoSROPPec2bJyAV/PUp9eo=;
+        b=Iq+Dj/WwosxA7wZIW8UGDydYLRexBODVi6G5PNa9L6VNhDNoNUO1LSkNp/+pKvk8m/
+         3rSTXj889OmS5R9T24xQugPR7qbhc8meOW2OubCRx95nA/lfEwQh2NkFNFJCJ3xkafmQ
+         nl2eY0v0BdmDirENRjiHNaCnhm9sbWzCoTy3T04rbeJIeYbRz9qOOr7+xlQu1pN7JKDa
+         oD47hRbJBcB1S9GsfNsQSFi/xpXDzw9cR9BaXg/0Kor4uWbVwVjACvjDpcIB8pGQy1TJ
+         6foUKND87FoTHezy8KvWKFtTLY8d7RaU/LGsGGtnwFhH/YlY1+7rE6wspdoMQoDn6e2Y
+         jAqQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792421386; x=1793026186;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5Ep23zikX9zOjtrHbiPT8GoSROPPec2bJyAV/PUp9eo=;
+        b=A6MpWo4DZnZG1Erkpr8ca1Q73c9BqmA/N3zmPX9qiAF+2u4INd3TnHMkU9H8r1Uy+H
+         kr5zoBiCqC4JsGBj7WWErUsEMpO2Q6a1JV0xag8cz1p7OIh80jvwRrvGncMQdVhoxu6B
+         usq+FT3fIRjp+3ySyw/5FzHbZVBN3CHsyKcPT6pRaAfK6/4z5FefMoEQJNYrUCHQDqOq
+         72v4LFUuOn9qqvneMU9dFNBAAkdQziA9AmKcSZ9TD0MsLyM7A0snBkUhHw2pHPdAvUS0
+         MQhPllsWca601tWf1hADEp8Y+ActnH5Xr6x0dLXvQAkrudsdQezI2Pm1cqGLODVQVNJ6
+         cqtA==
+X-Forwarded-Encrypted: i=1; AKwUvBwtUBtN3j6kHczpUSr2jv1p11WcMq/wynCMdJVwlxziYM2M7qYR4ER8vIBxucsuFWWZ0TAPSEucuw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJOdniLKYbQbmUfqtq1LSqVdQV8wz+CaLfVUzYg3+XH4N4obidc
+	iES9zfArEUZdCg+/PqsL7AXI0T9LwoSRvgYOOUf7VNDqg9yW2f7wQQGHWEmMjYL/nMkvKufPrZb
+	iLrKwbzKP4g4ZgnWsFAicPDUvSc6GmQP6ty5EM8q29Q7jRYs/Zz4Auk8OMJP2vQ==
+X-Gm-Gg: AYBFou30nyFQDSz/n4qBYEXP7PvL13GagA2KwRApt2lv7M97QQxdfqsrMLgSrqAYoPI
+	pXju4XU2I114iTt4K1PMg6PqNDNo43kIFXx8cWcOwxeyKgtkuweQ7U+bgKYdSjwa0SpfJUmjPTk
+	mBqrBKcmjIN+fS1PKZzxCFCty/BDCegIP0n9jrUG/CWPea7bV+ifoEvGJHbKptpJILBfXF79MFD
+	hQF04GEJFJ9zcApaVwdNe2AeaYHtRPlu0234mEa0DgNeJbDajC8zfEkZcSXHg9sWkDoi1buTIsX
+	ZclKsBaMBWtQKHGYXEXD5Of+hjS/YLXtJlk6DZ0oiMtwhhbGZUGuh6U+ZMLkHl1clRhT1ELDkbg
+	+2JH59f9YpgzA2ZTEN9kYV0h1dqmAe3etoMZngIcY73sumKrkvRPRTrVyOigmxwmiLdprWtbXC+
+	XHHql/qJpb8cO9
+X-Received: by 2002:a05:620a:d8e:b0:93c:6f0e:8468 with SMTP id af79cd13be357-93f29ceee4amr1368541785a.43.1792421385522;
+        Mon, 19 Oct 2026 07:49:45 -0700 (PDT)
+X-Received: by 2002:a05:620a:d8e:b0:93c:6f0e:8468 with SMTP id af79cd13be357-93f29ceee4amr1368534585a.43.1792421384904;
+        Mon, 19 Oct 2026 07:49:44 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5be4a6380f6sm1978836e87.63.2026.10.19.07.49.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 19 Oct 2026 07:49:43 -0700 (PDT)
+Date: Mon, 19 Oct 2026 17:49:41 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+        Jonathan Marek <jonathan@marek.ca>, Bryan O'Donoghue <bod@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 2/3] clk: qcom: camcc-sm8250: use icc-clk for camera
+ NoC AXI clock
+Message-ID: <g56qnvvcuvih7pm2lhkppvpbj6squhwyi6sfvahw4zvuqitrkj@mewzkeerabm7>
+References: <20261016170701.1504338-1-atanas.filipov@oss.qualcomm.com>
+ <20261016170701.1504338-3-atanas.filipov@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1d7da50cfb58232c6dd4c4afefb938fd7e62fdcd.1792163045.git.geert+renesas@glider.be>
+In-Reply-To: <20261016170701.1504338-3-atanas.filipov@oss.qualcomm.com>
+X-Proofpoint-ORIG-GUID: zTPtVmewQCQ9LAD3iIvK3hSr7jd9bman
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE5MDA1OSBTYWx0ZWRfX1v91f/7q4JI9
+ QxzFutW7cOJqugaI1TwxaN8bVJtQrRHFoNTeGl6c1277gh+liJ2mb+57j7j77JSlS91/DDJo+pm
+ eYMs3ugkorRHpySO0I+G2XNwTG87ZHM=
+X-Authority-Analysis: v=2.4 cv=XPOl2ghE c=1 sm=1 tr=0 ts=6ad62e0a cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=EUspDBNiAAAA:8
+ a=zF8lwYezSTq--4imPpAA:9 a=CjuIK1q_8ugA:10 a=NFOGd7dJGGMPyQGDc5-O:22
+X-Proofpoint-GUID: zTPtVmewQCQ9LAD3iIvK3hSr7jd9bman
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE5MDA1OSBTYWx0ZWRfX+QqsSYsYjZj4
+ wqaGlmGoJN1LIkIKt+t6FHxFq1Gr/qxzC6CJThzwMkhunt01NlmvEQKdRqCyGQZVzoc2VoHgx8W
+ zB6HCfHMb1jEhl4liSSD6oMxHsd9fdG0PG3CkemhRxRkhIHk6wYyIMc4++lLf5iyjDzjc6BqIdL
+ SdkhJrBONz53eDfplKEV7jC8M29Sm4Z3JXYBiLvx44NKdensJ4a2JteK1B8s25yNDUvHz9wP8u6
+ BnWPrZOmGmwJKklLWqThOYnXrVC4w9CKfdnIzPDJNIdK6iH193CmEIWcz12cdh2QAS2U55m9nxO
+ 60/q5zkwgU8Q72KaRaFdxJdT14Z0ALomXJMWtYNtJvrGaTZcq2c6ie/V3JyjfLoTLNXbqSDU4mb
+ qbFLhZz4YHhildshde3xumyH30VQ6I9/9ACrumCntFV8+FM6vHj3OjecMcTuRD2LUfJd9ciy5aq
+ ay3ObgK9D+QuswvAniQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-19_04,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0 adultscore=0 phishscore=0 suspectscore=0
+ clxscore=1015 priorityscore=1501 bulkscore=0 lowpriorityscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610190059
 
-On Fri, Oct 16, 2026 at 05:55:40PM +0200, Geert Uytterhoeven wrote:
-> Prepare for mapping to other than fixed-rate clocks by adding a clk_hw
-> pointer to the clk_map structure, and populating it up-front.
+On Fri, Oct 16, 2026 at 08:07:00PM +0300, Atanas Filipov wrote:
+> CAM_CC_CAMNOC_AXI_CLK is shared by several camera blocks. Setting its
+> rate directly from each consumer means the last writer wins.
 > 
-> Move r8a78000_cpg_priv.fixed_hws into fill_clk_map(), as it is no longer
-> needed afterwards, and drop NUM_FIXED_CLKS.
+> Register the clock as an icc-clk path through the common icc_hws
+> support, as gcc-ipq9574 does. The interconnect core aggregates all
+> requests and the clock runs at the highest requested rate.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Use the RCG rather than the branch: icc-clk enables the clock at
+> registration, when TITAN_TOP_GDSC is still off. Consumers enable the
+> branch themselves.
+> 
+> Signed-off-by: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
 > ---
-> v4:
->   - No changes,
-> 
-> v3:
->   - New.
-> ---
->  drivers/clk/renesas/r8a78000-cpg.c | 78 +++++++++++++++++++++---------
->  1 file changed, 56 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
-> index b8024e76743ea53d..5ffd7b89cb48e41c 100644
-> --- a/drivers/clk/renesas/r8a78000-cpg.c
-> +++ b/drivers/clk/renesas/r8a78000-cpg.c
-> @@ -16,19 +16,24 @@
->  
->  #include <dt-bindings/clock/renesas,r8a78000-cpg.h>
->  
-> +struct clk_map_in {
+>  drivers/clk/qcom/camcc-sm8250.c | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 
-The "_in" suffix isn't very explicit.
-
-> +	int dt_id;		/* DT binding clock ID or -1 sentinel */
-> +	u32 fw_id;		/* FIXED_CLK() ID */
-> +};
-> +
->  struct clk_map {
->  	int dt_id;		/* DT binding clock ID or -1 sentinel */
->  	u32 fw_id;		/* FIXED_CLK() ID */
-> +	struct clk_hw *hw;
->  };
->  
->  enum fixed_clk {
->  	FIXED_CLK_66M,
->  	FIXED_CLK_133M,
->  	FIXED_CLK_266M,
-> -	NUM_FIXED_CLKS
->  };
->  
-> -static const unsigned long fixed_clk_rates[NUM_FIXED_CLKS] = {
-> +static const unsigned long fixed_clk_rates[] = {
->  	[FIXED_CLK_66M] = 66666000,
->  	[FIXED_CLK_133M] = 133330000,
->  	[FIXED_CLK_266M] = 266660000,
-> @@ -41,12 +46,10 @@ static const unsigned long fixed_clk_rates[NUM_FIXED_CLKS] = {
->   *
->   * @dev: CPG device
->   * @map: Mapping from DT clock IDs to fixed-rate clocks
-> - * @fixed_hws: Fixed rate clocks
->   */
->  struct r8a78000_cpg_priv {
->  	struct device *dev;
->  	const struct clk_map *map;
-> -	struct clk_hw *fixed_hws[NUM_FIXED_CLKS];
->  };
->  
->  static const struct clk_map *clk_map_find(const struct clk_map *map, u32 id)
-> @@ -83,8 +86,7 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
->  	}
->  
->  	dev_dbg(dev, "Mapping DT clock %u to fixed clock %u\n", id, map->fw_id);
-> -
-> -	hw = priv->fixed_hws[map->fw_id];
-> +	hw = map->hw;
->  
->  	dev_dbg(dev, "clock %u is %s at %lu Hz\n", id, clk_hw_get_name(hw),
->  		clk_hw_get_rate(hw));
-> @@ -92,35 +94,69 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
->  	return hw;
->  }
->  
-> -static int register_fixed_clks(struct r8a78000_cpg_priv *priv)
-> +static struct clk_hw **register_fixed_clks(struct device *dev)
->  {
-> -	struct device *dev = priv->dev;
-> +	unsigned int n = ARRAY_SIZE(fixed_clk_rates);
-> +	struct clk_hw **hws, *hw;
->  	unsigned long rate;
-> -	struct clk_hw *hw;
->  	const char *name;
->  
-> -	for (unsigned int i = 0; i < ARRAY_SIZE(fixed_clk_rates); i++) {
-> +	hws = devm_kcalloc(dev, n, sizeof(*hws), GFP_KERNEL);
-> +	if (!hws)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	for (unsigned int i = 0; i < n; i++) {
->  		rate = fixed_clk_rates[i];
->  		name = devm_kasprintf(dev, GFP_KERNEL, "cpg-%lu", rate);
->  		if (!name)
-> -			return -ENOMEM;
-> +			return ERR_PTR(-ENOMEM);
->  
->  		hw = devm_clk_hw_register_fixed_rate(dev, name, NULL, 0, rate);
->  		if (IS_ERR(hw))
-> -			return PTR_ERR(hw);
-> +			return ERR_CAST(hw);
->  
-> -		priv->fixed_hws[i] = hw;
-> +		hws[i] = hw;
->  	}
->  
-> -	return 0;
-> +	return hws;
-> +}
-> +
-> +static const struct clk_map *fill_clk_map(struct r8a78000_cpg_priv *priv,
-> +					  const struct clk_map_in *map_in)
-> +{
-> +	struct device *dev = priv->dev;
-> +	struct clk_hw **fixed_hws;
-> +	struct clk_map *map;
-> +	unsigned int i;
-> +
-> +	fixed_hws = register_fixed_clks(dev);
-> +	if (IS_ERR(fixed_hws))
-> +		return ERR_CAST(fixed_hws);
-> +
-> +	for (i = 0; map_in[i].dt_id >= 0; i++) { }
-
-This is avoidable by passing { map, ARRAY_SIZE(map) } as match data
-instead of just the map.
-
-> +
-> +	map = devm_kcalloc(dev, i + 1, sizeof(*map), GFP_KERNEL);
-> +	if (!map)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	for (i = 0; ; i++) {
-> +		map[i].dt_id = map_in[i].dt_id;
-> +		if (map[i].dt_id < 0)
-> +			break;
-> +
-> +		map[i].fw_id = map_in[i].fw_id;
-> +		map[i].hw = fixed_hws[map[i].fw_id];
-> +	}
-> +
-> +	devm_kfree(dev, fixed_hws);
-
-Why not plain kcalloc/kfree ?
-
-> +	return map;
->  }
->  
->  static int r8a78000_cpg_probe(struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
->  	struct r8a78000_cpg_priv *priv;
-> -	const struct clk_map *map;
-> -	int ret;
-> +	const struct clk_map_in *map;
->  
->  	map = of_device_get_match_data(dev);
->  	if (!map)
-> @@ -131,16 +167,14 @@ static int r8a78000_cpg_probe(struct platform_device *pdev)
->  		return -ENOMEM;
->  
->  	priv->dev = dev;
-> -	priv->map = map;
-> -
-> -	ret = register_fixed_clks(priv);
-> -	if (ret)
-> -		return ret;
-> +	priv->map = fill_clk_map(priv, map);
-> +	if (IS_ERR(priv->map))
-> +		return PTR_ERR(priv->map);
->  
->  	return devm_of_clk_add_hw_provider(dev, r8a78000_clk_get, priv);
->  }
->  
-> -static const struct clk_map r8a78000_cpg_default[] = {
-> +static const struct clk_map_in r8a78000_cpg_default[] = {
->  	{ R8A78000_CPG_SGASYNCD4_PERW_BUS,	FIXED_CLK(266M) },
->  	{ R8A78000_CPG_SGASYNCD8_PERW_BUS,	FIXED_CLK(133M) },
->  	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	FIXED_CLK(66M) },
+This is a nice approach. Several quesitons: if there are multiple
+clients, should the clock track the max of the rates a sum of the rates?
+Also, this clock needs a certain level on a rail. Are you going to add
+the opp table to the clock controller or to the devices which use the
+ICC?
 
 -- 
-Regards,
-
-Laurent Pinchart
+With best wishes
+Dmitry
