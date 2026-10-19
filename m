@@ -1,62 +1,62 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792422183;
-	b=CNh1ofRwsYk/x5XE+I019Xrz6cc6lCE7rp/g4+pQoSW1Z5/L2s9cSgzuaQFayEr+xPLX
-	 DbCxiD4aPrLXVDAy9XScLw5wVVZN0FLfxcla7h+FAswrC/ln3SnZY5JYoXwSdhMJOd72w
-	 n1RMjmt3EkMb08fVY3tjah/8nc0zQEHcXnzc2w64cRU8dw+PoKHaCAkrPJEIkDBIx1MAK
-	 CTMF48I844O5utBFAV96JuwelHiUrkOqxyMZ/DOphzQ9RRV4uFfBBKaBgcjleRgezUYuv
-	 L7Js8mniX2HiMmLEWp/8dcDN+opVxwkC+xN46w150dSF3Y3VKyD/p6HbV9n7gXd2J+w==
+	t=1792422194;
+	b=YGoikuZFWS7sc908m39N8ojsojRf3UndZmJJJFs/4kt7VxjYCk+KQDUxH1bTp9LivEeJ
+	 wcT6pvotmh75qrIULEXaJHwJwbGxOL8ikZSvtevtjVDXzhpZxQc0AVdhIccHc0HGsKv2b
+	 5qenNmCkZzpNoP89fjkadw4zHFnHnFYOmNP4QFtvgw+u6nMIFk122SB3v6PnN0sCXvdKV
+	 e8CziNTHFAcVPxZ+8vsLVi8klEPYxkjOF3tbnuPd09T2/8k45cHupwKp+Y7KAddByZht5
+	 FW4dh+u59Yvm72n0M5g5Eu7JTDy2YfE8+rhNt1Mjb0yi82uRchFj3sU2nE/ZWwEjbgA==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792422183;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792422194;
 	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 X-Mailer:In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=a3lwkt1ZohAGOrSqwAYzmQWTtjwFrpyeZEK1Hc5Oasc=;
-	b=U0b5b2MgB+lYGsWF/3xt174krr0kJvbE77t2eaQGik8a/Zy3n2W07+XpV8kBbWBD1VPX
-	 kuRTKQe9UBLIvqij50rNCEgYi13RKSxlU+camfjXNcL/O78TsB5vdRtRkxDiw0Dzx82Es
-	 CWeb103hvXOaX4PFTaVko5qdAZWq4KwsbNZO5ibBn0uGEjY0NzLBb9BhTdpejyUtrohoF
-	 viYiW1U7MCSfzwZWfLF1IRSd9CiO4yM7XmOj8lC4Wn9jhqr1RIa1h+hX7Oiy+v3w8Tg68
-	 QmGWI6ZSb8B7ioTca5sQCOAqDZf1sXoivpUhZRsPZySpDPY82LRLlRob2j0qaZRRpXQ==
+	bh=sLRGknYPa42kdRe4qsC6Ur32o5buaryVLn46V4ZDDwo=;
+	b=oJckoP1p+7Ss9oul4BL2yUCoNgzOeqgFZhik9Gi8lvkYVX8EEvP/NfyjMpohr9OEi/Y5
+	 out0DWm+CJcJWt+65JqkcaALCMReOc7IDLwuJxI+mDed3eSksJMv3vbkLwqg0bnhAeXPU
+	 kAu4/P8UlqchcrdmdOjdIUYVLPhwZJKOwX4Rq90tsf1RFnEjTItj9y2opTeCCJ+e5exEi
+	 /IyxFE5P0MKwzY+kLsKe6AZ1kKREtvkpZpaqgEX6HYZYylPVaLjQmNYd7LtoIzcMdPQq2
+	 oIg6b8VCGVJ02RJgquUnBcauAsOLUJ/YR3/ng8Zxk4e8n8RZw+31UuxjmqeBSYEmIkA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dglvHI59;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KyIC0IcI;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
 Received: from aws-us-west-2-korg-listserv-1.web.codeaurora.org (ip-10-30-226-211.us-west-2.compute.internal [10.30.226.211])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7C911607BF3E
-	for <linux-pm.vger.kernel.org@localhost.mlmmj>; Mon, 19 Oct 2026 15:03:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2C554607D373
+	for <linux-pm.vger.kernel.org@localhost.mlmmj>; Mon, 19 Oct 2026 15:03:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dglvHI59
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KyIC0IcI
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 750246513E4
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 15:03:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09ED66513D0
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 15:03:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792422183; cv=none; b=iMw7vXJRlqy85LgVR6FUCdA5qwPQyCv9t9IR3o51+SgspaAs5iSaEGcW5xU58as6ChgOaoyCHa3jnLk7t+R0B6kHx/IgOGQvRe5hGysdtzXQQM9AEQXaX3XUmRj4es3qvA+/f/0apNsCHf5eNOHpPpzMputMjCcaQ6nvu4vtlFk=
+	t=1792422194; cv=none; b=ewWozOqkvEAX8ZcnloW59mOu53N35GISIw4aVMQKooPIZHJmjfA0Fj/FJJuhZj5dNQkKAV2IKdMs1ZSD8WJV4BMZbWn8aw3jB54AudJCuV7rmOrCn7iGUFP0sPKmZRacxwl20Y1AreiK7HFhVJY8wq22dqTiIMMbyyj7U7TqA34=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792422183; c=relaxed/simple;
-	bh=qFkUrCbvxzxjQfNec1sJhbiDhIPgsOrSs2G9kbqtinE=;
+	s=arc-20240116; t=1792422194; c=relaxed/simple;
+	bh=rXIwi84BqDHaQOhNkA5gx3ZXWj1FwrOISxizSxs0/bM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CHbYSRMPgFztamq5ymHTskK5cxbswne/eDP0y5ZsXu6MDg6BO+mdtN3O7dq5EPRJBRYE1JsfzOKxs0WL2XLzxbWuKxCEcIbyz6VvvuETnHMipGkfzFVnbbCN5+J62Hs3bXCZRDlJdjF+ija+9wKgqev8FPt3x/1E/bty4bI9zNs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dglvHI59; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62E941F000C7;
-	Mon, 19 Oct 2026 15:03:01 +0000 (UTC)
+	 MIME-Version; b=N9WvsnaQUiO2r5xt4ANaseZxxVfFKrcLW3UTuemH7YaQIeD4vW6TQ2yhl9qPmFqdUl/IDFt7xRJxK2tqby7aRliTah7YW6+JxvL8uhM8f3p219j5ByWkCgXpIGcQtKIKl0b0ZtrqP7kJdtVy94ZLOkKZlt7m2mD8aevUIQuhfrA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KyIC0IcI; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DD9E1F000C7;
+	Mon, 19 Oct 2026 15:03:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792422182;
-	bh=a3lwkt1ZohAGOrSqwAYzmQWTtjwFrpyeZEK1Hc5Oasc=;
+	s=k20260515; t=1792422192;
+	bh=sLRGknYPa42kdRe4qsC6Ur32o5buaryVLn46V4ZDDwo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=dglvHI59T8pQRPm/jp32ev29pjOP0os/b5K9RMW8vZ+QvWUDywwZE4cQAivRJfAgu
-	 MmvSC6iWRou4duW+mry5UfBlEm2oJfsZJHTd7sbEoLPAUqDoBEi7mXDuYPZJ6B/YMP
-	 Vwq4GkwRiqRTVD2ZXaUJVUCRT4kCJwOb9wuaznLFsekSsLObPpBGX5rkyAN1ATH8Sf
-	 3EIlypRuqdGXtezhg3EqkoeYtkpmBgnMHR3yLi4w82JjXj+/uWdeeRZPLO8ViBbL1Z
-	 mAbAzbWnpJ7e2EF0f/2eyeJ0cNsNamdbyjz5/VimzV/WocWs0wHUO7470cq3q/1s1O
-	 OuTNP00uljioQ==
+	b=KyIC0IcI2GTPDvJdwP+5sqwzRbGSgztAv7gaa9Fh1dneB+6hytRmfZbIp77Bjx9CZ
+	 C0nRI9PZXy/bqi5/aXudW1Pja1SrXPihiq6b/J3AWQBZ7TkLCMrj3Li9jWpN+N7RIZ
+	 U0d6RPpPbbCTTLP+Kq8dqYPQwrN0So42lQUDcVzCeC1AV7wmHrrakFFgt5IygNPB/w
+	 gLHJY5sXwiM2W9Vhtwrh+9ePoyyZm4jZi65c+U/+h+CgzH8OsVhBiK0jU41lSkKIYj
+	 EMm/o8GjvtiQ67p8HNBfjfLxcj8epnpZQkXiEDp4puzJMwIBwh72HfC8AHZqx9ydFv
+	 vcbWxrHz9+07w==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: Len Brown <len.brown@intel.com>
-Subject: [PATCH 11/23] tools/power turbostat: Fix typo: MHz, not Mhz
-Date: Mon, 19 Oct 2026 10:38:44 -0400
-Message-ID: <501c340739775ae01139b02ff50d392d0ca20e6f.1792420722.git.len.brown@intel.com>
+Subject: [PATCH 19/23] tools/power turbostat: Rename cpu_subset to cpuset_cmdline
+Date: Mon, 19 Oct 2026 10:38:52 -0400
+Message-ID: <258a27c56c602fe1e8351b1e3d727964d2cf9e1a.1792420722.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
 References: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
@@ -75,51 +75,120 @@ Content-Transfer-Encoding: 8bit
 
 From: Len Brown <len.brown@intel.com>
 
-The SI symbol for megahertz capitalizes
-both the SI prefix ('M') and the unit symbol ('Hz').
+The cpu_set supporting "--cpu" on the cmdline is special.
+Unlike all other cpu_sets, it is allocated, re-used,
+and never freed.
 
-Assisted-by: Claude:claude-sonnet-4.6
+Add a comment noting this and name it "cpuset_cmdline"
+to clarify its use.
+
+No functional change.
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.8 | 4 ++--
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 39 +++++++++++++++------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index 344ede2f8546..830c9f094765 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -269,7 +269,7 @@ Periodic output goes to stdout, by default, unless --out is used to specify an o
- The 5-second interval can be changed with the "-i sec" option.
- .nf
- sudo turbostat --quiet --show CPU,frequency
--	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMhz
-+	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMHz
- 	-	-	524	12.48	4198	3096	74.53	3800
- 	0	0	4	0.09	4081	3096	98.88	3800
- 	0	4	1	0.02	4063	3096
-@@ -279,7 +279,7 @@ sudo turbostat --quiet --show CPU,frequency
- 	2	6	3	0.08	4159	3096
- 	3	3	1	0.04	4046	3096	99.66
- 	3	7	0	0.01	3989	3096
--	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMhz
-+	Core	CPU	Avg_MHz	Busy%	Bzy_MHz	TSC_MHz	CPU%c7	UncMHz
- 	-	-	525	12.52	4198	3096	74.54	3800
- 	0	0	4	0.10	4051	3096	99.49	3800
- 	0	4	2	0.04	3993	3096
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index cab144d1d5ec..3248a6a60732 100644
+index eb76e337267a..0fce1f3a937f 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -658,7 +658,7 @@ double slm_bclk(void)
- 	freq = slm_freq_table[i];
+@@ -1424,7 +1424,7 @@ void init_perf_model_support(unsigned int family, unsigned int model)
+ int backwards_count;
+ char *progname;
  
- 	if (!quiet)
--		fprintf(outf, "SLM BCLK: %.1f Mhz\n", freq);
-+		fprintf(outf, "SLM BCLK: %.1f MHz\n", freq);
+-cpu_set_t *cpu_present_set, *cpu_possible_set, *cpu_effective_set, *cpu_allowed_set, *cpu_affinity_set, *cpu_subset;
++cpu_set_t *cpu_present_set, *cpu_possible_set, *cpu_effective_set, *cpu_allowed_set, *cpu_affinity_set, *cpuset_cmdline;
+ cpu_set_t *perf_pcore_set, *perf_ecore_set, *perf_lcore_set;
+ size_t cpu_setsize;
+ #define MAX_ADDED_THREAD_COUNTERS 24
+@@ -3382,7 +3382,7 @@ int format_counters(PER_THREAD_PARAMS)
+ 		return 0;
  
- 	return freq;
- }
+ 	/*if not summary line and --cpu is used */
+-	if ((t != average.threads) && (cpu_subset && !CPU_ISSET_S(t->cpu_id, cpu_setsize, cpu_subset)))
++	if ((t != average.threads) && (cpuset_cmdline && !CPU_ISSET_S(t->cpu_id, cpu_setsize, cpuset_cmdline)))
+ 		return 0;
+ 
+ 	if (DO_BIC(BIC_USEC)) {
+@@ -9682,19 +9682,19 @@ void topology_probe(bool startup)
+ 	/*
+ 	 * Validate and update cpu_allowed_set.
+ 	 *
+-	 * Make sure all cpus in cpu_subset are also in cpu_present_set during startup.
+-	 * Give a warning when cpus in cpu_subset become unavailable at runtime.
++	 * Make sure all cpus in cpuset_cmdline are also in cpu_present_set during startup.
++	 * Give a warning when cpus in cpuset_cmdline become unavailable at runtime.
+ 	 * Give a warning when cpus are not effective because of cgroup setting.
+ 	 *
+-	 * cpu_allowed_set is the intersection of cpu_present_set/cpu_effective_set/cpu_subset.
++	 * cpu_allowed_set is the intersection of cpu_present_set/cpu_effective_set/cpuset_cmdline.
+ 	 */
+ 	for (i = 0; i <= topo.max_cpu_num; ++i) {
+-		if (cpu_subset && !CPU_ISSET_S(i, cpu_setsize, cpu_subset))
++		if (cpuset_cmdline && !CPU_ISSET_S(i, cpu_setsize, cpuset_cmdline))
+ 			continue;
+ 
+ 		if (!CPU_ISSET_S(i, cpu_setsize, cpu_present_set)) {
+-			if (cpu_subset) {
+-				/* cpus in cpu_subset must be in cpu_present_set during startup */
++			if (cpuset_cmdline) {
++				/* cpus in cpuset_cmdline must be in cpu_present_set during startup */
+ 				if (startup)
+ 					errx(1, "cpu%d not present", i);
+ 				else
+@@ -11533,18 +11533,18 @@ void probe_cpuidle_counts(void)
+ 
+ /*
+  * parse cpuset with following syntax
+- * 1,2,4..6,8-10 and set bits in cpu_subset
++ * 1,2,4..6,8-10 and set bits in cpuset_cmdline
+  */
+ void parse_cpu_command(char *optarg)
+ {
+ 	if (!strcmp(optarg, "core")) {
+-		if (cpu_subset)
++		if (cpuset_cmdline)
+ 			goto error;
+ 		show_core_only++;
+ 		return;
+ 	}
+ 	if (!strcmp(optarg, "package")) {
+-		if (cpu_subset)
++		if (cpuset_cmdline)
+ 			goto error;
+ 		show_pkg_only++;
+ 		return;
+@@ -11552,18 +11552,23 @@ void parse_cpu_command(char *optarg)
+ 	if (show_core_only || show_pkg_only)
+ 		goto error;
+ 
+-	if (!cpu_subset) {
+-		cpu_subset = CPU_ALLOC(topo.max_cpu_num + 1);
+-		if (cpu_subset == NULL)
++	/*
++	 * cpuset_cmdline is allocated on the first invocation of --cpu
++	 * It is re-used for subsequent invocations.
++	 * It is never freed.
++	 */
++	if (!cpuset_cmdline) {
++		cpuset_cmdline = CPU_ALLOC(topo.max_cpu_num + 1);
++		if (cpuset_cmdline == NULL)
+ 			err(3, "CPU_ALLOC");
+ 
+-		CPU_ZERO_S(cpu_setsize, cpu_subset);
++		CPU_ZERO_S(cpu_setsize, cpuset_cmdline);
+ 	}
+ 
+-	if (parse_cpu_str(optarg, cpu_subset, cpu_setsize))
++	if (parse_cpu_str(optarg, cpuset_cmdline, cpu_setsize))
+ 		goto error;
+ 	if (debug)
+-		print_cpu_set("--cpu", cpu_subset);
++		print_cpu_set("--cpu", cpuset_cmdline);
+ 
+ 	return;
+ 
 -- 
 2.45.2
 
