@@ -1,96 +1,157 @@
-Received: from mail-dy1-f180.google.com (mail-dy1-f180.google.com [74.125.82.180])
+Received: from mta0.migadu.com (out-212.mta0.migadu.com [91.218.175.212])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 982D93DDDDE
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 06:35:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67F1B469836
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 06:54:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.212
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792391725; cv=none; b=EuXlHo68jNYVsFBjzKY7mz2zR/1Dn4+40RTs1M5vvkATgEFqs6pj5yxxmPJUg21Lyi8KnzsYZ/BXijzmQgEoOz4XkYMBTpDWg6aPZI0hkvykMexrLlBk/omjmtQ43j/LtilyfvM+QyLx8Hor9+2cke48umAgn/Er96yGixQiPHA=
+	t=1792392861; cv=none; b=EdlhyKvpjElMV+GVZ6FZ88MZJHhSAcOJM0QRwDbSed91huzbI0UCzgosUs1TLJfERs5a+KQ1fZ0VdphIqIqBjgRjKxO7dL8+OkX9ziqZRHMyQgvJsksgr9I06kcRrguAj+UPlShJM1NSZvz6M8Mb9iQzea5rZHB/RBK+9AJJrEw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792391725; c=relaxed/simple;
-	bh=0L4XVH1RatRMUnOcb3s8s0yM9FwbW/K5J4m77k7HPEw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZvNeAIrkxVBNoY+5quhfTF253WkTE6rwBKtImaha1pndCRVHwoIyzcGJL/1dqZ4ZpSBrJexgxN4ZYvPkIc4jSzwYT53wCwlLGoZj5+8naMS3pkfswrCpf4hjdljYgNltx5RnAiGIYP5G834TYTaZuxi7P4+ya/sMJij4/Nob+o8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=e7cym90H; arc=none smtp.client-ip=74.125.82.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1792392861; c=relaxed/simple;
+	bh=G2LQVsnTGKH481zBZmjUzuxsieJMbKq3WqfesaSHy6U=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LAHqA9L772zAXLuziLI5ITxbDGZr5lMR8jzsVK0cWtUifE/Sj5jlhZhbJFNOgUg11DnHU05YCbbqHlgPvsHpMfGFbRbnAsMg03zUXLjpxXC2V3jIArJjJc06H5tqPJJoyriqBeqXlH4eO51k4Xect36JSBFfL7Ze2gS7Psb8veM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=RohF+C9I; arc=none smtp.client-ip=91.218.175.212
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="e7cym90H"
-Received: by mail-dy1-f180.google.com with SMTP id 5a478bee46e88-353804b591eso3358622eec.0
-        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2026 23:35:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1792391723; x=1792996523; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=nKi2z3pi3oxPdtq2njVr3OPRIkpSJmJ+atF7S1CFI8U=;
-        b=e7cym90HTIneY8egdzDlq6uwmQcaqUcHwYKJOxiQr/SiHMlVW/CTQSN67+OaPBaT4K
-         BeFO+XGXTLMjoH3wHnPu9Vh6ssOCppfNb074E8r+JEwZOGRw27Q74FlAPy3gD6Chba4q
-         8Objcyfr2/EkDidq8EKJaHNQvJTKWY0e/D33ygSMBca2rgQje7oRCELYvsAuHgahRVj0
-         AYV8e/X/1sqjp3DsuuwNMvRdJ2Env1EGdob41DfHm3mvzmELgkVsmorm13oRuHNctiP5
-         CR7zOYINrGdLvHfZeGuTWznbeck5lBC/WkB1LoMia1PaLPN1QVNCXv8NBpuJ8VQlbxh7
-         pJow==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792391723; x=1792996523;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=nKi2z3pi3oxPdtq2njVr3OPRIkpSJmJ+atF7S1CFI8U=;
-        b=vZZQtId6hmjsPnnvryS8o6X7Gj30WbfldNOtSLxTmBwLbNw8tcvOPz06+yWNJhAw0X
-         OXbUJ2nqLGeorjgCXD24O7HmjWZVmOohkI3RYv90iiGEYQ6cDdvSKENgzdLLoLaWgrOE
-         AaKar8zwPeJB8yAn79gJ0sq96X6GMUqs2V/zv69r9ZCE68TYseXVez+PI6qQH1D4uI7T
-         kKpmCXfLLD/xj7oHTeLKVlpdZ5MdpIm573WCJHbLwYdcrfCORF2Rb5Nl0agJvXeqplT6
-         o4btYjZTDcc5x4GYo/li5OrOUKdqKXnuEP3Xp8KrzCRJGsB0jD/9foyjJijIOaAeMzYo
-         B/2A==
-X-Forwarded-Encrypted: i=1; AKwUvByx+H2B9pW80bcRV8Mzf7O0MeU8kd63gNF6mkC38aV+7oE9Z7yExViwtk9hpXXdCSvZtCv6IEjmjg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKVOHha4rB67JfC3lawyJKBqczplBSg+UBOYTF5iM9alOLxwnzl
-	wU2qhLFHOMFX4HqZnomvSP6Ypp855u0G4hUP2iDES+JRR/cUXPsVn07Z9CEOBdQCDE9oqLNDS8r
-	Um65t
-X-Gm-Gg: AYBFou200dujm2p5CYaG0spjIRtjHvPU2uET+qRAlGwm2Kf7NF59IkbMsYpiFASsutl
-	waShb46jPJLfFtiywctEl7ab000Dt6iyEwOTuzJNYm+EBWb66Kia/Kj/9QJEvblSCmVsu1nfr5r
-	laQK4B8J0vEz0N/AqcoSwovbuIAjFoG88lMOiZsgWs8r1idHW1VT95mowChhtJRNz/JFHbkMce9
-	ccS1arJtVoq7MLFawudPcgsoLO0U3rDZlCwAHDJDlskVx1i4vZCkbJFl+4W37S6MKeibKS5wI8+
-	rE3pvTkkKlyK5jQUUM7wMFdFt9JIkUQaow9UHpaGhFqO9OEXJ5MiePXkCPPlpOVCxuzDOGo25x2
-	FkzP8llfTYNoidk6TrrlP3BAM6lv7g+cmYZb/IDLCGynwv3dgzs34s6uP4xi8iqG+KRrOZTJZkT
-	MKitUL3Vaeb43tPfi2bS202CHdrfxErfEeHX4+pbfiUyH5Kf3VnbmTb7KRfbk56P6ow4tg1haEU
-	NSRa8ZXYuU=
-X-Received: by 2002:a05:701b:42cb:10b0:169:b1b1:1445 with SMTP id a92af1059eb24-18512e2515fmr10313720c88.31.1792391722239;
-        Sun, 18 Oct 2026 23:35:22 -0700 (PDT)
-Received: from localhost ([122.172.82.240])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36081ab80f9sm46711875eec.12.2026.10.18.23.35.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 18 Oct 2026 23:35:20 -0700 (PDT)
-Date: Mon, 19 Oct 2026 12:05:18 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Manuel Ebner <manuelebnerli@mailbox.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: longrun: fix typo in kernel-doc
-Message-ID: <atW6JlE-pkObg9MX@vireshk-B250M-D3H>
-References: <20261017071434.1250140-2-manuelebnerli@mailbox.org>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="RohF+C9I"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=G2LQVsnTGKH481zBZmjUzuxsieJMbKq3WqfesaSHy6U=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1792392856; v=1; x=1792997656;
+ b=RohF+C9IB/+SIZYVo8SGvMFm2bd3LTQGE2redmD2iGkoBgS0gv9cgOCs2KYTtm3ccJOSB+Pm
+ ZnF8Gi+E6iCrQdvardVYK69/WOx00QQz7Y2BPynEx5PoADXkEN5tQoC6Qzj7z8022eNdWGaVIsX
+ kFC5erPqDNCwnPBfviDguVbc=
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 254b41f0bd8203ad;
+	Mon, 19 Oct 2026 06:54:16 +0000
+X-Mizu-Trace-ID: 254b41f0bd8203ad
+X-Migadu-Flow: FLOW_OUT
+From: Jackie Liu <liu.yun@linux.dev>
+To: tglx@kernel.org
+Cc: mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	x86@kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH] cpufreq: Avoid fallback values in cpuinfo_avg_freq
+Date: Mon, 19 Oct 2026 14:53:58 +0800
+Message-ID: <20261019065358.66115-1-liu.yun@linux.dev>
+X-Mailer: git-send-email 2.56.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261017071434.1250140-2-manuelebnerli@mailbox.org>
+Content-Transfer-Encoding: 8bit
 
-On 17-10-26, 09:14, Manuel Ebner wrote:
-> Fix typo to fix:
-> 
->   $ ./scripts/kernel-doc -none drivers/cpufreq/longrun.c
->   Warning: drivers/cpufreq/longrun.c:126 expecting prototype for longrun_verify_poliy(). Prototype was for longrun_verify_policy() instead
-> 
-> Signed-off-by: Manuel Ebner <manuelebnerli@mailbox.org>
-> ---
->  drivers/cpufreq/longrun.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+From: Jackie Liu <liuyun01@kylinos.cn>
 
-Applied. Thanks.
+On x86, arch_freq_get_on_cpu() can return the requested or nominal
+frequency when hardware feedback is unavailable. cpuinfo_avg_freq then
+reports fallback values as hardware averages, even without APERF/MPERF.
 
+Use a separate sampling hook for the attribute and its support probe:
+return -EOPNOTSUPP without APERF/MPERF and -EAGAIN for zero MPERF deltas
+or stale samples. Preserve the scaling_cur_freq and /proc/cpuinfo fallback
+and the existing ARM64 AMU implementation.
+
+Fixes: fbb4a4759b54 ("cpufreq: Introduce an optional cpuinfo_avg_freq sysfs entry")
+Signed-off-by: Jackie Liu <liuyun01@kylinos.cn>
+---
+ arch/x86/kernel/cpu/aperfmperf.c | 18 +++++++++++++-----
+ drivers/cpufreq/cpufreq.c        |  9 +++++++--
+ include/linux/cpufreq.h          |  1 +
+ 3 files changed, 21 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/aperfmperf.c b/arch/x86/kernel/cpu/aperfmperf.c
+index 7ffc78d5ebf2..fa8376d9ce94 100644
+--- a/arch/x86/kernel/cpu/aperfmperf.c
++++ b/arch/x86/kernel/cpu/aperfmperf.c
+@@ -503,15 +503,15 @@ void arch_scale_freq_tick(void)
+  */
+ #define MAX_SAMPLE_AGE	((unsigned long)HZ / 50)
+ 
+-int arch_freq_get_on_cpu(int cpu)
++int arch_freq_get_avg_on_cpu(int cpu)
+ {
+ 	struct aperfmperf *s = per_cpu_ptr(&cpu_samples, cpu);
+-	unsigned int seq, freq;
++	unsigned int seq;
+ 	unsigned long last;
+ 	u64 acnt, mcnt;
+ 
+ 	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF))
+-		goto fallback;
++		return -EOPNOTSUPP;
+ 
+ 	do {
+ 		seq = raw_read_seqcount_begin(&s->seq);
+@@ -525,11 +525,19 @@ int arch_freq_get_on_cpu(int cpu)
+ 	 * which covers idle and NOHZ full CPUs.
+ 	 */
+ 	if (!mcnt || (jiffies - last) > MAX_SAMPLE_AGE)
+-		goto fallback;
++		return -EAGAIN;
+ 
+ 	return div64_u64((cpu_khz * acnt), mcnt);
++}
++
++int arch_freq_get_on_cpu(int cpu)
++{
++	int avg_freq = arch_freq_get_avg_on_cpu(cpu);
++	unsigned int freq;
++
++	if (avg_freq >= 0)
++		return avg_freq;
+ 
+-fallback:
+ 	freq = cpufreq_quick_get(cpu);
+ 	return freq ? freq : cpu_khz;
+ }
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 54dde8419bdc..2e44b6ee14c9 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -705,9 +705,14 @@ __weak int arch_freq_get_on_cpu(int cpu)
+ 	return -EOPNOTSUPP;
+ }
+ 
++__weak int arch_freq_get_avg_on_cpu(int cpu)
++{
++	return arch_freq_get_on_cpu(cpu);
++}
++
+ static inline bool cpufreq_avg_freq_supported(struct cpufreq_policy *policy)
+ {
+-	return arch_freq_get_on_cpu(policy->cpu) != -EOPNOTSUPP;
++	return arch_freq_get_avg_on_cpu(policy->cpu) != -EOPNOTSUPP;
+ }
+ 
+ static ssize_t show_scaling_cur_freq(struct cpufreq_policy *policy, char *buf)
+@@ -769,7 +774,7 @@ static ssize_t show_cpuinfo_cur_freq(struct cpufreq_policy *policy,
+ static ssize_t show_cpuinfo_avg_freq(struct cpufreq_policy *policy,
+ 				     char *buf)
+ {
+-	int avg_freq = arch_freq_get_on_cpu(policy->cpu);
++	int avg_freq = arch_freq_get_avg_on_cpu(policy->cpu);
+ 
+ 	if (avg_freq > 0)
+ 		return sysfs_emit(buf, "%u\n", avg_freq);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index d3d0d9d02aa4..925a3d3b6c31 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -1228,6 +1228,7 @@ static inline int of_perf_domain_get_sharing_cpumask(int pcpu, const char *list_
+ #endif
+ 
+ extern int arch_freq_get_on_cpu(int cpu);
++extern int arch_freq_get_avg_on_cpu(int cpu);
+ 
+ #ifndef arch_set_freq_scale
+ static __always_inline
 -- 
-viresh
+2.56.0
+
