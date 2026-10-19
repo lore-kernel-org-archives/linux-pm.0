@@ -1,44 +1,46 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B6F45B0622;
-	Mon, 19 Oct 2026 14:00:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0295D4C8474;
+	Mon, 19 Oct 2026 14:01:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418423; cv=none; b=pVb4k8md95TQgF2JBbD/Wq5jfTH14Zb0GFL+bp9HaIXFRIhePgsD6RzL+Qi+uJAIZIHEh9kmLlFF9ly/yxcuW+CulwsG0Zfssbbdb9yWfy6SujZG95WsPs4vw6I/QoSQHwgDf90ytZ2vaSC1G64I++K4KlbAGjaplsxGevYV7qo=
+	t=1792418498; cv=none; b=DlWFdHhZIelrn4n1G33zBVLKjNmfyN4vx7n9QvGAmAT5KL9h2ds2+04KcDZ94aig3a/fBq3yqbbdwxsAVmguXeQq6CnTgXb+LSO2JlvGS0RlfFXSPyth6FnIEJkfNh7Izi59yQ4xWNSb5QQvg0yScGpQ4zPrPCuWaCeItcejFq0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418423; c=relaxed/simple;
-	bh=+FlKxuhacd7NRpYtXfslnzo9m0fuF1eNvg4eUGav4eM=;
+	s=arc-20240116; t=1792418498; c=relaxed/simple;
+	bh=pevl2x+Sn9X3Q1eeZFj4P3E3HsMDmNjoMM46qKfxo+U=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qWE6ekXUoj2fX5jLa6QmrpGotRPu3dm1j+F06qsViQUy4JeU6XJpSYyPXpTwYhQmgb3QitaQWnYXLSNJgW/3zpZYjOGPnYHo0vJeRaFLSj2sbsmzWAD2QmYINhiwYrd7iG2acgc4yez2wJkGgJZM1LcvjJKzfnT6eAp6m5zVG+s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=df94oUW8; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=ElRlpeVRhgq/6fQtDRObDRljRTtKhbwgpeursQpoEI/MrhsTkr6R3yoykbW+OFemg9RzptIKV5kS2J62bjifeKoyIqxMUaOFh2yFDUmCrqqkWD4oOd37+iazCqsX6TN17+h5pU7cgp3hdzuPtF4tOmcz7mnxIjhjNSHBtlaxy4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KY+YqmQi; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="df94oUW8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2CCF1F000CA;
-	Mon, 19 Oct 2026 14:00:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KY+YqmQi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BDBE61F000CB;
+	Mon, 19 Oct 2026 14:01:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418419;
-	bh=pLa3Aan2ET0EDHss61T2wkoqQI56vgVGp8lag2OXteo=;
+	s=k20260515; t=1792418495;
+	bh=voAvVSk4YB+tIdoJj1CiH8tlxU0aSwXAsmGz8e3GhrA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=df94oUW8o5xdAqDAK0WjUjhnDDBXBlzCbaR72MWKDXefNZp8xPoJCsY6lGbtQrVmh
-	 JjJ+v6fy7hrs+gB7fpGjlO7BwVvgF+6ZlbOSMA9wSTuRVCKvWuneNiE9QzWvDfdysA
-	 vH1f0YJqVtucH6km19sqeTVqiWFZbFz423uwWP1eqtU1DZyibW+abc6yqqHbDc31I0
-	 ar95+IwZ/qApveo+lhXUFQdrxFuHsueL3ZeA/c/zObqb97goXHYFbCpkE/RwwKkqh0
-	 0t0iiPk8/2es21EJK8K/G3uHrAXkTa/BzixZYGibVyjcbNq6uBZGv/vApdKNt0DrnZ
-	 dgG+2rnqjOMcQ==
+	b=KY+YqmQij6N712OhXheZT12pHfyISXnJIqNJSOoz2zJstfxBR8kPZqs77LwQXHkpz
+	 D8JH+aFBacEEi09dTsDkIsd30ij3FLaZHXgblHYAtM79XKGj/qKkNxLJAevAVBHiAZ
+	 nuyIFvooGJCUY2kw2qbIe3iPwwOM0XQaCwa64+wEOV5i2307kf8QGDxNX5dNlWbBhn
+	 wv2RznOklEi9XKu+FXJoAFGMTCA6yuF3b7jIK53c5z9R/1E/9DYxTQglprQpKqdWmD
+	 tGpOs3wdLhODE6zWobrbFTIPtXFYiVD0ZAwWoIpnVxoFfoxpPJZz8gy/38c2IQIRhQ
+	 w50uoU1Umr8hQ==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+Cc: Praveen Talari <praveen.talari@oss.qualcomm.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
 	Sasha Levin <sashal@kernel.org>,
-	rafael@kernel.org,
-	daniel.lezcano@kernel.org,
+	vireshk@kernel.org,
+	nm@ti.com,
+	sboyd@kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-6.6] thermal: intel: int340x: clean up RFIM groups on DVFS failure
-Date: Mon, 19 Oct 2026 09:48:47 -0400
-Message-ID: <20261019135441.1420968-236-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-6.1] opp: Use clk_get_optional() to avoid leaving opp_table->clk as an error pointer
+Date: Mon, 19 Oct 2026 09:49:40 -0400
+Message-ID: <20261019135441.1420968-289-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -54,368 +56,570 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+From: Praveen Talari <praveen.talari@oss.qualcomm.com>
 
-[ Upstream commit 28f34d7dafa6dfa657efd6760b7c78e98c9b2f6a ]
+[ Upstream commit 84f05af0975c9f9c8ffee0361d6f7cbb1f289231 ]
 
-proc_thermal_rfim_add() can create the FIVR and DLVR sysfs groups
-before creating the DVFS group.
+_update_opp_table_clk() uses clk_get(dev, NULL) to acquire the
+device's clock. On platforms where the perf domain device has no
+Linux clock and is instead managed entirely by firmware via
+devm_pm_opp_of_add_table() (through
+of_genpd_add_provider_simple()/onecell()), clk_get() returns
+-ENOENT. That case is treated as valid (the OPP table can still
+have entries sourced from firmware), but opp_table->clk is left
+holding ERR_PTR(-ENOENT) rather than being reset to NULL:
 
-If DVFS group creation fails while both earlier groups are enabled, the
-current error handling removes only one group: the FIVR branch returns
-before the DLVR cleanup branch can run.  This leaves the DLVR group
-behind even though RFIM setup fails.
+	opp_table->clk = clk_get(dev, NULL);
+	ret = PTR_ERR_OR_ZERO(opp_table->clk);
+	...
+	if (ret == -ENOENT) {
+		opp_table->clk_count = 1;
+		return opp_table;   /* opp_table->clk is still ERR_PTR(-ENOENT) */
+	}
 
-Use one DVFS failure path that removes all previously created RFIM
-groups before returning the error.
+Consumers that only check IS_ERR(opp_table->clk) treat this as a
+valid clk and pass it straight into the clk consumer API. In
+particular, dev_pm_opp_set_rate() calls
+clk_round_rate(opp_table->clk, target_freq), and clk_round_rate()
+only guards against a NULL clk, so it dereferences the error pointer
+to read clk->exclusive_count and crashes:
 
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
-Link: https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+  Unable to handle kernel NULL pointer dereference at virtual
+  address 000000000000002e
+  ...
+  pc : clk_round_rate+0x3c/0x188
+  ...
+  Call trace:
+   clk_round_rate+0x3c/0x188 (P)
+   dev_pm_opp_set_rate+0x114/0x33c
+
+Rather than teaching every clk consumer API to special-case
+ERR_PTR(-ENOENT), fix it at the source: use clk_get_optional()
+instead of clk_get() in _update_opp_table_clk(), which already
+translates -ENOENT into a NULL clk. This documents that the clock is
+genuinely optional for such devices, and keeps opp_table->clk holding
+either a valid clk or NULL, never a lingering -ENOENT error pointer.
+_opp_config_clk_single() is only wired up via opp_table->config_clks
+when a clk was actually found, and every other opp_table->clk
+consumer already tolerates NULL through the standard clk API (which
+treats a NULL clk as a no-op), so no other call site needs to change.
+
+Suggested-by: Sebastian Reichel <sre@kernel.org>
+Reviewed-by: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-## Phase 1: Commit message forensics
+I have enough to decide: the crash path is in this 6.12 tree, the fix is
+small, and it should apply cleanly. Full analysis follows.
+
+===============================================================
+PHASE 1: COMMIT MESSAGE FORENSICS
+===============================================================
 
 **Step 1.1: PARSE THE SUBJECT LINE**
-Record: `[thermal/intel/int340x] [clean up] incomplete RFIM sysfs-group
-unwind when DVFS group creation fails`
+
+Record: **[opp] [Use] Use `clk_get_optional()` so `opp_table->clk` is
+never left as `ERR_PTR(-ENOENT)`.** Subsystem is the OPP core
+(`drivers/opp/`). “Use X to avoid Y” is a correctness fix, not a
+feature.
 
 **Step 1.2: PARSE ALL COMMIT MESSAGE TAGS**
+
 Record:
-- `Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>` (author)
-- `Link:
-  https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn`
-- `Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>`
-  (thermal maintainer)
-- No `Fixes:`, `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-
-  by:`, or `Cc: stable` (absence of the last two is expected for this
-  review)
+- **Suggested-by:** Sebastian Reichel `<sre@kernel.org>` (linux-pm /
+  power maintainer)
+- **Reviewed-by:** Sebastian Reichel `<sre@kernel.org>`
+- **Signed-off-by:** Praveen Talari `<praveen.talari@oss.qualcomm.com>`
+  (author)
+- **Signed-off-by:** Viresh Kumar `<viresh.kumar@linaro.org>` (OPP
+  maintainer; applied the patch)
+- **No Fixes:** tag (expected for this review pipeline)
+- **No Cc: stable@vger.kernel.org** (expected; not a negative)
+- **No Reported-by / Tested-by / Link / Acked-by**
+- Pipeline markers (`[Upstream commit …]`, Sasha Levin SOB) ignored per
+  instructions
+
+Upstream SHA (from public history, **not** in this tree):
+`84f05af0975c9f9c8ffee0361d6f7cbb1f289231`.
 
 **Step 1.3: ANALYZE THE COMMIT BODY TEXT**
+
 Record:
-- Bug: `proc_thermal_rfim_add()` may create FIVR and DLVR sysfs groups,
-  then fail creating DVFS.
-- Symptom: on DVFS failure with both earlier groups enabled, the FIVR
-  cleanup branch returns immediately, so the DLVR group is never
-  removed.
-- Failure mode: leftover sysfs group after RFIM setup reports failure
-  (resource leak; probe of the Intel processor thermal PCI device
-  fails).
-- Root cause: two sequential `if (ret && FEATURE_*) { remove; return; }`
-  blocks instead of one failure path that removes every group that was
-  created.
-- Version info in the message: none.
+- **Bug:** `_update_opp_table_clk()` treats `clk_get()` returning
+  `-ENOENT` as valid (firmware-managed / clockless OPP tables) but
+  leaves `opp_table->clk = ERR_PTR(-ENOENT)`.
+- **Symptom:** kernel oops. `dev_pm_opp_set_rate()` calls
+  `clk_round_rate(opp_table->clk, …)`. `clk_round_rate()` only NULL-
+  checks, then reads `clk->exclusive_count`. Error pointer wraps to a
+  low address (`000000000000002e` in the report).
+- **Stack:** `clk_round_rate` ← `dev_pm_opp_set_rate`
+- **Trigger:** platforms whose perf-domain / OPP device has no Linux
+  clock (`devm_pm_opp_of_add_table()` via
+  `of_genpd_add_provider_simple()`/`onecell()`), then a consumer calls
+  `dev_pm_opp_set_rate()`.
+- **Root cause:** consumers use `IS_ERR()` (true for `-ENOENT`) vs clk
+  APIs that only accept NULL as “no clock”.
+- **Fix:** `clk_get_optional()` maps `-ENOENT` → NULL at the source.
 
 **Step 1.4: DETECT HIDDEN BUG FIXES**
-Record: Yes. The subject says “clean up”, but the body and the diff are
-an error-path leak fix (missing `sysfs_remove_group` for DLVR).
 
-## Phase 2: Diff analysis
+Record: **Not hidden.** Explicit crash fix with a stack trace. Not
+cleanup/refactor-only.
+
+===============================================================
+PHASE 2: DIFF ANALYSIS - LINE BY LINE
+===============================================================
 
 **Step 2.1: INVENTORY THE CHANGES**
+
 Record:
-- File: `drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c`
-  (+5 / −6)
-- Function: `proc_thermal_rfim_add()`
-- Scope: single-file surgical error-path change
+- **File:** `drivers/opp/core.c` only (`+24 / -30` upstream)
+- **Function:** `_update_opp_table_clk()`
+- **Scope:** single-file surgical fix
 
 **Step 2.2: UNDERSTAND THE CODE FLOW CHANGE**
-Record: Before, DVFS `sysfs_create_group()` failure did:
 
-```c
-if (ret && FIVR) { sysfs_remove_group(fivr); return ret; }
-if (ret && DLVR) { sysfs_remove_group(dlvr); return ret; }
-```
+Record (this tree’s `_update_opp_table_clk` at
+`drivers/opp/core.c:1511`):
 
-If both FIVR and DLVR bits are set, the first branch returns and DLVR is
-never removed. After, a single `if (ret)` removes DLVR and/or FIVR
-according to the feature mask, then returns.
+**Before:**
+1. `opp_table->clk = clk_get(dev, NULL)`
+2. Success (`ret == 0`): set `config_clks = _opp_config_clk_single`,
+   `clk_count = 1`
+3. `-ENOENT`: set `clk_count = 1`, **leave `clk` as
+   `ERR_PTR(-ENOENT)`**, return the table
+4. Other errors: `dev_pm_opp_put_opp_table()`, `dev_err_probe()`, return
+   `ERR_PTR(ret)`
+
+**After:**
+1. `opp_table->clk = clk_get_optional(dev, NULL)` (`-ENOENT` becomes
+   NULL)
+2. `IS_ERR(clk)`: put table, `dev_err_probe()`, return `ERR_CAST(clk)`
+   (real errors, e.g. `-EPROBE_DEFER`)
+3. If `clk` is non-NULL: set `config_clks`
+4. Always `clk_count = 1` and return the table (clock present **or**
+   optional-absent)
 
 **Step 2.3: IDENTIFY THE BUG MECHANISM**
-Record: `[error path / resource leak]` Incomplete unwind.
-`sysfs_create_group(&pdev->dev.kobj, &dvfs_attribute_group)` failure
-leaked `dlvr_attribute_group` when FIVR+DLVR+DVFS were all enabled.
+
+Record: **[Memory safety / NULL-vs-ERR_PTR] [Logic / correctness]**
+
+Mechanism: `ERR_PTR(-ENOENT)` is not NULL. `clk_round_rate()` in this
+tree (`drivers/clk/clk.c:1799`) does `if (!clk) return 0;` then
+`clk->exclusive_count`. `ERR_PTR(-2)` plus `offsetof(struct clk,
+exclusive_count)` wraps to `0x2e`, matching the oops.
+`_find_current_opp` and table release already use
+`!IS_ERR(opp_table->clk)` and therefore skip the error pointer;
+`dev_pm_opp_set_rate()` does not.
 
 **Step 2.4: ASSESS THE FIX QUALITY**
-Record: Obviously correct. Groups are only removed if the corresponding
-feature bit is set, and those bits are the same ones that caused the
-groups to be created earlier in this function. No API, locking, or data-
-structure changes. Regression risk is very low: `sysfs_remove_group` on
-a group that this function just created.
 
-## Phase 3: Git history
+Record:
+- **Quality:** obviously correct. `clk_get_optional()` is the documented
+  helper for this case (`include/linux/clk.h:1195`). `config_clks` is
+  still only set when a real clk exists — same as before.
+- **Surgical:** one helper, no API change.
+- **Regression risk (low):**
+  - After NULL, early-return `!IS_ERR(opp_table->clk)` is true, so later
+    lookups do not retry `clk_get`. Previously `-ENOENT` was `IS_ERR`
+    and would retry. Correct for “no clock” devices.
+  - `_find_current_opp` may now call `clk_get_rate(NULL)` (returns 0)
+    instead of skipping. Lowest available OPP vs first list entry;
+    acceptable.
+  - Error path uses `opp_table->clk` **after**
+    `dev_pm_opp_put_opp_table()`. Old code saved `ret` first.
+    Theoretical UAF if the last ref frees the table before the
+    `PTR_ERR`/`ERR_CAST`. Mainline accepted this; not the common
+    `-ENOENT` success path.
+
+===============================================================
+PHASE 3: GIT HISTORY INVESTIGATION
+===============================================================
 
 **Step 3.1: BLAME THE CHANGED LINES**
+
 Record:
-- Original FIVR-only DVFS unwind: `473be51142adba` (“Add RFIM driver”,
-  2020; first in v5.11-rc1).
-- Incomplete DLVR branch: `5bc6b1df65c87f` (“Add DLVR support for RFIM
-  control”, 2023-04-13; first in v6.4-rc1). That commit added the second
-  `if (ret && DLVR) return` after the existing FIVR early-return, which
-  is the bug.
+- `_update_opp_table_clk` introduced in `32439ac7535a8` (“opp: Defer
+  acquiring the clk until OPPs are added”, 2021-02-02).
+- `-ENOENT` treated as valid in `d4a4c7a41153d` (“opp: Don't ignore
+  clk_get() errors other than -ENOENT”, 2021-02-02) — **this is the
+  commit that left the error pointer in the table**.
+- ENOENT comment / `clk_count = 1` / `config_clks` wiring from
+  `2083da24eb56ce` (“OPP: Allow multiple clocks for a device”,
+  2022-06-10).
+- `dev_pm_opp_set_rate()` dropped its `IS_ERR(clk)` guard in
+  `1d3c42cabbd35` (“opp: No need to check clk for errors”, 2021-01-20) —
+  “Clock is not optional for users who call into
+  `dev_pm_opp_set_rate()`”, which is false for firmware-managed clocks.
+
+Bug present since ~v5.12, definitely in 6.12.
 
 **Step 3.2: FOLLOW THE FIXES: TAG**
-Record: No `Fixes:` tag. Not applicable beyond that. The introducing
-commit is `5bc6b1df65c87f`, and `git merge-base --is-ancestor
-5bc6b1df65c87f HEAD` succeeded.
+
+Record: **No Fixes: tag.** Introducers `d4a4c7a41153d` and
+`1d3c42cabbd35` **are both ancestors of HEAD**.
 
 **Step 3.3: CHECK FILE HISTORY FOR RELATED CHANGES**
-Record:
-- `15176b818e048c` (“Fix sysfs group leak on DLVR registration failure”)
-  — same class of bug for the *DLVR create* path leaking FIVR; already
-  in this tree (v7.0-rc1).
-- This patch is standalone, not `patch X/Y`. Same author later did a
-  similar ODVP probe-unwind fix (`d83dc9ce57a74`) in a different file;
-  not a prerequisite.
+
+Record: Recent `drivers/opp/core.c` work is other OPP fixes (level,
+bandwidth, genpd). No later local rewrite of `_update_opp_table_clk`.
+**Standalone**, not “patch X/Y”.
 
 **Step 3.4: CHECK THE AUTHOR'S OTHER COMMITS**
-Record: Pengpeng Hou is not the subsystem maintainer. Thermal maintainer
-Rafael J. Wysocki applied the patch. Driver author Srinivas Pandruvada
-was on the original To/Cc list.
+
+Record: Praveen Talari has **no** prior commits in `drivers/opp/` on
+this tree. Viresh Kumar (OPP maintainer) signed off and applied it.
+Sebastian Reichel suggested and reviewed.
 
 **Step 3.5: CHECK FOR DEPENDENT/PREREQUISITE COMMITS**
-Record: None. The fix only reorders existing `sysfs_remove_group()`
-calls on `fivr_attribute_group` / `dlvr_attribute_group`, both present
-in this tree. Can apply standalone.
 
-## Phase 4: Mailing list and external research
+Record:
+- `clk_get_optional()` exists here: `60b8f0ddf1a92` (2019-02-06),
+  `include/linux/clk.h:1203`.
+- Function body in this tree **matches** the patch’s “before” hunk.
+  **Standalone apply.**
+
+===============================================================
+PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
+===============================================================
 
 **Step 4.1: FIND THE ORIGINAL PATCH DISCUSSION**
+
 Record:
-- `b4 dig -c 28f34d7dafa6d` →
-  https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn
-- `b4 dig -a`: v1 only
-- Thread (mbox): no NAKs. Rafael: “Applied as 7.3 material, thanks!”
-- No reviewer `Cc: stable` suggestion
+- `b4 dig -c 84f05af0975c9f9c8ffee0361d6f7cbb1f289231` → https://patch.m
+  sgid.link/20260727-fix_ptr_check_on_clk-v4-1-
+  97969fa7826a@oss.qualcomm.com
+- **v1:** guard `clk_round_rate()` against error pointers (and a
+  `drivers/clk/clk.c` change)
+- **v2:** per Reichel, fix OPP core with `clk_get_optional()`; drop clk-
+  core change
+- **v3:** add OPP maintainers
+- **v4:** rebase; drop local `ret` (applied)
+- Applied version is v4 (latest). No NAK. Viresh: “Applied. Thanks.”
+  (only nit: extra `---` in the changelog)
 
 **Step 4.2: CHECK WHO REVIEWED THE PATCH**
-Record (`b4 dig -w`): To/Cc included Rafael J. Wysocki, Daniel Lezcano,
-Zhang Rui, Srinivas Pandruvada, linux-pm. Applied by the thermal
-maintainer. No separate Reviewed-by.
+
+Record (`b4 dig -w`): Viresh Kumar, Nishanth Menon, Stephen Boyd (OPP
+maintainers), Konrad Dybcio, Sebastian Reichel, linux-pm, linux-kernel,
+clk maintainer Boyd. Right audience.
 
 **Step 4.3: SEARCH FOR THE BUG REPORT**
-Record: No `Reported-by` / bugzilla / syzbot. This is a code-inspection
-leak, not a user crash report.
+
+Record: No syzbot/bugzilla. Concrete oops in the message from a Qualcomm
+engineer. Real hardware, not theoretical.
 
 **Step 4.4: CHECK FOR RELATED PATCHES AND SERIES**
-Record: Standalone v1. Sibling leak fix is `15176b818e048c` (already
-here). Author’s ODVP cleanup is a different driver file.
+
+Record: Single-patch series. v1’s clk-core change was dropped; this does
+not depend on other patches.
 
 **Step 4.5: CHECK STABLE MAILING LIST HISTORY**
-Record: lore.kernel.org HTTP 403. `b4 dig` thread has no stable-list
-discussion. UNVERIFIED: whether linux-stable@ ever discussed this
-subject independently.
 
-## Phase 5: Code semantic analysis
+Record: **UNVERIFIED** for lore.kernel.org/stable (HTTP 403). No
+evidence this was rejected for stable.
 
-**Step 5.1: KEY FUNCTIONS**
-Record: `proc_thermal_rfim_add()` (modified). Uses `sysfs_create_group`
-/ `sysfs_remove_group`.
+===============================================================
+PHASE 5: CODE SEMANTIC ANALYSIS
+===============================================================
+
+**Step 5.1: IDENTIFY KEY FUNCTIONS IN THE DIFF**
+
+Record: `_update_opp_table_clk()` only.
 
 **Step 5.2: TRACE CALLERS**
+
 Record:
-- `proc_thermal_mmio_add()` in `processor_thermal_device.c` (only
-  caller)
-- That is called from `proc_thermal_pci_probe()` and
-  `proc_thermal_pci_legacy` probe
-- Probe / device-enumeration path, not IRQ or a hot syscall path
+- Only caller: `_add_opp_table_indexed()` (`core.c:1623`)
+- DT path `_of_add_table_indexed()` uses `getclk=true` (`of.c:1150`) —
+  **every** `dev_pm_opp_of_add_table()` / `devm_pm_opp_of_add_table()` /
+  genpd `of_genpd_add_provider_simple()` that adds an OPP table
+- Also `dev_pm_opp_add_dynamic()` (`core.c:2894`, getclk=true)
+- Crash consumer: `dev_pm_opp_set_rate()` (`core.c:1352`) — used by
+  Qualcomm UART/SPI/MMC/GPU/Venus, Tegra, cpufreq-dt,
+  panfrost/panthor/lima, etc.
 
 **Step 5.3: TRACE CALLEES**
-Record: `sysfs_create_group`, `sysfs_remove_group` on the PCI device
-kobject.
+
+Record: `clk_get` → `clk_get_optional`; on hard error
+`dev_pm_opp_put_opp_table` + `dev_err_probe`. No new locks/allocs.
 
 **Step 5.4: FOLLOW THE CALL CHAIN**
-Record: PCI probe → `proc_thermal_mmio_add()` →
-`proc_thermal_rfim_add()`. On RFIM failure, `proc_thermal_mmio_add()`
-does `goto err_rem_ptc` and **does not** call
-`proc_thermal_rfim_remove()`. `proc_thermal_pci_probe()` then `return
-ret` without `proc_thermal_mmio_remove()`. The leaked DLVR group
-therefore stays on `pdev->dev.kobj`. Reachable whenever this Intel
-thermal PCI device is probed (common on Intel laptops/SoCs with
-INT340x). Trigger still requires `sysfs_create_group(dvfs)` to fail.
 
-Verified hardware with all three bits (the only way both groups exist at
-DVFS failure): Meteor Lake `MTLP_THERMAL` is `FIVR | DVFS | DLVR`
-(`processor_thermal_device_pci.c`). `5bc6b1df65c87f` is what OR’d
-`PROC_THERMAL_FEATURE_DLVR` onto that ID.
+Record: Device probe (`dev_pm_opp_of_add_table`) →
+`_update_opp_table_clk` stores `ERR_PTR(-ENOENT)` → later
+`dev_pm_opp_set_rate` from driver/cpufreq/devfreq → oops. **Reachable
+from normal device operation**, not a debug-only path.
+
+Verified clk NULL-safety in this tree:
+- `clk_round_rate`: NULL → 0 (`clk.c:1804`)
+- `clk_get_rate`: NULL → 0 (`clk.c:2005`)
+- `clk_set_rate`: NULL → 0 (`clk.c:2600`)
+- `__clk_put`: NULL returns immediately (`clk.c:4748`)
 
 **Step 5.5: SEARCH FOR SIMILAR PATTERNS**
-Record: Same incomplete-unwind pattern was already fixed for DLVR-
-create-fails-after-FIVR (`15176b818e048c`). `fs/sysfs/group.c` returns
-`-EEXIST` (and warns) if the named group already exists, so a leaked
-DLVR group can make a later re-bind fail even after the original
-transient error is gone.
 
-## Phase 6: Cross-referencing against the local tree
+Record: Other `opp_table->clk` users already use `!IS_ERR()`
+(`_find_current_opp`, kref release). `set_rate` is the one that passes
+the error pointer into clk APIs. Fixing storage is the right place (as
+Reichel requested).
+
+===============================================================
+PHASE 6: CROSS-REFERENCING AGAINST THE LOCAL TREE
+===============================================================
 
 **Step 6.1: DOES THE BUGGY CODE EXIST IN THIS TREE?**
-Record:
-- Local tree: `v7.3-rc4-27-gf0100363d8c37`, `make kernelversion` →
-  7.3.0-rc4
-- RFIM, DLVR, FIVR, DVFS, and MTLP FIVR+DLVR+DVFS are all present
-- Bug introduced in v6.4 (`5bc6b1df65c87f`), well before this 7.3 branch
-- Parent of the candidate still has the two early-return blocks
+
+Record: **Yes.** Local tree is **6.12.111** (`pending-6.12`,
+`p-6.12-2-gd38d58a4e0359`). `_update_opp_table_clk` still uses
+`clk_get(dev, NULL)` and the `-ENOENT` early return
+(`core.c:1526-1551`). `git merge-base --is-ancestor
+84f05af0975c9f9c8ffee0361d6f7cbb1f289231 HEAD` failed (not present). Bug
+since ~2021.
 
 **Step 6.2: CHECK FOR BACKPORT COMPLICATIONS**
-Record: Clean apply. Surrounding `proc_thermal_rfim_add()` in this tree
-matches the hunk (Nova Lake DLVR switch and the earlier FIVR leak fix
-are already here).
+
+Record: **Clean apply.** Function text matches the patch context; only
+surrounding line numbers differ. `clk_get_optional()` already in
+`include/linux/clk.h`.
 
 **Step 6.3: CHECK IF RELATED FIXES ARE ALREADY HERE**
-Record: `15176b818e048c` is in this tree and fixes a *different* leak
-(DLVR create vs FIVR). It does not fix DVFS-create leaking DLVR. No
-other substitute for this patch.
 
-## Phase 7: Subsystem and maintainer context
+Record: `d4a4c7a41153d` (ENOENT allowed) and `1d3c42cabbd35` (set_rate
+dropped IS_ERR) are here. No `clk_get_optional` OPP commit. **No
+alternate fix.**
+
+===============================================================
+PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
+===============================================================
 
 **Step 7.1: IDENTIFY THE SUBSYSTEM AND ITS CRITICALITY**
-Record: `[drivers/thermal/intel/int340x] [IMPORTANT]` — Intel laptop/SoC
-processor thermal / RFIM sysfs, not core mm/fs, but used on shipping
-Meteor Lake platforms. `CONFIG_INT340X_THERMAL`.
+
+Record: **OPP core** (`drivers/opp/`) — **IMPORTANT**. Shared by
+cpufreq, devfreq, DRM, MMC, serial, genpd performance states. Not
+staging.
 
 **Step 7.2: ASSESS SUBSYSTEM ACTIVITY**
-Record: Actively maintained (Nova Lake, Wildcat Lake, Panther Lake IDs
-and DLVR tables in recent history). Maintainer applied this patch.
 
-## Phase 8: Impact and risk
+Record: Mature (OPP since well before 6.12) with ongoing correctness
+fixes. This bug is old, not a brand-new subsystem.
 
-**Step 8.1: WHO IS AFFECTED**
-Record: Driver-specific / config-specific: Intel INT340x processor
-thermal PCI, specifically IDs with FIVR+DLVR+DVFS (Meteor Lake in this
-tree).
+===============================================================
+PHASE 8: IMPACT AND RISK ASSESSMENT
+===============================================================
 
-**Step 8.2: TRIGGER CONDITIONS**
-Record: Device probe, after FIVR and DLVR groups succeed, when DVFS
-`sysfs_create_group()` fails (ENOMEM, duplicate name, etc.). Not
-unprivileged-syscall reachable except via driver bind. Uncommon, but
-deterministic when it happens. Re-probe can then hit `-EEXIST` on the
-leaked DLVR group (`internal_create_group()` in `fs/sysfs/group.c`).
+**Step 8.1: DETERMINE WHO IS AFFECTED**
 
-**Step 8.3: FAILURE MODE SEVERITY**
-Record: `[sysfs group leak on PCI device after failed probe; possible
-sticky re-bind failure] [MEDIUM]` — not a panic or filesystem
-corruption. Stale `dlvr` attributes can remain on the PCI device kobject
-after the driver has reported probe failure.
+Record: **Config/driver-specific:** `CONFIG_PM_OPP` plus devices with an
+OPP table and **no** unnamed Linux clock, that then call
+`dev_pm_opp_set_rate()`. Includes firmware-managed perf domains
+(Qualcomm-class, genpd OPP). Not every box, but production SoCs.
 
-**Step 8.4: RISK-BENEFIT RATIO**
-Record: Benefit medium (correct unwind on a real shipping platform’s
-probe error path; avoids leftover sysfs and sticky `-EEXIST`). Risk very
-low (5-line error-path-only change, no locking/API). Ratio favors taking
-the fix.
+**Step 8.2: DETERMINE THE TRIGGER CONDITIONS**
 
-## Phase 9: Final synthesis
+Record: Probe adds OPP table (`getclk=true`); `clk_get` → `-ENOENT`;
+later `dev_pm_opp_set_rate()`. Common on clockless firmware DVFS, not
+every boot on x86. Not a syzbot/unprivileged syscall primitive;
+driver/cpufreq context.
 
-**Step 9.1: EVIDENCE**
+**Step 8.3: DETERMINE THE FAILURE MODE SEVERITY**
 
-FOR:
-- Real, deterministic incomplete unwind; DLVR group leaked when
-  FIVR+DLVR+DVFS are set
-- Meteor Lake actually sets all three feature bits
-- Caller does not call `proc_thermal_rfim_remove()` on
-  `proc_thermal_rfim_add()` failure
-- Same bug class as `15176b818e048c`, which this tree already contains
-- Tiny, obviously correct, no new API
-- Thermal maintainer applied it; right people were CCed; no NAKs
-- Bug present since v6.4; code exists in this 7.3 tree
+Record: **Kernel oops / NULL deref** in `clk_round_rate`. **Severity:
+CRITICAL** (crash; can strand DVFS/device).
 
-AGAINST:
-- Trigger is a failed `sysfs_create_group()` (rare)
-- No user/syzbot report
-- Not a crash, UAF, or data-corruption bug
-- Rafael queued it as 7.3 material, not as a stable-cc’d hotfix
+**Step 8.4: CALCULATE RISK-BENEFIT RATIO**
 
-UNRESOLVED:
-- Direct lore.kernel.org / stable-list HTTP search returned 403; thread
-  content recovered via `b4 dig -m` instead
+Record:
+- **Benefit: HIGH** — prevents a real oops on clockless OPP devices;
+  6.12 LTS includes those platforms.
+- **Risk: LOW** — ~50-line rewrite of one helper; `clk_get_optional`
+  long-standing; success path equivalent except NULL vs ERR_PTR; clk
+  APIs already NULL-safe.
+- **Ratio: strongly favors backport.**
 
-**Step 9.2: STABLE RULES CHECKLIST**
-1. Obviously correct and tested? **PASS** — control flow is local and
-   clear; maintainer applied v1 with no further revisions.
-2. Fixes a real bug that affects users? **PASS** — leftover sysfs on the
-   PCI device after failed RFIM setup on Meteor Lake.
-3. Important issue? **PASS** (medium) — resource leak with a possible
-   sticky re-bind failure, not a panic; still the error-path leak class
-   stable regularly takes.
-4. Small and contained? **PASS** — one function, +5/−6 lines.
+===============================================================
+PHASE 9: FINAL SYNTHESIS
+===============================================================
+
+**Step 9.1: COMPILE THE EVIDENCE**
+
+**FOR:**
+- Real oops with stack trace (`clk_round_rate` ← `dev_pm_opp_set_rate`)
+- Buggy pattern present in **this** 6.12 tree
+- Small, obviously correct, no new API
+- `clk_get_optional` already here
+- Reviewed by Reichel; applied by Viresh
+- Clean apply; no missing prerequisites
+
+**AGAINST:**
+- Affects firmware-managed / clockless OPP devices, not every machine
+- Error-path `opp_table->clk` after put is slightly sloppier than the
+  old local `ret` (not the crash path being fixed)
+- No Fixes:/Cc:stable (irrelevant per pipeline rules)
+
+**UNRESOLVED:**
+- Could not fetch lore.kernel.org/stable (403)
+- Could not fetch v1 body (403/404); changelog is enough
+- Exact Qualcomm SoC in the oops not named in the v4 mail
+
+**Step 9.2: APPLY THE STABLE RULES CHECKLIST**
+
+1. Obviously correct and tested? **PASS** — helper does exactly this;
+   maintainer review + apply
+2. Fixes a real bug that affects users? **PASS** — oops on clockless OPP
+   + `set_rate`
+3. Important issue? **PASS** — kernel crash (CRITICAL)
+4. Small and contained? **PASS** — one function, one file
 5. No new features or APIs? **PASS**
-6. Can apply to the local tree? **PASS** — file and both sysfs groups
-   exist; hunk matches.
+6. Can apply to the local tree? **PASS** — body matches;
+   `clk_get_optional` present
 
-**Step 9.3: EXCEPTION CATEGORIES**
-Record: None (not a device ID, quirk, DT, build, or docs exception). It
-is a normal small leak fix.
+**Step 9.3: CHECK FOR EXCEPTION CATEGORIES**
 
-**Step 9.4: DECISION**
-This tree is 7.3.0-rc4. The buggy unwind, DLVR/FIVR/DVFS groups, and
-Meteor Lake FIVR+DLVR+DVFS mask are all here. The patch is a minimal,
-correct error-path leak fix with negligible regression risk. It should
-be in this tree.
+Record: Not a device-ID/quirk/DT/build/docs exception. Ordinary crash
+fix; does not need an exception.
 
-Verification:
-- [Phase 1] Tags: author SOB, Rafael SOB, lore Link; no Fixes/Reported-
-  by/Cc: stable
-- [Phase 2] Diff: `proc_thermal_rfim_add()` DVFS failure path; two
-  early-returns collapsed into one unwind of DLVR then FIVR
-- [Phase 3] `git blame` on parent: FIVR unwind from `473be51142adba`
-  (v5.11); DLVR early-return from `5bc6b1df65c87f` (v6.4-rc1)
-- [Phase 3] `git merge-base --is-ancestor 5bc6b1df65c87f HEAD` → yes;
-  related leak fix `15176b818e048c` also in HEAD
-- [Phase 3] `git log --author='Pengpeng Hou'` on thermal: this RFIM fix
-  plus a later independent ODVP unwind
-- [Phase 4] `b4 dig -c 28f34d7dafa6d`:
-  https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn
-- [Phase 4] `b4 dig -a`: v1 only; `b4 dig -w`: linux-pm +
-  Pandruvada/Wysocki/Lezcano
-- [Phase 4] mbox: Rafael “Applied as 7.3 material”; no NAK, no stable
-  nomination
-- [Phase 4] lore.kernel.org WebFetch: 403; stable-list search UNVERIFIED
-  via HTTP
-- [Phase 5] Callers: `proc_thermal_mmio_add` → PCI probe; RFIM failure
-  jumps to `err_rem_ptc`, skipping `proc_thermal_rfim_remove`
-- [Phase 5] MTLP ID: `FIVR | DVFS | DLVR` in
-  `processor_thermal_device_pci.c`; DLVR bit added in `5bc6b1df65c87f`
-- [Phase 5] `sysfs_create_group` / `internal_create_group`: `-EEXIST` if
-  named group already exists
-- [Phase 6] `git describe HEAD` = v7.3-rc4-27-gf0100363d8c37; `make
-  kernelversion` = 7.3.0-rc4
-- [Phase 6] Parent function still has the buggy two-branch return; this
-  tree has the needed groups and IDs
-- [Phase 8] Failure mode: leaked `dlvr` sysfs group after probe failure;
-  severity MEDIUM
+**Step 9.4: MAKE YOUR DECISION**
 
-The fix is small, surgical, and meets the stable criteria for an error-
-path resource leak on hardware this tree already supports.
+This is a real NULL-deref oops in OPP core that 6.12 still has. The fix
+maps “no clock” to NULL the way the clk API already documents, is tiny,
+and applies cleanly here. That is appropriate for this stable tree.
+
+---
+
+### What the commit solves (for this tree)
+
+On 6.12.111, `_update_opp_table_clk()` still does `clk_get(dev, NULL)`
+and, on `-ENOENT`, keeps `opp_table->clk` as `ERR_PTR(-ENOENT)` while
+treating the table as valid. `dev_pm_opp_set_rate()` then passes that
+into `clk_round_rate()`, which only rejects NULL, and the kernel oopses.
+That is exactly the path firmware-managed / genpd OPP devices take when
+they have no Linux clock.
+
+### Stable rules / risk
+
+Meets the stable criteria: real crash, small, no new API, prerequisites
+already in 6.12. Benefit is avoiding an oops; risk is a one-function
+change whose success path is equivalent except storing NULL instead of
+an error pointer (what clk consumers already expect).
+
+### Verification
+
+- **[Phase 1]** Parsed tags: Suggested-by/Reviewed-by Reichel; SOB
+  Talari + Viresh; no Fixes/Cc:stable
+- **[Phase 1]** Body: oops at `clk_round_rate` ← `dev_pm_opp_set_rate`,
+  address `0x2e`
+- **[Phase 2]** Diff: only `_update_opp_table_clk`; `clk_get` →
+  `clk_get_optional`; `-ENOENT` → NULL; `config_clks` only if clk non-
+  NULL
+- **[Phase 2]** `clk_round_rate` in this tree: NULL check only, then
+  `clk->exclusive_count` (`clk.c:1804-1809`)
+- **[Phase 3]** Blame: `-ENOENT` keep-table from `d4a4c7a41153d` (in
+  tree); set_rate dropped IS_ERR in `1d3c42cabbd35` (in tree)
+- **[Phase 3]** `clk_get_optional` from `60b8f0ddf1a92` (2019), present
+- **[Phase 3]** `git merge-base --is-ancestor 84f05af HEAD` → not in
+  tree
+- **[Phase 4]** `b4 dig -c 84f05af` → v4 msgid
+  `20260727-fix_ptr_check_on_clk-v4-1-97969fa7826a@oss.qualcomm.com`
+- **[Phase 4]** `b4 dig -a`: v1→v4; v2 switched to source fix per
+  Reichel
+- **[Phase 4]** `b4 dig -w`: OPP maintainers + linux-pm on To/Cc
+- **[Phase 4]** mbox: Viresh “Applied. Thanks.”; no NAK
+- **[Phase 5]** Caller: `_add_opp_table_indexed` ← DT add with
+  `getclk=true`; crash via `dev_pm_opp_set_rate`
+- **[Phase 5]** clk_get_rate/set_rate/put NULL-safe in this tree
+- **[Phase 6]** `git describe` / Makefile: 6.12.111; buggy `clk_get` +
+  `-ENOENT` block at `core.c:1526-1551`
+- **[Phase 8]** Failure mode: oops, CRITICAL
+- **UNVERIFIED:** stable@ lore (403); exact crash SoC; whether later
+  mainline fixed the post-put `opp_table->clk` read
 
 **YES**
 
- .../intel/int340x_thermal/processor_thermal_rfim.c    | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/opp/core.c | 54 +++++++++++++++++++++-------------------------
+ 1 file changed, 24 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
-index 635bc8fded1e9..2f32b230a4b15 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
-@@ -460,12 +460,11 @@ int proc_thermal_rfim_add(struct pci_dev *pdev, struct proc_thermal_device *proc
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index a179d57a5a150..a41ad136e90e0 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1579,8 +1579,6 @@ static struct opp_table *_update_opp_table_clk(struct device *dev,
+ 					       struct opp_table *opp_table,
+ 					       bool getclk)
+ {
+-	int ret;
+-
+ 	/*
+ 	 * Return early if we don't need to get clk or we have already done it
+ 	 * earlier.
+@@ -1589,39 +1587,35 @@ static struct opp_table *_update_opp_table_clk(struct device *dev,
+ 	    opp_table->clks)
+ 		return opp_table;
  
- 	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_DVFS) {
- 		ret = sysfs_create_group(&pdev->dev.kobj, &dvfs_attribute_group);
--		if (ret && proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_FIVR) {
--			sysfs_remove_group(&pdev->dev.kobj, &fivr_attribute_group);
--			return ret;
--		}
--		if (ret && proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_DLVR) {
--			sysfs_remove_group(&pdev->dev.kobj, &dlvr_attribute_group);
-+		if (ret) {
-+			if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_DLVR)
-+				sysfs_remove_group(&pdev->dev.kobj, &dlvr_attribute_group);
-+			if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_FIVR)
-+				sysfs_remove_group(&pdev->dev.kobj, &fivr_attribute_group);
- 			return ret;
- 		}
+-	/* Find clk for the device */
+-	opp_table->clk = clk_get(dev, NULL);
++	/*
++	 * There are few platforms which don't want the OPP core to manage
++	 * device's clock settings. In such cases neither the platform
++	 * provides the clks explicitly to us, nor the DT contains a valid
++	 * clk entry. The OPP nodes in DT may still contain "opp-hz" property
++	 * though, which we need to parse and allow the platform to find an
++	 * OPP based on freq later on.
++	 *
++	 * This is a simple solution to take care of such corner cases, i.e.
++	 * make the clk_count 1, which lets us allocate space for frequency
++	 * in opp->rates and also parse the entries in DT. Use
++	 * clk_get_optional() instead of clk_get() so opp_table->clk stays
++	 * NULL for such devices, instead of holding an ERR_PTR(-ENOENT) that
++	 * consumers must remember to special-case.
++	 */
++	opp_table->clk = clk_get_optional(dev, NULL);
+ 
+-	ret = PTR_ERR_OR_ZERO(opp_table->clk);
+-	if (!ret) {
+-		opp_table->config_clks = _opp_config_clk_single;
+-		opp_table->clk_count = 1;
+-		return opp_table;
++	if (IS_ERR(opp_table->clk)) {
++		dev_pm_opp_put_opp_table(opp_table);
++		dev_err_probe(dev, PTR_ERR(opp_table->clk), "Couldn't find clock\n");
++		return ERR_CAST(opp_table->clk);
  	}
+ 
+-	if (ret == -ENOENT) {
+-		/*
+-		 * There are few platforms which don't want the OPP core to
+-		 * manage device's clock settings. In such cases neither the
+-		 * platform provides the clks explicitly to us, nor the DT
+-		 * contains a valid clk entry. The OPP nodes in DT may still
+-		 * contain "opp-hz" property though, which we need to parse and
+-		 * allow the platform to find an OPP based on freq later on.
+-		 *
+-		 * This is a simple solution to take care of such corner cases,
+-		 * i.e. make the clk_count 1, which lets us allocate space for
+-		 * frequency in opp->rates and also parse the entries in DT.
+-		 */
+-		opp_table->clk_count = 1;
+-
+-		dev_dbg(dev, "%s: Couldn't find clock: %d\n", __func__, ret);
+-		return opp_table;
+-	}
++	if (opp_table->clk)
++		opp_table->config_clks = _opp_config_clk_single;
+ 
+-	dev_pm_opp_put_opp_table(opp_table);
+-	dev_err_probe(dev, ret, "Couldn't find clock\n");
++	opp_table->clk_count = 1;
+ 
+-	return ERR_PTR(ret);
++	return opp_table;
+ }
+ 
+ /*
 -- 
 2.53.0
 
