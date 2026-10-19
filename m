@@ -1,65 +1,74 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792422200;
-	b=vDOszmSXoxpbbXRwqYwjSL37c+silRhxmfIInCF9bMSTvi7D87+rXfBkPg62Hpz81GNv
-	 IsQlQh9C+o99rA6pshBV/j3SW6V0avdCLnIomVUD1SfsANulyfUEdkNro+mOzzuwRl6wK
-	 jnXX0yiiFOBoVCg1XOCZ7X5bZSP/gUlwEXTGSTDixE1Ij4yTzYFUYgnRahSAZwmtnoGqo
-	 EF+WMBojK15D5mgmFcuPeZ0i0/DdZ/fFZ6SxJbxI5igMLhhdAvYvdnqqrFNzbg52Jva/l
-	 r/W+LTYSYX+Mj1vk48S8SB2lFj7LirUExtRwG36ck+bujhn7IIuNpx9LLMEEfnTXojw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792422200;
-	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 X-Mailer:In-Reply-To:References:MIME-Version:Reply-To:Organization:
-	 Content-Transfer-Encoding;
-	bh=Cafey3EN3JAss/l/VMXLS5pBPlEFjOYUiJHh3pWVxP4=;
-	b=v6PeDRONBXW3xN2ZrzorQdRgksw6h3yOVppBFhAdDALYEKOPkb00V1vYj7H+owvV6gIx
-	 QC/Q3/bXD+jBBG8ReboJX8aDPijiFU/pZzuenDP7JRoKNUqSax+6h5uTHDWOsA5nAVjGk
-	 lspabY1isGt1H7+sH6GFI4il7DRLvU+SiUS0TYWlq/r4fcf0ilfqwBudQ4zVQ34LXKPFh
-	 4BEJ4P/yONA4DaEe/rTpWYWs9hAtZA3MuTyrQCO1hdL9Wy/gTPz6rddC+TqHT8YyPjfrr
-	 5yU5K1r+wjjbGLLnbf/87Rsb+IqSr64O4bpkjwEIJgoh99xkvjKCyAeuRNPT/gL6pPw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nhyEkqeA;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=10.30.226.211
-Received: from aws-us-west-2-korg-listserv-1.web.codeaurora.org (ip-10-30-226-211.us-west-2.compute.internal [10.30.226.211])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id DCF18607DC40
-	for <linux-pm.vger.kernel.org@localhost.mlmmj>; Mon, 19 Oct 2026 15:03:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nhyEkqeA
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1792425384;
+	b=GjwdL8ZvKCDhQJtGvfMGsa/GPYQhGsfnTjdOG08dPe1TkkZ0iMfJikoiBS055pNy8cRJ
+	 ag12urGq/mLmQrwksY6qz2TLvja4Ct9jYP2qcrB6Lq+KqvpURGMUmwgFKUp4BZxiLIfFf
+	 clGYj0yj3QzJVyrlJ8iGCTNOD59+50pnOJCC94MD1kUPeFhU4qxZB00ZYGJPYaUs0MHvA
+	 P92bHfOAdTk0ICvkzzU1Q/3RiFSinne018VjpDCdf0yEsECsFWmPO54DNosqX76cvIsaX
+	 +WBz7DT4cKFzNKJ8NequK8SRVO+dnR/MlkEpc2amr3ByDAMyh2fQfWMQIuLCIsIVyiw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792425384;
+	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
+	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
+	 In-Reply-To;
+	bh=522dSgSX8QDg4IeydtuZ1AFaoV8ZpxNqAXq0w4tKQaU=;
+	b=QUpMFJjrsxO7byJRi69xL0eb7QVpNW/iSGNbwccc7EDJA+NDDKQMcMmGCEFwh1sfMPWU
+	 tKEBiOc826rjwygq1XdxjIVQWIMwskP11H8bc1xkMNdKrgwWhk/LrWlABj0Eqd+ertw4t
+	 /yXcH45cQtfe6w3DTuXUXLz2hy0+9p+MKi21LjVXsb7/ZZxbOwYNK/m2xzgp4nd62afat
+	 1QPz1u9yvgqWtHTseHhZFICw64iVfDQJCv2BwXc8DknuqzefQxNmeWgPvhcac+P9hhZYo
+	 xaJJ3/4YfEe2/H+ErZsIkWidwSmfPhXmHGgoVeypHtlcXjvF7Sp7pvEXsL73tddgxdQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=ideasonboard.com;
+	spf=pass smtp.mailfrom=ideasonboard.com;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=QeSUwDeh;
+	arc=none smtp.remote-ip=213.167.242.64
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D6DD6513C3
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 15:03:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792422200; cv=none; b=XwDqRwa7g3/fnvcUO/rwJYz+vz6vExPpDXiWYcFdphxjhkDb7U61l1cApx5SYZQQJtRkR3YuW0gJOuGBK3P8PuTKt5hmPtphtLKMkCMJVI/5C0VSt8PVg4ctj3IlHbkMUCE+1qT+CskX6B95WM864J04zE0aMbQPpYokRrjk9Jk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792422200; c=relaxed/simple;
-	bh=69+0zACsOhHqtrhhZmateWNRgAOPHX3UoKeGCSQsXUA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DOkJwcGfwQuiMxvFx5IpaHQIzoWXa9c/Ww1Xl5wDvl/SYD853QX+UYpp/17QDfPUEOVc4aKs7YoX07aSj+ox6/HYAAL8QerfZvqdB00U2epVqw2y9MTzghMc1fnilD5ANDzOhBsLPBceDfO7eEiO6XoJz529b8bfrlrc/P5KaX0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nhyEkqeA; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 306CA1F000C5;
-	Mon, 19 Oct 2026 15:03:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792422199;
-	bh=Cafey3EN3JAss/l/VMXLS5pBPlEFjOYUiJHh3pWVxP4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=nhyEkqeAwCBhisyd5YdiFvrTqYE9tT8ytNOQWRMacZyZ6C5ItEMpWSB9FzYSsgCx4
-	 oEpsLklUEY01Ht/fT6GRRm42kxvRZzxXQDkJfvwqTM5EZOm7N+QPoeGv7+Y9hBA/K8
-	 KOz9fEzhCtAm3bSpia/7lwtdh2QTj0tuRk0Tz0K8EhNant6NpKdi66tMQpSFPvjQRY
-	 NFSd8WN4y3DuM9E2wyLh540B6fV+q18IBuG+2Yku84Zzviy2Zl7ZQTuUhRXipFFWyh
-	 O0yFSxIH0auAdaY8ECGLk5u8D+dUM9QKmEZ1DP/zSNwBuvpu2w/F8GnpHWtU279q05
-	 VgamtSjiy4Jig==
-From: Len Brown <lenb@kernel.org>
-To: linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
-Subject: [PATCH 23/23] tools/power turbostat: version 2026.10.16
-Date: Mon, 19 Oct 2026 10:38:56 -0400
-Message-ID: <0aac88e65d482d900e4e33c71812a6ec23275207.1792420722.git.len.brown@intel.com>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
-References: <962d0202306072651ef459abf1f7240c73afaee1.1792420722.git.len.brown@intel.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 656F7606AAC9;
+	Mon, 19 Oct 2026 15:56:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 656F7606AAC9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key, unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=QeSUwDeh
+Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id E1E82D0;
+	Mon, 19 Oct 2026 17:54:14 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1792425255;
+	bh=9uCPKIsEr/8+KuBqoPLaVUoPiPXEjoFfr9QWURIr6aM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=QeSUwDehkhxrrH591BEFl/mwIa5Lg0XyL0OAF1o4NQmUFpzj6s6p6mfyZvFH7UhRe
+	 FTu9nWzUZmHVuOOIZq1K2/lSn3tqWcRrApQ4GOsGtVr5wMJw3LYO/MZC73GfWsnEwr
+	 rhjruCETvAoqwmGwKXbKHUFlmu2pKpNBuryrILH8=
+Date: Mon, 19 Oct 2026 18:56:19 +0300
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	=?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v4 2/8] clk: renesas: r8a78000: Add SCMI remapping support
+Message-ID: <20261019155619.GB3705@killaraus.ideasonboard.com>
+References: <cover.1792163045.git.geert+renesas@glider.be>
+ <c38d744c09dffff550a9b882051c211b572b8daf.1792163045.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,381 +78,347 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Reply-To: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <c38d744c09dffff550a9b882051c211b572b8daf.1792163045.git.geert+renesas@glider.be>
 
-From: Len Brown <len.brown@intel.com>
+Hi Geert,
 
-Since 2026.09.28:
+Thank you for the patch.
 
-Remove hard-coded 8192-CPU limit.
-Decode Uncore Frequency Agent Types.
-Dump RDT (Resource Director Technology) config.
-Dump RP (Resource Priority) config.
-Misc cleanups and fixes.
+On Fri, Oct 16, 2026 at 05:55:41PM +0200, Geert Uytterhoeven wrote:
+> Extend the Clock Pulse Generator driver for R-Car X5H with SCMI support,
+> to remap DT clock IDs to abstractions (clocks) offered by the SCMI
+> firmware when running on a system with SCMI, and SCMI support is
+> enabled.  Take into account some peculiarities of the current SCMI
+> firmware implementations, and fall-back to fixed-rate clocks as
+> replacements for SCMI clocks that are not available.
+> Support for bus clocks used by serial, I2C, and SPI devices is included.
+> 
+> This lets us avoid putting SCMI IDs in DT, and allows us to use the same
+> hardware description in SoC DTS for systems with and without SCMI
+> firmware.
+> 
+> For now, it is assumed SCMI clock IDs are stable, and match SCP FW
+> SDKv4.31.0 and later.
+> 
+> Suggested-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> v4:
+>   - Drop unneeded IS_ERR() check after __clk_get_hw(),
+>   - Mark scmi_clk_np __free(device_node),
+>   - Assume all SCMI clock IDs are stable, and drop support for handling
+>     different ID spaces,
+>   - Include initial mapping table for SCP FW SDKv4.31.0 and later,
+>   - Try SCMI clocks first, and fall back to the default fixed-frequency
+>     clocks when not available, as recent firmware versions no longer
+>     restrict access to some bus clocks,
+>   - Drop renesas,scmi-firmware support, just find an arm,scmi node
+>     instead,
+>   - Fall back to the non-SCMI defaults when SCMI clock support is
+>     disabled,
+> 
+> v3:
+>   - Rebase,
+>   - Consistently use /* sentinel */ for zero sentinels,
+>   - s/firmware/renesas,scmi-firmware/,
+>   - Reword,
+> 
+> v2:
+>   - Spin off from "clk: renesas: Add R-Car X5H CPG SCMI remapping
+>     driver",
+>   - Use reverse xmas ordering in r8a78000_cpg_probe(),
+>   - Propagate error codes from scmi_get_base_info() now it can return
+>     -EPROBE_DEFER,
+>   - Improve error message on scmi_get_base_info() failure,
+>   - Check if SCMI firmware node is available,
+>   - Replace the scmi_clk_np member of struct r8a78000_cpg_priv by a
+>     local variable in r8a78000_cpg_probe(), and pass it to
+>     fill_clk_map(),
+>   - Join split short lines,
+>   - Fall back to the default support when SCMI support or firmware is
+>     not available, or when the detected SCMI firmware version is not
+>     supported by the driver,
+>   - Drop mapping tables.
+> ---
+>  drivers/clk/renesas/r8a78000-cpg.c | 149 ++++++++++++++++++++++++++---
+>  1 file changed, 138 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
+> index 5ffd7b89cb48e41c..758cfe78ae58e0fb 100644
+> --- a/drivers/clk/renesas/r8a78000-cpg.c
+> +++ b/drivers/clk/renesas/r8a78000-cpg.c
+> @@ -5,6 +5,7 @@
+>   * Copyright (C) 2026 Glider bv
+>   */
+>  
+> +#include <linux/cleanup.h>
+>  #include <linux/clk.h>
+>  #include <linux/clk-provider.h>
+>  #include <linux/dev_printk.h>
+> @@ -12,21 +13,27 @@
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/scmi_protocol.h>
+>  #include <linux/slab.h>
+>  
+>  #include <dt-bindings/clock/renesas,r8a78000-cpg.h>
+>  
+>  struct clk_map_in {
+>  	int dt_id;		/* DT binding clock ID or -1 sentinel */
+> -	u32 fw_id;		/* FIXED_CLK() ID */
+> +	u32 fw_id;		/* SCMI firmware clock ID or FIXED_CLK() ID */
+>  };
+>  
+>  struct clk_map {
+>  	int dt_id;		/* DT binding clock ID or -1 sentinel */
+> -	u32 fw_id;		/* FIXED_CLK() ID */
+> +	u32 fw_id;		/* SCMI firmware clock ID or FIXED_CLK() ID */
+>  	struct clk_hw *hw;
+>  };
+>  
+> +struct cpg_data {
+> +	const struct clk_map_in *default_map;
+> +	const struct clk_map_in *fw_map;
+> +};
+> +
+>  enum fixed_clk {
+>  	FIXED_CLK_66M,
+>  	FIXED_CLK_133M,
+> @@ -39,13 +46,14 @@ static const unsigned long fixed_clk_rates[] = {
+>  	[FIXED_CLK_266M] = 266660000,
+>  };
+>  
+> -#define FIXED_CLK(rate)		FIXED_CLK_ ## rate
+> +#define FIXED_CLK_OFFSET	0x80000000
+> +#define FIXED_CLK(rate)		FIXED_CLK_OFFSET + FIXED_CLK_ ## rate
 
-This patch:
+#define FIXED_CLK(rate)		(FIXED_CLK_OFFSET + FIXED_CLK_ ## rate)
 
-Format with: lindent -npro -kr -i8 -ts8 -sob -l190 -ss -ncs -cp1
-This allows lines as wide as my terminal.
+>  
+>  /**
+>   * struct r8a78000_cpg_priv - Clock Pulse Generator Private Data
+>   *
+>   * @dev: CPG device
+> - * @map: Mapping from DT clock IDs to fixed-rate clocks
+> + * @map: Mapping from DT clock IDs to SCMI or fixed-rate clocks
+>   */
+>  struct r8a78000_cpg_priv {
+>  	struct device *dev;
+> @@ -85,8 +93,19 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
+>  		return ERR_PTR(-ENOENT);
+>  	}
+>  
+> -	dev_dbg(dev, "Mapping DT clock %u to fixed clock %u\n", id, map->fw_id);
+> +	if (map->fw_id < FIXED_CLK_OFFSET)
+> +		dev_dbg(dev, "Mapping DT clock %u to SCMI clock %u\n", id,
+> +			map->fw_id);
+> +	else
+> +		dev_dbg(dev, "Mapping DT clock %u to fixed clock %u\n", id,
+> +			 map->fw_id - FIXED_CLK_OFFSET);
+> +
+>  	hw = map->hw;
+> +	if (!hw) {
+> +		/* CLOCK_ATTRIBUTES is not supported */
+> +		dev_err(dev, "Clock %u is not available\n", id);
+> +		return ERR_PTR(-ENOENT);
+> +	}
+>  
+>  	dev_dbg(dev, "clock %u is %s at %lu Hz\n", id, clk_hw_get_name(hw),
+>  		clk_hw_get_rate(hw));
+> @@ -94,6 +113,21 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
+>  	return hw;
+>  }
+>  
+> +static struct device_node *scmi_find_proto(struct device_node *scmi, u32 proto)
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 110 +++++++++-----------------
- 1 file changed, 36 insertions(+), 74 deletions(-)
+This is the kind of function name that looks prone to a namespace clash.
+I'd name it r8a78000_clk_scmi_find_proto().
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 89a71f44431b..fb268463aedc 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2501,8 +2501,7 @@ int has_allowed_lower_ht_sibling(int cpu)
- 	return 0;
- }
- 
--int for_all_cpus(int (func) (struct thread_data *, struct core_data *, struct pkg_data *),
--		 struct thread_data *thread_base, struct core_data *core_base, struct pkg_data *pkg_base)
-+int for_all_cpus(int (func) (struct thread_data *, struct core_data *, struct pkg_data *), struct thread_data *thread_base, struct core_data *core_base, struct pkg_data *pkg_base)
- {
- 	int cpu, retval;
- 
-@@ -2587,8 +2586,7 @@ int get_msr_fd(int cpu)
- 	sprintf(pathname, use_android_msr_path ? "/dev/msr%d" : "/dev/cpu/%d/msr", cpu);
- 	fd = open(pathname, O_RDONLY);
- 	if (fd < 0)
--		err(-1, "%s open failed, try chown or chmod +r %s, "
--		    "or run with --no-msr, or run as root", pathname, use_android_msr_path ? "/dev/msr*" : "/dev/cpu/*/msr");
-+		err(-1, "%s open failed, try chown or chmod +r %s, " "or run with --no-msr, or run as root", pathname, use_android_msr_path ? "/dev/msr*" : "/dev/cpu/*/msr");
- 	fd_percpu[cpu] = fd;
- 
- 	return fd;
-@@ -2795,8 +2793,7 @@ void help(void)
- 		"  -T, --TCC temperature\n"
- 		"		sets the Thermal Control Circuit temperature in\n"
- 		"		  degrees Celsius\n"
--		"  -h, --help\n"
--		"		print this help message\n  -v, --version\n\t\tprint version information\n\nFor more help, run \"man turbostat\"\n");
-+		"  -h, --help\n" "		print this help message\n  -v, --version\n\t\tprint version information\n\nFor more help, run \"man turbostat\"\n");
- }
- 
- /*
-@@ -4011,8 +4008,7 @@ int delta_thread(struct thread_data *new, struct thread_data *old, struct core_d
- 
- 	/* check for TSC < 1 Mcycles over interval */
- 	if (old->tsc < (1000 * 1000))
--		errx(-3, "Insanely slow TSC rate, TSC stops in idle?\n"
--		     "You can disable all c-states by booting with \"idle=poll\"\nor just the deep ones with \"processor.max_cstate=1\"");
-+		errx(-3, "Insanely slow TSC rate, TSC stops in idle?\n" "You can disable all c-states by booting with \"idle=poll\"\nor just the deep ones with \"processor.max_cstate=1\"");
- 
- 	old->c1 = new->c1 - old->c1;
- 
-@@ -4905,8 +4901,7 @@ int get_rapl_counters(int cpu, unsigned int domain, struct core_data *c, struct
- 			assert(rci->fd_perf != -1);
- 
- 			if (debug >= 2)
--				fprintf(stderr, "Reading rapl counter via perf at %u (%llu %e %lf)\n",
--					i, perf_data[pi], rci->scale[i], perf_data[pi] * rci->scale[i]);
-+				fprintf(stderr, "Reading rapl counter via perf at %u (%llu %e %lf)\n", i, perf_data[pi], rci->scale[i], perf_data[pi] * rci->scale[i]);
- 
- 			rci->data[i] = perf_data[pi];
- 
-@@ -5730,8 +5725,7 @@ static void dump_cst_cfg(void)
- 		(msr & SNB_C3_AUTO_UNDEMOTE) ? "UNdemote-C3, " : "",
- 		(msr & SNB_C1_AUTO_UNDEMOTE) ? "UNdemote-C1, " : "",
- 		(msr & NHM_C3_AUTO_DEMOTE) ? "demote-C3, " : "",
--		(msr & NHM_C1_AUTO_DEMOTE) ? "demote-C1, " : "",
--		(msr & (1 << 15)) ? "" : "UN", (unsigned int)msr & 0xF, pkg_cstate_limit_strings[pkg_cstate_limit]);
-+		(msr & NHM_C1_AUTO_DEMOTE) ? "demote-C1, " : "", (msr & (1 << 15)) ? "" : "UN", (unsigned int)msr & 0xF, pkg_cstate_limit_strings[pkg_cstate_limit]);
- 
- #define AUTOMATIC_CSTATE_CONVERSION		(1UL << 16)
- 	if (platform->has_cst_auto_convension) {
-@@ -6228,8 +6222,7 @@ static int parse_cpu_str(char *cpu_str, cpu_set_t *cpu_set, int cpu_set_size)
- int for_all_cpus_2(int (func) (struct thread_data *, struct core_data *,
- 			       struct pkg_data *, struct thread_data *, struct core_data *,
- 			       struct pkg_data *), struct thread_data *thread_base,
--		   struct core_data *core_base, struct pkg_data *pkg_base,
--		   struct thread_data *thread_base2, struct core_data *core_base2, struct pkg_data *pkg_base2)
-+		   struct core_data *core_base, struct pkg_data *pkg_base, struct thread_data *thread_base2, struct core_data *core_base2, struct pkg_data *pkg_base2)
- {
- 	int cpu, retval;
- 
-@@ -7019,8 +7012,7 @@ void check_msr_permission(void)
- 	}
- 
- 	if (failed) {
--		warnx("Failed to access %s. Some of the counters may not be available\n"
--		      "\tRun as root to enable them or use %s to disable the access explicitly", pathname, "--no-msr");
-+		warnx("Failed to access %s. Some of the counters may not be available\n" "\tRun as root to enable them or use %s to disable the access explicitly", pathname, "--no-msr");
- 		no_msr = 1;
- 	}
- }
-@@ -7597,9 +7589,7 @@ int print_hwp(PER_THREAD_PARAMS)
- 	get_msr(cpu, MSR_HWP_CAPABILITIES, &msr);
- 	fprintf(outf, "cpu%d: MSR_HWP_CAPABILITIES: 0x%08llx "
- 		"(high %d guar %d eff %d low %d)\n",
--		cpu, msr,
--		(unsigned int)HWP_HIGHEST_PERF(msr),
--		(unsigned int)HWP_GUARANTEED_PERF(msr), (unsigned int)HWP_MOSTEFFICIENT_PERF(msr), (unsigned int)HWP_LOWEST_PERF(msr));
-+		cpu, msr, (unsigned int)HWP_HIGHEST_PERF(msr), (unsigned int)HWP_GUARANTEED_PERF(msr), (unsigned int)HWP_MOSTEFFICIENT_PERF(msr), (unsigned int)HWP_LOWEST_PERF(msr));
- 
- 	get_msr(cpu, MSR_HWP_REQUEST, &msr);
- 	fprintf(outf, "cpu%d: MSR_HWP_REQUEST: 0x%08llx "
-@@ -7607,8 +7597,7 @@ int print_hwp(PER_THREAD_PARAMS)
- 		cpu, msr,
- 		(unsigned int)(((msr) >> 0) & 0xff),
- 		(unsigned int)(((msr) >> 8) & 0xff),
--		(unsigned int)(((msr) >> 16) & 0xff),
--		(unsigned int)(((msr) >> 24) & 0xff), (unsigned int)(((msr) >> 32) & 0xff3), (unsigned int)(((msr) >> 42) & 0x1));
-+		(unsigned int)(((msr) >> 16) & 0xff), (unsigned int)(((msr) >> 24) & 0xff), (unsigned int)(((msr) >> 32) & 0xff3), (unsigned int)(((msr) >> 42) & 0x1));
- 
- 	if (has_hwp_pkg) {
- 		get_msr(cpu, MSR_HWP_REQUEST_PKG, &msr);
-@@ -7616,17 +7605,14 @@ int print_hwp(PER_THREAD_PARAMS)
- 			"(min %d max %d des %d epp 0x%x window 0x%x)\n",
- 			cpu, msr,
- 			(unsigned int)(((msr) >> 0) & 0xff),
--			(unsigned int)(((msr) >> 8) & 0xff),
--			(unsigned int)(((msr) >> 16) & 0xff), (unsigned int)(((msr) >> 24) & 0xff), (unsigned int)(((msr) >> 32) & 0xff3));
-+			(unsigned int)(((msr) >> 8) & 0xff), (unsigned int)(((msr) >> 16) & 0xff), (unsigned int)(((msr) >> 24) & 0xff), (unsigned int)(((msr) >> 32) & 0xff3));
- 	}
- 	if (has_hwp_notify) {
- 		get_msr(cpu, MSR_HWP_INTERRUPT, &msr);
--		fprintf(outf, "cpu%d: MSR_HWP_INTERRUPT: 0x%08llx "
--			"(%s_Guaranteed_Perf_Change, %s_Excursion_Min)\n", cpu, msr, ((msr) & 0x1) ? "EN" : "Dis", ((msr) & 0x2) ? "EN" : "Dis");
-+		fprintf(outf, "cpu%d: MSR_HWP_INTERRUPT: 0x%08llx " "(%s_Guaranteed_Perf_Change, %s_Excursion_Min)\n", cpu, msr, ((msr) & 0x1) ? "EN" : "Dis", ((msr) & 0x2) ? "EN" : "Dis");
- 	}
- 	get_msr(cpu, MSR_HWP_STATUS, &msr);
--	fprintf(outf, "cpu%d: MSR_HWP_STATUS: 0x%08llx "
--		"(%sGuaranteed_Perf_Change, %sExcursion_Min)\n", cpu, msr, ((msr) & 0x1) ? "" : "No-", ((msr) & 0x4) ? "" : "No-");
-+	fprintf(outf, "cpu%d: MSR_HWP_STATUS: 0x%08llx " "(%sGuaranteed_Perf_Change, %sExcursion_Min)\n", cpu, msr, ((msr) & 0x1) ? "" : "No-", ((msr) & 0x4) ? "" : "No-");
- 
- 	return 0;
- }
-@@ -7670,8 +7656,7 @@ int print_perf_limit(PER_THREAD_PARAMS)
- 			(msr & 1 << 8) ? "Amps, " : "",
- 			(msr & 1 << 6) ? "VR-Therm, " : "",
- 			(msr & 1 << 5) ? "Auto-HWP, " : "",
--			(msr & 1 << 4) ? "Graphics, " : "",
--			(msr & 1 << 2) ? "bit2, " : "", (msr & 1 << 1) ? "ThermStatus, " : "", (msr & 1 << 0) ? "PROCHOT, " : "");
-+			(msr & 1 << 4) ? "Graphics, " : "", (msr & 1 << 2) ? "bit2, " : "", (msr & 1 << 1) ? "ThermStatus, " : "", (msr & 1 << 0) ? "PROCHOT, " : "");
- 		fprintf(outf, " (Logged: %s%s%s%s%s%s%s%s%s%s%s%s%s%s)\n",
- 			(msr & 1 << 31) ? "bit31, " : "",
- 			(msr & 1 << 30) ? "bit30, " : "",
-@@ -7683,8 +7668,7 @@ int print_perf_limit(PER_THREAD_PARAMS)
- 			(msr & 1 << 24) ? "Amps, " : "",
- 			(msr & 1 << 22) ? "VR-Therm, " : "",
- 			(msr & 1 << 21) ? "Auto-HWP, " : "",
--			(msr & 1 << 20) ? "Graphics, " : "",
--			(msr & 1 << 18) ? "bit18, " : "", (msr & 1 << 17) ? "ThermStatus, " : "", (msr & 1 << 16) ? "PROCHOT, " : "");
-+			(msr & 1 << 20) ? "Graphics, " : "", (msr & 1 << 18) ? "bit18, " : "", (msr & 1 << 17) ? "ThermStatus, " : "", (msr & 1 << 16) ? "PROCHOT, " : "");
- 
- 	}
- 	if (platform->plr_msrs & PLR_GFX) {
-@@ -7695,15 +7679,13 @@ int print_perf_limit(PER_THREAD_PARAMS)
- 			(msr & 1 << 1) ? "ThermStatus, " : "",
- 			(msr & 1 << 4) ? "Graphics, " : "",
- 			(msr & 1 << 6) ? "VR-Therm, " : "",
--			(msr & 1 << 8) ? "Amps, " : "",
--			(msr & 1 << 9) ? "GFXPwr, " : "", (msr & 1 << 10) ? "PkgPwrL1, " : "", (msr & 1 << 11) ? "PkgPwrL2, " : "");
-+			(msr & 1 << 8) ? "Amps, " : "", (msr & 1 << 9) ? "GFXPwr, " : "", (msr & 1 << 10) ? "PkgPwrL1, " : "", (msr & 1 << 11) ? "PkgPwrL2, " : "");
- 		fprintf(outf, " (Logged: %s%s%s%s%s%s%s%s)\n",
- 			(msr & 1 << 16) ? "PROCHOT, " : "",
- 			(msr & 1 << 17) ? "ThermStatus, " : "",
- 			(msr & 1 << 20) ? "Graphics, " : "",
- 			(msr & 1 << 22) ? "VR-Therm, " : "",
--			(msr & 1 << 24) ? "Amps, " : "",
--			(msr & 1 << 25) ? "GFXPwr, " : "", (msr & 1 << 26) ? "PkgPwrL1, " : "", (msr & 1 << 27) ? "PkgPwrL2, " : "");
-+			(msr & 1 << 24) ? "Amps, " : "", (msr & 1 << 25) ? "GFXPwr, " : "", (msr & 1 << 26) ? "PkgPwrL1, " : "", (msr & 1 << 27) ? "PkgPwrL2, " : "");
- 	}
- 	if (platform->plr_msrs & PLR_RING) {
- 		get_msr(cpu, MSR_RING_PERF_LIMIT_REASONS, &msr);
-@@ -7711,13 +7693,11 @@ int print_perf_limit(PER_THREAD_PARAMS)
- 		fprintf(outf, " (Active: %s%s%s%s%s%s)",
- 			(msr & 1 << 0) ? "PROCHOT, " : "",
- 			(msr & 1 << 1) ? "ThermStatus, " : "",
--			(msr & 1 << 6) ? "VR-Therm, " : "",
--			(msr & 1 << 8) ? "Amps, " : "", (msr & 1 << 10) ? "PkgPwrL1, " : "", (msr & 1 << 11) ? "PkgPwrL2, " : "");
-+			(msr & 1 << 6) ? "VR-Therm, " : "", (msr & 1 << 8) ? "Amps, " : "", (msr & 1 << 10) ? "PkgPwrL1, " : "", (msr & 1 << 11) ? "PkgPwrL2, " : "");
- 		fprintf(outf, " (Logged: %s%s%s%s%s%s)\n",
- 			(msr & 1 << 16) ? "PROCHOT, " : "",
- 			(msr & 1 << 17) ? "ThermStatus, " : "",
--			(msr & 1 << 22) ? "VR-Therm, " : "",
--			(msr & 1 << 24) ? "Amps, " : "", (msr & 1 << 26) ? "PkgPwrL1, " : "", (msr & 1 << 27) ? "PkgPwrL2, " : "");
-+			(msr & 1 << 22) ? "VR-Therm, " : "", (msr & 1 << 24) ? "Amps, " : "", (msr & 1 << 26) ? "PkgPwrL1, " : "", (msr & 1 << 27) ? "PkgPwrL2, " : "");
- 	}
- 	return 0;
- }
-@@ -7842,8 +7822,7 @@ void print_power_limit_msr(int cpu, unsigned long long msr, char *label)
- 	fprintf(outf, "cpu%d: %s: %sabled (%0.3f Watts, %f sec, clamp %sabled)\n",
- 		cpu, label,
- 		((msr >> 15) & 1) ? "EN" : "DIS",
--		((msr >> 0) & 0x7FFF) * rapl_power_units,
--		(1.0 + (((msr >> 22) & 0x3) / 4.0)) * (1 << ((msr >> 17) & 0x1F)) * rapl_time_units, (((msr >> 16) & 1) ? "EN" : "DIS"));
-+		((msr >> 0) & 0x7FFF) * rapl_power_units, (1.0 + (((msr >> 22) & 0x3) / 4.0)) * (1 << ((msr >> 17) & 0x1F)) * rapl_time_units, (((msr >> 16) & 1) ? "EN" : "DIS"));
- 
- 	return;
- }
-@@ -8051,8 +8030,7 @@ int print_rapl(PER_THREAD_PARAMS)
- 		fprintf(outf, "cpu%d: PKG Limit #2: %sabled (%0.3f Watts, %f* sec, clamp %sabled)\n",
- 			cpu,
- 			((msr >> 47) & 1) ? "EN" : "DIS",
--			((msr >> 32) & 0x7FFF) * rapl_power_units,
--			(1.0 + (((msr >> 54) & 0x3) / 4.0)) * (1 << ((msr >> 49) & 0x1F)) * rapl_time_units, ((msr >> 48) & 1) ? "EN" : "DIS");
-+			((msr >> 32) & 0x7FFF) * rapl_power_units, (1.0 + (((msr >> 54) & 0x3) / 4.0)) * (1 << ((msr >> 49) & 0x1F)) * rapl_time_units, ((msr >> 48) & 1) ? "EN" : "DIS");
- 
- 		get_msr(cpu, MSR_VR_CURRENT_CONFIG, &msr);
- 		fprintf(outf, "cpu%d: MSR_VR_CURRENT_CONFIG: 0x%08llx\n", cpu, msr);
-@@ -8208,8 +8186,7 @@ int set_temperature_target(PER_THREAD_PARAMS)
- 
- 		if (bits && enabled) {
- 			tcc_offset = (msr >> 24) & GENMASK(bits - 1, 0);
--			fprintf(outf, "cpu%d: MSR_IA32_TEMPERATURE_TARGET: 0x%08llx (%d C) (%d default - %d offset)\n",
--				cpu, msr, tcc_default - tcc_offset, tcc_default, tcc_offset);
-+			fprintf(outf, "cpu%d: MSR_IA32_TEMPERATURE_TARGET: 0x%08llx (%d C) (%d default - %d offset)\n", cpu, msr, tcc_default - tcc_offset, tcc_default, tcc_offset);
- 		} else {
- 			fprintf(outf, "cpu%d: MSR_IA32_TEMPERATURE_TARGET: 0x%08llx (%d C)\n", cpu, msr, tcc_default);
- 		}
-@@ -8331,8 +8308,7 @@ void decode_feature_control_msr(void)
- 		return;
- 
- 	get_msr(master_cpu, MSR_IA32_FEAT_CTL, &msr);
--	fprintf(outf, "cpu%d: MSR_IA32_FEATURE_CONTROL: 0x%08llx (%sLocked %s)\n",
--		master_cpu, msr, msr & FEAT_CTL_LOCKED ? "" : "UN-", msr & (1 << 18) ? "SGX" : "");
-+	fprintf(outf, "cpu%d: MSR_IA32_FEATURE_CONTROL: 0x%08llx (%sLocked %s)\n", master_cpu, msr, msr & FEAT_CTL_LOCKED ? "" : "UN-", msr & (1 << 18) ? "SGX" : "");
- }
- 
- void decode_misc_enable_msr(void)
-@@ -8350,8 +8326,7 @@ void decode_misc_enable_msr(void)
- 		master_cpu, msr,
- 		msr & MSR_IA32_MISC_ENABLE_TM1 ? "" : "No-",
- 		msr & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP ? "" : "No-",
--		msr & MSR_IA32_MISC_ENABLE_MWAIT ? "" : "No-",
--		msr & MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE ? "No-" : "", msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ? "No-" : "");
-+		msr & MSR_IA32_MISC_ENABLE_MWAIT ? "" : "No-", msr & MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE ? "No-" : "", msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ? "No-" : "");
- }
- 
- void decode_misc_feature_control(void)
-@@ -8453,8 +8428,7 @@ static int has_perf_instr_count_access(void)
- 
- 	if (fd == -1)
- 		warnx("Failed to access %s. Some of the counters may not be available\n"
--		      "\tRun as root to enable them or use %s to disable the access explicitly", "perf instructions retired counter",
--		      "'--hide IPC' or '--no-perf'");
-+		      "\tRun as root to enable them or use %s to disable the access explicitly", "perf instructions retired counter", "'--hide IPC' or '--no-perf'");
- 
- 	return (fd != -1);
- }
-@@ -8500,8 +8474,7 @@ int add_rapl_perf_counter(int cpu, struct rapl_counter_info_t *rci, const struct
- 	return ret;
- }
- 
--int initialize_cpu_set_from_sysfs(cpu_set_t *cpu_set, const char *sysfs_path,
--				  const char *sysfs_file)
-+int initialize_cpu_set_from_sysfs(cpu_set_t *cpu_set, const char *sysfs_path, const char *sysfs_file)
- {
- 	FILE *fp;
- 	char *cpuset_buf = NULL;
-@@ -9127,8 +9100,7 @@ void dump_rdt_a_leaf(int leaf)
- 		has_rp_thread = eax & (1 << 0);
- 		has_rp_package = eax & (1 << 1);
- 
--		fprintf(outf, "cpu%d: CPUID(0x%x).%d: %sRP_THREAD, %sRP_PKG",
--			cpu, leaf, RDT_RP_INDEX, has_rp_thread ? "" : "No-", has_rp_package ? "" : "No-");
-+		fprintf(outf, "cpu%d: CPUID(0x%x).%d: %sRP_THREAD, %sRP_PKG", cpu, leaf, RDT_RP_INDEX, has_rp_thread ? "" : "No-", has_rp_package ? "" : "No-");
- 		if (has_rp_thread) {
- 			unsigned long long msr;
- 
-@@ -9222,8 +9194,7 @@ void process_cpuid()
- 			ecx_flags & (1 << 8) ? "" : "No-",
- 			cpuid_has_hv ? "" : "No-",
- 			edx_flags & (1 << 4) ? "" : "No-",
--			edx_flags & (1 << 5) ? "" : "No-",
--			edx_flags & (1 << 22) ? "" : "No-", edx_flags & (1 << 28) ? "" : "No-", edx_flags & (1 << 29) ? "" : "No-");
-+			edx_flags & (1 << 5) ? "" : "No-", edx_flags & (1 << 22) ? "" : "No-", edx_flags & (1 << 28) ? "" : "No-", edx_flags & (1 << 29) ? "" : "No-");
- 	}
- 	if (!quiet && cpuid_has_hv)
- 		dump_cpuid_hypervisor();
-@@ -9272,9 +9243,7 @@ void process_cpuid()
- 			has_turbo ? "" : "No-",
- 			do_dts ? "" : "No-",
- 			do_ptm ? "" : "No-",
--			has_hwp ? "" : "No-",
--			has_hwp_notify ? "" : "No-",
--			has_hwp_activity_window ? "" : "No-", has_hwp_epp ? "" : "No-", has_hwp_pkg ? "" : "No-", has_epb ? "" : "No-");
-+			has_hwp ? "" : "No-", has_hwp_notify ? "" : "No-", has_hwp_activity_window ? "" : "No-", has_hwp_epp ? "" : "No-", has_hwp_pkg ? "" : "No-", has_epb ? "" : "No-");
- 
- 	if (!quiet)
- 		decode_misc_enable_msr();
-@@ -9299,8 +9268,7 @@ void process_cpuid()
- 			has_ardt_a = ecx & (1 << 1);
- 
- 			fprintf(outf, "CPUID(7): %sSGX %sRDT_M %sRDT_A %sARDT_M %sARDT_A %sHybrid\n",
--				has_sgx ? "" : "No-", has_rdt_m ? "" : "No-", has_rdt_a ? "" : "No-", has_ardt_m ? "" : "No-", has_ardt_a ? "" : "No-",
--				is_hybrid ? "" : "No-");
-+				has_sgx ? "" : "No-", has_rdt_m ? "" : "No-", has_rdt_a ? "" : "No-", has_ardt_m ? "" : "No-", has_ardt_a ? "" : "No-", is_hybrid ? "" : "No-");
- 
- 			if (has_sgx)
- 				decode_feature_control_msr();
-@@ -9842,8 +9810,7 @@ void topology_probe(bool startup)
- 			continue;
- 		fprintf(outf,
- 			"cpu %d pkg %d die %d l3 %d node %d lnode %d module 0x%x core %d ht_id %d",
--			i, cpus[i].package_id, cpus[i].die_id, cpus[i].l3_id,
--			cpus[i].physical_node_id, cpus[i].logical_node_id, cpus[i].module_id, cpus[i].core_id, cpus[i].ht_id);
-+			i, cpus[i].package_id, cpus[i].die_id, cpus[i].l3_id, cpus[i].physical_node_id, cpus[i].logical_node_id, cpus[i].module_id, cpus[i].core_id, cpus[i].ht_id);
- 		fprintf(outf, " siblings");
- 		for (ht_id = 0; ht_id <= MAX_HT_ID; ++ht_id)
- 			fprintf(outf, " %d", cpus[i].ht_sibling_cpu_id[ht_id]);
-@@ -10449,8 +10416,7 @@ void pmt_counter_add_domain(struct pmt_counter *pcounter, unsigned long *pmmio,
- }
- 
- int pmt_add_counter(unsigned int guid, unsigned int seq, const char *name, enum pmt_datatype type,
--		    unsigned int lsb, unsigned int msb, unsigned int offset, enum counter_scope scope,
--		    enum counter_format format, unsigned int domain_id, enum pmt_open_mode mode)
-+		    unsigned int lsb, unsigned int msb, unsigned int offset, enum counter_scope scope, enum counter_format format, unsigned int domain_id, enum pmt_open_mode mode)
- {
- 	struct pmt_mmio *mmio;
- 	struct pmt_counter *pcounter;
-@@ -10710,7 +10676,7 @@ int get_and_dump_counters(void)
- 
- void print_version()
- {
--	fprintf(outf, "turbostat version 2026.09.28 - Len Brown <lenb@kernel.org>\n");
-+	fprintf(outf, "turbostat version 2026.10.16 - Len Brown <lenb@kernel.org>\n");
- }
- 
- #define COMMAND_LINE_SIZE 2048
-@@ -10749,8 +10715,7 @@ struct msr_counter *find_msrp_by_name(struct msr_counter *head, const char *name
- 	return NULL;
- }
- 
--int add_counter(unsigned int msr_num, const char *path, const char *name,
--		unsigned int width, enum counter_scope scope, enum counter_type type, enum counter_format format, int flags, int id)
-+int add_counter(unsigned int msr_num, const char *path, const char *name, unsigned int width, enum counter_scope scope, enum counter_type type, enum counter_format format, int flags, int id)
- {
- 	struct msr_counter *msrp;
- 
-@@ -10758,8 +10723,7 @@ int add_counter(unsigned int msr_num, const char *path, const char *name,
- 		errx(1, "Requested MSR counter 0x%x, but in --no-msr mode", msr_num);
- 
- 	if (debug)
--		fprintf(stderr, "%s(msr%d, %s, %s, width%d, scope%d, type%d, format%d, flags%x, id%d)\n",
--			__func__, msr_num, path, name, width, scope, type, format, flags, id);
-+		fprintf(stderr, "%s(msr%d, %s, %s, width%d, scope%d, type%d, format%d, flags%x, id%d)\n", __func__, msr_num, path, name, width, scope, type, format, flags, id);
- 
- 	switch (scope) {
- 
-@@ -10858,9 +10822,7 @@ int add_counter(unsigned int msr_num, const char *path, const char *name,
-  * easily call re_initialize().
-  */
- struct perf_counter_info *make_perf_counter_info(const char *perf_device,
--						 const char *perf_event,
--						 const char *name,
--						 unsigned int width, enum counter_scope scope, enum counter_type type, enum counter_format format)
-+						 const char *perf_event, const char *name, unsigned int width, enum counter_scope scope, enum counter_type type, enum counter_format format)
- {
- 	struct perf_counter_info *pinfo;
- 
+> +{
+> +	for_each_available_child_of_node_scoped(scmi, child) {
+> +		u32 reg;
+> +
+> +		if (of_property_read_u32(child, "reg", &reg))
+> +			continue;
+> +
+> +		if (reg == proto)
+> +			return_ptr(child);
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+>  static struct clk_hw **register_fixed_clks(struct device *dev)
+>  {
+>  	unsigned int n = ARRAY_SIZE(fixed_clk_rates);
+> @@ -122,11 +156,16 @@ static struct clk_hw **register_fixed_clks(struct device *dev)
+>  }
+>  
+>  static const struct clk_map *fill_clk_map(struct r8a78000_cpg_priv *priv,
+> -					  const struct clk_map_in *map_in)
+> +					  const struct clk_map_in *map_in,
+> +					  const struct clk_map_in *fallback,
+> +					  struct device_node *scmi_clk_np)
+>  {
+> +	struct of_phandle_args scmi_spec;
+>  	struct device *dev = priv->dev;
+>  	struct clk_hw **fixed_hws;
+>  	struct clk_map *map;
+> +	struct clk_hw *hw;
+> +	struct clk *clk;
+>  	unsigned int i;
+>  
+>  	fixed_hws = register_fixed_clks(dev);
+> @@ -145,7 +184,46 @@ static const struct clk_map *fill_clk_map(struct r8a78000_cpg_priv *priv,
+>  			break;
+>  
+>  		map[i].fw_id = map_in[i].fw_id;
+> -		map[i].hw = fixed_hws[map[i].fw_id];
+> +		if (map[i].fw_id >= FIXED_CLK_OFFSET) {
+> +			enum fixed_clk idx = map[i].fw_id - FIXED_CLK_OFFSET;
+> +
+> +			map[i].hw = fixed_hws[idx];
+> +			continue;
+> +		}
+> +
+> +		scmi_spec.np = scmi_clk_np;
+
+This seems to be safe because a NULL scmi_clk_np implies usage of the
+default map, which only contains fixed clock offsets, but that makes the
+code a bit too fragile for my taste.
+
+> +		scmi_spec.args_count = 1;
+> +		scmi_spec.args[0] = map[i].fw_id;
+> +
+> +		clk = of_clk_get_from_provider(&scmi_spec);
+> +		if (IS_ERR(clk))
+> +			return dev_err_cast_probe(dev, clk,
+> +				"Failed to get SCMI clock %u\n", map[i].fw_id);
+> +
+> +		hw = __clk_get_hw(clk);
+> +		if (!hw && fallback != map_in) {
+
+And if the above is correct, fallback should always be different from
+map_in when fw_id corresponds to an SCMI clock.
+
+What issue does this catch ? Should the fw map contain a fixed clock
+entry for clocks not available in SCMI ?
+
+> +			for (unsigned int j = 0; fallback[j].dt_id >= 0; j++) {
+> +				if (fallback[j].dt_id == map_in[i].dt_id) {
+> +					enum fixed_clk idx = fallback[j].fw_id - FIXED_CLK_OFFSET;
+> +
+> +					map[i].hw = fixed_hws[idx];
+> +					break;
+> +				}
+> +			}
+> +			if (map[i].hw)
+> +				continue;
+> +		}
+> +
+> +		if (!hw) {
+> +			/* CLOCK_ATTRIBUTES is not supported */
+> +			dev_warn(dev, "SCMI clock %u is NULL\n", map[i].fw_id);
+> +			continue;
+> +		}
+> +
+> +		dev_dbg(priv->dev, "SCMI clock %u is %s at %lu Hz\n",
+> +			map[i].fw_id, clk_hw_get_name(hw), clk_hw_get_rate(hw));
+> +
+> +		map[i].hw = hw;
+>  	}
+>  
+>  	devm_kfree(dev, fixed_hws);
+> @@ -154,20 +232,55 @@ static const struct clk_map *fill_clk_map(struct r8a78000_cpg_priv *priv,
+>  
+>  static int r8a78000_cpg_probe(struct platform_device *pdev)
+>  {
+> +	struct device_node *scmi_clk_np __free(device_node) = NULL;
+> +	struct device_node *scmi __free(device_node) = NULL;
+>  	struct device *dev = &pdev->dev;
+> +	const struct cpg_data *cpg_data;
+>  	struct r8a78000_cpg_priv *priv;
+>  	const struct clk_map_in *map;
+>  
+> -	map = of_device_get_match_data(dev);
+> -	if (!map)
+> +	cpg_data = of_device_get_match_data(dev);
+> +	if (!cpg_data)
+>  		return -ENODEV;
+>  
+> +	map = cpg_data->default_map;
+> +
+>  	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+>  	if (!priv)
+>  		return -ENOMEM;
+>  
+>  	priv->dev = dev;
+> -	priv->map = fill_clk_map(priv, map);
+> +
+> +	if (!IS_ENABLED(CONFIG_COMMON_CLK_SCMI)) {
+> +		dev_dbg(dev, "SCMI clock support is disabled\n");
+> +		goto fallback;
+> +	}
+> +
+> +	scmi = of_find_compatible_node(NULL, NULL, "arm,scmi");
+> +	if (!scmi) {
+> +		dev_dbg(dev, "Cannot find SCMI firmware node\n");
+> +		goto fallback;
+> +	}
+> +
+> +	if (!of_device_is_available(scmi)) {
+> +		dev_dbg(dev, "SCMI firmware node is not available\n");
+> +		goto fallback;
+> +	}
+> +
+> +	scmi_clk_np = scmi_find_proto(scmi, SCMI_PROTOCOL_CLOCK);
+> +	if (!scmi_clk_np) {
+> +		dev_dbg(dev, "Cannot find SCMI clock management protocol\n");
+> +		goto fallback;
+> +	}
+> +
+> +	map = cpg_data->fw_map;
+> +
+> +fallback:
+> +	/*
+> +	 * We cannot do lazy look-up in r8a78000_clk_get(), as that function is
+> +	 * called with of_clk_mutex already held.
+> +	 */
+> +	priv->map = fill_clk_map(priv, map, cpg_data->default_map, scmi_clk_np);
+>  	if (IS_ERR(priv->map))
+>  		return PTR_ERR(priv->map);
+>  
+> @@ -181,10 +294,24 @@ static const struct clk_map_in r8a78000_cpg_default[] = {
+>  	{ -1 }
+>  };
+>  
+> +static const struct clk_map_in r8a78000_cpg_fw[] = {
+> +	{ R8A78000_CPG_SGASYNCD4_PERW_BUS,	1661 },
+> +	{ R8A78000_CPG_SGASYNCD8_PERW_BUS,	1662 },
+> +	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	1663 },
+> +	{ R8A78000_CPG_MSO_SCP_MAIN,		1459 },
+> +	{ R8A78000_CPG_MSOCK_PERW_BUS,		1667 },
+> +	{ -1 }
+> +};
+> +
+> +static const struct cpg_data r8a78000_cpg_data = {
+> +	.default_map = r8a78000_cpg_default,
+> +	.fw_map = r8a78000_cpg_fw,
+> +};
+> +
+>  static const struct of_device_id r8a78000_cpg_match[] = {
+>  	{
+>  		.compatible = "renesas,r8a78000-cpg",
+> -		.data = &r8a78000_cpg_default,
+> +		.data = &r8a78000_cpg_data,
+>  	},
+>  	{ /* sentinel */ }
+>  };
+
 -- 
-2.45.2
+Regards,
 
+Laurent Pinchart
