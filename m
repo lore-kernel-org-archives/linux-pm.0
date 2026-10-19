@@ -1,75 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.45
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.52
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792426866;
-	b=f32tM2ruQ8R2lsrK8ucBLDB3fLWLUEYtZKgTX16ICbsmYE7vrNcrUjwm8ouHPKdpvFMK
-	 J8rtwwsEATO2UZsj94TJf2xI+5/H0JlHSCWcUMW9r+UWCFfNN0jhnrOUwZJfuXyBrsHeZ
-	 lAEprmKTenFnfgU4OWAP9sJ4exHXmLsimX0cR7ZFcR+73uF2L4K79M/TTuKugmO7XJhum
-	 yXZQnrAh0ya8MaCsZsmgHQQQZXoNyLYhjbb1zzFDsDIsTAewUViL8mOs90SpZF8q5vJZR
-	 5sX/E/dyuWEiuqG1s9lFlWXjOLeYZJ4e6ypzA5fGvKre3c9Nfri4cI2wtMpHpwgj6xQ==
+	t=1792427585;
+	b=l4mSU0mXPGxyIiuDHpFjUuLGukdaEuMJiVd1gpCrxvCQYuTG50I8xxcfBLi/tr2RkFK4
+	 M3LafU2SkLZebR08IYjrW1z60G+zfygwksI6xiFby4h30oKr17O2HqZibjvsm6nkLa7KK
+	 B4wYO0RdMrG/AVAl1DgJE+CI/XU4MiPayW2wByk88lQSPPdoErC/4JcNUxP7uGbf9HNao
+	 hTiEsfBQ9o5y1hA1w0Lm3VxGxBWSh5NSvSg5vrln1OGZRZ90zrn2+kNtZf0/h4ZVsu8y8
+	 NZhUwzx8PdL27flQOvr1oIVz6LQC4nZ1VuszhWJzCGD6svQe6FrsZ2c4yX6ApnBCSiQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792426866;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792427585;
 	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
 	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type;
-	bh=VNVvlFmAYqdL7e0NbR8n4mhG40CW5PlDGJg9XCAnokY=;
-	b=hWB636QmLBKyMa9xNF9NaHV6fSnCpTKWxiqHzr9VG3k/xEHYvQECwSDRnBzVJt+LF01A
-	 hDxWYlGL7HvqIpX8buMii66vUwwQcnUx5mqgFA5xB64vDEoWO1KoXD/d0Xd2DBDAfST6h
-	 KN33RAhVR3utB1Iyj4E0ic8Ws3ug8HA/gg4e2xFKY20tjaJbyFLx5ujQ1oqKUqIiFE4TI
-	 tDXNP8IHHuKHnO0+RA8rs64iRJ0oatNo0VLbQbCi+g1vag8ZiGORWq8r+p5v4gV3cat8E
-	 1Mm5shKZf19Kgr0WB/3Rr36qISSKqHk9R8O1+oTtbtggVygF5QbRHMBJ/ZEDbRvFphg==
+	bh=Q8KL6LGvq0FwHTPovYus9FfkhDMRIi4bd+XQz8TiIQM=;
+	b=dOig1JYqhemDsU61XMVirbnma9tSvN3mllIB306POIFqswV6Cgx66dJTBMhDf7bUuPp/
+	 6PPUB8ToGEw+AsdIM5YgYwQlQTMnyqdvdtWwIG282VWLuDls6o78kQKJ/sOLVKSJDeAD9
+	 O8oNdHXf0pKo4wcNafF16P8qTGNyrok80mgvuPy852ChbAbrq2c44ovupUll4UAU9Pgp3
+	 qlpOFSGxyggcDOoG7bKz+2I+ff98TIQlg/tV3n6Uzri9w+sbUnsSjEcZnfYXYFr3y1N/L
+	 V+n+y9jJqzM9c3DrHmnr/CSEHYdCMGpbF+CODHPSPiHn2PegzxD2nSeiJwS8mEZ5FBQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=none header.from=linux-m68k.org;
 	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.167.45
-Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com [209.85.167.45])
+	arc=none smtp.remote-ip=209.85.218.52
+Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4C4960A2613
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 16:21:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A4C4960A2613
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90F03606A31A
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 16:33:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 90F03606A31A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5b8b3c8c4bbso993986e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 09:21:05 -0700 (PDT)
+Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-c411e139259so218836766b.2
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 09:33:04 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792426864; x=1793031664;
+        d=1e100.net; s=20260707; t=1792427583; x=1793032383;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=VNVvlFmAYqdL7e0NbR8n4mhG40CW5PlDGJg9XCAnokY=;
-        b=Q0jHvHW4QJ/PWyqPDqNRmdpzOY9BdxErmJJ8WpXGzrVWq7BkXWTduyMCOyqIrWGenM
-         F70sB7p+cpWTexVM6GWp+FbBSCEwACMD+rPk83uO2D+hYaLZ1OR5INT097PvRxPG/cp3
-         T2dl6q6laz3R0p3m1StbDuoMaSQ9qXpnvPT1uySlZgxjfbS3Yuq5ryNi8/NZZ5HRG09P
-         oq26JtgK8LW0ZL8gr/5h9DFU5JUHbQKWIZMp6JQTdsJWsA73Pj92iQdUNxkbe4wbKhjP
-         HpL0dBvPfnU2eSUFp9PoTDOO12p56VidRpwVA8ifLQJc42W2Ig1P7tF1L9oX2PTuwzkY
-         7zhQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzzntiZ0Ya/+iv+7t+JvQUpYebTTTF5UbKsEcfq1BKuphh7Fei47aTqjlmLx7cGeOtLgqKJ4pTEqg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKt5emhS0p00bHm9Wr2uvMJqrxQ/M29P+dcrIGduBzHepP+EPjv
-	iVfs5b9B6v+3MdQuNHfOJIKxJKxHtPWfUtGiC5rrdZEJ2PxhNKanWJkSYgvE9xD8sSs=
-X-Gm-Gg: AYBFou3AASvmIfbH9WUSelvrEoLThllxYdTq8R7ZdiIHuvwICsr4iHjhmMc+9QYwSlV
-	nRLteR9fS4JN5XJpM4sEuGANQck7Rf2r8cz96yr0xkAVfh/PU5lGavsUKxVI4P+9O5BV2mQAWRx
-	UlJ4//3FpWT3YJTECxMR6+Xp/QK1v84xJqC3l7J9Km8x2vzAxYqD8vDbUjQOYOwr1kxh2H8eMwc
-	N5xupdZRVvHpgwxCI6GX6GogzSM3XlQQuiyfkbM3eGLeYusWbeNMjwE5ANSsTO4HjFbHHNgQSzr
-	W+lbnokSquU8scbDLSht30W7Lmo2X0APasizdfrIyzNSv5EKpLBYTXfY/kk5W9KTl65SlnooKtr
-	FQ6L7OShyqWKJJaE38Gb8v9F0Ze7ghbmZp1cKcWnDKTiNa1iiQD96Z+1U+jX8HosKT6JZzyumcz
-	ddoHq73VBPCS5msMasO8j+dCsG9ZyZtNj9wmUNDx/p6q88/M1KYJOJoxej1gJL/80RNt8LgoyrJ
-	xqxkI6vi7lteiouHWsDeHKwqH4mMQPTEvJieWqx9oPEKROL
-X-Received: by 2002:a05:6512:39c7:b0:5be:4386:8076 with SMTP id 2adb3069b0e04-5be47919a71mr3312425e87.28.1792426863443;
-        Mon, 19 Oct 2026 09:21:03 -0700 (PDT)
-Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com. [209.85.167.46])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5be4a3fcf91sm2205200e87.7.2026.10.19.09.21.03
+        bh=Q8KL6LGvq0FwHTPovYus9FfkhDMRIi4bd+XQz8TiIQM=;
+        b=nw6GE5HtSWavjwLN8Yn6z2kQ++gjK56ZnFU2ZBu0TFe29SkkTI0LsZxOlvjfhqID4Y
+         EI16LuXk3ieaflY6GTRVDd7qI7XQUT4cYwfjdXefu3i+XB25RJXPUTxJxrZa/xuo9Hnj
+         nFRpF+TTTIU/5oFfnA26qfd/CPh13DvkchdXFXrhb/uHw2KC75aY8X07uo6pNjVcLebk
+         C3Q0H+LgXO3F5tbt6FF8iSsAmTcgn7arcbSRDK1u42ciKzklW81OOLuEuWM0fsXZQ0Iu
+         tOeH8NqBWwkKW6f2Ab6WIeD8RRvfBgC7URSFWayyhRCtfpOd3klwHg231X+haHuU4sov
+         2pmg==
+X-Forwarded-Encrypted: i=1; AKwUvBxqMDlF+JW5nLvKQ+x03u31jbHr+QssU1baxkdj10u9fr1AOVe1SjublRdv62n+597fUdesqr0Vyg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIKLP9481ftmTwNkPFpPgPkmO3x+MC2L0cwFSVp82q77rCv4MXD
+	VjyJDtOgUzqLu1AsE0myc3TWWbCi4mjDaZrW+ei01uZuPJ//QF7LuKRe6fKD6UnxbVc=
+X-Gm-Gg: AYBFou1GDhkS0FBtUapeHjBOXnvMDKfTIL0+JzDc2ZaArNMcw22xLD4+W7rVf80AYIv
+	rCoGeiUAuRLiUI51lT5SJJ7CG51wSfYNfolP/km9cgRuEmv17iTwPEPfYR1iOnd3/YnjvNIBr3E
+	8KNYRYAJTKbQPo//dBTBq0bV3Z2y2Rq8GuT2+B5UWhodAvf133KOs2r4XNWB4CENFBuVvYXXQ5O
+	7sBDMWG7A0vS0VTXNITMDRFckWLdz2zotyVqR0ZQZcnFsRsdnYU25fjazRGwfOQHRBNrnhyVTHy
+	irs+uBlXV2wNHLbmxtKgI8gTXPFx3O+i3Q4eJ6ml9JFHZ0Mi2vfGvgwDCxW0p5zFA8AO01TZXZN
+	45Ii+O4Myboj7CsLDole2fg48NcVCjhUnd/VbeN/i8tHa/OnNFKGNnoezM2D76duLEg2H/9ULa9
+	9yaaujzHmVVkOGFDyvEXA62eMf4afdFnSE4/u+jzV3xHYTJ/yOhnvfjsk8Kjnk6EMsXMRz7P2UE
+	WrPI6YjIOheBdiNZNTxYN3CsuoLI6umQbSg7lCUB/5G4nE=
+X-Received: by 2002:a17:907:6ea8:b0:c3f:a2f0:6cb with SMTP id a640c23a62f3a-c419e03a22cmr578682866b.18.1792427582820;
+        Mon, 19 Oct 2026 09:33:02 -0700 (PDT)
+Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com. [209.85.218.51])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c4256c790adsm245978266b.31.2026.10.19.09.33.02
         for <linux-pm@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 19 Oct 2026 09:21:03 -0700 (PDT)
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5bce4e278baso1177998e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 09:21:03 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzBPBhTqUfK2qzmLL6EmXXCQShJ86N5MIsAhB2+COD51rgWBwhHlsTGIJVoC5cfzFKjkNoeonkfqw==@vger.kernel.org
-X-Received: by 2002:a17:906:99c2:b0:c41:825d:ed8c with SMTP id
- a640c23a62f3a-c41825dfa20mr602336266b.26.1792426550419; Mon, 19 Oct 2026
- 09:15:50 -0700 (PDT)
+        Mon, 19 Oct 2026 09:33:02 -0700 (PDT)
+Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-c263415982eso277746966b.0
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 09:33:02 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwQhA9Xei2Zheo2vBAvE8pxpOa0Nl8/V+ft4oD1si5ZmHu8fb1fMJLn09Cixo2ru/zbZwVVYVWGSQ==@vger.kernel.org
+X-Received: by 2002:a17:907:944c:b0:c40:6ed9:b961 with SMTP id
+ a640c23a62f3a-c419a05c502mr618122766b.5.1792427582507; Mon, 19 Oct 2026
+ 09:33:02 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -79,15 +79,15 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1792163045.git.geert+renesas@glider.be> <c38d744c09dffff550a9b882051c211b572b8daf.1792163045.git.geert+renesas@glider.be>
- <20261019155619.GB3705@killaraus.ideasonboard.com>
-In-Reply-To: <20261019155619.GB3705@killaraus.ideasonboard.com>
+References: <cover.1792163045.git.geert+renesas@glider.be> <4524363679c1f2163aca3b3dda2bfbde170d095a.1792163045.git.geert+renesas@glider.be>
+ <20261019160545.GC3705@killaraus.ideasonboard.com>
+In-Reply-To: <20261019160545.GC3705@killaraus.ideasonboard.com>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 19 Oct 2026 18:15:34 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXDgc+NMFQ2HgkngsvyhVd1+yEgnk3DQpyVmVUQ_aLvEA@mail.gmail.com>
-X-Gm-Features: AclHuK_Wqb_TY8SIlHzico7Y9pGZs0pikimfidJslyUcM_WsFGAezgyxmzAMr2w
-Message-ID: <CAMuHMdXDgc+NMFQ2HgkngsvyhVd1+yEgnk3DQpyVmVUQ_aLvEA@mail.gmail.com>
-Subject: Re: [PATCH v4 2/8] clk: renesas: r8a78000: Add SCMI remapping support
+Date: Mon, 19 Oct 2026 18:32:48 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUTz3BR48_Y8_UR9PEjLuavHtN-4uaEKURtqRXFBO0uUA@mail.gmail.com>
+X-Gm-Features: AclHuK84fhnixZiNIMOwb9AdAvJEMnIe-A6l4ZZgkoIEEk378oR8Z0wb7zPZzKY
+Message-ID: <CAMuHMdUTz3BR48_Y8_UR9PEjLuavHtN-4uaEKURtqRXFBO0uUA@mail.gmail.com>
+Subject: Re: [PATCH v4 5/8] pmdomain: Make genpd_get_from_provider() return -EPROBE_DEFER
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
 	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
@@ -107,117 +107,91 @@ Content-Type: text/plain; charset="UTF-8"
 
 Hi Laurent,
 
-On Mon, 19 Oct 2026 at 17:56, Laurent Pinchart
+On Mon, 19 Oct 2026 at 18:05, Laurent Pinchart
 <laurent.pinchart@ideasonboard.com> wrote:
-> On Fri, Oct 16, 2026 at 05:55:41PM +0200, Geert Uytterhoeven wrote:
-> > Extend the Clock Pulse Generator driver for R-Car X5H with SCMI support,
-> > to remap DT clock IDs to abstractions (clocks) offered by the SCMI
-> > firmware when running on a system with SCMI, and SCMI support is
-> > enabled.  Take into account some peculiarities of the current SCMI
-> > firmware implementations, and fall-back to fixed-rate clocks as
-> > replacements for SCMI clocks that are not available.
-> > Support for bus clocks used by serial, I2C, and SPI devices is included.
+> On Fri, Oct 16, 2026 at 05:55:44PM +0200, Geert Uytterhoeven wrote:
+> > Unlike provider-based look-up functions in other subsystems[1],
+> > genpd_get_from_provider() returns -ENOENT instead of -EPROBE_DEFER when
+> > the provider is not found, thus not supporting probe deferral.
+> > Currently this is worked around in of_genpd_add_subdomain() by remapping
+> > -ENOENT[2].
+>
+> But not in the other functions calling genpd_get_from_provider() and
+> propagating the error up. Have you validated that no existing call
+> stacks will break ?
+>
+> > Fix this for all current and future callers by returning -EPROBE_DEFER
+> > instead, and drop the no longer needed remapping code.
 > >
-> > This lets us avoid putting SCMI IDs in DT, and allows us to use the same
-> > hardware description in SoC DTS for systems with and without SCMI
-> > firmware.
+> > [1] of_clk_get_hw_from_clkspec(), __fwnode_reset_control_get()),
+> > [2] Commit 18027d6f392ee8d8 ("PM: domains: Make of_genpd_add_subdomain()
+> >     return -EPROBE_DEFER").
 > >
-> > For now, it is assumed SCMI clock IDs are stable, and match SCP FW
-> > SDKv4.31.0 and later.
-> >
-> > Suggested-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
 > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-> > --- a/drivers/clk/renesas/r8a78000-cpg.c
-> > +++ b/drivers/clk/renesas/r8a78000-cpg.c
-
-> > @@ -94,6 +113,21 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
-> >       return hw;
-> >  }
+> > ---
+> > v4:
+> >   - New.
+> > ---
+> >  drivers/pmdomain/core.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
 > >
-> > +static struct device_node *scmi_find_proto(struct device_node *scmi, u32 proto)
+> > diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> > index 964e44c2f78f1d55..88c886814a5b9da3 100644
+> > --- a/drivers/pmdomain/core.c
+> > +++ b/drivers/pmdomain/core.c
+> > @@ -3021,7 +3021,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+> >  static struct generic_pm_domain *genpd_get_from_provider(
+> >                                       const struct of_phandle_args *genpdspec)
+> >  {
+> > -     struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
+> > +     struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
+> >       struct of_genpd_provider *provider;
+> >
+> >       if (!genpdspec)
 >
-> This is the kind of function name that looks prone to a namespace clash.
-> I'd name it r8a78000_clk_scmi_find_proto().
-
-I deliberately picked that name, as a suggestion for a future common
-helper ;-)
-
-> > @@ -145,7 +184,46 @@ static const struct clk_map *fill_clk_map(struct r8a78000_cpg_priv *priv,
+> Expanding the context:
+>
+> >               return ERR_PTR(-EINVAL);
+> >
+> >       mutex_lock(&of_genpd_mutex);
+> >
+> >       /* Check if we have such a provider in our array */
+> >       list_for_each_entry(provider, &of_genpd_providers, link) {
+> >               if (provider->node == genpdspec->np)
+> >                       genpd = provider->xlate(genpdspec, provider->data);
+> >               if (!IS_ERR(genpd))
 > >                       break;
-> >
-> >               map[i].fw_id = map_in[i].fw_id;
-> > -             map[i].hw = fixed_hws[map[i].fw_id];
-> > +             if (map[i].fw_id >= FIXED_CLK_OFFSET) {
-> > +                     enum fixed_clk idx = map[i].fw_id - FIXED_CLK_OFFSET;
-> > +
-> > +                     map[i].hw = fixed_hws[idx];
-> > +                     continue;
-> > +             }
-> > +
-> > +             scmi_spec.np = scmi_clk_np;
->
-> This seems to be safe because a NULL scmi_clk_np implies usage of the
-> default map, which only contains fixed clock offsets, but that makes the
-> code a bit too fragile for my taste.
-
-Fair enough, I can add a check for a non-zero scmi_clk_np...
-
->
-> > +             scmi_spec.args_count = 1;
-> > +             scmi_spec.args[0] = map[i].fw_id;
-> > +
-> > +             clk = of_clk_get_from_provider(&scmi_spec);
-
-... but please note of_clk_get_from_provider() will return -ENOENT
-in that case.
-
-> > +             if (IS_ERR(clk))
-> > +                     return dev_err_cast_probe(dev, clk,
-> > +                             "Failed to get SCMI clock %u\n", map[i].fw_id);
-> > +
-> > +             hw = __clk_get_hw(clk);
-> > +             if (!hw && fallback != map_in) {
->
-> And if the above is correct, fallback should always be different from
-> map_in when fw_id corresponds to an SCMI clock.
-
-True.
-
-> What issue does this catch ? Should the fw map contain a fixed clock
-> entry for clocks not available in SCMI ?
-
-Originally it had entries for fixed clocks, too, as the firmware
-restricted access to several bus clocks.
-Recent firmware provides access to more bus clocks than before, hence
-I figured it would be better to use the SCMI clock when available,
-and only use the fixed clock when the SCMI clock is not available.
-
-> > +                     for (unsigned int j = 0; fallback[j].dt_id >= 0; j++) {
-> > +                             if (fallback[j].dt_id == map_in[i].dt_id) {
-> > +                                     enum fixed_clk idx = fallback[j].fw_id - FIXED_CLK_OFFSET;
-> > +
-> > +                                     map[i].hw = fixed_hws[idx];
-> > +                                     break;
-> > +                             }
-> > +                     }
-> > +                     if (map[i].hw)
-> > +                             continue;
-> > +             }
-> > +
-> > +             if (!hw) {
-> > +                     /* CLOCK_ATTRIBUTES is not supported */
-> > +                     dev_warn(dev, "SCMI clock %u is NULL\n", map[i].fw_id);
-> > +                     continue;
-> > +             }
-> > +
-> > +             dev_dbg(priv->dev, "SCMI clock %u is %s at %lu Hz\n",
-> > +                     map[i].fw_id, clk_hw_get_name(hw), clk_hw_get_rate(hw));
-> > +
-> > +             map[i].hw = hw;
 > >       }
 > >
-> >       devm_kfree(dev, fixed_hws);
+> >       mutex_unlock(&of_genpd_mutex);
+> >
+> >       return genpd;
+>
+> The for loop seems to imply that we can have multiple providers for the
+> same node. In case a provider fails, the function overrides the error
+> code from -EPROBE_DEFER to whatever the first xlate() returns. That may
+> cause issues for your use case.
+
+The code has been like that since its introduction.  Technically one
+can register multiple providers for the same device node, but one
+can never safely remove one of them, as of_genpd_del_provider() just
+considers the device node, and removes the first matching provider.
+So I think someone just didn't like nesting curly braces, and tried
+to be smart ;-)
+
+> If the of_genpd_providers list doesn't expect multiple providers per
+> device node, I would change the above into
+>
+>         list_for_each_entry(provider, &of_genpd_providers, link) {
+>                 if (provider->node == genpdspec->np) {
+>                         genpd = provider->xlate(genpdspec, provider->data);
+>                         break;
+>                 }
+>         }
+>
+> to make it explicit.
+
+Will do.
 
 Gr{oetje,eeting}s,
 
