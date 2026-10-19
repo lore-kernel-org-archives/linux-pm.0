@@ -1,451 +1,190 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66AC5544D28;
-	Mon, 19 Oct 2026 14:06:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FF934FC358
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 14:09:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418790; cv=none; b=Aq3zbpV97q5+nvmDbxfPgk+cNpjnwwGItBTAPcFz4y/EjBZD6E3gObmJxP0btjjedBpVaUbi39RZYxluXBl/b9A37rOAd5CaR4hv3D2zmuaF4q1zmSAbERsw+bDtJaeQG+57MPwlrj7KGNjF/aPQoxtI0gqaj0qLobb8Xp7/1Ro=
+	t=1792419000; cv=none; b=rsXk11PW2YthT86vZqAyzbsDYvk0cKTYSjX16OMsYL7q5sjE21cuo5W1U/c1HcWhYpd9+rEIp0u4Yrrp4iZ6CAEQVdz5Bn2JKmAJ78rU2iVxFqwO3G2EdafWgMJzHexXn0h2XyJvLISnuZ8ed6Dgrg7BY7uaEN5cmLGO7PSkIUs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418790; c=relaxed/simple;
-	bh=fJkha6LmVu5H1yOlJ6i3ErBwlIkdlgBqVadbQbV8ue0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tbo1yu7LlE/mkhyi1QN4xl6zGR1IcH2K+iXP4WB4bsNOQSeVzho70hlTpqLq5ZdVNcXEPEhIfZTVl5O39kN5PFyWDgNlhqaPRPSjjIng924U4lBMYfC+S21O2dUASPOynp/jaHk4nIrlgGQWLBuy4vxYLwudkq0eNF6YdULXCl4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Zr+1J2Tc; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792419000; c=relaxed/simple;
+	bh=2zRswY1kMWQs0gXfYi4Jh01yqYcUt3kjlN5/njNXAJc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DtS10LoF2jAEt25F1KbH+hDcUaE3leHWz+zcOHZrmn1YARLBEqzpLYdf1U18UU0NM8hjDv3f/IazKs5OTtLQ48aWu/ljOLQ1+VxjzgKeENuuy19tB3fhtsUqCJuCDWdsy4uQVpB5h42APZIlTCPb69kaMqXptiHulDqOi9og30U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Gv4xxKaj; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Ay/qlqwq; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Zr+1J2Tc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 628C71F000C4;
-	Mon, 19 Oct 2026 14:06:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418787;
-	bh=Mn8rlLN/UqIMZ9eBAzfdjMCtR985Ve3IyGFbKAbplhY=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Zr+1J2Tc4zduqbpJXRAB3XzWj1fVVlTtiF1ZrIsIRa8x9bx5X9lZR+KCOPdRrT0aS
-	 MW6FgrAEQTPCUyrB/0sMq22ltzlFsO6RA/0wZBeRdh/GLd/lb65OqxyXT5zsKfAv0M
-	 1HF5tjohdXPv1WG4MfdCKKr1xzacqwTd7+UqmLnxf/iu4SZ9Q2JWXNOHjgZOgSiV/y
-	 qvHaEBxhLcstZwWujZZn+vIt5lHE/fzF3vxcxbsJp6fnqhLk2wb3ZG7rWYC5sjwYEX
-	 2/MzSt49DT2mN7KsEhBFihzBZFvroM0QQyhu4kW9WFUkJBKlAvWiqVQmIrAeKJ8PFe
-	 yBClqJU8HwC4Q==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Tzung-Bi Shih <tzungbi@kernel.org>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Sasha Levin <sashal@kernel.org>,
-	sre@kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-5.15] power: supply: cros_pchg: unregister EC notifier
-Date: Mon, 19 Oct 2026 09:53:07 -0400
-Message-ID: <20261019135441.1420968-496-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
-References: <20261019135441.1420968-1-sashal@kernel.org>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Gv4xxKaj";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Ay/qlqwq"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69JE080H4041091
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 14:09:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	ouV6+Wxc1injxeExVghh4cJm0g67UbarNcdMufji7eI=; b=Gv4xxKaj8Cit20k/
+	57e2jFRI5tvJOAlEdVycQAm7aD75a6O52Om3wlOvEffPEIz+R0cn123su6ldFroY
+	uRCx/1kEWkanakST5W+jF3LNsjT6A4HJTgNuFzwZHm9tHl0YpqhZARp7YiWs7Dvr
+	TXqdcIfDJwEAq+Yy9MF+4Pn9WyIU1y4JkwdQ+J/4MMz+yMFLx31NdZp0pcSi70fc
+	pcSz3jny5qvDcEVP+/z4ILWaxN4gCuNTASCuxVdXLB2XBz5k/Ow+fj6MuWuxiUFw
+	iqQJHvVlIJTLfWaju/LyZAyvF4K2GkUmGJvcoIrwdjEJsTGer+dMo+bA1JWO1jT8
+	eSZsvA==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hdf47hjwe-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 14:09:58 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2dfb24dfedfso19432305ad.2
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 07:09:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1792418997; x=1793023797; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ouV6+Wxc1injxeExVghh4cJm0g67UbarNcdMufji7eI=;
+        b=Ay/qlqwqq05so18r0Zrtc4BzFlB2Z/1uKxSBx6VyXhwjOVfRK9IV8aoDAv6zehF2vT
+         Xa/tXBSGo4IUz65aAvhew006DHycZnvHij6rnvxO5iIdAhCuTz6li8klXDGh9z2JoJpw
+         qnRdgC/CEPlHGvIAyDXfmPjeo/e5MRiqWml6kz2wW8IldmP31964r0JZSvUXkJg/9UoA
+         AYXDjk++DkYgGNAksuoamSxKoTUFzNtIHOG0OGJ9RdezgFbxXMfufrD7ikv7egsCDrU9
+         uJMucWYFJPnhz4A/iDpzsfvQb2dTPO5EN465tXQd9zXsOA6v1+PuopDD0s2gMtc4KThv
+         pyyw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792418997; x=1793023797;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ouV6+Wxc1injxeExVghh4cJm0g67UbarNcdMufji7eI=;
+        b=C52iQCJC5NkWSbohaa/Hots74XZ6ZtclZyV83zvTs1A1u8UQiLF5yPcSyeWYGcqtyr
+         siUnpJGcqZUE/NehUVUztACOup96/5TZyPuYJolFxhoBlJfywzZOwsDFlwunFZi8UEmH
+         CEGaZM+KNnKSuJjrAMp9mjKg7appCP5lB+CpUzqMSR8ywQTH4jmOu+3gPQ6D/6I3AfW4
+         o5JGX7cvUN8lT8S4HX9yOyqzDhDx3lHtGRitpW6JvxmU9ADHSL9kfPTulvs5wyp/mZJ+
+         1JyflKISWAmoEEFMFhNx7zea7u8IbD7AiMlWh9/Oxc+BCeCDaAGnkUl56BnRKBQbT/2C
+         GBKg==
+X-Forwarded-Encrypted: i=1; AKwUvBwuoV3nQP0uTUgOyOj23bfkIPLL32uqvFd10yXXrFFtmk4Uc9H44eLPYzIzyQj+lSqowXCTZWCpmg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIoKnIcN3J07bS1o961DCou5PnjnsiDuR80uQps3eaxwuUGJo3s
+	9Pt8F0mYkzZ2dmv9cD+H3/5TVA8FB9/6L0Loa8JCyzVr3DwGbloUiT+xPLYcdoq9OPfIXTCAq+d
+	Rc/0mJ2it7MbFsTmpPlcCCJXrgYwVFbrywz3LUAc4YQfmMxYkuEHsNhCiur/TFjVL9NzDHw==
+X-Gm-Gg: AYBFou1sGbyW12yewjAXkt43NJ15dlejY92tqaIsRgZPsOG9H2KEUo6x/X/F5cDA1pm
+	rT/qp9eT+C1ni1uyQ0FbNor5SYlobiG99vXRWpHL6raNohNnzs9W7S1ouNo58kK4sCWT0di8ZG5
+	wVUwqiyyAK8B3g2emCZ06Dk4LfMjR+f81dcUF6J5rXmmuLzxB+g4caURbbrm/tbbr4NhpqrfNxv
+	n7Cmqe0tOuRSweIMebM/r6mQzuw/L4lanbYPW3eEplkIk2EVe/vCWV2SdbXynI1IfC11I8ST7ky
+	ZkzRmszlJ4Wz5s32YHnuKnDE1gB0FD+qE9aQ7Ro44PQ6tMt3lFJo0NH5jjwSKFgoHuVA79rc8+3
+	nFP/mYcjmuxcXBLMFbYM2cmWuO95d
+X-Received: by 2002:a17:902:f54a:b0:2df:35f1:8771 with SMTP id d9443c01a7336-2e9a6c24bccmr68072275ad.54.1792418997292;
+        Mon, 19 Oct 2026 07:09:57 -0700 (PDT)
+X-Received: by 2002:a17:902:f54a:b0:2df:35f1:8771 with SMTP id d9443c01a7336-2e9a6c24bccmr68071855ad.54.1792418996622;
+        Mon, 19 Oct 2026 07:09:56 -0700 (PDT)
+Received: from [192.168.1.9] ([106.222.233.74])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ea151e1b09sm1459455ad.69.2026.10.19.07.09.48
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 19 Oct 2026 07:09:55 -0700 (PDT)
+Message-ID: <84ec68fa-358d-4339-aefd-ed100a4b7da5@oss.qualcomm.com>
+Date: Mon, 19 Oct 2026 19:39:47 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.18.57
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/6] dt-bindings: thermal: thermal-zones: add
+ hardware-binning trip properties
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Randy Dunlap
+ <rdunlap@infradead.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+References: <20261002-thermal_bin-v1-0-5a29be7e8ec5@oss.qualcomm.com>
+ <20261002-thermal_bin-v1-1-5a29be7e8ec5@oss.qualcomm.com>
+ <20261013-jolly-abiding-wolf-bab43e@quoll>
+Content-Language: en-US
+From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <20261013-jolly-abiding-wolf-bab43e@quoll>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-ORIG-GUID: Xpn8v1zhacD_dxEndSqIasEJjHhomH3h
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE5MDA1NiBTYWx0ZWRfX3+zQLoVAfjO2
+ vm2CWpIYfIFl8NQ0QhIFCcBdfLPrTlmprzaxHLNnPxJcTHpfVbhV9XozBl9ZQ/p2EjtwcmJgCN8
+ b1pqh32gMdKYGteLV0g2NNSr6Jh5pBa/fw1FMWuYqeBxyFxF2NkWHrclbOZ39sAP5nhKdUWt2GN
+ Z4tJ4JTj17Hbt7guSNYxNm0s4vbcNpDmZXfu7E9N5HlByrXfGf9oJ9JzDVle9meHY8VDSmj9Yme
+ +BHZN63Aq+XGHlpQRwtOnqviHif0sJb6NlMZuUyeylab31ETDVX+244rSV+fxyzDixWqibbLkKf
+ TBF/U1Sq77JL3kY6w3OjAFwiqvP8N9IakXKNcEVKIMa740Nn065s4G6ZEImnz2Yg30EdGQfOq5m
+ UvMG7XNgKzOF+b2KDMQbOXczRhFLWU23WbvhtVBwAH5JgLQEmYKgjLHC0t41qQqyNdhatuIqw2t
+ mLqoNTGeL0ecx/FC8ag==
+X-Proofpoint-GUID: Xpn8v1zhacD_dxEndSqIasEJjHhomH3h
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE5MDA1NiBTYWx0ZWRfX6LiknYxYGPtf
+ GmMt58OJkR6ChZhZyrLmbFbdXgRUCphFw4H4CPCoqbKXFq/tyYLqZyNAp5hHLfds55TZgKlQLrI
+ QPkc7qJ2mpz4UE5OeyQlGJPqev0QqNg=
+X-Authority-Analysis: v=2.4 cv=cLt1IVeN c=1 sm=1 tr=0 ts=6ad624b6 cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=A3JsiXT2jxe2NWqPQ1aCbg==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=EUspDBNiAAAA:8 a=-zH7FtNjIyeSShpWrKEA:9 a=QEXdDO2ut3YA:10
+ a=uG9DUKGECoFWVXl0Dc02:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-19_04,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 malwarescore=0 phishscore=0 spamscore=0 clxscore=1015
+ priorityscore=1501 impostorscore=0 lowpriorityscore=0 bulkscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610190056
 
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 
-[ Upstream commit 631adfa03595c63b2a621cdc62db60bb1ce5f91c ]
 
-cros_pchg_probe() registers an EC event notifier whose callback uses the
-devm-allocated charger_data via container_of().  The driver has no
-remove callback and does not unregister the notifier, so the notifier
-chain can retain a pointer to freed driver state after unbind or probe
-cleanup.
+On 10/13/2026 11:54 AM, Krzysztof Kozlowski wrote:
+> On Fri, Oct 02, 2026 at 04:16:56PM +0530, Gaurav Kohli wrote:
+>> From: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+>>
+>> Differences in SoC packaging can be used to provide multiple SoC SKUs at
+>> different thermal and performance characteristics. The underlying SoC
+>> remains the same except for how much heat the packaging can dissipate,
+>> thereby influencing the critical trip point at which an SoC SKU needs to
+>> be throttled. This SKU-specific data is typically burned into fuses
+>> during manufacturing and can be read back at runtime.
+>>
+>> Add two optional trip-point properties to describe this:
+>>
+>>    - 'temperature-bin': an array of per-bin trip temperatures, used
+>>      instead of 'temperature' when the trip depends on the hardware
+>>      revision encoded in fuses.
+>>
+>>    - 'thermal-hw-bin': one or more bitmask groups describing the hardware
+>>      revisions for which a trip point is valid, modeled on the
+>>      'opp-supported-hw' property of the OPP framework.
+>>
+>> Signed-off-by: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+>> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>> ---
+>>   .../devicetree/bindings/thermal/thermal-zones.yaml | 53 +++++++++++++++++++++-
+>>   1 file changed, 52 insertions(+), 1 deletion(-)
+> 
+> 10 days was enough for replies to feedback, so dropping from patchwork.
 
-Register a devm cleanup action immediately after the notifier is
-installed so the notifier is unregistered before the driver state is
-released.  Also fail probe if the notifier cannot be registered, instead
-of leaving a charger device that cannot receive EC events.
+Hi Krzysztof,
 
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
-Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Link: https://patch.msgid.link/20260615063105.39152-1-pengpeng@iscas.ac.cn
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
+Apologies for the delayed response. I was away on leave.
+Working through the Sashiko comments and will post a v2 addressing
+them.
 
-LLM Generated explanations, may be completely bogus:
-
-## Phase 1: Commit message forensics
-
-**Step 1.1: Subject line**
-Record: `[power: supply: cros_pchg]` `[unregister]` `[stop leaving an EC
-event notifier pointing at freed charger state]`
-
-**Step 1.2: Tags**
-Record:
-- `Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>` (author)
-- `Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>` (Chrome OS platform
-  maintainer)
-- `Link:
-  https://patch.msgid.link/20260615063105.39152-1-pengpeng@iscas.ac.cn`
-- `Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>`
-  (power-supply maintainer; applied the patch)
-- No `Fixes:`, no `Cc: stable`, no `Reported-by`, no `Tested-by`, no
-  syzbot/CVE tags (absence is expected)
-
-**Step 1.3: Body**
-Record:
-- **Bug:** `cros_pchg_probe()` registers `charger->notifier` on the
-  parent Chrome OS EC `event_notifier` chain. The callback uses
-  `container_of()` to recover `struct charger_data`, which is
-  `devm_kzalloc()`’d. The platform driver has no `.remove` and never
-  unregisters the notifier.
-- **Symptom:** After unbind/module unload (and, as claimed, probe
-  unwind), the parent EC chain still holds a pointer into freed driver
-  state. The next EC MKBP event can call into that freed object.
-- **Root cause:** Notifier lifetime is tied to the parent
-  `cros_ec_device`, not to the child pchg platform device.
-- **Fix:** `devm_add_action_or_reset()` immediately after successful
-  register; also fail probe if register fails instead of leaving a
-  charger that cannot receive events.
-- **Versions:** none stated in the message.
-
-**Step 1.4: Hidden bug fix?**
-Record: Not hidden. This is an explicit use-after-free / dangling-
-notifier fix. The “fail probe on register failure” part is a real
-correctness fix, not a feature.
-
-## Phase 2: Diff analysis
-
-**Step 2.1: Inventory**
-Record:
-- File: `drivers/power/supply/cros_peripheral_charger.c` (`+11 / -2`)
-- Functions: new `cros_pchg_unregister_notifier()`; `cros_pchg_probe()`
-  changed
-- Scope: single-file surgical fix
-
-**Step 2.2: Code flow**
-Record, from the pre-fix file (`631adfa03595c^`):
-- **Before:** After registering ports, probe does
-  `blocking_notifier_chain_register(&ec_dev->ec_dev->event_notifier,
-  nb)`. On failure it only logs and still `return 0`. There is no
-  `.remove`. `charger` is released by devm on unbind.
-- **After:** Register failure returns `dev_err_probe(...)`. On success,
-  `devm_add_action_or_reset(dev, cros_pchg_unregister_notifier,
-  charger)` unregisters from `charger->ec_device->event_notifier` before
-  other devm resources (including `charger`) are freed.
-  `devm_add_action_or_reset()` also runs the unregister callback if
-  adding the action itself fails.
-
-**Step 2.3: Bug mechanism**
-Record: **Use-after-free / dangling notifier (memory safety + ref-
-lifetime).** Secondary logic fix: probe no longer succeeds without a
-working notifier. Not a leak-only cleanup.
-
-Verified mechanism:
-- `cros_ec_notify()` does `container_of(nb, struct charger_data,
-  notifier)` then `cros_pchg_event(charger)`.
-- Parent EC IRQ path `cros_ec_handle_event()` /
-  `cros_ec_report_events_during_suspend()` call
-  `blocking_notifier_call_chain(&ec_dev->event_notifier, ..., ec_dev)`
-  in `drivers/platform/chrome/cros_ec.c`.
-- The pchg device is an MFD child (`cros-ec-pchg` in
-  `drivers/mfd/cros_ec_dev.c`), added when `EC_CMD_PCHG_COUNT` reports
-  ports. The chain lives on the parent `cros_ec_device`, which outlives
-  a child unbind / `rmmod` of `CHARGER_CROS_PCHG`.
-
-**Step 2.4: Fix quality**
-Record: Obviously correct and the same pattern already used by
-`cros_usbpd-charger.c`. Minimal. Regression risk is low: `devm` LIFO
-order unregisters before `charger` is freed; unregister is only
-scheduled after a successful register. Failing probe when notifier
-registration fails is stricter but matches sibling Chrome EC drivers
-(`rtc-cros-ec`, `cros_ec_keyb`, `extcon-usbc-cros-ec`).
-`blocking_notifier_chain_register()` rarely fails.
-
-## Phase 3: Git history
-
-**Step 3.1: Blame**
-Record: Notifier registration and the missing remove hook come from
-`56d629af09b9d` (“power: supply: PCHG: Peripheral device charger”,
-2021-07-16). That commit is an ancestor of `v5.15` (`git merge-base
---is-ancestor` exit 0 for v5.15, 1 for v5.14). The bug is old, not last-
-month code.
-
-**Step 3.2: Fixes: tag**
-Record: None. Introducer is `56d629af09b9d`, present in this tree.
-
-**Step 3.3: File history**
-Record (recent, this file): `631adfa03595c` (this fix), `d6486a13665e9`
-(ID table), `97dd69b1ade16` (resume sync). No prerequisite refactor.
-Standalone, not `patch X/Y`.
-
-**Step 3.4: Author**
-Record: Pengpeng Hou has one other power-supply commit here
-(`cw2015_battery` MODULE_DEVICE_TABLE). Not the subsystem maintainer.
-Weight comes from reviewer Tzung-Bi Shih (Chrome platform) and applier
-Sebastian Reichel (power-supply).
-
-**Step 3.5: Dependencies**
-Record: Uses `devm_add_action_or_reset()` and `dev_err_probe()`, both
-long-standing. No new helpers. Can apply standalone. No revert of this
-commit found.
-
-## Phase 4: Mailing list
-
-**Step 4.1: Original discussion**
-Record: `b4 dig -c 631adfa03595c` matched
-https://patch.msgid.link/20260615063105.39152-1-pengpeng@iscas.ac.cn
-(v1 only; subject used `cros_peripheral_charger`, maintainer retitled to
-`cros_pchg`). Thread saved via `b4 dig -m`.
-
-**Step 4.2: Recipients / review**
-Record (`b4 dig -w`): To/Cc included Sebastian Reichel, linux-pm, linux-
-kernel, Benson Leung, Tzung-Bi Shih, Guenter Roeck, chrome-platform.
-Tzung-Bi’s only comment was a subject-line nit; `Reviewed-by` “with or
-without this”. Sebastian applied it (“Applied, thanks!”). No NAKs, no
-stable nomination in-thread.
-
-**Step 4.3: Bug report**
-Record: No user crash/syzbot report. A later duplicate submission
-(Hongyan Xu / Patchew) says the same hole was found by static analysis.
-That still describes a real UAF, not a style nit.
-
-**Step 4.4: Series**
-Record: Single standalone patch (`[1/1]`).
-
-**Step 4.5: Stable list**
-Record: lore.kernel.org/stable search returned HTTP 403. UNVERIFIED
-whether anyone already asked for this on stable@. No evidence it was
-rejected.
-
-## Phase 5: Semantic / call graph
-
-**Step 5.1: Functions**
-Record: `cros_pchg_unregister_notifier` (new), `cros_pchg_probe`
-(modified). Callback still `cros_ec_notify` → `cros_pchg_event`.
-
-**Step 5.2: Callers**
-Record: `cros_pchg_probe` is the platform `.probe` for `cros-ec-pchg`.
-Instantiated from `ec_device_probe()` in `cros_ec_dev.c` when the EC
-reports PCHG ports. `cros_ec_notify` is invoked from the parent EC
-IRQ/event path (`cros_ec_irq_thread` → `cros_ec_handle_event` →
-`blocking_notifier_call_chain`). That is a live interrupt/event path,
-not init-only.
-
-**Step 5.3: Callees**
-Record: `blocking_notifier_chain_register/unregister`,
-`devm_add_action_or_reset`, `dev_err_probe`. No new allocations or locks
-beyond the notifier API.
-
-**Step 5.4: Reachability**
-Record: Userspace can trigger unbind (`/sys/bus/platform/drivers/cros-
-ec-pchg/unbind`) or `rmmod` when `CONFIG_CHARGER_CROS_PCHG=m`. After
-that, any EC MKBP event on the still-live parent walks the dangling
-notifier. Unprivileged users cannot usually unbind, but module unload,
-sysfs unbind, and parent teardown are real. After UAF,
-`cros_pchg_event()` walks `charger->ports[]` and may call
-`power_supply_changed()` — crash or memory corruption.
-
-**Step 5.5: Similar patterns**
-Record: Sibling `cros_usbpd-charger.c` already uses
-`devm_add_action_or_reset(..., cros_usbpd_charger_unregister_notifier,
-...)`. Other Chrome EC clients (`rtc-cros-ec`, `cros_ec_keyb`, `extcon-
-usbc-cros-ec`) unregister in `.remove`. This driver was the outlier.
-
-## Phase 6: This checkout
-
-**Step 6.1: Buggy code in this tree?**
-Record: Local tree is **v7.3-rc4** (`git describe HEAD` =
-`v7.3-rc4-27-gf0100363d8c37`, `VERSION=7 PATCHLEVEL=3 SUBLEVEL=0
-EXTRAVERSION=-rc4`). File exists. Driver introduced in v5.15; notifier
-bug present from that introduction. Pre-fix probe (shown via `git show
-631adfa03595c^`) matches the candidate diff. `git merge-base --is-
-ancestor 631adfa03595c HEAD` succeeds (the fix is already on this
-mainline branch, as expected for a candidate sourced from it).
-
-**Step 6.2: Backport difficulty**
-Record: Clean apply on this file. Surrounding probe logic is the
-original 2021 structure plus later resume/ID-table work; this hunk does
-not depend on those.
-
-**Step 6.3: Related fixes already here**
-Record: This is the fix. No earlier alternate fix on the file. No
-revert.
-
-## Phase 7: Subsystem context
-
-**Step 7.1:**
-Record: `drivers/power/supply/` Chrome OS EC peripheral charger.
-**IMPORTANT** (not core mm/vfs, but default-on for
-`CONFIG_MFD_CROS_EC_DEV` Chromebooks with stylus/WLC ports).
-
-**Step 7.2:**
-Record: File is mature; few commits since 2021. Not a newly landed
-subsystem.
-
-## Phase 8: Impact and risk
-
-**Step 8.1: Who is affected**
-Record: Chrome OS EC machines with peripheral charge ports
-(`EC_CMD_PCHG_COUNT` > 0). `CONFIG_CHARGER_CROS_PCHG` defaults to
-`MFD_CROS_EC_DEV`. Driver-specific, not universal.
-
-**Step 8.2: Trigger**
-Record: Successful probe, then unbind/rmmod/MFD child removal while the
-parent EC device (and its IRQ) remain. Not every boot. Timing-dependent
-once the dangling notifier is left on the chain: the next PCHG (or any)
-EC event walks the chain. `cros_ec_notify` returns `NOTIFY_DONE` for
-non-PCHG events but **after** `container_of()` — so *any* EC event after
-unbind is already a UAF.
-
-**Step 8.3: Failure mode**
-Record: Use-after-free in notifier callback → kernel oops or memory
-corruption. **Severity: HIGH.**
-
-**Step 8.4: Risk/benefit**
-Record: **Benefit: high** for Chromebooks that unbind or unload this
-driver (and for teardown races). **Risk: very low** (13 lines,
-established `devm` pattern, Chrome maintainer review). Ratio favors
-backport.
-
-## Phase 9: Synthesis
-
-**Step 9.1: Evidence**
-
-For:
-- Real dangling-notifier UAF: parent EC chain keeps `notifier_block`
-  inside `devm`-freed `charger_data`
-- Any post-unbind EC event is UAF (even events this driver ignores)
-- Small, obviously correct, matches `cros_usbpd-charger.c`
-- Reviewed by Chrome platform maintainer; applied by power-supply
-  maintainer
-- Driver present since v5.15; no extra dependencies
-- Fail-probe-on-register-failure avoids a half-working charger
-
-Against:
-- No `Reported-by` / syzbot / production crash (static analysis)
-- Affects only Chrome OS PCHG hardware
-- Unbind is not the common path on always-on Chromebooks
-- Slightly stricter probe (register failure now fails the device)
-
-Unresolved:
-- Stable@ discussion (lore 403)
-- How often users actually unbind this device in the field
-
-**Step 9.2: Stable rules**
-1. Obviously correct and tested? **PASS** — pattern is standard;
-   maintainer Reviewed-by + applied
-2. Real bug affecting users? **PASS** — UAF after unbind/unload while
-   parent EC is live
-3. Important (crash/security/corruption)? **PASS** — UAF →
-   oops/corruption, HIGH
-4. Small and contained? **PASS** — 13 lines, one file
-5. No new features/APIs? **PASS**
-6. Can apply to this tree? **PASS** — file and APIs exist; hunk is self-
-   contained
-
-**Step 9.3: Exception category**
-Record: None needed; this is a normal UAF bugfix.
-
-**Step 9.4: Decision**
-This is a classic stable-worthy UAF: the child’s notifier is left on a
-parent-owned chain. The local 7.3 tree has this driver; the fix is small
-and matches existing Chrome EC practice. Trigger is unbind/teardown
-rather than every boot, but the failure mode is a kernel UAF, which
-stable takes.
-
-What it solves for stable users: Chromebooks with peripheral chargers no
-longer keep a freed `charger_data` on the EC event chain after driver
-unbind, module unload, or MFD child removal, so a later EC interrupt
-cannot oops or corrupt memory in `cros_ec_notify()`.
-
-Risk vs benefit: very low risk, high benefit on the machines that hit
-teardown. No prerequisites beyond the driver itself.
-
----
-
-Verification:
-- [Phase 1] Parsed tags: Reviewed-by Tzung-Bi Shih; Link to msgid; no
-  Fixes/stable/syzbot
-- [Phase 1] Body describes dangling notifier after unbind; verified
-  against pre-fix source
-- [Phase 2] Diff: +11/-2 in `cros_pchg_probe` plus
-  `cros_pchg_unregister_notifier`; fail probe on register error
-- [Phase 2] Pre-fix file from `git show 631adfa03595c^`: register then
-  `return 0`; no `.remove`
-- [Phase 2] Post-fix file: `devm_add_action_or_reset` after successful
-  register
-- [Phase 3] `git blame`: notifier register from `56d629af09b9d` (2021);
-  `git merge-base --is-ancestor` → in v5.15, not v5.14
-- [Phase 3] `git log --oneline -20 --
-  drivers/power/supply/cros_peripheral_charger.c`: standalone, not a
-  series
-- [Phase 3] No revert of this commit
-- [Phase 4] `b4 dig -c 631adfa03595c`: lore thread found; v1 only
-- [Phase 4] `b4 dig -w`: Chrome/power-supply maintainers CC’d
-- [Phase 4] `b4 dig -m`: Tzung-Bi Reviewed-by (subject nit only);
-  Sebastian applied; no NAK
-- [Phase 4] Duplicate later patch (Hongyan Xu) notes static-analysis
-  origin
-- [Phase 4] lore.kernel.org WebFetch 403 — stable@ history UNVERIFIED
-- [Phase 5] `cros_ec_handle_event` / resume path call
-  `blocking_notifier_call_chain` on the same `event_notifier`
-- [Phase 5] MFD cell `cros-ec-pchg` in `drivers/mfd/cros_ec_dev.c` when
-  `pchg_count.port_count != 0`
-- [Phase 5] Sibling `cros_usbpd-charger.c` already uses the same `devm`
-  unregister pattern
-- [Phase 6] `git describe HEAD` = v7.3-rc4-27-gf0100363d8c37; `make
-  kernelversion` = 7.3.0-rc4
-- [Phase 6] Driver and APIs present; fix is self-contained on this tree
-- [Phase 8] UAF on any EC event after unbind: `container_of` happens
-  before the PCHG event-type check
-- UNVERIFIED: field frequency of unbind; whether stable@ already
-  discussed it
-
-The fix is small, surgical, and meets the stable criteria for a real
-UAF.
-
-**YES**
-
- drivers/power/supply/cros_peripheral_charger.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/cros_peripheral_charger.c b/drivers/power/supply/cros_peripheral_charger.c
-index 962a6fd298323..48e10e872d1bd 100644
---- a/drivers/power/supply/cros_peripheral_charger.c
-+++ b/drivers/power/supply/cros_peripheral_charger.c
-@@ -259,6 +259,14 @@ static int cros_ec_notify(struct notifier_block *nb,
- 	return cros_pchg_event(charger);
- }
- 
-+static void cros_pchg_unregister_notifier(void *data)
-+{
-+	struct charger_data *charger = data;
-+
-+	blocking_notifier_chain_unregister(&charger->ec_device->event_notifier,
-+					   &charger->notifier);
-+}
-+
- static int cros_pchg_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -346,9 +354,10 @@ static int cros_pchg_probe(struct platform_device *pdev)
- 	ret = blocking_notifier_chain_register(&ec_dev->ec_dev->event_notifier,
- 					       nb);
- 	if (ret < 0)
--		dev_err(dev, "Failed to register notifier (err:%d)\n", ret);
-+		return dev_err_probe(dev, ret, "Failed to register notifier\n");
- 
--	return 0;
-+	return devm_add_action_or_reset(dev, cros_pchg_unregister_notifier,
-+					charger);
- }
- 
- #ifdef CONFIG_PM_SLEEP
--- 
-2.53.0
+> 
+> Best regards,
+> Krzysztof
 
