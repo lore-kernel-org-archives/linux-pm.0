@@ -1,363 +1,195 @@
-Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-m103131191187.xmail.ntesmail.com (mail-m103131191187.xmail.ntesmail.com [103.131.191.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20D0D4B4058
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 10:04:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58939498922;
+	Mon, 19 Oct 2026 10:05:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.131.191.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792404296; cv=none; b=eJzUEuV+fRj50ZIbue7E3OPo7t4Uti+4s77pUrJTYJPszf9+N8Bv6a8CAM+PI7fq7Nxy0ShZ61ITLawIFJC+qHYwI76isUGFsNeEbUP1wChmkR/920/AfCOH/MEOsc/g8DdSFQWmUw8a4QZwR/4Vxz3UmyB0m6R4JIPdInD+QT0=
+	t=1792404338; cv=none; b=TJIh8cM1vs/AwGKzcNfgxtI98IHUbqb1D0dMcCmf/ZqKZhemFwei2MmaUF51l6AbZ9R1bUmDlv/wugwQ/nlxs09OyYkBqz2mXA32fPT+f/Y9msQrML/TSVc0QRCOsIssswv15pJUQlxQcMlxoNV9wGqw6910Qgy0Fu+LseaoCuY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792404296; c=relaxed/simple;
-	bh=vTbgxdJuUc8bPT6jOJqWQoEAVh5xzYo4Dkan0XX08wk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=K16b1YRPUmn3HWUlgBWzi7cnp+ad22s2s4DrZQGKhJpjj6c4LgAFexlfVlFVU5xCQe0xO11WUm0zGa09JPNK5Ex9RR4nnp6XLRBOJ1xR0CFf2Mhm1XasOf0R8Ca/uaxRadsIx0MIkCtbXP8EhZmhrJxPd+0ySsqCKzduEQ57twI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ap4v9b5+; arc=none smtp.client-ip=209.85.167.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1792404338; c=relaxed/simple;
+	bh=aP6gpqF3SRKV+cz/DZ3F4I5kr6Ch5wFAFsX4kBbIe6E=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=CThoDaqtWBwNXr5L8j/sl5MGZjDFAB1I7+xsdO750MblLVR9kJkGq0QSGNWmpVaDYcPgMYSsrBrt7GmyF6uXLNAXXtC9W2ynz4z4YbVN/Hgk32YFyRusAmDT4gG4SSJWnuYtlZsVzT40Q5k587vkD7Ny8HUx5ZRbYTWiBFVPolI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=OzAuOrMS; arc=none smtp.client-ip=103.131.191.187
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ap4v9b5+"
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5be469d4f9fso1610253e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 03:04:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792404292; x=1793009092; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Dgj4UbbyEsyRyIW26kcdyCzSX0/3ndCVzhgrPch3x2A=;
-        b=Ap4v9b5+b5RpMrab8DGEZL/Jbjhc4UJFufNVL5Wa3/cJr4FXZWOfmlZYnJ2yGisTBl
-         yCo8OXR7ZA7aa5CTAhyE9O269JjcdwI/4jgJrwxAqzOHUcTvDZs0Md3CrfPL5DsVoVVK
-         YzO9yzJrVescbfec+pxHUWCSPQuispWDd2cKU8bXnPLPI3EFme/9Zq3w9L52xV5c8VWS
-         rCFeleSWqEitCrj+ZX7f0ymk9daO0cPOSiMnDp5HRkI6n9bxu9vhv1p9OFxnXaKaDm2G
-         8bh3ZKCBVt3euPwtiM1dbxUVPkBcp1uCHaFBfh83UEpfenrd3HCuxL79p2ByH6PpMNA2
-         Gtpg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792404292; x=1793009092;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Dgj4UbbyEsyRyIW26kcdyCzSX0/3ndCVzhgrPch3x2A=;
-        b=UEQrY3OEWZoXHpKruju0akCGqcJUsz0Dl/IVBvox4trPz3Twd0szV1Sz38GLsYvpjv
-         G6E8tps/5yeUVuADHx4Tl8EG91RuHHAmZYZajKCigGIEEO5LhsoNx1XORojbgXBNVLU5
-         iAl/1x8m+HNtjEN3ebPVw/8ea7WESvYfiw/IC3d3yp9MPWM7oDkQxOK9GGyjbe+MWYMn
-         WbVmKJcXfn2iBE6zG+s2SiL42I5Ck+wvbvybAWno2FM6aXoau5Igm7Jt/1el/bIgXMdb
-         /odZns6iTF46wzlq1M0QkdIz5jnD35aTbPZ58o9wG6fDHSpD52G6QIB+eHqm9AMYu7jU
-         InBA==
-X-Forwarded-Encrypted: i=1; AKwUvBxJIbVIcL6G7Hw0ONnrT0kzpbguHLIQMavASj2ckM5btV8/D1ng3eQ/LTa/s5LRIJbibNmGhGHeKg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL/Qa5Rz2UnJq+VJddGxgG5e2v5iNT31BizeqF+P04iTKSMezed
-	TtED4WQbQEMs8FmdWGzZc2WuoLXVWODkmStizjaIHbGqeHYbf398zgHMzsUYfA==
-X-Gm-Gg: AYBFou0mDnICWnJIS+jWNwVmpNkovarFchPoO7VxAfw3RAx3bRRn1TO8xtNwROFSLh0
-	HyGV7CeUtbrrhLypR1Mjta0GylIK+K0gZtqCHuDp2dpuexEJWHVtTkcNKVnjXYMdZVB9wFq/Ha4
-	i5RciHRfD3oNeBMCg4s5dvEuICFJVkheWZ17IJxEAceB/6olF0c4RL6SBf8PwUYE4z/Hpx7Oj5h
-	QLcJR+SCZJWP2ZprLBqAUjRHNWIBhmqlhbz1YUXX1ZH2AkW9E0ImCRyb8gEuqBc5NPxXuge0wq9
-	7lGY/IrAU4y4a29Bko3/KV8al9mGCRKOek4dwOYPA815hcvFVQuJJzP/RTLlIzOacmpjNmq1pm9
-	qXNXq4vZAIN/PQj1IxUo6vTokpfaaAi226YzNASdub4kF0F7o90K4amm+ke853IfpE5wWOOjtvL
-	ZOjh9ibU1tOyO816v703JQeXaE+TQLCHZeAEJIXZn/CE54ts9gF9jhVQVNy3qADq6ni+paX6mWY
-	tfsxmOXD0FeV8P6Aic=
-X-Received: by 2002:a05:600c:3e85:b0:4a0:25d5:e853 with SMTP id 5b1f17b1804b1-4a1d7631660mr137987405e9.35.1792404278100;
-        Mon, 19 Oct 2026 03:04:38 -0700 (PDT)
-Received: from xeon ([188.163.112.62])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a1df164777sm177811485e9.5.2026.10.19.03.04.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2026 03:04:36 -0700 (PDT)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Lee Jones <lee@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Svyatoslav Ryhel <clamor95@gmail.com>,
-	Ion Agorria <ion@agorria.com>,
-	=?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
-	Florian Krischer <florian.krischer@fkr.dev>
-Cc: devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-input@vger.kernel.org,
-	mfd@lists.linux.dev,
-	linux-leds@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v12 7/7] power: supply: Add charger driver for Asus Transformers
-Date: Mon, 19 Oct 2026 13:04:06 +0300
-Message-ID: <20261019100406.103687-8-clamor95@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261019100406.103687-1-clamor95@gmail.com>
-References: <20261019100406.103687-1-clamor95@gmail.com>
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="OzAuOrMS"
+Received: from [172.16.12.48] (unknown [61.154.14.86])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 518c72105;
+	Mon, 19 Oct 2026 18:05:22 +0800 (GMT+08:00)
+Message-ID: <dd24624f-25cf-4f1f-aafe-064c22b0226c@rock-chips.com>
+Date: Mon, 19 Oct 2026 18:05:20 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Cc: shawn.lin@rock-chips.com, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, detlev.casanova@collabora.com,
+ finley.xiao@rock-chips.com, zhangqing@rock-chips.com, inindev@gmail.com,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, gahing@gahingwoo.com
+Subject: Re: [PATCH 1/2] pmdomain: rockchip: Manage the RK3576 GPU domain
+ supply
+To: Leonard Lausen <leonard@lausen.nl>, heiko@sntech.de, ulfh@kernel.org
+References: <20261019092417.391522-1-leonard@lausen.nl>
+ <20261019092417.391522-2-leonard@lausen.nl>
+From: Shawn Lin <shawn.lin@rock-chips.com>
+In-Reply-To: <20261019092417.391522-2-leonard@lausen.nl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa1539f76c503a4kunm93d66b22706dd2
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlDSh1MVh8fThgfQx4fSEpPGVYVFA
+	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSE
+	pKQk1VSktLVUpCWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=OzAuOrMSSc4NEyK3dbA+prFmbfSJSxw5HEAON51DvF6GTPJVffqPDlex3dFUBRy2S9HvYOPftQFIgl4fA7JvkPCNi5LZ7D9ENmebMHjkcDak22FxF26WQsuQpxniuyaMosRo5/Uhu85VIqI5d2Uw1iAQcEZXPr6Z44eOMxaejwk=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=217PjOf4FEFkv0Sop8OiYO8Cf7p7mV1hzNZL4FLAjcY=;
+	h=date:mime-version:subject:message-id:from;
 
-From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 
-Add support for charger detection capabilities found in the embedded
-controller of ASUS Transformer devices.
+在 2026/10/19 星期一 17:24, Leonard Lausen 写道:
+> On the NanoPi M5, boot hangs during Panfrost initialization. Before this
+> fix, booting required blacklisting Panfrost on the kernel command line.
+> Loading Panfrost after boot reports a GPU power-domain acknowledgment
+> timeout:
+> 
+>    failed to get ack on domain 'gpu', val=0x113ff
+> 
+> Add regulator support to the RK3576 domain descriptors and mark the GPU
+> domain as regulator-dependent. This lets the existing Rockchip
+> power-domain regulator handling manage the GPU domain supply.
+> 
+> A corresponding domain-supply property is needed in the board DT.
+> 
+> The regulator-capable descriptors are based on the regulator support in
+> Jiaxing Hu's pending RK3576 NPU enablement series, without its NPU settle
+> delay changes.
+> 
 
-Suggested-by: Maxim Schwalm <maxim.schwalm@gmail.com>
-Suggested-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/power/supply/Kconfig                  |  11 +
- drivers/power/supply/Makefile                 |   1 +
- .../supply/asus-transformer-ec-charger.c      | 208 ++++++++++++++++++
- 3 files changed, 220 insertions(+)
- create mode 100644 drivers/power/supply/asus-transformer-ec-charger.c
+It looks correct to me after checking TRM that PD_GPU need a VD_GPU on
+this Soc.
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 856eb81c97ae9..16d0a38b41b7e 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -508,6 +508,17 @@ config CHARGER_88PM860X
- 	help
- 	  Say Y here to enable charger for Marvell 88PM860x chip.
- 
-+config CHARGER_ASUS_TRANSFORMER_EC
-+	tristate "Asus Transformer's charger driver"
-+	depends on MFD_ASUS_TRANSFORMER_EC
-+	help
-+	  Say Y here to enable support AC plug detection on Asus Transformer
-+	  Dock.
-+
-+	  This sub-driver supports charger detection mechanism found in Asus
-+	  Transformer tablets and mobile docks and controlled by special
-+	  embedded controller.
-+
- config CHARGER_PF1550
- 	tristate "NXP PF1550 battery charger driver"
- 	depends on MFD_PF1550
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index bec4a6263048c..cd3640f4b7480 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -69,6 +69,7 @@ obj-$(CONFIG_CHARGER_RT9471)	+= rt9471.o
- obj-$(CONFIG_CHARGER_RT9756)	+= rt9756.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
- obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
-+obj-$(CONFIG_CHARGER_ASUS_TRANSFORMER_EC)	+= asus-transformer-ec-charger.o
- obj-$(CONFIG_CHARGER_PF1550)	+= pf1550-charger.o
- obj-$(CONFIG_BATTERY_RX51)	+= rx51_battery.o
- obj-$(CONFIG_AB8500_BM)		+= ab8500_bmdata.o ab8500_charger.o ab8500_fg.o ab8500_btemp.o ab8500_chargalg.o
-diff --git a/drivers/power/supply/asus-transformer-ec-charger.c b/drivers/power/supply/asus-transformer-ec-charger.c
-new file mode 100644
-index 0000000000000..c7a6bd2ba533f
---- /dev/null
-+++ b/drivers/power/supply/asus-transformer-ec-charger.c
-@@ -0,0 +1,208 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <linux/err.h>
-+#include <linux/mfd/asus-transformer-ec.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/property.h>
-+
-+struct asus_ec_charger_data {
-+	struct notifier_block nb;
-+	struct asusec_core *ec;
-+	struct power_supply *psy;
-+	struct power_supply_desc psy_desc;
-+};
-+
-+static enum power_supply_property asus_ec_charger_properties[] = {
-+	POWER_SUPPLY_PROP_USB_TYPE,
-+	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+};
-+
-+static int asus_ec_charger_get_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					union power_supply_propval *val)
-+{
-+	struct asus_ec_charger_data *priv = power_supply_get_drvdata(psy);
-+	enum power_supply_usb_type psu;
-+	int ret;
-+	u64 ctl;
-+
-+	/* Check if model name is requested first since it needs no hw access */
-+	if (psp == POWER_SUPPLY_PROP_MODEL_NAME) {
-+		val->strval = priv->ec->model;
-+		return 0;
-+	}
-+
-+	ret = asus_dockram_access_ctl(priv->ec->dockram, &ctl, 0, 0);
-+	if (ret)
-+		return ret;
-+
-+	switch (ctl & (ASUSEC_CTL_FULL_POWER_SOURCE | ASUSEC_CTL_DIRECT_POWER_SOURCE)) {
-+	case ASUSEC_CTL_FULL_POWER_SOURCE:
-+		psu = POWER_SUPPLY_USB_TYPE_CDP;	/* DOCK */
-+		break;
-+	case ASUSEC_CTL_DIRECT_POWER_SOURCE:
-+		psu = POWER_SUPPLY_USB_TYPE_SDP;	/* USB */
-+		break;
-+	case 0:
-+		psu = POWER_SUPPLY_USB_TYPE_UNKNOWN;	/* no power source connected */
-+		break;
-+	default:
-+		psu = POWER_SUPPLY_USB_TYPE_ACA;	/* power adapter */
-+		break;
-+	}
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = psu != POWER_SUPPLY_USB_TYPE_UNKNOWN;
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		val->intval = psu;
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		if (ctl & ASUSEC_CTL_TEST_DISCHARGE)
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-+		else if (ctl & ASUSEC_CTL_USB_CHARGE)
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+		else
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE;
-+		return 0;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int asus_ec_charger_set_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					const union power_supply_propval *val)
-+{
-+	struct asus_ec_charger_data *priv = power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		switch ((enum power_supply_charge_behaviour)val->intval) {
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE,
-+				ASUSEC_CTL_USB_CHARGE);
-+
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE, 0);
-+
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE,
-+				ASUSEC_CTL_TEST_DISCHARGE);
-+		default:
-+			return -EINVAL;
-+		}
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int asus_ec_charger_property_is_writeable(struct power_supply *psy,
-+						 enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct power_supply_desc asus_ec_charger_desc = {
-+	.name = "asus-ec-charger",
-+	.type = POWER_SUPPLY_TYPE_USB,
-+	.charge_behaviours = BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) |
-+			     BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE) |
-+			     BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE),
-+	.usb_types = BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_SDP) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_CDP) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_ACA),
-+	.properties = asus_ec_charger_properties,
-+	.num_properties = ARRAY_SIZE(asus_ec_charger_properties),
-+	.get_property = asus_ec_charger_get_property,
-+	.set_property = asus_ec_charger_set_property,
-+	.property_is_writeable = asus_ec_charger_property_is_writeable,
-+	.no_thermal = true,
-+};
-+
-+static int asus_ec_charger_notify(struct notifier_block *nb,
-+				  unsigned long action, void *data)
-+{
-+	struct asus_ec_charger_data *priv =
-+		container_of(nb, struct asus_ec_charger_data, nb);
-+
-+	switch (action) {
-+	case ASUSEC_SMI_ACTION(POWER_NOTIFY):
-+	case ASUSEC_SMI_ACTION(ADAPTER_EVENT):
-+		power_supply_changed(priv->psy);
-+		break;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int asus_ec_charger_probe(struct platform_device *pdev)
-+{
-+	struct asusec_core *ec = dev_get_drvdata(pdev->dev.parent);
-+	struct asus_ec_charger_data *priv;
-+	struct device *dev = &pdev->dev;
-+	struct power_supply_config cfg = { };
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, priv);
-+	priv->ec = ec;
-+
-+	cfg.fwnode = dev_fwnode(dev->parent);
-+	cfg.drv_data = priv;
-+
-+	memcpy(&priv->psy_desc, &asus_ec_charger_desc, sizeof(priv->psy_desc));
-+	priv->psy_desc.name = devm_kasprintf(dev, GFP_KERNEL, "%s-charger",
-+					     priv->ec->name);
-+	if (!priv->psy_desc.name)
-+		return -ENOMEM;
-+
-+	priv->psy = devm_power_supply_register(dev, &priv->psy_desc, &cfg);
-+	if (IS_ERR(priv->psy))
-+		return dev_err_probe(dev, PTR_ERR(priv->psy),
-+				     "Failed to register power supply\n");
-+
-+	priv->nb.notifier_call = asus_ec_charger_notify;
-+
-+	return blocking_notifier_chain_register(&ec->notify_list, &priv->nb);
-+}
-+
-+static void asus_ec_charger_remove(struct platform_device *pdev)
-+{
-+	struct asus_ec_charger_data *priv = platform_get_drvdata(pdev);
-+	struct asusec_core *ec = priv->ec;
-+
-+	blocking_notifier_chain_unregister(&ec->notify_list, &priv->nb);
-+}
-+
-+static struct platform_driver asus_ec_charger_driver = {
-+	.driver.name = "asus-transformer-ec-charger",
-+	.probe = asus_ec_charger_probe,
-+	.remove = asus_ec_charger_remove,
-+};
-+module_platform_driver(asus_ec_charger_driver);
-+
-+MODULE_ALIAS("platform:asus-transformer-ec-charger");
-+MODULE_AUTHOR("Michał Mirosław <mirq-linux@rere.qmqm.pl>");
-+MODULE_DESCRIPTION("ASUS Transformer Pad battery charger driver");
-+MODULE_LICENSE("GPL");
--- 
-2.53.0
+Reviewed-by: Shawn Lin <shawn.lin@rock-chips.com>
+
+> Link: https://lore.kernel.org/all/20260924102135.92217-10-gahing@gahingwoo.com/
+> Fixes: cfee1b507758 ("pmdomain: rockchip: Add support for RK3576 SoC")
+> Signed-off-by: Leonard Lausen <leonard@lausen.nl>
+> 
+> ---
+>   drivers/pmdomain/rockchip/pm-domains.c | 10 +++++++---
+>   1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+> index e193f978d5f35..b41f9fcb62bfe 100644
+> --- a/drivers/pmdomain/rockchip/pm-domains.c
+> +++ b/drivers/pmdomain/rockchip/pm-domains.c
+> @@ -176,41 +176,42 @@ struct rockchip_pmu {
+>   	.mem_offset = m_offset,				\
+>   	.mem_status_mask = (m_status),			\
+>   	.repair_status_mask = (r_status),		\
+>   	.req_offset = r_offset,				\
+>   	.req_w_mask = (req) << 16,			\
+>   	.req_mask = (req),				\
+>   	.idle_mask = (idle),				\
+>   	.ack_mask = (ack),				\
+>   	.active_wakeup = wakeup,			\
+>   	.need_regulator = regulator,			\
+>   }
+>   
+> -#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, wakeup)	\
+> +#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, wakeup, regulator)	\
+>   {							\
+>   	.name = _name,					\
+>   	.pwr_offset = p_offset,				\
+>   	.pwr_w_mask = (pwr) << 16,			\
+>   	.pwr_mask = (pwr),				\
+>   	.status_mask = (status),			\
+>   	.mem_offset = m_offset,				\
+>   	.mem_status_mask = (m_status),			\
+>   	.repair_status_mask = (r_status),		\
+>   	.req_offset = r_offset,				\
+>   	.req_w_mask = (req) << 16,			\
+>   	.req_mask = (req),				\
+>   	.idle_mask = (idle),				\
+>   	.clk_ungate_mask = (g_mask),			\
+>   	.ack_mask = (ack),				\
+>   	.active_wakeup = wakeup,			\
+> +	.need_regulator = regulator,			\
+>   }
+>   
+>   #define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator)	\
+>   {							\
+>   	.name = _name,				\
+>   	.pwr_w_mask = (pwr) << 16,			\
+>   	.pwr_mask = (pwr),				\
+>   	.status_mask = (status),			\
+>   	.req_w_mask = (req) << 16,			\
+>   	.req_mask = (req),				\
+>   	.idle_mask = (idle),				\
+>   	.ack_mask = (ack),				\
+> @@ -250,25 +251,28 @@ struct rockchip_pmu {
+>   	DOMAIN(name, pwr, status, req, req, req, wakeup)
+>   
+>   #define DOMAIN_RK3528(name, pwr, req)		\
+>   	DOMAIN_M(name, pwr, pwr, req, req, req, false)
+>   
+>   #define DOMAIN_RK3562(name, pwr, req, g_mask, mem, wakeup)		\
+>   	DOMAIN_M_G_SD(name, pwr, pwr, req, req, req, g_mask, mem, wakeup, false)
+>   
+>   #define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
+>   	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
+>   
+>   #define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
+> -	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
+> +	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup, false)
+> +
+> +#define DOMAIN_RK3576_R(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
+> +	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup, true)
+>   
+>   /*
+>    * Dynamic Memory Controller may need to coordinate with us -- see
+>    * rockchip_pmu_block().
+>    *
+>    * dmc_pmu_mutex protects registration-time races, so DMC driver doesn't try to
+>    * block() while we're initializing the PMU.
+>    */
+>   static DEFINE_MUTEX(dmc_pmu_mutex);
+>   static struct rockchip_pmu *dmc_pmu;
+>   
+>   /*
+> @@ -1323,25 +1327,25 @@ static const struct rockchip_domain_info rk3576_pm_domains[] = {
+>   	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  false),
+>   	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  false),
+>   	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  false),
+>   	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  true),
+>   	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  false),
+>   	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   false),
+>   	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  false),
+>   	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  false),
+>   	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  false),
+>   	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    false),
+>   	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    false),
+>   	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    false),
+> -	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  false),
+> +	[RK3576_PD_GPU]		= DOMAIN_RK3576_R("gpu",  0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  false),
+>   };
+>   
+>   static const struct rockchip_domain_info rk3588_pm_domains[] = {
+>   	[RK3588_PD_GPU]		= DOMAIN_RK3588("gpu",     0x0, BIT(0),  0,       0x0, 0,       BIT(1),  0x0, BIT(0),  BIT(0),  false, true),
+>   	[RK3588_PD_NPU]		= DOMAIN_RK3588("npu",     0x0, BIT(1),  BIT(1),  0x0, 0,       0,       0x0, 0,       0,       false, true),
+>   	[RK3588_PD_VCODEC]	= DOMAIN_RK3588("vcodec",  0x0, BIT(2),  BIT(2),  0x0, 0,       0,       0x0, 0,       0,       false, true),
+>   	[RK3588_PD_NPUTOP]	= DOMAIN_RK3588("nputop",  0x0, BIT(3),  0,       0x0, BIT(11), BIT(2),  0x0, BIT(1),  BIT(1),  false, false),
+>   	[RK3588_PD_NPU1]	= DOMAIN_RK3588("npu1",    0x0, BIT(4),  0,       0x0, BIT(12), BIT(3),  0x0, BIT(2),  BIT(2),  false, false),
+>   	[RK3588_PD_NPU2]	= DOMAIN_RK3588("npu2",    0x0, BIT(5),  0,       0x0, BIT(13), BIT(4),  0x0, BIT(3),  BIT(3),  false, false),
+>   	[RK3588_PD_VENC0]	= DOMAIN_RK3588("venc0",   0x0, BIT(6),  0,       0x0, BIT(14), BIT(5),  0x0, BIT(4),  BIT(4),  false, false),
+>   	[RK3588_PD_VENC1]	= DOMAIN_RK3588("venc1",   0x0, BIT(7),  0,       0x0, BIT(15), BIT(6),  0x0, BIT(5),  BIT(5),  false, false),
+>   	[RK3588_PD_RKVDEC0]	= DOMAIN_RK3588("rkvdec0", 0x0, BIT(8),  0,       0x0, BIT(16), BIT(7),  0x0, BIT(6),  BIT(6),  false, false),
 
