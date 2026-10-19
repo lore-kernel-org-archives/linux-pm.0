@@ -1,120 +1,150 @@
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mailgate01.uberspace.is (mailgate01.uberspace.is [95.143.172.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2E6C4A3F1E;
-	Mon, 19 Oct 2026 08:51:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 773C148FF63
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 09:15:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.143.172.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792399922; cv=none; b=aqkH6GrCz4VXzPuWILjgqYpe2zKutPoeeNdKfg8rMrahM0ziwoGWUt0W8JWCJpKa9gx9s5i2qDmflql7ngO8DNl4TVqy7AwpeC9saMPfHwBelbb1YQpgsEtD2XbHXqhIJJGYKMyIu7YO5KQrlu05q9Q4gRvCq9Bo9kcPtT5bukI=
+	t=1792401307; cv=none; b=a2V+8P6i+P0NDkx/xp7blM1lxWJUEbO3KHoFVEIwwD5msXEPkGoUZVUf7gePt6sN9LNisFvQ4fndX08uOlEUM4VBEeOGrlgtCAIxFAESNMrTep3upY/oWh42MBZRVyw8t4MRhz+0bK5I4mZCgPh3zqDVMvA0ZqjwUrj0zGfAtjA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792399922; c=relaxed/simple;
-	bh=DA4DlnYJiBv1rP3tuR5PuSaqJFiopm/harezIr7sSwY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=JZR9S738nLSoBdsj1lByJWhwDCmUFwyyC4MfmNnRyEezucRT5ZBhFceBx6HZl5nlI+ZBvRYDY40NhwivPH1Ukm12hVw4sYGm6EhjFUKtwnO7e8HtVVtSXRBxfX3xh9IE01YblnUEd762q3D0FHwQ4L49Ugfkmv4T662Ddl9Gw+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=A8CAOMqU; arc=none smtp.client-ip=80.241.56.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	s=arc-20240116; t=1792401307; c=relaxed/simple;
+	bh=G5e7xDGKZrF0gm5xtX9ZO1xpalWcEwZGn20RV5qhZOo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=SlooibqgebWN90mKf8lVsvGXcPyBbWGPxVgE+Hp3kJb/IoJeLgRmCBOYySQpEAOqrOoqcWSsfbGNFAX7HLgHu6kSdcIvrPI+Rz81ivI+bimdpm857cx0sn1arX8DwzVvmRNifuTYvhQovRMpgMqGl4dQwZildGkErJpxzDUDRog=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lausen.nl; spf=pass smtp.mailfrom=lausen.nl; dkim=pass (4096-bit key) header.d=lausen.nl header.i=@lausen.nl header.b=f/xc/cIQ; arc=none smtp.client-ip=95.143.172.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lausen.nl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lausen.nl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="A8CAOMqU"
-Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4j7Tn2150rzMlLL;
-	Mon, 19 Oct 2026 10:51:50 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1792399910;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=DA4DlnYJiBv1rP3tuR5PuSaqJFiopm/harezIr7sSwY=;
-	b=A8CAOMqUteu36VGV4F0ICc2ZqS6ScxITNc+ytRBRlcMMes8EiAB5BX8YIrqBH2N+M0j17R
-	4EnHlQDUdfSvK7QK44nAqGMEee6vGM15YWrYaTbwJIlTjYPlQGlbbdDPQj+9+IeRmkaIzR
-	AGCUjXeyF+6y6ZYMu8u3aSz/7l06mXZDrxP9lo5gCFkyea5aYYOZ4qBi2VOa76Mu3nds1P
-	LN4U0GspJjj/k+JlLL1X73IeBSC3uba8mGWPjbE8G8gaYPmeTV4p3Y0v5m5H9j/Tu0bUqT
-	Eve1UYNeMym1XB5vF1nPi/U5geC35mrfvWQaOj8c6sq1F4ZcmdskVpdPBNcsCw==
-Message-ID: <c635054081da35e61ccc25cf356f6356ca8580ba.camel@mailbox.org>
-Subject: Re: [PATCH] cpufreq: longrun: fix typo in kernel-doc
-From: Manuel Ebner <manuelebnerli@mailbox.org>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, "Rafael J. Wysocki"
-	 <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 19 Oct 2026 10:51:46 +0200
-In-Reply-To: <9c312de6-7c73-465f-93da-d7a75cf3be8c@oss.qualcomm.com>
-References: <20261017071434.1250140-2-manuelebnerli@mailbox.org>
-	 <9c312de6-7c73-465f-93da-d7a75cf3be8c@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-1.fc44) 
+	dkim=pass (4096-bit key) header.d=lausen.nl header.i=@lausen.nl header.b="f/xc/cIQ"
+Received: from devico.uberspace.de (devico.uberspace.de [185.26.156.185])
+	by mailgate01.uberspace.is (Postfix) with ESMTPS id 6E88761014
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 11:06:11 +0200 (CEST)
+Received: (qmail 9972 invoked by uid 990); 19 Oct 2026 09:06:11 -0000
+Authentication-Results: devico.uberspace.de;
+	auth=pass (plain)
+Received: from unknown (HELO unknown) (::1)
+	by devico.uberspace.de (Haraka/3.1.1) with ESMTPSA; Mon, 19 Oct 2026 11:06:11 +0200
+From: Leonard Lausen <leonard@lausen.nl>
+To: heiko@sntech.de,
+	gahing@gahingwoo.com
+Cc: leonard@lausen.nl,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	tomeu@tomeuvizoso.net,
+	ulfh@kernel.org,
+	linux-pm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH] arm64: dts: rockchip: Enable the NPU on NanoPi M5
+Date: Mon, 19 Oct 2026 09:03:42 +0000
+Message-ID: <20261019090348.378183-2-leonard@lausen.nl>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260924102135.92217-1-gahing@gahingwoo.com>
+References: <20260924102135.92217-1-gahing@gahingwoo.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MBO-RS-META: jrn8qitrc5ruhwnznws3i467q8wkknbe
-X-MBO-RS-ID: cde46030cab00897271
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Bar: /
+X-Rspamd-Report: SUSPICIOUS_RECIPS(1.5) MID_CONTAINS_FROM(1) MIME_GOOD(-0.1) BAYES_HAM(-2.999999) R_MISSING_CHARSET(0.5)
+X-Rspamd-Score: -0.099999
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lausen.nl; s=uberspace;
+	h=from:to:cc:subject:date;
+	bh=G5e7xDGKZrF0gm5xtX9ZO1xpalWcEwZGn20RV5qhZOo=;
+	b=f/xc/cIQtFrsxLz/Lbmo5IdXDWN1Nrtyv76OmaMwgrWVwizASO8PSVWBL6ZVrf1WYnh+GQI4aL
+	vNTJS1mQD6I373/xRbpDJJNBrDqVzQXq68RrYD8wdr16Rz33/Z+qiX+uZnpgpY1rPPtYNxIs71rS
+	fyw+4eM8gaAhIBMGy0GpLzOmaPMFUSDm1KXaP9GOkrsfPifax5LEjRNEQDfDHyNzaGHSyweOQQCC
+	7k14CJO8hoR9LjQZGsUV76vTX1lwVOz4HSZjgCs7/IBXHM9Jeh9QbNrYOIk9FUwbGZJ6IMWq67bQ
+	7AR+3tjyCMwO9UyLj9VHIcRsv0+8jVO8k+CV3c7M7XFIYToZ1fdbQtDMCTHrZBxM95Xi+rvEKKxU
+	T0r+1gy8O4Dg7mlZpoHy0mqUVWGuP310FSQpfMOGNJ6jkbrniiRo4YWpKueM1ZiazjwmiI73tDCf
+	WsphzaJMUij036yyEUDAhHJ1CzsXxLZm3S1KCppCXV/EfPlUW1FHW+GBoq0EP21deYfCAd2beibl
+	BKptxgUHHkOY7k4skd+5AHdP08DO+5NI7ZIDXSMZ8kHcEtaeCCBRm7hCLwlTNeXBn4Mf4HElO0UM
+	TGxV+OFP+FaG8sqpTVcVoTGIiVdGrjvqVh8/GgRSe5JFNQfzFWqc7At4jQ4bvzaAj2RSW3LjDIy7
+	s=
 
-On Mon, 2026-10-19 at 11:37 +0800, Zhongqiu Han wrote:
-> Hi Manuel,
->=20
-> Thanks for the patch.
->=20
-> On 10/17/2026 3:14 PM, Manuel Ebner wrote:
-> > Fix typo to fix:
-> >=20
-> > =C2=A0=C2=A0 $ ./scripts/kernel-doc -none drivers/cpufreq/longrun.c
-> > =C2=A0=C2=A0 Warning: drivers/cpufreq/longrun.c:126 expecting prototype=
- for longrun_verify_poliy(). Prototype was for longrun_verify_policy() inst=
-ead
->=20
-> ./scripts/checkpatch.pl reports a warning which should be acceptable to
-> keep unwrapped as it is tool output.
->=20
-> WARNING: Prefer a maximum 75 chars per line (possible unwrapped commit
-> description?)
-> #9:
-> =C2=A0=C2=A0 Warning: drivers/cpufreq/longrun.c:126 expecting prototype f=
-or=20
-> longrun_verify_poliy(). Prototype was for longrun_verify_policy() instead
->=20
-> total: 0 errors, 1 warnings, 8 lines checked
->=20
->=20
->=20
-> Also, while reproducing this issue, I noticed another problem,
->=20
-> ./scripts/kernel-doc -none drivers/cpufreq/longrun.c
-> Warning: drivers/cpufreq/longrun.c:21 This comment starts with '/**',=20
-> but isn't a kernel-doc comment. Refer to=20
-> Documentation/doc-guide/kernel-doc.rst
-> =C2=A0 * longrun_{low,high}_freq is needed for the conversion of cpufreq =
-kHz
->=20
-> It should use /* instead of /** and may be worth a separate patch.=C2=A0
+Connect the NPU parent power domain and both RKNN cores to the existing
+RK806 vdd_npu_s0 regulator, and enable both cores and their IOMMUs on the
+NanoPi M5.
 
-Will do.
+The domain supply lets the power-domain driver enable the rail before
+powering on the NPU. Each core also references the rail through its
+npu-supply property.
 
-> But
-> since this patch is only intended to fix the typo, the patch itself
-> looks fine to me.
->=20
-> >=20
-> > Signed-off-by: Manuel Ebner <manuelebnerli@mailbox.org>
->=20
-> Small nit: please consider to add the Fixes tag:
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Link: https://lore.kernel.org/all/20260924102135.92217-1-gahing@gahingwoo.com/
+Signed-off-by: Leonard Lausen <leonard@lausen.nl>
+---
+Applies on top of this series.
 
-Well, thats the init commit, should it still be added in=20
-future patches?
-Can pre-git history be referenced?
+The NPU has been tested and works on the NanoPi M5.
+The NanoPi M5 DTB builds with W=1 and passes schema validation.
 
->=20
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
->=20
+ .../boot/dts/rockchip/rk3576-nanopi-m5.dts    | 22 +++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-Thanks=20
- Manuel
+diff --git a/arch/arm64/boot/dts/rockchip/rk3576-nanopi-m5.dts b/arch/arm64/boot/dts/rockchip/rk3576-nanopi-m5.dts
+index 227fe6f3ec7c7..96c21838419e8 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3576-nanopi-m5.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3576-nanopi-m5.dts
+@@ -800,6 +800,10 @@ &pcie0 {
+ 	status = "okay";
+ };
+ 
++&pd_npu {
++	domain-supply = <&vdd_npu_s0>;
++};
++
+ &pinctrl {
+ 	gmac {
+ 		gmac0_int: gmac0-int {
+@@ -877,6 +881,24 @@ usb_otg0_pwren_h: usb-otg0-pwren-h {
+ 	};
+ };
+ 
++&rknn_core_0 {
++	npu-supply = <&vdd_npu_s0>;
++	status = "okay";
++};
++
++&rknn_core_1 {
++	npu-supply = <&vdd_npu_s0>;
++	status = "okay";
++};
++
++&rknn_mmu_0 {
++	status = "okay";
++};
++
++&rknn_mmu_1 {
++	status = "okay";
++};
++
+ &sai2 {
+ 	status = "okay";
+ };
 
-> ...
+base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
+prerequisite-patch-id: 46ebb679e93d3d25393e8cbf8fc3c955bcc01bd4
+prerequisite-patch-id: 0a572164fcadaa890f0fcd7795e9aed71b4110f7
+prerequisite-patch-id: 7d00dce28af9d650165613b4e63fc1632f1001b0
+prerequisite-patch-id: 1f4f63a13e342a642ce4ee33c64115c7ec09998d
+prerequisite-patch-id: 30b7597254007acdb9ce6f76535df17a896b92ee
+prerequisite-patch-id: 8f7794535e7def740abb4c0c154cd2dec15b1c26
+prerequisite-patch-id: e6dae43a32f177292235c896dd7534e704121afd
+prerequisite-patch-id: a18dcdf841b6975b1e5be01a931430c0a5711f47
+prerequisite-patch-id: c98141bac89990a409fa2a6d3bea93796c9d58ab
+prerequisite-patch-id: d72696eb07efc69faaee3da39b1995d2b2cef289
+prerequisite-patch-id: 6d5c580e02cd2ba4e1f0a590fdcd49dd643b91b0
+prerequisite-patch-id: 48b926e205e294a27d6e11d00b10d98205fd4afb
+prerequisite-patch-id: 8babd101cd3628a478872e8a28a9081906b87160
+prerequisite-patch-id: a0129d3f560f297a03780ef78be819e7aa0775fe
+-- 
+2.47.3
+
