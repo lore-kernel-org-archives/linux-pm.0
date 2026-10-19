@@ -1,44 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4990456982F;
-	Mon, 19 Oct 2026 13:57:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8797358B6CE;
+	Mon, 19 Oct 2026 13:59:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418266; cv=none; b=t6WBIjmjHplGtgigcDQNlVUZo6EwHYBt3yZVJGuSgotVwt3n4iwcoKYNVvs3CpkMbcWuu0PA2Ttcl84bw3e89cCDUz17gSKxOj3Tau8LIlNEW6mLYIHx04PUnEu1tr+8k8AXZY76tHqmUW9sKvbtRcmStdrH2hYrAIYAPinIM9A=
+	t=1792418386; cv=none; b=NGUl353MognCx2mGUiwszckl3OqY7/V/rYynJhQbD0/ktWsHHzCIVgp7w4R4rwLb1W4ONwYAFz1oqqnAdYP+TL7jLUsZtwEVkm/euIn9k+7XRDAic/0QZohXmRxSCTSfQfWFL924LFHWeoDIG6yS9uvOWSmmC0KaakJFxorrbIo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418266; c=relaxed/simple;
-	bh=wiqPXWVlTTveYzvN9waZ4nUny+eZwY9OurxyivW9KuI=;
+	s=arc-20240116; t=1792418386; c=relaxed/simple;
+	bh=XZPghCTjb1jX+Q7cqp8MHf8/5S+roAFYzazEhZS/viw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=uGgrcSgSmdu5tFxyxbSrzQERVB8MhlNNxgD/FPn5vkwDV7H1JC93blge9J9c35GYFPjqc58OGs915Iy1jBs0ERYwSGhT+vMr11Ot+p66X5rAshNsUNxCBX06qRNqo0Gp1YOWFU8cHzsWwDeN9+HXUYyD8fxYS628QvFbRKkEoA8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mYsFsmFq; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=ZLn3BBUTvKEoVPSHe2/2zWk29uI5Jv8rSen/nPPB8nr0vyOqoegDkalIe0UXtL8D8YgIMRVqtQxFa+X0s1cVSp0qbikbjBUH1x2X9blBq5QhVxDivPXjXgCYheCHLSIUdENh75NyyajMDHZ0tF+wQ+14Zhk5LAxRsmHevTskm3k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZBDC7KCX; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mYsFsmFq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06E481F000C6;
-	Mon, 19 Oct 2026 13:57:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZBDC7KCX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DF6C1F000CA;
+	Mon, 19 Oct 2026 13:59:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418263;
-	bh=MGmTAbgILO+6jEkopSYybQ9rcFhYEntoql9d3wDhxuo=;
+	s=k20260515; t=1792418383;
+	bh=D1aPOgBERGuCo14oNo+vtfsa1n/bJR50FBv53Np1Kr8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=mYsFsmFqWOG9Dwhte03PRlpm0r9FiOW0+2net+qKlP5aLpOL/WG4u5yoRT6fL6c4H
-	 4Vhr3jn+T5BkIEzehsQAi49zU5nxR9dFhXZdKT7p0Sf0S8HgeSy9WnrXio73krruo3
-	 V3sJBxHB+lb5H+QE+fKaSYT/RdRqGWtGqpd36UAkmWr+fjFIY25hif/YpYhDqn9Udz
-	 gu+AjXl7L16pZL4bOQpZa8Z4Rr9Lvv8itVYdYHqqI0HZPSMYDChTOvAgTNcA54SeDm
-	 +5mIM6vJXkVz2IGMvsHKoI6c7NB4jxgBl1VcQLOaUiyJg3uC2WAC0xyNcoN1OBJr/6
-	 D64fTvou7B6Yw==
+	b=ZBDC7KCX6j3nXvNmoW/nF3EUWlcoopMnzFDY9eDQU4e31bvGb4nWvPwQrali/yyaS
+	 VTfQcGekeFvvXEf8b+XYacwm5yEjpy/xGk0dSqivLjVxfB3xpWGc0y5WMv8r9k+Pwj
+	 jYyY14a2rbeCRQIpEg61fwR2hwxyVn//wSiKfgix/0wBcZX7E+A2EMBKpCy+EGLFQ+
+	 sG7j1H27cMRxrUglCcp8S8mhQNzackUMmLFNdv0xZTVvNZ3ERpQd2ahZCB+GiSEFEg
+	 aWzKdgrJyarbGSeTBrFQsy6ziikn6P/yKYatjWo9K0ttl4nwBnN7LezJOFZ+FV5uf4
+	 IEzx0Kb4MXPaQ==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Sumeet Pawnikar <sumeet4linux@gmail.com>,
-	Abel Vesa <abel.vesa@oss.qualcomm.com>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+Cc: Mike Tipton <mike.tipton@oss.qualcomm.com>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Ulf Hansson <ulfh@kernel.org>,
 	Sasha Levin <sashal@kernel.org>,
-	rafael@kernel.org,
+	linux-arm-msm@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-6.12] powercap: intel_rapl: Fix kernel panic during PMU unbind
-Date: Mon, 19 Oct 2026 09:46:59 -0400
-Message-ID: <20261019135441.1420968-128-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-6.6] pmdomain: qcom: rpmhpd: Skip retention by default
+Date: Mon, 19 Oct 2026 09:48:21 -0400
+Message-ID: <20261019135441.1420968-210-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -54,476 +54,422 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Sumeet Pawnikar <sumeet4linux@gmail.com>
+From: Mike Tipton <mike.tipton@oss.qualcomm.com>
 
-[ Upstream commit 916b61abba586d950a4d8264e2841cc5ccfa4df1 ]
+[ Upstream commit 7178817f190496f2bfdec181fb4aa72832448468 ]
 
-rapl_package_add_pmu() fails internally at perf_pmu_register(),
-and rapl_pmu_update() leaves the global rapl_pmu.pmu structure
-zero-initialized via memset and returns an error. But any
-previously probed packages retain has_pmu = true.
+Retention is very rarely an operational corner. In the majority of
+cases, HW cannot operate properly at Retention levels and so the minimum
+operational level when enabling a rail is the first corner above
+Retention. A small subset of always-on use cases can operate at
+Retention, but those aren't controlled from HLOS.
 
-When the driver is subsequently unbound or removed,
-rapl_package_remove_pmu_locked() sees has_pmu == true and
-unconditionally calls perf_pmu_unregister(&rapl_pmu.pmu) on the
-zeroed-out structure. This attempts a list_del_rcu() on a NULL
-list head, immediately causing a kernel panic.
+Currently, we allow Retention by default and only disallow it special
+cases. But this leaves us open to various failures when the PD is
+enabled without first being voted to an OPP above Retention. Such as
+when a child GDSC PD requests to enable its parent RPMh PD. In this
+case, the GDSC would get stuck powering on.
 
-Fix this by checking if the PMU is actually registered before
-attempting to unregister it.
+Newer chips have started supporting Retention on rails that didn't
+previously (such as for MMCX). Instead of adding more special cases to
+skip Retention on MMCX, start skipping Retention by default since it's
+almost never desired from an HLOS perspective.
 
-Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
-Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
-[ rjw: Added empty line after the new conditional ]
-Link: https://patch.msgid.link/20260822094657.12489-1-sumeet4linux@gmail.com
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Mike Tipton <mike.tipton@oss.qualcomm.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Signed-off-by: Ulf Hansson <ulfh@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-The local tree is **6.12.111** (`pending-6.12`). The panic path is
-present here; only the later `_locked` wrapper is missing, so the same
-two-line check belongs in `rapl_package_remove_pmu`.
-
-===============================================================
-PHASE 1: COMMIT MESSAGE FORENSICS
-===============================================================
-
-**Step 1.1: PARSE THE SUBJECT LINE**
-
-Record: **[powercap: intel_rapl:] [Fix] [kernel panic during PMU
-unbind]**
-Subsystem `powercap` / Intel RAPL. Verb is explicitly **fix**. Claimed
-intent: stop a panic when the RAPL perf PMU is unbound after a failed
-registration.
-
-**Step 1.2: PARSE ALL COMMIT MESSAGE TAGS**
-
-Record:
-- **Reviewed-by:** Abel Vesa `<abel.vesa@oss.qualcomm.com>`
-- **Link:** `https://patch.msgid.link/20260822094657.12489-1-
-  sumeet4linux@gmail.com`
-- **Signed-off-by:** Sumeet Pawnikar (author); Rafael J. Wysocki (PM
-  maintainer)
-- **Ignored (pipeline):** Signed-off-by: Sasha Levin (not present on
-  this candidate text, but would be ignored)
-- **No Fixes:** tag (expected)
-- **No Cc: stable** (expected)
-- **No Reported-by / Tested-by / syzbot**
-
-Notable: PM subsystem maintainer applied it; one external Reviewed-by.
-
-**Step 1.3: ANALYZE THE COMMIT BODY TEXT**
-
-Record:
-- **Bug:** `rapl_pmu_update()` can fail at `perf_pmu_register()` after
-  `memset` of `rapl_pmu.pmu`. Packages that already succeeded keep
-  `has_pmu = true`.
-- **Symptom:** On unbind/remove, `rapl_package_remove_pmu*()` sees
-  `has_pmu` and calls `perf_pmu_unregister()` on a PMU whose `list_head`
-  is NULL → `list_del_rcu()` NULL deref → **kernel panic**.
-- **Root cause:** Unregister is gated only on `rp->has_pmu`, not on
-  whether the global PMU is actually registered.
-- **Version info in message:** none. Introduced with RAPL PMU APIs
-  (verified in Phase 3 as v6.11).
-
-**Step 1.4: DETECT HIDDEN BUG FIXES**
-
-Record: **Not hidden.** This is an explicit panic fix, not cleanup
-disguised as a fix.
-
-===============================================================
-PHASE 2: DIFF ANALYSIS - LINE BY LINE
-===============================================================
-
-**Step 2.1: INVENTORY THE CHANGES**
-
-Record:
-- **File:** `drivers/powercap/intel_rapl_common.c`
-- **Scope:** 2 insertions, 1 deletion (plus blank line from rjw)
-- **Function (upstream):** `rapl_package_remove_pmu_locked()`
-- **Classification:** single-file surgical fix
-
-**Step 2.2: UNDERSTAND THE CODE FLOW CHANGE**
-
-Record:
-- **Before:** If this package has `has_pmu` and no other package still
-  needs the PMU, always `perf_pmu_unregister(&rapl_pmu.pmu)` then
-  `memset` the global `rapl_pmu`.
-- **After:** Same, but unregister only if `rapl_pmu.registered`.
-- **Path:** driver remove / unbind / (later kernels) CPU-hotplug
-  teardown — error-recovery path after a failed PMU (re)register.
-
-**Step 2.3: IDENTIFY THE BUG MECHANISM**
-
-Record: **[NULL deref / invalid list_del on unregistered PMU]**
-
-In this tree, `rapl_pmu_update()` (unchanged since 575024a8aa7cf):
-
-```1996:2024:drivers/powercap/intel_rapl_common.c
-        /* Unregister previous registered PMU */
-        if (rapl_pmu.registered)
-                perf_pmu_unregister(&rapl_pmu.pmu);
-
-        rapl_pmu.registered = false;
-        rapl_pmu.domain_map |= rp->domain_map;
-
-        memset(&rapl_pmu.pmu, 0, sizeof(struct pmu));
-        /* ... fill callbacks ... */
-        ret = perf_pmu_register(&rapl_pmu.pmu, "power", -1);
-        if (ret) {
-                pr_info("Failed to register PMU\n");
-                return ret;   /* does NOT set rp->has_pmu; does NOT
-restore prior PMU */
-        }
-        rapl_pmu.registered = true;
-end:
-        rp->has_pmu = true;
-```
-
-If package A already registered, then package B needs extra domains
-(documented dual-package Psys case): previous PMU is unregistered,
-`pmu.entry` is zeroed, re-register fails. Package A still has `has_pmu
-== true`. Remove of A then hits:
-
-```2104:2105:drivers/powercap/intel_rapl_common.c
-        perf_pmu_unregister(&rapl_pmu.pmu);
-        memset(&rapl_pmu, 0, sizeof(struct rapl_pmu));
-```
-
-`perf_pmu_unregister()` does `list_del_rcu(&pmu->entry)`. A zeroed
-`list_head` has `next = prev = NULL`. `__list_del(entry->prev,
-entry->next)` writes through NULL → oops.
-
-**Step 2.4: ASSESS THE FIX QUALITY**
-
-Record: **Obviously correct.** `rapl_pmu.registered` is already
-maintained in this file (set true only after successful
-`perf_pmu_register()`, cleared before re-register). Skipping unregister
-when it is false cannot skip a still-registered PMU. Regression risk is
-very low. No API/data-structure change.
-
-===============================================================
-PHASE 3: GIT HISTORY INVESTIGATION
-===============================================================
-
-**Step 3.1: BLAME THE CHANGED LINES**
-
-Record: Unconditional `perf_pmu_unregister` in
-`rapl_package_remove_pmu()` is from **575024a8aa7cf** (“powercap:
-intel_rapl: Introduce APIs for PMU support”, Zhang Rui, 2024-04-28).
-`git describe --contains` → **v6.11**. Present in this 6.12 tree (`git
-merge-base --is-ancestor 575024a8aa7cf HEAD` succeeded).
-
-**Step 3.2: FOLLOW THE FIXES: TAG**
-
-Record: No Fixes: tag. The introducing commit is 575024a8aa7cf; TPMI
-started calling it in **963a9ad3c589** (“Enable PMU support”), also in
-this tree (v6.11).
-
-**Step 3.3: CHECK FILE HISTORY FOR RELATED CHANGES**
-
-Record:
-- **35cf088430978** already in this tree (v6.12.110): “Handle PMU
-  registration failure during probe”. That only logs
-  `rapl_package_add_pmu()` failure; probe still succeeds; remove still
-  calls `rapl_package_remove_pmu()`. It does **not** fix the panic.
-- No `remove_pmu_locked` commits here.
-- Standalone logic; not patch X/Y of a series that 6.12 needs.
-
-**Step 3.4: CHECK THE AUTHOR'S OTHER COMMITS**
-
-Record: Sumeet Pawnikar has several powercap fixes in this tree,
-including 35cf088 (already backported). Not the RAPL maintainer; Zhang
-Rui / Rafael Wysocki own the subsystem. Rafael applied this patch as
-7.3-rc material.
-
-**Step 3.5: CHECK FOR DEPENDENT/PREREQUISITE COMMITS**
-
-Record: Upstream applies the check in
-`rapl_package_remove_pmu_locked()`, added later (~6.19) by “Fix possible
-recursive lock warning” (`dcd0b625`) together with MSR RAPL PMU. **`git
-merge-base --is-ancestor dcd0b625… HEAD` failed** — that refactor is
-**not** in 6.12. It is **not required**: 6.12 already has
-`rapl_pmu.registered` and the same unregister in
-`rapl_package_remove_pmu()`. Standalone one-line semantic backport.
-
-===============================================================
-PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
-===============================================================
-
-**Step 4.1: FIND THE ORIGINAL PATCH DISCUSSION**
-
-Record:
-- `b4 dig -c` cannot be used on this SHA (commit is not in the
-  checkout). Related commit 35cf088 was found as v3 on lore.
-- Original: 2026-07-26 (linux-pm). Resend: 2026-08-22, msgid
-  `20260822094657.12489-1-sumeet4linux@gmail.com`.
-- URLs: https://lists.openwall.net/linux-kernel/2026/08/22/310 and
-  https://lkml.iu.edu/2608.2/11624.html
-- Abel Vesa: “Looks OK to me” + Reviewed-by. Rafael: “Applied as 7.3-rc
-  material, thanks!”
-- No NAKs. Same 3-line diff from v1 through resend. No reviewer request
-  for Cc: stable.
-
-**Step 4.2: CHECK WHO REVIEWED THE PATCH**
-
-Record: To/Cc: Rafael J. Wysocki, linux-pm, linux-kernel. Reviewer Abel
-Vesa. Applied by the PM maintainer. Appropriate audience.
-
-**Step 4.3: SEARCH FOR THE BUG REPORT**
-
-Record: No syzbot/bugzilla. Mechanism is explained in the commit
-(list_del_rcu on NULL). Author of the sibling probe-failure patch, so
-this is from the same investigation, not theoretical cleanup.
-
-**Step 4.4: CHECK FOR RELATED PATCHES AND SERIES**
-
-Record: Sibling **35cf088** already in 6.12.110. This panic fix is the
-missing half of that failure handling. Not a multi-patch series that
-6.12 lacks.
-
-**Step 4.5: CHECK STABLE MAILING LIST HISTORY**
-
-Record: lore.kernel.org/stable returned 403. Open web search found no
-stable-list rejection. **UNVERIFIED:** whether anyone already asked for
-this on stable@ (does not change the technical verdict).
-
-===============================================================
-PHASE 5: CODE SEMANTIC ANALYSIS
-===============================================================
-
-**Step 5.1: IDENTIFY KEY FUNCTIONS IN THE DIFF**
-
-Record: Upstream: `rapl_package_remove_pmu_locked`. This tree:
-`rapl_package_remove_pmu`. Related: `rapl_pmu_update`,
-`rapl_package_add_pmu`.
-
-**Step 5.2: TRACE CALLERS**
-
-Record:
-- `intel_rapl_tpmi_remove()` → `rapl_package_remove_pmu()` (only caller
-  in 6.12; MSR driver does **not** use these APIs here).
-- `intel_rapl_tpmi_probe()` → `rapl_package_add_pmu()` →
-  `rapl_pmu_update()`. Probe **continues** if add_pmu fails (after
-  35cf088, still `return 0`).
-- Remove runs on unbind, rmmod, or TPMI device teardown — process
-  context, not IRQ.
-
-**Step 5.3: TRACE CALLEES**
-
-Record: `perf_pmu_unregister()` → `list_del_rcu(&pmu->entry)` under
-`pmus_lock`, then `synchronize_srcu` / `synchronize_rcu`, sysfs
-teardown. `list_add_rcu(&pmu->entry, &pmus)` happens only at the **end**
-of successful `perf_pmu_register()`. Failed register never links
-`entry`.
-
-**Step 5.4: FOLLOW THE CALL CHAIN**
-
-Record: Reachable on Intel TPMI RAPL (`CONFIG_INTEL_RAPL_TPMI` +
-`CONFIG_PERF_EVENTS`): Meteor Lake / Lunar Lake / Arrow Lake class
-platforms that 6.12 actually ships on. Trigger: successful PMU add, then
-a later package’s `rapl_pmu_update()` re-register fails, then driver
-remove. Unprivileged users typically cannot unbind, but
-rmmod/unbind/hot-unplug and failed second-package probe are real
-admin/boot paths. Documented dual-package Psys re-register is exactly
-this update path.
-
-**Step 5.5: SEARCH FOR SIMILAR PATTERNS**
-
-Record: Same file already checks `rapl_pmu.registered` before unregister
-**inside** `rapl_pmu_update()`. Remove path is the missing twin of that
-check. No other RAPL unregister site in 6.12.
-
-===============================================================
-PHASE 6: CROSS-REFERENCING AGAINST THE LOCAL TREE
-===============================================================
-
-**Step 6.1: DOES THE BUGGY CODE EXIST IN THIS TREE?**
-
-Record: **Yes.** `drivers/powercap/intel_rapl_common.c` lines 2089–2106:
-`rapl_package_remove_pmu()` still calls `perf_pmu_unregister` with only
-a `has_pmu` guard. `struct rapl_pmu { … bool registered; }` exists at
-1574–1579. Bug since **v6.11** (575024a8aa7cf + 963a9ad3c589).
-
-Local tree: `git describe HEAD` = `p-6.12-3-gc504cf0baa3d8`, `make
-kernelversion` = **6.12.111**, branch `pending-6.12`.
-
-**Step 6.2: CHECK FOR BACKPORT COMPLICATIONS**
-
-Record: **Minor context rework, not a semantic rewrite.**
-- Function name: `rapl_package_remove_pmu` vs upstream `_locked`
-- Extra `guard(cpus_read_lock)()` still in the 6.12 function
-- `EXPORT_SYMBOL_GPL` vs `EXPORT_SYMBOL_NS_GPL`
-
-The two-line `if (rapl_pmu.registered)` change applies in place.
-`registered` already exists.
-
-**Step 6.3: CHECK IF RELATED FIXES ARE ALREADY HERE**
-
-Record: 35cf088 is here and only adds a `dev_info`. **This panic is not
-already fixed.** `git log --grep='panic during PMU'` on this path is
-empty.
-
-===============================================================
-PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
-===============================================================
-
-**Step 7.1: IDENTIFY THE SUBSYSTEM AND ITS CRITICALITY**
-
-Record: **drivers/powercap (Intel RAPL)** — **IMPORTANT** for Intel
-platforms with TPMI RAPL + perf, not core-mm/VFS. Panic still takes down
-the machine.
-
-**Step 7.2: ASSESS SUBSYSTEM ACTIVITY**
-
-Record: Mature driver; PMU APIs added in v6.11. Moderate churn (platform
-IDs, locking, leak fixes). This is a leftover hole in the v6.11 PMU
-feature, not a brand-new 7.x path.
-
-===============================================================
-PHASE 8: IMPACT AND RISK ASSESSMENT
-===============================================================
-
-**Step 8.1: DETERMINE WHO IS AFFECTED**
-
-Record: **Config/driver-specific:** `CONFIG_INTEL_RAPL_TPMI` +
-`CONFIG_PERF_EVENTS` on Intel TPMI RAPL hardware (client MTL/LNL/ARL and
-any TPMI Xeon). Not universal, not staging.
-
-**Step 8.2: DETERMINE THE TRIGGER CONDITIONS**
-
-Record: (1) At least one package successfully added the PMU
-(`has_pmu=true`, `registered=true`). (2) A later package causes
-unregister + `memset(&rapl_pmu.pmu)` + failed `perf_pmu_register`
-(`registered` stays false; prior packages keep `has_pmu`). (3) Last
-`has_pmu` package is removed. Dual-package extra-domain update is
-documented in-tree. First-package-only register failure is already safe
-(`has_pmu` not set). Commonness: uncommon; severity when hit: panic.
-
-**Step 8.3: DETERMINE THE FAILURE MODE SEVERITY**
-
-Record: **Kernel oops/panic** via NULL deref in `list_del_rcu` /
-`__list_del`. **Severity: CRITICAL.**
-
-**Step 8.4: CALCULATE RISK-BENEFIT RATIO**
-
-Record:
-- **Benefit:** Prevents a real panic on TPMI RAPL unbind after a failed
-  PMU update. Complements the probe-failure log already in 6.12.110.
-- **Risk:** Very low — one boolean already used on the add path; skip
-  unregister only when the PMU is not on the perf list.
-- **Ratio:** Strongly favors backport. Needs a 2-line context-adjusted
-  backport, not the later `_locked` API.
-
-===============================================================
-PHASE 9: FINAL SYNTHESIS
-===============================================================
-
-**Step 9.1: COMPILE THE EVIDENCE**
-
-**FOR:**
-- Real kernel panic (`list_del_rcu` on a zeroed `pmu->entry`)
-- Buggy code and `rapl_pmu.registered` both exist in 6.12.111
-- Bug present since v6.11
-- 2-line, obviously correct
-- Reviewed and applied by Rafael Wysocki
-- Sibling PMU-failure handling already backported here (35cf088)
-- No new feature/API
-
-**AGAINST:**
-- Exact hunk targets `rapl_package_remove_pmu_locked()` (post-6.12
-  split) — needs a tiny backport
-- Trigger needs a failed re-register after a successful one (not every
-  boot)
-- TPMI-only in this tree
-- No syzbot / no Fixes tag (expected)
-
-**UNRESOLVED:**
-- Stable@ discussion (lore 403)
-- Whether a later mainline `rapl_pmu_update()` memsets the whole
-  `rapl_pmu` on error (6.12 path is still panic-capable as shown)
-
-**Step 9.2: APPLY THE STABLE RULES CHECKLIST**
-
-1. Obviously correct and tested? **PASS** — flag already tracks
-   registration; maintainer applied it.
-2. Fixes a real bug that affects users? **PASS** — panic on RAPL TPMI
-   unbind after failed PMU update.
-3. Important issue? **PASS** — kernel panic, CRITICAL.
-4. Small and contained? **PASS** — 2 lines, one function.
-5. No new features or APIs? **PASS**.
-6. Can apply to the local tree? **PASS** (with trivial rename/context:
-   same check in `rapl_package_remove_pmu`).
-
-**Step 9.3: CHECK FOR EXCEPTION CATEGORIES**
-
-Record: Not a device-ID/quirk/DT/build/docs exception. It is a straight
-crash fix.
-
-**Step 9.4: MAKE YOUR DECISION**
-
-This is a small, obviously correct panic fix for code that 6.12 has had
-since v6.11. The `_locked` wrapper is not a dependency. Backport the
-same `if (rapl_pmu.registered)` guard into `rapl_package_remove_pmu()`.
-
-Verification:
-- [Phase 1] Parsed tags: Reviewed-by Abel Vesa; Link msgid
-  20260822094657; Rafael SOB; no Fixes/Cc:stable/syzbot
-- [Phase 1] Body describes list_del_rcu on NULL after failed register +
-  leftover has_pmu
-- [Phase 2] Diff: 2 lines in remove path; add `if (rapl_pmu.registered)`
-  before `perf_pmu_unregister`
-- [Phase 2] Local `rapl_pmu_update()` confirmed: memset pmu, set
-  registered=false, return on register failure without clearing other
-  packages’ has_pmu
-- [Phase 2] `perf_pmu_unregister` → `list_del_rcu(&pmu->entry)`;
-  `list_add_rcu` only after successful register
-- [Phase 3] git blame: 575024a8aa7cf (v6.11) introduced the bug;
-  ancestor of HEAD
-- [Phase 3] 963a9ad3c589 TPMI Enable PMU support is in this tree
-- [Phase 3] 35cf088430978 already in v6.12.110; does not fix unregister
-  panic
-- [Phase 3] dcd0b625 `_locked` split is NOT an ancestor of HEAD
-- [Phase 4] Original 2026-07-26; resend 2026-08-22; Abel Reviewed-by;
-  Rafael applied as 7.3-rc; no NAK
-- [Phase 4] b4 dig on this SHA N/A (commit not in tree); b4 dig on
-  35cf088 found v3 lore thread
-- [Phase 4] lore.kernel.org/stable fetch 403 — UNVERIFIED stable-list
-  history
-- [Phase 5] Only 6.12 caller: intel_rapl_tpmi_remove; probe ignores
-  add_pmu errors
-- [Phase 6] git describe HEAD: p-6.12-3-gc504cf0baa3d8; kernelversion
-  6.12.111; buggy unregister at intel_rapl_common.c:2104
-- [Phase 6] rapl_pmu.registered exists; patch needs function-name
-  context tweak
-- [Phase 8] Failure mode: NULL deref / oops on unbind, severity CRITICAL
-- UNVERIFIED: whether anyone nominated this on stable@
-
-The fix is small, surgical, and meets the stable criteria for this 6.12
+## Phase 1: Commit message forensics
+
+**Step 1.1: Subject line**
+- Record: `[pmdomain/qcom/rpmhpd] [Skip] Skip Retention voltage as the
+  default enable corner`
+
+**Step 1.2: Tags**
+- Record:
+  - `Signed-off-by: Mike Tipton <mike.tipton@oss.qualcomm.com>` (author,
+    Qualcomm)
+  - `Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>`
+    (Qualcomm SoC reviewer)
+  - `Signed-off-by: Ulf Hansson <ulfh@kernel.org>` (GENERIC PM DOMAINS
+    maintainer)
+  - No `Fixes:` tag (expected)
+  - No `Cc: stable` (expected)
+  - No `Reported-by`, `Tested-by`, `Link`, or syzbot tags
+- Notable: Qualcomm author + Qualcomm reviewer + subsystem maintainer
+  SOB. No user/syzbot report.
+
+**Step 1.3: Body**
+- Record:
+  - **Bug:** HLOS enable of an RPMh PD without an OPP above Retention
+    can vote Retention. Most hardware cannot run at Retention.
+  - **Symptom:** Child GDSC enable of a parent RPMh PD leaves the GDSC
+    stuck powering on (hardware hang, not a kernel oops).
+  - **Root cause:** Retention is allowed by default; only MXC opted out
+    via `skip_retention_level`. Newer chips now expose Retention on
+    rails that previously did not (e.g. MMCX).
+  - **Fix approach:** Skip Retention for every rail when building the
+    cmd-db mapping, instead of adding more per-rail flags.
+  - **Version info:** None in the message. “Newer chips” / MMCX is the
+    motivation.
+
+**Step 1.4: Hidden bug fix?**
+- Record: Not hidden. It is a real hardware-failure fix described as a
+  default-policy change. Skipping Retention is the workaround, not a
+  cleanup.
+
+## Phase 2: Diff analysis
+
+**Step 2.1: Inventory**
+- Record:
+  - File: `drivers/pmdomain/qcom/rpmhpd.c` (+9 / −5)
+  - Functions/data: `struct rpmhpd` (drop `skip_retention_level`), `mxc`
+    / `mxc_ao` initializers, `rpmhpd_update_level_mapping()`
+  - Scope: single-file surgical change
+
+**Step 2.2: Code flow**
+- Record:
+  - **Before:** `rpmhpd_update_level_mapping()` copied cmd-db aux levels
+    into `rpmhpd->level[]`. Retention (vlvl 16) was skipped only if
+    `skip_retention_level` was set. That flag was true only on `mxc` /
+    `mxc_ao`. `enable_corner` became the first non-zero mapped corner,
+    which could be Retention.
+  - **`rpmhpd_power_on()`:** `corner = max(pd->corner,
+    pd->enable_corner)` then aggregate. Enable without an OPP uses
+    `enable_corner`.
+  - **After:** Retention is always skipped. `enable_corner` is the first
+    corner above Retention. MXC’s flag is redundant and removed.
+  - Path affected: probe-time mapping, then every power-on that does not
+    already have a higher OPP (including parent enable from a child
+    GDSC).
+
+**Step 2.3: Bug mechanism**
+- Record: **Hardware workaround / logic fix.** Retention as min enable
+  corner is not a valid operational vote for HLOS. Child GDSC parent-on
+  uses that corner and the GDSC never completes power-on.
+- Verified path: `gdsc_register()` attaches GDSCs as genpd subdomains of
+  the clock-controller’s `dev->pm_domain` (`drivers/clk/qcom/gdsc.c`).
+  `genpd_power_on()` walks parents and calls `rpmhpd_power_on()` with no
+  performance state. DT has many `power-domains = <&rpmhpd RPMHPD_MMCX>`
+  nodes (sm8450/sm8550/sm8650/sm8750 and others).
+
+**Step 2.4: Fix quality**
+- Record: Obviously correct given the existing skip logic. Minimal. If
+  cmd-db has no Retention entry, the new `if` never matches (no-op on
+  older rails). Regression risk is a slightly higher min vote (Retention
+  16 → typically MIN_SVS 48) on rails that advertised Retention; the
+  author states HLOS must not use Retention. No API/ABI change.
+
+## Phase 3: Git history
+
+**Step 3.1: Blame**
+- Record:
+  - Mapping loop: `279b7e8a62cc` (“soc: qcom: rpmhpd: Add RPMh power
+    domain driver”, 2019)
+  - `enable_corner`: `e3e56c050ab6` (“soc: qcom: rpmhpd: Make power_on
+    actually enable the domain”, 2021) — this is what makes Retention
+    reachable as the enable vote
+  - Opt-in skip: `ddab91f4b2de5` (“Skip retention level for Power
+    Domains”, 2024), MXC only, `Cc: stable@vger.kernel.org # v5.17`
+  - This change: `7178817f19049` (2026-07-13)
+
+**Step 3.2: Fixes tag**
+- Record: None. Closest predecessor is `ddab91f4b2de5` (MXC-only skip).
+  Both `ddab91f4b2de5` and `e3e56c050ab6` are ancestors of this HEAD.
+
+**Step 3.3: File history**
+- Record: Recent work is mostly new SoC tables. No later revert of
+  default-skip. Eliza MXC/MMCX add was reverted for unrelated reasons
+  (`9fca7779ad185`). Standalone v1 patch, not part of a numbered series.
+
+**Step 3.4: Author**
+- Record: Mike Tipton (Qualcomm); this is his only recent commit on
+  `drivers/pmdomain/qcom/`. Konrad reviews rpmhpd regularly. Ulf is the
+  pmdomain maintainer.
+
+**Step 3.5: Dependencies**
+- Record: Needs `enable_corner` + Retention skip `continue` in
+  `rpmhpd_update_level_mapping()`. Both exist here. Applies standalone
+  on a tree that still has `skip_retention_level`. No other patches
+  required.
+
+## Phase 4: Mailing list / external
+
+**Step 4.1: Original discussion**
+- Record: `b4 dig -c 7178817f19049` →
+  https://patch.msgid.link/20260629-rpmhpd-skip-
+  ret-v1-1-d94180ad9a29@oss.qualcomm.com
+- Series: **v1 only** (no v2/v3).
+- Thread (mbox): Ulf Hansson: “Applied for next, thanks!” No NAKs, no
+  stable nomination, no reviewer risk flags.
+
+**Step 4.2: Recipients (`b4 dig -w`)**
+- Record: Ulf Hansson, linux-arm-msm, linux-pm, linux-kernel, Bjorn
+  Andersson, Konrad Dybcio, Taniya Das (author of the MXC skip), Fenglin
+  Wu. Right lists and people.
+
+**Step 4.3: Bug report**
+- Record: No public user/syzbot/bugzilla report. Failure mode is
+  described by the Qualcomm author from platform bring-up.
+
+**Step 4.4: Related series**
+- Record: Standalone. Extends `ddab91f4b2de5` rather than depending on a
+  multi-patch series.
+
+**Step 4.5: Stable list**
+- Record: lore.kernel.org/stable fetch returned 403. UNVERIFIED whether
+  stable@ discussed this subject. The 2024 MXC skip *was* Cc:stable.
+
+## Phase 5: Semantic / call graph
+
+**Step 5.1: Functions**
+- Record: `rpmhpd_update_level_mapping()` (changed), `rpmhpd_power_on()`
+  / `rpmhpd_set_performance_state()` (consumers of `enable_corner`,
+  unchanged).
+
+**Step 5.2: Callers**
+- Record: `rpmhpd_update_level_mapping()` ← `rpmhpd_probe()` only.
+  `rpmhpd_power_on()` is `generic_pm_domain.power_on`, called from genpd
+  (including parent-on for child GDSCs). Probe + device/runtime PM, not
+  a syscall-only path.
+
+**Step 5.3: Callees**
+- Record: `cmd_db_read_aux_data()`, then later
+  `rpmhpd_aggregate_corner()` → `rpmhpd_send_corner()` (RPMh votes).
+
+**Step 5.4: Reachability**
+- Record: Yes, from normal Qualcomm device probe. Clock-controller GDSCs
+  are subdomains of rpmhpd (often MMCX). Userspace does not need a
+  special trigger; enabling display/video/camera clocks is enough.
+
+**Step 5.5: Similar patterns**
+- Record: Only MXC used `skip_retention_level`. MMCX/`mmcx_w_cx_parent`
+  did not. That matches “instead of adding more special cases for MMCX.”
+
+## Phase 6: This tree only
+
+**Step 6.1: Does the buggy code exist here?**
+- Record:
+  - Local tree: **Linux 7.3.0-rc4** (`v7.3-rc4-27-gf0100363d8c37`,
+    Makefile `VERSION=7 PATCHLEVEL=3`).
+  - `drivers/pmdomain/qcom/rpmhpd.c` is present. Pre-commit code had
+    `skip_retention_level` only on MXC.
+  - `7178817f19049` is already an ancestor of HEAD (in v7.3-rc1; **not**
+    in v7.2). Current file already skips Retention unconditionally.
+  - Bug class (Retention as `enable_corner`) dates to `e3e56c050ab6`
+    (2021) whenever cmd-db lists Retention; MMCX Retention on newer
+    chips is why this default change was made. That hardware **is**
+    represented in this 7.3 tree.
+
+**Step 6.2: Backport difficulty**
+- Record: Against current HEAD the patch is already applied (forward
+  apply would fail). Against 7.3 immediately before this commit it is a
+  clean apply (same file layout, `skip_retention_level` present). No
+  extra backport rework for this tree’s rpmhpd.c.
+
+**Step 6.3: Related fixes already here**
+- Record: MXC-only skip (`ddab91f4b2de5`) is here; it does **not** cover
+  MMCX/CX/etc. `2a93c6cbd5a70` (enabled_corner aggregation) is a
+  different bug (peer off during sync_state). No substitute for this
+  commit.
+
+## Phase 7: Subsystem context
+
+**Step 7.1**
+- Record: `drivers/pmdomain/qcom/` — Qualcomm RPMh power domains.
+  **IMPORTANT** (not core mm/fs, but used on a large set of Snapdragon
+  phones, laptops, and embedded boards). Maintainer: Ulf Hansson
+  (`GENERIC PM DOMAINS`).
+
+**Step 7.2**
+- Record: Active (new SoC tables: Nord, Hawi, Eliza, Kaanapali, Glymur,
+  etc.). The Retention default is independent of those tables.
+
+## Phase 8: Impact and risk
+
+**Step 8.1: Who is affected**
+- Record: Qualcomm rpmhpd platforms (`CONFIG_QCOM_RPMHPD`), especially
+  SoCs whose cmd-db advertises Retention on MMCX or other non-MXC rails.
+  Not universal; not staging.
+
+**Step 8.2: Trigger**
+- Record: Common: child GDSC on, parent rpmhpd has no OPP. Happens at
+  probe/runtime PM. Unprivileged userspace can cause it indirectly by
+  using multimedia devices; it also happens at boot when those
+  controllers probe.
+
+**Step 8.3: Failure mode**
+- Record: GDSC stuck powering on → device/controller hang, probe
+  failure, missing display/video/camera (or boot issues if that path is
+  on the critical path). Severity: **HIGH** (hardware hang), not a
+  KASAN/UAF class crash.
+
+**Step 8.4: Risk-benefit**
+- Record:
+  - **Benefit:** Prevents GDSC/parent-rail hangs on Qualcomm platforms
+    in this tree, including MMCX without extending a per-rail flag list.
+  - **Risk:** Low. 14-line change; no-op if Retention is absent from
+    cmd-db; MXC behavior unchanged; Qualcomm + maintainer reviewed.
+  - **Ratio:** Benefit > risk.
+
+## Phase 9: Synthesis
+
+**Step 9.1: Evidence**
+
+For:
+- Concrete hang: parent RPMh PD at Retention → child GDSC stuck on.
+- Call path and DT consumers verified in this tree.
+- Small, obviously correct extension of an existing skip that was
+  already Cc:stable for MXC.
+- Safe no-op when Retention is not in cmd-db.
+- Reviewed by Konrad, applied by Ulf; Taniya Das (original skip author)
+  was on Cc.
+- This 7.3 tree has rpmhpd, `enable_corner`, `skip_retention_level`, and
+  MMCX users.
+
+Against:
+- No `Fixes:` / public reproducer / syzbot (not a negative per rules).
+- Default change for all rails, not only MMCX (mitigated: Retention skip
+  is a no-op where unused).
+- lore.kernel.org/stable search could not be fetched (403).
+
+**Step 9.2: Stable rules**
+1. Obviously correct and tested? **PASS** — v1 accepted, maintainer
+   applied, Qualcomm review.
+2. Real user-visible bug? **PASS** — GDSC stuck on parent enable.
+3. Important (hang/corruption/security)? **PASS** — hardware hang on a
+   widely used SoC family; HIGH, not a panic.
+4. Small and contained? **PASS** — +9/−5, one file.
+5. No new features/APIs? **PASS** — same skip, defaulted; no userspace
+   API.
+6. Can apply to this tree? **PASS** — 7.3 has the pre-image; the commit
+   is in 7.3-rc1.
+
+**Step 9.3: Exception category**
+- Record: Hardware workaround (skip a non-operational corner), same
+  class as the 2024 MXC Retention skip.
+
+**Step 9.4: Decision**
+This tree is 7.3.0-rc4. The rpmhpd driver, the Retention-
+as-`enable_corner` bug, and MMCX parent-GDSC consumers are all here. The
+change is a small, correct hang fix, not a feature. It should be in this
 tree.
+
+---
+
+### What it solves for users of this tree
+
+Without it, enabling a Qualcomm GDSC whose parent RPMh rail (often MMCX)
+has no OPP votes Retention. That rail cannot actually run there, so the
+GDSC never finishes power-on. Display, video, camera, and similar
+controllers that list `power-domains = <&rpmhpd RPMHPD_MMCX>` hit this
+on probe or runtime PM. Skipping Retention when building the cmd-db map
+makes the min enable corner the first real operational level.
+
+### Risk vs benefit
+
+Benefit is avoiding a platform hang on common Qualcomm PM paths. Risk is
+low: SoCs without Retention in cmd-db are unchanged; MXC already skipped
+Retention; HLOS is not supposed to use Retention.
+
+### Concerns
+
+No public reproducer. Stable-list discussion unverified (HTTP 403).
+Slightly higher min vote on rails that listed Retention is intended, not
+a silent functional change for rails that never had it.
+
+### Verification
+- [Phase 1] Parsed tags: author/reviewer/maintainer SOBs only; no
+  Fixes/stable/syzbot
+- [Phase 2] Diff: +9/−5 in `rpmhpd.c`; drop `skip_retention_level`;
+  always skip `RPMH_REGULATOR_LEVEL_RETENTION` (16)
+- [Phase 2] `rpmhpd_power_on()` uses `max(pd->corner,
+  pd->enable_corner)` — verified in file
+- [Phase 2] GDSC subdomain attach in `gdsc_register()` — verified
+- [Phase 2] DT MMCX consumers in sm8450/sm8550/sm8650/sm8750 dtsi —
+  verified
+- [Phase 3] `git describe HEAD` / `make kernelversion`: v7.3-rc4 /
+  7.3.0-rc4
+- [Phase 3] `git merge-base --is-ancestor 7178817f19049 HEAD`: yes; not
+  in v7.2; in v7.3-rc1
+- [Phase 3] Blame: mapping 279b7e8a62cc (2019); enable_corner
+  e3e56c050ab6 (2021); MXC skip ddab91f4b2de5 (2024)
+- [Phase 3] Pre-image: `skip_retention_level` only on mxc/mxc_ao; mmcx
+  had no flag
+- [Phase 4] `b4 dig -c 7178817f19049`: lore/msgid `20260629-rpmhpd-skip-
+  ret-v1-1-d94180ad9a29@oss.qualcomm.com`
+- [Phase 4] `b4 dig -a`: v1 only; Ulf “Applied for next”; no NAK
+- [Phase 4] `b4 dig -w`: Ulf, Bjorn, Konrad, Taniya Das, linux-arm-msm,
+  linux-pm
+- [Phase 4] UNVERIFIED: lore.kernel.org/stable (403)
+- [Phase 5] `rpmhpd_update_level_mapping()` called only from
+  `rpmhpd_probe`
+- [Phase 6] Post-fix code already in this checkout; related MXC skip
+  present and insufficient
+- [Phase 8] Failure mode: GDSC stuck on — HIGH hang, Qualcomm-specific
 
 **YES**
 
- drivers/powercap/intel_rapl_common.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/pmdomain/qcom/rpmhpd.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index f08ac99f5e55e..977c4c90923d5 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -2106,7 +2106,9 @@ void rapl_package_remove_pmu(struct rapl_package *rp)
- 			return;
- 	}
+diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
+index 4c3cbf3abc750..fc61ec45755c3 100644
+--- a/drivers/pmdomain/qcom/rpmhpd.c
++++ b/drivers/pmdomain/qcom/rpmhpd.c
+@@ -41,7 +41,6 @@
+  * @addr:		Resource address as looped up using resource name from
+  *			cmd-db
+  * @state_synced:	Indicator that sync_state has been invoked for the rpmhpd resource
+- * @skip_retention_level: Indicate that retention level should not be used for the power domain
+  */
+ struct rpmhpd {
+ 	struct device	*dev;
+@@ -58,7 +57,6 @@ struct rpmhpd {
+ 	const char	*res_name;
+ 	u32		addr;
+ 	bool		state_synced;
+-	bool            skip_retention_level;
+ };
  
--	perf_pmu_unregister(&rapl_pmu.pmu);
-+	if (rapl_pmu.registered)
-+		perf_pmu_unregister(&rapl_pmu.pmu);
-+
- 	memset(&rapl_pmu, 0, sizeof(struct rapl_pmu));
- }
- EXPORT_SYMBOL_GPL(rapl_package_remove_pmu);
+ struct rpmhpd_desc {
+@@ -176,7 +174,6 @@ static struct rpmhpd mxc = {
+ 	.pd = { .name = "mxc", },
+ 	.peer = &mxc_ao,
+ 	.res_name = "mxc.lvl",
+-	.skip_retention_level = true,
+ };
+ 
+ static struct rpmhpd mxc_ao = {
+@@ -184,7 +181,6 @@ static struct rpmhpd mxc_ao = {
+ 	.active_only = true,
+ 	.peer = &mxc,
+ 	.res_name = "mxc.lvl",
+-	.skip_retention_level = true,
+ };
+ 
+ static struct rpmhpd nsp = {
+@@ -974,7 +970,15 @@ static int rpmhpd_update_level_mapping(struct rpmhpd *rpmhpd)
+ 		return -EINVAL;
+ 
+ 	for (i = 0; i < rpmhpd->level_count; i++) {
+-		if (rpmhpd->skip_retention_level && buf[i] == RPMH_REGULATOR_LEVEL_RETENTION)
++		/*
++		 * Most HW won't function properly at Retention. The minimum
++		 * operational level is the first level above Retention. The
++		 * small subset of HW that can operate at Retention isn't
++		 * controlled by HLOS. Skip the Retention level to avoid HW
++		 * failures when the PD is enabled without first having an
++		 * explicit OPP level set.
++		 */
++		if (buf[i] == RPMH_REGULATOR_LEVEL_RETENTION)
+ 			continue;
+ 
+ 		rpmhpd->level[i] = buf[i];
 -- 
 2.53.0
 
