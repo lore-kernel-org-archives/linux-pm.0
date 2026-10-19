@@ -1,52 +1,53 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792428745;
-	b=TS/YF1FHM3ZDkYxfx2SIXVBt6ldaWNjWzU2thOnNtkzRYbM3f7ZLK8vLs75kp+lh/faT
-	 KfFAANPU7xvdI5bHXnOX3ZPKQmptm8SEvCSvpPnwyP3aDiEG3+igkBW3fzo7TfyVh7q7O
-	 KxYScfk+jdKTjeN86EIuTyBn2rI9ROh6XIr+V2UsTVEft0ZdV8sPzPzxhIO/7VwaTiVLg
-	 sLV4EHVn3lxv7zI7Zpne1EBk4rNqqEXRXsls1odsTMmsI3vgJNOkTsmaqUQ33tpwFZkGU
-	 l5Y6NGOZewK5YfByEe3Ov54Dj7HcbflLGLBumN0fCFc8xVH0aRf431KcQ6sEXeT4UIA==
+	t=1792428747;
+	b=qmH+b/T9eEamsl8bncBThSi5W+A8+YLxAYHZ9IzUt9Es/tMBE0CD4sOz2sSn3ISiPGnM
+	 gDYb8t8StDnSZ5UZomIOKNtTw81B769P0MzQ0V3LLgnjL11mrsecNCM1g851ZQ1Tr5LOf
+	 eu3R1x58GznsjHLw3P8dTJzp2TKt2tyC4KmM/TomkA2/IOGvVK4WSu958DZWVcqazO4w+
+	 +3rjB+mBclgK7abHAK+xY0j02zMZiCcvZk5T/Sg27eBxYJ+uGBVtsEh8sp/EhYzlJVwnX
+	 Gk5hLDMx3/I22674QmEtg91ifleoKakGKdJTv2gZ9M7DzAzpt+FBPrO0YKveilfzwhw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792428745;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792428747;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=QQEpj3wWSD+9wod7uCM/8IlbmgGkKUvkpT4ef/f3cgc=;
-	b=J/OeWbs3iTAweC7jZo8giW67NdYv2Rh+9kkKfb1TG9RSK0nOyPgHmvw0wBwm9IfRkNyw
-	 XwUTsykUhr0/KFcGs9tSe1QGxQHECodmetfX21z76hWOCBQ5hwsLLi+X6GqZlowffFpbv
-	 GxLX399DCtZVeZKqswIUamtJhtbCK0+pJKfsT9YfyvJYH2nIZTZgzWZIzoRUtyPINyx+U
-	 QlrsW8yfyqDzAKAnF7Tbq2/+guu5EC9qNggNtdZYembzNbjXBIZWNDX+6D1+mehkTI/2Q
-	 JwKi4z3sV6FA545xywPKDAtjBEtEtpXng7tT4srvFuntGx7pQinW0JsgG+ZQ+KtvguQ==
+	bh=9QGJipQ9Pu143Wpdr9wFSwPEeSkoEWnU9PD1nCAoB74=;
+	b=EkVZ9bS5w95rLrBMxZs3vQJQx+wYhy+VX+xzyssLzrSmZ+LSAWe6NHk+h/+sIrdsB7Rm
+	 5BOmroWe36KEHEDPQ03lXzOtxs9EnKwpe5pJzVO7rKu0cT21Swv6YXlTRfelnU5vJr1Vk
+	 XA+Su/oLCPkHWa57TQulehAYnZ4nkbSdMXVlGbDZeOHNeoD8eqkoYsI+Inv9EhkZv3JbO
+	 UgIRF5aq/fAFRZxzGAl6NeDxD5fRAe6mM3Get68uyEqzWP8XdMRNCZLdaKUJJ2Ask92rR
+	 ftALJrGW5ib+/eXXhiGcwXbSVflE2ZX1MxzxXawKyquU1LeBqI/ZWmk9zB3JehnycEg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UIrLMnYd;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YMUgPyUV;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F20D2606A32F
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 16:52:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1FC2606A31B
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 16:52:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UIrLMnYd
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B08B81F0157F;
-	Mon, 19 Oct 2026 16:52:23 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YMUgPyUV
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 575411F000CF;
+	Mon, 19 Oct 2026 16:52:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792428744;
-	bh=QQEpj3wWSD+9wod7uCM/8IlbmgGkKUvkpT4ef/f3cgc=;
+	s=k20260515; t=1792428746;
+	bh=9QGJipQ9Pu143Wpdr9wFSwPEeSkoEWnU9PD1nCAoB74=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=UIrLMnYdiiB7NgKENfUT9q5X1C9KckXmkIkiEUZ+qmRkVXaOMTgDHB9rnfJiD7LcZ
-	 z9ULoGRwgySLcP8QBGYpBaloWGEjNPFOK2xmF2t/j5BoKCw7wVkYQ2yGaj+KmL/MnL
-	 6ox8CpD7+sYz3szCnavkjq4lhe6eAZie7wxbf5tKsZ1mxQoHVl7qjtV98RTYo3gFXM
-	 CHwTYfhPXoLCRuIlGeka2iE06d/RJ4GtGnIsAC2UKYT2X1C1yxKMdWgm3piE01tIFU
-	 BTyfudul3KEgkZrY9O8RRPn3kvrn18XZ0xJJFikNo8annwylVp3SdWYyuOz9vGTDJa
-	 aUcO+JyZdZd/A==
+	b=YMUgPyUV/EGoL6FlqeniF7yUzylzodCAt+/qXg4l8C4MqSXPC41Bp8mhSBT9Qa+Rv
+	 BX7K3937R+DzIj00F8SEvLeGf5SsKp7CiU7fDi1YgnEWVNv0MfLfS9vaHq7Ryl3Y96
+	 lfPOmYr9h8wtg/MI+eGnyn1W+riWj5+XDXRZQEtGNj8Xf8HB+6N9Mx+YHDwq+oKQo9
+	 rmcPk/K6RyOf26H80c4EjH5gGNzQ2bbOYJohMFmriYJyIXSxss5AUugxtPcv2OXbzS
+	 pdffTlakgXkal/ae7IvTdSYPl5O2bJ313Fvo65vNKaGjY7j4cohuir0VIaB1ZVoZ7P
+	 9EaGOKan21eFA==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: Andy Shevchenko <andriy.shevchenko@intel.com>,
+	Amarjeet <amarjeet@intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH 16/18] x86_energy_perf_policy: Fix use-after-free in err_on_hypervisor()
-Date: Mon, 19 Oct 2026 12:43:37 -0400
-Message-ID: <77e30731aaa7d6321dbae7bd58e111d4a73dfd4e.1792428130.git.len.brown@intel.com>
+Subject: [PATCH 17/18] x86_energy_perf_policy: Fix write_sysfs() return type
+Date: Mon, 19 Oct 2026 12:43:38 -0400
+Message-ID: <777cbe6f740ab2e371df856c716ffe41117940a6.1792428130.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <e160a0ae497702e1c32ab163faa63c0043ea9298.1792428130.git.len.brown@intel.com>
 References: <e160a0ae497702e1c32ab163faa63c0043ea9298.1792428130.git.len.brown@intel.com>
@@ -63,47 +64,61 @@ Reply-To: Len Brown <lenb@kernel.org>
 Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-From: Len Brown <len.brown@intel.com>
+From: Amarjeet <amarjeet@intel.com>
 
-Avoid testing a pointer into a freed buffer.
+write_sysfs() returns an unsigned int even though it returns -1 when
+write() fails. This converts the error to UINT_MAX and can cause callers
+that treat a nonzero return value as success to miss the failure.
 
-Assisted-by: GitHub-Copilot:Claude-Sonnet-4.6
+Use ssize_t to match write(), update the receiving variable accordingly,
+and explicitly require a positive result in sysfs_write_string().
+
+Signed-off-by: Amarjeet <amarjeet@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- .../x86/x86_energy_perf_policy/x86_energy_perf_policy.c  | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ .../x86/x86_energy_perf_policy/x86_energy_perf_policy.c   | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-index 70d889c3e0dc..f8ab9f4465ce 100644
+index f8ab9f4465ce..89850cbc6d90 100644
 --- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
 +++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-@@ -782,10 +782,10 @@ void err_on_hypervisor(void)
- 	/* On VMs /proc/cpuinfo contains a "flags" entry for hypervisor */
- 	cpuinfo = fopen_or_die("/proc/cpuinfo", "r");
- 
--	buffer = malloc(4096);
-+	buffer = calloc(4096, 1);
- 	if (!buffer) {
- 		fclose(cpuinfo);
--		err(-ENOMEM, "buffer malloc fail");
-+		err(-ENOMEM, "buffer calloc fail");
- 	}
- 
- 	if (!fread(buffer, 1024, 1, cpuinfo)) {
-@@ -814,11 +814,10 @@ void err_on_hypervisor(void)
- 	fclose(cpuinfo);
- 
- 	hypervisor = strstr(buffer, "hypervisor");
--
--	free(buffer);
--
- 	if (hypervisor)
- 		err(-1, "not supported on this virtual machine");
-+
-+	free(buffer);
+@@ -897,7 +897,7 @@ static unsigned int read_sysfs(const char *path, char *buf, size_t buflen)
+ 	return (unsigned int)numread;
  }
  
- /*
+-static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
++static ssize_t write_sysfs(const char *path, char *buf, size_t buflen)
+ {
+ 	ssize_t numwritten;
+ 	int fd;
+@@ -916,7 +916,7 @@ static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
+ 
+ 	close(fd);
+ 
+-	return (unsigned int)numwritten;
++	return numwritten;
+ }
+ 
+ static int sysfs_read_string(const char *path, char *buf, size_t buflen)
+@@ -941,7 +941,7 @@ static int sysfs_write_string(const char *path, const char *buf)
+ 	len = snprintf(tmp, sizeof(tmp), "%s\n", buf);
+ 	if (len < 0 || len >= (int)sizeof(tmp))
+ 		return -1;
+-	return write_sysfs(path, tmp, (size_t)len + 1) ? 0 : -1;
++	return write_sysfs(path, tmp, (size_t)len + 1) > 0 ? 0 : -1;
+ }
+ 
+ void print_hwp_cap(int cpu, struct msr_hwp_cap *cap, char *str)
+@@ -1047,7 +1047,7 @@ static int set_epb_sysfs(int cpu, int val)
+ 	char path[SYSFS_PATH_MAX];
+ 	char linebuf[3];
+ 	char *endp;
+-	int ret;
++	ssize_t ret;
+ 
+ 	if (!has_epb)
+ 		return -1;
 -- 
 2.45.2
 
