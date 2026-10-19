@@ -1,43 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAD00645085;
-	Mon, 19 Oct 2026 14:06:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66AC5544D28;
+	Mon, 19 Oct 2026 14:06:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418786; cv=none; b=hg7G/Tggf/jGPQra/b7OcSNplTo5yxM/wPlQW99GL0CyxaqYDU5zmmBmCsRZvib2/wKo7NGgQNUN56a3yhydrpv5M9uGnCyoPYM2eQGEdhkbaHMr+nVK1JeqjYi/mwkgQWc4oen5q24NRxWRThOMtkPHDbdOBR6xQazMWRC6WYI=
+	t=1792418790; cv=none; b=Aq3zbpV97q5+nvmDbxfPgk+cNpjnwwGItBTAPcFz4y/EjBZD6E3gObmJxP0btjjedBpVaUbi39RZYxluXBl/b9A37rOAd5CaR4hv3D2zmuaF4q1zmSAbERsw+bDtJaeQG+57MPwlrj7KGNjF/aPQoxtI0gqaj0qLobb8Xp7/1Ro=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418786; c=relaxed/simple;
-	bh=fpbUBSic+Y0uy5UHJ532+VtLkF+liEMy0afhOOEyUj0=;
+	s=arc-20240116; t=1792418790; c=relaxed/simple;
+	bh=fJkha6LmVu5H1yOlJ6i3ErBwlIkdlgBqVadbQbV8ue0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tHH0sSX/MU8PVgO7kAb1yxvBIStWZXZRMtzRhmleNhfMSSjs2OHVwQNI/MaPIMpfAkwUtxSXRDr2ESxVWum55G5l87g2Cy7o9KDwcB+mEhFUqMm/4q5KVQcSwuNjiGDgaa9Ri9vzeaBaDjEu3rklNz83VTw1jLD5axzla9Mf8uE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=E9/nQD7S; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=tbo1yu7LlE/mkhyi1QN4xl6zGR1IcH2K+iXP4WB4bsNOQSeVzho70hlTpqLq5ZdVNcXEPEhIfZTVl5O39kN5PFyWDgNlhqaPRPSjjIng924U4lBMYfC+S21O2dUASPOynp/jaHk4nIrlgGQWLBuy4vxYLwudkq0eNF6YdULXCl4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Zr+1J2Tc; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="E9/nQD7S"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D641E1F000C5;
-	Mon, 19 Oct 2026 14:06:23 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Zr+1J2Tc"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 628C71F000C4;
+	Mon, 19 Oct 2026 14:06:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418784;
-	bh=2Cqt/StO5wJRmyuqhqdQe+vFzWCcT9Y1VHmZC4EWq60=;
+	s=k20260515; t=1792418787;
+	bh=Mn8rlLN/UqIMZ9eBAzfdjMCtR985Ve3IyGFbKAbplhY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=E9/nQD7StqWbgAGRjAOY28lNWp7VlJALTWwOSu9hVt2wguy76/Db8F85SL70PoRbf
-	 Wm8bIVD5JHKkI6I8+qENXxIedNbBnNQr6/OxMxkyALuTWJyiIUOfYcJ+2WbNa8vP6Z
-	 Bm3QKYJGW/B/HIQnikepUrX90/wfL6iXuxcODTR3ri0lNAReehMIf7Tvm/btlD4kj7
-	 04JwFw01TrCjj4Aro2qgQIYKtuFnxoSFojzGoJyx2IMkszhQAjZVmTu4tMMOKqmhGP
-	 LTK9VyC4cg/x7Tg+zLnhZ1wA8XfUUO8OiVydRuIqq0auJNWkciqLcoq45lPesHQuGx
-	 nPb9VXWTX23bA==
+	b=Zr+1J2Tc4zduqbpJXRAB3XzWj1fVVlTtiF1ZrIsIRa8x9bx5X9lZR+KCOPdRrT0aS
+	 MW6FgrAEQTPCUyrB/0sMq22ltzlFsO6RA/0wZBeRdh/GLd/lb65OqxyXT5zsKfAv0M
+	 1HF5tjohdXPv1WG4MfdCKKr1xzacqwTd7+UqmLnxf/iu4SZ9Q2JWXNOHjgZOgSiV/y
+	 qvHaEBxhLcstZwWujZZn+vIt5lHE/fzF3vxcxbsJp6fnqhLk2wb3ZG7rWYC5sjwYEX
+	 2/MzSt49DT2mN7KsEhBFihzBZFvroM0QQyhu4kW9WFUkJBKlAvWiqVQmIrAeKJ8PFe
+	 yBClqJU8HwC4Q==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Andreas Haufler <andreas@haufler.info>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Tzung-Bi Shih <tzungbi@kernel.org>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	Sasha Levin <sashal@kernel.org>,
-	rafael@kernel.org,
+	sre@kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-6.1] tools/lib/thermal: Fix misplaced extern "C" closing brace
-Date: Mon, 19 Oct 2026 09:53:05 -0400
-Message-ID: <20261019135441.1420968-494-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-5.15] power: supply: cros_pchg: unregister EC notifier
+Date: Mon, 19 Oct 2026 09:53:07 -0400
+Message-ID: <20261019135441.1420968-496-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -53,524 +54,398 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Andreas Haufler <andreas@haufler.info>
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 
-[ Upstream commit cb0ec27efac2aaf92393ad563a35fb6f00d0a6cd ]
+[ Upstream commit 631adfa03595c63b2a621cdc62db60bb1ce5f91c ]
 
-The public libthermal header opens the C++ 'extern "C" {' block inside
-the __LIBTHERMAL_H include guard, but places the closing brace after
-the guard has already ended:
+cros_pchg_probe() registers an EC event notifier whose callback uses the
+devm-allocated charger_data via container_of().  The driver has no
+remove callback and does not unregister the notifier, so the notifier
+chain can retain a pointer to freed driver state after unbind or probe
+cleanup.
 
-	#endif /* __LIBTHERMAL_H */
+Register a devm cleanup action immediately after the notifier is
+installed so the notifier is unregistered before the driver state is
+released.  Also fail probe if the notifier cannot be registered, instead
+of leaving a charger device that cannot receive EC events.
 
-	#ifdef __cplusplus
-	}
-	#endif
-
-On a single inclusion the braces still balance, so the problem is
-invisible. On the second inclusion of the header in the same C++
-translation unit the include guard skips the opening 'extern "C" {',
-while the closing '}' lives outside the guard and is emitted anyway.
-This leaves a stray '}' and breaks compilation for any C++ consumer
-that includes the header more than once.
-
-Move the closing block inside the include guard so both halves of the
-'extern "C"' declaration are guarded consistently.
-
-Signed-off-by: Andreas Haufler <andreas@haufler.info>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Link: https://patch.msgid.link/20260721083230.91246-1-andreas@haufler.info
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
+Link: https://patch.msgid.link/20260615063105.39152-1-pengpeng@iscas.ac.cn
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-## Local tree
+## Phase 1: Commit message forensics
 
-This checkout is **pending-6.18**, kernel **6.18.53**
-(`p-6.18-1-g03b85e06ca9bf`). The verdict is only about this tree.
+**Step 1.1: Subject line**
+Record: `[power: supply: cros_pchg]` `[unregister]` `[stop leaving an EC
+event notifier pointing at freed charger state]`
 
-Mainline commit: `cb0ec27efac2aaf92393ad563a35fb6f00d0a6cd` (landed
-after v6.18; `git describe` reports `v7.2-rc2-24-gcb0ec27efac2a`). It is
-**not** an ancestor of HEAD.
+**Step 1.2: Tags**
+Record:
+- `Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>` (author)
+- `Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>` (Chrome OS platform
+  maintainer)
+- `Link:
+  https://patch.msgid.link/20260615063105.39152-1-pengpeng@iscas.ac.cn`
+- `Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>`
+  (power-supply maintainer; applied the patch)
+- No `Fixes:`, no `Cc: stable`, no `Reported-by`, no `Tested-by`, no
+  syzbot/CVE tags (absence is expected)
+
+**Step 1.3: Body**
+Record:
+- **Bug:** `cros_pchg_probe()` registers `charger->notifier` on the
+  parent Chrome OS EC `event_notifier` chain. The callback uses
+  `container_of()` to recover `struct charger_data`, which is
+  `devm_kzalloc()`’d. The platform driver has no `.remove` and never
+  unregisters the notifier.
+- **Symptom:** After unbind/module unload (and, as claimed, probe
+  unwind), the parent EC chain still holds a pointer into freed driver
+  state. The next EC MKBP event can call into that freed object.
+- **Root cause:** Notifier lifetime is tied to the parent
+  `cros_ec_device`, not to the child pchg platform device.
+- **Fix:** `devm_add_action_or_reset()` immediately after successful
+  register; also fail probe if register fails instead of leaving a
+  charger that cannot receive events.
+- **Versions:** none stated in the message.
+
+**Step 1.4: Hidden bug fix?**
+Record: Not hidden. This is an explicit use-after-free / dangling-
+notifier fix. The “fail probe on register failure” part is a real
+correctness fix, not a feature.
+
+## Phase 2: Diff analysis
+
+**Step 2.1: Inventory**
+Record:
+- File: `drivers/power/supply/cros_peripheral_charger.c` (`+11 / -2`)
+- Functions: new `cros_pchg_unregister_notifier()`; `cros_pchg_probe()`
+  changed
+- Scope: single-file surgical fix
+
+**Step 2.2: Code flow**
+Record, from the pre-fix file (`631adfa03595c^`):
+- **Before:** After registering ports, probe does
+  `blocking_notifier_chain_register(&ec_dev->ec_dev->event_notifier,
+  nb)`. On failure it only logs and still `return 0`. There is no
+  `.remove`. `charger` is released by devm on unbind.
+- **After:** Register failure returns `dev_err_probe(...)`. On success,
+  `devm_add_action_or_reset(dev, cros_pchg_unregister_notifier,
+  charger)` unregisters from `charger->ec_device->event_notifier` before
+  other devm resources (including `charger`) are freed.
+  `devm_add_action_or_reset()` also runs the unregister callback if
+  adding the action itself fails.
+
+**Step 2.3: Bug mechanism**
+Record: **Use-after-free / dangling notifier (memory safety + ref-
+lifetime).** Secondary logic fix: probe no longer succeeds without a
+working notifier. Not a leak-only cleanup.
+
+Verified mechanism:
+- `cros_ec_notify()` does `container_of(nb, struct charger_data,
+  notifier)` then `cros_pchg_event(charger)`.
+- Parent EC IRQ path `cros_ec_handle_event()` /
+  `cros_ec_report_events_during_suspend()` call
+  `blocking_notifier_call_chain(&ec_dev->event_notifier, ..., ec_dev)`
+  in `drivers/platform/chrome/cros_ec.c`.
+- The pchg device is an MFD child (`cros-ec-pchg` in
+  `drivers/mfd/cros_ec_dev.c`), added when `EC_CMD_PCHG_COUNT` reports
+  ports. The chain lives on the parent `cros_ec_device`, which outlives
+  a child unbind / `rmmod` of `CHARGER_CROS_PCHG`.
+
+**Step 2.4: Fix quality**
+Record: Obviously correct and the same pattern already used by
+`cros_usbpd-charger.c`. Minimal. Regression risk is low: `devm` LIFO
+order unregisters before `charger` is freed; unregister is only
+scheduled after a successful register. Failing probe when notifier
+registration fails is stricter but matches sibling Chrome EC drivers
+(`rtc-cros-ec`, `cros_ec_keyb`, `extcon-usbc-cros-ec`).
+`blocking_notifier_chain_register()` rarely fails.
+
+## Phase 3: Git history
+
+**Step 3.1: Blame**
+Record: Notifier registration and the missing remove hook come from
+`56d629af09b9d` (“power: supply: PCHG: Peripheral device charger”,
+2021-07-16). That commit is an ancestor of `v5.15` (`git merge-base
+--is-ancestor` exit 0 for v5.15, 1 for v5.14). The bug is old, not last-
+month code.
+
+**Step 3.2: Fixes: tag**
+Record: None. Introducer is `56d629af09b9d`, present in this tree.
+
+**Step 3.3: File history**
+Record (recent, this file): `631adfa03595c` (this fix), `d6486a13665e9`
+(ID table), `97dd69b1ade16` (resume sync). No prerequisite refactor.
+Standalone, not `patch X/Y`.
+
+**Step 3.4: Author**
+Record: Pengpeng Hou has one other power-supply commit here
+(`cw2015_battery` MODULE_DEVICE_TABLE). Not the subsystem maintainer.
+Weight comes from reviewer Tzung-Bi Shih (Chrome platform) and applier
+Sebastian Reichel (power-supply).
+
+**Step 3.5: Dependencies**
+Record: Uses `devm_add_action_or_reset()` and `dev_err_probe()`, both
+long-standing. No new helpers. Can apply standalone. No revert of this
+commit found.
+
+## Phase 4: Mailing list
+
+**Step 4.1: Original discussion**
+Record: `b4 dig -c 631adfa03595c` matched
+https://patch.msgid.link/20260615063105.39152-1-pengpeng@iscas.ac.cn
+(v1 only; subject used `cros_peripheral_charger`, maintainer retitled to
+`cros_pchg`). Thread saved via `b4 dig -m`.
+
+**Step 4.2: Recipients / review**
+Record (`b4 dig -w`): To/Cc included Sebastian Reichel, linux-pm, linux-
+kernel, Benson Leung, Tzung-Bi Shih, Guenter Roeck, chrome-platform.
+Tzung-Bi’s only comment was a subject-line nit; `Reviewed-by` “with or
+without this”. Sebastian applied it (“Applied, thanks!”). No NAKs, no
+stable nomination in-thread.
+
+**Step 4.3: Bug report**
+Record: No user crash/syzbot report. A later duplicate submission
+(Hongyan Xu / Patchew) says the same hole was found by static analysis.
+That still describes a real UAF, not a style nit.
+
+**Step 4.4: Series**
+Record: Single standalone patch (`[1/1]`).
+
+**Step 4.5: Stable list**
+Record: lore.kernel.org/stable search returned HTTP 403. UNVERIFIED
+whether anyone already asked for this on stable@. No evidence it was
+rejected.
+
+## Phase 5: Semantic / call graph
+
+**Step 5.1: Functions**
+Record: `cros_pchg_unregister_notifier` (new), `cros_pchg_probe`
+(modified). Callback still `cros_ec_notify` → `cros_pchg_event`.
+
+**Step 5.2: Callers**
+Record: `cros_pchg_probe` is the platform `.probe` for `cros-ec-pchg`.
+Instantiated from `ec_device_probe()` in `cros_ec_dev.c` when the EC
+reports PCHG ports. `cros_ec_notify` is invoked from the parent EC
+IRQ/event path (`cros_ec_irq_thread` → `cros_ec_handle_event` →
+`blocking_notifier_call_chain`). That is a live interrupt/event path,
+not init-only.
+
+**Step 5.3: Callees**
+Record: `blocking_notifier_chain_register/unregister`,
+`devm_add_action_or_reset`, `dev_err_probe`. No new allocations or locks
+beyond the notifier API.
+
+**Step 5.4: Reachability**
+Record: Userspace can trigger unbind (`/sys/bus/platform/drivers/cros-
+ec-pchg/unbind`) or `rmmod` when `CONFIG_CHARGER_CROS_PCHG=m`. After
+that, any EC MKBP event on the still-live parent walks the dangling
+notifier. Unprivileged users cannot usually unbind, but module unload,
+sysfs unbind, and parent teardown are real. After UAF,
+`cros_pchg_event()` walks `charger->ports[]` and may call
+`power_supply_changed()` — crash or memory corruption.
+
+**Step 5.5: Similar patterns**
+Record: Sibling `cros_usbpd-charger.c` already uses
+`devm_add_action_or_reset(..., cros_usbpd_charger_unregister_notifier,
+...)`. Other Chrome EC clients (`rtc-cros-ec`, `cros_ec_keyb`, `extcon-
+usbc-cros-ec`) unregister in `.remove`. This driver was the outlier.
+
+## Phase 6: This checkout
+
+**Step 6.1: Buggy code in this tree?**
+Record: Local tree is **v7.3-rc4** (`git describe HEAD` =
+`v7.3-rc4-27-gf0100363d8c37`, `VERSION=7 PATCHLEVEL=3 SUBLEVEL=0
+EXTRAVERSION=-rc4`). File exists. Driver introduced in v5.15; notifier
+bug present from that introduction. Pre-fix probe (shown via `git show
+631adfa03595c^`) matches the candidate diff. `git merge-base --is-
+ancestor 631adfa03595c HEAD` succeeds (the fix is already on this
+mainline branch, as expected for a candidate sourced from it).
+
+**Step 6.2: Backport difficulty**
+Record: Clean apply on this file. Surrounding probe logic is the
+original 2021 structure plus later resume/ID-table work; this hunk does
+not depend on those.
+
+**Step 6.3: Related fixes already here**
+Record: This is the fix. No earlier alternate fix on the file. No
+revert.
+
+## Phase 7: Subsystem context
+
+**Step 7.1:**
+Record: `drivers/power/supply/` Chrome OS EC peripheral charger.
+**IMPORTANT** (not core mm/vfs, but default-on for
+`CONFIG_MFD_CROS_EC_DEV` Chromebooks with stylus/WLC ports).
+
+**Step 7.2:**
+Record: File is mature; few commits since 2021. Not a newly landed
+subsystem.
+
+## Phase 8: Impact and risk
+
+**Step 8.1: Who is affected**
+Record: Chrome OS EC machines with peripheral charge ports
+(`EC_CMD_PCHG_COUNT` > 0). `CONFIG_CHARGER_CROS_PCHG` defaults to
+`MFD_CROS_EC_DEV`. Driver-specific, not universal.
+
+**Step 8.2: Trigger**
+Record: Successful probe, then unbind/rmmod/MFD child removal while the
+parent EC device (and its IRQ) remain. Not every boot. Timing-dependent
+once the dangling notifier is left on the chain: the next PCHG (or any)
+EC event walks the chain. `cros_ec_notify` returns `NOTIFY_DONE` for
+non-PCHG events but **after** `container_of()` — so *any* EC event after
+unbind is already a UAF.
+
+**Step 8.3: Failure mode**
+Record: Use-after-free in notifier callback → kernel oops or memory
+corruption. **Severity: HIGH.**
+
+**Step 8.4: Risk/benefit**
+Record: **Benefit: high** for Chromebooks that unbind or unload this
+driver (and for teardown races). **Risk: very low** (13 lines,
+established `devm` pattern, Chrome maintainer review). Ratio favors
+backport.
+
+## Phase 9: Synthesis
+
+**Step 9.1: Evidence**
+
+For:
+- Real dangling-notifier UAF: parent EC chain keeps `notifier_block`
+  inside `devm`-freed `charger_data`
+- Any post-unbind EC event is UAF (even events this driver ignores)
+- Small, obviously correct, matches `cros_usbpd-charger.c`
+- Reviewed by Chrome platform maintainer; applied by power-supply
+  maintainer
+- Driver present since v5.15; no extra dependencies
+- Fail-probe-on-register-failure avoids a half-working charger
+
+Against:
+- No `Reported-by` / syzbot / production crash (static analysis)
+- Affects only Chrome OS PCHG hardware
+- Unbind is not the common path on always-on Chromebooks
+- Slightly stricter probe (register failure now fails the device)
+
+Unresolved:
+- Stable@ discussion (lore 403)
+- How often users actually unbind this device in the field
+
+**Step 9.2: Stable rules**
+1. Obviously correct and tested? **PASS** — pattern is standard;
+   maintainer Reviewed-by + applied
+2. Real bug affecting users? **PASS** — UAF after unbind/unload while
+   parent EC is live
+3. Important (crash/security/corruption)? **PASS** — UAF →
+   oops/corruption, HIGH
+4. Small and contained? **PASS** — 13 lines, one file
+5. No new features/APIs? **PASS**
+6. Can apply to this tree? **PASS** — file and APIs exist; hunk is self-
+   contained
+
+**Step 9.3: Exception category**
+Record: None needed; this is a normal UAF bugfix.
+
+**Step 9.4: Decision**
+This is a classic stable-worthy UAF: the child’s notifier is left on a
+parent-owned chain. The local 7.3 tree has this driver; the fix is small
+and matches existing Chrome EC practice. Trigger is unbind/teardown
+rather than every boot, but the failure mode is a kernel UAF, which
+stable takes.
+
+What it solves for stable users: Chromebooks with peripheral chargers no
+longer keep a freed `charger_data` on the EC event chain after driver
+unbind, module unload, or MFD child removal, so a later EC interrupt
+cannot oops or corrupt memory in `cros_ec_notify()`.
+
+Risk vs benefit: very low risk, high benefit on the machines that hit
+teardown. No prerequisites beyond the driver itself.
 
 ---
 
-## PHASE 1: COMMIT MESSAGE FORENSICS
-
-### Step 1.1: PARSE THE SUBJECT LINE
-
-- **Subsystem:** `tools/lib/thermal` (userspace libthermal, not
-  `drivers/thermal`)
-- **Action verb:** Fix
-- **Claimed intent:** Put the C++ `extern "C"` closing brace inside the
-  include guard
-
-**Record:** `[tools/lib/thermal] [fix] [move misplaced extern "C" }
-inside include guard]`
-
-### Step 1.2: PARSE ALL COMMIT MESSAGE TAGS
-
-From `git show cb0ec27efac2a` and the lore thread:
-
-| Tag | Value |
-|-----|--------|
-| Signed-off-by | Andreas Haufler \<andreas@haufler.info\> (author) |
-| Signed-off-by | Daniel Lezcano \<daniel.lezcano@kernel.org\> (thermal
-maintainer) |
-| Link |
-https://patch.msgid.link/20260721083230.91246-1-andreas@haufler.info |
-
-**Absent (expected):** Fixes, Reported-by, Tested-by, Reviewed-by,
-Acked-by, Cc: stable.
-
-**Record:** Author + maintainer SOB; one lore Link. No syzbot, no Fixes,
-no stable tag.
-
-### Step 1.3: ANALYZE THE COMMIT BODY TEXT
-
-The header opens `extern "C" {` **inside** `#ifndef __LIBTHERMAL_H`, but
-closes `}` **after** `#endif`.
-
-- First include: braces balance, so C++ compiles.
-- Second include in the same C++ TU: the guard skips the opening brace,
-  but the closing `}` is still emitted → stray `}` → **compile error**.
-
-**Record:**
-- **Bug:** include-guard / `extern "C"` mismatch
-- **Symptom:** C++ compile failure on the second include of `thermal.h`
-- **Versions:** none stated; intro commit is in this tree since v5.19
-- **Root cause:** closing `}` lives outside the guard
-
-### Step 1.4: DETECT HIDDEN BUG FIXES
-
-Not disguised. Subject and body describe a real compile break.
-
-**Record:** Not a hidden fix. Explicit userspace header compile bug.
-
----
-
-## PHASE 2: DIFF ANALYSIS
-
-### Step 2.1: INVENTORY THE CHANGES
-
-```
-tools/lib/thermal/include/thermal.h | 4 ++--
-```
-
-One file. Two lines moved: `#endif /* __LIBTHERMAL_H */` is placed after
-the `extern "C"` close. No functions changed (header-only).
-
-**Record:** `[thermal.h +2/-2] [no functions] [single-file surgical]`
-
-### Step 2.2: UNDERSTAND THE CODE FLOW CHANGE
-
-**Before** (this tree, lines 178–182):
-
-```178:182:tools/lib/thermal/include/thermal.h
-#endif /* __LIBTHERMAL_H */
-
-#ifdef __cplusplus
-}
-#endif
-```
-
-**After:** `#ifdef __cplusplus` / `}` / `#endif` stay inside
-`__LIBTHERMAL_H`, then the guard ends.
-
-**Record:** `[header guard close moved after extern "C" close; second
-C++ include no longer emits a stray }]`
-
-### Step 2.3: IDENTIFY THE BUG MECHANISM
-
-**Category:** (g) logic/correctness + (h) not hardware; this is a
-**build / include-file** defect.
-
-**Mechanism:** On re-include, the guard suppresses `extern "C" {` but
-not `}`.
-
-**Record:** `[build/include-guard] [closing brace outside guard]`
-
-### Step 2.4: ASSESS THE FIX QUALITY
-
-Matches the correct pattern in `tools/lib/bpf/libbpf.h` (close `extern
-"C"` **then** `#endif /* __LIBBPF_LIBBPF_H */`). Minimal, no API change,
-no runtime code. Regression risk is effectively none.
-
-**Record:** `[obviously correct] [no meaningful regression risk]`
-
----
-
-## PHASE 3: GIT HISTORY INVESTIGATION
-
-### Step 3.1: BLAME THE CHANGED LINES
-
-```
-47c4b0de080adc (Daniel Lezcano 2022-04-20)  #endif /* __LIBTHERMAL_H */
-47c4b0de080adc (Daniel Lezcano 2022-04-20)  #ifdef __cplusplus
-47c4b0de080adc (Daniel Lezcano 2022-04-20)  }
-```
-
-Introduced with the library itself. Present since v5.19 (`git merge-base
---is-ancestor 47c4b0de080ad v5.19`; not in v5.18).
-
-**Record:** `[47c4b0de080ad "tools/lib/thermal: Add a thermal library"]
-[v5.19]`
-
-### Step 3.2: FOLLOW THE FIXES: TAG
-
-No Fixes tag. The buggy code is the original header layout from
-47c4b0de080ad, which **is** in this tree.
-
-**Record:** `[no Fixes tag; intro commit is in this tree]`
-
-### Step 3.3: CHECK FILE HISTORY
-
-Only two commits on this file in this tree:
-
-- `47c4b0de080ad` — add library
-- `a262672486287` — threshold netlink ABI (does not touch the
-  guard/`extern "C"`)
-
-No later local fix. `git log v6.18..HEAD --
-tools/lib/thermal/include/thermal.h` is empty. File at v6.18 and HEAD
-still has the misplaced `}`.
-
-**Record:** `[no related local fixes] [standalone] [not a series]`
-
-### Step 3.4: CHECK THE AUTHOR'S OTHER COMMITS
-
-`git log --author="Andreas Haufler" -- tools/` is empty in this tree.
-Author is an external contributor. Maintainer Daniel Lezcano committed
-it (`CommitDate: Fri Aug 7 17:18:51 2026`) after “Applied, thanks for
-the fix”.
-
-**Record:** `[external author; thermal maintainer applied]`
-
-### Step 3.5: CHECK FOR DEPENDENT/PREREQUISITE COMMITS
-
-Diff assumes only `#endif` / `#ifdef __cplusplus` / `}`. Those lines
-exist unchanged. Standalone.
-
-**Record:** `[no dependencies] [applies standalone]`
-
----
-
-## PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
-
-### Step 4.1: FIND THE ORIGINAL PATCH DISCUSSION
-
-`b4 dig -c cb0ec27efac2a` matched by patch-id:
-
-- **Lore:**
-  https://patch.msgid.link/20260721083230.91246-1-andreas@haufler.info
-- **v1 only** (`b4 dig -a`): no v2/v3
-- Thread: patch + Daniel Lezcano reply: **“Applied, thanks for the
-  fix”**
-- No NAK, no stable nomination, no requested rework
-
-WebFetch to lore returned 403; thread was recovered via `b4 mbox`.
-
-**Record:** `[v1 accepted as-is] [maintainer Applied] [no stable
-mention] [no NAKs]`
-
-### Step 4.2: CHECK WHO REVIEWED THE PATCH
-
-`b4 dig -w` recipients: Rafael Wysocki, Daniel Lezcano, Zhang Rui,
-Lukasz Luba, linux-pm, linux-kernel. Those are the THERMAL
-maintainers/reviewers in MAINTAINERS.
-
-**Record:** `[thermal maintainers on To/Cc; Lezcano applied]`
-
-### Step 4.3: SEARCH FOR THE BUG REPORT
-
-No Reported-by, bugzilla, or syzbot. Author found it by inspecting the
-public header.
-
-**Record:** `[no external bug report] [author-discovered compile
-defect]`
-
-### Step 4.4: CHECK FOR RELATED PATCHES AND SERIES
-
-Standalone `[PATCH]`, msgid `...91246-1`, no `-2`. `git log
-origin/master cb0ec27efac2a^.. -- tools/lib/thermal/include/thermal.h`
-shows only this commit.
-
-**Record:** `[standalone; no follow-up on the header]`
-
-### Step 4.5: CHECK STABLE MAILING LIST HISTORY
-
-lore.kernel.org/stable WebFetch returned 403. No Cc: stable on the
-patch. No local `git log --grep=extern -- tools/lib/thermal/` hits.
-
-**Record:** `[no stable-list discussion verified; lore/stable fetch
-failed with 403]`
-
----
-
-## PHASE 5: CODE SEMANTIC ANALYSIS
-
-semcode MCP is not available. Grep/read used instead.
-
-### Step 5.1: IDENTIFY KEY FUNCTIONS
-
-No functions modified. Change is preprocessor layout at the bottom of
-`thermal.h`.
-
-**Record:** `[none; include guard / extern "C" only]`
-
-### Step 5.2: TRACE CALLERS
-
-In-tree includes of this header:
-
-- `tools/lib/thermal/{thermal,events,commands,thermal_nl,sampling}.c`
-- `tools/thermal/thermal-engine/thermal-engine.c` (`thermal_init`,
-  `thermal_events_handle`)
-
-All **C**. `find tools/thermal tools/lib/thermal -name '*.cpp'` is
-empty. The header is still a **public installed API** (`install_headers`
-installs `include/thermal.h`; `libthermal.pc`).
-
-**Record:** `[in-tree users are C; public header is C++-aware and
-installed]`
-
-### Step 5.3: TRACE CALLEES
-
-N/A for a brace move.
-
-**Record:** `[N/A]`
-
-### Step 5.4: FOLLOW THE CALL CHAIN
-
-Trigger is **userspace C++** including `thermal.h` twice (direct or via
-two headers). Not a syscall/kernel path. Reachable for anyone who
-installs libthermal and uses it from C++.
-
-**Record:** `[userspace C++ re-include] [not kernel runtime]`
-
-### Step 5.5: SEARCH FOR SIMILAR PATTERNS
-
-`tools/lib/bpf/libbpf.h` and `libbpf_legacy.h` close `extern "C"`
-**inside** the guard. This patch matches that.
-
-**Record:** `[libbpf already uses the correct pattern; libthermal was
-the outlier]`
-
----
-
-## PHASE 6: CROSS-REFERENCING AGAINST THE LOCAL TREE
-
-### Step 6.1: DOES THE BUGGY CODE EXIST IN THIS TREE?
-
-Yes. `tools/lib/thermal/include/thermal.h` lines 178–182 still have
-`#endif` before the closing `}`. Introduced in v5.19; present at v6.18
-and HEAD.
-
-`git merge-base --is-ancestor cb0ec27efac2a HEAD` → **not in this
-tree**.
-
-**Record:** `[bug present at thermal.h:178-182] [since v5.19] [fix not
-applied]`
-
-### Step 6.2: CHECK FOR BACKPORT COMPLICATIONS
-
-Context around the hunk is identical to the mainline diff. No churn on
-this file after v6.18. Clean apply.
-
-**Record:** `[clean apply]`
-
-### Step 6.3: CHECK IF RELATED FIXES ARE ALREADY HERE
-
-No. File history has no other extern-C/guard fix.
-
-**Record:** `[no existing equivalent fix]`
-
----
-
-## PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
-
-### Step 7.1: IDENTIFY THE SUBSYSTEM AND ITS CRITICALITY
-
-`tools/lib/thermal/` — userspace thermal netlink library (THERMAL in
-MAINTAINERS: Rafael Wysocki, Daniel Lezcano).
-
-**Criticality:** PERIPHERAL for kernel runtime; IMPORTANT as a **public
-installed userspace API** for thermal tools. Not mm/fs/net core.
-
-**Record:** `[tools/lib/thermal] [PERIPHERAL kernel / public userspace
-header]`
-
-### Step 7.2: ASSESS SUBSYSTEM ACTIVITY
-
-Low churn: library add (2022), threshold ABI (2024), a few
-build/leak/symbol fixes. Mature header layout, not a moving target.
-
-**Record:** `[low activity; header layout stable since 2022]`
-
----
-
-## PHASE 8: IMPACT AND RISK ASSESSMENT
-
-### Step 8.1: DETERMINE WHO IS AFFECTED
-
-C++ programs that include the installed `thermal.h` more than once. In-
-tree C tools (`thermal-engine`) are unaffected. Kernel image/build is
-unaffected.
-
-**Record:** `[config/userspace-specific: C++ libthermal consumers]`
-
-### Step 8.2: DETERMINE THE TRIGGER CONDITIONS
-
-Second `#include <thermal.h>` in one C++ translation unit (common with
-umbrella headers). Unprivileged userspace compile-time only. Not a race.
-
-**Record:** `[double include from C++] [uncommon but valid] [compile-
-time only]`
-
-### Step 8.3: DETERMINE THE FAILURE MODE SEVERITY
-
-Compile failure (`stray '}'`), not oops/corruption/UAF. Stable rules
-still list **build errors** and **include-file fixes** as in-scope.
-
-**Record:** `[C++ compile break] [MEDIUM as a build bug; HIGH as
-include-file correctness; not a kernel crash]`
-
-### Step 8.4: CALCULATE RISK-BENEFIT RATIO
-
-- **Benefit:** C++ consumers of the public header compile; long-standing
-  defect (v5.19+).
-- **Risk:** 4-line preprocessor move, no runtime, no ABI change.
-
-**Record:** `[moderate benefit for C++ libthermal users] [near-zero
-risk] [favorable]`
-
----
-
-## PHASE 9: FINAL SYNTHESIS
-
-### Step 9.1: COMPILE THE EVIDENCE
-
-**FOR:**
-- Real, well-explained compile break for a public C++-aware header
-- Obviously correct; matches libbpf
-- 4 lines; zero runtime/API risk
-- Buggy code is in this 6.18.53 tree; fix is not
-- Applies cleanly; no prerequisites
-- Maintainer applied v1 with “thanks for the fix”
-- Fits the **build / include-file** exception in stable-kernel-rules
-
-**AGAINST:**
-- Not a kernel oops, UAF, deadlock, or security hole
-- In-tree tools are C and already build
-- No multi-user Reported-by
-- libthermal is a small audience
-
-**UNRESOLVED:**
-- Could not search lore.kernel.org/stable (HTTP 403). Unverified whether
-  anyone asked for this on the stable list.
-
-### Step 9.2: APPLY THE STABLE RULES CHECKLIST
-
-1. Obviously correct and tested? **PASS** — mechanical brace move;
-   maintainer applied
-2. Fixes a real bug that affects users? **PASS** — C++ double-include of
-   the installed header fails
-3. Important issue? **PASS** — build/include-file error (explicitly
-   allowed); not a crash, but in-scope
-4. Small and contained? **PASS** — 4 lines, one header
-5. No new features or APIs? **PASS**
-6. Can apply to the local tree? **PASS** — context matches HEAD
-
-### Step 9.3: CHECK FOR EXCEPTION CATEGORIES
-
-**Build / include-file fix.** Not a device ID, quirk, DT, or docs-only
-change.
-
-### Step 9.4: DECISION
-
-This tree ships the buggy public header. The fix is a 4-line, zero-risk
-compile repair that mainline already took. That meets stable rules for
-this 6.18 tree.
-
----
-
-## What the commit solves for this tree
-
-`thermal.h` advertises C++ support (`extern "C"`) and is installed
-(`make install` → `include/thermal.h`). The closing `}` sits outside
-`__LIBTHERMAL_H`, so a second include in one C++ file emits a stray
-brace and fails the build. Moving `#endif` below the close matches every
-other well-formed kernel userspace header. Kernel runtime is untouched.
-
-Risk vs benefit: benefit is restoring a header that this tree already
-ships; risk is none.
-
----
-
-## Verification
-
-- **[Phase 1]** `git show cb0ec27efac2a`: tags are author SOB, Lezcano
-  SOB, Link; no Fixes/Reported-by/Cc: stable
-- **[Phase 1]** Body describes second-include stray `}` — matches the
-  current header
-- **[Phase 2]** Diff is `#endif` moved after `#ifdef __cplusplus` / `}`
-  / `#endif`
-- **[Phase 2]** `tools/lib/bpf/libbpf.h` uses the same close-then-guard-
-  end order
-- **[Phase 3]** `git blame tools/lib/thermal/include/thermal.h` lines
-  178–182 → `47c4b0de080ad`
-- **[Phase 3]** `git merge-base --is-ancestor 47c4b0de080ad v5.19` yes;
-  `v5.18` no
-- **[Phase 3]** `git log --oneline --
-  tools/lib/thermal/include/thermal.h`: only add + threshold ABI
-- **[Phase 3]** `git merge-base --is-ancestor cb0ec27efac2a HEAD` → not
-  in this tree
-- **[Phase 4]** `b4 dig -c cb0ec27efac2a`: lore URL + v1 only
-- **[Phase 4]** `b4 dig -a`: single revision 2026-07-21
-- **[Phase 4]** `b4 dig -w`: Rafael, Lezcano, Zhang Rui, Lukasz Luba,
-  linux-pm, linux-kernel
-- **[Phase 4]** `b4 mbox`: Lezcano “Applied, thanks for the fix”
-  (2026-08-07)
-- **[Phase 4]** WebFetch lore/all, patch.msgid.link, lore/linux-pm,
-  lore/stable → 403
-- **[Phase 5]** No `*.cpp` under `tools/thermal` or `tools/lib/thermal`
-- **[Phase 5]** In-tree include sites are C; `thermal-engine.c` calls
-  `thermal_init`
-- **[Phase 5]** Makefile `install_headers` installs `include/thermal.h`
-- **[Phase 6]** `make kernelversion` / Makefile → 6.18.53; `git describe
-  HEAD` → `p-6.18-1-g03b85e06ca9bf`
-- **[Phase 6]** HEAD `thermal.h` still has `#endif` before `}`
-- **[Phase 6]** `git log v6.18..HEAD --
-  tools/lib/thermal/include/thermal.h` empty
-- **[Phase 7]** MAINTAINERS THERMAL covers `tools/lib/thermal/`
-- **[Phase 8]** Failure mode verified as C++ compile-time only, not
-  kernel oops
-- **UNVERIFIED:** stable@ mailing-list archive (HTTP 403); does not
-  change the verdict
-
-The local 6.18.53 tree has the bug, the fix is small and correct, and it
-applies cleanly.
+Verification:
+- [Phase 1] Parsed tags: Reviewed-by Tzung-Bi Shih; Link to msgid; no
+  Fixes/stable/syzbot
+- [Phase 1] Body describes dangling notifier after unbind; verified
+  against pre-fix source
+- [Phase 2] Diff: +11/-2 in `cros_pchg_probe` plus
+  `cros_pchg_unregister_notifier`; fail probe on register error
+- [Phase 2] Pre-fix file from `git show 631adfa03595c^`: register then
+  `return 0`; no `.remove`
+- [Phase 2] Post-fix file: `devm_add_action_or_reset` after successful
+  register
+- [Phase 3] `git blame`: notifier register from `56d629af09b9d` (2021);
+  `git merge-base --is-ancestor` → in v5.15, not v5.14
+- [Phase 3] `git log --oneline -20 --
+  drivers/power/supply/cros_peripheral_charger.c`: standalone, not a
+  series
+- [Phase 3] No revert of this commit
+- [Phase 4] `b4 dig -c 631adfa03595c`: lore thread found; v1 only
+- [Phase 4] `b4 dig -w`: Chrome/power-supply maintainers CC’d
+- [Phase 4] `b4 dig -m`: Tzung-Bi Reviewed-by (subject nit only);
+  Sebastian applied; no NAK
+- [Phase 4] Duplicate later patch (Hongyan Xu) notes static-analysis
+  origin
+- [Phase 4] lore.kernel.org WebFetch 403 — stable@ history UNVERIFIED
+- [Phase 5] `cros_ec_handle_event` / resume path call
+  `blocking_notifier_call_chain` on the same `event_notifier`
+- [Phase 5] MFD cell `cros-ec-pchg` in `drivers/mfd/cros_ec_dev.c` when
+  `pchg_count.port_count != 0`
+- [Phase 5] Sibling `cros_usbpd-charger.c` already uses the same `devm`
+  unregister pattern
+- [Phase 6] `git describe HEAD` = v7.3-rc4-27-gf0100363d8c37; `make
+  kernelversion` = 7.3.0-rc4
+- [Phase 6] Driver and APIs present; fix is self-contained on this tree
+- [Phase 8] UAF on any EC event after unbind: `container_of` happens
+  before the PCHG event-type check
+- UNVERIFIED: field frequency of unbind; whether stable@ already
+  discussed it
+
+The fix is small, surgical, and meets the stable criteria for a real
+UAF.
 
 **YES**
 
- tools/lib/thermal/include/thermal.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/power/supply/cros_peripheral_charger.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/tools/lib/thermal/include/thermal.h b/tools/lib/thermal/include/thermal.h
-index 818ecdfb46e50..d9097271d9fad 100644
---- a/tools/lib/thermal/include/thermal.h
-+++ b/tools/lib/thermal/include/thermal.h
-@@ -175,8 +175,8 @@ LIBTHERMAL_API thermal_error_t thermal_sampling_handle(struct thermal_handler *t
- 
- LIBTHERMAL_API int thermal_sampling_fd(struct thermal_handler *th);
- 
--#endif /* __LIBTHERMAL_H */
--
- #ifdef __cplusplus
+diff --git a/drivers/power/supply/cros_peripheral_charger.c b/drivers/power/supply/cros_peripheral_charger.c
+index 962a6fd298323..48e10e872d1bd 100644
+--- a/drivers/power/supply/cros_peripheral_charger.c
++++ b/drivers/power/supply/cros_peripheral_charger.c
+@@ -259,6 +259,14 @@ static int cros_ec_notify(struct notifier_block *nb,
+ 	return cros_pchg_event(charger);
  }
- #endif
+ 
++static void cros_pchg_unregister_notifier(void *data)
++{
++	struct charger_data *charger = data;
 +
-+#endif /* __LIBTHERMAL_H */
++	blocking_notifier_chain_unregister(&charger->ec_device->event_notifier,
++					   &charger->notifier);
++}
++
+ static int cros_pchg_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -346,9 +354,10 @@ static int cros_pchg_probe(struct platform_device *pdev)
+ 	ret = blocking_notifier_chain_register(&ec_dev->ec_dev->event_notifier,
+ 					       nb);
+ 	if (ret < 0)
+-		dev_err(dev, "Failed to register notifier (err:%d)\n", ret);
++		return dev_err_probe(dev, ret, "Failed to register notifier\n");
+ 
+-	return 0;
++	return devm_add_action_or_reset(dev, cros_pchg_unregister_notifier,
++					charger);
+ }
+ 
+ #ifdef CONFIG_PM_SLEEP
 -- 
 2.53.0
 
