@@ -1,53 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792428747;
-	b=qmH+b/T9eEamsl8bncBThSi5W+A8+YLxAYHZ9IzUt9Es/tMBE0CD4sOz2sSn3ISiPGnM
-	 gDYb8t8StDnSZ5UZomIOKNtTw81B769P0MzQ0V3LLgnjL11mrsecNCM1g851ZQ1Tr5LOf
-	 eu3R1x58GznsjHLw3P8dTJzp2TKt2tyC4KmM/TomkA2/IOGvVK4WSu958DZWVcqazO4w+
-	 +3rjB+mBclgK7abHAK+xY0j02zMZiCcvZk5T/Sg27eBxYJ+uGBVtsEh8sp/EhYzlJVwnX
-	 Gk5hLDMx3/I22674QmEtg91ifleoKakGKdJTv2gZ9M7DzAzpt+FBPrO0YKveilfzwhw==
+	t=1792428749;
+	b=ioGsYJvvd/1SHhNdcNvScUcYDkgEdFFjrxUFknF8xgZUJ2SHSMHIiDA3GjxjwuTXraxZ
+	 9y5+T1y0S+43lJVnqyid41qRT2jq+klRrvr/VyeOmXUnghLsT2uAIluvf8jMnxTev/LMg
+	 /uevKSlRO3phNuEFcooUZQV+FuBhfswXAGLau1h7T0/DjYPB5yR1jlX+/+dnCPKa6eFU8
+	 ErxojnPlsQR1LzN62kZ8SEc62y9/8TXcof5EKFVlRaFYMLxa1nqWfDWH0kcy4lg5sWnqa
+	 OEt8emvqYRmdcLkkkshEVxHWUJaglGet4rbjw2fwsqnHtWDK4H3qA3HjSnZ0iWXd7qw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792428747;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792428749;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=9QGJipQ9Pu143Wpdr9wFSwPEeSkoEWnU9PD1nCAoB74=;
-	b=EkVZ9bS5w95rLrBMxZs3vQJQx+wYhy+VX+xzyssLzrSmZ+LSAWe6NHk+h/+sIrdsB7Rm
-	 5BOmroWe36KEHEDPQ03lXzOtxs9EnKwpe5pJzVO7rKu0cT21Swv6YXlTRfelnU5vJr1Vk
-	 XA+Su/oLCPkHWa57TQulehAYnZ4nkbSdMXVlGbDZeOHNeoD8eqkoYsI+Inv9EhkZv3JbO
-	 UgIRF5aq/fAFRZxzGAl6NeDxD5fRAe6mM3Get68uyEqzWP8XdMRNCZLdaKUJJ2Ask92rR
-	 ftALJrGW5ib+/eXXhiGcwXbSVflE2ZX1MxzxXawKyquU1LeBqI/ZWmk9zB3JehnycEg==
+	bh=uIWTnre85yzC0kLWAkHKTiF4N8VoFvaQX904t2Yn0R0=;
+	b=O9pidWruepK0PQzib6kZLp3iJ6HcCOzcPfoBAblGRepBMHsjytkEvcaaLP8+AJLTIEYf
+	 byekG3tIiWBZgqIl1nkQHKHY51/xdCOIaTEbwos7yzJwMuNDDxFTsqGPRHmTbTjX5/s51
+	 g8Rr+DgUDMYgXwQmJrEW1rG5/cbh4Lqldp8MdvK30QH5WmYUqEvNXXUAfwjSCIuvJLga6
+	 LP9k7sTIXlURRh6jSPgc2jHckUqitlIzp1QsnHUC85ZT04tMw3wL4F9WfVI0ul8rgIZIn
+	 +XreSVL0vJYOeW5Cmga+g8mzLjUgHyaEY/K1MHMx9sBVVaXzzjIbq66bvf3+9G098Cw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YMUgPyUV;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QCB3Fr5g;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1FC2606A31B
-	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 16:52:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24AA1606A32E
+	for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 16:52:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YMUgPyUV
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 575411F000CF;
-	Mon, 19 Oct 2026 16:52:25 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QCB3Fr5g
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3BF11F01808;
+	Mon, 19 Oct 2026 16:52:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792428746;
-	bh=9QGJipQ9Pu143Wpdr9wFSwPEeSkoEWnU9PD1nCAoB74=;
+	s=k20260515; t=1792428748;
+	bh=uIWTnre85yzC0kLWAkHKTiF4N8VoFvaQX904t2Yn0R0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=YMUgPyUV/EGoL6FlqeniF7yUzylzodCAt+/qXg4l8C4MqSXPC41Bp8mhSBT9Qa+Rv
-	 BX7K3937R+DzIj00F8SEvLeGf5SsKp7CiU7fDi1YgnEWVNv0MfLfS9vaHq7Ryl3Y96
-	 lfPOmYr9h8wtg/MI+eGnyn1W+riWj5+XDXRZQEtGNj8Xf8HB+6N9Mx+YHDwq+oKQo9
-	 rmcPk/K6RyOf26H80c4EjH5gGNzQ2bbOYJohMFmriYJyIXSxss5AUugxtPcv2OXbzS
-	 pdffTlakgXkal/ae7IvTdSYPl5O2bJ313Fvo65vNKaGjY7j4cohuir0VIaB1ZVoZ7P
-	 9EaGOKan21eFA==
+	b=QCB3Fr5gANSTtt1RzbmaJboihAvIzG60XgXXCKkaBz/Czp3XwtSBinxnpHKSNs2ky
+	 V+y6i1YMm6WJAFBw3ZGknA6jfNwZTTAelZlxtjKehjLdtM1xb3NMb40unNsjDJ7/Yw
+	 m9NExXe9bQBM4Yp1WP7EZEUqV9pqvMpK5JhRFh3I546jaz9TAQyKMKGYe5Fzrrsn2g
+	 nkDNtVTakcC7sT81trWmTkxohRDkP5lYdsYNhbti+Hdd9pVl5N52LhIMi8PJY7VAnK
+	 yfeaSkJzslbPP0B0iPZjNVem/5ZPuW1c0ShN+ib0Pwo8Q4YxeykDTuos6+cfKAiJoC
+	 4zNkifaqW/nzQ==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: Andy Shevchenko <andriy.shevchenko@intel.com>,
-	Amarjeet <amarjeet@intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH 17/18] x86_energy_perf_policy: Fix write_sysfs() return type
-Date: Mon, 19 Oct 2026 12:43:38 -0400
-Message-ID: <777cbe6f740ab2e371df856c716ffe41117940a6.1792428130.git.len.brown@intel.com>
+Subject: [PATCH 18/18] MAINTAINERS: Add x86_energy_perf_policy
+Date: Mon, 19 Oct 2026 12:43:39 -0400
+Message-ID: <4ff2e5ee8ac95cef4ba20e0971bd87bf9f8b25f6.1792428130.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <e160a0ae497702e1c32ab163faa63c0043ea9298.1792428130.git.len.brown@intel.com>
 References: <e160a0ae497702e1c32ab163faa63c0043ea9298.1792428130.git.len.brown@intel.com>
@@ -64,61 +63,36 @@ Reply-To: Len Brown <lenb@kernel.org>
 Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-From: Amarjeet <amarjeet@intel.com>
+From: Len Brown <len.brown@intel.com>
 
-write_sysfs() returns an unsigned int even though it returns -1 when
-write() fails. This converts the error to UINT_MAX and can cause callers
-that treat a nonzero return value as success to miss the failure.
+This entry should help direct patches to linux-pm.
+(rather than to lkml)
 
-Use ssize_t to match write(), update the receiving variable accordingly,
-and explicitly require a positive result in sysfs_write_string().
-
-Signed-off-by: Amarjeet <amarjeet@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- .../x86/x86_energy_perf_policy/x86_energy_perf_policy.c   | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-index f8ab9f4465ce..89850cbc6d90 100644
---- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-+++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-@@ -897,7 +897,7 @@ static unsigned int read_sysfs(const char *path, char *buf, size_t buflen)
- 	return (unsigned int)numread;
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 782389bd5cd3..3958e66188ec 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -29577,6 +29577,15 @@ W:	https://x86-cpuid.org
+ F:	arch/x86/include/asm/cpuid/leaf_types.h
+ F:	tools/arch/x86/kcpuid/
  
--static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
-+static ssize_t write_sysfs(const char *path, char *buf, size_t buflen)
- {
- 	ssize_t numwritten;
- 	int fd;
-@@ -916,7 +916,7 @@ static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
- 
- 	close(fd);
- 
--	return (unsigned int)numwritten;
-+	return numwritten;
- }
- 
- static int sysfs_read_string(const char *path, char *buf, size_t buflen)
-@@ -941,7 +941,7 @@ static int sysfs_write_string(const char *path, const char *buf)
- 	len = snprintf(tmp, sizeof(tmp), "%s\n", buf);
- 	if (len < 0 || len >= (int)sizeof(tmp))
- 		return -1;
--	return write_sysfs(path, tmp, (size_t)len + 1) ? 0 : -1;
-+	return write_sysfs(path, tmp, (size_t)len + 1) > 0 ? 0 : -1;
- }
- 
- void print_hwp_cap(int cpu, struct msr_hwp_cap *cap, char *str)
-@@ -1047,7 +1047,7 @@ static int set_epb_sysfs(int cpu, int val)
- 	char path[SYSFS_PATH_MAX];
- 	char linebuf[3];
- 	char *endp;
--	int ret;
-+	ssize_t ret;
- 
- 	if (!has_epb)
- 		return -1;
++X86 ENERGY PERF POLICY UTILITY
++M:	Len Brown <lenb@kernel.org>
++L:	linux-pm@vger.kernel.org
++S:	Supported
++Q:	https://patchwork.kernel.org/project/linux-pm/list/
++B:	https://bugzilla.kernel.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git x86_energy_perf_policy
++F:	tools/power/x86/x86_energy_perf_policy/
++
+ X86 ENTRY CODE
+ M:	Andy Lutomirski <luto@kernel.org>
+ L:	linux-kernel@vger.kernel.org
 -- 
 2.45.2
 
