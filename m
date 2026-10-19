@@ -1,44 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8797358B6CE;
-	Mon, 19 Oct 2026 13:59:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B6F45B0622;
+	Mon, 19 Oct 2026 14:00:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418386; cv=none; b=NGUl353MognCx2mGUiwszckl3OqY7/V/rYynJhQbD0/ktWsHHzCIVgp7w4R4rwLb1W4ONwYAFz1oqqnAdYP+TL7jLUsZtwEVkm/euIn9k+7XRDAic/0QZohXmRxSCTSfQfWFL924LFHWeoDIG6yS9uvOWSmmC0KaakJFxorrbIo=
+	t=1792418423; cv=none; b=pVb4k8md95TQgF2JBbD/Wq5jfTH14Zb0GFL+bp9HaIXFRIhePgsD6RzL+Qi+uJAIZIHEh9kmLlFF9ly/yxcuW+CulwsG0Zfssbbdb9yWfy6SujZG95WsPs4vw6I/QoSQHwgDf90ytZ2vaSC1G64I++K4KlbAGjaplsxGevYV7qo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418386; c=relaxed/simple;
-	bh=XZPghCTjb1jX+Q7cqp8MHf8/5S+roAFYzazEhZS/viw=;
+	s=arc-20240116; t=1792418423; c=relaxed/simple;
+	bh=+FlKxuhacd7NRpYtXfslnzo9m0fuF1eNvg4eUGav4eM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZLn3BBUTvKEoVPSHe2/2zWk29uI5Jv8rSen/nPPB8nr0vyOqoegDkalIe0UXtL8D8YgIMRVqtQxFa+X0s1cVSp0qbikbjBUH1x2X9blBq5QhVxDivPXjXgCYheCHLSIUdENh75NyyajMDHZ0tF+wQ+14Zhk5LAxRsmHevTskm3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZBDC7KCX; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=qWE6ekXUoj2fX5jLa6QmrpGotRPu3dm1j+F06qsViQUy4JeU6XJpSYyPXpTwYhQmgb3QitaQWnYXLSNJgW/3zpZYjOGPnYHo0vJeRaFLSj2sbsmzWAD2QmYINhiwYrd7iG2acgc4yez2wJkGgJZM1LcvjJKzfnT6eAp6m5zVG+s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=df94oUW8; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZBDC7KCX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DF6C1F000CA;
-	Mon, 19 Oct 2026 13:59:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="df94oUW8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2CCF1F000CA;
+	Mon, 19 Oct 2026 14:00:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418383;
-	bh=D1aPOgBERGuCo14oNo+vtfsa1n/bJR50FBv53Np1Kr8=;
+	s=k20260515; t=1792418419;
+	bh=pLa3Aan2ET0EDHss61T2wkoqQI56vgVGp8lag2OXteo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=ZBDC7KCX6j3nXvNmoW/nF3EUWlcoopMnzFDY9eDQU4e31bvGb4nWvPwQrali/yyaS
-	 VTfQcGekeFvvXEf8b+XYacwm5yEjpy/xGk0dSqivLjVxfB3xpWGc0y5WMv8r9k+Pwj
-	 jYyY14a2rbeCRQIpEg61fwR2hwxyVn//wSiKfgix/0wBcZX7E+A2EMBKpCy+EGLFQ+
-	 sG7j1H27cMRxrUglCcp8S8mhQNzackUMmLFNdv0xZTVvNZ3ERpQd2ahZCB+GiSEFEg
-	 aWzKdgrJyarbGSeTBrFQsy6ziikn6P/yKYatjWo9K0ttl4nwBnN7LezJOFZ+FV5uf4
-	 IEzx0Kb4MXPaQ==
+	b=df94oUW8o5xdAqDAK0WjUjhnDDBXBlzCbaR72MWKDXefNZp8xPoJCsY6lGbtQrVmh
+	 JjJ+v6fy7hrs+gB7fpGjlO7BwVvgF+6ZlbOSMA9wSTuRVCKvWuneNiE9QzWvDfdysA
+	 vH1f0YJqVtucH6km19sqeTVqiWFZbFz423uwWP1eqtU1DZyibW+abc6yqqHbDc31I0
+	 ar95+IwZ/qApveo+lhXUFQdrxFuHsueL3ZeA/c/zObqb97goXHYFbCpkE/RwwKkqh0
+	 0t0iiPk8/2es21EJK8K/G3uHrAXkTa/BzixZYGibVyjcbNq6uBZGv/vApdKNt0DrnZ
+	 dgG+2rnqjOMcQ==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Mike Tipton <mike.tipton@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Ulf Hansson <ulfh@kernel.org>,
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
 	Sasha Levin <sashal@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
+	rafael@kernel.org,
+	daniel.lezcano@kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-6.6] pmdomain: qcom: rpmhpd: Skip retention by default
-Date: Mon, 19 Oct 2026 09:48:21 -0400
-Message-ID: <20261019135441.1420968-210-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-6.6] thermal: intel: int340x: clean up RFIM groups on DVFS failure
+Date: Mon, 19 Oct 2026 09:48:47 -0400
+Message-ID: <20261019135441.1420968-236-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -54,30 +54,24 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Mike Tipton <mike.tipton@oss.qualcomm.com>
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 
-[ Upstream commit 7178817f190496f2bfdec181fb4aa72832448468 ]
+[ Upstream commit 28f34d7dafa6dfa657efd6760b7c78e98c9b2f6a ]
 
-Retention is very rarely an operational corner. In the majority of
-cases, HW cannot operate properly at Retention levels and so the minimum
-operational level when enabling a rail is the first corner above
-Retention. A small subset of always-on use cases can operate at
-Retention, but those aren't controlled from HLOS.
+proc_thermal_rfim_add() can create the FIVR and DLVR sysfs groups
+before creating the DVFS group.
 
-Currently, we allow Retention by default and only disallow it special
-cases. But this leaves us open to various failures when the PD is
-enabled without first being voted to an OPP above Retention. Such as
-when a child GDSC PD requests to enable its parent RPMh PD. In this
-case, the GDSC would get stuck powering on.
+If DVFS group creation fails while both earlier groups are enabled, the
+current error handling removes only one group: the FIVR branch returns
+before the DLVR cleanup branch can run.  This leaves the DLVR group
+behind even though RFIM setup fails.
 
-Newer chips have started supporting Retention on rails that didn't
-previously (such as for MMCX). Instead of adding more special cases to
-skip Retention on MMCX, start skipping Retention by default since it's
-almost never desired from an HLOS perspective.
+Use one DVFS failure path that removes all previously created RFIM
+groups before returning the error.
 
-Signed-off-by: Mike Tipton <mike.tipton@oss.qualcomm.com>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Signed-off-by: Ulf Hansson <ulfh@kernel.org>
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Link: https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
@@ -85,391 +79,343 @@ LLM Generated explanations, may be completely bogus:
 
 ## Phase 1: Commit message forensics
 
-**Step 1.1: Subject line**
-- Record: `[pmdomain/qcom/rpmhpd] [Skip] Skip Retention voltage as the
-  default enable corner`
+**Step 1.1: PARSE THE SUBJECT LINE**
+Record: `[thermal/intel/int340x] [clean up] incomplete RFIM sysfs-group
+unwind when DVFS group creation fails`
 
-**Step 1.2: Tags**
-- Record:
-  - `Signed-off-by: Mike Tipton <mike.tipton@oss.qualcomm.com>` (author,
-    Qualcomm)
-  - `Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>`
-    (Qualcomm SoC reviewer)
-  - `Signed-off-by: Ulf Hansson <ulfh@kernel.org>` (GENERIC PM DOMAINS
-    maintainer)
-  - No `Fixes:` tag (expected)
-  - No `Cc: stable` (expected)
-  - No `Reported-by`, `Tested-by`, `Link`, or syzbot tags
-- Notable: Qualcomm author + Qualcomm reviewer + subsystem maintainer
-  SOB. No user/syzbot report.
+**Step 1.2: PARSE ALL COMMIT MESSAGE TAGS**
+Record:
+- `Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>` (author)
+- `Link:
+  https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn`
+- `Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>`
+  (thermal maintainer)
+- No `Fixes:`, `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-
+  by:`, or `Cc: stable` (absence of the last two is expected for this
+  review)
 
-**Step 1.3: Body**
-- Record:
-  - **Bug:** HLOS enable of an RPMh PD without an OPP above Retention
-    can vote Retention. Most hardware cannot run at Retention.
-  - **Symptom:** Child GDSC enable of a parent RPMh PD leaves the GDSC
-    stuck powering on (hardware hang, not a kernel oops).
-  - **Root cause:** Retention is allowed by default; only MXC opted out
-    via `skip_retention_level`. Newer chips now expose Retention on
-    rails that previously did not (e.g. MMCX).
-  - **Fix approach:** Skip Retention for every rail when building the
-    cmd-db mapping, instead of adding more per-rail flags.
-  - **Version info:** None in the message. “Newer chips” / MMCX is the
-    motivation.
+**Step 1.3: ANALYZE THE COMMIT BODY TEXT**
+Record:
+- Bug: `proc_thermal_rfim_add()` may create FIVR and DLVR sysfs groups,
+  then fail creating DVFS.
+- Symptom: on DVFS failure with both earlier groups enabled, the FIVR
+  cleanup branch returns immediately, so the DLVR group is never
+  removed.
+- Failure mode: leftover sysfs group after RFIM setup reports failure
+  (resource leak; probe of the Intel processor thermal PCI device
+  fails).
+- Root cause: two sequential `if (ret && FEATURE_*) { remove; return; }`
+  blocks instead of one failure path that removes every group that was
+  created.
+- Version info in the message: none.
 
-**Step 1.4: Hidden bug fix?**
-- Record: Not hidden. It is a real hardware-failure fix described as a
-  default-policy change. Skipping Retention is the workaround, not a
-  cleanup.
+**Step 1.4: DETECT HIDDEN BUG FIXES**
+Record: Yes. The subject says “clean up”, but the body and the diff are
+an error-path leak fix (missing `sysfs_remove_group` for DLVR).
 
 ## Phase 2: Diff analysis
 
-**Step 2.1: Inventory**
-- Record:
-  - File: `drivers/pmdomain/qcom/rpmhpd.c` (+9 / −5)
-  - Functions/data: `struct rpmhpd` (drop `skip_retention_level`), `mxc`
-    / `mxc_ao` initializers, `rpmhpd_update_level_mapping()`
-  - Scope: single-file surgical change
+**Step 2.1: INVENTORY THE CHANGES**
+Record:
+- File: `drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c`
+  (+5 / −6)
+- Function: `proc_thermal_rfim_add()`
+- Scope: single-file surgical error-path change
 
-**Step 2.2: Code flow**
-- Record:
-  - **Before:** `rpmhpd_update_level_mapping()` copied cmd-db aux levels
-    into `rpmhpd->level[]`. Retention (vlvl 16) was skipped only if
-    `skip_retention_level` was set. That flag was true only on `mxc` /
-    `mxc_ao`. `enable_corner` became the first non-zero mapped corner,
-    which could be Retention.
-  - **`rpmhpd_power_on()`:** `corner = max(pd->corner,
-    pd->enable_corner)` then aggregate. Enable without an OPP uses
-    `enable_corner`.
-  - **After:** Retention is always skipped. `enable_corner` is the first
-    corner above Retention. MXC’s flag is redundant and removed.
-  - Path affected: probe-time mapping, then every power-on that does not
-    already have a higher OPP (including parent enable from a child
-    GDSC).
+**Step 2.2: UNDERSTAND THE CODE FLOW CHANGE**
+Record: Before, DVFS `sysfs_create_group()` failure did:
 
-**Step 2.3: Bug mechanism**
-- Record: **Hardware workaround / logic fix.** Retention as min enable
-  corner is not a valid operational vote for HLOS. Child GDSC parent-on
-  uses that corner and the GDSC never completes power-on.
-- Verified path: `gdsc_register()` attaches GDSCs as genpd subdomains of
-  the clock-controller’s `dev->pm_domain` (`drivers/clk/qcom/gdsc.c`).
-  `genpd_power_on()` walks parents and calls `rpmhpd_power_on()` with no
-  performance state. DT has many `power-domains = <&rpmhpd RPMHPD_MMCX>`
-  nodes (sm8450/sm8550/sm8650/sm8750 and others).
+```c
+if (ret && FIVR) { sysfs_remove_group(fivr); return ret; }
+if (ret && DLVR) { sysfs_remove_group(dlvr); return ret; }
+```
 
-**Step 2.4: Fix quality**
-- Record: Obviously correct given the existing skip logic. Minimal. If
-  cmd-db has no Retention entry, the new `if` never matches (no-op on
-  older rails). Regression risk is a slightly higher min vote (Retention
-  16 → typically MIN_SVS 48) on rails that advertised Retention; the
-  author states HLOS must not use Retention. No API/ABI change.
+If both FIVR and DLVR bits are set, the first branch returns and DLVR is
+never removed. After, a single `if (ret)` removes DLVR and/or FIVR
+according to the feature mask, then returns.
+
+**Step 2.3: IDENTIFY THE BUG MECHANISM**
+Record: `[error path / resource leak]` Incomplete unwind.
+`sysfs_create_group(&pdev->dev.kobj, &dvfs_attribute_group)` failure
+leaked `dlvr_attribute_group` when FIVR+DLVR+DVFS were all enabled.
+
+**Step 2.4: ASSESS THE FIX QUALITY**
+Record: Obviously correct. Groups are only removed if the corresponding
+feature bit is set, and those bits are the same ones that caused the
+groups to be created earlier in this function. No API, locking, or data-
+structure changes. Regression risk is very low: `sysfs_remove_group` on
+a group that this function just created.
 
 ## Phase 3: Git history
 
-**Step 3.1: Blame**
-- Record:
-  - Mapping loop: `279b7e8a62cc` (“soc: qcom: rpmhpd: Add RPMh power
-    domain driver”, 2019)
-  - `enable_corner`: `e3e56c050ab6` (“soc: qcom: rpmhpd: Make power_on
-    actually enable the domain”, 2021) — this is what makes Retention
-    reachable as the enable vote
-  - Opt-in skip: `ddab91f4b2de5` (“Skip retention level for Power
-    Domains”, 2024), MXC only, `Cc: stable@vger.kernel.org # v5.17`
-  - This change: `7178817f19049` (2026-07-13)
+**Step 3.1: BLAME THE CHANGED LINES**
+Record:
+- Original FIVR-only DVFS unwind: `473be51142adba` (“Add RFIM driver”,
+  2020; first in v5.11-rc1).
+- Incomplete DLVR branch: `5bc6b1df65c87f` (“Add DLVR support for RFIM
+  control”, 2023-04-13; first in v6.4-rc1). That commit added the second
+  `if (ret && DLVR) return` after the existing FIVR early-return, which
+  is the bug.
 
-**Step 3.2: Fixes tag**
-- Record: None. Closest predecessor is `ddab91f4b2de5` (MXC-only skip).
-  Both `ddab91f4b2de5` and `e3e56c050ab6` are ancestors of this HEAD.
+**Step 3.2: FOLLOW THE FIXES: TAG**
+Record: No `Fixes:` tag. Not applicable beyond that. The introducing
+commit is `5bc6b1df65c87f`, and `git merge-base --is-ancestor
+5bc6b1df65c87f HEAD` succeeded.
 
-**Step 3.3: File history**
-- Record: Recent work is mostly new SoC tables. No later revert of
-  default-skip. Eliza MXC/MMCX add was reverted for unrelated reasons
-  (`9fca7779ad185`). Standalone v1 patch, not part of a numbered series.
+**Step 3.3: CHECK FILE HISTORY FOR RELATED CHANGES**
+Record:
+- `15176b818e048c` (“Fix sysfs group leak on DLVR registration failure”)
+  — same class of bug for the *DLVR create* path leaking FIVR; already
+  in this tree (v7.0-rc1).
+- This patch is standalone, not `patch X/Y`. Same author later did a
+  similar ODVP probe-unwind fix (`d83dc9ce57a74`) in a different file;
+  not a prerequisite.
 
-**Step 3.4: Author**
-- Record: Mike Tipton (Qualcomm); this is his only recent commit on
-  `drivers/pmdomain/qcom/`. Konrad reviews rpmhpd regularly. Ulf is the
-  pmdomain maintainer.
+**Step 3.4: CHECK THE AUTHOR'S OTHER COMMITS**
+Record: Pengpeng Hou is not the subsystem maintainer. Thermal maintainer
+Rafael J. Wysocki applied the patch. Driver author Srinivas Pandruvada
+was on the original To/Cc list.
 
-**Step 3.5: Dependencies**
-- Record: Needs `enable_corner` + Retention skip `continue` in
-  `rpmhpd_update_level_mapping()`. Both exist here. Applies standalone
-  on a tree that still has `skip_retention_level`. No other patches
-  required.
+**Step 3.5: CHECK FOR DEPENDENT/PREREQUISITE COMMITS**
+Record: None. The fix only reorders existing `sysfs_remove_group()`
+calls on `fivr_attribute_group` / `dlvr_attribute_group`, both present
+in this tree. Can apply standalone.
 
-## Phase 4: Mailing list / external
+## Phase 4: Mailing list and external research
 
-**Step 4.1: Original discussion**
-- Record: `b4 dig -c 7178817f19049` →
-  https://patch.msgid.link/20260629-rpmhpd-skip-
-  ret-v1-1-d94180ad9a29@oss.qualcomm.com
-- Series: **v1 only** (no v2/v3).
-- Thread (mbox): Ulf Hansson: “Applied for next, thanks!” No NAKs, no
-  stable nomination, no reviewer risk flags.
+**Step 4.1: FIND THE ORIGINAL PATCH DISCUSSION**
+Record:
+- `b4 dig -c 28f34d7dafa6d` →
+  https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn
+- `b4 dig -a`: v1 only
+- Thread (mbox): no NAKs. Rafael: “Applied as 7.3 material, thanks!”
+- No reviewer `Cc: stable` suggestion
 
-**Step 4.2: Recipients (`b4 dig -w`)**
-- Record: Ulf Hansson, linux-arm-msm, linux-pm, linux-kernel, Bjorn
-  Andersson, Konrad Dybcio, Taniya Das (author of the MXC skip), Fenglin
-  Wu. Right lists and people.
+**Step 4.2: CHECK WHO REVIEWED THE PATCH**
+Record (`b4 dig -w`): To/Cc included Rafael J. Wysocki, Daniel Lezcano,
+Zhang Rui, Srinivas Pandruvada, linux-pm. Applied by the thermal
+maintainer. No separate Reviewed-by.
 
-**Step 4.3: Bug report**
-- Record: No public user/syzbot/bugzilla report. Failure mode is
-  described by the Qualcomm author from platform bring-up.
+**Step 4.3: SEARCH FOR THE BUG REPORT**
+Record: No `Reported-by` / bugzilla / syzbot. This is a code-inspection
+leak, not a user crash report.
 
-**Step 4.4: Related series**
-- Record: Standalone. Extends `ddab91f4b2de5` rather than depending on a
-  multi-patch series.
+**Step 4.4: CHECK FOR RELATED PATCHES AND SERIES**
+Record: Standalone v1. Sibling leak fix is `15176b818e048c` (already
+here). Author’s ODVP cleanup is a different driver file.
 
-**Step 4.5: Stable list**
-- Record: lore.kernel.org/stable fetch returned 403. UNVERIFIED whether
-  stable@ discussed this subject. The 2024 MXC skip *was* Cc:stable.
+**Step 4.5: CHECK STABLE MAILING LIST HISTORY**
+Record: lore.kernel.org HTTP 403. `b4 dig` thread has no stable-list
+discussion. UNVERIFIED: whether linux-stable@ ever discussed this
+subject independently.
 
-## Phase 5: Semantic / call graph
+## Phase 5: Code semantic analysis
 
-**Step 5.1: Functions**
-- Record: `rpmhpd_update_level_mapping()` (changed), `rpmhpd_power_on()`
-  / `rpmhpd_set_performance_state()` (consumers of `enable_corner`,
-  unchanged).
+**Step 5.1: KEY FUNCTIONS**
+Record: `proc_thermal_rfim_add()` (modified). Uses `sysfs_create_group`
+/ `sysfs_remove_group`.
 
-**Step 5.2: Callers**
-- Record: `rpmhpd_update_level_mapping()` ← `rpmhpd_probe()` only.
-  `rpmhpd_power_on()` is `generic_pm_domain.power_on`, called from genpd
-  (including parent-on for child GDSCs). Probe + device/runtime PM, not
-  a syscall-only path.
+**Step 5.2: TRACE CALLERS**
+Record:
+- `proc_thermal_mmio_add()` in `processor_thermal_device.c` (only
+  caller)
+- That is called from `proc_thermal_pci_probe()` and
+  `proc_thermal_pci_legacy` probe
+- Probe / device-enumeration path, not IRQ or a hot syscall path
 
-**Step 5.3: Callees**
-- Record: `cmd_db_read_aux_data()`, then later
-  `rpmhpd_aggregate_corner()` → `rpmhpd_send_corner()` (RPMh votes).
+**Step 5.3: TRACE CALLEES**
+Record: `sysfs_create_group`, `sysfs_remove_group` on the PCI device
+kobject.
 
-**Step 5.4: Reachability**
-- Record: Yes, from normal Qualcomm device probe. Clock-controller GDSCs
-  are subdomains of rpmhpd (often MMCX). Userspace does not need a
-  special trigger; enabling display/video/camera clocks is enough.
+**Step 5.4: FOLLOW THE CALL CHAIN**
+Record: PCI probe → `proc_thermal_mmio_add()` →
+`proc_thermal_rfim_add()`. On RFIM failure, `proc_thermal_mmio_add()`
+does `goto err_rem_ptc` and **does not** call
+`proc_thermal_rfim_remove()`. `proc_thermal_pci_probe()` then `return
+ret` without `proc_thermal_mmio_remove()`. The leaked DLVR group
+therefore stays on `pdev->dev.kobj`. Reachable whenever this Intel
+thermal PCI device is probed (common on Intel laptops/SoCs with
+INT340x). Trigger still requires `sysfs_create_group(dvfs)` to fail.
 
-**Step 5.5: Similar patterns**
-- Record: Only MXC used `skip_retention_level`. MMCX/`mmcx_w_cx_parent`
-  did not. That matches “instead of adding more special cases for MMCX.”
+Verified hardware with all three bits (the only way both groups exist at
+DVFS failure): Meteor Lake `MTLP_THERMAL` is `FIVR | DVFS | DLVR`
+(`processor_thermal_device_pci.c`). `5bc6b1df65c87f` is what OR’d
+`PROC_THERMAL_FEATURE_DLVR` onto that ID.
 
-## Phase 6: This tree only
+**Step 5.5: SEARCH FOR SIMILAR PATTERNS**
+Record: Same incomplete-unwind pattern was already fixed for DLVR-
+create-fails-after-FIVR (`15176b818e048c`). `fs/sysfs/group.c` returns
+`-EEXIST` (and warns) if the named group already exists, so a leaked
+DLVR group can make a later re-bind fail even after the original
+transient error is gone.
 
-**Step 6.1: Does the buggy code exist here?**
-- Record:
-  - Local tree: **Linux 7.3.0-rc4** (`v7.3-rc4-27-gf0100363d8c37`,
-    Makefile `VERSION=7 PATCHLEVEL=3`).
-  - `drivers/pmdomain/qcom/rpmhpd.c` is present. Pre-commit code had
-    `skip_retention_level` only on MXC.
-  - `7178817f19049` is already an ancestor of HEAD (in v7.3-rc1; **not**
-    in v7.2). Current file already skips Retention unconditionally.
-  - Bug class (Retention as `enable_corner`) dates to `e3e56c050ab6`
-    (2021) whenever cmd-db lists Retention; MMCX Retention on newer
-    chips is why this default change was made. That hardware **is**
-    represented in this 7.3 tree.
+## Phase 6: Cross-referencing against the local tree
 
-**Step 6.2: Backport difficulty**
-- Record: Against current HEAD the patch is already applied (forward
-  apply would fail). Against 7.3 immediately before this commit it is a
-  clean apply (same file layout, `skip_retention_level` present). No
-  extra backport rework for this tree’s rpmhpd.c.
+**Step 6.1: DOES THE BUGGY CODE EXIST IN THIS TREE?**
+Record:
+- Local tree: `v7.3-rc4-27-gf0100363d8c37`, `make kernelversion` →
+  7.3.0-rc4
+- RFIM, DLVR, FIVR, DVFS, and MTLP FIVR+DLVR+DVFS are all present
+- Bug introduced in v6.4 (`5bc6b1df65c87f`), well before this 7.3 branch
+- Parent of the candidate still has the two early-return blocks
 
-**Step 6.3: Related fixes already here**
-- Record: MXC-only skip (`ddab91f4b2de5`) is here; it does **not** cover
-  MMCX/CX/etc. `2a93c6cbd5a70` (enabled_corner aggregation) is a
-  different bug (peer off during sync_state). No substitute for this
-  commit.
+**Step 6.2: CHECK FOR BACKPORT COMPLICATIONS**
+Record: Clean apply. Surrounding `proc_thermal_rfim_add()` in this tree
+matches the hunk (Nova Lake DLVR switch and the earlier FIVR leak fix
+are already here).
 
-## Phase 7: Subsystem context
+**Step 6.3: CHECK IF RELATED FIXES ARE ALREADY HERE**
+Record: `15176b818e048c` is in this tree and fixes a *different* leak
+(DLVR create vs FIVR). It does not fix DVFS-create leaking DLVR. No
+other substitute for this patch.
 
-**Step 7.1**
-- Record: `drivers/pmdomain/qcom/` — Qualcomm RPMh power domains.
-  **IMPORTANT** (not core mm/fs, but used on a large set of Snapdragon
-  phones, laptops, and embedded boards). Maintainer: Ulf Hansson
-  (`GENERIC PM DOMAINS`).
+## Phase 7: Subsystem and maintainer context
 
-**Step 7.2**
-- Record: Active (new SoC tables: Nord, Hawi, Eliza, Kaanapali, Glymur,
-  etc.). The Retention default is independent of those tables.
+**Step 7.1: IDENTIFY THE SUBSYSTEM AND ITS CRITICALITY**
+Record: `[drivers/thermal/intel/int340x] [IMPORTANT]` — Intel laptop/SoC
+processor thermal / RFIM sysfs, not core mm/fs, but used on shipping
+Meteor Lake platforms. `CONFIG_INT340X_THERMAL`.
+
+**Step 7.2: ASSESS SUBSYSTEM ACTIVITY**
+Record: Actively maintained (Nova Lake, Wildcat Lake, Panther Lake IDs
+and DLVR tables in recent history). Maintainer applied this patch.
 
 ## Phase 8: Impact and risk
 
-**Step 8.1: Who is affected**
-- Record: Qualcomm rpmhpd platforms (`CONFIG_QCOM_RPMHPD`), especially
-  SoCs whose cmd-db advertises Retention on MMCX or other non-MXC rails.
-  Not universal; not staging.
+**Step 8.1: WHO IS AFFECTED**
+Record: Driver-specific / config-specific: Intel INT340x processor
+thermal PCI, specifically IDs with FIVR+DLVR+DVFS (Meteor Lake in this
+tree).
 
-**Step 8.2: Trigger**
-- Record: Common: child GDSC on, parent rpmhpd has no OPP. Happens at
-  probe/runtime PM. Unprivileged userspace can cause it indirectly by
-  using multimedia devices; it also happens at boot when those
-  controllers probe.
+**Step 8.2: TRIGGER CONDITIONS**
+Record: Device probe, after FIVR and DLVR groups succeed, when DVFS
+`sysfs_create_group()` fails (ENOMEM, duplicate name, etc.). Not
+unprivileged-syscall reachable except via driver bind. Uncommon, but
+deterministic when it happens. Re-probe can then hit `-EEXIST` on the
+leaked DLVR group (`internal_create_group()` in `fs/sysfs/group.c`).
 
-**Step 8.3: Failure mode**
-- Record: GDSC stuck powering on → device/controller hang, probe
-  failure, missing display/video/camera (or boot issues if that path is
-  on the critical path). Severity: **HIGH** (hardware hang), not a
-  KASAN/UAF class crash.
+**Step 8.3: FAILURE MODE SEVERITY**
+Record: `[sysfs group leak on PCI device after failed probe; possible
+sticky re-bind failure] [MEDIUM]` — not a panic or filesystem
+corruption. Stale `dlvr` attributes can remain on the PCI device kobject
+after the driver has reported probe failure.
 
-**Step 8.4: Risk-benefit**
-- Record:
-  - **Benefit:** Prevents GDSC/parent-rail hangs on Qualcomm platforms
-    in this tree, including MMCX without extending a per-rail flag list.
-  - **Risk:** Low. 14-line change; no-op if Retention is absent from
-    cmd-db; MXC behavior unchanged; Qualcomm + maintainer reviewed.
-  - **Ratio:** Benefit > risk.
+**Step 8.4: RISK-BENEFIT RATIO**
+Record: Benefit medium (correct unwind on a real shipping platform’s
+probe error path; avoids leftover sysfs and sticky `-EEXIST`). Risk very
+low (5-line error-path-only change, no locking/API). Ratio favors taking
+the fix.
 
-## Phase 9: Synthesis
+## Phase 9: Final synthesis
 
-**Step 9.1: Evidence**
+**Step 9.1: EVIDENCE**
 
-For:
-- Concrete hang: parent RPMh PD at Retention → child GDSC stuck on.
-- Call path and DT consumers verified in this tree.
-- Small, obviously correct extension of an existing skip that was
-  already Cc:stable for MXC.
-- Safe no-op when Retention is not in cmd-db.
-- Reviewed by Konrad, applied by Ulf; Taniya Das (original skip author)
-  was on Cc.
-- This 7.3 tree has rpmhpd, `enable_corner`, `skip_retention_level`, and
-  MMCX users.
+FOR:
+- Real, deterministic incomplete unwind; DLVR group leaked when
+  FIVR+DLVR+DVFS are set
+- Meteor Lake actually sets all three feature bits
+- Caller does not call `proc_thermal_rfim_remove()` on
+  `proc_thermal_rfim_add()` failure
+- Same bug class as `15176b818e048c`, which this tree already contains
+- Tiny, obviously correct, no new API
+- Thermal maintainer applied it; right people were CCed; no NAKs
+- Bug present since v6.4; code exists in this 7.3 tree
 
-Against:
-- No `Fixes:` / public reproducer / syzbot (not a negative per rules).
-- Default change for all rails, not only MMCX (mitigated: Retention skip
-  is a no-op where unused).
-- lore.kernel.org/stable search could not be fetched (403).
+AGAINST:
+- Trigger is a failed `sysfs_create_group()` (rare)
+- No user/syzbot report
+- Not a crash, UAF, or data-corruption bug
+- Rafael queued it as 7.3 material, not as a stable-cc’d hotfix
 
-**Step 9.2: Stable rules**
-1. Obviously correct and tested? **PASS** — v1 accepted, maintainer
-   applied, Qualcomm review.
-2. Real user-visible bug? **PASS** — GDSC stuck on parent enable.
-3. Important (hang/corruption/security)? **PASS** — hardware hang on a
-   widely used SoC family; HIGH, not a panic.
-4. Small and contained? **PASS** — +9/−5, one file.
-5. No new features/APIs? **PASS** — same skip, defaulted; no userspace
-   API.
-6. Can apply to this tree? **PASS** — 7.3 has the pre-image; the commit
-   is in 7.3-rc1.
+UNRESOLVED:
+- Direct lore.kernel.org / stable-list HTTP search returned 403; thread
+  content recovered via `b4 dig -m` instead
 
-**Step 9.3: Exception category**
-- Record: Hardware workaround (skip a non-operational corner), same
-  class as the 2024 MXC Retention skip.
+**Step 9.2: STABLE RULES CHECKLIST**
+1. Obviously correct and tested? **PASS** — control flow is local and
+   clear; maintainer applied v1 with no further revisions.
+2. Fixes a real bug that affects users? **PASS** — leftover sysfs on the
+   PCI device after failed RFIM setup on Meteor Lake.
+3. Important issue? **PASS** (medium) — resource leak with a possible
+   sticky re-bind failure, not a panic; still the error-path leak class
+   stable regularly takes.
+4. Small and contained? **PASS** — one function, +5/−6 lines.
+5. No new features or APIs? **PASS**
+6. Can apply to the local tree? **PASS** — file and both sysfs groups
+   exist; hunk matches.
 
-**Step 9.4: Decision**
-This tree is 7.3.0-rc4. The rpmhpd driver, the Retention-
-as-`enable_corner` bug, and MMCX parent-GDSC consumers are all here. The
-change is a small, correct hang fix, not a feature. It should be in this
-tree.
+**Step 9.3: EXCEPTION CATEGORIES**
+Record: None (not a device ID, quirk, DT, build, or docs exception). It
+is a normal small leak fix.
 
----
+**Step 9.4: DECISION**
+This tree is 7.3.0-rc4. The buggy unwind, DLVR/FIVR/DVFS groups, and
+Meteor Lake FIVR+DLVR+DVFS mask are all here. The patch is a minimal,
+correct error-path leak fix with negligible regression risk. It should
+be in this tree.
 
-### What it solves for users of this tree
+Verification:
+- [Phase 1] Tags: author SOB, Rafael SOB, lore Link; no Fixes/Reported-
+  by/Cc: stable
+- [Phase 2] Diff: `proc_thermal_rfim_add()` DVFS failure path; two
+  early-returns collapsed into one unwind of DLVR then FIVR
+- [Phase 3] `git blame` on parent: FIVR unwind from `473be51142adba`
+  (v5.11); DLVR early-return from `5bc6b1df65c87f` (v6.4-rc1)
+- [Phase 3] `git merge-base --is-ancestor 5bc6b1df65c87f HEAD` → yes;
+  related leak fix `15176b818e048c` also in HEAD
+- [Phase 3] `git log --author='Pengpeng Hou'` on thermal: this RFIM fix
+  plus a later independent ODVP unwind
+- [Phase 4] `b4 dig -c 28f34d7dafa6d`:
+  https://patch.msgid.link/20260615065245.84252-1-pengpeng@iscas.ac.cn
+- [Phase 4] `b4 dig -a`: v1 only; `b4 dig -w`: linux-pm +
+  Pandruvada/Wysocki/Lezcano
+- [Phase 4] mbox: Rafael “Applied as 7.3 material”; no NAK, no stable
+  nomination
+- [Phase 4] lore.kernel.org WebFetch: 403; stable-list search UNVERIFIED
+  via HTTP
+- [Phase 5] Callers: `proc_thermal_mmio_add` → PCI probe; RFIM failure
+  jumps to `err_rem_ptc`, skipping `proc_thermal_rfim_remove`
+- [Phase 5] MTLP ID: `FIVR | DVFS | DLVR` in
+  `processor_thermal_device_pci.c`; DLVR bit added in `5bc6b1df65c87f`
+- [Phase 5] `sysfs_create_group` / `internal_create_group`: `-EEXIST` if
+  named group already exists
+- [Phase 6] `git describe HEAD` = v7.3-rc4-27-gf0100363d8c37; `make
+  kernelversion` = 7.3.0-rc4
+- [Phase 6] Parent function still has the buggy two-branch return; this
+  tree has the needed groups and IDs
+- [Phase 8] Failure mode: leaked `dlvr` sysfs group after probe failure;
+  severity MEDIUM
 
-Without it, enabling a Qualcomm GDSC whose parent RPMh rail (often MMCX)
-has no OPP votes Retention. That rail cannot actually run there, so the
-GDSC never finishes power-on. Display, video, camera, and similar
-controllers that list `power-domains = <&rpmhpd RPMHPD_MMCX>` hit this
-on probe or runtime PM. Skipping Retention when building the cmd-db map
-makes the min enable corner the first real operational level.
-
-### Risk vs benefit
-
-Benefit is avoiding a platform hang on common Qualcomm PM paths. Risk is
-low: SoCs without Retention in cmd-db are unchanged; MXC already skipped
-Retention; HLOS is not supposed to use Retention.
-
-### Concerns
-
-No public reproducer. Stable-list discussion unverified (HTTP 403).
-Slightly higher min vote on rails that listed Retention is intended, not
-a silent functional change for rails that never had it.
-
-### Verification
-- [Phase 1] Parsed tags: author/reviewer/maintainer SOBs only; no
-  Fixes/stable/syzbot
-- [Phase 2] Diff: +9/−5 in `rpmhpd.c`; drop `skip_retention_level`;
-  always skip `RPMH_REGULATOR_LEVEL_RETENTION` (16)
-- [Phase 2] `rpmhpd_power_on()` uses `max(pd->corner,
-  pd->enable_corner)` — verified in file
-- [Phase 2] GDSC subdomain attach in `gdsc_register()` — verified
-- [Phase 2] DT MMCX consumers in sm8450/sm8550/sm8650/sm8750 dtsi —
-  verified
-- [Phase 3] `git describe HEAD` / `make kernelversion`: v7.3-rc4 /
-  7.3.0-rc4
-- [Phase 3] `git merge-base --is-ancestor 7178817f19049 HEAD`: yes; not
-  in v7.2; in v7.3-rc1
-- [Phase 3] Blame: mapping 279b7e8a62cc (2019); enable_corner
-  e3e56c050ab6 (2021); MXC skip ddab91f4b2de5 (2024)
-- [Phase 3] Pre-image: `skip_retention_level` only on mxc/mxc_ao; mmcx
-  had no flag
-- [Phase 4] `b4 dig -c 7178817f19049`: lore/msgid `20260629-rpmhpd-skip-
-  ret-v1-1-d94180ad9a29@oss.qualcomm.com`
-- [Phase 4] `b4 dig -a`: v1 only; Ulf “Applied for next”; no NAK
-- [Phase 4] `b4 dig -w`: Ulf, Bjorn, Konrad, Taniya Das, linux-arm-msm,
-  linux-pm
-- [Phase 4] UNVERIFIED: lore.kernel.org/stable (403)
-- [Phase 5] `rpmhpd_update_level_mapping()` called only from
-  `rpmhpd_probe`
-- [Phase 6] Post-fix code already in this checkout; related MXC skip
-  present and insufficient
-- [Phase 8] Failure mode: GDSC stuck on — HIGH hang, Qualcomm-specific
+The fix is small, surgical, and meets the stable criteria for an error-
+path resource leak on hardware this tree already supports.
 
 **YES**
 
- drivers/pmdomain/qcom/rpmhpd.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ .../intel/int340x_thermal/processor_thermal_rfim.c    | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
-index 4c3cbf3abc750..fc61ec45755c3 100644
---- a/drivers/pmdomain/qcom/rpmhpd.c
-+++ b/drivers/pmdomain/qcom/rpmhpd.c
-@@ -41,7 +41,6 @@
-  * @addr:		Resource address as looped up using resource name from
-  *			cmd-db
-  * @state_synced:	Indicator that sync_state has been invoked for the rpmhpd resource
-- * @skip_retention_level: Indicate that retention level should not be used for the power domain
-  */
- struct rpmhpd {
- 	struct device	*dev;
-@@ -58,7 +57,6 @@ struct rpmhpd {
- 	const char	*res_name;
- 	u32		addr;
- 	bool		state_synced;
--	bool            skip_retention_level;
- };
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+index 635bc8fded1e9..2f32b230a4b15 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+@@ -460,12 +460,11 @@ int proc_thermal_rfim_add(struct pci_dev *pdev, struct proc_thermal_device *proc
  
- struct rpmhpd_desc {
-@@ -176,7 +174,6 @@ static struct rpmhpd mxc = {
- 	.pd = { .name = "mxc", },
- 	.peer = &mxc_ao,
- 	.res_name = "mxc.lvl",
--	.skip_retention_level = true,
- };
- 
- static struct rpmhpd mxc_ao = {
-@@ -184,7 +181,6 @@ static struct rpmhpd mxc_ao = {
- 	.active_only = true,
- 	.peer = &mxc,
- 	.res_name = "mxc.lvl",
--	.skip_retention_level = true,
- };
- 
- static struct rpmhpd nsp = {
-@@ -974,7 +970,15 @@ static int rpmhpd_update_level_mapping(struct rpmhpd *rpmhpd)
- 		return -EINVAL;
- 
- 	for (i = 0; i < rpmhpd->level_count; i++) {
--		if (rpmhpd->skip_retention_level && buf[i] == RPMH_REGULATOR_LEVEL_RETENTION)
-+		/*
-+		 * Most HW won't function properly at Retention. The minimum
-+		 * operational level is the first level above Retention. The
-+		 * small subset of HW that can operate at Retention isn't
-+		 * controlled by HLOS. Skip the Retention level to avoid HW
-+		 * failures when the PD is enabled without first having an
-+		 * explicit OPP level set.
-+		 */
-+		if (buf[i] == RPMH_REGULATOR_LEVEL_RETENTION)
- 			continue;
- 
- 		rpmhpd->level[i] = buf[i];
+ 	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_DVFS) {
+ 		ret = sysfs_create_group(&pdev->dev.kobj, &dvfs_attribute_group);
+-		if (ret && proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_FIVR) {
+-			sysfs_remove_group(&pdev->dev.kobj, &fivr_attribute_group);
+-			return ret;
+-		}
+-		if (ret && proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_DLVR) {
+-			sysfs_remove_group(&pdev->dev.kobj, &dlvr_attribute_group);
++		if (ret) {
++			if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_DLVR)
++				sysfs_remove_group(&pdev->dev.kobj, &dlvr_attribute_group);
++			if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_FIVR)
++				sysfs_remove_group(&pdev->dev.kobj, &fivr_attribute_group);
+ 			return ret;
+ 		}
+ 	}
 -- 
 2.53.0
 
