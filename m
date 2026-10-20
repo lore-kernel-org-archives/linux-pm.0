@@ -1,79 +1,90 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792523911;
-	b=cEWHFR6O8X7ufDFOe/Jux7TXA9FFWQJcEXSpfVN88Gg0gieQbHAtBMKbvF2oLEFbwcmV
-	 x6KU6Q5Tg255LfUIXsQ/92w0uFBRKELDUtv6tZKbABfZD51vil9qb+7j0ABCIUEdgFAAU
-	 DkZhD63jUAPh3rULxaZFdi0mT7etYVBTCF0zsEOpzRFAISkVVlz57c4FjFGbxOHFjLBCJ
-	 LkQ/pIh257/0JGgBuP1TsRjZqnPDuJJoQ/ILg+BMQ8BPcrtpY6ay6jxFVGg2w66sA0mBm
-	 u1ebOUyG2kKoiKq0aTd/P/3k2NGdTkhuLkCWtlRMBgezp2iNrcB2K2QOwfiLX7XQuAQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792523911;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=uP+Xmd9fBdjVfeg0RV451Ru7HMLulpVu6IyYqGTomKw=;
-	b=3nDsOPhk7qL5QqL04DDMnCz1DMEgp3g3prEw85h1vvLJV678lkv3nZv6zLLUNXuzaSvn
-	 ACvnmHtw/UbOezC59v1P8kIpsJ3153dpew1H3ZNt9d94SeKNYAsJW8EBYgFS0+AVccnvs
-	 viEQc+F8PcJRaNUo7vyYVI1K8UwxVfDdKsL+PX0LpjK69mMbhbwEwLoxZwvxj6k61aLzS
-	 1lEKtDYpvTuGaCUpA2L4uWabt+PWZEZALcYMzmFps7UWZvYYJZpgX+Bjus2UTkzEi1NVK
-	 BokvhR9Z3W/x3W6mheaJM8UxvKIAhkdASpPiee0jRQ6MZSWCuWMKRqpYgb3r4VOn97g==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bL08k4dd;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1792526643;
+	b=YAOxlm0ik5RRmKkoY7QdXFF/ErY4YsuE2nesRiMvSyWcUQoVc+gncoMaForHObe8KFhc
+	 Cmvy32ZKZ/k2nGl6zGMQdC62I2YOyBk5r67x2otnkbwIsjY0eNJgTE/MoC6LHGnHSJRRk
+	 XmQ8MKsc8qYv2HIr9oTu2Th4y1Co0EdTNhMTKzSLox2bPyhrI5dAqsJje7xHoC1j5DiX+
+	 WAz/qF/hsGxos9ykppqP5GpjzT8cbGpfczHaujsBzoORyysjAmUYB8srsyJ1pkm6sqD9L
+	 XHJ6EI5X559Xj1tG+RPxgxzPhkGB4XHFNQ/08tfCruUxIZvqWLaCw6eqhcIClOqC2/Q==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792526643;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:Date:To:cc:
+	 Subject:In-Reply-To:Message-ID:References:MIME-Version:Content-Type;
+	bh=wd2FJGlu+0fbyoXhw6VVc5IYaBCU7QVw7dLO30BJWrY=;
+	b=mwmSb5ZStWjbjV42EOQgdBXn5+kw/kvjYiDoGN56pSpeYMzdd4EqnHyhBx4uhGy5Pjfz
+	 VYGVxC+6iJlQie87qys4Wy2JCdGSWnSF24FqLmCkk2JT40XXVeYLBao3aWTp458FHA9fG
+	 KVq1dQqY8BEix07ISTtdhXEGlkvt9SvLM6rxFQhgevv9FPE3Lp6wGS7xdjsAG4eGsFUsz
+	 CgwSxNjCVmFO8QGAV+MecJCJtbjX70P5EWAnL7rPP/DlhH1IZWvV3KTEUQSOTxt7IL9KD
+	 rCSKqz0RHWeGLLwveYKZ7sUQ6RralKA5/JJ92f4JAvJ/+Y2fUp5DnPhgeti8otgeSuw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SfqUfK1s;
+	arc=none smtp.remote-ip=198.175.65.18
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE25F606A319;
-	Tue, 20 Oct 2026 19:18:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA58D606A31A;
+	Tue, 20 Oct 2026 20:04:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AA58D606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bL08k4dd
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1792523910;
-	b=EgeByC5CddRqJV4LV8r6nqCkcT2ArK2BBtTM4ngFOTdrL30HkO1dngEPJWe9RFIc1l7d
-	 owIe4cZ5afzKWk2NntwBdRachyyT9MtS9eMIBH3QAzyeH3NxmzRKxNGqp7aN7QZj88JwE
-	 TCfoReJLffNggBxXACA6IlleuYoPDUhnOxhJOAZOcQwB/AJ5WqZyFeNUxuXv62/P8/EjC
-	 7KfAAkd63BgZq3/8eTd7+3SnSO5Os7B1Q1rOQTqyVlZnfrfs3sZKVAocm4j2qgdVYWJF1
-	 vGXeAAXu1Fvj3nEOK4R7DvE33fVqDvBGQm8GjvjDPmvh6rt0e7Pc0CweV0uRol8Rpmw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792523910;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=uP+Xmd9fBdjVfeg0RV451Ru7HMLulpVu6IyYqGTomKw=;
-	b=GXLAu4dPvadE/lXh4ljBRAP/fdL1etpfSWjGk/VbwDsjNRlTUOSPGp5xpL3DHE6/jzk8
-	 9vJ0oMOE/RkqAkthvKECjVQPrYvPPHz2c0QfjP9xRURZVGdSX7ESAwSuMyNGUFWt9YXQ2
-	 OCw7o1F1cZDw69nFWZijjFYQe0iWcTW7z/SDWE39kbLuBKOL7BptvV+sucLgynOplvylL
-	 Ah/2GDyD72WTze8huZnwz2nRScGme8XA3PUvpcCOyv2JALeipK4TvZCagLwYBYr19PM8m
-	 Kz7/YZsp7Ys3Szj+sm382IOGbXOocgMtTqnoHzJ+wZfBroU2m0uu/tosdpUZGXR6goQ==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 0AD891F000C9;
-	Tue, 20 Oct 2026 19:18:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792523910;
-	bh=uP+Xmd9fBdjVfeg0RV451Ru7HMLulpVu6IyYqGTomKw=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=bL08k4ddy2AN02eB1oQTTxVwhOIal2GdrS/X6YMhy/hW71jxausI7fEPivSFw9j+X
-	 rO+tKTrzUSHGAi9Vptu+XempFIKfG3v+iYxHfsNczmLpBZ1UiBMD6VTTbIabXwDQbY
-	 ja6xMbm8IeyMcn/9xnokU/EAgZsTYqXjZX4CABCGAV7YlDxz9kH8TNzvqidO7KGMka
-	 p5ze77436xtHE4GT24+lC1yHtgVDVD+Uv4yQpF2tHXNLiPvAodPOFd5VTd93hOHIRM
-	 SwCeAtEQqGc6P1NWtmuz3n3PqAN8gAleJC+lMlt/+BmM2yoobJQwDnIaOn9ziI3Ff4
-	 4sSZqrMGafepQ==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 90E384322E;
-	Tue, 20 Oct 2026 19:18:29 +0000 (UTC)
-From: Patrick Fischer via B4 Relay <devnull+admin.tsv-stahl-riesa.de@kernel.org>
-Date: Tue, 20 Oct 2026 21:18:26 +0200
-Subject: [PATCH] thermal/drivers/tegra/soctherm: Program throttrip with hot
- trip temperature
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SfqUfK1s
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1792526643; x=1824062643;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=SA/hGjNUEOFfDC21kHQf5YbRyqwOcCA3aPR4u9P5bQc=;
+  b=SfqUfK1srfp90VoWQfacm6oMsMmSd90fVuiG6z3F9xgp+C6pM7lR86zL
+   u5hZ3EABjKVcpx7H3MmSlcDCsLWdaRetwoqOBVtIzT3K7UA9OwoHlfyKn
+   7TUPXtxXd/UeiHwcOSLpTeaxjvdJo2CPOMy1t5jFEA8rzGlu6U863UqMs
+   m4DficKfQATeSbHYqn6ckU/W2rBoVrEkqrCErMWV5l1le2ogjhtWg6zrD
+   WU+q6du6QRXjnDgPdd6SWrQ6UxzNEiS8ag3qXfLFafs3t7zVBhJPLJtwA
+   hNW1jnH5NYIg0KUXwRzo7nAknbeAPsfElYSUvf7WGQcmppj4B0UW4xXgX
+   g==;
+X-CSE-ConnectionGUID: d5vjzSvBSv+kUC1DrvdTag==
+X-CSE-MsgGUID: xOTjTFn0Q4uWuVGCtksx5w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11941"; a="1252888"
+X-IronPort-AV: E=Sophos;i="6.27,168,1787036400"; 
+   d="scan'208";a="1252888"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2026 13:04:02 -0700
+X-CSE-ConnectionGUID: 7k7fX0lLSnS4lEhGF2ANkg==
+X-CSE-MsgGUID: RlLF34yrT1unWcayhp536Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,168,1787036400"; 
+   d="scan'208";a="2850742"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.181])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2026 13:03:55 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Tue, 20 Oct 2026 23:03:51 +0300 (EEST)
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+    Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+    Viresh Kumar <viresh.kumar@linaro.org>, Hans de Goede <hansg@kernel.org>, 
+    Maximilian Luz <luzmaximilian@gmail.com>, 
+    Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, 
+    Mark Pearson <mpearson-lenovo@squebb.ca>, 
+    "Derek J. Clark" <derekjohn.clark@gmail.com>, 
+    Daniel Lezcano <daniel.lezcano@kernel.org>, 
+    Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+    Armin Wolf <W_Armin@gmx.de>, Jai Luthra <jai.luthra@ideasonboard.com>, 
+    Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+    "Mario Limonciello (AMD)" <superm1@kernel.org>, 
+    Jack Wu <jackbb_wu@compal.com>, 
+    Mario Limonciello <mario.limonciello@amd.com>, 
+    Zhang DM <jixianqiang1540@gmail.com>, linux-acpi@vger.kernel.org, 
+    LKML <linux-kernel@vger.kernel.org>, linux-doc@vger.kernel.org, 
+    linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org
+Subject: Re: [PATCH v3] platform profile: Separate handler locking from sysfs
+ lifetime
+In-Reply-To: <20261020144525.3265851-1-daniel.lezcano@oss.qualcomm.com>
+Message-ID: <97da66c6-a71a-e72a-579f-47dc813b346b@linux.intel.com>
+References: <20261020144525.3265851-1-daniel.lezcano@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,89 +94,325 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261020-upstream-soctherm-throttrip-v1-1-c67f8a02ec3b@tsv-stahl-riesa.de>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMwQrCMAwA0F8ZORvoCnbMXxEPXRdthK0lyUQY+
- 3erHt/l7aAkTAqXbgehFyuXtaE/dZByXB+EPDeDdz70zjvcqppQXFBLskyyoGUpZsIV4xzGcB6
- HYQoJ2lCF7vz+7dfb37pNT0r2LeE4PrY5N+l/AAAA
-X-Change-ID: 20261020-upstream-soctherm-throttrip-ad6965977b6c
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Thierry Reding <thierry.reding@kernel.org>, 
- Jonathan Hunter <jonathanh@nvidia.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Svyatoslav Ryhel <clamor95@gmail.com>, 
- stable@vger.kernel.org, Patrick Fischer <admin@tsv-stahl-riesa.de>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792523909; l=2148;
- i=admin@tsv-stahl-riesa.de; s=20261020; h=from:subject:message-id;
- bh=RYgQxo1Q07jpqk6tE6wjPPC841A4mk8ZdJMQnRXuUBo=;
- b=m+kV5YsJ2VgwipWiC2LRknxKcOCe0vnTOfvlAi1qcANkDyhbRNLWXXlz744RW9VoCNU36PzzD
- ZHRsW+KATFUCWJrcFeXl20/r2ZpMQFT8NFRZNIe0bow92jA3+f4MJNT
-X-Developer-Key: i=admin@tsv-stahl-riesa.de; a=ed25519;
- pk=D+v6EloYcEY9PIUHFyTM5sqcGIU/fIXzLUdkR8vjAtk=
-X-Endpoint-Received: by B4 Relay for admin@tsv-stahl-riesa.de/20261020 with
- auth_id=1251
-X-Original-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
-Reply-To: admin@tsv-stahl-riesa.de
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="8323328-1338216543-1792526631=:1177"
 
-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-tegra_soctherm_set_hwtrips() is supposed to program the hardware
-throttle trip (throttrip) with the temperature of the thermal zone's
-hot trip point. Since commit 735a968d2fea ("thermal/drivers/tegra: Use
-generic thermal_zone_get_trip() function"), get_hot_temp() only looks
-up the hot trip and no longer stores its temperature, and the later
-conversion to get_hot_trip() kept that behaviour. throttrip_program()
-is therefore called with the value still left in 'temperature', which
-is the thermtrip or critical temperature that was just used for
-thermtrip_program().
+--8323328-1338216543-1792526631=:1177
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-As a result, hardware throttling only starts at the shutdown
-temperature instead of at the hot trip. On the NVIDIA Tegra Note 7
-(P1640, Tegra114), where tegra114.dtsi defines the hot trips at 100 C
-and the critical trips at 102 C, soctherm reports:
+On Tue, 20 Oct 2026, Daniel Lezcano wrote:
 
-  throttrip: will throttle when cpu reaches 102000 mC
+> Registration and removal currently hold profile_lock across
+> device_unregister() and sysfs_update_group(). These operations can remove
+> sysfs attributes and wait for their active callbacks to finish. The
+> profile read and write callbacks acquire profile_lock themselves, so a
+> concurrent access can deadlock:
+>=20
+>   Removal/update path             Active sysfs callback
+>   -------------------             ---------------------
+>   acquire profile_lock            hold kernfs active reference
+>   remove a sysfs attribute         wait for profile_lock
+>   wait for its active references
+>=20
+> The removal path cannot finish until the callback returns, and the
+> callback cannot return until the removal path releases profile_lock.
+> This applies both to per-provider device teardown and to updates of the
+> legacy aggregate attribute group.
+>=20
+> Commit 041142d7d252 ("ACPI: platform-profile: Fix possible deadlock in
+> platform_profile_remove()") previously fixed this lock ordering by moving
+> sysfs_remove_group() outside profile_lock. Commit 55b1e68134bf ("ACPI:
+> platform_profile: Use guard(mutex) for register/unregister") reintroduced
+> the issue by extending the mutex guard over sysfs_remove_group(). Later,
+> commit 77be5cacb2c2 ("ACPI: platform_profile: Create class for ACPI
+> platform profile") replaced that teardown with device_unregister() and
+> sysfs_update_group(), still under the same mutex, extending the problem
+> to class-device teardown and aggregate attribute updates.
+>=20
+> Simply dropping profile_lock around these operations is insufficient.
+> Aggregate operations currently discover providers through the class
+> device list. A provider being unregistered could therefore still be
+> selected for an aggregate read, write or cycle while its sysfs files are
+> being torn down. Concurrent registrations and removals would also race
+> when updating aggregate attribute visibility.
+>=20
+> Introduce profile_registration_lock to serialize registration, removal
+> and aggregate sysfs updates. Sysfs callbacks never acquire this mutex.
+> Retain profile_lock for profile operations and use it to protect an
+> explicit list of handlers participating in the aggregate interface.
+>=20
+> Add a handler to that list only after device_register() succeeds. On
+> removal, unlink it under profile_lock before calling device_unregister().
+> Acquiring profile_lock first waits for any aggregate operation already
+> using the handler to complete; unlinking prevents later aggregate
+> operations from finding it. Release profile_lock before draining sysfs
+> callbacks, allowing active per-provider callbacks to complete before the
+> device is released. Apply the same unlink-before-unregister ordering to
+> registration error cleanup.
+>=20
+> Walk this list for aggregate reads, writes and profile cycling, and use
+> its emptiness to determine aggregate attribute visibility. The class
+> devices remain the per-provider userspace interface.
+>=20
+> There can now be an interval between removing the last handler from the
+> list and removing the aggregate attributes. Explicitly reject choices
+> reads and writes during that interval: the intersection bitmap starts
+> with every bit set, so an empty traversal must not advertise all profiles
+> or report a successful write without updating a provider.
+>=20
+> This separates aggregate membership from class device teardown while
+> preserving the existing class and ACPI sysfs interfaces.
+>=20
+> Fixes: 55b1e68134bf ("ACPI: platform_profile: Use guard(mutex) for regist=
+er/unregister")
+> Assisted-by: OpenCode:gpt-6.1-sol
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 
-instead of 100000 mC. Svyatoslav Ryhel observed the same on the ASUS
-Transformer Pad TF701T (Tegra114) and the Xiaomi Mi Pad (Tegra124).
-All boards using soctherm with a hot trip bound to a throttle cooling
-device are affected.
+Reviewed-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
 
-Use the temperature of the hot trip for throttrip_program() again.
-
-Fixes: 735a968d2fea ("thermal/drivers/tegra: Use generic thermal_zone_get_trip() function")
-Cc: stable@vger.kernel.org
-Assisted-by: LLM
-Tested-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Signed-off-by: Patrick Fischer <admin@tsv-stahl-riesa.de>
----
- drivers/thermal/tegra/soctherm.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index f74acf13b24d..903215502606 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -765,6 +765,8 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
- 		return 0;
- 	}
- 
-+	temperature = hot_trip->temperature;
-+
- 	for (i = 0; i < THROTTLE_OC1; i++) {
- 		struct thermal_cooling_device *cdev;
- 
-
----
-base-commit: f47d223627f80cb7a1eb14c585fe6cb35de5e984
-change-id: 20261020-upstream-soctherm-throttrip-ad6965977b6c
-
-Best regards,
---  
-Patrick Fischer <admin@tsv-stahl-riesa.de>
+--=20
+ i.
 
 
+> ---
+> Changes in v3:
+>   - Send the locking fix as a standalone patch, independently of the
+>     firmware-agnostic extraction and legacy-interface deprecation series.
+>   - Document that profile_lock protects handler-list membership and
+>     serializes profile operations against each other and handler removal.
+>     Explain why it must not be held across sysfs teardown.
+>=20
+> Changes in v2:
+>   - Expand the deadlock and handler-lifetime explanation.
+>   - Add the Fixes tag and describe the earlier fix, regression and later
+>     extension to class-device teardown and sysfs group updates.
+>=20
+>  drivers/acpi/platform_profile.c | 80 ++++++++++++++++++++++++-----------=
+------
+>  1 file changed, 47 insertions(+), 33 deletions(-)
+>=20
+> diff --git a/drivers/acpi/platform_profile.c b/drivers/acpi/platform_prof=
+ile.c
+> index 79d2e92e5c28..d79080a20e21 100644
+> --- a/drivers/acpi/platform_profile.c
+> +++ b/drivers/acpi/platform_profile.c
+> @@ -8,15 +8,25 @@
+>  #include <linux/bits.h>
+>  #include <linux/cleanup.h>
+>  #include <linux/init.h>
+> +#include <linux/list.h>
+>  #include <linux/mutex.h>
+>  #include <linux/platform_profile.h>
+>  #include <linux/sysfs.h>
+> =20
+>  #define to_pprof_handler(d)=09(container_of(d, struct platform_profile_h=
+andler, dev))
+> =20
+> +/*
+> + * Protects profile_handlers membership and serializes profile operation=
+s
+> + * against each other and handler removal. Never held across sysfs teard=
+own,
+> + * which can wait for callbacks that acquire this lock.
+> + */
+>  static DEFINE_MUTEX(profile_lock);
+> +/* Serialize registration and sysfs updates without blocking sysfs callb=
+acks. */
+> +static DEFINE_MUTEX(profile_registration_lock);
+> +static LIST_HEAD(profile_handlers);
+> =20
+>  struct platform_profile_handler {
+> +=09struct list_head node;
+>  =09const char *name;
+>  =09struct device dev;
+>  =09int minor;
+> @@ -44,6 +54,22 @@ static_assert(ARRAY_SIZE(profile_names) =3D=3D PLATFOR=
+M_PROFILE_LAST);
+> =20
+>  static DEFINE_IDA(platform_profile_ida);
+> =20
+> +static int profile_walk_handlers(void *data,
+> +=09=09=09=09 int (*fn)(struct device *dev, void *data))
+> +{
+> +=09struct platform_profile_handler *handler;
+> +=09int ret;
+> +
+> +=09lockdep_assert_held(&profile_lock);
+> +=09list_for_each_entry(handler, &profile_handlers, node) {
+> +=09=09ret =3D fn(&handler->dev, data);
+> +=09=09if (ret)
+> +=09=09=09return ret;
+> +=09}
+> +
+> +=09return 0;
+> +}
+> +
+>  /**
+>   * _commmon_choices_show - Show the available profile choices
+>   * @choices: The available profile choices
+> @@ -306,20 +332,18 @@ static ssize_t platform_profile_choices_show(struct=
+ kobject *kobj,
+>  =09int err;
+> =20
+>  =09scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
+> -=09=09err =3D class_for_each_device(&platform_profile_class, NULL,
+> -=09=09=09=09=09    &data, _aggregate_choices);
+> +=09=09err =3D profile_walk_handlers(&data, _aggregate_choices);
+>  =09=09if (err)
+>  =09=09=09return err;
+>  =09=09if (data.count =3D=3D 1) {
+> -=09=09=09err =3D class_for_each_device(&platform_profile_class, NULL,
+> -=09=09=09=09=09=09    &data, _remove_hidden_choices);
+> +=09=09=09err =3D profile_walk_handlers(&data, _remove_hidden_choices);
+>  =09=09=09if (err)
+>  =09=09=09=09return err;
+>  =09=09}
+>  =09}
+> =20
+>  =09/* no profile handler registered any more */
+> -=09if (bitmap_empty(data.aggregate, PLATFORM_PROFILE_LAST))
+> +=09if (!data.count || bitmap_empty(data.aggregate, PLATFORM_PROFILE_LAST=
+))
+>  =09=09return -EINVAL;
+> =20
+>  =09return _commmon_choices_show(data.aggregate, buf);
+> @@ -384,8 +408,7 @@ static ssize_t platform_profile_show(struct kobject *=
+kobj,
+>  =09int err;
+> =20
+>  =09scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
+> -=09=09err =3D class_for_each_device(&platform_profile_class, NULL,
+> -=09=09=09=09=09    &profile, _aggregate_profiles);
+> +=09=09err =3D profile_walk_handlers(&profile, _aggregate_profiles);
+>  =09=09if (err)
+>  =09=09=09return err;
+>  =09}
+> @@ -423,15 +446,13 @@ static ssize_t platform_profile_store(struct kobjec=
+t *kobj,
+>  =09=09return -EINVAL;
+> =20
+>  =09scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
+> -=09=09ret =3D class_for_each_device(&platform_profile_class, NULL,
+> -=09=09=09=09=09    &data, _aggregate_choices);
+> +=09=09ret =3D profile_walk_handlers(&data, _aggregate_choices);
+>  =09=09if (ret)
+>  =09=09=09return ret;
+> -=09=09if (!test_bit(i, data.aggregate))
+> +=09=09if (!data.count || !test_bit(i, data.aggregate))
+>  =09=09=09return -EOPNOTSUPP;
+> =20
+> -=09=09ret =3D class_for_each_device(&platform_profile_class, NULL, &i,
+> -=09=09=09=09=09    _store_and_notify);
+> +=09=09ret =3D profile_walk_handlers(&i, _store_and_notify);
+>  =09=09if (ret)
+>  =09=09=09return ret;
+>  =09}
+> @@ -450,22 +471,11 @@ static struct attribute *platform_profile_attrs[] =
+=3D {
+>  =09NULL
+>  };
+> =20
+> -static int profile_class_registered(struct device *dev, const void *data=
+)
+> -{
+> -=09return 1;
+> -}
+> -
+>  static umode_t profile_class_is_visible(struct kobject *kobj, struct att=
+ribute *attr, int idx)
+>  {
+> -=09struct device *dev;
+> -
+> -=09dev =3D class_find_device(&platform_profile_class, NULL, NULL, profil=
+e_class_registered);
+> -=09if (!dev)
+> -=09=09return 0;
+> -
+> -=09put_device(dev);
+> +=09guard(mutex)(&profile_lock);
+>
+> -=09return attr->mode;
+> +=09return list_empty(&profile_handlers) ? 0 : attr->mode;
+>  }
+> =20
+>  static const struct attribute_group platform_profile_group =3D {
+> @@ -502,8 +512,7 @@ int platform_profile_cycle(void)
+>  =09int err;
+> =20
+>  =09scoped_cond_guard(mutex_intr, return -ERESTARTSYS, &profile_lock) {
+> -=09=09err =3D class_for_each_device(&platform_profile_class, NULL,
+> -=09=09=09=09=09    &profile, _aggregate_profiles);
+> +=09=09err =3D profile_walk_handlers(&profile, _aggregate_profiles);
+>  =09=09if (err)
+>  =09=09=09return err;
+> =20
+> @@ -512,8 +521,7 @@ int platform_profile_cycle(void)
+>  =09=09    profile =3D=3D PLATFORM_PROFILE_LAST)
+>  =09=09=09return -EINVAL;
+> =20
+> -=09=09err =3D class_for_each_device(&platform_profile_class, NULL,
+> -=09=09=09=09=09    &data, _aggregate_choices);
+> +=09=09err =3D profile_walk_handlers(&data, _aggregate_choices);
+>  =09=09if (err)
+>  =09=09=09return err;
+> =20
+> @@ -525,8 +533,7 @@ int platform_profile_cycle(void)
+>  =09=09=09=09=09  PLATFORM_PROFILE_LAST,
+>  =09=09=09=09=09  profile + 1);
+> =20
+> -=09=09err =3D class_for_each_device(&platform_profile_class, NULL, &next=
+,
+> -=09=09=09=09=09    _store_and_notify);
+> +=09=09err =3D profile_walk_handlers(&next, _store_and_notify);
+> =20
+>  =09=09if (err)
+>  =09=09=09return err;
+> @@ -583,7 +590,7 @@ struct device *platform_profile_register(struct devic=
+e *dev, const char *name,
+>  =09=09}
+>  =09}
+> =20
+> -=09guard(mutex)(&profile_lock);
+> +=09guard(mutex)(&profile_registration_lock);
+> =20
+>  =09/* create class interface for individual handler */
+>  =09minor =3D ida_alloc(&platform_profile_ida, GFP_KERNEL);
+> @@ -604,6 +611,8 @@ struct device *platform_profile_register(struct devic=
+e *dev, const char *name,
+>  =09=09put_device(ppdev);
+>  =09=09goto cleanup_ida;
+>  =09}
+> +=09scoped_guard(mutex, &profile_lock)
+> +=09=09list_add_tail(&to_pprof_handler(ppdev)->node, &profile_handlers);
+> =20
+>  =09sysfs_notify(acpi_kobj, NULL, "platform_profile");
+> =20
+> @@ -614,6 +623,8 @@ struct device *platform_profile_register(struct devic=
+e *dev, const char *name,
+>  =09return ppdev;
+> =20
+>  cleanup_cur:
+> +=09scoped_guard(mutex, &profile_lock)
+> +=09=09list_del(&to_pprof_handler(ppdev)->node);
+>  =09device_unregister(ppdev);
+> =20
+>  cleanup_ida:
+> @@ -636,7 +647,10 @@ void platform_profile_remove(struct device *dev)
+> =20
+>  =09pprof =3D to_pprof_handler(dev);
+> =20
+> -=09guard(mutex)(&profile_lock);
+> +=09guard(mutex)(&profile_registration_lock);
+> +
+> +=09scoped_guard(mutex, &profile_lock)
+> +=09=09list_del(&pprof->node);
+> =20
+>  =09ida_free(&platform_profile_ida, pprof->minor);
+>  =09device_unregister(&pprof->dev);
+>=20
+> base-commit: d0cd1e850e1602729dd60dc3c5fd96f80e0cdc5d
+>=20
+--8323328-1338216543-1792526631=:1177--
