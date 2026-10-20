@@ -1,114 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.181
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792517908;
-	b=otNPm60RE9y8Z/YevtuueCJEd2fX+34jZ1CoTqUUdJnY7ws0aRaoEXiOaMW9HcjYDCLv
-	 EoeaupR5ifpdvqIqztMFFgNnVB+7H8H8K8GJJWbfY2VAAcNjZS6vCxvfAVhW/DKOhJaxb
-	 IolZ7MBJQ8ec1pUhWWNnIa01eM74mWXHjgh5cKm/gkOfha+23/oNutJXi6Ub1YdjAevr3
-	 5B/WoR7QykFMsgvW6re6PyaWEUkby1xVaQx1syNU3HpFExZJFu5NcivmKIHOoI9CogMFs
-	 GH5zUMgy5tpBgBjsknAHml5XdiduJvOdNRMmt6F+gWL9hiCt/XIIyIn83FODesOT+aQ==
+	t=1792522489;
+	b=3LWP5ITx1o2Uhg8EDXdrBA+PpiQ3rG8gqUqmP1fv6XBDl4ECl2Jnqgxgw4wWftHZ/sDg
+	 ceo3nuLnnJ7bntHSp/gAyv2SIxqNbQQEnqukyUvNuLokFIoFl5GFYtc4cfP5EwDjqMLTd
+	 zxMmFN7N+tM0u8GlRl125KyhRYow1spCKwDMF6DtTk2jlMozclX2NQD7tdZcqBCzGwuun
+	 JsPTOaQ11WlMU7Y2iGoqt/UirXvFM5oUysAVH+ELqTw0lDH076wJX6a2ABWAXme3LfNjO
+	 5CHrQXeGqxCIoOQGI3YRuuMJlONOzjTu6DtoHs+fTRrc3VwhHCSvH5nVrJrI2hOebSA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792517908;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792522489;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=ocwe/ua5bx6fTunJTjbDvG/Rp4d0BH8Fbx4UwIDjj0c=;
-	b=3jkbeffFnsLZnQh6i+wzGHg+pFA1USyuuylZL/nfDvzycssJzGqCO7vo6+3plmjAlTzO
-	 5MKku7VUr/EzSt75C7lJC48d8U6GubStO/PL854Zm69/byjdNF5awnCyHeE4/OPXy5jFt
-	 DbNznp2hfnwI/RrwsHp27ZVohQYN9VWIWjQjGf8S1Pemhr6xLOPb+DTLRFAVnxFaIRv+S
-	 IRJtZFp7qijNad1UkC0JWBrGMUdVL7vNWJLZ3ckEoSduLAZ1fRlzeAQN79tpcIECzcJPS
-	 A7PIDcR4wN6uI2tYY9uC6O5KleEIOu5Vy6TT5F/BAr+ns88p+X6FmbPP4OkGENsGKlQ==
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
+	 In-Reply-To;
+	bh=a+YGUJeEL21flQxeJgEyROLOEEmxFMPwen0F3bt91wI=;
+	b=WQaPyUbNVDrtJaGX6xxq8BkvO3uwjOE8xA266fDQtXYjAOpbAINj52+O8mBmw2A2S5b3
+	 vEssb9phoaOtAYWgMSO5M7ar/yFlSq/3Kvpkb1o2W4h8ZRvnftcr//Aeze4D5Gp2gJ3fH
+	 mEcKzm3dQ3oNhWFFxiZLAn0VqUyUmnanuUSeSKbTWwW6bZ4HRE2o71Ml0HmwLpNUHcFT5
+	 yLQSQDhNQqJspfyONivs6rtgrNZcJdvzgaiHuxSTVJ7JQZnWAkQrdDl7mXaLaswxk7XFe
+	 5DuWLpI2VrZcG4e08NUVwPhvykesr3XHAQuJcJJhBTDDkg6X2EqGSDCvWMQPHGV+JFA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dzAHyTZH;
-	arc=none smtp.remote-ip=209.85.128.42
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cNpSjyVD;
+	arc=none smtp.remote-ip=74.125.82.181
+Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A965C606A31B
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 17:38:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A965C606A31B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42BAF606A31F
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 18:54:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 42BAF606A31F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dzAHyTZH
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4a180fbeef5so26767185e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 10:38:27 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cNpSjyVD
+Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-35b2c599f43so1399763eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 11:54:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792517906; x=1793122706; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=ocwe/ua5bx6fTunJTjbDvG/Rp4d0BH8Fbx4UwIDjj0c=;
-        b=dzAHyTZH9KmnxvGzkLc4TBzZjYNmxyPET44e+8vYaLd50Da7xftyEBJXCp2EHpaxbi
-         z+Ej7Tgure6ZjFr2dDhPYnLS7QB8nkMLWeWbG3+59ZWM0U4w2hKBQl5MNxqCfkaAD4la
-         /dpeIPdlxbihyX5869qjfcaeU9uu8+TKSFeBDhsE6qtyZthuHCSloUyz9P87+scC14EU
-         UyKmmyP4ysDTcoc39eSm6y9KQZ1sPyX6IvNU+OcrSrBEN1FfY2wSExF0Zev/PlERviHE
-         G59yDW09gmU+hJ0yyIyPrCjlTEqZy5PR1LmFU7PXwSV+coISIv93hAyx0a2Yx/f2AmkJ
-         mPqg==
+        d=gmail.com; s=20251104; t=1792522488; x=1793127288; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=a+YGUJeEL21flQxeJgEyROLOEEmxFMPwen0F3bt91wI=;
+        b=cNpSjyVDxeZMqcqxOqB9EKCdiKtPdvBLoG6NwPB2ME90BEBUSoASCok3BTJCWRzmch
+         pNWcgsLpP4PYDmJr8a0L4mKvc7JsdLL2H7n7kPI2wZkDtIaq0W1rRg/MY6hUM/gy5Uoy
+         W+m7CWwruUbFTIYyqnOJmBOL0w946NXdRSpxe6jaOK0BT0sCvBvGsnj6H5fBmWcWNvLZ
+         msrgSrE2dYQ/4jED9CbuOpHR4ZW8ZY384J9TEKtFsWkaRluoI3p5WBWwaKkqlP4+GRbQ
+         U4HwE9gc512DhP6yTqnRZIiJQwgX36aA+yBDDi2k7JIy8yC1YZIs0MXwbGp1hJ1veg6G
+         SECw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792517906; x=1793122706;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ocwe/ua5bx6fTunJTjbDvG/Rp4d0BH8Fbx4UwIDjj0c=;
-        b=rUUO698jx87+wkx7/gx5wVuq2X/j9VEYAAPRQlXlgb9P3fCv2DzV/4Pl3cE/9AyELq
-         dFUxVJq/cD2pCQzWSJJmMfpaSYBexwgYZlqnYhNwvmkQNCiELfn+/6NZs9tMGjzR/NMM
-         z5+DK2RCSvQMVtvckgXIC6AZHNvBu09Sqz46x7+GuPdszuTpbHDGSrIm0XViZEyM5Juj
-         AcFFgwlvuguWb930TQoc9ZnPsezOPl1VMIh9GtI4Qo097ibBs0HeubqfBf39p7j3jUIb
-         tnpFidimBUk0rPZYfaNn8Bo274ct0cm++/BIzjTQqgPBL60tuc7Sfm7UbAd8RAlCgwhy
-         SveA==
-X-Forwarded-Encrypted: i=1; AKwUvBy4ty7pLsdI9NsrmzP1xvos/3IBsER0Q/DCJ6mEmIUaW1StpXGrHPCUZsmgk+DV++L6arJiiR3SnQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJDoa+RO7CVlmzXnaor1r20h2NfOT//Iah4fOkoJcqaltNh9dk9
-	tJe/3lBVuy1mpDQNXmTTc9YA8kd8GeLGGH9XtZi0PT45o2POZcY9QRhS
-X-Gm-Gg: AYBFou2az/SZ8QlRwtXNvoxRpYVwICIgtYPqEiL0oWsTvtrjhQj4TreXlRRHGaE2PdB
-	6rGEApqsMYvyM2HFHQ5WPCOIQ68fPA8bRqSaxOS2NEQdqJcf/NppDBtL80vOL3g0vLHZYr+HOHL
-	ftKWlj6IWYOLl10+65LLFbl8P5VtVDFbniJE0lHpec94hrkO4WqwkUA/kBiPxSCZYTZ+iv2zMpB
-	RFPKQu9ref56Jk6HSBiNwb5DWlGFBpcd+euB1WhhwtWy7CKTlJpswDB+Rrl+hY+Y1P+7PcIzKQn
-	dnS0+5CJ9hcWeTtMzuIu3JbeC6qGct4R0gCWJXJ4s8uPK8OGonb7wUN8CiacN0Do43+uqH5vKPq
-	B9uSA/KjYUr2x0UfvdzHY/nYSpYt35v+qJbZpPYoV2rwFNZgaK9P9iI6j8x3j0gpzW2asTsD9ZU
-	1R6LL3Mks7vwLjfm1EfK7RmXUkpSu4Wmz1PRV4i9sOsS+hZk7AikqI8371a2eYsHjEIg==
-X-Received: by 2002:a05:600c:3b1e:b0:49f:fdca:c361 with SMTP id 5b1f17b1804b1-4a1d75f9341mr271641575e9.12.1792517906016;
-        Tue, 20 Oct 2026 10:38:26 -0700 (PDT)
-Received: from luca-vm.lan ([154.61.61.58])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a1f8016c93sm52505235e9.5.2026.10.20.10.38.24
+        d=1e100.net; s=20260707; t=1792522488; x=1793127288;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=a+YGUJeEL21flQxeJgEyROLOEEmxFMPwen0F3bt91wI=;
+        b=taalZlaCSmmBRvL2GAcJ0ZcZRsQOsaKaOCwYnc/fIsWKA6PTxwtWRQi1kRHACQtIQd
+         +1fMZMhFjTIkV+4Sow9HipHnpVCTI0zsQRwqOzFKpw78mvVTcyjCW3VVc50fme2JLXrL
+         3gGXnMqzCEpq0mmMVkHH0fBmbQLtSLXYRlLftWV5NaQe8pq3e3TbMgLn+9hE+welwU+F
+         NHhpNwA7OoE2quXYvHYotQO0v23OAbgDGM5AXnhJNy1hhC47xG3PGdAfBxP/ny5Scbke
+         xYm9+U2fXvt/a47AV47LWJZE/goGQ0au9p7vnFJkmMvCHDuHLfowcUe9J9X4n5ZSFHDa
+         xNAA==
+X-Forwarded-Encrypted: i=1; AKwUvBwT7nXDi1qHmZOpHMjELOgHFl6Xl8AIMt/UqsS5fhSIyFVM4Xv//TrQDL85fFUVetlHOwo+gOtYgw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJX1GVY367C4ciyDE69kTlfDnaB1oBqbRrau85Mvrt0ePJXZkGC
+	Qko8S8x/tLjKRS53zvPdcCQEL+/FKJGUELP9rKKC24DXTvVAkyf/bxNjgGafqg==
+X-Gm-Gg: AYBFou167ntAQX30wRjDn7EtP51+GZYHOypQ1w0K6jGiKdCu8JvNuhCOxvRwOQ5psAl
+	2S2sILEqaJDouLnToCVSx2w3BCpCsuWznMXp/3uxnKfl58QCFFo0KT3gzdjlB7oZ2wSwoPBN59E
+	OdyPawRBwyuhBoQrAfbE+8x1ATtwVBp1pjj2QlNgnTlZLXothTWOSd6f57Odt/RXy+xyV6U0OM+
+	g/H205fgGhGGxgeJTNIjy8b/43P2/cdUyP7IxsVCJkctmEXi0ZxmLyMqj+ubfUl8ObCY17E9+Gn
+	K/2l2AUIOFbe9fi2bGA5GrAFBcs0lwoIWQy07t6AEDkoPRZO+mJx84Kx+R0PScIjjr/W7b6HeiW
+	hJWBU7QHp1Xhrv52W9KTB/lwoS8nqb8Y3jdZ0kvDS69dF4+j7AxF6szcoOoN3yDyuL//FkgGzXm
+	rWxrpyxgyesa++H3SfnbOlnzrOSzr7m9TLoa/54rV+BU8NopqHUTjS+4Lv4FDyxKUaIKEPbdSnL
+	mOSPQ9YgSr8P5a5OHR9uhA3o3zqZ37WAbMcWfLw
+X-Received: by 2002:a05:693c:6382:10b0:35c:de00:93d3 with SMTP id 5a478bee46e88-3674f6143a2mr134088eec.40.1792522488031;
+        Tue, 20 Oct 2026 11:54:48 -0700 (PDT)
+Received: from google.com ([2a00:79e0:2ebe:8:92d1:8038:c4e7:1f0c])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-367405ed2absm606896eec.5.2026.10.20.11.54.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 Oct 2026 10:38:25 -0700 (PDT)
-From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-To: linux-mediatek@lists.infradead.org
-Cc: Val Packett <val@packett.cool>,
-	Luca Leonardo Scorcia <l.scorcia@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sen Chu <sen.chu@mediatek.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>,
-	Lee Jones <lee@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Fabien Parent <parent.f@gmail.com>,
-	Akari Tsuyukusa <akkun11.open@gmail.com>,
-	Chen Zhong <chen.zhong@mediatek.com>,
-	linux-input@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mfd@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org
-Subject: [PATCH RESEND v10 9/9] arm64: dts: mediatek: Add MediaTek MT6392 PMIC dtsi
-Date: Tue, 20 Oct 2026 19:33:30 +0200
-Message-ID: <20261020173556.632798-10-l.scorcia@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261020173556.632798-1-l.scorcia@gmail.com>
-References: <20261020173556.632798-1-l.scorcia@gmail.com>
+        Tue, 20 Oct 2026 11:54:47 -0700 (PDT)
+Date: Tue, 20 Oct 2026 11:54:43 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+	Ion Agorria <ion@agorria.com>, =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	Florian Krischer <florian.krischer@fkr.dev>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-input@vger.kernel.org, mfd@lists.linux.dev, linux-leds@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v12 4/7] input: keyboard: Add driver for ASUS Transformer
+ dock multimedia keys
+Message-ID: <ate3WJz8gg9LUG9u@google.com>
+References: <20261019100406.103687-1-clamor95@gmail.com>
+ <20261019100406.103687-5-clamor95@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -118,200 +103,118 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20261019100406.103687-5-clamor95@gmail.com>
 
-From: Val Packett <val@packett.cool>
+On Mon, Oct 19, 2026 at 01:04:03PM +0300, Svyatoslav Ryhel wrote:
+> From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> 
+> Add support for multimedia top button row of ASUS Transformer's Mobile
+> Dock keyboard. Driver is made that function keys (F1-F12) are used by
+> default which suits average Linux use better and with pressing
+> ScreenLock + AltGr function keys layout is switched to multimedia keys.
+> Only Dock keyboard input events are tracked for AltGr pressing.
+> 
+> Co-developed-by: Ion Agorria <ion@agorria.com>
+> Signed-off-by: Ion Agorria <ion@agorria.com>
+> Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 
-Add the dtsi to be included by all boards using the MT6392 PMIC,
-providing support for regulator, keys, pinctrl and RTC.
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Import the new file in the shared device tree for the Pumpkin boards.
+> +
+> +static void asus_ec_keys_setup_keymap(struct asus_ec_keys_data *priv)
+> +{
+> +	struct input_dev *dev = priv->xidev;
+> +	unsigned int i;
+> +
+> +	BUILD_BUG_ON(ARRAY_SIZE(priv->keymap) < ARRAY_SIZE(asus_ec_dock_ext_keys));
+> +
+> +	dev->keycode = priv->keymap;
+> +	dev->keycodesize = sizeof(*priv->keymap);
+> +	dev->keycodemax = ARRAY_SIZE(priv->keymap);
+> +
+> +	input_set_capability(dev, EV_MSC, MSC_SCAN);
+> +	input_set_capability(dev, EV_KEY, KEY_UNKNOWN);
+> +
+> +	for (i = 0; i < ARRAY_SIZE(asus_ec_dock_ext_keys); i++) {
+> +		unsigned int code = asus_ec_dock_ext_keys[i];
+> +
+> +		if (!code)
+> +			continue;
 
-Signed-off-by: Val Packett <val@packett.cool>
-Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- arch/arm64/boot/dts/mediatek/mt6392.dtsi      | 145 ++++++++++++++++++
- .../boot/dts/mediatek/pumpkin-common.dtsi     |   7 +
- 2 files changed, 152 insertions(+)
- create mode 100644 arch/arm64/boot/dts/mediatek/mt6392.dtsi
+Nit: this check is not needed, input core will remove KEY_RESERVED (0)
+from the keybit when device is registered.
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt6392.dtsi b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-new file mode 100644
-index 000000000000..cc4770d70246
---- /dev/null
-+++ b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-@@ -0,0 +1,145 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2019 MediaTek Inc.
-+ * Copyright (c) 2024 Val Packett <val@packett.cool>
-+ * Copyright (c) 2026 Luca Leonardo Scorcia <l.scorcia@gmail.com>
-+ */
-+
-+#include <dt-bindings/input/input.h>
-+#include <dt-bindings/regulator/mediatek,mt6392-regulator.h>
-+
-+&pwrap {
-+	pmic: pmic {
-+		compatible = "mediatek,mt6392";
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		mt6392keys: keys {
-+			compatible = "mediatek,mt6392-keys";
-+
-+			key-power {
-+				linux,keycodes = <KEY_POWER>;
-+				wakeup-source;
-+			};
-+
-+			key-home {
-+				linux,keycodes = <KEY_HOME>;
-+				wakeup-source;
-+			};
-+		};
-+
-+		mt6392pio: pinctrl {
-+			compatible = "mediatek,mt6392-pinctrl";
-+
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
-+
-+		mt6392regulators: regulators {
-+			compatible = "mediatek,mt6392-regulator";
-+
-+			/* Fixed supply defined in the data sheet */
-+			avddldo-supply = <&mt6392_vsys_reg>;
-+
-+			mt6392_vcore_reg: vcore {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_BUCK_MODE_FORCE_PWM>;
-+			};
-+			mt6392_vproc_reg: vproc {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_BUCK_MODE_FORCE_PWM>;
-+			};
-+			mt6392_vsys_reg: vsys {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_BUCK_MODE_FORCE_PWM>;
-+			};
-+			mt6392_vaud28_reg: vaud28 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vxo22_reg: vxo22 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vaud22_reg: vaud22 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vadc18_reg: vadc18 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcama_reg: vcama { };
-+			mt6392_vcn35_reg: vcn35 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vio28_reg: vio28 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vusb_reg: vusb {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vmc_reg: vmc {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vmch_reg: vmch {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vemc3v3_reg: vemc3v3 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcamaf_reg: vcamaf {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vgp1_reg: vgp1 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vgp2_reg: vgp2 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vefuse_reg: vefuse {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vm25_reg: vm25 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vdig18_reg: vdig18 { };
-+			mt6392_vm_reg: vm {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vio18_reg: vio18 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcn18_reg: vcn18 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcamd_reg: vcamd {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcamio_reg: vcamio {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vrtc_reg: vrtc { };
-+		};
-+
-+		mt6392rtc: rtc {
-+			compatible = "mediatek,mt6392-rtc", "mediatek,mt6323-rtc";
-+		};
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi b/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-index 805fb82138a8..b19d5792bd89 100644
---- a/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-@@ -6,6 +6,8 @@
- 
- #include <dt-bindings/gpio/gpio.h>
- 
-+#include "mt6392.dtsi"
-+
- / {
- 	aliases {
- 		serial0 = &uart0;
-@@ -160,6 +162,11 @@ &i2c2 {
- 	status = "okay";
- };
- 
-+&pmic {
-+	interrupt-parent = <&pio>;
-+	interrupts = <28 IRQ_TYPE_LEVEL_HIGH>;
-+};
-+
- &uart0 {
- 	status = "okay";
- };
+> +
+> +		__set_bit(code, dev->keybit);
+> +		priv->keymap[i] = code;
+> +	}
+> +}
+> +
+> +static int asus_ec_keys_probe(struct platform_device *pdev)
+> +{
+> +	struct i2c_client *parent = to_i2c_client(pdev->dev.parent);
+> +	struct asusec_core *ec = dev_get_drvdata(pdev->dev.parent);
+> +	struct device *dev = &pdev->dev;
+> +	struct asus_ec_keys_data *priv;
+> +	int error;
+> +
+> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	platform_set_drvdata(pdev, priv);
+> +	priv->ec = ec;
+> +
+> +	priv->xidev = devm_input_allocate_device(dev);
+> +	if (!priv->xidev)
+> +		return -ENOMEM;
+> +
+> +	priv->xidev->name = devm_kasprintf(dev, GFP_KERNEL, "%s Keyboard Ext",
+> +					   ec->model);
+> +	priv->xidev->phys = devm_kasprintf(dev, GFP_KERNEL, "i2c-%u-%04x",
+> +					   i2c_adapter_id(parent->adapter),
+> +					   parent->addr);
+> +
+> +	if (!priv->xidev->name || !priv->xidev->phys)
+> +		return -ENOMEM;
+> +
+> +	asus_ec_keys_setup_keymap(priv);
+> +
+> +	error = input_register_device(priv->xidev);
+> +	if (error)
+> +		return dev_err_probe(dev, error,
+> +				     "failed to register extension keys\n");
+> +
+> +	priv->nb.notifier_call = asus_ec_keys_notify;
+> +
+> +	error = blocking_notifier_chain_register(&ec->notify_list, &priv->nb);
+> +	if (error)
+> +		return error;
+> +
+> +	ec->ext_keys_enabled = true;
+
+I think this block (after input_register_device()) can go into open()
+method for the input device.
+
+> +
+> +	return 0;
+> +}
+> +
+> +static void asus_ec_keys_remove(struct platform_device *pdev)
+> +{
+> +	struct asus_ec_keys_data *priv = platform_get_drvdata(pdev);
+> +	struct asusec_core *ec = priv->ec;
+> +
+> +	ec->ext_keys_enabled = false;
+> +	blocking_notifier_chain_unregister(&ec->notify_list, &priv->nb);
+
+And this into close().
+
+Thanks.
+
 -- 
-2.43.0
-
+Dmitry
