@@ -1,111 +1,61 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792500563;
-	b=ESXOUZiBzV3EaTYqdncr4DMt0TUw5KEaOE+JVi3IO1a1EPZnOnuD4EC0/GbrE2IUT33w
-	 Ag6cU5HHxF6xlwHc30z92njMOEBUeyrU/6s/S9JZjndWgYgXghWcZ+flMYApC06sHCNTv
-	 WNMuP/LnwXjE641uosIGZDe3Sesc+FKjXHFGGm4VodUOhferb8Wt7ZqNHGplB0FuWAfU0
-	 rlsmkxxujbwo55WwMKkaEbS1eRcmRR7VSRDbaGU2Mp5L7ZlZiRD7QFL8F3WQFazNHfgGB
-	 uZPTVE6t/KtQSIeF9ZblfoLQr2jZSn7B60KDTfHHX6iY99w3bIqF19/UmzQM2sHUAOw==
+	t=1792500771;
+	b=gTM4vldMuB4ABSbvfhaw9WsExTp6WQYHIlE3jfn7ybZU/JD7mFULEoSIHI4lZanu9Frp
+	 I6eeGgcjicWbaFzw+xVO3c6V/JKmKVb/Vn8kNSpQZyXkcHj1g2x7r4t3cqmP1RgtTTvQG
+	 usiDb/8KFF9vJ8cLlyw9yQ8ssKTWgGZ4OS+wGT7cMWS42+TmkTyf/Ytt46qT0BqCy1KBt
+	 bqlVbiFpIvUcbFqGFt83Qmwls7EmgkS9SgtPmV0KgJfBozuUN1ZwxkhlXYXbDuwTl5cmx
+	 +zDYb/aCEur0Kf1MfWZg9kM1c9bTWhnoNx7xlN87P62AG4MOqbcvpM/U5fy/xp/VRAA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792500563;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Spam-Info:
-	 X-Authority-Analysis:X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=oZR/dethywgb+OWlTTYLjm29IyP6L5k94h7PLYw6w6w=;
-	b=TAA7LLDXc93QVGsJEhcfDo/8w45A6l5AqJBS1Ph8vRPGLsHOa0m74heTjgRHboC3gRb7
-	 q0x82v7lHxIMC7CmRLDAHKMqbJQ2mg2TVQRsycNFEOIH16POgCMomeGbthwFDqxurKv7x
-	 OGxLuQcWUmJPu+6xowjgLOZEH987dvpIbDmpekYqnS7C2qNAOUdBafqde/CLX8pw3VHFw
-	 Duhlk+rnhT7N3AQL68GlUWDhAHQ9r92+8sGST6zFLRhlD8iMrdWyNAuUQieHQwcGRTZaw
-	 Yx2h3Am0aTngEDZOkohUT4z2/yJG9gvoi17M1/WP2goSGVtSSrBbr3ddi1I/r6u7K/g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792500771;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:Received:Received:From:In-Reply-To:
+	 MIME-Version:References:Date:X-Gmail-Original-Message-ID:
+	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type;
+	bh=Iog5cj9gQ1VLcQX/ZJ4/JUmApqIRY63Pzim15xBJZA4=;
+	b=EiUX2/6SVdbxhujryLtS0GoMrYUMvSVWVnGjQ8DlsLmy3lKn1lAOHibRbdegNFFOiAwG
+	 FDZMADLx6e5IXssuv0Gvh3KHs63vbBL9ppULBv5yyf45K5khAEe6T42A+5xWDDhTkpVBw
+	 MvG3LAKZ6Rh7CpwJFp2TPOJY10hKRdFII/amX1N3+m+rUC7XochC5m153gS1rcLWZHFtN
+	 ZqsA/gQMPAFEs2qt8u+d9vXlqDwZ3hODesJisLRiPjRJltv9Va1J3unEcqu+aFnhKjBwn
+	 KZdHmN1MhClk79HaAhW/Sy+K+E4M93lA10i+XJShPJe5UWcxJEkvnXzH4zwvI22jXVQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lRpMf7yf;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=LI0nG2Cf;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tcl8IopX;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB3A4606A326
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 12:49:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AB3A4606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5395D60A2606
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 12:52:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lRpMf7yf;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=LI0nG2Cf
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69KAxLIs1145637
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 12:49:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	oZR/dethywgb+OWlTTYLjm29IyP6L5k94h7PLYw6w6w=; b=lRpMf7yfcNp/VUHq
-	O083DxWJD2SSOyfl5nYh1RCJEm0sBLZD9cns1wrqEliBGvO1yjk3jbyDBp5ZNwrj
-	ZVjGhJ2SsonlHQDLRdV887MrRw9RhyDBNT3E62ZSihfUyEDOVQ0gG4EsaepzGO0H
-	PTfPaIc/cI7Smh5FnwgYXq7dfGK/XG3WyBK6YFFZj/rmIctTA5w50CsRZHTjjoPL
-	UifiwWn84EIFk0e/OJaloarlmMOvLOgMLrsumnz0JcO8bUDlxSRJ//OYy4aJHV5v
-	kzStxvjHMXTfN/ISFf7XwFbxVddgFeIHrgFtOP3GFWd0Sk+zOeTiy7GqvqBichQd
-	I1y8bw==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hdw5qafuh-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 12:49:21 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93c5ab5c136so527492585a.3
-        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 05:49:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792500561; x=1793105361; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=oZR/dethywgb+OWlTTYLjm29IyP6L5k94h7PLYw6w6w=;
-        b=LI0nG2CfRMB0TDMj7kdGreMXiV/FDHjQVwUVFd1YcacaCxrNTckVGXpjypsOxlyXcq
-         aAalxYTdraJKngl1Ju4u0lBwG20IPCOkpF4dDELF+UIkKBBHhW41ys0XUjRn4nQNUuqi
-         0PC3tMC8BrIK+yQEfyv3l85SdmJQiZoHlV6BhAkV3N1pSpOcf9mKNoNnPfb/GbE5T1IE
-         nxbkWKDvwpx103q8C6GKdIkSnNXY4I0Q7IUMPyLgzPeitNefkWr4nQnpElidSuwRygfi
-         cLJJ/fSuGqj0OIrmKn3YbqT0bRGzCBV7N1DBDNbLdlkar5GCYq4bBMwFx7MTOz+E/4x+
-         xb7g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792500561; x=1793105361;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=oZR/dethywgb+OWlTTYLjm29IyP6L5k94h7PLYw6w6w=;
-        b=xb3cGRwYQtTTt/N1raJMDaiGrk4yZ5dZx5FT9nYQguEs9qr1V8FY88egZgoGLJMfaF
-         Kk8j0UE54z0nE8ZVwPfIIZTUtj8B+H2BZagwhVUNsb6ABmk4l3EpS2fDmBGNH2e1Wifc
-         Pwl/mX8m6OXabrC9uMtcXe8xqHTpfMw4Rq08U4kI+JQw0cHw2F943lyTg1bVcoR+Q0le
-         IDkRrDXUiSStavEzE0LjMG8GD5PErauSE75WN9gbtR0FB3FLo06MUq1x0iSRMLQlRlhP
-         OYl4H3XRbPxKSyUCeCtZNQd8ZzjlpPj5iYldFB/KTvATSpNu/JKbWO4GGmHziYc/okpM
-         II/Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxLTQBJRzLu8ofVlDXQDO3+X2sVdzhn/rGKK/mhPUONKr+FljPghh+VME/02oy2DzkVvNhKyUQEQA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYI9kCwV1k6gwcgR704o4rwDtAF0ILbzI37HoaiH1eLHyX3USZCF
-	MYqfq8x+xnU8c77nTN8UYQNBisyn6vHp+Ju/tKuUDudkHUSyZT27SSA6wmcrr90ylXlGOs1THH5
-	vza+H/GKDQ6hRH/H2kxLJvQda9Zy0+8TD2Ym81+U10cslWZ6nOeZRbBbvreTq0A==
-X-Gm-Gg: AYBFou107UTyc6Occ7tLXpswcWGLKBf/JQf8M09V1pUOm95gyr/vsNqMfty7aX2fBew
-	YsJPqHFCZ9dYs/uRgM2242NcRh9xQZkIyayfs4Mv5d4eG7Z6qD46bwtZW/lyYoiKzop+qfjTyP/
-	twXa6Gml+VrgQXfeCoPL8VgrpI+YUJtWPlN/KNCj9t6J1RxDX3DLAQTC4pgPKng0lbElM3OKIdx
-	IjrF1DN98VO91yNoT6Y2oKs5mQOCVo3gPL0w/PPd2H9fhuI715m+PK8+PWyXWRd3MFcGNtLsBKx
-	kNop2xgtCqyaZ3QhK2LDxZVYqdVnFzY1sYGsfyVlnPE6oc0VMU51b6zj+Rv15rKypclyNW1jSS9
-	plUUiaG/n1dLkbAQYCeKtsM2ARfh2J3o=
-X-Received: by 2002:a05:620a:3955:b0:93e:7898:4d73 with SMTP id af79cd13be357-93f29d79550mr1681664885a.45.1792500560811;
-        Tue, 20 Oct 2026 05:49:20 -0700 (PDT)
-X-Received: by 2002:a05:620a:3955:b0:93e:7898:4d73 with SMTP id af79cd13be357-93f29d79550mr1681660585a.45.1792500560283;
-        Tue, 20 Oct 2026 05:49:20 -0700 (PDT)
-Received: from [192.168.1.73] ([92.247.57.178])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e1d820822sm6490980f8f.34.2026.10.20.05.49.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 20 Oct 2026 05:49:19 -0700 (PDT)
-Message-ID: <a01d8d86-740e-4a25-96a4-d4dfd664af5e@oss.qualcomm.com>
-Date: Tue, 20 Oct 2026 15:49:17 +0300
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tcl8IopX
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AF401F01574
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 12:52:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792500771;
+	bh=Iog5cj9gQ1VLcQX/ZJ4/JUmApqIRY63Pzim15xBJZA4=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=Tcl8IopX5XfgaCedFUCGnnX0qpLjXEfggFrl4g6uF0J9pj2ZByCxfjOKZhvjf29OT
+	 jyRZuEMaP+YsyaKXuH7/hX/aY07mqXNVV4LO8+f4vrcvMJBaBHK/vgvD6bqnZQoggG
+	 QmsW3kbSDYN4OLZz6SprO/PkstsWSmGXjHfa96tybNAqxlgR6r68ILHZyG8U3skR5p
+	 iZfHum1fWwYY7PCqVKD0/TqkffuGi8ZQN9TWachUoSMbvG1ruVtWESZ29ZpqRwRhP/
+	 s94Ge/xbVFsRNjGzYNFfkQVJ+9mlgllQjFQLQMDnF++TXXYNRy8qMtFagnQRiqbRW5
+	 d1Gt1sKrWNd1Q==
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-3aae7df0971so21615211fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 05:52:50 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwQXD9Nr0IgEa9V2XfApv5RZUm5AgPZ1AH7JcVUEwpoU/dA0e8/ecYvy1/s+UAVPTf3AZsZOXVSHA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKKfNfMNXhgZCYvGANOxUT9XaRkstHI7pXLs+pMVF6400AoBety
+	Sur1uzgLcsZTdXuixMg7B2I0TDrz7QzYDzxWJBz3FxC7vJtuBeBpy6QutYi8x8atCt5Ny/ZFMiN
+	Opw5tq+EL+Wmdf+zw2ghhUqR1RIKFndcAco/E+ER4Iw==
+X-Received: by 2002:a05:651c:a214:20b0:3a8:d9d5:f9d3 with SMTP id
+ 38308e7fff4ca-3ab29175de5mr15085321fa.16.1792500769655; Tue, 20 Oct 2026
+ 05:52:49 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 20 Oct 2026 13:52:48 +0100
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 20 Oct 2026 13:52:48 +0100
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <179206391202.36987.1416057976823693032@pm.me>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -115,157 +65,314 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/3] arm64: dts: qcom: sm8250: add camcc interconnect
- cells
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd
- <sboyd@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
-        Jonathan Marek <jonathan@marek.ca>, Bryan O'Donoghue <bod@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>,
-        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20261016170701.1504338-1-atanas.filipov@oss.qualcomm.com>
- <20261016170701.1504338-4-atanas.filipov@oss.qualcomm.com>
- <usade5zkrncpry4ufbdtaahoa2zyd5hx7tjgfvzfte2aqbkgs7@t3mej4maj6za>
- <3e5b7781-20ef-4e84-bb62-29a081c26d8f@oss.qualcomm.com>
- <x5x4av76vm3swozvwe46uq5vz2ys7bvo4bducpp7flnmhykg65@pvr3znxyktje>
-Content-Language: en-US
-From: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
-In-Reply-To: <x5x4av76vm3swozvwe46uq5vz2ys7bvo4bducpp7flnmhykg65@pvr3znxyktje>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: SPGvf4-BptwlqPo-zjfOmpTU_DTZw7E8
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIwMDA1MCBTYWx0ZWRfX/t2URcKY0kfn
- nWQW67OZsvPKkmHGwqHtf2Bc7JYv+FzT7Kutw4UYKdgcWiuxf5+ARI4kpNDRJMCc1enqHhtbEWx
- EB4u2geFhsEaBeFHSWLkbQWaUQaGo/IgxY7AmCB4gcMKh+yzi/qkyhXee2amSH7Vdj0GuevKuGE
- UvFOaeWeiWuukEj9IOKmIGCZk1rE5ZnqVO6yqwe3v8UPPoI/7sOtkHFfrttpJmxJcFfTicAUNTi
- EwbWqLYbY+JPSmWrYdPm/1/DCuMBKdM8ALx+rn0bK3YrcoVMz/I3eYHP1DQHL4TUppvgzfAFdCk
- 0kFFZBZ3OeKmcfxZ9Yv9fMV/B093PBRoVfZNVPxC5ZBsEZy3KbMX++MB4YfMsk3Zx+2wMcdM/Ni
- T6UJwqedLq0vKxr/6A3zcbq7msXZbjtG5D2/5Y9ff7M8DcPOK6bLBIRx11txrr9EpYiNhUNADjS
- H0gTS18vqshQs+hL3pA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIwMDA1MCBTYWx0ZWRfX7RLjmfHyI2MH
- KNvMpqXSHRree9CwDzBi1JzsTp03vfMe20lIeO9Ha834Mw033sQjZeWKlGVgS81Urog/oQcsHoP
- nZnJZQNGoKLj8LtlhkiCFiG88ESeSZU=
-X-Authority-Analysis: v=2.4 cv=LpcHWXdc c=1 sm=1 tr=0 ts=6ad76351 cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=ybD9qRDIDfZaXNPQ7Ca20A==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=z6v0ilfeUS-LjjL2a7cA:9 a=QEXdDO2ut3YA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-GUID: SPGvf4-BptwlqPo-zjfOmpTU_DTZw7E8
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-20_01,2026-10-19_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 phishscore=0 clxscore=1015 impostorscore=0
- malwarescore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610200050
+References: <179206391202.36987.1416057976823693032@pm.me>
+Date: Tue, 20 Oct 2026 13:52:48 +0100
+X-Gmail-Original-Message-ID: <CAMRc=Mf_93HM8RFq3i3Cuy1_L=VFskt6NcgkcwsyZVH7ymO1Yw@mail.gmail.com>
+X-Gm-Features: AclHuK_FLO2OQBomfcZDzAChpS6bYz-U0182uXSwbxihEnP3jdGgRRa6mwaU0dc
+Message-ID: <CAMRc=Mf_93HM8RFq3i3Cuy1_L=VFskt6NcgkcwsyZVH7ymO1Yw@mail.gmail.com>
+Subject: Re: [PATCH v2] pinctrl: qcom: Restore the pin configuration after hibernation
+To: Birk Skyum <birk.skyum@pm.me>
+Cc: linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Bartosz Golaszewski <brgl@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On 10/20/2026 12:45 PM, Dmitry Baryshkov wrote:
-> On Tue, Oct 20, 2026 at 11:26:42AM +0300, Atanas Filipov wrote:
->> On 10/19/2026 5:50 PM, Dmitry Baryshkov wrote:
->>> On Fri, Oct 16, 2026 at 08:07:01PM +0300, Atanas Filipov wrote:
->>>> Add #interconnect-cells to the camera clock controller so camera
->>>> consumers can request camera NoC AXI bandwidth through the
->>>> interconnect framework.
->>>
->>> I guess currently we have only one consumer, camss. Could you please
->>> include patches converting it to the bus voting? Be sure to retain
->>> compatibility with older DTs, which don't have ICC provided by the camcc
->>> node.
->>>
->>
->> Before converting CAMSS I would like to agree on the approach, since it
->> cannot simply follow JPEG. In either case the camcc path would be
->> optional, so older DTs keep working as before.
-> 
-> How does the current camss vote on the clock?  JPEG is not (yet) merged,
-> so we can't reference it here. The order in which the patches can land
-> would be: icc-clk, camss using the (optional) interconnect, JPEG on top.
+On Thu, 15 Oct 2026 13:31:54 +0200, Birk Skyum <birk.skyum@pm.me> said:
+> A hibernation image is restored after a power cycle. The TLMM registers
+> then hold what the boot firmware and the kernel that loaded the image
+> made of them. The restored kernel has the configuration it applied in
+> memory only, and nothing writes it to the hardware again, so every pin
+> that the loading kernel did not set up the same way stays wrong.
+>
+> On a Lenovo Yoga Slim 7x (X1E80100) the Bluetooth and Wi-Fi enable lines
+> are two of them. Their drivers are loaded from the root file system, so
+> the kernel that loads the image never touches the pins. This is
+> /sys/kernel/debug/gpio before the hibernation and after the resume:
+>
+>   gpio116 : out low  func0 2mA no pull
+>   gpio117 : out high func0 2mA no pull
+>
+>   gpio116 : in  low  func0 2mA pull down
+>   gpio117 : out high func0 16mA no pull
+>
+> The driver that owns gpio116 still believes it drives the line.
+>
+> Save the control, output and interrupt configuration registers in
+> freeze_noirq and write them back in restore_noirq, the output level
+> first, so that a pin drives the right level from the moment it becomes
+> an output. Changing the interrupt configuration can latch an interrupt,
+> so the status is cleared where the register changed, as
+> msm_gpio_irq_set_type() does.
+>
+> Only the GPIOs the kernel uses are put back: those requested as a GPIO,
+> muxed to a function or used as an interrupt, as pinctrl-intel does. A
+> valid GPIO without an owner may be in use by firmware. The SDC pads
+> after the GPIOs are configured without a mux function, so they never
+> have an owner, and their control register is always put back.
+>
+> msm_pinctrl_dev_pm_ops gets the two callbacks and x1e80100 starts using
+> these ops. With that x1e80100 also gets their suspend and resume
+> callbacks, which apply the sleep and default state of the controller's
+> own pins where a board defines them.
+>
+> Signed-off-by: Birk Skyum <birk.skyum@pm.me>
+> ---
+> Changes since the RFC:
+> - Put a GPIO back only when the kernel uses it, as a GPIO, through a
+>   mux function or as an interrupt, as pinctrl-intel does (Bartosz).
+> - Save and restore the SDC pads after the GPIOs as well (Bartosz).
+> - Allocate the save area under the same option as the callbacks,
+>   CONFIG_HIBERNATE_CALLBACKS (Sashiko).
+> - Clear the interrupt status only where the restore changed the
+>   interrupt configuration (Sashiko).
+> - Say in a comment that a both-edge interrupt emulated by flipping the
+>   polarity is not primed again. No SoC with such pins uses these ops.
+> - Rebased on pinctrl-qcom/for-next.
+> - Link to the RFC: https://lore.kernel.org/r/179163141354.18006.80461347454353634@pm.me
+>
+> Tested on a Lenovo Yoga Slim 7x with v7.2 plus this patch. The kernel
+> also carried the PCI change in [1], without which this machine does
+> not resume at all, the smp2p change in [2] and a GENI serial change
+> that is not posted. The Bluetooth driver had [3] applied. On
+> pinctrl-qcom/for-next the patch builds without warnings with W=1 and
+> sparse, with hibernation on, off and without sleep support.
+>
+> - Before the hibernation 45 TLMM pins have an owner, gpio116 and
+>   gpio117 among them (wcn7850-pmu), and four are interrupts.
+> - pm_test=core and test_resume pass.
+> - After a hibernation with a real power-off the TLMM part of
+>   /sys/kernel/debug/gpio differs only in the level read on two inputs
+>   (gpio93 and gpio153), as it did with the RFC.
+> - A suspend (deep) and wake still works.
+>
+> The Yoga has no SD card slot and its SDC2 pads have no owner, so this
+> only shows that putting them back does no harm. I did not read them
+> back.
+>
+> Not covered here: the LPASS LPI pin controller, whose pins also come
+> back at their reset values after a hibernation.
+>
+> [1] https://lore.kernel.org/r/179181074907.22199.10556821368232442334@pm.me
+> [2] https://lore.kernel.org/r/179158127177.70185.5691100900886332545@pm.me
+> [3] https://lore.kernel.org/r/179163212446.46972.2306254853726299632@pm.me
+>
+>  drivers/pinctrl/qcom/pinctrl-msm.c      | 147 +++++++++++++++++++++++-
+>  drivers/pinctrl/qcom/pinctrl-x1e80100.c |   1 +
+>  2 files changed, 146 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/pinctrl/qcom/pinctrl-msm.c b/drivers/pinctrl/qcom/pinctrl-msm.c
+> index 27f06bbc113c..0dd478e80e30 100644
+> --- a/drivers/pinctrl/qcom/pinctrl-msm.c
+> +++ b/drivers/pinctrl/qcom/pinctrl-msm.c
+> @@ -39,6 +39,15 @@
+>  #define MAX_NR_TILES 4
+>  #define PS_HOLD_OFFSET 0x820
+>
+> +/* Register values of one pin group, kept across a hibernation. */
+> +struct msm_pin_state {
+> +	u32 ctl;
+> +	u32 io;
+> +	u32 intr_cfg;
+> +	u32 intr_target;
+> +	bool saved;
+> +};
+> +
+>  /**
+>   * struct msm_pinctrl - state for a pinctrl-msm device
+>   * @dev:            device handle.
+> @@ -58,6 +67,7 @@
+>   * @soc:            Reference to soc_data of platform specific data.
+>   * @regs:           Base addresses for the TLMM tiles.
+>   * @phys_base:      Physical base address
+> + * @saved:          Pin registers kept while a hibernation image is taken.
+>   */
+>  struct msm_pinctrl {
+>  	struct device *dev;
+> @@ -80,6 +90,8 @@ struct msm_pinctrl {
+>  	const struct msm_pinctrl_soc_data *soc;
+>  	void __iomem *regs[MAX_NR_TILES];
+>  	u32 phys_base[MAX_NR_TILES];
+> +
+> +	struct msm_pin_state *saved;
+>  };
+>
+>  #define MSM_ACCESSOR(name) \
+> @@ -1583,9 +1595,133 @@ static __maybe_unused int msm_pinctrl_resume(struct device *dev)
+>  	return pinctrl_force_default(pctrl->pctrl);
+>  }
+>
+> -SIMPLE_DEV_PM_OPS(msm_pinctrl_dev_pm_ops, msm_pinctrl_suspend,
+> -		  msm_pinctrl_resume);
+> +static bool msm_pin_has_own_intr_target(struct msm_pinctrl *pctrl,
+> +					const struct msm_pingroup *g)
+> +{
+> +	return !pctrl->intr_target_use_scm && g->intr_target_reg &&
+> +	       g->intr_target_reg != g->intr_cfg_reg;
+> +}
+> +
+> +/*
+> + * A GPIO is only put back when the kernel uses it, as a GPIO, through a mux
+> + * function or as an interrupt. Other valid pins may be in use by firmware.
+> + * The pads after the GPIOs (SDC) have no GPIO and are configured without a
+> + * mux function, so they never have an owner and are always put back.
+> + */
+> +static bool msm_pin_in_use(struct msm_pinctrl *pctrl, unsigned int i)
+> +{
+> +	const struct pin_desc *desc;
+> +
+> +	if (i >= pctrl->chip.ngpio)
+> +		return true;
+> +
+> +	if (!gpiochip_line_is_valid(&pctrl->chip, i))
+> +		return false;
+> +
+> +	desc = pin_desc_get(pctrl->pctrl, i);
+> +
+> +	return desc && (desc->mux_owner || desc->gpio_owner ||
+> +			gpiochip_line_is_irq(&pctrl->chip, i));
+> +}
+> +
+> +/* Remember how the pins are set up when a hibernation image is taken. */
+> +static int msm_pinctrl_freeze_noirq(struct device *dev)
+> +{
+> +	struct msm_pinctrl *pctrl = dev_get_drvdata(dev);
+> +	const struct msm_pingroup *g;
+> +	struct msm_pin_state *s;
+> +	unsigned long flags;
+> +	unsigned int i;
+>
+> +	raw_spin_lock_irqsave(&pctrl->lock, flags);
 
-It does not vote. Each VFE calls clk_set_rate() directly from
-vfe_set_clock_rates(), based on the pixel rate of its own lines only.
+Sorry I didn't point it out earlier but can you use a lock guard here?
 
-Where clk_set_rate() is used on camnoc_axi (SC7280, SC8280XP, SA8775P),
-the clock is shared by all VFEs, but:
+> +	for (i = 0; i < pctrl->soc->ngroups; i++) {
+> +		g = &pctrl->soc->groups[i];
+> +		s = &pctrl->saved[i];
+> +		s->saved = msm_pin_in_use(pctrl, i);
+> +		if (!s->saved)
+> +			continue;
+> +
+> +		s->ctl = msm_readl_ctl(pctrl, g);
+> +		if (i >= pctrl->chip.ngpio)
+> +			continue;
+> +
+> +		s->io = msm_readl_io(pctrl, g);
+> +		if (!g->intr_cfg_reg)
+> +			continue;
+> +
+> +		s->intr_cfg = msm_readl_intr_cfg(pctrl, g);
+> +		if (msm_pin_has_own_intr_target(pctrl, g))
+> +			s->intr_target = msm_readl_intr_target(pctrl, g);
+> +	}
+> +	raw_spin_unlock_irqrestore(&pctrl->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * The image is restored after a power cycle, when the pins are back at what
+> + * the firmware and the kernel that loaded the image made of them. Nothing else
+> + * writes the configuration again, so put back what was there.
+> + *
+> + * A both-edge interrupt that is emulated by flipping the polarity gets the
+> + * polarity it had, which is not primed for a line that changed meanwhile. No
+> + * SoC with such pins (one-bit detection) uses these callbacks.
+> + */
+> +static int msm_pinctrl_restore_noirq(struct device *dev)
+> +{
+> +	struct msm_pinctrl *pctrl = dev_get_drvdata(dev);
+> +	const struct msm_pingroup *g;
+> +	struct msm_pin_state *s;
+> +	unsigned long flags;
+> +	unsigned int i;
+> +	u32 val;
+> +
+> +	raw_spin_lock_irqsave(&pctrl->lock, flags);
 
-  - the last VFE to power up wins and may lower the rate under a VFE
-    that is already streaming;
-  - vfe_check_clock_rates() checks only the VFE's own needs and does not
-    notice changes made by other VFEs;
-  - vfe_put() never drops the rate.
+And here?
 
-On the remaining SoCs the camnoc clocks have no levels and are only
-enabled. On SM8250 the levels sit on "camnoc_axi_src", which
-vfe_match_clock_names() does not match, so they are never applied.
+> +	for (i = 0; i < pctrl->soc->ngroups; i++) {
+> +		g = &pctrl->soc->groups[i];
+> +		s = &pctrl->saved[i];
+> +		if (!s->saved)
+> +			continue;
+> +
+> +		if (i >= pctrl->chip.ngpio) {
+> +			msm_writel_ctl(s->ctl, pctrl, g);
+> +			continue;
+> +		}
+> +
+> +		/* Set the level before the pin starts driving it. */
+> +		val = msm_readl_io(pctrl, g);
+> +		val &= ~BIT(g->out_bit);
+> +		val |= s->io & BIT(g->out_bit);
+> +		msm_writel_io(val, pctrl, g);
+> +
+> +		msm_writel_ctl(s->ctl, pctrl, g);
+> +		if (!g->intr_cfg_reg)
+> +			continue;
+> +
+> +		if (msm_pin_has_own_intr_target(pctrl, g))
+> +			msm_writel_intr_target(s->intr_target, pctrl, g);
+> +		val = msm_readl_intr_cfg(pctrl, g);
+> +		msm_writel_intr_cfg(s->intr_cfg, pctrl, g);
+> +
+> +		/*
+> +		 * Changing the configuration can latch an interrupt. One that
+> +		 * is latched with the configuration unchanged is a real one.
+> +		 */
+> +		if (val != s->intr_cfg)
+> +			msm_ack_intr_status(pctrl, g);
+> +	}
+> +	raw_spin_unlock_irqrestore(&pctrl->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +const struct dev_pm_ops msm_pinctrl_dev_pm_ops = {
+> +	SYSTEM_SLEEP_PM_OPS(msm_pinctrl_suspend, msm_pinctrl_resume)
+> +	.freeze_noirq = PTR_IF(IS_ENABLED(CONFIG_HIBERNATE_CALLBACKS),
+> +			       msm_pinctrl_freeze_noirq),
+> +	.restore_noirq = PTR_IF(IS_ENABLED(CONFIG_HIBERNATE_CALLBACKS),
+> +				msm_pinctrl_restore_noirq),
+> +};
+>  EXPORT_SYMBOL(msm_pinctrl_dev_pm_ops);
+>
+>  int msm_pinctrl_probe(struct platform_device *pdev,
+> @@ -1663,6 +1799,13 @@ int msm_pinctrl_probe(struct platform_device *pdev,
+>  	if (ret)
+>  		return ret;
+>
+> +	if (IS_ENABLED(CONFIG_HIBERNATE_CALLBACKS)) {
+> +		pctrl->saved = devm_kcalloc(&pdev->dev, pctrl->soc->ngroups,
+> +					    sizeof(*pctrl->saved), GFP_KERNEL);
+> +		if (!pctrl->saved)
+> +			return -ENOMEM;
+> +	}
+> +
+>  	platform_set_drvdata(pdev, pctrl);
+>
+>  	dev_dbg(&pdev->dev, "Probed Qualcomm pinctrl driver\n");
+> diff --git a/drivers/pinctrl/qcom/pinctrl-x1e80100.c b/drivers/pinctrl/qcom/pinctrl-x1e80100.c
+> index e4c0abcd95b9..bfe122fc7e79 100644
+> --- a/drivers/pinctrl/qcom/pinctrl-x1e80100.c
+> +++ b/drivers/pinctrl/qcom/pinctrl-x1e80100.c
+> @@ -1855,6 +1855,7 @@ static struct platform_driver x1e80100_pinctrl_driver = {
+>  	.driver = {
+>  		.name = "x1e80100-tlmm",
+>  		.of_match_table = x1e80100_pinctrl_of_match,
+> +		.pm = &msm_pinctrl_dev_pm_ops,
+>  	},
+>  	.probe = x1e80100_pinctrl_probe,
+>  };
+> --
+> 2.55.0
+>
+>
+>
 
-> 
-> Please note Krzysztof's comments.
+Otherwise looks good to me so if there are no objections, I intend to queue
+it for v7.5 with guards added.
 
-Yes. I will reply to Krzysztof directly in 1/3. The CAMSS behaviour
-above is part of that answer: today every consumer sets the shared
-camnoc rate directly and nothing aggregates the requests.
-
-> 
->> OPP is per device, and CAMSS is a single device containing several VFEs,
->> each with its own core clock and its own load. If CAMSS used
->> dev_pm_opp_set_opp() on its device like JPEG does, every VFE would overwrite
->> the clock and bandwidth votes of the others, which is the same
->> last-writer-wins problem in a different place.
-> 
-> For this series just convert the existing approach as is. We have two
-> distinct questions here:
->   - Letting camss and JPEG (and others) to vote independently on the
->     clock
->   - Letting camss correctly handle per-VFE votes
-> 
-> This series must address the first question only.
-> 
->> I see two ways to keep the VFEs independent:
->>
->> 1. One OPP table in the CAMSS node, used only as a lookup. Each VFE
->>     finds the OPP for its own required rate, sets its own clock and
->>     votes the bandwidth from that OPP on its own ICC path. The driver
->>     requests a separate path per VFE from the same "interconnects"
->>     entry, so DT describes the hardware connection once and the
->>     interconnect core aggregates the VFE requests with the other
->>     consumers. The rail level is not applied by the OPP core in this
->>     case, so CAMSS keeps handling it as today.
->>
->> 2. An OPP table per VFE, attached to the per-VFE power domain device
->>     that CAMSS already creates, so each VFE calls dev_pm_opp_set_opp()
->>     on its own device. This applies the rail level as well, but the
->>     virtual device shares the CAMSS of_node, so it would pick up all
->>     CAMSS interconnect paths and need indexed OPP tables in DT, which I
->>     have not seen used for such devices.
->>
->> Which one would you prefer, or do you see a better way?
-> 
-> 3. Add minimal VFE nodes and let camss use those. Converge towards the
-> split VFE (IFE) device tree.
-> 
-
-Agreed, I will take that up separately. To get it right the first
-time, could you clarify what "minimal" covers:
-
-  - child nodes of the camss node, or standalone nodes like the split
-    CSIPHY?
-  - which resources move into them: only the per-VFE clocks, power
-    domain, OPP table and interconnect path, or reg and interrupts as
-    well?
-
---
-Best regards,
-Atanas
-
+Bart
