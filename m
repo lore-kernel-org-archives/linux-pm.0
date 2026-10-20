@@ -1,75 +1,66 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.182
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.152
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792480655;
-	b=JKKBTbNeaNG7x7riAEoRTErF0ZrXCdg4GzvYpOBVFTZzsnAFXoewdXXV7A97qYJZJnyt
-	 Z9AxLtstKXBEWZYhVQsWnlDdMJ6JP/AileGKwQ4lRwn6MsRyS2dvLgTLJ8BXwBj6NSeAW
-	 VzZuOjkaT4Nk7qtr7ZLetPbQyY7odPg79wi5yPRpuO3L/aiEYMl9xqiPFyK9rmq/5xHUy
-	 Z0bRBm3OmKzBay3Cf8ziZOrqiqgfGt06oeExAEnZo5l5bueqUoe5napLCL8pPQy49Mxlk
-	 3Vn3ajFqUNc8r9I2K8BPdtixdvb8F2RzTUPm+wMqgdl7zmleCDqimr0D+g27mCV5EXw==
+	t=1792480794;
+	b=aa+Gk1zACPHtxE3O3yhFJjWTnvjfMHKoR1R+aSvFF9ri1kEXiLsM+BCdVC8kD5fL2Pul
+	 F0UiyIp7KZ9sovcygIPXdeYnL33Xe1vONmcBLWOn0Ly4Lo4NMTTBsmUpdshkQXxH6fzye
+	 KEUwSVXYB5rfznro471l3ECrw7NnQ/eEQXoSEzgIWPe6F3b8Ssxf1urWxj2Xei5hh1i3M
+	 DTF40kMyr57dCHIG6JgiB2KBsfYK9IsREE0Bx1DASIwK4ZXhX7ecBfBcaYDOyyOTza8RS
+	 gteQ9Iwnd63GyJc8PfygTONtLH4UP81ZGsABX/zmV5a0EixyTOHk3fniXehRItcHqDg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792480655;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=PPF5Lg+md+ScchRlISc/5Y7zr+t9DzuuY8wGaLIwWl4=;
-	b=DH62Z/Hpk1qIK5+cIlrJQgMa+JGGVplXU3CzUSEIH+MNVCaRz896e7qSZb1OV2mJ6c0p
-	 s32yflyXKcJJqHex6WS6OAlecrpXzr57KBETAZFPQFT1zO0OViOWaGQ3zCHuhc8wDvqML
-	 Eo76x1pQerW1xckCuDGMzZE5vQA2WHZsKuTz0/k8XpS7rWgsq2X5niL3UfQBnxQmUC/n4
-	 mxgoNKLa/l8fxIoelC1HGM+QO0HXDBF3vsKp1Uy5B3cnkO5sJ9B+ktXNiXD90VIpy24BT
-	 ReTh99TUTDicvX35NTb11I3LdS/3nXOalGz4cNBKjY+1He/UaKrqiVTpCNf9pIFI9Tg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792480794;
+	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-MBO-RS-ID:X-MBO-RS-META;
+	bh=5hHqP6l6P3y8TPqsQ4uBK1HTBu09IRjIugQD13gPINM=;
+	b=Wf5fgfswlDe//Hq5CCi1SibKVLvFs2XV+Pz0zgMUzGa4b6RwsLvDvi69uHxI11h+LUdy
+	 +MqmER7VMKOd/viJCGV0J+CVsskhKyBLSy8SUUGllk5904bJWA5jjRX2rml3aMYXhx76W
+	 X598L+lo80QE68VLj0Or5mOdwpBAKAe/dW9W92u/wZW6msg+Ge47yb4tV6IkXepU5uFMR
+	 TsMNMZiL9jp/DWXzq24UJMnPdGPcja+uEn7jvkQAE4XtF/SStsq1t6tn7ccDRpqtPiEsS
+	 HweBVLiYIECGMrWVk1CporexieNstXXu9gvkeLtbk5MJt/5UOWNMf60vcraxTad5EfQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.160.182
-Received: from mail-qt1-f182.google.com (mail-qt1-f182.google.com [209.85.160.182])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=mailbox.org;
+	spf=pass smtp.mailfrom=mailbox.org;
+	dkim=pass header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=BTMLbF2d;
+	arc=none smtp.remote-ip=80.241.56.152
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42DE7606A31C
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 07:17:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 42DE7606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-qt1-f182.google.com with SMTP id d75a77b69052e-53653e30353so22605951cf.2
-        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 00:17:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792480654; x=1793085454;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=PPF5Lg+md+ScchRlISc/5Y7zr+t9DzuuY8wGaLIwWl4=;
-        b=V1VeYHyNC/6o4BDdNakTzL59OOlNT9CKK+MQco8Um/XvdA6vN4kDY8CIVTgYLXnXth
-         APeM3Kahc9obH0UNvgkGblB9lA6SnaLML4OJXQvUiGBu4w7weKHdRIZ6SoSD6Pw8T20y
-         AtF9u4zqdMS10e9MdeGTOcSVY1cAjmAqrbDJK5Q1KMDjuO7upb/1zW0OfBhgHAJ5Oi0p
-         zU35WC04TUP2CEkR2h7ozyQhUKumLW8tIPEbA0mHu92AS3CMb9Qm9y3BsG4HSlLx5Anw
-         7KxpB2ZoBAuJPncrlw8SIx8J/yDJgw849Tfa0VmjJ3a3mfyIiHEU+b7ppEgCzb2NWpGV
-         G6Hg==
-X-Forwarded-Encrypted: i=1; AKwUvBx0ACRgc0RUrdvBeTh+TyyfuDJvYINON/dyir/+t1kHoutZ+Aoy23fH51b9BX+zYK/tjPgPmLOhyQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL+XjkV4FPo7NTrjXcU/trwBhljQsm7CRxjs0G2L+hZ6lDS3Nnd
-	6LITk94aj1lFV0KAl+ykK1KCIee1XpzE6aOahaNk3MjnWSY8btvIVA/xYr4sNI22Bos=
-X-Gm-Gg: AYBFou0empkYK6EF04b8zAZDPbomVK7jQvFNX7ZplevJc8kBkanTUechfXWIh3NZ37b
-	iIHk4morr6jTLz5J5+QVEvoJl3CGqex+Xd0evowFO8AIoTLMCnGSnFhZBCtE2AIOuhr9pHxVNhz
-	xXwAwv3Fpb8M5LVbU2MxGe1nv0KhbKGPesY5RXq7yITkUvKVgvunIwf+xhFV4iLW5esIUrfwxls
-	J417b+HFQtyL1XmeNxt+Tjg6ZxrSYOiQhB2je5RUwWYHu25+KVp0G8OcPs2nkO7/kCVSb60J/Aj
-	oqf3/U46+0jywa6kgX/uEVsjyc1cvXjc0BnVMGY/4x9g1oG4Pwz8z41TAQc+CE9X4fOHFnBY4IC
-	6vUBWX0gDRIH/GahVUoDj81CKk4slhCITU0+7tumCpb3EbFBSsa39l+MXxBJZ3tjaeXQO67pJX/
-	HMZavspJo14ozfubhwa2z8I6ylGB941HXY8IQylGETxiXsjzJwSY8V+76MCtf4bp/hrXaH/mfYx
-	EDc37vFQRdcU2lVgDDNRY8z96VN/SKRrIlxW+lr
-X-Received: by 2002:ac8:5d0e:0:b0:530:8853:1be5 with SMTP id d75a77b69052e-53645c32ef4mr165231001cf.10.1792480654211;
-        Tue, 20 Oct 2026 00:17:34 -0700 (PDT)
-Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com. [209.85.160.180])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-5363c24f7b1sm101730271cf.24.2026.10.20.00.17.33
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 20 Oct 2026 00:17:33 -0700 (PDT)
-Received: by mail-qt1-f180.google.com with SMTP id d75a77b69052e-5365f9a04c5so26883981cf.1
-        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 00:17:33 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBy6/051GGD/8hAF4jOOAXo7Co92ssfMUJko6grWZir/I3YwCzLHHqOdCzaLGkUWnXyhgcJSjoAHkw==@vger.kernel.org
-X-Received: by 2002:a05:6102:3753:b0:7cc:1ace:fd0b with SMTP id
- ada2fe7eead31-7cc368f6decmr2272570137.8.1792480154006; Tue, 20 Oct 2026
- 00:09:14 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFB45606A31E;
+	Tue, 20 Oct 2026 07:19:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EFB45606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=BTMLbF2d
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [IPv6:2001:67c:2050:b231:465::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4j83hQ0WZDzKp25;
+	Tue, 20 Oct 2026 09:19:50 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1792480790;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=5hHqP6l6P3y8TPqsQ4uBK1HTBu09IRjIugQD13gPINM=;
+	b=BTMLbF2dSJ+QLGysiCsh1voW+8HBXJuDdwpoqVYXDK75cCbLGtwEyL95e5O6GvidznTCrd
+	JBFpf4MJRPHkwruE3Ocjez8o1AeRRf15qznkU4GZiq+lDPeu+BZiqKpN2Oli3oOn11F6K1
+	xZ8Rgsc+a0IUVlvLyWo/2OrOBGKgYisMm8tGS9qYczlWJCw36P5HfBm8joh/tAFob90CfH
+	RIrD3Bip1hKq9UXBrZlktkn/P+YV8LWRdr1GsWL+xKOmoDEYHNJgC6q7N20LJVqvO6RpSw
+	+6F+sqrBlQh5pamJRdSC1zGqcRAk395ngL0gon4aCTpCjpbr9MOsTrqAijgXHA==
+From: Manuel Ebner <manuelebnerli@mailbox.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
+	Manuel Ebner <manuelebnerli@mailbox.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] cpufreq: longrun: fix kernel-doc warning
+Date: Tue, 20 Oct 2026 09:19:09 +0200
+Message-ID: <20261020071913.1677196-2-manuelebnerli@mailbox.org>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -79,58 +70,45 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1792163045.git.geert+renesas@glider.be> <4524363679c1f2163aca3b3dda2bfbde170d095a.1792163045.git.geert+renesas@glider.be>
- <20261019160545.GC3705@killaraus.ideasonboard.com> <CAMuHMdUTz3BR48_Y8_UR9PEjLuavHtN-4uaEKURtqRXFBO0uUA@mail.gmail.com>
-In-Reply-To: <CAMuHMdUTz3BR48_Y8_UR9PEjLuavHtN-4uaEKURtqRXFBO0uUA@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 20 Oct 2026 09:09:02 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWqgRL+rzQ7xEzn88Guy+KLUHmHyMwAdhfHhC8Xopc7uQ@mail.gmail.com>
-X-Gm-Features: AclHuK-xW82aBw8g83Y0vnua8_TBb23MC_WawHBUIyGh3Twhft0MuZERm0ITiqw
-Message-ID: <CAMuHMdWqgRL+rzQ7xEzn88Guy+KLUHmHyMwAdhfHhC8Xopc7uQ@mail.gmail.com>
-Subject: Re: [PATCH v4 5/8] pmdomain: Make genpd_get_from_provider() return -EPROBE_DEFER
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>, 
-	Vinod Koul <vkoul@kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
-	=?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>, 
-	Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-MBO-RS-ID: 5b6ebadf7ca5f0ac97e
+X-MBO-RS-META: 14gzcfiznwxqakq61nqwkfcms7dmfj7a
 
-Hi Laurent,
+Replace kernel-doc comment with normal multi-line comment thereby fixing:
 
-On Mon, 19 Oct 2026 at 18:32, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Mon, 19 Oct 2026 at 18:05, Laurent Pinchart
-> <laurent.pinchart@ideasonboard.com> wrote:
-> > On Fri, Oct 16, 2026 at 05:55:44PM +0200, Geert Uytterhoeven wrote:
-> > > Unlike provider-based look-up functions in other subsystems[1],
-> > > genpd_get_from_provider() returns -ENOENT instead of -EPROBE_DEFER when
-> > > the provider is not found, thus not supporting probe deferral.
-> > > Currently this is worked around in of_genpd_add_subdomain() by remapping
-> > > -ENOENT[2].
-> >
-> > But not in the other functions calling genpd_get_from_provider() and
-> > propagating the error up. Have you validated that no existing call
-> > stacks will break ?
+  $ ./scripts/kernel-doc -none drivers/cpufreq/longrun.c
+  Warning: drivers/cpufreq/longrun.c:21 This comment starts with '/**', but isn't a kernel-doc comment. Refer to Documentation/doc-guide/kernel-doc.rst
+   * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz
 
-Sorry for failing to provide the answer I intended to provide:
-IMO all of the callsites should be fine.
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Suggested-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Signed-off-by: Manuel Ebner <manuelebnerli@mailbox.org>
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+---
+[v2]
+ Fix Suggested-by-tag
+ Add Reviewed-by Zhongqiu Han
+ Add Fixes-tag
 
-Gr{oetje,eeting}s,
+[v1]
+ https://lore.kernel.org/all/20261019182946.1450406-2-manuelebnerli@mailbox.org/
 
-                        Geert
+ drivers/cpufreq/longrun.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/cpufreq/longrun.c b/drivers/cpufreq/longrun.c
+index 7d4146d6c..c1df9014a 100644
+--- a/drivers/cpufreq/longrun.c
++++ b/drivers/cpufreq/longrun.c
+@@ -18,7 +18,7 @@
+ 
+ static struct cpufreq_driver	longrun_driver;
+ 
+-/**
++/*
+  * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz
+  * values into per cent values. In TMTA microcode, the following is valid:
+  * performance_pctg = (current_freq - low_freq)/(high_freq - low_freq)
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.55.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
