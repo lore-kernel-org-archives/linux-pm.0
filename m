@@ -1,55 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792502326;
-	b=YDN31OXVIwi7O5V3gUluNip0fvNoKwmqPnSXvVRJGEgZa+rEa5FZTcjZho3o7sReT0T+
-	 Ln2t+Q8hsKRlFCQwARoS9ONdQXwN5Q7Pcra2vY56xJX+a2/wCbZ9RXnVgdFvHjnCHaWOA
-	 FwcXNrTj7/7W0oB+Z48H2G23I2RvK+BnsHQx93J3Sk01EqStNbQiKq18NZkO8W19XHQdA
-	 t/wyC+l6Ul50E9sdqua9VCMsznA5nxHhLM4xMrxJ3Y94/zLUqkRdQJa299s99xjS9BA3g
-	 rubWlOM162grF+zzIPrflxbhTz5+DGtBsYYetzp+YwZFJGxjJyYhrIfgoZ6dKPKeMvw==
+	t=1792502547;
+	b=G84RAZj6tUgsn7s7BTw+MU4yi5z5bjBh8Y71gDkjSZfH4BL6Xs/AV+KsI04m9EX75Wh0
+	 Qf4r1YCP2LGqRBER/Y7u8D3XplXicRqOpwNzdVPp3meuJrAfg1gnerVit1UtirBvSYcKc
+	 9OKwNjg5HFdavqCuzgk5Dv9tiXIc07468Ij/Ix0XfxfsQqqEXV/21YwCBavvlSCHR8C4F
+	 EF9fg87e5vBHy7AfBhCR/kIPiGkZuDgTNVRD/7srtnrOqdfh+rmcKg6yX3BfwXKlRealk
+	 KHCSD0cSycDFpdVnD8rlJ7FOMLt9oaHzbvVS3o0vugwMk7TEwe8sM0NbYzh+JA/1W+A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792502326;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	a=rsa-sha256; c=relaxed/relaxed; t=1792502547;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
+	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=nT5qVJtMsZOOQN5bDd9xQKpWcAmBmpPjDikwtQK4oYA=;
-	b=MDyB4PPBdr6C+wAwqKXfKNKQEPbp01rTLs+M++GTMzdLWRlt9GAOMFmXlvoQoXEWf8bE
-	 v4tFbfCWrq4y3bTYW0oa8pcvLbSRXO2zwzaQE2d445XxigHh59D0Jx+a/M0QcIe5IZXwD
-	 kqR0TlkBvA8IzBLHpeIRKVHGpEjM4nM/cDl+qHoZ+o0GcXQEzcP+k89ujD823S3SOhj+K
-	 6FFFAYII4lKZrjHjbdKs9ilqNQ9NoGJHuO/of5U96fvg2/eBMH5s4LlWM93nsiykVq7HE
-	 IhK9YnB3SxzN+o30k3VS/oMaW7nFsO5kFh0AD/hKoWfiYTGtahHloIKFYRBtcpuEEwA==
+	 Subject:To:Cc:Content-Type;
+	bh=D+mxgjdi4ZCAmeQ/8ywDwvDse5W9MOG3smctM4dikj4=;
+	b=39YLG62ZgoxqL/KkEPXpFfAD41FvidaI1IYiXrYnxi+yzQcUl9eDCXVrKS3stbXRt+Ou
+	 DMxVnDA1y6mttWghKuisRZWuCRY4ZWFNt9ahvhnxaW3bMxzcXnEZwhyOXY4HWhBkit2ct
+	 8Dq3Fs/o+t7EmoWSyy6sKGvnOD6IjHROP9XAFYlTcxpTTrUzsnpt5G5SEcEPr0Av3Memn
+	 2pUJ30NlRIONoJ1CvfgU0B08mYrwvShgaR5oFGIm/cQf7gNjc9SfDrcQ8FmYmyUNtmMg+
+	 Yixftn0DxVSCt519GlBnytZEB32p2AX04NDD0V+FcOsjrlQfKFohUVk4xlD3rzZo/Gg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MXzD36CU;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=none header.from=linux-m68k.org;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=none smtp.remote-ip=209.85.218.48
+Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9011606A323
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 13:18:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MXzD36CU
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 708E51F000C5
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 13:18:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792502325;
-	bh=nT5qVJtMsZOOQN5bDd9xQKpWcAmBmpPjDikwtQK4oYA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=MXzD36CUho2eKSkBxRNu6P8CLs3bu7ImIjnUVFcPPTSnHTwb2gO3IhGWuNdOAkdbm
-	 2S29sSWAaRcj29ziXE7wk//nIjJzXZd6DLfxdQJk2TRRY4U2TNsuOXfNeycG10RHlK
-	 iZLiyy9TPE4l6RoPJtQoHoi7eJGfWfONBM/3QdgeQzCxrXPkBz2cCcfZRbhKRKDGuv
-	 +xJHwtaj1gepUKm2Nr7/a+2A74IcFiYuoyX4xYaSRzplCQWoqMqmR3urW/KgK5nRdk
-	 hOsyxnzgV8vvmk56GnAt+XtI+zSIfXvuga5wqsHPzScTbaXXtV6JvjbSE+hGhl/9Cw
-	 nyU4eNlHto96w==
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5bcb440d1cbso574840e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 06:18:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxyzEua2YYCMk7M/OdFYUBrjphZOENn0rIZb4wsQ6fKB6UyH53VcK+dMbLjmFXTWtHq8O5yDcbTfw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIiCf1F2rRjDPmayUe6vh3bCx7K4GVEa6XFPyor15Cm/hQSGWRH
-	u1fJtfYUyq4KjSTm3ojBjoH6OrEUxxl3QreUIJ6XDsy3Hytjg326BP7E0QJLiCvca1ZtFwViYfq
-	Lp/j4zv4XHHLO+I3iG3o0wvQMIY8sMmw=
-X-Received: by 2002:a05:6512:b8f:b0:5be:44be:569f with SMTP id
- 2adb3069b0e04-5be66a23859mr739003e87.2.1792502323872; Tue, 20 Oct 2026
- 06:18:43 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CC71606A31E
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 13:22:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8CC71606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-c315869241fso378006266b.0
+        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 06:22:27 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792502546; x=1793107346;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=D+mxgjdi4ZCAmeQ/8ywDwvDse5W9MOG3smctM4dikj4=;
+        b=Y/lP57NAd/vHTOiU6lRlh1QnKppAqXwHXcj9vVJ3GMs64LLWoIb/ijAl5Te5wN4ZyL
+         uefXrBZZsRYnHYN0IhgkuoOMaNnSY9BWheJce3UgpS3oHIGsWdUlBhj7G4f75redrUV0
+         Z9fBdsLC4r37VxYOlfLtLII4QVJbmViazjW8Y136HZ34DuOu1q4hOjdLoUzQUnh2yI9b
+         CNCZIG5DCt5LbhSlhQH6aw9CWGA3ni+zp0cRpQ2HolFnVj76rJlFeZ951gJCFoDlOFQq
+         5/5KeyoipMClHJBo0w1UOB/06cHGqKdGQRVlGELdD8vmaDvqY+zozd05m93K3Gvv2G8C
+         j5FQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzODCmZ+BpMwofQNZR3HDz+xOB4rd/xMhj4PM5A0t2Z9jHZXB8qeauZFDwEWSXZ2SQa1Vmlt2E/qg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJUZxa9fP9fA7hZ/ruYyBvFQGCgv3PqAU/+lRKgS+75vcQ7bcve
+	8wgs/kYtHnK00FyklnIhNk/T8Z+srpsHykLUAbagDYMqs6tHvSmHmTbRpXsDOh4OxJw=
+X-Gm-Gg: AYBFou3KRnIy88qeHpgZJMZM30I+hi91vSULOx0bp6OS06gfjdpJudxRzY1dg9DQAQJ
+	ans7eKyBylYSlnwYkFj3woslvglMCpKhYW31b+5R9/NSAJCfmtNmrJ7dkLj8lTiI9ltg8/LXlUn
+	KbGR/2vEghsdWY/pnLryd+a+OGAO2uMu3626mgzFLNpOpFCcOoTpUOWtuT109VSUUX/rjLHVnlc
+	STY1G7Aknc5jIIRe5Hbu/atm+8nyTnY5XiN+bRfmNg37YDHp9S1jR0pa0qDWbBWuMqqxM2eLZBz
+	3kHF53aB3X61qH/cgYymbXvmClb+X4cR5a1k1DkIeLE4jUEPfj0woliEyiFbvmWHV2k/gOKZNWI
+	yNzRr+Tlatm39XtrPjrlTm7MiHN49ayVqna/pZbUDH8Xf57gbrf8kHSxqAXRjAcGdZtrxkIBDou
+	nW3BYDQv6Yj+bG534i/6KRNM7nwHssh/U63uJ9/HleVNKcapXNhRzywsJp5CA0MCqYDuQRPa4Ze
+	V1HtSOxY+dEaEGe2p9xPShMQkribEfeCLLL
+X-Received: by 2002:a17:907:e849:b0:c40:4320:de2c with SMTP id a640c23a62f3a-c419e73e2a1mr800237566b.15.1792502545779;
+        Tue, 20 Oct 2026 06:22:25 -0700 (PDT)
+Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com. [209.85.208.53])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c40912ca7f2sm498986266b.46.2026.10.20.06.22.23
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 20 Oct 2026 06:22:23 -0700 (PDT)
+Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-6b1cc392d8bso4019609a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 06:22:23 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwP2pvXBi58ITeY6Aer0Vbs+nirwBt2/Ab3tJdmaM1SBQ4MjBB/9/bPhl3n11SL56wc77MARVEujw==@vger.kernel.org
+X-Received: by 2002:a05:6402:270d:b0:6b1:c7d9:b631 with SMTP id
+ 4fb4d7f45d1cf-6b3a8191a46mr7499369a12.23.1792502542847; Tue, 20 Oct 2026
+ 06:22:22 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,93 +79,106 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261020121159.2154649-1-sadrul@google.com>
-In-Reply-To: <20261020121159.2154649-1-sadrul@google.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 20 Oct 2026 15:16:26 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hfGZWp9kWF1Fi4pYqwkukPrbw=MOiQ1yxd31mXg5zR6Q@mail.gmail.com>
-X-Gm-Features: AclHuK-M3XHHa8FV_F0N1LJ5FfL6gSK9Mdl9J8PTsQYLf0xcHyilyfaYZUWI-tU
-Message-ID: <CAJZ5v0hfGZWp9kWF1Fi4pYqwkukPrbw=MOiQ1yxd31mXg5zR6Q@mail.gmail.com>
-Subject: Re: [RESEND 1/2] fs/epoll: mark epoll_wait tasks TASK_FREEZABLE
-To: Sadrul Chowdhury <sadrul@google.com>
-Cc: linux-kernel@vger.kernel.org, 
-	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, 
-	Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org, 
-	John Stultz <jstultz@google.com>
+References: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-0-e052903a3832@ideasonboard.com>
+ <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-15-e052903a3832@ideasonboard.com>
+In-Reply-To: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-15-e052903a3832@ideasonboard.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 20 Oct 2026 15:22:09 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUHcR8-9g+KZ4Ssj+mJKYBz1h6QSjWnaPL1BcQWC6v8RQ@mail.gmail.com>
+X-Gm-Features: AclHuK_uZzRO_WalfaTseMvUVupoP686uPVQ89YYU5UfnQv3EiXJeP7RDzX6u2Q
+Message-ID: <CAMuHMdUHcR8-9g+KZ4Ssj+mJKYBz1h6QSjWnaPL1BcQWC6v8RQ@mail.gmail.com>
+Subject: Re: [PATCH DNI v3 15/15] media: rcar-fcp: Check device revision at
+ probe time
+To: Paul Elder <paul.elder+renesas@ideasonboard.com>
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-media@vger.kernel.org, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 20, 2026 at 2:12=E2=80=AFPM Sadrul Chowdhury <sadrul@google.com=
-> wrote:
->
-> During system suspend (freeze_processes) and resume (thaw_processes),
-> threads blocked in epoll_wait() sleep in TASK_INTERRUPTIBLE. When
-> try_to_freeze_tasks() executes, it must wake up every sleeping thread
-> with a synthetic signal so the thread can schedule, run try_to_freeze(),
-> enter TASK_FROZEN, and sleep again. Upon resume, the freezer wakes them
-> all up simultaneously, only for each thread to re-enter ep_poll(),
-> observe no ready I/O events, and call schedule() to go back to sleep.
->
-> On systems with numerous event-driven daemons (where hundreds of
-> threads idle in event loops), this causes a large wakeup stampede and
-> thousands of redundant context switches per suspend/resume cycle.
->
-> An earlier attempt to make epoll_wait() freezable in commit 1c441e921201
-> ("epoll: use freezable blocking call") was reverted in commit
-> c511851de162 ("Revert "epoll: use freezable blocking call"") due to
-> reports of userspace corruption (Bugzilla #61781). Under the legacy
-> freezer design, freezable tasks could wake up prematurely while
-> hardware and peripheral drivers were still suspended.
->
-> With the 2022 core freezer rewrite (commit f5d39b020809 ("freezer,sched:
-> Rewrite core freezer logic")), the legacy fake-signal mechanism was
-> replaced with the TASK_FROZEN state. Tasks sleeping in TASK_FREEZABLE
-> are safely frozen in-place without waking them up, and the scheduler
-> guarantees they cannot be woken until thaw_processes() explicitly clears
-> the frozen state.
->
-> Mark sleeping tasks in ep_poll() as TASK_FREEZABLE. Benchmarks on an
-> ARM64 test device demonstrate that combining this with freezable
-> select/poll reduces thaw latency by 63% (from 20.64 ms down to 7.55 ms
-> mean at fixed CPU frequency) and reduces context switches during
-> freeze/thaw by 87%.
->
-> Reviewed-by: Jan Kara <jack@suse.cz>
-> Signed-off-by: Sadrul Chowdhury <sadrul@google.com>
+Hi Paul,
 
-For both patches in the series:
-
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-
+On Thu, 15 Oct 2026 at 09:53, Paul Elder
+<paul.elder+renesas@ideasonboard.com> wrote:
+> From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+>
+> Verify that the device revision register reports a valid value,
+> otherwise reject the device.
+>
+> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
 > ---
->  fs/eventpoll.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> Changes since v2:
 >
-> diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-> index 6cbef8b4c2e0..35992f6457bf 100644
-> --- a/fs/eventpoll.c
-> +++ b/fs/eventpoll.c
-> @@ -39,6 +39,7 @@
->  #include <linux/rculist.h>
->  #include <linux/capability.h>
->  #include <net/busy_poll.h>
-> +#include <linux/freezer.h>
+> - Add FCP type information
+> - Reject devices with an unsupported version
+
+Thanks for the update!
+
+> --- a/drivers/media/platform/renesas/rcar-fcp.c
+> +++ b/drivers/media/platform/renesas/rcar-fcp.c
+
+> @@ -154,15 +204,67 @@ EXPORT_SYMBOL_GPL(rcar_fcp_soft_reset);
+>   * Platform Driver
+>   */
 >
->  #include <trace/hooks/fs.h>
->
-> @@ -1987,7 +1988,7 @@ static int ep_poll(struct eventpoll *ep, struct epo=
-ll_event __user *events,
->                  * the same lock on wakeup ep_poll_callback() side, so it
->                  * is safe to avoid an explicit barrier.
->                  */
-> -               __set_current_state(TASK_INTERRUPTIBLE);
-> +               __set_current_state(TASK_INTERRUPTIBLE | TASK_FREEZABLE);
->
->                 /*
->                  * Do the final check under the lock. ep_start/done_scan(=
-)
-> --
-> 2.56.0.212.g129ede20d9-goog
->
->
+> +static int rcar_fcp_setup(struct rcar_fcp_device *fcp)
+> +{
+> +       static const char * const models[] = {
+> +               [RCAR_FCPF] = "FCPF",
+> +               [RCAR_FCPV] = "FCPV",
+> +       };
+> +       static struct {
+> +               u32 version;
+> +               const char *name;
+> +       } versions[] = {
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3_ES1, "H3 ES1.x" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3W, "M3W" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3M, "V3M" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3, "H3" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_D3, "D3" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3N, "M3N" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3H, "V3H" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_E3, "E3" },
+> +               { RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_X5H_V1, "X5H v1.0" },
+> +       };
+> +
+> +       unsigned int i;
+> +       u32 version;
+> +
+> +       /* Check the device version register. */
+> +       version = rcar_fcp_read(fcp, RCAR_FCP_REG_VCR);
+> +
+> +       for (i = 0; i < ARRAY_SIZE(versions); ++i) {
+> +               if (versions[i].version == version)
+> +                       break;
+> +       }
+> +
+> +       if (i >= ARRAY_SIZE(versions)) {
+> +               dev_err(fcp->dev, "Invalid FCP version 0x%08x\n", version);
+
+You're missing a few variants:
+
+    R-Car V4H: rcar-fcp fea10000.fcp: Invalid FCP version 0x0000010a
+    R-Car V4M: rcar-fcp fea10000.fcp: Invalid FCP version 0x0000010b
+
+> +               return -ENODEV;
+> +       }
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
