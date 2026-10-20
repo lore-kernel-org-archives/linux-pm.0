@@ -1,109 +1,109 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792468027;
-	b=VdGfKb+PMO5+jsAFcV9vgacIxk0Qi3b3OJia3hLZCKj2WiBog1TsySAWdipbTxZEw0rq
-	 eC+yDo4tQIKc1NdVCiuDWFzsotZUt709HgPrVuWUix+sogvSrVKTCwiqRIsNnIdacJ2OA
-	 IBS/y2/FFsAcN7s8ROPfe0vxZxQfH+fGBlbzEEYsYGHAjwRz+Mc0nWLObNx3LP0Vt5Lmr
-	 IX4uHMdFZNWB0D5s7bD85FhpuViyhPaQGMaVnCV9ZCwXrIjs9AE2dARbPfw6a8qIwzxTG
-	 Gq/f/nm4Uh9pCUMuxjWi1+RVp0CP8CDlNfr3gfK6Z8kR85Tb8pcpfzlg+BomEqD/8Kg==
+	t=1792472650;
+	b=DC+1zGwOfEECRlXjWZyg1BmScu0XXa75El0YHlbppUk2onrLHNYolSFGq6oqlAQSfire
+	 DLs78t78B4L+fX/wMNLtLu4hUmUHvXpjroibU7SZG0T98UW9l6+S9nYUK24tMe+fkdlY5
+	 QQu428Bd3IrZDNHs/mdP4CZLytPczBnOZ0UcB6br06Th+qErMGwOfZ+E/JWm7cs2eJi9+
+	 4aahba01sS+9x4l2G24csLj6XmxRdlH95QhOt8TQaRi3j8yQVVKZ6Qa1s58i8mw6QoDCP
+	 PfoFYkAqPfJNeKfflQyWQY03c8WkfELIYzRYuaIl69UazcU9BCbsLQpFNZiWjlvUx5g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792468027;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792472650;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
 	 X-Received:X-Received:Received:Message-ID:Date:MIME-Version:
 	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding:X-Proofpoint-GUID:
-	 X-Authority-Analysis:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=I8KcGkKJc5O5cQ+cPv0hwt4+vT8X5Kf/M9p0U3SJiPg=;
-	b=VLIbHeOOB8KAQEwGdrUKB3Gf2Rtzxec+Hfn7esrQC7F4dYVKVxfzOKplzOkEfo7XhFhG
-	 jU+WWAQDVHZ194wCG3vjIAGteLrz5XPVd5Hxf/ON9C6SEwWKW0HVFh1ivrTw9a90L2qGJ
-	 XGHNyX9dtpeuhtt/THdiY0gHAfNQlFTuKa5KLUGMgRfboOSH7FPtMU2KuPdYukjPGLcjs
-	 kRIDcUOYSh1WHUQHY5tDxVF4p/UJou4t7hLjw3yeSQy2nrsuNgxcP8t+iemwIL9aFoh+h
-	 REZ9jA+JMPvRrnms+giRemMHpD5QFYqjdKE5GVnfMriKsaPshaSFJFOGQUzsiQKLYNg==
+	 X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=G5s338SO16XbpkdtMWpSdxzibIoHZLZutVSoQ9ZJFPQ=;
+	b=YtRLHUNMjDtP2Z7AJwevEbQxeCV+fjamFO1kH48mf8r6oc5iw+3gEw9etbEe15ZgJdEe
+	 zpGDmePSpG+aQ4qkpA7AiQbUGWvU9AjEdRLyd9WDek3FZY8PhZyZvoiLKlMZ+xFfnQSW0
+	 teJK4vR/lx18G7BWKfme49u9varOWt/AU7SnYl42Gk0SjJfU0MgjglB44MLTyWHUMHsDZ
+	 GTkX/dCFivN3F7VyUmtZcwEgxW8hK8BfMkhXGEwxmXxnOKrPt+qBWO0n0o00IW0JXM9hf
+	 3SAq8xdjDpI/hGqBl82BVag/DAeDW1bXAAdmKPk0UJMYmd4EMYs4ajiSlxLaoRFraIA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=hZtQ0Ij9;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=aev5tig+;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=drIpf4Wl;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=fWCdaXc4;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 347FC606A31B
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 03:47:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 347FC606A31B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61C2F606A321
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 05:04:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 61C2F606A321
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=hZtQ0Ij9;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=aev5tig+
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69K0t7Ft3806851
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 03:47:06 GMT
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=drIpf4Wl;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=fWCdaXc4
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69K513tE666488
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 05:04:09 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	I8KcGkKJc5O5cQ+cPv0hwt4+vT8X5Kf/M9p0U3SJiPg=; b=hZtQ0Ij9FPMQ+58X
-	NYucubZW5beltibOfA2ge7ZfiBti0b2HSaGKzHAuOncNw3DmARjiKKlw2unaAQlY
-	n0QJ6U3HBMPkYp7OV85GvYQ2Eln8DQx01mEVuRd8qAgp3Fj2MbUsuEqLLVBq16i3
-	bMKkd9lh8ftq+1u8h7MTnunt3O47+c9hYxtgO5KH5TsVD7b8GBeOb4oqPrW/7FPm
-	ytGsGxA30eFB5n7XVJB3XF6KGY/TGJZx0L2saBr2je4GP6iQBZIAR4kcTnjZHnsk
-	8rdHc3mvj9efDUt1zhYs9L6BEL3+QTwEVCOkurbeuaRoaOp2ggSIkDn+/8Jat6NG
-	gWAuLA==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hdw5p8q8h-1
+	G5s338SO16XbpkdtMWpSdxzibIoHZLZutVSoQ9ZJFPQ=; b=drIpf4WlXDGBT4gA
+	mAh124NETYBhVg4Y1qRERE9CD4eTAMbt8lp5FVckVh9EQaSJYdaI4rV2HStJ+7yi
+	lwyB3CYBMH+7xcFfdzQxJxwSVsZkJ3w/dwi66TUV9jJqaHhihssbfZY20lGtFWUz
+	KZeQillWeqD5a5rQrrvNzsdJKGLGMuQgVlWvpdaAVu0sKwQgdx0do+PLvbiGAFGV
+	ix/Agcz9PszTJf4zwHK7y3FEd8D7SgKgb7GBbdjrtGRQj2lbXSVEhzqW3bJUFa3N
+	nLigHzQ0AijjEPWIsWV2LOFuFQk58ZiAmR/wgzQh7scHgZGrtC47Pj0cnifZ9scs
+	8lbUSA==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hdw5n0x5q-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 03:47:06 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-39512608fb1so5465146a91.1
-        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 20:47:05 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 05:04:08 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cc4ac5feaa4so1622531a12.1
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2026 22:04:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792468025; x=1793072825; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1792472648; x=1793077448; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=I8KcGkKJc5O5cQ+cPv0hwt4+vT8X5Kf/M9p0U3SJiPg=;
-        b=aev5tig+4eWgmnAGV7JFaryuh0Vz5GQGb+BFW2akFTABc3Otve80gf2CdblBUlAGJS
-         dy+e23Z3jeHV2CEZji5jZ7RxEO5K3LnpejlWgH5QcoieKa4lExKzE+54nRUD8ORAJ36U
-         VtR4jo/hS1lOtdYr7i+xfTHwSdPI49QvqAaDsN/AKj/bZTwPPJXRswFtALYxqfhZ1SBB
-         beAfXvlSc7aS7mOOP+/cCUj6jmt+9VxFf8Dl+oGv0zZrGwWZw0mvFKssqTzWsjUjaVdd
-         0tNakIrpLsGzNHKQICuOfj5KpxEV24bg3mWXdVuFQgm/WvHyn1vqeadzA1zKcE2pYwIs
-         f+CQ==
+        bh=G5s338SO16XbpkdtMWpSdxzibIoHZLZutVSoQ9ZJFPQ=;
+        b=fWCdaXc4i1vsjdaMBuJdA37yx5QiDOw4KERamGTI7FjBAo0YtHAPneCNCAnGJ4G3Rd
+         3iWgUY5UNiuEkP4PSDVC3+m0Zr+vp3e//cvaxthjgosIlgY+/mYyChVJA8LIfG85LOGT
+         /UAvVrVHOClA+CpWQqXcojYIgKXFwGeVN5oVM2MZWTl42qWIWQgnU2MzUvzsKe51xY/G
+         edLIquUx710Wf7yv2Wpqm/YLXzjaXgesSCreN6p4MePVR0RYYiZjpZyXz3J8OGUXSSwb
+         86M39ch4+Lv0mN4KHJN+QDQkW0kqvS34iSQj5g6AobaLPC5rUHXG4F/91vYPxaa7T3Rt
+         3+cA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792468025; x=1793072825;
+        d=1e100.net; s=20260707; t=1792472648; x=1793077448;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=I8KcGkKJc5O5cQ+cPv0hwt4+vT8X5Kf/M9p0U3SJiPg=;
-        b=vg9i6xHlHox9qIdMU7PTH5i2uK3vtHd0OfECw7fIdvR9pXy6KWQnnPP9DSziOex3l5
-         vsTzErKVT2wnZqAlwo5S+aFDGbu/YfvbNiZV64TFpIkmobi2Tkpw+G66oiz0zBbzKNb/
-         bdSjKfnV9VGh4baj1DHrKM+Adz5lxqlFygZOPVrqCF/yyK+Gwxr53C1Xz3hw68gfHY14
-         cuSEpUSTSvWZl0xo/XN0+m5woYj1KYL3io1BxpG2SS1fzYzrpW0FvPSQypcl4RKnlRk3
-         9i8ftOiShrfuXX6hfY02AQf8ulqBUOzbujZa/hi+EKW30eiLgJds+duEcuwE0zXs/nrm
-         Dp2A==
-X-Gm-Message-State: AFq9FYKG6UFrZ3McbcHEPCkKu4jk39+dDOKNrbuv7BgAQX7JguCe1D+u
-	koT6pvKFC5D8Q6LTLtKSOeCotgJocCSgbLpgb1EPrW30MfkF/iSOhPb34SP8Wtbk9QuAc3/2zaP
-	USeyOfu3yG1Uvtmt0DYp9bHZJoMESwJCWakH0dJMOgS/K49Y67u/YbscpKHcqsg==
-X-Gm-Gg: AYBFou0aW3hWyXa4lxtuWcYBvueA0EGf5iIByqxHjnWiXs0zVs1yJw4Xx2uY8qkFhLz
-	+4KEgFKxXnBusVFJ7+qth5V+rkvuADGcvV8EOSgrjlDuC4GGWPSftBFUYtJtB/fIZ65Ci1pWsup
-	iz6ojFL3flrXwDWyzEUVJKrtfJNAmuK9xtKL6CIA0dmboeiwYeaAWfNXlmVoPEiYTBpomCn2mjg
-	aU+7CoubX9XXlw31g8h6G88woqlX1J0H0NaKP1rxs83aLkhOYTspzwuG7Cci+I+RO8liE5y9jQ/
-	s8C/vQaSxxmZ46AJ9ZNKnm9TYlyW195UhIml/DtnXoVaECl1rKTEwPkgt20NC5zYmrGIhsIpPnT
-	4JUByKy2ySvTfuDD51kW0JKkCVx7IHqo92grZE1LeMEV35s8exXVUtkmL9GiiJtyI9N40vA==
-X-Received: by 2002:a17:90a:acf:b0:3ad:183f:5e3a with SMTP id 98e67ed59e1d1-3ad183f5f57mr3604819a91.4.1792468025298;
-        Mon, 19 Oct 2026 20:47:05 -0700 (PDT)
-X-Received: by 2002:a17:90a:acf:b0:3ad:183f:5e3a with SMTP id 98e67ed59e1d1-3ad183f5f57mr3604804a91.4.1792468024799;
-        Mon, 19 Oct 2026 20:47:04 -0700 (PDT)
+        bh=G5s338SO16XbpkdtMWpSdxzibIoHZLZutVSoQ9ZJFPQ=;
+        b=YmgeBnizaiRmDtnN9elVYngZBZrbUAvTd6AgxZiLV9uiUAh1DoFFHJn/wIzRA1tPPJ
+         gx1/hbXe72KDjijlDpenW0IHelxKmBd65vviCU84qcKBQ03s+HzJGpiReURbYFFwwScW
+         7MtUXhuQhooIdUk3a13Ky1G7/eJN3aVI5slVV9HPeDD45XpFE994RcX7Q2/hq47Azan4
+         xb2//vFYZJ0yd1E1WFwvnGOvXHyMaQ/SrocXR4R52lupqWqp+5rKMzPMHDI7ODPh51Gn
+         RPOl2aXfOBZERxIeb0ZfzvIuhgp3m2i3WtBwfnHw4G14Yemypnmf+rDqPDdtEcqqOu6S
+         qK/g==
+X-Gm-Message-State: AFq9FYJc7u9g7QDeYer33RCxi/0bHotNC/g2SbYBT5CcnUvkq6f10/dU
+	OL2bwX4IVULyOk/kMqQJHNzCwD2ZFeZw9OVhyNv2VwbQv+DFcoZS/BgmCxO4L0kNlgeveVZhltj
+	h9YVn0Ydtdxn6R964vYT51iUgolN3a7P7oy1BcX8tKW7v6S+axDvmJe4EDEOk9g==
+X-Gm-Gg: AYBFou0bYf7Cs59Mw4GlM1JK5U1AqvuLlLSaCTZhq0mWQ7ekEmKrjSICMKNXKjk71Wl
+	Hb2oKXWDjgbl+wQAKTqzw9GmDRGjnHrJRF8/GOJAthWBnRhXfAWUL6pwCfhSIOlUXZdit9CjRrg
+	+Gr+CNRn0T5Q5ZzSc06djcXUDMV1qGlaBsMBYA4+zJkFnMwV3/+AsNK8cYh4JnwZeyrXZuC+nmG
+	zudosxiLz35c4a1q/YqZ+azXTjS8ur5GGxyhZyl/8KM8VMR7vZCgaoOEqPcC8/i6e4mfXC4z2r3
+	vykzDZYGE7nwKuqroa6oA+w/PzxqQSSptoZEsmIp0zOh9wNfpq5gwE+RAc6/sfKs7CiRgWLAEWc
+	b6icCDAd1IUVAF3S1cLT+6eS79DcujTFDmCwMK6RSy84KuDrgFzr2O+hiwxvxHryfV4TsDVA=
+X-Received: by 2002:a05:6a21:b89:b0:3e1:29b:bb35 with SMTP id adf61e73a8af0-3e2260dacb7mr6998465637.88.1792472647526;
+        Mon, 19 Oct 2026 22:04:07 -0700 (PDT)
+X-Received: by 2002:a05:6a21:b89:b0:3e1:29b:bb35 with SMTP id adf61e73a8af0-3e2260dacb7mr6998415637.88.1792472646111;
+        Mon, 19 Oct 2026 22:04:06 -0700 (PDT)
 Received: from [10.133.33.81] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ad5d4004efsm2113209a91.5.2026.10.19.20.47.02
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8a05e2e9c4dsm2257653b3a.19.2026.10.19.22.04.04
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 19 Oct 2026 20:47:04 -0700 (PDT)
-Message-ID: <d2c3fa0a-348b-4015-b2c9-b97d8c7964c8@oss.qualcomm.com>
-Date: Tue, 20 Oct 2026 11:47:00 +0800
+        Mon, 19 Oct 2026 22:04:05 -0700 (PDT)
+Message-ID: <0f38aae3-7e14-45cf-81c4-7647e96722c7@oss.qualcomm.com>
+Date: Tue, 20 Oct 2026 13:04:02 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -114,118 +114,80 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: longrun: fix typo in kernel-doc
+Subject: Re: [PATCH] cpufreq: longrun: fix kernel-doc warning
 To: Manuel Ebner <manuelebnerli@mailbox.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         zhongqiu.han@oss.qualcomm.com
-References: <20261017071434.1250140-2-manuelebnerli@mailbox.org>
- <9c312de6-7c73-465f-93da-d7a75cf3be8c@oss.qualcomm.com>
- <c635054081da35e61ccc25cf356f6356ca8580ba.camel@mailbox.org>
+References: <20261019182946.1450406-2-manuelebnerli@mailbox.org>
 Content-Language: en-US
 From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <c635054081da35e61ccc25cf356f6356ca8580ba.camel@mailbox.org>
+In-Reply-To: <20261019182946.1450406-2-manuelebnerli@mailbox.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: CxH2YBvI7pCrzJELcSemscZQLVDmyX3d
-X-Authority-Analysis: v=2.4 cv=fb84WEQF c=1 sm=1 tr=0 ts=6ad6e43a cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: 6fxDlN_CCaMRbGIpwszuVbxIJB0Tfbqj
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIwMDAxOSBTYWx0ZWRfXzly5J01m+CeV
+ pGFGiz/kqwHfo66r1uLhFxxOQeJRhzkF2/t57tE76pPxrXuOkuF6ZDRXsZcaT9HldZXR/r6eql+
+ 8V+wbKEzLsULWJyf9hJcBe6+exelTm0=
+X-Proofpoint-ORIG-GUID: 6fxDlN_CCaMRbGIpwszuVbxIJB0Tfbqj
+X-Authority-Analysis: v=2.4 cv=A5z5rKWG c=1 sm=1 tr=0 ts=6ad6f648 cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=VwQbUJbxAAAA:8 a=b3CbU_ItAAAA:8 a=EUspDBNiAAAA:8 a=C86PBj00trpwstLOT_sA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=uKXjsCUrEbL0IQVhDsJ9:22
- a=Rv2g8BkzVjQTVhhssdqe:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIwMDAxNCBTYWx0ZWRfX87IWdU1YeMOu
- 8dU4XpTCh09uJEOp3SAv0qMM2kRTHlqh6nl/BohoEqUCjEE4Dw2dk/vlJTXnegeZWH8bAAXfg1T
- n+byKbhpUe4Oc5muCMgW33d+Q7ObEQL06kO62wxTDcEgRwl2rxDpSZG7+7SUtEeC7IaAuzU6Kud
- cXmltAlFVQBwYGONrwwyHaOxFtS6NpEDL2899LAaM+kvQbHQnlZEk1hqVgojIT6ScMygxn8I3Zn
- rZi31+zdeGUU0/JancTeV0xX7QHR6XJCv25tbfUQXrXO+fkBpS+ysDmir72BMUhyf0VUZ9pbyUC
- 6mod9oZc3wFP6//3cIbIba/EQIYen9GK8tCyFsweqXcwFP/7qpcTCcK6F5QmI7rkjxCG5HNYPI/
- hfc65av/9F/SuSYFB9lHyqyrhU5HRhR7+iTgTpswC6VVFybOpMmRV0+2O8V61DHjYHgO8LJ0s0+
- 1Ap2aULi7UnKwatPfUw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIwMDAxNCBTYWx0ZWRfX87ImWefL6kS5
- fFw59BlRMW1vVPbtd8jrCMpTCQqaNn0VXuA8itxQK+E5Zvodf+oeHwi/0JGHdaPycbYA1aOXi5R
- v0K/+sjifcfXlHbImHaGqOovLU7ynoU=
-X-Proofpoint-ORIG-GUID: CxH2YBvI7pCrzJELcSemscZQLVDmyX3d
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=EUspDBNiAAAA:8 a=b3CbU_ItAAAA:8 a=4doGTLPSjtl--4LUb4sA:9 a=QEXdDO2ut3YA:10
+ a=x9snwWr2DeNwDh03kgHS:22 a=Rv2g8BkzVjQTVhhssdqe:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIwMDAxOSBTYWx0ZWRfXz2a9W5/Q5q7f
+ 4RWhH8pqt66imlmTnsosEHrsXO/pC6STv7W6hhg+I4SJq7+NDxfP7jmpsTEieLKGaQK+e2220Ui
+ 8rViRRmG8V3veST52miKTmNcX1vIINyCJegRFfOW1mnAMk685aAEBNSh+9K5YAhQSI7Yb3s9qeJ
+ 4PF8vYT3gxImheo6gp/BkyQhS/+5vvW83FlWWmoPPAq9g3KIBfpSDY1wJVHg9Lm6qTqPUgnkX86
+ jkSHYGdJQiPLTkIaMqElddtYXHaE7joPyFffCOLeaywSmbhp3hLbtDbU7vq+3hz1sijeQM+NFys
+ aptQm7viypkZLa5qOXPO67wJxnhTItAjApJ0Mk/PvE9rPU2ZBYMFGRk3IUgM3u29T1jhSEbxl93
+ GngvwKkzxK6jTOk1rFYUMy/2DDCulfuid9Eabvf/+qPnAnlJYp51zVOTcPVFxG5xtvhIp8ddrqE
+ W0MLIM9j8ooN7donIvA==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-20_01,2026-10-19_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0 adultscore=0
- phishscore=0 clxscore=1015 bulkscore=0 spamscore=0 priorityscore=1501
+ clxscore=1015 malwarescore=0 adultscore=0 priorityscore=1501 suspectscore=0
+ phishscore=0 spamscore=0 bulkscore=0 impostorscore=0 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610200014
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610200019
 
-On 10/19/2026 4:51 PM, Manuel Ebner wrote:
-> On Mon, 2026-10-19 at 11:37 +0800, Zhongqiu Han wrote:
->> Hi Manuel,
->>
->> Thanks for the patch.
->>
->> On 10/17/2026 3:14 PM, Manuel Ebner wrote:
->>> Fix typo to fix:
->>>
->>>     $ ./scripts/kernel-doc -none drivers/cpufreq/longrun.c
->>>     Warning: drivers/cpufreq/longrun.c:126 expecting prototype for longrun_verify_poliy(). Prototype was for longrun_verify_policy() instead
->>
->> ./scripts/checkpatch.pl reports a warning which should be acceptable to
->> keep unwrapped as it is tool output.
->>
->> WARNING: Prefer a maximum 75 chars per line (possible unwrapped commit
->> description?)
->> #9:
->>     Warning: drivers/cpufreq/longrun.c:126 expecting prototype for
->> longrun_verify_poliy(). Prototype was for longrun_verify_policy() instead
->>
->> total: 0 errors, 1 warnings, 8 lines checked
->>
->>
->>
->> Also, while reproducing this issue, I noticed another problem,
->>
->> ./scripts/kernel-doc -none drivers/cpufreq/longrun.c
->> Warning: drivers/cpufreq/longrun.c:21 This comment starts with '/**',
->> but isn't a kernel-doc comment. Refer to
->> Documentation/doc-guide/kernel-doc.rst
->>    * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz
->>
->> It should use /* instead of /** and may be worth a separate patch.
-> 
-> Will do.
+Hi Manuel,
 
-Thanks
+On 10/20/2026 2:29 AM, Manuel Ebner wrote:
+> Replace kernel-doc comment with normal multi-line comment thereby fixing:
+> 
+>    $ ./scripts/kernel-doc -none drivers/cpufreq/longrun.c
+>    Warning: drivers/cpufreq/longrun.c:21 This comment starts with '/**', but isn't a kernel-doc comment. Refer to Documentation/doc-guide/kernel-doc.rst
+>     * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz
+> 
+> Suggested by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Signed-off-by: Manuel Ebner <manuelebnerli@mailbox.org>
 
-> 
->> But
->> since this patch is only intended to fix the typo, the patch itself
->> looks fine to me.
->>
->>>
->>> Signed-off-by: Manuel Ebner <manuelebnerli@mailbox.org>
->>
->> Small nit: please consider to add the Fixes tag:
->> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> 
-> Well, thats the init commit, should it still be added in
-> future patches?
-> Can pre-git history be referenced?
+The tag should be Suggested-by (hyphen), with that fixed,
 
-AFAIK, yes, the usual approach for pre-Git history is to use
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2"), the initial Git commit.
-Many patches have used this Fixes tag, for example:
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
-https://lore.kernel.org/all/?q=1da177e4c3f4
 
+> ---
+>   drivers/cpufreq/longrun.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->>
->> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
->>
-> 
-> Thanks
->   Manuel
-> 
->> ...
+> diff --git a/drivers/cpufreq/longrun.c b/drivers/cpufreq/longrun.c
+> index 7d4146d6c..c1df9014a 100644
+> --- a/drivers/cpufreq/longrun.c
+> +++ b/drivers/cpufreq/longrun.c
+> @@ -18,7 +18,7 @@
+>   
+>   static struct cpufreq_driver	longrun_driver;
+>   
+> -/**
+> +/*
+>    * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz
+>    * values into per cent values. In TMTA microcode, the following is valid:
+>    * performance_pctg = (current_freq - low_freq)/(high_freq - low_freq)
 
 
 -- 
