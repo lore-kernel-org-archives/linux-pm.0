@@ -1,79 +1,80 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792611226;
-	b=HNjM4vFyW+uzMYFR7SJQIJx8KQJQNvC280ofyEmGbINaduaDj7qWWPAYenamqVdqJeca
-	 Vu8PXXhZTjpe41ppDX/nQiZu+Wko6t/6Q9WW6UjFc6NIaVFabc4RWX9k6IPxvNwI/Aliy
-	 otgKCUdtEJukKsPWqWFwYEpVlzOq7M8v1lF1ayE6KYUi29BfH3BRiBQpegN80h5AbBhG9
-	 NM5wgbiZDDL+lIP8tSv0XdrWIHxCBMVFZCo5s1ePNOYRhSdyK7uvhVX/YyZeIP9bZ44+4
-	 pModQitfcDVRE7nsNfgaOnLkzH4D/OxjDBHwFGMk6T7HXhnWW6c1cycjfiuoD+sAffA==
+	t=1792611225;
+	b=oLXOX6bcV2X/8RF6NvqD1Yy4QDNhekS7UcUOeH7kJVXoLWVWKKMqRKo6AMG0vDl6oamP
+	 F1U3mKPCDNAExOJdi9GfCd5KBNLHmx+M6emZYkMNmw4l2gdKTrVOlvtU4FXday+Hq5t3U
+	 Zws5fDTy3t/Ig58VCRehiDeYogruB1RdxBu2ZD4Nw8vBROAZ2lAyv0pmoOiFO8BO+ZVht
+	 ZX9dTwM3rckSmYbqpd2gYxGNHPK4q4GfssPdb+javB4Qfu+PLqLJUy6uQpOPCoV+TaM3i
+	 vDCdopGTdSi8DjWSBo55vEeXOJU6t3awcQ4t388Ea58PoHW6zSjWWNuOwziU9ySfjAg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792611226;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=9txDIgQwheV+fR7k/v+i+WYoRf4iUo+S9yPZXzd4p68=;
-	b=wMRAreNHyLXsVC0eJZWYDj/uEe+USKt73+ZhNwegD6ZBrPlA3PWKcWTPDLSCKQpJouVU
-	 ZzARaPq0MFLYNlfWBABcnUwP3G4TY2I6NHm/hJBwSFmJM71mQbDdCKbA+Eonz5rKKOHMx
-	 GB8QaGBkiTiWQcHqIQgB6XJ0jKPIumyCeM07uYYuSjBFavhI8JQqvKWbVbUzkWoZYChf2
-	 I50dFjrEeQAH5gdZbYN7h+CfZ9bCkTsk+vbMsF/gZWwM5NbqbVKBOcSuFR/TxOShkh9LU
-	 4cEZuu+uDoqLf1cgnGIfHat6SBcCInjFtfgysz3K9V+gv6ikE/MaA+wlvlKUnJXgMMQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792611225;
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=NV58PQIipTGy/bSccCY0OAhOuJk1+nLO11h0vylqVl8=;
+	b=C/L9hP6/unNFMAxhjy4xPgwt+GcDatvrw7du7uZ9voBjdIe+FZ57oSEbw+fcxfLk95Hy
+	 QTDP1h+s2RGOtyzt0+WBxVdecX/JZCCXvUIPoV/3bvbyCvl6LnFqNyjVQ3fNIxjK5pKFG
+	 IO8wNObI41zp+S32/PhrPprHyPF8mKbzGFh6Yr1XaMKxfWXORnZ8e12vJoI0w/kCOj7aj
+	 6q0/zoYPc0TRvqt0YFdHIAFEdFJdx7d8TtLl2WlEI5tTq0+Egaionfb/0ME17PZfn7Bjd
+	 pIOV7cbdOSadKzu6PXMNKnfjpLGZr5QjFl14v1SVfA/DeZ2m4IOESm3Uz+n7B9dZdDw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WJS4+NyK;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a5Jb6++5;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9FDB606A320;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87249606A31E;
 	Wed, 21 Oct 2026 19:33:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WJS4+NyK
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a5Jb6++5
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
 	t=1792611225;
-	b=mGozZY10PPaFRLLpvF+wSOLdtg+iccDZUBbNNEVXu1fIS/J1b3ALP49bTntMj/cMZ+39
-	 6h1h3rlpFbgB9zn190E8wK7oKSBNUoyOLdgQKySL9p9HRNWqO7lv/tGKpAUvkI1rhYPHc
-	 1Ba01ZZm9EZANnQ8f3HrdKAawEcbPQ+iYXlKqoEmBjLHlBl4njIKM9W6y9hIpxPzuHG0n
-	 RgN2+9XZ1ZvjEBBeV6X0PBFqaVRme1u+w+2qD+L/YH/bZ6dQoiZ7GXl8JOnwj4LYc3u1A
-	 jAEdB28hIF3mRxMWvil2s1d7OHQ/rKTHDU6Zwj4fVB/DFBDDVd4f01MmpkI6pAD62Eg==
+	b=W2CiBowUjsu4qgZxmAxlYd2nwHQZ6ea3hn0/OReiWrlJgj+jqO18RG4lGkvzvsvo3qlZ
+	 eruzU63dg4SAKcFXdgND1fP6GtYsR2UxQPcErpOoNIYLuo3LRxHXdgrbquekAbtlZMMjC
+	 YmpiHo6Hnyn+bzPL3UVh+vp4mNpj+eWUnQ3U1wmKtUsp4LYL5DcjjS98jOMtirv1tZsRh
+	 QhFg7bzFm30qX2fugJnIwFZJ3ENdJ8fwxUm6yQu2LPGmp8oTkD6cj47Y5R/Zmg08636yW
+	 B9IbIvbEC9Tog53GFIQd1MdtTt5t1qK3YVbF6EUtffF7VuV5LUuMrtIvxphR2Khab6g==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
 	c=relaxed/relaxed; t=1792611225;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=9txDIgQwheV+fR7k/v+i+WYoRf4iUo+S9yPZXzd4p68=;
-	b=VilLlmoZy3jbbFybgKqLnVJoI66vmKXLfdyKmhZqcxo6/aphQWYkD2CiSMMeaDyHo1SX
-	 Flk0HdwXRY1XuxSRwGRrrY7X2TwQSRjsrXJo/QtLGaHlVhJ8lI+F9EGTy3SxMF5VSWTBW
-	 FfNdRf8bA/oytIY/GgHRiQb5VSFq5XpFdXhkoYpxNAQuzVINI4HtFqmkrBTJ/eozl8Fh5
-	 OjFDu3Ua92Phw2xuEj3WwwzC7jy+DZ3pJdWsKc9gQAP/HViFupwvFCPVekzmiFQx7hROL
-	 gs4cA8L7xZawkwyS1jP+ZHT6h/zlXnlPyz/VM97X1rAR1Y+6AfQNi2ftjhlm42IU+kQ==
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=NV58PQIipTGy/bSccCY0OAhOuJk1+nLO11h0vylqVl8=;
+	b=DXr+4FysssF4S7YLcoXA2aSnIWd3KhKRDaY67vSg780p5Az6/+n6U7cAqlm5ECFplWRN
+	 fJQOmvAMPSS4WHj+rTtL6MoFCmUx7JSUKcEnstgz/Eemr2YBGplNzHZWrV4omM2hgADZE
+	 nKIRzJkCntI3/s4f5gYOsCShoejrJUxPdt9J3pNPMluf6JX5NjVrMtn/55lpKQz6uTaAh
+	 jCu0Tor8ubVOjpT33lnJXWbRgy+oclMojsmemnspRqJVDfugHl9KQ8p31yE9K2l6H+VPB
+	 jaiKOrrEK/xqE34jiYAnPZen5W9fMS8WVTZFR4fhf4LtA05iIyhaC7e64PJzHC+f+aA==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 4028E1F000C3;
+	by smtp.kernel.org (Postfix) with ESMTPS id 401821F000C1;
 	Wed, 21 Oct 2026 19:33:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1792611225;
-	bh=9txDIgQwheV+fR7k/v+i+WYoRf4iUo+S9yPZXzd4p68=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=WJS4+NyKgAnoNnFVaRQp3yctNORS6NwcUyS2PaFUTLMbtLK00vqDUKXsxL9qkNGJo
-	 gmFBT+iCfGiJJ4RoalyPccyD0cfdNWWRoFHXWuKa57/sW2VjBPvLAX6sQzGWpXp4K4
-	 mj/L9uhLViXo0U6CEdEHln43H7JU9XQ8Xg9YzeOQH1GJq1nqnAAZNO470vl2Pnw9/P
-	 Mmw5+jlP9avkxkVZTSrgoLmMlq9YLO1OMeSDIOvztG/8YOer4f6JgU5ys8KkgWdVrG
-	 bkKOl1pubo/ATlPrPFDhr8Hmy8EtzYiaJbBaiWWCXB/gqDBONxb7y+BppP1KcbpfZF
-	 12HSnW0v7PusQ==
+	bh=NV58PQIipTGy/bSccCY0OAhOuJk1+nLO11h0vylqVl8=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=a5Jb6++5cExrVwFOyH6m+d4VHHGQgAi1cEGtOJZv86qjSSCZW6FUcHf5ZEtzqFmVz
+	 gyYYQCrFJNn2cA1PF4qpllRWM90Q9zxK+7SqeiihPMhS5YrPSIOJw2XDm5GfuotA3N
+	 2QwMvpuECErCbfo6N7SqgK9MsvYMm5W0tYMSRl+Ugxe0JwsmMXcMmGulwCwRk6qzvh
+	 Ij/PaisTgKSK5BhJ5aZGGW9OFMl5EF96jd8DXTetS/OTnp7cQSvknOALtIgWBY3+xt
+	 UsmdqhBycHHgIOHequDQEiFKsBaeLSLSU3Q8nJsyST5Ei0gQeai9CgTIC6D2xDdfjn
+	 QU9np9D/RJ/Gg==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id A574743426;
+	by lkml.kernel.org (Postfix) with ESMTP id 941B943422;
 	Wed, 21 Oct 2026 19:33:43 +0000 (UTC)
 From: Serv Pol via B4 Relay <devnull+servpol.tuta.io@kernel.org>
-Date: Wed, 21 Oct 2026 19:33:44 +0000
-Subject: [PATCH v2 2/2] power: supply: Add GL.iNet GL-E750 MCU battery
+Subject: [PATCH v2 0/2] power: supply: Add GL.iNet GL-E750 MCU battery
  driver
+Date: Wed, 21 Oct 2026 19:33:42 +0000
+Message-Id: <20261021-gl-e750-mcu-v2-0-9bd7e7c2e0e1@tuta.io>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,479 +85,94 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261021-gl-e750-mcu-v2-2-9bd7e7c2e0e1@tuta.io>
-References: <20261021-gl-e750-mcu-v2-0-9bd7e7c2e0e1@tuta.io>
-In-Reply-To: <20261021-gl-e750-mcu-v2-0-9bd7e7c2e0e1@tuta.io>
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAJYT2WoC/22NQQ6CMBBFr0Jm7Zi2ShFX3sOwwHaAMUpNW4iGc
+ Hdb3Lp8yfvvLxDIMwU4Fwt4mjmwGxOoXQFmaMeekG1iUEJpKUSJ/QOpKgU+zYSdFtoYq7UlA2n
+ x8tTxe6tdmx+H6XYnE3MiGwOH6Pxnu5tl9v6XZ4kCj3VtFR1kV530JU6x3bODZl3XL7snm3y2A
+ AAA
+X-Change-ID: 20261005-gl-e750-mcu-f606ccd66dec
 To: Serv Pol <servpol@tuta.io>, Sebastian Reichel <sre@kernel.org>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+ Conor Dooley <conor.dooley@microchip.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792611222; l=13812;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792611222; l=3137;
  i=servpol@tuta.io; s=20261005; h=from:subject:message-id;
- bh=JoHLZy5I9ek9rN5BkWAaEmApO4fNgS8RBNNh6SSQmEE=;
- b=iip1tQrUBlCKgnbS5K6e9PdzN79hxfyWURzBvoVpD+Qjkr2ssmd0bdTjXizvo8Vcz2FW5BTgS
- vEMrqb4ljnEDHrDlID/EACywhZFKgmCuQTtCWNtIWkjQuH5ZsXE0cLV
+ bh=UTjoj589VJYwISLkJrhvgw9JTnsKO/syLAvRB7fBWoQ=;
+ b=WYNQ9ZC1fBbLGfWA0V/dav1NktTsJSRnfvwcBMrIny4+mPibtkF+GsSpAOKDoP1PBROTacwf9
+ /Dd5ZHnFaoFAham753+6e+0W7abwOU9/a9v91oNd35QFFe8Kuq5pq33
 X-Developer-Key: i=servpol@tuta.io; a=ed25519;
  pk=2HCjaqYjXxgwTYu30Nem9DOHT8mtKgjitt1vEXKpwrE=
 X-Endpoint-Received: by B4 Relay for servpol@tuta.io/20261005 with
  auth_id=1120
 X-Original-From: Serv Pol <servpol@tuta.io>
 Reply-To: servpol@tuta.io
-Content-Transfer-Encoding: 7bit
 
-From: Serv Pol <servpol@tuta.io>
+The GL.iNet GL-E750 (Mudi) is a battery powered LTE travel router
+(QCA9531). A microcontroller on the SoC UART drives the OLED status
+screen, monitors the battery and watches the power switch. The host talks
+to it in text lines of JSON; on request it reports the battery state, and
+when the power switch is turned off it sends a notification a few seconds
+before cutting the power.
 
-The status MCU of the GL.iNet GL-E750 (Mudi) travel router sits on the
-SoC UART and talks in text lines: the host sends JSON objects whose values
-are all strings, and a request containing "mcu_status": "1" is answered
-with
+This series adds a binding and a serdev driver that exposes the battery
+through the power_supply class and shuts the system down cleanly when the
+switch is turned off. The screen content (SSIDs, clients, cellular state,
+free-form vendor JSON) is deliberately left out.
 
-  {OK},<percent>,<temperature>,<charging>,<cycles>
+The board itself is supported by OpenWrt (ath79), not by an in-tree DTS,
+so there is no in-tree user of the binding yet. The OpenWrt side is at
+https://github.com/openwrt/openwrt/pull/25649
 
-Poll that every 30 seconds and expose the result as a power_supply.
+Testing: OpenWrt main with kernel 6.18, v1 of this series on a GL-E750
+V1 and this version on a GL-E750 V2. Battery properties read back as
+expected (capacity, status, temperature, cycle count), the module was
+unloaded and reloaded repeatedly without warnings, and turning the power
+switch off logs "power switch turned off, shutting down" and leads to a
+clean shutdown before the MCU removes power. The receive path was also
+run in a userspace harness with ASan and UBSan, feeding replies and
+events with and without line endings, glued together and split across
+poll boundaries. On this tree: checkpatch --strict, W=1 and sparse
+builds, and dt_binding_check are clean.
 
-When the power switch is turned off, the MCU sends {"shut_down": "1"},
-without a line ending, and cuts the power a few seconds later. Shut the
-system down cleanly in that case.
+Tool use: the driver, the binding and the changelogs were written with
+the help of an AI coding assistant (Claude, claude-opus-5-5), based on
+the vendor protocol description at
+https://github.com/gl-inet/GL-E750-MCU-instruction and on traces of the
+MCU traffic on the device. I reviewed the code, tested it on the
+hardware as described above and am responsible for it.
 
-The MCU also renders the status screen from JSON fields (SSIDs, clients,
-cellular state...). That vendor-specific content is not handled here.
-
-Assisted-by: Claude:claude-opus-5-5
-Signed-off-by: Serv Pol <servpol@tuta.io>
 ---
- MAINTAINERS                        |   1 +
- drivers/power/supply/Kconfig       |  13 ++
- drivers/power/supply/Makefile      |   1 +
- drivers/power/supply/gl-e750-mcu.c | 369 +++++++++++++++++++++++++++++++++++++
- 4 files changed, 384 insertions(+)
+Changes in v2:
+- Do not drop messages from the MCU when a status reply comes without a
+  line ending: a new message (they all start with '{') now ends the
+  previous one, and the poll work only consumes a pending status reply
+  instead of clearing the receive buffer, so a power switch event that
+  is being received is no longer lost (Sashiko AI review).
+- Drop <linux/mod_devicetable.h>, <linux/serdev.h> provides of_device_id
+  (Uwe Kleine-König).
+- Link to v1: https://patch.msgid.link/20261005-gl-e750-mcu-v1-0-499d2e31f786@tuta.io
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 247432449..505aa205c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11110,6 +11110,7 @@ M:	Serv Pol <servpol@tuta.io>
- L:	linux-pm@vger.kernel.org
- S:	Maintained
- F:	Documentation/devicetree/bindings/power/supply/glinet,gl-e750-mcu.yaml
-+F:	drivers/power/supply/gl-e750-mcu.c
- 
- GNSS SUBSYSTEM
- M:	Johan Hovold <johan@kernel.org>
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index ee7dc5f26..e87c76c18 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -1203,4 +1203,17 @@ config MACSMC_POWER
- 
- 	  Say Y or M here if you have an Apple Silicon based Mac.
- 
-+config BATTERY_GL_E750_MCU
-+	tristate "GL.iNet GL-E750 status MCU battery driver"
-+	depends on SERIAL_DEV_BUS
-+	depends on OF || COMPILE_TEST
-+	help
-+	  Say Y or M here to enable the battery driver for the status
-+	  microcontroller of the GL.iNet GL-E750 (Mudi) travel router.
-+	  It reports the battery state and shuts the system down when
-+	  the power switch is turned off.
-+
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called gl-e750-mcu.
-+
- endif # POWER_SUPPLY
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index f3c0d1006..5d405556e 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -78,6 +78,7 @@ obj-$(CONFIG_CHARGER_TWL4030)	+= twl4030_charger.o
- obj-$(CONFIG_CHARGER_TWL6030)	+= twl6030_charger.o
- obj-$(CONFIG_CHARGER_LP8727)	+= lp8727_charger.o
- obj-$(CONFIG_CHARGER_LP8788)	+= lp8788-charger.o
-+obj-$(CONFIG_BATTERY_GL_E750_MCU)	+= gl-e750-mcu.o
- obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
- obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
- obj-$(CONFIG_CHARGER_LT3651)	+= lt3651-charger.o
-diff --git a/drivers/power/supply/gl-e750-mcu.c b/drivers/power/supply/gl-e750-mcu.c
-new file mode 100644
-index 000000000..37541915e
---- /dev/null
-+++ b/drivers/power/supply/gl-e750-mcu.c
-@@ -0,0 +1,369 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * GL.iNet GL-E750 (Mudi) status MCU battery driver
-+ *
-+ * The MCU sits on the SoC UART. It drives the OLED screen, monitors the
-+ * battery and watches the power switch. The host sends one JSON object per
-+ * line, where every value is a string. When a line contains
-+ * "mcu_status": "1", the MCU answers with
-+ *
-+ *	{OK},<percent>,<temperature>,<charging>,<cycles>
-+ *
-+ * When the power switch is turned off, the MCU sends {"shut_down": "1"} and
-+ * cuts the power a few seconds later.
-+ *
-+ * Copyright (C) 2026 Serv Pol <servpol@tuta.io>
-+ */
-+
-+#include <linux/completion.h>
-+#include <linux/ctype.h>
-+#include <linux/devm-helpers.h>
-+#include <linux/math.h>
-+#include <linux/module.h>
-+#include <linux/power_supply.h>
-+#include <linux/property.h>
-+#include <linux/reboot.h>
-+#include <linux/serdev.h>
-+#include <linux/spinlock.h>
-+#include <linux/string.h>
-+#include <linux/workqueue.h>
-+
-+#define MCU_BAUDRATE		115200
-+#define MCU_RX_LINE_MAX		128
-+#define MCU_POLL_INTERVAL_MS	30000
-+#define MCU_REPLY_TIMEOUT_MS	1500
-+
-+static const u8 mcu_status_req[] = "{ \"mcu_status\": \"1\" }\n";
-+
-+struct gl_e750_mcu {
-+	struct serdev_device *serdev;
-+	struct power_supply *psy;
-+	struct delayed_work poll_work;
-+	struct work_struct poweroff_work;
-+	struct completion reply;
-+
-+	/* receive buffer and battery state, filled from the serdev callback */
-+	spinlock_t lock;
-+	char rx_line[MCU_RX_LINE_MAX];
-+	size_t rx_len;
-+	bool valid;
-+	int capacity;		/* percent */
-+	int temp;		/* tenths of a degree Celsius */
-+	bool charging;
-+	int cycles;
-+};
-+
-+/* "37.4", "40" or "-1.5" -> tenths of a degree */
-+static int mcu_parse_tenths(const char *s, int *out)
-+{
-+	const char *dot = strchr(s, '.');
-+	char whole_str[8];
-+	int whole, frac = 0;
-+
-+	if (!dot) {
-+		if (kstrtoint(s, 10, &whole))
-+			return -EINVAL;
-+		*out = whole * 10;
-+		return 0;
-+	}
-+
-+	if (dot == s || dot - s >= sizeof(whole_str))
-+		return -EINVAL;
-+	memcpy(whole_str, s, dot - s);
-+	whole_str[dot - s] = '\0';
-+	if (kstrtoint(whole_str, 10, &whole))
-+		return -EINVAL;
-+	if (isdigit(dot[1]))
-+		frac = dot[1] - '0';
-+	*out = whole * 10 + (*s == '-' ? -frac : frac);
-+	return 0;
-+}
-+
-+/*
-+ * "{OK},<percent>,<temperature>,<charging>,<cycles>", called with the lock
-+ * held. Returns true if the line was a valid status reply.
-+ */
-+static bool mcu_parse_status(struct gl_e750_mcu *mcu, char *line)
-+{
-+	char *p = line + 4, *f[4];
-+	int capacity, temp, charging, cycles, i;
-+	bool changed;
-+
-+	if (*p++ != ',')
-+		return false;
-+	for (i = 0; i < ARRAY_SIZE(f); i++) {
-+		f[i] = strsep(&p, ",");
-+		if (!f[i] || !*f[i])
-+			return false;
-+	}
-+
-+	if (kstrtoint(f[0], 10, &capacity) || mcu_parse_tenths(f[1], &temp) ||
-+	    kstrtoint(f[2], 10, &charging) || kstrtoint(f[3], 10, &cycles))
-+		return false;
-+	if (capacity < 0 || capacity > 100)
-+		return false;
-+
-+	changed = !mcu->valid || mcu->capacity != capacity ||
-+		  mcu->charging != !!charging || mcu->cycles != cycles ||
-+		  abs(mcu->temp - temp) >= 10;
-+	mcu->capacity = capacity;
-+	mcu->temp = temp;
-+	mcu->charging = !!charging;
-+	mcu->cycles = cycles;
-+	mcu->valid = true;
-+
-+	complete(&mcu->reply);
-+	if (changed)
-+		power_supply_changed(mcu->psy);
-+	return true;
-+}
-+
-+/* called with the lock held */
-+static void mcu_handle_line(struct gl_e750_mcu *mcu, char *line)
-+{
-+	if (!strncmp(line, "{OK}", 4))
-+		mcu_parse_status(mcu, line);
-+	else if (strstr(line, "\"shut_down\""))
-+		schedule_work(&mcu->poweroff_work);
-+	else
-+		dev_dbg_ratelimited(&mcu->serdev->dev, "unhandled: %s\n", line);
-+}
-+
-+/* hand the buffered message over, called with the lock held */
-+static void mcu_flush_line(struct gl_e750_mcu *mcu)
-+{
-+	mcu->rx_line[mcu->rx_len] = '\0';
-+	mcu_handle_line(mcu, mcu->rx_line);
-+	mcu->rx_len = 0;
-+}
-+
-+/* a status reply is waiting in the buffer, called with the lock held */
-+static bool mcu_status_pending(struct gl_e750_mcu *mcu)
-+{
-+	return mcu->rx_len > 4 && !strncmp(mcu->rx_line, "{OK}", 4);
-+}
-+
-+static size_t mcu_receive_buf(struct serdev_device *serdev, const u8 *data,
-+			      size_t count)
-+{
-+	struct gl_e750_mcu *mcu = serdev_device_get_drvdata(serdev);
-+	unsigned long flags;
-+	size_t i;
-+
-+	spin_lock_irqsave(&mcu->lock, flags);
-+	for (i = 0; i < count; i++) {
-+		char c = data[i];
-+
-+		if (c == '\r' || c == '\n') {
-+			if (mcu->rx_len)
-+				mcu_flush_line(mcu);
-+			continue;
-+		}
-+
-+		/*
-+		 * Status replies and JSON events may come without a line
-+		 * ending. Every message starts with '{', so a new one ends
-+		 * the previous message, and a JSON event ends with '}'.
-+		 */
-+		if (c == '{' && mcu->rx_len)
-+			mcu_flush_line(mcu);
-+		if (mcu->rx_len < MCU_RX_LINE_MAX - 1)
-+			mcu->rx_line[mcu->rx_len++] = c;
-+		if (c == '}' && mcu->rx_line[0] == '{' &&
-+		    strncmp(mcu->rx_line, "{OK}", 4))
-+			mcu_flush_line(mcu);
-+	}
-+	spin_unlock_irqrestore(&mcu->lock, flags);
-+
-+	return count;
-+}
-+
-+static const struct serdev_device_ops mcu_serdev_ops = {
-+	.receive_buf = mcu_receive_buf,
-+	.write_wakeup = serdev_device_write_wakeup,
-+};
-+
-+static void mcu_poll_work(struct work_struct *work)
-+{
-+	struct gl_e750_mcu *mcu = container_of(to_delayed_work(work),
-+					       struct gl_e750_mcu, poll_work);
-+	unsigned long timeout = msecs_to_jiffies(MCU_REPLY_TIMEOUT_MS);
-+	unsigned long flags;
-+	int ret;
-+
-+	/*
-+	 * Only an earlier status reply is consumed here; a partially received
-+	 * event stays in the buffer.
-+	 */
-+	spin_lock_irqsave(&mcu->lock, flags);
-+	if (mcu_status_pending(mcu))
-+		mcu_flush_line(mcu);
-+	reinit_completion(&mcu->reply);
-+	spin_unlock_irqrestore(&mcu->lock, flags);
-+
-+	ret = serdev_device_write(mcu->serdev, mcu_status_req,
-+				  sizeof(mcu_status_req) - 1, timeout);
-+	if (ret < 0) {
-+		dev_warn_ratelimited(&mcu->serdev->dev, "write failed: %d\n", ret);
-+	} else if (!wait_for_completion_timeout(&mcu->reply, timeout)) {
-+		/* the reply may come without a line ending */
-+		spin_lock_irqsave(&mcu->lock, flags);
-+		if (mcu_status_pending(mcu))
-+			mcu_flush_line(mcu);
-+		else
-+			dev_dbg(&mcu->serdev->dev, "no status reply\n");
-+		spin_unlock_irqrestore(&mcu->lock, flags);
-+	}
-+
-+	schedule_delayed_work(&mcu->poll_work,
-+			      msecs_to_jiffies(MCU_POLL_INTERVAL_MS));
-+}
-+
-+static void mcu_poweroff_work(struct work_struct *work)
-+{
-+	struct gl_e750_mcu *mcu = container_of(work, struct gl_e750_mcu,
-+					       poweroff_work);
-+
-+	/* the MCU cuts the power a few seconds after reporting the switch */
-+	dev_info(&mcu->serdev->dev, "power switch turned off, shutting down\n");
-+	orderly_poweroff(true);
-+}
-+
-+static const enum power_supply_property mcu_battery_props[] = {
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_CYCLE_COUNT,
-+};
-+
-+static int mcu_battery_get_property(struct power_supply *psy,
-+				    enum power_supply_property psp,
-+				    union power_supply_propval *val)
-+{
-+	struct gl_e750_mcu *mcu = power_supply_get_drvdata(psy);
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(&mcu->lock, flags);
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = 1;
-+		break;
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-+		break;
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (!mcu->valid)
-+			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
-+		else if (mcu->charging)
-+			val->intval = mcu->capacity >= 100 ?
-+				      POWER_SUPPLY_STATUS_FULL :
-+				      POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		if (mcu->valid)
-+			val->intval = mcu->capacity;
-+		else
-+			ret = -ENODATA;
-+		break;
-+	case POWER_SUPPLY_PROP_TEMP:
-+		if (mcu->valid)
-+			val->intval = mcu->temp;
-+		else
-+			ret = -ENODATA;
-+		break;
-+	case POWER_SUPPLY_PROP_CYCLE_COUNT:
-+		if (mcu->valid)
-+			val->intval = mcu->cycles;
-+		else
-+			ret = -ENODATA;
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+	spin_unlock_irqrestore(&mcu->lock, flags);
-+
-+	return ret;
-+}
-+
-+static const struct power_supply_desc mcu_battery_desc = {
-+	.name = "gl-e750-battery",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = mcu_battery_props,
-+	.num_properties = ARRAY_SIZE(mcu_battery_props),
-+	.get_property = mcu_battery_get_property,
-+};
-+
-+static int gl_e750_mcu_probe(struct serdev_device *serdev)
-+{
-+	struct device *dev = &serdev->dev;
-+	struct power_supply_config psy_cfg = {};
-+	struct gl_e750_mcu *mcu;
-+	int ret;
-+
-+	mcu = devm_kzalloc(dev, sizeof(*mcu), GFP_KERNEL);
-+	if (!mcu)
-+		return -ENOMEM;
-+
-+	mcu->serdev = serdev;
-+	spin_lock_init(&mcu->lock);
-+	init_completion(&mcu->reply);
-+	serdev_device_set_drvdata(serdev, mcu);
-+	serdev_device_set_client_ops(serdev, &mcu_serdev_ops);
-+
-+	/*
-+	 * devm teardown runs in reverse: the poll work is cancelled before the
-+	 * port is closed, the power-off work (queued from the receive path)
-+	 * and the battery only after it.
-+	 */
-+	psy_cfg.drv_data = mcu;
-+	psy_cfg.fwnode = dev_fwnode(dev);
-+	mcu->psy = devm_power_supply_register(dev, &mcu_battery_desc, &psy_cfg);
-+	if (IS_ERR(mcu->psy))
-+		return dev_err_probe(dev, PTR_ERR(mcu->psy),
-+				     "failed to register battery\n");
-+
-+	ret = devm_work_autocancel(dev, &mcu->poweroff_work, mcu_poweroff_work);
-+	if (ret)
-+		return ret;
-+
-+	ret = devm_serdev_device_open(dev, serdev);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to open serdev\n");
-+
-+	serdev_device_set_baudrate(serdev, MCU_BAUDRATE);
-+	serdev_device_set_flow_control(serdev, false);
-+	ret = serdev_device_set_parity(serdev, SERDEV_PARITY_NONE);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to set parity\n");
-+
-+	ret = devm_delayed_work_autocancel(dev, &mcu->poll_work, mcu_poll_work);
-+	if (ret)
-+		return ret;
-+
-+	schedule_delayed_work(&mcu->poll_work, 0);
-+	return 0;
-+}
-+
-+static const struct of_device_id gl_e750_mcu_of_match[] = {
-+	{ .compatible = "glinet,gl-e750-mcu" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, gl_e750_mcu_of_match);
-+
-+static struct serdev_device_driver gl_e750_mcu_driver = {
-+	.probe = gl_e750_mcu_probe,
-+	.driver = {
-+		.name = "gl-e750-mcu",
-+		.of_match_table = gl_e750_mcu_of_match,
-+	},
-+};
-+module_serdev_device_driver(gl_e750_mcu_driver);
-+
-+MODULE_AUTHOR("Serv Pol <servpol@tuta.io>");
-+MODULE_DESCRIPTION("GL.iNet GL-E750 status MCU battery driver");
-+MODULE_LICENSE("GPL");
+---
+Serv Pol (2):
+      dt-bindings: power: supply: Add GL.iNet GL-E750 MCU
+      power: supply: Add GL.iNet GL-E750 MCU battery driver
 
--- 
-2.47.3
+ .../bindings/power/supply/glinet,gl-e750-mcu.yaml  |  37 +++
+ MAINTAINERS                                        |   7 +
+ drivers/power/supply/Kconfig                       |  13 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/gl-e750-mcu.c                 | 369 +++++++++++++++++++++
+ 5 files changed, 427 insertions(+)
+---
+base-commit: 5c1c602463d597c5189ddc5a73dece588ba2c57a
+change-id: 20261005-gl-e750-mcu-f606ccd66dec
+
+Best regards,
+--  
+Serv Pol <servpol@tuta.io>
 
 
