@@ -1,60 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.38.64.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792590563;
-	b=kRNq5QhvVKf6uh4d1CnDS8MYOhknjjPhiKuCXOyPmq0Qym3EuLYRdy/7kXdMMg/F6R0K
-	 lIPCjKS2n/TBavY72eYS58QRyhGZ2RjWdUrTFxQB3UMdO4hUzKy+lWnz6FiJ7X7H8zKqS
-	 NqeTo5jq1sdAWDgfpETDcjYxuCVL9G56RZloCmZULOkJpv9YxwipFZA9TfcwN3SoIC2mZ
-	 J5z446z8ZjBn4ua/MFHninUMPgQPGcar2K4gS/e1R9ZGBXKFaVBsnm6OauMuKLL3lx9Kc
-	 9VW/dHATQ9N9ElKsWOs8dLRpOgSR3DNuj1dQzl8afH0GWfdxE5iuNb5HY1z0JaRyPHA==
+	t=1792590626;
+	b=jEftIgUQKIigTI/rluHlAB5zoGB4y4SSiEzmietu6/UZegXcyIymHDmVStpSB/DRcnE/
+	 GareWuP1dh4G3G/7V3ZCEDQW8i8s3P/prlSHmY6PUoL2vfQyJA2rFztU64VU9VfzGHAs8
+	 l6uOSnPdHbakMgNVd1DmY9sAr3+daTsRBOUZvnDhOX4OVhoMEU7+9aTLSIPlFwg+Qg4eo
+	 fWtEgObHsfafjfpAtC2uFOCLmUyC93Dm4VbKwI2efPekQUwD0i2vGYBmA7qGGmI/i73/d
+	 wdNuBpFCpSSQAhq0CmBv/6PaXbo9vH7yMsoCIiVGYke9Lrm5kWfRXmPLu8FSR0iQsOA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792590563;
-	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-ID:In-Reply-To:References:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-CM-TRANSID:
-	 X-Coremail-Antispam:X-CM-SenderInfo;
-	bh=uZg4BKspB/y+CooZbsgJ6fLMCO5/PIy2LqC7iUq3yNk=;
-	b=kXEeHMRCc4PNZNi8GLSpVh1Wwmy/tkfDqbOCV7LVppGwsJPzguvgSo2io4JS1SbJH3sT
-	 AOO/fCgzvBMYgQHqPZxEJnkqftxPag074cafZ9Mn0l6FII8D/78CEMnKwYhGc8ATzPnej
-	 b030FeMPnZIIC12YslAC/9dPlAoX3RuqWbbJdederBW95Ibq1IEFJ5HdTqCIbt09PK0BN
-	 ZNuIBvOqBz9k3QTCtfebaX9hKF8PhWKTIAhAEgUo+xTUVmt356vWGEtbdEnF2tmmlJUnG
-	 sPFwMHpC+lUiM6wuHZkHoG12OD4WP3I4cGh2S2W1BnfOGPGgiiix90jGARYaZnnREUw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792590626;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=I2bvdWY0t31KXpwJf/u0Qjl1LLzrtu3wyozMDwdTeBg=;
+	b=qAQO7sZNDWDnweKlwrkPA1XIVbN64n2EltuURGirjsXZcCaF4zNvLyOihkRlCOIMSGt/
+	 8w2t5xP88bFYUEplzE6ygx7eut1sum1nOrNv1350XynlbJ26TavrcCvD+FsWG6nh+2HgR
+	 irUYSiaeY4GVpp6VKesV/S6Cfj0qAn+L6C68QOz7dZIH4fi/191TTXTN2DXD/dY/5zMqI
+	 sWhGLn5DNVmx03Lgcjd4RxppslUToqfGwePBzI2QCRA+IgzAai1P4ml2ZG4wIoldV8lBR
+	 mSr+BW3m96gdPYz4ZQ3OyaAU8wlg75u+YtbJNpkTsPC9DPb/dbAl44ORPxQN1KQYjxw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mail.ustc.edu.cn;
-	spf=pass smtp.mailfrom=mail.ustc.edu.cn;
-	dkim=pass header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=PrElQ2nI;
-	arc=none smtp.remote-ip=202.38.64.46
-Received: from ustc.edu.cn (smtp.ustc.edu.cn [202.38.64.46])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id A6EA3606A319;
-	Wed, 21 Oct 2026 13:49:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6EA3606A319
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mail.ustc.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ustc.edu.cn
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X19jAfgv;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E72A5606A32D
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 13:50:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=PrElQ2nI
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-	Message-ID:In-Reply-To:References:Content-Type:
-	Content-Transfer-Encoding:MIME-Version; bh=uZg4BKspB/y+CooZbsgJ6
-	fLMCO5/PIy2LqC7iUq3yNk=; b=PrElQ2nIsm9MEcoRGnwjnvUBJBgamTyjrOg/v
-	/hoK8j+AT8UKFPEtKlmMWh3LM0Xbzhzs/CpMHfmLVdtzjwi5lFd/45SfMuFUWKrD
-	6vm1Pzo72ZY+9T+LfFJmlRpSd+HR4vPXMtMmuUNNAiLylMd8siATq6lTjo/uG6Ah
-	hfqHvs=
-Received: from [127.0.1.1] (unknown [114.214.181.25])
-	by mailimap2024 (Coremail) with SMTP id 3pYKCgAHfzPNwthqAOokAA--.948S2;
-	Wed, 21 Oct 2026 21:49:01 +0800 (CST)
-From: Qianhui Xu <xiaqinghuan@mail.ustc.edu.cn>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject:
- Re: [PATCH] power: supply: qcom_battmgr: do not report power_now on SM8750
-Date: Wed, 21 Oct 2026 21:49:01 +0800
-Message-ID: <179259054168.209323.8102186130128474174@mail.ustc.edu.cn>
-In-Reply-To: <5bf3636d-be7a-4800-9914-808d2fc5ebd9@oss.qualcomm.com>
-References: <20261013002124.332111-1-xiaqinghuan@mail.ustc.edu.cn>
- <5bf3636d-be7a-4800-9914-808d2fc5ebd9@oss.qualcomm.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X19jAfgv
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 868871F000C8
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 13:50:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792590625;
+	bh=I2bvdWY0t31KXpwJf/u0Qjl1LLzrtu3wyozMDwdTeBg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=X19jAfgvAld7gT/j9w83YYYU3N6XYsJW48KDz8G6dL72nfLBbMVaQb9nX9cY2pDcp
+	 6IAUm7jhxeP3F2nCmrf7F98bJLIEOsCtFHPjvgXYVViAzXvdl/NMIV/n6HbqRN6hQK
+	 5p+D9vBMtiR0AxGW8NRQHaIAIdw8CAYBWbZ3qyVhujKrHuSRTZ9AySgC9ZWic91bOV
+	 zoi+jn9gvc5kq++bm32WOSQCgaapKtTPOuozvu0ftqOUCjM2ST8nPeoRQh2wssqNjS
+	 zbeoC0tfnKMejAqW4gHyl/wE7HoXGwdb+ZOW/ycgDDVwvNevHe0jaJqkIn4iJ31947
+	 rDDWJ0sXGBW3Q==
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5be416e603cso485912e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 06:50:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByHJctKX+C3fhcVDxEnqFd/3vNtnfbNoehE88q4siF1ojbDwNHel0WZUJtwum25IAGqsXn1tVOI0A==@vger.kernel.org
+X-Gm-Message-State: AFq9FYK7BGqMzwrrAer0QxnezHnrC1tNJZYzrCWvWg6BdqcmlB4uUeve
+	jd/zFb+ObFmw9BtofOhU9QSg/vO5rmAcem7lrevLXvooOGcIJVQNyVhcITOgE4cODnt58jMvLXY
+	L43+ulF1efOzgP9/dudzw28d6IWLIsiE=
+X-Received: by 2002:a05:6512:b8c:b0:5be:4f5b:4078 with SMTP id
+ 2adb3069b0e04-5bfa1c11845mr962396e87.61.1792590623962; Wed, 21 Oct 2026
+ 06:50:23 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,78 +59,76 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-CM-TRANSID:3pYKCgAHfzPNwthqAOokAA--.948S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxZrW5ZrW5Jw1xCF18uw1rJFb_yoW5Gr4rpF
-	Z0qF4DGw1DJFyfZryvv3yDCanYvrZ5X3yjkFy8GrnrZayDKrn7Xr9Ikr1agFy8Cr1rWFW0
-	kFs8K3W5CF1DCaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvjb7Iv0xC_tr1lb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I2
-	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
-	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xII
-	jxv20xvEc7CjxVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I
-	8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
-	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8Jw
-	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lc7CjxVAaw2AFwI0_JF0_Jw1lc2xS
-	Y4AK67AK6ry8MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I
-	8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUAVWU
-	twCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x
-	0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_
-	Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjxUI7
-	5rUUUUU
-X-CM-SenderInfo: 50ld1x5qjk3t3q6ptxnoox23vfohv3gofq/1tbiAREHB2rXwVRrvQAqsE
+References: <20261021134243.35103-1-daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20261021134243.35103-1-daniel.lezcano@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 21 Oct 2026 15:48:05 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g5a+0eaULxGG=RFm=JN8Gh3_A=7mGUTmFUiXsxVKvpDQ@mail.gmail.com>
+X-Gm-Features: AclHuK_jJY-EtqEPHznjMyJCffRjO5WHMEjz4PwIVEEKCe7K_P5iT99bHlcHwog
+Message-ID: <CAJZ5v0g5a+0eaULxGG=RFm=JN8Gh3_A=7mGUTmFUiXsxVKvpDQ@mail.gmail.com>
+Subject: Re: [PATCH] thermal: Share THERMAL_NO_LIMIT between kernel and DT bindings
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: rafael@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Konrad,
+On Wed, Oct 21, 2026 at 3:43=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+> THERMAL_NO_LIMIT is defined separately in the thermal core and the DT
+> bindings, using different expressions for the same no-limit sentinel.
+>
+> Define it as 0xffffffff in the DT bindings header and include that
+> header from linux/thermal.h. Remove the duplicate kernel definition so
+> both interfaces use the same unsigned 32-bit value while preserving
+> the existing DT encoding.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 
-You are right, and thanks for stopping on that sentence.  "Maximum-load
-updater" is a phrase I invented; it is not a QBG or battmgr term from any
-document, so I should not have used it in a commit message.  Let me
-restate what I actually observed and what I am and am not claiming.
+But THERMAL_NO_LIMIT is also used by the core on systems without DT,
+so why is defining it in DT bindings not confusing?
 
-What the driver does (no bug here)
-
-qcom_battmgr_bat_get_property() does not sample anything.  For a given
-power_supply property N it reads the 32-bit slot that the QBG
-notification buffer reserves for that property (in the SM8750 variant the
-battery property array starts at context + 0x6a8 and is indexed by
-property id, so BATT_POWER_NOW, id 22, is context + 0x6a8 + 4 * 22).
-The driver faithfully returns whatever firmware left there.
-
-What I observed on the unit
-
-  - charging, actual input well under 1 W: power_now reported ~89 W
-  - discharging, actual draw ~4 W:           power_now reported >100 W
-  - current_now * voltage_now in the same samples stays in the expected
-    magnitude range, i.e. the other battery properties are consistent
-
-So on this platform the BATT_POWER_NOW slot does not hold a measurement of
-present power; it holds something closer to a configured/estimated ceiling.
-That is a statement about the value, and it is reproducible on my unit.
-
-What I do not have
-
-QBG firmware sources, or a public document describing the semantics of the
-BATT_POWER_NOW slot.  The "it is a maximum-load figure" reading is my
-inference from the two facts above plus the vendor battery property
-interface, not something I can cite.  I also cannot yet say whether this
-is a property of the SM8750 firmware build, of this OEM's configuration,
-or of the slot in general: Fenglin's earlier reply (default supported,
-OEM can customize) would predict the latter, and confirming it needs
-power_now/BATT_POWER_NOW readouts from the stock Android build on the
-same unit, which I have not done.
-
-Proposed wording
-
-I will resend the patch with the firmware-semantics sentence removed.  The
-commit message will keep only what is verifiable: on SM8750 the reported
-POWER_NOW is not a present-power reading (with the two counterexamples),
-the driver returns the slot as-is, and therefore this platform should not
-advertise POWER_NOW.  The code change is unaffected: add the SM8750
-variant and reuse the SM8550 property list without POWER_NOW.
-
-If you happen to know the intended semantics of that slot, or know of a
-QBG interface document that defines it, I would rather cite that than
-describe it in my own words.  Otherwise the factual version is what I will
-send.
-
-Thanks,
-Qianhui
-
+> ---
+>  include/dt-bindings/thermal/thermal.h | 2 +-
+>  include/linux/thermal.h               | 5 ++---
+>  2 files changed, 3 insertions(+), 4 deletions(-)
+>
+> diff --git a/include/dt-bindings/thermal/thermal.h b/include/dt-bindings/=
+thermal/thermal.h
+> index bc7babb1a67c..018f75febb9f 100644
+> --- a/include/dt-bindings/thermal/thermal.h
+> +++ b/include/dt-bindings/thermal/thermal.h
+> @@ -10,7 +10,7 @@
+>  #define _DT_BINDINGS_THERMAL_THERMAL_H
+>
+>  /* On cooling devices upper and lower limits */
+> -#define THERMAL_NO_LIMIT               (~0)
+> +#define THERMAL_NO_LIMIT               0xffffffff /* ~0U */
+>
+>  #endif
+>
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 083b4f533933..a6f635f0e1f8 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -17,12 +17,11 @@
+>  #include <linux/workqueue.h>
+>  #include <uapi/linux/thermal.h>
+>
+> +#include <dt-bindings/thermal/thermal.h>
+> +
+>  /* invalid cooling state */
+>  #define THERMAL_CSTATE_INVALID -1UL
+>
+> -/* No upper/lower limit requirement */
+> -#define THERMAL_NO_LIMIT       ((u32)~0)
+> -
+>  /* Default weight of a bound cooling device */
+>  #define THERMAL_WEIGHT_DEFAULT 0
+>
+> --
+> 2.53.0
+>
