@@ -1,72 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.197
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.219.70
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792585567;
-	b=4ofnFLuEL1pSSmqrZWyw6Z55J3dNDkBgJxvP2oj9bQxJLvA1bX8vhbPnfBUSezBCHnfd
-	 WgMCW3I43gg6FAjriwDF7OFzhcokffs3MFrm7GYKh8ZvpvCUSDCAZp/2Abaq36t5R+Q2m
-	 e0nZFnh2HkC7JiTmSVPqNDjKYzlVbiS2cNU/NZwKELwerUSdEK7Drj6pRyY0SiRbW+UfE
-	 2ZKVJArgn99Vb1FM+owxYqLfbqShAqF4X696t6RsKYadhTYUFe1jv99Du7mNJbZOGT1hx
-	 HjGx2zhIoSo4Z5YBg816cqawEUfFJeEjdb2Q1hSHgStPv04Ra0vWibGkBIqCGXFMMfA==
+	t=1792585576;
+	b=m1zbjIKMjLwrT/7kBK1e+8pP/x0Lr3ILlj0DKAGEuTeadf7r+PS9f3/GbaAb2cXIb7MG
+	 A8MRIOD3UfAnRtsmXooyInRNUY3SfyuyeDIiAWrxa0zqIahbSsRPhwGlpN4xuTesPBIsA
+	 zJ1+Az50l3k0lUAMxVTiFllf8josMV0fUqWlG9AtwynyxHX2Hqgu7p1S9LYCjbbh9Xwzv
+	 cmifLESlyey/N3Y0MdTMBjbrvo6nvcP1YyXJ15P/9Df9HDX52i3Q6Qg/gcOFLCx0tRI4N
+	 AyZfB7SsHvvUcFZlpOsSadcXL2U7yUAC6gR3BLQcCtcvCf+jKC3Oi8pxDC35EMddFuQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792585567;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792585576;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
-	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
-	bh=NR/6ReBtZzWPhL7shMo8n0oVFcpdIbC1mfBQJ9hh1jE=;
-	b=b73k2cfy9NO05AO1SDAELt4p3gTDI/kTGcOP/QVfQilod1sLMbis8vsSEJzNjXFYT6ug
-	 csGxp1cyCLhj0yHE0a7nmwoOy2RZ0ua6aoIem3BW2koStOfWKZ39C3RNAZBapAV36MOCz
-	 x44385wapXPUTEfcfAjbEcDFyZ3gqkzPcpL3Yo9kWZdCha3FCruOFQZV77hB6TpLKxUhF
-	 V8aBCAqd7ut4B5XZ0YPvQCH+QM63pyP83WLIoZ62oKLKbi6ITCHa7bP6LGang+SrtACA8
-	 0fH8H85MOWSoTKsFnizzNpT+H1IXXUzvtgqJ5p/3ZY/ISduFvrZvZOemiIoXMSLeksA==
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
+	 Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
+	 Content-Type;
+	bh=H6i391iVh1dQ0VMmEwYNJCCdz9XRHgnpnKzdqGscyes=;
+	b=4Mtm78yedJYrRr1VjMhbAUiHDcC18iuE2PqVRi5pBtEoHSHA+IUQvutVgTPEUzHcFvHi
+	 SWXg8DS9cGsquE6nVXwoZHIMFVOdocxAW1otdAY130rK/1Us0hanCxOThfyBhaOUXc5CD
+	 Y2/vm0xaAdAVcK5x8wJ6V01xtFCzKh/VNvCt8+lP/ZnCXCO9H4gMEs20TAFU1KEfepYip
+	 9SSSQbKE4qCj7HfIQexUJG6/GfFcIiEwtSKtN8fFZHL2Cd8Y+fLOoRfhaaPJuFiIg75G+
+	 NHsGAnT+yk/ZyAr5UsJIwTlEiPzVFDOKke8NUhrVKfqvst1VGyUIkn+1s4S3uG93UVw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=google.com;
 	spf=pass smtp.mailfrom=flex--sadrul.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=RDQptoAr;
-	arc=none smtp.remote-ip=209.85.160.197
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=K4Ck6vdU;
+	arc=none smtp.remote-ip=209.85.219.70
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8F24606A31B
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 12:26:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D8F24606A31B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06E54606A319
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 12:26:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 06E54606A319
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--sadrul.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=RDQptoAr
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-53380b67cfdso16614061cf.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 05:26:06 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=K4Ck6vdU
+Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-91b4bf686ceso21536576d6.3
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 05:26:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1792585566; x=1793190366; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=NR/6ReBtZzWPhL7shMo8n0oVFcpdIbC1mfBQJ9hh1jE=;
-        b=RDQptoAr7ZarafLjdYmo2ZhJs4b25kqadd7r9xdWurdX2lBuxGBC9Un5Wy9mY8DA8s
-         S/EMrM1T7nR0PBt/Y0xm8VF9eNGiLRMoVXPt/kGWXFhWAcj7TRw4+Kiu3hHTHKThZw9u
-         6yD7HXvvIffk42RgAKcF0R3gIqmN2WrFdmIpZEkWOmcD6+TWDw8mNnyCclW0HuRUq8F+
-         HcVbwviKLbVDr5SOr7KfK5TXb7yEjdkwEyhNoQbWuJfo/H4d8WJ+tEbouL/sQx9/Mvdg
-         XtTdKWWip+Q0SF0MzPVNw6NXwEN15KIyzfU+5ajNZfiVxrSjsAVximiJRVsT0HvCgQ2/
-         4x4w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792585566; x=1793190366;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=google.com; s=20251104; t=1792585575; x=1793190375; darn=vger.kernel.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=NR/6ReBtZzWPhL7shMo8n0oVFcpdIbC1mfBQJ9hh1jE=;
-        b=cmC1B2fG/pBxd9ncLQtuKZ9M5fruj9SXrrvx0K+r0O7aWBjVrk017EePiSHWUsv4wE
-         33X2Q/hQEt3nnErEm7jN8JzqCyXVf0BtOq3xrZF1DYh5n6v1PV36LvcYKTRSH9vXMCZt
-         IDTdSvJdBDX4hGSOYkTpM/ugrJa1M+xXLBkwvRc2E1RxUDGfqPVBVMTXWGuJ+MKF14CJ
-         U8dI0o+63/uyZxZfakWcqYbMv13GhAbo7JV3l19L6wihO+Cj1FGddUhEqdWmbIOGpXoh
-         5OREgzZQkSzP1G9mBFfFTPfA/r9paxz/yjTCwsoAXtiaD17V8ZXkFuKJXD9x1rFeOxMu
-         s7BA==
-X-Forwarded-Encrypted: i=1; AKwUvBxyLrqphqkqaJuyt8uNuIH7uekSLrlKyldXQwu2YIyEHY5o87QSm8lTMoZOIDpysk4ByjjgMTpK8Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIfM0dgilfTw8PpBK0M1HvG7ZuhJYwvaZntsUtbn4d8bvH0BAz9
-	Pq+hvfqJXN1yjlqGaEkh7N7J8f0QI3zvHsN2+6BUheSK5+BZK5iAoo2lHuHZ7YI3niHtPLb1iah
-	SjI0DRA==
-X-Received: from qvbfi13.prod.google.com ([2002:a05:6214:1a4d:b0:91b:88d2:29c0])
- (user=sadrul job=prod-delivery.src-stubby-dispatcher) by 2002:a05:622a:488:b0:535:855e:6e25
- with SMTP id d75a77b69052e-5369b8c7082mr28413131cf.47.1792585565409; Wed, 21
- Oct 2026 05:26:05 -0700 (PDT)
-Date: Wed, 21 Oct 2026 12:25:42 +0000
+        bh=H6i391iVh1dQ0VMmEwYNJCCdz9XRHgnpnKzdqGscyes=;
+        b=K4Ck6vdUNoxtGi0Ca3LQSncGupPvh+9yAB0gT2PT7YVyUU44uc06bdqokIR+GrQH1X
+         W3llXOTeBIljiJuwOX9Rk39Y8mVtDkCV2a7kWTWfPMLvLDEM+MRwVC+qwH4TLTnBfm86
+         fQ3V/WCY4kkQWnv9KayZZJhOwLCh17gq6IiWUYJFqVhErx3f2TeHhwlonjPPri18Joy8
+         l9V0Jes6Gui8SVnm0ITOF737tc/HvRCna/BSTXnQSXzPtO6yhL4aAyw2xk7oQ8Djp8E+
+         Q1dy1vQUUW/HudcL4Nlo2qHDV/A85ZlQeo3LZwjjtjfLjRvsy2zAM2DzF/9tfUfJnu7v
+         ALRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792585575; x=1793190375;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=H6i391iVh1dQ0VMmEwYNJCCdz9XRHgnpnKzdqGscyes=;
+        b=slzkO6fzprJe2He3IbQSy1/1CRFTaa7m97+FjILjyLGwgTGNxi9hLRO++w70yn3+7i
+         2mkUPrNHHlfusBcnhpIDLvaLkpkiE0GzxUUaFUnLoXHq+vXLKyLZ+EGgk8Jpw0uuhaX8
+         tol1XrcSmfC/R1AnO91N4XDr4bb66YGy3AGjmdPg4S1zhJrVRrXSKHgABEaB6yvYy4LH
+         94rAf2ie9uKUsXAtyHNgt8XDisuJjAaNlxia0+e9HHLwsWUPYEM/JddAt5wYRvjCsBFG
+         Lcaf3ncGAwPyfEMVDm0FbQiRgWZH6T/q46mptruaRn0fnZ7LkcbuK5oTDaDcQT+JwUb6
+         bL4A==
+X-Forwarded-Encrypted: i=1; AKwUvByeNWnz1tobmiNljYNEwTYGYa2JrM6v+h8q3D3Z13QObSfyAnBE06FEeOjuUvQy7tJDw5hqPpHmXg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJkD2ZB5k9xdUd4VfU+39nIRmXQIIow6nL/BC0tiLtOpuznTgLl
+	g7pvZSrQBoOYTVkRi8yhGQhMyim0Aht2PSIKvq5xrrllp4gzbtkCYespyA0MqNmNmhsbEc+A2X+
+	YPrEkZw==
+X-Received: from qvag18-n2.prod.google.com ([2002:a0c:f092:0:20b0:919:5a9b:414a])
+ (user=sadrul job=prod-delivery.src-stubby-dispatcher) by 2002:a05:620a:4493:b0:93f:22f1:97bc
+ with SMTP id af79cd13be357-93f57f639c0mr361670985a.67.1792585574428; Wed, 21
+ Oct 2026 05:26:14 -0700 (PDT)
+Date: Wed, 21 Oct 2026 12:25:43 +0000
+In-Reply-To: <20261021122543.3547778-1-sadrul@google.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -76,9 +79,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 Mime-Version: 1.0
+References: <20261021122543.3547778-1-sadrul@google.com>
 X-Mailer: git-send-email 2.56.0.212.g129ede20d9-goog
-Message-ID: <20261021122543.3547778-1-sadrul@google.com>
-Subject: [PATCH v2 1/2] fs/epoll: mark epoll_wait tasks TASK_FREEZABLE
+Message-ID: <20261021122543.3547778-2-sadrul@google.com>
+Subject: [PATCH v2 2/2] fs/select: mark select and poll tasks TASK_FREEZABLE
 From: Sadrul Chowdhury <sadrul@google.com>
 To: linux-kernel@vger.kernel.org, 
 	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
@@ -88,37 +92,26 @@ Cc: linux-fsdevel@vger.kernel.org, Pavel Machek <pavel@kernel.org>,
 	Sadrul Chowdhury <sadrul@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
-During system suspend (freeze_processes) and resume (thaw_processes),
-threads blocked in epoll_wait() sleep in TASK_INTERRUPTIBLE. When
-try_to_freeze_tasks() executes, it must wake up every sleeping thread
-with a synthetic signal so the thread can schedule, run try_to_freeze(),
-enter TASK_FROZEN, and sleep again. Upon resume, the freezer wakes them
-all up simultaneously, only for each thread to re-enter ep_poll(),
-observe no ready I/O events, and call schedule() to go back to sleep.
+Similar to epoll_wait(), threads sleeping in do_select() and do_poll()
+sleep in TASK_INTERRUPTIBLE via poll_schedule_timeout(). During system
+suspend and resume, these threads are woken up by the freezer solely to
+transition to TASK_FROZEN, and woken again upon thaw only to re-evaluate
+file descriptors with no pending activity and sleep again.
 
-On systems with numerous event-driven daemons (where hundreds of
-threads idle in event loops), this causes a large wakeup stampede and
-thousands of redundant context switches per suspend/resume cycle.
+A previous attempt to make select() and poll() freezable in commit
+9745cdb36da8 ("select: use freezable blocking call") was reverted in
+commit 59612d187912 ("Revert "select: use freezable blocking call"")
+alongside the epoll revert due to issues caused by the legacy freezer
+architecture.
 
-An earlier attempt to make epoll_wait() freezable in commit 1c441e921201
-("epoll: use freezable blocking call") was reverted in commit
-c511851de162 ("Revert "epoll: use freezable blocking call"") due to
-reports of userspace corruption (Bugzilla #61781). Under the legacy
-freezer design, freezable tasks could wake up prematurely while
-hardware and peripheral drivers were still suspended.
+Following the freezer overhaul in commit f5d39b020809 ("freezer,sched:
+Rewrite core freezer logic"), tasks in TASK_FREEZABLE are safely frozen
+in-place into TASK_FROZEN without running userspace code or experiencing
+premature wakeups before resume completes.
 
-With the 2022 core freezer rewrite (commit f5d39b020809 ("freezer,sched:
-Rewrite core freezer logic")), the legacy fake-signal mechanism was
-replaced with the TASK_FROZEN state. Tasks sleeping in TASK_FREEZABLE
-are safely frozen in-place without waking them up, and the scheduler
-guarantees they cannot be woken until thaw_processes() explicitly clears
-the frozen state.
-
-Mark sleeping tasks in ep_poll() as TASK_FREEZABLE. Benchmarks on an
-ARM64 test device demonstrate that combining this with freezable
-select/poll reduces thaw latency by 63% (from 20.64 ms down to 7.55 ms
-mean at fixed CPU frequency) and reduces context switches during
-freeze/thaw by 87%.
+Pass TASK_FREEZABLE to poll_schedule_timeout() in do_select() and
+do_poll() (TASK_INTERRUPTIBLE | TASK_FREEZABLE) so that polling threads
+remain asleep undisturbed across suspend/resume cycles.
 
 Reviewed-by: Jan Kara <jack@suse.cz>
 Acked-by: Rafael J. Wysocki <rafael@kernel.org>
@@ -128,22 +121,31 @@ v1 -> v2:
 - Rebased against current mainline (torvalds/linux.git master).
 - Collected Reviewed-by from Jan Kara and Acked-by from Rafael J. Wysocki.
 
- fs/eventpoll.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/select.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index f48b829a710f..76906ced2b86 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -2327,7 +2327,7 @@ static int ep_poll(struct eventpoll *ep, struct epoll_event __user *events,
- 		 * the same lock on wakeup ep_poll_callback() side, so it
- 		 * is safe to avoid an explicit barrier.
- 		 */
--		__set_current_state(TASK_INTERRUPTIBLE);
-+		__set_current_state(TASK_INTERRUPTIBLE | TASK_FREEZABLE);
+diff --git a/fs/select.c b/fs/select.c
+index 95d76531015a..03318d678187 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -600,7 +600,7 @@ static noinline_for_stack int do_select(int n, fd_set_bits *fds, struct timespec
+ 			to = &expire;
+ 		}
  
- 		/*
- 		 * Do the final check under the lock. ep_start/done_scan()
+-		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE,
++		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE | TASK_FREEZABLE,
+ 					   to, slack))
+ 			timed_out = 1;
+ 	}
+@@ -962,7 +962,7 @@ static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
+ 			to = &expire;
+ 		}
+ 
+-		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE, to, slack))
++		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE | TASK_FREEZABLE, to, slack))
+ 			timed_out = 1;
+ 	}
+ 	return count;
 -- 
 2.56.0.212.g129ede20d9-goog
 
