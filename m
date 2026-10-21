@@ -1,105 +1,105 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792573088;
-	b=oNQ84aWlEssJ9SZMKrJgrBtmNuLw9MFMGBs3OejJqJ9ofvtn/lWIHuGbSAMtFJjAd+y+
-	 XrpeyNLxD7lz44gDeNL6uHw4MN1ytoLgwdGFm0TmxJomRTz6MgspeN9pMNfdmFsydu3Fy
-	 EXVbyAs0g3HJmIwDOrqV+ry/FYVCtHMzRM6HudqnnqYgJSfDWO7ORKEZkltMlanWn0Tv5
-	 4clY4fe5tDLf35WWhlw+5f9ZriI+WFYlbcdUGdeN2qivymbg2NJWGUAKGIGApPQURuLco
-	 GqBYyab9qg075VQRV34STaD9pDQ25AAqElKtsIJhUIPEYBO2UvEI0l7hJ2Vfkk3dFbw==
+	t=1792573092;
+	b=OY0rrN0+kXHXZDfvg3WQbI35hbsVR5leoklx90zAuiV9xP0BonnNIPNAUgP2BzyxT2QS
+	 kThzbxLQLDUnp7bixdycwfZ4IUQYBECWBxkHOQBrKlxtUFmv0yeqL6sHJ8mn0h0z2BBoa
+	 GXwZkfP2q+QC0GPlcgizoxAsi6JEj5fVp6zuJGKw9loZnvEGGQN0ugbMherEVz9SaqBtP
+	 pNwxzaN6kj00h7jrcMC0ygNNqpF8pdStCN0oCHr0TcCyAr4FrOpHEHt4OMkRystKuhoQI
+	 BmHMbUnNE4qPt1IfLymtv4k1Z2XgByiruymKg7QxIWArBgofgnvAH8TgTcwA9BVuL5Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792573088;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792573092;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
 	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=2AfyFc0ogUfdrYyNRX9G1+SJ+Gxo1o57TnNd9vgut88=;
-	b=TWQQcZYeKEgdG24XPKm0av35CVSgjev0xcr7NiqugfVCrZ9UVmWxY/Pm36qd0boPYzp5
-	 nsipv743/uyypO7kGuYPSRNAnMPt29eMM5QQAwXygOJmGFqQk7m6wqYFEB3/iHIjyCDD0
-	 W1njn6tQ+HDAAg3VbHIzOpQvhjTfUbPWH+HwYqHutRVcv4tzDQxWVy8ZYhlhU5UaBo2uD
-	 cW+JgK0z/b+JPmbJl073dYiUJG8niVW1RTNDwSDiubfd0Drq/fgL0qz9NJmMKyQZKpwUT
-	 9HuTTkzYLiCfNsH2ojscQnrlonSNovRmZuteLuFxoQTeLuF+EX15cwQLAt9DyqNrrtA==
+	 Content-Transfer-Encoding:X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:
+	 X-Proofpoint-Spam-Info:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=Q5XfVpN7VVz9w3E1kpowPrPGfkMuKV+ilfnKpbzYapA=;
+	b=m6QVH7k6RSTAnYmlK1ITqVI3XyRh6KKhbyP4N9DH3xBhaZMyv2oeRDeLgUpn3fisj6HX
+	 p38Gq2O4JrJGMpwrPrKZ2sX2QePbQfjIYTQy2Lo7uetDOqNU/JU3rIjmcUfXSvg+3GFHU
+	 qpW2AxyLHBTUBe3hl9Cdv5c9KvwVsRcJpegjWuLoR+GvS2QmTKh5de7G5ICwUSm9VMBqY
+	 WOBmCvBzdPx3ycEvcoA1Rx1KGYx7JaFcDHUPJf+WlzJ7YWfWyJm+7rDnWBuwPGrNvwktu
+	 0T5Ch4kTln5sBXOss9z7HsXjB0XyjCWO8g3S1QPQIY9A3e0PJqNZsGI0JJdQ6VEmV4Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gbmHNU7k;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=PhKd0apH;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=EGocis+G;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=OCoii+IJ;
 	arc=none smtp.remote-ip=205.220.168.131
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D197606A33F
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 08:58:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4D197606A33F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD5FC606A31D
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 08:58:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AD5FC606A31D
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gbmHNU7k;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=PhKd0apH
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69L8VRuk2795036
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 08:58:07 GMT
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=EGocis+G;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=OCoii+IJ
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69L5ixMB756329
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 08:58:11 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=2AfyFc0ogUf
-	drYyNRX9G1+SJ+Gxo1o57TnNd9vgut88=; b=gbmHNU7kQbdNXFPXrzA8QJJo2CZ
-	a42GcmLkNAmhRgxA0rgy/vM6nUJiUDYRiryxZRkTPDO7AdSiBeh7CvexixDNA/6c
-	ISGYKWNKm9ObxCFzqHhhYuAePZLPaLpKUvBVtSu3bgzT630fa7PfYyw0fLPvYj6S
-	2TUyUCfEVL5hcvYyLZTS++vaNYLPEHKDgrtIo8C7tJwoVmBSAgjcXNP8MiOisesC
-	vcdnQJoKnJkvGE3BKvTKriPn2dQyynSbHrL/cIIksjF7AnhpaWQsmwcKAbfdi1dh
-	Jq6C8Rk5dRN2VewIjop8Ty4eJkqf5za68/ekn2P9HwvOKLIqro1xsyK5/cg==
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hesy788by-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=Q5XfVpN7VVz
+	9w3E1kpowPrPGfkMuKV+ilfnKpbzYapA=; b=EGocis+GJfmifeKt56tSqQ0eCmx
+	RQgs+iGvdP4OXocWg4G5yIdKOme5wFr0HgqfK+KrBo3TdQ3o8gvKD6HeI8bhg2Q8
+	IdhVdlWzPe5zsCy5K3Hm1+5xJwY/N71Yewr12FcA+hIt348V22a+cwfii/s6ZZPA
+	PoXPY/npgkJ63Ij+T1avAvySceXgb3QIXZ+c02ENNsSjUN9bPtTfmZqm3HbTmX7+
+	aSLiaSkFdiifZWOZ0V2ACAgEXxgliaPVOLaWS1FkxrzaT81NgwqPcY7sI5UuWfkF
+	ZUoXgoOWPOmmDIiZ3nRvKsRQkeS2O3Qdirmywvz0OnqqAnGPzbD7FDtaSKw==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4heda4u3s3-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 08:58:07 +0000 (GMT)
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-934956beec8so108045885a.0
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 01:58:07 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 08:58:10 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93cb93c874bso300894985a.0
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 01:58:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792573086; x=1793177886; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1792573090; x=1793177890; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=2AfyFc0ogUfdrYyNRX9G1+SJ+Gxo1o57TnNd9vgut88=;
-        b=PhKd0apHDcO7HGXlquY/vh68RAcWKK0YnTRc6B2RfUSS/A127TaLP+PfnrR9/pTo/f
-         ZPybIELJvJvWDmovFf+2/vibMHED2U0dPVytowVfXDDfMYEgFXi8a9zbDRTT06/Nukxz
-         50MLg92kyIFYazLZkPRh+O4nSYwjo65ma4K6KDK+yuVTNPRrsFMVWS3IBvFWtmUgJK+j
-         FbxVaTQSVPdmA9JVuTIRsvbomkTipdG90ouysK8Bj7NfQKDQ2F5DEFPuR+QY7N3WXzVR
-         asR3ZJHDwpeav6vda0ykOtv9Jalm6vc91xgku7PY0rWz113YkWAgopwqxdauaCgyXV3E
-         KmsA==
+        bh=Q5XfVpN7VVz9w3E1kpowPrPGfkMuKV+ilfnKpbzYapA=;
+        b=OCoii+IJFnPFSUaX+VVi0wb1c7NGLWp/eV4gYEW2cyMgZYNFmcFdT0h7MNLaXX/zOY
+         plODvMbLJjiVaMvTTczmUt3SGkFDV3r+LZuGfOo1FAXwQwif7X/7FA7azoNhG8QUP8J4
+         xsVRBj4LwFgkuXv1y1O65Ac70wGDmxBd7Jjghq7/5RZQuqPPWqEIPBl1lHPqkF2S4qnk
+         h40AkXpx1LlW8thpTDZuv33oLdo8AqCVx9XOTXiTiARRAFh+pGOwn9WJr4Ngmg/Vh8W/
+         8n3dWyIAPEqyYN9Jo8A0/UooQE74O+T5HuEBzLzZKp2R8ANOyl6xm/oZ1QZV90dTGQ4p
+         r5eA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792573086; x=1793177886;
+        d=1e100.net; s=20260707; t=1792573090; x=1793177890;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=2AfyFc0ogUfdrYyNRX9G1+SJ+Gxo1o57TnNd9vgut88=;
-        b=hTWGm0MsEoVs4qVjOrpgCmUGQ3RlaAN0GSndlvOsdOzOoJQAofCEl+hhQsfzGAoozR
-         VvGA5dFAa5NnhK9F9IpHLxox+GZTsWkIJWxW42tQ0DJ3G2YQ+29oq50xCF/UDESyOB/Z
-         lJXN4g8R4YYuT0XZk56/Y3c6B+UMhxtFrShbpy3lJOuHf8Ilr8cJLosjWHio8J53BsRt
-         z2uKi65RH2ULxXHGwpQnj3i9T0lc78QRoGvB4AmaNwSj8/keI4jUHkAW/ljZHxOZBgat
-         GYoL/uO9EAxLXvFltY2W0FFptj1WA6h01azUDFG7zoyV9L6Asb2YPWC/lb3tbgtUl15H
-         sn/w==
-X-Forwarded-Encrypted: i=1; AKwUvBzf0xrZIeATBw3N5YC0wATcDBJx5Jl0HfjjQSy1S51jUEsLKiJN0bhdXY5iBdd3XPLBUXzY+1ytjw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLGUN0yKmUx9clIbCz4L7KwDGbmunugG0ut/PLKZYeMHsaBGJ2e
-	KATSOyi2pc7LinI4g26dlFY0L6qd9bMRVWdFKr/5fAF9Il+gxOeHCbnwhYFB+Rstelv8wtkp7qW
-	WG31BuMSK2nzA/An+39QC5Q8XDdeywN2dvAlHKXHadYbVKx5Ppu6PAh6gq54fbw==
-X-Gm-Gg: AYBFou2KGoPg1Eqn9v+M7QkEYKScqQXAtMw6ApHu9f2jv1iqIuRjau6rOdHuGxAJqb+
-	HLe2DY169+n67P/WrZWdPLNKRHn6ooTxX50gvAUragQxXLnqeKW1dvN3adzg1qNwtpqWTJl9QvD
-	ZAMbaOIM0m6qkzjFLNZHhHZpGTiNUUF+gpvm6hm+zo9nixduDr7qbZu5lwrYZNmNt8ULJT29U7Y
-	TqoxrYNpRd/CPPXe5BirDfLV7pFuOvC7p8xM8aYGB0JncJbALFtbmI7iquDaS1tUyhxW6fo8bFB
-	ON4mM6zXZFlu2E6WD6gv3uVeLuRNK/S4gMgrCivmpB1ANP/R04UiZuo4Jd0f91n8At6LljZLB4I
-	GGXgeQPLpYwHF7CHL+li1p/MAag==
-X-Received: by 2002:a05:620a:1b95:b0:93c:c162:125b with SMTP id af79cd13be357-93f57f233admr308223685a.39.1792573086426;
-        Wed, 21 Oct 2026 01:58:06 -0700 (PDT)
-X-Received: by 2002:a05:620a:1b95:b0:93c:c162:125b with SMTP id af79cd13be357-93f57f233admr308220085a.39.1792573085975;
-        Wed, 21 Oct 2026 01:58:05 -0700 (PDT)
+        bh=Q5XfVpN7VVz9w3E1kpowPrPGfkMuKV+ilfnKpbzYapA=;
+        b=geOMd4HTNF91dGBDeWhlg/6t64Oepf0zBBdBAiX1IQudXzFFAfPoi8aA4HPrAejh1A
+         dL1MNrMVBcl1IxP4X7TACuzijHrLrAhmZ215ncOonTn+jELQTJpck5JkpMYzQXp5dcsT
+         udNZGpdbGEbhiEdCJnkEtiPQTioUVtQSfogOqk8mqlkzUww056ZTLa1e80qV8CRUGPFX
+         s2TqHF2zR3HhKDvDitDB7FeIerBpqDA72SO5D/MkC8X8hDGgfFhMWP5DIskvN7DOynxo
+         mVt22AujgFlEhgnOTNIBL3WaAaLg9YDKLPX0KnV1GNRtKAW3YQv3aLU2Bd77La1pDAuD
+         TYjg==
+X-Forwarded-Encrypted: i=1; AKwUvBzP3/ALTOOuIy5b0jCKKpXRuE82fATW/O1erV503adjwrXJK/fLFXmr1QEs7JUsHX1fZ1mef/WXFg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIo8oo+Cdwc60QRBpfvMs8kNKysFfWbojTb4NFAZlF7RzFOPs8A
+	7HMcvC4v6dWIgcknPCh/mlBpZrGNxDm1GyVQ3vXfPJ8jBEzhtQrGb5Hp64reZnZIxEGHn4qXWzz
+	CHRagbx+Lx+wtm3k44lSuxVT5T0UdbVFfD5OtBZVtTjunDZrLc5jhyK4H1cm1YQ==
+X-Gm-Gg: AYBFou1bYaNhWKzbr4AuQtKzmGVQci9iBPFRlf5nbrrp4VLumBAM0QrTaE6kKrLbKKr
+	ilXxNvNi4pBYD/rr9fyVFmjBZSJ/Ll3oxcpydMsWoOVV+WaVDFucqmWKBCoghxiwnERsMDuH2G7
+	XzLLTP4Srp6G+Qc0BwKmRyQ5VvLN4zuhPmWlFJnM6sFSQKR+oqkAWEPzcWoEco7d5AY9EhI/333
+	wXWAiXqlYCRh0LRNrs+zxPEICqBOvk9qq8dWAYN5s6DNr1nPmNkgmK6CNDTUlSnG83BZjko4oxS
+	nTYUx79LyEypgUGDcrPfYIdpj2vOggocScbbxgaC7a1rekZJWR1CrJXJ3xxXtx93WkOiKGA0sxN
+	dPruSIerM4MHqQhIAKTLpH7y20g==
+X-Received: by 2002:a05:620a:2688:b0:93e:c12d:4ec7 with SMTP id af79cd13be357-93f4c99f2e7mr729418985a.39.1792573089679;
+        Wed, 21 Oct 2026 01:58:09 -0700 (PDT)
+X-Received: by 2002:a05:620a:2688:b0:93e:c12d:4ec7 with SMTP id af79cd13be357-93f4c99f2e7mr729416985a.39.1792573089271;
+        Wed, 21 Oct 2026 01:58:09 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:8d9e:b00d:491:1503])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e258424bcsm4058401f8f.55.2026.10.21.01.58.04
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e258424bcsm4058401f8f.55.2026.10.21.01.58.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Oct 2026 01:58:04 -0700 (PDT)
+        Wed, 21 Oct 2026 01:58:06 -0700 (PDT)
 From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 To: daniel.lezcano@oss.qualcomm.com
 Cc: andersson@kernel.org, Amit Kucheria <amitk@kernel.org>,
@@ -110,9 +110,9 @@ Cc: andersson@kernel.org, Amit Kucheria <amitk@kernel.org>,
         linux-arm-msm@vger.kernel.org (open list:ARM/QUALCOMM MAILING LIST),
         linux-pm@vger.kernel.org (open list:QUALCOMM TSENS THERMAL DRIVER),
         linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 2/3] thermal/drivers/qcom/tsens: Validate the sensor count before initialization
-Date: Wed, 21 Oct 2026 10:57:47 +0200
-Message-ID: <20261021085749.3786101-2-daniel.lezcano@oss.qualcomm.com>
+Subject: [PATCH 3/3] thermal/drivers/qcom/tsens: Disable hardware on probe failure
+Date: Wed, 21 Oct 2026 10:57:48 +0200
+Message-ID: <20261021085749.3786101-3-daniel.lezcano@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261021085749.3786101-1-daniel.lezcano@oss.qualcomm.com>
 References: <20261021085749.3786101-1-daniel.lezcano@oss.qualcomm.com>
@@ -126,79 +126,110 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: vGdqOmEtN8V8_FMQswZ3VMXM80t3nN-o
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIxMDAzNSBTYWx0ZWRfX868/pzw4+NJH
- R9a0WF0q6JbEaP5UKa3HhfhZ2G/pse2uVWQ+XeazQUbJHTrb26ub1ETa5D9PXuddKBi7pItU5sr
- McQ9jMtglaZFH+ONTj36Sdd6EBHoKibcpjMiJ+tJUWy5kklfSnKEfUgTNSxzz/nOakZSbmEjWX5
- KdesUjxGvCoSuPiDQWiuaB7mUmJ81fF0K/TJzp1jfTOJzvJymLJsi9s82RqSujLQEg3apdiEV+W
- aM8sAlZTdftTvgfPz/Cqjjk9DH9SHby0QcXiTqAno2uggvcj3yIb2kGbjkav76KbFCsepKfhyYF
- yW1Jj2UudKU818YsttYHtCbrWcz0JH1jOetR74IcowiyAorCARn1a6EHy23pGQbuHAkKOUFlmEY
- wnCsT40N/VzPJ4vmTntIQ+Wxdi8byLBJDjc51fIzuuRnsm0aFxSHB8+NZZfnwQ5BBXdA8UVK6Ob
- Db04OjR7qnRP23adxzw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIxMDAzNSBTYWx0ZWRfX5d7G4e2jWOC2
- R5jQQVLNvThxhVMXuKMFJL/mzZmFDFsHDxBZ+AZ8YesVZP+l16IIFJICuJNJx7UbQn0O7bGNeRm
- Wm79RsR34v+xB7bP5/K7VyGxAmfenxM=
-X-Proofpoint-ORIG-GUID: vGdqOmEtN8V8_FMQswZ3VMXM80t3nN-o
-X-Authority-Analysis: v=2.4 cv=IPaXmQvG c=1 sm=1 tr=0 ts=6ad87e9f cx=c_pps
- a=qKBjSQ1v91RyAK45QCPf5w==:117 a=xqWC_Br6kY4A:10 a=660iZSQnnn4A:10
+X-Proofpoint-ORIG-GUID: YFm4HKO8Q84SiNHFbw_RPOiCfU8J_Fn_
+X-Proofpoint-GUID: YFm4HKO8Q84SiNHFbw_RPOiCfU8J_Fn_
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIxMDAzNSBTYWx0ZWRfX5tLMPwnjkN+y
+ RzdrNgNJPqKOTI4V2CdLyOJp2Hgf+BIXYxx33GLnxY+ZcgFGUaSqDpVjZdNR0r0EO953nqkdEZt
+ Tb8kqY+Fn7CpsUj3GFdr2KbD4zAX4FM=
+X-Authority-Analysis: v=2.4 cv=R7aWitRX c=1 sm=1 tr=0 ts=6ad87ea2 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=660iZSQnnn4A:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=DJpcGTmdVt4CTyJn9g5Z:22 a=c92rfblmAAAA:8 a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8
- a=Kcfep0Es--GOdI1On_cA:9 a=NFOGd7dJGGMPyQGDc5-O:22 a=GvGzcOZaWPEFPQC_NcjD:22
+ a=Um2Pa8k9VHT-vaBCBUpS:22 a=c92rfblmAAAA:8 a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8
+ a=u24PIR98rQV_9BJ0iLUA:9 a=IoWCM6iH3mJn3m4BftBB:22 a=GvGzcOZaWPEFPQC_NcjD:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIxMDAzNSBTYWx0ZWRfX0/qCGHbaWT6Y
+ Ox+GdMSShtdBmB2No95UTGhcYSXfXOmWBkF0/kWFA6KHlz908+jKSp7LIyqU+lfVJqq7MtgDBgk
+ c+p/+1peC2pSkGedjGlqJkYDCfq6BAmj/b1ojWklezvyoV0rUkAGym9mGUqYPVLhJoS35ExIiTZ
+ J4Igy3+VztEOznseJgYzPQxm9Nyra8PdIFKU0OJhYo5udKf5cXCa7CAJ0xQA06aRxH2GHQorDPe
+ voEjetG2usz6+UyGVEfXLN6ANRITvpzUUACI155tab8shwe/dMT6BQ5yuwuDYK9W6WNB+qCA68Z
+ 5xsmS2ViF+a2ZIiFBq9jUpuamYXdbHq5u6uKXs5VS0RG3DibqcXI9r+xgUdDU9SMC0h5Gef2TIP
+ 0YDNffs+GPHTIC5zpnwFt/FO5+yE1fvOU9TvDyCCtpzseqGjzxVdtbnvkrvh/W4BbT0pBXgOZKv
+ yzy9xRaxlJ1t7sItyFQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-21_02,2026-10-19_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 phishscore=0 lowpriorityscore=0 suspectscore=0
- impostorscore=0 spamscore=0 priorityscore=1501 adultscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610210035
+ malwarescore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0
+ clxscore=1015 impostorscore=0 bulkscore=0 spamscore=0 suspectscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
+ definitions=main-2610210035
 
-The #qcom,sensors property can override the platform sensor count without
-an upper-bound check. A count exceeding the IP's maximum causes the
-driver to access uninitialized regmap fields when handling interrupts.
-Platforms with an explicit hardware-ID table can also read beyond that
-table, even when the count remains within the IP's hardware limit.
+Hardware initialization enables TSENS interrupts before calibration and
+thermal zone and IRQ registration have completed. If calibration or
+registration fails, probe returns without disabling the hardware. Devres
+then releases any registered IRQ handlers, leaving the interrupt source
+enabled without a handler.
 
-Reject zero counts and counts exceeding the hardware maximum or, when
-present, the hardware-ID table length before allocating the private
-structure and assigning sensor IDs. Preserve the existing fallback to
-the platform default when the property cannot be read, and document
-both the fallback and the sensor-count limits.
+Factor the hardware shutdown sequence out of the remove callback and
+invoke it when calibration or registration fails after successful
+initialization. Disable hardware interrupts and call the optional sensor
+disable callback before devres releases IRQ handlers and register maps.
 
-Fixes: 6d7c70d1cd65 ("thermal: qcom: tsens: Allow number of sensors to come from DT")
-Closes: https://sashiko.dev/#/bug/linux-d0867095-c131-491e-a6aa-a81debfd0df5
+Fixes: 634e11d5b450 ("drivers: thermal: tsens: Add interrupt support")
+Closes: https://sashiko.dev/#/bug/linux-4b873699-7a0d-46e9-b768-169916c70d1d
 Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>
+Cc: Amit Kucheria <amitk@kernel.org>
 ---
- drivers/thermal/qcom/tsens.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/thermal/qcom/tsens.c | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 4f69ce4976d9..9134637a3458 100644
+index 9134637a3458..57d71159bd4b 100644
 --- a/drivers/thermal/qcom/tsens.c
 +++ b/drivers/thermal/qcom/tsens.c
-@@ -1399,10 +1399,20 @@ static int tsens_probe_common(struct platform_device *pdev)
+@@ -1374,6 +1374,13 @@ static int tsens_register(struct tsens_priv *priv)
+ 	return ret;
+ }
  
- 	num_sensors = data->num_sensors;
++static void tsens_disable(struct tsens_priv *priv)
++{
++	tsens_disable_irq(priv);
++	if (priv->ops->disable)
++		priv->ops->disable(priv);
++}
++
+ static int tsens_probe_common(struct platform_device *pdev)
+ {
+ 	int ret, i;
+@@ -1450,15 +1457,22 @@ static int tsens_probe_common(struct platform_device *pdev)
  
-+	/*
-+	 * DT may override the platform sensor count. A missing, empty or too
-+	 * short property leaves num_sensors unchanged, retaining the default.
-+	 */
- 	if (np)
- 		of_property_read_u32(np, "#qcom,sensors", &num_sensors);
- 
--	if (num_sensors <= 0) {
-+	/*
-+	 * Require at least one sensor and stay within the IP's hardware limit.
-+	 * Platforms with an explicit hardware-ID table also limit the count to
-+	 * its number of entries, which may be smaller than the hardware limit.
-+	 */
-+	if (!num_sensors || num_sensors > data->feat->max_sensors ||
-+	    (data->hw_ids && num_sensors > data->num_sensors)) {
- 		dev_err(dev, "%s: invalid number of sensors\n", __func__);
- 		return -EINVAL;
+ 	if (priv->ops->calibrate) {
+ 		ret = priv->ops->calibrate(priv);
+-		if (ret < 0)
+-			return dev_err_probe(dev, ret, "%s: calibration failed\n",
+-					     __func__);
++		if (ret < 0) {
++			dev_err_probe(dev, ret, "%s: calibration failed\n", __func__);
++			goto err_disable;
++		}
  	}
+ 
+ 	ret = tsens_register(priv);
+-	if (!ret)
+-		tsens_debug_init(pdev);
++	if (ret)
++		goto err_disable;
++
++	tsens_debug_init(pdev);
++	return 0;
+ 
++err_disable:
++	/* Stop hardware events before devres releases IRQs and register maps. */
++	tsens_disable(priv);
+ 	return ret;
+ }
+ 
+@@ -1502,9 +1516,7 @@ static void tsens_remove(struct platform_device *pdev)
+ 	struct tsens_priv *priv = platform_get_drvdata(pdev);
+ 
+ 	debugfs_remove_recursive(priv->debug_root);
+-	tsens_disable_irq(priv);
+-	if (priv->ops->disable)
+-		priv->ops->disable(priv);
++	tsens_disable(priv);
+ }
+ 
+ static struct platform_driver tsens_driver = {
 -- 
 2.43.0
 
