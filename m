@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792562864;
-	b=1KeYyyOGMh54Y1u+aTRHjJRonT+LKrmrHd7KoG5tCmmviobs+S1eKchP58eCmCEucnJV
-	 UYLcECFzkwsDCJ2OuSQ1bkEtpFph7IcR7uhfoSw5/rc9R5a/6YoUZofo2p17YPe3WPnlt
-	 IwSVCrpt2/auIvztnbNxFgKeqzvqY5zDYaniQMOQH2luAwCE9PLf0HuuJiJm6LtdeIDtk
-	 cWrERnUffM0VSIfOsTRdib+QOlAqaSNXX8PZfDSAJuEpX0v/xY4FCDg0qr58AWdSjTLcP
-	 h5XetYA06rl9vEjy6OhX/0w4z4fWM7csroB25hdFoifCYw9Md5D0Mklh/+1M/1f/eCQ==
+	t=1792563461;
+	b=AYqvfbTHv+pynlC8le9lCf1ltTIo/TE/AZjbH6TvkVkFlt4pQKhxpupktAeaPVuGWNqm
+	 Ig3H9qyeuaTcevaJ73EnqnBiis1l1HY3UotrLunTIhDC2RnGQZj00qtmus/nIO6HEL5Hl
+	 S6YG6Mqo2RqQVgAi1XyupgdbbWnS52Ne5dsuI6wv5C2qIiiQ27AdAO0xYYg4DV3eGLOlR
+	 8Xc/drkSl35EZMV7AO3Le93YbM0O+Z4BnDPEDDvJ9tAAMe9smC4E/Zr7UTf7NInRQkZtF
+	 Kg5PVoKsbRUmFhxP8q5H2jx+/hhgKYilVa6XV4PE52dRLzJNs5QMGUyXtwueOqUIaCw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792562864;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792563461;
 	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
 	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding;
-	bh=Bxouv0kn7Sc9hHczau5510tqW8b3G6JDVUWPALdKHHY=;
-	b=YsjZtcagElTblk/+c04PaX7eOLnjkurBuZL1vO58nWHxBu9Au4jvdheXlp3q76NMCXwV
-	 YNbWo4gS30b0HJkYGMUcIHtrawrjJIfLXAFLI3UfJl1UuJU7/Bjs4kKbdBDkGChwNu19W
-	 ETfxq7IlF3C5oIwWRgPDj59N1F3HfYFwqcw4vuZUTdo9z91TJSr9cTNfPoLPtQzE5pXef
-	 7QoOdn0SkkWpT+cCUyjiAaPLHkdZtmyYo9IcW0lQV2dvqAlB3g0tk8wbDQbNYxbdNq7SP
-	 xUZbuNFDEDBRnDGIn4gZspjcUOb3kT9/5/BxQJYXNyjzGG7/nDKUn/ewntTf0VUstbQ==
+	bh=X9hbRgzzqdzEgo+mQiwsrplcDlyPm54cxNU5JkvB5c0=;
+	b=BfEpDjCSHCSqSz8BkTcSsnYoCabyLsVWWFoVxzjfdNcxYwkTa0bkS9HVG3pOhQNN4Gwy
+	 lsuhWnQf+ua1rTCYT08jS5WvyNrsG0NKt9MFXHoFNp2UOqXRwvQT/SyW6yKWrw6Tqgiub
+	 fsU/yyAEP5NutJPmmKOoOwNJSgD4otjoN4ZnYD5OPbybWUw8nrT8oSh95iRSAX6dH0FRm
+	 5XMK+8O2KUZQC3JsyTzvHXH9XKBS6qB7S17KKU/6wjr/2I1UYVYueGGvzBp3uRjLYCvQM
+	 b8ZgBunj1yfZpkah137GugAnO1xDUY4bzdM3XAbnPK2kWs6qe6dwy6LxeeONsIH3lfA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lAKCu+o+;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="lB+oW/uH";
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25A8F606A32A;
-	Wed, 21 Oct 2026 06:07:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C20E606A334;
+	Wed, 21 Oct 2026 06:17:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lAKCu+o+
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDF221F000C9;
-	Wed, 21 Oct 2026 06:07:36 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lB+oW/uH
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B67C1F000C9;
+	Wed, 21 Oct 2026 06:17:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792562864;
-	bh=Bxouv0kn7Sc9hHczau5510tqW8b3G6JDVUWPALdKHHY=;
+	s=k20260515; t=1792563461;
+	bh=X9hbRgzzqdzEgo+mQiwsrplcDlyPm54cxNU5JkvB5c0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=lAKCu+o+pALPobQZAUGddKwHbG2VijoTyRwY+eqaavfcyR9AC9fJt0qxzrI8yXjP8
-	 HGCWfJ2+XVVfjt3J4CUTSQNZclicJGWWm4Oph3FvNVAzBOimYdJ9fKwsP5UIofmg93
-	 SkEUYcmKUPdoP0qq7PqfvQcPYvzqd1/anQZR4gg3PO1FO2Xi4F+wkljdplItfxbX1K
-	 xU6HFKBzeA7gESVpLwIpdSE06baOfBpYqF0gj2Tm8Qys+VM0YxXdzGbt0EKFtR7sAJ
-	 Hi6iThLAJ9RVVFU5FLkZv25b9xJbt5geXLip1RTpBRfJZLdA5WJxzZ7fO69qBkUrJ9
-	 a+xsaVawV3iOQ==
-Message-ID: <43b58ad7-5934-4895-b48d-5b5a7b92e253@kernel.org>
-Date: Wed, 21 Oct 2026 08:07:34 +0200
+	b=lB+oW/uHMa7tEG6aTH+Yj+nP4PTlPcQRRf/owEFV5gRaUKjUJN+hK8ni3Z+ordSwM
+	 +UByQRc7i/MQOZSLYadi2DQqwuOjT8JuNRfsWLO4PWGFNl0341FeIP1/eIBj/ACM65
+	 Pc5/13nRJl3awPgatKFlNnQ6lTlIiQ/i1PE2V6JH4O2F51mRlU3kapOruMy6xX9u9g
+	 VMUd4y/su+M3jv1NDjDD1P8Fr+1KIxGRIrvnboVqhLNc2S+0go0bv+pgVyKU2dtpuG
+	 QuvDGn7XK0rH6Q3Ak4c/3PvonFMa5kEuI8txyW8fNwvrB5mljHh7fs6mzayCjaHRiA
+	 E2JlA1fvO2oVA==
+Message-ID: <ecc66886-1989-4e61-86e7-fba6555c870a@kernel.org>
+Date: Wed, 21 Oct 2026 08:17:36 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,25 +52,18 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND v10 1/9] dt-bindings: mfd: mt6397: Add MT6392 PMIC
-To: Luca Leonardo Scorcia <l.scorcia@gmail.com>,
- linux-mediatek@lists.infradead.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>,
+Subject: Re: [PATCH] dt-bindings: cpufreq: qcom-nvmem: Allow generic OPP
+ tables
+To: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+Cc: Ilia Lin <ilia.lin@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
- Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
- Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Linus Walleij <linusw@kernel.org>, Val Packett <val@packett.cool>,
- Fabien Parent <parent.f@gmail.com>, Akari Tsuyukusa
- <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>,
- linux-input@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mfd@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
-References: <20261020173556.632798-1-l.scorcia@gmail.com>
- <20261020173556.632798-2-l.scorcia@gmail.com>
+ <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261015-opp-v1-1-f18fb6f9bae1@oss.qualcomm.com>
+ <20261017-calm-tangerine-marmot-2e8bfc@quoll>
+ <athPyI5nvYG4vmfl@hu-varada-blr.qualcomm.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -116,23 +109,27 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20261020173556.632798-2-l.scorcia@gmail.com>
+In-Reply-To: <athPyI5nvYG4vmfl@hu-varada-blr.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 20/10/2026 19:33, Luca Leonardo Scorcia wrote:
-> Describe the MT6392 PMIC and its RTC and regulator devices. This device
-> is mostly based on MT6323 with some similarities to MT6397 and is usually
-> found on boards using the MT8516/MT8167 SoC.
+On 21/10/2026 07:38, Varadarajan Narayanan wrote:
+> On Sat, Oct 17, 2026 at 06:45:53PM +0200, Krzysztof Kozlowski wrote:
+>> On Thu, Oct 15, 2026 at 04:25:28PM +0530, Varadarajan Narayanan wrote:
+>>> The OPP table node-name pattern also matches peripheral OPP tables on
+>>> supported SoCs. However, it only handles Qualcomm CPU and level OPP
+>>> compatibles, causing unevaluatedProperties errors for generic
+>>> operating-points-v2 tables.
+>>
+>> But the select should not select them. How can I reproduce the issue?
 > 
-> Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> ---
+> Sorry for the delay, it was a long weekend here.
+> 
+> With the attached patch, I get the following error.
+> 
 
-
-And here you write clear note about dependency, once you fixed
-bisectability.
+Does not apply, but exactly that sort of opp-table is already all over
+the tree. Just check yourself.
 
 Best regards,
 Krzysztof
