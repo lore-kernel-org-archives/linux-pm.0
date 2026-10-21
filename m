@@ -1,113 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.38.64.46
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792590182;
-	b=jiFti77aTURUjGB5txB8XuaygH70+qCJrv6o45BGIaA1EG8fTud9uUtB1e4cE0bvxFmo
-	 PgnE2T5P9Dhx/Q2tcsqO/Koh9eAceJH0hHmvpirobHMp2rfeccxwbg2sq5oWY8PDxd9ki
-	 6Iazdqnt2L6/W3oSl3TQGgAF9Drolgm5b3f6Db+WGySo7X3Ot3QhvbSEWI76KNpl9TNQI
-	 b77qoFTBCikf84gIxOgjUDsuSgwr7LkZ+Z7sDj1FHG5rlbnvgFw4Id7Z3nsZ3eCLRp9Rr
-	 QovXQb9riNrYdkEKZV9a3nMobgqVD0wA95zQi/xlctH5OYTnd8SPxZ0SPJ7jQgH9TnQ==
+	t=1792590563;
+	b=kRNq5QhvVKf6uh4d1CnDS8MYOhknjjPhiKuCXOyPmq0Qym3EuLYRdy/7kXdMMg/F6R0K
+	 lIPCjKS2n/TBavY72eYS58QRyhGZ2RjWdUrTFxQB3UMdO4hUzKy+lWnz6FiJ7X7H8zKqS
+	 NqeTo5jq1sdAWDgfpETDcjYxuCVL9G56RZloCmZULOkJpv9YxwipFZA9TfcwN3SoIC2mZ
+	 J5z446z8ZjBn4ua/MFHninUMPgQPGcar2K4gS/e1R9ZGBXKFaVBsnm6OauMuKLL3lx9Kc
+	 9VW/dHATQ9N9ElKsWOs8dLRpOgSR3DNuj1dQzl8afH0GWfdxE5iuNb5HY1z0JaRyPHA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792590182;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
-	 X-Authority-Analysis:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=zF9NZ8zldpsm3Sxh+HJmBn1FGdadQNBwM4F0LpqXvtQ=;
-	b=vns8Te6kwo3jRUiEQ0LuX3onWgRqZ6YaAEQHVmU16u6Zxhko/ANUlwOnDEtW1rWLRjrc
-	 7tF9G3lafQuRVYk+znZHYViKDIvtb/9hFiOKcPRdvdNLb2L2jYvsGR2JAiRa0P9CW737k
-	 QF8tensGtYK8FEVWEU32JeFumB2K9VgluCMbJGeVSn9J9U00qTcZd8zLWK6TZmXMk1iZ2
-	 c/K1j41h3+DvcFHf36eMRXWmSDnp1A3s4NIIXXeeAYgeOqOBD+s8NHqgEB2+q+auA2brc
-	 I8i000czvkNwz6S8st4fLl2l/JL4aDZ5FnQZNoDnRNlnNKeUJZuOkfpnmohNUtD/ymA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792590563;
+	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
+	 Message-ID:In-Reply-To:References:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-CM-TRANSID:
+	 X-Coremail-Antispam:X-CM-SenderInfo;
+	bh=uZg4BKspB/y+CooZbsgJ6fLMCO5/PIy2LqC7iUq3yNk=;
+	b=kXEeHMRCc4PNZNi8GLSpVh1Wwmy/tkfDqbOCV7LVppGwsJPzguvgSo2io4JS1SbJH3sT
+	 AOO/fCgzvBMYgQHqPZxEJnkqftxPag074cafZ9Mn0l6FII8D/78CEMnKwYhGc8ATzPnej
+	 b030FeMPnZIIC12YslAC/9dPlAoX3RuqWbbJdederBW95Ibq1IEFJ5HdTqCIbt09PK0BN
+	 ZNuIBvOqBz9k3QTCtfebaX9hKF8PhWKTIAhAEgUo+xTUVmt356vWGEtbdEnF2tmmlJUnG
+	 sPFwMHpC+lUiM6wuHZkHoG12OD4WP3I4cGh2S2W1BnfOGPGgiiix90jGARYaZnnREUw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pLF4V1yV;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=QBdOHoOv;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8845C606A31D
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 13:43:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8845C606A31D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	dmarc=pass header.from=mail.ustc.edu.cn;
+	spf=pass smtp.mailfrom=mail.ustc.edu.cn;
+	dkim=pass header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=PrElQ2nI;
+	arc=none smtp.remote-ip=202.38.64.46
+Received: from ustc.edu.cn (smtp.ustc.edu.cn [202.38.64.46])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A6EA3606A319;
+	Wed, 21 Oct 2026 13:49:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6EA3606A319
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mail.ustc.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ustc.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pLF4V1yV;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=QBdOHoOv
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69LBgM5o4168152
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 13:43:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=zF9NZ8zldpsm3Sxh+HJmBn1FGdadQNBwM4F
-	0LpqXvtQ=; b=pLF4V1yV5SxgrLhU4KqgqrqQMMYHGCxNNptCrHC5dd+Xd4YH1zP
-	oR+maJjpJ8yn7+UUPCoN36mMMwmUcoDOSDe66fr0EqxqGfNut5KG0CXaaD8ExdI7
-	WzbKVxl9FrHLmxvv11Rf/kObj9/7cN1xs6OPdALcPiWQ96ml9/3YrxD7bnYi0jXd
-	t++kBG0DS2u1jY8SGS7S9oSTEljcouD7ppF3ob8R/jieXQVjT3SwRHIEJ0wrUX4U
-	lSJeO7siafAOCqkE2jRWA0sna0HC0h/zjHmD+wCGZOinlMgiRc0awmyFC00X0vt8
-	/MUFJOJ8J9JMMNYXdgZN3B4n5hEIVQGfbFw==
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4heda0m6hp-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 13:43:00 +0000 (GMT)
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93f37c94ceeso329274885a.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 06:43:00 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=PrElQ2nI
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792590179; x=1793194979; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=zF9NZ8zldpsm3Sxh+HJmBn1FGdadQNBwM4F0LpqXvtQ=;
-        b=QBdOHoOv6yLG1bEOrNEqZYxU5EZzTYYwBXPUs+IWZtSyoesj+MRovjtbgjoMVOvUSk
-         EPM7cDyY6kJybeYsY73hFG1gy0K/DZ9YyZgQzkpTxYqoycSKWmamL8Qo91HbbpbULvWh
-         Mda59Vmi12GWlMxuBra1CWsRG7HUvNFonf+oKSgUFcjK+Nta2dd0O9KWsiNplYVrCEmv
-         QoxtN7PpkH0Qt02pKr8ftOi+QTsl6kScHVGZd5NedNdUt3SdZY2bqJnADyf8yD8LtRUT
-         OzvITQhuTbxgvBBx2zrOJp8csNqryrbsJ8pfLiZeujA43Ohsi1H0ilhIruWDUjQ0uBa0
-         4JOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792590179; x=1793194979;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=zF9NZ8zldpsm3Sxh+HJmBn1FGdadQNBwM4F0LpqXvtQ=;
-        b=dcZqfoDN068JSE2/sP9C1YAaYCyDncCDMHiI0D2fPxdFhQhEkBM5NQvEq00ZkYJxWk
-         vCEWfm4wKJNTJF6M/heF68AWq6nQWn+IP+OQQYYEmyT+9dOm2qSgkFwNr0Cfu8C6LIpc
-         KWbi9MVVivxz6WqpK/djpbOdnQNE+fcSDxb3sEul1M1UjR9hE5UOa2soJp9QqWydmWAQ
-         jkYqTGhkD+dJba2oIje4AbLkM4W//FwWh8jwqUNwE1j6QYgMw9hzCB9T2AZwxfEB3Jyw
-         qLe7Dt5cw/VSwuv2K3DKvP+qLZaTjYFW0ArBut/y3ZDP/w6TleSIqb+GlZHgftK3JexY
-         XtSg==
-X-Forwarded-Encrypted: i=1; AKwUvBxVRUcX+fXjxgjlGUetHMmyY4eaTxvfXdKtw5C2n3+48WI7N6PDz/weuv1FQ2L3ClLVjAm+HFWnqw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKLpSOibVlziWpbazXEAWxkvGEMSIhXO3MtLK2DaULdHojloT2o
-	aH+rS4YezFkqP8a2qIH0O72GsFuk0od5OGk2GO1t2eVmjr8USngHh0dkDcKa0s+4IBKPQRIq4T5
-	4vgo+bN8lPQIFujI3+Hzz75GxtBMfOTf7dtf6L6LC6vzt0CH3pw5ciyzsbmqnMg==
-X-Gm-Gg: AYBFou3utJTo3LFXp0GXQ9If3sLTClErlk+ZfdbYDnK0beukb2fvXNzCv6ykhxdPeNX
-	QiHRHhY4vI0iv45ngIbg7WR632C7AXgZ/+fP29PI+7g0b6JRVpInPAbr22mg/+iYRSy0nzs9Duo
-	u7ZokdRbM8ltve5sq/Us0wbBZ3rax8budynXCaRyBA732AEWsCuFmefVx/+xc0NYkP0gTaYFtk9
-	wmx73cvaUW9fREnUY+BX8OWqdXZUtvGm7C9gC3OyYeNE6myXlX2aJPhlObkpUPJF72HVKA/wVb0
-	VlWTtYprdZuVhtH9d9PufKhPH0NMavOXBy0pVUVaxJR9CJuMpwJuJrTbWAyzNu7yWYWmmIixDiv
-	R2VQRxXa+N/NG03hVaXnj3VxoL5Fxfq4naw==
-X-Received: by 2002:a05:620a:1a19:b0:93f:36d8:5334 with SMTP id af79cd13be357-93f4c66bce2mr859700885a.21.1792590179493;
-        Wed, 21 Oct 2026 06:42:59 -0700 (PDT)
-X-Received: by 2002:a05:620a:1a19:b0:93f:36d8:5334 with SMTP id af79cd13be357-93f4c66bce2mr859695285a.21.1792590178874;
-        Wed, 21 Oct 2026 06:42:58 -0700 (PDT)
-Received: from juillet.box.freepro.com ([2a05:6e02:1041:c10:297a:d3e4:3ba8:fbfd])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a1fb845dc2sm73536425e9.8.2026.10.21.06.42.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Oct 2026 06:42:56 -0700 (PDT)
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-To: rafael@kernel.org, daniel.lezcano@oss.qualcomm.com, robh@kernel.org,
-        krzk+dt@kernel.org, conor+dt@kernel.org
-Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: Share THERMAL_NO_LIMIT between kernel and DT bindings
-Date: Wed, 21 Oct 2026 15:42:43 +0200
-Message-ID: <20261021134243.35103-1-daniel.lezcano@oss.qualcomm.com>
-X-Mailer: git-send-email 2.53.0
+	d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
+	Message-ID:In-Reply-To:References:Content-Type:
+	Content-Transfer-Encoding:MIME-Version; bh=uZg4BKspB/y+CooZbsgJ6
+	fLMCO5/PIy2LqC7iUq3yNk=; b=PrElQ2nIsm9MEcoRGnwjnvUBJBgamTyjrOg/v
+	/hoK8j+AT8UKFPEtKlmMWh3LM0Xbzhzs/CpMHfmLVdtzjwi5lFd/45SfMuFUWKrD
+	6vm1Pzo72ZY+9T+LfFJmlRpSd+HR4vPXMtMmuUNNAiLylMd8siATq6lTjo/uG6Ah
+	hfqHvs=
+Received: from [127.0.1.1] (unknown [114.214.181.25])
+	by mailimap2024 (Coremail) with SMTP id 3pYKCgAHfzPNwthqAOokAA--.948S2;
+	Wed, 21 Oct 2026 21:49:01 +0800 (CST)
+From: Qianhui Xu <xiaqinghuan@mail.ustc.edu.cn>
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject:
+ Re: [PATCH] power: supply: qcom_battmgr: do not report power_now on SM8750
+Date: Wed, 21 Oct 2026 21:49:01 +0800
+Message-ID: <179259054168.209323.8102186130128474174@mail.ustc.edu.cn>
+In-Reply-To: <5bf3636d-be7a-4800-9914-808d2fc5ebd9@oss.qualcomm.com>
+References: <20261013002124.332111-1-xiaqinghuan@mail.ustc.edu.cn>
+ <5bf3636d-be7a-4800-9914-808d2fc5ebd9@oss.qualcomm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -117,81 +64,78 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIxMDA1NCBTYWx0ZWRfX5DNb5eNLP1Db
- Tu+ogV5HGBG7OqoZU7TFs5XWYuvRf0ZtllNBKuN4lKqpmv8sudE+av/8/JHxQqqlR0CPl6+BDbI
- aJL+F6GJlOLLTzfqkzW8ofB/kA+RnaOgfy8v8zP4ePpzo9Z8twMtLSN9wktes4hxS3Ujn7q9dDk
- AekM/P4QvL1OBtKr8KRgKAdt9ofQdE9HjdI70hgnHMfUutyw8r6X+7Zj+z7d1v5/L3KLRH/IqBB
- E8Ehwt2p96IXs9hTB6BoKa2Uv1oTy7YgrN6arWfbvOklznMV3UFHqsUJEHzD2kjtLOICm+di/3u
- OIK3LtWQwcqWA8ldrwN9Cz3UxV1gpZduc3wU+5F4jpbjksECCZ1RJT65tMHEdQ3v4p8W9guIek6
- VsSbxKPiIeiyb7dnCo1Jgi/1O80o8oH9w2tTJRdBw00d76U8G3ASM++rIwusyXsiNyvPlFfKsab
- 06cCQMdmWuSJFw+X79w==
-X-Proofpoint-ORIG-GUID: IxdtCIVi5vh28Nrhzhyk9hYogasR-qUf
-X-Proofpoint-GUID: IxdtCIVi5vh28Nrhzhyk9hYogasR-qUf
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIxMDA1NCBTYWx0ZWRfX4/kcCIaCgoMU
- ADVt3JYpvyUMS/+tvZFpFA3AzFGwBFTktjA+fM9p0CDuR6bwT44AVdkzgZfUk9At9vonGXJeLBv
- VHSMVx8Zn+Mj+cLi+54iwI5O6yzGTRM=
-X-Authority-Analysis: v=2.4 cv=HL5WhYtv c=1 sm=1 tr=0 ts=6ad8c164 cx=c_pps
- a=qKBjSQ1v91RyAK45QCPf5w==:117 a=xqWC_Br6kY4A:10 a=660iZSQnnn4A:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_K5XuSEh1TEqbUxoQ0s3:22 a=EUspDBNiAAAA:8 a=DIsPBAb7muRbsDREbf0A:9
- a=NFOGd7dJGGMPyQGDc5-O:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-21_03,2026-10-21_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 adultscore=0 impostorscore=0
- clxscore=1015 phishscore=0 suspectscore=0 bulkscore=0 malwarescore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610210054
+X-CM-TRANSID:3pYKCgAHfzPNwthqAOokAA--.948S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxZrW5ZrW5Jw1xCF18uw1rJFb_yoW5Gr4rpF
+	Z0qF4DGw1DJFyfZryvv3yDCanYvrZ5X3yjkFy8GrnrZayDKrn7Xr9Ikr1agFy8Cr1rWFW0
+	kFs8K3W5CF1DCaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvjb7Iv0xC_tr1lb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
+	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xII
+	jxv20xvEc7CjxVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I
+	8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
+	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8Jw
+	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lc7CjxVAaw2AFwI0_JF0_Jw1lc2xS
+	Y4AK67AK6ry8MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I
+	8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUAVWU
+	twCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x
+	0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_
+	Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjxUI7
+	5rUUUUU
+X-CM-SenderInfo: 50ld1x5qjk3t3q6ptxnoox23vfohv3gofq/1tbiAREHB2rXwVRrvQAqsE
 
-THERMAL_NO_LIMIT is defined separately in the thermal core and the DT
-bindings, using different expressions for the same no-limit sentinel.
+Hi Konrad,
 
-Define it as 0xffffffff in the DT bindings header and include that
-header from linux/thermal.h. Remove the duplicate kernel definition so
-both interfaces use the same unsigned 32-bit value while preserving
-the existing DT encoding.
+You are right, and thanks for stopping on that sentence.  "Maximum-load
+updater" is a phrase I invented; it is not a QBG or battmgr term from any
+document, so I should not have used it in a commit message.  Let me
+restate what I actually observed and what I am and am not claiming.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
----
- include/dt-bindings/thermal/thermal.h | 2 +-
- include/linux/thermal.h               | 5 ++---
- 2 files changed, 3 insertions(+), 4 deletions(-)
+What the driver does (no bug here)
 
-diff --git a/include/dt-bindings/thermal/thermal.h b/include/dt-bindings/thermal/thermal.h
-index bc7babb1a67c..018f75febb9f 100644
---- a/include/dt-bindings/thermal/thermal.h
-+++ b/include/dt-bindings/thermal/thermal.h
-@@ -10,7 +10,7 @@
- #define _DT_BINDINGS_THERMAL_THERMAL_H
- 
- /* On cooling devices upper and lower limits */
--#define THERMAL_NO_LIMIT		(~0)
-+#define THERMAL_NO_LIMIT		0xffffffff /* ~0U */
- 
- #endif
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 083b4f533933..a6f635f0e1f8 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -17,12 +17,11 @@
- #include <linux/workqueue.h>
- #include <uapi/linux/thermal.h>
- 
-+#include <dt-bindings/thermal/thermal.h>
-+
- /* invalid cooling state */
- #define THERMAL_CSTATE_INVALID -1UL
- 
--/* No upper/lower limit requirement */
--#define THERMAL_NO_LIMIT	((u32)~0)
--
- /* Default weight of a bound cooling device */
- #define THERMAL_WEIGHT_DEFAULT 0
- 
--- 
-2.53.0
+qcom_battmgr_bat_get_property() does not sample anything.  For a given
+power_supply property N it reads the 32-bit slot that the QBG
+notification buffer reserves for that property (in the SM8750 variant the
+battery property array starts at context + 0x6a8 and is indexed by
+property id, so BATT_POWER_NOW, id 22, is context + 0x6a8 + 4 * 22).
+The driver faithfully returns whatever firmware left there.
+
+What I observed on the unit
+
+  - charging, actual input well under 1 W: power_now reported ~89 W
+  - discharging, actual draw ~4 W:           power_now reported >100 W
+  - current_now * voltage_now in the same samples stays in the expected
+    magnitude range, i.e. the other battery properties are consistent
+
+So on this platform the BATT_POWER_NOW slot does not hold a measurement of
+present power; it holds something closer to a configured/estimated ceiling.
+That is a statement about the value, and it is reproducible on my unit.
+
+What I do not have
+
+QBG firmware sources, or a public document describing the semantics of the
+BATT_POWER_NOW slot.  The "it is a maximum-load figure" reading is my
+inference from the two facts above plus the vendor battery property
+interface, not something I can cite.  I also cannot yet say whether this
+is a property of the SM8750 firmware build, of this OEM's configuration,
+or of the slot in general: Fenglin's earlier reply (default supported,
+OEM can customize) would predict the latter, and confirming it needs
+power_now/BATT_POWER_NOW readouts from the stock Android build on the
+same unit, which I have not done.
+
+Proposed wording
+
+I will resend the patch with the firmware-semantics sentence removed.  The
+commit message will keep only what is verifiable: on SM8750 the reported
+POWER_NOW is not a present-power reading (with the two counterexamples),
+the driver returns the slot as-is, and therefore this platform should not
+advertise POWER_NOW.  The code change is unaffected: add the SM8750
+variant and reuse the SM8550 property list without POWER_NOW.
+
+If you happen to know the intended semantics of that slot, or know of a
+QBG interface document that defines it, I would rather cite that than
+describe it in my own words.  Otherwise the factual version is what I will
+send.
+
+Thanks,
+Qianhui
 
