@@ -1,99 +1,98 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=209.85.208.42
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
-	t=1792566389;
-	b=4KyzXWKfmvjYZDv4tYs+P6GGdoT1yh8K4weJBd7jMroCOJaSwH97lB1sP4y+xbytQ+1E
-	 eO+wfJKExd/+yLOg7+REC1UkG5fyuRJLfGyLWoOpUku3Xuo2ayUTdYyLGS6AduJ3es32t
-	 VpcCE1xARVa+X+poGx3+cgFP5DwBeFUyvP8gnErYgfT0t4uTuiA7S72U0Emc6t5BGUIRX
-	 i0CYLNUm1futXs9wt/wA/IBiJw/Lx6KZ68z9/JP8OBwNn5BdbxW2jrtubgIVDz7i1zOT0
-	 LZ3C22lTJK8+mjbqhn6gD20dV/8PDR27DCeEJ00Cj5od6ZBa+y6N804RO0vB91qm+dQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792566389;
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1792569929;
+	b=bwz6nPb0gHsfOVSUiPb13+b/gzQrW5w7awMEpI/t8pdSSrOL6FrichbKT9GbB03ZNE/6
+	 gQ1zN8oTFzVDgX3aXS5CwZue9We1OSMLYzL7XFXAK+QvT0opY9j/gQenFgPbAAfywityU
+	 Pfksp3V5FUFp2JA228hosatGWbmAoeVc+0LP9vi/RzEGsDJxoIi9ZwhLyZYxJKzwaUfP9
+	 W0902vM2V1b5AM7vgZZhpa5Ci2D0dY9gGdBal4MMppzrVjIrtNxQUymDBaDAzpgm//SqU
+	 zT7Tv9z3SLSebpVevnhiILC/fV1HlSPGEkXJ8xbeNSLw/pjq2iNZ+ayGl3IojDJJ/5g==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792569929;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
-	b=KlnzNqpXlM/nyziB04VDOiVNCf82lxM2CcLLb/AvsX9gIT2c2wMAhiXwCBMLBfPNGz/p
-	 2RtjvyYZXx0AAn99YE0DjS3zgRk1D6rLmnDew7JUJCQLJdcJPN0UIJZD8nDuNo3iSCzMj
-	 LsEFCBaTMYJkZU5ZGTtSN0M2Z0W+ADiLyvJuvzMYqRelib6WhBZhi2WiZxCP19BCsltnU
-	 +YoAThWhp+GgaVEXzimTggnUYNa3nCXGzQT9tW81Q+WsHO30Dpv3pfnNsJvnit4DYW1gj
-	 tXQEMjhljM4BWKAO1xjpjkC9YCA41IeVd+UisiwVw8slDO+hRpo6BXNvS8jpPgN8qhg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=ucrcGnxXyuYhogAmjNJch54rUpgpdnz/8hQqaKskjsk=;
+	b=Ps1ZTkQOrjdlw5B6EEZ00pS57IVldX/m4vvL0HiC7/ohjmlxusI5J6xVJq0gQqVMrcdD
+	 ZUc4LCdXQ2RaY99XQyJKVRBAO5mGiI9/+BTXCMePLjKov5p7406qjqodbUL6ZDpq9ElND
+	 PFVl4/c2IMw4vp+EicsZIQWt6BsFfI2kt6lFazy5ChnENNAtC1lfEXgB9Qk9Pp7Qcptfu
+	 zY3K4+GoZ9mQYSvY3q7RtjBl8+VBU9WIE0OGvz+FqWsJ/5GG+QOaaeMNXq4Yxa3IUYAT+
+	 kAtL/n2NIqT2WR8nTx4jCj9mNTG4cmGmx7xrCMgRVOdKvMQUvpiRNQ6bId9HZTebqlg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C2aW6AfO;
-	arc=fail smtp.remote-ip=209.85.208.42
-Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jwG847XJ;
+	arc=none smtp.remote-ip=209.85.128.54
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B70BF606A31C
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 07:06:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B70BF606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E9BB606A31E
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 08:05:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9E9BB606A31E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C2aW6AfO
-Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-6afbc363efeso538416a12.3
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 00:06:28 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792566387; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Sib/Tzt8+aY4lmGLUXJhYVQCW9nVSwI/Thmq3qJIDPfoZO++lejekyPIaC5DXL7bS5
-         tP2cFogNXm13P2w27oU/a9B58syIcTT1Z5DUAlFWLKluvhAks+FKmYZg2OCJV5f6MQAJ
-         X4+rMZZWSYlMTbzaBSQIwUSDcqjrQC0JVFp0IvW3uPumCwU7TXtfndIhI/hVi60marDO
-         0Ejj8TyWRk5fOTSIvtSzKytA4I33w69GArFoNSqEfnVnJdSTRvImwgjrddiampQC9yem
-         ghrbXCkMF+RjJW4jEE1DguwEVwBBRCGaDEm//zF4eZvnR+RUnEkbgUE2bwhGto1WIiqr
-         364w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
-        fh=0BCRNupJulijGT3QsFBa75BAqDo3lAhAwga4WDKIlWs=;
-        b=nJfFPJkNPmoxFeXU08gSd9YhJzu2nM+vcHu8Y2I49SFFwogBHdRGfHvL6ahKJCqM64
-         Cctq0WAEolzlmDFx8KcTQU4FfAy125iOFlegQA1qO1S6skAYdGbL9Djuf62dWXkCztjB
-         VPphiHCz9QmqM0GBCWCIzysxuubxVVdEqyG5pdmHWYA2meq2uefoTJfRqtKzzkOTR/ub
-         tBy/UuUZ8wbMjopYoxstHE+JXX/rlbz4g0b8VEMzKgiRY4Z6FG09rqfmgIctvxAtpdsN
-         yhyUduLXVrtkANRPKsAr0nBw3x92ubvCdK68s4VnWrRhh5XDWpi3RogobRZuVmBT2uVX
-         kvMw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jwG847XJ
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a021c809e3so3114925e9.0
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 01:05:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792566387; x=1793171187; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
-        b=C2aW6AfO2tXqS0Oxlx14bTBMVNZFQOYYIP++4Zjy0XAUzXRNiZIyd/we1pVq076aHi
-         iVYIhUPzTRpHWbk8TgjZRClfvVa/ZIrYZGMbZO3DJMSCV5UIvg3fS/yC6mcleMkr5AZl
-         CDc9kVye1E9N/IkJg93m7mi7sqO0whCAZMX9QcPqw07cX41RvUCWYBX2Ni2g9I4qZnBc
-         vQc5Edq7qEPfSyUtvQ+/172O9D4MiKBbq1sWvU7Tk2+K4adLUinXmEHtrQ6sATHMl6NQ
-         saHvu7vFC0jl/+EFXD61TpmMKJksXH1W78BY/OXH4ikoNly2no/97ZmvjpXcLfZRBf40
-         7B3Q==
+        d=gmail.com; s=20251104; t=1792569927; x=1793174727; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ucrcGnxXyuYhogAmjNJch54rUpgpdnz/8hQqaKskjsk=;
+        b=jwG847XJhJbV9MnwCiFohonUbKnj6JWHGBY63H4xDYKx9C8HSElWVEdTmW0dTxn5qB
+         sg+ehAJ1WM3rvjLZsCQAyeWcyIn+yGDKvq915orp0dRrGGSNEMqdlaUHwuIrPYs9YmT6
+         uinEITawyfHiGrsnhbTCBBwIZtLGAoDcVMadKyOc7LT0ycdfZZusmUyj53GLqnRHFaB2
+         4H6I+ZKSN4c7bynljJJHON45X1/mIBtXjHBmBFiE8aDfiJBB71OufeK4MVFGiyH6LSDR
+         PfXTgcOPZbpUcUyuE5ma1VNoCVyh6XnM+A7hD72MD0yxKr+OjxIxyJnZyh4dPNpuluyB
+         1HJw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792566387; x=1793171187;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
-        b=0cuP9LgAkm16xfI6FuoLeA9l0ud/GgHllce0+RsUDBWNdBTkZXXdk19LZqGBKYbD3T
-         XW4N0kP9IS0cjZVm+Cf26O7lNluKwZPjxRFmI/ZnECx/6NqZlrtASur8VCt4/A7fXl09
-         ze/K7Xyj9mDGaUPnWFCkkm2gcKGkiSKvCqyd79m+aR9nqXB3uWhLVQ+75IDd5waHZbWR
-         lQPEypOyvkOzxEjtp+iOuCp+nkH8Dmr6i5HZgpnetNXOcpQQm2snssD85Hvwop6guTFF
-         Z2JwAqhAZlaZN9OBuqcQvA+UIlAio8iMdAd2VOt7jATflkCU6GTNAyevmp8TEYjeN+gr
-         Y79A==
-X-Forwarded-Encrypted: i=1; AKwUvBzIXUl3oZPa7m+G5mrqOiSwwd8fwYBTpfir/daR6sskUI3FTvrJrSgaL2IuzdHLGfLHq/aO68cO/Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKMPeGZz9HrqSRwuo2M54en/gecW1pEJIxB6lgS6esSerTraK4F
-	EknWoyOk3GpnAEe+/HN+X6YJ+UEkcmM2LS6upUxmKtOzNsjNHSSlj7i/pCfsjDdIHhpqSdxFC1d
-	XWmrUNFJZR3Pr4PZPVzGfO2FD76ribZ4=
-X-Gm-Gg: AYBFou2SZlgr0ab+/HgTAmv6C1FIOmQOsRpePGGe9Cb7lxnlPfqOh7vJonepqprMmQK
-	vDYTWRwAundk+G/4rPYaZNvDk4GGntn5kB0fSZ3I6kXfFYHVhnEp1JFG7mYorukpG0ZYnxI+Mj3
-	SuvapQas6ATa3GOljcCd8Wx9308R6Q6UECrnf6+iA+fLZM6vXVCCN9HRh1IxKVEoWht2sRMo0Ps
-	yD8zh7VAV0Uw/lPsU8Acif0JLOCJPnFTWuY2JqwMBOlUK0th230T0KY88raJttGiKS2ZP1QXn6m
-	bBzcibbEGkp84xk5j2+ZlTzVP7CbzCMd9MKBmDY2S21SFDNjoOimn8Wp0pQIgnvfISomKhQZ/ZR
-	52h6FJSf/GHwDemVkLvgP/aG+xWxj/aGqGuA=
-X-Received: by 2002:a05:6402:1585:b0:6b1:cea1:a011 with SMTP id
- 4fb4d7f45d1cf-6b40893d0e9mr633902a12.0.1792566386899; Wed, 21 Oct 2026
- 00:06:26 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1792569927; x=1793174727;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ucrcGnxXyuYhogAmjNJch54rUpgpdnz/8hQqaKskjsk=;
+        b=Tks1YYF4Qd617D/uF7SSAEnlvYdz22LvBYyRbRJom9GwiKk1mstXWEEnLIEYo2xdpc
+         7yJiutm5Jr+G2tFkx0mmR9vghQJI/XSindr5Cgc7b3UI8HH41D46iDCZJaBwnULfbyIW
+         wnwedGcqovm3lvpPPakxjWV0bv452LCPWphLPOqvvMcm09vDkqkuyzaCAPBHbNKdobB/
+         FbtrhU7dB+Cq3A7nh5ntphfrmT1yDTW8AB1da6VUWLzSTXS+FWg1Q7tQgTGu0j/IfIY1
+         FIfAp9exw6etW07IRhuIU0FL/V643EVEBdEvw9rZokv0aQOl0e584l8HHaQ9oA1NwTW5
+         L4/Q==
+X-Forwarded-Encrypted: i=1; AKwUvBxuqYhqbtNBdb7hwq0kRf3MxhJoRSL8TCXz/ZLtBEjL/zid3bh1eWRaKyFbMY+TcjYaMWCxuUYRKw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYL41LJ4bIoY94b2+GYEK90jFwIutdajZ9qLsPmlgP4Jo+uAnjzA
+	nhKaK7fu0WVXIRqL7g4F2D9nVoVMeQIxF+DA3mP+1/SV5jAKYCYqVMjU
+X-Gm-Gg: AYBFou3X4Ey4neLvW7EXSpWmDAADYCCAF2Lk34ZixLGPcyhgP1/bNyaY8/E8j0CED/m
+	wN6lKAl22Wyn9qwqX3Sjmqck6jXBcB5Yxe1zEBeypk0uU5ey2dKsq/X6DzrRhHPBOFHGcnDefwf
+	IZYX76RHbedM4nBoLBRkoGNAXkU2goobDF7Jx+6eCWTBB395vX4SkYkf+mxGSgZLRJwuc7OgmvL
+	Htz41tsEaXjipoV9kgJu8VdClEbMZlS7eOxTDsEUBud6lqHjFhA8pBG1cvI4q50Cpws51SUVXco
+	IXVu73kV7ClgmTfOjvA58DmCZSzY1VM5cyXI2XRtAhTqo+g6wp52OCFHWRlBHC2FEOXCURysmmN
+	TXBAqZ/SbC6dzh0hpEQpUartJgfURIQvJ9tRQjkZxgkfNzkVXYzewlLSwTPLB1dn77sV5RHMHLJ
+	3z0lr+6Ab6RBCLdcu/hH5GEA7DRoP86UN72KLf4VYn/e7/7L5Zoe4tkBj80/xfqNbEn8CL6remv
+	h1PX4e1GSp6qhTd8y+3IlRWioXpkmJ9TAUILSBYytnHqluPcLmee5JZa/6z6YtPTw==
+X-Received: by 2002:a05:600c:c4a7:b0:4a1:d41a:afc2 with SMTP id 5b1f17b1804b1-4a1fd8cb7aemr24443845e9.3.1792569926424;
+        Wed, 21 Oct 2026 01:05:26 -0700 (PDT)
+Received: from localhost.localdomain ([94.252.75.12])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-4a1fc1066cfsm38928165e9.1.2026.10.21.01.05.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 21 Oct 2026 01:05:26 -0700 (PDT)
+From: Oleg Keri <okerixx@gmail.com>
+To: Ulf Hansson <ulfh@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>
+Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Abel Vesa <abel.vesa@oss.qualcomm.com>,
+	Akhil P Oommen <akhilpo@oss.qualcomm.com>,
+	Rob Clark <rob.clark@oss.qualcomm.com>,
+	Thorsten Leemhuis <regressions@leemhuis.info>,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	regressions@lists.linux.dev
+Subject: [PATCH] pmdomain: qcom: rpmhpd: don't clamp gfx and gmxc before sync_state
+Date: Wed, 21 Oct 2026 10:05:17 +0200
+Message-ID: <20261021080517.2161-1-okerixx@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,37 +102,53 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261020173556.632798-1-l.scorcia@gmail.com> <20261020173556.632798-2-l.scorcia@gmail.com>
- <43b58ad7-5934-4895-b48d-5b5a7b92e253@kernel.org> <CAORyz2JaJ40+F1oyrvY_0WdqH=fritbPuuQaZ98sXagVayZPLA@mail.gmail.com>
- <2426ffdd-9438-4166-a67b-96620650a59b@kernel.org>
-In-Reply-To: <2426ffdd-9438-4166-a67b-96620650a59b@kernel.org>
-From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Date: Wed, 21 Oct 2026 09:06:15 +0200
-X-Gm-Features: AclHuK9050nRGHSTN9753pi8bjuF0vHRU3cnUbJida-ygLIdS4pPdAAtcMwmgKA
-Message-ID: <CAORyz2KsozjmcDCd+KVfvLokuxs-YAP0E5yJawHECu9pbPQmKA@mail.gmail.com>
-Subject: Re: [PATCH RESEND v10 1/9] dt-bindings: mfd: mt6397: Add MT6392 PMIC
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-mediatek@lists.infradead.org, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>, 
-	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
-	Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Linus Walleij <linusw@kernel.org>, Val Packett <val@packett.cool>, Fabien Parent <parent.f@gmail.com>, 
-	Akari Tsuyukusa <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
-	linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mfd@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-> The dependency of this patch. This one uses compatibles defined in other
-> patch.
->
-> Just apply it yourself and run full testing - you will see notice about
-> undocumented compatibles.
+Until rpmhpd's sync_state every vote is clamped to the highest corner,
+so that hardware the bootloader left running keeps the rail level it
+needs until its driver takes over.  Nothing the bootloader leaves behind
+runs on the GPU rails, but the clamp hits them anyway: the GPU clock
+controller's probe runtime-resumes and suspends its GFX and GMXC
+domains, and from then on both rails are pinned at their highest corner
+until sync_state.
 
-Thank you, now I get it. I had already removed the example from my
-testing branch and removing the example also removed the dependency.
-I'll run another round of dt tests to be sure and resubmit without the example.
+On Glymur gfx.lvl has 14 levels and the clamp holds the rail at the top
+one, 0x1d0, while the GMU's own performance table ends at level 11,
+0x1c4.  With the GPU driver and firmware built in, the GMU boots long
+before sync_state, and its CLX DCVS calibration does not survive a gfx
+rail held that high: the firmware gives up with HFI_F2H_MSG_ERROR
+0x007306c7 (ResMgrCalibrateDcvsLvl), the first HFI_H2F_MSG_GX_BW_PERF_VOTE
+times out and the first GPU init fails.  On the Lenovo Yoga Slim 7x
+Gen 11 this means the compositor cannot start at first login.  Pinning
+gfx at level 11 or 12 instead fails the same way, level 10 and below
+boot fine, and pinning gmxc alone has no effect.
+
+Leave gfx and gmxc out of the clamp: they have no bootloader-configured
+consumer to protect, and the GMU votes them through its own RSC.
+
+Fixes: 93b6c8d10fad ("drm/msm/a8xx: Enable CLX feature on Adreno X2-85")
+Link: https://lore.kernel.org/r/179248663855.32151.9955864156939592299@gmail.com
+Acked-by: Akhil P Oommen <akhilpo@oss.qualcomm.com>
+Signed-off-by: Oleg Keri <okerixx@gmail.com>
+---
+ drivers/pmdomain/qcom/rpmhpd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
+index fa8fed5bd3e5..2c9d4beeffbe 100644
+--- a/drivers/pmdomain/qcom/rpmhpd.c
++++ b/drivers/pmdomain/qcom/rpmhpd.c
+@@ -1006,7 +1006,7 @@ static int rpmhpd_aggregate_corner(struct rpmhpd *pd, unsigned int corner)
+ 	unsigned int peer_active_corner = 0, peer_sleep_corner = 0;
+ 	unsigned int peer_enabled_corner;
+ 
+-	if (pd->state_synced) {
++	if (pd->state_synced || pd == &gfx || pd == &gmxc) {
+ 		to_active_sleep(pd, corner, &this_active_corner, &this_sleep_corner);
+ 	} else {
+ 		/* Clamp to highest corner if sync_state hasn't happened */
+
+base-commit: 2efb7a11f1aa4d2dc285fe2680cca22cb9f72f64
+-- 
+2.55.0
+
