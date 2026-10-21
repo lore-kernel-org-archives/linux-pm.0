@@ -1,100 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.174
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792565202;
-	b=eHozXjrS01BZfEoSgRzLzq92DmYeuC3NinYoKiu5NRV3cz4DEeQYNxMmq/gkxPeNN6xd
-	 9pND4CunxnWDr7qEYuu14/NTrhlqTNa25P9wAkfCNCzzj1axdBI2OJOduSaVxtQY/mfqq
-	 6+46tnf3PJnyZZP3serlUb/tM9rbuWx0VRqe8Cz5GayFK3Xrakw5wx+7AUuwMW8PFenhG
-	 6fsUDWa7Mgt93eYhafhzWevuorAKddxWvH6qd8qvSWrRHeqyPN45CGTNuWqAV7fZP/nG/
-	 o/rAOygr9li3nLuKc3TcKUCRGpy94T6168v+LMiZSvfU0q6eJJz7IGme/u8t+kFAKTg==
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=209.85.208.42
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
+	t=1792566389;
+	b=4KyzXWKfmvjYZDv4tYs+P6GGdoT1yh8K4weJBd7jMroCOJaSwH97lB1sP4y+xbytQ+1E
+	 eO+wfJKExd/+yLOg7+REC1UkG5fyuRJLfGyLWoOpUku3Xuo2ayUTdYyLGS6AduJ3es32t
+	 VpcCE1xARVa+X+poGx3+cgFP5DwBeFUyvP8gnErYgfT0t4uTuiA7S72U0Emc6t5BGUIRX
+	 i0CYLNUm1futXs9wt/wA/IBiJw/Lx6KZ68z9/JP8OBwNn5BdbxW2jrtubgIVDz7i1zOT0
+	 LZ3C22lTJK8+mjbqhn6gD20dV/8PDR27DCeEJ00Cj5od6ZBa+y6N804RO0vB91qm+dQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792565202;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792566389;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
 	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=MFx6RfKZoDg30I8aWbaaH8/QBhrTkiLCB5URy2j6R9Y=;
-	b=VHV4Em6Gm8LhsxY9Eg0W0TgLxWhvfrmyF0nxeL+9JytJ/eHt6xoG25Esa2gYAkLcpMvi
-	 7JendCjbEHV4l+W6Xtq3GQazZCdbPgozj4wrLm+LTcVy6nxzVRvpSSC8deSs7JcGy1A+Q
-	 E1PXY7jacFiS/kFtWssNu2L+GM1+jjZ956gHGJpfTH9+9/WvCyIpgfiyGh5XK9/W/YqUY
-	 8eJX0cjFXhWWnN7SEx65/37XQJgrFWRBmvbmzr4Dx2Jky+CR+hdEp0Rwz8tZBFGNg6aDT
-	 1lOIL7A8tgai/onYb3gi0rKmSmvoqjwrr9UsYPjXDvFZHQn2TUfShUKZMOmFQrXCGkA==
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
+	b=KlnzNqpXlM/nyziB04VDOiVNCf82lxM2CcLLb/AvsX9gIT2c2wMAhiXwCBMLBfPNGz/p
+	 2RtjvyYZXx0AAn99YE0DjS3zgRk1D6rLmnDew7JUJCQLJdcJPN0UIJZD8nDuNo3iSCzMj
+	 LsEFCBaTMYJkZU5ZGTtSN0M2Z0W+ADiLyvJuvzMYqRelib6WhBZhi2WiZxCP19BCsltnU
+	 +YoAThWhp+GgaVEXzimTggnUYNa3nCXGzQT9tW81Q+WsHO30Dpv3pfnNsJvnit4DYW1gj
+	 tXQEMjhljM4BWKAO1xjpjkC9YCA41IeVd+UisiwVw8slDO+hRpo6BXNvS8jpPgN8qhg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qhmxhi0T;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.174
-Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C2aW6AfO;
+	arc=fail smtp.remote-ip=209.85.208.42
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE8DE606A31B
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 06:46:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BE8DE606A31B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B70BF606A31C
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 07:06:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B70BF606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qhmxhi0T
-Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-35c76e9614aso705230eec.0
-        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2026 23:46:41 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792565201; cv=none;
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C2aW6AfO
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-6afbc363efeso538416a12.3
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 00:06:28 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792566387; cv=none;
         d=google.com; s=arc-20260327;
-        b=e0R3/Olr9WWwOqHWCR0bsnFL2bkbmj1TjXdXNY2CrX6sKl7Uo0k3zCk++OFif/wI4T
-         uTWzyUXii6vXd67a0yOaBh/EY6wlT6CKYLi5qnX/98o4UgbILHxQSr1Mn6nKFYldB0KP
-         mPfO4KRr4OtBCsuusBPYaWZp6+gVD6BBKg6iD7sGlVm+j8UFLbls75J129HuP+ORX/Eg
-         8bjL7SZxVQBbB1F248KoajaXRLVfWCXIbTyhyLJzThwukpW++877lHdt62eS6fVClsOA
-         t60kgyQyV/WXCOC/sl81C03mR+su7hI2uC50lX0/dtldmnTWfbAxzcW3EKDeE3B9p8VE
-         k//Q==
+        b=Sib/Tzt8+aY4lmGLUXJhYVQCW9nVSwI/Thmq3qJIDPfoZO++lejekyPIaC5DXL7bS5
+         tP2cFogNXm13P2w27oU/a9B58syIcTT1Z5DUAlFWLKluvhAks+FKmYZg2OCJV5f6MQAJ
+         X4+rMZZWSYlMTbzaBSQIwUSDcqjrQC0JVFp0IvW3uPumCwU7TXtfndIhI/hVi60marDO
+         0Ejj8TyWRk5fOTSIvtSzKytA4I33w69GArFoNSqEfnVnJdSTRvImwgjrddiampQC9yem
+         ghrbXCkMF+RjJW4jEE1DguwEVwBBRCGaDEm//zF4eZvnR+RUnEkbgUE2bwhGto1WIiqr
+         364w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=MFx6RfKZoDg30I8aWbaaH8/QBhrTkiLCB5URy2j6R9Y=;
-        fh=Z3HQ5j4qwMJ02HadUSnYwoevDERrrPev7kz0SglmG88=;
-        b=e8yFlkThUB3TqMAfBFS3WWCEF2pcrPahh/P3rnzIPb9iOWwU5DboUSLyTNy+StLc0D
-         G6+cRT6tMxzz1pytjIR5GLRoPbKrWteYU/UalXyAqH9+JI9pyDDbCcHZ4G4lC/k9zsQW
-         h9CdKoR9Q3AwSnORyZs9yOpTesY7zM6ZI2l6iFE/sYBWIHMQHAkZWX6clETQvdclDGLC
-         bia4JnJ92KEpfonoHkSQQgmOkScikAWaZlXGj0hXufjggVjxrJE/Nripc6kPtajP4JN1
-         UXA8r/eGLuMOPqgTbstzsbOmPoh7Xq6pwkCxke4udukHnJwiiHHAsCjRyUZCgZuCFQma
-         WbuQ==;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
+        fh=0BCRNupJulijGT3QsFBa75BAqDo3lAhAwga4WDKIlWs=;
+        b=nJfFPJkNPmoxFeXU08gSd9YhJzu2nM+vcHu8Y2I49SFFwogBHdRGfHvL6ahKJCqM64
+         Cctq0WAEolzlmDFx8KcTQU4FfAy125iOFlegQA1qO1S6skAYdGbL9Djuf62dWXkCztjB
+         VPphiHCz9QmqM0GBCWCIzysxuubxVVdEqyG5pdmHWYA2meq2uefoTJfRqtKzzkOTR/ub
+         tBy/UuUZ8wbMjopYoxstHE+JXX/rlbz4g0b8VEMzKgiRY4Z6FG09rqfmgIctvxAtpdsN
+         yhyUduLXVrtkANRPKsAr0nBw3x92ubvCdK68s4VnWrRhh5XDWpi3RogobRZuVmBT2uVX
+         kvMw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792565201; x=1793170001; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=MFx6RfKZoDg30I8aWbaaH8/QBhrTkiLCB5URy2j6R9Y=;
-        b=qhmxhi0TbMwtXBvTVlFY4f2LPpHPl8poznD9dAUHw8+/Z9wZhQBqqYwfND7kTtB/dj
-         BDT7fy1OHPOT3SsXcIJoCO2P5QWvHhSGsWpWrDlHwCxU3wdGdBZJo+CJDKK8hjNN6KtJ
-         ZTBEpRPZ/CzppBKznbLND/WVtTUpHxpIjv8l4Dszl6GShVbqspGQMSfdEn1YLZCusCt9
-         8XZUeUrLgiEXnrc9s2V2o2rhr6TPF2UsE6frYfs2vuDhFHmb1RIg6wUfaQGU2siObxeN
-         QZxhnIASpBqZUpMRUn6UfJAhdRPi9Cf8ml1LkjDPLUFZ1OJH0H7A3t4eraOGGpReFZps
-         J94w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792565201; x=1793170001;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1792566387; x=1793171187; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=MFx6RfKZoDg30I8aWbaaH8/QBhrTkiLCB5URy2j6R9Y=;
-        b=n+3E5lSV5yxkG113fAiAqQ7e1GXKtkUdCkUBb/JHoTeBVrHCXmi/t/4dHbOPgRjH/C
-         REsEqTB6iDHuEdFC0djvu5m0qL5lppd6Vh94xRyMbuhBsiuBtx9zssWbLMyo3rsae4Wy
-         V3m6kqi+D70wM3XW1lOGpT+tErsEIHBPHVPu8mzE8rjxIGnF5nSo/0ShE/6ocxt+GR8z
-         uPDwtVp2AihUckKKy2KaqLPwa1efYrq3owKckr/2u9VCWixfwkMSpOJ3FwgL55sWOYOs
-         KZEGpsOsEdKB7QOx1FcVeVXaGrLjzhI4uq11KVtCeAilfi1LLvv3HIyaZzS0zaWfynq/
-         i1kg==
-X-Forwarded-Encrypted: i=1; AKwUvBzn6GZRkKJIvwgpAdSmuwTE2acWTMZg1ds97/2LrraqDiCqCBcmtK5CTyrs4tsv5nMZG5HX85o1Yg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJvfhc1IAHMJQZwxx+It7j4gueDJ1Jd/49d6+mGG3YgxNk0B1Dy
-	bknyvzlNjOIVFkzIBdikT0BKM6QoqTY9+fAe8wl/9EQwh6EqnGFs9kadwjB8ZsCfcVCz3E5pTuc
-	P+7HBbLzkIVwvh8Gtk7qcQFvN04o543E=
-X-Gm-Gg: AYBFou0NzYrj/PppwAijDUT9qxRdZJk3WAGxt//EMZlHtyaFJckMx5i2KGtPj+ehvTU
-	bVJ5JkAQ68GTtGVVEqjNRYwN/TNvKRD0bha+fzlBfINi4lxPQLZe9HvTCBA/9/IDkVF7MUeSnLX
-	nhKe9l+6zR1U9ui1e5e5aI7RFpLD4dcS/8WgwO9gV8ew5WSvDa3kqWZ2wcdssByp/r/iV89e8RD
-	sYAOymT00kC3Dnd1FTWpKcNsC2QLL9KKAUJbvOJmF2raD/Ssm3e9iTd+JqBsOY3MP+2CkxBhErq
-	CFGb+QfUF9ZMBaljWf2o1L4muXoUvENR2D6cGRa3J+EckHye0dNTOC1UVLIcpt96aWVLHMDbuYd
-	Cg+9lOKG+8wvnUAzyKkFgvTl+ml6zU1JVLD3r8ZGe1sQ2JpX6d5FpCUf2vailRDQP4ODx4w==
-X-Received: by 2002:a05:693c:88c7:20b0:366:703c:5f0e with SMTP id
- 5a478bee46e88-3674ef1f33cmr2092100eec.35.1792565200654; Tue, 20 Oct 2026
- 23:46:40 -0700 (PDT)
+        bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
+        b=C2aW6AfO2tXqS0Oxlx14bTBMVNZFQOYYIP++4Zjy0XAUzXRNiZIyd/we1pVq076aHi
+         iVYIhUPzTRpHWbk8TgjZRClfvVa/ZIrYZGMbZO3DJMSCV5UIvg3fS/yC6mcleMkr5AZl
+         CDc9kVye1E9N/IkJg93m7mi7sqO0whCAZMX9QcPqw07cX41RvUCWYBX2Ni2g9I4qZnBc
+         vQc5Edq7qEPfSyUtvQ+/172O9D4MiKBbq1sWvU7Tk2+K4adLUinXmEHtrQ6sATHMl6NQ
+         saHvu7vFC0jl/+EFXD61TpmMKJksXH1W78BY/OXH4ikoNly2no/97ZmvjpXcLfZRBf40
+         7B3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792566387; x=1793171187;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=MrXSvMObVmUzW/wExlXkMf3oMLCJJTWEEpBTKn/sJ+Y=;
+        b=0cuP9LgAkm16xfI6FuoLeA9l0ud/GgHllce0+RsUDBWNdBTkZXXdk19LZqGBKYbD3T
+         XW4N0kP9IS0cjZVm+Cf26O7lNluKwZPjxRFmI/ZnECx/6NqZlrtASur8VCt4/A7fXl09
+         ze/K7Xyj9mDGaUPnWFCkkm2gcKGkiSKvCqyd79m+aR9nqXB3uWhLVQ+75IDd5waHZbWR
+         lQPEypOyvkOzxEjtp+iOuCp+nkH8Dmr6i5HZgpnetNXOcpQQm2snssD85Hvwop6guTFF
+         Z2JwAqhAZlaZN9OBuqcQvA+UIlAio8iMdAd2VOt7jATflkCU6GTNAyevmp8TEYjeN+gr
+         Y79A==
+X-Forwarded-Encrypted: i=1; AKwUvBzIXUl3oZPa7m+G5mrqOiSwwd8fwYBTpfir/daR6sskUI3FTvrJrSgaL2IuzdHLGfLHq/aO68cO/Q==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKMPeGZz9HrqSRwuo2M54en/gecW1pEJIxB6lgS6esSerTraK4F
+	EknWoyOk3GpnAEe+/HN+X6YJ+UEkcmM2LS6upUxmKtOzNsjNHSSlj7i/pCfsjDdIHhpqSdxFC1d
+	XWmrUNFJZR3Pr4PZPVzGfO2FD76ribZ4=
+X-Gm-Gg: AYBFou2SZlgr0ab+/HgTAmv6C1FIOmQOsRpePGGe9Cb7lxnlPfqOh7vJonepqprMmQK
+	vDYTWRwAundk+G/4rPYaZNvDk4GGntn5kB0fSZ3I6kXfFYHVhnEp1JFG7mYorukpG0ZYnxI+Mj3
+	SuvapQas6ATa3GOljcCd8Wx9308R6Q6UECrnf6+iA+fLZM6vXVCCN9HRh1IxKVEoWht2sRMo0Ps
+	yD8zh7VAV0Uw/lPsU8Acif0JLOCJPnFTWuY2JqwMBOlUK0th230T0KY88raJttGiKS2ZP1QXn6m
+	bBzcibbEGkp84xk5j2+ZlTzVP7CbzCMd9MKBmDY2S21SFDNjoOimn8Wp0pQIgnvfISomKhQZ/ZR
+	52h6FJSf/GHwDemVkLvgP/aG+xWxj/aGqGuA=
+X-Received: by 2002:a05:6402:1585:b0:6b1:cea1:a011 with SMTP id
+ 4fb4d7f45d1cf-6b40893d0e9mr633902a12.0.1792566386899; Wed, 21 Oct 2026
+ 00:06:26 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,94 +103,37 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261019100406.103687-1-clamor95@gmail.com> <20261019100406.103687-4-clamor95@gmail.com>
- <ate5K6ZdrSoBUI08@google.com>
-In-Reply-To: <ate5K6ZdrSoBUI08@google.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Wed, 21 Oct 2026 09:46:29 +0300
-X-Gm-Features: AclHuK9vSBGobmYgXVnmsJbAb2zJc_kKp_DYHLaIwx6A0bp9NGDYceSKiyk9FqE
-Message-ID: <CAPVz0n13NFbY1ChZRkc8_2CQd8HfjahA-gcRWzxsv7KbAxf5Ag@mail.gmail.com>
-Subject: Re: [PATCH v12 3/7] input: serio: Add driver for ASUS Transformer
- dock keyboard and touchpad
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
-	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
-	Florian Krischer <florian.krischer@fkr.dev>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
-	mfd@lists.linux.dev, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20261020173556.632798-1-l.scorcia@gmail.com> <20261020173556.632798-2-l.scorcia@gmail.com>
+ <43b58ad7-5934-4895-b48d-5b5a7b92e253@kernel.org> <CAORyz2JaJ40+F1oyrvY_0WdqH=fritbPuuQaZ98sXagVayZPLA@mail.gmail.com>
+ <2426ffdd-9438-4166-a67b-96620650a59b@kernel.org>
+In-Reply-To: <2426ffdd-9438-4166-a67b-96620650a59b@kernel.org>
+From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+Date: Wed, 21 Oct 2026 09:06:15 +0200
+X-Gm-Features: AclHuK9050nRGHSTN9753pi8bjuF0vHRU3cnUbJida-ygLIdS4pPdAAtcMwmgKA
+Message-ID: <CAORyz2KsozjmcDCd+KVfvLokuxs-YAP0E5yJawHECu9pbPQmKA@mail.gmail.com>
+Subject: Re: [PATCH RESEND v10 1/9] dt-bindings: mfd: mt6397: Add MT6392 PMIC
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-mediatek@lists.infradead.org, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>, 
+	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
+	Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>, Val Packett <val@packett.cool>, Fabien Parent <parent.f@gmail.com>, 
+	Akari Tsuyukusa <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
+	linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mfd@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-=D0=B2=D1=82, 20 =D0=B6=D0=BE=D0=B2=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 22:0=
-4 Dmitry Torokhov <dmitry.torokhov@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
+> The dependency of this patch. This one uses compatibles defined in other
+> patch.
 >
-> On Mon, Oct 19, 2026 at 01:04:02PM +0300, Svyatoslav Ryhel wrote:
-> > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> >
-> > Add input driver for ASUS Transformer dock keyboard and touchpad.
-> >
-> > Some keys in ASUS Dock report keycodes that don't make sense according =
-to
-> > their position, this patch modifies the incoming data that is sent to
-> > serio to send proper scancodes.
-> >
-> > Co-developed-by: Ion Agorria <ion@agorria.com>
-> > Signed-off-by: Ion Agorria <ion@agorria.com>
-> > Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
->
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
-> > +static int asus_ec_kbc_probe(struct platform_device *pdev)
-> > +{
-> > +     struct asusec_core *ec =3D dev_get_drvdata(pdev->dev.parent);
-> > +     struct asus_ec_kbc_data *priv;
-> > +     int error;
-> > +
-> > +     priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-> > +     if (!priv)
-> > +             return -ENOMEM;
-> > +
-> > +     platform_set_drvdata(pdev, priv);
-> > +
-> > +     priv->ec =3D ec;
-> > +     priv->parent =3D to_i2c_client(pdev->dev.parent);
-> > +
-> > +     error =3D asus_ec_register_serio(pdev, 0, "Keyboard", 0);
-> > +     if (error)
-> > +             return error;
-> > +
-> > +     error =3D asus_ec_register_serio(pdev, 1, "Touchpad", I8042_CMD_A=
-UX_SEND);
-> > +     if (error)
-> > +             return error;
-> > +
-> > +     priv->nb.notifier_call =3D asus_ec_kbc_notify;
-> > +
-> > +     error =3D blocking_notifier_chain_register(&ec->notify_list, &pri=
-v->nb);
-> > +     if (error)
-> > +             return dev_err_probe(&pdev->dev, error,
-> > +                                  "failed to register blocking notifie=
-r chain");
->
-> I think sashiko is right that we need to register the notifier first,
-> and in it check if serio ports are ready/registered or not. For that we
-> probably need a lock and set pointers or flags in serio's start()/stop()
-> or open()/close() methods.
->
-> This can be done as a followup I think.
->
+> Just apply it yourself and run full testing - you will see notice about
+> undocumented compatibles.
 
-FYI, Sashiko likes to hallucinate. Initially notifier was registered
-after ports, then sashiko suggested to move it before. Then in v10 it
-fussed again and suggested to move after. Then v11 passed without
-regressions and now in v12 it fusses again that notifier should be
-before.
-
-> Thanks.
->
-> --
-> Dmitry
+Thank you, now I get it. I had already removed the example from my
+testing branch and removing the example also removed the dependency.
+I'll run another round of dt tests to be sure and resubmit without the example.
