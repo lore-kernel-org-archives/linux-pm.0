@@ -1,75 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.13
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792600945;
-	b=V1QLUwbjzC9eBFfOGfXmlc8WUQ5BLBdCP/iXvP5J2auCM8E16r6Qn6CYTnWydM/7nQSA
-	 mC9riwjtKdSF7BpM0BXryH/icenurvDqikpmcl7Fan+mtXds4C1uuPW9o39IEAlMGj9/F
-	 2T1AWTrxWRSdlCPe/gB6xbZHc4tGj62X4ACVpX8NRFayNfe3UyxPd/km0TcVc5/1gLiUj
-	 JBoOAl05CS0dHVLrMI9VxUhX0XbW6I06cmNAdPx4XDRYhzA8CWHhEZQZq+BMjK+rhMkCF
-	 czSa0O27JoyDjOJFmh0Kot4KouJJiLVFD5YUiX1c+M8+Fyj7oxBmNMoWzyGXwZKxt+w==
+	t=1792601152;
+	b=LZOF+M4bykfI0s61D93FteRv/JHIt3Rt/z/KcK1MlW2WF84Uq0quVYAemK1TJOTcBfVS
+	 WOkx2nFxYI2oLKnIhBLPegEo8U3haO8OYJ1TX/IxzBB1TsAaNEGEsqMANCmBDcvcNhpP5
+	 ppWstKrEGfjGi5alyrvnJjyJ1fDg8cImbIOmY+Y4DNBlynkG/AypshC/jtT+IgAZhNnaw
+	 CeuXKfKgFaPwEkHvq13i0DH4oQ93Oec0V851pM5u8ssMTYWGjZ4Kuo3R2WII/qCsuvOa9
+	 skzTkjWbrIjmel8WFcfLlvL9L/dj0vjC+C7L012Q2LT3F985MtEJSyhjGXFffffc4xw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792600945;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792601152;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To:Organization;
-	bh=UVOU3FQ6JgpK5H31nZJuuLifqX3OO1LlbRASqFqVEu0=;
-	b=dWhtnIzTSNTQP6pRGCPfGzbWzZipAtbg1ZQpWZy2bGpWqAwWgYaY77uPyl7cW/Xkn1iV
-	 +d8wn21158g37KbKkU1YiIhJm30OFrTasTO0YyK58W/hS1GWQjcbCpURYcV/OyPhuUHBC
-	 IqJ0kyrpnQNZ4XPH8mfW9GQjC76g4bvzL7+E9HJ1C8yYfTHUEwJxWxS80nR6rsSwaOi3B
-	 ak1vT1CYt1yXWLHJLHLb0rcqLd3anpew0kekn9q1Jge9Vm5TbETgV2Is4kDccAelp2LCR
-	 /97bqpGEkxUw3EWt0ADkbMQh5nTDykAaKOUA4xl8nJV1kZ4wKu3R0iN1/AV41qh/kjg==
+	bh=0qGJqUggE3YMEWQAKjmj6RkNHsJ2D87NSpa/AXIcwN0=;
+	b=UYvZumx0XitwSmBg/qFA2rUE27Qiisp6ykuz+t4eciAm8dwfftP7PxbH8V+JLyYL66r4
+	 lEAaHGLb1RjVjcCvMbcEzQkPxySKcp0Aw3p6pd8SGgjRFWzeF+7ZIyRIHTPFBDtSGBz2A
+	 GsCgDkWEAVQRlMGtuesY2gHMyfEO3zYm/OEo4aWA1jQYhnzeN2/UN3TfpEVpcbd1Y2Xkq
+	 4DZHSzlJW1Rf29sjQAF8ZKWGEwDqYFIz05ET+QxPfHyh4pJ1AcWT5ECJ8BA1N+rHEmQPh
+	 IFDOsiqqu9MCgyy6ubxEJz4kboNcaUOqoLXze4w1AgVI+g4qVvfK/aYyGpY9OcKR1bQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=intel.com;
 	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ExyAzhqr;
-	arc=none smtp.remote-ip=192.198.163.11
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c8jOap6P;
+	arc=none smtp.remote-ip=192.198.163.13
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00D98606A31A
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 16:42:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 00D98606A31A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D3D8606A319
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 16:45:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2D3D8606A319
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ExyAzhqr
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c8jOap6P
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1792600944; x=1824136944;
+  t=1792601151; x=1824137151;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=e/nbM+pJwea/63usDwj3YHPS9L9ZC0Itz4Gf7QJplAQ=;
-  b=ExyAzhqrahxdRkEcAuWbZ0TmQlGhpYq+fFZftIexvPOfLtcLLePXSV53
-   S+fBKtZbM1m/5symQi01N9Th4yGXSM+7VgPm/Yw3kxolCSxQyKNfi2i++
-   8n3/bf2mWPa5SfEYQcrbw0CJI/6lLtth1Ug14pyWkOMaLFV9pg/xtVp3g
-   2YnGmUUp4j310myJq2VpCAh3LHtyrWLzit6Wj/nYVD3gjqREviJb8DzRG
-   vwglGN10XtPTWMtq9ugIkSQQzH2Q9Fn2RB4fZkM8Up6Pnp9Q5NcTJzBgN
-   c8TI5ViG1X8YKG5Zyy3m+TKcrI8uCTOLAPnhAeSso6gAwlzUqPQBYI5g5
-   Q==;
-X-CSE-ConnectionGUID: AFIKus/XRnmLmMVhp/YYgQ==
-X-CSE-MsgGUID: Hm0tGsNFSnyzHLbPfyBKAQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11942"; a="1235199"
+  bh=rSXyPVvN24pCLhjDH597VsWfiOrpk1V62L34c6PTX4c=;
+  b=c8jOap6PAHIdjFNb2PN+Jbp/TIJLTMwjAmqPSVcac9DHi4V/bPlPT5y2
+   wGQLHEe06svC7wDX4kgurpoUsz0JhPlZnBLayoiwqJhBg5owSYJ1gk/YA
+   fHLOJOp59RRKrz+CmCBar4iFykE4UdJ37QmtZYdd6A0ZJ4kxmKY4R4lMc
+   cSt9SsVhT7ZGz5MofPqylg/RWeviN7vZGiM/+DJWf6A5SRj5Be+bX3baH
+   SpsTwoDwz418LZhJRUr9LCXd6XgI38C4TVCWlijMgjYZ02GbxVrFaSyLb
+   6E91hWiHazd+v2oY6ftPwq63tePQUy0/KOuXawcaIODPJHHK1wnieDwHk
+   g==;
+X-CSE-ConnectionGUID: 1wz12f9ZS4OPdryCg24MDA==
+X-CSE-MsgGUID: XnCISadlTp6hRPfnWM409g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11942"; a="1313515"
 X-IronPort-AV: E=Sophos;i="6.27,170,1787036400"; 
-   d="scan'208";a="1235199"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2026 09:42:24 -0700
-X-CSE-ConnectionGUID: AwgJFi81TyenrAQWOCzBsQ==
-X-CSE-MsgGUID: D2BdtMXiSk2RQ1af/o74Fw==
+   d="scan'208";a="1313515"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2026 09:45:48 -0700
+X-CSE-ConnectionGUID: tlh28Z+kRf2w+mgCc6UV0A==
+X-CSE-MsgGUID: DyBKu5adQvuQYUn+1EEpEA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,170,1787036400"; 
-   d="scan'208";a="3063692"
+   d="scan'208";a="3472355"
 Received: from cpetruta-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.24])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2026 09:42:22 -0700
-Date: Wed, 21 Oct 2026 19:42:20 +0300
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2026 09:45:47 -0700
+Date: Wed, 21 Oct 2026 19:45:44 +0300
 From: Andy Shevchenko <andriy.shevchenko@intel.com>
 To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>
-Subject: Re: [PATCH 16/18] x86_energy_perf_policy: Fix use-after-free in
- err_on_hypervisor()
-Message-ID: <atjrbNImC5BK4qKv@ashevche-desk.local>
+Cc: linux-pm@vger.kernel.org, Amarjeet <amarjeet@intel.com>,
+	Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 17/18] x86_energy_perf_policy: Fix write_sysfs() return
+ type
+Message-ID: <atjsOHX5Uibb-CqK@ashevche-desk.local>
 References: <e160a0ae497702e1c32ab163faa63c0043ea9298.1792428130.git.len.brown@intel.com>
- <77e30731aaa7d6321dbae7bd58e111d4a73dfd4e.1792428130.git.len.brown@intel.com>
+ <777cbe6f740ab2e371df856c716ffe41117940a6.1792428130.git.len.brown@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -81,15 +82,41 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <77e30731aaa7d6321dbae7bd58e111d4a73dfd4e.1792428130.git.len.brown@intel.com>
+In-Reply-To: <777cbe6f740ab2e371df856c716ffe41117940a6.1792428130.git.len.brown@intel.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Mon, Oct 19, 2026 at 12:43:37PM -0400, Len Brown wrote:
+On Mon, Oct 19, 2026 at 12:43:38PM -0400, Len Brown wrote:
 
-> Avoid testing a pointer into a freed buffer.
+> write_sysfs() returns an unsigned int even though it returns -1 when
+> write() fails. This converts the error to UINT_MAX and can cause callers
+> that treat a nonzero return value as success to miss the failure.
+> 
+> Use ssize_t to match write(), update the receiving variable accordingly,
+> and explicitly require a positive result in sysfs_write_string().
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
+...
+
+> static int sysfs_write_string(const char *path, const char *buf)
+
+>  	len = snprintf(tmp, sizeof(tmp), "%s\n", buf);
+>  	if (len < 0 || len >= (int)sizeof(tmp))
+>  		return -1;
+> -	return write_sysfs(path, tmp, (size_t)len + 1) ? 0 : -1;
+> +	return write_sysfs(path, tmp, (size_t)len + 1) > 0 ? 0 : -1;
+
+Wouldn't it be better (but I haven't checked callers of this) to have
+other way around?
+
+	int ret;
+	...
+	ret = write_sysfs(path, tmp, (size_t)len + 1);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+
+>  }
 
 -- 
 With Best Regards,
