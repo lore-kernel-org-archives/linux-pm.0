@@ -1,68 +1,45 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=207.226.244.123
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792549967;
-	b=MmtHMPFRogwBadgtOqB1blRnGP8BtwtUPrNNUpWw94XzMucznAJuoXJecaVuwZak8Vvk
-	 H/EKomEkJoTgTXYyULScu7as2CcZ1Tplhu5Q/A7ARlrE+rqosusasyDNdc3LFi6hZp4OA
-	 92sApq9Vat+daT7F1Hu1LlVMwiT8OXwEL6vyqZXqompNdgDSUftDMc/Tf9Zlg+xo+p9Yq
-	 7JW+w28/SR5I8BjXfbvPkWWRTfHpCfb9RGbkHF8+jQQ1vfV892SBMKXNZXjLvfHzOgh2L
-	 7y+Oi7PHhsV0Gx5qI0HwnXPRHQazZmsLwEaZ6JWfyHntwThZy1rMVAE7008I2J0lFDw==
+	t=1792552696;
+	b=sEncPAxYr9IxLOxkYerfLsaAbI9MKP44vQQBeWnDYRvl6g8SqvDmXRQrtDQtOnHCsnHx
+	 oiG0WMf4f0rTc4FQiukxbuPuPj1V7yCF2/Pc1wbKErIgc91jK4hLue6vEbnkyZpXIe+Ex
+	 wgBehRzUXFHzr5KpN31uwwToABJupSCeg72+kiM8+LlWBtSiujhBpgJ56b+ysa6ae0ZyH
+	 Ylxv9HqQSzc5f4jrzYJ4luuFAzDqVaFNjKt8LqTjagAVBuPonzewP/vRaUD+hcwe1BzEW
+	 NHGHmNRbe11UUNI2+bHUPG4fBaVPUIG4JCG76n4YtQd2bvqqMIJwVR5oZAmL/n8Z0Kg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792549967;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=5BIOTNs2nezs/HO6l5CjGvSoFAHf9bcbJ2W8/ufQESo=;
-	b=TQgyI0VOFlhKRjPDLP1K+hPNkXm/+8e9LTZRiWBjTzunJOAqdp/ch6BsuWssRxKhiWeY
-	 Pdek4ewB/ty6LZZk6ekT893krAOWUAbt8OCLEcLKG/BR65QfasOiwLE/cKPk1ujRsa/9e
-	 sG0/jhrY66U3c7ZudZeY64wHW+0qtR1+4LZ7aDAliS0XAYyfkuuXeW+aD0BOezCboh26m
-	 xbcPy+fnKBvYOanVTFgonh/YxvlE1OmmQ+5kooQN1iv7sMG5IuuCLvsHYBONDiJronACO
-	 HgNFJJN6SfkvlCuAmRghC25C+rQ+PDTmU6CUXikqPuHEwTdofuO0hQKuryWRdWGpmlA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792552696;
+	h=DMARC-Filter:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:From:
+	 To:CC:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
+	 X-ClientProxiedBy;
+	bh=E6SRRIHdR3MeVbzYonVYeC0jQ3Pln5amYMSI+TSF0oA=;
+	b=3bALQYqe0dCbyPjPKF/ukVL5wja7WuFBQ5Oc868xNZaBfKj3V7uTa3TFYF9c1hx4NS99
+	 UputDDvzrnNizTygwd2Zdp0zQo3vP9y4M2V+R+7HeC5W9yG2nhqMyUO/p5+EhPDbmMSaI
+	 jDVpsF+9czShv0lzeetoXsrJw88lIIuMBP0patl6bW17AF4yopPCfRu6/rQ9n2jE0ph4k
+	 Pz6ja8Zi2Dsg2cLyVsd0NLgavPIo5OKrdI5qx8wmuvfZiTbud0I0LTNrkz/wabFNWLazU
+	 52O8WqbWGDrNH/XzYIBxIU37MAuTdrfbvLJOwKIlrJwOhH5rwXuDcpBVDElwrCUhncg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=diMBHzPq;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CA83606A319;
-	Wed, 21 Oct 2026 02:32:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=diMBHzPq
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BDC51F000C9;
-	Wed, 21 Oct 2026 02:32:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792549966;
-	bh=5BIOTNs2nezs/HO6l5CjGvSoFAHf9bcbJ2W8/ufQESo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=diMBHzPqA9Vic4uQ8X89NL3ds5Erirm7bqnEMM9F8MaK4G/aHh7ZF7+0MNhKPS5hx
-	 61KHv4SAHm5DleXqB3A5Pb5b97wVpin7wwzKB/IhRpj100ytyHJOHe6yljwTwRgIpU
-	 Bnfmb1fiu/qCs8yx7OaHzQNHZjvPuAJJoMCtLaTlUVeI1N9NAd+d9vb5i73u4H74ij
-	 /ptFC2xgm/gSE/LtGv++LlJCqefvj9tWCaNWD2JSVKLXXM5Pp2M4vzAeSKRSuf9jUv
-	 7O4SHv3g7ONDCg75OLq/XCrHshK6pcEzM8AXFmF+JjKvgMeYDNDiE6X/ISW+SykxO7
-	 NTNYOoWHNSn7A==
-Date: Tue, 20 Oct 2026 21:32:45 -0500
-From: Rob Herring <robh@kernel.org>
-To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Cc: linux-mediatek@lists.infradead.org,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>,
-	Val Packett <val@packett.cool>, Fabien Parent <parent.f@gmail.com>,
-	Akari Tsuyukusa <akkun11.open@gmail.com>,
-	Chen Zhong <chen.zhong@mediatek.com>, linux-input@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, mfd@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
-Subject: Re: [PATCH RESEND v10 1/9] dt-bindings: mfd: mt6397: Add MT6392 PMIC
-Message-ID: <20261021023245.GA3650393-robh@kernel.org>
-References: <20261020173556.632798-1-l.scorcia@gmail.com>
- <20261020173556.632798-2-l.scorcia@gmail.com>
+	dmarc=pass header.from=xiaomi.com;
+	spf=pass smtp.mailfrom=xiaomi.com;
+	arc=none smtp.remote-ip=207.226.244.123
+Received: from outboundhk.mxmail.xiaomi.com (outboundhk.mxmail.xiaomi.com [207.226.244.123])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CE412607B108;
+	Wed, 21 Oct 2026 03:18:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CE412607B108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xiaomi.com
+X-CSE-ConnectionGUID: GaW/xH2SQkKAlUYhY3iXfg==
+X-CSE-MsgGUID: FP2NoZ6qRMS2c2VW3EmU4A==
+X-IronPort-AV: E=Sophos;i="6.27,169,1786982400"; 
+   d="scan'208";a="192574023"
+From: Kaiqian Zhu <zhukaiqian@xiaomi.com>
+To: <ulfh@kernel.org>
+CC: <rafael@kernel.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, Kaiqian Zhu <zhukaiqian@xiaomi.com>
+Subject: [PATCH] cpuidle: psci: Fix CPU PM domain state after failed runtime PM resume
+Date: Wed, 21 Oct 2026 11:17:08 +0800
+Message-ID: <20261021031709.42644-1-zhukaiqian@xiaomi.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -72,130 +49,136 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261020173556.632798-2-l.scorcia@gmail.com>
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-ClientProxiedBy: BJ-MBX07.mioffice.cn (10.237.8.127) To YZ-MBX03.mioffice.cn
+ (10.237.88.123)
 
-On Tue, Oct 20, 2026 at 07:33:22PM +0200, Luca Leonardo Scorcia wrote:
-> Describe the MT6392 PMIC and its RTC and regulator devices. This device
-> is mostly based on MT6323 with some similarities to MT6397 and is usually
-> found on boards using the MT8516/MT8167 SoC.
-> 
-> Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> ---
->  .../bindings/mfd/mediatek,mt6397.yaml         | 72 +++++++++++++++++++
->  1 file changed, 72 insertions(+)
+In PSCI OSI mode with the hierarchical CPU topology, a CPU can come
+out of idle after dpm_suspend_late() has already disabled runtime PM
+for its device. The idle exit then restores the cluster PM domain through
+the runtime PM path, however, since the runtime PM is disabled, it
+becomes a no-op and the domain stays powered off in software while
+the CPU is running. The CPU then silently stops requesting the cluster/
+system power level in CPU_SUSPEND.
 
-You need to reorder your patches to avoid errors.
+The Race:
+dpm_suspend_late() wakes all idle CPUs first and only then walks the
+device list, disabling runtime PM per device as it goes:
 
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> index 3cbc0dc12c31..06e93c545e3b 100644
-> --- a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> +++ b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> @@ -39,6 +39,7 @@ properties:
->            - mediatek,mt6328
->            - mediatek,mt6358
->            - mediatek,mt6359
-> +          - mediatek,mt6392
->            - mediatek,mt6397
->        - items:
->            - enum:
-> @@ -72,6 +73,10 @@ properties:
->                - mediatek,mt6331-rtc
->                - mediatek,mt6358-rtc
->                - mediatek,mt6397-rtc
-> +          - items:
-> +              - enum:
-> +                  - mediatek,mt6392-rtc
-> +              - const: mediatek,mt6323-rtc
->            - items:
->                - enum:
->                    - mediatek,mt6359-rtc
-> @@ -99,6 +104,7 @@ properties:
->                - mediatek,mt6331-regulator
->                - mediatek,mt6358-regulator
->                - mediatek,mt6359-regulator
-> +              - mediatek,mt6392-regulator
->                - mediatek,mt6397-regulator
->            - items:
->                - enum:
-> @@ -663,3 +669,69 @@ examples:
->              compatible = "mediatek,mt6397-rtc";
->          };
->      };
-> +
-> +  - |
-> +    #include <dt-bindings/input/input.h>
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +
-> +    pmic {
-> +        compatible = "mediatek,mt6392";
+  dpm_suspend_late()
+    wake_up_all_idle_cpus()               <-- asynchronous cpu wakeup
+      device_suspend_late(dev, ...)
+        __pm_runtime_disable(dev,false)    <-- disable_depth++
 
-Or drop the example. Is this one really different enough from the 
-existing example(s)?
+wake_up_all_idle_cpus() only requests that the idle CPUs leave idle; it
+does not wait for them. A CPU parked in a deep PSCI state can take a long
+time to come back that its idle exit lands after the runtime disable:
 
-> +
-> +        interrupts-extended = <&pio 28 IRQ_TYPE_LEVEL_HIGH>;
-> +        interrupt-controller;
-> +        #interrupt-cells = <2>;
-> +
-> +        keys {
-> +          compatible = "mediatek,mt6392-keys";
-> +
-> +          key-power {
-> +            linux,keycodes = <KEY_POWER>;
-> +            wakeup-source;
-> +          };
-> +
-> +          key-home {
-> +            linux,keycodes = <KEY_HOME>;
-> +            wakeup-source;
-> +          };
-> +        };
-> +
-> +        pinctrl {
-> +          compatible = "mediatek,mt6392-pinctrl";
-> +
-> +          gpio-controller;
-> +          #gpio-cells = <2>;
-> +        };
-> +
-> +        regulators {
-> +          compatible = "mediatek,mt6392-regulator";
-> +
-> +          vproc {
-> +            regulator-allowed-modes = <0 1>;
-> +            regulator-initial-mode = <0>;
-> +            regulator-min-microvolt = < 700000>;
-> +            regulator-max-microvolt = <1350000>;
-> +            regulator-always-on;
-> +            regulator-boot-on;
-> +          };
-> +
-> +          // ...
-> +
-> +          vadc18 {
-> +            regulator-allowed-modes = <0 2>;
-> +            regulator-initial-mode = <0>;
-> +            regulator-min-microvolt = <1800000>;
-> +            regulator-max-microvolt = <1800000>;
-> +            regulator-boot-on;
-> +            regulator-always-on;
-> +          };
-> +
-> +          vefuse {
-> +            regulator-min-microvolt = <1800000>;
-> +            regulator-max-microvolt = <2000000>;
-> +          };
-> +        };
-> +
-> +        rtc {
-> +          compatible = "mediatek,mt6392-rtc", "mediatek,mt6323-rtc";
-> +        };
-> +    };
-> -- 
-> 2.43.0
-> 
+  CPU0: dpm_suspend_late()             CPUx: parked in idle
+  ------------------------------       ----------------------------
+  wake_up_all_idle_cpus()
+                                       powering ON
+  device_suspend_late(pd_dev)
+    __pm_runtime_disable(pd_dev)
+      disable_depth++
+                                       powered ON
+                                       __psci_enter_domain_idle_state()
+                                       pm_runtime_get_sync(pd_dev)
+                                       no-op: disable_depth > 0
+
+genpd_runtime_resume() never runs and the domain stays OFF. The next
+idle entry skips the genpd suspend as the state is already OFF.
+
+Fix this by using the genpd interface when the runtime PM is disabled.
+If the runtime resume failed to restore the domain, force it on by
+calling the genpd suspend/resume pair directly.
+
+Signed-off-by: Kaiqian Zhu <zhukaiqian@xiaomi.com>
+---
+ drivers/cpuidle/cpuidle-psci.c | 28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.=
+c
+index b250d0dde760..5b56f279cc7e 100644
+--- a/drivers/cpuidle/cpuidle-psci.c
++++ b/drivers/cpuidle/cpuidle-psci.c
+@@ -70,14 +70,23 @@ static __cpuidle int __psci_enter_domain_idle_state(str=
+uct cpuidle_device *dev,
+        struct device *pd_dev =3D data->dev;
+        struct psci_cpuidle_domain_state *ds;
+        u32 state =3D states[idx];
++       bool use_genpd;
+        int ret;
+
+        ret =3D cpu_pm_enter();
+        if (ret)
+                return -1;
+
++       /*
++        * The PM core disables runtime PM during a system-wide suspend, wh=
+ich
++        * makes the pm_runtime_*() calls below no-ops.  The resume can the=
+n
++        * no longer set the PM domains back ON, while the CPU is running.
++        * Use the genpd interface directly whenever runtime PM is unavaila=
+ble.
++        */
++       use_genpd =3D s2idle || !pm_runtime_enabled(pd_dev);
++
+        /* Do runtime PM to manage a hierarchical CPU toplogy. */
+-       if (s2idle)
++       if (use_genpd)
+                dev_pm_genpd_suspend(pd_dev);
+        else
+                pm_runtime_put_sync_suspend(pd_dev);
+@@ -90,11 +99,24 @@ static __cpuidle int __psci_enter_domain_idle_state(str=
+uct cpuidle_device *dev,
+        ret =3D psci_cpu_suspend_enter(state) ? -1 : idx;
+        trace_psci_domain_idle_exit(dev->cpu, state, s2idle);
+
+-       if (s2idle)
++       if (use_genpd) {
+                dev_pm_genpd_resume(pd_dev);
+-       else
++       } else {
+                pm_runtime_get_sync(pd_dev);
+
++               /*
++                * Whenever runtime PM is disabled while a CPU was idle (in
++                * the system-wide suspend progress), the resume above beca=
+me
++                * a no-op and the domain is still OFF.
++                * Force the genpd to update power state to ON, so that the=
+ next
++                * suspend can see the correct state.
++                */
++               if (!dev_pm_genpd_is_on(pd_dev)) {
++                       dev_pm_genpd_suspend(pd_dev);
++                       dev_pm_genpd_resume(pd_dev);
++               }
++       }
++
+        cpu_pm_exit();
+
+        /* Correct domain-idlestate statistics if we failed to enter. */
+--
+2.53.0
+
+#/******=B1=BE=D3=CA=BC=FE=BC=B0=C6=E4=B8=BD=BC=FE=BA=AC=D3=D0=D0=A1=C3=D7=
+=B9=AB=CB=BE=B5=C4=B1=A3=C3=DC=D0=C5=CF=A2=A3=AC=BD=F6=CF=DE=D3=DA=B7=A2=CB=
+=CD=B8=F8=C9=CF=C3=E6=B5=D8=D6=B7=D6=D0=C1=D0=B3=F6=B5=C4=B8=F6=C8=CB=BB=F2=
+=C8=BA=D7=E9=A1=A3=BD=FB=D6=B9=C8=CE=BA=CE=C6=E4=CB=FB=C8=CB=D2=D4=C8=CE=BA=
+=CE=D0=CE=CA=BD=CA=B9=D3=C3=A3=A8=B0=FC=C0=A8=B5=AB=B2=BB=CF=DE=D3=DA=C8=AB=
+=B2=BF=BB=F2=B2=BF=B7=D6=B5=D8=D0=B9=C2=B6=A1=A2=B8=B4=D6=C6=A1=A2=BB=F2=C9=
+=A2=B7=A2=A3=A9=B1=BE=D3=CA=BC=FE=D6=D0=B5=C4=D0=C5=CF=A2=A1=A3=C8=E7=B9=FB=
+=C4=FA=B4=ED=CA=D5=C1=CB=B1=BE=D3=CA=BC=FE=A3=AC=C7=EB=C4=FA=C1=A2=BC=B4=B5=
+=E7=BB=B0=BB=F2=D3=CA=BC=FE=CD=A8=D6=AA=B7=A2=BC=FE=C8=CB=B2=A2=C9=BE=B3=FD=
+=B1=BE=D3=CA=BC=FE=A3=A1 This e-mail and its attachments contain confidenti=
+al information from XIAOMI, which is intended only for the person or entity=
+ whose address is listed above. Any use of the information contained herein=
+ in any way (including, but not limited to, total or partial disclosure, re=
+production, or dissemination) by persons other than the intended recipient(=
+s) is prohibited. If you receive this e-mail in error, please notify the se=
+nder by phone or email immediately and delete it!******/#
