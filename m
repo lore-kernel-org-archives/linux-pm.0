@@ -1,102 +1,98 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.173
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792627314;
-	b=VNAnM9/421r88nCxjmZfDTYNrdkbvSokJRiShF6xM3emZ/2R9lhtaeFmkRFlPTREQ/y8
-	 bCfBhMsCTklqhAgH9bLU9aMjZAWaUXuHXg52ZGRL6g4rpZ7AVITbTgB77b/rvr1Lj9HX/
-	 HZas7FwLSoysrCGz7+IEBqRou9XcpSNK5SlpALcwgI0lHuJ5eEcFnydFBt8BTTzvVaSpz
-	 l88LuE8e31t1a9MjwTOL/boOFTCbYKGFjWI7mGjgK+kCfpVNwPF3y+HPi7g77mqouP0uf
-	 gOLjT1O8A9ABHns8FuE4dfxT/slMhA5rfy8m/d9p1RJ8NjlSMmlaZI7BJD9jEATqfag==
+	t=1792627315;
+	b=VeKRefsWns1ttKXOO7AT0CzWZQjELMBtkco1A8BddVcxllQMI2fgYAaIcTrXE+J56Kyk
+	 qBnvBTk02IY0EZONXLsLmt7BpfEcsCA4WEndMovfSUW+4DW6N2uGnXLC7/4bjvxeuz7Yw
+	 ZAD3hlDJwzthD0MbqLilia5xZx4odR8Z5nUl7h3ppZBOsnFEkAr/A18KjnxoLC3qrjRID
+	 MU46JcvWQAE/7Ljd0/P+wMe+Vwcy+DAN36FIddLXM8+V/0pvPF9V1gJSHWPsARiQYqblB
+	 4akjF3M+JMCew+CQDbqiHelCNzStDVxaFLh03Rlj+iMCLjadit6gfYIekkPORu96mDw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792627314;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792627315;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=O094qediP2wRssZ1brE73mgAfR6yZlb+wTlB4/WavvU=;
-	b=FcPs9SybS6lmsBS0qUV6KD50rrzHg6mgzoqQUTGeyVnVhaDJ2VzMJCOhUxWy3XfR6gMC
-	 TiVF1Nft56Xm5oZF0EGVRZg2+ujua2kEXeY2cXozVuWWm1EFcfhgTpKsvDpS49yY7k1FR
-	 B0DS82t4nEtNggXdn2xeTon8+lXTvzxkiYSsr2nuZrliJmOMwVbMz40YDrgHy+XMIlScj
-	 vYDaUEEkLUKRgPEKFiYhuXxt7ekbpm9pqnZS1VMUqYcC+838xyKUmDbzwMGsEJmMDlr4S
-	 FuuriK5FTt0ZgwKXvdf2Ytt+LqP3KEOf13rAr8mNGiGKto7fuWwiWiPb3hI1AZtJh4Q==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=n3xDMUCpAKA+W1udgKw6gUi4Aniek2eVFJ0ny2jPCSQ=;
+	b=1Qs7OkqqXw87UaYhgWm0zuJkfXDl4VhiYuLrRk94hN39aD539GAHpvbgIRjugsVrIE8k
+	 YIQaYbFuxnzKOKawheQeuK77OOB8UzhdW91FlvQM9c1xKXTX7Rmoh2/5QU/5nHK1w670T
+	 TkPmugDWERCze3raYeAyp+1oAmxiCx3WGR2KDKcB3FfCSCl3L8hU/dYS16jV6QZdDZ18l
+	 g9/eHb1dv+pJdudIkWdO5f9ByLvw4YW7ZqB7doiZg/Tfv3nSfBRWwQ1nIEjitPzLejT64
+	 NK8gl7dGKUoSvrne+XbBrmQPKv/mj3BHJWklR3uLSxKRpXKR9B2b+kKIBmNIiwc/oaA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ZhgsrPKU;
-	arc=none smtp.remote-ip=74.125.82.173
-Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=kvIRrwjF;
+	arc=none smtp.remote-ip=74.125.82.50
+Received: from mail-dl1-f50.google.com (mail-dl1-f50.google.com [74.125.82.50])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFC8760A5BC7
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 00:01:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CFC8760A5BC7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C605B60A380C
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 00:01:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C605B60A380C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ZhgsrPKU
-Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-35c76e9614aso2321479eec.0
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 17:01:53 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=kvIRrwjF
+Received: by mail-dl1-f50.google.com with SMTP id a92af1059eb24-157fe9d771bso1659464c88.0
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 17:01:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1792627313; x=1793232113; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=chromium.org; s=google; t=1792627314; x=1793232114; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=O094qediP2wRssZ1brE73mgAfR6yZlb+wTlB4/WavvU=;
-        b=ZhgsrPKU4LMXrrq+6Elpeq2DpLIdDfd/eNM9DRANdago8lMKwnsdDh0mSLtOw+1A+B
-         ic3OJYarLxbxRtaozaAXYSLAh2ZnILBpZuCBVWvUoH5hUHeCY+PKP6+auDMbJvtYuHOZ
-         IuK87XGlpA3OKuVwA6bLP4v9MpH7QRvqZ0RJI=
+        bh=n3xDMUCpAKA+W1udgKw6gUi4Aniek2eVFJ0ny2jPCSQ=;
+        b=kvIRrwjFl/SmlvjoHbZEubwmV1VUTKswii2wq2ZZEjoyn9z+qojvyG+qmSgXdXNLPQ
+         07CFtQMCqOO1ZmBsLY8ITCgQvab7T6BG59XbmrP2u9l2tvkPuelMWZBZ/o1evdAlIgPf
+         IqygWD7HfNf8t1a35mOslK+V/a6f6Ijkih2Vs=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792627313; x=1793232113;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20260707; t=1792627314; x=1793232114;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=O094qediP2wRssZ1brE73mgAfR6yZlb+wTlB4/WavvU=;
-        b=DDnUCM7ad5eXDfcQBIU7z/S/HCx+GgfmDIJFufQEOIPkRiooET0nvUt51Q7JvNRoug
-         T9GX1fheRjUcQOZHscVxdntONiMi48lPdJICZVJooQD77Lc3ZIkppLO1Hk2C8jRI+zlA
-         sE3aUp+J0XGjV/aEqq+cJrkpV0yoN/h7m89j48WZYrwSWoId8S0o4p+dnX29tASPU2YN
-         2b/Djt4BExbuTR9vxxCxfX8JROxPg/Y/evPGqoE35zgs/Qb2Ju9WeaHpB6c2Ma5HCOx+
-         yjjyh1LjCPl8X/bfWz+QHa2v1PP6cK/Hwqx49pTKlbX8sjqebOqZBNkQ01K3vSSugz2J
-         EIZQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwo0mLx642F6QWEdyXeOgh6R5MSWU5zuLJ6tW8zeFBiH/xhjBg2HHDyWVle1+gtZ52NosyJoHp78A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLus8JtcL18WkNwVsz7Y7FWJXVcjW3GEIF2xcckb6VQPqXdUyIv
-	nBoBqiC/sVfNH7N3l2doAXIt8BsZZ0hbIZvjhLNUybBE+TLpwBZBJKr/BgJET41D0g==
-X-Gm-Gg: AYBFou0ChdCrRutM19CCsDFdQAjbuzMsTNV3r6YamYaFK1NfnP5ApBU1XADzG/pqyPc
-	FbiRr0Q1sPAX3qNnr38b3rSTvPOAKcLJQZJPWc+NcDWCR3XI1L0KnTQWh9rB2XE0lQpCYCTs2o5
-	gnrM/lSF1S5t3nxCVvtYHeeLPNLhU4slgt4cP7ves9RbHJWse3WViT3TfrhWY9ulEPINRUw/dV6
-	ttqMMHUBdxES+JlDiMGz03LuLideNzpB7byvgnBAezBtK3PwubyN8jHT+dqO0/NIBy+ziC70Seh
-	1umg4LnKtwN3O88smau8gU/ggxl1G2EYbyGQrKaFPjhM2iUAATcgtWQe71MzjF3DLnQgf0VsHbv
-	tgIXKcD/3hueK8keuSKKe36//KQKcmuzUwpGibuSp/n6U/jMYgWi8nVCZMno3y7NG3AGkpnHKvB
-	MDheKMunadD8Rv4wuAMY2IBIZRZhAX01Rnq6oPs8K5nIvyQB9NcdPAdc8RStLrO0azVGS55T0LC
-	vCK+p+YqDoVv9iTOy4/etmnDu49DDr9RyTIwkpYlUrEVL4JNgKArN/TMb9sPsjUcisB4veAVceg
-	YsjyqXYIysRwQ6VE6bLVTpT9XxtIuI/X2FzOuKM1
-X-Received: by 2002:a05:7301:4005:b0:368:536e:c8b9 with SMTP id 5a478bee46e88-368536eda38mr2638548eec.26.1792627312863;
-        Wed, 21 Oct 2026 17:01:52 -0700 (PDT)
+        bh=n3xDMUCpAKA+W1udgKw6gUi4Aniek2eVFJ0ny2jPCSQ=;
+        b=aTlvMcKhIalkDVRYGukULgiBagK9raQIY7E0bJPzUaM4J1LEcmfWKW7n6cW5OJTuLD
+         szw/h7gwea8G920SU4jjnqR7w5xmI9EFRKleVuSWbYgC/HuznFuU64kUJTbkYepFFwvf
+         tgthH5JrCNHHXMh0ZnNkvCDKytD9kQcWW6WWTdPLOXmIMaEyzlc4fQZ4TwfdH5T07osj
+         YFPdbn2OFHZXFiOO6Kz0a+hJYYI4Vm+7jRqQXMVUZ6xENE6Bcbhi3eXigVIqCBlTmBe2
+         aRwJ5cuFIq5jWdlIihjTahp1i7qt0mYrwpDZTchUgyp012IkydPhjG83OKWPVBwROmX/
+         bLRw==
+X-Forwarded-Encrypted: i=1; AKwUvBzH5sEgyn944nafy247+nBaH98+PbQtRmSiiJUbR88/HRtCOhLLu7HgiJw77U5kp3ANbbTbGNkZ7Q==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKKdgtzW0reKYqDcduuhYxB0WLkr5nX8CyYedMxryzfpFaN713y
+	1GbOB2uj9CvQKKWE6Z4Z8YJqORHIXqShObAgxY7yP+78A2gmFamP4EcD0EE8t4fRGA==
+X-Gm-Gg: AYBFou1FRH2V04ySMFAqH8h0856BnNnsiF+QZWlKDpSKf4UeAt8kcvGq7+Ol6R0O1kI
+	409IdGjdsOIIK+zm96SY3yTw+E29CGEABSZtjobtfqHRfDHP80/tIirMSHJ2hBmw7eFuhdBV2TI
+	ztmFF51F9sjxCWYFCtsHLgfvhomcopT1i3+ElD48X9gCC+YDCv809kyMGRLDQQqRvwvY4lQ1Q92
+	N7q7YF/vXmegTnaPuodU70Q+XabPF1llWWUIx8qqnAFVwaxpAc2So5NOcr/lIKaNrg43YSoTUj4
+	bnBiL00LqMmRk8MLDn00AdnZDSrcoVEBI8jnIlRUeiM64iVNBbXDSzu4Glnoff497vYwzsyKqqN
+	v7KaQxe0fDeWgnt3hIyxH1E7yy3M/uaHWFK2DlcLR9Lhj6R9UDPlm4BbGRu7N3msoTKOYcGkMO9
+	W8uLQAVSf7L6xhBWWM+0eCaUm+IGTAtttzHO/A9hwntnoVERjFU6IBiYN1Ywt3N8dmiwvBjLskT
+	WdOXwKXiTxyx6BfSrFgZeMzT/lkJodj9/JFRD/XtB4BZ1h9HB0dzDPwJr1e7jIO9zcWYev3sPiw
+	QvRRBulnUixOViRA5tw=
+X-Received: by 2002:a05:701b:4194:10b0:15b:7f7a:730d with SMTP id a92af1059eb24-190a632f93fmr4268943c88.28.1792627313833;
+        Wed, 21 Oct 2026 17:01:53 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:14ab:bfeb:ac88:458f])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-36740cc8c6dsm12073378eec.12.2026.10.21.17.01.51
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1903d87ab1bsm10000732c88.21.2026.10.21.17.01.52
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Oct 2026 17:01:51 -0700 (PDT)
-Date: Wed, 21 Oct 2026 17:01:50 -0700
+        Wed, 21 Oct 2026 17:01:52 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: Jonathan Cameron <jic23@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	Ulf Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+Cc: =?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>,
+	linux-pm@vger.kernel.org,
 	Andy Shevchenko <andy@kernel.org>,
 	David Lechner <dlechner@baylibre.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Rui Miguel Silva <rmfrfs@gmail.com>, linux-iio@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH 03/13] iio: Discard pm_runtime_put_autosuspend() return
- values
-Message-ID: <atlSbgGb0kEEYhao@google.com>
-References: <20261006231900.3230373-1-briannorris@chromium.org>
- <20261006161337.3.If2263e6ae9eaa4493881b72922dcde031ce9d81d@changeid>
- <20261018211807.66bfea0d@jic23-hlaptop>
- <ataTYER7XM_MEYKL@google.com>
- <20261021194951.7b65c2eb@jic23-hlaptop>
+	linux-iio@vger.kernel.org,
+	Brian Norris <briannorris@chromium.org>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 17/17] iio: light: us5182d: Discard pm_runtime_put_autosuspend() return values
+Date: Wed, 21 Oct 2026 16:57:18 -0700
+Message-ID: <20261021165858.v2.17.I2a58d2ac56600e492fd431e173bd0d67f180c6a3@changeid>
+X-Mailer: git-send-email 2.56.0.218.g1ec904b173-goog
+In-Reply-To: <20261021235818.3059519-1-briannorris@chromium.org>
+References: <20261021235818.3059519-1-briannorris@chromium.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -106,26 +102,107 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261021194951.7b65c2eb@jic23-hlaptop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Wed, Oct 21, 2026 at 07:49:51PM +0100, Jonathan Cameron wrote:
-> On Mon, 19 Oct 2026 15:02:08 -0700
-> Brian Norris <briannorris@chromium.org> wrote:
-> > Also, unless you'd prefer otherwise, I plan to wait a bit more to send
-> > v2, since the merge window only just opened, and some of this series
-> > will just be a RESEND. I'd prefer maximizing the chance that the
-> > recipients will actually notice the patches, by submitting outside that
-> > window.
-> > 
-> > (OTOH, the bulk of these changes are in IIO, so I can just make IIO its
-> > own series if that helps things along.)
-> 
-> I'd split out an IIO series but take your time as no particular rush
-> given these won't merge until next time around.
+This driver propagates the return value of pm_runtime_put_autosuspend(),
+which is not particularly useful.
 
-OK, I've sent out an IIO-specific v2. I'll resend non-IIO separately
-later on.
+Returning an error code from pm_runtime_put_autosuspend() merely means
+that it has not queued up a timer or work item to check whether or not
+the device can be suspended and there are many perfectly valid
+situations in which that can happen, like after writing "on" to the
+device's runtime PM "control" attribute in sysfs for one example.
 
-Brian
+For this reason, modify this driver to simply discard the
+pm_runtime_put_autosuspend() return value.
+
+This will facilitate a planned change of the
+pm_runtime_put_autosuspend() return type to void in the future, similar
+to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+type to void").
+
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+---
+
+Changes in v2:
+ * Split iio patch into per-driver patches
+
+ drivers/iio/light/us5182d.c | 32 ++++++++++----------------------
+ 1 file changed, 10 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/iio/light/us5182d.c b/drivers/iio/light/us5182d.c
+index ab518311fd79..98279bd1ab25 100644
+--- a/drivers/iio/light/us5182d.c
++++ b/drivers/iio/light/us5182d.c
+@@ -366,45 +366,36 @@ static int us5182d_set_power_state(struct us5182d_data *data, bool on)
+ 	if (on)
+ 		return pm_runtime_resume_and_get(&data->client->dev);
+ 
+-	return pm_runtime_put_autosuspend(&data->client->dev);
++	pm_runtime_put_autosuspend(&data->client->dev);
++
++	return 0;
+ }
+ 
+ static int us5182d_read_value(struct us5182d_data *data,
+ 			      struct iio_chan_spec const *chan)
+ {
+-	int ret, value;
++	int ret;
+ 
+ 	mutex_lock(&data->lock);
+ 
+ 	if (data->power_mode == US5182D_ONESHOT) {
+ 		ret = us5182d_oneshot_en(data);
+ 		if (ret < 0)
+-			goto out_err;
++			goto out;
+ 	}
+ 
+ 	ret = us5182d_set_power_state(data, true);
+ 	if (ret < 0)
+-		goto out_err;
++		goto out;
+ 
+ 	if (chan->type == IIO_LIGHT)
+ 		ret = us5182d_get_als(data);
+ 	else
+ 		ret = us5182d_get_px(data);
+-	if (ret < 0)
+-		goto out_poweroff;
+-
+-	value = ret;
+ 
+-	ret = us5182d_set_power_state(data, false);
+-	if (ret < 0)
+-		goto out_err;
+-
+-	mutex_unlock(&data->lock);
+-	return value;
+-
+-out_poweroff:
+ 	us5182d_set_power_state(data, false);
+-out_err:
++
++out:
+ 	mutex_unlock(&data->lock);
+ 	return ret;
+ }
+@@ -676,11 +667,8 @@ static int us5182d_write_event_config(struct iio_dev *indio_dev,
+ 		goto err;
+ 	}
+ 
+-	if (!state) {
+-		ret = us5182d_set_power_state(data, false);
+-		if (ret < 0)
+-			goto err;
+-	}
++	if (!state)
++		us5182d_set_power_state(data, false);
+ 
+ 	if (!data->falling_en && !data->rising_en && !data->default_continuous)
+ 		data->power_mode = US5182D_ONESHOT;
+-- 
+2.56.0.218.g1ec904b173-goog
+
