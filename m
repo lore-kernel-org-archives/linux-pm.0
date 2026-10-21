@@ -1,75 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.219.70
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.199
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792585576;
-	b=m1zbjIKMjLwrT/7kBK1e+8pP/x0Lr3ILlj0DKAGEuTeadf7r+PS9f3/GbaAb2cXIb7MG
-	 A8MRIOD3UfAnRtsmXooyInRNUY3SfyuyeDIiAWrxa0zqIahbSsRPhwGlpN4xuTesPBIsA
-	 zJ1+Az50l3k0lUAMxVTiFllf8josMV0fUqWlG9AtwynyxHX2Hqgu7p1S9LYCjbbh9Xwzv
-	 cmifLESlyey/N3Y0MdTMBjbrvo6nvcP1YyXJ15P/9Df9HDX52i3Q6Qg/gcOFLCx0tRI4N
-	 AyZfB7SsHvvUcFZlpOsSadcXL2U7yUAC6gR3BLQcCtcvCf+jKC3Oi8pxDC35EMddFuQ==
+	t=1792586026;
+	b=fYM1H9ndiB5Meir2+syMttLhn6YcP9SHUZLJKv78hQzWLSNgKZ5yj6hDEvGNgFnGXKqO
+	 31GvluVJ1yXIXXUrmfKSAPZX5+tmrOJ6FWYZhtVdhKZCrl/Ic9oMuq4bz4Hl2HFxDLZIg
+	 gtizA/MbAp4STekysvXHSOFwE6nzvmunfHWqIzNOQJOoYd7rFoQLhmWq1tyfKhn+a2q3l
+	 pyru9N62mwEtxX6RZViqGVCvmWL6yxBLP2VO5R1Vy4LkQi93yTb3BVqLiCsUIWBcMJLOL
+	 VuHJ3z5+/oSsKAnS+fElQFmdCXhrqFR17ZVG/W9tn4AbJ0Uodd1DcxSj79Hn1XfjtcQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792585576;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
-	 Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
-	 Content-Type;
-	bh=H6i391iVh1dQ0VMmEwYNJCCdz9XRHgnpnKzdqGscyes=;
-	b=4Mtm78yedJYrRr1VjMhbAUiHDcC18iuE2PqVRi5pBtEoHSHA+IUQvutVgTPEUzHcFvHi
-	 SWXg8DS9cGsquE6nVXwoZHIMFVOdocxAW1otdAY130rK/1Us0hanCxOThfyBhaOUXc5CD
-	 Y2/vm0xaAdAVcK5x8wJ6V01xtFCzKh/VNvCt8+lP/ZnCXCO9H4gMEs20TAFU1KEfepYip
-	 9SSSQbKE4qCj7HfIQexUJG6/GfFcIiEwtSKtN8fFZHL2Cd8Y+fLOoRfhaaPJuFiIg75G+
-	 NHsGAnT+yk/ZyAr5UsJIwTlEiPzVFDOKke8NUhrVKfqvst1VGyUIkn+1s4S3uG93UVw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792586026;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:MIME-Version:X-Received:Date:
+	 X-Google-Appengine-App-Id:X-Google-Appengine-App-Id-Alias:Message-ID:
+	 Subject:From:To:Content-Type;
+	bh=g4UAyOiHX3u+Z8VUXBuCR6x3De88Q+2oGF4gxxKpcrc=;
+	b=FToDMyrKWfzmRdzYFDxO7aDgjB7E3JtyN9ZcgZd+mgbaAHJF7a7nXPZJAJ+a5kWAY6OL
+	 oufnvnAy0H44DXBxBuTlsqJ6DxQNUZQ3hA/kIbWe7rIDNjGI9DNZ7riBIHldPoiygTepu
+	 EQt2+PXd2BNiX0xAKEmRfD5zmHrqyPWIlb5NThjQgN+bRHad4PPT7eCtGX924ZI3OjLo6
+	 ZR6rB9Bt/QnYIGPx1AuB7z/OxkeCOqELu0NdVQdLA8TO6ml+Hvf0R7RiUV7RaZCklr3lj
+	 1clDrv58u6NMkECGfNcdHuvbfF3zZ0w3JgcGFTqPHohf5JuikpFO/Y54biPHsTnOOsQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=google.com;
-	spf=pass smtp.mailfrom=flex--sadrul.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=K4Ck6vdU;
-	arc=none smtp.remote-ip=209.85.219.70
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
+	dmarc=fail header.from=syzkaller.appspotmail.com;
+	spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com;
+	arc=none smtp.remote-ip=209.85.167.199
+Received: from mail-oi1-f199.google.com (mail-oi1-f199.google.com [209.85.167.199])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06E54606A319
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 12:26:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 06E54606A319
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--sadrul.bounces.google.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=K4Ck6vdU
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-91b4bf686ceso21536576d6.3
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 05:26:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1792585575; x=1793190375; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=H6i391iVh1dQ0VMmEwYNJCCdz9XRHgnpnKzdqGscyes=;
-        b=K4Ck6vdUNoxtGi0Ca3LQSncGupPvh+9yAB0gT2PT7YVyUU44uc06bdqokIR+GrQH1X
-         W3llXOTeBIljiJuwOX9Rk39Y8mVtDkCV2a7kWTWfPMLvLDEM+MRwVC+qwH4TLTnBfm86
-         fQ3V/WCY4kkQWnv9KayZZJhOwLCh17gq6IiWUYJFqVhErx3f2TeHhwlonjPPri18Joy8
-         l9V0Jes6Gui8SVnm0ITOF737tc/HvRCna/BSTXnQSXzPtO6yhL4aAyw2xk7oQ8Djp8E+
-         Q1dy1vQUUW/HudcL4Nlo2qHDV/A85ZlQeo3LZwjjtjfLjRvsy2zAM2DzF/9tfUfJnu7v
-         ALRg==
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 661CE606A31A
+	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 12:33:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 661CE606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f199.google.com with SMTP id 5614622812f47-540537f959fso891533b6e.0
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 05:33:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792585575; x=1793190375;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=H6i391iVh1dQ0VMmEwYNJCCdz9XRHgnpnKzdqGscyes=;
-        b=slzkO6fzprJe2He3IbQSy1/1CRFTaa7m97+FjILjyLGwgTGNxi9hLRO++w70yn3+7i
-         2mkUPrNHHlfusBcnhpIDLvaLkpkiE0GzxUUaFUnLoXHq+vXLKyLZ+EGgk8Jpw0uuhaX8
-         tol1XrcSmfC/R1AnO91N4XDr4bb66YGy3AGjmdPg4S1zhJrVRrXSKHgABEaB6yvYy4LH
-         94rAf2ie9uKUsXAtyHNgt8XDisuJjAaNlxia0+e9HHLwsWUPYEM/JddAt5wYRvjCsBFG
-         Lcaf3ncGAwPyfEMVDm0FbQiRgWZH6T/q46mptruaRn0fnZ7LkcbuK5oTDaDcQT+JwUb6
-         bL4A==
-X-Forwarded-Encrypted: i=1; AKwUvByeNWnz1tobmiNljYNEwTYGYa2JrM6v+h8q3D3Z13QObSfyAnBE06FEeOjuUvQy7tJDw5hqPpHmXg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJkD2ZB5k9xdUd4VfU+39nIRmXQIIow6nL/BC0tiLtOpuznTgLl
-	g7pvZSrQBoOYTVkRi8yhGQhMyim0Aht2PSIKvq5xrrllp4gzbtkCYespyA0MqNmNmhsbEc+A2X+
-	YPrEkZw==
-X-Received: from qvag18-n2.prod.google.com ([2002:a0c:f092:0:20b0:919:5a9b:414a])
- (user=sadrul job=prod-delivery.src-stubby-dispatcher) by 2002:a05:620a:4493:b0:93f:22f1:97bc
- with SMTP id af79cd13be357-93f57f639c0mr361670985a.67.1792585574428; Wed, 21
- Oct 2026 05:26:14 -0700 (PDT)
-Date: Wed, 21 Oct 2026 12:25:43 +0000
-In-Reply-To: <20261021122543.3547778-1-sadrul@google.com>
+        d=1e100.net; s=20260707; t=1792586025; x=1793190825;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=g4UAyOiHX3u+Z8VUXBuCR6x3De88Q+2oGF4gxxKpcrc=;
+        b=GaBcZxQRs5cHkerAM/Zq00Vh1jyEAq3yVSoCZ7gc8md5hrWdsOQX2BKRT7pf1R2mO0
+         WelEkGFsrvx3jPclQhDnHhgUMQ5UYIIncLza7uApyYbp8hkjAoD+0FtF+Fqx8EQct/qR
+         S5UuRMvmP5RhXbZ0kL7NoxQ3i55QpinNbAlbfmkAFueTEs3nURfLQsEe+5C7NVE1IqWR
+         xoJyK8ymckYYHPPV0G6e/VmaM/tTpNwQe3sI2VcXTLfAcfXXMTl8CqmRDScb2i8dpq4I
+         2DGvN7P5l6YtMo11Fj24Do6r1izqZ9fldLH29EHQ2kwr3TTCU7ixRdZpxu9hoLagH9xr
+         mu0g==
+X-Forwarded-Encrypted: i=1; AKwUvBwvHmdCQQGP1WdvApWWxoQHll4iO+bKKYdQaSD+wIjZ4FC1A7Zebvy6kUkCzRcAap9MB5ekd0ZHhg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLwhvOaIJ2FL2UV76LSW+4YhJPG5PD07QZ9vc2EjGk8odXnXhBl
+	4De60YaDrFHyFjL+ZkdOWlr8OHbZCd/+MldvUWaz9q5rUw+XWSvJL0yRoU2oeM+RFl3OfujvKcb
+	TdAxSDg/THYHJyrfo8Z3vU/yoPAMB68nCVQiiR2uSK2g1vE+eo6H9vKmLyy0=
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,74 +57,49 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20261021122543.3547778-1-sadrul@google.com>
-X-Mailer: git-send-email 2.56.0.212.g129ede20d9-goog
-Message-ID: <20261021122543.3547778-2-sadrul@google.com>
-Subject: [PATCH v2 2/2] fs/select: mark select and poll tasks TASK_FREEZABLE
-From: Sadrul Chowdhury <sadrul@google.com>
-To: linux-kernel@vger.kernel.org, 
-	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>
-Cc: linux-fsdevel@vger.kernel.org, Pavel Machek <pavel@kernel.org>, 
-	linux-pm@vger.kernel.org, John Stultz <jstultz@google.com>, 
-	Sadrul Chowdhury <sadrul@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+MIME-Version: 1.0
+X-Received: by 2002:a05:6808:2507:b0:4c4:8ace:cce8 with SMTP id
+ 5614622812f47-55350396824mr1164508b6e.8.1792586025405; Wed, 21 Oct 2026
+ 05:33:45 -0700 (PDT)
+Date: Wed, 21 Oct 2026 05:33:45 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6ad8b129.a384138e.1e340d.0002.GAE@google.com>
+Subject: [syzbot] Monthly pm report (Oct 2026)
+From: syzbot <syzbot+listc1584644ec31736acf97@syzkaller.appspotmail.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
 Content-Type: text/plain; charset="UTF-8"
 
-Similar to epoll_wait(), threads sleeping in do_select() and do_poll()
-sleep in TASK_INTERRUPTIBLE via poll_schedule_timeout(). During system
-suspend and resume, these threads are woken up by the freezer solely to
-transition to TASK_FROZEN, and woken again upon thaw only to re-evaluate
-file descriptors with no pending activity and sleep again.
+Hello pm maintainers/developers,
 
-A previous attempt to make select() and poll() freezable in commit
-9745cdb36da8 ("select: use freezable blocking call") was reverted in
-commit 59612d187912 ("Revert "select: use freezable blocking call"")
-alongside the epoll revert due to issues caused by the legacy freezer
-architecture.
+This is a 31-day syzbot report for the pm subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/pm
 
-Following the freezer overhaul in commit f5d39b020809 ("freezer,sched:
-Rewrite core freezer logic"), tasks in TASK_FREEZABLE are safely frozen
-in-place into TASK_FROZEN without running userspace code or experiencing
-premature wakeups before resume completes.
+During the period, 1 new issues were detected and 0 were fixed.
+In total, 7 issues are still open and 13 have already been fixed.
+There are also 6 low-priority issues.
 
-Pass TASK_FREEZABLE to poll_schedule_timeout() in do_select() and
-do_poll() (TASK_INTERRUPTIBLE | TASK_FREEZABLE) so that polling threads
-remain asleep undisturbed across suspend/resume cycles.
+Some of the still happening issues:
 
-Reviewed-by: Jan Kara <jack@suse.cz>
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
-Signed-off-by: Sadrul Chowdhury <sadrul@google.com>
+Ref Crashes Repro Title
+<1> 93      Yes   WARNING: ODEBUG bug in trace_suspend_resume (2)
+                  https://syzkaller.appspot.com/bug?extid=98850521518b962c5bab
+<2> 5       No    BUG: scheduling while atomic in trace_suspend_resume
+                  https://syzkaller.appspot.com/bug?extid=3ae5f6fdc78789d76c5d
+<3> 112     Yes   KASAN: invalid-access Read in swsusp_save
+                  https://syzkaller.appspot.com/bug?extid=461576769f21a04b4bc0
+
 ---
-v1 -> v2:
-- Rebased against current mainline (torvalds/linux.git master).
-- Collected Reviewed-by from Jan Kara and Acked-by from Rafael J. Wysocki.
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
- fs/select.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
 
-diff --git a/fs/select.c b/fs/select.c
-index 95d76531015a..03318d678187 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -600,7 +600,7 @@ static noinline_for_stack int do_select(int n, fd_set_bits *fds, struct timespec
- 			to = &expire;
- 		}
- 
--		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE,
-+		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE | TASK_FREEZABLE,
- 					   to, slack))
- 			timed_out = 1;
- 	}
-@@ -962,7 +962,7 @@ static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
- 			to = &expire;
- 		}
- 
--		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE, to, slack))
-+		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE | TASK_FREEZABLE, to, slack))
- 			timed_out = 1;
- 	}
- 	return count;
--- 
-2.56.0.212.g129ede20d9-goog
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
 
+You may send multiple commands in a single email message.
