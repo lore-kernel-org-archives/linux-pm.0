@@ -1,57 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=79.135.106.31
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=109.224.244.121
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792612381;
-	b=I0fDX+AbgTxAhI+/4giDMqVhB4Md42BUuGTHIRuMVFEnUjyrnOGmcIZn85vhwtE9nkqx
-	 4LJ+P2xhkMW0av//lEcEq9XDeakRKA40y4HvZDcHcD/0BJtvcJn+ByRLkGokB8mVMiFG9
-	 q1lrKSCsrvLtN2JELb2dZsvL3lRLxTEL3tub+YddSc+57fYnB1CcOLog1GQl941gxEBx+
-	 Je7WMtmExfN+nL63nsg2w51pW96jwqIJY0HQxU70WSTJLHjFd01o/BtEAHywWfjUmy49C
-	 cfim9IJracQ5b7QB5CIyzl4NMyB6Z7FVLhxcfwNSImxo9CwFpz6okvysJH/GCqiQRKQ==
+	t=1792616683;
+	b=a3ixubI6fSs9160OlFQAX8L2lDOMBUWmsCHBR5qlugmol3lE9j9piwCBqM2sTjSgUDCy
+	 IgsTbW+FDa65JXAPEsvNfWZNYpcfw0QAn3bvfSWG4TVam5pZY3dQMUS58Mhy2rdBt6xA3
+	 pvde4xEV379EH/vFAZ7xA0chOFO/Mysqn0QO5S8Px+BO2w16LqXvuvqP5M9wMhcF7T8zL
+	 EWhoc5HMJVZ+TSPVzf9iABpxzzPwAfIg2yugJQ2I8EYH8dC3IsRTQQaF/40SZ5gcCVTvb
+	 i7OhgP5RB+ef74JIDY1K1yFHyZDUFAFyDmK2sL6WcssGEIn/bU/hlm1PuBf6oDwG5Fw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792612381;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792616683;
 	h=DMARC-Filter:DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:
 	 Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=A7QHzyi7hILFsKIZgIskLbaHp/ycC6vPy0kZ2J0GHTc=;
-	b=bA1ABdNOPrfJXoMsdl2veIpduhjMudRWKYHxgJBI6p5iBP3EKnRFRrxco6DeQkmlKR+e
-	 a5p7rjEDGlabbuuMFkWqj9d0vzksXmNCW3Ncu35uQJ0j5cK1W+tomLgDZzW/YWZLMMiK2
-	 cAxxeaVBuydQtv//KUPqfWday9nkvgxMjKKjmEk537IwIuxLHM0CfIIZ3HyQeIdQ2hBHm
-	 eiTb44QLd/QKKFWsIIWTmqqX2eBk17Pf1ODu0pkdyyptO301R7hI4O0poAdSVZW5+RUYL
-	 me1s8HBh7SbQsJXcM/guCQaEUUfu4aY5gAthVn6TzyCq00Nlm1H+sbIG+y5hm+xHZWg==
+	bh=xn1uSgbiYXIquVNS5gJlnahF7mH3rI4fg0oKctmsVQk=;
+	b=SxGvWLg39Gkqk16Iqo5DEqvbr/PQbO5/Qzx2WBZhqzOfi55pgbAckVYeb+rRbFgWui8R
+	 QAFch7/fFPZ0s2nEOkKxskf+Ywi8Rybec+GRxGZ5rskh7oB2qa8Zw7DiQ/mffXGvoKz4w
+	 V5MrWeZ1vRSim7xmm65VtP4HrlA6q9RF884WVJYtkCRUUT5BpEIiEezyq8RhyvznaXogC
+	 WIqDwVusYGbRwbaDn3fbdJBLAHcKE+0RPWKbZbmXRFzkx66LMrsrafNzA798hH73rrq2G
+	 EOvuwfXIHVaA/dJYlhZQLYR2HbRKkSw8vFoEFPrC+WAdXMSa3zvuDEtr71tVTA117aA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=pm.me;
 	spf=pass smtp.mailfrom=pm.me;
-	dkim=pass header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=Xswu2Ydn;
-	arc=none smtp.remote-ip=79.135.106.31
-Received: from mail-10631.protonmail.ch (mail-10631.protonmail.ch [79.135.106.31])
+	dkim=pass header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=Y+JZkAkH;
+	arc=none smtp.remote-ip=109.224.244.121
+Received: from mail-244121.protonmail.ch (mail-244121.protonmail.ch [109.224.244.121])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8BC4606A31A
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 19:53:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D8BC4606A31A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A991B606A31B;
+	Wed, 21 Oct 2026 21:04:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A991B606A31B
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=Xswu2Ydn
+	dkim=pass (2048-bit key, unprotected) header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=Y+JZkAkH
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
-	s=protonmail3; t=1792612378; x=1792871578;
-	bh=A7QHzyi7hILFsKIZgIskLbaHp/ycC6vPy0kZ2J0GHTc=;
+	s=protonmail3; t=1792616679; x=1792875879;
+	bh=xn1uSgbiYXIquVNS5gJlnahF7mH3rI4fg0oKctmsVQk=;
 	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
 	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=Xswu2YdneDkUW3sZ13DqHmzhPhN1bIb150LsFXEqoAgpPonbhTwzttFzmRMyqjhRQ
-	 zqhcdrmiz8QKpzSCjtGNtseoHsXOfmHt+q1me05ojSyF4pl7Z3bJ6u1Ku4p2O41kQf
-	 OtHSdLhwApb+KTi5ehH1W0L7Ygz3mU3iU9r1L9XN3C/0LvMsappxlqqgijezw6BMxu
-	 gV+9kCgqv1VXPZrnOd4bXht439dn3rsSdR8hOt8ak38Y8n4IAcIMR4xgf8OkdOm7kN
-	 zebEa/mZYhmUGRf3EicTS7IYarr+tx/rYw1xCbwZBZ8wsN/Xkvk21d5gjNHC7aUNnG
-	 vTHOyxFWdgi2w==
-Date: Wed, 21 Oct 2026 19:52:53 +0000
+	b=Y+JZkAkHH+S01QhJzlv4kxPK1gcVoovi45c7gFYSS285Ft6jmm2faGzAkDyqQ8hP7
+	 z7L8ccajq2PoitlrdpV8PGs9psXx7V6IAg8l66dCqq7G6qAwSbByd8b9IKAy3kDFBw
+	 LLroiEjTNXn2DBypVEsFezQ8esrAexkDluDZSn6H9mtY5m0GLi6qyjjBOpCjin482x
+	 /cKEL6zUwcz0jIuh8BGEzZrc45yaxK2YtpjOYfL25YdWXGRWcqz+O23WeXV8DOxtpX
+	 CE/Pgh10RjCpiLYQ1Ly39nveF8ravK1rSW1s9myw39a7XGqx8wts1XxwODo+N7xO3S
+	 /9im1QxIWP+pw==
+Date: Wed, 21 Oct 2026 21:04:35 +0000
 To: Bartosz Golaszewski <brgl@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Linus Walleij <linusw@kernel.org>
 From: Birk Skyum <birk.skyum@pm.me>
 Cc: linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3] pinctrl: qcom: Restore the pin configuration after hibernation
-Message-ID: <20261021195250.83540-1-birk.skyum@pm.me>
+Subject: [PATCH v4] pinctrl: qcom: Restore the pin configuration after hibernation
+Message-ID: <20261021210425.57066-1-birk.skyum@pm.me>
 Feedback-ID: 21326998:user:proton
-X-Pm-Message-ID: f392f4a5580105f9f2dd70105c80d2a9ee48be0f
+X-Pm-Message-ID: 31568ca8d183b74c37eaf16e14835d84c0f7e1e6
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -87,8 +87,9 @@ Save the control, output and interrupt configuration registers in
 freeze_noirq and write them back in restore_noirq, the output level
 first, so that a pin drives the right level from the moment it becomes
 an output. Changing the interrupt configuration can latch an interrupt,
-so the status is cleared where the register changed, as
-msm_gpio_irq_set_type() does.
+so the configuration is written with the interrupt disabled, the status
+is cleared where the register changed, as msm_gpio_irq_set_type() does
+with the interrupt masked, and only then is the interrupt enabled again.
 
 Only the GPIOs the kernel uses are put back: those requested as a GPIO,
 muxed to a function or used as an interrupt, as pinctrl-intel does. A
@@ -103,6 +104,16 @@ own pins where a board defines them.
 
 Signed-off-by: Birk Skyum <birk.skyum@pm.me>
 ---
+Changes in v4:
+- Write the interrupt configuration with the interrupt disabled, clear
+  the status where the configuration changed, and only then enable the
+  interrupt again. The TLMM summary interrupt is chained and stays
+  enabled while the other CPUs run during restore_noirq, so a status
+  latched by the restore could reach them before it was cleared
+  (Sashiko).
+- Link to v3: https://lore.kernel.org/r/20261021195250.83540-1-birk.skyum@p=
+m.me
+
 Changes in v3:
 - Take the lock with guard() in both callbacks (Bartosz).
 - Link to v2: https://lore.kernel.org/r/179206391202.36987.1416057976823693=
@@ -122,22 +133,23 @@ Changes in v2:
 - Link to the RFC: https://lore.kernel.org/r/179163141354.18006.80461347454=
 353634@pm.me
 
-Tested with v2 on a Lenovo Yoga Slim 7x with v7.2 plus the patch. v3
-was not run on hardware again, because both callbacks compile to the
-same arm64 code as in v2. The kernel also carried the PCI change in
-[1], without which this machine does not resume at all, the smp2p
-change in [2] and a GENI serial change that is not posted. The
-Bluetooth driver had [3] applied. On pinctrl-qcom/for-next v3 builds
-without warnings with W=3D1 and sparse, with hibernation on, off and
-without sleep support.
+Tested with v4 on a Lenovo Yoga Slim 7x with v7.2 plus the patch. The
+kernel also carried the PCI change in [1], without which this machine
+does not resume at all, the smp2p change in [2] and a GENI serial
+change that is not posted. The Bluetooth driver had [3] applied. On
+pinctrl-qcom/for-next v4 builds without warnings with W=3D1 and sparse,
+with hibernation on, off and without sleep support.
 
 - Before the hibernation 45 TLMM pins have an owner, gpio116 and
   gpio117 among them (wcn7850-pmu), and four are interrupts.
 - pm_test=3Dcore and test_resume pass.
 - After a hibernation with a real power-off the TLMM part of
   /sys/kernel/debug/gpio differs only in the level read on two inputs
-  (gpio93 and gpio153), as it did with the RFC.
-- A suspend (deep) and wake still works.
+  (gpio93 and gpio153), as it did with v2. The counts of the four TLMM
+  interrupts are the same before and after, and no unhandled interrupt
+  is logged.
+- A suspend (deep) and wake worked with v2. v4 does not change that
+  path.
 
 The Yoga has no SD card slot and its SDC2 pads have no owner, so this
 only shows that putting them back does no harm. I did not read them
@@ -150,13 +162,13 @@ back at their reset values after a hibernation.
 [2] https://lore.kernel.org/r/179158127177.70185.5691100900886332545@pm.me
 [3] https://lore.kernel.org/r/179163212446.46972.2306254853726299632@pm.me
 
- drivers/pinctrl/qcom/pinctrl-msm.c      | 145 +++++++++++++++++++++++-
+ drivers/pinctrl/qcom/pinctrl-msm.c      | 150 +++++++++++++++++++++++-
  drivers/pinctrl/qcom/pinctrl-x1e80100.c |   1 +
- 2 files changed, 144 insertions(+), 2 deletions(-)
+ 2 files changed, 149 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/pinctrl/qcom/pinctrl-msm.c b/drivers/pinctrl/qcom/pinc=
 trl-msm.c
-index 27f06bbc113c..8ddb4261bf89 100644
+index 27f06bbc113c..32aa7b919e24 100644
 --- a/drivers/pinctrl/qcom/pinctrl-msm.c
 +++ b/drivers/pinctrl/qcom/pinctrl-msm.c
 @@ -39,6 +39,15 @@
@@ -192,7 +204,7 @@ index 27f06bbc113c..8ddb4261bf89 100644
  };
 =20
  #define MSM_ACCESSOR(name) \
-@@ -1583,9 +1595,131 @@ static __maybe_unused int msm_pinctrl_resume(struct=
+@@ -1583,9 +1595,136 @@ static __maybe_unused int msm_pinctrl_resume(struct=
  device *dev)
  =09return pinctrl_force_default(pctrl->pctrl);
  }
@@ -310,15 +322,20 @@ e
 +
 +=09=09if (msm_pin_has_own_intr_target(pctrl, g))
 +=09=09=09msm_writel_intr_target(s->intr_target, pctrl, g);
-+=09=09val =3D msm_readl_intr_cfg(pctrl, g);
-+=09=09msm_writel_intr_cfg(s->intr_cfg, pctrl, g);
 +
 +=09=09/*
-+=09=09 * Changing the configuration can latch an interrupt. One that
-+=09=09 * is latched with the configuration unchanged is a real one.
++=09=09 * Changing the configuration can latch an interrupt, so write it
++=09=09 * with the interrupt disabled and clear the status before the
++=09=09 * interrupt is enabled again. One that is latched with the
++=09=09 * configuration unchanged is a real one.
 +=09=09 */
++=09=09val =3D msm_readl_intr_cfg(pctrl, g);
++=09=09msm_writel_intr_cfg(s->intr_cfg & ~BIT(g->intr_enable_bit),
++=09=09=09=09    pctrl, g);
 +=09=09if (val !=3D s->intr_cfg)
 +=09=09=09msm_ack_intr_status(pctrl, g);
++=09=09if (s->intr_cfg & BIT(g->intr_enable_bit))
++=09=09=09msm_writel_intr_cfg(s->intr_cfg, pctrl, g);
 +=09}
 +
 +=09return 0;
@@ -334,7 +351,7 @@ e
  EXPORT_SYMBOL(msm_pinctrl_dev_pm_ops);
 =20
  int msm_pinctrl_probe(struct platform_device *pdev,
-@@ -1663,6 +1797,13 @@ int msm_pinctrl_probe(struct platform_device *pdev,
+@@ -1663,6 +1802,13 @@ int msm_pinctrl_probe(struct platform_device *pdev,
  =09if (ret)
  =09=09return ret;
 =20
