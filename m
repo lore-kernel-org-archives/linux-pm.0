@@ -1,54 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.199
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792586026;
-	b=fYM1H9ndiB5Meir2+syMttLhn6YcP9SHUZLJKv78hQzWLSNgKZ5yj6hDEvGNgFnGXKqO
-	 31GvluVJ1yXIXXUrmfKSAPZX5+tmrOJ6FWYZhtVdhKZCrl/Ic9oMuq4bz4Hl2HFxDLZIg
-	 gtizA/MbAp4STekysvXHSOFwE6nzvmunfHWqIzNOQJOoYd7rFoQLhmWq1tyfKhn+a2q3l
-	 pyru9N62mwEtxX6RZViqGVCvmWL6yxBLP2VO5R1Vy4LkQi93yTb3BVqLiCsUIWBcMJLOL
-	 VuHJ3z5+/oSsKAnS+fElQFmdCXhrqFR17ZVG/W9tn4AbJ0Uodd1DcxSj79Hn1XfjtcQ==
+	t=1792588655;
+	b=KLtRK0l3YSvTD3FamCvORdby53QKICWc8/IPnGOASgtMF8rFEMHqNHnWPjvwAMEzB5sG
+	 830aUed66UKi0BKylRqmAMiwJotgRxvcwzSWZ2TEG64mFEB9agmDzoCYB/zgLmaLnHX0i
+	 JbDlKShCcjoVUQhDG4IoaekOgPl2pB9+jJxH1OcWVLq+0Ej+8XU9gIhKGEyowgn2Ce5Ex
+	 3AA3K2mbGtyHKR6eNvlELB0JyVC0TLLQpUU/u9TX702ksumfgL72W6ipVUaUj5rsvuiO+
+	 AkXIZ0Rj2vHhVYhTWBn1cs941exdQi+KpdhfUlJaHlbpONj8NIoqdU8JZlguRBHfB7Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792586026;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:MIME-Version:X-Received:Date:
-	 X-Google-Appengine-App-Id:X-Google-Appengine-App-Id-Alias:Message-ID:
-	 Subject:From:To:Content-Type;
-	bh=g4UAyOiHX3u+Z8VUXBuCR6x3De88Q+2oGF4gxxKpcrc=;
-	b=FToDMyrKWfzmRdzYFDxO7aDgjB7E3JtyN9ZcgZd+mgbaAHJF7a7nXPZJAJ+a5kWAY6OL
-	 oufnvnAy0H44DXBxBuTlsqJ6DxQNUZQ3hA/kIbWe7rIDNjGI9DNZ7riBIHldPoiygTepu
-	 EQt2+PXd2BNiX0xAKEmRfD5zmHrqyPWIlb5NThjQgN+bRHad4PPT7eCtGX924ZI3OjLo6
-	 ZR6rB9Bt/QnYIGPx1AuB7z/OxkeCOqELu0NdVQdLA8TO6ml+Hvf0R7RiUV7RaZCklr3lj
-	 1clDrv58u6NMkECGfNcdHuvbfF3zZ0w3JgcGFTqPHohf5JuikpFO/Y54biPHsTnOOsQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792588655;
+	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
+	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 X-Mailer;
+	bh=agLknzMu3oVoMvggW9spU09cwqNWOp/fPO88uDYZmIQ=;
+	b=MeMnz2Ds3KytR2/+i7Ny6aS6/Vi5b3fQYCdT4QJpG2qNkHwYGoqyrH1dDN+MbUyaX1ap
+	 36EsrhZnDK+ZiJinos460HLRCo0eTfgQHx3fVTKUegK2uCkrev5oVlcnD0A3k+XcKcRPF
+	 1A0IyRFNo+ma1wcpuuBOWXITDgSG26YCZJfn84wUcP+iwC62H3pcZ/uHvxAvKTsP2xVir
+	 QC7u6pPEGuo3r2416IL/n0W2oDoyvmygawBQ6U7OktmXU4sVOvjMSRcFr9o+ccU7vsOl8
+	 BFCprUlD93wRF4mUE01nGR8TPW9tz4AmNvVsXI465wIPYwKQLS8uhxT5DRmpgiVJqXg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=syzkaller.appspotmail.com;
-	spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com;
-	arc=none smtp.remote-ip=209.85.167.199
-Received: from mail-oi1-f199.google.com (mail-oi1-f199.google.com [209.85.167.199])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kditkkgl;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 661CE606A31A
-	for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 12:33:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 661CE606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oi1-f199.google.com with SMTP id 5614622812f47-540537f959fso891533b6e.0
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 05:33:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792586025; x=1793190825;
-        h=content-type:to:from:subject:message-id:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=g4UAyOiHX3u+Z8VUXBuCR6x3De88Q+2oGF4gxxKpcrc=;
-        b=GaBcZxQRs5cHkerAM/Zq00Vh1jyEAq3yVSoCZ7gc8md5hrWdsOQX2BKRT7pf1R2mO0
-         WelEkGFsrvx3jPclQhDnHhgUMQ5UYIIncLza7uApyYbp8hkjAoD+0FtF+Fqx8EQct/qR
-         S5UuRMvmP5RhXbZ0kL7NoxQ3i55QpinNbAlbfmkAFueTEs3nURfLQsEe+5C7NVE1IqWR
-         xoJyK8ymckYYHPPV0G6e/VmaM/tTpNwQe3sI2VcXTLfAcfXXMTl8CqmRDScb2i8dpq4I
-         2DGvN7P5l6YtMo11Fj24Do6r1izqZ9fldLH29EHQ2kwr3TTCU7ixRdZpxu9hoLagH9xr
-         mu0g==
-X-Forwarded-Encrypted: i=1; AKwUvBwvHmdCQQGP1WdvApWWxoQHll4iO+bKKYdQaSD+wIjZ4FC1A7Zebvy6kUkCzRcAap9MB5ekd0ZHhg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLwhvOaIJ2FL2UV76LSW+4YhJPG5PD07QZ9vc2EjGk8odXnXhBl
-	4De60YaDrFHyFjL+ZkdOWlr8OHbZCd/+MldvUWaz9q5rUw+XWSvJL0yRoU2oeM+RFl3OfujvKcb
-	TdAxSDg/THYHJyrfo8Z3vU/yoPAMB68nCVQiiR2uSK2g1vE+eo6H9vKmLyy0=
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDB8F606A31A;
+	Wed, 21 Oct 2026 13:17:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kditkkgl
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 092A21F000C4;
+	Wed, 21 Oct 2026 13:17:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792588654;
+	bh=agLknzMu3oVoMvggW9spU09cwqNWOp/fPO88uDYZmIQ=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=kditkkgldFDSgRcGHq1o2g4/X5x5ZJBRDKVn1e+kZAFEZ726FdQ5tUV6ed7h9FY1b
+	 UW2sY962oLscN57QI2jS1P66CQVxbm+phZJqyhDkIp9q8BINhPZJCs72xo0ZnmhDVq
+	 Ba0KL9JtHCa83usVEhqgQUmJj8jwMFjMa8hbtpCIZh5iHa6//DAkO+qu24zQapqgC5
+	 7i7huoxlT2LUC0SZS2d1xRekDwGmME+3JtConaEpb2hC0M3ghHhXPOMpjXNQkBqcGz
+	 wpa3bDFLOAZsAfMiAWAT0oWm+5OLE7XW8+hDg9Y2yU0RdPTzNn+x+5vvdoa5PUKsyJ
+	 lowlIDd/Dt/Sw==
+From: Christian Brauner <brauner@kernel.org>
+To: linux-kernel@vger.kernel.org, 
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
+ Sadrul Chowdhury <sadrul@google.com>
+Cc: linux-fsdevel@vger.kernel.org, Pavel Machek <pavel@kernel.org>, 
+ linux-pm@vger.kernel.org, John Stultz <jstultz@google.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>
+In-Reply-To: <20261021122543.3547778-1-sadrul@google.com>
+References: <20261021122543.3547778-1-sadrul@google.com>
+Subject: Re: [PATCH v2 1/2] fs/epoll: mark epoll_wait tasks TASK_FREEZABLE
+Message-Id: <20261021-desaster-oboen-ungemacht-1056e418e106@brauner>
+Date: Wed, 21 Oct 2026 15:17:30 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,48 +62,38 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:2507:b0:4c4:8ace:cce8 with SMTP id
- 5614622812f47-55350396824mr1164508b6e.8.1792586025405; Wed, 21 Oct 2026
- 05:33:45 -0700 (PDT)
-Date: Wed, 21 Oct 2026 05:33:45 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6ad8b129.a384138e.1e340d.0002.GAE@google.com>
-Subject: [syzbot] Monthly pm report (Oct 2026)
-From: syzbot <syzbot+listc1584644ec31736acf97@syzkaller.appspotmail.com>
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev-3d1b8
 
-Hello pm maintainers/developers,
+On Wed, 21 Oct 2026 12:25:42 +0000, Sadrul Chowdhury wrote:
+> During system suspend (freeze_processes) and resume (thaw_processes),
+> threads blocked in epoll_wait() sleep in TASK_INTERRUPTIBLE. When
+> try_to_freeze_tasks() executes, it must wake up every sleeping thread
+> with a synthetic signal so the thread can schedule, run try_to_freeze(),
+> enter TASK_FROZEN, and sleep again. Upon resume, the freezer wakes them
+> all up simultaneously, only for each thread to re-enter ep_poll(),
+> observe no ready I/O events, and call schedule() to go back to sleep.
+> 
+> [...]
 
-This is a 31-day syzbot report for the pm subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/pm
+Applied to the vfs-7.5.misc branch of the vfs/vfs.git tree.
+Patches in the vfs-7.5.misc branch should appear in linux-next soon.
 
-During the period, 1 new issues were detected and 0 were fixed.
-In total, 7 issues are still open and 13 have already been fixed.
-There are also 6 low-priority issues.
+Please report any outstanding bugs that were missed during review in a
+new review to the original patch series allowing us to drop it.
 
-Some of the still happening issues:
+It's encouraged to provide Acked-bys and Reviewed-bys even though the
+patch has now been applied. If possible patch trailers will be updated.
 
-Ref Crashes Repro Title
-<1> 93      Yes   WARNING: ODEBUG bug in trace_suspend_resume (2)
-                  https://syzkaller.appspot.com/bug?extid=98850521518b962c5bab
-<2> 5       No    BUG: scheduling while atomic in trace_suspend_resume
-                  https://syzkaller.appspot.com/bug?extid=3ae5f6fdc78789d76c5d
-<3> 112     Yes   KASAN: invalid-access Read in swsusp_save
-                  https://syzkaller.appspot.com/bug?extid=461576769f21a04b4bc0
+Note that commit hashes shown below are subject to change due to rebase,
+trailer updates or similar. If in doubt, please check the listed branch.
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git
+branch: vfs-7.5.misc
 
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
+[1/2] fs/epoll: mark epoll_wait tasks TASK_FREEZABLE
+      https://git.kernel.org/vfs/vfs/c/5f2199f2720c
+[2/2] fs/select: mark select and poll tasks TASK_FREEZABLE
+      https://git.kernel.org/vfs/vfs/c/33ef4cf97c32
 
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
-
-You may send multiple commands in a single email message.
