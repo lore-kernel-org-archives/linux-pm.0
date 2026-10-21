@@ -1,81 +1,81 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.182
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792627295;
-	b=yUmoR0h+7AkOdecz0nyuUN8joRJyJl+k+pJcopzL9WeDxoUoL978js8pqOloiOfQ7x1J
-	 io+mXo1L1BBlNYUa2B4sWvp98aClAUGc0iORcuNT0Rr0yKN6MT4+mmQczkBtRdI3NRqnR
-	 5Bu9F4L2seXRNMZNLiTXJPFlTcirxkVbBsp9ELHop9845OKlidqFKuioUZj36hhyPfeYq
-	 BTlNhfDdzuolX6S08n7Asn98Fnsr3q2PJ2lC/nq+02AJ3s6O7nivmEzFR6A/CC3oHZQzE
-	 saLzD/2JaCUc3+6R0JC7l6OmzOTCML2AMN4j3kGQgjt+iY4bF+rxzXdWNNPBeNlQF0w==
+	t=1792627297;
+	b=MWfArQPs5sAtkqQWzN5jbGA6/mUSUksdoCkmF9wcIilOMHVnotdhJWeQ2/2EWKTeLJt2
+	 OfWab+0/nACUhwFFleLKqvKfGLikV6p/XbRVMVhj1PPsjohW0M3aO96xV88RaP4PUxcMJ
+	 iHbprX+j8k1gZT/hxOdl7mIF3s7Wc55lbjjFxVfJXJ372fayC4qU66r9o08EJ32l09+11
+	 iJgo0wWUH1nO4Wn59GVwfzR+7QJXOFUJEbEpoxNC5QBoUZexYdfKtZdQ14+rwI1kmAjjx
+	 0OvMx3dYxbI2djm+15JEtPwjNU5+ge4Nnv2lxIK7n8Z//zVV/sR6Fe+fiB1e7KtvrQQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792627295;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792627297;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=Gsd6bRhlTh/YOIZGX8jXAT4MMsBhNz0V/WWByQICZzw=;
-	b=cioFNshlWmGuYc2E9jPiytRibUJf0MkyIWU3CacYbNNAVXzT0JEZLyqhQMCGS1/mwBnz
-	 RjEL0qaBoKK53gHxhAeOBEsDex/gBBgz0mHsdS9DtqBrDtvXfrqVjj8Rc5XhtuTrRJklH
-	 seQOBHSj/R8mOVxcwSGUXZZ3wCGPtKwZ/l2ixRdOgk387NN2b9Pkqc3EHomke2ck7G37W
-	 YbVF6bStskgNdi/0d1yBQAbgs9pNWdiuFr1lrVN+lO5n3INdcmstR5bWYcGeGBBzgUBxe
-	 JShXRqYVnIlx180hCTgCLdDouyXlGDgDxBXJqv4NtH+TSi0OqtEGUaloHWd6YKUjvgQ==
+	bh=dsyz6PyMmMWH12hjOOrerrdLXzBjhoM9BZVLK/+mwbo=;
+	b=HIHG7uqFMTUvQ8EyG9zdX2YSLiPzH4jDjBG9h9nRqVEj6XyxMyeZVu5dXWQs/wbKBOmB
+	 Vv9uaEhTURXDTv3ABpEICOrSZi9sHN7smtMYYrXuYbgaJA/2Q4UEUTtz1tYTyy0Z7Yh5Y
+	 YofcWYe2TEFpuA+yuiDGm+g0TYXDL2xXoPZFv/Dc3+w8ogm8NeVP0kQybF7vwOIKW0GJV
+	 XPENxrz/bY8vRGbM7DXt0V/cmsDSdyNpEpu9czzVPN1CaYgRNIzdbXJQP4rbnRmMOSICi
+	 RS1KE3h2Ppx93KQEngZ0R0xbdhdqQbSGOXmMxgUAfad6mVNATVCqPJC2Ct16f5SFVCg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=cd4A51uY;
-	arc=none smtp.remote-ip=74.125.82.174
-Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=i01E8j0X;
+	arc=none smtp.remote-ip=74.125.82.182
+Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E18BF60A381B
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 00:01:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E18BF60A381B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9F3460A261A
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 00:01:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D9F3460A261A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=cd4A51uY
-Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-3514b90bb89so3491629eec.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 17:01:34 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=i01E8j0X
+Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-35d0be18c71so400924eec.1
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 17:01:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1792627294; x=1793232094; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1792627296; x=1793232096; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=Gsd6bRhlTh/YOIZGX8jXAT4MMsBhNz0V/WWByQICZzw=;
-        b=cd4A51uYQQAHx6tTp0GxCUUwPl6yFZwUM7LL8Vt2gNarBStsEYQ2Ts+sZDxxNH3jwD
-         xs3SSz7Ztc8vtsIr/f/Bq7aeiDNLJeaKj0lxVHMUOTIiIRFVPwqDLqlIv5g1bj97Bfrl
-         Apx2eb05eKs7GXxkiDh10+tMASq1hcHbutALQ=
+        bh=dsyz6PyMmMWH12hjOOrerrdLXzBjhoM9BZVLK/+mwbo=;
+        b=i01E8j0XnjV3FQzaofSDz1fL2jlLI7WdDnghuCDShMtw5HN3ZDK5A1lHNjIEpq7IC3
+         ONK2kvUfmCTqzyboOo74t9wInnwK14JKyCJqPgXsjRL79S8mXp0yiteUQy6SAAEFbfcN
+         htMUy8UyPGzWPlmAWHALe/BBymvWtLiELDvqc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792627294; x=1793232094;
+        d=1e100.net; s=20260707; t=1792627296; x=1793232096;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=Gsd6bRhlTh/YOIZGX8jXAT4MMsBhNz0V/WWByQICZzw=;
-        b=GENxpw4iuyWmLfwS8mFFZ8UU1xAWkki2zUBMhYpsOewneB0Ibdk0El5eINGLwacyam
-         konwZKsdOPRbIBZyanQyIt1XVKpwxN8ROioPVgqyE8ZI83z3BB09DvgKWSyijpiw6zbF
-         F16hj4U/tqFr3Sdb3fgsEKonw6Ogb70+ceaG36hW0seUB03ELZL+tIVIFPWSPooIlmCQ
-         orNQjb3fKvf2bFsT5mNa8hcpc7G/uOxIbgiTvSr2kEHM60Xow5VTZPBujgHeeyWMplb9
-         8oMXenfsNULTSdLjErSdk1ffF/Kl1mIMxIWbfIEtEDQqXrNsaS5w91NU1hBHLhHg+L3K
-         OvzA==
-X-Forwarded-Encrypted: i=1; AKwUvBwhjYtMzVpqCwkG4lFZ6t7DAKon+uEzCxxvqSoQdkITC8jDezAM0BZcC98RhLs9mZiBBumAbBFPUg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL39O83FT+EpWMVdFG8+ehWLT+dv5vbCQlfGCF011r+/l5iJoPQ
-	/kQ/jn4Nvpcf7XRk/RhDziCkRACAd8z5R64v9kbj52CJb1QhkShS6B5//3N9s6i2lA==
-X-Gm-Gg: AYBFou1YM+lDwyBvrE4hUTjMwCOngfgERAGcCjme0t6WhbBgqCmfNqFyxMSvvrDxdB2
-	P0rN3V255SDP7z9jJD/5RvTh/UlALcKdCYCzhmWcqFsT3qrh0zQvSinKQ0OAcAi7+hWh4rKbSGd
-	xHJRKpzxcF0qlZHfKM8900Mf1+Sxy+L/sdFF8KqfE4lG8usuMnQKNRL8Ns01ee4CmH81Hne+JJA
-	VpYHSRuEREZUydWoftShrwcrDRVaY+Oy3Ds8n5vmo7SfZL22N6oJffT1MesBc+rRoUG3lsErCu+
-	NkThxVispnt3qAaGSizo0ezLX1d7Kkab7p9b26BwAThkbVSVE6eKnN81F6YKwpcYBtt+vuOWN1j
-	w1rhdhtaUcEPCg2URM+z4eMcrrxCwcaMYGYJV7Dv6VRY3VkMMh1RSVtJ6T7U/b1MAEmmAKBwOTT
-	1wvjs0j8diPl4wuC+NMo3UJMFmSreBatbtxaS1jsZ72ml42ZwF2UiOq4klSftUxJ7GvaSyL1vEV
-	oUXQqkVauGPuu6JcHOaFefsui7+ctDy5LSSJMfOYvk26M57Oq5hYTCtQDww+pnnkOAjy1D2FW/a
-	W+jCxMpiPpyp9QYk6bmt
-X-Received: by 2002:a05:7023:904:b0:14a:d8fe:33b3 with SMTP id a92af1059eb24-190a6dbd933mr4831229c88.40.1792627293578;
-        Wed, 21 Oct 2026 17:01:33 -0700 (PDT)
+        bh=dsyz6PyMmMWH12hjOOrerrdLXzBjhoM9BZVLK/+mwbo=;
+        b=omnwDDyTm7JESxmTmbIcQzV95g7ZtW0iBdMPs0zEqSfi4ljbUVQJMGGFyBZAY80vaj
+         MQEp4eWY/YTV+K5zC1OvIIwFwMyiIyVJMFvWPInbdCZiN3DXVjcRD99L/DGX/sMd2TOM
+         Hfpa93U/MfiB14lESh4olu9/SGiuItdYbtys9DKR3V2W+PSGm8wID1WLteiZI8l1pnC/
+         o0aFkFQiB77USyoBr/Y2q9SVhPpXq4e5Zdb/zfYF4vKsyj2ycMo/P3RFPDEugX2nn1hq
+         Oe1BGYaA18w8vaT5m9TsF+rAU+qyZjLlFv0UEAcuuYDVcVk1QMgOhYPl1H6st6OYlZK1
+         LYwQ==
+X-Forwarded-Encrypted: i=1; AKwUvByG+U2jBcDmbbsM2YHYgwzhGSNrXevp9I+1LpZLD7JQDes1RzT5NbYFcoPoku3z/H9RSO477qaCfQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYK42cnX0gidfgHMespO7vs/oL5PEPj4+NvM/Z7wb3DKhRCMqiAJ
+	9vWTuLCyMneqv5Uvsm66xOlOXMnw7gJMjxG00qDdDEcKClqLs+HtdUhogDgn3Xq7LQ==
+X-Gm-Gg: AYBFou1eYX0aSGiMKry9FjJZttJBBN4EwDhi8VcK6P86SW2VBJC8RJBsM1Z2SI+1WMw
+	RO3eNZxiVSBXTi8Pt8gTs3gSmx5OAxTCMC3eMabv0tmCnAIYtIgh4wHOZJmosIRu6tM3QRSBaHY
+	SfKza53IdCHhMOnfJ2CtZo8K4EQaC0IJXjrJfwrVuYZWbonK8yGNSO0lPq7BAa3elAYT13By4sK
+	ve7Y/ViNIqL8HXMgVHVm8ekp5iaIx2UwseJjC6h5GbH+BKIUuJ0ADgiCBIXeAUrwSF0IW1eharn
+	SVoT3zPxAKw3zbWkPRrphwkmIzefuog+zcO/JxLbUM1Web1LOIiDLyCoBOUNZg2yn8Ma3CUNtaj
+	Pas/EevnB21UIvKe0mOkKFqF2JbTZQET+Ybs2k2lNTKFY7dI7BHfPPBft6yvdC+XWR8Hw3ikHAv
+	qd0O7FHCNf5JgGxN7GdzXc2qAbbWYHmIlZXZGa1J1XykvF3P9zro9AizGVsWimYC8GOjZEJS2/y
+	4nqAqinQgAjmcNkK7SoDgRo97EUdnRAi9Hb/rK2TRcrijOLk79n/gnw3t3FtbjQkj6ixvLXjm3u
+	XbOlYz4IRx1FgXBat/A=
+X-Received: by 2002:a05:7022:2605:b0:156:d588:c881 with SMTP id a92af1059eb24-192ee219b4fmr1409196c88.2.1792627296072;
+        Wed, 21 Oct 2026 17:01:36 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:14ab:bfeb:ac88:458f])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1903a180b9esm14472813c88.4.2026.10.21.17.01.32
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1903e4f2eacsm8955721c88.23.2026.10.21.17.01.34
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Oct 2026 17:01:32 -0700 (PDT)
+        Wed, 21 Oct 2026 17:01:35 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: Jonathan Cameron <jic23@kernel.org>
 Cc: =?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
@@ -88,9 +88,9 @@ Cc: =?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
 	Brian Norris <briannorris@chromium.org>,
 	Rui Miguel Silva <rmfrfs@gmail.com>,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 10/17] iio: gyro: bmg160: Discard pm_runtime_put_autosuspend() return values
-Date: Wed, 21 Oct 2026 16:57:11 -0700
-Message-ID: <20261021165858.v2.10.I5918e916cbe48281c13e5734733a3281e7be8841@changeid>
+Subject: [PATCH v2 11/17] iio: gyro: fxas21002c: Discard pm_runtime_put_autosuspend() return values
+Date: Wed, 21 Oct 2026 16:57:12 -0700
+Message-ID: <20261021165858.v2.11.I3517fbd2ba5f7d25ddcdf4abaec13f6ca301236d@changeid>
 X-Mailer: git-send-email 2.56.0.218.g1ec904b173-goog
 In-Reply-To: <20261021235818.3059519-1-briannorris@chromium.org>
 References: <20261021235818.3059519-1-briannorris@chromium.org>
@@ -116,20 +116,8 @@ situations in which that can happen, like after writing "on" to the
 device's runtime PM "control" attribute in sysfs for one example.
 
 For this reason, modify this driver to simply discard the
-pm_runtime_put_autosuspend() return value, and inline
-bmg160_set_power_state() now that it behaves the same with and without
-CONFIG_PM and is otherwise trivial.
-
-While at it, I notice that bmg160_write_event_config() and
-bmg160_data_rdy_trigger_set_state() mismanage the runtime PM reference
-count intentionally, relying on racy autosuspend behavior for
-correctness. I refactor this to manage refcounts properly instead.
-I use guard() for the mutex, to make this less error prone.
-
-Additionally, bmg160_write_raw() had one error path where a
-pm_runtime_resume_and_get() failure would also drop a runtime PM
-refcount (pm_runtime_put_autosuspend()), which potentially leads to
-underflow. I fix that.
+pm_runtime_put_autosuspend() return value, and inline the helpers now
+that they're even more trivial.
 
 This will facilitate a planned change of the
 pm_runtime_put_autosuspend() return type to void in the future, similar
@@ -142,348 +130,108 @@ Signed-off-by: Brian Norris <briannorris@chromium.org>
 Changes in v2:
  * Split iio patch into per-driver patches
  * Inlining
- * guard()
 
- drivers/iio/gyro/bmg160_core.c | 178 ++++++++++++++-------------------
- 1 file changed, 77 insertions(+), 101 deletions(-)
+ drivers/iio/gyro/fxas21002c_core.c | 33 ++++++++----------------------
+ 1 file changed, 9 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/iio/gyro/bmg160_core.c b/drivers/iio/gyro/bmg160_core.c
-index 0958b7d31a92..0281a3a52105 100644
---- a/drivers/iio/gyro/bmg160_core.c
-+++ b/drivers/iio/gyro/bmg160_core.c
-@@ -8,6 +8,7 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/slab.h>
-+#include <linux/cleanup.h>
- #include <linux/pm.h>
- #include <linux/pm_runtime.h>
- #include <linux/iio/iio.h>
-@@ -313,30 +314,6 @@ static int bmg160_chip_init(struct bmg160_data *data)
- 	return 0;
+diff --git a/drivers/iio/gyro/fxas21002c_core.c b/drivers/iio/gyro/fxas21002c_core.c
+index a88670207cec..1d891387b121 100644
+--- a/drivers/iio/gyro/fxas21002c_core.c
++++ b/drivers/iio/gyro/fxas21002c_core.c
+@@ -364,18 +364,6 @@ static int fxas21002c_write(struct fxas21002c_data *data,
+ 	return ret;
  }
  
--static int bmg160_set_power_state(struct bmg160_data *data, bool on)
+-static int  fxas21002c_pm_get(struct fxas21002c_data *data)
 -{
--#ifdef CONFIG_PM
--	struct device *dev = regmap_get_device(data->regmap);
--	int ret;
--
--	if (on)
--		ret = pm_runtime_get_sync(dev);
--	else
--		ret = pm_runtime_put_autosuspend(dev);
--
--	if (ret < 0) {
--		dev_err(dev, "Failed: bmg160_set_power_state for %d\n", on);
--
--		if (on)
--			pm_runtime_put_noidle(dev);
--
--		return ret;
--	}
--#endif
--
--	return 0;
+-	return pm_runtime_resume_and_get(regmap_get_device(data->regmap));
 -}
 -
- static int bmg160_setup_any_motion_interrupt(struct bmg160_data *data,
- 					     bool status)
- {
-@@ -503,8 +480,9 @@ static int bmg160_get_temp(struct bmg160_data *data, int *val)
- 	unsigned int raw_val;
- 
- 	mutex_lock(&data->mutex);
--	ret = bmg160_set_power_state(data, true);
-+	ret = pm_runtime_resume_and_get(dev);
- 	if (ret < 0) {
-+		dev_err(dev, "failed to resume: %d\n", ret);
- 		mutex_unlock(&data->mutex);
- 		return ret;
- 	}
-@@ -512,16 +490,14 @@ static int bmg160_get_temp(struct bmg160_data *data, int *val)
- 	ret = regmap_read(data->regmap, BMG160_REG_TEMP, &raw_val);
- 	if (ret < 0) {
- 		dev_err(dev, "Error reading reg_temp\n");
--		bmg160_set_power_state(data, false);
-+		pm_runtime_put_autosuspend(dev);
- 		mutex_unlock(&data->mutex);
- 		return ret;
- 	}
- 
- 	*val = sign_extend32(raw_val, 7);
--	ret = bmg160_set_power_state(data, false);
-+	pm_runtime_put_autosuspend(dev);
- 	mutex_unlock(&data->mutex);
--	if (ret < 0)
--		return ret;
- 
- 	return IIO_VAL_INT;
- }
-@@ -533,8 +509,9 @@ static int bmg160_get_axis(struct bmg160_data *data, int axis, int *val)
- 	__le16 raw_val;
- 
- 	mutex_lock(&data->mutex);
--	ret = bmg160_set_power_state(data, true);
-+	ret = pm_runtime_resume_and_get(dev);
- 	if (ret < 0) {
-+		dev_err(dev, "failed to resume: %d\n", ret);
- 		mutex_unlock(&data->mutex);
- 		return ret;
- 	}
-@@ -543,16 +520,14 @@ static int bmg160_get_axis(struct bmg160_data *data, int axis, int *val)
- 			       sizeof(raw_val));
- 	if (ret < 0) {
- 		dev_err(dev, "Error reading axis %d\n", axis);
--		bmg160_set_power_state(data, false);
-+		pm_runtime_put_autosuspend(dev);
- 		mutex_unlock(&data->mutex);
- 		return ret;
- 	}
- 
- 	*val = sign_extend32(le16_to_cpu(raw_val), 15);
--	ret = bmg160_set_power_state(data, false);
-+	pm_runtime_put_autosuspend(dev);
- 	mutex_unlock(&data->mutex);
--	if (ret < 0)
--		return ret;
- 
- 	return IIO_VAL_INT;
- }
-@@ -624,6 +599,7 @@ static int bmg160_write_raw(struct iio_dev *indio_dev,
- 			    int val, int val2, long mask)
- {
- 	struct bmg160_data *data = iio_priv(indio_dev);
-+	struct device *dev = regmap_get_device(data->regmap);
- 	int ret;
- 
- 	switch (mask) {
-@@ -636,18 +612,14 @@ static int bmg160_write_raw(struct iio_dev *indio_dev,
- 		 * register. Since we will be in suspend mode by default, change
- 		 * mode to power on for other writes.
- 		 */
--		ret = bmg160_set_power_state(data, true);
-+		ret = pm_runtime_resume_and_get(dev);
- 		if (ret < 0) {
-+			dev_err(dev, "failed to resume: %d\n", ret);
- 			mutex_unlock(&data->mutex);
- 			return ret;
- 		}
- 		ret = bmg160_set_bw(data, val);
--		if (ret < 0) {
--			bmg160_set_power_state(data, false);
--			mutex_unlock(&data->mutex);
--			return ret;
--		}
--		ret = bmg160_set_power_state(data, false);
-+		pm_runtime_put_autosuspend(dev);
- 		mutex_unlock(&data->mutex);
- 		return ret;
- 	case IIO_CHAN_INFO_LOW_PASS_FILTER_3DB_FREQUENCY:
-@@ -655,19 +627,14 @@ static int bmg160_write_raw(struct iio_dev *indio_dev,
- 			return -EINVAL;
- 
- 		mutex_lock(&data->mutex);
--		ret = bmg160_set_power_state(data, true);
-+		ret = pm_runtime_resume_and_get(dev);
- 		if (ret < 0) {
--			bmg160_set_power_state(data, false);
-+			dev_err(dev, "failed to resume: %d\n", ret);
- 			mutex_unlock(&data->mutex);
- 			return ret;
- 		}
- 		ret = bmg160_set_filter(data, val);
--		if (ret < 0) {
--			bmg160_set_power_state(data, false);
--			mutex_unlock(&data->mutex);
--			return ret;
--		}
--		ret = bmg160_set_power_state(data, false);
-+		pm_runtime_put_autosuspend(dev);
- 		mutex_unlock(&data->mutex);
- 		return ret;
- 	case IIO_CHAN_INFO_SCALE:
-@@ -676,18 +643,14 @@ static int bmg160_write_raw(struct iio_dev *indio_dev,
- 
- 		mutex_lock(&data->mutex);
- 		/* Refer to comments above for the suspend mode ops */
--		ret = bmg160_set_power_state(data, true);
-+		ret = pm_runtime_resume_and_get(dev);
- 		if (ret < 0) {
-+			dev_err(dev, "failed to resume: %d\n", ret);
- 			mutex_unlock(&data->mutex);
- 			return ret;
- 		}
- 		ret = bmg160_set_scale(data, val2);
--		if (ret < 0) {
--			bmg160_set_power_state(data, false);
--			mutex_unlock(&data->mutex);
--			return ret;
--		}
--		ret = bmg160_set_power_state(data, false);
-+		pm_runtime_put_autosuspend(dev);
- 		mutex_unlock(&data->mutex);
- 		return ret;
- 	default:
-@@ -759,42 +722,40 @@ static int bmg160_write_event_config(struct iio_dev *indio_dev,
- 				     bool state)
- {
- 	struct bmg160_data *data = iio_priv(indio_dev);
-+	struct device *dev = regmap_get_device(data->regmap);
- 	int ret;
- 
- 	if (state == data->ev_enable_state)
- 		return 0;
- 
--	mutex_lock(&data->mutex);
-+	guard(mutex)(&data->mutex);
- 
- 	if (!state && data->motion_trigger_on) {
- 		data->ev_enable_state = 0;
--		mutex_unlock(&data->mutex);
- 		return 0;
- 	}
--	/*
--	 * We will expect the enable and disable to do operation
--	 * in reverse order. This will happen here anyway as our
--	 * resume operation uses sync mode runtime pm calls, the
--	 * suspend operation will be delayed by autosuspend delay
--	 * So the disable operation will still happen in reverse of
--	 * enable operation. When runtime pm is disabled the mode
--	 * is always on so sequence doesn't matter
--	 */
--	ret = bmg160_set_power_state(data, state);
--	if (ret < 0) {
--		mutex_unlock(&data->mutex);
--		return ret;
--	}
- 
--	ret =  bmg160_setup_any_motion_interrupt(data, state);
--	if (ret < 0) {
--		bmg160_set_power_state(data, false);
--		mutex_unlock(&data->mutex);
--		return ret;
-+	if (state) {
-+		ret = pm_runtime_resume_and_get(dev);
-+		if (ret < 0) {
-+			dev_err(dev, "failed to resume: %d\n", ret);
-+			return ret;
-+		}
-+
-+		ret = bmg160_setup_any_motion_interrupt(data, true);
-+		if (ret < 0) {
-+			pm_runtime_put_autosuspend(dev);
-+			return ret;
-+		}
-+	} else {
-+		ret = bmg160_setup_any_motion_interrupt(data, false);
-+		if (ret < 0)
-+			return ret;
-+
-+		pm_runtime_put_autosuspend(dev);
- 	}
- 
- 	data->ev_enable_state = state;
--	mutex_unlock(&data->mutex);
- 
- 	return 0;
- }
-@@ -929,41 +890,47 @@ static int bmg160_data_rdy_trigger_set_state(struct iio_trigger *trig,
- {
- 	struct iio_dev *indio_dev = iio_trigger_get_drvdata(trig);
- 	struct bmg160_data *data = iio_priv(indio_dev);
-+	struct device *dev = regmap_get_device(data->regmap);
- 	int ret;
- 
--	mutex_lock(&data->mutex);
-+	guard(mutex)(&data->mutex);
- 
- 	if (!state && data->ev_enable_state && data->motion_trigger_on) {
- 		data->motion_trigger_on = false;
--		mutex_unlock(&data->mutex);
- 		return 0;
- 	}
- 
--	/*
--	 * Refer to comment in bmg160_write_event_config for
--	 * enable/disable operation order
--	 */
--	ret = bmg160_set_power_state(data, state);
--	if (ret < 0) {
--		mutex_unlock(&data->mutex);
--		return ret;
--	}
--	if (data->motion_trig == trig)
--		ret =  bmg160_setup_any_motion_interrupt(data, state);
--	else
--		ret = bmg160_setup_new_data_interrupt(data, state);
--	if (ret < 0) {
--		bmg160_set_power_state(data, false);
--		mutex_unlock(&data->mutex);
--		return ret;
-+	if (state) {
-+		ret = pm_runtime_resume_and_get(dev);
-+		if (ret < 0) {
-+			dev_err(dev, "failed to resume: %d\n", ret);
-+			return ret;
-+		}
-+
-+		if (data->motion_trig == trig)
-+			ret = bmg160_setup_any_motion_interrupt(data, true);
-+		else
-+			ret = bmg160_setup_new_data_interrupt(data, true);
-+		if (ret < 0) {
-+			pm_runtime_put_autosuspend(dev);
-+			return ret;
-+		}
-+	} else {
-+		if (data->motion_trig == trig)
-+			ret = bmg160_setup_any_motion_interrupt(data, false);
-+		else
-+			ret = bmg160_setup_new_data_interrupt(data, false);
-+		if (ret < 0)
-+			return ret;
-+
-+		pm_runtime_put_autosuspend(dev);
- 	}
-+
- 	if (data->motion_trig == trig)
- 		data->motion_trigger_on = state;
- 	else
- 		data->dready_trigger_on = state;
- 
--	mutex_unlock(&data->mutex);
+-static int  fxas21002c_pm_put(struct fxas21002c_data *data)
+-{
+-	struct device *dev = regmap_get_device(data->regmap);
 -
- 	return 0;
- }
- 
-@@ -1046,15 +1013,24 @@ static irqreturn_t bmg160_data_rdy_trig_poll(int irq, void *private)
- static int bmg160_buffer_preenable(struct iio_dev *indio_dev)
+-	return pm_runtime_put_autosuspend(dev);
+-}
+-
+ static int fxas21002c_temp_get(struct fxas21002c_data *data, int *val)
  {
- 	struct bmg160_data *data = iio_priv(indio_dev);
-+	struct device *dev = regmap_get_device(data->regmap);
-+	int ret;
+ 	struct device *dev = regmap_get_device(data->regmap);
+@@ -383,22 +371,20 @@ static int fxas21002c_temp_get(struct fxas21002c_data *data, int *val)
+ 	int ret;
  
--	return bmg160_set_power_state(data, true);
+ 	mutex_lock(&data->lock);
+-	ret = fxas21002c_pm_get(data);
 +	ret = pm_runtime_resume_and_get(dev);
-+	if (ret < 0)
-+		dev_err(dev, "failed to resume: %d\n", ret);
-+
-+	return ret;
- }
+ 	if (ret < 0)
+ 		goto data_unlock;
  
- static int bmg160_buffer_postdisable(struct iio_dev *indio_dev)
- {
- 	struct bmg160_data *data = iio_priv(indio_dev);
-+	struct device *dev = regmap_get_device(data->regmap);
+ 	ret = regmap_field_read(data->regmap_fields[F_TEMP], &temp);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to read temp: %d\n", ret);
+-		fxas21002c_pm_put(data);
++		pm_runtime_put_autosuspend(dev);
+ 		goto data_unlock;
+ 	}
  
--	return bmg160_set_power_state(data, false);
+ 	*val = sign_extend32(temp, 7);
+ 
+-	ret = fxas21002c_pm_put(data);
+-	if (ret < 0)
+-		goto data_unlock;
 +	pm_runtime_put_autosuspend(dev);
-+
-+	return 0;
- }
  
- static const struct iio_buffer_setup_ops bmg160_buffer_setup_ops = {
+ 	ret = IIO_VAL_INT;
+ 
+@@ -416,7 +402,7 @@ static int fxas21002c_axis_get(struct fxas21002c_data *data,
+ 	int ret;
+ 
+ 	mutex_lock(&data->lock);
+-	ret = fxas21002c_pm_get(data);
++	ret = pm_runtime_resume_and_get(dev);
+ 	if (ret < 0)
+ 		goto data_unlock;
+ 
+@@ -424,15 +410,13 @@ static int fxas21002c_axis_get(struct fxas21002c_data *data,
+ 			       &axis_be, sizeof(axis_be));
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to read axis: %d: %d\n", index, ret);
+-		fxas21002c_pm_put(data);
++		pm_runtime_put_autosuspend(dev);
+ 		goto data_unlock;
+ 	}
+ 
+ 	*val = sign_extend32(be16_to_cpu(axis_be), 15);
+ 
+-	ret = fxas21002c_pm_put(data);
+-	if (ret < 0)
+-		goto data_unlock;
++	pm_runtime_put_autosuspend(dev);
+ 
+ 	ret = IIO_VAL_INT;
+ 
+@@ -725,10 +709,11 @@ static irqreturn_t fxas21002c_trigger_handler(int irq, void *p)
+ 	struct iio_poll_func *pf = p;
+ 	struct iio_dev *indio_dev = pf->indio_dev;
+ 	struct fxas21002c_data *data = iio_priv(indio_dev);
++	struct device *dev = regmap_get_device(data->regmap);
+ 	int ret;
+ 
+ 	mutex_lock(&data->lock);
+-	ret = fxas21002c_pm_get(data);
++	ret = pm_runtime_resume_and_get(dev);
+ 	if (ret < 0)
+ 		goto out_unlock;
+ 
+@@ -741,7 +726,7 @@ static irqreturn_t fxas21002c_trigger_handler(int irq, void *p)
+ 					   data->timestamp);
+ 
+ out_pm_put:
+-	fxas21002c_pm_put(data);
++	pm_runtime_put_autosuspend(dev);
+ 
+ out_unlock:
+ 	mutex_unlock(&data->lock);
 -- 
 2.56.0.218.g1ec904b173-goog
 
