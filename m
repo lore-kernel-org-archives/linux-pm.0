@@ -1,81 +1,81 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792627290;
-	b=v34nzFMhAidosMeeUYK9pCZ73z8+ics+S9ytkC/txH0RH3xud/DtLFYSylUsi7nycR49
-	 rX0f6+i85LNPVDADuiLOl0zB/tTVPPPtZlIcEYvLcIsNoCgxizIMuMcEhGTveJG+FkC/A
-	 pjQIeHXP3jhlI++QOYFp3IuKqEEzRN2taervipV+isaeIiANYkMNscksbGAN+ALwU2gsp
-	 62BLpJR846FOOvVImd+FuFEdKP/OTKiuTdZbKsFTGfDh4dvPugaTIRUtiRpkbbTC3lIby
-	 wLDznAwH8t6/8QNW/IJ0xkGZz0NWjh7rqb+vNPMUIr7JqScxndnWyNCHN6moL0edJ7A==
+	t=1792627292;
+	b=ox9l0vzsFlb1yKBFRcqY6wA/0Z+PgTyAglTavzBQTojvtYUm8JqiF5wlH+CWyfPEMHyM
+	 f2/4LBeY8oK2a1FKkyHNL7jyQRZIaZFwyICJvz7uwycNrdu2xcMuk4yfmPJgA1aUtxybH
+	 pr2JC1j0cdA40Hf8IDY9rCGcWCQTDgLDQgJ4EvY+kux1cnIsLzdgUa6H8CWC/LcjsdsXx
+	 ABJlcaqP6IflJHPybD4eWAH0el+s7h3KPZEbnILGR2/iKoSIm7onJDk4hnMwkI8pXh0e5
+	 pHBko5/STRS6DfPnbHrwa/TXopDQVS9YDnsqsfNGzhCPxEafMI+J29kOQeu1hUD04iA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792627290;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792627292;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=qGPgAY2uzbFWVW1gwGK7OSQ0FTtWRIw5OwqDXn3zsW8=;
-	b=FY9Ts2sqeNSTDGpADtMUennoymDUDrqqW/u+2G4OqOYC8OEaN0qWxpK0bc653Y3oMXB2
-	 BhAJJiuuidWj5WCefmE4Ko0GttmyMMnF/g682NJ+LFdQVhmzc7BSIn1c7jPdy4p+7WlIV
-	 9TOQSrF6toNV+vCVwMrfGUyR9t+k520EDrvtS+KgvzGVBas673W720T1BI8ckXvTy2Rd7
-	 gNxsj558NKroUjjeCpTaNBTYUcwIfrRtcN+Ge3Ml3KpvG51A2rFfbgxaI3Qk/em5LAYHm
-	 765Kuo40JftPTnQ9ZMJgTfs4rNWhR+V86+ozqTclKSLlod7G3viwiYixrD0D+LjhX0A==
+	bh=x/XHFLeuklX28g57VcXmkzvZarjLghDnz4MbxZ3DLl8=;
+	b=uwqSYEcwJByQ9+U7kgEFz4hFuDaJHn4ZGvAGx49UIY0OXvZimmXZMUQqPd2wZMQLCHPN
+	 V3r+lsj4RR7JROpLwWujs/tTfHOKN28caUUFdOYN41ZEtE6SoUQQahYBng1WenrMRd8Ym
+	 vIuL1f7Br6qHTaj5cH70UP+YuWUhUS+iZEGF9FCEy5LUOBxa1HOTl6ASFZQccS9DCnbFR
+	 eYaaGc3t1BtkFTAifpG2QcLxX/Dq6FRG84MbnmlR/1wDbntvbLX6MBbnplhfgapKMZSrU
+	 gdhWWpZOZPB47M7BSVToUxpfNFdE09+EZGS05gaW6zfH0tiarUFYk84P5IcqVrvnQGw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WIFND+kT;
-	arc=none smtp.remote-ip=74.125.82.172
-Received: from mail-dy1-f172.google.com (mail-dy1-f172.google.com [74.125.82.172])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=F+55gpLc;
+	arc=none smtp.remote-ip=74.125.82.48
+Received: from mail-dl1-f48.google.com (mail-dl1-f48.google.com [74.125.82.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4E8060A3804
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 00:01:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A4E8060A3804
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1710560A3810
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 00:01:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1710560A3810
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WIFND+kT
-Received: by mail-dy1-f172.google.com with SMTP id 5a478bee46e88-3282db206d3so3012091eec.0
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 17:01:29 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=F+55gpLc
+Received: by mail-dl1-f48.google.com with SMTP id a92af1059eb24-15dd124bbe7so2357115c88.1
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 17:01:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1792627289; x=1793232089; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1792627291; x=1793232091; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=qGPgAY2uzbFWVW1gwGK7OSQ0FTtWRIw5OwqDXn3zsW8=;
-        b=WIFND+kTBwBCsBYJNd1wpQLhBQ+sITxmOuOQV6VZxXbnAKapDVGgjeSp26Q37/WxrX
-         CupVn8dGVWLQLfysitFEgwtRNtjR/s1eV/liJOqQVF69QLg8Yum64TcWI1pFs2S7yAUy
-         ogArNfoZMqceGQfsV5l+PUi6SDdOX+qgbIvYI=
+        bh=x/XHFLeuklX28g57VcXmkzvZarjLghDnz4MbxZ3DLl8=;
+        b=F+55gpLcgKIi59jDG/3y17J2mxJwaqdwqcW86tiRBV2JAs/BaAbfIOeFgAGyLUYzKH
+         LIFB0gfg+W+YxjLa8c3aGFpPveB7TcYCc2z+T0FySZsflkSLkcIH4kmtcB1mbU+JbBIt
+         tjJsT9HgE/HsItHIeujqomYP5BMBYSz5vhReA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792627289; x=1793232089;
+        d=1e100.net; s=20260707; t=1792627291; x=1793232091;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=qGPgAY2uzbFWVW1gwGK7OSQ0FTtWRIw5OwqDXn3zsW8=;
-        b=Ma6VPjwwkaMGJGVGAK455j1unSxXGHcfSKBBtaArGoBHH7Lfm/Wtj2MHWfSeXZhrsx
-         cFhOtgoP/5u5Mybvg5VfSOzju3QrMOnURB237f3/o/uj96OvQl06n/q+zSm1k8pk4vXw
-         h0G/OMY6Gu6huw6/95J5uefTnwYyztiLkpZzBsm4yD2tnKBbPliM/vjSOZ1XsZvvr+tA
-         XD4vOhJs9no0RsFL4pDefWoyAoKiVFuwDqUXC5ZROCI31skTVbStwWNFuS69ZiDgvj1x
-         qcGfBysw5ej8Zvnsosizl9W2m/LAZEJq5HNMXby25/s0HH3ax77GKK2qah4n8U0H4QiZ
-         PsUg==
-X-Forwarded-Encrypted: i=1; AKwUvBz1LcXJsHGL4gAVcdW7+6VPgie3MphmTj+ORsIlZR0dcrdLBsJlwcOCBoX/6fiqVkIuTduB0abfbA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIpptzRN6Y9n3R3syBWFaNRZw5siurdtt0cX38AkfTwksoHKOyI
-	rW/lGvyJk/JoRbgh17JeiKU84IHx+JMMk4jjikcuBKQmnR7k8hQeQGbybpeOAid4+Q==
-X-Gm-Gg: AYBFou3KHE+vMB5U5PlkJM6k3e4o5cVoiCMZ02uJ1p3kBizBpyCMKWDFKqvIkMZ8NdU
-	x1Xy8o7yhqwWiUFqEE7Anf7yJYes3LXk5Mu37NpRyTQKlWmI/FSEgXyRtIDHZsMfYVuMKGUcdxw
-	saGF3rq/AzCQlXpKWp/Qm5qGcNrKT2n0bs03yqwCol8QBeaWu/yyIWE+grPFbC0UVu+NGFtFuuo
-	pNLcbKUsd/ZgW22E2WPJ8u9xYG8hcNKaZmtuQLe1Ljo5Q+hU3rFB+Vct6k4SpzuK/jPlMGUlRUM
-	SsDivx4u6Zw9Cl+p/rGbptVE3oQRKKmeuv7Qc7Am6VPLwTd/pZB/S0rTTRyZrMBVH+ksGJxr8fg
-	acTeSKc+h5FKbdKX8gFrzziaaLO39p+ZkP1DBSJedrQ8LNfCvb5A91sZXHBJcXSvyNEOvzAzewM
-	EFFz718Y5EIJAaETSjU2xNAL+JF1xuIOYozhOAJpZpq0U6VkZgedZnOd31CEcBWKO3q9HQom4Vf
-	pjS6/8zDmLPyEvanF2JKxUxFJN30EAc18n4iRvSLa3q1X4I2A/NQrvlVYtiGLvUFLU54gbHvX0P
-	R1q1ubyY72rFCUWJasI=
-X-Received: by 2002:a05:693c:8092:b0:368:2548:c08b with SMTP id 5a478bee46e88-368255807aemr2585617eec.21.1792627288539;
-        Wed, 21 Oct 2026 17:01:28 -0700 (PDT)
+        bh=x/XHFLeuklX28g57VcXmkzvZarjLghDnz4MbxZ3DLl8=;
+        b=J02gsg46L+jlhiFEdSg4CYU1NKBITYyn3oTlWBM3KHnsCfz1qCNcearc8Jb6jsEi9c
+         M4z/t/YJBBPfQkT8CiXvoAZhFUun900LkLQAEQjFndczh94Squflc3skDCQglHtsTAd9
+         wPMh7VlK2k7cXzMM6XjM5oP1EPwyof96Wlg9XZhOsXaLLV4Hdm89MsiqkO3//Vsn3H6j
+         5NGPlAK0YeKM9Gp0AjAoWpK3KgNBgTE3JomfEqOEhRDVsTaCI0Ibq6KizYDL1IuHp0ow
+         v2lkPTCJFdJStHILwl2NAtclCTwvwAgOBMJnmE1n0dNUU00DEPRmt1KChU4nvX+mmGSu
+         Dlyw==
+X-Forwarded-Encrypted: i=1; AKwUvByR76ygi9udYdL/zegB/Pe3xciX4DvNegf403H0vzdgcntywQGFpEPid91bEk/VzXdRydldqS/GmA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKeJ29QhHspAVA0T4YfqJsJ6SSpsGUd1AfbD+6jRyZObIvRorKk
+	YHb3adlfOq2W1sE6DIuhZ9h/y6qvWzgufMOa3GrRiYd6tDkVjxjTvYJdHWFxezb/6w==
+X-Gm-Gg: AYBFou2bzUZDIN6ifqLBZKZtL14j8Q+btm+xDxl1j0xNsG9FnQTbTsVEiZV8Rr0je7Z
+	bwunDg8K53OnLtig7ctTHr7yB8Sf7nXlFHWCRRsCV5ErrDGYdT+2huHIyLLn/bMkhghkzhkquth
+	VlJId9G6TTfPr9wCRZk17mAP00UoQW/8YMWdavsNOlxThKs3LOS06T8q4Hpxzf0McCDOPXyRkL+
+	7MgUuqJTyNSb2dQ8fSmzqhS9KYquiw6JJy+DL0Di59h8Z2ONAhYYj99wsMKYWkIjqNbJUc/lXdC
+	nw77G7PJ+yR3lYWG57sPKxK0kU+dxxzXQNjVpnejcOf3LvXEXl3JUvOvIHIVPmpY0i16T+1nPpM
+	YoX2eVrwOA0k8ag628VtvjG0yBg8eXpLyh+gwSrHMiBRaXoBibEF1ogl25Hazf5bWIOtB9VTNK3
+	U/MnchKtIujx7KTlOmBq8w/0iWrx0onHfOIwM+dMI2ebvZuUhXLfIf2tZ0/kyCncyKZAHbs7XPc
+	5OQal3iiMfQA3Gzsff2VQkQtDSdacaQ1QPrcout/9WNpea0+K2aiMdmeLmV1N8BgIyXEgx65OFp
+	lKbFmGntiv60kwGz2ds=
+X-Received: by 2002:a05:701b:4518:20b0:143:3617:c5ae with SMTP id a92af1059eb24-1909f5c8459mr4538483c88.2.1792627291054;
+        Wed, 21 Oct 2026 17:01:31 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:14ab:bfeb:ac88:458f])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-36740cc848fsm10850448eec.13.2026.10.21.17.01.27
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1903a275026sm14432191c88.5.2026.10.21.17.01.29
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Oct 2026 17:01:27 -0700 (PDT)
+        Wed, 21 Oct 2026 17:01:30 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: Jonathan Cameron <jic23@kernel.org>
 Cc: =?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
@@ -88,9 +88,9 @@ Cc: =?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
 	Brian Norris <briannorris@chromium.org>,
 	Andy Shevchenko <andriy.shevchenko@intel.com>,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 08/17] iio: chemical: atlas-sensor: Discard pm_runtime_put_autosuspend() return values
-Date: Wed, 21 Oct 2026 16:57:09 -0700
-Message-ID: <20261021165858.v2.8.I55d76837b3feb481080e43d358375445ca0993c6@changeid>
+Subject: [PATCH v2 09/17] iio: hid-sensors: Discard pm_runtime_put_autosuspend() return values
+Date: Wed, 21 Oct 2026 16:57:10 -0700
+Message-ID: <20261021165858.v2.9.Idbac8a0f9ecdd345191130e256e8d881d991bfc7@changeid>
 X-Mailer: git-send-email 2.56.0.218.g1ec904b173-goog
 In-Reply-To: <20261021235818.3059519-1-briannorris@chromium.org>
 References: <20261021235818.3059519-1-briannorris@chromium.org>
@@ -106,7 +106,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The atlas-sensor driver propagates the return value of
+The hid-sensors driver propagates the return value of
 pm_runtime_put_autosuspend(), which is not particularly useful.
 
 Returning an error code from pm_runtime_put_autosuspend() merely means
@@ -130,24 +130,40 @@ Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 Changes in v2:
  * Split iio patch into per-driver patches
 
- drivers/iio/chemical/atlas-sensor.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ .../iio/common/hid-sensors/hid-sensor-trigger.c    | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/iio/chemical/atlas-sensor.c b/drivers/iio/chemical/atlas-sensor.c
-index 1d4a9919df1a..48598475512f 100644
---- a/drivers/iio/chemical/atlas-sensor.c
-+++ b/drivers/iio/chemical/atlas-sensor.c
-@@ -426,9 +426,7 @@ static int atlas_buffer_predisable(struct iio_dev *indio_dev)
- 	if (ret)
- 		return ret;
+diff --git a/drivers/iio/common/hid-sensors/hid-sensor-trigger.c b/drivers/iio/common/hid-sensors/hid-sensor-trigger.c
+index 60808e2430ca..d76a6d9f04f6 100644
+--- a/drivers/iio/common/hid-sensors/hid-sensor-trigger.c
++++ b/drivers/iio/common/hid-sensors/hid-sensor-trigger.c
+@@ -154,21 +154,17 @@ int hid_sensor_power_state(struct hid_sensor_common *st, bool state)
+ {
  
--	ret = pm_runtime_put_autosuspend(&data->client->dev);
--	if (ret)
+ #ifdef CONFIG_PM
+-	int ret;
+-
+ 	if (atomic_add_unless(&st->runtime_pm_enable, 1, 1))
+ 		pm_runtime_enable(&st->pdev->dev);
+ 
+ 	if (state) {
+ 		atomic_inc(&st->user_requested_state);
+-		ret = pm_runtime_resume_and_get(&st->pdev->dev);
+-	} else {
+-		atomic_dec(&st->user_requested_state);
+-		pm_runtime_use_autosuspend(&st->pdev->dev);
+-		ret = pm_runtime_put_autosuspend(&st->pdev->dev);
++		return pm_runtime_resume_and_get(&st->pdev->dev);
+ 	}
+-	if (ret < 0)
 -		return ret;
-+	pm_runtime_put_autosuspend(&data->client->dev);
++
++	atomic_dec(&st->user_requested_state);
++	pm_runtime_use_autosuspend(&st->pdev->dev);
++	pm_runtime_put_autosuspend(&st->pdev->dev);
  
  	return 0;
- }
+ #else
 -- 
 2.56.0.218.g1ec904b173-goog
 
