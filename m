@@ -1,55 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=31.31.198.150
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792696476;
-	b=iJC+endBfeb/XrpMr9iRmKHXoiMQUCTm5vKNcmSPdJv3+o0ELKdg5n5OhbpVv60gz+pl
-	 5ibAQ70hAH1P+5IBjfIBj8Sz/PFQSlYbR8tMQn4NVbv8QIiW+scW536gKZhdDNt7BiF99
-	 KCrFBOslc5m8Kw79j83VllDp6kpiZ5w7BOn407rWNpXr9Y0j91f2ing5cIp00FpKcLDPH
-	 KdDqJ8OpTO08efveZTwhNisdDuS9Se2fZ0Jd/pthQVdhn5JFGc4pA35dyMGBthxnpi2YC
-	 QuqmoSRTmVWewTrroDd1suWJpTRtW/qz/uGDQE3ztM/iT1dKXivbbWLlO9kHFlHvVNQ==
+	t=1792707951;
+	b=PV207yYiIFbY5nlRBvYWPNW4ExrdkkXezq9uE0ipuSIp6MEUe3VaSpsXWxsjuoBN2n/y
+	 9g1kUb+YkCqIifwNbL8H6ZSvcqKMqjcZxWgleGn6ziD4GxHOUPMMyLTdi+auSy0FOWKRi
+	 zCBAXt82RZT92LHWKY2KkxHTMeK+lv3gjO+cd3LLLvZGrBMOCUQwbz/L9tc5tI02/GrKR
+	 JqPF3QTAsx0UEQhWhYKofUW//wRRN7J74Cg9S0K0RohM+viwxZ22Bq6jZ7MP7cF7oNSn2
+	 XTse6W0mPoH8bXFERBntsVX3JMEhVD+z96O9sGo6DWK071v4bUgJfg09KBNDdm9DyoA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792696476;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=T/yfsex+iXT2y+mnUpnV6G/RlAESLattCq2u7FMOcqo=;
-	b=ACDzzclR5lB621Ts/290zPzKQzaxCK1cLe2tpZ++ikyjJIxQPb/1SCx4L+27n2P+BYob
-	 +bQZmtJ7AYRVfdLJnzkh7SJ6mqqE0EC3yk7d/+0WGCKPyF+xbdS3XitlzXRJ0qBo6Lomy
-	 4YOYykTY/nGbsI7TabqBD/v1vxatUU8ItHBVBOdfShn8/F8my+gbBINxcp+6/9OVQvCHG
-	 rWRUHqNpdHBD0/l/ct3HI1EjsguBE0N5Okiu872HrnVpEMkuMZT/+XFVdd6j4YQOXJclt
-	 IpByz1IBvJEo0O+5C7q8UF6lpWSdhOEJ7EWh1pc8wMquzSLCJfvZ6NwONSPdGlKx8Cw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792707951;
+	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=HFfwzZz7066EUgLs0i/+JThY7WAkNK+ZFFeFAWc6oco=;
+	b=AD9sFvPx/vE/3RDXRKHtJ8r4Bfyr+S4tFDYKf1IVB7Vx7K9RA7q/gA5dHZPxU9Iw4FyR
+	 V/M64u3JYdHUzqNRjtVCJB4qvnnNxv6VdfXyCR42x70I+36jAz5M7LbERbv9oghEYT0LY
+	 lRWc/+Y/nuDeMEoETv5MRW09HdFgXg8Ik0fqKc5DxSLYXorZMxASyS53e3T0IM1lfZmFq
+	 ljXftQV2/yS5H16IQ5FUiUsa0JpeqYwCUXenSx/gQx4+PpuH0c1PViwUWxJKTpLx7xmpm
+	 k53f9xBvOnQ2R/gFnzG2MaCYwFMTArxQA+R9bwDikPEP2k8iwO68tw7t0d0OKlOkSCw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WbNcKzrs;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=none header.from=minlexx.ru;
+	spf=none smtp.mailfrom=minlexx.ru;
+	dkim=pass header.d=minlexx.ru header.i=@minlexx.ru header.a=rsa-sha256 header.s=dkim header.b=zXqbsytS;
+	arc=none smtp.remote-ip=31.31.198.150
+Received: from sm24.hosting.reg.ru (sm24.hosting.reg.ru [31.31.198.150])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E433A606A31A
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 19:14:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3437C606A31B;
+	Thu, 22 Oct 2026 22:25:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3437C606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=minlexx.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=minlexx.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WbNcKzrs
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87ECD1F01825
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 19:14:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792696475;
-	bh=T/yfsex+iXT2y+mnUpnV6G/RlAESLattCq2u7FMOcqo=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=WbNcKzrs4jlat3qo19SV3vGqrVC/sjs6k92qlo/tyDrRcRGtDqEOQGCL+//UiNdya
-	 fU23l2YaBkwLby/GaQN8NAuFcyavTO6Mmnjq+nRuuyzcgzInnrzUNjhGusvuvcdgSC
-	 bUKleioMEsiPqL35LVrsRomt4pzoKnST9J7S2LYLVDfAvTnhj1Dadb67ZH+W772GoQ
-	 IVc6pu6+a+4eVj6DhdjQXrtgBqWkSClSAytPRIAaSXfTsEO/K7FhcOzo81+wNZTqVW
-	 JbZju2RUTdQEPn3wnKLitSw4oWbY2wlFZf+BoGqn6VWu5PwTS22alZwI8iKtZsvJ88
-	 QVeZSV53c6n6g==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5bcb6faf862so31186e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 12:14:35 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwn8OJVzHxwnvwNBpyu+MBf4tyevKW8PVbkWqU2RhE8ObCEC3Jz70rQ9J04uIaVp+6n6+n4uB/msw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLgf4EoHi/1x2rU8vuIrtrUunh8gLzRWJirDI/ydbNEDrzEaW6M
-	hRjIq0v77+FF8GoNRHKQoLVz1+yi0wrmOKePEHKKoM1s1AUURBRltlT8f9EF/kCmmq/k9hWD6ld
-	bWXg7jTSSUTw7uuobbMXQj2/heCfb5tk=
-X-Received: by 2002:a05:6512:1108:b0:5b6:95e:87ee with SMTP id
- 2adb3069b0e04-5bfa1be5a8cmr2554398e87.13.1792696473945; Thu, 22 Oct 2026
- 12:14:33 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=minlexx.ru header.i=@minlexx.ru header.a=rsa-sha256 header.s=dkim header.b=zXqbsytS
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=minlexx.ru;
+	s=dkim; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:References:
+	Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=HFfwzZz7066EUgLs0i/+JThY7WAkNK+ZFFeFAWc6oco=; b=zXqbsytSaa7ri06ojN2htb7KSM
+	KasZ9wW9CKrBp0Y/s+XLPQza3adfAJ8/YatdkKTrgYPkS+Qqxr4X3NQTshlWZf5C41OklsfNUz4nX
+	nrHAgOoqPCdp+PaHwE0MNM+gcWWc/Rq02gerVY7VeEMYtK8Hx6BTgC19+J9JmJhuoQM4=;
+Received: 
+	by sm24.hosting.reg.ru with esmtpsa (TLS1.3) tls TLS_AES_128_GCM_SHA256
+	(envelope-from <alexeymin@minlexx.ru>)
+	id 1xK1E9-00000002NZj-41hE;
+	Fri, 23 Oct 2026 01:25:38 +0300
+Message-ID: <83eb62f2-1bf2-401f-96a4-c0a8ed7cc0a4@minlexx.ru>
+Date: Fri, 23 Oct 2026 01:25:37 +0300
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,74 +58,75 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260910205234.5392-1-kmehltretter@gmail.com> <117bc415-6bbb-4739-81b9-d2bf718056ba@arm.com>
-In-Reply-To: <117bc415-6bbb-4739-81b9-d2bf718056ba@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 22 Oct 2026 21:12:11 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gg1uEy4pagxkPFMqvy__KWJU-_k3S6Ovx6BRzCnuD87A@mail.gmail.com>
-X-Gm-Features: AclHuK8EhEVVmKJNgxR3ezPnbggzziCRHv9w2do46n90Ob62xaTp3ojSpOD12RE
-Message-ID: <CAJZ5v0gg1uEy4pagxkPFMqvy__KWJU-_k3S6Ovx6BRzCnuD87A@mail.gmail.com>
-Subject: Re: [PATCH] PM: EM: allocate the cpumask for every perf domain
-To: Lukasz Luba <lukasz.luba@arm.com>, Karl Mehltretter <kmehltretter@gmail.com>
-Cc: Changwoo Min <changwoo@igalia.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] power: supply: qcom_smbx: read the charging status
+ without the power supply
+To: fabricioakio@gmail.com, Casey Connolly <casey.connolly@linaro.org>,
+ Sebastian Reichel <sre@kernel.org>
+Cc: Robin Snyders <robin@snyders.xyz>, David Heidelberg <david@ixit.cz>,
+ phone-devel@vger.kernel.org,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261008-qcom-smbx-psy-race-v1-1-cb49fe7b4336@gmail.com>
+Content-Language: en-US
+From: Alexey Minnekhanov <alexeymin@minlexx.ru>
+In-Reply-To: <20261008-qcom-smbx-psy-race-v1-1-cb49fe7b4336@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 12, 2026 at 9:57=E2=80=AFAM Lukasz Luba <lukasz.luba@arm.com> w=
-rote:
->
-> Hi Karl,
->
-> On 9/10/26 21:52, Karl Mehltretter wrote:
-> > em_create_pd() allocates space for the trailing cpus[] flexible array
-> > only for CPU devices.  A performance domain registered for another
-> > device therefore has no storage for its cpumask.
-> >
-> > All performance domains are added to em_pd_list.  The netlink interface
-> > does not distinguish CPU and non-CPU domains when it calls
-> > cpumask_weight() or iterates over pd->cpus.  A request for a non-CPU
-> > domain reads cpumask_size() bytes beyond the allocation and can report
-> > bits from the following memory as CPU attributes.
-> >
-> > KASAN reports slab-out-of-bounds reads for both dump and by-ID requests
-> > against a synthetic non-CPU performance domain.
-> >
-> > GET_PERF_DOMAINS does not require GENL_ADMIN_PERM, so an unprivileged
-> > request can reach this path when a GPU or another devfreq device has
-> > registered an energy model.
-> >
-> > Allocate the cpumask for non-CPU domains too.  The zeroed mask remains
-> > empty, as required for the documented unused field.
-> >
-> > Fixes: d8eef0453132 ("PM: EM: Implement em_nl_get_pds_doit()")
-> > Cc: stable@vger.kernel.org
-> > Assisted-by: LLM
-> > Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
-> > ---
-> >   kernel/power/energy_model.c | 4 +++-
-> >   1 file changed, 3 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> > index e610cf8e9a06..fd07c564c201 100644
-> > --- a/kernel/power/energy_model.c
-> > +++ b/kernel/power/energy_model.c
-> > @@ -439,7 +439,9 @@ static int em_create_pd(struct device *dev, int nr_=
-states,
-> >
-> >               cpumask_copy(em_span_cpus(pd), cpus);
-> >       } else {
-> > -             pd =3D kzalloc_obj(*pd);
-> > +             /* Readers expect pd->cpus to exist and remain empty. */
-> > +             pd =3D kzalloc_flex(*pd, cpus,
-> > +                               BITS_TO_LONGS(large_cpumask_bits));
-> >               if (!pd)
-> >                       return -ENOMEM;
-> >       }
->
-> my apologies for the delay.
-> The patch looks good, thanks for catching this!
->
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+On 08.10.2026 23:56, Fabricio Akio via B4 Relay wrote:
+> From: Fabricio Akio <fabricioakio@gmail.com>
+> 
+> smb_get_iio_chan() reads the charging status through
+> power_supply_get_property(chip->chg_psy), but chip->chg_psy is assigned
+> only when devm_power_supply_register() returns, and the power supply
+> core already calls get_property() from inside the registration, for its
+> uevents. If another driver has taken a reference to the supply by then,
+> as a fuel gauge naming the charger in power-supplies does, the core lets
+> the call through, and reading CURRENT_NOW or VOLTAGE_NOW dereferences
+> the NULL chg_psy.
+> 
+> Read the status from the hardware with smb_get_prop_status(), as the
+> STATUS property itself does.
+> 
+> Fixes: 8648aeb5d7b7 ("power: supply: add Qualcomm PMI8998 SMB2 Charger driver")
+> Signed-off-by: Fabricio Akio <fabricioakio@gmail.com>
+> ---
+>   drivers/power/supply/qcom_smbx.c | 8 +++-----
+>   1 file changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
+> index 3951326f488f..6e0796730c59 100644
+> --- a/drivers/power/supply/qcom_smbx.c
+> +++ b/drivers/power/supply/qcom_smbx.c
+> @@ -607,12 +607,10 @@ static void smb_status_change_work(struct work_struct *work)
+>   static int smb_get_iio_chan(struct smb_chip *chip, struct iio_channel *chan,
+>   			     int *val)
+>   {
+> -	int rc;
+> -	union power_supply_propval status;
+> +	int rc, status;
+>   
+> -	rc = power_supply_get_property(chip->chg_psy, POWER_SUPPLY_PROP_STATUS,
+> -				       &status);
+> -	if (rc < 0 || status.intval != POWER_SUPPLY_STATUS_CHARGING) {
+> +	rc = smb_get_prop_status(chip, &status);
+> +	if (rc < 0 || status != POWER_SUPPLY_STATUS_CHARGING) {
+>   		*val = 0;
+>   		return 0;
+>   	}
+> 
+> ---
+> base-commit: aac26bee2287c88af5be5a5ff96d783b19a28790
+> change-id: 20261008-qcom-smbx-psy-race-521568f9cfde
+> 
+> Best regards,
+> --
+> Fabricio Akio <fabricioakio@gmail.com>
 
-Applied as 7.4-rc material, thanks!
+Tested-by: Alexey Minnekhanov <alexeymin@minlexx.ru>
+
+--
+Regards,
+Alexey Minnekhanov
