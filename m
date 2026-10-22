@@ -1,109 +1,107 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792678514;
-	b=VGWFKL8YmYR6EpFKNsql10WLnvylINlwmKfFMn+P3FkYWyEYAWCB3RQtnRiQ/ZTLBbdN
-	 27s2a0edMmqTX9cqfXs8K3tf1lI8wKyv2fzhIb7iaFArSZ0+X5P+KkcDDY1zbTw45X+yS
-	 jEMvaveT3N4oS9gCH8gu1T3xoI3UJ43NocPmnC8VxKe1/wHWd+IgZ8x2mNVCHpTqqjnYv
-	 I+aK+l//MT2LHPRSJ04ClDTu/k+j5k61nKWimXehTNksdAg4kSiaBJH3sgkkozjAFRh1H
-	 vLUVRKyeeR1WtF9eqMeukj/3c/iMqlE2bwesqyqas508rHlSD7LDuSK1FJUGnOBfnag==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792678514;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:X-Received:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-GUID:X-Authority-Analysis:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=;
-	b=WnU57XFTfudwBJWQ0ursRRkkyQIxZCObMN18CTQ8twDxpesb4/+40mtJ+ls8TebAu52X
-	 iKj+d/jYhrmX1KOyB/mVw9D6AvIPBDKGjg4k2yYSv+PfaNs7FR/ReOsgbyvk4BeWkDxnl
-	 VgAPm25iPaseNusgMXCf2PMA19uxFxtdrLumk5+0sg/s9eZBkYmMLek/aEzdyx6yssvbY
-	 vlT61I4WiOM5F3Ls21z0hDK2GvEx42wbSv7QNrZVHMMcUnYMNvOrmsxemLGgRwQxpoGT9
-	 P829tpiPffmwa1DWhakiISLBI6LFEUD6sIeq60RGbZYEWDtTg300WPl3KEBWfXBDTPA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Be6NBfr9;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="NVZCD/mu";
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.84.19
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1792684376;
+	b=5ZzB3Ikfs+IQck2ehXEtLiw2F4N+S0hQWK+qEyczZeBZAcidk5wX/h/7ENw/B9y5mMDZ
+	 RmGZcZ5g3adm4SPA+oFcNAgKs9MzGdQ0cR20Yk4hxqrINGVZIokK66bwFles/myZxloz3
+	 cPFf+z+jjgElWiBKrx4H+sXCYIzeHURrBUkCKQlEi5HAmE9GfLWejCCPEWZvVoiLYtO7T
+	 T8U2XIN/xIPkMHW7zpbMdDAk9ZYfABhv3pRUHBOOWzb9++gtx8l6h62zDn/F8x8gCiWgv
+	 n1L3+MlU1UqAoRAq83hNZ7T7X9IFyDF0YhqhfssIjPjgNqUJ/buTx4NW7YjPLIN+hjQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792684376;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=Qr1vP+OgnJHy8jPEybda2XB3G+VunFh1U/WUL872/4o=;
+	b=ZYZKpj+GA8JY+OfH2wuVPbmNssX+5iSIM2OH3qmKP3SXfXwc+psluTQCOI2fEOfxvOCT
+	 +LBjLd3t80nyhDkJ67fyZ0c354JxSF6Q+mVO/VjcM96h+JmRRR+NtkQLcFb99XpXRPEfp
+	 fD/0mmMEu1yfOam22nSpXZMbhJolJCbX82GonZCTd8F4Gg27R4HRD7dVhq89xiLKzJckp
+	 Hye0hx6ZTM7zwLC2HzHjqXul59SJCr4gnGyUvc6ntaGgzBPDqFSMG1W4knUlA2pQFWyVK
+	 b5RHOmsuUZLYfhwtDbZilg1ULiOgJHopwbB2aFxrTSx8GrQso/rB6vdmtXPHOiI7PeQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.nxp.com;
+	spf=pass smtp.mailfrom=oss.nxp.com;
+	dkim=pass header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=PCVghYfp;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.84.19
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010019.outbound.protection.outlook.com [52.101.84.19])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E8C3606A31D
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 14:15:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4E8C3606A31D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5F56606A319;
+	Thu, 22 Oct 2026 15:52:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5F56606A319
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Be6NBfr9;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=NVZCD/mu
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69MA04lw1963368
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 13:39:54 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=; b=Be6NBfr9WxHlkwvF
-	6nOUpLIAC3TICYgkTGSPqkQGmc9FrbjdwwbEoeyHY4x0F4/oPnHenlt1Ed9kc2Hu
-	jhAiWVqtYm+bO4j5UPJaLOWq8OAL80XWTnv8l0j7n+APsNAuw1Gkh9KD61DwQQN+
-	lOQzfqTo3WkpCSZsUjiNGvviNfyK4OYpTTxyAN9bqw4SU3yMczekcce5hfcfyR/3
-	+3HeutSj7kN9AKcFVnLGpCtK9O+FkzZxnnw93IbTFBDw6Zpzd4dbv+fdIzqdqsza
-	wNQARzANHSc0UN5oOnySx9p1vBNM/MU/XOqmgSq1rDh5xrXo4IsghUysItnogfRS
-	szIYNA==
-Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hf93akqcg-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 13:39:53 +0000 (GMT)
-Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-33c35f5ca6cso3477350eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 06:39:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792676393; x=1793281193; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=;
-        b=NVZCD/muE0lO60jqUZKKgtOyvNnOmvIHPHMpENRJ9MFesMq5HIM4e7aaNAT5m8FlzB
-         i8wMySKrS2V1v+n2mOUtgeUXgG3yEMnnUhoFE+FfHwcoNN0z1jEdATXO9a0S3HrRwiSt
-         VEbN1A3V6NoSGJnjw6H4XSL8SqEiddkKq04tOdpFtt5jlUu7eneVaGHxabIGUZJhIdXQ
-         VGlIJdqcs1xzOyMXRH+T4oeUF4Kwb7OcvrBUCiimnxiSHCrbohwmAfKc9V7b19lB676b
-         ThWpPSYgamnOap4DplpqCj5dU4P6USpYroA1Iw6Douqxuc7WR3xRE46EXop7F4YjyjF0
-         VQSQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792676393; x=1793281193;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=;
-        b=Q7sCs6OSyrcZtiQGinl8xlpWCj6GPVDsap+j9u7g5bO451Ge4X6UfoMBvQTUimgzll
-         8Q3TF5il5AW+1rd/ai2gnN2iTwuzlaNF1lvRMkbBTUMez2V9t/Os+5ss8JrlAHcW+sJB
-         0pQX3MReEA/XYEIcwkNfMStb7DsyfPcD0ECcv4CQZkOw2Va1JSPyLiEFbPiBmIMfujnW
-         o5FFYOjDJqGMoZLBFx/y4Dm/fGtojb1wa1zEnwUCrZw8xoxn6wWJeerJiHs+A/gbra41
-         D+Htj8MEjZxI+hRW9be3G3oVNzRbTBGC/JHqZW9LOmiiti9PhE84dZJAsS4cGaTFPGZL
-         zCPw==
-X-Gm-Message-State: AFq9FYJv8Gk4thOqoqh6sA5MdqoRnra2rBf1zN/at9iC+QTEkpOHgWPp
-	QkNX2IWOpCBKfFTkxQKWb6e+e9S2tXnSFTUdhhx4aVJQLcZ2Bh0JxvykvJR2swiGOz2KT0ZSdCr
-	Jpso3xytLUJd1dQ425cPLqqc/3xDAPEV9lQoIyh7K6+HzrAmpYFMy8DlW9V89GQ==
-X-Gm-Gg: AYBFou0AriFvjLXpRbRH5GKwzYrJvyOWo0fNafPEVoJN7AN1g5b9MeH4ZU/8MwiqLAV
-	mlY6bFl/mLKV3xQAskRh8pVAAN2U4QrWO13htzaJtakYvvL/Cjfl0IugK4FYXDQLeo/689DaSSt
-	ht+ksUjrCS9dwyJllW/+qrpCNtkrk7wSGiWUgIXaGFn6UD1eRgChWB8zd28/a5LZOPzhsaAfbr+
-	36MvUgTx2mEEX9A81At9WAsW/SgNbfm7mgXy3NfBDib446LbtMMSzc9gIsg6rne91H9b3vHHtEH
-	lCsPoXIAP62Elcf5j3rGBC7VFfpWM+S+zCgk48Si6P51YlzNCFUu43SUd4HOxe+TTiUnrJsI3kw
-	ui5gjY7VRfWnDldAWJKWxv1zRQP7xRQ==
-X-Received: by 2002:a05:693c:87d3:20b0:369:7c:bfce with SMTP id 5a478bee46e88-369008c220fmr2325122eec.14.1792676392902;
-        Thu, 22 Oct 2026 06:39:52 -0700 (PDT)
-X-Received: by 2002:a05:693c:87d3:20b0:369:7c:bfce with SMTP id 5a478bee46e88-369008c220fmr2325059eec.14.1792676392215;
-        Thu, 22 Oct 2026 06:39:52 -0700 (PDT)
-Received: from [192.168.1.9] ([106.222.235.141])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-367416a1fb9sm14556522eec.20.2026.10.22.06.39.43
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 22 Oct 2026 06:39:50 -0700 (PDT)
-Message-ID: <f83c366e-e3fe-4921-8407-ffa90b7f933f@oss.qualcomm.com>
-Date: Thu, 22 Oct 2026 19:09:42 +0530
+	dkim=pass (2048-bit key, unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=PCVghYfp
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=rgXc4O2HfdENmna5ANGZO/CSolotueChf5L0giaCJ10LrOE9g2gcKoJ/P2uFHrIQVrCEOET1kN2lXXFlxq42f1/7NNcFrpzLRci/fzufJnydkrHBZQsUj0GpQIGApcfZg5Qwq6cPUY8Xigjfg2CIxlXjJArj65Lhi6pfZwS0Gzm7sEwNH0zZs+oRcV/d6mFbXRVpulnxRyEympV8rAXjoVV0LYN4YiXKbToH2AGPtJ7RfWKBbgRSk9qNYhkM5+cblF4gZUQ3SE8cq8J0LbR78TS/5dFjb3fwlbmUW5KNVRIu5XHamp3YSYt1NRvzDDQXN6iJpa21ViP/885SmbJr3A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Qr1vP+OgnJHy8jPEybda2XB3G+VunFh1U/WUL872/4o=;
+ b=EyNOSzFXVFWRquY/cQI2vrTVy1eTA2X/v6t7jGnti4wD1xEADZSc9aZzuFoRHtyAQq4Re1NLY+kYY7gOZjMKVk4eu9tl4GdNoDFCah7si0AoZBHTOSNum2iVQYOruy0Ze9FvgcPXu2sRDWKxEeqEUiPUjzPAs8l5C2wdkFS7sg9635fTtamyDlBlc4QQgXZutc3IgpxYE/uzyBI59rJe9SBMDow5YFA0BLs18butkgOQ9WIqeSIUgNn1cxOypHqaox95DkWd5OAsgqtgA+JfHfBVx3ryNW4GAGciR24Jh6C3dKrZMAzJ2YRfhhOniIoePtV6dmF0CLNfs89Z4AIuMA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Qr1vP+OgnJHy8jPEybda2XB3G+VunFh1U/WUL872/4o=;
+ b=PCVghYfpQvzUHZtHO0zZEhe6LZSbpCb04tlNgoMg64pcma3MuXd36A8DwmbhUXutypea+18APUxv3kaeGRljEB8BtaybJuQew92X/d/b15Zs7nd3mFaKrr3qELiGmQ95K9drk8kq9r/+Db+27OPTVTbDomIq/XqY5frM3V1153qzoDWonQQxeRRtSnrm/GXSJDduq3aLqHtMcEEXtUzO6ZbFF9WJZEHcphYkhLkDVq/r3PDfSg2fD3ghCuQmgboNwguy7AWh/ZQGHuda7ATBWMPlcthWztwgItUst8KDWPnxS6aE+R+QgpsCK5BHmMPDhnUyhwroMNvjdxKtfoQHcQ==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from MI3PR04MB12438.eurprd04.prod.outlook.com (2603:10a6:290:76::14)
+ by DU4PR04MB11032.eurprd04.prod.outlook.com (2603:10a6:10:58a::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.15; Thu, 22 Oct
+ 2026 15:52:48 +0000
+Received: from MI3PR04MB12438.eurprd04.prod.outlook.com
+ ([fe80::c715:c32:8bb1:b70b]) by MI3PR04MB12438.eurprd04.prod.outlook.com
+ ([fe80::c715:c32:8bb1:b70b%6]) with mapi id 15.21.0546.012; Thu, 22 Oct 2026
+ 15:52:47 +0000
+Date: Thu, 22 Oct 2026 10:52:36 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: "Golla, Nagendra" <Nagendra.Golla@amd.com>
+Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
+	Michal Simek <michal.simek@amd.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Kedareswara rao Appana <appana.durga.rao@xilinx.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Michael Tretter <m.tretter@pengutronix.de>,
+	Harini Katakam <harini.katakam@amd.com>,
+	Shyam Pandey <radhey.shyam.pandey@amd.com>,
+	dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, git@amd.com
+Subject: Re: [PATCH v4 1/6] dmaengine: zynqmp_dma: Use PM guard for
+ probe-time runtime PM reference
+Message-ID: <atoxRAVvHx1Ng2GB@SMW015318>
+References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
+ <20261009-adma-pm-fix-and-per-channel-reset-v4-1-55f5fe409c55@amd.com>
+ <asmsVD1RP6FoMN9l@SMW015318>
+ <212a4fc4-437a-409a-821e-86b9b8c7f85c@amd.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <212a4fc4-437a-409a-821e-86b9b8c7f85c@amd.com>
+X-ClientProxiedBy: PH0P220CA0022.NAMP220.PROD.OUTLOOK.COM
+ (2603:10b6:510:d3::21) To MI3PR04MB12438.eurprd04.prod.outlook.com
+ (2603:10a6:290:76::14)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -113,122 +111,288 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/6] arm64: dts: qcom: kodiak: use thermal hw-bin trips
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Randy Dunlap
- <rdunlap@infradead.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Abel Vesa <abelvesa@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        Amit Kucheria <amit.kucheria@oss.qualcomm.com>
-References: <20261002-thermal_bin-v1-0-5a29be7e8ec5@oss.qualcomm.com>
- <20261002-thermal_bin-v1-5-5a29be7e8ec5@oss.qualcomm.com>
- <9800eb77-0188-4b16-a672-adb7ee1a603c@oss.qualcomm.com>
-Content-Language: en-US
-From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-In-Reply-To: <9800eb77-0188-4b16-a672-adb7ee1a603c@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIyMDA1NCBTYWx0ZWRfX7MTUFUxfZZKe
- PmFFTiY9yoXwRxfhXLevB0gOH+waBjPTVgNR5/bEeLv6Jk/LsBXmzlVX5jib+vqz96tQ1lEZXA7
- RHXhUS17+PrnjaH7B1NhsbMwbb6Q3YyUHu6tN561ZvBBGMA6V7EU2XG6o4O2b8v25ECl7FgWYDL
- vud8tmga3Q9HHPwRis8b+EOfRxx9k+4BR5p1lnUgyHcNNIhBWmp/Ds6fof9PlHSZP/Sao2S1pwX
- tE40b0KZB1QMUrAyar/WH9/XU+KnpYiuGukyzVpzchQfX9B5PlxsAPCYHq3oWWU2fONc6B+akLN
- R8zgoItxww9GVyWLylTGnY7taJg3kTmAL65mPLOzfB/Pp7nRj0VwDMcJax4Ez1bnVXgDmSxpklu
- Y4ypUJr23hly/0284ESjeuUA9W+sQrn4twenE5JVs062A1VmyzoO5bvhkSI0PXj23LgY6TtVqMu
- FN244U3B94mwmaYrZKA==
-X-Proofpoint-GUID: 58JIwGyqopTXgElElUUhCdIlZQl9b5C4
-X-Authority-Analysis: v=2.4 cv=feg4WEQF c=1 sm=1 tr=0 ts=6ada1229 cx=c_pps
- a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=8wa5AUNoahJ04lRaSfAPWg==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=EUspDBNiAAAA:8 a=2wNLjvyEnIyB1ESV7yEA:9 a=QEXdDO2ut3YA:10
- a=bBxd6f-gb0O0v-kibOvt:22
-X-Proofpoint-ORIG-GUID: 58JIwGyqopTXgElElUUhCdIlZQl9b5C4
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIyMDA1NCBTYWx0ZWRfX9mzursTbm5IO
- TbacfTkSO83/Q+Nwe3jDROMGDrRj55SuW/5ld2V+z2NZRtEgGdn7/wVF8+xzvNBCdDkTOHEdYid
- NVMuytex14L3oLENuAWWYIgsNrin1lw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-22_04,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0 suspectscore=0
- spamscore=0 adultscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610220054
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MI3PR04MB12438:EE_|DU4PR04MB11032:EE_
+X-MS-Office365-Filtering-Correlation-Id: f710abf8-23b9-4290-e601-08df305484f4
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|19092799006|23010399003|1800799024|7416014|376014|366016|18002099003|22082099003|3023799007|4143699003|11063799006|261009221227099003|261009220027099003|261009223027099003|261009221727099003|261021123027099003|261021121427099003|10067099003|261009223327099003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	NdiDm/pLPyDJL02L7Wp8uD9g+R47n0ZhP9fYDiC920J0Y1xRb2Ea74Qb6ltHNF64C1BiYlZDjAPO0h6I2nBxcYmz3U2Sn2XGASVXmbf4N4hh/eLCOMNU4RpJEPS29TwaySIEMP3X+fWaIP7yVgtgwqwkBD3/wn7Jr4disA1i915ggfJSO4xIECKUfeebg1qxvs5qilN5DcINKWqb6OnmeF0pEBi0b+rz28E4XODz8Dq75rF0gOOYaJAOELs+BJa85/R11D5hsOQe6DY9o9ciPE52ImdFlXu8GsqlXRiV1irDZQd/SCLLI0cJ5n5Gu1YznEbYU99fos0uAgf7RNfZmf166eO5iG+MXCqM9GL9QArfghW/4wTy3adRxcd+MYcY6h8HJH2yJd4IUmNv1PGj0V4ByWhaBdqyrlpJjlhyxBs28FA8Sg1DzGm9VR2bvk7S+CHbvPO1SwYo7Q3BTCUdVJSj/4mokTUdk1qSxM8cigGY1/5+1mzgY6TcF0DQhkIoHtXyiEmgallPSkr9h3QLqqDQyYe3BCtTKDwfwaXVQ4MpYYHCfnQnlpjtJTE3KiHSyboWvxrrxbZmX0dwBSsIFctTO/gjezRqvksX/dy4U3laj9emboAkdzaqN1C0dBwg
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MI3PR04MB12438.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(1800799024)(7416014)(376014)(366016)(18002099003)(22082099003)(3023799007)(4143699003)(11063799006)(261009221227099003)(261009220027099003)(261009223027099003)(261009221727099003)(261021123027099003)(261021121427099003)(10067099003)(261009223327099003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?bTU2QUpRTFJXWkZLZjhwOVlISlZTUnc1QkZPbUlBdTBzMjdyRVNrQzFJemhK?=
+ =?utf-8?B?b1NhMEFBWjFUOFo4MnZKbXVwR3h3K3BGd2hBNkRzL3dxdlNaOWdVZytQSEtB?=
+ =?utf-8?B?aVBjeGU5bzRQWGRjWkVzVElSdWxhdUdNSWhjbDBjOHFPdUJ4V0xDWmVPWWxh?=
+ =?utf-8?B?STdPSEpvTzV2UHF1QWxJcnVQcm9PRnZvQmFaV09OZmdYK0RLWHZlY0dJeDc4?=
+ =?utf-8?B?YllKQTkzQWsyN3pnVnJ6UFBNQzluWG00ZlBUMERiYnE3YWk0QmMrdjFWUW8r?=
+ =?utf-8?B?VjlGMzNhTklJWFJiY3RlMnF2Z0NkRWh6YnpkOVc3dEhCRnltdzFaNlN1V1M5?=
+ =?utf-8?B?QnBtQnpGUjVWdlNKSmM1S3BSU0piYUpQdkRJeVViWWVSVmsxdnh1dDl1Vzlk?=
+ =?utf-8?B?cEJnelpxenRiNXRZMmk0dGdWQnV5Q2lRdEpyeGZXaTdYMVRQbFk0dGk3elFT?=
+ =?utf-8?B?QWlMdm1Cdm4vTWEyOHYxaFNRd3BzVFo4aEdqQnhQcGpHTEhGaGE5YzMvTUdX?=
+ =?utf-8?B?RXJEc2hrWG9QL2k1RHJRUjF1NGJGc3p3SVVUV3hrQm0walJhYUhzNkVXd2lN?=
+ =?utf-8?B?bHYvN0IrVC83Y3MwOG45MXgxREdHL245amRwS1NyZWlUSVR6WC8xSWtzaDZL?=
+ =?utf-8?B?d3NxcW5Tb2dUTjJXMDlhUzZVbXRpeEY2RysvcHNvajhycENpeFNyWnJWMnJE?=
+ =?utf-8?B?OUJjOTR0cUliUVlUdVhXT0lDNW00ZG5Gb3pkelZVRXRHcEIzMlNqYzdjN2Ja?=
+ =?utf-8?B?cTYwODVjL3pCYUJJb2FPcTV0Y1B6ZXNGZHdJc3FuOG9ZajV6VlAzMUl6WDE2?=
+ =?utf-8?B?OHd0dVRzMG1nVndRZ2w2aE0zTWhQRFR2VGU5SW1KRGdRWWxNbVZZTnRFOGt0?=
+ =?utf-8?B?ZUFyT04weXA1R21XNUxocHN3bFdmWmVjSnpDZ2c3K3EzYjBydmtkSHpOUjhv?=
+ =?utf-8?B?b3F0NGY4YUNvNWxnQ3pQTlBFTlVjd1hJMjZyYi9RRGFOR2xnU1NUdmRic3dz?=
+ =?utf-8?B?enZXdHBYdExUK2Y0RGJDajZBaXdtSENkREVPem9GNUQvR1dsb2RQQVVkUjlp?=
+ =?utf-8?B?d0lTYW9uYUVCclF4TzF6ZFlIU2NCUGVjVzhQS1lqdkIwd1ZYSmdzZS8wdkI2?=
+ =?utf-8?B?T25WQTFqcGpRTXc4Q2R1UEJHQ2tDNTB2VUhvMVp0aWd5NWUxY0dXc3IxRmxM?=
+ =?utf-8?B?MUFhN2h0aHRiRjRrdDM2R3UxWEw1RXY0UkRaOXU3T2RwaDA3RUhFdGtETmd5?=
+ =?utf-8?B?T3k2eS9TM0VkbVpJTlVtNnRpaS9UMnFhNkFnZmxHcTFYNnkybTRaaEZoYm9B?=
+ =?utf-8?B?ek5vYTN0UDNaNU41Y3VQVkl1M2xoeFUxOXZMSVhEUjdRbGk4cSs0OWVINTh1?=
+ =?utf-8?B?MGVNQkZvQzlEWE8vRXdFS3kvMUowdkdNeE05QXE5NFNXdEFrVStIU0hJTnNa?=
+ =?utf-8?B?S3BydndRb1JtbTRoZy9GWkpIbkh5K2oxUm5UcHZKamZoN3ZSeGhscGpTU0kw?=
+ =?utf-8?B?UVZmbDA3aWlTbFcxSU9mRzYvYUQ2ZHNFd2tqU3pReUdwU29FWGFVVWttbzJp?=
+ =?utf-8?B?dkd3U2hVa1BzQlJUVExxQmVBYk5PcFBNeksyWDMxY3ZVaUxDWFgrSW5IQ1VY?=
+ =?utf-8?B?OFBnMktmZ1l1QzVNcXQzY05mVjBRaU9iK0FhUWVDeXdBZXVMc0FTN1BMaUI1?=
+ =?utf-8?B?K1ZGSXNkcCtPV2k0bUxYWnQrZGtLdThuZ01SRWRyRDBCU3ljNGtBckgzV2ht?=
+ =?utf-8?B?UkR1aXhxKzZvTS9uWlJHbSs5Q1U2UXpuTVVMRFpNMlMrN2swRVZidWVtWXdB?=
+ =?utf-8?B?anQ2NkVkblFTYndrWmdYUzVDYlBlRDZNQUdmOUEzMlZFS05CUmY0SHRBM1Bx?=
+ =?utf-8?B?c2xXRzRrZzBJMm1LYlZFL3BlOW5nVFJtY0x6MklSNmJyNEU5NXFZTTRDcjB0?=
+ =?utf-8?B?dFovcDF6U0hLU2d0U2plNmVtK1A4ekN3bXk1dUxwazZXWGNBMVkybnBkUmtq?=
+ =?utf-8?B?dnFISlZNRm85NWxGKytRNGgyUUxkcElVMHo3dXQ0eTB3NTdFcGlYU0lrYi9M?=
+ =?utf-8?B?ZWxrcjY1VzRBVWlhRTR4MkVJaGtXb3JoNWtOWW9MV2ZzSmVlMXgwQmlyNnVa?=
+ =?utf-8?B?WHVFU3FtYk1LaG43YXJJYi96K1FBWnNJZmE0VzZEQ2N1Rm94NDNhWndndlJt?=
+ =?utf-8?B?VWg1aS9xUnRwb3hzSk1yNDFvc2o2NHJYVWtRazVncVhjL1gwTVBRNFdrOHlv?=
+ =?utf-8?B?eTJOWHRhQW5kVVFjdUhEQnNUa2lrSjUvcC80VTdudEFXRWtwWVgreUVhMzE0?=
+ =?utf-8?B?SEdRckRzQmJqQ3hrcXI3Q3MxYWVwR1BkUGtGelQyYmFWVVlnM25HZUszanRW?=
+ =?utf-8?Q?UxfRLZrUQoJBzW5fzO8HfShLFBieLdO82NOU/?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f710abf8-23b9-4290-e601-08df305484f4
+X-MS-Exchange-CrossTenant-AuthSource: MI3PR04MB12438.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Oct 2026 15:52:47.7954
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 4FhcYJAYFf33YYS/iJS6FIt/U1TaVrkxltnPeRXthc/hCMdJTUJCfsW2KNdlsxcz1U8Qbc49VnYEvMLND9e7lFvXoNiYxU3u4N6Ic7pfbHKPp4LnCE5MNRGQcN6xbsli
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB11032
 
+On Thu, Oct 22, 2026 at 10:40:53AM +0530, Golla, Nagendra wrote:
+> Hi Frank,
+>
+> On 10/10/2026 8:39 AM, Frank Li wrote:
+> > On Fri, Oct 09, 2026 at 09:30:10AM +0530, Golla Nagendra wrote:
+> > > Replace pm_runtime_resume_and_get() with the PM_RUNTIME_ACQUIRE_AUTOSUSPEND
+> > > guard to manage the probe-time runtime PM reference lifecycle. If the guard
+> > > acquire fails, fail probe immediately so a broken device is never
+> > > registered.
+> > >
+> > > When runtime PM is not enabled for the device, call
+> > > zynqmp_dma_runtime_resume() directly after pm_runtime_enable() to bring the
+> > > clocks up for probe.
+> > >
+> > > On probe failure after a successful guard acquire, drop the reference with
+> > > zynqmp_dma_probe_pm_put(), inhibit the guard destructor with
+> > > retain_and_null_ptr(), and gate the clocks through
+> > > zynqmp_dma_probe_fail(). When runtime PM is enabled,
+> > > zynqmp_dma_probe_pm_put() uses pm_runtime_put_sync_suspend(). When runtime
+> > > PM is not enabled for the device, balance the guard usage counter with
+> > > pm_runtime_put_noidle() and gate the clocks with
+> > > zynqmp_dma_runtime_suspend(). Runtime PM does not suspend a device that
+> > > is already disabled, so pair every direct zynqmp_dma_runtime_suspend()
+> > > call with pm_runtime_set_suspended() to keep the runtime PM status in
+> > > sync with the clocks.
+> > >
+> > > On probe success, release the probe-time reference with
+> > > pm_runtime_put_sync_autosuspend() when runtime PM is enabled for the
+> > > device. When runtime PM is not enabled for the device, balance the guard
+> > > usage counter with pm_runtime_put_noidle() only and leave the clocks
+> > > enabled so that later channel allocation can use the hardware. Inhibit the
+> > > guard destructor with retain_and_null_ptr(pm).
+> > >
+> > > Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
+> > > ---
+> > >   drivers/dma/xilinx/zynqmp_dma.c | 68 ++++++++++++++++++++++++++++++-----------
+> > >   1 file changed, 50 insertions(+), 18 deletions(-)
+> > >
+> > > diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
+> > > index 3b7dfa53f972..a48106e404e7 100644
+> > > --- a/drivers/dma/xilinx/zynqmp_dma.c
+> > > +++ b/drivers/dma/xilinx/zynqmp_dma.c
+> > > @@ -18,6 +18,7 @@
+> > >   #include <linux/slab.h>
+> > >   #include <linux/clk.h>
+> > >   #include <linux/io-64-nonatomic-lo-hi.h>
+> > > +#include <linux/cleanup.h>
+> > >   #include <linux/pm_runtime.h>
+> > >
+> > >   #include "../dmaengine.h"
+> > > @@ -1077,6 +1078,29 @@ static const struct dev_pm_ops zynqmp_dma_dev_pm_ops = {
+> > >   			   zynqmp_dma_runtime_resume, NULL)
+> > >   };
+> > >
+> > > +static void zynqmp_dma_probe_pm_put(struct device *dev)
+> > > +{
+> > > +	if (pm_runtime_enabled(dev))
+> > > +		pm_runtime_put_sync_suspend(dev);
+> > > +	else
+> > > +		pm_runtime_put_noidle(dev);
+> > > +}
+> > > +
+> > > +static int zynqmp_dma_probe_fail(struct zynqmp_dma_device *zdev, int ret)
+> > > +{
+> > > +	bool rpm_disabled = !pm_runtime_enabled(zdev->dev);
+> > > +
+> > > +	zynqmp_dma_chan_remove(zdev->chan);
+> > > +	zynqmp_dma_probe_pm_put(zdev->dev);
+> > > +	pm_runtime_disable(zdev->dev);
+> > > +	if (rpm_disabled || !pm_runtime_status_suspended(zdev->dev)) {
+> > > +		zynqmp_dma_runtime_suspend(zdev->dev);
+> > > +		pm_runtime_set_suspended(zdev->dev);
+> > > +	}
+> > > +
+> > > +	return ret;
+> > > +}
+> > > +
+> > >   /**
+> > >    * zynqmp_dma_probe - Driver probe function
+> > >    * @pdev: Pointer to the platform_device structure
+> > > @@ -1087,7 +1111,7 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+> > >   {
+> > >   	struct zynqmp_dma_device *zdev;
+> > >   	struct dma_device *p;
+> > > -	int ret;
+> > > +	int ret, pm_err;
+> > >
+> > >   	zdev = devm_kzalloc(&pdev->dev, sizeof(*zdev), GFP_KERNEL);
+> > >   	if (!zdev)
+> > > @@ -1128,21 +1152,30 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+> > >   	pm_runtime_set_autosuspend_delay(zdev->dev, ZDMA_PM_TIMEOUT);
+> > >   	pm_runtime_use_autosuspend(zdev->dev);
+> > >   	pm_runtime_enable(zdev->dev);
+> > > -	ret = pm_runtime_resume_and_get(zdev->dev);
+> > > -	if (ret < 0) {
+> > > -		dev_err(&pdev->dev, "device wakeup failed.\n");
+> > > -		pm_runtime_disable(zdev->dev);
+> > > -	}
+> > >   	if (!pm_runtime_enabled(zdev->dev)) {
+> > >   		ret = zynqmp_dma_runtime_resume(zdev->dev);
+> > > -		if (ret)
+> > > +		if (ret) {
+> > > +			pm_runtime_disable(zdev->dev);
+> > >   			return ret;
+> > > +		}
+> > > +	}
+> > > +	PM_RUNTIME_ACQUIRE_AUTOSUSPEND(zdev->dev, pm);
+> > > +	pm_err = PM_RUNTIME_ACQUIRE_ERR(&pm);
+> > > +	if (pm_err) {
+> > > +		retain_and_null_ptr(pm);
+> >
+> > Not sure why need call retain_and_null_ptr() here, generally only need
+> > call retain_and_null_ptr() at success pass if you use want to keep
+> > runtime_pm active. at fail case, needn't do that.
+> >
+> > > +		pm_runtime_disable(zdev->dev);
+> >
+> Thanks for the Review> If use devm_pm_runtime_enable(), needn't this one.
+>
+> We intentionally keep the nondevmpm_runtime_enable()pm_runtime_disable()
+> pair here and do not switch to devm_pm_runtime_enable().
+> devm_pm_runtime_enable() registers a devm action that calls
+> pm_runtime_disable() automatically after .remove returns. Since remove()
+> already calls pm_runtime_disable() explicitly itself, switching to the devm
+> variant would mean pm_runtime_disable() gets called a second time for the
+> same device
+> — driving disable_depth into underflow, along with any other
+> invalid state that comes from disabling an already-disabled runtime PM.
+>
+> If we remove the explicit pm_runtime_disable() from remove() to avoid that
+> double-disable call, it would affect the fix introduced in commit
+> 9c58a42c1612 ("dmaengine: zynqmp_dma: fix race between runtime PM and device
+> removal"),
+> https://lore.kernel.org/all/20260630064844.705173-2-nagendra.golla@amd.com/
+> which added that explicit disable specifically to close a race between
+> runtime PM and device removal.
 
+"[Severity: High]
+This isn't a bug introduced by this patch, but does zynqmp_dma_remove() need
+to halt the DMA hardware before disabling clocks?
 
-On 10/22/2026 2:39 PM, Konrad Dybcio wrote:
-> On 10/2/26 12:47 PM, Gaurav Kohli wrote:
->> From: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
->>
->> kodiak-based SoCs are binned at manufacturing time, with the bin
->> computed from the jtag-id and feat-id qfprom fuses.  The tsens driver
->> now reads these and feeds the resulting bin to the thermal core, which
->> selects per-bin trip temperatures.
->>
->> Add the jtag-id and feat-id nvmem cells to the tsens nodes and convert
->> the passive mitigation trip points from a fixed 95C to per-bin values
->> (95C for bin 0x1, 105C for bin 0x2) using the new
->> temperature-bin/thermal-hw-bin properties.
->>
->> Signed-off-by: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
->> Co-developed-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
->> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
->> ---
->>   arch/arm64/boot/dts/qcom/kodiak.dtsi | 56 +++++++++++++++++++++++++++---------
->>   1 file changed, 42 insertions(+), 14 deletions(-)
->>
->> diff --git a/arch/arm64/boot/dts/qcom/kodiak.dtsi b/arch/arm64/boot/dts/qcom/kodiak.dtsi
->> index 347815e5983e..f3bb9cd8f393 100644
->> --- a/arch/arm64/boot/dts/qcom/kodiak.dtsi
->> +++ b/arch/arm64/boot/dts/qcom/kodiak.dtsi
->> @@ -1019,6 +1019,16 @@ gpu_speed_bin: gpu-speed-bin@1e9 {
->>   				reg = <0x1e9 0x2>;
->>   				bits = <5 8>;
->>   			};
->> +			jtag_id: jtag-id@180 {
->> +				reg = <0x180 0x4>;
->> +				/* bits = <offset width>: 20 bits at offset 0 */
->> +				bits = <0 20>;
->> +			};
->> +			feat_id: feat-id@180 {
->> +				reg = <0x180 0x4>;
->> +				/* bits = <offset width>: 8 bits at offset 20 */
->> +				bits = <20 8>;
->> +			};
-> 
-> Couple nits: please keep a \n between each subnode
+The function disables device clocks via zynqmp_dma_runtime_suspend() but never
+writes to the hardware to halt active transfers or waits for idle.
 
-thanks for review, will fix this in v2.
+Could stopping clocks while an AXI master is mid-transaction violate the bus
+protocol and cause an interconnect hang?"
 
-> 
-> 
-> [...]
-> 
->>   				cpu0_alert1: trip-point1 {
->> -					temperature = <95000>;
->> +					temperature-bin = <95000 105000>;
-> 
-> Please do <foo>, <bar> instead of <foo bar>
+Is this one?
 
-Sure, will update.
+Frank
 
-> 
-> Konrad
-
+> Dropping it would reopen that same race.
+>
+> Thanks,
+> Nagendra
+>
+> >
+> > > +		if (!pm_runtime_status_suspended(zdev->dev)) {
+> > > +			zynqmp_dma_runtime_suspend(zdev->dev);
+> > > +			pm_runtime_set_suspended(zdev->dev);
+> > > +		}
+> > > +		return dev_err_probe(&pdev->dev, pm_err, "device wakeup failed\n");
+> > >   	}
+> > >
+> > >   	ret = zynqmp_dma_chan_probe(zdev, pdev);
+> > >   	if (ret) {
+> > >   		dev_err_probe(&pdev->dev, ret, "Probing channel failed\n");
+> > > -		goto free_chan_resources;
+> > > +		retain_and_null_ptr(pm);
+> > > +		return zynqmp_dma_probe_fail(zdev, ret);
+> > >   	}
+> > >
+> > >   	p->dst_addr_widths = BIT(zdev->chan->bus_width / 8);
+> > > @@ -1151,7 +1184,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+> > >   	ret = dma_async_device_register(&zdev->common);
+> > >   	if (ret) {
+> > >   		dev_err(zdev->dev, "failed to register the dma device\n");
+> > > -		goto free_chan_resources;
+> > > +		retain_and_null_ptr(pm);
+> > > +		return zynqmp_dma_probe_fail(zdev, ret);
+> > >   	}
+> > >
+> > >   	ret = of_dma_controller_register(pdev->dev.of_node,
+> > > @@ -1159,19 +1193,17 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+> > >   	if (ret) {
+> > >   		dev_err_probe(&pdev->dev, ret, "Unable to register DMA to DT\n");
+> > >   		dma_async_device_unregister(&zdev->common);
+> > > -		goto free_chan_resources;
+> > > +		retain_and_null_ptr(pm);
+> > > +		return zynqmp_dma_probe_fail(zdev, ret);
+> > >   	}
+> > >
+> > > -	pm_runtime_put_sync_autosuspend(zdev->dev);
+> > > +	if (pm_runtime_enabled(zdev->dev))
+> > > +		pm_runtime_put_sync_autosuspend(zdev->dev);
+> > > +	else
+> > > +		pm_runtime_put_noidle(zdev->dev);
+> > > +	retain_and_null_ptr(pm);
+> >
+> > You mix use auto cleanup and pm_runtime_put_sync_autosuspen() and
+> > pm_runtime_put_noidle() to make code mess up.
+> >
+> > Frank
+> > >
+> > >   	return 0;
+> > > -
+> > > -free_chan_resources:
+> > > -	zynqmp_dma_chan_remove(zdev->chan);
+> > > -	if (!pm_runtime_enabled(zdev->dev))
+> > > -		zynqmp_dma_runtime_suspend(zdev->dev);
+> > > -	pm_runtime_disable(zdev->dev);
+> > > -	return ret;
+> > >   }
+> > >
+> > >   /**
+> > >
+> > > --
+> > > 2.43.7
+> > >
+>
