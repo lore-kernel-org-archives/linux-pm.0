@@ -1,64 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.131.191.46
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792629689;
-	b=P6PBuqyJZXwwEh+Rr1O2st5JseOefAOa3mz20Vg5InNaVrblUTAoN/MqFb0LsbSw2x2m
-	 2RW3qEaUhJF+/mEUtgN7BYE/8GWlKhEWn4P3/j0Pfct0zSBIToGnmeTauVqSkRGJEEF0q
-	 S4ubpnyJsUaMGNsQe67jXOcD4BvPCzXrn9O+8CZCpyNWeqGOe8RSXWiOLPYs+8br78w7+
-	 UrhNQzbQfsOnGRM0K93LsxtAnvQ/p9XAFJEfLE68AU7cpUkls8LvtMiENODgYdW76GTYw
-	 8wIKcMYVUZDDNFB0kN14X0LMXJXVZ7EUYkxm9NyeYeNjr6/FwENhKcKzk3ERzLsD3+w==
+	t=1792635697;
+	b=nK5eGhnKDACVxWtQAMXFUJMr55xcj/tQ1Vtp1WVVfsFETKgQz2VedpVG8x9afKtaUCIi
+	 mdo41Se+cW5xE/UUI0VgZlSd7JnaXyofMC90Z6FVBbxSmcNfiQFYJBOnCU+84/RWhbMy6
+	 yydQYk8CNTm6OttNp+BX6RR8t+X9tWmVTVxfW7LQ4ILXMrSjPeXYz2kVqyAbCpN/Qtyzv
+	 9LKbjVkmKy2M/+r8qwJz6Ubc5A7CH5qq+yvbrv/hUv/NQcIPOyYbcL/wrsXFV0agEUhmV
+	 V92SLvzZnuEuBfqWiZYFgBA2A/Ce8zA44LxUEA4PGw4CaWbP9kTirdOd7Bl3SZt5d4Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792629689;
-	h=Received:DKIM-Signature:Received:Subject:From:In-Reply-To:References:
-	 X-PR-Tracked-List-Id:X-PR-Tracked-Message-Id:X-PR-Tracked-Remote:
-	 X-PR-Tracked-Commit-Id:X-PR-Merge-Tree:X-PR-Merge-Refname:
-	 X-PR-Merge-Commit-Id:Message-Id:Date:To:Cc;
-	bh=0JMQnG3ZZBP+/9NyLhM85piBlp23tY0DuxQYJlIP3HA=;
-	b=1FTasfAkSIDjoplDbsOhwUwrdCcMyk6MCMzL1OEGvEWo9JWKU9NIExJEXXulX7mjDnQI
-	 CHq9GtUKadL/no7pT4+H7C04iG5rLXUiCg6iyCSgqkJRDnmERLw02ygCMwumKlnVw3JzU
-	 7of46eqhPSM/mckt5PwTchoZPKJs+nrrjb0dh4ucHL4L1aGj/c2ISe0dH4wd4beJgdheP
-	 PCDkOzKZ8zEl30dnEF8DDQ8+HoEmmeilV8QFmTjdOI/PODEPVQelmLMLqz51hAYPIkK6U
-	 qosgvG7lgi2cTQQSBqxT3Vq5wTYAQHIx4ac2bKY3zrrhhQjSi0iSr/a3xcNR1fak7Kw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792635697;
+	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:
+	 X-HM-Spam-Status:DKIM-Signature;
+	bh=rTtOEHpuUdG1ZN7wpfmh79f1UZoM9LFVHJpiq1FULQo=;
+	b=cCDn95bKz81VzlMDEPa6Vspiuc9TOkD4Ps8aB39FbTi+Oc0dYBEW/v//vRqQKlA878E8
+	 qRMsBzaaxayN2gFGbdm6stZXNPkwx9ccABLOISuqu2VB4rMDj90RZdghFeb/KunZy4BHb
+	 jx/dplpk98rKSESWEfrD5i29mgK2fxFZ1ApJI347/RrdOV4tvL2JL8lilNz7I59oGLLGT
+	 NfLHu8w/2+eHh00FHcPVSsAy8dDZKEGfjuAbuKdXLKTGrN6rfdbGerOAw4NWz///XdcEa
+	 vt7YPwNm4cbb2X2vqpdwwfk2qeYwOxH7TPyuyD55l/iI231btSU5/AVltPc3kjThZ2A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iW2olH66;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=rock-chips.com;
+	spf=pass smtp.mailfrom=rock-chips.com;
+	dkim=pass header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b="SQsWjO/B";
+	arc=none smtp.remote-ip=103.131.191.46
+Received: from mail-m10313119146.xmail.ntesmail.com (mail-m10313119146.xmail.ntesmail.com [103.131.191.46])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64CD1606A319;
-	Thu, 22 Oct 2026 00:41:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27485606A319;
+	Thu, 22 Oct 2026 02:21:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 27485606A319
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iW2olH66
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05EE81F000C1;
-	Thu, 22 Oct 2026 00:41:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792629689;
-	bh=0JMQnG3ZZBP+/9NyLhM85piBlp23tY0DuxQYJlIP3HA=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=iW2olH66vXKkzhUtRev4oedZf5TwX/4RiwT2Sgkw+ciRAS9Y7B/zMnzSogHu9ZBzk
-	 /EUxNjo/oogxa/EYvG48f9F1W2zK87v6kJN+nvIm1OUxBkojPPbafsRLUt8oDr2HW7
-	 9zHpS/xj+M6/NgYaWHto7kNhmDB/7rvRMC8/bAk5C55amxssiq2kXZXGImcfiTnq9T
-	 IlWpmIWdp/uwrDMI4kAPxGONetdWLNdJnWmpBf8NYgpWjMkCKquXrFhUNucS1EtkGy
-	 NdtpSYGqRzZXg5XokAwldiJCbBXinnSiY9ivDu3USmrWQiLasKKy5uBgyFmGdaSc6T
-	 +eAYVSglpgimg==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id F1320380A963;
-	Thu, 22 Oct 2026 00:41:28 +0000 (UTC)
-Subject: Re: [GIT PULL] Thermal control updates for 7.4-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0hEkwqD4znFgQBtXskpiXXo52gNp=KbzbeqOW9g=ZGpuw@mail.gmail.com>
-References: <CAJZ5v0hEkwqD4znFgQBtXskpiXXo52gNp=KbzbeqOW9g=ZGpuw@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0hEkwqD4znFgQBtXskpiXXo52gNp=KbzbeqOW9g=ZGpuw@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.4-rc1
-X-PR-Tracked-Commit-Id: 503bb6e70bbf6304b8113373d09dfffcc4aa9183
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 4403278e4ea2f654f8130a5c03eb8b4516a0f201
-Message-Id: <179262968757.1381797.7368750239198889873.pr-tracker-bot@kernel.org>
-Date: Thu, 22 Oct 2026 00:41:27 +0000
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
+	dkim=pass (1024-bit key, unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=SQsWjO/B
+Received: from xf.. (unknown [61.154.14.86])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 51ed1a686;
+	Thu, 22 Oct 2026 10:21:21 +0800 (GMT+08:00)
+From: Finley Xiao <finley.xiao@rock-chips.com>
+To: finley.xiao@rock-chips.com,
+	heiko@sntech.de,
+	linux-pm@vger.kernel.org
+Cc: cw00.choi@samsung.com,
+	myungjoo.ham@samsung.com,
+	kant@allwinnertech.com,
+	kyungmin.park@samsung.com,
+	linux-rockchip@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	tony.xie@rock-chips.com,
+	huangtao@rock-chips.com,
+	stable@vger.kernel.org
+Subject: [PATCH v2] PM / devfreq: governor_userspace: Guard against NULL governor_data during switch
+Date: Thu, 22 Oct 2026 10:21:09 +0800
+Message-ID: <20261022022109.642339-1-finley.xiao@rock-chips.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,16 +61,87 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa16169bbfa03a8kunm107f5dafdcf40
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCGkNMVktIGh4aSR5PGUhKTVYVFA
+	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSE
+	pKQk1VSktLVUpCWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=SQsWjO/BBQxHRkBsgnOgPcYakFTvOHyIRj2GImr8AO68bBY89hVXHoLa6TNZu3KXBhhUd81Q+Ribz86i2eUFntrPEMtZHVgnMh5vImDK3OYzXDhNouRqu3OqVlHl2Zspg1EK0I+0QzZRqyi52cDbqSf7FKScBLfaDFvv0wkp4KU=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=rTtOEHpuUdG1ZN7wpfmh79f1UZoM9LFVHJpiq1FULQo=;
+	h=date:mime-version:subject:message-id:from;
 
-The pull request you sent on Mon, 19 Oct 2026 19:22:14 +0200:
+The userspace governor is the only one that uses devfreq->governor_data,
+allocated in its DEVFREQ_GOV_START handler (userspace_init()) and freed
+in its DEVFREQ_GOV_STOP handler (userspace_exit()).
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.4-rc1
+When switching governors via sysfs (governor_store in devfreq.c), the
+sequence is:
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/4403278e4ea2f654f8130a5c03eb8b4516a0f201
+STOP(old) -> df->governor = userspace -> START(userspace) -> userspace_init
 
-Thank you!
+Between the df->governor assignment and userspace_init() completing,
+governor_data is still NULL (the previous governor never touched it,
+and the core does not clear or pre-allocate it). During that window,
+asynchronous paths that call update_devfreq() outside of the driver's
+control -- the OPP notifier (devfreq.c:686) and the pm_qos notifier
+(devfreq.c:707) -- run devfreq_update_target() under df->lock and reach
+devfreq_userspace_func(), which dereferences governor_data without a
+NULL check, causing:
 
+  Unable to handle kernel access to user memory outside uaccess routines
+  pc : devfreq_userspace_func+0xc/0x28
+  lr : devfreq_update_target+0x58/0x158
+
+Add a NULL check in devfreq_userspace_func() and fall back to
+previous_freq, which is the same behaviour as the existing "no user
+frequency specified yet" branch. This closes the race for all callers
+since every path ultimately goes through get_target_freq.
+
+Additionally, take devfreq->lock around the kfree()/NULL assignment in
+userspace_exit(). Without it, a concurrent OPP/pm_qos notifier running
+under devfreq->lock could read governor_data after it is freed but
+before it is set to NULL, constituting a use-after-free.
+
+Fixes: 5fdded844892 ("PM/devfreq: governor: Add a private governor_data for governor")
+Cc: stable@vger.kernel.org
+Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+
+Link: https://lore.kernel.org/linux-pm/20260723080806.1451-1-finley.xiao@rock-chips.com/
+---
+Changes in v2:
+- Add Fixes: tag and Cc: stable@vger.kernel.org
+
+ drivers/devfreq/governor_userspace.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 3906ebedbae8..f7a485c43fd7 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -24,7 +24,7 @@ static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
+ {
+ 	struct userspace_data *data = df->governor_data;
+ 
+-	if (data->valid)
++	if (data && data->valid)
+ 		*freq = data->user_frequency;
+ 	else
+ 		*freq = df->previous_freq; /* No user freq specified yet */
+@@ -110,8 +110,10 @@ static void userspace_exit(struct devfreq *devfreq)
+ 	if (devfreq->dev.kobj.sd)
+ 		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
+ 
++	mutex_lock(&devfreq->lock);
+ 	kfree(devfreq->governor_data);
+ 	devfreq->governor_data = NULL;
++	mutex_unlock(&devfreq->lock);
+ }
+ 
+ static int devfreq_userspace_handler(struct devfreq *devfreq,
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.43.0
+
