@@ -1,67 +1,67 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.11
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792652357;
-	b=2FQy6nuThpDDXbEImZEzinG7ZfO11v4qArrJWeAVD00qdmchO76vNkU6Ky5X88dohGFi
-	 6nX5QQRzw1nnqqG13fxYW+1JGEWfrfTh6ESVTywBhMrQHnQfyCGOIS5e2dvALHix5ydC3
-	 YJnzFrAw9kU43uuA1I2dpL+SVrOWhrdIEHP5I0ic2lFVH9nhebeMXBkiza9L++PmQm6HB
-	 DujLDQYYywMMMHPouWUYh1+I7x+P9DgxIVu+N6Kc1aE3HQwsKDWV8CnTmZbBrOnpUxhYU
-	 A/XIYSbkYZQE5m8JIL6w/wehQYnSQSHJSDl8JLKR7H5nvjP/qRz2aismpeh1GnlIxWw==
+	t=1792652482;
+	b=ax1RRcI4XNtTh81m19z9Hx5mdxTyMINOHoq5D90EAnB3okCLQ+8mAaeL4HLO30b64gNN
+	 CsRRqJGtOX4B9q3t32gNid7Oo64UTC6mALADuqrFrAiB0bAfqmcKpQCclagO7j2EgpB5b
+	 Cw17GQd7GALqWzyUDoEOm5D+UumtPd7kfuMatikZXLg6YSY3gJ1cWL7sVm4yCKGMPThd5
+	 dtPp5u1NGzqMi3pdSE8jnCc+Fh7berY0LxnXPZpb+Ynm+wJr8YUYqV1KV4lEDbsSZK9Fn
+	 w1ZIehlBf7dPssCqlJb6jp3Q5B/wZSAzVhgvf7J8KdPd7OiQyJYcLl+93eUcjTdIuMQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792652357;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792652482;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To:Organization;
-	bh=A2v0UyZLrL0FvCelp3xxh8E2yhouhyinnzcUd/OTtsM=;
-	b=ym0Dn9HAumS2DSuwb1l5N3SIVZZA0UAyGxqBIFFqxJ78WZMMLZtUJuZvIemnnTJ71WGk
-	 MrUjNWDwqCdZ60GcUi1yvSQXNhEj2hwUQTQdPuwmwfrnFaDmzVZuXP3TaJZtibGrPrhU6
-	 BQ4Ih8jzIQSq0O/tz1PrtVCgTzWHM/sGuJ2sNYFasmykBlK2UohroPzEg8FNPrsuigy2n
-	 mmphOudwPwm6qHK6ebwuMbiLOnhMGjEYSrQ4qCtMexFdGsteWEvp2oB18Qx8YcbQNjE2Q
-	 QZUMFrjR9e/bNi8nZWKV9tW0B7aZgc9MO8n6a+rj1/Qf7K7UmOzzCNp0BAVlT/XXZ4w==
+	bh=ltUAnBtou90SNn5Ne2wUoBg+rS3tKtz8jx12czMY9Ds=;
+	b=bjOV3z9pNU0ubrc4Pw2uYXhioQXrqYQShmS6u5c8hj+6jpAmTMC4p037T91Jpls4GFpp
+	 nLc03FCTDP9bhaF+rhCcoYaqJwa2waRUyuQBEFUXanLKLtbKq/UbFwYFicJb+JVu70F9f
+	 wXfhjO6UcRWAMRm7kYYdcahYUjIEGXlFC09SY9C4wVy9ugng6tR+whBd8yStENKeedWcl
+	 h0hwKQ6WUlai5EzAS/MddzMHKzvQWNyMWUkWeDqDkK4TjrD3kkp6vStmLXMZXSaZN1PGa
+	 D5kSHNwliy+VNZvWpmd/Jyde6z+xVaJ64FoemmFqXt37urQ4l0eJfoMrqb02Pnhn/ZA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=intel.com;
 	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=l6Fp6cZc;
-	arc=none smtp.remote-ip=198.175.65.18
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WnQq+LMS;
+	arc=none smtp.remote-ip=192.198.163.11
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92E18606A319;
-	Thu, 22 Oct 2026 06:59:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 92E18606A319
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5145606A319;
+	Thu, 22 Oct 2026 07:01:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5145606A319
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=l6Fp6cZc
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WnQq+LMS
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1792652357; x=1824188357;
+  t=1792652482; x=1824188482;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=uaxQzhw7nU91HZ63N2v0J7ZNjT2kjXjlHg0x8yYroP0=;
-  b=l6Fp6cZcdhTBRm8f5eO2mhaEp3hvp38OayYWM2Jp09JgqC+FK1mU98rd
-   J4OG7xBw9hNR1w5bv/4Na8BI3TfbZiPT/7Q8iIACRN0HVmYEKkZWEVdNL
-   sLfM3uLtvnwfX0AbyQBW6fdACTvo+qLwxpePTooeoS24nYZeLWuYeShmZ
-   0GVFwhus2srgP5QVKahMuT24D1XvsZ36BAJOe3K61yNuYPexzX2VcBEoB
-   zd31efHXT3v5bAJewoeJmgvG07pe8rXc7OsATAvfrOks6T4zA5r9fSi5p
-   SOAnTqFSmyNU1xQRjSj9iS6rQ5TZnpQk+gKtV4sjH7Yp3o86jyxN/2Ule
-   w==;
-X-CSE-ConnectionGUID: 2jUG1UaITV2x6SkH2FVKKg==
-X-CSE-MsgGUID: sOphSEG4T3eZvoudpLcrig==
-X-IronPort-AV: E=McAfee;i="6800,10657,11942"; a="1397782"
+  bh=sxCKi+fB6UvtVKaiMqUH73/SrcAlNTYOkHoZYOedpjE=;
+  b=WnQq+LMSEiZYYwrkcAkBM5RibwrTzr3UE3tr3qVhu9KF9W29WhjmIQMA
+   2XkNlfYGmNNjvrL/gBfrH2c8ZpNbjzq4RGXko0HqmJ5t2KBfKvfmvGXYH
+   afoHjP2K+klwR1njYP6OVG5Zx2JbvtABtHfLcewpF3pKjq4o/XqT/H7YZ
+   5h6FoDnL8+3ynnYR8V+CviK+3hLJkV5Gx1D0rEzSDdc3US9NNUpufxKSv
+   JkdcWvfmeQmzaQX2n3N+WHUvpPNMsSzkhruwhFl/1iANIOZ7YKOkqoY5U
+   8wh6jgoxWTcpgXtR7s5qoIOkD5zFLQu2jKH1FAIDQSmrOjs7003S6srdu
+   A==;
+X-CSE-ConnectionGUID: EXN/E/NyRwiJcGaxpsTm4w==
+X-CSE-MsgGUID: QBecM9ucTa2IYUdUgGt8sQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11942"; a="1292278"
 X-IronPort-AV: E=Sophos;i="6.27,171,1787036400"; 
-   d="scan'208";a="1397782"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2026 23:59:16 -0700
-X-CSE-ConnectionGUID: foGnZhXYSiW2zSl4eblvtw==
-X-CSE-MsgGUID: T47D7lz+QhGW4Ns1SfpWng==
+   d="scan'208";a="1292278"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Oct 2026 00:01:21 -0700
+X-CSE-ConnectionGUID: ygzg2km4Tc+VdCIJZWeZqQ==
+X-CSE-MsgGUID: lbV0Lw9HSsa5obFnAv3qWw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,171,1787036400"; 
-   d="scan'208";a="3639674"
+   d="scan'208";a="3692933"
 Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.189])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2026 23:59:13 -0700
-Date: Thu, 22 Oct 2026 09:59:11 +0300
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Oct 2026 00:01:16 -0700
+Date: Thu, 22 Oct 2026 10:01:14 +0300
 From: Andy Shevchenko <andriy.shevchenko@intel.com>
 To: Brian Norris <briannorris@chromium.org>
 Cc: Jonathan Cameron <jic23@kernel.org>,
@@ -70,12 +70,15 @@ Cc: Jonathan Cameron <jic23@kernel.org>,
 	Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
 	Andy Shevchenko <andy@kernel.org>,
 	David Lechner <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 03/17] iio: accel: mma8452: Discard
- pm_runtime_put_autosuspend() return values
-Message-ID: <atm0P1iD3e4Qmtv2@ashevche-desk.local>
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Rui Miguel Silva <rmfrfs@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v2 00/17] iio: Stop looking at
+ pm_runtime_put_autosuspend() return codes
+Message-ID: <atm0umwtxZlQSAhy@ashevche-desk.local>
 References: <20261021235818.3059519-1-briannorris@chromium.org>
- <20261021165858.v2.3.I0ce530b298f72acf4015d898d8b2aaee89482b8e@changeid>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -87,61 +90,37 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261021165858.v2.3.I0ce530b298f72acf4015d898d8b2aaee89482b8e@changeid>
+In-Reply-To: <20261021235818.3059519-1-briannorris@chromium.org>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Wed, Oct 21, 2026 at 04:57:04PM -0700, Brian Norris wrote:
-> This driver propagates the return value of pm_runtime_put_autosuspend(),
-> which is not particularly useful.
+On Wed, Oct 21, 2026 at 04:57:01PM -0700, Brian Norris wrote:
+> Similar to this effort:
 > 
-> Returning an error code from pm_runtime_put_autosuspend() merely means
-> that it has not queued up a timer or work item to check whether or not
-> the device can be suspended and there are many perfectly valid
-> situations in which that can happen, like after writing "on" to the
-> device's runtime PM "control" attribute in sysfs for one example.
+>   Subject: [PATCH v1 00/23] PM: runtime: Convert pm_runtime_put() to a void function
+>   https://lore.kernel.org/all/6245770.lOV4Wx5bFT@rafael.j.wysocki/
 > 
-> For this reason, modify this driver to simply discard the
-> pm_runtime_put_autosuspend() return value, and inline the pm_runtime
-> helper, since the behavior is the same with and without CONFIG_PM.
+> i.e., commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+> type to void") and friends.
 > 
-> While I'm at it: I see that mma8452_data_rdy_trigger_set_state() and
-> mma8452_write_event_config() mismanage the runtime PM reference count,
-> and instead rely on (racy) autosuspend delay for correct ordering.
-> Undo this choice, and instead properly drop the reference count only
-> after we're done touching the hardware.
+> As with pm_runtime_put(), there is very little value in return-code
+> checking for pm_runtime_put_autosuspend().
 > 
-> This will facilitate a planned change of the
-> pm_runtime_put_autosuspend() return type to void in the future, similar
-> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
-> type to void").
+> Checking the return code is more likely to produce a race condition
+> (fighting with user space writing "on" to the "control" attribute) than
+> to tell a consumer useful info.
+> 
+> Because the IIO subsystem has the bulk of drivers that inspect
+> pm_runtime_put_autosuspend(), and because those drivers have a lot of
+> other issues touching the same code (which Jonathan suggested [1] I
+> fix -- I fix some, but not all), I'm sending an IIO-specific series
+> under a v2 label (since many of the changes are still borrowed from the
+> earlier series).
 
-...
-
-> static int mma8452_read(struct mma8452_data *data, __be16 buf[3])
-
-> -	ret = mma8452_set_runtime_pm_state(data->client, true);
-> -	if (ret)
-> +	ret = pm_runtime_resume_and_get(&data->client->dev);
-> +	if (ret < 0) {
-> +		dev_err(&data->client->dev, "failed to resume: %d\n", ret);
->  		return ret;
-> +	}
->  
->  	ret = i2c_smbus_read_i2c_block_data(data->client, MMA8452_OUT_X,
->  					    3 * sizeof(__be16), (u8 *)buf);
->  	if (ret < 0)
->  		return ret;
->  
-> -	ret = mma8452_set_runtime_pm_state(data->client, false);
-> +	pm_runtime_put_autosuspend(&data->client->dev);
->  
-> -	return ret;
-> +	return 0;
-
-Now it can use PM_RUNTIME_ACQUIRE*(), no?
-
->  }
+After three patches I stopped because it seems more works needs in each of
+the individual drivers. Yes, the series can be applied as is in exchange for
+a bigger additional churn in the future. My preference is to see everything
+settled down in a single step.
 
 -- 
 With Best Regards,
