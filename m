@@ -1,111 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792643228;
-	b=dwEd62WxyE+lHFRcLiUErpMy94rTAtsbcgQqwWdyNweFsj0Kofe0wPkA/7IMfrP0o1O/
-	 OugwbYDgizFESeK3/tiOQ40aV8C96vh255S6dSBIo0PamWK9sZk/awzLBgSEi0P7vQ9Wu
-	 oH0PImub5fc6qYRzoCZgfmF4+9vQ1JFeGcBRFQ3C4w51s4Lvi5ApdwzCRUQHyGHb0TqbZ
-	 BV3Jv0mM+B4asHAhNc9m3xxL8CUDjB2I0MgBWklsbg6nbT44bz2fFzohpiRBVHon5rhp4
-	 QHnD4gYlPx82DNZGcrdq3q6HdvZ7MZ+jqilyWBpUz1O6bRRA+Tvu0fuvd/m0yFmyUQg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792643228;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-GUID:X-Authority-Analysis:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=kHd6t9MH/IhdCNLkpF2qZJyQtdXI16Ce5y1ruH8zFEk=;
-	b=fmlknushg4dmzRd0ZICiatXJdbHDzkAEpMHZOiqBIoIwDis7BiEx7M+iDdlOFVg0QtzC
-	 70hgmoJ6wznkPyUKtjldICfQPXi8E9fc5RZs887k5nBcGaMr6xxTaBEHUrMXkPuV6zud4
-	 goR7GIZp3BWp2EQWA/xJzdntU4EgWZ2+vIFMrNyRxhE1ET0Gm3tceCm53x0FljGChKwF4
-	 BfpQ18wFSdhiqz3SZd1UhQQ4HKcjsj+F+FqwMXhTWndzbxrkRoTuMaM88GO65yGczEp5M
-	 PHpYTHRantJGs5zuYyhFAW0xYOd+o1mQAS6UiUpesp5H1a/il/0Zt+709G0RoK8xl0w==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=NSeKbWeO;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dYUDOUyz;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.43.55
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1792645870;
+	b=2oUBzPuZAyDS6NxLY6MbhvnaqtKwy/d7/CUb3PQwXAdIsiMNYwk013zKINP7eoGHCFKq
+	 dvS5HFtv2LIafctWvPLJmjhMouMm3CsnEJzGFcQzv5CDKV8sMJESRiRrjr1HUcl2K0c+p
+	 J47J0usBNACNRC0hO6T8pr4I1oJwNo8wNtG+fMT+eCDI6iQd/A5L2HfmkEArrlw3iswqP
+	 DKPXk5GhadZaFVmwMhklJGG3c9pQZlo8GtpNbhe2gJ+H+YUYXq1had99yBUUNq3OQNBRX
+	 Gx008H9foeV7Q8DsbeaNHKa9xFxzLR4CTKVl1dDNxamM9p1vhTIDBQMvZmyizYNQpQw==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792645870;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-LD-Processed:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=SUPx8zY1+kcUd4Fjaogw3QAnQedY2aoGxBYkMKek8PI=;
+	b=CnVUdz1T7n9wXEuHl45qbDUjrRgEBuMqc5TZlXu4anELRyam/xWFuUmJJKtbyJOOmS1Q
+	 URuSBJbG0OviLWPFz7S+Sgrhhyo/PO7HxFAtBBlunkBOd6/dypHW+kOwN4nfO+DcfndFC
+	 nsswzaB4IDfZH5vQO+vISSUW6Q8zAqE8m0sj+C3cCjkddIHPYAWFoPDKQ6/ClkgPdigHL
+	 Wj4erdHkrkPR5yWE/Rf0KrYZDNhXSNVQiEqBQmbv/uyheh3OdgUFH1Sgx+fYRlPl9Jwvp
+	 7XlJd3oOn9jj23o4QKKc87iuyAv/xRl1HYAzCGq/0pp+XulOXmxR3cKEZ+6xWVNpOlw==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=amd.com;
+	spf=fail smtp.mailfrom=amd.com;
+	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=WxELNRix;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.43.55
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012055.outbound.protection.outlook.com [52.101.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61B97606A31E
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 04:27:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 61B97606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48D3D606A31A;
+	Thu, 22 Oct 2026 05:11:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 48D3D606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=NSeKbWeO;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dYUDOUyz
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69M3itAm1139625
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 04:27:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	kHd6t9MH/IhdCNLkpF2qZJyQtdXI16Ce5y1ruH8zFEk=; b=NSeKbWeOzMfGqFWG
-	dw/KXAgKF8W5tod7RGtBKuGDtdq4rJuMBuGLTsJfXGp+68yK21yypMwoFBkT9NdC
-	Y3eSuWGBP6RsZPfitiODG6bldAbdEC5SauygAMPQ7uNzpuS1TORcSGSz6DyM68/g
-	Ze5Y8dgxJdtMmusbtE4aragvDVmRMSkoQpwVAAWhSj3lcHq6AwTq+6qdwhtxbrix
-	1aCZmEyPZ9lWD4zq0k+Ti/71/qOnbfmFcvRXTdfTBdkXro5yW9ZgihiOPcVtCQV+
-	Z5JrJAOxlj8QLBcyB2ECEQ049aBZhP3E8K/s3AHPf9s7VCFAJTmYwUmljbjSFFP8
-	heMmFA==
-Received: from mail-dy1-f199.google.com (mail-dy1-f199.google.com [74.125.82.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hf93agnqm-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 04:27:07 +0000 (GMT)
-Received: by mail-dy1-f199.google.com with SMTP id 5a478bee46e88-30bcb065bfdso2349873eec.0
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2026 21:27:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792643227; x=1793248027; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kHd6t9MH/IhdCNLkpF2qZJyQtdXI16Ce5y1ruH8zFEk=;
-        b=dYUDOUyzPJR3vEomzOB0qY35X+kvz/fyX4ylCGFb8+4KSZoTME2gcvngjmUSPphsUb
-         RtKAB9A8y8huHyBlFC7yDkFk8W69Sr2YS267fen97Y1F5Z32IxcmcOYORXF6XSQyx0Zm
-         tvSHZk1T3dvMP5lsRUqZmKKNN2/L5Fo335hu1ykUshPW1qmb2xpalqUxOKb2U4wofcxA
-         UtFMD23U7Pt71Z47IJd9/ylYUCpGMy3SmYra8skwH5Wr+yqk+nZk9djOtfxJWXM5FiLJ
-         0I3TmzaZscmrrggTqMSnSHnyxxSkJuQUkXoRYOSFeyNTbpmcbNarlw+5MPNYCu/8GYX/
-         slxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792643227; x=1793248027;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kHd6t9MH/IhdCNLkpF2qZJyQtdXI16Ce5y1ruH8zFEk=;
-        b=pYYNMcGadU4qwao+J+5w5d+vF3I0rCgIDFmECDlDgTxcirvw+eDne4IagvHfhCYynZ
-         vVqU9yNMJ/LrM7xSj+hnj0z7t4Xo0D2KF0smQz2K9Rk6HgozolAxBRj61yWm3nZNj8k2
-         0sn33XppiUowZWVh1AARwfRkUgZufGbnuBTR6peePqTjczmGduK5vRqfhGQOIMiB2ylB
-         c1+6pKTmlu4gr2KicBoQm1VwoWioure5yzsMH/hWUI1rVZ3Air5+zlO+EtxiGNbtThbw
-         jZkNQZLKgVlVmBrzT/p5qn4IXnaL7lXytBGYszYXq8e0D72WNy/vE+s+0S7Zb1znxhzX
-         83pA==
-X-Forwarded-Encrypted: i=1; AKwUvBy3cqw9Sr9xjk7ik0iu2MQHgPf141Z3Hmpx7kPsbkq1nfcgEr3fa55XuKOsvmew7LNgUU1XJYoBGw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIxH4G/bvDIMQ8dCuJKDHFpnIH+LNsnnpG8/UR3HNVIbA9L9eCe
-	wNtlg8Fp+bBfaTwZMJX2W8JhmgylIdWPaeBySPZZwq+VVx9Y1zoPKh4f8EI+u76t76xSeP8RhJI
-	/f2qU19y7/cROF//ndx0kK7F4pDsdA7N1sZA5KMhGvivicIXZN3wGQZSf8mKwDA==
-X-Gm-Gg: AYBFou0B7hLxDsAaTGTwm/eaywOXuFLDhDJ/C3mhasNkP4zJERH3AzcvlfiRdaQBmZX
-	q+ZeTZDsrakGIjByNPXWSEtpICksHLDXOQewC57XMMS7IyKtwZEskEvR2UOaNaozv5JJhEe25aD
-	wnRO0ihG/PZJ3A96bIH/syrzXkKGOwKZtgvKatpQEO9lwCDpwO1e287A1jhBLfhfVysqjrS738o
-	WkFu6O+IIX2cwc9ciVilVv7ZX5X8+JQQGei4gGCOarFc5xUcSQlWnQWQqjZzVlyUnFvJ1g7k71w
-	FiPp3RCZ8N29TByD1B5xAFm7d+0+bI5TZpqrF11rhoXCMAkpd8F2e5IW0m8txsQ/pgNf3VjqidS
-	0PZROMbPA98PTxJqxbs1DYMIdSKm5n7c5
-X-Received: by 2002:a05:7301:122:b0:368:e6b5:35ad with SMTP id 5a478bee46e88-368e6b53aa7mr1241626eec.12.1792643226599;
-        Wed, 21 Oct 2026 21:27:06 -0700 (PDT)
-X-Received: by 2002:a05:7301:122:b0:368:e6b5:35ad with SMTP id 5a478bee46e88-368e6b53aa7mr1241574eec.12.1792643225848;
-        Wed, 21 Oct 2026 21:27:05 -0700 (PDT)
-Received: from [10.218.42.145] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-367411bd27dsm13118133eec.17.2026.10.21.21.27.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Oct 2026 21:27:05 -0700 (PDT)
-Message-ID: <398a1d12-c28b-418c-bbcc-170d781223d6@oss.qualcomm.com>
-Date: Thu, 22 Oct 2026 09:56:59 +0530
+	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=WxELNRix
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=mrLdq7AI17IJFe+qHFSUt/JB2QEvBVu3Z2pqR3p00BxXWoRZtojiyibm429GGxXWCnr1e7YEjx/Q/adovySr7BRD2eHcnR4IlSKh0rWcPmI6IXr7i9EFJUA41wCVvUJchCrHRvCteG8OXMmAihKX30fTfFEGEJzlQ2yRHElNa0ghY9wb0mY9n6xYyWU3cbzpMCsBfi9h1Rjr/oENmpa3wV3fWVQBV/ByOIZFUkU22kkya538910QBCgTnm/gfdqjTF6hSKM5JvUuVtTI/tA4H3eLyV8jJYqgTxkypz+Ibl0rYQbCRo09rF+v6B9PffNS9TSXdqONNDN79aCHcj1S2g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=SUPx8zY1+kcUd4Fjaogw3QAnQedY2aoGxBYkMKek8PI=;
+ b=icnEXXZBkMMqbnfbJrDWhI4hY1tU8CCC1nmUAidT1SNXBB6jmEwDUdjL9X1pVIFPJwxUVOEisogs3jUop3A6pAGNxIe9+w3+p8faljE4T+e01JHJ2vI0j82HYr3oobCWjciMgqDSeyJ7JP9tbLfVx3d8b1uER2d4sM6LwIa7WAjsePVKqGv6efMj618PQ/zukGiNeUZQ+KcHFU2q4yXlYiuKP1tCr0KdJWJacu7ybZIfsMTAy1AmytCL0J7/X9ILJx9qcJ7a9I6f/c6UBvFzx2oIys0rV7yKJr6lVFt4BM7VArgl+qg810UJRxANoYHjvn8a4z4ca2yFSdubY7cTPQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=SUPx8zY1+kcUd4Fjaogw3QAnQedY2aoGxBYkMKek8PI=;
+ b=WxELNRixywqfbY+OhXxagc4DvsnbXa48uere/cuguR82vt8EJoTxbzldc1/idu2Q5G6Ih68LNjSS3CxQQmPGdG/xKhA4Y5ZfjC5tQxbstMFM5D/dwPyj//ijeSIPXbi3GGt+VvxgXdSA6d1xgEZKqiU1Yv3/Z2nkioD0olbdtB0=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DS4PR12MB999075.namprd12.prod.outlook.com (2603:10b6:8:2fc::20)
+ by BN7PPF7C0ACC722.namprd12.prod.outlook.com (2603:10b6:40f:fc02::6d5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.15; Thu, 22 Oct
+ 2026 05:11:03 +0000
+Received: from DS4PR12MB999075.namprd12.prod.outlook.com
+ ([fe80::4c9d:851d:3f44:800f]) by DS4PR12MB999075.namprd12.prod.outlook.com
+ ([fe80::4c9d:851d:3f44:800f%4]) with mapi id 15.21.0546.012; Thu, 22 Oct 2026
+ 05:11:03 +0000
+Message-ID: <212a4fc4-437a-409a-821e-86b9b8c7f85c@amd.com>
+Date: Thu, 22 Oct 2026 10:40:53 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/6] dmaengine: zynqmp_dma: Use PM guard for probe-time
+ runtime PM reference
+To: Frank Li <Frank.li@oss.nxp.com>
+Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
+ Michal Simek <michal.simek@amd.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Kedareswara rao Appana <appana.durga.rao@xilinx.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Michael Tretter <m.tretter@pengutronix.de>,
+ Harini Katakam <harini.katakam@amd.com>,
+ Shyam Pandey <radhey.shyam.pandey@amd.com>, dmaengine@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org, git@amd.com
+References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
+ <20261009-adma-pm-fix-and-per-channel-reset-v4-1-55f5fe409c55@amd.com>
+ <asmsVD1RP6FoMN9l@SMW015318>
+Content-Language: en-US
+From: "Golla, Nagendra" <Nagendra.Golla@amd.com>
+In-Reply-To: <asmsVD1RP6FoMN9l@SMW015318>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MA5P287CA0069.INDP287.PROD.OUTLOOK.COM
+ (2603:1096:a01:1b3::17) To DS4PR12MB999075.namprd12.prod.outlook.com
+ (2603:10b6:8:2fc::20)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -115,237 +108,272 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] dt-bindings: connector: Add PCIe M.2 Mechanical Key B
- connector
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, linux-pci@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-References: <20261021-pcie6_fix-v1-0-ad37134c35a3@oss.qualcomm.com>
- <20261021-pcie6_fix-v1-1-ad37134c35a3@oss.qualcomm.com>
- <CAKTNdwG5XA_chr2ZM9qTnr2RaDMzOjdb85bRdCr4aJCr1EGy7Q@mail.gmail.com>
-Content-Language: en-US
-From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-In-Reply-To: <CAKTNdwG5XA_chr2ZM9qTnr2RaDMzOjdb85bRdCr4aJCr1EGy7Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIyMDAxNyBTYWx0ZWRfX1ErDqaOcgeqL
- iZMApmXTfWReXvWTJzMT9U6jNou+tAnAZRrKDpHgNhlY5NlafM2Zx40+1ut0kJ1WKifAPs/Vzo7
- KigxDZveA6/B8G+lLZ7AHoKm0LkUptf/c3d7S7FfjZioG3vRXaJf6mpql97+oQPd2s+fFzCTWRM
- w/gaVX7gHMXdYh8JwNguut+lZoBE22mJbEkCOG3eKTIU/uIMgqIyZnidp+7Y70Ezbg4dfZHWqXb
- av1lJbOiimJqpkTYOYZEpMUXsec34cMQu8VTf749LaOCA9ckkJBWmEOD+nPph8msQwl7HtFvd48
- AsswHZoamkO6WSUtHV4/0ZnU9/AvZcPJSQI9wxN6zEApDJ2D6VzOCT+gh4nIL2fPrLid6hFBqrq
- xGp8ORYpLq831N1vAIqH0xBLT3OsJf13Iq9MK+bQtMkBU+oYTAyK0t37+FR637L0ZOrkAG7b8Fp
- 8y9l5wrmf8i1+UE/0ug==
-X-Proofpoint-GUID: OS882Duj0cyV1ujATeKFzGPK02odBCyb
-X-Authority-Analysis: v=2.4 cv=feg4WEQF c=1 sm=1 tr=0 ts=6ad9909b cx=c_pps
- a=cFYjgdjTJScbgFmBucgdfQ==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=gEfo2CItAAAA:8 a=EUspDBNiAAAA:8 a=FnTilxWQIxca3sEwcYwA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=scEy_gLbYbu1JhEsrz4S:22 a=sptkURWiP4Gy88Gu7hUp:22
-X-Proofpoint-ORIG-GUID: OS882Duj0cyV1ujATeKFzGPK02odBCyb
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIyMDAxNyBTYWx0ZWRfX47Q6r1aBWPgL
- MfzFhyIc00/BG8P0cJkK/yisv4oIahScvfVe84RP7QFbdGNUWgtB7jRvo7ck2y45nKwcLvZ3EXK
- XGSU8My0n9fdCtLDCZtZaGHIYQL8tMw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-22_02,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0 suspectscore=0
- spamscore=0 adultscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610220017
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS4PR12MB999075:EE_|BN7PPF7C0ACC722:EE_
+X-MS-Office365-Filtering-Correlation-Id: 27326766-1af6-4b15-015c-08df2ffade51
+X-LD-Processed: 3dd8961f-e488-4e60-8e11-a82d994e183d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|23010399003|1800799024|7416014|366016|261021123027099003|56012099006|261009220027099003|4143699003|11063799006|261009223027099003|261009223327099003|261009221227099003|261009221727099003|10067099003|22082099003|18002099003|261021121427099003;
+X-Microsoft-Antispam-Message-Info:
+	7+eiMIztOftif+r+52w89RZ/S/ya2IvX//KpqKelSkTu9Eyp/S3HJCnPJeHlX3HbeUMMWTVQ+0VTCAurvY2rUM8kRcGMCsLKTNa9fZIgn0AavvcmBpeUraLLrjptpM2xyMfo7GZxaJRfFkLX+UN7Gj+kTbKn0hFVaLdggJo7fuoEEVJ3EpMJFHYsEtDkKJbfo/qVM/XHlGEvlYm3L+MTg8McOzxaL/zqK+c9GqCL6N6fEeMLWsu3jYmPDslC7epfcdffwqb78y9ZEtkgtaBWngj61QmB6Vei3f96xq0HEBBHDOgNzwKekNhxytF9kjDevNlyASW3BxekNqGxco1F0UfSQV9CLZHke+ryziVYMcaZo3DG2KEhwsnAsct4A4iDFwc3S16BlMkvG4NdaqotRbdpURC+kXNj15mghS6WQ26dzBZdqOh1pIJTmDBPjx2Udn7TWcupsh4DwDcP9uYsAHd3DFVlRs6X91W43dlxDLrTVT+dKvspbrIt2D6Sjc49D13by0odn25BQxoaBvinL/E/7KAzLiojVJxqrAPs4LpioI9GTKXA7ddkLLhUsHRJnNlSHF6H+ea3LGK3jrsA7LZVDT447TystAQjvslwT3/4N1nmGtoOcByzsOE0ST3k
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS4PR12MB999075.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(1800799024)(7416014)(366016)(261021123027099003)(56012099006)(261009220027099003)(4143699003)(11063799006)(261009223027099003)(261009223327099003)(261009221227099003)(261009221727099003)(10067099003)(22082099003)(18002099003)(261021121427099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?bXJORUhRNU1uNVhzSWVpTjRQMkxhb291V0JxQmltUjUrck4zaVVhT1lVRzBM?=
+ =?utf-8?B?d1E1M0Vad2hRK2F6bloyeEdkbVBnQjd1enQ5NDcvc1pGNnNkV1FST3VvbkFs?=
+ =?utf-8?B?S0l4RGwwcXh6RExNTVFvZkROOXlHUU14YmUxbk1mcU5uaGNORGRpQTNleXhG?=
+ =?utf-8?B?VDhHTG45Qmg2VDlNUTRNYldaRm5RT3QwYTJjZDN6R0FEdDliWWtubXpyS1hi?=
+ =?utf-8?B?Z3g1WEsvanRvZHVVWW02R29aMlNUcDI4ZVpFUC93ZW82cG5DY0t4SHoxV1Nh?=
+ =?utf-8?B?SUZuKy9IaHRaV0RwUjhNVDFVWnZHZUhiVmpVOFFoaHBIaDFDdis4ZjR2akd5?=
+ =?utf-8?B?aElTZ3p5Y3pmVEY1Vm1zeU5nOHRRQlpMM2J3dzV5UTRmRFozMkFpMFJPZ01K?=
+ =?utf-8?B?c2ZNMUhmNm40WE5oenVxL3ZvazREUHlqMHRqZzEyL3o2WXZ5cm1ocWdRV2dl?=
+ =?utf-8?B?U3FyUEREdExOakZNTFQvaklxNzFGWktpSFBHQXpMVmIxT0xlODQ2eXBYUHdC?=
+ =?utf-8?B?NUtiUnlTd3lsTTI0Rmp0U0xOTjhDMnJxVVE5VUtKajVIWk9pSTZ0cWJwbFZt?=
+ =?utf-8?B?QmxCazlNZUpZLzhoSXJHSGJPRWdKZlVwSWtCbG5ud2swWDR0SVJIRGt6QWc3?=
+ =?utf-8?B?SXdwbHl3UW91cXp4MnovVTg2aFFEVkxyN20zeVMrZ0pLcWxLMXRwN1Y4YXRu?=
+ =?utf-8?B?S0pZRnlDQlV5QXNlZ0grdWc1SjdLU2tUcGFkVFpVaC9MVWwybDg5SStoRHIy?=
+ =?utf-8?B?VkEyNWVnR3FCczU1QmRUaXBERm9NNGVkOUFQLzBuQmd3Q3pyeHVuNFRWd3NZ?=
+ =?utf-8?B?bzFJU2krNS9TRGxCZ1c1YTVGblJuNmpaejlEQ1JuYzV1alFmWCswbmR6TjBC?=
+ =?utf-8?B?dWtEamkwR0JSMDRXU1lKLzFtWUdsbndPT2t1dHhpblRLQkgrQkJiQTMzMmRw?=
+ =?utf-8?B?WVBjWTV6cTVlK0wrQlhtVTFMWWxGcld2bGM1aXh0aFhhendqT2IzYXBwUlRX?=
+ =?utf-8?B?eTFQOHRLQkRXc3QrM1VLUVc5SVo1NE5VL1V5aFd0S3M4a1JEQTRoNXB5ODRz?=
+ =?utf-8?B?OTNqL0FYVWU4Q2JqdjFCYkU1Zi96SDN4R2hFVS9DN0p0eU1sdEZ6b1J1dGJx?=
+ =?utf-8?B?bktEeWRrVDZhT2Yzb0NicUNNSHptaHcrMUcxdVlhYnVIdEsrZGdML1ZVT2ZF?=
+ =?utf-8?B?SlpJMlRaRzBaeG5qc1E4QnlPalUxTDlzME9ZQXBYMW43cGFSN3RqcDBVWjZp?=
+ =?utf-8?B?TmM4K2wydFV1WENtZDlvcWFncTJxZUwwVFYzMmVVUGNDQnMyRk0wMFF3ekpj?=
+ =?utf-8?B?Nm10ZHlIMXBpZ3Fyd3lOK01jL1Qzc1kxUzNqTXA3ZlhPRVNNZjVnZ3pkTkhF?=
+ =?utf-8?B?OGxac2JHdDNwaFMwdy9JR3VpS2FIL3FWcXNzSnVZQW1ya3JjYW1aaTh5N20w?=
+ =?utf-8?B?c2lPTlh2RjhVL1I5a21rMjI1ejA5M0ZGaGJHbVpTMTZNbUZ4VzRYSE1YQnhP?=
+ =?utf-8?B?clF5azlpeU81WlYrQy9XUUhXRnhyYTNITGRvNEMyOWh5RHVwZnM0a3QxV3ho?=
+ =?utf-8?B?ZEJwQjJQS2Q4dDlOdG4vQTI2azVmZys5MHB0SzFOT2hhVmxId1lBOEVXeVlP?=
+ =?utf-8?B?L2J2T1dVVWZpTHlSc0dWSDZmd0NWOVRaS2R1cmprLzVWY012eEFqdGFnQThl?=
+ =?utf-8?B?dTZSTDZCeWxWRnRmRVhtNm9yWFY4c1BMWmorTndOR2VjWVk0QzdRU2JhL2dk?=
+ =?utf-8?B?NjFjWTFWRVhYa1QxZlBTVVVnU2ErNFI4cktwc3BwelQ4bVk4YkNVQkI3QW15?=
+ =?utf-8?B?aWJWYVFDMGJ0UHdCUVBBbTZHMVJGOXlIeG1yMEwwVWk4bUthQUdTU29wbW5P?=
+ =?utf-8?B?aEMzbm96UGxqdExNZHpsbmNuaVNCaERwQjllWkJOekNLeEV6MDZMQWEwL0ZX?=
+ =?utf-8?B?WEp6dWg2bjdiOC9qSS8wMUh6V0ZhYWlUZ0VGWUswaEJpZS84WU1nZ2g3Rnoy?=
+ =?utf-8?B?THdNenpNbUxsQmVJRk4weGU3UFVBRjRhMmRSMk9jWkpJVVdZZFRTcGhXdDlv?=
+ =?utf-8?B?NCtWbVdTemg4S0QweHNscEtJaks4ajJBOXlSR1VXVFMrZkltUFZqZ2tGTWov?=
+ =?utf-8?B?WUNhMkNlTE5Wam1MUXY5cHpHRkYzNGNnc2hmNHdBWWNBaFBPSlFOM25kajMx?=
+ =?utf-8?B?QktsODUxYnE2UWd1VXpoYnh4NUIwSW1LaWtZZ2xTcjFNWHAyd1hpZ2pZYmlZ?=
+ =?utf-8?B?R3pud3BwVitOczVEL2d1NGpiakpaZFprUU45T1ViZVJnWXZ2aXNqK2Z2dE9R?=
+ =?utf-8?Q?bJet9qSm1gu4ajIsl+?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 27326766-1af6-4b15-015c-08df2ffade51
+X-MS-Exchange-CrossTenant-AuthSource: DS4PR12MB999075.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Oct 2026 05:11:03.1332
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 2HD3p9n643+igRMJNOHYz3gCgiHblczUMWhB/WviyWC5atxCxMBUxJt0t7cIFvpugYXSXwN1fSSMFUKiYwqKMg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PPF7C0ACC722
 
+Hi Frank,
 
-
-On 10/21/2026 9:14 PM, Alexey Charkov wrote:
-> Hi Krishna,
-Hi Alexey,
-
-Thanks for the thorough review, this is helpful.
->
-> On Wed, Oct 21, 2026 at 5:51 PM Krishna Chaitanya Chundru
-> <krishna.chundru@oss.qualcomm.com> wrote:
->> Add the devicetree binding for PCIe M.2 Mechanical Key B connector
->> defined in the PCI Express M.2 Specification, r4.2, sec 3.2.19.1. This
->> connector is used to attach WWAN Adapters to the host machine over
->> interfaces such as PCIe, USB3.1 Gen1, SSIC, or USB 2.0, selected by the
->> Adapter's configuration pins.
+On 10/10/2026 8:39 AM, Frank Li wrote:
+> On Fri, Oct 09, 2026 at 09:30:10AM +0530, Golla Nagendra wrote:
+>> Replace pm_runtime_resume_and_get() with the PM_RUNTIME_ACQUIRE_AUTOSUSPEND
+>> guard to manage the probe-time runtime PM reference lifecycle. If the guard
+>> acquire fails, fail probe immediately so a broken device is never
+>> registered.
 >>
->> The connector provides a primary power supply of 3.3V/VBAT, along with
->> optional GPIO signals for WWAN-specific power/radio control:
->> FULL_CARD_POWER_OFF#, RESET#, W_DISABLE1#/2#, WAKE_OQN_WWAN#, and DPR.
+>> When runtime PM is not enabled for the device, call
+>> zynqmp_dma_runtime_resume() directly after pm_runtime_enable() to bring the
+>> clocks up for probe.
 >>
->> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+>> On probe failure after a successful guard acquire, drop the reference with
+>> zynqmp_dma_probe_pm_put(), inhibit the guard destructor with
+>> retain_and_null_ptr(), and gate the clocks through
+>> zynqmp_dma_probe_fail(). When runtime PM is enabled,
+>> zynqmp_dma_probe_pm_put() uses pm_runtime_put_sync_suspend(). When runtime
+>> PM is not enabled for the device, balance the guard usage counter with
+>> pm_runtime_put_noidle() and gate the clocks with
+>> zynqmp_dma_runtime_suspend(). Runtime PM does not suspend a device that
+>> is already disabled, so pair every direct zynqmp_dma_runtime_suspend()
+>> call with pm_runtime_set_suspended() to keep the runtime PM status in
+>> sync with the clocks.
+>>
+>> On probe success, release the probe-time reference with
+>> pm_runtime_put_sync_autosuspend() when runtime PM is enabled for the
+>> device. When runtime PM is not enabled for the device, balance the guard
+>> usage counter with pm_runtime_put_noidle() only and leave the clocks
+>> enabled so that later channel allocation can use the hardware. Inhibit the
+>> guard destructor with retain_and_null_ptr(pm).
+>>
+>> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
 >> ---
->>  .../bindings/connector/pcie-m2-b-connector.yaml    | 146 +++++++++++++++++++++
->>  MAINTAINERS                                        |   1 +
->>  2 files changed, 147 insertions(+)
+>>   drivers/dma/xilinx/zynqmp_dma.c | 68 ++++++++++++++++++++++++++++++-----------
+>>   1 file changed, 50 insertions(+), 18 deletions(-)
 >>
->> diff --git a/Documentation/devicetree/bindings/connector/pcie-m2-b-connector.yaml b/Documentation/devicetree/bindings/connector/pcie-m2-b-connector.yaml
->> new file mode 100644
->> index 000000000000..a7f4bcbc5119
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/connector/pcie-m2-b-connector.yaml
->> @@ -0,0 +1,146 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/connector/pcie-m2-b-connector.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
+>> index 3b7dfa53f972..a48106e404e7 100644
+>> --- a/drivers/dma/xilinx/zynqmp_dma.c
+>> +++ b/drivers/dma/xilinx/zynqmp_dma.c
+>> @@ -18,6 +18,7 @@
+>>   #include <linux/slab.h>
+>>   #include <linux/clk.h>
+>>   #include <linux/io-64-nonatomic-lo-hi.h>
+>> +#include <linux/cleanup.h>
+>>   #include <linux/pm_runtime.h>
+>>
+>>   #include "../dmaengine.h"
+>> @@ -1077,6 +1078,29 @@ static const struct dev_pm_ops zynqmp_dma_dev_pm_ops = {
+>>   			   zynqmp_dma_runtime_resume, NULL)
+>>   };
+>>
+>> +static void zynqmp_dma_probe_pm_put(struct device *dev)
+>> +{
+>> +	if (pm_runtime_enabled(dev))
+>> +		pm_runtime_put_sync_suspend(dev);
+>> +	else
+>> +		pm_runtime_put_noidle(dev);
+>> +}
 >> +
->> +title: PCIe M.2 Mechanical Key B Connector
+>> +static int zynqmp_dma_probe_fail(struct zynqmp_dma_device *zdev, int ret)
+>> +{
+>> +	bool rpm_disabled = !pm_runtime_enabled(zdev->dev);
 >> +
->> +maintainers:
->> +  - Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+>> +	zynqmp_dma_chan_remove(zdev->chan);
+>> +	zynqmp_dma_probe_pm_put(zdev->dev);
+>> +	pm_runtime_disable(zdev->dev);
+>> +	if (rpm_disabled || !pm_runtime_status_suspended(zdev->dev)) {
+>> +		zynqmp_dma_runtime_suspend(zdev->dev);
+>> +		pm_runtime_set_suspended(zdev->dev);
+>> +	}
 >> +
->> +description:
->> +  A PCIe M.2 B connector node represents a physical PCIe M.2 Mechanical Key B
->> +  connector. Mechanical Key B connectors are used to connect WWAN devices to
->> +  the host machine over interfaces like PCIe, USB3.1 Gen1, SSIC, or USB 2.0,
->> +  selected by the Adapter's configuration pins.
+>> +	return ret;
+>> +}
 >> +
->> +properties:
->> +  compatible:
->> +    const: pcie-m2-b-connector
->> +
->> +  vpcie3v3-supply:
->> +    description: A phandle to the regulator for the 3.3v/VBAT supply.
->> +
->> +  full-card-power-off-gpios:
->> +    description: GPIO output to FULL_CARD_POWER_OFF# signal. This signal is
->> +      used by the host system to turn off the entire Adapter. Refer, PCI
->> +      Express M.2 Specification r4.0, sec 3.2.13.1 for more details.
->> +    maxItems: 1
->> +
->> +  reset-gpios:
->> +    description: GPIO output to RESET# signal. This signal is used by the
->> +      host system to place the WWAN Adapter into a power-on reset condition.
->> +      Refer, PCI Express M.2 Specification r4.0, sec 3.2.13.2 for more
->> +      details.
->> +    maxItems: 1
->> +
->> +  w-disable1-gpios:
->> +    description: GPIO output to W_DISABLE1# signal. This signal is used by
->> +      the host system to disable the WWAN radio on the Adapter. Refer, PCI
->> +      Express M.2 Specification r4.0, sec 3.1.12.3 for more details.
->> +    maxItems: 1
->> +
->> +  w-disable2-gpios:
->> +    description: GPIO output to W_DISABLE2# signal (default function of
->> +      GPIO_10). This signal is used by the host system to disable a second
->> +      radio on the Adapter. Refer, PCI Express M.2 Specification r4.0,
->> +      sec 3.1.12.3 for more details.
->> +    maxItems: 1
->> +
->> +  wowwan-gpios:
->> +    description: GPIO input to WAKE_ON_WWAN# (WoWWAN#) signal. The Adapter
->> +      asserts this signal to wake up the host system. Refer, PCI Express M.2
->> +      Specification r4.0, sec 3.2.13.3.6 for more details.
->> +    maxItems: 1
->> +
->> +  dpr-gpios:
->> +    description: GPIO output to the Dynamic Power Reduction (DPR) signal.
->> +      This signal is provided by a host system proximity sensor to the
->> +      Adapter to trigger a reduction in the radio transmit output power to
->> +      meet regulatory SAR requirements. Refer, PCI Express M.2 Specification
->> +      r4.0, sec 3.2.13.4 for more details.
->> +    maxItems: 1
-> This seems to be missing the four CONFIG_* pins, which are quite
-> crucial in these connectors, as they define which interfaces the
-> module asks the host to provide on the respective pins. Without those
-> module type detection is impossible.
-Agreed, thanks for catching this. I will add a config-gpios property  (4 GPIO
-inputs, one per CONFIG_0..3 pin) to v2. It's optional, not required - a board
-that always has a known, fixed card type in a given socket (e.g. QCOM
-glymur-crd's WWAN-only slot) can just describe that fixed wiring via the ports
-property and skip CONFIG decode entirely; config-gpios is only needed when the
-host wants to detect the card type/host-interface at runtime. Kept it as plain
-sensed GPIOs with no decode semantics imposed by the schema - the property
-description documents the full Table 3-18 state table inline (all 16 states)
-so the binding is self-contained, but turning the sensed 4-bit pattern into
-"this is a WWAN-PCIe Adapter in port config 0" is left to driver code,
-consistent with how the rest of the connector's sensed straps (e.g.
-viocfg-gpios on the E-connector) are already handled.
->> +  clocks:
->> +    description: 32.768 KHz Suspend Clock (SUSCLK) input from the host system to
->> +      the M.2 card. Refer, PCI Express M.2 Specification r4.0, sec 3.1.12.1 for
->> +      more details.
->> +    maxItems: 1
->> +
->> +  ports:
->> +    $ref: /schemas/graph.yaml#/properties/ports
->> +    description: OF graph bindings modeling the interfaces exposed on the
->> +      connector. Since a single connector can have multiple interfaces, every
->> +      interface has an assigned OF graph port number as described below.
->> +
->> +    properties:
->> +      port@0:
->> +        $ref: /schemas/graph.yaml#/properties/port
->> +        description: PCIe interface for WWAN
->> +
->> +      port@1:
->> +        $ref: /schemas/graph.yaml#/properties/port
->> +        description: SSIC interface for WWAN
->> +
->> +      port@2:
->> +        $ref: /schemas/graph.yaml#/properties/port
->> +        description: USB 2.0 interface for WWAN
->> +
->> +      port@3:
->> +        $ref: /schemas/graph.yaml#/properties/port
->> +        description: USB3.1 Gen1 interface for WWAN
->> +
->> +    anyOf:
->> +      - required:
->> +          - port@0
->> +      - required:
->> +          - port@1
->> +      - required:
->> +          - port@3
-> This misses SATA which shares pins with PCIe. PCIe second lane also
-> conflicts with USB 3.1/SSIC, which isn't captured here. Should it be?
-Before adding a SATA/SSD port here, I want to double check the scope: per
-Table 2-1, every SSD-capable board using those CONFIG states is a B+M dual-key
-card (Type 2230/2242/2260/2280/22110, "B+M" key column), not a pure Key-B-only
-card. Pure Key-B-only form factors (2242, 3042, 3052, 3060) are WWAN-only per
-that table, with no SSD row.
+>>   /**
+>>    * zynqmp_dma_probe - Driver probe function
+>>    * @pdev: Pointer to the platform_device structure
+>> @@ -1087,7 +1111,7 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+>>   {
+>>   	struct zynqmp_dma_device *zdev;
+>>   	struct dma_device *p;
+>> -	int ret;
+>> +	int ret, pm_err;
+>>
+>>   	zdev = devm_kzalloc(&pdev->dev, sizeof(*zdev), GFP_KERNEL);
+>>   	if (!zdev)
+>> @@ -1128,21 +1152,30 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+>>   	pm_runtime_set_autosuspend_delay(zdev->dev, ZDMA_PM_TIMEOUT);
+>>   	pm_runtime_use_autosuspend(zdev->dev);
+>>   	pm_runtime_enable(zdev->dev);
+>> -	ret = pm_runtime_resume_and_get(zdev->dev);
+>> -	if (ret < 0) {
+>> -		dev_err(&pdev->dev, "device wakeup failed.\n");
+>> -		pm_runtime_disable(zdev->dev);
+>> -	}
+>>   	if (!pm_runtime_enabled(zdev->dev)) {
+>>   		ret = zynqmp_dma_runtime_resume(zdev->dev);
+>> -		if (ret)
+>> +		if (ret) {
+>> +			pm_runtime_disable(zdev->dev);
+>>   			return ret;
+>> +		}
+>> +	}
+>> +	PM_RUNTIME_ACQUIRE_AUTOSUSPEND(zdev->dev, pm);
+>> +	pm_err = PM_RUNTIME_ACQUIRE_ERR(&pm);
+>> +	if (pm_err) {
+>> +		retain_and_null_ptr(pm);
+> 
+> Not sure why need call retain_and_null_ptr() here, generally only need
+> call retain_and_null_ptr() at success pass if you use want to keep
+> runtime_pm active. at fail case, needn't do that.
+> 
+>> +		pm_runtime_disable(zdev->dev);
+> 
+Thanks for the Review> If use devm_pm_runtime_enable(), needn't this one.
 
-If that holds, is modeling SATA/PCIe-SSD states in pcie-m2-b-connector even in
-scope, versus always describing a B+M socket via pcie-m2-m-connector (which
-already covers PCIe/SATA SSDs) and reserving pcie-m2-b-connector strictly for
-the WWAN-only Key-B form factors? Or do you know of a real case where a pure
-Key-B socket legitimately decodes to an SSD CONFIG state that I'm missing?
-Happy to add the SATA port either way, just want to scope it correctly before v2.
-> Should the graph also envisage connections for the I2C bus (GNSS),
-> audio (2 or 4 wire), re-muxing of W_DISABLE2# and WAKE_ON_WWAN# into
-> HSIC functions in Port Config_3, GNSS interrupt line and the such?
-> Should the connector node also define pinctrl configurations for each
-> of the 15 interface configurations?
-These are all real signals in the spec (GPIO_0-11's BTO-defined functions per
-Table 3-15, plus the HSIC remux under Port Config_3), but I'd left them out
-deliberately for now: every one of GPIO_0 through GPIO_9 is explicitly "VENDOR
-DEFINED or GPIO_x" in the spec text, i.e. there's no fixed function to bind to
-without a BTO agreement between card vendor and platform. The sibling
-pcie-m2-e-connector binding takes the same approach and doesn't model its own
-analogous BTO pins either.
+We intentionally keep the nondevmpm_runtime_enable()pm_runtime_disable() 
+pair here and do not switch to devm_pm_runtime_enable(). 
+devm_pm_runtime_enable() registers a devm action that calls 
+pm_runtime_disable() automatically after .remove returns. Since remove() 
+already calls pm_runtime_disable() explicitly itself, switching to the 
+devm variant would mean pm_runtime_disable() gets called a second time 
+for the same device — driving disable_depth into underflow, along with 
+any other invalid state that comes from disabling an already-disabled 
+runtime PM.
 
-I'd rather land CONFIG_0-3 decode plus the SATA/PCIe-SSD scoping question in
-v2, and handle I2C/GNSS/audio/HSIC-remux/per-config pinctrl as follow-up
-patches once there's a concrete board that needs one of them with a real
-driver consumer - adding properties nothing reads yet felt like the wrong
-order of operations. But let me know if you think v1 shouldn't go in at all
-until that full state machine is captured in the binding.
+If we remove the explicit pm_runtime_disable() from remove() to avoid 
+that double-disable call, it would affect the fix introduced in commit 
+9c58a42c1612 ("dmaengine: zynqmp_dma: fix race between runtime PM and 
+device removal"), 
+https://lore.kernel.org/all/20260630064844.705173-2-nagendra.golla@amd.com/
+which added that explicit disable specifically to close a race between 
+runtime PM and device removal.
+Dropping it would reopen that same race.
 
-- Krishna Chaitanya.
-> Best regards,
-> Alexey
+Thanks,
+Nagendra
+
+> 
+>> +		if (!pm_runtime_status_suspended(zdev->dev)) {
+>> +			zynqmp_dma_runtime_suspend(zdev->dev);
+>> +			pm_runtime_set_suspended(zdev->dev);
+>> +		}
+>> +		return dev_err_probe(&pdev->dev, pm_err, "device wakeup failed\n");
+>>   	}
+>>
+>>   	ret = zynqmp_dma_chan_probe(zdev, pdev);
+>>   	if (ret) {
+>>   		dev_err_probe(&pdev->dev, ret, "Probing channel failed\n");
+>> -		goto free_chan_resources;
+>> +		retain_and_null_ptr(pm);
+>> +		return zynqmp_dma_probe_fail(zdev, ret);
+>>   	}
+>>
+>>   	p->dst_addr_widths = BIT(zdev->chan->bus_width / 8);
+>> @@ -1151,7 +1184,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+>>   	ret = dma_async_device_register(&zdev->common);
+>>   	if (ret) {
+>>   		dev_err(zdev->dev, "failed to register the dma device\n");
+>> -		goto free_chan_resources;
+>> +		retain_and_null_ptr(pm);
+>> +		return zynqmp_dma_probe_fail(zdev, ret);
+>>   	}
+>>
+>>   	ret = of_dma_controller_register(pdev->dev.of_node,
+>> @@ -1159,19 +1193,17 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+>>   	if (ret) {
+>>   		dev_err_probe(&pdev->dev, ret, "Unable to register DMA to DT\n");
+>>   		dma_async_device_unregister(&zdev->common);
+>> -		goto free_chan_resources;
+>> +		retain_and_null_ptr(pm);
+>> +		return zynqmp_dma_probe_fail(zdev, ret);
+>>   	}
+>>
+>> -	pm_runtime_put_sync_autosuspend(zdev->dev);
+>> +	if (pm_runtime_enabled(zdev->dev))
+>> +		pm_runtime_put_sync_autosuspend(zdev->dev);
+>> +	else
+>> +		pm_runtime_put_noidle(zdev->dev);
+>> +	retain_and_null_ptr(pm);
+> 
+> You mix use auto cleanup and pm_runtime_put_sync_autosuspen() and
+> pm_runtime_put_noidle() to make code mess up.
+> 
+> Frank
+>>
+>>   	return 0;
+>> -
+>> -free_chan_resources:
+>> -	zynqmp_dma_chan_remove(zdev->chan);
+>> -	if (!pm_runtime_enabled(zdev->dev))
+>> -		zynqmp_dma_runtime_suspend(zdev->dev);
+>> -	pm_runtime_disable(zdev->dev);
+>> -	return ret;
+>>   }
+>>
+>>   /**
+>>
+>> --
+>> 2.43.7
+>>
 
