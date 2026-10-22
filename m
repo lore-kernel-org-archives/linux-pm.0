@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792695643;
-	b=ZjmmKSgkLrAjawAEjE1zZ6rYpFUEjIg4Dz7JRJiTcuj3eTFmZq3blHKiEYbRV2+iZXeg
-	 Jyfyd3Oc4AV0WTsyjaibfXEEumvGyU/TCxik6QlX70hFmfMR0pxdRnvqWDrO9ivYVy/QU
-	 rtRU61urjLuZcrsv5oJEAJ+jUSORag8guLx7XPHefo5rUfUE1aLrQg7Et9i5vWi/Cjta7
-	 pS3gZQL0uJDpeX+hw8TAf2B7ihibhHgMrpTmXfKjanLBeikPfQt1tVOenmLfcTdpdKPa8
-	 z+MU0G4tiJOCNZrogDyc/shBANOq2i90Bp7QO2i5uv2H8mXDKvqsbsoO9N7aErcuq+g==
+	t=1792695754;
+	b=pRa8m4JrmYc7NtH30Vk2jxDGZSesrB4HIGKZGnc4tgFhyNKIA23wOl7v+SE36C37uU4K
+	 33tWl3j27x00cjW/wKD+KN9NS24dF9JtUIo3V4mamlqRCBe+yXFaoJCknHC+IlVgD8Sy1
+	 fQ7FeCOWDGK6xIZ/whXco2osMMnFA6jfUGeG7yUh7fcLkue2x3QfdMNLKAQbC56Jj1h6o
+	 wKC+/ND8tVcOOsUMxpu44zLq4K/Kf7saiAr4AwXN0p9hmIfc9omPMJnCs1rAxsD9sKwt3
+	 8uMeF5nQFCUngcPqprm3vqI+OdsuM8sA4XJC/KsDxxBtvU0rCTjM2vuznWqRKwyqqWg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792695643;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792695754;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=4F0OHOXs+sIl1YfcJm+UKxYFBwz92ofyleYV1YpiAl8=;
-	b=WZl4kprbeQF5bx0J0ann7axCMyxCb2ndQSPzeZ02ZAuvqd1nTXrWQKqJd51sGf6GBL1S
-	 QNYOjIhJJOk48t45aGYlt70kxPpgnW1A2ECxXQkCm6shXBxVp4zSoRL+xqp8h/ngUb6To
-	 5XkxYLGXl2lLzB7Pa5EgMo+OtXD0OjX2VDrR/M74Be7iU/CSSec2d4ddoIW9BQHw7rI0r
-	 TjwfTpqlP9HDQYvDxfhasrg+ZR1KjL/ZikQXujiJE7TKo38OC0DsTsCLaItPr4DO66//A
-	 b2aQILOrHz4WVNTa2/P4txxnS+vyu0WlQ4dfzWlJwtPP5Rbg3CR4S/Z33m3svxR5odw==
+	bh=AR3kez5fnRcYpN+/byP3CD5s15NltwUsUCBVli/ZHO0=;
+	b=DcXeFIHIv7fcQCBw4RzSNX++u5VOB3cPTQk+CfZBho5FSYwnszGoRhdipI6qo8pu4Lxv
+	 paX98llMhg+9U4gUrGUo2tX4eeDxGXGCU6e7tcEofpF7Ie+/mr85NVQkKG/EJOJLMKayV
+	 uFMGLEwEuxtS9SYbduklvV/Ts0rc5FUg1LbAB8Tw720EZn6k6KYiwIOTxal6SgKTPekQx
+	 BHZH+5dldpVDiVQrbeSVIkZMoU+U6NWnCXS+hYL5tTdUk0JfZxaWKdzm7augnGwnhgc4W
+	 3kpxJWIlRMSFH70VxXvbP/6+NhJxrq0WvvbqHUVwmrWpCVhJESMcBXUSK3E7mf9rQLA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="dZeMr/uY";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bITk5t4E;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABB9F606A31F
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 19:00:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64260606A31A
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 19:02:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dZeMr/uY
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A7541F031E0
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 19:00:22 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bITk5t4E
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03EF71F031E0
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 19:02:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792695622;
-	bh=4F0OHOXs+sIl1YfcJm+UKxYFBwz92ofyleYV1YpiAl8=;
+	s=k20260515; t=1792695754;
+	bh=AR3kez5fnRcYpN+/byP3CD5s15NltwUsUCBVli/ZHO0=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=dZeMr/uYyHtwlTv/pFnxxJxuLJE4Qw2o5LdUy9fEmtbqoi/bbqWul2EuZ8sgDBS2s
-	 WZyOsiwD01L+SEK6nLEowZw+pndELX7MZxtb37m1eLXlaSm//z/+dLQAdoNlVie6Jb
-	 y5SpwTRBZwpezuxWAt2cRxlMJGVAIEI1oUVoMrTPf3d6KsSaltCyEpmuw9iniaylUc
-	 JJ7k9ZNRQeVnxhMW41deluIqND4mLwlUb06ugAI46DjOKtCYWzii28gylVNfTkTYVO
-	 c/LLWZduzjkiZQyMBRDk6y5KT8+sBTMDpMhZXqhJCahICpx1g1yejJIcKo1fRxzXIS
-	 ETc2u1CDWX0TQ==
-Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-3a595487d43so129371fa.3
-        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 12:00:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzhfWYj1LSGi7agXCYzIgcq6Lz9QBrHZ6WQljR6OMXfrtceirqtL9YDatbnvvu5SGSVAf6mbhMEkw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYK6IUYh9nOAiFZNB7q1a0N4aErdL8Ga3mDTThAbN1UrtPZEbTye
-	hdE5QOUR/kXQbqgWvIZute4fDcgaRj6+ImorgnKGjlH7azHIURERfqagoLFAiOlRZdqfOyPxTSA
-	gNTPmlbUjZkvdofHvjVdmufKQ5jE10KQ=
-X-Received: by 2002:a05:6512:3d93:b0:5b6:1a7c:fd8a with SMTP id
- 2adb3069b0e04-5bfa1c03950mr2560524e87.48.1792695620695; Thu, 22 Oct 2026
- 12:00:20 -0700 (PDT)
+	b=bITk5t4E9yFcpq0jVJ4g2E70ul661bUgelLIhksn9Of5ionUc5nfqnSTQpZHnBIIi
+	 cRO96qWUPWIf51iQfS12/9+XVFeJxSeMxAjjqsfe3sLyfCWsJdR9zFJVu2HVvkIK/J
+	 aSdBcIpyQzK45UdTyqL/mtNQ9bBBbGHSE7hwz0ocuXcbSu9LxW1cFrbL3mdmAAgX2i
+	 K8zWXeD4W4q4Hp+D4bfM8rUMLbtKEO5xAWQ/bF9X74Q+gDbZw3ohuN39OMrfXcuX9/
+	 5eL+SsRkhnSvwoZX4hWaUyFpHdpLhaE2557M0i2aOBn9WtdjsHam8090HHf8wXlKRg
+	 VcShPBKYy39Ig==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5be42ae8eadso22901e87.3
+        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 12:02:33 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzRh0EDCknH8XTFddhT7imgd/nN1wTzXIidx+suDCH/7mKNw1FsAFOqTKrq/kuhkf6c8XyDXUAYJQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLv/z5HIGPRfB4913+oZeGcF6MnP0nEuHTe13rKAY7VW5lZcKu8
+	VHC9CHOaNMwrI2HUbbxJE3XtCHKDZL2gAHNYJq0x06f2EH8lsf2Xj1annlNpbMKRHgO90gRK80U
+	tioMXVdX8PiC0xWxXphPIhXmK0f8b9yk=
+X-Received: by 2002:a05:6512:690:b0:5bf:a4e4:c329 with SMTP id
+ 2adb3069b0e04-5bfa4e4c387mr1694066e87.64.1792695752379; Thu, 22 Oct 2026
+ 12:02:32 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,69 +59,69 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261019222635.1741146-1-tristmd@gmail.com>
-In-Reply-To: <20261019222635.1741146-1-tristmd@gmail.com>
+References: <20261001155118.1750028-1-briannorris@chromium.org>
+ <20261001085009.v4.2.I75ceea7b1afd016e08922e47b82e6eb36de144fe@changeid>
+ <CAJZ5v0hMHutu69acgSR7KsmcLs0McZK+-3OFoiqFrU5GnJzTNQ@mail.gmail.com>
+ <as_i5MEz3WfnDQmf@google.com> <CAJZ5v0i+77gt-KmMYdxxzS4uGzxFArrYGpoDnjrfknpPOkAuHg@mail.gmail.com>
+ <atE9urIHXAJZXu6k@google.com> <CAJZ5v0g56J9e9qdiR8W+BfmEbbedvpD8hop4+n9=rkFEsDG_Jw@mail.gmail.com>
+ <CAJZ5v0gNQqffxcdzWff=z3hi0BXzJBOV6WKgf6RXuOydzQJQMw@mail.gmail.com> <atLCom0YznHV8U6D@google.com>
+In-Reply-To: <atLCom0YznHV8U6D@google.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 22 Oct 2026 20:58:00 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jSDRLj_OsVJmy4ZmAZNxjnp54ZLKD=RF-7PMqae9zx_A@mail.gmail.com>
-X-Gm-Features: AclHuK-n0nRJB8EOQOON4ajoH2SlXhLIEohQFjhU8v5gidnIX8nR-o91INI1DqI
-Message-ID: <CAJZ5v0jSDRLj_OsVJmy4ZmAZNxjnp54ZLKD=RF-7PMqae9zx_A@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: cancel HWP notify work in driver cleanup
-To: Tristan Madani <tristmd@gmail.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, stable@vger.kernel.org, 
-	Tristan Madani <tristan@talencesecurity.com>
+Date: Thu, 22 Oct 2026 21:00:12 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iTDPTh3kv2m5CGacTrry_xLwq0bfcvY0-G4Q1NAu=+zw@mail.gmail.com>
+X-Gm-Features: AclHuK-CVVgYyLiB08-dnp4UgzpRfSgpwermatB4ehAge9qZKKsOFBzOok-H10c
+Message-ID: <CAJZ5v0iTDPTh3kv2m5CGacTrry_xLwq0bfcvY0-G4Q1NAu=+zw@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] PM: runtime: Add Example Driver Patterns section
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, 
+	Ulf Hansson <ulfh@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 20, 2026 at 12:26=E2=80=AFAM Tristan Madani <tristmd@gmail.com>=
+On Sat, Oct 17, 2026 at 2:34=E2=80=AFAM Brian Norris <briannorris@chromium.=
+org> wrote:
+>
+> Hi Rafael,
+>
+> On Fri, Oct 16, 2026 at 08:05:12PM +0200, Rafael J. Wysocki (Intel) wrote=
+:
+> > On Fri, Oct 16, 2026 at 7:42=E2=80=AFPM Rafael J. Wysocki (Intel)
+> > <rafael@kernel.org> wrote:
+> > > On Thu, Oct 15, 2026 at 10:55=E2=80=AFPM Brian Norris <briannorris@ch=
+romium.org> wrote:
+> > > > On Thu, Oct 15, 2026 at 10:11:04PM +0200, Rafael J. Wysocki (Intel)=
  wrote:
+> > > > > On Wed, Oct 14, 2026 at 10:15=E2=80=AFPM Brian Norris <briannorri=
+s@chromium.org> wrote:
+> > > > > > On Wed, Oct 14, 2026 at 09:07:54PM +0200, Rafael J. Wysocki (In=
+tel) wrote:
+> > > > > > > On Thu, Oct 1, 2026 at 5:51=E2=80=AFPM Brian Norris <briannor=
+ris@chromium.org> wrote:
+> > > > > > > >
+> >
+> > [cut]
 >
-> From: Tristan Madani <tristan@talencesecurity.com>
+> [ Thanks for the earlier clarification about PM domain. It helps me
+>   understand where you're coming from. ]
 >
-> intel_pstate_driver_cleanup() frees per-CPU data without cancelling the
-> pending HWP notify delayed work. If hwp_notify_work is still scheduled
-> or running when the struct is freed, the work function accesses freed
-> memory via container_of().
+> > > > I kinda think the point of most of this power domain architecture i=
+s
+> > > > that a typical driver just doesn't have to worry about it at all (i=
+n
+> > > > probe(), and if you use runtime PM properly), so I'd prefer not
+> > > > mentioning it in the Basic example. But sure.
+> > >
+> > > Well, your basic example needs to be put in a certain context because
+> > > it may not be generally applicable everywhere.
+> > >
+> > > I think that you should make it clear what the driver's expectations
+> > > regarding the physical state of the device at the probe time are and
+> > > the general rule is that it is better to leave the device in the same
+> > > state in which it is expected to be found next time.
 >
-> Call intel_pstate_disable_hwp_interrupt() before kfree() to disable
-> the interrupt source and cancel the pending work, matching the pattern
-> used in intel_pstate_suspend() and intel_pstate_hwp_offline().
->
-> Fixes: d0e936adfe84 ("cpufreq: intel_pstate: Add HWP_HIGHEST_PERF_CHANGE =
-handling")
+> Ack, will do to the best of my ability.
 
-Where did you get this commit from?  It is not a mainline one AFAICS.
-
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Tristan Madani <tristan@talencesecurity.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstat=
-e.c
-> index 17158cb25dd89..0e6ae4cdda5de 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -3436,6 +3436,8 @@ static void intel_pstate_driver_cleanup(void)
->                         if (intel_pstate_driver =3D=3D &intel_pstate)
->                                 intel_pstate_clear_update_util_hook(cpu);
->
-> +                       intel_pstate_disable_hwp_interrupt(all_cpu_data[c=
-pu]);
-> +
->                         kfree(all_cpu_data[cpu]);
->                         WRITE_ONCE(all_cpu_data[cpu], NULL);
->                 }
-> --
-
-The Fixes: tag replaced with the following one:
-
-Fixes: d845cd901b28 ("cpufreq: intel_pstate: Support highest
-performance change interrupt")
-
-and patch applied as 7.4-rc material.
+So please send a v5 of this one when you are ready.
 
 Thanks!
