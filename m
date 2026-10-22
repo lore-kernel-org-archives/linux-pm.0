@@ -1,113 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792690359;
-	b=VXKzZc70QUzO/9fYQwjMH8jgwbW/SFdh2P4Tdnev2pq0C667V9ZqyGwznPjuGAioCUC0
-	 qcyMV1uzPPNjWFOEu7Dfk5zvCZnqcqxtJmxQvoHcyFrUFhwUblkbPTx2fRtk07Rl4/OR1
-	 BHHDAqkvr7bLqby/tN1BgI9ejABpfE1yTDCf1mqDdlZrZU+JXmyi+6j6kPSx7uKISoOuF
-	 JFaOPN3YGY9h9+uPnMnGllDLA9wukX+FNdjQbpruH/DN1OOMqEbkRSs7AvexQikLS00xu
-	 T+VrJtro5R90As0OBBsZnoeVbeYZp9D2+KiUbQXBdvxu/mq1APHvi6rUdlWYsPF2UUg==
+	t=1792691264;
+	b=epIl4YgenCX7bj80lXJIBJJRP/JrcCY4cb3eoxm0uYucQcvoZ2SuFBKvFzmWdkdj64Xj
+	 BqHqNDXS4jm5xI4u+K0ezFa3IriUL+bI1FGFsKIzAIqfPpOSJlP8UYq8BOHQscgZcyXhd
+	 TYviiyYMKOE5pxXcCA2HE9m31QrUfI8HPmZrSITQnB4peHWQYy+faO1eznljDG1rtyqDS
+	 a3huKgu8CmDQrI0VB5cQT+fYXyZ/Jzg193sRBaKDmHGMtcClm1U6woVmt9DWyfZhgQIVT
+	 ykVEvoZ9m1ZayNn8faXDaVimUYFC6JzjUyvWmO8FvZnaqOhbRDFyQD0xgnVI4/M7k8Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792690359;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792691264;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=5TTK5L3C72RVXuyCfPoL1KiCUuBlYM9fSsQ+OoWqJh0=;
-	b=CxI81j4BEyhJFocvlYCkG5hwucSR+04pb6JVZsC5YUSIa+4+onLOJ4fyN0hE5mYdl7oT
-	 3AiIMLUBu7H3+iCwO7MBhf8K0TMGHkvQsJSO8ttjk9E0v7eCW/rZwuXcN7IoknAqOPHB9
-	 8g7dffrfrAl6u+4l+Kfk4NWkjh63AWUqtM5u71b0SZ8GIojcxSy90iSBwge1zs4Sjg3WL
-	 pEn2UDLuMs5JDyJyZNt4uUA5EWKQPTqLVEP+G1xocFf6NADfdXyxdP58ToPp59NQjS+kW
-	 vtkcjG7G0cqUMcyGUGaqPGYfgpeyYGvxT3wLMow3DgGgHgrb3JmU0FEqz8zbGfZH9aQ==
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=SCWBGn+DbuJPekfhEu4uXLYMGCLHZ53aEkUTCOxglzU=;
+	b=pFyU9EW19YZ/gt/mzZUj8psbU7tTSFAKUm63llzvtVt8VFE3JsTKVeeR/piqZiJxeDO7
+	 OG8fGD/naRbkP4iPMH8iyhjwnfDdmnbjjqVQlrbasaXUuUMY/Epip225PbyVimWaRHA77
+	 HVOtfXEcx78w+Yb23MlFhEvdmr6UybqTZo755vXb/J5KLinDjcJKxZegfYsk+nhNhFqpe
+	 Z/eBPBHQhk+1lJ0wnbzy3FA6AeW4Z3MKsgcsD4B155GT/pcxCjIVUp9NLCchnZJEwpnLj
+	 wtXkcqSQragAttljHHgWk1Oq/wqkeexWaY3Zc8HsoWUwMzL6cY88Au3GSv+N+QJ9yCQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eeCmVCgM;
-	arc=none smtp.remote-ip=209.85.128.41
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+	dmarc=pass header.from=chromium.org;
+	spf=pass smtp.mailfrom=chromium.org;
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=RRvkm1u8;
+	arc=none smtp.remote-ip=74.125.82.54
+Received: from mail-dl1-f54.google.com (mail-dl1-f54.google.com [74.125.82.54])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7744606A31D
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 17:32:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C7744606A31D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24B31606A31E
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 17:47:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 24B31606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eeCmVCgM
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-4a1fe9efc0eso279095e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 10:32:38 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=RRvkm1u8
+Received: by mail-dl1-f54.google.com with SMTP id a92af1059eb24-16079d54c17so74490c88.0
+        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 10:47:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792690357; x=1793295157; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=5TTK5L3C72RVXuyCfPoL1KiCUuBlYM9fSsQ+OoWqJh0=;
-        b=eeCmVCgMegRCMD7vOlGg+I+VL7pQWFbhxv3PU5KxF6XDa0o7ajmM/7XY1L43p9HS5+
-         itOL5APh7mnHzuXNFok96uju1BIDvogoYxKs+LNEoP0KzZqKpZB2h4aJiZfAoVBC9rXI
-         OXBa64Ghjhyr3+zpRWSioZQBJ0F4UnFDPvOW8xL1I0c88FZETbuvhll6WKwGvxuDYd/q
-         NjLKXl/YgtmD82fvvGg/sJb4Rb4nlhHaEawHymhU3n5L5dc4+7NXPF/gaQzxtJS1htSz
-         38lzO8YmLXH2ksX3fpjcSb2gD+VyGT3rVqk4P5zdk3C8pUXkvGTDCmhsvkyUpHkOLD95
-         0LGg==
+        d=chromium.org; s=google; t=1792691258; x=1793296058; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=SCWBGn+DbuJPekfhEu4uXLYMGCLHZ53aEkUTCOxglzU=;
+        b=RRvkm1u8IQ2Mlv0vsEHcUE6HX3QGyQ0zuC17cFWJH5zKzqe8B2RbjaeRf4virWKdfi
+         BxvSMALrfPAT1sQvmdnR9hn0E8NkF0DPFeIIZicEO8qpgQ4YIQGxDGKxo0a7LhN0KIAb
+         qrpZ4ahpNCVhO8d1q5QeFzajGWihKNT++R1NU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792690357; x=1793295157;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5TTK5L3C72RVXuyCfPoL1KiCUuBlYM9fSsQ+OoWqJh0=;
-        b=RqCd8aMUV2opZDK/snekr3nWptRMOricng+E9TjFaJG1Yv8BK4vAUSlJ4+xYG/bCwq
-         lu1zCHF1jVu4AfBkz0C6skdrCiWghrZDGUSU5Okb5BKf8VNEdRfSztPErYtExVEUPk9J
-         qVS0tRqmhixheK9Rg2TpLBinXqsBJZM1mhTG9lwpvJwlzgHGO37y6odpP20NmukdvzB4
-         Q4bLEe7lHU64Zwhx+ixBBMDKVUI+6tOJowWNKoOpOU+7G3oU8lwwtwiIqTeaWuq6/vZQ
-         RnS/of6UOaIU+ImZmykUdH30KX1RhLIxRm3WyKgiHi5v0jxIKfGJKIHWf4vGrW9n5rdP
-         svKQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxUO6PHhd5tekRdeIr+tYDSCcpUBS5jyUE+UeULBdhaMjDcml4OrO48WmZzNdIQ/OHKoIYiMnvs6Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLUb3vr0hIJYR4Byc0/C0l2BLw9ieuMATLx4MPSIqDyKoHtsA0D
-	Wuowl9nQJhAH2LdNT5Ivx2NtHS9xkCFeUKLpAqn2NLh4p6EpIOjxrfAcPmkH0dA3YCc=
-X-Gm-Gg: AYBFou3A/qwUhE+il2u7exvJVoYpcAwEQB7/MvZOpwbXeS2/eDVGDwe1zX8FqDznK9t
-	c6O3weebyWHCzaIWI9yciVpOlx++0x6dV5Zehx5d+mfe8NqOaAcy+69Fk4ykGdePZUVxLbYMkhu
-	yw8yA/X4Kj4/CAOdlkJLdY7DcnKVbDYUjoI7aNlJIPGzwh6NvOHnSsahyAVFSpcaYy8osxCb9w+
-	A8O0UGvOAbb5SGdxY2V8ghtkgD4ssK/DOUS3dW0/SKNj/E8vNGeecob7aATrfjJDHdKz8B9/viY
-	Q8Xdg5oD2XE/C76eS2Zfc4HOJiSv3qvQYeb5FcqNJKYy2IDghJveypTJQOHbyel+7RWro8RtL9S
-	4Equw8MthFqLkwaM8vv5sqP6sPBn3BOHpGvbZypIjOy4l07poXXdlDd3dK+3+0indhlYilwRbuO
-	ymSBIyuGs2HxuzjOvDI6tSVxjtGwuf3Sc29W3DgHbW28XGCioXZWoHZYGnNK3u9XSwrn5IDejjL
-	oGBPcp4Qf6b1Y+r8j+/Z6U7UeFIDUsTm84xKAOjxk+gMr+tIMcL4E0Ucew5xLRUg0h9I5kt/X+U
-	SJTi0ls=
-X-Received: by 2002:a05:600c:8b78:b0:4a2:cbe:bebc with SMTP id 5b1f17b1804b1-4a20cbec0d1mr26844975e9.23.1792690357003;
-        Thu, 22 Oct 2026 10:32:37 -0700 (PDT)
-Received: from localhost.localdomain ([188.190.249.216])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e2581f0d4sm13857279f8f.13.2026.10.22.10.32.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Oct 2026 10:32:36 -0700 (PDT)
-From: Vladyslav Tymoshchuk <tvlad744@gmail.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>
-Cc: Abel Vesa <abelvesa@kernel.org>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Dmitry Baryshkov <lumag@kernel.org>,
-	Casey Connolly <casey.connolly@linaro.org>,
-	Johan Hovold <johan@kernel.org>,
-	Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
-	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-	Joonhoe Kim <26rote@gmail.com>,
-	Daniel J Blueman <daniel@quora.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Kees Cook <kees@kernel.org>,
-	"Gustavo A . R . Silva" <gustavoars@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-hardening@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Vladyslav Tymoshchuk <tvlad744@gmail.com>
-Subject: [RFC PATCH 4/4] power: supply: qcom_battmgr: Allow charger changes to wake up the system
-Date: Thu, 22 Oct 2026 20:32:24 +0300
-Message-ID: <20261022173225.58-1-tvlad744@gmail.com>
-X-Mailer: git-send-email 2.45.1.windows.1
-In-Reply-To: <20261022164151.592-1-tvlad744@gmail.com>
-References: <20261022164151.592-1-tvlad744@gmail.com>
+        d=1e100.net; s=20260707; t=1792691258; x=1793296058;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SCWBGn+DbuJPekfhEu4uXLYMGCLHZ53aEkUTCOxglzU=;
+        b=QsRvfD4iAArXKnywD295PVCuV9Ta8HLLdW0LJg6ZAO3NzL+qluenxTRQ76Yu67Jx0p
+         J/0GKapCGeTAf6FXYUWQRFIsbs73p8Bv1IX7uOtzabqElHiPWdzfcR7n2h1fB3u9DlUg
+         FSbjEsOF3qcOkVvEd34zpGsoMgFDhvWJql0q1LquGCwocuZZun8/cBeEI2w+UKy2jR5U
+         3BaezevHP+4SHyeOXNtykGq7Ngk5czbCzTK8LQHnWceEfsnzVCtfpGDOEnYSogB3PEje
+         D0K4pL7vov42CAO0PewOHGApt0KnYvaGj4LMXdgAXX6UmmkBo76m5ryvMWPBusxhC1ad
+         NTRA==
+X-Forwarded-Encrypted: i=1; AKwUvBwM8DvScjoU7a3H1d2l6jNoqAz2XKSFTZ9H9C121MoOPFjwejuSjCVp5Ea9ItxrJIfQ8ie1oZVoMw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJQqUaNlDJKZ4jaHdyXoGSLniqta0Y2VyJ/goIUFta2YkpC8k1E
+	5dahwmnjxvX15qEaC1oUtRPsbvAWYZMLnzecnoBA4QBhLsajtKe1xkkjBG+qNsX5ug==
+X-Gm-Gg: AYBFou34Zo1YwTdh6u3UEkwP+3/ZFau/WHEqbsBdgJoB5TDQ3HbHVzz4cZ6MQHnp9EQ
+	n12Ikuz44XOAvn/81lA6QiIhMKX5tK6TPJsyrm2UgGnW79Jo22OJLu082AcqrvSEmW2YuvjXRmy
+	U0BRZkMdDek65679WEtrvmCaLW+Hl3scH3NslYW6Xu9j5YRsxHbYxtz0G7fkbt0x49kLl6MsGfe
+	uBTcwvKYJyPo8/1kp9I38dMpVx0cp4fb+HThjjhg5hqC4YjYKlxoRyhbHyhHOc6PKVGDSUeuMBe
+	XaYUPtQ7ZczTM2U03FkPR6QleTDRxxzI9VaHXFufww8lU6CKMX8iKSysPwMwTExFRgUFrhPLjRB
+	LdhZLDu5AgUdhoqt4atE1R0vs/0Kd4tCCVFbIkeUQPtDWvi2wcrtHpNkoamFUM0S+AtOeh7+z4d
+	1qtkwWkSdukwavOlf3fRVZ6eNoWcET1NWyfKedBvqO/5AGTg6DmESz8uwEJpeYpREas8GivtwYr
+	XWhPQnK/QL08hgCW4YMzlgUpFvbPNVTujakYnyApCY1hQK/rYO2bm+MrVnKU/yBwJyInJIP6o6H
+	olgE5ELnEyXHFfpwfnc=
+X-Received: by 2002:a05:701b:2608:b0:144:c127:dd1b with SMTP id a92af1059eb24-190a7f02797mr6894593c88.39.1792691257861;
+        Thu, 22 Oct 2026 10:47:37 -0700 (PDT)
+Received: from localhost ([2a00:79e0:2e7c:8:4a1d:784c:3fc4:37a2])
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-195a7f4432asm146724c88.6.2026.10.22.10.47.36
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 22 Oct 2026 10:47:37 -0700 (PDT)
+Date: Thu, 22 Oct 2026 10:47:34 -0700
+From: Brian Norris <briannorris@chromium.org>
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: Jonathan Cameron <jic23@kernel.org>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
+	Andy Shevchenko <andy@kernel.org>,
+	David Lechner <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Rui Miguel Silva <rmfrfs@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v2 00/17] iio: Stop looking at
+ pm_runtime_put_autosuspend() return codes
+Message-ID: <atpMNk6ymCpC5BL_@google.com>
+References: <20261021235818.3059519-1-briannorris@chromium.org>
+ <atm0umwtxZlQSAhy@ashevche-desk.local>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -117,73 +104,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <atm0umwtxZlQSAhy@ashevche-desk.local>
 
-The battery manager notifies about changes of the battery state, many
-of which arrive while the system is asleep, and about changes of the
-USB and wireless charger properties, a charger being plugged in or out
-for one. Only the latter can be worth a wakeup, to show the new
-charging state for example.
+On Thu, Oct 22, 2026 at 10:01:14AM +0300, Andy Shevchenko wrote:
+> After three patches I stopped because it seems more works needs in each of
+> the individual drivers. Yes, the series can be applied as is in exchange for
+> a bigger additional churn in the future. My preference is to see everything
+> settled down in a single step.
 
-Make the device wakeup capable, and set a wakeup filter that lets
-pmic_glink report only the charger notifications as wakeup events.
-Leave wakeup disabled, so that nothing changes by default: whether a
-charger change should wake up the system is up to user space, through
-power/wakeup.
+There are limits in how much work I'm willing to do on a bunch of
+drivers I don't use, can't test, and frankly have no actual interest in.
+I'm sure if I spent a few more minutes on each driver, I could find
+another dozen things to try to improve.
 
-Signed-off-by: Vladyslav Tymoshchuk <tvlad744@gmail.com>
----
-I used an AI assistant (Claude) for the analysis and to draft this
-patch and its description; I reviewed the result. The testing is
-described in the cover letter.
+I can go back to the v1 approach (fix only what I came to do) if you'd
+prefer.
 
- drivers/power/supply/qcom_battmgr.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+Or, I'd prefer to stick with the sentiment Jonathan expressed in
+optionally requesting additional refactoring:
+https://lore.kernel.org/all/20261018211807.66bfea0d@jic23-hlaptop/
+that most of these changes are optional, and that fixing 1 thing is not
+a subscription to fixing everything.
 
-diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index 636d6f6acecc..7a783a3a320d 100644
---- a/drivers/power/supply/qcom_battmgr.c
-+++ b/drivers/power/supply/qcom_battmgr.c
-@@ -10,6 +10,7 @@
- #include <linux/mutex.h>
- #include <linux/nvmem-consumer.h>
- #include <linux/of_device.h>
-+#include <linux/pm_wakeup.h>
- #include <linux/power_supply.h>
- #include <linux/property.h>
- #include <linux/soc/qcom/pdr.h>
-@@ -1596,6 +1597,20 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 	complete(&battmgr->ack);
- }
- 
-+static bool qcom_battmgr_is_charger_notification(const void *data, size_t len, void *priv)
-+{
-+	const struct qcom_battmgr_message *msg = data;
-+	unsigned int notification;
-+
-+	if (le32_to_cpu(msg->hdr.opcode) != BATTMGR_NOTIFICATION ||
-+	    len != sizeof(msg->hdr) + sizeof(msg->notification))
-+		return false;
-+
-+	notification = le32_to_cpu(msg->notification) & 0xff;
-+
-+	return notification == NOTIF_USB_PROPERTY || notification == NOTIF_WLS_PROPERTY;
-+}
-+
- static void qcom_battmgr_callback(const void *data, size_t len, void *priv)
- {
- 	const struct pmic_glink_hdr *hdr = data;
-@@ -1750,6 +1765,10 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
- 	if (IS_ERR(battmgr->client))
- 		return PTR_ERR(battmgr->client);
- 
-+	device_set_wakeup_capable(dev, true);
-+	pmic_glink_client_set_wakeup_filter(battmgr->client,
-+					    qcom_battmgr_is_charger_notification);
-+
- 	pmic_glink_client_register(battmgr->client);
- 
- 	return 0;
--- 
-2.43.0
-
+Brian
