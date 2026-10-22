@@ -1,63 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792664599;
-	b=tH+JNdpIl+QCVNAjjD9zzKXK1FSwSYUUOOOE6pDxiN3AW+5Ui0cnRzIIDR8aLqJoKtSC
-	 Py+DgkPcA2rpQ0TXn6PqeiL6hNnAK4q5lFlX1G/bGCggC+zz1r55gmxxj9F5qmyEX5a+h
-	 p0mZAsDOmCv/CDHHOd/BUpzVuNNDtsaDuXeXPdRvdZxzerMxkbYlYh4EGf3R8Iw5m4tpm
-	 eEDAjTo7j3MZ8y7ol88sMmDK0XWemXFBjnbh8xYR3UYlCvJe3keJGxpJRZXaBHxxVExmf
-	 LwTUD705lBLQzDMUVV3F1vbRbyNyDoLodwRlyiml2H/6O9yCGo20QHqPEMqKylecLaA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792664599;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=aZ3FSAhacOoA0G/LYvZBcAVEF7qI69cr77OqatyrH7k=;
-	b=w/FirYVdee2zk+1mgzdWDj8uDZ3C7Q4SzVWh9pGYPqrhZX2vdBVxQ1nVkYN0K1KbgrBp
-	 +4RPWkLkv9Mim3Ao4BaCH04t32ZfR8Rms9wNAlLMpm5To8+9aFdFSs7T+2dkCTSAVYYjK
-	 wUYZ1o6A7euDKMb257SF9PVl9iCyZ1gp38Pp9C3f4w6eFo2PSq1xlPq7O9rdIVY8vL+07
-	 xU/uPhtBaciD3asj/h2pcXsnog/cdpn2r/4719Rjb9WwhgMQULecfN0VB27xXHTlu9Kkq
-	 a+oAI+rwxRT7MUena8pHEfBmU23FGSX3aHiihl4UnDnFS4m+wLCTUzRI2n48irgWJ3g==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=i7gz2s1V;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1D300606A31B;
-	Thu, 22 Oct 2026 10:23:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1D300606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1792664667;
+	b=KcyVutd6ivhC+Yw6FFIIvrI5GI6C4b9qC2RN31FIHVKqKSWkzgeOln3g+2HqLmXL8CuI
+	 Q9aJKl9Lvmx60PTO8I4Zutg3y7tB+tFAUO/KaigYJzFUBpCvK/PojSekbaX/PQD64FA7R
+	 XmX5sXBio927ZySQeb5hmsLvPjeKRD9L1dLOWHE3Aok/dyzBcQEbzRfFKyvCX/05ikemV
+	 U/6AgME+z8nLMKX7wYfN9n2pO6OUAym8M9MxZhxv8bG/V7xJ3enCapdOr1fASQcBGkt1E
+	 2X0QEEYNVQLOh4N1W3+uMCcj9Ue/L+YMYJlvUeH/5ma9fKmSgnSq+m913nMtYiaWpmA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792664667;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Subject:From:To:Cc:
+	 Date:In-Reply-To:References:Content-Type:Content-Transfer-Encoding:
+	 User-Agent:MIME-Version;
+	bh=ugyFSCnTfsLdf9m20uVYRw6UIGWGn+LdXLFTD8Rhr/s=;
+	b=ueDRBc9tUHc9JPZBj+ePbFxao+dkUuosoKwuUrnnULheHTLnYWDQLV5YJpZ+GKGqpW3W
+	 HGWvLFu+4zPNouSMjIHtwgM61KNv9/MmWj5DJ7B26pR4mdsb38NGtZHF20JnlBNN2gJN5
+	 e+JZ1mzQiV4DARqZAJ+zX74XbC3Y9oC/oqVmkspNu6jv0Zyz6b9ZuRY7rfwj+ygs25Lug
+	 EnOARrnO2Kjtj8mLLUp2tUj6mDH/ous0lXzwcegrmz2HiUiUZqV6sQr0dbPH0PUrkXIo1
+	 acBZqCa6tNGM3W83pe0QB/G6zxy0x35aq+H5p6UaU8LuUiurqSX124iL5Z06Ce+ZM1Q==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=none header.from=pengutronix.de;
+	spf=pass smtp.mailfrom=pengutronix.de;
+	dkim=pass header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b="MdjfW2j/";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
+Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3B05606A329;
+	Thu, 22 Oct 2026 10:24:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E3B05606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=i7gz2s1V
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 04ECF1595;
-	Thu, 22 Oct 2026 03:23:14 -0700 (PDT)
-Received: from e121740.arm.com (e121740.arm.com [10.33.8.69])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5DDEB3F7B4;
-	Thu, 22 Oct 2026 03:23:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1792664597; bh=LlWXz+PA+zM435hlpcLMlUTS430tdpoSr+PxDjy+z5Q=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=i7gz2s1V+8RC3RRnbxmDymuL7h2jDLYk4Ge6j4Bzn2SRLYA7flQ08O1OMxby7Bu56
-	 fhWnOI1gmkJasfrzwWWxO/ZndH9TcprW7UxVqeBKx6QilV93iAtNRoSjPa62tIPENr
-	 TetS7yunMuQpOyiteMUIdn8f2NIqA0VkME13bNHs=
-Date: Thu, 22 Oct 2026 11:23:04 +0100
-From: Philip Radford <philip.radford@arm.com>
-To: Sudeep Holla <sudeep.holla@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	arm-scmi@vger.kernel.org, linux-pm@vger.kernel.org,
-	james.quinlan@broadcom.com, f.fainelli@gmail.com,
-	vincent.guittot@linaro.org, etienne.carriere@st.com,
-	peng.fan@oss.nxp.com, michal.simek@amd.com, quic_sibis@quicinc.com,
-	dan.carpenter@linaro.org, d-gole@ti.com, souvik.chakravarty@arm.com,
-	Cristian Marussi <cristian.marussi@arm.com>
-Subject: Re: [PATCH v9 03/13] firmware: arm_scmi: Refactor powercap domain
- layout
-Message-ID: <atnkCP6oB4xT65dV@e121740.arm.com>
-References: <20260909220437.1254412-1-philip.radford@arm.com>
- <20260909220437.1254412-4-philip.radford@arm.com>
- <20261022-spotted-impetuous-kittiwake-b2adcd@sudeepholla>
+	dkim=pass (2048-bit key, unprotected) header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b=MdjfW2j/
+Received: from [IPv6:2a0a:edc0:0:900:1d::4e] (lupine.office.stw.pengutronix.de [IPv6:2a0a:edc0:0:900:1d::4e])
+	(Authenticated sender: pza@pengutronix.de)
+	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id 014142004FF;
+	Thu, 22 Oct 2026 12:24:23 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
+	s=20260414; t=1792664663;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ugyFSCnTfsLdf9m20uVYRw6UIGWGn+LdXLFTD8Rhr/s=;
+	b=MdjfW2j/k2QDPsZOIHy7PZt5Z2El+wcq2JctgMX74K8hRrhLGybZQrXu3CWicg97R2KP2D
+	Ret1yLcSM3lfSjgcNOl/43Jg3TtiJlCUD5tgCP+gv/bocMeYbsUMt/niP2fXy0PGtAjoaz
+	tp/HNvckDbBnkJAl+5stHagl+SI9nIntwRgaMhq1kuHrZMY5CYdqWqlwf00dGe8IYqT2xl
+	WbGOmj8j3k71dUrFwjS5crsdfXMZtrJ+WoBjIHwhc/+sRJjJx1ebHt2ZbkrGo3sK690aTP
+	W9kdkWYztNp2vhDec1ej6sgcurYNiC0yZ06Mp6GnF7gDli6QPdG7P2XKcN0B1Q==
+ARC-Seal: i=1; s=20260414; d=pengutronix.de; t=1792664663; a=rsa-sha256;
+	cv=none;
+	b=edtDA8hUpIe7+mU0hva+zNJQGy6IEOqpNBTRFhWhKoUnjvFzJtFxXZRFh2S99ONFJUZnPu
+	Ne8xVqy21RdhXv5Hlige/XMqWFzrOlDDRgakCDeMYCSht9FA1YGr9s0eTnZvoS4zIHpvkx
+	OWBWZsdzoECmGCI5NJ76c5SbbrieVMkRmHwPLsy3LSjZlon8RAkMDUHwj39cjLQubV6awE
+	M3i0+KmcgNDZ4Bljnlr9XonivOr8CIsNBdbP2nz3cV4a0/J6r+VdnBLLIA6bf9xbhp9YyH
+	0/R+aqMNB4SgpEADu3aoE+1rxj+Ujk/F+gTOxYFoA/8G84iXgng+uIs3Ikh3ag==
+ARC-Authentication-Results: i=1;
+	ORIGINATING;
+	auth=pass smtp.auth=pza@pengutronix.de smtp.mailfrom=p.zabel@pengutronix.de
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
+	s=20260414; t=1792664663;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ugyFSCnTfsLdf9m20uVYRw6UIGWGn+LdXLFTD8Rhr/s=;
+	b=O44rc3MUCLXCMepH7FcLNVL4aje3eL/Kxcj8GCWeBb3Pk04DyoUO0DAGrvp3a4QHMtBQuH
+	oM3Fi99p1dzV515dvFcH4D85lMfCqJUqjzHPawSQBdDt47otWiFMxoxOX8vNKCOtSApJnN
+	QxqEC0QPB55vp5ECREbj5a9u1uHOlKX34o0vNsW3AzIXHylfDaGfvXbZwsZ2y3BP0M98QM
+	jkegbpg6wVp8KDVMPLvo87Hv0s7WuQv9pXRy4e31lbew19ZQbN8C7t2U6AjT0z6TAqGiZi
+	wxkV4NPED5YymbXEAGOngJ9UdQR7nc5fyzmuhQHyb4kgeFhPX/r8TL5kAzMh2Q==
+Message-ID: <2e28581115962ef23af4834ff274ee11de172344.camel@pengutronix.de>
+Subject: Re: [PATCH v4 4/8] reset: Add
+ reset_control_get_from_provider_exclusive()
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring
+ <robh@kernel.org>,  Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Stephen Boyd	 <sboyd@kernel.org>, Brian Masney
+ <bmasney+clk@redhat.com>, Jerome Brunet	 <jbrunet+clk@baylibre.com>, Ulf
+ Hansson <ulfh@kernel.org>, "Rafael J . Wysocki"	 <rafael@kernel.org>, Marek
+ Vasut <marek.vasut+renesas@mailbox.org>, Bartosz Golaszewski
+ <bartosz.golaszewski@oss.qualcomm.com>, Konrad Dybcio
+ <konrad.dybcio@oss.qualcomm.com>,  Kevin Hilman <khilman@baylibre.com>,
+ Vinod Koul <vkoul@kernel.org>, Wolfram Sang	
+ <wsa+renesas@sang-engineering.com>, Kuninori Morimoto	
+ <kuninori.morimoto.gx@renesas.com>, Laurent Pinchart	
+ <laurent.pinchart+renesas@ideasonboard.com>, =?ISO-8859-1?Q?Cl=E9ment?= Le
+ Goffic <clegoffic@baylibre.com>, Sudeep Holla <sudeep.holla@kernel.org>,
+ Cristian Marussi	 <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Date: Thu, 22 Oct 2026 12:24:22 +0200
+In-Reply-To: <b9e68c8df1e545191e0359dba23fe53de31a4ce5.1792163045.git.geert+renesas@glider.be>
+References: <cover.1792163045.git.geert+renesas@glider.be>
+	 <b9e68c8df1e545191e0359dba23fe53de31a4ce5.1792163045.git.geert+renesas@glider.be>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,66 +108,22 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261022-spotted-impetuous-kittiwake-b2adcd@sudeepholla>
 
-On Thu, Oct 22, 2026 at 11:10:06AM +0100, Sudeep Holla wrote:
-> On Wed, Sep 09, 2026 at 10:04:27PM +0000, Philip Radford wrote:
-> > From: Cristian Marussi <cristian.marussi@arm.com>
+On Fr, 2026-10-16 at 17:55 +0200, Geert Uytterhoeven wrote:
+> When stacking two reset controllers, the upper one should go through the
+> proper channels: request exclusive reset controls and use them via the
+> reset_control_*() APIs.  However, unlike the clock subsystem, which has
+> of_clk_get_from_provider(), the reset subsystem does not offer a way to
+> lookup and obtain a reset from a reset provider.
+>=20
+> Hence add a public helper reset_control_get_from_provider_exclusive()
+> to lookup and obtain an exclusive reference to a reset controller, based
+> on the recently introduced __reset_control_get_from_provider() helper.
+> This will be used by the R-Car X5H Module Controller driver.
+>=20
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Hi,
+Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
 
-> > 
-> > SCMIv4.0 introduces the idea of an optional Concurrent Power Limit (CPL)
-> > for each powercap domain, where CPL0 coincides with the one and only
-> > per-domain constraint limit that was available in pre-v4.0 SCMI Powercap.
-> > 
-> > Refactor the powercap domain descriptors and powercap operations to allow
-> > future v4.0 extensions to cope with multiple CPLs.
-> > 
-> > While at that generalize the powercap protocol API to drop PAI references
-> > in favour of a more generic avg_ivl naming, since from v4.0 the number and
-> > types of averaging intervals will change in a non-backward compatible way,
-> > so let's bury these changes within the protocol layer.
-> > 
-> > Last but not least, make the necessary changes to the ARM SCMI Powwercap
-> > driver in order to support all of these new capabilities.
-> > 
-> > No functional change.
-> > 
-> > Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
-> > [Philip: Adjusted domain_id comparitor in scmi_powercap_pai_get]
-> > Signed-off-by: Philip Radford <philip.radford@arm.com>
-> > ---
-> > V7->V8
-> > - Fixed conflict due to changes in 7.2-rc1
-> > ---
-> >  drivers/firmware/arm_scmi/powercap.c | 182 +++++++++++++++++----------
-> >  drivers/powercap/arm_scmi_powercap.c |  52 ++++----
-> >  include/linux/scmi_protocol.h        |  74 +++++++----
-> >  3 files changed, 189 insertions(+), 119 deletions(-)
-> > 
-> > diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-> > index 96d55921fefc..7c2dbba5002c 100644
-> > --- a/drivers/powercap/arm_scmi_powercap.c
-> > +++ b/drivers/powercap/arm_scmi_powercap.c
-> > @@ -123,7 +123,7 @@ scmi_powercap_set_root_children_enable_state(struct scmi_powercap_root *pr, bool
-> >  
-> >  		if (!scmi_powercap_is_control_type_child(spz))
-> >  			continue;
-> > -		if (!spz->info->powercap_cap_config)
-> > +		if (!spz->info->cpli[0].cap_config)
-> >  			continue;
-> >  		if (prev_state[i] == enable)
-> >  			continue;
-> 
-> You seem to have left one use `powercap_cap_config` above this hunk which
-> breaks the build and hence build bisectability with this series.
-> 
-
-Apologies, I was sure I had tested breaking the build throughout the series.
-I'll amend this.
-
-Regards,
-Phil
+regards
+Philipp
