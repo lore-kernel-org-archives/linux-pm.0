@@ -1,104 +1,68 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.43.55
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792645870;
-	b=2oUBzPuZAyDS6NxLY6MbhvnaqtKwy/d7/CUb3PQwXAdIsiMNYwk013zKINP7eoGHCFKq
-	 dvS5HFtv2LIafctWvPLJmjhMouMm3CsnEJzGFcQzv5CDKV8sMJESRiRrjr1HUcl2K0c+p
-	 J47J0usBNACNRC0hO6T8pr4I1oJwNo8wNtG+fMT+eCDI6iQd/A5L2HfmkEArrlw3iswqP
-	 DKPXk5GhadZaFVmwMhklJGG3c9pQZlo8GtpNbhe2gJ+H+YUYXq1had99yBUUNq3OQNBRX
-	 Gx008H9foeV7Q8DsbeaNHKa9xFxzLR4CTKVl1dDNxamM9p1vhTIDBQMvZmyizYNQpQw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792645870;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-LD-Processed:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=SUPx8zY1+kcUd4Fjaogw3QAnQedY2aoGxBYkMKek8PI=;
-	b=CnVUdz1T7n9wXEuHl45qbDUjrRgEBuMqc5TZlXu4anELRyam/xWFuUmJJKtbyJOOmS1Q
-	 URuSBJbG0OviLWPFz7S+Sgrhhyo/PO7HxFAtBBlunkBOd6/dypHW+kOwN4nfO+DcfndFC
-	 nsswzaB4IDfZH5vQO+vISSUW6Q8zAqE8m0sj+C3cCjkddIHPYAWFoPDKQ6/ClkgPdigHL
-	 Wj4erdHkrkPR5yWE/Rf0KrYZDNhXSNVQiEqBQmbv/uyheh3OdgUFH1Sgx+fYRlPl9Jwvp
-	 7XlJd3oOn9jj23o4QKKc87iuyAv/xRl1HYAzCGq/0pp+XulOXmxR3cKEZ+6xWVNpOlw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amd.com;
-	spf=fail smtp.mailfrom=amd.com;
-	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=WxELNRix;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.43.55
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012055.outbound.protection.outlook.com [52.101.43.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=43.163.128.49
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1792647253;
+	b=KlrHVFBcC5cNQGK48Yxph1ztB8BE1KI37gRBEQb11VrokFGd6sjutT3LsmjmoGWOkZHe
+	 G+7iCAYd8lXQOyqNc61Z2vA4fTUAelB9jcy0pN2dLNq268aWHJAkmVRvxZCDR5PDhTexN
+	 oU9Kh1uzexCMoA/5KkHCQf/Oadw2Kj0Y73ExeVC3MvZshyTOitiVqVOuiSauIWgkOVBro
+	 Dz3oNcLyJUOMPPK2QMNrMQmi39CumTPaGi7n59jsHYN5oY64Csg7+ZBzrzat9PLHgMVDi
+	 bpr16c5EpVIaPQKh1mHguxgsOixSPnZTIRRArdH7zWLG/O51bDITbEl/FW2DL7NW/Ig==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792647253;
+	h=DMARC-Filter:DKIM-Signature:X-QQ-XMRINFO:X-QQ-XMAILINFO:From:To:Cc:
+	 Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:Date:
+	 X-Priority:Message-ID:X-QQ-MIME:X-Mailer:X-QQ-Mailer:References:
+	 In-Reply-To:X-QQ-mid;
+	bh=ds0gPqcUBP6L02Z/8E2crybbPUoGn59iBftHI08WL+0=;
+	b=i1HApVAStE/fheYitrmUwA05i7/aTbmAjp8T7cq+br38WiIeC3grNTBe67vS74JpFuqD
+	 Xr9nMlJHQAbPjedZge10T/rqYU9h1QNKgJ942u5l1a4hSCRfgKr3zVNip209HfaKF+bbd
+	 JqFcSgZfyhwaMxV7dZngbrZthVYrSG0WWy7FsgWqpMjKOZ9vfbw3j+en4yIpg/Qsu+72E
+	 hm80BVr8gU/4LupN2vG/7XLF0SXyd8lO9Ujt+rx2T4IJ0fkvI0nKX2iNtyUBl6fxASU+t
+	 4DGDczLTrEiCxyb1JkTNf/vj4ajJ8ubORGaaMps9pwbeXyRScwP6dhDZtSBLZPJzM7A==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=qq.com;
+	spf=pass smtp.mailfrom=qq.com;
+	dkim=pass header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=h+FwYlqT;
+	arc=none smtp.remote-ip=43.163.128.49
+Received: from xmbghk7.mail.qq.com (xmbghk7.mail.qq.com [43.163.128.49])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48D3D606A31A;
-	Thu, 22 Oct 2026 05:11:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 48D3D606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99BBE606A31B;
+	Thu, 22 Oct 2026 05:34:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 99BBE606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=WxELNRix
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=mrLdq7AI17IJFe+qHFSUt/JB2QEvBVu3Z2pqR3p00BxXWoRZtojiyibm429GGxXWCnr1e7YEjx/Q/adovySr7BRD2eHcnR4IlSKh0rWcPmI6IXr7i9EFJUA41wCVvUJchCrHRvCteG8OXMmAihKX30fTfFEGEJzlQ2yRHElNa0ghY9wb0mY9n6xYyWU3cbzpMCsBfi9h1Rjr/oENmpa3wV3fWVQBV/ByOIZFUkU22kkya538910QBCgTnm/gfdqjTF6hSKM5JvUuVtTI/tA4H3eLyV8jJYqgTxkypz+Ibl0rYQbCRo09rF+v6B9PffNS9TSXdqONNDN79aCHcj1S2g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=SUPx8zY1+kcUd4Fjaogw3QAnQedY2aoGxBYkMKek8PI=;
- b=icnEXXZBkMMqbnfbJrDWhI4hY1tU8CCC1nmUAidT1SNXBB6jmEwDUdjL9X1pVIFPJwxUVOEisogs3jUop3A6pAGNxIe9+w3+p8faljE4T+e01JHJ2vI0j82HYr3oobCWjciMgqDSeyJ7JP9tbLfVx3d8b1uER2d4sM6LwIa7WAjsePVKqGv6efMj618PQ/zukGiNeUZQ+KcHFU2q4yXlYiuKP1tCr0KdJWJacu7ybZIfsMTAy1AmytCL0J7/X9ILJx9qcJ7a9I6f/c6UBvFzx2oIys0rV7yKJr6lVFt4BM7VArgl+qg810UJRxANoYHjvn8a4z4ca2yFSdubY7cTPQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=SUPx8zY1+kcUd4Fjaogw3QAnQedY2aoGxBYkMKek8PI=;
- b=WxELNRixywqfbY+OhXxagc4DvsnbXa48uere/cuguR82vt8EJoTxbzldc1/idu2Q5G6Ih68LNjSS3CxQQmPGdG/xKhA4Y5ZfjC5tQxbstMFM5D/dwPyj//ijeSIPXbi3GGt+VvxgXdSA6d1xgEZKqiU1Yv3/Z2nkioD0olbdtB0=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DS4PR12MB999075.namprd12.prod.outlook.com (2603:10b6:8:2fc::20)
- by BN7PPF7C0ACC722.namprd12.prod.outlook.com (2603:10b6:40f:fc02::6d5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.15; Thu, 22 Oct
- 2026 05:11:03 +0000
-Received: from DS4PR12MB999075.namprd12.prod.outlook.com
- ([fe80::4c9d:851d:3f44:800f]) by DS4PR12MB999075.namprd12.prod.outlook.com
- ([fe80::4c9d:851d:3f44:800f%4]) with mapi id 15.21.0546.012; Thu, 22 Oct 2026
- 05:11:03 +0000
-Message-ID: <212a4fc4-437a-409a-821e-86b9b8c7f85c@amd.com>
-Date: Thu, 22 Oct 2026 10:40:53 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/6] dmaengine: zynqmp_dma: Use PM guard for probe-time
- runtime PM reference
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
- Michal Simek <michal.simek@amd.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Kedareswara rao Appana <appana.durga.rao@xilinx.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Michael Tretter <m.tretter@pengutronix.de>,
- Harini Katakam <harini.katakam@amd.com>,
- Shyam Pandey <radhey.shyam.pandey@amd.com>, dmaengine@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, git@amd.com
-References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
- <20261009-adma-pm-fix-and-per-channel-reset-v4-1-55f5fe409c55@amd.com>
- <asmsVD1RP6FoMN9l@SMW015318>
-Content-Language: en-US
-From: "Golla, Nagendra" <Nagendra.Golla@amd.com>
-In-Reply-To: <asmsVD1RP6FoMN9l@SMW015318>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MA5P287CA0069.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:1b3::17) To DS4PR12MB999075.namprd12.prod.outlook.com
- (2603:10b6:8:2fc::20)
+	dkim=pass (1024-bit key, unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=h+FwYlqT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1792647243; bh=ds0gPqcUBP6L02Z/8E2crybbPUoGn59iBftHI08WL+0=;
+	h=From:To:Cc:Subject:Date:References:In-Reply-To;
+	b=h+FwYlqTXgik5If3mRRsEVYopsIgtFSMYaP28ZusSHv97d6QMxi1q5+lQrRojqo0i
+	 Lote634BZGuOddK1Yxmt+rdrq/5kMqIyam1vRK9bNh1qz3LJ8OjX9Hv0UgBUK8K15t
+	 LnvekWnyUNS0m+DYfJrDJbnbnXX5pkEqcGkf7r8A=
+X-QQ-XMRINFO: NyFYKkN4Ny6FuXrnB5Ye7Aabb3ujjtK+gg==
+X-QQ-XMAILINFO: MhG7PnEq6uVZHX1/fLwaNH4gNTfoyBXS9ICP9bBvYMJm10JGRqKmUPNfnZovbK
+	 nS7LD3DnZM7PG6RiQaSUv5jA6wcYID4CXviFq5wgLYtO/p9oKsmGavyZL23IQr7d0d0757wXjmQq7
+	 yQ7P4DlSJst9LAB48rnkgVe6bMMGzgnOMnx2w510aEb7WmMOZugA+FKA7dFvUSF3uk29l84MQCVWa
+	 jQFL/6ymo+L5sPEnKeO+fuYDDV04n5JfOPyZEFeAEmfXWUAB8OTy/p4ZQ0lksVvz66JR0MwPQoyDb
+	 n5LAxPqjoQkDSVYojlFvKE3QRWo8Nw4pbcgx4sO7HHLYRRdk9PdPe1dl9Oz8L3gwwLZpO2vxs5hei
+	 qATp4aaTQFXj3yXC1oG+ha4AW+3PduUTMWV52PMWa7MyzJ6vjj4gJqIyME5EoA42vB0JgxZ7NY2Wo
+	 9myLFVs1KHj6pNKchD7+yXWnERL3VjkJvvBiZMlLb+FmlEJNA1LZYvJvP7REb9kMKka3Qc/kMWdpw
+	 ME+RFtbLfk9lZ3u5hhUqIRHqnTf9HAtOaX3qkfGVxMghLWghcRkCcjp4YduvxdIgqa1UNak48VkSA
+	 TlF32t4i+7UTKw6wipXCWXomB5M6/VJB6cp/POqY8gU7URPIvvU4LD0ukvML2czWLuGUYH6r30P/m
+	 bXX6boLd8ugiSZw7/nbZ+RGDcnBecAq+r9/slaKApRUKH7s6zm7GotVwmdnJX9S+l+rdESnP8wViE
+	 9vbJL80OFI3AlQqnZEpKIeUtv1OELzKLi9bW/Ak0ZE/uS42Sx35Z7jFPP1A6vwGu63jbHjFK2hvdT
+	 aBnJvGGAzxze/RxDGZcoRUCiglOCmYcbCRxQ+BkyuLIVrFgllCCVH4GP9So5GCpK4pC842+2Woz3H
+	 /x0wBngA2q2A7jL3A4irwZ7fQe06KnNpbK6/KiHbsZ/CwDFMDYmJAPFfRA/yGUucc0EF5M1edwKPd
+	 c8e3odi6IFHoUhzcHqXa1FRKkNwZNlZ1NgdSi1gSFjCRn53/lCjp4yXQ+W6Ng6LzXU9RbIkD7soUE
+	 HaUAEHfrtNxYdCY9egQi/AEZt8oWCx2fFBPqR3sDpr3zBscPLFvJxBqm6q1PwCEUu0SMeN+rBHNVM
+	 iuzehjqgE1gJVCUlbFuba+5M
+From: "=?utf-8?B?Q3VuaGFvIEx1?=" <1579567540@qq.com>
+To: "=?utf-8?B?QW5kcmV3IEx1bm4=?=" <andrew@lunn.ch>
+Cc: "=?utf-8?B?U3RlcGhlbiBCb3lk?=" <sboyd@kernel.org>, "=?utf-8?B?QnJpYW4gTWFzbmV5?=" <bmasney+clk@redhat.com>, "=?utf-8?B?SmVyb21lIEJydW5ldA==?=" <jbrunet+clk@baylibre.com>, "=?utf-8?B?Um9iIEhlcnJpbmc=?=" <robh@kernel.org>, "=?utf-8?B?S3J6eXN6dG9mIEtvemxvd3NraQ==?=" <krzk+dt@kernel.org>, "=?utf-8?B?Q29ub3IgRG9vbGV5?=" <conor+dt@kernel.org>, "=?utf-8?B?SGVpa28gU3R1ZWJuZXI=?=" <heiko@sntech.de>, "=?utf-8?B?UGhpbGlwcCBaYWJlbA==?=" <p.zabel@pengutronix.de>, "=?utf-8?B?RWxhaW5lIFpoYW5n?=" <zhangqing@rock-chips.com>, "=?utf-8?B?TGVlIEpvbmVz?=" <lee@kernel.org>, "=?utf-8?B?TGludXMgV2FsbGVpag==?=" <linusw@kernel.org>, "=?utf-8?B?QmFydG9zeiBHb2xhc3pld3NraQ==?=" <brgl@kernel.org>, "=?utf-8?B?UmljaGFyZCBDb2NocmFu?=" <richardcochran@gmail.com>, "=?utf-8?B?VWxmIEhhbnNzb24=?=" <ulfh@kernel.org>, 
+	"=?utf-8?B?QW5kaSBTaHl0aQ==?=" <andi.shyti@kernel.org>, "=?utf-8?B?R3JlZyBLcm9haC1IYXJ0bWFu?=" <gregkh@linuxfoundation.org>, "=?utf-8?B?SmlyaSBTbGFieQ==?=" <jirislaby@kernel.org>, "=?utf-8?B?SmlzaGVuZyBaaGFuZw==?=" <jszhang@kernel.org>, "=?utf-8?B?QW5kcmV3IEx1bm4=?=" <andrew+netdev@lunn.ch>, "=?utf-8?B?RGF2aWQgUy4gTWlsbGVy?=" <davem@davemloft.net>, "=?utf-8?B?RXJpYyBEdW1hemV0?=" <edumazet@kernel.org>, "=?utf-8?B?SmFrdWIgS2ljaW5za2k=?=" <kuba@kernel.org>, "=?utf-8?B?UGFvbG8gQWJlbmk=?=" <pabeni@redhat.com>, "=?utf-8?B?RGF2aWQgV3U=?=" <david.wu@rock-chips.com>, "=?utf-8?B?UmFmYWVsIEouIFd5c29ja2k=?=" <rafael@kernel.org>, "=?utf-8?B?RGFuaWVsIExlemNhbm8=?=" <daniel.lezcano@kernel.org>, "=?utf-8?B?WmhhbmcgUnVp?=" <rui.zhang@intel.com>, "=?utf-8?B?THVrYXN6IEx1YmE=?=" <lukasz.luba@arm.com>, 
+	"=?utf-8?B?TWF4aW1lIENoZXZhbGxpZXI=?=" <maxime.chevallier@bootlin.com>, "=?utf-8?B?TWF4aW1lIENvcXVlbGlu?=" <mcoquelin.stm32@gmail.com>, "=?utf-8?B?QWxleGFuZHJlIFRvcmd1ZQ==?=" <alexandre.torgue@foss.st.com>, "=?utf-8?B?Vmlub2QgS291bA==?=" <vkoul@kernel.org>, "=?utf-8?B?TmVpbCBBcm1zdHJvbmc=?=" <neil.armstrong@linaro.org>, "=?utf-8?B?TWFuaXZhbm5hbiBTYWRoYXNpdmFt?=" <mani@kernel.org>, "=?utf-8?B?VGhpbmggTmd1eWVu?=" <Thinh.Nguyen@synopsys.com>, "=?utf-8?B?SmFlaG9vbiBDaHVuZw==?=" <jh80.chung@samsung.com>, "=?utf-8?B?U2hhd24gTGlu?=" <shawn.lin@rock-chips.com>, "=?utf-8?B?bGludXgtY2xr?=" <linux-clk@vger.kernel.org>, "=?utf-8?B?ZGV2aWNldHJlZQ==?=" <devicetree@vger.kernel.org>, "=?utf-8?B?bGludXgtYXJtLWtlcm5lbA==?=" <linux-arm-kernel@lists.infradead.org>, 
+	"=?utf-8?B?bGludXgtcm9ja2NoaXA=?=" <linux-rockchip@lists.infradead.org>, "=?utf-8?B?bGludXgta2VybmVs?=" <linux-kernel@vger.kernel.org>, "=?utf-8?B?bWZk?=" <mfd@lists.linux.dev>, "=?utf-8?B?bGludXgtZ3Bpbw==?=" <linux-gpio@vger.kernel.org>, "=?utf-8?B?bmV0ZGV2?=" <netdev@vger.kernel.org>, "=?utf-8?B?bGludXgtcG0=?=" <linux-pm@vger.kernel.org>, "=?utf-8?B?bGludXgtaTJj?=" <linux-i2c@vger.kernel.org>, "=?utf-8?B?bGludXgtc2VyaWFs?=" <linux-serial@vger.kernel.org>, "=?utf-8?B?bGludXgtbW1j?=" <linux-mmc@vger.kernel.org>, "=?utf-8?B?bGludXgtc3RtMzI=?=" <linux-stm32@st-md-mailman.stormreply.com>, "=?utf-8?B?bGludXgtcGh5?=" <linux-phy@lists.infradead.org>, "=?utf-8?B?bGludXgtdXNi?=" <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 16/27] net: stmmac: dwmac-rk: Add RK3572 support
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -107,273 +71,29 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS4PR12MB999075:EE_|BN7PPF7C0ACC722:EE_
-X-MS-Office365-Filtering-Correlation-Id: 27326766-1af6-4b15-015c-08df2ffade51
-X-LD-Processed: 3dd8961f-e488-4e60-8e11-a82d994e183d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|23010399003|1800799024|7416014|366016|261021123027099003|56012099006|261009220027099003|4143699003|11063799006|261009223027099003|261009223327099003|261009221227099003|261009221727099003|10067099003|22082099003|18002099003|261021121427099003;
-X-Microsoft-Antispam-Message-Info:
-	7+eiMIztOftif+r+52w89RZ/S/ya2IvX//KpqKelSkTu9Eyp/S3HJCnPJeHlX3HbeUMMWTVQ+0VTCAurvY2rUM8kRcGMCsLKTNa9fZIgn0AavvcmBpeUraLLrjptpM2xyMfo7GZxaJRfFkLX+UN7Gj+kTbKn0hFVaLdggJo7fuoEEVJ3EpMJFHYsEtDkKJbfo/qVM/XHlGEvlYm3L+MTg8McOzxaL/zqK+c9GqCL6N6fEeMLWsu3jYmPDslC7epfcdffwqb78y9ZEtkgtaBWngj61QmB6Vei3f96xq0HEBBHDOgNzwKekNhxytF9kjDevNlyASW3BxekNqGxco1F0UfSQV9CLZHke+ryziVYMcaZo3DG2KEhwsnAsct4A4iDFwc3S16BlMkvG4NdaqotRbdpURC+kXNj15mghS6WQ26dzBZdqOh1pIJTmDBPjx2Udn7TWcupsh4DwDcP9uYsAHd3DFVlRs6X91W43dlxDLrTVT+dKvspbrIt2D6Sjc49D13by0odn25BQxoaBvinL/E/7KAzLiojVJxqrAPs4LpioI9GTKXA7ddkLLhUsHRJnNlSHF6H+ea3LGK3jrsA7LZVDT447TystAQjvslwT3/4N1nmGtoOcByzsOE0ST3k
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS4PR12MB999075.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(1800799024)(7416014)(366016)(261021123027099003)(56012099006)(261009220027099003)(4143699003)(11063799006)(261009223027099003)(261009223327099003)(261009221227099003)(261009221727099003)(10067099003)(22082099003)(18002099003)(261021121427099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?bXJORUhRNU1uNVhzSWVpTjRQMkxhb291V0JxQmltUjUrck4zaVVhT1lVRzBM?=
- =?utf-8?B?d1E1M0Vad2hRK2F6bloyeEdkbVBnQjd1enQ5NDcvc1pGNnNkV1FST3VvbkFs?=
- =?utf-8?B?S0l4RGwwcXh6RExNTVFvZkROOXlHUU14YmUxbk1mcU5uaGNORGRpQTNleXhG?=
- =?utf-8?B?VDhHTG45Qmg2VDlNUTRNYldaRm5RT3QwYTJjZDN6R0FEdDliWWtubXpyS1hi?=
- =?utf-8?B?Z3g1WEsvanRvZHVVWW02R29aMlNUcDI4ZVpFUC93ZW82cG5DY0t4SHoxV1Nh?=
- =?utf-8?B?SUZuKy9IaHRaV0RwUjhNVDFVWnZHZUhiVmpVOFFoaHBIaDFDdis4ZjR2akd5?=
- =?utf-8?B?aElTZ3p5Y3pmVEY1Vm1zeU5nOHRRQlpMM2J3dzV5UTRmRFozMkFpMFJPZ01K?=
- =?utf-8?B?c2ZNMUhmNm40WE5oenVxL3ZvazREUHlqMHRqZzEyL3o2WXZ5cm1ocWdRV2dl?=
- =?utf-8?B?U3FyUEREdExOakZNTFQvaklxNzFGWktpSFBHQXpMVmIxT0xlODQ2eXBYUHdC?=
- =?utf-8?B?NUtiUnlTd3lsTTI0Rmp0U0xOTjhDMnJxVVE5VUtKajVIWk9pSTZ0cWJwbFZt?=
- =?utf-8?B?QmxCazlNZUpZLzhoSXJHSGJPRWdKZlVwSWtCbG5ud2swWDR0SVJIRGt6QWc3?=
- =?utf-8?B?SXdwbHl3UW91cXp4MnovVTg2aFFEVkxyN20zeVMrZ0pLcWxLMXRwN1Y4YXRu?=
- =?utf-8?B?S0pZRnlDQlV5QXNlZ0grdWc1SjdLU2tUcGFkVFpVaC9MVWwybDg5SStoRHIy?=
- =?utf-8?B?VkEyNWVnR3FCczU1QmRUaXBERm9NNGVkOUFQLzBuQmd3Q3pyeHVuNFRWd3NZ?=
- =?utf-8?B?bzFJU2krNS9TRGxCZ1c1YTVGblJuNmpaejlEQ1JuYzV1alFmWCswbmR6TjBC?=
- =?utf-8?B?dWtEamkwR0JSMDRXU1lKLzFtWUdsbndPT2t1dHhpblRLQkgrQkJiQTMzMmRw?=
- =?utf-8?B?WVBjWTV6cTVlK0wrQlhtVTFMWWxGcld2bGM1aXh0aFhhendqT2IzYXBwUlRX?=
- =?utf-8?B?eTFQOHRLQkRXc3QrM1VLUVc5SVo1NE5VL1V5aFd0S3M4a1JEQTRoNXB5ODRz?=
- =?utf-8?B?OTNqL0FYVWU4Q2JqdjFCYkU1Zi96SDN4R2hFVS9DN0p0eU1sdEZ6b1J1dGJx?=
- =?utf-8?B?bktEeWRrVDZhT2Yzb0NicUNNSHptaHcrMUcxdVlhYnVIdEsrZGdML1ZVT2ZF?=
- =?utf-8?B?SlpJMlRaRzBaeG5qc1E4QnlPalUxTDlzME9ZQXBYMW43cGFSN3RqcDBVWjZp?=
- =?utf-8?B?TmM4K2wydFV1WENtZDlvcWFncTJxZUwwVFYzMmVVUGNDQnMyRk0wMFF3ekpj?=
- =?utf-8?B?Nm10ZHlIMXBpZ3Fyd3lOK01jL1Qzc1kxUzNqTXA3ZlhPRVNNZjVnZ3pkTkhF?=
- =?utf-8?B?OGxac2JHdDNwaFMwdy9JR3VpS2FIL3FWcXNzSnVZQW1ya3JjYW1aaTh5N20w?=
- =?utf-8?B?c2lPTlh2RjhVL1I5a21rMjI1ejA5M0ZGaGJHbVpTMTZNbUZ4VzRYSE1YQnhP?=
- =?utf-8?B?clF5azlpeU81WlYrQy9XUUhXRnhyYTNITGRvNEMyOWh5RHVwZnM0a3QxV3ho?=
- =?utf-8?B?ZEJwQjJQS2Q4dDlOdG4vQTI2azVmZys5MHB0SzFOT2hhVmxId1lBOEVXeVlP?=
- =?utf-8?B?L2J2T1dVVWZpTHlSc0dWSDZmd0NWOVRaS2R1cmprLzVWY012eEFqdGFnQThl?=
- =?utf-8?B?dTZSTDZCeWxWRnRmRVhtNm9yWFY4c1BMWmorTndOR2VjWVk0QzdRU2JhL2dk?=
- =?utf-8?B?NjFjWTFWRVhYa1QxZlBTVVVnU2ErNFI4cktwc3BwelQ4bVk4YkNVQkI3QW15?=
- =?utf-8?B?aWJWYVFDMGJ0UHdCUVBBbTZHMVJGOXlIeG1yMEwwVWk4bUthQUdTU29wbW5P?=
- =?utf-8?B?aEMzbm96UGxqdExNZHpsbmNuaVNCaERwQjllWkJOekNLeEV6MDZMQWEwL0ZX?=
- =?utf-8?B?WEp6dWg2bjdiOC9qSS8wMUh6V0ZhYWlUZ0VGWUswaEJpZS84WU1nZ2g3Rnoy?=
- =?utf-8?B?THdNenpNbUxsQmVJRk4weGU3UFVBRjRhMmRSMk9jWkpJVVdZZFRTcGhXdDlv?=
- =?utf-8?B?NCtWbVdTemg4S0QweHNscEtJaks4ajJBOXlSR1VXVFMrZkltUFZqZ2tGTWov?=
- =?utf-8?B?WUNhMkNlTE5Wam1MUXY5cHpHRkYzNGNnc2hmNHdBWWNBaFBPSlFOM25kajMx?=
- =?utf-8?B?QktsODUxYnE2UWd1VXpoYnh4NUIwSW1LaWtZZ2xTcjFNWHAyd1hpZ2pZYmlZ?=
- =?utf-8?B?R3pud3BwVitOczVEL2d1NGpiakpaZFprUU45T1ViZVJnWXZ2aXNqK2Z2dE9R?=
- =?utf-8?Q?bJet9qSm1gu4ajIsl+?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 27326766-1af6-4b15-015c-08df2ffade51
-X-MS-Exchange-CrossTenant-AuthSource: DS4PR12MB999075.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Oct 2026 05:11:03.1332
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 2HD3p9n643+igRMJNOHYz3gCgiHblczUMWhB/WviyWC5atxCxMBUxJt0t7cIFvpugYXSXwN1fSSMFUKiYwqKMg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PPF7C0ACC722
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
+Date: Thu, 22 Oct 2026 13:33:59 +0800
+X-Priority: 3
+Message-ID: <tencent_DC0344109BFDE09B646864649812CA465409@qq.com>
+X-QQ-MIME: TCMime 1.0 by Tencent
+X-Mailer: QQMail 2.x
+X-QQ-Mailer: QQMail 2.x
+References: <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com>
+ <20261022-add-board-ok3572-c-v1-16-0b0fd85a31ee@qq.com>
+	<b1ab0503-628c-4f96-af38-727d4be06f8a@lunn.ch>
+In-Reply-To: <b1ab0503-628c-4f96-af38-727d4be06f8a@lunn.ch>
+X-QQ-mid: xmsezb41-0t1792647239txf7q5rwo
 
-Hi Frank,
-
-On 10/10/2026 8:39 AM, Frank Li wrote:
-> On Fri, Oct 09, 2026 at 09:30:10AM +0530, Golla Nagendra wrote:
->> Replace pm_runtime_resume_and_get() with the PM_RUNTIME_ACQUIRE_AUTOSUSPEND
->> guard to manage the probe-time runtime PM reference lifecycle. If the guard
->> acquire fails, fail probe immediately so a broken device is never
->> registered.
->>
->> When runtime PM is not enabled for the device, call
->> zynqmp_dma_runtime_resume() directly after pm_runtime_enable() to bring the
->> clocks up for probe.
->>
->> On probe failure after a successful guard acquire, drop the reference with
->> zynqmp_dma_probe_pm_put(), inhibit the guard destructor with
->> retain_and_null_ptr(), and gate the clocks through
->> zynqmp_dma_probe_fail(). When runtime PM is enabled,
->> zynqmp_dma_probe_pm_put() uses pm_runtime_put_sync_suspend(). When runtime
->> PM is not enabled for the device, balance the guard usage counter with
->> pm_runtime_put_noidle() and gate the clocks with
->> zynqmp_dma_runtime_suspend(). Runtime PM does not suspend a device that
->> is already disabled, so pair every direct zynqmp_dma_runtime_suspend()
->> call with pm_runtime_set_suspended() to keep the runtime PM status in
->> sync with the clocks.
->>
->> On probe success, release the probe-time reference with
->> pm_runtime_put_sync_autosuspend() when runtime PM is enabled for the
->> device. When runtime PM is not enabled for the device, balance the guard
->> usage counter with pm_runtime_put_noidle() only and leave the clocks
->> enabled so that later channel allocation can use the hardware. Inhibit the
->> guard destructor with retain_and_null_ptr(pm).
->>
->> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
->> ---
->>   drivers/dma/xilinx/zynqmp_dma.c | 68 ++++++++++++++++++++++++++++++-----------
->>   1 file changed, 50 insertions(+), 18 deletions(-)
->>
->> diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
->> index 3b7dfa53f972..a48106e404e7 100644
->> --- a/drivers/dma/xilinx/zynqmp_dma.c
->> +++ b/drivers/dma/xilinx/zynqmp_dma.c
->> @@ -18,6 +18,7 @@
->>   #include <linux/slab.h>
->>   #include <linux/clk.h>
->>   #include <linux/io-64-nonatomic-lo-hi.h>
->> +#include <linux/cleanup.h>
->>   #include <linux/pm_runtime.h>
->>
->>   #include "../dmaengine.h"
->> @@ -1077,6 +1078,29 @@ static const struct dev_pm_ops zynqmp_dma_dev_pm_ops = {
->>   			   zynqmp_dma_runtime_resume, NULL)
->>   };
->>
->> +static void zynqmp_dma_probe_pm_put(struct device *dev)
->> +{
->> +	if (pm_runtime_enabled(dev))
->> +		pm_runtime_put_sync_suspend(dev);
->> +	else
->> +		pm_runtime_put_noidle(dev);
->> +}
->> +
->> +static int zynqmp_dma_probe_fail(struct zynqmp_dma_device *zdev, int ret)
->> +{
->> +	bool rpm_disabled = !pm_runtime_enabled(zdev->dev);
->> +
->> +	zynqmp_dma_chan_remove(zdev->chan);
->> +	zynqmp_dma_probe_pm_put(zdev->dev);
->> +	pm_runtime_disable(zdev->dev);
->> +	if (rpm_disabled || !pm_runtime_status_suspended(zdev->dev)) {
->> +		zynqmp_dma_runtime_suspend(zdev->dev);
->> +		pm_runtime_set_suspended(zdev->dev);
->> +	}
->> +
->> +	return ret;
->> +}
->> +
->>   /**
->>    * zynqmp_dma_probe - Driver probe function
->>    * @pdev: Pointer to the platform_device structure
->> @@ -1087,7 +1111,7 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>   {
->>   	struct zynqmp_dma_device *zdev;
->>   	struct dma_device *p;
->> -	int ret;
->> +	int ret, pm_err;
->>
->>   	zdev = devm_kzalloc(&pdev->dev, sizeof(*zdev), GFP_KERNEL);
->>   	if (!zdev)
->> @@ -1128,21 +1152,30 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>   	pm_runtime_set_autosuspend_delay(zdev->dev, ZDMA_PM_TIMEOUT);
->>   	pm_runtime_use_autosuspend(zdev->dev);
->>   	pm_runtime_enable(zdev->dev);
->> -	ret = pm_runtime_resume_and_get(zdev->dev);
->> -	if (ret < 0) {
->> -		dev_err(&pdev->dev, "device wakeup failed.\n");
->> -		pm_runtime_disable(zdev->dev);
->> -	}
->>   	if (!pm_runtime_enabled(zdev->dev)) {
->>   		ret = zynqmp_dma_runtime_resume(zdev->dev);
->> -		if (ret)
->> +		if (ret) {
->> +			pm_runtime_disable(zdev->dev);
->>   			return ret;
->> +		}
->> +	}
->> +	PM_RUNTIME_ACQUIRE_AUTOSUSPEND(zdev->dev, pm);
->> +	pm_err = PM_RUNTIME_ACQUIRE_ERR(&pm);
->> +	if (pm_err) {
->> +		retain_and_null_ptr(pm);
-> 
-> Not sure why need call retain_and_null_ptr() here, generally only need
-> call retain_and_null_ptr() at success pass if you use want to keep
-> runtime_pm active. at fail case, needn't do that.
-> 
->> +		pm_runtime_disable(zdev->dev);
-> 
-Thanks for the Review> If use devm_pm_runtime_enable(), needn't this one.
-
-We intentionally keep the nondevmpm_runtime_enable()pm_runtime_disable() 
-pair here and do not switch to devm_pm_runtime_enable(). 
-devm_pm_runtime_enable() registers a devm action that calls 
-pm_runtime_disable() automatically after .remove returns. Since remove() 
-already calls pm_runtime_disable() explicitly itself, switching to the 
-devm variant would mean pm_runtime_disable() gets called a second time 
-for the same device — driving disable_depth into underflow, along with 
-any other invalid state that comes from disabling an already-disabled 
-runtime PM.
-
-If we remove the explicit pm_runtime_disable() from remove() to avoid 
-that double-disable call, it would affect the fix introduced in commit 
-9c58a42c1612 ("dmaengine: zynqmp_dma: fix race between runtime PM and 
-device removal"), 
-https://lore.kernel.org/all/20260630064844.705173-2-nagendra.golla@amd.com/
-which added that explicit disable specifically to close a race between 
-runtime PM and device removal.
-Dropping it would reopen that same race.
-
-Thanks,
-Nagendra
-
-> 
->> +		if (!pm_runtime_status_suspended(zdev->dev)) {
->> +			zynqmp_dma_runtime_suspend(zdev->dev);
->> +			pm_runtime_set_suspended(zdev->dev);
->> +		}
->> +		return dev_err_probe(&pdev->dev, pm_err, "device wakeup failed\n");
->>   	}
->>
->>   	ret = zynqmp_dma_chan_probe(zdev, pdev);
->>   	if (ret) {
->>   		dev_err_probe(&pdev->dev, ret, "Probing channel failed\n");
->> -		goto free_chan_resources;
->> +		retain_and_null_ptr(pm);
->> +		return zynqmp_dma_probe_fail(zdev, ret);
->>   	}
->>
->>   	p->dst_addr_widths = BIT(zdev->chan->bus_width / 8);
->> @@ -1151,7 +1184,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>   	ret = dma_async_device_register(&zdev->common);
->>   	if (ret) {
->>   		dev_err(zdev->dev, "failed to register the dma device\n");
->> -		goto free_chan_resources;
->> +		retain_and_null_ptr(pm);
->> +		return zynqmp_dma_probe_fail(zdev, ret);
->>   	}
->>
->>   	ret = of_dma_controller_register(pdev->dev.of_node,
->> @@ -1159,19 +1193,17 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>   	if (ret) {
->>   		dev_err_probe(&pdev->dev, ret, "Unable to register DMA to DT\n");
->>   		dma_async_device_unregister(&zdev->common);
->> -		goto free_chan_resources;
->> +		retain_and_null_ptr(pm);
->> +		return zynqmp_dma_probe_fail(zdev, ret);
->>   	}
->>
->> -	pm_runtime_put_sync_autosuspend(zdev->dev);
->> +	if (pm_runtime_enabled(zdev->dev))
->> +		pm_runtime_put_sync_autosuspend(zdev->dev);
->> +	else
->> +		pm_runtime_put_noidle(zdev->dev);
->> +	retain_and_null_ptr(pm);
-> 
-> You mix use auto cleanup and pm_runtime_put_sync_autosuspen() and
-> pm_runtime_put_noidle() to make code mess up.
-> 
-> Frank
->>
->>   	return 0;
->> -
->> -free_chan_resources:
->> -	zynqmp_dma_chan_remove(zdev->chan);
->> -	if (!pm_runtime_enabled(zdev->dev))
->> -		zynqmp_dma_runtime_suspend(zdev->dev);
->> -	pm_runtime_disable(zdev->dev);
->> -	return ret;
->>   }
->>
->>   /**
->>
->> --
->> 2.43.7
->>
+SGkgQW5kcmV3LAoKPiBZb3UgbmVlZCB0byBzcGxpdCB0aGlzIHBhdGNoZXMgcGVyIHN1YnN5
+c3RlbS4gUGxlYXNlIHNlbmQgYWxsCj4gbmV0d29ya2luZyBwYXRjaGVzIHRvIG5ldGRldiwg
+b25jZSB0aGUgbWVyZ2Ugd2luZG93IGNsb3Nlcy4KPgo+IGh0dHBzOi8vd3d3Lmtlcm5lbC5v
+cmcvZG9jL2h0bWwvbGF0ZXN0L3Byb2Nlc3MvbWFpbnRhaW5lci1uZXRkZXYuaHRtbAoKVGhh
+bmsgeW91IGZvciB0aGUgZ3VpZGFuY2UuIEkgYXBvbG9naXplIGZvciB0aGUgaW5jb252ZW5p
+ZW5jZS4gSSdsbCBzcGxpdCB0aGUKc2VyaWVzIGJ5IHN1YnN5c3RlbSBhbmQgc2VuZCB0aGUg
+UkszNTcyIEV0aGVybmV0IGJpbmRpbmcgYW5kIGR3bWFjLXJrIGRyaXZlcgpjaGFuZ2VzIHRv
+Z2V0aGVyIGFzIGEgc2VwYXJhdGUgc2VyaWVzIHRvIG5ldGRldiBhZnRlciBOb3ZlbWJlciA5
+LCAyMDI2LgoKQmVzdCByZWdhcmRzLApDdW5oYW8=
 
