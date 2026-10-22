@@ -1,55 +1,109 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792677771;
-	b=LxCtSEC9U1NhrlUK+9zBfPwSV6Co65YGRQWGQSEEpv3sxv2pGnbhzvtOkhXe2SthUOBm
-	 hkvqdwWtMy9inaKzoh7u7J6VOOLJoHTr3IVJN0fVlHsYPk1jSwbO2i6PG/S7iMrBg2Rzb
-	 ha0uii1qss94UFGBRirvY+wKLG17zU9bNU85rCNMbPFKZqMNySUGgPSt0QNHKWYKMmj7x
-	 RWHd8PzyPm6CGTV3lO1b572lwmtAOIlZNe7g7yxexxJkqjfFaL5YR90bioHC2aTiA+QK2
-	 rhsOLrSa66WbIcTeaNw+3CnlEUBAIwpi2+aREb1PyGNvYPfVyWTnCmFxzPaLejiMPfA==
+	t=1792678514;
+	b=VGWFKL8YmYR6EpFKNsql10WLnvylINlwmKfFMn+P3FkYWyEYAWCB3RQtnRiQ/ZTLBbdN
+	 27s2a0edMmqTX9cqfXs8K3tf1lI8wKyv2fzhIb7iaFArSZ0+X5P+KkcDDY1zbTw45X+yS
+	 jEMvaveT3N4oS9gCH8gu1T3xoI3UJ43NocPmnC8VxKe1/wHWd+IgZ8x2mNVCHpTqqjnYv
+	 I+aK+l//MT2LHPRSJ04ClDTu/k+j5k61nKWimXehTNksdAg4kSiaBJH3sgkkozjAFRh1H
+	 vLUVRKyeeR1WtF9eqMeukj/3c/iMqlE2bwesqyqas508rHlSD7LDuSK1FJUGnOBfnag==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792677771;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=89oFWpy7/fXqqbrfoJkdUcmDMlD4RYJFfDd35c+oJhg=;
-	b=CvjcMfkTZif8zilfvSgPQP71q8n5s4VIeO58O2bbzJZ8+O+VR8h/a5bDAoC6FPb9TrFQ
-	 Lk2D5g/0BGuLImCfvA245cP7MjyL5zaLsXkjs4HfXczLSbdqgtbRmwhl0U9E8AbOcUtB8
-	 l7J3NWonFNnR3zhJebKCryQGglH6upCf3eMecncrL3XxER0zlFlPI6gTiMDP9cCPxPMwf
-	 z0KCFK2EBLd4nwt/7rEpWL2AG+wU5KCH5ME1xB6pzY7ebWA1sWCkTvimlLivz6TP77hnN
-	 kIPVyKGkNMFTaI7OtPj+8poMmP4qr6zWsheP0lz7kkWJ06/XTdNRAcBSa4fLYED+B1g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792678514;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:X-Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-GUID:X-Authority-Analysis:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=;
+	b=WnU57XFTfudwBJWQ0ursRRkkyQIxZCObMN18CTQ8twDxpesb4/+40mtJ+ls8TebAu52X
+	 iKj+d/jYhrmX1KOyB/mVw9D6AvIPBDKGjg4k2yYSv+PfaNs7FR/ReOsgbyvk4BeWkDxnl
+	 VgAPm25iPaseNusgMXCf2PMA19uxFxtdrLumk5+0sg/s9eZBkYmMLek/aEzdyx6yssvbY
+	 vlT61I4WiOM5F3Ls21z0hDK2GvEx42wbSv7QNrZVHMMcUnYMNvOrmsxemLGgRwQxpoGT9
+	 P829tpiPffmwa1DWhakiISLBI6LFEUD6sIeq60RGbZYEWDtTg300WPl3KEBWfXBDTPA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JgE1FJhG;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Be6NBfr9;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="NVZCD/mu";
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB151606A31A
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 14:02:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E8C3606A31D
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 14:15:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4E8C3606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JgE1FJhG
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95AA51F000C6
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 14:02:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792677770;
-	bh=89oFWpy7/fXqqbrfoJkdUcmDMlD4RYJFfDd35c+oJhg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=JgE1FJhGZy2aDKaJ0gRpV8e6diMaQy+ymqNl1hxg4Veesrqdj9MG88vGrWP/w7Lni
-	 gxtqGd7yTFX9TubnCDOA1wGdRXThlRDaf6PfFFVVwYW/Qt+dfgCAdy0HIYcPQvvHOa
-	 HBZEofbWDI7GiWKPq09NCMjoS7Vaql37BGLw87JVj3AlemrEZrNfyHfG3pREOw8FIu
-	 9h9skjbTqfzI/0g5fdEb+XjR65yeOnSZS6hoVEFJRXvmJJCwhO9pTD85zCDAk2ITiV
-	 EFjw0RV1cY1m2vgZ0bHbjFWI0rC0lStqVQmhwFCHgnFQN1qDBK2C6QumDLiqszJrn/
-	 YhyHqnB6faQhw==
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5ba35c0df4fso2002268e87.0
-        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 07:02:50 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwv8YE2UPdGXUkjLRTbDWGMiTzJhWyyaWsSLoX8zGyPD52FurUFQNIGe27ydpRTPoETIwflGhE4Yg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJxgSuErwALrGSwWks55pKRoXkaxlQpsH1gR0jfuXL5mWtdfG25
-	isiYwdmxHjyOKSrGb7mawxzB6IvitWMwirKMtQOlSUBEXjKBhTUGmXcgVJBAyCQXVGC5U0XcS9X
-	IAWfSErzZHOXNd+8H5ef3MysXZ2BVezQ=
-X-Received: by 2002:a05:6512:31cd:b0:5be:42c0:6ce4 with SMTP id
- 2adb3069b0e04-5bfa1be92b4mr2034800e87.17.1792677768810; Thu, 22 Oct 2026
- 07:02:48 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Be6NBfr9;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=NVZCD/mu
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69MA04lw1963368
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 13:39:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=; b=Be6NBfr9WxHlkwvF
+	6nOUpLIAC3TICYgkTGSPqkQGmc9FrbjdwwbEoeyHY4x0F4/oPnHenlt1Ed9kc2Hu
+	jhAiWVqtYm+bO4j5UPJaLOWq8OAL80XWTnv8l0j7n+APsNAuw1Gkh9KD61DwQQN+
+	lOQzfqTo3WkpCSZsUjiNGvviNfyK4OYpTTxyAN9bqw4SU3yMczekcce5hfcfyR/3
+	+3HeutSj7kN9AKcFVnLGpCtK9O+FkzZxnnw93IbTFBDw6Zpzd4dbv+fdIzqdqsza
+	wNQARzANHSc0UN5oOnySx9p1vBNM/MU/XOqmgSq1rDh5xrXo4IsghUysItnogfRS
+	szIYNA==
+Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hf93akqcg-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 13:39:53 +0000 (GMT)
+Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-33c35f5ca6cso3477350eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 06:39:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1792676393; x=1793281193; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=;
+        b=NVZCD/muE0lO60jqUZKKgtOyvNnOmvIHPHMpENRJ9MFesMq5HIM4e7aaNAT5m8FlzB
+         i8wMySKrS2V1v+n2mOUtgeUXgG3yEMnnUhoFE+FfHwcoNN0z1jEdATXO9a0S3HrRwiSt
+         VEbN1A3V6NoSGJnjw6H4XSL8SqEiddkKq04tOdpFtt5jlUu7eneVaGHxabIGUZJhIdXQ
+         VGlIJdqcs1xzOyMXRH+T4oeUF4Kwb7OcvrBUCiimnxiSHCrbohwmAfKc9V7b19lB676b
+         ThWpPSYgamnOap4DplpqCj5dU4P6USpYroA1Iw6Douqxuc7WR3xRE46EXop7F4YjyjF0
+         VQSQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792676393; x=1793281193;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Iorya9CJVmbbeV06oongNxWV99dGCu9hixBeNSCACWI=;
+        b=Q7sCs6OSyrcZtiQGinl8xlpWCj6GPVDsap+j9u7g5bO451Ge4X6UfoMBvQTUimgzll
+         8Q3TF5il5AW+1rd/ai2gnN2iTwuzlaNF1lvRMkbBTUMez2V9t/Os+5ss8JrlAHcW+sJB
+         0pQX3MReEA/XYEIcwkNfMStb7DsyfPcD0ECcv4CQZkOw2Va1JSPyLiEFbPiBmIMfujnW
+         o5FFYOjDJqGMoZLBFx/y4Dm/fGtojb1wa1zEnwUCrZw8xoxn6wWJeerJiHs+A/gbra41
+         D+Htj8MEjZxI+hRW9be3G3oVNzRbTBGC/JHqZW9LOmiiti9PhE84dZJAsS4cGaTFPGZL
+         zCPw==
+X-Gm-Message-State: AFq9FYJv8Gk4thOqoqh6sA5MdqoRnra2rBf1zN/at9iC+QTEkpOHgWPp
+	QkNX2IWOpCBKfFTkxQKWb6e+e9S2tXnSFTUdhhx4aVJQLcZ2Bh0JxvykvJR2swiGOz2KT0ZSdCr
+	Jpso3xytLUJd1dQ425cPLqqc/3xDAPEV9lQoIyh7K6+HzrAmpYFMy8DlW9V89GQ==
+X-Gm-Gg: AYBFou0AriFvjLXpRbRH5GKwzYrJvyOWo0fNafPEVoJN7AN1g5b9MeH4ZU/8MwiqLAV
+	mlY6bFl/mLKV3xQAskRh8pVAAN2U4QrWO13htzaJtakYvvL/Cjfl0IugK4FYXDQLeo/689DaSSt
+	ht+ksUjrCS9dwyJllW/+qrpCNtkrk7wSGiWUgIXaGFn6UD1eRgChWB8zd28/a5LZOPzhsaAfbr+
+	36MvUgTx2mEEX9A81At9WAsW/SgNbfm7mgXy3NfBDib446LbtMMSzc9gIsg6rne91H9b3vHHtEH
+	lCsPoXIAP62Elcf5j3rGBC7VFfpWM+S+zCgk48Si6P51YlzNCFUu43SUd4HOxe+TTiUnrJsI3kw
+	ui5gjY7VRfWnDldAWJKWxv1zRQP7xRQ==
+X-Received: by 2002:a05:693c:87d3:20b0:369:7c:bfce with SMTP id 5a478bee46e88-369008c220fmr2325122eec.14.1792676392902;
+        Thu, 22 Oct 2026 06:39:52 -0700 (PDT)
+X-Received: by 2002:a05:693c:87d3:20b0:369:7c:bfce with SMTP id 5a478bee46e88-369008c220fmr2325059eec.14.1792676392215;
+        Thu, 22 Oct 2026 06:39:52 -0700 (PDT)
+Received: from [192.168.1.9] ([106.222.235.141])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-367416a1fb9sm14556522eec.20.2026.10.22.06.39.43
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 22 Oct 2026 06:39:50 -0700 (PDT)
+Message-ID: <f83c366e-e3fe-4921-8407-ffa90b7f933f@oss.qualcomm.com>
+Date: Thu, 22 Oct 2026 19:09:42 +0530
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,113 +113,122 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261020121846.691218-1-sumitg@nvidia.com> <20261020121846.691218-5-sumitg@nvidia.com>
- <cf4e3153-ff80-4d0d-94f7-572a26f369c1@arm.com> <51747329-abe1-406a-aeae-94ebb7a35bf4@nvidia.com>
- <85da866f-4fbb-4cf2-9376-3f7405e049ef@arm.com>
-In-Reply-To: <85da866f-4fbb-4cf2-9376-3f7405e049ef@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 22 Oct 2026 16:00:28 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iXip_5Ywk3EkrGL_u2w_hOcGKA1XvrubLPb3diWHx5Lw@mail.gmail.com>
-X-Gm-Features: AclHuK-vTfvlIZ3lOGv_EwwgmPMlFSmRAOWiMov9GEuALAEDP0Pgfx35UBoLgu8
-Message-ID: <CAJZ5v0iXip_5Ywk3EkrGL_u2w_hOcGKA1XvrubLPb3diWHx5Lw@mail.gmail.com>
-Subject: Re: [PATCH v6 4/5] cpufreq: CPPC: Preserve OSPM-set registers across
- hotplug and unload
-To: Christian Loehle <christian.loehle@arm.com>, Sumit Gupta <sumitg@nvidia.com>
-Cc: viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com, 
-	zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, ray.huang@amd.com, 
-	mario.limonciello@amd.com, perry.yuan@amd.com, kprateek.nayak@amd.com, 
-	maciej.wieczor-retman@intel.com, pawel.chmielewski@intel.com, 
-	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org, treding@nvidia.com, 
-	jonathanh@nvidia.com, vsethi@nvidia.com, ksitaraman@nvidia.com, 
-	sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/6] arm64: dts: qcom: kodiak: use thermal hw-bin trips
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Randy Dunlap
+ <rdunlap@infradead.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+References: <20261002-thermal_bin-v1-0-5a29be7e8ec5@oss.qualcomm.com>
+ <20261002-thermal_bin-v1-5-5a29be7e8ec5@oss.qualcomm.com>
+ <9800eb77-0188-4b16-a672-adb7ee1a603c@oss.qualcomm.com>
+Content-Language: en-US
+From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <9800eb77-0188-4b16-a672-adb7ee1a603c@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIyMDA1NCBTYWx0ZWRfX7MTUFUxfZZKe
+ PmFFTiY9yoXwRxfhXLevB0gOH+waBjPTVgNR5/bEeLv6Jk/LsBXmzlVX5jib+vqz96tQ1lEZXA7
+ RHXhUS17+PrnjaH7B1NhsbMwbb6Q3YyUHu6tN561ZvBBGMA6V7EU2XG6o4O2b8v25ECl7FgWYDL
+ vud8tmga3Q9HHPwRis8b+EOfRxx9k+4BR5p1lnUgyHcNNIhBWmp/Ds6fof9PlHSZP/Sao2S1pwX
+ tE40b0KZB1QMUrAyar/WH9/XU+KnpYiuGukyzVpzchQfX9B5PlxsAPCYHq3oWWU2fONc6B+akLN
+ R8zgoItxww9GVyWLylTGnY7taJg3kTmAL65mPLOzfB/Pp7nRj0VwDMcJax4Ez1bnVXgDmSxpklu
+ Y4ypUJr23hly/0284ESjeuUA9W+sQrn4twenE5JVs062A1VmyzoO5bvhkSI0PXj23LgY6TtVqMu
+ FN244U3B94mwmaYrZKA==
+X-Proofpoint-GUID: 58JIwGyqopTXgElElUUhCdIlZQl9b5C4
+X-Authority-Analysis: v=2.4 cv=feg4WEQF c=1 sm=1 tr=0 ts=6ada1229 cx=c_pps
+ a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=8wa5AUNoahJ04lRaSfAPWg==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
+ a=EUspDBNiAAAA:8 a=2wNLjvyEnIyB1ESV7yEA:9 a=QEXdDO2ut3YA:10
+ a=bBxd6f-gb0O0v-kibOvt:22
+X-Proofpoint-ORIG-GUID: 58JIwGyqopTXgElElUUhCdIlZQl9b5C4
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIyMDA1NCBTYWx0ZWRfX9mzursTbm5IO
+ TbacfTkSO83/Q+Nwe3jDROMGDrRj55SuW/5ld2V+z2NZRtEgGdn7/wVF8+xzvNBCdDkTOHEdYid
+ NVMuytex14L3oLENuAWWYIgsNrin1lw=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-22_04,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0 suspectscore=0
+ spamscore=0 adultscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610220054
 
-On Thu, Oct 22, 2026 at 3:23=E2=80=AFPM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 10/22/26 11:10, Sumit Gupta wrote:
-> > Hi Christian,
-> >
-> >
-> > On 20/10/26 21:41, Christian Loehle wrote:
-> >> External email: Use caution opening links or attachments
-> >>
-> >>
-> >> On 10/20/26 13:18, Sumit Gupta wrote:
-> >>> Values written to OSPM-set CPPC registers via sysfs can be lost in tw=
-o
-> >>> ways:
-> >>>
-> >>>    - Across CPU hotplug: the platform may reset a CPU's registers whi=
-le it
-> >>>      is offline.
-> >>>    - On driver unload: the value the driver wrote is left in the regi=
-ster
-> >>>      instead of returning to its pre-driver state.
-> >>>
-> >>> Add a small table-driven mechanism that handles both:
-> >>>
-> >>>    - On init(), capture each register's firmware value before the
-> >>>      driver programs anything.
-> >>>    - On offline(), read back each register's current value (whatever =
-was
-> >>>      last set via sysfs) so it can be reapplied, then restore the fir=
-mware
-> >>>      value.
-> >>
-> >> Sorry for the late suggestion, but all the ospm-set registers I think =
-we can
-> >> save ourselves some headache by just saving these at sysfs_store (and =
-not deal
-> >> with potential read-errors during offline/suspend (which actually may =
-happen!).
-> >>
-> >
-> > v1 [1] saved the values at store time. In v2 I switched to reading
-> > them in offline(), following the flow discussed in [2]. One read there
-> > covers every store handler and the pending boot parameter series.
->
-> Ah right!
->
-> >
-> > But a read error in offline() or suspend() drops the request. A failed
-> > reapply in online() can also leave the register at its firmware or rese=
-t
-> > value, which the next offline() or suspend() then saves over the
-> > request. Saving at store time keeps the request in both cases.
->
-> Yup, that's more reasonable IMO
 
-Yes, please!
 
-Cache stuff at store time.
+On 10/22/2026 2:39 PM, Konrad Dybcio wrote:
+> On 10/2/26 12:47 PM, Gaurav Kohli wrote:
+>> From: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+>>
+>> kodiak-based SoCs are binned at manufacturing time, with the bin
+>> computed from the jtag-id and feat-id qfprom fuses.  The tsens driver
+>> now reads these and feeds the resulting bin to the thermal core, which
+>> selects per-bin trip temperatures.
+>>
+>> Add the jtag-id and feat-id nvmem cells to the tsens nodes and convert
+>> the passive mitigation trip points from a fixed 95C to per-bin values
+>> (95C for bin 0x1, 105C for bin 0x2) using the new
+>> temperature-bin/thermal-hw-bin properties.
+>>
+>> Signed-off-by: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+>> Co-developed-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>> ---
+>>   arch/arm64/boot/dts/qcom/kodiak.dtsi | 56 +++++++++++++++++++++++++++---------
+>>   1 file changed, 42 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/arch/arm64/boot/dts/qcom/kodiak.dtsi b/arch/arm64/boot/dts/qcom/kodiak.dtsi
+>> index 347815e5983e..f3bb9cd8f393 100644
+>> --- a/arch/arm64/boot/dts/qcom/kodiak.dtsi
+>> +++ b/arch/arm64/boot/dts/qcom/kodiak.dtsi
+>> @@ -1019,6 +1019,16 @@ gpu_speed_bin: gpu-speed-bin@1e9 {
+>>   				reg = <0x1e9 0x2>;
+>>   				bits = <5 8>;
+>>   			};
+>> +			jtag_id: jtag-id@180 {
+>> +				reg = <0x180 0x4>;
+>> +				/* bits = <offset width>: 20 bits at offset 0 */
+>> +				bits = <0 20>;
+>> +			};
+>> +			feat_id: feat-id@180 {
+>> +				reg = <0x180 0x4>;
+>> +				/* bits = <offset width>: 8 bits at offset 20 */
+>> +				bits = <20 8>;
+>> +			};
+> 
+> Couple nits: please keep a \n between each subnode
 
-> >
-> > We could combine the two. Keep the policy across hotplug and the
-> > firmware restore in offline() from v2, and save the requested values
-> > at store time as in v1:
-> >  - init() saves the firmware values and uses them as the initial
-> >    requested values.
->
-> Yes, I guess if we cannot read the initial values at init() (or first
-> autosel enable?) there's no point in letting the driver initialize
-> (or allowing autosel=3D1 respectively)?
->
-> >  - Each sysfs store updates the requested value after it succeeds.
->    The boot parameter series will do the same.
-> >  - offline() and suspend() restore the firmware values without
-> >    reading the registers.
-> >  - online() and resume() reapply the requested values. If that fails,
-> >    the request is kept for a later online().
-> >
-> > Does this sound fine and keep the intent of the earlier discussion?
-> > I will respin accordingly.
->
->
-> To me it does,
+thanks for review, will fix this in v2.
 
-+1
+> 
+> 
+> [...]
+> 
+>>   				cpu0_alert1: trip-point1 {
+>> -					temperature = <95000>;
+>> +					temperature-bin = <95000 105000>;
+> 
+> Please do <foo>, <bar> instead of <foo bar>
 
-Thanks!
+Sure, will update.
+
+> 
+> Konrad
+
