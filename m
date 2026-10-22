@@ -1,107 +1,110 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.84.19
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792684376;
-	b=5ZzB3Ikfs+IQck2ehXEtLiw2F4N+S0hQWK+qEyczZeBZAcidk5wX/h/7ENw/B9y5mMDZ
-	 RmGZcZ5g3adm4SPA+oFcNAgKs9MzGdQ0cR20Yk4hxqrINGVZIokK66bwFles/myZxloz3
-	 cPFf+z+jjgElWiBKrx4H+sXCYIzeHURrBUkCKQlEi5HAmE9GfLWejCCPEWZvVoiLYtO7T
-	 T8U2XIN/xIPkMHW7zpbMdDAk9ZYfABhv3pRUHBOOWzb9++gtx8l6h62zDn/F8x8gCiWgv
-	 n1L3+MlU1UqAoRAq83hNZ7T7X9IFyDF0YhqhfssIjPjgNqUJ/buTx4NW7YjPLIN+hjQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792684376;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:Content-Type:Content-Disposition:
-	 Content-Transfer-Encoding:In-Reply-To:X-ClientProxiedBy:MIME-Version:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
-	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
-	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=Qr1vP+OgnJHy8jPEybda2XB3G+VunFh1U/WUL872/4o=;
-	b=ZYZKpj+GA8JY+OfH2wuVPbmNssX+5iSIM2OH3qmKP3SXfXwc+psluTQCOI2fEOfxvOCT
-	 +LBjLd3t80nyhDkJ67fyZ0c354JxSF6Q+mVO/VjcM96h+JmRRR+NtkQLcFb99XpXRPEfp
-	 fD/0mmMEu1yfOam22nSpXZMbhJolJCbX82GonZCTd8F4Gg27R4HRD7dVhq89xiLKzJckp
-	 Hye0hx6ZTM7zwLC2HzHjqXul59SJCr4gnGyUvc6ntaGgzBPDqFSMG1W4knUlA2pQFWyVK
-	 b5RHOmsuUZLYfhwtDbZilg1ULiOgJHopwbB2aFxrTSx8GrQso/rB6vdmtXPHOiI7PeQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.nxp.com;
-	spf=pass smtp.mailfrom=oss.nxp.com;
-	dkim=pass header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=PCVghYfp;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.84.19
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010019.outbound.protection.outlook.com [52.101.84.19])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.43
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1792687343;
+	b=lqQbk6zhmpnJ6hIw3qxI0qc820ZRw+mgOv+s3EG5VJrBPwdtBO1Pzq3KXI5QFLBYp2mV
+	 FUboUZlb0MLvDQZaTJtYev8IZrX4uuLGk2zDsLA7muP86yG3DwBISmCC2gCQw9dqmdt9v
+	 CHqm6ntE4u0CZ404i5ITh/X8AVvIHI6OqgnvtcgeNgkluNVz/jpQ/kbwwfUINaMjjdTJe
+	 w9NZ88T31jajgEE5XXmZ1C4LqZaM92DjXGWas342ixx2c30Rn1qdmHO9CId3h6nfrz3KM
+	 5UR54iZecNV0R1JbmbRNCi2qqKkmLHkfz/NKmb65zQmsBNtwAZfmXVebNfES40Y4IrA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792687343;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=BpFS6ySbwG4J+0ZDYOqEgZMFTp6XLFpyMVM4kuMmIEU=;
+	b=Jr1zk71JE3+MPbR/R2dj8TlwHtZ6pOv6GVJ0kYDoGK3tQwJZGM6CBRyhV8DwPKXHUYRS
+	 NP+A5LDLksZaaFZVsdk58TCbI8XbHBWS27iuXbaK+bAMj7DUmr9daQ7xraXfU1sfLgJNX
+	 G96FAUl/cWkCBK3tQNSyzKwq+55Nezwja1M5tS2CRL1a6gnOI3snd7HAOMAtAp9qZr9/Y
+	 oIU9qENosw8FrWKh0jAzOIww59SOYgTuKBeX+3C7FE6fIhxt72ba1o04+eGiSCej8kwS9
+	 WCqKiFKO2G+tEQA9/mExZl+nkYUTHUt/q485LOBj/QDX7zf5GjR0Y5Ee+7VZ2IOyWDw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b="Zly/bhuk";
+	arc=none smtp.remote-ip=209.85.221.43
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5F56606A319;
-	Thu, 22 Oct 2026 15:52:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5F56606A319
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14D56606A31D
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 16:42:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 14D56606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=PCVghYfp
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=rgXc4O2HfdENmna5ANGZO/CSolotueChf5L0giaCJ10LrOE9g2gcKoJ/P2uFHrIQVrCEOET1kN2lXXFlxq42f1/7NNcFrpzLRci/fzufJnydkrHBZQsUj0GpQIGApcfZg5Qwq6cPUY8Xigjfg2CIxlXjJArj65Lhi6pfZwS0Gzm7sEwNH0zZs+oRcV/d6mFbXRVpulnxRyEympV8rAXjoVV0LYN4YiXKbToH2AGPtJ7RfWKBbgRSk9qNYhkM5+cblF4gZUQ3SE8cq8J0LbR78TS/5dFjb3fwlbmUW5KNVRIu5XHamp3YSYt1NRvzDDQXN6iJpa21ViP/885SmbJr3A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Qr1vP+OgnJHy8jPEybda2XB3G+VunFh1U/WUL872/4o=;
- b=EyNOSzFXVFWRquY/cQI2vrTVy1eTA2X/v6t7jGnti4wD1xEADZSc9aZzuFoRHtyAQq4Re1NLY+kYY7gOZjMKVk4eu9tl4GdNoDFCah7si0AoZBHTOSNum2iVQYOruy0Ze9FvgcPXu2sRDWKxEeqEUiPUjzPAs8l5C2wdkFS7sg9635fTtamyDlBlc4QQgXZutc3IgpxYE/uzyBI59rJe9SBMDow5YFA0BLs18butkgOQ9WIqeSIUgNn1cxOypHqaox95DkWd5OAsgqtgA+JfHfBVx3ryNW4GAGciR24Jh6C3dKrZMAzJ2YRfhhOniIoePtV6dmF0CLNfs89Z4AIuMA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Qr1vP+OgnJHy8jPEybda2XB3G+VunFh1U/WUL872/4o=;
- b=PCVghYfpQvzUHZtHO0zZEhe6LZSbpCb04tlNgoMg64pcma3MuXd36A8DwmbhUXutypea+18APUxv3kaeGRljEB8BtaybJuQew92X/d/b15Zs7nd3mFaKrr3qELiGmQ95K9drk8kq9r/+Db+27OPTVTbDomIq/XqY5frM3V1153qzoDWonQQxeRRtSnrm/GXSJDduq3aLqHtMcEEXtUzO6ZbFF9WJZEHcphYkhLkDVq/r3PDfSg2fD3ghCuQmgboNwguy7AWh/ZQGHuda7ATBWMPlcthWztwgItUst8KDWPnxS6aE+R+QgpsCK5BHmMPDhnUyhwroMNvjdxKtfoQHcQ==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from MI3PR04MB12438.eurprd04.prod.outlook.com (2603:10a6:290:76::14)
- by DU4PR04MB11032.eurprd04.prod.outlook.com (2603:10a6:10:58a::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.15; Thu, 22 Oct
- 2026 15:52:48 +0000
-Received: from MI3PR04MB12438.eurprd04.prod.outlook.com
- ([fe80::c715:c32:8bb1:b70b]) by MI3PR04MB12438.eurprd04.prod.outlook.com
- ([fe80::c715:c32:8bb1:b70b%6]) with mapi id 15.21.0546.012; Thu, 22 Oct 2026
- 15:52:47 +0000
-Date: Thu, 22 Oct 2026 10:52:36 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: "Golla, Nagendra" <Nagendra.Golla@amd.com>
-Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Kedareswara rao Appana <appana.durga.rao@xilinx.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Michael Tretter <m.tretter@pengutronix.de>,
-	Harini Katakam <harini.katakam@amd.com>,
-	Shyam Pandey <radhey.shyam.pandey@amd.com>,
-	dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, git@amd.com
-Subject: Re: [PATCH v4 1/6] dmaengine: zynqmp_dma: Use PM guard for
- probe-time runtime PM reference
-Message-ID: <atoxRAVvHx1Ng2GB@SMW015318>
-References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
- <20261009-adma-pm-fix-and-per-channel-reset-v4-1-55f5fe409c55@amd.com>
- <asmsVD1RP6FoMN9l@SMW015318>
- <212a4fc4-437a-409a-821e-86b9b8c7f85c@amd.com>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <212a4fc4-437a-409a-821e-86b9b8c7f85c@amd.com>
-X-ClientProxiedBy: PH0P220CA0022.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:510:d3::21) To MI3PR04MB12438.eurprd04.prod.outlook.com
- (2603:10a6:290:76::14)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zly/bhuk
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-48dfdd0678dso8665f8f.0
+        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 09:42:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792687341; x=1793292141; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=BpFS6ySbwG4J+0ZDYOqEgZMFTp6XLFpyMVM4kuMmIEU=;
+        b=Zly/bhukMS6FJUjJfT1eSqtaTbkAgukn20PNTV+vr3KX4kG2j6DGVJa+PChtvWhfPj
+         cdXq80B0ssJ8Ip3qy11meFWs6jY7RkF8Q3FGJs5gDYEdqQkMSSk1U1wVUxeRl+ftO1Tq
+         nRm0yyPMkb7PklYx0RwaGNe9HE7sn30WOkLhrgixmaTTKwS3TtkE4wVzTZ4SKrZAWMq0
+         eUsrqrd0Poi1f29mM47ne04K55Z1jqBV6MAsAJqLEwAvSK0FBd0e9sBxl4q6jgKUpl2D
+         BXHLa7GhF1owwciNJ9qIyfOxGvc90wf5zKVlJfOGde0GUKoIW7KJFz6j4uXKmyIVj+xd
+         nJ6Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792687341; x=1793292141;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=BpFS6ySbwG4J+0ZDYOqEgZMFTp6XLFpyMVM4kuMmIEU=;
+        b=OP6bkMuWzAFxFgI96y1M5qLJQLTRp559Yx3C4NjDVvP+Zy0HofA4NFGZhEgnQt8Kjd
+         qBPuYUVe2IHUoFqg6oIwVqnshBCX4Bg9SZQ5i79Zr27ayt2/Jl/aMu0Hb5nq5UA8YQ/b
+         heUQaXyN4mjBgW7rXbKQ5NEJU/ye6UWocD/gByu36vvHtGb/sR8lOQr321852XF1bUQz
+         Q2NEoISun7kJWeJPe2Ke5ndgEtwMgRMn9oFouh9LYZOi1nQ8RFJAUDWBMkosZIvU2w8F
+         Hi3Xc0me4cQzsm8/aRWRR5V5555VmPuOLTtIQoirVhM4RbCaouMGl171J3waw6MGigC/
+         kYQQ==
+X-Forwarded-Encrypted: i=1; AKwUvBz47NpASHH3L9IPf+eVpoc5VffAPLweXwXFR7mVmmJ/W0h78em5tGkHBTcsjfYf809j7YnVIr3m/w==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLEfAciOg8laby58Sto68X0YVrry2m3pSpfhBZKwAfy8/geJ8og
+	FcmvMsQy7atdPUIwrl9eNUAZpdVhDeVzmPbSpl6bV8R8m7kQCMPZFR03
+X-Gm-Gg: AYBFou01jP54CB6zjrBY2vlaBdUN2mUQLd5AQAkwva5K0xejvDwtftm7wig5cACjGFO
+	yQ60Z7sQOviOdg73E+Z8zGt7+aKc/QEQImbhMhXJD3WT57DCIFpxig9HCA2ykSl11nfFQM1jIsZ
+	qX0dPBQxKnIcAmvNlEhSSQmkRP1/gishmotu5RMfaOEwcLRkLPQ/X7/Op3lOIicK34P4/pw/V/+
+	mi4MYTRgPQyIxLG67kGjDHL8obWfP37cDbBN0ALTBv5Dn8PN3mObwzw8xIz0Kmhez2KC5ID/Iwx
+	n8R0mARnWv77um0vl5N7h9k18yzToS09k2+FqXOrONgZhnnorKhAgC87jv4WNtlugTesiinEX1a
+	A+PyRGcFokXN+KXrU2EOykOg3lCWzqf+TKOzBaq1M5qljyc3KPUGlUZmgVNZgn4dji5dVO35OHM
+	Q4Xjrms0JBZwt1PC7C8JfKD7iH9bYEYgU61v5uf2Xg/n9US72yl7i+Go6KdYsvlxdQMCAszYhVR
+	sPl/AXzxjeOnuV/BaEjvfuaF2TPlsJxVubmA23jJ1+/MRG3Arc1963+UyRQpTC350ln5IIR6wOg
+	VBFjPg==
+X-Received: by 2002:a05:6000:50:b0:48d:e696:8a65 with SMTP id ffacd0b85a97d-48e264db1a1mr8359382f8f.46.1792687341082;
+        Thu, 22 Oct 2026 09:42:21 -0700 (PDT)
+Received: from localhost.localdomain ([188.190.249.216])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e2584c3b0sm15040175f8f.57.2026.10.22.09.42.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Oct 2026 09:42:20 -0700 (PDT)
+From: Vladyslav Tymoshchuk <tvlad744@gmail.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>
+Cc: Abel Vesa <abelvesa@kernel.org>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Dmitry Baryshkov <lumag@kernel.org>,
+	Casey Connolly <casey.connolly@linaro.org>,
+	Johan Hovold <johan@kernel.org>,
+	Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+	Joonhoe Kim <26rote@gmail.com>,
+	Daniel J Blueman <daniel@quora.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A . R . Silva" <gustavoars@kernel.org>,
+	linux-arm-msm@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-hardening@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Vladyslav Tymoshchuk <tvlad744@gmail.com>
+Subject: [RFC PATCH 0/4] soc: qcom: pmic_glink: Hold back notifications over system sleep
+Date: Thu, 22 Oct 2026 19:41:47 +0300
+Message-ID: <20261022164151.592-1-tvlad744@gmail.com>
+X-Mailer: git-send-email 2.45.1.windows.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,288 +114,176 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MI3PR04MB12438:EE_|DU4PR04MB11032:EE_
-X-MS-Office365-Filtering-Correlation-Id: f710abf8-23b9-4290-e601-08df305484f4
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|23010399003|1800799024|7416014|376014|366016|18002099003|22082099003|3023799007|4143699003|11063799006|261009221227099003|261009220027099003|261009223027099003|261009221727099003|261021123027099003|261021121427099003|10067099003|261009223327099003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	NdiDm/pLPyDJL02L7Wp8uD9g+R47n0ZhP9fYDiC920J0Y1xRb2Ea74Qb6ltHNF64C1BiYlZDjAPO0h6I2nBxcYmz3U2Sn2XGASVXmbf4N4hh/eLCOMNU4RpJEPS29TwaySIEMP3X+fWaIP7yVgtgwqwkBD3/wn7Jr4disA1i915ggfJSO4xIECKUfeebg1qxvs5qilN5DcINKWqb6OnmeF0pEBi0b+rz28E4XODz8Dq75rF0gOOYaJAOELs+BJa85/R11D5hsOQe6DY9o9ciPE52ImdFlXu8GsqlXRiV1irDZQd/SCLLI0cJ5n5Gu1YznEbYU99fos0uAgf7RNfZmf166eO5iG+MXCqM9GL9QArfghW/4wTy3adRxcd+MYcY6h8HJH2yJd4IUmNv1PGj0V4ByWhaBdqyrlpJjlhyxBs28FA8Sg1DzGm9VR2bvk7S+CHbvPO1SwYo7Q3BTCUdVJSj/4mokTUdk1qSxM8cigGY1/5+1mzgY6TcF0DQhkIoHtXyiEmgallPSkr9h3QLqqDQyYe3BCtTKDwfwaXVQ4MpYYHCfnQnlpjtJTE3KiHSyboWvxrrxbZmX0dwBSsIFctTO/gjezRqvksX/dy4U3laj9emboAkdzaqN1C0dBwg
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MI3PR04MB12438.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(1800799024)(7416014)(376014)(366016)(18002099003)(22082099003)(3023799007)(4143699003)(11063799006)(261009221227099003)(261009220027099003)(261009223027099003)(261009221727099003)(261021123027099003)(261021121427099003)(10067099003)(261009223327099003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?bTU2QUpRTFJXWkZLZjhwOVlISlZTUnc1QkZPbUlBdTBzMjdyRVNrQzFJemhK?=
- =?utf-8?B?b1NhMEFBWjFUOFo4MnZKbXVwR3h3K3BGd2hBNkRzL3dxdlNaOWdVZytQSEtB?=
- =?utf-8?B?aVBjeGU5bzRQWGRjWkVzVElSdWxhdUdNSWhjbDBjOHFPdUJ4V0xDWmVPWWxh?=
- =?utf-8?B?STdPSEpvTzV2UHF1QWxJcnVQcm9PRnZvQmFaV09OZmdYK0RLWHZlY0dJeDc4?=
- =?utf-8?B?YllKQTkzQWsyN3pnVnJ6UFBNQzluWG00ZlBUMERiYnE3YWk0QmMrdjFWUW8r?=
- =?utf-8?B?VjlGMzNhTklJWFJiY3RlMnF2Z0NkRWh6YnpkOVc3dEhCRnltdzFaNlN1V1M5?=
- =?utf-8?B?QnBtQnpGUjVWdlNKSmM1S3BSU0piYUpQdkRJeVViWWVSVmsxdnh1dDl1Vzlk?=
- =?utf-8?B?cEJnelpxenRiNXRZMmk0dGdWQnV5Q2lRdEpyeGZXaTdYMVRQbFk0dGk3elFT?=
- =?utf-8?B?QWlMdm1Cdm4vTWEyOHYxaFNRd3BzVFo4aEdqQnhQcGpHTEhGaGE5YzMvTUdX?=
- =?utf-8?B?RXJEc2hrWG9QL2k1RHJRUjF1NGJGc3p3SVVUV3hrQm0walJhYUhzNkVXd2lN?=
- =?utf-8?B?bHYvN0IrVC83Y3MwOG45MXgxREdHL245amRwS1NyZWlUSVR6WC8xSWtzaDZL?=
- =?utf-8?B?d3NxcW5Tb2dUTjJXMDlhUzZVbXRpeEY2RysvcHNvajhycENpeFNyWnJWMnJE?=
- =?utf-8?B?OUJjOTR0cUliUVlUdVhXT0lDNW00ZG5Gb3pkelZVRXRHcEIzMlNqYzdjN2Ja?=
- =?utf-8?B?cTYwODVjL3pCYUJJb2FPcTV0Y1B6ZXNGZHdJc3FuOG9ZajV6VlAzMUl6WDE2?=
- =?utf-8?B?OHd0dVRzMG1nVndRZ2w2aE0zTWhQRFR2VGU5SW1KRGdRWWxNbVZZTnRFOGt0?=
- =?utf-8?B?ZUFyT04weXA1R21XNUxocHN3bFdmWmVjSnpDZ2c3K3EzYjBydmtkSHpOUjhv?=
- =?utf-8?B?b3F0NGY4YUNvNWxnQ3pQTlBFTlVjd1hJMjZyYi9RRGFOR2xnU1NUdmRic3dz?=
- =?utf-8?B?enZXdHBYdExUK2Y0RGJDajZBaXdtSENkREVPem9GNUQvR1dsb2RQQVVkUjlp?=
- =?utf-8?B?d0lTYW9uYUVCclF4TzF6ZFlIU2NCUGVjVzhQS1lqdkIwd1ZYSmdzZS8wdkI2?=
- =?utf-8?B?T25WQTFqcGpRTXc4Q2R1UEJHQ2tDNTB2VUhvMVp0aWd5NWUxY0dXc3IxRmxM?=
- =?utf-8?B?MUFhN2h0aHRiRjRrdDM2R3UxWEw1RXY0UkRaOXU3T2RwaDA3RUhFdGtETmd5?=
- =?utf-8?B?T3k2eS9TM0VkbVpJTlVtNnRpaS9UMnFhNkFnZmxHcTFYNnkybTRaaEZoYm9B?=
- =?utf-8?B?ek5vYTN0UDNaNU41Y3VQVkl1M2xoeFUxOXZMSVhEUjdRbGk4cSs0OWVINTh1?=
- =?utf-8?B?MGVNQkZvQzlEWE8vRXdFS3kvMUowdkdNeE05QXE5NFNXdEFrVStIU0hJTnNa?=
- =?utf-8?B?S3BydndRb1JtbTRoZy9GWkpIbkh5K2oxUm5UcHZKamZoN3ZSeGhscGpTU0kw?=
- =?utf-8?B?UVZmbDA3aWlTbFcxSU9mRzYvYUQ2ZHNFd2tqU3pReUdwU29FWGFVVWttbzJp?=
- =?utf-8?B?dkd3U2hVa1BzQlJUVExxQmVBYk5PcFBNeksyWDMxY3ZVaUxDWFgrSW5IQ1VY?=
- =?utf-8?B?OFBnMktmZ1l1QzVNcXQzY05mVjBRaU9iK0FhUWVDeXdBZXVMc0FTN1BMaUI1?=
- =?utf-8?B?K1ZGSXNkcCtPV2k0bUxYWnQrZGtLdThuZ01SRWRyRDBCU3ljNGtBckgzV2ht?=
- =?utf-8?B?UkR1aXhxKzZvTS9uWlJHbSs5Q1U2UXpuTVVMRFpNMlMrN2swRVZidWVtWXdB?=
- =?utf-8?B?anQ2NkVkblFTYndrWmdYUzVDYlBlRDZNQUdmOUEzMlZFS05CUmY0SHRBM1Bx?=
- =?utf-8?B?c2xXRzRrZzBJMm1LYlZFL3BlOW5nVFJtY0x6MklSNmJyNEU5NXFZTTRDcjB0?=
- =?utf-8?B?dFovcDF6U0hLU2d0U2plNmVtK1A4ekN3bXk1dUxwazZXWGNBMVkybnBkUmtq?=
- =?utf-8?B?dnFISlZNRm85NWxGKytRNGgyUUxkcElVMHo3dXQ0eTB3NTdFcGlYU0lrYi9M?=
- =?utf-8?B?ZWxrcjY1VzRBVWlhRTR4MkVJaGtXb3JoNWtOWW9MV2ZzSmVlMXgwQmlyNnVa?=
- =?utf-8?B?WHVFU3FtYk1LaG43YXJJYi96K1FBWnNJZmE0VzZEQ2N1Rm94NDNhWndndlJt?=
- =?utf-8?B?VWg1aS9xUnRwb3hzSk1yNDFvc2o2NHJYVWtRazVncVhjL1gwTVBRNFdrOHlv?=
- =?utf-8?B?eTJOWHRhQW5kVVFjdUhEQnNUa2lrSjUvcC80VTdudEFXRWtwWVgreUVhMzE0?=
- =?utf-8?B?SEdRckRzQmJqQ3hrcXI3Q3MxYWVwR1BkUGtGelQyYmFWVVlnM25HZUszanRW?=
- =?utf-8?Q?UxfRLZrUQoJBzW5fzO8HfShLFBieLdO82NOU/?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f710abf8-23b9-4290-e601-08df305484f4
-X-MS-Exchange-CrossTenant-AuthSource: MI3PR04MB12438.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Oct 2026 15:52:47.7954
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 4FhcYJAYFf33YYS/iJS6FIt/U1TaVrkxltnPeRXthc/hCMdJTUJCfsW2KNdlsxcz1U8Qbc49VnYEvMLND9e7lFvXoNiYxU3u4N6Ic7pfbHKPp4LnCE5MNRGQcN6xbsli
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB11032
+Content-Transfer-Encoding: 8bit
 
-On Thu, Oct 22, 2026 at 10:40:53AM +0530, Golla, Nagendra wrote:
-> Hi Frank,
->
-> On 10/10/2026 8:39 AM, Frank Li wrote:
-> > On Fri, Oct 09, 2026 at 09:30:10AM +0530, Golla Nagendra wrote:
-> > > Replace pm_runtime_resume_and_get() with the PM_RUNTIME_ACQUIRE_AUTOSUSPEND
-> > > guard to manage the probe-time runtime PM reference lifecycle. If the guard
-> > > acquire fails, fail probe immediately so a broken device is never
-> > > registered.
-> > >
-> > > When runtime PM is not enabled for the device, call
-> > > zynqmp_dma_runtime_resume() directly after pm_runtime_enable() to bring the
-> > > clocks up for probe.
-> > >
-> > > On probe failure after a successful guard acquire, drop the reference with
-> > > zynqmp_dma_probe_pm_put(), inhibit the guard destructor with
-> > > retain_and_null_ptr(), and gate the clocks through
-> > > zynqmp_dma_probe_fail(). When runtime PM is enabled,
-> > > zynqmp_dma_probe_pm_put() uses pm_runtime_put_sync_suspend(). When runtime
-> > > PM is not enabled for the device, balance the guard usage counter with
-> > > pm_runtime_put_noidle() and gate the clocks with
-> > > zynqmp_dma_runtime_suspend(). Runtime PM does not suspend a device that
-> > > is already disabled, so pair every direct zynqmp_dma_runtime_suspend()
-> > > call with pm_runtime_set_suspended() to keep the runtime PM status in
-> > > sync with the clocks.
-> > >
-> > > On probe success, release the probe-time reference with
-> > > pm_runtime_put_sync_autosuspend() when runtime PM is enabled for the
-> > > device. When runtime PM is not enabled for the device, balance the guard
-> > > usage counter with pm_runtime_put_noidle() only and leave the clocks
-> > > enabled so that later channel allocation can use the hardware. Inhibit the
-> > > guard destructor with retain_and_null_ptr(pm).
-> > >
-> > > Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
-> > > ---
-> > >   drivers/dma/xilinx/zynqmp_dma.c | 68 ++++++++++++++++++++++++++++++-----------
-> > >   1 file changed, 50 insertions(+), 18 deletions(-)
-> > >
-> > > diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
-> > > index 3b7dfa53f972..a48106e404e7 100644
-> > > --- a/drivers/dma/xilinx/zynqmp_dma.c
-> > > +++ b/drivers/dma/xilinx/zynqmp_dma.c
-> > > @@ -18,6 +18,7 @@
-> > >   #include <linux/slab.h>
-> > >   #include <linux/clk.h>
-> > >   #include <linux/io-64-nonatomic-lo-hi.h>
-> > > +#include <linux/cleanup.h>
-> > >   #include <linux/pm_runtime.h>
-> > >
-> > >   #include "../dmaengine.h"
-> > > @@ -1077,6 +1078,29 @@ static const struct dev_pm_ops zynqmp_dma_dev_pm_ops = {
-> > >   			   zynqmp_dma_runtime_resume, NULL)
-> > >   };
-> > >
-> > > +static void zynqmp_dma_probe_pm_put(struct device *dev)
-> > > +{
-> > > +	if (pm_runtime_enabled(dev))
-> > > +		pm_runtime_put_sync_suspend(dev);
-> > > +	else
-> > > +		pm_runtime_put_noidle(dev);
-> > > +}
-> > > +
-> > > +static int zynqmp_dma_probe_fail(struct zynqmp_dma_device *zdev, int ret)
-> > > +{
-> > > +	bool rpm_disabled = !pm_runtime_enabled(zdev->dev);
-> > > +
-> > > +	zynqmp_dma_chan_remove(zdev->chan);
-> > > +	zynqmp_dma_probe_pm_put(zdev->dev);
-> > > +	pm_runtime_disable(zdev->dev);
-> > > +	if (rpm_disabled || !pm_runtime_status_suspended(zdev->dev)) {
-> > > +		zynqmp_dma_runtime_suspend(zdev->dev);
-> > > +		pm_runtime_set_suspended(zdev->dev);
-> > > +	}
-> > > +
-> > > +	return ret;
-> > > +}
-> > > +
-> > >   /**
-> > >    * zynqmp_dma_probe - Driver probe function
-> > >    * @pdev: Pointer to the platform_device structure
-> > > @@ -1087,7 +1111,7 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
-> > >   {
-> > >   	struct zynqmp_dma_device *zdev;
-> > >   	struct dma_device *p;
-> > > -	int ret;
-> > > +	int ret, pm_err;
-> > >
-> > >   	zdev = devm_kzalloc(&pdev->dev, sizeof(*zdev), GFP_KERNEL);
-> > >   	if (!zdev)
-> > > @@ -1128,21 +1152,30 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
-> > >   	pm_runtime_set_autosuspend_delay(zdev->dev, ZDMA_PM_TIMEOUT);
-> > >   	pm_runtime_use_autosuspend(zdev->dev);
-> > >   	pm_runtime_enable(zdev->dev);
-> > > -	ret = pm_runtime_resume_and_get(zdev->dev);
-> > > -	if (ret < 0) {
-> > > -		dev_err(&pdev->dev, "device wakeup failed.\n");
-> > > -		pm_runtime_disable(zdev->dev);
-> > > -	}
-> > >   	if (!pm_runtime_enabled(zdev->dev)) {
-> > >   		ret = zynqmp_dma_runtime_resume(zdev->dev);
-> > > -		if (ret)
-> > > +		if (ret) {
-> > > +			pm_runtime_disable(zdev->dev);
-> > >   			return ret;
-> > > +		}
-> > > +	}
-> > > +	PM_RUNTIME_ACQUIRE_AUTOSUSPEND(zdev->dev, pm);
-> > > +	pm_err = PM_RUNTIME_ACQUIRE_ERR(&pm);
-> > > +	if (pm_err) {
-> > > +		retain_and_null_ptr(pm);
-> >
-> > Not sure why need call retain_and_null_ptr() here, generally only need
-> > call retain_and_null_ptr() at success pass if you use want to keep
-> > runtime_pm active. at fail case, needn't do that.
-> >
-> > > +		pm_runtime_disable(zdev->dev);
-> >
-> Thanks for the Review> If use devm_pm_runtime_enable(), needn't this one.
->
-> We intentionally keep the nondevmpm_runtime_enable()pm_runtime_disable()
-> pair here and do not switch to devm_pm_runtime_enable().
-> devm_pm_runtime_enable() registers a devm action that calls
-> pm_runtime_disable() automatically after .remove returns. Since remove()
-> already calls pm_runtime_disable() explicitly itself, switching to the devm
-> variant would mean pm_runtime_disable() gets called a second time for the
-> same device
-> — driving disable_depth into underflow, along with any other
-> invalid state that comes from disabling an already-disabled runtime PM.
->
-> If we remove the explicit pm_runtime_disable() from remove() to avoid that
-> double-disable call, it would affect the fix introduced in commit
-> 9c58a42c1612 ("dmaengine: zynqmp_dma: fix race between runtime PM and device
-> removal"),
-> https://lore.kernel.org/all/20260630064844.705173-2-nagendra.golla@amd.com/
-> which added that explicit disable specifically to close a race between
-> runtime PM and device removal.
+The GLINK interrupt that delivers the PMIC GLINK messages is requested
+with IRQF_NO_SUSPEND, so the clients get notifications during system
+suspend and resume and in suspend-to-idle, and the work they schedule
+for them can run while devices are suspended. Commit c7c56b6ec077
+("soc: qcom: pmic_glink: Fix device access from worker during
+suspend") moved the altmode worker to system_freezable_wq as a
+stop-gap, and left the proper fix for later:
 
-"[Severity: High]
-This isn't a bug introduced by this patch, but does zynqmp_dma_remove() need
-to halt the DMA hardware before disabling clocks?
+  The final shape of the rework of the pmic glink driver in order to
+  fulfill both the filtering of the messages that need to be able to
+  wake-up the system and the queueing of these messages until the
+  system has properly resumed is still being discussed and it is
+  planned as a future effort.
 
-The function disables device clocks via zynqmp_dma_runtime_suspend() but never
-writes to the hardware to halt active transfers or waits for idle.
+This series is a proposal for that shape, to have something concrete
+to discuss:
 
-Could stopping clocks while an AXI master is mid-transaction violate the bus
-protocol and cause an interconnect hang?"
+- Patch 1 does the queueing: from ->prepare() on, pmic_glink holds the
+  notifications back, and passes them on from system_freezable_wq once
+  the system has resumed, in order, without duplicates, at most 64.
+  Responses are passed on right away. The service UP is held back as
+  well and passed on after the notifications, DOWN is passed on right
+  away.
 
-Is this one?
+- Patch 2 does the filtering: a notification is a wakeup event if the
+  client's device may wake up the system, see device_may_wakeup(), and
+  the client's optional wakeup filter accepts it, which is the
+  callback that Casey suggested [1]. pmic_glink reports the event when
+  the notification arrives, and keeps the client's wakeup source
+  active until the notification is delivered.
 
-Frank
+- Patch 3 enables wakeup for ucsi_glink, as Jishnu Prakash proposed
+  [5], without the event in the callback.
 
-> Dropping it would reopen that same race.
->
-> Thanks,
-> Nagendra
->
-> >
-> > > +		if (!pm_runtime_status_suspended(zdev->dev)) {
-> > > +			zynqmp_dma_runtime_suspend(zdev->dev);
-> > > +			pm_runtime_set_suspended(zdev->dev);
-> > > +		}
-> > > +		return dev_err_probe(&pdev->dev, pm_err, "device wakeup failed\n");
-> > >   	}
-> > >
-> > >   	ret = zynqmp_dma_chan_probe(zdev, pdev);
-> > >   	if (ret) {
-> > >   		dev_err_probe(&pdev->dev, ret, "Probing channel failed\n");
-> > > -		goto free_chan_resources;
-> > > +		retain_and_null_ptr(pm);
-> > > +		return zynqmp_dma_probe_fail(zdev, ret);
-> > >   	}
-> > >
-> > >   	p->dst_addr_widths = BIT(zdev->chan->bus_width / 8);
-> > > @@ -1151,7 +1184,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
-> > >   	ret = dma_async_device_register(&zdev->common);
-> > >   	if (ret) {
-> > >   		dev_err(zdev->dev, "failed to register the dma device\n");
-> > > -		goto free_chan_resources;
-> > > +		retain_and_null_ptr(pm);
-> > > +		return zynqmp_dma_probe_fail(zdev, ret);
-> > >   	}
-> > >
-> > >   	ret = of_dma_controller_register(pdev->dev.of_node,
-> > > @@ -1159,19 +1193,17 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
-> > >   	if (ret) {
-> > >   		dev_err_probe(&pdev->dev, ret, "Unable to register DMA to DT\n");
-> > >   		dma_async_device_unregister(&zdev->common);
-> > > -		goto free_chan_resources;
-> > > +		retain_and_null_ptr(pm);
-> > > +		return zynqmp_dma_probe_fail(zdev, ret);
-> > >   	}
-> > >
-> > > -	pm_runtime_put_sync_autosuspend(zdev->dev);
-> > > +	if (pm_runtime_enabled(zdev->dev))
-> > > +		pm_runtime_put_sync_autosuspend(zdev->dev);
-> > > +	else
-> > > +		pm_runtime_put_noidle(zdev->dev);
-> > > +	retain_and_null_ptr(pm);
-> >
-> > You mix use auto cleanup and pm_runtime_put_sync_autosuspen() and
-> > pm_runtime_put_noidle() to make code mess up.
-> >
-> > Frank
-> > >
-> > >   	return 0;
-> > > -
-> > > -free_chan_resources:
-> > > -	zynqmp_dma_chan_remove(zdev->chan);
-> > > -	if (!pm_runtime_enabled(zdev->dev))
-> > > -		zynqmp_dma_runtime_suspend(zdev->dev);
-> > > -	pm_runtime_disable(zdev->dev);
-> > > -	return ret;
-> > >   }
-> > >
-> > >   /**
-> > >
-> > > --
-> > > 2.43.7
-> > >
->
+- Patch 4 makes qcom_battmgr wakeup capable, with a filter for the
+  charger notifications, but leaves wakeup disabled: Bjorn does not
+  want a laptop to wake up in a backpack [9], and a battery charging
+  state notification woke up Abel's laptop with some chargers [10].
+
+The UCSI connector work running before the devices it uses have
+resumed has been hit on three boards so far [3]: on X Elite with a
+PS8830 retimer [2], on SM8850 with an FSA4480 switch, and on SM8750
+with the dwc3-qcom role switch, where the register access with the
+clocks off resets the SoC [4]. With patch 1, the clients don't have to
+keep the work for their notifications off the system workqueue: Abel's
+UCSI RFC [2] would not be needed, and the altmode stop-gap can stay or
+go.
+
+The earlier discussion is in the thread of the first version of the
+altmode fix [1]. Krzysztof:
+
+  Regardless whether we call pmic_glink a bus or some sort of
+  transport mechanism, the users of its interface should not be
+  called after they are suspended.
+
+Bjorn asked whether a bus would mean "some mechanism for pmic_glink to
+defer these messages until resume has happened". Abel found queueing
+the messages fine, but noted that it does not decide when to wake up.
+On the UCSI RFC, Dmitry asked to fix PMIC GLINK instead [2].
+
+Why not in GLINK: dropping IRQF_NO_SUSPEND would break the other users
+of the interrupt, as the description of c7c56b6ec077 says, and would
+not close the race [6].
+
+Why not a bus: patch 1 gives the guarantee Krzysztof asks for from the
+pm callbacks of the pmic_glink device, and the wakeup policy stays
+with the client devices, which reviewers preferred, according to [5],
+over making the GLINK interrupt a wakeup interrupt [8]. cros_ec does
+much the same: it passes the events that came during suspend on to its
+clients in ->complete(), and decides whether an event wakes up the
+system by its type and device_may_wakeup(). Its default wake mask
+leaves out the battery events and the AC disconnect as "not actionable
+wake events".
+
+Open questions:
+
+- ucsi_glink wakes the system up on a cable change by default, as in
+  [5]. Should it only be wakeup capable, like qcom_battmgr?
+
+- pmic_glink does not wait for the work that a client queues for a
+  notification, so if a suspend starts right after a notification was
+  passed on, the work can still overlap the suspend of devices. Should
+  ucsi_glink cancel the UCSI work in its ->suspend() with
+  ucsi_suspend(), like ucsi_acpi, or should a wakeup notification keep
+  the system awake for a while, like the timeout in [5]?
+
+- Only the latest of identical notifications is kept. That relies on
+  the clients treating a notification as state, or as a hint to read
+  the state, which holds for the in-tree ones. Should a client be able
+  to opt out?
+
+- qcom_battmgr notifications no longer reach power_supply_changed()
+  during a suspend, so its wakeup source no longer aborts a suspend
+  started through /sys/power/wakeup_count. Does anything rely on that?
+
+- Patches 3 and 4 depend on the API added in patch 2. Should the whole
+  series go through the Qualcomm SoC tree, with acks for those two?
+
+Tested with suspend-to-idle on SM8750 (OnePlus Pad 3): the series on
+top of the v7.3-rc5 based kernel that the device runs, with debug
+prints added. That kernel does not have the dwc3-qcom fix [4].
+
+- Awake, with qcom_battmgr wakeup enabled: of the 23 qcom_battmgr
+  notifications for an unplug and replug, only the four USB property
+  notifications were wakeup events.
+
+- Cable plugged in (one run) or unplugged (two runs) during
+  suspend-to-idle, with the default wakeup settings: the held-back UCSI
+  notification woke the system up. 10 to 13 notifications were held
+  back and 6 to 8 passed on after resume, none dropped. The wakeup
+  source of ucsi_glink stayed active until they were passed on, about
+  1.5 s. The UCSI work and the role switch ran only after that, and the
+  SoC did not reset.
+
+- With only qcom_battmgr wakeup enabled, a plug-in during
+  suspend-to-idle woke the system up with the USB property
+  notification. The UCSI notification before it was held back without
+  a wakeup.
+
+- With wakeup disabled for both clients, an unplug during
+  suspend-to-idle did not wake the system up. The 11 notifications were
+  held back until the RTC alarm 55 s later, and the SoC did not reset,
+  so the queueing of patch 1 is enough to avoid the reset.
+
+- 25 minutes of suspend-to-idle while charging: one qcom_battmgr
+  notification came, was held back without a wakeup, and was passed on
+  after resume, with the battery state updated right after.
+
+Not tested: PDR during suspend, more than 64 notifications held back,
+hibernation.
+
+Kamal Wadhwa's PMIC GLINK RTC series [7] also changes pmic_glink.c, so
+whichever goes in second needs a rebase. Its driver enables wakeup on
+its device, so with patch 2 its notifications would become wakeup
+events without further changes; today, the alarm only reports a soft
+wakeup event through rtc_update_irq(), which does not end
+suspend-to-idle.
+
+I used an AI assistant (Claude) for the analysis and to draft these
+patches and their descriptions; I reviewed the result and ran the
+tests on my device.
+
+[1] https://lore.kernel.org/all/20250110-soc-qcom-pmic-glink-fix-device-access-on-worker-while-suspended-v1-1-e32fd6bf322e@linaro.org/
+[2] https://lore.kernel.org/all/20250205-ucsi-schedule-conn-worker-on-freezable-wq-v1-1-107d1356b77b@linaro.org/
+[3] https://lore.kernel.org/all/20261020132432.998-1-26rote@gmail.com/
+[4] https://lore.kernel.org/all/20261018143126.3978-1-tvlad744@gmail.com/
+[5] https://lore.kernel.org/all/20260722-ucsi_glink_wakeup-v2-1-b43dee56df24@oss.qualcomm.com/
+[6] https://lore.kernel.org/all/CAMVG2ssS4=Kb=OxuVXb_062fgvBfKz+X0q1N2rFob0TH6JypYg@mail.gmail.com/
+[7] https://lore.kernel.org/all/20260807-rtc-glink-cleanup-v1-0-7801e4d69c4f@oss.qualcomm.com/
+[8] https://lore.kernel.org/all/20240603073648.3475123-1-quic_deesin@quicinc.com/
+[9] https://lore.kernel.org/all/ZnIe2hjPgWipDfgG@hu-bjorande-lv.qualcomm.com/
+[10] https://lore.kernel.org/all/Z5taRZ0om5y%2FDJ69@linaro.org/
+
+Vladyslav Tymoshchuk (4):
+  soc: qcom: pmic_glink: Hold back notifications over system sleep
+  soc: qcom: pmic_glink: Report wakeup events on behalf of clients
+  usb: typec: ucsi: glink: Wake up the system on connector changes
+  power: supply: qcom_battmgr: Allow charger changes to wake up the
+    system
+
+ drivers/power/supply/qcom_battmgr.c |  19 ++
+ drivers/soc/qcom/pmic_glink.c       | 257 +++++++++++++++++++++++++++-
+ drivers/usb/typec/ucsi/ucsi_glink.c |   6 +
+ include/linux/soc/qcom/pmic_glink.h |   2 +
+ 4 files changed, 281 insertions(+), 3 deletions(-)
+
+
+base-commit: 9a482184d910775cf648863148944945b74e2815
+-- 
+2.43.0
+
