@@ -1,68 +1,69 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792747126;
-	b=ngaR28FTUHaflpf0cJ/00xXEbq77X+7HTI1YrcE9HUFl1lddx8l1xSDfnMFxfCd0XQRq
-	 PjEnJGiyyAyj5Guj0X4JXJCyIUnXpwe1JrGB67IuWx05YIKSURbvwqCX3Bbbgs6t1PdRH
-	 TPEa09l3+PJjIJaHs1gaVB80mpyTLHA0HlqhkyKFL4tGkKoqHFZM/ha6+lzSHnjl0KA6+
-	 4z9Tgmlx0stwnw1r2CVDB/iQnPYl9wxeuNQep7LsNdG7QXFkfRQVNckVW/SCoglD9sPjN
-	 odVAOWH4qoolosiFUPQnf+ds5NtMYM1OZHAHarjm2oUCS0liSnAMd9BQAQCJwczcrkQ==
+	t=1792747407;
+	b=r263T+ZpwO3KfAb8vkGBGSORM2UL/Ln5R6tVYP5ocK0/ZFOBXOFReLHaixfhKPjHTIfw
+	 Of+X90w25KqEiHQfj3HsexYEONluYarnum+Xd/hjCilZHToD9F/P5Aa453V/yvHeubhtN
+	 YxcghQRvBSJjFf+3TiM2r7wh2m61nuaO0T97BrFcRnNG8Ji9X2q/6VP8lRMAgpKE0wb6D
+	 eMOMS+6b5RjkztUHAMCo1vFO0J+41Q5nJ1oDXs/r3cRTopRKy6554UR7YTQgnVgznT/d7
+	 bqMK1jau5h+AJ07bB8h0wbB+BHYEXqbiBJAI3WTCeP7HUrY/dUdMnZ0Ub0WGzkPvk5Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792747126;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792747407;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:Received:From:
-	 Subject:Date:Message-Id:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Proofpoint-Reinject:X-QCInternal:X-QCInternal:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-ORIG-GUID:X-Authority-Analysis:X-Proofpoint-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=HVbfw3LWtA41Gw7QpcFN5osov7cP7IWH2VaLMp5lUsI=;
-	b=AQ5D95rT+aVzr/ESDesIIzKLePwUGecGqHBaBNThsMCVwSA/kvmkmahY54JpiFvpnM5J
-	 T3Xj3YvFtPJCgWwPZ4sCELD4sifqVlg3hpSZU/DoAOEv5OvML90A20J/1f3toGAUTOduh
-	 2NpSvgdFHm3hz3IVFQn2mQuboxUF7AXe6cxFo+sGLcXLhHRUAAGG4YCZTvw4FKwbT6Gx7
-	 a97xZlYvkaKg4dkHylXPBOz0YQmoEzta1MTx3wn21HntWe/UQsDxa8RejRfqNsBypBuBQ
-	 wQXxiVkpsrS08wXqZcWcC/H0TSib5LnfW1xyPoONFlskO0X6IcPMizSDXTcTzi+omGw==
+	 Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Proofpoint-Reinject:X-QCInternal:X-QCInternal:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=6xXNDxqhq3cVDlWPfpNm5hTwgInBUiJsJK4YxHxrK7Q=;
+	b=Oo+o5rxPVoeTiMScrmt86vnAHqiVAjcg6Pf4BBfrB6msfZWzLYyyDUuHyxCCOOEIOPC9
+	 oBgCmTB+pxdRehmCkYmJziyywADYXt3recEfDMl5aGMEwDFY0r1kjYgVWMno8s6Mxks66
+	 rAZkqyh1TgQj/4WSZmWQFFtxRZ985ffXni7zjYekQg6TiFD5gL0jC3NBY/RfJFWl2dTe5
+	 Hs0gPbnY47nZ3PGUmltQXIAVpKQfYyN8RM4ZCdJ2o6Biqwb7HK60THO1IgT1NRAqDhfWX
+	 +i9HjIi6vqEGLbHLImHq3saMMkRW3mixq/j+NScmQvqRM8AyCokUg17raMq9UlceaJQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gImSatuU;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="Q/ZB700J";
 	arc=none smtp.remote-ip=205.220.180.131
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACD9B606A31A;
-	Fri, 23 Oct 2026 09:18:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org ACD9B606A31A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD679606A31B;
+	Fri, 23 Oct 2026 09:23:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CD679606A31B
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gImSatuU
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7FP5X1048719;
-	Fri, 23 Oct 2026 09:18:18 GMT
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Q/ZB700J
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7FBmA2092791;
+	Fri, 23 Oct 2026 09:22:58 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=HVbfw3LWtA41Gw7QpcFN5o
-	sov7cP7IWH2VaLMp5lUsI=; b=gImSatuUmY4gyDKSDiRO0XM9dOckXvNNO+gbsf
-	r/u+gUka42VQIiI3+y8Xo4WI0pNPf55V82UN2tN5Pe2s0lhqCSCaqtFN8YLddG7/
-	IByf905vhrQMHgDKK0WqwWjPFDeTePpsFxQmkWjXcgQbpP1uBT0PGDJc2NLm6f77
-	OiSYqsjd51QiajKxY/of6wEGb1iNuu0aZl7xNBJLuiV5P0h3gpo4ww4xZ9LVc0Q2
-	3aYF+RVb/cuMnujm2XPu5GFvzNwNl5C7xAsMqh0qoP5q7vUsHLlmaveuhgGHTtRz
-	l7uEEal79oSsa4LxlrprrksRbNHBtpXp8OLMALjYib259xNw==
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	6xXNDxqhq3cVDlWPfpNm5hTwgInBUiJsJK4YxHxrK7Q=; b=Q/ZB700JP5mK694z
+	HKAews5QY8uGuJNkqFiYEPgpgzZV0UCKIsly7Sn5hafs2bbXvrsqDGcgrB4qJCwi
+	UcnbuR8sEWo8Jl5LKHoInhUwrqlTEO29qsIC67ZciPZuI0PFpSVwc/xEBMFdvCiO
+	BHYVoS5jVylPWrPznTMoqmlu4hC8Gi0a8+9r5vmTwxw3qhE8n6HOnyUXwbCNV3kk
+	TBn12lAjJ3nCqHOKfULOqQz8p/2ciIIZx7uIFvMouRDcL27l6QQoFEo6Eeel448h
+	Ha48eIv602yvDtCHVqlB3b5OU++gcnwI29yK6WxpUPpTnLTB+9eHoDyerMnnkNvz
+	aGZz1w==
 Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hfqmbjyup-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hftyga5c7-11
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 23 Oct 2026 09:18:17 +0000 (GMT)
+	Fri, 23 Oct 2026 09:22:57 +0000 (GMT)
 Received: from pps.filterd (apblrppmta01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 69N9IESN4054733;
-	Fri, 23 Oct 2026 09:18:14 GMT
+	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 69N9IF9V4054752;
+	Fri, 23 Oct 2026 09:18:16 GMT
 Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 69N9IEN14054700;
-	Fri, 23 Oct 2026 09:18:14 +0000 (GMT)
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 69N9IEN44054700;
+	Fri, 23 Oct 2026 09:18:16 +0000 (GMT)
 From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-Subject: [PATCH v4 0/3] power: reset: Add NVMEM recorder provider for PSCRR
-Date: Fri, 23 Oct 2026 14:47:52 +0530
-Message-Id: <20261023-pscrr-provider-v4-0-e70fabb7e927@oss.qualcomm.com>
+Date: Fri, 23 Oct 2026 14:47:55 +0530
+Subject: [PATCH v4 3/3] arm64: dts: qcom: lemans: Add PSCRR NVMEM recorder
+ node
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -73,13 +74,10 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAEAm22oC/23OTWrDMBAF4KsErStV/7ayyj1KF4k8TgSxpYxsk
- RB896j2ItCWgYE3MB/vSTJggEz2uydBKCGHONagP3bEX47jGWjoaiaSS8tbbmnKHpEmjCV0gPT
- k+rbXRjRcAKlPCaEP9xX8+t4ywm2u7rQdN6lRgjtTh0lnubFU0MgQhgTXQ4LxPE8Yx3BnHXySH
- +YS8hTxsdYs8u20wv1uVCTl1PFGqlYB73V3iDmz23y8+jgMrK5VLOqtOKH/KKoqXht/EtZoCe0
- /yrIsL3aZLitAAQAA
-X-Change-ID: 20260806-pscrr-provider-b9f8f451701e
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261023-pscrr-provider-v4-3-e70fabb7e927@oss.qualcomm.com>
+References: <20261023-pscrr-provider-v4-0-e70fabb7e927@oss.qualcomm.com>
+In-Reply-To: <20261023-pscrr-provider-v4-0-e70fabb7e927@oss.qualcomm.com>
 To: Oleksij Rempel <o.rempel@pengutronix.de>,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
         Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
@@ -108,109 +106,71 @@ X-Mailer: b4 0.14.3
 X-Proofpoint-Reinject: loops=2 maxloops=12
 X-QCInternal: smtphost
 X-QCInternal: smtphost
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIzMDAzNiBTYWx0ZWRfX3wnX1LCr7Z6i
- C8vmXxsE5v6nNm6A6AyQ5x/4awqYxbcOfEywOT8r2hVdOlb3CHRUE3MrenQlx3uF5Q8L3lGr8yb
- LR4b9zHAoTZM9HOoaPsOwxf/TsjcurQ=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIzMDAzNiBTYWx0ZWRfXx+WivEEOl+Pd
- lDN8LcgS6pxGzDWJKKEvCVDberiT1XjenAP7kJG0LSm7WkloRzUYcdMRb4J89QTKVqoq0MYE432
- KEVZYobXjHKg+EayrWvJtmcKdNlCYxgu6OTkVvZ/sCFzA3vtZT7+0cPISrr4pHAKUgltcv918Nn
- m+qRCophIX80Taa/1JgxmI0IPEKMptPggrLzRAvKiJA9ymL9hE3s/IrIXzBUJcvtDC6ELEZ4/mT
- x6bpO1hSdVVft9CZATe6jzP1UjAD7F0o79UAmZXhkhOG01pMU2sjwb8vr9KjWFZfm+gkt8CL4P5
- wkIKHoRYBq1BXCjTf5em95IVGP9cgzqEUQ5L8Fpds0XSjV/tC6DMxQClFUYug5EuJxW+NxtnnRI
- L63YOtsAL3kxt1OExQmSTpvTBMCqa3esgnEDPJlFEyJeOpYvsQhQQW7+bbQP+KecDYU4rT2Hdm+
- wq65tM6HBN8qvt0UIBQ==
-X-Proofpoint-ORIG-GUID: XgRRe7D-AMa8veb5gkhCzCIMKvdR16ir
-X-Authority-Analysis: v=2.4 cv=Nt1E4MdJ c=1 sm=1 tr=0 ts=6adb265a cx=c_pps
+X-Authority-Analysis: v=2.4 cv=cZpHPXDM c=1 sm=1 tr=0 ts=6adb2771 cx=c_pps
  a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=bC-a23v3AAAA:8 a=Tb4baJqIJvETSDKJSKYA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-GUID: XgRRe7D-AMa8veb5gkhCzCIMKvdR16ir
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8
+ a=gg1OsQjKW_mRkEzLfZkA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIzMDAzNyBTYWx0ZWRfX01truoI8NCrx
+ CLVCu+KAO8BBb8aLdMTLfttiNnmjjlHnhX/wrMj/PmXus/C7HYJLnfiDc7etPzry8f9b5UAATzT
+ LtGfLpJz9k7Yb+LfPXBz94fjycAPmI8=
+X-Proofpoint-GUID: awbuoXlYO1dsUshWstS2xeVPF7xlnmlG
+X-Proofpoint-ORIG-GUID: awbuoXlYO1dsUshWstS2xeVPF7xlnmlG
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIzMDAzNyBTYWx0ZWRfXxGXDTZ5W5g+m
+ Z6p2plf7SiKa+VqCf0RUwMIa9wVbfuCIFSnyLFb7AC6DLD+5daWcmXOho44M2GZnW5X28VTO518
+ IOrEvOjx7ls7pBLNUOZbGncwazXvB+JEP5TdpCkkfJPV3f1VI/l8D0awALEVgqZTQKGIFmHedwm
+ FdUXdKq5o5NGYy2uKtTvqziHBG0n2TJ9GnFJRGkQ5YsX2R+yUvej0wESQgsToOZXPMTacd4sm+A
+ ZLkI2qTTo/KjNufIT+p/RRfkbureGQnCMPHnKNXQlg3I0Cb0QwqfDWN+C+6Hn87ff8ViBqpVsOr
+ TBKiPzmySDe2n1X3RC6ayJ8/QAn/khks0iQS/M99utgd99HFBPEL7fMeQpMHPu1Fd9btcFqXTYr
+ g6q743IMayGRcsxtRhpJEZCFBot1iqSSblipi38epAaWrv4ir5+79TVCWSC7EdWjk6VVoJ+NwwW
+ nyZGcg4EDVZLeMMNDRw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-10-23_02,2026-10-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 impostorscore=0 suspectscore=0 malwarescore=0
- phishscore=0 priorityscore=1501 lowpriorityscore=0 bulkscore=0 adultscore=0
+ suspectscore=0 phishscore=0 malwarescore=0 adultscore=0 priorityscore=1501
+ clxscore=1015 spamscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610230036
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610230037
 
-The PSCRR framework[1] currently does not provide a recorder provider
-capable of persisting power state change reasons across power cycles.
+The PSCRR NVMEM recorder needs a persistent storage cell to save the
+power state change reason before shutdown or reset. Without a described
+NVMEM cell, the recorder has no platform storage where it can preserve
+that reason for the next boot.
 
-This series extends the PSCRR framework[1] with support for an
-NVMEM-cell recorder provider, integrating PSCRR-recorded power state
-change reasons with the NVMEM subsystem.
+Add a pscrr-nvmem layout under the PMIC SDAM and describe a one-byte
+cell at offset 0x49. The recorder uses the lower four bits of this cell
+to persist the power state change reason across resets.
 
-The recorder writes the power state change reason into a small NVMEM cell
-(e.g. a PMIC SDAM byte or RTC scratch register) before shutdown or reset,
-so the cause survives a power cycle and is available via
-/sys/kernel/pscrr/ on the next boot.
-
-Only the NVMEM-cell provider is included here. The PMIC hardware-register
-provider will be submitted as a separate series.
-
-[1] https://lore.kernel.org/all/20261019-pscrr-framework-v17-0-69ea6cdf4731@oss.qualcomm.com/
-
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 ---
-Changes in v4:
-- Move the PSCRR NVMEM provider recorder from drivers/power/reset/pscrr/
-  to drivers/nvmem/layouts/ and relocate its Kconfig/Makefile/MAINTAINERS
-  entries accordingly, as suggested by Srinivas Kandagatla.
-- Reject a layout that declares more than one reason cell with -EINVAL
-  instead of silently using the first one - Srinivas Kandagatla.
-- Consolidate the probe error paths onto a single of_node_put() unwind
-  label instead of repeating the put on every failure - Srinivas Kandagatla.
-- add Reviewed-by tags from Abel Vesa and Rob Herring.
-- Link to v3: https://lore.kernel.org/r/20260914-pscrr-provider-v3-0-c45cb16542e8@oss.qualcomm.com
+ arch/arm64/boot/dts/qcom/lemans-pmics.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Changes in v3:
-- Drop unnecessary nvmem_cell_get_size() and core compatibility
-  detection changes because the layout now owns the compatible.
-- Patch 1/3 (dt-bindings): Move compatible from the cell to the
-  nvmem-layout node, relocate binding to nvmem/layouts/, and
-  simplify the cell to a plain reg/bits child.
-- Drop the trailing "binding" from the subject, as suggested by
-  Krzysztof.
-- Patch 2/3 (driver): Convert pscrr-nvmem from a consumer-based
-  platform driver to an nvmem_layout_driver that directly manages
-  its cell.
-- Patch 3/3 (dts): Update DTS to place compatible on the layout
-  node, add bits to reboot_reason_persist, and remove the separate
-  reboot-reason consumer node.
-- Link to v2: https://patch.msgid.link/20260819-pscrr-provider-v2-0-9072383e0f4d@oss.qualcomm.com
+diff --git a/arch/arm64/boot/dts/qcom/lemans-pmics.dtsi b/arch/arm64/boot/dts/qcom/lemans-pmics.dtsi
+index 500f715931aa..180d180be3c6 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-pmics.dtsi
++++ b/arch/arm64/boot/dts/qcom/lemans-pmics.dtsi
+@@ -186,6 +186,17 @@ reboot_reason: reboot-reason@48 {
+ 				reg = <0x48 0x1>;
+ 				bits = <1 7>;
+ 			};
++
++			nvmem-layout {
++				compatible = "pscrr-nvmem";
++				#address-cells = <1>;
++				#size-cells = <1>;
++
++				reboot_reason_persist: reboot-reason-persist@49 {
++					reg = <0x49 0x1>;
++					bits = <0 4>;
++				};
++			};
+ 		};
+ 	};
+ 
 
-Changes in v2:
-- Add reviewers to To/Cc list.
-- Update patch 1/4:
-   * Rename DT node from pscr-reason to reboot-reason.
-   * Update DT binding example to use fixed-layout NVMEM layout.
-   * Add reboot_reason_persist NVMEM cell under fixed-layout.
-   * Update Qualcomm DTS example accordingly.
-- Update patch 2/4 based on Uwe Kleine-König feedback:
-   * Remove unnecessary #include <linux/mod_devicetable.h>
-- Link to v1: https://lore.kernel.org/all/20260817-pscrr-provider-v1-0-88a318c13d41@oss.qualcomm.com/
-
----
-Faruque Ansari (3):
-      dt-bindings: nvmem: layouts: Add PSCRR NVMEM layout
-      power: reset: Add PSCRR NVMEM recorder
-      arm64: dts: qcom: lemans: Add PSCRR NVMEM recorder node
-
- .../bindings/nvmem/layouts/nvmem-layout.yaml       |   1 +
- .../bindings/nvmem/layouts/pscrr-nvmem.yaml        |  87 +++++++
- MAINTAINERS                                        |   2 +
- arch/arm64/boot/dts/qcom/lemans-pmics.dtsi         |  11 +
- drivers/nvmem/layouts/Kconfig                      |  10 +
- drivers/nvmem/layouts/Makefile                     |   1 +
- drivers/nvmem/layouts/pscrr-nvmem.c                | 270 +++++++++++++++++++++
- 7 files changed, 382 insertions(+)
----
-base-commit: be461b2185ea3ff6d9c92deedcee0a62a57e1332
-change-id: 20260806-pscrr-provider-b9f8f451701e
-
-Best regards,
 -- 
-Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+2.34.1
 
