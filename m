@@ -1,68 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792748596;
-	b=r/DlJvY/xN1FLHbCbbn2WCJ8acnM1zTm1HdjuIT9cPGUEBlR9KsKWrChEn3jgGQGMQFU
-	 O7cSz7JJNerq3fKTD8JWBtZlGggqQVoOh4vUsUdIq8jDfWdyieNYWezUUbfSeo9i1whHn
-	 VojjpNtA6rpum1poJGw5YRhzFwQrymioLswqxvsT6no8UaVI91vnARWjZUCR0A9/XUbNl
-	 XrrPJEudNv6jXV7MWuiu6Hqn4IOlTm/kHqwag4JjCz34Esmox/60se1l/F2ZjtbBZzvCs
-	 mq4cl9UIO4ZTIlZUa1Yci7qLV9+vpgrAAWqLKUgtR8nN+7kPBo+5/9KMSFt9u8HE67A==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792748596;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:Received:From:
-	 Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Proofpoint-Reinject:X-QCInternal:X-QCInternal:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=zvK3Ly8RBAGWd5O0Ri13E/eflgNnR2Spx0fhghD9ZY0=;
-	b=cKS8uvjDORPl8460wGVjfvJou4MpAuvSHOxE5tO3maGf5mZzG/OzYrxTi7yuT+6brdXx
-	 uHJZAZhdl85h65PX719wlOI2G1At98drDEq+twmjEONdwYOul7hz6Rg7HFZ0z2p9s8Uy7
-	 gA6RIKsFPPhSHj4AUnF4UKsPEmIkCfWMUtrvjnI7CUM1Tq6X17enZ8FuLwAgS6HHq24g7
-	 CxlpOVF4LkBnHsHZK+mT13hWI8naxrEtN3JJSg9Ai/Jplcr0UYdb1TzkvYLT29nRIjjex
-	 +8mcdneaDOcZmpq/XyQ/vFjhoWC008tlfkhDvZD0lAubP1wAKBNR2QKTST8zmHgjzvw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=NMvxtWiT;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1792748732;
+	b=D36pzwFiGTtCfrYjbNYQ3jh4o1FDZMxNk7lBISdOg37baI32DC4ep3JvyrHVlnRJ7GG7
+	 m5FtSe/g1wA6hi2RvM7a1Pn+ppVG3sUTFR95Yo3d91Ts9rFJvAaGqQCLjueEMOCBQBvPU
+	 IfmYw0JKh20qgfn9SmJ0EPUxBAvQjIxEWc5Unpm1ikbu0IGNEV64BpjM1iNrYL9+B5HMN
+	 dURWiNsvegm31tVuBXfYuz0bRY+B7wXLpgFQ5UdXJsOVrwrjlcS9txFN++1UYnDM65h4P
+	 VyGGsg1CZr782tWbx9tPn2SQ+bBwwAl+OKodW+MIetATDtbDtjq7sCQFOhBJV5SskSg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792748732;
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=7gHRA66Yi+9G1946JIHGvrwd5VEKKIi8mLpYBAlFBVg=;
+	b=MM/GE5Kw2PvTxmiXrUTFi1bi0A7idsHAVlgT+cTzX4w5hPMqsvOj2xIeICuVhLh1jxQy
+	 yQ2pZdS26Zx0nIcGovHI1oreVTycZW+juhGUoQrFPILRd5B1ehJwc7dtqw0UMslTAV31O
+	 Rvvo5TXKH+jBJPqqwGQ6NqAxvt5852mnvyF2oLMOCXqLhH08XNsU62whqQpIl9MTQUdm/
+	 //WbJEbnieACGu8FCqNbAb7OjZ/lQRilsBLOk/b2qObIR4709KydiKNncQa6+WKn9aUVL
+	 2FoDsWDWmAy/SDBnqqkhObOWzEg0jqqr6TgaLvwxAAMNbmxXkeWj0WglNYKajFz48wg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LDTOOMwX;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3F86606A31A;
+	Fri, 23 Oct 2026 09:45:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LDTOOMwX
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1792748731;
+	b=HUUCIfxq5SYfONqeF6uB5b6sdqmTxjVFfpc2gKleVpTRTFBGfJkx50yxoxwk4bT89qV+
+	 Rgw4BIgM30oQr2PMku/R1HjyWOEanj32I6LOZWM9w7nekMsUDain9xnFbkn0wRsgUYYlu
+	 20CYACux1JX2MIc66Bm0ymvVDmI5GSJhKzXaiJ/hi1fEhXw+6cmC7Pr0n50cCfzcz4roI
+	 SOx4APn9k8pxbcR3vClBse46d5ZL65m0IIBJoQwLQrglsESf0nNS8tzqS1XljCRmqNMJG
+	 PLOMwSbOPfcd5ucouYGrB+VtKkD3O+WklGu8Q9RFh8oiiHobnSHKBkS41QndWpVASAQ==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1792748731;
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=7gHRA66Yi+9G1946JIHGvrwd5VEKKIi8mLpYBAlFBVg=;
+	b=1ZGZEuqVdCqXbGyJpMsCQEF7qY6iuFm4czS9lI+agxFtyxRquE+KxR14ZSwiX4Zlw3Z/
+	 z/Vk2PDpK4jH8EMocHOS0uDqOYbjlCfv1T/wqTIYuXc+8XndFp+5Uyeobz/1lAx9H2LlH
+	 tWZuI8+MkNuHV7uE0qFJ+h9MTIbZZQTVgNkb4ui+bqpfcNNcHY8++XQfTIyHRquhtJ+VU
+	 4YdsH4hBVlLj8kGsAVqbKdvDNyI0Z/46BIhX4vL0R4tYAtlIlWNQCJFpcytotrduvozbH
+	 j0GfzSpNRFkeb58qGOm+Pnwo8TfnpQzoPvGgrtEomZI9tcZWOMovyLenEDla//40lcg==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B79CB60A2601;
-	Fri, 23 Oct 2026 09:43:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B79CB60A2601
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=NMvxtWiT
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7FAD42092782;
-	Fri, 23 Oct 2026 09:42:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	zvK3Ly8RBAGWd5O0Ri13E/eflgNnR2Spx0fhghD9ZY0=; b=NMvxtWiTS6WaFKAo
-	LaClPDDG/M+fjJsza6VjtTYg43Lysy6f3ARYnspXrCu5pEhqnXymaDBZ0gpA/qXN
-	UbLLBrLa5tj8GWvd9Q016VfYN8w/nAf+Hce7mZ2C/AXaLkxr1Fr/WQ/dX+6cSq4Y
-	iKz3wp1rVzR0paQ7rEbHhxt5uARCqmus9xPfWtasHQHpivMagt60IAfwKc6KQh4S
-	bWw4CZVNWBZiBhT680ImTnSLJxTkvIzl5wICCopvj4lABREXfIiBBBiRjo4Li++E
-	FT3lFq2sNPeTWiCMX4YFE3QTkP7QR51+bIJ+5Lpvji+nNNJPbEzWtqe8V5d5xKDl
-	UByDDA==
-Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hftyga88p-3
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 23 Oct 2026 09:42:47 +0000 (GMT)
-Received: from pps.filterd (apblrppmta01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 69N9IF9U4054752;
-	Fri, 23 Oct 2026 09:18:15 GMT
-Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 69N9IEN24054700;
-	Fri, 23 Oct 2026 09:18:15 +0000 (GMT)
-From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-Date: Fri, 23 Oct 2026 14:47:53 +0530
-Subject: [PATCH v4 1/3] dt-bindings: nvmem: layouts: Add PSCRR NVMEM layout
+	by smtp.kernel.org (Postfix) with ESMTPS id BCE5B1F01825;
+	Fri, 23 Oct 2026 09:45:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792748731;
+	bh=7gHRA66Yi+9G1946JIHGvrwd5VEKKIi8mLpYBAlFBVg=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=LDTOOMwXo93xKC6TN6pAvEBWBYwQsx3Ox0Y0Z7xdyZL45n50VoIGhvR1HYthL8y08
+	 KOg3dVX55TDEXuiRCvzTAqSzIJNQBWzjjahS7Eolyrjt+zouBIA2c6xx4W/YgJFN4y
+	 GJxKR4dmbvIoB1oipVg7xbGAFquJbz1GXnyu2zMMs18+1wl25ireSboC/qIuD+gNnr
+	 +hAbvmup7kieg2EDBD8TQWZojeqqaFkX2uGul1O6zcdkEkb6wkefoK115XiKavxPYf
+	 aYd7x0oUbScHEF0cavLDsn7a31Uvn25tAdNoeGVKRewB8jiw/Wis0pVj/SQRJ5FkTt
+	 VBbyKZEXUbDUg==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 36C9B44478;
+	Fri, 23 Oct 2026 09:45:30 +0000 (UTC)
+From: Ishu Brar via B4 Relay <devnull+patches.brar.si@kernel.org>
+Subject: [PATCH 0/2] interconnect: qcom: Add SM7250 interconnect provider
+Date: Fri, 23 Oct 2026 15:15:27 +0530
+Message-Id: <20261023-icc-sm7250-v1-0-1e47c1226857@brar.si>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,194 +85,60 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261023-pscrr-provider-v4-1-e70fabb7e927@oss.qualcomm.com>
-References: <20261023-pscrr-provider-v4-0-e70fabb7e927@oss.qualcomm.com>
-In-Reply-To: <20261023-pscrr-provider-v4-0-e70fabb7e927@oss.qualcomm.com>
-To: Oleksij Rempel <o.rempel@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>, Benson Leung <bleung@chromium.org>,
-        Tzung-Bi Shih <tzungbi@kernel.org>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, kernel@pengutronix.de,
-        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        =?utf-8?q?S=C3=B8ren_Andersen?= <san@skov.dk>,
-        Guenter Roeck <groeck@chromium.org>,
-        Matti Vaittinen <mazziesaccount@gmail.com>,
-        Ahmad Fatoum <a.fatoum@pengutronix.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        avaneesh.dwivedi@oss.qualcomm.com,
-        Umang Chheda <umang.chheda@oss.qualcomm.com>,
-        Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Authority-Analysis: v=2.4 cv=cZpHPXDM c=1 sm=1 tr=0 ts=6adb2c17 cx=c_pps
- a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=gEfo2CItAAAA:8
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=T2scfIwO0EnMTC8JHKIA:9 a=QEXdDO2ut3YA:10
- a=sptkURWiP4Gy88Gu7hUp:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIzMDAzOCBTYWx0ZWRfX9t8kTn1b7Dxe
- HoVNJTJmyKhhaV0w+vx0rrGBOmWWcGz9Z+Idsyf19vKVgHqeW2t1tG8Bl/nk0rMZY3O3lB193y2
- pq05RL7bCTsONlYXiJhsDFogZpQhZVg=
-X-Proofpoint-GUID: R8Bp7kSJzy75MQ0H_QDLtyRVJMnaPjGa
-X-Proofpoint-ORIG-GUID: R8Bp7kSJzy75MQ0H_QDLtyRVJMnaPjGa
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIzMDAzOCBTYWx0ZWRfX6kz0nAEM7GJ0
- LkUBbe6PAFpjY21t49HQTOAAAF/k2Zvuo9nOEQ5TGPECRhzsZPs68XMx2oX6MMX8qoR+M3P96D1
- D88CBL0Tze82pOn3wSQdKv2Ak3pRfKJNvdq0drsMzX9z0OynC/5fFMbIj+6wnFzNsUSGgzwSQoX
- JoJR23thggbMBao7xPcjFKbbYI0px/4hpBHkjTeDFD/hOj2LoypEMrtmhoUPxH3FIy6d6Q/5/Ub
- IuVAEeiCgkA8juClHVxGFlor6ocEWILZ4ClAGLykvi6IcuKHd4Aqh2t39uWm/NRhTelwZL8l6/Y
- m/+ZTZgUt0HBi6owkK4yGpnY039TAk3tRlugDGm2TH9tJAno4OFV44NWtITzXJ8vCKXRFSXwPl3
- t/E76EPuhKd5Q9JLoDxJnhfBTHbjE8SM6dE8vqmE5yL3O1dO7K+38xnssWv4gCH3dan1g809q49
- x4nlvbubpOJf5f5AUSw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-23_02,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 malwarescore=0 adultscore=0 priorityscore=1501
- clxscore=1015 spamscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610230038
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzNDAyNj3czkZN3iXHMjUwNdQzMLk1SzVBPDRAMjJaCGgqLUtMwKsGHRsRB
+ +cWlSVmpyCcgEpdpaAP0CuS1uAAAA
+X-Change-ID: 20261023-icc-sm7250-1684e6e41a02
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Konrad Dybcio <konradybcio@kernel.org>, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Ishu Brar <patches@brar.si>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792748728; l=1455;
+ i=patches@brar.si; h=from:subject:message-id;
+ bh=rT3/RTw2g8tLLg867RLRdVfy7CHWnSpMjk9in/XDuoc=;
+ b=5hjXakKZCZYAn2P6T8oMSE5/B57/nB6JEJXR1VyUSv53bKsiTIJsLZ8M+cDd6RschVdIA6moj
+ IuSOXSM5X28CcA9YnfPZem2hGv0rs7roYpgOlx/pHSWr33qT2olKKrV
+X-Developer-Key: i=patches@brar.si; a=ed25519;
+ pk=Ds+E23E3ntzjPzuBDyVRkOouclcNI5k75R+N42yJtCk=
+X-Endpoint-Received: by B4 Relay for patches@brar.si/default with
+ auth_id=1189
+X-Original-From: Ishu Brar <patches@brar.si>
+Reply-To: patches@brar.si
 
-Add a schema for the PSCRR NVMEM layout, which persists the power
-state change reason in a single NVMEM cell so it survives a power
-cycle and can be read back on the next boot.
+Add the binding and the driver for the Network-On-Chip interconnect
+providers of the Qualcomm SM7250 SoC (Snapdragon 765/765G/768G). They are
+controlled through RPMh Bus Clock Managers, like the other RPMh based
+providers. The driver follows the layout of sm7150 and sm8250, and the
+nodes and BCMs come from the downstream interconnect description of the
+platform.
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Tested on a OnePlus Nord (a 7.3-rc7 based tree): all providers probe,
+and UFS, USB, display, I2C, serial and camera ISP devices get their
+paths without errors. The Adreno 620 GPU also takes its memory bandwidth
+levels from these providers (the Adreno 620 series sent earlier relies on
+them). The SoC devicetree nodes are not part of this series.
+
+Signed-off-by: Ishu Brar <patches@brar.si>
 ---
- .../bindings/nvmem/layouts/nvmem-layout.yaml       |  1 +
- .../bindings/nvmem/layouts/pscrr-nvmem.yaml        | 87 ++++++++++++++++++++++
- MAINTAINERS                                        |  1 +
- 3 files changed, 89 insertions(+)
+Ishu Brar (2):
+      dt-bindings: interconnect: qcom: Add SM7250 RPMh NoC bindings
+      interconnect: qcom: Add SM7250 interconnect provider driver
 
-diff --git a/Documentation/devicetree/bindings/nvmem/layouts/nvmem-layout.yaml b/Documentation/devicetree/bindings/nvmem/layouts/nvmem-layout.yaml
-index 382507060651..24545db61416 100644
---- a/Documentation/devicetree/bindings/nvmem/layouts/nvmem-layout.yaml
-+++ b/Documentation/devicetree/bindings/nvmem/layouts/nvmem-layout.yaml
-@@ -21,6 +21,7 @@ oneOf:
-   - $ref: fixed-layout.yaml
-   - $ref: kontron,sl28-vpd.yaml
-   - $ref: onie,tlv-layout.yaml
-+  - $ref: pscrr-nvmem.yaml
-   - $ref: u-boot,env.yaml
- 
- properties:
-diff --git a/Documentation/devicetree/bindings/nvmem/layouts/pscrr-nvmem.yaml b/Documentation/devicetree/bindings/nvmem/layouts/pscrr-nvmem.yaml
-new file mode 100644
-index 000000000000..118669d33f5c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/nvmem/layouts/pscrr-nvmem.yaml
-@@ -0,0 +1,87 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/nvmem/layouts/pscrr-nvmem.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: NVMEM layout for the Power State Change Reason recorder (PSCRR)
-+
-+maintainers:
-+  - Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-+  - Oleksij Rempel <o.rempel@pengutronix.de>
-+
-+description:
-+  An NVMEM layout for a Power State Change Reason (PSCRR) recorder. The
-+  reboot or shutdown cause is persisted into a single small NVMEM cell,
-+  such as an RTC scratch register, a PMIC SDAM (Scratch Data Access Memory)
-+  byte, or an EEPROM byte, so the reason survives a power cycle and can be
-+  read back on the next boot.
-+
-+select: false
-+
-+properties:
-+  compatible:
-+    const: pscrr-nvmem
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 1
-+
-+patternProperties:
-+  "^.*@[0-9a-f]+$":
-+    type: object
-+    description:
-+      The single NVMEM cell used to persist the power state change reason.
-+
-+    properties:
-+      reg:
-+        items:
-+          - items:
-+              - description: Offset, in bytes, of the cell within the
-+                  parent NVMEM device.
-+              - const: 1
-+        description:
-+          Offset and size, in bytes, of the cell within the parent NVMEM
-+          device. The reason value occupies a single byte, so the size
-+          must be 1.
-+
-+      bits:
-+        $ref: /schemas/types.yaml#/definitions/uint32-array
-+        items:
-+          - minimum: 0
-+            maximum: 7
-+            description:
-+              Bit offset within the byte addressed by reg.
-+          - minimum: 1
-+            maximum: 8
-+            description:
-+              Number of bits used to store the reason. Must be wide enough
-+              to hold every value of enum psc_reason (currently 4 bits or
-+              more).
-+        description:
-+          Optional. When absent, the whole byte addressed by reg is used.
-+
-+    required:
-+      - reg
-+
-+    additionalProperties: false
-+
-+required:
-+  - compatible
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    nvmem-layout {
-+        compatible = "pscrr-nvmem";
-+        #address-cells = <1>;
-+        #size-cells = <1>;
-+
-+        reboot-reason-persist@49 {
-+            reg = <0x49 0x1>;
-+            bits = <0 4>;
-+        };
-+    };
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 19b9f6605d98..51f31e95f4ea 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -21693,6 +21693,7 @@ R:	Pengutronix Kernel Team <kernel@pengutronix.de>
- L:	linux-pm@vger.kernel.org
- S:	Maintained
- F:	Documentation/ABI/testing/sysfs-kernel-pscrr
-+F:	Documentation/devicetree/bindings/nvmem/layouts/pscrr-nvmem.yaml
- F:	drivers/power/reset/pscrr/
- F:	include/linux/pscrr.h
- F:	tools/testing/selftests/pscrr/
+ .../bindings/interconnect/qcom,sm7250-rpmh.yaml    |  102 ++
+ drivers/interconnect/qcom/Kconfig                  |   14 +
+ drivers/interconnect/qcom/Makefile                 |    2 +
+ drivers/interconnect/qcom/sm7250.c                 | 1683 ++++++++++++++++++++
+ .../dt-bindings/interconnect/qcom,sm7250-rpmh.h    |  151 ++
+ 5 files changed, 1952 insertions(+)
+---
+base-commit: 3fd56a2833c22f62eb84297d0dbd47739632f1a0
+change-id: 20261023-icc-sm7250-1684e6e41a02
 
--- 
-2.34.1
+Best regards,
+--  
+Ishu Brar <patches@brar.si>
+
 
