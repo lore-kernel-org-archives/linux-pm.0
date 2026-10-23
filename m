@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792778101;
-	b=qsStIN1xKyyt1k+exBgwiYoS+bFa6cz4D1lb9+a/YCHl0o+s06R39+yYqEu0/5lYuGRm
-	 cLst/AliaGBeaJT0BZxtIjas1uuBYiQxzWJD9I9EP02s0v09FJyugdadfYPxQUjlX+6b6
-	 H2KIgM6PcRolJnQZwGTijiSgAF/yd1wgiMddfEAyqH0QZWj3C4FS7vi1nhctq6QpFoybX
-	 Xck3zCoozMcMONU1WXXop0G6punwdgy5bSacW1/fYir8WFG+qxnYB7ors2GSInRfSIdGY
-	 z/8gWwCUp1EJ8P08GZlGvTrAXxUsXDBKLI6X+wgPGXVC28pBO4PqUPxb+kviRj06fLQ==
+	t=1792778125;
+	b=rU/toiPO9TVq5REjCqP3ET8T8f5OPAalI1c6FRhNPiwBhjS6iLRjZUdVI3V+mX5x3T2U
+	 GBnvsD/Fj8PfsSziR0MKHjRxZV0/y2GTO9th/dzPDxcQ/wPdZenTlB+6filFw38iCGiS8
+	 Bpn3juEFQM3YL83tITLrQKWzxROtn0UTsSmfCxrKzTmmxTA+QvklP6YkVq5o9L5zWk1XD
+	 qi6QC266QSxp7fVoRHpSiG4nf6v5mbcSLkrAX2Qcyx3vHNg8X8C0VU1rtZizfL2dRL6Z4
+	 mngBKUuLHFDm7K2jIh9VU2zA181bZcF3tihflwXCwPeCzJwGco2zKAM84MxbAQSkxJw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792778101;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792778125;
 	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=pao9WubCAod8keYe+2yXT+0/fwRHZA3RvWmCb5PUwHo=;
-	b=AmEcfuBlZ59Cbwh7cO+sEOB4gkD/PKn/4JW6jQE162M39xltC4RAzhUCasqRjaAls1al
-	 Lto8isL0HG1ikgdtqFZTcY0k/Qi+BoDfcv41d0xH/OGI+lXoPksaO2ptfQLJ+9kkRLn+4
-	 j1Kpmh+ne2z7CAWjbmfNmgCnY/XJf8OsSNhmymVqOesP8n91Rl/LJMPzgL4bFQaCrbKrl
-	 wQcODv9WWBw55DA9r8+z3aX+Y5zN55kpKZhU5+IyrQeMQzBwOCcaY8HiBUzirQ/rwk6px
-	 mXHzJi6dSXGZkeWDi1abHj2+aH0QQdIdSGYIjUgLrJjRSRKMX51ddDGD3WqY1frrCPg==
+	bh=u1NMUq+jqXQwc0QHEPQZUDhJH1xGVhYW8LwKRkp9xfA=;
+	b=fuV6y9sIC/kXyFLj/y1evQymwYtzo40tuBJED+jz1abeIA3xsxQxqJcJ2rLJY/RyzXSn
+	 jYjZ4YDcXILRE43yHbFZRx116sb4T3ZfwFtRumRw9mTDKjVjY9iQ55O1ZUa8xHko5B4OH
+	 cmckA2og4IvPmcCC0bWKVq2zNlC1vt9I90V/4t+KJ/lQdmLPm0fVLgfxeoL0qJCwWGf+W
+	 tKhP/iLjMsJYfQkQrmoWRd3OB65ScPhqEoWBWEJ6W/GMaZI4J1TXykOadWwGxMkboIJcY
+	 DKoDBgcf3qEeexNdzvMPIANygQZh45noUmbrDT2ZUInMO7HLzd5ORbWdDB1KBzhY8zw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A9D5606A31A;
-	Fri, 23 Oct 2026 17:55:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2EC851F01825;
-	Fri, 23 Oct 2026 17:54:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 660B6606A31A;
+	Fri, 23 Oct 2026 17:55:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDC541F031E1;
+	Fri, 23 Oct 2026 17:55:01 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Linus Walleij <linusw@kernel.org>,
 	Bartosz Golaszewski <brgl@kernel.org>,
@@ -44,9 +44,9 @@ Cc: linux-gpio@vger.kernel.org,
 	linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/DNI 6/7] pmdomain: renesas: r8a78000: Add SCMI GPIO support
-Date: Fri, 23 Oct 2026 19:50:44 +0200
-Message-ID: <54e186a3436605f5755dd16eb90b3b7a06e97254.1792776697.git.geert+renesas@glider.be>
+Subject: [PATCH/DNI 7/7] arm64: dts: renesas: r8a78000: Add gpio-ranges
+Date: Fri, 23 Oct 2026 19:50:45 +0200
+Message-ID: <cae27d2d9dd17c081dcea27e3b223a8fb8653796.1792776697.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1792776697.git.geert+renesas@glider.be>
 References: <cover.1792776697.git.geert+renesas@glider.be>
@@ -61,63 +61,108 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add support for the GPIO modules on R-Car X5H when using SCMI.
-These are handled by the AON, HSCN, PERE, and PERW Module Controller
-blocks.
+Link all GPIO controllers to the Pin Function Controller using
+"gpio-ranges" properties.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-This depends on "[PATCH v4 7/8] pmdomain: renesas: r8a78000: Add SCMI
-remapping support"
-https://lore.kernel.org/2895c8f3cbe718dc597ad25e16c2461f0d681ab6.1792163045.git.geert+renesas@glider.be/
+This depends on out-of-tree pin control support.
 ---
- drivers/pmdomain/renesas/r8a78000-mdlc.c | 25 ++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ arch/arm64/boot/dts/renesas/r8a78000.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/pmdomain/renesas/r8a78000-mdlc.c b/drivers/pmdomain/renesas/r8a78000-mdlc.c
-index 10089d938f71b27e..838566ed821e29e0 100644
---- a/drivers/pmdomain/renesas/r8a78000-mdlc.c
-+++ b/drivers/pmdomain/renesas/r8a78000-mdlc.c
-@@ -644,7 +644,23 @@ static const struct mdlc_info r8a78000_mdlc_default[] = {
- 	{ /* sentinel */ }
- };
- 
-+static const struct mod_map_in r8a78000_mdlc_aon_mod_fw[] = {
-+	{ 0x20, 811, -1 },	/* GPIODM0 */
-+	{ -1 }
-+};
-+
-+static const struct mod_map_in r8a78000_mdlc_hscn_mod_fw[] = {
-+	{ 0x50, 332, -1 },	/* PFC_HSCN_GPIODM0 */
-+	{ -1 }
-+};
-+
-+static const struct mod_map_in r8a78000_mdlc_pere_mod_fw[] = {
-+	{ 0x30, 193, -1 },	/* PFC_PERE_GPIODM0 */
-+	{ -1 }
-+};
-+
- static const struct mod_map_in r8a78000_mdlc_perw_mod_fw[] = {
-+	{ 0x30, 201, -1 },	/* PFC_PERW_GPIODM0 */
- 	{ 0x40, 205, -1 },	/* SCIF0 */
- 	{ 0x41, 206, -1 },	/* SCIF1 */
- 	{ 0x42, 207, -1 },	/* SCIF3 */
-@@ -678,6 +694,15 @@ static const struct mod_map_in r8a78000_mdlc_scp_mod_fw[] = {
- 
- static const struct mdlc_info r8a78000_mdlc_fw[] = {
- 	{
-+		.base = 0xc1338000 /* mdlc_aon */,
-+		.mod_map = r8a78000_mdlc_aon_mod_fw,
-+	}, {
-+		.base = 0xc9c90000 /* mdlc_hscn */,
-+		.mod_map = r8a78000_mdlc_hscn_mod_fw,
-+	}, {
-+		.base = 0xc08f0000 /* mdlc_pere */,
-+		.mod_map = r8a78000_mdlc_pere_mod_fw,
-+	}, {
- 		.base = 0xc05d0000 /* mdlc_perw */,
- 		.mod_map = r8a78000_mdlc_perw_mod_fw,
- 	}, {
+diff --git a/arch/arm64/boot/dts/renesas/r8a78000.dtsi b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
+index 36a4fa1e032ee703..946dce6ab38b619d 100644
+--- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
+@@ -1273,6 +1273,7 @@ gpio0: gpio@c1080110 {
+ 			resets = <&mdlc_aon 0x20>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 0 28>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1287,6 +1288,7 @@ gpio1: gpio@c1080910 {
+ 			resets = <&mdlc_aon 0x20>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 32 22>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1301,6 +1303,7 @@ gpio2: gpio@c1081110 {
+ 			resets = <&mdlc_aon 0x20>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 64 29>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1315,6 +1318,7 @@ gpio3: gpio@c0800110 {
+ 			resets = <&mdlc_pere 0x30>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 96 17>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1329,6 +1333,7 @@ gpio4: gpio@c0800910 {
+ 			resets = <&mdlc_pere 0x30>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 128 16>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1343,6 +1348,7 @@ gpio5: gpio@c0400110 {
+ 			resets = <&mdlc_perw 0x30>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 160 23>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1357,6 +1363,7 @@ gpio6: gpio@c0400910 {
+ 			resets = <&mdlc_perw 0x30>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 192 31>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1371,6 +1378,7 @@ gpio7: gpio@c0401110 {
+ 			resets = <&mdlc_perw 0x30>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 224 31>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1385,6 +1393,7 @@ gpio8: gpio@c0401910 {
+ 			resets = <&mdlc_perw 0x30>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 256 32>;
+ 			gpio-reserved-ranges = <16 10>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+@@ -1400,6 +1409,7 @@ gpio9: gpio@c9b00110 {
+ 			resets = <&mdlc_hscn 0x50>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 288 17>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
+@@ -1414,6 +1424,7 @@ gpio10: gpio@c9b00910 {
+ 			resets = <&mdlc_hscn 0x50>;
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
++			gpio-ranges = <&pfc 0 320 14>;
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
+ 		};
 -- 
 2.43.0
 
