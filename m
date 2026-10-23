@@ -1,96 +1,68 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.229.137
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792744310;
-	b=BIg2JkFsDD5hV6J5GFyuA6hWjIrY3eq3T/5NpJ9AvCZQPWbu2/nWN8CRKz+bW1w2ujBZ
-	 E3+muonkbM63NTWkaMF6FTlOIg5UffX9qzCsvUbfKjGGf46hb7za8x14cYJ1u+rdmifcU
-	 sTWOmCf3HUljfIQrCbu2/rso8uG960QZ3u/NLINrm4KRMU7UJJTTMwSxNDc3b/jNzj+0J
-	 A0J4eJVLyC+ZL+qZpoMZ+uTxuF4h201Vy7D7P64qARH1oIXcFAcPOBa7IV4EBhxGJujBW
-	 vERh9mIx4LI4YyKKGtwpQH38vNj1bs5c/T7lpyOhjBeX+9CPHD0DroKYsyQl7xiAAmQ==
+	t=1792747126;
+	b=A9jnqAYNJ9nni1RSCgEReARm3pilp24RtMLjBGVOVyUd6i2+I5ch2J1zFkvwVMPFD5vT
+	 E/5yU317Xcy2WqQfXS4D4CdaZthH5JtmYgza4TxBYjqxPozaDBynsz8QOigGh7+9KrkuE
+	 IMKjsKjb4lb2DAAp+y21f3jc6x2SBKyTq7UfS5OjmlPh4VyodLbCNmSLt2QtKX5xRWGdX
+	 YpdX8W8OC5mzujZq0dhR6VuFevpOaEBij5uur7vUj2vCdBfmfh70Gu7ITzsdiLYrOTAtp
+	 K2rXVhn+Jnh4vMVq2d5F4w5XiB0dNBQQM1AP4cl1+J8ss/UR8pDEy4rkx9a28h7tpLA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792744310;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=E05olwjMu5WDS6DflFS2ipV3arJ+f6q+MONc7cQ+gq4=;
-	b=WE4iMA2oHeDCw8MHQYXhyl4caqOS88azsj25F09z7afBhSqUO4xt+bRCRLbx9OUGlGJr
-	 weKMNgbHnDB3eCr20/2zFF4YnIwAXPqwcdB6vlbf0dtKsPiAjaojQ8Gw9GJGIaJo5ezo3
-	 u6MPLuAULTQmIe/g/3a3MGn7nenzw0yY91aRAD/YSwxtxDz1GeEjxWOubTSNVkiPHnOXq
-	 1hPuvSuffDMqIFLP2w/+tI0deCicqetePvuT5M5UOamBi36qXG6R9vCp7ISpwFJBpLC+y
-	 Bs7iCOf4QOxormK9XcqLjKgvf8n210CMibw0sHIGBiu9p8MgWgvM7GyQE6CXyCqEvRQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792747126;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:Received:From:
+	 Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Proofpoint-Reinject:X-QCInternal:X-QCInternal:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=57Cnjaqh9yW07mFneXNL8nTFOdmBF8ZmnDJCevxnPDo=;
+	b=o3GvSSWaRAV4J9C4NfKYQaZ0S8BTq3LvajUTeLLDcSUK2Dem6neNlTzeGGSHOz3uiHYq
+	 SduV7ptnFRafjfrlm5aPFbMplCzf2oNYi4gTQ7plKG8GMiAqrmz2uH1g7Dq6IKgl9FEVo
+	 2ojbqDJtRsk4y6Pc8iG0BiAUhPWLdsQ5N+IdYOL7EQODZcFiu2gVdksylfn0oluAdIsp5
+	 sZVOSSQ9/UDRbBPTrYuFUIdZXQ7/1V7oZFz49BgXboWD/uz7+iHtKTQ2ycg4M7EIQ/QWd
+	 c4M389jrZWW1lMRNTwv24WBIi7O2WmkdOx29Y6uJZ39qRZ8gBKAS81zv+ZZTaUoP8/g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JLKUQzn8;
-	arc=none smtp.remote-ip=74.125.229.137
-Received: from mail-dl2-f9.google.com (mail-dl2-f9.google.com [74.125.229.137])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="l0N/kShF";
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EBD8606A31E
-	for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 08:31:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9EBD8606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACF4B606A31B;
+	Fri, 23 Oct 2026 09:18:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org ACF4B606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JLKUQzn8
-Received: by mail-dl2-f9.google.com with SMTP id a92af1059eb24-164f08a9e84so145337c88.1
-        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 01:31:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792744309; x=1793349109; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=E05olwjMu5WDS6DflFS2ipV3arJ+f6q+MONc7cQ+gq4=;
-        b=JLKUQzn82EfCS/PK4aDyVvcv3gYzzF2Jtqxle8dQaEIXSK0iSxGVmaHOhLDPhqwcLV
-         fxkZ2Q+sQKbT0SfGeyo7Rut5L5ow2DF2LTK2Co6uMsAColZi3HbzLIfrr/oG0QopJSi0
-         MGihT/tiCRNM5m+eeUsFm0U4IVyrpIvWqjt2sPapnF+iAStCdEmfOV9lh3ile94LoGTZ
-         UI0ufV00ZQax8L1zOcqsqAM3aC2yIVS+/cIscbBDCU82qRvYZci8WRp1NR43Cyr/3yF+
-         6ssn89p6r9ttb++NaQC9TVRGSxIFjABuU9ToR+SKRK7z7N4THok3MzmLHhUMo5XF/N7E
-         sDlQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792744309; x=1793349109;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=E05olwjMu5WDS6DflFS2ipV3arJ+f6q+MONc7cQ+gq4=;
-        b=gU2LMRMj3mw7r7jg0Op/p06/V7AH97EBrI3H7KMly9cTGweXqVD7fMA2GLuLUZ9UtK
-         ZzO/3VpIIgeAFqqhqO33KYvfEE/JrgCxpbHEAnG+cmCZhfl77yuyI8LT089i2RGYZ/UB
-         +XrDyff872Iy0MUCWJASRPEQCiF79JG/r1Z/3Bsod/9dag9Di7iPc/o9iXI1y1aQDXw5
-         h4kAz+ZNIkEEl4raM77sFRY5oNBzsN9GKxhAtlTe33Awk2J0yz31yuLEdB5ut1k2n9cB
-         ky/sQ2UsPABqaA8aGWZ0PzoN2vJ3y/c2MB1cQ/0QqMGgOgLEw77KueKB4hZkOIkJAWV4
-         ZRmg==
-X-Forwarded-Encrypted: i=1; AKwUvBx7AlfspLmzjCTP9Pd5fTFmAvDLsoSUyhN2qR/E+Bejpk70xe0rcgTQqVJdKIZhIlJ7628FaJd4Eg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ4YJrf8b5IJ6yaC+PI3VrKcq3ZNoEU9vakspc13rU7KNWW9QSC
-	kY8Y3CoJrdhZzN/bsNVxNjGE2sPmBqT+Mw05eNp6yMMUc8qf2RPccb/Pj6iv3tY/
-X-Gm-Gg: AYBFou0V3qc3UjoXhdXDjnstiiVQzPOyJ8wyamFloU+YONXSsoT6OYl/c9bbS5AwMMG
-	NqPU7zAcDR4a/2sMYoiOcmY5udNk5hOQkF3JxBWollyiFpy8nF8NIPAREr4n1UrdKf9B5nhN7F0
-	kKg+L4qhZRYaHhDeaSn2B0f8mMjKkYxpDHMqTBkyxmhN/xwnh/qhT55AgPY5nLEndw8LTfM9r8l
-	ALoct0cHIZ2g75eaJmHmtSnXDiCuq3MxdL/BrqYJJNf4AJe/IYrSGQUsPH2NJiCpKl4tL0NmDGG
-	Cn7U/umY6gUNomGlsYvm+vrY9iUqfd5OCwrtp17J62eeB6Ao+D/Q4pwviajhv4r94L+X4bWW/7K
-	aNh9WXnBPIMSkJDBKJadW7ZHKGVciKSbc56xvgCnZoredOwXljSvCVBpqYpC1VLFdYAIGIBayUy
-	5GPKftq2TqPgHQ75aKTqnSHQmbowryt+BfL+6Yib6mIeE1Msqxdw79c4t87mfPEDdFmOz7ZEfRc
-	uErA4MpVQzSfQecgPofwfZtiJnRLmDKQZbpVc21g/1W7bzXaR9z2615maeB5JZg0KzzTgeP3bG4
-	w9wL5gg=
-X-Received: by 2002:a05:701b:4194:20b0:189:d6bf:7eaa with SMTP id a92af1059eb24-195c4d61629mr2215801c88.16.1792744308436;
-        Fri, 23 Oct 2026 01:31:48 -0700 (PDT)
-Received: from localhost.localdomain ([98.148.34.5])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-195dfbc23fbsm4661551c88.0.2026.10.23.01.31.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Oct 2026 01:31:47 -0700 (PDT)
-From: Hungyu Lin <dennylin0707@gmail.com>
-To: zouyipeng@huawei.com
-Cc: zhoujinghao24b@gmail.com,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	linux-pm@vger.kernel.org,
-	bpf@vger.kernel.org
-Subject: [RFC PATCH] cpufreq: ext: serialize BPF registration with governor teardown
-Date: Fri, 23 Oct 2026 08:31:31 +0000
-Message-ID: <20261023083131.58291-1-dennylin0707@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240927101342.3240263-2-zouyipeng@huawei.com>
-References: <20240927101342.3240263-2-zouyipeng@huawei.com>
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=l0N/kShF
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7FAEa2092783;
+	Fri, 23 Oct 2026 09:18:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	57Cnjaqh9yW07mFneXNL8nTFOdmBF8ZmnDJCevxnPDo=; b=l0N/kShF2uhix4xK
+	nFjlqRqoeQo0u2aFPb1fq/dLuNJHNWVkYazkYVXmLJUPvOjfVhWLAJJaXQKjWOy7
+	8zn27MdAOMdyYz/UPNgzgBUuZy0sBIGf6Z90CUJ8h3YPLXUHr5XnwdrZwnVWxf9R
+	hTBD7ORj6AJtu+aINPSMkjHkbWfaCYcOgnRANCTRRId5rEaKF3xWkFSaYV0kQEZu
+	lMqdp8pbuOb2hWoc3YIzo+E2QmrUa1xWwaoGIbOBAhsXy+6yb+cfBqjH7npc4jiq
+	iPk2RKtlVjITAgPnKwGTCr82vOxsvMcbZ7Pp2V+ckiiTYdCPOFkRRttZEmdBctCd
+	8KwOdg==
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hftyga4ra-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 23 Oct 2026 09:18:19 +0000 (GMT)
+Received: from pps.filterd (apblrppmta01.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 69N9IGVc4054764;
+	Fri, 23 Oct 2026 09:18:16 GMT
+Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 69N9IEN34054700;
+	Fri, 23 Oct 2026 09:18:15 +0000 (GMT)
+From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Date: Fri, 23 Oct 2026 14:47:54 +0530
+Subject: [PATCH v4 2/3] power: reset: Add PSCRR NVMEM recorder
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -100,149 +72,403 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261023-pscrr-provider-v4-2-e70fabb7e927@oss.qualcomm.com>
+References: <20261023-pscrr-provider-v4-0-e70fabb7e927@oss.qualcomm.com>
+In-Reply-To: <20261023-pscrr-provider-v4-0-e70fabb7e927@oss.qualcomm.com>
+To: Oleksij Rempel <o.rempel@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>, Benson Leung <bleung@chromium.org>,
+        Tzung-Bi Shih <tzungbi@kernel.org>,
+        Srinivas Kandagatla <srini@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, kernel@pengutronix.de,
+        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        =?utf-8?q?S=C3=B8ren_Andersen?= <san@skov.dk>,
+        Guenter Roeck <groeck@chromium.org>,
+        Matti Vaittinen <mazziesaccount@gmail.com>,
+        Ahmad Fatoum <a.fatoum@pengutronix.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        avaneesh.dwivedi@oss.qualcomm.com,
+        Umang Chheda <umang.chheda@oss.qualcomm.com>,
+        Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Authority-Analysis: v=2.4 cv=cZpHPXDM c=1 sm=1 tr=0 ts=6adb265b cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8
+ a=VwQbUJbxAAAA:8 a=4NpiubGSDSypE1FgfBwA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIzMDAzNiBTYWx0ZWRfXzBtbZnhy9HQd
+ 0ASjlzO5CMsb7xE4Ei1qNh8wjIEgS4cf9W+JoUyHDZGQBfmClUy6GOHLbp5Ex+IGAHjOfZ6PEdI
+ boGnB2+GCkblPCctX2ULB4ZMqVzhwjs=
+X-Proofpoint-GUID: b6Edjw1dLjExPNeDESSMLPlUj3xn6ylE
+X-Proofpoint-ORIG-GUID: b6Edjw1dLjExPNeDESSMLPlUj3xn6ylE
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIzMDAzNiBTYWx0ZWRfX0Apnow9BQSWZ
+ mI02uHzCVE8IZabYu1A5xEg6uNgqCBMSn/fLbI5NATSvvP8fFbBGids2AS+UAolv+UoespM2cS6
+ NMUvLwO0v+OgG1njOWAz21IFk1V4lb/niU062xbVSZOiHFu8GGxFiwQM7wGr6EoO54zHRrfTBGa
+ d19gNqjRatWaT2Vk2Y7p1s7tTvkjoWYrjIG2Kv+P9U1FSVgaf/zgcPXB4mtyPFQg5f/VzqfMDS1
+ 3TzuABeknnad4vT9ZlwHMwTdZ2GDirAloMKigikw8MAuxlyyiVkjKLySDTQAhKvvP5zJF2DkI14
+ 69exlIqYQR7drsDgWniAloR2iewRXtK8Cj3lwVbIBOObcMSh4QciAGEBYwZ7Y8irZ9Fr++RQzbp
+ UVFD63Gq2RvzLXuwLft92y0bM0NcUUDX7+svsoA4QuhQsOVBdjfugD4wcgqV6P4LScihJIa4O07
+ a0tQkQ/p4L95+uMxcRg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-23_02,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 malwarescore=0 adultscore=0 priorityscore=1501
+ clxscore=1015 spamscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610230036
 
-The struct_ops link can outlive the last policy using the ext governor.
-Switching that policy to performance releases the DBS tuners and clears
-ext_global_tuner. Destroying the link afterwards calls ext_disable(),
-which unconditionally dereferences the NULL pointer.
+Record the power state change reason into a NVMEM cell (a PMIC
+SDAM byte, RTC scratch register, or EEPROM) and read it back on the
+next boot, so the cause survives a power cycle.
 
-Serialize tuner publication and release with BPF registration and
-unregistration using ext_mutex, and allow unregistering after the tuners
-have gone away. Preserve registered BPF operations when the governor is
-initialized again while the link is still alive.
+The recorder is implemented as an NVMEM layout driver: it owns the
+single cell described by its layout binding and adds it to the
+parent NVMEM device, rather than acting as a standalone consumer of
+someone else's cell.
 
-Take the CPU hotplug read lock before ext_mutex in the BPF callbacks and
-use the cpuslocked static-key helpers. Governor callbacks can run under
-the hotplug write lock, so acquiring the read lock inside ext_mutex would
-invert their lock order.
-
-Reproduce by selecting ext, attaching the RFC sample, selecting
-performance, then destroying the link. This was tested on arm64 QEMU
-with Linux 6.12 plus the RFC and Jinghao Zhou's ext_gov_update() fix.
-Lifecycle, frequency-limit and original sample checks also passed with
-lockdep, jump labels and CPU hotplug enabled.
-
-The 2025 fix addresses a separate policy-state lookup error. This
-teardown bug is present in the original, unmerged RFC as well.
-
-Link: https://lore.kernel.org/linux-pm/20240927101342.3240263-2-zouyipeng@huawei.com/
-Link: https://lore.kernel.org/linux-pm/20250918125241.80968-1-zhoujinghao24b@gmail.com/
-Signed-off-by: Hungyu Lin <dennylin0707@gmail.com>
+Co-developed-by: Oleksij Rempel <o.rempel@pengutronix.de>
+Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 ---
- drivers/cpufreq/cpufreq_ext.c | 29 +++++++++++++++++++++++------
- 1 file changed, 23 insertions(+), 6 deletions(-)
+ MAINTAINERS                         |   1 +
+ drivers/nvmem/layouts/Kconfig       |  10 ++
+ drivers/nvmem/layouts/Makefile      |   1 +
+ drivers/nvmem/layouts/pscrr-nvmem.c | 270 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 282 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq_ext.c b/drivers/cpufreq/cpufreq_ext.c
-index c79068e86..20d4d3648 100644
---- a/drivers/cpufreq/cpufreq_ext.c
-+++ b/drivers/cpufreq/cpufreq_ext.c
-@@ -197,8 +197,9 @@ static int ext_check_member(const struct btf_type *t,
- static void ext_disable(void)
- {
- 	pr_info("%s : Unregister ext governor(%s).\n", __func__, ext_ops_global.name);
--	static_branch_disable(&ext_gov_load);
--	ext_global_tuner->ext_gov_stat = CPUFREQ_EXT_INIT;
-+	static_branch_disable_cpuslocked(&ext_gov_load);
-+	if (ext_global_tuner)
-+		ext_global_tuner->ext_gov_stat = CPUFREQ_EXT_INIT;
- 	ext_ops_global.get_next_freq = get_next_freq_nop;
- 	ext_ops_global.get_sampling_rate = get_sampling_rate_nop;
- 	ext_ops_global.init = init_nop;
-@@ -210,6 +211,7 @@ static int ext_reg(void *kdata, struct bpf_link *link)
- {
- 	struct cpufreq_governor_ext_ops *ops = (struct cpufreq_governor_ext_ops *)kdata;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 51f31e95f4ea..6c3e72114826 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -21694,6 +21694,7 @@ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/ABI/testing/sysfs-kernel-pscrr
+ F:	Documentation/devicetree/bindings/nvmem/layouts/pscrr-nvmem.yaml
++F:	drivers/nvmem/layouts/pscrr-nvmem.c
+ F:	drivers/power/reset/pscrr/
+ F:	include/linux/pscrr.h
+ F:	tools/testing/selftests/pscrr/
+diff --git a/drivers/nvmem/layouts/Kconfig b/drivers/nvmem/layouts/Kconfig
+index 5e586dfebe47..fcd234b8ad88 100644
+--- a/drivers/nvmem/layouts/Kconfig
++++ b/drivers/nvmem/layouts/Kconfig
+@@ -37,6 +37,16 @@ config NVMEM_LAYOUT_U_BOOT_ENV
  
-+	cpus_read_lock();
- 	mutex_lock(&ext_mutex);
+ 	  If unsure, say N.
  
- 	/*
-@@ -218,12 +220,14 @@ static int ext_reg(void *kdata, struct bpf_link *link)
- 	if (ext_global_tuner == NULL) {
- 		pr_err("%s : Need set ext governor first.\n", __func__);
- 		mutex_unlock(&ext_mutex);
-+		cpus_read_unlock();
- 		return -EEXIST;
- 	}
- 
- 	if (ext_global_tuner->ext_gov_stat != CPUFREQ_EXT_INIT) {
- 		pr_err("%s : Already register.\n", __func__);
- 		mutex_unlock(&ext_mutex);
-+		cpus_read_unlock();
- 		return -EEXIST;
- 	}
- 
-@@ -233,17 +237,20 @@ static int ext_reg(void *kdata, struct bpf_link *link)
- 	if (ext_ops_global.init && ext_ops_global.init()) {
- 		ext_disable();
- 		mutex_unlock(&ext_mutex);
-+		cpus_read_unlock();
- 		return -EINVAL;
- 	}
- 
--	static_branch_enable(&ext_gov_load);
-+	static_branch_enable_cpuslocked(&ext_gov_load);
- 	pr_info("%s: Register ext governor(%s).\n", __func__, ext_ops_global.name);
- 	mutex_unlock(&ext_mutex);
-+	cpus_read_unlock();
- 	return 0;
- }
- 
- static void ext_unreg(void *kdata, struct bpf_link *link)
- {
-+	cpus_read_lock();
- 	mutex_lock(&ext_mutex);
- 
- 	if (ext_ops_global.exit)
-@@ -251,6 +258,7 @@ static void ext_unreg(void *kdata, struct bpf_link *link)
- 
- 	ext_disable();
- 	mutex_unlock(&ext_mutex);
-+	cpus_read_unlock();
- }
- 
- static int ext_init(struct btf *btf)
-@@ -470,9 +478,13 @@ static int ext_gov_init(struct dbs_data *dbs_data)
- 	dbs_data->ignore_nice_load = 0;
- 	dbs_data->tuners = tuner;
- 	dbs_data->up_threshold = DEAFULT_FREQUENCY_UP_THRESHOLD;
++config NVMEM_LAYOUT_PSCRR
++	tristate "PSCRR NVMEM recorder provider"
++	depends on PSCRR
++	help
++	  PSCRR recorder that stores the power state change reason in a
++	  small NVMEM cell (such as an RTC scratch register) and reads it
++	  back on the next boot, so the cause survives a power cycle.
 +
-+	mutex_lock(&ext_mutex);
- 	ext_global_tuner = tuner;
--	/* Disable ext_gov_load as default */
--	static_branch_disable(&ext_gov_load);
-+	if (static_branch_unlikely(&ext_gov_load)) {
-+		tuner->ext_gov_stat = CPUFREQ_EXT_LOADED;
-+		goto unlock;
++	  If unsure, say N.
++
+ endmenu
+ 
+ endif
+diff --git a/drivers/nvmem/layouts/Makefile b/drivers/nvmem/layouts/Makefile
+index dd6c6c70b1a9..0079e935c4ad 100644
+--- a/drivers/nvmem/layouts/Makefile
++++ b/drivers/nvmem/layouts/Makefile
+@@ -7,3 +7,4 @@ obj-$(CONFIG_NVMEM_LAYOUTS) += fixed-layout.o
+ obj-$(CONFIG_NVMEM_LAYOUT_SL28_VPD) += sl28vpd.o
+ obj-$(CONFIG_NVMEM_LAYOUT_ONIE_TLV) += onie-tlv.o
+ obj-$(CONFIG_NVMEM_LAYOUT_U_BOOT_ENV) += u-boot-env.o
++obj-$(CONFIG_NVMEM_LAYOUT_PSCRR) += pscrr-nvmem.o
+diff --git a/drivers/nvmem/layouts/pscrr-nvmem.c b/drivers/nvmem/layouts/pscrr-nvmem.c
+new file mode 100644
+index 000000000000..ba501f126117
+--- /dev/null
++++ b/drivers/nvmem/layouts/pscrr-nvmem.c
+@@ -0,0 +1,270 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * pscrr-nvmem.c - NVMEM layout driver for PSCRR
++ *
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ * Copyright (C) 2025 Pengutronix, Oleksij Rempel <o.rempel@pengutronix.de>
++ */
++
++#include <linux/bitops.h>
++#include <linux/module.h>
++#include <linux/nvmem-consumer.h>
++#include <linux/nvmem-provider.h>
++#include <linux/of.h>
++#include <linux/pscrr.h>
++#include <linux/slab.h>
++
++struct pscrr_nvmem {
++	struct nvmem_device *nvmem;
++	u32 offset;		/* byte offset of the cell, from reg[0] */
++	u32 bit_offset;		/* 0 when the cell has no "bits" property */
++	u32 nbits;		/* BITS_PER_BYTE when the cell has no "bits" property */
++	enum psc_reason reason;
++};
++
++static inline u8 pscrr_nvmem_mask(struct pscrr_nvmem *priv)
++{
++	return (u8)GENMASK(priv->bit_offset + priv->nbits - 1, priv->bit_offset);
++}
++
++static int pscrr_nvmem_raw_read(struct pscrr_nvmem *priv, u8 *raw)
++{
++	int ret;
++
++	ret = nvmem_device_read(priv->nvmem, priv->offset, sizeof(*raw), raw);
++
++	return ret < 0 ? ret : 0;
++}
++
++static int pscrr_nvmem_raw_write(struct pscrr_nvmem *priv, u8 raw)
++{
++	int ret;
++
++	ret = nvmem_device_write(priv->nvmem, priv->offset, sizeof(raw), &raw);
++
++	return ret < 0 ? ret : 0;
++}
++
++static int pscrr_nvmem_cell_read(struct pscrr_nvmem *priv, u8 *out)
++{
++	u8 raw, mask = pscrr_nvmem_mask(priv);
++	int ret;
++
++	ret = pscrr_nvmem_raw_read(priv, &raw);
++	if (ret)
++		return ret;
++
++	*out = (raw & mask) >> priv->bit_offset;
++
++	return 0;
++}
++
++static int pscrr_nvmem_cell_write(struct pscrr_nvmem *priv, u8 val)
++{
++	u8 raw, mask = pscrr_nvmem_mask(priv);
++	int ret;
++
++	/* Sub-byte cell: preserve the neighbouring bits, read-modify-write. */
++	if (priv->nbits < BITS_PER_BYTE) {
++		ret = pscrr_nvmem_raw_read(priv, &raw);
++		if (ret)
++			return ret;
++	} else {
++		raw = 0;
 +	}
- 
- 	/* As default, set ext_ops_global to nop function */
- 	ext_ops_global.get_next_freq = get_next_freq_nop;
-@@ -480,6 +492,8 @@ static int ext_gov_init(struct dbs_data *dbs_data)
- 	ext_ops_global.init = init_nop;
- 	ext_ops_global.exit = exit_nop;
- 	strscpy(ext_ops_global.name, CPUFREQ_EXT_DEFAULT_NAME, strlen(CPUFREQ_EXT_DEFAULT_NAME));
-+unlock:
-+	mutex_unlock(&ext_mutex);
- 	return 0;
- }
- 
-@@ -490,11 +504,14 @@ static void ext_gov_exit(struct dbs_data *dbs_data)
- 	if (!dbs_data || !dbs_data->tuners)
- 		return;
- 
-+	mutex_lock(&ext_mutex);
- 	tuner = (struct ext_tuner *)dbs_data->tuners;
- 	tuner->ext_gov_stat = CPUFREQ_EXT_NONE;
-+	if (ext_global_tuner == tuner)
-+		ext_global_tuner = NULL;
- 	kfree(dbs_data->tuners);
- 	dbs_data->tuners = NULL;
--	ext_global_tuner = NULL;
-+	mutex_unlock(&ext_mutex);
- }
- 
- static void ext_gov_start(struct cpufreq_policy *policy)
++
++	raw = (raw & ~mask) | ((val << priv->bit_offset) & mask);
++
++	return pscrr_nvmem_raw_write(priv, raw);
++}
++
++static int pscrr_nvmem_read_reasons(struct pscrr_provider *p,
++				    unsigned long *reasons)
++{
++	struct pscrr_nvmem *priv = p->priv;
++
++	/*
++	 * Report the reason latched at probe (or overwritten by a later
++	 * record); the cell itself was cleared at probe, so it is not read
++	 * live here.
++	 */
++	set_bit(READ_ONCE(priv->reason), reasons);
++
++	return 0;
++}
++
++static int pscrr_nvmem_write_reason(struct pscrr_provider *p,
++				    enum psc_reason reason)
++{
++	struct pscrr_nvmem *priv = p->priv;
++	int ret;
++
++	if (reason >= PSCR_REASON_COUNT)
++		return -EINVAL;
++
++	ret = pscrr_nvmem_cell_write(priv, reason);
++	if (ret)
++		return ret;
++
++	WRITE_ONCE(priv->reason, reason);
++
++	return 0;
++}
++
++static const struct pscrr_provider_ops pscrr_nvmem_ops = {
++	.read_reasons = pscrr_nvmem_read_reasons,
++	.write_reason = pscrr_nvmem_write_reason,
++};
++
++static struct device_node *pscrr_nvmem_get_cell(struct device *dev,
++						struct nvmem_device *nvmem,
++						u32 reg[2])
++{
++	struct device_node *layout_np, *cell_np = NULL;
++
++	layout_np = of_nvmem_layout_get_container(nvmem);
++	if (!layout_np)
++		return ERR_PTR(-ENOENT);
++
++	for_each_child_of_node_scoped(layout_np, child) {
++		if (of_property_read_u32_array(child, "reg", reg, 2))
++			continue;
++
++		/*
++		 * The binding describes a single reason cell. Reject a layout
++		 * that lists more than one rather than silently using the first.
++		 */
++		if (cell_np) {
++			of_node_put(cell_np);
++			of_node_put(layout_np);
++			return ERR_PTR(dev_err_probe(dev, -EINVAL,
++						     "expected a single pscr nvmem cell\n"));
++		}
++
++		cell_np = of_node_get(child);
++	}
++	of_node_put(layout_np);
++
++	return cell_np ?: ERR_PTR(dev_err_probe(dev, -ENOENT,
++						"missing pscr nvmem cell\n"));
++}
++
++static int pscrr_nvmem_add_cells(struct nvmem_layout *layout)
++{
++	struct device *dev = &layout->dev;
++	struct pscrr_nvmem *priv;
++	struct device_node *cell_np;
++	struct nvmem_cell_info info = { };
++	u32 reg[2], bits[2];
++	u8 val;
++	int ret;
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->nvmem = layout->nvmem;
++
++	cell_np = pscrr_nvmem_get_cell(dev, priv->nvmem, reg);
++	if (IS_ERR(cell_np))
++		return PTR_ERR(cell_np);
++
++	/* The reason is a single byte; a bit cell still occupies one. */
++	if (reg[1] != sizeof(val)) {
++		ret = dev_err_probe(dev, -EINVAL,
++				    "unsupported pscr nvmem cell size\n");
++		goto err_put;
++	}
++	priv->offset = reg[0];
++
++	if (!of_property_read_u32_array(cell_np, "bits", bits, ARRAY_SIZE(bits))) {
++		priv->bit_offset = bits[0];
++		priv->nbits = bits[1];
++	} else {
++		priv->bit_offset = 0;
++		priv->nbits = BITS_PER_BYTE;
++	}
++
++	if (priv->bit_offset + priv->nbits > BITS_PER_BYTE * reg[1]) {
++		ret = dev_err_probe(dev, -EINVAL, "bits exceed cell size\n");
++		goto err_put;
++	}
++
++	/* PSCR_REASON_COUNT must fit in the allotted bits. */
++	if (PSCR_REASON_COUNT > (1U << priv->nbits)) {
++		ret = dev_err_probe(dev, -EINVAL,
++				    "too few bits for the reason range\n");
++		goto err_put;
++	}
++
++	ret = pscrr_nvmem_cell_read(priv, &val);
++	if (ret) {
++		dev_err_probe(dev, ret, "failed to read the pscr nvmem cell\n");
++		goto err_put;
++	}
++
++	priv->reason = val < PSCR_REASON_COUNT ? val : PSCR_UNKNOWN;
++
++	ret = pscrr_nvmem_cell_write(priv, PSCR_UNKNOWN);
++	if (ret) {
++		dev_err_probe(dev, ret, "failed to clear the pscr nvmem cell\n");
++		goto err_put;
++	}
++
++	info.name = kasprintf(GFP_KERNEL, "%pOFn", cell_np);
++	if (!info.name) {
++		ret = -ENOMEM;
++		goto err_put;
++	}
++	info.offset = reg[0];
++	info.bytes = reg[1];
++	info.bit_offset = priv->bit_offset;
++	info.nbits = priv->nbits;
++	info.np = cell_np;
++
++	ret = nvmem_add_one_cell(priv->nvmem, &info);
++	kfree(info.name);
++	if (ret)
++		goto err_put;
++
++	return PTR_ERR_OR_ZERO(devm_pscrr_provider_register(dev, "nvmem",
++							    &pscrr_nvmem_ops, NULL,
++							    priv));
++
++err_put:
++	of_node_put(cell_np);
++	return ret;
++}
++
++static int pscrr_nvmem_probe(struct nvmem_layout *layout)
++{
++	layout->add_cells = pscrr_nvmem_add_cells;
++
++	return nvmem_layout_register(layout);
++}
++
++static void pscrr_nvmem_remove(struct nvmem_layout *layout)
++{
++	nvmem_layout_unregister(layout);
++}
++
++static const struct of_device_id pscrr_nvmem_of_match[] = {
++	{ .compatible = "pscrr-nvmem" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, pscrr_nvmem_of_match);
++
++static struct nvmem_layout_driver pscrr_nvmem_layout = {
++	.driver	= {
++		.name		= "pscrr-nvmem",
++		.of_match_table	= pscrr_nvmem_of_match,
++	},
++	.probe	= pscrr_nvmem_probe,
++	.remove	= pscrr_nvmem_remove,
++};
++module_nvmem_layout_driver(pscrr_nvmem_layout);
++
++MODULE_AUTHOR("Oleksij Rempel <o.rempel@pengutronix.de>");
++MODULE_AUTHOR("Faruque Ansari <faruque.ansari@oss.qualcomm.com>");
++MODULE_DESCRIPTION("NVMEM recorder provider for PSCRR");
++MODULE_LICENSE("GPL");
+
 -- 
-2.43.0
+2.34.1
 
