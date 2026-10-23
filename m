@@ -1,54 +1,62 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=31.31.198.150
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792710083;
-	b=SLfRndZtr7oCeKo6ADpJCNoh7KFpVyuoAONhtI2jk89aWmijODhiMqdFZXBU9xtqu0RL
-	 GVD+h1w72zHRP4gp8jAY3G7TAkrgwjOTdRUHNK/qEGN/AdhThKdpH5YS+zi90jml/1uFr
-	 hozwHQbww2rJFCEJVPGjyzYdRNtkqOLhcyMqYjQXkyQ5gOxtk0PyEiuZqi6hNBeHanA6u
-	 CQM6nLVKtqF6WKFompOLlzGlZrQZ9+qmPpTi18eaidzbTXnXCovBa6u9+n4MXxVeF4B9e
-	 baACsJUobNtkuvs7vN5PQyoGnjpZ52+83exruI+ubEv4Msb7cB91s7U+Bu1mFY/La5Q==
+	t=1792726204;
+	b=eSFa3ENR6T8ptmtGy3uoG++4s/SLe6/JWbH7wb+tApkv4DZ/4EkIBQ43QT2hPmCnzc04
+	 nBLRxRsRDf0tPfAvnentr7Xdon9Gww/rDgyxmnabCDzcLy9B0s+v8UFAziyaD34T7Qtv2
+	 WvIpy60/CY04thUn638nFRDnr+XJiD8KcQR6l1ID8fE0r9bLq8FGcdTWUe6HvrZKUF0C8
+	 NnJvqWwpDBEoOSW2GYSLZwst9OymXadgPZACD9oiGr22+EBftbx92YymWWIpXPJrNPQ8+
+	 0O/aL3QSYNw4F/vgBQahL2n2IfY3FTtYdyr7pY55pxc+WYlVwMkDVOdxNqg9Y9UGu/g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792710083;
-	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=Z0q+m0ZhueJT/F7M7D10D5Fd+N0nrYZ/hM5rSyAO3pU=;
-	b=tVIsVJAVmV1yZ3Zztgn/vm7xJeZf2ugkuJqqRiBTBJEJXAu1lkmEsmvbPQjYhOHlBjWw
-	 KLw44D5bQZPDbARSWcDx9fjSfPrhJcWwMct7DevaqX3Oxy8ygMxo4hcQBrf3+hwDqCFOw
-	 dFSRbnTXlR/nD4Oviiqm8K4oGWngJ7W5tE6T3GRMlpxvjq/vEOefAtmADyi83LwO3S12w
-	 wxWmRnyWO7Nj8Y7zSaBx1h3AGZKAMig2WN91eEsyhog4V8B9E7yil06U+HIAOqFJfUrPo
-	 vAjKnrrGI3Nl74b4poqcHXlav1ZX+ZYY67F+CgA3dvu6p2LBvK1w+6p8M4djZYe4p8g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792726204;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=ynsZZCcsLCFsCT757HwPHQRAjd6MwLmnQSjGJ1BIZ1A=;
+	b=HiGd1T5rlAuz3aVtaaqytre785fw4BCyqJHApKmV83Ioav0dt4Hdssuwn9nAKwfPath0
+	 6cBpUIApUa7ANR1UNDw0qVefSaiUZB3n2cdqO64k185YQkqf7osYDm5/pSgyyNrP5AeNa
+	 8O9WB939yzsGzUjGaktdH8T486rSKxNrtFxOCJyvKKBx3Igqhre1a1zPNpR/aW22I4ajG
+	 o+1g5V+7WuTrZmYD461EoueL3g39wYyhak0S76votRLChI041diUY9EfxnaXORrs7f7QJ
+	 6eKFDOERDRZQq0ksIvRq+KViqQ+on+kzLocWtHk5hjut2aNWiKRpf2Bo+BDltmPxJ7g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=minlexx.ru;
-	spf=none smtp.mailfrom=minlexx.ru;
-	dkim=pass header.d=minlexx.ru header.i=@minlexx.ru header.a=rsa-sha256 header.s=dkim header.b=BLVxrCKL;
-	arc=none smtp.remote-ip=31.31.198.150
-Received: from sm24.hosting.reg.ru (sm24.hosting.reg.ru [31.31.198.150])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NiiMnBCY;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4A32606A31A;
-	Thu, 22 Oct 2026 23:01:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D4A32606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=minlexx.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=minlexx.ru
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3589A606A31B;
+	Fri, 23 Oct 2026 03:30:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=minlexx.ru header.i=@minlexx.ru header.a=rsa-sha256 header.s=dkim header.b=BLVxrCKL
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=minlexx.ru;
-	s=dkim; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:References:
-	Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=Z0q+m0ZhueJT/F7M7D10D5Fd+N0nrYZ/hM5rSyAO3pU=; b=BLVxrCKLvaSfyxxkSj9ca/VByz
-	iWhWYAkClSWbqDpcS7tey4qDiVfRcTCnfEnFZIUcvUwZ2B0FR6vMBWSwfF2ywneA98tphGAYmYnTP
-	tU/wzb8eeBXumm7fuYBgOQIJY+NTS/pCP3D3qI/W+H/MNTCfHr3WfOEjwmEXP/XgjPkI=;
-Received: 
-	by sm24.hosting.reg.ru with esmtpsa (TLS1.3) tls TLS_AES_128_GCM_SHA256
-	(envelope-from <alexeymin@minlexx.ru>)
-	id 1xK1me-00000002Z6x-1oJC;
-	Fri, 23 Oct 2026 02:01:17 +0300
-Message-ID: <10d97a0b-ea88-4f26-8f14-4fbe6ebd42e5@minlexx.ru>
-Date: Fri, 23 Oct 2026 02:01:16 +0300
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NiiMnBCY
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11E9C1F01828;
+	Fri, 23 Oct 2026 03:29:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792726204;
+	bh=ynsZZCcsLCFsCT757HwPHQRAjd6MwLmnQSjGJ1BIZ1A=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=NiiMnBCYJ4Ys87/O/nXLjjUsqE0+n75ydgPxssKp9jIyGehILWge6/HRjHxmiFOZe
+	 0YzWA51z/a5Ca1FI+w/gTcaquRTRahI+fL8Cu2ovZ3vVyrM4YMwVamzaLh3SghZWnG
+	 Dw9sutYa56KEEzToMKs2kjDm+7EAIE543V37ruklhgiF7YniaT/+VmIqp2xeRo0ra5
+	 282+O1VdNN5bW9v9EhPryLiDDX+MH+N1Z48GenseFllM99qxp1TXHhjWyVAJclxpL6
+	 WwTbuFZRb2ABDHZL/auAiH8LnK7khzI0xFyeHSjvQDVZLjjuWNQNCtw/LYWC1gnQ90
+	 P+i6Uu+LFecwA==
+Date: Fri, 23 Oct 2026 04:29:54 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Brian Norris <briannorris@chromium.org>
+Cc: Andy Shevchenko <andriy.shevchenko@intel.com>, Nuno =?UTF-8?B?U8Oh?=
+ <nuno.sa@analog.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson
+ <ulfh@kernel.org>, linux-pm@vger.kernel.org, Andy Shevchenko
+ <andy@kernel.org>, David Lechner <dlechner@baylibre.com>,
+ linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 01/17] iio: accel: fxls8962af: Discard
+ pm_runtime_put_autosuspend() return values
+Message-ID: <20261023042954.25959392@jic23-hlaptop>
+In-Reply-To: <atpNLy6Tb46hroHf@google.com>
+References: <20261021235818.3059519-1-briannorris@chromium.org>
+	<20261021165858.v2.1.If2263e6ae9eaa4493881b72922dcde031ce9d81d@changeid>
+	<atmy2Db_DlLUuOeC@ashevche-desk.local>
+	<atpNLy6Tb46hroHf@google.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,62 +66,90 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/4] arm64: dts: qcom: pm660: Add the charger state change
- interrupt
-To: fabricioakio@gmail.com, Casey Connolly <casey.connolly@linaro.org>,
- Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>
-Cc: Robin Snyders <robin@snyders.xyz>, David Heidelberg <david@ixit.cz>,
- phone-devel@vger.kernel.org, Richard Acayan <mailingradian@gmail.com>,
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Sebastian Reichel <sebastian.reichel@collabora.com>
-References: <20261003-qcom-smbx-chg-state-change-v1-0-fffaef446932@gmail.com>
- <20261003-qcom-smbx-chg-state-change-v1-3-fffaef446932@gmail.com>
-Content-Language: en-US
-From: Alexey Minnekhanov <alexeymin@minlexx.ru>
-In-Reply-To: <20261003-qcom-smbx-chg-state-change-v1-3-fffaef446932@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On 03.10.2026 22:45, Fabricio Akio via B4 Relay wrote:
-> From: Fabricio Akio <fabricioakio@gmail.com>
-> 
-> Describe the charger's chg-state-change interrupt, as the vendor device
-> tree does.
-> 
-> Signed-off-by: Fabricio Akio <fabricioakio@gmail.com>
-> ---
->   arch/arm64/boot/dts/qcom/pm660.dtsi | 9 +++++++--
->   1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/pm660.dtsi b/arch/arm64/boot/dts/qcom/pm660.dtsi
-> index 156b2ddff0dc..9e84f16f4b06 100644
-> --- a/arch/arm64/boot/dts/qcom/pm660.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/pm660.dtsi
-> @@ -80,8 +80,13 @@ pm660_charger: charger@1000 {
->   			interrupts = <0x0 0x13 0x4 IRQ_TYPE_EDGE_BOTH>,
->   				     <0x0 0x12 0x2 IRQ_TYPE_EDGE_BOTH>,
->   				     <0x0 0x16 0x1 IRQ_TYPE_EDGE_RISING>,
-> -				     <0x0 0x13 0x6 IRQ_TYPE_EDGE_RISING>;
-> -			interrupt-names = "usb-plugin", "bat-ov", "wdog-bark", "usbin-icl-change";
-> +				     <0x0 0x13 0x6 IRQ_TYPE_EDGE_RISING>,
-> +				     <0x0 0x10 0x1 IRQ_TYPE_EDGE_RISING>;
-> +			interrupt-names = "usb-plugin",
-> +					  "bat-ov",
-> +					  "wdog-bark",
-> +					  "usbin-icl-change",
-> +					  "chg-state-change";
->   
->   			io-channels = <&pm660_rradc 3>,
->   				      <&pm660_rradc 4>;
-> 
+On Thu, 22 Oct 2026 10:51:43 -0700
+Brian Norris <briannorris@chromium.org> wrote:
 
-Tested-by: Alexey Minnekhanov <alexeymin@minlexx.ru>
+> On Thu, Oct 22, 2026 at 09:53:12AM +0300, Andy Shevchenko wrote:
+> > On Wed, Oct 21, 2026 at 04:57:02PM -0700, Brian Norris wrote:  
+> > > This driver propagates the return value of pm_runtime_put_autosuspend(),
+> > > which is not particularly useful.
+> > > 
+> > > Returning an error code from pm_runtime_put_autosuspend() merely means
+> > > that it has not queued up a timer or work item to check whether or not
+> > > the device can be suspended and there are many perfectly valid
+> > > situations in which that can happen, like after writing "on" to the
+> > > device's runtime PM "control" attribute in sysfs for one example.
+> > > 
+> > > For this reason, modify this driver to simply discard the
+> > > pm_runtime_put_autosuspend() return value, and inline the
+> > > fxls8962af_power_off/on() helpers to their callsites, as they're even
+> > > more trivial now.
+> > > 
+> > > This will facilitate a planned change of the
+> > > pm_runtime_put_autosuspend() return type to void in the future, similar
+> > > to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+> > > type to void").  
+> > 
+> > ...
+> >   
+> > > static int fxls8962af_get_out(struct fxls8962af_data *data,  
+> >   
+> > >  
+> > >  	is_active = fxls8962af_is_active(data);  
+> >   
+> > >  	if (!is_active) {  
+> > 
+> > Why do we have this check at all?  
+> 
+> Frankly, I don't know. It seems logically wrong; you shouldn't even be
+> reading device registers without first grabbing a runtime PM reference.
 
---
-Regards,
-Alexey Minnekhanov
+In this case the runtime suspend is all about accessing registers
+as it's putting the device into a low power state. Not removing the power.
+So the same access is used if runtime resume occurs.  Hence this is safe
+but probably pointless.
+
+My guess for why it looks like this evolution.  There was probably something
+more complex in power_on that has since gone away.
+
+Whilst it should be fine to drop that check I'm in agreement with Brian
+that it is a more complex change, so getting a bit risky without
+an means to test.
+
+
+
+> 
+> But I'm also loathe to go tweak a bunch of driver-specific details I'm
+> completely unfamiliar with, when my main purpose is extremely simple --
+> to stop checking one return code.
+> 
+> All in all, I think this is beside the point, and I'd rather not try to
+> address it in this series. For one, even if I try to address it, there's
+> more chance of regressions that will distract from my purpose.
+> 
+> > > -		ret = fxls8962af_power_on(data);
+> > > -		if (ret)
+> > > +		ret = pm_runtime_resume_and_get(dev);
+> > > +		if (ret) {
+> > > +			dev_err(dev, "failed to power on: %d\n", ret);
+> > >  			return ret;
+> > > +		}
+> > >  	}
+> > >  
+> > >  	ret = regmap_bulk_read(data->regmap, chan->address,
+> > >  			       &raw_val, sizeof(data->lower_thres));
+> > >  
+> > >  	if (!is_active)
+> > > -		fxls8962af_power_off(data);
+> > > +		pm_runtime_put_autosuspend(dev);  
+> > 
+> > If it's active my understanding that runtime PM keeps device already resumed,
+> > so these two will be just a reference counting calls, no?  
+> 
+> Right. I don't really see the point.
+> 
+> Brian
+
