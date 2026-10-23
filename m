@@ -1,97 +1,86 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.229.6
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.14
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792735696;
-	b=JHTXS6rdtA91GvePkrgn4jYYL6fZgpp0I+6nvAo8XQGDI9/xU0F0N0vdznWFWhicPj5V
-	 c3s0qDnGQfI4akTyGZLg9k8YcUWHoBz2laSdjaGP/Mz5jJPBdDKUktJBGwYoVrjjdOiWu
-	 GyexQo3VBCNjGSWC7AFSaUsgi5QiC5k5rRioDyPOgBP2K2X8/uy4UIN5B2jXlrcdnaA2x
-	 KKVPWTJznAK5/FZLeWUsT5jo0rr+ADgHYFT0Th8KWbRdCyRP9aNyVUgvtCXA1ObdgsOV/
-	 1fKtb47Nf58767DW7izr9bZpO5QHLvemHIc1nKAgDnC9sjJQS+F9xh4evbYsSdJJ9lA==
+	t=1792738481;
+	b=kNmqVg5e+zJGQvilgtE3iaVGVJY94a4KISwkQAD23ALZQY+yjNujHdWjYerlaQk38mu/
+	 T+gzkN8+yY382wdIKQWPwGJ1uFSu3TQWi4PJq0Y2XCglInaiBJiL3ZPMMX1QrVJdxegl3
+	 Xxv5B+GzUqbXlUSEo1JkhL7QtOCyxWysW8xw7XXsMveyCx4aXIv4c6hLX4URrCStI76rq
+	 PMAB8/h5rvp955dISSWaEj78CGW5rTMxrZVMbj+7gxCMoKQ3bmu0eFMhtjNxoOuQH8f85
+	 zg9PXI+fEn1QjS4ksO7Legfb2MPzEKv0+Kq4sRDB/dwnXCtsYe9palc9j5/mWi7EoWQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792735696;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=KVLSe50V9P9os9fCF9Dj3HEzAcIkO7g0/a31qE5pUY0=;
-	b=dHPnK1OVy13fGe668IQHxYdRl57JuE979VaGXyedz+bUkLRJC8DlPQo1R/xJgmUEiJCJ
-	 qEsZMHArAIisfMD/b2QaHOoMcGWkyrMqvOV2i6ptIAc48+gPQLggu2EdfKFP6E5zE5ZhT
-	 /M0SSf/J1IhKaG5lKzqyKdSAs5TWsOgTwBXJsT23Nc0kPPveGEG+rmqfyt9od6Qya++nH
-	 Pk/V5gZzZjL15yzmLq/k5ODrEOaoDSMFQ89oaIbkYHeW5jOCJP/jYs1BTj4x8e32e1QGS
-	 CTOko5/JW8QPX+uPlBGcs6VvMtOpyutVaVQRQFSU19qDFfBhJ0LpGs94ki8rVncEQyA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792738481;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:Organization;
+	bh=8hvAczPVxFHsHRebSf3Lol2Zt9I+a7FbbQSRQrC7VAk=;
+	b=l1NmMt4br90aqUomxM2GnjYuyL0Z6ZhTPkr94e065TiUeAUPjfTkq6bzskGO9jXiDQyg
+	 22HA4lTNdUqsF6TDzETsPda5ZpjEP6GDnAArAL8I2seieskE5irQN7vnF1zIcBpb4n/rj
+	 vmJhq/9dx9/A6C74T3vaV//GiXbcM+DeNKHDlBiOOLnyjcUiqlWiX6/yN7Kto6Q2KJ0Em
+	 atjI5GpzmguDeOvj/86DWNb2vVK1+NYCXxdGT8kbsCkQu6Zd9EudVT2xylwBfNbUPGlYb
+	 W+wtrBuPFVpQYHrBSA30WYtg6dSmtRSD6TJnQ197q3NfsiL+86hPITA4qDt/vadAurA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RN9GJqUr;
-	arc=none smtp.remote-ip=74.125.229.6
-Received: from mail-dy2-f6.google.com (mail-dy2-f6.google.com [74.125.229.6])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UwFlGWyW;
+	arc=none smtp.remote-ip=198.175.65.14
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71F18606A31D
-	for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 06:08:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 71F18606A31D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BC63606A31B;
+	Fri, 23 Oct 2026 06:54:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8BC63606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RN9GJqUr
-Received: by mail-dy2-f6.google.com with SMTP id 5a478bee46e88-35adc681e1aso551043eec.0
-        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2026 23:08:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792735695; x=1793340495; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=KVLSe50V9P9os9fCF9Dj3HEzAcIkO7g0/a31qE5pUY0=;
-        b=RN9GJqUrNgYW152LEzWnO3/31p8ZkSA5sbLGo9jMaYa+FrWyGL5h5CgWMkM4q9UnL4
-         zKQ5ho+nSmMDpHc11Tw5Pm0J2uK65CCtB1pVwsfJ4r5cxMXjpcJJtFwoeKjTWa8cyet0
-         dYqU+4sZniyv/O44oWyEG486TffTVqmyfP1tpz7bm4Cd1YXassnCoGwcTHGiAl4ID6Pu
-         k1lpMHpslUf74kJHiBQ2eoJzGOyssEPIiRnSwrTRZXuK3U6Jc3oF7Jd/z6suEZjaESKS
-         gQa1f/rrhfnlPvDYN23ZD0Fbpw+zUB3xZQjeEYHZExCNNfFu03XW2Fs1dI9W2JDIEk7Q
-         m1zg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792735695; x=1793340495;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=KVLSe50V9P9os9fCF9Dj3HEzAcIkO7g0/a31qE5pUY0=;
-        b=X54qgGeRxESYw6UObszwpfGsFQnchcwfanbK+I3M0e6MhuiUfOgNWThXmC7J7lmOpo
-         jwoh+ggrdulffMzc0KsVcTLGwNrxjxNeu0SACscUrZqZ7U915k4xbGInPXbWlW+KpaXT
-         FV/jatRJPov9tNdvPyphZ74KYNclzEoBkdjF5WaMvGAM38J987rCXBJhHD9yr869HD7m
-         v2m6usSg+r4Kwnh7fKwh8THujBcp4U/OxnIW1YPylrEvHbK0VWqssQzAY1RlKLB6rJ7s
-         Wi98m16byBWv7YzPIeqZ74MLtfAdxifmSBTNS7SfKsh2WRkRznjXBq9eMeeB5WEVRoGm
-         jCDw==
-X-Forwarded-Encrypted: i=1; AKwUvBzBQssZrwk1WzR8Mh0jtXzeZolBCyphIeeIQ+xFFedr9XCoa2pyYQZ56XwbuKLr2XMFQt8OXw+P3Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLgwjQ5ORk1WrWweyzu5fR4SzQ1450BFQwhFVHF6VVQSlK+bOcD
-	dS8oVjdv9Xbfhfnd9bJ/oawMPjC40ctJWZo8qzB83ozRN25tAPIA0T2+
-X-Gm-Gg: AYBFou0PZZIp7BqKihLjw9rT45TQislrR0sDVOJ8D9CYKarQhRnRQ4Tng3+H7MQtz1r
-	jBjAHRKzE4ZJN9aEVsPAKfmIFT+M8+1GzoQ6mEPLX4YntqdWT1RTMAAvwgEc0eC6u0opDHRhnkF
-	qd+fkhkpB+O3zpqpyYI3bjzQOZAF409L5gOn5lNqvGUR1TdIZC3zNowZ6xBu7dp5jOuCloC8+8t
-	ix6ligVh8JhAk7KiMmqA8gFqtxlBExWURPL8ej+C/A62Fv7YZpNjxj+O1UKLDviuANM/iUPr1Yc
-	YFjM/1IdFgeGEZq5OBI6lb6EzcoIf8if2Y9Zpk3RzJ08tynGCVCGI+6c4i4W3VqDx3RC9oGOOAp
-	Gmmy0BFiRm9neCWLEp9VP4KA3qqr2nh3MAMm1/tU21EUomgn1celDkcCBd3tSBPmz8mkByUNhFi
-	xc8Y1eQrnXHUqtpkb8war8kxgb/D+S1+XN1K6dgmPQIOSwkIYoCGmyaNVatEmqrhnVR0Og1pk7F
-	GpH7qUSKYu+qkhdyeC/mkQ2YxU/dZjwcnXG20rTZ53uW2+NSWlAhpAwa5drNw6Tk/YXjIuWDGSS
-	Zkfhw6XrEc/mAhyZbh8Aud95Qxwr
-X-Received: by 2002:a05:701b:42cc:20b0:176:d885:4e94 with SMTP id a92af1059eb24-1959f9df88bmr2076945c88.26.1792735695388;
-        Thu, 22 Oct 2026 23:08:15 -0700 (PDT)
-Received: from localhost.localdomain ([98.148.34.5])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-195e5163e1esm4156742c88.3.2026.10.22.23.08.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Oct 2026 23:08:14 -0700 (PDT)
-From: Hungyu Lin <dennylin0707@gmail.com>
-To: rafael@kernel.org,
-	daniel.lezcano@kernel.org
-Cc: rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	javi.merino@kernel.org,
-	rostedt@goodmis.org,
-	edubezval@gmail.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Hungyu Lin <dennylin0707@gmail.com>
-Subject: [PATCH] thermal: Fix CPU mask truncation in power limit trace event
-Date: Fri, 23 Oct 2026 06:07:24 +0000
-Message-ID: <20261023060724.5691-1-dennylin0707@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UwFlGWyW
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1792738481; x=1824274481;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=4fYFw8sybPANT0pmg6TRi7WCeCgWOOdKQ2cph3BSk4U=;
+  b=UwFlGWyWTZuzw1xgYVwdyDmvVofNJihelI6JM0B0SGMwNYA6wRUUMCMm
+   pbnEwviCrjp+ajODAxuBi0Agg0PWrVeN1Zt/+iA+4Rbbi05fZGV4zJsL8
+   uTbVua4Quz2Z0Egtn+G1pBOvuJIVGeeFNmSaE6Uz4429Alh2kL0V4VKWU
+   orvz4lZ7o654nITPl4IdkAvHIV9mYc2rcRuG6RRJtUXKkX7439RkeU2C8
+   KYxuMV0ixdAKgnfGnYThaJIKa+zNjZ/ssxs/jHORsPMN4ARyv4ARLxzUL
+   bhsxo+Wi21Q5FnUqeL3IwOtGWTR4y9/dF2EtyxeSyGMLC0iD2F7Sj+wFo
+   Q==;
+X-CSE-ConnectionGUID: oqmRNvRwQg+Spjxky65obA==
+X-CSE-MsgGUID: X/PiFiOZTG60WasN068DIg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11943"; a="1370695"
+X-IronPort-AV: E=Sophos;i="6.27,173,1787036400"; 
+   d="scan'208";a="1370695"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Oct 2026 23:54:40 -0700
+X-CSE-ConnectionGUID: hTN0BJUnQ1yiGOW5M4cBhg==
+X-CSE-MsgGUID: 6xhOWRCTTpOIfvZjuZBk5Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,173,1787036400"; 
+   d="scan'208";a="3556295"
+Received: from kniemiec-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.100])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Oct 2026 23:54:37 -0700
+Date: Fri, 23 Oct 2026 09:54:34 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Brian Norris <briannorris@chromium.org>
+Cc: Jonathan Cameron <jic23@kernel.org>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
+	Andy Shevchenko <andy@kernel.org>,
+	David Lechner <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Rui Miguel Silva <rmfrfs@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v2 00/17] iio: Stop looking at
+ pm_runtime_put_autosuspend() return codes
+Message-ID: <atsEql7X20hGytXv@ashevche-desk.local>
+References: <20261021235818.3059519-1-briannorris@chromium.org>
+ <atm0umwtxZlQSAhy@ashevche-desk.local>
+ <atpMNk6ymCpC5BL_@google.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -101,45 +90,54 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <atpMNk6ymCpC5BL_@google.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-num_possible_cpus() counts CPUs, but CPU IDs need not be contiguous.
-Using it to size the thermal_power_cpu_limit bitmap can omit CPUs with
-higher IDs. For example, possible CPUs 0 and 64 produce an eight-byte
-bitmap on a 64-bit system, dropping CPU 64.
+On Thu, Oct 22, 2026 at 10:47:34AM -0700, Brian Norris wrote:
+> On Thu, Oct 22, 2026 at 10:01:14AM +0300, Andy Shevchenko wrote:
+> > After three patches I stopped because it seems more works needs in each of
+> > the individual drivers. Yes, the series can be applied as is in exchange for
+> > a bigger additional churn in the future. My preference is to see everything
+> > settled down in a single step.
+> 
+> There are limits in how much work I'm willing to do on a bunch of
+> drivers I don't use, can't test, and frankly have no actual interest in.
+> I'm sure if I spent a few more minutes on each driver, I could find
+> another dozen things to try to improve.
+> 
+> I can go back to the v1 approach (fix only what I came to do) if you'd
+> prefer.
+> 
+> Or, I'd prefer to stick with the sentiment Jonathan expressed in
+> optionally requesting additional refactoring:
+> https://lore.kernel.org/all/20261018211807.66bfea0d@jic23-hlaptop/
+> that most of these changes are optional, and that fixing 1 thing is not
+> a subscription to fixing everything.
 
-Use nr_cpumask_bits for both sizing and copying the bitmap.
+Right, but my concerns is that in (some) cases you can do one step further and
+use PM_RUNTIME_ACQUIRE*() instead of putting first the explicit calls in this
+series and makes someone to basically do the same again. To me it sounds like
+a double effort. Yes, that is_active thing perhaps to much to follow, but even
+there it can be refactored to something like
 
-Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator governor")
-Signed-off-by: Hungyu Lin <dennylin0707@gmail.com>
----
- drivers/thermal/thermal_trace.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+	if (is_active) {
+		ret = regmap...
+	} else {
+		PM_RUNTIME_ACQUIRE*();
+		...
+		ret = regmap...
+	}
 
-diff --git a/drivers/thermal/thermal_trace.h b/drivers/thermal/thermal_trace.h
-index df8f4edd6068..2f953fd8289d 100644
---- a/drivers/thermal/thermal_trace.h
-+++ b/drivers/thermal/thermal_trace.h
-@@ -119,7 +119,7 @@ TRACE_EVENT(thermal_power_cpu_limit,
- 	TP_ARGS(cpus, freq, cdev_state, power),
- 
- 	TP_STRUCT__entry(
--		__bitmask(cpumask, num_possible_cpus())
-+		__bitmask(cpumask, nr_cpumask_bits)
- 		__field(unsigned int,  freq      )
- 		__field(unsigned long, cdev_state)
- 		__field(u32,           power     )
-@@ -127,7 +127,7 @@ TRACE_EVENT(thermal_power_cpu_limit,
- 
- 	TP_fast_assign(
- 		__assign_bitmask(cpumask, cpumask_bits(cpus),
--				num_possible_cpus());
-+				nr_cpumask_bits);
- 		__entry->freq = freq;
- 		__entry->cdev_state = cdev_state;
- 		__entry->power = power;
+without changing the driver logic.
 
-base-commit: 503bb6e70bbf6304b8113373d09dfffcc4aa9183
+Whatever, I am not a maintainer here, so if Jonathan is okay with this churn,
+then it's fine.
+
 -- 
-2.43.0
+With Best Regards,
+Andy Shevchenko
+
 
