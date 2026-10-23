@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792777985;
-	b=XuM464YNeOmiWr9BWSMEC/DkB9VsYHklLtpTnROyOMEBHswJKS0r3MR1HTvn52h+ycTj
-	 +s+LCz5rBg+qzeDbosWP2+h4aLdXRzZ9qmhpEqUNF8K7m9YDFL+DY2KiD++P4dPw2AZl3
-	 iQ5MrnBBUVmxA4q+HR5Dru4PPomiHnIXEv6omOBgciub5qircCYKZwWFfz5tNiuPBvbL8
-	 cmqKNQnbRumjnAiYNBaa8DzhUmYfkSQJ32JRhZcr8bZkxDjMdq7+B46xBJCVI7US8N5JY
-	 Vq2qc+cjBDX4qr8ambD4X4CVi2/iPRhE2wyhiL0r6LLTkC1rWLxP8ZTjGJ2Wqn9KsLg==
+	t=1792778028;
+	b=SAVtXsPOdrJ9BSPr9ssz6w4lJKZlFi79LZq5UCrwInJaHzNxUY8lWufjRuWW6osEafHI
+	 +DnopzKkJgCY11karH12MvLMTI1xg0umfSSXAzVDloBX0rinE3xwyKp6+m7AR/ir9u5/O
+	 2RYTZE6OkKoQ8zjzrL8ekaOryf8nYd1NdDfBonPhOJdN4eKWTTqXaixZZukigiH9dAcoB
+	 TjLrdYBThE10Gv6TSfTA4Rnv1b62Qe4ifFgQq7HrL6mxqC48OHyQP1gBuuPppBc+9GKI+
+	 ccP6LuzkQo5sOT/0kE2DY6MrewaX+LrVBajU4FfVawwsBy4R1UdiTuMwSDnJG+hOXaQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792777985;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792778028;
 	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=cmw0kJvPlogc0Dq5lVT/xEgR88keU7nR4P6aPNL3aqg=;
-	b=MBy+w/ccLCWx/RveHjgsuXUz7V3h/D50J7sThPBiIaKxiARRg8w0j9Nrq0jXDJyk0Hd1
-	 jn1gJkX2MhFR3dkDWEplmRegTEnyq4UwaQwliY3q61gcmegM28miLFi5NodaiA3LhWfhE
-	 j4z73Bl7bz80EOpNutYJ+f73SePqFhSATmWsfqXZDR21QlUv9BVDfoTwzDvWGlMtZLcz/
-	 zxm0/dhN/o0VuOIW3/+PscSs6P/Hj7+vDelNxA7BIMVOSXiRkrxqEY73CMUSYFcoMYOSj
-	 ZxNYKxLEGwcY1n9o8OqHGPN9vTG5fzgzDQbpY1zDgDdc+9aBgj9K9yKMtnVg5KQreNQ==
+	bh=1muTcKBLuC7q1JD0nNZzHZd+pNV0OB32RDBryHwu9Mc=;
+	b=i7ORzPhhImyp9kptN6ZKEvsRWx2pzx1xNVdefPYYKLNb8vA69PPuegIqHMxnub50jr4d
+	 gtHbietNlZ3Ib930CoxJA61l6wjBp4NS/PqsCFZbCj5sM6PsdPWI4d0OKaNCGt7bGuNkL
+	 N4/VaqVL9zRGd44pmslw210iN95UcY8NO0BHe+Q5hhHkNGlocFlzo5PVMxx32N58zFqyD
+	 CAfpRx7x3t8PKomM8EWAsr0qyDRVSv+fLKaL/9Oxns+IrdNOjBjBHioQhpE4zBW8RX140
+	 lSaMWNYKwjV5VNiP6oi6goZvKnW8EQVg17YuVCdisvABZk+KAtsE5M7MU+K/rAN6pSA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 612DA606A31F;
-	Fri, 23 Oct 2026 17:53:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07A3D1F01825;
-	Fri, 23 Oct 2026 17:52:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65A43606A31A;
+	Fri, 23 Oct 2026 17:53:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D6461F031E0;
+	Fri, 23 Oct 2026 17:53:06 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Linus Walleij <linusw@kernel.org>,
 	Bartosz Golaszewski <brgl@kernel.org>,
@@ -43,10 +43,11 @@ Cc: linux-gpio@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 2/7] dt-bindings: clock: renesas,r8a78000-cpg: Add GPIO clocks
-Date: Fri, 23 Oct 2026 19:50:40 +0200
-Message-ID: <624a9fb09e4ec74b1995797e5121b86e7206f5f2.1792776697.git.geert+renesas@glider.be>
+Subject: [PATCH 3/7] arm64: dts: renesas: r8a78000: Add GPIO controller nodes
+Date: Fri, 23 Oct 2026 19:50:41 +0200
+Message-ID: <f9de8214043ad4c8748fadce7fd2cc2fa95b1291.1792776697.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1792776697.git.geert+renesas@glider.be>
 References: <cover.1792776697.git.geert+renesas@glider.be>
@@ -61,44 +62,190 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add definitions for the clocks used by the GPIO modules on R-Car X5H:
-  - R8A78000_CPG_SCPBUSD16_SCP_MAIN,
-  - R8A78000_CPG_S0D24_PERE_MAIN,
-  - R8A78000_CPG_SGD32_PERW_BUS,
-  - R8A78000_CPG_S0D24_HSCN_OTHER.
-Include a few more clocks from the same groups for ordering consistency.
+From: Marek Vasut <marek.vasut+renesas@mailbox.org>
 
+Add device nodes for the General-Purpose Input/Output Ports (GPIO) on
+the Renesas R-Car X5H (R8A78000) SoC.
+
+Signed-off-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+Co-developed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- include/dt-bindings/clock/renesas,r8a78000-cpg.h | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+Changes compared to Marek's original:
+  - Use hardware clocks/power-domains/resets instead of direct SCMI
+    references,
+  - Drop gpio-ranges properties for now, as upstream lacks Pin Function
+    Controller (PFC) support.
+---
+ arch/arm64/boot/dts/renesas/r8a78000.dtsi | 155 ++++++++++++++++++++++
+ 1 file changed, 155 insertions(+)
 
-diff --git a/include/dt-bindings/clock/renesas,r8a78000-cpg.h b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-index 14b3885f2d9933a3..cd7192ccecd4e22c 100644
---- a/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-+++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-@@ -12,5 +12,21 @@
- #define R8A78000_CPG_SGASYNCD16_PERW_BUS	2
- #define R8A78000_CPG_MSO_SCP_MAIN		3
- #define R8A78000_CPG_MSOCK_PERW_BUS		4
-+#define R8A78000_CPG_SCPBUSD1_SCP_MAIN		5
-+#define R8A78000_CPG_SCPBUSD2_SCP_MAIN		6
-+#define R8A78000_CPG_SCPBUSD4_SCP_MAIN		7
-+#define R8A78000_CPG_SCPBUSD6_SCP_MAIN		8
-+#define R8A78000_CPG_SCPBUSD8_SCP_MAIN		9
-+#define R8A78000_CPG_SCPBUSD16_SCP_MAIN		10
-+#define R8A78000_CPG_SCPBUSD32_SCP_MAIN		11
-+#define R8A78000_CPG_S0D1_PERE_MAIN		12
-+#define R8A78000_CPG_S0D2_PERE_MAIN		13
-+#define R8A78000_CPG_S0D3_PERE_MAIN		14
-+#define R8A78000_CPG_S0D4_PERE_MAIN		15
-+#define R8A78000_CPG_S0D8_PERE_MAIN		16
-+#define R8A78000_CPG_S0D24_PERE_MAIN		17
-+#define R8A78000_CPG_SGD8_PERW_BUS		18
-+#define R8A78000_CPG_SGD32_PERW_BUS		19
-+#define R8A78000_CPG_S0D24_HSCN_OTHER		20
+diff --git a/arch/arm64/boot/dts/renesas/r8a78000.dtsi b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
+index 66eec0907b34fa58..36a4fa1e032ee703 100644
+--- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
+@@ -1263,6 +1263,161 @@ pfc: pinctrl@c1080000 {
+ 			bootph-all;
+ 		};
  
- #endif /* __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__ */
++		gpio0: gpio@c1080110 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc1080110 0 0xc0>;
++			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SCPBUSD16_SCP_MAIN>;
++			power-domains = <&mdlc_aon R8A78000_MDLC_PD_AON 0x20>;
++			resets = <&mdlc_aon 0x20>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio1: gpio@c1080910 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc1080910 0 0xc0>;
++			interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SCPBUSD16_SCP_MAIN>;
++			power-domains = <&mdlc_aon R8A78000_MDLC_PD_AON 0x20>;
++			resets = <&mdlc_aon 0x20>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio2: gpio@c1081110 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc1081110 0 0xc0>;
++			interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SCPBUSD16_SCP_MAIN>;
++			power-domains = <&mdlc_aon R8A78000_MDLC_PD_AON 0x20>;
++			resets = <&mdlc_aon 0x20>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio3: gpio@c0800110 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc0800110 0 0xc0>;
++			interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_S0D24_PERE_MAIN>;
++			power-domains = <&mdlc_pere R8A78000_MDLC_PD_APL 0x30>;
++			resets = <&mdlc_pere 0x30>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio4: gpio@c0800910 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc0800910 0 0xc0>;
++			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_S0D24_PERE_MAIN>;
++			power-domains = <&mdlc_pere R8A78000_MDLC_PD_APL 0x30>;
++			resets = <&mdlc_pere 0x30>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio5: gpio@c0400110 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc0400110 0 0xc0>;
++			interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SGD32_PERW_BUS>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x30>;
++			resets = <&mdlc_perw 0x30>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio6: gpio@c0400910 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc0400910 0 0xc0>;
++			interrupts = <GIC_SPI 24 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SGD32_PERW_BUS>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x30>;
++			resets = <&mdlc_perw 0x30>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio7: gpio@c0401110 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc0401110 0 0xc0>;
++			interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SGD32_PERW_BUS>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x30>;
++			resets = <&mdlc_perw 0x30>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio8: gpio@c0401910 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc0401910 0 0xc0>;
++			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SGD32_PERW_BUS>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x30>;
++			resets = <&mdlc_perw 0x30>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			gpio-reserved-ranges = <16 10>;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio9: gpio@c9b00110 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc9b00110 0 0xc0>;
++			interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_S0D24_HSCN_OTHER>;
++			power-domains = <&mdlc_hscn R8A78000_MDLC_PD_APL 0x50>;
++			resets = <&mdlc_hscn 0x50>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
++		gpio10: gpio@c9b00910 {
++			compatible = "renesas,gpio-r8a78000",
++				     "renesas,rcar-gen5-gpio";
++			reg = <0 0xc9b00910 0 0xc0>;
++			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_S0D24_HSCN_OTHER>;
++			power-domains = <&mdlc_hscn R8A78000_MDLC_PD_APL 0x50>;
++			resets = <&mdlc_hscn 0x50>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#interrupt-cells = <2>;
++			interrupt-controller;
++		};
++
+ 		cpg: clock-controller@c1320000 {
+ 			compatible = "renesas,r8a78000-cpg";
+ 			reg = <0 0xc1320000 0 0x10000>;
 -- 
 2.43.0
 
