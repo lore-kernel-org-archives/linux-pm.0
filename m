@@ -1,96 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.176
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.44
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792773840;
-	b=DJ8Fmgne3SxGPJuhfa/NVBvK184gGOv2cLoW+vcrZ6zJ72RXOUUOwTHom78GCRaNj1v+
-	 nn9L2RefzFnmA3SW+OvJ9dKPF8WY48+QNZw+l8MIPXDjA72yzLaICOIPJYP8WduebtaB+
-	 NxtwF1AoGnNyJ+8ZV8ISfu9hDLUhSa0XDC0soBYEd59S3GmYPqv6FnkakY9OLkTXygjge
-	 UFfenQmer4lLc1kgLUTnWsZMhE1RuLjYYJtpayHJVWifvxkja0DPen572h7DKXjp23fIK
-	 FEmzh3qyxXi6R+hRV0/nu42r9gSIA2UMZIfmNubKqEsub2M0ytiYPwMrG4a+qEBhHVw==
+	t=1792773839;
+	b=dD0diLJ0xBdXFrN/H8+XFaqScwcM2SWdPByWzX2/GTvdeajGY0iWJTneLUPlikezLrll
+	 qiTzT5IIokIqBA4/5ky/98ZgvzKF3mrZLSMGCVRE86SZI+8HKQ3M6iZgnotplXdaP/9I2
+	 PezXTEhjnc9sPibUvyOJtnVIZUydgxp+NB/bDzHw8KmkvllEL5RfD0AMsmV3hOSrWjfBO
+	 uItg+7s3iscWxZ7fZA3OFZAMH1BVupF82FAdV3H7rnxKNfhVQdmRYET0FuvI8E2Dg7sog
+	 wXlLiVGP3QcaXdJ6296BBeo6BcuDe+dAfKFSjhBLkSl9d0yPSR6HuqIl9zebw/eLvoQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792773840;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792773839;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
 	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=QcjFvkA1d3cVHe/XpUIZZRMP9RY+naa+sxiF4g8aVzQ=;
-	b=Q9N2/Gu8g+KVBydqogXnkxI4CjFsoQtLonJgOcIadtVNuh1GCGCoZX+YD/+D4VwnX5qj
-	 Jycr4U7YxppnobvgZF1MKMn6JmIxpfp9fkbX+8N49KYcy3LTeQUuYLnIBpnCrgFtLEEIA
-	 Tn5O1g4CbFqO6oe6VPWNb6GWGp2AsGE+g0j/tKnPeNfnMwhWNc4Efjmp5XsPcrCfMRCQf
-	 GCWC4Tljm3DSwfnTnG45CbOwM22KdlpZd7F9tUCra9U9Rdcpnnmak0rq7ar1svEs0Es0Z
-	 RQXALZRHzo4VPc4SjJeaOOnseSALow6TvAbijrYyBqRNgKjKuIuroU4caykn+c5nBpA==
+	bh=IbU6AikASsymoWZcigm5KICcvIS1yLWM5oIUuCyGJFQ=;
+	b=Rsztly+bnsrdPyQXeFC5LEsUyz3OTi7394AZcB9a5S/IRoC3hhANlJjuH3+GAOVgD121
+	 Ru8EaLOdnvJ1vrkmpeoyX3IwXFSRIXNhjGosF/tsScnoagsdp2s0BzDpz9lp1jKwuDC89
+	 FhXgKxIEmVd/kjjgLsm5NYpJ7oVZPrExh7FZlsHRhC3+eFwMNrzKveU5lpNXt3cPQOSQI
+	 zS/Je7qAxvuKBiMxlzA6LYcBZtx4f/xs1B9JCPNQOfKQbYTFQkg9X76RcoTtuJ4aXEB0m
+	 mtN23h+ylnkLzIZUdx7nzOvC4ZjL1v/ieAVkydLg2wJxfvOiRUU4SH9m177W1P6R1wQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=DhIjBHX1;
-	arc=none smtp.remote-ip=74.125.82.176
-Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=nzaU3ccM;
+	arc=none smtp.remote-ip=74.125.82.44
+Received: from mail-dl1-f44.google.com (mail-dl1-f44.google.com [74.125.82.44])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD528606A331
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28334606A31F
 	for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 16:43:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AD528606A331
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 28334606A31F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=DhIjBHX1
-Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-36681e85e87so2576810eec.1
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=nzaU3ccM
+Received: by mail-dl1-f44.google.com with SMTP id a92af1059eb24-1846bc43c28so1197207c88.0
         for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 09:43:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1792773839; x=1793378639; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1792773838; x=1793378638; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=QcjFvkA1d3cVHe/XpUIZZRMP9RY+naa+sxiF4g8aVzQ=;
-        b=DhIjBHX1zUOJGQVbKbX/leEVidVcs39KyltpE01YcU1UbaY4aztTulbWWyy2plvhKo
-         nkMfTdtvUcOpBmLP+azBoIILWjOOEXzDeojioUoWLu87tuMBaFlBQ8MFcNqw6J2JOr8a
-         2PhuLr3I9dDHubo7GGyMQb+qPN8QdjCnZ6WuY=
+        bh=IbU6AikASsymoWZcigm5KICcvIS1yLWM5oIUuCyGJFQ=;
+        b=nzaU3ccMU77AvpQXNcTtuC5WXz9iJYbaVtZBMgTXyyG4nq33Axd+wqILM/gXW5zNET
+         qhazQYIP+HzqzYrlRqkWv+5N7lcFCV8ZT0hWkw+zBCfWY5kfu0Ibr+gWyUi6uquiA3DQ
+         tt34Rj7EivfG9r6KIQ4lluL4+suBwLC/k9IQY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792773839; x=1793378639;
+        d=1e100.net; s=20260707; t=1792773838; x=1793378638;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=QcjFvkA1d3cVHe/XpUIZZRMP9RY+naa+sxiF4g8aVzQ=;
-        b=LARG5JsvNF2cV4vIHmxyBFbcF962aO6PmMEiZDHhjffiZ+Ci45N1hRk+YnpekOP14H
-         FKKuTsNBP6kdmkEDFmzogEIWYkKuw6LClrNADETZmndhaEoBPXee7kSyyB99sBSAtIet
-         AYlpgfRQRVaMzQ/gGh6kNQann3ljrIfvI40lgmk/HOlDNyNSPEh2jpGuGL0KnsuPdK3P
-         QCXxNK0SXLdYPorHtOGsWJrKbAYnpAeb+HH4yvNhZ7yBlYIh5sAdmohAKur4975BQnbL
-         Fn3tZAPYsooNIDfVvt+dlIsGW5P7/PThZWW/D8gfdThWGYHnxxFPKA6Un8bJaAzYaY94
-         RsWA==
-X-Forwarded-Encrypted: i=1; AKwUvByAjx2voNpJGn4L3GqMQSnNE9dE3mWwpeAGqRJ2qB6Rjny4/Tm+psfcaLTSAX0KY1cXpMXtKa3XXw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIlmgGFJyzFaef6dknHtuqx0ez39RbDgW5Z13Te+GUagdxyLyHk
-	2V24tZ3U+HjSYLZ4XE7K4B5/kHq/PJlHIusB4DYllDxhMGPdX97jnVjv8KnsIwstxg==
-X-Gm-Gg: AYBFou2n78UljZpgzWJrnHZkR83jF4/lo7yvOMzEXPf8Ttz61xLkfnsr2oFbcC+hSUW
-	qKmKvOV3x+2qWV2OI9llPtJ2zn8JWbdfd2NoQ8csoEVJKndu+u55uTipz+RzGkSzhudNJyKXWEb
-	8PPypGdm27S9KXTPb/iG4Uhaoj7XwShote89v5A5QVCOqha6Vo4u4eFKtNJs0NqKMlrmmLLqL4V
-	OzBlfjpo3srO6JoO3xakcIBzWTrROPErQhyNHFtZw5hpKnRs7y8HfxK72BXo5R7YbDhNafptZpg
-	fo8WiWW+EGzOUkO4lkjFbYcfi3C22JdJEj4XDspAy063RHY6l3yHhhFBKcKzNQrwvPtNeoyiDDL
-	akzOZiflfxsceJUP18aTFBailJkpskwTjtap3bzDJuMOK0bQJr6GhwrwYsMMag4G5RK1hPR6NX3
-	GwYPeBimo6/40UagnzFclCWQCtCAYsUlhlC7FLhjAWiLVT2DGfHpqIowzNKM94B9uepp4BUPQtq
-	Cyehtr0Y0s8BNj3LPWDr9WnCkaP5Ur5azjl68gMpn27mTlUVhJ/QLGORKnRcVg57WkOf5nt50+K
-	UYUSRwGZM6ZCx+PvWTM=
-X-Received: by 2002:a05:7301:a10:b0:366:dbf9:32bd with SMTP id 5a478bee46e88-369d97205cemr3198207eec.9.1792773838852;
+        bh=IbU6AikASsymoWZcigm5KICcvIS1yLWM5oIUuCyGJFQ=;
+        b=sMz8wBcjA4VXJ1Px5MoyHVTG2mDV+3gF/Immbs/xFs6m2MNlB5EfxRvQM1SbmH3KqE
+         Ox8iUTnDqkh6JNftlEK8dyuRn6fm1gS5LzmwhPzM54XdIahCA4hxip4Ic05scs3x1cL/
+         lnOurE4y78Zgg65kjVu45qf3DRvrAWSv5dNy7gf9DW9O86UMjO9glnyf7zICy0aG7pGh
+         auTtKVb8aPXJE60icrccW31WZ/pUfzEJ8GxloZvdY5CZFDEkR+iECnP5cvrf8Q5uUft1
+         uQKcRrP+42ptG/w6NS4pcoukLxtiYYQt03fuGJwyul4cmIm7p+QFn2K94+8O2fpmxIiV
+         oS/g==
+X-Forwarded-Encrypted: i=1; AKwUvBx346pUGDKjBKL7sPOe/oAH/koXyMDQd+KwtvAru+453tXgcwcA+nptufrek2OYLPo4nyEl9QIh/g==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLlB41xARam2fDfL7opK3qZLTjqFOiD3AkuedVjtfu3sdyf3xWm
+	a6bHwHOBFL/X9kiJ+szalXyopcV7RsyJWUfgCM8ynvSQFNgCpZq2P+KhKsWJ4aTIvw==
+X-Gm-Gg: AYBFou1nh+UQtgbd1joGHDg983QaKQ6WF2Jaj08hC98ys7DyiwuXEYr8dGVZeAzqJQ+
+	VFOa+UfBFCFi/5AZbA8QSElzKboy2qPmnwWvmHnuLz42h4nHfZXM/fc0Jv3+Ngl8l6b3Z+zZgvO
+	GwY3HLujlvU8zifNphSAub18vFqhoqpgTd7ZqYusKA5D41UjMR67ukf/9nyVl7XBeJUWOSAeAWD
+	5hxPX/p8+mJyFB72xUS1uwBTxZJbvx4xF5cK47w42ztVj1LtG4gL5jOlOXuC3bMcw3uhdbJVqVv
+	eFku3b8vCxieVpyB4kZVwSjmtEx7BOOAh2mCEaxf1UvfXrCwGZKR5KPV1tJEm/GxyN0upkxgIIn
+	OS21D9HIz9B24bpMHdXLbc2DSZyrYqs+Gp6VVbxeedKQsaKvciu5OSe/JYTfi5m9YXSQ2Dw/2I0
+	XeqQn6MPaGkfF04rYwzkkwU53+CLJ4eFsXd/QwFgpjus+I4cU1+7mnyfvUsWQRuNI3C1fe0ed4Y
+	G3hQ74+8Fq/V0hqVrld8r3JBqG/FcC8HSCGI8HJ06+5TDFwie37qqcyuyCvaFR0tJRHlLi/orIv
+	0/qALlUFSHTcrcxKClOZJgrqoTrIjvJX2LT1ROSF
+X-Received: by 2002:a05:7022:4182:b0:144:fc5b:2121 with SMTP id a92af1059eb24-195c56ffe47mr4928192c88.17.1792773838113;
         Fri, 23 Oct 2026 09:43:58 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:4a1d:784c:3fc4:37a2])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-369e6e5ecabsm847022eec.19.2026.10.23.09.43.56
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-197e666f0d8sm1435609c88.1.2026.10.23.09.43.55
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 23 Oct 2026 09:43:58 -0700 (PDT)
-Date: Fri, 23 Oct 2026 09:43:56 -0700
+        Fri, 23 Oct 2026 09:43:57 -0700 (PDT)
+Date: Fri, 23 Oct 2026 09:43:54 -0700
 From: Brian Norris <briannorris@chromium.org>
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: Jonathan Cameron <jic23@kernel.org>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
 	Andy Shevchenko <andy@kernel.org>,
 	David Lechner <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 02/17] iio: accel: kxcjk-1013: Discard
- pm_runtime_put_autosuspend() return values
-Message-ID: <atuOzJiEs2ruiHJz@google.com>
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Rui Miguel Silva <rmfrfs@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v2 00/17] iio: Stop looking at
+ pm_runtime_put_autosuspend() return codes
+Message-ID: <atuOysdhmPRA7Waf@google.com>
 References: <20261021235818.3059519-1-briannorris@chromium.org>
- <20261021165858.v2.2.I7751f8c9dde6f4a576a17dcfa13a4c729fa748b4@changeid>
- <20261023043637.102d9a70@jic23-hlaptop>
+ <atm0umwtxZlQSAhy@ashevche-desk.local>
+ <atpMNk6ymCpC5BL_@google.com>
+ <atsEql7X20hGytXv@ashevche-desk.local>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,88 +108,76 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261023043637.102d9a70@jic23-hlaptop>
+In-Reply-To: <atsEql7X20hGytXv@ashevche-desk.local>
 
-On Fri, Oct 23, 2026 at 04:36:37AM +0100, Jonathan Cameron wrote:
-> On Wed, 21 Oct 2026 16:57:03 -0700
-> Brian Norris <briannorris@chromium.org> wrote:
+On Fri, Oct 23, 2026 at 09:54:34AM +0300, Andy Shevchenko wrote:
+> On Thu, Oct 22, 2026 at 10:47:34AM -0700, Brian Norris wrote:
+> > On Thu, Oct 22, 2026 at 10:01:14AM +0300, Andy Shevchenko wrote:
+> > > After three patches I stopped because it seems more works needs in each of
+> > > the individual drivers. Yes, the series can be applied as is in exchange for
+> > > a bigger additional churn in the future. My preference is to see everything
+> > > settled down in a single step.
+> > 
+> > There are limits in how much work I'm willing to do on a bunch of
+> > drivers I don't use, can't test, and frankly have no actual interest in.
+> > I'm sure if I spent a few more minutes on each driver, I could find
+> > another dozen things to try to improve.
+> > 
+> > I can go back to the v1 approach (fix only what I came to do) if you'd
+> > prefer.
+> > 
+> > Or, I'd prefer to stick with the sentiment Jonathan expressed in
+> > optionally requesting additional refactoring:
+> > https://lore.kernel.org/all/20261018211807.66bfea0d@jic23-hlaptop/
+> > that most of these changes are optional, and that fixing 1 thing is not
+> > a subscription to fixing everything.
 > 
-> > This driver propagates the return value of pm_runtime_put_autosuspend(),
-> > which is not particularly useful.
-> > 
-> > Returning an error code from pm_runtime_put_autosuspend() merely means
-> > that it has not queued up a timer or work item to check whether or not
-> > the device can be suspended and there are many perfectly valid
-> > situations in which that can happen, like after writing "on" to the
-> > device's runtime PM "control" attribute in sysfs for one example.
-> > 
-> > For this reason, modify this driver to discard the
-> > pm_runtime_put_autosuspend() return value, and inline these pm_runtime
-> > calls for simplicity.
-> > 
-> > While doing this, it becomes obvious that kxcjk1013_write_event_config()
-> > and kxcjk1013_data_rdy_trigger_set_state() are intentionally mismanaging
-> > runtime PM reference counts and instead are relying on (racy)
-> > autosuspend delay for correct ordering. Undo this choice, and instead
-> > properly drop the reference count only after we're done touching the
-> > hardware
-> .
-> Sorry, I should have looked more closely at this in the earlier
-> review.
+> Right, but my concerns is that in (some) cases you can do one step further and
+> use PM_RUNTIME_ACQUIRE*() instead of putting first the explicit calls in this
+> series and makes someone to basically do the same again.
+
+I'm not making anyone do anything except stop looking at the return code
+for pm_runtime_put_autosuspend(). Those cleanup-based helpers are
+totally optional, and are not always all that helpful. In fact,
+sometimes they introduce more problems than they're worth.
+
+> To me it sounds like
+> a double effort. Yes, that is_active thing perhaps to much to follow, but even
+> there it can be refactored to something like
 > 
-> I'm not sure this is actually true.
+> 	if (is_active) {
+> 		ret = regmap...
+> 	} else {
+> 		PM_RUNTIME_ACQUIRE*();
+> 		...
+> 		ret = regmap...
+> 	}
+> 
+> without changing the driver logic.
 
-I'll admit I'm also not 100% sure either. But these comments I'm
-deleting sound awfully suggestive:
+Well, IMO, this is adding more trickiness about the scoping, precisely
+because all these drivers have strange logic. Here, it may or may not be
+obvious to someone that the runtime PM acquisition goes out of scope at
+the end of the 'else' and so drops the refcount. Then you have to reason
+about, "what does the rest of the function do?" -- hopefully nothing
+relevant, but that may not always be the case.
 
-	 * We will expect the enable and disable to do operation in
-	 * reverse order. This will happen here anyway as our
-	 * resume operation uses sync mode runtime pm calls, the
-	 * suspend operation will be delayed by autosuspend delay
-	 * So the disable operation will still happen in reverse of
-	 * enable operation. When runtime pm is disabled the mode
-	 * is always on so sequence doesn't matter
+Don't get me wrong, I think the cleanup helpers are great for many
+things, and especially for well-structured code. But they're optional,
+and have their own downsides and risks, especially for unfamiliar
+people.
 
-That sounds to me like, "the put_autosuspend() is in the wrong order,
-but we're relying on autosuspend delay to flip that order." This text
-has also been copied between several drivers that borrow that same
-structure, IIUC. Overall, it seems like at least one author was
-documenting a race condition, and was simply lazy about handling it.
-
-> A device being in runtime suspend
-> on an i2c bus doesn't in general mean you can't talk to it.
-> Whether the mode switching in here is a problem or not isn't
-> that obvious and will require a datasheet dive.  It is inelegant
-> but maybe not a bug.
-
-Agreed it's not guaranteed. But given the comment and the nature of
-runtime PM, it seemed like an obvious transformation with little
-downside and likely upside.
-
-If we're not sure about these things, I can undo them.
-
-But mainly, I don't want to spend much more time on this series if I can
-help it, nor introduce more difficult driver-specific work items (see:
-all of Andy's comments) or areas of potential regression. So I'll lean
-toward the safe / less-change option if that helps make progress.
+Anyway, I disagree with piling your personal desires on a submitter to
+"fix" when they're unrelated, unnecessary, and may cause more work and
+problems of their own (or any combination of those 3).
 
 Brian
 
-> Anyhow, out of time and energy for today. I'll take a closer look
-> at the rest of the series in a day or two.
+> Whatever, I am not a maintainer here, so if Jonathan is okay with this churn,
+> then it's fine.
 > 
-> Thanks for looking at this.
+> -- 
+> With Best Regards,
+> Andy Shevchenko
 > 
-> Jonathan
 > 
-> > 
-> > Use guard() for managing the mutex in kxcjk1013_write_event_config(),
-> > because it helps simplify the above refactoring, making it less
-> > error-prone.
-> > 
-> > This will facilitate a planned change of the
-> > pm_runtime_put_autosuspend() return type to void in the future, similar
-> > to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
-> > type to void").
-> > 
-> > Signed-off-by: Brian Norris <briannorris@chromium.org>
