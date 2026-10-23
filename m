@@ -1,63 +1,111 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.38.64.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792753561;
-	b=BTebSHNGb7iOOPCN8BJQlWBrIcDeIuGb/jxVcYR8s7CpzkWUZB7NeRF4Kl3VyLUVjt4o
-	 hOBUxqDZliUI6ERfO62U1PIGpjwaeGgy/lnGOqA+/yaNyBHGdHOUiw5djMloZy6b7/eDK
-	 Uz1pmFqaR2lZkAENSv52Kw5YcHUedpcNnR6bm3XIB4L7lz24VQ3pDo4BJm542cQAZxUHq
-	 8/DFZFQaY0Dp6pNRSms8KhFbu8U9jnFebhYZxZlBB29/FpGCakBhL7lD4hEhj9FVTxnqv
-	 S+hIeEUDGiRBaZUgsM8RdSB2NUAodrF9Xo9R7Az0kqEpHGt4OsVJRwFQEtK0oFPhojQ==
+	t=1792753652;
+	b=XsMbx54vSmnz6pNiHugr5RQPW4IpBYpyh6Pvhr362P82i9JO0L71jjwWL+i38MLRmaRZ
+	 B5Lo3e528bSsndNfxU9XHiiTa6BLPp8WDI7su7dI4rDx6s/uNCvrJr+eyaDux8sMvOAAa
+	 49gCUuaxv+2Edq13PZgmFZ6xZLHti1m2u80jxPEMGn0btPyT4qfp9DafDO0zjsKVMs/QS
+	 BCO5o0dJbwKEZ1cLlIKZUPv3w/tfaK7LwQJA+0QHWkA+1zDFNYc2CN2/TPcT24U2+yW5C
+	 rKPaAL+zeA/dONY1tQMuOwwm2iXbBtjFon6UhPV0VDLNr2nCzCZuEcqchrEyUtQQXBw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792753561;
-	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-ID:In-Reply-To:References:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-CM-TRANSID:
-	 X-Coremail-Antispam:X-CM-SenderInfo;
-	bh=/rQlsHaf8RUxj4BJ5C4uFZp1pXhNw2oObE6nCLkBPIk=;
-	b=GTwyz1zG7AzhXKSAv4ULfKRao7sVupwe6NOjv7ZjhXGE3cJTVL9wsJ4tM40UF8OcoXQ0
-	 1L3pDy+N90v6Xh7xEU7BOl9KpnnBbHECJgdManh3V0uRElAN0XwzapDLG1gR3LgK9ICrq
-	 FJ1+fuvPBYCj8WDy2sQXnoFpcCiv+vSPJD1/12AZGoJK5MkHLAaZXJlN4x/jQVxSQXYNf
-	 YRQvHGhofnOc6gqeY8Oqi48KTcrUv+K4v5Joqs7WXJEecBP8z66fGNBxDAhPAKXiXdbmB
-	 dfG3S9kJ43pAx3P3YYr1WVwtsxWjSHncPDCajX+gK4ez89k0W8kG7Ql6rV9lJ3xoUmg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792753652;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
+	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-Authority-Analysis:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=jSSVqDq+NOelbWUVCaJ+EbCkgRjieJWhS34DS37RQKw=;
+	b=Rk6VlWuYNNkHKO+0juRaN5SzLiyue0C3AxUThaFe8ffWyKb7fP9R0WRGsbI3oWs2ign3
+	 pGA2/c0LB0vAG5UyVi/mM2k5m+2vnHdB6IvK+yP+o3jRx73XsdRhitzbLAcJXcxKvPXbg
+	 cDpoZpAWCK9CuhVHITN/s1tNQEpaFUjrWok4goMR3ixwbDOMDanOWBMGK8bimF5dFGvg0
+	 IPBi6n8KP75KpuZdIvAVizojbs3rD4tFKVT8F44ZH9LU28JFrVgCcIb8veHzVkzrXqMGU
+	 bU04/7lZmhA8woCTRoZ2sHswQMAO2piw/CvHiJYR3MKC94GGsXXSI3pPiNJlpO3pqLw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mail.ustc.edu.cn;
-	spf=pass smtp.mailfrom=mail.ustc.edu.cn;
-	dkim=pass header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=WsBuFAaz;
-	arc=none smtp.remote-ip=202.38.64.46
-Received: from ustc.edu.cn (smtp.ustc.edu.cn [202.38.64.46])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CA528606A31A;
-	Fri, 23 Oct 2026 11:05:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CA528606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mail.ustc.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ustc.edu.cn
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Tqek0Ovm;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=d5gMHnX+;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA05E606A31B
+	for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 11:07:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AA05E606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=WsBuFAaz
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Tqek0Ovm;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=d5gMHnX+
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69NAAXI52489837
+	for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 11:07:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	jSSVqDq+NOelbWUVCaJ+EbCkgRjieJWhS34DS37RQKw=; b=Tqek0OvmJj+sI9Mc
+	evX8s7G4Sp5KK0woDuKgE3OVExVr7iYp2IItDLMb9jrhdlQTgwLBvKubQvTDWRRG
+	XG1JkFXxup5+Sfy2U43swlC5Rr6DrpSovN9ryKjXnhC7PdQxuaZHVX/AS4cdJn9e
+	jEAxLTad2N+JUUFIcfNx+vRajIoQZekXi4PosnR0xEDlN+PGrEuwoqFZP3Ybbj1W
+	DWUod81HOK5eiLosG9h3tbFeRS2lN4KWREZn0nl/d0VtEyRHJ0UHU0sPOGoSB2SC
+	RZEHQlJC+i5SS9/Kuc/f7QSQotyAQdTBXqrSg14Z0LkfN5FUy1nx0Zm61RlnEFOs
+	pNTaHQ==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hftygajxg-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 11:07:25 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93f1f1f2ecfso18970585a.3
+        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2026 04:07:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-	Message-ID:In-Reply-To:References:Content-Type:
-	Content-Transfer-Encoding:MIME-Version; bh=/rQlsHaf8RUxj4BJ5C4uF
-	Zp1pXhNw2oObE6nCLkBPIk=; b=WsBuFAazG//+mgfQh/unhuD0T6gpPU+KtWIz1
-	vMhSqyNIq2+m3MnfjokluEAwORJbv7n5VTGi+QsyAS9NmLCMvzvky5kgT60fdedQ
-	v6rPD0+Gk67LSrIY5EZFL1SE8kkYQ6wpriF9YPSbTrYDhHnv++8fFulvaVTXIKE6
-	Gi8g68=
-Received: from [127.0.1.1] (unknown [114.214.178.200])
-	by mailimap2024 (Coremail) with SMTP id 3pYKCgB3AkeMP9tqZHU0AA--.1874S2;
-	Fri, 23 Oct 2026 19:05:48 +0800 (CST)
-From: Qianhui Xu <xiaqinghuan@mail.ustc.edu.cn>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, linux-pm@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
- Bjorn Andersson <andersson@kernel.org>,
- Mike Tipton <mike.tipton@oss.qualcomm.com>,
- Taniya Das <taniya.das@oss.qualcomm.com>
-Subject:
- Re: [PATCH] power: supply: qcom_battmgr: do not report power_now on SM8750
-Date: Fri, 23 Oct 2026 19:05:48 +0800
-Message-ID: <179275354818.2172689.9851715727007912571@mail.ustc.edu.cn>
-In-Reply-To: <101257b5-7e43-4cc1-ba17-1507dad27b52@oss.qualcomm.com>
-References: <20261013002124.332111-1-xiaqinghuan@mail.ustc.edu.cn>
- <179249416915.570120.11194300523322683054@mail.ustc.edu.cn>
- <101257b5-7e43-4cc1-ba17-1507dad27b52@oss.qualcomm.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+        d=oss.qualcomm.com; s=google; t=1792753645; x=1793358445; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=jSSVqDq+NOelbWUVCaJ+EbCkgRjieJWhS34DS37RQKw=;
+        b=d5gMHnX+lN2GfU1/6X8HOVBpA+WX9nM3s0pJsTIQExZr33avwo4WxfaZO3Hk8Wdoyu
+         4q3DQ9Qfp+JeDLBIqriUfm3eKDZ7W4WBPRNNX4OfooSOMgDhJ7nawLevCkJTZyuJnumn
+         fLC2OxGeCgc4NdWvdZT3WenjgIuh9bV4bwyu2jsOlYTLeSJUlD/KrC/3sK/opew+MDbA
+         stDOIvTsOSG1P05t/tLpnukea4+Q1RTqvFZweR1jWw5ItM8l9DCFrvAdvZjtdOfSsv+H
+         Mop0Knhoem2sTJv90ZeafUi7KTwuKT3C9JWdn1g6Qos7Jv86GN6nUx0uhgB9gt3gB4v5
+         l0bA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792753645; x=1793358445;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=jSSVqDq+NOelbWUVCaJ+EbCkgRjieJWhS34DS37RQKw=;
+        b=GtLXtriVKOWd1D9zMh8FIQ17UNOcI1hxJdJ4QfeRY2yjfolfIXtfyKI4HkYwljrX5U
+         fB24AZl7SA3Eu2wBojpTZgMTTeX+CTgWmKvFZMXMuhQFrSCAgYLqNPK4lT/LKYUQDAxO
+         QKmy643/hsXjYOlRILwP4shFZNDyduYRNlkqkDfOx5Q8+peIjQDnmsaGpoHbmCcBuBGs
+         bVv00YRw0A87SoQDVUIm9DfLgMnuoW91ObXb2/jC+OeHHKZ7VqRo5Gw3TbVdeunEdQAk
+         fMv27HcMeP5j4ZcZeIZGJABNg04dH3EWQGWohC62QrZwyrLWGOhLdmk0u3pT9XzME8Ey
+         H3Ew==
+X-Forwarded-Encrypted: i=1; AKwUvBx9BI/hqTEFmqSbRIGkL1mrma84orq+TwDq06D632F/gQDjoFuEvCwQHwDeo/TF+mvch4sYd9EO/g==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJRpE94V6boeuJHsLcQQyi7AoEpcD3y4BxAlNcwjDTD4kI+E9hn
+	ABFW6q0FErV3mcuMLTs+Vt9/SOyWzPlmsWQLfu0ms+c/ho7gc+FMhNW3eRtBpfNwURGSPO3u2iE
+	uR+vfF2r1pfIkbE1dQAVBzpX2Da9oFaof6hwxFp9PUdsDvI45f4uwTexJKKLYrQ==
+X-Gm-Gg: AYBFou1MBQvVp97P2JP6Hv09bzp3ETArNadJo9ZNJuoXpEGLJ8CzgEvv4UkeQOMGYsa
+	au7qqZOwsrWofmjQUbPAn4282vjJDEOXew8A5SiYWc6R1pF7riEEf9RA01MqkZdd/2IvY/7aVIp
+	gTeSt/zjpkPjHCUIZuV5vKz6a6+/JOUJejE2Qoauy1YqlpfifIxQoUmnla4TDIAQUy8/ugltLnt
+	3CI9e8kS/gCH66BzP86MhPxou18DNDP9qZ+R+tuHM3j4Z4xhg5L/AimWiWmRGUcvZROFtz02tjZ
+	tfDtGP5cG4Qt1FwxFlwJgJdIpgZDCp/1j6knLCAPResyX12728SaEkRvSMRCDwQXnQ5H8+i3lKS
+	i3LdOQAcYEBCgkLuvUDNg5Q==
+X-Received: by 2002:a05:620a:a182:10b0:93a:ec4:e5f2 with SMTP id af79cd13be357-93f6f9c2625mr321626185a.6.1792753644923;
+        Fri, 23 Oct 2026 04:07:24 -0700 (PDT)
+X-Received: by 2002:a05:620a:a182:10b0:93a:ec4:e5f2 with SMTP id af79cd13be357-93f6f9c2625mr321621885a.6.1792753644425;
+        Fri, 23 Oct 2026 04:07:24 -0700 (PDT)
+Received: from [192.168.226.26] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c46a5a90ac9sm91191866b.6.2026.10.23.04.07.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 23 Oct 2026 04:07:23 -0700 (PDT)
+Message-ID: <2cef48a1-7efe-4e02-9f8e-7da97cf8eaa8@oss.qualcomm.com>
+Date: Fri, 23 Oct 2026 13:07:21 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,154 +115,74 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-CM-TRANSID:3pYKCgB3AkeMP9tqZHU0AA--.1874S2
-X-Coremail-Antispam: 1UD129KBjvJXoW3GFyDXF1fJFW8CF17XF43Jrb_yoW7tFWxpF
-	9xK3sYka1kJw18X3srAr1xZas5ZrZaya98Jr1kG348ZasxurySqryFkFWjqay5urn8X3WY
-	vrs0qrnF9F4vkaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUk2b7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
-	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
-	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xII
-	jxv20xvEc7CjxVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I
-	8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
-	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8Jw
-	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lc7CjxVAaw2AFwI0_JF0_Jw1l42xK
-	82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGw
-	C20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48J
-	MIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMI
-	IF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E
-	87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxUgcTQUUUUU
-X-CM-SenderInfo: 50ld1x5qjk3t3q6ptxnoox23vfohv3gofq/1tbiAREJB2raZFVVbQARs2
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] power: supply: qcom_battmgr: do not report power_now on
+ SM8750
+To: Qianhui Xu <xiaqinghuan@mail.ustc.edu.cn>, linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Mike Tipton <mike.tipton@oss.qualcomm.com>,
+        Taniya Das <taniya.das@oss.qualcomm.com>
+References: <20261013002124.332111-1-xiaqinghuan@mail.ustc.edu.cn>
+ <179249416915.570120.11194300523322683054@mail.ustc.edu.cn>
+ <101257b5-7e43-4cc1-ba17-1507dad27b52@oss.qualcomm.com>
+ <179275354818.2172689.9851715727007912571@mail.ustc.edu.cn>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <179275354818.2172689.9851715727007912571@mail.ustc.edu.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=cZpHPXDM c=1 sm=1 tr=0 ts=6adb3fed cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=Q0jaTb4i31unmWYDfaUA:9 a=QEXdDO2ut3YA:10 a=NFOGd7dJGGMPyQGDc5-O:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIzMDA0MyBTYWx0ZWRfX13F/o7VEe2C1
+ fJ6h22Gd0l/Buwnnf6Mat5lLvTuP2ee+gf1mk9eePeCg1GhApbxTcqYtjO7KzagqOkk+0ovIwvx
+ cVAWtu2xc9/EOP8fBsVM35YOl7RduG0=
+X-Proofpoint-GUID: VbG5mMZuSxuVDrx88U2EH_xyB2eldbtB
+X-Proofpoint-ORIG-GUID: VbG5mMZuSxuVDrx88U2EH_xyB2eldbtB
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIzMDA0MyBTYWx0ZWRfX1SIiouHjU6oa
+ 0dqKsKnM6d+EEvQ50ZBnTXr1U/26vOJZ7Ah/RveUJ17HnGQuxUlZWDsksEGn03IgRSScVMKLS54
+ xsQglyp9CbdCFTAsMkrVnTHfzIM6NbkNl/m76iuCWuP34Hbv5jL7uVKiJr86VhUmRaScDIE2/Ir
+ 4jps7UxpjJ1g3vFArHKekgsXtlOVwS56/lnQFMmY8e1Lp5Swxi7UmFhYAViRdIgiVPe/auw10Vb
+ 0Uoo/QGoPNRVpiBolY9I1iIbghFMqZNjixtu+0nk6d2ASF+2wG4hdoDE8Gq7hcGyf0rLrLxgiQH
+ weboaNgpOOCqSCIwg6Zw0gnfn1pXAE6Qb4CcmFELeGyXJRinfUHo8ME5QsH1Gzqdf58MAWipemr
+ WzVtHAQcKVLVIhPjeq2/MI1nG5ANqLDPrDDK6EXjm+uXF2km3YT/8oqKHAAl074hlM4pQHGC0YM
+ j6S8SnfyTy4TsYCmb6A==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-23_03,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 malwarescore=0 adultscore=0 priorityscore=1501
+ clxscore=1015 spamscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610230043
 
-Hi Konrad,
+On 10/23/26 1:05 PM, Qianhui Xu wrote:
+> Hi Konrad,
+> 
+> (Sorry for the subject mismatch - this continues your suggestion inside the
+> battmgr thread rather than the SM8750 sleep one, since it was your reply in
+> this thread that told me what to try. Feel free to re-thread if you prefer.)
+> 
+> You suggested disabling rpmhpd_driver.sync_state to pin the rails at their
+> maximum corner. I ran it, it worked, and I think I now know why. Short
+> version: the effect you saw is not specific to sync_state - it is the
+> Retention corner, and there is already an upstream commit for it.
+> 
+> What I observed
+> 
+> Board: Lenovo Legion Y700 Gen4 (TB322FC, SM8750P, mainline port).
+> Symptom: with the camera power domains powered on, turning the display off
+> (DPMS off via the compositor) hard-resets the SoC. No panic, empty pstore,
+> no userland record - the reset is below the kernel.
+> 
+> Two kernels, same userspace, same device tree, same module tree:
+> 
+>   7.2-based tree    6 of 8 runs reset      (your sync_state arm: 0 of 4)
+>   7.3-rc7 tree      0 of 41 runs reset
 
-(Sorry for the subject mismatch - this continues your suggestion inside the
-battmgr thread rather than the SM8750 sleep one, since it was your reply in
-this thread that told me what to try. Feel free to re-thread if you prefer.)
+Please ONLY do development on linux-next/master going forward.
 
-You suggested disabling rpmhpd_driver.sync_state to pin the rails at their
-maximum corner. I ran it, it worked, and I think I now know why. Short
-version: the effect you saw is not specific to sync_state - it is the
-Retention corner, and there is already an upstream commit for it.
-
-What I observed
-
-Board: Lenovo Legion Y700 Gen4 (TB322FC, SM8750P, mainline port).
-Symptom: with the camera power domains powered on, turning the display off
-(DPMS off via the compositor) hard-resets the SoC. No panic, empty pstore,
-no userland record - the reset is below the kernel.
-
-Two kernels, same userspace, same device tree, same module tree:
-
-  7.2-based tree    6 of 8 runs reset      (your sync_state arm: 0 of 4)
-  7.3-rc7 tree      0 of 41 runs reset
-
-Your arm pins every rail without presync_floor to level_count - 1, so
-retention is never selected. That made me look at what else differs between
-the two trees in the RPMh power domain code, and there is exactly one
-behavioural difference in drivers/pmdomain/qcom/rpmhpd.c:
-
-  7.2:   if (rpmhpd->skip_retention_level && buf[i] == RETENTION)
-                 continue;
-         (skip_retention_level is only set on mxc and mxc_ao)
-
-  7.3:   if (buf[i] == RETENTION)
-                 continue;
-
-So on 7.2, every rail except mxc/mxc_ao keeps RPMH_REGULATOR_LEVEL_RETENTION
-(16) in its level table. That is Mike Tipton's "Skip retention by default"
-(2026-06-29, Reviewed-by: you), which landed after the 7.2 point this port
-was based on.
-
-Confirmed against the actual level tables
-
-The device exposes cmd-db through debugfs, so this is measured rather than
-inferred. Dumping /sys/kernel/debug/cmd-db on the 7.2 kernel:
-
-  cx.lvl   [00 00 10 00 40 00 ...]     -> has 0x10
-  mx.lvl   [00 00 10 00 40 00 ...]     -> has 0x10
-  ebi.lvl  [00 00 10 00 80 00 ...]     -> has 0x10
-  lcx.lvl  [00 00 10 00 38 00 ...]     -> has 0x10
-  lmx.lvl  [00 00 10 00 c0 00 ...]     -> has 0x10
-  gmxc.lvl [00 00 10 00 32 00 ...]     -> has 0x10
-  mmcx.lvl [00 00 38 00 40 00 ...]     -> no 0x10
-  mxc.lvl  [00 00 10 00 40 00 ...]     -> has 0x10, but skipped on 7.2 too
-
-Recomputing enable_corner under each tree's semantics: for cx, mx, ebi, lcx,
-lmx and gmxc, the 7.2 kernel's enable_corner = 1, whose level value is
-0x010, i.e. Retention. The 7.3 kernel's enable_corner = 2, whose level
-value is the real working corner (0x038 / 0x040 / 0x0c0). For mmcx, mxc,
-gfx, nsp, nsp2, mss, ddr and xo the two trees agree.
-
-Note that mmcx is NOT affected - I initially assumed it was and the cmd-db
-dump disproved me. Worth stating because it makes the hit list smaller and
-more specific.
-
-How it maps onto the failure
-
-rpmhpd_power_on() deliberately does corner = max(pd->corner,
-pd->enable_corner), so enabling a rail without an explicit OPP vote lands it
-exactly at enable_corner. rpmhpd_aggregate_corner()'s presync_floor branch
-then does to_active_sleep(pd, max(corner, pd->enable_corner)) - it reuses
-the same enable_corner, so it does not save you here.
-
-The rails in that hit list are the ones the DSPs depend on. From
-qcom_q6v5_pas.c:
-
-  sm8550_adsp_resource   proxy_pd_names = { "lcx", "lmx" }
-  sm8550_cdsp_resource   proxy_pd_names = { "cx", "mxc", "nsp" }
-
-So lcx and lmx are affected on 7.2 (both have 0x10 and neither is
-whitelisted), and cx is affected while mxc is whitelisted and nsp has no
-retention level. When the display and camera votes go away on DPMS off, the
-DSP proxy PDs can be the last votes left, and the rail gets enabled at
-Retention. What actually comes out on the serial console matches that:
-
-  qcom_q6v5_pas 32300000.remoteproc: fatal error received:
-      sys_m_smsm.c:322:err fatal notification received from TZ
-  qcom_q6v5_pas 6800000.remoteproc: watchdog received:
-      sys_m_smsm.c:322:err fatal notification received from TZ
-  remoteproc remoteproc0: crash detected in adsp: type watchdog
-  ucsi_glink.pmic_glink_ucsi: failed to send UCSI write request: -5
-
-TZ notices first, then ADSP falls over, then the SoC resets.
-
-Why I think this explains your result
-
-Your arm and the upstream fix do completely different things - pinning at
-the top versus deleting retention from the table - and both make the failure
-go away. They agree only on one property: the affected rails never sit at
-Retention. That convergence is what convinced me this is the mechanism and
-not coincidence.
-
-What I am not claiming
-
-- One arm I built (7.2 + just the skip-retention change, nothing else)
-  produced zero usable samples. All five attempts died in the display stack
-  first - dpu vblank timeout, then drm_crtc_wait_one_vblank WARNINGs, dpms
-  never actually reached Off. So I have not reproduced the fix myself on the
-  7.2 tree. I am not presenting that as confirmation, and I am not
-  presenting it as a refutation either - it is simply no data. I am
-  mentioning it so nobody reads more into the above than it supports.
-
-- I have not proven pd->corner is 0 at the moment of DPMS off. That step
-  comes from the reasoning in your commit message, not from my own
-  measurement.
-
-- Everything above is one board. If other SM8750 devices with a
-  7.2-era tree and DSP proxy PDS enabled at Retention do not reset, then
-  something else is also involved.
-
-For what it is worth, for us this is now closed: we run the 7.3 line, the
-fix is already in, and we need no local patch. The reason I am writing is
-that the observation is generic - any tree predating the skip-retention
-commit that enables an RPMh rail through a proxy PD without an explicit OPP
-vote can land on Retention. If you want I can send the cmd-db dump and the
-serial capture, but there is probably nothing in them you cannot reproduce
-faster on your own hardware.
-
-Thanks again for the pointer - it was the right direction even though the
-mechanism turned out to be one layer underneath what it looked like.
-
-Best regards,
-Qianhui Xu
-
+Konrad
