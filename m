@@ -1,105 +1,105 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792882588;
-	b=toa+yJqfH1jZ/c56xmeRK0zDF7337fMyyX6lIRCPTnvCrBXKUqy8Ojm6eRVUR3FOJkQB
-	 /THnUzzb+VQmGBcE8t2sowL2dkBmtFcRrGLYHQhDVYL9MLFpLEN7EG6abbHnCzKMH6T25
-	 l41rJDliXLUepvs4bTPp2555yxN/0GR4aLbDKiqhSs+21eDs4iJ0KwYIAZmqOWdZXyAJ4
-	 xTR6y6U+ueBRguP+SJxqu4/U9HJQ0gOOwXSP0sS/nJxIPs2gFdyn0ATcf99DwlLBzNFqw
-	 1ApA0jCFdm0Y/m6wBvzvq7THm6EAz8fpKSKeOJt1lxlO+O86x+s5wCUNttmiuZl/rAg==
+	t=1792882605;
+	b=iobIlJYQ3vhxnZCDT86pNmIJlyIvcw1+do5PgZvx/LY+HJelg+b/cbDFDR/5KmPKm51b
+	 fFRvz5nN1UO06j9wZa+DTrSPq4XkFDldZlljh74amWWtiYsnTKRYFBJrmKAKzAhqgJ6Iq
+	 VJJ2r5zUsOsNh1wfjGUw4xryU74Egoalcx848wWVHbv7FeNOVp5w3AE/5j6BMOTSQe7G0
+	 JIhuG5FkmzTjsVw9map4sQdBw8J6ywlS0hnkJLYDURsG/wrD3TXQf9jKLjTHe7VlHPFz4
+	 /feXtOOLqJ9plVMwzEqz+tleV/2tUY2UDgPRb9uniZcZ0DlHZ9azMNoA0MhpiS+skBg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792882588;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792882605;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
 	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 Content-Transfer-Encoding:X-Authority-Analysis:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
 	 X-Proofpoint-Spam-Details;
-	bh=f1HiuzAgbnoiP6XLEgSVQ76HAxeufd2AMG70LmlGRec=;
-	b=wAy4E11x7KJKeQ2Cr+0aWKP0sGcuuvb8P7puU0KjJjhLh/Vt9KVxNxox9uKFLTRFSEox
-	 y15i5wC/7PfJajzlFK1QjKGmoUFzlaRry6gWwaOBYhvFKJMjc7VpM9pbLmYpOl1kiq4m+
-	 vWFomPZyqhBqHFvWFgRjDij0PkRi2q6QHRfkE7wPdLl2OaC98PDmpdpiLn6AH/Iq2CnC2
-	 OiXko/nnlnDkahBniDvECQdTECJ7Q/XV1W/4fGkurjOQhipuXhFApZC2ABuPHLyP6/PEG
-	 qjn80q0q34JqrNWMwgLvvLxz4bbw7yHSgZCSpFBThodNy9H0KnPF2noxSFhaGD/tTLA==
+	bh=KZkTpDbUwC0fq2vu8+gU0Jyh9+/zPfcLoyDt0p9UsAM=;
+	b=dEkcxOE/QGKf4o1Zf1HOjmgb6eZV8uaeEnLxxQFh4uCf/K/bCeBGvKANpriLGm5RqRsp
+	 7NANSp/oM4XczvGSEG/ZrA1bdWhEdgoQdEg+o8zsHB4Ce2HmgLgW2paIHcz4+V+KDzQhZ
+	 OIqgli53RGv3r4Kk6/cz0+p9vU1lj+nDakZZhOzjzd0sM8Lz307kOarAcQaZ0eTkxClv3
+	 Nk//P45/KXyY8djawPS8ghGmflmMcRp1GppZxS+rbEL+UOhhsDb3aA6MJsF+0D0RxDFh5
+	 ysmZ/M+BqruLq+lWZflpfAsBdDlrlTBU8CG6MBMoY2myfTNbVdpp90n6RbFXRXDTcsw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=PizwXrXp;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=FGtEvaxW;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OXQK9vDo;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="Ie/GK8Yj";
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44AD6606A332
-	for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 22:56:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 44AD6606A332
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED8D2606A323
+	for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 22:56:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org ED8D2606A323
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=PizwXrXp;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=FGtEvaxW
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69OLbmWD3170261
-	for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 22:56:27 GMT
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OXQK9vDo;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Ie/GK8Yj
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69OLbCTT1171442
+	for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 22:56:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=f1HiuzAgbno
-	iP6XLEgSVQ76HAxeufd2AMG70LmlGRec=; b=PizwXrXp+SPjrmqdYg9i6ij5B1G
-	TZmW+sBXMnfz2c9Y+aqxy87GCWrhPL0G7LlSKAYx13IGlAGMpRLJoPInG4OMH4hH
-	eJIFRvx1Vgz3lmQix8QsLjm/kMdkOHTO9XIHp/q97OO+KxiUBOPzuhluNq/YHunh
-	g2lGmA+HI9Yc1DrczktFzBFiZ2SJM6D3rfUmb45SfsCfZ/Vun8x+YOQg1GZcDo+g
-	7noF6UixRadUdlv/nWdxoo3v60x9gwF9Swkt4D+uyWj3iE6buZ8jUdm34plvOiK9
-	Rq0koMe/EHpLMEIHVYHwgbn453Yp1uiimiIWVIESeUol7c3WZ1O1bR3WVRg==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hgkp6j3ff-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=KZkTpDbUwC0
+	fq2vu8+gU0Jyh9+/zPfcLoyDt0p9UsAM=; b=OXQK9vDok0Pd2zTnDDYPnwVhRNM
+	rb6IymPRqMdqH9PZaM8eGQU5nHcEwWPsSRIlEbrqiFOk+FeNUlnpAeAu7BgJ6qCs
+	x1Q2pg4ARFeAAAmCKH0o+XXOTR3g/8bPLtGhAEUuWOZl5ofRnDu/pOtOB81HxWAY
+	J+Au4v1CAIbadmDanQFpTqSfhR8B8qE6AQ/u3BwLzFRt1BZmtCAirp0x4UcStOf0
+	5vW5/EXdQzTkaJK6i/FOF05da2/o4EFomOSQlCz/IZFoHRvBIV6JB4nJqou5wuqU
+	LdMSsg7G3G/Rp8eN0DizluCgnZafQlCxG7d2GygbsgISlJQ6lAYqshwqf1g==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hgnuk9u2q-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 22:56:27 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93f62934ef6so116741285a.3
-        for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 15:56:27 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 22:56:44 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93f5844e383so356192685a.1
+        for <linux-pm@vger.kernel.org>; Sat, 24 Oct 2026 15:56:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792882586; x=1793487386; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1792882603; x=1793487403; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=f1HiuzAgbnoiP6XLEgSVQ76HAxeufd2AMG70LmlGRec=;
-        b=FGtEvaxW5KKcAB5khzlZF5TTY0puzq5/dNS4AYRkBQ2kV4v7U4wed65MbME9/sbbl8
-         IZo+1wYfn6gyhugmRvqoe8m3h1pksqqzJDB+ChCgv3A+JZlpXKgo7TDnnGGI5rw3c9ts
-         zLXOeid/TirWP88v12cr4ti8U358o57nw+taK7+T/SKFGfBDBRIFHgGh+k+GSxQpT4x3
-         4G+fM84/ZGRHPnjpAql73fM29E+wQnBbnBXeZOZgsCya8haC2Iexx7IxXVZ7t/hk8L5q
-         esQjhthhcCnzeFyAMx70Q1LY2+McRh4uUA7OxSMPNbYJ9cZFv7QW7lchIomUou10QowN
-         vKLg==
+        bh=KZkTpDbUwC0fq2vu8+gU0Jyh9+/zPfcLoyDt0p9UsAM=;
+        b=Ie/GK8Yj0/62U8kT/tr+4OUWz1suGMecf2PNGiwSI4cthgWFnXj5K7scbr9o9DQ6yR
+         4saoXWin0ugL1cyNYhUxdAwRO+uIhah1fFwYrtz8ONQou9MXNY807RTWc2tqvzso78gK
+         A2G8FMqIo/ecLWeXpKua4GrJot/LIAH+CekA92TKyQUq5wWm52je+gXGhWxJHp3TgsMF
+         LShKSsOi3Nc5ZXaeusmvlO7FwjBlNmRXX7zzSJxpQwYhQ0zMey1LROzFsAzu6KhzM7En
+         /eIclbv+iBWW5R7VFIRriVqD4RN5TV+5T37AnwBPoKpldRjglgjp+Aac8KWR/3kXRNhc
+         RXdg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792882586; x=1793487386;
+        d=1e100.net; s=20260707; t=1792882603; x=1793487403;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=f1HiuzAgbnoiP6XLEgSVQ76HAxeufd2AMG70LmlGRec=;
-        b=Sb5+E4igniBsEkQIqZ84a0qG7P9YB2RcK1+6vMIZnv0UD+GZHKGZNvriMR/mJ99/KQ
-         VEcpwJWsleqmgEoLSVVjrZh5Lfe8qvU/C1IgIJHLJxthfnH6xAImLh3zRxcY9Myb8DzI
-         irB2X9R00h8okVaFZfUz5F3NTLs1z2OYTkyjGXN4PpqLdc7paK1bGk8jsIKk0P7QM+SF
-         FTTD0Uca+eyTsLoE6BCpEgq4HPO95qdJUphUXF6nlxrvdxiF7atI+9aO/C4yOrp1oWxU
-         Q+Zix1z/Sk5g7bgKFFqWn6i+fNEU1vCwhKXmAxO41dub86KrgiP/pHmaqYfQpn7BqfFL
-         r60A==
-X-Forwarded-Encrypted: i=1; AKwUvBz4j9X4EqOQ4ukkJxtiG/cYWVLoCdVlNR+YYQqp83fQ7UfyVXj44mhpI+YCy1SB0MbjTOxR6Y1WIg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ3JnDIJF+2soC9RXpzp3zdSWvbJZ6UbU879usCAG8srDR24+4h
-	J4qcrfKmeKtmRxzup7im4MaQZCc67AQs0/WFdvD+MCefCMyCzVBoxDHpOQIHagmt+bBZM+F9fuA
-	fMlj2EsE1zXfGnqkWxPThUipMWWWUs2VqGGX+frsO1m1IYfJEDlams0Zia3hATA==
-X-Gm-Gg: AYBFou2gt8FqSPXkX5P0MRAKFaiWAc5LP8X2X8WjDEFarMj+47sQVkVgT27qiiaZvwJ
-	r+EmCVGYJOtosHIFQQ4ejXCE7bAzzCW5szenEGiScxNyzYoBopFW/g5SsOEvIz2UfUzWhli3ItX
-	7hnSWXsfTBcfTalHhy046ISGeglBgeodm2EqB2V66Wq4Q/0cA84neSNL/bSJJIjAHrP6PyOL1fs
-	m5ovTMShweU1tPWXJOQtzViCtc34r2uTdMUGPS/fDND7idUeKc75cuaNQGDeLnzxZCyodzdaEOg
-	uBExxKdoo5tVNJoFXC6JmwXTygNTuSOHiXOO1VZyzLVf4Xi2ZcW/2we/0p48j74oravymRh/RdQ
-	IOfy/WbsBSua5GThBY3O7WJ3Hhlo=
-X-Received: by 2002:a05:620a:4042:b0:93e:6325:ae6d with SMTP id af79cd13be357-940ef8db90amr453551885a.40.1792882586493;
-        Sat, 24 Oct 2026 15:56:26 -0700 (PDT)
-X-Received: by 2002:a05:620a:4042:b0:93e:6325:ae6d with SMTP id af79cd13be357-940ef8db90amr453548885a.40.1792882586057;
-        Sat, 24 Oct 2026 15:56:26 -0700 (PDT)
+        bh=KZkTpDbUwC0fq2vu8+gU0Jyh9+/zPfcLoyDt0p9UsAM=;
+        b=WL2e+fiJ7M0Bx+yeJbX3JW1+Vr5cE6DkCqRab74nXcPyovk+SZh0exq7GHawy0tXu6
+         NVMOTsnvTHZj4I49P27TgGwMmA8IQ/cv9s1rZeMKgF9st74VYsgBkAS91nXX3TwXekyD
+         F06Paxv3Qas0HW42gDZH75UC325uw7kJVayukqS0BZy0rLkYI3RF1gp1jDr+RQwlqkrA
+         ZbDZXwBIFpahDPSop/Qd4e40gm2+GCDx3Bj0VcmQzWHbqG0RVCOf09QFfbEarWvX3Ei+
+         jRagB9vcigeuUcYCzK5IqrNzPafez7bTK/prYZr4wz/W5FI5AYH2VmjjbN34ImWvHre1
+         vytQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxkBn3WcV9ODmLdpq3eNTs8uzVeZw2qZHcBAUCR6wwQT8FZS1vc7tmPXv8TifyCXOYRcEtBlgh9kg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJ/+UFI0fOZwgy/GbniBH1iax4eQqAGGveB7MKKMW154mo+c+zo
+	Onkl9RDMHnqMwXM7Q0YP6NqkdYBpkVOjlExkIyvytM6GHZutl49z7fmOvOVDh4kCG/eZATQz4LG
+	H/pjLOkoedhn05l+fSRx6b7+qiso2pdu8XcIscJcsl1uCWAm06zjVlpuFTi2BZQ==
+X-Gm-Gg: AYBFou0NcFamfZuMhl1+A4SBby/DRgc0I56pI980g0GuPgxykDUdnae4DmtbP9ll4j7
+	uj3PXY+Zc2tqMKlmiZx6YCZ4nFQDDiUtXGoCfb00MbYQ2amsx2kFMXw8ILHJ0mZf8s0LQUuYNk1
+	8XAFabTMdiavUp60fseuMvMiTXXKpREb3kwLFOncxCs1r5kId7o0/eX7d+12TXB7b2b5r+7P/dn
+	OxqGLejIXhBaDKV8n5e+14+A8XsFxEKQcDH7UBbXcBqMvLQVAhbAuNPQA62TaEZj8/xNyJCbfCd
+	VHSv1McMnei8C/fzjAxfHR3OccvwAZ3wpIceYc43A7h7Oi0Ax+A8rxJ5R/1/Sapk/0xtf4eZ5iB
+	X1HrKrgbxshTX96uhf9S3ZhRB7wk=
+X-Received: by 2002:a05:620a:4414:b0:93c:aff9:52c with SMTP id af79cd13be357-940ef99b527mr438931385a.60.1792882601819;
+        Sat, 24 Oct 2026 15:56:41 -0700 (PDT)
+X-Received: by 2002:a05:620a:4414:b0:93c:aff9:52c with SMTP id af79cd13be357-940ef99b527mr438928385a.60.1792882601319;
+        Sat, 24 Oct 2026 15:56:41 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:7d20:e20f:a77f:4ef7])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a359ff2189sm98564145e9.1.2026.10.24.15.56.24
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a359ff2189sm98564145e9.1.2026.10.24.15.56.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 24 Oct 2026 15:56:25 -0700 (PDT)
+        Sat, 24 Oct 2026 15:56:40 -0700 (PDT)
 From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 To: rafael@kernel.org
 Cc: Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
@@ -120,10 +120,14 @@ Cc: Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
         "Mario Limonciello (AMD)" <superm1@kernel.org>,
         linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-doc@vger.kernel.org, linux-pm@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org
-Subject: [PATCH v3 2/4] platform profile: Complete class notifications and registration cleanup
-Date: Sun, 25 Oct 2026 00:34:27 +0200
-Message-ID: <20261024223501.1420953-3-daniel.lezcano@oss.qualcomm.com>
+        platform-driver-x86@vger.kernel.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v3 3/4] platform profile: Document firmware-independent profile selection
+Date: Sun, 25 Oct 2026 00:34:28 +0200
+Message-ID: <20261024223501.1420953-4-daniel.lezcano@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261024223501.1420953-1-daniel.lezcano@oss.qualcomm.com>
 References: <20261024223501.1420953-1-daniel.lezcano@oss.qualcomm.com>
@@ -137,127 +141,184 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: lQanCTH6EozPYb3Jy3CGbGgpNA0uciQM
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI0MDA5MSBTYWx0ZWRfX6UDbHsJrYC+i
- Ik6Gy/ucBHEwW9PBWmHUDkCwQZk/9UemIUBuBZHFu+DgqnL5PemklzUewJWUTo8ULQTXZC4u+U5
- 5GnbT0pdGAOBi0BFTtfeN2aTFa1IobU=
-X-Proofpoint-GUID: lQanCTH6EozPYb3Jy3CGbGgpNA0uciQM
-X-Authority-Analysis: v=2.4 cv=bq/Zl0ai c=1 sm=1 tr=0 ts=6add379b cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=xqWC_Br6kY4A:10 a=660iZSQnnn4A:10
+X-Authority-Analysis: v=2.4 cv=Z8Z5j3RA c=1 sm=1 tr=0 ts=6add37ac cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=xqWC_Br6kY4A:10 a=660iZSQnnn4A:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_glEPmIy2e8OvE2BGh3C:22 a=EUspDBNiAAAA:8 a=sNWLPp6fUqVo4Qx2xT0A:9
- a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI0MDA5MSBTYWx0ZWRfX/TO1/iBpBPdp
- xrONG7sPoCe0gHYpO3e3fPlcUx3Hk80GNtnL5YcJioMyZpj5yUOoPDbqv+tw7NST6eZpqryFJ2c
- fE9PMqFexHjrjQrY4kY4cOhQ8kfD7PTeWvLyaILSrVG2AO3mmeVd2ZjdteJnuHhd1i+RugMHBey
- mfOAlZgeJuCa9aikIfcWnYtpWE7bcBk9OT3mhs4fGzbzkYVQJINVZRxZwlEEHrRDyLTZXCf7HDJ
- PtooJSCS5pRsZ22YhWh3l86wjwAoHR85wAfKQNXzCpB04dGjSt8xZ0glR4CEl8/01lBe5r7brlD
- yStnxiu7etZN2swzLwKmF39snUNP70ybZSatq3qvn7w1Vqm9TTjIHJf/3AyegSqtO1wzM5aT+2z
- pAohx5AxTYlQuohBDsmz1INOJZWlTcP+WUv7iM5lt5eCzQFaQh0rKWl9EAnBSKU7oL5q24Om+5y
- rdXzsMsJFFrRWrRlfSg==
+ a=DJpcGTmdVt4CTyJn9g5Z:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
+ a=uEqVyaLVsi9FIuCuvY4A:9 a=NFOGd7dJGGMPyQGDc5-O:22
+X-Proofpoint-ORIG-GUID: sYAGKmHOz6X2joxWdARS7HHn2dEfE7th
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI0MDA5MSBTYWx0ZWRfXwnUgpGvq9WV1
+ 9hm8RtB2VdLbSCc4RB5X/xbeKwBAmJGTPkXc3DQvMyQupjdn2C50EX1RzG8sB5gwuAhNrhCAm2V
+ Ftl+Msj+3/B/ANwK3GdOcHWtx9xoy2QdeunKEzOIJuWQPuc/KaQqh4hAQznDqDzG+2JkCkTpg1W
+ N5v0MhX9lxjsMueGq9ae9FODLn08wi6PCIESFVxoezK8WF5dQsUaIk5m8CCXDLNLUAQHjnzM9ko
+ uMAnU3V2k08T1A8+ymE6ehvCUE+DIFtnZlCDXnJc28ZU8iDiWVofUfB2kRo1U8glHHD0a9E4nQK
+ aMaw8mFsAqM1v00IJ04sz12C5PqgKqwDPaJigOeVexiUV3ar2gbClizyoEwTAitaIYfEbUSjRTm
+ cbLI75QZ9Pieh5HnMKrBwig67wySoBC86t3FtTM9CTW7lSKnPUXFjfcFN9ZMqp9LEt0cdZgulMu
+ KUzNdBMAilw3r6U2kyg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI0MDA5MSBTYWx0ZWRfX51EKkeHOJQCv
+ 0ZYDqjYSXlP7YpTvBa9zioP2Gex7uQcl9phJfytdA0Zed7pbSE8UNkgzVmRPsoI5cICSKvk/oAm
+ SjBMKCbXSOq7ibhQGAJdzPjRtdkihFg=
+X-Proofpoint-GUID: sYAGKmHOz6X2joxWdARS7HHn2dEfE7th
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-10-24_04,2026-10-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0 bulkscore=0 impostorscore=0 spamscore=0
- suspectscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610240091
+ priorityscore=1501 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ impostorscore=0 lowpriorityscore=0 clxscore=1015 malwarescore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610240091
 
-The class profile attribute documents POLLPRI notifications for changes
-made through userspace writes as well as changes reported by providers.
-However, a direct write currently notifies only the legacy ACPI aggregate
-attribute, leaving listeners on the provider's own profile attribute
-unaware of the change.
+Describe the existing per-provider class devices as the firmware-neutral
+userspace interface. Explain that providers can use any firmware transport
+or implement profiles in software, without an ACPI companion or firmware
+node on their parent device.
 
-Notify the class device after a successful direct write, using the same
-helper as aggregate writes and provider-originated notifications. This
-also makes notifications available when ACPI is absent or disabled.
+Retain the ACPI paths as compatibility interfaces for aggregate selection.
+Clarify that non-ACPI userspace selects individual providers and document
+the sequential application of aggregate writes and their partial-failure
+behavior. No new userspace ABI is introduced.
 
-Restore aggregate attribute visibility after unlinking a handler whose
-registration failed during a sysfs group update. Keep aggregation exposed
-only through the existing ACPI interface; the existing class devices
-provide firmware-independent userspace access.
+Correct the per-provider choices attribute reference and extend existing
+ACPI maintainer coverage to the extracted core and its interfaces.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 ---
- drivers/platform/profile/core.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ .../ABI/testing/sysfs-class-platform-profile  |  2 +-
+ .../userspace-api/sysfs-platform_profile.rst  | 46 ++++++++++++++-----
+ MAINTAINERS                                   |  5 ++
+ include/linux/platform_profile.h              |  3 ++
+ 4 files changed, 43 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/platform/profile/core.c b/drivers/platform/profile/core.c
-index 57c3dad2732b..a850942131cd 100644
---- a/drivers/platform/profile/core.c
-+++ b/drivers/platform/profile/core.c
-@@ -256,6 +256,7 @@ static ssize_t profile_store(struct device *dev,
- 		ret = _store_class_profile(dev, &index);
- 		if (ret)
- 			return ret;
-+		_notify_class_profile(dev, NULL);
- 	}
+diff --git a/Documentation/ABI/testing/sysfs-class-platform-profile b/Documentation/ABI/testing/sysfs-class-platform-profile
+index fcab26894ec3..75e0f6e2c128 100644
+--- a/Documentation/ABI/testing/sysfs-class-platform-profile
++++ b/Documentation/ABI/testing/sysfs-class-platform-profile
+@@ -35,7 +35,7 @@ Date:		March 2025
+ KernelVersion:	6.14
+ Description:	Reading this file gives the current selected profile for this
+ 		device. Writing this file with one of the strings from
+-		platform_profile_choices changes the profile to the new value.
++		choices changes the profile to the new value.
  
- 	profile_notify();
-@@ -330,7 +331,7 @@ static int _remove_hidden_choices(struct device *dev, void *arg)
- }
+ 		This file can be monitored for changes by polling for POLLPRI,
+ 		POLLPRI will be signaled on any changes, independent of those
+diff --git a/Documentation/userspace-api/sysfs-platform_profile.rst b/Documentation/userspace-api/sysfs-platform_profile.rst
+index 6613e188242a..a85ede3fb8e5 100644
+--- a/Documentation/userspace-api/sysfs-platform_profile.rst
++++ b/Documentation/userspace-api/sysfs-platform_profile.rst
+@@ -1,6 +1,8 @@
+-=====================================================================
+-Platform Profile Selection (e.g. /sys/firmware/acpi/platform_profile)
+-=====================================================================
++.. SPDX-License-Identifier: GPL-2.0
++
++==========================
++Platform Profile Selection
++==========================
  
- /**
-- * platform_profile_choices_show - Show the available profile choices for legacy sysfs interface
-+ * platform_profile_choices_show - Show the aggregate profile choices
-  * @kobj: The kobject
-  * @attr: The attribute
-  * @buf: The buffer to write to
-@@ -366,7 +367,7 @@ static ssize_t platform_profile_choices_show(struct kobject *kobj,
- }
+ On modern systems the platform performance, temperature, fan and other
+ hardware related characteristics are often dynamically configurable. The
+@@ -15,6 +17,21 @@ operation or towards performance.
+ The purpose of the platform_profile attribute is to offer a generic sysfs
+ API for selecting the platform profile of these automatic mechanisms.
  
- /**
-- * _aggregate_profiles - Aggregate the profiles for legacy sysfs interface
-+ * _aggregate_profiles - Aggregate the profiles across providers
-  * @dev: The device
-  * @data: The profile to return
++The framework is independent of the firmware interface used by a provider.
++Drivers can implement profile selection using ACPI, an embedded controller,
++or another platform-specific mechanism. The core does not discover providers
++or interpret firmware descriptions.
++
++The firmware-independent userspace interface is available under
++``/sys/class/platform-profile/platform-profile-X/``, with ``name``,
++``choices`` and ``profile`` attributes for each registered provider.
++
++On ACPI systems, ``/sys/firmware/acpi/platform_profile_choices`` and
++``/sys/firmware/acpi/platform_profile`` remain available as compatibility
++interfaces for aggregate profile selection across registered providers.
++On non-ACPI systems, userspace selects profiles through the individual
++provider class devices.
++
+ Note that this API is only for selecting the platform profile, it is
+ NOT a goal of this API to allow monitoring the resulting performance
+ characteristics. Monitoring performance is best done with device/vendor
+@@ -52,13 +69,14 @@ Multiple driver support
+ =======================
+ When multiple drivers on a system advertise a platform profile handler, the
+ platform profile handler core will only advertise the profiles that are
+-common between all drivers to the ``/sys/firmware/acpi`` interfaces.
++common between all drivers to the ``/sys/firmware/acpi`` interfaces, when
++ACPI is active.
+ 
+ This is to ensure there is no ambiguity on what the profile names mean when
+ all handlers don't support a profile.
+ 
+-Individual drivers will register a 'platform_profile' class device that has
+-similar semantics as the ``/sys/firmware/acpi/platform_profile`` interface.
++Individual drivers register a ``platform-profile`` class device with
++``name``, ``choices`` and ``profile`` attributes.
+ 
+ To discover which driver is associated with a platform profile handler the
+ user can read the ``name`` attribute of the class device.
+@@ -71,10 +89,14 @@ by writing to the ``profile`` attribute of the driver's class device.
+ 
+ This will allow users to set different profiles for different drivers on the
+ same system. If the selected profile by individual drivers differs the
+-platform profile handler core will display the profile 'custom' to indicate
+-that the profiles are not the same.
++ACPI aggregate interface will display the profile 'custom' to indicate that
++the profiles are not the same.
++
++While the ACPI ``platform_profile`` attribute has the value ``custom``,
++writing a common profile from ``platform_profile_choices`` to it will set
++the profile for all drivers. ``custom`` cannot be written to this aggregate
++interface.
+ 
+-While the ``platform_profile`` attribute has the value ``custom``, writing a
+-common profile from ``platform_profile_choices`` to the platform_profile
+-attribute of the platform profile handler core will set the profile for all
+-drivers.
++Aggregate profile changes are applied to providers sequentially. If a provider
++returns an error, providers updated earlier are not rolled back. Userspace can
++read the per-provider interfaces to determine their resulting state.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0e9fe9c2a39b..ecb3bf5fdafc 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -285,10 +285,14 @@ B:	https://bugzilla.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+ F:	Documentation/ABI/testing/configfs-acpi
+ F:	Documentation/ABI/testing/sysfs-bus-acpi
++F:	Documentation/ABI/testing/sysfs-class-platform-profile
++F:	Documentation/ABI/testing/sysfs-platform_profile
+ F:	Documentation/firmware-guide/acpi/
++F:	Documentation/userspace-api/sysfs-platform_profile.rst
+ F:	arch/x86/kernel/acpi/
+ F:	arch/x86/pci/acpi.c
+ F:	drivers/acpi/
++F:	drivers/platform/profile/
+ F:	drivers/pci/*/*acpi*
+ F:	drivers/pci/*acpi*
+ F:	drivers/pnp/pnpacpi/
+@@ -296,6 +300,7 @@ F:	include/acpi/
+ F:	include/linux/acpi.h
+ F:	include/linux/fwnode.h
+ F:	include/linux/fw_table.h
++F:	include/linux/platform_profile.h
+ F:	lib/fw_table.c
+ F:	rust/kernel/acpi.rs
+ F:	tools/power/acpi/
+diff --git a/include/linux/platform_profile.h b/include/linux/platform_profile.h
+index 855b28340e95..f23f9827eac6 100644
+--- a/include/linux/platform_profile.h
++++ b/include/linux/platform_profile.h
+@@ -2,6 +2,9 @@
+ /*
+  * Platform profile sysfs interface
   *
-@@ -391,7 +392,7 @@ static int _aggregate_profiles(struct device *dev, void *data)
- }
- 
- /**
-- * _store_and_notify - Store and notify a class from legacy sysfs interface
-+ * _store_and_notify - Store and notify a provider from an aggregate write
-  * @dev: The device
-  * @data: The profile to return
-  *
-@@ -409,7 +410,7 @@ static int _store_and_notify(struct device *dev, void *data)
- }
- 
- /**
-- * platform_profile_show - Show the current profile for legacy sysfs interface
-+ * platform_profile_show - Show the current aggregate profile
-  * @kobj: The kobject
-  * @attr: The attribute
-  * @buf: The buffer to write to
-@@ -437,7 +438,7 @@ static ssize_t platform_profile_show(struct kobject *kobj,
- }
- 
- /**
-- * platform_profile_store - Set the profile for legacy sysfs interface
-+ * platform_profile_store - Set the profile across all providers
-  * @kobj: The kobject
-  * @attr: The attribute
-  * @buf: The buffer to read from
-@@ -508,7 +509,7 @@ static int profile_update(void)
- }
- 
- /**
-- * platform_profile_notify - Notify class device and legacy sysfs interface
-+ * platform_profile_notify - Notify the provider and aggregate sysfs interfaces
-  * @dev: The class device
++ * Providers may use any firmware interface or implement profiles in software.
++ * The parent device does not need an ACPI companion or a firmware node.
++ *
+  * See Documentation/userspace-api/sysfs-platform_profile.rst for more
+  * information.
   */
- void platform_profile_notify(struct device *dev)
-@@ -650,6 +651,7 @@ struct device *platform_profile_register(struct device *dev, const char *name,
- 	scoped_guard(mutex, &profile_lock)
- 		list_del(&to_pprof_handler(ppdev)->node);
- 
-+	profile_update();
- 	device_unregister(ppdev);
- 
- cleanup_ida:
 -- 
 2.43.0
