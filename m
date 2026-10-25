@@ -1,13 +1,13 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.84.19
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.70.3
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792965931;
-	b=22JFwCWRliMxVXev5cwPdTsbTQeWfTY8zKyWw4T/c4AYvPIkZ3skhsN1nNHAnpH1ACaW
-	 pkyzuUWhYDmYfXLcGhq1/Yz+V1R100+Gl6adjx2V1YgPXeqAVNTHkNbKezH1/iIJXIBR8
-	 ApfG9ZhjByvTOzl2QGRegMixN1CCYtTTDuCLnSKbEvysycfmhaUk8N4e5CZWlRzPXnh3b
-	 CsgynPhPNdnJrU6NCXLtx4SlHqAqCEynlxdcvU4mvSWPCqHVKW1dbdoHgkPPeRPwlnDBB
-	 y7FY9WyCtaZ15bE8LCnZ2XfF2pI+OCWJnP40BlLei8LAsc9YnPIX0CwIIXE9TSSxpXw==
+	t=1792965938;
+	b=NEzXStAmmI5AS6E/oasWwtns661A6R133WZHFu/NLAEHRsHKDTtbmOPkgs4PPMG5VcfG
+	 oM93zLDn4VOj1ar76w3n1kL49partj9DmpguDJbzdziQSw5eSHyCxHG7PP4HOQU0aUZk9
+	 ZwLnaWINtAcynmLwBOzz1CfelcCi5euh0rxcBIfX8nnip4TemA5jpaJMMfVzQNgD/SVtV
+	 Sg6Hv0HNPayySR6CIc2tDv19el8WyVTRrwZZTh/xLGO9sIro9BsCv/41v/HPxFsMGWmLb
+	 kY6MIclwdljdu+yeG7YqgCdxAScnztg/y/7+Ic5dIksVwn5Eeo2f495ultWwSqBdkUA==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792965931;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792965938;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:
 	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
 	 From:To:CC:Subject:In-Reply-To:References:Message-ID:Date:
@@ -26,53 +26,53 @@ ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
 	 X-MS-Exchange-CrossTenant-FromEntityHeader:
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=Ckp4AcselHaGnRWw+RuixuLWQ2fM0cKysf8u4FoxUlE=;
-	b=iKzZ9YXQAF7UXjgvHDaWBDCv9ufk7RKHGvY50nHLqkr1KPXWwe5x/c8B0FdqudHT5ur6
-	 8OLoUXAQfxCgjFY0DYWcQUmfJUFoiz9jCfkxL0XkueANTUNljMncrOiokJwTylXHD+s+f
-	 Fj29SV16fAR0U2o+/pc8cGX/loEncIsZHeKfSD3BvGHQbc8xfibaqW6vUEwva3YuGFgw6
-	 WoGDG84XJHf/YYZv6aUUZFVQ6kA1gUdg5KrVmS3uCM/MH4r3UnjOczV3z64rq+fUxPOJ4
-	 3ksUXHwcQt7EnrJuh7mNTtMpsLIitdoBGJz0foS/tXXjfEWOHZp/oXKHM2m8nLwSK9Q==
+	bh=s2pec41WnmqNfteRoZAfQjBf0Qo1lveCFcNQoV/scb8=;
+	b=Jwpaz/Mvwhx0VnKldzoPNaKPNO677Ehd4Br8FFffkQ5DScqA1+DeTzslg/sMvgDKDLu6
+	 9/d6hketrwsL0vPV1DDFetwXlePIE+vycT25YQr1aX6kV59YBw19W3KhinEQoTt4PpatC
+	 mFfiy4m8J/mczVIX/0DvBbGtZbMLnBxzWGXMZTesY72/CLA2u8bCaSAhVt+r1zmUXWH6c
+	 GX0hOoZTtEsbxw5YxAFjS/j70JPs327MjVFAakUDAKrs7GO2Zhr3Nf3yiriGvMDS+pD25
+	 cqYO8L16ml02z9FJBkaPqZK9eXlS2226nNEYagCgSzHj/AVpXq8h9OgFBAYERVNHuKg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=axis.com;
 	spf=pass smtp.mailfrom=axis.com;
-	dkim=pass header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=Xhxl9TIL;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.84.19
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010019.outbound.protection.outlook.com [52.101.84.19])
+	dkim=pass header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b="ZMU/BbkK";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.70.3
+Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011003.outbound.protection.outlook.com [52.101.70.3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10B7A606A31A;
-	Sun, 25 Oct 2026 22:05:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 10B7A606A31A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A07E3606A31D;
+	Sun, 25 Oct 2026 22:05:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A07E3606A31D
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=Xhxl9TIL
+	dkim=pass (1024-bit key, unprotected) header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=ZMU/BbkK
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=IE5mcvyiH2ld/YxvT+LmEs1MmYd7dgspUkLr7A018yKhcQrzvKvGDLr51inE75sqPWr1aWpnz/lJWlXVKU0c+J2g5JA80cD9GKL4/xup61lPuIdZYCL+sUcMPnxbO2Vs+3g8rZnH3rGrxWIGsfAWrOk2lbC7fGfKZoiYoryDw/Nvhk8kR/7Y6kgoz5zJg9qsGskgA/CpvTPvXOl/aeYr2/oLoUKXi8iE7+QzbKFkNNThMJkK+0RV0RtALrPBQe7OndPqOEpf36EvsRoonp4EchhJXqXrKan1Lm4mHl5lTtIovZybL3k0VEi6nMSjE42TJ4vdVteGMgaqvFHPn0jYWQ==
+ b=U0sGEWq4eiE+sL6wFP1Clh0mDm0Foda1yN6vMhlKf2ZAywsqkCX5ZHOtNLYqwyWgRRxZl46Seytz1uqq4Hxk4d2OmWzAfnK5YIDcN5HXqK2farsimIvIR18ShajwzQ8i1abK0bVPve19aVnbkJUfGI+D/+9S6gkYkm/gAtVnqhQ58DOUbW+4TayNmvzfRiQ1BnjcVMklmUfaafywX/rKlPTQYvPcX/kXqYQFZRtYkkSu0u9/5IYJSzIiFas3tFnmHVc//Dou0jGA21A3HscE0z4ryPYpxTwEDuXM891HYgSO0mxqnHL35ziEy5nfcVsYOdGLSphZriEd9fvImbpkNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Ckp4AcselHaGnRWw+RuixuLWQ2fM0cKysf8u4FoxUlE=;
- b=E3W8RkOug1OPmykj5mkMNAmqSzCpI9hvCXx9Ek0+U6ed7yrUpAjrrR+1V1QIuL5797707cTr5CV3sn0myEWz+9fs4aVcFvqSMiwEyKsM9hH23LlGNPxd0ler5Zi1k5xgsH1xYOnF+1UaTwxPNbTJ7eA6N4yZwhnID9SDaN5eJjdIwp5ABy18SUv6pUTIzV36a0wnGy8RcWkzpCkrucgveYHRxF+a2ESzS/Iqcv3ieueArxnwZm/MeYnn3RX9V1yNJ50oEgsLz1jNuPuMTk9MImZs6EBaegGI1ExJqOj8NR+16RIlr26vgTLBO8k1WyzvpWih1uCgWSt5qZhGtOnheA==
+ bh=s2pec41WnmqNfteRoZAfQjBf0Qo1lveCFcNQoV/scb8=;
+ b=aoOj0Lmvj3ISVgVE/Nnnuu9N+j3CA2xEMuTk33l4xpH33v7rUTdNqsswHi13zOZWat+DVsRJNR+N8EXUJFHuIcCx2LHuy8FM+F1NAVmCqo5pf33V2XsbX7zcGu/kjjuGfTF5nT6JUQ2Q12XTN1h5jqR1UDJF9Dp/TVLuvp4rCFSgi7Spx0OqLwzC40weAoO4qOVeMVnwlOFuPQJIJH9kJWZ1GGsKUgNyid0q8IVK1SNqQCbF7JqPo92AhePXerEregPyNswAW5zkaGlpbC6/vIQgROXTv+MznGDxeqQYpYHrsyEbcZ7hJRiX5AL3wM/QO2ICbOMA7g2CZsgvtUywdQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=infradead.org smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Ckp4AcselHaGnRWw+RuixuLWQ2fM0cKysf8u4FoxUlE=;
- b=Xhxl9TILN88bfbnfD2W146xCceFFKfL0LbaWiujUBCOL2nDwQ4LfR1pw0gmr0SZOgnByDZSNGedhBb0WNT5R9mVzXj8Jp8PS3rKQF0IlYREMRlqElA7vdN/ZEG1Is5W2LO7nwVb+27MosrKvHEJCccWabBrRznDBhUvJihaALK8=
-Received: from DUZPR01CA0111.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:4bb::12) by AS8PR02MB7206.eurprd02.prod.outlook.com
- (2603:10a6:20b:3f4::19) with Microsoft SMTP Server (version=TLS1_2,
+ bh=s2pec41WnmqNfteRoZAfQjBf0Qo1lveCFcNQoV/scb8=;
+ b=ZMU/BbkKZvwqzmLdM8LePIbWFX+4WXAIMs1/8qr9WNj36mPbRW+dTPgLZdfeZrwydUPbUIzEfO6YO4DcY8FZtHt+gSTGubUggMSa/jkx79IAqkL+PV4VoWbtHiunEOwFVqb1/nb4g54dz1Y2L1T0OxwjF8BzMff7UBKigIL5UoI=
+Received: from DUZP191CA0056.EURP191.PROD.OUTLOOK.COM (2603:10a6:10:4fa::14)
+ by PA1PR02MB11449.eurprd02.prod.outlook.com (2603:10a6:102:4f1::11) with
+ Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.22; Sun, 25 Oct
- 2026 22:05:27 +0000
-Received: from DU2PEPF00028D0A.eurprd03.prod.outlook.com
- (2603:10a6:10:4bb:cafe::37) by DUZPR01CA0111.outlook.office365.com
- (2603:10a6:10:4bb::12) with Microsoft SMTP Server (version=TLS1_3,
+ 2026 22:05:33 +0000
+Received: from DU2PEPF00028D06.eurprd03.prod.outlook.com
+ (2603:10a6:10:4fa:cafe::62) by DUZP191CA0056.outlook.office365.com
+ (2603:10a6:10:4fa::14) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.546.22 via Frontend Transport; Sun,
- 25 Oct 2026 22:05:27 +0000
+ 25 Oct 2026 22:05:33 +0000
 X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
  is 195.60.68.100) smtp.mailfrom=axis.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=axis.com;
@@ -80,23 +80,23 @@ Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
  195.60.68.100 as permitted sender) receiver=protection.outlook.com;
  client-ip=195.60.68.100; helo=mail.axis.com; pr=C
 Received: from mail.axis.com (195.60.68.100) by
- DU2PEPF00028D0A.mail.protection.outlook.com (10.167.242.170) with Microsoft
+ DU2PEPF00028D06.mail.protection.outlook.com (10.167.242.166) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.569.4 via Frontend Transport; Sun, 25 Oct 2026 22:05:26 +0000
+ 15.21.569.4 via Frontend Transport; Sun, 25 Oct 2026 22:05:33 +0000
 Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Sun, 25 Oct
- 2026 23:05:25 +0100
+ 2026 23:05:30 +0100
 From: Waqar Hameed <waqar.hameed@axis.com>
-To: Sebastian Reichel <sre@kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Mauro Carvalho Chehab
+	<mchehab+huawei@kernel.org>
 CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab
-	<mchehab+huawei@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH 1/7] docs: ABI: power: rt9471: Fix invalid inline emphasis
+	<linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH 2/7] docs: ABI: power: rt9471: Add newline for paragraphs
 In-Reply-To: <cover.1792965060.git.waqar.hameed@axis.com>
 References: <cover.1792965060.git.waqar.hameed@axis.com>
-Message-ID: <ba11515d8e0dc45ad90f162302bcd1b20db9bd92.1792965060.git.waqar.hameed@axis.com>
-Date: Sun, 25 Oct 2026 23:05:18 +0100
+Message-ID: <eb8f0f6be0386b0f114c3d7cf2be1594d062d94b.1792965060.git.waqar.hameed@axis.com>
+Date: Sun, 25 Oct 2026 23:05:26 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,64 +111,65 @@ X-ClientProxiedBy: se-mail11w.axis.com (10.20.40.11) To se-mail10w.axis.com
  (10.20.40.10)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU2PEPF00028D0A:EE_|AS8PR02MB7206:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9a07d7fc-fb48-46f9-8d0d-08df32e4136c
+X-MS-TrafficTypeDiagnostic: DU2PEPF00028D06:EE_|PA1PR02MB11449:EE_
+X-MS-Office365-Filtering-Correlation-Id: 082b442a-7986-412a-10f9-08df32e41736
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|36860700016|82310400026|11063799006|56012099006|261009223027099003|261022105027099003|261021121427099003|261021123027099003|10067099003|18002099003|22082099003|13003099007;
+	BCL:0;ARA:13230040|36860700016|23010399003|376014|82310400026|1800799024|261009223027099003|261022105027099003|261021121427099003|10067099003|56012099006|3023799007|18002099003|22082099003|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	NMUWp6Tlc1HKNRGEImTfSiYxv7Eg++YSvwYxnafmXweLwDGc46i6p+4brMOVr4QzcJxzAd3FpTgKMcqjx0Yb2RtSGFtBTXpL+JH+ZKKdFu2f/j+l4cByZxMo4qRKslXkiX+jqsRc34w5GbY5WqUUcgwhDWBU8fdPTJvtuJWo8kQ2ttbBz4kZChQ9RuC13Fl2UWs5FdmjqO5lP8zQkKNXZMmrrKBM82EWQHrMYhn9lu8CqcGkt7sU3degMOeh1nLz1R/8KtfDA8HwrtcLgd0cImamj45ZsV9joE3QqkezZvu/K/h16nmh0LDZsEIhhyzcdVuW9v7eUZXSbsEy2dIwGB/HyrHJmgYN9VyK2gSisFcai6FCCiYC083zJn/cetOyxGQMpBIb6hgLcOxFdOTePw72pKHjuZYjISfQixmC5S2LH7cuPFygnmsRNJHu+65jG6hN4HFzFzmAP3GfpasYS9Io8e816BByEiJ/xZ78ntMklp6ozZ/Rkd0spGMWtHVczeqlPVe3mxsbGI70vYexBi6TrIAnDiseT57XO1TWbsPXXgjtPzsMHOiFuXFk1yfvCDwxpfFyOikkXrBqRGU8gzUbiqpGHCBvATsa6a6NT+pzIfx2PGUUfbOmeQ3eqwBmwMw1Env2LKv6pUkc0vR5Dev7Vh3fqX8YMLCPHghlxN8=
+	dpyR4qVQ43I3VEvlx6yKwl+BFwuMuwJ5r3/A96wLJ/h7jtaP6IqI6H4p7XVuB5rmQdYaI3EhBGiNzp7uTRDjeNmfh/yBFfnqkqez05UzzUeasrb07athkSEOf1NnxnP7k/PcOB0h7F52v22V6n87ItMlXlkidyOJqVnUGxE5PpzVq8D8ZOyr1bkMIgI5oG2gCxqfG0evmaysfK4lsMIULNSkvOs/9xXbz/l0HrQiUtUMEm/hfHyGvNMFrqtXsylPbUwxZe8BwCxMPX2sALrB+hWnOngJrGlu9TJdBihhhcjcurCZIC5soAifBZEnyU+af0nxIPFz25eDoHU1yAQ+RKrIMZBVLXNPW9/3NQFgmHNYkIEsz3+ulbZTF7t19zxwU/leO37I9apFhr5eucLIm6Boaq2mzb1G5gnu/C6ir5zV2vrAqZAsf65Ig0+5Gp6lhoJBNZlUvkggMmWHOPuIgfWYpd7tB66AMUqm4dWDeOdXiAszpHNHK9kyjk0QfieZyJK/I2PCU+MB0tofKyHQjB/PvP9DOd/NJ5IMvtJ8k0hNE7BkF4V6XERxwiU5M0n4nhOmWN53m0pdR48wS7j5I8LMapHGmKdHai36Cg/XvYpCYouzM0CizW1Efd/al47J3nX3z3XDJ3nRWxYvQkrLO703KhyGPVMdUUCsjgQ61qQ=
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(36860700016)(82310400026)(11063799006)(56012099006)(261009223027099003)(261022105027099003)(261021121427099003)(261021123027099003)(10067099003)(18002099003)(22082099003)(13003099007);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(23010399003)(376014)(82310400026)(1800799024)(261009223027099003)(261022105027099003)(261021121427099003)(10067099003)(56012099006)(3023799007)(18002099003)(22082099003)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	/qMutsXiVP5JZI8rQR4ekGnAZTkQiKnpEuIAjqg9giefy+e2d29mqsPrCOFOltggkcsqRAAsl7fz8p2KWW7W68e+TX3ArI3iXVp8iMVzc4MxWyusO0rYKMOTCiMirg+RP487QFppgQ0Bs6FiZQjVJhXsV47jQSNCVhUJenAmhug/r4qZNfjXhHgMcNTtRmFs+DuBHVuDyYVfF58HJ09A94TbOe4yfQvjZreBpxrgIdmV4yPTpfX670pNIwgsWUcTOCuoG926MWTyT3njc53RlljVDcOMzy5OGosut0cUP/F6GpTrpfUhDUpHGSFo73sjSbEWcanUN6AMQq9bZqoeMyBwPoiBlfQP1uN45o54+rLvmgzX7I5EI2sVxaPYzqrqW2rAe4xUelpZwbBKRPijDd4In7ej9wnHO+faKFJhvv+D3+IG9JDrB55SSGDeDApA
+	vyuNsiVkh9dhZ/ThYuYGMbD/iHRSBOQIGNX4+ku1VlmPjfMQafE3kJIqIMGaSphXQS8itGkVQEwDoi+Z/a/4j8DvKuB0pG4ih9zmyLOA/UNzTO8Ly0J18neDqSihv5TMiWNHNQPM5oHm8jGlR3QJ7lVuwy7Lt/Sd4J5PhYtEhQp4NDbSBz383jD04KKSbIegM/n1ST+2RVqOFONFCGzz0qOpTGNuWcRV49LivAQvScavDVbInNyWd1iJEC/TdJQjDa01IptJMzTh8yXobWaUFnN6aKqG2do5cC8HfPxUrljIIbaEPiAOiRkTv428hjJ/2WrdvqnSrZ+W4Q5bFQCBuUrvn+SQ08JE4E3VDL9z7SPw/rZqgS81DW5fAoSa1KRgOqBaiaq9Vu+f5VVN3tBterPGhtlD0pY02IqggkYFH95lqdM8evtqQs0GMSlhCaEo
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2026 22:05:26.9084
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2026 22:05:33.2603
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9a07d7fc-fb48-46f9-8d0d-08df32e4136c
+X-MS-Exchange-CrossTenant-Network-Message-Id: 082b442a-7986-412a-10f9-08df32e41736
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	DU2PEPF00028D0A.eurprd03.prod.outlook.com
+	DU2PEPF00028D06.eurprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR02MB7206
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR02MB11449
 
-`docutils` warns:
+To split paragraphs in reStructuredText, an empty line is needed.
+Otherwise the output will be:
 
-  Documentation/ABI/testing/sysfs-class-power-rt9471:1: (WARNING/2) Inline emphasis start-string without end-string.
-  Documentation/ABI/testing/sysfs-class-power-rt9471:20: (WARNING/2) Inline emphasis start-string without end-string.
+  Access: Read, Write Valid values: - 1: enabled - 0: disabled
 
-Fix this by escaping the `*`.
+Add a newline in order to properly format it as intended:
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202609110722.GAZVme6v-lkp@intel.com/
+Reported-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Closes: https://lore.kernel.org/oe-kbuild-all/20261020101625.01874245@foz.lan/
 Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 ---
- Documentation/ABI/testing/sysfs-class-power-rt9471 | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/ABI/testing/sysfs-class-power-rt9471 | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documentation/ABI/testing/sysfs-class-power-rt9471
-index 0a390ee5ac21c..04a771cd23512 100644
+index 04a771cd23512..c306e2ead6bb7 100644
 --- a/Documentation/ABI/testing/sysfs-class-power-rt9471
 +++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
-@@ -1,4 +1,4 @@
--What:		/sys/class/power_supply/rt9471-*/sysoff_enable
-+What:		/sys/class/power_supply/rt9471-\*/sysoff_enable
- Date:		Feb 2023
- KernelVersion:	6.3
- Contact:	ChiYuan Huang <cy_huang@richtek.com>
-@@ -16,7 +16,7 @@ Description:
+@@ -12,6 +12,7 @@ Description:
+ 		the action before the device really enter shipping mode.
+ 
+ 		Access: Read, Write
++
+ 		Valid values:
  		- 1: enabled
  		- 0: disabled
+@@ -27,6 +28,7 @@ Description:
+ 		datasheet for details. Normally controlled when TypeC/USBPD port integrated.
  
--What:		/sys/class/power_supply/rt9471-*/port_detect_enable
-+What:		/sys/class/power_supply/rt9471-\*/port_detect_enable
- Date:		Feb 2023
- KernelVersion:	6.3
- Contact:	ChiYuan Huang <cy_huang@richtek.com>
+ 		Access: Read, Write
++
+ 		Valid values:
+ 		- 1: enabled
+ 		- 0: disabled
 -- 
 2.43.0
 
