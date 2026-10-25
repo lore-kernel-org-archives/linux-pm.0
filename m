@@ -1,13 +1,13 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.72.59
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.72.52
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1792965942;
-	b=Md4OWk/h4VX8t5/6o6l6tzxOMiAgC3EofBIkcS3DCZ6y/9BywRfniHm18SHM44I7UG5H
-	 s+DazvvGO2vOTtRHVyRpZsmCCALtXsLFbG78r+ziGjHcyc01LS7HeOkfLlcjJv14kuNlj
-	 gjKxIl4Qxgz3IRnaFYC/L9q60jt1Z8Q5ImJpY5nw4oYdkdoMcAlJ98bRqDXR2FugCxP/d
-	 g4+TNKrDAkTywrskKnI4NfM2mL9J9m6fgp4qmsd6f6f4By4hS3U+5sBt1XS5/NHJG8zYi
-	 JFnBJ13NBoP75wF5yjVCNfZ0/fbhMxuGWw0qd7rE04b7p/qZXarMqk3vJvE2uFbFLOg==
+	t=1792965943;
+	b=xQUJrAeDhA9ITAcusNTYZmOCvY1WS/VpRGq1AXHq6FCd7RgcxKvGKzGRBJXK94HTQdAH
+	 F7a3AakLY4dk15GTBBS4fZO+iWvl4+YTlGYd09CC7WK0v+fHcSoZdiWqK3A2s02ezOJhB
+	 W2tzBCTXyMiCwtg8raiMLfhk7ErRp9uMm7QIVjyD7pd4w0TjIhJK/8VulBdxFZCPeUVSh
+	 P1BNoa3eX+YI1KwSZnCgacLYchxx6c2o7HZTmUGYpP6jxdT++dZTXfoIMp508InllbtJn
+	 eI88rHLkLnZSi3gqBo035fov+lsNGD0HkeyOFo4vs9MA3CLf2URGXEnzKhpLxn6s1Iw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792965942;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792965943;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:
 	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
 	 From:To:CC:Subject:In-Reply-To:References:Message-ID:Date:
@@ -26,53 +26,53 @@ ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
 	 X-MS-Exchange-CrossTenant-FromEntityHeader:
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=/NawPMF/TAdhigeC8ITp2ZFWsDtoSBiUH1BRHL9vn8E=;
-	b=U+x1fbfOAU3X7PEOdAoyDu78yiDOjDVDK2macxMsLNgLXe7fyuJfNwGsACf77tggw8pD
-	 CzzbSuX2nV2ifj16sRZzNoS3lq2Yur2rVlkIyE7OTA6BtZdXG7DpoAbnLhy1cSNMuzY00
-	 Mw3+rHye4o6U3C69AH6HtLWt4JfTlDkJrfGK/UycKxcjWGlR+3lU/SJvoxxKi/dVtP5QD
-	 5m0B2kr89CUItNnjlSE4rTwRbDDRop9QNNzs0t4fJZUY0RZfT1EypVbODFA93a7Az4Cqf
-	 bfagHdG/Dk7yYBmq9UDmcapMjpu+yMiwWwJcYCmK2m0GSwpssYqoM1cpjOQTHz0nFIw==
+	bh=zB2wa2U8zcOVQBw8siLdX49noQImQpAelgqznrmLFek=;
+	b=Z+TCIEojepjNdUgCsH6/s+geiAOIL1FzAd/rDV6GZIq++FwYkWC2yJ+mcFFHtl5MF4GI
+	 u/S9C389pg3gjM7RBBZ9uE62FWMCiGqurY9EmG4aSB7p7m9Y1X9XdL9ie9dtTv7KuiAvG
+	 VpLWf5wSYfIHxShDHWCZVXcTeWz4/q74DLqiJDB0aE3oHa2Db+Az1ERYSf06s1hReUTD0
+	 fQHz2r2hOtATd5SOywl8sLhTbDwtYuxAc5jS4A0/LvAKE/Wgcv2z/9zAKO0nP/szrQgAp
+	 54jwNO0/5PrSFI4EzxS/aEQMw4nj+UaQjKnpHmxWRqzeCTz12ECe3Ixkv3LGWsZtJtw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=axis.com;
 	spf=pass smtp.mailfrom=axis.com;
-	dkim=pass header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=SGCihzqv;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.72.59
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013059.outbound.protection.outlook.com [52.101.72.59])
+	dkim=pass header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=b0Om2XX8;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.72.52
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013052.outbound.protection.outlook.com [52.101.72.52])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07995606A327;
-	Sun, 25 Oct 2026 22:05:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 07995606A327
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4387F606A31F;
+	Sun, 25 Oct 2026 22:05:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4387F606A31F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=SGCihzqv
+	dkim=pass (1024-bit key, unprotected) header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=b0Om2XX8
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=CEkckxeJCR7iQF6dqkjxMeg3a93YScggJQdSMic3xCfOoHqVUEk0NCNNmiqjJrAJ39/mECz9Dxtyn9A7i+g7QT9b3CBuu1xP0X36ny15oz5DyE6tEXgRziHVGqMhkG6ZOjvRSSqbL8ixcMR9otrmmMlFBNSQML4J2HflVzCE7GW7DDiwThx/k9E5cpsCOMPY8qdiymFYNSBY9IYrrB2FEICK4JztxX5caam2KMtOp6jn3AcoTWN+GiQTsHQCDFJZS6o3tib4pO6A7Rqg+EG9yeWSNtwyna9/S6h/SfZvOmFZins5yjKtWDHkL4rCDBcLGo4lghSZQq2SuqptFgVXhQ==
+ b=Y2ZMOvBlvB9qYBNDIVYnUhlYhAQgIM7MP6TxUMFXnPpzbGIjO1k0dD3W7WGHfuWk6b0F9HXKoKCX7DRyOIr4LxBg/O06oo6Cn3v9jtanpqWJmTI1791VAOlyNi/ryF8YqVqlSBJ17kRJlRkQZ3kTka5eF4IfQQFVno8LlP111vwrNNbHKrnsc2x0j7fIzT1M1vxWCOxVSk9XhprOHCJ5BpjTfMShU3RM6D7FIXZ+OJiWxD7I9TVgHKZ1t4M0pVy9SCk2Oo99C7MbXDNM0/Yy5eYOOf9SY+5Gu/kXtxqk5NkQJKXp6CbuknO7iyWWbrLIJN5CPmIhOlX5apoY5Bwo8w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/NawPMF/TAdhigeC8ITp2ZFWsDtoSBiUH1BRHL9vn8E=;
- b=AyHwdOIhk26JUr/59vpTZfTcFh9mbbvH4Aior62oDHA0I1+5cJ4Yz63fqTgmlY6qpDrZUA5m90Du47g772ufVQzVEbmv/Gy33Wypuwotu2nRhHno/yT2cVXoYiNFpF2hmpuN3NnQH92x/Xk+pBYCYa4xslhHL40iH/m7WVbuQFNaaircue9Jf9n4AEASQjJoV3XJ2YSL0OifBi/e9p1J77s4wu2Nr/GwHkP6mq3X81FU8REaqrql3e9NLrfeRZm3uj89uJ/kZLUqw+vfSTTodT5ZQ1JLeoj4sfElZGFFPMawVVbYyxAZ+x/9YzTl6ZTrtIXhqPcKMr3aL1fLZ4zZtg==
+ bh=zB2wa2U8zcOVQBw8siLdX49noQImQpAelgqznrmLFek=;
+ b=b0PfndsZAru0ffkp3wqu7lTllPXWgq6kgXHLucNsH7jWkssu7ff4Kqd6cLuKrXW6MPg5nDxzJ3ubOyZ5wHZQD9ha/1WHsGaTkCwIPA93HdRkDsOr4V4hSC2VsHaLCseyp/ouq9psULjICbiAtIfPJAkVpKD/s73Ozj5z5UKDh6mPMcyICKEyXoc5tA6uZKuuuaXzeP8BEQBD4GBaUj+8eW3XSgeJk+S5TKV12yh1AfU3fN/6yxTSjy84ut2wUg8GBkUCSulSXMMh2G+6bQfF2SpL+mjBw77DOp4PhCMu8vQWlRdpy0OqpOoRBX13TCBMfnM493W30gNKRP8MBd13KA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=infradead.org smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/NawPMF/TAdhigeC8ITp2ZFWsDtoSBiUH1BRHL9vn8E=;
- b=SGCihzqvG1Hmltg6kqU3kiiEZt88wH2HxkoEETfREsogDWj7BIOsWQ1pjr8bfIzbKq6ZakK4spCG/8UhsvL7LnLQ5pJtzDFCzTcCSUd5CyP5x8zELkW9qp3W1F8Rc6WkHofE83YhevUV+RSjeysJAuu3zBuRLSGDJlisFDTolCs=
-Received: from DUZP191CA0071.EURP191.PROD.OUTLOOK.COM (2603:10a6:10:4fa::11)
- by VI1PR02MB10224.eurprd02.prod.outlook.com (2603:10a6:800:1bd::14) with
+ bh=zB2wa2U8zcOVQBw8siLdX49noQImQpAelgqznrmLFek=;
+ b=b0Om2XX8Y1pABQDtvZFFvj3QRR759TZOd/vQWSlw8sk4Wr699ot2rPqMg/ZqJR1zX++VBPNFTM2of4d1n7f7AVSInBDyLxJ5RafXJ0TsARgdplfyyfL4QQdXmuDS4y6SRwtv7+m6MBAXw1qKdCtnJyh2NQrc9WtupIj6azx8RB8=
+Received: from DUZP191CA0064.EURP191.PROD.OUTLOOK.COM (2603:10a6:10:4fa::17)
+ by PA1PR02MB11572.eurprd02.prod.outlook.com (2603:10a6:102:558::14) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.22; Sun, 25 Oct
- 2026 22:05:38 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.21; Sun, 25 Oct
+ 2026 22:05:37 +0000
 Received: from DU2PEPF00028D06.eurprd03.prod.outlook.com
- (2603:10a6:10:4fa:cafe::63) by DUZP191CA0071.outlook.office365.com
- (2603:10a6:10:4fa::11) with Microsoft SMTP Server (version=TLS1_3,
+ (2603:10a6:10:4fa:cafe::6d) by DUZP191CA0064.outlook.office365.com
+ (2603:10a6:10:4fa::17) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.546.22 via Frontend Transport; Sun,
- 25 Oct 2026 22:05:38 +0000
+ 25 Oct 2026 22:05:37 +0000
 X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
  is 195.60.68.100) smtp.mailfrom=axis.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=axis.com;
@@ -82,21 +82,21 @@ Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
 Received: from mail.axis.com (195.60.68.100) by
  DU2PEPF00028D06.mail.protection.outlook.com (10.167.242.166) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.569.4 via Frontend Transport; Sun, 25 Oct 2026 22:05:38 +0000
+ 15.21.569.4 via Frontend Transport; Sun, 25 Oct 2026 22:05:37 +0000
 Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Sun, 25 Oct
  2026 23:05:32 +0100
 From: Waqar Hameed <waqar.hameed@axis.com>
-To: Sebastian Reichel <sre@kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Mauro Carvalho Chehab
+	<mchehab+huawei@kernel.org>
 CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab
-	<mchehab+huawei@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH 7/7] docs: ABI: power: rt9756: Fix invalid inline emphasis
+	<linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH 6/7] docs: ABI: power: rt9467: Fix mismatched quote
 In-Reply-To: <cover.1792965060.git.waqar.hameed@axis.com>
 References: <cover.1792965060.git.waqar.hameed@axis.com>
-Message-ID: <51dec5a3f0422a6284d2310c5d7d36af1b59ea77.1792965060.git.waqar.hameed@axis.com>
-Date: Sun, 25 Oct 2026 23:05:32 +0100
+Message-ID: <d9085e9943a84a6b92c252906526a9ab95fd051f.1792965060.git.waqar.hameed@axis.com>
+Date: Sun, 25 Oct 2026 23:05:31 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,62 +111,54 @@ X-ClientProxiedBy: se-mail11w.axis.com (10.20.40.11) To se-mail10w.axis.com
  (10.20.40.10)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU2PEPF00028D06:EE_|VI1PR02MB10224:EE_
-X-MS-Office365-Filtering-Correlation-Id: 30a38bc2-5c57-4b45-9013-08df32e41a73
+X-MS-TrafficTypeDiagnostic: DU2PEPF00028D06:EE_|PA1PR02MB11572:EE_
+X-MS-Office365-Filtering-Correlation-Id: 14a9b0f1-d547-4ff1-ca1c-08df32e419b3
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|23010399003|376014|1800799024|36860700016|11063799006|56012099006|261021123027099003|261021121427099003|261022105027099003|261009223027099003|10067099003|18002099003|22082099003;
+	BCL:0;ARA:13230040|36860700016|23010399003|376014|82310400026|1800799024|261009223027099003|261021123027099003|261022105027099003|261022075727099003|261021121427099003|10067099003|56012099006|18002099003|22082099003|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	u7Oce2hCCtP2mvTwynOT91yLIwYwWUDnZgPaAsNekqHf95t/Ww6UntqqyXi6uDkysGgVQohsu3/6tq07Gy2sKC/Y6Lf4gQIbEegj637zZMZp+Fo/CXS0D0sPz7D7LpJxIQl/k7oiND69MCywljL1bWHoUQOrdbB+MoTp6DGtGZqX6omY8ejHrlhp9Xm1EncWhansViSGNI2ovSK6C5D60BbRVZW2UlC6BbHBpMPHGmWGlsykAJHs8eI5gj0RpuqvOXEuC13GDKMsggpCLDNu3E2lgP50uOun0kSAJzdNM9yRBfxIGDxERdZxtyP8QTYNaG+wvWZ0Ur+zPnogrOfZluByzMrLT8B9u7EDaQU0Ls+18HqMFAWp4OjG5A7C0uk70nU8pQD+RpjgDzJP+uVOqXyr63DSwZQDpdzY/AeMQ5+0Uhj+KB/FVdZ3iODnacdXXw+vbQfz0BNrZg4uo/rXb93CqWCmApZciz/Po4gE+x5SA/Q3gEuZU9brl8KlTAAX1Gw67wsPHQjEtKjhTDVOh3HVnqtJYgJJ5jl2rrCLuJXaTfNccLI0d1fPHTxGeK2w23sfZBTGvJnFdoXcGng5lU/WR/cb7jNCC297nm8xh1Vh05Fzu2QTuf+is0PPQQhr95pvXenHScJ6RfiIOPfDtyDFquPTLlWPRfs0qu2DFaNasOUaDRG59BxBk+VpqYazFvcaEfi5y6+RCRBe8aFCjA==
+	XFdMLlZT+ThlUcuoTpxMf/vuUTZsKIZ0nDEjuNrG1X20P4tbXLUniB3Tl+z1wM21y31e5lITh3zaKMjQ59IdmWOQ2r3NGngNqy+13g2CzF62fp/wm9L78PNIStM5PaQyy5EbAW8g9Idn2yN7Y9ef2ugdXCLHbsRBalL72D3yWJihH6s3Wm6wIk6br9w6oz5JOaCC48k+D/ra4tyDi4l+e6Q/q7RESPFAlHT8zgCrZrbzJ8qSU27EORpb7GwiihHe4LhWHxavMnGuqqzkmzNbC83XEkhYq62CiX1HdXWfuK/hGtOLEEMiWxCOxvdnZCDnCCRN9tHtxs+db1wQvysN91FqgCG+yFY7oH0JEaUwPkdLwIoJMQPeLHgkbBrTlWo06ebjyyXPcCfUTCFQqFUZxuIJy/pLcbQOYK+McyDDAg3OhNjkF1GbyIDVQbU2VBSr8ZQgBMKnga/auKz9NBAOZDpu6gtiGf0XdwfuotpOGwAS77th5iRW9e9jJl/D5k/6aAemjejbis3ONw1Ytxr2TTKNryqiF0xKxeGEw3EdfS1Fti7CWnZnoSr927rthU+ijL9btnCY3VkcfMY6TfeIeHodrsS88489uQvyhbmZE/EOgM94M74b35OEt3eXXMIChBMVAVqNy+sD7m5lap3j7+zRNTlc0aa+lE5Vwb/i9Ss=
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(23010399003)(376014)(1800799024)(36860700016)(11063799006)(56012099006)(261021123027099003)(261021121427099003)(261022105027099003)(261009223027099003)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(23010399003)(376014)(82310400026)(1800799024)(261009223027099003)(261021123027099003)(261022105027099003)(261022075727099003)(261021121427099003)(10067099003)(56012099006)(18002099003)(22082099003)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	dptTVMQN6x1QRE6aF0uQkE1VuNh+KQNCnks8pZMF7RfVHu5O4M70CTX/d5DyMCdt0AcsoZJblPYL1BvlnSrt3u3trO6aESmFuIVC7xzz/XnuXQWOdtpIsb40VA5OsHgJL32Q5+MxEM0tEVyflK7HzL3RzGpwE8/MM/yI1jY2v/OtqQXITUhowXugBD/w1qNc1vHhr0SXROb1NqTZWlx2uDYrwmSdY7R/P1UJE9RvScrFhc6wmGGtxoLPTblK4f3pC1iGWhXBDWhi11MZpB7poLjXgBhDLuQ8wDTR4/W2M7zINhD0ru5fFYWB4QCvWCPJc/OfBqaFsrRJ0BtaBlKitl6xH5f8BR0ahNkFup6q6+PeGVYo7lVIUH4awlMtSWdvbvEXLn58rqxn6gFS5s6LjVHC8bQysJ+Yiux3g9GnADiTAbow0qGcCxsREJVuZRih
+	f77bhh7e+LGcO63nZnusnn7cAIud60XLckbeKkwdUdn6neRF3Y/7J0Tbf40nBx/gP0x6VYHcxUh9EJlUu4JnJPVehQX/ytBBWB3dkLeZYyAtSymhA7iK99ApxPvdXg7jFY3rbIeTMkJb6r/LKfjO1A88ohQHOok4PKlEoDsZUTscwOC5F8WDezE4zgJ6nupFfRMj9m/YIUaCscav/zZ8EhvAnI3sTZ+KoArN7v+yNkhBt6I1S9F8/zs1zwnsE64gXVnq1kX5EgO3XCp2CyoVPTjFiUf/9LM0OQbyAuCYD0AQLXQT+HvsNOX4Gi4+edFskrYLRuDJqCDLgUvAnAQshJ29zl3Q8Qffn3IhjgMMUcYE2zZTuT+Yl0qkE4ZgX3JmIwPWXEnu7KtcuTC/vkd2FwB0a0/eEiaKRTDCM5YAkzeSANoJM7y/TwdG8kZnPosF
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2026 22:05:38.6969
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2026 22:05:37.4395
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 30a38bc2-5c57-4b45-9013-08df32e41a73
+X-MS-Exchange-CrossTenant-Network-Message-Id: 14a9b0f1-d547-4ff1-ca1c-08df32e419b3
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	DU2PEPF00028D06.eurprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR02MB10224
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR02MB11572
 
-`docutils` warns:
+Quotes should have matching characters. Fix this by replacing '"' with
+'''.
 
-  Documentation/ABI/testing/sysfs-class-power-rt9756:1: (WARNING/2) Inline emphasis start-string without end-string.
-  Documentation/ABI/testing/sysfs-class-power-rt9756:17: (WARNING/2) Inline emphasis start-string without end-string.
-
-Fix this by escaping the `*`.
-
+Reported-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Closes: https://lore.kernel.org/oe-kbuild-all/20261020101625.01874245@foz.lan/
 Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 ---
- Documentation/ABI/testing/sysfs-class-power-rt9756 | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/ABI/testing/sysfs-class-power-rt9467 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9756 b/Documentation/ABI/testing/sysfs-class-power-rt9756
-index c4d6c2b4715d3..e1ec7977a3402 100644
---- a/Documentation/ABI/testing/sysfs-class-power-rt9756
-+++ b/Documentation/ABI/testing/sysfs-class-power-rt9756
-@@ -1,4 +1,4 @@
--What:		/sys/class/power_supply/rt9756-*/watchdog_timer
-+What:		/sys/class/power_supply/rt9756-\*/watchdog_timer
- Date:		Dec 2025
- KernelVersion:	6.19
- Contact:	ChiYuan Huang <cy_huang@richtek.com>
-@@ -14,7 +14,7 @@ Description:
- 		- 500, 1000, 5000, 30000, 40000, 80000, 128000 or 255000 (milliseconds),
- 		- 0: disabled
+diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9467 b/Documentation/ABI/testing/sysfs-class-power-rt9467
+index 4d9f5893bef50..9f9e831b0d1cb 100644
+--- a/Documentation/ABI/testing/sysfs-class-power-rt9467
++++ b/Documentation/ABI/testing/sysfs-class-power-rt9467
+@@ -9,7 +9,7 @@ Description:
+ 		is turned off to reduce the leakage from the BAT pin. See
+ 		device datasheet for details. It's commonly used when the
+ 		product enter shipping stage. After entering shipping mode,
+-		only 'VBUS' or 'Power key" pressed can make it leave this mode.
++		only 'VBUS' or 'Power key' pressed can make it leave this mode.
+ 		'Disable' also can help to leave it, but it's more like to
+ 		abort the action before the device really enter shipping mode.
  
--What:		/sys/class/power_supply/rt9756-*/operation_mode
-+What:		/sys/class/power_supply/rt9756-\*/operation_mode
- Date:		Dec 2025
- KernelVersion:	6.19
- Contact:	ChiYuan Huang <cy_huang@richtek.com>
 -- 
 2.43.0
 
