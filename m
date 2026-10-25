@@ -1,76 +1,65 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.161.52
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=138.232.1.140
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792926599;
-	b=Cp19ZmtagDAOQDUbRuqYIof/nGMqvFwdnhRhHwuBrLZl2CmsIY8iDLt54BCxZyw9Og8W
-	 AnD6RzHNvYW39bZcwkCTLueE5hKorC7pKMMiLsiJh7ZdZ/Nz2M/aznQOHJI3y8V/zBSi2
-	 0z6VFiTIZorGyPSDoWTocbAGkovAACtzsxfRsw8cqKWzviijcWbrVxy/WPzZb//+E/wYr
-	 OkuNxHuWhX7UVThPuH0i94dFA1pN8YYEVmqg14QXq20+Owz1jr9guhowkJ7q8BdM/gVLa
-	 pI+XXU+CCKqO/W7sgkjJxZG5cjDctI8vP2Hgwzhby56hUUOGg5I4kW2JibWWsjhJQsA==
+	t=1792956163;
+	b=u30sQNqDg0GrrNmTx/SDjVsFiAUHNMHSynp8IJ3KCLZJjT0lVh+qytsFb8pwkJoHd8Dr
+	 qtNdK8kPzfQUruhODb8U6znk5AsudsCNVGILcK7jZnKw8ijPvY2HfEcfvFWjxGStUn82m
+	 8Z0N+NW5JmPQlvAKBZgKeEIxt1Olk5YMGvyqSo1fSug6MwunXg5NZ64SFYikYoURd/Ay4
+	 3Pby6S0QXWKnGZh/bI8Pvln2a71UdDuNZsaz1O4noBDOF/xe+G3bzLj4zL/bdXzrGfSaW
+	 b5XrByqSL5z6MwfeDN1JpM9BCrpXituxZ9kiQG3Rd0oeA/wu4PHMJY/OqFPuOoWpAaQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792926599;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=GjtDmUDJ7P9a7dCWsPAQRfLzfmaw50jjj96MMkbrG+o=;
-	b=dXRyKbPbKwR3vVoQ718nRVxXrcKl7zH6vugLn5jZDLHwiY2d1K9flCObQU0GUE4Cp6wH
-	 xy2ISNG7sO60I5ZH+pzd5TC+w5bRtroaR9KCQqSzwzUnP/DDgN00MCffJulrw3OwzRhU+
-	 SeXeyFNB6HMdgoz4d8hR5rSof1y2UApLUhrgZLwpfCqPUFd0ZN6N9cMKtOla/fKU0tb+l
-	 6nw5Vl9Hoi3oZcEP9igc+6i5D784FbdtTu++o27N4zZDeLgl4rBi9w5/69X61sVil7snH
-	 EglXJTBv4vRLpedr0Fcd4eHnQV5smF3kBedOEJvSiIsHw+Xz1H6mMoVIU5CidRy3F9w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792956163;
+	h=DMARC-Filter:Received:DKIM-Filter:DKIM-Signature:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-Spam-Score:X-Scanned-By;
+	bh=4Tvh3ER3yLmblvY3yXSbn1ihzEpc/dPSRG3EnZEQ720=;
+	b=xGxOilVqtbDIiMgeuKiV9PLa9ZP5CVEFeQiDl64/FEpDQddJyBmBxl9FFSo3xWixCoot
+	 xyAykA2U5fvJILRrdaK5LdgQXPAh3fFp1viJkbXIAZWdMfSFUg2Rj/JrL5Wdihff/aSsZ
+	 wRLWRlevnjDP1Fh/T/DlU664W7Xrt7/htud6jTGhzdLIwhr6HrCIjXPcRzkAJsg9HNP0N
+	 VQXAVD9YdZGkJLCPDogYSIEwy1tbsyVxC7P57R/5ILNzKWZbw4I8sxgCBpY1XkF11cCO7
+	 KhM1CQ/7hW5cAM/KrO/UzpsjGEd5Oq/hkTtJ2GjGrXIOHU5dbB2BstkH2R3SC9xXDNw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.161.52
-Received: from mail-oo1-f52.google.com (mail-oo1-f52.google.com [209.85.161.52])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=student.uibk.ac.at;
+	spf=pass smtp.mailfrom=student.uibk.ac.at;
+	dkim=pass header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b=R12NoYLl;
+	arc=none smtp.remote-ip=138.232.1.140
+Received: from smtp.uibk.ac.at (smtp.uibk.ac.at [138.232.1.140])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7255606A31A
-	for <linux-pm@vger.kernel.org>; Sun, 25 Oct 2026 11:09:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A7255606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oo1-f52.google.com with SMTP id 006d021491bc7-70059e4dab6so1546519eaf.3
-        for <linux-pm@vger.kernel.org>; Sun, 25 Oct 2026 04:09:58 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792926597; x=1793531397;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=GjtDmUDJ7P9a7dCWsPAQRfLzfmaw50jjj96MMkbrG+o=;
-        b=syg8w0wNih4FkrWz4UVJjIt8WNcDABDapcCJsTSrJg+TLrbkLZkPExrc8WBam0/oHN
-         L5h758H7rCr0t7RGUcKPy2MmoBIfF6TWT6qg7sRGyEOdutDKa98+nyEsGrv9a2uCLgIM
-         lDRUiaj2eh7vAJwTUDbTop2IlsR1E27lWM96DK5A++WFAoHoQnEmjEOaBhUBQKM6FdBF
-         ao2Rlyz0AXvPHLxocdXg+0OKFSwuc8gE9eLbLWTC2lJv7IbRWlA1FIvs0QOL1unAKT27
-         3tbId7/7Cp9b13gOrgUDndvYKdlizfkPWBZ97ggN/e3pfTejR2CJn+DOG6YiZ/nx3oA4
-         ty9w==
-X-Forwarded-Encrypted: i=1; AKwUvBx5n1zuNiXcKKoJ6EGb3IHjHu26UBJAtiS+6vur37xGsv6DK47Fgk7xuyEG2bSMABKxhAwCLi/PFg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLJYcOWdIxikcvD3ZmIkUr/DiIuAkmMl2os6gjjpuk+Bq1PZo6T
-	7D0DGmg0ZFpBfkLmtV8WJnZyNbvNaFEfA3RSjfGyO9AazbEeytIXATapnLmI5Fkp
-X-Gm-Gg: AYBFou0D8RvrPR/vlAznkFundcwdNjiHw42aOmbuom6q2CHq9swfTz4BbJoJ/KC0BdM
-	yFeK/Y0sI4pA/uATrrpRTYlc79WINZdus1EyW5ldF9bqt9rV656u0bN63r/dBzS1/hVUy3r6p0G
-	X4IaiZr/r5W5ll1Z8L7wEtLZz/PJsoc4u9zE+uSkN5zaskkzVcFGb6Yb3ylxfearHOUAgvjTpbL
-	kz49GBpGi0EP50PYPX1jwnRu12fzRSMmO7qwhLB3o+15N217kKygZsfZSz7QrASc0PvPQoPce3F
-	BkDrvBXApxn7MuSo7bipgEv82f0OEj2mwHq+oviC896dA+QzufhJ9K85N78uZCHJUp0G5ZokLBb
-	qauciJrPmlg6/DgAeHxd4DEsttlo3n1Io/YKSz67lckYP4LayiO4GR6jAuUcFs5+xkuERHTxChz
-	bYfl1mCxT6S8ZQYD2IJtC7gR+ILl1LJM9ugIB4XKGlEcxIG7SYHi5hsEDA/7E9TJ0q8rxqKM0gz
-	iacxZ8Ocy2U5Mwu50ikGAfREmiEI9/TxTzQfD49rUpKQGzSKRPwmd08/+Vjs/dT4OIedP7iYhQR
-	n6vA4P9pfF6aPLJgMQ==
-X-Received: by 2002:a05:6820:1381:b0:6c9:80d9:5f0 with SMTP id 006d021491bc7-70ba0e54fcbmr2084396eaf.49.1792926597634;
-        Sun, 25 Oct 2026 04:09:57 -0700 (PDT)
-Received: from mail-ot1-f45.google.com (mail-ot1-f45.google.com. [209.85.210.45])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4a843225d69sm2538389fac.15.2026.10.25.04.09.56
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 25 Oct 2026 04:09:56 -0700 (PDT)
-Received: by mail-ot1-f45.google.com with SMTP id 46e09a7af769-844a8bf7e25so1558036a34.1
-        for <linux-pm@vger.kernel.org>; Sun, 25 Oct 2026 04:09:56 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBw7lDMcSid3H7pmy/wUQe5KAHP4DNOdoa+Cl7qQa1UL1kPLCMQG/RGrHWmIed/NT9fNlJnXb6C17g==@vger.kernel.org
-X-Received: by 2002:a05:6102:4423:b0:7cc:776:6c54 with SMTP id
- ada2fe7eead31-7ce5cd246a2mr1349167137.21.1792926141152; Sun, 25 Oct 2026
- 04:02:21 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12636606A320;
+	Sun, 25 Oct 2026 19:22:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 12636606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=student.uibk.ac.at
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=student.uibk.ac.at
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key, unprotected) header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b=R12NoYLl
+Received: from surface-pro-5 (178.115.151.51.wireless.dyn.drei.com [178.115.151.51])
+	(authenticated bits=0)
+	by smtp.uibk.ac.at (8.15.2/8.15.2/F1) with ESMTPSA id 69PJMK10517096
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Sun, 25 Oct 2026 20:22:23 +0100
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp.uibk.ac.at 69PJMK10517096
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=student.uibk.ac.at;
+	s=prod24a; t=1792956144;
+	bh=4Tvh3ER3yLmblvY3yXSbn1ihzEpc/dPSRG3EnZEQ720=;
+	h=From:To:Cc:Subject:Date;
+	b=R12NoYLl7dofrZhqAh7l5eB0oPYAZY2oo/Wn/yCUtxkk7LQaz1nieBJa0xdTF1Mgm
+	 tSee/yLMwQWK2QXQXWRXrgbrO2neCy6/oZ5vTQ9DIt8IxvV1hNTnNyRejd7B1O/buW
+	 Uazurn5UtuEy+Ucq/+XL0KH0wa/IQe+rLFDlgayY=
+From: christian.koever-draxl@student.uibk.ac.at
+To: neil.armstrong@linaro.org, jbrunet@baylibre.com, sboyd@kernel.org,
+        bmasney+clk@redhat.com, khilman@baylibre.com,
+        martin.blumenstingl@googlemail.com, rafael@kernel.org,
+        viresh.kumar@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
+        conor+dt@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+        linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        =?UTF-8?q?Christian=20Stefan=20K=C3=B6v=C3=A9r-Draxl?= <ckoever@outlook.de>
+Subject: [PATCH 0/4] arm64: amlogic: S4 CPU frequency scaling
+Date: Sun, 25 Oct 2026 20:22:15 +0100
+Message-ID: <20261025192219.209137-1-christian.koever-draxl@student.uibk.ac.at>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,66 +69,70 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1792776697.git.geert+renesas@glider.be> <f9de8214043ad4c8748fadce7fd2cc2fa95b1291.1792776697.git.geert+renesas@glider.be>
- <d870c163-8d90-48c0-bae0-5f6e0e38c5bc@mailbox.org>
-In-Reply-To: <d870c163-8d90-48c0-bae0-5f6e0e38c5bc@mailbox.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sun, 25 Oct 2026 12:02:09 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVcxDY2q7MK6Zj5MFi-4UVJe=i8L=gWSTCmLE4NMjdh4Q@mail.gmail.com>
-X-Gm-Features: AclHuK8CaW_17mlyRa4Y7XpLgXIYuKk4YmAF6_as85fetPG-fOFZ1fPRmRtKgD8
-Message-ID: <CAMuHMdVcxDY2q7MK6Zj5MFi-4UVJe=i8L=gWSTCmLE4NMjdh4Q@mail.gmail.com>
-Subject: Re: [PATCH 3/7] arm64: dts: renesas: r8a78000: Add GPIO controller nodes
-To: Marek Vasut <marek.vasut@mailbox.org>
-Cc: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Magnus Damm <magnus.damm@gmail.com>, 
-	Ulf Hansson <ulfh@kernel.org>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Marek Vasut <marek.vasut+renesas@mailbox.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: () -13.0 ALL_TRUSTED,RCV_SMTP_AUTH,RCV_SMTP_UIBK,U_H_APTO_LONG,U_RCPTS_11_PLUS
+X-Scanned-By: MIMEDefang_3.2_at_uibk.ac.at
 
-Hi Marek,
+From: Christian Stefan Kövér-Draxl <ckoever@outlook.de>
 
-On Sat, 24 Oct 2026 at 07:35, Marek Vasut <marek.vasut@mailbox.org> wrote:
-> On 10/23/26 7:50 PM, Geert Uytterhoeven wrote:
-> > From: Marek Vasut <marek.vasut+renesas@mailbox.org>
-> >
-> > Add device nodes for the General-Purpose Input/Output Ports (GPIO) on
-> > the Renesas R-Car X5H (R8A78000) SoC.
-> >
-> > Signed-off-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
-> > Co-developed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > ---
-> > Changes compared to Marek's original:
-> >    - Use hardware clocks/power-domains/resets instead of direct SCMI
-> >      references,
-> >    - Drop gpio-ranges properties for now, as upstream lacks Pin Function
-> >      Controller (PFC) support.
->
-> Is that ^ OK ? If so, good, TIL.
+S4 keeps its CPU clock registers in the secure world and bins its parts
+by voltage, so CPU DVFS needs three pieces:
 
-Yes, it works without PFC, as long as the pins are kept at their reset
-state or configured for GPIO before Linux boots, which is the case
-for the pins on the PWM connector.
+ 1-2: the CPU clock in the S4 PLL controller, driven through the two
+      BL31 SMC services the firmware exposes (sys_pll and the CPU clock
+      tree), modelled as one clock because the firmware calls do not
+      map onto separate muxes and dividers;
+ 3:   the secure monitor call that returns the CPU speed bin;
+ 4:   a small cpufreq driver that picks the "opp-microvolt-speed<bin>"
+      curve and registers cpufreq-dt, like sun50i-cpufreq-nvmem.
 
-> Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+This applies on top of "firmware: meson: sm: make power-off work on
+S4" (sent separately; the command tables overlap). The patches touch
+clk, firmware/meson and cpufreq. Patch 4 depends on patch 3; 1-2 are
+independent of 3-4. I am happy to split them if the maintainers prefer
+to take them through their trees separately.
 
-Thanks!
+Tested on an S905W2 (speed bin 2): 100 MHz to 1.908 GHz with the
+vendor voltages, transitions under load for hours, vddcpu follows the
+table.
 
-BTW, looks like I used a wrong base for submitting, as the context does
-include the pfc node, which is not present in upstream ;-)
+Tool use (Documentation/process/generated-content.rst):
+This work was done with the help of an AI coding assistant, Claude
+(Anthropic), used through Claude Code over many sessions. It did a large
+part of the hands-on work: it read the vendor kernel and the firmware
+interfaces, probed registers on the board, drafted the code and the
+changelogs, and ran the builds, checkpatch, dt_binding_check and the
+tests on the hardware. I directed the work, reviewed every change and
+the final patches, and take responsibility for them. There is no single
+prompt to quote; the sessions were of the form "find out why X fails on
+this board, fix it, test it on the box".
 
-Gr{oetje,eeting}s,
+Tested on an Amediatech X98Q TV box (Amlogic S905W2, S4 family, 2 GiB),
+vendor U-Boot and BL31/OP-TEE, Linux 7.3 plus this work.
 
-                        Geert
+Christian Stefan Kövér-Draxl (4):
+  dt-bindings: clock: amlogic,s4-pll-clkc: add the CPU clock
+  clk: meson: s4-pll: add the CPU clock
+  firmware: meson: sm: add the CPU speed bin call
+  cpufreq: add an Amlogic speed-bin driver
+
+ MAINTAINERS                                   |   1 +
+ drivers/clk/meson/s4-pll.c                    | 320 ++++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                   |  14 +
+ drivers/cpufreq/Makefile                      |   1 +
+ drivers/cpufreq/amlogic-cpufreq.c             | 184 ++++++++++
+ drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
+ drivers/firmware/meson/meson_sm.c             |   1 +
+ .../dt-bindings/clock/amlogic,s4-pll-clkc.h   |   1 +
+ include/linux/firmware/meson/meson_sm.h       |   1 +
+ 9 files changed, 525 insertions(+)
+ create mode 100644 drivers/cpufreq/amlogic-cpufreq.c
 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+base-commit: 7be4bc52fd9e0e55dc9a2e0232b89427d2c4b614
+prerequisite-patch-id: f977117cf7f3a613f667c2106e7f4aafc0ace116
+prerequisite-patch-id: 1ec4e1bb456bd13cec4f140219f700f44ea19606
+-- 
+2.56.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
