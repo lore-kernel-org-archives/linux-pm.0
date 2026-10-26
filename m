@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793026556;
-	b=yW8kkh1EJCy5UqkzCLdTbPy2ND8xxvIYW5TfQ0NJy71H1XZUc5+ql1YVhM/nFtIORM0S
-	 7o9tkttJd5j9gYzu5eh6mQsvccqbgi6NdecNc6keuH8Gk/SdTvyG2r0RCzYDFuqn55qwK
-	 SOqS44c1jNX24Qje9Rx6J3XZMylXAKPPQPV9nz3l99CslqKn+AK+I2iToGclu14iOhRwC
-	 V3txMvo191qJytxOyocj2wygezDuZQtgWuO889p59R6+JE+3BXGpFeebV7PxFltLUAt+k
-	 Oskv+2B1lHGhxYDnKE31DxCewPNaooTLvoBUA85x0xyeAS5fdFv7Ai9HpIM8Y0gD4XA==
+	t=1793026568;
+	b=Ap2juyoL47ieQk4WZ/w7IzN9NyQ7Soo1/XG2d9Rc6+ydNq1irjkHdw0K5/Ue9ELRVh85
+	 lSwMOHSqCQmBecQJJWXtWTMrDWt4We8yGp3e5+aiKw68KRhcsOqOPXkOJcfsbVd8PfAhp
+	 LdL713hQNbci7kJVvx7e6ZDpHqL+zKmMaFH3+vb0IZtI+PQWQC9NbWk1gFYVlHhN7X2sh
+	 qrQV5Z5SECt7hSlGhRjFN5vyfF6aw1gCWXw/dkas6QqOiSJy4UXhHR0sY1A2IaSdmquVZ
+	 i/bLopXcWSgiFmcaYbyYIOlrCm2hUgHiNKmlP3yEsJoJR0wahFTT3h/ZPiGpB0r928w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793026556;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793026568;
 	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=Fj8cRFNdTuS88avz+KuVmikpDiQtONWEEH1nURlLM7Q=;
-	b=3Dbw9fb6VxqZ01PvJC4JkFND30jEvBLRVULMgYAEZoyuXdfzIlkyt7b992Q57sZdKzpK
-	 x46Ygyry6AJObx04Z46wLu9zVoJJnlq6oLwr2KpSm4DZoblddbzMO32FapBO8lNvcvbMy
-	 kbOl/gAiGL2tnfGgBHDdlc8/GcMIglJDh4RlXr/K+b0KATQQobLZ5Jj1QVd8G/PFCHwFG
-	 DKxXJ+794h0qAfEy8GKIJm4vh/WNB9xPD/+O5GIDvwYVmZ++Ja66INbvbLbtm53d+2uZY
-	 Sxind97iAgZnc0LMxNruza/yXt6iVJsutZgQ1fcoFtTPN/TjimmNt4smEu64qQNGDHg==
+	bh=6j5fPmNl4JXPUL19Fwb3C5vWLLpOlOJYPelcoa3tW+0=;
+	b=NpscZqaj5qylgbWJaKpJy2tAGkRgpbo/vQNmvGrvdazTvBG89Kp3JZ10vs2SDpKaLCSE
+	 Pco68AWKX9lIqUNqYCQBkg4CxWrwx8QsiqzADt75YqM/+zO6+6VU/saKm9/Q0xG7wi/l3
+	 R43QrKiQqJqPodR1H6vUj7NpXi5+l5OShSUyTBXU6V7iCU/KWa99X2DEV8mOoNKR0aUab
+	 QT6oA5ZKwKVKqJdk9J1tbHkOesF5eTEY/PG4IzC46wt6Xz0hZ0OPpi21NnCM69bNHf/+c
+	 3Az6v54VgmoGwyOUEJWIKtsY+6fyss2SvheXlpxffidsG+l1ToDinMBJf1bTphwl5oQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1872606A31E;
-	Mon, 26 Oct 2026 14:55:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F32871F01828;
-	Mon, 26 Oct 2026 14:55:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 707D9606A322;
+	Mon, 26 Oct 2026 14:56:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76A231F01829;
+	Mon, 26 Oct 2026 14:56:04 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
 	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
@@ -45,9 +45,9 @@ Cc: linux-pwm@vger.kernel.org,
 	linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 05/11] pwm: rcar: Parametrize cycle counter field size
-Date: Mon, 26 Oct 2026 15:55:21 +0100
-Message-ID: <a11daddd0c005d9bdf2b36e3b8b93720f1da4f55.1793026273.git.geert+renesas@glider.be>
+Subject: [PATCH 08/11] arm64: dts: renesas: r8a78000: Add PWM nodes
+Date: Mon, 26 Oct 2026 15:55:24 +0100
+Message-ID: <8912d1d4e99b95fc7e9f0d1cf3c596689c470e09.1793026273.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1793026273.git.geert+renesas@glider.be>
 References: <cover.1793026273.git.geert+renesas@glider.be>
@@ -62,145 +62,146 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Prepare for the advent of PWM blocks with output cycle and high-level
-period fields larger than 10 bits by parametrizing the field size.
+Add device nodes for the Pulse Width Modulation (PWM) modules and the
+16-Bit Timer Pulse Unit (TPU) on the Renesas R-Car X5H (R8A78000) SoC.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/pwm/pwm-rcar.c | 51 +++++++++++++++++++++++++++---------------
- 1 file changed, 33 insertions(+), 18 deletions(-)
+ arch/arm64/boot/dts/renesas/r8a78000.dtsi | 121 ++++++++++++++++++++++
+ 1 file changed, 121 insertions(+)
 
-diff --git a/drivers/pwm/pwm-rcar.c b/drivers/pwm/pwm-rcar.c
-index f1f68bfe016f729f..3813094c601efc8c 100644
---- a/drivers/pwm/pwm-rcar.c
-+++ b/drivers/pwm/pwm-rcar.c
-@@ -22,7 +22,7 @@
- #include <linux/slab.h>
+diff --git a/arch/arm64/boot/dts/renesas/r8a78000.dtsi b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
+index 946dce6ab38b619d..c5e48eac4c3712d8 100644
+--- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
+@@ -1243,6 +1243,127 @@ hscif3: serial@c071c000 {
+ 			status = "disabled";
+ 		};
  
- #define RCAR_PWM_MAX_DIVISION	24
--#define RCAR_PWM_MAX_CYCLE	1023
-+#define RCAR_PWM_MAX_CYCLE(rp)	GENMASK(rp->cycle_bits - 1, 0)
- 
- #define RCAR_PWMCR		0x00
- #define  RCAR_PWMCR_CC0_MASK	GENMASK(19, 16)
-@@ -32,14 +32,17 @@
- #define  RCAR_PWMCR_EN0		BIT(0)
- 
- #define RCAR_PWMCNT		0x04
--#define  RCAR_PWMCNT_CYC0_MASK	0x03ff0000
--#define  RCAR_PWMCNT_CYC0_SHIFT	16
--#define  RCAR_PWMCNT_PH0_MASK	0x000003ff
--#define  RCAR_PWMCNT_PH0_SHIFT	0
-+#define  RCAR_PWMCNT_CYC0_MASK	GENMASK(31, 16)
-+#define  RCAR_PWMCNT_PH0_MASK	GENMASK(15, 0)
- 
- struct rcar_pwm_chip {
- 	void __iomem *base;
- 	struct clk *clk;
-+	unsigned int cycle_bits;
-+};
++		tpu: pwm@c0720000 {
++			compatible = "renesas,tpu-r8a78000", "renesas,tpu";
++			reg = <0 0xc0720000 0 0x200>;
++			interrupts = <GIC_ESPI 23 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg R8A78000_CPG_SGASYNCD16_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x76>;
++			resets = <&mdlc_perw 0x76>;
++			#pwm-cells = <3>;
++			status = "disabled";
++		};
 +
-+struct rcar_pwm_info {
-+	unsigned int cycle_bits;
- };
- 
- static inline struct rcar_pwm_chip *to_rcar_pwm_chip(struct pwm_chip *chip)
-@@ -77,7 +80,7 @@ static int rcar_pwm_get_clock_division(struct rcar_pwm_chip *rp, int period_ns)
- 	if (clk_rate == 0)
- 		return -EINVAL;
- 
--	div = (u64)NSEC_PER_SEC * RCAR_PWM_MAX_CYCLE;
-+	div = mul_u32_u32(NSEC_PER_SEC, RCAR_PWM_MAX_CYCLE(rp));
- 	tmp = (u64)period_ns * clk_rate + div - 1;
- 	tmp = div64_u64(tmp, div);
- 	div = ilog2(tmp - 1) + 1;
-@@ -111,21 +114,19 @@ static int rcar_pwm_set_counter(struct rcar_pwm_chip *rp, int div, u64 duty_ns,
- 
- 	/* div <= 24 == RCAR_PWM_MAX_DIVISION, so the shift doesn't overflow. */
- 	tmp = mul_u64_u64_div_u64(period_ns, clk_rate, (u64)NSEC_PER_SEC << div);
--	if (tmp > FIELD_MAX(RCAR_PWMCNT_CYC0_MASK))
--		tmp = FIELD_MAX(RCAR_PWMCNT_CYC0_MASK);
--
--	cyc = FIELD_PREP(RCAR_PWMCNT_CYC0_MASK, tmp);
-+	cyc = min(tmp, RCAR_PWM_MAX_CYCLE(rp));
- 
- 	tmp = mul_u64_u64_div_u64(duty_ns, clk_rate, (u64)NSEC_PER_SEC << div);
--	if (tmp > FIELD_MAX(RCAR_PWMCNT_PH0_MASK))
--		tmp = FIELD_MAX(RCAR_PWMCNT_PH0_MASK);
--	ph = FIELD_PREP(RCAR_PWMCNT_PH0_MASK, tmp);
-+	ph = min(tmp, RCAR_PWM_MAX_CYCLE(rp));
- 
- 	/* Avoid prohibited setting */
- 	if (cyc == 0 || ph == 0)
- 		return -EINVAL;
- 
--	rcar_pwm_write(rp, cyc | ph, RCAR_PWMCNT);
-+	rcar_pwm_write(rp,
-+		       FIELD_PREP(RCAR_PWMCNT_CYC0_MASK, cyc) |
-+		       FIELD_PREP(RCAR_PWMCNT_PH0_MASK, ph),
-+		       RCAR_PWMCNT);
- 
- 	return 0;
- }
-@@ -142,12 +143,15 @@ static void rcar_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
- 
- static int rcar_pwm_enable(struct rcar_pwm_chip *rp)
- {
--	u32 value;
-+	u32 value, cyc, ph;
- 
- 	/* Don't enable the PWM device if CYC0 or PH0 is 0 */
- 	value = rcar_pwm_read(rp, RCAR_PWMCNT);
--	if ((value & RCAR_PWMCNT_CYC0_MASK) == 0 ||
--	    (value & RCAR_PWMCNT_PH0_MASK) == 0)
-+	cyc = FIELD_GET(RCAR_PWMCNT_CYC0_MASK, value);
-+	ph = FIELD_GET(RCAR_PWMCNT_PH0_MASK, value);
++		pwm0: pwm@c0740000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0740000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_SGASYNCD16_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
 +
-+	if ((cyc & RCAR_PWM_MAX_CYCLE(rp)) == 0 ||
-+	    (ph & RCAR_PWM_MAX_CYCLE(rp)) == 0)
- 		return -EINVAL;
- 
- 	rcar_pwm_update(rp, RCAR_PWMCR_EN0, RCAR_PWMCR_EN0, RCAR_PWMCR);
-@@ -202,11 +206,16 @@ static const struct pwm_ops rcar_pwm_ops = {
- 
- static int rcar_pwm_probe(struct platform_device *pdev)
- {
-+	const struct rcar_pwm_info *info;
- 	struct device *dev = &pdev->dev;
- 	struct rcar_pwm_chip *rcar_pwm;
- 	struct pwm_chip *chip;
- 	int ret;
- 
-+	info = of_device_get_match_data(dev);
-+	if (!info)
-+		return -ENODEV;
++		pwm1: pwm@c0741000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0741000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_SGASYNCD16_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
 +
- 	chip = devm_pwmchip_alloc(dev, 1, sizeof(*rcar_pwm));
- 	if (IS_ERR(chip))
- 		return PTR_ERR(chip);
-@@ -222,6 +231,8 @@ static int rcar_pwm_probe(struct platform_device *pdev)
- 		return PTR_ERR(rcar_pwm->clk);
- 	}
- 
-+	rcar_pwm->cycle_bits = info->cycle_bits;
++		pwm2: pwm@c0742000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0742000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_SGASYNCD16_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
 +
- 	chip->ops = &rcar_pwm_ops;
- 
- 	platform_set_drvdata(pdev, chip);
-@@ -247,8 +258,12 @@ static void rcar_pwm_remove(struct platform_device *pdev)
- 	pm_runtime_disable(&pdev->dev);
- }
- 
-+static const struct rcar_pwm_info rcar_pwm_info = {
-+	.cycle_bits = 10,
-+};
++		pwm3: pwm@c0743000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0743000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_SGASYNCD16_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
 +
- static const struct of_device_id rcar_pwm_of_table[] = {
--	{ .compatible = "renesas,pwm-rcar" },
-+	{ .compatible = "renesas,pwm-rcar", .data = &rcar_pwm_info },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, rcar_pwm_of_table);
++		pwm4: pwm@c0780000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0780000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_S0ASYNCD8_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
++
++		pwm5: pwm@c0781000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0781000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_S0ASYNCD8_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
++
++		pwm6: pwm@c0782000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0782000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_S0ASYNCD8_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
++
++		pwm7: pwm@c0783000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0783000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_S0ASYNCD8_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
++
++		pwm8: pwm@c0784000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0784000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_S0ASYNCD8_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
++
++		pwm9: pwm@c0785000 {
++			compatible = "renesas,pwm-r8a78000",
++				     "renesas,rcar-gen5-pwm";
++			reg = <0 0xc0785000 0 0x10>;
++			#pwm-cells = <2>;
++			clocks = <&cpg R8A78000_CPG_S0ASYNCD8_PERW_MAIN>;
++			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x70>;
++			resets = <&mdlc_perw 0x70>;
++			status = "disabled";
++		};
++
+ 		stcm_transport: sram@c1060000 {
+ 			compatible = "mmio-sram";
+ 			reg = <0x0 0xc1060000 0x0 0x1c00>;
 -- 
 2.43.0
 
