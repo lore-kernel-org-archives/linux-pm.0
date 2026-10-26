@@ -1,55 +1,63 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793042591;
-	b=Rzn9l+Kw9/QgboG2mrYuzRUC1RQgmOVbfTDK847VnLmBBRUzOonKbVIZIY0leqa/SAij
-	 spyHrWnXcNkOq4nFzwWPQpc0MmTQZnhtqsW1BgJZXvq3ceWE2MWBJUK3Q2s4JWBuknwz3
-	 LBl1QaxtmOqCNSSM5Sm/vxSOil3Lh25S/RIr1K690V5TB2B3hp2hppMhqkbvOI1KsfqeV
-	 7KJssx/0BuZ/oxWGDLC1WvBtmWADPWdZhSBbQ2YXcUFVKHaC++HLLrK1WKksUcLg9HD5s
-	 lfq6OuLAxfJJSeHsLiXahoxRnjf1KCAAXKx6AyW9eHDSclTnycEmsL3X/MCXBqG0BEA==
+	t=1793042626;
+	b=AOuCL8/4d8I5pTihCv+3u8SzHnljriK1Xq1qEqXsNtak2z9xJahQSm38PZdXr7kv8oBc
+	 yWQvN7q5r8OgjPe++aVitbI/F+1jhAgCtZeCDGR3/ew1ZsJ4lf+2EIx3/eLLlGop1Yzdo
+	 /7ooP4OTRD79ovDdeNDFEbd12ZO4QZO/I+8b4Q3qkJv0S9G+Vvyr/fwpFZBZYCjBkpMLT
+	 zhc92XQD/pf3a1EsI3gH/QvZuh9U3gmFxQecWHjBkvf1WjRa0ABdoGKQe7MrHIKNBWR66
+	 fDrww9S4pGlBWQoVV+LY8X00Xj3X2NMop4XCJFQGxt0dZuNP06Ma585fSUOlTkHg8PA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793042591;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=Tew2TYa3rQpGioNbT7CfeQl6rPBdaZqOIbvVXQwLbzw=;
-	b=EcDnvyIlKWQsp1fN2XnnMiG8c3isVH/iJSYf9QxQNNAGAs2QD9Y/QNXWY7L1y5nha0kU
-	 fDlXR4jRigZf9wHzknKt6K+4xXCw+PqkmwrruzdEhw9Vyi0yHmV1d6vUuLD+umEDZJo1Q
-	 +eVt1VIOMmXUCwavXXroF5cB/9uSixLpWeI03BFy/SBRAcpc1uYHDegZBC54lrWOMno8W
-	 gjJ//JoZ7shVd2EcVc2DSQZHoex2qM629SY1h4zmS6b6W4oQPOL+ZVJTtrIIl/IiIqdUE
-	 3wjaJuyXgkgg4ypMCOM295fynGIf8mcvTBOV+JlyU6hAgePu3PD4josuCQuOG+W721w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793042626;
+	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 Content-Type;
+	bh=AqmwLYHoY3N3Jn3DcpK5O8ALTetD0GAKAIXiKMQdJkc=;
+	b=bQkeFwh+jdhXhOv9d4N+lk/h2ledtn4/ESTpE3YTXitKlkRviF6gj7bSpgMKughAIze6
+	 Fw3H2QVM9YrHg3ELFTpnj7ecXk5KXmKluwl+p/dOzHMGWClz9E4ndpuZ5oHKRtUwjxQ6e
+	 GRl/LBzrwa8cOVArwSdgzNvQXsQPbRVl6cj9LgwOjQyWhjk76UTv1/1hOieegb/ReUwuL
+	 f2sWcp1ofqww6VB0xzk6kKRqKos04da3W6iVh3720lzsZpsCBKMzm0r/RzL3YuZhsRvjq
+	 6OM97icnQtrO8okD3NIsyjs6o/PMXwExd595fNSKSof7Tul3qrxtEhgtghN3OBW0Rvg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UYzDcHUt;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=sntech.de;
+	spf=pass smtp.mailfrom=sntech.de;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=ihzOWlko;
+	arc=none smtp.remote-ip=185.11.138.130
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9C55606A320
-	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 19:23:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61A82606A31A;
+	Mon, 26 Oct 2026 19:23:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 61A82606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UYzDcHUt
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 851361F031E2
-	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 19:23:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793042590;
-	bh=Tew2TYa3rQpGioNbT7CfeQl6rPBdaZqOIbvVXQwLbzw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=UYzDcHUt/ARtoNJ+R2uEp4WcK0SQCX+8u+sThgPL2VyokZiREUA4rK0WAInA+VLaw
-	 AShXMd8RMc8SU9pSngrWgZ2yCYYKHBgfxH9K/D3E4B5DrqmQxK9PhyL8dmBH8nkB9q
-	 SgIu1V/dWiz91j1W58hzhHqWAoIj5v5aQsTA+odXY7toqla+fILJrVQr2sLIL8Jk8T
-	 JGiK9qYizMGMJxiEKBoxupK27/AD9tgjJI9Um08SajGb1VUje5YteOjWRNSG3DVD0O
-	 JfedSKJ1mRQCSoS2jCENTSL5RioVsL8ZESmajIIk2pPm0gBRejzJoUPwNLnORCRtIZ
-	 xQVQxtMts3xLQ==
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5be4d648aacso3184962e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 12:23:10 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBx8AQedtLwNs8XlXSvtsH7DuyOoGSPydUAHUSDiNxpnySf7fqh4P5FyhL02yKcM5eiyxvjJGGAzHA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIG7LPLv9859a0g/5ZzPzZ7tqQJlvPdCW12k24OrFsQWzkNYsbb
-	Y4yexpsPddKS5qZs1p/mubPnPcPgk3iuLowE6MGAGZsU5wqeG9W88je4NcNz3BJ2/NGE7zkCWwk
-	dwfT0cKZR50ybZKnOLvKnUrnaJIKelsY=
-X-Received: by 2002:a05:6512:10ca:b0:5bf:c27b:8e52 with SMTP id
- 2adb3069b0e04-5bfc27b8f26mr873358e87.65.1793042588947; Mon, 26 Oct 2026
- 12:23:08 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=ihzOWlko
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=AqmwLYHoY3N3Jn3DcpK5O8ALTetD0GAKAIXiKMQdJkc=; b=ihzOWlkoMuN55i67fxYnH70IAf
+	1Dc7JL6ULToy5fPHNtBAS/64psDpQEAe8ggH9ISaZjAgFkHCLKWShulpdK256xKeDdUvQ2u06jj0/
+	KspCrAv42gs+pjoMqdUWXXhUsqu0ZlzneX4daVJOJL6bjU4iSflOAZehJ9whPgmfg0+ZaErEFnIYr
+	6Q2bee53ETm0trex+Xeq8JwATmWJxRY8uP5NaUfyKk9Jf1Q/4UL5xuLaQBWUY7eHb1XeuT540jDvb
+	P5CStcm65dlbdj04Jt3BtadMyua8Uv4fhz1Q7Gj2U6kdnh4x0Yjp1R0NPcW5t19Qfundl9zdXwzfd
+	uO5se/3A==;
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: linux-pm@vger.kernel.org, Chris Morgan <macroalpha82@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
+ maccraft123mc@gmail.com, zhangqing@rock-chips.com, zyw@rock-chips.com,
+ sre@kernel.org, conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org,
+ lee@kernel.org, Chris Morgan <macromorgan@hotmail.com>,
+ Zetarancio <zetarancio@users.noreply.github.com>
+Subject:
+ Re: [PATCH 4/5] dt-bindings: power: supply: rk817-charger: Add
+ rockchip,gate-function-disable
+Date: Mon, 26 Oct 2026 20:23:40 +0100
+Message-ID: <15875856.JCcGWNJJiE@diego>
+In-Reply-To: <20261026174834.1652309-5-macroalpha82@gmail.com>
+References:
+ <20261026174834.1652309-1-macroalpha82@gmail.com>
+ <20261026174834.1652309-5-macroalpha82@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,63 +67,69 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261023060724.5691-1-dennylin0707@gmail.com>
-In-Reply-To: <20261023060724.5691-1-dennylin0707@gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 26 Oct 2026 20:22:57 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gKSuXT4zqO-OTs+M6ZfEFUsbV42sXOCK-pF0J0_Cd4aA@mail.gmail.com>
-X-Gm-Features: AclHuK_igWyg2GTO7npcsDspF3bYbPoGIPZH3mSJygFCjzO8ygz-1d4lyorB0RE
-Message-ID: <CAJZ5v0gKSuXT4zqO-OTs+M6ZfEFUsbV42sXOCK-pF0J0_Cd4aA@mail.gmail.com>
-Subject: Re: [PATCH] thermal: Fix CPU mask truncation in power limit trace event
-To: Hungyu Lin <dennylin0707@gmail.com>
-Cc: rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com, 
-	lukasz.luba@arm.com, javi.merino@kernel.org, rostedt@goodmis.org, 
-	edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-On Fri, Oct 23, 2026 at 8:08=E2=80=AFAM Hungyu Lin <dennylin0707@gmail.com>=
- wrote:
->
-> num_possible_cpus() counts CPUs, but CPU IDs need not be contiguous.
-> Using it to size the thermal_power_cpu_limit bitmap can omit CPUs with
-> higher IDs. For example, possible CPUs 0 and 64 produce an eight-byte
-> bitmap on a 64-bit system, dropping CPU 64.
->
-> Use nr_cpumask_bits for both sizing and copying the bitmap.
->
-> Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator go=
-vernor")
-> Signed-off-by: Hungyu Lin <dennylin0707@gmail.com>
+Hi Chris,
+
+Am Montag, 26. Oktober 2026, 18:48:33 Mitteleurop=C3=A4ische Normalzeit sch=
+rieb Chris Morgan:
+> From: Chris Morgan <macromorgan@hotmail.com>
+>=20
+> Add a boolean attribute for the rk817-charger to control whether or not
+> the system power is shutdown in battery off mode. The BSP kernel sets
+> this value unless a device-tree attribute is present, and this attribute
+> is to replicate that behavior.
+
+Devicetree is supposed to describe the hardware, so your description needs
+to describe the per-board property this represents.
+
+Just because it's in a vendor-BSP is generally not enough justification :-)=
+ .
+
+This is especially true as you wrote in the cover-letter that no known
+board actually needs this right now.
+
+
+Heiko
+
+> Fixes: a592aa3a2a8c ("dt-bindings: mfd: Add Rockchip rk817 battery charge=
+r support")
+> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+> Suggested-by: Zetarancio <zetarancio@users.noreply.github.com>
 > ---
->  drivers/thermal/thermal_trace.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/thermal/thermal_trace.h b/drivers/thermal/thermal_tr=
-ace.h
-> index df8f4edd6068..2f953fd8289d 100644
-> --- a/drivers/thermal/thermal_trace.h
-> +++ b/drivers/thermal/thermal_trace.h
-> @@ -119,7 +119,7 @@ TRACE_EVENT(thermal_power_cpu_limit,
->         TP_ARGS(cpus, freq, cdev_state, power),
->
->         TP_STRUCT__entry(
-> -               __bitmask(cpumask, num_possible_cpus())
-> +               __bitmask(cpumask, nr_cpumask_bits)
->                 __field(unsigned int,  freq      )
->                 __field(unsigned long, cdev_state)
->                 __field(u32,           power     )
-> @@ -127,7 +127,7 @@ TRACE_EVENT(thermal_power_cpu_limit,
->
->         TP_fast_assign(
->                 __assign_bitmask(cpumask, cpumask_bits(cpus),
-> -                               num_possible_cpus());
-> +                               nr_cpumask_bits);
->                 __entry->freq =3D freq;
->                 __entry->cdev_state =3D cdev_state;
->                 __entry->power =3D power;
->
-> base-commit: 503bb6e70bbf6304b8113373d09dfffcc4aa9183
-> --
+>  Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml b/=
+Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
+> index 2cb6d176a84c..4cf987fe763b 100644
+> --- a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
+> @@ -148,6 +148,12 @@ properties:
+>            Value in microamps of the sleep filter current for the charger.
+>            Value is used by the driver to derive the sleep sample current.
+> =20
+> +      rockchip,gate-function-disable:
+> +        type: boolean
+> +        description:
+> +          Boolean value to prevent PMIC from turning off system voltage =
+when
+> +          battery voltage is shut down.
+> +
+>      required:
+>        - monitored-battery
+>        - rockchip,resistor-sense-micro-ohms
+> @@ -381,6 +387,7 @@ examples:
+> =20
+>              rk817_charger: charger {
+>                  monitored-battery =3D <&battery>;
+> +                rockchip,gate-function-disable;
+>                  rockchip,resistor-sense-micro-ohms =3D <10000>;
+>                  rockchip,sleep-enter-current-microamp =3D <300000>;
+>                  rockchip,sleep-filter-current-microamp =3D <100000>;
+>=20
 
-Applied as 7.4-rc material, thanks!
+
+
+
