@@ -1,56 +1,56 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793007161;
-	b=VKcp4IcjjVYlHMaEj80hIYe979n1pOqJqKjAK/z+5e6jYaHBig9q8+3SUNW35UyunwJe
-	 2T1OyHeaHjV8l6krzSKfynPdY5ZvI5GkWVHZljqOUpqtBPFMRrb1DCZouu87DMvXsIC6M
-	 cfIb1VjuKD0EwpSQItPiQhfQw35ElPXjl4gyT2Dc+y6LsZMPk68NvB74yXCCzBL/8ilMQ
-	 SkU0XMjn6jjw+RvttPPLbO1UvuJjaPP/fPkt06IB+jD9sFAirAC5iL6cgUZldKtfDxbd7
-	 uCm3oHZDXzzAB2a0vHD0ND3a/o0kZuuApXRBUmbeFNOUKmQs+JnEWT/MHWF4Klc1Yqg==
+	t=1793007200;
+	b=uH1k6z54A/q7XRnZMKYqU6nYgURRuAxu6dtnFDTlSX4yXetd3Jx/Chh5XJSXf1skQOfB
+	 zfacKzAgljeh3AncPkaO7M1udAw3ze5ioJvq3QpqljBIwdjW2hTRUr3+Tvd+CP4JGZYT+
+	 TBU0y7cY5qBPcdhbdS7+oYR7foPD7PhRNAhqBRlJvOE7oV6xjejW2kKImqsuHDGAVWsvS
+	 0jyHkibDFRPA4cfhjEvmO/A4eWwtOqyUi1ww500kR81/UcJ1ZbfxeIDMK5DeJQm1RhGMm
+	 oFQQCWTurCDU3iq8qTvpLuXJJLWoFdqdmn66aIRIrDo8JvERfxmOkzmfKKU1ZJwuKrw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793007161;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793007200;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=gyTbs/W4mFLXc6WAFFE2ifs3hVfSY/BJtHwWTBj88bQ=;
-	b=4OFy6kDohOD/9OnKg+VkanPef9HseAPza8GCKFJKPJwOYsQQXmP+IX7uMACbSRbiyGpf
-	 W0AgtVohwVAmlrUx7iby+3hxIChfE96hlpKfvSBpM+q3QXx5ECwnlbif8KvPBINONEF4O
-	 QvsTgObh1omTeYhe3SVyzZgl+ZMGIQHP4Q4DXY6qP4w6ipZLU3llukh9u9oYA4BeJmKRK
-	 fUM71c3NLTNmzzPJmBehbFnA1PKBESgHsZo03EO57rObjpU+5C/97+OO9b8NNrLhAQUjl
-	 qqYepKkhqh8MhWoxN8WPDW6xXK4HatFaaG4JCkVbsSjHHye+8zkw4QKpaSJ7VKsXGMA==
+	bh=/65MG6TY1IxlI+54oX3n3a9kcJsUVE1cpf7+Xy4EseU=;
+	b=h20d2LZP+q+Gq2iO7avS6q3oB8RoQdcPRW96+endOw044omZEtqsDzWMBnTZPC0DI4Mm
+	 lZdwMPsHjX33OwW48dW8jI4Ki8CTLm3G7dtIOvlAYuB9saRMCOTfTu3YO7pQ6ZOY6kSDk
+	 bhwv0I3R6ftp4pSL8udCBNDkD+yBBkhxGFr8F9GsR1CB/gnvxpgFmnl5GTfkagJwxZE4I
+	 Q2AXRFph4y3ntbPfPQBzNsOa9BJ9vjnFpS+H3bjqLqoffBGhM8rt3rFuiBN3iqPk/gbE8
+	 gZ6zKcWVXhj3eCIr8XlhNUy16MR0zs4zTreQB3MRngaScbaVVMIf0Yw0qoJuYkzQQSg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XTrh8iku;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kiExYlT9;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB260606A31A;
-	Mon, 26 Oct 2026 09:32:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA9A1606A31A;
+	Mon, 26 Oct 2026 09:33:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XTrh8iku
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C5F31F01828;
-	Mon, 26 Oct 2026 09:32:39 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kiExYlT9
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 759601F01825;
+	Mon, 26 Oct 2026 09:33:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793007160;
-	bh=gyTbs/W4mFLXc6WAFFE2ifs3hVfSY/BJtHwWTBj88bQ=;
+	s=k20260515; t=1793007199;
+	bh=/65MG6TY1IxlI+54oX3n3a9kcJsUVE1cpf7+Xy4EseU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=XTrh8ikuzv3xBwXkdHjxEKOf9zr5of8K8EYbew46UW1bo3/dH2tHaosjjSvXVhFRg
-	 5lu7YjiChNsy4yLt9elZ+Vtxa2FbDybyDF59Vm8NgeMiGQpQ7EjcWGwJkIdfo/ODOE
-	 3igkBzm3EydRqldfUyTkg2n1uDe9GfiunnkOJhm51kbKzZ0S2tpk+jBAxpFpVFIMk4
-	 BLp2vDr9MbFTfiFzStJ3j8G1aw+j5Vh9om83+pY6eA4OUFLLQG6QATAUWbOYKobRW9
-	 xWLTgeaMQh+8eAy3xIa8xf06BJjUh+auSl/C51iSGv/bxEtRrrqmlQWZ7Pix/ueDLn
-	 CB03P1guhshLw==
-Date: Mon, 26 Oct 2026 10:32:37 +0100
+	b=kiExYlT9M/6zZrtyq8bu9vgkM095T5aHNhu1EbnkiVCzNEqlpe4JIewxmeUmPEvu6
+	 PDoYynBy9sydwmeksJRu9zR9e06CInAqIsjywCHAeQblsHqXiNO2WBINiewXE4PeWq
+	 YegDNaG8lhXEp+l0rSSQHCGVcC/LDsVghthyUxPIiHs9F0Vi4tiQCz48agb+o5mK8F
+	 94uK7ekPfHE5gS/+ViI5UKfob4trFJNX2jImWRV7qHSMRzAOtmt+cvLmy7huw5G96C
+	 6sQVHpnQYU/W6S5d+pRSvDpxTrNDimo550nUTrfreoodVo15Nlaxg28wSPDniw+A95
+	 6ipuwitsMx9YQ==
+Date: Mon, 26 Oct 2026 10:33:16 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Olivier Louvignes <olivier@mgcrea.io>
 Cc: Lee Jones <lee@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, 
 	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
 	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/7] dt-bindings: power: supply: axp20x-usb-power: Add
- the AXP2101
-Message-ID: <20261026-glaring-fanatic-kangaroo-313cae@quoll>
+Subject: Re: [PATCH 6/7] dt-bindings: power: supply: axp20x-battery: Add the
+ AXP2101
+Message-ID: <20261026-calculating-evasive-eagle-1c750f@quoll>
 References: <20261023100401.67592-1-olivier@mgcrea.io>
- <20261023100401.67592-5-olivier@mgcrea.io>
+ <20261023100401.67592-7-olivier@mgcrea.io>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -62,29 +62,18 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261023100401.67592-5-olivier@mgcrea.io>
+In-Reply-To: <20261023100401.67592-7-olivier@mgcrea.io>
 
-On Fri, Oct 23, 2026 at 12:03:58PM +0200, Olivier Louvignes wrote:
-> The AXP2101's USB power supply reports whether VBUS is present and the
-> input current limit, like the AXP717's; its registers differ, so it gets
-> its own compatible.
+On Fri, Oct 23, 2026 at 12:04:00PM +0200, Olivier Louvignes wrote:
+> The AXP2101's charger is programmed from the monitored battery and its
+> registers differ from the other models', so it gets its own compatible.
 > 
 > Signed-off-by: Olivier Louvignes <olivier@mgcrea.io>
 > ---
->  .../bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml  | 1 +
+>  .../power/supply/x-powers,axp20x-battery-power-supply.yaml       | 1 +
 >  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
-> index 2ec036405ae4..1c582aa5e1d0 100644
-> --- a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
-> +++ b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
-> @@ -25,6 +25,7 @@ properties:
->            - x-powers,axp223-usb-power-supply
->            - x-powers,axp717-usb-power-supply
->            - x-powers,axp813-usb-power-supply
-> +          - x-powers,axp2101-usb-power-supply
 
-Missing update for constraint of input limit.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
