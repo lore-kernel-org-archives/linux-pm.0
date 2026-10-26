@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793026573;
-	b=nqgKdcKcqrWaQOROGuc7CjbPHWWsOtOyYXJ+vKr0uo3ZO0HtI0hXFon5+8UbUEvVvo4s
-	 2RWo/TJO18xCrixDtf3Rb5NEQDC/l+01XPXcPMz9ZUKsN0ezAnMBnxLy/tOJGT522Zd2s
-	 tr0cY4sZX95XA7111gjFBx3dZyWL7OLurcZltHq3dOEdIjBjIPLte15Hwp7w5gGk0WKvj
-	 aCrNZlPTEHt3mXpx4XquwF3Vgn+0qah5BcUCVrbpHGibS0y7vbucA6VYvSjm78u7sD9f9
-	 okNCQ5zQcQJZI6FOskuvzGIG3ohotq3hzNuBRyBldZXiZ3BzPh9+80y11CA1pqaqpRg==
+	t=1793026581;
+	b=PClr+78bALRoyZ57VyEXQr/LZBsQgZyd12/Ou4Uz4aJqRVYAeQodHU1QbVI973X/FaKH
+	 n3hiXKW32y3y7NGMbJdPpBgKe4VjFXk1vkg/dN/zmQUNLsiXy2bVXNLSW325Ew95C3y9+
+	 Yhm68QDqN+D1wVKk9h5EyuCghuyqk9qSX59IlA1zQ1l/03sgfXR1ilsuunzF6tqaB4Qa/
+	 mpeWzdd2ZRdJB6kqTgbz4/Xaj/DF5HXeH2YNjj0x1qfK51YRGq07M7U24AAT/5gXOWo/z
+	 FMmivI2mqdc3vTE2GnERGTaJ/USkJWvQyMBqoHUgEKvRPuiKQ5dZhzvVWbBV905xhYA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793026573;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793026581;
 	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=ngZ+YChJ683ub5nqZmPTKf2cgTQixpdwXS2UrmArJoI=;
-	b=KVUI8UYzUegZKv68C7UXq4pr2Vs0AZ7idYJ+hreZZn/eR0fPsNCAFBr5SsAN/AUXzvwO
-	 cVbab+Tv0iw+UI0GToKPkpQHAony5Zh8sDcKroQbnQKUSi46mTq+hx7V+OfuZXvNVlmbC
-	 bBf1NvQ3Lp9Qti17RTViLBx7IXr3cfLbNmEUAi5gWA/hE4xwmRaRLfpa4S47kgarjmJwt
-	 DNf5uCi1U2Ar9CGijhZHBEfDZG3BK3V33RvRvXCFq1epc//lJooO6olIXcKLGPzuWP5rL
-	 +JmS4hba0NqvYIKoX5f8PEBKfmyz2QOnIzwUVW61Y3mv+kRR0cRmdVYyhEGTVanj7Qw==
+	bh=Su/NSRv3Sw/2MP6PmrgJEPefQQ31VIPrx3FkQ3Apx24=;
+	b=rGjl4HmACQmbVVBN4ivHaZnyJwNbhGV9xyLwS/8rUgbZRPNFGWVZJpYJmoz8lX9uEHfF
+	 C4s6o3hcYIBGSZvK7kF+hcRazapMMDCHXm0k/SkOL5uagJQ1PZqUnYm9ixmd/sYDqGW1M
+	 F3wDrLJcVV9X83VQ+Defg9VbFWLh/ORNhIHmphKA49uUvPuTHGwrMyCLZuJ3On6WjQhYF
+	 1tjSHlRKYbKzNiOkltntFhcUNNkVUfoCWkRvZsIuuPJ79UKbw9RYN3SuBWeG5SJV9mXk6
+	 1uBhc633avUrg2iM/mky9eIPJqHT268sId1WwukOESqe4IDgMXfNDg6slqnF+hj2QQQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9067606A31E;
-	Mon, 26 Oct 2026 14:56:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C25931F01825;
-	Mon, 26 Oct 2026 14:56:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEE33606A31D;
+	Mon, 26 Oct 2026 14:56:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FFEF1F031E0;
+	Mon, 26 Oct 2026 14:56:16 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
 	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
@@ -45,9 +45,9 @@ Cc: linux-pwm@vger.kernel.org,
 	linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/DNI 09/11] clk: renesas: r8a78000: Add PWM clocks
-Date: Mon, 26 Oct 2026 15:55:25 +0100
-Message-ID: <4fc4232a28fe500b270d2cc26412a1909c12f5aa.1793026273.git.geert+renesas@glider.be>
+Subject: [PATCH/DNI 11/11] arm64: dts: renesas: ironhide: Enable PWM
+Date: Mon, 26 Oct 2026 15:55:27 +0100
+Message-ID: <d28846258918d12122704debc70b7c9bf9553053.1793026273.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1793026273.git.geert+renesas@glider.be>
 References: <cover.1793026273.git.geert+renesas@glider.be>
@@ -62,56 +62,122 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add support for the clocks used by the PWM modules on R-Car X5H.
-This includes SCMI remapping tables and fixed-clock fallbacks.
+Pulse Width Modulation (PWM) instances 0 to 5 and 16-Bit Timer Pulse
+Unit (TPU) channels 0 and 1 are wired to PWM CN (CN48).
+
+Note that TPU channels 0 and 1 are mutually-exclusive with PWM instances
+4 and 5.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-This depends on "[PATCH/DNI 4/7] clk: renesas: r8a78000: Add GPIO
-clocks"
-https://lore.kernel.org/34f97dab00c6d98b7afe8d8df38eeb83abf5c19f.1792776697.git.geert+renesas@glider.be
+This depends on out-of-tree pin control support.
 ---
- drivers/clk/renesas/r8a78000-cpg.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ .../boot/dts/renesas/r8a78000-ironhide.dts    | 84 +++++++++++++++++++
+ 1 file changed, 84 insertions(+)
 
-diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
-index 1d66082f6f44b5ba..9b1ff5a8ff1bdc31 100644
---- a/drivers/clk/renesas/r8a78000-cpg.c
-+++ b/drivers/clk/renesas/r8a78000-cpg.c
-@@ -38,6 +38,7 @@ enum fixed_clk {
- 	FIXED_CLK_33M,
- 	FIXED_CLK_37M5,
- 	FIXED_CLK_66M,
-+	FIXED_CLK_100M,
- 	FIXED_CLK_133M,
- 	FIXED_CLK_266M,
- };
-@@ -46,6 +47,7 @@ static const unsigned long fixed_clk_rates[] = {
- 	[FIXED_CLK_33M] = 33333000,
- 	[FIXED_CLK_37M5] = 37500000,
- 	[FIXED_CLK_66M] = 66666000,
-+	[FIXED_CLK_100M] = 100000000,
- 	[FIXED_CLK_133M] = 133330000,
- 	[FIXED_CLK_266M] = 266660000,
- };
-@@ -299,6 +301,8 @@ static const struct clk_map_in r8a78000_cpg_default[] = {
- 	{ R8A78000_CPG_S0D24_PERE_MAIN,		FIXED_CLK(33M) },
- 	{ R8A78000_CPG_SGD32_PERW_BUS,		FIXED_CLK(33M) },
- 	{ R8A78000_CPG_S0D24_HSCN_OTHER,	FIXED_CLK(33M) },
-+	{ R8A78000_CPG_SGASYNCD16_PERW_MAIN,	FIXED_CLK(66M) },
-+	{ R8A78000_CPG_S0ASYNCD8_PERW_MAIN,	FIXED_CLK(100M) },
- 	{ -1 }
+diff --git a/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts b/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
+index 5d919953efe4970e..c2d814da9fd97802 100644
+--- a/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
++++ b/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
+@@ -242,10 +242,87 @@ msiof6_pins: msiof6 {
+ 
+ 	};
+ 
++	pwm0_pins: pwm0 {
++		groups = "pwm0_a";
++		function = "pwm0";
++	};
++
++	pwm1_pins: pwm1 {
++		groups = "pwm1";
++		function = "pwm1";
++	};
++
++	pwm2_pins: pwm2 {
++		groups = "pwm2";
++		function = "pwm2";
++	};
++
++	pwm3_pins: pwm3 {
++		groups = "pwm3";
++		function = "pwm3";
++	};
++
++	pwm4_pins: pwm4 {
++		groups = "pwm4";
++		function = "pwm4";
++	};
++
++	pwm5_pins: pwm5 {
++		groups = "pwm5";
++		function = "pwm5";
++	};
++
+ 	scif_clk_pins: scif-clk {
+ 		groups = "scif_clk";
+ 		function = "scif_clk";
+ 	};
++
++	tpu_pins: tpu {
++		groups = "tpu_to0", "tpu_to1";
++		function = "tpu";
++	};
++};
++
++&pwm0 {
++	pinctrl-0 = <&pwm0_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&pwm1 {
++	pinctrl-0 = <&pwm1_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&pwm2 {
++	pinctrl-0 = <&pwm2_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&pwm3 {
++	pinctrl-0 = <&pwm3_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&pwm4 {
++	pinctrl-0 = <&pwm4_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&pwm5 {
++	pinctrl-0 = <&pwm5_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
  };
  
-@@ -312,6 +316,8 @@ static const struct clk_map_in r8a78000_cpg_fw[] = {
- 	{ R8A78000_CPG_S0D24_PERE_MAIN,		1690 },
- 	{ R8A78000_CPG_SGD32_PERW_BUS,		1660 },
- 	{ R8A78000_CPG_S0D24_HSCN_OTHER,	1499 },
-+	{ R8A78000_CPG_SGASYNCD16_PERW_MAIN,	1651 },
-+	{ R8A78000_CPG_S0ASYNCD8_PERW_MAIN,	1653 },
- 	{ -1 }
+ &scif_clk {
+@@ -263,3 +340,10 @@ scmi_rx_shmem: sram@1300 {
+ 		reg = <0x1300 0x100>;
+ 	};
  };
- 
++
++&tpu {
++	pinctrl-0 = <&tpu_pins>;
++	pinctrl-names = "default";
++
++	//status = "okay";	// Mutually-exclusive with pwm4 and pwm5
++};
 -- 
 2.43.0
 
