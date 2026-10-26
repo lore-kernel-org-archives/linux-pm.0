@@ -1,54 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=79.135.106.103
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793045633;
-	b=bGT4pAjiiciqNhnvNpWPfPzEhNa8aqIj1sRqpxbSraXOA2+s+cPHtm+yhEeKGRvCZVP1
-	 Pl6gfc/3nK4MngxB6dPgowbskvhOpxflS38SqGic2okNPnNuh8f8YsnCzqq6Qlt//o+EC
-	 7+ZZKsD1wyXZiRe192UXtXbfxjvyIHtObt4jCPKDCd7sFyuEGe+OibuPzaxAGljjdFcEl
-	 KIYxzls4YjYvF2Nk40xtLgyghQJ1Do48kxc3t7tTcti3BjPX/3FGpIABuBQvx5qX1NT3k
-	 NEBIUPxtKJ3GRwG9Fs5bJMp6mqg62v1GuJxoBIsxfAPdwHrAUuRhBnpcDVsK6KIx3yA==
+	t=1793046885;
+	b=q3DV3ZgE8QqrvondM6GWx5sBdTy0jPDBjrkz0BNzHn2gPQnErBnBYTRiLRBkebY2wO47
+	 6/FgGC6eaYa9GwT3xZfnKofukChMy42ZR5T3CERa2H8JgS0sIQUoh+FrAUs8m4YcDPr6m
+	 u4YIxP8yjgbM4kEilXf74MCf8kTC7WuPDe1VoK5h9xW8sYP92s2kUkBm13ridCPjeF9WT
+	 e0TJuhsrLG5wLqWg5xZOjjGCE2Ak+/3NtN7N2zRQjuf6uVL9Vj8i/2Cp+KEg8b/O47SIj
+	 bl7vrIXhMXbcbdkXUEL958xYpJ8BNkaOQQ1aPT6N/+OeLWoqIGU3FZVqqHmekOHJotA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793045633;
-	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=ZFEoz4zAnNP/e2CZdR6xrHUiI8JHFR28GWwihmBnonQ=;
-	b=FFGhT4AKmPR+6D72V+MK1hSVPLp/TEh08s1XA9g/pMnW6grz4cw7/zHh0u0ADKUhBgj6
-	 hzyCOEF4MxkxptYjkT1hvNf0P25wab4wt72epTB5jeIC1fQ4N87U61L4N7m6dxTnjSFaf
-	 Q3BMp9HWgWaPOXkYcDdtsHA4CptF/k0SVaR+in7eQQ1h7te3bMAVXw6XyhaGyMKTeiKG9
-	 T/XonN0ZgChC/spODVToISGIKCqTYaf4iQDSrf0TEGPhWusummqy1vn1/mnokXxli70tu
-	 tdSSUsDS8PeRE7YGDOTpnJj/1D5tJ6oxFzWod6wyh4qZaKFNCZgFUfl1bqm/6XhGWQg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793046885;
+	h=DMARC-Filter:DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:
+	 Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=pK8qCFZ9v8CLCDquJQQQvUscCxAM6X1Grwl8H6t4NAg=;
+	b=z21Wzk+2vFdJvIQjq/OAQOOn3bPj+/DvR9bXxcT+GqYgIXqAbtlTRJmE8GjiXmf7t3rl
+	 3Zt8lei/4DOqAaST17iwHr4Zja/To082b7aa2zVp6+iK+0OHXM78qWqOgVATuDkfBx9wv
+	 e3CmgP7/tWm16EVZlWEQHq2qhxHrGmQ59kkmSEHu2a/Pa8gSZlBZHRIxo7KrHhH0ajqqb
+	 DjjCoVBnx8n2OKn+gvdsZ8t2cN2rQP8poz1U81AtCgGc2E2I25Agy64+naITClFhr52ac
+	 AvvOF7xqqOAo9qu33GyVOaIrR76tiqZPewPtJ/MUzrDl0lisXyvlQTmnxNJhuyuWmvA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=infradead.org;
-	spf=pass smtp.mailfrom=infradead.org;
-	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=fYT53Vx2;
-	arc=none smtp.remote-ip=198.137.202.133
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	dmarc=pass header.from=proton.me;
+	spf=pass smtp.mailfrom=proton.me;
+	dkim=pass header.d=proton.me header.i=@proton.me header.a=rsa-sha256 header.s=swwv6yqiifdexemy77bcz5dqp4.protonmail2 header.b=iud8SGEy;
+	arc=none smtp.remote-ip=79.135.106.103
+Received: from mail-106103.protonmail.ch (mail-106103.protonmail.ch [79.135.106.103])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95D67606A31E;
-	Mon, 26 Oct 2026 20:13:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 95D67606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB680606A31D
+	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 20:34:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EB680606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=fYT53Vx2
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=ZFEoz4zAnNP/e2CZdR6xrHUiI8JHFR28GWwihmBnonQ=; b=fYT53Vx2tLwuv3kAl7B2FqH8br
-	kcYZT6KxYso9fB6zwWepCQafujHWHtRYTwauBP552d0J6ICs6czTL2dgIwWDi99j8vIUjcGKxdGfQ
-	0yWLAuWaoRY+shgcTPjSzJoWSBUPlXogBcdFCIc5dbqdiGeD07wGJsmzHSvAqGpBk6gYpH8R1Dl4H
-	6UJGb2qGUEAfFB5EtNGivqRiBu8WMoyAlMl3XqABsroJ4WmNSuGIyOO7CLAkKcES0MBouGsfnaxRX
-	l8MXg90/BqHtEEoTlLrPcQLLITv2ZdJ+uSdBM65Rc3k24MpbmG+PdeovQ0QgqpkOZ3SJhXY4yMhvk
-	ClZxbWvw==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xLR4o-00000003Cv0-2j7I;
-	Mon, 26 Oct 2026 20:13:50 +0000
-Message-ID: <4ab3e196-0326-48d9-bfdb-ede2f8cfac64@infradead.org>
-Date: Mon, 26 Oct 2026 13:13:49 -0700
+	dkim=pass (2048-bit key, unprotected) header.d=proton.me header.i=@proton.me header.a=rsa-sha256 header.s=swwv6yqiifdexemy77bcz5dqp4.protonmail2 header.b=iud8SGEy
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
+	s=swwv6yqiifdexemy77bcz5dqp4.protonmail2; t=1793046881;
+	x=1793306081; bh=pK8qCFZ9v8CLCDquJQQQvUscCxAM6X1Grwl8H6t4NAg=;
+	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
+	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=iud8SGEy+hL0pW8Ysb8FcFmrkeucUIzlGGrNEQJ09/8bQmFMbbTcnfuDtPwt3mGEQ
+	 PtZjEGKNXUzjwDDZCTNGjtRL6/c5e9d6+O6HFUx0lQkFm8uq5N9qTj8obqSqCmrCNB
+	 rLZCJhlZDwBzge2vlz0qFhC3lXMnxxAkMgDfniwVcgPUPPFqVqEOxGGIcqabenb9Ei
+	 8hC2vilZNLl8VMHfgmV8hPKZsfLok9oZJCcupF1p3gWyt+N6lVvOepiq+j2t5g+qlu
+	 Husp6aMOzt8CONSCym701z2LhWBVrg/xQhFF2/+RFR5sX4FhMry3x6kHREkxbAQ9hv
+	 Nk50dQw32LYNA==
+Date: Mon, 26 Oct 2026 20:34:35 +0000
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Guppy <realguppy@proton.me>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Lecoo N155A (Ryzen 7 H 255): spontaneous power-on after poweroff, Windows unaffected
+Message-ID: <8TU4lNwHVZxb2wwWzkHCgC_6DYerUYpHLY85OteuSCWhtPAlxJZyJ4pBSWOa9g4U-8SkP26IXuRmh1U_3IT0-7z0Z06Fbnd11b_XCa8e-pQ=@proton.me>
+Feedback-ID: 187169849:user:proton
+X-Pm-Message-ID: c6a38b8b36ecdbeb7b3f117041bc2dc249f956a1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,117 +61,71 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/7] docs: ABI: power: rt9471: Fix invalid inline emphasis
-To: Waqar Hameed <waqar.hameed@axis.com>
-Cc: Sebastian Reichel <sre@kernel.org>, kernel@axis.com,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-References: <cover.1792965060.git.waqar.hameed@axis.com>
- <ba11515d8e0dc45ad90f162302bcd1b20db9bd92.1792965060.git.waqar.hameed@axis.com>
- <004fbff3-7fbc-440c-9c44-44585795521c@infradead.org>
- <pndse1svbin.a.out@axis.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <pndse1svbin.a.out@axis.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
+Hello,
 
+On a Lecoo N155A laptop, after Linux completes a poweroff the machine
+frequently powers itself back on. Windows 11 (Fast Startup disabled) shut
+down cleanly in all 6 tests on the same hardware. I suspect a firmware
+issue, but since Linux sometimes carries platform quirks for firmware
+behavior, I would appreciate any guidance.
 
-On 10/26/26 6:26 AM, Waqar Hameed wrote:
-> On Sun, Oct 25, 2026 at 19:39 -0700 Randy Dunlap <rdunlap@infradead.org> wrote:
-> 
->> On 10/25/26 3:05 PM, Waqar Hameed wrote:
->>> `docutils` warns:
->>>
->>>   Documentation/ABI/testing/sysfs-class-power-rt9471:1: (WARNING/2) Inline emphasis start-string without end-string.
->>>   Documentation/ABI/testing/sysfs-class-power-rt9471:20: (WARNING/2) Inline
->>> emphasis start-string without end-string.
->>>
->>> Fix this by escaping the `*`.
->>
->> I'm still seeing this issue after the patch is applied (same for patch 4/7).
->> Maybe we are fighting a docutils your-version vs. my-version problem
->> or just a moving target.
-> 
-> Hm, that's weird. What output do you actually get? The '*' is escaped
-> now, so it shouldn't complain...
-> 
+Hardware / firmware
+- Lecoo N155A, AMD Ryzen 7 H 255 (CPUID 00A70F52), 32 GB, 1 TB NVMe
+- BIOS N155A_00_V2.5_PKID 03/27/2026 (AMI Aptio, AGESA PhoenixPI-FP8-FP7 1.=
+2.0.0e)
+- EC: ITE, firmware 10.04 (07/08/2025)
+- Kernels: Ubuntu 7.0.0-38-generic, Ubuntu 26.10 live 7.3.0-9-generic;
+  earlier also Fedora 6.19 and 7.1. BIOS 1.2 and 2.5 both affected.
 
-docutils still complains:
+Symptom
+systemctl poweroff completes normally, the power LED goes off, and about
+0.5 s later the laptop powers on again and boots. Rate: about 6 of 7 when
+shutting down repeatedly; much rarer in daily use (3 of ~55 in the journal)=
+.
 
-Documentation/ABI/testing/sysfs-class-power-rt9467:1: WARNING: Inline emphasis start-string without end-string. [docutils]
-Documentation/ABI/testing/sysfs-class-power-rt9471:1: WARNING: Inline emphasis start-string without end-string. [docutils]
+The kernel message "x86/amd: Previous system reset reason [0x00080800]:
+... CF9" appears after intentional reboots, but not after successful
+poweroffs nor after the spontaneous power-ons, so this does not look like
+a normal reset.
 
-and running the command that Mauro provided:
-$ ./tools/docs/get_abi.py -D Documentation/ABI/testing/ rest --enable-lineno|grep -A20 rt9467
+Checked, with no effect or found already disabled
+- BIOS: S5 RTC wake, Wake on LAN, Wake on PME disabled; also tried
+  AC Loss Control =3D Always Off and Wake On Voice =3D Disabled
+- FCH PMx74 =3D 0x1E020017 (PCIE_WAK_MASK, PCIE_WAK_INTR_DIS set);
+  PM1_EN.PCIEXP_WAKE_DIS reads back 0 when set
+- no AMD GPIO with the S4/S5 wake bit set; EC power-on flags
+  (AIPO/LOPO/ATPU) are 0; no ACPI wake devices for S5
+- _PTS(5) only writes FCH registers (no EC access); no _TTS
+- disabling all /proc/acpi/wakeup entries, DSDT overrides skipping
+  MPTS(5) or all of _PTS(5), unbinding network/BT/USB/USB4 before
+  poweroff, module_blacklist=3Damdgpu, module_blacklist=3Damd_pmc
 
-gives me:
-.. LINENO Documentation/ABI/testing/sysfs-class-power-rt9467#1
+Shutdown traces
+Using EFI pstore (printk.always_kmsg_dump=3D1, initcall_debug,
+dyndbg=3D"file ec.c +p") I captured the kernel log up to "reboot: Power
+down" for three consecutive poweroffs: two powered back on, one stayed
+off. All three show the same 149 device shutdowns in the same order,
+nearly identical timing, the same 0.318 s _PTS(5), and no EC transactions
+during shutdown.
 
-.. _abi_sys_class_power_supply_rt9467_sysoff_enable:
+One more data point: an EFI application launched from GRUB calling
+ResetSystem(EfiResetShutdown) powered off cleanly 9 of 10 times; the one
+failure was the first shutdown after Linux had run.
 
-+------------------------------------------------------------+
-| **\/sys\/class\/power_supply\/rt9467\-\\*\/sysoff_enable** |
-+------------------------------------------------------------+
+Questions
+1. Could the "Improvements to S5 power consumption" series (devices in
+   D3 before S5, closer to Windows) be relevant here?
+2. Is there a platform quirk or another diagnostic you would suggest?
 
-Defined on file :ref:`sysfs-class-power-rt9467 <abi_file_testing_sysfs_class_pow
-er_rt9467>`
+I am happy to test upstream kernels and patches, and to collect more
+traces.
 
-This entry allows enabling the sysoff mode of rt9467 charger
-devices.
-If enabled and the input is removed, the internal battery FET
-is turned off to reduce the leakage from the BAT pin. See
-device datasheet for details. It's commonly used when the
-product enter shipping stage. After entering shipping mode,
-only 'VBUS' or 'Power key' pressed can make it leave this mode.
-'Disable' also can help to leave it, but it's more like to
-abort the action before the device really enter shipping mode.
+Logs, ACPI tables, register dumps and the three shutdown traces:
+https://github.com/xguppy/lecoo-n155a-poweroff
 
-Note: use /sys/class/power_supply/rt9467-*/load_switch instead.
----
-
-Aha. It's the line above that now needs to have the '*' character
-escaped. I have no warnings after that is done.
-
-
->>
->> $ docutils --version
->> docutils-3.13 (Docutils 0.23, Python 3.13.16, on linux)
-> 
-> I have
-> 
->   docutils (Docutils 0.20.1, Python 3.12.3, on linux)
-> 
->>
->>> Reported-by: kernel test robot <lkp@intel.com>
->>> Closes: https://lore.kernel.org/oe-kbuild-all/202609110722.GAZVme6v-lkp@intel.com/
->>> Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
->>> ---
->>>  Documentation/ABI/testing/sysfs-class-power-rt9471 | 4 ++--
->>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documentation/ABI/testing/sysfs-class-power-rt9471
->>> index 0a390ee5ac21c..04a771cd23512 100644
->>> --- a/Documentation/ABI/testing/sysfs-class-power-rt9471
->>> +++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
->>> @@ -1,4 +1,4 @@
->>> -What:                /sys/class/power_supply/rt9471-*/sysoff_enable
->>> +What:                /sys/class/power_supply/rt9471-\*/sysoff_enable
->>>  Date:                Feb 2023
->>>  KernelVersion:       6.3
->>>  Contact:     ChiYuan Huang <cy_huang@richtek.com>
->>> @@ -16,7 +16,7 @@ Description:
->>>               - 1: enabled
->>>               - 0: disabled
->>>
->>> -What:                /sys/class/power_supply/rt9471-*/port_detect_enable
->>> +What:                /sys/class/power_supply/rt9471-\*/port_detect_enable
->>>  Date:                Feb 2023
->>>  KernelVersion:       6.3
->>>  Contact:     ChiYuan Huang <cy_huang@richtek.com>
-
--- 
-~Randy
+Thank you,
+Igor Murzaev
 
