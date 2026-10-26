@@ -1,46 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793016341;
-	b=DVFu7MPYYgsqZDSgqe+EdIeYGNpry9E/JYRINV8Ur1QJj9pWIF906PCMbTphwUmx4Mgk
-	 kKXidg06fDY/xpGXrGIxD8m7MC2LfNAR+aYx9WmZQ2EzB5f8YX2y6IqUIOZj00d7LbKAz
-	 wYo9kBzDwJXp8lEDYqxq0gezTKPN6HuBC9Lnhfc4Uc9K+aezgbUrYqvC76ykAOaoHgCt9
-	 kHjChgsmlknapaR1I4fKDwDaCDgtaDO9fuENeYQX4bQ8H6TzixCLGDuZCO/+3D495NMuq
-	 8BI4BAP0QCCbeMq7QtFjMNYvqwv+SZ16KkEEHKb1QOQtkl9T6deCmGoIiEP1J2KA/fg==
+	t=1793016349;
+	b=Pk+XHQmIXdDDKD1mostvbS628QpX+IWsrGcye3kq7xCUMsxOQOiGk6ObvCeudVbhcIZ2
+	 A5t8yae97s/ueGl70thidTSmTu181aj3P4rDNyDC1cU9Poz1B5JVDoW+EJjz296KlQ5SK
+	 9U9cIwguhJ/vH5sYdiZsM//JoDpYsF8oD1RSH2LkEOdzGgs0ZuvH7ikGNOEcpyeHNch8i
+	 h/F4DrI2jN7te0ufgMZKMUNByut34n6aq7QTvYK+8qR7+7EJtfKn2z/FzyGkIVIZ4X/PZ
+	 2u7QSH8RB6f/g7vaIOy7tQ+sFLXb68+oBnFqKCoyvwR+TSQa3wklrni4MgiJRFXMrcg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793016341;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793016349;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=G8xQcDH2otxxYZLzgFmvvHPotcztln45z2AqQl3MVAo=;
-	b=dFXhDHd2cB/H0roL4N097K+0wXpHL3rTvKzwY3vr0Ol2443N9E9vmLIVQYVpaSyBR6wI
-	 +vSSaoLYb+D8UFv9msY3JOzY2HY0f9DhgZ49Jhqgi6QuHypX3Q+CcJVKcWzcrz5vOD9it
-	 tH+GyUiFTQeTeJQ+UC3rhiED7rqJMalQRTndNAJ9hJ4lZLlZABPK9eHzazbSgQZZGBE/M
-	 +2udr2Oyt3Qo+hmlyASPPC2fqHY8r+5EOjDjxjUIBWsFI1zMNDxaYmz8/3JGXYX6BphF/
-	 T2YbIlvEDqOq3GR8h1Cjg71jKPn6ppjjMg8td4YO3y8pAR2jTb/+Kdq3EGGeT14zNAQ==
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=ZilW0XB6BHhrRULiOzNG1HXi3S6umgE4jXpLhpUC0xg=;
+	b=2hYUea+3gO5ncWRv2WU9sjlb7KNwwxOze1tTjY4XWqPloP1LwlRGAA0v5PvBF0r8ka4M
+	 bRopeunOu8yxUtvCxt9WLhvRpzA1kG1NOsJxaUUgGBxVXM2mHkZH/Oz1XSv8FmIbSpRFV
+	 3Iv3n4fjlhtHkF/FEp9UffmibPgTDUdElbV/uoCvR3Ke8p7LQv3h8eN2hwnOme6V1vF/a
+	 oM11TOL6bVZZfTYfgODUe3aaH1P5s5JZGgJZwjqTSGaFtzWX8OnoBp5DPH/UinmY3Z/A/
+	 aMTGFVn/tKqelLy1NP+FISqy0HgAPi8Wn+8LSexmdmD5yCOsLH2LEYLdViq/ueZOFFA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=arm.com;
 	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b="Jk1aM/mn";
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=nsjTFYq7;
 	arc=none smtp.remote-ip=217.140.110.172
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2A805606A31B;
-	Mon, 26 Oct 2026 12:05:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2A805606A31B
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D142F60A2616;
+	Mon, 26 Oct 2026 12:05:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D142F60A2616
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Jk1aM/mn
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=nsjTFYq7
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 80EA625DF;
-	Mon, 26 Oct 2026 05:05:35 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0D8F128FA;
+	Mon, 26 Oct 2026 05:05:45 -0700 (PDT)
 Received: from e143943.arm.com (unknown [10.57.58.20])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 887763F7B4;
-	Mon, 26 Oct 2026 05:05:34 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id EBB103F7B4;
+	Mon, 26 Oct 2026 05:05:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793016338; bh=i2qQHLE0grhenajYcjIhJMoYmoqCSUyZD0j5cnUvM9o=;
-	h=From:To:Cc:Subject:Date:From;
-	b=Jk1aM/mnt1Pe23JjbNq2gRO2dsDvKlhOfJEhN/fqWNUXEnQSNzF41N9jQGv+XFq7Z
-	 cNcF/qFkqddifchTwP+VOAdy1qmNhRrPnktoRE4N5Fy1ucpx6QgwmmgtqeeqEG4t3e
-	 BPUXAjsMD7c9gDFJ7jtLFb3JVFwykzDcsxJk6Guc=
+	t=1793016348; bh=5OfVdPR2UF1mCgifE+HNKGU16EFUcd/A6Dxc9hV2iyw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=nsjTFYq7q6CdSI5Nwm3sWwJUDsCkAOgRxwrO7FHGVD3npJYHo8XSZFp2oby7kElyE
+	 XL4qZGjJ3COktAWRsSevd4mTOykSCPI2P9D3jUMs/IMoG1V3ND2AB5BF93CAEvSUK0
+	 CfgP4E1CoIic3lZcus7YbxWTNZ9nOi9EOaVrweFs=
 From: Beata Michalska <beata.michalska@arm.com>
 To: ojeda@kernel.org,
 	dakr@kernel.org,
@@ -62,10 +63,12 @@ Cc: boqun@kernel.org,
 	driver-core@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: Request::put_noidleFrom 43bd77ceaa3d6a9f61ae8074be13824a94fa76c1 Mon Sep 17 00:00:00 2001
-Date: Mon, 26 Oct 2026 13:05:05 +0100
-Message-ID: <20261026120523.526942-1-beata.michalska@arm.com>
+Subject: [PATCH v5 2/3] rust: platform: wire runtime PM callbacks
+Date: Mon, 26 Oct 2026 13:05:07 +0100
+Message-ID: <20261026120523.526942-3-beata.michalska@arm.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261026120523.526942-1-beata.michalska@arm.com>
+References: <20261026120523.526942-1-beata.michalska@arm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,113 +80,100 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi All,
+Allow platform drivers to provide Rust runtime PM callbacks by exposing
+typed `dev_pm_ops` through the platform driver trait and installing them
+via the generated `platform_driver`.
 
-This series adds initial Rust support for Linux runtime PM.
+Add a platform-specific constructor for `pm::DevPMOps` that ties the
+PM callbacks to `platform::Adapter<T>` and requires callbacks to use
+a bound platform device. This keeps the unsafe generic PM ops constructor
+internal while letting platform drivers opt into runtime PM without
+affecting drivers that do not use it.
 
-The concept for Rust abstraction gets introduced in the first patch.
-It provides callback registration, PM callback dispatch through PMOps trait,
-scoped request helpers for common runtime PM operations and configuration
-helpers.
+The platform glue only wires the callback table into the C driver model;
+ownership of the callback payload and runtime PM teardown remain with
+the pm module.
 
-The abstraction intends to keep the request semantics aligned with
-the C runtime PM core.
-
-Second patch integrates dev_pm_ops into the Rust platform driver abstraction,
-enabling drivers to register PM callbacks with the core.
-
-The last in the series is provided for demonstrative purposes
-(not intended to be an actual merge material).
-
-This has been lightly tested with the Tyr driver.
-
-Based on drm-next.
-
+Signed-off-by: Beata Michalska <beata.michalska@arm.com>
 ---
-v5:
-- Added doc comment for `rust_private`
-- Dropped the `RuntimePMState::Unknown` as that was no longer needed
-- Dropped masking the RPM mode in `ResumeScope::release_inner` as that is not
-  necessary and brings in only confusion
-- Fixed the behaviour of `AwakeScope::new` when the `Request::resume` returns
-  `EINPROGRESS`.
-- Note on `RetainScope`: the pairing of:
-  `Request::get_noresume` ->`Request::put_noidle`
-  is intentional to avoid mixing the expected behaviour of `Scope`s
-- Cleaned up all the CONFIG_PM guards
-- Switched the `PMPayload` to use `ManuallyDrop<>` instead of `Option<>`
-- Apply the `PMConfig` only after successfully marking the devices devices PM
-  state
-- Dropped `#[pin_data]` for `RegistrationData`
-- `Registration::new()` is now usafe to with the safety requirement that the
-  `Registration` cannot be mem::forgotten
-- Overall cleanup for attributes and formatting
-- The `platform::Driver` trait is now sized to enable making the DevPMOps an
-  associated constant.
+ rust/kernel/platform.rs | 32 +++++++++++++++++++++++++++++++-
+ 1 file changed, 31 insertions(+), 1 deletion(-)
 
-v4:
-- Simplified the PMOps/DevPMOps type model by making the bus adapter an
-  associated type of PMOps, so DevPMOps is now parameterized only by the
-  driver PM implementation type.
-- Added DevPMOpsRef to pass typed, adapter-scoped dev_pm_ops references through
-  bus registration code.
-- Made DevPMOps own the generated dev_pm_ops table and require a static
-  DevPMOps instance for Registration::new().
-- Made the runtime PM payload mandatory.
-- Replaced the PMContext enabled flag with an explicit Disabled/Enabled/Dead
-  state machine to prevent re-enabling through stale PMContext clones during
-  teardown.
-- Updated with_get() to reject NOWAIT profiles in addition to ASYNC profiles.
-- Changed AutoSuspendDelay to i32 to match the C runtime PM API.
-- Renamed RuntimePMState variants to Rust-style names.
-- Dropped the local EINPROGRESS error addition: already available
-- Updated the platform PM wiring and Tyr example to the new DevPMOpsRef/static
-  DevPMOps model.
-- Cleaned up comments, docs, and minor typos.
-
-v3:
-- Dropped macros in favour of plain encoding of the PM callbacks
-- Moved Mode to use kernel::impl_flags
-- Generated PM callbacks, the stored payload, and the device cast
-  are all monomorphized for the same (Adapter<T>, T) pair,
-  with the registration sealing the contract by validating installed dev_pm_ops
-- Platform PM wiring should be type-safe now
-- Tracking runtime enable/disable state
-- Few fixes for issues pointed out by Sami Tolvanen (samitolvanen@google.com),
-  like making the registration teardown respecting the CONFIG_PM settings or
-  fixing AwakeScope for async/no wait calls; Sami is also the person behind
-  adding get_if_active variant (much appreciated)
-- Changed base branch
-v2:
-- Moving away from the old PMContext<T, Dormant/Active> type-state design
-- Introducing an explicit Registration<'a, T> object.
-- PMContext now carries a lifetime and is derived from the registration
-- Callback data is no longer recovered through driver data
-- Simplified PMOps
-- Runtime payload handling change
-- Request helpers slightly extended
-
-
-*** BLURB HERE ***
-
-Beata Michalska (3):
-  rust: add runtime PM support
-  rust: platform: wire runtime PM callbacks
-  drm/tyr: enable runtime PM
-
- drivers/base/base.h             |    4 +
- drivers/gpu/drm/tyr/driver.rs   |  110 ++-
- drivers/gpu/drm/tyr/file.rs     |    3 +
- rust/bindings/bindings_helper.h |    1 +
- rust/helpers/helpers.c          |    1 +
- rust/helpers/pm_runtime.c       |   89 +++
- rust/kernel/lib.rs              |    1 +
- rust/kernel/platform.rs         |   32 +-
- rust/kernel/pm.rs               | 1106 +++++++++++++++++++++++++++++++
- 9 files changed, 1326 insertions(+), 21 deletions(-)
- create mode 100644 rust/helpers/pm_runtime.c
- create mode 100644 rust/kernel/pm.rs
-
+diff --git a/rust/kernel/platform.rs b/rust/kernel/platform.rs
+index ac0a012ae1bb..ae1ef7daa1fa 100644
+--- a/rust/kernel/platform.rs
++++ b/rust/kernel/platform.rs
+@@ -72,6 +72,11 @@ unsafe fn register(
+             None => core::ptr::null(),
+         };
+ 
++        #[cfg(CONFIG_PM)]
++        let pm_ops = T::DEV_PM_OPS.map_or(core::ptr::null(), |ops| ops.as_raw());
++        #[cfg(not(CONFIG_PM))]
++        let pm_ops = core::ptr::null();
++
+         // SAFETY: It's safe to set the fields of `struct platform_driver` on initialization.
+         unsafe {
+             (*pdrv.get()).driver.name = name.as_char_ptr();
+@@ -79,6 +84,7 @@ unsafe fn register(
+             (*pdrv.get()).remove = Some(Self::remove_callback);
+             (*pdrv.get()).driver.of_match_table = of_table;
+             (*pdrv.get()).driver.acpi_match_table = acpi_table;
++            (*pdrv.get()).driver.pm = pm_ops;
+         }
+ 
+         // SAFETY: `pdrv` is guaranteed to be a valid `DriverType`.
+@@ -194,6 +200,7 @@ macro_rules! module_platform_driver {
+ /// impl platform::Driver for MyDriver {
+ ///     type IdInfo = ();
+ ///     type Data<'bound> = Self;
++///
+ ///     const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = Some(&OF_TABLE);
+ ///     const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = Some(&ACPI_TABLE);
+ ///
+@@ -205,7 +212,7 @@ macro_rules! module_platform_driver {
+ ///     }
+ /// }
+ ///```
+-pub trait Driver {
++pub trait Driver: Sized {
+     /// The type holding driver private data about each device id supported by the driver.
+     // TODO: Use associated_type_defaults once stabilized:
+     //
+@@ -223,6 +230,9 @@ pub trait Driver {
+     /// The table of ACPI device ids supported by the driver.
+     const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
+ 
++    /// Provides driver's PM callbacks, if any.
++    const DEV_PM_OPS: Option<crate::pm::DevPMOpsRef<'static, Adapter<Self>>> = None;
++
+     /// Platform driver probe.
+     ///
+     /// Called when a new platform device is added or discovered.
+@@ -587,3 +597,23 @@ unsafe impl Sync for Device {}
+ // SAFETY: Same as `Device<Normal>` -- the underlying `struct platform_device` is the same;
+ // `Bound` is a zero-sized type-state marker that does not affect thread safety.
+ unsafe impl Sync for Device<device::Bound> {}
++
++#[allow(clippy::new_without_default)]
++impl<T> crate::pm::DevPMOps<T>
++where
++    T: Driver + crate::pm::PMOps<
++        Adapter = Adapter<T>,
++        DeviceType = crate::platform::Device<device::Bound>,
++    >,
++{
++    /// Creates a platform driver's runtime PM callbacks for `T`.
++    ///
++    /// This constructor is available only when `T` is a platform driver and
++    /// its runtime PM callbacks accept a bound platform device.
++    #[inline]
++    pub const fn new() -> Self {
++        // SAFETY: `Adapter<T>` is the platform bus adapter for `T`, and the
++        // bound above forces PM callbacks to receive a platform bound device.
++        unsafe { crate::pm::DevPMOps::new_unchecked(crate::pm::PMContext::<T>::PM_OPS) }
++    }
++}
 -- 
 2.43.0
 
