@@ -1,11 +1,11 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.53
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1793030493;
-	b=EJ8HlialpfsXBX+810TROlXBMYSs+5Tg5pXYCHZbfqXE5LGRopVGAZQ3BWaRYxrZfcA6
-	 0A3xDEb2Rj1PfFPGvgo7WzAdEoGxDEBHVuHBhM8xE6CcafB9Nd3jxY/TobZrV+Xc8W/gs
-	 2E7AqyEV1rof/5SDyzX/5nYs2CLmwRDb/BGhPVzSA/wgsPa3Ntli4XJxoGR4QzZ6kekHc
-	 aLhL+wkQihjORawz/N4z7XI5b0o/oQvzPp/oXLVl7TnVYi//YkefiVFAfWiuHEXxAWCGn
-	 /Blsx+rx6xetS93Hf8Sa5if+Svfvb2dcGxRHkpJlDoGsM3S8dFEzF0o5nPphK0xeRhQ==
+	b=pbU/KffrI95W94rImvVYxnaFBh2LPgyymLwFwwXechxT9UjbKhGRIG7wQ29+aJzftEFe
+	 XICSfZO6jzw6B43p3OhTmW5YDB/ma4zO3Pq03gCqxV9ExI75yqPr3SiBA9ay692Fzb0r9
+	 +51P39lYpLcN6G1T8P5SyBHzOpK4wXWLR+KHgc/RHxQmQlBU59WFjw1WleudX1g8eaWGx
+	 Ez9Ml8mdqiVmOYcv3qZF3lSUJBv+hSK/pteIhAmurqQms0g9h4B9FTPCwBTyZD+yaXGNQ
+	 pN+vvDbheJfuOsi17AvpE1zbOgBwW8ZLhP1LLjxkogr0q1yBsYgxQQ4RrSfVOLBy3Qg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1793030493;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
@@ -13,78 +13,78 @@ ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	 From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key;
-	bh=uqme9Wp5homb4GKnr1RiyXTopVTpMqOF0DSF1J4+ZFA=;
-	b=q8qfKQXFNHg8lsj9jYdJYwoMWTBivnGUQVMsmUj84O5UYpX+8vFVQy2d9m6dVgvEZc/S
-	 utf6BpeOSVbhIBZrcJMkkkeUs/H+z290b6igna/CDhskXj5Gwz8Eq4867Q1F/8Zy2iArW
-	 QrXstP0s2SfVwHIJ4Ynnc0F5S+ZGFyIchlGaeuRdR0txQ7uuvE7Qx7aqDQjOi5CcxlhP1
-	 NyDVmEz44mBGAaGJRQgy5sJnW4RnkGAvMcBmRaZK01xWDgkFRAezM1xMp51LsaqSjzfVK
-	 CvULrKsdIKypWL3aiJlqOw1dgA62OIQc+wQMyo2tO/E+vaag6CWz9G0sjcRzHrtPkTQ==
+	bh=G5mOJb0RnfSFctotyurw1MWzkVYTqMttYi7YnmnVgyQ=;
+	b=ZvUcYkwjKQ5zB0IQREnkpQRPitxfoZZGCdCpPRPKI6Gm376SBcLSu+KMAeFkyDXpn7Fx
+	 oiWt1ExhFeGCPa7Fl9GXW7JZrJzo5CkiUV1KvnfLd5aJF2xXS2DrotCRFYNFz/lY3e7hK
+	 Rhx3Qq7LZA6HDZtMvslqXMLgF1og0nk397wzefvi3i8fLAMQ5yDJGGiIS6BeavWneId/7
+	 gE0K2opTjayk88sBTB/rwkvqNU21vLunl+cyhPsncB2zmniSYc/m34nqAJGc6gGwltxSG
+	 /R+YvHpZ9Bsle5/J9+RKFJnPthrjKl+hiwuYhr9pz6PIdnEs0hCumbizXd+tingKhaQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linaro.org;
 	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Jizuv7pv;
-	arc=none smtp.remote-ip=209.85.218.53
-Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=dW3Fc24n;
+	arc=none smtp.remote-ip=209.85.218.50
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86C52606A333
-	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 16:01:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 86C52606A333
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD7B660A2616
+	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 16:01:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DD7B660A2616
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Jizuv7pv
-Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c46d41f6af3so196542966b.1
-        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 09:01:31 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=dW3Fc24n
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-c4322d310e7so467120566b.0
+        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 09:01:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1793030490; x=1793635290; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1793030491; x=1793635291; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=uqme9Wp5homb4GKnr1RiyXTopVTpMqOF0DSF1J4+ZFA=;
-        b=Jizuv7pvuxy19viM9ptnpuVBxGX1f6XW1wsBz6DO6Cp3AuafDjZiJ+J5sOvDWPAKts
-         PEg2Xn35Ub7+Da3PstmTcQBD3X2ASgeHkaDtimk6USFNs70V+95nQvCLB7MrnTczhp4a
-         M5YSjcDSWih7op3+KOWXNvZLk71LjfdWbUrt2xLCg7QO5lA1gCmz7qltVq4NARKyts2Z
-         sHf5ysV9r7U93QwIYl/L0+1r8SaHSs0ODKyTIG2Q6R3ey0+tInnPmj2usKuUKDO+wR+d
-         le87tvQDOmX6vrGYCKzFINPk8hahdGQdCkAww7iZ/wN2AqUtk7q5XFDEJvk6h5tiWJt/
-         9KjQ==
+        bh=G5mOJb0RnfSFctotyurw1MWzkVYTqMttYi7YnmnVgyQ=;
+        b=dW3Fc24nHwm7RX4RtLNqTM5TYYHXznFabtwjEmnDJBOV0ztb/htbS668pgH+XdCeDb
+         ss9PL8XqeU4mGTspAXLGVRtIE2oPt9TSPKdW9BcEZnPG46g+TA6jB0ogpTd3atRSFWaU
+         ddsrmUeb1fVu4rotrra/pP//4B2YatJB9QUhTqnCj8hYYXGofjUyFtglScfFOP6tFyLd
+         rAsy+t6ehs0dhjvOMxC0EHsbDYLz+2vXS1gdnpEaeCMkserfcwPRuXAO0r7/W6FqxAv5
+         07LJRDKiYFrilduw8Y9WjZldcwhov715zOcrax2BqNa4jRNWYHgucCbMvj0clGub9Sqf
+         p4dg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793030490; x=1793635290;
+        d=1e100.net; s=20260707; t=1793030491; x=1793635291;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=uqme9Wp5homb4GKnr1RiyXTopVTpMqOF0DSF1J4+ZFA=;
-        b=AP3x2KmN6YThs78vX5V+sQ1rhCr1kdLg3wpJQtoMMr2dndJl2aByujH7pLWULKDlr+
-         rzbk/X1VSs+HlLPanZna26mqTjw/7oERTNZ9ldjr7BSJvcndlhIeSZOjRdUQyE6iZizz
-         1P2pGddyFsH05EocW2H7YJd/ZuWqQnXkf6Y/m1RWCuRnA4pVwH2OKWavhs0elfhToZWT
-         zkCZJCUaBfHSy3pNjHu1Syg/QceuN10DVROiNdzzi8ro38Q/az7feAaMtYYm4HD0IGZC
-         3quklLBbgLOZqL2UMufEeY4wTGMSmXyEJ5VtNXRDzoiwiKOXrEj5Xatmr1z8bKGeoJlG
-         249w==
-X-Forwarded-Encrypted: i=1; AKwUvBxs0i2i+CaRKTS6WiBsJeLc2TCF36BASavXJsoVfKkddzD5Oetf32SPybR3HyksM//sWzRz7g+0YQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIrTQkZowA84MajjbIusJzv2PWlMhwOUbucbF2jdArs1ns77/3J
-	1dQ3e9fbpyWbDiYiyGSHGJBmgJFQQi79ao7AyN5dyXaegh4Tx9dPzSQcCcTqqpkZcVo=
-X-Gm-Gg: AYBFou3AvwDLD3FfLlbt0tL0zg3nndhy1kMImP7j4tOLjy5qcfcm/hXoJRbj6lAtu/n
-	deQvtQHZDH+7+qRaziZBTXjt561mTQMlKiry6Ck6E+amMaob+fxyigouNn6yHu5ZohT195u2u2Z
-	Z1Px1pvCWjm/Z/S+UIjd4V1eQacsG1Z4h10VUlGJUePY5T3dmZhta2fzUUgwh4+7sZ/XnhBqLEI
-	/4CP55cAHe3p2oBcz3R4YBgagi1d8AFloHi+myxUKBYTsgfS1r/voIP3Yhs6UK8HWpxVAwEMNHc
-	XQQRW9roocuFkNFkje/KdbxH6LNY8dla+Eah4idtas6bnFUbEpIFjcdN25aGquIxMNlsjrlC/gK
-	tmtsIBmdnHv9qRDypnhIVIpMrYGAOfVeI5bTR3NQi/PbLwZHRLS4BN/oOQ6Rf3Z9CCdSaUcCyI5
-	GvwKy3PunytiXcsmGoeyAtDg6Htkg9BD45+ebw+BVD5QOGl30tSSWSEX/8KnOWdYHdx+WArjMKy
-	CAuUgi/UKRdwGFuXa+Q1WGCGk9Ina3s9KPg3rXj473slMwtDxzG6U8UKgAPXs4QM3/wGlXMhV1G
-	zqfbPDLIUOE7WtqO+3+2yYnyeKaJ/LbhQE/YYN6ifWS28VKYxP5RLydRlgshft7WTvGseGXDxxW
-	K9SlN2EMfLA==
-X-Received: by 2002:a17:907:7f9e:b0:c41:5970:2360 with SMTP id a640c23a62f3a-c46bde8d65dmr797137366b.41.1793030489913;
-        Mon, 26 Oct 2026 09:01:29 -0700 (PDT)
+        bh=G5mOJb0RnfSFctotyurw1MWzkVYTqMttYi7YnmnVgyQ=;
+        b=vCy1ZQuKzZyyPIew2asCS3ZpQ9AlrZblhNXwFlbaSAHFqCi7uH/dl8Y7T9sQnoIKkj
+         vRyBjNIk+QywDFWfSV95sEP5TdaIgaW6wN2BrMoU8LSm1F10SgJhGF3C3Jzm2aEpv4aA
+         Q4Ly0otzpcncyuAiVwC9N9o+VIY28vcMiTpfTqd55X9wv3dU0VstPCWwFcfUgKaI4DF0
+         QI4PyoVvUmjl+DA29BjgZlUKoeGCy+Atg58NJbuma1WByb7kEoI8KYCoV+6QHh0n9t/o
+         M3tf9J1GuYuwP6FNLArIUpkbVt1feOtPmYBmbj1NG1xztSzEd1xN/dKvJ1WITe0JaEIT
+         F5rQ==
+X-Forwarded-Encrypted: i=1; AKwUvByFy3EB7Ovjxq5Qm5Q1PlNwlyj74axKkTYpyHm7DfK8Lvi8p1EmumVBKSiniUGONHKYjMahMWn8bA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLz/SmgZs/QKzvC9QdLC3q1Ac7UfBSnKHZmMcgsP1T+gUvHhlR1
+	buI65/pxLrK1iyQkkOGwX13MBzneBpuq7LIBjhOuPa404z/9ugYDVTXq2yVH1ix9tj8=
+X-Gm-Gg: AYBFou0DCgjOtppJ3zoEp2FCE0ilqYd6Ywzjey5tZRjDiqG4w+2JqlduTmYi0feaEAO
+	E6pQnmVdzmHmUdOu9YvGBNQDGYyTP9OU3hKSfGZdbdPhcCb01g0yxvaW1Ib3bM/TfZuSsV4tPzD
+	zZurjONxJKz7R0uIoEyidjI6gtut8Pj133pWCIXOn53xnUOcXiNIP/zbuit9/aY7CuwT+ZggQ5i
+	Nv0s7XfjR60uCx7IvJjW0CPdBFmxpcPTONCJcVfNw3ALTXBPxgiLWalm8py2tSahQYWqW1oBSaB
+	InU1vZUczzeJdQ9yhIAG2B72rvjJFv5rmdMApaXzfhEIVUg8bU2L6OEGEET2HDEoQQMwDZsx9vF
+	4VNrREU8EHs8JsvXtTIEVeUGnQzv8XpAiqDTScyq/05MKy0o9KqDAPnjKYFwNNEXYHO+z4ydxJ3
+	UNRa7kQ3J0wawlN0MM/0riMQeQLJdK/stlLB8IPcFe+Zp8aILOB0YNmzPGq1mUWwquuQ/t+Jhbc
+	afRCeb28nqCjDObr3l2iVvWbB3MNRKWIvjdSAaWcRH5vb0qy9CdZIVVsE1DDYW4AdgfK0mzW8RR
+	dEhYtCP82xUncXT5RZMqxLdlI8c2c7CAQ8vyjKN1y9JGyU7YHt3JpfxW7dOjvs9S3UaCcAhyXXV
+	839lloJZNMikvPlKaqXDWeGc+xCUtnV56
+X-Received: by 2002:a17:906:dc95:b0:c34:83c0:b92b with SMTP id a640c23a62f3a-c46bde24eebmr834629766b.23.1793030491260;
+        Mon, 26 Oct 2026 09:01:31 -0700 (PDT)
 Received: from ta2.c.googlers.com (231.141.38.34.bc.googleusercontent.com. [34.38.141.231])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c49a530f520sm17307466b.23.2026.10.26.09.01.29
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c49a530f520sm17307466b.23.2026.10.26.09.01.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 09:01:29 -0700 (PDT)
+        Mon, 26 Oct 2026 09:01:30 -0700 (PDT)
 From: Tudor Ambarus <tudor.ambarus@linaro.org>
-Date: Mon, 26 Oct 2026 16:01:25 +0000
-Subject: [PATCH 08/15] thermal/drivers/samsung: acpm-tmu: Annotate lockless
- sensor->enabled access
+Date: Mon, 26 Oct 2026 16:01:27 +0000
+Subject: [PATCH 10/15] MAINTAINERS: Use linux-pm mailing list for Samsung
+ Exynos ACPM thermal driver
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -96,7 +96,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261026-acpm-tmu-fixes-v1-8-0637431b7268@linaro.org>
+Message-Id: <20261026-acpm-tmu-fixes-v1-10-0637431b7268@linaro.org>
 References: <20261026-acpm-tmu-fixes-v1-0-0637431b7268@linaro.org>
 In-Reply-To: <20261026-acpm-tmu-fixes-v1-0-0637431b7268@linaro.org>
 To: Daniel Lezcano <daniel.lezcano@kernel.org>
@@ -112,60 +112,38 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
  linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-kernel@vger.kernel.org, Tudor Ambarus <tudor.ambarus@linaro.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793030483; l=1693;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793030483; l=927;
  i=tudor.ambarus@linaro.org; s=20241212; h=from:subject:message-id;
- bh=s+vlmicvmxoIoV/zG2HTAfaht+VsOMx3OvHNh06nsKQ=;
- b=sr3Gr7+wPMBcALGw6z7oTnVQMKMSvhD4VWlJImkrIylHLhmr5t9yYa8CM8+YcRQX0+qwzTdZ7
- MYcDNOc0I6uAEEX6sHSgfiz0P4Wgj2B+LSwh2tq1C1/bqWW9EUL4LL6
+ bh=BUTSbzEDMtAp9xedXXWiQmdqZWmXBU0Yaz6LK7Awqpw=;
+ b=QC+yB04KHzmX5XUlB+M3WHYVAVTzsEU7atGXSGu9B/dV19AW24NT684VZEvIKwYcRbj6F20Un
+ wPF2S4wqf9pBCDVZf1GnUpDmH22JyWeQwySA4zYEGDPNhN/tKZ9uvFY
 X-Developer-Key: i=tudor.ambarus@linaro.org; a=ed25519;
  pk=uQzE0NXo3dIjeowMTOPCpIiPHEz12IA/MbyzrZVh9WI=
 
-acpm_tmu_get_temp() reads sensor->enabled outside sensor->lock as a fast
-path before resuming the device via runtime PM, while
-acpm_tmu_op_tz_control() updates sensor->enabled under sensor->lock.
-Because both accesses are plain C accesses, concurrent execution is a
-data race.
+List the power management and thermal subsystem mailing list
+(linux-pm@vger.kernel.org) instead of the general
+linux-kernel@vger.kernel.org list under SAMSUNG EXYNOS ACPM THERMAL
+DRIVER.
 
-Pair READ_ONCE() on the lockless fast-path read with WRITE_ONCE() in
-acpm_tmu_op_tz_control() to prevent compiler misoptimizations and KCSAN
-data-race warnings.
-
-Fixes: 50a2c5d4062a ("thermal/drivers/samsung: Add Exynos ACPM TMU driver GS101")
+Fixes: 05657c7822f2 ("MAINTAINERS: Add entry for Samsung Exynos ACPM thermal driver")
 Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
 ---
- drivers/thermal/samsung/acpm-tmu.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acpm-tmu.c
-index 1f56c69af76f..65be8884a8c5 100644
---- a/drivers/thermal/samsung/acpm-tmu.c
-+++ b/drivers/thermal/samsung/acpm-tmu.c
-@@ -7,6 +7,7 @@
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0e9fe9c2a39b..6da7c884373a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -24382,7 +24382,7 @@ F:	include/linux/firmware/samsung/exynos-acpm-protocol.h
  
- #include <linux/cleanup.h>
- #include <linux/clk.h>
-+#include <linux/compiler.h>
- #include <linux/device/devres.h>
- #include <linux/err.h>
- #include <linux/firmware/samsung/exynos-acpm-protocol.h>
-@@ -148,7 +149,7 @@ static int acpm_tmu_op_tz_control(struct acpm_tmu_sensor *sensor, bool on)
- 	if (ret)
- 		return ret;
- 
--	sensor->enabled = on;
-+	WRITE_ONCE(sensor->enabled, on);
- 
- 	return 0;
- }
-@@ -199,7 +200,7 @@ static int acpm_tmu_get_temp(struct thermal_zone_device *tz, int *temp)
- 	 * concurrent disabling is caught by the second check under the lock
- 	 * after PM resume.
- 	 */
--	if (!sensor->enabled)
-+	if (!READ_ONCE(sensor->enabled))
- 		return -ENODATA;
- 
- 	ret = pm_runtime_resume_and_get(dev);
+ SAMSUNG EXYNOS ACPM THERMAL DRIVER
+ M:	Tudor Ambarus <tudor.ambarus@linaro.org>
+-L:	linux-kernel@vger.kernel.org
++L:	linux-pm@vger.kernel.org
+ L:	linux-samsung-soc@vger.kernel.org
+ S:	Supported
+ F:	Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml
 
 -- 
 2.56.0.257.gf7497c7d27-goog
