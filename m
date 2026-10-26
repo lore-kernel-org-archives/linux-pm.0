@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793041680;
-	b=rcJPQyzGtbSzqCaqouroqZeh5NtCtVB5PVsdlcOf7HLvk5LvKOLX1lsijhcZNEqrftqe
-	 RJzokbk7fTh+ycsXJgrZJWfZ4Ajcg5qz/CzTC13sVGzc7OQnkF2H6Qw+5sQABzuKImci5
-	 GHv5hUaXSV+Rl63hFzLMqSexhh2eEoShAIE0FKmy31rv3ZLpBFdTfZUZAsBrzEftwjD5r
-	 bmnZTCmRp3AxkjG+vbUPg1lIPv6WU3VQxeM61mUJ8w4+3ZoRbSsuZiaJY+f8q3ywU2tUK
-	 vTuj1HiJaXrN2BlnZNEZKWHKpFOdWFNOeea8ECtr5RUbkVXytColvewPMKJi1axifLA==
+	t=1793041932;
+	b=B8lIiBJhxylMsvAhSUDpkw2aAH72rVbv1dNRHezXMD807Ifu1QkGY8yIHu0v1/nrrpcS
+	 5n+O+G6JXtbBkirDSleorU7f+bSn8GnNXuGOfJRVqHY+fqh2X9A1tqZsgbl9E7m+Tp9Eb
+	 HshchM9Fmix2Wn14u9XCHwCeFHGeKoUPRNm9CDeFUNB0KQXm4XtEweg04hrcALK6J04vf
+	 vYCwJRCiol2dOFQVfGY1H6E+TN42cYx7KTW9xdHQTU+QLw+eCmJD+DghrCv4gJRwnvMt9
+	 HRVs4TYc2fQZu7VftK0wG3ghFq1Gx4FWDCCz8Z0jtiXKCz8smgrpGerEXPEvf2pWIfw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793041680;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793041932;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=urfO6D4hqsaWObIrpF6xBqN7wc2zXiiEIXZMlS0+D0s=;
-	b=NYP8AeG1B+q4vdfJDMTJ7vgt8HqoCR2zA2nhbY/Ja9EsDhu/mbMjUmW1/IlEDXp3BFsF
-	 U0/jCVEbagxQYzD8m1FP6MWHkonCaIdVDuLxOOMa2TqhYBcUyyCSYPIMGKllf0P7c+F5f
-	 jXlzDXfefUlFVb/RMMx8sthNVPfoKrV00/LWz7CCVRwhJUHdhr4ilZv4XA8dI4vr3lLc+
-	 CMov2KVUwMT0bh2zLOB4Bk5RCvteGpBbzwLQQbVvOPFV4YzmHSxhO68pG2d/qdB6ltnIk
-	 cnHF+4FO7gvgEIRWqtVIJ1QzAfRU8sFr/cEsBVrajc5qetMMb/HGvfMtvpJZywNp42w==
+	bh=ESeb32clViSSBCfxyL4C/fFgJaSiqIpJxyga8RHrWCU=;
+	b=rFtGH9LumIdP3fa1et772yr5jiUXhOldCc9yTMPGprxLXkdVqvSlN3hduyaqIPMhh6Zs
+	 L1ZWuY+IXOIoUle9+KedP7MrCUBs/lNFrjwkGwPL2LY850gp/j7/j7ya+hpQ45AJnhdTg
+	 IfVAynYv4NYpiqw6p2Ki/nKM2RpKUv3Rv5qrTXKF8AvuU1OndK/OLbxYJGS9kXAKzI2OU
+	 XFcuccnmvPS2Hsh24CJf3RX5YUSR+vyBOvBrBMpYSBwFz7zveCyYIY6mZk8Adulx6mpAF
+	 cA17ZVltIXJc7MaB0+dBJVAvBWj030nCKoMD66fy1jh4fTYwipUopyQmFJzEifQ56sw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UY2ho6jA;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lB5VmfAS;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA1DB606A31A
-	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 19:07:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95E4C606A31E
+	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 19:12:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UY2ho6jA
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86A501F01828
-	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 19:07:59 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lB5VmfAS
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27A921F01828
+	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 19:12:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793041679;
-	bh=urfO6D4hqsaWObIrpF6xBqN7wc2zXiiEIXZMlS0+D0s=;
+	s=k20260515; t=1793041931;
+	bh=ESeb32clViSSBCfxyL4C/fFgJaSiqIpJxyga8RHrWCU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=UY2ho6jArPqIFaWq+Nzej3FIZZMDU+HH3zUAv5RWoTZJFF26qENwlX/PuSzeave9B
-	 up8sNePlt/i79wnID0Z/QzG6yOp22f8t2E8ojlYTLzLcdvr7CpUlNjlIVBpKtqKliR
-	 f6xADGHY9N43BI2fSnDjZC6UuGKYf+ZBeTykk9+zwmk1kaVMvCuVi6fI2WbKuD2y3m
-	 PZ01ROgqxUWWOgz3acwz09J7CWAKdmIs9IhIMlDBIxHYoOVIDgL9OqyUhOKbMtWXAt
-	 1O6MY7L4QAYAI4Z1EBBQA52A7u5aLR3P/7ZVDxz08JM6067J766dpceYp7Zfopvhun
-	 h0Z3AENqJiBLw==
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5be47aa555cso3843314e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 12:07:59 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwx2IYYq5w7CAjQ33J8SkYfn2kJgQ1M70gAY700Pp7Lw305bUaiRPwPN6UX5cjx8IYLrmPx6OhdWA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIwUzukT8Y9CuN1sABbhV5P3OdPRHB266rdIE/gYVhSJJa0bUPc
-	bFquRkAEi7nrzbjceLXWkZIVRGdC7xrMGdyr1IAs7H+qZlgXjGoWGgN0Tkqyx3edHWo4CU6cU8T
-	wRKsXEt59MormZrpwAAiBjI9cAArJ/ds=
-X-Received: by 2002:a05:6512:3d91:b0:5bf:c4d2:b074 with SMTP id
- 2adb3069b0e04-5bfc4d2b178mr465139e87.55.1793041677961; Mon, 26 Oct 2026
- 12:07:57 -0700 (PDT)
+	b=lB5VmfASl7uMKDqj0SBUorNNC2e4XfuV4f4czrhdh2lGpVX47PQc9tPNuaZ/o5LmL
+	 zbJlavEAiJv2mqAyWmnxP0/zlByoP1muBPUD+iCjpBbQj0Zr/ebWlt/ytK8EiGSv1D
+	 /83qu0Ezp2M/cA+fphU8aAnRT47XOrudn8TGC1PbFC8QywVnvqDKeZkDH5JwJrOG2T
+	 TDxolm0E/iUvyncLqj81YBrO6Z0Hamg9s4+y3Ttb2TdYsnFfh3OyitFgrruopTT2Fo
+	 j83jx5pGsYWyBnet4UXqn5tv/DPD081NmfKCMNVgL2WVxpE3xp8J1q+7cAd61ctZ5w
+	 JYJsOiOdwVHHA==
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5be3ea5a7adso1147719e87.2
+        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 12:12:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxaNFAEqe5Nsk6lPzswJvaD87mqnljTqgAn+peNBdWbas6AS+S6FpydP3TklxM9+beDeGZTY1c8Mw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKPZIoXFtQ9ROfjZ05OIRCs6CQRg6Ah1yA055KqCiiuQdQuZnZ0
+	WXYEYGJtpr3GaUAFaJDte/xt9VdBI37yaLS/aR+gzdHS4Lc5uhSl4kn6lR7qFRtB5w4tmdboakE
+	izVWTIM56OQdqO9TjtlSq9rboDGoHtHo=
+X-Received: by 2002:a05:6512:239f:b0:5bc:b23c:f7dc with SMTP id
+ 2adb3069b0e04-5bfb716dce8mr2548379e87.9.1793041929627; Mon, 26 Oct 2026
+ 12:12:09 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,102 +59,95 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261014200127.1363472-1-sashal@kernel.org> <20261014200127.1363472-4-sashal@kernel.org>
-In-Reply-To: <20261014200127.1363472-4-sashal@kernel.org>
+References: <20261010100148.297720-1-xiongyining1480@phytium.com.cn>
+In-Reply-To: <20261010100148.297720-1-xiongyining1480@phytium.com.cn>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 26 Oct 2026 20:07:44 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hN1xj6wnf53QAD_OZxJHyy3DNAXeMWBnVrTZ4xcBBG5A@mail.gmail.com>
-X-Gm-Features: AclHuK8f4uksRxlVflTjoQx-AJmosU8fA-9vAMQQLIJZ0eA6F1YTlLjjzwLCkvw
-Message-ID: <CAJZ5v0hN1xj6wnf53QAD_OZxJHyy3DNAXeMWBnVrTZ4xcBBG5A@mail.gmail.com>
-Subject: Re: [PATCH 3/5] selftests/thermal: allow cross builds of the Intel tests
-To: Sasha Levin <sashal@kernel.org>
-Cc: Shuah Khan <shuah@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 26 Oct 2026 20:11:56 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iO00WGo=Op6YCz2t2f5WQUK0OPae8R7jD_ZzLFYoqrWQ@mail.gmail.com>
+X-Gm-Features: AclHuK-ZxMmLsw196GQVo3yjC5ZsB3uG1TZ7Et-SYP0Lg46qun1CpNhsaanIZEw
+Message-ID: <CAJZ5v0iO00WGo=Op6YCz2t2f5WQUK0OPae8R7jD_ZzLFYoqrWQ@mail.gmail.com>
+Subject: Re: [PATCH] selftests: cpufreq: stop CPU hotplug loop after cpufreq
+ update test
+To: xiong yining <xiongyining1480@phytium.com.cn>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Shuah Khan <shuah@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	chenbaozi@phytium.com.cn
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 14, 2026 at 10:01=E2=80=AFPM Sasha Levin <sashal@kernel.org> wr=
-ote:
+On Sat, Oct 10, 2026 at 12:02=E2=80=AFPM xiong yining
+<xiongyining1480@phytium.com.cn> wrote:
 >
-> The power_floor and workload_hint Makefiles build nothing when
-> CROSS_COMPILE is set, even for an x86 target, and they include lib.mk
-> only on x86. Other architectures therefore have no install or
-> emit_tests rules for these suites, and their installation fails with a
-> missing target.
+> Original test uses a fixed 5000 iteration loop to trigger CPU hotplug
+> for verifying cpufreq synchronization between CPU hotplug and sysfs
+> writes.
 >
-> Select the x86 tests from the target ARCH when it is given and from the
-> host's SUBARCH otherwise, and include lib.mk unconditionally so that the
-> suites install and emit an empty runlist on other architectures. Use a
-> private ARCH_PROCESSED instead of the ARCH override added by
-> commit 5a1292137e89 ("selftests: fix ARCH normalization to handle
-> command-line argument"): the override changed the value lib.mk uses to
-> pick the clang target, whereas leaving ARCH unset lets lib.mk use the
-> compiler's native triple. A command-line ARCH such as x86_64 is still
-> normalized for the selection, while an ARCH spelling that lib.mk does
-> not know, such as i686 with LLVM=3D1, is rejected as in other selftests.
+> Two issues exist:
+> 1. Background hotplug task keeps running after test completes, causing
+> redundant CPU on/offline operations.
+> 2. When cpufreq frequency setup is slow, the hotplug loop may exit
+> before frequency updates finish, which breaks test purpose.
 >
-> Fixes: 27801542b2b8 ("selftests/thermel/intel: Add test to read workload =
-hint")
-> Fixes: d4d27e5a1a88 ("selftests/thermel/intel: Add test to read power flo=
-or status")
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
+> Introduce a file-based stop flag to control the infinite hotplug loop.
+> After all cpufreq updates complete, create the stop flag file and
+> wait for the hotplug task to exit.
+>
+> This makes hotplug run only during cpufreq sysfs write test,
+> align with test objective.
+>
+> Signed-off-by: xiong yining <xiongyining1480@phytium.com.cn>
 > ---
->  .../selftests/thermal/intel/power_floor/Makefile     | 12 +++++-------
->  .../selftests/thermal/intel/workload_hint/Makefile   | 12 +++++-------
->  2 files changed, 10 insertions(+), 14 deletions(-)
+>  tools/testing/selftests/cpufreq/special-tests.sh | 12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
 >
-> diff --git a/tools/testing/selftests/thermal/intel/power_floor/Makefile b=
-/tools/testing/selftests/thermal/intel/power_floor/Makefile
-> index 07463c2160e09..16d26eab55652 100644
-> --- a/tools/testing/selftests/thermal/intel/power_floor/Makefile
-> +++ b/tools/testing/selftests/thermal/intel/power_floor/Makefile
-> @@ -1,12 +1,10 @@
->  # SPDX-License-Identifier: GPL-2.0
-> -ifndef CROSS_COMPILE
-> -ARCH ?=3D $(shell uname -m 2>/dev/null || echo not)
-> -override ARCH :=3D $(shell echo $(ARCH) | sed -e s/i.86/x86/ -e s/x86_64=
-/x86/)
-> +top_srcdir =3D ../../../../../..
-> +include $(top_srcdir)/scripts/subarch.include
-> +ARCH_PROCESSED :=3D $(shell echo $(or $(ARCH),$(SUBARCH)) | sed -e s/i.8=
-6/x86/ -e s/x86_64/x86/)
+> diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/tes=
+ting/selftests/cpufreq/special-tests.sh
+> index e87ed7c8e5e5..14530c1b8d25 100755
+> --- a/tools/testing/selftests/cpufreq/special-tests.sh
+> +++ b/tools/testing/selftests/cpufreq/special-tests.sh
+> @@ -97,14 +97,20 @@ governor_race()
+>  hotplug_with_updates_cpu()
+>  {
+>         local filepath=3D"$CPUROOT/$1/cpufreq"
+> +       local stop_flag=3D"/tmp/stop_hotplug_$1"
+> +       rm -f "$stop_flag"
 >
-> -ifeq ($(ARCH),x86)
-> +ifeq ($(ARCH_PROCESSED),x86)
->  TEST_GEN_PROGS :=3D power_floor_test
-> +endif
+>         # switch to ondemand
+>         __switch_governor_for_cpu $1 "ondemand"
 >
->  include ../../../lib.mk
-> -
-> -endif
-> -endif
-> diff --git a/tools/testing/selftests/thermal/intel/workload_hint/Makefile=
- b/tools/testing/selftests/thermal/intel/workload_hint/Makefile
-> index 49e3bc2b20f9d..e53d6ecd9f8de 100644
-> --- a/tools/testing/selftests/thermal/intel/workload_hint/Makefile
-> +++ b/tools/testing/selftests/thermal/intel/workload_hint/Makefile
-> @@ -1,12 +1,10 @@
->  # SPDX-License-Identifier: GPL-2.0
-> -ifndef CROSS_COMPILE
-> -ARCH ?=3D $(shell uname -m 2>/dev/null || echo not)
-> -override ARCH :=3D $(shell echo $(ARCH) | sed -e s/i.86/x86/ -e s/x86_64=
-/x86/)
-> +top_srcdir =3D ../../../../../..
-> +include $(top_srcdir)/scripts/subarch.include
-> +ARCH_PROCESSED :=3D $(shell echo $(or $(ARCH),$(SUBARCH)) | sed -e s/i.8=
-6/x86/ -e s/x86_64/x86/)
+> -       for i in `seq 1 5000`
+> +       while true
+>         do
+> +               if [ -f "$stop_flag" ]; then
+> +                       break
+> +               fi
+>                 reboot_cpu $1
+>         done &
+> +       local hotplug_pid=3D$!
 >
-> -ifeq ($(ARCH),x86)
-> +ifeq ($(ARCH_PROCESSED),x86)
->  TEST_GEN_PROGS :=3D workload_hint_test
-> +endif
+>         local freqs=3D$(cat $filepath/scaling_available_frequencies)
+>         local oldfreq=3D$(cat $filepath/scaling_min_freq)
+> @@ -117,6 +123,10 @@ hotplug_with_updates_cpu()
+>                 done
+>         done
 >
->  include ../../../lib.mk
-> -
-> -endif
-> -endif
+> +       touch "$stop_flag"
+> +       wait $hotplug_pid
+> +       rm -f "$stop_flag"
+> +
+>         # restore old freq
+>         echo $oldfreq > $filepath/scaling_min_freq
+>  }
+>
+> base-commit: 28924df2a08f440c73991b83028032c901de2ae4
 > --
 
-Applied as 7.4-rc material, thanks!
+Please see Sashiko's feedback on this patch:
+
+https://sashiko.dev/#/patchset/20261010100148.297720-1-xiongyining1480%40ph=
+ytium.com.cn
+
+and tell me what you think about it.
+
+Thanks!
