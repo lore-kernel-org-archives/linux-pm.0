@@ -1,59 +1,59 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792985158;
-	b=XKxH87Q4bT1X09wu8UHq7XlreMIeY/o+TPVBUtF8aopoJC/oDv47ic9Ex0EgZjIdLopE
-	 9oz5zEm+a19SqJLRytd2XE3PDMtMxoNcAWO7Yap7264zFxVIAag7257e4A6LrybeUOfDq
-	 Mf4+Y8r6rUVzVTR2aaYSb04fW976SnJB+DVeP7YBc8if4oZ4qL8cXdhYHHan7+PjcRNZb
-	 xNi8ytgRvUhAPa/tDa0iBlrGh+1ZVNnYIarhIi0RCjvJ5VEyKineHD6hVNzWVsIV0IEVK
-	 LM/R0KsInIOLYTvn5lpbF5SSq4iNFZc2Waz8aBTrCaTSKrzJexb2b3cBBcCicDHwkMQ==
+	t=1792985253;
+	b=aKcsdx6jS/KK/RGB4uzamL+pFG7TFUvsisGD+HhVeU7K2fDFTbLMP2gtQFdZ4lZQ+Qsb
+	 9hJFhTMPHPNjuddxEmgBu+yVcfze9Fty7NQ6hlTKM884/TgbaIRsuywGpc30wh9i9nDmE
+	 kO2Bd/EnfW4kWH0+t/YGmJpbk6dt/p5xYCt8ZSLeD5UmeppBwU1NA7RB3awNmcEXCy4q9
+	 CnNF5+pubte6RiEASzGIa51I2c/LMS4xEn2Xe3ViBB99e/u2X7uZhAzwg6bYh2pI+92Xs
+	 b6g9YZa+z/q0ktJApeT806zpkeG04tvbR0tExmvrEvggLVaMgC75OEKWztGdNR+0wrw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792985158;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792985253;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=r7ezphrj+oGFDlyJzh0KgsQtGnCebZng7eNFUrW44ts=;
-	b=Kr34c5rs7Bhg1qxFfxn5Y5PVxfoGr9VHWPLB4o5Ww9uJF1rSpYKBNq1X7mbqTU+DFejg
-	 o1wZStB/nRbpHmYAYgI6t7s03xtUc76roodE9u+tA//q8M5Dv8O6DqoWiYvmF9DSN2gtt
-	 8XF16yFl86wDAIROmvxXGEEDF+auka+AMTSkliZg28RDZVVGufIYkggpoV+2hmb1sQ+dv
-	 vrKb8Ufq18xR5GqjZRww8ZATTTy00jJTm13pYUdtzmM/RiigQi6Hib0ystCncoQsEGbuI
-	 RXa2ghyGAv3RttxHMbbnWIdv77RpbKheRbkx3VFSxi3i+rB9faiT1SwGbMJVsZ0H1vg==
+	bh=y+VtLfq/MdIYVkK2DxK4rvhjYdfZfO4NoblIfof12wE=;
+	b=wh0npzRhMqgMzjL7EFvtYiGdTIbEqtqpLnYasNmflPVyVDQHIzlPjmAuu993XW5UMeRu
+	 CVmANAyb7ZTpL37J8kWgY7s6qHjnHGrT9lnSuAEPN3sGjdAVUYU870JHvCmIMdf6gWv4I
+	 /N2jYPxtOKj3LLRPpWz7d4eAp8F3r84HJdMPV/gVP/eMa8Ci84F/4plpizoCDePCL/5mu
+	 BlyrnP7U/aP1jFmiDPRXR4WuhNcrCgFQVloagyNJrCCVGHpsOM7uFpwSySAuxvq9TRqOh
+	 KThbpAOy082VOWllBCK1oLZtC6j93+ltFZDuWffhy0TegAFnzHCksUqD3RH2YAJP0og==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iJbor1ZF;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dBG3BIj0;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66646606A31B;
-	Mon, 26 Oct 2026 03:25:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16EF5606A323;
+	Mon, 26 Oct 2026 03:27:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iJbor1ZF
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24BB41F01825;
-	Mon, 26 Oct 2026 03:25:55 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dBG3BIj0
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50CEB1F01825;
+	Mon, 26 Oct 2026 03:27:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792985158;
-	bh=r7ezphrj+oGFDlyJzh0KgsQtGnCebZng7eNFUrW44ts=;
+	s=k20260515; t=1792985252;
+	bh=y+VtLfq/MdIYVkK2DxK4rvhjYdfZfO4NoblIfof12wE=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=iJbor1ZF6TAy1nxpgPmlEV3U2iTl4M1wdl+VcMJ2pE2JDoI2fQfESg9a5P5yNEF6/
-	 9d8F6waUwgqFW8BupkLm2PXDnn6lATlwpKVNc9i4etUIDAKe+K29b0Wh6ISwpDhMuL
-	 dl5apYZ14qKbxvzsXDMZ5vRkzf3jm/p7Nu4//ms2QrIw2Wo2ZpGB27KgnxcdCKLMNY
-	 qcaRb4AzjbXELgY14p60jozchxVwoO8OVlS/dIyboC70DrozygyEb5Ue0YGUpYvn2b
-	 rWzNxu0B3DOZrlafHeswD2onVwZGcZx+ZStSTlDeohADnsYfuurkww+HfSYDALXVEY
-	 bnWmjIl96w8QQ==
-Date: Mon, 26 Oct 2026 03:25:50 +0000
+	b=dBG3BIj0tVgTaX/Eb3I8cJzfU5J0t/VaD1HoIIeNAAW4vyEuhuL2vUgHAY9UtARrL
+	 ZfcPK8sLhbLW1iUnr2PbeDjQXq1XFqlidBtoak6axocX3Bis1PtbVvX0yekKZ3vS1S
+	 Y5xTqmZzkr4qABIdLEA4ZYqJbs+dDw4Hhb1S3KPG3G+Cu+WIpVqDBR7nL6+15t/pRI
+	 Y8QrDFvqNqj0X6cxw0EXB6m4A90cqIKZSGLMXugIPyVNPsUXDshXtBfBhzmDhgHv8f
+	 Bxn+I3hdu9cHYAD8An7MN8tIC6+KGMJClVgfLerrPY8eeIMEpwxAck1XrPK7BIZXNp
+	 pmEq3NAr2CH2w==
+Date: Mon, 26 Oct 2026 03:27:25 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Brian Norris <briannorris@chromium.org>
 Cc: Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, "Rafael J. Wysocki"
  <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
  linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>, David Lechner
- <dlechner@baylibre.com>, linux-iio@vger.kernel.org, Andy Shevchenko
- <andriy.shevchenko@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 08/17] iio: chemical: atlas-sensor: Discard
+ <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 07/17] iio: adc: ti-ads1015: Discard
  pm_runtime_put_autosuspend() return values
-Message-ID: <20261026032550.0451be50@jic23-hlaptop>
-In-Reply-To: <20261021165858.v2.8.I55d76837b3feb481080e43d358375445ca0993c6@changeid>
+Message-ID: <20261026032725.47b5843a@jic23-hlaptop>
+In-Reply-To: <20261021165858.v2.7.Ib4e8fc11192ec5721b98bd85fa9a68d3349ba9e8@changeid>
 References: <20261021235818.3059519-1-briannorris@chromium.org>
-	<20261021165858.v2.8.I55d76837b3feb481080e43d358375445ca0993c6@changeid>
+	<20261021165858.v2.7.Ib4e8fc11192ec5721b98bd85fa9a68d3349ba9e8@changeid>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -67,11 +67,11 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Wed, 21 Oct 2026 16:57:09 -0700
+On Wed, 21 Oct 2026 16:57:08 -0700
 Brian Norris <briannorris@chromium.org> wrote:
 
-> The atlas-sensor driver propagates the return value of
-> pm_runtime_put_autosuspend(), which is not particularly useful.
+> This driver propagates the return value of pm_runtime_put_autosuspend(),
+> which is not particularly useful.
 > 
 > Returning an error code from pm_runtime_put_autosuspend() merely means
 > that it has not queued up a timer or work item to check whether or not
@@ -80,7 +80,9 @@ Brian Norris <briannorris@chromium.org> wrote:
 > device's runtime PM "control" attribute in sysfs for one example.
 > 
 > For this reason, modify this driver to simply discard the
-> pm_runtime_put_autosuspend() return value.
+> pm_runtime_put_autosuspend() return value. Inline
+> ads1015_set_power_state() while we're at it, since its behavior is now
+> the same with and without CONFIG_PM, and it is otherwise trivial.
 > 
 > This will facilitate a planned change of the
 > pm_runtime_put_autosuspend() return type to void in the future, similar
@@ -88,30 +90,5 @@ Brian Norris <briannorris@chromium.org> wrote:
 > type to void").
 > 
 > Signed-off-by: Brian Norris <briannorris@chromium.org>
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
+Fairly simple one and clearly a net gain.
 Applied.
-
-> ---
-> 
-> Changes in v2:
->  * Split iio patch into per-driver patches
-> 
->  drivers/iio/chemical/atlas-sensor.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/iio/chemical/atlas-sensor.c b/drivers/iio/chemical/atlas-sensor.c
-> index 1d4a9919df1a..48598475512f 100644
-> --- a/drivers/iio/chemical/atlas-sensor.c
-> +++ b/drivers/iio/chemical/atlas-sensor.c
-> @@ -426,9 +426,7 @@ static int atlas_buffer_predisable(struct iio_dev *indio_dev)
->  	if (ret)
->  		return ret;
->  
-> -	ret = pm_runtime_put_autosuspend(&data->client->dev);
-> -	if (ret)
-> -		return ret;
-> +	pm_runtime_put_autosuspend(&data->client->dev);
->  
->  	return 0;
->  }
-
