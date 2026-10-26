@@ -1,90 +1,52 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.44
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793030495;
-	b=B0V53ueqMQUdB4AfI8mtJiiHD0LPiLnzkFspTzxFfuRWJG6KBQ17xS4Ualf6Gk6WEEjI
-	 kCOCKcV1iu6Ho/nHjjg5W1rz75vvwAbsSW/qFBuC3B39KmowrHIAkO7cMT0nHWxfrCuyo
-	 nJApQYV49tLaBG5grE6xMmyQsCaBZHVAsw6wg1Fucbc+2SMqK0t+kQRQKIH2c28xYbO+t
-	 3hiMwGLeD2DZNWlanpg6/l4ib0u7Gmf9soBmExiCt/RoRZSzbWqwqxIdugpQKBlWFvXXR
-	 loV4us9wCMZPqFXlJOMbHsQvu9WGNiVhw36i6bC0N09tGUruZZ+38DypoPzSTy1VK3g==
+	t=1793033576;
+	b=zjDWBW4x/7pgAtA0WznpMWLOrirOKYSB/jh9MFeJxW21zrK/ESxr09zVVSVLlqSqbC+c
+	 De5aAUkMt6rhXgwCUO8PTEr2PQ5q2V0FY0Xme8kLdIUryku3HQw82oZlcxaGNIraSV5y3
+	 rBwlHdV2aPsllOG8n8KTXbaqWNW9+9JGganJd7bWnk4p1FLIK5Y8NkXJfHpd00BlVbHg2
+	 pgBKVztEZ90deoXhK1CANIdkwk4XhHkqzXv106/C4mTDdX0XKbArxmKmh7qetkBKoZ+Mo
+	 I8BLTnKL4RPv3Hsfh+r6zahje5h5v6Bt6L4t3/7/M4DYUAwmyzi2gG4ghGN1lbw5dnw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793030495;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key;
-	bh=kBw7AsSPjsfDBCQewWzDRPOIx+yoCp8Gcws1tr4ymx4=;
-	b=zMRB0HW01kjtJ6aXKfX+rysp+79RAsLeh4eDS+8FfRlWZqwRQVT3vhZCQs1hNPqlAP/U
-	 kRMzgOjH32qVKhnENoyHCTS5uKP0G3vDoiIj3ZjPxhH+TGFpUy/fPuqUOEle2AwW29cmg
-	 aZA2Iua9hSeAJZIZ5Jvb/Q9e1lE7NTfMn0phSud5h1JLp2FrCFEzS3FfPm7i6vIPxvG+W
-	 dAW83MbpxEZtLF/otaUgto7H+ZH1FjIGSxpaEzjfDq5Bc8cKfrkGZm5EjTb7nFW2Ygk4b
-	 gTp1ZkAljKZTFvs2om7fip+IKKLtJn8kFGFys1x/j4A9cpnRM4q91Wh6Xhv1Iceph5A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793033576;
+	h=Received:DKIM-Signature:Received:Date:From:To:Cc:Subject:Message-ID:
+	 MIME-Version:Content-Type:Content-Disposition;
+	bh=V8PvGXZ7VCsMB0ruiPuEvtUOu6j7X/roxqJhe5mrWAM=;
+	b=RvvZAWF47ZUNtpr36xrGGArRreIta4RFxB2HsVBRU+zPnve94xYRUapKkk8sPQp1izk5
+	 8/BJxBI/cWYfdkWSW1m1g0s68A4lpvZmpMWTb6dl5VitvB8ZKOBgCxMHCKglqdqAfTjaU
+	 f/zjDt8SN8pmOAchJdkQz9n8my1lO7RbIykI9z4Tb1DacTf/cHdecYB70x3uhonaG5Ujm
+	 NzjPpevWYTvbqVa8temwz4RxANbhkSvo6a5YmhV2hbINnVh0hDqxzyXVtkXS+SofNO2aF
+	 EE5b/QU/LAMMrUIy4vgEf8vBVSvVSLIBWOzpTyYuUAXOP2P2JtungBXwu115gHQF4Rw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Q2+gKLTX;
-	arc=none smtp.remote-ip=209.85.218.44
-Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WL4CmMux;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CC3560A2613
-	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 16:01:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5CC3560A2613
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4179C606A31A;
+	Mon, 26 Oct 2026 16:52:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Q2+gKLTX
-Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-c423b145922so426714866b.3
-        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 09:01:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1793030493; x=1793635293; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kBw7AsSPjsfDBCQewWzDRPOIx+yoCp8Gcws1tr4ymx4=;
-        b=Q2+gKLTXKBmiFtZ3oS6jQ/Alb+7Y8/226FUbzVO0UsRgn0WP/nSIudqsHDvjXVWlYe
-         ppKS28mUWuunFTQtgq3SL7OpecpO5D87T58jH32UNB4L/hAPcqmu/8aSkrJM05L/ZNbp
-         uijzsrmQDyDLNoCv4nswrIlEfI0NCvKa5H4/aZbyATgqu/ekcUtezv8kqOqPBFAyv5ae
-         1yacVh897Y8xxclpOvfEbgIwheoneVYdNswZ9dkOj8TKA6JhrnnaBWLdv8DTlnd+wOfC
-         dJUE/FDAWdd3OTlm4hD98Hs094pws974LOzbU5vUIrWNR2n1i2FV3SZwBuPuU0lQkAdB
-         KiMQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793030493; x=1793635293;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kBw7AsSPjsfDBCQewWzDRPOIx+yoCp8Gcws1tr4ymx4=;
-        b=X1TJVZ6UCc7cCP1ieplJgUnwJoiQXhiTJcHZtjftsU4utBuNBKuSpUzOEBzMfjkv5x
-         95YG5PUl7+3l/K8ZW4CxyR07D9LtuYDOyR+sT613R7kY5ayzjMHXRCPp5TRvfzzI0zfA
-         rwQIF71O90kYohBjteuv28i1EAAaSoCMjA2ZoFav81DfPuXlAEnyqoS2pncRsIMzqZJD
-         W/RGVD5+IpGprLW4pjmpadWM+UyCXXQVaxFa6DBiVHIDPSNiaLqGqZNWrumCVElGtw+6
-         L1/5bUOp0jjupVYzeMjW7ICaaLD8JwQfTdhHreqNM9cp4eabm2Rqauwk6uz0463RT4EJ
-         Kznw==
-X-Forwarded-Encrypted: i=1; AKwUvBycSdPVdcjvxWFuUo7UaPup7jLhVvXtoy9scfpaMnFxlGRmVtPJuxRSlK1y95OKP/Iyv/l/+dC1bA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYK6xbx/aMfbA608O36Gn/KWVtkmOA+5Tbbq6bsUp9WzCguJYum2
-	CGYiJtwGkiE+MZ/JqeaRuYJ3tfpyuG3ElcetKPgR0CkCfrt0AZa831vd98UCrHrIUcc=
-X-Gm-Gg: AYBFou242dn4dEAT4ZC8QLuAkdBSM5VheHUsBSoXl3NSOSdNdVhPuC78E8Z+rq0HbJZ
-	Nw76CSsdxk8jbZmd+MUc2gtNAX6kuw2hW7tLqvEFbBr9O5UW3vehcWvuU7rXqLlZhOhFEPe0zF0
-	zztg4MMgkVNeNenoJuqrqeEktjlJ15/rC+ETy+DTipkfewmnocYAp8znquxGW88eXlxVL7Dm0QB
-	LJurkOySU3JfpMvoHEC1J4Lqu0ML3ADYwh78hKL4gKczwYAXwF1TnmxGCtlpGoup+cujAtpnlbR
-	/FnFDoFC8y9yJ9MTCKaLwoUg8SlErrFPfw6VMXvgEko1cqLi/OlvBs3hxwWflnVwJ6V4voZoWT4
-	qQVlGrj/k7RlJocFBVZ0G6ynf/T7XKLzfmWR8+QEHbOfLC5wunT4bVkykTapNe0v91DqtBfRVXa
-	QfKUF7Z5cdEqap0yNH1h/F+YUIkQ+vvG+2M9NU7o4q8LNFRT9N8DCtcSjxBHXVCyjVbyG9CMhEG
-	nRyNETj3A0bqxhNOq68YSNVrpwoPtdnrOUv4sN1Jwsc3l5HirGLVgbNRcDuuLkhIY3GTCv1HUle
-	kysrC5Dwk8fDHntq2P23/RRTVus1oYxDmp7Che36RUeopY5dgRW9z/dMxi0j2YlOv3QTjMvv/zC
-	N6Mz3uYrzQw==
-X-Received: by 2002:a17:906:7952:b0:c24:adf4:5c73 with SMTP id a640c23a62f3a-c46bdaa744dmr805676266b.1.1793030492733;
-        Mon, 26 Oct 2026 09:01:32 -0700 (PDT)
-Received: from ta2.c.googlers.com (231.141.38.34.bc.googleusercontent.com. [34.38.141.231])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c49a530f520sm17307466b.23.2026.10.26.09.01.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 09:01:32 -0700 (PDT)
-From: Tudor Ambarus <tudor.ambarus@linaro.org>
-Date: Mon, 26 Oct 2026 16:01:29 +0000
-Subject: [PATCH 12/15] thermal/drivers/samsung: Drop redundant composite
- object in Makefile
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WL4CmMux
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 955B01F01825;
+	Mon, 26 Oct 2026 16:52:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793033575;
+	bh=V8PvGXZ7VCsMB0ruiPuEvtUOu6j7X/roxqJhe5mrWAM=;
+	h=Date:From:To:Cc:Subject;
+	b=WL4CmMuxAg/ZGy1bOfU+tg5BTB9JnMCnrkHeqRyBoXqp7WSDJdXJFfDDroRm6k81Y
+	 PQRhCuvVFoTJeIMmE4UaFhoYty5CzTeUyKuncx1eQtLFLRUS4nDEUhYTnRFyuZeXi+
+	 TtOb/YQWAcVYlLJ6jme7uBfPlpMdWWgy7d29JhpfDURIQ3aDI5tpqvH7xpW6vlHfYD
+	 RG/BkAN7fWEpAFXx5FaMyGZpkxqZlzcfh73uHn1sv82ZiC06eDqHKaePjNW9dxn5F+
+	 TV0ai87s9Bg+FbIU609n9yL8V418U0iRQo1d5KFWpw60QXU5NsWaw87mWhc9EfN/XH
+	 Vm52pdlURzuww==
+Received: by venus (Postfix, from userid 1000)
+	id 821BC1806C8; Mon, 26 Oct 2026 17:52:53 +0100 (CET)
+Date: Mon, 26 Oct 2026 17:52:53 +0100
+From: Sebastian Reichel <sre@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [GIT PULL] power-supply changes for 7.4
+Message-ID: <at-FRLALI5DhW7Lh@venus>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -94,54 +56,296 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261026-acpm-tmu-fixes-v1-12-0637431b7268@linaro.org>
-References: <20261026-acpm-tmu-fixes-v1-0-0637431b7268@linaro.org>
-In-Reply-To: <20261026-acpm-tmu-fixes-v1-0-0637431b7268@linaro.org>
-To: Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Alim Akhtar <alim.akhtar@samsung.com>, 
- Alexey Klimov <alexey.klimov@linaro.org>, 
- Peter Griffin <peter.griffin@linaro.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Juan Yescas <jyescas@google.com>, linux-pm@vger.kernel.org, 
- linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Tudor Ambarus <tudor.ambarus@linaro.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793030483; l=884;
- i=tudor.ambarus@linaro.org; s=20241212; h=from:subject:message-id;
- bh=SDTotlLZ4kEAoPrEqW6PvwCyKZkwJhZmCCGyB1TBPzI=;
- b=JadGXkbxn+EafNhgFKNtszZPIyTWdwhW8qTIY37B/py/BVkrrWmdJpOWgaeZTF461yBeuiH6t
- pQrC4KFxCwoBCxlHTzjvL6fSlwGnY2iXIZSE9WCw0AgKuhCRPGCehLb
-X-Developer-Key: i=tudor.ambarus@linaro.org; a=ed25519;
- pk=uQzE0NXo3dIjeowMTOPCpIiPHEz12IA/MbyzrZVh9WI=
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="bw5hswutkyqd2qag"
+Content-Disposition: inline
 
-The Exynos ACPM thermal driver consists of a single source file
-(acpm-tmu.c). Build acpm-tmu.o directly under CONFIG_EXYNOS_ACPM_THERMAL
-instead of wrapping it in a single-file exynos_acpm_thermal.o composite
-object.
 
-Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
----
- drivers/thermal/samsung/Makefile | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+--bw5hswutkyqd2qag
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: [GIT PULL] power-supply changes for 7.4
+MIME-Version: 1.0
 
-diff --git a/drivers/thermal/samsung/Makefile b/drivers/thermal/samsung/Makefile
-index daed80647c34..d5b6e9e05377 100644
---- a/drivers/thermal/samsung/Makefile
-+++ b/drivers/thermal/samsung/Makefile
-@@ -4,5 +4,4 @@
- #
- obj-$(CONFIG_EXYNOS_THERMAL)			+= exynos_thermal.o
- exynos_thermal-y				:= exynos_tmu.o
--obj-$(CONFIG_EXYNOS_ACPM_THERMAL)		+= exynos_acpm_thermal.o
--exynos_acpm_thermal-y				:= acpm-tmu.o
-+obj-$(CONFIG_EXYNOS_ACPM_THERMAL)		+= acpm-tmu.o
+Hi Linus,
 
--- 
-2.56.0.257.gf7497c7d27-goog
+The following changes since commit 5b4bd13e0552926648a46c2c9a12a24dfaee3715:
 
+  power: supply: core: prevent unregistering a power supply while a callbac=
+k runs (2026-10-04 18:49:02 +0200)
+
+are available in the Git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.gi=
+t tags/for-v7.4
+
+for you to fetch changes up to f0f400459bf6a037e70768de623fff3f8920b8bb:
+
+  power: supply: gpio-charger: Report discharging without input power (2026=
+-10-18 12:21:00 +0200)
+
+----------------------------------------------------------------
+power supply and reset changes for the 7.4 series
+
+ * power-supply core
+  - introduce LOAD_SWITCH property
+  - pack power_supply_desc to optimize memory
+  - prevent power-supply device unregistration while callback runs
+  - drop last CONFIG_OF build-time dependencies from the core
+  - documentation fixes
+ * power-supply drivers
+  - bq27xxx: add support for bq27z746, bq28z620
+  - ab8500: add AB8505 support
+  - bq257xx: fix probe time configuration race condition
+  - multiple: convert drivers with custom LOAD_SWITCH properties to the
+    new standard one
+  - cros_charge-control: restore EC state on resume
+  - qcom_battmgr: fix USB type reporting, notify charger online state,
+    report full batteries and correct capacity on X1E
+  - gpio-charger: always report as discharging if input power is missing
+  - bq24190_charger: don't reset registers across system suspend
+  - qcom_smbx: a lot of independent fixes
+  - lots of error and module removal path fixes
+  - misc. fixes
+ * reset drivers
+  - misc. fixes
+
+----------------------------------------------------------------
+Alexey Charkov (5):
+      dt-bindings: power: supply: bq27xxx: add BQ28Z620
+      power: supply: bq27xxx: add support for BQ28Z620
+      power: supply: bq257xx: Use psy directly instead of driver data
+      power: supply: bq257xx: Convert parameters setup to the new .init cal=
+lback
+      power: supply: bq257xx: Describe the dev field in the driver data str=
+ucture
+
+Andrew Pam (1):
+      power: supply: cros_charge-control: restore EC state on resume
+
+Babanpreet Singh (1):
+      power: supply: max17042_battery: Make the fractional macros safe
+
+Bjorn Andersson (1):
+      power: supply: qcom_battmgr: report full batteries
+
+Brandon Williams (1):
+      power: supply: qcom_battmgr: Notify charger supplies of online changes
+
+Daniel Lezcano (1):
+      power: supply: Fix power limit documentation
+
+Derek J. Clark (1):
+      Documentation: sysfs-class-power: Update Long_Life description
+
+Fabricio Akio (1):
+      power: supply: qcom_smbx: set the charge enable after software control
+
+Fan Wu (1):
+      power: supply: bq27xxx: Ensure poll work is cancelled on remove
+
+Hang Nan (1):
+      power_supply: serialize property access with unregister
+
+Hemanth Selam (2):
+      power: reset: keystone: fix missing space in error message
+      power: supply: fix typos in comments
+
+Henrik Grimler (3):
+      dt-bindings: power: bq27xxx: bq27z561: allow interrupts property
+      dt-bindings: power: bq27xxx: document bq27z746
+      power: supply: bq27xxx: add support for bq27z746
+
+Igor Velkov (1):
+      power: supply: gpio-charger: Report discharging without input power
+
+Iv=E1n Ezequiel Rodriguez (4):
+      power: supply: return -ENOMEM on OCV table alloc failure
+      power: supply: restore hwmon if extension update fails
+      docs: power: supply: fix power_supply_class.rst status, health and ti=
+me_to
+      power: supply: use tabs in power_supply_get_property_direct
+
+Joonhoe Kim (1):
+      power: supply: qcom_battmgr: report the USB type from USB_ADAP_TYPE
+
+Karl Mehltretter (1):
+      power: supply: mp2629: Use the full batt_impedance_compensation name =
+in the ABI document
+
+Kees Cook (1):
+      power: supply: qcom_smbx: Remove const from desc allocation type
+
+Linmao Li (1):
+      power: supply: bq2515x: Propagate charge-enable read errors
+
+Linus Walleij (16):
+      dt-bindings: power: supply: ab8500: Add AB8505 charger
+      power: supply: ab8500_fg: Accept status from supplied power
+      power: supply: ab8500_fg: Report sub-percent charge changes
+      power: supply: ab8500: Correct register definitions
+      power: supply: ab8500_fg: Drop nonexistent AB8505 controls
+      power: supply: ab8500_btemp: Fix event temperature reporting
+      power: supply: ab8500: Preserve battery termination current
+      power: supply: ab8500_charger: Fix AC charger re-enable
+      power: supply: ab8500_charger: Decode AB8505 USB status
+      power: supply: ab8500_charger: Respect AB8505 register layout
+      power: supply: ab8500_charger: Handle detection errors
+      power: supply: ab8500_charger: Skip absent AB8505 main charger
+      power: supply: ab8500_charger: Retry AB8505 USB detection
+      power: supply: ab8500_charger: Recover inactive AB8505 charger
+      power: supply: ab8500_fg: Finalize current measurements
+      power: supply: ab8500_fg: Avoid reserved AB8505 CCConf bit
+
+Liviu Nicoara (1):
+      power: supply: qcom_battmgr: Report capacity on X1E80100
+
+Matt DeVillier (1):
+      power: supply: cros_charge-control: adopt EC charge state on probe
+
+Maurizio Casciano (1):
+      power: supply: core: Honor supplied-from with CONFIG_OF=3Dy
+
+Myeonghun Pak (2):
+      power: supply: pf1550: drain IRQ work before unregistering supplies
+      power: supply: sbs-battery: disable polling before supply teardown
+
+Reza Kurniawan (1):
+      power: supply: bq256xx: Expose VBUS state through extcon
+
+Robert Killick (1):
+      power: supply: sysfs: Ratelimit "unavailable enum value" warning
+
+Robin Snyders (5):
+      power: supply: qcom_smbx: include base when petting watchdog
+      power: supply: qcom_smbx: test battery health status bits
+      power: supply: qcom_smbx: fix float voltage selector
+      power: supply: qcom_smbx: validate battery float voltage
+      power: supply: qcom_smbx: notify battery overvoltage recovery
+
+Ryan Brue (3):
+      power: supply: bq24190_charger: use the wake irq API
+      power: supply: bq24190_charger: don't reset registers across system s=
+uspend
+      dt-bindings: power: supply: battery: allow 101 ocv-capacity points
+
+Sebastian Reichel (1):
+      Merge power-supply fixes branch
+
+Shengzhuo Wei (1):
+      power: supply: bq27xxx: synchronize work cancellation on suspend
+
+Sumeet Pawnikar (1):
+      power: Use %pe to print error pointers symbolically
+
+Tim Douglas (1):
+      power: supply: generic-adc-battery: fix status with no supplier
+
+Uwe Kleine-K=F6nig (3):
+      power: supply: axp20x*: Drop check for disabled devices
+      power: supply: axp20x_usb: Introduce a helper variable for &pdev->dev
+      power: supply: axp20x_usb: Improve probe error reporting
+
+Waqar Hameed (8):
+      power: supply: Pack power_supply_desc to eliminate holes
+      power: supply: Add sysfs entry for system load control
+      power: supply: ltc4162-l: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+      power: supply: rt9471: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+      power: supply: rt9467: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+      power: supply: bq24257: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+      power: supply: bq24190: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+      power: supply: bq25630: Add support for BATFET control
+
+Wentao Liang (1):
+      power: supply: ltc2941: Fix of_node reference leak in ltc294x_i2c_pro=
+be()
+
+Zongmin Zhou (1):
+      power: supply: s2mu005-battery: return errors from dev_err_probe() in=
+ probe
+
+bui duc phuc (1):
+      power: supply: generic-adc-battery: Propagate charged GPIO errors
+
+hpp.iscas (1):
+      power: supply: mm8013: Publish the OF module alias
+
+ Documentation/ABI/testing/sysfs-class-power        |  49 ++-
+ .../ABI/testing/sysfs-class-power-ltc4162l         |   2 +
+ Documentation/ABI/testing/sysfs-class-power-mp2629 |   2 +-
+ Documentation/ABI/testing/sysfs-class-power-rt9467 |   2 +
+ Documentation/ABI/testing/sysfs-class-power-rt9471 |   2 +
+ .../devicetree/bindings/power/supply/battery.yaml  |   3 +-
+ .../devicetree/bindings/power/supply/bq27xxx.yaml  |   4 +-
+ .../power/supply/stericsson,ab8500-charger.yaml    |  76 +++-
+ Documentation/power/power_supply_class.rst         |  23 +-
+ drivers/power/reset/keystone-reset.c               |   3 +-
+ drivers/power/reset/macsmc-reboot.c                |   4 +-
+ drivers/power/supply/Kconfig                       |   1 +
+ drivers/power/supply/ab8500-bm.h                   |   8 +-
+ drivers/power/supply/ab8500_bmdata.c               |   3 +-
+ drivers/power/supply/ab8500_btemp.c                |  30 +-
+ drivers/power/supply/ab8500_chargalg.c             |   9 +-
+ drivers/power/supply/ab8500_charger.c              | 406 +++++++++++++++++=
++---
+ drivers/power/supply/ab8500_fg.c                   | 181 +++------
+ drivers/power/supply/axp20x_ac_power.c             |   3 -
+ drivers/power/supply/axp20x_battery.c              |   3 -
+ drivers/power/supply/axp20x_usb_power.c            |  50 +--
+ drivers/power/supply/bq24190_charger.c             | 101 +++--
+ drivers/power/supply/bq24257_charger.c             |  43 ++-
+ drivers/power/supply/bq2515x_charger.c             |  15 +-
+ drivers/power/supply/bq25630_charger.c             |  84 +++++
+ drivers/power/supply/bq256xx_charger.c             |  96 ++++-
+ drivers/power/supply/bq257xx_charger.c             | 125 +++----
+ drivers/power/supply/bq25890_charger.c             |   2 +-
+ drivers/power/supply/bq27xxx_battery.c             |  24 +-
+ drivers/power/supply/bq27xxx_battery_i2c.c         |   4 +
+ drivers/power/supply/charger-manager.c             |   2 +-
+ drivers/power/supply/cpcap-charger.c               |   4 +-
+ drivers/power/supply/cros_charge-control.c         | 186 +++++++++-
+ drivers/power/supply/da9030_battery.c              |   2 +-
+ drivers/power/supply/generic-adc-battery.c         |   5 +-
+ drivers/power/supply/gpio-charger.c                |   5 +-
+ drivers/power/supply/intel_dc_ti_battery.c         |   2 +-
+ drivers/power/supply/ltc2941-battery-gauge.c       |   6 +-
+ drivers/power/supply/ltc4162-l-charger.c           |  56 ++-
+ drivers/power/supply/max17042_battery.c            |  28 +-
+ drivers/power/supply/mm8013.c                      |   1 +
+ drivers/power/supply/pf1550-charger.c              |  32 +-
+ drivers/power/supply/power_supply_core.c           | 110 +++---
+ drivers/power/supply/power_supply_sysfs.c          |  20 +-
+ drivers/power/supply/qcom_battmgr.c                |  53 ++-
+ drivers/power/supply/qcom_smbx.c                   | 113 ++++--
+ drivers/power/supply/rt9467-charger.c              |  54 ++-
+ drivers/power/supply/rt9471.c                      |  54 ++-
+ drivers/power/supply/s2mu005-battery.c             |   4 +-
+ drivers/power/supply/sbs-battery.c                 |  11 +
+ drivers/power/supply/sbs-charger.c                 |   4 +-
+ drivers/power/supply/smb347-charger.c              |   4 +-
+ include/linux/power/bq27xxx_battery.h              |   2 +
+ include/linux/power_supply.h                       |  18 +-
+ 54 files changed, 1566 insertions(+), 568 deletions(-)
+
+--bw5hswutkyqd2qag
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmrfhV0ACgkQ2O7X88g7
++pqsJA/+IyBcvqAxPLwmWikOcPItSgyJan8EeZei/qous06suzUOVIIUdRhstuno
+kLR86W5Cj02qN8V72/eTCZSwxvOZ6Y3b/WZYBgxi/bOlNMjN4BZqshPVqntplfxc
+N2eklVBVbHEAqUGxveyCcsT6zd0K7YZHPURjCrNL59KUDbm3/GwLOIOvN40TD6uW
+t+W0ukQGkof+QHBRLF9hHgOtigrLOYm85Ax0gX1c+hEXmZ5WijVCQuiYmjaPnjdm
+VyWGbCIWvDr34/+vz/MnkLjbJ8QXDSX6I5In8/qrRC0Z3K25NYaMQBPSP6J4dZpX
+Mn92+hY3ZjfJXhFclTJ0vxC/Vqay0SxhLPb2b1eXUZ4X4gp43C0TzzySQQseGMoz
+DjHvtz6JQGweYIiPQ1zfW7TWHMkZoKrQjV51ECBcRjrlVjWxnR+3baeo0bqXN9Wk
+LQ3Egq3I1XiLw9vS4Y13/sENwGXpgt11YM2WS9CUp+bLUeOag61CMr0t034iLSRI
+yyXYhALq1kGUFw3wN3iY3+hTGnM9pvS2xBxMrAmj6akqQ+K1PnM7bs8fVNI2yzeQ
+TJv+X/9mFxK+AgCfry+ZoMZ8untJJISXRtLK3zkG/SDtjzsD9yby6m/MloWXC3CT
+2TFrKfZSgzwHp7sfe1yv5ayyRnElZBndZ1xyYJj5yxtxi4Zy7V8=
+=0mhb
+-----END PGP SIGNATURE-----
+
+--bw5hswutkyqd2qag--
