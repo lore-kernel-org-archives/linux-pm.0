@@ -1,80 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1792984922;
-	b=bdFd5PhmiW9rLm2IQ94IGvISmk65j/g31P3EDetFwDjS3y6rKmuAMoF10M6FpYzqkCH0
-	 YpK6JViewdRK0DXDY8nhXcCQcDRPUrPo17yrVgvPL/khs7stuXZCaAbH06GsghdRhYKHE
-	 sQ5e5T2oITI+Wpvvx/StFaixsC//Y6CrGErfzwW5SMKzTkeMsZYew0byXbjJL3T9v2kT2
-	 lVE+baKeRxsuGOkzbc5/E3kI2Ox8eqP1NoSamiQgqNNubCuQmL1wrkXlWds3GxGl9nQkx
-	 dDLodSwWcpBTVXWff0K+mhwoTvpnTP+BSzWGzpbRNeTxU11CpZ8iHME6EEtXJpZB2Bw==
+	b=lC4l3UOqnN/mQRpR02gK2cfzuee9u4Uy5aX7JWPe1hSkmr52jgjaRkKlrgI1sSStRYEj
+	 E8+MM24wcHituT+wwT0uS5Kggw1/vyEJvpSXTfUAnt0xpfgtSfXcTg1Jgz1/xIhyxzTc1
+	 Jn+w/QL0knviA261iuCmyMfRwde9/gvM8pocNfho4mCu1QpAlvAhBdACD1z7cDM/FjSSC
+	 mfiJ7zkisAdoIkIHI6eB0e5bHMmvIYXVl/wrgHTsdgRXDHJlSCjt8KJRf7+gPVC9Qnk8e
+	 Kz2K9Q7uHQoaVjKyaeitJaDhWgSdO7QKQRAhpAi2p0O0lMr9GRe4Z4oqPFdzKueNjIg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1792984922;
-	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
+	 In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
 	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=NbE8+EkvU8qKTKBXp8MrzwQWpu9rEN62vlfyhAKPT8M=;
-	b=otUe0vlmxlviXf1umz4UYAyeXP6DttxltpwUPcjrVef7ubZdWYysc5hEwgBZ9be9MtyM
-	 +oJL4+KnwSFL93R5oHi7IY9k4XSY0KckIohgoJ2b6VpqIgKgvGSaS3lx/L3jEZytQV5Cr
-	 NO+NHGN34FhTnJMC81+XwyzqC5d7cfJXPda30NLVyLl7I3FunSAcTnuoVN4MAEqr3X9cQ
-	 hgBruOt66/l0rGpeJpe7diyDdIf+I/W0KJoN8COn2WDLuoyf57yMvDCVCErH8U0uZFhqL
-	 LE5D6q0TzGU4PNtP1xpnH7J9EVzv9LksiWzHUFDLx6K+H7p93CfUbTDBaLkuAp+9wgg==
+	bh=LPCTmqFhsplwbKb1wijjfV48wJ72fr8FqzfRigPQo6g=;
+	b=Nff5WTRW6S1025GkZ8f1iBYFN6hiT03nxxOTWyaU1VxiKXRQMvc/pviq39F2tdBd89hK
+	 EXMPX4UcvzG2i4E0gMKiEnCkJhWCQCmMIrxW3Tw+JmHYcwbR33ZWCiu564634juU5dZC6
+	 ZslKKpHo5gGkLe9UD7eyShdXNsZGTkUqBwwRAyky/+zn33etlyIa9IiXXnqSKxB8+HQMb
+	 h4N5e6j8FGOFv0afjcJ4k9jjISWBLpdzQHaqGeyymhFypmW0tQoXlP2wxZROGenFVfzWn
+	 4GyLcH9MrH5BXxKpt99Db5c+qwdM/vWxdpKTa4QoZ41t1q33mv7XCoIxGOdlJcNY1Tw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HlHQLLWN;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iNXd9Pgy;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61777606A320;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CA46606A31F;
 	Mon, 26 Oct 2026 03:22:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HlHQLLWN
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iNXd9Pgy
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
 	t=1792984922;
-	b=xwgDwlf3GaaubyyW0zqGwGicPxlJJdLMbITTOJxyY3pcCgO2d0vOVCRW7KjmgRUg8wkN
-	 CBmzUR2f+QgR4GeckWG3+RTbGEFZoHEix9dMYjAijLLpV56W3Y7d9OvU5oC+pcHWw+cNT
-	 YMGb439KrTVjRaRg3GvI6rBWfU4iB8PcdcfAKL29WM+ncXWyw+//yXYCVQVCuH04Dn82y
-	 /FGF7b0oYukQA5Gr7E/hQXAnzw8bGBNDFj+mpDN7+s3HP/g9ltknBXLN0rv4Jc48PEu47
-	 5S/xsjlV9Hbv1EQIjJwVl1+sUg4kA+3SQjD9uIO0/4yIYcUYUBa/N1uHANskB3dUSaQ==
+	b=Tnqb2t6zQXjCWN5tfWXAXzJvClxcZ0r6lWpq7yMBtrZhi/Xmu3yl3e9ulklQKXd7AZvg
+	 Q3auMVQRZGHL60VqkMPqGOQPCCSUvuaQjyEibhkWzsefFR/sHSd8VtQnvzPxXgKx9BqYI
+	 IHN4t13hz03lM+m3D7c0+iOMiiTvPbUGi8Ef5ahXUEFxxGECdIdBWpfpMFz4pxh3RN3ZF
+	 zf+tCHBcFs0NfCT8YTK5C8yLw+FsHVAQeHKg1jXTTeOWyUDT7sOfKnekiDgawVzZ/FNsL
+	 q3xs45NluLpFYCPKEcjqBY6fINn5UBWje70JTtKUwquZTDLfV9M3Hfa0tMZIcGQJFjw==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
 	c=relaxed/relaxed; t=1792984922;
-	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To;
-	bh=NbE8+EkvU8qKTKBXp8MrzwQWpu9rEN62vlfyhAKPT8M=;
-	b=SvdTQP3cwPUG6hcQR4nAuXYG/e/H/Dgz1PRDjc3MLg9cLpRmmHJ/FhwGwNKbeIW3bl+7
-	 xzYWojKPoC+Kp16f2HBAURYx9QYZ5EXH1NE5ioBmYYQ+AeL59HTPPeapkxwM9raEUA+oU
-	 IeOxRR0koksBJqflb0LOnsSy2OeWXWf+jcEB9ooUQMTHF3e1XbAYXRUoy/vIGgvEj4Mt9
-	 eed8R3U7ddcQMSSHfC7yVu7Fv4YxNTd2VXmyrA5EmCxjtzF8HjstD0O1QNT5rvqq2+aY2
-	 5gBNCOA0yW7Y1y4Ll4BP1WRpS/DOQS4kjBxhpH1/EJDs/eEaDFJg0IY89WBxHftI/hg==
+	bh=LPCTmqFhsplwbKb1wijjfV48wJ72fr8FqzfRigPQo6g=;
+	b=jGNGZ/AjHM2NrWF8Ghnj1E1FjfOBDQWVerYM7HJ63X47AtzIENGkyvwPVK8hC6lU5HtD
+	 tyulYnpcDlNyJ+ZjTaLlRUtrx1c9u5Zum7B9FAb3b9rU9xGU9ANQHyL/B5/2RLzfKYXrD
+	 eD669waslwRmaoNLxNeHoQ+cgDTc1Tp0QsIiQz57myKre2YjsVtqcdWFGQUCAmu/kAWAf
+	 6LTQk/FDJdCtM82KdHNAa7HG3db0L7QKhl4cBdky8JZHn45JPecSUSPxI0PUt87KUH0u9
+	 CYOoaWLxJbgOGtBkmUe9ocacM5X3PH8pHFLUH3yD0h8VTtd0TEeZd5JJ+zPXmQKHxuA==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id DACE21F01825;
+	by smtp.kernel.org (Postfix) with ESMTPS id E98D81F01828;
 	Mon, 26 Oct 2026 03:22:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1792984922;
-	bh=NbE8+EkvU8qKTKBXp8MrzwQWpu9rEN62vlfyhAKPT8M=;
-	h=From:Subject:Date:To:Cc:Reply-To;
-	b=HlHQLLWN+eJAJZCUKCSfGnHNnMBGrFJpj0sZbjoiVdGCFWuRsG79pfb8GDXVprRtn
-	 bWqAwrW0/DOlg9X6Za2PgR69iVucvAf9eF+Aw1plsIYzuZ9FTgp+yFvoNbL3DpOBfP
-	 yqERxpd9PLnxhAVgHPDCl7Xtv9r3yG9Hx5IZC7rppM1jIR3v/Vq//0Qo5FM0q71jKE
-	 4Jqt+Azq+QNd3mi4F1EE0Z9PO3O2ECqeFhxChm+XK/KXGryErtSsQa5TnEfBSmm/g8
-	 ONv2D0LiFAUgfhOnrEj5az16fIh+a7LMp7d4Uu67l4hOmxCvEnMleqGRx7P2g4KUW7
-	 w+2J/sGfqUyEQ==
+	bh=LPCTmqFhsplwbKb1wijjfV48wJ72fr8FqzfRigPQo6g=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=iNXd9Pgy30nkMKKXETV3KURoZlWqyWGz2zSiTWpcKFmRc1vU83zkgQitZab1xJr6a
+	 IZOF/9bKDnFgYR9VYeWEX/mzDpBPo0TBSeU5amflRtgG7/tJ1AZ0gox9HYcoczPyDv
+	 5CLVpUhNL2hfeme7ivR6//KVBkPMmEL/c+7dUlZYy3+OAGrJZUCMejsZYSwF2SzPCS
+	 dZ8zM4IE1QQbUsU/rU9HlfVVG4HHt/gmsruvg4K4ZoMlGEBNuPU369vmMReAKPYY2k
+	 sykomv5Gpezb8/5l63dFQv94MkSGG3sOTf1XVs7ivUR2iwkc7hIXxka9EVXKdG5oCk
+	 04Xl+9WH6yD0w==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 542DC44BDD;
+	by lkml.kernel.org (Postfix) with ESMTP id 6ED8E44BE1;
 	Mon, 26 Oct 2026 03:22:00 +0000 (UTC)
 From: Cunhao Lu via B4 Relay <devnull+1579567540.qq.com@kernel.org>
-Subject: [PATCH v3 0/2] pmdomain: rockchip: Add RK3572 boot peripheral
+Date: Mon, 26 Oct 2026 11:21:39 +0800
+Subject: [PATCH v3 2/2] pmdomain: rockchip: Add RK3572 boot peripheral
  domains
-Date: Mon, 26 Oct 2026 11:21:37 +0800
-Message-Id: <20261026-add-board-ok3572-c-pmdomain-v3-0-70d614d3d921@qq.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -86,11 +85,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAEHH3moC/32OQQ6CMBBFr0K6dkw7FUVX3sO4KJ1Bq4Fqi42Gc
- HcBo3FhXL7kz3vTicjBcRSbrBOBk4vONwPoWSbs0TQHBkcDC5S4VBI1GCIovQkE/qzzFYKFS02
- +Nq4BrCSSUUoXSxaD4RK4cvfJvtu/ON7KE9t2VI6Lo4utD48pn9S4e5fwVykpkCBLWVGRG62Yt
- 9fr3PpajPaE3/f/P004iFZrIlogr9Gqj6jv+yeBnQf9FQEAAA==
-X-Change-ID: 20261023-add-board-ok3572-c-pmdomain-2f02da11386e
+Message-Id: <20261026-add-board-ok3572-c-pmdomain-v3-2-70d614d3d921@qq.com>
+References: <20261026-add-board-ok3572-c-pmdomain-v3-0-70d614d3d921@qq.com>
+In-Reply-To: <20261026-add-board-ok3572-c-pmdomain-v3-0-70d614d3d921@qq.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
  Elaine Zhang <zhangqing@rock-chips.com>, Ulf Hansson <ulfh@kernel.org>
@@ -99,11 +96,11 @@ Cc: Cunhao Lu <1579567540@qq.com>, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  Finley Xiao <finley.xiao@rock-chips.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792984919; l=5260;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792984919; l=13332;
  i=1579567540@qq.com; s=20261015; h=from:subject:message-id;
- bh=AcZhQE2h3agPWP8/xjxv38mEgdS8HpR3PNxcZ2ZWylw=;
- b=ibcpCH/0lvTn1T/jrYlbaE11ZcaSxH4CSYMvzvOanFPwW7EYWBaz2YcfIYbpzPiOP19liBy+2
- 8OeSYy0uPwgBX+WVMc1x61I4EiOXHYiAQTR3MqsSO6QTQOPxi1vUvXm
+ bh=lMIoehkgYj4ZCK822u+mgM72j1Vkr/cr6zj9n5Ur564=;
+ b=m2eR+QHhxLsnf8MVqUR1cPFavYq0hILGuBNe9DKrs6oohNKM28QynKoqLKrDkUJhuTjg8y9k/
+ pgdqC/SclBzD0v0xuREICofQ3wFX/h7jaMTs71iOjhq77zw2Wo0T5Su
 X-Developer-Key: i=1579567540@qq.com; a=ed25519;
  pk=sUTWrzlIwT4C7ctjNfVZAzzg0G7QUn2XxRGpYsw4RtM=
 X-Endpoint-Received: by B4 Relay for 1579567540@qq.com/20261015 with
@@ -111,87 +108,27 @@ X-Endpoint-Received: by B4 Relay for 1579567540@qq.com/20261015 with
 X-Original-From: Cunhao Lu <1579567540@qq.com>
 Reply-To: 1579567540@qq.com
 
-This is one of the subsystem submissions for RK3572 support.
+From: Finley Xiao <finley.xiao@rock-chips.com>
 
-This series adds the RK3572 power-controller binding and power IDs,
-followed by support for the NVM0, NVM1, PHP, and VOP power domains.
-The driver uses the system GRF to check firmware shift-ready status.
+Add support for the RK3572 NVM0, NVM1, PHP, and VOP power domains.
 
-The RK3572 SoC has eight CPU cores: two Cortex-A73 cores and six
-Cortex-A53 cores. It also integrates an Arm Mali-G310V2 MC1 GPU.
-The OK3572-C board provides two Gigabit Ethernet ports, three USB3 Type-A
-ports, a Type-C dual-role port, eMMC, microSD, and UART.
+Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
 
-Power-on progress and restoration are tracked separately so that a
-failed transition can be retried without losing pending memory resets or
-QoS state. The shared Rockchip power-domain code is updated to support
-the RK3572 register layout and retry behavior.
+- Returned firmware shift-ready wait errors to callers.
+- Kept the domain pending after a firmware shift-ready wait failure.
+- Retried power-on without repeating completed memory resets.
+- Recorded low-level power-on and restoration stages before hardware
+  operations so retries complete unfinished low-level work.
+- Kept memory resets pending across failures, including when memory is off.
+- Preserved QoS snapshots after a failed power-on and cleared progress
+  after successful power-on or shutdown.
+- Tracked incomplete shutdowns to preserve QoS and complete firmware updates.
+- Preserved pending memory resets across shutdown and cancelled unfinished
+  power-on requests.
+- Attempt to restore the domain after power-off errors, while preserving
+  the original error returned to genpd.
 
-Testing was performed with Debian 13 minimal and Linux 7.3 on the
-OK3572-C with the FET3572-C module. Shared peripheral tests were run with
-the system booted from SD, while eMMC validation covered the complete
-boot chain.
-
-Passed functionality:
-
-- SD and eMMC complete the firmware, kernel, and root filesystem
-  boot chain.
-- UART console works at 1500000 baud.
-- SD read/write and data persistence checks pass.
-- All eight CPUs start; CPU frequency scaling and hotplug checks pass.
-- Both Ethernet ports obtain IPv4 addresses and pass bidirectional file
-  transfers.
-- All three Type-A ports pass USB2 and USB3 enumeration, data transfers,
-  and reconnect persistence checks.
-- Type-C host and device modes pass in both plug orientations. Physical
-  reconnects correctly select the expected device, host, and device roles
-  in sequence.
-
-Stability:
-
-- Repeated cold and software reboots complete on SD and eMMC without
-  data integrity failures or power-domain transition failures.
-- A combined CPU, memory, network, SD, and USB3 stress test completes
-  without a crash, lockup, CPU offline event, or thermal shutdown.
-- Ethernet error and drop counters do not increase during bidirectional
-  network tests.
-
-Power-domain fault-path validation:
-
-- Host tests extracted the transition logic and memory operations from
-  the driver and simulated register failures during power-status checks,
-  memory chain/off/on operations, idle exit, and firmware shift-ready checks.
-- The tests also cover retries, shutdown after a failed power-on,
-  clock-enable failure, regulator loss, and domains without a firmware
-  shift-ready mask. QoS preservation and memory-reset counts were checked.
-- The simulated tests pass ASan and UBSan.
-
-Build and checks:
-
-- The kernel, modules, and board DTB build successfully.
-- The series passes checkpatch with --strict; only generic reminders about
-  new MAINTAINERS entries remain.
-
-Untested hardware and paths:
-
-- NPU
-- PCIe
-- GPU, video output, and audio
-- CPU rates above 1.2 GHz and voltage scaling
-- Other low-speed external interfaces
-
-Some files in this series are derived from the Forlinx OK3572-C BSP
-Alpha1. Thanks to Forlinx for their support.
-Thanks also to Rockchip's David Wu, Elaine Zhang, Finley Xiao, Frank
-Wang, William Wu, and Ye Zhang for providing the driver source files.
-
-AI assistance:
-
-- Codex / DeepSeek V4.1 Flash were used for:
-  - Reviewing and adjusting code style to follow community conventions
-  - Automating tests
-  - Collecting data
-
+Co-developed-by: Cunhao Lu <1579567540@qq.com>
 Signed-off-by: Cunhao Lu <1579567540@qq.com>
 ---
 Changes in v3:
@@ -200,47 +137,384 @@ Changes in v3:
   power-on requests.
 - Attempt to restore the domain after power-off errors, while preserving
   the original error returned to genpd.
-- Link to v2:
-  https://patch.msgid.link/20261023-add-board-ok3572-c-pmdomain-v2-0-79ddd42e92c1@qq.com
 
 Changes in v2:
-- Split the original RK3572 support series by subsystem.
-- Track low-level power-on and restoration separately. Retain unfinished
-  memory resets across retries, avoid repeating completed resets, and
-  preserve QoS snapshots when shutting down after a failed power-on.
-- Link to v1:
-  https://patch.msgid.link/20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com
-
+- Record low-level power-on and restoration stages before hardware
+  operations, so a retry cannot skip unfinished low-level work.
+- Retain pending memory resets even if memory is off on retry, and
+  avoid repeating completed resets during restoration.
+- Preserve QoS snapshots across failed power-on and shutdown; clear
+  progress after successful power-on or shutdown.
 ---
-Raw dmesg: see v2 cover letter.
+ drivers/pmdomain/rockchip/pm-domains.c | 187 +++++++++++++++++++++++++++++----
+ 1 file changed, 167 insertions(+), 20 deletions(-)
 
-To: Rob Herring <robh@kernel.org>
-To: Krzysztof Kozlowski <krzk+dt@kernel.org>
-To: Conor Dooley <conor+dt@kernel.org>
-To: Heiko Stuebner <heiko@sntech.de>
-To: Elaine Zhang <zhangqing@rock-chips.com>
-To: Ulf Hansson <ulfh@kernel.org>
-Cc: devicetree@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-rockchip@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index e193f978d5f3..668d208dea55 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -39,6 +39,7 @@
+ #include <dt-bindings/power/rockchip,rk3528-power.h>
+ #include <dt-bindings/power/rockchip,rk3562-power.h>
+ #include <dt-bindings/power/rk3568-power.h>
++#include <dt-bindings/power/rockchip,rk3572-power-controller.h>
+ #include <dt-bindings/power/rockchip,rk3576-power.h>
+ #include <dt-bindings/power/rk3588-power.h>
+ 
+@@ -59,6 +60,9 @@ struct rockchip_domain_info {
+ 	u32 pwr_offset;
+ 	u32 mem_offset;
+ 	u32 req_offset;
++	u32 status_offset;
++	u32 firewall_mask;
++	u32 clk_ungate_offset;
+ };
+ 
+ struct rockchip_pmu_info {
+@@ -72,6 +76,8 @@ struct rockchip_pmu_info {
+ 	u32 mem_status_offset;
+ 	u32 repair_status_offset;
+ 	u32 clk_ungate_offset;
++	u32 firewall_status_offset;
++	bool chain_status_inverted;
+ 
+ 	u32 core_pwrcnt_offset;
+ 	u32 gpu_pwrcnt_offset;
+@@ -90,6 +96,13 @@ struct rockchip_pmu_info {
+ #define QOS_SATURATION		0x14
+ #define QOS_EXTCONTROL		0x18
+ 
++enum rockchip_pd_power_state {
++	ROCKCHIP_PD_IDLE,
++	ROCKCHIP_PD_ON_HW,
++	ROCKCHIP_PD_ON_RESTORE,
++	ROCKCHIP_PD_OFF,
++};
++
+ struct rockchip_pm_domain {
+ 	struct generic_pm_domain genpd;
+ 	const struct rockchip_domain_info *info;
+@@ -101,11 +114,14 @@ struct rockchip_pm_domain {
+ 	struct clk_bulk_data *clks;
+ 	struct device_node *node;
+ 	struct regulator *supply;
++	enum rockchip_pd_power_state power_state;
++	bool mem_reset_pending;
+ };
+ 
+ struct rockchip_pmu {
+ 	struct device *dev;
+ 	struct regmap *regmap;
++	struct regmap *grf;
+ 	const struct rockchip_pmu_info *info;
+ 	struct mutex mutex; /* mutex lock for pmu */
+ 	struct genpd_onecell_data genpd_data;
+@@ -373,15 +389,16 @@ static bool rockchip_pmu_domain_is_idle(struct rockchip_pm_domain *pd)
+ 	const struct rockchip_domain_info *pd_info = pd->info;
+ 	unsigned int val;
+ 
+-	regmap_read(pmu->regmap, pmu->info->idle_offset, &val);
++	regmap_read(pmu->regmap, pmu->info->idle_offset + pd_info->status_offset, &val);
+ 	return (val & pd_info->idle_mask) == pd_info->idle_mask;
+ }
+ 
+-static unsigned int rockchip_pmu_read_ack(struct rockchip_pmu *pmu)
++static unsigned int rockchip_pmu_read_ack(struct rockchip_pm_domain *pd)
+ {
++	struct rockchip_pmu *pmu = pd->pmu;
+ 	unsigned int val;
+ 
+-	regmap_read(pmu->regmap, pmu->info->ack_offset, &val);
++	regmap_read(pmu->regmap, pmu->info->ack_offset + pd->info->status_offset, &val);
+ 	return val;
+ }
+ 
+@@ -400,7 +417,8 @@ static int rockchip_pmu_ungate_clk(struct rockchip_pm_domain *pd, bool ungate)
+ 
+ 	val = ungate ? (pd_info->clk_ungate_mask | clk_ungate_w_mask) :
+ 			clk_ungate_w_mask;
+-	regmap_write(pmu->regmap, pmu->info->clk_ungate_offset, val);
++	regmap_write(pmu->regmap, pmu->info->clk_ungate_offset +
++		     pd_info->clk_ungate_offset, val);
+ 
+ 	return 0;
+ }
+@@ -431,7 +449,7 @@ static int rockchip_pmu_set_idle_request(struct rockchip_pm_domain *pd,
+ 
+ 	/* Wait util idle_ack = 1 */
+ 	target_ack = idle ? pd_info->ack_mask : 0;
+-	ret = readx_poll_timeout_atomic(rockchip_pmu_read_ack, pmu, val,
++	ret = readx_poll_timeout_atomic(rockchip_pmu_read_ack, pd, val,
+ 					(val & pd_info->ack_mask) == target_ack,
+ 					0, 10000);
+ 	if (ret) {
+@@ -543,6 +561,9 @@ static bool rockchip_pmu_domain_is_chain_on(struct rockchip_pm_domain *pd)
+ 	regmap_read(pmu->regmap,
+ 		    pmu->info->chain_status_offset + pd->info->mem_offset, &val);
+ 
++	if (pmu->info->chain_status_inverted)
++		return !(val & pd->info->mem_status_mask);
++
+ 	/* 1'b1: power on, 1'b0: power off */
+ 	return val & pd->info->mem_status_mask;
+ }
+@@ -600,16 +621,13 @@ static int rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
+ 	struct rockchip_pmu *pmu = pd->pmu;
+ 	struct generic_pm_domain *genpd = &pd->genpd;
+ 	u32 pd_pwr_offset = pd->info->pwr_offset;
+-	bool is_on, is_mem_on = false;
++	bool is_on;
+ 	struct arm_smccc_res res;
+ 	int ret;
+ 
+ 	if (pd->info->pwr_mask == 0)
+ 		return 0;
+ 
+-	if (on && pd->info->mem_status_mask)
+-		is_mem_on = rockchip_pmu_domain_is_mem_on(pd);
+-
+ 	if (pd->info->pwr_w_mask)
+ 		regmap_write(pmu->regmap, pmu->info->pwr_offset + pd_pwr_offset,
+ 			     on ? pd->info->pwr_w_mask :
+@@ -620,13 +638,13 @@ static int rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
+ 
+ 	wmb();
+ 
+-	if (is_mem_on) {
++	if (on && pd->mem_reset_pending) {
+ 		ret = rockchip_pmu_domain_mem_reset(pd);
+ 		if (ret)
+ 			return ret;
++		pd->mem_reset_pending = false;
+ 	}
+ 
+-
+ 	ret = readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
+ 					is_on == on, 0, 10000);
+ 	if (ret) {
+@@ -644,14 +662,29 @@ static int rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
+ 	return 0;
+ }
+ 
++static int rockchip_pmu_wait_firewall(struct rockchip_pm_domain *pd)
++{
++	struct rockchip_pmu *pmu = pd->pmu;
++	u32 mask = pd->info->firewall_mask;
++	u32 val;
++
++	if (!mask)
++		return 0;
++
++	return regmap_read_poll_timeout(pmu->grf, pmu->info->firewall_status_offset,
++				       val, (val & mask) == mask, 0, 10000);
++}
++
+ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+ {
+ 	struct rockchip_pmu *pmu = pd->pmu;
++	bool is_on;
+ 	int ret;
+ 
+ 	guard(mutex)(&pmu->mutex);
+ 
+-	if (rockchip_pmu_domain_is_on(pd) == power_on)
++	is_on = rockchip_pmu_domain_is_on(pd);
++	if (is_on == power_on && pd->power_state == ROCKCHIP_PD_IDLE)
+ 		return 0;
+ 
+ 	ret = clk_bulk_enable(pd->num_clks, pd->clks);
+@@ -662,18 +695,38 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+ 
+ 	rockchip_pmu_ungate_clk(pd, true);
+ 
+-	if (!power_on) {
+-		rockchip_pmu_save_qos(pd);
++	if (power_on) {
++		if (pd->power_state == ROCKCHIP_PD_IDLE ||
++		    pd->power_state == ROCKCHIP_PD_OFF ||
++		    (pd->power_state == ROCKCHIP_PD_ON_RESTORE && !is_on)) {
++			/* A failed reset may still be forcing memory off. */
++			pd->mem_reset_pending |= pd->info->mem_status_mask &&
++				rockchip_pmu_domain_is_mem_on(pd);
++			pd->power_state = ROCKCHIP_PD_ON_HW;
++		}
++
++		/* A status bit alone does not prove the low-level sequence finished. */
++		if (pd->power_state == ROCKCHIP_PD_ON_HW) {
++			ret = rockchip_do_pmu_set_power_domain(pd, true);
++			if (ret < 0)
++				goto out;
++			pd->power_state = ROCKCHIP_PD_ON_RESTORE;
++		}
++	} else {
++		if (pd->power_state == ROCKCHIP_PD_IDLE)
++			rockchip_pmu_save_qos(pd);
++		pd->power_state = ROCKCHIP_PD_OFF;
+ 
+ 		/* if powering down, idle request to NIU first */
+ 		ret = rockchip_pmu_set_idle_request(pd, true);
+ 		if (ret < 0)
+ 			goto out;
+-	}
+ 
+-	ret = rockchip_do_pmu_set_power_domain(pd, power_on);
+-	if (ret < 0)
+-		goto out;
++		/* Cancel a pending power-on even if its status is still off. */
++		ret = rockchip_do_pmu_set_power_domain(pd, false);
++		if (ret < 0)
++			goto out;
++	}
+ 
+ 	if (power_on) {
+ 		/* if powering up, leave idle mode */
+@@ -681,8 +734,14 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+ 		if (ret < 0)
+ 			goto out;
+ 
++		ret = rockchip_pmu_wait_firewall(pd);
++		if (ret)
++			goto out;
++
+ 		rockchip_pmu_restore_qos(pd);
++		pd->mem_reset_pending = false;
+ 	}
++	pd->power_state = ROCKCHIP_PD_IDLE;
+ 
+ out:
+ 	rockchip_pmu_ungate_clk(pd, false);
+@@ -733,11 +792,18 @@ static int rockchip_pd_power_on(struct generic_pm_domain *domain)
+ static int rockchip_pd_power_off(struct generic_pm_domain *domain)
+ {
+ 	struct rockchip_pm_domain *pd = to_rockchip_pd(domain);
+-	int ret;
++	int ret, err;
+ 
+ 	ret = rockchip_pd_power(pd, false);
+-	if (ret)
++	if (ret) {
++		/* genpd still considers the domain on after a failed power-off. */
++		err = rockchip_pd_power(pd, true);
++		if (err)
++			dev_err(pd->pmu->dev,
++				"failed to restore domain '%s' after power-off failure: %d\n",
++				domain->name, err);
+ 		return ret;
++	}
+ 
+ 	rockchip_pd_regulator_disable(pd);
+ 	return ret;
+@@ -1064,6 +1130,11 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 	mutex_init(&pmu->mutex);
+ 
+ 	pmu->info = pmu_info;
++	if (pmu_info->firewall_status_offset) {
++		pmu->grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
++		if (IS_ERR(pmu->grf))
++			return dev_err_probe(dev, PTR_ERR(pmu->grf), "failed to get system GRF\n");
++	}
+ 
+ 	pmu->genpd_data.domains = pmu->domains;
+ 	pmu->genpd_data.num_domains = pmu_info->num_domains;
+@@ -1313,6 +1384,62 @@ static const struct rockchip_domain_info rk3568_pm_domains[] = {
+ 	[RK3568_PD_PIPE]	= DOMAIN_RK3568("pipe", BIT(8), BIT(11), false, false),
+ };
+ 
++static const struct rockchip_domain_info rk3572_pm_domains[] = {
++	[RK3572_PD_NVM1] = {
++		.name = "nvm1",
++		.pwr_mask = BIT(4),
++		.pwr_w_mask = BIT(20),
++		.mem_status_mask = BIT(4),
++		.repair_status_mask = BIT(3),
++		.req_mask = BIT(6),
++		.req_w_mask = BIT(22),
++		.idle_mask = BIT(6),
++		.ack_mask = BIT(6),
++		.clk_ungate_mask = BIT(6),
++	},
++	[RK3572_PD_PHP] = {
++		.name = "php",
++		.pwr_mask = BIT(7),
++		.pwr_w_mask = BIT(23),
++		.mem_status_mask = BIT(7),
++		.repair_status_mask = BIT(5),
++		.req_mask = BIT(9),
++		.req_w_mask = BIT(25),
++		.idle_mask = BIT(9),
++		.ack_mask = BIT(9),
++		.clk_ungate_mask = BIT(9),
++		.firewall_mask = BIT(28),
++	},
++	[RK3572_PD_VOP] = {
++		.name = "vop",
++		.pwr_mask = BIT(12),
++		.pwr_w_mask = BIT(28),
++		.mem_status_mask = BIT(12),
++		.repair_status_mask = BIT(10),
++		.req_mask = BIT(14),
++		.req_w_mask = BIT(30),
++		.idle_mask = BIT(14),
++		.ack_mask = BIT(14),
++		.clk_ungate_mask = BIT(14),
++		.firewall_mask = BIT(23),
++	},
++	[RK3572_PD_NVM0] = {
++		.name = "nvm0",
++		.pwr_mask = BIT(15),
++		.pwr_w_mask = BIT(31),
++		.mem_status_mask = BIT(15),
++		.repair_status_mask = BIT(13),
++		.req_mask = BIT(0),
++		.req_w_mask = BIT(16),
++		.idle_mask = BIT(0),
++		.ack_mask = BIT(0),
++		.clk_ungate_mask = BIT(0),
++		.req_offset = 4,
++		.status_offset = 4,
++		.clk_ungate_offset = 4,
++	},
++};
++
+ static const struct rockchip_domain_info rk3576_pm_domains[] = {
+ 	[RK3576_PD_NPU]		= DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       false),
+ 	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  false),
+@@ -1536,6 +1663,23 @@ static const struct rockchip_pmu_info rk3568_pmu = {
+ 	.domain_info = rk3568_pm_domains,
+ };
+ 
++static const struct rockchip_pmu_info rk3572_pmu = {
++	.pwr_offset = 0x210,
++	.status_offset = 0x230,
++	.chain_status_offset = 0x250,
++	.chain_status_inverted = true,
++	.mem_status_offset = 0x260,
++	.mem_pwr_offset = 0x300,
++	.req_offset = 0x110,
++	.idle_offset = 0x130,
++	.ack_offset = 0x120,
++	.repair_status_offset = 0x570,
++	.clk_ungate_offset = 0x150,
++	.firewall_status_offset = 0x140,
++	.num_domains = ARRAY_SIZE(rk3572_pm_domains),
++	.domain_info = rk3572_pm_domains,
++};
++
+ static const struct rockchip_pmu_info rk3576_pmu = {
+ 	.pwr_offset = 0x210,
+ 	.status_offset = 0x230,
+@@ -1648,6 +1792,9 @@ static const struct of_device_id rockchip_pm_domain_dt_match[] = {
+ 		.data = (void *)&rk3568_pmu,
+ 	},
+ 	{
++		.compatible = "rockchip,rk3572-power-controller",
++		.data = &rk3572_pmu,
++	}, {
+ 		.compatible = "rockchip,rk3576-power-controller",
+ 		.data = (void *)&rk3576_pmu,
+ 	},
 
----
-Finley Xiao (2):
-      dt-bindings: power: rockchip: Add RK3572 power domains
-      pmdomain: rockchip: Add RK3572 boot peripheral domains
-
- .../bindings/power/rockchip,power-controller.yaml  |  17 ++
- drivers/pmdomain/rockchip/pm-domains.c             | 187 ++++++++++++++++++---
- .../power/rockchip,rk3572-power-controller.h       |  30 ++++
- 3 files changed, 214 insertions(+), 20 deletions(-)
----
-base-commit: a804c5742bff224d4cb4d25dd383554d598be32b
-change-id: 20261023-add-board-ok3572-c-pmdomain-2f02da11386e
-
-Best regards,
---  
-Cunhao Lu <1579567540@qq.com>
+-- 
+2.34.1
 
 
