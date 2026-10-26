@@ -1,54 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792982374;
-	b=jj9dljbvJA/vYhpaO1UxsT6lNwp4h9KThTf04k/CV3AOj5yan52Qd8VCLc8MCZUbkkQq
-	 oGHGGg5R8jjvNYGq8YkCfgfRgadLDD0zYhGAFl4M8AlGibp7KrtKsaQ74I8FwXawyog/P
-	 qzdPMIqiJ+KC3ZGVtnmpJ7Ej3xyTQz2ZPtCEFtMZrK9HyWNAVn3N4swiFSQg2tz4ajKWl
-	 GiHxGLKBdz4hOonXLnx97d922raCYqq4YVjrVPJHmK9piISv5vDHn98Wvx1UNkROeV+75
-	 W/I+XKyjRKV5+bhSbieXkPSYWAvQA1mgHCL0jLDeP5bYZv5BzngepHUnilDjwF7AfFQ==
+	t=1792984904;
+	b=LuJZV2z/0Ypt60QeUoAhAAwG6b+ARYP3T3SPMXHU9uu8yhfiJ6G8cgeTxO9r3JGGZKMQ
+	 ka3H9QSIoC2XnIFJaFPUHLzELjlI1TNkpnH9gUOf7Q7cGLAUjKqVZFNB3DLdpMXv4OKwC
+	 MOqIr/OvmiQYnry4m6xd42SYhMPT14a8vJXBBx5p7aB/D8puOkhkz8UFurH3wVyUcmDcs
+	 ilZF9kuPdYSr2DCNo9bvNahhGwcuIh2M8AdHXt4RGc9jfQZFxTs6pBE3+1I2+CvV4j2nV
+	 usdpvZfSTyOsvXVC0WMO4CusSqbSmY++mEQwP050Hx5rGK30/Me1Tq4YYHbpZZNGjMg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792982374;
-	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=EWIAgwzBcg7K8A8tYbwaBO/laAOinWsGzDghXjTvN3M=;
-	b=KiA1zz7h6WQd5XI95jJKewCVZC25W+/L0LmXXYJUn+l2456hyDwhZxrsUfnq39e0My3m
-	 KJoQgonnAIK2B5mhMY2C94eIs3fnDpuVBcc3Qbe4SBPXjeYCWNh0oLzvOtSCZjshqIVKB
-	 GmOz2xtXKsztymqpPVccKesgq0BoKAqJVGn+nn/7cEEcuRsU1cj3dH6VGTBqJnCmUmBQS
-	 SG5b/LaPkGTvIeFfrOHNaDHfkz4s7qz5ejdSAHf4o5NtqY3qFr+67gZyVpdhdyf4oBdYt
-	 EAH4fdjieq9DpVUcGjjwTp+jkzScSLsY0vuCrG9ifuiTZ1uOBSRBm9fa8PVAhT1zY4Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792984904;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=hHE6IQcnuKMkcZmd8KP7GqMn/9CxW05x7kZYhg8S1Kg=;
+	b=t5O3X5LXEtM15FmxdvnVOSPokIDa39fwD85cjdAakNKSZS4Xplxh//3LhQxEuaRZcZee
+	 KD4Dc+gSKcH2fMPgAGzttSROBVX2S7xBve99wRJxmg+6C8Ow4gIpLsnJ1HuafvAYlPu6n
+	 C7DeNmuVBfL2BdJXnoJuwoFjUBbAoqfsD8LXd3LPj7H2664P0j5NzGYNhXOEXPcwk1yMI
+	 UWbQD2DGNqea52CYuwjVD7MnbAuySJtJ9Ha9DdxTo3GL+rDWjvX6VzH8UKdrqN9+befR6
+	 3R4TMQLa3LWIkKqxH2H7AsLlLRQHJeNzu0dgrWrcudomUlzzuMR+FzyZ6zDRKk6rjLw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=infradead.org;
-	spf=pass smtp.mailfrom=infradead.org;
-	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=aSlFAcPN;
-	arc=none smtp.remote-ip=198.137.202.133
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="BZk9ZC8/";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C82BD606A31A;
-	Mon, 26 Oct 2026 02:39:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C82BD606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DE36606A31A;
+	Mon, 26 Oct 2026 03:21:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=aSlFAcPN
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=EWIAgwzBcg7K8A8tYbwaBO/laAOinWsGzDghXjTvN3M=; b=aSlFAcPNmvamUP6oh8yhFU3dbt
-	pDzZiUh0KJYdgfvaDJA8JRIl1ze8ftTCn4F1DhnAemxrgfjgkvHVC/8PWuIC3K2NkFFNNmiimmgbo
-	GrFerzcy8HWPNd2jDoz5/1z3raxq3O5ywXq3mg9guoQ66gRsLe2ogzhjU3i+vNrwzsOwCYu2Bsgpl
-	jbwmukGTeC4DrKqW2MpkI+HY5EokkDvjoXNxVV9afkkwzEvJ+auaQhfoh47f5XvjWfyTf4yMxoNTQ
-	yeqcWbnDCszkc0NjjCnn3tL3+0fCYdGWQ5H1nOgycTRseJ30fB0g8OwaYahPGtCV0qb2dXLlsfDg6
-	RAGrS8hA==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xLAcX-00000001ccV-0oxL;
-	Mon, 26 Oct 2026 02:39:33 +0000
-Message-ID: <004fbff3-7fbc-440c-9c44-44585795521c@infradead.org>
-Date: Sun, 25 Oct 2026 19:39:32 -0700
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZk9ZC8/
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BB391F01825;
+	Mon, 26 Oct 2026 03:21:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792984904;
+	bh=hHE6IQcnuKMkcZmd8KP7GqMn/9CxW05x7kZYhg8S1Kg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=BZk9ZC8/5zmdEP8WmnXOP0XottU3T7Llp4+0ob8BSm+iA3Ts8VNRfRImgXEnpnM+1
+	 i1ri3VNYuH8n3h5NFViMJuJp/miZHBDmmh/wwsvkH0yCITiRyy4sCSBAIsoOu13nIG
+	 azSkncVIpBJO69uPMVPR4//81jk6ZtyQw3WYbPjXOz26/B0cyDn8SBjfwzmSEW9trl
+	 UK3NfFC1tNsR+AKe0AQ2qLn+imR7oIaYusKzUr9fYnqCOZQuHatwX50otbk5NjyzbJ
+	 3g6dyKmYSSM7kMVXdua2y4jgd953Jl00oUrYSIPiIkw2QaUuAPLDlMDdfsxmObWzCV
+	 gvIOlN87kLSTg==
+Date: Mon, 26 Oct 2026 03:21:35 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Brian Norris <briannorris@chromium.org>
+Cc: Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+ linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>, David Lechner
+ <dlechner@baylibre.com>, linux-iio@vger.kernel.org, Rui Miguel Silva
+ <rmfrfs@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 11/17] iio: gyro: fxas21002c: Discard
+ pm_runtime_put_autosuspend() return values
+Message-ID: <20261026032135.43938d1c@jic23-hlaptop>
+In-Reply-To: <20261021165858.v2.11.I3517fbd2ba5f7d25ddcdf4abaec13f6ca301236d@changeid>
+References: <20261021235818.3059519-1-briannorris@chromium.org>
+	<20261021165858.v2.11.I3517fbd2ba5f7d25ddcdf4abaec13f6ca301236d@changeid>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,63 +64,115 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/7] docs: ABI: power: rt9471: Fix invalid inline emphasis
-To: Waqar Hameed <waqar.hameed@axis.com>, Sebastian Reichel <sre@kernel.org>
-Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-References: <cover.1792965060.git.waqar.hameed@axis.com>
- <ba11515d8e0dc45ad90f162302bcd1b20db9bd92.1792965060.git.waqar.hameed@axis.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <ba11515d8e0dc45ad90f162302bcd1b20db9bd92.1792965060.git.waqar.hameed@axis.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
+On Wed, 21 Oct 2026 16:57:12 -0700
+Brian Norris <briannorris@chromium.org> wrote:
 
-
-On 10/25/26 3:05 PM, Waqar Hameed wrote:
-> `docutils` warns:
+> This driver propagates the return value of pm_runtime_put_autosuspend(),
+> which is not particularly useful.
 > 
->   Documentation/ABI/testing/sysfs-class-power-rt9471:1: (WARNING/2) Inline emphasis start-string without end-string.
->   Documentation/ABI/testing/sysfs-class-power-rt9471:20: (WARNING/2) Inline emphasis start-string without end-string.
+> Returning an error code from pm_runtime_put_autosuspend() merely means
+> that it has not queued up a timer or work item to check whether or not
+> the device can be suspended and there are many perfectly valid
+> situations in which that can happen, like after writing "on" to the
+> device's runtime PM "control" attribute in sysfs for one example.
 > 
-> Fix this by escaping the `*`.
+> For this reason, modify this driver to simply discard the
+> pm_runtime_put_autosuspend() return value, and inline the helpers now
+> that they're even more trivial.
+> 
+> This will facilitate a planned change of the
+> pm_runtime_put_autosuspend() return type to void in the future, similar
+> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+> type to void").
+> 
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
 
-I'm still seeing this issue after the patch is applied (same for patch 4/7).
-Maybe we are fighting a docutils your-version vs. my-version problem
-or just a moving target.
+This one I think does deserve a tweak.
+Whether to jump to guard() and ACQUIRE() for 2 out of the 3 cases
+is a more complex decision - I messed with it and I think it
+makes sense. I'll send out a suggested v3 in a sec with a follow up
+doing broader conversion to guard.
 
-$ docutils --version
-docutils-3.13 (Docutils 0.23, Python 3.13.16, on linux)
-
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202609110722.GAZVme6v-lkp@intel.com/
-> Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 > ---
->  Documentation/ABI/testing/sysfs-class-power-rt9471 | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documentation/ABI/testing/sysfs-class-power-rt9471
-> index 0a390ee5ac21c..04a771cd23512 100644
-> --- a/Documentation/ABI/testing/sysfs-class-power-rt9471
-> +++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
-> @@ -1,4 +1,4 @@
-> -What:		/sys/class/power_supply/rt9471-*/sysoff_enable
-> +What:		/sys/class/power_supply/rt9471-\*/sysoff_enable
->  Date:		Feb 2023
->  KernelVersion:	6.3
->  Contact:	ChiYuan Huang <cy_huang@richtek.com>
-> @@ -16,7 +16,7 @@ Description:
->  		- 1: enabled
->  		- 0: disabled
->  
-> -What:		/sys/class/power_supply/rt9471-*/port_detect_enable
-> +What:		/sys/class/power_supply/rt9471-\*/port_detect_enable
->  Date:		Feb 2023
->  KernelVersion:	6.3
->  Contact:	ChiYuan Huang <cy_huang@richtek.com>
+> Changes in v2:
+>  * Split iio patch into per-driver patches
+>  * Inlining
+> 
+>  drivers/iio/gyro/fxas21002c_core.c | 33 ++++++++----------------------
+>  1 file changed, 9 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/iio/gyro/fxas21002c_core.c b/drivers/iio/gyro/fxas21002c_core.c
+> index a88670207cec..1d891387b121 100644
+> --- a/drivers/iio/gyro/fxas21002c_core.c
+> +++ b/drivers/iio/gyro/fxas21002c_core.c
 
--- 
-~Randy
+>  static int fxas21002c_temp_get(struct fxas21002c_data *data, int *val)
+>  {
+>  	struct device *dev = regmap_get_device(data->regmap);
+> @@ -383,22 +371,20 @@ static int fxas21002c_temp_get(struct fxas21002c_data *data, int *val)
+>  	int ret;
+>  
+>  	mutex_lock(&data->lock);
+> -	ret = fxas21002c_pm_get(data);
+> +	ret = pm_runtime_resume_and_get(dev);
+>  	if (ret < 0)
+>  		goto data_unlock;
+>  
+>  	ret = regmap_field_read(data->regmap_fields[F_TEMP], &temp);
+>  	if (ret < 0) {
+>  		dev_err(dev, "failed to read temp: %d\n", ret);
+> -		fxas21002c_pm_put(data);
+> +		pm_runtime_put_autosuspend(dev);
+>  		goto data_unlock;
+>  	}
+>  
+>  	*val = sign_extend32(temp, 7);
+>  
+> -	ret = fxas21002c_pm_put(data);
+> -	if (ret < 0)
+> -		goto data_unlock;
+> +	pm_runtime_put_autosuspend(dev);
+
+Similar to below.
+
+>  
+>  	ret = IIO_VAL_INT;
+>  
+> @@ -416,7 +402,7 @@ static int fxas21002c_axis_get(struct fxas21002c_data *data,
+>  	int ret;
+>  
+>  	mutex_lock(&data->lock);
+> -	ret = fxas21002c_pm_get(data);
+> +	ret = pm_runtime_resume_and_get(dev);
+>  	if (ret < 0)
+>  		goto data_unlock;
+>  
+> @@ -424,15 +410,13 @@ static int fxas21002c_axis_get(struct fxas21002c_data *data,
+>  			       &axis_be, sizeof(axis_be));
+>  	if (ret < 0) {
+>  		dev_err(dev, "failed to read axis: %d: %d\n", index, ret);
+> -		fxas21002c_pm_put(data);
+> +		pm_runtime_put_autosuspend(dev);
+See below - tiny tweak and this isn't needed.
+
+>  		goto data_unlock;
+>  	}
+>  
+>  	*val = sign_extend32(be16_to_cpu(axis_be), 15);
+>  
+> -	ret = fxas21002c_pm_put(data);
+> -	if (ret < 0)
+> -		goto data_unlock;
+> +	pm_runtime_put_autosuspend(dev);
+This wants pushing a few lines later as then it can be after
+a new label just above data_unlock.  With that done we can drop the call of
+the same above.
+
+>  
+>  	ret = IIO_VAL_INT;
+>  
 
