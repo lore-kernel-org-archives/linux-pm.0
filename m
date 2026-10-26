@@ -1,80 +1,82 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.173
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.49
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793036919;
-	b=uS4ljT6Gpn8xUkz7L6EPSdMXggXVI+txtBAWzO5VdmrC6xEaJDb2fyTeIbuSW1acZo3E
-	 U8KwO956QqbKUZbe8vk6kOSfoiUz0zUIaEQtZEb7hs3Z8LmBAJbX/ev6qCctCVsQtBA9D
-	 VqLGXDQnviVz3E6EkJ76VzpUfP3dY/ra095BzSNgbz3bAyr2DP01TmxXgj9hk6JRfLzrC
-	 7Y+wtIgGO31v+wvs4TTewrSRQiYbeyqY4JNiOY9KGCEZbCx061ylSR3PQaCWAVv8wBUfT
-	 2RmCmAyvzQ62S4itn/+0IBLkiSkH5hna5IAtnYobGJxcBd+KL6bVeRuhS6HIfsNQ+zQ==
+	t=1793036920;
+	b=uNPWl3k5eZ6kxydhPosgwPlfywI3QOVfmK+JynLDM/GsHFZg0+TBvv7nt0nQjAMDdYgI
+	 8E7FeB1viwUr8l5T8tifjVEYXs+KySuNRvJdRHAJi1Gq2PchrmVrLOxpkPqnCIPAI39iD
+	 KlQQeWOl2LNaDSxYBMpd5bfrhXQunk1asAUNLHo/cEtP2FYrNlna3pFPbCzVzyjiUwzpc
+	 Okecf8y+liQfI/azahHjobupW3gO/yFesrbkBZ5BbaOD/LwP70Eexn63RbNT0epotrXjK
+	 7CJ3k+uvfLVZf9v6QIWfjkVvBQBDePYsfSCFfqg9nh1y3/Uz1v9SZnz50J2v/wMuSfg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793036919;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793036920;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=hZ7yPLnsxhfMD/1GegWYSNSd6Og2H7HlUEBWqKkjyv0=;
-	b=xct1w8adMrKPBovxh5DaYF0RQyuQywByK23GxHC9rbnT9gYSgR8QtdA13DnpyYx91qhK
-	 he6yjajOzWVrQjQKPLWBUHxtew0a9Oy2MCtVWGWn2Owu+waV0ziaQKn1i7JPkgBu6uG17
-	 2lCbfmVt1oEyxk+mqGXbrG71xWLzEfsRXlWLWNzEqVBCzkeQw2P40mmzGbIVNURbl+m6Z
-	 Qn98AESYsUPrFS+elpHW01r8Kk43+NDxMeugjnvLrMc76CyMegAdnCsMTkwGZnzjSm41M
-	 CXJmeQTZ6JxjFfM3kZllOXc3pGUF4dgfiVkeTUAazLP9SaNjdaRs0Ntr0qPk7TOt5LQ==
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=no08TYy9z5N15Gfih7t9dZs8POOT+RS2X8Q3gds+d0o=;
+	b=re6Skifqf7m0Cp4ZYm//Dw6ktlV1vUQ0nptn64im3O0qocqiEBP6Mwy6g4gi5knSDYAH
+	 kfrwt+OIvL9Y+zNoUJXr9qZGKNqusPmL7fu8qTfamG6ph7TeWLbeli9wcvfNJ4rDR19te
+	 7r29ZJH75mk/pZq+EqVVLI7PCskTcrq2Nn560rRlMoaj9+BlSRIuugV1RzxmrLJSqO4Qs
+	 6jIFSuj4NReDWWvyXLPf2xRY20Bptk9K5aJ2oKiu0DK9Er6IbQzKrJ32m4S2VFvOTmhuM
+	 yf9ImrU6OelmxtxznWSadVhbMezHCCCHF7o+kVNy7b6Dya5VhFCtn0L9WnSwR7ImAoA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=luj5OyBl;
-	arc=none smtp.remote-ip=209.85.167.173
-Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com [209.85.167.173])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EGQsjoS3;
+	arc=none smtp.remote-ip=209.85.160.49
+Received: from mail-oa1-f49.google.com (mail-oa1-f49.google.com [209.85.160.49])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 575DF606A31A
-	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 17:48:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 575DF606A31A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73C25606A325
+	for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 17:48:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 73C25606A325
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=luj5OyBl
-Received: by mail-oi1-f173.google.com with SMTP id 5614622812f47-4b190cdc9feso1803381b6e.0
-        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 10:48:38 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EGQsjoS3
+Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-490d838b425so1618134fac.3
+        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 10:48:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793036917; x=1793641717; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=hZ7yPLnsxhfMD/1GegWYSNSd6Og2H7HlUEBWqKkjyv0=;
-        b=luj5OyBlMjzI47kdwxhgM8mgrYKUhoBRUSg0hpxLNN6uQ9zCevu9POmM30b+XNOd6u
-         JR/z4huFbN08fSZZhvslboiPFj4vTSup1htwNR1/1/cXm016iMFwVTBRMtE1fAyeBK8c
-         iuNd5DaM75Nml1IR+ykUJtlAh7EkCBzhRr2yNdkjlDTPcoz9RLYuhPtpImB8j9dZcLL3
-         o15opyBXotcESQ4kYYKqBY3d1wib0Zml8rWr1itSp/JhbEe03nmTU4AYQDRNEcvAetA+
-         LCorGJ9RxcMH7WVCTQ+fRlKIjBU5ExdbHqY2MrgDsJo7XbwinyF8ahtZyDAUaZLZY477
-         U4/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793036917; x=1793641717;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1793036918; x=1793641718; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=hZ7yPLnsxhfMD/1GegWYSNSd6Og2H7HlUEBWqKkjyv0=;
-        b=Ve0IhsSoqREMxmEkrw4tw/so0GS06pPAH0iz/OWNLrUy7ZauvTpWPAa0ZggTGHdLsL
-         A/2uDcJhQWzl/D4F9yJPYe9z2tDCbdaqaIeixPXxgMH8IlJXz7M8dLSuyeAnRDOLHgpm
-         Gids3W3wwwsxNBPoo57z+T8AWzhdIrX6i4p660AELyGEvOKkD61OIN8gyAEXbE2zVCVw
-         ORURvBCG7JXZCbjFUd8v0Lcl+05PUr8PkdexFUlFyXtm5TW53vRSK41IPoveZUibQ+kR
-         pawlHJIvPf+XfRPxFUueTT9mYXZbO2oi89FUdRs824zPbYH68BwNvbRRI5+X0inxHQqn
-         5xgA==
-X-Gm-Message-State: AFq9FYJ5RdG+MGB8H2fJTbZ8Fj5ZQ8wHm+0ZSd9oyTTThjYAB2l2Fl9l
-	sa4zaJdcaUNVTsXz4AUT6b53lphuOi6EisqXK1Z1F4tQmlxXMJYN134nhvCH6GJ6
-X-Gm-Gg: AYBFou01CMP+u8IDGSeuy0ebng68PIIPMqf2zU0Vu1M+apssj+74QewJN3/RYQwFCSH
-	cLX5vDRR6s5o5Ethhj9JJVsZuTZMVaStDssvJDjub9rTxewaox15qu7tYMXs8fPn9ln+DoBDSnu
-	zEh6EvrlPHiF1qm0GtXsORU7rd25G57yRZ9c51mGDN1xMbhGNkBBMHX/O69sG+IF8s4VOnHs4ac
-	NOyIRjwEeA8tk/c5cLer0WkQA1X+YfzGeYBF0IZRjdj/QgROaAi6BgARHCHXFL5WUmUo261EjY1
-	DsXofOTerJgGcOiuZXRiCAKx9B4PSSeJVyvZHa9Z92p2+ZE8ia/RgB5LIYE0XwxcZlMGlD7quPX
-	iAmvWKOMv257iRdI5hOMajCcioFBpeRhqIp4HDRu7ENYfDMnuPTc8fUaG76dfyPEFyEV+um0k/W
-	fKajjFt9X/otmNVNR9DlQEIP/Qi9HN0yqRnY315MHcj3SGXE6wryPTW63lUWZsjMakrps3voifo
-	FMDsXwkeymcP0lARqJ1ZNZ7VJG1s4a/oe+JHVggtCTAGeJcbMl16WwgwiQvKYX/SsPd9d0fpXwh
-	87qcQYUZbqwqszcYXBxV4hEZG4VpWQ==
-X-Received: by 2002:a05:6808:4f2b:b0:4f6:5279:5c89 with SMTP id 5614622812f47-55c0026b905mr4577266b6e.47.1793036917104;
-        Mon, 26 Oct 2026 10:48:37 -0700 (PDT)
+        bh=no08TYy9z5N15Gfih7t9dZs8POOT+RS2X8Q3gds+d0o=;
+        b=EGQsjoS3aD3rh/Ke6LU9Rb4lq++MQ31utgMNkRLoHARkb6UCVLuPvuodq+K1V8bWfK
+         eMSQaKkCK38U0otloxxvu6scUuClerf40HlK1td9g3bqfwaUyUxrVUr26AMwmGzkBwKv
+         fXr77sH/zCAJbrpWbKRoXtyHMcoBbylWT/EXTZNJpYcxquxQUbQU3JW6K0QH9O+qu/lP
+         +6TaJ0V3lQpOG/wZWhOfVI3rZmroaEdmjdKxXDGDZePBFu3lPjtzCh3eCCSPJFnCeYIU
+         S/UvHSLV2owQOgSg9yxkOjT0BwInM54Y1fMUgjpb1hIVxXuLVPXfv9pzWoU7BlCNxy/r
+         5jww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793036918; x=1793641718;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=no08TYy9z5N15Gfih7t9dZs8POOT+RS2X8Q3gds+d0o=;
+        b=PpHyeBx26xxl1WB6ROmqiwNLtg8Ix7enIeipg2yXEhmHKUPr9AnNeA2hit+oGyS+w0
+         m0eCgtVuGnOavRH8TwpRjdenIAcU5EDwKeFV7BYuTrQDF+PaE65IvifcM3RZ9dMXXmGY
+         uV1FDJ8nSDp9qo+ypVD02oYokYzNEITpjVcfFycnQFnzxtoDx+z/pUy2Ya6+AoaUodsn
+         S3IjZ9qIdt4DvRLyeUY0Q+WZYeYrUgVheFybVhquH7A+rkMtYoy4gvUNOW08IFbVWqsP
+         9H6kMnSR8rkuKToYjBEvl2nDIEc2rHorXDkVmOhNPpo9w3iRNJq1ngpEhiGmgpMOz2ru
+         RCmg==
+X-Gm-Message-State: AFq9FYJas0/sC+9XoGWHSdzORr+TvT3MMh8YnEE7YuSbbJnntQtEIdZs
+	/40L8nhohIGdY9hUKN6juFSiBuLi7/zmK2I2bBREHvvc9l5l4sANBYCF1jszoEXd
+X-Gm-Gg: AYBFou2jA1dER+mk0yGa6WwCURrBIXmERBVAiGnLzcOxPiQeI73BV0j8S/M6qfM8q8l
+	dn6t1gT4FI1pUo7qMWvdfI2b97fNfQIrvb1ioVO5voCgwWPPrrLPLs7QNZu2zIXS6IWRKGSJUKC
+	SQtRFMUz3TDXZpIah5kdzKpwVd1whIO4l/5kLq1MkmNUjFShS0BTCgC1qP4PRcxEJZWIEdvgbvo
+	V7NfcGk5rRTPU+xBM93GM8qIzw6Ke8Fy8WQfV6PsSf48Z6tTDS4cNCcSqjbo21GftER0J4nqxtH
+	6ytcBOH+micr7NZNkYlJaDQjgfXsRqMnEgNc1SCUd5LHwXr+YNxh1HQ4gr5CrbFC9uqoiUeKzwq
+	P8Jf2UA4S7cCLN8x6HjGFVtFX4v4n/zQLTARMKWQ71aWUOGD/XZjVZS2yxMScwhPnfZJ4mS0YW1
+	cVqAm8Mx4OL+ktXCAXcah6tMaCZfNs+vYsBZzDwtglHfVIdTULFc8onmyh9Gx8/QtfKEG1+kDL/
+	l1AJKJTP7QqTvk7Mheuf4xsvr6BRsVS9eItcy9KwmG1aH2G0bUzmb2Wo9JbXUqAk5Keo6MEORrP
+	kbUNwFuLrI1Ba/ZIxuNcnhRvs2sWsg==
+X-Received: by 2002:a05:6870:2c49:b0:48f:e107:317e with SMTP id 586e51a60fabf-4a83f5d590dmr4738136fac.49.1793036918122;
+        Mon, 26 Oct 2026 10:48:38 -0700 (PDT)
 Received: from neuromancer ([75.28.21.198])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4a842e89e33sm5034753fac.1.2026.10.26.10.48.36
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4a842e89e33sm5034753fac.1.2026.10.26.10.48.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 10:48:36 -0700 (PDT)
+        Mon, 26 Oct 2026 10:48:37 -0700 (PDT)
 From: Chris Morgan <macroalpha82@gmail.com>
 To: linux-pm@vger.kernel.org
 Cc: linux-rockchip@lists.infradead.org,
@@ -88,11 +90,14 @@ Cc: linux-rockchip@lists.infradead.org,
 	krzk+dt@kernel.org,
 	robh@kernel.org,
 	lee@kernel.org,
-	Chris Morgan <macromorgan@hotmail.com>
-Subject: [PATCH 0/5] Fix Incorrect State of Charge for RK817
-Date: Mon, 26 Oct 2026 12:48:29 -0500
-Message-ID: <20261026174834.1652309-1-macroalpha82@gmail.com>
+	Chris Morgan <macromorgan@hotmail.com>,
+	Jacob Cook <jacobmcook1984@gmail.com>
+Subject: [PATCH 1/5] power: supply: rk817-charger: Fix NVRAM SoC Value
+Date: Mon, 26 Oct 2026 12:48:30 -0500
+Message-ID: <20261026174834.1652309-2-macroalpha82@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261026174834.1652309-1-macroalpha82@gmail.com>
+References: <20261026174834.1652309-1-macroalpha82@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -106,54 +111,41 @@ Content-Transfer-Encoding: 8bit
 
 From: Chris Morgan <macromorgan@hotmail.com>
 
-Users of the popular firmware RockNIX had identified a few bugs with
-accurately displaying the correct state of charge for RK817 battery
-devices. With the help of one user analyzing the code with Claude
-they were able to identify a few potential bugs along with potential
-solutions which I was then able to verify. These bugs are as follows:
+The NVRAM value is stored as a value between 0 (0%) and 100000 (100%),
+but the bounds checking checks and truncates with a max of 10000,
+causing a value of 100% to get read as 10%.
 
-1) Incorrectly clamping a value with a max of 10000 instead of 100000.
-This bug caused the state of charge to sometimes read as 10% instead
-of 100% as it should have.
+Fixes: 11cb8da0189b ("power: supply: Add charger driver for Rockchip RK817")
+Suggested-by: Jacob Cook <jacobmcook1984@gmail.com>
+Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+---
+ drivers/power/supply/rk817_charger.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-2) Using the boot_voltage value to calibrate the battery in scenarios
-where it could not be trusted. The boot_voltage register populates
-immediately at power-on, and the driver would check if this value
-was older than 30 minutes before using it. Unfortunately when combined
-with the default behavior of the bootloader to turn the device off
-when plugged in (requiring a user to explicitly power the device on)
-the boot_voltage and boot_timer values were wrong. The boot voltage
-would not account for any voltage added while the device was off,
-and the boot_counter that tracks the time the device was off would
-be reset. To fix this we adopted the same behavior as the BSP driver
-which would typically (outside of first-boot scenarios) use a value
-saved to NVRAM or the value from the coulomb counter directly and
-then recalibrate with the OCV voltage once it was available.
-
-3) A similar issue would happen during suspend, as values from the
-coulomb counter could not be relied upon. So we add suspend specific
-recalibration to the driver.
-
-Included in this series is another fix that would cause the battery
-to drain while the system was shut down. This patch replicates the
-Rockchip BSP driver to set a shutdown register and provides a
-device-tree parameter to override the behavior (though I am not aware
-of any existing boards that need the override).
-
-Chris Morgan (5):
-  power: supply: rk817-charger: Fix NVRAM SoC Value
-  power: supply: rk817-charger: Resolve boot state of charge from the
-    coulomb counter
-  power: supply: rk817-charger: Correct the gauge across system sleep
-  dt-bindings: power: supply: rk817-charger: Add
-    rockchip,gate-function-disable
-  power: supply: rk817-charger: Clear SYS_CAN_SD register by default
-
- .../bindings/mfd/rockchip,rk817.yaml          |   7 +
- drivers/power/supply/rk817_charger.c          | 336 +++++++++++++++---
- include/linux/mfd/rk808.h                     |   3 +
- 3 files changed, 290 insertions(+), 56 deletions(-)
-
+diff --git a/drivers/power/supply/rk817_charger.c b/drivers/power/supply/rk817_charger.c
+index 5558b182a1a6..86da0462fb59 100644
+--- a/drivers/power/supply/rk817_charger.c
++++ b/drivers/power/supply/rk817_charger.c
+@@ -728,7 +728,7 @@ static int rk817_read_battery_nvram_values(struct rk817_charger *charger)
+ 
+ 	/*
+ 	 * Read the nvram for state of charge. Sanity check for values greater
+-	 * than 100 (10000) or less than 0, because other things (BSP kernels,
++	 * than 100 (100000) or less than 0, because other things (BSP kernels,
+ 	 * U-Boot, or even i2cset) can write to this register. If the value is
+ 	 * off it should get corrected automatically when the voltage drops to
+ 	 * the min (soc is 0) or when the battery is full (soc is 100).
+@@ -738,8 +738,8 @@ static int rk817_read_battery_nvram_values(struct rk817_charger *charger)
+ 	if (ret < 0)
+ 		return ret;
+ 	charger->soc = get_unaligned_le24(bulk_reg);
+-	if (charger->soc > 10000)
+-		charger->soc = 10000;
++	if (charger->soc > 100000)
++		charger->soc = 100000;
+ 	if (charger->soc < 0)
+ 		charger->soc = 0;
+ 
 -- 
 2.53.0
 
