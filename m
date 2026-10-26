@@ -1,60 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.137.202.133
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792977229;
-	b=ueykCiTjrVsHXuEvmJLn3z196twnJgRHgyVsF4YwYYgPuYQEy2NkgGAGkFTtJtK0lE4l
-	 nxic8qfN/nGbVc8Q/Ag7vE6QRw0Yw4KF2KekPSEge12d6oAwHR6B0bxrKRqIxTRxouFh7
-	 KX0bLEQ8JYBJcNQZ8WjF8a7/0Ube6oskIGMZh23ysSdSPGL6bz9j1TzfbAUL2lN3YgrgA
-	 L/hoGQblIAEIPRT+jtYNZALVbVhM3EDvZcQVr3Y918TcP/EARwkBcvNu2TxxFvwKXbHS4
-	 gPf553h/M0JF/Q6NlPTwpjibmQDXmHeVf/tboQWRQn/X59pWqgnV1QlwfZrW3arGr5A==
+	t=1792981751;
+	b=rTLV2s52ycZ9ZMsrHqKrOvN3chGXnP6d1Yku/k+BkTF7T40a8WjazK4NAR4fvSFq0PwY
+	 HnaNLSyanCIcPPDK8NLcVb6Am6Fd7iZGaWnQpKGG8aSMDPEt1kiKiVOrmRG6KnqdEMfxE
+	 Nt/+7gTNG2v+ZK4dir6tT+3KGaFMpFSyzUiQu2Mv/aqg86oiWFDgvy2m2GvzObvwlkONU
+	 lkSzdUFW+Z1WxUXIsliqo4GEldy1fblUa8Z71UpxEFH7rxadi5w1Byy94Y5Kyg5hjfmq4
+	 +50VrM1ZfU/bXj72OPGR1M+qYjlKVZ0qMb5YYvq/nbh/0f/dS6RblmfkvOji1cRRZRQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792977229;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=WVvNKLceFMws7Rkx2c9OqMhvST1ZscHVOQd+zxV06sg=;
-	b=Lq7BgJZqk846es/vTwDJDENKkaKBRgQgXUejaPCo7Ky6LYwjkFypoteOp2FvqOBg7HB5
-	 IgooKzEHtwVCtt4j8gWv47zT6cSXdVwyvETwBj+TZQTDNnGVDl3yejXENqhqKVwLCspXU
-	 nXEslEB6AsVgqwU8DlhNem92UzAYIaKSFTcJG9BxZqyagOu2EhdLd0DIqTv6Wbxpv9eye
-	 W+Mbr1fMjkfgMuSaN6wOKXghtdcJr02DFaVJ1XlI8Cre7a3G3f5dNTT0PLVNbvObRXod1
-	 M83KDIAT3LF4Ui1V9ciQqqDyxU5fbM2QaNQZz2OvWVBjQrktrT9Ej3F88x2YmQQdutA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792981751;
+	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=8GIlngdOYpkCQ54tZek2AbzCBUnRS2yxF8KYowfA6jI=;
+	b=Yi65X78UK2nb03NyJbTuAGTDARcicoYT5HWvQMyiBREfqL/GkV/MXS9F0cijo0ELBTgz
+	 GYArv9e1cLbk3sVe1ASKMl0jPjNXK3D2/DOZnK5++GbOcz3yWWQ/iULjjVAIPQrhmM7nY
+	 HWLzDJyaKWAVhfC9jU3kySvKENa1i5xmYc3e7bXTVKAAI0wRMYBl5DVO8t8KUaNNHV2pi
+	 NSmt9ENuMkOzFMsAKr73VlCXsbzcgR0WDvIFJ6qy02FmT+obaCnw8LrBQ87fU9ftymXBF
+	 Cctgr/n0tw7ozSwrxAw+P4SdAJNInwp9IbbcAUDYm51Y8a6WiEPUkVRg9M7ntoAmJgA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DN0LU9ue;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=infradead.org;
+	spf=pass smtp.mailfrom=infradead.org;
+	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Rsi9bLEP;
+	arc=none smtp.remote-ip=198.137.202.133
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7079606A31A;
-	Mon, 26 Oct 2026 01:13:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AA94606A31A;
+	Mon, 26 Oct 2026 02:29:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6AA94606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DN0LU9ue
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F247F1F01825;
-	Mon, 26 Oct 2026 01:13:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792977228;
-	bh=WVvNKLceFMws7Rkx2c9OqMhvST1ZscHVOQd+zxV06sg=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=DN0LU9ueW46ghLNxA1WGEN7h4QWnL9ZK36HtUd4zIPyoj1UxHcLGJVeux15BJ+Glf
-	 ureZF9JS2feNem6FB/IR/iiSSRxMPlZixW5JCJwTRdZknMnjCo8HgPeGFCH7ZmkieR
-	 GDrigtBdv4YFOXXJME0+6HFRiwvH0NSpqR/vVPx2+wfckfsuTg4XmFVBHuAlNp+zlO
-	 Z/DibI/xG18H04uI9TdhkNaodYTzRNIRDZ9fZTASOgYcQD9Ldn62Dmca5QoGXzHomC
-	 WFb+pFMx1joQYopyGWu44gXINE88rCzfKgFmf2jLsLkoMzLg3sm/184y3AHu9dnmpi
-	 w/UPx5nf4bLjg==
-Date: Mon, 26 Oct 2026 01:13:41 +0000
-From: Jonathan Cameron <jic23@kernel.org>
-To: Brian Norris <briannorris@chromium.org>
-Cc: Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
- linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>, David Lechner
- <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 12/17] iio: imu: kmx61: Discard
- pm_runtime_put_autosuspend() return values
-Message-ID: <20261026011341.227e575a@jic23-hlaptop>
-In-Reply-To: <20261021165858.v2.12.Ibb6be74faca4446a1147537fa1a82bb6b9d5c580@changeid>
-References: <20261021235818.3059519-1-briannorris@chromium.org>
-	<20261021165858.v2.12.Ibb6be74faca4446a1147537fa1a82bb6b9d5c580@changeid>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Rsi9bLEP
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=8GIlngdOYpkCQ54tZek2AbzCBUnRS2yxF8KYowfA6jI=; b=Rsi9bLEPT9QcmcMuVKL+INM0Gb
+	ERZYX6HpIZW41rvQ6sx9SuljDCsEURqHn+UM47HjkYdZqSOCplvmqOxwmMqfvf1pfCaLdhyXaWLq5
+	sxpcPl0d0MOUceTBsoAILqBXrTUo84muj4xPWUVL5X7heAnlBJ/msTD+/Bes9HN7IcVl4uNogTWQP
+	B/5pjJe+K2leVymeDy6WKplbhO0rQfJMhP4NcHq7X7HyfciIlp+1+P0LNDVfbiqUUmovE8cdHy8qh
+	YL7IvMVd6UmytpRwZLZdKsbL6VDjEtyDPNtVLvX+6AuCJZp1R63XIHltzeOU7piz3jt0Sn9ldKRDr
+	IgYaU8OA==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xLASS-00000001cMK-3KeW;
+	Mon, 26 Oct 2026 02:29:08 +0000
+Message-ID: <45832309-7569-4a9c-b24a-f7838407caa1@infradead.org>
+Date: Sun, 25 Oct 2026 19:29:08 -0700
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,38 +58,64 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/7] docs: ABI: power: rt9471: Add newline for paragraphs
+To: Waqar Hameed <waqar.hameed@axis.com>, Sebastian Reichel <sre@kernel.org>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1792965060.git.waqar.hameed@axis.com>
+ <eb8f0f6be0386b0f114c3d7cf2be1594d062d94b.1792965060.git.waqar.hameed@axis.com>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <eb8f0f6be0386b0f114c3d7cf2be1594d062d94b.1792965060.git.waqar.hameed@axis.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On Wed, 21 Oct 2026 16:57:13 -0700
-Brian Norris <briannorris@chromium.org> wrote:
+Hi,
 
-> The kmx61 driver propagates the return value of
-> pm_runtime_put_autosuspend(), which is not particularly useful.
+On 10/25/26 3:05 PM, Waqar Hameed wrote:
+> To split paragraphs in reStructuredText, an empty line is needed.
+> Otherwise the output will be:
 > 
-> Returning an error code from pm_runtime_put_autosuspend() merely means
-> that it has not queued up a timer or work item to check whether or not
-> the device can be suspended and there are many perfectly valid
-> situations in which that can happen, like after writing "on" to the
-> device's runtime PM "control" attribute in sysfs for one example.
+>   Access: Read, Write Valid values: - 1: enabled - 0: disabled
 > 
-> For this reason, modify this driver to simply discard the
-> pm_runtime_put_autosuspend() return value.
+> Add a newline in order to properly format it as intended:
 > 
-> Note: kmx61_set_power_state() is a possible inlining candidate, but it
-> performs some non-trivial logic on the {acc,mag}_ps fields, so I leave
-> it alone.
+> Reported-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> Closes: https://lore.kernel.org/oe-kbuild-all/20261020101625.01874245@foz.lan/
+> Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
+> ---
+>  Documentation/ABI/testing/sysfs-class-power-rt9471 | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> This will facilitate a planned change of the
-> pm_runtime_put_autosuspend() return type to void in the future, similar
-> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
-> type to void").
-> 
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-Agreed with your analysis that inlining this one hits some non
-obvious complexity.  So applied - maybe as step one of of
-cleaning this up more generally.
+> diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documentation/ABI/testing/sysfs-class-power-rt9471
+> index 04a771cd23512..c306e2ead6bb7 100644
+> --- a/Documentation/ABI/testing/sysfs-class-power-rt9471
+> +++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
+> @@ -12,6 +12,7 @@ Description:
+>  		the action before the device really enter shipping mode.
+>  
+>  		Access: Read, Write
+> +
+>  		Valid values:
 
-Thanks,
+It would look nicer to add a blank line here (and below) so that the 2
+following lines are processed as bullet items.
+(as Mauro suggested)
 
-Jonathan
+Same for patch 5/7.
+
+>  		- 1: enabled
+>  		- 0: disabled
+> @@ -27,6 +28,7 @@ Description:
+>  		datasheet for details. Normally controlled when TypeC/USBPD port integrated.
+>  
+>  		Access: Read, Write
+> +
+>  		Valid values:
+>  		- 1: enabled
+>  		- 0: disabled
+
+-- 
+~Randy
+
