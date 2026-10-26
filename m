@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793026564;
-	b=NJ4PpFd6ibk2nC+LWt74l9a7O3rNjJgIp/pgNSWX+mT+RjlB3P2t4+XQjSxNzTOYijx0
-	 9YfCORAXvLlrmaPFj+cKASPYOSaMTf+JNC0AdYRUuVpQsyGG9ubPN6qxXX3R8RasJ6zIr
-	 zNlAIb80YuPnfFs81foHfaESc8SQJGj6vajTJWbKw0KNK+vctEKNyvz2U2xRu5hiLviGM
-	 ldfOiHN0uSN+PO+SlloGkD7dG/+6+41oybWAdQsaKZAoNOoPauQ1BYoaF2xjAZu+IVEqT
-	 SKSNJkGusw3ki2vL//YQtSd/h+dIRgocb6pL2sDsKz3nwf9TSj/dRte9pNBBZ+U31ZA==
+	t=1793026560;
+	b=MtApuWDFRPCvbVTlxmeoULYJMUOi9z3ghCnO/ZrZXG/563dl4O4Twuuy8tRZRh4I5nE0
+	 RxVBtBEAzOJpKJwcvsrcxfUcMHpJ4GbOeOG9D/DrvHWlEqvvZAtH+V/zzcytv0r2FVkQa
+	 erBhTcUevCzeijZKWmRvoYrkWfYDddkb34aMtVNHpvNpjhbazJeEQszCCpUJYLAwTOOBZ
+	 igCbNWEa+iJTd8O/U8l381K9F5B7pXxE4tARhiv4heCAZVripdIDCnmAs9vCoxanErIAZ
+	 I5vM27JKI+bJ1JC5wGuryfBCmL2u555QdmkgVfHlytEgNajnuXB70bOw9SvjgH8lvPA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793026564;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793026560;
 	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=wLFuu8tZf1E/YQuDfViod9+RbMD86cfFucSt/ed8wOA=;
-	b=eSJuR++976Dgzvv/y3I4RCjjgXO5btwbk6ASb26IGTe9D+C2uEfVjKP64mdD6zF1XqMV
-	 JYIbPbj7yp0CUTm7YZ+BX9s0APyBn5ruqwjR9SYD873IwEKc+/W4iH8svX/+2YOO7OfDU
-	 oK290irJTWnG5OhSbS3tjscDJ5d3fQeZB13tNYaaIBg+jI256jrpScL8swjsELBxk0ldT
-	 LHjszH0ED7EbFONV2WAOLwtsIyDgTng2kGhcvbjjxc7pZZf3d9y5mVi5zPMGgxDe0G7/e
-	 H2mgWGj6VvcZn6fD1JlcKjDsrQyP4F/zFnbSrF4hAx8ZwfTdE3g8ivXP95rabKDTM/A==
+	bh=44CTiA7A49EJN2VY0UCM0Rmoy6mh9PnJJvTxNQQxTx8=;
+	b=SUKn6jAZg/ncYFYW7nm6A/BBA2KCLNzdOHdq9w0yney0ozJKo7yHesbf0SLmrSaaHlKN
+	 bMbDVI5Flnrjhx3AW8Pmba4jwq7N/jnTrkkhfgYYRlCDRLDLKujxY2SM/G2k8iXkP0JBB
+	 1QVh78enycSn5Oc1Fex11HJynVoxq+29gzCvOZn66zAa36U8sZgW9MKMfGRFpcMYKCzgS
+	 UFxbrO0vIvjtj704Cy7Y/aqaXAFI7+LdReAoQeMTwNlqjxuI8rI3MM99ieA8c3Fls0daJ
+	 O4mGvjqICWkBT0MNv8RLimc8TmkavlcdIiOkFfMjXw6RRMgjiIAMRhQYIDLfj7/rbGA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73353606A31B;
-	Mon, 26 Oct 2026 14:56:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3BD6E1F031E0;
-	Mon, 26 Oct 2026 14:56:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E24AF606A31D;
+	Mon, 26 Oct 2026 14:55:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C6B11F01829;
+	Mon, 26 Oct 2026 14:55:55 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
 	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
@@ -45,9 +45,9 @@ Cc: linux-pwm@vger.kernel.org,
 	linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 07/11] dt-bindings: clock: renesas,r8a78000-cpg: Add PWM clocks
-Date: Mon, 26 Oct 2026 15:55:23 +0100
-Message-ID: <e723696e02cfb34fb808e2ae3ccb6faf68528c00.1793026273.git.geert+renesas@glider.be>
+Subject: [PATCH 06/11] pwm: rcar: Add support for R-Car Gen5
+Date: Mon, 26 Oct 2026 15:55:22 +0100
+Message-ID: <f09a095ee5128c94c5dd1dadb71e655ec9dac658.1793026273.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1793026273.git.geert+renesas@glider.be>
 References: <cover.1793026273.git.geert+renesas@glider.be>
@@ -62,33 +62,78 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add definitions for the clocks used by the PWM modules on R-Car X5H:
- - R8A78000_CPG_SGASYNCD16_PERW_MAIN,
- - R8A78000_CPG_S0ASYNCD8_PERW_MAIN.
-Include R8A78000_CPG_SGASYNCD8_PERW_MAIN for ordering consistency.
+R-Car Gen5 enlarged the PWM output cycle and high-level period fields
+from 10 to 24 bits.  The high parts of each field are stored in a new
+register.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-This depends on "[PATCH 2/7] dt-bindings: clock: renesas,r8a78000-cpg:
-Add GPIO clocks"
-https://lore.kernel.org/624a9fb09e4ec74b1995797e5121b86e7206f5f2.1792776697.git.geert+renesas@glider.be
----
- include/dt-bindings/clock/renesas,r8a78000-cpg.h | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/pwm/pwm-rcar.c | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/include/dt-bindings/clock/renesas,r8a78000-cpg.h b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-index cd7192ccecd4e22c..8c30476d41448cf5 100644
---- a/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-+++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-@@ -28,5 +28,8 @@
- #define R8A78000_CPG_SGD8_PERW_BUS		18
- #define R8A78000_CPG_SGD32_PERW_BUS		19
- #define R8A78000_CPG_S0D24_HSCN_OTHER		20
-+#define R8A78000_CPG_SGASYNCD8_PERW_MAIN	21
-+#define R8A78000_CPG_SGASYNCD16_PERW_MAIN	22
-+#define R8A78000_CPG_S0ASYNCD8_PERW_MAIN	23
+diff --git a/drivers/pwm/pwm-rcar.c b/drivers/pwm/pwm-rcar.c
+index 3813094c601efc8c..5e91509de7a7c162 100644
+--- a/drivers/pwm/pwm-rcar.c
++++ b/drivers/pwm/pwm-rcar.c
+@@ -31,7 +31,8 @@
+ #define  RCAR_PWMCR_SS0		BIT(4)
+ #define  RCAR_PWMCR_EN0		BIT(0)
  
- #endif /* __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__ */
+-#define RCAR_PWMCNT		0x04
++#define RCAR_PWMCNTA		0x04		/* Low part */
++#define RCAR_PWMCNTB		0x08		/* High part (R-Car Gen5) */
+ #define  RCAR_PWMCNT_CYC0_MASK	GENMASK(31, 16)
+ #define  RCAR_PWMCNT_PH0_MASK	GENMASK(15, 0)
+ 
+@@ -124,9 +125,15 @@ static int rcar_pwm_set_counter(struct rcar_pwm_chip *rp, int div, u64 duty_ns,
+ 		return -EINVAL;
+ 
+ 	rcar_pwm_write(rp,
+-		       FIELD_PREP(RCAR_PWMCNT_CYC0_MASK, cyc) |
+-		       FIELD_PREP(RCAR_PWMCNT_PH0_MASK, ph),
+-		       RCAR_PWMCNT);
++		       FIELD_PREP(RCAR_PWMCNT_CYC0_MASK, lower_16_bits(cyc)) |
++		       FIELD_PREP(RCAR_PWMCNT_PH0_MASK, lower_16_bits(ph)),
++		       RCAR_PWMCNTA);
++
++	if (rp->cycle_bits >= 16)
++		rcar_pwm_write(rp,
++		       FIELD_PREP(RCAR_PWMCNT_CYC0_MASK, upper_16_bits(cyc)) |
++		       FIELD_PREP(RCAR_PWMCNT_PH0_MASK, upper_16_bits(ph)),
++		       RCAR_PWMCNTB);
+ 
+ 	return 0;
+ }
+@@ -146,9 +153,14 @@ static int rcar_pwm_enable(struct rcar_pwm_chip *rp)
+ 	u32 value, cyc, ph;
+ 
+ 	/* Don't enable the PWM device if CYC0 or PH0 is 0 */
+-	value = rcar_pwm_read(rp, RCAR_PWMCNT);
++	value = rcar_pwm_read(rp, RCAR_PWMCNTA);
+ 	cyc = FIELD_GET(RCAR_PWMCNT_CYC0_MASK, value);
+ 	ph = FIELD_GET(RCAR_PWMCNT_PH0_MASK, value);
++	if (rp->cycle_bits >= 16) {
++		value = rcar_pwm_read(rp, RCAR_PWMCNTB);
++		cyc |= FIELD_GET(RCAR_PWMCNT_CYC0_MASK, value) << 16;
++		ph |= FIELD_GET(RCAR_PWMCNT_PH0_MASK, value) << 16;
++	}
+ 
+ 	if ((cyc & RCAR_PWM_MAX_CYCLE(rp)) == 0 ||
+ 	    (ph & RCAR_PWM_MAX_CYCLE(rp)) == 0)
+@@ -262,8 +274,13 @@ static const struct rcar_pwm_info rcar_pwm_info = {
+ 	.cycle_bits = 10,
+ };
+ 
++static const struct rcar_pwm_info rcar_gen5_pwm_info = {
++	.cycle_bits = 24,
++};
++
+ static const struct of_device_id rcar_pwm_of_table[] = {
+ 	{ .compatible = "renesas,pwm-rcar", .data = &rcar_pwm_info },
++	{ .compatible = "renesas,rcar-gen5-pwm", .data = &rcar_gen5_pwm_info },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, rcar_pwm_of_table);
 -- 
 2.43.0
 
