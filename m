@@ -1,79 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793132534;
-	b=m6PuGr9GyHqIC+/eFxc72tbVUZxgR8OGd1RFmtLXKLz0d2bGY5vxgOdLBa7TF2Lfb+In
-	 OTE2vau6zJoXO2PrM/Hbqpf8WmT1xmKeQ5hcDy+C3wcYMFBEDUShrgD9mKzuc4Gp+Wqm0
-	 b+shUt/e5miOoq2tANJ2gCMs+Es1TN5KfPziszplFvkP7UVoGcQo9EwVPvS/Q9zjwE0p+
-	 XstPcoq2kIMVHWv3BbMPGXDLEQMxR0c8ft3TL/TRm2iqYSSxD7oGzMB+93OSDgNHzixpC
-	 MfqUYxraDZw4dlr70IGWuoNuF+G6ZsMcbeBcJFP8HXofM/SHHSDs86D6eqsitmrSI3Q==
+	t=1793132547;
+	b=LKUScnWqMyr/b1pFNFnU9oXnIba3NzhT8CuVqBveLk8cZs20Dy77SI2pRKAWqVbWQvX7
+	 JJMusepniPPuixYpkfbcFl4jqLh3z/ct/ozbMVknGLifZchGPXhKkTdn0vXHKqrYOPaco
+	 YkhRmTmrXJp2eD3XsJUMipLs+Y1dFtbtpJItacf8uMaEIDLOmU+b/lwqTfy4FqI+BdmfR
+	 0F1nUZ9dzow+u7bf9eE8ROUb51a7cLaU7eHuDXbzEKdlYvy81DW108dETQozmoadBKSQp
+	 +pgwL4TDT5hd6xHVyUaBS/E5wvLu5kDrO6/QNlrqpO7y/58URigvY7ip48WO9t7hseA==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793132534;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793132547;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=p8OLfPjJJxghmVweXow3lGp05o2c//rUSd8L9sTgH9M=;
-	b=RSWJ2rwi2gQv45XW9k1ChSQxPh7sc+p/zJ6bPzN7tBAAuNRrs0SsIuVeydIrpuL+m8g1
-	 CSPCzgURZIP7A5S4DITE1fUKNI1Uf/1R7wFgl6LHp3xBav349vfpUQM7TknOrmSA8Se+f
-	 /B2RkPe2UdPL3YpyLyUQhY0YL9Kk1IP4moOik1+/d+agSWZ2PPEWFWw/5QYHxGkjGMcdU
-	 S6vyyru9mVKVRK4n5IXlPF5Q8CKJg9Vvbd5vesEx3R+iwexQKxgYDPlFz3gj3SLyf5HKR
-	 WsHz7/5agaH9RLJeNH+9n8x5RBOmfAx4ab1ouGNI2JI3OJYn42eFFsUSE+8XRnxMCJA==
+	bh=MD3WemlNx8wDWgzNhjIwPFawd5UT5lSpHnkAmq2nUNY=;
+	b=B34weIgg8YCXuF9UKP6AEVaLGW0vu2cg4VO4a8V4RQ6NUlGUehinNrKibKf29O3LZEV2
+	 2isYoNKCwa0b+9h4RdN2nlxiJgbwc0DZ/R9ar7hGHrmt2QK/9RsioLfxHN4TxG2MtyckQ
+	 S86m37c8+W6sbZEM7COwOx1Rpi9s/MSTkWcmR4DS+TykFjIPtg9xHWf2JI9X2ZY2zNZZz
+	 LtJlgjnV1atihg2et1Z5pxeBDQjmCoMgPnGCwhjFpdcxgKk9eVWj0e6ILxBmM16eMc3JM
+	 58/mzyjWfdU15UC+qBMqD0ygXi3HihsU5tC7+Fxo3akpew21qUKeBo6dAwLW1rwHbxQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UW8SQd30;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LkhFz+xo;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB822606A333;
-	Tue, 27 Oct 2026 20:22:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA23560A6F4A;
+	Tue, 27 Oct 2026 20:22:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UW8SQd30
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LkhFz+xo
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793132533;
-	b=Vk1Mt/xLiobDJz1URboEVtBDeT7vDgnV0v7XO9aTsL+hazovudT/Nuv2ZWPdXTW2HEbL
-	 HeBBgQGbmBkDFGroHz+yGPnOpQsm620fSuDhyrb/MO5pjN9zFb1BQhCr07zZnXQ6ezH7J
-	 OBluHwtUNC5R8FQeTqO6aI9I07bjRwx9njUxqAKfJnOCaKwDX6pcGjwIfucfLffoX9+yU
-	 DWrs/ag9XaDuPZZplTspBUbSxj+QH1rBIAPkSxvaGSCYiHq6YTWUNrrsjFkMmtUHH+etN
-	 KTzsHC/SbPUagzxoaFoPq+kDbn9qThhTNBT5G0AMyETffoV7JvdHcEclJvFcIy5rHxA==
+	t=1793132546;
+	b=IJKmio8d3wJMowlymUCcRPk57oEfXXnsgFllh0dd9tzHX/NorZGHAq2mLuKm9vuEnj3p
+	 C3UfTj6zYzb37paBvCE1deQbNrweqtGvYUg+y+YheD90OiVuJHyEj+7r2+7cpb9FMbHMU
+	 EVr2m9ia+cEjI9euj9jWRfYVTEbfoUa9nGX+X8WCZQ88yJ2zEaYCfcuVnBRgddIZKbDvJ
+	 KDcskNdj37qweBuHhMf+0npu9RAqT0N+AmSYnLBN/qrMqStHeJPuLOVjlLazRnx5TSRMq
+	 5c3lmc+SZRtPSS1vPY6nYjTt53JV/5QIBY2BCTxMB5Q2Ryov1UqepwSZecHy0gq2n2w==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793132533;
+	c=relaxed/relaxed; t=1793132546;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=p8OLfPjJJxghmVweXow3lGp05o2c//rUSd8L9sTgH9M=;
-	b=gDPFKq5aHQoT+NEEV0h3fpFtvrS1kFtcJCX8jNl6tJkicBiouBeimFeIm+YnUYInzpBC
-	 uXBLNkHIpFaKq8Q2hZZzcqV2E8XCqWflt3v1umnxcf9bfRtSeQELOAk1OAAfDQ5NufEwl
-	 ev5XsWfEENi45xK1HUyAi6BGeXpQ+gFUcelsIomVWKl95bhVB9N/QYi58/UrEcQh2wOwY
-	 Z3TwOuuHqTX56diGxEDsHf1OKIpxIZC9e3HKQTDQUUspdgQWMja0NyucS5ma3WGide9yr
-	 orU5vvAbjNFKg34m31LPHUpG03RQ99p0MMPIW081Filew5+/LVlD6MlTl9VxyrrxZKQ==
+	bh=MD3WemlNx8wDWgzNhjIwPFawd5UT5lSpHnkAmq2nUNY=;
+	b=KP2uLkTL5Mn1FPr8r9IiKn0SRyM4E0b5/OAQA7y30lheE+NNYm6yKNFfZgpoYp6YNTI3
+	 Y36SYrqzqQK44ssR5mD2naNAdFhjw8WjwwhP4D7qiacrGSLV7dYIZ4YFVsvHWtW/modOZ
+	 5ANLE7i9iv7u1ZAbhXFCQfEOWOIj+sJcoq/NzKJljfkNSxb9scsKe3aDApifJQwZ5iAtW
+	 EIXerTLqcZpan6MDKb8jGYa0Eaj6C5TbF48wvOthL5w858EJCruX081L8izh1TLRUE8ez
+	 EMTpHLCa8ld6RdPX70BjK81htQCOnZ3LLths3yqS1KAjcmkudLUDrhZl3czw1RxTg9A==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 556CF1F031E4;
-	Tue, 27 Oct 2026 20:22:12 +0000 (UTC)
+	by smtp.kernel.org (Postfix) with ESMTPS id E0C121F0136A;
+	Tue, 27 Oct 2026 20:22:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793132533;
-	bh=p8OLfPjJJxghmVweXow3lGp05o2c//rUSd8L9sTgH9M=;
+	s=k20260515; t=1793132546;
+	bh=MD3WemlNx8wDWgzNhjIwPFawd5UT5lSpHnkAmq2nUNY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=UW8SQd30kqgnY5kGH4WIw6rnXJkqaKizcXwXOiIPV9I/YEoejLZVUMEXVV3qFwaJA
-	 QwGgEbWERnDv/lhlAwMZ1DEa1o4RP55ej58NSZV6JWcYBceKLAhCvtxkbkqET0pQq/
-	 WNABAhQeIUGHronuz+AdJ+WELGN5wO9LAghPKczJg7jeZDIIU9ZB30BvMTaL4xmyiv
-	 ISq+Q5fDHyGKPalyEzeXm3H5ujQcZOd8klMdQfdbVttkeTH7S9BIy5ye5a3bElBkwx
-	 tgo/C8tysa5sGvj6YgM0zjwK2mbJzHXTtQTtBftT9gvDaygVILo5CQEHD1PBtmo5n6
-	 juNsYg674hDPw==
+	b=LkhFz+xoly7mxPoFNYiEVs8Ske78Jx6jlzfQ/WNRTwbuzmu0VmplQDEwVbIvOTwbo
+	 H4cYbn93vGekHQxWdRTBtwkvJE1ekDqwykRjYlr9p6JPPz3FEb0+x7YF6WiOgyVKOW
+	 c9TjdqNtgkhNKQQeDsu8JwGiBw8jTrTEM3qpCdONegzNVrs0jljO0ctsgD5oCSWlsB
+	 +ghGvkWA//E1yqFrhXuOnBYwZzEecxknKgpM+FS1OnoVCUOOFmpR5y9YUDbyESE667
+	 jRMQWpx70udqrsJ99JT9DRywBkBGBXlGYNyrCXOOXMrCEn4MCgafHjLX+Ddr+i9JHb
+	 RSAZxy8EHhzpw==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id E59BE45211;
-	Tue, 27 Oct 2026 20:22:09 +0000 (UTC)
+	by lkml.kernel.org (Postfix) with ESMTP id 38EDE45274;
+	Tue, 27 Oct 2026 20:22:11 +0000 (UTC)
 From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Tue, 27 Oct 2026 14:22:08 -0600
-Subject: [PATCH v13 08/39] dyndbg: add stub macro for
- DECLARE_DYNDBG_CLASSMAP
+Date: Tue, 27 Oct 2026 14:22:33 -0600
+Subject: [PATCH v13 33/39] dyndbg: add epilogue to dynamic_debug/control
+ file
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261027-dd-cmap-part2-clean-v13-8-9267923be612@gmail.com>
+Message-Id: <20261027-dd-cmap-part2-clean-v13-33-9267923be612@gmail.com>
 References: <20261027-dd-cmap-part2-clean-v13-0-9267923be612@gmail.com>
 In-Reply-To: <20261027-dd-cmap-part2-clean-v13-0-9267923be612@gmail.com>
 To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
@@ -113,11 +113,11 @@ Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
  linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
  Jason Baron <jbaron@redhat.com>, Jim Cromie <jim.cromie@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793132527; l=3163;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793132527; l=2252;
  i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=SVpwWYWapDOMkXkjrEEN6bsp08Xgp+vSqsY5/WDA3N0=;
- b=N4vorS3MgiGRVy7XkNmxHoVIAqr3We2GyVw6SRWJxbaj4zDmrrNT++T2yaWHpUSelC/R3+Yrh
- t9lObO0SZH7A48uWGVuaBEInpDbalTDhdoeNa2RoNwtRmpz+bkF4hwx
+ bh=GnB4si52gXR6L2+aPCSO9dyvxPaeMcaUtlggi3ubNhU=;
+ b=ETZPNmW0juGHsMdzAOFLnSr7VbeUa75JKUrCV/Qur61K0h8bUwUfPHiNgNEn3UR6DK9B9RLs0
+ VlVhImNeNy7CH7IjOWn2G2damVla20PPgJrl8ck+SdnE1y2IVVswcFj
 X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
  pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
 X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
@@ -128,83 +128,80 @@ Content-Transfer-Encoding: 7bit
 
 From: Jim Cromie <jim.cromie@gmail.com>
 
-Add the stub macro for !DYNAMIC_DEBUG builds, after moving the
-original macro-defn down under the big ifdef.  Do it now so future
-changes have a cleaner starting point.
+Add an epilogue to the control-file, to allow display of statistics
+etc, without disturbing the header.
+
+NB: epilogue lines should start with "#: " to distinguish them from
+lines describing pr_debugs (and from the header line).  No new lines
+are added here, only the place to do so.
 
 Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
 ---
- include/linux/dynamic_debug.h | 43 ++++++++++++++++++++++---------------------
- 1 file changed, 22 insertions(+), 21 deletions(-)
+v9:
+. update ddebug_proc_start() to return EPILOGUE_TOKEN when seeking directly to epilogue.
+---
+ lib/dynamic_debug.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/dynamic_debug.h b/include/linux/dynamic_debug.h
-index 05743900a116..a10adac8e8f0 100644
---- a/include/linux/dynamic_debug.h
-+++ b/include/linux/dynamic_debug.h
-@@ -93,27 +93,6 @@ struct ddebug_class_map {
- 	enum class_map_type map_type;
- };
- 
--/**
-- * DECLARE_DYNDBG_CLASSMAP - declare classnames known by a module
-- * @_var:   a struct ddebug_class_map, passed to module_param_cb
-- * @_type:  enum class_map_type, chooses bits/verbose, numeric/symbolic
-- * @_base:  offset of 1st class-name. splits .class_id space
-- * @classes: class-names used to control class'd prdbgs
-- */
--#define DECLARE_DYNDBG_CLASSMAP(_var, _maptype, _base, ...)		\
--	static const char *_var##_classnames[] = { __VA_ARGS__ };	\
--	static struct ddebug_class_map __aligned(8) __used		\
--		__section("__dyndbg_classes") _var = {			\
--		.mod = THIS_MODULE,					\
--		.mod_name = KBUILD_MODNAME,				\
--		.base = _base,						\
--		.map_type = _maptype,					\
--		.length = NUM_TYPE_ARGS(char*, __VA_ARGS__),		\
--		.class_names = _var##_classnames,			\
--	}
--#define NUM_TYPE_ARGS(eltype, ...)				\
--        (sizeof((eltype[]){__VA_ARGS__}) / sizeof(eltype))
--
- /* encapsulate linker provided built-in (or module) dyndbg data */
- struct _ddebug_info {
- 	struct _ddebug *descs;
-@@ -138,6 +117,27 @@ struct ddebug_class_param {
- #if defined(CONFIG_DYNAMIC_DEBUG) || \
- 	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))
- 
-+/**
-+ * DECLARE_DYNDBG_CLASSMAP - declare classnames known by a module
-+ * @_var:   a struct ddebug_class_map, passed to module_param_cb
-+ * @_type:  enum class_map_type, chooses bits/verbose, numeric/symbolic
-+ * @_base:  offset of 1st class-name. splits .class_id space
-+ * @classes: class-names used to control class'd prdbgs
-+ */
-+#define DECLARE_DYNDBG_CLASSMAP(_var, _maptype, _base, ...)		\
-+	static const char *_var##_classnames[] = { __VA_ARGS__ };	\
-+	static struct ddebug_class_map __aligned(8) __used		\
-+		__section("__dyndbg_classes") _var = {			\
-+		.mod = THIS_MODULE,					\
-+		.mod_name = KBUILD_MODNAME,				\
-+		.base = _base,						\
-+		.map_type = _maptype,					\
-+		.length = NUM_TYPE_ARGS(char*, __VA_ARGS__),		\
-+		.class_names = _var##_classnames,			\
-+	}
-+#define NUM_TYPE_ARGS(eltype, ...)				\
-+	(sizeof((eltype[]) {__VA_ARGS__}) / sizeof(eltype))
+diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
+index 82edec19c67e..5c87e92bbcdb 100644
+--- a/lib/dynamic_debug.c
++++ b/lib/dynamic_debug.c
+@@ -1185,6 +1185,9 @@ static struct _ddebug *ddebug_iter_next(struct ddebug_iter *iter)
+  * read() call from userspace.  Takes the ddebug_lock and
+  * seeks the seq_file's iterator to the given position.
+  */
++static char ddebug_epilogue_token;
++#define EPILOGUE_TOKEN (&ddebug_epilogue_token)
 +
- extern __printf(2, 3)
- void __dynamic_pr_debug(struct _ddebug *descriptor, const char *fmt, ...);
+ static void *ddebug_proc_start(struct seq_file *m, loff_t *pos)
+ {
+ 	struct ddebug_iter *iter = m->private;
+@@ -1200,7 +1203,9 @@ static void *ddebug_proc_start(struct seq_file *m, loff_t *pos)
+ 	dp = ddebug_iter_first(iter);
+ 	while (dp != NULL && --n > 0)
+ 		dp = ddebug_iter_next(iter);
+-	return dp;
++	if (dp)
++		return dp;
++	return n <= 1 ? EPILOGUE_TOKEN : NULL;
+ }
  
-@@ -314,6 +314,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
+ /*
+@@ -1213,12 +1218,20 @@ static void *ddebug_proc_next(struct seq_file *m, void *p, loff_t *pos)
+ 	struct ddebug_iter *iter = m->private;
+ 	struct _ddebug *dp;
  
- #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt)
- #define DYNAMIC_DEBUG_BRANCH(descriptor) false
-+#define DECLARE_DYNDBG_CLASSMAP(...)
++	(*pos)++;
++
++	if (p == EPILOGUE_TOKEN)
++		return NULL;
++
+ 	if (p == SEQ_START_TOKEN)
+ 		dp = ddebug_iter_first(iter);
+ 	else
+ 		dp = ddebug_iter_next(iter);
+-	++*pos;
+-	return dp;
++
++	if (dp)
++		return dp;
++
++	return EPILOGUE_TOKEN;
+ }
  
- #define dynamic_pr_debug(fmt, ...)					\
- 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+ static bool ddebug_class_map_in_range(const int class_id, const struct ddebug_class_map *map)
+@@ -1270,6 +1283,10 @@ static int ddebug_proc_show(struct seq_file *m, void *p)
+ 			 "# filename:lineno [module]function flags format\n");
+ 		return 0;
+ 	}
++	if (p == EPILOGUE_TOKEN) {
++		/* use this soon */
++		return 0;
++	}
+ 
+ 	seq_printf(m, "%s:%u [%s]%s =%s \"",
+ 		   trim_prefix(dp->filename), dp->lineno,
 
 -- 
 2.56.0
