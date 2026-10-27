@@ -1,74 +1,74 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.70
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.197
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793140771;
-	b=RyzowUz5QT7TdT/gCObv67XhpRCztVnR+4qaOAIRCJiUgHaoT8rMnYO0oA9mHk/j6ywL
-	 7kz8iBrE9mt3s+JZYhY/hTh7K6Ylv1m4+r6rFBrxRfBP2Cdrepd0ABd2VT/6gGK1XM2md
-	 XdH0HqOtqp9D1U2FidK6ra3A5daAQ0BWkdli/sCpjBomWljNRa5XoD8p+l7yzrpe8Vke4
-	 bzVWwigkxMxu+E0KwVXTbcVr7WDeaFwhW79vCL318G+27FkqGxtC4YltJCN6n3FCQb/bX
-	 POUvllT8FNYJOsTjXE7ZRKcD3DpmfTlI3PVRichbFQJ5DE/0iQp5SsFV03znvRCfnnw==
+	t=1793140773;
+	b=KGgYkWaRX1CU+60/+qPUFNx/Z8gySNvKIMnIxpTEX9E0ypE7k/wxu3V0gaAzv88A0+8J
+	 AIZGlXJ5reF06t7BHVwv0TQqJ9nAJKGkR33J18VzYLSQOMN4Fn9gHT6SJA47dA65KqCK8
+	 f2yBhrgIbG9JRwhs/tXMXLVlbxexHJFWW/RlV8e1JvduG/3M288OlsugskkuXdsuuthgC
+	 nNgEHgDwr1a9Cb9eseoF5ROB+hTFZt+gt4RLiJ8+RJHZIGMkExriYcwk+0JOAzo/AYvfR
+	 iJr1O4sTkijVxC+GrsnSO0qbSVbAmGNx0/PCw0zhVGV6bvLQpBgpJC6W18cjnL5rNXg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793140771;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793140773;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
 	 Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
 	 Content-Type;
-	bh=aItLXVgOXAbsJZn2OZIWl+3TQwb1N1Woum6UsPYCRPI=;
-	b=0u8nCR9jTHO5CKbThGlFPI7mQcCBftiMQiejREn2BMpqU0rBXi3s6Ay7cZXFvnES0CZk
-	 KiLO6MqJwAmAz1r+6FYZBSWEFfyHNC3o2nUkkrRNH7K5etf4MRZ03CxwavXGMJfMEWG5I
-	 k5JZx4hT0ILwPVZLEIe4BikP7fGMdC6DXCu9zQPh4+I+JbZdeSp2cCiozfqBebKwRLci+
-	 McG53asnPNxpkUgwDJTx2drR6IAPwbwu/HgWfkoTtc+cnjRVlXtkzQGdD1wQEDn++eqWD
-	 11b7Uv6sBF/tMWILrr+07pPmUOu+iq3Gf/mWE1Wt3iOmCXIa5JMhyBpub3Pt06e+WyA==
+	bh=MTMJFM/nqHoym7HFBiG90k6OXEIlh5WHZZg+1coUz9A=;
+	b=WvoC0u9jMZCgz9WYpdEYXkjaUbe/+4z+lgYGmrPr3+7ViDPORVc2fiqOXQYy4sU/UM9U
+	 sj8DL9OY0tD/e/zBhOoRGF7SaXHGDJXj9JxuDe32RO8YlgrPn0M92qZn5DyOJqw/Jk6X7
+	 YfOn3I8dDBeUURZbi2Bk+DK7qepDXDZ0+F6TWZSpUuwhumy/1ZO0ELyNCurMrlN6kqSZ8
+	 GEr09FVB/yi1Jnme6+6wErdjGTPCZJ9EbbwqxMlnt5I5ShpcW2FKsRxyguhafpVKTERU3
+	 wG14ijmSHZc3zmiOEiw0wai3yTXOuLxQ5/ewqvhA/F1ITR5oLx9NjvFfiuB1WsMiYMg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=google.com;
 	spf=pass smtp.mailfrom=flex--irogers.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=cqwNTjHA;
-	arc=none smtp.remote-ip=74.125.82.70
-Received: from mail-dl1-f70.google.com (mail-dl1-f70.google.com [74.125.82.70])
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=V8JcAq5e;
+	arc=none smtp.remote-ip=74.125.82.197
+Received: from mail-dy1-f197.google.com (mail-dy1-f197.google.com [74.125.82.197])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E139F60A5BD2
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 22:39:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E139F60A5BD2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85A7960A2630
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 22:39:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 85A7960A2630
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--irogers.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=cqwNTjHA
-Received: by mail-dl1-f70.google.com with SMTP id a92af1059eb24-1a71dd190b0so299110c88.1
-        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 15:39:30 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=V8JcAq5e
+Received: by mail-dy1-f197.google.com with SMTP id 5a478bee46e88-359b81ad4e8so403047eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 15:39:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793140770; x=1793745570; darn=vger.kernel.org;
+        d=google.com; s=20260707; t=1793140773; x=1793745573; darn=vger.kernel.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=aItLXVgOXAbsJZn2OZIWl+3TQwb1N1Woum6UsPYCRPI=;
-        b=cqwNTjHAYXOy8Mi0KDVWON2iofqVJPaU9RstSleLyvA0ZnHHca9sgwMffgWuSP96Vq
-         Kpgku/LZAhDRayOYk8QgB1Cz1AwlyVsDfvTjhOxiQE6MZPH70GmVtxnVpgC0CLWmUxK9
-         IxTAqbdqAGbhhlKKZua67l8+9/SRZpDmPOIu25o5ZfY4arDHKBM3F+ILVqikbjfrGpZm
-         5TcNRqJAXT0C8XFBzOxtasn4OfHvhdu19U4W5KHMuHF1ZKBxJJPSpLvE2u+ciYeZvDCh
-         oo6FbSB5vK82QmvlGaMLVdVgDui47ubesXtV2QdmfdzgUkdxRwV6GI4rakX9wYnSs1Mf
-         1abQ==
+        bh=MTMJFM/nqHoym7HFBiG90k6OXEIlh5WHZZg+1coUz9A=;
+        b=V8JcAq5eridBOQAVIhJDBk5udYixIX3Z19mo2hr8E6Z6VfUFt1lTfvim4/AxG3zb8Z
+         EZo4F2BC4WEJaAQw/E3X/w3pxHyfSaN5vlw5bsXcpq9hlVabOoSULFZq9vbjCGMNbSPV
+         0b3Xu9ssoevkf+Hidvj0XM063aER2XLV6ov0Wc/eNXa6jiQjXOlywa/gTwDpmykT8ja+
+         v9YPkEeXH7Z6C4x+CcoqoibTHHvT0KDfWRKzTqilWV/99p68Ri4lG5uC8v/W/y3EWV3H
+         RV/rX86Ua225QzAyvoK4tU/xfQvrk/2zDFPLLVy81RIHL4ITdfL+suc2o35/0EcVwiwI
+         IFGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793140770; x=1793745570;
+        d=1e100.net; s=20260707; t=1793140773; x=1793745573;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=aItLXVgOXAbsJZn2OZIWl+3TQwb1N1Woum6UsPYCRPI=;
-        b=QNzXJDOlaAzto39ZG9JUPgEqf8W3xeiaYb4nfuRuXXf5IHXbAikEk/N0rDhq50A4SS
-         BWu+UtoA8djVC2E6M/TdmnLJw+NsHjB18jdKQFw/ta/GemBimGukdtmrLpIwDrCg2LuV
-         dvm1DsGmsyCLR56FJiwbI59jjrQHsHbZXjoYNpqvC/rtsSMSv7Sc0yIYIV+54FAIpL1p
-         9gUNzoQPLARN8taeeH4ehZXA71DaYV960CkI91++uqSqB4Ra3Y9bcy/uBBZc1r7uAWQZ
-         kqahtfn8KfB7bJXXAvH/LK0f5WiFB7GaGWZrdDGzXjkSunUlWnQ+4R4LkB7/NdiC3NtZ
-         Qhdg==
-X-Forwarded-Encrypted: i=1; AKwUvBwj3D5nJC/5v6hEmib7ENTmkImlYpsJcxmuETeh8hYTbOs+37jIausAq3M1cMc6la11ntCFXp6m/Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIclIB17+mHghda8krCrjKBaSJVpbV1S0GtNpzH2DDXqZDZLVj1
-	ZEDCdJ3JIgOoJgU6mP+90kkt68lsJoRdOLSf50+2gA4W3CJcUABHsaQGUF5WYLhSMFvenRJA2in
-	hNX7pYkO2+g==
-X-Received: from dld12.prod.google.com ([2002:a05:7022:30c:b0:191:45cb:f8d3])
- (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7022:607:b0:166:af48:a2ba
- with SMTP id a92af1059eb24-1a6c2c71125mr1317138c88.0.1793140769446; Tue, 27
- Oct 2026 15:39:29 -0700 (PDT)
-Date: Tue, 27 Oct 2026 15:38:42 -0700
+        bh=MTMJFM/nqHoym7HFBiG90k6OXEIlh5WHZZg+1coUz9A=;
+        b=lF/ohfkywMM09WGTUsb6gYhAvNFj1IMEZYrVinmhaPlexcNCSBBCTwtQ/5ntEgIvTk
+         mHydm7fVhIdC0ZC8QaVv+oSd3ceToSJOemXiH83vP93KgVO8jxpusENSrkn/lail4fKB
+         fC17pkDbRR3K4ruvCGLlAyiaYSsDzF0fb4DvBv19MhwZpFh5mPZsrvZO7ReT5Yv1JGLR
+         STpo7RjHBEmLOs7mwAdNpQ3NnT8jRZkJvx4yaewctw8wZJZeCBQYCB5BTvwKjkq1Uvdf
+         DpH0cXuByXTtqYSLXZLhKOQxI7oLsYHa8YEhSnKSAa2qm9BMPc6HCyOU8e2WzaMLWwJ9
+         2FLQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxEr5i2Uq3d1F2Ho9Z17D9WXprLun2qDXM14Lm2hxno0hMx8Zp5UazpP/Qw0tpM6UrO00+U0C8smw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJuvkO3paPzfxXu+HQdBJd/U4ujwo0dQWS0UcudV0rqraZshNGW
+	Zo+o9UZu9oFpfk/rrpiMMUuQTelM7X8/+LJ0MpE3lu6WMP3Eig/NR+FPtkSGfZGpH0SxW31rKjI
+	eX9Nm04dMEw==
+X-Received: from dlea12-n1.prod.google.com ([2002:a05:701b:420c:10b0:1a4:c892:b166])
+ (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:701b:2813:b0:143:6525:f9f6
+ with SMTP id a92af1059eb24-1a6cd3a1575mr630918c88.13.1793140772067; Tue, 27
+ Oct 2026 15:39:32 -0700 (PDT)
+Date: Tue, 27 Oct 2026 15:38:43 -0700
 In-Reply-To: <20261027223847.652884-1-irogers@google.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -81,8 +81,9 @@ Precedence: list
 Mime-Version: 1.0
 References: <20261027223847.652884-1-irogers@google.com>
 X-Mailer: git-send-email 2.56.0.313.g2479322e68-goog
-Message-ID: <20261027223847.652884-8-irogers@google.com>
-Subject: [PATCH v2 7/9] ubifs: sysfs: Use kset_create_and_add() for ubifs_kset
+Message-ID: <20261027223847.652884-9-irogers@google.com>
+Subject: [PATCH v2 8/9] drm/amdkfd: Free queue in procfs_queue_type kobject
+ release callback
 From: Ian Rogers <irogers@google.com>
 To: Kees Cook <kees@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
 	Miguel Ojeda <ojeda@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>
@@ -99,77 +100,86 @@ Cc: Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google
 	xen-devel@lists.xenproject.org, linux-mtd@lists.infradead.org, 
 	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
 	linux-kernel@vger.kernel.org, Ian Rogers <irogers@google.com>, 
-	Richard Weinberger <richard@nod.at>, Liu Shixin <liushixin2@huawei.com>
+	Felix Kuehling <Felix.Kuehling@amd.com>, Alex Deucher <alexander.deucher@amd.com>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Amber Lin <Amber.Lin@amd.com>
 Content-Type: text/plain; charset="UTF-8"
 
-ubifs_kset was a static struct kset using a custom ubifs_ktype that
-had no default_groups and no .release callback. With
-CONFIG_DEBUG_KOBJECT_RELEASE=y, unloading the ubifs module while delayed
-kobject release is pending causes a use-after-free on the static kset.
+struct queue embeds a struct kobject (q->kobj) for procfs entries, but
+procfs_queue_type had no .release callback and uninit_queue() freed q
+immediately after kfd_procfs_del_queue() called kobject_put(&q->kobj).
+With CONFIG_DEBUG_KOBJECT_RELEASE=y, this causes a use-after-free.
 
-Replace the static ubifs_kset and empty ubifs_ktype with a dynamically
-allocated kset via kset_create_and_add().
+Add kfd_procfs_queue_release() to free struct queue from the kobject
+release callback, change kfd_procfs_del_queue() to only remove the
+kobject from sysfs via kobject_del(), and drop the final reference in
+uninit_queue() via kobject_put(). Check q->kobj.state_in_sysfs before
+calling kobject_del() in kfd_procfs_del_queue() to avoid warnings if
+sysfs creation previously failed.
 
-Fixes: 203a55f04f66 ("ubifs: Fix memory leak in ubifs_sysfs_init()")
-Tested-by: Zhihao Cheng <chengzhihao1@huawei.com>
-Reviewed-by: Zhihao Cheng <chengzhihao1@huawei.com>
+Fixes: 6d220a7e7971 ("drm/amdkfd: Add queue information to sysfs")
 Signed-off-by: Ian Rogers <irogers@google.com>
 ---
- fs/ubifs/sysfs.c | 24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
+ drivers/gpu/drm/amd/amdkfd/kfd_process.c | 12 +++++++++---
+ drivers/gpu/drm/amd/amdkfd/kfd_queue.c   |  5 ++++-
+ 2 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/fs/ubifs/sysfs.c b/fs/ubifs/sysfs.c
-index dbf967dcf26e..e20931e3a62f 100644
---- a/fs/ubifs/sysfs.c
-+++ b/fs/ubifs/sysfs.c
-@@ -80,13 +80,7 @@ static const struct kobj_type ubifs_sb_ktype = {
- 	.release	= ubifs_sb_release,
+diff --git a/drivers/gpu/drm/amd/amdkfd/kfd_process.c b/drivers/gpu/drm/amd/amdkfd/kfd_process.c
+index 226f52626e84..8e6136d52a50 100644
+--- a/drivers/gpu/drm/amd/amdkfd/kfd_process.c
++++ b/drivers/gpu/drm/amd/amdkfd/kfd_process.c
+@@ -512,7 +512,15 @@ static const struct sysfs_ops procfs_queue_ops = {
+ 	.show = kfd_procfs_queue_show,
  };
  
--static const struct kobj_type ubifs_ktype = {
--	.sysfs_ops	= &ubifs_attr_ops,
--};
--
--static struct kset ubifs_kset = {
--	.kobj	= {.ktype = &ubifs_ktype},
--};
-+static struct kset *ubifs_kset;
- 
- int ubifs_sysfs_register(struct ubifs_info *c)
- {
-@@ -107,7 +101,7 @@ int ubifs_sysfs_register(struct ubifs_info *c)
- 		goto out_free;
++static void kfd_procfs_queue_release(struct kobject *kobj)
++{
++	struct queue *q = container_of(kobj, struct queue, kobj);
++
++	kfree(q);
++}
++
+ static const struct kobj_type procfs_queue_type = {
++	.release = kfd_procfs_queue_release,
+ 	.sysfs_ops = &procfs_queue_ops,
+ 	.default_groups = procfs_queue_groups,
+ };
+@@ -552,7 +560,6 @@ int kfd_procfs_add_queue(struct queue *q)
+ 	if (ret < 0) {
+ 		pr_warn("Creating proc/<pid>/queues/%u failed",
+ 			q->properties.queue_id);
+-		kobject_put(&q->kobj);
+ 		return ret;
  	}
  
--	c->kobj.kset = &ubifs_kset;
-+	c->kobj.kset = ubifs_kset;
- 	init_completion(&c->kobj_unregister);
+@@ -697,11 +704,10 @@ static void kfd_procfs_add_sysfs_files(struct kfd_process *p)
  
- 	ret = kobject_init_and_add(&c->kobj, &ubifs_sb_ktype, NULL,
-@@ -139,18 +133,14 @@ void ubifs_sysfs_unregister(struct ubifs_info *c)
- 
- int __init ubifs_sysfs_init(void)
+ void kfd_procfs_del_queue(struct queue *q)
  {
--	int ret;
-+	ubifs_kset = kset_create_and_add("ubifs", NULL, fs_kobj);
-+	if (!ubifs_kset)
-+		return -ENOMEM;
+-	if (!q || !q->process->kobj)
++	if (!q || !q->process || !q->process->kobj || !q->kobj.state_in_sysfs)
+ 		return;
  
--	kobject_set_name(&ubifs_kset.kobj, "ubifs");
--	ubifs_kset.kobj.parent = fs_kobj;
--	ret = kset_register(&ubifs_kset);
--	if (ret)
--		kset_put(&ubifs_kset);
--
--	return ret;
-+	return 0;
+ 	kobject_del(&q->kobj);
+-	kobject_put(&q->kobj);
  }
  
- void ubifs_sysfs_exit(void)
+ int kfd_process_create_wq(void)
+diff --git a/drivers/gpu/drm/amd/amdkfd/kfd_queue.c b/drivers/gpu/drm/amd/amdkfd/kfd_queue.c
+index ae3e7c54014a..4666110aebe0 100644
+--- a/drivers/gpu/drm/amd/amdkfd/kfd_queue.c
++++ b/drivers/gpu/drm/amd/amdkfd/kfd_queue.c
+@@ -83,7 +83,10 @@ int init_queue(struct queue **q, const struct queue_properties *properties)
+ 
+ void uninit_queue(struct queue *q)
  {
--	kset_unregister(&ubifs_kset);
-+	kset_unregister(ubifs_kset);
+-	kfree(q);
++	if (q && q->kobj.state_initialized)
++		kobject_put(&q->kobj);
++	else
++		kfree(q);
  }
+ 
+ #if IS_ENABLED(CONFIG_HSA_AMD_SVM)
 -- 
 2.56.0.313.g2479322e68-goog
 
