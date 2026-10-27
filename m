@@ -1,102 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=74.125.82.175
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
-	t=1793120966;
-	b=IEMmfVykOX1pXPoyk03X9VzT0bLZtdosLDwaon/8BhaSvBcwCVXSYoDqwdaFyTJblAwb
-	 bGUnCS3a+xa2JHSq7a1vKxUO+93ISc8yJe7PXNwphcf10kcr1vcW9Ddi78toPO6uuS4oA
-	 B0UFHFkO/UC5+gAtUjm1kMM7njpOPFerOMOeEqo8U6W8FxjsnOLr1VbQlvFvi1euSeNa5
-	 ZqClsh96msu2rGxBRqdjgv4hOSD+Aj/ikZPEwDhqHK48/VRc0u4x3wAypI7t/LBmZNMGp
-	 MgAfDmXW7rOdcZXJuv/U7mrsKx8aK2tF2w9cNAdu388vnAs03RTlrIpro+xnmw4DwPw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793120966;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
-	b=BiGePMM3i0bJbBSrqkce/5DEIvHN1hl2f+fWrOEkQ4sdoFMSSjVLX8eYvFeZP5hkR9kW
-	 Me6vvsEzWCoFfOfFscJlTsLKO14FOecvIHHIYvZY4xhdN7+Df2/52rFQlXev51aJf7UmF
-	 l/dH16QEdkTwwNdiai0wdxRgxKZ7VYk1FITc4aW+ogWgPgUoZHnyO05BWnEKzCZVI6hVj
-	 VPpfVEeYMuHuekmH3U7mxvmaznpEnbZMvJEkR+lizKYL0dXE00Q7jEqy3ONVYbGqsPvTo
-	 +ch8+ugWDBmygGwtJ5Z9vG26OeZLVqEQlgStNGCOgrsuDKjY3XRjrwNwH7FtH0K1i5g==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MqoKYkhP;
-	arc=fail smtp.remote-ip=74.125.82.175
-Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=84.42.129.46
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793121579;
+	b=V2C3B36w17kLWtzTcdrIjut9CdY+rwoVYLOZFCQ2B5MICteQH6sBX6jZj1iMFPodkxiq
+	 WVCEi5grwaWfkxo5QWrzApvv58KqQY/QBbeAlDVdTjcWVyPEojcdBTTZ4lZ+fyliDv3ZL
+	 Ko+pxvuLTiG/hbinldfTVywLoUDKhZ8HqvR7H1freXWI+Ej/dhW0Yn8YorlHn/8ypqtSb
+	 MQJ9SZyfZt4yXoME6mkVJqxwAx4VHTTI4pZxf26BV3je1ALsX6hJ9VXNQ3Zp7P5m2JsSG
+	 zFqc4e2Ou/4yQG2VYvSassjpCOtiLIzsrQSfObzoVcKt6PQlLMFoN5i7L4sU3w6+PIQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793121579;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=lp3hOSIGPE1tppyJv1RE+JXMFvZyG7e+JE+3G2D1EhM=;
+	b=fu0Ta493eOcwG38cTcKG9oFVA0f6yzOgsnKuahvV8KbujUEq7l1wYDHXGT3V1ymRpMcR
+	 MnnKOyzalZQIMqg60wLTAURfGASLXD1zO0vALmFnD0V37kM+Ntc1deKvZQoNR20BokINm
+	 q3vAcAD8+DLiWfNRm9C7oFc0c2p175gjnz0eBmetkd2//684xoPE3pPo0FiAHzTRAUnDX
+	 AaCnR9e2kD9e8eovd8pldIHqtjwoFCTrRfQ/QDrrsSflR/pmQNWoBLTNDO6H9y6gTT2s+
+	 yeEnbyF6Ex9/jJwSfzE5s78+XchtOPrfIGKv09CdmhIVOIiQ+0jzlpiULo+hC9Zhg3w==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=ixit.cz;
+	spf=pass smtp.mailfrom=ixit.cz;
+	dkim=pass header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim header.b=YM8ItfqA;
+	arc=none smtp.remote-ip=84.42.129.46
+Received: from ixit.cz (ixit.cz [84.42.129.46])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF450606A31B
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 17:09:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AF450606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27BD6606A31A;
+	Tue, 27 Oct 2026 17:19:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 27BD6606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MqoKYkhP
-Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-36a1865cfdcso6422eec.2
-        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 10:09:25 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793120965; cv=none;
-        d=google.com; s=arc-20260327;
-        b=LqooVEp2M2MuVtxuNxiAwRM9Bt0JVmGa6gqQ8daS+ZEYhh0blg1q+o7YJomrbtDCkv
-         WR4zuBgBFySx7JC2EMns9U9bmwtnLm2MDClP2LhMRXTJ7m5Meba1HG8tNeBJMskYQKBs
-         xfp1A4nZDOQyoDVQZSdMzL44obFNgE66U3HkNXY8VlFZsV0Hc1ua58q0uYpIbOf9hTxR
-         ev1FUPUf+amPQ9DYrxneiBTSOTwMj76le2qOD/kn5t4PIbVmvIWQLr3/2dcBme5HNHu+
-         WqDlr00sxODhm7LG2FJjifaZ5QfgfPVTyumVNEYJoZYAmUdepEtKhTLE3c16bPUXNgP9
-         VUMw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
-        fh=p7Xp1bz9a3PBdn+Fy3aVWMYaTWMLeN+zsmosTNBA4sY=;
-        b=Zj5rO684yJmxctHrNVOsx2pf2wlkvHkr/D2CJ+/avx64jXDG82R07t9lMuKhPliAQW
-         KwbMzEdhnpvxqaOAzuHtDG5NFsJR18Y9GH7DWz+V+5OGVa7euCvUgl3/fdeTTf0ZLdZP
-         cwMOlA+lKKS0s3CK1CvUfj5WbJWybZqffXIYLGqo652usjlZ9grKUgYGf/glXPdMpzwW
-         NyUCnqzYgkpL+uoYbCJFSaVNja26q8yn55uNTcyuTZTqlGL+9b80rF4TiCU/efI6fMe/
-         cRGwaISgUftAS1Vod8oX1+AgonbCNT9Nbu3orwFK3JQyu7v3BtBPN7hL6JNXux+3IXhV
-         fN3A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793120965; x=1793725765; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
-        b=MqoKYkhPxinnWU0rxiVQOQIW2xdnLJUYOk/ZRub1C+GHV7g3MDgeO36xzGgv7zV0pU
-         b7Q5Qd4T6P4QzQDWxqMDT2E4vSB1Ta2AT4vyvV1W/SJjCa/I908j3i58wt4B7gA9owyE
-         9FD0Vttj3KKr416fqs4ExXmIutqEMMvdS3FVh9CsUN01w9w2ZbUNXISwvFTGHY2NwJr8
-         i/oo60Obz+7f/NV/ussWc0mzJobz4krgT1zVk8FX8wemuSyiQyuANn/afGbcNeZ1N8XD
-         WWKH1SX1jfedntfB+WOQis7PzeNakgQ+G22IsTyut5xTYR0Y9WEiQfV0RFdLoac6YVHY
-         D5SQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793120965; x=1793725765;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
-        b=xshlQKMbIp1THnCtbfb29/g2VlOuEgOdrmcMzqvRi1SZ8BNAfMcoHpgQ2wAv9gHLwu
-         Almn4jVGOw9LhrYSrNzMsA1BW+k40nclRtYHDBb8eEZvmhkvRQ5QL2+q18Lx3IVH+gKG
-         qu6/MUnEvQrEV8QWOO+wiiATF2eQVhRymtygdxIIbK+Mw9T85WS/oekJZ5rNAojEGQUq
-         6SV5gopXaQTe9AJw5QyM71Mzxsvgt2zLu/F7xhvw9Ti2pDNs/U/bXYV8ksINcQs55Opc
-         AYVjuwM+9vfUmCrqZ6ZLZBZ08SufcTkLKn/AeafaMX/ef9Ctleqb64I3DhYc8Vljad8u
-         iZgA==
-X-Forwarded-Encrypted: i=1; AKwUvBxsHHBvQHqVSuYEcA/Xor/ThsPA+uXCRfQvRHKiXHUM2h7K0lDXZu/tyObvqfuCO4rKQ+yNEzwJzg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIN6KBQhUiZNZ75giXU4LMRFHPk5XiMCOegR46CG1bzhrKoHD8K
-	t22/CyF0HaU7UUvxHvNbqL5mq7mZsIefxgsF4aKHOptub+FMrxDoc2BDNcKh2kDo4C5+0rsKCmN
-	bysqJwI33kEDNX/+VhotXbY2POaP1brM=
-X-Gm-Gg: AYBFou2YlsTA4ZPJFmToAHVonWyWQ7cnonlhKtrsHqoRR08T1yjDG3ytzuUStch1rzB
-	kMRBSvyWAh5AThvTaeRVm7llQOBH/Cmu5kLaA6yUvPofw2W0dKIPUO0mgZSDstaapQzMV33FXVx
-	Gshlc6Oh2jwojvuo0hPRfizRrIoJELB+/iMjA05UYoP9srV4lGDCfavoYK9O7sFzovzs4w5FKYq
-	sZSjU9wiUMjrTO0MDNvTZ5NGpozGUTQCkurWDDocyvT8nwWhPAxoJ82FPwcU+t0f+3QE8GdenV/
-	tJH40pHDhnvbSr13WjOeNYmu2r4XEf2wSyV4MRuRqqAfL1pg+wrs5gxHQlt1ju+cZHCRuGi7PZq
-	Nx9RKOvvcjEZX6niy/+0WCgsb2A3AALk1RWuXjPmeV6EkGQAoiBwb+SDVMObP91fY9zDT1uuNiD
-	kO++pak6JyauXDnB8J68D3xMEhPphn9593NdQM8UchXv/OPxpgJaTqlpFm7oOIX/BnFIlM5XQeS
-	ZQ2YIVuzOVWPnr+kqULX6s/0S1CILRAi+2a
-X-Received: by 2002:a05:693c:6392:10b0:35f:ea17:d171 with SMTP id
- 5a478bee46e88-36a1ffbd5d7mr237613eec.2.1793120964600; Tue, 27 Oct 2026
- 10:09:24 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim header.b=YM8ItfqA
+Received: from [IPV6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e] (unknown [IPv6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ixit.cz (Postfix) with ESMTPSA id 723EE5340910;
+	Tue, 27 Oct 2026 18:19:29 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
+	t=1793121569;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=lp3hOSIGPE1tppyJv1RE+JXMFvZyG7e+JE+3G2D1EhM=;
+	b=YM8ItfqA4BF7rJZDIFswBTxxeSt2+Wmke/u8AQRSaWDIEkZBpQr6VW4vl4O7mke0AZpKtE
+	rVqebQG/95qvDD25TnBI5HD1MN2Bh+SCXNfMu0IwB6JNxRMFe256XCsZyNNtXz1nnPNWAE
+	AU+qWs7KjqVNem5fIqGtdh6urwU5IDA=
+Message-ID: <6251801f-3662-4ad4-8d55-710144462010@ixit.cz>
+Date: Tue, 27 Oct 2026 18:19:28 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -106,38 +60,176 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261018163719.81691-1-ojeda@kernel.org> <4600d9d2-9369-4d9e-afe3-b21aa5f0cb2f@oss.qualcomm.com>
- <atW5adUhMhOhjbyh@vireshk-B250M-D3H>
-In-Reply-To: <atW5adUhMhOhjbyh@vireshk-B250M-D3H>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Tue, 27 Oct 2026 18:09:11 +0100
-X-Gm-Features: AclHuK_9imwtkjqF5Ms9356_ENKgDBIHYMMCKtsJ66MmiTSw1XdVs4AdT2mg6B0
-Message-ID: <CANiq72m1Mn8wTCWCzRawV_OUSm5L7BH6s6gcN-gQE43jQfx5aw@mail.gmail.com>
-Subject: Re: [PATCH] rust: cpufreq: fix `undocumented_unsafe_blocks` in `PolicyCpu::from_cpu()`
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Miguel Ojeda <ojeda@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, Boqun Feng <boqun@kernel.org>, 
-	Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, Daniel Almeida <daniel.almeida@collabora.com>, 
-	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
-	=?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
-	rust-for-linux@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 2/2] power: supply: qcom_smbx: add SMB5 support
+To: robin@snyders.xyz, Casey Connolly <casey.connolly@linaro.org>,
+ Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Joel Selvaraj <foss@joelselvaraj.com>
+References: <20260820-submit-qcom-smbx-send-v1-v4-0-818dabb2771e@snyders.xyz>
+ <20260820-submit-qcom-smbx-send-v1-v4-2-818dabb2771e@snyders.xyz>
+Content-Language: en-US, cs-CZ
+From: David Heidelberg <david@ixit.cz>
+Autocrypt: addr=david@ixit.cz; keydata=
+ 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
+In-Reply-To: <20260820-submit-qcom-smbx-send-v1-v4-2-818dabb2771e@snyders.xyz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 19, 2026 at 8:32=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
-rg> wrote:
->
-> I agree.
+On 20/08/2026 12:03, Robin Snyders via B4 Relay wrote:
+> From: Casey Connolly <casey.connolly@linaro.org>
+> 
+> Introduce support for the SMB5 charger found on PM7250B, PM8150B and
+> related Qualcomm PMICs.
+> 
+> SMB5 uses different DCDC status offsets, charger-state encodings and
+> electrical ranges. Select these from per-PMIC match data, with PM7250B
+> using the PM8150B compatible fallback and parameter block. Read
+> overvoltage from the SMB5 status bit, use the already-prescaled IIO
+> voltage reading, and convert the SMB5 current-sense voltage to microamps.
+> Use battery-info property presence when selecting voltage and current
+> targets.
+> 
+> Keep Type-C power-role and VBUS control with the dedicated TCPM and
+> regulator drivers. Clear the unsupported HVDCP negotiation modes so stale
+> firmware settings cannot raise VBUS. Leave the firmware recharge policy
+> unchanged and match the downstream default of ADC-based AICL disabled,
+> while enabling periodic hardware AICL with its twelve-second SMB5 rerun
+> interval. Preserve the existing three-second SMB2 interval.
+> 
+> PM8150B places the charger and VBUS regulator in the same DCDC peripheral,
+> but the SMB5 path does not write the regulator registers. qcom_smbx reads
+> 0x1108 and 0x110b, while qcom_usb_vbus-regulator writes 0x1140, 0x1152
+> and 0x1153. The SMB2-only OTG configuration write to 0x1153 is not part
+> of the SMB5 initialization sequence. The TCPM port and PD PHY use the
+> separate 0x15xx and 0x17xx peripherals. Name the USBIN BC1.2 integration
+> register and SMB2-only OTG definitions accordingly to make this ownership
+> boundary explicit.
+> 
+> Program the battery limits and complete SMB5 input and charging setup
+> from the power-supply registration init callback before device_add
+> publishes the properties. This makes all public callbacks safe without
+> driver-specific probe synchronization.
+> 
+> Suspend USB input and charging before SMB5 initialization. On a later
+> failure, restore the original charging-enable state before the
+> input-suspend state; leave the input suspended if charging cannot be
+> restored. Cancel status work before unregistering the power supply during
+> managed teardown. Update the Kconfig description to cover both charger
+> generations.
+> 
+> On a OnePlus 7T Pro, register reads from the initial implementation
+> confirmed the programmed 4.40 V, 1.50 A and 500 mA limits. A 180-second
+> guarded charging trace and a subsequent 600-second runtime trace
+> completed without crossing the voltage guard.
+> 
+> Signed-off-by: Casey Connolly <casey.connolly@linaro.org>
+> Co-developed-by: Joel Selvaraj <foss@joelselvaraj.com>
+> Signed-off-by: Joel Selvaraj <foss@joelselvaraj.com>
+> Co-developed-by: Robin Snyders <robin@snyders.xyz>
+> Signed-off-by: Robin Snyders <robin@snyders.xyz>
+> ---
+>   drivers/power/supply/Kconfig     |   8 +-
+>   drivers/power/supply/qcom_smbx.c | 757 ++++++++++++++++++++++++++++++---------
+>   2 files changed, 598 insertions(+), 167 deletions(-)
+> 
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index b89ef40df7f8..1159a7711919 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -1173,13 +1173,13 @@ config BATTERY_CHARGER_SURFACE_RT
+>   	  will be called surface-rt-ec.
+>   
+>   config CHARGER_QCOM_SMB2
+> -	tristate "Qualcomm PMI8998 PMIC charger driver"
+> +	tristate "Qualcomm SMB2 and SMB5 charger driver"
+>   	depends on MFD_SPMI_PMIC
+>   	depends on IIO
+>   	help
+> -	  Say Y here to enable the Qualcomm PMIC Charger driver. This
+> -	  adds support for the SMB2 switch mode battery charger found
+> -	  in PMI8998 and related PMICs.
+> +	  Say Y here to enable the Qualcomm PMIC charger driver. This adds
+> +	  support for the SMB2 and SMB5 switch-mode battery chargers found
+> +	  in PMI8998, PM660, PM7250B and PM8150B PMICs.
+>   
+>   config FUEL_GAUGE_MM8013
+>   	tristate "Mitsumi MM8013 fuel gauge driver"
+> diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
+> index 71f5a4859412..bc2b1cd3ed68 100644
+> --- a/drivers/power/supply/qcom_smbx.c
+> +++ b/drivers/power/supply/qcom_smbx.c
+> @@ -23,6 +23,13 @@
+>   #include <linux/types.h>
+>   #include <linux/workqueue.h>
+>   
+> +enum smb_generation {
+> +	SMB2,
+> +	SMB5,
+> +};
+> +
+> +#define SMB_REG_OFFSET(smb) ((smb)->gen == SMB2 ? 0x600 : 0x100)
+> +
 
-I think this is not in -next yet -- if it helps, I am happy to take
-this into `rust-fixes` (with the two statements):
+More and more as I look at it, this shouldn't be here, but within the 
+device-tree as
+charger@1000 {
+     reg = <0x1000>, <0x1600>;  # SMB2, or
+     reg = <0x1000>, <0x1100>;  # SMB5
+};
 
-    // SAFETY: It is safe to call `cpufreq_cpu_get` for any valid CPU.
-    let ptr =3D unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) };
-    let ptr =3D NonNull::new(ptr).ok_or(ENODEV)?;
+But see also:
+https://lore.kernel.org/all/eodzuccugtdn42basgpczett4yatyirog4nxwe5rhg5xf46ibp@jzcjmje4aqc3/
 
-Cheers,
-Miguel
+I'll try to do some basic separation so we know what bits belongs into which 
+blog, keep you in CC.
+
+David
+
+
+[...]
