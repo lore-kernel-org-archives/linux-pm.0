@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793110828;
-	b=2l/I6YNcIHN5SwCGGmI6t4XeZW3EaCYTcTsKP/VM4lGNFpS+beZMXgu4jxRpc/hR87VU
-	 oEH0QJfEHRTsG6ebjhNfH9dAdNzeiQp8fAikZDc31fFfSL6iudD2ealTT4b2J2pXebrsf
-	 9i7vK+lRI0xCdws3PN2XjEIE3hqFZOptJOwYa8u7QozW19CXCWl6Hbdd1jNTLL4SMA1NS
-	 1PK+OQnesgnx8/sZImBM4bB63+LQDCj9r2xBiNQ60g23GJZ1Z8KGzIpjeNRHIPTNoOypp
-	 XkPm58BlJbRoBnIXTbODer7A+xwSTYTicE08IL3lIibl+8Sj9IxEfxS7Cfv2fnfvpRQ==
+	t=1793110873;
+	b=Y5tKVto6KJXuy25SAQkpkhDYW2Zkcw1XGrnzqmRQegNmTxOSL1k8P87vO6NvZeSA8+U0
+	 5rEJam9Gmqg6/RsBjTzWRhvinB4H16vvkO1fUeOmgtljPkrQC3LCBYGPzzVSJSaPfLVFE
+	 7me/8KwwX6B7VIxgmaHQHHhXYKqF3DkYZs4jMxYak/fMLrf3p4lra0PeXQ5n6QCyBtTUN
+	 QQ8pqFhLCzsdoeJ+6+d5u0NFZr1qGCd4xqXvK1iVL1Qgkp2DV0O7d8Y55PKAl2RnB8mG1
+	 CLMxMlrf9NjhIyUUz73Zsk+s9tFNx9P/z+PHoIeRUSAxOZHD1ljYLeqjEj17RTVimwg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793110828;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793110873;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=GGNr41yBdTpZYx2SDxAZUmAJloAwnOll1e229XCkLow=;
-	b=jEQHEIljBr0Mtn0FLE0V5s3hqKC/8y1313uufrgHJTZw8UC+Xcn3t2nYpYrWFCVCn4aZ
-	 Xqoo4yOn/Ed17krVORApfRzz7vCND+KWD6O/XZrHttAWucdMRFAKztx1ik8PAZGkr76ZZ
-	 x7k0J2ZJHQcpdNjXJ7CmNMCU94U2eNXI4+umFGPgHDUeAKia73zRfyyrrJ2wFI8590TEJ
-	 e2d8n03WORDiAQtQ0Pwc6GhW6CKYHQ6p7lmzmJLPqCtndcQQlBcxvuTg5PTrRrJ2GqOEg
-	 BJ1M8urS9foqPrghhix1n31ceGmooj8oXBmoVRlDXxNWEyjJYVVOJcA92scGWDxeX5Q==
+	bh=NbaKo2EojPBVQVK7LV8aGSsd5gN1hbSzP/sBhHan3BQ=;
+	b=pTOe+OThkACJ/jQhpk5YtkgDsLEGw3PZUdAyFhllP7cnhj9cSzNa9Ak2ch4v5jfiWRYl
+	 G/F/GMxT6NZRgO7nua0GMOXt5DqZQr4iIgJ+m4GikX2EhxIpqT+mpEYOXptGef4dSltq0
+	 1P3M1u7+8DUrtHCM8ej9NDUzIbgu18c6HB0Wrl2Ee6hi6yk0tRFxlwfl2goVoy0YIeiU+
+	 6dTgvcjfMWrVUyzKYChGtpSEu8WtzX7Pvxjfb4MxL2H8DHUoo3y2/15UeEnpwRz8qPzXW
+	 xlOsz7PDExZQmqXs+npRo60QUzkXFML3Pj+5m+ua5RhmP0Heni6sQuCSwtoKNqScQ1Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="I/3197F/";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ofhIRjS8;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34EAC606A31F
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 14:20:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1580606A31B
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 14:21:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I/3197F/
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAFCD1F031E1
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 14:20:27 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ofhIRjS8
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB4251F01828
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 14:21:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793110827;
-	bh=GGNr41yBdTpZYx2SDxAZUmAJloAwnOll1e229XCkLow=;
+	s=k20260515; t=1793110872;
+	bh=NbaKo2EojPBVQVK7LV8aGSsd5gN1hbSzP/sBhHan3BQ=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=I/3197F//5bf406jcAf97sCVxQOGKU6UQ+ppRF4YfsIIKbMuoTYo9LTj5Sjy3AD8w
-	 KzUFb/HWCvyqo6L0w0RA7Mux0i2L9tlWeNARzqQCoTEuRvWNWYhZUgP4kshPwZnbqR
-	 qLTdSi5pTD64Oq88TgupSzSmf5UvVYDrrasz4m671Snyp+Qd5JLlhhCzeJ6yacD0A1
-	 ot3I4+kOrMBuvLutRTGJ/d8Tc0Og1ksLmp6oy4CedyYgX6NINvi1kEE5e0iYTsAhic
-	 BWtWbqRrF12zvUIqmwHD09OsGL0TYIP5ow6FProRbLMo8vvbOqpDP+oG7cmSY0LqTR
-	 dCULZxEgiBaxQ==
-Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-49e1251674cso1490930fac.2
-        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 07:20:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwS0h6ZCh1JCofV94DmpNNxBtHZ+ew31xVj2/KwMAd4Y/8EU4W5PeLkW2lnCCRZcJIPJw363Bx8SQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKIAiEUo/6dlR/OIHBkcs5C5ByJrMTjIETUx1r9UArR8/dqLyoY
-	JP0+UBzJRCk/IUKt93haUzBBTp/8O2qPvxX4zWqCTm1ep3figAkiDR62Ui0S/DX/T/1zVCa4RKf
-	x9W+MQJp9er+hkxlirmT9HBdt4byTmPs=
-X-Received: by 2002:a05:6870:c2b5:b0:47d:b8a7:40f5 with SMTP id
- 586e51a60fabf-4a83f533260mr6584722fac.22.1793110827181; Tue, 27 Oct 2026
- 07:20:27 -0700 (PDT)
+	b=ofhIRjS8UEcNYvRQ7QGnfdQbpB4M4tcgf59FYC/8+tx0dVDsCcJERBhUt/ywGnGS7
+	 Z7sw8QQSG7uwU6gjncZs+IwlfvhcrwE6aCGfPy4jNRVkGLuUnk63x7MGS/amO8dmHw
+	 y4lQKO41tkZaNFLPiG2aan3Gg2+Zol2FedDrEmOyui0AkwlLkM7Ya49QyeaelD1Css
+	 LDNOpLnYlgg2+jG0xMFwJrBzCcYuubAckbNCOAlJLP0KvnbI2YkPnBAT2eRDIRenUU
+	 rxSu/IvzW4Ly/hucGVFn1y3e0XFgUnfZZ2rRXkQw+fT8W7KUEDOufo9jKr81kh6tzu
+	 kTa8p1cfiEAbg==
+Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-4a89b4a59a1so792618fac.1
+        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 07:21:12 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwE8S6bP//S8h1qNS8MM7nb8bAj0lc3m0qSvzR3bQ7Nnc+B+P75t96Icwq6o0ROYRikcoHnaNEJVA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIda/FOtbfFLMXbRy12NVrk0xiC6ZmrdPninM2G48UP7KDL2NIR
+	16ZEgJM+gMlxK1YkN3OguysnjpFHxwn4sPmP7Bup4yWAamv5LRViA6fn/cFJGMmvSCZarwZQ50s
+	JoggXLs47UjO6lyqfb8iCB6rO2wbSCEk=
+X-Received: by 2002:a05:6870:3047:b0:49e:50bc:79dc with SMTP id
+ 586e51a60fabf-4a89b6135d3mr1718291fac.22.1793110872016; Tue, 27 Oct 2026
+ 07:21:12 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,14 +59,14 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1792776697.git.geert+renesas@glider.be> <cae27d2d9dd17c081dcea27e3b223a8fb8653796.1792776697.git.geert+renesas@glider.be>
-In-Reply-To: <cae27d2d9dd17c081dcea27e3b223a8fb8653796.1792776697.git.geert+renesas@glider.be>
+References: <cover.1792776697.git.geert+renesas@glider.be> <f9de8214043ad4c8748fadce7fd2cc2fa95b1291.1792776697.git.geert+renesas@glider.be>
+In-Reply-To: <f9de8214043ad4c8748fadce7fd2cc2fa95b1291.1792776697.git.geert+renesas@glider.be>
 From: Linus Walleij <linusw@kernel.org>
-Date: Tue, 27 Oct 2026 15:20:12 +0100
-X-Gmail-Original-Message-ID: <CAD++jL=7GkFOS9i46WDuKHcJa0S-VemJ1OW33H8EKK-SZ67ufQ@mail.gmail.com>
-X-Gm-Features: AclHuK9MY21FRxc3OT2vCWHfUpZZ9cxWX59B-lOuZ_icl7P9J24tGPdGErZiGJg
-Message-ID: <CAD++jL=7GkFOS9i46WDuKHcJa0S-VemJ1OW33H8EKK-SZ67ufQ@mail.gmail.com>
-Subject: Re: [PATCH/DNI 7/7] arm64: dts: renesas: r8a78000: Add gpio-ranges
+Date: Tue, 27 Oct 2026 15:20:57 +0100
+X-Gmail-Original-Message-ID: <CAD++jLkrF-Fuqa_ojSyeO8ogDrY==nupNvZAUC+nPoK+PNJc4A@mail.gmail.com>
+X-Gm-Features: AclHuK9wpK2sOZ4pxVax9gNRbt2j8VY4zFskPh_vnOw0mDesf_mVGe4CvELlVTU
+Message-ID: <CAD++jLkrF-Fuqa_ojSyeO8ogDrY==nupNvZAUC+nPoK+PNJc4A@mail.gmail.com>
+Subject: Re: [PATCH 3/7] arm64: dts: renesas: r8a78000: Add GPIO controller nodes
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
@@ -74,18 +74,24 @@ Cc: Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>,
 	Jerome Brunet <jbrunet+clk@baylibre.com>, Magnus Damm <magnus.damm@gmail.com>, 
 	Ulf Hansson <ulfh@kernel.org>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
 	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 23, 2026 at 7:55=E2=80=AFPM Geert Uytterhoeven
+On Fri, Oct 23, 2026 at 7:53=E2=80=AFPM Geert Uytterhoeven
 <geert+renesas@glider.be> wrote:
 
-> Link all GPIO controllers to the Pin Function Controller using
-> "gpio-ranges" properties.
+> From: Marek Vasut <marek.vasut+renesas@mailbox.org>
 >
+> Add device nodes for the General-Purpose Input/Output Ports (GPIO) on
+> the Renesas R-Car X5H (R8A78000) SoC.
+>
+> Signed-off-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+> Co-developed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
+LGTM!
 Reviewed-by: Linus Walleij <linusw@kernel.org>
 
 Yours,
