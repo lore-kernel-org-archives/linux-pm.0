@@ -1,78 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793132551;
-	b=MzYACcPbZY5BNkeIZdFJQEOofQxtXs8a9rBqam7zppkZKfEwbUak/B2xUpCiGzUepDTg
-	 UJA/QDD15wEwtYM1j9Z4YOw+LQbzcCZ+lWC7FQAWVI+r+VAUh0mWppJ/WVxt5lbHbhRG+
-	 bcDTpNyNFqTPzJ0Sowhv/7NS7TGHrFkvSqAV+lP8RYfgXObdByuZfdDf0te6ZeSMBio21
-	 nNwauzMy1QrBgKz+HcKvLBRVJSZKHhyuSfz88toiddHWNFqCfPbFg3lvkU6t1Z/jnSife
-	 gyaZ9SpZLwgKacdVl1ArlcRPTV/K6EAgxqalFQZ0BxvfvKnCR8K2nPZf7Vsi9HL3tcQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793132551;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=QFqpzviPc62m2+b1N8YCwl/uYJvBexNvvOd3y1LZQaE=;
-	b=cYKwI4J7ZBiLtpbXZSuY2Z7fhO0DRKA6a7FmI1S/5woKv/DP8+8IbiBp5CYV+BTuSJnZ
-	 OcdwCyxpHrwSPu/ieQ0M89MVK/ex6T+IvGJ6GvDedwOLU5/PdLnWHEzq/G9HtxYTJT+3f
-	 3OOyJ9aad3hYHJpug6u8yYy2EWXDyqaLNujbPX9RYcLDU1id25S3RQMimSM+T5TiHJwiC
-	 iofRYZiLBGTHN2Bi74kK2IQ4+9fWWVn5TmEVbI/UVr8gpJaMJkwx4t/OQF5H8oQCqk50f
-	 fSn5CamCFD/el7ob17GcMNzvH+r1btT97Bgm3HRnfqWR0nEKaNatyl6hyGd2ep3xGOQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YNjgLP15;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A099D606A911;
-	Tue, 27 Oct 2026 20:22:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YNjgLP15
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793132550;
-	b=eVGO/CShdI8p8b3RHTZA/I8pgrJNB1y4xoRqbH2J5/0/fKZ8gYrWnHon6rE1M9P8ctn5
-	 cAuvBPvvl+oy62GguoGEXLozPyhK7xCroex9bwA6Tq0HB91ZMv0XMoSQERnAmNQjW6Cyu
-	 XvMlziiO7TM+VrKntN3+ldOKm/5iTUW9IjlfYOSHqtMDiMwnIHUisr4EBMhltmqQD2fUw
-	 cyZCxvpyHDXuCvqbTHXLyw8z+OJa8XWOu0EsAf7vMEIdFgak/T+tjQXaVsO5MvMerx1Uj
-	 AQDd47E3zxX8MYK5s1ouv9kwvo6oH83jBpO7vWuLlVZLpG1MIGic6ZzeON/Z782ISTA==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793132550;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=QFqpzviPc62m2+b1N8YCwl/uYJvBexNvvOd3y1LZQaE=;
-	b=1TCfyP7MpTMiiG0YJl7VYhgua1kf5J9sFusLhzFdlDYNTWFDKsGSGVpigD8k4vcqZHSE
-	 lU99UYmnMoagav5mPbb4cYPUk+n6uHDNXdfmiojUN6bVYGts/fjvEg78q6fxlBPHl3Azx
-	 89jjFI1ItJwVzYCMiBeaACIOVHLQaWTUcKVJxUugFjO9+sz7+ZqB/Pak2KGwYYQM+clHr
-	 cDQHglwGFIm8Gq0qgx5deX0HzFnfrz1jtTJF9GoP4EMRCcE8x8iw5XuEOzMXpK9fPL0Vt
-	 owZqwJvMSAnbNJKsXj+wVWE5WDHaUWPgxFlm+AsxoVyjgCwBHVuM94feX6yJV4npepg==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=109.224.244.121
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793133105;
+	b=uD2llUiSQ0mesZHTDVcvp9ihY8O+cf8oPR9X6IELpLMl0JBMi1CofRy7Wf/dajZEjD6p
+	 r05BGffkgoTQ5VWuzQwWi1SMboaXaK11r0EYMb/XJmCyvPZ0eiY7BlhVldb7G55aKAjR8
+	 XSVv6SqpllPQre9gVyfgYiHFMgt0fSiDLw4TyRSmvDdY1WAdmoTt/b62AOtatoLy01VPB
+	 wdLIraP47wg5oOkM5sSs56u1dLNnxJ6fOxBPAwwKRDOayYkyeTwbNSspLCI8yST0uwECN
+	 fyk+axPGVOnlTpRZyWISRkaFvAP4hVVe2058kGggxxyaQ9mrQ8AAvGr1XxjL2M6umqA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793133105;
+	h=DMARC-Filter:DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:
+	 Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=ItOY3Vg5BOHo/uC07nNATgEJDvbeahAuY9/6a3jg9K0=;
+	b=g5VdgrYQl943adeWT3vCICYgQHUcWyscmlqtXgR3KxmMxxNh+5eGSlujdhR63B2hGeCr
+	 ECAlRwJ7ge2U/pTzEhezM9BpuHJ+FVZpz3044RMzEC623mVLFPxr/K8nAeVJeCUPofQje
+	 LKQIaTHd7K75Zqk+S7J0Puu6CX+yJWL1GS/N4iqOIMYhVIi6VqMWHSLkno4rqQZsXBFmV
+	 iLW6718w1ax1Mqd7aifVOhOivSSFI7vfzQQbjY36exHsktQ9Scf7lDIg0F3UqHcZWOaUb
+	 EaXD3k5rs+yQ21G5cvm8nP0IwVqg4N3M5zbKFP2iWujkN+WO732GHIyjcobOPJoD/xg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=pm.me;
+	spf=pass smtp.mailfrom=pm.me;
+	dkim=pass header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=TNP6XfRW;
+	arc=none smtp.remote-ip=109.224.244.121
+Received: from mail-244121.protonmail.ch (mail-244121.protonmail.ch [109.224.244.121])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 84AE31F0135F;
-	Tue, 27 Oct 2026 20:22:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793132550;
-	bh=QFqpzviPc62m2+b1N8YCwl/uYJvBexNvvOd3y1LZQaE=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=YNjgLP15d7ARK+Z4Bda3ofnJn5CdcU4Oyxsilndn6k1YBeXXmpFiIXwGNYU7NOKmt
-	 zOvufcxjl9Ns1LjzoZVMg4FCIeMiS5DAhHFMi/K89pZi44f+1XUCyymRqNFcRDtoZy
-	 dgzyETMt68ldRtpRmadMwEcJGAgpF8E8Ur5UnKaEYsKrDsMq4sK8Y/jeRndtZr/X+l
-	 V0CSaKHKMBSM1+mzAjae9YRO2KtAneKUVze/v3rumhfmnYiV0J10yLHy04iWG2KI1z
-	 4bUoVsAd+RExqwgFzLt/KdAzev0OiJieIi0d3/5W0Rt/DeToSdcnR/93NMYk5xwc/t
-	 wwfEaloTzm+Sw==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 0EA9245264;
-	Tue, 27 Oct 2026 20:22:11 +0000 (UTC)
-From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Tue, 27 Oct 2026 14:22:29 -0600
-Subject: [PATCH v13 29/39] selftests: enable comma-terminator tests
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF84D606A31F;
+	Tue, 27 Oct 2026 20:31:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BF84D606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=TNP6XfRW
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
+	s=protonmail3; t=1793133102; x=1793392302;
+	bh=ItOY3Vg5BOHo/uC07nNATgEJDvbeahAuY9/6a3jg9K0=;
+	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
+	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=TNP6XfRW0r6Gi8+sA3NB85f8TvH3QXPO5o1Mv7fMSt+egBjOcM9z08uapPa+XPspm
+	 d+GWCir7eKtVZp2n7PQNehpQafWQxYCtp+qEKooSMo1pN4KMmCk67KnfgolvceSit2
+	 5oCdNk/1EQQnx0aXTbVmyODKAOd53WN9ACOcfmZKiWt/lX5sadx4RPIDsw4/oCpX/b
+	 hytZQm6y2CG/WlFQ6IiaycRIZRUT7uub04RMBPbZjc7JBCF3oerDzm9c3hYAqQdArC
+	 ZELVJI9sUGtm+AeLHodL1UkoqONE/9/DtbwH5YjLNTYGE1ysDwv6X9SyVmL7C9yYRx
+	 H6QvjUAesgakQ==
+Date: Tue, 27 Oct 2026 20:31:38 +0000
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>
+From: Birk Skyum <birk.skyum@pm.me>
+Cc: Praveen Talari <praveen.talari@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] serial: qcom-geni: Set the serial engine up again after hibernation
+Message-ID: <20261027203136.95971-1-birk.skyum@pm.me>
+Feedback-ID: 21326998:user:proton
+X-Pm-Message-ID: 514362eb52f479d693c59884f7ec81f7766e91c6
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,142 +61,111 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261027-dd-cmap-part2-clean-v13-29-9267923be612@gmail.com>
-References: <20261027-dd-cmap-part2-clean-v13-0-9267923be612@gmail.com>
-In-Reply-To: <20261027-dd-cmap-part2-clean-v13-0-9267923be612@gmail.com>
-To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, 
- Petr Pavlu <petr.pavlu@suse.com>, Daniel Gomez <da.gomez@kernel.org>, 
- Sami Tolvanen <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>, 
- Jonathan Corbet <corbet@net.net>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>, 
- Shuah Khan <skhan@linuxfoundation.org>, 
- Randy Dunlap <rdunlap@infradead.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, 
- Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
- Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, 
- John Ogness <john.ogness@linutronix.de>, 
- Sergey Senozhatsky <senozhatsky@chromium.org>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
- "Jason A. Donenfeld" <Jason@zx2c4.com>
-Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
- linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
- linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
- Jason Baron <jbaron@redhat.com>, Jim Cromie <jim.cromie@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793132527; l=3975;
- i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=NxQmKtv0eDJHiMhYB7Dsgkr2EoP7NbBP01ImDvAfxdw=;
- b=qbn/L3/n+uApxRkFQR7jbqsIdGX1ATWtKG8Pm04sW0nk8M66EbqdpedcS02w/6VJfKwmzxsj1
- ye2G4u900UzAbrsDfqBkQB1C3QDuD9LzhapimtIefqBuBECl5+nAffC
-X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
- pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
-X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
- auth_id=958
-X-Original-From: Jim Cromie <jim.cromie@gmail.com>
-Reply-To: jim.cromie@gmail.com
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Jim Cromie <jim.cromie@gmail.com>
+A hibernation image is restored after a power cycle, which resets every
+serial engine. The kernel that loads the image only sets up the engines
+it uses itself, and on laptops the Bluetooth UART is opened from the
+root file system, so that kernel never touches it.
 
-Enable the FT_comma_terminators test block in dyndbg_selftest.sh to
-verify control query parsing when queries are terminated by commas.
+The restored kernel still has port->setup set from before, so the
+startup in uart_resume_port() skips qcom_geni_serial_port_setup() and
+the port runs on an engine whose FIFOs, packing and transfer mode were
+never configured. On a Lenovo Yoga Slim 7x (X1E80100) the WCN7850's
+Bluetooth controller then never comes back: every setup attempt of
+hci_qca's error recovery ends in "command 0xfc00 tx timeout" and
+"Reading QCA version information failed (-110)".
 
-Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
+Clear port->setup in a restore callback of its own, so the next startup
+sets the engine up again. The other system sleep callbacks are
+unchanged.
+
+Signed-off-by: Birk Skyum <birk.skyum@pm.me>
 ---
-v11:
-. convert modprobe dyndbg parameters in FT_test_classes and
-  FT_classmap_inheritance to use comma separators
-  ("class,D2_CORE,+pf;...").
-  Sashiko review complaint (patch 24):
-  "Are these load-time parameters truncated during module load due to
-  how the shell handles quotes? When bash evaluates and strips the
-  double quotes before executing modprobe, modprobe constructs the
-  kernel options string without adding quotes around the parameters.
-  The kernel's parse_args() function (using next_arg() in lib/cmdline.c)
-  splits module parameters at unquoted spaces... treats D2_CORE and +pf
-  as separate unknown parameters."
----
- .../selftests/dynamic_debug/dyndbg_selftest.sh     | 29 ++++++++++++++++++++--
- 1 file changed, 27 insertions(+), 2 deletions(-)
+Tested on a Lenovo Yoga Slim 7x (X1E80100) with 7.3 and the other
+hibernation fixes for this laptop, which are in review:
 
-diff --git a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-index d7681cdcd012..f4078ad112f0 100755
---- a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-+++ b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-@@ -340,6 +340,25 @@ function FT_basic_queries {
-     ddcmd "file $f =_" "$f"
+  pinctrl: qcom: Restore the pin configuration after hibernation (v4)
+  https://lore.kernel.org/all/20261021210425.57066-1-birk.skyum@pm.me/
+  PCI: qcom: Power the controller down when hibernating (v2), on top of
+  the v6 series "PCI: qcom: Implement shutdown() to avoid SMMU/NoC
+  errors on reboot"
+  https://lore.kernel.org/all/179181074907.22199.10556821368232442334@pm.me=
+/
+  soc: qcom: smp2p: Start over after a restore from hibernation
+  https://lore.kernel.org/all/179158127177.70185.5691100900886332545@pm.me/
+  Bluetooth: hci_qca: Reset the in-band sleep state on power off (v2)
+  https://lore.kernel.org/all/20261014180201.57109-1-birk.skyum@pm.me/
+
+The test kernel had a switch for this change, so both ways ran on the
+same build, each a real hibernation with a power-off from a fresh boot:
+
+  without   restored after 112 s, Bluetooth never comes back
+  with      restored after 89 s, hci_qca's recovery sets the controller
+            up about 18 s after the restore and a scan finds devices
+
+pm_test=3Dcore and test_resume pass with it as well; there the port is
+restored without a power cycle and is simply set up a second time.
+
+7.3 does not have the console pm_runtime_resume() that tty-next adds to
+the resume callback. The port here is not a console and this laptop has
+no serial console, so console ports were not exercised. For those, the
+kernel that loads the image sets the engine up itself when it
+registers the console, so clearing port->setup only repeats that at the
+next startup.
+
+Built with W=3D1 and sparse on tty-next with hibernation on, with
+hibernation off, and without system sleep.
+
+ drivers/tty/serial/qcom_geni_serial.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/tty/serial/qcom_geni_serial.c b/drivers/tty/serial/qco=
+m_geni_serial.c
+index bfdc155c1..4e5b0e247 100644
+--- a/drivers/tty/serial/qcom_geni_serial.c
++++ b/drivers/tty/serial/qcom_geni_serial.c
+@@ -2131,6 +2131,20 @@ static int qcom_geni_serial_resume(struct device *de=
+v)
+ =09return ret;
  }
- 
-+# test parsing on spaces, commas. testing against builtin file kernel/params.c
-+function FT_comma_terminators {
-+    v_echo "${GREEN}# COMMA_TERMINATOR_TESTS ${NC}"
-+    if [ $LACK_DD_BUILTIN -eq 1 ]; then
-+	echo "SKIP - test requires dynamic_debug built into kernel"
-+	return
-+    fi
-+    local f='kernel/params.c'
-+    ddcmd =_
-+    ddcmd "file $f +p" "$f"
+=20
++/*
++ * A hibernation image is restored after a power cycle, which reset the se=
+rial
++ * engine. The kernel that loaded the image only set up the engines it use=
+d
++ * itself, so set this one up again when the port starts.
++ */
++static int qcom_geni_serial_restore(struct device *dev)
++{
++=09struct qcom_geni_serial_port *port =3D dev_get_drvdata(dev);
 +
-+    ddcmd "file,$f,=_" "$f"
-+    ddcmd "file,$f,+mf" "$f"
-+    # ignore empty tokens
-+    ddcmd ",file ,, ,  $f, -p" "$f"
-+    ddcmd " , file ,,, ,  $f, -m" "$f"
++=09port->setup =3D false;
 +
-+    ddcmd =_
++=09return qcom_geni_serial_resume(dev);
 +}
- # testing classmap-based query enablers and class configurations
- function FT_test_classes {
-     v_echo "${GREEN}# TEST_CLASSES - classmap-based query enablers and class configs ${NC}"
-@@ -350,7 +369,7 @@ function FT_test_classes {
- 
-     # 1. Verify initial multi-query enablement state via file slice
-     my_modprobe test_dynamic_debug \
--        dyndbg="class D2_CORE,+pf;class D2_KMS,+ps;class D2_ATOMIC +pm"
-+        dyndbg="class,D2_CORE,+pf;class,D2_KMS,+ps;class,D2_ATOMIC,+pm"
-     verify_control_slice '\[test_dynamic_debug\]'
- 
-     # 2. Verify state transition and live-printing end-to-end via ddcmd_load!
-@@ -368,7 +387,7 @@ function FT_classmap_inheritance {
- 
-     # 1. Load submod directly (which auto-loads supermod with default parameters)
-     my_modprobe test_dynamic_debug_submod \
--	"dyndbg=+p;class D2_CORE +pfs;class D2_KMS +pts;class D2_ATOMIC +pmf"
-+	"dyndbg=+p;class,D2_CORE,+pfs;class,D2_KMS,+pts;class,D2_ATOMIC,+pmf"
-     verify_control_slice 'test_dynamic_debug'
- 
-     # 2. Runtime parameter changes to supermod propagate to submod descriptors
-@@ -447,6 +466,7 @@ builtin_tests=(
-     FT_grammar_ok
-     FT_grammar_errs
-     FT_basic_queries
-+    FT_comma_terminators
- )
- 
- # Modular Feature Tests (Require CONFIG_MODULES=y and test_dynamic_debug*.ko available)
-@@ -537,6 +557,11 @@ function GOLDEN_RECORDS {
- #K= 02e4fd94602e108cb89bfc70d47a5dad FT_basic_queries.5
- #K= f03a7ca7316e8db4c0e16523dc41e75d FT_basic_queries.6
- #K= c518a50ba30ba8099d0dc874a27ecf16 FT_basic_queries.7
-+#K= c8bbbac639f244ed9088208ebb7d83a6 FT_comma_terminators.1
-+#K= bed6350f058f600910837dae83a12f56 FT_comma_terminators.2
-+#K= 6e8599556a312200fb6d484565b6c52f FT_comma_terminators.3
-+#K= 68b329da9893e34099c7d8ad5cb9c940 FT_comma_terminators.4
-+#K= adc1ef04304c861c87fe294a8ba4e402 FT_comma_terminators.5
- #K= 91838b4012c50a1dc1d9e210ba8d68f8 FT_test_classes.1
- #K= a15ec4843acd721fbdfddc0b512c8032 FT_test_classes.2
- #K= 2cee6842c9cdee5cb3bf50b2e3914813 FT_test_classes.3
-
--- 
++
+ #if IS_ENABLED(CONFIG_SERIAL_QCOM_GENI_CONSOLE)
+ static const struct qcom_geni_device_data qcom_geni_console_data =3D {
+ =09.console =3D true,
+@@ -2168,7 +2182,12 @@ static const struct qcom_geni_device_data sa8255p_qc=
+om_geni_uart_data =3D {
+ static const struct dev_pm_ops qcom_geni_serial_pm_ops =3D {
+ =09SET_RUNTIME_PM_OPS(qcom_geni_serial_runtime_suspend,
+ =09=09=09   qcom_geni_serial_runtime_resume, NULL)
+-=09SYSTEM_SLEEP_PM_OPS(qcom_geni_serial_suspend, qcom_geni_serial_resume)
++=09.suspend =3D pm_sleep_ptr(qcom_geni_serial_suspend),
++=09.resume =3D pm_sleep_ptr(qcom_geni_serial_resume),
++=09.freeze =3D pm_sleep_ptr(qcom_geni_serial_suspend),
++=09.thaw =3D pm_sleep_ptr(qcom_geni_serial_resume),
++=09.poweroff =3D pm_sleep_ptr(qcom_geni_serial_suspend),
++=09.restore =3D pm_sleep_ptr(qcom_geni_serial_restore),
+ };
+=20
+ static void qcom_geni_serial_sys_shutdown(struct platform_device *pdev)
+--=20
 2.56.0
 
 
