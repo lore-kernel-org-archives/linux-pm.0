@@ -1,55 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.38.64.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793107794;
-	b=ZzGzgsNaMsgOreNE2lswnKRocd9eMZrUZ9/e9sM2H1qNXaJC3p1tqhsIW1e72jr6xcr0
-	 EZZ8w2kCtnfVQ1s/cqLDbxMST532DiSDUZxXHGr+p9Ihg57Y+vr5YTD/G5/q7SEi6PcLt
-	 uDeov9pI9XZTlHZNFNa5AyClV6gBBqshpOPio8UvdYT4eGwadPGjUt1DIMAhpMZHB7GSo
-	 IS4W23lwTgDcx19FW/NSGY7PUE0fT2vZNOn+QS3UW6udEEfi5+U74r8UMVBSSjjNsooP0
-	 b7kb+ZXc2Hs1s89J9x5SdiXZ2NP9eEy6LMe+sPEbS9kGxkEyyx2qsWDiscIAcgtXPdA==
+	t=1793107886;
+	b=O2maVkI09Oq2pezuTK/Thdme0j8UKC4yKZNj3xNsbxs5CqPAF/n706bNkPjdOvZpVwdt
+	 OSbkGkOxQWh5MgC9smRPQQUJIEjEPw5tqvBnGKGNJA9P2YnDjuFwjAV0pZAMafBEZtN37
+	 dnq52ro4VqwNy9jBfTuZ3G+Sk/mqnAvyGpnSFCWPLArALfru9Wfd8DoUm44VNTadWtvuS
+	 PNMrYLj5xN9tkTQiB2Zo1llz1u6SrYr7U2ljTIyY1ZRvWSjAsBWfbWk/lQREz0f4aLuXv
+	 eSykgBh2EI38V7AgxBcXrZF5cORjXOx8u13m+8L5TD5/KXgXkgvVwXtyDfHKmdzkHOg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793107794;
-	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
-	bh=DF5jq7LcllRPbW++Uz7QpUJQ2W6mZYaUl51ykSJdEOY=;
-	b=COolQBOLuL6/ZPfoim1ZH0bsobSV73D1/2SZk7k0fcE+txozsXRuyE5Gdyasv7WvdCFn
-	 pG4YWDIe6ZoMlh4TLDSCYv7hfN7xSBB0MKhbdNpl19MTIJmNi6ruWeqGYdsReitoVNohp
-	 IiII11jWV6nmPjud6C5nPcMTrE9eY10hTqr0Krba8wmDv1+RXjb+zWXmFqTokf3zaf5RY
-	 xBXhwqy9JCCBXhM9MXeSbHnrl8Cy+LBXkg8zz/pprObk0ydOlYcoxpABlNuXL3Iz35bV4
-	 FD6yUI/l8uFTnVSx3kC4kvnFeC5ycg9XXAx1+8O53suxd8tb6Ig9RSKxQjdJiXo5dvw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793107886;
+	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 Content-Type;
+	bh=qEC5D0LF9e/JOlM8sgTaH4qiRnn1eg0HLkg9p1QEwmU=;
+	b=2MgHqbP/1oXdoJlMwtSHaEFJO2rvz23CVqE7hnr08NoN1Uw8vcnlL9ji4zvX4Wi4VfAY
+	 JKxDy2ay7hQgcds/QYkE9Kzcdhz+4hcFQR1BYbaR4Jp0jmgNRln+jpAD2/OhGatwyp5xd
+	 /uXxAJVf1Du/yokg4Xrg0+b9WQYa/AXuthj1Uxiv/oLPbus9R+2rxAubpbQEesyq7v8dS
+	 UvEBF0y7dhY6TU800zqRM8bSIprhxnYkPv+9QOy1Bv16FwOKfL1A90Z9oAtFUNNSD3xUc
+	 PmBJMxaBcftUlDOQO6V19wOEeV5u2yHhqB1jBZyzgI1KzVWhweoMszBcSi7s6bxPn7Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mail.ustc.edu.cn;
-	spf=pass smtp.mailfrom=mail.ustc.edu.cn;
-	dkim=pass header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=dvdMAMao;
-	arc=none smtp.remote-ip=202.38.64.46
-Received: from ustc.edu.cn (smtp.ustc.edu.cn [202.38.64.46])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 31B8A60A2638;
-	Tue, 27 Oct 2026 13:29:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 31B8A60A2638
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mail.ustc.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ustc.edu.cn
+	dmarc=pass header.from=sntech.de;
+	spf=pass smtp.mailfrom=sntech.de;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gVkKcdyw;
+	arc=none smtp.remote-ip=185.11.138.130
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20A69606A31B;
+	Tue, 27 Oct 2026 13:31:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 20A69606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=dvdMAMao
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-	Message-ID:MIME-Version:Content-Transfer-Encoding; bh=DF5jq7Lcll
-	RPbW++Uz7QpUJQ2W6mZYaUl51ykSJdEOY=; b=dvdMAMaovYlfKjhrAF696q9Jxy
-	vWm1/5/JytdOjC4XT6ZHPffk9eTKsy3ysoLdUKbsVjXkUgKlBNeKuWOjXB2W5ciX
-	WF1pmJ1BvKlY3wcez1IJmjYm63OvpeqXiThYOUmuA6Fs+64W9sgCBqSdoQm3U/fx
-	trbvopvBc7b+Dvk1o=
-Received: from xuqianhui.ustc.edu.cn (unknown [114.214.177.11])
-	by mailimap2024 (Coremail) with SMTP id 3pYKCgAXoUVNp+BqjmxRAA--.1869S2;
-	Tue, 27 Oct 2026 21:29:49 +0800 (CST)
-From: Qianhui Xu <xiaqinghuan@mail.ustc.edu.cn>
-To: linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Xu Qianhui <xiaqinghuan@mail.ustc.edu.cn>
-Subject: [PATCH] power: supply: qcom_battmgr: do not report power_now on SM8750
-Date: Tue, 27 Oct 2026 21:29:49 +0800
-Message-ID: <20261027132949.242685-1-xiaqinghuan@mail.ustc.edu.cn>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key, unprotected) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gVkKcdyw
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=qEC5D0LF9e/JOlM8sgTaH4qiRnn1eg0HLkg9p1QEwmU=; b=gVkKcdyw0U2MQvyLMmviOIuJ9j
+	xya+zVI6IoIafmhBMUgl3dv4Jf1WA7cvIQj8ZbG7YDrZg6ObXmrdpXzez7DY0WEFxINKoU242J6an
+	NJ3lmLxmcS3dB6WiX4VVy+Aedi+TLCI4QwA/yrzCKHVjXRWdk28irHuSW02PyuyBQOjJ5AXEWWXu9
+	iwLNJOxU0UXmS9i6SjAtd1mv4hE1GXzWroz4zXbX90ZMt8uSBsZsLhRGrddCZ0ZQrWgOiPXWT+GA3
+	D0YcsjhS3nfIlDM0pAO6yUKa3+R89BKkK7cdAcK1OfDt7Jq2GO5YyunjzF4nFoj4KSY7BLR3eFVJR
+	hDp2S9Kg==;
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: 1579567540@qq.com, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Elaine Zhang <zhangqing@rock-chips.com>, Ulf Hansson <ulfh@kernel.org>,
+ Finley Xiao <finley.xiao@rock-chips.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject:
+ Re: [PATCH v3 2/2] pmdomain: rockchip: Add RK3572 boot peripheral domains
+Date: Tue, 27 Oct 2026 14:31:10 +0100
+Message-ID: <1942535.QCnGb9OGeP@diego>
+In-Reply-To: <080cffd7-05e6-458d-a00a-b757b0f44aa5@rock-chips.com>
+References:
+ <20261026-add-board-ok3572-c-pmdomain-v3-0-70d614d3d921@qq.com>
+ <3329883.fEcJ0Lxnt5@phil>
+ <080cffd7-05e6-458d-a00a-b757b0f44aa5@rock-chips.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,127 +68,40 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:3pYKCgAXoUVNp+BqjmxRAA--.1869S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxXF47AFW7Xw1DZF48GryDWrg_yoWruFWfpa
-	95JFZIyw1vyF43Aa47AF4Ikw4xKr4vy343KFn7W34Iva43trn2gr9rtFnxK348A3sayryF
-	kw4ak343Cr47GrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkK14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
-	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
-	2Ix0cI8IcVAFwI0_Jrv_JF1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
-	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
-	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIY
-	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14
-	v26F4j6r4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_
-	Cr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUbb_-P
-	UUUUU==
-X-CM-SenderInfo: 50ld1x5qjk3t3q6ptxnoox23vfohv3gofq/1tbiARENB2rfqlZqOAAwsx
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-From: Xu Qianhui <xiaqinghuan@mail.ustc.edu.cn>
+Am Dienstag, 27. Oktober 2026, 02:10:37 Mitteleurop=C3=A4ische Normalzeit s=
+chrieb Finley Xiao:
+>=20
+> =E5=9C=A8 2026/10/26 19:53, Heiko Stuebner =E5=86=99=E9=81=93:
+> > Hi Finley,
+> >
+> > Am Montag, 26. Oktober 2026, 12:37:06 Mitteleurop=C3=A4ische Normalzeit=
+ schrieb Finley Xiao:
+> >> =E5=9C=A8 2026/10/26 16:47, Finley Xiao =E5=86=99=E9=81=93:
+> >>> =E5=9C=A8 2026/10/26 11:21, Cunhao Lu via B4 Relay =E5=86=99=E9=81=93:
+> >>>> From: Finley Xiao <finley.xiao@rock-chips.com>
+> >>>>
+> >>>> Add support for the RK3572 NVM0, NVM1, PHP, and VOP power domains.
+> >>>>
+> >>>> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+> >> I have to point out that the changes (the shutdown/restore
+> >> rework, pending-state tracking, etc.) were not made by me, and I have
+> >> not reviewed them in detail. Therefore, I should not remain as the
+> >> author (From:) of this patch, nor should my Signed-off-by be kept on
+> >> it.
+> > As this seemingly comes from the vendor-tree, _some_ Rockchip authorship
+> > should be kept I think?
+> >
+> > Do you have a suggestion who that should be other than you? :-)
+> We have never carried code like this, and the other parts also
+> differ significantly from the Rockchip kernel. It does not appear
+> to be our original code.
 
-The SM8750 QBG firmware fills BATT_POWER_NOW via its maximum-load updater
-instead of an instantaneous measurement: the property getter indexes
-context + 0x6a8 + 4 * property, so property 22 (BATT_POWER_NOW) reads the
-offset written by the maximum-load path.  Exposing that as power_now makes
-userspace report e.g. 89 W while the battery is charging below 1 W, or
-above 100 W while discharging at about 4 W.
+thanks for the clarification. In that case it should _not_ claim a
+rockchip authorship obviously.
 
-The SM8750 PMIC GLINK node is already described in DT
-("qcom,sm8750-pmic-glink" in sm8750-mtp/qrd), but the driver has no entry
-for that compatible, so the node resolves to the SM8550 entry listed second
-in the same node and advertises POWER_NOW.
+Heiko
 
-Add the SM8750 variant and a battery descriptor that reuses the SM8550
-properties without POWER_NOW.  The property array is reordered so that
-POWER_NOW is the last entry, which keeps the new descriptor a two-line
-addition; property ordering itself is not ABI.
-
-Voltage, current, charge counters and the charge-control thresholds are
-retained.
-
-Tested on Lenovo Legion Y700 Gen4 (TB322FC, SM8750P): charging and
-discharging, UPower state-of-charge and rate are unchanged and power_now
-is no longer exposed.
-
-Signed-off-by: Xu Qianhui <xiaqinghuan@mail.ustc.edu.cn>
----
- drivers/power/supply/qcom_battmgr.c | 29 +++++++++++++++++++++++++++--
- 1 file changed, 27 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index 636d6f6..05846db 100644
---- a/drivers/power/supply/qcom_battmgr.c
-+++ b/drivers/power/supply/qcom_battmgr.c
-@@ -24,6 +24,7 @@ enum qcom_battmgr_variant {
- 	QCOM_BATTMGR_SC8280XP,
- 	QCOM_BATTMGR_SM8350,
- 	QCOM_BATTMGR_SM8550,
-+	QCOM_BATTMGR_SM8750,
- 	QCOM_BATTMGR_X1E80100,
- };
- 
-@@ -917,9 +918,13 @@ static const enum power_supply_property sm8550_bat_props[] = {
- 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
- 	POWER_SUPPLY_PROP_INTERNAL_RESISTANCE,
- 	POWER_SUPPLY_PROP_STATE_OF_HEALTH,
--	POWER_SUPPLY_PROP_POWER_NOW,
- 	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD,
- 	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD,
-+	/*
-+	 * Kept last on purpose: SM8750 reuses this list without POWER_NOW,
-+	 * see sm8750_bat_psy_desc.
-+	 */
-+	POWER_SUPPLY_PROP_POWER_NOW,
- };
- 
- static const struct power_supply_desc sm8550_bat_psy_desc = {
-@@ -932,6 +937,23 @@ static const struct power_supply_desc sm8550_bat_psy_desc = {
- 	.property_is_writeable = qcom_battmgr_bat_is_writeable,
- };
- 
-+/*
-+ * The SM8750 QBG firmware fills BATT_POWER_NOW from its maximum-load updater
-+ * instead of from an instantaneous measurement, so the published value is not
-+ * a present power reading (it reports the maximum load, e.g. 89 W while the
-+ * battery is actually charging below 1 W).  Do not advertise POWER_NOW on
-+ * this platform.
-+ */
-+static const struct power_supply_desc sm8750_bat_psy_desc = {
-+	.name = "qcom-battmgr-bat",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = sm8550_bat_props,
-+	.num_properties = ARRAY_SIZE(sm8550_bat_props) - 1,
-+	.get_property = qcom_battmgr_bat_get_property,
-+	.set_property = qcom_battmgr_bat_set_property,
-+	.property_is_writeable = qcom_battmgr_bat_is_writeable,
-+};
-+
- static int qcom_battmgr_ac_get_property(struct power_supply *psy,
- 					enum power_supply_property psp,
- 					union power_supply_propval *val)
-@@ -1644,6 +1666,7 @@ static const struct of_device_id qcom_battmgr_of_variants[] = {
- 	{ .compatible = "qcom,sc8180x-pmic-glink", .data = (void *)QCOM_BATTMGR_SC8280XP },
- 	{ .compatible = "qcom,sc8280xp-pmic-glink", .data = (void *)QCOM_BATTMGR_SC8280XP },
- 	{ .compatible = "qcom,sm8550-pmic-glink", .data = (void *)QCOM_BATTMGR_SM8550 },
-+	{ .compatible = "qcom,sm8750-pmic-glink", .data = (void *)QCOM_BATTMGR_SM8750 },
- 	{ .compatible = "qcom,x1e80100-pmic-glink", .data = (void *)QCOM_BATTMGR_X1E80100 },
- 	/* Unmatched devices falls back to QCOM_BATTMGR_SM8350 */
- 	{}
-@@ -1717,7 +1740,9 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
- 			return dev_err_probe(dev, PTR_ERR(battmgr->wls_psy),
- 					     "failed to register wireless charing power supply\n");
- 	} else {
--		if (battmgr->variant == QCOM_BATTMGR_SM8550)
-+		if (battmgr->variant == QCOM_BATTMGR_SM8750)
-+			psy_desc = &sm8750_bat_psy_desc;
-+		else if (battmgr->variant == QCOM_BATTMGR_SM8550)
- 			psy_desc = &sm8550_bat_psy_desc;
- 		else
- 			psy_desc = &sm8350_bat_psy_desc;
--- 
-2.53.0
 
