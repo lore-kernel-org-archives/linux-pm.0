@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793128558;
-	b=R7iwu+1ufJPW0mf0rQsvJPTtC4w5BGOVdmODiqfazd2OefiCTsdPlTPgLpjF0+4AKiY9
-	 m53BG83l/iCIph8VZH7PTZrAmqV3OMuDj1UCKIGAwMoq66Kj8miQHQG/DyISLCyeo+mFD
-	 WrtPzqUA7vXZTVAuC0Uc1dPsNCxZ0wMENwnbOCUKUokWCSP20kswjvhzFEJ1CJipFEGYd
-	 LSfuiRvov5qyigzpNIFwuu0RtPRPpLzCtGi8rQa8GZYAG/XfWNlvfa7cdme1ZSKRFUSlD
-	 y4j25tCJzUO+RBehnb7MQ/g6GSUh2tFdHy/25VhIHElm0/py+iLHGY/yHvlPp+zq9JA==
+	t=1793128559;
+	b=2JduzeSnPXXiKh5f2B3lCLmcN5dyrSop8PjsrZGs4cg5mrIFiNaNo91HWxQRYJk1Bm/A
+	 IIQnbie+kJi1Og1HCXVXhemuC/sbQA9HA08oOrVEWCTAy9BzjIBg9lIM4FoitiHz9R0ko
+	 MabigFORosg5tVtDTip647DUbxJ6mVKxT6LBZbGdESF56Hef3vlIMZQyGV4fDmhi8SxWS
+	 mJTWDQBs3rsGv35aSlPL0YlwUPQJc9SowMOrHtvgbzJVySWlH04CTCfRUUM7qa6CeNf+K
+	 Sd53pKsapDlyO8cCfa6XUTmXv0QLWSgUv9ba9Kh/nfr1I7tiaE+qnEv9qRlrBTtSP8A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793128558;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793128559;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=IFuhL2k1RKVhokBiBwYm161DVxxuEYLh75jZQDM+pyw=;
-	b=RGdxnRVZtW9DzF36YXpOLiFv3BhQ5u/K4mqe+k8v2xmNyNAyEZvA9xINE3KWohGOZ8JJ
-	 THgH10/7sQXXIN4ALNYAGhQeiddX0Rotgmcx/SW93SV/L3ebg29MSEpghpttKsk2sP5Tf
-	 bUdh2wZegd5Gs9E8QZum8HlvAGux2IA5nNyxcGchSZmWPgqQlN25ew0stiCPiHTE6jQKn
-	 o5nbNJVgM43xyJA3eJXbXL8c4ERm86e56UiQVBv600W9QSafy6+3D2O1AMxJ1M7vrTstD
-	 U9Yb7RWYZVSBAV6F6QSJILBZiMg3u18WVDQ1IDGHHbsaG8SYpm4CU6tVTLQ2Yg2cDIg==
+	bh=CT2dclR715FMT4BSvWqh6xbTqLmw2ZVo2s8GXFdAR+s=;
+	b=JDJMh3BQO1XLISneXuaWQzNKKJTWhe+ljUo2w81OGSHENXYaC5teTpwEjH/+VUezRcNp
+	 NpNb092+XtOEasnqkESI7LUf/bRvQCmj9mOZs4515iM4Xn9bmsrXfpE8v0a/R3FJ5Mj4w
+	 O3Q3tKvMDEE2JsDas4i05YtKuxVDFpxI9wympEYjyeBwULep5guUAMTHgRXZCX6tTD4ps
+	 i/EEgpw3eiH2wq5q+KZVVKol2WjyQEXjF6I1qlroDUGbURTZZNGg92DLxNx4Rx+flnwB7
+	 YGl6fAbRZQlU55Ux2042ON/z8KQZvq10ZeVBUFO+nb/7vSCiaZnhP0Q7ctqoc4vLLhQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=byRaEva8;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kYQqN6K0;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AAFC606A31A
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 19:15:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8366D606A31A
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 19:15:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=byRaEva8
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68DCC1F01825;
-	Tue, 27 Oct 2026 19:15:56 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kYQqN6K0
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 278501F031E1;
+	Tue, 27 Oct 2026 19:15:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793128557;
-	bh=IFuhL2k1RKVhokBiBwYm161DVxxuEYLh75jZQDM+pyw=;
+	s=k20260515; t=1793128559;
+	bh=CT2dclR715FMT4BSvWqh6xbTqLmw2ZVo2s8GXFdAR+s=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=byRaEva8emNW1plHHldhnni2/id6KdDQueUFgYSR3e1tMSOSIhnRxHYSLMlIE0uo0
-	 8oRwEzwQBn3NwPAu3kwZRdxM2wSDvIA7bXASSPqYycjY4VCED5yIm6xM3+oIIvUJBO
-	 MYdDWe6GsCtXC77fBIJ2uKZeEAwd++rK15uup3Ww3HYVrEcd74TiD4ymCYD6eFDhcb
-	 vjnpXUvYw+ouX2sevRRnqC4/s2jpRSWFzi9n3klj1vG0OsvhTc8MkzKGzIAjrH0pJ0
-	 F8sl1QXy1zdXF4c7S8TeTHp/7LlY3FWxXGfrMufFMkDT1Ok976P7kRutltbEo6w871
-	 N9GIxlf7T0I1Q==
+	b=kYQqN6K0RItYrS6Jvonzn8V2Mg5HEfijYoLVvZLaJb1IKPeOluEl9fGM/OJ133W2g
+	 OE2snNznFvZwlKQQnci7Hv028aXSzGFz1c79C8302wzbkNdd8Gnwj6IRhqKN7alq+u
+	 lWMweWxyFg16G0qQqLnpwOVA+Kg2LaxTl5bSLdP6qv+VlqSrYA1JsRH5LFEiJbW9iT
+	 9LK+Bck0O5vpij0xvllPcN8WC9jbX9LIlPrwOzl/VZ5ZZ/mAyTA8xOKVDMzMCJgeZ/
+	 02mgyS5jRSHMMdd2gl31Us/OZZmhpHwbEkP9lKtflIKBYrm8iHueoLFlbA/5FOvUbg
+	 I5jO2WgeEbJgA==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: Andy Shevchenko <andriy.shevchenko@intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH 01/16] x86_energy_perf_policy: Rewrite Linux/Android MSR path discovery
-Date: Tue, 27 Oct 2026 15:01:55 -0400
-Message-ID: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
+Subject: [PATCH 03/16] x86_energy_perf_policy: Harden with strtol()
+Date: Tue, 27 Oct 2026 15:01:56 -0400
+Message-ID: <9ba78b0197903c2191a047068ba13bd90ab13a73.1793124601.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20261027191550.369122-1-lenb@kernel.org>
-References: <20261027191550.369122-1-lenb@kernel.org>
+In-Reply-To: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
+References: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,158 +65,192 @@ Content-Transfer-Encoding: 8bit
 
 From: Len Brown <len.brown@intel.com>
 
-First check that the Linux MSR driver path exists, modprobe if no.
-If still no, then check that the Android MSR driver path exists.
+Replace atoi() with strtol() and proper error checking when parsing the
+--hwp-use-pkg command-line argument value, and other spots.
 
-Read or Write permissions are handled at run-time
-in the get_msr()/put_msr() error paths.
+Add explicit check that value is in valid range [0, 1].
 
-Create set_msr_path() helper.
+Update associated error message strings.
 
-Return -1 for all fatal errors.
+parse_optarg_string() now returns long, as returned from strtol().
 
-Suggested-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 Assisted-by: GitHub-Copilot:Claude-Sonnet-4.6
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- .../x86_energy_perf_policy.c                  | 73 ++++++++++++-------
- 1 file changed, 47 insertions(+), 26 deletions(-)
+ .../x86_energy_perf_policy.c                  | 71 ++++++++++---------
+ 1 file changed, 39 insertions(+), 32 deletions(-)
 
 diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-index 0dc959e30076..8a15093a485e 100644
+index da89b267f357..d53427a059f3 100644
 --- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
 +++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-@@ -15,6 +15,7 @@
- #include <sys/types.h>
- #include <sched.h>
- #include <sys/stat.h>
-+#include <sys/wait.h>
- #include <sys/resource.h>
- #include <getopt.h>
- #include <err.h>
-@@ -98,6 +99,7 @@ unsigned char update_platform_profile;
- int soc_slider_balance;
- int soc_slider_offset;
- char platform_profile[64];
-+char msr_path[64];
- 
- #define PATH_TO_CPU "/sys/devices/system/cpu/"
- #define SYSFS_PATH_MAX 255
-@@ -799,21 +801,32 @@ void err_on_hypervisor(void)
- 		err(-1, "not supported on this virtual machine");
- }
- 
-+/*
-+ * if (use_android_msr_path)
-+ *	msr_path = /dev/msr%d	// Android
-+ * else
-+ *	msr_path = /dev/cpu/%d/msr	// Linux
-+ */
-+static void set_msr_path(int cpu)
-+{
-+	if (snprintf(msr_path, sizeof(msr_path), use_android_msr_path ? "/dev/msr%d" : "/dev/cpu/%d/msr", cpu) >= (int)sizeof(msr_path))
-+		err(-1, "MSR path buffer overflow for cpu%d", cpu);
-+}
-+
- int get_msr(int cpu, int offset, unsigned long long *msr)
- {
- 	int retval;
--	char pathname[32];
- 	int fd;
- 
--	sprintf(pathname, use_android_msr_path ? "/dev/msr%d" : "/dev/cpu/%d/msr", cpu);
--	fd = open(pathname, O_RDONLY);
-+	set_msr_path(cpu);
-+	fd = open(msr_path, O_RDONLY);
- 	if (fd < 0)
--		err(-1, "%s open failed, try chown or chmod +r %s, or run as root", pathname, use_android_msr_path ? "/dev/msr*" : "/dev/cpu/*/msr");
-+		err(-1, "%s open failed, try chown or chmod +r, or run as root", msr_path);
- 
- 	retval = pread(fd, msr, sizeof(*msr), offset);
- 	if (retval != sizeof(*msr)) {
- 		err_on_hypervisor();
--		err(-1, "%s offset 0x%llx read failed", pathname, (unsigned long long)offset);
-+		err(-1, "%s offset 0x%llx read failed", msr_path, (unsigned long long)offset);
+@@ -191,7 +191,7 @@ int parse_cmdline_epb(int i)
+ 		return ENERGY_PERF_BIAS_PERFORMANCE;
  	}
- 
- 	if (debug > 1)
-@@ -825,14 +838,13 @@ int get_msr(int cpu, int offset, unsigned long long *msr)
- 
- int put_msr(int cpu, int offset, unsigned long long new_msr)
- {
--	char pathname[32];
- 	int retval;
- 	int fd;
- 
--	sprintf(pathname, use_android_msr_path ? "/dev/msr%d" : "/dev/cpu/%d/msr", cpu);
--	fd = open(pathname, O_RDWR);
-+	set_msr_path(cpu);
-+	fd = open(msr_path, O_RDWR);
- 	if (fd < 0)
--		err(-1, "%s open failed, try chown or chmod +r %s, or run as root", pathname, use_android_msr_path ? "/dev/msr*" : "/dev/cpu/*/msr");
-+		err(-1, "%s open failed, try chown or chmod +w, or run as root", msr_path);
- 
- 	retval = pwrite(fd, &new_msr, sizeof(new_msr), offset);
- 	if (retval != sizeof(new_msr))
-@@ -1601,32 +1613,41 @@ void set_base_cpu(void)
- 		err(-ENODEV, "No valid cpus found");
+ 	if (i < 0 || i > ENERGY_PERF_BIAS_POWERSAVE)
+-		errx(1, "--epb must be from 0 to 15");
++		errx(1, "--epb must be 0 through 15");
+ 	return i;
  }
  
--static void probe_android_msr_path(void)
-+/* return 0 if path exists */
-+static int check_msr_path(void)
- {
- 	struct stat sb;
--	char test_path[32];
- 
--	sprintf(test_path, "/dev/msr%d", base_cpu);
--	if (stat(test_path, &sb) == 0)
--		use_android_msr_path = 1;
-+	return stat(msr_path, &sb);
+@@ -305,8 +305,8 @@ int parse_cmdline_hwp_epp(int i)
+ 	case OPTARG_PERFORMANCE:
+ 		return HWP_EPP_PERFORMANCE;
+ 	}
+-	if (i < 0 || i > 0xff) {
+-		fprintf(stderr, "--hwp-epp must be from 0 to 0xff\n");
++	if (i < 0 || i > 255) {
++		fprintf(stderr, "--hwp-epp must be 0 through 255\n");
+ 		usage();
+ 	}
+ 	return i;
+@@ -332,9 +332,9 @@ int parse_cmdline_turbo(int i)
+ 	return i;
  }
  
-+/*
-+ * Check Linux MSR path
-+ * If it fails, try modprobe and check it again
-+ * If still no joy, enable Android path and try again
-+ */
- void probe_dev_msr(void)
+-int parse_optarg_string(char *s)
++long parse_optarg_string(char *s)
  {
--	struct stat sb;
--	char pathname[32];
-+	int retval;
+-	int i;
++	long i;
+ 	char *endptr;
  
--	probe_android_msr_path();
-+	use_android_msr_path = 0;
-+	set_msr_path(base_cpu);
-+	if (check_msr_path() == 0)
-+		return;
+ 	if (!strncmp(s, "default", 7))
+@@ -355,19 +355,13 @@ int parse_optarg_string(char *s)
+ 	if (!strncmp(s, "performance", 11))
+ 		return OPTARG_PERFORMANCE;
  
--	sprintf(pathname, use_android_msr_path ? "/dev/msr%d" : "/dev/cpu/%d/msr", base_cpu);
--	if (stat(pathname, &sb)) {
--		if (system("/sbin/modprobe msr > /dev/null 2>&1")) {
--			if (use_android_msr_path)
--				err(-5, "no /dev/msr0, Try \"# modprobe msr\" ");
++	errno = 0;
+ 	i = strtol(s, &endptr, 0);
+-	if (s == endptr) {
+-		fprintf(stderr, "no digits in \"%s\"\n", s);
++	if (endptr == s || errno == ERANGE || i < 0 || i > 255) {
++		warnx("bad value \"%s\"", s);
+ 		usage();
+ 	}
+-	if (i == LONG_MIN || i == LONG_MAX)
+-		errx(-1, "%s", s);
+ 
+-	if (i > 0xFF)
+-		errx(-1, "%d (0x%x) must be < 256", i, i);
+-
+-	if (i < 0)
+-		errx(-1, "%d (0x%x) must be >= 0", i, i);
+ 	return i;
+ }
+ 
+@@ -424,9 +418,10 @@ void parse_cmdline_cpu(char *s)
+ 			int end_cpu;
+ 
+ 			startp++;
++			errno = 0;
+ 			end_cpu = strtol(startp, &endp, 10);
+-			if (startp == endp)
+-				continue;
++			if (startp == endp || errno == ERANGE)
++				errx(1, "Confused by end_cpu '%s'", startp);
+ 
+ 			while (cpu <= end_cpu) {
+ 				if (cpu > max_cpu_num)
+@@ -469,11 +464,11 @@ void parse_cmdline_cpu(char *s)
+ 				break;
+ 		}
+ 
++		errno = 0;
+ 		cpu = strtol(startp, &endp, 10);
+-		if (startp == endp)
++		if (startp == endp || errno == ERANGE || cpu < 0 || cpu > max_cpu_num)
+ 			errx(1, "--cpu cpu-set: confused by '%s'", startp);
+-		if (cpu > max_cpu_num)
+-			errx(1, "Requested cpu%d exceeds max cpu%d", cpu, max_cpu_num);
++
+ 		CPU_SET_S(cpu, cpu_setsize, cpu_selected_set);
+ 		startp = endp;
+ 	}
+@@ -504,9 +499,10 @@ void parse_cmdline_pkg(char *s)
+ 			int end_pkg;
+ 
+ 			startp++;
++			errno = 0;
+ 			end_pkg = strtol(startp, &endp, 10);
+-			if (startp == endp)
+-				continue;
++			if (startp == endp || errno == ERANGE)
++				errx(1, "Confused by end_pkg '%s'", startp);
+ 
+ 			while (pkg <= end_pkg) {
+ 				if (pkg > max_pkg_num)
+@@ -523,9 +519,11 @@ void parse_cmdline_pkg(char *s)
+ 			return;
+ 		}
+ 
++		errno = 0;
+ 		pkg = strtol(startp, &endp, 10);
+-		if (pkg > max_pkg_num)
+-			errx(1, "Requested pkg%d Exceeds max pkg%d", pkg, max_pkg_num);
++		if (startp == endp || errno == ERANGE || pkg < 0 || pkg > max_pkg_num)
++			errx(1, "Confused by pkg '%s'", startp);
++
+ 		pkg_selected_set |= 1 << pkg;
+ 		startp = endp;
+ 	}
+@@ -546,6 +544,7 @@ static int parse_cmdline_int(const char *s, int *out)
+ 	char *endp;
+ 	long val;
+ 
++	errno = 0;
+ 	val = strtol(s, &endp, 0);
+ 	if (endp == s || errno == ERANGE)
+ 		return -1;
+@@ -714,13 +713,19 @@ void cmdline(int argc, char **argv)
+ 		case 't':
+ 			turbo_update_value = parse_cmdline_turbo(parse_optarg_string(optarg));
+ 			break;
+-		case 'u':
+-			update_hwp_use_pkg++;
+-			if (atoi(optarg) == 0)
+-				req_update.hwp_use_pkg = 0;
 -			else
--				err(-5, "no /dev/cpu/0/msr, Try \"# modprobe msr\" ");
--		}
--	}
-+	retval = system("/sbin/modprobe msr > /dev/null 2>&1");
+-				req_update.hwp_use_pkg = 1;
+-			break;
++		case 'u': {
++				char *endp;
++				long val;
 +
-+	if (check_msr_path() == 0)
-+		return;
++				update_hwp_use_pkg++;
 +
-+	use_android_msr_path = 1;
-+	set_msr_path(base_cpu);
-+	if (check_msr_path() == 0)
-+		return;
-+
-+	if (WIFEXITED(retval))
-+		retval = WEXITSTATUS(retval);
-+	errx(-1, "\"msr\" driver support required, modprobe msr returned %d", retval);
- }
++				errno = 0;
++				val = strtol(optarg, &endp, 10);
++				if (endp == optarg || errno == ERANGE || val < 0 || val > 1)
++					errx(1, "--hwp-use-pkg: must be 0 or 1");
++				req_update.hwp_use_pkg = val;
++				break;
++			}
+ 		case 'v':
+ 			print_version();
+ 			exit(0);
+@@ -1016,8 +1021,9 @@ static int get_epb_sysfs(int cpu)
+ 	if (!read_sysfs(path, linebuf, 3))
+ 		return -1;
  
- static void get_cpuid_or_exit(unsigned int leaf, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
++	errno = 0;
+ 	val = strtol(linebuf, &endp, 0);
+-	if (endp == linebuf || errno == ERANGE)
++	if (endp == linebuf || errno == ERANGE || val < 0 || val > 15)
+ 		return -1;
+ 
+ 	return (int)val;
+@@ -1040,8 +1046,9 @@ static int set_epb_sysfs(int cpu, int val)
+ 	if (ret <= 0)
+ 		return -1;
+ 
++	errno = 0;
+ 	val = strtol(linebuf, &endp, 0);
+-	if (endp == linebuf || errno == ERANGE)
++	if (endp == linebuf || errno == ERANGE || val < 0 || val > 15)
+ 		return -1;
+ 
+ 	return (int)val;
 -- 
 2.45.2
 
