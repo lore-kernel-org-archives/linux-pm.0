@@ -1,111 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793117890;
-	b=JqJK+obWshcDziW2H8V7G/zImHILxSTPwySK61Jd56o8vJYUVj0PfC4SF99ncB2pb8J/
-	 SrRe0lww03cTg6mKthJf3dNoyVFy0M3sSFi+zqil9wPikXeypAI1P/ICiaJtilTpX5WDI
-	 ldrzwIa2jEGJaZPo6AnrL3/M+U42jKgkL4PRxKDGZkZp5I5QHs5yQIyhbRv/1ean/dWXY
-	 TQpf/la2JM47Y8TB300LT8GFc2vULpjcAK+XIrLgIs/Ko7KZrZTBW5oFSTZAu3+OIlZja
-	 B1KtZ1ZewdhaZZ1zXMEdz6aDzd9tsLUgtBb6RNNrcyWGFIUNDBf2hiCDthi9QvmQucQ==
+	t=1793119016;
+	b=IpJVo+1WfvbuepC5vhdtj8VjTicV2hAvdiARdOMg4bb/yCX+jI7XfuLX5rA86+38MhXp
+	 AUHXvyiZcNoI5m4TL3C3iMk8/F0eVh9O45e5Jare1kyWVk4kfaEfICdR8MPrBxSE0GJ9q
+	 WUHZnMhPUJN7M+66B3s7WDbXpbg3mrW8tsN+xzasKY/sx/zQFfUcyUU5N8t4hUvbyZz1M
+	 QzvGeL7h3mk1H6dT+CtnnJHZqhGiWak0tFXCh4AF80NnmMS/FsfTn25CK5HLDcO+VY1jf
+	 sXyDNfIqbeEW8NT1pX7xaUCsxMR/6yUt8s8s+RD07Ft6wU/Airw5gNWYFPr1fOzUAeA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793117890;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:
-	 X-Authority-Analysis:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=IGDTuUyORqQ9ZtkZ7BRn3HYpiHLzxyIKFVLh6zS3w3s=;
-	b=kRz3fD4RVE7j+brmn91IkmA/7s61u93N0U/BBRe+ScA3mZmERfBPc8YtpSMjVOMNKUFj
-	 or+ereyIhBjhgz4Fp0BwtMY8Jq9jwxFr8b523lOFEzWEOGBcNCEg4fcHnejH0/SvEPH3j
-	 WBBZwD6re0jzfBkIaFBWgCCoH/qPM7VqCRhlvwfJrjyusx6YCRTbBhGYIkeiQHf0WgIlY
-	 fVaz2Xr1gycwGbPLk9VlsduxSObQ+CPdQ8aCiVbdXnrL6e65dZwYc5bFJdTqevDi397QD
-	 OBgqDplHnqLNTG5NLgwqCSY6Zlq60XaB5hgELf+fGAWOD6MpX/ys7eNhDvZm6oY9jNg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793119016;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:References:In-Reply-To:Subject:Date:Message-ID:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:
+	 Content-Language:Thread-Index;
+	bh=DgyxaXcpCEgbpB6+0qEWI5ndWEratI/KZGAOF1/cwnc=;
+	b=anP66ibYyQXDeKVtPhS2K0Lk8qqO5/dMZftpwhNQgjLf4w/w3lNLFJCdztfacQX5o/zy
+	 aR/q9THYvumTfA2fuaI4/Qyr376stJpWeghofLrKWju7iXTLAnKWRjYNAa1/T1ZucPkF1
+	 RTFa8sD8OiHRbUS60mbKuDoD1PD4eGvHaVm/Lkpjq3RSyBMeUW9UnkdXPo7+ObfEs5CMj
+	 rUzOGdvCkEkWxK4hetRJf1ZzpHbeOUOEOLWDnGvLDXBT4EljeIB497mq+WqpAZAMZXsZK
+	 6G1iCepEHJwRJTv20zZWApMe9MHwmCUTzx3nNYOCsritIyRmvA/7Txry/1U8crmrPYw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=mkLDoAVu;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=IlLzR2In;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=telus.net;
+	spf=pass smtp.mailfrom=telus.net;
+	dkim=pass header.d=telus.net header.i=@telus.net header.a=rsa-sha256 header.s=google header.b=dXf3FYtH;
+	arc=none smtp.remote-ip=209.85.215.173
+Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECCC7606A31E
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 16:18:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org ECCC7606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C5ED606A330
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 16:36:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5C5ED606A330
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=telus.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=telus.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=mkLDoAVu;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=IlLzR2In
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69RFKw3G3655228
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 16:18:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	IGDTuUyORqQ9ZtkZ7BRn3HYpiHLzxyIKFVLh6zS3w3s=; b=mkLDoAVufykMfXU9
-	b0wNwshi/OOFS1fGs2PUhkkdJTgKHecVqhmTkGvP5r4qVsM+99YVbuqYp42UzZBm
-	2TI4maBCJKRfRPZLpK4EHZrA4GQCiz0sUK0TDussji1lhYQpdcZ+ik3hIJgvxnM0
-	hZWRaYnTqGItcNiX0Kw7f9A/6jtt8D68cwLTH4CWc1agJ6uhZHLwqnGJA7wS3xzb
-	vyELDZ4MGuWT4alpDXCC/oZm6s0T+j2wvi/ooq5od9IlQ9oV1WXkYa8UMu1FHjnR
-	88tcaYIVwMLXmirQuw4xV27zS3jA/EgftwetVNFFnLWWu1MMo7IZQzPRqk+ELF69
-	G8yO2w==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hjh91bge6-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 16:18:08 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93caf7856ffso1027618985a.3
-        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 09:18:07 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=telus.net header.i=@telus.net header.a=rsa-sha256 header.s=google header.b=dXf3FYtH
+Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-cd3310348d2so553958a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 09:36:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793117887; x=1793722687; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+        d=telus.net; s=google; t=1793119016; x=1793723816; darn=vger.kernel.org;
+        h=thread-index:content-language:content-transfer-encoding
+         :content-type:mime-version:message-id:date:subject:in-reply-to
+         :references:cc:to:from:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=IGDTuUyORqQ9ZtkZ7BRn3HYpiHLzxyIKFVLh6zS3w3s=;
-        b=IlLzR2InH2CS98YhZBCaotjhyEygpybW1CmPXgAkPnGDOyPDXOV3gh0D+loR79QpFg
-         k0RNJHqPL35aU+JSC13lBbScU3nKaSVlIiq4h0WxDuJT0bAiQztzlTVd/Z+l32W5Em3O
-         dxtqhznm4Ydsf8oLJitYAVWC7eeS9HGuU+WGJtGL4XuHvlgKMaNxuPPKvJ5f5Q8Zbjh5
-         E21UoR/9IoYX8du5rXjH7b1bSrDqDYpTZLA6Gl6kUvNtYrd4CIr1taUCGxvCLbb9fVu/
-         fS1Ue5Nw9IbMR/0vQS9LHKoEwf++0jm4PA8qlntLZV1rm0n9iClTMG5lGWeIuLi0poLT
-         0+Kw==
+        bh=DgyxaXcpCEgbpB6+0qEWI5ndWEratI/KZGAOF1/cwnc=;
+        b=dXf3FYtHi6EApSS+succvYZUloGyMtcGm4itBNRUej+p2wUz1PdvJWyWBnHlS7IXyW
+         Wvwc+7ohJcYWd7giLzyglW+KZ8S+dVpgaikh7JwqEQS9g3EF/eYF3mWEp89abTEdlQIT
+         55iceKE5kDWXGvUrjlfoFiFN1aCibgH9B5n3IIqpxZ4f5t6nnq+OfOlK5UzK4GQ82KFv
+         htE1xuXoMEYndJO5bmTbKpUTfY/6vCeF7IQsGi9sN6UOjSVxVAMTcwzseyF3yLhVEevY
+         UTH19XCQvW+efQsT+IH822A968wBB8gp1u6h8vMAuqyZaOFNMTNQOn9tVIt9Ry3lvHIJ
+         V2aQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793117887; x=1793722687;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IGDTuUyORqQ9ZtkZ7BRn3HYpiHLzxyIKFVLh6zS3w3s=;
-        b=H12xWzZOpyQsvkpb311Wc4KbWtMRNzh9TrtD9OqlxuheXFwf30IHe9/FVn6LZTVnFF
-         ZMPGkSxfzumwW7+2jCljnohqmkyeJ6+5njA88h3OVsGc3aa5ker0T5kz++Zl3y+2/Xrj
-         YKAbeGzgYga6FUD44amyeleorEau9LmoNAUaH+iYEtu11FpXRoG/eNNfHtU6GvSY4TdS
-         Ohve7EzywdVpnysl92zQDXrpolxaGvWOVi1rGqoi4WM3ahrZUPHCoN6P0cVItTNP8ovA
-         lEH5IQJSAcLvHu8HfEe2emy/NaKrktkDUgkcCWo3eGrjqVyAyHek0bqbJ27CtZdYsYC0
-         Aa6Q==
-X-Forwarded-Encrypted: i=1; AKwUvBy7TFKmyOcuPDQivf+4KsXqCB7tIqf4PlVLXmn+uAYznN931JBJ7CQNCRkASEtF/JCpiGLQogVoTA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLo7Y2mQDO2YVP+V//YPu7XHGXNSeYcFIWZgtXvpYuozYMUjyrB
-	reGEHkBHbMw5CQLxr68EsS2/pmYjNJO07f6H56HmDC+wfGmaxmo0Rpu5iE3EG/Dnp0pw2lcJdTa
-	jCb7Y0vSBDWYQ35TxFUUE4hn79T7Oubsv+ptojzT/l1yISUExrn0fXYuFMiTZbw==
-X-Gm-Gg: AYBFou0xvDRxSu2ds6H9l1RxOZ/enmUMAgSsWW4S6/NtjIJ16rdAIThE1Ke3CGw12+m
-	4j3tzWHRUnUtmA5WdBwcW/bSi4b+lM2zH7Yx3JeWayhbtTZOkJvvpliOR5mPwDnptNNbY/gGSMQ
-	nMEeCY0pXvxCSmAWHJu0jKPqjToL3ncx31XDhu5XIBaseEU1O8FQhhAtvrhIdhGZuUq1RFmpuR4
-	hAdIwVnd3aozeurFQ4IGqlAWq5VDml1ix+gOAUVwA47bJgnWQQ+a3+w7WCV46xzl5zFj7Cz30Gu
-	pvCUcm4/+F5D28ZmrwrlY3fde734BrmLJAt/gnvOHsgO/lnIWwYTMBO1ROs+yDupfje7SaIuBwP
-	wNpVtnpqIRX8FiuVLZ1Lo/BSHQOOVzNTNaMVSw1hpGmFv0pk2OWvBSPhnoCWAxA==
-X-Received: by 2002:a05:620a:2b91:b0:93f:6e05:22eb with SMTP id af79cd13be357-940ef8f9253mr1634334785a.48.1793117886949;
-        Tue, 27 Oct 2026 09:18:06 -0700 (PDT)
-X-Received: by 2002:a05:620a:2b91:b0:93f:6e05:22eb with SMTP id af79cd13be357-940ef8f9253mr1634328585a.48.1793117886452;
-        Tue, 27 Oct 2026 09:18:06 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:7d20:e20f:a77f:4ef7? ([2a05:6e02:1041:c10:7d20:e20f:a77f:4ef7])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ecd8ddasm25927477f8f.48.2026.10.27.09.18.05
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 27 Oct 2026 09:18:05 -0700 (PDT)
-Message-ID: <8e53d1a3-fc96-4d07-8be7-74f383ed3618@oss.qualcomm.com>
-Date: Tue, 27 Oct 2026 17:18:04 +0100
+        d=1e100.net; s=20260707; t=1793119016; x=1793723816;
+        h=thread-index:content-language:content-transfer-encoding
+         :content-type:mime-version:message-id:date:subject:in-reply-to
+         :references:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=DgyxaXcpCEgbpB6+0qEWI5ndWEratI/KZGAOF1/cwnc=;
+        b=d3oR9B7xUi+nDwpOT+SwQXjwFx9dgwMg97dcm2bJyS2pTJi9VHxBXifYPNYkYQqs9e
+         oMcBhK4rL6Oo5JHHakEPqSXLwV7UDqBHUjMf1mqAnOrosbHHYpRs1sPfGNC0Qdxat2eT
+         4uS7yX1jErHGIsKq51KG+Dxszq4uCdAc6Y89Rpn+xqBG6qph+sKqtQbGL4DQZQFwe93F
+         sfzj1f5vgUFRFHgx8L+ES+fEnEMhbrMLfSN5FxC/mi/jpxg+oTo77+Vfe4485GDDKGgp
+         nNYcIk+zDSbNiq4rcOYHT0aQl9uB9qorH6znuBMvoP4bAyrndB9PEgjh+0kSYxiFSkGa
+         dcbg==
+X-Forwarded-Encrypted: i=1; AKwUvBxys+urucWRYXOgzYc8ln1vsp3+fj6hq/FQdvfDLYgyg58vvfop1htzlcIvwb4NMD8nwoqUwpD6hQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYL73R8L3d8bYQTkg2E/pv3WrwjNsytCdNmEYBMR0YHGRl4v1Fql
+	hWmtWQcXmCKnShJrEK2hzSvptDz3xlnx8mKy6f9ZRww77nnL1PeT8nYgGDm4e/tNzHc=
+X-Gm-Gg: AYBFou34ihk8rZhQ5BSLcbUpprQioNM+cl6d6ENuKxE+BUyctXj53VUl0Pd+E+B0Bu2
+	bJF3rk1Ycddo9B37uPYOW9fM0iKMu0S/I099OOxPQM9lfRsVMMpLipY/+MzVlaWYCzoA4lXewf8
+	/oHHfA9t7m4/gy2SponU8qR+KM2ebWsZc78WORp5GRK00LQRlpiypCDjEoFoELH9hdrY03sH2Vl
+	26dARzhJjumk17PRDh95zMrSUQSdiD/TIfM8kl5m+0D6u+ZLXtDA4Z3qddEVmYNJJ8WIcV0unO/
+	7cTwqGqDoD9Dok4LyeWWrgJNMZIiDM2CTFNY/zyVaPM4xkFfpwUYGSD4NnEq8XrNxx4p8/6cTrN
+	EjASty+6tygS+GPjkTm67NzygvQeJwVm+4LXgSYwdcHxIQVH6KkKNatNJLHlNkAzo17tQcnX/7i
+	uPNjB7BpCii4vN5yoqG9YlyfnxMVGrNoShi0qZVjY1zsJeA8gyPrW1XBIR4nxclvegdOIGfQlrp
+	vmYG0VIERxQi2lO8Gms/1/nxQYbt8If8oo6xNi0C1LjTH/SvVnDFKIiFAAbJfk=
+X-Received: by 2002:a17:90b:582f:b0:3a6:e159:a229 with SMTP id 98e67ed59e1d1-3ae40443725mr1880815a91.49.1793119015745;
+        Tue, 27 Oct 2026 09:36:55 -0700 (PDT)
+Received: from DougS18 ([66.183.142.209])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cd8ccc90d74sm3015675a12.20.2026.10.27.09.36.54
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 27 Oct 2026 09:36:55 -0700 (PDT)
+From: "Doug Smythies" <dsmythies@telus.net>
+To: "'Zak'" <zakbrightonknight@gmail.com>,
+	<linux-pm@vger.kernel.org>,
+	"'Rafael J. Wysocki'" <rafael@kernel.org>,
+	"'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>
+Cc: "'Len Brown'" <lenb@kernel.org>,
+	"'Viresh Kumar'" <viresh.kumar@linaro.org>,
+	<linux-kernel@vger.kernel.org>,
+	<stable@vger.kernel.org>,
+	"Doug Smythies" <dsmythies@telus.net>
+References: <20261027143725.3763827-1-zakbrightonknight@gmail.com>
+In-Reply-To: <20261027143725.3763827-1-zakbrightonknight@gmail.com>
+Subject: RE: [PATCH] cpufreq: intel_pstate: Restore P-state request on resume without HWP
+Date: Tue, 27 Oct 2026 09:36:55 -0700
+Message-ID: <001101dd6631$6167dbd0$24379370$@telus.net>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -115,97 +104,124 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/6] selftests/powercap: Add powercap hierarchy
- creation API tests
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Heiko Stuebner <heiko@sntech.de>, Shuah Khan <shuah@kernel.org>,
-        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org, linux-kselftest@vger.kernel.org,
-        Thomas Huth <thuth@redhat.com>, Vasily Gorbik <gor@linux.ibm.com>
-References: <cover.1792504834.git.daniel.lezcano@oss.qualcomm.com>
- <83799bf79e85e9e2ab77140e632f11d96b17a04f.1792504834.git.daniel.lezcano@oss.qualcomm.com>
- <CAJZ5v0gSLOP4KN3bNB425SaYOLcpJ1c3t5isYEQAdvxqQR0sVQ@mail.gmail.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <CAJZ5v0gSLOP4KN3bNB425SaYOLcpJ1c3t5isYEQAdvxqQR0sVQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: _00ldwDPzpVbB0gxFWRAnT0KRc2klKHH
-X-Proofpoint-GUID: _00ldwDPzpVbB0gxFWRAnT0KRc2klKHH
-X-Authority-Analysis: v=2.4 cv=TuxzFzXh c=1 sm=1 tr=0 ts=6ae0cec0 cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22 a=bC-a23v3AAAA:8
- a=EUspDBNiAAAA:8 a=c92rfblmAAAA:8 a=82gYmaJqspjqQrwE4UoA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=IoWCM6iH3mJn3m4BftBB:22 a=FO4_E8m0qiDe52t0p3_H:22
- a=GvGzcOZaWPEFPQC_NcjD:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI3MDA2NCBTYWx0ZWRfX6yF+d7HtREB/
- 9P0w71dzQ/UkcNWuElm+jaNK6Qga8QquGLDmi+GfDtAOZSuhEWVpYKj9WWKvdGIXa/akfYe8deK
- UlBeaUF/urNtT8C7moMiOV3MYwyWqDpfEhDzko1D4Kqorabl/njzjd6j4cIbLUTAQJdIZdCH8jz
- Xd23Q1fEgVnXQ2xQrJaizrEnzjeNKrxMUusRzOjwBIDPEEUKIIOQd83BmKDH3Na5Q9CBMyCXOlt
- T+Z9xEE79b7sJB1HMGeNLSE33uXsqMXf2oAOsrnX/NlD6xvlXUgL/guj3hT1li4+1BXA+RR3LHs
- wkQr7HFMeyAkiebVlrQV+XZBywIy20RPtsFOOEh4JDmhpU7ibxMyCcH45iQHBdH04N5PdDpAekl
- yOD2Rb91QqraYdC6CmKTdevJeDnznWkwMDv9JURmw3E/P++9D1JaHdY9nhx3FLSbJsnveB8F3u6
- y8RUCNevC6D7zmhTQRw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI3MDA2NCBTYWx0ZWRfXyI+Tc3D671cD
- yskifR15imzz/rbzuitFtHawM6qbCluhp8KhGr5NnVwhm+fTS6KxVoHUQ4lY+YNyGPgC27IshRd
- gAWVpfIXqw67ajx1NLXNngITkaGLKdE=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-27_03,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 spamscore=0 priorityscore=1501 bulkscore=0
- adultscore=0 suspectscore=0 lowpriorityscore=0 impostorscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610270064
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Outlook 16.0
+Content-Language: en-ca
+Thread-Index: AQG+ka4iSAouj32QbdBtcmCOlo9WerdPO5KA
 
-On 10/27/26 17:10, Rafael J. Wysocki (Intel) wrote:
-> On Tue, Oct 20, 2026 at 4:18 PM Daniel Lezcano
-> <daniel.lezcano@oss.qualcomm.com> wrote:
->>
->> The powercap hierarchy API introduces generic helpers to duplicate,
->> instantiate and destroy a complete powercap hierarchy from a static
->> description.
->>
->> Add a kselftest exercising this API. The test builds a synthetic
->> powercap hierarchy composed of a package, three CPU clusters and twelve
->> CPUs, registers it as a powercap control type and checks the zone count
->> and selected sysfs attribute values. It also checks that the controller
->> directory disappears when the module is unloaded.
->>
->> Exercise direct static creation, duplication, skipped clusters and their
->> descendants, reuse after partial destruction, and repeated creation
->> returning -EBUSY without replacing existing zone pointers. Callback
->> checks verify the controller, name and backend-private data supplied by
->> the helpers.
->>
->> The test consists of:
->>
->> * a kernel module implementing a synthetic powercap hierarchy and
->>    dummy callbacks;
->> * a userspace kselftest script that loads the module, checks 16 zones
->>    and their power and constraint attributes, unloads the module with an
->>    attribute descriptor open, and checks controller removal.
->>
->> Use powercap-owned zone allocations so registration failures are cleaned
->> up by the core. Build generated module files in the selftest output
->> directory and extend the common clean target with Kbuild module cleanup.
->>
->> This provides a regression test for the powercap hierarchy helpers and
->> their integration with the powercap core.
->>
->> Cc: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
->> Link: https://patch.msgid.link/20260806110159.69690-3-daniel.lezcano@oss.qualcomm.com
->> Assisted-by: LLM
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> 
-> Sashiko is complaining about this one now:
-> 
-> https://sashiko.dev/#/patchset/cover.1792504834.git.daniel.lezcano%40oss.qualcomm.com
+On 2026.10.27 07:37 Zak Brighton Knight wrote:
 
-Thanks, I'll have a look
+> From: Zak Brighton Knight <zakbrightonknight@gmail.com>
+>
+> On a ThinkPad T520 with an i7-3840QM (Ivy Bridge) running coreboot,
+> the CPUs stop using turbo after every suspend to RAM when intel_pstate
+> is in passive mode with the performance governor: they stay at the
+> 2.8 GHz base frequency instead of boosting up to 3.8 GHz, until the
+> policy limits change or the system is rebooted.
+> 
+> During resume, the firmware sets each CPU's P-state request register,
+> MSR_IA32_PERF_CTL, to the base ratio (28), and the kernel never writes
+> the requested turbo ratio (38) again.  Without hardware-managed
+> P-states (HWP), intel_pstate caches the last P-state it wrote and
+> skips writes that would not change it.  In passive mode the cpufreq
+> core also skips requests for the frequency it believes is already set
+> (policy->cur), because intel_cpufreq sets CPUFREQ_NEED_UPDATE_LIMITS
+> only with HWP.  Neither cached value is updated across suspend and
+> resume, so as long as the governor keeps requesting the same P-state,
+> as the performance governor always does, the register is never
+> rewritten.  Governors that change the request often, such as
+> schedutil, mostly hide the problem.
+>
+> Fix this by writing the cached P-state back to the register in
+> intel_pstate_resume() when HWP is not used, as is already done for
+> the HWP request when it is.
+>
+> The problem was found and root-caused, and this patch was drafted, with
+> the help of an AI coding assistant (Claude, by Anthropic) during a
+> performance review of the machine described above.
+>
+> Fixes: 001c76f05b01 ("cpufreq: intel_pstate: Generic governors support")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Zak Brighton Knight <zakbrightonknight@gmail.com>
+> ---
+> Tested on the T520 (i7-3840QM, no HWP, coreboot 24.08 with SeaBIOS)
+> with v7.3 plus this patch and a temporary module parameter, not part
+> of this patch, to turn the fix off.  intel_pstate.c is the same in
+> v7.3 and in the base commit below.
+>
+> Each row is one suspend to RAM and resume (rtcwake -m mem -s 25).
+> "Request" is the P-state read back from PERF_CTL on all eight CPUs
+> 5 and 17 seconds after resume; "clock" is the measured speed of a
+> single-threaded busy loop.  Before every suspend, all CPUs requested
+> 38 and the clock was about 3.8 GHz.
+>
+>  mode     governor     fix  request after resume  clock
+>  passive  performance  on   38 on all CPUs        3.8 GHz
+>  passive  performance  off  28 on all CPUs        2.8 GHz
+>  active   performance  off  38 on all CPUs        3.8 GHz
+>  active   performance  on   38 on all CPUs        3.8 GHz
+>
+> The passive-mode failure was also reproduced twice on Fedora's 7.2.11
+> kernel.  In active mode the request was back at 38 after resume even
+> without the fix, so on this machine the fix only makes a difference in
+> passive mode, the default without HWP.
+>
+> Not tested: systems with HWP (their code path is unchanged, only
+> restructured), other machines and firmware, and suspend-to-idle.  The
+> patch adds no warnings with W=1; sparse was not run.  The tests were
+> scripted and run by the same AI assistant.
+>
+> drivers/cpufreq/intel_pstate.c | 16 +++++++++++++---
+> 1 file changed, 13 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 17158cb..53db91a 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1371,6 +1371,7 @@ static void set_power_ctl_ee_state(bool input)
+>  }
+> 
+>  static void intel_pstate_hwp_enable(struct cpudata *cpudata);
+> +static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate);
+> 
+>  static void intel_pstate_hwp_reenable(struct cpudata *cpu)
+>  {
+> @@ -1404,11 +1405,20 @@ static int intel_pstate_resume(struct cpufreq_policy *policy)
+>  	else if (power_ctl_ee_state == POWER_CTL_EE_DISABLE)
+>  		set_power_ctl_ee_state(false);
+> 
+> -	if (cpu->suspended && hwp_active) {
+> +	if (cpu->suspended) {
+> 		mutex_lock(&intel_pstate_limits_lock);
+> 
+> -		/* Re-enable HWP, because "online" has not done that. */
+> -		intel_pstate_hwp_reenable(cpu);
+> +		if (hwp_active) {
+> +			/* Re-enable HWP, because "online" has not done that. */
+> +			intel_pstate_hwp_reenable(cpu);
+> +		} else {
+> +			/*
+> +			 * PERF_CTL may have been changed by the platform
+> +			 * firmware, but it is only written when the requested
+> +			 * P-state changes, so restore it explicitly.
+> +			 */
+> +			intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate);
+> +		}
+> 
+> 		mutex_unlock(&intel_pstate_limits_lock);
+> 	}
+>
+> base-commit: d135ab453a7400a34930bdda1ef4bdc8acfac80e
+> -- 
+> 2.56.0
+
+I confirm your findings and tested your proposed patch. It all worked fine.
+I had not seen Rafaels's reply about a possible race condition until now.
+
+Test computer: i5-10600K, 6 cores, 12 CPUs, HWP disabled.
+
+... Doug
+
 
