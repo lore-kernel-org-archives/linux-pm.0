@@ -1,99 +1,53 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.53
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=5.75.144.95
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793107076;
-	b=22d/eX06fsa8+dKQ1GNKO1J1+usUvJgeAO1RwkNfzbjFGnzHOBOtF2HArDCMG//sBRR3
-	 6+u2QgPX2v4WUUUtZ+kDvzjFvlQYbxZ/GP/xCZESTrm+9qVns1MiSfFByxuM5yAo1a0VR
-	 6w0OpaoaB1bJrrYT9Qfa7WcJQyVElPUJo5evqc7XTLeZtI+W/uXvjYB1dX4zTMdKxNkI0
-	 ndXE2HDURHIOfICWycLn1fZ0sRukWI4ldvOUOG9VsgZUfmkCYH0GazDEfO7GhkibDYdf2
-	 dwDvY1CUL0HzVIy4rg9QbCUdnbciPxjhf+Q3/SEbOAmQJiCD/rLsxla3wUNo0hWERpw==
+	t=1793107346;
+	b=GnaRgoXht2wiE3F2o95l96QrJVYqD+bc14BAjy9A+9EVMc0oNkTY+epZm69IzKqTj8OA
+	 TOCfQL6DdsxJxh/u1mEXAZ7mbCObfOWWjJZu+VacQbzy1atTcgCUBteHrArwWmrbC1ACn
+	 1KYoH6JyQdr+0zOGO+ZYgsafVgG9HIpohrJ8hjjNjKE0YaCYCW2GPEvyB8AAj+IREIzEV
+	 qqRxz4k78faNz43hW6cU9bexzqq/PWJfc2d9fhd9lSqFmp2ThwlM+mMw03FIDm87v9lbw
+	 XAx3+X2dcSKKt/ny1gJjiBTeEqVeLohu/2CBunAU0S83qjvE1FfbJRAWkodjFCsFIzQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793107076;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=jjDyecQnnlL5whA8K/QC/fRj9uMASe5xPr8cb11QCas=;
-	b=e1r8DNpHoGodzeBfS/T50tgwRWHcfACI98SKmSTCkbe54ynhrfwarHQdXgDfYpd6FIfW
-	 fdbcDe4Hd8HPkE6dewE3tYAlun18sKoaNL66kmdP0nzaED8g8NP3c7s+4Pjd8RMT0b9ja
-	 Qsabl5Z2i2xYHHT7/YAgB1YkJ++AiH0CzIFc2cIh/wX3/f+iufYzyuSfUnWrTRU/6moHb
-	 rj3MX2OFqKsi4xS+zhOxRSjs99mXp9jUdyBdgFXCTd0VmT8i71oJEfjrCCkxH2aEtoxlY
-	 MuGpJxZVTZtDuwFLphIwrrI/Jp2D5gGNekBfo3giYGGcTo4ec8drGnnLf0X5dLkSuHQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793107346;
+	h=DMARC-Filter:DKIM-Signature:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:From:
+	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=Xj67NiJh2Z4pdwze/JwyyrlvFS2Frq0bavp1aNAOF+Y=;
+	b=y3ZBdxLsPK2WIywQAKyM1BBTH8l6WLOHB/S9yG7WnQSAkUgb91lvApRy1qq6gplcSa7M
+	 pFs+cqvymC9x+kiJsjcj7hrVBH2i10cpbOgAENpep1GqKmZfjmT/ZB7tZ4VITsrAqFWnK
+	 b9PF7JRPSihjzwCD5m0v9+Nrr3UmViKTxcVvfUJ2nlVeP4rwcobxqrQMRPvHeNu4YSf5/
+	 V7a6iy45DJcdWXvph4Liy2ZDlHE7WyjAVuxdWlfPmp9zyDbUdpTe1W2tR8dUoIhtQ00yo
+	 +OVrut1YcfWJJgzAo5A8GeN4FMFYeDmsIqUv5J6kPN1kW/s+5dApWrL2LAAl4gRThpw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S1Ohc7D9;
-	arc=none smtp.remote-ip=209.85.160.53
-Received: from mail-oa1-f53.google.com (mail-oa1-f53.google.com [209.85.160.53])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=mainlining.org;
+	spf=pass smtp.mailfrom=mainlining.org;
+	dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=rsa-sha256 header.s=202507r header.b=mxxbttXc;
+	dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=ed25519-sha256 header.s=202507e header.b=eTsWZ5U5;
+	arc=none smtp.remote-ip=5.75.144.95
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 095DD606A321
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 13:17:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 095DD606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B08B606A31D;
+	Tue, 27 Oct 2026 13:22:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9B08B606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S1Ohc7D9
-Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-499f20c7054so2110320fac.0
-        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 06:17:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793107075; x=1793711875; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=jjDyecQnnlL5whA8K/QC/fRj9uMASe5xPr8cb11QCas=;
-        b=S1Ohc7D9yDYO9kTImSEQV/3gSKyDDFiQkKyMj1zVf/+lf30uKRE9GKjYK4VGZmaV2P
-         xrehuLHLkoecRLRMDSCgF9TA6+6uJJE3CbLQ46235dcvvmpeLUeY+V448qODnTcTtmsn
-         zTf8h/J75N9dw9ZtIJrZyIGuYWb9t5Fq0kqjjlk8rC6rXw+vqO0+iPEdrvDuM8ufqMY8
-         wG3WJdqJCtGLmEeDcWjulxoh/OCQIQFMbm3967pMyzSXikqHaHkE3V5u0WSDN4QiZUUn
-         qHSRbPofaTPj98tUiLCrbM3LSvHGfTQ4KP2bAGX7+DRsJCwcqo0arwfDR8e766DKYHDi
-         17JA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793107075; x=1793711875;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=jjDyecQnnlL5whA8K/QC/fRj9uMASe5xPr8cb11QCas=;
-        b=bRq1RggxBgFA0xDKoxwcjP8rH+xUFRZ+trQtJa5eZaCOUh3d16wLNliVEgWpYORxnn
-         6nTF3bJBaFtJnLrBX4vwh9I7FCC+b8xO0b5NcpL+1Fkud07YN4ePjKPJ0CGz8fgDi8SI
-         UCW7cUJLYYMnWqYfWKG6KHOkhea4i/kWuZge+7hzKCDXwPR0BiUGzRkL2hWLMjCahQmE
-         qkW2vCxI1q+kTnOxzMHydqA0easjW3IKLkICrvCEpbDKLlRO7RJuk5ZlFIFkSEKpVuve
-         +LZQowgFrmXAG47WseNhBo1ueyBF97qkXntG6ftJsj3Q3P3UkAMYSu3DxI9k3EYT5JaP
-         I4bA==
-X-Gm-Message-State: AFq9FYJtZ7xmqbfkXYSR1AF49sQ9PUlQXKGmx6/iM2U6dtYMwHHtU6Yk
-	1S4cGI9I0Y8igVh4aT6Cpnb+mhiM/12ERsbwtDOMzLTlaJXcVJHtk2gQMaC7IYD/
-X-Gm-Gg: AYBFou3zSAxi8fNFk6rjK+Xosa8HNP3tlQGYRFFnPPOHVCaX8OEZ/dnhVPuJB2gdzbe
-	UDUqGCiibxSxgtIfkzUbGe4xiX9DyjvjExbSh+YIIX/Jpz98BShM217AseO7FLY/i9nRJb9rpOE
-	nApLMTgQ+wnGAV8qibJoZlEMRkgPsCQt9hKuCGbaQckfnaFPGvsvq6ccX0XADdZR4tUqUQricq/
-	uJfZqDe1O5Wfcu3iThhrN6GxdDmZ3I4hb088fjYy2nDKqkNdU+turUXxhUPASf5tbNaMPmqHfvg
-	X5xG50hhxKVAWZ3s0KtiDtynQo860BYGDowPcwcFiCyHnuZpNtOSCP0ucDnq+xV0BhpLV8RfI8X
-	pgyuzkZM7YvF7XOxPfMA80PUj8qiYyvwBvWMAWjkbv0nNVT8NZdEhtuYf7MVat/lLn+5xJPHGRX
-	xm2D/fvO1L0Pq2BF2cJLNz0RYQEZ/OMjjtSy0cPPyRkUdrUdKHAfGAY/KBaq+ARR//4yTzV9qB0
-	aeE3O1XTv1mpL/RZtK+qx1cR51QAn6st7kF8E8Wkd/Qr1B2HTmVnKGYoUvb9zEbBfUb0lFNMlpL
-	M8ePyAkc3FW8po7Mawi3EegkyZcqhg==
-X-Received: by 2002:a05:6871:739f:b0:48f:e107:3183 with SMTP id 586e51a60fabf-4a83f60f86dmr6853825fac.54.1793107074863;
-        Tue, 27 Oct 2026 06:17:54 -0700 (PDT)
-Received: from neuromancer ([75.28.21.198])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4a8b74c0a7fsm23412fac.2.2026.10.27.06.17.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2026 06:17:54 -0700 (PDT)
-From: Chris Morgan <macroalpha82@gmail.com>
-To: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	heiko@sntech.de,
-	conor+dt@kernel.org,
-	krzk+dt@kernel.org,
-	robh@kernel.org,
-	sre@kernel.org,
-	t.schramm@manjaro.org,
-	Chris Morgan <macromorgan@hotmail.com>
-Subject: [PATCH 1/3] dt-bindings: power: cw2015: add cw2215, cw2217, and cw2218
-Date: Tue, 27 Oct 2026 08:17:49 -0500
-Message-ID: <20261027131751.1724448-2-macroalpha82@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261027131751.1724448-1-macroalpha82@gmail.com>
-References: <20261027131751.1724448-1-macroalpha82@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=mainlining.org header.i=@mainlining.org header.a=rsa-sha256 header.s=202507r header.b=mxxbttXc;
+	dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=ed25519-sha256 header.s=202507e header.b=eTsWZ5U5
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=From:To:Subject:Date:Message-ID; t=1793107318; bh=Xj67NiJh2Z4pdwze/Jwyyrl
+	vFS2Frq0bavp1aNAOF+Y=; b=mxxbttXc1kwRAw4uFr6Joln+wd89lpfwXB3f0rPAO4vYimMZh7
+	jvVbJ/fWa2pt91BX37u4bOR1QAyWdKL/UBi9irf9pvF6r1GsNgAAdAOBCggwJdYbYd8MGYbKBcb
+	IC8a5slECJdOA/6e+GRAJupr0Z3LlxDEoRrOPQqYt5QNtKh2g2rNfHOjHC4IEgG6U7P4aDgRLxE
+	4FrXQHIR1FTK9819rifvTRK2ku6pUXnTGP6noUTAxhSXGTmAep0w/Uo888MdzxZza7w9yo98LAC
+	w5cleacP1J8MXMNn+7DtOuZMy7sgE7iZVCS3leZn1nar8BkA2KG1+SoegpudNixb3pg==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=From:To:Subject:Date:Message-ID; t=1793107318; bh=Xj67NiJh2Z4pdwze/Jwyyrl
+	vFS2Frq0bavp1aNAOF+Y=; b=eTsWZ5U5a1kSPxUaMDFdlMnVdcfluYbi3UyR/neQ+3HarpYrgO
+	xKOLXAksCoxT2sfC1Nn2S6fCPflmtLkTAiCw==;
+Message-ID: <524ccb0f-8880-4552-8549-88a9d68e3faa@mainlining.org>
+Date: Tue, 27 Oct 2026 16:21:55 +0300
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,98 +57,221 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 5/7] arm64: dts: qcom: Add initial support for MSM8952
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Srinivas Kandagatla <srini@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, "Joerg Roedel (AMD)" <joro@8bytes.org>,
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+ Konrad Dybcio <konradybcio@kernel.org>, Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Bjorn Andersson <andersson@kernel.org>,
+ Abel Vesa <abelvesa@kernel.org>, Kees Cook <kees@kernel.org>,
+ Tony Luck <tony.luck@intel.com>, "Guilherme G. Piccoli"
+ <gpiccoli@igalia.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ David Heidelberg <david@ixit.cz>, phone-devel@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, iommu@lists.linux.dev,
+ linux-pm@vger.kernel.org, linux-input@vger.kernel.org
+References: <20261011-msm8952-initial-support-v5-0-1857074992ec@mainlining.org>
+ <20261011-msm8952-initial-support-v5-5-1857074992ec@mainlining.org>
+ <cf9aa65d-5603-425e-b09e-0a5ae86fa551@oss.qualcomm.com>
+From: Muzaffer Kadir <muzafferkadir@mainlining.org>
+Content-Language: en-US
+In-Reply-To: <cf9aa65d-5603-425e-b09e-0a5ae86fa551@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: Chris Morgan <macromorgan@hotmail.com>
+Hi Konrad,
 
-Add bindings for the Cellwise cw2215/cw2217/cw2218 i2C interface
-battery gauge. It is similar in function to the existing cw2015 but
-with a different register layout. Each of the cw2215, cw2217 and cw2218
-only really differ in the minor specs and the hardware ID they display
-when queried. shunt-resistor-micro-ohms is a property in use for
-multiple devices so not appending a vendor prefix to it.
+Thanks a lot for review,
 
-Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
----
- .../bindings/power/supply/cw2015_battery.yaml | 42 +++++++++++++++----
- 1 file changed, 35 insertions(+), 7 deletions(-)
+On Mon, 26 Oct 2026 16:01:49 +0100, Konrad Dybcio wrote:
+> On 10/11/26 6:51 PM, Muzaffer Kadir via B4 Relay wrote:
+>> From: Muzaffer Kadir <muzafferkadir@mainlining.org>
+>>
+>> Add initial support for MSM8952 SoC.
+>>
+>> AI help is used for calculating qfprom nodes.
+>>
+>> Downstream reference for port is [1] which is very lightly modified
+>> version of [2].
+> 
+> Generally this looks good, couple more comments
+> 
+> [...]
+> 
+>> +	soc: soc@0 {
+>> +		compatible = "simple-bus";
+>> +		ranges = <0 0 0 0xffffffff>;
+> 
+> this is equal to `ranges;`
 
-diff --git a/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
-index f7bde324153d..12d2d9a9cf6f 100644
---- a/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
-@@ -14,12 +14,13 @@ description: |
-   phandle in monitored-battery. If specified the driver uses the
-   charge-full-design-microamp-hours property of the battery.
- 
--allOf:
--  - $ref: power-supply.yaml#
--
- properties:
-   compatible:
--    const: cellwise,cw2015
-+    enum:
-+      - cellwise,cw2015
-+      - cellwise,cw2215
-+      - cellwise,cw2217
-+      - cellwise,cw2218
- 
-   reg:
-     maxItems: 1
-@@ -31,8 +32,6 @@ properties:
-       it is to mail two batteries to a test facility of CellWise and receive
-       back a test report with the binary blob.
-     $ref: /schemas/types.yaml#/definitions/uint8-array
--    minItems: 64
--    maxItems: 64
- 
-   cellwise,monitor-interval-ms:
-     description:
-@@ -41,7 +40,14 @@ properties:
- 
-   power-supplies:
-     minItems: 1
--    maxItems: 8 # Should be enough
-+    maxItems: 8  # Should be enough
-+
-+  shunt-resistor-micro-ohms:
-+    description: |
-+      The value, in micro-ohms, of the shunt resistor used for sampling
-+      the battery current.
-+    minimum: 1000000
-+    maximum: 50000000
- 
-   monitored-battery: true
- 
-@@ -49,6 +55,28 @@ required:
-   - compatible
-   - reg
- 
-+allOf:
-+  - $ref: power-supply.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - cellwise,cw2015
-+    then:
-+      properties:
-+        shunt-resistor-micro-ohms: false
-+
-+        cellwise,battery-profile:
-+          minItems: 64
-+          maxItems: 64
-+
-+    else:
-+      properties:
-+        cellwise,battery-profile:
-+          minItems: 80
-+          maxItems: 80
-+
- additionalProperties: false
- 
- examples:
--- 
-2.53.0
+Changing this to empty ranges would make ranges property
+to expect parent and child size-cells and address-cells to
+be equal but root size-cells and address-cells are 2 and soc
+size-cells and address-cells are 1.
 
+The Devicetree Specification describes an empty ranges as:
+"If the property is defined with an <empty> value, it
+specifies that the parent and child address space is identical,
+and no address translation is required."
+(Devicetree Specification v0.4, section 2.3.8)
+
+So this change creates these warnings:
+/soc@0:ranges: empty "ranges" property but its #address-cells (1) differs from / (2)
+/soc@0:ranges: empty "ranges" property but its #size-cells (1) differs from / (2)
+
+I will keep this unchanged.
+
+> 
+> [...]
+> 
+> 
+>> +		sdhc_1: mmc@7824900 {
+>> +			compatible = "qcom,msm8952-sdhci", "qcom,sdhci-msm-v4";
+>> +			reg = <0x07824900 0x500>, <0x07824000 0x800>, <0x7824e00 0x200>;
+>> +			reg-names = "hc", "core", "cqhci";
+> 
+> Please break up these into one-per-line (also for properties below)
+> the last reg entry needs a leading zero
+> 
+> (in general one-per-line is cool)
+> 
+> [...]
+> 
+> 
+>> +		usb: usb@78db000 {
+>> +			compatible = "qcom,ci-hdrc";
+>> +			reg = <0x078db000 0x200>,
+>> +			      <0x078db200 0x200>;
+>> +			interrupts-extended = <&mpm 58 IRQ_TYPE_LEVEL_HIGH>,
+>> +					      <&mpm 49 IRQ_TYPE_LEVEL_HIGH>;
+>> +			clocks = <&gcc GCC_USB_HS_AHB_CLK>,
+>> +				 <&gcc GCC_USB_HS_SYSTEM_CLK>;
+>> +			clock-names = "iface",
+>> +				      "core";
+>> +			assigned-clocks = <&gcc GCC_USB_HS_SYSTEM_CLK>;
+>> +			assigned-clock-rates = <80000000>;
+>> +			resets = <&gcc GCC_USB_HS_BCR>;
+>> +			reset-names = "core";
+>> +			hnp-disable;
+>> +			srp-disable;
+>> +			adp-disable;
+>> +			ahb-burst-config = <0>;
+>> +			dr_mode = "otg";
+> 
+> dr_mode = otg is default - you can drop it
+> 
+> [...]
+> 
+>> +			pll_opp_table_c1: opp-table {
+>> +				compatible = "operating-points-v2";
+>> +
+>> +				opp-499200000 {
+>> +					opp-hz = /bits/ 64 <499200000>;
+>> +				};
+>> +
+>> +				opp-806400000 {
+>> +					opp-hz = /bits/ 64 <806400000>;
+>> +				};
+>> +
+>> +				opp-960000000 {
+>> +					opp-hz = /bits/ 64 <960000000>;
+>> +				};
+>> +
+>> +				opp-1094400000 {
+>> +					opp-hz = /bits/ 64 <1094400000>;
+>> +				};
+>> +
+>> +				opp-1344000000 {
+>> +					opp-hz = /bits/ 64 <1344000000>;
+>> +				};
+>> +
+>> +				opp-1440000000 {
+>> +					opp-hz = /bits/ 64 <1440000000>;
+>> +				};
+>> +
+>> +				opp-1516800000 {
+>> +					opp-hz = /bits/ 64 <1516800000>;
+>> +				};
+>> +
+>> +				opp-1651200000 {
+>> +					opp-hz = /bits/ 64 <1651200000>;
+>> +				};
+> 
+> Drop the last entry for the same reasons you explained
+> 
+> [...]
+> 
+> 
+>> +		a53pll_cci: clock@b1d0000 {
+>> +			compatible = "qcom,msm8939-a53pll";
+> 
+> This needs a 8952-specific compatible (bindings-only fallback
+> is fine)
+> 
+>> +			reg = <0x0b1d0000 0x40>;
+>> +			clocks = <&xo_board>;
+>> +			clock-names = "xo";
+>> +			#clock-cells = <0>;
+>> +		};
+>> +
+>> +		apcs2: mailbox@b1d1000 {
+>> +			compatible = "qcom,msm8939-apcs-kpss-global", "syscon";
+> 
+> Likewise
+>> +			reg = <0x0b1d1000 0x1000>;
+>> +			clocks = <&a53pll_cci>,
+>> +				 <&gcc GPLL0_VOTE>,
+>> +				 <&rpmcc RPM_SMD_XO_CLK_SRC>;
+>> +			clock-names = "pll",
+>> +				      "aux",
+>> +				      "ref";
+>> +			#clock-cells = <0>;
+>> +			#mbox-cells = <1>;
+>> +		};
+>> +
+>> +		adsp: remoteproc@c200000 {
+>> +			compatible = "qcom,msm8996-adsp-pil";
+> 
+> And likewise
+> 
+> also IMEM, DSI, RPMPD, RPMCC
+> 
+> [...]
+> 
+>> +	thermal-zones {
+>> +		aoss0-thermal {
+>> +			polling-delay-passive = <250>;
+> 
+> TSENS sensors are interrupt-driven so you don't need polling
+> 
+> AOSS is surely the wrong name - that hw didn't come until years
+> later than 8952 was released. I can't find a mapping of the
+> sensors for this SoC right now, so either drop these or give them
+> some generic names
+
+Understood, I will change these to generic names
+(excluding known ones from downstream)
+
+> 
+> [...]
+> 
+>> +	timer {
+>> +		compatible = "arm,armv8-timer";
+>> +		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
+>> +			     <GIC_PPI 3 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
+>> +			     <GIC_PPI 4 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
+>> +			     <GIC_PPI 1 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>;
+>> +		clock-frequency = <19200000>;
+> 
+> Drop this property, it's only needed for very broken FWs
+
+For other parts I will change them as requested.
+
+Best Regards,
+Muzaffer Kadir
