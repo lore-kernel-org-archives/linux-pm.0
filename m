@@ -1,51 +1,51 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793115854;
-	b=jfyT8vuG+IbfycS8XmlaIwgDOd7aVUGCdwuke2nlqa+OAGLjKMi8ryop9gzrpJwEmTFe
-	 vGV2I/Zz12tcm59r77amRphbn5ovUgYjtliruTmCvkIf/2P+aUWJ/4+Rt8poarQXPC/5j
-	 8vvEv4YCg8m7bSWRGMBBIE8Uv34LpHMo8ijXkfCpiPNJjYfMpsdsvmcBiEl743z2wRb6i
-	 oQRNLpl8v1OOqCo5w6Tx0mEe95OssmZI8VBlV5NsdwJV+zSQdenPCvio8mj/sjBL/13EZ
-	 8tJ+/hQUi8PdbEY6yAsZLPKut7qXgqoALIh5LB9jtwzUlwoh0VbOvYLxUjPr7ut/BQA==
+	t=1793115855;
+	b=YJZGGqc2Ty866RubH8lOrBGrxxpj/qdNycKZehIHTZsPWKgbgMgswexr2sa7eVxw/1V8
+	 uGFjlPaLYi1c28S8w4S5lFtLzQqfePA6U3Mc6j1MfuHnx1dcSsbp+5leLYhZoKfDptij4
+	 b0K8ZkNYrPGiLhFnJRHiTxtaOLm6Tu0nTiFdvbaKFyP5xC0UlKtHzHqFCQRUcTS/W6zhe
+	 RCDLVkEsGlfnWrL0D059L2Y/jjqDWBYj3zQtQXQDC4mIMSMd4aPweciaaYlmgDSb+FP2Q
+	 0KzkjYYky8bXuaSp3PRh6tw4HhApi5NFfhZnuy3+jiB7EVpvqDWrr1d1syM96fYk+vQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793115854;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793115855;
 	h=Received:DKIM-Signature:Received:Message-ID:User-Agent:Date:From:To:
 	 Cc:Subject:References:MIME-Version:Content-Type;
-	bh=azcg7d1eP1GSCwwf6vHG33FdrWswOi+yIuOTdqpdfFI=;
-	b=wSSaJ9RlKEaj0PJkC/u3VSh3ki13fxZH5vUwagjwnshA0ftSl2885g+Bt5No7LI/bR56
-	 TPeBQmjYWO61HuvbYbFal/b+1HSnFQdN5TeqJsE23XEOjwNdK1VzDuL7kUeYy3zqywj3O
-	 X+owgdg2MuljzTpGK+fbtMuAwDP/S0dk4yPmudZPupQclahxk6FcmeesT6POKGd6//H4m
-	 S1IfUtn0JXjzwa3TCVN1jBwkJWbxgR+rafTiX0Ix386FRiiLFvomYJRYZ1oB1KweaX3E/
-	 d9hWIEZWr2MNHc+fkcINgkKtXW8GaTEKCdTXMNMvfrGjIr8SuqLP1J+JBem+d6bfcOQ==
+	bh=EnDqdoBlLXNNsQWF1PTAQfygtIq8DiYIDOwKN0S5TYo=;
+	b=xbtJo5024VQYK1zULUca5HdA5IM6E8fsgnvb8t8qpBhR/zkLHTPAAfFaGuo44j6pSy/t
+	 s9AYzd6V7UINHSdhTZHUPGRaEaWxYgsJwd11YYI2BBWD2bOXQhQaPZtySQuKKu0ZyYZUy
+	 Ra3VkynqVr8KaThDcfGuuUVeU5eM53Ma0xo+MI880EG0VBUrcjh85uxMGBWxWpHkNstJ2
+	 KNYUBT/sIc/SVK8bfufh5TUeHkbKe/AwSoHnPEnxfyvWCtNWDajGwxeGtikb0VLRStzaH
+	 JhbrPENV8Uv2DyYTy3fKwt0ferhjim5J9kzrDfvz6+6d7jgjSyPRSNDkgdo7//9iIwQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RmZhbbU0;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRTNu4g7;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52998606A329;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1B9606A33F;
 	Tue, 27 Oct 2026 15:44:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RmZhbbU0
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 141061F031E0;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRTNu4g7
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 718051F031E3;
 	Tue, 27 Oct 2026 15:44:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1793115854;
-	bh=azcg7d1eP1GSCwwf6vHG33FdrWswOi+yIuOTdqpdfFI=;
+	bh=EnDqdoBlLXNNsQWF1PTAQfygtIq8DiYIDOwKN0S5TYo=;
 	h=Date:From:To:Cc:Subject:References;
-	b=RmZhbbU0xMF39dlPMHj471aI1Pzkp+I32nSh24gjv327qpWzU7s7VV9ehmUe4iQNj
-	 UyApf1ngkRQLCUDqn0fw07Mviig7WH6AJdutP3yhV8awViS6ysm7mtyniI91Rk2xPl
-	 0lzYKQbWBN0lE6nIS5+RvElHZ8zvVI44Vc//K8/mmdtwOhU0r+MWw4nN+rwNGZvp98
-	 PsY2m+t5ouiWlVRQkOvjcZXRNE0JpbNWr/PGTCvsGbcdmRXg90j4Yn7k8UDdiHosAG
-	 3PB6HbGSniV5mzbDmZTWQpHNOCwrnukDl1Q84p5R3++bYR/RpkW4kjy6S/xZCaa1hu
-	 7G/yhwSD7Ec1A==
+	b=JRTNu4g77Y9W+naHrADfdMOHHQ9syVNyuM9xuMSXf3IuDIeWHdAFsn5XSf+e4kBfC
+	 a5hguQUVEWlTVw0jOJOcIAbOSLJw7XAY7O7x1NyvbIVcFZuf1iKx9xxR9haMcpnMQQ
+	 Dz22lwb0JIesfTJczu36lzaG8VJgEtG/H2KHPfJd5I7cEQcvF/DeTc2cm5LNOX5J6r
+	 vG+5VARedfxaW466FILJdpYspMDYinA+T/0PE3+gsmkoOYK53dL6lNixOTUKparNzU
+	 qBkZvBEN34T6qIx9SOwEasvcNuhC2ZH94OsnAE2mLKvDHnj+0gFDUd0U5dTRt76BYp
+	 Gjd2BmjfO8DFA==
 Received: from rostedt by gandalf with local (Exim 4.100.1)
 	(envelope-from <rostedt@kernel.org>)
-	id 1xLjLR-000000078hO-1ium;
+	id 1xLjLR-000000078iW-3Joy;
 	Tue, 27 Oct 2026 11:44:13 -0400
-Message-ID: <20261027154413.231874596@kernel.org>
+Message-ID: <20261027154413.617192888@kernel.org>
 User-Agent: quilt/0.69
-Date: Tue, 27 Oct 2026 11:37:02 -0400
+Date: Tue, 27 Oct 2026 11:37:04 -0400
 From: Steven Rostedt <rostedt@kernel.org>
 To: linux-kernel@vger.kernel.org,
  linux-trace-kernel@vger.kernel.org
@@ -107,7 +107,7 @@ Cc: Masami Hiramatsu <mhiramat@kernel.org>,
  linux-scsi@vger.kernel.org,
  linux-sctp@vger.kernel.org,
  netdev@vger.kernel.org
-Subject: [PATCH 4/9] dma-buf: Use trace_call__##name() at guarded tracepoint call sites
+Subject: [PATCH 6/9] scsi: ufs: Use trace_call__##name() at guarded tracepoint call sites
 References: <20261027153658.703730257@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -135,28 +135,86 @@ Parts of the original v2 series have already been merged in mainline.
 This patch is being reposted as a follow-up cleanup for the remaining
 unmerged pieces.
 
-Link: https://patch.msgid.link/20260515135927.2238823-1-vineeth@bitbyteword.org
+Link: https://patch.msgid.link/20260515135946.2238888-1-vineeth@bitbyteword.org
 Suggested-by: Steven Rostedt <rostedt@goodmis.org>
 Suggested-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
 Assisted-by: Claude:claude-sonnet-4-6
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- drivers/dma-buf/dma-fence.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ufs/core/ufshcd.c | 31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/dma-buf/dma-fence.c b/drivers/dma-buf/dma-fence.c
-index bd58688b81a7..f7dee2f7c0de 100644
---- a/drivers/dma-buf/dma-fence.c
-+++ b/drivers/dma-buf/dma-fence.c
-@@ -554,7 +554,7 @@ dma_fence_wait_timeout(struct dma_fence *fence, bool intr, signed long timeout)
+diff --git a/drivers/ufs/core/ufshcd.c b/drivers/ufs/core/ufshcd.c
+index cc75384c6502..7a169cf0093b 100644
+--- a/drivers/ufs/core/ufshcd.c
++++ b/drivers/ufs/core/ufshcd.c
+@@ -421,8 +421,8 @@ static void ufshcd_add_cmd_upiu_trace(struct ufs_hba *hba,
+ 	else
+ 		header = &lrb->ucd_rsp_ptr->header;
+ 
+-	trace_ufshcd_upiu(hba, str_t, header, &rq->sc.cdb,
+-			  UFS_TSF_CDB);
++	trace_call__ufshcd_upiu(hba, str_t, header, &rq->sc.cdb,
++			       UFS_TSF_CDB);
+ }
+ 
+ static void ufshcd_add_query_upiu_trace(struct ufs_hba *hba,
+@@ -432,8 +432,8 @@ static void ufshcd_add_query_upiu_trace(struct ufs_hba *hba,
+ 	if (!trace_ufshcd_upiu_enabled())
+ 		return;
+ 
+-	trace_ufshcd_upiu(hba, str_t, &rq_rsp->header,
+-			  &rq_rsp->qr, UFS_TSF_OSF);
++	trace_call__ufshcd_upiu(hba, str_t, &rq_rsp->header,
++			       &rq_rsp->qr, UFS_TSF_OSF);
+ }
+ 
+ static void ufshcd_add_tm_upiu_trace(struct ufs_hba *hba, unsigned int tag,
+@@ -445,15 +445,15 @@ static void ufshcd_add_tm_upiu_trace(struct ufs_hba *hba, unsigned int tag,
+ 		return;
+ 
+ 	if (str_t == UFS_TM_SEND)
+-		trace_ufshcd_upiu(hba, str_t,
+-				  &descp->upiu_req.req_header,
+-				  &descp->upiu_req.input_param1,
+-				  UFS_TSF_TM_INPUT);
++		trace_call__ufshcd_upiu(hba, str_t,
++					&descp->upiu_req.req_header,
++					&descp->upiu_req.input_param1,
++					UFS_TSF_TM_INPUT);
+ 	else
+-		trace_ufshcd_upiu(hba, str_t,
+-				  &descp->upiu_rsp.rsp_header,
+-				  &descp->upiu_rsp.output_param1,
+-				  UFS_TSF_TM_OUTPUT);
++		trace_call__ufshcd_upiu(hba, str_t,
++					&descp->upiu_rsp.rsp_header,
++					&descp->upiu_rsp.output_param1,
++					UFS_TSF_TM_OUTPUT);
+ }
+ 
+ static void ufshcd_add_uic_command_trace(struct ufs_hba *hba,
+@@ -477,7 +477,7 @@ static void ufshcd_add_uic_command_trace(struct ufs_hba *hba,
+ 		arg3 = ufshcd_readl(hba, REG_UIC_COMMAND_ARG_3);
  	}
- 	if (trace_dma_fence_wait_end_enabled()) {
- 		rcu_read_lock();
--		trace_dma_fence_wait_end(fence);
-+		trace_call__dma_fence_wait_end(fence);
- 		rcu_read_unlock();
+ 
+-	trace_ufshcd_uic_command(hba, str_t, cmd, arg1, arg2, arg3);
++	trace_call__ufshcd_uic_command(hba, str_t, cmd, arg1, arg2, arg3);
+ }
+ 
+ static void ufshcd_add_command_trace(struct ufs_hba *hba, struct scsi_cmnd *cmd,
+@@ -526,8 +526,9 @@ static void ufshcd_add_command_trace(struct ufs_hba *hba, struct scsi_cmnd *cmd,
+ 	} else {
+ 		doorbell = ufshcd_readl(hba, REG_UTP_TRANSFER_REQ_DOOR_BELL);
  	}
- 	return ret;
+-	trace_ufshcd_command(cmd->device, hba, str_t, tag, doorbell, hwq_id,
+-			     transfer_len, intr, lba, opcode, group_id);
++	trace_call__ufshcd_command(cmd->device, hba, str_t, tag, doorbell,
++				   hwq_id, transfer_len, intr, lba, opcode,
++				   group_id);
+ }
+ 
+ static void ufshcd_print_clk_freqs(struct ufs_hba *hba)
 -- 
 2.53.0
