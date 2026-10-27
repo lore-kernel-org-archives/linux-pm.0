@@ -1,51 +1,51 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1793115855;
-	b=YJZGGqc2Ty866RubH8lOrBGrxxpj/qdNycKZehIHTZsPWKgbgMgswexr2sa7eVxw/1V8
-	 uGFjlPaLYi1c28S8w4S5lFtLzQqfePA6U3Mc6j1MfuHnx1dcSsbp+5leLYhZoKfDptij4
-	 b0K8ZkNYrPGiLhFnJRHiTxtaOLm6Tu0nTiFdvbaKFyP5xC0UlKtHzHqFCQRUcTS/W6zhe
-	 RCDLVkEsGlfnWrL0D059L2Y/jjqDWBYj3zQtQXQDC4mIMSMd4aPweciaaYlmgDSb+FP2Q
-	 0KzkjYYky8bXuaSp3PRh6tw4HhApi5NFfhZnuy3+jiB7EVpvqDWrr1d1syM96fYk+vQ==
+	b=3GEcYfIo7qkbS1I0GMH3f9l5waXHN1fQ9mgdmWy0zT3f7yAXnMXPu538xJFZ7pJOYdX/
+	 4840iaLq2JCLpQa7MqeQ93S4kuqbQgZcShLit3CP6Citq8tyM3O4irsilqce92nHzHrrb
+	 orXZ26d++71/7gp9iLuZrJgJDUyTdsLcKAdSsCx0b4WgcypAue7xCIXh5RhrJPFR1SHUz
+	 WOJGoA/pFB04hLCTmUPOeUaKTyPiuyfhECESHTytr3WzFlHe+n+3/HS5n8BPhgZE5A+cN
+	 bkWff8uKU6cNAnRQsV24/j+QG8aisxzZDiVKh5Q9QWV6UJhymSV3ER0GQgAYhOqDxtQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1793115855;
 	h=Received:DKIM-Signature:Received:Message-ID:User-Agent:Date:From:To:
 	 Cc:Subject:References:MIME-Version:Content-Type;
-	bh=EnDqdoBlLXNNsQWF1PTAQfygtIq8DiYIDOwKN0S5TYo=;
-	b=xbtJo5024VQYK1zULUca5HdA5IM6E8fsgnvb8t8qpBhR/zkLHTPAAfFaGuo44j6pSy/t
-	 s9AYzd6V7UINHSdhTZHUPGRaEaWxYgsJwd11YYI2BBWD2bOXQhQaPZtySQuKKu0ZyYZUy
-	 Ra3VkynqVr8KaThDcfGuuUVeU5eM53Ma0xo+MI880EG0VBUrcjh85uxMGBWxWpHkNstJ2
-	 KNYUBT/sIc/SVK8bfufh5TUeHkbKe/AwSoHnPEnxfyvWCtNWDajGwxeGtikb0VLRStzaH
-	 JhbrPENV8Uv2DyYTy3fKwt0ferhjim5J9kzrDfvz6+6d7jgjSyPRSNDkgdo7//9iIwQ==
+	bh=/z7vULV9ET96OVawlpuKhOOFOEzaoRsKx7ENimt5WTY=;
+	b=4tGC9v1YPOrmhv3E4tuSmGTIH36olEpnskyUp0vPlUAhn7KcceUbwlBPggcv0sPd0Xrm
+	 15TzA8arSEN2A6z1y9SMQcWViRopOuCoWctzunz1OearV9xPY69xNhV7xnD1UgHO3VbmS
+	 26fSlmHa3M6aGvkO01se0KRQIaweYxvQR1taxuDUpA6fsYghAA4wCIzGsi2ogAaUp52rw
+	 +zn1iy7JjugyRwsjSeuV4OLm2iP8KqBFKptUCQljB5eUim10NODgbYuslkTNjqaP0qBvN
+	 kz8kvA6fic1bz9Ev5nNSwqT8npiTlP5khYncGrANge5ddc+s0OyLecf0v9ZbIg5UzFQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRTNu4g7;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jdXfyJo0;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1B9606A33F;
-	Tue, 27 Oct 2026 15:44:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12E1460A261E;
+	Tue, 27 Oct 2026 15:44:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRTNu4g7
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 718051F031E3;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jdXfyJo0
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDEA01F031E1;
 	Tue, 27 Oct 2026 15:44:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793115854;
-	bh=EnDqdoBlLXNNsQWF1PTAQfygtIq8DiYIDOwKN0S5TYo=;
+	s=k20260515; t=1793115855;
+	bh=/z7vULV9ET96OVawlpuKhOOFOEzaoRsKx7ENimt5WTY=;
 	h=Date:From:To:Cc:Subject:References;
-	b=JRTNu4g77Y9W+naHrADfdMOHHQ9syVNyuM9xuMSXf3IuDIeWHdAFsn5XSf+e4kBfC
-	 a5hguQUVEWlTVw0jOJOcIAbOSLJw7XAY7O7x1NyvbIVcFZuf1iKx9xxR9haMcpnMQQ
-	 Dz22lwb0JIesfTJczu36lzaG8VJgEtG/H2KHPfJd5I7cEQcvF/DeTc2cm5LNOX5J6r
-	 vG+5VARedfxaW466FILJdpYspMDYinA+T/0PE3+gsmkoOYK53dL6lNixOTUKparNzU
-	 qBkZvBEN34T6qIx9SOwEasvcNuhC2ZH94OsnAE2mLKvDHnj+0gFDUd0U5dTRt76BYp
-	 Gjd2BmjfO8DFA==
+	b=jdXfyJo0CGxQAq6lrM+rdnAC5kkyIyDGCyaXy8RY12C/xhAmDv3kBWgF640VC9QLr
+	 5ShJWb1/tqFMTWp3gx+4Bu638fVHYryIf65TpGBn9iErS6v5zw4chc+UIqthKMFSol
+	 m7QJgZDgqjgnpl6sFCER7TZcLp5ZqjJm9yTM5hebyb6YNCzPAgGsdwC0gbxsalLn38
+	 6BtLExOerDeAlk2bQKM+UiC1Lxrm5PIavqM9G8sYWMn19MLQ3I2DWjlYV/2TCRcwCQ
+	 2IqeWVq3OUlxSdmQQEVXdpj261/935ndAUdylVs9l3k+qqwUfbv56vUmNl7D9zeeR4
+	 0hWk1S9PZO1eQ==
 Received: from rostedt by gandalf with local (Exim 4.100.1)
 	(envelope-from <rostedt@kernel.org>)
-	id 1xLjLR-000000078iW-3Joy;
-	Tue, 27 Oct 2026 11:44:13 -0400
-Message-ID: <20261027154413.617192888@kernel.org>
+	id 1xLjLS-000000078je-0hhf;
+	Tue, 27 Oct 2026 11:44:14 -0400
+Message-ID: <20261027154413.997660461@kernel.org>
 User-Agent: quilt/0.69
-Date: Tue, 27 Oct 2026 11:37:04 -0400
+Date: Tue, 27 Oct 2026 11:37:06 -0400
 From: Steven Rostedt <rostedt@kernel.org>
 To: linux-kernel@vger.kernel.org,
  linux-trace-kernel@vger.kernel.org
@@ -107,7 +107,8 @@ Cc: Masami Hiramatsu <mhiramat@kernel.org>,
  linux-scsi@vger.kernel.org,
  linux-sctp@vger.kernel.org,
  netdev@vger.kernel.org
-Subject: [PATCH 6/9] scsi: ufs: Use trace_call__##name() at guarded tracepoint call sites
+Subject: [PATCH 8/9] kernel: time, trace: Use trace_call__##name() at guarded tracepoint
+ call sites
 References: <20261027153658.703730257@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -135,86 +136,72 @@ Parts of the original v2 series have already been merged in mainline.
 This patch is being reposted as a follow-up cleanup for the remaining
 unmerged pieces.
 
-Link: https://patch.msgid.link/20260515135946.2238888-1-vineeth@bitbyteword.org
+Link: https://patch.msgid.link/20260515135959.2238922-1-vineeth@bitbyteword.org
 Suggested-by: Steven Rostedt <rostedt@goodmis.org>
 Suggested-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
 Assisted-by: Claude:claude-sonnet-4-6
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- drivers/ufs/core/ufshcd.c | 31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+ kernel/time/tick-sched.c       | 12 ++++++------
+ kernel/trace/trace_benchmark.c |  2 +-
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/ufs/core/ufshcd.c b/drivers/ufs/core/ufshcd.c
-index cc75384c6502..7a169cf0093b 100644
---- a/drivers/ufs/core/ufshcd.c
-+++ b/drivers/ufs/core/ufshcd.c
-@@ -421,8 +421,8 @@ static void ufshcd_add_cmd_upiu_trace(struct ufs_hba *hba,
- 	else
- 		header = &lrb->ucd_rsp_ptr->header;
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 5d53ab18b31a..9bdd49e66acf 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -346,32 +346,32 @@ static bool check_tick_dependency(atomic_t *dep)
+ 		return !!val;
  
--	trace_ufshcd_upiu(hba, str_t, header, &rq->sc.cdb,
--			  UFS_TSF_CDB);
-+	trace_call__ufshcd_upiu(hba, str_t, header, &rq->sc.cdb,
-+			       UFS_TSF_CDB);
- }
- 
- static void ufshcd_add_query_upiu_trace(struct ufs_hba *hba,
-@@ -432,8 +432,8 @@ static void ufshcd_add_query_upiu_trace(struct ufs_hba *hba,
- 	if (!trace_ufshcd_upiu_enabled())
- 		return;
- 
--	trace_ufshcd_upiu(hba, str_t, &rq_rsp->header,
--			  &rq_rsp->qr, UFS_TSF_OSF);
-+	trace_call__ufshcd_upiu(hba, str_t, &rq_rsp->header,
-+			       &rq_rsp->qr, UFS_TSF_OSF);
- }
- 
- static void ufshcd_add_tm_upiu_trace(struct ufs_hba *hba, unsigned int tag,
-@@ -445,15 +445,15 @@ static void ufshcd_add_tm_upiu_trace(struct ufs_hba *hba, unsigned int tag,
- 		return;
- 
- 	if (str_t == UFS_TM_SEND)
--		trace_ufshcd_upiu(hba, str_t,
--				  &descp->upiu_req.req_header,
--				  &descp->upiu_req.input_param1,
--				  UFS_TSF_TM_INPUT);
-+		trace_call__ufshcd_upiu(hba, str_t,
-+					&descp->upiu_req.req_header,
-+					&descp->upiu_req.input_param1,
-+					UFS_TSF_TM_INPUT);
- 	else
--		trace_ufshcd_upiu(hba, str_t,
--				  &descp->upiu_rsp.rsp_header,
--				  &descp->upiu_rsp.output_param1,
--				  UFS_TSF_TM_OUTPUT);
-+		trace_call__ufshcd_upiu(hba, str_t,
-+					&descp->upiu_rsp.rsp_header,
-+					&descp->upiu_rsp.output_param1,
-+					UFS_TSF_TM_OUTPUT);
- }
- 
- static void ufshcd_add_uic_command_trace(struct ufs_hba *hba,
-@@ -477,7 +477,7 @@ static void ufshcd_add_uic_command_trace(struct ufs_hba *hba,
- 		arg3 = ufshcd_readl(hba, REG_UIC_COMMAND_ARG_3);
+ 	if (val & TICK_DEP_MASK_POSIX_TIMER) {
+-		trace_tick_stop(0, TICK_DEP_MASK_POSIX_TIMER);
++		trace_call__tick_stop(0, TICK_DEP_MASK_POSIX_TIMER);
+ 		return true;
  	}
  
--	trace_ufshcd_uic_command(hba, str_t, cmd, arg1, arg2, arg3);
-+	trace_call__ufshcd_uic_command(hba, str_t, cmd, arg1, arg2, arg3);
- }
- 
- static void ufshcd_add_command_trace(struct ufs_hba *hba, struct scsi_cmnd *cmd,
-@@ -526,8 +526,9 @@ static void ufshcd_add_command_trace(struct ufs_hba *hba, struct scsi_cmnd *cmd,
- 	} else {
- 		doorbell = ufshcd_readl(hba, REG_UTP_TRANSFER_REQ_DOOR_BELL);
+ 	if (val & TICK_DEP_MASK_PERF_EVENTS) {
+-		trace_tick_stop(0, TICK_DEP_MASK_PERF_EVENTS);
++		trace_call__tick_stop(0, TICK_DEP_MASK_PERF_EVENTS);
+ 		return true;
  	}
--	trace_ufshcd_command(cmd->device, hba, str_t, tag, doorbell, hwq_id,
--			     transfer_len, intr, lba, opcode, group_id);
-+	trace_call__ufshcd_command(cmd->device, hba, str_t, tag, doorbell,
-+				   hwq_id, transfer_len, intr, lba, opcode,
-+				   group_id);
- }
  
- static void ufshcd_print_clk_freqs(struct ufs_hba *hba)
+ 	if (val & TICK_DEP_MASK_SCHED) {
+-		trace_tick_stop(0, TICK_DEP_MASK_SCHED);
++		trace_call__tick_stop(0, TICK_DEP_MASK_SCHED);
+ 		return true;
+ 	}
+ 
+ 	if (val & TICK_DEP_MASK_CLOCK_UNSTABLE) {
+-		trace_tick_stop(0, TICK_DEP_MASK_CLOCK_UNSTABLE);
++		trace_call__tick_stop(0, TICK_DEP_MASK_CLOCK_UNSTABLE);
+ 		return true;
+ 	}
+ 
+ 	if (val & TICK_DEP_MASK_RCU) {
+-		trace_tick_stop(0, TICK_DEP_MASK_RCU);
++		trace_call__tick_stop(0, TICK_DEP_MASK_RCU);
+ 		return true;
+ 	}
+ 
+ 	if (val & TICK_DEP_MASK_RCU_EXP) {
+-		trace_tick_stop(0, TICK_DEP_MASK_RCU_EXP);
++		trace_call__tick_stop(0, TICK_DEP_MASK_RCU_EXP);
+ 		return true;
+ 	}
+ 
+diff --git a/kernel/trace/trace_benchmark.c b/kernel/trace/trace_benchmark.c
+index e19c32f2a938..189d383934fd 100644
+--- a/kernel/trace/trace_benchmark.c
++++ b/kernel/trace/trace_benchmark.c
+@@ -51,7 +51,7 @@ static void trace_do_benchmark(void)
+ 
+ 	local_irq_disable();
+ 	start = trace_clock_local();
+-	trace_benchmark_event(bm_str, bm_last);
++	trace_call__benchmark_event(bm_str, bm_last);
+ 	stop = trace_clock_local();
+ 	local_irq_enable();
+ 
 -- 
 2.53.0
