@@ -1,101 +1,44 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.45
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793060149;
-	b=CU7Vx+PNzt7GeTq4LilgtkPmO5JA8KwD0WbF0yfUogqt+nLA2fuQn/oz9IPmHjxK5HYc
-	 pkGcP+LPFK6ui2dWrvMIOyq8f2gz4qTdPjn3dV4JEFp+QH26Is/Jb5Ao3h21i5LAKBBAM
-	 XmYuOeFyb7hrhwZu+Qu8YN+EiLs2MkmNXAsBUJi6+ij6IdTJv2+PXhbw1rCSFy0gyy4YW
-	 AFZpkkqtXiAIDeqQEpXHzfqn96/hZeqhTcF/t7ux0u33pKoU14q/yewcpAiluaazEkE+t
-	 6i7lgkmVfQGWkHF1O2wac6oYHC3Jx90KEFr3hT2olQNtmUyU0lSr3gaF/eFCxle59Qw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793060149;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=qKeQmKdHS147YBCUhe6/TQHxqYO/kgxJinnL8fZRSJA=;
-	b=l1JropvIOmExTyXPxrxMRcj/iNwQm7ekDa9cSSokD+zoRt5ijH5+F2Mx95lsvOYzBuJE
-	 eA5s3B0dMxVboX+T1HzM8MRvkVIjIT2Fcm9DTCp2WE5h8RczZD8DwMYeEUJf+jb5rQuC2
-	 QCVNXA66g8gcmSF5JhKFyLHcgOzqMeqVgdkMIv1137+yECsrxP6jvQqKvN2/Yl3OhA0Np
-	 wKAF6IbAXb/c8RKfolkfFcI6Q8uQomov8KJyd0Q2N2fi1f7/pbJkqcabcG8gzeUTkZKSj
-	 Avvk7swFG87ej7oFX6/AJho5CPvT3WHsaN55o8JgQaqzV+NXePEC33g5IB3jGDY4QKQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=s0Wfg3DQ;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.45
-Received: from mail-yx1-f45.google.com (mail-yx1-f45.google.com [74.125.224.45])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=156.224.81.90
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793062408;
+	b=2kPa5IRq7EJvdvjtPewsBKtrzZz6W/PIc41nKPpYlKgPJER8v0sEcGFOUub9YX1e4Elb
+	 necJqfG5Azj6x8h15DxvXe92yZq0HwpiHU6dV7xhSQfpt3MHuO8XxbdFx/lem/g7WLewc
+	 3fDtLj7ddzBJaUXESgaOJbYOC0DV2k8hfBXrU6HrFxbLTcJBJpkUt/nVnAYVQ/CJni777
+	 HPhpS/uf32WjXGktqfyMrTTI5LMEybV2UQmFeB8hDd1uotBQ5IQFFYvWo84eBh1kyakXj
+	 hcKepKE0CAfEPqhNDnwdPKWutXXD+kkMjHFioIRmLympDx01CG4F383Hgog/GIc07+g==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793062408;
+	h=DMARC-Filter:Received:Message-ID:Date:MIME-Version:User-Agent:Cc:
+	 Subject:To:References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:X-HM-Spam-Status:
+	 DKIM-Signature;
+	bh=wghg31XooAJPKL/XTiGnCxCN5pFUy2mBUdUxi6yrLos=;
+	b=hsqc+Gv09Vibsh4zPxQF0+f1hqGEsB+xnje/B5sxXEBwklVJZTP/NAUzYwSpCEROr+kA
+	 3iOP+u1Ar1bp/EYH7+1ts8/IgloPHXyYKxP5LmSOY+1UjRC0lv+AE0F3KHlHz+n0W4Th2
+	 UjGXDRTKoIjqsU8xzcL257v5Zc4tmsGsdDsyVE+e8ivOJp9Mucud9fRZoGvL9iS60Wuwq
+	 Pxf5tFfwgM7LXxTU3EfHNOHRRVKoZ1kLOjPhNEF69gewYqa9hHjRwm6h8wAmTCJ1SbH7o
+	 OQHAVGtkWRjuoj2k2ZjA/VClm7DxoxVV2DogKQVaMmq7dFR1JJiTh3XNzJ9fIvYWD5A==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=rock-chips.com;
+	spf=pass smtp.mailfrom=rock-chips.com;
+	dkim=pass header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=IJsQys7w;
+	arc=none smtp.remote-ip=156.224.81.90
+Received: from mail-m8190.xmail.ntesmail.com (mail-m8190.xmail.ntesmail.com [156.224.81.90])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4706F606A328
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 00:15:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4706F606A328
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 320C1606A31A;
+	Tue, 27 Oct 2026 00:53:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 320C1606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=s0Wfg3DQ
-Received: by mail-yx1-f45.google.com with SMTP id 956f58d0204a3-6798eb0d13fso3790892d50.0
-        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2026 17:15:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793060148; cv=none;
-        d=google.com; s=arc-20260327;
-        b=A8CmRmhrCSOn9YkYNJNX+C330vdHWadYpUY+S8WCVxEGFfVjxkAHSqXmvNKb8XqtfN
-         g4QImP1+d1R+V+aRtWCPifGnQPr8ijkkjsUQ6KqsTc4tFXrSlV7nUHE4gRD3zg5mm2pm
-         KUBYUNoz6z1yqpyfXavRk7gqhzpeLhFwjCFg/CC9Nxs3QnnjqM2kH86RxI+LyNnj2XZk
-         aa8ef2xf7ZOzrYaU49fQuEBdxEOyswbqzH11qs9/KeaDtWmyXg4XqXV7N579iC5HjARP
-         Q3rI4Krlea4PUP3DYvs0B2Pp+GSSlWFVwrKK8zGmO7GkTgxD86jI83VYRY0hAYafGKfM
-         wUHA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=qKeQmKdHS147YBCUhe6/TQHxqYO/kgxJinnL8fZRSJA=;
-        fh=dcDCRgxGpGEKcRtD0GxLMVpL115LdWEjkvzcdzNJrUw=;
-        b=PoSyolrpvte4TSTE+VlTP8fZQKsaHRFNLUdLtvdrwBM2E/y5HHdou8HALAAtK8B8jO
-         Rh+CtQqTRlFaPx3DRf9YRuKf5K0fQ16hcx4EKzhk55g26HlHPeKGSzVbN1FLAkKKsV5u
-         +PwSj+yxs7fGDfUzD5o+VNZ/r0pueNzJ2xUG7PH1gTZK3GqFPeSXEKV0Jnkssw2dIAXK
-         FzleLNfd1/oDUliC1wAt0dpvjJk8lSGFZHPiOSd8/PxqWRnnwgV5tCVoXZn+/L6Y4Swb
-         sZvETN/Mqz1wLhrSeMUnpzc3RhnpwOgLdXfFvKPGHm5CGnOF20u4M/X2RkEiK5xXaqP9
-         zwyA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793060148; x=1793664948; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=qKeQmKdHS147YBCUhe6/TQHxqYO/kgxJinnL8fZRSJA=;
-        b=s0Wfg3DQSfdPBtgTrPJ7hEq4HUweU0fxNhhrERYXULKUVGjvojByBZj8KKVt7nRxU+
-         qfuMSheIJo5HVMHmH35pJ0m4FosgwDQvoFqO6hWdyPRkiWPWjpgGD4+44lYarYwcj4p9
-         lwGrCp9TiIJ7Y9Q7o3VLX5IDHtJph2ZfYWK9hb7nwFZcN/EGzSOwKwJdiqW4e4tKM19a
-         TwcHswoqbtz3QUq2JqUArNS2ontBIM0U5Az1Xxt/qvNOY6jlotL5RVH54V4eQYaO9/UJ
-         cfXBJNeZLYP/7FfHZRk1FnPXiW2XAqkAAz+W61A369XeoogwEs/6FcBTuT08s5U96hTP
-         UsKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793060148; x=1793664948;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=qKeQmKdHS147YBCUhe6/TQHxqYO/kgxJinnL8fZRSJA=;
-        b=t6E82Zqr8k8FhfeC2tuNOKI5c4Lb6ftF0mYt2/3PGCZN5jPY6G/Eup/LqjMBhk80mt
-         R6yRSLY2cuR/S79IbXSrMRBuxf6auoLJC0KPQHMAPejTRWInu9Kh+kcl9r9lFyCpe+/+
-         lxLzkiVWXxAdQnLc7ZtEMRMshiOvHrkXZEcodTbz+NLRuNQ4cU3RUL9PMBdajKLfzXai
-         D2mnvzXkbLxEFdseFC1hVpAdYT+Lsv9FwfVrhC8QMHuaLMeeg+0UAG9E1mDq2vBFWRXW
-         FwB7jWdDq0A+/1Ithvch3LGXoL5FycsGQt2aGdIbzKb457KEwir3U+8vye7gTUdecDwO
-         ig+Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxxnJOVX/oy+R9WuenRurWve9wkok1rtgTxTD1SQblCAzUcqHyQnoh4lMTPGMIut/9z/0F9xyjQJg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJc+Mu8f0wmbIeLoepK+XPXC42o2V11hSLUvDoQukckpOKCweEK
-	VpNzZWMF8AYzdQGwhfEkAXyAW02Th0FtKg8PUpAeq0zeNMgUnkoxgAV2g4+/8K3Xuzs83TzHogx
-	KQkItPfxSAGTE6Wq94xS/dwaTbsu5RoA=
-X-Gm-Gg: AYBFou2xzWn2WZOTcgf7sNSotKtBe+jOSQlmV0zaWIV4AFZuaTrLHAamXTFGTjSH7pL
-	6sn8isJ7jeWuZz0SZ8aC7DcIgY3uKIBxrfZ1KwBeLt16LrapBX1ivbp7Ov8krsVGM16gSz/FQtm
-	r7T5ACznE1T9TIEJUCecyqf4gT+vs5mBuJ7AbxMkOQlzMTlUj38FOcCvpm+Wh1PySV0Hvcb71Gv
-	aoU+4VBFafwWryuYzGLlfuAJPbydIJvxZLtmup2R/bG73q6Li79X1+UVg7qO/7BvqLP1UiELOJN
-	IvoxzoycY+vAH96s+rmPbzRb4rBfnUxw3W3+n9fLW4edUhHZyrFYbyjN6lRYu4LeR2w8ukag5aO
-	jRXJOgop1l7Z9TmUMLjUzVyZnPeDNbeD3htavhSUNxLMYlyx+Q8R4yJ6DM1Cicekv839lTrbs5d
-	2TYZkWjJFU6mUJTWE=
-X-Received: by 2002:a05:690e:150f:b0:679:c803:98d1 with SMTP id
- 956f58d0204a3-67a45496c6cmr4080476d50.152.1793060148265; Mon, 26 Oct 2026
- 17:15:48 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=IJsQys7w
+Received: from [172.16.12.48] (unknown [61.154.14.86])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 526e8ceb0;
+	Tue, 27 Oct 2026 08:53:12 +0800 (GMT+08:00)
+Message-ID: <bb38e2c8-1868-4a66-9e0d-78d9f68ab4be@rock-chips.com>
+Date: Tue, 27 Oct 2026 08:53:09 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,172 +48,137 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
- <20261012-dd-cmap-part2-clean-v12-33-3c8cc5725def@gmail.com> <as4W9hToBqAvbzJ-@pathway.suse.cz>
-In-Reply-To: <as4W9hToBqAvbzJ-@pathway.suse.cz>
-From: jim.cromie@gmail.com
-Date: Mon, 26 Oct 2026 18:15:21 -0600
-X-Gm-Features: AclHuK9LH_u23sCYiYKMz0I-9md-phfbwb6JA9KZbhXjHlVRGYmTapsg8H2JBYc
-Message-ID: <CAJfuBxw-cq3AYXKZ07Y3732tDM-NYxt+rs8Fz6S=P7+1TF5WNA@mail.gmail.com>
-Subject: Re: [PATCH v12 33/40] dyndbg: Ignore additional arguments from pr_fmt
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
-	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
-	Aaron Tomlin <atomlin@atomlin.com>, Jonathan Corbet <corbet@net.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Nicolas Schier <nsc@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Steven Rostedt <rostedt@goodmis.org>, John Ogness <john.ogness@linutronix.de>, 
-	Sergey Senozhatsky <senozhatsky@chromium.org>, =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
-	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
-	linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Philipp Hahn <phahn-oss@avm.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Cc: shawn.lin@rock-chips.com, linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+ mfd@lists.linux.dev, linux-gpio@vger.kernel.org, netdev@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-mmc@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com, linux-phy@lists.infradead.org,
+ linux-usb@vger.kernel.org
+Subject: Re: [PATCH 24/27] mmc: dw_mmc-rockchip: Keep RK3572 NVM domain
+ powered
+To: 1579567540@qq.com, Stephen Boyd <sboyd@kernel.org>,
+ Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ Elaine Zhang <zhangqing@rock-chips.com>, Lee Jones <lee@kernel.org>,
+ Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
+ Richard Cochran <richardcochran@gmail.com>, Ulf Hansson <ulfh@kernel.org>,
+ Andi Shyti <andi.shyti@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ David Wu <david.wu@rock-chips.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Maxime Chevallier <maxime.chevallier@bootlin.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Thinh Nguyen <Thinh.Nguyen@synopsys.com>,
+ Jaehoon Chung <jh80.chung@samsung.com>
+References: <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com>
+ <20261022-add-board-ok3572-c-v1-24-0b0fd85a31ee@qq.com>
+From: Shawn Lin <shawn.lin@rock-chips.com>
+In-Reply-To: <20261022-add-board-ok3572-c-v1-24-0b0fd85a31ee@qq.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa17ad8d47003a4kunm11e232fa473cda
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlDTh1CVh1KTR9CSE1LQx4fGFYVFA
+	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSE
+	pKQk1VSktLVUpCWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=IJsQys7w6ZxV+DGACFu7tp6IC2XPPwcJXSelxQSD1vTGjhE9PoZcuZz9xwdeWJyiMmawVu+MEW+G8WAm2iMk67hmhZOiMs56Iq7OGWJB2jXbZ7rtdDSqWunDi5ua9gLF9vWCsJIjLwel7Nty1TbOGwqxXT82cvpybuOOJTauLtE=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=wghg31XooAJPKL/XTiGnCxCN5pFUy2mBUdUxi6yrLos=;
+	h=date:mime-version:subject:message-id:from;
 
-On Tue, Oct 13, 2026 at 5:33=E2=80=AFAM Petr Mladek <pmladek@suse.com> wrot=
-e:
->
-> On Mon 2026-10-12 20:37:04, Jim Cromie via B4 Relay wrote:
-> > From: Philipp Hahn <phahn-oss@avm.de>
-> >
-> > pr_fmt can be used to add a common prefix to any output from a module:
-> >       #define pr_fmt(fmt) KBUILD_MODNAME ".%s " fmt, __func__
-> >
-> > But adding additional arguments breaks dynamic debug:
-> > > error: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" passed 4 arguments, =
-but takes just 3
-> > > |         pr_debug_ratelimited("%s", "Hello world!");
-> > > |                                                  ^
-> > > note: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" defined here
-> > > | #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)       \
-> > > |
-> > > error: =E2=80=98DEFINE_DYNAMIC_DEBUG_METADATA_CLS=E2=80=99 undeclared=
- (first use in this function)
-> > > |         DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT=
-, fmt)
-> > > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->
-> I wonder what this error about undeclared macro means.
->
-> > > note: in expansion of macro =E2=80=98DEFINE_DYNAMIC_DEBUG_METADATA=E2=
-=80=99
-> > > |         DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));    =
-     \
-> > > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > > note: in expansion of macro =E2=80=98pr_debug_ratelimited=E2=80=99
-> > > |         pr_debug_ratelimited("%s", "Hello world!");
-> > > |         ^~~~~~~~~~~~~~~~~~~~
-> >
-> > Add an additional ', ...' to DEFINE_DYNAMIC_DEBUG_METADATA_CLS to slurp
-> > any additional argument, which `pr_fmt` might add.
-> >
-> > --- a/include/linux/dynamic_debug.h
-> > +++ b/include/linux/dynamic_debug.h
-> > @@ -351,7 +351,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor=
-,
-> >               dump_stack();                                   \
-> >  }
-> >
-> > -#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)    \
-> > +#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)       \
-> >       static struct _ddebug  __aligned(8)                     \
-> >       __section("__dyndbg_descs") name =3D {                    \
-> >               .modname =3D KBUILD_MODNAME,                      \
-> > diff --git a/include/linux/printk.h b/include/linux/printk.h
-> > index f594c1266bfd..5d701952e739 100644
-> > --- a/include/linux/printk.h
-> > +++ b/include/linux/printk.h
-> > @@ -742,7 +742,7 @@ do {                                               =
-                       \
-> >       static DEFINE_RATELIMIT_STATE(_rs,                              \
-> >                                     DEFAULT_RATELIMIT_INTERVAL,       \
-> >                                     DEFAULT_RATELIMIT_BURST);         \
-> > -     DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));         \
-> > +     DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, fmt);         \
->
-> IMHO, this changes the existing behavior. The prefix added by
-> pr_fmt() will no longer be stored in DEFINE_DYNAMIC_DEBUG_METADATA().
-> Is this intentional, please?
->
+Hi Cunhao,
 
-yes, its intentional.
+在 2026/10/22 星期四 0:11, Cunhao Lu via B4 Relay 写道:
+> From: Cunhao Lu <1579567540@qq.com>
+> 
+> Power cycling the RK3572 NVM domain causes repeated SD recovery. Keep it
+> powered during runtime suspend without disabling controller runtime PM.
+> 
 
-515a9adce0f0 ("include/linux/printk.h: include pr_fmt in pr_debug_ratelimit=
-ed")
-added pr-fmt to both the METADATA macro call, and to the printk() just belo=
-w it.
-The commit-msg was clearly about adding it to the __dynamic_pr_debug() itse=
-lf,
-the METADATA addition was overzealous.
+Before your v2 about this path, I would like to ask why you need this?
+The dw_mmc-rockchip controller is always under A power domain on every
+SoC, none of the predecessors need this kind of change. If you see
+some errors during RPM, perhaps you should have a look[1] and check your
+DTS.
 
-Removing it brings pr_debug_ratelimited() into conformance with the other
-*_pr_debug_* calls:
-    dynamic_pr_debug, dev_dbg_ratelimited, net_dbg_ratelimited.
+[1] 
+https://lore.kernel.org/linux-mmc/1768524932-163929-1-git-send-email-shawn.lin@rock-chips.com/
 
-and as you noted, this makes the ... variadic unnecessary.
+> Signed-off-by: Cunhao Lu <1579567540@qq.com>
+> ---
+>   drivers/mmc/host/dw_mmc-rockchip.c | 24 ++++++++++++++++++++++++
+>   1 file changed, 24 insertions(+)
+> 
+> diff --git a/drivers/mmc/host/dw_mmc-rockchip.c b/drivers/mmc/host/dw_mmc-rockchip.c
+> index 75c82ff20f177..8bc55d4b996c6 100644
+> --- a/drivers/mmc/host/dw_mmc-rockchip.c
+> +++ b/drivers/mmc/host/dw_mmc-rockchip.c
+> @@ -10,6 +10,7 @@
+>   #include <linux/mmc/host.h>
+>   #include <linux/of_address.h>
+>   #include <linux/mmc/slot-gpio.h>
+> +#include <linux/pm_domain.h>
+>   #include <linux/pm_runtime.h>
+>   #include <linux/slab.h>
+>   
+> @@ -528,6 +529,19 @@ static int dw_mci_rockchip_init(struct dw_mci *host)
+>   	return 0;
+>   }
+>   
+> +static int dw_mci_rk3572_init(struct dw_mci *host)
+> +{
+> +	int ret;
+> +
+> +	/* Power cycling the NVM domain disrupts SDMMC recovery. */
+> +	ret = dev_pm_genpd_rpm_always_on(host->dev, true);
+> +	if (ret && ret != -EOPNOTSUPP)
+> +		dev_warn(host->dev, "failed to keep power domain on: %pe\n",
+> +			 ERR_PTR(ret));
+> +
+> +	return dw_mci_rockchip_init(host);
+> +}
+> +
+>   static const struct dw_mci_drv_data rk2928_drv_data = {
+>   	.init			= dw_mci_rockchip_init,
+>   	.parse_dt		= dw_mci_rk2928_parse_dt,
+> @@ -541,6 +555,14 @@ static const struct dw_mci_drv_data rk3288_drv_data = {
+>   	.init			= dw_mci_rockchip_init,
+>   };
+>   
+> +static const struct dw_mci_drv_data rk3572_drv_data = {
+> +	.common_caps		= MMC_CAP_CMD23,
+> +	.set_ios		= dw_mci_rk3288_set_ios,
+> +	.execute_tuning		= dw_mci_rk3288_execute_tuning,
+> +	.parse_dt		= dw_mci_rk3576_parse_dt,
+> +	.init			= dw_mci_rk3572_init,
+> +};
+> +
+>   static const struct dw_mci_drv_data rk3576_drv_data = {
+>   	.common_caps		= MMC_CAP_CMD23,
+>   	.set_ios		= dw_mci_rk3288_set_ios,
+> @@ -554,6 +576,8 @@ static const struct of_device_id dw_mci_rockchip_match[] = {
+>   		.data = &rk2928_drv_data },
+>   	{ .compatible = "rockchip,rk3288-dw-mshc",
+>   		.data = &rk3288_drv_data },
+> +	{ .compatible = "rockchip,rk3572-dw-mshc",
+> +		.data = &rk3572_drv_data },
+>   	{ .compatible = "rockchip,rk3576-dw-mshc",
+>   		.data = &rk3576_drv_data },
+>   	{},
+> 
 
-Ive added the Fixes: tag accordingly.
-
-thanks for the review & pushback.
-and apologies for the delay, I picked up a FLU shortly after sending v12.
-
-
-
-
-> Anyway, if we do not longer pass pr_fmt(fmt) then we should not
-> need to add "..." into DEFINE_DYNAMIC_DEBUG_METADATA_CLS().
->
-> By other words, we newly pass just the format "fmt" without the parametes=
-.
-> The 4th parameter was added by pr_fmt().
->
->
-> IMHO, the right solution is to keep pr_fmt(fmt) here and extend both
-> BEFINE_DYNAMIC_DEBUG_METADATA() and
-> DEFINE_DYNAMIC_DEBUG_METADATA_CLS()
-> to accept var args. I would expect something like:
->
-> #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)  \
-> ...
->
-> #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)           \
->         DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt,=
- ##__VA_ARGS__)
->
->
-> or maybe, we could "eat" the extra parameters in
-> DEFINE_DYNAMIC_DEBUG_METADATA. It would mean to keep
-> DEFINE_DYNAMIC_DEBUG_METADATA_CLS() as is and just add the "..." into
-> DEFINE_DYNAMIC_DEBUG_METADATA(), aka
->
-> #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)           \
->         DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt)
->
->
-> Or do I miss something, please?
->
-> It is possible that the macros work another way. Or this depends
-> on another change. I checked only this patch...
->
-> Best Regards,
-> Petr
->
-> PS: I was curious what Sashiko says about this change and it seems
->     that it does not review this patchset from some reasons.
-
-I checked shortly after sending, it was "embargoed" for 24 hrs,
-perhaps cuz it was so soon after rc7
-
->
-> >       if (DYNAMIC_DEBUG_BRANCH(descriptor) &&                         \
-> >           __ratelimit(&_rs))                                          \
-> >               __dynamic_pr_debug(&descriptor, pr_fmt(fmt), ##__VA_ARGS_=
-_);    \
