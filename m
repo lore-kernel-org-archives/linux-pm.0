@@ -1,100 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.173
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793119016;
-	b=IpJVo+1WfvbuepC5vhdtj8VjTicV2hAvdiARdOMg4bb/yCX+jI7XfuLX5rA86+38MhXp
-	 AUHXvyiZcNoI5m4TL3C3iMk8/F0eVh9O45e5Jare1kyWVk4kfaEfICdR8MPrBxSE0GJ9q
-	 WUHZnMhPUJN7M+66B3s7WDbXpbg3mrW8tsN+xzasKY/sx/zQFfUcyUU5N8t4hUvbyZz1M
-	 QzvGeL7h3mk1H6dT+CtnnJHZqhGiWak0tFXCh4AF80NnmMS/FsfTn25CK5HLDcO+VY1jf
-	 sXyDNfIqbeEW8NT1pX7xaUCsxMR/6yUt8s8s+RD07Ft6wU/Airw5gNWYFPr1fOzUAeA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793119016;
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=74.125.82.175
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
+	t=1793120966;
+	b=IEMmfVykOX1pXPoyk03X9VzT0bLZtdosLDwaon/8BhaSvBcwCVXSYoDqwdaFyTJblAwb
+	 bGUnCS3a+xa2JHSq7a1vKxUO+93ISc8yJe7PXNwphcf10kcr1vcW9Ddi78toPO6uuS4oA
+	 B0UFHFkO/UC5+gAtUjm1kMM7njpOPFerOMOeEqo8U6W8FxjsnOLr1VbQlvFvi1euSeNa5
+	 ZqClsh96msu2rGxBRqdjgv4hOSD+Aj/ikZPEwDhqHK48/VRc0u4x3wAypI7t/LBmZNMGp
+	 MgAfDmXW7rOdcZXJuv/U7mrsKx8aK2tF2w9cNAdu388vnAs03RTlrIpro+xnmw4DwPw==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793120966;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:References:In-Reply-To:Subject:Date:Message-ID:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:
-	 Content-Language:Thread-Index;
-	bh=DgyxaXcpCEgbpB6+0qEWI5ndWEratI/KZGAOF1/cwnc=;
-	b=anP66ibYyQXDeKVtPhS2K0Lk8qqO5/dMZftpwhNQgjLf4w/w3lNLFJCdztfacQX5o/zy
-	 aR/q9THYvumTfA2fuaI4/Qyr376stJpWeghofLrKWju7iXTLAnKWRjYNAa1/T1ZucPkF1
-	 RTFa8sD8OiHRbUS60mbKuDoD1PD4eGvHaVm/Lkpjq3RSyBMeUW9UnkdXPo7+ObfEs5CMj
-	 rUzOGdvCkEkWxK4hetRJf1ZzpHbeOUOEOLWDnGvLDXBT4EljeIB497mq+WqpAZAMZXsZK
-	 6G1iCepEHJwRJTv20zZWApMe9MHwmCUTzx3nNYOCsritIyRmvA/7Txry/1U8crmrPYw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=telus.net;
-	spf=pass smtp.mailfrom=telus.net;
-	dkim=pass header.d=telus.net header.i=@telus.net header.a=rsa-sha256 header.s=google header.b=dXf3FYtH;
-	arc=none smtp.remote-ip=209.85.215.173
-Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
+	b=BiGePMM3i0bJbBSrqkce/5DEIvHN1hl2f+fWrOEkQ4sdoFMSSjVLX8eYvFeZP5hkR9kW
+	 Me6vvsEzWCoFfOfFscJlTsLKO14FOecvIHHIYvZY4xhdN7+Df2/52rFQlXev51aJf7UmF
+	 l/dH16QEdkTwwNdiai0wdxRgxKZ7VYk1FITc4aW+ogWgPgUoZHnyO05BWnEKzCZVI6hVj
+	 VPpfVEeYMuHuekmH3U7mxvmaznpEnbZMvJEkR+lizKYL0dXE00Q7jEqy3ONVYbGqsPvTo
+	 +ch8+ugWDBmygGwtJ5Z9vG26OeZLVqEQlgStNGCOgrsuDKjY3XRjrwNwH7FtH0K1i5g==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MqoKYkhP;
+	arc=fail smtp.remote-ip=74.125.82.175
+Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C5ED606A330
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 16:36:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5C5ED606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=telus.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=telus.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF450606A31B
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 17:09:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AF450606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=telus.net header.i=@telus.net header.a=rsa-sha256 header.s=google header.b=dXf3FYtH
-Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-cd3310348d2so553958a12.1
-        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 09:36:56 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MqoKYkhP
+Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-36a1865cfdcso6422eec.2
+        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 10:09:25 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793120965; cv=none;
+        d=google.com; s=arc-20260327;
+        b=LqooVEp2M2MuVtxuNxiAwRM9Bt0JVmGa6gqQ8daS+ZEYhh0blg1q+o7YJomrbtDCkv
+         WR4zuBgBFySx7JC2EMns9U9bmwtnLm2MDClP2LhMRXTJ7m5Meba1HG8tNeBJMskYQKBs
+         xfp1A4nZDOQyoDVQZSdMzL44obFNgE66U3HkNXY8VlFZsV0Hc1ua58q0uYpIbOf9hTxR
+         ev1FUPUf+amPQ9DYrxneiBTSOTwMj76le2qOD/kn5t4PIbVmvIWQLr3/2dcBme5HNHu+
+         WqDlr00sxODhm7LG2FJjifaZ5QfgfPVTyumVNEYJoZYAmUdepEtKhTLE3c16bPUXNgP9
+         VUMw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
+        fh=p7Xp1bz9a3PBdn+Fy3aVWMYaTWMLeN+zsmosTNBA4sY=;
+        b=Zj5rO684yJmxctHrNVOsx2pf2wlkvHkr/D2CJ+/avx64jXDG82R07t9lMuKhPliAQW
+         KwbMzEdhnpvxqaOAzuHtDG5NFsJR18Y9GH7DWz+V+5OGVa7euCvUgl3/fdeTTf0ZLdZP
+         cwMOlA+lKKS0s3CK1CvUfj5WbJWybZqffXIYLGqo652usjlZ9grKUgYGf/glXPdMpzwW
+         NyUCnqzYgkpL+uoYbCJFSaVNja26q8yn55uNTcyuTZTqlGL+9b80rF4TiCU/efI6fMe/
+         cRGwaISgUftAS1Vod8oX1+AgonbCNT9Nbu3orwFK3JQyu7v3BtBPN7hL6JNXux+3IXhV
+         fN3A==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=telus.net; s=google; t=1793119016; x=1793723816; darn=vger.kernel.org;
-        h=thread-index:content-language:content-transfer-encoding
-         :content-type:mime-version:message-id:date:subject:in-reply-to
-         :references:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=DgyxaXcpCEgbpB6+0qEWI5ndWEratI/KZGAOF1/cwnc=;
-        b=dXf3FYtHi6EApSS+succvYZUloGyMtcGm4itBNRUej+p2wUz1PdvJWyWBnHlS7IXyW
-         Wvwc+7ohJcYWd7giLzyglW+KZ8S+dVpgaikh7JwqEQS9g3EF/eYF3mWEp89abTEdlQIT
-         55iceKE5kDWXGvUrjlfoFiFN1aCibgH9B5n3IIqpxZ4f5t6nnq+OfOlK5UzK4GQ82KFv
-         htE1xuXoMEYndJO5bmTbKpUTfY/6vCeF7IQsGi9sN6UOjSVxVAMTcwzseyF3yLhVEevY
-         UTH19XCQvW+efQsT+IH822A968wBB8gp1u6h8vMAuqyZaOFNMTNQOn9tVIt9Ry3lvHIJ
-         V2aQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793119016; x=1793723816;
-        h=thread-index:content-language:content-transfer-encoding
-         :content-type:mime-version:message-id:date:subject:in-reply-to
-         :references:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1793120965; x=1793725765; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=DgyxaXcpCEgbpB6+0qEWI5ndWEratI/KZGAOF1/cwnc=;
-        b=d3oR9B7xUi+nDwpOT+SwQXjwFx9dgwMg97dcm2bJyS2pTJi9VHxBXifYPNYkYQqs9e
-         oMcBhK4rL6Oo5JHHakEPqSXLwV7UDqBHUjMf1mqAnOrosbHHYpRs1sPfGNC0Qdxat2eT
-         4uS7yX1jErHGIsKq51KG+Dxszq4uCdAc6Y89Rpn+xqBG6qph+sKqtQbGL4DQZQFwe93F
-         sfzj1f5vgUFRFHgx8L+ES+fEnEMhbrMLfSN5FxC/mi/jpxg+oTo77+Vfe4485GDDKGgp
-         nNYcIk+zDSbNiq4rcOYHT0aQl9uB9qorH6znuBMvoP4bAyrndB9PEgjh+0kSYxiFSkGa
-         dcbg==
-X-Forwarded-Encrypted: i=1; AKwUvBxys+urucWRYXOgzYc8ln1vsp3+fj6hq/FQdvfDLYgyg58vvfop1htzlcIvwb4NMD8nwoqUwpD6hQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL73R8L3d8bYQTkg2E/pv3WrwjNsytCdNmEYBMR0YHGRl4v1Fql
-	hWmtWQcXmCKnShJrEK2hzSvptDz3xlnx8mKy6f9ZRww77nnL1PeT8nYgGDm4e/tNzHc=
-X-Gm-Gg: AYBFou34ihk8rZhQ5BSLcbUpprQioNM+cl6d6ENuKxE+BUyctXj53VUl0Pd+E+B0Bu2
-	bJF3rk1Ycddo9B37uPYOW9fM0iKMu0S/I099OOxPQM9lfRsVMMpLipY/+MzVlaWYCzoA4lXewf8
-	/oHHfA9t7m4/gy2SponU8qR+KM2ebWsZc78WORp5GRK00LQRlpiypCDjEoFoELH9hdrY03sH2Vl
-	26dARzhJjumk17PRDh95zMrSUQSdiD/TIfM8kl5m+0D6u+ZLXtDA4Z3qddEVmYNJJ8WIcV0unO/
-	7cTwqGqDoD9Dok4LyeWWrgJNMZIiDM2CTFNY/zyVaPM4xkFfpwUYGSD4NnEq8XrNxx4p8/6cTrN
-	EjASty+6tygS+GPjkTm67NzygvQeJwVm+4LXgSYwdcHxIQVH6KkKNatNJLHlNkAzo17tQcnX/7i
-	uPNjB7BpCii4vN5yoqG9YlyfnxMVGrNoShi0qZVjY1zsJeA8gyPrW1XBIR4nxclvegdOIGfQlrp
-	vmYG0VIERxQi2lO8Gms/1/nxQYbt8If8oo6xNi0C1LjTH/SvVnDFKIiFAAbJfk=
-X-Received: by 2002:a17:90b:582f:b0:3a6:e159:a229 with SMTP id 98e67ed59e1d1-3ae40443725mr1880815a91.49.1793119015745;
-        Tue, 27 Oct 2026 09:36:55 -0700 (PDT)
-Received: from DougS18 ([66.183.142.209])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cd8ccc90d74sm3015675a12.20.2026.10.27.09.36.54
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 27 Oct 2026 09:36:55 -0700 (PDT)
-From: "Doug Smythies" <dsmythies@telus.net>
-To: "'Zak'" <zakbrightonknight@gmail.com>,
-	<linux-pm@vger.kernel.org>,
-	"'Rafael J. Wysocki'" <rafael@kernel.org>,
-	"'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>
-Cc: "'Len Brown'" <lenb@kernel.org>,
-	"'Viresh Kumar'" <viresh.kumar@linaro.org>,
-	<linux-kernel@vger.kernel.org>,
-	<stable@vger.kernel.org>,
-	"Doug Smythies" <dsmythies@telus.net>
-References: <20261027143725.3763827-1-zakbrightonknight@gmail.com>
-In-Reply-To: <20261027143725.3763827-1-zakbrightonknight@gmail.com>
-Subject: RE: [PATCH] cpufreq: intel_pstate: Restore P-state request on resume without HWP
-Date: Tue, 27 Oct 2026 09:36:55 -0700
-Message-ID: <001101dd6631$6167dbd0$24379370$@telus.net>
+        bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
+        b=MqoKYkhPxinnWU0rxiVQOQIW2xdnLJUYOk/ZRub1C+GHV7g3MDgeO36xzGgv7zV0pU
+         b7Q5Qd4T6P4QzQDWxqMDT2E4vSB1Ta2AT4vyvV1W/SJjCa/I908j3i58wt4B7gA9owyE
+         9FD0Vttj3KKr416fqs4ExXmIutqEMMvdS3FVh9CsUN01w9w2ZbUNXISwvFTGHY2NwJr8
+         i/oo60Obz+7f/NV/ussWc0mzJobz4krgT1zVk8FX8wemuSyiQyuANn/afGbcNeZ1N8XD
+         WWKH1SX1jfedntfB+WOQis7PzeNakgQ+G22IsTyut5xTYR0Y9WEiQfV0RFdLoac6YVHY
+         D5SQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793120965; x=1793725765;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=te7+uZN2QkD8nk5NHPCvRLXnUD64mzCV6/WajInfo8k=;
+        b=xshlQKMbIp1THnCtbfb29/g2VlOuEgOdrmcMzqvRi1SZ8BNAfMcoHpgQ2wAv9gHLwu
+         Almn4jVGOw9LhrYSrNzMsA1BW+k40nclRtYHDBb8eEZvmhkvRQ5QL2+q18Lx3IVH+gKG
+         qu6/MUnEvQrEV8QWOO+wiiATF2eQVhRymtygdxIIbK+Mw9T85WS/oekJZ5rNAojEGQUq
+         6SV5gopXaQTe9AJw5QyM71Mzxsvgt2zLu/F7xhvw9Ti2pDNs/U/bXYV8ksINcQs55Opc
+         AYVjuwM+9vfUmCrqZ6ZLZBZ08SufcTkLKn/AeafaMX/ef9Ctleqb64I3DhYc8Vljad8u
+         iZgA==
+X-Forwarded-Encrypted: i=1; AKwUvBxsHHBvQHqVSuYEcA/Xor/ThsPA+uXCRfQvRHKiXHUM2h7K0lDXZu/tyObvqfuCO4rKQ+yNEzwJzg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIN6KBQhUiZNZ75giXU4LMRFHPk5XiMCOegR46CG1bzhrKoHD8K
+	t22/CyF0HaU7UUvxHvNbqL5mq7mZsIefxgsF4aKHOptub+FMrxDoc2BDNcKh2kDo4C5+0rsKCmN
+	bysqJwI33kEDNX/+VhotXbY2POaP1brM=
+X-Gm-Gg: AYBFou2YlsTA4ZPJFmToAHVonWyWQ7cnonlhKtrsHqoRR08T1yjDG3ytzuUStch1rzB
+	kMRBSvyWAh5AThvTaeRVm7llQOBH/Cmu5kLaA6yUvPofw2W0dKIPUO0mgZSDstaapQzMV33FXVx
+	Gshlc6Oh2jwojvuo0hPRfizRrIoJELB+/iMjA05UYoP9srV4lGDCfavoYK9O7sFzovzs4w5FKYq
+	sZSjU9wiUMjrTO0MDNvTZ5NGpozGUTQCkurWDDocyvT8nwWhPAxoJ82FPwcU+t0f+3QE8GdenV/
+	tJH40pHDhnvbSr13WjOeNYmu2r4XEf2wSyV4MRuRqqAfL1pg+wrs5gxHQlt1ju+cZHCRuGi7PZq
+	Nx9RKOvvcjEZX6niy/+0WCgsb2A3AALk1RWuXjPmeV6EkGQAoiBwb+SDVMObP91fY9zDT1uuNiD
+	kO++pak6JyauXDnB8J68D3xMEhPphn9593NdQM8UchXv/OPxpgJaTqlpFm7oOIX/BnFIlM5XQeS
+	ZQ2YIVuzOVWPnr+kqULX6s/0S1CILRAi+2a
+X-Received: by 2002:a05:693c:6392:10b0:35f:ea17:d171 with SMTP id
+ 5a478bee46e88-36a1ffbd5d7mr237613eec.2.1793120964600; Tue, 27 Oct 2026
+ 10:09:24 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,124 +106,38 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Outlook 16.0
-Content-Language: en-ca
-Thread-Index: AQG+ka4iSAouj32QbdBtcmCOlo9WerdPO5KA
+References: <20261018163719.81691-1-ojeda@kernel.org> <4600d9d2-9369-4d9e-afe3-b21aa5f0cb2f@oss.qualcomm.com>
+ <atW5adUhMhOhjbyh@vireshk-B250M-D3H>
+In-Reply-To: <atW5adUhMhOhjbyh@vireshk-B250M-D3H>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Tue, 27 Oct 2026 18:09:11 +0100
+X-Gm-Features: AclHuK_9imwtkjqF5Ms9356_ENKgDBIHYMMCKtsJ66MmiTSw1XdVs4AdT2mg6B0
+Message-ID: <CANiq72m1Mn8wTCWCzRawV_OUSm5L7BH6s6gcN-gQE43jQfx5aw@mail.gmail.com>
+Subject: Re: [PATCH] rust: cpufreq: fix `undocumented_unsafe_blocks` in `PolicyCpu::from_cpu()`
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Miguel Ojeda <ojeda@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, Boqun Feng <boqun@kernel.org>, 
+	Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+	Danilo Krummrich <dakr@kernel.org>, Daniel Almeida <daniel.almeida@collabora.com>, 
+	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
+	=?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+	rust-for-linux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 2026.10.27 07:37 Zak Brighton Knight wrote:
+On Mon, Oct 19, 2026 at 8:32=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
+rg> wrote:
+>
+> I agree.
 
-> From: Zak Brighton Knight <zakbrightonknight@gmail.com>
->
-> On a ThinkPad T520 with an i7-3840QM (Ivy Bridge) running coreboot,
-> the CPUs stop using turbo after every suspend to RAM when intel_pstate
-> is in passive mode with the performance governor: they stay at the
-> 2.8 GHz base frequency instead of boosting up to 3.8 GHz, until the
-> policy limits change or the system is rebooted.
-> 
-> During resume, the firmware sets each CPU's P-state request register,
-> MSR_IA32_PERF_CTL, to the base ratio (28), and the kernel never writes
-> the requested turbo ratio (38) again.  Without hardware-managed
-> P-states (HWP), intel_pstate caches the last P-state it wrote and
-> skips writes that would not change it.  In passive mode the cpufreq
-> core also skips requests for the frequency it believes is already set
-> (policy->cur), because intel_cpufreq sets CPUFREQ_NEED_UPDATE_LIMITS
-> only with HWP.  Neither cached value is updated across suspend and
-> resume, so as long as the governor keeps requesting the same P-state,
-> as the performance governor always does, the register is never
-> rewritten.  Governors that change the request often, such as
-> schedutil, mostly hide the problem.
->
-> Fix this by writing the cached P-state back to the register in
-> intel_pstate_resume() when HWP is not used, as is already done for
-> the HWP request when it is.
->
-> The problem was found and root-caused, and this patch was drafted, with
-> the help of an AI coding assistant (Claude, by Anthropic) during a
-> performance review of the machine described above.
->
-> Fixes: 001c76f05b01 ("cpufreq: intel_pstate: Generic governors support")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Zak Brighton Knight <zakbrightonknight@gmail.com>
-> ---
-> Tested on the T520 (i7-3840QM, no HWP, coreboot 24.08 with SeaBIOS)
-> with v7.3 plus this patch and a temporary module parameter, not part
-> of this patch, to turn the fix off.  intel_pstate.c is the same in
-> v7.3 and in the base commit below.
->
-> Each row is one suspend to RAM and resume (rtcwake -m mem -s 25).
-> "Request" is the P-state read back from PERF_CTL on all eight CPUs
-> 5 and 17 seconds after resume; "clock" is the measured speed of a
-> single-threaded busy loop.  Before every suspend, all CPUs requested
-> 38 and the clock was about 3.8 GHz.
->
->  mode     governor     fix  request after resume  clock
->  passive  performance  on   38 on all CPUs        3.8 GHz
->  passive  performance  off  28 on all CPUs        2.8 GHz
->  active   performance  off  38 on all CPUs        3.8 GHz
->  active   performance  on   38 on all CPUs        3.8 GHz
->
-> The passive-mode failure was also reproduced twice on Fedora's 7.2.11
-> kernel.  In active mode the request was back at 38 after resume even
-> without the fix, so on this machine the fix only makes a difference in
-> passive mode, the default without HWP.
->
-> Not tested: systems with HWP (their code path is unchanged, only
-> restructured), other machines and firmware, and suspend-to-idle.  The
-> patch adds no warnings with W=1; sparse was not run.  The tests were
-> scripted and run by the same AI assistant.
->
-> drivers/cpufreq/intel_pstate.c | 16 +++++++++++++---
-> 1 file changed, 13 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 17158cb..53db91a 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1371,6 +1371,7 @@ static void set_power_ctl_ee_state(bool input)
->  }
-> 
->  static void intel_pstate_hwp_enable(struct cpudata *cpudata);
-> +static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate);
-> 
->  static void intel_pstate_hwp_reenable(struct cpudata *cpu)
->  {
-> @@ -1404,11 +1405,20 @@ static int intel_pstate_resume(struct cpufreq_policy *policy)
->  	else if (power_ctl_ee_state == POWER_CTL_EE_DISABLE)
->  		set_power_ctl_ee_state(false);
-> 
-> -	if (cpu->suspended && hwp_active) {
-> +	if (cpu->suspended) {
-> 		mutex_lock(&intel_pstate_limits_lock);
-> 
-> -		/* Re-enable HWP, because "online" has not done that. */
-> -		intel_pstate_hwp_reenable(cpu);
-> +		if (hwp_active) {
-> +			/* Re-enable HWP, because "online" has not done that. */
-> +			intel_pstate_hwp_reenable(cpu);
-> +		} else {
-> +			/*
-> +			 * PERF_CTL may have been changed by the platform
-> +			 * firmware, but it is only written when the requested
-> +			 * P-state changes, so restore it explicitly.
-> +			 */
-> +			intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate);
-> +		}
-> 
-> 		mutex_unlock(&intel_pstate_limits_lock);
-> 	}
->
-> base-commit: d135ab453a7400a34930bdda1ef4bdc8acfac80e
-> -- 
-> 2.56.0
+I think this is not in -next yet -- if it helps, I am happy to take
+this into `rust-fixes` (with the two statements):
 
-I confirm your findings and tested your proposed patch. It all worked fine.
-I had not seen Rafaels's reply about a possible race condition until now.
+    // SAFETY: It is safe to call `cpufreq_cpu_get` for any valid CPU.
+    let ptr =3D unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) };
+    let ptr =3D NonNull::new(ptr).ok_or(ENODEV)?;
 
-Test computer: i5-10600K, 6 cores, 12 CPUs, HWP disabled.
-
-... Doug
-
-
+Cheers,
+Miguel
