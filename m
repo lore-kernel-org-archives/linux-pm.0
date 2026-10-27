@@ -1,55 +1,51 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793126319;
-	b=mOoniHGs3gItLqqGu7aibcXfspAO2cv6iiBvHQZ8yn8ok3f7VnDoawaSu65VujxKgx0T
-	 nyGGgE03gshnPg05mTGY9LKa/STBAdgfE/ITDT9TbW9rrCn0IWz9fERfLZ22btW/jrmeV
-	 GEIG4uHIyWis0/YbWsBV/fo76pUWToy29fAgUzaTCNsvihxd2kWqUq0fZ6tVKSfmGsm6M
-	 CwuXM1vTQhHwBV8Ce/4J1xCapRD8w9nwwEket0drBbiWSPldh46WFG/aZE6TckdzDbU9T
-	 PsfvMw2CbfUyNXCehIdVjcOSJFipj7P9yqZ7OnS4r3TqITs+aZv1eRoji1H6ogioQjA==
+	t=1793128556;
+	b=b5/iUpD0+2H0a3JkWJDFEzk1iGoVZGKdyQdl0A/2eEInd8QA1+tw728wGPJOEnR6cbVX
+	 X7rb0XqVQYxDodihRg7jj5k7h5kitABGL/tsR2cmn9Es2StDdf8KyV0+G48ZBq+yebjDb
+	 dBsU+Ilo1xOePLsgSHDv9IimuB/9u+7W3elc3fEVX2eyyyc8Iz0yUk4Nacxkk6FPAiSSU
+	 ebofRzOIeivx/719jeHuy3wi/kSeB+urCxhoGZqApow0xsOQuVtP9y8n7AWQdeLnpQmDk
+	 PxYS8eLkJX0ewLkIbSOhj7fvKZ8i/Gw/FrCZC7yWQqxlGQI6sBMydyx3clp63eKxPuQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793126319;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=uBoSJTtzRxvJ8IoYQJOlz0olC7lznlyUmLgUztO17J8=;
-	b=muLKby4HyCxCVPQBK28MBE9JoCtLGPu6ZP4oZHbAiyyryhwR2/sYQJJmfW6ujVexLSVQ
-	 LUqhLBXO2FyCGi/ZHh/hNZJzjBIqQac9bEBCASNAZ4EzaKlokr2L9LjjKKd6QCFH3RDCk
-	 eJmhKN+4ng2hbzqkrxl32y46No79suUH5A3skGr/i1hURS4PAN9q094pIC8HADqqHHfHb
-	 LHrE8STXwmsXJpAsrOIGBLFp2Q3cdy4LvAIZ15Lr3Etc8OdRX/AuZEqLK4MnAn6k2/rgn
-	 omRwdrtTQXp3EpDLliZCWaED3E2rw4+GvQVoCJVD3jH2csoBeEpxJnCZBqLGnVIlLtQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793128556;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=PGVTAF7iIungW5z9kPDkJNStXW4ErI+UZp+jvf+bGJs=;
+	b=bKzTfJGempNpb+vDtJDwi8yd0e9sNkCx+ht9pE/ncfElfPJEh0OOrl9wMhvIdu3EQYMK
+	 YVFHTwowB5pGKtv+L1dYGiI0ceeDaaePO8XSgrozCRLwo086gShnhsVCJ2osgk9ECqfgz
+	 nLHt9KvzhoRwOnNtnWrP45mpiGY5HtimBkxx53MnKwDZiR73iR/fPZsdhtPSr4U8byBT5
+	 3z/QL8apS1MafYCRLKKHxZJo9yD+UtCmzBD3y/ON7ckyVsIdglNEecHD1KzCN3fG5kQ/y
+	 mqKXUdEdVbwczqtgieW2+9YC/2/q1T7vW7fsv/yeP6EiKnUtUOTGDOkCArxlTiJEv0w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UGY0+Uik;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QXwz10ER;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2563606A31D;
-	Tue, 27 Oct 2026 18:38:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07042606A31A
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 19:15:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UGY0+Uik
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98B211F01828;
-	Tue, 27 Oct 2026 18:38:37 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QXwz10ER
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA1701F01825;
+	Tue, 27 Oct 2026 19:15:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793126318;
-	bh=uBoSJTtzRxvJ8IoYQJOlz0olC7lznlyUmLgUztO17J8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=UGY0+UikCFUt8hwv4spfhzh0v2PxZ/wCQMCGYBGA/w8anYhMOv6hnb70+68iAXwmP
-	 6b5MDe1bXcUcknQR2H+m0mh47551tzLN7nE4P56zTBnCAKSNl67trGd2O6s5HnM7Lz
-	 4DMh+75jYlYIFdY1JmsNl5CCTV/lYEkYiLYHB4Oc6kucCImixFlvvroxhcgR3vmiGf
-	 30soTkn6sAwYzpgI6XSGx1ogANlx5Gzk80yAyUt2pqszY9A9kdD9nP/Jk5oBYfzN23
-	 AGA8Vk63eqzB/j/Nh0itFC3W/clkteHa5/MqivKIyOYvKLrm011SLPB8UXsLTCfp91
-	 +G3c5D5CGEzBw==
-Date: Tue, 27 Oct 2026 19:38:34 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Ishu Brar <patches@brar.si>
-Cc: djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	konradybcio@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 1/2] dt-bindings: interconnect: qcom: Add SM7250 RPMh
- NoC
-Message-ID: <20261027-married-jasmine-hummingbird-dadc1d@quoll>
-References: <20261027-icc-sm7250-v4-0-f9bdaa3c1c7b@brar.si>
- <010601a17d6212dc-ed028a84-ea72-48e7-a4d8-fea315dc42cc-000000@ap-northeast-1.amazonses.com>
+	s=k20260515; t=1793128555;
+	bh=PGVTAF7iIungW5z9kPDkJNStXW4ErI+UZp+jvf+bGJs=;
+	h=From:To:Cc:Subject:Date;
+	b=QXwz10ER+VPDzmiZbG5grLiWsi7+/39fABTj42xv0W3hHQ1vrgKZx9qd4Et0CIjfm
+	 8fk2JToc3cvDFCZnmSufrSZTMK2nZReV0rCOBtKGAN71246SiML4vERl999bRFkLi5
+	 7NjNdrsp1bYRpOMS+SvdBvAGVk5G5KZxnjhoEJfoBUfTbrh49Pymi+UfwIrYNmMImH
+	 8TbHkF3EiXuwyZtpgYJC25BibmBgcGhifcHPOkiD4iDMwN12eL/icvueDemmeIEvsF
+	 PiMJyxdYrf81GjjlwTsg/AOc0xKdKWV90bso3CJ/hc2V2zuSNNiqASbV8VIt6qShSK
+	 KE110nySb0/hw==
+From: Len Brown <lenb@kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: Andy Shevchenko <andriy.shevchenko@intel.com>
+Subject: [PATCH v2 0/16] x86_energy_perf_policy cleanups
+Date: Tue, 27 Oct 2026 15:01:54 -0400
+Message-ID: <20261027191550.369122-1-lenb@kernel.org>
+X-Mailer: git-send-email 2.45.2
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,26 +55,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <010601a17d6212dc-ed028a84-ea72-48e7-a4d8-fea315dc42cc-000000@ap-northeast-1.amazonses.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Oct 27, 2026 at 12:42:21PM +0000, Ishu Brar wrote:
-> Document the Network-On-Chip interconnect providers of the Qualcomm
-> SM7250 SoC (Snapdragon 765/765G/768G), which are controlled through RPMh
-> Bus Clock Managers, and add the header with the node and slave IDs.
-> 
-> Signed-off-by: Ishu Brar <patches@brar.si>
-> ---
->  .../bindings/interconnect/qcom,sm7250-rpmh.yaml    | 105 +++++++++++++++
->  .../dt-bindings/interconnect/qcom,sm7250-rpmh.h    | 148 +++++++++++++++++++++
->  2 files changed, 253 insertions(+)
-> 
+These patches have changed since v1:
 
-Cover letter is missing, but you also never responded what is the actual
-hardware here - why sometimes you have children, sometimes not. How is
-it supposed to work?
+[PATCH 01/16] x86_energy_perf_policy: Rewrite Linux/Android MSR path
+	This combines the old patch 1 and patch 2, which didn't
+	really stand on their own.
 
-Best regards,
-Krzysztof
+	Andy, I took your reviewed-by off of #1
+	because it wasn't on the old #2.
 
+[PATCH 03/16] x86_energy_perf_policy: Harden with strtol()
+	Updated to address human and AI comments.
+
+[PATCH 07/16] x86_energy_perf_policy: Bound package iteration
+[PATCH 08/16] x86_energy_perf_policy: Cleanup: Define
+	Andy, These had RB, but resending b/c AI review asked for some tweaks.
+
+[PATCH 09/16] x86_energy_perf_policy: Cleanup: Define BCLK_MHZ
+	Updated per Andy comments.
+
+[PATCH 13/16] <I combined the previous trivial #14 & #15 Constify patches>
+
+[PATCH 15/16] x86_energy_perf_policy: Simplify write_sysfs() return
+	Re-written due to review comments
