@@ -1,52 +1,53 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793128564;
-	b=dKKAFS0JxVlFmu6LpQGFPoYDC8ORzvmBjINECtDYs49mLhB63xvzVHN9XBgtHPOQhf8b
-	 jl+Kl0+lnOcW1g0XRFlltVVfkVJGVNlc1/THCUOZeJgNZF69qNI9vecdaM/0uOpUQszHw
-	 89ctXLXKncK9pg8z2BMofmbkqFgiG8XPI+Xb9cqwXqYTrVJCgCZc6ytbDc/AuUKfFb1ON
-	 UeSlHFgo8i8MnB3UZ/sd1xQLLpnXKAr9OYQOX4twJvTqI5nxJrXZNlDEmz6JBik24N/Zd
-	 YsuLHus6sub96MrY6jzpnE2zmIL5n54vlmVd7Jcz0sTkfuHsRhK1EE1TvYIFZoM6/Ww==
+	t=1793128566;
+	b=DUvtKDlytqm9z1CRxef8gq/Xua6oBanQz1OeAQCFJ35RfXCS26wYJCdZ+8LHjb6TgiAa
+	 0Hj45RTL3YfNsL5ZDjl3+CyyYCvOaiYkTFDhH1Oq6TVSOttmgJNcrHXrPp9WFCvaafJrI
+	 Kn98yGdmH1Rlh20X2HH3pNxFCKPdjksbrSEwgkffNx4hhf3HebUzbxKmvjD0MTVgsZE8z
+	 Uvsemo+EAmrHYTYIjIkFqXxHduSX/qujpYkJbJtLewYqPBlyQ27+9QJBck9GkhMUEd0+v
+	 HiW1My1bSzOtImqcuckOJHnU2nSbGH/2RrBNvvMrVbLC8E9X1lMawbl0A/vl0KnZqoA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793128564;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793128566;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=bqe7hLZh4E7oP+6KQ2w7oqlLvlkTMwdT2LfTEGtE3CU=;
-	b=l0V5rxOBKaSRJeTtaSd58Di/SVcD41gCFssNlEj2/cpAEGLZoN93U2kCupJ9o1/NYfZx
-	 OR/rSCJcPvgP+/p4X4gwC07JWhs/B/qosG0IYIBSDeiRuH2AqxC0XCULmP9AGk7MBURCH
-	 RGiQDEKFAFJ+nSNIH+3FPGTmBabCZayZc1lL/dqfIHdQVAXzqkSe+7VtK4UC/vO/b+Tbf
-	 DPsyZ2fBBb95moJ08Ys3258mgAbSaZTV7x6j5WjmOW79KXV7cPlEP1TWLLJ1uZz+Cq8zE
-	 rsmYQQcf6a8RKnCFu5fuo5qdDc5sqnOwNIOv9pGRA7z2mUehh9Ybl0EsCRGXPOtfeew==
+	bh=zQ+KpUc/wnv+x4g5KjvD842/HO+YmwnwXl0Op4nsKYM=;
+	b=MYZCkLt56bw2Aa+XbjEzHyP5T9KaaZhQR+H6ClrDjuRej/4zrlV7HnP0mleWkDIg6o+6
+	 d8a0ZjGmg3xlRBMgG4CYpWguvX0RQ6nmQnAyGnTon2IeBjV2SznZOqP1at867GtaVJ+lX
+	 TPSxu3MCpZrQzaDzvMz2D/sZoVmv4+LDESzWR9Qa7CoxPRGFiyirRM44EiZ3/xG1cR2kn
+	 lrRTs6jmmUAew+AxzEet6QW5zm1AEeD0qJ7K0l3N90PphhT/d++yHcuV8MuV9ZuyL8CR8
+	 ylhawEWodjYhqoBFyyGg4xuHwDFsozERIYUydO+L/5NQIOP/YZDTqpV6MwgOu5lZx6Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k6VM5ako;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YvwboUoA;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FF56606A31A
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 19:16:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CDB2606A31A
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 19:16:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k6VM5ako
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13F9E1F031E1;
-	Tue, 27 Oct 2026 19:16:02 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YvwboUoA
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75C431F01825;
+	Tue, 27 Oct 2026 19:16:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793128564;
-	bh=bqe7hLZh4E7oP+6KQ2w7oqlLvlkTMwdT2LfTEGtE3CU=;
+	s=k20260515; t=1793128565;
+	bh=zQ+KpUc/wnv+x4g5KjvD842/HO+YmwnwXl0Op4nsKYM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=k6VM5akoqCAIdD9Yd9+sgg0IpVVkI51UBw3Fc0g/dEWen0FMgnNc94wXY4Y/6VCkw
-	 hOOSK2n593qH6Pw2Woh1CQLbwPuiZw3QugH9z52Ncqu6gGFkL2FoaS/EMXyPTKALIj
-	 T3NfDty9h9EDeTarnbGYVIhOcNTJR5iUT/bLKQ90XNgIY4YK8eYFYvOtc6O2v9a46L
-	 kDJSvAhVW3yIIbsdUiiGcmx9S2w7V0ZkL1YdqENRnpbeiWMy1aSSWwqT/QoVoZKgVy
-	 PVFEz/MwmCo+CtUEB5+BxKF4Iw9wK9zxBFFZZTQ6LoIgQq7pFyGBxfIv1WYXnImNJl
-	 Im2xg198XfvQg==
+	b=YvwboUoAZMhhfTXJIEImuY+pcQGiCszJjKR55By5Lw4VmlWsS2riTNCX3jYU8694e
+	 TAPeBYZdpx+3PLwmt/lBtNyClVq7JaQ6s0/eYMDKkh28B781aX2rw3NIRXZ4JyjORG
+	 TxwADIJgZrSEqxsXP18J2Y93p3ukw9mWTTipNHs2RIPZUCsjiju6A9X4uq3loTKGca
+	 vA7YIQ68Q7TTnGP+b3rbFNSOWks3RJL9ehExrhLOBn37774KY2RQ2sV0jO4zFaiId9
+	 qhMzrQSxKq0aRFrwqfSBIAXpoex/aQCA224cXM7ZjYafPfNfu+ykUmcgTxYDQ1VEdI
+	 7QCY/1YsBxSbQ==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: Andy Shevchenko <andriy.shevchenko@intel.com>,
-	Len Brown <len.brown@intel.com>
-Subject: [PATCH 09/16] x86_energy_perf_policy: Cleanup: Define BCLK_MHZ
-Date: Tue, 27 Oct 2026 15:01:59 -0400
-Message-ID: <1b2cc9a8fcf2af42f0f8048fda4683bbd4563c86.1793124601.git.len.brown@intel.com>
+	Len Brown <len.brown@intel.com>,
+	Amarjeet <amarjeet@intel.com>
+Subject: [PATCH 15/16] x86_energy_perf_policy: Simplify write_sysfs() return type
+Date: Tue, 27 Oct 2026 15:02:00 -0400
+Message-ID: <ff01e8e75e397380db5fd5ead7c93aca00d11f1a.1793124601.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
 References: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
@@ -65,39 +66,71 @@ Content-Transfer-Encoding: 8bit
 
 From: Len Brown <len.brown@intel.com>
 
-Replace the hardcoded value 100 with a named symbolic constant BCLK_MHZ in
-ratio_2_sysfs_khz() to document the assumed bus clock frequency.
+Simplify error check in write_sysfs().
 
-Assisted-by: GitHub-Copilot:Claude-Sonnet-4.6
+Suggested-by: Amarjeet <amarjeet@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- .../x86/x86_energy_perf_policy/x86_energy_perf_policy.c     | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ .../x86_energy_perf_policy/x86_energy_perf_policy.c  | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
 diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-index 5fb6b0883e55..0a67b6f5381c 100644
+index 904ab803f5c7..2b4d48b520f2 100644
 --- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
 +++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-@@ -37,6 +37,10 @@
- /* Maximum HWP activity window duration in microseconds */
- #define HWP_WINDOW_MAX_USEC 1270000000U
- 
-+/* Nominal bus clock frequency in MHz - assumed for all HWP systems */
-+#define BCLK_MHZ 100
-+#define KHZ_PER_MHZ 1000
-+
- struct msr_hwp_cap {
- 	unsigned char highest;
- 	unsigned char guaranteed;
-@@ -1163,7 +1167,7 @@ int print_pkg_msrs(int pkg)
-  */
- int ratio_2_sysfs_khz(int ratio)
- {
--	int bclk_khz = 100 * 1000;	/* 100,000 KHz = 100 MHz */
-+	int bclk_khz = BCLK_MHZ * KHZ_PER_MHZ; /* Convert MHz to KHz */
- 
- 	return ratio * bclk_khz;
+@@ -900,14 +900,14 @@ static unsigned int read_sysfs(const char *path, char *buf, size_t buflen)
+ 	return (unsigned int)numread;
  }
+ 
+-static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
++static int write_sysfs(const char *path, char *buf, size_t buflen)
+ {
+ 	ssize_t numwritten;
+ 	int fd;
+ 
+ 	fd = open(path, O_WRONLY);
+ 	if (fd == -1)
+-		return 0;
++		return -1;
+ 
+ 	numwritten = write(fd, buf, buflen - 1);
+ 	if (numwritten < 1) {
+@@ -919,7 +919,7 @@ static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
+ 
+ 	close(fd);
+ 
+-	return (unsigned int)numwritten;
++	return 0;
+ }
+ 
+ static int sysfs_read_string(const char *path, char *buf, size_t buflen)
+@@ -944,7 +944,7 @@ static int sysfs_write_string(const char *path, const char *buf)
+ 	len = snprintf(tmp, sizeof(tmp), "%s\n", buf);
+ 	if (len < 0 || len >= (int)sizeof(tmp))
+ 		return -1;
+-	return write_sysfs(path, tmp, (size_t)len + 1) ? 0 : -1;
++	return write_sysfs(path, tmp, (size_t)len + 1);
+ }
+ 
+ void print_hwp_cap(int cpu, struct msr_hwp_cap *cap, char *str)
+@@ -1050,7 +1050,6 @@ static int set_epb_sysfs(int cpu, int val)
+ 	char path[SYSFS_PATH_MAX];
+ 	char linebuf[3];
+ 	char *endp;
+-	int ret;
+ 
+ 	if (!has_epb)
+ 		return -1;
+@@ -1058,8 +1057,7 @@ static int set_epb_sysfs(int cpu, int val)
+ 	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/power/energy_perf_bias", cpu);
+ 	snprintf(linebuf, sizeof(linebuf), "%d", val);
+ 
+-	ret = write_sysfs(path, linebuf, 3);
+-	if (ret <= 0)
++	if (write_sysfs(path, linebuf, 3))
+ 		return -1;
+ 
+ 	errno = 0;
 -- 
 2.45.2
 
