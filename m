@@ -1,52 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793128561;
-	b=J5CxjWySzW6VsNm6SIWaHVoUCoVYOBwVzmFkJyuFwGmHZ2DxsuSHkjF6M6r9w27Fq33j
-	 kV9QS+U4w2WsiuroXKWcyBCMp0xbLEhv5QoZBX63kNn/tN54VPqZ2W5ZYZAeV7yN7Yxby
-	 33MpuFbpX3S1VPIm1y7EbZFtIi/iChpENJNXy61wC9zRlQocK81tfVHgDE1ffnu1jhfX9
-	 xLXVn8yPAGIAc39kxvMvXf8S6JD0Xr5uz3ELa7Fn4yGdnOihMHKROxKz/e7b2krbmzLag
-	 RQAv0kWgy1ZaFKjTDwurmVBoWYuvtkwsEIkOCG+KGWkjSBVLUnjGj8cfGl4EFqIQpkA==
+	t=1793128563;
+	b=e+naKv9GcjbVOhkWTAzqjy8QDy2wedK+QQBneD+dkuMWvc5mumMUfV9wgKaOEWCnoOiN
+	 ZujjJBFggeXLxOnYppk2LdiwPTSSteFqjnVLuWEppZ4qWzfEW3b5EQvisi3WQC8qf+dFA
+	 1eZ91+f6RlcFWzFy/nPegpFP176mnUTykvUpHe7T8YcR7y0Cx67TKW4eQjld2Q3pzG7G9
+	 5r3b9Dc+xP7jFQL1loy/tF+p9mLmeDEXna01wpE9O31PjgCkiqOOe/SH341L9Au3tAJp3
+	 EceyqsXeT9FqM8XRFGe6hMGnHYw8S2VmbJ6iqcq8hyXng/J7C0BB3h7BRG2sH/CaiMw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793128561;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793128563;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Reply-To:Organization:
 	 Content-Transfer-Encoding;
-	bh=Ij91kBdtCJZgKGlvowXwCjgFDmVE3B6v8eh51pIgDtw=;
-	b=GsPbsm3H96WqAxwOTPAe8rjwt1BA3lUlGwMtOkVOuho6n6ovntVEeOrumS44KQlD9BZr
-	 8KwmObm3+ObbwqEGBrgJlKdZmmiBSIWqB6jBQg4sRs928VYwgd9ZCPDn3xlMNjHWwR3pY
-	 7jrGC/ImfM5Pfm4XimgXh0MVWpk9YdyNsYaQRP0e/9z3Naj7bNCCfIqO6Y9wNBs0U39Ix
-	 f0cWDyynp1xO7m73ghOm5jHaDH+7jH2o/SQEr8t72xGv9qRF6LyI+utn1mpwTbT/555lM
-	 St/7siFJ9RkpyugAaKMLyWoXLjvh3sy5MO9LNkZiEBaB0giNgDO/l0gXDmRB8/sMq3g==
+	bh=ISMEEkMU/BE5053mJI94/RlGYSw/dGJ9F+vRj1PUKjk=;
+	b=g2oarBLyI60pSLwhNAlsszItza2hZOWQ7CorFUqQn1HuqrD6wnN8wc8ZhBB9iL3X1a77
+	 k3lAz9nMqw6sKiC2oLFJjXFfCJ0xid9fx/zP0iPMadE8Mm1hSRFQKEHdR2DuJkh28Zg+t
+	 +VjCxb7Iptnc1JU35e1uAZ+IUxULr72GmYPF3hcvf4MgCe3xP9uvQ7mqLrwN8Dz4DJwwe
+	 qWZSXEYwyA9JgqgSd45Ab6IV55bWfmJBXyqPqsND7g7CmYFq48X40fqI1fUCF5uLBfjmd
+	 vhDZrbBEu0HntVmvivNapao53tlr0n//uAresvSpddp4ElNlQCTaDtMXZAeuCehR7nw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="OCUuww/c";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NJEadQEt;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CF8F606A326
-	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 19:16:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1004606A31A
+	for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2026 19:16:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OCUuww/c
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D09F1F031E5;
-	Tue, 27 Oct 2026 19:15:59 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NJEadQEt
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 873141F031E5;
+	Tue, 27 Oct 2026 19:16:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793128560;
-	bh=Ij91kBdtCJZgKGlvowXwCjgFDmVE3B6v8eh51pIgDtw=;
+	s=k20260515; t=1793128562;
+	bh=ISMEEkMU/BE5053mJI94/RlGYSw/dGJ9F+vRj1PUKjk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
-	b=OCUuww/cuOYleG2eAQf1JIz9J9aHT8Z1TNbgC/pmWYCD0Ggi/ghGBPXY8hnp99rUw
-	 RShZ39kyMk5EY3RpiFMTUD499vOM5iMmUzDCeDXapXqhoZfFKKv2ZJTLOBBVYdczMT
-	 9FUh0P0e/HThu6VRuy8qPXl0vBpjULqpF9ABap3wPmSwwUv2tpvBgzyk/vmYzU+rOh
-	 E0OZZ65vgZ8MBDLIheMO3foHPu916gwYEw/be/bqixq7yJh1gRW9Xn9Pg5Suh1oImU
-	 euAZLAjT5vfUdqNfWyj5aV3wuJtuN+UPyPeqZ5Z97Hfa3PhfkAAM2NS4K6q9rQacpw
-	 rom872i97S14w==
+	b=NJEadQEtJPchtrKZnRRbm1X2O9jNFaTqo0H314/VvzcC8AnKXcQpviDLeXcfPEw77
+	 FYeB+KcBkO+Ri8ryn+UVRsk13yJPYzC+GtPsTTKIIYncmM4UFHu+damizDgtP/FEjm
+	 ID8fwgJ+qL+QPUsIU3zJxcktaiuS2LERiTmChiqM1cLb8h8jkM5s8k9x6YvTEf54rl
+	 H0g8Me74Efv6DzhtUd52lz1dliSaI0iY06LHOfrI/6DwvEVGyLaWLNcW0IpxPikvw5
+	 EIfZvoHwBLVFkEdgQjCRy926hDdtyP9oc5EtSu+b2bsghkXp21OnF6guNj4doDdcXZ
+	 7p1xvY0ZCv4mg==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: Andy Shevchenko <andriy.shevchenko@intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH 07/16] x86_energy_perf_policy: Bound package iteration
-Date: Tue, 27 Oct 2026 15:01:57 -0400
-Message-ID: <1dc9d80317077000fe7989d20e09e4c3bed3d97a.1793124601.git.len.brown@intel.com>
+Subject: [PATCH 08/16] x86_energy_perf_policy: Cleanup: Define HWP_WINDOW_MAX_USEC
+Date: Tue, 27 Oct 2026 15:01:58 -0400
+Message-ID: <f7950006f0fd09c7291b1cba5f60cda0003236b1.1793124601.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
 References: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
@@ -65,49 +65,65 @@ Content-Transfer-Encoding: 8bit
 
 From: Len Brown <len.brown@intel.com>
 
-Add explicit bounds checking against MAX_PACKAGES in for_packages()
-to prevent potential out-of-bounds bit shift operations.
-Also, use consistent shift idiom: (1ULL << pkg_num)
+Define HWP_WINDOW_MAX_USEC
+Doing so pointed out that it should be unsigned,
+so change associated code that touches it to use unsigned.
 
 Assisted-by: GitHub-Copilot:Claude-Sonnet-4.6
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- .../x86/x86_energy_perf_policy/x86_energy_perf_policy.c   | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ .../x86_energy_perf_policy/x86_energy_perf_policy.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-index e79462f93f3a..2d77f465f1ee 100644
+index 2d77f465f1ee..5fb6b0883e55 100644
 --- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
 +++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-@@ -509,7 +509,7 @@ void parse_cmdline_pkg(char *s)
- 			while (pkg <= end_pkg) {
- 				if (pkg > max_pkg_num)
- 					errx(1, "Requested pkg%d exceeds max pkg%d", pkg, max_pkg_num);
--				pkg_selected_set |= 1 << pkg;
-+				pkg_selected_set |= 1ULL << pkg;
- 				pkg++;
- 			}
- 			startp = endp;
-@@ -526,7 +526,7 @@ void parse_cmdline_pkg(char *s)
- 		if (startp == endp || errno == ERANGE || pkg < 0 || pkg > max_pkg_num)
- 			errx(1, "Confused by pkg '%s'", startp);
+@@ -34,6 +34,9 @@
+ #define	OPTARG_BALANCE_PERFORMANCE	(INT_MAX - 4)
+ #define	OPTARG_PERFORMANCE		(INT_MAX - 5)
  
--		pkg_selected_set |= 1 << pkg;
-+		pkg_selected_set |= 1ULL << pkg;
- 		startp = endp;
- 	}
++/* Maximum HWP activity window duration in microseconds */
++#define HWP_WINDOW_MAX_USEC 1270000000U
++
+ struct msr_hwp_cap {
+ 	unsigned char highest;
+ 	unsigned char guaranteed;
+@@ -259,7 +262,7 @@ int parse_cmdline_hwp_desired(int i)
+ 	return i;
  }
-@@ -535,8 +535,8 @@ void for_packages(unsigned long long pkg_set, int (func) (int))
- {
- 	int pkg_num;
  
--	for (pkg_num = 0; pkg_num <= max_pkg_num; ++pkg_num) {
--		if (pkg_set & (1UL << pkg_num))
-+	for (pkg_num = 0; pkg_num <= max_pkg_num && pkg_num < MAX_PACKAGES; ++pkg_num) {
-+		if (pkg_set & (1ULL << pkg_num))
- 			func(pkg_num);
+-int parse_cmdline_hwp_window(int i)
++unsigned int parse_cmdline_hwp_window(unsigned int i)
+ {
+ 	unsigned int exponent;
+ 
+@@ -273,13 +276,13 @@ int parse_cmdline_hwp_window(int i)
+ 	case OPTARG_PERFORMANCE:
+ 		return 0;
  	}
+-	if (i < 0 || i > 1270000000) {
+-		fprintf(stderr, "--hwp-window: 0 for auto; 1 - 1270000000 usec for window duration\n");
++	if (i > HWP_WINDOW_MAX_USEC) {
++		fprintf(stderr, "--hwp-window: 0 for auto; 1 - %u usec for window duration\n", HWP_WINDOW_MAX_USEC);
+ 		usage();
+ 	}
+ 	for (exponent = 0;; ++exponent) {
+ 		if (debug)
+-			printf("%d 10^%d\n", i, exponent);
++			printf("%u 10^%d\n", i, exponent);
+ 
+ 		if (i <= 127)
+ 			break;
+@@ -287,7 +290,7 @@ int parse_cmdline_hwp_window(int i)
+ 		i = i / 10;
+ 	}
+ 	if (debug)
+-		fprintf(stderr, "%d*10^%d: 0x%x\n", i, exponent, (exponent << 7) | i);
++		fprintf(stderr, "%u*10^%d: 0x%x\n", i, exponent, (exponent << 7) | i);
+ 
+ 	return (exponent << 7) | i;
  }
 -- 
 2.45.2
