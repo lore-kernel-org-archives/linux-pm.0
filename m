@@ -1,45 +1,45 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793193586;
-	b=lylr8u0jvZ5kzcwGQxEO46tmvGkMmEdk4OaXCid2LMSHqnVf6b9ymh884ualLW5So1R9
-	 dBoLycDCGAqQ9GfCVkp5MOv+aVItNqZrWcNYD9cRLbSPKQGg/vNca7Iuvu/9l6XhsddpY
-	 WsQ/z3GTpOj+HCGYfh7MlIo/b158XRo6Z1CbDVK4SgHxh9TP3Y5XErQN1UX3qcy8tV8iW
-	 mbJjwlfgBpKgAZx/oJ/S5r4VJrYLDmyQbZXg1OAwm+YZuJiLQIvYPsZe76tNZoue0UWAF
-	 q7+IBiilkpvbsujvEFo0fMSdxXeeNk9IlcjNToCIw8K1W3q9vfgkF0V42MQHN/rs5+A==
+	t=1793193880;
+	b=dJLWshsJu4KutqP+eArM1HC5QEWi5B9Zt+FonAk68Q/SDLLi552wdt0WqHax9yT/u177
+	 IXvcR+mS4fhSFnDiolhcEvBTDXKwfRBjZOTlFBIyAlX5AywgXinsFFbtBE6j/MrVRreZa
+	 hS7boRUwEG4wtKtmhL/+qXP4TpR8CB1TlTA6c159oJ1trPDMyqqEmEWCB/mDIJs2cBY21
+	 xfZKKYZx+PVK85Bvi7X+NmwF8RtnUUSDlS+B+wDt3WPoip/Ps5G8YKZt6wMDKYPgt//sA
+	 T5RQlwy09zKn923qkjJ4fgm09SeHyF+GRNJzPn+XDS7f/qt2wLpPzKBEIgoSrhhqBcQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793193586;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793193880;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=rNrgsfhJ8iQuc0OgyRK6owJ7CKB0QPGDuirnZiNjO7I=;
-	b=jtj8rpfuGHvZYrTDGdRgsq++8JwJsYoKfm0BsOQCVTddIQQWEoV8l3/E0o2dqSdCtB/4
-	 6liJ3hNmSoOCnSund1H8t6aHprfusHsSRbBYFfwhatNK1mhmm5sE5+lk+BNvmQxzalqpK
-	 zPTThWf3Xah0/zMDPj5iAv1oSMvdePhWizePKZutzCQg+5OfKxhroHg3n9QqQk2sVm4hj
-	 Fpdp3P1UQOEl+cVZs3n9Ros8WCvjjyWQrw+xqV/QY3PQKnnhncRKNNBIijReaNHJy3TKO
-	 Mf0X3ms164jresrSWhcieZPt6NEw4wBIR0AxCLB36hoWyq/Qfi7ILyT633OW3Lv7EFg==
+	bh=zMyLVpl5SGn9LRVq3YemmUnIHNGskaGDXWx+m9anSm4=;
+	b=BwfsyKNzc4gSlrDVr2XyD8gIl1b8etZc5dbAbJDxmCvFNYXgF3OvW2BtsZfh7vDHVFQo
+	 uxfHKiQQsEuL37y4pzkxriBHEifQ3vV0ON6QvVndwyzMhxmI3rq8qFtULqJ5qLonepVcB
+	 eB4lEk8fBEUcy79p+82+BCWPs24T4TjeZFl9zsn/qLIrIz0ZuCAzeijogbvyHczIbQlRX
+	 i538B+L4Ay0o5+12zJDCVM+YPxG/m+ZfIWE9SA18iCV0Y5EkBiMwBI4wFthww3w1Nzu2M
+	 ppOp6LYCvWOhli6q+P88Negu7QjQ/P7A8SXN+OZf8h+g27pUdo72tkWIFpfQPdW19zQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C+6p5HmB;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Kfegx7uj;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 247B5606A31E;
-	Wed, 28 Oct 2026 13:19:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22693606A31A;
+	Wed, 28 Oct 2026 13:24:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C+6p5HmB
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 013911F01825;
-	Wed, 28 Oct 2026 13:19:44 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Kfegx7uj
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8C641F01828;
+	Wed, 28 Oct 2026 13:24:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793193585;
-	bh=rNrgsfhJ8iQuc0OgyRK6owJ7CKB0QPGDuirnZiNjO7I=;
+	s=k20260515; t=1793193879;
+	bh=zMyLVpl5SGn9LRVq3YemmUnIHNGskaGDXWx+m9anSm4=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=C+6p5HmBaYr5tGiWDQW8DO9OXPVO5d0N/g5bNvmX4QN6kXYA+OyuJ333IWFjCQOxn
-	 qsWoUsVixm22DCKopMLEA9H264qL1laJBucEBsgfAeFdeTirQMNVxjvCidjAlfxauV
-	 iabQFLG6bem/w//Vd7veKWZa0E5FRIofuKwO90WQoaaGnPXTG3egrkiwxORRmbgSYx
-	 PQTKRfUzs+xGyYX0bxZPyaAmYb8frm3RpNxikM8Q3JU66xkpBzG8AKrsqXmNz5z1KT
-	 lEW6LuT5Yjsx5QZnDv8rehEivRPxGjsxWCb5OoOzXpauMWPVH88LIRP4e1OQHNiryB
-	 h8iNrLjNZgnIg==
-Date: Wed, 28 Oct 2026 14:19:42 +0100
+	b=Kfegx7ujlGk/2hjxiHA1Z+E7EMek3gRDyf0P7d57n0ymidZffq4rr3n644D7L2ioV
+	 YCEclgT7D3hsJZMPAZAFLCqXa2LMGV/1UN9Q6wKApeFeTTdOnvoHNLxwa8/TH0GDbW
+	 yy6vqqVxJGOX029sckv9QqIGbT2fkh08T3GleGZVgL1Nh5MJe9Dt2e0An1bDjJDHA8
+	 4YY9xCP1jqrqcGml7YgPpSIrV4kr/7x5br8YkOmFc7DvRm6IIpu2MgkCD598kY75Fl
+	 NDKZm50ZzVFa8oftaYRfgBEWvigM5Nn5Xa/iF1OR2l5I3uI8pabN4y+7U+32RbRvMA
+	 Akd5Ea5WMoDRA==
+Date: Wed, 28 Oct 2026 14:24:35 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Brian Norris <briannorris@chromium.org>
 Cc: Rob Herring <robh@kernel.org>, 
@@ -53,11 +53,9 @@ Cc: Rob Herring <robh@kernel.org>,
 	linux-arm-kernel@lists.infradead.org, Mariano Marciello <mmarciello@google.com>, 
 	Douglas Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org, 
 	Jakub =?utf-8?B?R8WCb3dhY2tp?= <jglow@google.com>
-Subject: Re: [PATCH 2/9] dt-bindings: soc: google: Add Google Tensor CPM
- binding
-Message-ID: <20261028-nonchalant-griffin-of-triumph-ccc710@quoll>
+Subject: Re: [PATCH 0/9] google: Add support for Laguna CPM
+Message-ID: <20261028-armored-glistening-cheetah-6f3070@quoll>
 References: <20261026214359.3122870-1-briannorris@chromium.org>
- <20261026144346.2.Ib692ddd35c1dbea1757d9b1db6c1c7e938fc4ea6@changeid>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,21 +67,55 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261026144346.2.Ib692ddd35c1dbea1757d9b1db6c1c7e938fc4ea6@changeid>
+In-Reply-To: <20261026214359.3122870-1-briannorris@chromium.org>
 
-On Mon, Oct 26, 2026 at 02:43:40PM -0700, Brian Norris wrote:
+On Mon, Oct 26, 2026 at 02:43:38PM -0700, Brian Norris wrote:
 > The Central Power Manager (CPM) is a co-processor on the Google Tensor
 > SoCs, as used on Pixel phones. CPM supports power-management and a
 > number of other features.
 > 
+> The Application Processor communicates with CPM over a pair of mailbox
+> channels. CPM provides clock, power-domain, reset, and interrupt
+> services.
+> 
+> This series adds device tree bindings, DTS, and drivers to support CPM,
+> and several of the basic services provided by CPM. These services are a
+> minimal set needed to bootstrap many other components on the SoC --
+> e.g., I have a working proof-of-concept PCIe driver running on top of
+> this series + pinctrl (not included here). CPM provides some other
+> components not yet included in this series (e.g., PMIC, RTC).
+> 
+> This series depends on the bindings and mailbox-payload-definitions from
+> this series:
+> 
+>   https://lore.kernel.org/all/20261023235408.3063350-1-dianders@chromium.org/
+>   [PATCH v2 0/4] mailbox: Improve the mbox core then introduce the goog-mba driver
+> 
+> So this series cannot be applied as-is yet. However, v1 of that series
+> was under review for about 3 months, so I'd like to at least:
+> 
+>   1) demonstrate its clients (this came up at
+>      https://lore.kernel.org/all/CAD=FV=VW2h1zWDYWQ6LknX3O+3=EY665jde35Ly+UQzuscXy=Q@mail.gmail.com/,
+>      for one); and
+> 
+>   2) start review for anything that isn't significantly impacted by
+>      potential changes in the above mailbox series.
+> 
+> With luck, the general design and DT bindings don't need to change, but
+> even if so, I expect any changes should not significantly affect:
+> 
+>  (a) the CPM DT binding or DTS (apart from #mbox-cells)
+> 
+>  (b) the CPM interface (cpm_request_client(), cpm_send_message())
+> 
+>  (c) any of the CPM clients (irqchip, reset, clk, pmdomain)
+> 
+> Thus, I think this falls somewhere between "PATCH" and "RFC".
 
-Ah, and one more:
-
-A nit, subject: drop second/last, redundant "binding". The
-"dt-bindings" prefix is already stating that these are bindings.
-See also:
-https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/bindings/submitting-patches.rst#L23
-
+Either you expect review or not. RFC means no. If that's patch, then at
+the top level of cover letter, as the most important thing, you explain
+the dependency and merging proposal of this. You combined here like 5
+different subsystens...
 
 Best regards,
 Krzysztof
