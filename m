@@ -1,65 +1,85 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.38.64.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793188688;
-	b=aD/xopRvbYltIHBk1QHmdUscIdgJhhdZeBbzk/8dOqiMY4R1irL2YjrVWOu530fvhQil
-	 lyPycVdKylxm6QGRe52Sodyi57YpnUnyAFiG4XICutrxoEmaBJMLBIPUIaRnNn7PkxVmM
-	 segfSHY48IDams82XB5kODoeimH+4SeDeiyzWDeAZ0iEwouNhRsILByHUMvjnj7Jlznrr
-	 YVR8XOYrvHGINBUd+AgS7gft5kGogSplGfG1WFakzuzO80Nxt2goFf6FjsmA+D1i0LzdE
-	 F4fxU6rSJOUMFxYQSrxNq8f/TlnU9kpYXdJNmCAR2YNbn9c78tVpknSu1a49juaVQsQ==
+	t=1793191522;
+	b=1bF5yLdAs/fvIhhbbhoaRIacFL9xQOURZDLQpnorCSTfI43JKm1sw4IGGNyQgxmuaIvh
+	 GBXI+7R3KAsyc+BsHWPjQeQ9yncOkGffufzVOfF8SJBQnfzjhBtrLwpMt8iFID/0OLxom
+	 oFgNo1G0PnHy4FE4JGZ7hLMSxZx7/je1PL8HPsZzAELL/IlgmTr+1XngHyeWqYe1ccgwi
+	 vvdiME3lL/Gqov+YkCPee9/IFl/v3VFA2sPJHftplM0nHTjmc5JBEJlpKY9yniV8lFRGc
+	 5xWBsor05tKsnS+2iwczZPl0toIgDcPX4/7rEe3ZQQI0JEd0dfnDMCXLQ257htmlOuQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793188688;
-	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-ID:In-Reply-To:References:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-CM-TRANSID:
-	 X-Coremail-Antispam:X-CM-SenderInfo;
-	bh=0rd0eq+HWmPKSTWPxG5jNO/1HvtIEnxtmy7jSKAuMZU=;
-	b=Ce5Mdbhc4GAv2IK+wIaq7nqyrnekylqByEzN18EWr+k05cS03jfxtToYu7KDaMXhz5SL
-	 ybsB1kkSXympS9bYwVMnVnVA4M/y3umSEUFYIRtogDUhtiL3TZBlZDmvU1x/dCl/qEwQ2
-	 4SSou63ztZTpaA0yr5S7mhp7R5tHHV6LIYufZuL1izeEisBjQVZMPG6iL1VMKJy2YC3pd
-	 R/pKk5/QPVyIE2b2XWuI6vLEWJ8xMjnhYbV7diF6WttUMqUexIouyyvRGCvizAVR79j5J
-	 R+2bQq9JCVcKY9cUXS6Zih495JJOgId6XxTeVo7aOH21GG5SKqIx4keWmnikCfrdoKQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793191522;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=QqTI4OK/fhuaR1GlqOO94iKxdKzeyM0Y5bQN/d17mzE=;
+	b=TGp8paf7uiSbMchHinUvvEWa/SHhDGLL3Ul3kwd165LSaL+UPLOC82kObXbO8O+JJbTz
+	 UFbmoEw7xd8zZ+Lw0UB1MO6ygOrh0QK+mUdHOhcNRuVhVK6E2MGLRi8y9sAAKwblSB5Nz
+	 OnUq8ZDPhQkMnVvaSRI9OEybWRsY8piTZcvm0Va24qVaQfV8Hv3V559BJgaIM7HDCZwkA
+	 1BFTHyxDJAiKLdgYmC8EzL3+1VnVA1gkdNCZ5KfGxFpbSbjwG9JncfxWpA94YHjzbnqPi
+	 5AgNU/fE9KteI7jFyzC5P9FRHc+WFHQFFFQNlfIR0JSZ/b4qWb0eM41MaGzLsI5K80g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mail.ustc.edu.cn;
-	spf=pass smtp.mailfrom=mail.ustc.edu.cn;
-	dkim=pass header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=xH1CgE2W;
-	arc=none smtp.remote-ip=202.38.64.46
-Received: from ustc.edu.cn (smtp.ustc.edu.cn [202.38.64.46])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 35553606A31C;
-	Wed, 28 Oct 2026 11:57:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 35553606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mail.ustc.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ustc.edu.cn
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.a=rsa-sha256 header.s=dkim header.b=xH1CgE2W
+	dmarc=none header.from=tuxon.dev;
+	spf=pass smtp.mailfrom=tuxon.dev;
+	arc=none smtp.remote-ip=209.85.128.42
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A383606A31E
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 12:45:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8A383606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tuxon.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tuxon.dev
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4a140e7405dso9492755e9.3
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 05:45:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-	Message-ID:In-Reply-To:References:Content-Type:
-	Content-Transfer-Encoding:MIME-Version; bh=0rd0eq+HWmPKSTWPxG5jN
-	O/1HvtIEnxtmy7jSKAuMZU=; b=xH1CgE2WFNhu+WDMbiZ6GUyJcTDyQTv92AAWk
-	OOegw6PiBMAQEyBkcC6Mt2ZXg2/P1C35aebPlGF4jTnToWxnPFiGiuO7nBdplDBR
-	jKA8gfLR24cgw44ZYrE+DRGHDCWaiEFVKsFwj+RVoZ0JyKZr2MHNSc7UJx7aFTtu
-	RNzcYA=
-Received: from [127.0.1.1] (unknown [114.214.180.23])
-	by mailimap2024 (Coremail) with SMTP id 3pYKCgDHST5F4+FqCs5YAA--.2697S2;
-	Wed, 28 Oct 2026 19:57:57 +0800 (CST)
-From: Qianhui Xu <xiaqinghuan@mail.ustc.edu.cn>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject:
- Re: [PATCH] power: supply: qcom_battmgr: do not report power_now on SM8750
-Date: Wed, 28 Oct 2026 19:57:57 +0800
-Message-ID: <179318867727.88971.13007415873000488463@mail.ustc.edu.cn>
-In-Reply-To: <84483ae1-1fbb-4219-a829-5867feb8bb17@oss.qualcomm.com>
-References: <20261013002124.332111-1-xiaqinghuan@mail.ustc.edu.cn>
- <5bf3636d-be7a-4800-9914-808d2fc5ebd9@oss.qualcomm.com>
- <52fc4222-508d-4acf-b38a-7b4e5aeff3cb@oss.qualcomm.com>
- <63cf18bc-5c89-4a55-aa15-2550dc47c155@oss.qualcomm.com>
- <179276335779.97093.2561281074827129812@mail.ustc.edu.cn>
- <179276342356.98176.10645303509497652146@mail.ustc.edu.cn>
- <84483ae1-1fbb-4219-a829-5867feb8bb17@oss.qualcomm.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+        d=tuxon.dev; s=google; t=1793191520; x=1793796320; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QqTI4OK/fhuaR1GlqOO94iKxdKzeyM0Y5bQN/d17mzE=;
+        b=kSmYo2IApQsaZVeoI/lHS65DndOvyRY8lt50GRCZmz/jWWH8qe4s7wo/zr2/zMpq25
+         +sjQr/YIemSHfu6uSz39sV8QOjFvoudUeuFCrPfNICLHczUoyPJM2MMP2ZzljZ7g4y9C
+         e2zu+Bti1OHmJlatzf5eQK5sXxZ3i0qUYaH+sDqEm4IIQ4Nk+kHHbcDLgsKMAjNiyB+/
+         XHCS25+GfCpZiPYLwRPoWKFHsIs3BMbU1i6dviNOqXSCye9VVbinYsSDEBX24Qp54NKy
+         2ZE+Gf+jUmLFXKEj1XKHO4ETJGGRqh51DtS3Fk31LWhkvIQvA1aIATIPsXPkaoqVeUIU
+         2+rA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793191520; x=1793796320;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=QqTI4OK/fhuaR1GlqOO94iKxdKzeyM0Y5bQN/d17mzE=;
+        b=UVtl2qZBfYER7/tQahlj7xoo22A2SJ46uG4XFSD/f+bLMPzurKUTaPSWPymwJOOWAi
+         Hl6MInCpUaziF68EVqZy1Kr3TV6QZHlA7BJYSCSerhQQMpuSgHIJUOf5cQBep0DJBKN8
+         WaoxXDI4qfh2E8QCA98XoiOMYLQme3OFVw9C/0cU0I4DzL5nXCIVtrUtfHgHTF5EI5fL
+         br/WP2q+U+49mfTFUyXqfa2cronDCjA7j5MFoVSmYJonFbvDOLJwCsnNuubwM5q3pkz+
+         qpJZwTxWdmJwF1Zzh+B40d7LNZc9Og8jybL9pg+tFY8QeLZtWeKc+Przf0RgJqIULdiO
+         RoNg==
+X-Forwarded-Encrypted: i=1; AKwUvBwmJBcnv5A264TvEsqpg+wbzwZ8/pYzcSCEH736ObBm5JCLbbBrCPHQqPhPsq2NQdOnHn+PcOVCFQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIlJKa07nHG9ahQV6C+2z4oOtWQZ9983BbwVE+jxTgqoVHWSlGe
+	nFMgyQA2LIoK6/dK+EMuslA3Q6elf/Rg3kIcRL+3o6nVl5Q9R6hhSTy0HkcTHYIL1FQ=
+X-Gm-Gg: AYBFou2ycScvx/UWYSYNV4GlZhCTJN3r1B7IrvZ7TEP9Ie9dSeXMvqv3PwPYVn6iVj5
+	MZ3uX++64UEkaH4oHqDHdikxLAz0cmO2ODVr627wfL+vj2UOerM4iVEDIzZ5FHKdjLX29ZNSOG2
+	tF5fSh9DLHIqqu4cNIpzhliabXcqgoUKpCAePHaT4ANc0O24KnpiheY1+KsAY2X8642xkQiRpGX
+	1r8jfr8d8pPYsZoz+jm8x7xTSVbbGuEw9FBpQ3zwQKAANss8ZOhPMsc7gsCuam221mA/QVr/P7j
+	cO/LxPaFOoJDj7SoKzlXkB0FWqSP4uhpQrWIBmGlkvtdF9L8ZkFsMNuDhuYYpnvn6hIPm3NDcEq
+	4j3zdkCm92UqzOyb+Rb3HQ+UENP+060dk5xMDMYaFV8RdOlrl4KU3i7IbBwyj+ZjBMxcSofOMOk
+	gkWkwzDOkdDjv+mZX0usa0uuuHcMCisFl8xnuGcdhBYowjuAprkKsc6/VIK681zocMqHkubr8ch
+	ck7JoCu2nejnm5e1o914RDXHhBLpvrJIrZ4v6Kms172AjddhWiBv2VYO0Oly+PThu64Q4Daa+0O
+	QIoWAoI8iFHaztGRlvWYrRFFGnnZZJY2US9okQ==
+X-Received: by 2002:a05:600c:3510:b0:4a4:7a8d:c436 with SMTP id 5b1f17b1804b1-4a96667dd75mr44218195e9.11.1793191519063;
+        Wed, 28 Oct 2026 05:45:19 -0700 (PDT)
+Received: from [192.168.50.4] ([82.78.167.196])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ebcb8d5sm29772912f8f.28.2026.10.28.05.45.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 28 Oct 2026 05:45:17 -0700 (PDT)
+Message-ID: <0602847f-4fef-49b6-a1eb-3240d7c1ecbc@tuxon.dev>
+Date: Wed, 28 Oct 2026 14:45:15 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,91 +89,76 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-CM-TRANSID:3pYKCgDHST5F4+FqCs5YAA--.2697S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxuryxGryfGr4kCFWxJr47Arb_yoW5ZrWfpa
-	yrtrnYkw1vyFWrCryUtr47Ca4Ygrs3AFy5Kr9Fv3sYva15Ar17tr1kKFn8Wr97Crn3XF4x
-	t3Waqwn3WF13CaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvFb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I2
-	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
-	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xII
-	jxv20xvEc7CjxVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwV
-	C2z280aVCY1x0267AKxVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
-	0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAFwI0_Jr0_Gr
-	1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI48JMxkF7I0En4kS14v26r126r1DMxkI
-	ecxEwVAFwVW8KwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c
-	02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_JF0_
-	Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7
-	CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v2
-	6r4j6F4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJbIYCTnIWIevJa73UjIFyTuYvj
-	xUg_gCUUUUU
-X-CM-SenderInfo: 50ld1x5qjk3t3q6ptxnoox23vfohv3gofq/1tbiAREOB2rg+9ZfJwBgsm
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 4/4] watchdog: rzg2l_wdt: Power on the watchdog domain
+ in the restart handler
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: geert+renesas@glider.be, mturquette@baylibre.com, sboyd@kernel.org,
+ wim@linux-watchdog.org, linux@roeck-us.net, ulf.hansson@linaro.org,
+ linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ linux-pm@vger.kernel.org, Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+References: <20241015164732.4085249-1-claudiu.beznea.uj@bp.renesas.com>
+ <20241015164732.4085249-5-claudiu.beznea.uj@bp.renesas.com>
+ <auC7FueGYTiLOpcX@black.igk.intel.com>
+Content-Language: en-US
+From: claudiu beznea <claudiu.beznea@tuxon.dev>
+In-Reply-To: <auC7FueGYTiLOpcX@black.igk.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Konrad,
 
-You are right and my previous mail was wrong. I checked the repository
-you pointed at and the battery/QBG path is there. Correcting it properly,
-including why I got it wrong.
 
-What I did before was a partial clone with a sparse checkout limited to
-the display, mmc and audio paths. drivers/power was never materialised,
-so "there is no drivers/power/supply vendor code in the drop" was an
-artefact of my own checkout, not a property of the repository. That is my
-mistake and I should have caught it before writing it down.
+On 10/27/26 16:54, Andy Shevchenko wrote:
+> On Tue, Oct 15, 2024 at 07:47:32PM +0300, Claudiu wrote:
+>>
+>> On RZ/G3S the watchdog can be part of a software-controlled PM domain. In
+>> this case, the watchdog device need to be powered on in
+>> struct watchdog_ops::restart API. This can be done though
+>> pm_runtime_resume_and_get() API if the watchdog PM domain and watchdog
+>> device are marked as IRQ safe. We mark the watchdog PM domain as IRQ safe
+>> with GENPD_FLAG_IRQ_SAFE when the watchdog PM domain is registered and the
+>> watchdog device though pm_runtime_irq_safe().
+>>
+>> Before commit e4cf89596c1f ("watchdog: rzg2l_wdt: Fix 'BUG: Invalid wait
+>> context'") pm_runtime_get_sync() was used in watchdog restart handler
+>> (which is similar to pm_runtime_resume_and_get() except the later one
+>> handles the runtime resume errors).
+>>
+>> Commit e4cf89596c1f ("watchdog: rzg2l_wdt: Fix 'BUG: Invalid wait
+>> context'") dropped the pm_runtime_get_sync() and replaced it with
+>> clk_prepare_enable() to avoid invalid wait context due to genpd_lock()
+>> in genpd_runtime_resume() being called from atomic context. But
+>> clk_prepare_enable() doesn't fit for this either (as reported by
+>> Ulf Hansson) as clk_prepare() can also sleep (it just not throw invalid
+>> wait context warning as it is not written for this).
+> 
+>> Because the watchdog device is marked now as IRQ safe (though this patch)
+> 
+> ...which is complete hack and has to be avoided.
+> 
+> Can it be solved differently?
 
-Checked now with the GitHub contents API on main (tip 210981a0ad74,
-last push 2025-11-09), no full clone:
+Can't tell ATM. This solution was suggested by Ulf.
 
-  drivers/power/supply/qti_battery_charger.c     70657 B
-  drivers/power/supply/qcom_battmgr.c            39375 B
-  drivers/power/supply/qcom/qti-qbg.c            78872 B
-  drivers/power/supply/qcom/qbg-core.h
-  drivers/power/supply/qcom/qbg-sdam.c
-  drivers/power/supply/qcom/qbg-battery-profile.c
-  drivers/power/supply/qcom/battery.c
+> (Note, OMAP, for example, got patches in the past
+> and become pm_runtime_irq_safe()-free.)
 
-The same commit is the one I have locally and git ls-tree lists all of
-them, so the content was in the tree I already had.
+I'll look through it.
 
-On your three questions, now with the sources in hand:
+Thank you,
+Claudiu
 
-- Which channel does the vendor actually build? CONFIG_QTI_BATTERY_CHARGER=m
-  in both arch/arm64/configs/vendor/sun_perf.config and sun_le.config
-  (sun = SM8750). CONFIG_BATTERY_QCOM_BATTMGR=m appears only in the generic
-  defconfig, so the SM8750 build does not use the upstream-shaped driver.
-
-- Is the property remapped? I do not see a remap. qti_battery_charger.c has
-  BATT_POWER_NOW at enum value 22, maps it to POWER_SUPPLY_PROP_POWER_NOW,
-  and read_property_id() sends that id unchanged to the PMIC GLINK
-  firmware. Upstream qcom_battmgr.c also uses 22 for the same slot, so both
-  channels address the same property id; nothing in the vendor driver
-  renumbers it.
-
-- Does that mean power_now is trustworthy on this board? No, and I am not
-  going to claim it. The vendor driver answering slot 22 only shows that
-  the firmware has an answer for it. It says nothing about whether the
-  value tracks load.
-
-Two things that do not change:
-
-The vendor's own qcom_battmgr.c is an older copy - enum qcom_battmgr_variant
-has only SM8350 and SC8280XP, no SM8750 - so there is still no
-upstream-shaped reference implementation for this SoC to compare against.
-
-And qti_battery_charger.c is downstream-only: it includes
-linux/soc/qcom/qti_pmic_glink.h, linux/soc/qcom/battery_charger.h and
-linux/soc/qcom/panel_event_notifier.h, none of which are upstream, so
-qcom_battmgr cannot reuse it. Same conclusion as before, just reached with
-the sources in front of me instead of behind my own checkout mistake.
-
-So the question from my previous mail still stands, now asked with better
-information: would you take the conservative version - add the SM8750
-variant, do not register POWER_NOW at all, no claim about what the slot
-means - or would you rather I keep the property and only fix the commit
-message? If you would prefer the numbers first, I can print slot 22 next
-to current_now and voltage_now in one sample and post that before sending
-anything.
-
-Sorry for the noise, and thanks for the pointer.
-
-Qianhui Xu
+> 
+>> the irq_safe_dev_in_sleep_domain() call from genpd_runtime_resume() returns
+>> 1 for devices not registering an IRQ safe PM domain for watchdog (as the
+>> watchdog device is IRQ safe, PM domain is not and watchdog PM domain is
+>> always-on), this being the case for RZ/G3S with old device trees and
+>> the rest of the SoCs that use this driver, we can now drop also the
+>> clk_prepare_enable() calls in restart handler and rely on
+>> pm_runtime_resume_and_get().
+> 
+>> Thus, drop clk_prepare_enable() and use pm_runtime_resume_and_get() in
+>> watchdog restart handler.
+> 
 
