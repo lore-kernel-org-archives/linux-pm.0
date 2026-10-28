@@ -1,79 +1,110 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793197411;
-	b=YcJ/hCSsVkkRjtNUwnMtStN9rrjJHVj8DcSUK0WRtMmoDPe9oBlZSEua69mN+1M4fQBT
-	 dE+nt4rWDSGIFmGl4TmMBNWMHg5RBUoUMdWv4xQ7Bri+vxSkzuHOxAIQDUpYqkhIDnbFC
-	 2QHtsVBSYPVd5wF84rU0xhZCB+Ufp+BNIZdFVzVVOMonnSHP3nedqQv32L/UhgDyXboh3
-	 n8INUuvQvaYqjMVnqa2ynSZizd106EUi8kUXY0hP8XlGFGyWjIZeVibkpyf7KbQsq8SOx
-	 6UAtiftmcb8L4QOhC9ejY18zeQJNAHzZgdKpLY7MVTa7RDskNPRgTpBAy/qrrTDI4wg==
+	t=1793198496;
+	b=M5aMmQLpPQn/zra2K2dhntIXKMi0LJ9uzNMNGujndmUOg6EtNiCUVtnbnvjCdk2UObzN
+	 86mAvBsN5DzJ8ztPLCgel18vJ3qIW/yeD9IRwDwSxykkE2pOUDGX4yGqjJM8dOsDGE6iq
+	 6S3dSvDE/1rNXSbk8njSgLApjfDyeW4X0xIKVSXkummbgIGfZOi10LKyCXQ7CuM2KxoW+
+	 rKbvdEEZs7rAj2Yz0D73ovbLoOMyRMAbz0eIWRk+Uekb+bxyETEFEl+QZ88CbGaqAKbAR
+	 v3zhj5V4FT9Vcxax6QLUjZRtsaCpusQKHaZFEEP8DrBw/MF1L3ZCeG2h1EkYncl54Lg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793197411;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
-	 Cc:Subject:Message-ID:User-Agent;
-	bh=2NdrZAkAz7heaa42OfUL91fExS8Tds1gie9XHu1AeFI=;
-	b=ri17XsTUE3/ElmSEwYaiSPQT1Ni0pz8qcS9CnfKo/MdBh8l43wejEqqZJ9Lk85RHyY9x
-	 QB9vjn2ZqKlQB221X/hOo/WsT62OO8iUaj+UIXcO8GUdiHWffTo6wArcyg7abK9Qzk1Q8
-	 ulFQgFu88qolOIR/xEnxOi+gxng+U7SWgLX0egfdlOiyNwIPbTg8nBzQPjYVLme04+uFL
-	 S9oB8lwqpWbBuR+fxUbZygLlvGTU7wCTWtMMqUIlJmMfosnn5qvC4k91WAq5rxOwJzzAW
-	 pJtE82+xp3wkbjIpJoEFCTby5VVYfQXENuTIGpjtawSQuP/jzCBAN+YuKnwzck9M3wA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793198496;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:X-Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-Authority-Analysis:
+	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=cU+ZB9844KPXAcjrEqi/T/TxmCtfMJe4KVaRRxeF4PI=;
+	b=LFpHfIxpKbiwaIgI+WVAM0m+ixObdKm1aF6cH1C4bQgHDNIDJoBRb4fTgqRT7lpT2Esq
+	 iUcpBUFy+Vy1Kxh/cLJY6IBJ76cGGZd4NnCmoqdFUY1gjD8MQaZSv6A++3774+VZYe42q
+	 jxtPInjTaHXkPN4p+rR/RsXNhzS3fY5efxyP6Xv9WUV0YrmtIFKyGHZuhPjwdyl7Q6aKy
+	 J4RHBdok9XY2w/GCXMyoTSIhMYqoJLP+xd7shJGzA/9T7VSKzW9nizS9A9j7+pYCwZUUV
+	 7Kq+C7Fna/o1cA4W5Oxt9ekDG1Yqa9sPu4K2iwXOQITAbehkLJgk6BnxhrLRJ1Ug3Qg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kkB8J+Ly;
-	arc=none smtp.remote-ip=198.175.65.12
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QK6P9sRl;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dE2iqtn4;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ECC360A263D
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 14:23:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5ECC360A263D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2044606A330
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 14:41:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C2044606A330
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kkB8J+Ly
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793197410; x=1824733410;
-  h=date:from:to:cc:subject:message-id;
-  bh=n/azdzmJ94M4g+CyGtjLKBZf2SVDWtbyTXshttQ7Qe0=;
-  b=kkB8J+LyoO3nPQThoouqYPN4mX7VHWigw2N3hdYBxN7LMy2QVMlmDX65
-   Djq6FdGGQEYGsNTi7MRJ4LgHztd1g8WPo/uNDOx5bJCEh9Ar4XHghdc9Y
-   SmyFGWn/bnOes5MdwUKUFt7G5TkKZhAbWodblNltHhFEpsQRFCL7cHvtY
-   3tSdUeF1tner+RdQkknXlAOiYJv9y8lUkKyEXXjJ+7fOQ+z8NJbHoRXR0
-   Q+0pjdXsYe0l2BOkSsBP9s2U/EFuyMOqUBNmxLDIkvVqHaY8L3W59CbOO
-   V5Sk0QctlAv2UhOwwu6ciPAZ7+H3eGbCT3U/ntzUwmHzMld23e3SxA5fp
-   g==;
-X-CSE-ConnectionGUID: JBPb9PCBT2iNi8Y+ugAFtg==
-X-CSE-MsgGUID: rccZ9/tXS0i8DRjE5IwZjQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11949"; a="1799541"
-X-IronPort-AV: E=Sophos;i="6.27,182,1787036400"; 
-   d="scan'208";a="1799541"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2026 07:23:30 -0700
-X-CSE-ConnectionGUID: R/tn64d4QWidz3UVmQPuug==
-X-CSE-MsgGUID: uaJzQ5kATOOvAxLEKvge5A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,182,1787036400"; 
-   d="scan'208";a="5174543"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
-  by fmviesa008.fm.intel.com with ESMTP; 28 Oct 2026 07:23:27 -0700
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xM4Ym-00000000YqO-3dbR;
-	Wed, 28 Oct 2026 14:23:24 +0000
-Date: Wed, 28 Oct 2026 22:22:38 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
- linux-pm@vger.kernel.org
-Subject: [amd-pstate:superm1/lockdown-iommu 3/3]
- security/lockdown/lockdown.c:217:8: error: call to undeclared function
- 'iommu_is_available'; ISO C99 and later do not support implicit function
- declarations
-Message-ID: <202610282110.ZVggpdqM-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QK6P9sRl;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dE2iqtn4
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69SBe2Mg1538955
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 14:41:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	cU+ZB9844KPXAcjrEqi/T/TxmCtfMJe4KVaRRxeF4PI=; b=QK6P9sRlLQRXw6DN
+	5y8otHdGrG0lxl0Y26kfdeAF0hp4rr10saNLUaBdlF4GUhI3ELvHc4HAnnpF6hnz
+	msyjQAT5ZSqRqyADyOQolglwcbUU0614GTZDpLbZAaWs849h+4+EvfUV+2usdeDm
+	m93j32xYU8ZpK2tOOaZDCgGbkkfXUiiaCLDqdRR5tkAFfyxC9buM5dU0SzVtNU8B
+	IVxhnfWAvRDfqer7AgM+0Sl1RqTbGYKnZmCNJMj8K/fdj1TTE04G8g/MxH7eUZ9F
+	nJwr+XtE1K7FI3kX/LVcI2OAvZmaABsu8lCpO4TI5M7xxUBO7SQjZBlJiBMfJwJr
+	MaKsXw==
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hkdf7seaq-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 14:41:34 +0000 (GMT)
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-3adbc9a47fbso1230966a91.1
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 07:41:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1793198493; x=1793803293; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=cU+ZB9844KPXAcjrEqi/T/TxmCtfMJe4KVaRRxeF4PI=;
+        b=dE2iqtn4jyxZogmzG6xMCFssuZNzBJCTBOFSvjRZkIFS0mOC3kVBKzrljCoC+SQpR2
+         eDwRi70oNzQS7iYq9Upyh1ohmaiQ5E4853fcqgvrNRlOOInk9DLPcdXGx8werPWgIg1/
+         Ej6SoTdNezQeZ3QsYoy06BJuQU/zYO3ag5iQcdXtiTCuwPPfA3oz5BFQVw87AtwEq26K
+         0zzI+Hr9IpOOZ40/bntcI/t0tvn46d0OgTwNwlt8FLSMS0af4Y2FpMsLFZH8NdQ53ZXt
+         ZUgcXj37/jiS8eLyvylpRaTOcWVAEPbjA0ALgirgLHtJvZSX8cA1y+zP3+5KKixHYtOd
+         kDVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793198493; x=1793803293;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=cU+ZB9844KPXAcjrEqi/T/TxmCtfMJe4KVaRRxeF4PI=;
+        b=lcdd+tS65cXIvRfgnx3M2YXtUYsXNpNCxk5VHdfHEEVFXGp+N0CXu17oXuB3xAcuM+
+         Ld1lGbMYsHZKNTiPLonjaMWEqU1Hu0LQLklQ12rbsznH+oWAF3zYU1lyc/3ZBpSwWjtx
+         ZRq4OqzoLrQlgl6jH2im3wJSX13FPdfU1FuGKsRk1AJAT8yW8UEq77Xi5GCaqRw2QFxd
+         OA+aN0DVt549sxwzQ4fTTbI2E0zwu73wAJ40RczOhw5quMVCfqAhmjI54srUKUq74dLp
+         KIf/DBUn53RLEKtm5DTRUg4p44CKPOnigfWjRZPvRzywz/NtLzEATOgogZgB/qKxdnA9
+         7x8Q==
+X-Gm-Message-State: AFq9FYIqCTpxA5z564uukxfGKHJd2H33g/aeXm4SnpdmlgPCWO7kybJ9
+	eWJsiG43N4yEaORLPQpXp/cEQAf5TtNufO5PuoujGONJGyaRzV0ggETb2iZLuxf0yXioapuKuj6
+	qlSoQfnSbCjpoC268gx1qXVG/eIlQP6XAW9XWD9cUTO8+KAz7YYjl1SEijoxiEw==
+X-Gm-Gg: AYBFou0P/p51JTNsW0ST6ahG5To8to9LX3dmzmrIF+SGEGgHjwWJHtWFGK/gy/7dDGP
+	yebjfStmTwavUb42+Fz0k2T/eJZvlyj/P6pbUELcAtXyO9Grga6+9nUeVjmJAXs9icDUVrxFjtx
+	+DnPfI2ZZ8gNxu2axPUCZddXPO5bqTfRAl2GqQFVBTjPxyCI3N75uUrJFZ2vMlPjrct+iSyOiE4
+	XWru+OtayO5qRtEizvy9SnK2ltMZVUnPhDjZRUheSuG9U+7cKt4aRdvHru8wLVKGnmlkTss7b6Z
+	NT9bX/Ez11yCy3S7cgAV3tQUScackEMWT4OnJycfw9MPEJtUa5heWZ4yvyk8eHJI9KVKKAJg5TI
+	h8O+kAKufGBAENlakvLR2ivzBpSHqCDb8/wKBom0aApdnPcLwnyDjSwWshNLFqmOPuFqHZoazz2
+	gjTOaQwKOho4W6/Vbd1Nl2Vcpczyzfgzm2RzrLyMhFbr0x
+X-Received: by 2002:a17:90b:2296:b0:3a4:b30b:b501 with SMTP id 98e67ed59e1d1-3ae57e2b787mr1494813a91.9.1793198493233;
+        Wed, 28 Oct 2026 07:41:33 -0700 (PDT)
+X-Received: by 2002:a17:90b:2296:b0:3a4:b30b:b501 with SMTP id 98e67ed59e1d1-3ae57e2b787mr1494800a91.9.1793198492549;
+        Wed, 28 Oct 2026 07:41:32 -0700 (PDT)
+Received: from [10.133.33.238] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ae5a5839besm3357980a91.11.2026.10.28.07.41.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 28 Oct 2026 07:41:32 -0700 (PDT)
+Message-ID: <b228d3c3-ac4b-43df-8829-edb9c459860d@oss.qualcomm.com>
+Date: Wed, 28 Oct 2026 22:41:28 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,55 +113,216 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] selftests: cpufreq: stop CPU hotplug loop after
+ cpufreq update test
+To: xiong yining <xiongyining1480@phytium.com.cn>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>, Shuah Khan <shuah@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kselftest@vger.kernel.org,
+        linux-kernel@vger.kernel.org, chenbaozi@phytium.com.cn,
+        zhongqiu.han@oss.qualcomm.com
+References: <20261028100241.189085-1-xiongyining1480@phytium.com.cn>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20261028100241.189085-1-xiongyining1480@phytium.com.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=M4bYuCws c=1 sm=1 tr=0 ts=6ae2099e cx=c_pps
+ a=vVfyC5vLCtgYJKYeQD43oA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=Vt2AcnKqAAAA:8 a=VwQbUJbxAAAA:8 a=c92rfblmAAAA:8 a=fgrLqfBXAAAA:8
+ a=rLnwe5TcSjkNIz7vCUkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=rl5im9kqc5Lf4LNbBjHf:22 a=v10HlyRyNeVhbzM4Lqgd:22 a=GvGzcOZaWPEFPQC_NcjD:22
+ a=_Ge82aPy-h_wFa7gWU4u:22
+X-Proofpoint-GUID: ONQdbl9MTR2zFY6rzS8ngxxul2S8SPx7
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI4MDA1OCBTYWx0ZWRfXwjCDgEGfmdcE
+ JXExjMvZNtEpaqK+2BfVXKdY2Ns2O6ch8Opay4R+Ib6BKxfUjFapo1TRRjA+HuZbEaiEnTY05VC
+ D7YG0KBCyjbkpl9Up3JoTDsuUrXTsNQ=
+X-Proofpoint-ORIG-GUID: ONQdbl9MTR2zFY6rzS8ngxxul2S8SPx7
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI4MDA1OCBTYWx0ZWRfX0TqKI21XOC82
+ imUnW4qaVDNYN7UJws9D4CzjlSvaJre3mqgjvq1tbsJZyNbz8wjyOvyXcI9Xzxd+TyQWsvKdZnW
+ jFU/N9G1o5W1tgcEyAHMB0Ismf6zib9dyLujQbiN8znTmQHKlbnxjYGd/98SxUsE6SIXBwIW4/B
+ bD4N4OLG9A0+tl4aqEEdJuxlFM4btLrjgucWaksdr4M4KAJBiZFBAhFCVSETLadPejGkAuYkGE1
+ dv5wNkBMKrTAjMz5YPje4lAQp1bslBTo8FZwJ5a0tqHF32brceUZeCG2Y4r/6LHqv/J2QVE7Tsq
+ r2lUSrOEaq3HnAw38U61PXL/kfvMjeeHw+MGX2lV3PDOc9TyzRS9vvoZ+aFFdvjVgXyEjyOTuOk
+ qYBJx1h5odHJ+Y8oY+e0gXxGwZQjp5lfcMntMdOXoFA60KLnmUN6ChvXA1ryP+Sm5rHbRkBeZfE
+ u0YHPfAXDRGlhzEuEEQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-28_04,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 clxscore=1015 impostorscore=0 malwarescore=0
+ bulkscore=0 spamscore=0 suspectscore=0 lowpriorityscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610280058
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git superm1/lockdown-iommu
-head:   74b0183524154e17897a7789da06a937eaf8b2b7
-commit: 74b0183524154e17897a7789da06a937eaf8b2b7 [3/3] security: lockdown: Prevent boot with lockdown but no IOMMU
-config: arm64-randconfig-1003-20261028 (https://download.01.org/0day-ci/archive/20261028/202610282110.ZVggpdqM-lkp@intel.com/config)
-compiler: clang version 24.0.0git (https://github.com/llvm/llvm-project 1da436a23e613c425fc9b868fc8deb979ede47a4)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261028/202610282110.ZVggpdqM-lkp@intel.com/reproduce)
+Hi,
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202610282110.ZVggpdqM-lkp@intel.com/
+On 10/28/2026 6:02 PM, xiong yining wrote:
+> Original test uses a fixed 5000 iteration loop to trigger CPU hotplug
+> for verifying cpufreq synchronization between CPU hotplug and sysfs
+> writes.
+> 
+> Two issues exist:
+> 1. Background hotplug task keeps running after test completes, causing
+> redundant CPU on/offline operations.
+> 2. When cpufreq frequency setup is slow, the hotplug loop may exit
+> before frequency updates finish, which breaks test purpose.
+> 
+> Introduce a file-based stop flag to control the infinite hotplug loop.
+> After all cpufreq updates complete, create the stop flag file and
+> wait for the hotplug task to exit.
 
-All errors (new ones prefixed by >>):
+The changelog still describes the v1 stop-file approach; please
+update it.
 
->> security/lockdown/lockdown.c:217:8: error: call to undeclared function 'iommu_is_available'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-     217 |                 if (!iommu_is_available()) {
-         |                      ^
-   security/lockdown/lockdown.c:217:8: note: did you mean 'slab_is_available'?
-   include/linux/slab.h:283:6: note: 'slab_is_available' declared here
-     283 | bool slab_is_available(void);
-         |      ^
-   1 error generated.
+> 
+> This makes hotplug run only during cpufreq sysfs write test,
+> align with test objective.
+> 
+> Signed-off-by: xiong yining <xiongyining1480@phytium.com.cn>
+> ---
+> Changes in v2:
+> - Stop the hotplug child process by signal notification instead of
+> a stop file, avoiding the predictable temporary path.
+> - Add an exit trap so the hotplug child is also cleaned up when the
+> main shell terminates abnormally.
+> - Link to v1:
+> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2662696.html
+> 
+> This addresses the security and robustness concerns raised by Sashiko.
+> ---
+>   .../selftests/cpufreq/special-tests.sh        | 30 +++++++++++++++----
+>   1 file changed, 24 insertions(+), 6 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
+> index e87ed7c8e5e5..b3ebead1c52a 100755
+> --- a/tools/testing/selftests/cpufreq/special-tests.sh
+> +++ b/tools/testing/selftests/cpufreq/special-tests.sh
+> @@ -16,6 +16,8 @@ source cpu.sh
+>   source cpufreq.sh
+>   source governor.sh
+>   
+> +HOTPLUG_PID=""
+> +
+>   # Test 1
+>   # $1: policy
+>   __simple_lockdep()
+> @@ -92,20 +94,34 @@ governor_race()
+>   	restore_all_governors
+>   }
+>   
+> +hotplug_cleanup()
+> +{
+> +	if [[ -n "$HOTPLUG_PID" ]]; then
+> +		kill -s SIGTERM "$HOTPLUG_PID"
+> +		wait "$HOTPLUG_PID"
+> +
+> +		HOTPLUG_PID=""
+> +	fi
+> +}
+> +
+>   # Test 4
+>   # $1: cpu
+>   hotplug_with_updates_cpu()
+>   {
+>   	local filepath="$CPUROOT/$1/cpufreq"
+>   
+> +	(
+> +		local quit=0
+> +		trap 'quit=1' SIGTERM
+> +		while [ "$quit" -eq 0 ]; do
+> +			reboot_cpu "$1"
+> +		done
+> +	) &
+> +	HOTPLUG_PID=$!
+> +
+>   	# switch to ondemand
+>   	__switch_governor_for_cpu $1 "ondemand"
+>   
+> -	for i in `seq 1 5000`
+> -	do
+> -		reboot_cpu $1
+> -	done &
+> -
+>   	local freqs=$(cat $filepath/scaling_available_frequencies)
+>   	local oldfreq=$(cat $filepath/scaling_min_freq)
 
 
-vim +/iommu_is_available +217 security/lockdown/lockdown.c
+The background hotplug loop is now started before switching to ondemand
+and before reading scaling_available_frequencies / scaling_min_freq. If
+the CPU happens to be offline at that point (such as single-CPU policy),
+those accesses return -EBUSY: the governor switch is lost, freqs is
+empty so the update loop does nothing while the test still passes, and
+oldfreq is empty so scaling_min_freq is not restored. Please start the
+hotplug subshell only after that setup is done.
 
-   197	
-   198	/*
-   199	 * Late init call to verify IOMMU availability when lockdown is active.
-   200	 * This catches cases where:
-   201	 *  - IOMMU hardware is absent on the platform
-   202	 *  - IOMMU was disabled by driver initialization failure
-   203	 *  - IOMMU was not detected (e.g. broken firmware, missing ACPI tables)
-   204	 *
-   205	 * On x86, we also check no_iommu here as a double-check. The early check
-   206	 * in lockdown_lsm_init() catches 'iommu=off' from the cmdline before
-   207	 * lockdown_lsm_init() runs, but this late check covers any missed cases.
-   208	 */
-   209	static int __init lockdown_check_iommu(void)
-   210	{
-   211		if (kernel_locked_down > LOCKDOWN_NONE) {
-   212			/*
-   213			 * Check generic IOMMU availability (all architectures).
-   214			 * iommu_is_available() returns true if any IOMMU driver
-   215			 * registered successfully.
-   216			 */
- > 217			if (!iommu_is_available()) {
+>   
+> @@ -117,14 +133,16 @@ hotplug_with_updates_cpu()
+>   		done
+>   	done
+>   
+> +	hotplug_cleanup
+> +
+>   	# restore old freq
+>   	echo $oldfreq > $filepath/scaling_min_freq
+>   }
+>   
+>   hotplug_with_updates()
+>   {
+> +	trap 'hotplug_cleanup' EXIT
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+
+AFAIK, regarding the EXIT-trap-on-signal remark from Sashiko:
+
+https://sashiko.dev/#/patchset/20261028100241.189085-1-xiongyining1480%40phytium.com.cn
+
+Bash runs the EXIT trap on SIGINT, SIGTERM, and SIGHUP, so I don't think
+additional traps are necessary. This issue occurs with Dash, but not
+with Bash.
+
+One sample simulation script：
+
+
+#!/bin/bash
+
+for sh in bash dash; do
+	command -v $sh >/dev/null || continue
+	for s in INT TERM HUP; do
+		out=$(env --default-signal=INT $sh -c \
+			'echo "$(readlink /proc/$$/exe)"
+			 trap "echo EXIT-trap-ran" EXIT
+			 kill -'$s' $$
+			 sleep 1
+			 echo not-killed' 2>/dev/null)
+		rc=$?
+		self=$(echo "$out" | sed -n 1p)
+		res=$(echo "$out" | sed -n 2p)
+		printf "%-14s %-4s rc=%-3s %s\n" "$self" $s $rc "${res:-<EXIT trap NOT 
+run>}"
+	done
+done
+
+
+output:
+/usr/bin/bash  INT  rc=130 EXIT-trap-ran
+/usr/bin/bash  TERM rc=143 EXIT-trap-ran
+/usr/bin/bash  HUP  rc=129 EXIT-trap-ran
+/usr/bin/dash  INT  rc=130 <EXIT trap NOT run>
+/usr/bin/dash  TERM rc=143 <EXIT trap NOT run>
+/usr/bin/dash  HUP  rc=129 <EXIT trap NOT run>
+
+
+>   	save_all_governors
+>   	for_each_non_boot_cpu hotplug_with_updates_cpu
+> -	wait
+>   	restore_all_governors
+>   }
+
+
+-- 
+Thx and BRs,
+Zhongqiu Han
