@@ -1,79 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793146831;
-	b=XAXqHeujGPv9FMOMkRgkC//fohR/joX+YCqKQVR0wOLfvkgR1BdrKKhuPVOLcruS5SRW
-	 aXOBQ8G4vZYqHNJkmQgt45Mp5FmVwb3LAdm/KFDOQQsAytXpwu70L/9ZDM4CMP1TYnP5V
-	 H5BfdfZ4FATXii+Foq4ilYNH2AHFBuSM5o/+O6ZfKVqmu/bu2ToIJ4bmoeOpY2RhcSgVj
-	 k2hCnBwIf0YhX0FvkgnjlbnHcX/x0QY6FYXteMlJpdb48HNB7lgZawzxa4Id1+MJIRVsK
-	 MOYDj9BlCddC5/yyqJ3VXUUpFmd9htlf6i99cyeRM+i3DgE0EsOAMarmewsegFonnaw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793146831;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=tJzDohBgQIEeXhbGPUON1R9UnoZ1QEo5Jwi1O8KFilY=;
-	b=Rknc9hkz+GY2BDc4wQaCuJy8iRvNg4xa6vdLWOUEt9tOHRr80EIqe+i/Y9UzWQbHdcsp
-	 L2YdEr/Q31nRvtIzaSB3fd1pATEdT+sLAdo5jQNP5dcoTr77TFrGRr3fBrJ/2efVv1XfZ
-	 vfXw6lb17kH37jZcVUlNaKYUX+Ww9kj0QjGgwkMo7REofbFjbxQsvFbnqsvpKSPVhxiJd
-	 AIqmZeholXUFGtPnLXagtVO6di6xxcEDYKLVvPLpXtGvNcj7smdY6zZY5R8qLjhkTULtX
-	 /gi7qvBpTmidtXVHUZQ//06nXSdm2oz6RhrenPm3Sq7/s5OXSZ7z8nwXHh79N74u3Ww==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RcdX+S52;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793150605;
+	b=2O4NGEFkZj1h1/v+8JwXzKlcD1vecUQv0WtwMiRWzX5jzGIXkaqL9ihAzCvUh8b3FMBG
+	 g/uLrhJCaIhsbclO5eK5SkB41eFHRu5FHmmeg1/2aJu7gBazvNQcOryda7Hm/G8Dij2KN
+	 9kcfsbNSiy9PDE1seP3aWVISsT8g2TDxwyVqObe32AJT9UJhO+6Cp64n9pl4vTFktj2yg
+	 lRKghvwVe/1eLkrruicXcEO+31bhs4cfAMH0VMb89Xul4Xc1Vrj9fw8keH25w9MZ/jWyE
+	 VBtyM18ArSHB0nY09I7y1tKs9lYIrvUpA7/lKZ2/MEMyLrKpVZtPKY72732vQ1NDerQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793150605;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+	 Cc:Subject:Message-ID:User-Agent;
+	bh=z4lL/va3hRQrO6UmbYnPLHkiRHndwpW4aNgxZpSshco=;
+	b=dhj4LtTkhEh86rQCi4TuSprZe+qye/Tw25jPSDOx6dhsbX22sWeryvEMcPQ+LoNwcerU
+	 11LBIpbY+bhZWlnZgEi74eGwL4Rnw6oB1IhyZJpWIemp2Dt0luyw/PsKyDygujbdWnTox
+	 n8cQct5qE4O6mbHCqRQSs0GMN6AUuojT8Xr5levsPYYVHa8w94qZfQ94/lgd3LmWe7xio
+	 tZX+WjmeUD2BD20VwWRPa/sqSrBeMFtZ18KRkhtpSjjAgNYjeHmnTKhWl8I3aWBm/6szM
+	 pGiqCTMWB4CwG9TUPlxG9HSWorIJ28I378NQ0dKxvg2z9f+0krE15Rnp0PHI6pgYURA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A6oObGxG;
+	arc=none smtp.remote-ip=192.198.163.18
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46AC1606A31E;
-	Wed, 28 Oct 2026 00:20:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E401C606A31A;
+	Wed, 28 Oct 2026 01:23:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E401C606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RcdX+S52
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793146830;
-	b=p90rWZEBGX1a8KALpsg2Isrw125FaRGoSLVjsUDo9VzOOD/lAbjCl9YPttxSK6FQt/uU
-	 tQfQQGiTPWbXaR+K91XpK5j5ukS5+J8mzfwfWR/HIhiLZlIWgfbIf6+Hu77KSo27thf5y
-	 rQ8oil6KWgVuYX3mqS6UlvIyjP2Dkr7Xq+J16Lj6ITf5GHQ0+FVgOotl50CaA9LaLUWuI
-	 IuaDtcqY4/umVu1dJzeQq2YhyeRkuJHyNhKReGUxtZYN+suuVo+SLwn3KfJE7/0l1oL5+
-	 88Xyn+4qbwXFodKDqtIls1cTgzQXd/pyWwnY5NOncge3rX4l6HfmQ6/IipMVE8VXBHQ==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793146830;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=tJzDohBgQIEeXhbGPUON1R9UnoZ1QEo5Jwi1O8KFilY=;
-	b=H07U5ie5XeOwbcnfl0tKSIO5spZ7TvanYfQlAPkEqN64M5a+NjhZWiUAox6y++b1hA5u
-	 syN6Qb9gwV8JN2wnfDWKLmK1k0Lzcp1+zQ95vYyejhtFripfxPWD3rrtcg3zWdLt/8ZgW
-	 dggvT03ffoDFdIgfmQfnpPdSqFGigRIUfeNwkqBAF1l6QUCrQvI+QNEq24nOaWqWvDp0s
-	 COKexgL5MpkXHKfthiIEZZmzdg7AFmoop8BVRzJ0nvcTVFCX8aKhey90ogFsd/O1DToXs
-	 nLkCp/AJKNMFhIoc+VK15u4qMmkacS8cWyj5xyuO01+a52jbF+S9GV+FYyq7V+3nyPw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id BC72F1F01828;
-	Wed, 28 Oct 2026 00:20:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793146830;
-	bh=tJzDohBgQIEeXhbGPUON1R9UnoZ1QEo5Jwi1O8KFilY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=RcdX+S52nBkXSOQNeHrLHNLAgDiwVOnidVXEYRXK1qRvMRfpiGvpaGBZqcy5gJPoA
-	 7jHwNHsOxqKqh/XJLAmwUAPN/flfYsZKjoRSe6U3jrvRQZVrPiZFkgEbDQwQCymgE+
-	 KudL935YOtu3oJ3m5ku9+Q7gVzZiGzD9shvMILmcFYQhotFzkxU1+flEJuhonz7lcV
-	 qCQ3wSoP6lOsgmfGGcrolkUdRHCeB/rXd7i2oB2367ZfC1FUxJeV3sxrsdkTIXQQbJ
-	 DXywPUX4KClGYZrDyfypfJmmjXJt/cQ0HLTl0icQ9hTB/oVeXkhhHUG1tuJfCTk842
-	 GBrcmqQasqMZw==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 35A9D452FD;
-	Wed, 28 Oct 2026 00:20:29 +0000 (UTC)
-From: Jez Ng via B4 Relay <devnull+jez.sfcompute.com@kernel.org>
-Date: Wed, 28 Oct 2026 00:14:46 +0000
-Subject: [PATCH 2/2] thermal: intel: hfi: Disable HFI left enabled by a
- previous kernel
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A6oObGxG
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793150604; x=1824686604;
+  h=date:from:to:cc:subject:message-id;
+  bh=1w277LaduK9/Af5yCwpqyZW2ck1wsrlhfrGh5WCgG58=;
+  b=A6oObGxG/rNwSu8matFwxZ6M4TEmPgbHuNQPHaVetuquyOLlJpUtMOeL
+   zaSzFAjieOg5tVrG5ylDJ70T1pwvFX5yPkg8CNzEpYqI4s/ywrARau7L5
+   QJcEnIWe0YyIgxV19rPfCUCmKVGhajhvGSzlMGKEIxrsb8W12h6KFIS7E
+   1Cio5Qrj33GYMZBGMfNr7TRk+nhi+MWC/hsf42GWrGlLvhNESGytf95qo
+   BIvpZIAI19sByD2n2Sr23A1v0Q0YDKUAzQ4yaBbqBOyUKu0qqmFBXDTv3
+   kiUOIBh/6v4o/eXezKArV+Wj9e9btZCEWirZdWYVU+L8M6QT4nGHbxVVO
+   Q==;
+X-CSE-ConnectionGUID: BGlMn2jNT+ec73PPwVf4qA==
+X-CSE-MsgGUID: JAPl3edsT4KvlTOCHYu02A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11948"; a="1894975"
+X-IronPort-AV: E=Sophos;i="6.27,182,1787036400"; 
+   d="scan'208";a="1894975"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2026 18:23:23 -0700
+X-CSE-ConnectionGUID: nYlFxMKoSxSjbjeEEIRV7A==
+X-CSE-MsgGUID: F6As0nsCSB6STMG2ayF9Kw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,182,1787036400"; 
+   d="scan'208";a="4644521"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+  by orviesa003.jf.intel.com with ESMTP; 27 Oct 2026 18:23:22 -0700
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1xLsNr-00000000XzQ-1frD;
+	Wed, 28 Oct 2026 01:23:19 +0000
+Date: Wed, 28 Oct 2026 09:22:18 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 0f60d2bdc364232f07145d2114b95cc9cfa45c8b
+Message-ID: <202610280913.n33Hdl21-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,120 +79,245 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261028-hfi-kexec-v1-2-956234dcfb2b@sfcompute.com>
-References: <20261028-hfi-kexec-v1-0-956234dcfb2b@sfcompute.com>
-In-Reply-To: <20261028-hfi-kexec-v1-0-956234dcfb2b@sfcompute.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, 
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, 
- Len Brown <len.brown@intel.com>, 
- Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org, Andrew James <ajames@sfcompute.com>, 
- John Ranzie <jranzie@sfcompute.com>, Jez Ng <jez@sfcompute.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793146828; l=3879;
- i=jez@sfcompute.com; s=20261027; h=from:subject:message-id;
- bh=MFHvCGMUfhFOc56f4vLbDg8eYQ8Wf8YlM3SPBL0W/oY=;
- b=FJFpb2EWq1gVcnPUpk8FY5Wsa6tnVG0gXGdAVE6kOPndaZVq8RYjjKa1x91I8PuEVgSph0pUT
- 01u9WWPekmHDMwIpgx962TDfY1uKUTpXwh0FafqaZ/4YKmk63b0E5VJ
-X-Developer-Key: i=jez@sfcompute.com; a=ed25519;
- pk=e8QxvBomwv96udVoo4EZvgPDtnl1YbPysb3vNdKi8JA=
-X-Endpoint-Received: by B4 Relay for jez@sfcompute.com/20261027 with
- auth_id=1337
-X-Original-From: Jez Ng <jez@sfcompute.com>
-Reply-To: jez@sfcompute.com
-Content-Transfer-Encoding: 7bit
 
-From: Jez Ng <jez@sfcompute.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 0f60d2bdc364232f07145d2114b95cc9cfa45c8b  Merge branch 'thermal-core' into bleeding-edge
 
-Since commit b33f3d2677b8 ("thermal: intel: hfi: Enable HFI only when
-required"), the kernel only programs HFI when a thermal netlink client
-subscribes to events. Before that, the first CPU of each package to come
-online wrote a fresh table address and enabled HFI, which replaced any
-setup a previous kernel left behind.
+elapsed time: 1660m
 
-Now, if the previous kernel left HFI enabled, for example across kexec,
-nothing touches it. Hardware keeps writing updates into the previous
-kernel's table, which is free memory in this kernel and can be allocated
-for anything. On dual-socket Sapphire Rapids systems kexec'ing from a 6.1
-kernel into 7.0, these writes corrupted the inode hash table and caused
-oopses in find_inode_fast().
+configs tested: 225
+configs skipped: 8
 
-When the first CPU of a package comes online, check
-MSR_IA32_HW_FEEDBACK_CONFIG and disable HFI if it is already enabled. If
-a client subscribes later, HFI is re-enabled with this kernel's table as
-before.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-This narrows the window but cannot close it. Hardware may still write
-to the old table until the package's first CPU reaches the thermal
-online callback, which runs from a device initcall. On the systems
-above that was about 30 seconds after this kernel started, 21 of which
-were spent in acpi_init(). In testing there, hardware wrote the table
-once right after HFI was enabled and not again over several minutes,
-idle or with every CPU busy, but the rate under other loads is
-unknown. The complete fix is for the previous kernel to disable HFI on
-shutdown, as "thermal: intel: hfi: Disable HFI on shutdown and kexec"
-does; this covers previous kernels that do not.
+tested configs:
+alpha                              allnoconfig    gcc-16.2.0
+alpha                             allyesconfig    gcc-16.2.0
+alpha                                defconfig    gcc-16.2.0
+arc                               allmodconfig    clang-24
+arc                               allmodconfig    gcc-16.2.0
+arc                                allnoconfig    gcc-16.2.0
+arc                               allyesconfig    clang-24
+arc                                  defconfig    gcc-16.2.0
+arc                   randconfig-1000-20261027    gcc-10.5.0
+arc                   randconfig-1000-20261028    gcc-8.5.0
+arc                   randconfig-1001-20261027    gcc-10.5.0
+arc                   randconfig-1001-20261028    gcc-8.5.0
+arm                                allnoconfig    gcc-16.2.0
+arm                               allyesconfig    clang-24
+arm                                  defconfig    gcc-16.2.0
+arm                              mxs_defconfig    clang-17
+arm                   randconfig-1000-20261027    gcc-10.5.0
+arm                   randconfig-1000-20261028    gcc-8.5.0
+arm                   randconfig-1001-20261027    gcc-10.5.0
+arm                   randconfig-1001-20261028    gcc-8.5.0
+arm                   randconfig-1002-20261027    gcc-10.5.0
+arm                   randconfig-1002-20261028    gcc-8.5.0
+arm                   randconfig-1003-20261027    gcc-10.5.0
+arm                   randconfig-1003-20261028    gcc-8.5.0
+arm                          s5pv210_defconfig    clang-24
+arm64                             allmodconfig    clang-24
+arm64                              allnoconfig    gcc-16.2.0
+arm64                                defconfig    gcc-16.2.0
+arm64                 randconfig-1000-20261027    gcc-8.5.0
+arm64                 randconfig-1001-20261027    gcc-8.5.0
+arm64                 randconfig-1002-20261027    gcc-8.5.0
+arm64                 randconfig-1003-20261027    gcc-8.5.0
+csky                              allmodconfig    gcc-16.2.0
+csky                               allnoconfig    gcc-16.2.0
+csky                                 defconfig    gcc-16.2.0
+csky                  randconfig-1000-20261027    gcc-8.5.0
+csky                  randconfig-1001-20261027    gcc-8.5.0
+hexagon                           alldefconfig    clang-17
+hexagon                           allmodconfig    gcc-16.2.0
+hexagon                            allnoconfig    gcc-16.2.0
+hexagon                              defconfig    gcc-16.2.0
+hexagon               randconfig-1000-20261027    clang-24
+hexagon               randconfig-1001-20261027    clang-24
+i386                              allmodconfig    clang-22
+i386                               allnoconfig    gcc-16.2.0
+i386                              allyesconfig    clang-22
+i386        buildonly-randconfig-1000-20261027    clang-22
+i386        buildonly-randconfig-1001-20261027    clang-22
+i386        buildonly-randconfig-1002-20261027    clang-22
+i386        buildonly-randconfig-1003-20261027    clang-22
+i386        buildonly-randconfig-1004-20261027    clang-22
+i386        buildonly-randconfig-1005-20261027    clang-22
+i386                                 defconfig    gcc-16.2.0
+i386                  randconfig-1000-20261027    gcc-14
+i386                  randconfig-1001-20261027    gcc-14
+i386                  randconfig-1002-20261027    gcc-14
+i386                  randconfig-1003-20261027    gcc-14
+i386                  randconfig-1004-20261027    gcc-14
+i386                  randconfig-1005-20261027    gcc-14
+i386                  randconfig-1006-20261027    gcc-14
+i386                  randconfig-1007-20261027    gcc-14
+i386                  randconfig-1008-20261027    gcc-14
+i386                  randconfig-1009-20261027    gcc-14
+i386                  randconfig-1010-20261027    gcc-14
+i386                  randconfig-1011-20261027    gcc-14
+i386                  randconfig-1012-20261027    gcc-14
+i386                  randconfig-1013-20261027    gcc-14
+loongarch                         allmodconfig    clang-24
+loongarch                          allnoconfig    gcc-16.2.0
+loongarch                            defconfig    clang-24
+loongarch                 loongson64_defconfig    gcc-16.2.0
+loongarch             randconfig-1000-20261027    clang-24
+loongarch             randconfig-1001-20261027    clang-24
+m68k                              allmodconfig    gcc-16.2.0
+m68k                               allnoconfig    gcc-16.2.0
+m68k                              allyesconfig    clang-24
+m68k                              allyesconfig    gcc-16.2.0
+m68k                           amiga_defconfig    clang-17
+m68k                           amiga_defconfig    gcc-16.2.0
+m68k                          apollo_defconfig    clang-24
+m68k                        bvme6000_defconfig    gcc-16.2.0
+m68k                                 defconfig    clang-24
+m68k                         m5272c3_defconfig    gcc-16.2.0
+m68k                        m5475evb_defconfig    clang-24
+m68k                         mvme147_defconfig    clang-17
+microblaze                         allnoconfig    gcc-16.2.0
+microblaze                        allyesconfig    gcc-16.2.0
+microblaze                           defconfig    clang-24
+mips                              allmodconfig    gcc-16.2.0
+mips                               allnoconfig    gcc-16.2.0
+mips                              allyesconfig    gcc-16.2.0
+mips                   decstation_64_defconfig    gcc-16.2.0
+mips                         qi_lb60_defconfig    clang-17
+mips                           rb532_defconfig    clang-24
+nios2                          3c120_defconfig    clang-24
+nios2                             allmodconfig    clang-20
+nios2                              allnoconfig    clang-24
+nios2                                defconfig    clang-24
+nios2                 randconfig-1000-20261027    clang-24
+nios2                 randconfig-1001-20261027    clang-24
+openrisc                          allmodconfig    clang-20
+openrisc                           allnoconfig    clang-24
+openrisc                             defconfig    gcc-16.2.0
+parisc                            allmodconfig    gcc-16.2.0
+parisc                             allnoconfig    clang-24
+parisc                            allyesconfig    clang-17
+parisc                               defconfig    gcc-16.2.0
+parisc                randconfig-1000-20261027    clang-22
+parisc                randconfig-1001-20261027    clang-22
+parisc64                             defconfig    clang-24
+powerpc                           allmodconfig    gcc-16.2.0
+powerpc                            allnoconfig    clang-24
+powerpc                      asp8347_defconfig    clang-24
+powerpc                    currituck_defconfig    clang-17
+powerpc                mpc834x_itxgp_defconfig    gcc-16.2.0
+powerpc                     mvme5100_defconfig    clang-24
+powerpc                      powernv_defconfig    gcc-16.2.0
+powerpc               randconfig-1000-20261027    clang-22
+powerpc               randconfig-1001-20261027    clang-22
+powerpc                      skiroot_defconfig    clang-24
+powerpc                      stx_gp3_defconfig    clang-17
+powerpc                      tqm8560_defconfig    clang-17
+powerpc64             randconfig-1000-20261027    clang-22
+powerpc64             randconfig-1001-20261027    clang-22
+riscv                             allmodconfig    clang-24
+riscv                              allnoconfig    clang-24
+riscv                             allyesconfig    clang-24
+riscv                                defconfig    gcc-16.2.0
+riscv                 randconfig-1000-20261027    gcc-16.2.0
+riscv                 randconfig-1001-20261027    gcc-16.2.0
+s390                              allmodconfig    clang-17
+s390                               allnoconfig    clang-24
+s390                              allyesconfig    gcc-16.2.0
+s390                                 defconfig    gcc-16.2.0
+s390                  randconfig-1000-20261027    gcc-16.2.0
+s390                  randconfig-1001-20261027    gcc-16.2.0
+sh                                allmodconfig    gcc-16.2.0
+sh                                 allnoconfig    clang-24
+sh                                allyesconfig    clang-17
+sh                                   defconfig    gcc-14
+sh                    randconfig-1000-20261027    gcc-16.2.0
+sh                    randconfig-1001-20261027    gcc-16.2.0
+sh                           rsk7264_defconfig    gcc-16.2.0
+sparc                              allnoconfig    clang-24
+sparc                                defconfig    gcc-16.2.0
+sparc                 randconfig-1000-20261027    clang-20
+sparc                 randconfig-1000-20261028    gcc-12
+sparc                 randconfig-1001-20261027    clang-20
+sparc                 randconfig-1001-20261028    gcc-12
+sparc64                           allmodconfig    clang-20
+sparc64                              defconfig    gcc-14
+sparc64               randconfig-1000-20261027    clang-20
+sparc64               randconfig-1000-20261028    gcc-12
+sparc64               randconfig-1001-20261027    clang-20
+sparc64               randconfig-1001-20261028    gcc-12
+um                                allmodconfig    clang-17
+um                                 allnoconfig    clang-24
+um                                allyesconfig    gcc-16.2.0
+um                                   defconfig    gcc-14
+um                              i386_defconfig    gcc-14
+um                    randconfig-1000-20261027    clang-20
+um                    randconfig-1000-20261028    gcc-12
+um                    randconfig-1001-20261027    clang-20
+um                    randconfig-1001-20261028    gcc-12
+um                            x86_64_defconfig    gcc-14
+x86_64                            allmodconfig    clang-22
+x86_64                             allnoconfig    clang-24
+x86_64                            allyesconfig    clang-22
+x86_64      buildonly-randconfig-1000-20261027    gcc-14
+x86_64      buildonly-randconfig-1000-20261028    clang-22
+x86_64      buildonly-randconfig-1001-20261027    gcc-14
+x86_64      buildonly-randconfig-1001-20261028    clang-22
+x86_64      buildonly-randconfig-1002-20261027    gcc-14
+x86_64      buildonly-randconfig-1002-20261028    clang-22
+x86_64      buildonly-randconfig-1003-20261027    gcc-14
+x86_64      buildonly-randconfig-1003-20261028    clang-22
+x86_64      buildonly-randconfig-1004-20261027    gcc-14
+x86_64      buildonly-randconfig-1004-20261028    clang-22
+x86_64      buildonly-randconfig-1005-20261027    gcc-14
+x86_64      buildonly-randconfig-1005-20261028    clang-22
+x86_64                               defconfig    gcc-14
+x86_64                                   kexec    clang-22
+x86_64                randconfig-1000-20261027    gcc-14
+x86_64                randconfig-1000-20261028    clang-22
+x86_64                randconfig-1001-20261027    gcc-14
+x86_64                randconfig-1001-20261028    clang-22
+x86_64                randconfig-1002-20261027    gcc-14
+x86_64                randconfig-1002-20261028    clang-22
+x86_64                randconfig-1003-20261027    gcc-14
+x86_64                randconfig-1003-20261028    clang-22
+x86_64                randconfig-1004-20261027    gcc-14
+x86_64                randconfig-1004-20261028    clang-22
+x86_64                randconfig-1005-20261027    gcc-14
+x86_64                randconfig-1005-20261028    clang-22
+x86_64                randconfig-1006-20261027    clang-22
+x86_64                randconfig-1006-20261028    gcc-14
+x86_64                randconfig-1007-20261027    clang-22
+x86_64                randconfig-1007-20261028    gcc-14
+x86_64                randconfig-1008-20261027    clang-22
+x86_64                randconfig-1008-20261028    gcc-14
+x86_64                randconfig-1009-20261027    clang-22
+x86_64                randconfig-1009-20261028    gcc-14
+x86_64                randconfig-1010-20261027    clang-22
+x86_64                randconfig-1010-20261028    gcc-14
+x86_64                randconfig-1011-20261027    clang-22
+x86_64                randconfig-1011-20261028    gcc-14
+x86_64                randconfig-1012-20261027    clang-22
+x86_64                randconfig-1013-20261027    clang-22
+x86_64                randconfig-1014-20261027    clang-22
+x86_64                randconfig-1015-20261027    clang-22
+x86_64                randconfig-1016-20261027    clang-22
+x86_64                randconfig-1017-20261027    clang-22
+x86_64                                rhel-9.4    clang-22
+x86_64                            rhel-9.4-bpf    gcc-14
+x86_64                           rhel-9.4-func    clang-22
+x86_64                     rhel-9.4-kselftests    clang-22
+x86_64                          rhel-9.4-kunit    gcc-14
+x86_64                            rhel-9.4-ltp    gcc-14
+x86_64                           rhel-9.4-rust    clang-22
+xtensa                             allnoconfig    clang-24
+xtensa                            allyesconfig    clang-20
+xtensa                randconfig-1000-20261027    clang-20
+xtensa                randconfig-1000-20261028    gcc-12
+xtensa                randconfig-1001-20261027    clang-20
+xtensa                randconfig-1001-20261028    gcc-12
 
-Also update the kernel-doc of intel_hfi_online(), which still described
-it as always enabling HFI.
-
-Fixes: b33f3d2677b8 ("thermal: intel: hfi: Enable HFI only when required")
-Cc: stable@vger.kernel.org
-Reviewed-by: Andrew James <ajames@sfcompute.com>
-Reviewed-by: John Ranzie <jranzie@sfcompute.com>
-Signed-off-by: Jez Ng <jez@sfcompute.com>
----
- drivers/thermal/intel/intel_hfi.c | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
-index 8ff094eccbaf..b97f8113930c 100644
---- a/drivers/thermal/intel/intel_hfi.c
-+++ b/drivers/thermal/intel/intel_hfi.c
-@@ -413,13 +413,14 @@ static bool hfi_disable_if_enabled(void)
- }
- 
- /**
-- * intel_hfi_online() - Enable HFI on @cpu
-- * @cpu:	CPU in which the HFI will be enabled
-+ * intel_hfi_online() - Set up HFI on @cpu
-+ * @cpu:	CPU that is coming online
-  *
-- * Enable the HFI to be used in @cpu. The HFI is enabled at the package
-- * level. The first CPU in the package to come online does the full HFI
-- * initialization. Subsequent CPUs will just link themselves to the HFI
-- * instance of their package.
-+ * The HFI is enabled at the package level. The first CPU in the package to
-+ * come online does the full HFI initialization, which includes disabling HFI
-+ * if a previous kernel left it enabled. HFI is enabled only when there are
-+ * thermal netlink clients. Subsequent CPUs will just link themselves to the
-+ * HFI instance of their package.
-  *
-  * This function is called before enabling the thermal vector in the local APIC
-  * in order to ensure that @cpu has an associated HFI instance when it receives
-@@ -462,6 +463,14 @@ void intel_hfi_online(unsigned int cpu)
- 	if (hfi_instance->hdr)
- 		goto enable;
- 
-+	/*
-+	 * A previous kernel may have left HFI enabled across kexec. Hardware
-+	 * would keep writing to that kernel's table, in memory this kernel now
-+	 * owns.
-+	 */
-+	if (hfi_disable_if_enabled())
-+		pr_info("HFI left enabled on package %u, disabled\n", pkg_id);
-+
- 	/*
- 	 * Hardware is programmed with the physical address of the first page
- 	 * frame of the table. Hence, the allocated memory must be page-aligned.
-
--- 
-2.39.5
-
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
