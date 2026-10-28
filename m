@@ -1,128 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793211047;
-	b=uAlKs21lvwDdHp1gZEvsY/ys2LxSxkLKf+MVgMvQNtEiezDaoSBNGBBVehR8l13W738F
-	 TcHp/gsdUfh1tHXiwk1lROmNOg7dgAA2ycnMPhRSXZwOMCwnXXHvqWsfb8mJIgUnzhvzL
-	 LT/aw1L/zyEUqoign8GkT9VYA2p53vSJeW4v4Jz6sLAiSDOM5usbmNTgm0PUNpqVluh7V
-	 gXKDwoldJivQDfZO4DZgdsj8+VEvRa9GKrnSqt0dliMEuq5G4gttgxzJgT/pD+5TWyQkn
-	 7ZgJPk7hCkzEuIOvpZ66Mbx7n+MSfAqiYSEQIt5EMI1cY2BzRzeGMlJZH5/xCWrkBTQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793211047;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
-	 Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Authority-Analysis:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=6u3zqcJQ01sSMu+qm6L7bE2aybaQhlU8iBaL9JFnZjM=;
-	b=rph8AUW/rXMjtW/p5DWfSphDKxdZNGBnAgnCJ9WAbhoJRObZ8n+6uBwJ1zKVpvDB/Mmd
-	 DpReRBYdC+/q9j4hn0v8baIy0WtHqa1eJBGfDBcRH3mpsDdOSlpRmZ+ZEnLiVDuP7pa8Z
-	 ZFrF2IKmMX9nuw4ZNAFpAyqQVdLLY5r6ZiH6sg4kJT2+9R2aLZjTRF1a1nJ9soLHNKm6C
-	 NeMsnTfekp8NFCpOBGN7ENGe44zO04ukGTsxphK4VHEwcDhCHXZa3aKKMQFoBCPZ+wgBv
-	 gzO1U97Q03ugvCbaKjga5uTXG5ENFzxlLqEXHYP0hmzPV4MADvq61lejnVL8nELN5ww==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ArxIu4Pw;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=NyILZ4yb;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.54
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793211814;
+	b=kLqx3FsV5foK4j32hTwpm3vSQnnW7m0t9gl0JHgBCx4Qc91ag/QNaYJdwOlRw2Q+Pwuo
+	 MRmFFqZaxiStg3nPgH7936nn25jyAg+vEEoekY5+VQVNv1GjCagcOObnSLTwbknHjYY7h
+	 +KgPsV59fDuoTRR+FVQN98L2/TRvbIs7C3KiFsgTxgQmPqeVU0mUjTo+nguM5oSXUZWIt
+	 t/Y2YCXAtIH72a1zEa60Ls0MjwA0DbS1AZKls4LETZrHRH8XY9HradW0W9S80aKg7rvyW
+	 fPJ5gL/wWnLPZnlFCFxo/MzyXJIJ82MzWryZCCapP5Hlw+LwuLMKyPBqixZpdjzB0OQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793211814;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=cFWfkIkWfjhOSUFJOJXQEhmE0QtvF6eBs0tDviPyGsc=;
+	b=hq4TVbPLSdv44C1yJFTkoE3rhOBH99tM9WJiypbi13ciWW2E1ZOfR37+werEmBXztFJk
+	 LastjCpFnvTpkSqEUEhrp0ZOns2zn+pVxLVsYdA4Ezzu+jOfQI68GF4cyVZMw+OCKeUbZ
+	 1mJ0oGqVHUZ0jocQgV3h1gAi+T0GniqgjiVs70rBc5LZvjPxTrZapsHUobCcT4TP+wTrq
+	 CPSwR9U0uu8glf48SRxoIVDcJyVfZiF000zIgIjl6SPky989rGb209ArYtuzvh3xRu1tH
+	 TAlCGoW5ZRtnhOTD1ih9Ss9xMKY2PGkZEb59ZV4z4IRoD4oYk9O8GPV5GP17mYY7vcg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=cmCVmz5E;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.54
+Received: from mail-yx1-f54.google.com (mail-yx1-f54.google.com [74.125.224.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D51B460A6F4E
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 18:10:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D51B460A6F4E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55585606A33C
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 18:23:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 55585606A33C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ArxIu4Pw;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=NyILZ4yb
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69SHaSvt1474511
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 18:10:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=6u3zqcJQ01s
-	SMu+qm6L7bE2aybaQhlU8iBaL9JFnZjM=; b=ArxIu4PwtAhxXYrlBnwxbsMSKn9
-	Sa9Yu3eWK/NuQ/ZMmyh2bEcFsDg5zgE14xK3YIx/VdViTFPR3PupnD7+J0OoH33e
-	piHVmnpn/wgAh27ZLAZOHD2qz3bymru9azMuhO7PU4r9+DZUoxeiMsSlk694qaUC
-	QSDaY7qi4Gi7w5Xr24b0cZNDdJOSINYnZTEaLUgSv0aSS229Q7K2rCwC4TzP+btd
-	46fuPGkeqY2H+Sw+r/pD55YlUR7rReFFEdb0XldyUsZkAJUGxWzpY0jDP3yphaP7
-	TkI3fsZxELPFB05xHviqgvdAVD2dK6kwOYnb/Bd0TJtI8ay8Jv1RJVshkkg==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hknkp84e9-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 18:10:45 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93f559420f3so111598385a.0
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 11:10:45 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=cmCVmz5E
+Received: by mail-yx1-f54.google.com with SMTP id 956f58d0204a3-67999045530so1187549d50.1
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 11:23:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793211813; cv=none;
+        d=google.com; s=arc-20260327;
+        b=UWLdxQ3tA2rgwBIQTRctpBamupEMZtKUzwiObodA+Vhqg6ehYMMFzZMPqviL3xkqgq
+         /UcVHDtW30+f7vtk/vQIrNbk/szqQzRDCfGkOPYqr4KGF9ibRRq1UaQLeah3CboXEcb5
+         A+VnYarJr18+nH7BWebTBmVxah9yTa4TcSSHqMD4dDPNR6V8WTdDkPnz3AoxT/eX++Ch
+         QRpRSEjv4wocrH2hYztc859kSAYgh/pgzacLbMy2X0VDRAExo4JzAevleKdmzNz2vV5j
+         yIeVil0X2MecAYTou1yjy8OxUR2f2JVELzFyKlfaeY0EPVctEi3WhpeAUo69mOQb40Ck
+         XB6w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=cFWfkIkWfjhOSUFJOJXQEhmE0QtvF6eBs0tDviPyGsc=;
+        fh=107QcE7410bOKu7oudPvj8ORHgWcGXexyS7J9N04NbY=;
+        b=aLlRwKl5TmbY/6v1WMB8sqGXylqh3YpYaSyigfxtwp/ssM31lasdobMI4oCglkAqhY
+         W1kXNYgUfMi+PrYx5iOoTPEZ0M75Wb/tP67OPgEFTUFLbqpnz6VAH3vQFuo8c2AUCAq+
+         ZB3IbRSYUIbB69uj/8o+Nuhxe822vSYhq4VvD33mgHaUyF8SGQQ4P3qC94ACcWdHNuSG
+         t8p62n98tgF7t76kqDqMpxvGbJ25tcyJnI19mG0JJIAl0wMwS2IaEsFHWKkz9u+0AmsS
+         1OizVId5s8qEKafqc2mrg8EcNSMa3nNUlNPMzjhal0xkKgAgnU3gBUV6wgz1lR2irtK/
+         pStQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793211045; x=1793815845; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6u3zqcJQ01sSMu+qm6L7bE2aybaQhlU8iBaL9JFnZjM=;
-        b=NyILZ4ybfIWMNXTIxPdmD98k45qlob8L3xmgmoH/y8/bsrzCr4DKiuBKHr0yjtlRYy
-         N5UzUTuJeyDhEaP64mTsOyDy3pozCrcFvU15WqH48tOK+3rc8zatPzOqHULHCqVP25JO
-         h6PKnNMEnBHUsAlJutFu1k+7chgkPb53HOwNsQl18v6Gdp5DDD73Aswgg5nE4+dCZs65
-         0gXopaUm27EGIiwNNFerGiJPn9ZT+C0HXBETmPxewupaNCUut8q4ohOeG7awLpyi8TjZ
-         4UQf/v3j0bSeX+tTIMilHex2Zyud4cZLYUAi8TYq/13G4rT8d2lRPGE5WlxaPAYzysXA
-         5eIQ==
+        d=gmail.com; s=20260707; t=1793211813; x=1793816613; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=cFWfkIkWfjhOSUFJOJXQEhmE0QtvF6eBs0tDviPyGsc=;
+        b=cmCVmz5EDlPgGpt7D48i7zZLLkqYO+wKOQEJCFw+CPT1V0HsVdAOe24mkft9RXoEkD
+         jPI3A5deGmYs3Q1PF3kw8R4dQ23CEIy4/U1S9qF9Ar1JXrXInpunTdMqBudL8okCjjoy
+         5f2IcaSQ8wAY9ju3+/m0NYTjPTu/ueX6EsDmnX2FcC4QUPjx2/QEKkvGtV3J6mBSoLn1
+         c3+DohN62m7thFQFl0j2MU+ok2Gf6av/sgv+lltqY/+2wDnHn7XYq7irZX+hCgsbB0iP
+         CA/YnvHkM7rIJBNzGlEN4RTUyMUBRGWhDff6qMJm3GQt/BHtf5zQNMIcn/yy9/Oe26Hk
+         1FOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793211045; x=1793815845;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=6u3zqcJQ01sSMu+qm6L7bE2aybaQhlU8iBaL9JFnZjM=;
-        b=POc0LHsPXGzbzmCeJkUdw7sd0Nr6lDG7n5JJ1n5AM9iOw0wirVS3iitibUsId0dZSn
-         qO2nop4cKXgh8VXq+BWyKtC5GLIvJGNG1LKi45uO7psCiS58VrdbbWch9fJD62dfWHjD
-         kffly3G1jUy3/7NmCwskliO8tqxWj7Y09iQI85ZM2ziQdWIWbaS8H5CPadFN2X/1c+YT
-         ez/g1zIH7UfV9Y/yzE5odBLXUURSIFTfgDbDjFFMpp7mlPZ/FoUsR3q2CZVwIvVNEfu7
-         3+lvgbuD6NXX3jC7JV8ah0TVVFevM06l/XMg3qYwoBLwHMfed/5Fr2r96wqpbskWpK8X
-         lEEQ==
-X-Forwarded-Encrypted: i=1; AKwUvBztt/KMlrKPqYfBWJKlti78S+ulQWUy5nfO0I3BtjaVbjG9MndmD20zwa1h9VR4ZPdlgovnF1XPQA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKpb6H9WKrb+vXyQ0yXnV2yAsPfG5oG/v+qtJ7P0xQ0it9ZAdaT
-	mrMO4Vd1rQtBsqDkjBxuGf/n5IP5Uy7QLIYuAcR/dw2KO2c2m8Dg3zSn4LmKnyO3tcbUyOj7o7Z
-	7OcAQ7lFXJTRa6tctUp39SpN8HpHa5sfqxAP+Vc2F9UTseFR6szoxaPNgdYXu1A==
-X-Gm-Gg: AYBFou3TxK0PeeWVURRYZ0kYoZ6zr1z43/CLklPuoMscjvEWZllfTIGB60DIMZuUDWO
-	zvZvHqa78WnDI7twXHMGm36wSK42XZP30lWYw5pYYEoNNHpW6w7Gxt0a/YneYxz1Wo5qpTkNWVE
-	R2HohO16vncf0/qBnntdh9TcRZWFRYTOK8cTvoUoLCzjMkOOZbJrzRzh12PaeNIdtMTXqITZbzl
-	ac/kCnfSYqcS08KlBIL+2EhpiMivDNGhBDu55jQvwLqL/tarHgVJKmbOGWtOuuZ5YnFKCDXh9wC
-	TIHiB1XP2yZcM2TUYid0PSKVOZ8t+jp5xnl1UjhCzTq57bSXtHX0cM2ChOn6I8PnP0iwQarDsoH
-	DYNued6sZYNB7rT8bSWHSj83KC7J3eZ/vHUjBkjOXqVazlgUoi05wroCn0dyLSWFwY4Biiu47mw
-	==
-X-Received: by 2002:a05:620a:6493:b0:93f:2ff0:87ef with SMTP id af79cd13be357-94408a728bamr431339385a.15.1793211044835;
-        Wed, 28 Oct 2026 11:10:44 -0700 (PDT)
-X-Received: by 2002:a05:620a:6493:b0:93f:2ff0:87ef with SMTP id af79cd13be357-94408a728bamr431333885a.15.1793211044276;
-        Wed, 28 Oct 2026 11:10:44 -0700 (PDT)
-Received: from lin-0772.qualcomm.com ([212.136.9.4])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4aa82516a45sm9801595e9.15.2026.10.28.11.10.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2026 11:10:42 -0700 (PDT)
-From: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: atanas.filipov@oss.qualcomm.com, Bjorn Andersson <andersson@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
-        Jonathan Marek <jonathan@marek.ca>, Bryan O'Donoghue <bod@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>,
-        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] dt-bindings: clock: qcom,camcc-sm8250: add interconnect provider
-Date: Wed, 28 Oct 2026 20:10:40 +0200
-Message-Id: <20261028181040.3515955-1-atanas.filipov@oss.qualcomm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <7ca815b3-4712-42e4-996d-4a1e53cad492@oss.qualcomm.com>
-References: <20261016170701.1504338-1-atanas.filipov@oss.qualcomm.com> <20261016170701.1504338-2-atanas.filipov@oss.qualcomm.com> <20261020-bloodhound-of-remarkable-debate-11afe3@quoll> <7ca815b3-4712-42e4-996d-4a1e53cad492@oss.qualcomm.com>
+        d=1e100.net; s=20260707; t=1793211813; x=1793816613;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=cFWfkIkWfjhOSUFJOJXQEhmE0QtvF6eBs0tDviPyGsc=;
+        b=ddii1jc867XTZKN1c1j1w5HxsXojt5J3AKZtYOcXkPPzjFhMOHOSx/B/gtww46NsYP
+         ixDsaNh7OKytgz57wHaMZQmsOYWGDTeaPKjFDjHlPx05WWWLwA20D/W5nxwSl4EEETho
+         LHBLzGRDCnQzzk71bJWRBS4hLNxWMNbWjTX1At0jRnonkCX7ec+DDia8TMLFPS1xnP+e
+         8pA4J5PkDp4UpRB6R9D13gxtahr9VSIUF2wh5Je2QWU3yA2PLjelXvwoX3ByO6gcyWUE
+         ZDBfEzntP2YwN4h0UZYS3y63M7jtAxGX9kI+1KT4OtcqIPPFuITAWB+Mx6R0eJTmpboW
+         elGw==
+X-Forwarded-Encrypted: i=1; AKwUvBxCHC7J1CUsJmwflu8vgWFWD/HcPUkCHnLPkBTpZOF6jH5APtg2Tfe9/MZrZ2rW2xCMpOfA3ltDzg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJbDvfq6NHbc4Z8c4Oy2nOK0sG8umlCF1FvXwECCHplS/5E9RLU
+	UXkIZWCrm1OnUy08XJrGOqCyLZywy/HJlT3oFF0XmVY3+a0uTlknFBcmQlJ7ZCCJpn7bk/mhi76
+	fOPkYNOuQwUJOL7qNLpWCnvXiB7EquvI=
+X-Gm-Gg: AYBFou3N5VQnF9Bscon8mILadbcvo7+q/2+34icSCVxBhyLpHsyeyLLAm2nAzDkrRe2
+	dkekIXnvmQuwaR5sUgWbTCh+hPWD0/yR28gMQwPolCR6GZHMgRlEUnoRQ/+Vp2csytMfnmzg5bv
+	wd4psybGphmuOZAickVzENbz8DmyM6OS8PQnuqDWAmDcBABuE6IwgnSD9G/Utm5X6gmvsLR7VNJ
+	R+/bbH6pTT24C0hbaDTt3B42bu7Ng4sPU4lIjbAGMmt+wg9iP7EQdtuIxkm22IDQIpJYUBA/tma
+	jUEMY5rkOhpoK1lP+yWf8YeNVHjnk3uY05pA4IiQogd97T8yWailnCdw6K1gsB43hFcrd2/Qhsp
+	RDM3BGH7IapfwPtFTci9at5zPzqOq9daZGT5NsVZuKxAG1420WWC6PDs7Kuxc7RX9G9nHzWB5/J
+	5Fq4Fw+EWPgbVXYtw=
+X-Received: by 2002:a05:690e:d0d:b0:679:9e60:346c with SMTP id
+ 956f58d0204a3-67a7baef0a5mr2432293d50.4.1793211813004; Wed, 28 Oct 2026
+ 11:23:33 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -132,76 +105,247 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=Ju9kP84C c=1 sm=1 tr=0 ts=6ae23aa5 cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=dNlqnMcrdpbb+gQrTujlOQ==:17
- a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=SLSU3p2cmSaEdqdVgzYA:9 a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-ORIG-GUID: Kb02nLyv9IsqYo5_NsA1OE6ld_Ca-MEG
-X-Proofpoint-GUID: Kb02nLyv9IsqYo5_NsA1OE6ld_Ca-MEG
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI4MDA3MiBTYWx0ZWRfX9j6UkLJX8S8W
- OnX+dvOjjYj8VUh7YPUHnSWh64fkuMrHj6OkucEDlVwHgZxf1N+JyHtzETZmuJcsgNIhtTphOrW
- Ic1zdpusyfA3AQVII6HzsKrQdcZtcCw=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI4MDA3MiBTYWx0ZWRfX1kfRP7SWgmNY
- uIZR9bK5NKAq2kIXArmGjpZTSkpBML/OMvrhRsHa+yKqZfdPslKem03nQQxHJy0rDtldfvOHZRM
- 3DDihMtUkjMsVd/ytZ5AmcQWHNNJwwTJ8BiOHcme3UFfRptSTjiV/w1dGFxKxyvZu7wbbCNNqzK
- kr4P23Nzr+wGP8vj3RSb30jGpeKjRcjncQiFe1dG4vFLfA7g17u3t96i5dw+Rl6yesdmfe5E85l
- B+pZs9Wlfsem7viOLEc9IGGSac+qE3y/l4FJZoecKjT6q5iq1013h7K1hhCFX0zc9rjGApwzbTh
- cK/vTdr3VvX9OW09hgsPqI6LrZBS/WHpINr6vJAqgsnZSSnLsuvAC90tK6+wWNDaTv9cz3N5lOl
- YF410xopj4si0W9ZrxpstVa+h/v5zfQeTMzTmNHxyUDFEBpAAo0m+/pr/bnmL1YndYH0an2BIsG
- IqOiuNE0gO1g10wnlHg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-28_05,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 adultscore=0 bulkscore=0 clxscore=1015
- suspectscore=0 spamscore=0 lowpriorityscore=0 priorityscore=1501
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610280072
+References: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
+ <20261012-dd-cmap-part2-clean-v12-33-3c8cc5725def@gmail.com>
+ <as4W9hToBqAvbzJ-@pathway.suse.cz> <20261027132253.5f3a461d@pumpkin>
+In-Reply-To: <20261027132253.5f3a461d@pumpkin>
+From: jim.cromie@gmail.com
+Date: Wed, 28 Oct 2026 12:23:06 -0600
+X-Gm-Features: AclHuK-4voxmbnvtymBlAumJXr1uxieHMHufYdWUINblBauYdwThefAV8akW3iU
+Message-ID: <CAJfuBxxgn8AOv_1rrAWb1xgJiPyU0faD08RuTz4kGY9RS_-v1g@mail.gmail.com>
+Subject: Re: [PATCH v12 33/40] dyndbg: Ignore additional arguments from pr_fmt
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Petr Mladek <pmladek@suse.com>, Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
+	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
+	Aaron Tomlin <atomlin@atomlin.com>, Jonathan Corbet <corbet@net.net>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nathan Chancellor <nathan@kernel.org>, 
+	Nicolas Schier <nsc@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>, 
+	Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+	Steven Rostedt <rostedt@goodmis.org>, John Ogness <john.ogness@linutronix.de>, 
+	Sergey Senozhatsky <senozhatsky@chromium.org>, =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
+	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
+	linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Philipp Hahn <phahn-oss@avm.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 10/20/2026 3:44 PM, Atanas Filipov wrote:
-> On Tue, Oct 20, 2026 at 09:12:03AM +0200, Krzysztof Kozlowski wrote:
->> If you only need to solve "last writer" problem, why not fixing the
->> clock framework to accept the votes? Otherwise this should have
->> description why it is an interconnect.
+On Tue, Oct 27, 2026 at 7:22=E2=80=AFAM David Laight
+<david.laight.linux@gmail.com> wrote:
+>
+> On Tue, 13 Oct 2026 13:33:10 +0200
+> Petr Mladek <pmladek@suse.com> wrote:
+>
+> > On Mon 2026-10-12 20:37:04, Jim Cromie via B4 Relay wrote:
+> > > From: Philipp Hahn <phahn-oss@avm.de>
+> > >
+> > > pr_fmt can be used to add a common prefix to any output from a module=
+:
+> > >     #define pr_fmt(fmt) KBUILD_MODNAME ".%s " fmt, __func__
+> > >
+> > > But adding additional arguments breaks dynamic debug:
+> > > > error: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" passed 4 arguments=
+, but takes just 3
+> > > > |         pr_debug_ratelimited("%s", "Hello world!");
+> > > > |                                                  ^
+> > > > note: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" defined here
+> > > > | #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)       \
+> > > > |
+> > > > error: =E2=80=98DEFINE_DYNAMIC_DEBUG_METADATA_CLS=E2=80=99 undeclar=
+ed (first use in this function)
+> > > > |         DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DF=
+LT, fmt)
+> > > > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> >
+> > I wonder what this error about undeclared macro means.
+> >
+> > > > note: in expansion of macro =E2=80=98DEFINE_DYNAMIC_DEBUG_METADATA=
+=E2=80=99
+> > > > |         DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));  =
+       \
+> > > > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> > > > note: in expansion of macro =E2=80=98pr_debug_ratelimited=E2=80=99
+> > > > |         pr_debug_ratelimited("%s", "Hello world!");
+> > > > |         ^~~~~~~~~~~~~~~~~~~~
+> > >
+> > > Add an additional ', ...' to DEFINE_DYNAMIC_DEBUG_METADATA_CLS to slu=
+rp
+> > > any additional argument, which `pr_fmt` might add.
+> > >
+> > > --- a/include/linux/dynamic_debug.h
+> > > +++ b/include/linux/dynamic_debug.h
+> > > @@ -351,7 +351,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descript=
+or,
+> > >             dump_stack();                                   \
+> > >  }
+> > >
+> > > -#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)  \
+> > > +#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)     \
+> > >     static struct _ddebug  __aligned(8)                     \
+> > >     __section("__dyndbg_descs") name =3D {                    \
+> > >             .modname =3D KBUILD_MODNAME,                      \
+> > > diff --git a/include/linux/printk.h b/include/linux/printk.h
+> > > index f594c1266bfd..5d701952e739 100644
+> > > --- a/include/linux/printk.h
+> > > +++ b/include/linux/printk.h
+> > > @@ -742,7 +742,7 @@ do {                                             =
+                       \
+> > >     static DEFINE_RATELIMIT_STATE(_rs,                              \
+> > >                                   DEFAULT_RATELIMIT_INTERVAL,       \
+> > >                                   DEFAULT_RATELIMIT_BURST);         \
+> > > -   DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));         \
+> > > +   DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, fmt);         \
+> >
+> > IMHO, this changes the existing behavior. The prefix added by
+> > pr_fmt() will no longer be stored in DEFINE_DYNAMIC_DEBUG_METADATA().
+> > Is this intentional, please?
+> >
+> > Anyway, if we do not longer pass pr_fmt(fmt) then we should not
+> > need to add "..." into DEFINE_DYNAMIC_DEBUG_METADATA_CLS().
+> >
+> > By other words, we newly pass just the format "fmt" without the paramet=
+es.
+> > The 4th parameter was added by pr_fmt().
+> >
+> >
+> > IMHO, the right solution is to keep pr_fmt(fmt) here and extend both
+> > BEFINE_DYNAMIC_DEBUG_METADATA() and
+> > DEFINE_DYNAMIC_DEBUG_METADATA_CLS()
+> > to accept var args. I would expect something like:
+> >
+> > #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)        \
+> > ...
+> >
+> > #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)         \
+> >       DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt,=
+ ##__VA_ARGS__)
+> >
+> >
+> > or maybe, we could "eat" the extra parameters in
+> > DEFINE_DYNAMIC_DEBUG_METADATA. It would mean to keep
+> > DEFINE_DYNAMIC_DEBUG_METADATA_CLS() as is and just add the "..." into
+> > DEFINE_DYNAMIC_DEBUG_METADATA(), aka
+> >
+> > #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)         \
+> >       DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt)
+> >
+> >
+> > Or do I miss something, please?
+>
+> Don't think that will work.
 
-A follow-up on the second part, since the problem turned out to be
-more than the last writer.
+Im not sure who youre responding to here,
+in any case I sent v13, with adjustments based on Petr's observations.
 
-The last-writer problem between the CAMSS VFEs is now handled in CAMSS
-itself, in the direction you and Bryan suggested: each VFE sets a
-clk_set_rate_range() floor, and on power off drops it and sets the
-lowest rate explicitly, so the clock no longer stays high:
+here it is, in action
 
-https://lore.kernel.org/all/20261028132403.3505037-1-atanas.filipov@oss.qualcomm.com/
+bash-5.3# history
+    1  modprobe test_dynamic_debug dyndbg=3D+p
+    2  dmesg
+    3  modprobe test_dynamic_debug_submod dyndbg=3D+pmf
+    4  dmesg
+    5  history
 
-What clock votes cannot express is why I think the camera NoC is an
-interconnect:
+[    0.707538] virtme-ng-init: initialization done
+[    1.060923] clocksource: Marking clocksource tsc unstable due to
+inter CPU skew
+[    1.060929] clocksource: CPU0       4136478715 < CPU1
+4136478900 (cycles)
+[    1.060932] tsc: Marking TSC unstable due to clocksource watchdog
+[    4.703188] (udev-worker) (78) used greatest stack depth: 12376 bytes le=
+ft
+[   44.598698] dyndbg:  47 debug prints in module test_dynamic_debug
+[   44.598706] dyndbg: module: test_dynamic_debug dyndbg=3D"+p"
+[   44.599208] test_dd: init start
+[   44.599210] test_dd: do_classes 1 times:
+[   44.599212] test_dd: doing categories
+[   44.599213] test_dd: doing levels
+[   44.599214] test_dd: do_bulk 1 times:
+[   44.599215] test_dd: bulk msg 1.0
+[   44.599216] test_dd: bulk msg 1.1
+[   44.599217] test_dd: bulk msg 1.2
+[   44.599219] test_dd: bulk msg 1.3
+[   44.599220] test_dd: bulk msg 1.4
+[   44.599221] test_dd: bulk msg 1.5
+[   44.599222] test_dd: bulk msg 1.6
+[   44.599223] test_dd: bulk msg 1.7
+[   44.599224] test_dd: bulk msg 1.8
+[   44.599225] test_dd: bulk msg 1.9
+[   44.599226] test_dd: init done
+[  527.233033] dyndbg:  47 debug prints in module test_dynamic_debug_submod
+[  527.233039] dyndbg: module: test_dynamic_debug_submod dyndbg=3D"+pmf"
+[  527.233458] test_dynamic_debug_submod:test_dynamic_debug_init:
+test_dd_submod: test_dynamic_debug_init init start
+[  527.233460] test_dynamic_debug_submod:do_classes: test_dd_submod:
+do_classes do_classes 1 times:
+[  527.233461] test_dynamic_debug_submod:do_cats: test_dd_submod:
+do_cats doing categories
+[  527.233463] test_dynamic_debug_submod:do_levels: test_dd_submod:
+do_levels doing levels
+[  527.233464] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk do_bulk 1 times:
+[  527.233465] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.0
+[  527.233467] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.1
+[  527.233468] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.2
+[  527.233469] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.3
+[  527.233471] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.4
+[  527.233472] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.5
+[  527.233473] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.6
+[  527.233475] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.7
+[  527.233476] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.8
+[  527.233477] test_dynamic_debug_submod:do_bulk: test_dd_submod:
+do_bulk bulk msg 1.9
+[  527.233478] test_dynamic_debug_submod:test_dynamic_debug_init:
+test_dd_submod: test_dynamic_debug_init init done
+bash-5.3#
 
- - The camera NoC is a bus with several independent masters: the VFE
-   write ports, JPEG and OPE. They share it on the way to the MMSS NoC,
-   and the camnoc AXI clock sets its throughput.
- - The consumers know their bandwidth, not the NoC rate that serves it.
-   Converting one to the other depends on the NoC width, which is a
-   property of the bus, not of each consumer.
- - Masters running at the same time load the NoC by the sum of their
-   traffic. Clock rate requests can only be aggregated by maximum; a
-   sum of rates has no meaning, a sum of bandwidth does.
- - The rest of the camera DMA path, from the MMSS NoC to DDR, is
-   already described with interconnects, and CAMSS votes bandwidth on
-   it. The camera NoC is its first hop.
+NOTE that  the dynamic-prefix precedes the one added by pr_fmt,
+(the parent and submod differ, latter adds __func__,
+in both the dynamic-prefix, and the one from pr_fmt())
+This is perhaps vaguely sub-optimal, but it has been this way for ages.
 
-The interconnect core already sums the average bandwidth of all
-requests. icc-clk currently derives the rate from the aggregated peak
-only, so it does not use that sum yet; that is a limitation of the
-icc-clk translation, not of describing the camera NoC as an
-interconnect. It can be addressed in icc-clk by taking the average
-into account together with the bus width.
+> Won't you end up with ".%s" fmt as the string without the extra argument.
+> So you need to keep the expansion of pr_fmt() together until is is finall=
+y
+> substituted into a printf-like call.
+> It is possible to enclose it in () so it is passed as one parameter and
+> remove them on the final expansion.
+>
+> David
+>
 
-Is this a valid reason to describe the camera NoC as an interconnect?
+hi David,
 
---
-Best regards,
-Atanas
+Im not sure what / who youre responding to with "
+
+> >
+> > It is possible that the macros work another way. Or this depends
+> > on another change. I checked only this patch...
+> >
+> > Best Regards,
+> > Petr
+> >
+> > PS: I was curious what Sashiko says about this change and it seems
+> >     that it does not review this patchset from some reasons.
+> >
+> > >     if (DYNAMIC_DEBUG_BRANCH(descriptor) &&                         \
+> > >         __ratelimit(&_rs))                                          \
+> > >             __dynamic_pr_debug(&descriptor, pr_fmt(fmt), ##__VA_ARGS_=
+_);    \
+> >
+>
