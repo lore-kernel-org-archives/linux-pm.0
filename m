@@ -1,45 +1,45 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793192511;
-	b=YtpSLuB1bUyeaN0fHvYtBKT6ZIYhRNiQpenRxJp6DcvA0TDzOOFeqYGKDw8LU4JmPCpA
-	 GqlHhMpQo+CyFxO6+mrAFTQIT0VjsmJ1llWWvWxdr7YC7OZJSo+7L03rsRBP58PBQG5ZK
-	 I12IKJ6Cd4b6Mq1kkGxIILIjrpmiuHiD7DLt5wj5Jo/jucPrvwKyrfwsidBy2Ilx3IXk6
-	 2z/HITZUnAW/vb1mxqKdofCSalmXfTg/mC8gYhw5A+6fDCvMwujrZjnLsHT7anupUZ8j2
-	 UoaTeCqGb9BFXcqeSyaWLFjQxWKGXmRmiyHoY3nKeoBn6t9aAsZlWzOEZ7LmwqtMWYw==
+	t=1793192806;
+	b=HPsBCR4IDBhPIoz2ubEkTbqHyGmqIrUn7Gs2b+kWiY9wCBRR9ax7JkdH0irZids+SH8D
+	 vlFlP33QmE70FL693odD+pnryZ3tKpymWDjVf6tKQYktGprfk6nxxE6H+EuJB7WbDZAf6
+	 EpRaA14Pjbld8/g1feNCj4Vp9JfhlVqLm9M1w0t3jFbOemmVK0JjiRBzPkOJR3hUUWMNW
+	 dRZrwB7jl+daKhoEOc94t2aADW05DQIJj3mKnp7XKyWTvOQZ116yH/FvgJDPWEXZ2+ihV
+	 ANw3NGoeQr5Fkig8RdE/yV6ckLW/RCXhuxwjFvGRm4HdFLTSVFI8ZpziZPR3FW5/TfQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793192511;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793192806;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=2s8hbBcIbYi5ITvf/mtBJDRTfD2CW57Z/I1IxHbdhm4=;
-	b=Xx+bPs/kGWNwG3nybDRiar+6uJQce95h40PmaZQ6a6Eh3TNjdNdNeP7ugTXwO6ZcWebP
-	 JdYZibweqpsQx44uAEO24+4g16DbR5QCgigx4z3nLF+vHeurVvbh0zJF72mv9urLcBvKR
-	 SFhk5PWEEXH2k+wlO4a3krAR5R4WmAnYkkbQR63CJs+fRtn1LOIhGqA8DnvxqTIHBVtD2
-	 v4Oy6UN4YmuwtIm2HNYD5KQpvYWZwf0tyHq9rlKmWESyhI3bxytY0FUAWNeD1Gdt29Nx9
-	 PpLeOYzQ5JBR2TlNvcOVFasyNlJDMD3Q++/6vN/FDkdnHyXzrBSi/ns/dJoaIsJ8tzg==
+	bh=qDzV/BSCBAxOgkyeUgwhABAV8Xciygx/josgC+QLyV0=;
+	b=MkcD2qhGnqQGYMCG/vSNlKw6nQFgQCV+OKJNTGlqyIJS9kYW1qbV1ELhU1coVJpmJemm
+	 VaLAfcw+fDHZGG+evoTGAa2O2ln3T6PNGNTVQMo2BM18x8CcKXzvZkCFT2Xrf76dyS51Q
+	 S2EZ5ttz1BpZNvnVmlvGlHMyWPu9UcRyk07ycQZwfn6dqM+HLZatAJfGzY2+3nsAOO6JN
+	 yJOzyZJ31p1b0j8cGgUX5gpNrTER8SW3nhti/J+FeHNtw/JCRWvVpC5T6yIahYg+sAZ9X
+	 LtpinlWvKGms5d7VKChUNn4eiajWNrKXD5tInwX8cJa5ZaDMftTgWAMkrqI5Aik7zwQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GgZWipTv;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RdnBz1db;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CA69606A31F;
-	Wed, 28 Oct 2026 13:01:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 700AA606A31A;
+	Wed, 28 Oct 2026 13:06:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GgZWipTv
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E2AE1F01825;
-	Wed, 28 Oct 2026 13:01:49 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RdnBz1db
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48F191F01828;
+	Wed, 28 Oct 2026 13:06:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793192511;
-	bh=2s8hbBcIbYi5ITvf/mtBJDRTfD2CW57Z/I1IxHbdhm4=;
+	s=k20260515; t=1793192806;
+	bh=qDzV/BSCBAxOgkyeUgwhABAV8Xciygx/josgC+QLyV0=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=GgZWipTvEB2/3Zvj039fdzq9q108ATG0cgEAjSluQmUkmz7AUaZhdRhlf1zAfjElz
-	 W7VIXrUS8QKRtAo7Qjn15vUqp1VwdWFm69dHU8rG/A7S5Jdu+vJRh9r110TKuy3OzT
-	 mDJNfL0xDSErMr33tXEr9AblKxBv0zWtuFC3K3aRwuCSMhhQT/MHrvArSPOoGpTGS3
-	 zLlMK5ahRNcfNd7Ax1rc3PT//9SlaoxWgmCthVYVvUTEO8i5XEj+/Z10VRjDw1Vgob
-	 uFIwY8y2BFv6pp3i8nDSCOsNLM2+XXiUDgArFxD/igAvYlEb42Qyg3INFdBNKLlAnB
-	 Lp/t7LaTW4mZA==
-Date: Wed, 28 Oct 2026 14:01:47 +0100
+	b=RdnBz1dbtXIeb3HyA7QqqOJ302Jd+NkhIn8zrh+yGXspbul4+HP4qUcZg7SvMRyeN
+	 ksTnfg3zMNnB6WNBV73M/sAaYcpWVYuM7RoTGnS2DJVKmxQO/jTzecXmsXW48Ymdjq
+	 6VKWbhzz3pLQQHIUDgcnRmzeDYGdFA7lJpHW7BwCqGBMisL7y50McuyciglcrV5km7
+	 IIclv+4fgj3p6ecCStDcv5+gqxZmEBMMUZuJ60UT2mqy5Zy4V02t9vPwKJc/CcUF8p
+	 Fku9mH/mWu5cICCnYkIkWFOWL8dNDDPGQ4UJkzuRb5wFUtHSN/xCrNrmUfPWgb6gAq
+	 Y0olpsYneKHmw==
+Date: Wed, 28 Oct 2026 14:06:42 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
@@ -49,13 +49,12 @@ Cc: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
 	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
 	Ulf Hansson <ulfh@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, linux-pwm@vger.kernel.org, 
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Khanh Le <khanh.le.xr@renesas.com>
-Subject: Re: [PATCH 01/11] dt-bindings: pwm: renesas,tpu-pwm: Add support for
- R-Car X5H
-Message-ID: <20261028-phenomenal-delightful-cicada-eb7bbe@quoll>
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 02/11] dt-bindings: pwm: renesas,pwm-rcar: Add support
+ for R-Car X5H
+Message-ID: <20261028-snobbish-deft-saiga-1cb2aa@quoll>
 References: <cover.1793026273.git.geert+renesas@glider.be>
- <8b2c7719c301a445891fc6c5309456327ec8a94c.1793026273.git.geert+renesas@glider.be>
+ <388ee68e120ba73e675ad78fe0b1cbd89b061831.1793026273.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,21 +66,24 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <8b2c7719c301a445891fc6c5309456327ec8a94c.1793026273.git.geert+renesas@glider.be>
+In-Reply-To: <388ee68e120ba73e675ad78fe0b1cbd89b061831.1793026273.git.geert+renesas@glider.be>
 
-On Mon, Oct 26, 2026 at 03:55:17PM +0100, Geert Uytterhoeven wrote:
-> From: Khanh Le <khanh.le.xr@renesas.com>
+On Mon, Oct 26, 2026 at 03:55:18PM +0100, Geert Uytterhoeven wrote:
+> Document support for the Pulse Width Modulation (PWM) module in the
+> Renesas R-Car X5H (R8A78000) SoC.
 > 
-> Document support for the 16-Bit Timer Pulse Unit (TPU) in the Renesas
-> R-Car X5H (R8A78000) SoC.
+> R-Car Gen5 enlarged the PWM output cycle and high-level period fields
+> from 10 to 24 bits.  While the added register bits have initial states
+> of all-zeroes, and thus look compatible with previous generations, the
+> register bits may have been modified before Linux boots.  Hence no
+> fallback to renesas,pwm-rcar is included.
 > 
-> Signed-off-by: Khanh Le <khanh.le.xr@renesas.com>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  Documentation/devicetree/bindings/pwm/renesas,tpu-pwm.yaml | 1 +
->  1 file changed, 1 insertion(+)
+>  .../bindings/pwm/renesas,pwm-rcar.yaml        | 61 ++++++++++---------
+>  1 file changed, 33 insertions(+), 28 deletions(-)
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
