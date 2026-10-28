@@ -1,76 +1,51 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.222.53
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793181214;
-	b=U4zsG4wUcJY31jivEpkhhwZ64jmoS/E13ocarepZgj1HoN67ESm2BktIgFT352l7nmL6
-	 Q2BBDuqabMIYMN3Gfxx9Dn5zEdLRLhBYfrSFFiUdUlJP6MAu8/eJQF1tdS1MZcL1JdkN9
-	 UapHbF8hpWfCD71P6TBnD3CIBaas3yVY2+/nWBZ8CHk5Wpajy6kQ89sgOBuMaRUunTDCc
-	 Pg538/5aeJ29oX/8bblNSpQ7xJH5tdx2Fd3PrTYZbz9sTTCkCkZPjebWzCK78Oq2d8V1n
-	 Rt4DPOSYLLJBFLJzC4kp00UOmLckE2aSR+HKNg+0vMfl9tRQTwTnf8cfELqhKj9kJzg==
+	t=1793181776;
+	b=Lt7fAxNPedkMp4UP3BAiUypUR6iv8VG2K68XZfDt/vdLXZ1Y8udo/raTMOB8miJLylLb
+	 tHjw1htOtni7HItnh4upJ7kcuQrV/VsZaCvYy6T+pgS9q1K0glWmkjmhGuwp0x/QplLdT
+	 cj7Y6ZU36TqHbsvFLF9il5sL31+CmHz0hy+YWIIwypRy0DLo5mMjBLPvwxd2s2j0IymhK
+	 a37Wy1edvAPUmU4H4ut3Mw6RIJau+4S/NMLNMhncqhRbcgG+M22v+JYImZRFB9UQSj4J8
+	 It26ngB/VGrVYo6WSXquZ4B7Fol7ywHtWKRbns3gyd5l6/OdmQfnY320t2TELvBxy2Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793181214;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=LaKKgg7JsBllMMsQkIPVI3Ax0Bcgu+KbcncA6nhcHSA=;
-	b=2EwpBT6elKUBH9R/pLK/MMu2cfZ99RQ8XBdtrLFPh1atZMTsBa2tlb7C++1+gqdLcBO5
-	 yF9i2Ec6mQRvCmWZHAVPKLNby4gwMw7S4vG2XxaLhQFu47OzG690zv3SbCdSSw1XBNqcy
-	 BhwvcRCw6wo0KAeESVAgCZFS0NOwOm37b3QoYnRVr4DVenkmWd9mHCAnPhD7mVz0yvwMF
-	 1IHWwdrH23GSeQgfLaQ0cEVy8ePVSZNUpw95Qpp7PF76iE00hcy6q09OL4Ihjyf26qu4d
-	 r9oIxirqTlGUKvtRtdLmifBL37ROH2Lj4wps+mdHRW04Rkz/gdYZ26QoPXaYmoAVOCw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793181776;
+	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-Id:
+	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-CM-SenderInfo:X-Coremail-Antispam;
+	bh=ddvx5f00z+VIk9kGMVictMEiXeJ0/JrB5XxYTj9h55Q=;
+	b=ceoXUNhz0NC6lQbmq0pCfDrSHXbf1SgBvFjEVvuu0XWNbzPgGxGp8NNmOwRLX/OqPYVg
+	 pJjLi5DLePSCAeEdwHXlkIvAJEOPn7GaU2dPLCc/pUw+tnH/ZLyGsHt/KkLf8ubXpyMb3
+	 CGcP9DLfjFOWH55wZp4OOMzoVL3Dp48zdqSS+x9JevBCl518N6YlC+4PheztYN+NeF9km
+	 ABi4Sp7v76HHq8kJXFsVUHjspSypL5hzRe2WcSnqsNqi6hE7rmdJe80mEZ23Rd2pPi5D/
+	 0//A0GwYXVMplUnqaRsxiTCZXKIgyOZFpI6dZ6WibjgWvGQmgRrmi/TNuWut07o8Haw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.222.53
-Received: from mail-ua1-f53.google.com (mail-ua1-f53.google.com [209.85.222.53])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9ACC606A327
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 09:53:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D9ACC606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ua1-f53.google.com with SMTP id a1e0cc1a2514c-9912c61b8b8so440417241.2
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 02:53:33 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793181213; x=1793786013;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=LaKKgg7JsBllMMsQkIPVI3Ax0Bcgu+KbcncA6nhcHSA=;
-        b=xwnEYcU2hDGhUz4KMKcbTj2r7MJ9hO3P9dt1W5y22KArOhMFREXTW6rFjE7XiukURd
-         vkpJYtfRLzpdmuGijvc1ati+i6cXAc9jm6f/AdwvrcLVYy0p2LnFXCD6FsxS4DVnsEqk
-         AeUqOB2YDWr9RqGZgXJ2m8NqPmhaccKS+i3koHy1opJFHGIa3VZkBWLvF5KpJRbBarUc
-         MzuVNcc3UMmrhCTyBgU+Y3RtlEh5WeEOIkJJK7IFREqX4YqLNEKRKFbaipDvMHQK7Eeg
-         yOvPk/dXEc0qx3xe/NGLli70KnkP2XVQWPQb1TnnPqpMuukp5Bo8JXeBkE2ptOKeO2U/
-         DMGg==
-X-Forwarded-Encrypted: i=1; AKwUvByGdSk/q5ixiJhsSAfwml/qAhiCj+M+FWSizrDSfGHE/PsgkzZX93Knm9KP01sEcuZGCvYiizhVNQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJNwDh99ZLUcqhLxP9f0+vvc7uyP/m/naeLZWx0s29tftBxkFMd
-	rWSCSjVB9sy/0JN2wrX07DtCukJEPB5aCJdLCytbK/Dqjmn/8EMtpE2jlKadx9lM
-X-Gm-Gg: AYBFou0Lnl2z1D8V/Agq5/Ka1hH2c/LKePSlp5n1M6jVd5uSaJpezAqrlrAawzIH47D
-	BbqocSVu0r6WoCAkcDZr4mIY8VC/6GG54AT3vKEnaVhO55hdYIXZbjauX6EOhqrhd28YpkrMLa+
-	0widAbqfzBl77ebLZlrfLvuRdKrrwS4paeEE92gomKKTSvFW5bukOsjax9QzO/cuAqi75Kwzh3a
-	nFeN+qm0cIVWPIbEscVt27R9SURaEq6Kk369G3xsYGJNlbZFJowRHGu12Zxq7rBEtCfyisXl1Ks
-	3D4rI3tSmyXaABYhcMwrAtNbQFnyohilgn7ML1fDuY2iTfhs6ncYFuDZp9NE0LzB+bSiZpHxNGS
-	bxKyKAtgs660mhUOURNtt2dA3r44RUfO8p8QA/SozuQ/4DAUNHWSYCTwp8t5KbegvA/JwDgUkqx
-	4zBn3uD/YU1sLOjoX5fVLpzbEIuXPvvWo9PihsmVto98lX5kIKepEXr47f9oxFSE2Ik6KNpFx+J
-	j9BhZCL96R5Lfqo29RCGI8Cin2mzSiQkLsuYVE2kp41oJyQrQcGMA2t7EAh+Ca838ICHK3Ml/OS
-	Vm1Yt3xZxxxnwYszaI5Az5KL1padOuumE9Mh+9UoY1RsgKMIu/nVqKnCI13VskFKC0Y=
-X-Received: by 2002:a05:6102:3c83:b0:7c3:7286:c291 with SMTP id ada2fe7eead31-7d03a4846c0mr741350137.19.1793181212957;
-        Wed, 28 Oct 2026 02:53:32 -0700 (PDT)
-Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com. [209.85.222.43])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-991259c5b23sm5473330241.4.2026.10.28.02.53.31
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 28 Oct 2026 02:53:32 -0700 (PDT)
-Received: by mail-ua1-f43.google.com with SMTP id a1e0cc1a2514c-99075306daaso423835241.3
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 02:53:31 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByuWav0gJW4i6lnoRxUEuGPNo+D3FQHQg7jeYW9JF5rGxon/KOAV7OUhT0WlZDBrtYNGiqpVYf/rw==@vger.kernel.org
-X-Received: by 2002:a05:6102:5244:b0:7cc:2fd1:7122 with SMTP id
- ada2fe7eead31-7d03a47e768mr803872137.18.1793181210633; Wed, 28 Oct 2026
- 02:53:30 -0700 (PDT)
+	dmarc=none header.from=phytium.com.cn;
+	spf=pass smtp.mailfrom=phytium.com.cn;
+	arc=none smtp.remote-ip=162.243.164.118
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B3741606A31C;
+	Wed, 28 Oct 2026 10:02:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B3741606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=phytium.com.cn
+Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
+	by hzbj-icmmx-6 (Coremail) with UTF8SMTP id AQAAfwAnfdxFyOFq04SlAQ--.14102S2;
+	Wed, 28 Oct 2026 18:02:45 +0800 (CST)
+Received: from phytium.com.cn (unknown [218.76.62.144])
+	by mail (Coremail) with SMTP id AQAAf8DwJnVCyOFqaF3yAA--.16563S3;
+	Wed, 28 Oct 2026 18:02:43 +0800 (CST)
+From: xiong yining <xiongyining1480@phytium.com.cn>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Shuah Khan <shuah@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	chenbaozi@phytium.com.cn,
+	xiong yining <xiongyining1480@phytium.com.cn>
+Subject: [PATCH v2] selftests: cpufreq: stop CPU hotplug loop after cpufreq update test
+Date: Wed, 28 Oct 2026 18:02:41 +0800
+Message-Id: <20261028100241.189085-1-xiongyining1480@phytium.com.cn>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,59 +55,120 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1792776697.git.geert+renesas@glider.be> <528b079a19bd4043754bfb56db8e5950bdda62f6.1792776697.git.geert+renesas@glider.be>
- <CAMRc=MdH37DhKMtagN3Ua1doY7ZgD3f+ok3V+h86kb4J8-dtQQ@mail.gmail.com>
-In-Reply-To: <CAMRc=MdH37DhKMtagN3Ua1doY7ZgD3f+ok3V+h86kb4J8-dtQQ@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 28 Oct 2026 10:53:18 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdU=ZkOsjG_FF-raMJWEUtj0VkD=9Gs0SsWKWLwyhG5H_A@mail.gmail.com>
-X-Gm-Features: AclHuK9BGkRKGrsUq56mu96OMIK1DMZBGsGDXPyfwPmkMrcZVroZETBYHJfP3k4
-Message-ID: <CAMuHMdU=ZkOsjG_FF-raMJWEUtj0VkD=9Gs0SsWKWLwyhG5H_A@mail.gmail.com>
-Subject: Re: [PATCH 1/7] gpio: rcar: Convert to gpiochip_generic_{request,free}()
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Linus Walleij <linusw@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Magnus Damm <magnus.damm@gmail.com>, 
-	Ulf Hansson <ulfh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:AQAAf8DwJnVCyOFqaF3yAA--.16563S3
+X-CM-SenderInfo: x0lr0wp1lqx0bjrumio6sk53xlxphulrpou0/1tbiAQABCmrfqkkNCABOsX
+Authentication-Results: hzbj-icmmx-6; spf=neutral smtp.mail=xiongyinin
+	g1480@phytium.com.cn;
+X-Coremail-Antispam: 1Uk129KBjvJXoWxWF15Kw4rKw4kAF1kuF1xKrg_yoW5XrWUpF
+	WkW3W5twn7CF1qyws3J34UW3y8X3Z3AF47Wrs0qr1Svw15JF90v3WfK3WxWFy3urWkZw4F
+	9anYy3W09r4FyrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+	DUYxn0WfASr-VFAU7a7-sFnT9fnUUIcSsGvfJ3UbIYCTnIWIevJa73UjIFyTuYvj4RJUUU
+	UUUUU
 
-Hi Bartosz,
+Original test uses a fixed 5000 iteration loop to trigger CPU hotplug
+for verifying cpufreq synchronization between CPU hotplug and sysfs
+writes.
 
-On Wed, 28 Oct 2026 at 10:47, Bartosz Golaszewski <brgl@kernel.org> wrote:
-> On Fri, 23 Oct 2026 19:50:39 +0200, Geert Uytterhoeven
-> <geert+renesas@glider.be> said:
-> > When a gpio device node has no gpio-ranges property,
-> > pinctrl_gpio_request() returns -EPROBE_DEFER and its GPIOs are unusable.
-> >
-> > Restore the ability to use GPIOs before pin control support is added by
-> > using the gpiolib helpers instead, which cater for this use case.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->
-> This sound like a fix? Can you add the Fixes tag? Is this patch independent
+Two issues exist:
+1. Background hotplug task keeps running after test completes, causing
+redundant CPU on/offline operations.
+2. When cpufreq frequency setup is slow, the hotplug loop may exit
+before frequency updates finish, which breaks test purpose.
 
-Sort of, but no upstream system needs it, so I don't think it is worth
-adding a Fixes tag.
-ISTR we used to have GPIO nodes without gpio-ranges on other R-Car
-platforms before, when pin control was not yet available, but DTS
-history doesn't provide any evidence of that...
+Introduce a file-based stop flag to control the infinite hotplug loop.
+After all cpufreq updates complete, create the stop flag file and
+wait for the hotplug task to exit.
 
-> from the rest?
+This makes hotplug run only during cpufreq sysfs write test,
+align with test objective.
 
-Yes, it can be applied independently.
-Thanks!
+Signed-off-by: xiong yining <xiongyining1480@phytium.com.cn>
+---
+Changes in v2:
+- Stop the hotplug child process by signal notification instead of
+a stop file, avoiding the predictable temporary path.
+- Add an exit trap so the hotplug child is also cleaned up when the
+main shell terminates abnormally.
+- Link to v1:
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2662696.html
 
-Gr{oetje,eeting}s,
+This addresses the security and robustness concerns raised by Sashiko.
+---
+ .../selftests/cpufreq/special-tests.sh        | 30 +++++++++++++++----
+ 1 file changed, 24 insertions(+), 6 deletions(-)
 
-                        Geert
-
+diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
+index e87ed7c8e5e5..b3ebead1c52a 100755
+--- a/tools/testing/selftests/cpufreq/special-tests.sh
++++ b/tools/testing/selftests/cpufreq/special-tests.sh
+@@ -16,6 +16,8 @@ source cpu.sh
+ source cpufreq.sh
+ source governor.sh
+ 
++HOTPLUG_PID=""
++
+ # Test 1
+ # $1: policy
+ __simple_lockdep()
+@@ -92,20 +94,34 @@ governor_race()
+ 	restore_all_governors
+ }
+ 
++hotplug_cleanup()
++{
++	if [[ -n "$HOTPLUG_PID" ]]; then
++		kill -s SIGTERM "$HOTPLUG_PID"
++		wait "$HOTPLUG_PID"
++
++		HOTPLUG_PID=""
++	fi
++}
++
+ # Test 4
+ # $1: cpu
+ hotplug_with_updates_cpu()
+ {
+ 	local filepath="$CPUROOT/$1/cpufreq"
+ 
++	(
++		local quit=0
++		trap 'quit=1' SIGTERM
++		while [ "$quit" -eq 0 ]; do
++			reboot_cpu "$1"
++		done
++	) &
++	HOTPLUG_PID=$!
++
+ 	# switch to ondemand
+ 	__switch_governor_for_cpu $1 "ondemand"
+ 
+-	for i in `seq 1 5000`
+-	do
+-		reboot_cpu $1
+-	done &
+-
+ 	local freqs=$(cat $filepath/scaling_available_frequencies)
+ 	local oldfreq=$(cat $filepath/scaling_min_freq)
+ 
+@@ -117,14 +133,16 @@ hotplug_with_updates_cpu()
+ 		done
+ 	done
+ 
++	hotplug_cleanup
++
+ 	# restore old freq
+ 	echo $oldfreq > $filepath/scaling_min_freq
+ }
+ 
+ hotplug_with_updates()
+ {
++	trap 'hotplug_cleanup' EXIT
+ 	save_all_governors
+ 	for_each_non_boot_cpu hotplug_with_updates_cpu
+-	wait
+ 	restore_all_governors
+ }
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.34.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
