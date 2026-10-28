@@ -1,61 +1,128 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793182572;
-	b=l3t9R1L8DAvp4czffGR4WZ72Mj8zOTsuw0YofAgMCxGSN7cXE+LnmAnTA3WucFne9p4Y
-	 8Ducax2zMqn82Y2EQ4LdHctV3Eu6OaaLH3tUU4t2PQj34ILUZoF9ZPq6mY9UdcFijJjpg
-	 wXJ2x1NwDN6CNeJGnmcmMHIXimjkXHpfp3+IfDu1TzR6mH5jrNHQ/O8WUYl3loP2ZtM7y
-	 XG7lxj4mYbqab2JVcx/unumnrTS2yViu9BTWI2py9c/t35cHgKI/y7n0EpvI1ITVS6vUw
-	 XiIfaC+/M08zS35ZRfNzgm7Xa1ZFBITb+L8lp2ag4/UTOTVJiAaW/h0Fp06Vu+mG2ag==
+	t=1793182981;
+	b=zxTiaosn6xKTXw9x0UJtFbvsXChixN0ndVlV157vqzXYULcR85O7F648nuCXRKKaALTO
+	 yN2mogH5xrub+7wT/2J5KSD+jTSXwoku9YUvBrKIgovmD339f7G383pRJRFAZKzsljRp5
+	 vHe755feYwDXodYrhpP/9z4zblv5q5ppXg0i/OQdXksFAiwRYR1PLs55SQ/bYVaqh2lEw
+	 Knbc68Q7HN1mxqvFfKuN1YZHYnARQJqPV6SYB1bL6aEBCr8DTaHEU5W06Tk0DvIUJxDrv
+	 wtAsQDzNUzeSgiTF4id1aRYiYf823U6tPM8Qg4VB+Hk1l1Xwj94elb5lBfGwnjPOnqA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793182572;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:Received:Received:From:In-Reply-To:
-	 MIME-Version:References:Date:X-Gmail-Original-Message-ID:
-	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type;
-	bh=bjLe+3f9gc9bVK8rm2L9uAXKG4i5uaLi17dzEkbJ/vQ=;
-	b=R44wbyYICTAILhB5zt+2LOuWxXyBHPaQIv5nTcaYwCJGhxnbf9GVCS+eNCpGv9QwJBHY
-	 xsU6nXZOI93v+eO2OoTh3sD8wqqkMQUZx2iFPhJKHDlLDqKLkQqc0aC1IluANAARHiZXd
-	 SE70Gseix6eQLkbDx9IGDucinYVK+RuihgbPNyK1yRVb0bNfo+FR9uh+c8B/ZGlCAqNKj
-	 1n5hngOJRK8Q2PV+n7HQWnGce74vRY+aFgoXu1FJu6kHGCaVF4usrGQ4bdBc4yXVy1Wyu
-	 ISPbwH9SnrltOnQpp7ErY1vCox1uRW+m9XNc8M71hD5J85zFl/h5nxl6aT+b2ORJ2Bg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793182981;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
+	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-Spam-Info:X-Authority-Analysis:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=fJLqm9V4jsOFfA6wxHEcJun15GePDPlJxumBUvgqgGU=;
+	b=dq5tDaL1TaHGs7kxXjJYVax8y8LEKX6UHDC+eOpzLZfLnWgBMMsVpY95Horcvyp+05dW
+	 f6HTjHATyAKJ+UsKyRUxdeDkHwTSxVjLfevRZARQ95rYABf/6KdODL/iR4RfuZZYD02cj
+	 FmHdBsPFwpW/kdNHEbVAJ0x5A9kMCBWQlIf/HZ17hbWJferwmp3BujbNDUlJcj0v2FRH5
+	 ECO1S/rgLjNBbYUX8F5tx3qzTAp8Eoaf4iJoEle73PBfrUflxGW2hwbimdQ7ra+42nREd
+	 OPN1vBwKJHSAv7K4WQ38ZOu7YT5wJiRtM42Ua2Nb4Q4G2TICsegxO1HWKWTdBVD4Ldg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fcejuAl6;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=UqJ49b6j;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=cEelwyrf;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26D3D606A31A
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 10:16:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C67D606A31F
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 10:23:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9C67D606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fcejuAl6
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3EC61F031ED
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 10:16:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793182572;
-	bh=bjLe+3f9gc9bVK8rm2L9uAXKG4i5uaLi17dzEkbJ/vQ=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=fcejuAl6E4+V7xpS9ChrGL6mM/mq7hcNzQluumHdQux62jySqCF1hHjVt/inV4WhP
-	 YkcxJallI2I9HjuB/SJN2TuKyWpXcDGV4NliF2UVO51IilJkj69fziE8klAjqeYvXI
-	 vd9eDg5YAMfF/eITBfogHCsQQ1vYLNJJO4+W7vRR08b80LRqLo4CPFjsJT3a32j+gm
-	 SwRXbA0YlETrDg8O/K+RHgvR1z9WcTv0QMUqmoxsjzShDw3RGZFmuZvUFke+pixq+R
-	 e+KvpTllvcCmHmKZ34vI7UCecYUU6kY0r8RzZzoh15qsAzAVg8GC2B8EwKsT9IZirE
-	 20hYSGa0G2pag==
-Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-3ab4c608a6dso7436451fa.1
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 03:16:11 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwJJft+kUcLU/GFQah6NYx3vyiWwovMH1/gzNwbklH6DlEhzhuMZ+OA0XTORpvMSAZCiBr3MLCeMA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLzzvSpPJcOb+aQ9vfDM/NCiybxz2rqx8tQBIdrVSjSgO0oqIFP
-	n3rSKWPDZEzz3VKDdJfjBWOL+YrQJGmN3IcdaK+nGa/ndLG1DxTejULRtGkG2Q6ZyPXYJ84ApK3
-	p3rQxraJYa0JIhWHo74hQOGxD71L1eSo44OtUKVwxnQ==
-X-Received: by 2002:a05:651c:509:b0:3ab:37ee:aab6 with SMTP id
- 38308e7fff4ca-3ac9cf6327cmr3565321fa.17.1793182570561; Wed, 28 Oct 2026
- 03:16:10 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 28 Oct 2026 03:16:09 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 28 Oct 2026 03:16:09 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20261022-add-board-ok3572-c-v1-9-0b0fd85a31ee@qq.com>
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=UqJ49b6j;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=cEelwyrf
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69S8KLIY3264826
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 10:23:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	fJLqm9V4jsOFfA6wxHEcJun15GePDPlJxumBUvgqgGU=; b=UqJ49b6jcBEGRk4N
+	SMcg+4URhJJuhk3SeW8bv8F4v6ep04YNfItmRsT7kGdv+WqjQJKm8XECwY4SMr0l
+	Cw/OBTIt6b7DBmuLNZWP8tSDKfneEmZ9lmTLN4s83EFFQ2wUGYRQgdk3Qmsx/Sqw
+	HmjX8jCJG8Ku0powhzuVEZgUKBbyf+LRYDEpuzykx0+rHBLgnExjTCzLMLuaB5Nr
+	NXwXvgaq8a8hJvmaBjuRP02xX3M8WljiBZQ84/2smhW8KyRJ9piZfexGD740N+Dd
+	l3uF0WZOQ6TPpfwjtKiQUeG2pXrZB6HgovunNh649Zgzo8MWX738zXTzSIzmSdhS
+	B5MMcA==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hjy713pt1-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 10:22:59 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93f6f4fe531so127536485a.0
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 03:22:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1793182979; x=1793787779; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=fJLqm9V4jsOFfA6wxHEcJun15GePDPlJxumBUvgqgGU=;
+        b=cEelwyrfGfmlt35tTqod9Uw9EXTfW+0PqqluJChECzfmxHszHmi524Yrh/sCXh9AxM
+         sscjoDTAIjs8OQk7wTnXfZ7M5NlZeCrJpwDVRhAFMzml+X0uj2SZxOeeyS8lWbDlBZkd
+         RjuhhLSANG4wmC+5ZN1LDpJPsaPpAmv8WKwEN6W4w9YRnv8fWmErGzyLGahakNw+u/6o
+         VeqFM0/z0Xcrm2SHQhK4AuGpqs72lseYQJG8BQGDQ037Z11+GelEbTOBHx4Ehz8s0z6s
+         6tRg2HpqWbzFXgAEFE4Fh8CyUp/GseaYCuDT8LtUzYpggWrPYOwhv/lxpukkZc3md7r4
+         UJkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793182979; x=1793787779;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=fJLqm9V4jsOFfA6wxHEcJun15GePDPlJxumBUvgqgGU=;
+        b=n7wK3mzXpBLvu8s4nNSelN4e/ixXcyR8qy+py6KtkT7ymvcaJ6bYh6bv3ybSAyORWH
+         jCzO4uGMmbB5FlD3Axs/xLHJSdoasBehT88dfQc5cPKAHfEG6jdgjvdYvcZ7qgKA1kHN
+         Lu5luvp9pFQfRnqoH8ZDBpYOd68Wp2/2PgBzYXbc9/gG2vnGXKB15ALMQOqs2adaZBE5
+         /iyjjaaO1ekVl+xFI0m/OngZPoNiu2P/pKvAWd4nO7+sYp7z3nSqXEn/ATNxyrMg9Pf0
+         NC6Ryk4GGHFNV4uIf1+t+EGddyOwJ3QvNRE95K3F6fVrdhyFJ+bRmujz2sMdbAE9laDo
+         DnLQ==
+X-Forwarded-Encrypted: i=1; AKwUvBy3UIF9WN9MdkSXBsCwY2eGLC800AteOS5/fpVBPun0TYOQY70ehor4NZWU++OC6eY41i3k2KNoFA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYI0APcqq5+J1KDnm6lUVpSNQ9NsFSLCQVuVKUbIQ6WJkitQqfEM
+	6Tq2hjRV/oLv6hvRm5haLZymgwftCQlh4t5I+OPsOT1LGbo4jngDHLos4rADTm8LCkAiAeT4G0I
+	VIswaAAySAZbMkqBpPnoGnK2POvWt37WH8fe+jsdKPmDj54TTM0eKjACbuRRcnw==
+X-Gm-Gg: AYBFou0zZfZlNdx90+ZbdOT7parfl5GuzAnLM4Nog9yuMbXnFhWX1ulQ9iaJIxw4dA6
+	6nEwILqxsJj4Sr+1Nmxi5jlIKZqvusvUjqRklLBGwHjejbX0lcPXU0t3QJZDqxzemYptmQqprZB
+	xk7xnI6kRM6YlJ6UOPc/EHoORLjf7x8p3HfIlChyjHuiFLhQ1jzr0UTypE45d2ehctLu19d2DNU
+	c99JihBx1pRxrauj4ldvzKrvDmXtLfS/UDQbRKyL16kiE1kJy6BKcUkz44nAVi95Tk4KZWt7Td/
+	pOxuqCTvuSzSi5J5nc+EixxEvJ+JAuX4nbpDHoJVMlc5dyftIcyeGoUsKGY8CqqzsBAVBTgcjNI
+	+XT1p80TCfym8G7oT5x9bsgSROFiTFYSU/Qc3KT5TDzj0CCNuvwR1RNGo2J0v33bLiIWsdjOkiB
+	KP
+X-Received: by 2002:a05:620a:4008:b0:93c:7d49:7b69 with SMTP id af79cd13be357-94408d42e06mr227997385a.60.1793182978714;
+        Wed, 28 Oct 2026 03:22:58 -0700 (PDT)
+X-Received: by 2002:a05:620a:4008:b0:93c:7d49:7b69 with SMTP id af79cd13be357-94408d42e06mr227994285a.60.1793182978265;
+        Wed, 28 Oct 2026 03:22:58 -0700 (PDT)
+Received: from brgl-qcom.home ([2a01:cb1d:dc:7e00:8916:7b9b:97a2:6c96])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a976010ca7sm36225665e9.1.2026.10.28.03.22.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Oct 2026 03:22:57 -0700 (PDT)
+From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+To: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+        Brian Masney <bmasney+clk@redhat.com>,
+        Jerome Brunet <jbrunet+clk@baylibre.com>,
+        Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+        linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: (subset) [PATCH 0/7] arm64: renesas: r8a78000: Enable GPIO support
+Date: Wed, 28 Oct 2026 11:22:55 +0100
+Message-ID: <179318297302.16022.6984836476337905961.b4-ty@oss.qualcomm.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <cover.1792776697.git.geert+renesas@glider.be>
+References: <cover.1792776697.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,287 +132,64 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com> <20261022-add-board-ok3572-c-v1-9-0b0fd85a31ee@qq.com>
-Date: Wed, 28 Oct 2026 03:16:09 -0700
-X-Gmail-Original-Message-ID: <CAMRc=MeNF_=T2Yb6wzsQFFcpO+w7sLgaKR=sZhZRzRDFcpgumw@mail.gmail.com>
-X-Gm-Features: AclHuK_BQRJk4TIxkYuHqPCftlY-tqaqteyj8aBVDFPyNxJaNTje36_cX4YFAeQ
-Message-ID: <CAMRc=MeNF_=T2Yb6wzsQFFcpO+w7sLgaKR=sZhZRzRDFcpgumw@mail.gmail.com>
-Subject: Re: [PATCH 09/27] gpio: rockchip: Add RK3572 GPIO support
-To: 1579567540@qq.com
-Cc: Cunhao Lu via B4 Relay <devnull+1579567540.qq.com@kernel.org>, linux-clk@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	mfd@lists.linux.dev, linux-gpio@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-mmc@vger.kernel.org, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-phy@lists.infradead.org, 
-	linux-usb@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Heiko Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Elaine Zhang <zhangqing@rock-chips.com>, Lee Jones <lee@kernel.org>, 
-	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Richard Cochran <richardcochran@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Andi Shyti <andi.shyti@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Jisheng Zhang <jszhang@kernel.org>, 
-	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
-	Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
-	David Wu <david.wu@rock-chips.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Thinh Nguyen <Thinh.Nguyen@synopsys.com>, 
-	Jaehoon Chung <jh80.chung@samsung.com>, Shawn Lin <shawn.lin@rock-chips.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI4MDA0MSBTYWx0ZWRfX3ELONEzxO/XO
+ uyEOKKRvV9cd3OodYxIamFaP5dfAUJfGqwx0bvb3X9uIZdfZeYGH/v0B6T0x1pQK1i3xjbzWXVa
+ bHEJRZ9znyWq2vm4i2Fd0JW3LbUcT/WV8a22hxDLaO8KdXP7Y+B04VXInfB161c/lDm4tAAU6mQ
+ rRbVk/Pmzk2rgdSjOl0Oc1YMqhEQ54jK9fXtsXgp0bhmS7m00+3/onmsqltraX6Zd2viBJghBsX
+ OziK9OQJLdrwvh1P9sBZeBBlc6CzHHjzTVgN2RYqKwT9TkTv+iVHNsp5jGkYgoCbkUusLr0I9sF
+ TCcAZbPmVjXHxAgSR6KV139pwUB4xVsJzrLRounLoXv7/d4+p2pdtMPgV6vdR6wj+GgS6ipirsh
+ vx5MBO/jRIe4QS9bAj61ePn5ed64evUY/ep7HHG5GBjavSw/ceoPG3YXPjEsFh4dU4dOebuuFUy
+ 6zVa/dFO1zvWPht50Zw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI4MDA0MSBTYWx0ZWRfX3ltj6Pj2Pwcg
+ GncyPO5ywloTS+6BFKJAj56RPRARMMylK/hrVMz3FgoOBwVU/1WlPBDN8RelMWTnnrROpuYPQU2
+ /okUgRP/y2/I5jMhCz5jVbMVKDYrmJM=
+X-Authority-Analysis: v=2.4 cv=JspkP84C c=1 sm=1 tr=0 ts=6ae1cd03 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=0_pEspLTn5AsfqPZqEwA:9 a=QEXdDO2ut3YA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-GUID: n8JDp8lkxaUFqRKOxwbH40BPizox5h7K
+X-Proofpoint-ORIG-GUID: n8JDp8lkxaUFqRKOxwbH40BPizox5h7K
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-28_03,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 adultscore=0 lowpriorityscore=0 clxscore=1015
+ spamscore=0 priorityscore=1501 impostorscore=0 bulkscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610280041
 
-On Wed, 21 Oct 2026 18:11:06 +0200, Cunhao Lu via B4 Relay
-<devnull+1579567540.qq.com@kernel.org> said:
-> From: Cunhao Lu <1579567540@qq.com>
->
-> Support GPIO V2.7, four parent interrupts, and firmware-provided
-> interrupt-group masks. Keep all pins on the primary interrupt when group
-> queries are unavailable.
->
-> Signed-off-by: Cunhao Lu <1579567540@qq.com>
-> ---
->  drivers/gpio/gpio-rockchip.c        | 91 +++++++++++++++++++++++++++++++++----
->  drivers/pinctrl/pinctrl-rockchip.h  |  8 +++-
->  include/soc/rockchip/rockchip_sip.h |  5 ++
->  3 files changed, 92 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/gpio/gpio-rockchip.c b/drivers/gpio/gpio-rockchip.c
-> index 77b239a9a601e..35894a68b5446 100644
-> --- a/drivers/gpio/gpio-rockchip.c
-> +++ b/drivers/gpio/gpio-rockchip.c
-> @@ -6,6 +6,7 @@
->   * Copyright (c) 2021 Rockchip Electronics Co. Ltd.
->   */
->
-> +#include <linux/arm-smccc.h>
->  #include <linux/bitops.h>
->  #include <linux/clk.h>
->  #include <linux/device.h>
-> @@ -21,6 +22,7 @@
->  #include <linux/pinctrl/pinconf-generic.h>
->  #include <linux/platform_device.h>
->  #include <linux/regmap.h>
-> +#include <soc/rockchip/rockchip_sip.h>
->
->  #include "../pinctrl/core.h"
->  #include "../pinctrl/pinctrl-rockchip.h"
-> @@ -35,6 +37,7 @@
->  #define GPIO_TYPE_V2		(0x01000C2B)
->  #define GPIO_TYPE_V2_1		(0x0101157C)
->  #define GPIO_TYPE_V2_2		(0x010219C8)
-> +#define GPIO_TYPE_V2_7		(0x01074D2E)
->
->  static const struct rockchip_gpio_regs gpio_regs_v1 = {
->  	.port_dr = 0x00,
-> @@ -209,12 +212,27 @@ static int rockchip_gpio_set_debounce(struct gpio_chip *gc,
->  	if (bank->gpio_type == GPIO_TYPE_V2 && !IS_ERR(bank->db_clk)) {
->  		div_debounce_support = true;
->  		freq = clk_get_rate(bank->db_clk);
-> -		max_debounce = (GENMASK(23, 0) + 1) * 2 * 1000000 / freq;
-> -		if (debounce > max_debounce)
-> -			return -EINVAL;
->
-> -		div = debounce * freq;
-> -		div_reg = DIV_ROUND_CLOSEST_ULL(div, 2 * USEC_PER_SEC) - 1;
-> +		if (of_device_is_compatible(bank->of_node, "rockchip,rk3572-gpio-bank")) {
-> +			if (!freq)
-> +				return -EINVAL;
-> +
-> +			div = (u64)(GENMASK(23, 0) + 1) * USEC_PER_SEC;
-> +			max_debounce = div_u64(div, 2 * freq);
-> +			if (debounce > max_debounce)
-> +				return -EINVAL;
-> +
-> +			div = (u64)debounce * freq * 2;
-> +			div_reg = DIV_ROUND_CLOSEST_ULL(div, USEC_PER_SEC);
-> +			div_reg = div_reg ? div_reg - 1 : 0;
-> +		} else {
-> +			max_debounce = (GENMASK(23, 0) + 1) * 2 * 1000000 / freq;
-> +			if (debounce > max_debounce)
-> +				return -EINVAL;
-> +
-> +			div = debounce * freq;
-> +			div_reg = DIV_ROUND_CLOSEST_ULL(div, 2 * USEC_PER_SEC) - 1;
-> +		}
->  	} else {
->  		div_debounce_support = false;
->  	}
-> @@ -342,6 +360,12 @@ static void rockchip_irq_demux(struct irq_desc *desc)
->  	chained_irq_enter(chip, desc);
->
->  	pending = readl_relaxed(bank->reg_base + bank->gpio_regs->int_status);
 
-Please sprinkle in some newlines for readability here...
+On Fri, 23 Oct 2026 19:50:38 +0200, Geert Uytterhoeven wrote:
+> 	Hi all,
+> 
+> This patch series enables GPIO support for the Renesas R-Car X5H SoC, as
+> found on the Renesas Ironhide development board.  On this board, clocks,
+> power-domains, and resets must be accessed only through SCMI firmware.
+> 
+> The series is a bit special, in that most patches are not meant to be
+> applied upstream yet:
+>   1. The first patch, targeting the GPIO tree, restores the abily to use
+>      the R-Car GPIO driver on a system that does not have pin control
+>      support yet (pin control is not yet supported by SCMI on Ironhide),
+>   2. The second patch, targeting a shared DT bindings branch, adds GPIO
+>      clock definitions,
+>   3. The third patch, targeting renesas-devel, adds GPIO device nodes to
+>      the R-Car X5H .dtsi file,
+>   4. The remaining patches are marked RFC or DNI; the latter depend on
+>      code or DTS that is not yet upstream.  More detail can be found in
+>      the individual patches.
+> 
+> [...]
 
-> +	for (unsigned int i = 0; i < bank->nr_irqs; i++) {
-> +		if (bank->irqs[i] == irq_desc_get_irq(desc)) {
-> +			pending &= bank->irq_masks[i];
-> +			break;
-> +		}
-> +	}
+Applied, thanks!
 
-... here ...
+[1/7] gpio: rcar: Convert to gpiochip_generic_{request,free}()
+      https://git.kernel.org/brgl/c/5e826d71d4839d8471784d968274823f1f492eb5
 
->  	for_each_set_bit(irq, &pending, 32) {
->  		dev_dbg(bank->dev, "handling irq %d\n", irq);
->
-> @@ -568,8 +592,9 @@ static int rockchip_interrupts_register(struct rockchip_pin_bank *bank)
->  	rockchip_gpio_writel(bank, 0xffffffff, bank->gpio_regs->int_en);
->  	gc->mask_cache = 0xffffffff;
->
-> -	irq_set_chained_handler_and_data(bank->irq,
-> -					 rockchip_irq_demux, bank);
-> +	for (unsigned int i = 0; i < bank->nr_irqs; i++)
-> +		irq_set_chained_handler_and_data(bank->irqs[i],
-> +						 rockchip_irq_demux, bank);
->
->  	return 0;
->  }
-> @@ -645,6 +670,36 @@ static void rockchip_clk_put(void *data)
->  	clk_put(clk);
->  }
->
-> +static int rockchip_gpio_read_irq_groups(struct rockchip_pin_bank *bank)
-> +{
-> +	struct arm_smccc_res res;
-> +	u32 assigned = 0;
-> +	int status;
-> +
-> +	for (unsigned int i = 1; i < bank->nr_irqs; i++) {
-> +		arm_smccc_smc(ROCKCHIP_SIP_GPIO_CONFIG, ROCKCHIP_SIP_GPIO_GET_GROUP,
-> +			      bank->bank_num, i, 0, 0, 0, 0, &res);
-> +		status = (int)res.a0;
-> +		if (i == 1 && (status == SMCCC_RET_NOT_SUPPORTED ||
-> +			       status == ROCKCHIP_SIP_RET_NOT_SUPPORTED)) {
-> +			/* Older firmware leaves all pins on the primary IRQ. */
-> +			dev_dbg(bank->dev, "GPIO group query unsupported: %d\n",
-> +				status);
-> +			break;
-> +		}
-> +		if (status)
-> +			return dev_err_probe(bank->dev, -EIO,
-> +					     "cannot read interrupt group %u: %d\n",
-> +					     i, status);
-> +		bank->irq_masks[i] = res.a1;
-> +		if (assigned & bank->irq_masks[i])
-> +			return -EINVAL;
-> +		assigned |= bank->irq_masks[i];
-> +	}
-
-... here, etc.
-
-> +	bank->irq_masks[0] = ~assigned;
-> +	return 0;
-> +}
-> +
->  static int rockchip_get_bank_data(struct rockchip_pin_bank *bank)
->  {
->  	struct platform_device *pdev = to_platform_device(bank->dev);
-> @@ -654,10 +709,23 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank)
->  	if (IS_ERR(bank->reg_base))
->  		return PTR_ERR(bank->reg_base);
->
-> -	ret = platform_get_irq(pdev, 0);
-> +	ret = platform_irq_count(pdev);
->  	if (ret < 0)
->  		return ret;
-> -	bank->irq = ret;
-> +	if (ret != (of_device_is_compatible(bank->of_node,
-> +					    "rockchip,rk3572-gpio-bank") ? 4 : 1))
-> +		return -EINVAL;
-> +	bank->nr_irqs = ret;
-> +	for (unsigned int i = 0; i < bank->nr_irqs; i++) {
-> +		ret = platform_get_irq(pdev, i);
-> +		if (ret < 0)
-> +			return ret;
-> +		bank->irqs[i] = ret;
-> +	}
-> +
-> +	ret = rockchip_gpio_read_irq_groups(bank);
-> +	if (ret)
-> +		return ret;
->
->  	bank->clk = devm_clk_get_enabled(bank->dev, NULL);
->  	if (IS_ERR(bank->clk))
-> @@ -669,6 +737,7 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank)
->  	case GPIO_TYPE_V2:
->  	case GPIO_TYPE_V2_1:
->  	case GPIO_TYPE_V2_2:
-> +	case GPIO_TYPE_V2_7:
->  		bank->gpio_regs = &gpio_regs_v2;
->  		bank->gpio_type = GPIO_TYPE_V2;
->  		bank->db_clk = of_clk_get(bank->of_node, 1);
-> @@ -797,7 +866,8 @@ static void rockchip_gpio_remove(struct platform_device *pdev)
->  {
->  	struct rockchip_pin_bank *bank = platform_get_drvdata(pdev);
->
-> -	irq_set_chained_handler_and_data(bank->irq, NULL, NULL);
-> +	for (unsigned int i = 0; i < bank->nr_irqs; i++)
-> +		irq_set_chained_handler_and_data(bank->irqs[i], NULL, NULL);
->  	if (bank->domain) {
->  		irq_domain_remove_generic_chips(bank->domain);
->  		irq_domain_remove(bank->domain);
-> @@ -807,6 +877,7 @@ static void rockchip_gpio_remove(struct platform_device *pdev)
->
->  static const struct of_device_id rockchip_gpio_match[] = {
->  	{ .compatible = "rockchip,gpio-bank", },
-> +	{ .compatible = "rockchip,rk3572-gpio-bank" },
->  	{ .compatible = "rockchip,rk3188-gpio-bank0" },
->  	{ },
->  };
-> diff --git a/drivers/pinctrl/pinctrl-rockchip.h b/drivers/pinctrl/pinctrl-rockchip.h
-> index 553197f6dc690..058b58dcde404 100644
-> --- a/drivers/pinctrl/pinctrl-rockchip.h
-> +++ b/drivers/pinctrl/pinctrl-rockchip.h
-> @@ -302,7 +302,9 @@ struct rockchip_drv {
->   *	    bank has its own IOC block
->   * @clk: clock of the gpio bank
->   * @db_clk: clock of the gpio debounce
-> - * @irq: interrupt of the gpio bank
-> + * @irqs: parent interrupts of the GPIO bank
-> + * @irq_masks: pins assigned to each parent interrupt
-> + * @nr_irqs: number of parent interrupts
->   * @saved_masks: Saved content of GPIO_INTEN at suspend time.
->   * @pin_base: first pin number
->   * @nr_pins: number of pins in this bank
-> @@ -331,7 +333,9 @@ struct rockchip_pin_bank {
->  	struct regmap			*regmap_ioc;
->  	struct clk			*clk;
->  	struct clk			*db_clk;
-> -	int				irq;
-> +	unsigned int			irqs[4];
-> +	u32				irq_masks[4];
-> +	unsigned int			nr_irqs;
->  	u32				saved_masks;
->  	u32				pin_base;
->  	u8				nr_pins;
-> diff --git a/include/soc/rockchip/rockchip_sip.h b/include/soc/rockchip/rockchip_sip.h
-
-The changes in headers in other subsystems should be in separate patches.
-
-> index 501ad1fedb201..984272ede3baf 100644
-> --- a/include/soc/rockchip/rockchip_sip.h
-> +++ b/include/soc/rockchip/rockchip_sip.h
-> @@ -20,4 +20,9 @@
->  #define ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM	0x07
->  #define ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD	0x08
->
-> +#define ROCKCHIP_SIP_RET_NOT_SUPPORTED		-2
-> +
-> +#define ROCKCHIP_SIP_GPIO_CONFIG		0x8200002c
-> +#define ROCKCHIP_SIP_GPIO_GET_GROUP		0
-> +
->  #endif
->
-> --
-> 2.34.1
->
->
->
-
-Bart
+Best regards,
+-- 
+Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
