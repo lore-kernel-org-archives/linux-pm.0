@@ -1,51 +1,61 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793181776;
-	b=Lt7fAxNPedkMp4UP3BAiUypUR6iv8VG2K68XZfDt/vdLXZ1Y8udo/raTMOB8miJLylLb
-	 tHjw1htOtni7HItnh4upJ7kcuQrV/VsZaCvYy6T+pgS9q1K0glWmkjmhGuwp0x/QplLdT
-	 cj7Y6ZU36TqHbsvFLF9il5sL31+CmHz0hy+YWIIwypRy0DLo5mMjBLPvwxd2s2j0IymhK
-	 a37Wy1edvAPUmU4H4ut3Mw6RIJau+4S/NMLNMhncqhRbcgG+M22v+JYImZRFB9UQSj4J8
-	 It26ngB/VGrVYo6WSXquZ4B7Fol7ywHtWKRbns3gyd5l6/OdmQfnY320t2TELvBxy2Q==
+	t=1793182572;
+	b=l3t9R1L8DAvp4czffGR4WZ72Mj8zOTsuw0YofAgMCxGSN7cXE+LnmAnTA3WucFne9p4Y
+	 8Ducax2zMqn82Y2EQ4LdHctV3Eu6OaaLH3tUU4t2PQj34ILUZoF9ZPq6mY9UdcFijJjpg
+	 wXJ2x1NwDN6CNeJGnmcmMHIXimjkXHpfp3+IfDu1TzR6mH5jrNHQ/O8WUYl3loP2ZtM7y
+	 XG7lxj4mYbqab2JVcx/unumnrTS2yViu9BTWI2py9c/t35cHgKI/y7n0EpvI1ITVS6vUw
+	 XiIfaC+/M08zS35ZRfNzgm7Xa1ZFBITb+L8lp2ag4/UTOTVJiAaW/h0Fp06Vu+mG2ag==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793181776;
-	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-Id:
-	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
-	 X-CM-SenderInfo:X-Coremail-Antispam;
-	bh=ddvx5f00z+VIk9kGMVictMEiXeJ0/JrB5XxYTj9h55Q=;
-	b=ceoXUNhz0NC6lQbmq0pCfDrSHXbf1SgBvFjEVvuu0XWNbzPgGxGp8NNmOwRLX/OqPYVg
-	 pJjLi5DLePSCAeEdwHXlkIvAJEOPn7GaU2dPLCc/pUw+tnH/ZLyGsHt/KkLf8ubXpyMb3
-	 CGcP9DLfjFOWH55wZp4OOMzoVL3Dp48zdqSS+x9JevBCl518N6YlC+4PheztYN+NeF9km
-	 ABi4Sp7v76HHq8kJXFsVUHjspSypL5hzRe2WcSnqsNqi6hE7rmdJe80mEZ23Rd2pPi5D/
-	 0//A0GwYXVMplUnqaRsxiTCZXKIgyOZFpI6dZ6WibjgWvGQmgRrmi/TNuWut07o8Haw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793182572;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:Received:Received:From:In-Reply-To:
+	 MIME-Version:References:Date:X-Gmail-Original-Message-ID:
+	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type;
+	bh=bjLe+3f9gc9bVK8rm2L9uAXKG4i5uaLi17dzEkbJ/vQ=;
+	b=R44wbyYICTAILhB5zt+2LOuWxXyBHPaQIv5nTcaYwCJGhxnbf9GVCS+eNCpGv9QwJBHY
+	 xsU6nXZOI93v+eO2OoTh3sD8wqqkMQUZx2iFPhJKHDlLDqKLkQqc0aC1IluANAARHiZXd
+	 SE70Gseix6eQLkbDx9IGDucinYVK+RuihgbPNyK1yRVb0bNfo+FR9uh+c8B/ZGlCAqNKj
+	 1n5hngOJRK8Q2PV+n7HQWnGce74vRY+aFgoXu1FJu6kHGCaVF4usrGQ4bdBc4yXVy1Wyu
+	 ISPbwH9SnrltOnQpp7ErY1vCox1uRW+m9XNc8M71hD5J85zFl/h5nxl6aT+b2ORJ2Bg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=phytium.com.cn;
-	spf=pass smtp.mailfrom=phytium.com.cn;
-	arc=none smtp.remote-ip=162.243.164.118
-Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B3741606A31C;
-	Wed, 28 Oct 2026 10:02:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B3741606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=phytium.com.cn
-Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
-	by hzbj-icmmx-6 (Coremail) with UTF8SMTP id AQAAfwAnfdxFyOFq04SlAQ--.14102S2;
-	Wed, 28 Oct 2026 18:02:45 +0800 (CST)
-Received: from phytium.com.cn (unknown [218.76.62.144])
-	by mail (Coremail) with SMTP id AQAAf8DwJnVCyOFqaF3yAA--.16563S3;
-	Wed, 28 Oct 2026 18:02:43 +0800 (CST)
-From: xiong yining <xiongyining1480@phytium.com.cn>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	chenbaozi@phytium.com.cn,
-	xiong yining <xiongyining1480@phytium.com.cn>
-Subject: [PATCH v2] selftests: cpufreq: stop CPU hotplug loop after cpufreq update test
-Date: Wed, 28 Oct 2026 18:02:41 +0800
-Message-Id: <20261028100241.189085-1-xiongyining1480@phytium.com.cn>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fcejuAl6;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26D3D606A31A
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 10:16:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fcejuAl6
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3EC61F031ED
+	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 10:16:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793182572;
+	bh=bjLe+3f9gc9bVK8rm2L9uAXKG4i5uaLi17dzEkbJ/vQ=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=fcejuAl6E4+V7xpS9ChrGL6mM/mq7hcNzQluumHdQux62jySqCF1hHjVt/inV4WhP
+	 YkcxJallI2I9HjuB/SJN2TuKyWpXcDGV4NliF2UVO51IilJkj69fziE8klAjqeYvXI
+	 vd9eDg5YAMfF/eITBfogHCsQQ1vYLNJJO4+W7vRR08b80LRqLo4CPFjsJT3a32j+gm
+	 SwRXbA0YlETrDg8O/K+RHgvR1z9WcTv0QMUqmoxsjzShDw3RGZFmuZvUFke+pixq+R
+	 e+KvpTllvcCmHmKZ34vI7UCecYUU6kY0r8RzZzoh15qsAzAVg8GC2B8EwKsT9IZirE
+	 20hYSGa0G2pag==
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-3ab4c608a6dso7436451fa.1
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 03:16:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwJJft+kUcLU/GFQah6NYx3vyiWwovMH1/gzNwbklH6DlEhzhuMZ+OA0XTORpvMSAZCiBr3MLCeMA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLzzvSpPJcOb+aQ9vfDM/NCiybxz2rqx8tQBIdrVSjSgO0oqIFP
+	n3rSKWPDZEzz3VKDdJfjBWOL+YrQJGmN3IcdaK+nGa/ndLG1DxTejULRtGkG2Q6ZyPXYJ84ApK3
+	p3rQxraJYa0JIhWHo74hQOGxD71L1eSo44OtUKVwxnQ==
+X-Received: by 2002:a05:651c:509:b0:3ab:37ee:aab6 with SMTP id
+ 38308e7fff4ca-3ac9cf6327cmr3565321fa.17.1793182570561; Wed, 28 Oct 2026
+ 03:16:10 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 28 Oct 2026 03:16:09 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 28 Oct 2026 03:16:09 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20261022-add-board-ok3572-c-v1-9-0b0fd85a31ee@qq.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -55,120 +65,287 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:AQAAf8DwJnVCyOFqaF3yAA--.16563S3
-X-CM-SenderInfo: x0lr0wp1lqx0bjrumio6sk53xlxphulrpou0/1tbiAQABCmrfqkkNCABOsX
-Authentication-Results: hzbj-icmmx-6; spf=neutral smtp.mail=xiongyinin
-	g1480@phytium.com.cn;
-X-Coremail-Antispam: 1Uk129KBjvJXoWxWF15Kw4rKw4kAF1kuF1xKrg_yoW5XrWUpF
-	WkW3W5twn7CF1qyws3J34UW3y8X3Z3AF47Wrs0qr1Svw15JF90v3WfK3WxWFy3urWkZw4F
-	9anYy3W09r4FyrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
-	DUYxn0WfASr-VFAU7a7-sFnT9fnUUIcSsGvfJ3UbIYCTnIWIevJa73UjIFyTuYvj4RJUUU
-	UUUUU
+References: <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com> <20261022-add-board-ok3572-c-v1-9-0b0fd85a31ee@qq.com>
+Date: Wed, 28 Oct 2026 03:16:09 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MeNF_=T2Yb6wzsQFFcpO+w7sLgaKR=sZhZRzRDFcpgumw@mail.gmail.com>
+X-Gm-Features: AclHuK_BQRJk4TIxkYuHqPCftlY-tqaqteyj8aBVDFPyNxJaNTje36_cX4YFAeQ
+Message-ID: <CAMRc=MeNF_=T2Yb6wzsQFFcpO+w7sLgaKR=sZhZRzRDFcpgumw@mail.gmail.com>
+Subject: Re: [PATCH 09/27] gpio: rockchip: Add RK3572 GPIO support
+To: 1579567540@qq.com
+Cc: Cunhao Lu via B4 Relay <devnull+1579567540.qq.com@kernel.org>, linux-clk@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	mfd@lists.linux.dev, linux-gpio@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-phy@lists.infradead.org, 
+	linux-usb@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Heiko Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Elaine Zhang <zhangqing@rock-chips.com>, Lee Jones <lee@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Richard Cochran <richardcochran@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Andi Shyti <andi.shyti@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Jiri Slaby <jirislaby@kernel.org>, Jisheng Zhang <jszhang@kernel.org>, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+	Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	David Wu <david.wu@rock-chips.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, 
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Thinh Nguyen <Thinh.Nguyen@synopsys.com>, 
+	Jaehoon Chung <jh80.chung@samsung.com>, Shawn Lin <shawn.lin@rock-chips.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Original test uses a fixed 5000 iteration loop to trigger CPU hotplug
-for verifying cpufreq synchronization between CPU hotplug and sysfs
-writes.
+On Wed, 21 Oct 2026 18:11:06 +0200, Cunhao Lu via B4 Relay
+<devnull+1579567540.qq.com@kernel.org> said:
+> From: Cunhao Lu <1579567540@qq.com>
+>
+> Support GPIO V2.7, four parent interrupts, and firmware-provided
+> interrupt-group masks. Keep all pins on the primary interrupt when group
+> queries are unavailable.
+>
+> Signed-off-by: Cunhao Lu <1579567540@qq.com>
+> ---
+>  drivers/gpio/gpio-rockchip.c        | 91 +++++++++++++++++++++++++++++++++----
+>  drivers/pinctrl/pinctrl-rockchip.h  |  8 +++-
+>  include/soc/rockchip/rockchip_sip.h |  5 ++
+>  3 files changed, 92 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/gpio/gpio-rockchip.c b/drivers/gpio/gpio-rockchip.c
+> index 77b239a9a601e..35894a68b5446 100644
+> --- a/drivers/gpio/gpio-rockchip.c
+> +++ b/drivers/gpio/gpio-rockchip.c
+> @@ -6,6 +6,7 @@
+>   * Copyright (c) 2021 Rockchip Electronics Co. Ltd.
+>   */
+>
+> +#include <linux/arm-smccc.h>
+>  #include <linux/bitops.h>
+>  #include <linux/clk.h>
+>  #include <linux/device.h>
+> @@ -21,6 +22,7 @@
+>  #include <linux/pinctrl/pinconf-generic.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/regmap.h>
+> +#include <soc/rockchip/rockchip_sip.h>
+>
+>  #include "../pinctrl/core.h"
+>  #include "../pinctrl/pinctrl-rockchip.h"
+> @@ -35,6 +37,7 @@
+>  #define GPIO_TYPE_V2		(0x01000C2B)
+>  #define GPIO_TYPE_V2_1		(0x0101157C)
+>  #define GPIO_TYPE_V2_2		(0x010219C8)
+> +#define GPIO_TYPE_V2_7		(0x01074D2E)
+>
+>  static const struct rockchip_gpio_regs gpio_regs_v1 = {
+>  	.port_dr = 0x00,
+> @@ -209,12 +212,27 @@ static int rockchip_gpio_set_debounce(struct gpio_chip *gc,
+>  	if (bank->gpio_type == GPIO_TYPE_V2 && !IS_ERR(bank->db_clk)) {
+>  		div_debounce_support = true;
+>  		freq = clk_get_rate(bank->db_clk);
+> -		max_debounce = (GENMASK(23, 0) + 1) * 2 * 1000000 / freq;
+> -		if (debounce > max_debounce)
+> -			return -EINVAL;
+>
+> -		div = debounce * freq;
+> -		div_reg = DIV_ROUND_CLOSEST_ULL(div, 2 * USEC_PER_SEC) - 1;
+> +		if (of_device_is_compatible(bank->of_node, "rockchip,rk3572-gpio-bank")) {
+> +			if (!freq)
+> +				return -EINVAL;
+> +
+> +			div = (u64)(GENMASK(23, 0) + 1) * USEC_PER_SEC;
+> +			max_debounce = div_u64(div, 2 * freq);
+> +			if (debounce > max_debounce)
+> +				return -EINVAL;
+> +
+> +			div = (u64)debounce * freq * 2;
+> +			div_reg = DIV_ROUND_CLOSEST_ULL(div, USEC_PER_SEC);
+> +			div_reg = div_reg ? div_reg - 1 : 0;
+> +		} else {
+> +			max_debounce = (GENMASK(23, 0) + 1) * 2 * 1000000 / freq;
+> +			if (debounce > max_debounce)
+> +				return -EINVAL;
+> +
+> +			div = debounce * freq;
+> +			div_reg = DIV_ROUND_CLOSEST_ULL(div, 2 * USEC_PER_SEC) - 1;
+> +		}
+>  	} else {
+>  		div_debounce_support = false;
+>  	}
+> @@ -342,6 +360,12 @@ static void rockchip_irq_demux(struct irq_desc *desc)
+>  	chained_irq_enter(chip, desc);
+>
+>  	pending = readl_relaxed(bank->reg_base + bank->gpio_regs->int_status);
 
-Two issues exist:
-1. Background hotplug task keeps running after test completes, causing
-redundant CPU on/offline operations.
-2. When cpufreq frequency setup is slow, the hotplug loop may exit
-before frequency updates finish, which breaks test purpose.
+Please sprinkle in some newlines for readability here...
 
-Introduce a file-based stop flag to control the infinite hotplug loop.
-After all cpufreq updates complete, create the stop flag file and
-wait for the hotplug task to exit.
+> +	for (unsigned int i = 0; i < bank->nr_irqs; i++) {
+> +		if (bank->irqs[i] == irq_desc_get_irq(desc)) {
+> +			pending &= bank->irq_masks[i];
+> +			break;
+> +		}
+> +	}
 
-This makes hotplug run only during cpufreq sysfs write test,
-align with test objective.
+... here ...
 
-Signed-off-by: xiong yining <xiongyining1480@phytium.com.cn>
----
-Changes in v2:
-- Stop the hotplug child process by signal notification instead of
-a stop file, avoiding the predictable temporary path.
-- Add an exit trap so the hotplug child is also cleaned up when the
-main shell terminates abnormally.
-- Link to v1:
-https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2662696.html
+>  	for_each_set_bit(irq, &pending, 32) {
+>  		dev_dbg(bank->dev, "handling irq %d\n", irq);
+>
+> @@ -568,8 +592,9 @@ static int rockchip_interrupts_register(struct rockchip_pin_bank *bank)
+>  	rockchip_gpio_writel(bank, 0xffffffff, bank->gpio_regs->int_en);
+>  	gc->mask_cache = 0xffffffff;
+>
+> -	irq_set_chained_handler_and_data(bank->irq,
+> -					 rockchip_irq_demux, bank);
+> +	for (unsigned int i = 0; i < bank->nr_irqs; i++)
+> +		irq_set_chained_handler_and_data(bank->irqs[i],
+> +						 rockchip_irq_demux, bank);
+>
+>  	return 0;
+>  }
+> @@ -645,6 +670,36 @@ static void rockchip_clk_put(void *data)
+>  	clk_put(clk);
+>  }
+>
+> +static int rockchip_gpio_read_irq_groups(struct rockchip_pin_bank *bank)
+> +{
+> +	struct arm_smccc_res res;
+> +	u32 assigned = 0;
+> +	int status;
+> +
+> +	for (unsigned int i = 1; i < bank->nr_irqs; i++) {
+> +		arm_smccc_smc(ROCKCHIP_SIP_GPIO_CONFIG, ROCKCHIP_SIP_GPIO_GET_GROUP,
+> +			      bank->bank_num, i, 0, 0, 0, 0, &res);
+> +		status = (int)res.a0;
+> +		if (i == 1 && (status == SMCCC_RET_NOT_SUPPORTED ||
+> +			       status == ROCKCHIP_SIP_RET_NOT_SUPPORTED)) {
+> +			/* Older firmware leaves all pins on the primary IRQ. */
+> +			dev_dbg(bank->dev, "GPIO group query unsupported: %d\n",
+> +				status);
+> +			break;
+> +		}
+> +		if (status)
+> +			return dev_err_probe(bank->dev, -EIO,
+> +					     "cannot read interrupt group %u: %d\n",
+> +					     i, status);
+> +		bank->irq_masks[i] = res.a1;
+> +		if (assigned & bank->irq_masks[i])
+> +			return -EINVAL;
+> +		assigned |= bank->irq_masks[i];
+> +	}
 
-This addresses the security and robustness concerns raised by Sashiko.
----
- .../selftests/cpufreq/special-tests.sh        | 30 +++++++++++++++----
- 1 file changed, 24 insertions(+), 6 deletions(-)
+... here, etc.
 
-diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
-index e87ed7c8e5e5..b3ebead1c52a 100755
---- a/tools/testing/selftests/cpufreq/special-tests.sh
-+++ b/tools/testing/selftests/cpufreq/special-tests.sh
-@@ -16,6 +16,8 @@ source cpu.sh
- source cpufreq.sh
- source governor.sh
- 
-+HOTPLUG_PID=""
-+
- # Test 1
- # $1: policy
- __simple_lockdep()
-@@ -92,20 +94,34 @@ governor_race()
- 	restore_all_governors
- }
- 
-+hotplug_cleanup()
-+{
-+	if [[ -n "$HOTPLUG_PID" ]]; then
-+		kill -s SIGTERM "$HOTPLUG_PID"
-+		wait "$HOTPLUG_PID"
-+
-+		HOTPLUG_PID=""
-+	fi
-+}
-+
- # Test 4
- # $1: cpu
- hotplug_with_updates_cpu()
- {
- 	local filepath="$CPUROOT/$1/cpufreq"
- 
-+	(
-+		local quit=0
-+		trap 'quit=1' SIGTERM
-+		while [ "$quit" -eq 0 ]; do
-+			reboot_cpu "$1"
-+		done
-+	) &
-+	HOTPLUG_PID=$!
-+
- 	# switch to ondemand
- 	__switch_governor_for_cpu $1 "ondemand"
- 
--	for i in `seq 1 5000`
--	do
--		reboot_cpu $1
--	done &
--
- 	local freqs=$(cat $filepath/scaling_available_frequencies)
- 	local oldfreq=$(cat $filepath/scaling_min_freq)
- 
-@@ -117,14 +133,16 @@ hotplug_with_updates_cpu()
- 		done
- 	done
- 
-+	hotplug_cleanup
-+
- 	# restore old freq
- 	echo $oldfreq > $filepath/scaling_min_freq
- }
- 
- hotplug_with_updates()
- {
-+	trap 'hotplug_cleanup' EXIT
- 	save_all_governors
- 	for_each_non_boot_cpu hotplug_with_updates_cpu
--	wait
- 	restore_all_governors
- }
--- 
-2.34.1
+> +	bank->irq_masks[0] = ~assigned;
+> +	return 0;
+> +}
+> +
+>  static int rockchip_get_bank_data(struct rockchip_pin_bank *bank)
+>  {
+>  	struct platform_device *pdev = to_platform_device(bank->dev);
+> @@ -654,10 +709,23 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank)
+>  	if (IS_ERR(bank->reg_base))
+>  		return PTR_ERR(bank->reg_base);
+>
+> -	ret = platform_get_irq(pdev, 0);
+> +	ret = platform_irq_count(pdev);
+>  	if (ret < 0)
+>  		return ret;
+> -	bank->irq = ret;
+> +	if (ret != (of_device_is_compatible(bank->of_node,
+> +					    "rockchip,rk3572-gpio-bank") ? 4 : 1))
+> +		return -EINVAL;
+> +	bank->nr_irqs = ret;
+> +	for (unsigned int i = 0; i < bank->nr_irqs; i++) {
+> +		ret = platform_get_irq(pdev, i);
+> +		if (ret < 0)
+> +			return ret;
+> +		bank->irqs[i] = ret;
+> +	}
+> +
+> +	ret = rockchip_gpio_read_irq_groups(bank);
+> +	if (ret)
+> +		return ret;
+>
+>  	bank->clk = devm_clk_get_enabled(bank->dev, NULL);
+>  	if (IS_ERR(bank->clk))
+> @@ -669,6 +737,7 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank)
+>  	case GPIO_TYPE_V2:
+>  	case GPIO_TYPE_V2_1:
+>  	case GPIO_TYPE_V2_2:
+> +	case GPIO_TYPE_V2_7:
+>  		bank->gpio_regs = &gpio_regs_v2;
+>  		bank->gpio_type = GPIO_TYPE_V2;
+>  		bank->db_clk = of_clk_get(bank->of_node, 1);
+> @@ -797,7 +866,8 @@ static void rockchip_gpio_remove(struct platform_device *pdev)
+>  {
+>  	struct rockchip_pin_bank *bank = platform_get_drvdata(pdev);
+>
+> -	irq_set_chained_handler_and_data(bank->irq, NULL, NULL);
+> +	for (unsigned int i = 0; i < bank->nr_irqs; i++)
+> +		irq_set_chained_handler_and_data(bank->irqs[i], NULL, NULL);
+>  	if (bank->domain) {
+>  		irq_domain_remove_generic_chips(bank->domain);
+>  		irq_domain_remove(bank->domain);
+> @@ -807,6 +877,7 @@ static void rockchip_gpio_remove(struct platform_device *pdev)
+>
+>  static const struct of_device_id rockchip_gpio_match[] = {
+>  	{ .compatible = "rockchip,gpio-bank", },
+> +	{ .compatible = "rockchip,rk3572-gpio-bank" },
+>  	{ .compatible = "rockchip,rk3188-gpio-bank0" },
+>  	{ },
+>  };
+> diff --git a/drivers/pinctrl/pinctrl-rockchip.h b/drivers/pinctrl/pinctrl-rockchip.h
+> index 553197f6dc690..058b58dcde404 100644
+> --- a/drivers/pinctrl/pinctrl-rockchip.h
+> +++ b/drivers/pinctrl/pinctrl-rockchip.h
+> @@ -302,7 +302,9 @@ struct rockchip_drv {
+>   *	    bank has its own IOC block
+>   * @clk: clock of the gpio bank
+>   * @db_clk: clock of the gpio debounce
+> - * @irq: interrupt of the gpio bank
+> + * @irqs: parent interrupts of the GPIO bank
+> + * @irq_masks: pins assigned to each parent interrupt
+> + * @nr_irqs: number of parent interrupts
+>   * @saved_masks: Saved content of GPIO_INTEN at suspend time.
+>   * @pin_base: first pin number
+>   * @nr_pins: number of pins in this bank
+> @@ -331,7 +333,9 @@ struct rockchip_pin_bank {
+>  	struct regmap			*regmap_ioc;
+>  	struct clk			*clk;
+>  	struct clk			*db_clk;
+> -	int				irq;
+> +	unsigned int			irqs[4];
+> +	u32				irq_masks[4];
+> +	unsigned int			nr_irqs;
+>  	u32				saved_masks;
+>  	u32				pin_base;
+>  	u8				nr_pins;
+> diff --git a/include/soc/rockchip/rockchip_sip.h b/include/soc/rockchip/rockchip_sip.h
 
+The changes in headers in other subsystems should be in separate patches.
+
+> index 501ad1fedb201..984272ede3baf 100644
+> --- a/include/soc/rockchip/rockchip_sip.h
+> +++ b/include/soc/rockchip/rockchip_sip.h
+> @@ -20,4 +20,9 @@
+>  #define ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM	0x07
+>  #define ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD	0x08
+>
+> +#define ROCKCHIP_SIP_RET_NOT_SUPPORTED		-2
+> +
+> +#define ROCKCHIP_SIP_GPIO_CONFIG		0x8200002c
+> +#define ROCKCHIP_SIP_GPIO_GET_GROUP		0
+> +
+>  #endif
+>
+> --
+> 2.34.1
+>
+>
+>
+
+Bart
