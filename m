@@ -1,124 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793185218;
-	b=B/hOH3PIbPYamVFN/2k1ak/w3C1vRCcHJFXHEIabiMPGLR5yaUwm2AMeqCsKCz2hfndN
-	 l4peCxf8esYGGKsqWV4TQWpLRewt0ARG22h2j8qmIfB40ciIhdg8T7HOixmM3Ym/R/WOC
-	 rlYmXKp6TJMRM6J33nRbZpHuxtokMP7hqGZgnrmbNQg0RvhY8j+xSwqabrJ2W73CnJ6aE
-	 DJea3M9X34tOeOUVnXF+4YTFpeeMP7fVzyHeIXy+UeyTi4TlNqQpwLbuQkwZhueDdh1QR
-	 TCoBnkWdH2IjwVjWMjAvs8uYKy6qx+nlIYm5Fn21pvNrgwS3nY10fYSbDcrLCqhhOPA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793185218;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:Content-Transfer-Encoding:X-Authority-Analysis:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=1wa+/owR94gXnrAcOckNHscnr8fLSqcbseBqLJMCJV8=;
-	b=R5enxv9lw+W7FIOar9+WXfEE82vqFKwDdSghuHRBDs17bdqnRkZh1qTm4J8z8+qufQ9Z
-	 tF18zW+fRDNmpcCW7+b2S7eCBUlXcQJDkcmojFUu5BVpnxQ37LX0J1p8KSxu+nhmZiigH
-	 KV9VKhhsCkC0UQCc3JlcsJr4lQyTgLb+HK2nccqmZtagPhYX//1x33nA4x7Uz4x6wrCYP
-	 NBNna/+fG8xoqno0a90ohU3QRtmQc8MhYJ1tmCOFHi8k7CQIVRbLtFBIUPMKp33LZ9u0g
-	 KSWF8fYLNpZXjIIm7A8jg4XvpBSogDcUikxGaTARRXb7W7WJOvRuhvgF+Q1739rH3yA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=YLZUaHMv;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TwwPPUDa;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=84.42.129.46
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793186784;
+	b=NqM+43uuiE3LVJBSK9ZhMgDIWNIM3yGMaYW8RIv4aII5ZUn79pXb4q8QvE6ydSr/pL2D
+	 KrTdntA0aOpz7KqCChQuXQt1pH1lZ1nX3JBReA2cgYHiCV4FWPDNjD1/hOTNa3li8dDy1
+	 zRCqMUYfGhbjiQWYxItRd0yQDw1l4yrhgk0s1HvZyM7J1LdhMJgEWCvb4CgTo8BiFJLTD
+	 zXP6WVkmG5uNaOy33ZtJJNO7vVrzQxC4jqs5gntB50o3vXE8S1za6PkH2TjmwLCIzBZMp
+	 7m3WucpcPZlzamjjtvhU+tONfNRLLUNqWcV8u6IoaLjr4GwEehTuRIrnxUuQI6QTebg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793186784;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=K8hugQRBJFCRqRVR9TtuMv4qNp8j1eR3GJhYgLoZmRM=;
+	b=y8P86I2dPk3S+WRWohlmpkCYltWvenC1uvvK3CSdlBfZOgxpAnIpROihXdi0Y16lOenD
+	 6BUI0mPmLwxLX/PkTpsO0pTIW0u4jRXl+28rJb7cvVDzzVk0Imj1ZcJAgQbbYbV8Ea935
+	 Cy1cYHtzLST8n5JQS+KfER/2NxH5VFUaErFAU0HkRpBsjU/IfTNDxAf41F+X5EX8AHWJx
+	 ryulBQp+A9OKXOd+PHWW1MFKzLTCBVPU8gcDRR2QUaK6xBWsvxiO5nYYK+ExzVK0h8+Fb
+	 2ua6FIJ624WCbKP/COwa5rK4CE8PFPQHNJ1DyE/M45VR4GEp56g6/EHwLymrV6M9F2Q==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=ixit.cz;
+	spf=pass smtp.mailfrom=ixit.cz;
+	dkim=pass header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim header.b=H5TKogQR;
+	arc=none smtp.remote-ip=84.42.129.46
+Received: from ixit.cz (ixit.cz [84.42.129.46])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 821D2606A31C
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 11:00:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 821D2606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64C97606A31D;
+	Wed, 28 Oct 2026 11:26:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 64C97606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=YLZUaHMv;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TwwPPUDa
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69S8Kqgu1101742
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 11:00:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	1wa+/owR94gXnrAcOckNHscnr8fLSqcbseBqLJMCJV8=; b=YLZUaHMvORb5+JOm
-	pG6DIHFWDZCgl6lavcglKsmKSBHvYojRNB2UznE7BHNJKjVtjehpaXBSngpbtnCk
-	OCsMb6xLFLL3Jh43HIREbPjEargv4QqJED5H3FeXVbxaZZq4l2oKrdsKuJYSw+L3
-	hQ78YRw5ihdKxJhXhM6aPpnwoZa3jIod3pDbSwgb03x7caVeMeOfyClpTss+NY4R
-	5W5yXsZZSkpoN829u+IQ13XhSJr3O/Z1iSKu8weAgT/rYrQsz2dArQgUcPf/35hf
-	PpGI1UXTWE3PDnkkbsMwa2L6nA31G8p6B3vQreWi9edsjsOrUuoq4Ge+uwnY//sI
-	XZbljw==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hkdf7rjhx-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 11:00:10 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2e93f266d20so11519405ad.3
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2026 04:00:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793185210; cv=none;
-        d=google.com; s=arc-20260327;
-        b=VfUd/EeXEVeDoGvU3KC8M/Qb6O20qNVZ39OwFEA672SUINLC11QXX0DCPW13zBYtr4
-         ATEToaoJJhlQWDfmCuBl81zvUVcRoqIL08cD9THeWCRXrC9Qa8bPt2Y5X309Qzl4YlFZ
-         Fcwug09U7DS1nnb4ND/RMMhVTKukulv3PPSHRwtMwB1y6ixB68it2geoNc36SjZwXqnQ
-         Q+QFdDaF9U7vxKd4XFnXD0eI569Jx33Fs5xBTqRWy9ALkIT4sDBzTuKX+0L3ZRp3FJSy
-         mHtZo0ILA6KR1+2oS4k1CVsj9DoBhpc4AwK2dl4l6Oed2CLZvvVff7e7yRm0jZAz/ckV
-         RewQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=1wa+/owR94gXnrAcOckNHscnr8fLSqcbseBqLJMCJV8=;
-        fh=NCnQpBeinYtWTcs47UMV4JAmv33XXwXJzlAyXQ/ZpZM=;
-        b=shkBDDLuS6SkNnuKBv0XzrL05KfZkxj6DIAgIgP2H5yiea/gwqWQmVPiwVu8tbkhVD
-         qbxHftNehAfuP89XuIn5UqTjT2SvM8NX1WYU1qO6waRqdLtpdwNoS4VJa/hRnmJizfxy
-         ZPX8x2lqNIOzkVfATfHtFCDUrRjVPw8D53KazeemyIyS/xRjuLJwJQ0MUOYIYndgAUOV
-         KpiYuilVexfxtw63M1DQj+v5MwRV8/bKv7PeRID4/iVLuzrhDT1QYuyX9WscNyzSAtGk
-         0iHfGCvYQ9YbqE9Sh4PqsWriKMgmLPe41aUYvh+HEuumRD0fsD1+xelNltRzY5pTS7x+
-         4WYw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793185210; x=1793790010; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=1wa+/owR94gXnrAcOckNHscnr8fLSqcbseBqLJMCJV8=;
-        b=TwwPPUDa0jtCCNmldKxmcrc9NtQgN0xgFHn7Z65f01ViRnrPtkmqFpIKItmIqyk3Sv
-         B5L6lhtFgmcE/LDKLBvSaB+shejfHhYyr0TZYe0J/CQqWLk/GX1xQ+lF8YbGiBy3J2id
-         9QfnFej/IrD53IvxcpVc4Em0c+JTLe6Ma5F++UJz2X0tsVboaadbm8yjbnmOXAQ9/zA8
-         n/va1fQpbSC6DAoYdnUAas0RzlUFKnoPpwnwyzEUwq9/vYRxhywLTmGHYVlr1GxtVi5J
-         zkLFeLqcg+Zpyv876RkTkm5tEcPB5tBp6Fl7hENjfj442AfOsan7ZSCrnnUvj7tPn2dN
-         xBoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793185210; x=1793790010;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=1wa+/owR94gXnrAcOckNHscnr8fLSqcbseBqLJMCJV8=;
-        b=nqO2IyXHLEY95WGuKW5u6Znmxk7jQ92iXOifdp1FOLIw/eFrv8XbnmZVCNAUkXEtS1
-         ofS0ZyacTaPorHZdpAyAllAm7p+hBpfkyY9rTf6A9jUH/c5JgQ/UjQu5hGUhTZ0vx1OG
-         +LDE9IeAFyAf8EKczesosOQEYicTQpJaf7cYrmjc2tJ/NMPTvlJwr2gcW/BPZxjEP2My
-         NcEHNjTxAOm5EE0tlrDfrYBbnQPsxyfrX+Hl1NbbUiA6gyaJkSWVG0G7EhWujM7T6/wH
-         MdRKoot9j4t0oTm2nXRiLMVaR6z0PG28qMKIoGYQ97LoR6MdLIcV3OCLeId/AByHgCaj
-         Njyw==
-X-Forwarded-Encrypted: i=1; AKwUvBwIE8v2/QinhR990JFEAWky+8JydXNE8d0900g+GRGi2ETCyh4W3sg80YbSwCnlt4X16joIYU3zmg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKh0MyDw8an8+6X5uR4SJLbc/B2/dtnGKZG9puEXQ0s/vx5BzB3
-	SGKk8R9xbAvnOZC6nu+dTvqDZmIdLcrdCcRMe0PHvIdpdSUosbxhr8Qj//tBExOd5UI/6dNqkoK
-	yV8FmxZ+lruiKOwRIdKWwEm6IwTCnqt+m+oyMd0hPsOcNMapCjZCaX0XDGUpDP1nCZB5HKq9f5i
-	5WLr7IIluFuH9IADuSMZCkNYLgqW6j20WVGKhw
-X-Gm-Gg: AYBFou2csuNf1+N8vbKX0Ep42S/A+fl0HO2FJslVkIlv+zReq/LhN5AVGmfuG0UlcDz
-	PrQ7ZafozlTGTGYW7a8jum3NiQDyATaUQezaGCDgZ439O+z1y4ibU/XX6b/tSYvFR2QHRubby2/
-	cMJ4Zv0TApkbL0ca1+Q5EKuhjK1h38VJvf//uiKNi4grSGZlrBEw3ijuSu8Xu5+DeLrSgN9e5x1
-	MypobVVOmOSsvbDDA==
-X-Received: by 2002:a17:903:244c:b0:2e9:7dda:bfd1 with SMTP id d9443c01a7336-2eb003cdd36mr19355735ad.30.1793185209838;
-        Wed, 28 Oct 2026 04:00:09 -0700 (PDT)
-X-Received: by 2002:a17:903:244c:b0:2e9:7dda:bfd1 with SMTP id
- d9443c01a7336-2eb003cdd36mr19355325ad.30.1793185209362; Wed, 28 Oct 2026
- 04:00:09 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim header.b=H5TKogQR
+Received: from [IPV6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e] (unknown [IPv6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ixit.cz (Postfix) with ESMTPSA id AFD7853409F8;
+	Wed, 28 Oct 2026 12:26:19 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
+	t=1793186780;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=K8hugQRBJFCRqRVR9TtuMv4qNp8j1eR3GJhYgLoZmRM=;
+	b=H5TKogQRjlf3dxbaISyp8kV1lyi5ZG9jIPOMGbL6HYGzWOpLO4EhJwXiCqCJ7z8T30/Iuq
+	lr4rRonUxbMU2w1okoTP3SjZfuIqI67ng213rYUYVkyDVubMvOHTb9KuTDqn/6UPOi6SzA
+	ibqL2t7FrFqixgO4yQvZlYmpIyoEDWg=
+Message-ID: <80f088f1-a11d-4129-bf26-f8224c94b534@ixit.cz>
+Date: Wed, 28 Oct 2026 12:26:19 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -128,183 +60,152 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261005-s2idle_state-v1-0-3c402c66f388@oss.qualcomm.com>
- <20261005-s2idle_state-v1-2-3c402c66f388@oss.qualcomm.com>
- <20261006-romantic-stalwart-seriema-90e71d@sudeepholla> <CAPx+jO-T_0KT3GytYu8w6QvrhXFQNZQzR496RL=McU6rnMtnPA@mail.gmail.com>
- <20261009-frisky-rottweiler-from-avalon-6c409e@sudeepholla>
- <CAPx+jO-_aY5pMnWyy1hAs1WRmfW33vc317jdtBsEXYBoHsPfxA@mail.gmail.com>
- <20261009-skilled-mature-bittern-2206fc@sudeepholla> <CAPx+jO87gkTumF=Tg=UPWpJO6O-CRF4njT2KxQ3f=4nF5m7GiQ@mail.gmail.com>
- <20261014-prudent-mini-duck-377cb6@sudeepholla>
-In-Reply-To: <20261014-prudent-mini-duck-377cb6@sudeepholla>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Wed, 28 Oct 2026 11:59:58 +0100
-X-Gm-Features: AclHuK-LQgnIpxOBv6YIR41I8lr76Fns1lvAAUTxZNI-80rsX3bNmiwX8o5xW2c
-Message-ID: <CAPx+jO_BOwbKeRytBezm+piLhb8Z5N2eQO=LRwBQoSZ3kXOpwQ@mail.gmail.com>
-Subject: Re: [PATCH 2/3] pmdomain: Add support for system-suspend-only states
-To: Sudeep Holla <sudeep.holla@kernel.org>
-Cc: Maulik Shah <maulik.shah@oss.qualcomm.com>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Abel Vesa <abelvesa@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=M4bYuCws c=1 sm=1 tr=0 ts=6ae1d5ba cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_glEPmIy2e8OvE2BGh3C:22 a=VwQbUJbxAAAA:8 a=Fkqsunai0WhB3pQShDEA:9
- a=QEXdDO2ut3YA:10 a=324X-CrmTo6CU4MGRt3R:22
-X-Proofpoint-GUID: LQQ4zjrkVA3-SbcXxVyduCmCDzPYlVTY
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI4MDA0MyBTYWx0ZWRfXyNzrWO735Scw
- 6YzuPsVhOoSRIXvT2DQYIYL9MLZqHL0lf4ogUrX/RiMKa+TXxnJ4jiCiMctBJPJF5RbstWyKdG9
- xXKuw6GlPasVqA7yjsatYUgKvEgJI8k=
-X-Proofpoint-ORIG-GUID: LQQ4zjrkVA3-SbcXxVyduCmCDzPYlVTY
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI4MDA0MyBTYWx0ZWRfX6b8bUEgm0yj5
- FDPWne5u+2oovPRmWuqyo0qVaQhoF1u9zBZ8CMQUv1U0olIZx/NidhzHPjq47XHtwDwnXOPiq7+
- LOhSa6JwMkxUCY4TEhxZpIx6zqLxwZXHv/S9yQmZppzSx3cQs/YmmCQSsUYrczx5SFDGIZil5ht
- 13ECaAV5sVd14X5Amn+dlPEenGibpXKMn0LR7jx6/kk8a8WwNQpD6icVJAGzD8Ku6yfRNZ6674z
- MoQnTyu9ls9PfOwRNpfO2MvvJaXRPIscoYXhYHd1RyRAR0/4pgGzuRs9iS+lln+hOCatu+yG7rh
- 7met7wCZp91/pAsTG2oalgMXm3YC5+l5YMj2xYJWmA/zaYvSeKyutJiqWMVPcu1cMSDrHJm/zxj
- XjAbqV8u2Jz/yeXv+jtJ1ANDkimMgYiygweVPsnGUvt8Ngg4avEWZCCTf3dnGwMURXCR27QLtvU
- fZaBDWwskZXIkiBX/Xw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-28_03,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 clxscore=1015 impostorscore=0 malwarescore=0
- bulkscore=0 spamscore=0 suspectscore=0 lowpriorityscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610280043
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 2/2] power: supply: qcom_smbx: add SMB5 support
+To: Robin Snyders <robin@snyders.xyz>
+Cc: Casey Connolly <casey.connolly@linaro.org>,
+ Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org,
+ phone-devel@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Joel Selvaraj <foss@joelselvaraj.com>
+References: <20260820-submit-qcom-smbx-send-v1-v4-0-818dabb2771e@snyders.xyz>
+ <20260820-submit-qcom-smbx-send-v1-v4-2-818dabb2771e@snyders.xyz>
+ <6251801f-3662-4ad4-8d55-710144462010@ixit.cz>
+ <468873b2-d154-4793-93b1-82816a00e580@mail.infomaniak.com>
+Content-Language: en-US, cs-CZ
+From: David Heidelberg <david@ixit.cz>
+Autocrypt: addr=david@ixit.cz; keydata=
+ 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
+In-Reply-To: <468873b2-d154-4793-93b1-82816a00e580@mail.infomaniak.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 14, 2026 at 9:12=E2=80=AFPM Sudeep Holla <sudeep.holla@kernel.o=
-rg> wrote:
->
-> On Tue, Oct 13, 2026 at 12:11:36PM +0200, Ulf Hansson wrote:
-> > On Fri, Oct 9, 2026 at 5:27=E2=80=AFPM Sudeep Holla <sudeep.holla@kerne=
-l.org> wrote:
-> > >
-> > > On Fri, Oct 09, 2026 at 04:26:38PM +0200, Ulf Hansson wrote:
->
-> [...]
->
-> > > > If that's the case, besides that the cluster PM domain topology mus=
-t
-> > > > be modelled accordingly, the display device should be hooked up to =
-the
-> > > > cluster PM domain it belongs to.
-> > > >
-> > >
-> > > Ah, I thought that's the way the whole domain-idle was modelled as we
-> > > started this OSI discussion a decade ago with an example of CPU clust=
-ers
-> > > sharing power domains with some other devices. I am surprised if that=
- is
-> > > not the case already =F0=9F=99=81.
-> >
-> > It works fine today, I was just trying to explain how it works,
-> > considering the use case that you brought up.
-> >
->
-> Ah OK, good to hear. For once, it sounded like that's not the case. My ba=
-d.
->
-> > >
-> > > > Beyond that, it's the corresponding display driver that becomes
-> > > > responsible for what should happen during system suspend. If the
-> > > > screen needs to stay on it may need to call device_set_awake_path()
-> > > > for the display device - unless it's a decision for user space that
-> > > > can control the behaviour for the display device via its sysfs node=
-.
-> > > > If things are managed accordingly, genpd_finish_suspend() may decid=
-e
-> > > > to keep the corresponding PM domain powered on during system suspen=
-d.
-> > > >
-> > >
-> > > But the s2idle and s2ram anyways suspends all the devices, so they ne=
-ed
-> > > to vote in for the power domains to be turned off. If they are suppos=
-ed
-> > > to stay on, the system enters the state it can based on the other vot=
-es.
-> > >
-> > > > The above said, $subject patch doesn't change any of this. It only
-> > > > allows us to use more states (deeper), which are limited to system
-> > > > suspend (s2idle).
-> > > >
-> > >
-> > > Still not convinced, if all devices are plugged in to the power domai=
-n
-> > > hierarchy correctly and the domain-idle states represent or carries
-> > > the entire system power domain topology, we shouldn't need this extra
-> > > information. Having it make cause issues when it conflicts with the
-> > > topology information IMO.
-> >
-> > No, it's still not sufficient to model the power domain hierarchy corre=
-ctly.
-> >
-> > These "system states" are special since they require additional
-> > coordination in FW/HW, to take into account votes not directly
-> > controlled by Linux.
-> >
->
-> But if Linux doesn't control, some other entity would vote and until then
-> the system shouldn't enter that state. Without knowing that it is system
-> state, will the kernel be unable to choose that state as it hidden vote
-> is invisible/not tracked ? I trying to understand why if Linux chooses
-> that system level state as part of idle loop, the platform can't downgrad=
-e
-> if all the voting requirements are not met. I am struggling with that
-> and want to make sure we are not working around a broken firmware.
+On 28/10/2026 08:42, Robin Snyders wrote:
+> On 27/10/2026 18:19, David Heidelberg wrote:
+>> On 20/08/2026 12:03, Robin Snyders via B4 Relay wrote:
+>>> +enum smb_generation {
+>>> +	SMB2,
+>>> +	SMB5,
+>>> +};
+>>> +
+>>> +#define SMB_REG_OFFSET(smb) ((smb)->gen == SMB2 ? 0x600 : 0x100)
+>>> +
+>>
+>> More and more as I look at it, this shouldn't be here, but within the device-tree as
+>> charger@1000 {
+>>      reg = <0x1000>, <0x1600>;  # SMB2, or
+>>      reg = <0x1000>, <0x1100>;  # SMB5
+>> };
+>>
+>> But see also:
+>> https://lore.kernel.org/all/eodzuccugtdn42basgpczett4yatyirog4nxwe5rhg5xf46ibp@jzcjmje4aqc3/
+>>
+>> I'll try to do some basic separation so we know what bits belongs into which blog, keep you in CC.
+> 
+> Hi David,
+> 
+> Thanks for looking at this.
 
-For OSI, all the FW would be able to do is to return an error. But
-that doesn't prevent Linux from trying the same idle state again and
-again.
+Hi Robin
 
-For PC mode, the FW should be able to downgrade the vote. Although,
-from the cpuidle governor point of view that would be suboptimal as it
-means that we will try to use an idle state that isn't really possible
-to enter.
+btw. since I'm working on the type-c + vbus (which originally clankers put into 
+smbx), I noticed that there is existing vbus driver which can be used.
 
->
-> Sorry for being pedantic, but some real example would help to understand
-> it IMO.
+This implies removing OTG (0x1100 block) from the smbx driver.
 
-I will coordinate with Maulik to try to share some examples.
+Thus series needs more testing (charge/otg/DP, etc.), I have it at
 
->
-> > I realize that the description in patch1 should be extended a bit to
-> > explain this better. In principle, we can compare this with the PSCI
-> > SYSTEM_SUSPEND support. The difference would be that PSCI
-> > SYSTEM_SUSPEND is limited to support only one state, while the
-> > $subject series would allow us to support multiple.
-> >
->
-> I understand that part. SYSTEM_SUSPEND is sort of platform co-ordinated
-> once the requirement for entering is met.
+https://codeberg.org/sdm845/linux/commits/branch/b4/pmi8998-vbus
 
-Right! And I think that kind of explains the problem we are looking at
-quite well.
+see the commit touching smbx, as you can omit changing this part, which going to 
+be removed in favor 'qcom_usb_vbus-regulator.c' (there was small conflict with 
+SMB5 due to defines renaming).
 
-These "system-states" are similar to how PSCI SYSTEM_SUSPEND works.
-There is additional coordination needed in the FW to be able to enter
-these states.
+I'll keep the rest of proposed changes to be commented by maintainers/qcom folks :)
 
->
-> > In regards to ACPI. I think this is as simple as comparing it with the
-> > list of ACPI S-states.
-> >
->
-> I need to check if we use ACPI S-states via S2Idle which is the case with
-> this patch set I assume.
+Thank you
+David
 
-Yes, this series enables the "system-states" to be used for S2Idle -
-and prevents them from being used for the regular CPUIdle path.
+> 
+> Agreed. Describing the second register block explicitly in the charger's
+> reg property (0x1600 on SMB2, 0x1100 on SMB5) is cleaner than deriving
+> its base address from the hardware generation.
+> 
+> For v5, I plan to extend qcom,pmi8998-charger.yaml with a second reg
+> entry and use that base for both the power-path status and the
+> effective ICL status accesses, keeping their generation-specific
+> register offsets.
+> 
+> I'd retain a driver fallback for existing PMI8998/PM660 DTBs that only
+> have one reg entry. The binding could still require both entries for new
+> SMB5 descriptions. If you or Sebastian prefer a different compatibility
+> approach, I'm happy to adjust.
+> 
+> Given Dmitry's concern about shared charger/Type-C register ownership on
+> SMB2 in the gen1 Type-C RFC, I'd like to coordinate v5 with your block
+> split so that we don't introduce conflicting register descriptions.
+> Please keep me in Cc.
+> 
+> For reference, I also audited the current v4 SMB5 accesses on PM8150B.
+> They are confined to the charger core (0x10xx), the DCDC status
+> registers (reads of 0x1108 and 0x110b), the USB input/BC1.2 registers
+> (0x1340-0x1380) and the watchdog/AICL registers (0x1651-0x1661).
+> 
+> In particular, USBIN_TYPE_C_CFG at 0x1358 is part of the USB-input
+> peripheral, not the dedicated Type-C port register at 0x1544. The
+> current SMB5 accesses do not overlap with the dedicated Type-C port
+> (0x1500) or PD PHY (0x1700) register accesses. The DCDC peripheral is
+> also used by the VBUS regulator, so this is a register-level
+> observation rather than a claim of exclusive peripheral ownership.
+> 
+> I'll update the public register-ownership note to reflect the exact v4
+> access paths.
+> 
+> Thanks,
+> Robin
 
-Kind regards
-Uffe
