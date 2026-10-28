@@ -1,62 +1,68 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793194091;
-	b=ZBuvm4zTPGagXIE6Dox0g5FmIGDuTezAzl4Swwy5JIx/7JsWGMZfQxP35P/7Xw0vVoUv
-	 XiPGZLMMY0qwlr+cDEIy8jtY/Ckfad4OL9k19BfHnOELGiEDpM3tekQ2oeYAli2BFq3fi
-	 w4vq9JkgMPRxRWoJ7pnGF4q6l+4xun1PqtbKQffsZHX8FQ8p489dDJ+lfUUPhi02Ov2XU
-	 Gk/9giimYaq+LNWfxF4VlmzB6P7X66V575Hbd7w9HBv013Khby6+BonyzDALhd3evXUXZ
-	 GfPmORgd1P4GxVU1yfOC1La6Z7aJfPbwzvDcTg4RQ21kb5kKc+hDJAZjT/2WMJhR9WQ==
+	t=1793194187;
+	b=5BJdCX0Bnijo3idozoC/u8GpEh3MdSh4DL2vfpLUpy0kTqjicZ1o2uKxoUwYdYSIHyxN
+	 VKOYdDlsLsTQpNIQSdyKT1OCm2d88BWkqI2QZLZa0MQiSHLnTBLf9e5pkUvp+0I2cPTWK
+	 iU7X70ueZr0hxveEdTeLXKCclscrJKcbHaJVVkWZP2HLcHYfnqy9Qvx3d1GUfvFzPlcxo
+	 U8pyGrMrYg5/S92FMem3u6ng3kfsiMEAuKjludfCJmvnlY50dsWYiS3bsLOtArIK8aud3
+	 IMLQrifFCPNkumtRvED9B16rneMG36rv/9ZxhJBc04aPZ4kG79KpRTqLy2Urz9AKvhg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793194091;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=dguWzmy1fO5cn8/7TwM3KTtc8nZLyA6X3w9/d84TI+Y=;
-	b=XBdPXbbgLPanz4dSAPXj7/7iSNPyqv/weIgpG+kZ4yuqopt5rmTnQwcnFffRyJRXDnTm
-	 aZ7upjgm5C+OCNP+31096+KyjzBsKlROhM4MplzzjbU/mWZ4dabgmu2Ndd5N4mfijgTcy
-	 vP2udGkjFthxm7ljhgpQMs/JRqQag8VdoihvYcWU7FZA+5J8WwXwsulrndVleiM8j4FJt
-	 mFItt3ef6jyoB244xdbWz+OWFkh4AMnGsKZVcdj1oIEPsLebtN6Qsh8fH9ppsHVcpCsHi
-	 83KJozSIfeXQmyvKsrtqHiq6BSgBBy8Phl6GGVehBvP8XoU7ipP3QAPuM1pNQqj0BNQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793194187;
+	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
+	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
+	 In-Reply-To;
+	bh=+ZDZrqj/BPoTA6v4mR/qLoQhcDV/UIjpuvoi1Z0zPGQ=;
+	b=dXG0ufqVBhnxEcYmYZ4Xlyih+LOo69Arr9JN3tgz5OcvcmTpj4xIvzliNX400GVJVZmY
+	 EkGUt2kBboW0wVJm7o05fCSbgVIIUVLZkPvWGtIR92UDzKuCtAfGE15A0zbp7xojrPrGZ
+	 aNiEQ7qoB0iNNnOma7/RVhfiN72O++I9+UMTzVOfilawcbeZ8RBPm8ltwAjpkcWeEDw27
+	 w2ThUkQ6LS53hDJpNR2pKcZiOUQFP4IBT/MXGEwn2cbnvIa9ojAe3JSZsz4VvFOZYySaU
+	 XOqci5zVM2VW2UGL7VAXD0hVw0bcaeS5TOBaK2TGE+gviJ5pXLiQzytypxfU4vqVfTQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mHORANrj;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=ideasonboard.com;
+	spf=pass smtp.mailfrom=ideasonboard.com;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=DC6WunDL;
+	arc=none smtp.remote-ip=213.167.242.64
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E437606A31A;
-	Wed, 28 Oct 2026 13:28:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BA1B606A31E;
+	Wed, 28 Oct 2026 13:29:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8BA1B606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mHORANrj
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 354491F01825;
-	Wed, 28 Oct 2026 13:28:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793194090;
-	bh=dguWzmy1fO5cn8/7TwM3KTtc8nZLyA6X3w9/d84TI+Y=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=mHORANrjbDbgzpk5akf0G4hAmrJFvXsLUUDs7fAxZlDnxCnDiFHdUNJm82eFJAHo1
-	 Nw6Zu2aFCAwkk+0HkvREErBtwfypdH/QixmtcMTnCvgwH8BQrb/ZEdBxTcsa27GyyG
-	 V8P7agLj2myIr2RlEeX51t+5a5v83n1ziPMCqYttLLYHUQRDJumAWOxepXcymILN+c
-	 sbyU6hl6TGXWAMs5aJ/P5Q3KbaVaEHZF93B4Fr9NFzwlnk0xWOi8Ii16DoDVt02GWj
-	 IdrfBsl8pVA6M0Vs08ES3cuoB3PgHPRNUippa/0gSuvXyiRvB9oX5pzhvx+xzFGPSQ
-	 RBBUW5dsLKcYA==
-Date: Wed, 28 Oct 2026 14:28:08 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Brian Norris <briannorris@chromium.org>
-Cc: Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Thomas Gleixner <tglx@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Peter Griffin <peter.griffin@linaro.org>, 
-	devicetree@vger.kernel.org, Tudor Ambarus <tudor.ambarus@linaro.org>, 
-	=?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>, 
-	linux-arm-kernel@lists.infradead.org, Mariano Marciello <mmarciello@google.com>, 
-	Douglas Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org, 
-	Jakub =?utf-8?B?R8WCb3dhY2tp?= <jglow@google.com>
-Subject: Re: [PATCH 8/9] arm64: dts: google: Add Laguna CPM node
-Message-ID: <20261028-handsome-chubby-toucanet-0e7cc0@quoll>
-References: <20261026214359.3122870-1-briannorris@chromium.org>
- <20261026144346.8.I4778aeffbdc796147efa8114431efcb201063b59@changeid>
+	dkim=pass (1024-bit key, unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=DC6WunDL
+Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id DE3C034;
+	Wed, 28 Oct 2026 14:27:25 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1793194046;
+	bh=8cQ5CvO/2sA2dQUmqeKVIlmOQmp+Y7f2f6c5x7Y+SrY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DC6WunDLJngl6a5oLdyhXtOxCbeD47TRHBYXKqGadYb+KVLYJL2wFP2W9sAuwBbuT
+	 0ZrOdBnemjOFetphtsckixYkVX7RFSmvWk02kL7PZ8kp0LZj+sCKS0v9q3bHzCknIv
+	 9SbqSAWUkTebMzav3ZRtsAa7t8pR/VLI8J3bBbRI=
+Date: Wed, 28 Oct 2026 15:29:37 +0200
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Ulf Hansson <ulfh@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
+	linux-pwm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH 07/11] dt-bindings: clock: renesas,r8a78000-cpg: Add PWM
+ clocks
+Message-ID: <20261028132937.GL15441@killaraus.ideasonboard.com>
+References: <cover.1793026273.git.geert+renesas@glider.be>
+ <e723696e02cfb34fb808e2ae3ccb6faf68528c00.1793026273.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -68,52 +74,49 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261026144346.8.I4778aeffbdc796147efa8114431efcb201063b59@changeid>
+In-Reply-To: <e723696e02cfb34fb808e2ae3ccb6faf68528c00.1793026273.git.geert+renesas@glider.be>
 
-On Mon, Oct 26, 2026 at 02:43:46PM -0700, Brian Norris wrote:
-> The Central Power Manager (CPM) is a co-processor on the Google Tensor
-> SoCs, as used on Pixel phones. CPM supports power-management and a
-> number of other features.
+Hi Geert,
+
+Thank you for the patch.
+
+On Mon, Oct 26, 2026 at 03:55:23PM +0100, Geert Uytterhoeven wrote:
+> Add definitions for the clocks used by the PWM modules on R-Car X5H:
+>  - R8A78000_CPG_SGASYNCD16_PERW_MAIN,
+>  - R8A78000_CPG_S0ASYNCD8_PERW_MAIN.
+> Include R8A78000_CPG_SGASYNCD8_PERW_MAIN for ordering consistency.
 > 
-> The Application Processor communicates with CPM over a pair of mailbox
-> channels. CPM provides clock, power-domain, reset, and interrupt
-> services, so we include the appropriate cell-definitions for those.
-> 
-> Because this also adds clock, reset, and power-domain support, we add
-> them to the UART node at the same time.
-> 
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
+> This depends on "[PATCH 2/7] dt-bindings: clock: renesas,r8a78000-cpg:
+> Add GPIO clocks"
+> https://lore.kernel.org/624a9fb09e4ec74b1995797e5121b86e7206f5f2.1792776697.git.geert+renesas@glider.be
+> ---
+>  include/dt-bindings/clock/renesas,r8a78000-cpg.h | 3 +++
+>  1 file changed, 3 insertions(+)
 > 
->  arch/arm64/boot/dts/google/lga.dtsi | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/google/lga.dtsi b/arch/arm64/boot/dts/google/lga.dtsi
-> index 6ceb9ea6a100..83b2361c5f00 100644
-> --- a/arch/arm64/boot/dts/google/lga.dtsi
-> +++ b/arch/arm64/boot/dts/google/lga.dtsi
-> @@ -7,8 +7,13 @@
->  
->  /dts-v1/;
->  
-> +#include <dt-bindings/clock/google,lga-cpm.h>
->  #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +#include <dt-bindings/interrupt-controller/irq-cpm-google.h>
->  #include <dt-bindings/interrupt-controller/irq.h>
-> +#include <dt-bindings/power/google,lga-cpm.h>
-> +#include <dt-bindings/reset/google,lga-cpm-reset.h>
-> +#include <dt-bindings/soc/google,lga-lpcm.h>
->  
->  / {
->  	#address-cells = <2>;
-> @@ -356,6 +361,16 @@ abl@be000000 {
->  		};
->  	};
->  
-> +	cpm: cpm {
+> diff --git a/include/dt-bindings/clock/renesas,r8a78000-cpg.h b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+> index cd7192ccecd4e22c..8c30476d41448cf5 100644
+> --- a/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+> +++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+> @@ -28,5 +28,8 @@
+>  #define R8A78000_CPG_SGD8_PERW_BUS		18
+>  #define R8A78000_CPG_SGD32_PERW_BUS		19
+>  #define R8A78000_CPG_S0D24_HSCN_OTHER		20
+> +#define R8A78000_CPG_SGASYNCD8_PERW_MAIN	21
+> +#define R8A78000_CPG_SGASYNCD16_PERW_MAIN	22
 
-Name should be rather: power-controller
+Could you also add R8A78000_CPG_SGASYNCD4_PERW_MAIN and
+R8A78000_CPG_SGASYNCD32_PERW_MAIN for ordering consistency ? The
+dependency patch should then also include R8A78000_CPG_SGD4_PERW_BUS and
+R8A78000_CPG_SGD16_PERW_BUS, as well as
+R8A78000_CPG_S0D{1,2,4,8,12,16}_HSCN_OTHER.
 
-Best regards,
-Krzysztof
+> +#define R8A78000_CPG_S0ASYNCD8_PERW_MAIN	23
+>  
+>  #endif /* __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__ */
 
+-- 
+Regards,
+
+Laurent Pinchart
