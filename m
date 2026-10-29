@@ -1,83 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.176
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793264213;
-	b=P0fao8DJzvnblr31XhnOu8MzTcF3ZBWEDFyWvdwjys1CyUf/FajDKxPvODW51/kVqMe8
-	 wzX2NBEmX/SmXSLR3Vma9qxszkv4TyZ8YkALxUccnB+neXqtr8R/yM8hx1s+BKRYRiu76
-	 rM75nhl+wHV4rlrVFMfN8kyW05BP87OPctbsOkYnhqprCM9wbfhB4OUSOsPrwakQuQZJT
-	 spTClNNOAOcv9rXqozBWaHydxK6zlbuA0mUrV//zoubagiCfvsSVvowkmFqRqwd7f+wRA
-	 Ksoz1LhHXhKNyKhnCGQrVlbaB4dO/D016KtD15S+UTLnNg813EgQdZRQ51h55HkOrHA==
+	t=1793264241;
+	b=EkP7/QhcxcpX7bPrBoEBkOW5DYwM24yWVndl5is1LIw2wGh3fnXDgaIOO1WvyoJttFEI
+	 OxXx/cDGLizu+5EiSqANJjA77yrMydajDPWUztWFvg1V0Cl5IMQWtfdG6njKNn1Nor3Cj
+	 +JSerfjPPaMDJPO3d8zhfUDIxw8DTHWAyUdRyHf8W98RyZF/LOKdEOWSHHl8XHUakB3fo
+	 GwIe0NQ4H57nWx5aUJk4C15wduI+A+Pr3+4cWlYf3U1Vva7sWjz2cQblg6D69iG7Qxbo8
+	 HOQsSUt1JwFSLHydH9Z1057vuOHM5rwogKwjMOwHeDn0qr3y7ub/6bYtkhXXWLOrU9g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793264213;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793264241;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=8fcT8idEfR8PBU/3VTMJzFtb5vi4SP2MCLYE2KeHNSU=;
-	b=NXHrK5OtZHHP2xpS2dWRDmhr1dH9gEGkpFO3Qy6Df++jlpBoXQvafuYRpXerBtzm+q+F
-	 hHhwC94lGZ4sd7DMlC4ZKfPRUxrn5IxxTutyRqDSd9GAkGMPCb0cGH13VDKOSxWMYcd9C
-	 kq+bpoWn0N0ivTiNsvY/5N32uwRyxk9qQA92s5hihrehYiS2NTEjcEWBiscY47IPndcWi
-	 ShLXKHo9uuBfI1qjLjYmlxy3KciUVLqz1t9Z7nYKvXjPzLVX5jBFa3CLdfE7p+sMj8y1v
-	 sJuKVWjZCw/43ETJ+LzvMmTaZOsuakuX6N39rnWEooqWMXJYcU9GnY+SpiPdgezX/vg==
+	bh=l2H0bFieZXxd5jJJlL+lwbMkDWOOduyv3s8IOA4GnsU=;
+	b=RjrMAPop0GC8fkEvjlCvffgNQe2b3TJnfvMonCVuDfgEqD+glxCqJd1JKS/DEy5GAkmm
+	 NWvjFPhaMM8SHCe0ty77X5jW1rvhz31R93EkyMmQAduswo+iTWpB7g4jXV1OG8YbLjGXy
+	 m8yL+Pi0Or8rZpwHfSGB499W9EivVLKbiY5+5CqZVgVM48764I3/wD1v1ZHAEQnGydbOQ
+	 +1VHTP4NPlbMJ1gq61LiP9wYens4E5C2Z4mfOAX3hW/C90AACWVHrDhqfZQiiwdG0Axm4
+	 cJ1ia7CpQce6vCN3PJ86dSJ8z9bN0DqO/BaSMpMLChB4FBGQ2R2WEJr2byf0aav1ErA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AGeU8mK6;
-	arc=none smtp.remote-ip=74.125.82.174
-Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hVOk1ChT;
+	arc=none smtp.remote-ip=74.125.82.176
+Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C995606A31C
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 08:56:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3C995606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD922606A32F
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 08:57:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BD922606A32F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AGeU8mK6
-Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-36a315ed211so669997eec.0
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 01:56:52 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hVOk1ChT
+Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-3535a54bed9so2733352eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 01:57:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793264211; x=1793869011; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1793264240; x=1793869040; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=8fcT8idEfR8PBU/3VTMJzFtb5vi4SP2MCLYE2KeHNSU=;
-        b=AGeU8mK6RvBPVWvgYqco1acIC+qDLNZpe3usE15CZSJGldQiLa2wUWw694D+1Yum/P
-         2WkDYCVJy1EBI56rGo0x97JyX3zGahptgMOcQigklypmawch7hqVNizb9bGlueHrPvxX
-         4+LQlzxZjyCVWoDpHDPoUjJgeCw/qv/LkiKBhbUxTCLxfsosntsyVXUeQriSNxgIj7N2
-         CL9IF2RJ9f8ZtxVwj+Rr032uB2fxVi9gx2kZuhI5Wx0m+flCAKQ7pG00QJ5KeFqtx/6M
-         vIDEASrWYT3pav90gloGcTFZjzSghNKdZ0kSrGOHTi8I0UTopRqPf80dsm65qYlOvxK2
-         mV7g==
+        bh=l2H0bFieZXxd5jJJlL+lwbMkDWOOduyv3s8IOA4GnsU=;
+        b=hVOk1ChTsyDShJ56FOp8o/9+3MQFLB0HW1Ei0A0/oEO++7zL1B6B1eZnTpmrIYtipJ
+         St7BvbStGgaYM8FI+pgxJwnqYzTBIDCI6RH48ISInnwbjSoJWTaKWHcj+dxy2IwnDz5z
+         pPZy5M3Wrv3Zc6ZjmIe8kbynI/RK51T2vfk++Lawt8B9M6KGNcOdFk4Ym3l59f6IadYQ
+         gjX1nIvb4LAzRV//gMrTJGuNZ3TLl989iUwDvOtrQQd87WYuuKl7nTHM2ggKsKxL1cY2
+         ALXOzhV1gXysgRz6wxfNsk0WlxN8WBguWpiasJJmzs8wVmwCVrLFNHpWYNkpCkcJexd/
+         FhMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793264211; x=1793869011;
+        d=1e100.net; s=20260707; t=1793264240; x=1793869040;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=8fcT8idEfR8PBU/3VTMJzFtb5vi4SP2MCLYE2KeHNSU=;
-        b=P8AUuOWVT5KGcVsJoTpInjh6WHRem80mE8Vmw1U/w8QYpy8Ld5pF6yffauhEY0iI02
-         Zd2b/df4gKBK2+46NjY1pp1HMdTrtd8M6gxycvJSxx3HCXJIBhPldZnQzcD2geqBjtwM
-         t9aPO3h7lXoiuAoOfoaZ4w/rLGLI511NOYSPRcsUU90+1dbdy1989kRXfJMnvWEAB4l0
-         FjD2fM3XxLS+K/Q8bm122vrUkYWCYit4D2FOs0fDCd4B5BXRQPJrEr37WOKFZa0rGjc9
-         h+F10rWXwGv4P6V36o8746vSjjqNmo1VjoBr/VpQuKF+KjxSqP4VBwcPi5NTagmaI41F
-         oLcg==
-X-Forwarded-Encrypted: i=1; AKwUvBwb2NmjAxAV+Qu0EUGkhUnpJ507+7Tg+jH99eCnk7nObf/ty0OR+fhZ8qDfiBQVaW5OynE1E3DxLw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIihYFSEYdLWCZC1QSdg8/WjENYD2iMVtp8MwvvaCrTUToNjnvK
-	LG0YiBqBfYbo0Cq0+I+izzRyuuOpjk76KKU4+eoLGOlAqrldYK79h5M=
-X-Gm-Gg: AYBFou0momFvEt/NsstXp8QwTYLiOKV9ytSEvkvnmhLakyb5zHZyMF9p/5fRFPkjZeE
-	J2gUOJPc8Mf2Ob2zUZex16ziHKbS5Go0cZwNfT0+jA3iuoLB9l6IQUQZYYAKZEm9yiS1hp6evco
-	xlvYyk1lH+bIdQtCM/mldLuSGLhrmV5drvdcqKozgTV2IsntG6bRbo1Eweabep9/w+czQQnG1uQ
-	v0HyTaQIiDEY6CAIgcy4Kd15w894NolGFiSLDGLYM5h6J7HrjUEOnV6a0Zs4dWAeQUFRVo7buVW
-	7iseYJD7rgV1b74ZEYT6ybdGB5/6kVWmygFGlmo81nz/YReFAqIweaMBxMrd178cfvdQqHX3q6o
-	lwHSOljGdwTMSeYc2oEfEVcgTG7V+wczA4SvFxgdtGownnEJNbpWPsf09uqju5qBVqefC0fErB7
-	UbQOkAxFX8xh34DtIPJao46M8i7rBhckLwYhY7PHtDw0vubthyEtW8OoSiZC6wr03kOZ5C5fEu5
-	Io2WQBJnPk0w3QKtopTQK50cwfvfScsacd2PSMIFGAcNGIbc50LDwUjpAeXst9qzJZU23D1bP6V
-	OApe4C6WJAZ2+rf0KnZ/7mVZWBLn3cmKiHNZAqd2TtfAQ3RYD1fCLDP+hkBa/w==
-X-Received: by 2002:a05:693c:20cb:10b0:36a:15ba:43ea with SMTP id 5a478bee46e88-36a2fd51c3emr2774135eec.5.1793264211026;
-        Thu, 29 Oct 2026 01:56:51 -0700 (PDT)
+        bh=l2H0bFieZXxd5jJJlL+lwbMkDWOOduyv3s8IOA4GnsU=;
+        b=dszwmT8RVnGr+CvykkvFCRXpq7UziZdSy7Y3yMpZtSsS4et6TAM8dQBJkeybl3ufkl
+         ZW82OXpPcRhz2+cmlcAInXP3+B3eDnzfhkzAerpVJoxnq428E7oyeu+waObcKZ+jhtHZ
+         zidr3XgpM2UFOo+ouo+Np9QaM+prNap73OzM0g4cC5m3qmCXmLogi+ONp7CX4COmJQy2
+         kbxAL/VELNBY6wV76KSz2bOYUtgR4iIpFduaYvxpXDZihR/4kGDXFwpl+TOUL92zmqaz
+         /QRtZIDi1b+iNDvLhy6q3PGtouP3kR1v8KdBeq5GzZ8K04SMZAzB6g2MfcBnMq2HUani
+         luww==
+X-Forwarded-Encrypted: i=1; AKwUvBwqtdEwvgr9Ms9EPyRoDvy5fcw612sykk6DSY44Pw8slSqtOBtb1HmcGIjGjHZGobGmxS/5h7/lCg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLW4lVeEh4HYeBKXtGAxWMGATcu3ZvxGMv2AwxN1yKt/ORpb9uP
+	8U/w2mHusLPs8q94DIPHtkrKPoZdxcZvJLPWX9rSdja7sbNNMYoWUnc=
+X-Gm-Gg: AYBFou0ezclLSjO628aHTeFlYoBOnSjk++lt1t6pXwf5948jh36cWRdWt9tIuYsHcFP
+	L7mYn/uI9hhINzeVQWQnex1AY0RPAteeJ11c8G2WC0sGhlleyQV4wF9AmWPROnAa1Ac8tTnY/6G
+	b5AOrX2kP4aEc2E6AXG/KUpldvC6cypSZhJ2wE3Xy1CcYEhLjDzbGIXUrOb3XlWpzFiiZJkLJoW
+	0noEciWwdfc5Bj/8f6wN9XkT4UQlTrHgHaWDc2M3xucDLUyp61VB+SMesKWpiYU7VQA8/BDJVgn
+	Q3Hh02GvTCWak2A8GYPt+Aw691gp5ieULJXgvTTyJoJclJ7jSrJZPn9FRuHiIlzb+X4Z5cz8+II
+	BOdhDMWFIq58FRPyguf38APVvN+m1W5zi+2wpz9rsIfBL4ga7qDAAFj1MPKFBzdoAcMRPnM4+4P
+	YmSMMEv9rnKBI/G2T5OmE928uFP//QVG6NJHBbnBYp7153mGg+pzcrmIFehSiWffQdTgk99B/GE
+	DbADYe0UMMdXczaBa1vx0sDlKWkPXfBoHTv94E95Pb2cwQthhr7mFUjCmEpD82gvh2KA4uSby0J
+	qE017wJsyv8unH1u27DlwxTKCtFIVpKvgrwkIc0IUvKX/nCrR1Lzgm1rH1e2Bg==
+X-Received: by 2002:a05:7300:e9c4:20b0:36a:13e1:c889 with SMTP id 5a478bee46e88-36a20427d57mr7840856eec.36.1793264239420;
+        Thu, 29 Oct 2026 01:57:19 -0700 (PDT)
 Received: from at-Standard-PC-Q35-ICH9-2009 ([27.60.20.232])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a23641e78sm16497937eec.0.2026.10.29.01.56.32
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a23641e78sm16497937eec.0.2026.10.29.01.57.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Oct 2026 01:56:50 -0700 (PDT)
+        Thu, 29 Oct 2026 01:57:19 -0700 (PDT)
 From: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
 To: 
 Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
@@ -133,9 +133,9 @@ Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
 	linux-integrity@vger.kernel.org,
 	keyrings@vger.kernel.org,
 	linux-security-module@vger.kernel.org
-Subject: [RFC PATCH 02/14] platform/x86: add backend for macsmc in intel macs
-Date: Thu, 29 Oct 2026 04:51:59 -0400
-Message-ID: <20261029085504.3547-3-atharvatiwarilinuxdev@gmail.com>
+Subject: [RFC PATCH 03/14] watchdog: add driver for apple smc
+Date: Thu, 29 Oct 2026 04:52:00 -0400
+Message-ID: <20261029085504.3547-4-atharvatiwarilinuxdev@gmail.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
 References: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
@@ -150,703 +150,229 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add a backend that talks to the SMC on Intel Macs over ACPI.
-It supports the old I/O port interface, and also MMIO and
-interrupt-driven completion, which applesmc doesn't have.
-If an interrupt is missed it falls back to polling.
-
-This is the base that lets the macsmc drivers replace
-applesmc.
+Add a watchdog driver for the SMC on Intel Macs. It can
+reset the machine if the system stops responding. It works
+on both newer and older SMC versions.
 
 Signed-off-by: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
 ---
- drivers/platform/x86/Kconfig       |  10 +
- drivers/platform/x86/Makefile      |   1 +
- drivers/platform/x86/macsmc-acpi.c | 642 +++++++++++++++++++++++++++++
- 3 files changed, 653 insertions(+)
- create mode 100644 drivers/platform/x86/macsmc-acpi.c
+ drivers/mfd/macsmc-core.c     |  11 +++
+ drivers/watchdog/Kconfig      |  11 +++
+ drivers/watchdog/Makefile     |   2 +-
+ drivers/watchdog/macsmc_wdt.c | 140 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 163 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/watchdog/macsmc_wdt.c
 
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index 4851bf451..448aa2db6 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -202,6 +202,16 @@ config ADV_SWBUTTON
- 	  To compile this driver as a module, choose M here. The module will
- 	  be called adv_swbutton.
+diff --git a/drivers/mfd/macsmc-core.c b/drivers/mfd/macsmc-core.c
+index b8905c834..1c1469828 100644
+--- a/drivers/mfd/macsmc-core.c
++++ b/drivers/mfd/macsmc-core.c
+@@ -33,6 +33,10 @@ static const struct mfd_cell apple_smc_acpi_rtc[] = {
+ 	MFD_CELL_NAME("macsmc-rtc"),
+ };
  
-+config MACSMC_ACPI
-+	tristate "Apple SMC (System Management Controller) ACPI Backend"
-+	depends on MFD_MACSMC_CORE && ACPI && !SENSORS_APPLESMC
++static const struct mfd_cell apple_smc_acpi_wdt[] = {
++	MFD_CELL_NAME("macsmc-wdt"),
++};
++
+ int apple_smc_read(struct apple_smc *smc, smc_key key, void *buf, size_t size)
+ {
+ 	guard(mutex)(&smc->mutex);
+@@ -147,6 +151,13 @@ int apple_smc_probe(struct device *dev, const struct apple_smc_backend_ops *ops,
+ 				return ret;
+ 		}
+ 
++		if (apple_smc_key_exists(smc, SMC_KEY(NATJ))) {
++			ret = devm_mfd_add_devices(dev, -1, apple_smc_acpi_wdt,
++				ARRAY_SIZE(apple_smc_acpi_wdt), NULL, 0, NULL);
++			if (ret < 0)
++				return ret;
++		}
++
+ 	} else
+ 		ret = devm_mfd_add_devices(dev, -1, apple_smc_rtkit_devs,
+ 			ARRAY_SIZE(apple_smc_rtkit_devs), NULL, 0, NULL);
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index f7d0a0c2c..854ab772f 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -1810,6 +1810,17 @@ config SIEMENS_SIMATIC_IPC_WDT
+ 	  To compile this driver as a module, choose M here: the module will be
+ 	  called simatic-ipc-wdt.
+ 
++config MACSMC_WDT
++	tristate "Apple SMC Watchdog"
++	depends on X86 && MACSMC_ACPI
++	select WATCHDOG_CORE
 +	help
-+	  This driver allows communication with the SMC (System Management Controller)
-+	  on Intel-Macs. It is used to control fans, control battery, and more.
++	  This driver adds support for Watchdogs in Intel macs Using
++	  Apple SMC.
 +
-+	  To compile this driver as a module, choose M here. The module will
-+	  be called macsmc_acpi.
++	  To compile this driver as a module, choose M here: the module will be
++	  called macsmc_wdt.
 +
- config APPLE_GMUX
- 	tristate "Apple Gmux Driver"
- 	depends on ACPI && PCI
-diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
-index cab20a414..933aed4a8 100644
---- a/drivers/platform/x86/Makefile
-+++ b/drivers/platform/x86/Makefile
-@@ -28,6 +28,7 @@ obj-y				+= amd/
- obj-$(CONFIG_ADV_SWBUTTON)	+= adv_swbutton.o
+ # M68K Architecture
  
- # Apple
-+obj-$(CONFIG_MACSMC_ACPI)	+= macsmc-acpi.o
- obj-$(CONFIG_APPLE_GMUX)	+= apple-gmux.o
+ config M54xx_WATCHDOG
+diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+index 9ac406677..f142a5d8d 100644
+--- a/drivers/watchdog/Makefile
++++ b/drivers/watchdog/Makefile
+@@ -158,7 +158,7 @@ obj-$(CONFIG_NIC7018_WDT) += nic7018_wdt.o
+ obj-$(CONFIG_MLX_WDT) += mlx_wdt.o
+ obj-$(CONFIG_KEEMBAY_WATCHDOG) += keembay_wdt.o
+ obj-$(CONFIG_SIEMENS_SIMATIC_IPC_WDT) += simatic-ipc-wdt.o
+-
++obj-$(CONFIG_MACSMC_WDT) += macsmc_wdt.o
+ # M68K Architecture
+ obj-$(CONFIG_M54xx_WATCHDOG) += m54xx_wdt.o
  
- # ASUS
-diff --git a/drivers/platform/x86/macsmc-acpi.c b/drivers/platform/x86/macsmc-acpi.c
+diff --git a/drivers/watchdog/macsmc_wdt.c b/drivers/watchdog/macsmc_wdt.c
 new file mode 100644
-index 000000000..a06ec921a
+index 000000000..38f68d0d8
 --- /dev/null
-+++ b/drivers/platform/x86/macsmc-acpi.c
-@@ -0,0 +1,642 @@
-+// SPDX-License-Identifier: GPL-2.0-only OR MIT
++++ b/drivers/watchdog/macsmc_wdt.c
+@@ -0,0 +1,140 @@
++// SPDX-License-Identifier: GPL-2.0 OR MIT
 +/*
-+ * Apple SMC ACPI backend
-+ * Copyright (C) 2026 Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
++ * Apple SMC Watchdog Driver
 + *
-+ * PIO code taken from drivers/hwmon/applesmc.c:
-+ * Copyright (C) 2007 Nicolas Boichat <nicolas@boichat.ch>
-+ * Copyright (C) 2010 Henrik Rydberg <rydberg@euromail.se>
++ * Copyright (C) 2026 Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
 + */
 +
-+#include <linux/acpi.h>
-+#include <linux/byteorder/generic.h>
-+#include <linux/completion.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/kfifo.h>
 +#include <linux/mfd/macsmc.h>
 +#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+#include <linux/spinlock.h>
-+#include <linux/unaligned.h>
-+#include <linux/workqueue.h>
++#include <linux/watchdog.h>
 +
-+#define SMC_IO_DATA_PORT	0
-+#define SMC_IO_CMD_PORT		4
-+#define SMC_IO_NR_PORTS		32
++#define WATCHDOG_TIMEOUT 60 /* 60 sec default timeout */
 +
-+#define SMC_IO_STATUS_AWAITING_DATA	BIT(0)
-+#define SMC_IO_STATUS_IB_CLOSED		BIT(1)
-+#define SMC_IO_STATUS_BUSY		BIT(2)
++static bool nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, bool, 0);
++MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started default="
++		 __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
 +
-+#define SMC_MMIO_KEY_DATA		0
-+#define SMC_MMIO_KEY_INTERRUPT_STATUS	0x4000
-+#define SMC_MMIO_KEY_STATUS		0x4005
-+#define SMC_MMIO_KEY_NAME		0x78
-+#define SMC_MMIO_KEY_DATA_LEN		0x7D
-+#define SMC_MMIO_KEY_SMC_ID		0x7E
-+#define SMC_MMIO_KEY_CMD		0x7F
-+#define SMC_MMIO_MIN_SIZE		0x4006
++static int timeout = WATCHDOG_TIMEOUT; /* in secounds */
++module_param(timeout, int, 0);
++MODULE_PARM_DESC(timeout,
++		 "Watchdog timeout in seconds. 1 <= timeout <= 255, default="
++		 __MODULE_STRING(WATCHDOG_TIMEOUT) ".");
 +
-+#define SMC_TIMEOUT_MS			1000
-+
-+struct apple_smc_acpi {
-+	struct device *dev;
-+
-+	u8 __iomem *iomem_base;
-+	u32 iomem_base_addr, iomem_base_size;
-+	bool is_mmio;
-+
-+	u16 port_base;
-+	bool has_port;
-+
-+	bool has_interrupt;
-+	bool interrupt_enabled;
-+	struct completion cmd_done;
-+
-+	struct blocking_notifier_head event_handlers;
-+	struct work_struct shutdown_work;
-+	struct work_struct notifier_work;
-+
-+	DECLARE_KFIFO(event_fifo, u8, 64);
-+	spinlock_t event_lock;
++struct macsmc_wdt {
++	struct apple_smc *smc;
++	bool has_oswd; /* Newer version of watchdogs in macsmc */
++	struct watchdog_device wdd;
 +};
 +
-+
-+static int apple_smc_acpi_port_wait(struct apple_smc_acpi *smc, u8 val, u8 mask)
++static int macsmc_wdt_set_timeout(struct watchdog_device *wdd, unsigned int timeout)
 +{
-+	int ms;
-+
-+	for (ms = SMC_TIMEOUT_MS; ms != 0; ms--) {
-+		if ((inb(smc->port_base + SMC_IO_CMD_PORT) & mask) == val)
-+			return 0;
-+
-+		fsleep(1000);
-+	}
-+	dev_dbg(smc->dev, "port/wait: timeout value:%u, mask:%u\n", val, mask);
-+	return -ETIMEDOUT;
-+}
-+
-+static int apple_smc_acpi_port_write_byte(struct apple_smc_acpi *smc, u8 buf)
-+{
++	struct macsmc_wdt *drv = watchdog_get_drvdata(wdd);
 +	int ret;
 +
-+	ret = apple_smc_acpi_port_wait(smc, 0, SMC_IO_STATUS_IB_CLOSED) ? :
-+		apple_smc_acpi_port_wait(smc, SMC_IO_STATUS_BUSY, SMC_IO_STATUS_BUSY);
-+	if (ret)
-+		return ret;
++	if (timeout)
++		wdd->timeout = timeout;
 +
-+	outb(buf, smc->port_base + SMC_IO_DATA_PORT);
-+	return 0;
-+}
-+
-+static int apple_smc_acpi_port_write_cmd(struct apple_smc_acpi *smc, u8 buf)
-+{
-+	int ret;
-+
-+	ret = apple_smc_acpi_port_wait(smc, 0, SMC_IO_STATUS_IB_CLOSED);
-+	if (ret)
-+		return ret;
-+
-+	outb(buf, smc->port_base + SMC_IO_CMD_PORT);
-+	return 0;
-+}
-+
-+static int apple_smc_acpi_port_write_key(struct apple_smc_acpi *smc, smc_key key)
-+{
-+	int i;
-+
-+	for (i = 3; i >= 0; i--) {
-+		if (apple_smc_acpi_port_write_byte(smc, (u8)(key >> (i * 8))))
-+			return -EIO;
-+	}
-+	return 0;
-+}
-+
-+static int apple_smc_acpi_port_valid(struct apple_smc_acpi *smc)
-+{
-+	int ret;
-+
-+	ret = apple_smc_acpi_port_wait(smc, 0, SMC_IO_STATUS_BUSY);
-+	if (!ret)
-+		return ret;
-+
-+	ret = apple_smc_acpi_port_write_cmd(smc, SMC_MSG_READ_KEY);
-+	if (ret)
-+		return ret;
-+
-+	return apple_smc_acpi_port_wait(smc, 0, SMC_IO_STATUS_BUSY);
-+}
-+
-+static int apple_smc_acpi_port_read(struct apple_smc_acpi *smc, u8 cmd, smc_key key,
-+				void *buffer, size_t len)
-+{
-+	int ret;
-+
-+	ret = apple_smc_acpi_port_valid(smc);
-+	if (ret)
-+		return ret;
-+
-+	if (apple_smc_acpi_port_write_cmd(smc, cmd) || apple_smc_acpi_port_write_key(smc, key)) {
-+		dev_dbg(smc->dev, "port/read: read argument failed, key: 0x%X, cmd: 0x%X\n",
-+				key, cmd);
-+		return -EIO;
-+	}
-+
-+	if (apple_smc_acpi_port_write_byte(smc, len)) {
-+		dev_dbg(smc->dev, "port/read: read len failed, key: 0x%X, len: 0x%lX\n", key, len);
-+		return -EIO;
-+	}
-+
-+	for (ret = 0; ret < len; ret++) {
-+		if (apple_smc_acpi_port_wait(smc,
-+				SMC_IO_STATUS_AWAITING_DATA | SMC_IO_STATUS_BUSY,
-+				SMC_IO_STATUS_AWAITING_DATA | SMC_IO_STATUS_BUSY)) {
-+			dev_dbg(smc->dev, "port/read: read failed, key: 0x%X\n", key);
-+			return -EIO;
-+		}
-+		((u8 *)buffer)[ret] = inb(smc->port_base + SMC_IO_DATA_PORT);
-+	}
-+
-+	return apple_smc_acpi_port_wait(smc, 0, SMC_IO_STATUS_BUSY);
-+}
-+
-+static int apple_smc_acpi_port_write(struct apple_smc_acpi *smc, smc_key key, const void *buffer,
-+		size_t len)
-+{
-+	int ret;
-+
-+	ret = apple_smc_acpi_port_valid(smc);
-+	if (ret)
-+		return ret;
-+
-+	if (apple_smc_acpi_port_write_cmd(smc, SMC_MSG_WRITE_KEY) ||
-+			apple_smc_acpi_port_write_key(smc, key)) {
-+		dev_dbg(smc->dev, "port/write: write argument failed, key: 0x%X\n", key);
-+		return -EIO;
-+	}
-+
-+	if (apple_smc_acpi_port_write_byte(smc, len)) {
-+		dev_dbg(smc->dev, "port/write: write len failed, key: 0x%X, len: 0x%lX\n",
-+				key, len);
-+		return -EIO;
-+	}
-+
-+	for (ret = 0; ret < len; ret++) {
-+		if (apple_smc_acpi_port_write_byte(smc, ((const u8 *)buffer)[ret])) {
-+			dev_dbg(smc->dev, "port/write: write failed, key: 0x%X\n", key);
-+			return -EIO;
-+		}
-+	}
-+	return apple_smc_acpi_port_wait(smc, 0, SMC_IO_STATUS_BUSY);
-+}
-+
-+static int apple_smc_acpi_port_get_key_info(struct apple_smc_acpi *smc,
-+			smc_key key, struct apple_smc_key_info *info)
-+{
-+	u8 buf[6];
-+
-+	if (apple_smc_acpi_port_read(smc, SMC_MSG_GET_KEY_INFO, key, buf, 6))
-+		return -EIO;
-+
-+	if (!info)
-+		return 0;
-+
-+	info->size = buf[0];
-+	info->type_code = get_unaligned_be32(&buf[1]);
-+	info->flags = buf[5];
-+
-+	return 0;
-+}
-+
-+static void apple_smc_acpi_mmio_clear(struct apple_smc_acpi *smc)
-+{
-+	if (ioread8(smc->iomem_base + SMC_MMIO_KEY_STATUS))
-+		return iowrite8(0, smc->iomem_base + SMC_MMIO_KEY_STATUS);
-+}
-+
-+static int apple_smc_acpi_mmio_wait(struct apple_smc_acpi *smc)
-+{
-+	int ms = SMC_TIMEOUT_MS;
-+
-+	if (smc->interrupt_enabled) {
-+		if (wait_for_completion_timeout(&smc->cmd_done,
-+					msecs_to_jiffies(SMC_TIMEOUT_MS)) > 0)
-+			return 0;
-+
-+		smc->interrupt_enabled = 0;
-+		dev_dbg(smc->dev, "mmio/wait: interrupt missed, reverting to polling\n");
-+	}
-+
-+	for (ms = SMC_TIMEOUT_MS; ms != 0; ms--) {
-+		if (ioread8(smc->iomem_base + SMC_MMIO_KEY_STATUS) & 0x20)
-+			return 0;
-+
-+		fsleep(1000);
-+	}
-+	dev_dbg(smc->dev, "mmio/wait: timeout");
-+	return -ETIMEDOUT;
-+}
-+
-+static int apple_smc_acpi_mmio_read(struct apple_smc_acpi *smc, u8 cmd, smc_key key,
-+		void *buffer, size_t len)
-+{
-+	u8 ret;
-+
-+	reinit_completion(&smc->cmd_done);
-+	apple_smc_acpi_mmio_clear(smc);
-+	iowrite32be(key, smc->iomem_base + SMC_MMIO_KEY_NAME);
-+	iowrite8(0, smc->iomem_base + SMC_MMIO_KEY_SMC_ID);
-+	iowrite8(cmd, smc->iomem_base + SMC_MMIO_KEY_CMD);
-+
-+	if (apple_smc_acpi_mmio_wait(smc))
-+		return -EIO;
-+
-+	ret = ioread8(smc->iomem_base + SMC_MMIO_KEY_CMD);
-+	if (ret) {
-+		dev_dbg(smc->dev, "mmio/read: read failed, ret: 0x%X, key: 0x%X\n", ret, key);
-+		return -ret;
-+	}
-+
-+	memcpy_fromio(buffer, smc->iomem_base + SMC_MMIO_KEY_DATA, len);
-+	return 0;
-+}
-+
-+static int apple_smc_acpi_mmio_write(struct apple_smc_acpi *smc, smc_key key, const void *buffer,
-+		size_t len)
-+{
-+	u8 ret;
-+
-+	reinit_completion(&smc->cmd_done);
-+	apple_smc_acpi_mmio_clear(smc);
-+	iowrite32be(key, smc->iomem_base + SMC_MMIO_KEY_NAME);
-+	memcpy_toio(smc->iomem_base + SMC_MMIO_KEY_DATA, buffer, len);
-+	iowrite8(len, smc->iomem_base + SMC_MMIO_KEY_DATA_LEN);
-+	iowrite8(0, smc->iomem_base + SMC_MMIO_KEY_SMC_ID);
-+	iowrite8(SMC_MSG_WRITE_KEY, smc->iomem_base + SMC_MMIO_KEY_CMD);
-+
-+	if (apple_smc_acpi_mmio_wait(smc))
-+		return -EIO;
-+
-+	ret = ioread8(smc->iomem_base + SMC_MMIO_KEY_CMD);
-+	if (ret) {
-+		dev_dbg(smc->dev, "mmio/write: write failed, ret: 0x%X, key: 0x%X\n", ret, key);
-+		return -ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int apple_smc_acpi_mmio_get_key_info(struct apple_smc_acpi *smc, smc_key key,
-+					struct apple_smc_key_info *info)
-+{
-+	u8 ret;
-+
-+	reinit_completion(&smc->cmd_done);
-+	apple_smc_acpi_mmio_clear(smc);
-+	iowrite32be(key, smc->iomem_base + SMC_MMIO_KEY_NAME);
-+	iowrite8(0, smc->iomem_base + SMC_MMIO_KEY_SMC_ID);
-+	iowrite8(SMC_MSG_GET_KEY_INFO, smc->iomem_base + SMC_MMIO_KEY_CMD);
-+
-+	if (apple_smc_acpi_mmio_wait(smc))
-+		return -EIO;
-+
-+	ret = ioread8(smc->iomem_base + SMC_MMIO_KEY_CMD);
-+	if (ret) {
-+		dev_dbg(smc->dev, "mmio/get_key_info failed, ret: 0x%X, key: 0x%X\n", ret, key);
-+		return -ret;
-+	}
-+
-+
-+	if (!info)
-+		return 0;
-+	info->type_code = cpu_to_be32(ioread32(smc->iomem_base + SMC_MMIO_KEY_DATA));
-+	info->size = ioread8(smc->iomem_base + 5);
-+	info->flags = ioread8(smc->iomem_base + 6);
-+
-+	return 0;
-+}
-+
-+static void apple_smc_acpi_shutdown_work(struct work_struct *work)
-+{
-+	orderly_poweroff(true);
-+}
-+
-+static void apple_smc_acpi_notifier_work(struct work_struct *work)
-+{
-+	struct apple_smc_acpi *smc =
-+		container_of(work, struct apple_smc_acpi, notifier_work);
-+
-+	unsigned long flags;
-+	uint8_t event;
-+
-+	for (;;) {
-+		spin_lock_irqsave(&smc->event_lock, flags);
-+
-+		if (!kfifo_get(&smc->event_fifo, &event)) {
-+			spin_unlock_irqrestore(&smc->event_lock, flags);
-+			break;
-+		}
-+		spin_unlock_irqrestore(&smc->event_lock, flags);
-+
-+		blocking_notifier_call_chain(&smc->event_handlers, event, NULL);
-+	}
-+}
-+
-+static irqreturn_t apple_smc_acpi_irq(int irq, void *data)
-+{
-+	struct apple_smc_acpi *smc = data;
-+	uint8_t status = 0, int_id = 0;
-+	unsigned long flags;
-+
-+	if (smc->is_mmio) {
-+		status = ioread8(smc->iomem_base + SMC_MMIO_KEY_INTERRUPT_STATUS);
-+		if ((status & 0x20) == 0 && status != 0)
-+			return IRQ_HANDLED;
++	if (drv->has_oswd) {
++		ret = apple_smc_write_u16(drv->smc, SMC_KEY(OSWD), (u16)(timeout << 8));
++		if (ret < 0)
++			return ret;
 +	} else {
-+		status = inb(smc->port_base + SMC_IO_CMD_PORT);
-+		if ((status & 0x40) == 0 && status != 0)
-+			return IRQ_HANDLED;
++		/*
++		 * NATJ = 2, makes the watchdog do force restart if NATi == 0
++		 * NATJ = 0, makes the watchdog do nothing if NATi == 0
++		 */
++		if (timeout == 0) {
++			ret = apple_smc_write_u16(drv->smc, SMC_KEY(NATJ), 0);
++			if (ret < 0)
++				return ret;
++		}
++		ret = apple_smc_write_u16(drv->smc, SMC_KEY(NATi), (u16)(timeout << 8));
++		if (ret < 0)
++			return ret;
++
++		if (timeout != 0) {
++			ret = apple_smc_write_u16(drv->smc, SMC_KEY(NATJ), 2);
++			if (ret < 0)
++				return ret;
++		}
 +	}
 +
-+	int_id = inb(smc->port_base + 0x1F);
-+	switch (int_id) {
-+	case 0x4B: // SMC Command done
-+		complete(&smc->cmd_done);
-+		break;
-+	case 0x40: // Shutdown Imminet
-+		schedule_work(&smc->shutdown_work);
-+		break;
-+	case 0x41: // bridgeOS Crash
-+		dev_crit(smc->dev, "BridgeOS Crashed!!!\n");
-+		break;
-+	case 0x2A: // ALS Change
-+	case 0x54: // Thermal Level Changed
-+	case 0x55: // PlatformFuntion
-+	case 0x60: // SMS Drop
-+	case 0x69: // SMS Orientation
-+	case 0x6F: // SMS Shock
-+	case 0x80: // PLimit Changed
-+		spin_lock_irqsave(&smc->event_lock, flags);
-+		if (!kfifo_put(&smc->event_fifo, int_id))
-+			dev_warn_ratelimited(smc->dev, "Notification lost: %u\n", int_id);
-+
-+		spin_unlock_irqrestore(&smc->event_lock, flags);
-+
-+		schedule_work(&smc->notifier_work);
-+		break;
-+	}
-+
-+	return IRQ_HANDLED;
++	return 0;
++}
++static int macsmc_wdt_start(struct watchdog_device *wdd)
++{
++	return macsmc_wdt_set_timeout(wdd, wdd->timeout);
++}
++static int macsmc_wdt_stop(struct watchdog_device *wdd)
++{
++	return macsmc_wdt_set_timeout(wdd, 0);
 +}
 +
-+static acpi_status apple_smc_acpi_walk_resources(struct acpi_resource *res,
-+	void *data)
++static int macsmc_wdt_ping(struct watchdog_device *wdd)
 +{
-+	struct apple_smc_acpi *smc = data;
-+	int ret = 0;
-+
-+	switch (res->type) {
-+	case ACPI_RESOURCE_TYPE_IO:
-+		if (!smc->has_port) {
-+			if (res->data.io.address_length < SMC_IO_NR_PORTS)
-+				return AE_ERROR;
-+			smc->port_base = res->data.io.minimum;
-+			smc->has_port = true;
-+		}
-+		return AE_OK;
-+
-+	case ACPI_RESOURCE_TYPE_FIXED_MEMORY32:
-+		if (!smc->is_mmio) {
-+			if (res->data.fixed_memory32.address_length < SMC_MMIO_MIN_SIZE) {
-+				dev_dbg(smc->dev, "found mmio support but its too small: %u\n",
-+					res->data.fixed_memory32.address_length);
-+				return AE_OK;
-+			}
-+			smc->iomem_base_addr = res->data.fixed_memory32.address;
-+			smc->iomem_base_size = res->data.fixed_memory32.address_length;
-+			smc->is_mmio = true;
-+		}
-+		return AE_OK;
-+
-+	case ACPI_RESOURCE_TYPE_IRQ:
-+		ret = devm_request_irq(smc->dev, res->data.irq.interrupts[0],
-+					apple_smc_acpi_irq,
-+					0, "macsmc-acpi", smc);
-+		if (ret < 0) {
-+			dev_dbg(smc->dev, "Unable to register interrupts\n");
-+			smc->has_interrupt = false;
-+			return AE_OK;
-+		}
-+		smc->has_interrupt = true;
-+		return AE_OK;
-+
-+	case ACPI_RESOURCE_TYPE_END_TAG:
-+		if (smc->has_port)
-+			return AE_OK;
-+		else
-+			return AE_NOT_FOUND;
-+
-+	default:
-+		return AE_OK;
-+	}
-+}
-+
-+static void apple_smc_acpi_try_enable_mmio(struct apple_smc_acpi *smc)
-+{
-+	if (!smc->is_mmio)
-+		return;
-+
-+	u8 ldkn;
-+
-+	smc->iomem_base = ioremap(smc->iomem_base_addr, smc->iomem_base_size);
-+	if (!smc->iomem_base)
-+		goto out;
-+
-+	if (ioread8(smc->iomem_base + SMC_MMIO_KEY_STATUS) == 0xFF) {
-+		dev_dbg(smc->dev, "mmio enable failed: init status is 0xff\n");
-+		goto out_iomem;
-+	}
-+
-+	if (apple_smc_acpi_mmio_read(smc, SMC_MSG_READ_KEY, SMC_KEY(LDKN), &ldkn, 1)) {
-+		dev_dbg(smc->dev, "mmio enable failed: ldkn read failed\n");
-+		goto out_iomem;
-+	}
-+
-+	if (ldkn < 2) {
-+		dev_dbg(smc->dev, "mmio enable failed: ldkn version less than 2\n");
-+		goto out_iomem;
-+	}
-+	return;
-+
-+out_iomem:
-+	iounmap(smc->iomem_base);
-+out:
-+	smc->is_mmio = false;
-+}
-+
-+static void apple_smc_acpi_try_enable_interrupts(struct apple_smc_acpi *smc)
-+{
-+	if (!smc->has_interrupt)
-+		return;
-+
-+	const u8 enable = 1;
++	struct macsmc_wdt *drv = watchdog_get_drvdata(wdd);
 +	int ret;
 +
-+	if (smc->is_mmio)
-+		ret = apple_smc_acpi_mmio_write(smc, SMC_KEY(NTOK), &enable, 1);
++	if (drv->has_oswd)
++		ret = apple_smc_write_u16(drv->smc, SMC_KEY(OSWD), (u16)(wdd->timeout << 8));
 +	else
-+		ret = apple_smc_acpi_port_write(smc, SMC_KEY(NTOK), &enable, 1);
-+
-+	if (ret < 0) {
-+		dev_dbg(smc->dev, "Unable to enable interrupts\n");
-+		smc->interrupt_enabled = 0;
-+		return;
-+	}
-+
-+	smc->interrupt_enabled = 1;
-+}
-+
-+static int apple_smc_acpi_read(void *cookie, smc_key key, void *buf, size_t size)
-+{
-+	struct apple_smc_acpi *smc = cookie;
-+	int ret;
-+
-+	if (smc->is_mmio)
-+		ret = apple_smc_acpi_mmio_read(smc, SMC_MSG_READ_KEY,
-+			key, buf, size);
-+	else
-+		ret = apple_smc_acpi_port_read(smc, SMC_MSG_READ_KEY,
-+			key, buf, size);
++		ret = apple_smc_write_u16(drv->smc, SMC_KEY(NATi), (u16)(wdd->timeout << 8));
 +
 +	if (ret < 0)
 +		return ret;
 +
-+	return size;
-+
++	return 0;
 +}
 +
-+static int apple_smc_acpi_write(void *cookie, smc_key key, const void *buf, size_t size)
-+{
-+	struct apple_smc_acpi *smc = cookie;
-+	int ret;
-+
-+	if (smc->is_mmio)
-+		ret = apple_smc_acpi_mmio_write(smc, key, buf, size);
-+	else
-+		ret = apple_smc_acpi_port_write(smc, key, buf, size);
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	return size;
-+}
-+
-+static int apple_smc_acpi_get_key_by_index(void *cookie, int index, smc_key *key)
-+{
-+	struct apple_smc_acpi *smc = cookie;
-+
-+	if (smc->is_mmio)
-+		return apple_smc_acpi_mmio_read(smc, SMC_MSG_GET_KEY_BY_INDEX, (smc_key) index,
-+				key, 4);
-+	else
-+		return apple_smc_acpi_port_read(smc, SMC_MSG_GET_KEY_BY_INDEX, (smc_key) index,
-+				key, 4);
-+
-+}
-+
-+static int apple_smc_acpi_get_key_info(void *cookie, smc_key key,
-+		struct apple_smc_key_info *info)
-+{
-+	struct apple_smc_acpi *smc = cookie;
-+
-+	if (smc->is_mmio)
-+		return apple_smc_acpi_mmio_get_key_info(smc, key, info);
-+	else
-+		return apple_smc_acpi_port_get_key_info(smc, key, info);
-+
-+}
-+
-+static void apple_smc_acpi_notifications(void *cookie)
-+{
-+	const u8 buf = 0;
-+
-+	apple_smc_acpi_write(cookie, SMC_KEY(NTOK), &buf, 1);
-+}
-+
-+static const struct apple_smc_backend_ops apple_smc_acpi_be_ops = {
-+	.read = apple_smc_acpi_read,
-+	.write = apple_smc_acpi_write,
-+	.get_key_by_index = apple_smc_acpi_get_key_by_index,
-+	.get_key_info = apple_smc_acpi_get_key_info,
-+	.disable_notifications = apple_smc_acpi_notifications,
++static const struct watchdog_ops macsmc_wdt_ops = {
++	.owner =	THIS_MODULE,
++	.start =	macsmc_wdt_start,
++	.stop  =	macsmc_wdt_stop,
++	.set_timeout =	macsmc_wdt_set_timeout,
++	.ping =	macsmc_wdt_ping,
 +};
 +
-+static int apple_smc_acpi_probe(struct platform_device *pdev)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
-+	struct apple_smc_acpi *smc;
-+	acpi_status status;
++static const struct watchdog_info macsmc_wdt_info = {
++	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
++	.identity = "Macsmc Watchdog timer",
++};
 +
-+	smc = devm_kzalloc(&pdev->dev, sizeof(*smc), GFP_KERNEL);
-+	if (!smc)
++static int macsmc_wdt_probe(struct platform_device *pdev)
++{
++	struct macsmc_wdt *drv;
++
++	drv = devm_kzalloc(&pdev->dev, sizeof(struct macsmc_wdt), GFP_KERNEL);
++	if (!drv)
 +		return -ENOMEM;
 +
-+	smc->dev = &pdev->dev;
-+	init_completion(&smc->cmd_done);
-+	status = acpi_walk_resources(adev->handle, METHOD_NAME__CRS,
-+				apple_smc_acpi_walk_resources, smc);
++	drv->smc = dev_get_drvdata(pdev->dev.parent);
++	if (apple_smc_key_exists(drv->smc, SMC_KEY(OSWD)))
++		drv->has_oswd = true;
++	else
++		drv->has_oswd = false;
 +
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
++	drv->wdd.ops = &macsmc_wdt_ops;
++	drv->wdd.info = &macsmc_wdt_info;
++	drv->wdd.min_timeout = 1;
++	drv->wdd.max_timeout = 255;
++	watchdog_init_timeout(&drv->wdd, timeout, &pdev->dev);
++	watchdog_set_nowayout(&drv->wdd, nowayout);
++	watchdog_set_drvdata(&drv->wdd, drv);
 +
-+	apple_smc_acpi_try_enable_mmio(smc);
-+	BLOCKING_INIT_NOTIFIER_HEAD(&smc->event_handlers);
-+	INIT_WORK(&smc->shutdown_work, apple_smc_acpi_shutdown_work);
-+	INIT_WORK(&smc->notifier_work, apple_smc_acpi_notifier_work);
-+	spin_lock_init(&smc->event_lock);
-+	INIT_KFIFO(smc->event_fifo);
-+	apple_smc_acpi_try_enable_interrupts(smc);
-+
-+	return apple_smc_probe(smc->dev, &apple_smc_acpi_be_ops, smc, &smc->event_handlers, true);
++	return devm_watchdog_register_device(&pdev->dev, &drv->wdd);
 +}
 +
-+static int apple_smc_acpi_resume(struct device *dev)
-+{
-+	struct apple_smc *smc = dev_get_drvdata(dev);
-+	struct apple_smc_acpi *smc_acpi = smc->be_cookie;
-+
-+	/* NTOK may be set to 0 on resume */
-+	if (smc_acpi->interrupt_enabled) {
-+		smc_acpi->interrupt_enabled = 0;
-+		apple_smc_acpi_try_enable_interrupts(smc_acpi);
-+	}
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops apple_smc_acpi_ops = {
-+	.resume = apple_smc_acpi_resume,
-+};
-+
-+static const struct acpi_device_id apple_smc_acpi_ids[] = {
-+	{"APP0001", 0},
-+	{"", 0},
-+};
-+MODULE_DEVICE_TABLE(acpi, apple_smc_acpi_ids);
-+
-+static struct platform_driver apple_smc_acpi_driver = {
-+	.probe = apple_smc_acpi_probe,
++static struct platform_driver macsmc_wdt_driver = {
++	.probe = macsmc_wdt_probe,
 +	.driver = {
-+		.name = "macsmc-acpi",
-+		.acpi_match_table = apple_smc_acpi_ids,
-+		.pm = &apple_smc_acpi_ops,
++		.name = "macsmc-wdt"
 +	},
 +};
-+module_platform_driver(apple_smc_acpi_driver);
++module_platform_driver(macsmc_wdt_driver);
 +
 +MODULE_AUTHOR("Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>");
 +MODULE_LICENSE("Dual MIT/GPL");
-+MODULE_DESCRIPTION("Apple SMC ACPI backend");
-+MODULE_DEVICE_TABLE(acpi, apple_smc_acpi_ids);
++MODULE_DESCRIPTION("Apple SMC Watchdog Driver");
++MODULE_ALIAS("platform:macsmc-wdt");
 -- 
 2.55.0
 
