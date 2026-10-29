@@ -1,96 +1,100 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.163.135.77
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793259041;
-	b=tY8pxPVXQaXEl43fhs6HMEd/7bh2e5flIUrVyqxRTRrhPPc4xrFExdNdqzAF15o/gfKb
-	 lNBCmLRkggUdAVMB7K1ZmNV2oZ45vi98d/OXHD8mMhAC8ALEP3rYmFUUcxILkJlB5GbIO
-	 D9emYruaqrfPHAWf6Z8Q9IiFe9Ruzsljf3Mqd61eQmdVNln8+VoXb2xlPLE4QgBglphgK
-	 FVxE5wSoJPFfJesZl7Fhcd/f5hPXecvSAkKBANXNU7UqeEv3Vmrv5j5m7GM45TKiyLvsL
-	 xENckfZ9VtvKIhthctWnz+/5DgYmviEhAhnG/zacJw7wicIstrmfMpZH0wtn7IiRgSQ==
+	t=1793259045;
+	b=I0QasB+nJM+E+07yXqhx1Ha78drLCN/u4AuubfdgjYolEJlkuFeW6jz0c2nJeOrGQ17J
+	 Ce0bHrpNyxoEgMtRy6CCbCaUnyWoxnACYtSsi7qYsf5mnHS5dtYxFXnMuXL++PmJdTiwU
+	 HYQg4GcIv/bB7yKrNOmAuTtjkGhp2r/sAczZCb5AjxS8OntMzTwN5lZwvmn51CAkMBct+
+	 PHmi8YsRtU8XGIexAwdEOyw6wdWReGtRY4gKklu3/2p6ijsXmCbC6VoMfTumAaT3rbAeH
+	 H1VbUVLdxPtr4MUm5pgkV2i0L/zNk080nWdzVqWADx0oRE+3G5XqJHi6pqJHFv7/jDA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793259041;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793259045;
 	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:Received:
 	 Received:Received:Received:Received:Received:From:To:CC:Subject:Date:
-	 Message-ID:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:X-ADIRuleOP-NewSCL:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Spam-Details-Enc:
-	 X-Authority-Analysis:X-Proofpoint-ORIG-GUID:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type:X-ADIRuleOP-NewSCL:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:X-Proofpoint-GUID:
+	 X-Authority-Analysis:X-Proofpoint-Spam-Details-Enc:
 	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=nsiAxT8KKUIacP7cLxTvtwoJBZfMQ+Oronl3f0pzRwM=;
-	b=UOid7CiKtgrUwpb72HI1zIS6FSQGUp28PsCTIntkAxp3DF/2iSklPjXcFRScBbyPpXQe
-	 uoAp/zb8sFMMcVF48maWHDWH9UF4tTuNF3ThNX93N3RsevJ6qfHaaSnR3lvLZIeNL4DTg
-	 ZvWUwH7NLlZZH+6T79bGrUnOhC4fCP3i+G8VgigoanfyP8x2oNzRzyHntQQpEUhllOabO
-	 OcF1ndrE/SWG4qkNQC63u371hW+tvg1XNdjB9JLnz8V85rvILlUqv0/EsSle0F4DB++q6
-	 0KrndrasSFGSkk6rWpuG6QCheAc58dpnh6raCwosIiGFVFYYVM9TAYUKwL3+AgJEw0w==
+	bh=HyWEsx1GlWlY3L89mEqtrYdx5WTFLSmuRxoVGkH2Jks=;
+	b=X+K1FPdjxuvOguO/N+/urMaQeyT7kBwWcNB8caVufv6oJz/yYtYncA06HPrslWqmVFrd
+	 Q0dGyo88VnHhi9lGYD4+d8d7FWPGZD0e1KqGmpe80na2nmKRwfgqyO2G7EyjRo1cXYjVq
+	 UKCJjDoefwURGP8U3ruYhJ2lBN3rIlTpLEvzsCsF8p1fvAYF50ol7EXr/zudoVgU1LV2Y
+	 kPwB6Vg42Swkn5mezaKh/E/ueG4v3Vey9B2BB/e1UsnXpi7S2EPgxduduMLUTnF3jVcnr
+	 vGV1v0Tk73dw43M09UIzjoJ3pMsU53sk3SpASW//8opUQi/zoHJvIgJ2+0BBpR9ci/w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=analog.com;
 	spf=pass smtp.mailfrom=analog.com;
-	dkim=pass header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=imuczH1O;
-	dkim=pass header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=OoVrB8CC;
+	dkim=pass header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=PBL7Ur3p;
+	dkim=pass header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=aEWdrYNr;
 	arc=none smtp.remote-ip=148.163.135.77
 Received: from mx0a-00128a01.pphosted.com (mx0a-00128a01.pphosted.com [148.163.135.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B157606A31C;
-	Thu, 29 Oct 2026 07:30:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5B157606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6001606A324;
+	Thu, 29 Oct 2026 07:30:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6001606A324
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=analog.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=analog.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=imuczH1O;
-	dkim=pass (2048-bit key, unprotected) header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=OoVrB8CC
-Received: from pps.filterd (m0167089.ppops.net [127.0.0.1])
-	by mx0a-00128a01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T71Psb808314;
-	Thu, 29 Oct 2026 03:30:31 -0400
+	dkim=pass (2048-bit key, unprotected) header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=PBL7Ur3p;
+	dkim=pass (2048-bit key, unprotected) header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=aEWdrYNr
+Received: from pps.filterd (m0167088.ppops.net [127.0.0.1])
+	by mx0a-00128a01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T5GkaW1940240;
+	Thu, 29 Oct 2026 03:30:35 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vtelectron.com;
 	 h=cc:content-transfer-encoding:content-type:date:from
-	:message-id:mime-version:subject:to; s=DKIM; bh=nsiAxT8KKUIacP7c
-	LxTvtwoJBZfMQ+Oronl3f0pzRwM=; b=imuczH1Oo0sXrM1+lq2+L49K8VJETae5
-	IDwvnl3nOZ+g4mMNg5SwTxF7tMUSnzQnJPaaqrdyumDehuLWghTNfGJS9LgOQjIS
-	9EB708nnCgXGg54QSB9TTtJBFiPEG/rdkNRFU9dDNgXCmTv7BgRCTRQk/grDFxZl
-	n+/9rk9MDoBSJ04E0U/RTWK1cnvK4Ji6C1DfAdrf2Zk9obZmZ2ygTXPLH2zBKZE1
-	NNNL4kC/ApcmLjaX9u1nrEN96d8h5Os44275Sa+t9N+QvhRBaEvlmhsVvd5epZ77
-	3Qdb0HzrhKwtLwl7ZY4qh/ziHWYhRuyKvaYXShAgtDP9/yvyF+k+cA==
+	:in-reply-to:message-id:mime-version:references:subject:to; s=
+	DKIM; bh=HyWEsx1GlWlY3L89mEqtrYdx5WTFLSmuRxoVGkH2Jks=; b=PBL7Ur3
+	ptRzyximQISPEZk71j/Wwqwor5+9vn5E54O9gyALWMu/tTYe5h2oilHdBrPo4Fd6
+	eT7TFLSf0JhcCfyC7RtWlpL68ty9BUfVf7DZ+20O9J9XH3P4686XOQVQ27sFpQfK
+	l2w12iEqvTaOdRGy6ZoEkwCeq89t3klwxolxZ8bHLQVYph8kW6KIRUyfPBCPpyn4
+	6kx+3CEJAm+eaFTMZy8J/Qdqv9TpURCtETghyCdl8+dLb5oGAl4NEcEW58A0qO6h
+	nXB2sD/ah+cIssS98hZWEDf62hG2XfsSegZxuKPToMvv80xjIFgbSGvxvn7DKfsw
+	wAu0dhZuptQGGPg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=analog.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=DKIM; bh=nsiAxT8KKUIacP7cLxTvtwoJBZf
-	MQ+Oronl3f0pzRwM=; b=OoVrB8CCLlrA/LnCPBj58foT2aPfAffUSyzAh0XpcBv
-	vd2sdL5q42k8mkg8CkEDCdNg3IOK96ZHP8rphEB1PekM/plEmJJhh7UkFOn1kxqK
-	376xLBjAL3MoSh1sMzheIxXGHdzT7Ad3X1V0QynvjVqE5RhubVBMPbnm3ZXZkKb5
-	QPAl72ZqmKIzbYSkxTMtTrBUWVBo72mYDezuaU1qat3aVRjTiFLXkDpUCvagW+Ud
-	IbhctLvFhkodQZYQMrkfvDZCL3VzcTows1vT1BIPboZRNENaZ6KfAsNsIMGSFoJ9
-	YQAjuSE0NADgaGC590M7IfDrNWN3xvSryYLEJj7YLcQ==
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=DKIM; bh=HyWEs
+	x1GlWlY3L89mEqtrYdx5WTFLSmuRxoVGkH2Jks=; b=aEWdrYNrS/fhE5zTzKVFA
+	2ze10N3MYUka1hYJvvDZXMXRk5qALREbnCRiVFm4fNuEBqydji4BpdbJumGNKQPx
+	UDMJcJTSGhqQF0VPcxJtN3IEklUT0a/kl8X8yfT9//qiBRqy1iMxDw43RIVva5wU
+	Z3yha6jMm8h78W0Tm+dbxF6I8rJKD/eTdNRJ3dJMOvYQtkhb8Z6Zd5ybAGU4QSRC
+	v4UL+ilDPTt5751qW2IltRdE39j57kiq9B2277Ke8aoy8LxPwBUU5qAvxrTI9nMQ
+	MdNJ3S0lR9jp101BrvAe+7eDwPpVTWAK3UqbMBedxbZmgU20rZtDFIaqgCT60Z5G
+	A==
 Received: from nwd2mta4.analog.com ([137.71.173.58])
-	by mx0a-00128a01.pphosted.com (PPS) with ESMTPS id 4hm1d0g538-1
+	by mx0a-00128a01.pphosted.com (PPS) with ESMTPS id 4hkrqh300e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 29 Oct 2026 03:30:31 -0400 (EDT)
+	Thu, 29 Oct 2026 03:30:34 -0400 (EDT)
 Received: from ASHBMBX8.ad.analog.com (ASHBMBX8.ad.analog.com [10.64.17.5])
-	by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 69T7UUMm044468
+	by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 69T7UXYN044471
 	(version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 29 Oct 2026 03:30:30 -0400
-Received: from ASHBCASHYB4.ad.analog.com (10.64.17.132) by
+	Thu, 29 Oct 2026 03:30:33 -0400
+Received: from ASHBCASHYB5.ad.analog.com (10.64.17.133) by
  ASHBMBX8.ad.analog.com (10.64.17.5) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1748.37; Thu, 29 Oct 2026 03:30:30 -0400
-Received: from ASHBMBX8.ad.analog.com (10.64.17.5) by
- ASHBCASHYB4.ad.analog.com (10.64.17.132) with Microsoft SMTP Server
+ 15.2.1748.37; Thu, 29 Oct 2026 03:30:33 -0400
+Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by
+ ASHBCASHYB5.ad.analog.com (10.64.17.133) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1748.37; Thu, 29 Oct 2026 03:30:30 -0400
-Received: from zeus.spd.analog.com (10.66.68.11) by ashbmbx8.ad.analog.com
- (10.64.17.5) with Microsoft SMTP Server id 15.2.1748.37 via Frontend
- Transport; Thu, 29 Oct 2026 03:30:30 -0400
+ 15.2.1748.37; Thu, 29 Oct 2026 03:30:33 -0400
+Received: from zeus.spd.analog.com (10.66.68.11) by ashbmbx9.ad.analog.com
+ (10.64.17.10) with Microsoft SMTP Server id 15.2.1748.37 via Frontend
+ Transport; Thu, 29 Oct 2026 03:30:33 -0400
 Received: from JGERONI2-L01.ad.analog.com ([10.66.6.193])
-	by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 69T7UKMI010624;
-	Thu, 29 Oct 2026 03:30:23 -0400
+	by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 69T7UKMJ010624;
+	Thu, 29 Oct 2026 03:30:28 -0400
 From: John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
 To: <sre@kernel.org>
 CC: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
         <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 0/2] Add LT8491 driver
-Date: Thu, 29 Oct 2026 15:30:10 +0800
-Message-ID: <20261029073012.1498-1-johnerasmusmari.geronimo@analog.com>
+Subject: [PATCH v3 1/2] dt-bindings: power: supply: add adi,lt8491.yaml
+Date: Thu, 29 Oct 2026 15:30:11 +0800
+Message-ID: <20261029073012.1498-2-johnerasmusmari.geronimo@analog.com>
 X-Mailer: git-send-email 2.44.0.windows.1
+In-Reply-To: <20261029073012.1498-1-johnerasmusmari.geronimo@analog.com>
+References: <20261029073012.1498-1-johnerasmusmari.geronimo@analog.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -100,83 +104,163 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-ADIRuleOP-NewSCL: Rule Triggered
-X-Proofpoint-GUID: Rs_wFsvi8CJkgRx7hb7yg5Oaafkc435x
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfX+1Gw7917DjTv
- bYLLgTSW/wMcEx8hMtru++Z6Ka0ee/TKtBo92fU9nN+GbSWpvV52VC7P8tQEMbuXc+QOIyzIrjA
- 8UnHRoVNwFEf+Z1KsMXHOmnpKYhOj60prYnyZIieAyrZTGdV23UY
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfX1xDO42vgHE0C
- t2S1lXJbW5T0sEvOQ59nOjR2PCOq25LcovluNi1SeCKFm7crYN1F6Qmq4fkdfryfTO6CFadwrSp
- CqWqwnRRd6+fjVApqM+AGUhWcabn+zIeAa9NcybV7Q2k4LW/VeDc7YMBXAgzQLhThkibqPGDaDd
- CUn3XaEHwtvnHoRZ/tABQ74HYFUO0s223iy1dukVkDwNYVwNbDsSegz7olfL53p9z59gSv4CJc5
- mBbWgZGjYX5XYrI5lgKmVrBOjHpr01FgQSTLGMvojZcjmum0THZ/hv77E8VoaFDQVMeyKJlgRIf
- NPgCmMBZULmWCCEuL4bbYr6W9uEipvGCf22J/iF1FzuB8yH2kv+qR7XyEx9qwi5XldOcyvZrjtF
- MZaG2mdHK4jUF/dGJOZp7HeEiFgjADZ9h+Ywmf4AkNIQyHYup49Eu2hBoQgi/I4NZtT98ObeEHI
- PXgnHZAsSUlOTYA+sgg==
-X-Authority-Analysis: v=2.4 cv=M7XYuCws c=1 sm=1 tr=0 ts=6ae2f617 cx=c_pps
+X-Proofpoint-ORIG-GUID: pDQQd3-LQvDxGisjU94vocGGfo1oVOI1
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfX+32yDyqm0NiQ
+ G4XKUxA1cOTNzSfgGY3Ahur0W7fnPSEnvu6P9CTwzs15ZZI0/3NqJDii4/RTUvhH6GMg9e31jny
+ FTjUlhMjOJI/I9vZ+uTA9TRlRCt+wu1xTLxfbXiV9pvhH6xwD4pZ
+X-Proofpoint-GUID: pDQQd3-LQvDxGisjU94vocGGfo1oVOI1
+X-Authority-Analysis: v=2.4 cv=OK+yTiaB c=1 sm=1 tr=0 ts=6ae2f61a cx=c_pps
  a=3WNzaoukacrqR9RwcOSAdA==:117 a=3WNzaoukacrqR9RwcOSAdA==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=0sLvza09kfJOxVLZPwjg:22 a=Z0pTeXoby7EwIRygza74:22 a=VwQbUJbxAAAA:8
- a=gAnH3GRIAAAA:8 a=n22vjvBVvcT7OZeQm1wA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: Rs_wFsvi8CJkgRx7hb7yg5Oaafkc435x
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=0sLvza09kfJOxVLZPwjg:22
+ a=uXIjobp8t2wMuQ0fPvqm:22 a=gEfo2CItAAAA:8 a=gAnH3GRIAAAA:8 a=VwQbUJbxAAAA:8
+ a=pGLkceISAAAA:8 a=C-PO4pFZFlxbmb0oAE0A:9 a=sptkURWiP4Gy88Gu7hUp:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfXzIgGxxAT2net
+ 2EjIre1qLnu9s5e+1D0xb4FbdDgW9eTu3ATZYDqNOPRfuYvuGdhwlF+sJefPsoTa5zqOrCN7F3L
+ RBkrJqKJnujQsQ42QXoE/p1KeSNqgOkCfcHSKyO0JqVN/Me500+ua+cfRPi+ZVNWXD+VioPULir
+ QY1MkrmnTKgyelKSRNojzSZGMvAeqVfqhp2S5W0hiVc5cn9fALRo8TzhBU8F3OW2p3bDIT22OHS
+ +3cTHUP4gYxKU0vVOXMJcbSc4i82p/0y3L5suDm7YdU/O+Hy+qP0lSZ/HuHdvKthVALKxuZGkpd
+ S+vcN3NlWk3LZY2w31FDP5VUB2iENEBLU3qo7q+i2SJ9lx25O6ulFOdRdQN6B0sI6stQRJEIXiq
+ nv0PExTNfXDzU8LdLVFQprVCDpWTkq/MIIgCzGE13rMlup0+TBXVvqi0QubejnSXrp3Jdmnbzt5
+ cVm6PrfdzKKa6hBuCgw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-10-29_02,2026-10-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 bulkscore=0 malwarescore=0 adultscore=0 suspectscore=0
- clxscore=1015 priorityscore=1501 impostorscore=0 lowpriorityscore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610290028
+ impostorscore=0 spamscore=0 malwarescore=0 lowpriorityscore=0 clxscore=1011
+ suspectscore=0 adultscore=0 priorityscore=1501 phishscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610290028
 
-The LT8491 is a buck-boost switching regulator battery charger that
-implements a constant-current constant-voltage (CCCV) charging profile.
+Add the devicetree binding for the Analog Devices LT8491, a high
+voltage buck-boost battery charge controller with an I2C interface.
+The values of the PCB resistors used by the chip's telemetry are
+described as properties.
 
-Changes since v2:
-https://lore.kernel.org/all/cover.1788432152.git.johnerasmusmari.geronimo@analog.com/
- - dt-bindings: use unevaluatedProperties: false instead of
-   additionalProperties: false (Conor Dooley, sashiko-bot).
- - driver: drop the <linux/mod_devicetable.h> include and use a named
-   initializer for the i2c_device_id table (Uwe Kleine-König).
- - driver: use an int for ret in lt8491_get_property() so readings
-   >= 0x8000 are not treated as errors (sashiko-bot).
- - driver: register the power supply with
-   devm_power_supply_register() (sashiko-bot).
- - driver: poll the telemetry-active bit after triggering a telemetry
-   update (sashiko-bot).
- - driver: bounds-check the temperature limits and the resistor
-   configuration values before truncating them into registers
-   (sashiko-bot).
- - driver: write the 16-bit resistor configuration registers as two
-   byte writes, as the device has no word-write transaction.
- - driver: report current_now in microamps.
- - driver: return -ENODATA for the temperature when the chip reports
-   the not-measured-yet (0x7FFF) or thermistor-disconnected (0x7777)
-   values.
- - driver: minor cleanups.
-
-Tested on a DC2703A-A-KIT evaluation board with a Raspberry Pi 4B
-(6.12-based vendor kernel) with no battery connected; charging was not
-tested, nor were the two special temperature values above. Build-tested
-against the power-supply for-next tree.
-
-John Erasmus Mari Geronimo (2):
-  dt-bindings: power: supply: add adi,lt8491.yaml
-  power: supply: add LT8491 battery charger driver
-
- .../bindings/power/supply/adi,lt8491.yaml     |  92 ++++
- MAINTAINERS                                   |   7 +
- drivers/power/supply/Kconfig                  |   9 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/lt8491_charger.c         | 428 ++++++++++++++++++
- 5 files changed, 537 insertions(+)
+Signed-off-by: John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
+---
+ .../bindings/power/supply/adi,lt8491.yaml     | 92 +++++++++++++++++++
+ MAINTAINERS                                   |  6 ++
+ 2 files changed, 98 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/supply/adi,lt8491.yaml
- create mode 100644 drivers/power/supply/lt8491_charger.c
 
-
-base-commit: f0f400459bf6a037e70768de623fff3f8920b8bb
+diff --git a/Documentation/devicetree/bindings/power/supply/adi,lt8491.yaml b/Documentation/devicetree/bindings/power/supply/adi,lt8491.yaml
+new file mode 100644
+index 000000000..268289841
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/adi,lt8491.yaml
+@@ -0,0 +1,92 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/adi,lt8491.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Linear Technology (Analog Devices) LT8491 Battery Charger
++
++maintainers:
++  - John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
++
++description: |
++  The LT8491 is a buck-boost switching regulator battery charger that implements
++  a constant-current constant-voltage (CCCV) charging profile used for most
++  battery types, including sealed lead-acid (SLA), flooded, gel and lithium-ion.
++
++  Specifications about the charger can be found at:
++    https://www.analog.com/en/products/lt8491.html
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    enum:
++      - adi,lt8491
++
++  reg:
++    maxItems: 1
++
++  adi,rsense1-micro-ohms:
++    description: Resistance value of RSENSE1 in micro ohms.
++
++  adi,rimon-out-ohms:
++    description: Resistance value of RIMON_OUT in ohms.
++
++  adi,rsense2-micro-ohms:
++    description: Resistance value of RSENSE2 in micro ohms.
++
++  adi,rdaco-ohms:
++    description: Resistance value of RDACO1 + RDACO2 in ohms.
++
++  adi,rfbout1-ohms:
++    description: Resistance value of RFBOUT1 in ohms.
++
++  adi,rfbout2-ohms:
++    description: Resistance value of RFBOUT2 in ohms.
++
++  adi,rdaci-ohms:
++    description: Resistance value of RDACI1 + RDACI2 in ohms.
++
++  adi,rfbin2-ohms:
++    description: Resistance value of RFBIN2 in ohms.
++
++  adi,rfbin1-ohms:
++    description: Resistance value of RFBIN1 in ohms.
++
++required:
++  - compatible
++  - reg
++  - adi,rsense1-micro-ohms
++  - adi,rimon-out-ohms
++  - adi,rsense2-micro-ohms
++  - adi,rdaco-ohms
++  - adi,rfbout1-ohms
++  - adi,rfbout2-ohms
++  - adi,rdaci-ohms
++  - adi,rfbin2-ohms
++  - adi,rfbin1-ohms
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        battery-charger@10 {
++            compatible = "adi,lt8491";
++            reg = <0x10>;
++            adi,rsense1-micro-ohms = <5000>;
++            adi,rimon-out-ohms = <124000>;
++            adi,rsense2-micro-ohms = <3000>;
++            adi,rdaco-ohms = <64900>;
++            adi,rfbout1-ohms = <113000>;
++            adi,rfbout2-ohms = <10000>;
++            adi,rdaci-ohms = <7000>;
++            adi,rfbin2-ohms = <3480>;
++            adi,rfbin1-ohms = <102000>;
++        };
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3a19da74d..2b3cc7649 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -15466,6 +15466,12 @@ F:	Documentation/devicetree/bindings/hwmon/pmbus/adi,lt3074.yaml
+ F:	Documentation/hwmon/lt3074.rst
+ F:	drivers/hwmon/pmbus/lt3074.c
+ 
++LT8491 BATTERY CHARGER DRIVER
++M:	John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/power/supply/adi,lt8491.yaml
++
+ LTC1660 DAC DRIVER
+ M:	Marcus Folkesson <marcus.folkesson@gmail.com>
+ L:	linux-iio@vger.kernel.org
 -- 
 2.34.1
 
