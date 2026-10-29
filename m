@@ -1,113 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.181
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793264581;
-	b=pK0hX7vzBCfs1RggokWXXtesCYkv/3N/dZdu42nD6fENYxLGm2lC2hPGr5H/rAyzFW2O
-	 WVVIO64G9VJECvIzS4V/QZ8o8cc8hCES7ISiA4qGyVXIHV9CUA+lXj1s8qsYwLl1i4m0C
-	 4QAlfhLVYSDEb8MOqk8RsXM2RsBpaxMlbYeMDONWpahhWh25nMR9ibRlBTB69S7s3REso
-	 /0rCbSwjqfPk9I/cV+CzVLPEvVKM6IMTEjW+9pv2ipbMq2NthUrs5MRUijjuBs0yIEZnM
-	 4YDUekAs7OHMceGcJtwzzoE4TmMJrYgDgtOWwDHX3EY2EFugcuBQgLwNolKRgVs5t3Q==
+	t=1793264923;
+	b=CTlsf0caL1jayMKoHzhRZ3C5J0DBz8qaoPRgvhe6Y2oDLEGNQ8k8/RSgVUHr8LKpoGop
+	 S45ts5uuXNpalZW0xIGF+V6YlyhmnccX8JB0FLEphayT5+QHUuYPbv7t5vXYXVdj94TwD
+	 w0f+YAleIfl4JQpmg022o3lCXNceXo6qQD+KHn3DCgVLHF7X6i0ITV7Tuz85xg8eFzduc
+	 AlHK9i9cLwQcSPtWGhnObf7NhwGVkF4SjXf6Y/hOa/Vnl7MYWFfKDscyUg6JotQmOPjGo
+	 NO45OZGwD9UXSo9hNetdVr8nTgLSY6awQs/7BMGeOIlpU+B3dgVg3/NznmChpNgsXcg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793264581;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
-	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-Spam-Info:X-Authority-Analysis:X-Proofpoint-GUID:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=W0iJhYwYFHxApioBxjUjHv9EZd+NjU0umTau3U6H/X4=;
-	b=C4sS5CyGUcJ1wL/Izcj94WU5kdwY29HH42qfnGeyiTCA8qeYhVFOL+9WQUHTQeE4habm
-	 Fsw8ZCQmpUT+kveCpEEtytr1Y0hj13Cx1fUFjUJIVFBBqI9ngfoFRSaETvDnt+mbCYVUr
-	 AZnJr3bMK1Gmbhnp2ruxeARqEeNjs4ohJJX+QvT0pMMfno54doAzZLfER/5tygaYmmr4S
-	 TSBf/lQ4j87dpTwZHkYmigr+2ghwXxoUWBlohWzyLOrJ4ehNFHP9rUK6JtHf+0dydwWWZ
-	 qd1oCL4sKmD9xJF3cGCm3YO2AFFhT33U2OKswzaew53BUMqubvwn29D6p3dxuhXp5gg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793264923;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
+	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type;
+	bh=ZlsJgsuUxLshKsbZ0JGTcZhiSxa4IqXzGzYrO+oYcmo=;
+	b=fc9vne6yS9Razwtguxh8x22ySWEELGIwAtw4QIlgoQhsj5lK6SoIBMcnPeiWSLRUtmO9
+	 YhVv+L2NVy35nf+Muz6sxHwrb+9Pu3zqtT30NdUqFp/9Ck9SfqMzPORhJTOuPa/3ZZ1OJ
+	 nLg+IdpewisBqQnwXqS7W15Zp2OwEVHNkZERHTcpw6dY8rn8UMoLLvRDXp9LBt+fO962i
+	 RmfKyWFfmw2g2MvD57RpMnyFzytIpAQcPIrFTwyskeagXAkHBEqIAKrH0wdjmlmpKsCCo
+	 sTjuIDyV1qfo8vY+ps0x91cQb9XUBYqZQJDArK9p+dkzW+DL3kb+faZAnOROx67hkvw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="UGzuI/fB";
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="Avg+t/AN";
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=none header.from=linux-m68k.org;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=none smtp.remote-ip=209.85.221.181
+Received: from mail-vk1-f181.google.com (mail-vk1-f181.google.com [209.85.221.181])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E8B6606A326
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:03:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9E8B6606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=UGzuI/fB;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Avg+t/AN
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T8vmMA690940
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:03:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	W0iJhYwYFHxApioBxjUjHv9EZd+NjU0umTau3U6H/X4=; b=UGzuI/fBbzLudgIS
-	gXr14iwDFjdzVTsZFGYigdgyuhuNl4dIWN4tkZxbHkqFlOdGYV5FD/wfbGCsLe8m
-	5LbnXlm+FB9lTB4HzzK+MWPVUnvRybey86pXLOvGcM0Nu1RY5Rz11JBe7zUaGgOH
-	FdX36c48cKPgTzqhwC3NR+TlESLZ/CNMZxHKc39P3KzUF9LE4wLBq7o5l4/NE2sU
-	qF1luJhDxxIIZzKWk8s/DKfK6sbDO0PhVT6l0fy72a5J30ErkNG3/vlguxL7Axse
-	m7PifjR8kQ2+P73kPBopA+kO5+x7eYyJG5dz0YrGkL6PpfVSBsNu5RD5wFRKLlAw
-	fgWg/A==
-Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hkneuu4db-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:59 +0000 (GMT)
-Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cd65285537aso810527a12.1
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:02:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793264579; x=1793869379; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=W0iJhYwYFHxApioBxjUjHv9EZd+NjU0umTau3U6H/X4=;
-        b=Avg+t/ANgx6+Qx877ZYXmCgRoLjaXtbjguJ34Qt7ONRBapfvgUFN4rwnw4qgNCCA+r
-         +w5js3gbjjWRux+FXN7lDiv4lclUVjOI91tWyY3ihmznhC6sojrnJ1i75ylYgeaSkNbf
-         x1uTVU3xBDmAo2Fi0MpYHtCCpVkYpvWO9MuVIjVv4jUlORTd4JkSXZ0yGq0hVLLSWh/c
-         KryrxSwHqosCSSGN99ulgzTQUDqH9VHwVAgg5b2TmVg9b0iHqTZokjAe6vOcWdaUVALG
-         14NeBZAO4lUb+B59TVN0R5olE9N6uiyTmw+0hr5QLQXubhKLUTIVTEC1LCeciuWsU3yc
-         515w==
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCF20606A31A
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:08:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DCF20606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f181.google.com with SMTP id 71dfb90a1353d-5eac3b6b2ceso447313e0c.2
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:08:41 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793264579; x=1793869379;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=W0iJhYwYFHxApioBxjUjHv9EZd+NjU0umTau3U6H/X4=;
-        b=l7o5Y/sHSrxMKheDd+GVHwGBUeIBZSM0lAUifiiAzSGZB0j8GWx4QlX1QLpGrqYmpd
-         zokMcwGLj5cYYQH4qpHZNrNN+wngCq79BzFgqrGS/o1yGw6yvM/kvQ+wQCkv0o1R27px
-         AjCk/WjtfXLgkwj7M1+yvBhL+ECvK92y1lY86dMIogZu4XcppcqL/m70RnL53UDv1Tp0
-         tKcjGXjNHEJ7ZN1udpzWAEXewq1bdUCr450bWOPW82pGj5QCzFnNtK+v4l4AiZGseqXq
-         hgonS2NpuRpIkTzwPcvGw+PbvEn/vnp9dn3cHy38B8D6YPne3B95gBTQGFEwJOLvzN5+
-         HMbQ==
-X-Forwarded-Encrypted: i=1; AKwUvByrmJJBhNZNjVXzdByxAT/dYxhh0lrSZjO5iraqGwdv/DRF5PzH4ID2ohwQ8B3ibHyHS9k9VlJI7A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLk2tJ9ZFDFoegBREp9dwTAdGP4fRDR7PQNH2geNW1wg03dPuYI
-	gIqaVc9r0e5+SbO4DvlpFTaKWWd5av8xzsg+2Wsf9/Q128RSfHl9cOX9ASw4+TLIxoKu5vqJ1KG
-	M2VOA/dyAXTXKXihzLczSCdApu7aJIun9ZBT6RnNZrEgc3okubMy3Hncbj5LadQ==
-X-Gm-Gg: AYBFou2ulunOwK4qTiXkzYH+WX3HCnSk0V+EAXyLSte3NInr01lR/6Cm7EaBakhD6AR
-	3JwBvTr/IrHt2sgglOpksJ9HUFm1R8g1luk4bkNjtsGOWUAzAhXd0G39tHTcBHImtnam72/i+Y7
-	KrhPB9OvmvUk/QdXiXs9Dj1KaDaS8/1DnRG2XGlwryRyitYhlppBEoC78CZlavzNybqANhAMHr2
-	ghjEQqYWEtsL0yAazK8cpT0b8GGsJp+j4+xyDcjSHTiHjFduLt8QR4ctcYUIiRLeEGGnn1OFR2X
-	C6uvNkE1u+UMVqHretSrKfSriPHAp4TvBWeU3MA9SDnLdaPZXgcLLJ0QF9W96kuXoeuQuEEBVtt
-	43HD3c8pzzmhGNtQge7lKlnVQJ9jbQ+Gxk5fLOQBNO8txoWAYassV3XLCR6gMDRodtS+4GxcG93
-	DsKrk+flA0
-X-Received: by 2002:a17:90b:46:b0:3aa:548f:eb77 with SMTP id 98e67ed59e1d1-3ae5823c672mr3892948a91.56.1793264578110;
-        Thu, 29 Oct 2026 02:02:58 -0700 (PDT)
-X-Received: by 2002:a17:90b:46:b0:3aa:548f:eb77 with SMTP id 98e67ed59e1d1-3ae5823c672mr3892899a91.56.1793264577591;
-        Thu, 29 Oct 2026 02:02:57 -0700 (PDT)
-Received: from hu-spratap-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ae6e7ad710sm3197385a91.3.2026.10.29.02.02.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Oct 2026 02:02:57 -0700 (PDT)
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Date: Thu, 29 Oct 2026 14:31:04 +0530
-Subject: [PATCH v27 10/10] arm64: dts: qcom: Add psci reboot-modes for
- talos boards
+        d=1e100.net; s=20260707; t=1793264921; x=1793869721;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=ZlsJgsuUxLshKsbZ0JGTcZhiSxa4IqXzGzYrO+oYcmo=;
+        b=uzUx4Vu/OClRVyl+ZA3bpBEqryXTVIvc6Oqo+i1IyYGPbM7KLaWWTn9TTJzhpC/0CS
+         1IcrR1r0GQ5SEY+SMGJRQFC7XmtKrW3Dmglg4P/GQVjr4XSIHulSBth/wd5CVEiZncQh
+         /IePtfN/zbgkMvCabYfvjyebHNdnnUQXj9+TkgcDiHd7hzBtfrnfkp8s+ZxA0w/fzEHB
+         HJQ3BZtqTXFbr0Stuc4jW3ZRFob5xxDdnaVZX5mOdAD5bgLJx8QQX7o7yI+YFdx26sci
+         ykXOze6i7Ral1h8QS/EZzrLxGqAxtt71l7aFRGMmZEvrn2so05ue9Pph+OG1XwXYXsHa
+         RRVg==
+X-Forwarded-Encrypted: i=1; AKwUvByn4acBR3oyffNFAV0Slu3KUPEg0KbKwJgv045mvgXZi6pgYsIZ2aTY7pldLRGd7ok9Em2K/Uu/zA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLlZgyZMBTR7hdzGV0u1qrl0Erxws3Ah5Huz/FY0iNKyZ/XFKHy
+	r/Rz+wSnC+Ai1fpDqAqkOp9slD2apYr9kp3HMTcX4YuG7R/tQHnB4jM2jMX1HOlp
+X-Gm-Gg: AYBFou0qogfTMuchTPKhoboFhjbsxHnVi7bg2TugsFcEYVJtMV064WICUMm2BqYZN9L
+	THdghcp1D1uNAF332KTMCQzQxr+80n0zXffLJ0Ep1nPU355CSWqC9PfscZJmgiKZLrzBpMvLtGB
+	MGb4Lq3PhxQUjRs7TxzMuu+wbVgXcAtEoIv3PmiYojv+uU+SBs4M0ZX1r/gcGJ8wqIJdv73Xp6W
+	Dhn26iTU9VLYG4tbvTqu39WbuKLxixo/HEC3aJUAy1RkVQtVZgcMBjt3Q1jzY3FXjV/VvLT/Q6K
+	FkAUihxyVVQZJdQL2S7w5ang2bwnNTNcV+UH+aZd3JNhaT3JGpwj8wGoNfpZeB/QPLViPIrRYmh
+	bXFdCwgGZ9mVZxbDa4EI3Oe6sWKPDMvgg6lciUUWc9f2i9Evd7/oQB4Q6cVRokt+Jr56rLobUc4
+	AttyHkQ8iLccAas5O/N1zrlG+DALsETX1GvBD7vznWYdPl2Y9ph+EAHHo5sr2ESvUYzOIQ6zmv4
+	pVHNikYGoydxe8IT0t7d1LjXZMwfDM7mxfYUs6OcUe2L8h2KEic7gF6BDGQ0r9fzDjvDlARWakS
+	qKVfsFtdczInPvle4Vufd3p4DGjACcUlaMVDDkfBTsUDFfcuBws/TfDOEsizMCfnV/c=
+X-Received: by 2002:a05:6122:4d8c:b0:5ce:76cf:fb2e with SMTP id 71dfb90a1353d-5ec4cc99b45mr2471768e0c.16.1793264920929;
+        Thu, 29 Oct 2026 02:08:40 -0700 (PDT)
+Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com. [209.85.222.54])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5ec4f9572acsm4797660e0c.12.2026.10.29.02.08.40
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 29 Oct 2026 02:08:40 -0700 (PDT)
+Received: by mail-ua1-f54.google.com with SMTP id a1e0cc1a2514c-9906034086cso588410241.1
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:08:40 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzAhMFGqF4iFHbXQGXS+R7AHOgoGsUJwttxpPWJKzvUiN1s8D7FFFlow09/qzXMc28qc63kC3pHvQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:8357:10b0:7cd:3218:362e with SMTP id
+ ada2fe7eead31-7d03a5d6043mr1694600137.29.1793264920555; Thu, 29 Oct 2026
+ 02:08:40 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -117,130 +80,128 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261029-arm-psci-system_reset2-vendor-reboots-v27-10-fa4b3ff1359b@oss.qualcomm.com>
-References: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
-In-Reply-To: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
-To: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
-        Abel Vesa <abelvesa@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>, Andy Yan <andyshrk@163.com>,
-        Ulf Hansson <ulfh@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        Song Xue <quic_songxue@quicinc.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793264459; l=1558;
- i=shivendra.pratap@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
- bh=WI51nMUK6qgMXe/JMYvx21HtG2tpC5q/6iKj1pJYETw=;
- b=gGvS3BpXvoO4+rAnmMB8gWe5F/jUrTtj0OtL+qKpMHz1TeSAYRy3TL5xGqfr7v91arFxZBUnY
- IUqkMdrzwNlAtyHZYqier3l3JTqGKtZc+5XnqRKZZeif4m/l9NQFXFW
-X-Developer-Key: i=shivendra.pratap@oss.qualcomm.com; a=ed25519;
- pk=ssWsJFX3OM9pkdoe4+guOfGPaulHOFt0GVnVlB6on+s=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfX9X9oKpMbTfCJ
- K+kVmTogm+elYlpUwlwkwWNbA06d0peM9+rPc46ttUncHqlmAwb1zU43jrblDwmOU77NnV2A+C+
- i/ERGcnT7qObH/TxKR1OFrMIzcLZ/SNgC/0haRl6zwzonExQl+wUjdDk/E0FOb6O3uIZlCFCsav
- 2A4e6OAuwfKkDY6tdL0OXkrKu00KS6aBm9WA4uOIjNJbTwej+2n/bEGC0SHVwg+vxpNSL0rHKvw
- UwGGUc6tVs16uaUnuk1fakQJ2OixXLK6/bkDCNGZLQ/nFuBgl25+F08Hfhf/YBrIAwYE7z2NjnY
- cVGFLLY4qvTJ7iEFKyVpqLcxcfRR8tKxBRzkcNbMFgvW2PfOZadFphENycMv1AiNegxYUyHr+K8
- QkDkV/0q2XovXbarzJawuKaWnyRdjEgqjOAHsqzSdA5ENG8fAfWVdYWwx77nP2OGsP/VrKqp+Kj
- Hlr4N78DI2S0x2Gh0Mw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfX0yivAyg7ekUq
- 4FuxJ/IFwE5BC5oW/eWwQENqV3eR+10arnClvnPMBJNtQtWkjrz40Je1fB1/wWKafmyTidY757g
- owDfmvOv2fRQOF02FvonGz5I176GXak=
-X-Authority-Analysis: v=2.4 cv=LoAHWXdc c=1 sm=1 tr=0 ts=6ae30bc3 cx=c_pps
- a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=EUspDBNiAAAA:8 a=COk6AnOGAAAA:8 a=bjH5yOvFM8yfI_BY5k4A:9 a=QEXdDO2ut3YA:10
- a=x9snwWr2DeNwDh03kgHS:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-GUID: i2HsavtBPgsTYbExCMS1rnjMQ4Zn7x17
-X-Proofpoint-ORIG-GUID: i2HsavtBPgsTYbExCMS1rnjMQ4Zn7x17
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-29_03,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 adultscore=0 clxscore=1015 phishscore=0 suspectscore=0
- bulkscore=0 priorityscore=1501 spamscore=0 impostorscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610290034
+References: <cover.1793026273.git.geert+renesas@glider.be> <e723696e02cfb34fb808e2ae3ccb6faf68528c00.1793026273.git.geert+renesas@glider.be>
+ <20261028132937.GL15441@killaraus.ideasonboard.com> <CAMuHMdXycpJ6COtiAA-2oRRfHSfLK40n2cacStW15QJRN3EfLQ@mail.gmail.com>
+ <20261028163940.GA2673734@killaraus.ideasonboard.com>
+In-Reply-To: <20261028163940.GA2673734@killaraus.ideasonboard.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 29 Oct 2026 10:08:28 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVOT+DTZum525kmYfP+jzzPrxMnEeRAkapxOMGz4XMHBA@mail.gmail.com>
+X-Gm-Features: AclHuK9-UV4UizkhZLPxSnm2gBMXfy5lUX6jKfLRdtUVdpASkFCmlMNEyTp9nPg
+Message-ID: <CAMuHMdVOT+DTZum525kmYfP+jzzPrxMnEeRAkapxOMGz4XMHBA@mail.gmail.com>
+Subject: Re: [PATCH 07/11] dt-bindings: clock: renesas,r8a78000-cpg: Add PWM clocks
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
+	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, linux-pwm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Add PSCI SYSTEM_RESET2 reboot-modes for qcs615-ride, for use by the
-psci-reboot-mode driver.
+Hi Laurent,
 
-The following modes are defined:
-- bootloader: reboot into fastboot mode for fastboot flashing.
-- edl: reboot into emergency download mode for image loading via the
-  Firehose protocol.
+On Wed, 28 Oct 2026 at 17:39, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Wed, Oct 28, 2026 at 03:43:42PM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 28 Oct 2026 at 14:29, Laurent Pinchart wrote:
+> > > On Mon, Oct 26, 2026 at 03:55:23PM +0100, Geert Uytterhoeven wrote:
+> > > > Add definitions for the clocks used by the PWM modules on R-Car X5H:
+> > > >  - R8A78000_CPG_SGASYNCD16_PERW_MAIN,
+> > > >  - R8A78000_CPG_S0ASYNCD8_PERW_MAIN.
+> > > > Include R8A78000_CPG_SGASYNCD8_PERW_MAIN for ordering consistency.
+> > > >
+> > > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >
+> > > > --- a/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+> > > > +++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+> > > > @@ -28,5 +28,8 @@
+> > > >  #define R8A78000_CPG_SGD8_PERW_BUS           18
+> > > >  #define R8A78000_CPG_SGD32_PERW_BUS          19
+> > > >  #define R8A78000_CPG_S0D24_HSCN_OTHER                20
+> > > > +#define R8A78000_CPG_SGASYNCD8_PERW_MAIN     21
+> > > > +#define R8A78000_CPG_SGASYNCD16_PERW_MAIN    22
+> > >
+> > > Could you also add R8A78000_CPG_SGASYNCD4_PERW_MAIN and
+> > > R8A78000_CPG_SGASYNCD32_PERW_MAIN for ordering consistency ? The
+> > > dependency patch should then also include R8A78000_CPG_SGD4_PERW_BUS and
+> > > R8A78000_CPG_SGD16_PERW_BUS, as well as
+> > > R8A78000_CPG_S0D{1,2,4,8,12,16}_HSCN_OTHER.
+> >
+> > I could add them, but do you have any need to refer to them from DT?
+> > So far I only added clocks that are listed as clock supplies of on-SoC
+> > modules, e.g. R8A78000_CPG_SGASYNCD8_PERW_MAIN is supplied to the
+> > Timer Unit (TMU)).
+>
+> So we have two conflicting goals here. One of them is to only add clocks
+> that we have validated to exist (and ideally work as documented). The
+> other is to keep renesas,r8a78000-cpg.h readable. We won't be able to
+> satisfy them both fully.
+>
+> I think we previously discussed adding whole groups of dividers in one
+> go, as some sort of middle-ground approach. Those are clocks that are
 
-  Support for these modes is firmware dependent.
+That is what did in this and the previous patch: we need
+  - R8A78000_CPG_SGASYNCDn_PERW_MAIN for n=16, and added the one for
+    n=8, too.
+  - R8A78000_CPG_SCPBUSDn_SCP_MAIN for n=16, and added the ones for
+    n=1,2,4,6,8,32, too.
+  - R8A78000_CPG_S0Dn_PERE_MAIN for n=24, and added the ones for
+    n=1,2,3,4,8, too.
+  - R8A78000_CPG_SGDn_PERW_BUS for n=32, and added the ones for n=8,
+    too.
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Signed-off-by: Song Xue <quic_songxue@quicinc.com>
-Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/qcs615-ride.dts | 7 +++++++
- arch/arm64/boot/dts/qcom/talos.dtsi      | 2 +-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+I did not includes clocks with values for n that exist according to
+the documentation, but are not used as suppliers for modules.
+Of course the documentation may be incorrect or incomplete, and we may
+need to add them later. As IDs are ABI and the list is append-only,
+they must be added at the end, which could indeed lead to not all
+clocks of the same group being located together.  From an ABI point
+of view that is OK, but from a human-readability point of view it is
+indeed suboptimal.
 
-diff --git a/arch/arm64/boot/dts/qcom/qcs615-ride.dts b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
-index 142dafb04324..30e4cb642473 100644
---- a/arch/arm64/boot/dts/qcom/qcs615-ride.dts
-+++ b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
-@@ -497,6 +497,13 @@ &pon_resin {
- 	status = "okay";
- };
- 
-+&psci {
-+	reboot-mode {
-+		mode-bootloader = <0x80010001 0x2>;
-+		mode-edl = <0x80000000 0x1>;
-+	};
-+};
-+
- &qspi {
- 	status = "okay";
- 
-diff --git a/arch/arm64/boot/dts/qcom/talos.dtsi b/arch/arm64/boot/dts/qcom/talos.dtsi
-index 8ed6f2755705..03da6400c5f2 100644
---- a/arch/arm64/boot/dts/qcom/talos.dtsi
-+++ b/arch/arm64/boot/dts/qcom/talos.dtsi
-@@ -581,7 +581,7 @@ pmu-a76 {
- 		interrupts = <GIC_PPI 5 IRQ_TYPE_LEVEL_HIGH &ppi_cluster1>;
- 	};
- 
--	psci {
-+	psci: psci {
- 		compatible = "arm,psci-1.0";
- 		method = "smc";
- 
+Before, we tended to add all clocks from the clock tables listed the
+documentation upfront, ignoring clocks that are clearly internal-only.
+Some of them turned out not to exist later.
+Some new clocks had to be added when the documentation was updated.
+Nothing new here, except that the list of clocks on R-Car X5H is an
+order of magnitude longer.
+
+Note that we don't use a linear array of clocks indexed by clock ID
+in the R-Car X5H CPG driver (yet), so large holes of unused clocks do
+not hurt (they do hurt in the SCMI driver ;-)
+
+> not directly controllable. There's a risk of adding clocks that don't
+
+FTR, the xDn clocks are not directly controllable; clocks like
+R8A78000_CPG_MSO_SCP_MAIN are.  We know the latter exist, as they
+are used.
+
+> exist, or clocks that we won't need to reference from DT (because
+> they're only used as parents of the MDLC-controlled module clock). Do
+
+The direct parent of an MDLC-controlled module clock should be in DT.
+Higher-up parents should not be needed iff the SCMI firmware exposed
+and/or implements the proper clock hierarchy (which it does not at
+the moment).  Still, they can be internal enum, starting after the last
+DT clock, like we did in other R-Car clock drivers.
+
+> you think that's an issue, could it cause ABI problems in the future ?
+
+An ABI problem appears only when you refer in DT to a clock that does
+not exist in hardware.  This should be caught by testing before the
+DT user is added.
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-2.34.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
