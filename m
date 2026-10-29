@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793279508;
-	b=49F2majlQ/RRX/MUkcpswtanjjVlfgVc3GZGy+E0aytpJ4438DjZ4hBeNIuVOTqiXgWt
-	 eOB+Wb8cdh3qDZa0GXCWmssTCGICsIGO8m0xI+doEnXUCeYY+JQf3CMY3XKwuaL2TgI8v
-	 3QQEXwUQxmgexkq/eoa87edIE6EkXJKO0YAaEgj4oLep2Xi982OWleCDEHnvTBOIz+aS0
-	 jeMR2jpAjIhZTprgHqB6/lcp4pE+L7P1+LQ5PqYMRvr0VxT45VLObIHj7HCaDFXjL0jdV
-	 bDd3F3m0xadFOx5/GX/7vis+5GDm/JUu1GnrZCjdg3Fc/87ZJoinFcgCU2GLgSJrYCQ==
+	t=1793279500;
+	b=cIZIjzSkxRownu6jg+kwDyYa+WpV2PG44h6kNLKFRjdUrlZY38QKwiDWJ01FHskSgslR
+	 6NS759J2JSO/SwhirswevJfUhyT/SyrU87AvNW2zqPJHDu7m1KEk8h8m3gLTaCfSC0EFG
+	 IWeKZRdVWLmnG1yQmtbpzzeQfglUqkn9wpBO/qlq1odHNM+a5dnJtPhjqDGY4HEMf3gqO
+	 FokXqpbwShXHvjBC/bJ8R1TSs5hNPbG+KMPebO5FjBzoiMKAL+91J46qeRkKvpsDMECDd
+	 JWVM+KIMNa2huAdqL/FgG+vj6I2gBP7544p9QgMcw1IdTMBTU0g5Y69Ts2tqFCOH3dQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793279508;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793279500;
 	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=Edmcko11Xp6DEFFN8DrNllqPF61F7sdGOgmwg2xTmCQ=;
-	b=dIgcqD39+VImuyjvwTNch/C1mQIAd58r9R8v4J9pS+UW8HCMMeUV+VkU7V+EBpFlFpdQ
-	 zEVJe6wkJUep2Cu1K8YlosyqGmsGjE30aoxGBIyy/3Ss2ktbChn7m647KYVRbpBpqaF27
-	 GAYyLDjssnpHs++BPkFIMyjvJbbOYP363yXDOMkRz6sLkAlOdN4RDJJpFRj3Aj6/Ke6S4
-	 XkptT0zxiVANT+m8Dq7Xa+XT3HaKROR1Q7ol47CDBAsYdhbTq2nFIEY+f7kc2tD2+p2O5
-	 ozalYEYHpKNEHRMP517Up0L4J8BGbsDtZzIXESDMHqPk+X3mAEFmFFYUJPJLKH0CddQ==
+	bh=G+5BF49ou0ARRWxKFvfp1ZFgtF67xapc/rlFrqYl8VA=;
+	b=bmpHM/TQ4hzgIfc06hV11NbDgdbiOZaDO/kjvH0As8fHjq2u+vkh8xUMD3TTNDF3vbJY
+	 EbIm8XP4jQtrLpflNLueoEBh6P3wBNN8GIyIhqz9AND5eWerCARN+3gkBhlKRbxiCTnhI
+	 e7eAP0wzi2DG44u/rFmFhqrR022HwswnZ8ZcBnKNVgcmiHXr3UfRY/wrrY/MhL3rfmAlf
+	 VKtN4S6g/lpXOdRbFR1OwpwbVkLbdp6pw79naFB+it4+XuVC3IYMmWy6RrcRbtHdzx0om
+	 KHslx48ny9BhpcXn4W8SO+f6vOBT/7w68z90dMbQz5VPYEl/GAhR668NzLtAoZZGbzA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8921B606A31C;
-	Thu, 29 Oct 2026 13:11:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C14331F031E9;
-	Thu, 29 Oct 2026 13:11:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EB1A606A323;
+	Thu, 29 Oct 2026 13:11:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3C631F031E0;
+	Thu, 29 Oct 2026 13:11:36 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
 	Marc Kleine-Budde <mkl@pengutronix.de>,
@@ -47,9 +47,9 @@ Cc: linux-can@vger.kernel.org,
 	linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/DNI 7/9] clk: renesas: r8a78000: Add CAN-FD clocks
-Date: Thu, 29 Oct 2026 14:11:08 +0100
-Message-ID: <5e76e7bc1d45939387746d84e4d8628f4fbd4f9b.1793278754.git.geert+renesas@glider.be>
+Subject: [PATCH 5/9] dt-bindings: clock: renesas,r8a78000-cpg: Add CAN-FD clock
+Date: Thu, 29 Oct 2026 14:11:06 +0100
+Message-ID: <843d6df21b3ed139ec71a702e57fd5b516c139a1.1793278754.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1793278754.git.geert+renesas@glider.be>
 References: <cover.1793278754.git.geert+renesas@glider.be>
@@ -64,62 +64,29 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add support for the clocks used by the Controller Area Network Flexible
-Data Rate (CAN-FD) modules on R-Car X5H.
-This includes SCMI remapping table entries and a fixed-clock fallback.
+Add a definition for the CANFD_SCP_MAIN clock, as used by the Controller
+Area Network Flexible Data Rate (CAN-FD) modules on R-Car X5H.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-This depends on "[PATCH/DNI 09/11] clk: renesas: r8a78000: Add PWM
-clocks"
-https://lore.kernel.org/4fc4232a28fe500b270d2cc26412a1909c12f5aa.1793026273.git.geert+renesas@glider.be
+This depends on "[PATCH 07/11] dt-bindings: clock: renesas,r8a78000-cpg:
+Add PWM clocks"
+https://lore.kernel.org/e723696e02cfb34fb808e2ae3ccb6faf68528c00.1793026273.git.geert+renesas@glider.be
 ---
- drivers/clk/renesas/r8a78000-cpg.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ include/dt-bindings/clock/renesas,r8a78000-cpg.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
-index 9b1ff5a8ff1bdc31..4e986b6cb79e4631 100644
---- a/drivers/clk/renesas/r8a78000-cpg.c
-+++ b/drivers/clk/renesas/r8a78000-cpg.c
-@@ -40,6 +40,7 @@ enum fixed_clk {
- 	FIXED_CLK_66M,
- 	FIXED_CLK_100M,
- 	FIXED_CLK_133M,
-+	FIXED_CLK_150M,
- 	FIXED_CLK_266M,
- };
+diff --git a/include/dt-bindings/clock/renesas,r8a78000-cpg.h b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+index 8c30476d41448cf5..9d7f3afcb2c52ec4 100644
+--- a/include/dt-bindings/clock/renesas,r8a78000-cpg.h
++++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+@@ -31,5 +31,6 @@
+ #define R8A78000_CPG_SGASYNCD8_PERW_MAIN	21
+ #define R8A78000_CPG_SGASYNCD16_PERW_MAIN	22
+ #define R8A78000_CPG_S0ASYNCD8_PERW_MAIN	23
++#define R8A78000_CPG_CANFD_SCP_MAIN		24
  
-@@ -49,6 +50,7 @@ static const unsigned long fixed_clk_rates[] = {
- 	[FIXED_CLK_66M] = 66666000,
- 	[FIXED_CLK_100M] = 100000000,
- 	[FIXED_CLK_133M] = 133330000,
-+	[FIXED_CLK_150M] = 150000000,
- 	[FIXED_CLK_266M] = 266660000,
- };
- 
-@@ -297,6 +299,7 @@ static const struct clk_map_in r8a78000_cpg_default[] = {
- 	{ R8A78000_CPG_SGASYNCD4_PERW_BUS,	FIXED_CLK(266M) },
- 	{ R8A78000_CPG_SGASYNCD8_PERW_BUS,	FIXED_CLK(133M) },
- 	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	FIXED_CLK(66M) },
-+	{ R8A78000_CPG_SCPBUSD4_SCP_MAIN,	FIXED_CLK(150M) },
- 	{ R8A78000_CPG_SCPBUSD16_SCP_MAIN,	FIXED_CLK(37M5) },
- 	{ R8A78000_CPG_S0D24_PERE_MAIN,		FIXED_CLK(33M) },
- 	{ R8A78000_CPG_SGD32_PERW_BUS,		FIXED_CLK(33M) },
-@@ -312,12 +315,14 @@ static const struct clk_map_in r8a78000_cpg_fw[] = {
- 	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	1663 },
- 	{ R8A78000_CPG_MSO_SCP_MAIN,		1459 },
- 	{ R8A78000_CPG_MSOCK_PERW_BUS,		1667 },
-+	{ R8A78000_CPG_SCPBUSD4_SCP_MAIN,	1451 },
- 	{ R8A78000_CPG_SCPBUSD16_SCP_MAIN,	1454 },
- 	{ R8A78000_CPG_S0D24_PERE_MAIN,		1690 },
- 	{ R8A78000_CPG_SGD32_PERW_BUS,		1660 },
- 	{ R8A78000_CPG_S0D24_HSCN_OTHER,	1499 },
- 	{ R8A78000_CPG_SGASYNCD16_PERW_MAIN,	1651 },
- 	{ R8A78000_CPG_S0ASYNCD8_PERW_MAIN,	1653 },
-+	{ R8A78000_CPG_CANFD_SCP_MAIN,		1456 },
- 	{ -1 }
- };
- 
+ #endif /* __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__ */
 -- 
 2.43.0
 
