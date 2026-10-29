@@ -1,124 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.44
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=91.218.175.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793285817;
-	b=EnRb+niy58OaeKZqnSODq5KMMU19FS5QjIp+0mEJ2fqZx0Ijgf5RD5WHmGjCA35st50o
-	 ZX9N1qI2jfE32MLeVsvDXGIiS3dvxkIuZizJFY4LphkpkQmSM+ZDLgtRrwcSTNBL8iqAL
-	 AV85/zmBTGHTD242+FMvi5RD7i+Av95HuUvdRHOeqrTLZg5J+QMfS+EoDttl7r/oHQS7K
-	 wVNy5NIsm6sFRI5kzT18qzpa0JPpeWlJihRWv3NEKvsqj2seLCZSvY2Hy/3xJZi+FKdMr
-	 DqGp4s0kP+ax3cHvyndlp8lQ1Vr34zlpOtKWd+OjTA2kL0xR6upF82AeAgVxm6L+J6Q==
+	t=1793287579;
+	b=pwey4LNdHAYYkR0/8QiC2bB5jWSRAfRG3560MzxpAiukz9pIaRakUSnItGVJRqgiD33b
+	 zeJ8kW6hzTUdj3LWP5lrhBBthJHagt2XibmQ3d85iACRJkojisK5rglbtYxJJohI/QPLu
+	 NCqIIoWsy0VPmE3cxr3vuVUayBSeR76yT/bKLAzOvpUeCniDBVFrci2DINGUBqo1+w/4V
+	 /mrAztePrfTnqlfyjfppZZGcui7pjqrworM32ftUbe2q+HfmWve2f0Lq/XLBLHMjvKw8B
+	 frDi211eilyKWdbuGzlA6jrtqLRySqlSGOLzG0zQ8xtHqbqI2dAYmMhqPX5IfLKsN0A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793285817;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
-	 In-Reply-To;
-	bh=PiLUJIzj7M85elEEaNM0ojSu5Qbzbb6E3aVU0YwZNoU=;
-	b=Zxig/AWypwqf/p8MjUnTHbg3ib6gj2OVrEPx3eoQlcfaC74Xr1vpRQFat5b6lsXFmbD8
-	 PEY24lj0CRJD3QDiI75eJJladDwZC+yGit9KXzwjvTEDDRtHaVaM+4TgIvduY06U0UfIT
-	 465JOPuvzYYKwidE3i0Aie1uVVAFYH4E8jUwjUzVFS+z2tfrOhm29lwxlEr+M/Ry1iTpc
-	 T9MF4V7gzyiOFMiJGpD9DhzLCARI+eiZ9eCqMcj4FLhBhJs7rs9jc5NsiWDuIBixPOJ+o
-	 frUIlYGQXid7zCzc2u80slWBYlgRhB5XAzD3rPFCKpGXTAqJlbSxKX7KZqaWFDqveiA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793287579;
+	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
+	 X-Mizu-Trace-ID:X-Migadu-Flow:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=mpW7Rx8PuBJeOKNX2dQ8d9XnAjnbB8743kHyv8YBQHw=;
+	b=y7klgy21wkrZkdypK7fNVMQOo7D3O510n+ybc1SiDdGQKEU7YUEGj1rsWiehkvtIoiTX
+	 fMjqjmjY+wREIIhpwp+UXUvDTLe+JAk0tDBr9Rv9XwVBfSHTBFesJvRjTx87mUjZD4+/q
+	 YTCp1krpO0EIklV2FrboqIHrW8Qw+jV4NmqN8Tg/I+6feFxh/BYmvVG+o7F4IHnbQOTmn
+	 9vjbvo+URwX4RJcIDYx9GTCaEjo+qluhKh8aQ5uhgmojt5Sh7oa3Hx6bkoYH5frXDiLth
+	 g/t95qfNiFi8hWf6cJkZUg1RZLh9J6849QLPy4/f1zJRdl0TRfR9dSyUFS6p7ChRC3A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=suse.com;
-	spf=pass smtp.mailfrom=suse.com;
-	dkim=pass header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=VBBtzV54;
-	arc=none smtp.remote-ip=209.85.221.44
-Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+	dmarc=pass header.from=linux.dev;
+	spf=pass smtp.mailfrom=linux.dev;
+	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b="CFHq/4I7";
+	arc=none smtp.remote-ip=91.218.175.48
+Received: from mta0.migadu.com (out-48.mta0.migadu.com [91.218.175.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B283606A31F
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 14:56:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1B283606A31F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D5E0606A31A
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 15:26:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6D5E0606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=VBBtzV54
-Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-48c4be28b82so1992663f8f.2
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 07:56:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1793285814; x=1793890614; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=PiLUJIzj7M85elEEaNM0ojSu5Qbzbb6E3aVU0YwZNoU=;
-        b=VBBtzV543IUjp3L3nroXQrlC/QE6S+8gXo6jr4I0eHzp4Q3/fgQ96if7xtxcQ+VqLz
-         s19qARniM3o+7h8g7xtxQPTJw/6p358LWMNXRgqkJIbnJXHxlMrWB7nJPDaF+NKET7mJ
-         0JgVER0btUhOoW8vZ34IN5qvDsQpFvfF6CMOLDdw4Cr5yB+LzHLeARk1o3ukGjmCmDUt
-         kXFNpVftEBMuvndsJvgf76u6usMMe1SZa9+N1Z3DTuOK6veiNZBgg/utXmh9//asLtiU
-         DoqQFHQyI8iPg6OBshBXAjQR+NUPAsqfXG2eCbmRTIiNmqjpPisFlRbuRJxjKj3j8X9p
-         322Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793285814; x=1793890614;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=PiLUJIzj7M85elEEaNM0ojSu5Qbzbb6E3aVU0YwZNoU=;
-        b=qxqnA7iHSxOQUSJorzaejmYfvz2RkjOsy6UNjUUHYQSet33zJUT24Vl5DoX/lWyJlC
-         eBZi1Ab6cPgYN4gpARClMh0+NqbbNMasjkQAC4uOOSXh/WZItqlGRwEkYMWZXMl1ZSyY
-         Vcba7XRNC8BWHZbE/37L5wVT2pQf8qbxY/WSJlPQ2YHVjIn6Y7Dc121PHphXOQTXKD+q
-         DATGYzX+qiPKCAojjC7BTnzjk0qn7/bnmqTb5piFyEyBoienn4OfwItGLzjpH3HsyGUs
-         CEXOg89di47grXIne1XX/IDmFZvXs5ma3jfvaaaQiC+/bcm9oS0Zsh+O9UgOCvbZFTc/
-         bY5w==
-X-Forwarded-Encrypted: i=1; AKwUvBxi9f86+p+ZLzWfMOzPp7HKJl9sWB37DCi4L2uFyJFq3OH2FyJK0m4xNuYxgALcwTACXNANRCAmWw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL6a5mTLSOHiK4Dqa8CZn9qdm+EiWEOqX0HHRx9Nb0HF72CS6VM
-	1TLmq/UZoT4+2CCcHO7ZHgeXsumWxOcgarEz0jfS8fszOK3UgYVdqivdrXt+dVrCGj4=
-X-Gm-Gg: AYBFou30Ga9VCi8/5FP+hAV6dhwQhh47/cfM2cV16gubh4UOHL4m5AVADkW1qeRV9f0
-	ozMfsIARvDSzSsYQDZV7l0n+pJIfovAlbFhzeg19snyAxA7Z0itQDpLg4ag0d4ldQkuTkuAbm5v
-	RtJIp3G8p9rHc0RvmafleA1pvpI8FszH5cKuiVd3z7q7K3VKQppfvvm2fd+COTKNu1srnadbCZP
-	7irLM4MDYXKD6kxdWXA1+a78kbOEizrOYTBCGb1dm4irXn6wsqUEfxot70GdmOUrXa3k51kffXP
-	F6zQtKTaGmQM+c5A0WvbXp5X/8xC3v2OMnA9apB7N+Vr5g30Zs3v0SN0oqhR+vTLl4owefvzexR
-	QnkZckCHujIqdLXQwa//BDMUp9G2RPZUztxanVN9KTZ+cPEjEo6B8CgTQPfInuW4hRSJ9Z7mYA/
-	hxzXeORsYa1uSg2FxvNJXIW1y1W9qyDqv6xWLAoL5sD4i/wkwbTPKHxjxdWARlVY8rxweEf19Ow
-	Ad79QIArwBpBTJ7YI5P6awWq9dgkC5PIGPCPXD+VeIGciE+FnRhhnKtFD/PXSadMY5PhCk+9ceA
-	03W9Sqp+XtucxX40nuXvmkfE/rMYJ9pxmsE=
-X-Received: by 2002:a05:6000:290d:b0:48e:6a23:4a09 with SMTP id ffacd0b85a97d-48e6a234a62mr3002384f8f.54.1793285814407;
-        Thu, 29 Oct 2026 07:56:54 -0700 (PDT)
-Received: from pathway (nat2.prg.suse.com. [195.250.132.146])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ebc39b3sm35816798f8f.10.2026.10.29.07.56.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Oct 2026 07:56:53 -0700 (PDT)
-Date: Thu, 29 Oct 2026 15:56:51 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: David Laight <david.laight.linux@gmail.com>
-Cc: jim.cromie@gmail.com, Jason Baron <jbaron@akamai.com>,
-	Shuah Khan <shuah@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	Jonathan Corbet <corbet@net.net>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nicolas Schier <nsc@kernel.org>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Ogness <john.ogness@linutronix.de>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
-	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org,
-	linux-modules@vger.kernel.org, linux-doc@vger.kernel.org,
-	linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org,
-	Philipp Hahn <phahn-oss@avm.de>
-Subject: Re: [PATCH v12 33/40] dyndbg: Ignore additional arguments from pr_fmt
-Message-ID: <auNes2b11NqUey3C@pathway>
-References: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
- <20261012-dd-cmap-part2-clean-v12-33-3c8cc5725def@gmail.com>
- <as4W9hToBqAvbzJ-@pathway.suse.cz>
- <20261027132253.5f3a461d@pumpkin>
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CFHq/4I7
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=vYqatMBexbASiH/pDoDg+soUpC7jr6OsHv3SiCXY0DQ=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1793287570; v=1; x=1793892370;
+ b=CFHq/4I7/Ryp9pDrYCokipvX9Q3IBM65pbtpLZ0ZnxwtpVp4/KZergKO2A6hs85u2EgK1XI4
+ salYWiH7GwXrPHodZwh3cocV/ZBi2TKG3EyzBZ710vT60x7aM4qAx1NbVH12ki0e43SO8KIm1bB
+ HywAW1I7jNTMsiGuMH2y4/qo=
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 7378328bbc0346d2;
+	Thu, 29 Oct 2026 15:26:09 +0000
+X-Mizu-Trace-ID: 7378328bbc0346d2
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <12988c8e-95ad-4989-a6de-e02af3c9ef1b@linux.dev>
+Date: Thu, 29 Oct 2026 20:55:53 +0530
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -128,113 +58,74 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261027132253.5f3a461d@pumpkin>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 14/14] mfd/macsmc: add ioctl to access smc keys
+To: Sasha Finkelstein <k@chaosmail.tech>,
+ Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
+Cc: alexandre.belloni@bootlin.com, andy@kernel.org, asahi@lists.linux.dev,
+ bhelgaas@google.com, bp@alien8.de, brgl@kernel.org,
+ dave.hansen@linux.intel.com, dlechner@baylibre.com,
+ dmitry.kasatkin@gmail.com, eric.snowberg@oracle.com, griffin@kroah.com,
+ hansg@kernel.org, hpa@zytor.com, ilpo.jarvinen@linux.intel.com,
+ j@jannau.net, jarkko@kernel.org, jic23@kernel.org, jmorris@namei.org,
+ lee@kernel.org, lenb@kernel.org, linusw@kernel.org,
+ linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux@roeck-us.net, mfd@lists.linux.dev,
+ mingo@redhat.com, neal@gompa.dev, nuno.sa@analog.com, paul@paul-moore.com,
+ pavel@kernel.org, platform-driver-x86@vger.kernel.org, rafael@kernel.org,
+ roberto.sassu@huawei.com, serge@hallyn.com, sre@kernel.org, sven@kernel.org,
+ tglx@kernel.org, wim@linux-watchdog.org, x86@kernel.org, zohar@linux.ibm.com
+References: <525E5B4D-A947-4567-9FCD-5FFF2CA8B161@chaosmail.tech>
+ <20261029143926.1246-1-atharvatiwarilinuxdev@gmail.com>
+ <0683C803-C578-4C55-B893-BC03EBF9A9F1@chaosmail.tech>
+Content-Language: en-US
+From: Aditya Garg <aditya.garg@linux.dev>
+In-Reply-To: <0683C803-C578-4C55-B893-BC03EBF9A9F1@chaosmail.tech>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue 2026-10-27 13:22:53, David Laight wrote:
-> On Tue, 13 Oct 2026 13:33:10 +0200
-> Petr Mladek <pmladek@suse.com> wrote:
+
+
+On 10/29/26 8:23 PM, Sasha Finkelstein wrote:
+> On Oct 29, 2026, at 15:39, Atharva Tiwari <atharvatiwarilinuxdev@gmail.com> wrote:
+>> 1. The patch is required, atleast on intel macs, as without writing GPU and CPU
+>> states to smc, the system gives PROCHOT signal under small load
+>> , and heats up a lot.
 > 
-> > On Mon 2026-10-12 20:37:04, Jim Cromie via B4 Relay wrote:
-> > > From: Philipp Hahn <phahn-oss@avm.de>
-> > > 
-> > > pr_fmt can be used to add a common prefix to any output from a module:
-> > > 	#define pr_fmt(fmt) KBUILD_MODNAME ".%s " fmt, __func__
-> > > 
-> > > But adding additional arguments breaks dynamic debug:  
-> > > > error: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" passed 4 arguments, but takes just 3
-> > > > |         pr_debug_ratelimited("%s", "Hello world!");
-> > > > |                                                  ^
-> > > > note: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" defined here
-> > > > | #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)       \
-> > > > |
-> > > > error: ‘DEFINE_DYNAMIC_DEBUG_METADATA_CLS’ undeclared (first use in this function)
-> > > > |         DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt)
-> > > > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-> > 
-> > I wonder what this error about undeclared macro means.
-> > 
-> > > > note: in expansion of macro ‘DEFINE_DYNAMIC_DEBUG_METADATA’
-> > > > |         DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));         \
-> > > > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > > > note: in expansion of macro ‘pr_debug_ratelimited’
-> > > > |         pr_debug_ratelimited("%s", "Hello world!");
-> > > > |         ^~~~~~~~~~~~~~~~~~~~  
-> > > 
-> > > Add an additional ', ...' to DEFINE_DYNAMIC_DEBUG_METADATA_CLS to slurp
-> > > any additional argument, which `pr_fmt` might add.
-> > > 
-> > > --- a/include/linux/dynamic_debug.h
-> > > +++ b/include/linux/dynamic_debug.h
-> > > @@ -351,7 +351,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
-> > >  		dump_stack();					\
-> > >  }
-> > >  
-> > > -#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)	\
-> > > +#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)	\
-> > >  	static struct _ddebug  __aligned(8)			\
-> > >  	__section("__dyndbg_descs") name = {			\
-> > >  		.modname = KBUILD_MODNAME,			\
-> > > diff --git a/include/linux/printk.h b/include/linux/printk.h
-> > > index f594c1266bfd..5d701952e739 100644
-> > > --- a/include/linux/printk.h
-> > > +++ b/include/linux/printk.h
-> > > @@ -742,7 +742,7 @@ do {									\
-> > >  	static DEFINE_RATELIMIT_STATE(_rs,				\
-> > >  				      DEFAULT_RATELIMIT_INTERVAL,	\
-> > >  				      DEFAULT_RATELIMIT_BURST);		\
-> > > -	DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));		\
-> > > +	DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, fmt);		\  
-> > 
-> > IMHO, this changes the existing behavior. The prefix added by
-> > pr_fmt() will no longer be stored in DEFINE_DYNAMIC_DEBUG_METADATA().
-> > Is this intentional, please?
-> > 
-> > Anyway, if we do not longer pass pr_fmt(fmt) then we should not
-> > need to add "..." into DEFINE_DYNAMIC_DEBUG_METADATA_CLS().
-> > 
-> > By other words, we newly pass just the format "fmt" without the parametes.
-> > The 4th parameter was added by pr_fmt().
-> > 
-> > 
-> > IMHO, the right solution is to keep pr_fmt(fmt) here and extend both
-> > BEFINE_DYNAMIC_DEBUG_METADATA() and
-> > DEFINE_DYNAMIC_DEBUG_METADATA_CLS()
-> > to accept var args. I would expect something like:
-> > 
-> > #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)	\
-> > ...
-> > 
-> > #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)		\
-> > 	DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt, ##__VA_ARGS__)
-> > 
-> > 
-> > or maybe, we could "eat" the extra parameters in
-> > DEFINE_DYNAMIC_DEBUG_METADATA. It would mean to keep
-> > DEFINE_DYNAMIC_DEBUG_METADATA_CLS() as is and just add the "..." into
-> > DEFINE_DYNAMIC_DEBUG_METADATA(), aka
-> > 
-> > #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)		\
-> > 	DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt)
-> > 
-> > 
-> > Or do I miss something, please?
+> In that case, why are you exposing a generic smc key interface instead
+> of one that just does that? If you think that this data should be set
+> from userspace - whitelist the set of keys that are needed.
 > 
-> Don't think that will work.
-> Won't you end up with ".%s" fmt as the string without the extra argument.
-> So you need to keep the expansion of pr_fmt() together until is is finally
-> substituted into a printf-like call.
-> It is possible to enclose it in () so it is passed as one parameter and
-> remove them on the final expansion.
 
-My understanding was that the format is stored in the metadata as is.
-I mean that the string is not formatted in this code path. So that
-the parameter values are or can be ignored. We just need to make
-the compiler happy.
+Whitelisting will create an endless cycle of upstreaming new keys. But 
+considering T2 no longer is receiving updates, Asahi would be happy to 
+send their keys they wish to be whitelisted right ;)>
+>> 2. the smc dosent expose keys of nature that can physically damage the system
+>> it only exposes power/volt data, and the most you can poke is reboot
+>> keys and gpu/cpu p-states.
+> 
+> Are you willing to make that claim for every smc-equipped device, not
+> just T2? Are you willing to make the same claim for future versions of
+> smc firmware?
 
-But I might miss something.
+Fair enough. We can restrict it to T2 Macs, and Asahi can later adopt if 
+useful?>
+>> 3. If a person is randomly touching keys, Its their problem and not ours.
+>>
+>> 4. There are a lot of things that can mess the system way more and permanently
+>> than smc (undervolting for example), but they are not safe guarded, why
+>> should this be then?
+> 
+> I think it is inadvisable to leave a loaded footgun around and then
+> blame the user for using it. As an "OS Vendor" you have a duty of care
+> to your users.
 
-Best Regards,
-Petr
+It would say the "duty of care" argument is more of a philosophical 
+thing than a technical argument here. Still, I respect that but there 
+needs to be a balance between adding features and respecting the duty. 
+It seems various vendors have different views in determining the 
+balance. The above 2 arguments look like a good balance. What do you think?
+
