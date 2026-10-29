@@ -1,72 +1,72 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.200
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.198
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793257701;
-	b=b2/USwc2I5d9cQ49ttGXmyfiec6BuReAwrTOtCMr8TgzUMWLkTv4krtvFPOYn2WyCoa1
-	 l45mlhGLsUrC/1vDAeQFLsW2EX0GQrrtuNtHgmTYTuUdkJSg8zvQ39CCXErDd/FLQuZde
-	 Ikl7i/gi7grL/iYiZzdP9v/Py5rkoVmCUI0iDbzA3qDB44Kj5GM5lnKHgClxzfLQiqFEl
-	 4bknQO6y3ZkG/ezJ/q/rSkpCStpHYo7mnHzx+eu4GcmKcMKjRIpF22+QOr/xSoVWDt77t
-	 JeoIocu6kfz2i9KlabPMh5Ub2WELY+3OTRkgHVxneqORK4KIhDkADEltlAWvvJ+dn1w==
+	t=1793257713;
+	b=3N4ynoblXprLJ8WE4EaWET+icgl8JJTvMzMoFh8XeqaVmprsoazK/owzYl5T4CXtS3q1
+	 J2AAixXZgrI8BnOHc5CXCaJON688NCfClhPDtA5uQx+16yIbMRgYytMMPZNKWeKKkUcOF
+	 VBOID7h+uqy1kdAVynpo/t/iWtbp2MTX4NXLuCXB5oGuID2UvJDSSIgvqgl13R2nDzqyC
+	 gRxjLLnMZy50NP3ahN3xO36Ts22wKbWh9FKQ99m8OUBgS1DKUg9Urc374cxYqyCZs62Ru
+	 D5NoKj5/fo+Ly5dTxY29IK/ilp7RHNUNaEXBNqTNaTIYs49RJ/N4JhmaabSgQX6l2WA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793257701;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793257713;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
 	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
-	bh=ke87La0xWSgmTiEL3IFuQIhdbuC7AYi2feZJeeO6Kt4=;
-	b=3M5qTwIqu1U5zvU7lynaOLpmXSk3KzIDbjPwOoHzwNlAH4/9MnUqHyZbddjq2+Kwm3gO
-	 t5fojH7262CIP1zCWo7DEI7HiW89DtUnMi+yAlURo2l+bWY0nRZm5hNYG3N9n6c+E9+Dw
-	 js+he+fQno3q79fAxU41XTFRrQagjjVW6YDljGdmdjWjR5GKeyInW1mquLkHZUxWdCJ8k
-	 T9oKrk/IqDztzBL6G0+4EKaWNBDD2p+vjuOdR+NEHC/40seAPpfxxgmhEbSpZgIM7JA/I
-	 5VQCEum43kskyfQNRY02d1dzVLZT46N6y0atKN+jf1ur9IvO4eIn6d1xSHHHgKxPyOQ==
+	bh=K3AM1SjPaLQrVo38ruBsuLHnWg43JcXaTUMKROby+Fo=;
+	b=or6o+ARoBp8/xS/MgDmMlKJ08HxFa/OGXHNFU9YkEjsy2oBM0pCjjXHinnBXhLFrmMTW
+	 WVpkRFsx7Gzd4sp2mjFviQB1g1sn7nLtSDrPSpOeXZjOAUaZTlPTktxXaxBQ5Xlx3AwBl
+	 qY8GDzdrmGTBOBp+mPgmqxP32FMbrxwyGduVNVyVwnguH5ayw8twj/KcmK4iFaqrKxxB3
+	 eorDcfkBdQiJOHevYtyy9lU2U5pPhcuWxN5OO03R6uhbwbjb5plG7wkfcnqVbaoAIMBb0
+	 rrAhg9pNm3d069tgr6suOehKUuNR/sq8+axLO/oLeoTrPwhLoX+Qj/GwLf7UVYpXxRg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=google.com;
 	spf=pass smtp.mailfrom=flex--stanleyjhu.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=M20GFEY0;
-	arc=none smtp.remote-ip=209.85.210.200
-Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b="Ay/HXkdc";
+	arc=none smtp.remote-ip=209.85.215.198
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DDAF606A31E
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 07:08:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7DDAF606A31E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 305CC606A31D
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 07:08:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 305CC606A31D
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--stanleyjhu.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=M20GFEY0
-Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-8862ed0539dso1878062b3a.0
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 00:08:21 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=Ay/HXkdc
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cd8b299b0abso1136060a12.1
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 00:08:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793257701; x=1793862501; darn=vger.kernel.org;
+        d=google.com; s=20260707; t=1793257712; x=1793862512; darn=vger.kernel.org;
         h=content-type:cc:to:from:subject:message-id:mime-version:date:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ke87La0xWSgmTiEL3IFuQIhdbuC7AYi2feZJeeO6Kt4=;
-        b=M20GFEY02HFSlOhygrjlm7JH+ts5qe+9RbS8DxnrFLxry8ev9Lw11ID2dfeTYsjyBY
-         qVSyuWqH7hAygkevW54cuMwSIRjF7pe1C0jZKZDcPKzyfLYnXKZAJtiL4vg1+VFey012
-         j9Hpe/FqeqKAnoq7Grxue+mDvoCWyUns7Fg3gJAHodzyVDay3ahfl63+/h4mUoZuYo7b
-         QeKf3mv7FFNFn8ZpTi3F+19xC7Fe+q5wn773h7jQb5HE9PI2Im8fJNHd5QmtR5STJbxT
-         iSex4RNsKfYxh1RZf05woqvVdj+XfC3Xo7F5DJyMHONeX+Jk2DkfGvqp6B7DHe/EeC2h
-         gbyg==
+        bh=K3AM1SjPaLQrVo38ruBsuLHnWg43JcXaTUMKROby+Fo=;
+        b=Ay/HXkdc42VKrrrHQ1rh+tKnXsuLOIa1OfJrZUcujGB5FqhWKSmQQZVWMYVPZtXkaK
+         MNE2Mtr+Lkie5BhgtYxJe5Y1KyeiU2WMOeL8O6gxNtpa6te3Vbzk65XTKLWWS6r2m9Gk
+         EnCkC33NAkCC1ie1dxu7f/FtB9/9jL0OWhkLfG3oJUriVxrRXhh85nLgWLLMkLLMaOcH
+         CBK2OG2GrMuJPMfPdZsIastGuZLqFJE10MqhBcfAC9fWTN4Rfn68X0J0g6dr90EJrp5a
+         jLGZJmtb+uHL5+lW8JZdyGJ1TRMtZUv4ml/QofdCPJZKtJd7x00ZD3LpGFy1WB/iDWFB
+         X5Kg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793257701; x=1793862501;
+        d=1e100.net; s=20260707; t=1793257712; x=1793862512;
         h=content-type:cc:to:from:subject:message-id:mime-version:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=ke87La0xWSgmTiEL3IFuQIhdbuC7AYi2feZJeeO6Kt4=;
-        b=HGmLCkYa/i114ivG3u2SJeFu2VUSQMZxMXVKAmbw1UkOvdgI0Xl/ICOHEhFlN5kj5M
-         smAtfIwQ4/S8ZmQFs5hrT3NeeoM3n84v/6IC0W1FsHlG1Y0vKkQP5h0pe+z9TfpO0XyG
-         08gYF7zKAMRayBRl9ZLpj857dIAuYqNvwqWlnkT71XIlKqzVBRDkDWNgym3gHOUomPez
-         5Y2dVItO+FSwYkXEZr1mt/CtWzWB+BFQSbiQV0Pkv16KDrDYnNl4jnYjLspLK0EnOuNV
-         xtHEuNBnA77JpGExF7QhXYnqoQG16/jc77jUYO072txsdQv1hTbmRsMRqG9DAJI7uDoc
-         F+Pw==
-X-Forwarded-Encrypted: i=1; AKwUvBxVeI2dr6FOUFNPF1S7YegpPkiU/QY2lSXmdPM9QrdysbJBMGlocdBgQKKMP3vAQBLIkKIbfQSzIg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL3+c6PKfZ95AbJYyb3S52KkDXln+fow3PrdK71tWc7+LQzK50U
-	VeaWnPAmW7R29kPG83S7z4YycnYZTh1uHG1nvEXfr+gCHyRhJt+fblSm2O3DlDnNMCqtURpuAle
-	oCSrdodZcmgiyYJQmAsh0NQ==
-X-Received: from pfblo10.prod.google.com ([2002:a05:6a00:3d0a:b0:88a:f8c3:9c75])
+        bh=K3AM1SjPaLQrVo38ruBsuLHnWg43JcXaTUMKROby+Fo=;
+        b=AqptFCYd+EelGCIVVEFeZJupyXB8jst9+mC7HUkrN6Yb1zDnwbsej/eRvnBpH5Enu7
+         U6kUq5jY8AuMQUslVhIFRhsWyUE/AWVikCae+SLmMYuMbv8A9XVj518N4/9P4ovWKEFJ
+         kdSdP6QXdaq1MdngbvrDaXZJLriiMEUeGy2Gb1klLvte027cUH9agKwwoqHLhA0eHvQI
+         LMMJNCzIDlodLG+LI+1cD5hvyqIBvEMdv3tLRqjKZzb8T/WXcufncHxRCzVfQdZVVuen
+         FUpJ8JdfoDwOXYG6ZI+0T12SI4VSlwOGuJbDR5kifu53yz9IVgN8m4wrrT0E0qhmFjYC
+         LFTw==
+X-Forwarded-Encrypted: i=1; AKwUvBwa9QEd/VRgkIHvngvOP/6BBCRshw6ejGBDMJPw0BqrWCbceiVdNcD/Fc7Nm7QRP2zGME/0xwP44A==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJkEfFggYrAbddxYERWFxo/T4GCZtCUdNI7J2t/rppu6nqJYFBw
+	HOxO5PvGp29KOI8OZVW5Qn2CglhY+G3IDX/rxcli72g1ool5Z3+vH3ilJJHSpfi2tmSik/F1zrR
+	DRR+CGLDnMUx3FWe3Z808QQ==
+X-Received: from pfbbr15.prod.google.com ([2002:a05:6a00:440f:b0:8a0:7c0e:8263])
  (user=stanleyjhu job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6a00:1c84:b0:8a0:1435:fda0 with SMTP id d2e1a72fcca58-8a6e7dc9390mr4068412b3a.51.1793257700500;
- Thu, 29 Oct 2026 00:08:20 -0700 (PDT)
-Date: Thu, 29 Oct 2026 15:08:18 +0800
+ 2002:a05:6372:a810:b0:3dd:a009:3182 with SMTP id adf61e73a8af0-3e9023432c4mr3356622637.42.1793257712327;
+ Thu, 29 Oct 2026 00:08:32 -0700 (PDT)
+Date: Thu, 29 Oct 2026 15:08:30 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,80 +77,67 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 Mime-Version: 1.0
 X-Mailer: git-send-email 2.56.0.313.g2479322e68-goog
-Message-ID: <20261029040001.2100001-1-stanleyjhu@google.com>
-Subject: [PATCH] block: Keep RPM_ACTIVE in blk_pre_runtime_resume() when
- already active
+Message-ID: <20261029040002.2100002-1-stanleyjhu@google.com>
+Subject: [PATCH] scsi: ufs: core: Keep clock-gating hold on failed W-LUN
+ runtime resume
 From: Stanley Jhu <stanleyjhu@google.com>
-To: Jens Axboe <axboe@kernel.dk>
+To: "Martin K . Petersen" <mkp@kernel.org>, 
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, 
+	Alim Akhtar <alim.akhtar@samsung.com>, Bart Van Assche <bvanassche@acm.org>, 
+	Bean Huo <beanhuo@micron.com>
 Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Praveen Talari <praveen.talari@oss.qualcomm.com>, 
-	Alan Stern <stern@rowland.harvard.edu>, Bart Van Assche <bvanassche@acm.org>, 
-	linux-block@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Stanley Jhu <stanleyjhu@google.com>, stable@vger.kernel.org
+	Peter Wang <peter.wang@mediatek.com>, Can Guo <can.guo@oss.qualcomm.com>, 
+	John Garry <john.garry@linux.dev>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Stanley Jhu <stanleyjhu@google.com>, 
+	stable@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
-Since commit eef1d74bf88f ("PM: runtime: Only set runtime_error on
-suspend callback failures"), a failed runtime resume leaves
-dev->power.runtime_error at 0 with runtime_status set to RPM_SUSPENDED,
-so later runtime resume requests run sdev_runtime_resume() again:
+1. __ufshcd_wl_suspend() takes one ufshcd_hold() reference and sets
+   hba->clk_gating.is_suspended while the UFS device W-LUN enters
+   RPM_SUSPENDED.
+2. Since commit eef1d74bf88f ("PM: runtime: Only set runtime_error on
+   suspend callback failures"), a failed runtime resume (for example
+   START STOP UNIT completing with an error) leaves the W-LUN in
+   RPM_SUSPENDED with power.runtime_error == 0, while
+   __ufshcd_wl_resume() already clears hba->clk_gating.is_suspended and
+   calls ufshcd_release().
+3. The next W-LUN runtime resume runs __ufshcd_wl_resume() again without
+   an intervening suspend and calls ufshcd_release() a second time,
+   dropping a reference it does not own and underflowing
+   hba->clk_gating.active_reqs on UFSHCD_CAP_CLK_GATING hosts.
 
-1. A runtime suspend increments q->pm_only from 0 to 1 and sets
-   q->rpm_status to RPM_SUSPENDED.
-2. The first runtime resume fails in the driver callback, and
-   blk_post_runtime_resume() sets q->rpm_status to RPM_ACTIVE and calls
-   blk_clear_pm_only(), decrementing q->pm_only from 1 to 0 so recovery
-   commands can enter the queue (intended since
-   commit 6e1fcab00a23 ("scsi: block: pm: Always set request queue
-   runtime active in blk_post_runtime_resume()")).
-3. A retried runtime resume calls blk_pre_runtime_resume(), which
-   overwrites q->rpm_status from RPM_ACTIVE to RPM_RESUMING, so
-   blk_post_runtime_resume() sees old_status != RPM_ACTIVE and calls
-   blk_clear_pm_only() a second time without a matching
-   blk_set_pm_only().
-4. q->pm_only underflows from 0 to -1 (triggering WARN_ON_ONCE in
-   blk_clear_pm_only()), blocking non-PM requests in blk_queue_enter()
-   and __bio_queue_enter() while the device is RPM_ACTIVE, and the next
-   runtime suspend increments q->pm_only from -1 to 0, letting non-PM
-   requests dispatch while RPM_SUSPENDED. This hits the UFS device
-   well-known LUN by default and SCSI disks with
-   manage_runtime_start_stop enabled (ATA and FireWire sbp2 defaults).
-
-Set q->rpm_status to RPM_RESUMING in blk_pre_runtime_resume() only when
-q->rpm_status is not already RPM_ACTIVE, so blk_post_runtime_resume()
-skips blk_clear_pm_only() on retries.
+Keep hba->clk_gating.is_suspended and the suspend hold across a failed
+W-LUN runtime resume, so the hold stays paired with the W-LUN
+RPM_SUSPENDED state and the next successful resume releases it.
 
 Fixes: eef1d74bf88f ("PM: runtime: Only set runtime_error on suspend callback failures")
 Cc: stable@vger.kernel.org # v7.3+
 Signed-off-by: Stanley Jhu <stanleyjhu@google.com>
 ---
- block/blk-pm.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/ufs/core/ufshcd.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/block/blk-pm.c b/block/blk-pm.c
-index 8d3e052f91da..31598dd03a3f 100644
---- a/block/blk-pm.c
-+++ b/block/blk-pm.c
-@@ -142,7 +142,8 @@ EXPORT_SYMBOL(blk_post_runtime_suspend);
-  *
-  * Description:
-  *    Update the queue's runtime status to RESUMING in preparation for the
-- *    runtime resume of the device.
-+ *    runtime resume of the device, or keep RPM_ACTIVE if a previous failed
-+ *    runtime resume already reactivated the queue.
-  *
-  *    This function should be called near the start of the device's
-  *    runtime_resume callback.
-@@ -153,7 +154,9 @@ void blk_pre_runtime_resume(struct request_queue *q)
- 		return;
- 
- 	spin_lock_irq(&q->queue_lock);
--	q->rpm_status = RPM_RESUMING;
-+	/* Keep RPM_ACTIVE if a prior failed resume reactivated the queue. */
-+	if (q->rpm_status != RPM_ACTIVE)
-+		q->rpm_status = RPM_RESUMING;
- 	spin_unlock_irq(&q->queue_lock);
+diff --git a/drivers/ufs/core/ufshcd.c b/drivers/ufs/core/ufshcd.c
+index cc75384c6502..9be370cea52a 100644
+--- a/drivers/ufs/core/ufshcd.c
++++ b/drivers/ufs/core/ufshcd.c
+@@ -10626,8 +10626,14 @@ static int __ufshcd_wl_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
+ out:
+ 	if (ret)
+ 		ufshcd_update_evt_hist(hba, UFS_EVT_WL_RES_ERR, (u32)ret);
+-	hba->clk_gating.is_suspended = false;
+-	ufshcd_release(hba);
++	/*
++	 * A failed runtime resume leaves the W-LUN RPM_SUSPENDED, so keep
++	 * is_suspended and the suspend hold for the next resume.
++	 */
++	if (!ret || pm_op != UFS_RUNTIME_PM) {
++		hba->clk_gating.is_suspended = false;
++		ufshcd_release(hba);
++	}
+ 	hba->pm_op_in_progress = false;
+ 	return ret;
  }
- EXPORT_SYMBOL(blk_pre_runtime_resume);
 -- 
 2.56.0.313.g2479322e68-goog
 
