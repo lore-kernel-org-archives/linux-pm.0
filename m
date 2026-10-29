@@ -1,113 +1,144 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.182
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793264485;
-	b=Ww33Ahu2mO915UZ3p1V+0Y1L+e1FwNniGQSBrPoYgQXBOGPAVVu6UG6sFaHh83PwqPbJ
-	 IjGqDdwP63Jo0YYTVBiSR8fh5/ryhEsNDh9ybl5FTN/YWdv6Ri++6A5iQDBZzIZFtLTRf
-	 cavaZ3RJm0zZ0+fevTkVKy6lcadWX4K83SeBfKliSN0hyOBB03expTOQrSwMjuODJTSmw
-	 xReqdXSZ50QbRsAb4lEoCZr03EowGdn9/xwvH0N1KiUYonrtKw3XrGxYSDvdowrL8f30i
-	 c516zPPWk3AxHwngTYlkaGBIfgGBBGTeQvSD29aHXuAWzqRJUmO0pD/zhgdcRbrgR6A==
+	t=1793264493;
+	b=u5tNlmV46I0QfvqF4oZDgJIGKvAsgevG1FCSrBE6xISgLZJ8r0qX9elG6Trg8nt9kkyI
+	 DkNb7wbnMy2K8heTwVMqOd/uljZGdr+I/cAF2AFo7dpFLqNZxVKShlZl8MFVI3Hkqcydt
+	 N5r30NxUZis6l0k0ucMCqPIdUZaapMJ/TuFE1OaJHblcMszNtQNmGt4owfGI99SswZPFB
+	 Ff5L0BVjsnYvn5H1vcrE/r9Pt7fG71cRgpMV6N9YYKb67Yy49PDJ7tNIgYiayoJJcrEg7
+	 Kb4jc5BQInD74Xh/od9X3QS6NO9DDF8n+thzflz7zs+LON0l7TI3zUZdJr4exVMeQog==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793264485;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
-	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Authority-Analysis:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=8+ql9HRxwiF7Hsvr+2veecKSO1rWsvRUfuJvm2uvKQo=;
-	b=Th7VO0jH88ogyBuSzkgJ6nO6yuiXVMZB7XPusy3eru86IZdFf2T1f1OjIyqV0zoTkaDA
-	 Nqyqg7Fe1HK0RTYzBdFIpCnD/ktvFn2mXGKP8fjC+hGOwUldb2ZRjHM8eq23Glj8SNd3X
-	 pU6SbughR4lgYOWMqWscGhVWkcIWiZIP42VxjxuEmnmFgHh10HETSIrysnfXwkuhSuih6
-	 gCuk81O8ITkt6APy6a/ZB6KfcN4B7G/n/KhxU9AVgnCL84UG/XLIJLZ8iwG4n88tF8vd2
-	 2bkdldCtjh+Nq5A8ujzx5Tjmn6shmRpuGDj9LtgH1g55rVXo7rhBZNigbhLKd7h0Kyg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793264493;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=5ZHPP80P/K5Og+av73zHRl2Ft2Q1yinNFTFs8Wj9Vvw=;
+	b=OyFgO5gqUXBtRwz4ZbqmXsuY8TyTRdGXaGUz6dKMNFnGp/hYtyFqENB0kQGIOH1euZRz
+	 pc9fW2tWzbYBuvRWtpGLaTQ7RgE3awY+ZPA7REGDavbDucAd0xvY0nXN1BWKRqCQQfDTt
+	 vRVkl3aosCKWnUFTH1tfvRu3pxtvd4+FyJXfw41nA3A6r5HkciGUBsBpSlAX/gPhqqMTg
+	 qP0MLhaAKSqw6R9K43vfcx8X9ErgPZYTvaTODATO5YHaI6oaxzD8JQgx0PqHEcVxyRSQR
+	 hxquZfSTdqdSi0dbdvwfpy8Hm2NWwY4BM9/QiAi/gPoGFeFP8/4+WUF/MjGQ2n5ZNQg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=B+ubSU34;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=cxlhKFJb;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CA3LCyJ7;
+	arc=none smtp.remote-ip=74.125.82.182
+Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47B1F606A31A
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:01:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 47B1F606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBFC9606A321
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:01:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EBFC9606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=B+ubSU34;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=cxlhKFJb
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T8vEUq3825009
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:01:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	8+ql9HRxwiF7Hsvr+2veecKSO1rWsvRUfuJvm2uvKQo=; b=B+ubSU34TnQmuqRf
-	jUXoP6JgBr03nskbsZWwAdWWZq9rE9HnL8IdPQhFieB8jO4nLxj+z3SjdEgYg3rf
-	Zbm/1TlJN38AuDcQ3nG+SdmrdvFDUoS/hdtYMU1JUihyMbbKiC8c4vv0CSgezLeK
-	OVSHeDstB7ytpTB/VuklL9JHWoA+xCa5faXM0NPaync6ur05YARM1rEda8628Y5y
-	TWxy9ZWMNt3mSngWoe8goa8ZSBazScNs5XetO7eSCCjyY3u4aePg5IKH5Rnr58p/
-	gAIdrrcCHKAyVEDmM4sx3hnlxzVsK4rFK67J4g4uQuHbRJ/fMq+1aEJho4A3ZNKC
-	uDHmnw==
-Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hkut3hk2q-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:01:24 +0000 (GMT)
-Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-cd5fd34fee0so1087173a12.3
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:01:24 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CA3LCyJ7
+Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-3645f0f3fcdso3465636eec.0
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:01:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793264482; x=1793869282; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1793264492; x=1793869292; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=8+ql9HRxwiF7Hsvr+2veecKSO1rWsvRUfuJvm2uvKQo=;
-        b=cxlhKFJb67aefDWHZNLRI47Avg0occJVCH9ivurLfzwWEQcyy+qMsYFO346afu6NuX
-         Oa3JhQTLBmjtTV1zBxQxMy4DPiQwT9E3ae4ZYfQOCAg4zVdXsw3+xLHghKGUIBNyuL2L
-         9PcDnH+8MaY9daWerMUb+4Fyqpond9fES6aJ5Fvr0tMWdVTQmDAy4R7LoGkcUYQcnsab
-         LgWlK7tGgvyrMdICNrKU0OLX3RUIm7DXC+uUUTQ3EHFekxJzTOw9xNgn9PfCqPy0guSN
-         PpzdLMu6LnDxMrf8k0cHmcPXustXbHGUmQbdjpKNL2I2UyXiOtQ0ftRzLUABBOCUV54R
-         zCIg==
+        bh=5ZHPP80P/K5Og+av73zHRl2Ft2Q1yinNFTFs8Wj9Vvw=;
+        b=CA3LCyJ7nJ/xoJVBGK7euuvFzDooHoTkancn1/gOxLVhjkV9W0IXBNdBCqW/OiX92H
+         9gXvxbQ5ViuabsM2dJqowCO25Nhn0OnwZtEr0DGEq1trREc/LmtGBEDHIE1+uJOjFOzK
+         xc3mXgwxk1dwMn3lfUNHTlk1yX9y2ij0QeRu6KKP3rTNCIj2saYmL0zm0nbzBivHhcUk
+         +MUT5NcNWQ+IQenZp4oOj7GXdjUVtpF16UUjZ9VbmIyylrrQjEGl+1U/aQKidV+fsDBe
+         +5j+PrkMZuRgJ7aKoCIDWEYqX4gv0aePmwTjEVe1F0VQVTuVNSwHPI5oGlTatJ1SLARt
+         DX5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793264482; x=1793869282;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=8+ql9HRxwiF7Hsvr+2veecKSO1rWsvRUfuJvm2uvKQo=;
-        b=M66l6+MsgrLAkma6BUgXdJobitRF1VLcUymwBmVcGAxyh6moS8/VlPVqK9g1aePoPC
-         YwxGk6YZw8uzbSGGyYaXJ+hNXmUMvCQJjwjbQ9gaae/K+hoz8PAWyo2oCTba8EpfRoJK
-         LJOs+h+dxyXx8x+FprLS4ft49NbeUFApRAZO826vSomoCnXcRrZSKSgDtSQXvVFaA+jv
-         zjhVM/H5DF87ErbQfwx8SDQ/sb3dFL7bMWpFGdzef/zO8EGcDQ3M1LP8tsLHI6XKK8hL
-         3eJTWvqYMv6H1XEub7ECYgvnH7pX25iS7hFhavtSPDZ9xTxz0chC9jCnmsHyGuh/dytE
-         8e9g==
-X-Forwarded-Encrypted: i=1; AKwUvByEZlrWyCiIHn6iAjSVypaZIn5C6s1J/mJn8eoDVYzwh9CbZBSQvtC8llMv/d0UM4NtTma/hrFI8g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJouonvwUFiUZ1Rq4Go6Ay7J7ezNuhazkDWmMcIGLuvZgCAhX82
-	rLC1oK57s+mdYpP4LKQvRone9gdAK1zta9bXyBvgCNUvU6HHRiDAQZIYUHYxWTKzLNp11jFQ3cN
-	KF4JIP1a1RfftgXsSQAwZYgDbts+bkWHa+tuC7POmLHVV1sSfgw/GKF5vjKRiLg==
-X-Gm-Gg: AYBFou0/4D2UWuaOmxDVUOOGTKNM28kNcyG9cUd+MHCL+RpSYADVwYRvslIbXoKl6g4
-	7rEkfy50rwlhthdkIxYsxCMddi5baQ7G26nMc7ErYIyohYb1DqtRNlQhyZJVMNcddeJMIPoy9vB
-	UW5eyAtpoOOij/rk1t1yRga/hhyEkG17hFACEjIUgRFOTdkuGgtUnWOi8oPvuZFU4pBvjBK76Z/
-	YBbLS4ihWZMnAwJYhZJjQIL0WkE5FTcQR2noKnHFCgqOWIY/gUz9RsdlCH/R+mFCNmi9jWRwoAa
-	6mWWtATqyS7JKhDTwhtWCFqyUK08SGVrIGFKD2QLX766qGf/UADGnT4IIRjtzelVCzDhJJPY2Th
-	5McgCwcgQPxRF8qxQr3hUH1uS7ZIIHYOlucS/UYCj1Vvge0Deo8ZfaP4TvMeb4mzxfme54B9kFR
-	EPPVMB84KU
-X-Received: by 2002:a17:90a:c886:b0:3ac:9e76:aa9b with SMTP id 98e67ed59e1d1-3ae57e2b795mr3492856a91.7.1793264481312;
-        Thu, 29 Oct 2026 02:01:21 -0700 (PDT)
-X-Received: by 2002:a17:90a:c886:b0:3ac:9e76:aa9b with SMTP id 98e67ed59e1d1-3ae57e2b795mr3492841a91.7.1793264480794;
-        Thu, 29 Oct 2026 02:01:20 -0700 (PDT)
-Received: from hu-spratap-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ae6e7ad710sm3197385a91.3.2026.10.29.02.01.10
+        d=1e100.net; s=20260707; t=1793264492; x=1793869292;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=5ZHPP80P/K5Og+av73zHRl2Ft2Q1yinNFTFs8Wj9Vvw=;
+        b=In0NcaLkD+LDYw+eKVXlOQ0DeaPK4YVZ1YUm3vgy3wVArdbgEkHe3dkEJEVO09lojj
+         lOL8qetlXJaBXKcWeo7gNbqjPc5U/iZ2SGSOgbLq1CWJdaVDDk3sXMuwq3oOu1yg841+
+         gMTc5IX9gutrCbhxNhHyVAVVugYYsG+KCoqqoL9iYPBtgJqwFR9244FEVwvlHVrpaKtR
+         otnUTk3bSo1bbWna39/QpTXlHCV+8SgLWQ6WdVG224mJmqh7xMxT5QvNTyg2RUkK08L5
+         bQJIGRhsU8plvQLOcVMOSxdlmx1blhgGPfqc30blEt14yKbqkVj7iBAnwnrmjK+k/JxG
+         8Y/A==
+X-Forwarded-Encrypted: i=1; AKwUvBwRAhd71S8pg2KdOlkR52vB7WSifSIL8J2lnp82psfGUU3BMYNnrKJDYQz7ynpgM3NNcX46CE2/iA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKLo8Fg8aDizEnKmKn6hqSPf1wskU7seUuYD6mvDeMpjHmiYEQc
+	uwg6+jwNZcR047jRY5kO40NpP9iC03eNoZOMOX0OedARHLqjqeo1KxU=
+X-Gm-Gg: AYBFou35kS2gl4kC2ZiZsg5VhjuE+r4kfQWZV6QibHHCTFWs14oflkvyEz9u9yHZSH9
+	P2pS7M+YuyuddgLiKXR5WB2QTPcWPojmZ6syTiP3+Qpg/fPym+/0XFDXqRakNONiq7MOU9k8RkE
+	x1/dFgCX2fAJVqESLC5FDIOgKiBMp7aIkTWHGvR1wuNevSQP1MFnoo9Jym1wbPIB6FgrfZze16v
+	pHz5R3lAlN10x/MVjPTWNYlFr0kVzVj7nMv1QcZCNuGVsg2ICsT44IfSxEWV3vlmU7t6jdIfZFM
+	P/157bugXdJQHLWuQ5tPfZUfGeqqhmoB5yzfmlZNqIJ9//k5CUwWfZQv297M7dqR6Xw2XC8XwLG
+	EOT4gu5pjE8txVtX8797sR3BzAz5fM5RAmDljeSqt5WfMednfDhdWk1SzJboZmjVzMNUvf65EX2
+	dtx6Ofll9s++WuDM+gRa4iIbdtFtmI8dha7N7GIvrqbdLye7BIAjIMvxTgRS2ySVMq402kke1KC
+	XJaRyrPaWtv4/i4s3+DiIvFv20PMmvIi7yvbXCKE1Yf5gMFmmM7Tkb+OTwZx+oLoCG8TwAhFAT8
+	bKjlQQQcvCMsx1e8eZqv0NS8UDDBy/NuDXnx8eHeg43+O3X3JAUQ6Sr92I98QQ==
+X-Received: by 2002:a05:7300:f587:b0:369:fc38:6821 with SMTP id 5a478bee46e88-36a20113296mr6116491eec.12.1793264491785;
+        Thu, 29 Oct 2026 02:01:31 -0700 (PDT)
+Received: from at-Standard-PC-Q35-ICH9-2009 ([27.60.20.232])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a23641e78sm16497937eec.0.2026.10.29.02.01.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Oct 2026 02:01:20 -0700 (PDT)
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Date: Thu, 29 Oct 2026 14:30:55 +0530
-Subject: [PATCH v27 01/10] power: reset: reboot-mode: Support up to 3 magic
- values per mode
+        Thu, 29 Oct 2026 02:01:31 -0700 (PDT)
+From: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
+To: 
+Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Sven Peter <sven@kernel.org>,
+	Janne Grunau <j@jannau.net>,
+	Neal Gompa <neal@gompa.dev>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Lee Jones <lee@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Griffin Kroah-Hartman <griffin@kroah.com>,
+	Hans de Goede <hansg@kernel.org>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Mimi Zohar <zohar@linux.ibm.com>,
+	Roberto Sassu <roberto.sassu@huawei.com>,
+	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+	Eric Snowberg <eric.snowberg@oracle.com>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-gpio@vger.kernel.org,
+	asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-hwmon@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	mfd@lists.linux.dev,
+	platform-driver-x86@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-rtc@vger.kernel.org,
+	linux-watchdog@vger.kernel.org,
+	linux-integrity@vger.kernel.org,
+	keyrings@vger.kernel.org,
+	linux-security-module@vger.kernel.org
+Subject: [RFC PATCH 12/14] hwmon/macsmc: add more types
+Date: Thu, 29 Oct 2026 04:52:09 -0400
+Message-ID: <20261029085504.3547-13-atharvatiwarilinuxdev@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
+References: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -117,222 +148,348 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261029-arm-psci-system_reset2-vendor-reboots-v27-1-fa4b3ff1359b@oss.qualcomm.com>
-References: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
-In-Reply-To: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
-To: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
-        Abel Vesa <abelvesa@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>, Andy Yan <andyshrk@163.com>,
-        Ulf Hansson <ulfh@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793264458; l=4572;
- i=shivendra.pratap@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
- bh=3jZJCDBmdKair7R/qKaAWXxKmatvkMOd5u4ong8jp54=;
- b=pwt0UJhchuo9nRGpdPR4BB+yIn09z57FaxDRxlb2ix4AAxBac4tXKc6+sgbl7Lmrp1t16D/Mb
- l1rXyaHrrKtDBUIJR68JnHgXfn60pn9DJIDCO7wBnMbX2W5pYeUyOhd
-X-Developer-Key: i=shivendra.pratap@oss.qualcomm.com; a=ed25519;
- pk=ssWsJFX3OM9pkdoe4+guOfGPaulHOFt0GVnVlB6on+s=
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfX02DvsmJb3neE
- PSfPnWkdTPKfvSgndPqCZbYmrPEaiHgdN4kZJWCvuyL93V6XzIwu+HXcOeE1d/zDEdsBECVg6AT
- aLU4FZC0B0xK0bgZGWjZfVCJ0MQfz8Y=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfX0ngJUwoLidEI
- xJI46k7M6Hlxa6rTdeu9iAads8blbml3/6dlnfZZ3RvTM7OD5j2jaeUytjj8zmDkwaiEA0KJMv1
- 3ase8A/HuB0P+G25DVLTFYMaFGl2N3Rk+hNvyOKHfbuGx/5TKKtuz9rHTUz8Wj7XUouRhpvZgrp
- DtW0qj5/clWWmlITnvEKSZHWYCyO31yRajlwLHd0KCKwBu9JPBEr+hjcWunogqkpyGJ3BelpVcd
- 675RYp9uGavZpp1XIWvtbnIPLcQl5Nb+P4/K+gJ+jjSAZAeX3yYyViKaIs64fRkpR7FVbbPIxY5
- 43zDxYcmomLXl4J1h+OC8BYwK6SJXj02h48duYOE7IdKTNhCYUtRTrOKBc6iyds4pQdpR01SjNB
- J/ojpHBI9k0cdSBtQdwnn5RrTnSGXwMSJi+38jZI/G9sn41IrwpgAjJ3hJheTqLO98A4PYoej7m
- wDn/VKjyzeWjdWQ+c2A==
-X-Proofpoint-ORIG-GUID: nn3tE9S6CPnP5d6coAqrOkph5GaCiPTE
-X-Proofpoint-GUID: nn3tE9S6CPnP5d6coAqrOkph5GaCiPTE
-X-Authority-Analysis: v=2.4 cv=HYSB3SE8 c=1 sm=1 tr=0 ts=6ae30b64 cx=c_pps
- a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=EUspDBNiAAAA:8 a=_usNffLPL2KliZ4tEdwA:9 a=QEXdDO2ut3YA:10
- a=3WC7DwWrALyhR5TkjVHa:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-29_03,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 adultscore=0 suspectscore=0 clxscore=1015
- spamscore=0 lowpriorityscore=0 impostorscore=0 malwarescore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610290034
+Content-Transfer-Encoding: 8bit
 
-ARM PSCI vendor-specific resets, require a 32-bit reset_type and a 64-bit
-cookie as arguments. This cannot be implemented via the reboot-mode
-framework, which supports a single 32-bit argument as magic value.
+SMC keys come in many data types, and Intel Macs use a lot
+that macsmc-hwmon couldn't read, such as the signed fixed
+point types like sp1e.
 
-Extend the reboot-mode framework to support up to three 32-bit arguments
-as magic, per reboot-mode.
+Add support for the common integer and fixed point types,
+and allow writing fan speeds.
 
-Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Signed-off-by: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
 ---
- drivers/power/reset/reboot-mode.c | 46 +++++++++++++++++++++++++++------------
- include/linux/reboot-mode.h       |  3 +++
- 2 files changed, 35 insertions(+), 14 deletions(-)
+ drivers/hwmon/macsmc-hwmon.c | 310 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 310 insertions(+)
 
-diff --git a/drivers/power/reset/reboot-mode.c b/drivers/power/reset/reboot-mode.c
-index 3611bed341e1..328fa37598df 100644
---- a/drivers/power/reset/reboot-mode.c
-+++ b/drivers/power/reset/reboot-mode.c
-@@ -20,7 +20,8 @@
- 
- struct mode_info {
- 	const char *mode;
--	u32 magic;
-+	u32 magic[3];
-+	u32 count;
- 	struct list_head list;
- };
- 
-@@ -72,8 +73,7 @@ static const struct class reboot_mode_class = {
- 	.dev_groups = reboot_mode_groups,
- };
- 
--static unsigned int get_reboot_mode_magic(struct reboot_mode_driver *reboot,
--					  const char *cmd)
-+static struct mode_info *get_reboot_mode_info(struct reboot_mode_driver *reboot, const char *cmd)
- {
- 	const char *normal = "normal";
- 	struct mode_info *info;
-@@ -84,11 +84,11 @@ static unsigned int get_reboot_mode_magic(struct reboot_mode_driver *reboot,
- 
- 	list_for_each_entry(info, &reboot->head, list)
- 		if (!strcmp(info->mode, cmd))
--			return info->magic;
-+			return info;
- 
- 	/* try to match again, replacing characters impossible in DT */
- 	if (strscpy(cmd_, cmd, sizeof(cmd_)) == -E2BIG)
--		return 0;
-+		return NULL;
- 
- 	strreplace(cmd_, ' ', '-');
- 	strreplace(cmd_, ',', '-');
-@@ -96,21 +96,25 @@ static unsigned int get_reboot_mode_magic(struct reboot_mode_driver *reboot,
- 
- 	list_for_each_entry(info, &reboot->head, list)
- 		if (!strcmp(info->mode, cmd_))
--			return info->magic;
-+			return info;
- 
--	return 0;
-+	return NULL;
- }
- 
- static int reboot_mode_notify(struct notifier_block *this,
- 			      unsigned long mode, void *cmd)
- {
- 	struct reboot_mode_driver *reboot;
--	unsigned int magic;
-+	struct mode_info *info;
- 
- 	reboot = container_of(this, struct reboot_mode_driver, reboot_notifier);
--	magic = get_reboot_mode_magic(reboot, cmd);
--	if (magic)
--		reboot->write(reboot, magic);
-+	info = get_reboot_mode_info(reboot, cmd);
-+	if (info && info->count) {
-+		if (reboot->write_array)
-+			reboot->write_array(reboot, info->magic, info->count);
-+		else if (reboot->write && info->magic[0])
-+			reboot->write(reboot, info->magic[0]);
+diff --git a/drivers/hwmon/macsmc-hwmon.c b/drivers/hwmon/macsmc-hwmon.c
+index 1500ec2cc..2e74dcd66 100644
+--- a/drivers/hwmon/macsmc-hwmon.c
++++ b/drivers/hwmon/macsmc-hwmon.c
+@@ -221,6 +221,313 @@ static int macsmc_hwmon_read_key(struct apple_smc *smc,
+ 			*val = (long)ioft;
+ 		break;
+ 	}
++	/* unsigned 8-bit integer */
++	case __SMC_KEY('u', 'i', '8', ' '): {
++		u8 ui8 = 0;
++
++		ret = apple_smc_read_u8(smc, sensor->macsmc_key, &ui8);
++		if (ret)
++			return ret;
++
++		*val = ui8 * scale;
++		break;
 +	}
- 
- 	return NOTIFY_DONE;
- }
-@@ -173,16 +177,22 @@ int reboot_mode_register(struct reboot_mode_driver *reboot)
- 	struct property *prop;
- 	struct device_node *np = reboot->dev->of_node;
- 	size_t len = strlen(PREFIX);
--	u32 magic;
-+	u32 magic[3];
-+	int count;
- 	int ret;
- 
- 	INIT_LIST_HEAD(&reboot->head);
- 
- 	for_each_property_of_node(np, prop) {
-+		memset(magic, 0, sizeof(magic));
++	/* signed 8-bit integer */
++	case __SMC_KEY('s', 'i', '8', ' '): {
++		s8 si8 = 0;
 +
- 		if (strncmp(prop->name, PREFIX, len))
- 			continue;
- 
--		if (device_property_read_u32(reboot->dev, prop->name, &magic)) {
-+		count = device_property_count_u32(reboot->dev, prop->name);
++		ret = apple_smc_read_s8(smc, sensor->macsmc_key, &si8);
++		if (ret)
++			return ret;
 +
-+		if (count <= 0 || count > ARRAY_SIZE(magic) ||
-+		    device_property_read_u32_array(reboot->dev, prop->name, magic, count)) {
- 			dev_dbg(reboot->dev, "reboot mode %s without magic number\n",
- 				prop->name);
- 			continue;
-@@ -194,7 +204,15 @@ int reboot_mode_register(struct reboot_mode_driver *reboot)
- 			goto error;
- 		}
- 
--		info->magic = magic;
-+		if (!memchr_inv(magic, 0, count * sizeof(u32))) {
-+			dev_dbg(reboot->dev, "reboot mode %s with zero magic values\n",
-+				prop->name);
-+			info->count = 0;
-+		} else {
-+			memcpy(info->magic, magic, count * sizeof(u32));
-+			info->count = count;
-+		}
++		*val = si8 * scale;
++		break;
++	}
++	/* unsigned 16-bit integer */
++	case __SMC_KEY('u', 'i', '1', '6'): {
++		u16 ui16 = 0;
 +
- 		info->mode = kstrdup_const(prop->name + len, GFP_KERNEL);
- 		if (!info->mode) {
- 			ret = -ENOMEM;
-diff --git a/include/linux/reboot-mode.h b/include/linux/reboot-mode.h
-index 4a2abb38d1d6..29ae39935d69 100644
---- a/include/linux/reboot-mode.h
-+++ b/include/linux/reboot-mode.h
-@@ -2,10 +2,13 @@
- #ifndef __REBOOT_MODE_H__
- #define __REBOOT_MODE_H__
- 
-+#include <linux/types.h>
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &ui16);
++		if (ret)
++			return ret;
 +
- struct reboot_mode_driver {
- 	struct device *dev;
- 	struct list_head head;
- 	int (*write)(struct reboot_mode_driver *reboot, unsigned int magic);
-+	int (*write_array)(struct reboot_mode_driver *reboot, const u32 *magic, int count);
- 	struct notifier_block reboot_notifier;
- };
- 
-
++		*val = ui16 * scale;
++		break;
++	}
++	/* signed 16-bit integer */
++	case __SMC_KEY('s', 'i', '1', '6'): {
++		s16 si16 = 0;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &si16);
++		if (ret)
++			return ret;
++
++		*val = si16 * scale;
++		break;
++	}
++	/* unsigned 32-bit integer */
++	case __SMC_KEY('u', 'i', '3', '2'): {
++		u32 ui32 = 0;
++
++		ret = apple_smc_read_u32(smc, sensor->macsmc_key, &ui32);
++		if (ret)
++			return ret;
++
++		*val = ui32 * scale;
++		break;
++	}
++	/* signed 32-bit integer */
++	case __SMC_KEY('s', 'i', '3', '2'): {
++		s32 si32;
++
++		ret = apple_smc_read_s32(smc, sensor->macsmc_key, &si32);
++		if (ret)
++			return ret;
++
++		*val = si32 * scale;
++		break;
++	}
++	/* 2.14 unsigned fixed point decimal */
++	case __SMC_KEY('f', 'p', '2', 'e'): {
++		u16 fp2e;
++
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &fp2e);
++		if (ret)
++			return ret;
++
++		*val = mult_frac(be16_to_cpu(fp2e), scale, BIT(14));
++		break;
++	}
++
++	/* 3.13 unsigned fixed point decimal */
++	case __SMC_KEY('f', 'p', '3', 'd'): {
++		u16 fp3d;
++
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &fp3d);
++		if (ret)
++			return ret;
++
++		*val = mult_frac(be16_to_cpu(fp3d), scale, BIT(13));
++		break;
++	}
++
++	/* 4.12 unsigned fixed point decimal */
++	case __SMC_KEY('f', 'p', '4', 'c'): {
++		u16 fp4c;
++
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &fp4c);
++		if (ret)
++			return ret;
++
++		*val = mult_frac(be16_to_cpu(fp4c), scale, BIT(12));
++		break;
++	}
++
++	/* 5.11 unsigned fixed point decimal */
++	case __SMC_KEY('f', 'p', '5', 'b'): {
++		u16 fp5b;
++
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &fp5b);
++		if (ret)
++			return ret;
++
++		*val = mult_frac(be16_to_cpu(fp5b), scale, BIT(11));
++		break;
++	}
++
++	/* 6.10 unsigned fixed point decimal */
++	case __SMC_KEY('f', 'p', '6', 'a'): {
++		u16 fp6a;
++
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &fp6a);
++		if (ret)
++			return ret;
++
++		*val = mult_frac(be16_to_cpu(fp6a), scale, BIT(10));
++		break;
++	}
++
++	/* 8.8 unsigned fixed point decimal */
++	case __SMC_KEY('f', 'p', '8', '8'): {
++		u16 fp88;
++
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &fp88);
++		if (ret)
++			return ret;
++
++		*val = mult_frac(be16_to_cpu(fp88), scale, BIT(8));
++		break;
++	}
++	/* 14.2 fixed point decimal */
++	case __SMC_KEY('f', 'p', 'e', '2'): {
++		/*
++		 * fpe2 is only used for fan stats and fan control
++		 * so precision is not needed
++		 */
++		u16 fpe2;
++
++		ret = apple_smc_read_u16(smc, sensor->macsmc_key, &fpe2);
++		if (ret)
++			return ret;
++
++		*val = (be16_to_cpu(fpe2) >> 2);
++		break;
++	}
++	/* 1.14 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '1', 'e'): {
++		s16 sp1e;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp1e);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp1e), scale, BIT(14));
++		break;
++	}
++
++	/* 2.13 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '2', 'd'): {
++		s16 sp2d;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp2d);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp2d), scale, BIT(13));
++		break;
++	}
++
++	/* 3.12 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '3', 'c'): {
++		s16 sp3c;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp3c);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp3c), scale, BIT(12));
++		break;
++	}
++
++	/* 4.11 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '4', 'b'): {
++		s16 sp4b;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp4b);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp4b), scale, BIT(11));
++		break;
++	}
++
++	/* 5.10 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '5', 'a'): {
++		s16 sp5a;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp5a);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp5a), scale, BIT(10));
++		break;
++	}
++
++	/* 6.9 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '6', '9'): {
++		s16 sp69;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp69);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp69), scale, BIT(9));
++		break;
++	}
++
++	/* 7.8 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '7', '8'): {
++		s16 sp78;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp78);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp78), scale, BIT(8));
++		break;
++	}
++
++	/* 8.7 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '8', '7'): {
++		s16 sp87;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp87);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp87), scale, BIT(7));
++		break;
++	}
++
++	/* 9.6 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', '9', '6'): {
++		s16 sp96;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &sp96);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(sp96), scale, BIT(6));
++		break;
++	}
++
++	/* 10.5 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', 'a', '5'): {
++		s16 spa5;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &spa5);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(spa5), scale, BIT(5));
++		break;
++	}
++
++	/* 12.3 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', 'c', '3'): {
++		s16 spc3;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &spc3);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(spc3), scale, BIT(3));
++		break;
++	}
++
++	/* 13.2 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', 'd', '2'): {
++		s16 spd2;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &spd2);
++		if (ret)
++			return ret;
++
++		*val = mult_frac((s16)be16_to_cpu(spd2), scale, BIT(2));
++		break;
++	}
++
++	/* 15.0 signed fixed point decimal */
++	case __SMC_KEY('s', 'p', 'f', '0'): {
++		s16 spf0;
++
++		ret = apple_smc_read_s16(smc, sensor->macsmc_key, &spf0);
++		if (ret)
++			return ret;
++
++		*val = (s16)be16_to_cpu(spf0) * scale;
++		break;
++	}
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -263,6 +570,9 @@ static int macsmc_hwmon_write_key(struct apple_smc *smc,
+ 	/* unsigned 8-bit integer */
+ 	case __SMC_KEY('u', 'i', '8', ' '):
+ 		return apple_smc_write_u8(smc, sensor->macsmc_key, val);
++	/* 14.2 fixed point decimal */
++	case __SMC_KEY('f', 'p', 'e', '2'):
++		return apple_smc_write_u16(smc, sensor->macsmc_key, cpu_to_be16(val << 2));
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
 -- 
-2.34.1
+2.55.0
 
