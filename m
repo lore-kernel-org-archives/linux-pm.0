@@ -1,112 +1,145 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793264537;
-	b=MGz911vPN8IV2LQlIgIyXEHE4Vfgx7xhCZAFImfHaZ2eMAgDQ7WYTVjsyi07eMW4kDvg
-	 uCGdNqPD3+M+D149OFVZm6lXyU5AWp3FBL5Nul4pxB9JSP7lFXLVkerJYtdqvYe57SomH
-	 N+ZIXF8bArhufJwA25wVj5ZrioqVVHPv2IQmLWWJKC1hkfruXiqPoIEzDE8aVgEG/o5WO
-	 2gW8SixklMGub9oRFtjebO3hRU+zrbaTWgMj1AC+U5GhErd9MVKnQWoxJt9iR2n4rEobu
-	 rLjehmVJu9yCfySdMAeSCIRFF1LIDZqM2pW+/ru+ZGfG4tWiGijLucQfQmaHC2t2lnw==
+	t=1793264547;
+	b=zQhXa+smQ7A3jhIlv3q2zn064j3klTPcGhfFdjVdUGaokUihctf8MsDedgOsh7KFm4H6
+	 wgwWfVA4HHBzoo7ppC0B604YSZtkCSFz6qR6Sw8smKZ17gxtP3yIU4jhVlv4dZn0CgUTC
+	 xrmgUI5JNkRgmGoykRvdVxBejrUpXy+C3iLqz7jFlSy8Rq7i3KBtLF5iyGJnA1M8BUcZP
+	 9DhgAVYKeLnCbbZJoBF+d5Bc3GDuUazqDFWnWqxa9Nn8jt1vi43k+oe65nR2LK+tWoxQv
+	 czRY98fCm+BHRaQ1xr3Vjv0UCRuW8SfT10x6EZ73NweKjuKjeYr5ZcsKgPpS5F9BIMw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793264537;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
-	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-GUID:
-	 X-Authority-Analysis:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=O9tE0VhLdA02J4VPxVQaUCiXLFk5PSSXEe9PuZp3B6Y=;
-	b=kEghnCiHI1Tw8SeR9rw5purSUOtcLviFUMcmU9DERra7s9juDwkaJsgX/dv/14o/utof
-	 KN123mCR/uVdSl4y2q2LpoUkMe8TvYvVGzh9unURyQ/6W16s99RXOWTvGh9wLldIYE8f9
-	 7hR7c083F3ev/9rPBekTGVAH5B2H4Qj/tvgFvH4B6gC1FlD/z0sC3NEFv6qhJ9i+9/rvx
-	 i4vNJ2JhEoXc5IVkQps0Y5azq8+Ulq+g1WvWFS59VN89Q1ENqIAy40AEeVwH6B8NEsil+
-	 /lhII25IS6Kbb08R43vJLQ1n+TfKwNdLhyFQa/c1Z9u1IHhVu+76FPS/p41sPi9FWGQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793264547;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=Em6bj94swsrfUrSQCXEn0xceZl+9/C90nnaFaaRvExo=;
+	b=OcfchytFvj8EULVAX9747OcGNZA3GCGiJKg4XpQ31XLG8qSFA7X68kgyx9B4YTMdIw8k
+	 SkX+pu8dDO/bk4yNDTQzqsIdKCjHFjV9QQnFXNH4xT249hVDNUml/JZeebxFJXU2evMb5
+	 qfd4vjVHfTWX3+5oZW9O1M8w2YFjnoAy0zv8XXaaZHdKR5ZM22Xet3eHwT0i2GLurFvad
+	 RvDzPg5uUseREFrKSgNxueRpiZft6h+NQFv3nY9F2SMYX+PCD4MrnOY0iURq6R8pgi1Fb
+	 HOL5Ot+l8fiCl/AOSv0XGaME4yYweZekAorj4wIWeMgdeoIgkbnyrWAmuEVMt6V/9MA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="BL/ohZZe";
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=enCyjhrj;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=v+GdMNW6;
+	arc=none smtp.remote-ip=74.125.82.173
+Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B63606A331
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 64B63606A331
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1287860A262C
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1287860A262C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=BL/ohZZe;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=enCyjhrj
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T8vF8G3775301
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	O9tE0VhLdA02J4VPxVQaUCiXLFk5PSSXEe9PuZp3B6Y=; b=BL/ohZZeT2Ub1L8i
-	Q85twEiv+1skouGeATcwuvx7eQgdv/Xtq8jI1dokM0g45a70s4F+qfhG2j9fldrQ
-	JU6ia8H2W0b80zUxArcf4NnA1W1/CLQZP9mfZu7G89CPP3DueE3hDngSF+GJudna
-	qTfxxvxvzQolFMXvOxo4Q9GPfwGXRxhci3hvvZU1TtilW+eJ8AOLruxDL1tMWD0F
-	EsREAtsxnkDxAQ0wEm2AvI5CVEDgpNCJ7ZQtEupyx2H0PGRjPmMTibG9Uyn2ivsN
-	mKtKA/lQzSu8XMx6TON8t1FOwkfBnG+wmaMgvZCKd8eKQgY9Sw6mSOB7qKctK/nv
-	3CgOUQ==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hkxshryuc-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:16 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-3ad704d4760so1589733a91.3
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:02:16 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=v+GdMNW6
+Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-35c76e9614aso2709207eec.0
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:02:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793264535; x=1793869335; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1793264545; x=1793869345; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=O9tE0VhLdA02J4VPxVQaUCiXLFk5PSSXEe9PuZp3B6Y=;
-        b=enCyjhrjerBxgDlhfi0wtq2VSkxCIbBct8Xv4dXSAUiMD6WV6+Hh+EAco8rCKnC9f1
-         2Yxl8Mc7vh2CEzx/I63CeSZYF16Tcr53f2/n6EKyisvcBWkF0hv5wGdUsM++OAdURMf1
-         iN0XZDPcHon2M6MS8VLoMm5VhKUqJKnYDlRBySnV5QC1neV+liIM6AvU6BqVbaA51Gam
-         VwIRfumv5CdQoXkPdC9o6w2VGWfZL9U2yogku4zfik+fdP+sywq9zifIxWa0b7/O/lQf
-         EayLO+Czu5w+mlR4ck9OBwIcNd8A+jEVaijKvJx9viF/9aBOz41E70y/E6VsML8/4tO8
-         mxVw==
+        bh=Em6bj94swsrfUrSQCXEn0xceZl+9/C90nnaFaaRvExo=;
+        b=v+GdMNW6VY8ycTHLfDP4t6NciTC2osSPI32ktEngjDdXmrE1hV/8sVFvczzMG693wH
+         roVa6n53id4X2dMpgKp+DjKqlllj47SDkvmmr5ezZIF6LlLu+SfhNQ39/aI40vZyy/Ou
+         Z1x9lLclc65fddRgXyNElq4cBZ3FdzDnQWpxJBWLnGus4aXlTpZrVX2FyKbfkpUX7GqO
+         UaDKWWAG9kKEfxQX1GODfbN966lJz+jj0swpTaqnlP09hOWI4hrbKWS7mXwGGaGBXmXw
+         gl0z03dnYTdfH6Ezjkip09l+kSpsRBWcpFY8YDksWET3NGpvEJTPB4mI02mkjQWTgD9d
+         xICA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793264535; x=1793869335;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=O9tE0VhLdA02J4VPxVQaUCiXLFk5PSSXEe9PuZp3B6Y=;
-        b=jOFDk2Uizl5kamSKjnoc0Ee/q8/7MCktI7hCjICSNydAMV0rYkN2TT51YvaPUYWCfd
-         SrSNs2KGdUrtiV75AyYuX0ct+2rCM7evWBT5C72/hycwDI19NeFRPdZxb2Q04TkQdl9v
-         oDF4UdWPfqQLj+NHTNjswXJyDn09Psal63Jm96SWNzuk/2lsRv+8EB+L+PaEhnv6dpL0
-         VaSU3JU3Bg3Ku5K86im7xRSSDGad6INyJ25u7KNFrJfEFIQhIHZ0fx6PE1zHVRm4Nczw
-         jfsQMagoU+Ejvfm7T5gIE5nSN+07NDd2BrJ1a7QWlYTmJpD7/yrzIocXYvT3/or2KpFh
-         l0iQ==
-X-Forwarded-Encrypted: i=1; AKwUvBy1wScDtyvLW4lW33KkIrTiDW2k5cGV9lx5oTCOII88nqTdEqcQAzLrHgM90zWjO8eAJoIBQn9oEA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJjlNswJBduJRZuiMNXzZ6ydrDK7eWwmwnr72RShYoARsdBOL3s
-	A8Tcc+ysJ0tdXajXLnc7hdhbwDyWEbdz8+c+s6pzDkSvjX3alQn6tNTlsCmfEkYwrKo63lCGZYq
-	IsdSHZ4Q0zbrfmLxwSSWvRC6uG6oDxBRZ76fvlfpJqq/aJnX5B+zZShxUTQWolQ==
-X-Gm-Gg: AYBFou0O9+ZOibx7GHqjdG3lnuBazi57/f7nzRbq9pT3jfkhiSJU/tc9BXOMD4/PMPZ
-	52EbV+8DUQNQ9UWjD4vYOLsXtq7HUEpzAls4dHSRrk/DvjouePIngruEBfVnwZWlF1h4qZknlfi
-	YiAHqOlbG5SuI9ARgW4GlgznjZMu3hAI0dF7ImPbiiHSm0Ts/9aCY14bT04B06TbRr4cQmOkahx
-	dtNU4BcoA3ej5RwdR5k+4VWbhpWNZubCvGJ0dGGCaUGLs+XDoB5kZ/TKTTaiRj/51rH9gBFhFof
-	I5UCtV17a8zS53ZhMfWoNHOggxHNPjRrYNEUyUKen3PvZexA6eG3nqUIdgLfUZjUi5ZPeCP8cFN
-	xEgH0ux9lqF8MKcDllpRmeQ5K1NW6Domdkh4QbwBDMQIUrV1E4eHBHqucVpy2BLBqLdPhDBIfPT
-	hGLlln5xtb
-X-Received: by 2002:a17:90b:4b89:b0:3ac:17c:6e85 with SMTP id 98e67ed59e1d1-3ae581e1959mr3770257a91.47.1793264535058;
-        Thu, 29 Oct 2026 02:02:15 -0700 (PDT)
-X-Received: by 2002:a17:90b:4b89:b0:3ac:17c:6e85 with SMTP id 98e67ed59e1d1-3ae581e1959mr3770169a91.47.1793264534432;
-        Thu, 29 Oct 2026 02:02:14 -0700 (PDT)
-Received: from hu-spratap-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ae6e7ad710sm3197385a91.3.2026.10.29.02.02.03
+        d=1e100.net; s=20260707; t=1793264545; x=1793869345;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Em6bj94swsrfUrSQCXEn0xceZl+9/C90nnaFaaRvExo=;
+        b=Z1GT4loIhdNZIVe2HxujqIekpf2odeZF2/IUexij8vWwJHyGiVl6fa38r4Bz1kIhjh
+         jmUsBXpmgMrIqhYXc/yXFSlGaOr7QlEsJLw9ACPQbvaW+KF9QLn7dByH/3Np1Z72IT86
+         mosrmvb+Hf8DfTmkbq4xl6OK3iel/JnsTwl4l1cc/3kVyxU4kRthxCVzm9tUbUw0MiMC
+         FeLPhRasGNCWUg00Duy9RFLeCKla/Q2neS3U2D8lETL+GrzyHILXcZMiflvWBp1JPGpS
+         Qw02whUg7eVAg5wj9hXFkX3zyW1cRPURghlft2dZng2Y95zcUY/0H4auJY92dUPfXmBU
+         Oj8A==
+X-Forwarded-Encrypted: i=1; AKwUvByQCiTY1Rf0KA2galS/tOrXb3GABDOS09CI7l3W8cxD3IFBWMjljEHaOafw0SGVqRbvzU6HFRDcwA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJsOLA98TLBu46czHAEZFV48OBfOvqVlAnKNVXjoXfLCtgiDvU5
+	lPNGBJv+1S90JcQbQUGAIZgVAW9S6lkXUOA645g6/jC+Awx6AD4s5vA=
+X-Gm-Gg: AYBFou0GDfaZk3UAk80+pI1qd7NH4054zwyYqWjWFzRIcpxPSOCLMcb5HXY5NPYcPPb
+	GFYBue1dRWTTUi7MjLAKLmBfCcbY0nTPLfRjoYteAhS2aITW2aglT7Zg2hqObApb+4kC//zQ+nE
+	ocDL/Vs6Sh2WyMiXt659OoZAUxtOx8YxoqMAnBysJgQ106KdyrIczE1VF9a766Qp3b190wlgiJT
+	Ws8lUiJqrQMaf0i6FTDLJ8w9KfktWuxrtbWzLtWhpKYLW/ZK0aapAj6QkB2CwxqvtN0+4tHJGca
+	DQL5X5FW1Pjw+24VkuCvyxDP+Fla7UVWONYD/laxVsqq9vI2/J6ZFIZ6s5blXkhl70PsWpNdJEc
+	j4PM9dLs45arIpWZFchpdC0gA/D1V9btw08OGZ9AlO4Jx93MVus25xlObyCR/kqnqHx46E/zP5c
+	oTjpytw0QyzgJYvPbSHR2vB/aQvt0FEJPBd59dZIgkNSk6JyKWVcu4m1I5qieWgXRqeHY3b0IkL
+	BKR+8gClD+s7iCZi8PpVjPYPhX4quZ/nl1hN/jR3LQDS8MPbIVdjv1Z1/KFLBzfNw7ssGfM0pcV
+	85F7EwYC5YoMxvdx0SF/mrRv2zvoHh2BD720jCX6uRFPGmnmm4rJa7f51Z414qTvePibKT8ELR1
+	5q0kQ+x8=
+X-Received: by 2002:a05:7300:7312:b0:358:ec5c:bef1 with SMTP id 5a478bee46e88-36a204773c0mr9949917eec.39.1793264544951;
+        Thu, 29 Oct 2026 02:02:24 -0700 (PDT)
+Received: from at-Standard-PC-Q35-ICH9-2009 ([27.60.20.232])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a23641e78sm16497937eec.0.2026.10.29.02.02.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Oct 2026 02:02:14 -0700 (PDT)
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Date: Thu, 29 Oct 2026 14:31:00 +0530
-Subject: [PATCH v27 06/10] power: reset: Add psci-reboot-mode driver
+        Thu, 29 Oct 2026 02:02:24 -0700 (PDT)
+From: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
+To: 
+Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Sven Peter <sven@kernel.org>,
+	Janne Grunau <j@jannau.net>,
+	Neal Gompa <neal@gompa.dev>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Lee Jones <lee@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Griffin Kroah-Hartman <griffin@kroah.com>,
+	Hans de Goede <hansg@kernel.org>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Mimi Zohar <zohar@linux.ibm.com>,
+	Roberto Sassu <roberto.sassu@huawei.com>,
+	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+	Eric Snowberg <eric.snowberg@oracle.com>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-gpio@vger.kernel.org,
+	asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-hwmon@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	mfd@lists.linux.dev,
+	platform-driver-x86@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-rtc@vger.kernel.org,
+	linux-watchdog@vger.kernel.org,
+	linux-integrity@vger.kernel.org,
+	keyrings@vger.kernel.org,
+	linux-security-module@vger.kernel.org
+Subject: [RFC PATCH 14/14] mfd/macsmc: add ioctl to access smc keys
+Date: Thu, 29 Oct 2026 04:52:11 -0400
+Message-ID: <20261029085504.3547-15-atharvatiwarilinuxdev@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
+References: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,282 +149,260 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261029-arm-psci-system_reset2-vendor-reboots-v27-6-fa4b3ff1359b@oss.qualcomm.com>
-References: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
-In-Reply-To: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
-To: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
-        Abel Vesa <abelvesa@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>, Andy Yan <andyshrk@163.com>,
-        Ulf Hansson <ulfh@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793264458; l=7058;
- i=shivendra.pratap@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
- bh=zAebzMok6MKL21880n9O4CoUq9888Knlr3p3nNPuBa0=;
- b=A+v7i4iLM+vZC5KFPyNk4BIQswY5X5kvCg4cn7yWdhSuFVWy4Xdy5OybTMAUZne9NeTpJGB/C
- szcw2tYRimCDkGLYvzdoiYvqPrlrwqy0FlZrdLVVkNqV/q0ranqRKAx
-X-Developer-Key: i=shivendra.pratap@oss.qualcomm.com; a=ed25519;
- pk=ssWsJFX3OM9pkdoe4+guOfGPaulHOFt0GVnVlB6on+s=
-X-Proofpoint-GUID: 85sSkBkJaEhcur8XbCv3dPtc9DT5nDIq
-X-Authority-Analysis: v=2.4 cv=H6BOUOYi c=1 sm=1 tr=0 ts=6ae30b98 cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=JfrnYn6hAAAA:8 a=OTBdipT0aglEIzt2I9sA:9
- a=QEXdDO2ut3YA:10 a=uKXjsCUrEbL0IQVhDsJ9:22 a=1CNFftbPRP8L7MoqJWF3:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfX4IYdB0J2Nn7a
- N4JswOFOH2QEDEGvg156qWNCF8tsdVHfXc89Bbrh9mjfn7iKo7rHY3eWPNB6HEw9RRSKB3+ziIm
- 3Hr0wWyZ2baXEFpLHIuzmY72ZAmi75Q=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfXzJcsKK+YjJbU
- JxHJ8tCBIi9yIt+sHHoC0bPeEHAvdJUfmMFOIj5F3+lSXKEnJPuJ8mknmCWM70K0aX6o1jeHpBO
- DA1PxJarDiqSRDOaZ4dK17Lg/gn+MssSrkZdoSoRoWsqDNgxF/TqIQQ8OaabFMFBV9Tl+9JW021
- VCNFVZyboE9FlHcXxPI17HubKeY5MFjWi2Qro1sWfXSvkcI//y13O42gOx7FsHBqqLkHaoMGFCT
- /PdhUliJhWOMpW40Qx5M2da1tEOsCx1I6zqRtbNjYIgHB/8OGnM5ylx1IvHULEqkiRAPDe0SquU
- WFoXTLcgDViUnf07SHXIzUbV3HOm7ho4fhuPSuXivlyfUl4GC5DLEp6AMfLuGdy5HqyBFot/9eR
- FvUTzZaPFJS6US7PAlCR5K4ydww8hifn9AidL+JfD3IT6fRrjaQkhmtG7j4wSPAZh6x9aAj3Sk/
- IVIDdxZG+c9qgyNNUYA==
-X-Proofpoint-ORIG-GUID: 85sSkBkJaEhcur8XbCv3dPtc9DT5nDIq
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-29_03,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015 spamscore=0 impostorscore=0 bulkscore=0
- priorityscore=1501 lowpriorityscore=0 suspectscore=0 adultscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610290034
+Content-Transfer-Encoding: 8bit
 
-PSCI supports different types of resets like SYSTEM_RESET, SYSTEM_RESET2
-ARCH WARM reset and SYSTEM_RESET2 vendor-specific resets. Currently
-there is no common driver that handles all supported psci resets at one
-place. Additionally, there is no common mechanism to issue the supported
-psci resets from userspace.
+Add a /dev/smc device so userspace can talk to the SMC
+directly. Some keys that need to be written aren't handled by
+any driver, or affect several drivers at once, so they
+can't be exposed cleanly through the kernel interfaces.
 
-Add psci-reboot-mode as an auxiliary device created by the psci-devices
-driver. Define two types of PSCI resets, predefined-resets and
-vendor-specific resets. Predefined-resets are defined by psci driver
-and vendor-specific resets are defined by SoC vendors, under the
-psci:reboot-mode node of SoC device tree.
+Keys already managed by kernel drivers can't be written this
+way, to avoid conflicts.
 
-Register the driver with the reboot-mode framework to interface these
-resets to userspace. When userspace initiates a supported command, pass
-the reset arguments to the PSCI driver to enable command-based reset.
-
-This change allows userspace to issue supported PSCI reset commands
-using the standard reboot system calls while enabling SoC vendors to
-define their specific resets for PSCI.
-
-Suggested-by: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Suggested-by: Lee Jones <lee@kernel.org>
-Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Signed-off-by: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
 ---
- MAINTAINERS                            |   1 +
- drivers/firmware/psci/psci-devices.c   |   4 ++
- drivers/power/reset/Kconfig            |  11 ++++
- drivers/power/reset/Makefile           |   1 +
- drivers/power/reset/psci-reboot-mode.c | 101 +++++++++++++++++++++++++++++++++
- 5 files changed, 118 insertions(+)
+ drivers/mfd/macsmc-core.c  | 155 +++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/macsmc.h |  27 +++++++
+ 2 files changed, 182 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e4ca41cdd872..0e03826eec48 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22292,6 +22292,7 @@ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
- S:	Maintained
- F:	Documentation/devicetree/bindings/arm/psci.yaml
- F:	drivers/firmware/psci/
-+F:	drivers/power/reset/psci-reboot-mode.c
- F:	include/linux/psci.h
- F:	include/uapi/linux/psci.h
+diff --git a/drivers/mfd/macsmc-core.c b/drivers/mfd/macsmc-core.c
+index bc4200f57..a30f7386e 100644
+--- a/drivers/mfd/macsmc-core.c
++++ b/drivers/mfd/macsmc-core.c
+@@ -6,10 +6,13 @@
  
-diff --git a/drivers/firmware/psci/psci-devices.c b/drivers/firmware/psci/psci-devices.c
-index d23befc490ed..04f24b8d9943 100644
---- a/drivers/firmware/psci/psci-devices.c
-+++ b/drivers/firmware/psci/psci-devices.c
-@@ -20,6 +20,10 @@ static const struct arm_psci_device_info arm_psci_devices[] = {
- 	{
- 		.name = "psci-cpuidle-domain",
- 	},
-+	{
-+		.name = "psci-reboot-mode",
-+		.of_node_name = "reboot-mode",
-+	},
- };
+ #include <linux/bitfield.h>
+ #include <linux/device.h>
++#include <linux/fs.h>
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/macsmc.h>
++#include <linux/miscdevice.h>
+ #include <linux/mutex.h>
+ #include <linux/spinlock.h>
++#include <linux/uaccess.h>
  
- static void arm_psci_auxiliary_device_release(struct device *dev)
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index bce996bbef28..f165a41d40ed 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -360,6 +360,17 @@ config NVMEM_REBOOT_MODE
- 	  then the bootloader can read it and take different
- 	  action according to the mode.
+ static const struct mfd_cell apple_smc_rtkit_devs[] = {
+ 	MFD_CELL_NAME("macsmc-input"),
+@@ -112,6 +115,144 @@ static void apple_smc_disable_notifications(void *data)
+ 	smc->be->disable_notifications(smc->be_cookie);
+ }
  
-+config PSCI_REBOOT_MODE
-+	bool "PSCI reboot mode driver"
-+	depends on ARM_PSCI_DEVICES
-+	select AUXILIARY_BUS
-+	select REBOOT_MODE
-+	help
-+	  Say y here to enable the PSCI reboot mode driver. The driver
-+	  registers with the reboot-mode framework to configure PSCI
-+	  reset commands, which are executed by the PSCI driver during
-+	  psci_sys_reset().
-+
- config POWER_MLXBF
- 	tristate "Mellanox BlueField power handling driver"
- 	depends on (GPIO_MLXBF2 || GPIO_MLXBF3) && ACPI
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index e31cab4ba78e..45d8aaaffaa1 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -41,5 +41,6 @@ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
- obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
- obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
- obj-$(CONFIG_NVMEM_REBOOT_MODE) += nvmem-reboot-mode.o
-+obj-$(CONFIG_PSCI_REBOOT_MODE) += psci-reboot-mode.o
- obj-$(CONFIG_POWER_MLXBF) += pwr-mlxbf.o
- obj-$(CONFIG_POWER_RESET_QEMU_VIRT_CTRL) += qemu-virt-ctrl.o
-diff --git a/drivers/power/reset/psci-reboot-mode.c b/drivers/power/reset/psci-reboot-mode.c
-new file mode 100644
-index 000000000000..c5dcfc40392a
---- /dev/null
-+++ b/drivers/power/reset/psci-reboot-mode.c
-@@ -0,0 +1,101 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-+ */
-+
-+#include <linux/array_size.h>
-+#include <linux/auxiliary_bus.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/psci.h>
-+#include <linux/reboot-mode.h>
-+#include <linux/slab.h>
-+#include <linux/types.h>
-+
-+/*
-+ * Predefined modes use two arguments. arg1/magic[0] is always zero and
-+ * arg2/magic[1] is one of the values defined by enum psci_standard_resets.
-+ */
-+static const struct reboot_mode_entry psci_resets[] = {
-+	{
-+		.name  = "psci-system-reset",
-+		.magic = { 0, PSCI_SYSTEM_RESET_COLD_RESET },
-+		.count = 2,
-+	},
-+	{
-+		.name  = "psci-system-reset2-arch-warm-reset",
-+		.magic = { 0, PSCI_SYSTEM_RESET2_ARCH_WARM_RESET },
-+		.count = 2,
-+	},
-+};
-+
-+static u64 psci_reboot_mode_get_cookie(const u32 *magic, int count)
++static long apple_smc_fops_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 +{
-+	u64 cookie = 0;
-+	int i;
-+
-+	/*
-+	 * For a 3-cell magic, arg2 is the high 32 bits and arg3 is the low 32 bits.
-+	 * For a 2-cell magic, arg2 is the low 32 bits.
-+	 */
-+	for (i = 1; i < count; i++)
-+		cookie = (cookie << 32) | magic[i];
-+
-+	return cookie;
-+}
-+
-+static int psci_reboot_mode_write(struct reboot_mode_driver *reboot,
-+				  const u32 *magic, u32 count)
-+{
-+	if (count < 2 || count > 3)
-+		return -EINVAL;
-+
-+	/* Unexpected value at magic[1]/arg2 on a 32-bit system. */
-+	if (!IS_ENABLED(CONFIG_64BIT) && count == 3 && magic[1])
-+		return -EINVAL;
-+
-+	return psci_set_reset_cmd(magic[0],
-+				  psci_reboot_mode_get_cookie(magic, count));
-+}
-+
-+static int psci_reboot_mode_probe(struct auxiliary_device *auxdev,
-+				  const struct auxiliary_device_id *id)
-+{
-+	struct reboot_mode_driver *reboot;
-+	struct device *dev = &auxdev->dev;
-+	size_t count;
++	struct apple_smc *smc = file->private_data;
++	void __user *argp = (void __user *)arg;
 +	int ret;
 +
-+	reboot = devm_kzalloc(dev, sizeof(*reboot), GFP_KERNEL);
-+	if (!reboot)
-+		return -ENOMEM;
++	switch (cmd) {
++	case IOCTL_SMC_READ: {
++		struct ioctl_smc_rw_payload payload;
++		struct apple_smc_key_info info;
 +
-+	/* Skip PSCI SYSTEM_RESET2 modes if unsupported. */
-+	count = psci_has_system_reset2_support() ? ARRAY_SIZE(psci_resets) : 1;
++		if (copy_from_user(&payload, argp, sizeof(payload)))
++			return -EFAULT;
 +
-+	ret = reboot_mode_driver_init(reboot, dev, NULL,
-+				      psci_reboot_mode_write, psci_resets,
-+				      count);
++		ret = apple_smc_get_key_info(smc, payload.key, &info);
++		if (ret < 0)
++			return ret;
++
++		if (payload.size != info.size)
++			return -EINVAL;
++
++		if (payload.size > 32)
++			return -EINVAL;
++
++		ret = apple_smc_read(smc, payload.key, payload.buf, payload.size);
++		if (ret < 0)
++			return ret;
++
++		if (copy_to_user(argp, &payload, sizeof(payload)))
++			return -EFAULT;
++		return 0;
++	}
++	case IOCTL_SMC_WRITE: {
++		struct ioctl_smc_rw_payload payload;
++		struct apple_smc_key_info info;
++
++		if (copy_from_user(&payload, argp, sizeof(payload)))
++			return -EFAULT;
++
++		ret = apple_smc_get_key_info(smc, payload.key, &info);
++		if (ret < 0)
++			return ret;
++
++		if (payload.size != info.size)
++			return -EINVAL;
++
++		if (payload.size > 32)
++			return -EINVAL;
++
++		switch (payload.key) {
++		case __SMC_KEY('C', 'H', '0', 'I'):
++		case __SMC_KEY('C', 'H', '0', 'C'):
++		case __SMC_KEY('C', 'H', '0', 'K'):
++		case __SMC_KEY('C', 'H', '0', 'B'):
++		case __SMC_KEY('C', 'H', 'T', 'E'):
++		case __SMC_KEY('C', 'H', 'L', 'S'):
++		case __SMC_KEY('B', 'C', 'L', 'M'):
++		case __SMC_KEY('M', 'B', 'S', 'E'):
++		case __SMC_KEY('C', 'L', 'K', 'L'):
++		case __SMC_KEY('C', 'L', 'K', 'O'):
++		case __SMC_KEY('O', 'S', 'W', 'D'):
++		case __SMC_KEY('N', 'A', 'T', 'J'):
++		case __SMC_KEY('N', 'A', 'T', 'i'):
++		case __SMC_KEY('N', 'E', 'S', 'N'):
++		case __SMC_KEY('M', 'O', 'C', 'N'):
++		case __SMC_KEY('L', 'K', 'S', 'B'):
++		case __SMC_KEY('N', 'T', 'O', 'K'):
++		case __SMC_KEY('N', 'T', 'A', 'P'):
++		case __SMC_KEY('F', '0', 'T', 'g'):
++		case __SMC_KEY('F', '1', 'T', 'g'):
++		case __SMC_KEY('F', '0', 'M', 'd'):
++		case __SMC_KEY('F', '1', 'M', 'd'):
++		case __SMC_KEY('F', 'S', '!', ' '):
++			return -EPERM;
++		}
++
++		ret = apple_smc_write(smc, payload.key, payload.buf, payload.size);
++		if (ret < 0)
++			return ret;
++
++		return 0;
++	}
++	case IOCTL_SMC_GET_KEY_INDEX: {
++		struct ioctl_smc_index_payload payload;
++
++		if (copy_from_user(&payload, argp, sizeof(payload)))
++			return -EFAULT;
++
++		ret = apple_smc_get_key_by_index(smc, payload.index, &payload.key);
++		if (ret < 0)
++			return ret;
++
++		if (copy_to_user(argp, &payload, sizeof(payload)))
++			return -EFAULT;
++
++		return 0;
++	}
++	case IOCTL_SMC_GET_KEY_INFO: {
++		struct ioctl_smc_info_payload payload;
++
++		if (copy_from_user(&payload, argp, sizeof(payload)))
++			return -EFAULT;
++
++		ret = apple_smc_get_key_info(smc, payload.key, &payload.info);
++		if (ret < 0)
++			return ret;
++
++		if (copy_to_user(argp, &payload, sizeof(payload)))
++			return -EFAULT;
++
++		return 0;
++	}
++	default:
++		return -EINVAL;
++	}
++}
++
++static int apple_smc_fops_open(struct inode *inode, struct file *file)
++{
++	struct miscdevice *misc = file->private_data;
++
++	file->private_data = container_of(misc, struct apple_smc, miscdev);
++	return 0;
++}
++
++static const struct file_operations apple_smc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= apple_smc_fops_open,
++	.unlocked_ioctl	= apple_smc_fops_ioctl,
++	.compat_ioctl	= compat_ptr_ioctl,
++	.llseek		= noop_llseek,
++};
++
++static void apple_smc_misc_unregister(void *data)
++{
++	misc_deregister(data);
++}
++
+ int apple_smc_probe(struct device *dev, const struct apple_smc_backend_ops *ops,
+ 		void *cookie, struct blocking_notifier_head *event_handlers, bool is_acpi)
+ {
+@@ -150,6 +291,20 @@ int apple_smc_probe(struct device *dev, const struct apple_smc_backend_ops *ops,
+ 	if (ret)
+ 		return ret;
+ 
++	smc->miscdev.minor = MISC_DYNAMIC_MINOR;
++	smc->miscdev.name = "smc";
++	smc->miscdev.fops = &apple_smc_fops;
++	smc->miscdev.parent = dev;
++	smc->miscdev.mode = 0600;
++
++	ret = misc_register(&smc->miscdev);
 +	if (ret)
 +		return ret;
 +
-+	return devm_reboot_mode_register(dev, reboot);
-+}
++	ret = devm_add_action_or_reset(dev, apple_smc_misc_unregister, &smc->miscdev);
++	if (ret)
++		return ret;
 +
-+static const struct auxiliary_device_id psci_reboot_mode_id_table[] = {
-+	{ .name = "arm-psci.psci-reboot-mode" },
-+	{ }
+ 	if (smc->is_acpi) {
+ 		ret = devm_mfd_add_devices(dev, -1, apple_smc_acpi_common,
+ 			ARRAY_SIZE(apple_smc_acpi_common), NULL, 0, NULL);
+diff --git a/include/linux/mfd/macsmc.h b/include/linux/mfd/macsmc.h
+index 4b4368b99..29fd7b20c 100644
+--- a/include/linux/mfd/macsmc.h
++++ b/include/linux/mfd/macsmc.h
+@@ -8,6 +8,8 @@
+ #ifndef _LINUX_MFD_MACSMC_H
+ #define _LINUX_MFD_MACSMC_H
+ 
++#include <linux/ioctl.h>
++#include <linux/miscdevice.h>
+ #include <linux/soc/apple/rtkit.h>
+ 
+ /**
+@@ -125,6 +127,7 @@ struct apple_smc_backend_ops {
+  * @is_acpi: Is the backend ACPI based
+  * @mutex: Mutex for non-atomic mode
+  * @lock: Spinlock for atomic mode
++ * @miscdev: Misc Device struct for ioctl ops
+  */
+ struct apple_smc {
+ 	struct device *dev;
+@@ -141,8 +144,32 @@ struct apple_smc {
+ 
+ 	struct mutex mutex;
+ 	spinlock_t lock;
++
++	struct miscdevice miscdev;
 +};
-+MODULE_DEVICE_TABLE(auxiliary, psci_reboot_mode_id_table);
 +
-+static struct auxiliary_driver psci_reboot_mode_driver = {
-+	.probe = psci_reboot_mode_probe,
-+	.id_table = psci_reboot_mode_id_table,
++struct ioctl_smc_rw_payload {
++	smc_key key;
++	size_t size;
++	u8 buf[32];
 +};
 +
-+static int __init psci_reboot_mode_init(void)
-+{
-+	return __auxiliary_driver_register(&psci_reboot_mode_driver, THIS_MODULE,
-+					   "psci-reboot-mode");
-+}
-+subsys_initcall(psci_reboot_mode_init);
-
++struct ioctl_smc_index_payload {
++	int index;
++	smc_key key;
++};
++
++struct ioctl_smc_info_payload {
++	smc_key key;
++	struct apple_smc_key_info info;
+ };
+ 
++#define APPLE_SMC_MAGIC 'S'
++#define IOCTL_SMC_READ           _IOWR(APPLE_SMC_MAGIC, 1, struct ioctl_smc_rw_payload)
++#define IOCTL_SMC_WRITE          _IOW(APPLE_SMC_MAGIC, 2, struct ioctl_smc_rw_payload)
++#define IOCTL_SMC_GET_KEY_INDEX  _IOWR(APPLE_SMC_MAGIC, 3, struct ioctl_smc_index_payload)
++#define IOCTL_SMC_GET_KEY_INFO   _IOWR(APPLE_SMC_MAGIC, 4, struct ioctl_smc_info_payload)
++
+ /**
+  * apple_smc_read - Read size bytes from given SMC key into buf
+  * @smc: Pointer to apple_smc struct
 -- 
-2.34.1
+2.55.0
 
