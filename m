@@ -1,145 +1,113 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.173
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793264547;
-	b=zQhXa+smQ7A3jhIlv3q2zn064j3klTPcGhfFdjVdUGaokUihctf8MsDedgOsh7KFm4H6
-	 wgwWfVA4HHBzoo7ppC0B604YSZtkCSFz6qR6Sw8smKZ17gxtP3yIU4jhVlv4dZn0CgUTC
-	 xrmgUI5JNkRgmGoykRvdVxBejrUpXy+C3iLqz7jFlSy8Rq7i3KBtLF5iyGJnA1M8BUcZP
-	 9DhgAVYKeLnCbbZJoBF+d5Bc3GDuUazqDFWnWqxa9Nn8jt1vi43k+oe65nR2LK+tWoxQv
-	 czRY98fCm+BHRaQ1xr3Vjv0UCRuW8SfT10x6EZ73NweKjuKjeYr5ZcsKgPpS5F9BIMw==
+	t=1793264548;
+	b=kNyc2AFlF2xEuqyxIBq6QLRTfgxOULeJ04PXnNekOtRXBxnowFmG6fEhv4M7poS0t0ep
+	 ufSQmTTnK5hjyeehCpZdL3QAf8ETj8aIiOrNdUgo6kPS8dPPVAU0iN2PJYozb4piG2Fe8
+	 o6z7jeNspGmUJRog8VMd2c2srXBqMVrs4jAMPvB5B8lpJ1M17e2yqICo7IC5YoeU6ZfVy
+	 8ULOWw7H03K5ZptmkgF/FmED7GnQ0A/qt3iKFmunl44Pu2a2BxnVoCFXuTA5OeC09cFKJ
+	 Al+Ju8T/3FXrZmZpUOxNR/xNGi74Skv5/Vvf7cvQNH2TUTEe7fOxwdvmifjx05ogSSA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793264547;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=Em6bj94swsrfUrSQCXEn0xceZl+9/C90nnaFaaRvExo=;
-	b=OcfchytFvj8EULVAX9747OcGNZA3GCGiJKg4XpQ31XLG8qSFA7X68kgyx9B4YTMdIw8k
-	 SkX+pu8dDO/bk4yNDTQzqsIdKCjHFjV9QQnFXNH4xT249hVDNUml/JZeebxFJXU2evMb5
-	 qfd4vjVHfTWX3+5oZW9O1M8w2YFjnoAy0zv8XXaaZHdKR5ZM22Xet3eHwT0i2GLurFvad
-	 RvDzPg5uUseREFrKSgNxueRpiZft6h+NQFv3nY9F2SMYX+PCD4MrnOY0iURq6R8pgi1Fb
-	 HOL5Ot+l8fiCl/AOSv0XGaME4yYweZekAorj4wIWeMgdeoIgkbnyrWAmuEVMt6V/9MA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793264548;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
+	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
+	 X-Proofpoint-Spam-Info:X-Authority-Analysis:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=Ra0wkK0VOhs8mZ313296c7ydEzyM1zL9ytp50t1dNQM=;
+	b=IzRmXKed/4PdrrSar0d55Jdn4wxDdffjvjKCmVJPUT8H5E2ay9HP3kYuqv0uy8fdkP66
+	 h9z6jJrW/JAGQ9NR7LY68r/5sR4k2n2pulw3khtvfTZAUvHGWr3oDtdAYtRbTG+3zYUrn
+	 LR83wsb5WXVaNpITQRR4sox9HPwpr3MrJMJxSaMAML1NNGxYxNLTKM7Lhdu/kZKEo31Df
+	 pOVMs65nN+MprFo/7x5nIAWw/w4e0wqfeYqFIvMBYdukpClU8369uSE/EpKCzV/+52mAj
+	 RNPajytEGU2qfaj0XkSz+GWM4BsCx9lmKvvJ07yuPONFSpdyXKJ3SkhUJY7AR3dehPA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=v+GdMNW6;
-	arc=none smtp.remote-ip=74.125.82.173
-Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=C26XEd2C;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gGaftdv2;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1287860A262C
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1287860A262C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1400960A262B
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1400960A262B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=v+GdMNW6
-Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-35c76e9614aso2709207eec.0
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:02:25 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=C26XEd2C;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gGaftdv2
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T8vAS9659664
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Ra0wkK0VOhs8mZ313296c7ydEzyM1zL9ytp50t1dNQM=; b=C26XEd2CcgRn4dkf
+	3jQTT571CluA7sV2xEQK1/gtOdQEam4dkB41lT12hh33q1U3qncelaTHCd3WVUyO
+	qPDjyOemwsMNbxO9U25lPqA74Ssgyg2BX6mkpIzWsLjj97Fc+PUGkFso6uhof+p+
+	XnqOWgf2yYrnJbiGUedWjExUuntQP8XGdixAdf9eaDYt6r+VtlvJLP61glqTloq9
+	uYKU3Sq0dO3wovB0LYQiyVFfmjwXktGpC6eGAB4F2VDCQk4psbSnibpHnPJ8aund
+	n6iZP0saS3vAO4pz/naU157nua9o3V0Z3X/rw/w98R2WS4pqUUHFfI+ElbrYxjy9
+	+SIRTw==
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hkkehut95-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 09:02:26 +0000 (GMT)
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-3ac8f449d1bso1708832a91.3
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 02:02:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793264545; x=1793869345; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=oss.qualcomm.com; s=google; t=1793264546; x=1793869346; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Em6bj94swsrfUrSQCXEn0xceZl+9/C90nnaFaaRvExo=;
-        b=v+GdMNW6VY8ycTHLfDP4t6NciTC2osSPI32ktEngjDdXmrE1hV/8sVFvczzMG693wH
-         roVa6n53id4X2dMpgKp+DjKqlllj47SDkvmmr5ezZIF6LlLu+SfhNQ39/aI40vZyy/Ou
-         Z1x9lLclc65fddRgXyNElq4cBZ3FdzDnQWpxJBWLnGus4aXlTpZrVX2FyKbfkpUX7GqO
-         UaDKWWAG9kKEfxQX1GODfbN966lJz+jj0swpTaqnlP09hOWI4hrbKWS7mXwGGaGBXmXw
-         gl0z03dnYTdfH6Ezjkip09l+kSpsRBWcpFY8YDksWET3NGpvEJTPB4mI02mkjQWTgD9d
-         xICA==
+        bh=Ra0wkK0VOhs8mZ313296c7ydEzyM1zL9ytp50t1dNQM=;
+        b=gGaftdv2Wf9RwbhsKxc9U5IBHqEcCRQvNh2YeYmkyB9HGEWXv5lXr6IpYTJbzI4iyQ
+         9xn/soXibhIGApJMQqiCDzAS1pVgQEfUoXkPgzH+at1AH0eTOShMUD5QW+caL4x9owei
+         CcA15pgzc+sFJZrPbsZLA0B/JiQsyAugZ96rI1e8XelYS/uXPo+RXkfdDQukFp0XxeT8
+         5C/JIFm2r+gDJgqao8JD8PWLGth6UsP8Uf5XLH24muYCx8vFcnIVeaPsV+XOtzlWQHQi
+         DTI5X5VduPNiXB7ZCKQxvENwGY8Wm1zua5M/mrpfilblZIvsELZ2lr2OuNS/0PoR94U6
+         40lw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793264545; x=1793869345;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Em6bj94swsrfUrSQCXEn0xceZl+9/C90nnaFaaRvExo=;
-        b=Z1GT4loIhdNZIVe2HxujqIekpf2odeZF2/IUexij8vWwJHyGiVl6fa38r4Bz1kIhjh
-         jmUsBXpmgMrIqhYXc/yXFSlGaOr7QlEsJLw9ACPQbvaW+KF9QLn7dByH/3Np1Z72IT86
-         mosrmvb+Hf8DfTmkbq4xl6OK3iel/JnsTwl4l1cc/3kVyxU4kRthxCVzm9tUbUw0MiMC
-         FeLPhRasGNCWUg00Duy9RFLeCKla/Q2neS3U2D8lETL+GrzyHILXcZMiflvWBp1JPGpS
-         Qw02whUg7eVAg5wj9hXFkX3zyW1cRPURghlft2dZng2Y95zcUY/0H4auJY92dUPfXmBU
-         Oj8A==
-X-Forwarded-Encrypted: i=1; AKwUvByQCiTY1Rf0KA2galS/tOrXb3GABDOS09CI7l3W8cxD3IFBWMjljEHaOafw0SGVqRbvzU6HFRDcwA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJsOLA98TLBu46czHAEZFV48OBfOvqVlAnKNVXjoXfLCtgiDvU5
-	lPNGBJv+1S90JcQbQUGAIZgVAW9S6lkXUOA645g6/jC+Awx6AD4s5vA=
-X-Gm-Gg: AYBFou0GDfaZk3UAk80+pI1qd7NH4054zwyYqWjWFzRIcpxPSOCLMcb5HXY5NPYcPPb
-	GFYBue1dRWTTUi7MjLAKLmBfCcbY0nTPLfRjoYteAhS2aITW2aglT7Zg2hqObApb+4kC//zQ+nE
-	ocDL/Vs6Sh2WyMiXt659OoZAUxtOx8YxoqMAnBysJgQ106KdyrIczE1VF9a766Qp3b190wlgiJT
-	Ws8lUiJqrQMaf0i6FTDLJ8w9KfktWuxrtbWzLtWhpKYLW/ZK0aapAj6QkB2CwxqvtN0+4tHJGca
-	DQL5X5FW1Pjw+24VkuCvyxDP+Fla7UVWONYD/laxVsqq9vI2/J6ZFIZ6s5blXkhl70PsWpNdJEc
-	j4PM9dLs45arIpWZFchpdC0gA/D1V9btw08OGZ9AlO4Jx93MVus25xlObyCR/kqnqHx46E/zP5c
-	oTjpytw0QyzgJYvPbSHR2vB/aQvt0FEJPBd59dZIgkNSk6JyKWVcu4m1I5qieWgXRqeHY3b0IkL
-	BKR+8gClD+s7iCZi8PpVjPYPhX4quZ/nl1hN/jR3LQDS8MPbIVdjv1Z1/KFLBzfNw7ssGfM0pcV
-	85F7EwYC5YoMxvdx0SF/mrRv2zvoHh2BD720jCX6uRFPGmnmm4rJa7f51Z414qTvePibKT8ELR1
-	5q0kQ+x8=
-X-Received: by 2002:a05:7300:7312:b0:358:ec5c:bef1 with SMTP id 5a478bee46e88-36a204773c0mr9949917eec.39.1793264544951;
-        Thu, 29 Oct 2026 02:02:24 -0700 (PDT)
-Received: from at-Standard-PC-Q35-ICH9-2009 ([27.60.20.232])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a23641e78sm16497937eec.0.2026.10.29.02.02.09
+        d=1e100.net; s=20260707; t=1793264546; x=1793869346;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Ra0wkK0VOhs8mZ313296c7ydEzyM1zL9ytp50t1dNQM=;
+        b=HU9YXXUxZdjXD69o6oz0jGBswtUmK8diVp+yy2L7vrgv50vefkYiKoTioGhgxrKlvl
+         9DipwUwu83Fm5KN3+vLBH3afgjWHvlX3w8E2al0KbKn6kz2oT0BuwtisZToWK+6JF13v
+         SW5txfCXaMNXO45btwk2/9ALPmf+BeIClz8/eptkBGL1NZRFnuXSrmNLFAA3UMB1+/qG
+         iVosGF7KM6B4NmppHGJusvtk80RhU4MTTkr85VNq61L0xALKP4Y2ren3msyfihtdRrCF
+         hZ197Apio2tjkEUw1Y4kAyUo1IXXzORj3q9cLOhnX+68sNmIsvjLr6C5ETJUQ9UoAFYF
+         YLgQ==
+X-Forwarded-Encrypted: i=1; AKwUvBz6Phssyjw1E8FBOXMMGpV8a+WDptrohovmMiE0szoAfOC20Nom3jMiVQWg9ylB30IJT4cz0o1PJA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJ+c0NFoMgLZeQUSqGDY9oJ9YatnfKYTOGiSEOupWh/IuvWrCa8
+	efMey2TYHm3jKNIp3dvxDGd6vjdgNWGx6Se45ZqRd2xwNDvOxPJ3x4/pGRpigysXom2URbS9Za0
+	mGAr4E7o9RGagxvpTfS8xoC/O/abXKtcXxIMUA7yYp/3YDM2ocBR6pAl1EZa5lw==
+X-Gm-Gg: AYBFou0UVpt8dpEKfp63096ACv8WK4I9zwAjjfdzVbckgIQYPM82ZwFtNxA7lCj6CAf
+	7dJ6eoU1mMtz37eFvpwURraCUyaB4NlNulzvdsoO/2rEF0k2v8JEAmcnUeW8Dbt+e857m8lOUbX
+	uWefK09NJ8y1BmiyGaIHwoX1+QOcOE4l0rEXAOipyd9bkqbwlQOkg1iclk/4Q0qB66H5B7XZG2t
+	Hya/++tgOpYkeN6T8VNiufnaCYPn1giwYutTkGbCnFgHCugOCOPof187UCAfvUmvG4inhx5lb0m
+	AMO3vRZhXt3bAF5bCNEVfOWvQfgdHhMPwRlksnwfjmnYMahcUFmQ+1gi8fWHNyml8x9xGOZI8l4
+	rI91anmefSMqEO5oUINcZKIfc28luZCx93xh433mIySIMJZbEzj8bMnU0Xv7Gk61rdbZepA2LQK
+	+zcFGCG2cG
+X-Received: by 2002:a17:90b:274c:b0:3a4:945e:bc33 with SMTP id 98e67ed59e1d1-3ae580df4edmr3665025a91.47.1793264545642;
+        Thu, 29 Oct 2026 02:02:25 -0700 (PDT)
+X-Received: by 2002:a17:90b:274c:b0:3a4:945e:bc33 with SMTP id 98e67ed59e1d1-3ae580df4edmr3664973a91.47.1793264545125;
+        Thu, 29 Oct 2026 02:02:25 -0700 (PDT)
+Received: from hu-spratap-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ae6e7ad710sm3197385a91.3.2026.10.29.02.02.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Thu, 29 Oct 2026 02:02:24 -0700 (PDT)
-From: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
-To: 
-Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Sven Peter <sven@kernel.org>,
-	Janne Grunau <j@jannau.net>,
-	Neal Gompa <neal@gompa.dev>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Lee Jones <lee@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Griffin Kroah-Hartman <griffin@kroah.com>,
-	Hans de Goede <hansg@kernel.org>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Jarkko Sakkinen <jarkko@kernel.org>,
-	Mimi Zohar <zohar@linux.ibm.com>,
-	Roberto Sassu <roberto.sassu@huawei.com>,
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-	Eric Snowberg <eric.snowberg@oracle.com>,
-	Paul Moore <paul@paul-moore.com>,
-	James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-gpio@vger.kernel.org,
-	asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-hwmon@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	linux-leds@vger.kernel.org,
-	mfd@lists.linux.dev,
-	platform-driver-x86@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-rtc@vger.kernel.org,
-	linux-watchdog@vger.kernel.org,
-	linux-integrity@vger.kernel.org,
-	keyrings@vger.kernel.org,
-	linux-security-module@vger.kernel.org
-Subject: [RFC PATCH 14/14] mfd/macsmc: add ioctl to access smc keys
-Date: Thu, 29 Oct 2026 04:52:11 -0400
-Message-ID: <20261029085504.3547-15-atharvatiwarilinuxdev@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
-References: <20261029085504.3547-1-atharvatiwarilinuxdev@gmail.com>
+From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Date: Thu, 29 Oct 2026 14:31:01 +0530
+Subject: [PATCH v27 07/10] arm64: dts: qcom: Add psci reboot-modes for
+ kodiak boards
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -149,260 +117,147 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261029-arm-psci-system_reset2-vendor-reboots-v27-7-fa4b3ff1359b@oss.qualcomm.com>
+References: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
+In-Reply-To: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
+To: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Moritz Fischer <moritz.fischer@ettus.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>,
+        Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
+        Abel Vesa <abelvesa@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
+        Sudeep Holla <sudeep.holla@kernel.org>, Andy Yan <andyshrk@163.com>,
+        Ulf Hansson <ulfh@kernel.org>
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+        Andre Draszik <andre.draszik@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
+        Srinivas Kandagatla <srini@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793264458; l=2150;
+ i=shivendra.pratap@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
+ bh=mPj+QLGPnZnwXZyxbErfY3pN7hCQJuFpiu9YM0YUfhE=;
+ b=Cqq6XXf1kv0NCylp7UGDtgQOM3peyD1cGQ4s9I1D7xhKF1GuKsTELxbtOUUYyagw5Rm4ch3ET
+ Q6YJVJBmFmwDzewQbD9obZSG2A/e9W0Kn6Mp68NJkE+vEHkybMmG+5H
+X-Developer-Key: i=shivendra.pratap@oss.qualcomm.com; a=ed25519;
+ pk=ssWsJFX3OM9pkdoe4+guOfGPaulHOFt0GVnVlB6on+s=
+X-Proofpoint-ORIG-GUID: taOpufdyv2ZoTNYLlRsPjr_Ul7BJyszW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfX1Xn7YQjC1ihl
+ wX/vykC5KYVR3zI1GJ9PQM3+/6wB6HMd662Ts8feYaRrNmDCb3SzagPwRkJw1k7euWUhwLPk7k2
+ 3kq9MCJ06TU7eHtWPl/rP4eAWNgJTvTFYTUU3vwrB8fta+nuisDw9VEanNlNN6hPEUzC1gveHyG
+ 8cFPJYU53+iAE1C/I1fYeVMKcZtGcDZzWQe5l0JHQYopsHI8PgQHAUO0kbCHzhvvSaw/8GJGnyX
+ jt639Xuj1FdAvrpoaycWQGvo8NSoEPC3yObLVLsp2zs7/hrix27HRcAcypjNC/qs8YbURK5oTpR
+ MyR6IMAgzb6PA4N+HoGQh3f3hBXMOGtNM0bDwkx+6jJY/zFHzsQa5yI/jS7VRIkDapix7nw6MuB
+ c+pI64+SGZ/cv2D6FprEUugzQEKl8UNzyA29ZJPAnuLVYSVrAl7IHnk9ux48eMWOVGshsNzLdfK
+ 1e/ddsyt//rq6AYM/ig==
+X-Proofpoint-GUID: taOpufdyv2ZoTNYLlRsPjr_Ul7BJyszW
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAzNCBTYWx0ZWRfX7EdLPl+RbHCd
+ AWxJNNF5ZIpIuk3NDaTwpVQPW9+emDMovtdNkA3kDx/8Kv9tIc1wCPTVtLO3eeBZapQoaDMbHqV
+ xKu2rOjsd5KwXv4jyGxSeUwRFtZT/jY=
+X-Authority-Analysis: v=2.4 cv=bYv+w+PB c=1 sm=1 tr=0 ts=6ae30ba2 cx=c_pps
+ a=vVfyC5vLCtgYJKYeQD43oA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=EUspDBNiAAAA:8 a=t9IVmYW30V31rltyR78A:9 a=QEXdDO2ut3YA:10
+ a=rl5im9kqc5Lf4LNbBjHf:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-29_03,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 impostorscore=0 malwarescore=0 bulkscore=0 spamscore=0
+ phishscore=0 lowpriorityscore=0 clxscore=1015 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610290034
 
-Add a /dev/smc device so userspace can talk to the SMC
-directly. Some keys that need to be written aren't handled by
-any driver, or affect several drivers at once, so they
-can't be exposed cleanly through the kernel interfaces.
+Add PSCI SYSTEM_RESET2 reboot-modes for qcm6490-idp and qcs6490-rb3gen2
+for use by the psci-reboot-mode driver.
+The following modes are defined:
+- bootloader: reboot into fastboot mode for fastboot flashing.
+- edl: reboot into emergency download mode for image loading via
+  the Firehose protocol.
 
-Keys already managed by kernel drivers can't be written this
-way, to avoid conflicts.
+Support for these modes is firmware dependent and not available across
+all kodiak based boards.
 
-Signed-off-by: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
 ---
- drivers/mfd/macsmc-core.c  | 155 +++++++++++++++++++++++++++++++++++++
- include/linux/mfd/macsmc.h |  27 +++++++
- 2 files changed, 182 insertions(+)
+ arch/arm64/boot/dts/qcom/kodiak.dtsi         | 2 +-
+ arch/arm64/boot/dts/qcom/qcm6490-idp.dts     | 7 +++++++
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 7 +++++++
+ 3 files changed, 15 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/mfd/macsmc-core.c b/drivers/mfd/macsmc-core.c
-index bc4200f57..a30f7386e 100644
---- a/drivers/mfd/macsmc-core.c
-+++ b/drivers/mfd/macsmc-core.c
-@@ -6,10 +6,13 @@
+diff --git a/arch/arm64/boot/dts/qcom/kodiak.dtsi b/arch/arm64/boot/dts/qcom/kodiak.dtsi
+index 8c7523602d27..d1b5eb9e86dd 100644
+--- a/arch/arm64/boot/dts/qcom/kodiak.dtsi
++++ b/arch/arm64/boot/dts/qcom/kodiak.dtsi
+@@ -867,7 +867,7 @@ pmu-a78 {
+ 		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
+ 	};
  
- #include <linux/bitfield.h>
- #include <linux/device.h>
-+#include <linux/fs.h>
- #include <linux/mfd/core.h>
- #include <linux/mfd/macsmc.h>
-+#include <linux/miscdevice.h>
- #include <linux/mutex.h>
- #include <linux/spinlock.h>
-+#include <linux/uaccess.h>
+-	psci {
++	psci: psci {
+ 		compatible = "arm,psci-1.0";
+ 		method = "smc";
  
- static const struct mfd_cell apple_smc_rtkit_devs[] = {
- 	MFD_CELL_NAME("macsmc-input"),
-@@ -112,6 +115,144 @@ static void apple_smc_disable_notifications(void *data)
- 	smc->be->disable_notifications(smc->be_cookie);
- }
- 
-+static long apple_smc_fops_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	struct apple_smc *smc = file->private_data;
-+	void __user *argp = (void __user *)arg;
-+	int ret;
-+
-+	switch (cmd) {
-+	case IOCTL_SMC_READ: {
-+		struct ioctl_smc_rw_payload payload;
-+		struct apple_smc_key_info info;
-+
-+		if (copy_from_user(&payload, argp, sizeof(payload)))
-+			return -EFAULT;
-+
-+		ret = apple_smc_get_key_info(smc, payload.key, &info);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (payload.size != info.size)
-+			return -EINVAL;
-+
-+		if (payload.size > 32)
-+			return -EINVAL;
-+
-+		ret = apple_smc_read(smc, payload.key, payload.buf, payload.size);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (copy_to_user(argp, &payload, sizeof(payload)))
-+			return -EFAULT;
-+		return 0;
-+	}
-+	case IOCTL_SMC_WRITE: {
-+		struct ioctl_smc_rw_payload payload;
-+		struct apple_smc_key_info info;
-+
-+		if (copy_from_user(&payload, argp, sizeof(payload)))
-+			return -EFAULT;
-+
-+		ret = apple_smc_get_key_info(smc, payload.key, &info);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (payload.size != info.size)
-+			return -EINVAL;
-+
-+		if (payload.size > 32)
-+			return -EINVAL;
-+
-+		switch (payload.key) {
-+		case __SMC_KEY('C', 'H', '0', 'I'):
-+		case __SMC_KEY('C', 'H', '0', 'C'):
-+		case __SMC_KEY('C', 'H', '0', 'K'):
-+		case __SMC_KEY('C', 'H', '0', 'B'):
-+		case __SMC_KEY('C', 'H', 'T', 'E'):
-+		case __SMC_KEY('C', 'H', 'L', 'S'):
-+		case __SMC_KEY('B', 'C', 'L', 'M'):
-+		case __SMC_KEY('M', 'B', 'S', 'E'):
-+		case __SMC_KEY('C', 'L', 'K', 'L'):
-+		case __SMC_KEY('C', 'L', 'K', 'O'):
-+		case __SMC_KEY('O', 'S', 'W', 'D'):
-+		case __SMC_KEY('N', 'A', 'T', 'J'):
-+		case __SMC_KEY('N', 'A', 'T', 'i'):
-+		case __SMC_KEY('N', 'E', 'S', 'N'):
-+		case __SMC_KEY('M', 'O', 'C', 'N'):
-+		case __SMC_KEY('L', 'K', 'S', 'B'):
-+		case __SMC_KEY('N', 'T', 'O', 'K'):
-+		case __SMC_KEY('N', 'T', 'A', 'P'):
-+		case __SMC_KEY('F', '0', 'T', 'g'):
-+		case __SMC_KEY('F', '1', 'T', 'g'):
-+		case __SMC_KEY('F', '0', 'M', 'd'):
-+		case __SMC_KEY('F', '1', 'M', 'd'):
-+		case __SMC_KEY('F', 'S', '!', ' '):
-+			return -EPERM;
-+		}
-+
-+		ret = apple_smc_write(smc, payload.key, payload.buf, payload.size);
-+		if (ret < 0)
-+			return ret;
-+
-+		return 0;
-+	}
-+	case IOCTL_SMC_GET_KEY_INDEX: {
-+		struct ioctl_smc_index_payload payload;
-+
-+		if (copy_from_user(&payload, argp, sizeof(payload)))
-+			return -EFAULT;
-+
-+		ret = apple_smc_get_key_by_index(smc, payload.index, &payload.key);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (copy_to_user(argp, &payload, sizeof(payload)))
-+			return -EFAULT;
-+
-+		return 0;
-+	}
-+	case IOCTL_SMC_GET_KEY_INFO: {
-+		struct ioctl_smc_info_payload payload;
-+
-+		if (copy_from_user(&payload, argp, sizeof(payload)))
-+			return -EFAULT;
-+
-+		ret = apple_smc_get_key_info(smc, payload.key, &payload.info);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (copy_to_user(argp, &payload, sizeof(payload)))
-+			return -EFAULT;
-+
-+		return 0;
-+	}
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int apple_smc_fops_open(struct inode *inode, struct file *file)
-+{
-+	struct miscdevice *misc = file->private_data;
-+
-+	file->private_data = container_of(misc, struct apple_smc, miscdev);
-+	return 0;
-+}
-+
-+static const struct file_operations apple_smc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= apple_smc_fops_open,
-+	.unlocked_ioctl	= apple_smc_fops_ioctl,
-+	.compat_ioctl	= compat_ptr_ioctl,
-+	.llseek		= noop_llseek,
-+};
-+
-+static void apple_smc_misc_unregister(void *data)
-+{
-+	misc_deregister(data);
-+}
-+
- int apple_smc_probe(struct device *dev, const struct apple_smc_backend_ops *ops,
- 		void *cookie, struct blocking_notifier_head *event_handlers, bool is_acpi)
- {
-@@ -150,6 +291,20 @@ int apple_smc_probe(struct device *dev, const struct apple_smc_backend_ops *ops,
- 	if (ret)
- 		return ret;
- 
-+	smc->miscdev.minor = MISC_DYNAMIC_MINOR;
-+	smc->miscdev.name = "smc";
-+	smc->miscdev.fops = &apple_smc_fops;
-+	smc->miscdev.parent = dev;
-+	smc->miscdev.mode = 0600;
-+
-+	ret = misc_register(&smc->miscdev);
-+	if (ret)
-+		return ret;
-+
-+	ret = devm_add_action_or_reset(dev, apple_smc_misc_unregister, &smc->miscdev);
-+	if (ret)
-+		return ret;
-+
- 	if (smc->is_acpi) {
- 		ret = devm_mfd_add_devices(dev, -1, apple_smc_acpi_common,
- 			ARRAY_SIZE(apple_smc_acpi_common), NULL, 0, NULL);
-diff --git a/include/linux/mfd/macsmc.h b/include/linux/mfd/macsmc.h
-index 4b4368b99..29fd7b20c 100644
---- a/include/linux/mfd/macsmc.h
-+++ b/include/linux/mfd/macsmc.h
-@@ -8,6 +8,8 @@
- #ifndef _LINUX_MFD_MACSMC_H
- #define _LINUX_MFD_MACSMC_H
- 
-+#include <linux/ioctl.h>
-+#include <linux/miscdevice.h>
- #include <linux/soc/apple/rtkit.h>
- 
- /**
-@@ -125,6 +127,7 @@ struct apple_smc_backend_ops {
-  * @is_acpi: Is the backend ACPI based
-  * @mutex: Mutex for non-atomic mode
-  * @lock: Spinlock for atomic mode
-+ * @miscdev: Misc Device struct for ioctl ops
-  */
- struct apple_smc {
- 	struct device *dev;
-@@ -141,8 +144,32 @@ struct apple_smc {
- 
- 	struct mutex mutex;
- 	spinlock_t lock;
-+
-+	struct miscdevice miscdev;
-+};
-+
-+struct ioctl_smc_rw_payload {
-+	smc_key key;
-+	size_t size;
-+	u8 buf[32];
-+};
-+
-+struct ioctl_smc_index_payload {
-+	int index;
-+	smc_key key;
-+};
-+
-+struct ioctl_smc_info_payload {
-+	smc_key key;
-+	struct apple_smc_key_info info;
+diff --git a/arch/arm64/boot/dts/qcom/qcm6490-idp.dts b/arch/arm64/boot/dts/qcom/qcm6490-idp.dts
+index af7821e02fdb..3001ec050a5e 100644
+--- a/arch/arm64/boot/dts/qcom/qcm6490-idp.dts
++++ b/arch/arm64/boot/dts/qcom/qcm6490-idp.dts
+@@ -792,6 +792,13 @@ &qup_uart7_tx {
+ 	bias-disable;
  };
  
-+#define APPLE_SMC_MAGIC 'S'
-+#define IOCTL_SMC_READ           _IOWR(APPLE_SMC_MAGIC, 1, struct ioctl_smc_rw_payload)
-+#define IOCTL_SMC_WRITE          _IOW(APPLE_SMC_MAGIC, 2, struct ioctl_smc_rw_payload)
-+#define IOCTL_SMC_GET_KEY_INDEX  _IOWR(APPLE_SMC_MAGIC, 3, struct ioctl_smc_index_payload)
-+#define IOCTL_SMC_GET_KEY_INFO   _IOWR(APPLE_SMC_MAGIC, 4, struct ioctl_smc_info_payload)
++&psci {
++	reboot-mode {
++		mode-bootloader = <0x80010001 0x2>;
++		mode-edl = <0x80000000 0x1>;
++	};
++};
 +
- /**
-  * apple_smc_read - Read size bytes from given SMC key into buf
-  * @smc: Pointer to apple_smc struct
+ &qupv3_id_0 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index 909039816a21..82788a1516d5 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -1107,6 +1107,13 @@ &qup_spi3_data_clk {
+ 	bias-disable;
+ };
+ 
++&psci {
++	reboot-mode {
++		mode-bootloader = <0x80010001 0x2>;
++		mode-edl = <0x80000000 0x1>;
++	};
++};
++
+ &qup_uart7_cts {
+ 	/*
+ 	 * Configure a bias-bus-hold on CTS to lower power
+
 -- 
-2.55.0
+2.34.1
 
