@@ -1,112 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.163.135.77
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793258753;
-	b=xcvbBG79Gd5h32VVmqgE7A+fkn9WLmixZ4LiiM8128+BSFdd5iD6Op3/koHGC7i4tXJJ
-	 BFbsXEDKver8vPxi1wulNmdx8OUILyxrNyW+0B+Tf5ki2n9b++K2u9/bCS1mAw7/RmOXl
-	 qH/LKsWcKdKtyotO1ABNTFbTnPeeKnwe6KQax/S69oHHJuEoNd0ZJjSQMP6zx8vNEWXlT
-	 PJfdYnYR7opF7pQx8x22aF3Ehomi8T4d9/xgC4inbqDF7WzFvYae1vce+aJnHL47uTwrQ
-	 SD/R4hiNOioquiT50hisyXkc3Htz5nRi6RbxVrMKS8DOzzMg5pM31XzJRnMNXctv+cw==
+	t=1793259041;
+	b=aFEKJZLPEboEtXHjlaVdMk8M6FwiO8DohAZMkmv1quzDAWy047YwH97QM/oK682N7qiJ
+	 8W0xaEsF9O5crdKjYgAOme8m0uGRjyFdSAgUlsVYWNF+uLby80gcrau8O95UUsa73au60
+	 sa6TJc4Lh3mQvyvkt3txBqnFj1L8mmKXh3t7jvEWNG0f5r46A5kiW7BtT3h+8E6H6ywBq
+	 637kNTtaXRXsTt6gaPrNucuE3ZkcYYfv4su25SVldgBpMv6Ou7nI6Q//CiCHvA3MMr5wT
+	 9Xji6Ct+1JHCFCNJ6Vgn6tQb12EmUrLBCfdsUPpXaVZ82ZTYu3r6XWdSkF/R8gPrgug==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793258753;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
-	 X-Authority-Analysis:X-Proofpoint-Spam-Info:X-Proofpoint-GUID:
+	a=rsa-sha256; c=relaxed/relaxed; t=1793259041;
+	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:Received:
+	 Received:Received:Received:Received:Received:From:To:CC:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type:X-ADIRuleOP-NewSCL:
+	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
 	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
 	 X-Proofpoint-Spam-Details;
-	bh=DPr/ruBMl/5HBXMrl9bzUyjfwBosBgVuKL0NnKrAD/w=;
-	b=ZhUUtmg5+47ptLt1/iS6KByneYyujU6DJ0E/5RKOPRb6UoPTf7HBuFbxD/a2t0u+Dxvk
-	 DdQ+USAdwOpvitzB+07OWPykaURqX+xtaUg/xz/+JDb+E1d+cKf9QTYvR4JcCAfTvScxW
-	 SE992d7fCmWyyqQFCRPX86R/H9icvSs37XbGyIpS8sWhqIXlzf+Nc5iXkYUyQ0wH9mFM7
-	 bdx2ObV00mydS4HhidcfEL9ees3JkGvMcUewnqkz1rxb7Fa0XI0QyyqNFXLpH5sIqayBw
-	 7BCpreo4KxREkPt0kVPDHTw1rErb6j32jTwVRn7EywItxKhZKaxRDCZ2+tqf8lD/l0g==
+	bh=3UkgSTvG1c0XA8zbrYDI2em4WQKJ3eirHGMDzw/gh9M=;
+	b=fx2uPr45PlzT6lQBnEkt+mysLuqMmrdDzV5qEqoPYKspAm49cH4VL0ni1Aw4CpJow+Sg
+	 /U90EDN0uYXjyALsYIiJSaF9DbVAGggKzwKRAA9LwV2GDdrf9rcvaqOJSrNXJXC2Ol2fc
+	 6VFnPhs1uDBVf2PFS6WMqAF6wgHuutWvDF4rgL1rjUPeP6ArTKtCJD3mH1qCMfdF5sre/
+	 G5wLv5BQSBauIL+BNEJLNNk+Yd8AH7PLOh25x9uyEaugniGLJGDDPZqcAaq9ezr101cxg
+	 BNbvkgb5zrxNahxqMsBcWaBNnHg+FWra4SOWk0OLzx8Y/VKe7BNA7EUkzo9B96ya3Lg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=WMbDXrgb;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=GqdrpWKf;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dmarc=pass header.from=analog.com;
+	spf=pass smtp.mailfrom=analog.com;
+	dkim=pass header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=CA5cOaY+;
+	dkim=pass header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b="YZ/LUQR4";
+	arc=none smtp.remote-ip=148.163.135.77
+Received: from mx0a-00128a01.pphosted.com (mx0a-00128a01.pphosted.com [148.163.135.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83B8D606A322
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 07:25:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 83B8D606A322
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B0AF606A31A;
+	Thu, 29 Oct 2026 07:30:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5B0AF606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=analog.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=analog.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=WMbDXrgb;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=GqdrpWKf
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T5GuLF3829010
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 07:25:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	DPr/ruBMl/5HBXMrl9bzUyjfwBosBgVuKL0NnKrAD/w=; b=WMbDXrgb+uS8dEwt
-	DjFQF79dR1ep6mfPqr4H1gwzFJ35mCShmfFtfCshkwKxnGD56fDCx74h8e2wh97W
-	rUa4FlmajEarcIuR6Q+OO3UwbWTaBG9M7G6tyL1Hyk0eqXgQTmA2AN3GWQuKVLx2
-	uuPrEMpRfmX4m6Tr6WGDjLPQ1x7AQUvqmUY4SG0SYM/XI/0BffHG5nfx7ysB/YC8
-	bO4pu3ADHcqcAyqK71NzhqAo9uuMSs0oPGhhQQ+pSC9SbPPYP44ClEvwwflZF42E
-	2sLRkxybcB5FYvZukMxQsiqAG6/QtMMz+nOS7WMD8yljtdKfQFO44Qp1vuXCS/jl
-	NHaCnw==
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hktmp9fet-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 07:25:51 +0000 (GMT)
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-91c0f73807eso24194686d6.0
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2026 00:25:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793258751; x=1793863551; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=DPr/ruBMl/5HBXMrl9bzUyjfwBosBgVuKL0NnKrAD/w=;
-        b=GqdrpWKfCUk4imCVsSVEKcRZPv2JRmj+5XT7hpK7YUmufnLpeSYMLjTE9TKQumZoPL
-         aNBk5O6rEJ2uYCIuuZZZpCxXHR0Dq1ZU+SSxEAwr7B2D7rgnDF4fnFYITPVAaDsAGYoO
-         yjIr7lpInBOcW57eyrFeTY1zicJJoMsEJmiruQWkoAlD/WcRbpYMe/CpLQrbE4ty3K9i
-         3S7h5/fQR9jAH9KIXZytdPNv1DUFsl7FLQh08OiTR4+wzqy/IWT2W6fV6NDpWhNixA96
-         RKby40+baKyz7Gl90COd3j2w5ofaZM0skIlLKBXi4N7FeJ/9illy97w13Wis06pQCKar
-         NpPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793258751; x=1793863551;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=DPr/ruBMl/5HBXMrl9bzUyjfwBosBgVuKL0NnKrAD/w=;
-        b=JFk30kTup72/VQc1DHWOI0QBBkXsabX7o+k3mQVjeD47TtAvk5zS26EXV9bwey79V9
-         mi+ple1Fkz1kX7Jn+OEQ2McM6vtFpbkkEwuMx2YWSgrqAa6B9B6/aUsCB2D6rTucVrS0
-         PcOoUWOwU62ybK1HtSZ1PsqPbJve/Y/H5CMNQ+4p9PCwor5cBC7cqvM80aPm0uHe9YCj
-         KQOEbP+dOufLPmw1ygCKaufLITOl45M5PGYTkbmZJoYNstLeVSPqEoZRawkrgn5KkIEs
-         fURB3al7xH6InBJPn60+34z0idDsy53emhG3V23gi5KeDRErqbvaSPfxoNlzS1m2/f7J
-         oGyA==
-X-Forwarded-Encrypted: i=1; AKwUvBw134880FUrvpwRP9CelZw7zC3SpmBrmUNQ0WEouRhALVqvg7pEYciGtclLsZxa4f5bnLRTiTBd3w==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIccOrU0HFAJKH98PW6VEN55i2Zftd5AFU3YCS3jJ2KA0tOcZTC
-	6qH0OPoPB8kxxXPzWB8S9Lp4aiKmQYL99W0C3tql5eWloLMe57AxjfknMfW1xm6AmrQKSM2tLgO
-	jhmArnKcI9iBSCLHQTGjnApF67pJLgv7CDVgxxHkCpuhMI03hnuWyikYv6eAh3A==
-X-Gm-Gg: AYBFou2kJcVG7h10YInMgZPByuCUmKj0h50H0xuAvNPnxPRQUDb8Its6pkmzwLPLGCm
-	jC7k7rUxY++M1+vfpoYVT5oHfPSZ2Y413bb92K9eZZj3HwjKoc1u/9svZU/EigCGeW7oP0lNjRo
-	6LnENs2DT8wQpOdYAz+VYdansjFmWGeZiUeaASygCwgOqR+4yVgsbyzHDYqQyBQnA3T7Wfi30s6
-	vbsSomU6NHpqfzOe1rCPWms0x88/2TpL6zxWHgOcCT+cPMUzaSyHlJumlj3R8jZLlNkzfC5IBRS
-	cFWSg6P+lWgzghO04lRmqhD3HFvRFc2iXXKB0NhOTIglL0S3q2uAtvPCO2OwDJAhiugSoXwhKga
-	s2ecI25Dsd3nVZbmE3DJBs/gOyaUp+xtG/I2Vc3WHHXv5toYcbxYOEywxeo1fbfeoj7UfEARn2J
-	u65HG5CmvTcFVM6Q==
-X-Received: by 2002:a05:620a:284a:b0:944:6c7:c88 with SMTP id af79cd13be357-94408ce4acdmr614856685a.54.1793258750415;
-        Thu, 29 Oct 2026 00:25:50 -0700 (PDT)
-X-Received: by 2002:a05:620a:284a:b0:944:6c7:c88 with SMTP id af79cd13be357-94408ce4acdmr614853885a.54.1793258749900;
-        Thu, 29 Oct 2026 00:25:49 -0700 (PDT)
-Received: from [192.168.25.64] ([94.155.124.210])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e542ed998sm18038106f8f.13.2026.10.29.00.25.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 29 Oct 2026 00:25:49 -0700 (PDT)
-Message-ID: <d59a7591-b4ca-48fe-9f23-335e3bc21d81@oss.qualcomm.com>
-Date: Thu, 29 Oct 2026 09:25:46 +0200
+	dkim=pass (2048-bit key, unprotected) header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=CA5cOaY+;
+	dkim=pass (2048-bit key, unprotected) header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=YZ/LUQR4
+Received: from pps.filterd (m0167089.ppops.net [127.0.0.1])
+	by mx0a-00128a01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69T71Ndm808294;
+	Thu, 29 Oct 2026 03:30:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vtelectron.com;
+	 h=cc:content-transfer-encoding:content-type:date:from
+	:in-reply-to:message-id:mime-version:references:subject:to; s=
+	DKIM; bh=3UkgSTvG1c0XA8zbrYDI2em4WQKJ3eirHGMDzw/gh9M=; b=CA5cOaY
+	+VkLU6K47DKD60uM3nUW6N5jeLrcMeCoV3fc59s+HEGHHTcvDouG63hwEZRFQ2iP
+	AzXcw3TGn9+y1HHuZx6yH2RXqsJMPiRQDYTbjiVVFoc9C22v1HyyQT/rpuOnvI+R
+	IoXRHmEHnvUuUMG7/dIt76Cd9AgOkMsjXpLmml8qsQkf0YWCbUzFixVCKCU3M3J5
+	XmISMOpdYsow4opKXFfheO+lyW3SMhIvZcJoGph56nDQ3fBRYxi7ADrOVOthTT1e
+	6u0SkrHbOr3UXdCHHWNzshnVxaJX6jtsiWIVuV3hH93OtS1kOTRuBIZjCFwY1cWx
+	iQqcc5CZOjCYD3A==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=analog.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=DKIM; bh=3UkgS
+	TvG1c0XA8zbrYDI2em4WQKJ3eirHGMDzw/gh9M=; b=YZ/LUQR43VMdtaDg6Op2E
+	6mdm3k1915wC+8T3V741l1D2sH64jbz3oISUx6V8E2yGJ4NtDkpy8dV7AWVvo/uT
+	IoODN4KYbhHQyzIMMrRrPdv06guLAeezSNU68kr24gSOGsZkXZOZr/RvulNFq4Vc
+	2ouHPsBKgs2gVWkjqghsPkZLcttsb5IykyDS0FUeZmY6iRDDH0NTx709WfinNfmj
+	qJ/5ftjw23OveZPGvdE9pLtFM5OIHW+aNwEwTlDPRnVCShwa0QESEulnHEllMT/5
+	lxgj/k7SeLs6eK9I4pWAnEZdVrPrsiFwa7A9P+26H+ToFg8AHp1FzHrmMkTu16wk
+	Q==
+Received: from nwd2mta3.analog.com ([137.71.173.56])
+	by mx0a-00128a01.pphosted.com (PPS) with ESMTPS id 4hm1d0g53y-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Oct 2026 03:30:37 -0400 (EDT)
+Received: from ASHBMBX9.ad.analog.com (ASHBMBX9.ad.analog.com [10.64.17.10])
+	by nwd2mta3.analog.com (8.14.7/8.14.7) with ESMTP id 69T7UaY5009140
+	(version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Thu, 29 Oct 2026 03:30:36 -0400
+Received: from ASHBCASHYB5.ad.analog.com (10.64.17.133) by
+ ASHBMBX9.ad.analog.com (10.64.17.10) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.37; Thu, 29 Oct 2026 03:30:36 -0400
+Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by
+ ASHBCASHYB5.ad.analog.com (10.64.17.133) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.37; Thu, 29 Oct 2026 03:30:36 -0400
+Received: from zeus.spd.analog.com (10.66.68.11) by ashbmbx9.ad.analog.com
+ (10.64.17.10) with Microsoft SMTP Server id 15.2.1748.37 via Frontend
+ Transport; Thu, 29 Oct 2026 03:30:36 -0400
+Received: from JGERONI2-L01.ad.analog.com ([10.66.6.193])
+	by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 69T7UKMK010624;
+	Thu, 29 Oct 2026 03:30:31 -0400
+From: John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
+To: <sre@kernel.org>
+CC: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH v3 2/2] power: supply: add LT8491 battery charger driver
+Date: Thu, 29 Oct 2026 15:30:12 +0800
+Message-ID: <20261029073012.1498-3-johnerasmusmari.geronimo@analog.com>
+X-Mailer: git-send-email 2.44.0.windows.1
+In-Reply-To: <20261029073012.1498-1-johnerasmusmari.geronimo@analog.com>
+References: <20261029073012.1498-1-johnerasmusmari.geronimo@analog.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,151 +105,531 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/3] dt-bindings: clock: qcom,camcc-sm8250: add
- interconnect provider
-To: Bryan O'Donoghue <bod@kernel.org>,
-        Atanas Filipov <atanas.filipov@oss.qualcomm.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd
- <sboyd@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
-        Jonathan Marek <jonathan@marek.ca>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20261016170701.1504338-1-atanas.filipov@oss.qualcomm.com>
- <20261016170701.1504338-2-atanas.filipov@oss.qualcomm.com>
- <20261020-bloodhound-of-remarkable-debate-11afe3@quoll>
- <7ca815b3-4712-42e4-996d-4a1e53cad492@oss.qualcomm.com>
- <Sm-FvdxaOiXpzzGo30wECHdQF_-LtUaJCO3mGpBUxXfnVCYjOLE5DhNWdNmOMhYdkR1RMXhPzWuHhsZJkJ_Vzw==@protonmail.internalid>
- <20261028181040.3515955-1-atanas.filipov@oss.qualcomm.com>
- <f0618a27-cee2-4f39-a578-fcbf3c51607a@kernel.org>
-Content-Language: en-US
-From: "Gjorgji Rosikopulos (Consultant)"
- <gjorgji.rosikopulos@oss.qualcomm.com>
-In-Reply-To: <f0618a27-cee2-4f39-a578-fcbf3c51607a@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfX41CmfedaOS6r
- BkiwObJgSBEWm1NKpYLHD/dfC4Lnq2/oO7U86FJCezvpXUQYwwRj1KGkxeChlAAtkUaw4bu8vp7
- 00kM3kxQGGvDDy1mkikVbG8EyLmYuac6AECRJhFFP7u0bLyFlmr3NzmlfuECh0DPLNIJGc3PB7d
- csM3sqNoggvmQHBOVWQH3hVR/AWBWJ4CYS7I6uX6+jVFmJC/KJf57ZovPv3hg0HTPcdkqRHgbzZ
- z+asolARyz3AjFEGYr1dozFCDQQ81gpzy4EAag6LwCkj2kb3evP3VkoQB74gm0uqLnsReqTvmPd
- +51h1ZlVAU5BgWCM3l/rsiStDDUKrmdrmnszemUjFo0umDpJFvH1gAbQU+fDbfS+kHrucyNIzXt
- 8N2m98XKgnURLzTslX9bBgcwFH0ZsumH0G6oR2SJb3r3QatV9kZSshfWmpTapv5cv5jSYaFGQ7K
- ImG7bolAGZu5OUzN0qQ==
-X-Authority-Analysis: v=2.4 cv=crYOAF4i c=1 sm=1 tr=0 ts=6ae2f4ff cx=c_pps
- a=oc9J++0uMp73DTRD5QyR2A==:117 a=eGCDHFSXubCXFTSSGhjuOA==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
- a=bB782UoiXxmDKwpK7Y8A:9 a=QEXdDO2ut3YA:10 a=iYH6xdkBrDN1Jqds4HTS:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfX76gwBqSPOCv5
- nBwV4pcBzKtp3qmx1PNaoQMR4M9vmvN/eAw6gqHAAeYgvKc7YeD7KbsRLCMRIr5Xf96y3DcVR0e
- ToERTKDFhI+t50Sboc4fz+ffARX2eqM=
-X-Proofpoint-GUID: LG3BQ8qwnP4mGXgK50xPeGhRNMsxbvdq
-X-Proofpoint-ORIG-GUID: LG3BQ8qwnP4mGXgK50xPeGhRNMsxbvdq
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ADIRuleOP-NewSCL: Rule Triggered
+X-Proofpoint-GUID: -yz6ov0amVDcD56p2xqdxFTbbaBX1Q5z
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfX0A2rToN9uTvc
+ 3E+nboP7MsA5nY6EYucEOXDIfaXwGvsbQaCfQogA8c/43bvpTtng0c16PnHTbcmY6AZpaqazOto
+ e+ncQxM2oYgzwcOZ2KnghHGGUmh1YhdvVldmAknBKOmqfJ97slM6
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI5MDAyOCBTYWx0ZWRfX9kwn+YBFJ+mj
+ 91kjOHnjCBOpAGzgA43ksgsXwETpN44xoTSD7zyF4jynrLTahu5uXeiHbvhukI+X9j1QgTG0n+A
+ PXqgC+va7+554n4x11K9mudjV6HH+OvjUPjqqXiEngmeetKnaP+9xjV5BxY1Bh7vgnMIW8ikBVX
+ a0ZsyQ4Vqq4t1skZoe8rei4QLxnIUYCxp+Z0pU6WS+orewWt9KdsLqS5Itoz1wJGJ8lHpVKKd8o
+ 2e1QAEYER1TrtO2Ms+8bdGJXBz+E6A6hL/ohq3iXcjuqVENe6meuldbjaPWRoqp6IwFsG6JM9au
+ SouPBDn1OFbwRjom90jgvNgSQ+e/BAV01KGji7iD9RfYeamevMujyMRpuUGaxnIJN2h/FgWt4kY
+ m55GbJqTjF/NURPHsHtPni2O5me42S/gA/UdgawfotRl2Azit4hvKllDgUNhzJfy9WxeSYwl933
+ DuHcJp75tmBslMt1ERQ==
+X-Authority-Analysis: v=2.4 cv=M7XYuCws c=1 sm=1 tr=0 ts=6ae2f61d cx=c_pps
+ a=PpDZqlmH/M8setHirZLBMw==:117 a=PpDZqlmH/M8setHirZLBMw==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=0sLvza09kfJOxVLZPwjg:22
+ a=Z0pTeXoby7EwIRygza74:22 a=gAnH3GRIAAAA:8 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8
+ a=Z_6zUrearLLfCFo25iUA:9
+X-Proofpoint-ORIG-GUID: -yz6ov0amVDcD56p2xqdxFTbbaBX1Q5z
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-10-29_02,2026-10-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 malwarescore=0 lowpriorityscore=0 impostorscore=0 clxscore=1015
- adultscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610290028
+ phishscore=0 bulkscore=0 malwarescore=0 adultscore=0 suspectscore=0
+ clxscore=1015 priorityscore=1501 impostorscore=0 lowpriorityscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
+ definitions=main-2610290028
 
+Add support for the Analog Devices LT8491 buck-boost battery charge
+controller connected over I2C. The driver registers a power supply
+exposing the charging status, battery voltage, current, power and
+temperature, and the battery temperature limits. The PCB resistor
+values needed by the chip's telemetry are read from the devicetree and
+written to the chip at probe.
 
+Signed-off-by: John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
+---
+ MAINTAINERS                           |   1 +
+ drivers/power/supply/Kconfig          |   9 +
+ drivers/power/supply/Makefile         |   1 +
+ drivers/power/supply/lt8491_charger.c | 428 ++++++++++++++++++++++++++
+ 4 files changed, 439 insertions(+)
+ create mode 100644 drivers/power/supply/lt8491_charger.c
 
-On 10/29/2026 12:00 AM, Bryan O'Donoghue wrote:
-> On 28/10/2026 19:10, Atanas Filipov wrote:
->> What clock votes cannot express is why I think the camera NoC is an
->> interconnect:
->>
->>   - The camera NoC is a bus with several independent masters: the VFE
->>     write ports, JPEG and OPE. They share it on the way to the MMSS NoC,
->>     and the camnoc AXI clock sets its throughput.
-> 
-> I've always conceptually viewed the CamNoc as just another NoC that 
-> happens to live inside of the TITAN_TOP_GDSC power-island.
-> 
-> I think the trouble here is the CAMNOC_AXI_CLK is just one clock, it's 
-> not interconnecting any two things at all.
-> 
-> Noc entries in DT usually look like
-> 
-> interconnects = <&gem_noc MASTER_AMPSS_M0 0
-> 		 &config_noc SLAVE_VENUS_CFG 0>,
-> 		<&mmss_noc MASTER_VIDEO_P0 0 &mc_virt SLAVE_EBI_CH0 0>;
-> 		interconnect-names = "cpu-cfg", "video-mem";
-> 
-> In the second case we're connecting an MMSS port to a DRAM port i.e. two 
-> completely separate producers/consumers and we have specific ports that 
-> RPM/RPMh is involved in managing.
-> 
-> Which is not the case for CamNoc - here really we have some shared 
-> clocks which we need to calculate across components within the Camera 
-> power-island.
-> 
-> In downstream the CPAs code does that.
-> 
-> - icc-clk would I think over-provision clocks
-> - CCF would as you've observed under-provision
-> 
-> - But a CPA's analog in upstream which components set/consume ?
-> 
-> That would work.
-> 
-> After all what we are doing here _is_ specific to how camera works. We 
-> don't really have many - any ? other examples in Qcom SoCs where we lump 
-> a number of different semi-independent components into one area - ICP, 
-> CDM, VFE, JPEG and ask them to share aggregated clocks - in a way that 
-> is specific to - guessing but - specific to how these components get 
-> modeled in silicon test benches.
-> 
-> My vote is to replicate CPAs in upstream with a CPA's icc provider driver.
-> 
-> The bandwidth calculations are already proven out in downstream and if 
-> we get it right - potentially its something downstream could switch to.
-> 
-> We could even use the interconnect API inside of the CPA's driver but, I 
-> think just doing votes via interconnect and icc_set_bw() into icc-clk in 
-> the drivers directly won't produce the same bandwidth calculations we 
-> have in downstream - which you may loathe downstream code but the clock 
-> calculations we'd assume are ~ a pretty good starting point.
-> 
-> So; make the CPAs driver an icc provider.
-> 
-> cpas_icc_set() could/should absorb the downstream cam_cpas_hw.c 
-> heuristic for calculating the aggregate clocks.
-> 
-> Its not represented in generic icc-clk right now and as we add in more 
-> clocks/SoCs this disparity will grow.
-
-Just to add, there is a CAMNOC interconnect within the camera subsystem
-that handles arbitration between the online and offline engines and routes
-the data to MMNOC.
-
-It also provides QoS settings, which are currently configured by the VFE driver
-as part of set_qos(). Therefore, I agree with Bryan that, if implemented properly,
-the downstream driver could switch to this approach in the future.
-
-This raises the question: should we update CAMSS to use the CAMNOC provider and stop
-voting directly on MMNOC? CAMNOC could then vote on MNOC based on the aggregated bandwidth
-requests from the individual engines.
-
-Regards,
-~Gjorgji
-
-> 
-> ---
-> bod
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2b3cc7649..badfce0b8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -15471,6 +15471,7 @@ M:	John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
+ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/devicetree/bindings/power/supply/adi,lt8491.yaml
++F:	drivers/power/supply/lt8491_charger.c
+ 
+ LTC1660 DAC DRIVER
+ M:	Marcus Folkesson <marcus.folkesson@gmail.com>
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index ee7dc5f26..2a5a0c823 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -598,6 +598,15 @@ config CHARGER_LT3651
+ 	  Say Y to include support for the Analog Devices (Linear Technology)
+ 	  LT3651 battery charger which reports its status via GPIO lines.
+ 
++config CHARGER_LT8491
++	tristate "Analog Devices LT8491 charger"
++	depends on I2C
++	help
++	  Say Y to include support for the Analog Devices (Linear Technology)
++	  LT8491 battery charge controller connected to I2C. The LT8491 is a
++	  high voltage buck-boost switching regulator battery charger
++	  controller.
++
+ config CHARGER_LTC4162L
+ 	tristate "LTC4162-L charger"
+ 	depends on I2C
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index f3c0d1006..7b85b35b5 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -81,6 +81,7 @@ obj-$(CONFIG_CHARGER_LP8788)	+= lp8788-charger.o
+ obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
+ obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
+ obj-$(CONFIG_CHARGER_LT3651)	+= lt3651-charger.o
++obj-$(CONFIG_CHARGER_LT8491)	+= lt8491_charger.o
+ obj-$(CONFIG_CHARGER_LTC4162L)	+= ltc4162-l-charger.o
+ obj-$(CONFIG_CHARGER_MAX14577)	+= max14577_charger.o
+ obj-$(CONFIG_CHARGER_DETECTOR_MAX14656)	+= max14656_charger_detector.o
+diff --git a/drivers/power/supply/lt8491_charger.c b/drivers/power/supply/lt8491_charger.c
+new file mode 100644
+index 000000000..eab5ea720
+--- /dev/null
++++ b/drivers/power/supply/lt8491_charger.c
+@@ -0,0 +1,428 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Analog Devices LT8491 Battery Charger
++ *
++ * Copyright 2024 Analog Devices Inc.
++ */
++
++#include <linux/bitfield.h>
++#include <linux/device.h>
++#include <linux/errno.h>
++#include <linux/i2c.h>
++#include <linux/iopoll.h>
++#include <linux/module.h>
++#include <linux/power_supply.h>
++
++#define LT8491_TELE_TBAT_REG 0x0
++#define LT8491_TELE_POUT_REG 0x2
++#define LT8491_TELE_PIN_REG  0x4
++#define LT8491_TELE_EFF_REG  0x6
++#define LT8491_TELE_IOUT_REG 0x8
++#define LT8491_TELE_IIN_REG  0xA
++#define LT8491_TELE_VBAT_REG 0xC
++#define LT8491_TELE_VIN_REG  0xE
++#define LT8491_TELE_VINR_REG 0x10
++#define LT8491_STAT_CHARGER_REG 0x12
++#define LT8491_CTRL_UPDATE_TELEM_REG 0x26
++
++#define LT8491_CFG_RSENSE1_REG 0x28
++#define LT8491_CFG_RIMON_OUT_REG 0x2A
++#define LT8491_CFG_RSENSE2_REG 0x2C
++#define LT8491_CFG_RDACO_REG 0x2E
++#define LT8491_CFG_RFBOUT1_REG 0x30
++#define LT8491_CFG_RFBOUT2_REG 0x32
++#define LT8491_CFG_RDACI_REG 0x34
++#define LT8491_CFG_RFBIN2_REG 0x36
++#define LT8491_CFG_RFBIN1_REG 0x38
++#define LT8491_CFG_TBAT_MIN_REG 0x40
++#define LT8491_CFG_TBAT_MAX_REG 0x41
++#define LT8491_MFR_DATA1_LSB_REG 0x5C
++
++#define LT8491_TELEM_ACTIVE_MASK BIT(6)
++#define LT8491_CHARGING_MASK BIT(2)
++
++#define LT8491_UPDATE_TELEM_CMD 0xAA
++
++/* A telemetry update typically takes 20ms to complete, per the datasheet. */
++#define LT8491_TELEM_POLL_PERIOD_US 2000
++#define LT8491_TELEM_UPDATE_TIMEOUT_US 50000
++
++/* LT8491_CFG_TBAT_{MIN,MAX}_REG hold a signed whole-degree-Celsius value. */
++#define LT8491_TBAT_MIN_C -128
++#define LT8491_TBAT_MAX_C 127
++
++/* LT8491_TELE_TBAT_REG: reset value, and thermistor-disconnected indication. */
++#define LT8491_TBAT_NOT_MEASURED 0x7FFF
++#define LT8491_TBAT_DISCONNECTED 0x7777
++
++#define LT8491_MFR_DATA_LEN 0x3
++
++struct lt8491_info {
++	struct i2c_client *client;
++	struct power_supply *psp;
++	char serial_number[16];
++	/* protect against device accesses */
++	struct mutex lock;
++};
++
++static int lt8491_read_serial_number(struct lt8491_info *info)
++{
++	int i;
++	int serial_number[LT8491_MFR_DATA_LEN];
++
++	for (i = 0; i < LT8491_MFR_DATA_LEN; i++) {
++		serial_number[i] = i2c_smbus_read_word_data(info->client,
++							    LT8491_MFR_DATA1_LSB_REG + i * 2);
++		if (serial_number[i] < 0)
++			return serial_number[i];
++	}
++
++	scnprintf(info->serial_number, sizeof(info->serial_number), "%04x%04x%04x",
++		  serial_number[0], serial_number[1], serial_number[2]);
++
++	return 0;
++}
++
++static int lt8491_update_telemetry(struct lt8491_info *info)
++{
++	int ret, val;
++
++	ret = i2c_smbus_read_byte_data(info->client, LT8491_STAT_CHARGER_REG);
++	if (ret < 0)
++		return ret;
++
++	/* Telemetry acquisition is already running; nothing to trigger. */
++	if (FIELD_GET(LT8491_TELEM_ACTIVE_MASK, ret))
++		return 0;
++
++	ret = i2c_smbus_write_byte_data(info->client, LT8491_CTRL_UPDATE_TELEM_REG,
++					LT8491_UPDATE_TELEM_CMD);
++	if (ret)
++		return ret;
++
++	ret = read_poll_timeout(i2c_smbus_read_byte_data, val,
++				val < 0 || !FIELD_GET(LT8491_TELEM_ACTIVE_MASK, val),
++				LT8491_TELEM_POLL_PERIOD_US,
++				LT8491_TELEM_UPDATE_TIMEOUT_US, false,
++				info->client, LT8491_STAT_CHARGER_REG);
++	if (ret)
++		return ret;
++
++	return val < 0 ? val : 0;
++}
++
++static int lt8491_get_property(struct power_supply *psy,
++			       enum power_supply_property psp,
++			       union power_supply_propval *val)
++{
++	struct lt8491_info *info = power_supply_get_drvdata(psy);
++	int ret;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		ret = i2c_smbus_read_byte_data(info->client,
++					       LT8491_STAT_CHARGER_REG);
++		if (ret < 0)
++			return ret;
++
++		val->intval = FIELD_GET(LT8491_CHARGING_MASK, ret) ?
++					POWER_SUPPLY_STATUS_CHARGING :
++					POWER_SUPPLY_STATUS_NOT_CHARGING;
++
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		scoped_guard(mutex, &info->lock) {
++			ret = lt8491_update_telemetry(info);
++			if (ret)
++				return ret;
++
++			ret = i2c_smbus_read_word_data(info->client,
++						       LT8491_TELE_VBAT_REG);
++			if (ret < 0)
++				return ret;
++		}
++
++		val->intval = ret * 10000;
++
++		return 0;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		scoped_guard(mutex, &info->lock) {
++			ret = lt8491_update_telemetry(info);
++			if (ret)
++				return ret;
++
++			ret = i2c_smbus_read_word_data(info->client,
++						       LT8491_TELE_IOUT_REG);
++			if (ret < 0)
++				return ret;
++		}
++
++		val->intval = ret * 1000;
++
++		return 0;
++	case POWER_SUPPLY_PROP_POWER_NOW:
++		scoped_guard(mutex, &info->lock) {
++			ret = lt8491_update_telemetry(info);
++			if (ret)
++				return ret;
++
++			ret = i2c_smbus_read_word_data(info->client,
++						       LT8491_TELE_POUT_REG);
++			if (ret < 0)
++				return ret;
++		}
++
++		val->intval = ret * 10000;
++
++		return 0;
++	case POWER_SUPPLY_PROP_TEMP:
++		scoped_guard(mutex, &info->lock) {
++			ret = lt8491_update_telemetry(info);
++			if (ret)
++				return ret;
++
++			ret = i2c_smbus_read_word_data(info->client,
++						       LT8491_TELE_TBAT_REG);
++			if (ret < 0)
++				return ret;
++		}
++
++		if (ret == LT8491_TBAT_NOT_MEASURED ||
++		    ret == LT8491_TBAT_DISCONNECTED)
++			return -ENODATA;
++
++		val->intval = sign_extend32(ret, 15);
++
++		return 0;
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
++		ret = i2c_smbus_read_byte_data(info->client,
++					       LT8491_CFG_TBAT_MIN_REG);
++		if (ret < 0)
++			return ret;
++
++		val->intval = sign_extend32(ret, 7) * 10;
++
++		return 0;
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
++		ret = i2c_smbus_read_byte_data(info->client,
++					       LT8491_CFG_TBAT_MAX_REG);
++		if (ret < 0)
++			return ret;
++
++		val->intval = sign_extend32(ret, 7) * 10;
++
++		return 0;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval = "lt8491";
++
++		return 0;
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval = "Analog Devices";
++
++		return 0;
++	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
++		val->strval = info->serial_number;
++
++		return 0;
++	default:
++		return -EINVAL;
++	}
++}
++
++static int lt8491_set_property(struct power_supply *psy,
++			       enum power_supply_property psp,
++			       const union power_supply_propval *val)
++{
++	struct lt8491_info *info = power_supply_get_drvdata(psy);
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
++		if (val->intval < LT8491_TBAT_MIN_C * 10 ||
++		    val->intval > LT8491_TBAT_MAX_C * 10)
++			return -EINVAL;
++
++		return i2c_smbus_write_byte_data(info->client,
++						 psp == POWER_SUPPLY_PROP_TEMP_ALERT_MIN ?
++						 LT8491_CFG_TBAT_MIN_REG :
++						 LT8491_CFG_TBAT_MAX_REG,
++						 val->intval / 10);
++	default:
++		return -EINVAL;
++	}
++}
++
++static int lt8491_property_is_writeable(struct power_supply *psy,
++					enum power_supply_property psp)
++{
++	switch (psp) {
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
++		return 1;
++	default:
++		return 0;
++	}
++}
++
++static const enum power_supply_property lt8491_properties[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_POWER_NOW,
++	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
++	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_MANUFACTURER,
++	POWER_SUPPLY_PROP_SERIAL_NUMBER,
++};
++
++static const struct power_supply_desc lt8491_desc = {
++	.name		= "lt8491",
++	.type		= POWER_SUPPLY_TYPE_BATTERY,
++	.properties	= lt8491_properties,
++	.num_properties	= ARRAY_SIZE(lt8491_properties),
++	.get_property	= lt8491_get_property,
++	.set_property	= lt8491_set_property,
++	.property_is_writeable = lt8491_property_is_writeable,
++};
++
++static int lt8491_configure_resistor(struct lt8491_info *info,
++				     const char *propname, int divider,
++				     unsigned int reg)
++{
++	struct device *dev = &info->client->dev;
++	int ret;
++	u32 val;
++
++	ret = device_property_read_u32(dev, propname, &val);
++	if (ret < 0)
++		return dev_err_probe(dev, ret, "Missing %s property.\n",
++				     propname);
++
++	val /= divider;
++	if (val > U16_MAX)
++		return dev_err_probe(dev, -EINVAL,
++				     "Value for %s is out of range.\n",
++				     propname);
++
++	/* The device has no word-write transaction; write low then high byte. */
++	ret = i2c_smbus_write_byte_data(info->client, reg, val & 0xff);
++	if (ret)
++		return ret;
++
++	return i2c_smbus_write_byte_data(info->client, reg + 1, val >> 8);
++}
++
++static int lt8491_configure_telemetry(struct lt8491_info *info)
++{
++	int ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rsense1-micro-ohms", 10,
++					LT8491_CFG_RSENSE1_REG);
++	if (ret)
++		return ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rimon-out-ohms", 10,
++					LT8491_CFG_RIMON_OUT_REG);
++	if (ret)
++		return ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rsense2-micro-ohms", 10,
++					LT8491_CFG_RSENSE2_REG);
++	if (ret)
++		return ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rdaco-ohms", 10,
++					LT8491_CFG_RDACO_REG);
++	if (ret)
++		return ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rfbout1-ohms", 100,
++					LT8491_CFG_RFBOUT1_REG);
++	if (ret)
++		return ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rfbout2-ohms", 10,
++					LT8491_CFG_RFBOUT2_REG);
++	if (ret)
++		return ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rdaci-ohms", 10,
++					LT8491_CFG_RDACI_REG);
++	if (ret)
++		return ret;
++
++	ret = lt8491_configure_resistor(info, "adi,rfbin2-ohms", 10,
++					LT8491_CFG_RFBIN2_REG);
++	if (ret)
++		return ret;
++
++	return lt8491_configure_resistor(info, "adi,rfbin1-ohms", 100,
++					 LT8491_CFG_RFBIN1_REG);
++}
++
++static int lt8491_probe(struct i2c_client *client)
++{
++	struct device *dev = &client->dev;
++	struct lt8491_info *info;
++	struct power_supply_config psy_cfg = {};
++	int ret;
++
++	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA |
++				     I2C_FUNC_SMBUS_READ_WORD_DATA))
++		return -EOPNOTSUPP;
++
++	info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	info->client = client;
++	psy_cfg.drv_data = info;
++
++	ret = devm_mutex_init(dev, &info->lock);
++	if (ret)
++		return ret;
++
++	ret = lt8491_read_serial_number(info);
++	if (ret)
++		return dev_err_probe(dev, ret,
++				     "Can't read serial. Hardware error.\n");
++
++	ret = lt8491_configure_telemetry(info);
++	if (ret)
++		return ret;
++
++	info->psp = devm_power_supply_register(dev, &lt8491_desc, &psy_cfg);
++	if (IS_ERR(info->psp))
++		return dev_err_probe(dev, PTR_ERR(info->psp),
++				     "Failed to register power supply.\n");
++
++	return 0;
++}
++
++static const struct i2c_device_id lt8491_id[] = {
++	{ .name = "lt8491" },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, lt8491_id);
++
++static const struct of_device_id lt8491_of_match[] = {
++	{ .compatible = "adi,lt8491" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, lt8491_of_match);
++
++static struct i2c_driver lt8491_driver = {
++	.driver = {
++		.name = "lt8491",
++		.of_match_table = lt8491_of_match,
++	},
++	.probe = lt8491_probe,
++	.id_table = lt8491_id,
++};
++module_i2c_driver(lt8491_driver);
++
++MODULE_AUTHOR("John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>");
++MODULE_DESCRIPTION("LT8491 battery charger");
++MODULE_LICENSE("GPL");
+-- 
+2.34.1
 
