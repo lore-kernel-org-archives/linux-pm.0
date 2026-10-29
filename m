@@ -1,52 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=77.81.229.115
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.137.202.133
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793288548;
-	b=DVzYoPxEM4Ly5Yaz5Nt5CR5+zp2voRFvz5xCzwdX1/fnbmUuUeuz+cji+qbVh1dNRKuC
-	 Vm99ize7DHFOAo7kA8p+sz7lgPvaFcwIZUiOVvGYx0ocjid4SEsIwePali6kAv9+t9WJW
-	 Wg/fEmFuKGEKTy7j900PnbAsEdn7AJ5VaS/7SrgzKwL9CI01T+Yal8NHFxaOQjPgm1+y/
-	 bN3wXmzOV2tiIXywbvOJYoGMvdDfoRa8862fxZQkGB6jiPAA6h3Wa++/BdPhypDDxoY3a
-	 iJymBlkN4T87yCfbG37W9nsZsNfwmo6o9gei76VZEYo9P4o1Gyp08XPzLzil82V3yAw==
+	t=1793289889;
+	b=YKz+iAEt1P2oqFz/xdK2OBIZgYs+begaQFKyCnzOB39bCWniKETBKFXsePQDOe3JhIHL
+	 NwGIKY0wGwsl70TVoP4P+1IlSRnh16+cbcPibamdGaRF3t9DizoVRkdD0B0ze5/0AIQGO
+	 3C7Mm7qmWHCoAiJvGTGhKRNf+blUZsoMfumNaE5kvTVKBJFL9Q9hR0VIURqnDoxBP8H3F
+	 tQbJ9OgfaPz0IU+GJifgZ8KYIhdeBX2KBpUBTbyaqfbxeeRSVRv1TAYt5qttEZXD7OFeI
+	 pU/7HtV6f1SA/Ea2+nAEM+lreIqcXPYgo4cEJF/VX9d/PKzcZveqFfyOCKqEQafUueQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793288548;
-	h=DMARC-Filter:Received:DKIM-Signature:Content-Type:MIME-Version:
-	 Subject:From:In-Reply-To:Date:Cc:Content-Transfer-Encoding:Message-Id:
-	 References:To;
-	bh=Hi1ZL/P6xTwIFqhtVwLPu3VRn9H34CRK9uafD+p4DyE=;
-	b=Xz4Ufgz/FPFRYZ2EQGBow31Io1/koVaapE4UYQIQQItINoYxABdshbVwa2hYHuYjJMZW
-	 rQX9Ht+K1RoO/W1QEOxpf+NhLlz1cq+AG8V39TzeZIRUN/ze605FOrIUbJjanG6CwlFL4
-	 oTkYWXDTVeaW29QcYvNb0zsR6Sv5DvHqKzb0qcRTlqqQj4nL1Jr5ih+VP15LiTMDSRA10
-	 RqwGZ4psSt+ihC3bnAhse7PG2FD4IeBFZkuDwxusMC5uOIuax/D4+KBR5AaSbd6BGGlYt
-	 eoHOsAK0A6GFLxLWZ0AE19FLI4xSIIpZQLA3wkyZpRjmMsE1dbS4zeK6JVlzmV4zORQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793289889;
+	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=qVRLkBmwmg+TmfzMT50Xgy/KvRvwtW2uIgy7R70qgBk=;
+	b=Xkk+nCq5zSt4EUcwxEcWqLqsNkDobx6Jtl/O3Ev22QTo07HeAnzuU+1q2cu11ny4dhDI
+	 Takmdldn5u3lFcrInpabTDUbUKSbFgxKsFu+HlY1D60hwQ3NsarSAKmGXwRUwmoyGB0bG
+	 5CS7ZNISoPOdQFbm8yTjrEhM82N4IrlyVNWYyLszMN/kqkubCrDBJ2teGztDZ/xHOfK1W
+	 YCPnvkhW5/qquahSj0xNWlLMYRF9pKEdoWdzaWsZM2/Y5KOGtuLecx14UQLgtOfm1MxX3
+	 YmXtzAoM/OfnW5bLl+GFdbpJuHnPM4DZpkbZgDYPCp+7JK/EkuWxDQjNZCtuJptEePA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chaosmail.tech;
-	spf=pass smtp.mailfrom=chaosmail.tech;
-	dkim=pass header.d=chaosmail.tech header.i=@chaosmail.tech header.a=rsa-sha256 header.s=mail header.b=Nsrn3EDa;
-	arc=none smtp.remote-ip=77.81.229.115
-Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
+	dmarc=pass header.from=infradead.org;
+	spf=pass smtp.mailfrom=infradead.org;
+	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Imn8dHmy;
+	arc=none smtp.remote-ip=198.137.202.133
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CB64606A31A;
-	Thu, 29 Oct 2026 15:42:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0CB64606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53C8C606A31C;
+	Thu, 29 Oct 2026 16:04:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 53C8C606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chaosmail.tech header.i=@chaosmail.tech header.a=rsa-sha256 header.s=mail header.b=Nsrn3EDa
-Received: by chaosmail.tech (Postfix) id A043B1C8AAF;
-	Thu, 29 Oct 2026 15:42:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
-	s=mail; t=1793288546;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Hi1ZL/P6xTwIFqhtVwLPu3VRn9H34CRK9uafD+p4DyE=;
-	b=Nsrn3EDaUl1axthWNFon0U2+dA13f1L+vVnts30Oh3yVZBVUUR+B5XnWSpOkjv/V9GcWRI
-	ewb8OQpnhWxOmbTnboc3e7UVtSWF/fmXK/HbIvxXDnKKUex+Xe99DbwEOEK26ZeZ2xDlWT
-	Us7sOzT/XDhsHTcNPUT+Oeu2qg7dUjU=
-Content-Type: text/plain;
-	charset=us-ascii
+	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Imn8dHmy
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=qVRLkBmwmg+TmfzMT50Xgy/KvRvwtW2uIgy7R70qgBk=; b=Imn8dHmy6kBxKHeJAUhZloX+Ef
+	ITtxnVSuM9fvcVrPBTUFfVEgLqU77+C2E0SEJlVFjEL0IzpuTX3f63KyjBzyosHAc5TLUhezwA56O
+	8yS4tLUblvA2zgnbO8B2JUCHzLsPUrXb915EXl26W2myXFxcvHeDVyYSQf7IwX4ua13t9QNIKA9Id
+	CXWQZYjaebKGHRwpoKzy9jcm1toZdtRwsnYwkgcFl5/dvCWKb7r9vDVxj0Lj6jA4NMIqdZxmVweTN
+	mT8CRwiV/4MUH8fc26WDXqZDqOXMQDqyqjm8lyloBi2+52KjBB8kDFuagrqDct4VaSm3MZmMRhv6q
+	m20mD1eg==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xMScR-00000009jhR-2orr;
+	Thu, 29 Oct 2026 16:04:47 +0000
+Message-ID: <58d11bf2-f5db-40e4-b367-de8ae7e31472@infradead.org>
+Date: Thu, 29 Oct 2026 09:04:46 -0700
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -56,81 +58,64 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Subject: Re: [RFC PATCH 14/14] mfd/macsmc: add ioctl to access smc keys
-From: Sasha Finkelstein <k@chaosmail.tech>
-In-Reply-To: <12988c8e-95ad-4989-a6de-e02af3c9ef1b@linux.dev>
-Date: Thu, 29 Oct 2026 16:42:12 +0100
-Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
- alexandre.belloni@bootlin.com,
- andy@kernel.org,
- asahi@lists.linux.dev,
- bhelgaas@google.com,
- bp@alien8.de,
- brgl@kernel.org,
- dave.hansen@linux.intel.com,
- dlechner@baylibre.com,
- dmitry.kasatkin@gmail.com,
- eric.snowberg@oracle.com,
- griffin@kroah.com,
- hansg@kernel.org,
- hpa@zytor.com,
- ilpo.jarvinen@linux.intel.com,
- j@jannau.net,
- jarkko@kernel.org,
- jic23@kernel.org,
- jmorris@namei.org,
- lee@kernel.org,
- lenb@kernel.org,
- linusw@kernel.org,
- linux-acpi@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- linux-gpio@vger.kernel.org,
- linux-hwmon@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org,
- linux-pm@vger.kernel.org,
- linux-rtc@vger.kernel.org,
- linux-watchdog@vger.kernel.org,
- linux@roeck-us.net,
- mfd@lists.linux.dev,
- mingo@redhat.com,
- neal@gompa.dev,
- nuno.sa@analog.com,
- paul@paul-moore.com,
- pavel@kernel.org,
- platform-driver-x86@vger.kernel.org,
- rafael@kernel.org,
- roberto.sassu@huawei.com,
- serge@hallyn.com,
- sre@kernel.org,
- sven@kernel.org,
- tglx@kernel.org,
- wim@linux-watchdog.org,
- x86@kernel.org,
- zohar@linux.ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <DA128414-1BB3-4D04-9361-C870E0E3B57C@chaosmail.tech>
-References: <525E5B4D-A947-4567-9FCD-5FFF2CA8B161@chaosmail.tech>
- <20261029143926.1246-1-atharvatiwarilinuxdev@gmail.com>
- <0683C803-C578-4C55-B893-BC03EBF9A9F1@chaosmail.tech>
- <12988c8e-95ad-4989-a6de-e02af3c9ef1b@linux.dev>
-To: Aditya Garg <aditya.garg@linux.dev>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/7] docs: ABI: power: rt9471: Add newline for
+ paragraphs
+To: Waqar Hameed <waqar.hameed@axis.com>, Sebastian Reichel <sre@kernel.org>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1793225920.git.waqar.hameed@axis.com>
+ <98bc1b0dae37a68b4a5f148094459fabd5f4c867.1793225920.git.waqar.hameed@axis.com>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <98bc1b0dae37a68b4a5f148094459fabd5f4c867.1793225920.git.waqar.hameed@axis.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Oct 29, 2026, at 16:25, Aditya Garg <aditya.garg@linux.dev> wrote:
-> Whitelisting will create an endless cycle of upstreaming new keys. But =
-considering T2 no longer is receiving updates, Asahi would be happy to =
-send their keys they wish to be whitelisted right ;)>
 
-Yes. We are willing to add additional entries to this list should we
-need to expose them to userspace. In addition, the current approach also
-needs more keys to be added to the list, as despite the claim in the
-commit description, it only rejects a fraction of the driver-managed
-keys (I do not see the GPIO or certain battery keys, for example). In
-addition, the read side would also need to have a list, as certain keys
-are read-sensitive.=20
 
-> Fair enough. We can restrict it to T2 Macs, and Asahi can later adopt =
-if useful?>
+On 10/28/26 3:39 PM, Waqar Hameed wrote:
+> To split paragraphs in reStructuredText, an empty line is needed.
+> Otherwise the output will be:
+> 
+>   Access: Read, Write Valid values: - 1: enabled - 0: disabled
+> 
+> Add a newline in order to properly format it as intended.
+> 
+> Reported-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> Closes: https://lore.kernel.org/oe-kbuild-all/20261020101625.01874245@foz.lan/
+> Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 
-This outcome is acceptable.
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Tested-by: Randy Dunlap <rdunlap@infradead.org>
 
+> ---
+>  Documentation/ABI/testing/sysfs-class-power-rt9471 | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documentation/ABI/testing/sysfs-class-power-rt9471
+> index d4ea9c9a5a9b2..53393488ec419 100644
+> --- a/Documentation/ABI/testing/sysfs-class-power-rt9471
+> +++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
+> @@ -14,7 +14,9 @@ Description:
+>  		Note: use /sys/class/power_supply/rt9471-\*/load_switch instead.
+>  
+>  		Access: Read, Write
+> +
+>  		Valid values:
+> +
+>  		- 1: enabled
+>  		- 0: disabled
+>  
+> @@ -29,6 +31,8 @@ Description:
+>  		datasheet for details. Normally controlled when TypeC/USBPD port integrated.
+>  
+>  		Access: Read, Write
+> +
+>  		Valid values:
+> +
+>  		- 1: enabled
+>  		- 0: disabled
+
+-- 
+~Randy
