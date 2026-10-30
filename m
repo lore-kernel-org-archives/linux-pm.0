@@ -1,59 +1,103 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.13
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793349405;
-	b=eWVeb95jNVXStCk5NVRMFJCG0rNjwjscZ1bVXqubD2gnXHwtmr9GtMacYGzuWNWwFmzQ
-	 lbcLTTc7FaRYnRPLtpVX2+rIPn2Jwp4e+V+02RI+Cj8ZNcsQKYs8HB0AjIN3kStqfdcqg
-	 Cv0tB4vQQlI4n2urYFn2voLhNXT+inN2kyvgwz+5sqjYI6yRMDgdprRDpAxy/+f1yLiXf
-	 ZqqetO/ntdgjtV9Tw0Kzsoq2Kj/DRb36tCyK/LHB5z9pPmSzyFpNZw+dV/hpfAMLf9XfJ
-	 aKiyfuEhrakVxEg+QCcWx4mcbPYl2ZO3GX+WSFCNvgm2xoU7yqH/uc1+r9ub2RBBtag==
+	t=1793350664;
+	b=t1+feQbsae7mZBoBfbUu/hXjXDecktn6O+CIvIGtX/VtkHjR1apSD/lY3DEfruEMLIIN
+	 fbtESGnx43a3WghDCfBLaRZb0KJ7lHSCjLG7fh5Xx8zHtlBFAmQFhyDc4s8gM/YZz9hNM
+	 yqqAw7gUqQqPQg5uPxKA+0Bk/CJeH3ZSXW8862i9DqCOrm2aZ+YfNCy9FbC0GW/dj56aB
+	 EhpSMz+/xjSupRNeC5q9A/bMi2s9ldLUfLjl+5d3ZXa1Pj9NvI1Eh5J1xetMNaz88A2rS
+	 nQKAZgHOHYnm9Opcq6fBYq1KkPIV2maHTex7ZpMoNsdPTw/mOKjCAtX9lFmn/ZohqDg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793349405;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
-	 Date:Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=QJpeU3mIk9H3tdluWplJ4JH/q7Ot9S7T2YR2AtQqS60=;
-	b=Kor7MFrHsTBkj15NWkC2jj/4HI2LwkzwRIWWrxWEQpINWQrfzRxvXHkhNIYLUGQhKPPI
-	 MreebXwUBY9wFpU3JpOT85zTdzdk/VQw1NnGxtlgmxJb21xj0+RJOL4MwGy0eRNv9E1PT
-	 /b1mid/bGdNa/MK+amfpclNJDo5gsGcxaxTtlB0gilSwUP2a7nJqvyboqOkaFjR1/CHOs
-	 EAScCfjGZUWVzGOW41fTKoJreYxomf+i9R4fo1SNbdwLe4e/mDI+EqiJGVAb14cnIxVPi
-	 vn3GkXefDT7rjsYfUsHXe/0/4CHB6j0zTlei0fbJNwzsbZ6O/+LU26Sv+hbgRYT58bQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793350664;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:
+	 Organization:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=eGH1sgh8fHcD1YzHQAXXHU+ICjz/GR3arUB8DIO7xaI=;
+	b=cRd3WNwOcp82N+5BbTERaiFge8tLXG5fO7pmT+c6sA0tzejBPam8VXM8//xQOgosTrKS
+	 56BeuPbnU3s48xNHPeuxG23ygMWm6IfZyIj+FBNNyJ08NkBrY7LaZT70D/hd6KGrTdk4g
+	 NMIu48Ct4o+bHfwLY1rnXcCnxCr7qK05K7MgvOOa3Be8vKIAb5dXjG1MzrRGS9esHDfFg
+	 lydQ0NwNOHsbMhZBxikzCNK/La7VlqPIO5pYvZvK4Kd8Zr+hQ4xPKyJhrGP0yg7IL8bBp
+	 JKLw0y6kZ/Shp+AwfEx1tv9VTKf0u9aiCIrazfaZotqDCeQqOvIjjIlnnQz/SAI51uw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=kLVjlHqT;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4D583606A33C;
-	Fri, 30 Oct 2026 08:36:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4D583606A33C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L79pU4vW;
+	arc=none smtp.remote-ip=198.175.65.13
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 273FF606A31C;
+	Fri, 30 Oct 2026 08:57:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 273FF606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=kLVjlHqT
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6A8E11E8D;
-	Fri, 30 Oct 2026 01:36:40 -0700 (PDT)
-Received: from e127648.arm.com (unknown [10.57.79.231])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A3AC73F673;
-	Fri, 30 Oct 2026 01:36:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793349403; bh=us169U//VQGZafJRfAU3cNExT02omKnXb+PMt1WaD9o=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=kLVjlHqTPwIzE7VYha6jIkkVOS9JS7CTFBvt/K8pgq9PSg/Eo6WK18ZgeKeQ4xgKe
-	 hX+19k8GUhge8yvDs23QvjZILdn/eLpEejXudw+DpXp8TdwAJH9wH6rylBEsJ3V05j
-	 CPpzCPdj8xwPWKkyz+vhbSU1vYt2Yjt1+BOwZsB0=
-From: Christian Loehle <christian.loehle@arm.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH 1/2] cpuidle: Skip miss accounting for timer broadcast fallbacks
-Date: Fri, 30 Oct 2026 08:36:32 +0000
-Message-Id: <20261030083633.1699270-2-christian.loehle@arm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20261030083633.1699270-1-christian.loehle@arm.com>
-References: <20261030083633.1699270-1-christian.loehle@arm.com>
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L79pU4vW
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793350664; x=1824886664;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=XC9L0N0lGS0WxoaPGxJtRF+Dcu7w/yLaO4BtytOzzuQ=;
+  b=L79pU4vW7uY7s26CgOQnkqh84RSv936RavEmcjrDTUnS4Siipvtjaxv9
+   niC/LQALmZglumppct7FEwQIro1Gz/w674bkYPVoPpUs7WdYYrKj8S4dh
+   pzbje3C7Tok8W3ejcrBifgXwizUFSAgAZknUyf1X1uEdKEqzYRhBhmM0u
+   VNlUIdPpedishVRl3xlDdhyqLpVcFReAGuJNt3+ZcVVbHXOZqNHIQYCE2
+   8QV4MERFL9+uvL8WvzD28keURSTx3+k6K3S4QyMJ7JQJlkHCDQlO1o6kH
+   qSxXemxc78C/HhTKxmdFwkZvq4LJevHZJxeCyUkDpo2OWXghEEAascIs9
+   w==;
+X-CSE-ConnectionGUID: rsO5rGNMSNKICgyZGCqLdw==
+X-CSE-MsgGUID: ZTeF+5WvTq2wwTAtPCe8dA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11950"; a="1987135"
+X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
+   d="scan'208";a="1987135"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2026 01:57:43 -0700
+X-CSE-ConnectionGUID: 2ZQs9CufQJ2aI+tvMlBntg==
+X-CSE-MsgGUID: YTk54IPeRM2APeu2Ec1IKw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
+   d="scan'208";a="5265993"
+Received: from ettammin-mobl3.ger.corp.intel.com (HELO kekkonen.fi.intel.com) ([10.245.244.19])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2026 01:57:35 -0700
+Received: from kekkonen.localdomain (localhost [IPv6:::1])
+	by kekkonen.fi.intel.com (Postfix) with SMTP id 2CDB9121B77;
+	Fri, 30 Oct 2026 10:57:36 +0200 (EET)
+Date: Fri, 30 Oct 2026 10:57:34 +0200
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+To: Frank.Li@oss.nxp.com
+Cc: Frank Li <Frank.Li@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Andrzej Kacprowski <andrzej.kacprowski@linux.intel.com>,
+	Karol Wachowski <karol.wachowski@linux.intel.com>,
+	Oded Gabbay <ogabbay@kernel.org>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Alex Elder <elder@kernel.org>, Will Deacon <will@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
+	Rob Clark <robin.clark@oss.qualcomm.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Guan-Yu Lin <guanyulin@google.com>,
+	Mathias Nyman <mathias.nyman@linux.intel.com>,
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
+	intel-xe@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev,
+	linux-arm-msm@vger.kernel.org, linux-media@vger.kernel.org,
+	linux-staging@lists.linux.dev, netdev@vger.kernel.org,
+	imx@lists.linux.dev, Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 1/1] PM: runtime: change stub pm_runtime_get_if_active()
+ return 1 when !CONFIG_PM
+Message-ID: <auRb_r8ZSSU-eHZA@kekkonen.localdomain>
+References: <20261029163044.3062958-1-Frank.Li@oss.nxp.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -63,61 +107,30 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261029163044.3062958-1-Frank.Li@oss.nxp.com>
 
-A failed tick_broadcast_enter() can force a shallower state than the
-governor selected. Exclude successful broadcast fallbacks from above/below
-miss accounting while retaining their usage, residency and governor
-feedback.
+Hi Frank,
 
-Fixes: 04dab58a39d4 ("cpuidle: Add 'above' and 'below' idle state metrics")
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- drivers/cpuidle/cpuidle.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Thanks for the patch.
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 2d2f40a2cb81..faa29f58738e 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -222,6 +222,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
- 
- 	struct cpuidle_state *target_state = &drv->states[index];
- 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
-+	bool broadcast_failed = false;
- 	ktime_t time_start, time_end;
- 
- 	instrumentation_begin();
-@@ -232,6 +233,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
- 	 * CPU as a broadcast timer, this call may fail if it is not available.
- 	 */
- 	if (broadcast && tick_broadcast_enter()) {
-+		broadcast_failed = true;
- 		index = find_deepest_state(drv, dev, target_state->exit_latency_ns,
- 					   CPUIDLE_FLAG_TIMER_STOP, false);
- 
-@@ -306,6 +308,13 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
- 		dev->states_usage[entered_state].time_ns += diff;
- 		dev->states_usage[entered_state].usage++;
- 
-+		/*
-+		 * The broadcast constraint forced a shallower state, do not
-+		 * account for it as a cpu_idle_miss.
-+		 */
-+		if (broadcast_failed)
-+			goto out;
-+
- 		if (diff < drv->states[entered_state].target_residency_ns) {
- 			for (i = entered_state - 1; i >= 0; i--) {
- 				if (dev->states_usage[i].disable)
-@@ -338,6 +347,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
- 		dev->states_usage[index].rejected++;
- 	}
- 
-+out:
- 	instrumentation_end();
- 
- 	return entered_state;
+On Thu, Oct 29, 2026 at 12:30:37PM -0400, Frank.Li@oss.nxp.com wrote:
+> From: Frank Li <Frank.Li@nxp.com>
+> 
+> When CONFIG_PM is not enabled, all devices runtime PM state should be
+> treated as active.
+> 
+> __pm_runtime_resume() returns 1 (called by pm_runtime_get()).
+> pm_runtime_get_if_active() is the try-and-get version of pm_runtime_get().
+> stub pm_runtime_active() also returns true. So pm_runtime_get_if_active()
+> should return the same value as the stub pm_runtime_get(), which is 1.
+
+Shouldn't the same change be done to pm_runtime_get_if_in_use()? It's
+otherwise the same, except that it requires also the use count to be
+non-zero.
+
 -- 
-2.34.1
+Regards,
 
+Sakari Ailus
