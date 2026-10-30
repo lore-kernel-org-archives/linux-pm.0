@@ -1,70 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.14
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793397470;
-	b=SnW+GpnSMs2VhoerQM4ofmfBUH87sYRlm8UCBaReFPvK5SPcYTvGkPiO9qd4w4WHKDRD
-	 zKsT28RL4vlK0VdiB/tc4h3q+SU46rjVKB4aT53whArK78jKF7Q/+6AuklXaPZiXYNLtU
-	 cQY2DxtKRZWGXGAJDK1Awe2BXnzqr153Z3P99T79k6zrukqsqjTJvpVqvKpxVCsQg6WHO
-	 kqJ3+tYNNG771JRR9VEdmvspZ2YldLW2YoleJoFhcclMflARRtbHcKV40Zibr23Uo3x3l
-	 AVbS3tw+rC3bq8a6sWpePxDQt8kLm7YKgKgYvPMCR7cw74UwI9i0A5qfqT0lsqkgPqQ==
+	t=1793397667;
+	b=GP00EpYglOBPrzcDnuR6cLvqBYh+TlygwE/D/wGNbA2/gibz5Ipq3rf3SqhLJDcWzn3E
+	 TaxXk5K4Hd35O93oPfO53I+0GAEqgOB2gyJNApweqXBHxUDRPRg652ZcoQYBCU260Vkdo
+	 +oz7ew8qPquUP8mTtaUbrmFDQ3OfkmNcw9YTan3Ly/CKmMUakCfbY88nBeT1tz5wzizpW
+	 ZDowUMArHIryv0ozntBW/6onhG+QpmMWV7XRvb3jV4QWO69aETTd59AMLGIeJhrPU6xxE
+	 XyyCeJGQBwq8fxZUy5QPCpUMxRM3o/IKO71DavWi0DPU+eIRVsb+hZROLQXiitDTWcQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793397470;
-	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To;
-	bh=bEGOgsDVGhIJx4rlG5jGs+QKv8RNAZHyuX7MzGnejOQ=;
-	b=D/KaxP3nV4cdcdbhGCj3dtGGhck30eoKg3J9VJe+qISZcK6Cl/pIsoCGTvtSbuNbRaRz
-	 8rFlhT5Fm1RpIYf4A6MYbiKbi8PbTSuZvrJtIyi6byQQyPy/Dl9db+xseRM9d35QNtWDn
-	 TV/dq1ojsQXlRa8YHfiaQJ3Wi1gzo8iFmaSm5h0uaPS3E70lQ3tkR6eGCgy3idEW8xWOj
-	 D6NS6fYuVMLkc7wyKfAm4Aol4z0gLybs6EPNbDHeSvq3p/ciag2ZEv2tMeV8cFlP4SiBt
-	 cbieYriJSkUcf1CC2cd4HvEaxmK9URTF98xwzor5/C3VT68Bt/sLalbj8ETP+4dGfKg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793397667;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=eC5A6pHAnZ0aE2KsQp0iN/0xlnhAOejQmwk5XYY9Wwg=;
+	b=LMG3RNgG+hIBJsnaksB9KEEyzUup4zauK99KJcTgiU/k7mGQmgs15MPbR2j4VqGrKWiD
+	 HixQQeELGvK0GoxAHYO4MjoGu5ZgxWpYeEDT8jV5A3LXEjnw4GMbD28EcpQdsnAfYC+Hj
+	 IBSntjdH8QdqB55fZqtWyp0LHoe3A2MsyVEhLjwYLmXseBSQ8WkXiQRegm61ouhzchtwp
+	 8ahzM3vNtHbRBxBaCCIfu0FGmg2PC8NlpraFeijIdiBc1kqm4TW79W89srJZYzx3SJmGU
+	 k+ioJ9W6Vny6ho2op8gKhzeyl/3PctVxdZ03jkDuawIFwmTECsrhD0QNs2gaQvus/6Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ideasonboard.com;
-	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=KSGgq7+O;
-	arc=none smtp.remote-ip=213.167.242.64
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DV0d0HjL;
+	arc=none smtp.remote-ip=192.198.163.14
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65945606A31A;
-	Fri, 30 Oct 2026 21:57:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 65945606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C84E0606A31E;
+	Fri, 30 Oct 2026 22:01:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C84E0606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=KSGgq7+O
-Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id C05404B0;
-	Fri, 30 Oct 2026 22:55:33 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1793397333;
-	bh=V3JgVLQtVdb5VLqlOWN8YJQxZQDEBr6c4IsRWxr421M=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=KSGgq7+O2MKnE1J4x3pkNTGoCUu+L4ZbDx/P7Mwlk0aqZvussGRm4uRHhOLZdN3y8
-	 RIqm/+a+g6zwT6xWpidRyUUJiUw3ygUeBTLd7MS7ElQ0AwSPcnlmm8JRhx0y+Gr8KK
-	 4v3sVcCrS8xnyU72gzxn5imF7PlXojPXsM0p9frQ=
-Date: Fri, 30 Oct 2026 23:57:46 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH DNI v3 01/15] dt-bindings: clock: renesas,r8a78000-cpg:
- Add CPG_SGD4_VIO_DP_{TX,OTHER}
-Message-ID: <20261030215746.GB3144851@killaraus.ideasonboard.com>
-References: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-0-e052903a3832@ideasonboard.com>
- <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-1-e052903a3832@ideasonboard.com>
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DV0d0HjL
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793397667; x=1824933667;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=w31wXGRTOhUvzCl07DAy2h+Ynmh/ZR5jn1N9SMn3Isg=;
+  b=DV0d0HjLTtU4VGcEXHQgrC/kyHM4p77W0c+dqKjPwdg0DYery+6yaJyc
+   pxndYhSILCbjaGL04vNup9NUSfPMX9/0kMiJQ+ewYFNgCM3H7xvcyOq7u
+   m/OZz1nmYF0KfADOFP/1M/vrMmMIxbG/oP+eRJXKxIF6QL3hQZGKhUHLB
+   VumbuJNhKw6xdjJcnpD/2rYFKHL5iujC6turfsqzTcwZD6KtU6ptV1kNq
+   utLFYswusSSb4vdYYuycO91a+qsdf9OutgchfYJJz+Op5EPS1BKIHcGXw
+   osbRwoZ3Pc/UFU04WJd9ooUKfqGiw6xtQjuZaAnilYACQpG2SPxk0slti
+   Q==;
+X-CSE-ConnectionGUID: 3I7jSGtJQeOUxKOURsrT+w==
+X-CSE-MsgGUID: 6Txxn/TDTHeN+TjK2Q5FUg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11951"; a="2203062"
+X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
+   d="scan'208";a="2203062"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2026 15:01:06 -0700
+X-CSE-ConnectionGUID: OXSaNlHyS1arWzlEY+TGQA==
+X-CSE-MsgGUID: kW0MS3YuSjaBb215Zgq1vQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
+   d="scan'208";a="5426391"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+  by orviesa008.jf.intel.com with ESMTP; 30 Oct 2026 15:01:04 -0700
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1xMuek-00000000cHM-1Mbk;
+	Fri, 30 Oct 2026 22:01:02 +0000
+Date: Sat, 31 Oct 2026 06:00:37 +0800
+From: kernel test robot <lkp@intel.com>
+To: Saranya Gopal <saranya.gopal@intel.com>, linux-acpi@vger.kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	rafael.j.wysocki@intel.com
+Subject: Re: [PATCH] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
+Message-ID: <202610310520.ZvkDiItr-lkp@intel.com>
+References: <20261030030515.3127310-1-saranya.gopal@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,50 +83,53 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-1-e052903a3832@ideasonboard.com>
+In-Reply-To: <20261030030515.3127310-1-saranya.gopal@intel.com>
 
-Hi Paul,
+Hi Saranya,
 
-Thank you for the patch.
+kernel test robot noticed the following build errors:
 
-On Thu, Oct 15, 2026 at 04:51:41PM +0900, Paul Elder wrote:
-> Add the CPG_SGD4_VIO_DP_TX and CPG_SGD4_VIO_DP_OTHER clocks. The former
-> is used by FCPV{B,D,I} and VSPD while the latter is used by VSP{B,I} on
-> the Renesas R-Car X5H.
+[auto build test ERROR on rafael-pm/linux-next]
+[also build test ERROR on rafael-pm/bleeding-edge amd-pstate/linux-next amd-pstate/bleeding-edge linus/master next-20261029]
+[cannot apply to v7.3]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-The comment message should probably be updated based on the discussion
-in 04/15.
+url:    https://github.com/intel-lab-lkp/linux/commits/Saranya-Gopal/ACPI-s2idle-Handle-shared-_Ixx-GPEs-without-an-EC/20261030-083515
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+patch link:    https://lore.kernel.org/r/20261030030515.3127310-1-saranya.gopal%40intel.com
+patch subject: [PATCH] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
+config: loongarch-allnoconfig (https://download.01.org/0day-ci/archive/20261031/202610310520.ZvkDiItr-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261031/202610310520.ZvkDiItr-lkp@intel.com/reproduce)
 
-> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
-> ---
->  include/dt-bindings/clock/renesas,r8a78000-cpg.h | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/include/dt-bindings/clock/renesas,r8a78000-cpg.h b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-> index 5851a29847f961b9b4ec270f263eb3aa19e45308..8c1a01e28ddbb26c583d7c9b387400ef6626c06c 100644
-> --- a/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-> +++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-> @@ -12,5 +12,7 @@
->  #define R8A78000_CPG_SGASYNCD16_PERW_BUS	2
->  #define R8A78000_CPG_S0D4_PERE_MAIN		3	// FIXME Preliminary
->  #define R8A78000_CPG_MSOCK_PERW_BUS		4	// FIXME Preliminary
-> +#define R8A78000_CPG_SGD4_VIO_DP_TX		5	// FIXME Preliminary
-> +#define R8A78000_CPG_SGD4_VIO_DP_OTHER		6	// FIXME Preliminary
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202610310520.ZvkDiItr-lkp@intel.com/
 
-Rebasing the next version on top of Geert's v4 of the CPG, those won't
-be preliminary any more \o/
+All errors (new ones prefixed by >>):
 
-Please define all SGD clocks in one go (see the discussion in [1]).
+   In file included from drivers/acpi/tables.c:26:
+>> drivers/acpi/internal.h:262:10: error: use of undeclared identifier 'ENOTSUP'
+     262 |         return -ENOTSUP;
+         |                 ^
+   1 error generated.
 
-[1] https://lore.kernel.org/all/e723696e02cfb34fb808e2ae3ccb6faf68528c00.1793026273.git.geert+renesas@glider.be
 
->  
->  #endif /* __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__ */
-> 
+vim +/ENOTSUP +262 drivers/acpi/internal.h
 
--- 
-Regards,
+   258	
+   259	static inline void acpi_ec_flush_work(void) {}
+   260	static inline int acpi_ec_dispatch_gpe(void)
+   261	{
+ > 262		return -ENOTSUP;
+   263	}
+   264	
 
-Laurent Pinchart
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
