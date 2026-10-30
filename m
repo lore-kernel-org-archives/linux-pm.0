@@ -1,57 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793357887;
-	b=Lp4uW9bi0NpiT2mtjsbz9fk8Uh7MxlDq8HK1H6B5qmCWW/UWcn9BdkpnuBZZkX7gK9cN
-	 f52gn07Hsyy8O4Xz6c2Y0HIuidbUYeCRdVdNJJpYDzblSzDaAEiOwY2UR0MHuYvCohcuf
-	 Tz751ztuAM2985C/qTmYNEcldfe7SHIYcZ/FWrc9GCYHfdCY+HEWhz1RHwPhz9fywvTkZ
-	 m6zl0xxgfk9EU5BuOulZn3XU3jHNwnbhf1rvKFnBYHjdaC4MxbwOSx1m6hGCBZl1de/sQ
-	 UUQuTKYux774whYDvWFywDqHLWjfU2kBER2HmrWq1PuT4aBwzVHlUDV1tLkyzcra4tQ==
+	t=1793358927;
+	b=fCv1mbSh5Dsh/ctTzf4ygHcSYKsL2h7ufgIkXMc7pYSM6ylicEXFJ6Rao/2fSo0y+UIY
+	 sk+uV1bs0bMk/9Zflel+nxBEcXhrM8MeaWFxQTPvNW7hveSTxs5lbK6Mh5a8grZvnA4zg
+	 5gDy60cwrEY70ZF2T0F9agKaoNNx2+hk6zl1JYaReMkAoQA0G6ozqnDchel1M0P0ZduLX
+	 Qi3WQf8XH5ECluJNlcEHSELn4y1OAIi8o0EUFnEjmS3VduRVePTHdUhSLsYLfT2MoNtMU
+	 iQLoF0w4+8UFzULf75//k55DNMOhc3RYQ0I8TStVgddb3o0PNjNFCz7A5LhHwZJHUBg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793357887;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793358927;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:
 	 Content-Transfer-Encoding:In-Reply-To;
-	bh=ZQ89vXgB1TrUWvEfIhW+c+p7R38YEkwskGy3wdZfINs=;
-	b=NaF6JcXncvRY/+U5cPT/Dg2PtZUJfr72DxS6aUvKVhqTvPconW16WB3N8gW1iOBikU4D
-	 dT0FA8y9Ar2CFYSm8rPrF8lpArJYe3lAbUE3bgYgP9EdWX3R/qGSJZK86ZuBFxMkpgTft
-	 5YfebmNyuIX6fdDoS6PNmQLJ5BMCYqFOLFrxQVLGMNLW/4hnp5yg6/kbAFCMAvSK3hpJk
-	 SE7fTuRTKQcAL9YpyH3h/cd2dv90v9V8Y3dp6gMGdBMWy0ynsmAvYcvBCbReDDKArXT+E
-	 YzZV/DISD2oJjl5DrDFOEshzEqrkx7dZCd6k2dzMokwUdmmcushJ+HVPBu0rlQ1Juqw==
+	bh=4LuX6viShIi0dZkWLBzFB0AnGUBKUuhfZQE4sOsfOL8=;
+	b=dUW+hHM2l5HOd7ICiiE7FxZY/Kviqh2L03Fs5WWP/KDPDzlDnEq51AtbskQyM70uAstX
+	 VR/BFo8LIiYzhZxhKIx2+w8G/ptB3+h4NPicQkvjLUqVS6h6/RZ8oH7ZoT1oTkOthiITG
+	 /YBEgaKCxBN5axgbMcw2oD0EQOkmhmj4JGZqdsTGFxrFgnxwG8OzKX6oE4uddL/rsU7DA
+	 dwW67TH2p8Co5UjpgSGKnwj3HZiXauVwO+W2dvAC5JGpjzB2mUbOaGv/D1weTS5zbokcY
+	 gk89Qsk8ZufEmzs69yFXS6did4V9w67garw513OwO4nEl218VJBAbIViFg8F8wtgTog==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JOzeonYD;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=koSobmDN;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B7A5606B95A;
-	Fri, 30 Oct 2026 10:58:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3B5F606A31A;
+	Fri, 30 Oct 2026 11:15:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JOzeonYD
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2FCE71F000C1;
-	Fri, 30 Oct 2026 10:58:06 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=koSobmDN
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB1B21F0093A;
+	Fri, 30 Oct 2026 11:15:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793357887;
-	bh=ZQ89vXgB1TrUWvEfIhW+c+p7R38YEkwskGy3wdZfINs=;
+	s=k20260515; t=1793358926;
+	bh=4LuX6viShIi0dZkWLBzFB0AnGUBKUuhfZQE4sOsfOL8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=JOzeonYDU8Qzt6kJeeywRtZ5GmkGvxjGt25W1f/N/nDroDAC4opbFBaquXqR4CneM
-	 se1Hu7PoIV2+vZMkiNp6DK0zVKPMIolC0IDgAT4WieFad1hfm0tDeISa8af61NpXQA
-	 aARFxg59ZdGM448PxMxraPmygrDyai9XoaJx3T/r6p+75hy36l9OYxmMq++r8KXdBb
-	 30RYiwrTMkns3r9IPhdnKMg/7Lfd/GFi9Be213d7An2JwyyKPmA/2pQp0uxsIPTQ0Z
-	 9tq/M/SuiH7hjO4gP7ChAwT42it7SdJpaSBa5fqHd3IcdwFDMgk4jARddgO+6voSdf
-	 MWwq86yYBzJuQ==
-Date: Fri, 30 Oct 2026 11:58:03 +0100
+	b=koSobmDNsosyI2zvhAxvlL4srpRmz79RPyy0cykC6V3p6prMwP/y7DC7uMuTszGTv
+	 BG3mNdgEf1FC44ikXoPJbiNxlVCiFi9VANl5UdM4qnkOyfhplcZOw5GRd9U1yzgYul
+	 uNRd2okYdwVh0oc6CcUD/FA8tmDpo9fzGM1goXjPB7VZiE1sfh49/Q+MZf+ajtP82Z
+	 AaPKFoWq3teCVundpmSTf2m8qoyVYWGoXKmjAqm8Rj1c6CQQzvSpx33CBiq+d5GbLP
+	 3VCUfX9Eit+2ST8x6xksGoNm/8ySFDGK62SFdvDKW1yVbaJmaV7l5nrQH0fy/Cea8Z
+	 ZBCvcFKVk1Gdg==
+Date: Fri, 30 Oct 2026 12:15:23 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: christian.koever-draxl@student.uibk.ac.at
-Cc: glaroque@baylibre.com, rafael@kernel.org, daniel.lezcano@kernel.org, 
-	rui.zhang@intel.com, lukasz.luba@arm.com, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+Cc: neil.armstrong@linaro.org, jbrunet@baylibre.com, sboyd@kernel.org, 
+	bmasney+clk@redhat.com, khilman@baylibre.com, martin.blumenstingl@googlemail.com, 
+	rafael@kernel.org, viresh.kumar@linaro.org, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+	linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, 
 	Christian Stefan =?utf-8?B?S8O2dsOpci1EcmF4bA==?= <ckoever@outlook.de>
-Subject: Re: [PATCH 2/3] thermal/drivers/amlogic: add S4 support
-Message-ID: <20261030-funny-ibex-of-modernism-b995fe@quoll>
-References: <20261025192244.209256-1-christian.koever-draxl@student.uibk.ac.at>
- <20261025192244.209256-3-christian.koever-draxl@student.uibk.ac.at>
+Subject: Re: [PATCH 1/4] dt-bindings: clock: amlogic,s4-pll-clkc: add the CPU
+ clock
+Message-ID: <20261030-rustling-expensive-lyrebird-aeb880@quoll>
+References: <20261025192219.209137-1-christian.koever-draxl@student.uibk.ac.at>
+ <20261025192219.209137-2-christian.koever-draxl@student.uibk.ac.at>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,43 +67,21 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20261025192244.209256-3-christian.koever-draxl@student.uibk.ac.at>
+In-Reply-To: <20261025192219.209137-2-christian.koever-draxl@student.uibk.ac.at>
 
-On Sun, Oct 25, 2026 at 08:22:43PM +0100, christian.koever-draxl@student.ui=
+On Sun, Oct 25, 2026 at 08:22:16PM +0100, christian.koever-draxl@student.ui=
 bk.ac.at wrote:
 > From: Christian Stefan K=C3=B6v=C3=A9r-Draxl <ckoever@outlook.de>
 >=20
-> The S4 CPU sensor reads its calibration through the secure monitor and
-> otherwise matches the T7 setup, so reuse the T7 data for it.
-
-So is it or is it not compatible with T7?
->=20
-> Without the calibration the driver reported about -144 degrees Celsius
-> on an S905W2 board; with it the readings are plausible and CPU
-> throttling engages.
+> Add an identifier for the S4 CPU clock so that the CPU nodes can
+> reference it for frequency scaling.
 >=20
 > Signed-off-by: Christian Stefan K=C3=B6v=C3=A9r-Draxl <ckoever@outlook.de>
 > ---
->  drivers/thermal/amlogic_thermal.c | 4 ++++
->  1 file changed, 4 insertions(+)
->=20
-> diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_=
-thermal.c
-> index 60728de6968a..c58bac633bed 100644
-> --- a/drivers/thermal/amlogic_thermal.c
-> +++ b/drivers/thermal/amlogic_thermal.c
-> @@ -292,6 +292,10 @@ static const struct of_device_id of_amlogic_thermal_=
-match[] =3D {
->  		.compatible =3D "amlogic,a1-cpu-thermal",
->  		.data =3D &amlogic_thermal_a1_cpu_param,
->  	},
-> +	{
-> +		.compatible =3D "amlogic,s4-cpu-thermal",
-> +		.data =3D &amlogic_thermal_t7_param,
-> +	},
->  	{
+>  include/dt-bindings/clock/amlogic,s4-pll-clkc.h | 1 +
+>  1 file changed, 1 insertion(+)
 
-This clearly suggests they are compatible.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
