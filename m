@@ -1,49 +1,49 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793397106;
-	b=gMV0B62sp498ffIheJ1qAhQBxw51bV9fFZHl+vs/FJHOi0g7lfXxHTA/45W7h84yOGYk
-	 ayabhObaOPYtfdcC7FT4J9w8jA/u6J8NWLAa2ZOn0DPJKMOh4oBXaWcYTQKoscrElEQvd
-	 DAIc7I4RsJfKsx8ayhmpkqmuJVMTcO1Mz0zHyVhD0kZRSSP6j7HqB87Hom0EPjv/cM1gH
-	 OzLwORyAgKfAV9l+jmh0/iklHqXZ5jIuYv3zg2+rli77OqHA96sAFn93RVoUg5Mizyj2d
-	 +XPYwvxOjyqgcnNVctmxU3CnR6ORyUSHvuukvxSB6pGxeoCwz0fojRwpE+oyCh7iUhQ==
+	t=1793397233;
+	b=cQCnF6PjLlTrYXTyKNNvNf0JGaUPU/jlu5NYaF+1W9MYMEo/6s68+mAKFrF4nHA8snW+
+	 TLbqX/+UTVtACguAOTu9H1rHNoF6GtkGyLJ0EmoV1ICRDVtLNQdDDH+rx4jJ6g8dMbliA
+	 HIFmZzqDqbVW1D8/hpnl/ya9UmodOwiCrW6TY7I4OtnvIc8MTPSnF+yQ6i7e9AuESLruG
+	 mhQbUxNtxlgoXctsvmsZrdXThV3zuotODbdzronYbzVaVWr2WI60aakc22ezZhWdogpvo
+	 0Wu2oudKBZoNxNT8fT1FR48LNpce4yQAHBzL3aguoLJIGsPOmoq1XnysDvW08ygBVpQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793397106;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793397233;
 	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
 	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
 	 In-Reply-To;
-	bh=nowaq5krQmYyET3/kT0HLFoDfuX9S6TMbuwqRBo7zJM=;
-	b=Em/lvWJHsaLtbE+r5yEfeBP4/mBLgfJLHgsNriaciGcrWRA9QlQAHUzvmDgwhcOtttp7
-	 84wAXfIOif74ivlW2W+ihGs7Tlq0jIxMm6Yf7s/a+VmnvJti9DytyqQgZCoZKUvxJOZ16
-	 wCeWk7RD00h/5vNOZTrqFbfEqctQU7sC5YTBsxSi0TdP2tXx05g6PL/kemVJ7Kt2MbxI1
-	 JM6oOQT6zmvgYIEJHoD2TqNyjqikkcS0tEKhu9XzINv5EemS885/j3rZev6vQGVXKID4m
-	 1mG9fM/tTdaXwuRdcwx28Wr+L21zwZAG1TUPY0/rpBwl0DajCv3WPJQB2OKUGx5g0XA==
+	bh=ogQtYDBJv4vT5OrszcZv0KYQ/leURTInx/kaevVzlo8=;
+	b=JyHMbBOL4s4Er9dnG+VjJc9oDlFRbZ9fupa+Mnu2Ym8ZfboS5X/x+k0fVwJvJ7VUm6GM
+	 Ua7xoy0w8rfh5gn8liAflfW4cP/kAUj1ku1mBtfnvw4Ab9gNNPGhzBi2+KLhlPaKa/FNH
+	 NmEAGDH0p7JoqAc6QN0axMDmjfDTXXw5c/wO4BLPvg3yHgUjLgjFpbC+ek9P5M93+dJit
+	 f0QzyxiRGg/V48Xr+0M9Xo/kkKTeXiFQovprZx91B5Sc5nByticXW8MxhBMQjQfOQirQp
+	 2U0urG/EPeNyBGWGaUX+tjmpvoy27ovRgOiEYKrFJJHK3Euv/bNhYSWWuTjjcVs95aA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=ideasonboard.com;
 	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=aCTajLHP;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=Rk0ePdko;
 	arc=none smtp.remote-ip=213.167.242.64
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C98CA606A31C;
-	Fri, 30 Oct 2026 21:51:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C98CA606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFD75606A31A;
+	Fri, 30 Oct 2026 21:53:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BFD75606A31A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=aCTajLHP
+	dkim=pass (1024-bit key, unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=Rk0ePdko
 Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 8B01D4B0;
-	Fri, 30 Oct 2026 22:49:28 +0100 (CET)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 182614B0;
+	Fri, 30 Oct 2026 22:51:36 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1793396968;
-	bh=YfYRQdKxBnVAUwjO81ld0nM62cSdG3LQxtwd8SV6nK4=;
+	s=mail; t=1793397096;
+	bh=SbwUdP2djrhmAtB75jWLtmU9/D9shgsQxCWx3JG24pg=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aCTajLHPVXes4Pwnb7DjKOtGZYX1w3Hp06r5sjl0219fRsNg9xlnPnpr90LDvrRCm
-	 bLagfybbHkHT5FrAcPA7spWbLsowJqkZ7Gj736JPd9psOnIGIqMCg+vz/7sBbhcmKm
-	 hHhCVuKdOyrEFb/9j5gz7hyGPyI48l1Rz92lr6fM=
-Date: Fri, 30 Oct 2026 23:51:41 +0200
+	b=Rk0ePdko6dxw0r2u2YpqG8aEYPA44SyTx81+OoyIRaPbPutCIMtlz6jcIJRbRAo1A
+	 DpfiAIX9IUjbMat8PNwbgYqHqYzK71z2a9H4SX1K49abAaeg3mZ0/3MLiaIcQ2yoTT
+	 nUOXrzOMlVA6zdKIjYeJn/skN8rYbEKEYD4EGbkk=
+Date: Fri, 30 Oct 2026 23:53:49 +0200
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 To: Paul Elder <paul.elder+renesas@ideasonboard.com>
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -59,14 +59,12 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
 	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
 	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
-	Phong Hoang <phong.hoang.wz@renesas.com>,
-	Paul Elder <paul.elder@ideasonboard.com>
-Subject: Re: [PATCH v3 12/15] media: vsp1: Fix setting control register by
- display list
-Message-ID: <20261030215141.GE3178046@killaraus.ideasonboard.com>
+	linux-pm@vger.kernel.org, linux-media@vger.kernel.org
+Subject: Re: [PATCH v3 14/15] media: vsp1: Complete buffers as queued in
+ start_streaming error path
+Message-ID: <20261030215349.GF3178046@killaraus.ideasonboard.com>
 References: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-0-e052903a3832@ideasonboard.com>
- <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-12-e052903a3832@ideasonboard.com>
+ <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-14-e052903a3832@ideasonboard.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,50 +76,88 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-12-e052903a3832@ideasonboard.com>
+In-Reply-To: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-14-e052903a3832@ideasonboard.com>
 
-On Thu, Oct 15, 2026 at 04:51:52PM +0900, Paul Elder wrote:
-> From: Phong Hoang <phong.hoang.wz@renesas.com>
+Hi Paul,
+
+Thank you for the patch.
+
+On Thu, Oct 15, 2026 at 04:51:54PM +0900, Paul Elder wrote:
+> In the error path of vsp1_video_start_streaming, the queued buffers are
+> released via vsp1_video_release_buffers with the state
+> VB2_BUF_STATE_ERROR. This causes subsequent start_streaming calls to hit
+> the following warning in vb2_start_streaming:
 > 
-> According to R-Car Hardware User's Manual, VSP HW does not
-> support to download register settings for the control registers
-> by display list, so set those registers by APB interface instead.
+> /*
+>  * If done_list is not empty, then start_streaming() didn't call
+>  * vb2_buffer_done(vb, VB2_BUF_STATE_QUEUED) but STATE_ERROR or
+>  * STATE_DONE.
+> */
+
+Missing space. I recommend copying indentation from the original source
+to make it clearer:
+
+	/*
+	 * If done_list is not empty, then start_streaming() didn't call
+	 * vb2_buffer_done(vb, VB2_BUF_STATE_QUEUED) but STATE_ERROR or
+	 * STATE_DONE.
+	 */
+	WARN_ON(!list_empty(&q->done_list));
+
+> WARN_ON(!list_empty(&q->done_list));
 > 
-> This limitation is especially enforced within the VDK.
+> Fix this by completing the queued buffers with the state set to
+> VB2_BUF_STATE_QUEUED in the error path of vsp1_video_start_streaming.
 > 
-> Signed-off-by: Phong Hoang <phong.hoang.wz@renesas.com>
-> Reviewed-by: Paul Elder <paul.elder@ideasonboard.com>
-> Signed-off-by: Paul Elder <paul.elder@ideasonboard.com>
+> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+
 > ---
->  drivers/media/platform/renesas/vsp1/vsp1_wpf.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+>  drivers/media/platform/renesas/vsp1/vsp1_video.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/media/platform/renesas/vsp1/vsp1_wpf.c b/drivers/media/platform/renesas/vsp1/vsp1_wpf.c
-> index 821887815eb2e38d3a51791161de8cd3c135ef3c..4a5ad8e4903e99d5a522af2239889d7899f629cd 100644
-> --- a/drivers/media/platform/renesas/vsp1/vsp1_wpf.c
-> +++ b/drivers/media/platform/renesas/vsp1/vsp1_wpf.c
-> @@ -332,9 +332,8 @@ static void wpf_configure_stream(struct vsp1_entity *entity,
->  	vsp1_wpf_write(wpf, dlb, VI6_WPF_SRCRPF, srcrpf);
+> diff --git a/drivers/media/platform/renesas/vsp1/vsp1_video.c b/drivers/media/platform/renesas/vsp1/vsp1_video.c
+> index b85351986fae50aa678032b05b0352dff2b5a26a..46e0d6f8a66bddb4064e52e1521f3c9da7192868 100644
+> --- a/drivers/media/platform/renesas/vsp1/vsp1_video.c
+> +++ b/drivers/media/platform/renesas/vsp1/vsp1_video.c
+> @@ -765,7 +765,8 @@ static int vsp1_video_setup_pipeline(struct vsp1_pipeline *pipe)
+>  	return 0;
+>  }
 >  
->  	/* Enable interrupts. */
-> -	vsp1_dl_body_write(dlb, VI6_WPF_IRQ_STA(index), 0);
-> -	vsp1_dl_body_write(dlb, VI6_WPF_IRQ_ENB(index),
-> -			   VI6_WPF_IRQ_ENB_DFEE);
-> +	vsp1_write(vsp1, VI6_WPF_IRQ_STA(index), 0);
-> +	vsp1_write(vsp1, VI6_WPF_IRQ_ENB(index), VI6_WPF_IRQ_ENB_DFEE);
-
-Unfortunately I think this will cause a problem. For the V4L2 and DRM
-clients, all should be fine. The configure_stream operation is called
-after starting streaming, which calls vsp1_device_get() to
-runtime-resume the device. For the ISP client, however, I think this
-function can be called from the .buf_queue() handler before the start
-streaming operation, as vb2 enqueues buffer in the driver before calling
-.start_streaming() on the queue. We would then try to write the register
-while the device is suspended, which won't lead to any good outcome.
-
+> -static void vsp1_video_release_buffers(struct vsp1_video *video)
+> +static void vsp1_video_release_buffers(struct vsp1_video *video,
+> +				       enum vb2_buffer_state state)
+>  {
+>  	struct vsp1_vb2_buffer *buffer;
 >  
->  	if (pipe->iif)
->  		return;
+> @@ -773,7 +774,7 @@ static void vsp1_video_release_buffers(struct vsp1_video *video)
+>  	guard(spinlock_irqsave)(&video->irqlock);
+>  
+>  	list_for_each_entry(buffer, &video->irqqueue, queue)
+> -		vb2_buffer_done(&buffer->buf.vb2_buf, VB2_BUF_STATE_ERROR);
+> +		vb2_buffer_done(&buffer->buf.vb2_buf, state);
+>  	INIT_LIST_HEAD(&video->irqqueue);
+>  }
+>  
+> @@ -802,7 +803,7 @@ static int vsp1_video_start_streaming(struct vb2_queue *vq, unsigned int count)
+>  		if (pipe->stream_count == pipe->num_inputs) {
+>  			ret = vsp1_video_setup_pipeline(pipe);
+>  			if (ret < 0) {
+> -				vsp1_video_release_buffers(video);
+> +				vsp1_video_release_buffers(video, VB2_BUF_STATE_QUEUED);
+>  				vsp1_video_cleanup_pipeline(pipe);
+>  				return ret;
+>  			}
+> @@ -858,7 +859,7 @@ static void vsp1_video_stop_streaming(struct vb2_queue *vq)
+>  	}
+>  
+>  	video_device_pipeline_stop(&video->video);
+> -	vsp1_video_release_buffers(video);
+> +	vsp1_video_release_buffers(video, VB2_BUF_STATE_ERROR);
+>  	vsp1_video_pipeline_put(pipe);
+>  }
+>  
 
 -- 
 Regards,
