@@ -1,52 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793356943;
-	b=1/fhMFuV9EADNOqeyVYUWqBhEfAcCY2ZghT2HpoWpNHXyN19YXLyj4006cTqpwWex6Ad
-	 nx4nAA+AHlmjZC7li6GSCo4L5THNxrDwFVq1Gx5ntqptse5GP4jfG/3dYCoglkiAM4mhO
-	 6Ikcv1J0BTD6sRLdc66Ja1q7SIhCNG3kL3LR6usl05+aVWIuo8LWL1LSEz3r8zBiwSnBS
-	 u4x5I3e0X6dHaVSO4aohqBgF9a2+jUYNhxdzXEvapRy0YHGHRmrFbRoISwAqTNEA4zpb/
-	 gguwA8O9DwUaAVb3WEVZHz3PGavunJOGl36EeyMjGowGJ8Ryc+8wNsbga3fFiSEG+5g==
+	t=1793357849;
+	b=5A2rm99U3rOE4NrFBoZ4G4P5g2WYouKYD+rOS9lxN/I9GWX/KNgV1ccef87Lpu4UEmrI
+	 HsDN3DbAZC9nniCaIDcy6O4NDAIxkYUNYZGKmSxsBRm1bk8EGEaYL5hf+5mbS8pQZcbH5
+	 TWraqX6wm30QQ+OyTJFV3M1Zmpu/Qr5W9TKbpqabj+pIPqOOYbY+h2W9gJIGX7dW6ZKGm
+	 8vDsITkY4MakYtq1bhAVuXCNFL6wr4zbF8jd95VRn/5cZdJPvkrkYUS6YMJ91c51H8CFX
+	 APFk80pJ71TQGU6Br2+fg3R26vyBn6CpFkmQdLd5/LPQCyNA86qYsg72jy2pjk6NHiQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793356943;
-	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-Id:
-	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
-	 X-CM-SenderInfo:X-Coremail-Antispam;
-	bh=V91mG1ucI7P99bGc4LQseFhOC+7VxJiPPM+PptTC53o=;
-	b=VvaVWUX9h0MmSDRV+b841y2gETW+uBvIsJh6TiSrMAIsjzFy+DhYXaksp+FaM2BKX+4+
-	 nxRZuJlwnmNiVvqkpt7Q5brJ8/QFoq87cqmIZL2uQw9pKqtRVeyuaENltnphcLBhfGgyA
-	 UqIxsoeLHjkZGZw4e09JORGDA6RJiMDjlOd0fdFAJs4wMVS0NaR0jz60qHz9TgPWoGhJx
-	 o3XrH8kv63DGzmQ55ruc+CBaPxHCl7e0JfYfsLhtwHmQq4NeWWS3NANUjmkQTMJ8uCwps
-	 GIpZpZ+q7BhMCWywV76aIueCeu76qTdYQU4e2EH15fhZIURX0xc8IrylfWVoB15DOIg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793357849;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To;
+	bh=nd1S1qGDMFy2LjhbOYktweIqH3jY/o2wTGMnO5tRhRo=;
+	b=vSOUfo0YvKiYUlXsQNtfr/Zcl90dzFw3nO0HZQHz3sU72bAJE8xgxxE2nPWRIh0Bjs0Y
+	 dTLqlNtx6KQQWEHOkmn8wWap+eXM+pAY298lUUgZZR1vWTYRVwrgKq7k6WlS+zZ7CFryg
+	 uEDQrBDXdna7ICpd03UCXx7RuHctpzY6CcUrpPbmBvUWXg9p9mkql426YiBIoAeEkRkxO
+	 DI154PvqMAagEJQrXNq7Jc3WOdxEhU1WtLgciqS0/notbtwcwDVWo0KwpFui2vRqF38A2
+	 9XGlJpUUmAa6bK90eOWtn9VciRdTdJM/3QIdRonuhDLIDRIdjy3lu4YILr4dj+F/Yew==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=phytium.com.cn;
-	spf=pass smtp.mailfrom=phytium.com.cn;
-	arc=none smtp.remote-ip=162.243.164.118
-Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 80694606A31E;
-	Fri, 30 Oct 2026 10:42:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 80694606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=phytium.com.cn
-Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
-	by hzbj-icmmx-7 (Coremail) with UTF8SMTP id AQAAfwD36r6KdORqiF4HBQ--.9378S2;
-	Fri, 30 Oct 2026 18:42:19 +0800 (CST)
-Received: from phytium.com.cn (unknown [218.76.62.144])
-	by mail (Coremail) with SMTP id AQAAf8Dwj3KGdORqNXXzAA--.24040S3;
-	Fri, 30 Oct 2026 18:42:15 +0800 (CST)
-From: xiong yining <xiongyining1480@phytium.com.cn>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	chenbaozi@phytium.com.cn,
-	"zhongqiu . han" <zhongqiu.han@oss.qualcomm.com>,
-	xiong yining <xiongyining1480@phytium.com.cn>
-Subject: [PATCH v3] selftests: cpufreq: stop CPU hotplug loop after cpufreq update test
-Date: Fri, 30 Oct 2026 18:42:13 +0800
-Message-Id: <20261030104213.2030283-1-xiongyining1480@phytium.com.cn>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UlJ3GW5q;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1A3A606B942;
+	Fri, 30 Oct 2026 10:57:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UlJ3GW5q
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60AAD1F0093A;
+	Fri, 30 Oct 2026 10:57:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793357848;
+	bh=nd1S1qGDMFy2LjhbOYktweIqH3jY/o2wTGMnO5tRhRo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=UlJ3GW5qrWNWW07RPi/VLcWesAvpBOFFW6OwaWvRvpA66hIIy8rYGSFbXxMpB+Hpn
+	 w1nCtzTTpWXSTmcqZEMznbZTC7BaJdhjlYQab3KwXn2apml/ki3QL6tMRxpLkwopak
+	 ms7GVaWSeEceBZS3fAYFOrZRLuu18SDMEhKZgG/byiw3MOVog3KvwV4F6KBTypka7O
+	 2EeCkUhlCzXn8eGvWnIv416PKWNf94tchQFfWN7xsRpbH7Cm7Znf0GkAaYN0hyuYav
+	 oZxXki44PfbWLixyHWpf/1aog2QNSLhbhWlG9MnvrZ8lntU0XzY5eyGfYHkHDJdzyW
+	 aE02ArStD3A/Q==
+Date: Fri, 30 Oct 2026 11:57:24 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: christian.koever-draxl@student.uibk.ac.at
+Cc: glaroque@baylibre.com, rafael@kernel.org, daniel.lezcano@kernel.org, 
+	rui.zhang@intel.com, lukasz.luba@arm.com, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Christian Stefan =?utf-8?B?S8O2dsOpci1EcmF4bA==?= <ckoever@outlook.de>
+Subject: Re: [PATCH 1/3] dt-bindings: thermal: amlogic: add the S4 CPU sensor
+Message-ID: <20261030-hopping-toucanet-of-prestige-0dbcdf@quoll>
+References: <20261025192244.209256-1-christian.koever-draxl@student.uibk.ac.at>
+ <20261025192244.209256-2-christian.koever-draxl@student.uibk.ac.at>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -56,125 +61,27 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:AQAAf8Dwj3KGdORqNXXzAA--.24040S3
-X-CM-SenderInfo: x0lr0wp1lqx0bjrumio6sk53xlxphulrpou0/1tbiAQAECmrjns4IMwAOsj
-Authentication-Results: hzbj-icmmx-7; spf=neutral smtp.mail=xiongyinin
-	g1480@phytium.com.cn;
-X-Coremail-Antispam: 1Uk129KBjvJXoWxWF15Kw48tw15GFW7tr45GFg_yoW5Ww43pF
-	WkGw45twn7CF1qyws3G34UX3y8X3Z3CF47Wrsaqr1Svw15JF9Iv3WSg3W7WFy3uFWkZw4F
-	kanYy3W09rWYyrJanT9S1TB71UUUUUJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
-	DUYxn0WfASr-VFAU7a7-sFnT9fnUUIcSsGvfJ3UbIYCTnIWIevJa73UjIFyTuYvj4RJUUU
-	UUUUU
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20261025192244.209256-2-christian.koever-draxl@student.uibk.ac.at>
 
-Original test uses a fixed 5000 iteration loop to trigger CPU hotplug
-for verifying cpufreq synchronization between CPU hotplug and sysfs
-writes.
+On Sun, Oct 25, 2026 at 08:22:42PM +0100, christian.koever-draxl@student.ui=
+bk.ac.at wrote:
+> From: Christian Stefan K=C3=B6v=C3=A9r-Draxl <ckoever@outlook.de>
+>=20
+> The S4 CPU temperature sensor is the G12A design, but like on T7 its
+> calibration value is only available through the secure monitor: the
+> ao-secure register used on G12A holds unrelated data on S4. Add a
+> compatible for it; it takes a single clock and the secure monitor
+> phandle with the sensor index.
+>=20
+> Signed-off-by: Christian Stefan K=C3=B6v=C3=A9r-Draxl <ckoever@outlook.de>
+> ---
 
-Two issues exist:
-1. Background hotplug task keeps running after test completes, causing
-redundant CPU on/offline operations.
-2. When cpufreq frequency setup is slow, the hotplug loop may exit
-before frequency updates finish, which breaks test purpose.
+Feedback from Sashiko looks reasonable and I do not see it being
+responded to. Dropping from DT Patchwork.
 
-Use signal notification to terminate the infinite hotplug loop, and
-add an EXIT trap to clean up the hotplug child when this test function
-terminates abnormally.
-
-This makes hotplug run only during cpufreq sysfs write test,
-align with test objective.
-
-Signed-off-by: xiong yining <xiongyining1480@phytium.com.cn>
----
-Changes in v3:
-- Start the hotplug child after governor switch and sysfs frequency reads,
-to avoid -EBUSY errors when the target CPU is offline.
-
-Changes in v2:
-- Stop the hotplug child process by signal notification instead of
-a stop file, avoiding the predictable temporary path.
-- Add an exit trap so the hotplug child is also cleaned up when the
-main shell terminates abnormally.
-- Link to v1:
-https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2662696.html
-
-This addresses the security and robustness concerns raised by Sashiko.
----
- .../selftests/cpufreq/special-tests.sh        | 30 +++++++++++++++----
- 1 file changed, 24 insertions(+), 6 deletions(-)
-
-diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
-index e87ed7c8e5e5..0665da8f2444 100755
---- a/tools/testing/selftests/cpufreq/special-tests.sh
-+++ b/tools/testing/selftests/cpufreq/special-tests.sh
-@@ -16,6 +16,8 @@ source cpu.sh
- source cpufreq.sh
- source governor.sh
- 
-+HOTPLUG_PID=""
-+
- # Test 1
- # $1: policy
- __simple_lockdep()
-@@ -92,6 +94,16 @@ governor_race()
- 	restore_all_governors
- }
- 
-+hotplug_cleanup()
-+{
-+	if [[ -n "$HOTPLUG_PID" ]]; then
-+		kill -s SIGTERM "$HOTPLUG_PID"
-+		wait "$HOTPLUG_PID"
-+
-+		HOTPLUG_PID=""
-+	fi
-+}
-+
- # Test 4
- # $1: cpu
- hotplug_with_updates_cpu()
-@@ -101,14 +113,18 @@ hotplug_with_updates_cpu()
- 	# switch to ondemand
- 	__switch_governor_for_cpu $1 "ondemand"
- 
--	for i in `seq 1 5000`
--	do
--		reboot_cpu $1
--	done &
--
- 	local freqs=$(cat $filepath/scaling_available_frequencies)
- 	local oldfreq=$(cat $filepath/scaling_min_freq)
- 
-+	(
-+		local quit=0
-+		trap 'quit=1' SIGTERM
-+		while [ "$quit" -eq 0 ]; do
-+			reboot_cpu "$1"
-+		done
-+	) &
-+	HOTPLUG_PID=$!
-+
- 	for j in `seq 1 5000`
- 	do
- 		# Set all frequencies one-by-one
-@@ -117,14 +133,16 @@ hotplug_with_updates_cpu()
- 		done
- 	done
- 
-+	hotplug_cleanup
-+
- 	# restore old freq
- 	echo $oldfreq > $filepath/scaling_min_freq
- }
- 
- hotplug_with_updates()
- {
-+	trap 'hotplug_cleanup' EXIT
- 	save_all_governors
- 	for_each_non_boot_cpu hotplug_with_updates_cpu
--	wait
- 	restore_all_governors
- }
--- 
-2.34.1
+Best regards,
+Krzysztof
 
