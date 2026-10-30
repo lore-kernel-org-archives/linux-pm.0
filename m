@@ -1,50 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793356768;
-	b=Hh5c/JuGmyzN9kihYpVFQiC//G0ARtd94Qc0C0kbD9ui6co0Pqvf6aKKgK8WeIvwBvzq
-	 dDHv0s7BLwn2daMOD6qFiaZ4uOM9U49KkkbIBoF5O0GOmMNgKXLx0DkS9xycq4t7QVk5g
-	 chi7j+4oglCuXLkNllCV3zCpp/0k/aBR+LdsVB9P+zO7mXov7v8wZFEZ5BhpjtgY/ZdpB
-	 CP4ehwlabRphh9eBDSkV8t7yI+svsGiWhRK+Sdu+4AFKNvU/JRYZnwHXTj6Si7ZBWF3oE
-	 LWQWGdeGprLR7vZHrvlt3ufSArwrZT0tqY4shW7uM56VSUd5p1LepTL3HmahKJnPkwg==
+	t=1793356943;
+	b=1/fhMFuV9EADNOqeyVYUWqBhEfAcCY2ZghT2HpoWpNHXyN19YXLyj4006cTqpwWex6Ad
+	 nx4nAA+AHlmjZC7li6GSCo4L5THNxrDwFVq1Gx5ntqptse5GP4jfG/3dYCoglkiAM4mhO
+	 6Ikcv1J0BTD6sRLdc66Ja1q7SIhCNG3kL3LR6usl05+aVWIuo8LWL1LSEz3r8zBiwSnBS
+	 u4x5I3e0X6dHaVSO4aohqBgF9a2+jUYNhxdzXEvapRy0YHGHRmrFbRoISwAqTNEA4zpb/
+	 gguwA8O9DwUaAVb3WEVZHz3PGavunJOGl36EeyMjGowGJ8Ryc+8wNsbga3fFiSEG+5g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793356768;
-	h=DMARC-Filter:Received:Received:Date:From:Cc:Subject:References:
-	 X-Priority:X-Has-Attach:X-Mailer:Mime-Version:Message-ID:Content-Type:
-	 Content-Transfer-Encoding:X-CM-TRANSID:X-CM-SenderInfo:
-	 X-Coremail-Antispam;
-	bh=qOtVBURnDilyxFWXOG1CCLW2lEhEOn6TnvzakyEZlZI=;
-	b=vB0RnD/c/K1akd2DelPhjNB7FVvyUl0cVUMW4tsPXoZnXtFQSk5+BvPmrZFiIjSJcTf/
-	 zm5nbLOagV6JsSvr0Y7RLWWwQvVCgMbAOvUCyMr9UIF8FcVJK0PZgN8dM/pLmqVUJKAW9
-	 Oz/2LO1Kgj2SNxS/vASXEHnG1jff2aOZdWlbLH7rEMPnr4lTUSBoqwHsSCep+dFxpDo60
-	 RZlfa+3KWs7jCLUbfrpmjG4Lcqj9QvktkIb8LLfTSBCN6+FP3pwCNOPbSxt9DbQpBQyG5
-	 /wuJQ2IPN+P2yx/rhUn18RvTcRcRi6zzw2X8uUFtrEip0pTPjKLpx52Qju+MSaJZ+Ng==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793356943;
+	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-Id:
+	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-CM-SenderInfo:X-Coremail-Antispam;
+	bh=V91mG1ucI7P99bGc4LQseFhOC+7VxJiPPM+PptTC53o=;
+	b=VvaVWUX9h0MmSDRV+b841y2gETW+uBvIsJh6TiSrMAIsjzFy+DhYXaksp+FaM2BKX+4+
+	 nxRZuJlwnmNiVvqkpt7Q5brJ8/QFoq87cqmIZL2uQw9pKqtRVeyuaENltnphcLBhfGgyA
+	 UqIxsoeLHjkZGZw4e09JORGDA6RJiMDjlOd0fdFAJs4wMVS0NaR0jz60qHz9TgPWoGhJx
+	 o3XrH8kv63DGzmQ55ruc+CBaPxHCl7e0JfYfsLhtwHmQq4NeWWS3NANUjmkQTMJ8uCwps
+	 GIpZpZ+q7BhMCWywV76aIueCeu76qTdYQU4e2EH15fhZIURX0xc8IrylfWVoB15DOIg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=none header.from=phytium.com.cn;
 	spf=pass smtp.mailfrom=phytium.com.cn;
 	arc=none smtp.remote-ip=162.243.164.118
 Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 11565606A31D;
-	Fri, 30 Oct 2026 10:39:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 11565606A31D
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 80694606A31E;
+	Fri, 30 Oct 2026 10:42:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 80694606A31E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=phytium.com.cn
 Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
-	by hzbj-icmmx-7 (Coremail) with UTF8SMTP id AQAAfwAXyJzZc+Rq3FAHBQ--.3894S2;
-	Fri, 30 Oct 2026 18:39:21 +0800 (CST)
-Received: from Foxmail (unknown [218.76.62.144])
-	by mail (Coremail) with SMTP id AQAAf8DwwXPZc+Rq6nPzAA--.17080S2;
-	Fri, 30 Oct 2026 18:39:21 +0800 (CST)
-Date: Fri, 30 Oct 2026 18:39:20 +0800
-From: "xiongyining1480@phytium.com.cn" <xiongyining1480@phytium.com.cn>
-Cc: linux-pm <linux-pm@vger.kernel.org>, 
-	linux-kselftest <linux-kselftest@vger.kernel.org>, 
-	linux-kernel <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?5Zue5aSNOiBSZTogW1BBVENIIHYyXSBzZWxmdGVzdHM6IGNwdWZyZXE6IHN0b3AgQ1BVIGhvdHBsdWcgbG9vcCBhZnRlciBjcHVmcmVxIHVwZGF0ZSB0ZXN0?=
-References: <20261028100241.189085-1-xiongyining1480@phytium.com.cn>, 
-	<b228d3c3-ac4b-43df-8829-edb9c459860d@oss.qualcomm.com>
-X-Priority: 3
-X-Has-Attach: no
-X-Mailer: Foxmail 7.2.25.563[cn]
+	by hzbj-icmmx-7 (Coremail) with UTF8SMTP id AQAAfwD36r6KdORqiF4HBQ--.9378S2;
+	Fri, 30 Oct 2026 18:42:19 +0800 (CST)
+Received: from phytium.com.cn (unknown [218.76.62.144])
+	by mail (Coremail) with SMTP id AQAAf8Dwj3KGdORqNXXzAA--.24040S3;
+	Fri, 30 Oct 2026 18:42:15 +0800 (CST)
+From: xiong yining <xiongyining1480@phytium.com.cn>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Shuah Khan <shuah@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	chenbaozi@phytium.com.cn,
+	"zhongqiu . han" <zhongqiu.han@oss.qualcomm.com>,
+	xiong yining <xiongyining1480@phytium.com.cn>
+Subject: [PATCH v3] selftests: cpufreq: stop CPU hotplug loop after cpufreq update test
+Date: Fri, 30 Oct 2026 18:42:13 +0800
+Message-Id: <20261030104213.2030283-1-xiongyining1480@phytium.com.cn>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,67 +55,126 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-Message-ID: <202610301839207103055@phytium.com.cn>
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: base64
-X-CM-TRANSID:AQAAf8DwwXPZc+Rq6nPzAA--.17080S2
-X-CM-SenderInfo: x0lr0wp1lqx0bjrumio6sk53xlxphulrpou0/1tbiAQAECmrjns4IMwAKsn
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:AQAAf8Dwj3KGdORqNXXzAA--.24040S3
+X-CM-SenderInfo: x0lr0wp1lqx0bjrumio6sk53xlxphulrpou0/1tbiAQAECmrjns4IMwAOsj
 Authentication-Results: hzbj-icmmx-7; spf=neutral smtp.mail=xiongyinin
 	g1480@phytium.com.cn;
-X-Coremail-Antispam: 1Uk129KBjvJXoWxWw13GrWkXF4UCw4UurWxWFg_yoW5Gry7pr
-	W3Ja1xtrWqkFW8Zw1DK3WfXrWxAF4kZF4UGrs5Kr1rA3s8Aa4fJr1fKry8XF93Aryfur4Y
-	vwsYvas8Ga4UGrDanT9S1TB71UUUUb7qnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+X-Coremail-Antispam: 1Uk129KBjvJXoWxWF15Kw48tw15GFW7tr45GFg_yoW5Ww43pF
+	WkGw45twn7CF1qyws3G34UX3y8X3Z3CF47Wrsaqr1Svw15JF9Iv3WSg3W7WFy3uFWkZw4F
+	kanYy3W09rWYyrJanT9S1TB71UUUUUJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
 	DUYxn0WfASr-VFAU7a7-sFnT9fnUUIcSsGvfJ3UbIYCTnIWIevJa73UjIFyTuYvj4RJUUU
 	UUUUU
 
-SGksIAoKVGhhbmsgeW91IGZvciB0aGUgcmV2aWV3IGFuZCB0aGUgdGVzdCBzY3JpcHQuCgo+IFRo
-ZSBjaGFuZ2Vsb2cgc3RpbGwgZGVzY3JpYmVzIHRoZSB2MSBzdG9wLWZpbGUgYXBwcm9hY2g7IHBs
-ZWFzZQo+IHVwZGF0ZSBpdC4KClJpZ2h0LCB0aGFua3MgZm9yIGNhdGNoaW5nIHRoYXQuIEnigJls
-bCB1cGRhdGUgdGhlIGNoYW5nZWxvZyB0byBkZXNjcmliZSB0aGUgCmN1cnJlbnQgYXBwcm9hY2gu
-Cgo+IFRoZSBiYWNrZ3JvdW5kIGhvdHBsdWcgbG9vcCBpcyBub3cgc3RhcnRlZCBiZWZvcmUgc3dp
-dGNoaW5nIHRvIG9uZGVtYW5kCj4gYW5kIGJlZm9yZSByZWFkaW5nIHNjYWxpbmdfYXZhaWxhYmxl
-X2ZyZXF1ZW5jaWVzIC8gc2NhbGluZ19taW5fZnJlcS4gSWYKPiB0aGUgQ1BVIGhhcHBlbnMgdG8g
-YmUgb2ZmbGluZSBhdCB0aGF0IHBvaW50IChzdWNoIGFzIHNpbmdsZS1DUFUgcG9saWN5KSwKPiB0
-aG9zZSBhY2Nlc3NlcyByZXR1cm4gLUVCVVNZOiB0aGUgZ292ZXJub3Igc3dpdGNoIGlzIGxvc3Qs
-IGZyZXFzIGlzCj4gZW1wdHkgc28gdGhlIHVwZGF0ZSBsb29wIGRvZXMgbm90aGluZyB3aGlsZSB0
-aGUgdGVzdCBzdGlsbCBwYXNzZXMsIGFuZAo+IG9sZGZyZXEgaXMgZW1wdHkgc28gc2NhbGluZ19t
-aW5fZnJlcSBpcyBub3QgcmVzdG9yZWQuIFBsZWFzZSBzdGFydCB0aGUKPiBob3RwbHVnIHN1YnNo
-ZWxsIG9ubHkgYWZ0ZXIgdGhhdCBzZXR1cCBpcyBkb25lLgoKQWdyZWVkLiBTdGFydGluZyBpdCBi
-ZWZvcmUgZ292ZXJub3Igc3dpdGNoaW5nIGFuZCBzeXNmcyBmcmVxdWVuY3kgcmVhZHMgY2FuIApo
-aXQgLUVCVVNZIGlmIHRoZSB0YXJnZXQgQ1BVIGlzICBvZmZsaW5lLiBJIHdpbGwgbGF1bmNoIHRo
-ZSBob3RwbHVnIGNoaWxkIG9ubHkgCmFmdGVyIHRob3NlIHNldHVwIHN0ZXBzIGZpbmlzaC4KCj4g
-QmFzaCBydW5zIHRoZSBFWElUIHRyYXAgb24gU0lHSU5ULCBTSUdURVJNLCBhbmQgU0lHSFVQLCBz
-byBJIGRvbid0IHRoaW5rCj4gYWRkaXRpb25hbCB0cmFwcyBhcmUgbmVjZXNzYXJ5LiBUaGlzIGlz
-c3VlIG9jY3VycyB3aXRoIERhc2gsIGJ1dCBub3QKPiB3aXRoIEJhc2guCgpUaGFua3MgZm9yIHRo
-ZSBjb21wYXJpc29uIHNjcmlwdCBhbmQgdGhlIHRlc3QgcmVzdWx0cyDigJQgdGhhdCdzIHZlcnkg
-aGVscGZ1bC4KSSBhZ3JlZSB0aGF0IEJhc2ggcnVucyB0aGUgRVhJVCB0cmFwIG9uIFNJR0lOVCwg
-U0lHVEVSTSwgYW5kIFNJR0hVUC4gIEkgdGVzdGVkIApib3RoIHRoZSBzdWJzaGVsbCBjYXNlIGFu
-ZCB0aGUgbWFpbi1zaGVsbCBjYXNlOgoKV2hlbiB0aGUgc2lnbmFsIGlzIHNlbnQgdG8gdGhlIGRv
-X3Rlc3Qgc3Vic2hlbGwsIHRoZSBFWElUIHRyYXAgcnVucyBhbmQgY2xlYW51cCAKY29tcGxldGVz
-LgoKV2hlbiB0aGlzIHNpZ25hbCBpcyBzZW50IHRvIHRoZSBtYWluIHNoZWxsLCB0aGUgc3Vic2hl
-bGwgZG9lcyBub3QgcmVjZWl2ZSBpdCwga2VlcHMgCnJ1bm5pbmcsICBhbmQgcGVyZm9ybXMgY2xl
-YW51cCB3aGVuIGl0IGV4aXRzIG5hdHVyYWxseS4KCkNsZWFudXAgd29ya3MgY29ycmVjdGx5IGlu
-IGJvdGggY2FzZXMuCgpTYW1wbGUgc2ltdWxhdGlvbiBzY3JpcHQ6CgojIS9iaW4vYmFzaAoKCmRv
-X3Rlc3QoKSB7CiAgICB0cmFwICdlY2hvICJFWElUIHRyYXAgcmFuIicgRVhJVAogICAgbG9jYWwg
-c2lnPSIkMSIKICAgIGxvY2FsIHRhcmdldD0iJDIiCgoKICAgIGNhc2UgIiR0YXJnZXQiIGluCiAg
-ICAgICAgMSkKICAgICAgICAgICAgZWNobyAiLS0tLSBzZW5kICRzaWcgdG8gZG9fdGVzdCBwaWQg
-LS0tLSIKICAgICAgICAgICAga2lsbCAtIiRzaWciICIkQkFTSFBJRCIKICAgICAgICAgICAgOzsK
-ICAgICAgICAyKQogICAgICAgICAgICBlY2hvICItLS0tIHNlbmQgJHNpZyB0byBtYWluIHBpZCAt
-LS0tIgogICAgICAgICAgICBraWxsIC0iJHNpZyIgJCQKICAgICAgICAgICAgOzsKICAgIGVzYWMK
-CiAgICBlY2hvICJkb190ZXN0IGZpbmlzaGVkIgoKfQoKIApleHBvcnQgLWYgZG9fdGVzdAoKZWNo
-byAiLS0tLS0tLS0tc3ViIHNoZWxsLS0tLS0tLS0tLS0iCmZvciBzaWcgaW4gSU5UIFRFUk0gSFVQ
-OyBkbwogICAgICAgIGJhc2ggLWMgImRvX3Rlc3QgJyRzaWcnIDEgfCB0ZWUgdGVzdC5sb2ciCmRv
-bmUKIAplY2hvICItLS0tLS0tLS1tYWluIHNoZWxsLS0tLS0tLS0tLS0iCmZvciBzaWcgaW4gSU5U
-IFRFUk0gSFVQOyBkbwogICAgICAgIGJhc2ggLWMgImRvX3Rlc3QgJyRzaWcnIDIgfCB0ZWUgdGVz
-dC5sb2ciIDI+L2Rldi9udWxsCmRvbmUKIApvdXRwdXQ6Ci0tLS0tLS0tLXN1YiBzaGVsbC0tLS0t
-LS0tLS0tCi0tLS0gc2VuZCBJTlQgdG8gZG9fdGVzdCBwaWQgLS0tLQpFWElUIHRyYXAgcmFuCi0t
-LS0gc2VuZCBURVJNIHRvIGRvX3Rlc3QgcGlkIC0tLS0KRVhJVCB0cmFwIHJhbgotLS0tIHNlbmQg
-SFVQIHRvIGRvX3Rlc3QgcGlkIC0tLS0KRVhJVCB0cmFwIHJhbgotLS0tLS0tLS1tYWluIHNoZWxs
-LS0tLS0tLS0tLS0KLS0tLSBzZW5kIElOVCB0byBtYWluIHBpZCAtLS0tCmRvX3Rlc3QgZmluaXNo
-ZWQKRVhJVCB0cmFwIHJhbgpUZXJtaW5hdGVkCi0tLS0gc2VuZCBURVJNIHRvIG1haW4gcGlkIC0t
-LS0KZG9fdGVzdCBmaW5pc2hlZApFWElUIHRyYXAgcmFuCi0tLS0gc2VuZCBIVVAgdG8gbWFpbiBw
-aWQgLS0tLQpkb190ZXN0IGZpbmlzaGVkCkVYSVQgdHJhcCByYW4KIAoKVGhhbmtzIGFnYWluIGZv
-ciB5b3VyIHVzZWZ1bCB0ZXN0LgpCZXN0IHJlZ2FyZHMsCllpbmluZyBYaW9uZw==
+Original test uses a fixed 5000 iteration loop to trigger CPU hotplug
+for verifying cpufreq synchronization between CPU hotplug and sysfs
+writes.
+
+Two issues exist:
+1. Background hotplug task keeps running after test completes, causing
+redundant CPU on/offline operations.
+2. When cpufreq frequency setup is slow, the hotplug loop may exit
+before frequency updates finish, which breaks test purpose.
+
+Use signal notification to terminate the infinite hotplug loop, and
+add an EXIT trap to clean up the hotplug child when this test function
+terminates abnormally.
+
+This makes hotplug run only during cpufreq sysfs write test,
+align with test objective.
+
+Signed-off-by: xiong yining <xiongyining1480@phytium.com.cn>
+---
+Changes in v3:
+- Start the hotplug child after governor switch and sysfs frequency reads,
+to avoid -EBUSY errors when the target CPU is offline.
+
+Changes in v2:
+- Stop the hotplug child process by signal notification instead of
+a stop file, avoiding the predictable temporary path.
+- Add an exit trap so the hotplug child is also cleaned up when the
+main shell terminates abnormally.
+- Link to v1:
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2662696.html
+
+This addresses the security and robustness concerns raised by Sashiko.
+---
+ .../selftests/cpufreq/special-tests.sh        | 30 +++++++++++++++----
+ 1 file changed, 24 insertions(+), 6 deletions(-)
+
+diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
+index e87ed7c8e5e5..0665da8f2444 100755
+--- a/tools/testing/selftests/cpufreq/special-tests.sh
++++ b/tools/testing/selftests/cpufreq/special-tests.sh
+@@ -16,6 +16,8 @@ source cpu.sh
+ source cpufreq.sh
+ source governor.sh
+ 
++HOTPLUG_PID=""
++
+ # Test 1
+ # $1: policy
+ __simple_lockdep()
+@@ -92,6 +94,16 @@ governor_race()
+ 	restore_all_governors
+ }
+ 
++hotplug_cleanup()
++{
++	if [[ -n "$HOTPLUG_PID" ]]; then
++		kill -s SIGTERM "$HOTPLUG_PID"
++		wait "$HOTPLUG_PID"
++
++		HOTPLUG_PID=""
++	fi
++}
++
+ # Test 4
+ # $1: cpu
+ hotplug_with_updates_cpu()
+@@ -101,14 +113,18 @@ hotplug_with_updates_cpu()
+ 	# switch to ondemand
+ 	__switch_governor_for_cpu $1 "ondemand"
+ 
+-	for i in `seq 1 5000`
+-	do
+-		reboot_cpu $1
+-	done &
+-
+ 	local freqs=$(cat $filepath/scaling_available_frequencies)
+ 	local oldfreq=$(cat $filepath/scaling_min_freq)
+ 
++	(
++		local quit=0
++		trap 'quit=1' SIGTERM
++		while [ "$quit" -eq 0 ]; do
++			reboot_cpu "$1"
++		done
++	) &
++	HOTPLUG_PID=$!
++
+ 	for j in `seq 1 5000`
+ 	do
+ 		# Set all frequencies one-by-one
+@@ -117,14 +133,16 @@ hotplug_with_updates_cpu()
+ 		done
+ 	done
+ 
++	hotplug_cleanup
++
+ 	# restore old freq
+ 	echo $oldfreq > $filepath/scaling_min_freq
+ }
+ 
+ hotplug_with_updates()
+ {
++	trap 'hotplug_cleanup' EXIT
+ 	save_all_governors
+ 	for_each_non_boot_cpu hotplug_with_updates_cpu
+-	wait
+ 	restore_all_governors
+ }
+-- 
+2.34.1
 
