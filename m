@@ -1,76 +1,50 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.176
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793355948;
-	b=emrOpOb1ftKovIkQyiksfwVW1aaYoKRqsv0iFvz3LwFKfu9ftMWYQu98OAe88NMZZ/vp
-	 H8yTscqbo87Di2ruhnD8a5S9ezMOrvWOgqvU3l61ZfT0hTCGEqelDPzA4sH/VSQQOgNKB
-	 PrDrojb/0CXnm9RS/fQmXNLwRc7qSWHNeTecbCNy29CZkLoD3wgY6kO0OCz4m5bn9Ly7r
-	 MyyAjreo31+0q0RA89FjdnT7JKTHFOqnakufd1kcSSffFjaibdlzUPs5eUk7qOzNyPzWi
-	 sU8qGZQ6MVubOGT7qjNm3ne62lJFTg/7os/eATU8RO3J1Gg11MEKv+/ocWNlOT3R6Dw==
+	t=1793356768;
+	b=Hh5c/JuGmyzN9kihYpVFQiC//G0ARtd94Qc0C0kbD9ui6co0Pqvf6aKKgK8WeIvwBvzq
+	 dDHv0s7BLwn2daMOD6qFiaZ4uOM9U49KkkbIBoF5O0GOmMNgKXLx0DkS9xycq4t7QVk5g
+	 chi7j+4oglCuXLkNllCV3zCpp/0k/aBR+LdsVB9P+zO7mXov7v8wZFEZ5BhpjtgY/ZdpB
+	 CP4ehwlabRphh9eBDSkV8t7yI+svsGiWhRK+Sdu+4AFKNvU/JRYZnwHXTj6Si7ZBWF3oE
+	 LWQWGdeGprLR7vZHrvlt3ufSArwrZT0tqY4shW7uM56VSUd5p1LepTL3HmahKJnPkwg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793355948;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=N/lKB/c9Lq//6NoMXUd+nQ4qRj1zdlYJ2/JdgAh063M=;
-	b=ZwCCf0ay2TypyKOHn1GceuAh8MH9mVRnr/JQQwpufS0Xa9CntUvT0nEj8s2+SuUBkUhq
-	 OnoyhcahDXkjwp9rh61iGocbfR4hRGHFBEBbVxqxVihIzPY0BJeG0UuBQQU+hh5LETieQ
-	 MqZyIknEXEJdZsGpEGmuhZ2pHsB7Si+lIe80WdT7UYVL8PI/vIcyPz2tuIVOJH4VYtok+
-	 /3Otwj1Z60oume+vIW81pgdVKlcXdkpUhvCE2TiSSYYcpQquk89XDA3fMcFIdVUkO8enU
-	 xCdX5M79Z5JK2n176RKR9xMCxl3i3ZHuSexp+j/e05+AwT9kWc5And3HNNq8PCM9vxA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793356768;
+	h=DMARC-Filter:Received:Received:Date:From:Cc:Subject:References:
+	 X-Priority:X-Has-Attach:X-Mailer:Mime-Version:Message-ID:Content-Type:
+	 Content-Transfer-Encoding:X-CM-TRANSID:X-CM-SenderInfo:
+	 X-Coremail-Antispam;
+	bh=qOtVBURnDilyxFWXOG1CCLW2lEhEOn6TnvzakyEZlZI=;
+	b=vB0RnD/c/K1akd2DelPhjNB7FVvyUl0cVUMW4tsPXoZnXtFQSk5+BvPmrZFiIjSJcTf/
+	 zm5nbLOagV6JsSvr0Y7RLWWwQvVCgMbAOvUCyMr9UIF8FcVJK0PZgN8dM/pLmqVUJKAW9
+	 Oz/2LO1Kgj2SNxS/vASXEHnG1jff2aOZdWlbLH7rEMPnr4lTUSBoqwHsSCep+dFxpDo60
+	 RZlfa+3KWs7jCLUbfrpmjG4Lcqj9QvktkIb8LLfTSBCN6+FP3pwCNOPbSxt9DbQpBQyG5
+	 /wuJQ2IPN+P2yx/rhUn18RvTcRcRi6zzw2X8uUFtrEip0pTPjKLpx52Qju+MSaJZ+Ng==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.210.176
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2A3D606A31A
-	for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2026 10:25:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B2A3D606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-8a06b44bd01so259991b3a.0
-        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2026 03:25:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793355947; x=1793960747;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=N/lKB/c9Lq//6NoMXUd+nQ4qRj1zdlYJ2/JdgAh063M=;
-        b=rBe6ePu7oBy+pffwKM+KTyxBwnxL0P3E7l1sWMZ6a219ikVUUzHh1hyO5UFZoeS34d
-         s5AyWuMGNcmbylEDbfFKZVnERZD55briV1xypGSm1LBira/8LtZQ7A8c+XzuYSCK7b8v
-         kZRYkvAomlrnKyIs1yj04KwHq8DXtXwkalDMiy60XwE04n1MOm520M+aIHopXWYExeGJ
-         ScFsPfc5odOQsl+E3H61I71sg5JBD750Rcc5kScRiqQFlh6X0ANFX20xwW+lIBRgwCQg
-         2fXeMBqU23usvNmX73U9hxkbr136P1yE48Fj0ikHTNVZ6mWc2PoNMwGM/PRsE6QV3ufJ
-         zDOw==
-X-Forwarded-Encrypted: i=1; AKwUvBy0crdxH1+gXtL/DadMYroP77WaNFe+TjQTk9QXcVAUsNNh6Bqg0gHYU44SdL0hEeqFXXDSQ4PvaA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLB/XrD0ZiS9vjkIw51bJl07fjAuUYmt3a7X45b6YpRavz7Og/T
-	6n6aq83lf9eVQKU6a44S+96w7NqZ6+lp9YCv2yFsRIhjzSBgzk8Dl4+bWQVwJ1UP
-X-Gm-Gg: AYBFou0d8muGMpPkk4xeAglZTTPfYpO86tIw/IO6jPgYAlglgv4Sz92St/jRSD+W44H
-	bYh5HUuyYkP7F9NhapO3lbqEMbYXINoiW85+KKBK7cNdk52c6E3o+TP2IQThybCoH1D+AtepYCi
-	ObGncQtgTgzLSaXWTvmf28+W4UjzJZQy4ei0lXMl7cnxJm+qdxIzwPu6ADae6jTDJqIYjcNzves
-	HZU/RaYiL/lrbeqk0roCOVRU5d4gpMWNj7zF+Ty954ZiaLZG+JmmHAXYlgRlx+YcG1P3vG/WFN8
-	Llo64mce/IOtLhlX9WZhglX5Pfu7JZl/4QLE+xHk9qdQpD9iTCk7mq9hdqoBc566uSmB0hXMbhc
-	uRZHI8pVfQyz64/CVcDxaSt/NGi4YVZShtFgmeva9Lx6/3tENmSGHOS/Ae9nIim5xdVwDLm/5c+
-	wkXpGqKNb1ke6hm7AxmxO31+DAlbXfCpmwf9dz7NERXEnqd+lS8vc84CIrwVZXu1EIwQHJ6RsZY
-	maSLzQUUcLq3FXIL3QQ30l6qDLAP15U1eA9I8y4U8PSAC6V3ZFLo0ddG3t5rWe7WWydBpiXr4bH
-	n601XWKto4+LUZBbrF5sl0r1ON9UBMtDItaWUiGzzB1eSBqitKOwGET/NrNMjDCwwA==
-X-Received: by 2002:a05:6a00:10c5:b0:89d:7f51:6492 with SMTP id d2e1a72fcca58-8a9bc8321e4mr1603752b3a.32.1793355946981;
-        Fri, 30 Oct 2026 03:25:46 -0700 (PDT)
-Received: from mail-dl1-f41.google.com (mail-dl1-f41.google.com. [74.125.82.41])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8a9ecf563bbsm598436b3a.1.2026.10.30.03.25.46
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 30 Oct 2026 03:25:46 -0700 (PDT)
-Received: by mail-dl1-f41.google.com with SMTP id a92af1059eb24-1931ff67a29so1503461c88.1
-        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2026 03:25:46 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwC9lmwrOJxQNdb+NDjaqDo5sgn9SZ9rCjtJzwXdKWbVXyfPCgxEd8PJ+fIOfZJ07/OqtFu3GTiYw==@vger.kernel.org
-X-Received: by 2002:a05:6102:9d4:b0:7ce:5952:125d with SMTP id
- ada2fe7eead31-7d0728d38cemr726412137.36.1793355567237; Fri, 30 Oct 2026
- 03:19:27 -0700 (PDT)
+	dmarc=none header.from=phytium.com.cn;
+	spf=pass smtp.mailfrom=phytium.com.cn;
+	arc=none smtp.remote-ip=162.243.164.118
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 11565606A31D;
+	Fri, 30 Oct 2026 10:39:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 11565606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=phytium.com.cn
+Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
+	by hzbj-icmmx-7 (Coremail) with UTF8SMTP id AQAAfwAXyJzZc+Rq3FAHBQ--.3894S2;
+	Fri, 30 Oct 2026 18:39:21 +0800 (CST)
+Received: from Foxmail (unknown [218.76.62.144])
+	by mail (Coremail) with SMTP id AQAAf8DwwXPZc+Rq6nPzAA--.17080S2;
+	Fri, 30 Oct 2026 18:39:21 +0800 (CST)
+Date: Fri, 30 Oct 2026 18:39:20 +0800
+From: "xiongyining1480@phytium.com.cn" <xiongyining1480@phytium.com.cn>
+Cc: linux-pm <linux-pm@vger.kernel.org>, 
+	linux-kselftest <linux-kselftest@vger.kernel.org>, 
+	linux-kernel <linux-kernel@vger.kernel.org>
+Subject: =?UTF-8?B?5Zue5aSNOiBSZTogW1BBVENIIHYyXSBzZWxmdGVzdHM6IGNwdWZyZXE6IHN0b3AgQ1BVIGhvdHBsdWcgbG9vcCBhZnRlciBjcHVmcmVxIHVwZGF0ZSB0ZXN0?=
+References: <20261028100241.189085-1-xiongyining1480@phytium.com.cn>, 
+	<b228d3c3-ac4b-43df-8829-edb9c459860d@oss.qualcomm.com>
+X-Priority: 3
+X-Has-Attach: no
+X-Mailer: Foxmail 7.2.25.563[cn]
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -79,73 +53,67 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-References: <cover.1793278754.git.geert+renesas@glider.be> <2f986484ade3f3ab7785a088b476b4bc6f53c157.1793278754.git.geert+renesas@glider.be>
-In-Reply-To: <2f986484ade3f3ab7785a088b476b4bc6f53c157.1793278754.git.geert+renesas@glider.be>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 30 Oct 2026 11:19:16 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVDs38CWQv+-1d6iMa5Et-w53iVbjSTyQS5uVcvq+E8Ag@mail.gmail.com>
-X-Gm-Features: AclHuK8TLIiJXfBZEbZO-sDHcOFpgPhdmma0xCzHFZfNFDpVgGdGYD9NeIfWwIY
-Message-ID: <CAMuHMdVDs38CWQv+-1d6iMa5Et-w53iVbjSTyQS5uVcvq+E8Ag@mail.gmail.com>
-Subject: Re: [PATCH 4/9] can: rcar_canfd: Add support for R-Car Gen5
-To: Fabrizio Castro <fabrizio.castro.jz@renesas.com>, Marc Kleine-Budde <mkl@pengutronix.de>, 
-	Vincent Mailhol <mailhol@kernel.org>, Biju Das <biju.das.au@gmail.com>, 
-	Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, linux-can@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-ID: <202610301839207103055@phytium.com.cn>
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
+X-CM-TRANSID:AQAAf8DwwXPZc+Rq6nPzAA--.17080S2
+X-CM-SenderInfo: x0lr0wp1lqx0bjrumio6sk53xlxphulrpou0/1tbiAQAECmrjns4IMwAKsn
+Authentication-Results: hzbj-icmmx-7; spf=neutral smtp.mail=xiongyinin
+	g1480@phytium.com.cn;
+X-Coremail-Antispam: 1Uk129KBjvJXoWxWw13GrWkXF4UCw4UurWxWFg_yoW5Gry7pr
+	W3Ja1xtrWqkFW8Zw1DK3WfXrWxAF4kZF4UGrs5Kr1rA3s8Aa4fJr1fKry8XF93Aryfur4Y
+	vwsYvas8Ga4UGrDanT9S1TB71UUUUb7qnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+	DUYxn0WfASr-VFAU7a7-sFnT9fnUUIcSsGvfJ3UbIYCTnIWIevJa73UjIFyTuYvj4RJUUU
+	UUUUU
 
-On Thu, 29 Oct 2026 at 14:11, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> The CAN-FD block on R-Car Gen5 is similar to the variant on R-Car Gen4,
-> but uses split global and per-channel interrupts, like on RZ/G2L.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+SGksIAoKVGhhbmsgeW91IGZvciB0aGUgcmV2aWV3IGFuZCB0aGUgdGVzdCBzY3JpcHQuCgo+IFRo
+ZSBjaGFuZ2Vsb2cgc3RpbGwgZGVzY3JpYmVzIHRoZSB2MSBzdG9wLWZpbGUgYXBwcm9hY2g7IHBs
+ZWFzZQo+IHVwZGF0ZSBpdC4KClJpZ2h0LCB0aGFua3MgZm9yIGNhdGNoaW5nIHRoYXQuIEnigJls
+bCB1cGRhdGUgdGhlIGNoYW5nZWxvZyB0byBkZXNjcmliZSB0aGUgCmN1cnJlbnQgYXBwcm9hY2gu
+Cgo+IFRoZSBiYWNrZ3JvdW5kIGhvdHBsdWcgbG9vcCBpcyBub3cgc3RhcnRlZCBiZWZvcmUgc3dp
+dGNoaW5nIHRvIG9uZGVtYW5kCj4gYW5kIGJlZm9yZSByZWFkaW5nIHNjYWxpbmdfYXZhaWxhYmxl
+X2ZyZXF1ZW5jaWVzIC8gc2NhbGluZ19taW5fZnJlcS4gSWYKPiB0aGUgQ1BVIGhhcHBlbnMgdG8g
+YmUgb2ZmbGluZSBhdCB0aGF0IHBvaW50IChzdWNoIGFzIHNpbmdsZS1DUFUgcG9saWN5KSwKPiB0
+aG9zZSBhY2Nlc3NlcyByZXR1cm4gLUVCVVNZOiB0aGUgZ292ZXJub3Igc3dpdGNoIGlzIGxvc3Qs
+IGZyZXFzIGlzCj4gZW1wdHkgc28gdGhlIHVwZGF0ZSBsb29wIGRvZXMgbm90aGluZyB3aGlsZSB0
+aGUgdGVzdCBzdGlsbCBwYXNzZXMsIGFuZAo+IG9sZGZyZXEgaXMgZW1wdHkgc28gc2NhbGluZ19t
+aW5fZnJlcSBpcyBub3QgcmVzdG9yZWQuIFBsZWFzZSBzdGFydCB0aGUKPiBob3RwbHVnIHN1YnNo
+ZWxsIG9ubHkgYWZ0ZXIgdGhhdCBzZXR1cCBpcyBkb25lLgoKQWdyZWVkLiBTdGFydGluZyBpdCBi
+ZWZvcmUgZ292ZXJub3Igc3dpdGNoaW5nIGFuZCBzeXNmcyBmcmVxdWVuY3kgcmVhZHMgY2FuIApo
+aXQgLUVCVVNZIGlmIHRoZSB0YXJnZXQgQ1BVIGlzICBvZmZsaW5lLiBJIHdpbGwgbGF1bmNoIHRo
+ZSBob3RwbHVnIGNoaWxkIG9ubHkgCmFmdGVyIHRob3NlIHNldHVwIHN0ZXBzIGZpbmlzaC4KCj4g
+QmFzaCBydW5zIHRoZSBFWElUIHRyYXAgb24gU0lHSU5ULCBTSUdURVJNLCBhbmQgU0lHSFVQLCBz
+byBJIGRvbid0IHRoaW5rCj4gYWRkaXRpb25hbCB0cmFwcyBhcmUgbmVjZXNzYXJ5LiBUaGlzIGlz
+c3VlIG9jY3VycyB3aXRoIERhc2gsIGJ1dCBub3QKPiB3aXRoIEJhc2guCgpUaGFua3MgZm9yIHRo
+ZSBjb21wYXJpc29uIHNjcmlwdCBhbmQgdGhlIHRlc3QgcmVzdWx0cyDigJQgdGhhdCdzIHZlcnkg
+aGVscGZ1bC4KSSBhZ3JlZSB0aGF0IEJhc2ggcnVucyB0aGUgRVhJVCB0cmFwIG9uIFNJR0lOVCwg
+U0lHVEVSTSwgYW5kIFNJR0hVUC4gIEkgdGVzdGVkIApib3RoIHRoZSBzdWJzaGVsbCBjYXNlIGFu
+ZCB0aGUgbWFpbi1zaGVsbCBjYXNlOgoKV2hlbiB0aGUgc2lnbmFsIGlzIHNlbnQgdG8gdGhlIGRv
+X3Rlc3Qgc3Vic2hlbGwsIHRoZSBFWElUIHRyYXAgcnVucyBhbmQgY2xlYW51cCAKY29tcGxldGVz
+LgoKV2hlbiB0aGlzIHNpZ25hbCBpcyBzZW50IHRvIHRoZSBtYWluIHNoZWxsLCB0aGUgc3Vic2hl
+bGwgZG9lcyBub3QgcmVjZWl2ZSBpdCwga2VlcHMgCnJ1bm5pbmcsICBhbmQgcGVyZm9ybXMgY2xl
+YW51cCB3aGVuIGl0IGV4aXRzIG5hdHVyYWxseS4KCkNsZWFudXAgd29ya3MgY29ycmVjdGx5IGlu
+IGJvdGggY2FzZXMuCgpTYW1wbGUgc2ltdWxhdGlvbiBzY3JpcHQ6CgojIS9iaW4vYmFzaAoKCmRv
+X3Rlc3QoKSB7CiAgICB0cmFwICdlY2hvICJFWElUIHRyYXAgcmFuIicgRVhJVAogICAgbG9jYWwg
+c2lnPSIkMSIKICAgIGxvY2FsIHRhcmdldD0iJDIiCgoKICAgIGNhc2UgIiR0YXJnZXQiIGluCiAg
+ICAgICAgMSkKICAgICAgICAgICAgZWNobyAiLS0tLSBzZW5kICRzaWcgdG8gZG9fdGVzdCBwaWQg
+LS0tLSIKICAgICAgICAgICAga2lsbCAtIiRzaWciICIkQkFTSFBJRCIKICAgICAgICAgICAgOzsK
+ICAgICAgICAyKQogICAgICAgICAgICBlY2hvICItLS0tIHNlbmQgJHNpZyB0byBtYWluIHBpZCAt
+LS0tIgogICAgICAgICAgICBraWxsIC0iJHNpZyIgJCQKICAgICAgICAgICAgOzsKICAgIGVzYWMK
+CiAgICBlY2hvICJkb190ZXN0IGZpbmlzaGVkIgoKfQoKIApleHBvcnQgLWYgZG9fdGVzdAoKZWNo
+byAiLS0tLS0tLS0tc3ViIHNoZWxsLS0tLS0tLS0tLS0iCmZvciBzaWcgaW4gSU5UIFRFUk0gSFVQ
+OyBkbwogICAgICAgIGJhc2ggLWMgImRvX3Rlc3QgJyRzaWcnIDEgfCB0ZWUgdGVzdC5sb2ciCmRv
+bmUKIAplY2hvICItLS0tLS0tLS1tYWluIHNoZWxsLS0tLS0tLS0tLS0iCmZvciBzaWcgaW4gSU5U
+IFRFUk0gSFVQOyBkbwogICAgICAgIGJhc2ggLWMgImRvX3Rlc3QgJyRzaWcnIDIgfCB0ZWUgdGVz
+dC5sb2ciIDI+L2Rldi9udWxsCmRvbmUKIApvdXRwdXQ6Ci0tLS0tLS0tLXN1YiBzaGVsbC0tLS0t
+LS0tLS0tCi0tLS0gc2VuZCBJTlQgdG8gZG9fdGVzdCBwaWQgLS0tLQpFWElUIHRyYXAgcmFuCi0t
+LS0gc2VuZCBURVJNIHRvIGRvX3Rlc3QgcGlkIC0tLS0KRVhJVCB0cmFwIHJhbgotLS0tIHNlbmQg
+SFVQIHRvIGRvX3Rlc3QgcGlkIC0tLS0KRVhJVCB0cmFwIHJhbgotLS0tLS0tLS1tYWluIHNoZWxs
+LS0tLS0tLS0tLS0KLS0tLSBzZW5kIElOVCB0byBtYWluIHBpZCAtLS0tCmRvX3Rlc3QgZmluaXNo
+ZWQKRVhJVCB0cmFwIHJhbgpUZXJtaW5hdGVkCi0tLS0gc2VuZCBURVJNIHRvIG1haW4gcGlkIC0t
+LS0KZG9fdGVzdCBmaW5pc2hlZApFWElUIHRyYXAgcmFuCi0tLS0gc2VuZCBIVVAgdG8gbWFpbiBw
+aWQgLS0tLQpkb190ZXN0IGZpbmlzaGVkCkVYSVQgdHJhcCByYW4KIAoKVGhhbmtzIGFnYWluIGZv
+ciB5b3VyIHVzZWZ1bCB0ZXN0LgpCZXN0IHJlZ2FyZHMsCllpbmluZyBYaW9uZw==
 
-> --- a/drivers/net/can/rcar/rcar_canfd.c
-> +++ b/drivers/net/can/rcar/rcar_canfd.c
-> @@ -636,6 +636,23 @@ static const struct rcar_canfd_hw_info rcar_gen4_hw_info = {
->         .external_clk = 1,
->  };
->
-> +static const struct rcar_canfd_hw_info rcar_gen5_hw_info = {
-> +       .nom_bittiming = &rcar_canfd_gen4_nom_bittiming_const,
-> +       .data_bittiming = &rcar_canfd_gen4_data_bittiming_const,
-> +       .tdc_const = &rcar_canfd_gen4_tdc_const,
-> +       .regs = &rcar_gen4_regs,
-> +       .sh = &rcar_gen4_shift_data,
-> +       .rnc_field_width = 16,
-> +       .max_aflpn = 127,
-> +       .max_cftml = 31,
-> +       .max_channels = 8,
-> +       .postdiv = 2,
-
-R-Car X5H does not have the /2 postdivider, so this should be one.
-Else the bitrate is twice as fast as intended when the external can_clk
-is not available.
-
-> +       .multi_channel_irqs = 1,
-> +       .ch_interface_mode = 1,
-> +       .shared_can_regs = 1,
-> +       .external_clk = 1,
-> +};
-> +
->  static const struct rcar_canfd_hw_info rzg2l_hw_info = {
->         .nom_bittiming = &rcar_canfd_gen3_nom_bittiming_const,
->         .data_bittiming = &rcar_canfd_gen3_data_bittiming_const,
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
