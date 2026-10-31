@@ -1,78 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
-	t=1793459126;
-	b=XSZ4vyePQG5dY7CeEf37TeERXKTz1QkhKyOW1OjYniB99ZpAT6oA8a5NWmMW9LNNg8qw
-	 ZGTUjYZ2Vwn2vHOqEH/VmwB7eF9+EbSFtiy6w4J4TNBTQfcPfZLzp1Np7SA7uHt5d0ien
-	 HS0OIDNOyC4BkZQ6W096RFnoiFSUkjY4m9PhFIoY6TNsRRsUJQONhB4wcFDk16pApbDrc
-	 T6FSnuIw9nOqhM6n0WeT6aoU1TLKuI4KWWVboSh3qcroWlHUGJs9+RzXBc2J5HUw3svv1
-	 7ZVsxrNmugCaUnaU3aBRdeScWekm8cGkr9JwHoWQ5wWySl50BDB8rElB+eWAqFBU3IQ==
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793459125;
+	b=PrJ7yn7uaSVzexvMS7psYLXYfjRhPU1RqzCLc/k6p8sqrwJKLcfWvAnO7JmXyk5LdgNL
+	 hBhm20ACHUeOz9O7lmVgXi0Dgc4lxoTue6RGnVf1+HJZHfTwJAgrqYIqf2zdpBrV+9k2P
+	 7BIj3TWf22O02Jqi0WRZwbO1jxaD/XNWTX3h70q1X3h/1H0NDdyelWMk0lwD8ecZBvGiU
+	 goDICXYzB4dEnJcfrKvI8CVSYe9FavH57e/YKu8/Nzg+fTTPHi7S/+L++pje3zt1yR92J
+	 SfrpONly3wB/bkj+iZmJUi5TvitDhdEOEeMqFlxCgPNDjlIDOG2dRBn/mP6pME359ww==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793459126;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793459125;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=bl/rYyXttvjHdb4Ohr1xdECvjLaL/p3syYDbGC3Fn7s=;
-	b=NUJeLIgO+kE6z/Eo/US7jlyDsrfl29Bpz06Dx7hZnpmWP+zuhbYuSjy5Ld2K49p8Ef/u
-	 2dDpUlNrPrMARb5QGs3xCpENmfo5V9TS5jTSLkpaaPfm/54L/IwFbeOygRQ4HuA9lRQ3Y
-	 K/VJyxi4BpzEpdzvcJdEojnyrdDm2NQTW86KbwCzuMceYL1d1cz9YI85/ggRxC8mGRHWK
-	 qVcBQZhZg7+hTgXdKwzRc2VGxlxvaOD/ZDjc8YQgViqMO8ZhoVzzXXAqsncEDAuwr8Fcu
-	 OliM3Ygow9xuvk4tnSdOUDQ61oSnUo6r+zlcBQfpznA/QkVCaXkwBac57l8Oafx44uQ==
+	bh=GOtB/aqTsvf6bQGU9dL2JqihPsMclbo/24c9lDiPZws=;
+	b=wqc6sN5zJOuhB5TyVXaZpc8ERpv184E+DwHHNwHnkxM9YG4jnbhStpeuohxHxQm7lZfB
+	 ZZ/huPKiVlhgGWalAD/NR2LRxriY/gnZuYknyl4D10l1+YYrAVIadFXShPgiRMh3KSmim
+	 GIHjFKO8wJewzjQrN1F3F2DYXCblOtxY4APyBU/xAw+h0PXe2n8IMCJQbKQ1QOdnPpkBX
+	 H9kAb/Ut3C/TYHIzQKUz+YBByYZ2ku3hqxtOHibvDaisRBUNX1d+B0UxdJqUIhizpHPw7
+	 DMBez9i6kMPiD4+P12y4hPrHQi5r8KIMCgRMl7qnhytqldLVsX9wWWO3aVIibNaBYNA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZHD8hnL4;
-	arc=fail smtp.remote-ip=100.103.45.18
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="PuF/mwd0";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A970D606A33A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04FC360A2609;
 	Sat, 31 Oct 2026 15:05:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZHD8hnL4
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PuF/mwd0
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793459125;
-	b=gu2BsLR1Q0pVHyrNVh8sK5gDeEC45nKQeAqdI+Ew1tkRZwq1XOtqsvTQQcCYdC1sHpKg
-	 GNHaN45rS9Z7Qqz9ZJLL93oQPM93HEvgC5pBtNje3ExtM1YVPy/vnkM2U713qC9NUieMs
-	 TONfuIGXctb6GBsKtbIU+/EnmOGwv8HdzDjC5YcD3bHbwYp9kgvhlGySZ55gD5vAyHyEr
-	 qcBC239PPvR+EvRml9nxObM8O0gdUZLU4kQVlFih45wL/dmBGDKOw7MlTXdvMahvM0Dbr
-	 R0yFMs/zAE5ZA1lcvvCuU/yIlXTSq+V1IMxLif6Dg2FPwgYRUMINhRlut71HNCZrPTg==
+	t=1793459124;
+	b=biXMQJNcEhWkdYXXx+RXrE+9i40STobhPcui6xIzUAz5A75Rs6EmR9PfKXwZclkh9VD3
+	 a+REpb3SqUPFAKWS1wqOHUNMfgFrj8OCgBmRLC8koTrCxcGN0AkdmsiKSFl1H/X29MXl+
+	 D8DUCk8Vz0GtU0r6wLnAjzUo+sxvDvSCkVzD4dSowXd79hWcau+Krf3mwgkAaUb7aQLK6
+	 m9sy/i3jgcpexajX2lEm78U11u8vkiLZ86h/98ADzmE0LdINyQI+8E4OP1bzQYjy/+Kyh
+	 9xfRLZdLvqccxb7U5/S6mDeSBt5M8RV/HtehpwAwWasULdU8RIz5XKyebsJK3zHYnWg==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793459125;
+	c=relaxed/relaxed; t=1793459124;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=bl/rYyXttvjHdb4Ohr1xdECvjLaL/p3syYDbGC3Fn7s=;
-	b=ttTFOtlIYT0UwwVZyjfymE9b/+BLc8DD6e+Mq4C4Ubgb/dMXrvHqIT8BSrIUB/Dq1zxW
-	 k9QcSg36qC9SBIDM0lJCaf2LbWVho5djSg8+fvH4x4kWfGkykUDdx74y3z+jT9YuXVx8e
-	 ZuL2jif/N2oOF4g4wwXtFSlQvbNkh7RcvyDuaRSWvA2x3rh19NltmGwZ0lRiuI4eb3yVY
-	 +wp+RSMlnxeJrwpwH62JtPsWP70yKAIyYJgplzVT8PB3axzBRdHac45qBVtwRaquwknyB
-	 vc3LF7WcTDb6hL7z5RiROsCK5557Htz4svvE1uBBtVB9dReCVHxgUGE7q0o38AtcTeg==
+	bh=GOtB/aqTsvf6bQGU9dL2JqihPsMclbo/24c9lDiPZws=;
+	b=eW2EiaeIC+jTJ+0dmowRPSV+JxDKnWfmwov5bEyd2K1H3jdRVa7Dvv/lsesLlL6+pK7k
+	 f8mYZHMrZ/o/dn630TIZGZigiuwfckLt/9x+0FiqcoUiVoLNt778ERp/3w49D36rEIMKj
+	 ux8BpBVr1u+QoGZsvteIkeTxCNKwUhElB2MXjl5wze73P/6wZXSfTlve6vh8LawzNSZdF
+	 mM/OmlEMTGZ3zx3XPZaP9G8LPnPRftwJ0oeioYQN3fHC4eZQiEM1lNtbZxT4PCAWjLhhZ
+	 JMxpdOEFKYyAJ8FasmX4zf/leyWbaTm896IznwtMIotq1Y0lhwZxsU7YxhpV0xU0lWg==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id E87211F00A1A;
+	by smtp.kernel.org (Postfix) with ESMTPS id C07D11F00A1C;
 	Sat, 31 Oct 2026 15:05:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793459125;
-	bh=bl/rYyXttvjHdb4Ohr1xdECvjLaL/p3syYDbGC3Fn7s=;
+	s=k20260515; t=1793459124;
+	bh=GOtB/aqTsvf6bQGU9dL2JqihPsMclbo/24c9lDiPZws=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=ZHD8hnL4DH8AZGMWe05Vh/Cn0GhLsxiaYLWXix77U6/XfLcNAgcvoffGhjbCBVCsz
-	 /wd5EnHXPyYn3Yc0w9LgFG62D15niqHoqKrhOf4CBied6DBYKiXvQ2tvS/fxR0OGzv
-	 asN88QAMNHDsx81AxbJ6lcw6X37kFiby90+3NSXg1FoDGGSoA4OTXNLSXHzHcIL20B
-	 wp1IlO+n6FdesoZ0H1fiPME3ECjPyii/4i/hRi/8cgRdg/Q5gQHKXQ5xDMJzuLSnkv
-	 tXgEvTHGSQUPNu00jHyg/61SBfIIv3lYFPDysFdlesYKdxyFBEsbSQR8UFSuahK7ms
-	 T+5Mm0fjSyVbQ==
+	b=PuF/mwd0m6dyAWE2TF2top72KrLwayM7agGbm9d/YLovOcMsxDaw4riGlMoHB9Zzq
+	 9CRlTrUjgPrb1ZE33TGdinukWXaGw3x/s8S2d1xRh224KQrSjOJugGyVgLz3/BVKf7
+	 DAi62+XHibwe/fnsHOofV15VFQY9YBizbdCD5LdC9eskfJVL0RtafNG8mkIi6s+Icr
+	 +lvtmO8S/hvDqaIOP1SD6DgMlQpKbuXuqqxvq4x1R7f9mru5EFLAh0CcgCY5BkIy/b
+	 eITbyxdA7m1mfd28r05B57BmrePQ2X56mVlZotuGfZmEUe4x+n1zaujzW26nNdnbS+
+	 Iw4Esh0alw7WQ==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id B80C445F23;
+	by lkml.kernel.org (Postfix) with ESMTP id 9E9A345F1B;
 	Sat, 31 Oct 2026 15:05:21 +0000 (UTC)
 From: David Heidelberg via B4 Relay <devnull+david.ixit.cz@kernel.org>
-Date: Sat, 31 Oct 2026 16:05:06 +0100
-Subject: [PATCH 09/11] arm64: dts: qcom: sdm845-lg: Enable vbus support
+Date: Sat, 31 Oct 2026 16:05:04 +0100
+Subject: [PATCH 07/11] arm64: dts: qcom: sdm845-oneplus: Enable vbus
+ support
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261031-pmi8998-vbus-v1-9-4d805e5a0f27@ixit.cz>
+Message-Id: <20261031-pmi8998-vbus-v1-7-4d805e5a0f27@ixit.cz>
 References: <20261031-pmi8998-vbus-v1-0-4d805e5a0f27@ixit.cz>
 In-Reply-To: <20261031-pmi8998-vbus-v1-0-4d805e5a0f27@ixit.cz>
 To: Alexey Minnekhanov <alexeymin@minlexx.ru>, 
@@ -101,21 +102,21 @@ Cc: Richard Acayan <mailingradian@gmail.com>, linux-arm-msm@vger.kernel.org,
  linux-pm@vger.kernel.org, phone-devel@vger.kernel.org, 
  David Heidelberg <david@ixit.cz>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=957; i=david@ixit.cz;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1021; i=david@ixit.cz;
  h=from:subject:message-id;
- bh=Rihonp/y8+HoX4rhsOxsAwY056X8OB2FPhm/6tjGeo8=;
- b=owEBbQKS/ZANAwAIAWACP8TTSSByAcsmYgBq5gOwu6Es3lE0a5vv22oieDwXQsTItibWBcimX
- aV8eNKGZQKJAjMEAAEIAB0WIQTXegnP7twrvVOnBHRgAj/E00kgcgUCauYDsAAKCRBgAj/E00kg
- cvLOEADO8ds7RwJwPjQL7KH0HSxa4vjtSilyl4fuCEN7Wwisumhe/Nl146RpydO6rngFMkfxVA8
- w5YwVGKgR3mOsiZss3vL1K+YY1lKM3RJvxfMg68yIAAHLzsFCIzHP5OvR4RdoiWN4CHbLu/W7B/
- VfUtT7Kf8/qBBHSmKj3VgnFuLbt8W5381TSp3nKv8LNVHxLu+o04JsEEktGzNx4ObVvWrkjccg7
- CLHLjmRV70hGx4mxwG1XPtQfIi8FQiCSKGh/3hfe5QIvl0kwu0FY7FuonlQ6T/cW+dJDppbz6T+
- o2ksaePVYa56WRJa45luonj20NhGOl45aIjPvd5x62hNGmVHten7uXZfMrtGBwSaXGxiITDDpks
- RmGNkObqUYSvw8GxoCfrHkdOJKfHJdC8DCyPAv0iA2PXh2HGPnU8SAMK3tsirLamVh3vjUdar2d
- voaSCSGahx7ppMENu7muwJKy0Z8a+na1iCPJoMLL+hgVMBdUEoN0KQiY8Gk2MRv15gnoEM0Jl/2
- SRf/v80St3Cp7T3UJz/NKw4fvg5sD3D8vNx93E3NiAsodZVVok9AnI7tq84ykpvhQkUre+nt/Yt
- MxLTTAN5/qWMji6xeELP/JYe1YTxmeDQZzTlybZHDn6+rQIV0bZhDcSdybkTAErHJ5kSfVI4RIK
- kMvLjRzNWS9zNIA==
+ bh=qtK8U0DG1cRkdsACHAr+c1jMalJb+5fDCyLN85kWDvA=;
+ b=owEBbQKS/ZANAwAIAWACP8TTSSByAcsmYgBq5gOvumnNkjX9xEkWmSZ03N2FQLW1h7MKYlPAb
+ XF0klZkU26JAjMEAAEIAB0WIQTXegnP7twrvVOnBHRgAj/E00kgcgUCauYDrwAKCRBgAj/E00kg
+ crq+EACg6Q0/DvGX7+HThl0wRuAbMDl1EQfhjxmcDDlxUq/vORmUwxVfpyUFldpcSFZlBTYlzzW
+ GM8+XbKePDKCY5XXcUZ0JEmUB9b0o6UnnAkvlEzXveYSwwWo2y8FWRDC+GJXBVOVgKTfDNFD4Q1
+ T6ovUgq9h97lesdOLVaQYjHVawqI17yPArry2BNA/nvrlwzTgD+YjnMwFnNQ5draqjOMvwRDvpm
+ jwgD1vFDYv+yvn+4jcQVDR1XdBsNjfvDv5vfyaE55nuXbLiHJZLKNIThMg77B0+WANso1U12UEV
+ 54nTjMg2+m54LvdkDPQ5rWrZ5GG2qo/3K/B+hfGzTza5gL15kDBG3bzm6CJgsdCVcnjA2+clIZf
+ 9XC0mFbJgcUsEFCrWmZyVsqq6NmfB8d+gs7VNY20UmPbg33M0QiVre86+6deTp2K9UjjXFHXNr9
+ e7FzDtNolJ9mhRnrEpJsHb7LYjXKkH6OUKdhguH8FyFaSJNnNx7FJtjFc1p2Lguh38mKpy69U6R
+ mzLn7z0VcR0znXZF+fvx5Yxt7Lt1zGTOOvBNYukCPZKpJ2YLgQzZO43cxadT1NMBHNarRtKxS81
+ DdTWKqYTmB7/MQ1j9E1MnDZm2Qj0Brl5Em0pHY04D8vKyUcWOmklsyVgoerkPntQ+iVdIcnJh3j
+ Vo0GQGrfLh3Kjxw==
 X-Developer-Key: i=david@ixit.cz; a=openpgp;
  fpr=D77A09CFEEDC2BBD53A7047460023FC4D3492072
 X-Endpoint-Received: by B4 Relay for david@ixit.cz/default with auth_id=355
@@ -130,19 +131,19 @@ Enable proper driver.
 
 Signed-off-by: David Heidelberg <david@ixit.cz>
 ---
- arch/arm64/boot/dts/qcom/sdm845-lg-common.dtsi | 7 +++++++
+ arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm845-lg-common.dtsi b/arch/arm64/boot/dts/qcom/sdm845-lg-common.dtsi
-index 84f0e1f0bcd32..d88bad1d07959 100644
---- a/arch/arm64/boot/dts/qcom/sdm845-lg-common.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm845-lg-common.dtsi
-@@ -529,16 +529,23 @@ led@4 {
- 
- 		led@5 {
- 			reg = <5>;
- 			color = <LED_COLOR_ID_RED>;
- 		};
+diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+index 1df09da3c4d71..4996ce24fee36 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+@@ -660,16 +660,23 @@ led-1 {
+ 		color = <LED_COLOR_ID_YELLOW>;
+ 		led-sources = <2>;
+ 		led-max-microamp = <500000>;
+ 		flash-max-microamp = <1500000>;
+ 		flash-max-timeout-us = <1280000>;
  	};
  };
  
@@ -153,14 +154,14 @@ index 84f0e1f0bcd32..d88bad1d07959 100644
 +	status = "okay";
 +};
 +
- &pmi8998_wled {
- 	qcom,current-limit-microamp = <20000>;
- 	qcom,ovp-millivolt = <29600>;
- 	qcom,switching-freq = <800>;
- 	qcom,num-strings = <3>;
- 	qcom,cabc;
- 	status = "okay";
- };
+ &q6afedai {
+ 	dai@22 {
+ 		reg = <QUATERNARY_MI2S_RX>;
+ 		qcom,sd-lines = <1>;
+ 	};
+ 
+ 	dai@23 {
+ 		reg = <QUATERNARY_MI2S_TX>;
 
 -- 
 2.55.0
