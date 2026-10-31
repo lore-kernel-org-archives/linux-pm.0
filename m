@@ -1,99 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793456388;
-	b=QD042NqbB+fIgo7Kglygm0dvnqtKqC9OXoq9U6CLJNA0l1E7FB9hvX0TSNe30+CMyQIU
-	 lGRBKMQfQW2sHbxhAT5J6SO6Sd9VvOc6OvHi+MY7l70rH9HR9ukwLmEom6j+TGjoHTHbV
-	 zawvOCswWJqibb7vD1EZm6lfxBAv1J9xyRVbHYnx2Wu3OnedEZUk+Mcm0EAdw2xE0mN7i
-	 jD6Z2OtAT6utjlLb948Dq/6IzEKsA/BErdaU3PCyXkECoi/87/g2c3Xl+z253g0xJTqmd
-	 q5poHGRnGDD3+gjORuA/G9V5KPlfsmtoB22IdgGlm919izPIeSr3oUnJFe8bV24ztsg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793456388;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=c15yII0Bbqbvlrh2M47suTP3fe26fyb8Izw0IoDwLNY=;
-	b=He/yRyBt97LmfRYlXWsFFI3eWBCXjyKoPEcpJ+OGGIPMZIgZ7JtMBEecv+XPUEreVUvB
-	 qEUlMy77EEWCsLRj+9TKox7DvTKbwpU1vkUT68X30vmZrW49vkbT8DeCs8N/HnCNF/eFx
-	 RzRBqIFxpxJNO8VaLlYB+fmos6nef+VuJLniyV5qLhjzz7N2p1rleSEXcOSh03pMTh75x
-	 f28tVNwH4CPci9UMmEOTmV6WhVlvsqkWqVphp6pWOimkQkMHHv/SMFY2Zf+otXrHef3Vc
-	 ayMTn/MZu9gpieXrb1WvpR++8SHMxvydNEcNicO3H/iLTu+Zs0RKdwofpNJbKgxdSbQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=utAh3K9n;
-	arc=none smtp.remote-ip=209.85.128.54
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793459123;
+	b=dP9SUdUoqdUaWgHGfvSDFUG3JXx8MQVFjYcgCNc0WTEcqQCZbtkM10pVwmU10Wn+ufVk
+	 V3BcljRlKZuyccZkx8skI9ewMrwiel1g1HD4UNklFCS4JcPf/2eddYuN43Z6OGJJ5Sixz
+	 3ZGk6AgrJjKFpHZlUXwEqRfA9vFdSGbNFA5j/A/GJGcSHkkgyJXHBX7G05xlRznstzuvJ
+	 8/Fd7mIrAA5IGPRJ5Dblhm8GUieJDHPvoaRCCj2L34FWmcUAZ8h+ONtSSC0nVaMXMQchN
+	 0/ikWFr6XMZFIlpFbE8H6f4H9daihTt3VcOaAY3R2kBNs7wFVCKGYoXLG2ZX+GKFWbQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793459123;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=PCD/gBhQWHOD85GSHzF1y0CMZKDBwCfPG8eOkm8c4Go=;
+	b=ydR60MkIGytbBTsDBe095Hmc/Bv33PTY76Z6rHOgga78t2kTQCX5ioW4UAVj3ZOg/k/t
+	 JBhmkXKYjOkMzH/8GF99z9T4Reho3yvijcWsAzHN0qyuBcfrkBTS+vg0U1mmCrb6jfScE
+	 8K6xTRb/GwHYEhBVQyu9TQJ7rTyBzAA/rX6zcTGTZlU8wooEe9ihTPtpEcGmT16L2Fdhi
+	 kt6kffWg5SGI3/qjllcZqr0X1h9MdY5d24yIXfSDl1yw5bKp/792x4mGcQ73OQmzGBEv5
+	 LINwm2td/990cU30Zyl1BBT4K4aqyhgwBg2lbRT1O0qnappiehyyDei7QIM+8UMWO0g==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YsxV+1Bg;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA9C9606A31A;
+	Sat, 31 Oct 2026 15:05:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YsxV+1Bg
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1793459122;
+	b=qDaSeLWStk7PHnm5utACGkvlwzhBWT15Vg4un9XjJVvz0c18TNANZwpEeJHU5UnldVML
+	 /3rvxGFMnVtsJsVG5GRK/lUAP1rvH4Cr6zGGVuNcBgt95nL5pZ6zy8x2NMfmbtFajzWgl
+	 mhqV/BoNXwqUDd19BNjo0gs+O1XgksVyr393CjNJZ90d2pjv9lV7KhjwRTUGgnztSWv3+
+	 ryYulvM31UmINYtcRX+q58YFflQpLncYLdxgE7Rj6W3o7nGx/cNlrgJ2YZNXS/4e/wMjO
+	 8gVgGFQSDGCpT9+K5be7OzYhPGkmeTFGEG4RQ/QysGPzOBHKTmiVGN5NdMv5vc/6AUA==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793459122;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=PCD/gBhQWHOD85GSHzF1y0CMZKDBwCfPG8eOkm8c4Go=;
+	b=eE5LicnadHPN7nr7iXdjiGNINNCW8KGxpmNt1r4ORV0JaiGPN5nOl2HQ2e5JwhmdHBiz
+	 gSBhCxVTfTrQUiHZpkgD1pVDNoK1ufQwSkg6eAKfBaDMMv4MTHFPKyEYwrtJOJPZOx9q6
+	 g/Ty5gLevDBthdabMG7Nc7cEvKdjCSwJYTF3a1POpqNRv2tQKxzSRNulm5T8EIyYmBUey
+	 wcTcmFszRnXJ7T7GA5yhPrrnsOWRTNprxPtAeF4F2By9NHeesJsBwQLMQprVUbBMHbUqY
+	 zWunKfPBJl3TqjVC5n+YQ5ZIY+4O4jpntdBEDFsXPV/aMIYjNf17FCSOkcnGcHWvrsg==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0C18606A31D
-	for <linux-pm@vger.kernel.org>; Sat, 31 Oct 2026 14:19:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B0C18606A31D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=utAh3K9n
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a210470b49so12857635e9.2
-        for <linux-pm@vger.kernel.org>; Sat, 31 Oct 2026 07:19:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793456386; x=1794061186; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=c15yII0Bbqbvlrh2M47suTP3fe26fyb8Izw0IoDwLNY=;
-        b=utAh3K9n6ASkvDKJCVcthNXfPz/IXZukGbpuM7aKzBdZQ/aWHtg41rLYOxQx+vyywK
-         WyliRtagefBD3CuNc6cy3qlkAVHtkwKGaf8+h6pxEpjCyTxzOGbsYi+f8aHxns5KK+hL
-         iHE05tiSBV2MEtCWBkRFA2TFoP8kaQ7zMHIjh9Wqv8ciRlbItUIUZjjLy84MGZYrkb7O
-         SLcFer62IwjVekybP2FP4RyADwVJGSoWqaFAkG+TZDWoHo+uIndqCkm1RKmCQUuflLZ3
-         P+vpGJlOQsZDfm9K09G/35yl7q/OuYF8nld6YjFCE0CA6N3tseIpqKhp0KxLk5pY9oZ1
-         PRqw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793456386; x=1794061186;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=c15yII0Bbqbvlrh2M47suTP3fe26fyb8Izw0IoDwLNY=;
-        b=deancks0Kl0BrAvH634UNq5X8fU6lrIflEV9j9OtQCwwwewzPOmTzbFtkn0/bicPT9
-         yEDlGkugwZtYvOMHgr0ah7GmXRBuhUHkWjaXIdltAPH6lQkQ36WLbqZj6iOYtFGO/HeL
-         EIM8SgldHwJ13JKQgrvWKUzpMjx861AcvLAOMJAZbSLdmXBBqSfIlJ8fV0KQ09UZfz/g
-         tk/nCtqJ87kq/7roZ8od9G+LOMC6YIQXX19gwDlrGwfRTJZt9DOVaadlebi7ixMak+ka
-         l4EahpeYs2axVB0so8+PooDDQlE67dzDpESLpNBwdjQAe/3AwVaUbHN4zAbcCxmc5CE1
-         dRew==
-X-Forwarded-Encrypted: i=1; AKwUvBy/e427aYpG86b4EnlIdWZ9J/8ygsxKu5dKr5fUVjRYXOtAiw5hzuMezP+qAxv/SMYyy6dPK0CEZA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLjmqkYAanydjvMxa4FTj/oVW6nkYxDF3LjJA9d5CeXuDc4rEOV
-	pJhwAngQJ+oqxvR4Ek3eg5cGCHeiaSdqQRMv2alP90Sb4xpy8jCPkno=
-X-Gm-Gg: AYBFou3vWQOFrmH9+uO9EE+gi81FsLG471RoFz7hcxmuA+tBmGHrR0iwOAxVfeS1hUz
-	9hiuilAC6vd4g0QFWjul9aCy9yr3Epwo9WhNVE2cxHd6u7NR4hITu/kRnKoCPD1IkJmR+0FvP8/
-	u/UZJ7wV9gK9JFe0eZs1G9EESZTzyIBTS3xu7Pi1gmLzFkohhgP2ER5PHE24xQ+j0QE1Qb02iuF
-	jqtcymWBuJ2hpQc4YMcfySUfp6poYgyMe0ePP1O3MiWRMhuijFsSoZTpNMWH/9W6G05TTns5JtG
-	gTjTafRo7UILH9CP9F8M67j0nalsVPBfOBCy0sPk95RnbCzx/zXPNNER6xIDGURe4iiI3wD9LUN
-	4QbuayCj3rHy5xaE2Bz9FFfD47xiHFzqY7/nQ71iXGnIq7SjzU2+KeMMt3u9EPoxwc4ptwpdLeF
-	HFmBunw13wWr6dZMVqNbryhb+I8puCqwnJa0Hp4xdDZCvYWQSJsI8IB0kPIv5U7q50tiAcr7LZe
-	Ls9pRTvay27ZgJPvFy0HJy4AZ0Nq9VvBvELmcsRIUYDGqyN5yTRLZ74u0yrMowBfUoJcNz9J5RE
-	g7RhUHrJKCY314nTWqtkGiV3U0KLQHdnE5/aC0Y8
-X-Received: by 2002:a05:600c:4e49:b0:4a4:6fdb:cc42 with SMTP id 5b1f17b1804b1-4ac17b2c38bmr128602715e9.11.1793456386005;
-        Sat, 31 Oct 2026 07:19:46 -0700 (PDT)
-Received: from fedora ([46.8.219.5])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4aa80f04785sm209871275e9.4.2026.10.31.07.19.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 31 Oct 2026 07:19:45 -0700 (PDT)
-From: Vitaliy Sochnev <sochnev.v.74@gmail.com>
-To: daniel.lezcano@kernel.org
-Cc: rafael@kernel.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	ansuelsmth@gmail.com,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Vitaliy Sochnev <sochnev.v.74@gmail.com>
-Subject: [PATCH 0/2] thermal: airoha: Expose EN7581 CPU temperature
-Date: Sat, 31 Oct 2026 16:19:10 +0200
-Message-ID: <20261031141912.1664575-1-sochnev.v.74@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by smtp.kernel.org (Postfix) with ESMTPS id E8EC61F0093A;
+	Sat, 31 Oct 2026 15:05:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793459122;
+	bh=PCD/gBhQWHOD85GSHzF1y0CMZKDBwCfPG8eOkm8c4Go=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=YsxV+1BgQaDGfWAUf4Pt7xgOXqzASD1WNojRtnwqPVBaWFxthNyFHmaisd7AY/1Uk
+	 3xazw0G0KhJ6ApyoNWpHOL0D16nfBHBOAhl7TtAZ/FsgJTgx2l2j3dB4HsNfZNA7J6
+	 aECKscaIPAyewkACXdsFfK00xvCKsOzEp5JbM7T7/OVzqLFG9S+6E6SkfqMnFx7FM9
+	 y3s+OFswo+5NksjeIb8mIzJwY36116UPCjxtRC9rRYKsvRxXWYvIQvBXzKI8WsmPoB
+	 U0rSyrckTZ6RMT9GhBDEx4aicuW1+3v9PXQ1xW4mwj8W4jiVtX3rTiAMooSfcS1gy3
+	 C8Cmb+iPtR3HQ==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 6B60945F0B;
+	Sat, 31 Oct 2026 15:05:21 +0000 (UTC)
+From: David Heidelberg via B4 Relay <devnull+david.ixit.cz@kernel.org>
+Date: Sat, 31 Oct 2026 16:05:00 +0100
+Subject: [PATCH 03/11] dt-bindings: regulator: qcom,usb-vbus-regulator: Add
+ pmi8998 and pm660
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,29 +83,86 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261031-pmi8998-vbus-v1-3-4d805e5a0f27@ixit.cz>
+References: <20261031-pmi8998-vbus-v1-0-4d805e5a0f27@ixit.cz>
+In-Reply-To: <20261031-pmi8998-vbus-v1-0-4d805e5a0f27@ixit.cz>
+To: Alexey Minnekhanov <alexeymin@minlexx.ru>, 
+ Robin Snyders <robin@snyders.xyz>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Wesley Cheng <quic_wcheng@quicinc.com>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+ Casey Connolly <casey.connolly@linaro.org>, 
+ Sebastian Reichel <sre@kernel.org>
+Cc: Richard Acayan <mailingradian@gmail.com>, linux-arm-msm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-pm@vger.kernel.org, phone-devel@vger.kernel.org, 
+ David Heidelberg <david@ixit.cz>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1294; i=david@ixit.cz;
+ h=from:subject:message-id;
+ bh=8b76kVmv0SWaU2OFA005s+KLQA5vUoRMBd25Pd9muoU=;
+ b=owEBbQKS/ZANAwAIAWACP8TTSSByAcsmYgBq5gOvbY+oPG3hlXZA9XqKAk3Vrm8L+RMaCUlD3
+ mLWP36ir4eJAjMEAAEIAB0WIQTXegnP7twrvVOnBHRgAj/E00kgcgUCauYDrwAKCRBgAj/E00kg
+ cq9cD/49B8I13OS7eo7LRQmzgDIyJRzRCkX+iJZxX+yUi87mXltY84FGkEMBuSSy7LOEhOezFhb
+ MXLl8g4tUGflPLcBWoV2IdaVxV/ieR6x2kh1PYDrSoNqN28Q3qQRagDJx6Gt0ijfgBaEcAU0OmS
+ EfAA6FU73aIassgW7RVWsjpWdNWcH7zkmIrpPCSWc+r8rSYzXxAo6Gtse1yPK+CWQTT/cQmDpHi
+ V7I8X2EtDWoyOhbtRun8S8b7HlJcdi5sYBd7x2mXDoAIPekI0X1iCIloXk1AUqdd4j87O7nuLVX
+ ewFcyKJkzz4dkc9ehH0HcicJh+JDICKR7/dyF66inlJUSrGMXKVYRrBFuVc7uDpRoB+0ec688a1
+ 6BQ782d6oS3611pQTC8bSC0WBot34NnaHW4u6H6nLDnbH2mEFYMa2PjjjzaLIlPFzwMIXhumAKG
+ dmdX0+eGXHEseXY2CTABkYOK6t9fwOvF4R9ewLlSeTlsv9sZN9Rgj60BHrI2TYwgUApSYJC6uVI
+ sAIRJgMH0Z5WF96R8MAIbfPxP2xrpZjegfJxEJT3c2DzHW1ZDjdQNCIx4g4Ncz345+38VaeddwK
+ pNyqz+isUt5wvmaXZTOTyVYROs5tSyNbEZJqv06Z+2jwRTCA1eEj9gao5c9anvpSfPdShtXZW8e
+ LWGJmBuf2z3yv0g==
+X-Developer-Key: i=david@ixit.cz; a=openpgp;
+ fpr=D77A09CFEEDC2BBD53A7047460023FC4D3492072
+X-Endpoint-Received: by B4 Relay for david@ixit.cz/default with auth_id=355
+X-Original-From: David Heidelberg <david@ixit.cz>
+Reply-To: david@ixit.cz
+Content-Transfer-Encoding: 7bit
 
-EN7581 has a second thermal ADC for the CPU die at SCU offsets 0x2fc/0x308.
-Expose it as sensor index 1 while keeping the main ADC at index 0 and
-retaining zero-cell device tree compatibility. The hardware temperature
-monitor and its trips continue to use only the main ADC.
+From: David Heidelberg <david@ixit.cz>
 
-Tested on Nokia XG-040G-MD (EN7581, OpenWrt 6.18.55): both zones read
-successfully before and after reboot; temperatures tracked CPU load and
-cooling, and matched direct ADC readings within 0.3 C. Twenty driver
-unbind/bind cycles with an IRQ pending preserved both zones and handled
-the interrupt each time. The driver builds for arm64 with W=1 and the
-binding passes dt_binding_check.
+The VBUS register block on the PMI8998 and PM660 PMIC shares the design
+with the PM8150B one. Define corresponding compatible string, having the
+qcom,pm8150b-vbus-reg as a fallback.
 
-Vitaliy Sochnev (2):
-  dt-bindings: thermal: airoha: Allow sensor indices for EN7581
-  thermal/drivers/airoha: Read the EN7581 CPU ADC
+Signed-off-by: David Heidelberg <david@ixit.cz>
+---
+ .../devicetree/bindings/regulator/qcom,usb-vbus-regulator.yaml          | 2 ++
+ 1 file changed, 2 insertions(+)
 
- .../thermal/airoha,en7581-thermal.yaml        |   6 +-
- drivers/thermal/airoha_thermal.c              | 157 ++++++++++++++++--
- 2 files changed, 152 insertions(+), 11 deletions(-)
+diff --git a/Documentation/devicetree/bindings/regulator/qcom,usb-vbus-regulator.yaml b/Documentation/devicetree/bindings/regulator/qcom,usb-vbus-regulator.yaml
+index 024b34d0eb1a6..3cdfb556662cb 100644
+--- a/Documentation/devicetree/bindings/regulator/qcom,usb-vbus-regulator.yaml
++++ b/Documentation/devicetree/bindings/regulator/qcom,usb-vbus-regulator.yaml
+@@ -24,19 +24,21 @@ description: |
+ properties:
+   compatible:
+     oneOf:
+       - enum:
+           - qcom,pm8150b-vbus-reg
+           - qcom,pm4125-vbus-reg
+       - items:
+           - enum:
++              - qcom,pm660-vbus-reg
+               - qcom,pm6150-vbus-reg
+               - qcom,pm7250b-vbus-reg
+               - qcom,pmi632-vbus-reg
++              - qcom,pmi8998-vbus-reg
+           - const: qcom,pm8150b-vbus-reg
+ 
+   reg:
+     maxItems: 1
+     description: VBUS output base address
+ 
+ allOf:
+   - $ref: regulator.yaml#
 
-
-base-commit: 2dc1f296b5754dd2441fc8b6613a362a47f6b98f
 -- 
 2.55.0
+
+
