@@ -1,78 +1,71 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=23.251.234.51
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793422233;
-	b=cPCecnxkTHChYNtBckycF9jJQ9sYxclCQDI/GM4QGWfAkJHTfpJT95BEDIRhGWBhX3L+
-	 uunwZ2kWG25zUzj90q3Q2OrTL/9bYV3f3tP0UfhwdcOWy4c7eU8pTB+KwWNQNLvJ2owSn
-	 MnAMwqiI8sBvioo/uj6QZ5dcIUOkvcVNRONB0Aex+1KZXdz8ip79xJP042EwhmWgJnFL9
-	 tjlDm1QO/qXUuERE8OWQ/bCYkV5ppbpkhYXghtNgM5rgo8EbhRzJq4gVpLN6C06yU+RIz
-	 t5h0SLOKWXt+1FfEmBR6AmpkXFtBAyeuIPon2jc2kaRicGuw/aXzxd6AA0uYXS3omeA==
+	t=1793423978;
+	b=dEP72avJ2pPFFdLj6TFdWm5pxm39YJYJKmAL7pBT93URnNJ8x8m6fNlGUkfZnnGglG5D
+	 jLBwri1W5RqOuphf6UgkSz5sGbkf7G6Hub3VTf40IR7lJMS0HMoBuDk8fc3ejnHflTP7B
+	 UbbrL+elqaA1KjVS71WO6iBlFPDNLQEbnh9vc+l+lIZT7lB4UipZIMh0fY2TR3xWlhbWw
+	 yz2muHVq6+Td2qVF5NPHnv/t+RMOc60BtVfxEIRdEs7PgjVoUmQdRT7xO/6ecMSWbic0X
+	 frKHR0Xq8ECv0EOF7bPzJygJDljc8AWT/5DovGoHdDG4dP0kwZG7IWNQqFQcZhcf6Kw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793422233;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
-	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=U0ah+/mdXfppCcH+FdTlHAr5Y6FK4dmXjWDNtY24zT8=;
-	b=LSQqm+uN11LcbgO7uOCMBE4IL/l58/MVoO6ZUHeEkeR0vfq4LujkSu3lmrgS+5XKaXLV
-	 6EwD4xn+ABWShsgDd1fnCF+D66mUm9C7UE/iXjuOpjN3zY1hQGR/rwxSC/zSrO0NTzB/+
-	 rkdaXwsRuIo+sqnUQxqocDcq6cNn4/m85dDI7BQ9CKbMsjsdlPAHUUBYnSFNApl0Zp1z1
-	 pdaVUFihDGylHxkMJXiOaeqhKGpoK5jLGyRAx+3BKBVRCIGvyVmlemllvZgYr+b7uXmUb
-	 XXhsz4VPrvzwveEtnqD4C08OFke28GhujHZX/TUkeZ+3wNPodEDcsTubAd2KXPWGwUw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793423978;
+	h=DMARC-Filter:DKIM-Signature:DKIM-Signature:In-Reply-To:Message-ID:
+	 References:X-Pmail-ID:From:To:Cc:Subject:Content-Transfer-Encoding:
+	 Date:MIME-Version:Content-Type:Feedback-ID:X-SES-Outgoing;
+	bh=aTrjdhAZkYsM2rcSRWE3MAxfT10HTPL5Pfouv/xeRtw=;
+	b=f0S8nEWynGFyXS922aitM0VPwRqEYJyZxxwLmgj/SDK4JWKiS+1k5xjyWUzqRTyBRD2i
+	 SeDmgCQ59rkHihpPRloDQAgc759es7umptQpkti0fD9tNINorc8oIl0IM7VTjg2GQoCVM
+	 0vn/dywhmqpDRxH5Hal5BtN9wFIOUeKaR3MDRKwkoyylElDmkd5EW+E49aawDdXLtfO5n
+	 u9prep8mwPi42OW+VFjpdqkRLBW4ynVg8Yt0rmVMZyioaiL7q7hJxbamsWuOVnfj1fYFp
+	 4Zc7viSpFVYhCOyyn427lPYdLKwg/kon3bZM0XtB7cOTG33jKzIyZ2A33z9R++KwBzA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RVVpX0zH;
-	arc=none smtp.remote-ip=198.175.65.17
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=brar.si;
+	spf=pass smtp.mailfrom=rsend.brar.si;
+	dkim=pass header.d=brar.si header.i=@brar.si header.a=rsa-sha256 header.s=resend header.b=CPXENnup;
+	dkim=pass header.d=amazonses.com header.i=@amazonses.com header.a=rsa-sha256 header.s=zh4gjftm6etwoq6afzugpky45synznly header.b=ZYZrUUFZ;
+	arc=none smtp.remote-ip=23.251.234.51
+Received: from e234-51.smtp-out.ap-northeast-1.amazonses.com (e234-51.smtp-out.ap-northeast-1.amazonses.com [23.251.234.51])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBC73606A31A;
-	Sat, 31 Oct 2026 04:50:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BBC73606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA79C606A31A;
+	Sat, 31 Oct 2026 05:19:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BA79C606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=brar.si
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rsend.brar.si
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RVVpX0zH
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793422232; x=1824958232;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=VQIxThp1B2mpWnsX0MaSqLPhRU+ui0ShDgvVHR25dYQ=;
-  b=RVVpX0zHVF2NYfL9h4VgwAQN0n0qBEKkVQgcKRBSKd0N/QoOKfDW9XaB
-   oHXNmo0uMBpqgYJxY1CfhaMFDwFT0nihK5cP5YsCOeANuygFs47TMS2Yu
-   B6CKGpAd+2FMi+6pa0xrNfLhy5Kg3rxkxujV/wn0SZ4aYbLb5jnsu0lm+
-   boZDMBZAkqADlKqbTt1tSMWul0b/f9D0uvGbqK8WIEz0KK208FeBti/Qv
-   V6nCDm4g0HFpczY0tjEJYdQ8UuTW6MHdLpuoyS7JBOzKI70dWIlrNM6j4
-   SZMdrZTj2zT0+omgZQxXVVaY2HttGBFP0SlIf6/837tTrYOgmoltgYwWj
-   g==;
-X-CSE-ConnectionGUID: Gd7xGkt8SniTi2EMU8bJGQ==
-X-CSE-MsgGUID: kHmBInVYQSWX4uw6IRDe3w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11951"; a="2199117"
-X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
-   d="scan'208";a="2199117"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2026 21:50:31 -0700
-X-CSE-ConnectionGUID: jh76AprFT1i2+5WyacK76w==
-X-CSE-MsgGUID: aWxndDEHTM6RBXMZz9Yrew==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
-   d="scan'208";a="5481267"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
-  by orviesa005.jf.intel.com with ESMTP; 30 Oct 2026 21:50:30 -0700
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xN12x-00000000cXk-2XEz;
-	Sat, 31 Oct 2026 04:50:27 +0000
-Date: Sat, 31 Oct 2026 12:49:32 +0800
-From: kernel test robot <lkp@intel.com>
-To: Saranya Gopal <saranya.gopal@intel.com>, linux-acpi@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com
-Subject: Re: [PATCH] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
-Message-ID: <202610311242.kB7pRXhy-lkp@intel.com>
-References: <20261030030515.3127310-1-saranya.gopal@intel.com>
+	dkim=pass (1024-bit key, unprotected) header.d=brar.si header.i=@brar.si header.a=rsa-sha256 header.s=resend header.b=CPXENnup;
+	dkim=pass (1024-bit key, unprotected) header.d=amazonses.com header.i=@amazonses.com header.a=rsa-sha256 header.s=zh4gjftm6etwoq6afzugpky45synznly header.b=ZYZrUUFZ
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple; s=resend;
+	d=brar.si; t=1793423976;
+	h=In-Reply-To:Message-ID:References:From:To:Cc:Subject:Content-Transfer-Encoding:Date:MIME-Version:Content-Type;
+	bh=j30RlGk9uaAKzG/CjGIFRv7T5BN+RZPMz5USnZpOEec=;
+	b=CPXENnupum6hY+bn7mN2eUwZvZjAVrC2jL9X/1a2bASFFLwgflzsIgTVuNIfqSeo
+	QsQpq8vxqMnjUNi2azN5fPGi9qBxHl2AtctcBv3pFbMYV3oDSKLpukptIMQ3D+2T6pF
+	NnEYXZ5OxWTUloTydpiAugHL9en1zCLZeNUeScxQ=
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=zh4gjftm6etwoq6afzugpky45synznly; d=amazonses.com; t=1793423976;
+	h=In-Reply-To:Message-ID:References:From:To:Cc:Subject:Content-Transfer-Encoding:Date:MIME-Version:Content-Type:Feedback-ID;
+	bh=j30RlGk9uaAKzG/CjGIFRv7T5BN+RZPMz5USnZpOEec=;
+	b=ZYZrUUFZmhQR9dWjvM/194DChU2iHD/Hv22UGbmGybqsQf32WvNCUbsLL6V/AWSP
+	Rld517D0varKE4USh6UwebHy9Msu0nR2V5ICIZlxCD+b4Dln9orTpbIucCf4RicFePC
+	O3cODxPnfPP/3T7zeR0YEm+OXov1mViKmWN88uJI=
+In-Reply-To: <b0d99121-06a2-4674-bbc0-0edeb426e072@kernel.org>
+Message-ID: <010601a190662577-fd93bfc1-739a-45ce-9847-727776271c84-000000@ap-northeast-1.amazonses.com>
+References: <20261027-icc-sm7250-v4-0-f9bdaa3c1c7b@brar.si>
+ <010601a17d6212dc-ed028a84-ea72-48e7-a4d8-fea315dc42cc-000000@ap-northeast-1.amazonses.com>
+ <20261028-classic-sloppy-harrier-72dfcf@quoll>
+ <b0d99121-06a2-4674-bbc0-0edeb426e072@kernel.org>
+X-Pmail-ID: <1793423974923.5b783470d46a@brar.si>
+From: Ishu Brar <patches@brar.si>
+To: krzk@kernel.org
+Cc: djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, konradybcio@kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] dt-bindings: interconnect: qcom: Add SM7250
+ RPMh NoC
+Content-Transfer-Encoding: 7bit
+Date: Sat, 31 Oct 2026 05:19:35 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,64 +75,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261030030515.3127310-1-saranya.gopal@intel.com>
+Content-Type: text/plain; charset=utf-8
+Feedback-ID: :1.ap-northeast-1.5YL5VvZ+qZ0e19wo5UdMspzrKjMAjMWs/SlfuwHJq77JVCQWpVGwyETo7FaXf+sztO4bYMxF6WHssrYHSY+K7X2T1EZhOskwm44pQQStdKG0Jdj3d5ybzIXFkMTcPBXllY63oWIrFhJN26LFqLzTuHiXuqj9UCHxIuFhxi7IM0GCfceBHtKocmWdFsR9dK9X:1.ap-northeast-1.TOS0vxEE3Ar6ai29fkp2i/jb+l2iigajCGeLfF7S3sk=:AmazonSES
+X-SES-Outgoing: 2026.10.31-23.251.234.51
 
-Hi Saranya,
+On Wed, 28 Oct 2026 09:10:21 +0100, Krzysztof Kozlowski wrote:
+> On 28/10/2026 08:59, Krzysztof Kozlowski wrote:
+>>> +  clocks:
+>>> +    items:
+>>> +      - description: aggre UFS PHY AXI clock
+>>> +      - description: aggre USB3 PRIM AXI clock
+>>> +
+>>> +patternProperties:
+>>> +  '^interconnect-[0-9]+$':
+>> 
+>> We actually do not need to enforce -0: '^interconnect(-[0-9]+)?$'
+>
+> Actually is this really a pattern? How many children are there?
 
-kernel test robot noticed the following build warnings:
+No, not a pattern. there is at most one child per provider:
+	aggre2-noc  -> compute-noc
+	gem-noc     -> mc-virt
+	system-noc  -> qup-virt
 
-[auto build test WARNING on rafael-pm/linux-next]
-[also build test WARNING on rafael-pm/bleeding-edge amd-pstate/linux-next amd-pstate/bleeding-edge linus/master next-20261030]
-[cannot apply to v7.3]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+The other providers have no child. v5 would replace the pattern with a
+single fixed "interconnect" child node.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Saranya-Gopal/ACPI-s2idle-Handle-shared-_Ixx-GPEs-without-an-EC/20261030-083515
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-patch link:    https://lore.kernel.org/r/20261030030515.3127310-1-saranya.gopal%40intel.com
-patch subject: [PATCH] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
-config: x86_64-buildonly-randconfig-1000-20261031 (https://download.01.org/0day-ci/archive/20261031/202610311242.kB7pRXhy-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261031/202610311242.kB7pRXhy-lkp@intel.com/reproduce)
+Should the binding also allow the child only under these three
+providers (and "interconnect: false" for the rest), or is the plain
+child node enough?
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202610311242.kB7pRXhy-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   In file included from drivers/acpi/sleep.c:26:
-   drivers/acpi/internal.h: In function 'acpi_ec_dispatch_gpe':
-   drivers/acpi/internal.h:262:17: error: 'ENOTSUP' undeclared (first use in this function); did you mean 'ENOTSUPP'?
-     262 |         return -ENOTSUP;
-         |                 ^~~~~~~
-         |                 ENOTSUPP
-   drivers/acpi/internal.h:262:17: note: each undeclared identifier is reported only once for each function it appears in
->> drivers/acpi/internal.h:263:1: warning: control reaches end of non-void function [-Wreturn-type]
-     263 | }
-         | ^
-
-Kconfig warnings: (for reference only)
-   WARNING: unmet direct dependencies detected for PM_GENERIC_DOMAINS_OF
-   Depends on [n]: PM_GENERIC_DOMAINS [=y] && OF [=n]
-   Selected by [y]:
-   - COMMON_CLK_MT8173_MFGTOP [=y] && COMMON_CLK [=y] && (ARCH_MEDIATEK || COMPILE_TEST [=y]) && COMMON_CLK_MT8173 [=y] && PM [=y]
-
-
-vim +263 drivers/acpi/internal.h
-
-a6021aa24f64174 Arnd Bergmann 2024-10-11  258  
-a6021aa24f64174 Arnd Bergmann 2024-10-11  259  static inline void acpi_ec_flush_work(void) {}
-c644e4b14c9cb08 Saranya Gopal 2026-10-30  260  static inline int acpi_ec_dispatch_gpe(void)
-a6021aa24f64174 Arnd Bergmann 2024-10-11  261  {
-c644e4b14c9cb08 Saranya Gopal 2026-10-30  262  	return -ENOTSUP;
-a6021aa24f64174 Arnd Bergmann 2024-10-11 @263  }
-a6021aa24f64174 Arnd Bergmann 2024-10-11  264  
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Ishu Brar
