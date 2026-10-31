@@ -1,56 +1,78 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.17
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793415669;
-	b=nqjezm6rtLFLcQ4i+Ijj35ohSai/5F0RafFknRvZMgoe/bPW+nmlkW6xQduXYNshdLoW
-	 3K5C0boOTJKZq5uIfPnq1JhEEDRP91fQfBUWfz7Tjkr6YDm4USbZ5mtfqduBrQ32953eN
-	 43O4HyU0IjzexKcSJaxYUCIftSmFEZOXb4G3jeshRCVArkUZjJNimK4ZTLqkhXFvN3zfo
-	 8Xa/Q1izhy0EEQ3CaAerDD9lnnvk1iZmfZRouHRjO9ZyyUYb/crx4GQFcqlDBa1/hTaUD
-	 GBZqHVKtp1z7THnb2bozgErdVJdyHMGyCRjIu4UBObbfNglWJOhzUn/oIfUr25629gQ==
+	t=1793415682;
+	b=xf7co+8OjTRMvTwRblYUJGjf+tDhsyH1qICp28A1KS+tXOOzidKMsW+pmwMUlBBKfJGY
+	 l5sIBd4qR836htkOHEWUYvObXpmUONteWlb46B9MVH6G386/3I5z2qE9wESpEPAdUuQP0
+	 3Z+9cx/8CS4ANw/O00egl1X7079jZIwzH13njsxY92IoW9N5hTgqdPQaaz7u9BsLTkkRP
+	 TmlsArsLwfxa++0VarQrADsgQCwSRKmsy1yH4ntSizZ2uj0ALt3sb2coFHHQcLXktGScS
+	 f6j2n/BKLOgPLq5b5O9+732uYbab6Usyos4ztz9njGUjRzBLdJCduroJUDvxB9rGUKw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793415669;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=BngSBXTp+deGkFdRSOmECpX1qa4udSKk9eVqZM6ckQs=;
-	b=YSe2HFYYDU0qva1DgzWG2f2n4mytpx1Pn9jHjdsXrvvWnUdogd22BNaFy5vmHEmAxUSC
-	 2elthGW2RPJeYkXuM+iW00Eltu3B29AnmdPafixIaD51pM7CAQuWK9uAHZz2DCQ2wK7qH
-	 hWrokd/aYuTqpLiyFM7eMFvtz39p9pHtI9Fk8BQAyTIdi+VAHvH2kkTQJrwnY5tWXqSVj
-	 OibyvbGofX2+i5xbtMynQfmxFw6ci4S1qSIkx7Ac7gx5zB0L/29LSZ1durE7Uatyq6blo
-	 TKFGPmVJgDXeK9JuOrbvNsrwH4oNv21J5SJUAh1SjUKxwKbDd36SelDntatglUcIoyQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793415682;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=ScO8O/upqFlWc9ms/cDV7A+06pHYa0mgXEy5Xe3VLRM=;
+	b=l1gi5vb1JSZa03esa5n5b8IW///yzmOqpoFFyMpGDX8mxa6jZhL9I2rL3Sbo4RFqubi3
+	 S5PMkiHNZksOG77UNMIwgkx5eevmb6UyoEyiUCk1gZi+Tntm3NNn3ad0UKGbec/JDoqll
+	 V6YorAu839iLF6ZdLaTaVDB/BPNddopemSIosexwbfb8T+1LI3w8M45CkGymTERLPwYdt
+	 Gimdmv+JtLGFprDxaZKLZylOEK/9ibAzDxXeJsEoVX2WcsgldVZDdhmQm6rt89M3IlsZ3
+	 6feN9Q1iCHfMJsfBWSHgnZd9nAYcdOOVfnDYz55ygHfhF04lDipOURXleUzcJDLPZ9g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K5tBDEg3;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=b1kRt6px;
+	arc=none smtp.remote-ip=198.175.65.17
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with UTF8SMTPS id 65E29606A31A;
-	Sat, 31 Oct 2026 03:01:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85A76606A320;
+	Sat, 31 Oct 2026 03:01:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 85A76606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K5tBDEg3
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 6155B1F000C1;
-	Sat, 31 Oct 2026 03:01:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793415669;
-	bh=BngSBXTp+deGkFdRSOmECpX1qa4udSKk9eVqZM6ckQs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=K5tBDEg3PiRlab478XW6PS7L4wUZFmiKjSTa5yM23K+XR5iNzDS+zBV06lnLbqf13
-	 /zb5sNkIHZNfa+A1k0HIT7zUjUQyNYOgwmILdmgi2WdCepEhtM42cFKKwFcCYiDRdx
-	 ZfI8NzwC11B98IA4FyOGG9xNK3fCIWXABm/XLw9QydHm1VTYfy8kjvHnpr2j32ymMt
-	 6Hxhf20TsSWLlOD+MfUHJsW+ECBxBtcGz4UxKJ0JN/r23xwEnSikQYeroaJ0JtDYMz
-	 dLdO38ky/dpx3/4bHDxzQwpDfU5uRZ8Jt9KDHEY4DG6t6r657KhyyqUjy6WEQ2Vxlm
-	 rtmRfmMAHcgkQ==
-Date: Sat, 31 Oct 2026 05:01:04 +0200
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Matthew Garrett <matthewg@nvidia.com>
-Cc: mjg59@srcf.ucam.org, keyrings@vger.kernel.org,
-	James.Bottomley@hansenpartnership.com,
-	linux-integrity@vger.kernel.org, rafael@kernel.org,
-	linux-pm@vger.kernel.org, linux-efi@vger.kernel.org
-Subject: Re: [RFC] Make hibernation work with lockdown
-Message-ID: <auVZ8AvMXqqKXl7S@kernel.org>
-References: <20261008132532.1155166-1-matthewg@nvidia.com>
- <att9OPPi0sPqt_CW@kernel.org>
- <atux0EFb_euN6pM3@kernel.org>
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=b1kRt6px
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793415680; x=1824951680;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=414eLYxu+WXKrALlVPM8NuQyq6xSQJkQYhiLsXdq/iw=;
+  b=b1kRt6pxMzmHsqbcKpPc3+IQAdonYiTflXT/uEfUfAIIAvcUq/cs/MD9
+   4TA158QlHotP1s/3zRqc7NiebQBORZ175HZaT1NWSnMT+OY7q2kgwNDSE
+   GB2uTOKugDbNPxNIdx0J/53HTLtcyOTaSRQiUygm4+Z9ELmIdnBbESwxB
+   eFW/X1N8SbXer+jZg12ZxkVEq+JwYMX9x5qUrUKS4nPn525K3u4BAT0IW
+   Yr2/w4bdJm07jfxB6y6dvwGnXlJnzIk1hku1z7vHiUMpE/GkSDl3KEDyp
+   BPBGtRUY1RNNpSpAYf7S3/4/3SMyXL0TIimBwrDvrE4qq4nJf20dacftP
+   Q==;
+X-CSE-ConnectionGUID: 3sOrMF0oQ+q/BXBZ/i9zaw==
+X-CSE-MsgGUID: T6QJ0VkTS7+Jxu1LV6uM4A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11951"; a="2195886"
+X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
+   d="scan'208";a="2195886"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2026 20:01:19 -0700
+X-CSE-ConnectionGUID: +7yY5swGQQ2kKbO+RDjs8g==
+X-CSE-MsgGUID: 2kuP9pWuTUmhbE14Qkfh/Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
+   d="scan'208";a="5738979"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+  by fmviesa002.fm.intel.com with ESMTP; 30 Oct 2026 20:01:17 -0700
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1xMzLG-00000000cUC-3q17;
+	Sat, 31 Oct 2026 03:01:14 +0000
+Date: Sat, 31 Oct 2026 11:01:03 +0800
+From: kernel test robot <lkp@intel.com>
+To: Saranya Gopal <saranya.gopal@intel.com>, linux-acpi@vger.kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com
+Subject: Re: [PATCH] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
+Message-ID: <202610311004.dFYbEqgo-lkp@intel.com>
+References: <20261030030515.3127310-1-saranya.gopal@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -62,34 +84,61 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <atux0EFb_euN6pM3@kernel.org>
+In-Reply-To: <20261030030515.3127310-1-saranya.gopal@intel.com>
 
-On Fri, Oct 23, 2026 at 10:13:20PM +0300, Jarkko Sakkinen wrote:
- > As the next step I'll expand the bootc OS installer that I did to have an
-> option for hibernate so that it does partition layout and all the wiring
-> required. I can then integrate that to my test environment and test it
-> in a libvirtd VM.
-> 
-> It's not as tedious as it sounds :-)
-> 
-> There would be faster routes but this is the only one that is not a
-> tower of cards. I'll just shovel it through.
-> 
-> I'd figure that it's also modelling quite well any possible production
-> environment where this feature might be ever used (reproducible build,
-> read-only rootfs, bootc container).
-> 
-> 1. https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/linux-tpmdd-test.git/
-> 2. https://github.com/puu-os/installer
+Hi Saranya,
 
-My kernel test build is now generating installable bootc container, and
-has hibernate working (not all changes have been pushed yet). Not being
-completely ad-hoc environment allows effortless testing, which is
-essential in order to get all of this eventually applied. 
+kernel test robot noticed the following build errors:
 
-The next step is to test with the patches applied but without secure
-boot at first.
+[auto build test ERROR on rafael-pm/linux-next]
+[also build test ERROR on rafael-pm/bleeding-edge amd-pstate/linux-next amd-pstate/bleeding-edge linus/master next-20261030]
+[cannot apply to v7.3]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Br, Jarkko
+url:    https://github.com/intel-lab-lkp/linux/commits/Saranya-Gopal/ACPI-s2idle-Handle-shared-_Ixx-GPEs-without-an-EC/20261030-083515
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+patch link:    https://lore.kernel.org/r/20261030030515.3127310-1-saranya.gopal%40intel.com
+patch subject: [PATCH] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
+config: i386-randconfig-1000-20261031 (https://download.01.org/0day-ci/archive/20261031/202610311004.dFYbEqgo-lkp@intel.com/config)
+compiler: gcc-13 (Debian 13.3.0-16) 13.3.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261031/202610311004.dFYbEqgo-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202610311004.dFYbEqgo-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   In file included from drivers/acpi/processor_driver.c:25:
+   drivers/acpi/internal.h: In function 'acpi_ec_dispatch_gpe':
+>> drivers/acpi/internal.h:262:17: error: 'ENOTSUP' undeclared (first use in this function); did you mean 'ENOTSUPP'?
+     262 |         return -ENOTSUP;
+         |                 ^~~~~~~
+         |                 ENOTSUPP
+   drivers/acpi/internal.h:262:17: note: each undeclared identifier is reported only once for each function it appears in
+--
+   In file included from drivers/acpi/x86/utils.c:19:
+   drivers/acpi/x86/../internal.h: In function 'acpi_ec_dispatch_gpe':
+>> drivers/acpi/x86/../internal.h:262:17: error: 'ENOTSUP' undeclared (first use in this function); did you mean 'ENOTSUPP'?
+     262 |         return -ENOTSUP;
+         |                 ^~~~~~~
+         |                 ENOTSUPP
+   drivers/acpi/x86/../internal.h:262:17: note: each undeclared identifier is reported only once for each function it appears in
 
 
+vim +262 drivers/acpi/internal.h
+
+   258	
+   259	static inline void acpi_ec_flush_work(void) {}
+   260	static inline int acpi_ec_dispatch_gpe(void)
+   261	{
+ > 262		return -ENOTSUP;
+   263	}
+   264	
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
