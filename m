@@ -1,64 +1,56 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793403208;
-	b=vRLTpSLur/N1HC/jCLdN5cvWMR5t4DdWNpZdM/S2sRglQr96l2pU9SX5BA5h5r2mFpxx
-	 GXj27TZne3cGG+XbQeOSK+G/eLknhLgUQG2f8kuHDm1g22oDsMZqAqUIP8hTDMCH+RSfX
-	 5McyFSrSlVwpYgYtu/h0+S210yRJnnp4mEBw8+4Po6ue3TkGND7cGXJVesDZqvkz83Eqb
-	 S4JWoboW4ixSu3smbuG5ahxtbYQrW3XeRb/U/KtIpWhChoRVuwnFGFWo1aN11CL5SXZLf
-	 VNdHYgXvgRNsfp5i+1xfNRCKFT5BP7U/p5mn6Y0R6QJngh34YSdeqAiin2AQ5lK57lA==
+	t=1793415669;
+	b=nqjezm6rtLFLcQ4i+Ijj35ohSai/5F0RafFknRvZMgoe/bPW+nmlkW6xQduXYNshdLoW
+	 3K5C0boOTJKZq5uIfPnq1JhEEDRP91fQfBUWfz7Tjkr6YDm4USbZ5mtfqduBrQ32953eN
+	 43O4HyU0IjzexKcSJaxYUCIftSmFEZOXb4G3jeshRCVArkUZjJNimK4ZTLqkhXFvN3zfo
+	 8Xa/Q1izhy0EEQ3CaAerDD9lnnvk1iZmfZRouHRjO9ZyyUYb/crx4GQFcqlDBa1/hTaUD
+	 GBZqHVKtp1z7THnb2bozgErdVJdyHMGyCRjIu4UBObbfNglWJOhzUn/oIfUr25629gQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793403208;
-	h=Received:DKIM-Signature:Received:Subject:From:In-Reply-To:References:
-	 X-PR-Tracked-List-Id:X-PR-Tracked-Message-Id:X-PR-Tracked-Remote:
-	 X-PR-Tracked-Commit-Id:X-PR-Merge-Tree:X-PR-Merge-Refname:
-	 X-PR-Merge-Commit-Id:Message-Id:Date:To:Cc;
-	bh=rIM07U8EAAaNoo3eaOYwtWzXSWsnLrfbZ1zlbdtziow=;
-	b=hdnsuZIElrpt65LSrpVzUPj/qTLmUQwIEWugbziXSOHyVZEHFhaR0bKEGSqQcssrs0Pg
-	 Yek2mneQqEvZDmnbVwlo9ZNq3LGd5g8XSRwFmCunIpvzcx63zdTDdW23qRae7HgbTtcxt
-	 VShHQzvLnOWoFHagBCoh01Xj7yBy+11hRH46Q5w0/6A0Ja4XgPNHWtPTEhAf5uNGrVeIF
-	 Qf6TlKj0nx4mcz+XrRwa585FFNdnJKUyWjsaaiKCK1g5WpynDrZ34lY75DAyJseuf+k9m
-	 M7QlbbI7JE0oXu7aEvty8mtUEw9NFLk8gpNl1F7T3rN1YjKvEjIns/M25iobg8AsfKw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793415669;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=BngSBXTp+deGkFdRSOmECpX1qa4udSKk9eVqZM6ckQs=;
+	b=YSe2HFYYDU0qva1DgzWG2f2n4mytpx1Pn9jHjdsXrvvWnUdogd22BNaFy5vmHEmAxUSC
+	 2elthGW2RPJeYkXuM+iW00Eltu3B29AnmdPafixIaD51pM7CAQuWK9uAHZz2DCQ2wK7qH
+	 hWrokd/aYuTqpLiyFM7eMFvtz39p9pHtI9Fk8BQAyTIdi+VAHvH2kkTQJrwnY5tWXqSVj
+	 OibyvbGofX2+i5xbtMynQfmxFw6ci4S1qSIkx7Ac7gx5zB0L/29LSZ1durE7Uatyq6blo
+	 TKFGPmVJgDXeK9JuOrbvNsrwH4oNv21J5SJUAh1SjUKxwKbDd36SelDntatglUcIoyQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LJPSrhSp;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K5tBDEg3;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB530606A31A;
-	Fri, 30 Oct 2026 23:33:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with UTF8SMTPS id 65E29606A31A;
+	Sat, 31 Oct 2026 03:01:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LJPSrhSp
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C3DBF1F000C1;
-	Fri, 30 Oct 2026 23:33:27 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K5tBDEg3
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 6155B1F000C1;
+	Sat, 31 Oct 2026 03:01:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793403207;
-	bh=rIM07U8EAAaNoo3eaOYwtWzXSWsnLrfbZ1zlbdtziow=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=LJPSrhSpGeflTyKGWdwmYydbo74+yAQvlHGbR2L9FqtxW3wgRkPwbpDBZM2Fg5Wu1
-	 mECruXYg/f5x0n61cAggNAol7gBsK58iipo29fG/wYTLiQWgiXuSF+5LcXYmQHKFmw
-	 WupuP4PEzeR92eNJIjtH7kSz/5wTQ9kdfsBsfg8ruJyNdRsKXf6i/gWTDbIB/hQmWV
-	 uqn2wCGb47yZwIHlrOeZjicz/YDCyg3SnqJviOgzE3REpnTtYAWWiygLGnoHr/4Im3
-	 3YxYWwNjluhFtUzES2ZmkrXZ3mbJSaQN+ew17jLMVz31K7OcRDcAAfek6mZY+SeiqN
-	 ID1Z7+hA3wtFA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA14C3800478;
-	Fri, 30 Oct 2026 23:33:27 +0000 (UTC)
-Subject: Re: [GIT PULL] Thermal control fixes for 7.4-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0iNLS=-XW+LeJTa5ttDJGs6AcQdMOxaFTCxhXu78jnsjQ@mail.gmail.com>
-References: <CAJZ5v0iNLS=-XW+LeJTa5ttDJGs6AcQdMOxaFTCxhXu78jnsjQ@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0iNLS=-XW+LeJTa5ttDJGs6AcQdMOxaFTCxhXu78jnsjQ@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.4-rc1-2
-X-PR-Tracked-Commit-Id: 4358090906b01806ee483229e8d7163b806bd116
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: a9547379cb381e2a036e3261a6becc17973ac470
-Message-Id: <179340320624.1831258.3449648061474347587.pr-tracker-bot@kernel.org>
-Date: Fri, 30 Oct 2026 23:33:26 +0000
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, Daniel Lezcano <daniel.lezcano@kernel.org>
+	s=k20260515; t=1793415669;
+	bh=BngSBXTp+deGkFdRSOmECpX1qa4udSKk9eVqZM6ckQs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=K5tBDEg3PiRlab478XW6PS7L4wUZFmiKjSTa5yM23K+XR5iNzDS+zBV06lnLbqf13
+	 /zb5sNkIHZNfa+A1k0HIT7zUjUQyNYOgwmILdmgi2WdCepEhtM42cFKKwFcCYiDRdx
+	 ZfI8NzwC11B98IA4FyOGG9xNK3fCIWXABm/XLw9QydHm1VTYfy8kjvHnpr2j32ymMt
+	 6Hxhf20TsSWLlOD+MfUHJsW+ECBxBtcGz4UxKJ0JN/r23xwEnSikQYeroaJ0JtDYMz
+	 dLdO38ky/dpx3/4bHDxzQwpDfU5uRZ8Jt9KDHEY4DG6t6r657KhyyqUjy6WEQ2Vxlm
+	 rtmRfmMAHcgkQ==
+Date: Sat, 31 Oct 2026 05:01:04 +0200
+From: Jarkko Sakkinen <jarkko@kernel.org>
+To: Matthew Garrett <matthewg@nvidia.com>
+Cc: mjg59@srcf.ucam.org, keyrings@vger.kernel.org,
+	James.Bottomley@hansenpartnership.com,
+	linux-integrity@vger.kernel.org, rafael@kernel.org,
+	linux-pm@vger.kernel.org, linux-efi@vger.kernel.org
+Subject: Re: [RFC] Make hibernation work with lockdown
+Message-ID: <auVZ8AvMXqqKXl7S@kernel.org>
+References: <20261008132532.1155166-1-matthewg@nvidia.com>
+ <att9OPPi0sPqt_CW@kernel.org>
+ <atux0EFb_euN6pM3@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,16 +59,37 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <atux0EFb_euN6pM3@kernel.org>
 
-The pull request you sent on Fri, 30 Oct 2026 21:27:01 +0100:
+On Fri, Oct 23, 2026 at 10:13:20PM +0300, Jarkko Sakkinen wrote:
+ > As the next step I'll expand the bootc OS installer that I did to have an
+> option for hibernate so that it does partition layout and all the wiring
+> required. I can then integrate that to my test environment and test it
+> in a libvirtd VM.
+> 
+> It's not as tedious as it sounds :-)
+> 
+> There would be faster routes but this is the only one that is not a
+> tower of cards. I'll just shovel it through.
+> 
+> I'd figure that it's also modelling quite well any possible production
+> environment where this feature might be ever used (reproducible build,
+> read-only rootfs, bootc container).
+> 
+> 1. https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/linux-tpmdd-test.git/
+> 2. https://github.com/puu-os/installer
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.4-rc1-2
+My kernel test build is now generating installable bootc container, and
+has hibernate working (not all changes have been pushed yet). Not being
+completely ad-hoc environment allows effortless testing, which is
+essential in order to get all of this eventually applied. 
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/a9547379cb381e2a036e3261a6becc17973ac470
+The next step is to test with the patches applied but without secure
+boot at first.
 
-Thank you!
+Br, Jarkko
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+
