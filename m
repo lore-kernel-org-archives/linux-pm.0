@@ -1,78 +1,53 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793459131;
-	b=sTq8uqRptIEquRfn6l/v0ewHPD4exBehUyi/nzFU1Y+e9QxTqJvaOxO/vF//UxQQNGWs
-	 lAAnDqUdwhSukbvN28Sx69npualrUTzFPJCawhuhv06ITzIbkfB6WJHPVst6+wtuGeyw7
-	 Ouv/OfuHUaYqLKZTRsb8y36fpGp0wVqVsQoZsI8kOgi1V8qyLHBBDutP6aG7tXyUVfdCN
-	 exhV7qk0Y3jBa6HLumMENO8c9O9mBR4RfnCmdg0dum4Y6M74Gq1Q6XS7whOmsHYLnPcsJ
-	 aZtKcmJRgEGtEObBDPUemO8/LMwCNlGEmOoFplEES9XxplzgN0zXTmCP7dOxsgQp0IQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793459131;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=qXY4fJ4tgD+nshkl+/BLl0xVOtH6+j50yaehaAtwkZc=;
-	b=ao+SMlGpUbp/INKanvpfgBAGy8CgCn7e70ZihlhWcB/1UuIi/qz7ly95vpGYuyY6mPLg
-	 H99BlFCPIJn14MBM2Gk4HKhuT36RowiG7r25l6Q+DOqPn7EfHO5dbOY0uuBkqYBlwxjgd
-	 f4byfrCWrb+9KXIzyWjQ+7aLcPmH2At1EvWIrS/ACRx9TSPvsXonHY4gHEIuSIbbOCxzK
-	 paeY4QflMU5h1n81aEYQVEOR6tqGtjR9aJu+9m54tTv4rps2fcVX6Fo5HqZm66ZQHSXB7
-	 AEdPBWV2hCufsTeVoHXorW930b+uoIZBmwYtb5+CDu3MBZQ4K8qCeAtCWQAxMwRsH0A==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=leuy+NVN;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793468943;
+	b=Lhqwio7Sa1rCxiQ5ahyNJcnVVq5rYYJkLE8cDFVCOm2zIrOpbs8iwr3C6+shaXrKWefH
+	 vBM6TED94b1wcIPlyO54tjLJDBX2ToXqQbk9kcpPi4OWCdeATfsX1X/XxbgGk8pPWPOOK
+	 2u+SsO/qFUxpIIxFOb7YgdjKfpSZISxg1CUpZfwUotcSRDoJoggdecVeIH3xV9N8xHy1M
+	 AvNFeBiW4Nld9odO7bOMNSH35/pJ03ujz2ch03hrqAno8tKrwKhVaRMdvzel2O/LniQu2
+	 6XL7HqZ6fB7jSoM3zCBnjT28TEmGy+wbUYh0hMdH2LLVxQYwS4iU2DnDfgwwN9YPUug==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793468943;
+	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
+	 MIME-Version:From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=NSB2PecxKZRZZ5SWAtMykPl3XsNqbNX6cSidiyaczIU=;
+	b=0d6Q7sAMgo/vU+CtIUsqUpWJMX1iG6K9rXRgKgRMLs7LM1JLckz0FAPTYXFNsma7iDNR
+	 Tm5iKUXzG46iFczCIHIqhNP3xhev6Q+fqBowmYQje7NWMpQYvz/Fq+XwYFUFyXkl9Wm+J
+	 KoDgC60e0HZdrV82LMUE4B5AO02fK38YI1SksR4t75k/5LDS41xJ1CAXZVhLPc1l8Y/6y
+	 NRKkNYBVulbJNbln/w+h031bdCNCnlk6VcYHM59P4+0eOdgBeFyMm68cmRgYMwPxDdmxH
+	 H/Vb6XIl3WwMLcYD0P9irozxa7Ef3l+0HtCms06RNjeVTwz3NPyvZmzvYOqDldsZPfw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eDjONVRi;
+	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1176B606A336;
-	Sat, 31 Oct 2026 15:05:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C94F606A31D
+	for <linux-pm@vger.kernel.org>; Sat, 31 Oct 2026 17:49:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=leuy+NVN
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793459125;
-	b=2dOiBN3V0nW/qasQFI0jUGdW5VrBUTnVg6enaqx4QhGqkykb3SWhYwnvafcgU2+ENnI1
-	 wVqcN/031OWPWENnSbZBohAv9RL1eqFBJf47uXf7ZuwaCdUuu6WeniPf2x06qnqvY2na2
-	 EJ7UbIqZvhbEynQaENQy2VJbC8r2VR6XGk5RePpvIgQtZsXrjX6OMdnf8D/TBc/HzOJsf
-	 kOSnXqDUJ/V9szNtu0wNyVBrOO8fo2QrrEo7vcMee5QF6XY5It1MSRbR6lwjHBbUf7Cuo
-	 MdqQoPNp7GzGgdtLgOuR2FZ/vMdssdt/k7iAINDjY8S6pEI9+yCfNFpADAYU4yZAozQ==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793459125;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=qXY4fJ4tgD+nshkl+/BLl0xVOtH6+j50yaehaAtwkZc=;
-	b=aAr7xr4DHJus93Y6SqrRozYZZMG/X1OaM67oTEvwVxyygCcDgJUn/XRgH5/FjOUJLnJ6
-	 I2oLzbU+UXbiL5HxfbnsJVPsKoKHuC7Bo5FB84uwNWggud0Y4Bss1vqZPuLZBw7IC2CF6
-	 pJRsPDjAl8NfEjHfBnl95+WXGiUS89aiatSFtxOhV2SnQy8wFUE8P6d4FVQfowg7gHX9V
-	 ePJ/7UpLtt9HSdxJSXZCuVsHyvDposcl6o1Ve1kGB9LdxJEvxihCewednZzeYUrbOmssN
-	 QZsj1dtIBuZ47f3MuRveiP+Q90fUiua7MZohn4CAehnZV6sCdObZ4iS7Tm8Fl/ArhxA==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 4202C1F00A02;
-	Sat, 31 Oct 2026 15:05:24 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eDjONVRi
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD9DB1F00919
+	for <linux-pm@vger.kernel.org>; Sat, 31 Oct 2026 17:49:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793459125;
-	bh=qXY4fJ4tgD+nshkl+/BLl0xVOtH6+j50yaehaAtwkZc=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=leuy+NVN/5FqgcaH+NtZ1qHZEdsMYnGmJuoHa+Fh+5en4nqzCkZuZZkgliBqQu2gx
-	 JduEC2iVXc9pmKKIDfXgIVkv0uZDQXukG3uyrwkpWeXnYmztw+JSQd+m1xfiX8NcOw
-	 2duHMn9qRN+jxls5j9lriyBfivJMqsywB/ML1u0g3aN+3WN6wvXnvNb5QqXhZKw7O9
-	 IwR6vLyrv8g6fEgkZUBz2umEHd+o1T8p53tH3JdPkO8Jsi9GhHrlcTavzbyXXNsdsg
-	 TIUaj52Y1E/T8bou5s0Kkvi0V54eUKSiJ168wy6/Qhz25o7eDN/kSH+p5UTDEZYHVw
-	 eSM9V4H6T7G6Q==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id D1F1D45F2B;
-	Sat, 31 Oct 2026 15:05:21 +0000 (UTC)
-From: David Heidelberg via B4 Relay <devnull+david.ixit.cz@kernel.org>
-Date: Sat, 31 Oct 2026 16:05:08 +0100
-Subject: [PATCH 11/11] arm64: dts: qcom: sdm670-google: Enable vbus support
+	s=k20260515; t=1793468942;
+	bh=NSB2PecxKZRZZ5SWAtMykPl3XsNqbNX6cSidiyaczIU=;
+	h=From:Date:Subject:To:Cc;
+	b=eDjONVRiwjQwK1VbumLMFeYJdZickLy1CHmK8vHiPyhEOOOerTKoNtka5r91Ov/xb
+	 tKYnyTpca8EF6JEbtcwFyMM10kzI24/ms0TJNu+XwMgYhy6uPknNpz2XE15gKUglzY
+	 r8mzBuG01L1SZ9ok/LIt1N9ukY92Z6kZ1lRnNxBtx6VR+Y2JL0T7XqIENkfXnzzc3M
+	 wfZ5YzAyoRxIlMISWPXfD3oK8WMLkSuBvsjeEawezb0ZxCCPMnTy06FvJam9tPt85d
+	 pGQyZ1SiOThyO1mMX8mVjtpHozLQCVFc7J3n5rJrsn7x++ZE9Leh3rJSf4xbT7SnUP
+	 /Jkc/EdpAqFTw==
+Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-6b2237b596cso3380277a12.0
+        for <linux-pm@vger.kernel.org>; Sat, 31 Oct 2026 10:49:02 -0700 (PDT)
+X-Gm-Message-State: AFq9FYKeUB8NB4RUhP3XWsWEz6nOQPA27aBuFx+vqaLVaGnTSstALEGF
+	rkILFC7ab7RspbZAteZA+jCNjHtQYmJWxNPMYxWEWGYM3HEEbjv8074aCXfXy7r92d0XuOBApF7
+	F8FF6bYFETVUFERhHn3kWkcu3sFVcw+w=
+X-Received: by 2002:a05:6402:42cf:b0:6b4:20bc:fa0 with SMTP id
+ 4fb4d7f45d1cf-6b4d428ea8amr4354672a12.13.1793468941878; Sat, 31 Oct 2026
+ 10:49:01 -0700 (PDT)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,87 +57,114 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261031-pmi8998-vbus-v1-11-4d805e5a0f27@ixit.cz>
-References: <20261031-pmi8998-vbus-v1-0-4d805e5a0f27@ixit.cz>
-In-Reply-To: <20261031-pmi8998-vbus-v1-0-4d805e5a0f27@ixit.cz>
-To: Alexey Minnekhanov <alexeymin@minlexx.ru>, 
- Robin Snyders <robin@snyders.xyz>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Wesley Cheng <quic_wcheng@quicinc.com>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
- Casey Connolly <casey.connolly@linaro.org>, 
- Sebastian Reichel <sre@kernel.org>
-Cc: Richard Acayan <mailingradian@gmail.com>, linux-arm-msm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
- Sebastian Reichel <sebastian.reichel@collabora.com>, 
- linux-pm@vger.kernel.org, phone-devel@vger.kernel.org, 
- David Heidelberg <david@ixit.cz>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=985; i=david@ixit.cz;
- h=from:subject:message-id;
- bh=pBRLO5rZ3Rm5tJrcNsGBLN6OjgyMlOuDvEjF7+il+L0=;
- b=owEBbQKS/ZANAwAIAWACP8TTSSByAcsmYgBq5gOwhLDb/48orJirTu7/94yDF3J9cj4MK58qB
- gzwA9lAJPaJAjMEAAEIAB0WIQTXegnP7twrvVOnBHRgAj/E00kgcgUCauYDsAAKCRBgAj/E00kg
- cjElEADLWvkkUZnThiqp7xjD5OiyhyBOHmbh4/dUJl97peX0+9x3PZ+tdgXmxqRz2t/1SsOj577
- 2KsQdL9+OfMrXvnjZN618mRGROr6yM3k6pGxunLNACnlMiob7pWRjL+uHdS8I+Au8Yq+KJkD4c4
- RvmnaJ39XXDj2NTUfH4fiZnIbfO3vYORGIH8Dd6eTxZr8nr2A99V7RhfZGz0e5lUcnHhhKuEyA9
- yajcezPXRZMYzlDQo3xZ8A30TzJQ6UZAJiY2puGPr7jE9p0BQJwsHgwloI38gRSm8xCmi4WWSLz
- RynkeFrypRgD5c/ssJ5o+ZqlVE1uFkJoFaQF+y/Ou2iatbB6pTJ94je36x7gXs803yN6Gh4r/yk
- aiBoUjNkcYdn+CNN60kKzntlTrs0knq4Dd2djgoEulANMBMSz85n1EkOT+IhMcD9JfmDhacg+/E
- Mo96L42wOCPEMGjg/GsKNEY+COBzTJ1z67mR51jgVawqTqWJ2B8QqhC0OhcKgspuUV3OxkRzTFj
- jRix8tJT5RHtmugWGCQT/5Mx2AUGmQ40+bbBfFy+Z8Sb4l92X5O8P+yGMD2fc5185gAkEaqlKAD
- +HYvX2c9Xxcob3nWMPKFQb4tk9J3fAMyN+LfnRmZKDF422igi6jD72zcL3BFWXBg4RRcpIfHfM4
- I4Gk/3hVrj2jkdg==
-X-Developer-Key: i=david@ixit.cz; a=openpgp;
- fpr=D77A09CFEEDC2BBD53A7047460023FC4D3492072
-X-Endpoint-Received: by B4 Relay for david@ixit.cz/default with auth_id=355
-X-Original-From: David Heidelberg <david@ixit.cz>
-Reply-To: david@ixit.cz
-Content-Transfer-Encoding: 7bit
+From: Len Brown <lenb@kernel.org>
+Date: Sat, 31 Oct 2026 14:48:50 -0300
+X-Gmail-Original-Message-ID: <CAJvTdKk8oCKTDyzyyaruaTRQoNLeKnZJofiN6va3=fm9VRmGNQ@mail.gmail.com>
+X-Gm-Features: AclHuK8OLaxdAq5Xgp_oDOiMWDGtiU142ig2W2hDUl-OKh8WDJohcgx8MRKTJXM
+Message-ID: <CAJvTdKk8oCKTDyzyyaruaTRQoNLeKnZJofiN6va3=fm9VRmGNQ@mail.gmail.com>
+Subject: [GIT PULL] power utilities update for Linux-7.4
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-From: David Heidelberg <david@ixit.cz>
+Hi Linus,
 
-On this device, vbus was setup and switched off by the charger driver.
-Enable proper driver.
+Please pull these power-utilities-2026.10.31 patches.
 
-Signed-off-by: David Heidelberg <david@ixit.cz>
----
- arch/arm64/boot/dts/qcom/sdm670-google-common.dtsi | 7 +++++++
- 1 file changed, 7 insertions(+)
+thanks!
+Len Brown, Intel Open Source Technology Center
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm670-google-common.dtsi b/arch/arm64/boot/dts/qcom/sdm670-google-common.dtsi
-index 4ce9b62abe53f..94590cccc590f 100644
---- a/arch/arm64/boot/dts/qcom/sdm670-google-common.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm670-google-common.dtsi
-@@ -602,16 +602,23 @@ cam_vio_pin: cam-vio-state {
- 		power-source = <0>;
- 	};
- };
- 
- &pm660_rradc {
- 	status = "okay";
- };
- 
-+&pm660_vbus {
-+	regulator-min-microamp = <500000>;
-+	regulator-max-microamp = <1500000>;
-+
-+	status = "okay";
-+};
-+
- &pm660l_flash {
- 	status = "okay";
- 
- 	led-0 {
- 		function = LED_FUNCTION_FLASH;
- 		color = <LED_COLOR_ID_WHITE>;
- 		led-sources = <1>, <2>;
- 		led-max-microamp = <500000>;
+The following changes since commit c03c1a14507dfaf8b856c2608f9ac216021fc222:
 
--- 
-2.55.0
+  Linux 7.3 (2026-10-18 13:14:58 -1000)
 
+are available in the Git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git
+tags/power-utilities-2026.10.31
+
+for you to fetch changes up to 8969e647d0322939512041b9685cc5f27753dd8c:
+
+  Merge branches 'turbostat' and 'x86_energy_perf_policy' into
+utilities (2026-10-31 14:29:22 -0300)
+
+----------------------------------------------------------------
+power utilities 2026.10.31
+
+turbostat 2026.10.31
+
+Fix --cpu option to work more than once.
+Fix --Joules option to work with --show power.
+Remove hard-coded 8192-CPU limit.
+Decode Uncore Frequency Agent Types.
+Dump RDT (Resource Director Technology) config.
+Dump RP (Resource Priority) config.
+Recognize Rugged Panther Lake.
+Fix PMT mmap size, bounds check, and mask computation.
+Misc cleanups and minor fixes.
+
+x86_energy_perf_policy 2026.10.31
+
+Harden input parsing and bounds checks.
+Fix optarg keyword matching.
+Rewrite MSR device path discovery.
+Misc cleanups and minor fixes.
+
+----------------------------------------------------------------
+Hemanth Selam (1):
+      tools/power turbostat: Fix comment typo
+
+Kaushlendra Kumar (2):
+      tools/power turbostat: Fix undefined behavior in pmt_gen_value_mask()
+      tools/power turbostat: Fix PMT mmap size and bounds check
+
+Kuppuswamy Sathyanarayanan (1):
+      tools/power turbostat: Add rugged Panther Lake support
+
+Len Brown (39):
+      tools/power turbostat: Decode Uncore Frequency Agent Types
+      tools/power turbostat: Cleanup: Delete unused flags
+      tools/power turbostat: Rename: Differentiate counter and CPU sets
+      tools/power turbostat: Cleanup: Remove hard-coded 8192 CPU limit
+      tools/power turbostat: Cleanup: Delete duplicate table entry
+      tools/power turbostat: Cleanup: Remove useless assert()
+      tools/power turbostat: Cleanup: Unify comparisons to max_cpu_num
+      tools/power turbostat: Cleanup counter sets debug code
+      tools/power turbostat: Cleanup add_counter declaration
+      tools/power turbostat: Cleanup: consistently use warn/err, not perror
+      tools/power turbostat: Fix typo: MHz, not Mhz
+      tools/power turbostat: Cleanup: bool force_load
+      tools/power turbostat: pmt: Improve sscanf() hygiene
+      tools/power turbostat: Dump RDT CPUID.7 Support
+      tools/power turbostat: Dump RDT CPUID.0xF,0x10,0x27,0x28 Support
+      tools/power turbostat: Dump RP-Enable MSRs
+      tools/power turbostat: Cleanup: Use one cpu_setsize for all purposes
+      tools/power turbostat: Allow multiple --cpu on cmdline
+      tools/power turbostat: Rename cpu_subset to cpuset_cmdline
+      x86_energy_perf_policy: Rewrite Linux/Android MSR path discovery
+      x86_energy_perf_policy: Harden update_cpufreq_scaling_freq()
+      x86_energy_perf_policy: Harden with strtol()
+      x86_energy_perf_policy: Cleanup: Use snprintf() for platform-profile
+      x86_energy_perf_policy: Fix optarg keyword matching
+      x86_energy_perf_policy: Harden against potential ratio overflow
+      x86_energy_perf_policy: Bound package iteration
+      x86_energy_perf_policy: Cleanup: Define HWP_WINDOW_MAX_USEC
+      x86_energy_perf_policy: Cleanup: Define BCLK_MHZ
+      x86_energy_perf_policy: Cleanup: Check fseek() in VM path
+      x86_energy_perf_policy: Document MSRHEADER
+      x86_energy_perf_policy: Cleanup: Drop unused signal.h
+      x86_energy_perf_policy: Cleanup: Constify read only parameters
+      x86_energy_perf_policy: Use calloc to initialize string buffer
+      x86_energy_perf_policy: Simplify write_sysfs() return type
+      MAINTAINERS: Add x86_energy_perf_policy
+      tools/power turbostat: Fix --Joules when used with --show power
+      tools/power turbostat: Version 2026.10.31
+      tools/power x86_energy_perf_policy: Version 2026.10.31
+      Merge branches 'turbostat' and 'x86_energy_perf_policy' into utilities
+
+ MAINTAINERS                                        |   9 +
+ tools/power/x86/turbostat/turbostat.8              |   6 +-
+ tools/power/x86/turbostat/turbostat.c              | 818 +++++++++++----------
+ .../x86_energy_perf_policy.c                       | 234 +++---
+ 4 files changed, 587 insertions(+), 480 deletions(-)
