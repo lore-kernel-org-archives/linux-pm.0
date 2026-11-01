@@ -1,66 +1,45 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.12.242.13
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793524520;
-	b=C5LSO1r5RkKY+6qyUZJekffnJ+5bctaTEXew5u9omOvaYtaxdYP9PD1hv24gPFhkRZbL
-	 BWLBr5hLc83t7H+Nhxe2lcsi/QGl9lyEAsk+2bOSY50IiZl1/YvvRYwC42eB6TMCh4h+x
-	 /Ut/Cd+xwP5nFpv76Gc8zP0xeXyGtz8aBL7iH0Sp1pod3MlV83YvmF4C9CRYejTO9wL83
-	 UVBgz0GaWk0teySag1I8s95PLG3MrD+BhDgYxDFpsANWJKlqOy3I8i+eD7ei4lSCFBzVy
-	 k/UlY/8PHn4tNH+8Jm5Ei2oJfGlleXjguNzvcBTsFx5aNma/UdBkfDBwzkaD1I6fVAA==
+	t=1793530328;
+	b=Rar9Gf1jMANl7HOyZI5hpRer8xCgpb5ftEmK5H40k7sgIA8J8jT8YcqV5WQa3hUmfx2H
+	 WJxzgxPvcL68wbQlbIt9aPPzyQ+5+PkfCZnECG2hgnMsJFl3X0bCbLVQR5a2JKtWP8c/U
+	 Ittda2XXcEubmV0du+uvI6Vrd0qdz7ORcoPetT+oGjDHUoMGsFz/qkFC3td2FhikKGepN
+	 KlNtQp9lcdH/4hTJT16FmJ495612Leavj8pu+LBoX/EseOc3xN0/DoCmY5GfQ+6FFkAJq
+	 sdDMilhKLmxFhzmf3OiQGFVhie7PnbHhd3pWMEc2vWHIj1yK91+ZEw92vXhpWGjeHWQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793524520;
-	h=DMARC-Filter:Received:DKIM-Signature:X-ME-Helo:X-ME-Auth:X-ME-Date:
-	 X-ME-IP:From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=hpAYGvjX3DPYXJqhuECAIb7VRmhCJAkGQrZ4pOyjybg=;
-	b=Uigd/Wv4/gNLE2OFkUx5vLjvGiFSmaO4SsCcPhQwTM3F6MSQi8cODqTcuRM/Zp9YMDXt
-	 hYiKtlGsHWLOoqrlTS4Udx2l0L5/ewQV5siJrGoCS9PGuQ316ZW5C3tUnywCcAsDmKHN2
-	 FW6WPYw04DEZZTmhxllssqQW36oVmC21GeR++rzq57/oZT9q2wV7Km+If8UrtFF7m5G+S
-	 if130L4m7paT4Bhqo+isMdvr6YXC1FpzwfyxlKrfeNjI3OnQIdmzVLFhXNe3f7coVrWpu
-	 24x3BTwt6yHEhRIWfqGpC4Aht/thQ5wqEK/Ro+I9wn7G1B2u1OQ8n7fG82etn1nX3nw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793530328;
+	h=Received:DKIM-Signature:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Subject:From:To:Cc:In-Reply-To:References:
+	 Date:Message-Id:X-Mailer:X-Developer-Signature:X-Developer-Key;
+	bh=pJVVKwHbhmfTEf9BsmBhWwB3UfIBhltnU3zTc/bmdjo=;
+	b=kHjfFcSIkYIZDlZecGeDHWVs4emKYwEiBKB2xZGaGKQwVQempPQPCyeJX9j2KO1Pyzev
+	 C3NVpbRNMD45aDRcK+9I/mg/L650Hy/ur6KknQQYRQI7/DtbTc2vZ6BuAwkt4iBhH4Kox
+	 l+I/rSb4rGtB9ya4furnbNQKsAx6kcVa5T6UErAvuZpx2LW+CFw1QA6Xgqc0t3ecjpnW6
+	 sGqX2KZTnu6XeZKXJOiZoATYBQaYnZnwgsEbmBtKG8wf1ZFdQap3h36r9/wJuJ/fdqGGu
+	 gCuVD8dX2gxoZTTCe+NDs6c4HGx6LRHJBpdNIaS6+cI3G/VzO7CZ3VrwsQlefjDs9KA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=wanadoo.fr;
-	spf=pass smtp.mailfrom=wanadoo.fr;
-	dkim=pass header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=d7ywW8Tr;
-	arc=none smtp.remote-ip=80.12.242.13
-Received: from smtp.smtpout.orange.fr (smtp-13.smtpout.orange.fr [80.12.242.13])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="l0c/lPT/";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F286606A324;
-	Sun,  1 Nov 2026 09:15:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0F286606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B6E6606A324;
+	Sun,  1 Nov 2026 10:52:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=d7ywW8Tr
-Received: from fedora.home ([IPv6:2a01:cb10:785:b00:26fb:aefb:6cd2:db0e])
-	by smtp.orange.fr with ESMTPSA
-	id NRegxTj34LDKZNRehxO0lB; Sun, 01 Nov 2026 10:15:11 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1793524511;
-	bh=hpAYGvjX3DPYXJqhuECAIb7VRmhCJAkGQrZ4pOyjybg=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=d7ywW8TrPZ9b3rPZx6fzmwfoG/zazFagDyJsftf0yS5MI6jCc2vmAlLYKPt+LrNDl
-	 dot0II+ClwEcsWr4AZy4Pg0hDEYRzvdLCzmeJ9r8KNiAnWhIRPn55BR3vaCssaf9FO
-	 dYVek7MU0aBcUKFEhPaMijokzyFrWFmBn7a0zzwiAMrGLakO/x/JwzCBPKCbHKTr8J
-	 cUhSKNhAYg3ydCq1QYZr7lRAOnqZPXRCwss/V3Er0ul1VI7AHaYyn1K90qOM1+KMBB
-	 rNwt9LRrrSLKjH3Sjy4I45SYQkxl5AY92P8DW22Lry4lW1PJ1qsAE/zIB8EutpqhvS
-	 mGr8Jv/p6tKdg==
-X-ME-Helo: fedora.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sun, 01 Nov 2026 10:15:11 +0100
-X-ME-IP: 2a01:cb10:785:b00:26fb:aefb:6cd2:db0e
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: Daniel Lezcano <daniel.lezcano@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] powercap: dtpm: Constify some structures
-Date: Sun,  1 Nov 2026 10:15:06 +0100
-Message-ID: <a4737f7c69e044d35348c1e9c7f69f229070d29b.1793524483.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.56.0
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l0c/lPT/
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DC941F000C1;
+	Sun,  1 Nov 2026 10:51:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793530327;
+	bh=pJVVKwHbhmfTEf9BsmBhWwB3UfIBhltnU3zTc/bmdjo=;
+	h=Subject:From:To:Cc:In-Reply-To:References:Date;
+	b=l0c/lPT/eHsnt1tu0zHEi2fcjmyhFiZ/YhFGHrjw3FbL3pYqJvbloIdadawwaB612
+	 FBUXj/oiY0K3qDL8wX/neSpZzhEHZkMFvAKvNkqQTnumEInIkI6/gCd7lKUmkFdqHz
+	 PxfZ7v4jGDpZvZdkWaoBpXrQErbRQXKlIjTIeRWOR5hVqs/5jLB0rcT1poWWRrLIEx
+	 keRC/Y8Be+MNkn9QSHiLWHWKDEisoJA/OWDywAbucKI3nYaJJ9dQt8eIPH0grbMLPQ
+	 t9IDpoyBs4x4Ix9A6NGoqNrAX/wPqbatMCkyFH7cI18gzxBx4BVvfCmGl/YnX8O4C0
+	 1UBl0NAQojcig==
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -70,64 +49,131 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 21/27] phy: rockchip-inno-usb2: Add RK3572 support
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Cunhao Lu <1579567540@qq.com>
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Philipp Zabel <p.zabel@pengutronix.de>, 
+ Elaine Zhang <zhangqing@rock-chips.com>, Lee Jones <lee@kernel.org>, 
+ Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+ Richard Cochran <richardcochran@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
+ Andi Shyti <andi.shyti@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, Jisheng Zhang <jszhang@kernel.org>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ David Wu <david.wu@rock-chips.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, 
+ Maxime Chevallier <maxime.chevallier@bootlin.com>, 
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+ Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+ Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+ Manivannan Sadhasivam <mani@kernel.org>, 
+ Thinh Nguyen <Thinh.Nguyen@synopsys.com>, 
+ Jaehoon Chung <jh80.chung@samsung.com>, 
+ Shawn Lin <shawn.lin@rock-chips.com>, linux-clk@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ mfd@lists.linux.dev, linux-gpio@vger.kernel.org, netdev@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, 
+ linux-serial@vger.kernel.org, linux-mmc@vger.kernel.org, 
+ linux-stm32@st-md-mailman.stormreply.com, linux-phy@lists.infradead.org, 
+ linux-usb@vger.kernel.org
+In-Reply-To: <20261022-add-board-ok3572-c-v1-21-0b0fd85a31ee@qq.com>
+References: <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com>
+ <20261022-add-board-ok3572-c-v1-21-0b0fd85a31ee@qq.com>
+Date: Sun, 01 Nov 2026 16:21:52 +0530
+Message-Id: <179353031285.2955.4272173079718014092.b4-reply@b4>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2049; i=mani@kernel.org;
+ h=from:subject:message-id; bh=31exuPQfsAOhnwIjmXEjjvAlTRXnnjz1PKLb/yyFj6k=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBq5xnKP2pbzdBpJAuX9SwupspI7yJNwomVsnJuz
+ aOJqq74qKuJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaucZygAKCRBVnxHm/pHO
+ 9WQAB/96KIbnRgeB00Ab1FYAF1roqbKbj5c0aeRO93f5urNJ5r4URepXfyJP8dOuE9JZMVZcr5b
+ GALeNpvXnpsL49mzVQohe0Sp2GxQbbkDvy3WNXMFLbrkiwoNUew3PXjGrpC+WP0iMwunoMh40sM
+ +FfXLZ/BJbcm4CwP6xP2rbTgKlRX+YBDZ+5anFKAflhI8lyjzOroc6CaQKJWA1uoNR/cCsO3b/7
+ PbLuWLleLh5V6qLB832ZwG0rMmEZomEhcXEuXh11t9ERKG4ysL4hKV6TinMlLU2Ruhu+iLPuGXa
+ eWPJiKBNr/cTl6yoqPDo7ctlFKJ8f+OZjojQUZ/2GmF6FG2F
+X-Developer-Key: i=mani@kernel.org; a=openpgp;
+ fpr=C668AEC3C3188E4C611465E7488550E901166008
 
-'struct powercap_zone_constraint_ops', 'struct powercap_zone_ops' and the
-'dtpm_node_callback_t' array are not modified in this driver.
+On 2026-10-22 00:11 +0800, Cunhao Lu wrote:
+> Support both RK3572 USB2 PHY instances.
+> 
+> Signed-off-by: Cunhao Lu <1579567540@qq.com>
 
-Constifying these structures moves some data to a read-only section, so
-increases overall security, especially when the structure holds some
-function pointers.
+Nitpicks below. With those fixed,
 
-On a x86_64, with allmodconfig:
-Before:
-======
-   text	   data	    bss	    dec	    hex	filename
-  22049	   7736	    128	  29913	   74d9	drivers/powercap/dtpm.o
+Reviewed-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-After:
-=====
-   text	   data	    bss	    dec	    hex	filename
-  22273	   7512	    128	  29913	   74d9	drivers/powercap/dtpm.o
+> ---
+>  drivers/phy/rockchip/phy-rockchip-inno-usb2.c | 136 ++++++++++++++++++++++++++
+>  1 file changed, 136 insertions(+)
+> 
+> diff --git a/drivers/phy/rockchip/phy-rockchip-inno-usb2.c b/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
+> index 7d8a533f24aea..16a36e68cb6d3 100644
+> --- a/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
+> +++ b/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
+> @@ -1544,6 +1544,49 @@ static int rk3528_usb2phy_tuning(struct rockchip_usb2phy *rphy)
+>  	return 0;
+>  }
+>  
+> +static int rk3572_usb2phy_tuning(struct rockchip_usb2phy *rphy)
+> +{
+> +	u32 reg = rphy->phy_cfg->reg;
+> +	struct clk *refclk;
+> +	unsigned long rate;
+> +	u32 val;
+> +	int ret;
+> +
+> +	refclk = devm_clk_get(rphy->dev, "phyclk");
+> +	if (IS_ERR(refclk))
+> +		return PTR_ERR(refclk);
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Compile tested only.
----
- drivers/powercap/dtpm.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Please insert a newline between each operation to improve readability.
 
-diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-index b7a65e543f19..3413318401fc 100644
---- a/drivers/powercap/dtpm.c
-+++ b/drivers/powercap/dtpm.c
-@@ -296,7 +296,7 @@ static int get_max_power_uw(struct powercap_zone *pcz, int id, u64 *max_power)
- 	return 0;
- }
- 
--static struct powercap_zone_constraint_ops constraint_ops = {
-+static const struct powercap_zone_constraint_ops constraint_ops = {
- 	.set_power_limit_uw = set_power_limit_uw,
- 	.get_power_limit_uw = get_power_limit_uw,
- 	.set_time_window_us = set_time_window_us,
-@@ -305,7 +305,7 @@ static struct powercap_zone_constraint_ops constraint_ops = {
- 	.get_name = get_constraint_name,
- };
- 
--static struct powercap_zone_ops zone_ops = {
-+static const struct powercap_zone_ops zone_ops = {
- 	.get_max_power_range_uw = get_max_power_range_uw,
- 	.get_power_uw = get_power_uw,
- 	.release = dtpm_release_zone,
-@@ -470,7 +470,7 @@ static struct dtpm *dtpm_setup_dt(const struct dtpm_node *hierarchy,
- 
- typedef struct dtpm * (*dtpm_node_callback_t)(const struct dtpm_node *, struct dtpm *);
- 
--static dtpm_node_callback_t dtpm_node_callback[] = {
-+static const dtpm_node_callback_t dtpm_node_callback[] = {
- 	[DTPM_NODE_VIRTUAL] = dtpm_setup_virtual,
- 	[DTPM_NODE_DT] = dtpm_setup_dt,
- };
--- 
-2.56.0
+> +	rate = clk_get_rate(refclk);
+> +	if (rate != 24000000 && rate != 26000000)
+> +		return -EINVAL;
+> +
+> +	ret = regmap_write(rphy->grf, reg + 0x0004,
+> +			   GENMASK(18, 16) | (rate == 24000000 ? 2 : 6));
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_read(rphy->grf, reg + 0x0010, &val);
+> +	if (ret)
+> +		return ret;
+> +	if (val & BIT(13)) {
+> +		ret = regmap_write(rphy->grf, reg + 0x0010, BIT(29));
+> +		if (ret)
+> +			return ret;
+> +		ret = rockchip_usb2phy_reset(rphy);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	/* Set the normal line-state filter interval. */
+> +	ret = regmap_write(rphy->grf, reg + 0x0020, 0x30100);
+> +	if (ret)
+> +		return ret;
+
+Here.
+
+> +	/* Increase HS voltage by 5.89% and double pre-emphasis current. */
+> +	ret = regmap_write(rphy->grf, reg + 0x000c, GENMASK(27, 24) | 0x0900);
+> +	if (ret)
+> +		return ret;
+
+And here.
+
+- Mani
+
 
