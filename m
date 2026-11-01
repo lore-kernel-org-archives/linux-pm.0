@@ -1,56 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.151
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.171
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793559504;
-	b=GzFda6x3yb10lGJbJiWkz5mxTVgWeihohABE9sMjW9fbWwQvMQwUYA3IRXTEwnELSVI6
-	 B3kqA+ilrxvyegfG0n0kYLC3jhwrRDY8cronb/+vrRSyO+0hckXAyHN/3b47DjqGSKY5o
-	 ueNlv05DI/gAiNvXy8YngEB75nHifra0tj9RWynAq3Eu7c4XAIesuFu87DF8ThFET6WWd
-	 0+qkVX8IpYBzBd1XK6h5S1YXbq7bDnEMZK/MVRITIKU4vFByin57hf8sC+Xu/CBbgXI/V
-	 lLQc63aT/hMm2g5z50oc/zGcPpYcF//7sJN+UZc4ZJ4l81ZEQJ7AGJz052fLVcyDqCw==
+	t=1793559502;
+	b=scWskZPkguqr6SPP1PrZZAW0gpwvHCQWir41/ycocQt1m+JdfqlH+ZqowbMGwmA4G9vi
+	 zj2p6byUR0V5dJ9k9Cp2cDhaFzpwa076Gr+p2IsI5wjZ4hpIQ+9nJZmyT0TQRJGmbybMm
+	 4XfSSI7B8O/cwmNL4mhV2Tmfh2R3/dzvjQJsPI9bvV3kQk17HgVRcixqvecTXjsLo5E9c
+	 UzQuwroQzVEexhkiLQOuivZYvGUnuYdGdDJXLJtQIQSMnTL1o6idwF4UsVVV4xPcCeO2m
+	 xmO8TH+0dYlLD5ycBGkDldk3UnjkHo4qa+MOkJF/bvhVuneR+Md73VnaVz7OGcsD99w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793559504;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793559502;
 	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
 	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:X-Rspamd-Queue-Id;
-	bh=gxV8jWkJrL5x4Ukev9pRL/MqZOjbjDyS7hPKdWYrOlw=;
-	b=f/kvtl1gcW1V3TAGSYg9bb/FK39RegkZ260dlu4WnMT9Llf2tCRI+B0YuLAEoj4C01dC
-	 9ppBGJe1vpq3784GnJZEepHA2gUXrCwuqy31/voIa+bu6bwy9KD9JBY7hdCcu9ldFC5PD
-	 gK7LpkH7ouzNfC90VS1+IvFgP6l4bE3o5kjK0DM/t6azwZ8abgYoTXfAWfrLyUTV+mhI1
-	 K3N6sN7VDETPxHj+0CbSjt48OJ5M540wPnzRmi81S/T/fD540koNSE6X4gZccuAhGSSbd
-	 vjFxBtIDlPgE6kATB07UzTgOLNevA0cmAL4asmnz4RKb+3tH5S6+STBj1tzx51BthAQ==
+	bh=x5fTb5UWBlgiWGkgOOBDAPFo8Ho3NRa1iT80XUYs+XY=;
+	b=rAonsfVAALugXqwRNHhk8PP+eQSFNctlQKKRPHeziPQsmhx4jehKr+h+8LRhL037grIP
+	 FViCKzWNL50XuoSi4s6XFf/E2bv14zjrPASFrO1vFI2x7eVkgRFT4CjfA4Qv4QQ1LPvd4
+	 y5cmVdQqqnTo+XMx7rmO+b7tn/BNIIlKk1HR4crDjubtzxGcu+dUJiwyAoC+xmUfC66q+
+	 NByL28rtXHNqWajlRgaCiL0jeM2KIcw63LeWDNBwOxdrxex3Jr7NGm5TV5g8ONRZYwXcK
+	 RcP8Un3nzewYz/zX4VAAsimt+X1roHXYnwub6rXmn+hCzgDuPTjTWRYFaeLtSc3VP/A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=hsal.es;
 	spf=pass smtp.mailfrom=hsal.es;
-	dkim=pass header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=kUtDzGLi;
-	arc=none smtp.remote-ip=80.241.56.151
-Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
+	dkim=pass header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=ry3hCN5V;
+	arc=none smtp.remote-ip=80.241.56.171
+Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C310606A324;
-	Sun,  1 Nov 2026 18:58:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9C310606A324
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81CDB60A2610;
+	Sun,  1 Nov 2026 18:58:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 81CDB60A2610
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hsal.es
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hsal.es
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=kUtDzGLi
+	dkim=pass (2048-bit key, unprotected) header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=ry3hCN5V
 Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4jHkcg3Scbz8sqQ;
-	Sun, 01 Nov 2026 19:58:11 +0100 (CET)
+	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4jHkck1PTGzMlB2;
+	Sun, 01 Nov 2026 19:58:14 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hsal.es; s=MBO0001;
-	t=1793559491;
+	t=1793559494;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=gxV8jWkJrL5x4Ukev9pRL/MqZOjbjDyS7hPKdWYrOlw=;
-	b=kUtDzGLiq53XNm9bS/34T0NPC61clhCez7wX0EXj0fT3fHhdabwUMZRQoLFJL7f9K3vf40
-	T8KnWY5YnGJv9Xb4IR1B6YNPCHeKr52zQN7O4VfU7QWac5LEa1RAx2rYkNML6dM7M7BMtt
-	plTLjYIu+mEffAbjeV36POVYvRxv5TjsIWfT3wgVcOq7m51LPw4Tskf1+KNaJP4j+1rKyd
-	frDIBhew5rkNgdR8qhcx6em5Vzwxd61P9NwIgEb2pt1QkS7Sw6YRInnSweW1FYIIDiU8xB
-	6kXUYDH6aYXts4JGniQ88R+9enzDQ23eEmzsv/9pIXB+JSdQOVjiN/F7ihIufw==
+	bh=x5fTb5UWBlgiWGkgOOBDAPFo8Ho3NRa1iT80XUYs+XY=;
+	b=ry3hCN5VJL/ERMI1JVM+B58zISOvY4hcFtzGbXEZSkj0OqEZIRbyfcOSO2NzhTJeSiZoNW
+	NhuLyXw46ky0WLkFWa4K7pmvUGH4FO1waj1LgAZ9c6cemLbLc4hbTNzlrviWAmyWj8A2+i
+	C58AMZGaGXB2EA2qJ3rZgfrMa4kcc/H6Lq0OtSZnHJVvRgTrZGkrTkIZg0RipL7pX+WCxA
+	5hs4USb/yhVFWXi/9JSUU1Xmk076nz6Vd64iq2Dw6yasjRvJscXAv+oyBkvANSVbkEjARq
+	M8M2q72mTQWPs8qmhpCuT/msOmFBcP4cSj1hQFBb9hBAYAU5Oeewva/2lb/khA==
 Authentication-Results: outgoing_mbo_mout;
 	dkim=none;
 	spf=pass (outgoing_mbo_mout: domain of hugo@hsal.es designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=hugo@hsal.es
@@ -67,9 +67,9 @@ Cc: Len Brown <lenb@kernel.org>,
 	linux-acpi@vger.kernel.org,
 	linux-doc@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 1/4] cpufreq: Add a CPUFREQ_UPDATE_CPUINFO policy notifier event
-Date: Sun,  1 Nov 2026 18:58:04 +0000
-Message-ID: <20261101185807.112449-2-hugo@hsal.es>
+Subject: [RFC PATCH 3/4] ACPI: processor: thermal: Factor out the thermal_req update
+Date: Sun,  1 Nov 2026 18:58:06 +0000
+Message-ID: <20261101185807.112449-4-hugo@hsal.es>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261101185807.112449-1-hugo@hsal.es>
 References: <20261101185807.112449-1-hugo@hsal.es>
@@ -83,109 +83,62 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 4jHkcg3Scbz8sqQ
+X-Rspamd-Queue-Id: 4jHkck1PTGzMlB2
 
-Turning boost on or off changes policy->cpuinfo.max_freq in the
-->set_boost() callbacks of amd-pstate, cppc_cpufreq and the drivers that
-use cpufreq_boost_set_sw(). Users that derive a QoS request from
-cpuinfo.max_freq have no way to learn about it. The ACPI processor
-thermal code is one: its throttling steps are fixed fractions of
-cpuinfo.max_freq, computed only when the cooling state is written
+Split the cap computation and the thermal_req update out of
+cpufreq_update_thermal_limit() into cpufreq_update_thermal_req(), which
+takes the policy and the step as arguments. This prepares for
+recomputing the cap on CPUFREQ_UPDATE_CPUINFO, where the notifier
+passes the policy and the step is stored for each CPU
 
-Its freq QoS notifiers don't help, since they only fire when the
-aggregate limit changes. While a thermal cap is lower than both maximums,
-turning boost on changes boost_freq_req but not the aggregate
-
-Add a CPUFREQ_UPDATE_CPUINFO policy notifier event and send it from
-policy_set_boost() once the driver has updated cpuinfo. The helper that
-sends it is global, so a driver that changes cpuinfo.max_freq outside
-->set_boost() can send it too
+No functional change
 
 Signed-off-by: Hugo Sales <hugo@hsal.es>
 ---
- Documentation/cpu-freq/core.rst |  9 ++++++---
- drivers/cpufreq/cpufreq.c       | 16 ++++++++++++++++
- include/linux/cpufreq.h         |  2 ++
- 3 files changed, 24 insertions(+), 3 deletions(-)
+ drivers/acpi/processor_thermal.c | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/cpu-freq/core.rst b/Documentation/cpu-freq/core.rst
-index 4ceef8e7217c3..946913c024121 100644
---- a/Documentation/cpu-freq/core.rst
-+++ b/Documentation/cpu-freq/core.rst
-@@ -49,11 +49,14 @@ transition notifiers.
- 2.1 CPUFreq policy notifiers
- ----------------------------
+diff --git a/drivers/acpi/processor_thermal.c b/drivers/acpi/processor_thermal.c
+index 11036f0d2b942..25c4b0ad64e36 100644
+--- a/drivers/acpi/processor_thermal.c
++++ b/drivers/acpi/processor_thermal.c
+@@ -88,23 +88,30 @@ static int cpufreq_get_cur_state(unsigned int cpu)
+ 	return reduction_step(cpu);
+ }
  
--These are notified when a new policy is created or removed.
-+These are notified when a new policy is created or removed, and when boost
-+is turned on or off or the driver reports a change of cpuinfo.max_freq.
+-static bool cpufreq_update_thermal_limit(unsigned int cpu, struct acpi_processor *pr)
++static void cpufreq_update_thermal_req(struct cpufreq_policy *policy,
++				       struct acpi_processor *pr,
++				       unsigned int step)
+ {
+ 	unsigned long max_freq;
+ 	int ret;
  
- The phase is specified in the second argument to the notifier.  The phase is
--CPUFREQ_CREATE_POLICY when the policy is first created and it is
--CPUFREQ_REMOVE_POLICY when the policy is removed.
-+CPUFREQ_CREATE_POLICY when the policy is first created, it is
-+CPUFREQ_REMOVE_POLICY when the policy is removed and it is
-+CPUFREQ_UPDATE_CPUINFO when boost has been turned on or off or the driver
-+reports that cpuinfo.max_freq has changed.
+-	struct cpufreq_policy *policy __free(put_cpufreq_policy) = cpufreq_cpu_get(cpu);
+-	if (!policy)
+-		return false;
+-
+ 	max_freq = (policy->cpuinfo.max_freq *
+-		(100 - reduction_step(cpu) * cpufreq_thermal_reduction_pctg)) / 100;
++		(100 - step * cpufreq_thermal_reduction_pctg)) / 100;
  
- The third argument, a ``void *pointer``, points to a struct cpufreq_policy
- consisting of several values, including min, max (the lower and upper
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 54dde8419bdc4..4d974dac4dff5 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -594,6 +594,8 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
- 		return ret;
+ 	ret = freq_qos_update_request(&pr->thermal_req, max_freq);
+ 	if (ret < 0) {
+ 		pr_warn("Failed to update thermal freq constraint: CPU%d (%d)\n",
+ 			pr->id, ret);
  	}
- 
-+	cpufreq_notify_cpuinfo_update(policy);
-+
- 	return 0;
- }
- 
-@@ -1184,6 +1186,20 @@ void refresh_frequency_limits(struct cpufreq_policy *policy)
- }
- EXPORT_SYMBOL(refresh_frequency_limits);
- 
-+/**
-+ * cpufreq_notify_cpuinfo_update - Notify policy notifiers of a cpuinfo change
-+ * @policy: Policy whose cpuinfo limits have changed
-+ *
-+ * Send CPUFREQ_UPDATE_CPUINFO to the policy notifiers, so that QoS requests
-+ * derived from @policy->cpuinfo can be recomputed. An inactive policy is
-+ * notified too, since its QoS requests stay until CPUFREQ_REMOVE_POLICY
-+ */
-+void cpufreq_notify_cpuinfo_update(struct cpufreq_policy *policy)
-+{
-+	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+				     CPUFREQ_UPDATE_CPUINFO, policy);
 +}
 +
- static void handle_update(struct work_struct *work)
- {
- 	struct cpufreq_policy *policy =
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index d3d0d9d02aa4a..f3acdcee7183f 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -249,6 +249,7 @@ void disable_cpufreq(void);
- u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
++static bool cpufreq_update_thermal_limit(unsigned int cpu, struct acpi_processor *pr)
++{
++	struct cpufreq_policy *policy __free(put_cpufreq_policy) = cpufreq_cpu_get(cpu);
++	if (!policy)
++		return false;
++
++	cpufreq_update_thermal_req(policy, pr, reduction_step(cpu));
  
- void refresh_frequency_limits(struct cpufreq_policy *policy);
-+void cpufreq_notify_cpuinfo_update(struct cpufreq_policy *policy);
- void cpufreq_update_policy(unsigned int cpu);
- void cpufreq_update_limits(unsigned int cpu);
- bool have_governor_per_policy(void);
-@@ -536,6 +537,7 @@ static inline void cpufreq_resume(void) {}
- /* Policy Notifiers  */
- #define CPUFREQ_CREATE_POLICY		(0)
- #define CPUFREQ_REMOVE_POLICY		(1)
-+#define CPUFREQ_UPDATE_CPUINFO		(2)
- 
- #ifdef CONFIG_CPU_FREQ
- int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
-
-base-commit: 5854d2ce4b0b9ccb37b154319d8283bad889a694
+ 	return true;
+ }
 -- 
 2.56.0
 
