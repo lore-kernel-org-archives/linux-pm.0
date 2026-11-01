@@ -1,56 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.152
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793559496;
-	b=vY+xXh15RCZbP/gye8tE/PMZ28HudajH8SkDhn9t5qW+3y+jmdrDOh1EJ+mUuFKOb10a
-	 M2SNCeBsM6Z1R/vMpnLZyJSmsjv1rNmJREmoN8dVkUuahwNYJhEpE5N4DZa1JRPeAUBmG
-	 oIb+Byeb790dGQpH8ySMpF4Npm1q3tilPNgn2+CrppnnvS8SDpWhKBGZsb6MjAY7xzq15
-	 Hzyjc4OFSlIGfeeMf8SSThfPgFXWCBFYlicCfRFp4zvrQ0oIUBFbgSlzSQWVwo25DmBQK
-	 5dPwHIwixfSkvTovrIk4UjK5Itt6HXitS3e8KQLrG0tkZRoUELYcsB6SezQx/JVjPnQ==
+	t=1793559498;
+	b=rAVdO6vbznNdZs6gatDc9frJ9sdj6+LRuw2mfvXRA4VIcHYpp4sEFAt4Qe71K6jeOj1S
+	 kD1gZQc6zEJM8hUJG9Av50PHnxcHR4qkUBgXpBBjpPHDC4gYkWJfn41x3wp1kFpJ0Yfto
+	 7VYQZ7pl17ATRQwmKvAhSyG4KDHOsdnBrtXO4j7ZvXjHKn4EEtUe1zRhxAV8fRJErTVIv
+	 pWiVMI81gCLveJcE9cihz5fwcy+vtJIpZNaxPuZ+wuIzrYP0Y7t+UVqOkzBlCaUHNG9ai
+	 vfVEsXORRy8jXkHl/Fut5pq0kaowro1K+hT05urAt0/UoVY1+tKaDuXnkgTTeAH6yww==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793559496;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793559498;
 	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Rspamd-Queue-Id;
-	bh=ptw+MuKIB/nDKNuKuc8q9Chj/1S3rLY9q3tb7HiLDxM=;
-	b=mwJtIyF0ppORVNaH1BhT5ZjiXnvJQ2g+OWvJwvTWM441bjlazQ/ubK6GckTKkzCI/M9j
-	 a2B0exlkJna7w5QW3YLqDaf9QJshcs+rkYQADzSz+Aoc6fvKZ1olR/LBlgW1RGU2ev48d
-	 K8xkx6juOuNE05Q1gC1hH4HDm2Pk1YIj/PVl4GNtE4fzJoAGCq5lsSU2alcVXeOi5QHfK
-	 8KIy6uVGGcI1+mVpqK2UkWbv93HVnvhOiBM67INl/IgBnldgpu9k06OFA5q0lk4R2SN3R
-	 z/suEVYUqsO1s2IfnhEtSR+qKIHe4e8509x0dqobw0fDXcTZFrbZgdk5s5x0wdHkvuA==
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-Rspamd-Queue-Id;
+	bh=U8qzDU+msPHL0dnxX5aGigQJ0eVelvQUESkdPC29Fq8=;
+	b=Rfa4ttmOM6O+liakE6o9B/LR/PDCjcC/eHs7hurfopXiZeeCmRzcxif5ZovN8vkTUTXj
+	 nKLVREWTqWAoe3JfLwGo9xXt7XNI4T/HPU/7wm/5iSwnavj6GESsvS6K+82Lv9Ht86/1e
+	 zpc1P10GWGW3gfID/IXEHmA6gVrApCOteHHPAR5rtEFE27aeOmb/cpFKOYMclud5m4p/s
+	 9vDS+9VoHcOKOHr7hFOLyTqfESugFjR9rQiJ0964xCmgBRfWwzaqXpaWe61c5QdjtaO4j
+	 yidLmJFLC+vM5VWDE3lBmiOJU4KAb7HbDtg72yV4doCZTxRSjO+cxC2nyartp/+VWjQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=hsal.es;
 	spf=pass smtp.mailfrom=hsal.es;
-	dkim=pass header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=G1kYf7WO;
-	arc=none smtp.remote-ip=80.241.56.152
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
+	dkim=pass header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=ODMK0351;
+	arc=none smtp.remote-ip=80.241.56.172
+Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org [80.241.56.172])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E98D606A325;
-	Sun,  1 Nov 2026 18:58:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0E98D606A325
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1E83606A326;
+	Sun,  1 Nov 2026 18:58:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B1E83606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hsal.es
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hsal.es
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=G1kYf7WO
+	dkim=pass (2048-bit key, unprotected) header.d=hsal.es header.i=@hsal.es header.a=rsa-sha256 header.s=MBO0001 header.b=ODMK0351
 Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4jHkch6h4SzKp9t;
-	Sun, 01 Nov 2026 19:58:12 +0100 (CET)
+	by mout-p-202.mailbox.org (Postfix) with ESMTPS id 4jHkcf1Z6mzMlWK;
+	Sun, 01 Nov 2026 19:58:10 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hsal.es; s=MBO0001;
-	t=1793559492;
+	t=1793559490;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ptw+MuKIB/nDKNuKuc8q9Chj/1S3rLY9q3tb7HiLDxM=;
-	b=G1kYf7WONy4WGNc1L+iXOuj4ZvU12x9SR3+jVRfniJKg6X5HwDpSt+NastzfDwdxrKZkLL
-	ArM2WqcYg2RwhUOzraq1JfJWC6/HnIxEuxrNM35TAG3QQIPd8n7y+vQM2slbFiXrYdMhxF
-	cIQ8O1AzAOozMZZlCkuJgpfXj1fB9wcnMp708Z7jEnf+IUIpq4vq9Ra0k9pEk2k752kg+y
-	KLwK4GwFE2+YYpm3vXMcGGBPbYPZvWtV/293hmAH6+1uETHKNEE/+87sCEjbOfooYGIPtg
-	7xa7BNyAmcj/Kpbedd21I13sbtY46B1U8WCGFcVNdqilXiRE0GYrU/AxtCikWA==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=U8qzDU+msPHL0dnxX5aGigQJ0eVelvQUESkdPC29Fq8=;
+	b=ODMK0351XiCM8o96SlfxjVYnVzejOPAVsREQzZS4T7wQ1LQq05HWD6yROayj+y7HJlhM97
+	TIByRt5yvg5L1epAvaH91t5BxkqgWO9FWnjOAR/lZ6dk6qmqIPJfnocJKmcmcbXB05PTHO
+	VYyDT7s6jHjWEQlp8pl+ZpPNi7etn4GhAiuz3j8ZyRvlCgi5elDI4CKASyssAk4FE+U+Q6
+	kGR5IAq9lkhbrIXPmX+gHiLk5Vp/fdEgfv80REmL04WzDjp1sC9EZnW9dLXWyD9j8P7302
+	XCIWEWZxBo/Q203lyZx/OljeDNpy02fS4C+FaV+2vHopN4YUbMm0JZF6VwDYJw==
 Authentication-Results: outgoing_mbo_mout;
 	dkim=none;
 	spf=pass (outgoing_mbo_mout: domain of hugo@hsal.es designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=hugo@hsal.es
@@ -67,12 +66,10 @@ Cc: Len Brown <lenb@kernel.org>,
 	linux-acpi@vger.kernel.org,
 	linux-doc@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 2/4] cpufreq: intel_pstate: Send CPUFREQ_UPDATE_CPUINFO on max_freq changes
-Date: Sun,  1 Nov 2026 18:58:05 +0000
-Message-ID: <20261101185807.112449-3-hugo@hsal.es>
+Subject: [RFC PATCH 0/4] ACPI: processor: thermal: Recompute the frequency cap when boost changes
+Date: Sun,  1 Nov 2026 18:58:03 +0000
+Message-ID: <20261101185807.112449-1-hugo@hsal.es>
 X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261101185807.112449-1-hugo@hsal.es>
-References: <20261101185807.112449-1-hugo@hsal.es>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,47 +80,87 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 4jHkch6h4SzKp9t
+X-Rspamd-Queue-Id: 4jHkcf1Z6mzMlWK
 
-intel_pstate has no ->set_boost() callback. It changes
-policy->cpuinfo.max_freq in __intel_pstate_update_max_freq() when
-no_turbo is written and when the HWP capabilities change, so
-policy_set_boost() never sends CPUFREQ_UPDATE_CPUINFO for it
+thermal_req is a fixed fraction of policy->cpuinfo.max_freq, computed
+only when the cooling state is written, so it keeps the boost state of
+that moment. The ACPI thermal zone writes step 0 on every resume, and
+step 0 caps at cpuinfo.max_freq, so if boost was off at suspend, turning
+it on after resume leaves the CPUs at their base clock. Steps 1 to 3 go
+stale the same way
 
-Send the event from there when the value changes, before the policy
-limits are refreshed
+Ashton A. sent a one-line fix for the resume case, which stops step 0
+from setting a cap. It fixes the resume case on my laptop, and my
+Tested-by is in that thread:
 
-Signed-off-by: Hugo Sales <hugo@hsal.es>
----
- drivers/cpufreq/intel_pstate.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+  https://lore.kernel.org/all/20261028-acpi-thermal-stale-limit-v1-1-4b0ab3230f01@ashtonantila.com/
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 0e6ae4cdda5de..f9e356409f199 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1429,13 +1429,19 @@ static void intel_pstate_update_policies(void)
- static void __intel_pstate_update_max_freq(struct cpufreq_policy *policy,
- 					   struct cpudata *cpudata)
- {
-+	unsigned int max_freq;
-+
- 	guard(cpufreq_policy_write)(policy);
- 
- 	if (hwp_active)
- 		intel_pstate_get_hwp_cap(cpudata);
- 
--	policy->cpuinfo.max_freq = READ_ONCE(global.no_turbo) ?
--			cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
-+	max_freq = READ_ONCE(global.no_turbo) ?
-+		   cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
-+	if (policy->cpuinfo.max_freq != max_freq) {
-+		policy->cpuinfo.max_freq = max_freq;
-+		cpufreq_notify_cpuinfo_update(policy);
-+	}
- 
- 	refresh_frequency_limits(policy);
- }
+That patch is small, easy to backport and enough to fix the biggest
+issue. This series applies on its own to bleeding-edge and fixes the
+resume case and steps 1 to 3 by recomputing the cap when boost changes,
+so please take one or the other, not both
+
+Before d15ce412737a the CPUFREQ_ADJUST notifier recomputed the cap on
+every policy update. This series brings that back without letting a
+notifier touch the policy:
+
+  1. cpufreq core: a CPUFREQ_UPDATE_CPUINFO policy notifier event, sent
+     from policy_set_boost() after ->set_boost(). That covers
+     amd-pstate, cppc_cpufreq and the cpufreq_boost_set_sw() drivers
+  2. intel_pstate: send it from __intel_pstate_update_max_freq(), since
+     no_turbo and HWP capability changes don't go through ->set_boost()
+  3. processor_thermal: factor out the thermal_req update
+  4. processor_thermal: recompute thermal_req on the new event, from the
+     step each request was last set to, under a mutex shared with
+     cpufreq_set_cur_state() and the request add and remove
+
+Step 0 still sets a cap here, and patch 4 recomputes it with the other
+steps, so the resume case needs no special case
+
+The freq QoS notifiers can't do this. They fire only when the aggregate
+limit changes, and while the thermal cap is below both maximums,
+turning boost on moves boost_freq_req without moving the aggregate
+
+I also looked at basing the steps on a fixed reference frequency, the
+way cpufreq_cooling uses absolute table frequencies. There is no generic
+way to read the boost maximum while boost is off (amd-pstate and cppc
+keep it in driver data), and with boost off step 1 would often not
+throttle at all
+
+Rafael, Viresh, which do you prefer? This series adds a cpufreq event
+with one user. If that isn't worth it, I'm happy to drop it and keep my
+Tested-by on Ashton's patch
+
+Tested on my laptop (Ryzen 9 5980HS, amd-pstate-epp) with the series
+backported to 7.3. With boost off and cooling state 1, cpu0's
+scaling_max_freq is 2640800, 80% of 3301000. Turning boost on raises it
+to 3879405, 80% of 4849257, and turning boost off brings it back down.
+Step 2 follows boost the same way, and at step 0 turning boost on gives
+the full 4849257. Toggling boost while writing cooling states on all 16
+CPUs left nothing in the kernel log, on a kernel without lockdep
+
+Patch 1 changes Documentation/cpu-freq/core.rst only. Its zh_CN and
+zh_TW translations need the same update from someone who can review
+them
+
+Hugo Sales (4):
+  cpufreq: Add a CPUFREQ_UPDATE_CPUINFO policy notifier event
+  cpufreq: intel_pstate: Send CPUFREQ_UPDATE_CPUINFO on max_freq changes
+  ACPI: processor: thermal: Factor out the thermal_req update
+  ACPI: processor: thermal: Recompute the frequency cap when boost
+    changes
+
+ Documentation/cpu-freq/core.rst  |  9 +++--
+ drivers/acpi/processor_driver.c  |  2 ++
+ drivers/acpi/processor_thermal.c | 58 ++++++++++++++++++++++++++------
+ drivers/cpufreq/cpufreq.c        | 16 +++++++++
+ drivers/cpufreq/intel_pstate.c   |  8 ++++-
+ include/acpi/processor.h         |  4 +++
+ include/linux/cpufreq.h          |  2 ++
+ 7 files changed, 85 insertions(+), 14 deletions(-)
+
+
+base-commit: 5854d2ce4b0b9ccb37b154319d8283bad889a694
 -- 
 2.56.0
 
