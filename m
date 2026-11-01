@@ -1,111 +1,111 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.145
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793521442;
-	b=tVGQqcx3VFpPYy/W0oovumvltvuVAlKNkMwgIHZSHA294ZdkvFuxpMQv37vrrDi99yhE
-	 mdhPwi0eTebrxQz80C1CQyjFA/D2Gl/SWN/HK2Jy5QGMEpka4QrqSUgxYoBJPlOaPq5y2
-	 PSFJa5evDc6w1D6rSG7c3IKYEvOSQlEAQaXzANd9x7EMDD4IE95aZByjARZ8YTKsNVLIm
-	 vZaMsX4kRDDqkvC2AkZcVc4mfTcHGM1DdFDLN+F3Rz2jwSntgFV7Y/YHhWFQbe0C7MR49
-	 q8krjhKL3dsZukNKY41Edx/AaWAUyIbpVhaGW+gQNeJTIUvwHLNGSlIIAS5YpCzWi6A==
+	t=1793521452;
+	b=WaQHipCMu9k4/L33GeR2dzRT0PCYGG0VUeLxQ3bH2S/oWSXhHUvMbmTnRcD8rVGSqWC7
+	 D/E0bODe8ksZx6efYM4ZrADuZmik4kjtVqOqy6XvGnf0YbBNY88rle3/kImoT8pKf+RtI
+	 lnChRKBJtUVb+p9ceqbNQ0Ms1MSc8knvMuL4tgc2EMfdcEd3lTBM01SS5evGZ350Nsi4w
+	 7kwJYSbI7+GzVUdIDJYR7tu4ukePlE9/J/nzvBuMfW7if/Plw0aYbqzLUAJdDHa+iUOP4
+	 yNNKz580wF8mTlaYHQnj7NrhpedmWlllt8uDfoLGxWt9+W2hnT0x2LlRttYRd4uKw8g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793521442;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793521452;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
 	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
 	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
 	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=BkTcONOVgxmiHpWbrh6se8CO85l9DSVApCi2YbLZEQs=;
-	b=2JSCnZdoQfZcUhwdkAxzFAVkrySMf/rH5XOkLGqnSmuZk8DRUVBd16zW7Em+tZL7RtlV
-	 8W8dhuhrZZyKzgHXWRVvio0EaPNACZFjWGv/OPZ4RhaA1nRHdnM+LJJ7E6ue5PLp/WCl6
-	 wXKXpkceKGUyRPq2r0pSUfgWaliQxwj9ppjkiBCc6h4WfBUZ8y5GkNKmp4FEollSIeQJQ
-	 1Y9ClVbl7gqC3BrOA7iL4RQRy0ZEaOKgXLoZBLHuwWb0xyNZHSQ8aPYqEg4jt5n3SyBWC
-	 vnUJqyc1YEc8BiduGkEEU+25AAV0xzJF3XWgP51dBFFlOshfZgw9tkydnw7xpBETrQQ==
+	bh=cgr3O4I7DwkUDW0N/kSwsX4ydZ39VN+0kbFssYLbxJg=;
+	b=ovGSgLsFMmA6oe5m+0mk+08lzVtMI+PQyJSvTBGVGT4iTaRQ277553EzQP6PtHyWYAJs
+	 3I7L6bc4tL0VF20kBINUZNwlGbXk9U5lFSY3eHsF5sBNxtKzL8e58t+uxdRInRQNRKMJL
+	 3c3WAgoTkUAXh5gdLKB4sD3SB1rVoTdfSMPZMVzRZLJRmSJytXY1MxPOFIzv6UTV52bmt
+	 Q0hInHQTVCrLFkedgvYmjZfydCmiAJzNC8NTC/khqO3Qb7kh6xBomdlCzzZPrdGR7keye
+	 y17WcJ9IhYlUSOaZtHwyteguKqgC/qkdaPxPYRJx8yso8F39dBFrNJtkAQiGmrsGPkg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gahingwoo.com;
 	spf=pass smtp.mailfrom=gahingwoo.com;
-	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=huhlWvmh;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=lcKskV9l;
+	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=DD3dVSEd;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=cObI03vx;
 	arc=none smtp.remote-ip=103.168.172.145
 Received: from fout-a2-smtp.messagingengine.com (fout-a2-smtp.messagingengine.com [103.168.172.145])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 929C2606A32C
-	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 08:24:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 929C2606A32C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF9DB606A32F
+	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 08:24:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AF9DB606A32F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=huhlWvmh;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=lcKskV9l
+	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=DD3dVSEd;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=cObI03vx
 Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailfout.phl.internal (Postfix) with ESMTP id D747BEC069F
-	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 03:24:00 -0500 (EST)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-06.internal (MEProxy); Sun, 01 Nov 2026 03:24:00 -0500
+	by mailfout.phl.internal (Postfix) with ESMTP id 269E0EC06A1
+	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 03:24:11 -0500 (EST)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-06.internal (MEProxy); Sun, 01 Nov 2026 03:24:11 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm1; t=1793521440; x=
-	1793607840; bh=BkTcONOVgxmiHpWbrh6se8CO85l9DSVApCi2YbLZEQs=; b=h
-	uhlWvmhRJhX5eLt8XYFpPqMTdBVLHZxhWZldXJIVEncgaJwdsC/D/xVxNWrXeu+a
-	8PQuduVHG1h/YJjlaLowIg/zjf9SfBRWZJXTiEf+P32x10kY9aQ5HChPAXsINsxA
-	oIZMxCnmR2U5fo66FaxOu6UnvKLCu/mm1NHIilMv2Z7XRiaIb2Lc2bsWSjZrRPy7
-	7rY2bu7VYC3bY7OeVcI3kn6690utCGmD6E42SFhypZ0Xf1ovJ92UFQuv0Mv0kvS0
-	OTv3OPDPiXb9PxpkgSkRGhU+HKD1Xeg0Eh/2WEw6eU6eSJ8HbenzMKerLi9GlfxK
-	jdruRuAk2H/LfP1cThEtg==
+	:reply-to:subject:subject:to:to; s=fm1; t=1793521451; x=
+	1793607851; bh=cgr3O4I7DwkUDW0N/kSwsX4ydZ39VN+0kbFssYLbxJg=; b=D
+	D3dVSEddWuKhJ5+P4wX4ffYK2bu87Ah0Y+aUc/gI5P1Q8x0W3cV5VkzcEMyz49B3
+	TFydSWKmQPdrWPl9PYzE3a9AFS9fDfL9ZRyL3UuOoLVceWwtlcA/J31+iCDzbS5n
+	qfcX3cQAbXumSFn1DQWtCuD0JnYne7LpSK2r7L83EQnoUJNOkNe2AcVcCP3w3LFh
+	NV9Mbec2JHZhV7bnZu0KOfX+Ni8wgzbZ+0vjN4ATF/LLa+7B2/ecp2lE33Ud8yyV
+	p2i47cX/RYItDMjayZZ3O6j4cJIbJhFJOSxrdILbpGIS1gRp61ZdCqotsz6mO2a3
+	DA9IqIh4TeYG6VahueiGw==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm2; t=1793521440; x=1793607840; bh=B
-	kTcONOVgxmiHpWbrh6se8CO85l9DSVApCi2YbLZEQs=; b=lcKskV9lM8QelbYdC
-	35YS6c92EMZcgJmfQWOxvWjnVgnfNI+a7DWpxLJk2rtEAt+cFFCdsy+UlLjit+L4
-	Lfp4zvUhse4oQdSVwzAPzre3L6Eannl+zUCHI8WB6moIgAVtJKjgjlGZ51vfL6yy
-	gyB14QnQ0baMqI6TTXHjbId8jugzbrxCQBcGQsf3ylld34U2h2xu6MLZGJpRSSWS
-	DoP0bBYs1kX6iroN7H2mwNZUwqeF9+1pBgIfvOV5mK3OO0CLMg/wj0aWFJaA2Flc
-	tkEG6GzlnI5j4UR4a35rwBFQENwkCkXurzXrHw0osMiRRyrg6R+el4MN57a3zXzc
-	49xOQ==
+	:x-me-sender:x-sasl-enc; s=fm2; t=1793521451; x=1793607851; bh=c
+	gr3O4I7DwkUDW0N/kSwsX4ydZ39VN+0kbFssYLbxJg=; b=cObI03vx7rkLK2mau
+	vqkD/wtwMSgcqEFSMnbyq2qRiHqtWhWDsBwB8f2EU9djCdeUpgYiC4d+x8A7Dyer
+	wYc//+BqIH8pSZiYne8DD8ULLYvxG6jUGHca/R+qm07gqOFtatrv9yMkarf5WPm4
+	nEl3fmML044quAzJ3CxXFNet2RRYHx2Izg2GEDuxeta9C++UZT8on+fGWpgJfTXq
+	ySYvnfni0rBJISOJUKjs4qOJtdz/eStYpd7CZteMzdwhm9Ak1GAigYlIlHKMcsZU
+	OCw2ecQWYzmVMETboyE8qZ9SsA8r96Onp4VtOjVoa0TDXxpoToUcLxk7Ntdv6lLy
+	dn88A==
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-08;
 	repo=github.com/dkim2wg/interop; date=2026-10-28; sw=lmtpprox;
 	action=sign d=gahingwoo.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1793521440; d=gahingwoo.com;
+DKIM2-Signature: i=1; m=1; t=1793521451; d=gahingwoo.com;
 	mf=PGdhaGluZ0BnYWhpbmd3b28uY29tPg==;
 	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm1:rsa-sha256:F9YgcrSu7D/HRAEuNsC7uzSeAdhkUr+Ut7mF99TZkrhRUxN
-	s+arVMkP9WNh4gM6ynesTGctItiPHxuuSI6xSnBvz9GSpS2PXi+jlIcmcv0JXOG1
-	pZCetzggjMi8CvdXQyQnQbj3cEN8P/9Jr965ErEybTYn6TCy1VervXWrkXDRs5nu
-	K1z+OeEcOoefNY+l3MgPj7MdGpgjLGooS1vv/J2sjQMuoV4+Wkn5YHiyzpVycoEk
-	GdlqErrHW+Im6+to44X6u/cPVQsc1htxUM5Esls896HpNs7B9UvvTLW1+KpCn7ul
-	YWDyT/jmRAL3BCC8DAtoHhLPeS6y2P2fV5KCCLw==;
+	s=fm1:rsa-sha256:fACik6nVOOxYXRsNIL0FnGu48TG50LFgPxllqASjiTGdj/O
+	685wImbnZNS8KdJZvfSanx1iAUd6K3+911kn1mJLNsXbZJGuwrndbiw4yv5BnPHy
+	SKq0OKJt7GXtnY9DE99Py16DaCCXYpLoLvMx9AEwWKgkPpexNSKaPR5z69+w/GHL
+	anro7/qosof+XvZDFo0RcVnAzBuRO/IshEvz5Hk+h0yHvPWWycqw43xZQiPJliWN
+	EShpdZa8KOHESpH8OkxOCN/i+bxdStjA+0OIsuXJtcxLgJGpCiQlI2MB5VwcBxUJ
+	FIh20GYNjMhUA1EgndPYFZoVVSG+IqDQ3TNKHLA==;
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-08;
 	repo=github.com/dkim2wg/interop; date=2026-10-28; sw=lmtpprox;
 	action=mi-m=1; hc=11;
 	hn=cc,content-transfer-encoding,date,feedback-id,from,
 	in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:iWYj6ENj7Pnjcr0pBXQxpbajj8XjUbkAvxHLmyetk2s=:PvsT+Qa1KcEvQd1vRhQoegnNpYbcA51YPv70V/wY8/w=;
-X-ME-Sender: <xms:IPfmaiKoiUAtaeoL1gyBqsZfZvYOn70vOIZP7MooOezwbuwm9M8whw>
-    <xme:IPfmasfG_D-wSqw119qIHq8OWV6NPFxLVLtDLv0LLxyAXlxQl3pjXYv3wZ2-l1tXF
-    oklr9m74xgizt_q1k9J7WGzKwltNSLGhdO1sB6qOLeIs9wG4eiDMQ>
-X-ME-Received: <xmr:IPfmahbKfkf-CSfVAZXLrrCDZcVtF297xkbbTFQPP7_mvWiZ5AGyDVRblmoQD5syk0KauiD0>
-X-ME-Proxy-Cause: dmFkZTG1f5xhzVY1+tDVA2GDAZsCkJLH07r+Yy8eDDwJ6JOhttyoXjIFNLHdIMBXenkhJx
-    GYNu1BmhoCEfkR9grTKkLuIJN+OzTEGtgz44pzE7hxNJDyINE2djZDhuIxWCGbyrBAg8N4
-    go07QXa3FbJDHoqbVIkh+YewIyKzezBgmEguYHIs5iblTpD6uKFVhdzvoEpK9WyO9LZQh2
-    oZjSmXf8essUkIouu3K9xMlLp9+lzsrzT9OlAkrndhtRVZ+s7Dbtf/1n46loyb7XK1/pPJ
-    EZkemaWOJwxsmDm91Iwy20kA5um10TciIZ30X1rMTa5jzi7bDygiLl3spCruOgxPW+4DdG
-    v5K2N+sz+B3MGZwvQ34inZ/3irz3OTjJ6lCXKH5N0Ml92muuLTNBr9/rAHMJtBAC4X3OpM
-    jj4z4XwPKfyKvMTBUCCVuNtPDijsZPFFavu2iWyFEJaO9aBkzWHvKa+MIwNl9gMVQNfJ4j
-    dgywX0zidVpz4aRWyH0iJHC0r/oHDj/0CmOr/Q8RYvPwmus9hNm/qZ8vUBpuCKmMaydeQ/
-    +qoJ5s3IGwg2k8Sf0dgFjgBHWiZOEbtV6qolABl865M2drbL6pDckvvRFGFeT/5dkUtr/0
-    fgahdpJv78H3VudMDwBzdZk0wfO1181/ateMJKD9i7Ah8CgsfFOaBmJXu2fg
-X-ME-Proxy: <xmx:IPfmakXlADSana7q_O4dJ4uUgvXtQAD76Rb5cJ1HNsmf94TmZwgeqw>
-    <xmx:IPfmanC5isFGb33eQnILVzN01Ptddqnv0Qqda0YcEAY-dWycrQ19WA>
-    <xmx:IPfmarBEu01zRM76mo5HufQMQNjNeUS8agBTkxt98B_ohfOjDZ4rCg>
-    <xmx:IPfmaup0J1Xv_HPxs4_0kXTyywxb2DpJod3dS3wyE_MFrih3XW08yg>
-    <xmx:IPfmaqWsUjij__DlLA_N5qB9v1HTxqq6WxOOHe27UeCE3bKAljjMvAxl>
+Message-Instance: m=1; h=sha256:G2ezc5FLDefrR+8r2DKGPcy/zKp7XpR519EEybRktVQ=:ZuRx5xe755qYa0gb4/aDfZM05kBxhm1L8sT7M608++E=;
+X-ME-Sender: <xms:K_fmagwT-AqMUXnhdntSZ2H7Iw99TmpZ7uQxFJUTP29XW9T0H51AyA>
+    <xme:K_fmandBoKBlTSlxj7zi4uhyiKcGJX5LmvGQLBB-4S-qtwYcLw5Rdvxmbf4nQGFSn
+    PqF4VJZPwv-_yHlAUnDBuBmZMnPuOKv-lEaEuw3lU5EgP7UlNj5bg>
+X-ME-Received: <xmr:K_fmapLf7WPQU4kdHUuEJcysZ2kHkkXU_LirWcuLhhzx8yQDe4eXsrJyaa97X1b3Ie0OQwvt>
+X-ME-Proxy-Cause: dmFkZTEio0HITRPU8VpT4PebgbYf+HqQTVmTBwoXIcaWhSPJQuOpCGNL4Feyfw1mm6jNto
+    aCqGt+GjGmHddQdDYMsFOcBW2fd2wbE1C2hSqpUPgYFBCtzpG0VAhrL+r+dSJb3xHPmeXu
+    bbiU80H+3s8diofjGu9JFbSOoisVQrvN3eDU6svi49hrmcI63rUfSkuUe5+aUvGFuszdig
+    Qnc72eHSOddgDW0HvcKHXNvldok2Sz2296F+6Jr1XxRzNWV9h54MRHCMGFMHXdGms8Xsm1
+    Bk/Rw1sBqh58/z5F2FEqlRBvxPnvur8T5rxLVrR8npGrMSSnol3N1co7aLduCklPXA/vJl
+    YnFEZni01NLKMQSYX/mIf+ZL4IJ4nKp6UeVFxNKY0H9ZkwD+pN+hUO6U8qVglr0xDwBrUo
+    Ap91fJhWyJmW7tmIhfo1ecixjxPiIxBlkz2+I3fZDeKM0s+jVo4i2YAEMvIRr9oxESn0bA
+    dYOSHaNneoSd7TOH7qPxulWMlw5H4ir1fqyMB6M9qTPz1zCxBgUFVJ72mc2b7lJqlTlc01
+    +yg9c8YauDhdWXWKM/kX7urjBozR2WEB+DztoA8IR0e6n9kkyEWuD0Itq1J4jfQtAKJhFQ
+    ROHqX/PWdXMnjSp1FHjdtvqC3n/RoSZdXckt9BOYpAtvD4wkhxGwK8VtchVA
+X-ME-Proxy: <xmx:K_fmajl6Tpd7Oavv05hJzLJLBJAkMvi23ZRUqHd0v7ajCCrMBk7FYw>
+    <xmx:K_fmakXwlDjbQssh8qwjDpPkjxIhODFkpWdHMz-yPB9qVKPQ6QpqAg>
+    <xmx:K_fmalthWUdisAovsc9BYlxq54liDIo7E_JpxJ25JHFvIm0tuRZdCg>
+    <xmx:K_fmao0d2_aXDgeONcZe9IbDFuV88nXkawIheY8k5uv_ipR0N-09zg>
+    <xmx:K_fmajXp1FzijLW9CrX4NAhVST5I3w_OHQxt0wFumXftctJlTIr2BSAw>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 1 Nov 2026 03:23:52 -0500 (EST)
+ 1 Nov 2026 03:24:03 -0500 (EST)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -138,9 +138,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v15 04/15] accel/rocket: let the core suspend after a reset
-Date: Sun,  1 Nov 2026 21:22:56 +1300
-Message-ID: <20261101082307.151957-5-gahing@gahingwoo.com>
+Subject: [PATCH v15 05/15] accel/rocket: factor the completion tail out of the IRQ handler
+Date: Sun,  1 Nov 2026 21:22:57 +1300
+Message-ID: <20261101082307.151957-6-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261101082307.151957-1-gahing@gahingwoo.com>
 References: <20261101082307.151957-1-gahing@gahingwoo.com>
@@ -155,42 +155,63 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-rocket_reset() drops the in-flight job's runtime PM reference with
-pm_runtime_put_noidle(), which requests nothing, so the core does not
-suspend until something else asks and its power domain does not cycle. On
-RK3576 the domain's power-on resets the NPU bus interface; without it the
-IOMMU stops answering and the job after a timeout fails.
+Move the part of rocket_job_handle_irq() that starts the next task or
+retires the job into rocket_job_next_locked(). No functional change.
 
-Use pm_runtime_put_autosuspend(), as the completion path does. On a ROCK 4D
-the job after a timeout goes from 0 to 128 of 128 channels correct.
-
-Link: https://lore.kernel.org/all/20260819073530.6087-1-royalnet026@gmail.com/
-Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, induced reset, JOB_TIMEOUT_MS=2
+Reviewed-by: Igor Paunovic <royalnet026@gmail.com>
 ---
- drivers/accel/rocket/rocket_job.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/accel/rocket/rocket_job.c | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
-index 5b2abf40b618..152a9098634b 100644
+index 152a9098634b..417d5ef06c09 100644
 --- a/drivers/accel/rocket/rocket_job.c
 +++ b/drivers/accel/rocket/rocket_job.c
-@@ -467,12 +467,12 @@ rocket_reset(struct rocket_core *core, struct drm_sched_job *bad)
+@@ -365,6 +365,25 @@ static struct dma_fence *rocket_job_run(struct drm_sched_job *sched_job)
+ 	return ERR_PTR(ret);
+ }
  
- 	/*
- 	 * No handler is running now, but we might still have stuck jobs. Let's
--	 * make sure the PM counters stay balanced by manually calling
--	 * pm_runtime_put_noidle().
-+	 * make sure the PM counters stay balanced by putting the reference the
-+	 * job took, and request idle while doing it so the core can suspend.
- 	 */
- 	scoped_guard(mutex, &core->job_lock) {
- 		if (core->in_flight_job)
--			pm_runtime_put_noidle(core->dev);
-+			pm_runtime_put_autosuspend(core->dev);
++/* Start the job's next task, or retire it. Caller holds job_lock. */
++static void rocket_job_next_locked(struct rocket_core *core)
++{
++	lockdep_assert_held(&core->job_lock);
++
++	if (!core->in_flight_job)
++		return;
++
++	if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
++		rocket_job_hw_submit(core, core->in_flight_job);
++		return;
++	}
++
++	iommu_detach_group(NULL, iommu_group_get(core->dev));
++	dma_fence_signal(core->in_flight_job->done_fence);
++	pm_runtime_put_autosuspend(core->dev);
++	core->in_flight_job = NULL;
++}
++
+ static void rocket_job_handle_irq(struct rocket_core *core)
+ {
+ 	pm_runtime_mark_last_busy(core->dev);
+@@ -378,17 +397,7 @@ static void rocket_job_handle_irq(struct rocket_core *core)
+ 		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+ 		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
  
- 		iommu_detach_group(NULL, core->iommu_group);
+-		if (core->in_flight_job) {
+-			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
+-				rocket_job_hw_submit(core, core->in_flight_job);
+-				return;
+-			}
+-
+-			iommu_detach_group(NULL, iommu_group_get(core->dev));
+-			dma_fence_signal(core->in_flight_job->done_fence);
+-			pm_runtime_put_autosuspend(core->dev);
+-			core->in_flight_job = NULL;
+-		}
++		rocket_job_next_locked(core);
+ 	}
+ }
  
 -- 
 2.43.0
