@@ -1,111 +1,111 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.145
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.156
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793521411;
-	b=I+eq/D9ldroYyLRcpL5gWQyD6hY/YDSTDd0bT+VeiKq+qmZ4cA3n+DqukYaIOcnyVpbD
-	 VMs1yMkslDvGD7jSKLp4NiFh3CPxTLizno+kQd7gSBMnXxW5UolnEZC6kiYc7OXqdqKa6
-	 udiAF5fjnJ9Kbims3bgItnyDo9qkHZJDRLnMKj3oj7Gyz5bV1KLsCRhWUajcXOXHKX0Kg
-	 wQaWjzheXmJs+ewDgJw4jSMv0Ibd84yO/i1r9z06PmoAopHoSk/FwiL7+pNRZQG+n6Vb7
-	 6ARtzO4Eje7P69FYzvZYnqdxjcEUGb1Ua+bF9UDjevZZ51+aZNH5O5sOBGsT/IvrfNA==
+	t=1793521421;
+	b=lTvBFvhBQGO78yXN/+ITkQMA7exuLmEBUspKYk6KVOVOB/Tt+YhlWh6TFpYtweX1bZoj
+	 Y5UhX195YxQSP0TVvgsCV1mHha8Cupir939foz4XlXZru49YXYIi5YMXcTZf8wszqHK20
+	 jB+H/AK2RGZ2y4vtDvykXCFcTmya8T/ooGKRUckBPY5myJR8dGJnnp93DwpiPxBY5lil/
+	 2pI+BTejpsB0t2/0mN//O8yYWEgQcumF4k6ygc3EuKJCgeE1s993FfFL+fclhRzWxM10v
+	 UMxe0V2bpgYnSC7JGHHVX+f1BJbQxdD20VzsTEcEfgq/goKe2zKhiUMYCXgWonmZeXA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793521411;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793521421;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
 	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
 	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
 	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=0F4ziOUj7efFtwDDPlQcoGKrClzlEgL2KvdhJLu+LYo=;
-	b=oJUa/zMfJ/RYTmqPeb1hWWupKIkGOtMWwz5C+rpph5beVs0eGFdz2rl7rnjl8L5zKG3W
-	 u+8INd+H0U5B61CIobn2s8+wArdx8HKHE3A8xJ9jTkvO4MfEl66PG7Mc08iKmDDEfabsY
-	 OWTconmYnmopvn4raVzOUXFyk62U/rcsOfLdFnM2BP7xq45HNNupqUmaYe2fW0Rys6fEe
-	 u81SeZOj0ER8iCIjgAwp5+3tG2W6dq8AcEQNAC1RPNhEloh5t6w5tcUcHuWB9/OcTStta
-	 NO5ifZ26NyzMxMGUkdCpMPsGW0nj54t825UhrckV2j+ljmEM+rN+u1L5e6Fha0S8HEw==
+	bh=ZAHududhAN2bNiKXcm98FWOTLV3kdD3LQHqkOnkqBH0=;
+	b=Un+sboEYdbqRaDP35Ji+iic4U1OJ+oM1hJB5VU6x7iVwE7rsMNi5ENL6lXz1ignSyPu9
+	 P096HvsHlxocd1KhNWS1NP0fw/3beJPe/zH55XJKO7j5SA5wbBjto0F7hKynVLJhe9voQ
+	 IvtU5s1T/OPXNRTE1+b6Hq0HDMs8B2qVxnQZAVKj+T6bCbkgvo/zdclP8FZyj5B4qd4Y4
+	 AM8a/hufz7GiGwMyhVXk31uvNx9xDBu59L7KIhe6Lzbhui7Cbg8fwS5pNgw8q600W1RWW
+	 /9kTADdIXY8SghahmwFcM6jzUMORS+plmoJ1oMrTJ2uH5LrJp8hjopHAQUdT5DyObJQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gahingwoo.com;
 	spf=pass smtp.mailfrom=gahingwoo.com;
-	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=RBYBhfnT;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=nnOiBoPt;
-	arc=none smtp.remote-ip=103.168.172.145
-Received: from fout-a2-smtp.messagingengine.com (fout-a2-smtp.messagingengine.com [103.168.172.145])
+	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=ikZSrJxZ;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b="toST6/OD";
+	arc=none smtp.remote-ip=103.168.172.156
+Received: from fhigh-a5-smtp.messagingengine.com (fhigh-a5-smtp.messagingengine.com [103.168.172.156])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A700D606A327
-	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 08:23:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A700D606A327
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16595606A325
+	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 08:23:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 16595606A325
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=RBYBhfnT;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=nnOiBoPt
-Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
-	by mailfout.phl.internal (Postfix) with ESMTP id E9553EC0691
-	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 03:23:29 -0500 (EST)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-02.internal (MEProxy); Sun, 01 Nov 2026 03:23:29 -0500
+	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=ikZSrJxZ;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=toST6/OD
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id 655111400309
+	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 03:23:40 -0500 (EST)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-01.internal (MEProxy); Sun, 01 Nov 2026 03:23:40 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm1; t=1793521409; x=
-	1793607809; bh=0F4ziOUj7efFtwDDPlQcoGKrClzlEgL2KvdhJLu+LYo=; b=R
-	BYBhfnTJAjhL5vpv6QEg7Truy1sIOQdLPaVevuXG8yayd+wCxhMo5vp3kCaNmnSP
-	jBiNG3TPgn3Ab9yexr0eQQuXnTtMbmGXZSkMITwtP8QWdBwRtvmvTU8Rm7F5LyBK
-	1pVkWaCRawBukouAscccbOxAhPeuYBr9uPZRA6A2QbghZ/d9LS7i5XCIzDS/dD/5
-	zjzdj7imuB7K+WLbLq5mhz2HxZoHy1HH0RkYPVjwuBXH+JgtkPRI8V6uzREwFVPn
-	jePpunE9BtFt177SXZWrBSASUheR+9vPr0e801/Q8NXhf7Fofi5Y/SXiPviu7+17
-	0ZviYJpsCUQt8shEFwM3g==
+	:reply-to:subject:subject:to:to; s=fm1; t=1793521420; x=
+	1793607820; bh=ZAHududhAN2bNiKXcm98FWOTLV3kdD3LQHqkOnkqBH0=; b=i
+	kZSrJxZRULGkrzGj6gaRjAHLn4ctv1VT85ohhD9irSp/UduHrABNvmgHFbZbXgut
+	82Uj9HBlzfv3YniTQRE5ezrX0csVDGNhje5Xf/CjU6cVs7vS9mudNeubkhlLqBjj
+	8I+q/MPNCqHzgkJHoGp9l4b936uEzRQStuKFOo6eiCUryAtCtu+6S+gHdzOMFEpI
+	l0XaETviiYKgFCL4t6mr+smZqnWhN6xP0soy9vxzsARW4mvwMSSUOyEiHKvs1+W5
+	CloaezDC7QZMf6P5YbPKhdkOTKNUhbwdN4xNYLH0JUV25j9IIeFHc89Cao/NX5Dw
+	MKAjtXMUZhymqqoED2j1A==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm2; t=1793521409; x=1793607809; bh=0
-	F4ziOUj7efFtwDDPlQcoGKrClzlEgL2KvdhJLu+LYo=; b=nnOiBoPtvaCP2aH31
-	whszeALOYHRvcsVfeGBOLJtACp5ZVA7dHx9VAlYdQBnE9Wovp+BlV0BPekmsFZp4
-	rRBf0VFqvfow4jbHhyDzSQgFljmMIt0LaDI/IVqRGApE5W/GOscFGiBvuuxq+4j5
-	JFFIJMBEpPKOfsX+p+RSwwpW+Pq6YQvWNbKPAHv8n18dO+0uCwnxwiExwVoB6SIo
-	h8hPnz4I8SInrBM72GLv4pnc23k+NIXr+S69+0jNeQ8zMb2gPH54dUhp2ki/HEiE
-	YT0Klh6RCdoPVmaFxHZO+7x7yWfiSebC7/coVi3tuCQtd87q1KzXRJCTbZT1ZtGc
-	ZGrQw==
+	:x-me-sender:x-sasl-enc; s=fm2; t=1793521420; x=1793607820; bh=Z
+	AHududhAN2bNiKXcm98FWOTLV3kdD3LQHqkOnkqBH0=; b=toST6/ODOmh+2vMmz
+	/N90EScYOL8E/l+AbeDDlYOpeTKSN2BdCvDWEE4JN4+ZWdgRRBJ3/dKBEEB4GphI
+	VcKW9k3ALCXLqY04tPMK+YeY0IJ6v+FTomVJyGiEytRcUFXsNuuns3DtXFJRvO/s
+	qq+60gTXsDeWSJTrc4pGFJWAhcjQ2qs5bqhnz0DcgR9VADC35q0MV68l1N5A5jPP
+	zi3b1rmQvd8DZ2NWVNcQIa8Vs9zc40UYuV0YfCUhFIh5RXfp6Xq2s0KT0QlwiHPu
+	WWeztw3AC+xYOZkmQrf9CSEGmCnm+pRDz/f83O8fgMF7XOnXoTndDVJiVipHmFg4
+	lFlpA==
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-08;
 	repo=github.com/dkim2wg/interop; date=2026-10-28; sw=lmtpprox;
 	action=sign d=gahingwoo.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1793521409; d=gahingwoo.com;
+DKIM2-Signature: i=1; m=1; t=1793521420; d=gahingwoo.com;
 	mf=PGdhaGluZ0BnYWhpbmd3b28uY29tPg==;
 	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm1:rsa-sha256:XRUsVgsXdd/LNsn7wU/Zw2QKB/cOPYOgSDAm3N2iP6shiKO
-	ml61Gax7rmq4t+eyvwo9J5Zy5pV6W1CiOKMG2lE5wq3wK3uw1cRBu8DeFdWc1LrK
-	BiwkUmZTeL/f+zySenwrhbewPTTQzqZ0hZt1jOD/+NAhT1pwOovhDQsG+jPq6vzw
-	lwobSbEEiA6FjjlS2W95ziKYvVUIS458gGQDZP+g+/mNuX/akVbXpWXmqStye8iF
-	wbESNayTEogiAvSsnKo/9a1/uvvsS0ioGI+Sa5wr9bm3snqEO196yiA066QWkGFt
-	VWaVjD35SzWH/D54EiGSS8fNQsd4Nr/i0qeBYQg==;
+	s=fm1:rsa-sha256:h/bwJGxyvcLwLAOgORuq5qwGsnkfTvhpLWRhWdenJ4nMTnk
+	IiWnK//ZeS5945d3gy2RoGagOPpqIba/rjvxSomX4r0hSysa+rX2/9zZTCVRd70z
+	DdZnGCEX5b8XOIiwRtLzrZN1RRiFtvaNlb2UW/7wWKYHXSl4DuKH97lhzKbbp+mN
+	wD4OkYJQDIAsLPx+McIIxZ6LZcnkrc/oIJYAhuKGbRhpQdEVtJTZSWOC536NTTMT
+	TXG4Ah2JmxzoEIXBLv41w2Z55cttROniU339Bb62lQ/aWxMcTed2C3dmoJffHsRX
+	IlrNdR2mBbZG4EqA3JjppugLtjMHn74XD7WXZMA==;
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-08;
 	repo=github.com/dkim2wg/interop; date=2026-10-28; sw=lmtpprox;
 	action=mi-m=1; hc=11;
 	hn=cc,content-transfer-encoding,date,feedback-id,from,
 	in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:G1/pb7bWMT/0l4LKBnibCs1YsTx58iSaXfSCsOSviSY=:RJHqqy+W4Is5TB1jmXvzdduGEtV4nfkar9l5VxBVQp8=;
-X-ME-Sender: <xms:Affmap3zOfLrTH6mkEpyplCVeQoRuvzLBi6fPhYa0dpb4Itbe-I5rg>
-    <xme:AffmaiZsQYuVQiGK4x1DQS9PsRbuMWpI7Swh3qqg6eqY8qrVvqXe1_0Fm4CP4aEXC
-    ID0T1RhGyl_5j4MH6-tMPomfS026dFuDWp7XlBQeefmorRaagh89NGU>
-X-ME-Received: <xmr:AffmaomN4NU5wqKBv0k9OdEKuDefoHg_bhcTNd4uL3fngiTq6rH0sMitfYobQ9R_gdgZfzdf>
+Message-Instance: m=1; h=sha256:68moGeP8x7JmMxokVk5blklCUtJveW2G0pg9zz1D7LM=:k+QPvQZtzXDHqi+92JcSrBBnCLFrtIzMII9e5FctQI0=;
+X-ME-Sender: <xms:C_fmakeuJpNnav-HXp2T-ALR4qlkh9aLlHrJLZLkhwXUKRnq4dgI8w>
+    <xme:C_fmaoiieUDcBSW7nd3fxDcJslS4zsr4p7WG2Zn9Bt1-zdjK35ZSX7cMPoZ7Xyt_g
+    F4l3MAXhEg3-RcV4PR9pmd81KrTxQYHYjZd8rxUw9Fz9pB3qRyC8Nai>
+X-ME-Received: <xmr:C_fmakPBA57FUv1feJMModpjIqvxv6Q0DdrL8nTsXq84qP_Q4kmwfQf6xAadRleyX6yYeA37>
 X-ME-Proxy-Cause: dmFkZTGyh+h4Oz/02elyRzjcRRcFpvHFjmUJCnxNp2cKE2We77OzoK7VQLrSm4eM2eB7ES
     ZXYJNEUB69Lfmlo4BbDpozx55aBH3xHf569WnDWwtFhUpPk0WaG27oVgoEA92BrPX8ybbG
     lVvCv9B4GY0sGCL8lWuvRRdhYtj6CDshZ+rxDIsdVMf8F9QgOg8gXc9cdCOHkH1m+c2Big
     hig4aNfN4nuBefG3HYaHLHaq5rR0CK8cq0/bqlaJmEt4LbTynrCCTIklU+JAaE7AuO9r4C
-    kC4gllUxYkdmDmdmnXTGCC9WevcAeVCB5BLLAP0zSIFYTrZTsiHavZssNvQ5oV0hNi/EPh
-    5feOm0XUl+SWCfMTp4hdGGBkl18RkQ/GdgUTQO2+OvQVGbAugHMVKCzg6/ACXgxOyvHV7k
-    6aCaeEps/8tDDS2rnQmaWcy8qHDbBW9DCwqbIt8E/0w5phGT/QbtjqDCOCAkCevHnl97jo
-    puf3BDYDwQ0wFHMpNo3QErTk1Seiid/EJTvYfbPQtekWBzUYhZo6IhdKfbI45EvPPGi0D/
-    6BQIJiaAst3IBvngMinjIUR7dkkfcFMVekguEsiCfILz2i1HJHZ0mgCKf3h6bJZWHEKywp
-    9MOtiQWwRCYSikqW0ZS0CdhGzaWs7z0EO4dUqw4lT9hmAxvlaJldIrI91G0w
-X-ME-Proxy: <xmx:AffmajxvPpFjPx9OhgdK1cXSZXxTDd463AaYHGbV_a1M5y8JwnwPHA>
-    <xmx:AffmapthZiDK1JPZhANXPK9q0U-XFvQYdvCAFWtd9kOTNnxeUjClsQ>
-    <xmx:Affmav-A_FskCpt9z1F0QDDIWD7s6ltzKcd4LZXIc6jzYimr8iIyhw>
-    <xmx:Affmao0c8R2B6ceOZn0-Xtfv5tgvW-l1tU0Wi17xq41ZmF4xxe5rBw>
-    <xmx:AffmapfKsPU94dKmmp2QoHp-o6fIx8c1nSsTPyfX4ekNLocoe1RjdL68>
+    kC4gllUxYkdmDmdmnXTGCC9WevcAeVCB5BLLAP0zSIFYTrZTsiHavZssNvQ5oV0hNi/EIF
+    DvniigbILwxNdtqxW1aqIW7+QxtMjFlAughZdUlWYkbDChwfx6ZSP5mRAesS5EAP2K2mxA
+    g1dmV83iBN5eD/BXSeDsQQoscdBrF+EuBf/h9dthzJ8Ordm2BAmilGF1tvvNzLNjTcMpxe
+    IyxdUug75rREhOLZldGyGbJ180xkqMjUKK4DHKnrkRPjDMPO7a4Pn7gBMk64pO1s4cyhfo
+    OqqZrBoDL2cT9Gcktih5b9o4IC76aAn0cKdQhQGiv4+a/9muWc3dHL+4CzVpQLkkG2BHeV
+    R9BQibr/p+eE/AEQcwAR6pG3qxqpNuvBuui+YCRd1A51zJS6vfShl5lSqFIQ
+X-ME-Proxy: <xmx:C_fmam6RLGTxjoOgT1L7PLDadbJhby7PId9xREPT8Xl5Z8R-7FXntQ>
+    <xmx:C_fmauXcm8S7UDn2sxUJcbVYHqF1nNdCWbdQvQtC_kJ-lj7ScmGtzw>
+    <xmx:C_fmaoF7videAlRcrxuZtc0IZLBaGUk6qZr1e441KDuS0eBeQfjJOA>
+    <xmx:C_fmaueRcdI-_3rKYcyrW9ZjPJoMmVGBbcEloqleMdirfOC1uzKpog>
+    <xmx:DPfmas5trhRy-aH7ikCOkoJgGn_YcweWG1DjEGEkGMUk5r5Ug8Qo0zZC>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 1 Nov 2026 03:23:21 -0500 (EST)
+ 1 Nov 2026 03:23:32 -0500 (EST)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -138,9 +138,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v15 01/15] accel/rocket: request the core clocks by name
-Date: Sun,  1 Nov 2026 21:22:53 +1300
-Message-ID: <20261101082307.151957-2-gahing@gahingwoo.com>
+Subject: [PATCH v15 02/15] accel/rocket: take the completion register writes under job_lock
+Date: Sun,  1 Nov 2026 21:22:54 +1300
+Message-ID: <20261101082307.151957-3-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261101082307.151957-1-gahing@gahingwoo.com>
 References: <20261101082307.151957-1-gahing@gahingwoo.com>
@@ -155,81 +155,50 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Igor Paunovic <royalnet026@gmail.com>
+rocket_job_handle_irq() writes OPERATION_ENABLE and INTERRUPT_CLEAR before
+taking job_lock, while rocket_job_hw_submit() writes OPERATION_ENABLE under
+it, so a completion can write its zero after a submit has written its one
+and stop a task that has just started. Move both writes inside the existing
+scoped_guard().
 
-rocket_core_init() hands core->clks to devm_clk_bulk_get() without ever
-setting the .id members. The rocket_core array is allocated with
-devm_kcalloc() in rocket_device_init(), and rocket_probe() only fills in
-.rdev, .dev and .index, so all four clk_bulk_data entries are requested
-with a NULL con_id (unlike core->resets, whose ids are set a few lines
-above).
-
-clk_get(dev, NULL) ends up in of_clk_get_hw(np, 0, NULL), and
-of_parse_clkspec() only consults "clock-names" when a name was passed, so
-the index stays 0 for all four entries. Every entry therefore ends up
-holding a handle to the *first* clock of the DT "clocks" property, i.e.
-ACLK_NPUn. Nothing fails: probe succeeds and the driver believes it owns
-four different clocks.
-
-The consequence is that rocket_device_runtime_resume() prepares and enables
-the AXI clock four times, while hclk, pclk and - most importantly - the NPU
-compute clock ("npu", SCMI_CLK_NPU on RK3588) are never prepared or enabled
-by this driver at all. The NPU still works only because the Rockchip
-power-domain driver sets GENPD_FLAG_PM_CLK and its attach_dev() callback
-walks the device node with of_clk_get() and adds every clock to the pm_clk
-list, so genpd happens to keep the remaining clocks running. The bug is
-therefore latent today, but it means the driver holds no reference to the
-clock that actually feeds the NPU, which stands in the way of any future
-frequency scaling (OPP/devfreq) work.
-
-Found on an Orange Pi 5 Plus (RK3588) by reading the live clock tree:
-/sys/kernel/debug/clk/clk_summary shows four "fdab0000.npu" consumer
-handles on aclk_npu0 (and likewise on aclk_npu1/aclk_npu2 for the other two
-cores), while hclk_npu0, pclk_npu_root and scmi_clk_npu have no
-"fdab0000.npu" consumer at all - their only consumers are the
-"npu@fdab0000" handles created by the power-domain driver via of_clk_get().
-
-Set the ids explicitly, in the order mandated by the binding
-(Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml):
-aclk, hclk, npu, pclk. After the change the driver holds one handle per
-distinct clock and clk_bulk_prepare_enable() covers all four.
-
-Note that this is a user-visible tightening for out-of-tree DTs: the old
-NULL-id requests resolved by index and succeeded no matter what
-"clock-names" contained, while the named requests fail probe with -ENOENT
-when one of the four names is missing. That is the right outcome for
-in-tree users - the binding requires exactly these four clock-names and
-rk3588-base.dtsi carries them on all three cores - but a DT that relied on
-the permissive lookup goes from silently running on the wrong clock handles
-to not probing at all, so record the change here where git log will find
-it.
-
-Fixes: ed98261b4168 ("accel/rocket: Add a new driver for Rockchip's NPU")
-Signed-off-by: Igor Paunovic <royalnet026@gmail.com>
-Tested-by: Sidong Yang <sidong.yang@furiosa.ai>
-Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, NanoPC-T6 Plus
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Reviewed-by: Jiaxing Hu <gahing@gahingwoo.com>
+Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, induced reset, JOB_TIMEOUT_MS=2
 ---
- drivers/accel/rocket/rocket_core.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/accel/rocket/rocket_job.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/rocket_core.c
-index b3b2fa9ba645..5dd260bacbff 100644
---- a/drivers/accel/rocket/rocket_core.c
-+++ b/drivers/accel/rocket/rocket_core.c
-@@ -28,6 +28,10 @@ int rocket_core_init(struct rocket_core *core)
- 	if (err)
- 		return dev_err_probe(dev, err, "failed to get resets for core %d\n", core->index);
+diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
+index c3edb94355a3..03e5f094f60b 100644
+--- a/drivers/accel/rocket/rocket_job.c
++++ b/drivers/accel/rocket/rocket_job.c
+@@ -369,10 +369,15 @@ static void rocket_job_handle_irq(struct rocket_core *core)
+ {
+ 	pm_runtime_mark_last_busy(core->dev);
  
-+	core->clks[0].id = "aclk";
-+	core->clks[1].id = "hclk";
-+	core->clks[2].id = "npu";
-+	core->clks[3].id = "pclk";
- 	err = devm_clk_bulk_get(dev, ARRAY_SIZE(core->clks), core->clks);
- 	if (err)
- 		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", core->index);
+-	rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+-	rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
++	scoped_guard(mutex, &core->job_lock) {
++		/*
++		 * Stopping the block belongs under the lock. hw_submit() writes
++		 * OPERATION_ENABLE too, and outside the lock this zero can land
++		 * after that one and stop a task that has only just started.
++		 */
++		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
++		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+ 
+-	scoped_guard(mutex, &core->job_lock)
+ 		if (core->in_flight_job) {
+ 			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
+ 				rocket_job_hw_submit(core, core->in_flight_job);
+@@ -384,6 +389,7 @@ static void rocket_job_handle_irq(struct rocket_core *core)
+ 			pm_runtime_put_autosuspend(core->dev);
+ 			core->in_flight_job = NULL;
+ 		}
++	}
+ }
+ 
+ static void
 -- 
 2.43.0
 
