@@ -1,45 +1,45 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793649154;
-	b=nxYJ71Bwywbia5Xo91XDfoFue1TIf4REgv7c1GRJ4eXHjkFihHEjBbJ+GdkbyLICHxKD
-	 upWXMcJN6jcH/x07cv32Gkb2wy1tBkpRl9Lniq1rKNANGp4T3esPbKDYncbHImHFn+pcD
-	 AKyy61N2xo4x2DSECH0srQBokeGV/nsALQDqvsJUK0cRtLsK/CIztpoGY312yIxHcTxov
-	 k3e9Q7Hegb1SpbEi/43/jKrkBwD8EqrDQ7qeu7GozG/4qi/Kh28JRt+/pWh3t3PF3Ls+2
-	 HqGDZ8cfaKQsBtQrjes0BmK2c8WIcNDhfrSI22JE6gCvyDcT0+s6CSF2wB8MQSDD17A==
+	t=1793649159;
+	b=HbFaLLNB94V1DY3FUpG3PPca/2T5xt8MQsxKdIiZohKhdBiHFS2hJZWDc2ZZcLpejAE1
+	 0h5FwG2+A7sJB2msTGMWyaSMHIXljuBLwtHJoH+BBu7O7b0uTji9332HLErHgjBurbz5F
+	 d/u/fSubDRBE7pJ3jtNJ4QG2PhbqafDptPBFq7IRblkEU93iJiCvu/AFL3yIUx62lXoH9
+	 ELzxiTLztyS/pTKfMkDx3KaEZiC1f/PiYDvM8C9H7k7zF8zW6cC5HIuQiXr6wBFvdWblB
+	 GJXdQmqET6cVx7fnMPNTBTUkELDVM3cXeBEut+jI/0TJ14YZc0USpczGJpPtF2ujbdw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793649154;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793649159;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 Organization:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:Content-Type;
-	bh=ydwbuayhqIRazAAgO+gWwpqXSrp++r71dhZK7a8682w=;
-	b=sjNQTHVxWcbvmDeXLQ7dv4Fqn5gVoKXKblpd4UkXdz6WppGtPDpGt8KIH6mB9HloIU+4
-	 4G2i28BgPiPnkPMQMYeVbJzMThz4i1Tf0E884IGS2eVbejSCiytgORBKsi52reIekxIu2
-	 25kWrUudkEHhKagAvJWrPJtq4pXuRd2icvg4xlsrfsd0oaaYMGoVUBn5yQWdZq0WcTKT+
-	 CvxdcY/aTAXZEyim08vxOF5ZkCcAtFA7eH/gFUb7Gyukh4qRx17aUdoGhHXDDYS1ygjmO
-	 VpcDHABoje5sbSu5RExFSClPaP8dDvQS0hfsEouthJ+5qHLxR3sSzFP1sApKL7ZoQjQ==
+	bh=AaZ90ReWusq0LZzAbUoTnH7EemtyqlRkFEjjlpcV2nY=;
+	b=em+/mmrsaA2NACG2xn4V+j932ezgBbQoasjoJRobfROuAOA294YDJ/DJ5gToKfTqNqhh
+	 UQ6IIr3YwGNOACFR2tOTsGopfPGU4+AwXXOlsuGSiEgqTrQvthsNSvspLojGL4RDJw9+e
+	 mew8WelDPiuwe8wFEcg9PoqP1tfAr1DGNjlg8k75XxTpfmf6QrCwoRHHqk70qVT+tZRom
+	 3a8PuiuipRp5HFqEPQzd2PCTRjAZ40RukhkdrYXXPJXsYla6Yb/Jd/5peZ+oVihr9tlzL
+	 +rKS66CdN0XXvmbBdpeSUHDi7mz1zZ2tJGAzh6uyVCJjPcR8idNTOejVVdku0OH6n+A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jcC6FFjg;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="N/IxKy1Q";
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17521606A324
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 19:52:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 991B1606A326
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 19:52:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jcC6FFjg
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B69C1F00A16;
-	Mon,  2 Nov 2026 19:52:31 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N/IxKy1Q
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E613C1F00A1A;
+	Mon,  2 Nov 2026 19:52:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793649153;
-	bh=ydwbuayhqIRazAAgO+gWwpqXSrp++r71dhZK7a8682w=;
+	s=k20260515; t=1793649159;
+	bh=AaZ90ReWusq0LZzAbUoTnH7EemtyqlRkFEjjlpcV2nY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=jcC6FFjgFQhYRnCQzP0C5b0go5gY20xNDlHzK3cQIW2tu0IPhQvOcAtmkCxNn/YRP
-	 q8nlG7jK5t7mMWlpbtSeVh/DBwUh1zsGzchdVJE1GU/pLCfXGGl+PwOx5i2gsIaQSU
-	 /qWQ1ydKyeVzfsJAeqyWRjvZMrvG4BcL6YrM4YTbkGW9UFwY+nnO2EdZ8s40UdlMiL
-	 3w38h0yTHs7e4RXn/U68jgHJgS0aruDwgYo/ZkH3wD+KvCN1w0AVb1UDMrvPxSEGRi
-	 1fudQpudYFXO6LH4Be3+rSW9pm9+tGccH1eLVT066JdJ5T0kMdQfLDtUyGT7GKhG8t
-	 calGP8v7YnBaw==
+	b=N/IxKy1QTKnuq2HBaSWmHICCU5e2nv3eKXuB7uMTu2t6j6ep5fNhwF477Pb95HOoc
+	 n0Pr9Jk7PRw+s37LOIx/DzBShN7yrIbMeeb5HFvFSDb7XDDHM+/XUMQ+2s3IcthlqM
+	 2XpjMm0BDu1Cnjq9lSZ0EiWfliOQ5mH4oHj6bKNz0BjyzE+yv5bsEfUKkr8uOpOcjH
+	 04o3D7VNXkkZDn+ZZL17/+wQuF9Huh8dpjVHxQmQSGISQnAHE75mskk7RQexKMr2r2
+	 LWxB/FIVYbEn/9bKY+Dh9x9wCm3mzgvlPSMs9LiEvGUgG9ekdBm3xKAoq16BpFjVeY
+	 HLfqGbUhHv3AQ==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>,
@@ -48,9 +48,10 @@ Cc: Viresh Kumar <viresh.kumar@linaro.org>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  Mario Limonciello <superm1@kernel.org>
 Subject:
- [PATCH v1 4/4] cpufreq: Use the cpus_read_lock guard in cpufreq_suspend()
-Date: Mon, 02 Nov 2026 20:51:55 +0100
-Message-ID: <3459069.aeNJFYEL58@rafael.j.wysocki>
+ [PATCH v1 3/4] cpufreq: intel_pstate: Clear last written P-state value on
+ suspend
+Date: Mon, 02 Nov 2026 20:50:49 +0100
+Message-ID: <14146180.uLZWGnKmhe@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <5162355.31r3eYUQgx@rafael.j.wysocki>
 References: <5162355.31r3eYUQgx@rafael.j.wysocki>
@@ -68,50 +69,61 @@ Content-Type: text/plain; charset="utf-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Now that cpufreq_suspended is only accessed by cpufreq_suspend()
-and cpufreq_resume() and it can be set upfront in the former, rearrange
-cpufreq_suspend() to use the cpus_read_lock guard and avoid using goto.
+Preserving cpu->pstate.current_pstate across system suspend-resume
+cycles, when running in the passive mode with HWP disabled, is a mistake
+because its value from before system suspend may become stale after the
+subsequent system resume and in some cases it prevents MSR_IA32_PERF_CTL
+from being updated properly after system resume [1].
 
-No intentional functional impact.
+Address this by clearing cpu->pstate.current_pstate after the governor
+has been stopped during system suspend.
 
+Fixes: 001c76f05b01 ("cpufreq: intel_pstate: Generic governors support")
+Fixes: 4adcf2e5829f ("cpufreq: intel_pstate: Add ->offline and ->online callbacks")
+Link: https://lore.kernel.org/linux-pm/20261027143725.3763827-1-zakbrightonknight@gmail.com/ [1]
+Reported-by: Zak Brighton Knight <zakbrightonknight@gmail.com>
+Reported-by: Doug Smythies <dsmythies@telus.net>
+Cc: All applicable <stable@vger.kernel.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index efa663b1456f..edcab28aa1ee 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1979,12 +1979,15 @@ void cpufreq_suspend(void)
- 	if (!cpufreq_driver)
- 		return;
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 17158cb25dd8..72798f25a931 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3389,10 +3389,11 @@ static void intel_cpufreq_cpu_exit(struct cpufreq_policy *policy)
  
--	cpus_read_lock();
-+	cpufreq_suspended = true;
+ static int intel_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
++	struct cpudata *cpu = all_cpu_data[policy->cpu];
 +
- 	if (!has_target() && !cpufreq_driver->suspend)
--		goto suspend;
-+		return;
+ 	intel_pstate_suspend(policy);
  
- 	pr_debug("%s: Suspending Governors\n", __func__);
+ 	if (hwp_active) {
+-		struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 		u64 value = READ_ONCE(cpu->hwp_req_cached);
  
-+	guard(cpus_read_lock)();
-+
- 	for_each_active_policy(policy) {
- 		if (has_target())
- 			cpufreq_suspend_policy(policy);
-@@ -1993,10 +1996,6 @@ void cpufreq_suspend(void)
- 			pr_err("%s: Failed to suspend driver: %s\n", __func__,
- 				cpufreq_driver->name);
+ 		/*
+@@ -3403,6 +3404,17 @@ static int intel_cpufreq_suspend(struct cpufreq_policy *policy)
+ 		value &= ~HWP_DESIRED_PERF(~0L);
+ 		wrmsrq_on_cpu(cpu->cpu, MSR_HWP_REQUEST, value);
+ 		WRITE_ONCE(cpu->hwp_req_cached, value);
++	} else {
++		/*
++		 * Invalidate the cached P-state value that may be stale when
++		 * the governor is started again during resume and may prevent
++		 * MSR_IA32_PERF_CTL from being updated.
++		 *
++		 * This does not require synchronization because the core
++		 * prevents frequency updates for suspended policies from
++		 * occurring.
++		 */
++		cpu->pstate.current_pstate = 0;
  	}
--
--suspend:
--	cpufreq_suspended = true;
--	cpus_read_unlock();
- }
  
- static void cpufreq_resume_policy(struct cpufreq_policy *policy, bool start)
+ 	return 0;
 -- 
 2.51.0
 
