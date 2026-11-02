@@ -1,85 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.217.53
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793610376;
-	b=G13hraZ6kmI1mhg6g5sl80rffVjcEzWf7LE+iIRJv4Vp1nB6YhXAEqGAbqHtjabILkXg
-	 bxcdjnrUDwh6axw66XgoXZYMya6uJfx+4q+6yOpYKAgrcDraQ7thy0mtQEwBRoj/YSeCO
-	 rW5Mw75QqAb92q6enM6ND42ml7btGGZDDPNhOsMCt0y7T1oGAbddfHc6Ay4EhyKLRJMdb
-	 jtDt744M6cNXJ79nI28zJE2yFMDdcTOhAZJLbG0Nd6I+DEcKiAHhUBr0qwqVyxzH2rVn9
-	 L4wNBFrN1Xx2ovC5yWGQ9eykhlVoe2pNLeyN1B3c3fVj+D0Cxg8I3VhukBmFOR7GSTQ==
+	t=1793610465;
+	b=ccRQbre0h76T0p38wgTAnNCnXh5dyuIiXQBZWmZ+uM2OHKSvuIxGIH5Im+KjjL+eNfOV
+	 EbK2BLH+KeNFrtyEK5oag+2KtDNVtdReF/7iYk5q0kMwrLmE56rXxhsrM8x2qsdc93Imj
+	 TMiLFR757yv13Yp1Fx2vxG14Pb4ea/baRWy19+LN6HbebLSTN/wLu45PDV0ON9587TB1q
+	 GXvvHEKDpwJTet/GA9vy8fAOh14Mp8wYqY/lGPrUST8ZIlCUehx1RfHbWUwJGkatMJ4DE
+	 41/8Y3l8L3B8JjG/8tQpRO/1T/GJloSBwA/p57hy3OR4M3U/FaYS5AZ5BYHpE55k4ew==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793610376;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=77Xvm1RZi1fMUkErP5AZnNQjl3KUFV3T8alLBOD3IkA=;
-	b=l+fnSlqKdn2T2yv9G/oAtfTCPHO12ToI+uRE7i6OWobPiPiAlGjV/oqtM8sRWPLcmeb9
-	 dFrvsfJC1vqKHOXKyRyh5CBe08ziciB6+jQwy5Z31YYiATYjwrOnXFb+t3f0my7rK9Tak
-	 JhZD8mEFXkYx43lgxXgZ6kx85PN9Qwpn0xdYPkC99Bst1ZRs6ljdJ5ynUSemtylSI8aAM
-	 0FqshbZdaVlZiGH419xx4qNDLWJUNfXQgaZuh7WFQjVcCtjg4Ns1JSFdRxh0HipK+lDhW
-	 wQKnQTJuq76M24J3IkNESKZHq/HM1u1DozN45E0GyXGClxYF9x/0Qm5Jh0QDXasJ+1w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793610465;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
+	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type;
+	bh=ac+xpJrvd6zfAE97WIurl+pYtHzF00Lzr1WG7VTrgAw=;
+	b=LNI8NetERe/VaTyLcvRJ/7K92ZoOvgvLGjbQVs2yT+jEXYEmsR4cOofMJbpFpxbqryUl
+	 Bk/zeXvW3W3kBMMn8Ynrv2OheEJZ7ArMkTbV1223d41qw9A8d7DGpmoe9dp1vREklkLI+
+	 cptaqLK6iUSKGSq/8fCw9QF5LcA4IUPpbjofgR5Aoc3GpUtYmqGlz29LVvTzn5/qIegop
+	 wjQfEH/FDIIvEOFO0aJdnEG53yrun2Q6nP4xXspOe0Dor9RNR5PS4jTf9datnJX9OTojH
+	 yiRRkXBKHAiYNn+PNac87KRaUBhtQ4SwBM6/7hbj6jllYiKEtCJW136rA68JV6uKCbw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=infradead.org;
-	spf=pass smtp.mailfrom=infradead.org;
-	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=SuhR9+vn;
-	arc=none smtp.remote-ip=90.155.50.34
-Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=none header.from=linux-m68k.org;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=none smtp.remote-ip=209.85.217.53
+Received: from mail-vs1-f53.google.com (mail-vs1-f53.google.com [209.85.217.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65C05606A324;
-	Mon,  2 Nov 2026 09:06:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 65C05606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=SuhR9+vn
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=77Xvm1RZi1fMUkErP5AZnNQjl3KUFV3T8alLBOD3IkA=; b=SuhR9+vnaTOUcvs25RDk/YBx7U
-	DD+eBRPNPIrYJxMnypkeuCgCUYcC3KH8Pve/4VJOBP7UEilytwKIBC6Nujr/VxuGLPF3U/HGB2SG5
-	GMcYRXk5ztdK6oiyVtaCYe2O9FUa/T7fSvhyuezjnUgdEAuV9Yrzp/G80DG1vLf4/UNhEUmndwfcd
-	/gc/facHFTAvWiOM6HwTYv5YG7x+xpML4zM0IZczXrLu6kp4DZuoBaur/8DHmdo5p65xLI5+LuDFk
-	aR4a4e+TTXtR/T95Wy9RSDvPEWlYX414XnRoVKvp05FP06O95dJpovAtM2uIQx31xv1JH0H+HYgxt
-	oM9NpRbQ==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNnzR-00000001eC4-0uDX;
-	Mon, 02 Nov 2026 09:06:05 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id C3DA4300312; Mon, 02 Nov 2026 10:06:04 +0100 (CET)
-Date: Mon, 2 Nov 2026 10:06:04 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Ingo Molnar <mingo@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
-	James Clark <james.clark@linaro.org>,
-	Thomas Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Jiayuan Chen <jiayuan.chen@linux.dev>,
-	"Steven Rostedt (Google)" <rostedt@goodmis.org>,
-	"Vineeth Pillai (Google)" <vineeth@bitbyteword.org>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Andi Kleen <ak@linux.intel.com>, linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev
-Subject: Re: [PATCH 1/6] irq_work: Re-raise pending irq_work after system
- resume
-Message-ID: <20261102090604.GR1779021@noisy.programming.kicks-ass.net>
-References: <20261102074039.26983-1-adrian.hunter@intel.com>
- <20261102074039.26983-2-adrian.hunter@intel.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 959C5606A32C
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 09:07:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 959C5606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f53.google.com with SMTP id ada2fe7eead31-7cc013095d4so802382137.2
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 01:07:45 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793610464; x=1794215264;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=ac+xpJrvd6zfAE97WIurl+pYtHzF00Lzr1WG7VTrgAw=;
+        b=IC+CwYXMFCCQC+vPb5vdQoLhO0V9JlPpPxtKn5eZMlfqfyCgLEdgnXKACmty6kISu7
+         iFKpIGFeL2ZT5/LO2CmTZIvXrZt7kYGCx8Q69WFxDPTQw7JOKvnNs/h8zuG5ty5WPhrn
+         B+Qtbv3b+4AOqOVNL2zCYLZgmr5NBOeF6YKfqjIyNDRQ58ckFRjsg3Qv4RmQyWQFwaEb
+         4EP2AJX5FmniXvWC11TZW6Kkuz4sjq/pCW6PIhajcy3hhRNR1cs6EiJbTEWTtBlbZAZR
+         jkfvXfE2UxPA/rkOEwEs3fJZWFKT7EnJOwO+mCurM5XOE+SJEmC956Lzuvj3NtRPucsr
+         DX4Q==
+X-Forwarded-Encrypted: i=1; AKwUvBwnpcxsQpTLMT8mTAu8qw0xYfc69Nh58NKWe/iFyqt8lIOtKA8ahWBnVDEl76NCqCIkKa7YuPso9Q==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8howqQ4Ts+m0uZff8QMIswwkehjwZ18tPlXCRILsBEy/XgSy58
+	L1FfqFz37eu5t855ytX71dJzAOct3VZCxchVze3ALIlCh/zEYvf7rDZXUbJQjOJx
+X-Gm-Gg: AYBFou3LIEwcocuz7hj6EQ4wqbaHWW640xhxGMztml9awimNNg0jGt9Zgtb1uSV9tQv
+	eBodTry40QTuybFcEIBO1rYhisH/gR0+K/6dygSl/cTDP/MSmFm3+Qr8VMeBuKptHgF5xb4xzA/
+	RGQdWwIkJfAF1JXPf/HrKFZCH2vPMENZ99LDIIBMC0lKMMjWaOVlL7rnfbkAoneAEFEF5P8ZCdV
+	C6ih/ZZAtPhUakMub8Pl0dQpgQDu1jR4ta45R1Ia9aTSpDq0JoPcQVOyjRhrWewD3Yf8uas0x2T
+	d4KzAzfuSRnC9uxXFvCJypAvOluz5rXfWVfMieU2LM39d9O45Gr9NPzW1z9Yy43qPRBAL0n8kUF
+	27hLrD+m6aHzJf4YvNC4zESnhgFPzbZYsqoEVLtepyYKrv7NNO6ByeYHDewPTvKpFctZ7Xu4xBc
+	mV8WGHOvChg2JFFQBtF8eqPmSOIaWom40mszhValHnVq1F+1Y37RHHQ/1WrCnyNhbbT0y/M2OqP
+	e2mapvAMvXapiae90S1ss/OBqhC0CeDnv2V8LXPSW7XmU8PmwmIQbj1ytkiHiwNw1kpG/hB9Th4
+	RzxDssdrzDY7PwRrGplyVgWzT8Gde19yq5TAfuFGiIibnrpxt6wIZMf8BdlGLXBNLg==
+X-Received: by 2002:a05:6102:3707:b0:7c2:799c:9031 with SMTP id ada2fe7eead31-7d072d11c63mr3073884137.30.1793610464495;
+        Mon, 02 Nov 2026 01:07:44 -0800 (PST)
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com. [209.85.217.46])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-992ee3a066esm10945921241.5.2026.11.02.01.07.43
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 02 Nov 2026 01:07:43 -0800 (PST)
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-7cc2bb73cd9so706042137.3
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 01:07:43 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBzvQQqdf/yXl47KEc0XSQOMKA7W1fNBdfIHT+F4cj57CahcbBWEeMteHJNrSfdBLmR1/Ppb6oiGuQ==@vger.kernel.org
+X-Received: by 2002:a67:f403:0:b0:7d0:9587:1b90 with SMTP id
+ ada2fe7eead31-7d0958732b2mr1205111137.13.1793610463593; Mon, 02 Nov 2026
+ 01:07:43 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -89,40 +80,47 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261102074039.26983-2-adrian.hunter@intel.com>
+References: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-0-e052903a3832@ideasonboard.com>
+ <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-3-e052903a3832@ideasonboard.com> <20261030220549.GH3178046@killaraus.ideasonboard.com>
+In-Reply-To: <20261030220549.GH3178046@killaraus.ideasonboard.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 2 Nov 2026 10:07:31 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdX1czCW_KTW8Z+_jb3egLxqBu7bOUmqyXy3PqYhmUfLNg@mail.gmail.com>
+X-Gm-Features: AclHuK-1v1dRSgyK1HeeK29l-3g4aKIGNPop6k2nHA1eLryORdmauRDpRhHjRsM
+Message-ID: <CAMuHMdX1czCW_KTW8Z+_jb3egLxqBu7bOUmqyXy3PqYhmUfLNg@mail.gmail.com>
+Subject: Re: [PATCH DNI v3 03/15] pmdomain: renesas: r8a78000: Add maps for
+ VIO for SCP FW SDKv4.36
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Paul Elder <paul.elder+renesas@ideasonboard.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-media@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Mon, Nov 02, 2026 at 09:40:34AM +0200, Adrian Hunter wrote:
-> irq_work_queue() raises the irq_work self-interrupt only when adding
-> work to an empty raised_list.  Once raised_list is non-empty, further
-> queueing assumes the interrupt is already pending and will eventually
-> process the list.
-> 
-> That assumption can fail across system suspend.  irq_work queued after
-> arch_suspend_disable_irqs() and before the interrupt controller is
-> suspended, for example from NMI context, may leave its self-interrupt
-> pending in hardware.  If that pending interrupt state is lost during
-> suspend, hibernation restore, or kexec jump, raised_list remains
-> non-empty after resume but nothing will process it.
-> 
-> Subsequent irq_work added to raised_list will not raise another
-> interrupt because the list is already non-empty.  Architectures that use
-> an irq_work interrupt and do not process raised_list from the tick can
-> therefore leave irq_work pending indefinitely.  A caller waiting in
-> irq_work_sync() may then spin forever, for example when closing a perf
-> event whose pending irq_work never executes.
-> 
-> For suspend, hibernation, and kexec jump, only the CPU that remains
-> online is affected.  The other CPUs are taken offline beforehand, and
-> smpcfd_dying_cpu() runs irq_work_run() on each CPU before it is removed,
-> so checking the local raised_list is sufficient.
+On Fri, 30 Oct 2026 at 23:05, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Thu, Oct 15, 2026 at 04:51:43PM +0900, Paul Elder wrote:
+> > Add maps for VIO for the VSP and FCP power domains and reset domains.
+>
+> s/reset domains/module control/ as its not just reset (and there's no
+> "reset domain") but also module control clock ?
 
-I thought here was a suspend2idle option where all the CPUs remain
-online?
+FTR, SCMI calls it "reset domain", but I agree "module controle" fits
+better here.
 
-Anyway, I'm torn; I would much rather make this trigger a WARN and have
-suspend pause/resume perf in a more controlled manner. Also, ISTR there
-being hooks in kexec, but I can't seem to find them :/
+Gr{oetje,eeting}s,
+
+                        Geert
 
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
