@@ -1,47 +1,103 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.179
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793605679;
-	b=KoYAAo8YbCLIwHvZgVL9BYc+Zx0fpYhR3qRH08pOfaxnuxeatHosANodJlPtaQY6sluq
-	 h7vZcok8OqkTjxscj/rFJqiyR5G+6w8+vZ3uaFFCBn9U5aJYJqw0G47p+2BkADk64RJ6R
-	 LACqKKbDNfoxOiog9RvaSVj80uzaHstuPD4eINVjR7l4HhzDbgfLKBlkKXzj5x3Oye4eB
-	 nxXUyaK/COTfyme9Bk55vBJkcFiRPIRoeViBC4jgalN3FCor2WRzZOkWgQbKKlydLt+bf
-	 l2rwo8hAfhMXU1dUqkF/YJDCGF6dqOFt/7wzc/2lZL7tkaDGP81JKFwI4vqLAAJvK4g==
+	t=1793608724;
+	b=dsncu+mTx71szv73WTQStzv/HwVn+sNLJwjlUM8PHzDSva3DGcO8kGPLTxv0wbO4dqP3
+	 xzcGTFSVtWPo8CoQ/4uAMjezA532QddjHnb5chvyfHk7TeBVTlSGPs/jZ8DeSl+Ycjw8t
+	 KqMEzN2i8czhx3eDQ8uak42uvkflrEyJPZ+/Bm+3XuGeprYtzQT4el2GF9b+Ofy8bhvfC
+	 DE5Ba3wyy2Wnfh1gU9aRuHKYqkHJ7caE6gaLWld+7oDS/IYtSyJG0fUjKFVGBs7wM4dsd
+	 y7za1cuS318/BiyVrSNNLjKm/gm5BIZY+Nc8z61N6c+pd4VLoPQRdjgL+3BTJR00Dng==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793605679;
-	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=/5I86CZ+slqkRJTosNHUxkAL8uURBN5dDpgqbLr07wU=;
-	b=X9x8U4l8UtI2eNh/qaIR57+w0SqZ7OyIh1myN85YFBMj+YxCa66Pw7PBDDqGZU3EbjgO
-	 U9FmKhpInuqnAolplukFq4D6wn1uDXW5TATzyfTT9WaSQVENKvZ2m4wUcSYCZF5Yei/cV
-	 TRWbZ3OmROTYPhCQoPc+hCqfK9NM25ImDOaDR6hxWSaE7VRY3GFvxLygNc0Cs9H5pLC+Y
-	 3SsWuekdtFMGVl1UWipAeB5nyTSPdBRaQ1aVUd4yVnRVOnP4jHZBghVnEEmvbzom0A7Ia
-	 N9c4O3e2exujaR/6bmVEMQGYAzgmEaNyrtHwKXJQzYLnHNar0wM128M5xPc0svZKs8g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793608724;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=ALAVVcLX8MYIjdcNV1urspiVK2AVDCX+KdL/tArgC58=;
+	b=RUVUS2IdpAGMT3YJyDLxQpkwEJaJ0ryvN40vJWD5DmEhsLHL2zYHNMYL9Y9dwBmPzmdN
+	 lB3KvovHrjqHtIcL0JseNjtXHa8eyNOt6v077N5/sAs6fhmYnA3lgU9bVOHZUck2e1737
+	 8pQ8Ih++IYsdJmngo2daIFkDE2/oH4/AEtdnTMCP5U/CP2nmKOZEuLF8XmldzLznBMhtH
+	 /Cpofx7+xFyrTinkpWSaiLVgO9oijsy8KHcS/hwiFW9zSD5nPM6yyHweIolbLOPuQl/WI
+	 daSEY+Erc+znDFlj2ttkWusZAhGFOlfcvjsnK0DRtRQmI2A0pWflqSOPuJUYjmXQtxQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="Yt/7r3JE";
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=SHebu6ho;
+	arc=none smtp.remote-ip=74.125.82.179
+Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7924D60A260E;
-	Mon,  2 Nov 2026 07:47:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CC87606A339
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 08:38:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3CC87606A339
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Yt/7r3JE
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20DB91F00919;
-	Mon,  2 Nov 2026 07:47:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793605676;
-	bh=/5I86CZ+slqkRJTosNHUxkAL8uURBN5dDpgqbLr07wU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Yt/7r3JEtzHG6GYJFiSgbdV4xZv1CP1WOEwveRYgMAoVmlr1ssFwCP3cji8JybOvP
-	 5pFdBlfjfYYpmPkLhRoaFM716IP8ckfK7/mpd6AbncfvqPt67Mlag7w25Tcel3PH+y
-	 fAzcYndBtlAVHCwlgyj4LYIpuny562C1vEhC4hqUFZ2UOKTd6kMjC7SnyVm+6765Hp
-	 snsim7fvwgSqAtSmB4ATTR51c9pbLaNiJA7T/pXaXBQ8ZaKOvHYUJ4GVSN2cZH3EwQ
-	 E4wu2/tajaDVYQruUjC5aZOWIHVkNWq0ituIE0wMlu4lpRoG7zL/7AAdMjHYmQmN93
-	 Rvd7Gyh1FFS4g==
-Message-ID: <f63bf987-aaf7-45d5-89da-24c16b1a848b@kernel.org>
-Date: Mon, 2 Nov 2026 08:47:47 +0100
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=SHebu6ho
+Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-3535a54bed9so4128487eec.1
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 00:38:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1793608723; x=1794213523; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ALAVVcLX8MYIjdcNV1urspiVK2AVDCX+KdL/tArgC58=;
+        b=SHebu6hoU+l6S24ourZc1qdv7upLIrnVe/F/sF7kE+UblHKNd8Dm/yvtFnW1hxuHTi
+         gkw12/YBHBBewxvMXAWAh5T57tcX2TfCCYzWue2IQlOPBJe0Aj7QuQHN2XE3ee6zQRN3
+         nyoh52cV9jS7cPnJ/v1lhuG9mUEzcFDkAnXcvylHwFk6RdHaQZsISxX1WL3BznoFlSKg
+         7uCk+RyfT7QJPp4Obj4rRpgXZBnT1AuPHcSzJQ54vhYuMbyX839IxZ3FIeHhUDzgaAgh
+         aAiHgxRZNonuaeqyPKPsG+MH8rmjWm8UepvCNfch2WZMzK4OofLaDFis8D4k4cwJWvoo
+         7DFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793608723; x=1794213523;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ALAVVcLX8MYIjdcNV1urspiVK2AVDCX+KdL/tArgC58=;
+        b=yjc7amFItRnkFy9vl/RYclMsvioUdAn+o3fi2xh0ASD30xAX4P3l4qA6re1zI6tbkW
+         7M0ztjyRouoF/0ICVMTjx1yxP56dzEwTt2t8qWJKOhvPD5Kll2NzSQHAigZsJ871pwBO
+         8kjSso9Rz0p9h3c0R1dAiUAgCYBVx5156vNGe12HiQjelbXpvQzbGg6dEjsqZIJyO5cE
+         wpqiYrw3G4CXZd6NnQeietc1hsza9POh1xRN6LwNAxfCiCkNUFB8wvoZsFrPH4mpbUWs
+         mg4SB7z4jVQ8hRmdLjNi/aSpwrCWQcLWx8V2Rxy6ycZP4IW3vFWttukWfeo4A+obvh2g
+         DLlA==
+X-Forwarded-Encrypted: i=1; AKwUvBxVPFErt/3vlNc2j5uvWR3dfSSBbKKFuSND5n0vvr8e4B28O1qhJWH0+/zzZXKzON3JUUTV47gGxQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z82ZlLZ+yFQZxB73utjazd7lQVHapqIwNrFBYVdmDULjfQ5Ttzs
+	ktSNz5sn8uRO9qqlxCG9WZNmnZN7oUlYTzJ4KS1xBGNVQGGsFGPgr9yVq8UqK7iWXig=
+X-Gm-Gg: AYBFou1/lGCAc4t/RE2ZJRP7XLNqLY9Go0vhN1k1LUdnDSvi8FkhRnaUFB2lFqgMPBp
+	eLy+dwryIG2lMcM2zZxo0eCm6MDPYxn+qGogxyIGpGRq7YRx36SXO2oOyXvlpd/dFx+qiqDqNsT
+	mCXF9aTmeqYOxt0SpZwPtuMR+s12XcO8JSejgNKrWXQpLSJkvf2JG7wyyzggCiG6Wz2mjBj6pru
+	gR/7f78h2kpuLp5/ZCTfv7fUdrUrRJTAfc+cmaj2X21u2r/0xp9FbFGMIwxYYv6SWURoQH+Vthp
+	z/9zcP4YBNmSUQh2xcVgu32COsmidvhj5cS3S9jw5YHZHjFy2jNCSisVZhgpUCqV4WPBNveEb/2
+	n884P9GFD2vCBtE/+Ww33wnZ0wRs6OVF9CMDEh0O1t3FU1AbVnlgHQdBTG95LEJLEB6olt+Ph9O
+	8QOk4mPvYIszsJNL0Cgw1NGysK5BCxWk7Aq8+VVLi90+P4Qmy+UlE5ZzPm37TAr0nyyPctV4Dfd
+	oT1xqPf5hcYiZFZvrO5k3efJ7AfYezOGXo8ebEpqrGEmvCqGjNIYgcO+HLmPvl4QgNOXOpPZDzL
+	RLAJygG5gIRUkR5+qVvNiU5XR3eGi0M=
+X-Received: by 2002:a05:7300:e9c5:10b0:367:3d68:8480 with SMTP id 5a478bee46e88-36a4206d82emr15498311eec.0.1793608722988;
+        Mon, 02 Nov 2026 00:38:42 -0800 (PST)
+Received: from localhost ([122.172.82.240])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42669128sm37714488eec.3.2026.11.02.00.38.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 02 Nov 2026 00:38:42 -0800 (PST)
+Date: Mon, 2 Nov 2026 14:08:39 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Ananthu C V <ananthu.cv@oss.qualcomm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Oleg Keri <okerixx@gmail.com>
+Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to
+ non-boost freq on boost disable
+Message-ID: <auhMD2-5FD4BqImG@vireshk-B250M-D3H>
+References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
+ <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -51,85 +107,45 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] dt-bindings: mfd: mediatek: mt6397: describe the
- RTC's 32 kHz output
-To: Ryan Brue <ryanbrue.dev@gmail.com>, Sen Chu <sen.chu@mediatek.com>,
- Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
- Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Eddie Huang <eddie.huang@mediatek.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: linux-pm@vger.kernel.org, mfd@lists.linux.dev,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
- linux-rtc@vger.kernel.org
-References: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-0-9758f38d7053@gmail.com>
- <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-1-9758f38d7053@gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-1-9758f38d7053@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
 
-On 02/11/2026 06:33, Ryan Brue wrote:
-> The MT6397 RTC drives its 32 kHz clock out of the PMIC, where boards
-> use it as the sleep clock of a Wi-Fi/Bluetooth combo chip. The output
-> is off unless something turns it on.
+Hi,
+
+On 29-09-26, 17:08, Ananthu C V wrote:
+> Commit 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq directly if
+> max boost is known") introduced a guard for cpuinfo max updates to only
+> increase, to preserve driver-set values above the freq table maximum.
+> Later commit db80ad776cd2 ("cpufreq: Remove driver default policy->min/max
+> init") dropped the 'policy->max = max_freq' assignment from
+> cpufreq_frequency_table_cpuinfo, leaving that one-way-guard to be the only
+> path for cpuinfo max and consequently policy max to be updated, causing
+> both values to be stuck at boost frequency even when boost is disabled.
 > 
-> Let the RTC node provide it as a clock.
-> 
-> Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+> Unconditionally track the highest non-boost frequency (max_base_freq)
+> in the freq table. If boost frequencies are available, use the highest
+> frequency from the table/max_base_freq instead of cpuinfo->max_freq to
+> control boost values, so the value can decrease again when boost is
+> disabled.
+
+If this is a fix, it should be submitted separately so we can get this merged
+independently.
+
+> Fixes: db80ad776cd2 ("cpufreq: Remove driver default policy->min/max init")
+
+I am not able to understand the current problem though. I see from the sequence
+of events mentioned in your cover-letter that scaling_max_freq doesn't return
+back, but why ?
+
+And does a simple revert of the above commit (just freq_table.c) fixes it ?
+
+> Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
 > ---
->  Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/cpufreq/cpufreq.c    | 16 +++++++++++++++-
+>  drivers/cpufreq/freq_table.c |  9 ++++++++-
+>  include/linux/cpufreq.h      |  3 +++
+>  3 files changed, 26 insertions(+), 2 deletions(-)
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-
-Best regards,
-Krzysztof
+-- 
+viresh
