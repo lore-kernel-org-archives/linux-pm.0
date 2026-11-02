@@ -1,88 +1,86 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.231.137
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.7
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793638232;
-	b=2BtFPQy8GWaKeDkZrMy1G1Bi3GtTY/i4awUFElxFF2SRTu5VfqHl/spMYqf6TMH1LRhE
-	 gWINqhKe8N2zRxUTCcgf8kLraALDFQdleO0hiv2Z4yrqwduJIp3XV+huMwHnVdnB3ah2z
-	 ERVfeJPTE6KNp0md6W+RS3BOJb7YBFJrB0y/HI72cfQ97QSIkHsChpMt5pOvXRdJ1IO1i
-	 DP5UgiMi6CmmEceW4JX3rEvOibzGySfL+cCX/1ze/IAVi4p9ZZOLoPAe9OMSpMKbFMxQA
-	 nYNak8Va1OiUmR6tAOKYOdxs/jMmFYBQ5K6xwp0dkRPyqp6O9+xVrYteh1sSa8v9SMg==
+	t=1793638546;
+	b=t+5EK5qwTlHZIsWwH/o9GWcuf2yDAIlT7ZtmFwiFWiH5hJriy1iMKpZZc0svYqjeY7ZZ
+	 sMHkVG+MzeavBGhkQtla/0ACEphbKrNvSfoBUwbn8pQYSbdSPyTfapfReo35dFGGdBpzP
+	 gY5wukb/3zxeGqpjwlTnR5ygWTJeaiyEiUK54Z77mt1ppy65dE+fLilpqvaovXNSyAc3N
+	 E0PHwIwvHu7dI3U7Yfswbim3LVdGHqMBr12PNTu690cB4CnJ4MK0pGXwAZ79FpUjpPs3R
+	 tYoQUGVuPmryR/08GgMAeqfwZbLe2chATPW6ywkj9BoSehQ5IzODev8q8Afyu6eCezA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793638232;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Date:Subject:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
-	 References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
-	 X-Developer-Key;
-	bh=K8BYvSAD0vaRsrXFQzKVgQ9ORTXgw762XXjLlecX85Y=;
-	b=ZLE4nHNWviJsDHy2NTaCOGNvVvmS1BdGNkX7dUAqfO9gFzssPRXPtGnM8gwxCDEBuaRC
-	 zFFbzX3O6X6f+G+HJvU47NO1cVmaWq/+lPQUhkRzCYFkRpXk+CogvG6gRpJTHHi/yU6b3
-	 cALUNF3j8k3m/+dfjq9NQChG5zsycDyVD35MqpbL/Y9CI/0WuaxbECz+bjs7UhL6vR6Yr
-	 scQpn/u84onpfTUOclmygYn241jt4PEkuNIXFNFveKDSBdUPxYz4e9tyYVIwWL5Euul8Z
-	 UudHMzI+gzw5BpeNeZ4aGQP56K9wicw+/SQFaRAbOZDFxhGF+k6rRbSs7dgZcF/2Eyw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793638546;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Message-ID:Subject:
+	 From:To:Cc:Date:In-Reply-To:References:Content-Type:
+	 Content-Transfer-Encoding:User-Agent:MIME-Version;
+	bh=4RDMzPQ3Kc7Ayt29cgTuAx8lVc5b4/aAlpi/xEsU6A0=;
+	b=lloqvva2DMaGE/ge7l2Ylm2MYNRbd3Jg3mndL/v18uH9QDhkThPQzpKO0+ejQ9B+0JTF
+	 8yabGAX3H+82JnFAEslyNJvQ3kKsoP5FzErWP+9p0066ESAObN4tzpJCUsaEuoUsjTssh
+	 5fzoNjsEQg9I01VsPhA8HC3nqqH4yUYStm7N3NlSkShSuKpzw70EK1givL0H6OOkzkVGY
+	 00vi0DRHO0gYep5qgNkr2YYnTsYjJ1UX6bmKQZsGqjwrfBPPBhQecros1yyJsW3e1oi6U
+	 CNPg/pNd1Fk9c2B7Y6n5xTh0Z9UGpsqvwux98CHsvYbhL2/U/NzQvIc8+4yN+JywPPg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rHfQ1jyI;
-	arc=none smtp.remote-ip=74.125.231.137
-Received: from mail-oo2-f9.google.com (mail-oo2-f9.google.com [74.125.231.137])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=U+WOEszz;
+	arc=none smtp.remote-ip=192.198.163.7
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1ECD607466D
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 16:50:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D1ECD607466D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAEA7606A582;
+	Mon,  2 Nov 2026 16:55:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DAEA7606A582
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rHfQ1jyI
-Received: by mail-oo2-f9.google.com with SMTP id 46e09a7af769-821a4a69647so258983a34.0
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 08:50:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793638231; x=1794243031; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=K8BYvSAD0vaRsrXFQzKVgQ9ORTXgw762XXjLlecX85Y=;
-        b=rHfQ1jyI8vgeZsIJ8/crxP6sQGfOrqxThPsEAA/+kbRZwUIEBpVbtv0fgCcZRIF23D
-         jawXtmxCraOCtUMOjgKF2+S9Ww0FRiTIgABHxilJk8/hfn/bzcoHiYI0KZHSPccxiW1I
-         1/agQFhLFa1IMgaD9Szej8Q3tnpjCpN8FCN8tOVSKSnxBziMSactzZwu7lizWLGztw7C
-         DLip1LNDcM8jd8J2A0nS64qm7jIGRLOTEvSlRagL8a/hh/ywh/oAVXto359VwJJBwv5y
-         Ik9/Ifb/YIaU/OECBjMSkLi69Zsj7Tf81u12NAT+xnj0Y+qS/2TsgMNydiWc0Ps5ACLr
-         V1HQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793638231; x=1794243031;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=K8BYvSAD0vaRsrXFQzKVgQ9ORTXgw762XXjLlecX85Y=;
-        b=2hLlNQ0yK0MuP6gNGsSqyuSosozKfBljuGbk0dhQr9PJMt/wBjzcI1Jz8L8xOXFgge
-         w8KMLrB6xaDDQbY5YpRtm/k6PtdKq9Mp9O6NZt0arY2VaRlWKznCrRx2D2nxRKWYhiK2
-         HXfB5TC6Ck3Rd1AAttOQu0LjYgV0ytv5Cz7+WEZkQfQApFHV/chGRFLxVFCN0c+lqJqL
-         etwgfIJKSIEosz9fq9XCxCMbiBfPuZos7JuhHQHv3i0mm5/tk3mGJ+z/ysgLhTOgc8bt
-         gXnkCzYRxovhxiiB8ei+Teeku72EYrtTc96khk8cjCrfERhNmeWHEgkZvW7o/gFzCenF
-         FbCA==
-X-Gm-Message-State: AFq9FYKcWXQRxn3A2brp3DrX3vAGAUOpdNegVEdM7FlCqQ/N3S2tAa2K
-	2yBClYYUTFTNEByvWsWuPSmmUgRY2y7nfwKLqlJjtgjcusejGI+BmZNO
-X-Gm-Gg: AYBFou0H51Xuh6bILjscTjkVjJdFG4zwWWN51/CoaJyVQ0xeZagLajtGKKMD637SgZO
-	9iGxiGYtpIYuqUkxyinsr26AhLkIFt6C4nKlk/kwbebwui6BXMRGEqeheo7zuYgm29J4pIf5XWF
-	xbv2wAQ9+JvqIv2poNM+hJY8AlqujA1A5NEjLTtf8FtkAFUATIzditht3v+dOqUI7ykBQrGXn3B
-	L1hUvo7SlETWGhoVgL06fJK3vzWHssvpSB+nGTIGfCzNeL8vpZdiQLyoYUmeEIeJaSIUrYubo+7
-	qL78SPQKRQgb/tLkHqyUGR+9ENFqNCVCix1KLZ3kKnAo0czvvaY0ju+Z7SwQ8ezyLESq1ovT0Et
-	gYgMeU2UuF+INBe/zFsZoLZRa0rk2ceAy2NepwVq3tVICHqoQFV68JZILw2owQT5f12G+6scM0i
-	iI6viqcCoRAzUqrqaS16cefBmQpXqTUj1F4+ziD/XWKD5F21fyFXWy1c039npXdWPyPc4hczJLz
-	I1fKqIzrLtThv5CjEryXv6P/aVe4DeYwLLg001KZHfimw+Q0amNafMf4YckUe6HmJgjd+pIc2IA
-	voZuOImKm1lPyhzD3wYBLzVheXRQ0aKTgXRcrZC8dX+No3pjS99+i5Mms5eXebhkTMlPDE4XTzA
-	Zd2YU1vsrix54Dssc54Y=
-X-Received: by 2002:a05:6830:3481:b0:844:a8bf:7dc7 with SMTP id 46e09a7af769-85d363fc570mr7336192a34.17.1793638230796;
-        Mon, 02 Nov 2026 08:50:30 -0800 (PST)
-Received: from [10.10.18.223] (wsip-64-207-253-118.tu.ok.cox.net. [64.207.253.118])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-85d354985cdsm9936779a34.10.2026.11.02.08.50.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 08:50:30 -0800 (PST)
-From: Ryan Brue <ryanbrue.dev@gmail.com>
-Date: Mon, 02 Nov 2026 10:50:22 -0600
-Subject: [PATCH v2 2/2] rtc: mt6397: provide the 32 kHz output as a clock
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=U+WOEszz
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793638546; x=1825174546;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=JXScI8WmnZi2CPPJHPNar6v2gK+emYwKGOG37t5KugI=;
+  b=U+WOEszz5zTnfl4ZJ5L5ffryYjiQjn6Jywipg8ipMErcmLRdWfYN9GDd
+   6zY8vtznhDH3a5eA4PSR11Jk+FMMqAjTu7esl3nANC81e58Wq8po2uKIi
+   sQIljR+VNm/NmBB6Y6vJYgAbsFcVl8gSTklUKC0SqlVqWOErD6IMkQXfX
+   2P/fqEsp8+NgIsCE/OARKjaK+kQnYcXxCIDTtraD1O9r6RZWu+1FWnevg
+   Z1aYREU5+inWakoLg7jNXKyo+v1M6fPrtv3HHfnr+qmlWlIMdV1owLB0M
+   ErnmsCwIgrf7TjZ1liV2ZIQ63//y+aHfI6hCeT213joNlDWYGWgz3W327
+   A==;
+X-CSE-ConnectionGUID: VGRkpjS/Rbqk+L3ItVEH7A==
+X-CSE-MsgGUID: gT4S/WMeQLyrhdOGyWkRPA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11954"; a="2216569"
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="2216569"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Nov 2026 08:55:45 -0800
+X-CSE-ConnectionGUID: vXUXCuyvRGCIBpejotJQKQ==
+X-CSE-MsgGUID: FmajquUeRGSIy4yc7nvAmQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="6145309"
+Received: from spandruv-desk2.jf.intel.com ([10.24.80.14])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Nov 2026 08:55:45 -0800
+Message-ID: <84d712c6aa3df7df8fdb6cb85b85d720bdab5840.camel@linux.intel.com>
+Subject: Re: [PATCH v2 09/17] iio: hid-sensors: Discard
+ pm_runtime_put_autosuspend() return values
+From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Jonathan Cameron <jic23@kernel.org>, Brian Norris
+ <briannorris@chromium.org>
+Cc: Nuno =?ISO-8859-1?Q?S=E1?= <nuno.sa@analog.com>, "Rafael J. Wysocki"	
+ <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+ linux-pm@vger.kernel.org,  Andy Shevchenko	 <andy@kernel.org>, David
+ Lechner <dlechner@baylibre.com>, 	linux-iio@vger.kernel.org, Andy
+ Shevchenko <andriy.shevchenko@intel.com>, 	linux-kernel@vger.kernel.org,
+ Jiri Kosina <jikos@kernel.org>
+Date: Mon, 02 Nov 2026 08:55:44 -0800
+In-Reply-To: <20261102015255.487bd1bd@jic23-hlaptop>
+References: <20261021235818.3059519-1-briannorris@chromium.org>
+		<20261021165858.v2.9.Idbac8a0f9ecdd345191130e256e8d881d991bfc7@changeid>
+	 <20261102015255.487bd1bd@jic23-hlaptop>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.60.2 (3.60.2-2.fc44) 
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -92,202 +90,103 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-rbrue-suez-upstreaming-mt6397-rtc-32k-v2-2-19ca72815374@gmail.com>
-References: <20261102-rbrue-suez-upstreaming-mt6397-rtc-32k-v2-0-19ca72815374@gmail.com>
-In-Reply-To: <20261102-rbrue-suez-upstreaming-mt6397-rtc-32k-v2-0-19ca72815374@gmail.com>
-To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
- Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Eddie Huang <eddie.huang@mediatek.com>, 
- Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: linux-pm@vger.kernel.org, mfd@lists.linux.dev, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
- linux-rtc@vger.kernel.org, Ryan Brue <ryanbrue.dev@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793638226; l=4890;
- i=ryanbrue.dev@gmail.com; s=20260906; h=from:subject:message-id;
- bh=amIz4+OO8bg9BY0ErwfxlJTjkYD75qjrKdIIoLGCs4c=;
- b=SddfdcmGKWyuqGOE2/GxaWQqOQ1TXoTGs5VUhTToGfp3bnPWl7+Zrz5vLWEeXxPdlsr4dE61r
- fAJ9r7/SePRCBSg2vB3thim3kLRhLfoupjQ/1z8Xsr6XCNPG6w8yuKc
-X-Developer-Key: i=ryanbrue.dev@gmail.com; a=ed25519;
- pk=KsUvVaP//v/2q+ZBuacc7cLbsyEYn+AD71Sn28oZWKo=
 
-The RTC's 32 kHz output is gated by RTC_CON.F32KOB, which the vendor
-kernel clears before it powers the Wi-Fi/Bluetooth combo chip. Mainline
-never touches it, so on a board whose bootloader leaves it set, such a
-chip has no sleep clock and does not come up.
+On Mon, 2026-11-02 at 01:52 +0000, Jonathan Cameron wrote:
+> On Wed, 21 Oct 2026 16:57:10 -0700
+> Brian Norris <briannorris@chromium.org> wrote:
+>=20
+> > The hid-sensors driver propagates the return value of
+> > pm_runtime_put_autosuspend(), which is not particularly useful.
+> >=20
+> > Returning an error code from pm_runtime_put_autosuspend() merely
+> > means
+> > that it has not queued up a timer or work item to check whether or
+> > not
+> > the device can be suspended and there are many perfectly valid
+> > situations in which that can happen, like after writing "on" to the
+> > device's runtime PM "control" attribute in sysfs for one example.
+> >=20
+> > For this reason, modify this driver to simply discard the
+> > pm_runtime_put_autosuspend() return value.
+> >=20
+> > This will facilitate a planned change of the
+> > pm_runtime_put_autosuspend() return type to void in the future,
+> > similar
+> > to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put()
+> > return
+> > type to void").
+> >=20
+> > Signed-off-by: Brian Norris <briannorris@chromium.org>
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
+> +CC the various hid-sensors maintainers.
+>=20
 
-Register the output as a clock when the RTC node has #clock-cells, so
-the chip's power sequence can enable it.
+    Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
----
- drivers/rtc/rtc-mt6397.c       | 85 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/mt6397/rtc.h |  6 +++
- 2 files changed, 91 insertions(+)
 
-diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-index d6e156516aa6..2849beddc79d 100644
---- a/drivers/rtc/rtc-mt6397.c
-+++ b/drivers/rtc/rtc-mt6397.c
-@@ -6,6 +6,7 @@
- 
- #include <linux/array_size.h>
- #include <linux/bitfield.h>
-+#include <linux/clk-provider.h>
- #include <linux/err.h>
- #include <linux/interrupt.h>
- #include <linux/mfd/mt6397/core.h>
-@@ -317,6 +318,84 @@ static int mtk_rtc_nvram_write(void *priv, unsigned int offset, void *val,
- 	return ret;
- }
- 
-+#ifdef CONFIG_COMMON_CLK
-+static int mtk_rtc_clkout_set(struct clk_hw *hw, bool on)
-+{
-+	struct mt6397_rtc *rtc = container_of(hw, struct mt6397_rtc, clkout);
-+	int ret;
-+
-+	mutex_lock(&rtc->lock);
-+	ret = regmap_update_bits(rtc->regmap, rtc->addr_base + rtc->data->con,
-+				 RTC_CON_F32KOB, on ? 0 : RTC_CON_F32KOB);
-+	if (!ret)
-+		ret = mtk_rtc_write_trigger(rtc);
-+	mutex_unlock(&rtc->lock);
-+
-+	return ret;
-+}
-+
-+static int mtk_rtc_clkout_prepare(struct clk_hw *hw)
-+{
-+	return mtk_rtc_clkout_set(hw, true);
-+}
-+
-+static void mtk_rtc_clkout_unprepare(struct clk_hw *hw)
-+{
-+	mtk_rtc_clkout_set(hw, false);
-+}
-+
-+static int mtk_rtc_clkout_is_prepared(struct clk_hw *hw)
-+{
-+	struct mt6397_rtc *rtc = container_of(hw, struct mt6397_rtc, clkout);
-+	u32 con;
-+
-+	if (regmap_read(rtc->regmap, rtc->addr_base + rtc->data->con, &con))
-+		return 0;
-+
-+	return !(con & RTC_CON_F32KOB);
-+}
-+
-+static unsigned long mtk_rtc_clkout_recalc_rate(struct clk_hw *hw,
-+						unsigned long parent_rate)
-+{
-+	return 32768;
-+}
-+
-+static const struct clk_ops mtk_rtc_clkout_ops = {
-+	.prepare = mtk_rtc_clkout_prepare,
-+	.unprepare = mtk_rtc_clkout_unprepare,
-+	.is_prepared = mtk_rtc_clkout_is_prepared,
-+	.recalc_rate = mtk_rtc_clkout_recalc_rate,
-+};
-+
-+/* The 32 kHz output the PMIC drives to other chips, such as a combo chip */
-+static int mtk_rtc_register_clkout(struct device *dev, struct mt6397_rtc *rtc)
-+{
-+	struct clk_init_data init = {
-+		.name = "mt6397-rtc-32k",
-+		.ops = &mtk_rtc_clkout_ops,
-+	};
-+	int ret;
-+
-+	if (!of_property_present(dev->of_node, "#clock-cells") || !rtc->data->con)
-+		return 0;
-+
-+	rtc->clkout.init = &init;
-+
-+	ret = devm_clk_hw_register(dev, &rtc->clkout);
-+	if (ret)
-+		return ret;
-+
-+	return devm_of_clk_add_hw_provider(dev, of_clk_hw_simple_get,
-+					   &rtc->clkout);
-+}
-+#else
-+static int mtk_rtc_register_clkout(struct device *dev, struct mt6397_rtc *rtc)
-+{
-+	return 0;
-+}
-+#endif
-+
- static int mtk_rtc_probe(struct platform_device *pdev)
- {
- 	struct resource *res;
-@@ -380,6 +459,11 @@ static int mtk_rtc_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	ret = mtk_rtc_register_clkout(&pdev->dev, rtc);
-+	if (ret)
-+		return dev_err_probe(&pdev->dev, ret,
-+				     "failed to register the 32k clock\n");
-+
- 	nvmem_cfg.priv = rtc;
- 
- 	return devm_rtc_nvmem_register(rtc->rtc_dev, &nvmem_cfg);
-@@ -416,6 +500,7 @@ static const struct mtk_rtc_data mt6358_rtc_data = {
- 
- static const struct mtk_rtc_data mt6397_rtc_data = {
- 	.wrtgr = RTC_WRTGR_MT6397,
-+	.con = RTC_CON_MT6397,
- };
- 
- static const struct of_device_id mt6397_rtc_of_match[] = {
-diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rtc.h
-index f4da579ec638..a8130d726c59 100644
---- a/include/linux/mfd/mt6397/rtc.h
-+++ b/include/linux/mfd/mt6397/rtc.h
-@@ -9,6 +9,7 @@
- #ifndef _LINUX_MFD_MT6397_RTC_H_
- #define _LINUX_MFD_MT6397_RTC_H_
- 
-+#include <linux/clk-provider.h>
- #include <linux/jiffies.h>
- #include <linux/mutex.h>
- #include <linux/regmap.h>
-@@ -22,6 +23,9 @@
- #define RTC_WRTGR_MT6397       0x003c
- #define RTC_WRTGR_MT6323       RTC_WRTGR_MT6397
- 
-+#define RTC_CON_MT6397         0x003e
-+#define RTC_CON_F32KOB         BIT(5)
-+
- #define RTC_IRQ_STA            0x0002
- #define RTC_IRQ_STA_AL         BIT(0)
- #define RTC_IRQ_STA_LP         BIT(3)
-@@ -72,6 +76,7 @@
- 
- struct mtk_rtc_data {
- 	u32                     wrtgr;
-+	u32                     con;
- };
- 
- struct mt6397_rtc {
-@@ -83,6 +88,7 @@ struct mt6397_rtc {
- 	int                     irq;
- 	u32                     addr_base;
- 	const struct mtk_rtc_data *data;
-+	struct clk_hw           clkout;
- };
- 
- #endif /* _LINUX_MFD_MT6397_RTC_H_ */
+> Anyone remember why this does
+> pm_runtime_use_autosuspend(&st->pdev->dev);
+> in this code?
+>=20
+> That is unusual...=C2=A0 My immediate instinct is to
+> get rid of it, but maybe there is something subtle
+> going on.
 
--- 
-2.55.0
+When reading sensor via raw interface, you need to power-up, read and
+power-down (This is done via runtime PM). To avoid repeating this
+sequence of power up and power down for consecutive fast reads, auto
+suspend is used. If there are reads with in 3 seconds, the sensor will
+keep power up.
 
+Thanks,
+Srinivas
+
+>=20
+> > ---
+> >=20
+> > Changes in v2:
+> > =C2=A0* Split iio patch into per-driver patches
+> >=20
+> > =C2=A0.../iio/common/hid-sensors/hid-sensor-trigger.c=C2=A0=C2=A0=C2=A0=
+ | 14 +++++-----
+> > ----
+> > =C2=A01 file changed, 5 insertions(+), 9 deletions(-)
+> >=20
+> > diff --git a/drivers/iio/common/hid-sensors/hid-sensor-trigger.c
+> > b/drivers/iio/common/hid-sensors/hid-sensor-trigger.c
+> > index 60808e2430ca..d76a6d9f04f6 100644
+> > --- a/drivers/iio/common/hid-sensors/hid-sensor-trigger.c
+> > +++ b/drivers/iio/common/hid-sensors/hid-sensor-trigger.c
+> > @@ -154,21 +154,17 @@ int hid_sensor_power_state(struct
+> > hid_sensor_common *st, bool state)
+> > =C2=A0{
+> > =C2=A0
+> > =C2=A0#ifdef CONFIG_PM
+> > -	int ret;
+> > -
+> > =C2=A0	if (atomic_add_unless(&st->runtime_pm_enable, 1, 1))
+> > =C2=A0		pm_runtime_enable(&st->pdev->dev);
+> > =C2=A0
+> > =C2=A0	if (state) {
+> > =C2=A0		atomic_inc(&st->user_requested_state);
+> > -		ret =3D pm_runtime_resume_and_get(&st->pdev->dev);
+> > -	} else {
+> > -		atomic_dec(&st->user_requested_state);
+> > -		pm_runtime_use_autosuspend(&st->pdev->dev);
+> > -		ret =3D pm_runtime_put_autosuspend(&st->pdev->dev);
+> > +		return pm_runtime_resume_and_get(&st->pdev->dev);
+> > =C2=A0	}
+> > -	if (ret < 0)
+> > -		return ret;
+> > +
+> > +	atomic_dec(&st->user_requested_state);
+> > +	pm_runtime_use_autosuspend(&st->pdev->dev);
+> This is odd enough to make me nervous even though the patch is
+> obviously a no-op change.
+>=20
+>=20
+> > +	pm_runtime_put_autosuspend(&st->pdev->dev);
+> > =C2=A0
+> > =C2=A0	return 0;
+> > =C2=A0#else
+>=20
