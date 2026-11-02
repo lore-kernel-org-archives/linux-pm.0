@@ -1,79 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793612894;
-	b=FULZDp6A3kdM3AWirJ1njFGLz450llJG5yg8fm8GZ8+d2vEBIOS5ycAttnZvoowNcubM
-	 vap5TLT5MpvYMPYzFFLz7mCwELykDzOujbISJ9K6h/P9piL5t+TDM4HPlq2eOXszMjacF
-	 K5LMPTjDg/ghMoSK9LdY9TBbnxlU2YNsm7ElES92CGl/jeYgcn7T9lSDwgbB5GUyIevu6
-	 E7ilj06qGyFp/lxX08DQlPRPwNgv7O4izE0n0sUjYqQ7DiLIlVDjk9RBewC+gWmjRO678
-	 If7w3CAPzuwlimEAmR5p4UK+tlBiXmNw1f1juRjZRb/jihsPRN/AEgvqRDGtL0ytmZA==
+	t=1793613413;
+	b=dMQzWcQt6nAwEJ2zsLkSMzcMFlr1fCQUnF5wF6oPE+0Q2dQI6W85fHiQlCum1KoFuKOF
+	 kDG3gwI9CqlR34DbI0kNEK5X/J0sYpKs4vtkbd8CBVaUBe0hR5oDvRbIFjb1u0PvUS9oa
+	 acyY+3rKoML9kVJousx7QRZZFp80FzTqCJZfueSTeamzsbygYCR/XOmJCYvgOo8Uey9hC
+	 mXqmgPDCMgCpD4O4M3W1xAdudSvbTt1KeGiZwqrjHaa8ZRvGwHB7NNWSiNnQ6H4cpYPbv
+	 bVzmMBK89N8VxZO/UZ6EtNN7tTiAf7UD/usNTaAdlMW8XElW+QmaxiPCB0T+AKZgf9w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793612894;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:Received:
-	 Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:X-Proofpoint-Reinject:X-QCInternal:
-	 X-QCInternal:X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:
-	 X-Authority-Analysis:X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=y99IFQU1Z/zGZnStXTf6TTTZ1kfP+dHEP9lO3wSWaEw=;
-	b=VnmcJTYHINdbTMeNO6idw8jLgPSgvucs45fMFiuD5hfuAM8g+E8VY7db0d0M9Wyv4F+N
-	 v1ZPSlWigRKLDi7cK6TYvtVEoOKi6/Vvj4AkZ2VGMoRr8Av/vbkVV6UeAb9PHjwBONxxg
-	 sXSMHAXSuSDR2jUOqCJyoahhMUH0+TQgOkjGWb4x5xnNo6m+QcA9rySJwsbEmkpiLvrUu
-	 KmgXdZeHbsjUNd3UAVPiIGtrbJoYWUOovY9GG8MA4jFC51aKqzHCXeXz41t2WmBzo/nQZ
-	 akKwIvQQuD1oyN4AUYNfgLQi0Bc75Rjbds2I+jjOlslLOb90bcCGX/1YVgwnCxrnIrQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793613413;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=jEXZn25mOSnRSnFkDPXVKbT86gLRaygrv7hBJoYn83Y=;
+	b=Sw75FOHCMo/wJKzDrXOZTIQoyRwVoCdlqEOBUWPc4hvzXBGn6jqOBWo1IuA4M0kxFXTP
+	 PEMK+Ivv3HNJnhdp91bLIqzSQ4TilP38GMoNgyG2VFknD5GUk+z0SlxS16GUqaAbEh9IU
+	 k0BY4ON3JqawT0zVnDikWgjeHOAXOM/YrYuFVSANeIgEPJf456sXygsvONTjlFfxYQfr6
+	 m/MVeeZro+TIadWx8S1TYU6RLrqmxro1NPo/3n1/9GKLgsW405LSujQh83KG8smPII6ir
+	 jSAXP8H6r6WQK6bXXVzxAIpaxR442Aia3M9CjwdKljsHEumz6+7cpLk8Qe2sgIIH/NQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=CXIH8Kzk;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCCE2606A327;
-	Mon,  2 Nov 2026 09:48:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CCCE2606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Zg48mlwk;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B4A60606A33D;
+	Mon,  2 Nov 2026 09:56:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B4A60606A33D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=CXIH8Kzk
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A29AQmo3086616;
-	Mon, 2 Nov 2026 09:48:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=y99IFQU1Z/zGZnStXTf6TTTZ1kfP+dHEP9l
-	O3wSWaEw=; b=CXIH8KzkTO1VRrOHwyBIFcHrrPAixqmzWMcOUITuTuNeyyewWzn
-	VtAed7E5UyxIejohHkZ7T/qYY/BeR4r5hPa/evH/9jUXG0I1e7jdFHVcn7XfaoE3
-	jIU9zCeJyxUtx985ybJVZg+bINo/YwU2g+ztALIuuR6E5DM+RYv22zPIciCIJOp7
-	OOWTRhUHTe1YCSuv0nbSWCYfXkIn/45g9k8ZZgNziRtqA0Xd3GEdDZJUK5Il4Gvy
-	/oHTI74PYfMBPZMOwVRMk7MY9PpcNphF0fgnDoGoGVfAjk6593KxjXYGWLN9vwLc
-	8+1zb0v6t6Ra1rgko2mXbPLdejPzcHqATCw==
-Received: from aptaippmta01.qualcomm.com (tpe-colo-wan-fw-bordernet.qualcomm.com [103.229.16.4])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hpka616eg-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 02 Nov 2026 09:48:11 +0000 (GMT)
-Received: from pps.filterd (aptaippmta01.qualcomm.com [127.0.0.1])
-	by APTAIPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A29m8gx3436119;
-	Mon, 2 Nov 2026 09:48:08 GMT
-Received: from shuaz-gv.ap.qualcomm.com (smtphost-taiwan.qualcomm.com [10.249.136.33])
-	by APTAIPPMTA01.qualcomm.com (PPS) with ESMTPS id 6A29m8I43436112
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 02 Nov 2026 09:48:08 +0000 (GMT)
-Received: by shuaz-gv.ap.qualcomm.com (Postfix, from userid 4467449)
-	id 8A282671; Mon,  2 Nov 2026 17:48:07 +0800 (CST)
-From: Shuai Zhang <shuai.zhang@oss.qualcomm.com>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        chejiang@qti.qualcomm.com, quic_chezhou@quicinc.com,
-        wei.deng@oss.qualcomm.com, jinwang.li@oss.qualcomm.com,
-        mengshi.wu@oss.qualcomm.com, stable@vger.kernel.org,
-        Shuai Zhang <shuai.zhang@oss.qualcomm.com>,
-        Cheng Jiang <cheng.jiang@oss.qualcomm.com>
-Subject: [PATCH v1] power: sequencing: qcom-wcn: increase WCN7850 power-up delay
-Date: Mon,  2 Nov 2026 17:48:00 +0800
-Message-Id: <20261102094800.3225454-1-shuai.zhang@oss.qualcomm.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Zg48mlwk
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CF3DE1595;
+	Mon,  2 Nov 2026 01:56:48 -0800 (PST)
+Received: from [10.57.16.53] (unknown [10.57.16.53])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E43FB3F59E;
+	Mon,  2 Nov 2026 01:56:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793613411; bh=a+LR+CmbFBIcR2fiRj3wp8/wI+yAEpxcNhNDKOn/P+0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Zg48mlwkHNaWfJLi8qkWbskLRD3Pspw0QyjdDGJgFahD1n2OQCvVFP2WKnQ6GxZG6
+	 nbsNHPO6jsU2jOL517F/o6Cxqe5x79PUYiiL5XhOm8Bd/BYbyZUE72pzyB3COFi8C1
+	 eagMYzWRrNx5SLM9k3X3rs43KFd3aK/61j/dJIio=
+Message-ID: <3005f6f5-3b6a-4139-a170-1f60d93c9902@arm.com>
+Date: Mon, 2 Nov 2026 09:57:20 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,79 +53,189 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-ORIG-GUID: 6iWzyB_znUzkD8RYYlCAUl3ORHK0DJU1
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDAzOCBTYWx0ZWRfX+D0J6sTAJ9hP
- km9cQ69FH6eGLxsWDKDT90Cg5YSwkXBFmSdTRRNVP5/erdydrQeHFAPSJDfzxoXhTXRJ8aRb2RC
- 5x0vFEgnewKIBdNBVvkaIreuEE4tx4Q=
-X-Authority-Analysis: v=2.4 cv=ZbyIpcVA c=1 sm=1 tr=0 ts=6ae85c5b cx=c_pps
- a=nuhDOHQX5FNHPW3J6Bj6AA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=ZpdpYltYx_vBUK5n70dp:22 a=EUspDBNiAAAA:8 a=v_2pxYgQTzMkBfL8lxYA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDAzOCBTYWx0ZWRfX4o43CnkcceWv
- QqMvCtLaW+kqqk7ZGdJ/UNPnZxsmH/h2nDSuMfd3351YGW9rK9uugOrYxQMcwfmfuJnuF88LUsd
- 8YNYXC2GE779n4yiDBxMFCVvY1UfJ3uxTK5sjElglQUtN4OlwS6Ds9QhXKMWXJXdYLfRkl8voED
- 5GhsqNwE/OsNrEsm0MqQUhvf/k6HQ2gAXToW0pLYC6HxGwzyrEloIIzHXvAjqxFlPHntpCgd2X4
- zhpXMyeEt1exnoM0LkBEXhjCZNESws1+DN8i5lKPzHSMkGCmDuU7lI0jnVSx2lcESyLz4yWaKJd
- 5sVYYG9Bw8TMTi+NQ7m4nNRE+68y0ppc4kyy2COZPmbpKo/LQuritxWZXREofiSkXz1cyqC7Bvw
- Uo3gRUNV0sEhEOijA0NbawlxXlR0O5mkM67x3eh+Jk14/312fLhVvdicJPe0tw6gKd5WbxTI1Ln
- JMQStDfzFjkbRWzzeOQ==
-X-Proofpoint-GUID: 6iWzyB_znUzkD8RYYlCAUl3ORHK0DJU1
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-02_03,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 suspectscore=0 malwarescore=0
- phishscore=0 adultscore=0 clxscore=1011 bulkscore=0 impostorscore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
- definitions=main-2611020038
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 4/6] powercap: dtpm: Use generic powercap hierarchy
+ helpers
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, rafael@kernel.org,
+ Heiko Stuebner <heiko@sntech.de>, Shuah Khan <shuah@kernel.org>,
+ Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-kselftest@vger.kernel.org
+References: <cover.1793288783.git.daniel.lezcano@oss.qualcomm.com>
+ <f34635d2ce1d5c741968708e6349f7f059b03173.1793288783.git.daniel.lezcano@oss.qualcomm.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <f34635d2ce1d5c741968708e6349f7f059b03173.1793288783.git.daniel.lezcano@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-When the WCN7850 is powered up from the Bluetooth side first, i.e.
-BT_EN is asserted while WLAN_EN is still low, the chip starts from a
-cold state and is not ready to accept the first HCI command 50 ms after
-BT_EN goes high. The first command (0xfc00, read QCA version) is lost,
-hci_qca does not resend it and fails after the 2 s command timeout:
+Hi Daniel,
 
-  Bluetooth: hci0: Reading QCA version information failed (-110)
+On 10/29/26 16:56, Daniel Lezcano wrote:
+> DTPM implements its own hierarchy creation and destruction logic while
+> the powercap core now provides generic helpers for this purpose.
+> 
+> Convert DTPM to use the generic powercap hierarchy infrastructure.
+> Duplicate the platform hierarchy before creating it, and use
+> powercap_hierarchy_create() and powercap_hierarchy_destroy() to manage
+> the DTPM zones.
+> 
+> Add DTPM callbacks to create and destroy the zones associated with each
+> powercap hierarchy node. Adapt the CPU and devfreq backends to return
+> the created DTPM instance and use the node name provided by the
+> hierarchy.
+> 
+> Convert the Rockchip RK3399 description to struct powercap_hierarchy
+> and keep the device tree path as DTPM-specific node data.
+> 
+> This removes the DTPM-specific hierarchy traversal and destruction code
+> and leaves the hierarchy management to the powercap core.
+> 
+> Preserve best-effort creation: an unavailable backend returns NULL to
+> skip its branch, and setup failures are warned about and skipped rather
+> than rolling back independent zones. Invalid node descriptors remain
+> fatal.
+> 
+> When the representative CPU is offline, find an active policy through an
+> online sibling whose related_cpus mask contains it. Hold the CPU hotplug
+> read lock during selection and setup, and initialize the zone through the
+> policy's active CPU while keeping the hierarchy-provided name. An entirely
+> offline policy still has no active CPU to initialize through.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+> ---
+> Changes in v4 (since v3):
+> - Rebase on v7.3; no code or commit-description changes.
+> 
+> Changes in v3 (since v2):
+> - Rebase on v7.3-rc7.
+> - Preserve best-effort branch creation using the generic NULL result.
+> - Find an online policy sibling for offline CPU representatives and
+>    protect policy selection and setup against CPU hotplug.
+> - Keep generic API behavior and documentation in patch 1.
+> - Fix __initdata placement; match-table indentation is handled in patch 3.
+> - Name setup callback arguments and remove whitespace-only lines.
+> - Update the description.
+> 
+>   drivers/powercap/dtpm.c         | 177 +++++++++++++++-----------------
+>   drivers/powercap/dtpm_cpu.c     |  62 ++++++++---
+>   drivers/powercap/dtpm_devfreq.c |  22 ++--
+>   drivers/soc/rockchip/dtpm.c     |  67 +++++++++---
+>   include/linux/dtpm.h            |   6 +-
+>   5 files changed, 195 insertions(+), 139 deletions(-)
 
-When WLAN is powered first, 50 ms is sufficient, so the failure only
-shows up in the BT-first ordering. Measured on the affected board by
-which enable pin rose first:
+Tha patch in general looks good. I only have one
+comment related to the future usage of this mechanism.
+For this implementation it's safe, but I would add
+some extra safety net around the of_find_node_by_path().
+See comments below.
+[snip]
 
-  pwup_delay_ms   BT-first boots   with -110
-  50              9                9
-  75              23               0
-  100             21               0
-  300             20               0
+>   
+> -static struct dtpm *dtpm_setup_dt(const struct dtpm_node *hierarchy,
+> +static struct dtpm *dtpm_setup_dt(const char *name, const char *path,
+>   				  struct dtpm *parent)
+>   {
+>   	struct device_node *np;
+> -	int i, ret;
+> +	struct dtpm *dtpm = NULL;
+> +	int i;
+>   
+> -	np = of_find_node_by_path(hierarchy->name);
 
-Raise the power-up delay of WCN7850 to 100 ms. The delay is shared by
-the Bluetooth and WLAN targets, so WLAN power-up also waits 50 ms
-longer.
 
-Fixes: 2f1630f437df ("power: pwrseq: add a driver for the PMU module on the QCom WCN chipsets")
-Signed-off-by: Cheng Jiang <cheng.jiang@oss.qualcomm.com>
-Signed-off-by: Shuai Zhang <shuai.zhang@oss.qualcomm.com>
----
- drivers/power/sequencing/pwrseq-qcom-wcn.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I would add a NULL check for 'path' here, or below
+where dtpm_setup_dt() is called.
 
-diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
-index 636dd7e63..05ee1785e 100644
---- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
-+++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
-@@ -427,7 +427,7 @@ static const char *const pwrseq_wcn7850_vregs[] = {
- static const struct pwrseq_qcom_wcn_pdata pwrseq_wcn7850_of_data = {
- 	.vregs = pwrseq_wcn7850_vregs,
- 	.num_vregs = ARRAY_SIZE(pwrseq_wcn7850_vregs),
--	.pwup_delay_ms = 50,
-+	.pwup_delay_ms = 100,
- 	.targets = pwrseq_qcom_wcn_targets,
- };
- 
--- 
-2.34.1
+Usually it's up the the code which is calling that API
+to make sure that the NULL is not sneaked in.
+We probably can force drivers code for that, right?
 
+> +	np = of_find_node_by_path(path);
+>   	if (!np) {
+> -		pr_err("Failed to find '%s'\n", hierarchy->name);
+> +		pr_err("Failed to find '%s'\n", path);
+>   		return ERR_PTR(-ENXIO);
+>   	}
+>   
+>   	for (i = 0; i < ARRAY_SIZE(dtpm_subsys); i++) {
+> +		struct dtpm *tmp;
+>   
+>   		if (!dtpm_subsys[i]->setup)
+>   			continue;
+>   
+> -		ret = dtpm_subsys[i]->setup(parent, np);
+> -		if (ret) {
+> -			pr_err("Failed to setup '%s': %d\n", dtpm_subsys[i]->name, ret);
+> -			of_node_put(np);
+> -			return ERR_PTR(ret);
+> +		tmp = dtpm_subsys[i]->setup(parent, np, name);
+> +		if (IS_ERR(tmp)) {
+> +			pr_err("Failed to setup '%s': %ld\n",
+> +			       dtpm_subsys[i]->name, PTR_ERR(tmp));
+> +			dtpm = tmp;
+> +			break;
+> +		}
+> +
+> +		if (tmp) {
+> +			dtpm = tmp;
+> +			break;
+>   		}
+>   	}
+>   
+>   	of_node_put(np);
+>   
+> -	/*
+> -	 * By returning a NULL pointer, we let know the caller there
+> -	 * is no child for us as we are a leaf of the tree
+> -	 */
+> -	return NULL;
+> +	return dtpm;
+>   }
+>   
+> -typedef struct dtpm * (*dtpm_node_callback_t)(const struct dtpm_node *, struct dtpm *);
+> -
+> -static dtpm_node_callback_t dtpm_node_callback[] = {
+> -	[DTPM_NODE_VIRTUAL] = dtpm_setup_virtual,
+> -	[DTPM_NODE_DT] = dtpm_setup_dt,
+> -};
+> -
+> -static int dtpm_for_each_child(const struct dtpm_node *hierarchy,
+> -			       const struct dtpm_node *it, struct dtpm *parent)
+> +static struct powercap_zone *
+> +dtpm_node_create(struct powercap_control_type *pct, const char *name,
+> +		 void *data, struct powercap_zone *parent)
+>   {
+> +	struct dtpm_node *node = data;
+> +	struct dtpm *dtpm_parent = parent ? to_dtpm(parent) : NULL;
+>   	struct dtpm *dtpm;
+> -	int i, ret;
+>   
+> -	for (i = 0; hierarchy[i].name; i++) {
+> +	if (!node)
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	switch (node->type) {
+> +	case DTPM_NODE_VIRTUAL:
+> +		dtpm = dtpm_setup_virtual(name, dtpm_parent);
+> +		break;
+> +	case DTPM_NODE_DT:
+
+... or a NULL check here.
+
+> +		dtpm = dtpm_setup_dt(name, node->path, dtpm_parent);
+> +		break;
+> +	default:
+> +		return ERR_PTR(-EINVAL);
+> +	}
+
+
+The rest looks good.
+
+If we are sure we would never experience that NULL ptr coming to those
+registration callbacks - then OK.
+
+Regards,
+Lukasz
