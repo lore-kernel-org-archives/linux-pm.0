@@ -1,120 +1,93 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=170.10.129.124
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793652793;
-	b=15JIuaSVVmy6E2Tj1Eg6LaudUWnHhzepo6vCRaw8iT5Yq6tKUPxTJXF1YL1o/c0HdeS9
-	 kKXpyQL8lyN/SRGDgaALZFwM5ujEaJTIh+W9/gXoccRMSfzz57iCQzDGawkvSNIeRuvmk
-	 g56iC2GbReBq6FAyz+AkNylwDQu548zklAc9wEyY657Bw/frU79NRnGF06BPAal+ogKar
-	 50bzQXi2BZddrlhfBlCret7/rOCALRkL+cV2Ex+XuwVBAt4dMjGpsLbkYLqT+hpNU7J86
-	 PSqcNNKghfWOXBUDtL1d+MsyH5Wka6UMGRKJNT+6eMwpLXiWe3UC3qtf9HtQhZHcaZw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793652793;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:MIME-Version:References:In-Reply-To:From:Date:
-	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=117yBiLwKENKL+3PiWG/U5OMCVmGd5cgD5S+cpkVimE=;
-	b=ycd2GvxMO/yEt0Td//loNlyhhEf3BVeJjRwySXHO/g0arJ/sK3fDrt9rbgTOgGR+S9gQ
-	 /Hj7/qU/r0AtXFM93K1fAChiJPKde4QahY3OiwK2b22RoOjoxytt6YJcemUItIGbx9J2W
-	 ribG1BfgWN9XP7FXtXn+sYQrQ+tN4qplZ/0kM7Nb3GdOcaDzwmiOFLJMhcOi7PHU/Ia6r
-	 k7PqEfzaUzc97mVtcdSMA4mFxJJJ2KbR4GHMAtFTzEHa8Ctm61sCIgyWe+oJeXA47wugO
-	 +UMOHSiiDeWHMM1c23t6qymg0p/X8Jp+EVV7QG0dswr/RldH8601C4rfBvMyLDL679Q==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JrjqNRqP;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=ILbC3qNV;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=170.10.129.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.49
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793654164;
+	b=hfUx0JmtnktwaiIxSHMZVSwTWTC4NEtTwcFiNyEQZxJ6bvBxNXIqBkMnb6ISQsvY18bc
+	 a/HXMAJ8htyeMqmq+WzdHh3RcklDu8gZQP2/gZvc+pN07SOpeXzUP9OioYlGj9UCax1F5
+	 AMEKn2JCQwcI4UyfM1D4EEEPKQ7ms/IEgF//W6NFAJwlqAH13hO3jnaDzqIobg+l0WK2t
+	 dn/J9FUfpjqyjKdLH0mek3Wkp354Yp3MSyTHMqwOoAcpNYDuvjG/l0EUpedVJZpK12AEO
+	 6Pnf+Xh1zNfDHl4Ta59jadLmFyv+iT1IiBW1hg2siTEhGAyGIQVQvgoZdrizqayuqhw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793654164;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=VaQ4mY5L5yPvzObTP46rUUyQYF+3IVm7RJ9iuidlpa4=;
+	b=4CqfSjA+0JiSQo/c6NONwXp2oPOHZF21HJj6EfwYV2NAFtbEMh3Yxr7L+oV4Ulhz//I5
+	 np4sbRYBxlRY1Wm84/1wcFxTjZmfA0qdothCplaLRMIfett2U+UEBAw6yY0CwCld3SGck
+	 sCxlJcCJELM2qFewn3LBrZPdRxA3L6aFqTjnZXrIva9aWll2tFis2GtyyzTWg2xfsNG3y
+	 ayel7kLgYFioDKbbzDZXEkaxtbNE/RBYcdeBIM//pZrx9lcz/K+hVT76ijWc8A6tCcx09
+	 KGqyVMR1m16PPR2Un02hnU1tIpT1YwxqnYL2dzkpeS4BVfUIWJkTvHmra21n8o9auAw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=chromium.org;
+	spf=pass smtp.mailfrom=chromium.org;
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Tv+7ae6q;
+	arc=none smtp.remote-ip=74.125.82.49
+Received: from mail-dl1-f49.google.com (mail-dl1-f49.google.com [74.125.82.49])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29071606A32F
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 20:53:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 29071606A32F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77449606A330
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 21:16:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 77449606A330
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JrjqNRqP;
-	dkim=pass (2048-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=ILbC3qNV
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793652792;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=117yBiLwKENKL+3PiWG/U5OMCVmGd5cgD5S+cpkVimE=;
-	b=JrjqNRqP10lz+xwTaT1N5hOMraQMewbNcL6ZPtYs/6qBeMDZq5lyggz1hz5TUE2wvCqKwM
-	IXQbQRbVn/7mLpXXty1C0A86MwLFP717upzSrzHF5Nt1PiF43MqFrw00/Vf94oFs2+EMGE
-	o+EsfhfOm9/h5ijPwHR98WSryq3gxtk=
-Received: from mail-lj1-f199.google.com (mail-lj1-f199.google.com
- [209.85.208.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-379--1rClco1MCWZhMsh7lJKSA-1; Mon, 02 Nov 2026 15:53:09 -0500
-X-MC-Unique: -1rClco1MCWZhMsh7lJKSA-1
-X-Mimecast-MFC-AGG-ID: -1rClco1MCWZhMsh7lJKSA_1793652788
-Received: by mail-lj1-f199.google.com with SMTP id 38308e7fff4ca-3ab3fc6e459so290151fa.0
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 12:53:09 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793652788; cv=none;
-        d=google.com; s=arc-20260327;
-        b=O3fiAOpu4YDK8ZB/nNPT8aWfTCWit5UQmPYeBlaz8iiNTfsEOBGghQ7A0aoQFiY54+
-         YIP87OhaQUbvYmQYT1sUsrQQzCkpPzFyz7ZDMY8RBe5m+RPgFjbOzsye9CItYxm1sHj2
-         25yG6OYA3P+LZPL+GpTbyxDJOoimEZICEFKzBMIsuoKO6kjC27dLRCXkDHtrxmI0x1hl
-         uS3hHoY4pUEwslelcZTFqAc/zPCB9Z1FYXJoCeq8624wrnsus8fsQMvjMULEe3zcdHzb
-         ExD+iNvOabwhrW6mq9pcU1EjkLXbENb7/ofnNv5lysfR9kr9EGJs2/fCZ+st7ZqvdLLz
-         Ay9w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=117yBiLwKENKL+3PiWG/U5OMCVmGd5cgD5S+cpkVimE=;
-        fh=lMg5sahEW8YeGuxCpjzyLVdEdjmLA8Pid92/xrn2Zyo=;
-        b=HPSq73WeAhxUyejzpXSJLkAwiD3vp26y3diTYnL5eJEDZUMsSxu0oI65R9nVzd7iV9
-         yQzM9Zv2Hg0sOmLS6XV+cONdE63l61Nc4+LKAqS8otAjhXQqAzaJV6n8OVcyjwKgBpxv
-         JC6ZI+pDSg3iCxb33UM259yXrkn7BejALGh/CrE1IUxYeyswF0MHjxwT76AXm/5f60JJ
-         1QlJmZS9mLYoZTi/PhSgLmvJ4ZTSy+UJAApxXHVTIhX5u/E4RC7s/58Gg5hABJoLKpaG
-         FkFMlCJQNsHNu53POOJi7Tx7djgkk3bVHvJKZizW0qG0HJrDzXYnhXNrN/6I0khQxPny
-         NbmQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Tv+7ae6q
+Received: by mail-dl1-f49.google.com with SMTP id a92af1059eb24-1a2761c69fbso5577884c88.0
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 13:16:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1793652788; x=1794257588; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+        d=chromium.org; s=google; t=1793654162; x=1794258962; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=117yBiLwKENKL+3PiWG/U5OMCVmGd5cgD5S+cpkVimE=;
-        b=ILbC3qNVxcxSfLLqiEMczm2K9EWJDHjQ3jtHiRo8lvs7xOcCBk9KViZKbMYNn3rDyD
-         1nRBZKRZevJudcNGThw44x8q3rGE46+/V3Lp15cYzXfiXGQHqy3zvhO0o48B5BncA5Or
-         KbQ3kcHqkQQMolwwbUP9ub3434QutGVu8nmoCGzc2PCEhLmjOocqh+8d4XwIGdidYoBZ
-         1xLTej5dBNXaVOsg0H9ykUYcbsfyfY1xRAFquEOh1DF007rqhduAsvbJpJIrCtz2kQKk
-         jbQ0GJtS49pjk16tDcdcdHiHPoCzeSh4Rpt4Z21PkzyRrg6RuTlgqDQLYpdpsCCp4Dam
-         yDGQ==
+        bh=VaQ4mY5L5yPvzObTP46rUUyQYF+3IVm7RJ9iuidlpa4=;
+        b=Tv+7ae6qFwJUrAkkvyIFZ26J2lYxiAmmLc0CaTjSOjF+KSqWztMzk+NOQACrq81a4r
+         gQjTBn8Yh08fg6/UgxnavjLITlrMd3FL6soeyH6B+afiYoJ5H4audZFQGOj9/ziptdvd
+         VF8A8Nr4HeodvQdeSWNH6bjDaon/cspwZlubw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793652788; x=1794257588;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20260707; t=1793654162; x=1794258962;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=117yBiLwKENKL+3PiWG/U5OMCVmGd5cgD5S+cpkVimE=;
-        b=vjObABP+5D4vHdEwRe7EnsyK172hZIa5ld7WeEccg9BHeYdpx0g5nq0TuS2Wi93IE6
-         FBLONSiwVnU3gESymTbFrRd7EDZ+cECMAibCf+hGnjTrsQlxr5GjPbAdCeHV6q/EvHo/
-         ZYWeeuHDr4T2YxTJquNRkqLVjZa856ExlpwbFu0qSxj+oJvbt0GnOqvbquLWboUtMu0T
-         AZTC+R2IawHN8CiDJne8YQig4Kv8mDlNQI2i/3fPveQ5r9aT1Ii2kAKpg/vih/eg9dUi
-         eFL0ODY2z3Rg2Wf2f4zC5WjS7BKhbJgZnGol+l712GtWsvVfopg8AkOAhMnWwtuZTbZ3
-         K0yQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzOVZvzlYHhNiH/jk6hvBs1aHRhmsfCyV0Xjx3oLhxO+lXyI7R6V6Jv3gLsNlmN/kOzoFjhrrcqxA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8+/oAlgen4q6oGNsdLyWZtBKVp4uAzj/zApFI2LnaKemYG9xE6
-	/WZP4ibr25vXzdceypttW85G0Fl+sJM/XEloRAhSZMTI9nC20NqN1F3QTsyqcyqyjz+FdaTtNnn
-	K4qM6lLjt0cGyyR5uur4+ltiAwnI9ZgyBoLpz8EtuvlmkixQfDsOw1H6DLodY2nxYrUAzH2VDzK
-	vCQLM4NzcUHVdiotEt+T7GxLMKlvEq2/1Zfgc=
-X-Gm-Gg: AYBFou0l9J2NfmKqahi9IOPEJ0k1lk4GD+D5u/Tc2A7tDnvgEhVeuJS8MMeP+Ma3sfa
-	7vu1/rm1p9dGYKxJQ1VBonj+MD1q9KI2lsbbhIIgYx4fqrxqt406/kgJCdV4sUq3awbEnz/N30Q
-	98uBejdhvRtKu+1fxpfjhsNupSf48Im6chBkCWA379LnEcvKVLFdPLYJD6
-X-Received: by 2002:a05:651c:a14e:b0:3ac:4b79:573b with SMTP id 38308e7fff4ca-3acb7aa83b1mr20499281fa.13.1793652788273;
-        Mon, 02 Nov 2026 12:53:08 -0800 (PST)
-X-Received: by 2002:a05:651c:a14e:b0:3ac:4b79:573b with SMTP id
- 38308e7fff4ca-3acb7aa83b1mr20499011fa.13.1793652787872; Mon, 02 Nov 2026
- 12:53:07 -0800 (PST)
+        bh=VaQ4mY5L5yPvzObTP46rUUyQYF+3IVm7RJ9iuidlpa4=;
+        b=JhqgvJ2qSbP7J+B8BpwgU2mkYy9T5fT0iiSR0CUA1djVNUnBCUa2kN0EWiySsnjhcw
+         Ih9FBDrqfaRJ/U6ItaiGcjs9GSKNqaNt7EjDpOcbKT+pVg8c0OOZR/qxXE6KWqB4TUO8
+         fb1Gg5mKFRImRD8zlmP+2K6EfYuUkcRb+XRpMiYpRjOPrHRC7pDLmYQ8bwSS1uXqBRXg
+         JFYWXCC0YPQoYgYgKwJiUCj3I3Yh1l5uNEaFLR335s4h+PS8xFfiNNBtSTofCfcERXNx
+         4cIzcwLnzxWqIj1n6RXpsIdHZWJPslgTCA/nbkiDO18PzW0Q4tJgSmtk2DzmDReC1CN1
+         1wPA==
+X-Forwarded-Encrypted: i=1; AKwUvBxwBFieSBn0T2UvnldDbyyXjK/8TB316PDz8psOqycOA7y7ti1Chb0jFbH7o6czrR5suTHdu9MR6w==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIG2MlkrfvQKfw2dwjViGR/BkWuyS+bPIM2juCQLwUuo1Bys33g
+	HaaH/K3V8cmFDPbbUtJJ1ExWCRZyOxrPcqnMjVW80kD0fKCrfBBLmAOz6oYd8V4dVQ==
+X-Gm-Gg: AYBFou3cDR0cJy/uBq7lD2hMyGLnt7OttlLZiWpjYW9zy5ofz8x00JNUuYgqdTyVXMY
+	gnN7k7Qc9h+cx4HqHDduPfOBlANdX/qWOKFSJZKnYSCZVpCs7KnWD/n7BGcy9waCDDZ+nJgO/uk
+	ijfE+GqiGjPA0swuhO0nST58980hkgIriYXBDN9T9uDOmxgigJinDhvTNetjf0WnNdRuYGQJH9Y
+	oxjaSJFlczb0xgTzf8Ir77KXhXLcPrD3lcW6tDRWmfXsHn23rGl0X7QopXEGDfKc6nYg6Xgz5/W
+	HFOCvKT0LTz4J6TY/MQF/yszwEIYR0Y83V3Axo8btanO2kt+DRtOybQ2rjOnasg1YSyyMTaIhHj
+	ia7KmQ84gBvFRn/Ec3FuQ3gF4lMhETgHXKAnJsgneJSFuJ6TjsC5YMFB3Why6ScKZE5TQ7ERwEu
+	pmgRHzAFbXNXVbqR1tc6cbtVdYtLhJS2e0qDovd9cBLwEAkeE/jZm3qm4n5a2O/3ThjtB6EC5XM
+	g1ewQ3vXwcpTqEQLQS0cySMVrZx7vbt3HAm7+kLWRwBpqvrNKJTVO15yAPkakZlahvAKhOEFVf5
+	9SDf7Z/WPf491rikqkGgzpycwkcdDztQxgM+HxeXvnHukcYV+3TyuMuIwUOH79TDtz8=
+X-Received: by 2002:a05:7022:eb55:10b0:168:3243:c90c with SMTP id a92af1059eb24-1ac59dd356cmr17871485c88.15.1793654162136;
+        Mon, 02 Nov 2026 13:16:02 -0800 (PST)
+Received: from localhost ([2a00:79e0:2e7c:8:c57d:c93d:3543:aab5])
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1ac1854d925sm63953172c88.7.2026.11.02.13.16.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 02 Nov 2026 13:16:01 -0800 (PST)
+Date: Mon, 2 Nov 2026 13:15:59 -0800
+From: Brian Norris <briannorris@chromium.org>
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: linux-iio@vger.kernel.org,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>,
+	David Lechner <dlechner@baylibre.com>, linux-kernel@vger.kernel.org,
+	Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
+Subject: Re: [PATCH v3] iio: gyro: bmg160: Discard
+ pm_runtime_put_autosuspend() return values
+Message-ID: <auj9j3sbYa4sVoil@google.com>
+References: <20261102014830.679216-1-jic23@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -124,63 +97,142 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261027223847.652884-1-irogers@google.com> <20261027223847.652884-6-irogers@google.com>
-In-Reply-To: <20261027223847.652884-6-irogers@google.com>
-From: Alexander Aring <aahringo@redhat.com>
-Date: Mon, 2 Nov 2026 15:52:55 -0500
-X-Gm-Features: AclHuK8pGzNf4aGPekLa6NQcs521xOugw8djA3E8ZMCjZ7yn89XzG5j_wIaQNFk
-Message-ID: <CAK-6q+j-MS_5St04YFU11LG_Cjf1jOuS3q33qk_iK=7TE-iuBg@mail.gmail.com>
-Subject: Re: [PATCH v2 5/9] dlm: Free dlm_ls in kobject release callback
-To: Ian Rogers <irogers@google.com>
-Cc: Kees Cook <kees@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Miguel Ojeda <ojeda@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, 
-	Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, 
-	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
-	Zhihao Cheng <chengzhihao1@huawei.com>, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
-	Sumanth Korikkar <sumanthk@linux.ibm.com>, Bill Wendling <morbo@google.com>, 
-	Justin Stitt <justinstitt@google.com>, driver-core@lists.linux.dev, llvm@lists.linux.dev, 
-	linux-hardening@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-sh@vger.kernel.org, linux-s390@vger.kernel.org, gfs2@lists.linux.dev, 
-	xen-devel@lists.xenproject.org, linux-mtd@lists.infradead.org, 
-	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, David Teigland <teigland@redhat.com>, 
-	Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261102014830.679216-1-jic23@kernel.org>
 
-Hi,
+Hi Jonathan,
 
-On Tue, Oct 27, 2026 at 6:39=E2=80=AFPM Ian Rogers <irogers@google.com> wro=
-te:
->
-> struct dlm_ls embeds a struct kobject (ls_kobj), but dlm_ktype lacked a
-> .release callback and dlm freed the lockspace structure directly via
-> kfree(ls). With CONFIG_DEBUG_KOBJECT_RELEASE=3Dy, freeing ls before the
-> delayed kobject release runs causes a use-after-free, and unloading the
-> module while the delayed release is pending results in an instruction
-> page fault.
->
-> Add a completion ls_kobj_done and dlm_ls_release() to complete it when
-> the last kobject reference is dropped, waiting for it in free_lockspace()
-> before kfree(ls) and in the new_lockspace() error path before module_put(=
-).
-> Also delete the kobject via kobject_del() before stopping dlm_recoverd
-> to close the window where concurrent sysfs writes could wake the stopped
-> recovery task.
->
-> Fixes: 3514faca19a6 ("kobject: remove struct kobj_type from struct kset")
-> Signed-off-by: Ian Rogers <irogers@google.com>
+On Mon, Nov 02, 2026 at 01:48:30AM +0000, Jonathan Cameron wrote:
+> From: Brian Norris <briannorris@chromium.org>
+> 
+> This driver propagates the return value of pm_runtime_put_autosuspend(),
+> which is not particularly useful.
+> 
+> Returning an error code from pm_runtime_put_autosuspend() merely means
+> that it has not queued up a timer or work item to check whether or not
+> the device can be suspended and there are many perfectly valid
+> situations in which that can happen, like after writing "on" to the
+> device's runtime PM "control" attribute in sysfs for one example.
+> 
+> For this reason, modify this driver to simply discard the
+> pm_runtime_put_autosuspend() return value, and inline
+> bmg160_set_power_state() now that it behaves the same with and without
+> CONFIG_PM and is otherwise trivial.
+> 
+> Now the return value of the cleanup is ignored, also switch various
+> paths to use PM_RUNTIEM_ACQUIRE_AUTOSUSPEND() in conjunction
+> with guard(mutex)() futher simplifying the code.
+> 
+> While at it, I notice that bmg160_write_event_config() and
+> bmg160_data_rdy_trigger_set_state() mismanage the runtime PM reference
+> count intentionally, relying on racy autosuspend behavior for
+> correctness. I refactor this to manage refcounts properly instead.
+> I use guard() for the mutex, to make this less error prone.
+> 
+> Additionally, bmg160_write_raw() had one error path where a
+> pm_runtime_resume_and_get() failure would also drop a runtime PM
+> refcount (pm_runtime_put_autosuspend()), which potentially leads to
+> underflow. I fix that.
+> 
+> This will facilitate a planned change of the
+> pm_runtime_put_autosuspend() return type to void in the future, similar
+> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+> type to void").
+> 
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> Signed-off-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
+> ---
+> I'm continuing to nibble away at Brian's series applying some of the
+> additional changes Andy asked for (that Brian quite reasonably stated
+> were beyond what he was going to take on!)  Just this one today.
+> 
+> v3: Make use of ACQUIRE magic in various paths as enabled
+> by dropping the return value.
+> 
+> With this posted, I'll mark it changes requested in patchwork.
+> 
+> https://patchwork.kernel.org/project/linux-iio/patch/20261021165858.v2.10.I5918e916cbe48281c13e5734733a3281e7be8841@changeid/
+> 
+> ---
+>  drivers/iio/gyro/bmg160_core.c | 237 +++++++++++++--------------------
+>  1 file changed, 94 insertions(+), 143 deletions(-)
+> 
+> diff --git a/drivers/iio/gyro/bmg160_core.c b/drivers/iio/gyro/bmg160_core.c
+> index b007f46d3fd6..a48e01ecc367 100644
+> --- a/drivers/iio/gyro/bmg160_core.c
+> +++ b/drivers/iio/gyro/bmg160_core.c
 
-A somewhat "big change" for just a debug functionality. Althrough I
-agree we shout call "kobject_del()" early to avoid additional sysfs
-changes during removal.
 
-Acked-by: Alexander Aring <aahringo@redhat.com>
+> @@ -759,42 +700,37 @@ static int bmg160_write_event_config(struct iio_dev *indio_dev,
+>  				     bool state)
+>  {
+>  	struct bmg160_data *data = iio_priv(indio_dev);
+> +	struct device *dev = regmap_get_device(data->regmap);
+>  	int ret;
+>  
+>  	if (state && data->ev_enable_state)
+>  		return 0;
+>  
+> -	mutex_lock(&data->mutex);
+> +	guard(mutex)(&data->mutex);
+>  
+>  	if (!state && data->motion_trigger_on) {
+>  		data->ev_enable_state = 0;
+> -		mutex_unlock(&data->mutex);
+>  		return 0;
+>  	}
+> -	/*
+> -	 * We will expect the enable and disable to do operation
+> -	 * in reverse order. This will happen here anyway as our
+> -	 * resume operation uses sync mode runtime pm calls, the
+> -	 * suspend operation will be delayed by autosuspend delay
+> -	 * So the disable operation will still happen in reverse of
+> -	 * enable operation. When runtime pm is disabled the mode
+> -	 * is always on so sequence doesn't matter
+> -	 */
+> -	ret = bmg160_set_power_state(data, state);
+> -	if (ret < 0) {
+> -		mutex_unlock(&data->mutex);
+> -		return ret;
+> -	}
+> +	if (state) {
+> +		ret = pm_runtime_resume_and_get(dev);
+> +		if (ret < 0) {
+> +			dev_err(dev, "failed to resume: %d\n", ret);
+> +			return ret;
+> +		}
+>  
+> -	ret =  bmg160_setup_any_motion_interrupt(data, state);
+> -	if (ret < 0) {
+> -		bmg160_set_power_state(data, false);
+> -		mutex_unlock(&data->mutex);
+> -		return ret;
+> -	}
+> +		ret = bmg160_setup_any_motion_interrupt(data, true);
+> +		if (ret < 0) {
+> +			pm_runtime_put_autosuspend(dev);
+> +			return ret;
+> +		}
+> +	} else {
+> +		ret = bmg160_setup_any_motion_interrupt(data, false);
+> +		if (ret < 0)
+> +			return ret;
+>  
+> -	data->ev_enable_state = state;
 
-Thanks.
+This is an unexpected (to me) delta vs v2: you've stopped setting
+data->ev_enable_state here. I think that's a regression.
 
-- Alex
+This is also one reason I think it's unwise to make so many changes
+together here. One person's "churn" (to apply several patches to similar
+code) is another person's "hard to review / easy to make mistakes".
 
+Brian
+
+> -	mutex_unlock(&data->mutex);
+> +		pm_runtime_put_autosuspend(dev);
+> +	}
+>  
+>  	return 0;
+>  }
