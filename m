@@ -1,66 +1,66 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.17
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793605263;
-	b=Je7jagys92fkng+hNeosZz2FiFEQDThoB4hASX6l/7lFyn2T26E9xtpMQDXFLOca+H9v
-	 s1D0IuaA7R8NufmDlpm7FjaT6dAhUzdmP3g921CyU617hqRGjLcmI1JZ7LuHTRMm3pv/2
-	 1oUNZBsoyZNu7PIo2mDN+5JbwZ9wQIri0DtKa+dYQw/RHViDBK2pGk29HTW2N0U8YLM0F
-	 nQ2lfVlMkEv7L4xIREICjotHG+z0KEwSjnggE7Q5aED/f1E4eV4O6153BguMtd//CqorR
-	 iHCm+I1MURb8pLGCBr0VkUd1Pyrs/59w3WSoSKcXQTBmpnMQddtN2bruWKmTgWZHQvw==
+	t=1793605270;
+	b=zVaQPyolfijxer8oKyhjxbpXFytpwLEa/JCL/nzrT+1uv3zjmjrdGEFueubo2PKvDLCK
+	 Q7hstCU1+ypf1MLK92ZanlcmICGJE8zw58nPqXCz/f8PrFyggw2fmdOoX/qiXeXVV8Rz4
+	 IpoP7/osAphCMP4puY/f+EUfqbItQUmtMIwwdyHx9kdov6WdD+BWwKcwnLVGUEOyWoa98
+	 h8Gselo+j6cOKidxkRwxveT8tT5HgcXS20dvwK5jE+8F1z7vdQvGdAgiHZfbTAgQawznG
+	 1X3fXtDd6ri/7eOrgWNYBvbAVetVoulhurGe0GjeSiGkBiA7T3sDTS4tPSAcQVeggjg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793605263;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793605270;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
 	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Organization:Content-Transfer-Encoding;
-	bh=RH2Hnu2Dti7Q+9NWgAUZ00h2CN2wYvdC3cQQu5a/rL0=;
-	b=GXUue+gLQspploKka+1erBAhLNZUtQXY2w+8dNlyH5pmBFvWPgSknVBA+EwUsPkwEA+n
-	 ncY+F6ZGbvl/FfhI91RPgvEzjQUONJipR7lFuub2lkjoQKx3x9sgZt/QODILbkukdn/90
-	 Z6Sp0fMuyYUbyZTKEwC0FmzDwhmaxvrq/6CyPWsg/8J7oAFNj5sBWJC4UqsdD8McHLNAm
-	 3nHyJv/mN7Lr1+FCEBrF4uKdQBXFDXfkfIbZeZ6sNzHsO1V/Lcz3jBXilNOl0T3o9PJa9
-	 J9DcLRqmK9C1JzcKT4nV/ELl0xGVh1gDIK9y/wOkXlTbx9Zd9sINsf9/3222PDBDcNQ==
+	bh=RWvaWe3fQrnhnNXMlm0+MG4DLsCk6PnMuuEdTBN2qog=;
+	b=xzSK8P0DR9QcfL+gtEvAomXZ40DuUCKSaMrZ4DR33qy+0DvgWX2IL5T0k58f4VyYi/mr
+	 LGyBbIC/nSSZmfAr7rvS7njDqvBkTxMQhWBj/WhpjaVNjh4aZ0KLooDq4YDDdc3sL7/BC
+	 VuFals44dkZvaRfvn8Ej8W6lMmJjyGhd9jkYvWSlILd4Q/FP1q/MAOgWEv6C6WRfF6pWf
+	 Nzx2qV6J8aLB4oDLJX+AABJ+/LReyC+St6fgMtvU4qIB9SeBZxNa/OqmjIs04PftCkB0+
+	 rfqPahVuIzzXXNytM4x7O30dIE/bUB5nbg6U0cYawz9NAdNBa+yz9yYGeWhCRa442yQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=intel.com;
 	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YyFmMJkE;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XNvniGJt;
 	arc=none smtp.remote-ip=198.175.65.17
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 182B4606A32F;
-	Mon,  2 Nov 2026 07:41:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 182B4606A32F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE850606A334;
+	Mon,  2 Nov 2026 07:41:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CE850606A334
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YyFmMJkE
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XNvniGJt
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793605262; x=1825141262;
+  t=1793605269; x=1825141269;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=VLW4mh7uPKNWjdbDLVnZfcxQmi3GS6EFtxsZW3S4z0o=;
-  b=YyFmMJkEu9RuVXKMWLAKhbjRVepCfTLuFjDtsjVS4ryvGaRGCt1kV+aF
-   NZYeqWV+uOg58P3zc4wKPu3t8OvXs0W+SHlYUEtW5evDyoCg63OA1kIIK
-   f5ftbaB0j/A66XbYObxchZIi/Blm87CZx4n7R4eoCuFq1p3ycOESzblFd
-   R4qG05FxlUI7QQ3XHqZYfrfulu7XysSLiQJgVUqatoOeZPbW9Rz8JeClJ
-   NPmhlCPaIrFg/LLj5x4mebXCn5hLtSrYio7B8Jdmu6348F9I8axU2dA49
-   fS3EDpj287HVARZJFL2Xrh4/yk/v6IR1rGqv3Jy48jJsgp6fi0NkNl9B8
-   g==;
-X-CSE-ConnectionGUID: Ju91IQszT3+wHbiXPGHimQ==
-X-CSE-MsgGUID: uofL19KHTGO53fHNXNHL2Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2300085"
+  bh=XKwZHaphQF9yKywgOabuA7G4fnw+cforMEHdkv1ePGk=;
+  b=XNvniGJtHwP8qYr7NRSHiS7YwLpuH8xWfF+anEHVo//j7AAYS8o2zUDw
+   JYLo5Nnc29rh29z/+RLoZPY96wGxqKTDYxyWPdVyvqHGDyji/zOwkVRrq
+   hE1ZQuPg5iax59zlTV4ESQQvEOa1S2n2ExJvBxU6fg64AfO4E7g4H54tV
+   0e5hxem8hGH0m3qTGPTSFe888E99bN3vOAZlQjjYl25BfllZdWY8u0/E3
+   3bqDjac3AUXqf2MKlgP3T+0CM7m9bSD5svWvMAJK2PEpssOuMxKrpgHsH
+   IaxEZAQLQRBZ3oGLyAx6zcGxHA8yBcpNzeYcPnUFqocQtKjE0FTaYlIdC
+   w==;
+X-CSE-ConnectionGUID: pYrgcJjQQMC5a0r0hkAleQ==
+X-CSE-MsgGUID: mC+GqT0fQC2wD2anHJQoeg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2300122"
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="2300085"
+   d="scan'208";a="2300122"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:01 -0800
-X-CSE-ConnectionGUID: TvauPCT9SgK8LZuoeFMPeg==
-X-CSE-MsgGUID: 0BAGtZxmT1i4ETFx8WYYgg==
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:08 -0800
+X-CSE-ConnectionGUID: Z+8U3Z8bQSKdMhOR7kiW2g==
+X-CSE-MsgGUID: OuZp5KUtSYuIkXvr+8V3GQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="6182151"
+   d="scan'208";a="6182222"
 Received: from pgcooper-mobl3.ger.corp.intel.com (HELO ahunter6-desk) ([10.245.244.189])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:40:54 -0800
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:01 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@redhat.com>,
@@ -92,9 +92,9 @@ Cc: Ingo Molnar <mingo@redhat.com>,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	driver-core@lists.linux.dev
-Subject: [PATCH 1/6] irq_work: Re-raise pending irq_work after system resume
-Date: Mon,  2 Nov 2026 09:40:34 +0200
-Message-ID: <20261102074039.26983-2-adrian.hunter@intel.com>
+Subject: [PATCH 2/6] perf/x86/intel/pt: Stop tracing if VMXON has not yet happened
+Date: Mon,  2 Nov 2026 09:40:35 +0200
+Message-ID: <20261102074039.26983-3-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261102074039.26983-1-adrian.hunter@intel.com>
 References: <20261102074039.26983-1-adrian.hunter@intel.com>
@@ -110,157 +110,125 @@ MIME-Version: 1.0
 Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 - 4, Domiciled in Helsinki
 Content-Transfer-Encoding: 8bit
 
-irq_work_queue() raises the irq_work self-interrupt only when adding
-work to an empty raised_list.  Once raised_list is non-empty, further
-queueing assumes the interrupt is already pending and will eventually
-process the list.
+On Broadwell, which does not support Intel PT in VMX operation
+(IA32_VMX_MISC[14] = 0), VMXON clears IA32_RTIT_CTL.TraceEn and any
+subsequent write to IA32_RTIT_CTL causes #GP.
 
-That assumption can fail across system suspend.  irq_work queued after
-arch_suspend_disable_irqs() and before the interrupt controller is
-suspended, for example from NMI context, may leave its self-interrupt
-pending in hardware.  If that pending interrupt state is lost during
-suspend, hibernation restore, or kexec jump, raised_list remains
-non-empty after resume but nothing will process it.
+To avoid that, intel_pt_handle_vmx() sets pt->vmx_on so that
+pt_config_start() and pt_config_stop() skip writes to
+IA32_RTIT_CTL while VMX is active.
 
-Subsequent irq_work added to raised_list will not raise another
-interrupt because the list is already non-empty.  Architectures that use
-an irq_work interrupt and do not process raised_list from the tick can
-therefore leave irq_work pending indefinitely.  A caller waiting in
-irq_work_sync() may then spin forever, for example when closing a perf
-event whose pending irq_work never executes.
+However, pt->vmx_on is set before VMXON executes. An NMI in the window
+between setting pt->vmx_on and executing VMXON can then observe
+vmx_on == true while tracing is still enabled.
 
-For suspend, hibernation, and kexec jump, only the CPU that remains
-online is affected.  The other CPUs are taken offline beforehand, and
-smpcfd_dying_cpu() runs irq_work_run() on each CPU before it is removed,
-so checking the local raised_list is sufficient.
+In that case pt_config_stop() skips the write that would clear TraceEn,
+leaving tracing active. This can subsequently cause:
 
-Add irq_work_resend(), which re-raises the irq_work self-interrupt when
-raised_list is non-empty, and invoke it from syscore_resume() after
-interrupt controllers have been restored.  Also invoke it from the
-syscore_suspend() failure path, after the already-suspended callbacks
-have been resumed, because callers do not call syscore_resume() in that
-case.  This restores a lost irq_work interrupt on the CPU that remains
-online for suspend-to-RAM, hibernation, and kexec jump.
+  - intel_pt_interrupt() to reprogram PT output registers while
+    TraceEn is set, resulting in #GP, or
+  - cpu_emergency_stop_pt() to leave tracing active during kdump,
+    allowing tracing to continue into the capture kernel.
 
-If the original interrupt was not lost, the extra self-interrupt is
-harmless.
+If pt->vmx_on is set, read IA32_RTIT_CTL and still clear TraceEn when
+it remains enabled.  Writing IA32_RTIT_CTL is valid until VMXON
+executes, while after VMXON TraceEn is guaranteed clear and cannot be
+re-enabled.  Consequently no write is attempted while VMX is active.
 
-Example S3 with perf record that always loses a self-IPI:
+Example (on a Broadwell):
 
- # echo deep > /sys/power/mem_sleep
- # cat /sys/power/mem_sleep
- s2idle [deep]
- # perf record -e power:suspend_resume --no-buffering -C 0 -o /tmp/s3.data &
- [2] 2147
- # rtcwake -m mem -s 10
- rtcwake: wakeup from "mem" using /dev/rtc0
- # kill -INT %2
- [ perf record: Woken up 1 times to write data ]
- [ perf record: Captured and wrote 0.892 MB /tmp/s3.data ]
+    Instrument x86_vmx_enable_virtualization_cpu() to enlarge the
+    window e.g.
 
- Now perf record is stuck in irq_work_sync() which spins forever:
+	 	intel_pt_handle_vmx(1);
 
- # perf record -C 0 -- sleep 1 | perf report --stdio
- # Overhead  Command  Shared Object      Symbol
- # ........  .......  .................  ................................
- #
-     99.98%  perf     [kernel.kallsyms]  [k] irq_work_sync
-      0.02%  perf     [kernel.kallsyms]  [k] ktime_get_update_offsets_now
+	+	for (int j = 0; j < 6; j ++) {
+	+		int cpu = smp_processor_id();
+	+
+	+		pr_info("VMX: cpu %d: spinning %d\n", cpu, j);
+	+		for (int i = 0; i < 10000; i++)
+	+			cpu_relax();
+	+	}
 
- Eventually resulting in hung tasks:
+	 	r = x86_virt_cpu_vmxon();
 
- INFO: task kworker/u8:1:35 blocked for more than 122 seconds.
-       Not tainted 7.3.0 #2
- task:kworker/u8:1    state:D stack:0     pid:35    tgid:35    ppid:2      task_flags:0x4208060 flags:0x00080000
- Workqueue: events_unbound fsnotify_mark_destroy_workfn
+    Start Intel PT tracing on a CPU:
 
-Fixes: 76a33061b932 ("irq_work: Force raised irq work to run on irq work interrupt")
+	perf record -e intel_pt//k -C 1 &
+
+    Load KVM:
+
+	modprobe kvm_intel
+
+    Observe kernel messages.  Without the fix, there is an unchecked
+    MSR access:
+
+	VMX: cpu 1: spinning 0
+	VMX: cpu 1: spinning 1
+	VMX: cpu 1: spinning 2
+	VMX: cpu 1: spinning 3
+	unchecked MSR access error: WRMSR to 0x571 ...
+	Call Trace:
+	 <NMI>
+	 intel_pt_interrupt+0x190/0x490
+	 handle_pmi_common+0x6fc/0xc10
+	 intel_pmu_handle_irq+0x1c9/0x5e0
+	 perf_event_nmi_handler+0x62/0x90
+	 nmi_handle.part.0+0xbd/0x270
+	 default_do_nmi+0x3c/0x120
+	 exc_nmi+0xe3/0x110
+	 <TASK>
+	 x86_vmx_enable_virtualization_cpu+0x88/0xd0
+	 x86_virt_get_ref+0x3f/0x80
+	 kvm_arch_enable_virtualization_cpu+0x1c4/0x820 [kvm]
+	 kvm_online_cpu+0x31/0x50 [kvm]
+	 cpuhp_invoke_callback+0x25c/0xf90
+	 cpuhp_thread_fun+0x298/0x7e0
+	 smpboot_thread_fn+0x28c/0x6d0
+	 kthread+0x2cb/0x3a0
+	 ret_from_fork+0x5ff/0x7f0
+
+Fixes: 1c5ac21a0e9b ("perf/x86/intel/pt: Don't die on VMXON")
 Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 Cc: stable@vger.kernel.org
 ---
- drivers/base/syscore.c   | 10 ++++++++++
- include/linux/irq_work.h |  2 ++
- kernel/irq_work.c        | 12 ++++++++++++
- 3 files changed, 24 insertions(+)
+ arch/x86/events/intel/pt.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/syscore.c b/drivers/base/syscore.c
-index 483adb796654..3f645da46e77 100644
---- a/drivers/base/syscore.c
-+++ b/drivers/base/syscore.c
-@@ -6,6 +6,7 @@
-  */
- 
- #include <linux/syscore_ops.h>
-+#include <linux/irq_work.h>
- #include <linux/mutex.h>
- #include <linux/module.h>
- #include <linux/suspend.h>
-@@ -81,6 +82,8 @@ int syscore_suspend(void)
- 		if (syscore->ops->resume)
- 			syscore->ops->resume(syscore->data);
- 
-+	irq_work_resend();
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(syscore_suspend);
-@@ -106,6 +109,13 @@ void syscore_resume(void)
- 				"Interrupts enabled after %pS\n",
- 				syscore->ops->resume);
- 		}
-+
-+	/*
-+	 * A pending irq_work self-interrupt may have been lost while suspended.
-+	 * Resend it now that interrupt controllers have been restored.
-+	 */
-+	irq_work_resend();
-+
- 	trace_suspend_resume(TPS("syscore_resume"), 0, false);
- }
- EXPORT_SYMBOL_GPL(syscore_resume);
-diff --git a/include/linux/irq_work.h b/include/linux/irq_work.h
-index 7184e1273965..0040ea94a4fe 100644
---- a/include/linux/irq_work.h
-+++ b/include/linux/irq_work.h
-@@ -62,6 +62,7 @@ void irq_work_run(void);
- void irq_work_run_cpu(unsigned int cpu);
- bool irq_work_needs_cpu(void);
- void irq_work_single(void *arg);
-+void irq_work_resend(void);
- 
- void arch_irq_work_raise(void);
- 
-@@ -70,6 +71,7 @@ static inline bool irq_work_needs_cpu(void) { return false; }
- static inline void irq_work_run(void) { }
- static inline void irq_work_run_cpu(unsigned int cpu) { }
- static inline void irq_work_single(void *arg) { }
-+static inline void irq_work_resend(void) { }
- #endif
- 
- #endif /* _LINUX_IRQ_WORK_H */
-diff --git a/kernel/irq_work.c b/kernel/irq_work.c
-index 73eabcbdcd50..5d186ec35770 100644
---- a/kernel/irq_work.c
-+++ b/kernel/irq_work.c
-@@ -274,6 +274,18 @@ void irq_work_run_cpu(unsigned int cpu)
- 	irq_work_run_list(per_cpu_ptr(&lazy_list, cpu));
+diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
+index 49349afee611..36bf039668d7 100644
+--- a/arch/x86/events/intel/pt.c
++++ b/arch/x86/events/intel/pt.c
+@@ -567,6 +567,15 @@ static void pt_config(struct perf_event *event)
+ 	pt_config_enable(event);
  }
  
-+/*
-+ * Raise the self-interrupt again if irq_work is queued, because it may have
-+ * been lost across system suspend.
-+ */
-+void irq_work_resend(void)
++static bool pt_trace_enabled(void)
 +{
-+	lockdep_assert_preemption_disabled();
++	u64 ctl;
 +
-+	if (!llist_empty(this_cpu_ptr(&raised_list)))
-+		arch_irq_work_raise();
++	rdmsrq(MSR_IA32_RTIT_CTL, ctl);
++
++	return ctl & RTIT_CTL_TRACEEN;
 +}
 +
- void irq_work_tick(void)
+ static void pt_config_stop(struct perf_event *event)
  {
- 	struct llist_head *raised = this_cpu_ptr(&raised_list);
+ 	struct pt *pt = this_cpu_ptr(&pt_ctx);
+@@ -577,7 +586,12 @@ static void pt_config_stop(struct perf_event *event)
+ 		return;
+ 
+ 	ctl &= ~RTIT_CTL_TRACEEN;
+-	if (!READ_ONCE(pt->vmx_on))
++	/*
++	 * vmx_on is set before VMXON, so tracing may not have stopped yet.
++	 * RTIT_CTL can be written until VMXON, and after VMXON TraceEn is
++	 * clear, so still write RTIT_CTL if TraceEn is set.
++	 */
++	if (!READ_ONCE(pt->vmx_on) || pt_trace_enabled())
+ 		wrmsrq(MSR_IA32_RTIT_CTL, ctl);
+ 
+ 	WRITE_ONCE(event->hw.aux_config, ctl);
 -- 
 2.53.0
 
