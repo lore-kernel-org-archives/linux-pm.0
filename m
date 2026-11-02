@@ -1,66 +1,66 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.17
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793605257;
-	b=4msMfLlLHQ424GDI+bt5rbLsmv7V52ywhV86T33PK5g7T2aISVdlpEKWpiwxOC8zoFTt
-	 Ay5DgaezhO0L40INeR4P83mNR8tIKQpZ3QCkSH4R3QKVugpfHfAvRmA4/+XCC/yt2dN7O
-	 kKCVSjPzKl8gfbGYgF02ZK+YO/Jwg22YWOLCx8PIW3b/dW6ta7peFKxT6GkUbJBPW/yIw
-	 VnwYIPYtKgHtWxwlZMWA0ba84m/oFq8/ddU2v7UMaxxaufANsIUB/kSd90QLei/QgfGGV
-	 mNH7Z/JwpY4nja0EbIXSDE6CD8DQppjCgn+3E7COO3cXagf2u4RQ2d2k8LsfppVoLFg==
+	t=1793605263;
+	b=Je7jagys92fkng+hNeosZz2FiFEQDThoB4hASX6l/7lFyn2T26E9xtpMQDXFLOca+H9v
+	 s1D0IuaA7R8NufmDlpm7FjaT6dAhUzdmP3g921CyU617hqRGjLcmI1JZ7LuHTRMm3pv/2
+	 1oUNZBsoyZNu7PIo2mDN+5JbwZ9wQIri0DtKa+dYQw/RHViDBK2pGk29HTW2N0U8YLM0F
+	 nQ2lfVlMkEv7L4xIREICjotHG+z0KEwSjnggE7Q5aED/f1E4eV4O6153BguMtd//CqorR
+	 iHCm+I1MURb8pLGCBr0VkUd1Pyrs/59w3WSoSKcXQTBmpnMQddtN2bruWKmTgWZHQvw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793605257;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793605263;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Organization:
-	 Content-Transfer-Encoding;
-	bh=CPhb8czvE9Xdht7fm0n0ri1ZxL1wovm/GrL4+C+wKVA=;
-	b=gx5R0R+ngWleN1Zu5CkSDgVE1esIjw2uvtZqCmlL3LJE+dbDipnysOfhHz62wb2gHjK0
-	 4KMha/L0iOYYqTfF1pikFVt4GOvIiEloCmwgSh/Sw3LR3D7nimw//VeW2tZsE6r0q6WBO
-	 9519a+7mQ0KlThLU5bxrnBPg/94HrFS6IQ4S1EKYHR/LJYNST/Zb+bqexLvrFKec149Qm
-	 c5WjYAh5m86gfZADatLUqzBoLoCGQ0JZDMdYe2pLXhzhs4Adlz7OIqbOe7XeSvKqJODkT
-	 SmJA/R2CX1lR5ElutuFPWNyx30MYQtNVlWIilZzoeg5wf+46444lKEcSyTzl/tHpMRQ==
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Organization:Content-Transfer-Encoding;
+	bh=RH2Hnu2Dti7Q+9NWgAUZ00h2CN2wYvdC3cQQu5a/rL0=;
+	b=GXUue+gLQspploKka+1erBAhLNZUtQXY2w+8dNlyH5pmBFvWPgSknVBA+EwUsPkwEA+n
+	 ncY+F6ZGbvl/FfhI91RPgvEzjQUONJipR7lFuub2lkjoQKx3x9sgZt/QODILbkukdn/90
+	 Z6Sp0fMuyYUbyZTKEwC0FmzDwhmaxvrq/6CyPWsg/8J7oAFNj5sBWJC4UqsdD8McHLNAm
+	 3nHyJv/mN7Lr1+FCEBrF4uKdQBXFDXfkfIbZeZ6sNzHsO1V/Lcz3jBXilNOl0T3o9PJa9
+	 J9DcLRqmK9C1JzcKT4nV/ELl0xGVh1gDIK9y/wOkXlTbx9Zd9sINsf9/3222PDBDcNQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=intel.com;
 	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=aXqFrP0N;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YyFmMJkE;
 	arc=none smtp.remote-ip=198.175.65.17
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF1A6606A326;
-	Mon,  2 Nov 2026 07:40:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CF1A6606A326
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 182B4606A32F;
+	Mon,  2 Nov 2026 07:41:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 182B4606A32F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=aXqFrP0N
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YyFmMJkE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793605256; x=1825141256;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=YxKlnEZUTR2lBbVDdyn5I7/hmP6Old/LuQJQLG4uhGI=;
-  b=aXqFrP0Ny2WExkMr+U7Vo9YoOrKLwXbnoLcdPaWhMcjTSXQGtnM29fA2
-   zX/5N9OD192drdFT9xGqaguYZyofwQzr5998OgoPClP4cNswc27qWwv1p
-   pCIEsnrTAZidtCDUhrR3zBSeGOUhC8TWjFN5RSOnTazLMMF8yix0vvdoM
-   xkoIWVJuIG+yiTZEBizazH/KS//PiVqjQSZvjRPflJm38QctnPiNuOMc3
-   aOfRVRMBR4K+GmxoObmVV5xs2MW8YBK5Q3vuRSd2fYQ7NaMC2HpYaCopI
-   llAGthYA8WilLoAQ/I7BHClRBZbQ/yI7tjUpN72Asbaw9T8ZgskILeaCE
-   Q==;
-X-CSE-ConnectionGUID: zaMwsBwSTjGSNDVr+hFjrQ==
-X-CSE-MsgGUID: eATUNmi4QIqMb+7PUM5mLA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2300054"
+  t=1793605262; x=1825141262;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=VLW4mh7uPKNWjdbDLVnZfcxQmi3GS6EFtxsZW3S4z0o=;
+  b=YyFmMJkEu9RuVXKMWLAKhbjRVepCfTLuFjDtsjVS4ryvGaRGCt1kV+aF
+   NZYeqWV+uOg58P3zc4wKPu3t8OvXs0W+SHlYUEtW5evDyoCg63OA1kIIK
+   f5ftbaB0j/A66XbYObxchZIi/Blm87CZx4n7R4eoCuFq1p3ycOESzblFd
+   R4qG05FxlUI7QQ3XHqZYfrfulu7XysSLiQJgVUqatoOeZPbW9Rz8JeClJ
+   NPmhlCPaIrFg/LLj5x4mebXCn5hLtSrYio7B8Jdmu6348F9I8axU2dA49
+   fS3EDpj287HVARZJFL2Xrh4/yk/v6IR1rGqv3Jy48jJsgp6fi0NkNl9B8
+   g==;
+X-CSE-ConnectionGUID: Ju91IQszT3+wHbiXPGHimQ==
+X-CSE-MsgGUID: uofL19KHTGO53fHNXNHL2Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2300085"
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="2300054"
+   d="scan'208";a="2300085"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:40:54 -0800
-X-CSE-ConnectionGUID: WRNMMPeXQQa6Ib0jPUhH1g==
-X-CSE-MsgGUID: FbAbFZLaTz+f8kzfidTMJQ==
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:01 -0800
+X-CSE-ConnectionGUID: TvauPCT9SgK8LZuoeFMPeg==
+X-CSE-MsgGUID: 0BAGtZxmT1i4ETFx8WYYgg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="6181954"
+   d="scan'208";a="6182151"
 Received: from pgcooper-mobl3.ger.corp.intel.com (HELO ahunter6-desk) ([10.245.244.189])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:40:47 -0800
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:40:54 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@redhat.com>,
@@ -92,10 +92,12 @@ Cc: Ingo Molnar <mingo@redhat.com>,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	driver-core@lists.linux.dev
-Subject: [PATCH 0/6] perf/x86/intel/pt: Fix tracing across kexec, kdump and suspend
-Date: Mon,  2 Nov 2026 09:40:33 +0200
-Message-ID: <20261102074039.26983-1-adrian.hunter@intel.com>
+Subject: [PATCH 1/6] irq_work: Re-raise pending irq_work after system resume
+Date: Mon,  2 Nov 2026 09:40:34 +0200
+Message-ID: <20261102074039.26983-2-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261102074039.26983-1-adrian.hunter@intel.com>
+References: <20261102074039.26983-1-adrian.hunter@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -108,77 +110,157 @@ MIME-Version: 1.0
 Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 - 4, Domiciled in Helsinki
 Content-Transfer-Encoding: 8bit
 
-Hi
+irq_work_queue() raises the irq_work self-interrupt only when adding
+work to an empty raised_list.  Once raised_list is non-empty, further
+queueing assumes the interrupt is already pending and will eventually
+process the list.
 
-Intel PT writes trace data directly to physical memory, so tracing must
-be stopped whenever the trace buffers or the hardware state describing
-them can no longer be relied on.  This series fixes several cases where
-that does not currently happen:
+That assumption can fail across system suspend.  irq_work queued after
+arch_suspend_disable_irqs() and before the interrupt controller is
+suspended, for example from NMI context, may leave its self-interrupt
+pending in hardware.  If that pending interrupt state is lost during
+suspend, hibernation restore, or kexec jump, raised_list remains
+non-empty after resume but nothing will process it.
 
-  - tracing can survive kexec and kdump.  After kexec, Intel PT
-    continues writing into buffers configured by the old kernel,
-    corrupting memory that the new kernel may have reused
+Subsequent irq_work added to raised_list will not raise another
+interrupt because the list is already non-empty.  Architectures that use
+an irq_work interrupt and do not process raised_list from the tick can
+therefore leave irq_work pending indefinitely.  A caller waiting in
+irq_work_sync() may then spin forever, for example when closing a perf
+event whose pending irq_work never executes.
 
-  - suspend-related state loss can leave the driver's cached PT MSR
-    state out of sync with hardware, allowing tracing to restart with
-    reset output registers and corrupt memory (typically beginning at
-    page 0)
+For suspend, hibernation, and kexec jump, only the CPU that remains
+online is affected.  The other CPUs are taken offline beforehand, and
+smpcfd_dying_cpu() runs irq_work_run() on each CPU before it is removed,
+so checking the local raised_list is sufficient.
 
-  - races can leave TraceEn set in hardware after perf believes tracing
-    has stopped, preventing tracing from being reliably disabled and
-    potentially causing subsequent PT MSR accesses to #GP
+Add irq_work_resend(), which re-raises the irq_work self-interrupt when
+raised_list is non-empty, and invoke it from syscore_resume() after
+interrupt controllers have been restored.  Also invoke it from the
+syscore_suspend() failure path, after the already-suspended callbacks
+have been resumed, because callers do not call syscore_resume() in that
+case.  This restores a lost irq_work interrupt on the CPU that remains
+online for suspend-to-RAM, hibernation, and kexec jump.
 
-The fixes stop relying solely on perf's software state where it is not
-authoritative: TraceEn is cleared directly in hardware during shutdown
-and emergency-stop paths, tracing is prevented from restarting once
-shutdown begins, cached PT MSR state is invalidated whenever hardware
-state may have been lost, and active tracing is stopped and restarted
-across suspend on the CPU that remains online.
+If the original interrupt was not lost, the extra self-interrupt is
+harmless.
 
-The first patch is a general irq_work fix, not specific to Intel PT. It
-re-raises a lost irq_work self-interrupt after resume, preventing
-irq_work from remaining permanently pending if the interrupt state is
-lost across suspend.  The final Intel PT suspend fix depends on it.
+Example S3 with perf record that always loses a self-IPI:
 
-All patches are marked for stable.  The last patch also depends on commit
-2e17bf3a469a ("perf/x86/intel/pt: Fix stop/start with no update") and
-its two preparatory patches.
+ # echo deep > /sys/power/mem_sleep
+ # cat /sys/power/mem_sleep
+ s2idle [deep]
+ # perf record -e power:suspend_resume --no-buffering -C 0 -o /tmp/s3.data &
+ [2] 2147
+ # rtcwake -m mem -s 10
+ rtcwake: wakeup from "mem" using /dev/rtc0
+ # kill -INT %2
+ [ perf record: Woken up 1 times to write data ]
+ [ perf record: Captured and wrote 0.892 MB /tmp/s3.data ]
 
-An alternative to the last patch would be for perf core to schedule out
-all active events from a syscore suspend callback, and schedule them
-back in from the syscore resume callback.  That would be a more general
-change, but the last patch keeps the fix within the Intel PT driver.
+ Now perf record is stuck in irq_work_sync() which spins forever:
 
-AI disclosure: all issues addressed by this series were identified using
-AI assistance, and AI was also used in development of the patches.
-Problems described with reproducer examples in the individual changelogs
-were reproduced and fixes validated.  The race fixed by
-"perf/x86/intel/pt: Clear TraceEn in hardware in cpu_emergency_stop_pt()"
-was identified by analysis and has not been reproduced.
+ # perf record -C 0 -- sleep 1 | perf report --stdio
+ # Overhead  Command  Shared Object      Symbol
+ # ........  .......  .................  ................................
+ #
+     99.98%  perf     [kernel.kallsyms]  [k] irq_work_sync
+      0.02%  perf     [kernel.kallsyms]  [k] ktime_get_update_offsets_now
 
+ Eventually resulting in hung tasks:
 
-Adrian Hunter (6):
-      irq_work: Re-raise pending irq_work after system resume
-      perf/x86/intel/pt: Stop tracing if VMXON has not yet happened
-      perf/x86/intel/pt: Stop tracing at syscore shutdown
-      perf/x86/intel/pt: Clear TraceEn in hardware in cpu_emergency_stop_pt()
-      perf/x86/intel/pt: Reset stale MSR state on CPU start and resume
-      perf/x86/intel/pt: Stop tracing across system suspend
+ INFO: task kworker/u8:1:35 blocked for more than 122 seconds.
+       Not tainted 7.3.0 #2
+ task:kworker/u8:1    state:D stack:0     pid:35    tgid:35    ppid:2      task_flags:0x4208060 flags:0x00080000
+ Workqueue: events_unbound fsnotify_mark_destroy_workfn
 
- arch/x86/events/intel/core.c      |   9 ++
- arch/x86/events/intel/pt.c        | 170 ++++++++++++++++++++++++++++++++++++--
- arch/x86/events/intel/pt.h        |   6 +-
- arch/x86/events/perf_event.h      |   4 +
- arch/x86/include/asm/perf_event.h |   3 +
- arch/x86/power/cpu.c              |   3 +-
- drivers/base/syscore.c            |  10 +++
- include/linux/irq_work.h          |   2 +
- include/linux/perf_event.h        |   6 --
- kernel/irq_work.c                 |  12 +++
- 10 files changed, 208 insertions(+), 17 deletions(-)
+Fixes: 76a33061b932 ("irq_work: Force raised irq work to run on irq work interrupt")
+Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+Cc: stable@vger.kernel.org
+---
+ drivers/base/syscore.c   | 10 ++++++++++
+ include/linux/irq_work.h |  2 ++
+ kernel/irq_work.c        | 12 ++++++++++++
+ 3 files changed, 24 insertions(+)
 
-base-commit: f96ebf32b3135db4c9eeb868e4cb98e5dfe79ac0
+diff --git a/drivers/base/syscore.c b/drivers/base/syscore.c
+index 483adb796654..3f645da46e77 100644
+--- a/drivers/base/syscore.c
++++ b/drivers/base/syscore.c
+@@ -6,6 +6,7 @@
+  */
+ 
+ #include <linux/syscore_ops.h>
++#include <linux/irq_work.h>
+ #include <linux/mutex.h>
+ #include <linux/module.h>
+ #include <linux/suspend.h>
+@@ -81,6 +82,8 @@ int syscore_suspend(void)
+ 		if (syscore->ops->resume)
+ 			syscore->ops->resume(syscore->data);
+ 
++	irq_work_resend();
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(syscore_suspend);
+@@ -106,6 +109,13 @@ void syscore_resume(void)
+ 				"Interrupts enabled after %pS\n",
+ 				syscore->ops->resume);
+ 		}
++
++	/*
++	 * A pending irq_work self-interrupt may have been lost while suspended.
++	 * Resend it now that interrupt controllers have been restored.
++	 */
++	irq_work_resend();
++
+ 	trace_suspend_resume(TPS("syscore_resume"), 0, false);
+ }
+ EXPORT_SYMBOL_GPL(syscore_resume);
+diff --git a/include/linux/irq_work.h b/include/linux/irq_work.h
+index 7184e1273965..0040ea94a4fe 100644
+--- a/include/linux/irq_work.h
++++ b/include/linux/irq_work.h
+@@ -62,6 +62,7 @@ void irq_work_run(void);
+ void irq_work_run_cpu(unsigned int cpu);
+ bool irq_work_needs_cpu(void);
+ void irq_work_single(void *arg);
++void irq_work_resend(void);
+ 
+ void arch_irq_work_raise(void);
+ 
+@@ -70,6 +71,7 @@ static inline bool irq_work_needs_cpu(void) { return false; }
+ static inline void irq_work_run(void) { }
+ static inline void irq_work_run_cpu(unsigned int cpu) { }
+ static inline void irq_work_single(void *arg) { }
++static inline void irq_work_resend(void) { }
+ #endif
+ 
+ #endif /* _LINUX_IRQ_WORK_H */
+diff --git a/kernel/irq_work.c b/kernel/irq_work.c
+index 73eabcbdcd50..5d186ec35770 100644
+--- a/kernel/irq_work.c
++++ b/kernel/irq_work.c
+@@ -274,6 +274,18 @@ void irq_work_run_cpu(unsigned int cpu)
+ 	irq_work_run_list(per_cpu_ptr(&lazy_list, cpu));
+ }
+ 
++/*
++ * Raise the self-interrupt again if irq_work is queued, because it may have
++ * been lost across system suspend.
++ */
++void irq_work_resend(void)
++{
++	lockdep_assert_preemption_disabled();
++
++	if (!llist_empty(this_cpu_ptr(&raised_list)))
++		arch_irq_work_raise();
++}
++
+ void irq_work_tick(void)
+ {
+ 	struct llist_head *raised = this_cpu_ptr(&raised_list);
+-- 
+2.53.0
 
-
-Regards
-Adrian
