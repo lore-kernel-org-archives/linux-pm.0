@@ -1,48 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793627663;
-	b=NfQRZ6tlWoc3AQHJVyfeVhfT7ku2wHV1d41yNtMFDV4p2DapEdbb2ApE4nbXJlRnu9zh
-	 rgJPaTvXN4pWKGoVQCWowgvSbJc3QzmZv15q7I2Yn+xTRoUP53Cbocug369WU3F3tMfzW
-	 hScoL3cwc2WiRXKCSq9+dzDQijpd/BcTUPutuniN1ukgpWPgDWhFBqKM2GHPPJPEWUPoy
-	 2FMlnVbVLfSQxZjq76nYS4OlFHC2tMJqSH1PIY8uLh94AMEYMVpFHEeHHzWRYQ9ZyPVJJ
-	 oLVHAdS9FUCgudb93qLeVEnFAQ/Ul58avyeE/uH3XXqdnEvnCOk4jJMbMNqmPDy6V1A==
+	t=1793627920;
+	b=dNlkl66CFtmYME3YeaPZbvC5Z5X6Ot6ji80AfswKpbcSY/ZSpFXdbNWnJ+xXyiDUh06Q
+	 dE2Bs5o+IOtSwDuBK+LDDMaLzJIogKHxKDyk0nQa0vhgbLI5zrQVCXWJmXVqg8oBdDaqZ
+	 I53hqrVzaxngkiaKkXxJKevihefe4bynnRGV9mG1YRXyfQqGYnP4jSqSb0xzsjjpehBbv
+	 i45UeDbiPPo0ZTFT2Jtr39WfAbUV+bzIT4uap1X5ennIl6pL1OZxdWOclJXFv2cl74Lhx
+	 ybvklIjBbuk+nSh9vU7+guPA2RPDUnfHvWVIN4S/a6Pd3MIPdhsGImz9YJ6KHQy+Smg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793627663;
-	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	a=rsa-sha256; c=relaxed/relaxed; t=1793627920;
+	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
+	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 X-Mailer;
-	bh=mFtjTfjF96h3Bv9TOaPN4aONAIjO6u2dFzKJuI6D/kM=;
-	b=veulf2mwEWHDqY/VFDeizZvFflmBXNu8huRlEXPPhZgEmq/jkZyepC7BkR/XHHox9KD4
-	 WYR+3AsXsWEo5dtkBP4d/Mmf7pxL9oa/F9X6x799LmzkiNBYrwvkwrVUiiqTsLCwD9iqL
-	 OEwOlgL3m9nXYqmzS7ApKj/DtyU7fMl0H4qvuL3MkVgZaA/LTZfkyAuia6BK/ohqm9Z+8
-	 NnVaBrNpUQHi13WmA7iyxru2IsEvl5/yoKe7+krQ+y7TMoE0UkJQadQo3f9bNMacP+hUd
-	 M4rhH19KgX16sgA5x07Ohibf/3x5TzozIVjc91IfFDO53/EW/ziaxuiyeThX1Nd+nwA==
+	bh=UsABZ0lwLfggHeYm6LleXhMVDT34BdvM7eLvAqIcs1s=;
+	b=hROiO7hfoTxbmLd8C4kGGvLQaAB9U6SUIkA2N9IKVu1A4o+eAlHpOI/ge7a7Soupt4Z0
+	 ig7Qnoe1Yvt0ErhmWnj8o5v3ZjteMpFNit44STcm2ZT7O2AXIwu8VTaDE2Ou07PyiRqsh
+	 XeZlBa4hKlnYq8NNYBuJfA2gK29aTlsPS1ZNnxsFRHg0b5xSU7zmrQrvDYzUuThaHkxEs
+	 IM84/s5k3YFWzs0FykxLAV3Xg0tczoGJIDofqS1tn/d1nq/IJ6ECaZalvNI5FZ3GFEuJq
+	 nVTT8s31SwT2IItZUANYQ6jPrSY7Gur0+c+SaaUMlt6T1Yw5fRorF1zIXmSL1aq42CQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DCnVpNCR;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UixUaAxt;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37D0E60A2606;
-	Mon,  2 Nov 2026 13:54:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E55B860A2607;
+	Mon,  2 Nov 2026 13:58:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DCnVpNCR
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7DAB1F00A16;
-	Mon,  2 Nov 2026 13:54:21 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UixUaAxt
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 230AE1F00A17;
+	Mon,  2 Nov 2026 13:58:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793627663;
-	bh=mFtjTfjF96h3Bv9TOaPN4aONAIjO6u2dFzKJuI6D/kM=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=DCnVpNCRgJUE7VaBJ0XVsv2S78YcT8dtN0tPStJwegyCcoP5u/riLvIREEb9Tiszn
-	 bjNuux5gUsKNOelW5FYDwfmPt7IiWdStEDtPTmALUzlFLW3JePPAf4khsZGDTmg4U2
-	 hxYB4vLgXi5KMFbRWyw8RbkIN3N+Wlr95PQGiy+FIIl7fBrvhOJxEFQujx/yuRg0Vl
-	 9eG7gA+EMdlb3Aou5nkaOLIaRRogFqDxahlyrRxCZxc1nCZc7tuhhCcyN9hxY03mxw
-	 efdPyB1rqoJMhus+gtiX9w1XejiZQXA5EyvrNCzRzL3MWhQmW0fRn/m/S5OrqyPrd3
-	 dWs3Kh2QgzZIA==
-From: Mario Limonciello <superm1@kernel.org>
-Date: Mon, 02 Nov 2026 07:54:10 -0600
-Subject: [PATCH 2/2] PM: Add shutdown=legacy command line option
+	s=k20260515; t=1793627919;
+	bh=UsABZ0lwLfggHeYm6LleXhMVDT34BdvM7eLvAqIcs1s=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=UixUaAxty87lFuFytIWEIUzRYsaJcDzVgHw6J++nAujqPiznIGfndAP6SvC8gumRO
+	 Qv0ONZx0X/W39T3e+iQwLSl7ca/UnU3vvNGEUlSooWAPEje9WHGZpF/V3kFf29Br5/
+	 6+Kf+mObBUGzKDK7GX+Cv9//mCEyipvBFuZzOD3kjdRP6k/O6GEwjmNUrFk7jwkj4q
+	 PKc0taGGg6dJFa/g6VkGEi5XNb850jqrLv6XpYPYiDRheV/Yq7wxB/xqlA0x3UK/Qk
+	 JnJ+j6aIGzGXpA+rtUG6fIerNRmQoTD0U0H6CScikxnbxmo/YLIPgGZJOU+wf0KYr+
+	 mAfmR8fDoFDjA==
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: linux-mediatek@lists.infradead.org, 
+ Valentin Haudiquet <valentin.haudiquet@canonical.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Jian Hui Lee <jianhui.lee@canonical.com>, 
+ stable@vger.kernel.org, Yong Wu <yong.wu@mediatek.com>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>
+In-Reply-To: <20260926192417.1448813-1-valentin.haudiquet@canonical.com>
+References: <20260926192417.1448813-1-valentin.haudiquet@canonical.com>
+Subject: Re: [PATCH v2] memory: mtk-smi: fail larb runtime resume until
+ component bind
+Message-Id: <179362791566.178192.291057765845051785.b4-ty@b4>
+Date: Mon, 02 Nov 2026 14:58:35 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,122 +65,31 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20261102-superm1-s4-at-s5-v1-2-313e0012dd39@kernel.org>
-References: <20261102-superm1-s4-at-s5-v1-0-313e0012dd39@kernel.org>
-In-Reply-To: <20261102-superm1-s4-at-s5-v1-0-313e0012dd39@kernel.org>
-To: Jonathan Corbet <corbet@lwn.net>, 
- Shuah Khan <skhan@linuxfoundation.org>, 
- Randy Dunlap <rdunlap@infradead.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
- Pavel Machek <pavel@kernel.org>
-Cc: Denis Benato <benato.denis96@gmail.com>, 
- AceLan Kao <acelan.kao@canonical.com>, Kai-Heng Feng <kaihengf@nvidia.com>, 
- Mark Pearson <mpearson-lenovo@squebb.ca>, 
- =?utf-8?q?Merthan_Karaka=C5=9F?= <m3rthn.k@gmail.com>, 
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
- linux-pm@vger.kernel.org, Mario Limonciello <superm1@kernel.org>, 
- Bartu Alev <bartualev@gmail.com>
+Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.16.0
 
-Powering off now uses the hibernation callback flow when it is available.
-Add an escape valve for systems that fail with this flow.
 
-The shutdown=legacy option restores the device_shutdown() path. Document
-it in the kernel parameter reference and the shutdown debugging guide.
+On Sat, 26 Sep 2026 21:24:17 +0200, Valentin Haudiquet wrote:
+> With the mtk-smi and mtk-iommu drivers built as modules, a consumer
+> device probe (e.g. mediatek-drm on MT8183) can race the iommu's
+> component master bind.  The consumer's probe path runtime-resumes its
+> smi-larb suppliers, and the larb's runtime resume then runs
+> mtk_smi_larb_config_port_gen2_general(), which dereferences
+> larb->mmu and larb->bank.  Those pointers are only populated by
+> mtk_smi_larb_bind() when the component master completes, so a larb
+> resumed inside the window dereferences NULL and oopses in the module
+> loader's initcall context.  The module loader is then stuck and the
+> rest of the boot dies.  On MT8183 (krane), mediatek-drm module init
+> hits this:
+> 
+> [...]
 
-Tested-by: Bartu Alev <bartualev@gmail.com>
-Tested-by: Merthan Karakaş <m3rthn.k@gmail.com>
-Signed-off-by: Mario Limonciello <superm1@kernel.org>
----
-Bartu specifically tested his ASUS FA507 with this series.  His laptop
-got really hot in S5 before the series.  He also intentionally used
-this debug knob to verify the problem comes back.
+Applied, thanks!
 
-Merthan tested on his ASUS laptop and it fixed system getting hot at
-S5.
----
- Documentation/admin-guide/kernel-parameters.txt |  4 ++++
- Documentation/power/shutdown-debugging.rst      |  7 ++++++-
- kernel/reboot.c                                 | 10 +++++++++-
- 3 files changed, 19 insertions(+), 2 deletions(-)
+[1/1] memory: mtk-smi: fail larb runtime resume until component bind
+      https://git.kernel.org/krzk/linux-mem-ctrl/c/dfadc8ba7d2d32fcf7f8f740aa8a0a60e3e731ec
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 0b3c140babd94..16d584bdbb73d 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -6981,6 +6981,10 @@ Kernel parameters
- 	shapers=	[NET]
- 			Maximal number of shapers.
- 
-+	shutdown=legacy [KNL]
-+			Use the legacy device shutdown callbacks when powering off
-+			the system instead of the hibernation power-off callbacks.
-+
- 	show_lapic=	[APIC,X86] Advanced Programmable Interrupt Controller
- 			Limit apic dumping. The parameter defines the maximal
- 			number of local apics being dumped. Also it is possible
-diff --git a/Documentation/power/shutdown-debugging.rst b/Documentation/power/shutdown-debugging.rst
-index c510122e0bbc2..254cd3e0b5907 100644
---- a/Documentation/power/shutdown-debugging.rst
-+++ b/Documentation/power/shutdown-debugging.rst
-@@ -33,7 +33,7 @@ some potential options include:
- 
- Kernel Command-line Parameters
- ==============================
--Add these parameters to your kernel command line:
-+Add these parameters to your kernel command line to capture shutdown logs:
- 
- * ``printk.always_kmsg_dump=Y``
- 	* Forces the kernel to dump the entire message buffer to pstore during
-@@ -41,6 +41,11 @@ Add these parameters to your kernel command line:
- * ``efi_pstore.pstore_disable=N``
- 	* For EFI-based systems, ensures the EFI backend is active
- 
-+If the system fails while running the hibernation power-off callbacks, add
-+``shutdown=legacy`` to use the legacy device shutdown callbacks instead. This
-+can be used to work around the failure and confirm which callback flow caused
-+it.
-+
- Userspace Interaction and Log Retrieval
- =======================================
- On the next boot after a hang, pstore logs will be available in the pstore
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index 1ad8629fde4d9..6c80356b9a85f 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -70,6 +70,7 @@ struct sys_off_handler {
-  * of that.
-  */
- static bool poweroff_fallback_to_halt;
-+static bool shutdown_legacy;
- 
- /*
-  * Temporary stub that prevents linkage failure while we're in process
-@@ -317,7 +318,7 @@ static void kernel_shutdown_prepare(enum system_states state)
- 	system_state = state;
- 	usermodehelper_disable();
- #ifdef CONFIG_HIBERNATE_CALLBACKS
--	if (state == SYSTEM_POWER_OFF) {
-+	if (state == SYSTEM_POWER_OFF && !shutdown_legacy) {
- 		if (!dpm_suspend_start(PMSG_POWEROFF) && !dpm_suspend_end(PMSG_POWEROFF))
- 			return;
- 		pr_emerg("Failed to power off devices, using shutdown instead.\n");
-@@ -1112,6 +1113,13 @@ static ssize_t hw_protection_store(struct kobject *kobj,
- static struct kobj_attribute hw_protection_attr = __ATTR_RW(hw_protection);
- #endif
- 
-+static int __init shutdown_setup(char *str)
-+{
-+	shutdown_legacy = true;
-+	return 1;
-+}
-+__setup("shutdown=legacy", shutdown_setup);
-+
- static int __init reboot_setup(char *str)
- {
- 	for (;;) {
-
+Best regards,
 -- 
-2.53.0
+Krzysztof Kozlowski <krzk@kernel.org>
 
