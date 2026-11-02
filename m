@@ -1,89 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.46
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793576888;
-	b=hTDOlNg9KKgvgOGZB6xWnKw2aS44Uil0bnlVwpaPrJ6hj3kBbLUK8pIby8TcKejL/v2R
-	 qgTeoU0EDCmT/RJ7ACw5HGpb5KoalaHt7fOybjKwMet+S6If3I9lrDo4JpuC3WmrvoSgB
-	 0RJ9VklByWHdQ8WEvyBbdiohPYrW8bgErG17qHulG4rV4T/TzuWGYqafW6wXXsyy+EJNF
-	 u4p1a69aAFIUnS6yl6w99M/kj/ZiERH9lggTA44y7XdkE5L7NaQqtAjxi1rm/IOX07JPr
-	 PGcu7syaFd1LMmsaLbVitw/5dkTt3cbSS7ZaV3oUUi9YbFnhPPrfupWxilCwskdc44A==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793576888;
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.182
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793580400;
+	b=ZI27MDXIdDq0BUpJmHYV7Rps9K6uU9FT8vOlMVB/axHyhchE9Am27+QmNN8D3qFjDEUV
+	 jyuaQeSaj+bLgpgekWo+rPrd8m7ezRsOjVwWJi2kjq33K4ofKxSowtFM6Jg88+aIMpnsh
+	 32aYTHJHIlsFT89jIZXsNKSH9bnssMRzhiGUBip7tjWc4J+Sumjv5BJxmsv42iWJoRdY+
+	 h6Xon1qmbngIyn3kh9MGQliLIwTuixwiUNMBLT/9MsECep+7732HpJis6PYw/SxmYsNqK
+	 CHwGvu0XP7DSm5oq7xP9EYfb+0TtjVNjBypQisUneMNDRn3QQj23d/clfYYznQdZENw==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793580400;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=V1PNsriSOXNXk9F4i3pS/7KJmz2B+6Azrj9cQd9O7UM=;
-	b=EGUU+ILrYHDN9rCA2M1qeTg6PS6oy6zGKhNxSZRYNWe7NiyVBhYx7jwmwJb0nNVRo3UQ
-	 Zv/6GLCEVffxbTXHKPYQQ7IBFeAN4YZayvQeFg6Xi1tvpSLxFXf/p5Q+vTKCDDhngFq7V
-	 fA+vLWEfti5XvhnTDskxMEm5Oa++tb1f/GgcqL/qt/nb3yl9ODsXlTX9Nh1mPKFeGxA6N
-	 Mqbb889dEznkmdNYW/3DFVREjVM1ui4oU9GTiC9rCz/pJOnme94jt2R0St1eUXOkXTyDf
-	 da1m+SloOxHmWaqu3HW73+w3JuCFkeqToJHvUzbx/Ljk/RF97mu0B7UISjIKFx9ivrw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=layalina.io;
-	spf=pass smtp.mailfrom=layalina.io;
-	dkim=pass header.d=layalina-io.20260707.gappssmtp.com header.i=@layalina-io.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=n2MjKH7O;
-	arc=none smtp.remote-ip=209.85.128.46
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
+	b=CBHh7cf87yR3O/B32lYb0F3uT80guTpFYKGuYNaDlXH+IDfMI0ELSO9QbxJR3EnT9oGE
+	 nNL/f89mC74veKh1WSrFnPX5G4vZhrAnhl7RIFj/EHUT/hXbCLo90zerZVz8aNhaavsN8
+	 7AKlNipdKFfbmFo2epSN/lIhvGGklOn8xbvu5a4dZV+SaRzxAFjFcJ3nKv2iJE7eTDnJ/
+	 qi4PRdX0YpLkQ8zpMm9ETQ/PtA8DBdwcYGh0AzkZ5ZApZILurZ28JwStK3XK3LFou9axP
+	 mNxBEFcWNsplThS6i7442ywe1SyZ2oKdd4jStif13PyJUD7vKb1n5T6K/UKQSi/fhpg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o67+VfI7;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.182
+Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45FF3606A326
-	for <linux-pm@vger.kernel.org>; Sun,  1 Nov 2026 23:48:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 45FF3606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A6F3606A326
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 00:46:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5A6F3606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=layalina-io.20260707.gappssmtp.com header.i=@layalina-io.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=n2MjKH7O
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4a2084d62cdso20993955e9.1
-        for <linux-pm@vger.kernel.org>; Sun, 01 Nov 2026 15:48:08 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o67+VfI7
+Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-33c10faf6easo319701eec.0
+        for <linux-pm@vger.kernel.org>; Sun, 01 Nov 2026 16:46:40 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793580399; cv=none;
+        d=google.com; s=arc-20260327;
+        b=M0w4cSv5G+bXXF4cfQJIoBwO9CDzQoT4kQjiN9kQb8HD6NpjZCU8xrnDlyUZtdC+uh
+         Ukn88l1ujy6rpUuRMFosLqPQY3ZCHat2iTdQzuUeIZAusAwSmndFaDZ2dp37xU1vpm14
+         qoLWKLAQ1aOQLJuSh5U4gAmFMWKVn66OVuUCij4KshTE7QptRwc27mGIfVI45RQbcxN4
+         uwZshe3Kvk8AZfE8ZtqCp0gnTKB4aaRiexLZdv0x+ojQ52x1dhl70pUD17jTLrCJJ/wl
+         0EY3/YA0LYxycgtatqtoBC9xaMawtX7MuXfqvqQPifqYH/H4KDdN89fMFfyPWqmwsIjw
+         wAmg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
+        fh=QyjAHNnvFfX819TgFTxFyvLDL3CvKgxafMR8ubximMI=;
+        b=U/MwSOYrXjVdZ6fuMhR87ZyCaVjMd7PebirVm9KKKsDG5WeyGrTud0J2XvNpJrIeC+
+         e4xPHDP1lFTGRkj7UedYTDf1lln8JMgwCOtIO35Y6GTlBaeMUSsZLtJQBzJHynF7+rrr
+         APFwLFjBQPaHyziE/p5lL0Q+2Nz6+thyvFO5pBJOGpb2X3h1qel4Eo0ywuenCfZ3GOD3
+         IJlJBduJCL4AhfIQ7pOJXdo3CcTvmItYrVeF/3tpq3JUPi3f7rFA8LLRElef1mzoWyu4
+         hFOp2KzozIf/+MZTRNKi52aDk4TZmuyatrOEEntg1mt8STmDvXtzWQRHH5mB70rQ2khQ
+         7kgw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20260707.gappssmtp.com; s=20260707; t=1793576886; x=1794181686; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=V1PNsriSOXNXk9F4i3pS/7KJmz2B+6Azrj9cQd9O7UM=;
-        b=n2MjKH7O6SY9pxL51xLt1JI7VMyOAtlcscbZYAwKMR25twYjomrrDYMYvQtmiX6b6n
-         rUHnef9wUGXE0NaH5d9eD4BusJ1/XQs3FhAkkWu1bMiuVgair81IC/91+723D8lrF7ym
-         trBgJaxhCeIIjP+g1kOxHDmzp2lPJvjO7nnI5m76RyUT96JMTOo7F/Ko+8a0Lm6AgpM4
-         XEEqZfAUZrY2xQskuFsTYSg+2Nap+3Ya0HfAf1LTPb1zYSwjfxsk8VeA9Ii0caMxoWVm
-         dSV/pWlj9X2mDoWtevSTP3FhxwYmakJg4ucn4hJZ1Guq4Ka1kPIUB4KKgcDwYBMfD3E6
-         j1tw==
+        d=gmail.com; s=20260707; t=1793580399; x=1794185199; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
+        b=o67+VfI7TGlXSNgSkpFsughn7q+9+yYECnzFIFfY0Y1sMOBq4tdMupuBlGXNqGKPop
+         9egfqYW8M48YFL4DHaV2vblg+EEhDOCNzZonx49S27LBpQJWMiWtW+OScff8t5EmN3Qw
+         kQFfIoLLQzTymHK895yYeKg00pGNNQ4kWz7Kx0LvxJW1dV8MaXD+pqvoAtC9UYRy5IQx
+         sp9+hoAv7LlGyDwRBpQ76cqB/VOHGMJ+vEbqNehCzHsiXNS9zVcfbtWvWPc9kQHe8gyC
+         wf1lBhoLuzyl5C+qB0brSJJ42k0SRBBe7OStcRaFX9MGUjrGly92crJOXDcd6gYXDZCA
+         jJTQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793576887; x=1794181687;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=V1PNsriSOXNXk9F4i3pS/7KJmz2B+6Azrj9cQd9O7UM=;
-        b=ZF9JLxPI3FAbJhYYLxO0JZjAY84cVaJ+4G+HP7jcDk5ZWaJH4frcJ4H25pDqx27Lh2
-         MIPwAfZoJtx3LNTvN+ViryuwzNvZooy/838U6gI701cB5FZZfBu/lJxiD1KjwtJm4zWh
-         agB2kDrLw4VAr43Ld8YUeRuIoYWdhLt0CCQnqqu7o0D4QGN4JVAwV6UBhIpkjp46C09I
-         lArABhkjB6zm6dbwd9gdLMEMIRZnEywbG1ImJnn7R70nl6hpaw2SM2R9oeo+MfA/laAZ
-         2B6NErXDe0M5cj4CimBFGuB9sqg2QHLgDSgW8HlPSJlDXXT5R6CnmZ6okZG2Z9WmFHwF
-         UBsA==
-X-Forwarded-Encrypted: i=1; AKwUvBxFk4CSlX9jV7c3Sw5L1PLoJtKyoYmtgC3z49XFMcFbhV1tWEX5h8k1X6r8XPzzX1Xho+YxfzlMDA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIAINh5qpRVPwawpvs1M5r6wilNs1VgtN9wJRvoPbNAmZNssTd/
-	3vjPuIMmvSERWOQur2pQKvCXdPkzabcqu5YW/dQh5eYqq4kniOeyi8qATuKoBE25ao4=
-X-Gm-Gg: AYBFou02toI7vG9K3Feh1esZ20WtvTp3QWoNcpom/evi0HT3U3ANOEPL2vR0M/v3u3v
-	1W8eoWM75bWYLTsfw+XTFnx+gd5lLtNEWngDlYtgDXmQQPYvrZczaLctrNa7RVZP8A8quJ28h8l
-	5UTkrTyuR8e/oXlJCZrvz8+Mbr98LgnGaepI9xvd7tx2QRY5yQnNnI9eZkGcoQD0NdbQjLcek7j
-	4ZF4reqOaojZUouLvMHftjlUVflolX7+AYkvdL6gDgQtFz5xFLZI+F8QpkzTQE5UXuZ8GpFR7ME
-	tJn/8JGnO60dcaG/gabnywACj0z7EfWvKeKM8nL9GTGf7U05yh0v35hS7HqmXCLKEFyno0KRHsI
-	zhs/vUPuF/zwIcVCtLVo2eYLSS1tbLxbz336Y4zoW45ZmvArc04fYXRQU1ZUGzq6+C6WDpV8Qat
-	UqRYOhYBJfSFjbLUcnAjFKLFh0igI+5wwWZcGzF1Qk0gq7M8X8hf8E/ITEacz5tMAWGyzXoTDaf
-	WC+yRRYgSm6DE8WqwlknuGfCi3uMvqD3Cca6A8i1QDcAlf1uUd3K+MMAXFkG7S0z/amb4ByS7m5
-	d00M9cl1DeQkFYiGgU+EB5a4t/deJWlCFQBzvo7deHyuR4i+Oehd9/bpku7o0hlLzyDN3FUSguT
-	/PXVWttQKDLYl
-X-Received: by 2002:a05:600c:8b54:b0:4a1:fa21:fd90 with SMTP id 5b1f17b1804b1-4ac16bc547dmr204281285e9.9.1793576886582;
-        Sun, 01 Nov 2026 15:48:06 -0800 (PST)
-Received: from [192.168.0.219] (host86-128-182-179.range86-128.btcentralplus.com. [86.128.182.179])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4aa80f047bfsm300812595e9.3.2026.11.01.15.48.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 01 Nov 2026 15:48:05 -0800 (PST)
-Message-ID: <3228e523-3819-4c59-a523-49b6d381e533@layalina.io>
-Date: Sun, 1 Nov 2026 23:48:03 +0000
+        d=1e100.net; s=20260707; t=1793580399; x=1794185199;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
+        b=qRgKs8nR76DJyFqgeRMlK9D/xHID2jggGVC/QvbOznXgOTT9xH0BrfwLfeXcVBJDYO
+         J7DWMn7Qx6Bh3L/X7EJBck4Lkz4ipUmNaWD0yj3D9XWtaXKNJlh85iJ8yrMn8dIJrI8I
+         jYKVm+Rj/ouKHEVf+1ZXrX0D/Bz5UIFqWGvIwzDjd9D5+veIoZ2Y2Wa6H8oOyrfRR1/E
+         dpxbEXyPB8aBrffq/fDGgwBCjIMCybJ+4119Iyur5kL65UAm45CDocKQ45/yYerFtgTW
+         rPEBPsSWj3/mVARV3uyOLRk9GTbxvZB9Th8NzstCMtSo9DGf1RIj2cGwaCFFUB8BkhdK
+         uKSA==
+X-Forwarded-Encrypted: i=1; AKwUvBwAL+OX45JoJ5EEPtk0AKo9JVa18j6AeENmsbHeRPfLlwnDu0P63GY9Mjfv7ol93ExrGIjLk6hzAw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+Ymy9TUhEtTPFRF+yx0EFgTQN62HqEkRn5yEY5WUnsS5Z5aP3F
+	htzl/2J1H/bm4tZqqlZ09FXfWs5DmImqWZwuoZE8Qs/nWZbH0rrX1d7cE3SvpgptUNmkGi1H3Au
+	wFcy9gj2tlpfNbycfxMGaqsYF6bALRos=
+X-Gm-Gg: AYBFou10KbTtCFRHCG+CXc9SW1/jgv6LVgdCMpej4YlCKlVI8pmgFUyiNFavfh65D3z
+	hHeACXJCFZumRPvL/LN3cLoBF48eGQMyGcsMGoxQ4nSQep7Xrb/H2MwSSlZ7fDm6+1Np9PcoumD
+	5qitF1rCp/MUPCZ0gDbG3/U0RzWe8YoQFZ3p7uLESuJFwG4z3QfZU2sICnufn36C8HC9XF4VNzK
+	F+jj35+tIqSnN1PO0F5qVhszezz2a45rUY6xdbkr/qMCJQu+jb0gVfcrGZf1+HRvWANuqXOS6jL
+	O8IhkYjNWaVZh/p3VQbTw/i4PYlmPQo23Kr1XH4hvvL49EdkUKoBViT/MUBNV14e4T8K7L4PpON
+	/9okPFp2nyz6/yy+6imd/2X27JAr4gO5cH2FQWyeP67SX3pjIWzyLlLFE4ZW7KY0Ha+7drp/uP2
+	hnZE3pFl1wqH+xGtE2nLqR91nvcw7DdKwLvTFOmDjd7ixQ6EUM+idsirp18OxNKVHBEOORNzOqe
+	OA/dv6d9+YU6k4hJ1fmt0FDrVoU7x2SLIHaNa5BtNTtV4TCXlVxkUpShA==
+X-Received: by 2002:a05:7300:d082:b0:369:ffc5:6767 with SMTP id
+ 5a478bee46e88-36a4236a643mr17666091eec.2.1793580399370; Sun, 01 Nov 2026
+ 16:46:39 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -93,120 +106,57 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 04/13] sched/fair: Remove magic hardcoded margin in
- fits_capacity()
-To: Zhan Xusheng <zhanxusheng1024@gmail.com>
-Cc: Zhan Xusheng <zhanxusheng@xiaomi.com>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>,
- Steven Rostedt <rostedt@goodmis.org>, John Stultz <jstultz@google.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Tim Chen <tim.c.chen@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>,
- Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-References: <20260504020003.71306-1-qyousef@layalina.io>
- <20260504020003.71306-5-qyousef@layalina.io>
- <20260923065407.3451520-1-zhanxusheng@xiaomi.com>
-Content-Language: en-US
-From: Qais Yousef <qyousef@layalina.io>
-In-Reply-To: <20260923065407.3451520-1-zhanxusheng@xiaomi.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20261018163719.81691-1-ojeda@kernel.org>
+In-Reply-To: <20261018163719.81691-1-ojeda@kernel.org>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Mon, 2 Nov 2026 01:46:26 +0100
+X-Gm-Features: AclHuK-4MjIXg8YJnYcWupgszDUMapc507LicBlOsBTb2wracrfxL9hXutBBGhQ
+Message-ID: <CANiq72=JMDa882tQPLUSTYhkfKmxxZH-gjp=sTD-Eq5KDt-F-g@mail.gmail.com>
+Subject: Re: [PATCH] rust: cpufreq: fix `undocumented_unsafe_blocks` in `PolicyCpu::from_cpu()`
+To: Miguel Ojeda <ojeda@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+	Danilo Krummrich <dakr@kernel.org>, Daniel Almeida <daniel.almeida@collabora.com>, 
+	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
+	=?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+	rust-for-linux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 9/23/26 07:54, Zhan Xusheng wrote:
-> On 05/04/26 02:59, Qais Yousef wrote:
->> -#define fits_capacity(cap, max)	((cap) * 1280 < (max) * 1024)
->> +static inline bool fits_capacity(unsigned long util, int cpu)
->> +{
->> +	return util < cpu_rq(cpu)->fits_capacity_threshold;
->> +}
-> 
-> This does not hold on current tip anymore: fits_capacity() has picked up
-> a second caller that does not pass a capacity, and the new signature
-> accepts it silently.
-> 
-> kernel/sched/fair.c, invalid_llc_nr():
-> 
-> 	return !fits_capacity((READ_ONCE(grp->nr_running_avg) * cpu_smt_num_threads),
-> 			(scale * per_cpu(sd_llc_size, cpu)));
-> 
-> The second argument is a scaled count of the CPUs in an LLC. sd_llc_size
-> is a per-CPU int and scale is an int, so the product binds to the new @cpu
-> parameter with no conversion and no warning, and the test becomes
-> 
-> 	cpu_rq(scale * per_cpu(sd_llc_size, cpu))->fits_capacity_threshold
-> 
-> With the defaults (CONFIG_SCHED_CACHE=y, sysctl_sched_cache_user=1,
-> llc_aggr_tolerance=1) scale is 1, so this is cpu_rq(sd_llc_size), which is
-> not a valid CPU id on a machine with a single LLC. invalid_llc_nr() is
-> called from account_mm_sched(), task_cache_work() and
-> can_migrate_llc_task().
-> 
-> Separating the two uses first makes 04/13 safe to apply. Something like
-> the below, against tip/sched/urgent (3cb0243767fd, where the cache-aware
-> fixes have just landed; sched/core still has the older mm->sc_stat form).
-> It is a no functional change, since x * 1280 < y * 1024 is equivalent to
-> x * 100 < y * 80. Built with CONFIG_SCHED_CACHE=y and =n, no new warnings.
-> 
-> I can post it as a standalone patch if you would rather not carry it in
-> the series.
+On Sun, Oct 18, 2026 at 6:37=E2=80=AFPM Miguel Ojeda <ojeda@kernel.org> wro=
+te:
+>
+> For Rust <=3D 1.86, Clippy triggers after commit 02c5d7bfa872 ("rust:
+> cpufreq: reject NULL from cpufreq_cpu_get()"):
+>
+>     warning: unsafe block missing a safety comment
+>        --> rust/kernel/cpufreq.rs:700:26
+>         |
+>     700 |             NonNull::new(unsafe { bindings::cpufreq_cpu_get(u32=
+::from(cpu)) }).ok_or(ENODEV)?;
+>         |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^=
+^^^^^^^^^^^^^^
+>         |
+>         =3D help: consider adding a safety comment on the preceding line
+>         =3D help: for further information visit https://rust-lang.github.=
+io/rust-clippy/master/index.html#undocumented_unsafe_blocks
+>         =3D note: requested on the command line with `-W clippy::undocume=
+nted-unsafe-blocks`
+>
+> Thus clean it up.
+>
+> Fixes: 02c5d7bfa872 ("rust: cpufreq: reject NULL from cpufreq_cpu_get()")
+> Assisted-by: LLM
+> Signed-off-by: Miguel Ojeda <ojeda@kernel.org>
 
-Thanks for catching this and reporting it. I am preparing an updated version and
-would have missed this tbh.
+Applied to `rust-fixes` -- thanks everyone!
 
-I'm happy for them to be split; but not happy we have a new user with magic
-numbers :( I am trying to remove these numbers, so seeing more added is unfortunate.
+I added Cc: stable@ -- while this one is not a big deal, we are
+backporting 02c5d7bfa872 (i.e. the one this one fixes), and thus we
+can take the chance to keep it aligned to mainline and clean.
 
-If you don't mind posting a patch to split and discuss the details that'd be great.
-
-Thanks!
-
---
-Qais Yousef
-
-> 
-> ---
->  kernel/sched/fair.c | 19 +++++++++++++++++--
->  1 file changed, 17 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 57360f5cdde4..97ce56fcaf85 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -1526,6 +1526,21 @@ static bool exceed_llc_capacity(struct sched_cache_group *grp, int cpu)
->  	return false;
->  }
->  
-> +/*
-> + * The margin used when comparing the number of a process' active threads
-> + * with the number of CPUs in an LLC.
-> + *
-> + * Mirrors the ~20% margin of fits_capacity(), but is kept separate because
-> + * fits_capacity() describes a utilization versus CPU capacity relation,
-> + * which this is not.
-> + *
-> + * (default: ~80% of the LLC's CPUs)
-> + */
-> +static inline bool fits_llc_nr(u64 nr_threads, unsigned int nr_cpus)
-> +{
-> +	return nr_threads * 100 < (u64)nr_cpus * 80;
-> +}
-> +
->  static bool invalid_llc_nr(struct sched_cache_group *grp, struct task_struct *p,
->  			   int cpu)
->  {
-> @@ -1542,8 +1557,8 @@ static bool invalid_llc_nr(struct sched_cache_group *grp, struct task_struct *p,
->  	if (scale == INT_MAX)
->  		return false;
->  
-> -	return !fits_capacity((READ_ONCE(grp->nr_running_avg) * cpu_smt_num_threads),
-> -			(scale * per_cpu(sd_llc_size, cpu)));
-> +	return !fits_llc_nr(READ_ONCE(grp->nr_running_avg) * cpu_smt_num_threads,
-> +			    scale * per_cpu(sd_llc_size, cpu));
->  }
->  
->  /*
-
+Cheers,
+Miguel
