@@ -1,105 +1,74 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.201.22
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793598402;
-	b=1GFBM0FNWTNk/Ej95qpdCQ50YdCR8AOLWhq0kXY1bw803uOiJ5qMcrvdnqpudD5z5zhz
-	 E2kBpnMt6WhWJ5GCEeGnm9CgnpoACroVmb1x+m1aICLc2T7qd8vpRhPZLw/51u/HAZEBb
-	 OqMdXmnV2MyqK9t2SCaOO1zHyVMqmiqpEybw7MGyk99Mhh1dMjfVBvxXJOfQvG8DHsShl
-	 0TFd2Z18A606mzgZk6YKtpHqgrh2AjVcNqpmp5ijAFz9aDsdJARjfzRO+UhpjX1YWP+ct
-	 FNVVjaKGnsVq3vPNGKtmWPu4BKILp8jr9iJSANTQXnAzTAF1e2nIldaVHIeSI3XT+7g==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793598402;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-LD-Processed:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=wuRbOs3XqpP0lp7sUetuLOcFRLOUYYFLyEsp95wldxU=;
-	b=uJG+uVxNzz+m//l8PB/R0+mkcjI6lkDthyeaD44qrc4EjgEzQJ1ChAx1UL3X4m5VU9xy
-	 Sc5pXpj70Zs2MH9xinBEFA6FeTOFtnI5oIousQU9E+E4rwuEwy/xuU0EtPrr2EVSgZtVs
-	 mRezGd00morbVjEi5vGn9GXXj2XI2ZPWFOf63wQbHEoHFhCV5mzNbVrmdh+V41k1BtLaX
-	 UNqaUZ9ecXVeaAc2cRLw68wBDSvBiDkIQlMJJHUyeoDXFRhWn8zb4idhQ2r7NKSdr3OUc
-	 tbqQLbw/mMk8FdGhUbLB9Cms5D6pa6coK0eZKNh7B3BcfVUJEh+iVCFHpdMLq2DzJIA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amd.com;
-	spf=fail smtp.mailfrom=amd.com;
-	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=e36IkOyo;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.201.22
-Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013022.outbound.protection.outlook.com [40.93.201.22])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.19
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793601419;
+	b=fEydpt0C3mTMuyH+S3NY/26pfYqMRqWWCsR9LRGFoR9Kxv+dZaKvVoyIGdi3KP6doRaV
+	 PNziPIM+DlAfLzQGA59K/igLx35xCSDJYtbTG65v1HLshc63HKR+xCATkuo7s888a2LU8
+	 sVdB/Qi7n/0tdD8VxalV4nPiDojd03YFy3qtGU1bJFtvMM3i/W7Gt5/KiMLvPA1pIwuEz
+	 kZ4ONCTUwJspfcipGPgPYf11SmFSIkiL3lYmnZskRpCt35Pcb55UsP1u6fHKzZhFbaVaW
+	 8IpYywEp4Xks8v2nfgzVQm2H760TdX0wRMu3oYewHmOYDtdgy3UVIt0fvVTUsko+GUQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793601419;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
+	 Date:Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=FIoy2Z3OD2zk6sZ28SkCKEoda0zBofnG2s9KCkyZzbw=;
+	b=d4UdSUtkqleTdSgd8rvS4ckkWnv1yferwhxxy8j76ii/gaN6GUcA+ohdKQxovC3V7URT
+	 J3ug318YENABD0MjDLqkOHAjyEgXmtTM3+QPcUHbML4tn0tU9zC2nbqMogtZ4OLltKYx3
+	 4TNLAHR8ceCFV/j7n7lq5fc+x4b4WQAGX6zdgCEbvpyL6+qN18s9Nmnezlw+jd8ObzGFY
+	 H6oRBPsDAdDjQFZeH1hanqEW/ZgccWlocaOqn8KnTPKdjVRKuXoU68ZdQq4amAEZNp9gz
+	 EZkyra3Tno/x+x+ZwoQITyWj/Q5XfPiYpf1sq/T8mKzmya4210Hh6A4s2XBjUaD0eHw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QwF7aUMn;
+	arc=none smtp.remote-ip=198.175.65.19
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDD50606A324;
-	Mon,  2 Nov 2026 05:46:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EDD50606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8488606A324;
+	Mon,  2 Nov 2026 06:36:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D8488606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=e36IkOyo
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cYl2rHQSyGygaP980R9M3SXfyGkCwmO0/kx1p48r4tUPmMi7+wnWSe7AbjcDjx9yuFErQd1aMq1fbaIx7cJpui1nO9paye4PWEV8PZ6L16CtZeJRU2InzE1XmaQ5kNtOFyq/ziS96hFdkSY65kbtVIEIUMAWVZ585gvmAULyHwoGiIe+42wqN21bEYdtl6uzcJWQHRntCB3t9MzTa7ZcMzE+gI3Ust3JgPigtazvJeYiAasJ3ZkQ9xWmcMx+wesyIpQyiaGzUiDF+cMsg1XLjWtPuG3kAfAvD7fUZGKe/Sptyt2fGvjhM3L2mas6QU78/r/r+7k5KkZGXHnYqqDG0w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wuRbOs3XqpP0lp7sUetuLOcFRLOUYYFLyEsp95wldxU=;
- b=FaKyXtWwWzOoJyhDjyV9Q/KDKGP8L5hcHR63a4rlKWGs/m5d2yP5MspoQ2O6tenHskqUW1qWdbJJz3kxnnbOAnjh/DpDqFZEMRC4aGSK5cDdgQust/m5puYoS77zN0yF0IzNLJIrNXB+wA6XzlV/6I8ymtw3dby70PodWCIpS+4GVmbDfm2ApdZB4oPIW9u4Z5N3riw8mmN+NrByIJmrNskW1U+SsQuAB/H/n7oCh3lEkEh5kvscrEt3WAVgEDOvCIsrxbs+5PXKSgViClbJQleplVcqSSW7rjvEc3wrpOxNCW8YlC93p/hKjdu8OEkaDaAtEWrRta9aCIODgzyqGQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=wuRbOs3XqpP0lp7sUetuLOcFRLOUYYFLyEsp95wldxU=;
- b=e36IkOyoV8aOyye5ZwvdvPS1PU6f3OotwWG6gov+9bM9gjEw1a21l3f6un06W7+zJU9SaxVsqB01zW3B6+yhP/eHX7mrpWFfQjWN04bEDL5jS0LVilVb4eQFuQD/+g8RTuEMcuwa1fsHrQl7sjXLjgztIp+FPXETmpbiMuarrJc=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from CY8PR12MB7516.namprd12.prod.outlook.com (2603:10b6:930:94::9)
- by SN7PR12MB7811.namprd12.prod.outlook.com (2603:10b6:806:34f::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.12; Mon, 2 Nov
- 2026 05:46:37 +0000
-Received: from CY8PR12MB7516.namprd12.prod.outlook.com
- ([fe80::b6cb:7a8c:fe0f:b9cd]) by CY8PR12MB7516.namprd12.prod.outlook.com
- ([fe80::b6cb:7a8c:fe0f:b9cd%6]) with mapi id 15.21.0569.011; Mon, 2 Nov 2026
- 05:46:37 +0000
-Message-ID: <2706dd89-27c6-4225-9476-344fcb146620@amd.com>
-Date: Mon, 2 Nov 2026 11:16:28 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/6] dmaengine: zynqmp_dma: Use PM guard for probe-time
- runtime PM reference
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
- Michal Simek <michal.simek@amd.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Kedareswara rao Appana <appana.durga.rao@xilinx.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Michael Tretter <m.tretter@pengutronix.de>,
- Harini Katakam <harini.katakam@amd.com>,
- Shyam Pandey <radhey.shyam.pandey@amd.com>, dmaengine@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, git@amd.com
-References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
- <20261009-adma-pm-fix-and-per-channel-reset-v4-1-55f5fe409c55@amd.com>
- <asmsVD1RP6FoMN9l@SMW015318> <212a4fc4-437a-409a-821e-86b9b8c7f85c@amd.com>
- <atoxRAVvHx1Ng2GB@SMW015318>
-Content-Language: en-US
-From: "Golla, Nagendra" <Nagendra.Golla@amd.com>
-In-Reply-To: <atoxRAVvHx1Ng2GB@SMW015318>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MA5P287CA0146.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:1d7::6) To CY8PR12MB7516.namprd12.prod.outlook.com
- (2603:10b6:930:94::9)
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QwF7aUMn
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793601417; x=1825137417;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Mj8Zo7ZDsS9A32QqDBR8EvgwoDbt2Mi1IV0DCLUNXMc=;
+  b=QwF7aUMn5Pb6IrIrIqxmo91Swi2F10vpZZKj01tLsp7SWbYXHN3pxhWv
+   s1gMmLV5g8gsPDbrNGhcw2Z9fM+7pAdjvColL5THIWElqGVN6X1ID8+GP
+   DLGme9q3LsM0iulmcu4nM4Eev8YQE/P0ulR4w99+E2zECsMtTA4iPPSDr
+   PgAYtt6yaet5kQpr6qWR35OIl842/USXujNKS5q5ti6BKeNqb2+9IYTJd
+   +atw6tpIc3qITZH8YN4xvgRWPOa8L1t/Y5XVOUX7RwY/pr6hbzyWhdpFv
+   hg7aARvYRCpX/Qhx/xjxgW2tKdn20NuHmcFoPuDNDoNAnnHNG+/OgCQhm
+   Q==;
+X-CSE-ConnectionGUID: zuOk2r+qSG62z5CcPgTXCg==
+X-CSE-MsgGUID: 5w5f0q3+SQmojHCqB5w5yw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2309966"
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="2309966"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 22:36:56 -0800
+X-CSE-ConnectionGUID: jWvrhJ9mQZmFpHDYt09xqg==
+X-CSE-MsgGUID: MAWPaxLXTZG1xnX/0hsmow==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="6025253"
+Received: from senthil-nuc10i7fnh.iind.intel.com ([10.223.163.42])
+  by orviesa002.jf.intel.com with ESMTP; 01 Nov 2026 22:36:53 -0800
+From: Saranya Gopal <saranya.gopal@intel.com>
+To: linux-acpi@vger.kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	rafael.j.wysocki@intel.com
+Subject: [PATCH v2] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
+Date: Mon,  2 Nov 2026 12:06:10 +0530
+Message-Id: <20261102063610.3242714-1-saranya.gopal@intel.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -109,317 +78,224 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PR12MB7516:EE_|SN7PR12MB7811:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0892dfe1-00ea-47f8-9ad4-08df38a4a954
-X-LD-Processed: 3dd8961f-e488-4e60-8e11-a82d994e183d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|23010399003|1800799024|366016|4143699003|11063799006|56012099006|261009223027099003|261009221727099003|261009221227099003|261009223327099003|261009220027099003|261028144727099003|261021121427099003|261021123027099003|261026121527099003|261026140227099003|261022075727099003|261022105027099003|10067099003|22082099003|18002099003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	J1tuJLIRLRpibHhzYn+AcvD1v2uxdhlw1V9gFL3qiAfXrT0ZliAd/0duxmqHuZmeXArfrr0JkxkzwgRvJSKbqV7IJslSpgsVT7hRsTsAehJIhDHDkmftOpDs2Sld8UyGop8Y7bHm240yj0ARmX8FwlUeKJCLNUCmAd40Uef0T+ifaThw/M8YApD0lddMWFMJXBfG18UWZM+uh9ZlAKQg8Eg9yNx4DHCQMj2Du1tJLC++xFqqxRZwvD8j+KdCavoK3ktUKx++CbIpCYyM+yh+TRp7J4+dK4AwAm5uRzV2qiWhS4hE834sJCCyh+gpTUf/IdNULiybwRuD+lLQ4NMseW6ExTK/qXby6WSv5i9rVoIqe3QfaRnVFD3a5syvqdaMrZGM/gIcos+LC8lDjYXDZDEqMhiT1vGzEq0FnadAgqTMNDw6P8IVwZ0RaSn3ZdvkCJuZA+d5xgXHkgaDXPPdmSuxCRY8gWbk0wDVwQkFST6qfGHK78CddCWXiXv0cwEWlRkwVUq74LzRkZa4SLR9nbiTXNpOeNRYqW8zBqDuZbbWcm71xkKN/R9bW1kxyUvbVz347+045KdShRRdhWGPM42GPJyvtHLlqJrGpFhjucdAaIeTLlTCHpLkSxn5zy34
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR12MB7516.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(1800799024)(366016)(4143699003)(11063799006)(56012099006)(261009223027099003)(261009221727099003)(261009221227099003)(261009223327099003)(261009220027099003)(261028144727099003)(261021121427099003)(261021123027099003)(261026121527099003)(261026140227099003)(261022075727099003)(261022105027099003)(10067099003)(22082099003)(18002099003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?OExvejdCV2ozZkxLUFNUaHZlWVM5VWlBSnQyanJ2YjA2UUE1c0ExTE9HVlVm?=
- =?utf-8?B?QStQTmVoSHpsZlg2enJEbEpGb09oeUhZbzRKN3hsSUlnbFJpU0RBQXpOTmZW?=
- =?utf-8?B?d09oRmNibGhPaTVYWVVhclBrV2k5ZzJqS3FsVGVPT24wSUczWmxrV1BIcnor?=
- =?utf-8?B?SHZIaDFHRkc4ZkFham1zRjVBeEkvQzdUZjNQWjlFSGFwTUl6M1BWMnB5OHFp?=
- =?utf-8?B?R2JqeEp0S3dSbko5QmNMSnV6eUhoR3hveXlHUW5NNDdRNFZoL3AxNGpmekt5?=
- =?utf-8?B?SVdwMkkybjBxalExYUtTNzcwSTg5SzdxbU5FeVd4d3FHeVh6MWJXbXlob0pR?=
- =?utf-8?B?d1BPampKMkJnMVVBQTlYK1ZnM3FpZkI1NHFCa0NoeXZYQzV6b24vR216TFB0?=
- =?utf-8?B?dGhxUmJ5UE9yTEt1bFZuYy9CTzRFSzczOEhCMzR3TzZTczJDNzRDM1JCc2xF?=
- =?utf-8?B?SG42MWNrU1BpYXRIcEhpQnNOK3pTR0pEMXMvQ0tldjdZbWNWVGVEalg0T0VQ?=
- =?utf-8?B?RmZmWG8yajRVRnMxcitpMUxhRFUyQkJjS21JKzhJZUJjaUx5bDlCM2JLQ2dm?=
- =?utf-8?B?ZmZMVXlreTlVSmJaQUFES3lmZ1IrSWVKL1ptNllPbldtYnoyKzRZZ0RHcFNX?=
- =?utf-8?B?YTZpVlhiaHZ5Ukp0aFZIeXpMSjRYUzE2ZlIvSzllOCt2YURTWnQra0RyMGJx?=
- =?utf-8?B?akwvZ2ZXQ3FqNlo3RGZkM3JGbnMxWmw3bHM5Q3NiV2VXRzFoTUNtMllPakFa?=
- =?utf-8?B?RWlFeVVjNEx1RTArWUZ0c2JLa29vbVlLeVhPbFBZV004N1hyMUZ4V044N1NC?=
- =?utf-8?B?Q3lBNkJ1UEpJTTZxY1N5b05oK0dCNUJNend0SFFLY1JpOThkSFZPd3k0TW01?=
- =?utf-8?B?Q3JFMmZITUVWa2ZJZ1BQOG01cGpOMTAwcUNmNFBRZEFwU0x0eldrU0trd2dv?=
- =?utf-8?B?dkFhai81YllzdUQ1UFRIeXk2c0hhUW5iUVhDamJNRFl6K2Z1amwwb25BR3F0?=
- =?utf-8?B?bUxBd29INU80V1VNRnIyQlZqVzY1SWkzdE01WEh6U0luYmJmMHJTTWJoc21M?=
- =?utf-8?B?ZmMrUGVQb0UzT1pyM3ZRS3hYa3JoMS8rL3VPUXhHcjgwRXRVLysycEZWdGtz?=
- =?utf-8?B?aXlkbnUzZnlESGxCcUdxT05HMW5nbnNaZXQ2dmJuanBocmN2OXpZMkQ0ZDFw?=
- =?utf-8?B?VlQ1b2c3aDhLR0F5dWppL3JPblNjcmpHeitFaTdvb1hUTVBpa1hhUFZvZk90?=
- =?utf-8?B?VnAxZy9HdWcwNEVsSHk3R0diTm1OcWtwS1h6SExTcWx4U3ZvWllIZWZyZ2lz?=
- =?utf-8?B?ZXBqRFpnUVpsRVlwd3lBUkFTVG9QVjhXSlN6dVNXLzhrRDdDSXVIS2lBM2Jy?=
- =?utf-8?B?b3F5ZDZtekVPaW42cURRYjNmcVp5WVZ1Q243aWdNOHNvb2dlVnpRbjdvN29a?=
- =?utf-8?B?WjlQYVZTQWpidUJCcktIU2l0R2oxSFBwUXlhY0k3Y2NxRkZrTHQ1QjM0UEtC?=
- =?utf-8?B?ZGVSWHlqRkMzUEt4TWI5SmtGTGlNcEtHNW9va0xSMDZ4ODBXZ2ZGeXBWNWEw?=
- =?utf-8?B?cWd1U0VyQnBFWkJGZmRaUXdKaVdLZFdkSEFrZVRuRjZuZ0l0QXEvdGphczdj?=
- =?utf-8?B?ZlN5bTN3MVBOdlVKUDRUYmdsVmcxRlN0WVg2bW5TS2dEdm1sYTRmRVI0cWNh?=
- =?utf-8?B?MExBdkNhRitCYVJlWlJzM3ZCdnlHSDBmYnFFcUd2aVI0NFVYZFZLTUNLTzRM?=
- =?utf-8?B?WlJrdVhUdnNnd3RkeUJKN2dlb3hUKzdIMkdrcCtaTWswMmNCLzVUNXcxSUFl?=
- =?utf-8?B?a0toV3hESDBCOGNodXdHd2VvUFd3d3RRUWZrcTJWUEFLNG9laFpPeUxlSVhB?=
- =?utf-8?B?QkJUZ0wycWdabGc0UzhqbVNDeXNvdHpUWFV4T2s1c0gwV0JjTkppdnJHZ2VI?=
- =?utf-8?B?N2Jvbmh6QVphZnJucnJ1Um15NEg4STNRdVFzRUJjaGl3azZmTWRyVmhXelQ5?=
- =?utf-8?B?YklnZTRqMnBFS2lBWWc2VDZXZ1BURmlScEt0WmNrUDJBT0tubU9jL2dTVG9S?=
- =?utf-8?B?Z0NSV2xMcUtJa2ZjYmNNSHlZS2k4Z2ovZGl3RUpXY3VTVlN1SlRVUW9tOG1R?=
- =?utf-8?B?MkFvRWNnQzIvditLQ2FSL3E5eTBFV2c5WEJLS09xQzdWaDZzN253bWl4dlkv?=
- =?utf-8?B?NllsdnZ5QnBOaGZER2NpaWJKRnE3N29zVzRxazM0Yy8xMS9mZSszR3h2ZU1R?=
- =?utf-8?B?azdhUEZUVjNScnQ2N0poQ3BubFQzZVA5N1huM055MjNoNzE0YzRJcFl6dGQ4?=
- =?utf-8?B?VUY0aEM4ZEhtMjlwK0RtMUJhMVN2K0ZLaDNmTEVQQTZsdEJGWnlJZz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0892dfe1-00ea-47f8-9ad4-08df38a4a954
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR12MB7516.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Nov 2026 05:46:37.8008
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: cldKaJp17I+uYkL/5+dMif6ceyMzm8enTqwQACxreckHUQvF0L5e5a1LG/SRkdOs5wppHZXbhVf5SBuUS/99kQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7811
+Content-Transfer-Encoding: 8bit
 
-Hi Frank,
+When first_ec is NULL, acpi_ec_dispatch_gpe() previously treated any
+active GPE as a wake source. On platforms where an _Ixx GPE is shared
+by user-wakeup and background events, that can cause unnecessary
+wakeups.
 
-On 10/22/2026 9:22 PM, Frank Li wrote:
-> On Thu, Oct 22, 2026 at 10:40:53AM +0530, Golla, Nagendra wrote:
->> Hi Frank,
->>
->> On 10/10/2026 8:39 AM, Frank Li wrote:
->>> On Fri, Oct 09, 2026 at 09:30:10AM +0530, Golla Nagendra wrote:
->>>> Replace pm_runtime_resume_and_get() with the PM_RUNTIME_ACQUIRE_AUTOSUSPEND
->>>> guard to manage the probe-time runtime PM reference lifecycle. If the guard
->>>> acquire fails, fail probe immediately so a broken device is never
->>>> registered.
->>>>
->>>> When runtime PM is not enabled for the device, call
->>>> zynqmp_dma_runtime_resume() directly after pm_runtime_enable() to bring the
->>>> clocks up for probe.
->>>>
->>>> On probe failure after a successful guard acquire, drop the reference with
->>>> zynqmp_dma_probe_pm_put(), inhibit the guard destructor with
->>>> retain_and_null_ptr(), and gate the clocks through
->>>> zynqmp_dma_probe_fail(). When runtime PM is enabled,
->>>> zynqmp_dma_probe_pm_put() uses pm_runtime_put_sync_suspend(). When runtime
->>>> PM is not enabled for the device, balance the guard usage counter with
->>>> pm_runtime_put_noidle() and gate the clocks with
->>>> zynqmp_dma_runtime_suspend(). Runtime PM does not suspend a device that
->>>> is already disabled, so pair every direct zynqmp_dma_runtime_suspend()
->>>> call with pm_runtime_set_suspended() to keep the runtime PM status in
->>>> sync with the clocks.
->>>>
->>>> On probe success, release the probe-time reference with
->>>> pm_runtime_put_sync_autosuspend() when runtime PM is enabled for the
->>>> device. When runtime PM is not enabled for the device, balance the guard
->>>> usage counter with pm_runtime_put_noidle() only and leave the clocks
->>>> enabled so that later channel allocation can use the hardware. Inhibit the
->>>> guard destructor with retain_and_null_ptr(pm).
->>>>
->>>> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
->>>> ---
->>>>    drivers/dma/xilinx/zynqmp_dma.c | 68 ++++++++++++++++++++++++++++++-----------
->>>>    1 file changed, 50 insertions(+), 18 deletions(-)
->>>>
->>>> diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
->>>> index 3b7dfa53f972..a48106e404e7 100644
->>>> --- a/drivers/dma/xilinx/zynqmp_dma.c
->>>> +++ b/drivers/dma/xilinx/zynqmp_dma.c
->>>> @@ -18,6 +18,7 @@
->>>>    #include <linux/slab.h>
->>>>    #include <linux/clk.h>
->>>>    #include <linux/io-64-nonatomic-lo-hi.h>
->>>> +#include <linux/cleanup.h>
->>>>    #include <linux/pm_runtime.h>
->>>>
->>>>    #include "../dmaengine.h"
->>>> @@ -1077,6 +1078,29 @@ static const struct dev_pm_ops zynqmp_dma_dev_pm_ops = {
->>>>    			   zynqmp_dma_runtime_resume, NULL)
->>>>    };
->>>>
->>>> +static void zynqmp_dma_probe_pm_put(struct device *dev)
->>>> +{
->>>> +	if (pm_runtime_enabled(dev))
->>>> +		pm_runtime_put_sync_suspend(dev);
->>>> +	else
->>>> +		pm_runtime_put_noidle(dev);
->>>> +}
->>>> +
->>>> +static int zynqmp_dma_probe_fail(struct zynqmp_dma_device *zdev, int ret)
->>>> +{
->>>> +	bool rpm_disabled = !pm_runtime_enabled(zdev->dev);
->>>> +
->>>> +	zynqmp_dma_chan_remove(zdev->chan);
->>>> +	zynqmp_dma_probe_pm_put(zdev->dev);
->>>> +	pm_runtime_disable(zdev->dev);
->>>> +	if (rpm_disabled || !pm_runtime_status_suspended(zdev->dev)) {
->>>> +		zynqmp_dma_runtime_suspend(zdev->dev);
->>>> +		pm_runtime_set_suspended(zdev->dev);
->>>> +	}
->>>> +
->>>> +	return ret;
->>>> +}
->>>> +
->>>>    /**
->>>>     * zynqmp_dma_probe - Driver probe function
->>>>     * @pdev: Pointer to the platform_device structure
->>>> @@ -1087,7 +1111,7 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>>>    {
->>>>    	struct zynqmp_dma_device *zdev;
->>>>    	struct dma_device *p;
->>>> -	int ret;
->>>> +	int ret, pm_err;
->>>>
->>>>    	zdev = devm_kzalloc(&pdev->dev, sizeof(*zdev), GFP_KERNEL);
->>>>    	if (!zdev)
->>>> @@ -1128,21 +1152,30 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>>>    	pm_runtime_set_autosuspend_delay(zdev->dev, ZDMA_PM_TIMEOUT);
->>>>    	pm_runtime_use_autosuspend(zdev->dev);
->>>>    	pm_runtime_enable(zdev->dev);
->>>> -	ret = pm_runtime_resume_and_get(zdev->dev);
->>>> -	if (ret < 0) {
->>>> -		dev_err(&pdev->dev, "device wakeup failed.\n");
->>>> -		pm_runtime_disable(zdev->dev);
->>>> -	}
->>>>    	if (!pm_runtime_enabled(zdev->dev)) {
->>>>    		ret = zynqmp_dma_runtime_resume(zdev->dev);
->>>> -		if (ret)
->>>> +		if (ret) {
->>>> +			pm_runtime_disable(zdev->dev);
->>>>    			return ret;
->>>> +		}
->>>> +	}
->>>> +	PM_RUNTIME_ACQUIRE_AUTOSUSPEND(zdev->dev, pm);
->>>> +	pm_err = PM_RUNTIME_ACQUIRE_ERR(&pm);
->>>> +	if (pm_err) {
->>>> +		retain_and_null_ptr(pm);
->>>
->>> Not sure why need call retain_and_null_ptr() here, generally only need
->>> call retain_and_null_ptr() at success pass if you use want to keep
->>> runtime_pm active. at fail case, needn't do that.
->>>
->>>> +		pm_runtime_disable(zdev->dev);
->>>
->> Thanks for the Review> If use devm_pm_runtime_enable(), needn't this one.
->>
->> We intentionally keep the nondevmpm_runtime_enable()pm_runtime_disable()
->> pair here and do not switch to devm_pm_runtime_enable().
->> devm_pm_runtime_enable() registers a devm action that calls
->> pm_runtime_disable() automatically after .remove returns. Since remove()
->> already calls pm_runtime_disable() explicitly itself, switching to the devm
->> variant would mean pm_runtime_disable() gets called a second time for the
->> same device
->> — driving disable_depth into underflow, along with any other
->> invalid state that comes from disabling an already-disabled runtime PM.
->>
->> If we remove the explicit pm_runtime_disable() from remove() to avoid that
->> double-disable call, it would affect the fix introduced in commit
->> 9c58a42c1612 ("dmaengine: zynqmp_dma: fix race between runtime PM and device
->> removal"),
->> https://lore.kernel.org/all/20260630064844.705173-2-nagendra.golla@amd.com/
->> which added that explicit disable specifically to close a race between
->> runtime PM and device removal.
-> 
-> "[Severity: High]
-> This isn't a bug introduced by this patch, but does zynqmp_dma_remove() need
-> to halt the DMA hardware before disabling clocks?
-> 
-> The function disables device clocks via zynqmp_dma_runtime_suspend() but never
-> writes to the hardware to halt active transfers or waits for idle.
-> 
-> Could stopping clocks while an AXI master is mid-transaction violate the bus
-> protocol and cause an interconnect hang?"
-> 
-> Is this one?
+Return -ENODEV when no EC instance is available so the s2idle wake
+path can handle that case. On x86, check active GPEs against those
+registered from _Ixx methods. Preserve immediate wakeup for active
+non-_Ixx GPEs; otherwise cancel the SCI wake request and dispatch
+active _Ixx GPEs. The common s2idle path then synchronizes event
+processing and checks whether a driver requested wakeup. Lookup or
+dispatch failures conservatively request wakeup.
 
-Apologies for the delayed response.
-> 
-> Frank
-No, the commit I mentioned does not refer to this issue. This patch 
-resolve the race with respect to runtime PM in the remove function . The 
-old code first checks whether the device is runtime active, and based on 
-that it decides whether to manually suspend the device. But during the 
-small gap between that check and the manual suspend call, runtime PM is 
-still enabled, so a runtime PM transition can occur in parallel. In that 
-window, the PM core may call the driver runtime suspend callback itself. 
-Then the remove path also calls the same suspend callback based on the 
-earlier active-state check, so the device may be suspended twice.
+The non-x86 fallback retains the previous any-GPE status check.
 
-this is why pm_runtime_disable() is moved before the suspend decision. 
-because it closes the race window by  blocking further runtime PM 
-transitions and stabilizing the device state.
+Fixes: 46767b17fda3 ("ACPI: PM: s2idle: Add _Ixx GPE wake indicator support")
+Signed-off-by: Saranya Gopal <saranya.gopal@intel.com>
+---
+ drivers/acpi/ec.c         | 10 ++++-----
+ drivers/acpi/internal.h   |  6 +++---
+ drivers/acpi/sleep.c      | 18 +++++++++-------
+ drivers/acpi/sleep.h      |  8 ++++++++
+ drivers/acpi/x86/s2idle.c | 43 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 70 insertions(+), 15 deletions(-)
 
-this was the potential condition reported by the internal AI review
-
-The issue you pointed out regarding an ongoing DMA transfer during 
-removal is separate and needs further investigation. The commit I 
-mentioned does not address stopping an active transfer or waiting for 
-the hardware to become idle before disabling the clocks.
-
-Thanks,
-Nagendra
-> 
->> Dropping it would reopen that same race.
->>
->> Thanks,
->> Nagendra
->>
->>>
->>>> +		if (!pm_runtime_status_suspended(zdev->dev)) {
->>>> +			zynqmp_dma_runtime_suspend(zdev->dev);
->>>> +			pm_runtime_set_suspended(zdev->dev);
->>>> +		}
->>>> +		return dev_err_probe(&pdev->dev, pm_err, "device wakeup failed\n");
->>>>    	}
->>>>
->>>>    	ret = zynqmp_dma_chan_probe(zdev, pdev);
->>>>    	if (ret) {
->>>>    		dev_err_probe(&pdev->dev, ret, "Probing channel failed\n");
->>>> -		goto free_chan_resources;
->>>> +		retain_and_null_ptr(pm);
->>>> +		return zynqmp_dma_probe_fail(zdev, ret);
->>>>    	}
->>>>
->>>>    	p->dst_addr_widths = BIT(zdev->chan->bus_width / 8);
->>>> @@ -1151,7 +1184,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>>>    	ret = dma_async_device_register(&zdev->common);
->>>>    	if (ret) {
->>>>    		dev_err(zdev->dev, "failed to register the dma device\n");
->>>> -		goto free_chan_resources;
->>>> +		retain_and_null_ptr(pm);
->>>> +		return zynqmp_dma_probe_fail(zdev, ret);
->>>>    	}
->>>>
->>>>    	ret = of_dma_controller_register(pdev->dev.of_node,
->>>> @@ -1159,19 +1193,17 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>>>    	if (ret) {
->>>>    		dev_err_probe(&pdev->dev, ret, "Unable to register DMA to DT\n");
->>>>    		dma_async_device_unregister(&zdev->common);
->>>> -		goto free_chan_resources;
->>>> +		retain_and_null_ptr(pm);
->>>> +		return zynqmp_dma_probe_fail(zdev, ret);
->>>>    	}
->>>>
->>>> -	pm_runtime_put_sync_autosuspend(zdev->dev);
->>>> +	if (pm_runtime_enabled(zdev->dev))
->>>> +		pm_runtime_put_sync_autosuspend(zdev->dev);
->>>> +	else
->>>> +		pm_runtime_put_noidle(zdev->dev);
->>>> +	retain_and_null_ptr(pm);
->>>
->>> You mix use auto cleanup and pm_runtime_put_sync_autosuspen() and
->>> pm_runtime_put_noidle() to make code mess up.
->>>
->>> Frank
->>>>
->>>>    	return 0;
->>>> -
->>>> -free_chan_resources:
->>>> -	zynqmp_dma_chan_remove(zdev->chan);
->>>> -	if (!pm_runtime_enabled(zdev->dev))
->>>> -		zynqmp_dma_runtime_suspend(zdev->dev);
->>>> -	pm_runtime_disable(zdev->dev);
->>>> -	return ret;
->>>>    }
->>>>
->>>>    /**
->>>>
->>>> --
->>>> 2.43.7
->>>>
->>
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index 64ad4cfa6208..8be572af4115 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -2155,19 +2155,19 @@ static bool acpi_ec_work_in_progress(struct acpi_ec *ec)
+ 	return ec->events_in_progress + ec->queries_in_progress > 0;
+ }
+ 
+-bool acpi_ec_dispatch_gpe(void)
++int acpi_ec_dispatch_gpe(void)
+ {
+ 	bool work_in_progress = false;
+ 
+ 	if (!first_ec)
+-		return acpi_any_gpe_status_set(U32_MAX);
++		return -ENODEV;
+ 
+ 	/*
+ 	 * Report wakeup if the status bit is set for any enabled GPE other
+ 	 * than the EC one.
+ 	 */
+ 	if (acpi_any_gpe_status_set(first_ec->gpe))
+-		return true;
++		return 1;
+ 
+ 	/*
+ 	 * Cancel the SCI wakeup and process all pending events in case there
+@@ -2195,7 +2195,7 @@ bool acpi_ec_dispatch_gpe(void)
+ 	spin_unlock_irq(&first_ec->lock);
+ 
+ 	if (!work_in_progress)
+-		return false;
++		return 0;
+ 
+ 	pm_pr_dbg("ACPI EC GPE dispatched\n");
+ 
+@@ -2212,7 +2212,7 @@ bool acpi_ec_dispatch_gpe(void)
+ 		spin_unlock_irq(&first_ec->lock);
+ 	} while (work_in_progress && !pm_wakeup_pending());
+ 
+-	return false;
++	return 0;
+ }
+ #endif /* CONFIG_PM_SLEEP */
+ 
+diff --git a/drivers/acpi/internal.h b/drivers/acpi/internal.h
+index 40f875b265a9..d5435338d6ca 100644
+--- a/drivers/acpi/internal.h
++++ b/drivers/acpi/internal.h
+@@ -236,7 +236,7 @@ void acpi_ec_register_opregions(struct acpi_device *adev);
+ 
+ #ifdef CONFIG_PM_SLEEP
+ void acpi_ec_flush_work(void);
+-bool acpi_ec_dispatch_gpe(void);
++int acpi_ec_dispatch_gpe(void);
+ #endif
+ 
+ #else
+@@ -256,9 +256,9 @@ static inline void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit
+ static inline void acpi_ec_register_opregions(struct acpi_device *adev) {}
+ 
+ static inline void acpi_ec_flush_work(void) {}
+-static inline bool acpi_ec_dispatch_gpe(void)
++static inline int acpi_ec_dispatch_gpe(void)
+ {
+-	return false;
++	return -EOPNOTSUPP;
+ }
+ 
+ #endif
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 132a9df98471..9366c3d927c2 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -787,13 +787,17 @@ bool acpi_s2idle_wake(void)
+ 			return true;
+ 		}
+ 
+-		/*
+-		 * Check non-EC GPE wakeups and if there are none, cancel the
+-		 * SCI-related wakeup and dispatch the EC GPE.
+-		 */
+-		if (acpi_ec_dispatch_gpe()) {
+-			pm_pr_dbg("ACPI non-EC GPE wakeup\n");
+-			return true;
++		/* Check EC handling and other GPE wake sources. */
++		{
++			int ret = acpi_ec_dispatch_gpe();
++
++			if (ret == -ENODEV) {
++				if (acpi_x86_s2idle_check_ixx_gpes())
++					return true;
++			} else if (ret > 0) {
++				pm_pr_dbg("ACPI non-EC GPE wakeup\n");
++				return true;
++			}
+ 		}
+ 
+ 		acpi_os_wait_events_complete();
+diff --git a/drivers/acpi/sleep.h b/drivers/acpi/sleep.h
+index 9c3cb109c5d2..955e9c22bf0d 100644
+--- a/drivers/acpi/sleep.h
++++ b/drivers/acpi/sleep.h
+@@ -20,6 +20,14 @@ extern int acpi_s2idle_prepare(void);
+ extern bool acpi_s2idle_wake(void);
+ extern void acpi_s2idle_restore(void);
+ extern void acpi_s2idle_end(void);
++#if defined(CONFIG_X86) && defined(CONFIG_SUSPEND)
++extern bool acpi_x86_s2idle_check_ixx_gpes(void);
++#else
++static inline bool acpi_x86_s2idle_check_ixx_gpes(void)
++{
++	return acpi_any_gpe_status_set(U32_MAX);
++}
++#endif
+ 
+ extern void acpi_s2idle_setup(void);
+ 
+diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
+index c278ea14c0b3..979684950f24 100644
+--- a/drivers/acpi/x86/s2idle.c
++++ b/drivers/acpi/x86/s2idle.c
+@@ -16,6 +16,7 @@
+  */
+ 
+ #include <linux/acpi.h>
++#include <linux/bitmap.h>
+ #include <linux/device.h>
+ #include <linux/dmi.h>
+ #include <linux/suspend.h>
+@@ -24,6 +25,8 @@
+ 
+ #ifdef CONFIG_SUSPEND
+ 
++static DECLARE_BITMAP(acpi_s2idle_ixx_gpes, 256);
++
+ static void acpi_setup_ixx_gpes(void)
+ {
+ 	acpi_handle gpe_root;
+@@ -47,11 +50,51 @@ static void acpi_setup_ixx_gpes(void)
+ 
+ 		acpi_mark_gpe_for_wake(NULL, i);
+ 		acpi_set_gpe_wake_mask(NULL, i, ACPI_GPE_ENABLE);
++		set_bit(i, acpi_s2idle_ixx_gpes);
+ 
+ 		pm_pr_dbg("ACPI: GPE0x%02x armed for wake via %s\n", i, gpe_nr_str);
+ 	}
+ }
+ 
++bool acpi_x86_s2idle_check_ixx_gpes(void)
++{
++	acpi_handle gpe_device;
++	acpi_event_status status;
++	u32 gpe;
++
++	for (gpe = 0; gpe < acpi_current_gpe_count; gpe++) {
++		if (ACPI_FAILURE(acpi_get_gpe_device(gpe, &gpe_device)))
++			return true;
++
++		if (!gpe_device && gpe < 256 &&
++		    test_bit(gpe, acpi_s2idle_ixx_gpes))
++			continue;
++
++		if (ACPI_FAILURE(acpi_get_gpe_status(gpe_device, gpe, &status)))
++			return true;
++
++		if ((status & ACPI_EVENT_FLAG_STATUS_SET) &&
++		    (status & ACPI_EVENT_FLAG_ENABLE_SET))
++			return true;
++	}
++
++	pm_system_cancel_wakeup();
++
++	for_each_set_bit(gpe, acpi_s2idle_ixx_gpes, 256) {
++		if (ACPI_FAILURE(acpi_get_gpe_status(NULL, gpe, &status)))
++			return true;
++		if (!(status & ACPI_EVENT_FLAG_STATUS_SET) ||
++		    !(status & ACPI_EVENT_FLAG_ENABLE_SET))
++			continue;
++
++		pm_pr_dbg("ACPI _Ixx GPE 0x%02x status set\n", gpe);
++		if (acpi_dispatch_gpe(NULL, gpe) != ACPI_INTERRUPT_HANDLED)
++			return true;
++	}
++
++	return false;
++}
++
+ static bool sleep_no_lps0 __read_mostly;
+ module_param(sleep_no_lps0, bool, 0644);
+ MODULE_PARM_DESC(sleep_no_lps0, "Do not use the special LPS0 device interface");
+-- 
+2.34.1
 
