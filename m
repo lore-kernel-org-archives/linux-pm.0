@@ -1,49 +1,48 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793627660;
-	b=RXbU69QMPfe1igj47GjYdJ0IMPceUWr6rnTDmBwwc/wsWGiPpFfEhdFLqJczzBCQyxzf
-	 mc3ZuKcr6Q9Yvkcs32HHAPU8e6vpSVNjFQP4RfJNcBjg8H9U9K73dwHh3kn7iuHbzplKD
-	 OsrCEdcBB45/WNbMUHzJMBac2TTuew0PBgrUc7lsG/rOopjk7DzNJf2hC7UUrcyrEdsjj
-	 ORJnsXcLNsRS0tzOa+NmUhxW0BKJOK1yxVnsBzpfAg11xOKehf+ts1Pk37UUZdlzZTD61
-	 RKsMUxlMMfccGHb0ABLiipc4z7CgdLJpEtiYyanNW1NmpT4Ka3MXoWk1B54OAB8TgTg==
+	t=1793627662;
+	b=I77Ft2xy4mV+5YkTxhDUYPRSL5izxnpzSoJgkOmT6q0iNped3SidtIRbFGpNn8rKf1B5
+	 10B7uXtcQAtNkT2nIBHGJ6WfvsW+KhN5R5VKxKbYSntq/OwK5IsMeHKYMfAhZC5YD1rOX
+	 JVaAVoYCVfxhRkzP1pXfvlnSMZmuYfNUnmzxEDxjMC2tKPRIrC+WhOnXtGh0SSCBomxS+
+	 vzoPfXQrhgzMHviclGZeGtXQtIpT4DcLZaUf/ikWJ8RD1adPmaAmgMqJ0KesNTRkcuC1d
+	 Fb6vnSD8O7vXONtLI841uaaBkIhcykbETHubyzqVk5CDWz97qqgMVU7rK8qf2aXnEDQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793627660;
-	h=Received:DKIM-Signature:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer;
-	bh=lCTSBvg/sVJta496EObSjzg3KWEJc4BDFGrEHVQJdC4=;
-	b=AVW3hr5LU+2fEYq3zMVI9/pG0XJt6ZNLtySEPpjg15cW0xRj28jWJamJcZuzR2FUs0ye
-	 FrmUkCAaiGDm38vOhvp5xjUOUD0q+gW5z2CkzAz1j0v2F5oc4lh25A7zC4VB8pd3ctRGq
-	 3VIQvroW0+Ptjc/x6Ck/mLEVqJ2TtyJXgnip1dCsCHCtI9Tcg1Yssxu5WxNl8JyAQZs/T
-	 C5d8kcjxpTXi1ihiehuWRfH9e6JWxbeuVu+4CijCsnldVOhJLQmIILIanpNCqf8t+2k0P
-	 ZdIo1Rio/jRUgh8zDHILPmoUIZxFFGIoYyHL+BOTorYwQno95ZUis50/+Al6+InM3dQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793627662;
+	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	 X-Mailer;
+	bh=ik6VFiFfPJe255GVKRzpIR8r7xYA8hWdqcOzEhsK5iM=;
+	b=RKmZtagyCL1D8WanMRsXFNLbhskyTE8qfo8SmFEVvgjtE3JIXRi8UeQV8KUajRRQRi6k
+	 nVBXNnlJb7P6/W5KpFIPDkyXeLarWviUwsHtHe/rDAU5ktKOtg53M40OFShdkz3mBxuGZ
+	 Frn5VAjV0+TUVBoGIiNab9efUfuD2ApgfZ2GisDkd7EbiRCV4xUcIItev82uNmjC6R9iT
+	 XSh74mT8B5boW0fG5WQJVmEmJSmWtirgQEFvhOWO1x1a0neKVjShIJwAd5eWraafvf/ln
+	 5+azqPtMNz/nCUjY6NBflyGT0rf2u4w3ZKFwPR/86BjOFo966kZdfn3a9R/Dv/jJtZw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BWEg0rPO;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HyK9fahL;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3828C606A326;
-	Mon,  2 Nov 2026 13:54:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEAB7606A336;
+	Mon,  2 Nov 2026 13:54:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BWEg0rPO
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 675971F00A16;
-	Mon,  2 Nov 2026 13:54:18 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HyK9fahL
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12C811F00A18;
+	Mon,  2 Nov 2026 13:54:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793627659;
-	bh=lCTSBvg/sVJta496EObSjzg3KWEJc4BDFGrEHVQJdC4=;
-	h=From:Subject:Date:To:Cc;
-	b=BWEg0rPOtaPNDlx8uNukUpcbfb/QmAYEp+HYE+tLdPyiiHY3zRCz8qcJFmduFZeOj
-	 DUpa8zpX2pkBesFQrijJa22dTTZNIgTavr+19ICx2Hae+K925ESSixkm2OQah+ZDzk
-	 m9+F728SVDFi+PrOADJW3pjYXHW8FVwwFvBcUOnh2bxFiw4hye1NzlM3Gsig8bOCsX
-	 3bMLxmDI3c5EWF7P330zc7Ka+56jP43GSkYe13nPMwzy7Us3fhu4wWCf2oTV1H2ABc
-	 3NJ7VIlWAxx4YytBbh4zFsGwN054FLUwxC2oXq0ezoS4AKODpqx5nYCZG4TT6mko0s
-	 z2fheGReIZoyg==
+	s=k20260515; t=1793627661;
+	bh=ik6VFiFfPJe255GVKRzpIR8r7xYA8hWdqcOzEhsK5iM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=HyK9fahL3mEyAFHzDo3wWnmF9nJ9B+SCg/3LQHhwltqBBb1+Q/YKYdECY4Dcqvr78
+	 zSE60H7288DSylqiDUzQL5/Dq7OitRRqhVoVr/IweuX/lqZWiGKnw7a6NlTh2wLD+Z
+	 92R6R823/G+ZtIN0H3KHi3YScKGIFRsEU/u/+b43Qpxlc0B4dV7wxlOwIrPq2VVC4x
+	 t2ZWW4lTm/kBq+Fiav9UgUgubNlKuD9I+AmDtHCSVxD+cqNKxxaR7esfasqIypwfkv
+	 +n1j7XCektl1X6rH1ARjBjh/SqZ2rKJVVQhAfj8T0APOI6isux0Zg0I+ms3wxKQyPT
+	 zRYax/JwnFu8w==
 From: Mario Limonciello <superm1@kernel.org>
-Subject: [PATCH 0/2] Use hibernate callbacks when shutting down the system
-Date: Mon, 02 Nov 2026 07:54:08 -0600
-Message-Id: <20261102-superm1-s4-at-s5-v1-0-313e0012dd39@kernel.org>
+Date: Mon, 02 Nov 2026 07:54:09 -0600
+Subject: [PATCH 1/2] PM: Use hibernation callbacks for system power off
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -55,10 +54,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MPQ6AIAxA4auQzjYBAwxexTgIFO3gT6gaE+PdJ
- Y7f8N4DQoVJoFMPFLpYeFsrTKMgzuM6EXKqhla33mjtUc6dymJQLI4HisPsXLDWJB9dgJrthTL
- f/7If3vcDsRKBmmIAAAA=
-X-Change-ID: 20261006-superm1-s4-at-s5-f55b441d6c5b
+Message-Id: <20261102-superm1-s4-at-s5-v1-1-313e0012dd39@kernel.org>
+References: <20261102-superm1-s4-at-s5-v1-0-313e0012dd39@kernel.org>
+In-Reply-To: <20261102-superm1-s4-at-s5-v1-0-313e0012dd39@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>, 
  Shuah Khan <skhan@linuxfoundation.org>, 
  Randy Dunlap <rdunlap@infradead.org>, 
@@ -73,74 +71,62 @@ Cc: Denis Benato <benato.denis96@gmail.com>,
  Eric Naim <dnaim@cachyos.org>, Bartu Alev <bartualev@gmail.com>
 X-Mailer: b4 0.16.0
 
-OEM systems that ship with Linux preloaded need to go through energy
-certifications that match regulatory bodies in the regions that they
-will ship.
+During system power-off, device_shutdown() invokes the PCI bus shutdown
+callback for each PCI device. pci_device_shutdown() first calls
+pm_runtime_resume(), which may return a runtime-suspended device to D0
+before invoking its driver's ->shutdown() callback. Consequently, devices
+may remain in D0, consuming power or causing spurious wakeups.
 
-If any of those certifications don't pass then OEMs might not be able
-to ship systems preloaded in applicable regions.
+Devices should instead remain in a low-power state until power is removed.
+ACPI 6.5 section 7.4.2.5 states that all devices are in D3 in S4. Section
+7.4.2.6 defines S5 as similar to S4 except that OSPM saves no context, so
+reusing the device hibernation power-off callbacks for S5 is appropriate.
 
-Multiple models of systems are reported to fail in Linux but pass
-for Windows on the exact same hardware.
+For SYSTEM_POWER_OFF, run the device PM core's suspend sequence with
+PMSG_POWEROFF. When CONFIG_HIBERNATE_CALLBACKS is enabled, this invokes the
+hibernation ->poweroff*() callbacks. Skip device_shutdown() after a
+successful sequence so the PCI shutdown callback does not resume devices to
+D0 and undo the transition. If callback support is unavailable or either
+phase fails, fall back to device_shutdown() so power-off can continue.
 
-By looking at a breakdown of power consumption across devices the
-issue is that some devices aren't turned off when user puts the
-system into S5 (shutdown).
-
-A few years ago when I first root caused this I submitted patches
-to PCI core to change the PCI policy at shutdown [1].
-
-But through various iterations I've come up with a better approach.
-Instead of changing policy in each subsystem we can instead
-change our shutdown command to run hibernate callbacks for all hardware.
-
-In order to accomplish that the last 17 kernel cycles I've been slowly
-drippping changes into the hibernate code paths of all subsystems to make
-sure they behave as intended.
-
-Those are all merged as of kernel 7.4-rc1, and thus I am now ready to
-start using the hibernate codepath at shutdown. This series adds that
-support.
-
-I'm not naïve; there is definitely risk involved with this change as it
-will essentially affect anything running Linux that gets turned off.
-
-To that I will say that I have been running, rebasing and iterating this
-series on my personal development tree ever since December 2023.
-Various rolling distro community members have also been testing iterations
-of these patches in their hardware and distros.
-
-I've also put a few guard rails in place:
-
-1. Don't mandate hibernate support. If not compiled with it, just use
-   previous shutdown paths.
-2. If hibernate callback fail, emit a `pr_emerg()` message but fallback
-   to previous shutdown paths.
-3. Offer a kernel command line option `shutdown=legacy` that any affected
-   user could use to roll back to previous behavior while we root cause
-   any issues.
-
-I did split out the kernel command line option to a second commit.  If we
-later decide that we want to keep this behavior but drop the rollback knob
-we can revert that commit.
-
-Link: https://lore.kernel.org/linux-pci/20231213182656.6165-1-mario.limonciello@amd.com/#t
-
+Tested-by: Eric Naim <dnaim@cachyos.org>
+Tested-by: Denis Benato <benato.denis96@gmail.com>
+Tested-by: Bartu Alev <bartualev@gmail.com>
+Tested-by: Merthan Karakaş <m3rthn.k@gmail.com>
+Link: https://lore.kernel.org/linux-pci/20231213182656.6165-1-mario.limonciello@amd.com/
+Link: https://lore.kernel.org/linux-pci/20250506041934.1409302-1-superm1@kernel.org/
 Signed-off-by: Mario Limonciello <superm1@kernel.org>
 ---
-Mario Limonciello (2):
-      PM: Use hibernation callbacks for system power off
-      PM: Add shutdown=legacy command line option
+ kernel/reboot.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
- Documentation/admin-guide/kernel-parameters.txt |  4 ++++
- Documentation/power/shutdown-debugging.rst      |  7 ++++++-
- kernel/reboot.c                                 | 16 ++++++++++++++++
- 3 files changed, 26 insertions(+), 1 deletion(-)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261006-superm1-s4-at-s5-f55b441d6c5b
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 9a84401adde5a..1ad8629fde4d9 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -14,6 +14,7 @@
+ #include <linux/kexec.h>
+ #include <linux/kmsg_dump.h>
+ #include <linux/rcupdate.h>
++#include <linux/pm.h>
+ #include <linux/reboot.h>
+ #include <linux/sched/signal.h>
+ #include <linux/suspend.h>
+@@ -315,6 +316,13 @@ static void kernel_shutdown_prepare(enum system_states state)
+ 		(state == SYSTEM_HALT) ? SYS_HALT : SYS_POWER_OFF, NULL);
+ 	system_state = state;
+ 	usermodehelper_disable();
++#ifdef CONFIG_HIBERNATE_CALLBACKS
++	if (state == SYSTEM_POWER_OFF) {
++		if (!dpm_suspend_start(PMSG_POWEROFF) && !dpm_suspend_end(PMSG_POWEROFF))
++			return;
++		pr_emerg("Failed to power off devices, using shutdown instead.\n");
++	}
++#endif
+ 	device_shutdown();
+ }
+ /**
 
-Best regards,
---  
-Mario Limonciello <superm1@kernel.org>
+-- 
+2.53.0
 
