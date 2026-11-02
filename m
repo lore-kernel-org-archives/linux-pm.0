@@ -1,107 +1,150 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793614976;
-	b=hnUq6pggDyYLn5MoD6tsNJ6WjxVs6uLmMYOOiJQrtVdgZnmvScvW1YlbclaNcfkcg9CY
-	 OQqnQ5Srolp5iicNR8XiIeViMMIIA4weKagHBRYLRv6hP8LMPBCoJiO99iWH1HbLWtgP7
-	 tWve1mB1tsdwOxlQUU1yLltBaTW2da96JuYgstGKJTyX1adGyI7uxNfiW73wIcSigCdEp
-	 iWvWYIAbS77+l1WT8GlFOZ15ViSR+i/LsG9WSGPLt2wyrX1/Av6B4FnYvwLbK8rJifg/Z
-	 lk9CKoUAiR0pySUsbvSQXEmOC/PfhSlT1aQJwQyoSOtQFIjvGfKnKKO0LPXdQdn3+yg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793614976;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:X-Received:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=txDbIO54teYjP545chfzMHa6XzfSozkBD5T780zcYFc=;
-	b=eRQIgW37FTxceKdOy83qcJM3haJt35IWTNtfHE9H8RUE+j2e89beFBSw3pCwMrQj/7ew
-	 2ibVEg2KpGBMLxUdY97Up4GV2Rcu1NchSKj/koKVsns9Ep6teztQmG56rtqHTWdQPfm+W
-	 VBPhprjfq+kq9KhDGLqpK5tSuAUIQoTlDPWGtDjCNTGaAaC6uQZ0uduYUjh8pJYFM2CVx
-	 lU5AYcEPHxrx4dTmT+l3OTS1ViWM7H48KOHsWo/+MpmT+iYEDRX1bhz25s1VhyPvqJUhD
-	 3yVYyET6I/Vlm0I1UO/05I4utleJY/Oml8NdG+rMiGbKJjLn9pEDcDU1an8IRS6HYkQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Rh5UgEZM;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=RhhvsvxZ;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=198.175.65.19
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
+	t=1793615051;
+	b=oyCSgROzJ96A9/9gaenogxvodvXPJgZx5FN6SWHIzlstzK/N5qZi66Iw8KEkNTiLHM40
+	 vL5LqZ+wN/zQG+zMzleE+Qi+l0rhU0xAxrPpPGzIUaBP8hjvcBUtt1PsNtbGoknHB4rJs
+	 uYf22IsG3yZyRwGzzfsB4h/maxJLdf5rk6yWTrTT6Z4oU3kdml3q2Zgy7L/s1pgtZHLk7
+	 i6HhFfGpKHaUWGQNVUNV/3zLj1V6ehH8cFGB835MANzqMh4aIqs/zFKAwScrkWF5pxBnC
+	 MzZeG9k8/NtkIl3yKWI3GLO8W8y4c66ftrkge+88QfLlkrk8C0mRRv/nOKRl4gpKsAA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793615051;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
+	 Received:Received:Received:Message-ID:Date:User-Agent:Subject:To:CC:
+	 References:Content-Language:From:Organization:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-LD-Processed:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
+	bh=lsox1+XC0oIL3mFSDS6nHHUhaOMMXtufo20mJV8KX/k=;
+	b=mym7FQot8Q2JFSS2vWsP3FTEdXDLXr671ipCf/c9ZBgrfFrzKbpaUVeVypXYbXSdgjbE
+	 edVyPnSCZtKNMiIyNti+JWv+8ZeEpdYMV2AjSCke13gX6eGhz7/MWFt0v+56hKOZaK3yN
+	 pD0P1aL6HZPr4EvQp31sdXNgYim3whu1uS6Nlym1yIB32011WmUPoUjQkHOVhrTXVKtiS
+	 uSX/+I4C4CRQZT2fwcrWc5fT3eQmiS944zrREFA0pfkQRQCfYn7HTRnwj4FsmRGCt2zPl
+	 GtdoQc3Ti4/1yXwNeJt73rLeZRIvdjAzrC+Ss3D2gfu3EIi+57WcaWz4sBhsS5tHefg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fM65xz6Y;
+	arc=fail smtp.remote-ip=198.175.65.19
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 535E9606A327
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 10:22:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 535E9606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0571B606A324;
+	Mon,  2 Nov 2026 10:24:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0571B606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Rh5UgEZM;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=RhhvsvxZ
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A29A75w2466790
-	for <linux-pm@vger.kernel.org>; Mon, 2 Nov 2026 10:22:55 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=txDbIO54teYjP545chfzMH
-	a6XzfSozkBD5T780zcYFc=; b=Rh5UgEZMSgEk4sQjOAyY5jW2wQLhpfttW7zir/
-	TKyfSxvjo1qLVDFNDjKnPXk7E7cRFpnoZOjNzhdRQLgtwTXEGVulBjDMRw1a7Ydx
-	8JHyYi5CtPSCk+P5uKce6xJdjMnRhxsg0rK1+CKNLi0BWNvtNEjkAp6i7d5Cwfix
-	o++e5cNlGdncbfsc74z7sGnQknjOIYLT8XAUcUPm7tHaBziq5r/rc1DT22Nd4cbl
-	rDoAEdYdjsQq4+ZBYu0OsztO89/h4eQF6zhGZ8L0Nhv/sVWKrl39AZK1ICZS6Xts
-	2q2qvK8RrFBNJITqaScMmC/TUb0YTJQZHfnqI5dWeCFVnWrA==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hpk9rhaj5-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 10:22:55 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93ce7a85f04so567723085a.0
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 02:22:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793614974; x=1794219774; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=txDbIO54teYjP545chfzMHa6XzfSozkBD5T780zcYFc=;
-        b=RhhvsvxZmEf4oqDRPUwh0XXs2jA2YC83cRHJp48tCHO1ASD8EIuGy/Z1eemcSwU12E
-         Z0zNdGJ1v4uuluNqHdaNBT+xXWNyspuFm4vZDgEC9eBdFW8XLLEq0ZYJErsO8dxrlFrY
-         Q8ChWn2DnhpnSOnGX6jk+PbLqhVBtdh5DkXDBAVEd91B6MPUv1iyppaxs++KPsr+kF/s
-         7qJOoNTeQI6pbBVxrMpHDmCs/n3UUA8dVyO1hQOzXGp//UWUFDVdTPGh9QPwQNjUfX/g
-         /mvfH/mdbSZSYF+E2N7CuCeV0nvNafts8n8X0uiEi1GgyoM7mIHjFjGRka0OkVLQRiK5
-         3+Ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793614974; x=1794219774;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=txDbIO54teYjP545chfzMHa6XzfSozkBD5T780zcYFc=;
-        b=FpoIbdLAX9UkXBbeyFmYW7IQXsim6nYy63ZpLjpEOg2sT8iE6hdAAVrkieoS9ffS+T
-         fLdp9MQHvRWd0W3ZFQ7yICeHpuKaOSGE1IuPlfM+e6jZQCwYKe/VzEBRIHYPzeFKT0G+
-         DhL+TNzf+ZgvnT0c0/gazKCuO/Bu/wgRzvm8RJPl9XQwwEuvDdiSdeWKc4cOhP5ebDV2
-         FIVq2HU4TwTqy6g+ZKTG3YwhM3Ho4C0c/snfRpKD5RQ38o4Cb3YXf8nPTqB3gy4+uK56
-         FUBRyv9WJnUJ7YQk/Qxsuqn/BdZzpJqVfFxIp3V/Ro9fPrATWAkxwMadtaE+TSAfDUTk
-         aJeg==
-X-Gm-Message-State: AFq9FYKWNLoMZpt88u+p7DR3uyGrt0XHeIPZn6h0rawVRTQIRWFcyA8V
-	RVMcOTk7snqoBfxiWhDKJgxg/u22c3Ysdn24E4c2b7TesIspAlaAm/VLY1RSzQywJhRA9k7HDQY
-	pfjDjWIAHDNXkKXvjXfKLJk98rpjt5wWzht0rdQN2z6GwXwAFOM9nckn4nWtquQ==
-X-Gm-Gg: AYBFou1sG+Vkm7wxydc90mY1MffXSkoE3HmgmLbVvE3r5iMFWhdVaLDI1TGwn+6dr07
-	jw2zNCvjCy+vDMkwVN9h6II6RJQi7p5HumLmuJoLI1cjzRkaT0ZGyTR2636TxqdyBqrx3yc+YK7
-	Ul4LqfoUZfBv4bdh+wU/jkb++jB7YZm5br4LzETSk9XMjL50JwoHZsz151L0uyKVAlj0tAlSk0a
-	Znv/nh05LjDt/G0CPkH+oFwV2hTWGt++vctuVYcri/7oUq0dEt5j+KPAqqG1ym69EjpCkw7O1fG
-	e9z2CL8bKPhv2P2bydhCyfV6B4Qiv3BCnVicWsHPyXU09UePdGyX08c5cXqhm4A1jwvN4P0Ljmb
-	MMsNb0hHy+mzndUH4wlhY7HgDGw439lZ1GNhqGhIH5k4Fz/SKS4pL0H0xRw==
-X-Received: by 2002:a05:620a:618b:b0:940:f224:5a6f with SMTP id af79cd13be357-944217f708dmr1465447385a.71.1793614974199;
-        Mon, 02 Nov 2026 02:22:54 -0800 (PST)
-X-Received: by 2002:a05:620a:618b:b0:940:f224:5a6f with SMTP id af79cd13be357-944217f708dmr1465442985a.71.1793614973456;
-        Mon, 02 Nov 2026 02:22:53 -0800 (PST)
-Received: from [127.0.1.1] ([188.27.161.77])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4ac09fadb75sm173842435e9.3.2026.11.02.02.22.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 02:22:52 -0800 (PST)
-From: Abel Vesa <abel.vesa@oss.qualcomm.com>
-Date: Mon, 02 Nov 2026 12:22:46 +0200
-Subject: [PATCH] PM: clk: Report clock enable failures from pm_clk_resume()
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fM65xz6Y
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793615050; x=1825151050;
+  h=message-id:date:subject:to:cc:references:from:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=N+erJ8de8abzYaxTjwaNVt1YdCosAhHFnRjj5Zsuc3g=;
+  b=fM65xz6Y/cM7KHSImpd5V8lBWQI2+BSSwp3UNZCp/JfEoOEumK9Tu3zq
+   eZph/YKFJYz+q4GoegVvAswf2lSV9+VwbkBed6DjPhP4hihkrCWppuxxw
+   F6yS0waExb86SvxEWtrWrhkD1cQpwsb2upaCqWaMYeemxCxsYixS1LtFW
+   i5c792ZyWKjMfsoWXnJUy5xeoTgByhgYa/9AENcDKF+XcRD+V9YG4/yVf
+   FZvSLABFzcsIcziypk769LGLWk0hJARxFpaoI0kVs3eH7XIlNTDCDi3uj
+   PVSMtcjpXH20aH0jIZf7HdNPWY6c7PVXGlr3aPYS0f9ClvEYbXCwZGkMj
+   g==;
+X-CSE-ConnectionGUID: 4nBiIo9SSIq6grx6GJhY4w==
+X-CSE-MsgGUID: xxXMouo4R1OWj33pjhjyGA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2327322"
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="2327322"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Nov 2026 02:24:10 -0800
+X-CSE-ConnectionGUID: eUlMAmkDQQ+EkT70zZozmw==
+X-CSE-MsgGUID: wds5r4JzSNWaahCV6bDGqA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="6214961"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+  by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Nov 2026 02:24:09 -0800
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Mon, 2 Nov 2026 02:24:09 -0800
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56 via Frontend Transport; Mon, 2 Nov 2026 02:24:09 -0800
+Received: from CO1PR03CU002.outbound.protection.outlook.com (52.101.46.45) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Mon, 2 Nov 2026 02:24:08 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ebYl2YR9adE6pna4jB8xSKWNeeUvrBpgsVtApP1PV5lwwU/AfoUAEP8AR6d50KxCtvWcRNdHcr1bJWenIc0bxLxBxWrfa0u42d2SFxda5gdzeWh21skCk3tvRgOQvVAOfnNG0vxAEeZg2ORLUZW8hHb/B47BNFQtzG/c5LlfENza9G5+iyuZHTaUB1fV2/kt2bfTYEa0fWbQcddvtHusvfYq7g3Ij/Cq3ptt6luXR5RYxrLUVOBpoc1sbfywVsnI2dAVJyjuWrlQtWfav1RSjz3idOeeZ2nHX9a3ZrGMX0BKNS4yBAiVUQpB6pHhdYKhDaE5kzMqWSqj3Drmt8YSLA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=lsox1+XC0oIL3mFSDS6nHHUhaOMMXtufo20mJV8KX/k=;
+ b=F0w49AQCs8f5bBDII1HyEWeSQAhw4ra79VdNW2pQF4U8Co45i+I3i2IZZrFgHlun0++iHbC/jfOhsCsXAnn6UEa0YIn5L5pq85Hgm3V3QxN5kUvsSw55yLbvbwrXb75+LozCcns0aFE6zbLTjY77rbZTirmaoMfLxKWt2/i7oKZwo/iJdqwML7T/DBTg08ENg/Ek7MMrFkNfILMPf2fOmr+IONMZ6EttjhoRKyv57ODnu04lmwzqzolbIkw9mkTv7U+QlXMoQsYRL1VPVKELbks/nzG3kF+OOmCCXmcf82akV8JzFfpre90aqmNmrnQUucJrCTPn2cg66HHl80FkXQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from IA1PR11MB7198.namprd11.prod.outlook.com (2603:10b6:208:419::15)
+ by MW3PR11MB4649.namprd11.prod.outlook.com (2603:10b6:303:5b::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.11; Mon, 2 Nov
+ 2026 10:24:06 +0000
+Received: from IA1PR11MB7198.namprd11.prod.outlook.com
+ ([fe80::2c4e:e92a:4fa:a456]) by IA1PR11MB7198.namprd11.prod.outlook.com
+ ([fe80::2c4e:e92a:4fa:a456%3]) with mapi id 15.21.0569.011; Mon, 2 Nov 2026
+ 10:24:05 +0000
+Message-ID: <8cd3d3f3-c866-4ed3-a41f-a4210e2d73c2@intel.com>
+Date: Mon, 2 Nov 2026 12:23:57 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/6] perf/x86/intel/pt: Stop tracing at syscore shutdown
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo
+	<acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland
+	<mark.rutland@arm.com>, Alexander Shishkin
+	<alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, "Ian
+ Rogers" <irogers@google.com>, James Clark <james.clark@linaro.org>, "Thomas
+ Gleixner" <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+	<dave.hansen@linux.intel.com>, <x86@kernel.org>, "H. Peter Anvin"
+	<hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek
+	<pavel@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Danilo
+ Krummrich" <dakr@kernel.org>, Johan Hovold <johan@kernel.org>, "Sebastian
+ Andrzej Siewior" <bigeasy@linutronix.de>, Mathieu Desnoyers
+	<mathieu.desnoyers@efficios.com>, Jiayuan Chen <jiayuan.chen@linux.dev>,
+	"Steven Rostedt (Google)" <rostedt@goodmis.org>, "Vineeth Pillai (Google)"
+	<vineeth@bitbyteword.org>, Frederic Weisbecker <frederic@kernel.org>, "Andi
+ Kleen" <ak@linux.intel.com>, <linux-perf-users@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<driver-core@lists.linux.dev>
+References: <20261102074039.26983-1-adrian.hunter@intel.com>
+ <20261102074039.26983-4-adrian.hunter@intel.com>
+ <20261102100451.GT1779021@noisy.programming.kicks-ass.net>
+Content-Language: en-US
+From: Adrian Hunter <adrian.hunter@intel.com>
+Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park,
+ 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 -
+ 4, Domiciled in Helsinki
+In-Reply-To: <20261102100451.GT1779021@noisy.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: DUZPR01CA0146.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:4bd::9) To IA1PR11MB7198.namprd11.prod.outlook.com
+ (2603:10b6:208:419::15)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,222 +154,89 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-pm-clk-resume-report-errors-v1-1-ba6e1dddd522@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAHVk6GoC/yXMyw6CMBBG4Vchs3YSqMHbqxgXtv3VUaHNDBgSw
- rtTdXXybc5MBhUYnaqZFB8xSX1Bs6koPK79HSyxmFztdk3tjpw7Du8XK2zsUJKTDgzVpMa+je3
- 2AO/2EVQOWXGT6Xc/X/620T8Rhu+SlmUFIC3Fy38AAAA=
-X-Change-ID: 20261029-pm-clk-resume-report-errors-b5d538eb27de
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
-        Pavel Machek <pavel@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>
-Cc: linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
-        linux-kernel@vger.kernel.org, Abel Vesa <abel.vesa@oss.qualcomm.com>
-X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5326;
- i=abel.vesa@oss.qualcomm.com; h=from:subject:message-id;
- bh=O6jdgaz4i2fF6JPagpblmH1Np8pousIfoqISKdES3ig=;
- b=owEBbQKS/ZANAwAKARtfRMkAlRVWAcsmYgBq6GR3vaYybZlkrv8eUtlbCmriJPb95Yo9hb8bi
- PkHhpNjOEeJAjMEAAEKAB0WIQRO8+4RTnqPKsqn0bgbX0TJAJUVVgUCauhkdwAKCRAbX0TJAJUV
- VvOuD/4/jla2bm6PSOFoZFTRMTPZKjZ6f3aB4beD7rUY0bnNTG37utoeuEGrHB/Ot7cAbFthPMo
- oxUElf7OrbkLo5v6gFJJJIv3OeiK2fPlAswO2gISVk5DkB9nbB2Shs9/4cLTGXO1dpATp5wm8Sv
- sw65ciO78L8IacsyDCfs6ame/ZvarKsgSoXt+WJI45IodzJXB1aPT5JwAb0OUjdV9Ijjl1yts2W
- nY63YIorEOJogradD2orGgxWc/UmMynrNFXmQGYDlpCPBK9R9SJtElHURMlvpBZTbftJDz9eMEK
- kioMMNqC+n98zmhiTk157yQP078xuIq54lbXB3x5uOGIBGcfoJiNLfZ+/ipWn8gWzNblgaf0XL9
- PWw4pZoUDUg32cs4Oq0GXhX4+CyPERwDy6a1VL8eRA1XcgyKFV5FTgFeTjS5xqOWGxR6mBYjkbT
- /h9H9zVe0ni8vurEi4BQnmezFs64SgK5Ayq0DpH3YRaBvZLDg91CO3IVvXw0Ae2Y3pIOvQ1AI1p
- WhyVVOi/gdtiF4fR/gBJn0S0gAcq99K5jIRUTVazc8eCQB0Zr6dUZPCWqt0kDuUr5wOPFO8/Pq3
- UYraE2/dhly98+w2+LAjSZa3S918Eo2wbqcupqxn5KOH3yeXtW/H23z4IX5oHyrGLJRjZfAQqmO
- l+CNG+LDzz8+JXw==
-X-Developer-Key: i=abel.vesa@oss.qualcomm.com; a=openpgp;
- fpr=6AFF162D57F4223A8770EF5AF7BF214136F41FAE
-X-Proofpoint-ORIG-GUID: Gy3mOyWeeYCWFzi9oTHPztUUdOES1pfa
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDA0MSBTYWx0ZWRfX2ZgNFPG1m8WV
- i6BqFDa6Kt1P59UiF7LGVnN2WLqfxjQsD5LqbUYxa/GP2EIhK9WlouGw8YNOxCl24fWZsLxPR56
- qk/gTr6TQibSvD586C5NWogmGVuHnQTkYfCrZGtu4ItiJf8sP5rSHpr9fTqmeXumrWWDViCXalJ
- SrYNSB27L7rUyF9W/huncvi1RBKxo5KNR8NeAN/gcTDf+ecVNe/d9EMLWh0oRPH4cmtx89bte5j
- AE3g0pZNMaKoEnjQYNfoEPjdhtItMWf+/UYSPTgm71rQ9wyC8mrtuIqxoecJLCkUnT6BquMZJzR
- bFTncuIhUOPQFrKuQxddpDPMDgKipvqVW0hpFzCnvjU4Izg7PZcW6QJ6ygMBrnebXyhri9PxcSo
- nq8qFTrVkGcxGVIrfJeqYiG8d7AbMseJogLxSRVbkRm1DLZOKj5N18+p79GsnQC+7C+BOt7dDCd
- stzHvU4fgU6KsawNpng==
-X-Proofpoint-GUID: Gy3mOyWeeYCWFzi9oTHPztUUdOES1pfa
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDA0MSBTYWx0ZWRfX8aFRs84oZwqF
- 3Ya0925OwD/QCL6fCojmqcnny9jnPCSFkN71Ctkha6pb9oc9NC7Bu9vhh/u4ZuMoS1AnwvXa2tU
- IHaZI5WuLLe+nkeNK7oCTR8kX2WQyJ8=
-X-Authority-Analysis: v=2.4 cv=LvwHWXdc c=1 sm=1 tr=0 ts=6ae8647f cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=asF+/XNaGoxFafzDDLC1GQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
- a=EUspDBNiAAAA:8 a=_2T3vPzLGwBzaavU8JcA:9 a=QEXdDO2ut3YA:10
- a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-02_03,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0
- phishscore=0 priorityscore=1501 adultscore=0 suspectscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611020041
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA1PR11MB7198:EE_|MW3PR11MB4649:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6ead79b8-1fda-4a87-9c73-08df38cb6c4a
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|23010399003|376014|7416014|1800799024|366016|4143699003|11063799006|56012099006|261028144727099003|261022105027099003|261026140227099003|261026121527099003|10067099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: +ytzkLvXQxeWf70CStG3sPPKtfMAuzGjxRUXe4+gGkjI46eZyKndCLa5B7EKc077obGZQrZJFpLfd/xdvPbMsP8eg35EUaERW74y3kNFBykmwUDnb/wMIq8XjYz5bjDgSX7/OHLSPaODuhE6c4T7lVuu2Q6WUky6MPOUhEd0UMWu7imeDoLqR/IcjDibMK8PCvlD/j7jVczwUmDyDm4G8kDbjFzojonh794QNGw7NTbVzN8OZj04BojWayza5IFaXd8CVHgBhE5pb+xx9+cAueT+MJ3C7rYgQYtSow8b4xsJsx0B6lqCujbcL16ky3h8hbTvZjTnBG9K89l/epmZ+aFrsU2EWqfVSIcFJqqGQfTINGhy2uGSpHmpcRdxac7uvRGw067IB3wT7zBdt1RsiTnWf6/GLBgR/MLh5PSGsAmbrcyCsbShjwamcxGZckfvD7DBSJ57mTwibFLp9ezdPqJ11U3ZoZbDNBIim5nIh2j7/SEUkgrS04zJ6dOE35SHI7hR3/FwaYXXLEgqz4LU9jjlO+DTXsSP9SqDIu+rXZjshKcogqTF1sP5Em+rh7dJ3VjwzTxelDuk8KkE+5gwkPiTnQe2LRalfoLDdsrzUJoZYSZPz3Fa0+FUh4CCoPjyaAuT1OwPTjs4qccUOFeOesePGJenQ8t8KpUG2ohg1E8=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA1PR11MB7198.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(7416014)(1800799024)(366016)(4143699003)(11063799006)(56012099006)(261028144727099003)(261022105027099003)(261026140227099003)(261026121527099003)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?SUhFRkkzVDhpL3BHNjJnaENkRmhqTEpvTjByNjArTHVHQzhaLzNwUkNueVlR?=
+ =?utf-8?B?OGNNTlB2ZzlWZUxEc0ZNVTM4MlZMdnZXMlR4a082dXhuNGZTaFgxeFNXcEN5?=
+ =?utf-8?B?N1lnMjVvQ2FkN09HZUswL2s5OGtIWWFhNGU3LzloRm5CTElTQmV3WFJGai8z?=
+ =?utf-8?B?SWtYWnRKSDJjcnkwbzZWM01aczRzZ3A0VnNkdmhVOWEwTVFFakxqK2dYRUxm?=
+ =?utf-8?B?MlRYbE5UVS9xblQ5SHBaWVZpV3hjaTJBZmgzV1ZDU2dRN1BHVnJxVWtRb1p3?=
+ =?utf-8?B?aTFEQU1USkRMRlBKaDdQYlZUanFFMGFwa1Fkbk52RTFjcHpRR2duY002dFEw?=
+ =?utf-8?B?bWlwNms0eExOOE9rSXpVZHFVeEZONzRMVFNzYkgwRnVyMDZ6TE5mK2diUDhO?=
+ =?utf-8?B?SytuVXp6VEg3Q0swNGo4UHJsT0tYK0Izd2hmczhFVFBBdWNPbTBZQTMwU2NQ?=
+ =?utf-8?B?UGQ5Q0N6cnNsNG1lZGh5bHljTlJlVHdqU1RjRjd2aXZwWmo1S1pJZW0ycDQw?=
+ =?utf-8?B?UHJwdDBPZEJzRU5zKzYvaGI5M0p5bld4MUZYYzRMV2NEOGlmZzBxcUJCYnht?=
+ =?utf-8?B?MVUrT2pJYWJiQ2N2VUcwZVh3N2dGY1FwZm5nd2l1VWtCdEFQV0lxSnZmMytj?=
+ =?utf-8?B?bS9tU016aitBcUZ4VXM1Umh4bTU3NmRaSng1SjN6SWZ2Sk1scTFaRkNIUTlY?=
+ =?utf-8?B?TXFqUUZTKzhqQ1hwcjRzdmNYYkoxL3pCRFNVb3Z2bGVyMVZrVU93OHdjM0tp?=
+ =?utf-8?B?QWM0YVlnczNKN3U4RkFOb3J5c3YxSFdKdFpRYmZzb0tFa3RVNk1NSkUvaEhu?=
+ =?utf-8?B?T3daKzRTbitpYXRSbG41WTE0MEF6VkVjYUZ1VHROSWd6U0pMMFNBcmRSTXdl?=
+ =?utf-8?B?aXhhdHRSUGc1NnZ0U1FpMXRGUzlEekVFMDNWTjBPNVVBb2NkUzc2R3V1Q2Zw?=
+ =?utf-8?B?SEhoRVBTdC9mMUVrRUlkREY4Q3ExUGRMMXRsTGZXcTIxVldGclJGSUpQWENF?=
+ =?utf-8?B?NW5kNzF3U1ZqUVp5eFR6SlBRUWlYRCtQVlVKbzBlb0Z5L3lGMmtvc0x3Ukd2?=
+ =?utf-8?B?VFVxd1cwaUc0MkFBd0xCenM3alFTR0JGczZqYnJySTdQd2VyUitKeUErd3BT?=
+ =?utf-8?B?YVhJeGNoQWd5N1Z1SmFucUVSN2JmWFFETzZUeVVqSEFsYkIrZ1hOQXFza05z?=
+ =?utf-8?B?ZjZJNmJRQ3RTU2VPblNWVTkvRFRqNG1lNVcxT01ubHM3V21KaGpoejhjZ2xE?=
+ =?utf-8?B?dTl2WUQ5Z1ZTc3RwOGlYQkdISG1POXFRUmIwUnl3NUtnQnZibDJuWGo4ejQw?=
+ =?utf-8?B?N3dySjVwc0FlYTJDaU05bnZEZ3ljQ01VeVh0WEIzVHhaQnNleUgrSUV1TmpB?=
+ =?utf-8?B?YkFUSy92anY4OEI0VTk5MWdFV2NSaDVPS1hDVGpwLzlBSXo5c2NVMTAyWHBp?=
+ =?utf-8?B?QUZDRnN4MEFHU2QrRHdIK1liZE5qWTZ2d014Y01vb2kzZWJCUDFCb3RZZ2sz?=
+ =?utf-8?B?VG5HN0oycUZuZnVPUmlrVjVaTlRqSG5iWG1FcHFtSjVuWGV4WXlXZWdrVVBN?=
+ =?utf-8?B?K2tDNENPT2M5SmVBbnptMHFyTkVHM0dtM2g5N2p2cE9wRDFEbFBUdGRiemZL?=
+ =?utf-8?B?bE1adlVic01lWTVFTFRaSi9ETlN5MXVvQ0UrMzRXSFRlazRIUVpBdXJPSG8x?=
+ =?utf-8?B?SDBJVHBzTHdpRnVIZnZCTHVmOWNzTHVPdjN2WndjVzZvaEJZWFVnN3FkTWRR?=
+ =?utf-8?B?ZnZzTVdOL1NpVHhYWmpQNGhTZmlXY2E0b2Z1d2p4SnprajRrOEVjWi9uM3pi?=
+ =?utf-8?B?VWVlV0t6ZGNpZUdXNnpOaVVOZXlRajZkZjJKZE5uR05rS00yanZNNVcycDc4?=
+ =?utf-8?B?UUllbys1Nlg2K0lLOHRNYldHZjErRFZVc2YydWRKN0h5MUdDclBOaXVYNUxv?=
+ =?utf-8?B?V1hNaU83SmFYcGZZcGRGbHliODgwWTZZOXdhaG1abHZKODJocGR4OUcxTS9C?=
+ =?utf-8?B?WlBDK2hVMkp1SlBBY3BILy9qYS81NnMwKzAwNnhSUStXTW8rRDBRV1RLNThP?=
+ =?utf-8?B?L3Q5UVYzalh4M1FJMWNPVHFrR2FVQnhUVmhocXdCZmFkRE9YNUE4Tm1WcEFy?=
+ =?utf-8?B?eXRQMytlNWVtb3lkT3UxQTQwampkMDBBNnZYekE1Z2dNVnZlSzF2ZlNzMllo?=
+ =?utf-8?B?UkFsVU1IUjJ5ME9PSmgxQjZFQjhwbFZ3SmRjSmpOT2Y0M0lWNXU0L3Zoc2tI?=
+ =?utf-8?B?QzAyUU8zRCthV2lJK3NES0Voa25vRG1FK2JCQ3lqY1k3K1pFRkhscXJpNzFs?=
+ =?utf-8?B?NU81Zjh6dkxMd05pc3RaVW1lM2JLeVBmcE1ESEgyNW1SK2RtOFJxcXdVK01F?=
+ =?utf-8?Q?IjxWYwMdO0/awtQM=3D?=
+X-Exchange-RoutingPolicyChecked: DGQmSTx6QqVFv/jczoq0ybykux0sQn/kQjkBkBDDokHkcuE0hsfFoaHdCwzb7D9lpenm0Ne9r+otA4ysQaoiuV/GdCxtNM8ZSIfgdiIOizkqCW2XPdpW7VY7RNQU62GqWAxoZUXDdeEcpfoAWamTDat5Ro2yv9Owbjy/LWUAbb3gMbsJzwy/zvDoB4tjNqMiSMktu/ei2S/bNI303ntW61vaSHPodYW+1I0gcIkv4ejOpF6/uhz+2qSBf9H7oxyaSmhJVs6WedNYvKgzKFxq7TV6DAIwqHSw7azM1/p7tAL4Qw6oaeh3UDxchMmE/Uxc27kZFzvGqO7a5kODknUmiA==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6ead79b8-1fda-4a87-9c73-08df38cb6c4a
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB7198.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Nov 2026 10:24:05.8062
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: mhdeEk6aOLk2VdtOEEa1gKZydwrbe8p0SpEKKPQ8b6X6dPEp5SBAUe1dqQNYIcgGcmdLAornvjoTH0J8C4aNxw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW3PR11MB4649
+X-OriginatorOrg: intel.com
 
-pm_clk_resume() logs a clock that fails to start but always returns
-success, so the runtime resume of a device using the PM clock helpers
-succeeds without its clocks, and its driver goes on and accesses the
-hardware.
+On 02/11/2026 12:04, Peter Zijlstra wrote:
+> On Mon, Nov 02, 2026 at 09:40:36AM +0200, Adrian Hunter wrote:
+>> +static void pt_shutdown_cpu(void *info)
+>> +{
+>> +	u64 ctl;
+>> +
+>> +	/*
+>> +	 * After VMXON on CPUs without PT support in VMX operation,
+>> +	 * TraceEn is already clear and RTIT_CTL must not be written.
+>> +	 */
+>> +	rdmsrq(MSR_IA32_RTIT_CTL, ctl);
+>> +	if (ctl & RTIT_CTL_TRACEEN)
+>> +		wrmsrq(MSR_IA32_RTIT_CTL, ctl & ~RTIT_CTL_TRACEEN);
+>> +}
+> 
+> Why not unconditionally do: wrmsrq(MSR_IA32_RTIT_CTL, 0), at this point?
 
-This happens to the devices in the Qualcomm LPASS, whose clocks are
-provided by the ADSP: after the ADSP is gone, like right after a
-hibernation image is restored, a sound card opened by user space
-resumes the LPASS LPI pin controller without clocks, and the access to
-its registers then brings the whole machine down:
+Writing 0 instead of ctl & ~RTIT_CTL_TRACEEN would be fine, but the
+condition is needed.  The comment tries to explain.
 
-  qcom-prm gprsvc:service:2:2: CMD timeout for [100100f] opcode
-  qcom-sm8550-lpass-lpi-pinctrl 6e80000.pinctrl: __pm_clk_enable: failed to enable clk 00000000b90a5151, error -110
-
-Stop at the first clock that fails to start, stop the ones started
-before it, and return the error, so that the resume fails and the
-device stays suspended with its clocks off.
-
-The callers of pm_clk_resume() check what it returns, including genpd
-and pm_clk_runtime_resume(), except the MMP2 audio clock controller,
-which keeps ignoring it. A device with a clock that fails to start no
-longer resumes though, even if it used to work without that clock.
-
-Signed-off-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
----
-pm_clk_resume() always returns success, even when a clock fails to
-start, so a device using the PM clock helpers resumes without its clocks
-and its driver goes on accessing the hardware.
-
-I hit this on the Qualcomm Hamoa CRD while working on hibernation: the LPASS
-devices get their clocks from the ADSP, and when the ADSP is gone, like
-right after a hibernation image is restored, a sound card opened by user
-space resumes the LPASS LPI pin controller without clocks and the whole
-machine resets on the first register access. With this patch, the
-resume fails, the open fails, and the machine stays up until the ADSP is
-restarted.
-
-The LPASS macro drivers already check what pm_clk_resume() returns, but
-never saw an error so far.
-
-Prepared with help from an LLM-based assistant.
----
- drivers/base/power/clock_ops.c | 56 ++++++++++++++++++++++++++++++------------
- 1 file changed, 40 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 3b8ba27802a8..a978eb3d5479 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -143,8 +143,10 @@ static void pm_clk_op_unlock(struct pm_subsys_data *psd, unsigned long *flags)
-  * __pm_clk_enable - Enable a clock, reporting any errors
-  * @dev: The device for the given clock
-  * @ce: PM clock entry corresponding to the clock.
-+ *
-+ * Return: 0 on success or the error from enabling the clock.
-  */
--static inline void __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce)
-+static inline int __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce)
- {
- 	int ret;
- 
-@@ -156,13 +158,29 @@ static inline void __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce
- 		ret = clk_enable(ce->clk);
- 		break;
- 	default:
--		return;
-+		return 0;
- 	}
- 	if (!ret)
- 		ce->status = PCE_STATUS_ENABLED;
- 	else
- 		dev_err(dev, "%s: failed to enable clk %p, error %d\n",
- 			__func__, ce->clk, ret);
-+
-+	return ret;
-+}
-+
-+static inline void __pm_clk_disable(struct pm_clock_entry *ce)
-+{
-+	if (ce->status != PCE_STATUS_ENABLED)
-+		return;
-+
-+	if (ce->enabled_when_prepared) {
-+		clk_disable_unprepare(ce->clk);
-+		ce->status = PCE_STATUS_ACQUIRED;
-+	} else {
-+		clk_disable(ce->clk);
-+		ce->status = PCE_STATUS_PREPARED;
-+	}
- }
- 
- /**
-@@ -483,17 +501,8 @@ int pm_clk_suspend(struct device *dev)
- 	if (ret)
- 		return ret;
- 
--	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
--		if (ce->status == PCE_STATUS_ENABLED) {
--			if (ce->enabled_when_prepared) {
--				clk_disable_unprepare(ce->clk);
--				ce->status = PCE_STATUS_ACQUIRED;
--			} else {
--				clk_disable(ce->clk);
--				ce->status = PCE_STATUS_PREPARED;
--			}
--		}
--	}
-+	list_for_each_entry_reverse(ce, &psd->clock_list, node)
-+		__pm_clk_disable(ce);
- 
- 	pm_clk_op_unlock(psd, &flags);
- 
-@@ -504,6 +513,9 @@ EXPORT_SYMBOL_GPL(pm_clk_suspend);
- /**
-  * pm_clk_resume - Enable clocks in a device's PM clock list.
-  * @dev: Device to enable the clocks for.
-+ *
-+ * Return: 0 on success or a negative error code. If a clock fails to start,
-+ * the clocks started before it are stopped again.
-  */
- int pm_clk_resume(struct device *dev)
- {
-@@ -521,12 +533,24 @@ int pm_clk_resume(struct device *dev)
- 	if (ret)
- 		return ret;
- 
--	list_for_each_entry(ce, &psd->clock_list, node)
--		__pm_clk_enable(dev, ce);
-+	list_for_each_entry(ce, &psd->clock_list, node) {
-+		ret = __pm_clk_enable(dev, ce);
-+		if (ret)
-+			break;
-+	}
-+
-+	/*
-+	 * A device whose clocks are not running cannot be accessed. Do not
-+	 * pretend it resumed, and leave its clocks off as it stays suspended.
-+	 */
-+	if (ret) {
-+		list_for_each_entry_continue_reverse(ce, &psd->clock_list, node)
-+			__pm_clk_disable(ce);
-+	}
- 
- 	pm_clk_op_unlock(psd, &flags);
- 
--	return 0;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(pm_clk_resume);
- 
-
----
-base-commit: 7649ba73f9e7e1e04d0b46213e39c79ae09dd55c
-change-id: 20261029-pm-clk-resume-report-errors-b5d538eb27de
-
-Best regards,
---  
-
-Abel
-
+The first processor to support Intel PT (BDW) will #GP if a write is
+made to RTIT_CTL while VMX is on.  Since VMXON clears TRACEEN,
+if TRACEEN is set, then the write is safe.
