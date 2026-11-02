@@ -1,82 +1,82 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.43
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.161.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793630390;
-	b=yVlqPOytO4aHnqfdJGfuarf6KxZ+vT6htQgpbh/YQeprtZ5ToZQ3gSlk90M1o9l/Mk17
-	 +qoNxOg0l802HTf3W4AZ9+1g/8GcKJXZhOlrvF9goHyH09j1omh6BLrwIur+Ly2sByHVR
-	 21U1hal2RY3fBhRbJobrM0j3ctFMrCggLAHGZXIQZhGN4AhlkvdZUhDPDQflZJD5xXxLd
-	 6NxTkVE3Q2ZHkBMNIWI04sJFljUNCxm66OK0YPRwji0PlF8DUxqNCmyI5ugNni+dazj+s
-	 Q+B8Gp6UgIWHiOP5AYEsvsKi33taNirY3ox9f9Gf4MBlATJ0lE09Qbz68IByQLlxpYw==
+	t=1793630391;
+	b=IxTdIK5Z+mF0+o7+KCkpe6M/uf8xX3Sar7mJ6lZli1LPySjx5JxrYXdrdjohrpXu61/Z
+	 +KTfZPGtKQDI8JXpTRaEo5y6kihzmLD5sAqwVr7I2t8VI9tv2ZVdHZiDmZT56Cy7xDfzL
+	 Q9yPmAbZymOEny6pQEUqQWRthh0/jWcGrot2gNAXg7tZMov59+4NxRFURhoyxXhqKtRvT
+	 et4SSj47vPx2/oKqTzb2u2Iv+5dEGKaTD4mBwfWPH2ruVmawcJmRHD0LSfp9h5Ny4HQWP
+	 7WUpRm0RL8msTtWPeDrxemBZXBW8/yh8vI/EK3PL7LB+P7WjoZSilO6Egm9HxGy88yQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793630390;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793630391;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
 	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=mMX9dUF/iBpcP6akVjBzxM3wKkMEuggyI4vc+241Ru4=;
-	b=YaNjATQSDBu14t4/95dJZQxcqVILlx0mohPUBrqhjt57Rt0SlpdGqeh+yM4fQkhsAobf
-	 197G8CIXWv4L666C6o5T3MaNViwV8asYULt96854Ba5IQpcW5wTO91TIyfR1OKB+oP6W4
-	 qI/L9Xo5D4P4TZv10y+u8s5tiqhNIxA6+sa6oPmj7HhgYZ8La/dptNm6JbmCR9qDsRIZP
-	 F9oISVY3VQucYkSaFiLdzLrc3KgSKRm50v8kOK6X7NztKwMzIjcnkbJEKgsA2pH5e5ZxK
-	 hesX4bOIItowQjUj7igeY40tHI7iT9H+bPQC9Xzajd9h1/4cCa0W43vYRr93WmexrpQ==
+	bh=8yW9LSFgp1seAV1UAD5YKm8oGpU8G3ftKWOzpnzuWNw=;
+	b=NbU96sCXiDWYcZEVE5/mnzfe1nIkx6pyQp78QrX+eP4Cpcv7VQYWsXhqUiDpdN0T5HzX
+	 M/xhBY+jslc79AwVihU8CZLMgZo6mTCJwPR9ZfC3VbqeDuFe0C0Op3AbolSvaFTB0Z+l4
+	 e0e36POMLSV2fLI1m1NPf4n818Ti3Sd3YPGkar+EwVijCUmD/x/642Fz2KphkxkXHg/b3
+	 xN6fdNo1JfE+2E4nuXxu6UZenBjX2vBVpHRVjwf2vT1sRH+bZ26yKfRVfDIgO51uo8UAZ
+	 8JT1ESxmA4IANzNhc6F0oE0FkdjzpCF+y2lQkMeV5wt5teo/GUVEUbgNa5J9doG/Ajg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lJKsD2jO;
-	arc=none smtp.remote-ip=209.85.210.43
-Received: from mail-ot1-f43.google.com (mail-ot1-f43.google.com [209.85.210.43])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=REeaWX33;
+	arc=none smtp.remote-ip=209.85.161.48
+Received: from mail-oo1-f48.google.com (mail-oo1-f48.google.com [209.85.161.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C1CD606A596
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5F6D606E011
 	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 14:39:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4C1CD606A596
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5F6D606E011
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lJKsD2jO
-Received: by mail-ot1-f43.google.com with SMTP id 46e09a7af769-843a4ca671eso1374710a34.2
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=REeaWX33
+Received: by mail-oo1-f48.google.com with SMTP id 006d021491bc7-6b1afdf5196so975086eaf.2
         for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 06:39:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793630389; x=1794235189; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1793630390; x=1794235190; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=mMX9dUF/iBpcP6akVjBzxM3wKkMEuggyI4vc+241Ru4=;
-        b=lJKsD2jOfA4lnPSu8j1rIQCtN4zoffVkI3G9tVgDHn4nfixyFC3Yz35oZor+zUiKS1
-         ej8GCF8VGCER7JBExm0cWwFT3VyayTrcvPI0AuyiudI+xth2UpFPdx5Q0qoApTUVoulp
-         X2ATriQ6kxt5ZmTEmJjlpkNpcmQXJTQ5XUTOKvNRlK4BOK6avajHuX5BblSW8YswWa66
-         B6Rkjfa/hNwKofpRdaoICR7ht4mGRJZHBTGpZk1Lnt+v8FM8M0ntQvtmfs+Y3YNSMltd
-         Yq7kMMU7I1J1IHW4Kl/4Xp2H2Xj6K4ZxzUCYKhcz+pyGBPL1Yr7vPBd1S0Q1P48jM03q
-         kqEA==
+        bh=8yW9LSFgp1seAV1UAD5YKm8oGpU8G3ftKWOzpnzuWNw=;
+        b=REeaWX33Xg9keSSTYO5yib9Rl2BA7bjHpjNWQn8aFvbON+7z4PPVEXIA5LHw3jeNsc
+         OtkYn94peibq5TtH1uHKg/+55nhlJ++Q601mRVWiQMts+qCIn4QE3fcnQaYpGzvmDvlr
+         j7CVg9qYh4CpgOs39UH0yVXXmtCPooan09jrlIx7M6yRAd5HWTQOTS1gzCjRBPCc4urw
+         n72hdwWRfFLK7c6T0fW8RQIHBuGCnzvnhwJAmpSaYH9bER44a4AKJjhZFY7QFZdol71c
+         4BloDJBhMv6DWaGKpL/mhnW0+VYjMjhcZ55QxQ3qkKj9GDlK0Vx00qrfwXDEeLyq6iLD
+         9t4w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793630389; x=1794235189;
+        d=1e100.net; s=20260707; t=1793630390; x=1794235190;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=mMX9dUF/iBpcP6akVjBzxM3wKkMEuggyI4vc+241Ru4=;
-        b=io7l9wGcjBaW3QkwtgOo4lx6hkvdr6o/mjoRufd6L3CLI+gt4khxqloMfYrV5aJMvi
-         z9MDjtFhivIUOHDar+xNdRKj+6rhNlWRwEx2E+74pxuXk9iHBaWfn8WBUxtFSmqjNDFA
-         HlWek+++V9jf0auUn51JPoYQmVUkAup8ZjFezJuDdSO/feRq31q82oOnfctSk57cUN7N
-         9ORO1+anZ1W60l6RZT2h3OyfXHmSmwp5jN4lABJ/gF3jMMeP72fYNkEZhfx6EAt2PclD
-         +QimjnostmGp6FK9mjMjpcExy5BXXRD3M4WKwFByxn5n1Z6j6/iRI13LL4+uHCf3+Za3
-         OZfQ==
-X-Gm-Message-State: AFq9FYLPLe9BX5JfG7cH6FQJJZeJjJpPqBfW5VQpinlyy3suhVz2fpid
-	RH6AXFP/AenqorYtDmKlSJofQ42DBfqfNyl6AQr8XuYN4TnWGLjwJims
-X-Gm-Gg: AYBFou1GVHmZv0eR2mL1hErLoUR8Y5QxWswsZA3S9T6tWsErx0iAdZDbkpaw+TBxdFL
-	UIdhoxjDFkthFdb8LQJSNlb1Hw7T1Yg9zuI1GXtfoA6Pj6Zdf6Cvia1bDo77NVOqJmUMXn3wUEg
-	UTJMVWIGGffjKtHo0bzK2JnvteMDrQSZGlVNC+X83l2WG2JL2bCJRYeHzYD84t+GhVRNDjgNlbD
-	LQ+YC8UXMWV6JbwD/yXgwICx3rANB573RU/wrO8BmuBe+q+QszuCsmDCxIuE8YGcFGMot5eb2yP
-	gV8Yabf1AhV4OKtrIozxiDkVNF8SCbeGUiL7qN5XN3EUrrPzsul3HUlF05HeAv7ffpq7XXBJjGY
-	PdKMqAdGCDiMIZIhJXiSFsQNL9YfHKRMLcGmniKubtsEVb8+n6Z+BFLwtF4XoJh9ZCeHk5Egh2Y
-	TqQH6Rx9qO6yUP0wZA9Bm7R/9YzJjKxgLbvzJ8x9gsKc0nhcJJpcj77O5bWwpv7lIXLAJxEduUD
-	7NcYpls1Ik/v8Z6aXgxKLvArJ0gf3tDZp0YWBVCzRhehtrtCU9xx4sDLyFvv5C87GZ0NeM3/7AB
-	aQBjVvES0PHAlivImyNpwC41PjT2bA==
-X-Received: by 2002:a05:6830:4411:b0:83c:2a05:c65d with SMTP id 46e09a7af769-85d365f91a5mr8464513a34.18.1793630389255;
+        bh=8yW9LSFgp1seAV1UAD5YKm8oGpU8G3ftKWOzpnzuWNw=;
+        b=sy5y9IBO4MnIpcnumGeBa6IT1q3/qvaHsU/Gsj/YHjsYy3gw4RZVsTgoXQaR9iidwb
+         Dq7KWs+Ws8Y36oWGdDzsC/Ym1wrmbpKUs0lErFKblVGjp+yFRc58FmptNmScdAQ8YTQS
+         9vXQOGwLqHEDc2buz8+r/u2cdwvPW7wa+HrDT2Jj3mm+Tg53EgxReInfEuefR9MWdg9h
+         hx/fjDJ5ec/n2RqJkTpvwm00VWK1gb59Eppnb60sXz0h2+8U3Vi1ptcgBWyfyy5927TH
+         rhIeQJfRW4Y/NsW+aS4p9Wq2byYU1UQ2bnz45ejvlq4koi+tTGpzTkLdkPzi1P5eqTY8
+         SPoA==
+X-Gm-Message-State: AFq9FYKf7yzq1VJqjoeUN/62eL8aJaRzC3Tdo0nmud6FGyp7HJpWrGgG
+	qFgv6QrUGgH49/E427knpyr57LR75uDs2W9gmHEjoCPEE770P60wKBKV
+X-Gm-Gg: AYBFou0B0ZEKOdUiRbzQX1OgW5eSEh5ssLHqXThq0KDlSOv00TrHelNQBGiXfwlGOui
+	Rh2pcxe6UtVCFalomypUluxZQ0HnJQHMFodjmm168E0iEo7eE5hcKxqCTClef6HE2LEdDrSd30O
+	qiIzTQQNVswIGTIVSN3YsmyODymA07uUrIxHM09I2jlNR6Fqh07T2Isi5zmsNmPE4ga2QkJ8Jxr
+	P8KfnAfNXpoGZOjfM0mVZkeLn+83+avwtABFbaZWH9jve3Sq7dKRJ+UoilAiV0WMzhRrbMBuP0h
+	sTm4H3isR2cr93jK531RDvyAdfQ7NfXmWiZd42j867vF+o87cTIegTSmnclrNUbZwhf4NJJJNr3
+	WJiKm3wpSnSyd15kMEbRtxqApF1OFbcBecofyhMSMnwXeVZHzucerOqnR0c4Z+IVGQB7xHXgA66
+	JCnVeCIKmSHZAPZvByIV6aPx5Cdtbu0fCxoKV6IfaR218Vbx6Fm6B3SSx81TPSY8O/GVDWrT83x
+	LBMGoSgVJycA/KN+/8YX+OKAQWlW70yX4jxz/ke9o4lyF+6bsST91rX/ajmxNyB5tXAhEA1CXrH
+	ez13eK+0Z+01nzKqdPB7zRxBydW2+0gN+K44kStkH14NaNkBcSU=
+X-Received: by 2002:a05:6820:810:b0:702:f890:e11b with SMTP id 006d021491bc7-714f28d7b7fmr5882947eaf.16.1793630389833;
         Mon, 02 Nov 2026 06:39:49 -0800 (PST)
 Received: from neuromancer ([75.28.21.198])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-85d3545b875sm9516327a34.5.2026.11.02.06.39.48
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-85d3545b875sm9516327a34.5.2026.11.02.06.39.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 06:39:48 -0800 (PST)
+        Mon, 02 Nov 2026 06:39:49 -0800 (PST)
 From: Chris Morgan <macroalpha82@gmail.com>
 To: linux-rockchip@lists.infradead.org
 Cc: linux-pm@vger.kernel.org,
@@ -84,11 +84,10 @@ Cc: linux-pm@vger.kernel.org,
 	heiko@sntech.de,
 	lee@kernel.org,
 	sre@kernel.org,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Zetarancio <zetarancio@users.noreply.github.com>
-Subject: [PATCH V2 3/4] power: supply: rk817-charger: Clear SYS_CAN_SD register by default
-Date: Mon,  2 Nov 2026 08:39:41 -0600
-Message-ID: <20261102143942.305293-4-macroalpha82@gmail.com>
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: [PATCH V2 4/4] power: supply: rk817-charger: Clear full charge cal on resume
+Date: Mon,  2 Nov 2026 08:39:42 -0600
+Message-ID: <20261102143942.305293-5-macroalpha82@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261102143942.305293-1-macroalpha82@gmail.com>
 References: <20261102143942.305293-1-macroalpha82@gmail.com>
@@ -105,54 +104,29 @@ Content-Transfer-Encoding: 8bit
 
 From: Chris Morgan <macromorgan@hotmail.com>
 
-The BSP driver for the rk817 charger by default clears the SYS_CAN_SD.
-This register tells the PMIC that the system voltage can be shut down in
-battery off mode. Though the BSP driver also included a way to bypass
-this behavior, no boards have been observed using the override.
+After suspending, the coulumb counter may be off by a bit. Set the
+cal_soc bit to 0 so that the gauge may be recalibrated again on a
+full charge.
 
-When this register is not cleared, it can result in a persistent power
-drain on certain devices while the device is off, as observed by users.
-
-Fixes: 11cb8da0189b ("power: supply: Add charger driver for Rockchip RK817")
 Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-Suggested-by: Zetarancio <zetarancio@users.noreply.github.com>
 ---
- drivers/power/supply/rk817_charger.c | 9 +++++++++
- include/linux/mfd/rk808.h            | 1 +
- 2 files changed, 10 insertions(+)
+ drivers/power/supply/rk817_charger.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/power/supply/rk817_charger.c b/drivers/power/supply/rk817_charger.c
-index 0c7287ad27c6..d7d367211d5e 100644
+index d7d367211d5e..b88e7283ebfa 100644
 --- a/drivers/power/supply/rk817_charger.c
 +++ b/drivers/power/supply/rk817_charger.c
-@@ -1166,6 +1166,15 @@ static int rk817_battery_init(struct rk817_charger *charger,
- 	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN, RK817_USB_ILIM_EN,
- 			  (0x01 << 3));
+@@ -1377,6 +1377,9 @@ static int __maybe_unused rk817_resume(struct device *dev)
  
-+	/*
-+	 * Do not shut down the system voltage in bat_off mode. The BSP driver
-+	 * cleared this bit for all devices unless a specific device tree
-+	 * parameter was used, however I have yet to see such parameter on any
-+	 * device.
-+	 */
-+	regmap_clear_bits(rk808->regmap,
-+			  RK817_PMIC_CHRG_TERM, RK817_SYS_CAN_SD);
+ 	struct rk817_charger *charger = dev_get_drvdata(dev);
+ 
++	/* try to recalibrate capacity if we hit full charge. */
++	charger->soc_cal = 0;
 +
- 	return 0;
- }
+ 	/* force an immediate update */
+ 	mod_delayed_work(system_percpu_wq, &charger->work, 0);
  
-diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
-index 72419d311626..2bc58de53d82 100644
---- a/include/linux/mfd/rk808.h
-+++ b/include/linux/mfd/rk808.h
-@@ -1297,6 +1297,7 @@ enum rk809_reg_id {
- #define RK817_USB_ILIM_EN		(0x01 << 3)
- #define RK817_USB_ILIM_SEL		(0x07 << 0)
- #define RK817_PMIC_CHRG_TERM		0xe6
-+#define RK817_SYS_CAN_SD		(0x01 << 7)
- #define RK817_CHRG_TERM_ANA_DIG		(0x01 << 2)
- #define RK817_CHRG_TERM_ANA_SEL		(0x03 << 0)
- #define RK817_CHRG_EN			(0x01 << 6)
 -- 
 2.53.0
 
