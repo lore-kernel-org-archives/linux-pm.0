@@ -1,93 +1,113 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.49
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.180
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793654164;
-	b=hfUx0JmtnktwaiIxSHMZVSwTWTC4NEtTwcFiNyEQZxJ6bvBxNXIqBkMnb6ISQsvY18bc
-	 a/HXMAJ8htyeMqmq+WzdHh3RcklDu8gZQP2/gZvc+pN07SOpeXzUP9OioYlGj9UCax1F5
-	 AMEKn2JCQwcI4UyfM1D4EEEPKQ7ms/IEgF//W6NFAJwlqAH13hO3jnaDzqIobg+l0WK2t
-	 dn/J9FUfpjqyjKdLH0mek3Wkp354Yp3MSyTHMqwOoAcpNYDuvjG/l0EUpedVJZpK12AEO
-	 6Pnf+Xh1zNfDHl4Ta59jadLmFyv+iT1IiBW1hg2siTEhGAyGIQVQvgoZdrizqayuqhw==
+	t=1793657115;
+	b=NH1di+jA8higVi8S2Z9tISPAL0NFArrbXPWW+NgAaYWotoVVkkoLELWk1AraJ91EEu73
+	 Ek5L9RVInC2dzJyvno2cZ3DTpFqJGMEcYVftzHiHYKHbl4cDoyFgwiz53duL5FHi+7lvK
+	 Oc/fKCeN9oQPPn7/ryi4OC7g7ggrG9nZtB2YaPCmttqANXiGsW5aGEPVT7v36TR0ThNwX
+	 l8m6RQjjiy7Il1fs+V7B5PIfFpbntFqFUHz/VdSmx1EY9sjPMnOYVZ16hl6OEZZXkJ+oZ
+	 062ACOxN9QKY5fH9JbszYIu2PSrEB+/un42S6NWlVxBqpdxjONDx8YjTdhdkC6XhdSw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793654164;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793657115;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=VaQ4mY5L5yPvzObTP46rUUyQYF+3IVm7RJ9iuidlpa4=;
-	b=4CqfSjA+0JiSQo/c6NONwXp2oPOHZF21HJj6EfwYV2NAFtbEMh3Yxr7L+oV4Ulhz//I5
-	 np4sbRYBxlRY1Wm84/1wcFxTjZmfA0qdothCplaLRMIfett2U+UEBAw6yY0CwCld3SGck
-	 sCxlJcCJELM2qFewn3LBrZPdRxA3L6aFqTjnZXrIva9aWll2tFis2GtyyzTWg2xfsNG3y
-	 ayel7kLgYFioDKbbzDZXEkaxtbNE/RBYcdeBIM//pZrx9lcz/K+hVT76ijWc8A6tCcx09
-	 KGqyVMR1m16PPR2Un02hnU1tIpT1YwxqnYL2dzkpeS4BVfUIWJkTvHmra21n8o9auAw==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=po9LaFR4COBNDjXRaH0sos9yo8To8XsMCK5cpaZoeE0=;
+	b=eerClWjGxzLJOAyZSJ8NEjWyPzflEKyRYB3tMtSd3VUeKeUucciLP9g9d6GCjzRpJgMW
+	 Sly5Gp75TmY9GvNmC8Qr7e0XPn3nWPBrXTKy0TafFsPtV7xx8DvVkVRorlvdyzDntOfGE
+	 lMEQd//1KQX2S/j0U6uM2y1lUItAuV63nBFXV7wQYjERbrRcaEKmJbjckQKbFlCpYToHV
+	 +8wDrK/Nlz4LH+LQ+FAIcWrxs4T2EhuIV72nbD3AntXVU9ZFILLV4iNZlwSWbpXeY7Wm/
+	 GkMzbwd5uYNHJxmjJaO1ubwqeY5EnmwEawz30+cl9h6s5aqKt/mvI94PhUz727xh6rQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Tv+7ae6q;
-	arc=none smtp.remote-ip=74.125.82.49
-Received: from mail-dl1-f49.google.com (mail-dl1-f49.google.com [74.125.82.49])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JgsAov36;
+	arc=none smtp.remote-ip=74.125.82.180
+Received: from mail-dy1-f180.google.com (mail-dy1-f180.google.com [74.125.82.180])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77449606A330
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 21:16:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 77449606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EF85606EEA9
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 22:05:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3EF85606EEA9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Tv+7ae6q
-Received: by mail-dl1-f49.google.com with SMTP id a92af1059eb24-1a2761c69fbso5577884c88.0
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 13:16:03 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JgsAov36
+Received: by mail-dy1-f180.google.com with SMTP id 5a478bee46e88-35829219da8so116495eec.0
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 14:05:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1793654162; x=1794258962; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1793657114; x=1794261914; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=VaQ4mY5L5yPvzObTP46rUUyQYF+3IVm7RJ9iuidlpa4=;
-        b=Tv+7ae6qFwJUrAkkvyIFZ26J2lYxiAmmLc0CaTjSOjF+KSqWztMzk+NOQACrq81a4r
-         gQjTBn8Yh08fg6/UgxnavjLITlrMd3FL6soeyH6B+afiYoJ5H4audZFQGOj9/ziptdvd
-         VF8A8Nr4HeodvQdeSWNH6bjDaon/cspwZlubw=
+        bh=po9LaFR4COBNDjXRaH0sos9yo8To8XsMCK5cpaZoeE0=;
+        b=JgsAov36eHCi4xcxestGz2HdshrJ6ho9n42lUOpL6lQKXpCOfBnFjnryy5u/3Azz2R
+         QBtXmKBE3qHG+ej0F5TintEHwkU0I+8of94h0KvhAr7BAoyXbzqsaz3k0dHYzSvxt0mh
+         o9A8yJabfYDnFshUU1blgx1XfoBhbZJKvCM2n/P+aj3JfgvU5o8LMzckGXLJRLE8RmOb
+         1+prHhFrgG8VBkIw5oi/uib42Kh+n3PbXGiU3YCJX/Oqyel0V0ZDbMGMO+s/L4PS9HIg
+         lWFDXvfliB3FFhQThiqrrtnABhPt+I2JzcIfkxI0MRNb4e8X8kTqIoLfG9HDNyaGjXPM
+         X3iA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793654162; x=1794258962;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20260707; t=1793657114; x=1794261914;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=VaQ4mY5L5yPvzObTP46rUUyQYF+3IVm7RJ9iuidlpa4=;
-        b=JhqgvJ2qSbP7J+B8BpwgU2mkYy9T5fT0iiSR0CUA1djVNUnBCUa2kN0EWiySsnjhcw
-         Ih9FBDrqfaRJ/U6ItaiGcjs9GSKNqaNt7EjDpOcbKT+pVg8c0OOZR/qxXE6KWqB4TUO8
-         fb1Gg5mKFRImRD8zlmP+2K6EfYuUkcRb+XRpMiYpRjOPrHRC7pDLmYQ8bwSS1uXqBRXg
-         JFYWXCC0YPQoYgYgKwJiUCj3I3Yh1l5uNEaFLR335s4h+PS8xFfiNNBtSTofCfcERXNx
-         4cIzcwLnzxWqIj1n6RXpsIdHZWJPslgTCA/nbkiDO18PzW0Q4tJgSmtk2DzmDReC1CN1
-         1wPA==
-X-Forwarded-Encrypted: i=1; AKwUvBxwBFieSBn0T2UvnldDbyyXjK/8TB316PDz8psOqycOA7y7ti1Chb0jFbH7o6czrR5suTHdu9MR6w==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIG2MlkrfvQKfw2dwjViGR/BkWuyS+bPIM2juCQLwUuo1Bys33g
-	HaaH/K3V8cmFDPbbUtJJ1ExWCRZyOxrPcqnMjVW80kD0fKCrfBBLmAOz6oYd8V4dVQ==
-X-Gm-Gg: AYBFou3cDR0cJy/uBq7lD2hMyGLnt7OttlLZiWpjYW9zy5ofz8x00JNUuYgqdTyVXMY
-	gnN7k7Qc9h+cx4HqHDduPfOBlANdX/qWOKFSJZKnYSCZVpCs7KnWD/n7BGcy9waCDDZ+nJgO/uk
-	ijfE+GqiGjPA0swuhO0nST58980hkgIriYXBDN9T9uDOmxgigJinDhvTNetjf0WnNdRuYGQJH9Y
-	oxjaSJFlczb0xgTzf8Ir77KXhXLcPrD3lcW6tDRWmfXsHn23rGl0X7QopXEGDfKc6nYg6Xgz5/W
-	HFOCvKT0LTz4J6TY/MQF/yszwEIYR0Y83V3Axo8btanO2kt+DRtOybQ2rjOnasg1YSyyMTaIhHj
-	ia7KmQ84gBvFRn/Ec3FuQ3gF4lMhETgHXKAnJsgneJSFuJ6TjsC5YMFB3Why6ScKZE5TQ7ERwEu
-	pmgRHzAFbXNXVbqR1tc6cbtVdYtLhJS2e0qDovd9cBLwEAkeE/jZm3qm4n5a2O/3ThjtB6EC5XM
-	g1ewQ3vXwcpTqEQLQS0cySMVrZx7vbt3HAm7+kLWRwBpqvrNKJTVO15yAPkakZlahvAKhOEFVf5
-	9SDf7Z/WPf491rikqkGgzpycwkcdDztQxgM+HxeXvnHukcYV+3TyuMuIwUOH79TDtz8=
-X-Received: by 2002:a05:7022:eb55:10b0:168:3243:c90c with SMTP id a92af1059eb24-1ac59dd356cmr17871485c88.15.1793654162136;
-        Mon, 02 Nov 2026 13:16:02 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:c57d:c93d:3543:aab5])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1ac1854d925sm63953172c88.7.2026.11.02.13.16.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 02 Nov 2026 13:16:01 -0800 (PST)
-Date: Mon, 2 Nov 2026 13:15:59 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: linux-iio@vger.kernel.org,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>,
-	David Lechner <dlechner@baylibre.com>, linux-kernel@vger.kernel.org,
-	Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
-Subject: Re: [PATCH v3] iio: gyro: bmg160: Discard
- pm_runtime_put_autosuspend() return values
-Message-ID: <auj9j3sbYa4sVoil@google.com>
-References: <20261102014830.679216-1-jic23@kernel.org>
+        bh=po9LaFR4COBNDjXRaH0sos9yo8To8XsMCK5cpaZoeE0=;
+        b=MYUgoCSKkz/jz0yUBfB6jG08MHaQ+16Jg6VjJZTKbOhTpRtIre5F3Fk8orLBLqhTzQ
+         khUw4Jg06/n3q7Qb4hvwihis6DJRXLeyh359MzSwGwMhbH7lrlRrPEwFiTQbkApgx2o7
+         L+c1qwQKF+QDWczL1pxR6a/TBb5pP0HBjcIMdIJNUzzPBC/gkcl8n+0D/ih208ZH8x/9
+         pna+qXeRSZt5lN9BCTFoL/wG2U5KW7TgAUS0K/b9KDGOmTPdNLyDJO3d4mXWddw9b3/5
+         bZReutCkeHQAwaPuJavp+kL5TCW+/hEygL7anfvLwaXceZqwD05cMSVATve8dTiKmbWi
+         xGdQ==
+X-Forwarded-Encrypted: i=1; AKwUvBw2OsFgLz63qvOUFKztFJXmH1X0N0yaS/xkmsMmIJKN/QNH/Ye2hg/P4jY2sUll0tZBW6NrDFU/0A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9UQMjd8WhAMwq4IE4Z9iQ09J0YK1Nkanue+Ym2torahWzAUaOT
+	sbocVr3Y6fl20zEcdhqGOnRHVb9MFb5euLWkCThHr6H0kz30uUQ3MMuo
+X-Gm-Gg: AYBFou1yFirfAVOIrKg0IvguVz6m4SWwBjDlYZ80J5C6H3kB8jvmQSjZxvUbC9c16Cw
+	lOLPYNfYWVI2TRIBltKAcoWC1sYblRVe5Me8W+3PES37CsnsV2V/HMe2aFmln5iU1BSqxgy2fA2
+	NBi5NDYtaih7D+0+v2afgjfzBF5ICxVb1tk6pvt4VuTvzY9rGxDKdwHZFjRB4ksL1nWib0OUOtP
+	8FLld3czs6qw8h9KUJEnkBUSQ46pyj4706V92lL6DwBIhxVp8Co2fMAJV0iJztP3ou4p0COq9Qz
+	yNDL0oMGt0r+xEeIESKtSx/hJq5PlV6jJv1sSt/U/OehHUOzjdSyAschx01kyOxuC51oT9Igixb
+	bNsVDARAYUhRnE6LE3TuEfGboC5rs4kJftKc77W+P2kHFOnb3bWBq/ZZMZGqj1sjxnBe1tei+ob
+	BgmY1Y3RC4IIKtrWl1utAFtZosrwmXNodRytBLw2wvo+JyyQdAZun4j2Z+hjP9nWNoxtFat2CVN
+	cDso+XHKjjpDR3gZQnoOtfcmQ1OJ1rt/fpA/VmzKjllx86P2WNVfCIXM089Uq8zAuUoJDx9z0gf
+	j7qw48XynIPNeg6VzvkbnaYYlVsfekeY1iOFgTO0VQ88lKePYNkqzF4dudesM9B4Sg==
+X-Received: by 2002:a05:7301:4d12:b0:369:dc59:7a6f with SMTP id 5a478bee46e88-36a422042d2mr15983030eec.1.1793657114197;
+        Mon, 02 Nov 2026 14:05:14 -0800 (PST)
+Received: from DESKTOP-NM9EKIA ([125.134.240.130])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a4291e38fsm46670346eec.15.2026.11.02.14.05.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 02 Nov 2026 14:05:11 -0800 (PST)
+From: Joonhoe Kim <26rote@gmail.com>
+To: Vladyslav Tymoshchuk <tvlad744@gmail.com>
+Cc: andersson@kernel.org,
+	konradybcio@kernel.org,
+	abelvesa@kernel.org,
+	heikki.krogerus@linux.intel.com,
+	gregkh@linuxfoundation.org,
+	sre@kernel.org,
+	krzk@kernel.org,
+	lumag@kernel.org,
+	casey.connolly@linaro.org,
+	johan@kernel.org,
+	jishnu.prakash@oss.qualcomm.com,
+	kamal.wadhwa@oss.qualcomm.com,
+	daniel@quora.org,
+	neil.armstrong@linaro.org,
+	kees@kernel.org,
+	gustavoars@kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-hardening@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/4] soc: qcom: pmic_glink: Hold back notifications over system sleep
+Date: Tue,  3 Nov 2026 07:05:09 +0900
+Message-ID: <20261102220510.1721-1-26rote@gmail.com>
+X-Mailer: git-send-email 2.55.0.windows.5
+In-Reply-To: <20261022164151.592-1-tvlad744@gmail.com>
+References: <20261022164151.592-1-tvlad744@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -97,142 +117,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261102014830.679216-1-jic23@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi Jonathan,
+I tried the series with suspend-to-idle on a Lenovo Y700 Gen 5
+(TB323FU, Kaanapali/SM8850, FSA4480 on the SBU lines). This is v7.3
+with out-of-tree board support. v7.3 does not have c7c56b6ec077, and
+I left the UCSI connector work on system_wq as well. So only the
+series kept the workers off the suspended devices. Without it, this
+setup crashed on a DP sink unplugged during suspend, as in [3] of your
+cover letter.
 
-On Mon, Nov 02, 2026 at 01:48:30AM +0000, Jonathan Cameron wrote:
-> From: Brian Norris <briannorris@chromium.org>
-> 
-> This driver propagates the return value of pm_runtime_put_autosuspend(),
-> which is not particularly useful.
-> 
-> Returning an error code from pm_runtime_put_autosuspend() merely means
-> that it has not queued up a timer or work item to check whether or not
-> the device can be suspended and there are many perfectly valid
-> situations in which that can happen, like after writing "on" to the
-> device's runtime PM "control" attribute in sysfs for one example.
-> 
-> For this reason, modify this driver to simply discard the
-> pm_runtime_put_autosuspend() return value, and inline
-> bmg160_set_power_state() now that it behaves the same with and without
-> CONFIG_PM and is otherwise trivial.
-> 
-> Now the return value of the cleanup is ignored, also switch various
-> paths to use PM_RUNTIEM_ACQUIRE_AUTOSUSPEND() in conjunction
-> with guard(mutex)() futher simplifying the code.
-> 
-> While at it, I notice that bmg160_write_event_config() and
-> bmg160_data_rdy_trigger_set_state() mismanage the runtime PM reference
-> count intentionally, relying on racy autosuspend behavior for
-> correctness. I refactor this to manage refcounts properly instead.
-> I use guard() for the mutex, to make this less error prone.
-> 
-> Additionally, bmg160_write_raw() had one error path where a
-> pm_runtime_resume_and_get() failure would also drop a runtime PM
-> refcount (pm_runtime_put_autosuspend()), which potentially leads to
-> underflow. I fix that.
-> 
-> This will facilitate a planned change of the
-> pm_runtime_put_autosuspend() return type to void in the future, similar
-> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
-> type to void").
-> 
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> Signed-off-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
-> ---
-> I'm continuing to nibble away at Brian's series applying some of the
-> additional changes Andy asked for (that Brian quite reasonably stated
-> were beyond what he was going to take on!)  Just this one today.
-> 
-> v3: Make use of ACQUIRE magic in various paths as enabled
-> by dropping the return value.
-> 
-> With this posted, I'll mark it changes requested in patchwork.
-> 
-> https://patchwork.kernel.org/project/linux-iio/patch/20261021165858.v2.10.I5918e916cbe48281c13e5734733a3281e7be8841@changeid/
-> 
-> ---
->  drivers/iio/gyro/bmg160_core.c | 237 +++++++++++++--------------------
->  1 file changed, 94 insertions(+), 143 deletions(-)
-> 
-> diff --git a/drivers/iio/gyro/bmg160_core.c b/drivers/iio/gyro/bmg160_core.c
-> index b007f46d3fd6..a48e01ecc367 100644
-> --- a/drivers/iio/gyro/bmg160_core.c
-> +++ b/drivers/iio/gyro/bmg160_core.c
+- Monitor (pin assignment C) unplugged during suspend, default wakeup
+  settings: the UCSI notification woke the system within a second.
+  The held-back notifications were passed on right after the tasks
+  were thawed. The altmode worker, fsa4480_set() and the UCSI
+  connector work ran only then. No I2C errors, no reset.
 
+- The same with ucsi_glink wakeup disabled: no wakeup. The
+  notifications waited until the power key and were passed on after
+  resume.
 
-> @@ -759,42 +700,37 @@ static int bmg160_write_event_config(struct iio_dev *indio_dev,
->  				     bool state)
->  {
->  	struct bmg160_data *data = iio_priv(indio_dev);
-> +	struct device *dev = regmap_get_device(data->regmap);
->  	int ret;
->  
->  	if (state && data->ev_enable_state)
->  		return 0;
->  
-> -	mutex_lock(&data->mutex);
-> +	guard(mutex)(&data->mutex);
->  
->  	if (!state && data->motion_trigger_on) {
->  		data->ev_enable_state = 0;
-> -		mutex_unlock(&data->mutex);
->  		return 0;
->  	}
-> -	/*
-> -	 * We will expect the enable and disable to do operation
-> -	 * in reverse order. This will happen here anyway as our
-> -	 * resume operation uses sync mode runtime pm calls, the
-> -	 * suspend operation will be delayed by autosuspend delay
-> -	 * So the disable operation will still happen in reverse of
-> -	 * enable operation. When runtime pm is disabled the mode
-> -	 * is always on so sequence doesn't matter
-> -	 */
-> -	ret = bmg160_set_power_state(data, state);
-> -	if (ret < 0) {
-> -		mutex_unlock(&data->mutex);
-> -		return ret;
-> -	}
-> +	if (state) {
-> +		ret = pm_runtime_resume_and_get(dev);
-> +		if (ret < 0) {
-> +			dev_err(dev, "failed to resume: %d\n", ret);
-> +			return ret;
-> +		}
->  
-> -	ret =  bmg160_setup_any_motion_interrupt(data, state);
-> -	if (ret < 0) {
-> -		bmg160_set_power_state(data, false);
-> -		mutex_unlock(&data->mutex);
-> -		return ret;
-> -	}
-> +		ret = bmg160_setup_any_motion_interrupt(data, true);
-> +		if (ret < 0) {
-> +			pm_runtime_put_autosuspend(dev);
-> +			return ret;
-> +		}
-> +	} else {
-> +		ret = bmg160_setup_any_motion_interrupt(data, false);
-> +		if (ret < 0)
-> +			return ret;
->  
-> -	data->ev_enable_state = state;
+- Charger plugged in during suspend, qcom_battmgr wakeup enabled and
+  ucsi_glink wakeup disabled: woke up 0.3 s after the plug-in.
 
-This is an unexpected (to me) delta vs v2: you've stopped setting
-data->ev_enable_state here. I think that's a regression.
+Two things I saw on this board, both the same without the series:
 
-This is also one reason I think it's unwise to make so many changes
-together here. One person's "churn" (to apply several patches to similar
-code) is another person's "hard to review / easy to make mistakes".
+- Plug-in of a DP sink during suspend (two runs with the series and
+  one without, each after an unplug during suspend in the same boot):
+  the firmware sends an altmode notification right away and a DP one
+  13 s later. The UCSI connector change only comes 13 s after that,
+  so the system wakes up 26 s after the plug-in.
 
-Brian
+- After an unplug during suspend, the DP controller is resumed before
+  the held-back altmode notification is passed on. It tries to train
+  the link to the monitor that is gone (about 10 s of timeouts), which
+  delays passing on the notifications by as much. It also leaves the
+  DP PHY initialised. So on the next resume the USB PHY init times out
+  and the dwc3 resume fails with -110. The plug-in runs above ended
+  that way, without USB.
 
-> -	mutex_unlock(&data->mutex);
-> +		pm_runtime_put_autosuspend(dev);
-> +	}
->  
->  	return 0;
->  }
+A plug-in during suspend after a fresh boot, without the series, does
+not hit the PHY problem. It still ends without a display, for another
+reason in UCSI; I'll report that separately.
+
+Tested-by: Joonhoe Kim <26rote@gmail.com> # SM8850
+
+Thanks,
+Joonhoe Kim
