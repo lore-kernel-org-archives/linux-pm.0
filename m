@@ -1,102 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.182
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793580400;
-	b=ZI27MDXIdDq0BUpJmHYV7Rps9K6uU9FT8vOlMVB/axHyhchE9Am27+QmNN8D3qFjDEUV
-	 jyuaQeSaj+bLgpgekWo+rPrd8m7ezRsOjVwWJi2kjq33K4ofKxSowtFM6Jg88+aIMpnsh
-	 32aYTHJHIlsFT89jIZXsNKSH9bnssMRzhiGUBip7tjWc4J+Sumjv5BJxmsv42iWJoRdY+
-	 h6Xon1qmbngIyn3kh9MGQliLIwTuixwiUNMBLT/9MsECep+7732HpJis6PYw/SxmYsNqK
-	 CHwGvu0XP7DSm5oq7xP9EYfb+0TtjVNjBypQisUneMNDRn3QQj23d/clfYYznQdZENw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793580400;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
-	b=CBHh7cf87yR3O/B32lYb0F3uT80guTpFYKGuYNaDlXH+IDfMI0ELSO9QbxJR3EnT9oGE
-	 nNL/f89mC74veKh1WSrFnPX5G4vZhrAnhl7RIFj/EHUT/hXbCLo90zerZVz8aNhaavsN8
-	 7AKlNipdKFfbmFo2epSN/lIhvGGklOn8xbvu5a4dZV+SaRzxAFjFcJ3nKv2iJE7eTDnJ/
-	 qi4PRdX0YpLkQ8zpMm9ETQ/PtA8DBdwcYGh0AzkZ5ZApZILurZ28JwStK3XK3LFou9axP
-	 mNxBEFcWNsplThS6i7442ywe1SyZ2oKdd4jStif13PyJUD7vKb1n5T6K/UKQSi/fhpg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o67+VfI7;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.182
-Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793582859;
+	b=X7O4RTtQYWHlSx9pVT4cjD7VmwUBvsVv2ntDAbG5YhIiWcWq8UegPerWMQISp+f0dQKS
+	 lV0aXQvedilFsmHKIQ5hkxXcSkiDdXFhs+wu7cZCqZp3E0VWYjbKh0qCQYwCdvfToasoe
+	 397Q06mDFCWYxxt2rJ7IkvoLKBngEHTh7ev1ZolDyYaLU5UhCOayaj77uHcYjuzlPqqOA
+	 +pCo9OUYRfvuznSNKRULHUxeEkhH+0KuGZkHEbcw8M+Sa/0NthODijell2BbG5daEx1QP
+	 bx9QnoPEZLgfzRsNV3Tr9Fd8SIEoNJ4CTFTEBCXulL2tB55uaNBDzwmvzn9ccGBoStA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793582859;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=UfRldmRYmdOXB066OSHlxeXaxLqp09q3SNbqpbUYr6E=;
+	b=JluMyMmajjHlC42db5VLVmi2ght6Y4hwG7BH44iIZF0EeUfFupaHdaRkTDMENgktjV8v
+	 1XES4zPSRzL1BrHXYHB8LOLxrLkKr73/CeOi4sqDKdpTwLVs5q6wfHAwOL5ym1bQMCtDt
+	 dLyuCx2rc2Hjd53W2yABnb6TKYUwFs3YfN2xzDciJTs84fy2m4anBrObxRU8joyrWn6si
+	 TvfFoTubhXVDaGCMNtA4q15ZWFv36ax2kF66mvf51MgjKca+6bs7NQoOPyvuDWXDTgaqQ
+	 Wvovz17OaDre3RqyOxjKeNHV7/8zutYinelCi/vlg4zADpWpGvSbJmP4TSYX6WTQeFQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D0p68AVd;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A6F3606A326
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 00:46:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5A6F3606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F5B6606A324;
+	Mon,  2 Nov 2026 01:27:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o67+VfI7
-Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-33c10faf6easo319701eec.0
-        for <linux-pm@vger.kernel.org>; Sun, 01 Nov 2026 16:46:40 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793580399; cv=none;
-        d=google.com; s=arc-20260327;
-        b=M0w4cSv5G+bXXF4cfQJIoBwO9CDzQoT4kQjiN9kQb8HD6NpjZCU8xrnDlyUZtdC+uh
-         Ukn88l1ujy6rpUuRMFosLqPQY3ZCHat2iTdQzuUeIZAusAwSmndFaDZ2dp37xU1vpm14
-         qoLWKLAQ1aOQLJuSh5U4gAmFMWKVn66OVuUCij4KshTE7QptRwc27mGIfVI45RQbcxN4
-         uwZshe3Kvk8AZfE8ZtqCp0gnTKB4aaRiexLZdv0x+ojQ52x1dhl70pUD17jTLrCJJ/wl
-         0EY3/YA0LYxycgtatqtoBC9xaMawtX7MuXfqvqQPifqYH/H4KDdN89fMFfyPWqmwsIjw
-         wAmg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
-        fh=QyjAHNnvFfX819TgFTxFyvLDL3CvKgxafMR8ubximMI=;
-        b=U/MwSOYrXjVdZ6fuMhR87ZyCaVjMd7PebirVm9KKKsDG5WeyGrTud0J2XvNpJrIeC+
-         e4xPHDP1lFTGRkj7UedYTDf1lln8JMgwCOtIO35Y6GTlBaeMUSsZLtJQBzJHynF7+rrr
-         APFwLFjBQPaHyziE/p5lL0Q+2Nz6+thyvFO5pBJOGpb2X3h1qel4Eo0ywuenCfZ3GOD3
-         IJlJBduJCL4AhfIQ7pOJXdo3CcTvmItYrVeF/3tpq3JUPi3f7rFA8LLRElef1mzoWyu4
-         hFOp2KzozIf/+MZTRNKi52aDk4TZmuyatrOEEntg1mt8STmDvXtzWQRHH5mB70rQ2khQ
-         7kgw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793580399; x=1794185199; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
-        b=o67+VfI7TGlXSNgSkpFsughn7q+9+yYECnzFIFfY0Y1sMOBq4tdMupuBlGXNqGKPop
-         9egfqYW8M48YFL4DHaV2vblg+EEhDOCNzZonx49S27LBpQJWMiWtW+OScff8t5EmN3Qw
-         kQFfIoLLQzTymHK895yYeKg00pGNNQ4kWz7Kx0LvxJW1dV8MaXD+pqvoAtC9UYRy5IQx
-         sp9+hoAv7LlGyDwRBpQ76cqB/VOHGMJ+vEbqNehCzHsiXNS9zVcfbtWvWPc9kQHe8gyC
-         wf1lBhoLuzyl5C+qB0brSJJ42k0SRBBe7OStcRaFX9MGUjrGly92crJOXDcd6gYXDZCA
-         jJTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793580399; x=1794185199;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=vjEmmX6EzGgRBfyBSvZnMWKCis3KJq0Gi1UrMn51jSQ=;
-        b=qRgKs8nR76DJyFqgeRMlK9D/xHID2jggGVC/QvbOznXgOTT9xH0BrfwLfeXcVBJDYO
-         J7DWMn7Qx6Bh3L/X7EJBck4Lkz4ipUmNaWD0yj3D9XWtaXKNJlh85iJ8yrMn8dIJrI8I
-         jYKVm+Rj/ouKHEVf+1ZXrX0D/Bz5UIFqWGvIwzDjd9D5+veIoZ2Y2Wa6H8oOyrfRR1/E
-         dpxbEXyPB8aBrffq/fDGgwBCjIMCybJ+4119Iyur5kL65UAm45CDocKQ45/yYerFtgTW
-         rPEBPsSWj3/mVARV3uyOLRk9GTbxvZB9Th8NzstCMtSo9DGf1RIj2cGwaCFFUB8BkhdK
-         uKSA==
-X-Forwarded-Encrypted: i=1; AKwUvBwAL+OX45JoJ5EEPtk0AKo9JVa18j6AeENmsbHeRPfLlwnDu0P63GY9Mjfv7ol93ExrGIjLk6hzAw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+Ymy9TUhEtTPFRF+yx0EFgTQN62HqEkRn5yEY5WUnsS5Z5aP3F
-	htzl/2J1H/bm4tZqqlZ09FXfWs5DmImqWZwuoZE8Qs/nWZbH0rrX1d7cE3SvpgptUNmkGi1H3Au
-	wFcy9gj2tlpfNbycfxMGaqsYF6bALRos=
-X-Gm-Gg: AYBFou10KbTtCFRHCG+CXc9SW1/jgv6LVgdCMpej4YlCKlVI8pmgFUyiNFavfh65D3z
-	hHeACXJCFZumRPvL/LN3cLoBF48eGQMyGcsMGoxQ4nSQep7Xrb/H2MwSSlZ7fDm6+1Np9PcoumD
-	5qitF1rCp/MUPCZ0gDbG3/U0RzWe8YoQFZ3p7uLESuJFwG4z3QfZU2sICnufn36C8HC9XF4VNzK
-	F+jj35+tIqSnN1PO0F5qVhszezz2a45rUY6xdbkr/qMCJQu+jb0gVfcrGZf1+HRvWANuqXOS6jL
-	O8IhkYjNWaVZh/p3VQbTw/i4PYlmPQo23Kr1XH4hvvL49EdkUKoBViT/MUBNV14e4T8K7L4PpON
-	/9okPFp2nyz6/yy+6imd/2X27JAr4gO5cH2FQWyeP67SX3pjIWzyLlLFE4ZW7KY0Ha+7drp/uP2
-	hnZE3pFl1wqH+xGtE2nLqR91nvcw7DdKwLvTFOmDjd7ixQ6EUM+idsirp18OxNKVHBEOORNzOqe
-	OA/dv6d9+YU6k4hJ1fmt0FDrVoU7x2SLIHaNa5BtNTtV4TCXlVxkUpShA==
-X-Received: by 2002:a05:7300:d082:b0:369:ffc5:6767 with SMTP id
- 5a478bee46e88-36a4236a643mr17666091eec.2.1793580399370; Sun, 01 Nov 2026
- 16:46:39 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D0p68AVd
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 233981F00919;
+	Mon,  2 Nov 2026 01:27:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793582859;
+	bh=UfRldmRYmdOXB066OSHlxeXaxLqp09q3SNbqpbUYr6E=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=D0p68AVdlqZHXbsjr56QtNk+BdkIR47WcT1nfpC2a0XNCVRXnWZVgYSLzVT7IpHfL
+	 pqwCPlvBDxJK8BShX1tg7dzDgfA5I3JTjrvyWa7DRKFqDww8nSCGTy+lu1Zp/s5foH
+	 eWXIONLFfOLY6xaruIhxMBeHKvJL0Cya428kSP3e6k1h3suDy2WspNx1TY6oQZonhz
+	 tWQyJFwYiM2vRPTjfMS/tAnfUMty3Y6E87udbkcrZVKZwNkp8kgcSCQcNvFxc0lsQv
+	 u1xVEQCs14mJGLp/94Y+fx6lrGntHACR8oaLyqDZko5gxFQ5EHAn7IBdpSG/df+cJN
+	 w9qREWdTKqJsg==
+Date: Mon, 2 Nov 2026 01:27:33 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Brian Norris <briannorris@chromium.org>
+Cc: Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+ linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>, David Lechner
+ <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 13/17] iio: light: apds9960: Discard
+ pm_runtime_put_autosuspend() return values
+Message-ID: <20261102012733.435bdc94@jic23-hlaptop>
+In-Reply-To: <20261021165858.v2.13.Ic0c3be7c36a602e32c04628d5ae5692556742fa8@changeid>
+References: <20261021235818.3059519-1-briannorris@chromium.org>
+	<20261021165858.v2.13.Ic0c3be7c36a602e32c04628d5ae5692556742fa8@changeid>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -106,57 +64,174 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261018163719.81691-1-ojeda@kernel.org>
-In-Reply-To: <20261018163719.81691-1-ojeda@kernel.org>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Mon, 2 Nov 2026 01:46:26 +0100
-X-Gm-Features: AclHuK-4MjIXg8YJnYcWupgszDUMapc507LicBlOsBTb2wracrfxL9hXutBBGhQ
-Message-ID: <CANiq72=JMDa882tQPLUSTYhkfKmxxZH-gjp=sTD-Eq5KDt-F-g@mail.gmail.com>
-Subject: Re: [PATCH] rust: cpufreq: fix `undocumented_unsafe_blocks` in `PolicyCpu::from_cpu()`
-To: Miguel Ojeda <ojeda@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, Daniel Almeida <daniel.almeida@collabora.com>, 
-	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
-	=?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
-	rust-for-linux@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Sun, Oct 18, 2026 at 6:37=E2=80=AFPM Miguel Ojeda <ojeda@kernel.org> wro=
-te:
->
-> For Rust <=3D 1.86, Clippy triggers after commit 02c5d7bfa872 ("rust:
-> cpufreq: reject NULL from cpufreq_cpu_get()"):
->
->     warning: unsafe block missing a safety comment
->        --> rust/kernel/cpufreq.rs:700:26
->         |
->     700 |             NonNull::new(unsafe { bindings::cpufreq_cpu_get(u32=
-::from(cpu)) }).ok_or(ENODEV)?;
->         |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^=
-^^^^^^^^^^^^^^
->         |
->         =3D help: consider adding a safety comment on the preceding line
->         =3D help: for further information visit https://rust-lang.github.=
-io/rust-clippy/master/index.html#undocumented_unsafe_blocks
->         =3D note: requested on the command line with `-W clippy::undocume=
-nted-unsafe-blocks`
->
-> Thus clean it up.
->
-> Fixes: 02c5d7bfa872 ("rust: cpufreq: reject NULL from cpufreq_cpu_get()")
-> Assisted-by: LLM
-> Signed-off-by: Miguel Ojeda <ojeda@kernel.org>
+On Wed, 21 Oct 2026 16:57:14 -0700
+Brian Norris <briannorris@chromium.org> wrote:
 
-Applied to `rust-fixes` -- thanks everyone!
+> This driver propagates the return value of pm_runtime_put_autosuspend(),
+> which is not particularly useful.
+> 
+> Returning an error code from pm_runtime_put_autosuspend() merely means
+> that it has not queued up a timer or work item to check whether or not
+> the device can be suspended and there are many perfectly valid
+> situations in which that can happen, like after writing "on" to the
+> device's runtime PM "control" attribute in sysfs for one example.
+> 
+> For this reason, modify this driver to simply discard the
+> pm_runtime_put_autosuspend() return value. Inline the "off" helper, as
+> it's trivial now, and rename to apds9960_power_on().
+> 
+> This will facilitate a planned change of the
+> pm_runtime_put_autosuspend() return type to void in the future, similar
+> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+> type to void").
+> 
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
 
-I added Cc: stable@ -- while this one is not a big deal, we are
-backporting 02c5d7bfa872 (i.e. the one this one fixes), and thus we
-can take the chance to keep it aligned to mainline and clean.
+I took a look at this one and the current code is a complete mess.
 
-Cheers,
-Miguel
+I'm going to apply what you have here as a step in the right direction
+simply because I can't see a quick path to fixing it properly.
+
+If anyone wants a fun project then unwinding the mess in here would
+be a good place to start.
+
+Anyhow, applied this one.
+
+thanks,
+
+Jonathan
+
+> ---
+> I'm not sure if apds9960_write_event_config()'s existing logic is
+> correct, but I don't want to mess with it.
+> 
+> Changes in v2:
+>  * Split iio patch into per-driver patches
+>  * Inline the put() helper
+> 
+>  drivers/iio/light/apds9960.c | 48 ++++++++++++++----------------------
+>  1 file changed, 18 insertions(+), 30 deletions(-)
+> 
+> diff --git a/drivers/iio/light/apds9960.c b/drivers/iio/light/apds9960.c
+> index afe520de60e2..0e084ffba1a6 100644
+> --- a/drivers/iio/light/apds9960.c
+> +++ b/drivers/iio/light/apds9960.c
+> @@ -476,38 +476,23 @@ static int apds9960_set_als_gain(struct apds9960_data *data, int val)
+>  	return ret;
+>  }
+>  
+> -#ifdef CONFIG_PM
+> -static int apds9960_set_power_state(struct apds9960_data *data, bool on)
+> +static void apds9960_power_on(struct apds9960_data *data)
+>  {
+>  	struct device *dev = &data->client->dev;
+> -	int ret = 0;
+> +	int suspended;
+>  
+>  	mutex_lock(&data->lock);
+>  
+> -	if (on) {
+> -		int suspended;
+> -
+> -		suspended = pm_runtime_suspended(dev);
+> -		ret = pm_runtime_get_sync(dev);
+> +	suspended = pm_runtime_suspended(dev);
+> +	pm_runtime_get_sync(dev);
+>  
+> -		/* Allow one integration cycle before allowing a reading */
+> -		if (suspended)
+> -			usleep_range(data->als_adc_int_us,
+> -				     APDS9960_MAX_INT_TIME_IN_US);
+> -	} else {
+> -		ret = pm_runtime_put_autosuspend(dev);
+> -	}
+> +	/* Allow one integration cycle before allowing a reading */
+> +	if (suspended)
+> +		usleep_range(data->als_adc_int_us,
+> +			     APDS9960_MAX_INT_TIME_IN_US);
+>  
+>  	mutex_unlock(&data->lock);
+> -
+> -	return ret;
+>  }
+> -#else
+> -static int apds9960_set_power_state(struct apds9960_data *data, bool on)
+> -{
+> -	return 0;
+> -}
+> -#endif
+>  
+>  static int apds9960_read_raw(struct iio_dev *indio_dev,
+>  			     struct iio_chan_spec const *chan,
+> @@ -522,7 +507,7 @@ static int apds9960_read_raw(struct iio_dev *indio_dev,
+>  
+>  	switch (mask) {
+>  	case IIO_CHAN_INFO_RAW:
+> -		apds9960_set_power_state(data, true);
+> +		apds9960_power_on(data);
+>  		switch (chan->type) {
+>  		case IIO_PROXIMITY:
+>  			ret = regmap_read(data->regmap, chan->address, val);
+> @@ -540,7 +525,7 @@ static int apds9960_read_raw(struct iio_dev *indio_dev,
+>  		default:
+>  			ret = -EINVAL;
+>  		}
+> -		apds9960_set_power_state(data, false);
+> +		pm_runtime_put_autosuspend(&data->client->dev);
+>  		break;
+>  	case IIO_CHAN_INFO_INT_TIME:
+>  		/* RGB + ALS sensors only have integration time */
+> @@ -767,7 +752,6 @@ static int apds9960_write_event_config(struct iio_dev *indio_dev,
+>  		if (ret)
+>  			return ret;
+>  		data->pxs_int = state;
+> -		apds9960_set_power_state(data, state);
+>  		break;
+>  	case IIO_INTENSITY:
+>  		if (data->als_int == state)
+> @@ -777,12 +761,16 @@ static int apds9960_write_event_config(struct iio_dev *indio_dev,
+>  		if (ret)
+>  			return ret;
+>  		data->als_int = state;
+> -		apds9960_set_power_state(data, state);
+>  		break;
+>  	default:
+>  		return -EINVAL;
+>  	}
+>  
+> +	if (state)
+> +		apds9960_power_on(data);
+> +	else
+> +		pm_runtime_put_autosuspend(&data->client->dev);
+> +
+>  	return 0;
+>  }
+>  
+> @@ -1078,7 +1066,7 @@ static int apds9960_probe(struct i2c_client *client)
+>  	pm_runtime_set_autosuspend_delay(&client->dev, 5000);
+>  	pm_runtime_use_autosuspend(&client->dev);
+>  
+> -	apds9960_set_power_state(data, true);
+> +	apds9960_power_on(data);
+>  
+>  	ret = apds9960_regfield_init(data);
+>  	if (ret)
+> @@ -1105,12 +1093,12 @@ static int apds9960_probe(struct i2c_client *client)
+>  	if (ret)
+>  		goto error_power_down;
+>  
+> -	apds9960_set_power_state(data, false);
+> +	pm_runtime_put_autosuspend(&client->dev);
+>  
+>  	return 0;
+>  
+>  error_power_down:
+> -	apds9960_set_power_state(data, false);
+> +	pm_runtime_put_autosuspend(&client->dev);
+>  
+>  	return ret;
+>  }
+
