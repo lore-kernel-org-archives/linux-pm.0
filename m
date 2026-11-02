@@ -1,45 +1,44 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793649170;
-	b=uC/+KxO84fpnNTheFAEDKre0Z9rwNf/0mtp1yl/+VJ50/knBM/WWWdtvEpcqNNEqWLem
-	 oTMlO67QsWVEATPYU5dGjwGogqHw3N+kF0c5N1fgNVwN6pDh6WOnOMi4yv1YPJgAG1GNa
-	 2VkeCAIwk8zCwc1SjKSpIdeew+s964Fv7x0qI7+zVyfXs/RRSz81ZL2l47C5BtQqZ9Cbd
-	 z2y7vEIeAO1QwSPnHZLim9tU/c/zh7SjehvXg8qyc8JNmnkfaWiAphukRXHD+EzQtS/IB
-	 vtq7nRg9Qst1hhI/KYwB7WgDPB2nJ6EEWKtg3eaGBuU9Dash+h1bxTJkQ9CmAGjv8/w==
+	t=1793649175;
+	b=q+2aBzmYPPZ5WD2oSei8J6e2peUh4gAiJUTZUgw5/bCvuQI/4aX22uZXxXGhQzeboeUC
+	 mj3Vi6I9WtHh7CqIHTQplQdM6ZCxbNdOVn29JbPR2Li8x104bUiC8/HlMVoGms+w+6kjH
+	 7RZu8DKW8Vgk4eUgz67BwHBoPFszh3uvbrX+WBR2kHMq3O91iLu18+xq0w7WmYUYSelsx
+	 x33cVuHGfgFwjM3dUkiynqIX21aIB2Fe7oXvl/aSjm/aU4hOvsiyzKegYcryqr0eP7QH+
+	 SwgV7DbRb6QT+vKyCHgZnmEvKJZm7xDCdhV1LC1542pWM9oZrg3Y5fqY6spjDb9T5TA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793649170;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793649175;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 Organization:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:Content-Type;
-	bh=urB/b8zoTpngDyX/dZie8ECWCYpomdhWaljkDmbeHD4=;
-	b=cn8hFHf8LlfbBmQ/LkxLXXXnnGI6HE+RTEfosHgISxoXrg7tIcwWZCFlUEDUydWI3xXb
-	 OjDaLOcnhaWG1LPWTsZhNFnCSh7YNpRVhdLTxEYfvF9shGMXSSQx/gDZ4ajDxE/ACh6Ym
-	 L8znCS6uQujCEGwS155WZ7RTqCNFvPbXqMBMYQCStrqxznCYNbZg2Ofrdv16iawlDKOSf
-	 E22sqlj3JNYJcu5QrVMEJZrLcp87hQOMCCHQLDLkHBPlFL9CoOjRX1uoFiZDyRS5j+N0X
-	 yxNFC93Mk2QdUd8fTUkHWe0HNdpQcOjQtXIAWdq2HEaZjoQ5vvVW/W7O303C1WfA3WA==
+	 Organization:MIME-Version:Content-Transfer-Encoding:Content-Type;
+	bh=M0xXm6XiXe004uqwr7i/jYND3X6GY5GXFr/RX21T58E=;
+	b=zS7U538lRI5V2cjXKZXcWxhpX8mNeqaGdS3y9pUPDm4kLx0HiKV9mipWNJRAzCoMiIHZ
+	 nIybPt0gnBAug/Fslbm6UFizf/ntDKNMx9C+kAI/v+6sSs+tZiiH42WuESfMz4hjymXQg
+	 F965/DhDVCayzDb0IaPS0/NSthVvLvxA0xDZKkwLBMSTfQ3wxeAoePV7nuZEVgGX08fkc
+	 0/n5W9sz3K6uJGdYOaow9A89xb4GbWjY21ciDzvs5SDdZ3Q8o8rUmeYg/LbkC9T+Tci/n
+	 1bm8r+4MQ/XTv3jEvqUm9+qhDlKOpMF6pgnsM32czsGyAbPw47GjrZn64KlHerNa4Rw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MH983xyU;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Dw4FJ4fC;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9900C606A33F
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 19:52:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99E71606A329
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 19:52:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MH983xyU
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47FB01F00A17;
-	Mon,  2 Nov 2026 19:52:48 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Dw4FJ4fC
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05A381F00A21;
+	Mon,  2 Nov 2026 19:52:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793649170;
-	bh=urB/b8zoTpngDyX/dZie8ECWCYpomdhWaljkDmbeHD4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=MH983xyUTojxEpzeZ7vKB22vMztLfkXMjFa4f1p7KjD9pPizdJqV+C6LULcpk2rHb
-	 nilcEwqLi95DIQO5cOxC68V7cSyq7Xx/rQUmGg8mhjDBpx/NVgm1Vw7uDa3GxDW7DR
-	 tyzGA3psI27dHB2Ob9oLB6ZWee86c9gYjZEzUXcKOdvh7fckHJnJ33a26IOQ9/4ypv
-	 kyR8k63ZNP5piTygJfTyY/Vr5PKtdASwyx0w93roTOLvFVe+ixb6r3ZEXaHRsEB0NS
-	 qcpaeuhGjJmnpV+OibBW5OMba43Tvsu+7CJm+kjcgMhlw2h3EATS/OmMd4vxMRGY/Q
-	 5ouplTL8vmu4w==
+	s=k20260515; t=1793649175;
+	bh=M0xXm6XiXe004uqwr7i/jYND3X6GY5GXFr/RX21T58E=;
+	h=From:To:Cc:Subject:Date;
+	b=Dw4FJ4fCFEZOF56lsYOzVN8UG/50T2zyBrXVRZ6DXs/7RrR8ZN9/JoNSWFaHoj/tR
+	 Y/r+mLwKuL5ZvHjItu0kXISuLx2lhHlqvesMMtCox6NEsXSi6k30ZAIUR5IQp0dFFq
+	 jststBZ+MRmb8HuzlHVXT4P7UTS30GeuHS7jVW9lA4r6PnOXWUhXhM8p+D5aax5B85
+	 uNgHrA9U6RgJ88Ud7ytSHI25V5kEv7gimyb9TL4nT9WgeA5HBOdM+V3nz+5HcWg7X1
+	 Jf0fKpw2OBFoIaWTCOaLAsWLy4BZkk2fSayz08MKgoTE1z3DCE1ZjDFpCphTNCojGQ
+	 eYAcn9njxXpZw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>,
@@ -47,12 +46,11 @@ Cc: Viresh Kumar <viresh.kumar@linaro.org>,
  Doug Smythies <dsmythies@telus.net>, Zak <zakbrightonknight@gmail.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  Mario Limonciello <superm1@kernel.org>
-Subject: [PATCH v1 1/4] cpufreq: Improve suspend-resume synchronization
-Date: Mon, 02 Nov 2026 20:49:24 +0100
-Message-ID: <2450089.ElGaqSPkdT@rafael.j.wysocki>
+Subject:
+ [PATCH v1 0/4] cpufreq: Fix synchronization with system suspend/resume
+Date: Mon, 02 Nov 2026 20:48:13 +0100
+Message-ID: <5162355.31r3eYUQgx@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
-In-Reply-To: <5162355.31r3eYUQgx@rafael.j.wysocki>
-References: <5162355.31r3eYUQgx@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,204 +63,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Hi,
 
-The suspend-resume synchronization in the cpufreq core is not perfect
-because the global cpufreq_suspended variable is accessed locklessly,
-so updates of it may be subject to reordering with respect to other
-operations and they may be missed by concurrent readers running in
-parallel with the updater on other CPUs.
+This series fixes issues related to the synchronization between cpufreq
+and the intel_pstate driver with system suspend/resume mentioned here:
 
-Address this by adding a per-policy "suspended" flag that is always
-read under the policy rwsem and is updated under it after stopping the
-governor in cpufreq_suspend() and before restarting the governor in
-cpufreq_resume().
+https://lore.kernel.org/linux-pm/CAJZ5v0hT6aoX4tuJM+rO_5iequFc_7rEXCoaFnHoJBaH3JP4KA@mail.gmail.com/
 
-Also carry out the loops over active and inactive cpufreq policies
-in cpufreq_resume() under the cpus_read_lock guard to reflect what
-cpufreq_suspend() does.
+The first patch actually prevents governor operations from being
+carried out on suspended cpufreq policies.
 
-Fixes: 8e30444e1530 ("cpufreq: fix cpufreq suspend/resume for intel_pstate")
-Fixes: b1b12babe3b7 ("cpufreq: update 'cpufreq_suspended' after stopping governors")
-Cc: All applicable <stable@vger.kernel.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c | 69 ++++++++++++++++++++++++++-------------
- include/linux/cpufreq.h   |  3 ++
- 2 files changed, 50 insertions(+), 22 deletions(-)
+The second one forces the driver callback to be invoked on the
+first frequency update after cpufreq policy resume.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 54dde8419bdc..1c1962a4beb4 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1956,6 +1956,14 @@ int cpufreq_generic_suspend(struct cpufreq_policy *policy)
- }
- EXPORT_SYMBOL(cpufreq_generic_suspend);
- 
-+static void cpufreq_suspend_policy(struct cpufreq_policy *policy)
-+{
-+	guard(cpufreq_policy_write)(policy);
-+
-+	cpufreq_stop_governor(policy);
-+	policy->suspended = true;
-+}
-+
- /**
-  * cpufreq_suspend() - Suspend CPUFreq governors.
-  *
-@@ -1978,11 +1986,8 @@ void cpufreq_suspend(void)
- 	pr_debug("%s: Suspending Governors\n", __func__);
- 
- 	for_each_active_policy(policy) {
--		if (has_target()) {
--			scoped_guard(cpufreq_policy_write, policy) {
--				cpufreq_stop_governor(policy);
--			}
--		}
-+		if (has_target())
-+			cpufreq_suspend_policy(policy);
- 
- 		if (cpufreq_driver->suspend && cpufreq_driver->suspend(policy))
- 			pr_err("%s: Failed to suspend driver: %s\n", __func__,
-@@ -1994,6 +1999,23 @@ void cpufreq_suspend(void)
- 	cpus_read_unlock();
- }
- 
-+static void cpufreq_resume_policy(struct cpufreq_policy *policy, bool start)
-+{
-+	guard(cpufreq_policy_write)(policy);
-+
-+	if (!policy->suspended)
-+		return;
-+
-+	policy->suspended = false;
-+
-+	if (!start)
-+		return;
-+
-+	if (cpufreq_start_governor(policy))
-+		pr_err("%s: Failed to start governor for CPU%u's policy\n",
-+		       __func__, policy->cpu);
-+}
-+
- /**
-  * cpufreq_resume() - Resume CPUFreq governors.
-  *
-@@ -2003,7 +2025,6 @@ void cpufreq_suspend(void)
- void cpufreq_resume(void)
- {
- 	struct cpufreq_policy *policy;
--	int ret;
- 
- 	if (!cpufreq_driver)
- 		return;
-@@ -2018,20 +2039,24 @@ void cpufreq_resume(void)
- 
- 	pr_debug("%s: Resuming Governors\n", __func__);
- 
-+	guard(cpus_read_lock)();
-+
- 	for_each_active_policy(policy) {
--		if (cpufreq_driver->resume && cpufreq_driver->resume(policy)) {
--			pr_err("%s: Failed to resume driver: %s\n", __func__,
--				cpufreq_driver->name);
--		} else if (has_target()) {
--			scoped_guard(cpufreq_policy_write, policy) {
--				ret = cpufreq_start_governor(policy);
--			}
-+		int ret = 0;
- 
-+		if (cpufreq_driver->resume) {
-+			ret = cpufreq_driver->resume(policy);
- 			if (ret)
--				pr_err("%s: Failed to start governor for CPU%u's policy\n",
--				       __func__, policy->cpu);
-+				pr_err("%s: Failed to resume driver: %s\n", __func__,
-+				       cpufreq_driver->name);
- 		}
-+
-+		if (has_target())
-+			cpufreq_resume_policy(policy, ret == 0);
- 	}
-+
-+	for_each_inactive_policy(policy)
-+		policy->suspended = false;
- }
- 
- /**
-@@ -2416,8 +2441,8 @@ static int cpufreq_init_governor(struct cpufreq_policy *policy)
- {
- 	int ret;
- 
--	/* Don't start any governor operations if we are entering suspend */
--	if (cpufreq_suspended)
-+	/* Don't start any governor operations for suspended policies. */
-+	if (policy->suspended)
- 		return 0;
- 	/*
- 	 * Governor might not be initiated here if ACPI _PPC changed
-@@ -2460,7 +2485,7 @@ static int cpufreq_init_governor(struct cpufreq_policy *policy)
- 
- static void cpufreq_exit_governor(struct cpufreq_policy *policy)
- {
--	if (cpufreq_suspended || !policy->governor)
-+	if (policy->suspended || !policy->governor)
- 		return;
- 
- 	pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
-@@ -2475,7 +2500,7 @@ int cpufreq_start_governor(struct cpufreq_policy *policy)
- {
- 	int ret;
- 
--	if (cpufreq_suspended)
-+	if (policy->suspended)
- 		return 0;
- 
- 	if (!policy->governor)
-@@ -2499,7 +2524,7 @@ int cpufreq_start_governor(struct cpufreq_policy *policy)
- 
- void cpufreq_stop_governor(struct cpufreq_policy *policy)
- {
--	if (cpufreq_suspended || !policy->governor)
-+	if (policy->suspended || !policy->governor)
- 		return;
- 
- 	pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
-@@ -2510,7 +2535,7 @@ void cpufreq_stop_governor(struct cpufreq_policy *policy)
- 
- static void cpufreq_governor_limits(struct cpufreq_policy *policy)
- {
--	if (cpufreq_suspended || !policy->governor)
-+	if (policy->suspended || !policy->governor)
- 		return;
- 
- 	pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
-@@ -2747,7 +2772,7 @@ static void cpufreq_policy_refresh(struct cpufreq_policy *policy)
- 	 * -> ask driver for current freq and notify governors about a change
- 	 */
- 	if (cpufreq_driver->get && has_target() &&
--	    (cpufreq_suspended || WARN_ON(!cpufreq_verify_current_freq(policy, false))))
-+	    (policy->suspended || WARN_ON(!cpufreq_verify_current_freq(policy, false))))
- 		return;
- 
- 	refresh_frequency_limits(policy);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index d3d0d9d02aa4..20a6863b640a 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -149,6 +149,9 @@ struct cpufreq_policy {
- 	/* Pending policy->min/max update for the driver */
- 	bool			update_limits;
- 
-+	/* The policy has been suspended. */
-+	bool			suspended;
-+
- 	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
- 	unsigned int cached_target_freq;
- 	unsigned int cached_resolved_idx;
--- 
-2.51.0
+The third one causes intel_pstate to invalidate the cached last
+P-state value during suspend.
 
+The last one is a cleanup on top of the previous three.
+
+Thanks!
 
 
 
