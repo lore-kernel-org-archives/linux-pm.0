@@ -1,123 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.137.202.133
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793639450;
-	b=PZXtBrSAnmWYq2LLXos+DKmtwvykCmU5Wv3lWjkBvy7E69gRpFF181urgPptMoSYF0/v
-	 23EY9Qka3zTKfE/NEJ6Zg1MHD2zh6F8Ajg61/rgDwbRq0VieoGh+5aUPwgUtwrN900qYM
-	 gbeNs3bO9DrW+aCtlsH2B+3bjwvh1Jxw8EiB0kweFbmI05ihmFOnsnnE2UE//lqCuSKtX
-	 p9fzTvIvXAPm9vvVIIPr7Rz85nDpOnlu2kXgkIXCPdozyoMK6YFQ/2qjd6g089hBVOBtE
-	 NZ23ymdqYvRNV4WvgJRMd12DcJFrOpcATW2vqGmKFeFBrnbzygIcNgdFZoFpCh2fGGA==
+	t=1793639846;
+	b=gQg4Ty93f0eOxgtjxBklRkEuO+z2kBDzC6ezsEp5i7DHlA5SXBewCmbquX9TsUWlWIxm
+	 GSGt/nrgXe8AAmJ6skZ8fmUX7ANsqUqnyq0NRxf7MYfWszb2GoLULhu1UWV8MRRpid6Ad
+	 Gs4I6WvH5Sju1n6j0qS6fOTe2OXLp8jKPWVelG0Gxx+USCdNNIzx9g4/JGW+HwbO0fhee
+	 KQJJ6AAd0VEC51pRRpVyf5Kvf0aylJ61J5SJQtvWmxgXqFQuPqDUMwRc9b7quM9JpbNIM
+	 1AALM2M7p6Sv7sXrrTY1j6+rb4e+MBlFuMsGVF10rD5wYx1BP5Yw2djWLb5WSKEfoiA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793639450;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
-	 X-Cookie;
-	bh=1C1+XioTRX3xL6+y9qksFrookXeEiiwK+P4D7t5AbDk=;
-	b=hbxSESaQQY9QiK5buivGqRmIhaNPfht9hnFyORkP9xe5nRypdoPgCnZgaWP0BLotVJ/q
-	 wpxluOjPBYnjAG+lExuLy402xEAyj/am9/j2UkaeDk9hyuKmPWeQRav5IxFesppb32bta
-	 Ex1ao5kpCBjLtP4PsRcgyxzAcG1bDD3Vug6ZBybcDq5hQevJjOi+ujKfixyShJ8lfO/8J
-	 MMADaYa5RtvL39Yd+BiKemmMbLo7og8iAVpc1e5QLRyVW2XnJtFmeO6CyrHHZTtOn8cDR
-	 7j5JuGp9gQ4pM7tPJT0ItaP/vAUarjGnOygYNKm9cuTUkI3E3K3u+ziI/6miKA4Ox0g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793639846;
+	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=J6Dot723Q5bLhqFgH8TTsJpVPW/PfBXIh5g2n9QcYps=;
+	b=tMffLW6N7CkDkGyjAKqFzBeveof/S+lKtnoy+QWXOQ7LiBQKtRyXh2rIAFkNTOWq0iri
+	 n/Vl4KCGpGM9dD2yhnlQGR25NAPZlpzCeBmk1hD/NET3+XeoB2uiyBJ0Xzgky4R1f7z1K
+	 IEwV92FNJw1w48y+BRNvmizFr5mTWW6sgEj/B+Vg9K7NEeZKtwvZmdVPJ2QM+sXSCvOlF
+	 qX9uMwefu1WBPWxaNc89d9H4F3ub2qzAx7H93bXGPNCzPZfuawFltGucXXtA+eElqQdjZ
+	 TrPXflsZCaEMkgiFvPA7m3wvBRxO5IZev8LwGt5aoiKdtiyNpFIpa0mfi5phGv4eNfg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ABTVoPA1;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=infradead.org;
+	spf=pass smtp.mailfrom=infradead.org;
+	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=324cVDnO;
+	arc=none smtp.remote-ip=198.137.202.133
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D290606ABA4;
-	Mon,  2 Nov 2026 17:10:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A8EA606B0DF;
+	Mon,  2 Nov 2026 17:17:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9A8EA606B0DF
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ABTVoPA1
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B9881F00A16;
-	Mon,  2 Nov 2026 17:10:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793639450;
-	bh=1C1+XioTRX3xL6+y9qksFrookXeEiiwK+P4D7t5AbDk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ABTVoPA11AcLWkMt2HA3NuaCz3TJC7cnr/HC+r5G6PR6a8aG7aRLuLyUHjoos4mk/
-	 FGGhmGmyUFITYN4wcjdlul8/bi6GRsAoWVTD0LWhZh2nLhD8s0v+KJ34XdB/EcFA9p
-	 bj7h1JmDXycwqk3fffJ3Bj+ZaOtvQy3ZN+fXGwU5Mo332EP6xDRRc1j/b8QBRPO3B9
-	 oFKE/+K/1/DPAFHhIVomg/lZf/GTxFNzd0MGpxxzid2gzVdaV7sydbx6OYJHlUX2Ye
-	 XkGrWyIsnCJf7w8Ms/IJbXTD8futWINJEtUKzY+znoX4p8/Hs89T1PQcag5KOTitM8
-	 N4M1zDlFRxy0Q==
-Date: Mon, 2 Nov 2026 17:10:31 +0000
-From: Mark Brown <broonie@kernel.org>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Vadim Fedorenko <vadim.fedorenko@linux.dev>,
-	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
-	Jiri Pirko <jiri@resnulli.us>, Ivan Vecera <ivecera@redhat.com>,
-	Benson Leung <bleung@chromium.org>,
-	Guenter Roeck <groeck@chromium.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Olivier Moysan <olivier.moysan@foss.st.com>,
-	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Fabrice Gasnier <fabrice.gasnier@foss.st.com>,
-	Lee Jones <lee@kernel.org>, Srinivas Kandagatla <srini@kernel.org>,
-	Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Hans Ulli Kroll <ulli.kroll@googlemail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	Paul Kocialkowski <paul.kocialkowski@bootlin.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Chanh Nguyen <chanh@os.amperecomputing.com>,
-	Alistair Francis <alistair@alistair23.me>,
-	Julius Werner <jwerner@chromium.org>,
-	Paul Cercueil <paul@crapouillou.net>,
-	Dmitry Osipenko <digetx@gmail.com>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Ray Jui <ray.jui@broadcom.com>,
-	Scott Branden <scott.branden@broadcom.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	chrome-platform@lists.linux.dev, linux-gpio@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-sound@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-tegra@vger.kernel.org, mfd@lists.linux.dev,
-	linux-arm-msm@vger.kernel.org, linux-mmc@vger.kernel.org,
-	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Use hex unit address patterns
-Message-ID: <46a87ad3-5bfa-4906-8869-8eb7d0f7a82b@sirena.org.uk>
-References: <20261102135330.2493332-1-robh@kernel.org>
+	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=324cVDnO
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=J6Dot723Q5bLhqFgH8TTsJpVPW/PfBXIh5g2n9QcYps=; b=324cVDnOT+KyqnxWd8iuHe06X+
+	CGuCIp9PsIy4Ebsm/8ISVpS6lxgHyuO+o5CjkMozZx+WwcsbW7PElbwnCIyeLxBUP+T+/zuUDgJWW
+	bC04VBlbMk/OIjaLgbgNtKcWPhxOjk7gT45sL4hp6MuRYwnYrSWFVlvY6OjeDoZ7256GANAI3rPtg
+	LQa1gVI7+Dl1PifFM2EVs2rKAVaboQBO/Jz2VVUvfVSH/4lOGndh/w+XfL1GWeIGeAjP8SqhVj+PA
+	aMFpfllwNQvScAyR3pfZBtXkFjORzEZ3yMh3WlV7z6JOt5NMzn0xxI7LwNBY3kdPPtgJEs+FwjvTl
+	ziTIYe4w==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xNvet-0000000HQGi-3VUu;
+	Mon, 02 Nov 2026 17:17:23 +0000
+Message-ID: <4d80567f-ecdc-4dcc-aff9-4645df4d3ea0@infradead.org>
+Date: Mon, 2 Nov 2026 09:17:22 -0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -127,37 +58,47 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="II/GuXYaiAd5/THw"
-Content-Disposition: inline
-In-Reply-To: <20261102135330.2493332-1-robh@kernel.org>
-X-Cookie: Used with permission.
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] PM: Add shutdown=legacy command line option
+To: Mario Limonciello <superm1@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+ Pavel Machek <pavel@kernel.org>
+Cc: Denis Benato <benato.denis96@gmail.com>,
+ AceLan Kao <acelan.kao@canonical.com>, Kai-Heng Feng <kaihengf@nvidia.com>,
+ Mark Pearson <mpearson-lenovo@squebb.ca>,
+ =?UTF-8?Q?Merthan_Karaka=C5=9F?= <m3rthn.k@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-pm@vger.kernel.org, Bartu Alev <bartualev@gmail.com>
+References: <20261102-superm1-s4-at-s5-v1-0-313e0012dd39@kernel.org>
+ <20261102-superm1-s4-at-s5-v1-2-313e0012dd39@kernel.org>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20261102-superm1-s4-at-s5-v1-2-313e0012dd39@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
 
---II/GuXYaiAd5/THw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Mon, Nov 02, 2026 at 07:53:22AM -0600, Rob Herring (Arm) wrote:
-> Unit-addresses by default (and most commonly) are hexadecimal. There's a
-> number of cases using decimal patterns. Fix all of them, limiting the
-> pattern to match the 'reg' limits if there are any.
+On 11/2/26 5:54 AM, Mario Limonciello wrote:
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 0b3c140babd94..16d584bdbb73d 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -6981,6 +6981,10 @@ Kernel parameters
+>  	shapers=	[NET]
+>  			Maximal number of shapers.
+>  
+> +	shutdown=legacy [KNL]
+> +			Use the legacy device shutdown callbacks when powering off
+> +			the system instead of the hibernation power-off callbacks.
+> +
+>  	show_lapic=	[APIC,X86] Advanced Programmable Interrupt Controller
+>  			Limit apic dumping. The parameter defines the maximal
+>  			number of local apics being dumped. Also it is possible
 
-Acked-by: Mark Brown <broonie@kernel.org>
+Alphabetical order, please. I.e., add shutdown= after show_lapic=.
 
---II/GuXYaiAd5/THw
-Content-Type: application/pgp-signature; name="signature.asc"
+-- 
+~Randy
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmroxAcACgkQJNaLcl1U
-h9C0NAf/apisaJjoPaRQ3p+Tid6myUtq0cuOzuE2aVnPR8iumwTpFmtJ3R7zGJl/
-bKV1H2FxfvCFDPI5gEFjBhoA8fFlBhCN/Xfqa/sNMOen6rihVDXtsCJ3Aisf4ZwM
-mGBcOHHcpfbe9eVJQDGln8TNm+bohiDCmtUmzk5cavtLKRIfuYlv2ZDfsPWETWQb
-FJUx3rlX/fOteFbygcgKXryK+yfNoq6072k6WBwn8O72yJdLDky6aGU5Y517ocKd
-pBL+4J2d49+xPyb0zRTbVvVFip8kFWAIu/opdahAn7IDSZsmCzKDeEmDJgiopRm6
-W/Z5ZSJpbXDiCuqW/gEK1TSrLjxzzQ==
-=FFre
------END PGP SIGNATURE-----
-
---II/GuXYaiAd5/THw--
