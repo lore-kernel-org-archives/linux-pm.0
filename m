@@ -1,66 +1,66 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.17
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793605270;
-	b=zVaQPyolfijxer8oKyhjxbpXFytpwLEa/JCL/nzrT+1uv3zjmjrdGEFueubo2PKvDLCK
-	 Q7hstCU1+ypf1MLK92ZanlcmICGJE8zw58nPqXCz/f8PrFyggw2fmdOoX/qiXeXVV8Rz4
-	 IpoP7/osAphCMP4puY/f+EUfqbItQUmtMIwwdyHx9kdov6WdD+BWwKcwnLVGUEOyWoa98
-	 h8Gselo+j6cOKidxkRwxveT8tT5HgcXS20dvwK5jE+8F1z7vdQvGdAgiHZfbTAgQawznG
-	 1X3fXtDd6ri/7eOrgWNYBvbAVetVoulhurGe0GjeSiGkBiA7T3sDTS4tPSAcQVeggjg==
+	t=1793605284;
+	b=YGaxnaVqeo6/ivkmo4AafVr/QmUhwpXnh5fMEclQgK0DgZi+SBY5blOWOZUWZz2rxorI
+	 jen+4qHFb8dMVV/vHegvKqWtWPdgrpgSbyS9adGcX4gwL1Bu1MQS7p3xnH5lhqn20wPQT
+	 dihZuNReb4gGUKGQMZUHl0SQSd/F/VcQd8Y9jZFNPQsqMUsmnmV/2zjuwXG/W8bxLU1Vw
+	 fWLTJEbK3ocpG3gdHVObaGZPXBE/UkP8xnZ335eTV54dUJqn24k/UXs4Fa8Rp9syuVB4S
+	 niTzrIapIOaSU3APC2VS7KTKN/peJ/fEp8NaX/kMkuz7regIY4RnLS+ej8gsGx9ZvRw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793605270;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793605284;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
 	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Organization:Content-Transfer-Encoding;
-	bh=RWvaWe3fQrnhnNXMlm0+MG4DLsCk6PnMuuEdTBN2qog=;
-	b=xzSK8P0DR9QcfL+gtEvAomXZ40DuUCKSaMrZ4DR33qy+0DvgWX2IL5T0k58f4VyYi/mr
-	 LGyBbIC/nSSZmfAr7rvS7njDqvBkTxMQhWBj/WhpjaVNjh4aZ0KLooDq4YDDdc3sL7/BC
-	 VuFals44dkZvaRfvn8Ej8W6lMmJjyGhd9jkYvWSlILd4Q/FP1q/MAOgWEv6C6WRfF6pWf
-	 Nzx2qV6J8aLB4oDLJX+AABJ+/LReyC+St6fgMtvU4qIB9SeBZxNa/OqmjIs04PftCkB0+
-	 rfqPahVuIzzXXNytM4x7O30dIE/bUB5nbg6U0cYawz9NAdNBa+yz9yYGeWhCRa442yQ==
+	bh=YYRG3mAruKxAvwUQFwRjhaf46fluRFJ0lQb4sPxhPnE=;
+	b=we6yt2oDqDez1x/AAsND/yXpDjF7jBEMXiIou0NyNVTqPGG4VBE2jJrRmAncOxOEgg6V
+	 x2Y2FqhT1rSouneW9zSEAi9mtqIZdUFZa6uM9twiSZ3cqYt265Mwpt3xDUEdn0wr2iW2s
+	 W91jA8q9CBz/VNrupqn1c8saEw2q2lSP0rqzklvcQ9pw6tMWtuQE59DE3cDkm+gPuTa6u
+	 zthv83Wh0E9FUmFZic9cXIKPvZZRL+CisMHKvecrgxWG6DZ2MnNK2L8vAXCT1TWywl6Ag
+	 tC12qzVUchrWaMLneXYogCqCM25f6GZG7WzQD+JdaAGPf+Ba2KIpzNh7zm0rYfS0U8g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=intel.com;
 	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XNvniGJt;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VPjylFM8;
 	arc=none smtp.remote-ip=198.175.65.17
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE850606A334;
-	Mon,  2 Nov 2026 07:41:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CE850606A334
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1A7E606A327;
+	Mon,  2 Nov 2026 07:41:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B1A7E606A327
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XNvniGJt
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VPjylFM8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793605269; x=1825141269;
+  t=1793605282; x=1825141282;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=XKwZHaphQF9yKywgOabuA7G4fnw+cforMEHdkv1ePGk=;
-  b=XNvniGJtHwP8qYr7NRSHiS7YwLpuH8xWfF+anEHVo//j7AAYS8o2zUDw
-   JYLo5Nnc29rh29z/+RLoZPY96wGxqKTDYxyWPdVyvqHGDyji/zOwkVRrq
-   hE1ZQuPg5iax59zlTV4ESQQvEOa1S2n2ExJvBxU6fg64AfO4E7g4H54tV
-   0e5hxem8hGH0m3qTGPTSFe888E99bN3vOAZlQjjYl25BfllZdWY8u0/E3
-   3bqDjac3AUXqf2MKlgP3T+0CM7m9bSD5svWvMAJK2PEpssOuMxKrpgHsH
-   IaxEZAQLQRBZ3oGLyAx6zcGxHA8yBcpNzeYcPnUFqocQtKjE0FTaYlIdC
+  bh=JBdt+suzHwpIrFn1Exd923ztY6/cg2FKIYSPbQgjXdE=;
+  b=VPjylFM8ZFlRVAuCVrAVCO3Okfo52VL3J8G9yKKd5QGsxq2pESm3BW6b
+   sO5akAM0AzjYQWr34CTDLL5/8+4eIVDCvwrR2J4Ozd0wd+5/k5AySog5O
+   nlemFw69WoRVSw++SPKi3WOnxsaolBbph+xkIemT9XyoQf+GpI9LIGaJM
+   cjpVQtLGd2mb8nNx58kaF3bfXkHL6bnEiojegKjrm+lN57KkWZSJSjuR/
+   5hqkG1pOn8jsB2/tFWp1cgI+WGFjJvDqsuZlREQtUuKqvRzKgOlNcycwI
+   tNMioXRmUrW5QnYIpODWS37Nw4U/tjUwUnEFiosAt1RR8cfQcmtZNB4c3
    w==;
-X-CSE-ConnectionGUID: pYrgcJjQQMC5a0r0hkAleQ==
-X-CSE-MsgGUID: mC+GqT0fQC2wD2anHJQoeg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2300122"
+X-CSE-ConnectionGUID: YdBKLObVQSW7CBMzNK7a1w==
+X-CSE-MsgGUID: YtyM4CgmToyzxkVJm3UVDw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2300173"
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="2300122"
+   d="scan'208";a="2300173"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:08 -0800
-X-CSE-ConnectionGUID: Z+8U3Z8bQSKdMhOR7kiW2g==
-X-CSE-MsgGUID: OuZp5KUtSYuIkXvr+8V3GQ==
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:22 -0800
+X-CSE-ConnectionGUID: TIFBNtKrSEyFABiL+/UMYw==
+X-CSE-MsgGUID: NWGNiliHRV2JaqlAGMaw5Q==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="6182222"
+   d="scan'208";a="6182252"
 Received: from pgcooper-mobl3.ger.corp.intel.com (HELO ahunter6-desk) ([10.245.244.189])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:01 -0800
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:15 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@redhat.com>,
@@ -92,9 +92,9 @@ Cc: Ingo Molnar <mingo@redhat.com>,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	driver-core@lists.linux.dev
-Subject: [PATCH 2/6] perf/x86/intel/pt: Stop tracing if VMXON has not yet happened
-Date: Mon,  2 Nov 2026 09:40:35 +0200
-Message-ID: <20261102074039.26983-3-adrian.hunter@intel.com>
+Subject: [PATCH 4/6] perf/x86/intel/pt: Clear TraceEn in hardware in cpu_emergency_stop_pt()
+Date: Mon,  2 Nov 2026 09:40:37 +0200
+Message-ID: <20261102074039.26983-5-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261102074039.26983-1-adrian.hunter@intel.com>
 References: <20261102074039.26983-1-adrian.hunter@intel.com>
@@ -110,125 +110,95 @@ MIME-Version: 1.0
 Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 - 4, Domiciled in Helsinki
 Content-Transfer-Encoding: 8bit
 
-On Broadwell, which does not support Intel PT in VMX operation
-(IA32_VMX_MISC[14] = 0), VMXON clears IA32_RTIT_CTL.TraceEn and any
-subsequent write to IA32_RTIT_CTL causes #GP.
+cpu_emergency_stop_pt() stops tracing through pt_event_stop(), which
+assumes the software state accurately reflects whether tracing is
+enabled.  That assumption can fail when a crash NMI interrupts
+pt_config_start().
 
-To avoid that, intel_pt_handle_vmx() sets pt->vmx_on so that
-pt_config_start() and pt_config_stop() skip writes to
-IA32_RTIT_CTL while VMX is active.
+pt_config_start() sets TraceEn in IA32_RTIT_CTL before updating
+event->hw.aux_config.  If a crash NMI arrives in that window,
+pt_config_stop() sees TraceEn clear in aux_config and skips the MSR
+write needed to disable tracing.  Tracing remains active in hardware.
 
-However, pt->vmx_on is set before VMXON executes. An NMI in the window
-between setting pt->vmx_on and executing VMXON can then observe
-vmx_on == true while tracing is still enabled.
+Alternatively, an earlier NMI in the same window can stop the event
+without restarting it, for example a group throttle calling
+pt_event_stop(event, 0), or a PT PMI for which perf_aux_output_begin()
+fails.  pt_config_stop() again skips the write, so the event is stopped
+only in software: TraceEn remains set in IA32_RTIT_CTL, and
+pt->handle.event becomes NULL.  When pt_config_start() continues, it
+sets TraceEn in aux_config, so tracing continues until the event is
+next stopped.  If a crash occurs before then, cpu_emergency_stop_pt()
+sees no event and does nothing.
 
-In that case pt_config_stop() skips the write that would clear TraceEn,
-leaving tracing active. This can subsequently cause:
+In both cases tracing can remain active into the kdump kernel.  Moreover,
+pt_event_stop() may access PT MSRs while tracing is still enabled and
+can trigger a #GP by writing IA32_RTIT_STATUS with TraceEn set.
 
-  - intel_pt_interrupt() to reprogram PT output registers while
-    TraceEn is set, resulting in #GP, or
-  - cpu_emergency_stop_pt() to leave tracing active during kdump,
-    allowing tracing to continue into the capture kernel.
+Fix this by making cpu_emergency_stop_pt() disable tracing directly from
+the hardware state.  Set pt_shutdown and invoke pt_shutdown_cpu(), which
+reads IA32_RTIT_CTL and clears TraceEn whenever it is set, independent
+of perf's software state.  The shutdown flag prevents any path from
+re-enabling tracing afterwards, including intel_pt_handle_vmx(0) during
+the emergency VMXOFF sequence on other CPUs.
 
-If pt->vmx_on is set, read IA32_RTIT_CTL and still clear TraceEn when
-it remains enabled.  Writing IA32_RTIT_CTL is valid until VMXON
-executes, while after VMXON TraceEn is guaranteed clear and cannot be
-re-enabled.  Consequently no write is attempted while VMX is active.
+Continue to call pt_event_stop() afterwards so that AUX state, including
+the buffer head, is updated for vmcore collection.  Its PT MSR accesses
+now occur with tracing disabled.
 
-Example (on a Broadwell):
+Do this only if the driver initialized successfully.  In particular, if
+pt_init() finds tracing already enabled at boot, it leaves Intel PT
+alone, and the emergency path must do the same.
 
-    Instrument x86_vmx_enable_virtualization_cpu() to enlarge the
-    window e.g.
+The race is reachable only through restart paths that call
+pt_config_start() with TraceEn clear in the software copy.  These were
+introduced by the commits with the Fixes tags below.  The restart path
+in the PT PMI handler runs in NMI context, so only a machine check can
+interrupt it.
 
-	 	intel_pt_handle_vmx(1);
-
-	+	for (int j = 0; j < 6; j ++) {
-	+		int cpu = smp_processor_id();
-	+
-	+		pr_info("VMX: cpu %d: spinning %d\n", cpu, j);
-	+		for (int i = 0; i < 10000; i++)
-	+			cpu_relax();
-	+	}
-
-	 	r = x86_virt_cpu_vmxon();
-
-    Start Intel PT tracing on a CPU:
-
-	perf record -e intel_pt//k -C 1 &
-
-    Load KVM:
-
-	modprobe kvm_intel
-
-    Observe kernel messages.  Without the fix, there is an unchecked
-    MSR access:
-
-	VMX: cpu 1: spinning 0
-	VMX: cpu 1: spinning 1
-	VMX: cpu 1: spinning 2
-	VMX: cpu 1: spinning 3
-	unchecked MSR access error: WRMSR to 0x571 ...
-	Call Trace:
-	 <NMI>
-	 intel_pt_interrupt+0x190/0x490
-	 handle_pmi_common+0x6fc/0xc10
-	 intel_pmu_handle_irq+0x1c9/0x5e0
-	 perf_event_nmi_handler+0x62/0x90
-	 nmi_handle.part.0+0xbd/0x270
-	 default_do_nmi+0x3c/0x120
-	 exc_nmi+0xe3/0x110
-	 <TASK>
-	 x86_vmx_enable_virtualization_cpu+0x88/0xd0
-	 x86_virt_get_ref+0x3f/0x80
-	 kvm_arch_enable_virtualization_cpu+0x1c4/0x820 [kvm]
-	 kvm_online_cpu+0x31/0x50 [kvm]
-	 cpuhp_invoke_callback+0x25c/0xf90
-	 cpuhp_thread_fun+0x298/0x7e0
-	 smpboot_thread_fn+0x28c/0x6d0
-	 kthread+0x2cb/0x3a0
-	 ret_from_fork+0x5ff/0x7f0
-
-Fixes: 1c5ac21a0e9b ("perf/x86/intel/pt: Don't die on VMXON")
+Fixes: 8e105a1fc2a0 ("perf/x86/intel/pt: Factor out pt_config_start()")
+Fixes: 25e8920b301c ("perf/x86/intel/pt: Add sampling support")
+Fixes: 08c7454ceb94 ("perf/x86/intel/pt: Add support for pause / resume")
+Fixes: 2e17bf3a469a ("perf/x86/intel/pt: Fix stop/start with no update")
 Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 Cc: stable@vger.kernel.org
 ---
- arch/x86/events/intel/pt.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ arch/x86/events/intel/pt.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
-index 49349afee611..36bf039668d7 100644
+index 7453e9880b25..8d71c00f9ff6 100644
 --- a/arch/x86/events/intel/pt.c
 +++ b/arch/x86/events/intel/pt.c
-@@ -567,6 +567,15 @@ static void pt_config(struct perf_event *event)
- 	pt_config_enable(event);
- }
+@@ -38,6 +38,8 @@ static struct pt_pmu pt_pmu;
+ /* Set at shutdown, after which TraceEn must not be set */
+ static bool pt_shutdown;
  
-+static bool pt_trace_enabled(void)
-+{
-+	u64 ctl;
++static bool pt_initialized __ro_after_init;
 +
-+	rdmsrq(MSR_IA32_RTIT_CTL, ctl);
-+
-+	return ctl & RTIT_CTL_TRACEEN;
-+}
-+
- static void pt_config_stop(struct perf_event *event)
+ /*
+  * Capabilities of Intel PT hardware, such as number of address bits or
+  * supported output schemes, are cached and exported to userspace as "caps"
+@@ -1900,6 +1902,12 @@ void cpu_emergency_stop_pt(void)
  {
  	struct pt *pt = this_cpu_ptr(&pt_ctx);
-@@ -577,7 +586,12 @@ static void pt_config_stop(struct perf_event *event)
- 		return;
  
- 	ctl &= ~RTIT_CTL_TRACEEN;
--	if (!READ_ONCE(pt->vmx_on))
-+	/*
-+	 * vmx_on is set before VMXON, so tracing may not have stopped yet.
-+	 * RTIT_CTL can be written until VMXON, and after VMXON TraceEn is
-+	 * clear, so still write RTIT_CTL if TraceEn is set.
-+	 */
-+	if (!READ_ONCE(pt->vmx_on) || pt_trace_enabled())
- 		wrmsrq(MSR_IA32_RTIT_CTL, ctl);
++	if (!pt_initialized)
++		return;
++
++	WRITE_ONCE(pt_shutdown, true);
++	pt_shutdown_cpu(NULL);
++
+ 	if (pt->handle.event)
+ 		pt_event_stop(pt->handle.event, PERF_EF_UPDATE);
+ }
+@@ -1973,6 +1981,7 @@ static __init int pt_init(void)
+ 		return ret;
  
- 	WRITE_ONCE(event->hw.aux_config, ctl);
+ 	register_syscore(&pt_syscore);
++	pt_initialized = true;
+ 
+ 	return 0;
+ }
 -- 
 2.53.0
 
