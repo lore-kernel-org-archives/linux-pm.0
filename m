@@ -1,107 +1,107 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.70.15
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793614790;
-	b=BSMXFz3oE3xTMiFanCMcZbazm8g+pzwNVX8zWYDv7FusMZYDNuBnPUiAA0QrcUMTQ9KV
-	 BAVO4vaOKrS6T0NMKMBEq1vFfLv/zlOvG+ac0SndNqLhqG2QfKZh24Y0N8XiHYL22tly3
-	 V5WbesT6Xd5ATBzb/I5rc7n8TWcyVf5d6HsWEbIfckZVPPMUdsbvbzKQ1yZYlmYn3/bEa
-	 WbrpHUokzbd25gT5s/oGq1Q9yqhDNLShG93Z54au3WtHFM6b5qKHRmOKr46Dr/PERiIQ+
-	 oiCzw73igZBZRjFAaiaffWn+kZRMDZVHyKzZ1Joj9HuzWgu3eFIYFGnmB8IxPMF0DJA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793614790;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:From:Date:Subject:
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793614976;
+	b=hnUq6pggDyYLn5MoD6tsNJ6WjxVs6uLmMYOOiJQrtVdgZnmvScvW1YlbclaNcfkcg9CY
+	 OQqnQ5Srolp5iicNR8XiIeViMMIIA4weKagHBRYLRv6hP8LMPBCoJiO99iWH1HbLWtgP7
+	 tWve1mB1tsdwOxlQUU1yLltBaTW2da96JuYgstGKJTyX1adGyI7uxNfiW73wIcSigCdEp
+	 iWvWYIAbS77+l1WT8GlFOZ15ViSR+i/LsG9WSGPLt2wyrX1/Av6B4FnYvwLbK8rJifg/Z
+	 lk9CKoUAiR0pySUsbvSQXEmOC/PfhSlT1aQJwQyoSOtQFIjvGfKnKKO0LPXdQdn3+yg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793614976;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:X-Received:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:
 	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=9Zh+yv1nlsdK+S2n8eg9NTBHRSWY5/jKEctsHSHvNAU=;
-	b=EP+rXDzVal9Ce+przHETqAsLfSawf/B/yUj3knNCAx3iC04HPvUtNioxf0al4D8RuBOh
-	 UnlxAiw+qaI7OmAebZTOgpgCarRH169SMym5O5bR4kwRrTD6a8+gACBzCYTpNj8D8nBJd
-	 Cdjp4hUY+GMLFhPioq6UZmJf+WH1skmV9FP83PQ/IyIvuWLJHy1OLM6nSqoWImy4DWMYN
-	 FuTomj1xSiPQiZ6xwhISismStI8pm1VmyTunW6rfmxN7Pc9RsDzSSxGVJd4O3uUx1Ym7A
-	 9kOGcUQ2rwB0hpduX71pRxTOAhDjCcpAPvwO4ImN7WcVXSoYjPyhSRP4VzmdI+Hae0Q==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=axis.com;
-	spf=pass smtp.mailfrom=axis.com;
-	dkim=pass header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=jrfl9KKO;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.70.15
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011015.outbound.protection.outlook.com [52.101.70.15])
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:X-Authority-Analysis:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=txDbIO54teYjP545chfzMHa6XzfSozkBD5T780zcYFc=;
+	b=eRQIgW37FTxceKdOy83qcJM3haJt35IWTNtfHE9H8RUE+j2e89beFBSw3pCwMrQj/7ew
+	 2ibVEg2KpGBMLxUdY97Up4GV2Rcu1NchSKj/koKVsns9Ep6teztQmG56rtqHTWdQPfm+W
+	 VBPhprjfq+kq9KhDGLqpK5tSuAUIQoTlDPWGtDjCNTGaAaC6uQZ0uduYUjh8pJYFM2CVx
+	 lU5AYcEPHxrx4dTmT+l3OTS1ViWM7H48KOHsWo/+MpmT+iYEDRX1bhz25s1VhyPvqJUhD
+	 3yVYyET6I/Vlm0I1UO/05I4utleJY/Oml8NdG+rMiGbKJjLn9pEDcDU1an8IRS6HYkQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Rh5UgEZM;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=RhhvsvxZ;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBCBE606A32E;
-	Mon,  2 Nov 2026 10:19:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DBCBE606A32E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 535E9606A327
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 10:22:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 535E9606A327
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=selector1 header.b=jrfl9KKO
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=GQJ7jESO8tnd5xasC6ji0cA3AcvyQmIyN17Zc54fsQrpwCID/sEEfMefjroJ0g8hQU9AXQVK61ZnDR59HM+sqdyh2dX3P6jeu5Q1c7Q7698YoA2L3lckLaM4ZQKyZcuLknGZ2EPkjRbOjzCI0+aNjCbFE3x0iv7EXKrwgrPkO4GzZWHecOESgaUDOO2QnKDT1S7v7bjPH0ESCeYlnGPmQU1AACJ34joaRaErKfWQAVUT2Mjo3D8LVf2bQIu5RknwBwSCqsLvjNkumuBNFNsaAcu4yykcUem6nwZOk6d6ls+VZhnxJqqSkFzgz7f/VhlDs93PSY5WgRpl0bHcHwpf3A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9Zh+yv1nlsdK+S2n8eg9NTBHRSWY5/jKEctsHSHvNAU=;
- b=OtLjTFo4i3hiZ7kLX+hdOF+ng1ediokdOIbpocvaekMhRaZLDJRMHGu7hHlGToclFx4ofrxhbsmeivI8tdvP6nEeb9M58Jo0r+6cFS4iB0x/yU4oJcPP97TxrSFvyn2At5pQk8hrYAbfFKbfmbr45BVlbNukzIyMLCgy7tlWYtlp+OKifvpYEyyfj3i3lU86mrVqcVaYSc55R4bF2vtVG4E3KY/zLPjA3uYph5YrP3XRmdiGgaWGTvhzSoU98cRV5uDJHWlRg4jBsIacQqh+MSD/qcdEKAqo6mEM5+soh+Zt3ADwBRc+9ZB/nuYgGDFfZReXXlXo2FuN00RDkNcPYQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=axis.com; dmarc=pass action=none header.from=axis.com;
- dkim=pass header.d=axis.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9Zh+yv1nlsdK+S2n8eg9NTBHRSWY5/jKEctsHSHvNAU=;
- b=jrfl9KKOA/gyjySop+UpLh/j+81hFkdkjLTwK3OGAoTw6Ph9Vfoxr+A43IY4b90UkG0LKcMkzUQFIn89egdZjFQwpoUf7/2KWut41IeYCqyHjYea67N2akCvilSpl1Fcap977cN9sneLaAyHKfRiVWCMsn8APlBUisHdZUfWjlI=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=axis.com;
-Received: from GV2PPFBD14D17F4.eurprd02.prod.outlook.com
- (2603:10a6:158:401::5df) by AS2PR02MB9367.eurprd02.prod.outlook.com
- (2603:10a6:20b:578::20) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.12; Mon, 2 Nov
- 2026 10:19:46 +0000
-Received: from GV2PPFBD14D17F4.eurprd02.prod.outlook.com
- ([fe80::9ac:6f90:5998:69d6]) by GV2PPFBD14D17F4.eurprd02.prod.outlook.com
- ([fe80::9ac:6f90:5998:69d6%5]) with mapi id 15.21.0569.011; Mon, 2 Nov 2026
- 10:19:46 +0000
-From: Henrik Grimler <henrik.grimler@axis.com>
-Date: Mon, 02 Nov 2026 11:19:30 +0100
-Subject: [PATCH] power: supply: bq27xxx: drop dead data memory update code
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-bq27xxx-cleanup-v1-1-8810e411dac5@axis.com>
-X-B4-Tracking: v=1; b=H4sIALJj6GoC/x2MQQqAIBAAvyJ7TlAPpX0lOqhttRBmSiFIf086z
- GEOMxUyJsIMI6uQ8KFMZ2giOwZ+t2FDTktzUEL1ssHdpYZSCvcH2nBHrswgvNPWGS2hVTHhSuU
- /TvP7friUjWhhAAAA
-X-Change-ID: 20261026-bq27xxx-cleanup-2970cb8ab981
-To: =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@axis.com, 
- Henrik Grimler <henrik.grimler@axis.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3213;
- i=henrik.grimler@axis.com; h=from:subject:message-id;
- bh=RVljIr3i2Ol9lLMfqm0Wa2UAqQ1Lv5tScTBKYNWfViw=;
- b=owEBbQGS/pANAwAKAbAHbkkLcWFrAcsmYgBq6GO8qNS4GGciy1Jq/6Ehfbt6EVXOEIWnyCmtv
- khLb1Mks6KJATMEAAEKAB0WIQQsfymul4kfZBmp4s2wB25JC3FhawUCauhjvAAKCRCwB25JC3Fh
- a9VXB/4onEIbq9Yj/GCAXrJliMupayiBU0aCZNfbuRPr7WGU4qLazMDfw5ICZ77rnVDQ07tE1fe
- 2mCF2qyXGGoZGHKA9KEHGKl8BFoIzPpeoDXKgiIyw4gJpeTCcZ6T5hotpbByvtaTMdWKojAK5oy
- 6dbGmq+awHNzxzJ7oUBqUdHTl6N5zxRcz0Fg+RTfiFf6WQiPhL7c/kZWiJGLqgOv04/9ComP7SL
- 8vMyPSrytJZI8ozlc4GbFN6Td+54h5sGWcAeRuRy/efXXyt+kNRQ0xcyCAs2b6a3Q73AUei+z20
- opg2XVLSZLjkGz8VAaEGPdt4Tq+SV4SXKPdi8xGCsZM5W0Ce
-X-Developer-Key: i=henrik.grimler@axis.com; a=openpgp;
- fpr=2C7F29AE97891F6419A9E2CDB0076E490B71616B
-X-ClientProxiedBy: MM0P280CA0075.SWEP280.PROD.OUTLOOK.COM
- (2603:10a6:190:8::14) To GV2PPFBD14D17F4.eurprd02.prod.outlook.com
- (2603:10a6:158:401::5df)
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Rh5UgEZM;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=RhhvsvxZ
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A29A75w2466790
+	for <linux-pm@vger.kernel.org>; Mon, 2 Nov 2026 10:22:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=txDbIO54teYjP545chfzMH
+	a6XzfSozkBD5T780zcYFc=; b=Rh5UgEZMSgEk4sQjOAyY5jW2wQLhpfttW7zir/
+	TKyfSxvjo1qLVDFNDjKnPXk7E7cRFpnoZOjNzhdRQLgtwTXEGVulBjDMRw1a7Ydx
+	8JHyYi5CtPSCk+P5uKce6xJdjMnRhxsg0rK1+CKNLi0BWNvtNEjkAp6i7d5Cwfix
+	o++e5cNlGdncbfsc74z7sGnQknjOIYLT8XAUcUPm7tHaBziq5r/rc1DT22Nd4cbl
+	rDoAEdYdjsQq4+ZBYu0OsztO89/h4eQF6zhGZ8L0Nhv/sVWKrl39AZK1ICZS6Xts
+	2q2qvK8RrFBNJITqaScMmC/TUb0YTJQZHfnqI5dWeCFVnWrA==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hpk9rhaj5-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 10:22:55 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93ce7a85f04so567723085a.0
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 02:22:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1793614974; x=1794219774; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=txDbIO54teYjP545chfzMHa6XzfSozkBD5T780zcYFc=;
+        b=RhhvsvxZmEf4oqDRPUwh0XXs2jA2YC83cRHJp48tCHO1ASD8EIuGy/Z1eemcSwU12E
+         Z0zNdGJ1v4uuluNqHdaNBT+xXWNyspuFm4vZDgEC9eBdFW8XLLEq0ZYJErsO8dxrlFrY
+         Q8ChWn2DnhpnSOnGX6jk+PbLqhVBtdh5DkXDBAVEd91B6MPUv1iyppaxs++KPsr+kF/s
+         7qJOoNTeQI6pbBVxrMpHDmCs/n3UUA8dVyO1hQOzXGp//UWUFDVdTPGh9QPwQNjUfX/g
+         /mvfH/mdbSZSYF+E2N7CuCeV0nvNafts8n8X0uiEi1GgyoM7mIHjFjGRka0OkVLQRiK5
+         3+Ww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793614974; x=1794219774;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=txDbIO54teYjP545chfzMHa6XzfSozkBD5T780zcYFc=;
+        b=FpoIbdLAX9UkXBbeyFmYW7IQXsim6nYy63ZpLjpEOg2sT8iE6hdAAVrkieoS9ffS+T
+         fLdp9MQHvRWd0W3ZFQ7yICeHpuKaOSGE1IuPlfM+e6jZQCwYKe/VzEBRIHYPzeFKT0G+
+         DhL+TNzf+ZgvnT0c0/gazKCuO/Bu/wgRzvm8RJPl9XQwwEuvDdiSdeWKc4cOhP5ebDV2
+         FIVq2HU4TwTqy6g+ZKTG3YwhM3Ho4C0c/snfRpKD5RQ38o4Cb3YXf8nPTqB3gy4+uK56
+         FUBRyv9WJnUJ7YQk/Qxsuqn/BdZzpJqVfFxIp3V/Ro9fPrATWAkxwMadtaE+TSAfDUTk
+         aJeg==
+X-Gm-Message-State: AFq9FYKWNLoMZpt88u+p7DR3uyGrt0XHeIPZn6h0rawVRTQIRWFcyA8V
+	RVMcOTk7snqoBfxiWhDKJgxg/u22c3Ysdn24E4c2b7TesIspAlaAm/VLY1RSzQywJhRA9k7HDQY
+	pfjDjWIAHDNXkKXvjXfKLJk98rpjt5wWzht0rdQN2z6GwXwAFOM9nckn4nWtquQ==
+X-Gm-Gg: AYBFou1sG+Vkm7wxydc90mY1MffXSkoE3HmgmLbVvE3r5iMFWhdVaLDI1TGwn+6dr07
+	jw2zNCvjCy+vDMkwVN9h6II6RJQi7p5HumLmuJoLI1cjzRkaT0ZGyTR2636TxqdyBqrx3yc+YK7
+	Ul4LqfoUZfBv4bdh+wU/jkb++jB7YZm5br4LzETSk9XMjL50JwoHZsz151L0uyKVAlj0tAlSk0a
+	Znv/nh05LjDt/G0CPkH+oFwV2hTWGt++vctuVYcri/7oUq0dEt5j+KPAqqG1ym69EjpCkw7O1fG
+	e9z2CL8bKPhv2P2bydhCyfV6B4Qiv3BCnVicWsHPyXU09UePdGyX08c5cXqhm4A1jwvN4P0Ljmb
+	MMsNb0hHy+mzndUH4wlhY7HgDGw439lZ1GNhqGhIH5k4Fz/SKS4pL0H0xRw==
+X-Received: by 2002:a05:620a:618b:b0:940:f224:5a6f with SMTP id af79cd13be357-944217f708dmr1465447385a.71.1793614974199;
+        Mon, 02 Nov 2026 02:22:54 -0800 (PST)
+X-Received: by 2002:a05:620a:618b:b0:940:f224:5a6f with SMTP id af79cd13be357-944217f708dmr1465442985a.71.1793614973456;
+        Mon, 02 Nov 2026 02:22:53 -0800 (PST)
+Received: from [127.0.1.1] ([188.27.161.77])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4ac09fadb75sm173842435e9.3.2026.11.02.02.22.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 02 Nov 2026 02:22:52 -0800 (PST)
+From: Abel Vesa <abel.vesa@oss.qualcomm.com>
+Date: Mon, 02 Nov 2026 12:22:46 +0200
+Subject: [PATCH] PM: clk: Report clock enable failures from pm_clk_resume()
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,160 +111,222 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PPFBD14D17F4:EE_|AS2PR02MB9367:EE_
-X-MS-Office365-Filtering-Correlation-Id: 270acd75-fc20-4b3d-f348-08df38cad0ef
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|366016|1800799024|261022105027099003|261026140227099003|261026121527099003|261021121427099003|261021123027099003|261028144727099003|10067099003|11063799006|261009223027099003|18002099003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	oQt8hXjgVRnZJjC9jehJ3sZoalkMDESiSN05uMnw6aAcYO8LTWibEr0N6m9Okoijh13AkoFD+knUvhNp06yyVXjpNk/yKqdpx35IuFdqXSmms1GIwIX2pyrsJxK3ytwaWrXpFcCb8tzPD452uGrNYTjYwIzEtfzGA1qXYzt0F5Id6msftR9xqT4zmuy6mYFq2aBWVLbmijzLgP9kuK8lETyq5jHgLGSaNtwopzt6O/z4TaA07GVXtfERAub+KwLo9ojoc99pAj5v6iKVjQ7k1iK/wFyj7h2YhOT5IiZK4UhKu0n/fkq6glQtLrIwTvxiaMhPWNXleThvDRhH87N0XHgQ+JMOpGVUsc/SWO92ysebgxEnGEJASTy+aUT154htY+Aiwb96e2j/OT4uWgciuug/BJTQS87NcCZcCZdG+OcHFBPMjxTWtTkWpNq7QR8bFW3hac/n6dxaK2wNWXR6luaBT9MuasGNu41huvb/ueozbJwheQ5YpC+cm0f2y5w+xfFBrsJsWsvzjTyEINYWzLikfydXPHWbdEWT5qfZ42H+TKGSybmbhbquMj8G2kD0Gbn5iq6iQZ7fhf4NTEivxHEIz35l73u07sAf44lYvHMBlWnjs8lc2C6FsVyA4hS7QIL2EIv7iKFkufwc8Y3ORAC6lfI6Bxdl1jpU8M+PH/E=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PPFBD14D17F4.eurprd02.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(366016)(1800799024)(261022105027099003)(261026140227099003)(261026121527099003)(261021121427099003)(261021123027099003)(261028144727099003)(10067099003)(11063799006)(261009223027099003)(18002099003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?VFJRQXhSWU1oWHlhWm9XSGxvcCtVL2JybXdGcFV2Z0pwTEVNYzFSRnVmN1lF?=
- =?utf-8?B?TUVEZ3pNSEJhMjRvMlRsWmlSUWJDZ0NybjdoNDJHeURNZmxnU3l6TEJRTGZk?=
- =?utf-8?B?RlJmZWZqOW12NWxheGdhRk5rTFkzU3AyS1FBUUZEcWlYTzUxTlY2SjFRVnpJ?=
- =?utf-8?B?ZWFqeE52M00rT0ZCcDJaQ0sxd0NzMDU0YjJyUzMvSGtVRTZFdG0vUlZSS2NF?=
- =?utf-8?B?V3g2aHlyRXFkeit2WkdNaTI1WUZVTG94aHJUZG9DN0c1Q3FQQldQUEg4ZHNx?=
- =?utf-8?B?ZmFDWjkxYXA0L2RBZ2M1aG00SVlzby9ZUTB4UDR5UHlZRGRFSTk1bU1hK25Z?=
- =?utf-8?B?dU51SGE2S08wQkFLak5PNFFETDF4Y2tBSVpvL2JCM0lJOUNoV0QrblVoM0o4?=
- =?utf-8?B?cjhDRU9mRlhBeGJRKzc1UDFjejdML1c4ZExHdFJ3TzdSblVrSWplR2sxYk9H?=
- =?utf-8?B?Ym5XQ2xxVGIyV0cwdDV6ZytMRHpxRDJZMlR6b01SNlJvRzZqOUxubkd0NDlY?=
- =?utf-8?B?RjhTSTdhNDNWRDAvTG5jc2p1TDdid3NzK1kxbjVLT2Y2ei81K0U1Q2FxZGZJ?=
- =?utf-8?B?RG40K2dYcUdkTG54dkVvbStPNnZrZDJrM0VCcWNValRvQWdNZVZQdGxxdmZt?=
- =?utf-8?B?RzE0M09Ha3NZSUdXcnFhUUpZNHFYZGxwa0lWUnRFWDJYZFBCdjJqRU5vS1lN?=
- =?utf-8?B?b05BTFB2WlZWL2tQNkVJRVY5dlpyeWlLcHI2WHIvMERRbHFhbUIreG1jYmZG?=
- =?utf-8?B?Qm40cDU0OFJhbVBLMmpVbkEyaDk0c090Zk1FT1E1YUhETVAwRDl3c3BSY1Ez?=
- =?utf-8?B?QWoyeGk2R3NuQVNkTnN4aHJJdE5ZMGFNS080eEJMMmlFdW5GTWhmTWE2V3FM?=
- =?utf-8?B?QWpNLzd0aU9wSy9oR0dya2dXZURPemZTZTE5T0UwMzV3SzNIT3d0bUFoV3cy?=
- =?utf-8?B?M0JJdGNVNjZMek1Ob1dNUWZIeUprNFhVZkFITW13NjdHS1hpb1J2TTJzVEVy?=
- =?utf-8?B?Uk9zQmVBelRpamtvcjNEdURpcXN5b011YkJ0MEY4RXc0amFpTXNSR2RaeG9O?=
- =?utf-8?B?Q0hONi9oZHZ2eFJaSld3LzN6b09wd2svZDJMcDlmWU1lWWhlSXJBZi9oclI1?=
- =?utf-8?B?TUVzT3JqWUJ6WHlGbDZ4RVNFbXJYNkJmeDQvRkFmcGVHYzlvTFBmMDROaUVu?=
- =?utf-8?B?NGQrTzhIODQ0TEU4bVlPOUpocHFTZ08rbDdlZExQVUhnVFUxS3kzZlZydE9o?=
- =?utf-8?B?ZnRlOWVnVVhRZGNDRDV3bTR1TW1iU0hPaUZ5RmNENnZUM1M1aDYyQVV1QW8z?=
- =?utf-8?B?YmxKS2lDOWs3UTh0d1grT2paN0lNK2djcC9ra3IwV1IrM1VDeExhWmlpR1Zt?=
- =?utf-8?B?R3RkejFvT0Y1dERGNHRuU295RXlkcmpxM1pBR3prdW4xRXltSWwzV0ZZZnBv?=
- =?utf-8?B?SUZsczU1Q2FDQVdKY0JMamlOL01paU11L1BxUEFpS0pXbVNuRGJOY2NJM0Vr?=
- =?utf-8?B?enljWllGUzcwbzAzdG9SK2lsZVdsN055UUxsNDBKZnpHWTBnOCtnYUFMNFBu?=
- =?utf-8?B?RkYvVktwUFpWL0Z4bGtZYkgxelhZQm1oaHNNakIwYnk5YUZ2ZG5jV2t2b295?=
- =?utf-8?B?UnFXRjlRRDRmKzFNcENsQjlzQTVDVU9kQStOMkZOeXc4OFlTU05wcWgzRkMy?=
- =?utf-8?B?ZmY2VTYrSG9raUZZNWxMVTV1YWdmL05XZVliMjlsclk1SDkzRFZ2cmJaTjhz?=
- =?utf-8?B?bTNWczRMYWJtZzFmMzMwNkYxY25zMjZORlBWaWxIT0x1SWpXVCtZUzJudFN6?=
- =?utf-8?B?WnE1OVZhay9WT0tlZzVqOWhodXhPQTFLdCtSRXZjUWY3S3FweDlmOEpRNThz?=
- =?utf-8?B?bFUxTENmUzFWM2JCYjJNNk0yK0lrTHB3VGxCVFo4dkpIRTFaYmdSOXNJOFU4?=
- =?utf-8?B?Z1B2Qi9QRGFxa3BDelZUb0tZWEE4RHlqVjJoRFArL0tYSjB0LzM5eG45STRa?=
- =?utf-8?B?MkNvSE56QytCeGNVZkFSMnc5c3Q2S09kREJRQ2ovWUd2R1hXVzR4TzlDNXZo?=
- =?utf-8?B?WkxBMmprS1VXZ1R0YXlvRVpjd1p0OWVYRDB6T2tlb0VNazJDT1dRNFFiMVR4?=
- =?utf-8?B?d0lkS3hzZnNIcCtPNW1wQXFDMTI3WXhtd2preWJrRUo0Y1dNL2R0dVhGSHgr?=
- =?utf-8?B?S1hzZUJldW5ETlZhNDl6RnBIcHZmblUrcjhITzVBTmNCV3RYYTRaS0cvVlh6?=
- =?utf-8?B?Z0VseE1PSUxtamZxbTNnN3Y3Ync1dms0OGhnWTFzQ3djNUtOVEN2cjc0Vlgv?=
- =?utf-8?B?Z1dqTHpiL1l6TE93TXBTRkFnNHh6OW8ycWdxdWpBbjBNYmF2NEFkQT09?=
-X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 270acd75-fc20-4b3d-f348-08df38cad0ef
-X-MS-Exchange-CrossTenant-AuthSource: GV2PPFBD14D17F4.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Nov 2026 10:19:45.9742
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: EBZEsQxB+cCUVNiRQEKM2E/2pFZ2nJYFvy+iMhiSp+e+QHTxJSEIKCh2L66C504fki57j4o4p7x+UzCleAsMeA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR02MB9367
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261102-pm-clk-resume-report-errors-v1-1-ba6e1dddd522@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAHVk6GoC/yXMyw6CMBBG4Vchs3YSqMHbqxgXtv3VUaHNDBgSw
+ rtTdXXybc5MBhUYnaqZFB8xSX1Bs6koPK79HSyxmFztdk3tjpw7Du8XK2zsUJKTDgzVpMa+je3
+ 2AO/2EVQOWXGT6Xc/X/620T8Rhu+SlmUFIC3Fy38AAAA=
+X-Change-ID: 20261029-pm-clk-resume-report-errors-b5d538eb27de
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+        Pavel Machek <pavel@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>
+Cc: linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+        linux-kernel@vger.kernel.org, Abel Vesa <abel.vesa@oss.qualcomm.com>
+X-Mailer: b4 0.15.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5326;
+ i=abel.vesa@oss.qualcomm.com; h=from:subject:message-id;
+ bh=O6jdgaz4i2fF6JPagpblmH1Np8pousIfoqISKdES3ig=;
+ b=owEBbQKS/ZANAwAKARtfRMkAlRVWAcsmYgBq6GR3vaYybZlkrv8eUtlbCmriJPb95Yo9hb8bi
+ PkHhpNjOEeJAjMEAAEKAB0WIQRO8+4RTnqPKsqn0bgbX0TJAJUVVgUCauhkdwAKCRAbX0TJAJUV
+ VvOuD/4/jla2bm6PSOFoZFTRMTPZKjZ6f3aB4beD7rUY0bnNTG37utoeuEGrHB/Ot7cAbFthPMo
+ oxUElf7OrbkLo5v6gFJJJIv3OeiK2fPlAswO2gISVk5DkB9nbB2Shs9/4cLTGXO1dpATp5wm8Sv
+ sw65ciO78L8IacsyDCfs6ame/ZvarKsgSoXt+WJI45IodzJXB1aPT5JwAb0OUjdV9Ijjl1yts2W
+ nY63YIorEOJogradD2orGgxWc/UmMynrNFXmQGYDlpCPBK9R9SJtElHURMlvpBZTbftJDz9eMEK
+ kioMMNqC+n98zmhiTk157yQP078xuIq54lbXB3x5uOGIBGcfoJiNLfZ+/ipWn8gWzNblgaf0XL9
+ PWw4pZoUDUg32cs4Oq0GXhX4+CyPERwDy6a1VL8eRA1XcgyKFV5FTgFeTjS5xqOWGxR6mBYjkbT
+ /h9H9zVe0ni8vurEi4BQnmezFs64SgK5Ayq0DpH3YRaBvZLDg91CO3IVvXw0Ae2Y3pIOvQ1AI1p
+ WhyVVOi/gdtiF4fR/gBJn0S0gAcq99K5jIRUTVazc8eCQB0Zr6dUZPCWqt0kDuUr5wOPFO8/Pq3
+ UYraE2/dhly98+w2+LAjSZa3S918Eo2wbqcupqxn5KOH3yeXtW/H23z4IX5oHyrGLJRjZfAQqmO
+ l+CNG+LDzz8+JXw==
+X-Developer-Key: i=abel.vesa@oss.qualcomm.com; a=openpgp;
+ fpr=6AFF162D57F4223A8770EF5AF7BF214136F41FAE
+X-Proofpoint-ORIG-GUID: Gy3mOyWeeYCWFzi9oTHPztUUdOES1pfa
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDA0MSBTYWx0ZWRfX2ZgNFPG1m8WV
+ i6BqFDa6Kt1P59UiF7LGVnN2WLqfxjQsD5LqbUYxa/GP2EIhK9WlouGw8YNOxCl24fWZsLxPR56
+ qk/gTr6TQibSvD586C5NWogmGVuHnQTkYfCrZGtu4ItiJf8sP5rSHpr9fTqmeXumrWWDViCXalJ
+ SrYNSB27L7rUyF9W/huncvi1RBKxo5KNR8NeAN/gcTDf+ecVNe/d9EMLWh0oRPH4cmtx89bte5j
+ AE3g0pZNMaKoEnjQYNfoEPjdhtItMWf+/UYSPTgm71rQ9wyC8mrtuIqxoecJLCkUnT6BquMZJzR
+ bFTncuIhUOPQFrKuQxddpDPMDgKipvqVW0hpFzCnvjU4Izg7PZcW6QJ6ygMBrnebXyhri9PxcSo
+ nq8qFTrVkGcxGVIrfJeqYiG8d7AbMseJogLxSRVbkRm1DLZOKj5N18+p79GsnQC+7C+BOt7dDCd
+ stzHvU4fgU6KsawNpng==
+X-Proofpoint-GUID: Gy3mOyWeeYCWFzi9oTHPztUUdOES1pfa
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDA0MSBTYWx0ZWRfX8aFRs84oZwqF
+ 3Ya0925OwD/QCL6fCojmqcnny9jnPCSFkN71Ctkha6pb9oc9NC7Bu9vhh/u4ZuMoS1AnwvXa2tU
+ IHaZI5WuLLe+nkeNK7oCTR8kX2WQyJ8=
+X-Authority-Analysis: v=2.4 cv=LvwHWXdc c=1 sm=1 tr=0 ts=6ae8647f cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=asF+/XNaGoxFafzDDLC1GQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=EUspDBNiAAAA:8 a=_2T3vPzLGwBzaavU8JcA:9 a=QEXdDO2ut3YA:10
+ a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-02_03,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0
+ phishscore=0 priorityscore=1501 adultscore=0 suspectscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611020041
 
-bq27500, bq27545 and bq27441 had some work done to enable data memory
-updates in commit 05045379b274 ("power: supply: bq27xxx: Enable data
-memory update for certain chips"), but it seems like it was never
-tested on the hardware, and the code has been in #if 0 .. #endif's
-ever since.
+pm_clk_resume() logs a clock that fails to start but always returns
+success, so the runtime resume of a device using the PM clock helpers
+succeeds without its clocks, and its driver goes on and accesses the
+hardware.
 
-It has been around 9 years since this dead code was added. Let's drop
-it to give a cleaner driver, as no one has apparently needed the code.
+This happens to the devices in the Qualcomm LPASS, whose clocks are
+provided by the ADSP: after the ADSP is gone, like right after a
+hibernation image is restored, a sound card opened by user space
+resumes the LPASS LPI pin controller without clocks, and the access to
+its registers then brings the whole machine down:
 
-Signed-off-by: Henrik Grimler <henrik.grimler@axis.com>
+  qcom-prm gprsvc:service:2:2: CMD timeout for [100100f] opcode
+  qcom-sm8550-lpass-lpi-pinctrl 6e80000.pinctrl: __pm_clk_enable: failed to enable clk 00000000b90a5151, error -110
+
+Stop at the first clock that fails to start, stop the ones started
+before it, and return the error, so that the resume fails and the
+device stays suspended with its clocks off.
+
+The callers of pm_clk_resume() check what it returns, including genpd
+and pm_clk_runtime_resume(), except the MMP2 audio clock controller,
+which keeps ignoring it. A device with a clock that fails to start no
+longer resumes though, even if it used to work without that clock.
+
+Signed-off-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 ---
- drivers/power/supply/bq27xxx_battery.c | 36 ++--------------------------------
- 1 file changed, 2 insertions(+), 34 deletions(-)
+pm_clk_resume() always returns success, even when a clock fails to
+start, so a device using the PM clock helpers resumes without its clocks
+and its driver goes on accessing the hardware.
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 09272249b4f7..0238ed754e94 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -922,20 +922,11 @@ enum bq27xxx_dm_reg_id {
+I hit this on the Qualcomm Hamoa CRD while working on hibernation: the LPASS
+devices get their clocks from the ADSP, and when the ADSP is gone, like
+right after a hibernation image is restored, a sound card opened by user
+space resumes the LPASS LPI pin controller without clocks and the whole
+machine resets on the first register access. With this patch, the
+resume fails, the open fails, and the machine stays up until the ADSP is
+restarted.
+
+The LPASS macro drivers already check what pm_clk_resume() returns, but
+never saw an error so far.
+
+Prepared with help from an LLM-based assistant.
+---
+ drivers/base/power/clock_ops.c | 56 ++++++++++++++++++++++++++++++------------
+ 1 file changed, 40 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index 3b8ba27802a8..a978eb3d5479 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -143,8 +143,10 @@ static void pm_clk_op_unlock(struct pm_subsys_data *psd, unsigned long *flags)
+  * __pm_clk_enable - Enable a clock, reporting any errors
+  * @dev: The device for the given clock
+  * @ce: PM clock entry corresponding to the clock.
++ *
++ * Return: 0 on success or the error from enabling the clock.
+  */
+-static inline void __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce)
++static inline int __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce)
+ {
+ 	int ret;
  
- #define bq27000_dm_regs NULL
- #define bq27010_dm_regs NULL
-+#define bq27500_dm_regs NULL
- #define bq2750x_dm_regs NULL
- #define bq2751x_dm_regs NULL
- #define bq2752x_dm_regs NULL
+@@ -156,13 +158,29 @@ static inline void __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce
+ 		ret = clk_enable(ce->clk);
+ 		break;
+ 	default:
+-		return;
++		return 0;
+ 	}
+ 	if (!ret)
+ 		ce->status = PCE_STATUS_ENABLED;
+ 	else
+ 		dev_err(dev, "%s: failed to enable clk %p, error %d\n",
+ 			__func__, ce->clk, ret);
++
++	return ret;
++}
++
++static inline void __pm_clk_disable(struct pm_clock_entry *ce)
++{
++	if (ce->status != PCE_STATUS_ENABLED)
++		return;
++
++	if (ce->enabled_when_prepared) {
++		clk_disable_unprepare(ce->clk);
++		ce->status = PCE_STATUS_ACQUIRED;
++	} else {
++		clk_disable(ce->clk);
++		ce->status = PCE_STATUS_PREPARED;
++	}
+ }
  
--#if 0 /* not yet tested */
--static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
--	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
--	[BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
--	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
--};
--#else
--#define bq27500_dm_regs NULL
--#endif
--
- /* todo create data memory definitions from datasheets and test on chips */
- #define bq27510g1_dm_regs NULL
- #define bq27510g2_dm_regs NULL
-@@ -949,19 +940,10 @@ static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
- #define bq27531_dm_regs NULL
- #define bq27541_dm_regs NULL
- #define bq27542_dm_regs NULL
-+#define bq27545_dm_regs NULL
- #define bq27546_dm_regs NULL
- #define bq27742_dm_regs NULL
+ /**
+@@ -483,17 +501,8 @@ int pm_clk_suspend(struct device *dev)
+ 	if (ret)
+ 		return ret;
  
--#if 0 /* not yet tested */
--static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
--	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
--	[BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
--	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
--};
--#else
--#define bq27545_dm_regs NULL
--#endif
--
- static struct bq27xxx_dm_reg bq27411_dm_regs[] = {
- 	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0, 32767 },
- 	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
-@@ -986,22 +968,8 @@ static struct bq27xxx_dm_reg bq27426_dm_regs[] = {
- 	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 10, 2, 2500,  3700 },
- };
+-	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
+-		if (ce->status == PCE_STATUS_ENABLED) {
+-			if (ce->enabled_when_prepared) {
+-				clk_disable_unprepare(ce->clk);
+-				ce->status = PCE_STATUS_ACQUIRED;
+-			} else {
+-				clk_disable(ce->clk);
+-				ce->status = PCE_STATUS_PREPARED;
+-			}
+-		}
+-	}
++	list_for_each_entry_reverse(ce, &psd->clock_list, node)
++		__pm_clk_disable(ce);
  
--#if 0 /* not yet tested */
--#define bq27441_dm_regs bq27421_dm_regs
--#else
- #define bq27441_dm_regs NULL
--#endif
--
--#if 0 /* not yet tested */
--static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
--	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
--	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
--	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
--};
--#else
- #define bq27621_dm_regs NULL
--#endif
--
- #define bq27z561_dm_regs NULL
- #define bq27z746_dm_regs NULL
- #define bq28z610_dm_regs NULL
+ 	pm_clk_op_unlock(psd, &flags);
+ 
+@@ -504,6 +513,9 @@ EXPORT_SYMBOL_GPL(pm_clk_suspend);
+ /**
+  * pm_clk_resume - Enable clocks in a device's PM clock list.
+  * @dev: Device to enable the clocks for.
++ *
++ * Return: 0 on success or a negative error code. If a clock fails to start,
++ * the clocks started before it are stopped again.
+  */
+ int pm_clk_resume(struct device *dev)
+ {
+@@ -521,12 +533,24 @@ int pm_clk_resume(struct device *dev)
+ 	if (ret)
+ 		return ret;
+ 
+-	list_for_each_entry(ce, &psd->clock_list, node)
+-		__pm_clk_enable(dev, ce);
++	list_for_each_entry(ce, &psd->clock_list, node) {
++		ret = __pm_clk_enable(dev, ce);
++		if (ret)
++			break;
++	}
++
++	/*
++	 * A device whose clocks are not running cannot be accessed. Do not
++	 * pretend it resumed, and leave its clocks off as it stays suspended.
++	 */
++	if (ret) {
++		list_for_each_entry_continue_reverse(ce, &psd->clock_list, node)
++			__pm_clk_disable(ce);
++	}
+ 
+ 	pm_clk_op_unlock(psd, &flags);
+ 
+-	return 0;
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(pm_clk_resume);
+ 
 
 ---
-base-commit: f0f400459bf6a037e70768de623fff3f8920b8bb
-change-id: 20261026-bq27xxx-cleanup-2970cb8ab981
+base-commit: 7649ba73f9e7e1e04d0b46213e39c79ae09dd55c
+change-id: 20261029-pm-clk-resume-report-errors-b5d538eb27de
 
 Best regards,
 --  
-Henrik Grimler <henrik.grimler@axis.com>
+
+Abel
 
