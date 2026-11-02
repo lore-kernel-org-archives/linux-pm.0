@@ -1,47 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793640971;
-	b=ggCfRcNSeB3QCsFAhzrd4axFrv9brIfzqXEHMyRpDIXTqmuBKeKaIQVp2htvoqyPSolh
-	 YfKyYL5SXEmA6IXYOBQQL3p2eL/Qyl2OGzm382DFsxdkqycQynwaS6pFKPPVAr5QqQM8b
-	 /Y/NxxmDbGDekrDut1d98q6qi2voC2UIQ5gI8BLEdcSFmHvWkF+E58yQP5BVjhjCXFlDW
-	 4zp0OtvpHZF/WyGS4MW9SaCWMIo7HuHkC5u4TLQhb4XshEfCyf+zRJqCbZt5aBJfLOh87
-	 1LObKYu35O+gN3hC+yJE8xXdLDF8tnridHGKDYmsmUH9XzjlJWAaCBQ4xorVoOOTvsw==
+	t=1793641560;
+	b=adKEEIL4TP/vtcHxkbx+sezUlI8mVtkzl+upEAIt3C01AIWwkjP8e/nI3B959+kGeCM9
+	 +eHbZ+nseG8qPCdAx3tL7IlxToAi55yLDHwGZS/Ah814BXAa5capcpq5aKvEaNX71JuiU
+	 4YszFRQ9EflEL7AOyGgY0szUKMeJmwHa8ufDodeDhj7rBXiDzOcAjs/Uw8rk8nhSc96dy
+	 eD+uVvef+qhrD4Wj7uE+VJztf5aHq2qnMKE2s23ATgSlTGoDny6ujRG/JYI4O+KSKbSCH
+	 y4fU7nlUgAHayWP77T9OI79m2173RQkN8HwNDex2s6hDEtmg2TEXkEU6uqtJxFhThig==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793640971;
-	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:Content-Language:To:Cc:References:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=TqU9mzSMoRSBhA2tlAVmvOR4VvtxTohd5mgqbKgv2co=;
-	b=ERP8XayGdSg+ChZEj9snSX306Ub9/2LWi9CSbywiSRbN8VR9P4idH6pDLTzw5ldrk932
-	 uAWa7phXHxVOAelPkC2jiHH3GXmYV8QTdIsqRnoJsW8Uf1psWXwTuxrczhlysIgL4Qroa
-	 J1AwZ9nDFwigtXPcDeZzz0By6mJ/jU6aabIcEmOhdBIApvvQFz2066x5q326Oh1s3RA9x
-	 IENpmO5XO70G67XK+WknaIhsgQ67yvZbDkgKrIHU6gjbJmeLP73IhOZ8MUnacZLa95W6E
-	 6g+X0V5wBvwJucUWto6FNBST5e3k9MAYo8/Ntgh7zUWwOavtKnOVseMfxHp9EU4ANAg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793641560;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=TyrupP9HlfXQmjG2GxRqzTa9XeQTSyEAkYuFINjOMic=;
+	b=2WtcVta65B6iZqqiMQNgFwDWoZLUjgnEb7GpI09PRHX/CRV/4OVLzX0pg+Mcn+t06vDZ
+	 rvhevuOfSvUEHTJSkkHGnBiLC+o+sPmVFJah/PgJWvqcCrfp0oMRma2Pl9wUcMLXBw5XE
+	 PJ4UIjI4Xj0TDH3eteY9p6syfE3VvNw4k0/PQWiAk9a/XQ6fOnb+hlNW1h98KG6DsSnma
+	 6D6I7kGjMeWLQ7T7HRes66otowRBl1iBXgKSOpE2cEGbKBAu+aCvzJ66oUESFDKoyEp1D
+	 yMrSP+lYoYA3AGYO//bOvKqhk6PAdUvYLx9xNKytcZ/7ua2bLKzo+gFP/kxhBXhF+dg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O81IAeW6;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BPnU6XEl;
+	arc=none smtp.remote-ip=192.198.163.18
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBEDE606A5A3;
-	Mon,  2 Nov 2026 17:36:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FDFD6074661;
+	Mon,  2 Nov 2026 17:45:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6FDFD6074661
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O81IAeW6
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95DA11F00A18;
-	Mon,  2 Nov 2026 17:36:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793640970;
-	bh=TqU9mzSMoRSBhA2tlAVmvOR4VvtxTohd5mgqbKgv2co=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=O81IAeW6IJUA1Nk2cdoAcXSRnCTH51kX5MkN6Qvmlskt9E83jMtz663IuG3BUOXu1
-	 UlS5xfmwvLn0WMsafnxS4UkxqVuJj9Tn4UUUlEi7aNkDk1ciZ0Qm4phS44zjZrFw0h
-	 TQxVylzgm+r9oLnOI02QdUGsxfQUzfhQdgs/+V5H5y7DmA5K7CUieATIJVaC2vLrtK
-	 g9NkKVQ+4MwWVgJWjBjK+8kCJGe65ObUZAg65EZshD5G37qCJdBfXn6tZMashF35gd
-	 7v/Vk68d9/vkLX28C8Tnv58m7l/XnU/ibxTEqJKZncLq6xPjIHWsi7tyzJiNMkTlUL
-	 3fnySMkjPPy+A==
-Message-ID: <043c1f21-f7dc-411e-a2cd-5748e1162169@kernel.org>
-Date: Mon, 2 Nov 2026 11:36:07 -0600
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BPnU6XEl
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793641560; x=1825177560;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=uD19Fb5fdpt/7jRuUUbcNI5DvCbhjKMzTNkgHXyTE6c=;
+  b=BPnU6XEl1kh0Y/qMRSmaNZOmNTZIaGTVL9fysGDicJI/X/Y5w1dphxAR
+   /XdvVOEGSkt7XmfKt1KSzEo5QFJ/vWOGepf5KOBuXgN480TuZjh0OdqCd
+   aAh7TkEnKZMHhJmnLkUgptBdfqPkc+ZfBGZtAmtMrfhG0PkW64Cxyit9n
+   l2vh3E5B79iw9RMv8uWB9aOqQ4MO1vdhqhfu5n0S6q9C9L2nlpXZYMk5Y
+   Trif07gQLglFL/Wr0TOe389pJRzEAIDfBCPf4Kkil1PMMddQc0J+F2R5r
+   L4HyrmasjwtOZ3pqVfYXyuu5C0L1Hp4Ol/U4DpK8DVietJsLsbJiUNtag
+   A==;
+X-CSE-ConnectionGUID: VCUdeNORSoW6n4OpJ6sCJA==
+X-CSE-MsgGUID: fOQ4b7/4QimON8Ob+7cHyw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11954"; a="2375573"
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="2375573"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Nov 2026 09:45:59 -0800
+X-CSE-ConnectionGUID: hzN+wRsuQ6+Zf5DjyDJwTg==
+X-CSE-MsgGUID: wfp7iaEFQUa/aOEfGKH1AA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
+   d="scan'208";a="6570948"
+Received: from tassilo.jf.intel.com (HELO tassilo) ([10.54.38.190])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Nov 2026 09:45:58 -0800
+Date: Mon, 2 Nov 2026 09:45:56 -0800
+From: Andi Kleen <ak@linux.intel.com>
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+	James Clark <james.clark@linaro.org>,
+	Thomas Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Jiayuan Chen <jiayuan.chen@linux.dev>,
+	"Steven Rostedt (Google)" <rostedt@goodmis.org>,
+	"Vineeth Pillai (Google)" <vineeth@bitbyteword.org>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	linux-perf-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev
+Subject: Re: [PATCH 3/6] perf/x86/intel/pt: Stop tracing at syscore shutdown
+Message-ID: <aujMVC0_8purXK5k@tassilo>
+References: <20261102074039.26983-1-adrian.hunter@intel.com>
+ <20261102074039.26983-4-adrian.hunter@intel.com>
+ <aui3L0ppW-cBBo1W@tassilo>
+ <a2108322-0c88-48e0-a10f-77ae2556bcae@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -51,48 +101,43 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] PM: Add shutdown=legacy command line option
-Content-Language: en-US
-To: Randy Dunlap <rdunlap@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
- Pavel Machek <pavel@kernel.org>
-Cc: Denis Benato <benato.denis96@gmail.com>,
- AceLan Kao <acelan.kao@canonical.com>, Kai-Heng Feng <kaihengf@nvidia.com>,
- Mark Pearson <mpearson-lenovo@squebb.ca>,
- =?UTF-8?Q?Merthan_Karaka=C5=9F?= <m3rthn.k@gmail.com>,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-pm@vger.kernel.org, Bartu Alev <bartualev@gmail.com>
-References: <20261102-superm1-s4-at-s5-v1-0-313e0012dd39@kernel.org>
- <20261102-superm1-s4-at-s5-v1-2-313e0012dd39@kernel.org>
- <4d80567f-ecdc-4dcc-aff9-4645df4d3ea0@infradead.org>
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <4d80567f-ecdc-4dcc-aff9-4645df4d3ea0@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a2108322-0c88-48e0-a10f-77ae2556bcae@intel.com>
 
-On 11/2/26 11:17, Randy Dunlap wrote:
+On Mon, Nov 02, 2026 at 06:27:30PM +0200, Adrian Hunter wrote:
+> On 02/11/2026 18:15, Andi Kleen wrote:
+> >> +
+> >> +/*
+> >> + * Tracing must not continue into a kexec'ed kernel, which may reuse the
+> >> + * trace buffer memory, so stop tracing on all CPUs and prevent it from
+> >> + * being started again. Events are left in place, but record nothing more.
+> >> + */
+> >> +static void pt_syscore_shutdown(void *data)
+> >> +{
+> >> +	WRITE_ONCE(pt_shutdown, true);
+> >> +	on_each_cpu(pt_shutdown_cpu, NULL, 1);
+> > 
+> > I don't think adding more and more broadcast NMIs to the panic path 
+> > is a good idea. It's always a very big hammer and a risky operation
+> > that risks breaking the actual dump. panic reallhy needs to be
+> > simple and reliable, and this is the total opposite.
 > 
-> 
-> On 11/2/26 5:54 AM, Mario Limonciello wrote:
->> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
->> index 0b3c140babd94..16d584bdbb73d 100644
->> --- a/Documentation/admin-guide/kernel-parameters.txt
->> +++ b/Documentation/admin-guide/kernel-parameters.txt
->> @@ -6981,6 +6981,10 @@ Kernel parameters
->>   	shapers=	[NET]
->>   			Maximal number of shapers.
->>   
->> +	shutdown=legacy [KNL]
->> +			Use the legacy device shutdown callbacks when powering off
->> +			the system instead of the hibernation power-off callbacks.
->> +
->>   	show_lapic=	[APIC,X86] Advanced Programmable Interrupt Controller
->>   			Limit apic dumping. The parameter defines the maximal
->>   			number of local apics being dumped. Also it is possible
-> 
-> Alphabetical order, please. I.e., add shutdown= after show_lapic=.
-> 
+> Is pt_syscore_shutdown() called on a panic path?  I can't find a way.
 
-Ack, thanks, will change in v2.
+It's called from kexec which can be called from panic.
+
+> 
+> > 
+> > KVM already does one at least (which I never liked either). At a
+> > minimum please find a way to consolidate those into a single
+> > one (as in have a notifier chain that is called on the target CPU).
+> > 
+> > But better would be to not do this and find some other way.
+> > 
+> > How about just passing the PT region as reserved and maybe free
+> > it later after the target kernel had a chance to reinitialize all CPUs?
+> 
+> Intel PT has cpu_emergency_stop_pt().
+
+?
