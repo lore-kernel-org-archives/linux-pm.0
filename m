@@ -1,45 +1,45 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793649159;
-	b=HbFaLLNB94V1DY3FUpG3PPca/2T5xt8MQsxKdIiZohKhdBiHFS2hJZWDc2ZZcLpejAE1
-	 0h5FwG2+A7sJB2msTGMWyaSMHIXljuBLwtHJoH+BBu7O7b0uTji9332HLErHgjBurbz5F
-	 d/u/fSubDRBE7pJ3jtNJ4QG2PhbqafDptPBFq7IRblkEU93iJiCvu/AFL3yIUx62lXoH9
-	 ELzxiTLztyS/pTKfMkDx3KaEZiC1f/PiYDvM8C9H7k7zF8zW6cC5HIuQiXr6wBFvdWblB
-	 GJXdQmqET6cVx7fnMPNTBTUkELDVM3cXeBEut+jI/0TJ14YZc0USpczGJpPtF2ujbdw==
+	t=1793649166;
+	b=kvDenH6p240TnXBUlB2P8VvWMaeZpI7ef4tF0GYfgvL46kkQaU2cBwb8lmEaflXs7EA2
+	 CLMMpVGRYKuJi7cWuOXLsgwcn2SZealMczRaB+Pefg0/fVQZ70EdyNhOFls2QZY+frlhF
+	 LwkS373fewO47o8dLVuXNhM+YdBqpvQoHqGEjKTca84MIafMYPY6dbKs+9VKwrFEPAdcJ
+	 mlF2f62ONZW+3LtJNiKu2Mc18VHA75YhKSuAvSHtn+MvCmlyx1zHUt5ynfSIFyM71yDAD
+	 hVTrJgcGFIdYLFbYvKCD/nJe5W/P2JDbQVfQdmv7o3YupVwes3Tj9zJaXVrfkui/aFQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793649159;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793649166;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 Organization:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:Content-Type;
-	bh=AaZ90ReWusq0LZzAbUoTnH7EemtyqlRkFEjjlpcV2nY=;
-	b=em+/mmrsaA2NACG2xn4V+j932ezgBbQoasjoJRobfROuAOA294YDJ/DJ5gToKfTqNqhh
-	 UQ6IIr3YwGNOACFR2tOTsGopfPGU4+AwXXOlsuGSiEgqTrQvthsNSvspLojGL4RDJw9+e
-	 mew8WelDPiuwe8wFEcg9PoqP1tfAr1DGNjlg8k75XxTpfmf6QrCwoRHHqk70qVT+tZRom
-	 3a8PuiuipRp5HFqEPQzd2PCTRjAZ40RukhkdrYXXPJXsYla6Yb/Jd/5peZ+oVihr9tlzL
-	 +rKS66CdN0XXvmbBdpeSUHDi7mz1zZ2tJGAzh6uyVCJjPcR8idNTOejVVdku0OH6n+A==
+	bh=H7LYOW6vZbnMx3LsrUUJ2jpsiL4+pnJKUDw/S3sy4dg=;
+	b=utulo4jtax9/lbCmKYFC5jT7nBrBmGHoShB77xU9MZLdSoW06Dpl5iA/7i6IBAvE04AE
+	 BNAVV+nhkHAg5TQvi6KKFGl76C3fGmXMUMIAJaP8dVKIsgLYLEpeuXu6ukj8/avhclT0X
+	 tCm+tFdYGRAmmyGtDzy7bHWwLXlWmbxFW5I53jjL7BhZnci/sGeB9WTfOKlbN3BEXz9NA
+	 t3yOj6Aie6WSDpvs5O99jVu6ymvstfMJ8wgP7ivdYoLToALFC7O3sa3srbWHrPuRJ3XBA
+	 YxAoGqFep+tb/0omjBHu7ZA2536CpcoyuDPUm7/4sJSX23SafiJK5I6Q9dsAg+7PMwQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="N/IxKy1Q";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b+Q8Fe6U;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 991B1606A326
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 19:52:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BC33606D807
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 19:52:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N/IxKy1Q
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E613C1F00A1A;
-	Mon,  2 Nov 2026 19:52:36 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b+Q8Fe6U
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6AB91F00A18;
+	Mon,  2 Nov 2026 19:52:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793649159;
-	bh=AaZ90ReWusq0LZzAbUoTnH7EemtyqlRkFEjjlpcV2nY=;
+	s=k20260515; t=1793649165;
+	bh=H7LYOW6vZbnMx3LsrUUJ2jpsiL4+pnJKUDw/S3sy4dg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=N/IxKy1QTKnuq2HBaSWmHICCU5e2nv3eKXuB7uMTu2t6j6ep5fNhwF477Pb95HOoc
-	 n0Pr9Jk7PRw+s37LOIx/DzBShN7yrIbMeeb5HFvFSDb7XDDHM+/XUMQ+2s3IcthlqM
-	 2XpjMm0BDu1Cnjq9lSZ0EiWfliOQ5mH4oHj6bKNz0BjyzE+yv5bsEfUKkr8uOpOcjH
-	 04o3D7VNXkkZDn+ZZL17/+wQuF9Huh8dpjVHxQmQSGISQnAHE75mskk7RQexKMr2r2
-	 LWxB/FIVYbEn/9bKY+Dh9x9wCm3mzgvlPSMs9LiEvGUgG9ekdBm3xKAoq16BpFjVeY
-	 HLfqGbUhHv3AQ==
+	b=b+Q8Fe6U05w8mi4yxGxmgroTxKSnYRWcDi5vcZiOOeFs5nX51vAgKuGLEz73NrEhl
+	 ER0kxys1VPDsXglXQl34JLnjTfieeLCYwk+tP8AUMxpxGIVgCQJkGTurdS2dwmIk3C
+	 67eGZHWRFDJo1BnBirCgXMVk3irN6VdMaVZxdQ1va2MlzmUraKwa2ZXiKSyiLR3xXb
+	 o31VmtUh60z7Xs/qThkwAZe5TgJfeb6I1KNZgk5U7pYp/akk4OP/Pp6xqr/TUvMl0A
+	 j/MTFvElm3CP28nkLn2jZYaJed6M4PdxvaBsNwLtMtRgB3aU/AZQYD29a021+pwD2P
+	 obtl26Q7cq5TQ==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>,
@@ -48,10 +48,10 @@ Cc: Viresh Kumar <viresh.kumar@linaro.org>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  Mario Limonciello <superm1@kernel.org>
 Subject:
- [PATCH v1 3/4] cpufreq: intel_pstate: Clear last written P-state value on
- suspend
-Date: Mon, 02 Nov 2026 20:50:49 +0100
-Message-ID: <14146180.uLZWGnKmhe@rafael.j.wysocki>
+ [PATCH v1 2/4] cpufreq: Force passing target frequency to driver during
+ resume
+Date: Mon, 02 Nov 2026 20:50:11 +0100
+Message-ID: <1991839.tdWV9SEqCh@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <5162355.31r3eYUQgx@rafael.j.wysocki>
 References: <5162355.31r3eYUQgx@rafael.j.wysocki>
@@ -69,61 +69,105 @@ Content-Type: text/plain; charset="utf-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Preserving cpu->pstate.current_pstate across system suspend-resume
-cycles, when running in the passive mode with HWP disabled, is a mistake
-because its value from before system suspend may become stale after the
-subsequent system resume and in some cases it prevents MSR_IA32_PERF_CTL
-from being updated properly after system resume [1].
+The policy->cur value preserved across a system suspend-resume cycle
+may become stale in some cases and it may prevent the CPU performance
+control logic from being updated due to the target_freq == policy->cur
+check in __cpufreq_driver_target() [1].
 
-Address this by clearing cpu->pstate.current_pstate after the governor
-has been stopped during system suspend.
+To address this, adjust the existing mechanism to force the
+invocation of the driver callback in __cpufreq_driver_target()
+and make cpufreq_resume_policy() use it.  Among other things,
+this involves renaming update_limits in struct cpufreq_policy to
+force_target and moving the driver CPUFREQ_NEED_UPDATE_LIMITS flag
+check from __cpufreq_driver_target() to cpufreq_set_policy(), where
+it is used as a condition for setting policy->force_target.
 
-Fixes: 001c76f05b01 ("cpufreq: intel_pstate: Generic governors support")
-Fixes: 4adcf2e5829f ("cpufreq: intel_pstate: Add ->offline and ->online callbacks")
+Fixes: 2f0aea936360 ("cpufreq: suspend governors on system suspend/hibernate")
 Link: https://lore.kernel.org/linux-pm/20261027143725.3763827-1-zakbrightonknight@gmail.com/ [1]
 Reported-by: Zak Brighton Knight <zakbrightonknight@gmail.com>
 Reported-by: Doug Smythies <dsmythies@telus.net>
 Cc: All applicable <stable@vger.kernel.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq.c | 19 ++++++++++++++-----
+ include/linux/cpufreq.h   |  4 ++--
+ 2 files changed, 16 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 17158cb25dd8..72798f25a931 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -3389,10 +3389,11 @@ static void intel_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 1c1962a4beb4..efa663b1456f 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2011,6 +2011,13 @@ static void cpufreq_resume_policy(struct cpufreq_policy *policy, bool start)
+ 	if (!start)
+ 		return;
  
- static int intel_cpufreq_suspend(struct cpufreq_policy *policy)
- {
-+	struct cpudata *cpu = all_cpu_data[policy->cpu];
++	/*
++	 * Force executing the driver callback in the next invocation of
++	 * __cpufreq_driver_target() in case policy->cur has become stale
++	 * while suspended.
++	 */
++	policy->force_target = true;
 +
- 	intel_pstate_suspend(policy);
+ 	if (cpufreq_start_governor(policy))
+ 		pr_err("%s: Failed to start governor for CPU%u's policy\n",
+ 		       __func__, policy->cpu);
+@@ -2397,11 +2404,10 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 	 * calls.
+ 	 */
+ 	if (target_freq == policy->cur) {
+-		if (!(cpufreq_driver->flags & CPUFREQ_NEED_UPDATE_LIMITS) ||
+-		    !policy->update_limits)
++		if (!policy->force_target)
+ 			return 0;
  
- 	if (hwp_active) {
--		struct cpudata *cpu = all_cpu_data[policy->cpu];
- 		u64 value = READ_ONCE(cpu->hwp_req_cached);
- 
- 		/*
-@@ -3403,6 +3404,17 @@ static int intel_cpufreq_suspend(struct cpufreq_policy *policy)
- 		value &= ~HWP_DESIRED_PERF(~0L);
- 		wrmsrq_on_cpu(cpu->cpu, MSR_HWP_REQUEST, value);
- 		WRITE_ONCE(cpu->hwp_req_cached, value);
-+	} else {
-+		/*
-+		 * Invalidate the cached P-state value that may be stale when
-+		 * the governor is started again during resume and may prevent
-+		 * MSR_IA32_PERF_CTL from being updated.
-+		 *
-+		 * This does not require synchronization because the core
-+		 * prevents frequency updates for suspended policies from
-+		 * occurring.
-+		 */
-+		cpu->pstate.current_pstate = 0;
+-		policy->update_limits = false;
++		policy->force_target = false;
  	}
  
- 	return 0;
+ 	if (cpufreq_driver->target) {
+@@ -2655,6 +2661,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 			      struct cpufreq_governor *new_gov,
+ 			      unsigned int new_pol)
+ {
++	bool need_update_limits = cpufreq_driver->flags & CPUFREQ_NEED_UPDATE_LIMITS;
+ 	struct cpufreq_policy_data new_data;
+ 	struct cpufreq_governor *old_gov;
+ 	unsigned int freq;
+@@ -2694,7 +2701,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 			      CPUFREQ_RELATION_H);
+ 	if (freq != policy->max) {
+ 		WRITE_ONCE(policy->max, freq);
+-		policy->update_limits = true;
++		if (need_update_limits)
++			policy->force_target = true;
+ 	}
+ 
+ 	freq = __resolve_freq(policy, new_data.min, new_data.min, new_data.max,
+@@ -2702,7 +2710,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 	freq = min(freq, policy->max);
+ 	if (freq != policy->min) {
+ 		WRITE_ONCE(policy->min, freq);
+-		policy->update_limits = true;
++		if (need_update_limits)
++			policy->force_target = true;
+ 	}
+ 
+ 	trace_cpu_frequency_limits(policy);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 20a6863b640a..be1eaa43aeb0 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -146,8 +146,8 @@ struct cpufreq_policy {
+ 	/* Per policy boost supported flag. */
+ 	bool			boost_supported;
+ 
+-	/* Pending policy->min/max update for the driver */
+-	bool			update_limits;
++	/* Force passing target frequency to the driver. */
++	bool			force_target;
+ 
+ 	/* The policy has been suspended. */
+ 	bool			suspended;
 -- 
 2.51.0
 
