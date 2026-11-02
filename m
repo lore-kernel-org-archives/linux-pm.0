@@ -1,85 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=37.230.196.243
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793618091;
-	b=aa2XEL5TuOmfs7I9XFVR4c4X86IqrgufvvxogGIwmmxrwYiFLjGDx0VPf1huoq0KtTh8
-	 xSEaKNwQz9ICd8GbuxRhxAp5EfS7kCs95j+whIHkaLYnzLHc1WMWLcg8/cOlNZLpcHQxr
-	 4xJGP4+fFxo5MbJ6GLjOg4hUBXXq/r7uKdZwoDxspgIap+DzQlYeI7f08/FLpuXRYlF2g
-	 Q09GWY2UB3schCdXm9dZYYguBKICwz4kgNSOVljaGWqFcJzbwwEuNn6Jec3bnpFQBJwIM
-	 MCOfV9J6rfJsSEC3eh47eWbftf8ezX3egJDsJIF6igo7DvoSn3jCoQGOh4x68YAUGQQ==
+	t=1793619130;
+	b=nnlTr9qplh7Mn2IPDLh6K0tVSjmhj8yzyDVxnBPvPzhdTb2+D7M1ukxXpYwvl9t/nE/D
+	 jsinSxZ69r5xC+rAnByLkOXuoLOsfWfKu3DNdrMdCelLYzRiS0zVJmL4roWSlpySfvRSg
+	 FBuOOSD1sQIL0Y5TtlbIcY4eL/PCfd6P4X6qW+L2EnRJc1jL7fesRQp5L2aUoPzr2XOdb
+	 ir6K/Xr1AcfFa/iE9n0J3ubwMNqXNNRStko47l8Y7DImQAQyxdW4E5Z3w16DaIk+tuvbp
+	 ai+UcB4VzcEf4lxj4PigOw9IfIBibFTVEekZQw8h5OxYao7qSdUBpRWNHxkAwMcYFnw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793618091;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Received:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-KSMG-AntiPhishing:X-KSMG-AntiSpam-Auth:
-	 X-KSMG-AntiSpam-Envelope-From:X-KSMG-AntiSpam-Info:
-	 X-KSMG-AntiSpam-Interceptor-Info:X-KSMG-AntiSpam-Lua-Profiles:
-	 X-KSMG-AntiSpam-Method:X-KSMG-AntiSpam-Rate:X-KSMG-AntiSpam-Status:
-	 X-KSMG-AntiSpam-Version:X-KSMG-AntiVirus:X-KSMG-AntiVirus-Status:
-	 X-KSMG-LinksScanning:X-KSMG-Message-Action:X-KSMG-Rule-ID;
-	bh=LrVJ5bUTeXelwjzPn1QiWJn3910qYox79VQxI4uhKq8=;
-	b=TCCmqy050sv6XxGqmP4fa+YOePX8UAepZZT75QRkm40xCbwHB/aKpl90eEOyDZd0rZu9
-	 JOf/nX8zet445dqx6nyosmIIGtO4+xFaXUbiJxIr/UtvoPGcgqU8hKrwU/nX/xUlE7FN9
-	 5sg/ksd8HyGlBiIODWhIQvHej2RHsxSBOu9amVTfMWcns1vJma4jePm/DQJ/B5A4xpuxn
-	 3uCESwPeLtnLIskdJM1brfoTXFhl1vZlV2Agm46zzTRuhfO2L/FSCNFX31rOHPl2wk5yp
-	 99yFnEi4kr6Rr58FgLjI9nkbSzDWdijE3k0P5xhzJZhoY0RnTx+tJvKi5MrfmkxHjpQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793619130;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=7wWR/kabT1aDgwyJI2mMDwpL+9XIqIMRnR+gF3/USXw=;
+	b=k5uxX3hwWxDjmSQK8KHu4idHFnHzIGYUT68fGR9OKWatkJag6Af7RLmYF0HHI2tcnvfm
+	 EVoi1BqYysqjTNYJsAVVrO2cGbootbzeVqULBxuDAQc+ioCtp36Mju3TRx5QTeNj+QJTi
+	 3keVLZtmfe3VJGa7rBuLhJEZtBo3junFSetx7vKp2y/H/FuZ78maoCvkEfrRo09q/TLFU
+	 Iwe7Q2F6LFZ2VVD7oJza7mjU3oFPntWOOR8Rg+nwsECEKVZe5tTlIswULLf5ogCiMWCzS
+	 H7r+0faxuSVarwfQ8KVnYxKSYu9+2wvaxYfj+XThLZM8GJufGyNBkFmwxoQw2jMDvBA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=astralinux.ru;
-	spf=pass smtp.mailfrom=astralinux.ru;
-	dkim=pass header.d=astralinux.ru header.i=@astralinux.ru header.a=rsa-sha256 header.s=mail header.b=Ru43vj7n;
-	arc=none smtp.remote-ip=37.230.196.243
-Received: from mail-gw01.astralinux.ru (mail-gw01.astralinux.ru [37.230.196.243])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X6CNi0ZQ;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E196606A32D;
-	Mon,  2 Nov 2026 11:14:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5E196606A32D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=astralinux.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=astralinux.ru
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1DF6606A33E
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 11:32:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=astralinux.ru header.i=@astralinux.ru header.a=rsa-sha256 header.s=mail header.b=Ru43vj7n
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=astralinux.ru;
-	s=mail; t=1793618088;
-	bh=gfnrYB9JtB2e/a9IuzBgQBQCCj0qqnxxJiDT5JEvrww=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Ru43vj7neDq5DvMIv385vkPGgdt0WkyQyf4RywiCQ+8Jtl/tedU905tEiV9yDaSLt
-	 c57OAt3dni7VCGFGkd/NmTfSNZKO1nuruDUODI90ogBLDaI5n9/N+RPqqaD4m+gMo6
-	 TRpBnhJW0tOVIgHcrV1qeOq0mrcFCcIEGaK3KVqySFGAgsxWln+rD0n22We6dzaqke
-	 ZTgb26q83+eE1v4pUq/REXdCI1ssr9LrvNHRwJJiVlyf1G5wvvvP/KFqDDa+Uowexu
-	 Cs9bMttnclC+2x+fuTmzpS+5npKN1oEgn43aRxIfEmuzNYq4Zt0AlpZUHXc7VMIRbx
-	 8punPWQYW+/0w==
-Received: from gca-sc-a-srv-ksmg01.astralinux.ru (localhost [127.0.0.1])
-	by mail-gw01.astralinux.ru (Postfix) with ESMTP id 59BA325AC8;
-	Mon,  2 Nov 2026 14:14:48 +0300 (MSK)
-Received: from new-mail.astralinux.ru (unknown [10.205.207.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail-gw01.astralinux.ru (Postfix) with ESMTPS;
-	Mon,  2 Nov 2026 14:14:46 +0300 (MSK)
-Received: from DESKTOP-D46TNHI (unknown [10.198.31.164])
-	by new-mail.astralinux.ru (Postfix) with ESMTPA id 4jJ8Fy1xNMz3lJS;
-	Mon, 02 Nov 2026 14:13:26 +0300 (MSK)
-From: Mikhail Dmitrichenko <mdmitrichenko@astralinux.ru>
-To: stable@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Mikhail Dmitrichenko <mdmitrichenko@astralinux.ru>,
-	Sasha Levin <sashal@kernel.org>,
-	Schspa Shi <schspa@gmail.com>,
-	Lucas Tsai <lucas_tsai@richtek.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Rhyland Klein <rklein@nvidia.com>,
-	Anton Vorontsov <anton@enomsg.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	lvc-project@linuxtesting.org,
-	Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH 5.10/5.15 2/2] power: supply: core: fix supplied_from allocations
-Date: Mon,  2 Nov 2026 14:12:32 +0300
-Message-ID: <20261102111233.383-3-mdmitrichenko@astralinux.ru>
-X-Mailer: git-send-email 2.54.0.windows.1
-In-Reply-To: <20261102111233.383-1-mdmitrichenko@astralinux.ru>
-References: <20261102111233.383-1-mdmitrichenko@astralinux.ru>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X6CNi0ZQ
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 795B11F00A1C
+	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 11:32:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793619129;
+	bh=7wWR/kabT1aDgwyJI2mMDwpL+9XIqIMRnR+gF3/USXw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=X6CNi0ZQTufe+wV+Zotl8HMHJ0fTIFI1iv3bs55PrjmsUmevXB45h2dv8sIVt6O8u
+	 KNpy5K8eZHbAzR38RlZfF/S0KZup+6o3C1cXtBJuXg3QP775WTPiq1r5KYuSu2TyNJ
+	 kAxXToV+yZXK51trVLF25Hr+gKbSrUgKs8jKHr4ihZYfW4kON0HkfYUvOZT9Xgdp18
+	 jZf1uQIBNKFbKgV1oFuA1i03Ue/VjpaaS+pfZugYRAxulLY7oNoMrm0GHsvY3IVWo2
+	 2hQj3ovJ9LP6qgYjK90P2uIILlndn2nEWlCZygez29v2M1Hl9E+/huIgK83cbUp02S
+	 eKo/msv0egqBA==
+Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5bb7c6980f1so2786700e87.2
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 03:32:09 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBwjxIISz7GVpkHtDhUUMLZh/Y28Ixb8gS1ZeEi8Ds7tfEP7Ja5yH0fWWquArPRnKN6jbw8hOjVYAg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/7446XA1fv/Ui0TvZhtYRw7aH0sYxxT98tEW7oOSN3EABxAOKA
+	8BU5qxgJSOfNHIOVFJaGqBDGblwcx2Tfg2rmzMPfoiZ662QC5/yxQngoXrDw5GWCQnZkMOqi9ak
+	gBqo/eYdrSKuTrefWx3vmtn/TfG8iBZs=
+X-Received: by 2002:a05:6512:6690:20b0:5bf:dc07:3c08 with SMTP id
+ 2adb3069b0e04-5bfdc073d90mr1916977e87.48.1793619127876; Mon, 02 Nov 2026
+ 03:32:07 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -89,68 +59,86 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-KSMG-AntiPhishing: NotDetected, bases: 2026/11/02 09:49:00
-X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Envelope-From: mdmitrichenko@astralinux.ru
-X-KSMG-AntiSpam-Info: LuaCore: 133 0.3.133 d508d579b02cdb6df47808421a9b9e12fc9fb75b, {date_rfc_vio_soft_silent}, {Tracking_one_susp_tld}, {Tracking_uf_ne_domains}, {Tracking_from_domain_doesnt_match_to}, 127.0.0.199:7.1.2;astralinux.ru:7.1.1;patch.msgid.link:7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;new-mail.astralinux.ru:7.1.1, FromAlignment: s
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiSpam-Lua-Profiles: 207173 [Nov 02 2026]
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Version: 6.1.1.27
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.0.7854, bases: 2026/11/02 08:04:00 #28779785
-X-KSMG-AntiVirus-Status: NotDetected, skipped
-X-KSMG-LinksScanning: NotDetected, bases: 2026/11/02 09:49:00
-X-KSMG-Message-Action: skipped
-X-KSMG-Rule-ID: 1
+References: <20261027090638.900747-1-chungkai@google.com> <CAJZ5v0hLYKeuSHpxxRkbK07DuqOat7AuUp4nwz-1V6bgfgzWAA@mail.gmail.com>
+ <20261102040348.4154728-1-chungkai@google.com>
+In-Reply-To: <20261102040348.4154728-1-chungkai@google.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 2 Nov 2026 12:31:55 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jfbUk8ickkCxojHevJ2zrmbCECxJfUySGwp-0W8D3cww@mail.gmail.com>
+X-Gm-Features: AclHuK9ncUO_Qs_j0WFYocdd5wYCsH6AIN3-nn7HRtOBIc8G4tXtRUPLZ82zG3k
+Message-ID: <CAJZ5v0jfbUk8ickkCxojHevJ2zrmbCECxJfUySGwp-0W8D3cww@mail.gmail.com>
+Subject: Re: [PATCH] PM: runtime: Allocate pm_wq with WQ_HIGHPRI
+To: "Chung-Kai (Michael) Mei" <chungkai@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Tejun Heo <tj@kernel.org>, 
+	Lai Jiangshan <jiangshanlai@gmail.com>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Lucas Tsai <lucas_tsai@richtek.com>
+On Mon, Nov 2, 2026 at 5:03=E2=80=AFAM Chung-Kai (Michael) Mei
+<chungkai@google.com> wrote:
+>
+> On Tue, Oct 27, 2026 at 11:59 AM Rafael J. Wysocki wrote:
+> > Interesting.
+> >
+> > I suppose that there is a measurable performance benefit from this
+> > change, so it would be good to say what it is (say, an increased frame
+> > rate or similar).
+>
+> Below is A/B data from two arm64 Android phones (6.12-based kernels)
+> comparing unbound pm_wq at nice 0 vs. WQ_HIGHPRI (nice -20), with this
+> patch as the only difference.
+>
+> The workload is an automated UI test that repeatedly swipes open and
+> collapses the notification shade on a 120 Hz display, driving frequent
+> GPU and display runtime PM suspend/resume transitions alongside active
+> frame composition:
+>
+>   Platform A: 8 CPUs, 245 vs. 245 runs (220,524 vs. 217,954 work items)
+>   ---------------------------------------------------------------------
+>   pm_runtime_work CPU wait mean    151.0 -> 107.5 us        (-28.8%)
+>   pm_runtime_work CPU wait P99     1,867 -> 1,102 us        (-41.0%)
+>   pm_runtime_work CPU wait max     15.08 -> 5.77 ms         (-61.7%)
+>   pm_runtime_work wait >=3D 2 ms/run  7.51 -> 0.94            (-87.5%)
+>   pm_runtime_work wait >=3D 5 ms/run 0.457 -> 0.008           (-98.2%)
+>   UI rpm_resume() waker wait P90   662.7 -> 156.7 us        (-76.4%)
+>   UI rpm_resume() D-state P90      717.4 -> 213.7 us        (-70.2%)
+>   FrameTimeline app missed/run     0.204 -> 0.171           (-16.0%)
+>   FrameTimeline SF missed/run      1.086 -> 1.074           (-1.1%)
+>
+>   Platform B: 7 CPUs, 196 vs. 245 runs (85,957 vs. 104,452 work items)
+>   ---------------------------------------------------------------------
+>   pm_runtime_work CPU wait mean    134.5 -> 100.9 us        (-25.0%)
+>   pm_runtime_work CPU wait P99     1,809 -> 1,122 us        (-38.0%)
+>   pm_runtime_work CPU wait max     15.77 -> 3.71 ms         (-76.5%)
+>   pm_runtime_work wait >=3D 2 ms/run  3.40 -> 0.53            (-84.5%)
+>   pm_runtime_work wait >=3D 5 ms/run 0.189 -> 0.000          (-100.0%)
+>   UI rpm_resume() waker wait P90   207.5 -> 23.3 us         (-88.8%)
+>   UI rpm_resume() D-state P90      217.1 -> 73.3 us         (-66.2%)
+>   FrameTimeline SF missed/run      0.551 -> 0.531           (-3.7%)
+>
+> > Essentially, we're talking about redistributing CPU time between
+> > tasks, so some tasks will get more latency as a result of this change,
+> > which means that it is not an obviously right thing to do.
+>
+> Agreed, this is a scheduling trade-off: pm_wq runs arbitrary driver
+> callbacks and genpd work whose cost is driver- and platform-dependent,
+> so the impact on other tasks cannot be assumed negligible across all
+> systems.
+>
+> If changing the global default is undesirable,
 
-commit ba61aed9a34671222d1149acfc2f0179a9ce7e80 upstream.
+I'm not saying it's undesirable, I'm just saying that there could be
+more analysis of its impact IMV.
 
-If dts property power-supplies has multiple values, then accessing to
-psy->supplied_from[i-1] in __power_supply_populate_supplied_from will
-overrun supplied_from array.
+The FrameTimeline numbers don't seem to be changing significantly
+although there is measurable improvement.
 
-Fixes: f6e0b081fb30 ("power_supply: Populate supplied_from hierarchy from the device tree")
-Signed-off-by: Lucas Tsai <lucas_tsai@richtek.com>
-Link: https://patch.msgid.link/20260609114403.3896073-1-lucas_tsai@richtek.com
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Mikhail Dmitrichenko <mdmitrichenko@astralinux.ru>
----
-Backport fix for CVE-2026-74271
+What about other workloads?  Are they affected in any way and if so then ho=
+w?
 
- drivers/power/supply/power_supply_core.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+> would exposing pm_wq
+> with WQ_SYSFS (so platforms that need it can tune
+> /sys/devices/virtual/workqueue/pm/nice) be a cleaner alternative?
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index d63cd225d4d4..b6ade977d63c 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -260,18 +260,13 @@ static int power_supply_check_supplies(struct power_supply *psy)
- 	if (cnt == 1)
- 		return 0;
- 
--	/* All supplies found, allocate char ** array for filling */
--	psy->supplied_from = devm_kzalloc(&psy->dev, sizeof(*psy->supplied_from),
-+	/* All supplies found, allocate char * array for filling */
-+	psy->supplied_from = devm_kcalloc(&psy->dev,
-+					  cnt - 1, sizeof(*psy->supplied_from),
- 					  GFP_KERNEL);
- 	if (!psy->supplied_from)
- 		return -ENOMEM;
- 
--	*psy->supplied_from = devm_kcalloc(&psy->dev,
--					   cnt - 1, sizeof(**psy->supplied_from),
--					   GFP_KERNEL);
--	if (!*psy->supplied_from)
--		return -ENOMEM;
--
- 	return power_supply_populate_supplied_from(psy);
- }
- #else
--- 
-2.43.0
-
+I'm not a big fan of this TBH.
