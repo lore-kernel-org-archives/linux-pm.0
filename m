@@ -1,55 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=90.155.92.199
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=90.155.50.34
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793614091;
-	b=D0Rniv4Oo6UiK9j5RaoYuFFvGkTP4MCRMlq5MJUjlYDgr3XR22bk2bGWTbSAj7jJ7IyP
-	 X52Wghr/g8+5iTBMfm5lPSxEHvxvsZ7e4i1QioM3AOIKm3JVDUfqxPnrsdR7UPI5/S11u
-	 qrJS4G2b5z+zcq4+L2YFIi9W5ikZgtrUaGzeWQ2e5MrFP6MZqaQXeLIxX9nkuj0PD8pOq
-	 UkPypGEgQ/xYp9kXjmcrFkxdtPQyFrUdfWWhLzaJJfZLuCOr68gABkCPFRRsI4gBbhqJn
-	 y7OWqIBAZG4yGwTh765I8ITOO7clCpJPw6Vm8gocniWG4ctG+3yjMDBqNtzS/Pw9SMA==
+	t=1793614244;
+	b=P9Wzsa49w4WhLmQPD44i1jI3hU4sWkA7B1iiRyfdCAETRc62MehURz44d5nNA8F50wbc
+	 e+Q6AzlagLfLVUTVQUTdMUDB4EE3j9cneIJhh0c9aH7fTrLRmCXKwm2bTV4wm2gQ1DScw
+	 Ui2be2Gye833Z6EKCO2a98U4augO4U1UE9dYbotUhtseGPpaloJKaJkeNV3QwPM+rVsQh
+	 5fCfKKh0j0+2ixShJnXeLyleqnzLXwH/aSEZO5NT8OqQuDAusVaBPrxQjAIgEuAsRxAsT
+	 6KIyhB5ZiwOPOo4lTC7WNa78P0qaaHmTo8iITGF92TnhTYTDwE/6oUlQERBDrlRCuZg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793614091;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793614244;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To;
-	bh=2YB7xrA0JT0IFETP3BjX0Ypy94aXSCDzJ2+kb+881MA=;
-	b=VhI83An0GAYdGlUoVGidT3TnrWe5FghMrnQ4w5eNzrvcDa/rcvUAog/PO6mwFfuws9GE
-	 HNv8fCdrV+b9wxhfOaSVsUtp1mKLeli8bCjUmBXFrVtA+Do9Gl4o7vmrZCttNpZF2og2y
-	 ihiE9k6WIfQ3uCh3weqBqGc/6MPH5ntLwBCxb8Ay/78ybuuQ22q7Oe/eTQpI5X1ei0dK5
-	 tf6NsXljunUKMgufGiMoIRyT94JRFTXalWgg4iWIxuuYitn8017hDCGoznijRPfYudsSE
-	 JRWnLGsvGli/FoaFtxW2rRCI3O2TJQ/+TOB2l6Bo4nDt6f/Ez9S1hVOlVRllLytShQg==
+	bh=oLmryoludorxUKAxAQ5hnB9frOZfqvyT8PUcSzQKcts=;
+	b=X+Kl17qSoIKJan2lp9EDYObsxFvycJB+dgnO6NF0pYMwqnS5CZFfOIGGU+WdGTuJKn0F
+	 SeKT0gXYR9St0zGChmJsXDbTfqMq4KR1z+1F4UBIpUqnMUJKCRzZDBNqtZc4ABeGbEh/z
+	 n433siV5E9jBSdBBHZgL3qgL1FH635WgKawlse+DuntyEgG8QE7IUHQ3vbcmM/Kr5Vltw
+	 JoGFgnvLlLIe352tHoyFnBuvq53brM5lPlykY6hbBSjDlaZyeBiypEQ2rJVkOr/sWCrNg
+	 R4IvRjd8rMyR9m2Qg3ObeypRy90Ex4xKGvRHeNrq7UymmHZtYQ//77CZFJfsOPmNITg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=infradead.org;
 	spf=pass smtp.mailfrom=infradead.org;
-	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=OeXhwYeb;
-	arc=none smtp.remote-ip=90.155.92.199
-Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=jnzjlinA;
+	arc=none smtp.remote-ip=90.155.50.34
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BFC8606A329;
-	Mon,  2 Nov 2026 10:08:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8BFC8606A329
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F552606A326;
+	Mon,  2 Nov 2026 10:10:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6F552606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=OeXhwYeb
+	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=jnzjlinA
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
 	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=2YB7xrA0JT0IFETP3BjX0Ypy94aXSCDzJ2+kb+881MA=; b=OeXhwYebvQGFMpo78KVF8COSNC
-	s4ZkGjVtr8ODxaygIo0W+sgGZFVw1z4p1IJkqwFTB3ul+tHO445HGeIEzP8hdQyduX0TaGkn3wMyD
-	fvo/WblPxF7eLX+6V6jpOKzG//ovQbZLn5GFZRnRYq9AJwbNLmolOMlCAzTHzh6uN9IaVK/CsJ/PO
-	DR9/W+/hZr3D5E6z8Z7YDrxtJ3YVUsQaYHQJ1CNu0ZA1U2SPkGUj+zvr/ZPTCtJpynseWjG3sTvYv
-	Ttek4tSct5LFBidErl1NjNz+jIKKhT7ebNdtDo2E2iBv92RY1D5u+RuHdLMTcS/lDTrdaW/pQ/akQ
-	4fHI79tg==;
+	bh=oLmryoludorxUKAxAQ5hnB9frOZfqvyT8PUcSzQKcts=; b=jnzjlinA2vMr/czlRhOwMaL5Bz
+	x+d/XHpZu6OpAlySFI4M/tPJCJWNFHnnYuQ54JJg4Qe35TPHn0RueMsfjsc3Rgj3VWZ4oht52moHj
+	SQCIZ5/zJJvCk9sxPHkjt1Y80fqw05G8n4JcBQJDVf1LPEsiAENF1+vNw66exzdrHnH5LA8HrXkoK
+	F4BFuJfadHDq8BJ2ssQ9pOBL5wSQaZ2yr38FN/ZtXD9b2fx4el5fu6eHmhhVegfRH+gjLPNp1uQL7
+	EUIBQlrMUivh2uKyY3VrJyR9D7080kd3oEihvYWmh2lCwPI/OHAoBPfmt88ECcGvl8MVYV9A1GOht
+	hxuS9j7w==;
 Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNoxD-00000002Lrl-1a4P;
-	Mon, 02 Nov 2026 10:07:55 +0000
+	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xNozr-00000001vzP-3CI9;
+	Mon, 02 Nov 2026 10:10:35 +0000
 Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 1258E300312; Mon, 02 Nov 2026 11:07:50 +0100 (CET)
-Date: Mon, 2 Nov 2026 11:07:50 +0100
+	id A3476300322; Mon, 02 Nov 2026 11:10:34 +0100 (CET)
+Date: Mon, 2 Nov 2026 11:10:34 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: Adrian Hunter <adrian.hunter@intel.com>
 Cc: Ingo Molnar <mingo@redhat.com>,
@@ -75,11 +75,10 @@ Cc: Ingo Molnar <mingo@redhat.com>,
 	Andi Kleen <ak@linux.intel.com>, linux-perf-users@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
 	driver-core@lists.linux.dev
-Subject: Re: [PATCH 4/6] perf/x86/intel/pt: Clear TraceEn in hardware in
- cpu_emergency_stop_pt()
-Message-ID: <20261102100750.GU1779021@noisy.programming.kicks-ass.net>
+Subject: Re: [PATCH 0/6] perf/x86/intel/pt: Fix tracing across kexec, kdump
+ and suspend
+Message-ID: <20261102101034.GV1779021@noisy.programming.kicks-ass.net>
 References: <20261102074039.26983-1-adrian.hunter@intel.com>
- <20261102074039.26983-5-adrian.hunter@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -91,92 +90,18 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261102074039.26983-5-adrian.hunter@intel.com>
+In-Reply-To: <20261102074039.26983-1-adrian.hunter@intel.com>
 
-On Mon, Nov 02, 2026 at 09:40:37AM +0200, Adrian Hunter wrote:
-> cpu_emergency_stop_pt() stops tracing through pt_event_stop(), which
-> assumes the software state accurately reflects whether tracing is
-> enabled.  That assumption can fail when a crash NMI interrupts
-> pt_config_start().
+On Mon, Nov 02, 2026 at 09:40:33AM +0200, Adrian Hunter wrote:
+> Hi
 > 
-> pt_config_start() sets TraceEn in IA32_RTIT_CTL before updating
-> event->hw.aux_config.  If a crash NMI arrives in that window,
-> pt_config_stop() sees TraceEn clear in aux_config and skips the MSR
-> write needed to disable tracing.  Tracing remains active in hardware.
-> 
-> Alternatively, an earlier NMI in the same window can stop the event
-> without restarting it, for example a group throttle calling
-> pt_event_stop(event, 0), or a PT PMI for which perf_aux_output_begin()
-> fails.  pt_config_stop() again skips the write, so the event is stopped
-> only in software: TraceEn remains set in IA32_RTIT_CTL, and
-> pt->handle.event becomes NULL.  When pt_config_start() continues, it
-> sets TraceEn in aux_config, so tracing continues until the event is
-> next stopped.  If a crash occurs before then, cpu_emergency_stop_pt()
-> sees no event and does nothing.
-> 
-> In both cases tracing can remain active into the kdump kernel.  Moreover,
-> pt_event_stop() may access PT MSRs while tracing is still enabled and
-> can trigger a #GP by writing IA32_RTIT_STATUS with TraceEn set.
-> 
-> Fix this by making cpu_emergency_stop_pt() disable tracing directly from
-> the hardware state.  Set pt_shutdown and invoke pt_shutdown_cpu(), which
-> reads IA32_RTIT_CTL and clears TraceEn whenever it is set, independent
-> of perf's software state.  The shutdown flag prevents any path from
-> re-enabling tracing afterwards, including intel_pt_handle_vmx(0) during
-> the emergency VMXOFF sequence on other CPUs.
-> 
-> Continue to call pt_event_stop() afterwards so that AUX state, including
-> the buffer head, is updated for vmcore collection.  Its PT MSR accesses
-> now occur with tracing disabled.
-> 
-> Do this only if the driver initialized successfully.  In particular, if
-> pt_init() finds tracing already enabled at boot, it leaves Intel PT
-> alone, and the emergency path must do the same.
-> 
-> The race is reachable only through restart paths that call
-> pt_config_start() with TraceEn clear in the software copy.  These were
-> introduced by the commits with the Fixes tags below.  The restart path
-> in the PT PMI handler runs in NMI context, so only a machine check can
-> interrupt it.
-> 
-> Fixes: 8e105a1fc2a0 ("perf/x86/intel/pt: Factor out pt_config_start()")
-> Fixes: 25e8920b301c ("perf/x86/intel/pt: Add sampling support")
-> Fixes: 08c7454ceb94 ("perf/x86/intel/pt: Add support for pause / resume")
-> Fixes: 2e17bf3a469a ("perf/x86/intel/pt: Fix stop/start with no update")
-> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
-> Cc: stable@vger.kernel.org
-> ---
->  arch/x86/events/intel/pt.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
-> index 7453e9880b25..8d71c00f9ff6 100644
-> --- a/arch/x86/events/intel/pt.c
-> +++ b/arch/x86/events/intel/pt.c
-> @@ -38,6 +38,8 @@ static struct pt_pmu pt_pmu;
->  /* Set at shutdown, after which TraceEn must not be set */
->  static bool pt_shutdown;
->  
-> +static bool pt_initialized __ro_after_init;
-> +
->  /*
->   * Capabilities of Intel PT hardware, such as number of address bits or
->   * supported output schemes, are cached and exported to userspace as "caps"
-> @@ -1900,6 +1902,12 @@ void cpu_emergency_stop_pt(void)
->  {
->  	struct pt *pt = this_cpu_ptr(&pt_ctx);
->  
-> +	if (!pt_initialized)
-> +		return;
-> +
-> +	WRITE_ONCE(pt_shutdown, true);
-> +	pt_shutdown_cpu(NULL);
-> +
->  	if (pt->handle.event)
->  		pt_event_stop(pt->handle.event, PERF_EF_UPDATE);
+> Intel PT writes trace data directly to physical memory, so tracing must
+> be stopped whenever the trace buffers or the hardware state describing
+> them can no longer be relied on.  This series fixes several cases where
+> that does not currently happen:
 
-So in general pmu::stop() is reachable from PTI/NMI context, through
-things like throttling. So arguably it not functioning correctly when
-interleaving with pmu::start() is a problem.
+Same is true for PEBS, no? I also saw that AMD/IBS is already
+registering a syscore handler.
 
-
+Perhaps it should be a perf wide thing, than than having individual bits
+and pieces do their own thing?
