@@ -1,103 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793605298;
-	b=lxDYiKl6/u1F2HUqY3t/qisrOp6TaW7vh7vL//lU729ClcATOlNEF5GZRvIbRVNDhZqX
-	 sKgzpNaMPrJmIIAqjqYCMY83M5yduoiXFnlWQy1sQTOcAhJ5wlvNd0TYao7L8ZTvM2v5u
-	 xwDBwqOxff+QN5WBm5fZmzWRb93udi8T94Ugn5lyQ7HtKkwE1PJlniqdmZYh46o+PEbgG
-	 wcp3FpGXjxEMvhWsZ6omKhrwMjmQajn9bsgWela1hF58PCu9fRxGR/n5vxqxr1A5h9omZ
-	 7amaH807QIiC8E59QuraJ1fvRJTVVkprA7Cs5gpxRXTLGqeIOnIa8MWRR15OPlKucZg==
+	t=1793605679;
+	b=KoYAAo8YbCLIwHvZgVL9BYc+Zx0fpYhR3qRH08pOfaxnuxeatHosANodJlPtaQY6sluq
+	 h7vZcok8OqkTjxscj/rFJqiyR5G+6w8+vZ3uaFFCBn9U5aJYJqw0G47p+2BkADk64RJ6R
+	 LACqKKbDNfoxOiog9RvaSVj80uzaHstuPD4eINVjR7l4HhzDbgfLKBlkKXzj5x3Oye4eB
+	 nxXUyaK/COTfyme9Bk55vBJkcFiRPIRoeViBC4jgalN3FCor2WRzZOkWgQbKKlydLt+bf
+	 l2rwo8hAfhMXU1dUqkF/YJDCGF6dqOFt/7wzc/2lZL7tkaDGP81JKFwI4vqLAAJvK4g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793605298;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Organization:Content-Transfer-Encoding;
-	bh=+oZ1lR8ai99DubT220UT7e3b62UgZS6S7+f0O1weT4o=;
-	b=Dp0Ewb8yj7A2aGUWk/mqHD9OjvsxbWEfjqeE/solIyfHbfyTHPchoTuoFOq49pfxVi0o
-	 3v9YTxKJib6GrDTstQ95F2Oxv8ey8co7f+akvn5xoHhLqcQpBVUjTIWRJCAE6pW4kgTvK
-	 uCNxihVMCx2JmEeY8/WzIYFZK/TidLkD+ONC4hp/Zll+ymSLbOD6Q1if3ebDsFu8rXNSh
-	 rda7LCnkLq6xTcbs16W95fL/33iaHeehyln1nhD5eZRMTkRzgGz32ds0CjDjplQBKz7MT
-	 bauOa4JqmvJk+wB07sXQXzrAGsFIYTK8YRbXBrnXMn2lm8W3qM14pfVEoXVdyNKfvhA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793605679;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=/5I86CZ+slqkRJTosNHUxkAL8uURBN5dDpgqbLr07wU=;
+	b=X9x8U4l8UtI2eNh/qaIR57+w0SqZ7OyIh1myN85YFBMj+YxCa66Pw7PBDDqGZU3EbjgO
+	 U9FmKhpInuqnAolplukFq4D6wn1uDXW5TATzyfTT9WaSQVENKvZ2m4wUcSYCZF5Yei/cV
+	 TRWbZ3OmROTYPhCQoPc+hCqfK9NM25ImDOaDR6hxWSaE7VRY3GFvxLygNc0Cs9H5pLC+Y
+	 3SsWuekdtFMGVl1UWipAeB5nyTSPdBRaQ1aVUd4yVnRVOnP4jHZBghVnEEmvbzom0A7Ia
+	 N9c4O3e2exujaR/6bmVEMQGYAzgmEaNyrtHwKXJQzYLnHNar0wM128M5xPc0svZKs8g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ItylkfbW;
-	arc=none smtp.remote-ip=198.175.65.17
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="Yt/7r3JE";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C06A606A32F;
-	Mon,  2 Nov 2026 07:41:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7C06A606A32F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7924D60A260E;
+	Mon,  2 Nov 2026 07:47:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ItylkfbW
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793605297; x=1825141297;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=Bad/Faw2+hvP14KuKCFKS+k2Z9pGOeEVApANpFF9YhY=;
-  b=ItylkfbWzi7WoReF+BFnz7lAXLUD41tXKZnKLp6JkcbVlyW1/+nJ70g+
-   D8WFcotrb/eegqCDU3h+dKZROR+4okw5+xFpTxefusMyQOUDVzCo97Wj/
-   Xq8iayaFu+0b1MgdwpryKGOjAy05gJtI38Eym03n7KOLiUem0nKb2JuTb
-   RYNyjNeuua6aArNdgy0PwUezNNEfLUU0k/IqmZxYyA11hKlmeI8XP272g
-   /NSINxXMIVtxo7jSxWU+rk9oBFlx+lQ95oJQQ+ogn4mOJ/SAYEqbnhvFe
-   Z5JaNiOGC+0JKobQLqhaKjPMMbawDdKOKOsdntQ9Fv5wqd5TFqW6/PDFu
-   A==;
-X-CSE-ConnectionGUID: 58k9ol4MTfChyjFxFs+Gkw==
-X-CSE-MsgGUID: UqNgK/D6TKaZ1/u9ZGygwQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11953"; a="2300221"
-X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="2300221"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:36 -0800
-X-CSE-ConnectionGUID: S/TocA1jQPGUeMPN6tCknQ==
-X-CSE-MsgGUID: VZjYApVdS2Smbr/6hOQLbA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="6182280"
-Received: from pgcooper-mobl3.ger.corp.intel.com (HELO ahunter6-desk) ([10.245.244.189])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2026 23:41:29 -0800
-From: Adrian Hunter <adrian.hunter@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Jiri Olsa <jolsa@kernel.org>,
-	Ian Rogers <irogers@google.com>,
-	James Clark <james.clark@linaro.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Johan Hovold <johan@kernel.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Jiayuan Chen <jiayuan.chen@linux.dev>,
-	"Steven Rostedt (Google)" <rostedt@goodmis.org>,
-	"Vineeth Pillai (Google)" <vineeth@bitbyteword.org>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Andi Kleen <ak@linux.intel.com>,
-	linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev
-Subject: [PATCH 6/6] perf/x86/intel/pt: Stop tracing across system suspend
-Date: Mon,  2 Nov 2026 09:40:39 +0200
-Message-ID: <20261102074039.26983-7-adrian.hunter@intel.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261102074039.26983-1-adrian.hunter@intel.com>
-References: <20261102074039.26983-1-adrian.hunter@intel.com>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Yt/7r3JE
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20DB91F00919;
+	Mon,  2 Nov 2026 07:47:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793605676;
+	bh=/5I86CZ+slqkRJTosNHUxkAL8uURBN5dDpgqbLr07wU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Yt/7r3JEtzHG6GYJFiSgbdV4xZv1CP1WOEwveRYgMAoVmlr1ssFwCP3cji8JybOvP
+	 5pFdBlfjfYYpmPkLhRoaFM716IP8ckfK7/mpd6AbncfvqPt67Mlag7w25Tcel3PH+y
+	 fAzcYndBtlAVHCwlgyj4LYIpuny562C1vEhC4hqUFZ2UOKTd6kMjC7SnyVm+6765Hp
+	 snsim7fvwgSqAtSmB4ATTR51c9pbLaNiJA7T/pXaXBQ8ZaKOvHYUJ4GVSN2cZH3EwQ
+	 E4wu2/tajaDVYQruUjC5aZOWIHVkNWq0ituIE0wMlu4lpRoG7zL/7AAdMjHYmQmN93
+	 Rvd7Gyh1FFS4g==
+Message-ID: <f63bf987-aaf7-45d5-89da-24c16b1a848b@kernel.org>
+Date: Mon, 2 Nov 2026 08:47:47 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -107,196 +51,85 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 - 4, Domiciled in Helsinki
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: mfd: mediatek: mt6397: describe the
+ RTC's 32 kHz output
+To: Ryan Brue <ryanbrue.dev@gmail.com>, Sen Chu <sen.chu@mediatek.com>,
+ Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
+ Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Eddie Huang <eddie.huang@mediatek.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: linux-pm@vger.kernel.org, mfd@lists.linux.dev,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-rtc@vger.kernel.org
+References: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-0-9758f38d7053@gmail.com>
+ <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-1-9758f38d7053@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-1-9758f38d7053@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-During S3, hibernation and kexec jump, all CPUs except one are taken
-offline, stopping their Intel PT events.  The CPU that remains online
-retains an active event, but its Intel PT state is lost when power is
-removed.
+On 02/11/2026 06:33, Ryan Brue wrote:
+> The MT6397 RTC drives its 32 kHz clock out of the PMIC, where boards
+> use it as the sleep clock of a Wi-Fi/Bluetooth combo chip. The output
+> is off unless something turns it on.
+> 
+> Let the RTC node provide it as a clock.
+> 
+> Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml | 6 ++++++
+>  1 file changed, 6 insertions(+)
 
-After resume, perf still believes the event is running even though the
-PT MSRs have returned to their reset values.  Paths that set TraceEn
-without fully reprogramming Intel PT can therefore resume tracing with
-invalid OUTPUT_BASE/OUTPUT_MASK state.  In ToPA mode, stopping such an
-event reads back OUTPUT_BASE = 0 and derives an invalid AUX head from
-it.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Stop the remaining Intel PT event in a syscore suspend callback and
-restart it from a syscore resume callback.  By resume time,
-perf_restore_processor_state() has invalidated the cached PT MSR values,
-so the restart path reprograms them.
-
-Normal mode already updates the AUX head when the event is stopped and
-starts a new AUX transaction on restart.  Snapshot mode requires
-additional handling because a stop without PERF_EF_UPDATE leaves the AUX
-transaction open and a subsequent restart would normally only re-enable
-TraceEn.  Save the output offsets during suspend and force the full
-configuration path on resume so that the output MSRs are restored from
-the saved state.  Until resume has reprogrammed the output MSRs, use the
-saved offsets so that an NMI (for example an AUX sample) cannot consume
-reset PT MSR values.
-
-Stopping the event can queue irq_work when ending the AUX transaction,
-for example a wakeup or a deferred disable when the buffer becomes full.
-The irq_work self-interrupt may be lost across suspend, but
-irq_work_resend() re-raises it during syscore_resume().  The irq_work
-then executes normally once interrupts are enabled.
-
-A deferred disable queued during suspend is therefore processed after
-the event has been restarted, as it would be without suspend.
-
-Restart tracing only if the event remains in PERF_EVENT_STATE_ACTIVE.
-Nothing currently changes the event state between the syscore callbacks,
-but this avoids restarting the event if perf core were ever to schedule
-it out in the meantime.
-
-This also prevents the CPU that remains online during kexec jump from
-continuing to trace into the other kernel image.
-
-s2idle does not lose Intel PT state and does not invoke syscore
-callbacks.
-
-Example showing page 0 corruption with S3:
-
- After S3, Intel PT driver samples the trace data (snapshot mode)
- by stopping, copying, and restarting the trace without amending
- the configuration - but IA32_RTIT_OUTPUT_BASE is 0.
-
- # cat /sys/power/mem_sleep
- s2idle [deep]
- # dd if=/dev/mem bs=4096 count=1 | od -t x1 -A x
- 000000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- *
- 001000
- # perf record -C 0 --aux-sample -c100000 -e '{intel_pt//,cycles}' -- rtcwake -m mem -s 10
- rtcwake: wakeup from "mem" using /dev/rtc0 at Mon Oct 26 19:17:35 2026
- [ perf record: Woken up 6 times to write data ]
- [ perf record: Captured and wrote 2.781 MB perf.data ]
- # dd if=/dev/mem bs=4096 count=2 | od -t x1 -A x
- 000000 bc 9c 1e 59 1e 22 59 1f 08 59 20 06 4d 20 c4 97
- 000010 96 06 4d b0 9f 56 96 59 21 18 5d 8b c3 5f 96 01
- 000020 53 8a 77 73 59 11 6d 80 00 20 96 ff ff 02 43 00
- 000030 30 88 00 00 00 e0 90 80 04 59 12 e0 8c 59 13 de
- ...
-
-Fixes: 52ca9ced3f70 ("perf/x86/intel/pt: Add Intel PT PMU driver")
-Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
-Cc: stable@vger.kernel.org # c6df51779618: perf/x86/intel/pt: Factor out pt_config_enable()
-Cc: stable@vger.kernel.org # 265bb4ef75fa: perf/x86/intel/pt: Use bitwise access for PERF_HES_STOPPED
-Cc: stable@vger.kernel.org # 2e17bf3a469a: perf/x86/intel/pt: Fix stop/start with no update
-Cc: stable@vger.kernel.org
----
- arch/x86/events/intel/pt.c | 60 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
-
-diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
-index 272808f2b483..1d304ba6d9c6 100644
---- a/arch/x86/events/intel/pt.c
-+++ b/arch/x86/events/intel/pt.c
-@@ -40,6 +40,8 @@ static bool pt_shutdown;
- 
- static bool pt_initialized __ro_after_init;
- 
-+static struct perf_event *pt_suspended_event;
-+
- /*
-  * Capabilities of Intel PT hardware, such as number of address bits or
-  * supported output schemes, are cached and exported to userspace as "caps"
-@@ -1012,6 +1014,10 @@ static void pt_read_offset(struct pt_buffer *buf)
- 	struct pt *pt = this_cpu_ptr(&pt_ctx);
- 	struct topa_page *tp;
- 
-+	/* MSRs may be reset across suspend, so use saved offsets */
-+	if (READ_ONCE(pt_suspended_event))
-+		return;
-+
- 	if (!buf->single) {
- 		rdmsrq(MSR_IA32_RTIT_OUTPUT_BASE, pt->output_base);
- 		tp = phys_to_virt(pt->output_base);
-@@ -1659,6 +1665,11 @@ static void pt_event_start(struct perf_event *event, int mode)
- 	 */
- 	if (!(hwc->state & PERF_HES_UPTODATE)) {
- 		hwc->state &= ~PERF_HES_STOPPED;
-+		/* After suspend, need to fully re-configure */
-+		if (READ_ONCE(pt_suspended_event)) {
-+			buf = perf_get_aux(&pt->handle);
-+			goto fully_configure;
-+		}
- 		pt_config_enable(event);
- 		return;
- 	}
-@@ -1675,7 +1686,11 @@ static void pt_event_start(struct perf_event *event, int mode)
- 
- 	hwc->state &= ~(PERF_HES_STOPPED | PERF_HES_UPTODATE);
- 
-+fully_configure:
- 	pt_config_buffer(buf);
-+	/* Output MSRs are valid again, so pt_read_offset() may read them */
-+	if (unlikely(READ_ONCE(pt_suspended_event)))
-+		WRITE_ONCE(pt_suspended_event, NULL);
- 	pt_config(event);
- 
- 	return;
-@@ -1866,6 +1881,49 @@ static int pt_event_init(struct perf_event *event)
- 	return 0;
- }
- 
-+/*
-+ * The CPU that stays online during system suspend may lose its PT state, so
-+ * stop its event beforehand and start it again afterwards. The other CPUs
-+ * were taken offline, which stopped their events.
-+ */
-+static int pt_syscore_suspend(void *data)
-+{
-+	struct pt *pt = this_cpu_ptr(&pt_ctx);
-+	struct perf_event *event = pt->handle.event;
-+	struct pt_buffer *buf;
-+
-+	if (!event)
-+		return 0;
-+
-+	pt_event_stop(event, 0);
-+
-+	/*
-+	 * Save the output offsets while the MSRs are still valid, for
-+	 * pt_event_snapshot_aux() and for reprogramming them on resume.
-+	 */
-+	buf = perf_get_aux(&pt->handle);
-+	if (buf && buf->snapshot)
-+		pt_read_offset(buf);
-+
-+	WRITE_ONCE(pt_suspended_event, event);
-+
-+	return 0;
-+}
-+
-+static void pt_syscore_resume(void *data)
-+{
-+	struct perf_event *event = pt_suspended_event;
-+
-+	if (!event)
-+		return;
-+
-+	/* Guard against perf core having scheduled the event out meanwhile */
-+	if (event->state == PERF_EVENT_STATE_ACTIVE)
-+		pt_event_start(event, 0);
-+
-+	WRITE_ONCE(pt_suspended_event, NULL);
-+}
-+
- static void pt_shutdown_cpu(void *info)
- {
- 	u64 ctl;
-@@ -1891,6 +1949,8 @@ static void pt_syscore_shutdown(void *data)
- }
- 
- static const struct syscore_ops pt_syscore_ops = {
-+	.suspend	= pm_sleep_ptr(pt_syscore_suspend),
-+	.resume		= pm_sleep_ptr(pt_syscore_resume),
- 	.shutdown	= pt_syscore_shutdown,
- };
- 
--- 
-2.53.0
-
+Best regards,
+Krzysztof
