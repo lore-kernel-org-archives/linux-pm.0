@@ -1,106 +1,106 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793681339;
-	b=afAuEVkizG+GfJh4k3qDhPFomh6G0BvKiTy2UgnGfljeDcPCr66AOc4iucLayms2HZz/
-	 z7vck5qLxDQjzNW34JokSoCMVMSrCcmPON4gTURnDGGHuAYuqNkpkeiO67rvouJPmUrRU
-	 hzWDIDSJ4R8DG48mZRIGHWgEc0efAl+YEIvlr+2/jszBhskHXx9arTUEyyM+fSt2Upx3T
-	 ARNaiE9glM+FuMZfuHy0rO2VdAuZt2MJ2oGITIxjLfuQv/UapNOmFnXl7XMg6m4fvxn9i
-	 X+W/hSomoYoWKlY/PdGkhKTcnPUeaLymfT3SYxMNzGtAuZcXSVlBCMKRX39vNikHPPw==
+	t=1793681351;
+	b=dMv0w6IzkzQNv9nbrYN90OhXDw+SxRKm9a09V0CwfYhOzA00lJbn0KhaRQd8aUOynDO4
+	 9jVM7aIr2RzAhSvbZuHU3822t0h4sdxL5rjVkdsjjwx7ARSMkXdHhliUA6Eo2hrdTUs3n
+	 +qPLIlR/GYSIH9z1cgRsQ+OVsqcS5XUbllNjoFxks39LvnqvUgan28/1zsMc5oOHBmMJ4
+	 H6sxF+YzNReBiq2Nr+q/yeiyu2tYcGNylQ6EghXioCNv/Roj5NfVqseNwTWNbK0Y7O0z1
+	 HeGeQumf9zqE4CgXgC7pXgomX5jTUqTjH6W5rMIb8yMMNGi445TldN/ll3jJ+OX+KXg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793681339;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793681351;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
 	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Info:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
+	 Content-Transfer-Encoding:X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
 	 X-Proofpoint-Spam-Details;
-	bh=zCHD1aIKZc3dFq2/pqI8Cbn/B96ityC0q1gr//qHJbs=;
-	b=eRXo4a0tTxGK1HUOxwdAuR8mDoyK+wqTqdTb9SIHuBo7XlQzOP6GbjrUVfcHvdTYaSAw
-	 ZR+G0tf90rR2hKwbFSakEwef4aCEoXsUXu01OFs3uTc+6jYLda6ZsfJbmXxIdbB9dVXlO
-	 7Zrg+dDRQjyCX6CSA3TnkW5raKGue8HwJ0Eq09MRPe+8iiLMYqV+7s0O1npANAUUtOUeP
-	 NMOfhtKEFv0YtL/wmsDnT2OGq/WIEsOikPuxARjF4dxqxyOFg1WPu9SMgWjbyChF3md0K
-	 c/h3FoWHbpUMW1VUzq873hd6Ps5HnA72drelJIrzXmt1AVQl6xFssx7zKtfnN+ukTMg==
+	bh=xI4gvJjOAmwGjJ10E+KfBxUOX/8swyX/L3aQALDRl8g=;
+	b=vc4B8vpdWgSZlWvflutJbxHLw8+Mowrr3YCsG50j4moBGKJEe0bQ47+AOspPr1azHNwR
+	 k7C0VapyysO7ro12ZiRepUJ0clVk5xVXANOSZUdZpSK4KmPtc7Tpsnxaf4bnYRhJYx+tA
+	 vW1zHc+K9Y54ILme1J3fCsk14qR/DRLI8tOL80oDty+oD0qfSC5x2u+xc8aUmRQJFZMbI
+	 KUi3LUayYj3GylXzlsLXaE62woFpL4AZLUUMQWYP+TXwhNOqdhaZITUyE7tIQJ1qcRyyt
+	 712jSp5L4LmDCnv5Qo2k1ntR2WxLCnz7kc3MK0ZSN06UEPWtbUbyNhHou0Hhes2Kh/g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=SwmlpZDa;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TfhKBhnn;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ZZknBHZP;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=FvJOAyTO;
 	arc=none smtp.remote-ip=205.220.180.131
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A8BB606A333
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 04:48:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9A8BB606A333
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 429FC606A333
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 04:49:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 429FC606A333
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=SwmlpZDa;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TfhKBhnn
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A31eMTu1431338
-	for <linux-pm@vger.kernel.org>; Tue, 3 Nov 2026 04:48:57 GMT
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ZZknBHZP;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=FvJOAyTO
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A32BtaH2106677
+	for <linux-pm@vger.kernel.org>; Tue, 3 Nov 2026 04:49:09 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=zCHD1aIKZc3
-	dFq2/pqI8Cbn/B96ityC0q1gr//qHJbs=; b=SwmlpZDapvnxrPqjXW1Zgw4G6OI
-	SctU7p5FsJA6wW9BK2Bbbxeze29Y+GxwPaxZ6BIRMS0v5TUPc2crOczu7Qq86tfP
-	z2AOYIxQCQh8pfDd4aPS0tjk6WrXqRHwdixvt2dXV1BGD2MdFdrb96IlZ/V2H9sP
-	l+5cSndyoRuUZns7y9FnJkzpWBBXEKxTFBVyPyTXz/HzN6AnN5iI6kzmrK8ciqZX
-	fiAu4nQbM2LxT7bg3/Yi7kZ0bmD06w2LqwaZO2uT2NNOZdTCxwfBlJ66I8nsa3Q9
-	OnNb3OWD2NsgCADmRCsDdyi5/oZxNQyl4MYzUSWlpRbMfQ8MscyG2WcMhvg==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hq0871xv2-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=xI4gvJjOAmw
+	GjJ10E+KfBxUOX/8swyX/L3aQALDRl8g=; b=ZZknBHZPGA8j3sdVFQeyjONlyiw
+	d6E2V4CHledeLpedsobCLLn+5xLVABkY+i2i3VsvbnSr6LllGYNGm50kqgFzMtLO
+	TzJhTK8I8luT2QaN/+cr8yO9MfXDvEUuf4v+KiEl1p1TZNzhxj0Fnyj7pHKfSpgd
+	n0fbmBqQ5TdELJ1HtAxwA/zo8OVQbnUtmbkJNtC4m5GU6HmcaG6nTcTAHBT0X5do
+	3S5eON3t8AjRYoN/yEb54iDRrz9l89vlQkNCGhRR0aEhllJJsOZfBwYhPY3sY4lp
+	6GpJBIME20ima80f9kHAL9uh0dluepPWaByVXqF+fJMZguvdWkVbcmo6l5Q==
+Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com [209.85.219.71])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hq6m98fqm-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 04:48:57 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-93cb98809caso631341785a.1
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 20:48:57 -0800 (PST)
+	for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 04:49:08 +0000 (GMT)
+Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-91c817b56adso77154386d6.1
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 20:49:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793681337; x=1794286137; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1793681348; x=1794286148; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=zCHD1aIKZc3dFq2/pqI8Cbn/B96ityC0q1gr//qHJbs=;
-        b=TfhKBhnnmKgz3+RcPewWNoAmMnFdbSsNGQuVpMDn4RcabcW3KAHViJJUZCXtALIJCN
-         7zFS65teElu0j6A3Swvx/2H/T1fhItHSCPteBrzdRKIvp7ifSv3W36LrDybRkO2G9VZr
-         mlXvMbzQXeH5U5xCzzfTXjeZzD3ecQ+uNHGSqw8lCq9FIy2jgAMaMvcCUmI6bqHGOFPA
-         DAQ+nMM2H0njXjFWmIdS/41xzJDhia9RqxUB8ReSC4R6bdGfVDW5l3yMhdHc/oY5lbre
-         X3zyR6/4nIu7jMcIy/qFuPg8C7/hapZ/4y8GFjcnj/p7X+jL/WX4RAJyZCgedHfEPj8Q
-         /MEA==
+        bh=xI4gvJjOAmwGjJ10E+KfBxUOX/8swyX/L3aQALDRl8g=;
+        b=FvJOAyTOD6yEXIRKrjsV0ardFYZ5cLElC0jjV8ZURfJbVZeezbXxIkszzwNjHME58N
+         XhOEitGCgPh6aU40y1uYPTn0JbmgkMqzTo1tF2TFF0z0hHcq2LbG7d5nM9FoZdyfbklk
+         KXJ9FdZSR676DMpVF+Fovn6dBVEXG3jzcHbROxrWrzWwhDGfdBolgUe9O+zGPI8y8j7C
+         Z/mrUDuXj5jitWXDvF582bU/671XMPemcbpmK5sZRZrxZpJS+f/2KBu73ZaQ9XTNJrJM
+         mFOKkUVbBIVMiMdE/W0+bEQOUB8ou8MMeI/P+4QN0ovqsLcaEbEHJdJ7Z/PQIIVBYTf8
+         Jurg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793681337; x=1794286137;
+        d=1e100.net; s=20260707; t=1793681348; x=1794286148;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=zCHD1aIKZc3dFq2/pqI8Cbn/B96ityC0q1gr//qHJbs=;
-        b=nmc8IK01KfAJLVROBEjGY1KMEXDoPj3qF4lfSTlNgNjic5p7i5SxeiUsTru+GuCM9w
-         cnM2c9L/Kgz61pY+KfrQrdG8LWIBv6072jp754slQxtW8uZv9L8QkWmT+QCTzujjH90y
-         faIHG8T6rprj7y7PtuN+FbpdPOAkk/H05tkVZIsQepWmzcGB/PQvT2xZJxPdJB7mLEbd
-         IxeMY+Fwj7ENgQ7M0tuShHSfRLb9jL6zR2wokaJh5u26gn2CuNDxlzZ1wpEOeWf1reDV
-         sa0Jo9JgeJ0K2S18BftdVyZmQ9+xOocRQWbIgbuxleeDrOOnelGBTIHuCM8rSDBVR9CQ
-         dAAQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzGBbV7u4yCb6VINmSW/fWd5OfyMs+rJ8b5FJ2JzVQQTqg4Riy2vd7kRfEjQH61/fSfulUO0hOViA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+9rXn3zyjiwhBhciDc3gJNPK3+enis/f5HXtp8gJs1q8gT8wuc
-	hc0kM7xxSrNo9ctrle8Q55pKW2WQ6/Ym/HJhrLiFsmtgao9qkQv2VMUEsYA1xVqTkueiHAWoYuO
-	K9BzaQSY/lsDmR8rQpxVWY35gC0suirOC0v7uDJ0VeIkP+bMesiz7P4x8Kvsr+g==
-X-Gm-Gg: AYBFou3qMSk7ZVlFtEbsAJi4CzBeI0CJxOLqxtuvitr8DN8tbtrPkjDfBkeOIM6kKaD
-	1mzOck0kcoWeBsn1joFhTR79QqlZZ685bs+x2oepN/6FC9MxsyqQshP68V+ZQC12Z8al2voboZz
-	BetKSxXY2v2XSH/KIlT/pT9WWMfnLOZijd9BPQlo1dZI38UkEDWBdt+4bG86Do3rqxhVXLGPsZW
-	2VhYhtUnOK2nqL1Gs+8Iy45HCwgZWF2RAVova9Oeb/XVKuVXUwIIzDK6FXYZTIjAeAm6c4lV8Zl
-	v3+FUAvKDR5qXfI7F0ksLAHMXqaceT/9Wq2Aemkb7XgGnDuEAKeGL+0IN+Y61laHcmFZq1Dnx/H
-	R2ivMNRc3GI3V9ZRoux596Kc8lQjMEZ1uGDalupxJez6/5OKjBtiPi4cz0/OwPXC3+2kDAvkA3r
-	8/
-X-Received: by 2002:a05:620a:45ac:b0:93e:c12c:f121 with SMTP id af79cd13be357-944218577eemr2009964285a.77.1793681336475;
-        Mon, 02 Nov 2026 20:48:56 -0800 (PST)
-X-Received: by 2002:a05:620a:45ac:b0:93e:c12c:f121 with SMTP id af79cd13be357-944218577eemr2009962285a.77.1793681335845;
-        Mon, 02 Nov 2026 20:48:55 -0800 (PST)
+        bh=xI4gvJjOAmwGjJ10E+KfBxUOX/8swyX/L3aQALDRl8g=;
+        b=uuN6swcK74OH3X0G9pVh0eqyZ8dfF+4/Sx2QMbCU3gAIVG7BcDTfVULcERVWD1thS+
+         YJS+/vZW5uKo89pSQV8mOOW2018P7DPcwdk2jbNgHy9EPRLtd1l2la+OJ3Ozpoh9EbaE
+         OcPPd5MHOfrRYST5N7SN1wDm8dS5bJCfpI0cffOFQBxA+/qFfgnurF/RqUvW8HpmO83n
+         hJ4VjclLdqX1H4LYpYYZMZ4Mo2llnxC/BeGlJNtW0IZ5FFvSH1Y4peAcgvrfz1rXMZcP
+         FKyX9JoMJVoHjXgZFuTsxgVu1IFnF1WtgveliWetfdQ5RCdO2Ue0Hgfb94bt13XVppoo
+         zl8Q==
+X-Forwarded-Encrypted: i=1; AKwUvBwMOLq8DGuRakSovc1e7/K7SvXlmo69j6saSjUmU0L1aty9etjcL7IRLBQhpbHD+/3/SjtUQyfi3g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9If+XUfCUGD5u/bKZ/m9KvJY+dqiQs3OUXIIRj6mdWhhIAwsM9
+	d3KbRVIcPTzse9xqka0oJIXdZTAAMzt/n+N/XmM8cU/zqA5PMWNiWdTCwxVL/q/2eRIuKIaZo1A
+	YuNgQ9ToXGze7UY6jCi1PaOrh6GWfVH4Ng3MO2PAY2KHDkR5N01/Eqg5hdVqqPA==
+X-Gm-Gg: AYBFou3aCQsOkOzoLAuMBEURpFFUf8/0BR39S5VszebDIi8wVUMJ1YrmLoCTB0WNf6V
+	N1wFeFT2jBifLovKOmsKlW5W0pE4onL9z7mxGOyfSydn7FGFPRbUJh+zAulzHbf/AcYPzEsMSA/
+	zD7mp6XBak+z7LbvGlwUfH6D0rSGTiPnKHBvd0Psvu0S8Kiwn63FXBN4XCgvsr4VolaN89u/XiK
+	1At5bDsa+bMturyYPV0SasOvujSpgrtNz50BoOYSRAUShE44ycK9sjf9egXjMmCTPbv5DD0wHFd
+	M0NDSHuRZWzcpGjhRfIxRtSvlZyYY24bK8jfU+QPBmWDcpV/Vc1ftItTLqbxeFEX82iknvwq+sY
+	Q98295Ct0Mm4ZEA9MdaiGjqEHK5oEoJRFFhLYTL9JauiBnzT9lTlqALBt7xRl/uYnTkMMQjLqpM
+	dA
+X-Received: by 2002:a05:620a:a905:b0:945:b9c8:de5a with SMTP id af79cd13be357-945b9c8dedbmr587930185a.20.1793681348172;
+        Mon, 02 Nov 2026 20:49:08 -0800 (PST)
+X-Received: by 2002:a05:620a:a905:b0:945:b9c8:de5a with SMTP id af79cd13be357-945b9c8dedbmr587928685a.20.1793681347600;
+        Mon, 02 Nov 2026 20:49:07 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:8b9e:7797:dd05:11cb])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b2a879fb29sm25685445e9.4.2026.11.02.20.48.54
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b2a879fb29sm25685445e9.4.2026.11.02.20.49.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 20:48:55 -0800 (PST)
+        Mon, 02 Nov 2026 20:49:06 -0800 (PST)
 From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 To: rafael@kernel.org
 Cc: Daniel Lezcano <daniel.lezcano@kernel.org>,
@@ -109,9 +109,9 @@ Cc: Daniel Lezcano <daniel.lezcano@kernel.org>,
         Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-rockchip@lists.infradead.org, linux-kselftest@vger.kernel.org
-Subject: [PATCH v5 1/6] powercap: Add generic zone hierarchy creation helpers
-Date: Tue,  3 Nov 2026 05:48:15 +0100
-Message-ID: <d33ddfe789ee42a00d3ff3df55e0c4011e69debc.1793666444.git.daniel.lezcano@oss.qualcomm.com>
+Subject: [PATCH v5 4/6] powercap: dtpm: Use generic powercap hierarchy helpers
+Date: Tue,  3 Nov 2026 05:48:18 +0100
+Message-ID: <bded992091c92baa7246b939f266297f99c8942b.1793666444.git.daniel.lezcano@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1793666444.git.daniel.lezcano@oss.qualcomm.com>
 References: <cover.1793666444.git.daniel.lezcano@oss.qualcomm.com>
@@ -125,603 +125,691 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAzMDAxOCBTYWx0ZWRfX+dFcQcUecFG2
- EAe2ekQAaZuVmgtdsGfB6cV/WG3yamkzxCrN+9SlC2yLi7lOU++RiWpyFgwv0i8KoeFMaihhAqg
- Q50dW7wj9ozlZ+P+G/tmDIXeaZMlOZs=
-X-Authority-Analysis: v=2.4 cv=K9m3jCWI c=1 sm=1 tr=0 ts=6ae967b9 cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=xqWC_Br6kY4A:10 a=zJRp6_cAMcgA:10
+X-Proofpoint-GUID: rcByr6pF4XulvOGs6OFM3liUfM8u0byA
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAzMDAxOCBTYWx0ZWRfX55CpS4EHamue
+ pUKsBBKlPjRCiMcKVwIW42PcHiSL4+3EYb0s2hMODu30UbJFuIaFVs0nGaM5Hs7qyxsL7nJXPk6
+ SbY9SzfvIX6LkDEmTwR3kIMKt3Y7ECI=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAzMDAxOCBTYWx0ZWRfX8LYeqLIjNiT1
+ mfgi5J3kD9CjMZ4wFagNZZD3qFafQ8VYBWCCnvTAK1+gqmow2IWUdXpJjiNtePm/7k05n85cMfO
+ +XOmu63lBTN1lQsc9FG55iqIf9qpr9X0dcgFM3i01pmBqxeR87Ook7LgShj4vZruTumVpH4zJT6
+ rFFe/VeGmShHY7lE1IsQdz1F1AqwSiIRAmI8/JFBoBm6QzAYc6CYbiu/d/JI8dLU3p0A4Hag12Z
+ Zes0TAwPHUQrng1ofRmD/RLc+DeH2bXqZ0m+V97MPqr6EwHxmur1PM9xkBl8jspxx9bYyWWAxyx
+ emw2xFjsYYbSTn5FFUTPAXQy6srzLO3kz+rNwiYy64LwLCVtql0pu4MA636pIbfSqN3nNZDUBug
+ yF56CDqAZoAipYAZQ4Dta7ELG2Q09pNpi81/bwytWQoSYQlzRYauC6MY52Jw2XJ6ZCa5hfaCGzJ
+ 5T/Zhi1junyUPqllI0Q==
+X-Authority-Analysis: v=2.4 cv=C7B8WgP+ c=1 sm=1 tr=0 ts=6ae967c5 cx=c_pps
+ a=UgVkIMxJMSkC9lv97toC5g==:117 a=xqWC_Br6kY4A:10 a=zJRp6_cAMcgA:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=gowsoOTTUOVcmtlkKump:22 a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=7CQSdrXTAAAA:8
- a=ePbI5pmQYSbfls1t7MoA:9 a=PEH46H7Ffwr30OY-TuGO:22 a=FO4_E8m0qiDe52t0p3_H:22
- a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAzMDAxOCBTYWx0ZWRfX43Rn5V6Y/Sss
- FnTtlS/NcBnEXGQ7M220pC1KPbf9aNyuvFKaOzlD+9MRmbRud2C6I/KnRSD9SZ1K5gu2xk0l9wl
- xxPdG7g+Co0bTURj5GUyOIwek6hiSIi8deXk6L+i+jjgO7EBbEL5UEX4EfCb2QMrkfwSTwZsP9V
- ESxRxHRV2SS0kZoAhoCza+20YglyGIx/8YHwgVuCcmn3jU3vfVvuPLUNHpv/NUXOCqkYePgSPjS
- 5eqCkTw1VwqrBKmeg95HVbiVxVjLd3O/1fllS3+p9NL/HnL2El7y2Sm9/OA/zLgiCEI7L7mg7+D
- Lp5icd8VIeLdD2TVrSsRs+tusbU7plLc/+QGhjyPlrluWV/oV9p61HJhiXx78eFzkZ2ZGTO1dRj
- WtGkr6QXxQnGjzn1oDj1VSj7eGsfDvDLnmr79fHlGvDxC6ddpukI20fszEbl2xT+/JEzp4jZ+qx
- 1WzYohZY4Qi/pSOwThg==
-X-Proofpoint-ORIG-GUID: oPGiWeI4Y1NmkG7qoG8qBWbO3a5AeLuV
-X-Proofpoint-GUID: oPGiWeI4Y1NmkG7qoG8qBWbO3a5AeLuV
+ a=3WHJM1ZQz_JShphwDgj5:22 a=EUspDBNiAAAA:8 a=PNS_9xEdTJF3v_BdtpwA:9
+ a=1HOtulTD9v-eNWfpl4qZ:22
+X-Proofpoint-ORIG-GUID: rcByr6pF4XulvOGs6OFM3liUfM8u0byA
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-03_01,2026-11-02_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 clxscore=1015 malwarescore=0
- bulkscore=0 adultscore=0 spamscore=0 suspectscore=0 phishscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
- definitions=main-2611030018
+ spamscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0 clxscore=1015
+ impostorscore=0 phishscore=0 priorityscore=1501 suspectscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611030018
 
-Powercap controllers may need to create several powercap zones organized
-as a hierarchy. At present, each controller has to open-code the
-hierarchy traversal, parent lookup, error rollback and reverse-order
-destruction.
+DTPM implements its own hierarchy creation and destruction logic while
+the powercap core now provides generic helpers for this purpose.
 
-Introduce struct powercap_hierarchy to describe a powercap
-hierarchy. Each node contains its name, parent, backend-specific data
-and the powercap zone created for it.
+Convert DTPM to use the generic powercap hierarchy infrastructure.
+Duplicate the platform hierarchy before creating it, and use
+powercap_hierarchy_create() and powercap_hierarchy_destroy() to manage
+the DTPM zones.
 
-For example, the following description:
+Add DTPM callbacks to create and destroy the zones associated with each
+powercap hierarchy node. Adapt the CPU and devfreq backends to return
+the created DTPM instance and use the node name provided by the
+hierarchy.
 
-  static struct powercap_node nodes[] = {
-          { .name = "package" },
-          { .name = "cpu", .parent = &nodes[0] },
-          { .name = "gpu", .parent = &nodes[0] },
-  };
+Convert the Rockchip RK3399 description to struct powercap_hierarchy
+and keep the device tree path as DTPM-specific node data.
 
-  static struct powercap_hierarchy hierarchy =
-          POWERCAP_HIERARCHY_INIT(hierarchy, nodes, ARRAY_SIZE(nodes));
+This removes the DTPM-specific hierarchy traversal and destruction code
+and leaves the hierarchy management to the powercap core.
 
-creates the following hierarchy:
+Preserve best-effort creation: an unavailable backend returns NULL to
+skip its branch, and setup failures are warned about and skipped rather
+than rolling back independent zones. Invalid node descriptors remain
+fatal. Reject a DT node with a NULL path before calling
+of_find_node_by_path(), treating it as an invalid descriptor rather
+than an unavailable backend.
 
-  package
-  |-- cpu
-  `-- gpu
+When the representative CPU is offline, find an active policy through an
+online sibling whose related_cpus mask contains it. Hold the CPU hotplug
+read lock during selection and setup, and initialize the zone through the
+policy's active CPU while keeping the hierarchy-provided name. An entirely
+offline policy still has no active CPU to initialize through.
 
-Drivers supporting multiple platforms may provide a separate static
-hierarchy description for each platform. These descriptions and their
-node arrays can reside in initdata: only the hierarchy selected for the
-running platform needs to remain available after initialization.
-
-Add powercap_hierarchy_dup() to turn the selected description into a
-working runtime hierarchy. Copy its node array and rebase parent pointers
-to the copy, allowing all original descriptions, including the unselected
-ones, to be reclaimed automatically with init memory. The names and
-backend-private data are not duplicated and must remain valid for the
-lifetime of the working hierarchy.
-
-Add powercap_hierarchy_create() to walk the description in order. The
-hierarchy describes the topology, but only the controller knows how to
-initialize a zone for its underlying hardware and which powercap
-operations and constraints to register.
-
-The controller therefore supplies a function of type powercap_node_create_t
-as the third argument to powercap_hierarchy_create().
-For each node, the helper calls this function with the control type, node
-name, node-private data and the already-created parent zone, or NULL for
-a root. The function uses these arguments to initialize its backend state
-and call powercap_register_zone(), then returns the registered zone.
-
-The controller also supplies a powercap_node_destroy_t function as the
-fourth argument. The helper calls it to unregister zones during rollback
-or destruction, passing the control type, zone and node-private data.
-These functions adapt the generic traversal to controller-specific zone
-creation and cleanup; they are separate from the powercap zone operations
-used for subsequent power readings and limit updates.
-
-The creation function may let powercap allocate the zone or embed it in a
-backend-specific structure to retrieve private data later using
-container_of(). For example, an embedded zone can be allocated and
-registered inside this function as follows:
-
-  struct foo_powercap_zone {
-          struct powercap_zone zone;
-          struct foo_domain *domain;
-  };
-
-  foo_zone = kzalloc(sizeof(*foo_zone), GFP_KERNEL);
-  if (!foo_zone)
-          return ERR_PTR(-ENOMEM);
-
-  foo_zone->domain = domain;
-
-  pcz = powercap_register_zone(&foo_zone->zone, pct, name, parent,
-                               &foo_zone_ops, nr_constraints,
-                               &foo_constraint_ops);
-
-For an embedded zone, its allocation, private state and lifetime remain
-under the control of the backend.
-
-The creation callback returns the registered powercap_zone pointer. The
-hierarchy helper stores this pointer to provide it as the parent of
-subsequent nodes and to pass it back during hierarchy destruction.
-
-Validate node names and require every parent to be an earlier entry in
-the same array before creating zones. Reject an already populated
-hierarchy with -EBUSY without modifying its existing zones. Provide
-POWERCAP_HIERARCHY_INIT() for static instances used directly by the
-creation and destruction helpers; duplication initializes its own lock.
-
-A callback may return NULL to skip a node and its descendants while
-continuing independent branches. Error pointers abort creation and
-trigger rollback.
-
-Add powercap_hierarchy_destroy() to destroy the hierarchy in
-reverse order, ensuring that children are removed before their parents.
-Use the same mechanism to roll back previously created zones when the
-creation of a subsequent node fails.
-
-Serialize creation and destruction of each hierarchy to prevent
-concurrent updates of the powercap zone pointers stored in its runtime
-copy.
-
-This provides a common mechanism for creating controller-defined
-powercap hierarchies while keeping controller-specific operations
-outside the powercap core.
-
-Cc: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-Link: https://patch.msgid.link/20260806110159.69690-2-daniel.lezcano@oss.qualcomm.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
 Changes in v5 (since v4):
-- Add Reviewed-by from Lukasz Luba; no code changes.
+- Reject a NULL DT node path with -EINVAL before invoking
+  dtpm_setup_dt(), as suggested by Lukasz Luba.
+- Document that a missing path is an invalid hierarchy descriptor.
 
 Changes in v4 (since v3):
 - Rebase on v7.3; no code or commit-description changes.
 
 Changes in v3 (since v2):
 - Rebase on v7.3-rc7.
-- Add a static initializer and clarify hierarchy ownership and locking.
-- Check for existing zones and validate names and parent ordering before
-  creation; use zone for the runtime pointer member.
-- Allow NULL callback results to skip branches; keep errors fatal.
-- Use explicit locking and a signed reverse-loop index.
-- Explain the controller callbacks, their arguments and their relationship
-  to zone operations; update the description.
+- Preserve best-effort branch creation using the generic NULL result.
+- Find an online policy sibling for offline CPU representatives and
+  protect policy selection and setup against CPU hotplug.
+- Keep generic API behavior and documentation in patch 1.
+- Fix __initdata placement; match-table indentation is handled in patch 3.
+- Name setup callback arguments and remove whitespace-only lines.
+- Update the description.
 
- drivers/powercap/powercap_sys.c | 204 +++++++++++++++++++++++++++++++
- include/linux/powercap.h        | 205 ++++++++++++++++++++++++++++++++
- 2 files changed, 409 insertions(+)
+ drivers/powercap/dtpm.c         | 180 +++++++++++++++-----------------
+ drivers/powercap/dtpm_cpu.c     |  62 ++++++++---
+ drivers/powercap/dtpm_devfreq.c |  22 ++--
+ drivers/soc/rockchip/dtpm.c     |  67 +++++++++---
+ include/linux/dtpm.h            |   6 +-
+ 5 files changed, 198 insertions(+), 139 deletions(-)
 
-diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-index 9197fa20d93f..a637929eefe3 100644
---- a/drivers/powercap/powercap_sys.c
-+++ b/drivers/powercap/powercap_sys.c
-@@ -667,6 +667,210 @@ int powercap_unregister_control_type(struct powercap_control_type *control_type)
- }
- EXPORT_SYMBOL_GPL(powercap_unregister_control_type);
+diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
+index b7a65e543f19..da5795b0f3ff 100644
+--- a/drivers/powercap/dtpm.c
++++ b/drivers/powercap/dtpm.c
+@@ -35,6 +35,7 @@ static const char *constraint_name[] = {
  
-+struct powercap_hierarchy *
-+powercap_hierarchy_dup(const struct powercap_hierarchy *hierarchy)
-+{
-+	struct powercap_hierarchy *copy;
-+	size_t i;
+ static DEFINE_MUTEX(dtpm_lock);
+ static struct powercap_control_type *pct;
++static struct powercap_hierarchy *dtpm_hierarchy;
+ static struct dtpm *root;
+ 
+ static int get_time_window_us(struct powercap_zone *pcz, int cid, u64 *window)
+@@ -191,7 +192,7 @@ static int get_power_limit_uw(struct powercap_zone *pcz,
+ 			      int cid, u64 *power_limit)
+ {
+ 	*power_limit = to_dtpm(pcz)->power_limit;
+-	
 +
-+	if (!hierarchy || !hierarchy->nodes || !hierarchy->nr_nodes)
+ 	return 0;
+ }
+ 
+@@ -412,8 +413,7 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
+ 	return 0;
+ }
+ 
+-static struct dtpm *dtpm_setup_virtual(const struct dtpm_node *hierarchy,
+-				       struct dtpm *parent)
++static struct dtpm *dtpm_setup_virtual(const char *name, struct dtpm *parent)
+ {
+ 	struct dtpm *dtpm;
+ 	int ret;
+@@ -423,10 +423,9 @@ static struct dtpm *dtpm_setup_virtual(const struct dtpm_node *hierarchy,
+ 		return ERR_PTR(-ENOMEM);
+ 	dtpm_init(dtpm, NULL);
+ 
+-	ret = dtpm_register(hierarchy->name, dtpm, parent);
++	ret = dtpm_register(name, dtpm, parent);
+ 	if (ret) {
+-		pr_err("Failed to register dtpm node '%s': %d\n",
+-		       hierarchy->name, ret);
++		pr_err("Failed to register dtpm node '%s': %d\n", name, ret);
+ 		kfree(dtpm);
+ 		return ERR_PTR(ret);
+ 	}
+@@ -434,90 +433,91 @@ static struct dtpm *dtpm_setup_virtual(const struct dtpm_node *hierarchy,
+ 	return dtpm;
+ }
+ 
+-static struct dtpm *dtpm_setup_dt(const struct dtpm_node *hierarchy,
++static struct dtpm *dtpm_setup_dt(const char *name, const char *path,
+ 				  struct dtpm *parent)
+ {
+ 	struct device_node *np;
+-	int i, ret;
++	struct dtpm *dtpm = NULL;
++	int i;
+ 
+-	np = of_find_node_by_path(hierarchy->name);
++	np = of_find_node_by_path(path);
+ 	if (!np) {
+-		pr_err("Failed to find '%s'\n", hierarchy->name);
++		pr_err("Failed to find '%s'\n", path);
+ 		return ERR_PTR(-ENXIO);
+ 	}
+ 
+ 	for (i = 0; i < ARRAY_SIZE(dtpm_subsys); i++) {
++		struct dtpm *tmp;
+ 
+ 		if (!dtpm_subsys[i]->setup)
+ 			continue;
+ 
+-		ret = dtpm_subsys[i]->setup(parent, np);
+-		if (ret) {
+-			pr_err("Failed to setup '%s': %d\n", dtpm_subsys[i]->name, ret);
+-			of_node_put(np);
+-			return ERR_PTR(ret);
++		tmp = dtpm_subsys[i]->setup(parent, np, name);
++		if (IS_ERR(tmp)) {
++			pr_err("Failed to setup '%s': %ld\n",
++			       dtpm_subsys[i]->name, PTR_ERR(tmp));
++			dtpm = tmp;
++			break;
++		}
++
++		if (tmp) {
++			dtpm = tmp;
++			break;
+ 		}
+ 	}
+ 
+ 	of_node_put(np);
+ 
+-	/*
+-	 * By returning a NULL pointer, we let know the caller there
+-	 * is no child for us as we are a leaf of the tree
+-	 */
+-	return NULL;
++	return dtpm;
+ }
+ 
+-typedef struct dtpm * (*dtpm_node_callback_t)(const struct dtpm_node *, struct dtpm *);
+-
+-static dtpm_node_callback_t dtpm_node_callback[] = {
+-	[DTPM_NODE_VIRTUAL] = dtpm_setup_virtual,
+-	[DTPM_NODE_DT] = dtpm_setup_dt,
+-};
+-
+-static int dtpm_for_each_child(const struct dtpm_node *hierarchy,
+-			       const struct dtpm_node *it, struct dtpm *parent)
++static struct powercap_zone *
++dtpm_node_create(struct powercap_control_type *pct, const char *name,
++		 void *data, struct powercap_zone *parent)
+ {
++	struct dtpm_node *node = data;
++	struct dtpm *dtpm_parent = parent ? to_dtpm(parent) : NULL;
+ 	struct dtpm *dtpm;
+-	int i, ret;
+ 
+-	for (i = 0; hierarchy[i].name; i++) {
++	if (!node)
 +		return ERR_PTR(-EINVAL);
 +
-+	copy = kzalloc_obj(*copy);
-+	if (!copy)
-+		return ERR_PTR(-ENOMEM);
++	switch (node->type) {
++	case DTPM_NODE_VIRTUAL:
++		dtpm = dtpm_setup_virtual(name, dtpm_parent);
++		break;
++	case DTPM_NODE_DT:
++		if (!node->path)
++			return ERR_PTR(-EINVAL);
 +
-+	/*
-+	 * The source node array may live in init memory. A shallow copy would
-+	 * leave parent pointers referencing that array after it has been freed.
-+	 * Copy the nodes now and rebase their parent pointers below. The name
-+	 * and data objects remain owned by the backend and are not duplicated.
-+	 */
-+	copy->nodes = kmemdup_array(hierarchy->nodes, hierarchy->nr_nodes,
-+				    sizeof(*copy->nodes), GFP_KERNEL);
-+	if (!copy->nodes) {
-+		kfree(copy);
-+		return ERR_PTR(-ENOMEM);
++		dtpm = dtpm_setup_dt(name, node->path, dtpm_parent);
++		break;
++	default:
++		return ERR_PTR(-EINVAL);
 +	}
-+
-+	copy->nr_nodes = hierarchy->nr_nodes;
-+	mutex_init(&copy->lock);
-+
-+	for (i = 0; i < copy->nr_nodes; i++) {
-+		const struct powercap_node *parent = hierarchy->nodes[i].parent;
-+		ptrdiff_t index;
-+
-+		copy->nodes[i].zone = NULL;
-+
-+		if (!copy->nodes[i].name)
-+			goto invalid;
-+
-+		if (!parent)
-+			continue;
-+
-+		index = parent - hierarchy->nodes;
-+		if (index < 0 || index >= i)
-+			goto invalid;
-+
-+		copy->nodes[i].parent = &copy->nodes[index];
+ 
+-		if (hierarchy[i].parent != it)
+-			continue;
++	/* An unavailable backend must not prevent independent branches. */
++	if (IS_ERR(dtpm)) {
++		pr_warn("Failed to create '%s' in the hierarchy: %ld\n",
++			name, PTR_ERR(dtpm));
++		return NULL;
 +	}
-+
-+	return copy;
-+
-+invalid:
-+	mutex_destroy(&copy->lock);
-+	kfree(copy->nodes);
-+	kfree(copy);
-+
-+	return ERR_PTR(-EINVAL);
+ 
+-		dtpm = dtpm_node_callback[hierarchy[i].type](&hierarchy[i], parent);
++	if (!dtpm)
++		return NULL;
+ 
+-		/*
+-		 * A NULL pointer means there is no children, hence we
+-		 * continue without going deeper in the recursivity.
+-		 */
+-		if (!dtpm)
+-			continue;
++	return &dtpm->zone;
 +}
-+EXPORT_SYMBOL_GPL(powercap_hierarchy_dup);
-+
-+void powercap_hierarchy_free(struct powercap_hierarchy *hierarchy)
+ 
+-		/*
+-		 * There are multiple reasons why the callback could
+-		 * fail. The generic glue is abstracting the backend
+-		 * and therefore it is not possible to report back or
+-		 * take a decision based on the error.  In any case,
+-		 * if this call fails, it is not critical in the
+-		 * hierarchy creation, we can assume the underlying
+-		 * service is not found, so we continue without this
+-		 * branch in the tree but with a warning to log the
+-		 * information the node was not created.
+-		 */
+-		if (IS_ERR(dtpm)) {
+-			pr_warn("Failed to create '%s' in the hierarchy\n",
+-				hierarchy[i].name);
+-			continue;
+-		}
++static void dtpm_node_destroy(struct powercap_control_type *pct,
++			      struct powercap_zone *zone, void *data)
 +{
-+	if (!hierarchy)
-+		return;
-+
-+	mutex_destroy(&hierarchy->lock);
-+	kfree(hierarchy->nodes);
-+	kfree(hierarchy);
-+}
-+EXPORT_SYMBOL_GPL(powercap_hierarchy_free);
-+
-+static void __powercap_hierarchy_destroy(struct powercap_control_type *pct,
-+					 struct powercap_hierarchy *hierarchy,
-+					 powercap_node_destroy_t powercap_node_destroy)
-+{
-+	ssize_t i = (typeof(i))hierarchy->nr_nodes - 1;
-+
-+	/* Creation validates that parents precede their children. */
-+	for (; i >= 0; i--) {
-+		if (!hierarchy->nodes[i].zone)
-+			continue;
-+
-+		powercap_node_destroy(pct, hierarchy->nodes[i].zone,
-+				      hierarchy->nodes[i].data);
-+
-+		hierarchy->nodes[i].zone = NULL;
-+	}
-+}
-+
-+int powercap_hierarchy_destroy(struct powercap_control_type *pct,
-+			       struct powercap_hierarchy *hierarchy,
-+			       powercap_node_destroy_t powercap_node_destroy)
-+{
-+	if (!pct || !hierarchy || !hierarchy->nodes ||
-+	    !hierarchy->nr_nodes || !powercap_node_destroy)
-+		return -EINVAL;
-+
-+	mutex_lock(&hierarchy->lock);
-+
-+	__powercap_hierarchy_destroy(pct, hierarchy, powercap_node_destroy);
-+
-+	mutex_unlock(&hierarchy->lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(powercap_hierarchy_destroy);
-+
-+/*
-+ * Validate the hierarchy description before creating any zones. The caller
-+ * must supply a non-empty node array and hold the hierarchy mutex.
-+ *
-+ * Every node must have a non-NULL name. A NULL parent identifies a root;
-+ * otherwise, the parent must be an earlier entry in the same array. This
-+ * excludes self-parenting, cycles and references outside the array, ensures
-+ * parents are processed before children, and makes reverse-order destruction
-+ * safe. Multiple roots are allowed; sibling ordering and unique names are not
-+ * required.
-+ *
-+ * Return 0 for a valid description, or -EINVAL if any node violates these
-+ * requirements. Runtime zone state is checked separately by the caller.
-+ */
-+static int powercap_hierarchy_validate(const struct powercap_hierarchy *hierarchy)
-+{
-+	size_t i;
-+
-+	for (i = 0; i < hierarchy->nr_nodes; i++) {
-+		const struct powercap_node *parent = hierarchy->nodes[i].parent;
-+		size_t j;
-+
-+		if (!hierarchy->nodes[i].name)
-+			return -EINVAL;
-+
-+		if (!parent)
-+			continue;
-+
-+		for (j = 0; j < i; j++) {
-+			if (parent == &hierarchy->nodes[j])
-+				break;
-+		}
-+
-+		if (j == i)
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+int powercap_hierarchy_create(struct powercap_control_type *pct,
-+			      struct powercap_hierarchy *hierarchy,
-+			      powercap_node_create_t powercap_node_create,
-+			      powercap_node_destroy_t powercap_node_destroy)
-+{
-+	struct powercap_zone *pcz;
-+	int ret;
-+	size_t i;
-+
-+	if (!pct || !hierarchy || !hierarchy->nodes || !hierarchy->nr_nodes ||
-+	    !powercap_node_create || !powercap_node_destroy)
-+		return -EINVAL;
-+
-+	mutex_lock(&hierarchy->lock);
-+
-+	for (i = 0; i < hierarchy->nr_nodes; i++) {
-+		if (hierarchy->nodes[i].zone) {
-+			ret = -EBUSY;
-+			goto out_unlock;
-+		}
-+	}
-+
-+	ret = powercap_hierarchy_validate(hierarchy);
-+	if (ret)
-+		goto out_unlock;
-+
-+	for (i = 0; i < hierarchy->nr_nodes; i++) {
-+		struct powercap_zone *parent = NULL;
-+
-+		if (hierarchy->nodes[i].parent) {
-+			parent = hierarchy->nodes[i].parent->zone;
-+			if (!parent)
-+				continue;
-+		}
-+
-+		pcz = powercap_node_create(pct, hierarchy->nodes[i].name,
-+					   hierarchy->nodes[i].data, parent);
-+		if (IS_ERR(pcz)) {
-+			ret = PTR_ERR(pcz);
-+			goto rollback;
-+		}
-+
-+		hierarchy->nodes[i].zone = pcz;
-+	}
-+
-+	ret = 0;
-+	goto out_unlock;
-+
-+rollback:
-+	__powercap_hierarchy_destroy(pct, hierarchy, powercap_node_destroy);
-+
-+out_unlock:
-+	mutex_unlock(&hierarchy->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(powercap_hierarchy_create);
-+
- static int __init powercap_init(void)
++	struct dtpm *dtpm = to_dtpm(zone);
+ 
+-		ret = dtpm_for_each_child(hierarchy, &hierarchy[i], dtpm);
+-		if (ret)
+-			return ret;
+-	}
++	if (dtpm == root)
++		root = NULL;
+ 
+-	return 0;
++	dtpm_unregister(dtpm);
+ }
+ 
+ /**
+@@ -528,27 +528,16 @@ static int dtpm_for_each_child(const struct dtpm_node *hierarchy,
+  * description of the different node in the hierarchy. It creates the
+  * tree in the sysfs filesystem under the powercap dtpm entry.
+  *
+- * The expected tree has the format:
+- *
+- * struct dtpm_node hierarchy[] = {
+- *	[0] { .name = "topmost", type =  DTPM_NODE_VIRTUAL },
+- *	[1] { .name = "package", .type = DTPM_NODE_VIRTUAL, .parent = &hierarchy[0] },
+- *	[2] { .name = "/cpus/cpu0", .type = DTPM_NODE_DT, .parent = &hierarchy[1] },
+- *	[3] { .name = "/cpus/cpu1", .type = DTPM_NODE_DT, .parent = &hierarchy[1] },
+- *	[4] { .name = "/cpus/cpu2", .type = DTPM_NODE_DT, .parent = &hierarchy[1] },
+- *	[5] { .name = "/cpus/cpu3", .type = DTPM_NODE_DT, .parent = &hierarchy[1] },
+- *	[6] { }
+- * };
+- *
+- * The last element is always an empty one and marks the end of the
+- * array.
++ * The platform description is a struct powercap_hierarchy. The private
++ * data associated with each powercap node describes how DTPM creates the
++ * corresponding zone.
+  *
+  * Return: zero on success, a negative value in case of error. Errors
+  * are reported back from the underlying functions.
+  */
+ int dtpm_create_hierarchy(struct of_device_id *dtpm_match_table)
  {
- 	int result;
-diff --git a/include/linux/powercap.h b/include/linux/powercap.h
-index 603419db924c..1115108dcf5b 100644
---- a/include/linux/powercap.h
-+++ b/include/linux/powercap.h
-@@ -9,6 +9,7 @@
+-	const struct dtpm_node *hierarchy;
++	const struct powercap_hierarchy *hierarchy;
+ 	int i, ret;
  
- #include <linux/device.h>
- #include <linux/idr.h>
-+#include <linux/mutex.h>
+ 	mutex_lock(&dtpm_lock);
+@@ -571,10 +560,18 @@ int dtpm_create_hierarchy(struct of_device_id *dtpm_match_table)
+ 		goto out_err;
+ 	}
  
- /*
-  * A power cap class device can contain multiple powercap control_types.
-@@ -309,4 +310,208 @@ struct powercap_zone *powercap_register_zone(
- int powercap_unregister_zone(struct powercap_control_type *control_type,
- 				struct powercap_zone *power_zone);
- 
-+/**
-+ * struct powercap_node - Description of a node in a powercap hierarchy
-+ * @name: Name of the powercap zone.
-+ * @parent: Parent node, or NULL if the node is a hierarchy root.
-+ * @zone: Powercap zone created for this node. This field is managed by the
-+ *	 hierarchy creation and destruction helpers.
-+ * @data: Private data passed unchanged to the creation and destruction
-+ *	  callbacks.
-+ *
-+ * This structure describes one node of a powercap hierarchy. The backend
-+ * supplies an array of nodes through &struct powercap_hierarchy.
-+ *
-+ * Nodes must be ordered so that a parent appears before all its children.
-+ * Duplication and creation validate this ordering. Reverse array order then
-+ * guarantees that destruction removes children before their parents.
-+ *
-+ * The @name and @data objects must remain valid until the duplicated hierarchy
-+ * has been freed. The @parent pointer is rebased by powercap_hierarchy_dup(),
-+ * allowing the original node array to be released after duplication.
-+ *
-+ * The @zone field is runtime state managed by powercap_hierarchy_create() and
-+ * powercap_hierarchy_destroy(). It is cleared when a node is destroyed.
-+ */
-+struct powercap_node {
-+	const char *name;
-+	struct powercap_node *parent;
-+	struct powercap_zone *zone;
-+	void *data;
-+};
+-	ret = dtpm_for_each_child(hierarchy, NULL, NULL);
+-	if (ret)
++	dtpm_hierarchy = powercap_hierarchy_dup(hierarchy);
++	if (IS_ERR(dtpm_hierarchy)) {
++		ret = PTR_ERR(dtpm_hierarchy);
++		dtpm_hierarchy = NULL;
+ 		goto out_err;
+-	
++	}
 +
-+/**
-+ * struct powercap_hierarchy - Powercap zone hierarchy
-+ * @nodes: Array describing the hierarchy nodes.
-+ * @nr_nodes: Number of entries in @nodes.
-+ * @lock: Lock serializing hierarchy creation and destruction.
-+ *
-+ * A backend may place the initial description in init memory and duplicate it
-+ * with powercap_hierarchy_dup() before the init sections are released. The
-+ * duplicated hierarchy owns the @nodes array, but not the objects referenced
-+ * by &struct powercap_node.name and &struct powercap_node.data.
-+ *
-+ * A hierarchy passed directly to powercap_hierarchy_create() or
-+ * powercap_hierarchy_destroy() must have an initialized lock. Use
-+ * POWERCAP_HIERARCHY_INIT() for a static instance. A description used only as
-+ * input to powercap_hierarchy_dup() does not need an initialized lock.
-+ */
-+struct powercap_hierarchy {
-+	struct powercap_node *nodes;
-+	size_t nr_nodes;
-+	struct mutex lock;
-+};
++	ret = powercap_hierarchy_create(pct, dtpm_hierarchy,
++				dtpm_node_create, dtpm_node_destroy);
++	if (ret)
++		goto out_free_hierarchy;
 +
-+/**
-+ * POWERCAP_HIERARCHY_INIT - Initialize a static powercap hierarchy
-+ * @name: Name of the hierarchy variable.
-+ * @node_array: Array describing the hierarchy nodes.
-+ * @count: Number of entries in the node array.
-+ *
-+ * The hierarchy and its node array must remain valid until destruction has
-+ * completed. Only duplicated hierarchies may be passed to
-+ * powercap_hierarchy_free().
+ 	for (i = 0; i < ARRAY_SIZE(dtpm_subsys); i++) {
+ 
+ 		if (!dtpm_subsys[i]->init)
+@@ -590,31 +587,20 @@ int dtpm_create_hierarchy(struct of_device_id *dtpm_match_table)
+ 
+ 	return 0;
+ 
++out_free_hierarchy:
++	powercap_hierarchy_free(dtpm_hierarchy);
++	dtpm_hierarchy = NULL;
+ out_err:
+ 	powercap_unregister_control_type(pct);
+ out_pct:
+ 	pct = NULL;
+ out_unlock:
+ 	mutex_unlock(&dtpm_lock);
+-	
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dtpm_create_hierarchy);
+ 
+-static void __dtpm_destroy_hierarchy(struct dtpm *dtpm)
+-{
+-	struct dtpm *child, *aux;
+-
+-	list_for_each_entry_safe(child, aux, &dtpm->children, sibling)
+-		__dtpm_destroy_hierarchy(child);
+-
+-	/*
+-	 * At this point, we know all children were removed from the
+-	 * recursive call before
+-	 */
+-	dtpm_unregister(dtpm);
+-}
+-
+ void dtpm_destroy_hierarchy(void)
+ {
+ 	int i;
+@@ -624,8 +610,8 @@ void dtpm_destroy_hierarchy(void)
+ 	if (!pct)
+ 		goto out_unlock;
+ 
+-	__dtpm_destroy_hierarchy(root);
+-	
++	powercap_hierarchy_destroy(pct, dtpm_hierarchy, dtpm_node_destroy);
++
+ 
+ 	for (i = 0; i < ARRAY_SIZE(dtpm_subsys); i++) {
+ 
+@@ -635,8 +621,10 @@ void dtpm_destroy_hierarchy(void)
+ 		dtpm_subsys[i]->exit();
+ 	}
+ 
++	powercap_hierarchy_free(dtpm_hierarchy);
+ 	powercap_unregister_control_type(pct);
+ 
++	dtpm_hierarchy = NULL;
+ 	pct = NULL;
+ 
+ 	root = NULL;
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index 21355db6419d..ccfc97e96e66 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -16,6 +16,7 @@
+  */
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
++#include <linux/cpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpufreq.h>
+ #include <linux/cpuhotplug.h>
+@@ -189,22 +190,53 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 	return 0;
+ }
+ 
+-static int __dtpm_cpu_setup(int cpu, struct dtpm *parent)
++/*
++ * A hierarchy node identifies a policy through one of its related CPUs,
++ * which need not be online. Find an active policy through an online sibling
++ * when necessary. The caller must hold cpus_read_lock() and release the
++ * returned policy with cpufreq_cpu_put().
 + */
-+#define POWERCAP_HIERARCHY_INIT(name, node_array, count) { \
-+	.nodes = (node_array), \
-+	.nr_nodes = (count), \
-+	.lock = __MUTEX_INITIALIZER(name.lock), \
++static struct cpufreq_policy *dtpm_cpu_get_policy(unsigned int cpu)
++{
++	struct cpufreq_policy *policy;
++	unsigned int sibling;
++
++	policy = cpufreq_cpu_get(cpu);
++	if (policy)
++		return policy;
++
++	/* The hierarchy's representative CPU may be offline. */
++	for_each_online_cpu(sibling) {
++		policy = cpufreq_cpu_get(sibling);
++		if (!policy)
++			continue;
++
++		if (cpumask_test_cpu(cpu, policy->related_cpus))
++			return policy;
++
++		cpufreq_cpu_put(policy);
++	}
++
++	return NULL;
 +}
 +
-+/**
-+ * powercap_hierarchy_dup - Duplicate a powercap hierarchy description
-+ * @hierarchy: Hierarchy description to duplicate.
-+ *
-+ * Allocate a runtime hierarchy and copy the nodes from @hierarchy. Parent
-+ * pointers are rebased to the duplicated node array and the runtime zone fields
-+ * are initialized to NULL.
-+ *
-+ * Every parent must belong to the source node array and precede its children.
-+ * The node names and private data are not duplicated and must remain valid
-+ * until powercap_hierarchy_free() is called.
-+ *
-+ * Context: Process context. May sleep.
-+ *
-+ * Return: A pointer to the duplicated hierarchy on success, or an ERR_PTR()
-+ * encoded error otherwise.
-+ */
-+struct powercap_hierarchy *powercap_hierarchy_dup(const struct powercap_hierarchy *hierarchy);
++static struct dtpm *__dtpm_cpu_setup(int cpu, struct dtpm *parent, const char *name)
+ {
+ 	struct dtpm_cpu *dtpm_cpu;
+ 	struct cpufreq_policy *policy;
+ 	struct em_perf_state *table;
+ 	struct em_perf_domain *pd;
+-	char name[CPUFREQ_NAME_LEN];
+-	int ret = -ENOMEM;
++	int ret;
+ 
+ 	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
+ 	if (dtpm_cpu)
+-		return 0;
++		return NULL;
+ 
+-	policy = cpufreq_cpu_get(cpu);
++	policy = dtpm_cpu_get_policy(cpu);
+ 	if (!policy)
+-		return 0;
++		return NULL;
 +
-+/**
-+ * powercap_hierarchy_free - Free a duplicated powercap hierarchy
-+ * @hierarchy: Hierarchy to free, or NULL.
-+ *
-+ * Free the node array and hierarchy allocated by powercap_hierarchy_dup(). All
-+ * registered zones must have been destroyed before calling this function.
-+ */
-+void powercap_hierarchy_free(struct powercap_hierarchy *hierarchy);
++	cpu = policy->cpu;
+ 
+ 	pd = em_cpu_get(cpu);
+ 	if (!pd || em_is_artificial(pd)) {
+@@ -224,8 +256,6 @@ static int __dtpm_cpu_setup(int cpu, struct dtpm *parent)
+ 	for_each_cpu(cpu, policy->related_cpus)
+ 		per_cpu(dtpm_per_cpu, cpu) = dtpm_cpu;
+ 
+-	snprintf(name, sizeof(name), "cpu%d-cpufreq", dtpm_cpu->cpu);
+-
+ 	ret = dtpm_register(name, &dtpm_cpu->dtpm, parent);
+ 	if (ret)
+ 		goto out_kfree_dtpm_cpu;
+@@ -240,7 +270,7 @@ static int __dtpm_cpu_setup(int cpu, struct dtpm *parent)
+ 		goto out_dtpm_unregister;
+ 
+ 	cpufreq_cpu_put(policy);
+-	return 0;
++	return &dtpm_cpu->dtpm;
+ 
+ out_dtpm_unregister:
+ 	dtpm_unregister(&dtpm_cpu->dtpm);
+@@ -253,18 +283,24 @@ static int __dtpm_cpu_setup(int cpu, struct dtpm *parent)
+ 
+ release_policy:
+ 	cpufreq_cpu_put(policy);
+-	return ret;
++	return ERR_PTR(ret);
+ }
+ 
+-static int dtpm_cpu_setup(struct dtpm *dtpm, struct device_node *np)
++static struct dtpm *dtpm_cpu_setup(struct dtpm *dtpm, struct device_node *np,
++				   const char *name)
+ {
++	struct dtpm *node;
+ 	int cpu;
+ 
+ 	cpu = of_cpu_node_to_id(np);
+ 	if (cpu < 0)
+-		return 0;
++		return NULL;
 +
-+/**
-+ * typedef powercap_node_create_t - Create a powercap hierarchy node
-+ * @pct: Powercap control type owning the hierarchy.
-+ * @name: Name of the powercap zone to create.
-+ * @data: Private data associated with the hierarchy node.
-+ * @parent: Parent powercap zone, or NULL for a root node.
-+ *
-+ * Callback invoked by powercap_hierarchy_create() for each node in the
-+ * hierarchy. The callback must create and register a powercap zone below
-+ * @parent. The backend is expected to embed struct powercap_zone in its own
-+ * object, pass the address of that member to powercap_register_zone(), and
-+ * return the same address from this callback. This lets the backend recover
-+ * its object with container_of() from subsequent powercap callbacks.
-+ *
-+ * Context: Called with the powercap hierarchy mutex held. The callback may
-+ * sleep, but must not call powercap_hierarchy_create() or
-+ * powercap_hierarchy_destroy() for the same hierarchy.
-+ *
-+ * Return: A valid pointer to the created powercap zone on success, NULL to
-+ * skip this node and its descendants, or an ERR_PTR() encoded error to abort
-+ * creation and roll back all zones created by this invocation.
-+ */
-+typedef struct powercap_zone *(*powercap_node_create_t)(struct powercap_control_type *pct,
-+							const char *name, void *data,
-+							struct powercap_zone *parent);
-+/**
-+ * typedef powercap_node_destroy_t - Destroy a powercap hierarchy node
-+ * @pct: Powercap control type owning the hierarchy.
-+ * @zone: Powercap zone to destroy.
-+ * @data: Private data associated with the hierarchy node.
-+ *
-+ * Callback invoked when a hierarchy is destroyed or when its creation must
-+ * be rolled back. The callback must unregister the powercap zone represented
-+ * by @zone. The backend remains responsible for the lifetime of the enclosing
-+ * object, including releasing it from the powercap zone release callback when
-+ * necessary.
-+ *
-+ * Nodes are passed to this callback in reverse creation order, ensuring that
-+ * all children are destroyed before their parent.
-+ *
-+ * Context: Called with the powercap hierarchy mutex held. The callback may
-+ * sleep, but must not call powercap_hierarchy_create() or
-+ * powercap_hierarchy_destroy() for the same hierarchy.
-+ */
-+typedef void (*powercap_node_destroy_t)(struct powercap_control_type *pct,
-+					struct powercap_zone *zone,
-+					void *data);
++	cpus_read_lock();
++	node = __dtpm_cpu_setup(cpu, dtpm, name);
++	cpus_read_unlock();
+ 
+-	return __dtpm_cpu_setup(cpu, dtpm);
++	return node;
+ }
+ 
+ static int dtpm_cpu_init(void)
+diff --git a/drivers/powercap/dtpm_devfreq.c b/drivers/powercap/dtpm_devfreq.c
+index fa71285dee60..a783601fe74e 100644
+--- a/drivers/powercap/dtpm_devfreq.c
++++ b/drivers/powercap/dtpm_devfreq.c
+@@ -144,7 +144,8 @@ static struct dtpm_ops dtpm_ops = {
+ 	.release = pd_release,
+ };
+ 
+-static int __dtpm_devfreq_setup(struct devfreq *devfreq, struct dtpm *parent)
++static struct dtpm *__dtpm_devfreq_setup(struct devfreq *devfreq,
++					 struct dtpm *parent, const char *name)
+ {
+ 	struct device *dev = devfreq->dev.parent;
+ 	struct dtpm_devfreq *dtpm_devfreq;
+@@ -156,23 +157,23 @@ static int __dtpm_devfreq_setup(struct devfreq *devfreq, struct dtpm *parent)
+ 		ret = dev_pm_opp_of_register_em(dev, NULL);
+ 		if (ret) {
+ 			pr_err("No energy model available for '%s'\n", dev_name(dev));
+-			return -EINVAL;
++			return ERR_PTR(-EINVAL);
+ 		}
+ 	}
+ 
+ 	dtpm_devfreq = kzalloc_obj(*dtpm_devfreq);
+ 	if (!dtpm_devfreq)
+-		return -ENOMEM;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	dtpm_init(&dtpm_devfreq->dtpm, &dtpm_ops);
+ 
+ 	dtpm_devfreq->devfreq = devfreq;
+ 
+-	ret = dtpm_register(dev_name(dev), &dtpm_devfreq->dtpm, parent);
++	ret = dtpm_register(name, &dtpm_devfreq->dtpm, parent);
+ 	if (ret) {
+ 		pr_err("Failed to register '%s': %d\n", dev_name(dev), ret);
+ 		kfree(dtpm_devfreq);
+-		return ret;
++		return ERR_PTR(ret);
+ 	}
+ 
+ 	ret = dev_pm_qos_add_request(dev, &dtpm_devfreq->qos_req,
+@@ -185,23 +186,24 @@ static int __dtpm_devfreq_setup(struct devfreq *devfreq, struct dtpm *parent)
+ 
+ 	dtpm_update_power(&dtpm_devfreq->dtpm);
+ 
+-	return 0;
++	return &dtpm_devfreq->dtpm;
+ 
+ out_dtpm_unregister:
+ 	dtpm_unregister(&dtpm_devfreq->dtpm);
+ 
+-	return ret;
++	return ERR_PTR(ret);
+ }
+ 
+-static int dtpm_devfreq_setup(struct dtpm *dtpm, struct device_node *np)
++static struct dtpm *dtpm_devfreq_setup(struct dtpm *dtpm, struct device_node *np,
++				       const char *name)
+ {
+ 	struct devfreq *devfreq;
+ 
+ 	devfreq = devfreq_get_devfreq_by_node(np);
+ 	if (IS_ERR(devfreq))
+-		return 0;
++		return NULL;
+ 
+-	return __dtpm_devfreq_setup(devfreq, dtpm);
++	return __dtpm_devfreq_setup(devfreq, dtpm, name);
+ }
+ 
+ struct dtpm_subsys_ops dtpm_devfreq_ops = {
+diff --git a/drivers/soc/rockchip/dtpm.c b/drivers/soc/rockchip/dtpm.c
+index e71f315fbb6b..222d9098cc98 100644
+--- a/drivers/soc/rockchip/dtpm.c
++++ b/drivers/soc/rockchip/dtpm.c
+@@ -11,26 +11,59 @@
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ 
+-static struct dtpm_node __initdata rk3399_hierarchy[] = {
+-	[0] = { .name = "rk3399",
+-		.type = DTPM_NODE_VIRTUAL },
+-	[1] = { .name = "package",
+-		.type = DTPM_NODE_VIRTUAL,
+-		.parent = &rk3399_hierarchy[0] },
+-	[2] = { .name = "/cpus/cpu@0",
+-		.type = DTPM_NODE_DT,
+-		.parent = &rk3399_hierarchy[1] },
+-	[3] = { .name = "/cpus/cpu@100",
+-		.type = DTPM_NODE_DT,
+-		.parent = &rk3399_hierarchy[1] },
+-	[4] = { .name = "/gpu@ff9a0000",
+-		.type = DTPM_NODE_DT,
+-		.parent = &rk3399_hierarchy[1] },
+-	[5] = { /* sentinel */ }
++static struct dtpm_node rk3399_virtual = {
++	.type = DTPM_NODE_VIRTUAL,
++};
 +
-+/**
-+ * powercap_hierarchy_destroy - Destroy a powercap hierarchy
-+ * @pct: Powercap control type owning the hierarchy.
-+ * @hierarchy: Hierarchy to destroy.
-+ * @powercap_node_destroy: Callback used to destroy each powercap zone.
-+ *
-+ * Destroy all powercap zones previously created for @hierarchy. Nodes are
-+ * destroyed in reverse array order so that children are removed before their
-+ * parents.
-+ *
-+ * Entries whose &struct powercap_node.zone field is NULL are ignored. After
-+ * a zone has been destroyed, its zone field is cleared.
-+ *
-+ * The caller must ensure that no users of the hierarchy remain when this
-+ * function is called.
-+ *
-+ * Context: Process context. May sleep.
-+ *
-+ * Return: 0 on success or -EINVAL if an argument is invalid.
-+ */
-+int powercap_hierarchy_destroy(struct powercap_control_type *pct,
-+			       struct powercap_hierarchy *hierarchy,
-+			       powercap_node_destroy_t powercap_node_destroy);
++static struct dtpm_node rk3399_cpu0 = {
++	.type = DTPM_NODE_DT,
++	.path = "/cpus/cpu@0",
++};
 +
-+/**
-+ * powercap_hierarchy_create - Create a powercap hierarchy
-+ * @pct: Powercap control type that will own the hierarchy.
-+ * @hierarchy: Hierarchy to create.
-+ * @powercap_node_create: Callback used to create each powercap zone.
-+ * @powercap_node_destroy: Callback used to roll back an incomplete hierarchy.
-+ *
-+ * Create the powercap zones described by @hierarchy in array order. For each
-+ * entry, @powercap_node_create is called with the powercap zone stored in its
-+ * parent entry. Root nodes are created with a NULL parent.
-+ *
-+ * Each parent entry must precede all its children in the node array. All zone
-+ * fields must be NULL when this function is called.
-+ *
-+ * If a callback returns NULL, its node and all descendants are skipped.
-+ * Their zone fields remain NULL, and independent branches are still created.
-+ *
-+ * If a callback returns an error pointer, all zones created by this invocation
-+ * are destroyed in reverse order by calling @powercap_node_destroy. Therefore,
-+ * @powercap_node_destroy must be provided even when the caller does not
-+ * expect to destroy the hierarchy explicitly.
-+ *
-+ * The hierarchy and the objects referenced by its name and data fields must
-+ * remain valid until powercap_hierarchy_destroy() has completed.
-+ *
-+ * Context: Process context. May sleep.
-+ *
-+ * Return: 0 on success, -EINVAL if an argument or hierarchy entry is invalid,
-+ * -EBUSY if the hierarchy already contains a created zone, or the error
-+ * returned by @powercap_node_create.
-+ */
-+int powercap_hierarchy_create(struct powercap_control_type *pct,
-+			      struct powercap_hierarchy *hierarchy,
-+			      powercap_node_create_t powercap_node_create,
-+			      powercap_node_destroy_t powercap_node_destroy);
++static struct dtpm_node rk3399_cpu4 = {
++	.type = DTPM_NODE_DT,
++	.path = "/cpus/cpu@100",
++};
 +
- #endif
++static struct dtpm_node rk3399_gpu = {
++	.type = DTPM_NODE_DT,
++	.path = "/gpu@ff9a0000",
++};
++
++static struct powercap_node rk3399_nodes[] __initdata = {
++	[0] = {
++		.name = "rk3399",
++		.data = &rk3399_virtual,
++	},
++	[1] = {
++		.name = "package",
++		.parent = &rk3399_nodes[0],
++		.data = &rk3399_virtual,
++	},
++	[2] = {
++		.name = "cpu0-cpufreq",
++		.parent = &rk3399_nodes[1],
++		.data = &rk3399_cpu0,
++	},
++	[3] = {
++		.name = "cpu4-cpufreq",
++		.parent = &rk3399_nodes[1],
++		.data = &rk3399_cpu4,
++	},
++	[4] = {
++		.name = "ff9a0000.gpu",
++		.parent = &rk3399_nodes[1],
++		.data = &rk3399_gpu,
++	},
++};
++
++static struct powercap_hierarchy rk3399_hierarchy __initdata = {
++	.nodes = rk3399_nodes,
++	.nr_nodes = ARRAY_SIZE(rk3399_nodes),
+ };
+ 
+ static struct of_device_id __initdata rockchip_dtpm_match_table[] = {
+-	{ .compatible = "rockchip,rk3399", .data = rk3399_hierarchy },
++	{ .compatible = "rockchip,rk3399", .data = &rk3399_hierarchy },
+ 	{},
+ };
+ 
+diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
+index a4a13514b730..79a34d5923f4 100644
+--- a/include/linux/dtpm.h
++++ b/include/linux/dtpm.h
+@@ -38,7 +38,8 @@ struct dtpm_subsys_ops {
+ 	const char *name;
+ 	int (*init)(void);
+ 	void (*exit)(void);
+-	int (*setup)(struct dtpm *, struct device_node *);
++	struct dtpm *(*setup)(struct dtpm *parent, struct device_node *np,
++			      const char *name);
+ };
+ 
+ enum DTPM_NODE_TYPE {
+@@ -48,8 +49,7 @@ enum DTPM_NODE_TYPE {
+ 
+ struct dtpm_node {
+ 	enum DTPM_NODE_TYPE type;
+-	const char *name;
+-	struct dtpm_node *parent;
++	const char *path;
+ };
+ 
+ static inline struct dtpm *to_dtpm(struct powercap_zone *zone)
 -- 
 2.43.0
 
