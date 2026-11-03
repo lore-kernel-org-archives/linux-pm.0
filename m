@@ -1,68 +1,63 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=54.206.34.216
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793706117;
-	b=oLrBs/w9ms7R9uuAUgIDH2K0vAsKmPe4O4TFsPdzWcHZ7CniYJ5nH8KPbJsuKVonKqeN
-	 y7G0alNbiwBTTCIicZ31k4Cn/ZXWNOQLa9tLacj6YmtGG9m8fqV5uFI9Ft5O6GPVrokK1
-	 jmyVdlQ0pGtWEvB1b1o7pcLWnZGPs5YbrnI3wrcvG9LFPSF5Yv9gfgUtZwr9UST8yibto
-	 ZgWp+h80LZaIu1OOMMdYMLe6zftiX82EdV/8A0/pr7qo9IUJfPPP/hnx5Y0d2f9QbmGvM
-	 1fDZZAZ75r11l5yNXun2EeybM3HODWV4Cf/CjhEN6ktMhiVeAF7fgD2rcIPV/x24vMA==
+	t=1793706195;
+	b=Me9IabNLYSSq9WrNoK7yIbMjjnXSvviSdwQP+F2PCVcJqFVOt5C35UlLN1JTh1JqCFk4
+	 ZJFE7BMXPNHqy2Kd8fT2zhRTy5DYvTTyn0TE+nvB7cLCKemXNeUFm+fMQNILs89/XinTU
+	 7C/4/gTTIxCF9TRfakcL/1oUBvu4Zm34GF37D60JsF3+RZmeFfMcpubNBmq2tKk3dfNPG
+	 7p7t+nkx3Ba9/WioX8cRV+HDpwPT0YDBqle8d5NG3oM6fjRP4j8fB08xsFzijAjozCS9m
+	 3yFOtmGPDDUvykUCSmHixQzNS57wjZYNDkCpaDH7H5FWupTZKeZH1Hk4SBLoa1tMQUA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793706117;
-	h=DMARC-Filter:DKIM-Signature:X-QQ-mid:X-QQ-Originating-IP:Received:
-	 X-QQ-SSF:X-QQ-GoodBg:X-BIZMAIL-ID:From:To:Cc:Subject:Date:Message-Id:
-	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-QQ-SENDSIZE:
-	 Feedback-ID:X-QQ-XMAILINFO:X-QQ-XMRINFO:X-QQ-RECHKSPAM;
-	bh=hm+YoIJYg/6q89asgoCxIeqE0TkFtgT8zYaopp8hYqE=;
-	b=KZn9v4C6vR+pffs7V4UJeLPuhn+DWb2xfjsx2Hd/R8qL7mFlMbABDFKeJMk9f5RVYTEt
-	 3c45g8KmkUPsOlQdueUVSzuV5FgsB3L3u9CWR6mivmIbZc2ha6N5VTUBXVUoCJX60XNC0
-	 /FYpoiRBK93ltSKIqi5t2a1ZPOlQ8Q9ZVGM4BLK2odlpBiKkWIyV3sta6dmjAD+4HQvY/
-	 43xTS0P/nFIt2t1tBRip+U+5HsUQ6BdLiFewtL+/6kpwDiBFTcwPwTTw7DzIRBCZhlxU1
-	 QLvQI80kKV+0lcnOIUOr4EQBxOTifsO781SNvpj1ApFmQp15Hla9Z3zW3+y7UGGNz4g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793706195;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To:X-AI-Review-Draft;
+	bh=oAKEq7+BRpGvpBSsBEayKf/a7ZevUUTupaXX5UTwYd0=;
+	b=puwjbtLk9sFJ+LTrcTGeQDaDd6Fw6I1x7mYJVZr6Pj005u10Gj51Szapr9hxePk18DKM
+	 uOKUgnlBOdSkTAcUJRbjvqniPIqS8UH+YoATAHp81zaf4uERFmquDRzewqHK+qtUUelPw
+	 oaIK/GEdoZ6SmCd0WprahPQ0uOmyP+hLCF4wlASzdogm1VucIDGFp4Ldqy4Cw4D7fVHCf
+	 dlEIrdTzpQgzUhyntaRcaTzPM4tfu0JAB+AlRh7QgZG6vm8N80C15WcnjBB0YrSg4McpV
+	 LXOZ5kBUBx2SzkUhQaTGYrYaIdP/4l2OkwRgmM400EMcvzxY5bfO5cs8PoACoJqETMw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=smail.nju.edu.cn;
-	spf=pass smtp.mailfrom=smail.nju.edu.cn;
-	dkim=pass header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b="cZxSlD/m";
-	arc=none smtp.remote-ip=54.206.34.216
-Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D3Re9nEX;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E97ED6082BF8;
-	Tue,  3 Nov 2026 11:41:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E97ED6082BF8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=smail.nju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=smail.nju.edu.cn
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 494F96082BD3;
+	Tue,  3 Nov 2026 11:43:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b=cZxSlD/m
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=smail.nju.edu.cn;
-	s=iohv2404; t=1793706073;
-	bh=hm+YoIJYg/6q89asgoCxIeqE0TkFtgT8zYaopp8hYqE=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=cZxSlD/mb02Q0+QQqZkGMBi1aznnp0cxQvCMEgsh1JiCWyjNsY7zZTWqksI7ycIHv
-	 n+qZ8JqlntvS5Pt5sA6ohteEKSi+8eshJPhnrAnHKUCCdpN7RqE1AyjPj1U/dKfIxD
-	 3ixCoI4dPJ6azXhNYzCMIvqneGxpyzAzOwtTN6FI=
-X-QQ-mid: zesmtpip3t1793706068t64c2cd54
-X-QQ-Originating-IP: rs7/Fn/wvEfZvuqafW6DiSnyzLCyIonP5O2xqm3nqCA=
-Received: from workstation-Precision-7920-Towe ( [localhost])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Tue, 03 Nov 2026 19:41:06 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 261078607910687109
-From: Kang Chen <k.chen@smail.nju.edu.cn>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Kaushlendra Kumar <kaushlendra.kumar@intel.com>,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Matthew Garrett <mjg59@google.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: int340x: reject changing ODVP package sizes
-Date: Tue,  3 Nov 2026 19:41:06 +0800
-Message-Id: <20261103114106.74290-1-k.chen@smail.nju.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D3Re9nEX
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 698921F00919;
+	Tue,  3 Nov 2026 11:43:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793706195;
+	bh=oAKEq7+BRpGvpBSsBEayKf/a7ZevUUTupaXX5UTwYd0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=D3Re9nEXxDEqekdLNIVGqpGr2AVGbtN5bTu62y6bkxpSfNHVfRE8UZ5Z9c9JH0Vek
+	 EXO+dgInLFcdO7vp6Zyk72NeixIba8haUOaM1pkt8feK9C6fkJn4z2oMx8EonacOSn
+	 5vkfGe09bvojQPdQvnDLN6dszvvJCNgpcdkiew/EPgj/mPUqs4Z8dfWknf8Jgyn12O
+	 5tynCQsL0rjTAY4Us33cxpepLJjsFWydtaoT8A6ljfkYn9u4zyXqrj72UdVaAZlAzO
+	 PwFUeeejCRkOw2z71ZLcdJith91Xnb1LQrBTE5ySw6DSzGSzaw5+opnKcCut6w/Nui
+	 ikvRjKVRn/tQg==
+Date: Tue, 3 Nov 2026 11:43:09 +0000
+From: Lee Jones <lee@kernel.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+	Ion Agorria <ion@agorria.com>,
+	=?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
+	Florian Krischer <florian.krischer@fkr.dev>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-input@vger.kernel.org, mfd@lists.linux.dev,
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v12 2/7] mfd: Add driver for ASUS Transformer embedded
+ controller
+Message-ID: <179249578293.1833288.15514260998480602004@kernel.org>
+References: <20261019100406.103687-1-clamor95@gmail.com>
+ <20261019100406.103687-3-clamor95@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -72,87 +67,158 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpip:smail.nju.edu.cn:qybglogicsvrgz:qybglogicsvrgz5b-1
-X-QQ-XMAILINFO: NE/KYnj71KnOjFMP7dH5iZTd6+g0/JyRtHCu5H3ny0COlT6T5oGg2kbj
-	oxI3B8VDQ3v5Fi5y0zMG6AbEzSPuXOxr3Aq7TiTY9o5ge6/XJY3Yzb0bUpExPUVk572lQso
-	PAT+vva+vkIQ4xcPrMG3YcLk/7TY74TgJIuMRW09SqAL/DYoMbWCwcoIr0ZHKIJVW7Owl1U
-	usT+9UqJ6eaOOmw9Z3UqPigaGArpWAPE1Uevhdi8ojldxxfA4AOHjj+/P6y+BzxHDYREvwG
-	XdJ82tagEUgije4PeHGGptaNSvfZ+UwN9SRxUEuAijpoRdOjOaftkRFS3XB/2qMHrce0+T3
-	X3CVk2OLLSVxkEQmftonhH7U44QLP8DnfkjeT9WGA56j3hfhMuriHfDvOuYbmixoWJjD8tG
-	2O/QIkWk+dStVtMrEQfL78T1jj7uoyAR32pjct29yIjeOwtNcV0gDpRwT1OHcfjXlCSBBly
-	n6vU1gYxaS4JceBLqg+tNJOxmzr2k5xsRxZYsDEp8nKqH2cyDFS5nGW1fQg779oaYfTbiF9
-	vaDTsLmd9V+jjASxSgit29Y5rR8UAkxeEeXEI7AZ1p1Pd1mUNvJdpMFjOTaxhjnR3Z+Vk2a
-	XV/z5X+HSDA4XN4NFSWEGc/sjsYQlTbIsbjevMdGs1oQmVOR7sKIsTt4as1zB+cN3r/tDUv
-	k8zuLuKv6NwSm0TG81Rs3iJnE5xM2KuVLkALvV0zp92wvTwVbtm3Xg/SWSOAfLlU44vBtTC
-	KNuWdI7ffKoif0oYoXs/I5n9KI8WPcaz9E82awV+D59Pg3DCxsvqCKvQJ1RRU3nWd5yvu2J
-	Gg2AIm08JVDI989DY+bXFk885ouKDj0hkh+Y7SHxKVSgIFM2OnxZ/6TWuvsHLrDzYhc8rya
-	kCAWCzCcRdkHd4Q930f3ooTMa/x+XUMt3s+4+MhBOVf9hkbL0qtXi/J1vXv45kJ+CtLLyq5
-	lVXoJMnsGix9DFxWxFPPcq61zum3dyd0qjN6AwoZsC6XFqCsbYfWh7h5ZOyS3mCuX205XI4
-	HMHKVBrojIEgK+L71E5+sXUZx42atborpTpSrbk7+o9btb4MsblieqsKtWvQk=
-X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
-X-QQ-RECHKSPAM: 0
+In-Reply-To: <20261019100406.103687-3-clamor95@gmail.com>
+X-AI-Review-Draft: <20261019100406.103687-3-clamor95@gmail.com>
 
-evaluate_odvp() sizes priv->odvp from the package count returned by the
-first ODVP evaluation, but it never compares that cached size with the
-count of a later evaluation.  The function runs at probe time, on
-INT3400_ODVP_CHANGED notifications, and on thermal mode changes, so a
-firmware that answers with a larger package after the first call makes
-the fill loop write past the cached allocation.
+--- checkpatch.pl (4 issues) ---
+Line 607: WARNING: DT compatible string "asus,sl101-ec-dock" appears un-documented -- check ./Documentation/devicetree/bindings/
+Line 610: WARNING: DT compatible string "asus,tf101-ec-dock" appears un-documented -- check ./Documentation/devicetree/bindings/
+Line 613: WARNING: DT compatible string "asus,tf201-ec-pad" appears un-documented -- check ./Documentation/devicetree/bindings/
+Line 616: WARNING: DT compatible string "asus,tf600t-ec-pad" appears un-documented -- check ./Documentation/devicetree/bindings/
+----------------------------------
 
-Ignore packages whose count differs from the cached one, and reject
-counts that do not fit in the int that stores priv->odvp_count.  Also
-reject a missing ODVP object instead of dereferencing a NULL pointer
-when the method returns no value.
+On Mon, 19 Oct 2026, Svyatoslav Ryhel wrote:
+> From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+>
+> Support Nuvoton NPCE795-based ECs as used in Asus Transformer TF201,
+> TF300T, TF300TG, TF300TL and TF700T pad and dock, as well as TF101 dock
+> and TF600T, P1801-T and TF701T pad. This is a glue driver handling
+> detection and common operations for EC's functions.
+>
+> Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> ---
+>  drivers/mfd/Kconfig                     |  16 +
+>  drivers/mfd/Makefile                    |   1 +
+>  drivers/mfd/asus-transformer-ec.c       | 569 ++++++++++++++++++++++++
+>  include/linux/mfd/asus-transformer-ec.h | 100 +++++
+>  4 files changed, 686 insertions(+)
+>  create mode 100644 drivers/mfd/asus-transformer-ec.c
+>  create mode 100644 include/linux/mfd/asus-transformer-ec.h
 
-Fixes: 006f006f1e5c ("thermal/int340x_thermal: Export OEM vendor variables")
-Signed-off-by: Kang Chen <k.chen@smail.nju.edu.cn>
----
- .../intel/int340x_thermal/int3400_thermal.c    | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+[...]
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 5d70301d4a3d..eb899f90970e 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -377,12 +377,25 @@ static int evaluate_odvp(struct int3400_thermal_priv *priv)
- 	}
- 
- 	obj = odvp.pointer;
--	if (obj->type != ACPI_TYPE_PACKAGE) {
-+	if (!obj || obj->type != ACPI_TYPE_PACKAGE) {
- 		ret = -EINVAL;
- 		goto out_err;
- 	}
- 
-+	if (priv->odvp && priv->odvp_count != obj->package.count) {
-+		dev_warn_once(&priv->pdev->dev,
-+			      "ODVP count changed from %d to %u, ignoring\n",
-+			      priv->odvp_count, obj->package.count);
-+		ret = 0;
-+		goto out_free;
-+	}
-+
- 	if (priv->odvp == NULL) {
-+		if (obj->package.count > INT_MAX) {
-+			ret = -EINVAL;
-+			goto out_err;
-+		}
-+
- 		priv->odvp_count = obj->package.count;
- 		priv->odvp = kmalloc_objs(int, priv->odvp_count);
- 		if (!priv->odvp) {
-@@ -429,6 +442,9 @@ static int evaluate_odvp(struct int3400_thermal_priv *priv)
- 	kfree(obj);
- 	return 0;
- 
-+out_free:
-+	kfree(obj);
-+	return ret;
- out_err:
- 	cleanup_odvp(priv);
- 	kfree(obj);
+> +static int asus_ec_reset(struct asus_ec_data *ddata)
+> +{
+> +	int retry, ret;
+> +
+> +	guard(mutex)(&ddata->ecreq_lock);
+> +
+> +	for (retry = 0; retry < ASUSEC_RETRY_MAX; retry++) {
+
+As mentioned on v8, 'for (int retry = 0; ...)' is generally preferred for
+throw-away loop variables.
+
+> +		ret = i2c_smbus_write_word_data(ddata->client, ASUSEC_WRITE_BUF,
+> +						ASUSEC_RESET);
+> +		if (!ret)
+> +			return 0;
+> +
+> +		msleep(ASUSEC_ACCESS_TIMEOUT);
+> +	}
+> +
+> +	return ret;
+> +}
+
+[...]
+
+> +static int asus_ec_probe(struct i2c_client *client)
+> +{
+> +	struct device *dev = &client->dev;
+> +	struct asus_ec_data *ddata;
+> +	const struct mfd_cell *cells;
+> +	unsigned int num_cells;
+> +	unsigned long irqflags;
+> +	int ret;
+> +
+> +	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_I2C_BLOCK))
+> +		return dev_err_probe(dev, -ENXIO,
+> +			"I2C bus is missing required SMBus block mode support\n");
+> +
+> +	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+> +	if (!ddata)
+> +		return -ENOMEM;
+> +
+> +	ddata->info = device_get_match_data(dev);
+> +	if (!ddata->info)
+> +		return -ENODEV;
+> +
+> +	switch (ddata->info->variant) {
+> +	case ASUSEC_SL101_DOCK:
+> +		cells = asus_ec_sl101_dock_mfd_devices;
+> +		num_cells = ARRAY_SIZE(asus_ec_sl101_dock_mfd_devices);
+> +		break;
+> +	case ASUSEC_TF101_DOCK:
+> +		cells = asus_ec_tf101_dock_mfd_devices;
+> +		num_cells = ARRAY_SIZE(asus_ec_tf101_dock_mfd_devices);
+> +		break;
+> +	case ASUSEC_TF201_PAD:
+> +		cells = asus_ec_tf201_pad_mfd_devices;
+> +		num_cells = ARRAY_SIZE(asus_ec_tf201_pad_mfd_devices);
+> +		break;
+> +	case ASUSEC_TF600T_PAD:
+> +		cells = asus_ec_tf600t_pad_mfd_devices;
+> +		num_cells = ARRAY_SIZE(asus_ec_tf600t_pad_mfd_devices);
+> +		break;
+> +	default:
+> +		return dev_err_probe(dev, -EINVAL,
+> +				     "unknown device variant %d\n",
+> +				     ddata->info->variant);
+> +	}
+> +
+> +	i2c_set_clientdata(client, ddata);
+> +	ddata->client = client;
+> +
+> +	ddata->ec.dockram = devm_asus_dockram_get(dev);
+> +	if (IS_ERR(ddata->ec.dockram))
+> +		return dev_err_probe(dev, PTR_ERR(ddata->ec.dockram),
+> +				     "failed to get dockram\n");
+> +
+> +	ddata->ecreq_gpio = devm_gpiod_get(dev, "request", GPIOD_OUT_LOW);
+> +	if (IS_ERR(ddata->ecreq_gpio))
+> +		return dev_err_probe(dev, PTR_ERR(ddata->ecreq_gpio),
+> +				     "failed to get EC request GPIO\n");
+> +
+> +	BLOCKING_INIT_NOTIFIER_HEAD(&ddata->ec.notify_list);
+> +	mutex_init(&ddata->ecreq_lock);
+> +
+> +	asus_ec_signal_request(ddata);
+> +
+> +	ret = asus_ec_detect(ddata);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "failed to detect EC version\n");
+> +
+> +	ret = asus_ec_init(ddata);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "failed to init EC\n");
+> +
+> +	/*
+> +	 * Systems using device tree should set up interrupt via DTS,
+> +	 * the rest will use the default low interrupt.
+> +	 */
+> +	irqflags = dev->of_node ? 0 : IRQF_TRIGGER_LOW;
+> +
+> +	ret = devm_request_threaded_irq(dev, client->irq, NULL,
+> +					&asus_ec_interrupt,
+> +					IRQF_ONESHOT | irqflags,
+> +					client->name, ddata);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "failed to register IRQ\n");
+> +
+> +	/* Parent I2C controller uses DMA, ASUS EC and child devices do not */
+> +	client->dev.coherent_dma_mask = 0;
+> +	client->dev.dma_mask = &client->dev.coherent_dma_mask;
+> +
+> +	return devm_mfd_add_devices(dev, 0, cells, num_cells, NULL, 0, NULL);
+
+Why not use 'PLATFORM_DEVID_NONE' or 'PLATFORM_DEVID_AUTO' here instead of a raw
+'0' and hard-coded cell IDs in 'asus_ec_tf101_dock_mfd_devices'?
+
+> +}
+
 -- 
-2.34.1
-
+Lee Jones
