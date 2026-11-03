@@ -1,98 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.170
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793736275;
-	b=R2RXlaThddvm9muMXZBtI+EjbLvo7832EFwCvhlCGATX1YsFiK61t4iY7+LrqhAWnxdR
-	 Kl6eMfDKqD5WXnGuaZbPr/MxFBUu2wncrT8DFjGbSwWilU/Sv4lIEvAgU6jRo+fKnSZSz
-	 cjgKYVGTejZZZAlX3kLTN4DJ+Dmk+CYqBVRw67zO5H5j3TZvkOh6KRg/ZRO5WnzwNbc4x
-	 0MfZIeLxhFFTF0Lb7upuo3tk9tAMyESTD6TAcaozZw7YS/txdXJ2OKgt1UiOYSNogAgv+
-	 afYkB6sKJlMBwNz5tpqPAYbMfx8wvCBWft8OMPAHtYARIafiEanXMgMDJdXkT/7fP9g==
+	t=1793736388;
+	b=utc3hdv6Ja/lG/xJrWWZetMRj+MIuYr7fYrUofg8dHLeOEkKOJGkyaeh4vpHI2oxvu2T
+	 epnd9QYHfKTw8y+VZvtWbymo1J/z9Wo+9J8SU9FjhY0W1x8b/idKcMcH4krPIGOJUiOVC
+	 rWl01mvyOPj1spEJRg/ixBvhlz5cqoPIrft2FJfw4S/9+ddrtPNIrId4B9G8DQCnVPHQe
+	 IkYV0Ou0H8pinFH09eV9wIqjPufnAaFye01fJUMTDWbB8uBqcCBp+cZWwn8cgSbtxji02
+	 eCvdq90zF14GZ9tmgqCVyoJRE56HpdwE6NSahLM1IbIOcK5FQm4rc744YJIwwWTjh0A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793736275;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=go4AIpvhBkoC7ZGd8wKwZdjhT/BPEGzJrSrX2YZDWhc=;
-	b=x21K2bZXzZKb+dMlDPbuAjVDOmFxaQgg8Qab5ed9rLXHsVDEx0uxWR1btkcSzQY5UWwT
-	 VhUClDtANdWAOv/pRq9Ior7gOhLCX1UjZ2zS5EI5Tjg1KQXRB2Qc+vBPsZr7FFyEizfgn
-	 Vx9MeckrGCgI2nBwkX9HLBd57DBxNnkD/olyID93orWKanTXUzVFzPX0IktuSE6n5wDUp
-	 guWWJI3tlY2UwTA+SaDAzHLl8mhecTzQdbQdXl8yzn2Co1/MPon9HpXiNsKCGzZvNu4pJ
-	 cH2u50o67wOu+wxF2RsVEqIYngLYlcN3bbbeXhJTPJkNnHVSQ/5R8p3mFbrV6iiVURg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793736388;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:Content-Language:To:Cc:References:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=hssDwEe1rOKRZStCD3pdhScZWrDFQx9Kmg4KZWjcIYA=;
+	b=VjmEDJQ3mDpn15KoKJyyoSXukZPHIdc8k/NbPCB51zXLGhmyhVZF6KoAj/fss3kxXH8p
+	 92GPNa0yupWd2jBlR2vDe8V/W5JKEcoI/ECvHedRijVNhqL+EvYhlMm+cUIhFaeqBZejB
+	 fz+ubTpERox8r+077CF9VccxjA48xNLuJRfTwLQQVwCuxyj7lCAwuPj2mBMxcL+YL6+uV
+	 0WFWDDVj45WG7xeOXkmSVXLTWHY/T66IIErEUwlG5cXztARq+SaYL7XPxBayRvWiEsye9
+	 f4FLf8dh0eq4xVR9vjducNUBvL6mRNg+k+yXf+CmvmeAtjYfaGXHGiA4190iM6gCXpg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MY3vc6Gb;
-	arc=none smtp.remote-ip=74.125.82.170
-Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R4CHFTdT;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30EB1606A330
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 20:04:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 30EB1606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1750F606D830
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 20:06:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MY3vc6Gb
-Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-36a18fc7a38so8824256eec.1
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 12:04:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793736274; x=1794341074; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=go4AIpvhBkoC7ZGd8wKwZdjhT/BPEGzJrSrX2YZDWhc=;
-        b=MY3vc6Gbvvfq42ubgxn7ZiALrft/xLB+7RdNtGFpyhdTAWULvE/ASxqtUVijeZaLAG
-         pFKwTl7Old40mDX8hTr504VOvLwRmf6WVo0XKxWHImHyLsyuvO5cI1YC7tyUOb9E2Ov4
-         ZupY/VOPLYTmU/TSmjc5sIO5R0nqbRrhc3gWtc1PAW4PGvUZRAa5TTXXr/Ol/wguGV04
-         /NyrkwL8H+JcKuFKPUwQu2sHRwhVoxKd3+a7lgDpWBVwlzlTOj+u8qnjv3odQL7LHfl6
-         id4GY7sKuMug1ts1LrY+1VLRHv5zI9HugBWlvGhAGFXapCIpnKpd9Sz4vKeVcJt7nGUP
-         lk5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793736274; x=1794341074;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=go4AIpvhBkoC7ZGd8wKwZdjhT/BPEGzJrSrX2YZDWhc=;
-        b=fte93KmlzU5KuakbJyGKmbmWPV1R1NstfiYxTCtfpABjQx9TQgyg/S+zpQU/H1ekSq
-         iaqXCsi5e/vUT/5ZCCXDw48a/aUbxPPPtjBp7M8JSkDLTvHzEyOGT0OnKp+GhLJbhmTN
-         4CDsaR0abFGuGAXSNtIu6cQ16MfoJUeKvL523M+kfnjxlEcu523a/3WjdGSe4tr/gLiA
-         +Jnm/4+/W+kcHxWoiNgAJFvpANMj98DKvgteHyIhqsfmGZglDFDEc18oqHKrw2gzdjdp
-         FtRSMc/30dTEhpTXDgLs3Yaa4978DTGt0+34WlKIqejgAeLDvPWakw7ttVFmA30nBS+A
-         TNFg==
-X-Forwarded-Encrypted: i=1; AKwUvBwduKih6cbFm+dxDA15hFM5raDBMcGbhg+n+LPL0D55k7TXlXou/KXS1VAbiK0lOsIEi0Izxw2o7g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8J0kiJTzTeeTatx/9CEqCbtDMoYAXmo8jB1+TlULk6uKWNZw1P
-	8lpCcgXcCEUgZ15Fh4p4hva8ckNvO8GiGiCWGvDO3W0bcCOCcx3fw2TB
-X-Gm-Gg: AYBFou0WW8quWIqD/1jlrba835QWW1adRO1F0uh67ZCzJctLfW7yPPak+9ccVVaMXUf
-	u7W+bQWd1OdMvjI3kc9VsBXk/RkMlw77jaRN103GvrYCLWAWfLdBPEjREY21QWefAOMt81RZgHA
-	RH9faDNifJ1Ngibih5OJqMuWoUoLu73WcVsIboTEMhCQ2CHbzMyg5RnDITEafyR3ZDHLLcSZihw
-	keXxktZdx9UgLNFeeavE1yliwOX/dLbGziYP6++c50j7wDnqiduFVUcOQjmZgDD2V0D3HLkC0XD
-	aNH+e7XNMBSaZXZ9oYXJVWJBz+hQTLCNjpzMSzTsFt3vqwjbowURbJApqxD1+JFON+eFyZVvJA5
-	2iXsESAcplwAYFz/HIthdg6fenEYW8FjgMF3hqi8eRA1VB4W0P+bn8eFmfYInnW6pDfzr2F/YYA
-	ZJZmHKEXhNMZrCumFUmd1oUXhsiK7Sd+HkpkXnY4EJi7iTGlpS//nNpjo5xrfllp9PvqUvK5vrO
-	6w1vxYBf2XGoRluLPWl1B+5YSJbAwT7X8DYMhrF4v3qzrVo1EyghLOOLkwseORt1ydQA8y8qWgV
-	5BXVRrLwh1lfmSqwM5AN3xrsy1ZulQ3aGaCFFjD2hTomsBgaYCvd8sqJTQs6Ynb83bVS
-X-Received: by 2002:a05:7300:824b:b0:36a:1c75:8ca3 with SMTP id 5a478bee46e88-36a4221b3b9mr19658147eec.1.1793736274072;
-        Tue, 03 Nov 2026 12:04:34 -0800 (PST)
-Received: from google.com ([2a00:79e0:2ebe:8:88b4:22ec:d621:c1b])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36ca38a6160sm368905eec.9.2026.11.03.12.04.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Nov 2026 12:04:33 -0800 (PST)
-Date: Tue, 3 Nov 2026 12:04:29 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andi Shyti <andi.shyti@kernel.org>
-Cc: Mika Westerberg <westeri@kernel.org>, 
-	Corey Minyard <corey@minyard.net>, Hans de Goede <hansg@kernel.org>, 
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, linux-i2c@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
-	openipmi-developer@lists.sourceforge.net, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/8] i2c: docs: update i2c_smbus_read_block_data()
- prototype in writing-clients
-Message-ID: <auo-JCn9VES7OwX5@google.com>
-References: <20261024-i2c-smbus-read-block-data-v1-0-19bb97467982@gmail.com>
- <20261024-i2c-smbus-read-block-data-v1-2-19bb97467982@gmail.com>
- <auI4Qq1KUo7YYVtG@zenone.zhora.eu>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R4CHFTdT
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2FBC21F00A02;
+	Tue,  3 Nov 2026 20:06:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793736387;
+	bh=hssDwEe1rOKRZStCD3pdhScZWrDFQx9Kmg4KZWjcIYA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=R4CHFTdTuMOuS7jt7JoKUFbf1I+E+14sEWMa2d2DlooiqmSAFNy032FRirgX0epot
+	 lqZUFtgI+nUanCKc8Faxvl0QqnC6I4yIWsboKjm8O3zd89YvV2U3mPWGsohQ7cd5p6
+	 +pdSGVt8/jYjD+kFooIQh7S+poyX+v5kObtfgOqjhkQSrge3KFm2/UzD8v7VN/Gkvb
+	 BV/7DOyc6xfXgJdH+2a9W0hYczGoFpSsK45Ljh3thr8nkCpV7cFbn+rDBwbqj9vtyG
+	 R860xW2WJ57PZlk5U5QP4zsbk81dekcrZmPWmeJ+eeqEzKzdAif4Or5qrZSFLVXpQa
+	 V7yq2i1Z7weQg==
+Message-ID: <d57d491b-a18f-4c54-a12e-b1d3bf85ff46@kernel.org>
+Date: Tue, 3 Nov 2026 14:06:25 -0600
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,24 +51,46 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <auI4Qq1KUo7YYVtG@zenone.zhora.eu>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/3] cpufreq: Fix synchronization with system
+ suspend/resume
+Content-Language: en-US
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Linux PM <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Doug Smythies <dsmythies@telus.net>, Zak <zakbrightonknight@gmail.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+References: <6065833.DvuYhMxLoT@rafael.j.wysocki>
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <6065833.DvuYhMxLoT@rafael.j.wysocki>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 28, 2026 at 07:00:49PM +0100, Andi Shyti wrote:
-> Hi Dmitry,
+On 11/3/26 13:42, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> On Sat, Oct 24, 2026 at 07:48:42PM -0700, Dmitry Torokhov wrote:
-> > Update the prototype of i2c_smbus_read_block_data() in the SMBus
-> > protocol function table to include the length parameter.
-> > 
-> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> This is an update of
 > 
-> Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
+> https://lore.kernel.org/linux-pm/5162355.31r3eYUQgx@rafael.j.wysocki/
+> 
+> that modifies the first two patches in the series (to address Sashiko
+> findings) and drops the last one.
+> 
+> This series fixes issues related to the synchronization between cpufreq
+> and the intel_pstate driver with system suspend/resume mentioned here:
+> 
+> https://lore.kernel.org/linux-pm/CAJZ5v0hT6aoX4tuJM+rO_5iequFc_7rEXCoaFnHoJBaH3JP4KA@mail.gmail.com/
+> 
+> The first patch actually prevents governor operations from being
+> carried out on suspended cpufreq policies.
+> 
+> The second one forces the driver .target() callback to be invoked on
+> the first frequency update after cpufreq policy resume.
+> 
+> The third one causes intel_pstate to invalidate the cached last
+> P-state value during suspend.
+> 
+> Thanks!
 
-Andi, so will you be picking up the patches affecting drivers/i2c?
-
-Thanks.
-
--- 
-Dmitry
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
