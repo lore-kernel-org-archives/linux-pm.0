@@ -1,22 +1,22 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=159.226.251.81
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793687319;
-	b=KFNszpOyfc6CqMEhYYXMiT9SJGbPMwwB8uHBqtK8xfGaj1zacNrnZGb08i+PPlxBmd/x
-	 gzTCJdZ7+I7kbf/K8l1Vni92TS3ieL5XJ95XQR/yn32nNQLyqUou8idgcL0/SpsK2taTl
-	 MipSYpLPxIhAJ9qXjPqcBYa960H5eIpn4jHOiKb5X6G53qzXM8Ji7H+ODd1N/kD1ve3BP
-	 qYJyAan75o81lQw8gYrRBYHO3MYuHRixb3rc/RyX0jAIQR5pn3Zw3jc+kuGXoS7ugTnQj
-	 psvonPt5YodpXpkJDhOgi/lSUkM9Ak55brqXr4kQLih5XcJ0tOw8KDsoCks9dqXIhMg==
+	t=1793687764;
+	b=sbsH35MAD80PqwbBV0h+E/6P2RrSiWMJvlADyILtHTeJUrwbWgEHS+53J76uLxNrRa9v
+	 cZe5uXLjsBS31W2iswo9oKFAaYW2X+RUqFmXtIci6KEmqtbURJLYOWxUZEr7gGHP/B+/N
+	 tGMHoC8O7QtgLL3zsMOIX3RyibryN+uqAEnuINXUQv4ymHCqUdUJHGOcMbGIeVYuSZnOd
+	 e3GKQEnJwaBUSkx84ZNM3EZgG7cGa1yKZDf9Mn3J0ql715PfCGvPPWdHrwc9W6ztjO2jN
+	 7c09MxA3lAOkmdKzoP+G4+G/8+zZHeWxAagO9bLPVd6OEETfsU9UZLZMCzcuJzUoXuw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793687319;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793687764;
 	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
 	 MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
 	 X-Coremail-Antispam:X-Originating-IP:X-CM-SenderInfo;
-	bh=NGgi7FuzRvoo9lEIu1iCHQcCtHKx/g+aK20hu2ScPxo=;
-	b=Z7Ys1rRDc+S2KfMhlTOmPEEY9TsDGdIBnNCzYR/ejUVPt2bvYAoq09TAUjdmZC+QcI/H
-	 yeDVrnC7zDdl3KfgDV3LEyhdEMpJBoP/XRwnGd++7NlUCXf/wqpZpiNFHaV06UBexNvBu
-	 IqZwWgBIUqX1JnldbsTsoUIxdeej4+ogBeFzeCoqudF/LofV7kSWMmHONDYgZH/vEUjhq
-	 Q+lDW/YZtAMcK59Js8BCP0X6IbtX44ysfY6hzjiGWkf9nKU7+EMA+xPdU7g/LwBuRDgC5
-	 CyWMO+W8JqoWJPRnGRuLG4p2WqPk2TkSwDeFLbFHD6BaaGaYMpr6jvAr2rSC9s7Q3Cg==
+	bh=0bnxT/GaODOLw9buJdXMz007PkKtmbGsQ3QJymSQxXg=;
+	b=Fz4ennLExkHX5fWp7rYaBj5BdXInkLjRB14FTLl+cQKp4/AFqznCPRAoMlwTAE3sHmO8
+	 uFGjbvvR3EGpeRaiwv7rDEwSO+GJBYmvjiThXESSBYxZ7PGXltx/0rt9N8G74AAgA0veW
+	 sleiwf9+Prt9doMJvfU/Sde6WUlDyDKRhHjD8mVYqj1prtRqGXu4GJHzA/sMESUzvrwHr
+	 81iLNoap4j5fMywBkivqJgKadC980viEJhGUI+IADeFTWeYA7wkPhu3nzNh/OT39Fwbfv
+	 7JgxxDQmztDCRB4qnc4npBLVfiFrvxU/YC5otHvjcOTD2p1TtlcVYKE2+cNPCZPh4iA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=none header.from=iscas.ac.cn;
 	spf=pass smtp.mailfrom=iscas.ac.cn;
@@ -25,14 +25,14 @@ Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B7F9606A324;
-	Tue,  3 Nov 2026 06:28:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5B7F9606A324
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA803606A324;
+	Tue,  3 Nov 2026 06:36:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CA803606A324
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
 Received: from dfae2b116770.home.arpa (unknown [36.110.52.2])
-	by APP-03 (Coremail) with SMTP id rQCowAAHE5QSf+lq0Fs5AA--.43S2;
-	Tue, 03 Nov 2026 14:28:34 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowAC3xZbQgOlqnWs5AA--.93S2;
+	Tue, 03 Nov 2026 14:36:00 +0800 (CST)
 From: Wentao Liang <vulab@iscas.ac.cn>
 To: rafael@kernel.org,
 	viresh.kumar@linaro.org
@@ -40,9 +40,9 @@ Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Wentao Liang <vulab@iscas.ac.cn>,
 	stable@vger.kernel.org
-Subject: [PATCH] cpufreq: pxa: Release the core clock reference on failure and exit
-Date: Tue,  3 Nov 2026 06:28:43 +0000
-Message-Id: <20261103062843.1020546-1-vulab@iscas.ac.cn>
+Subject: [PATCH] cpufreq: mediatek: Release DVFS resources when removing the driver
+Date: Tue,  3 Nov 2026 06:36:09 +0000
+Message-Id: <20261103063609.1028187-1-vulab@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -54,61 +54,71 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:rQCowAAHE5QSf+lq0Fs5AA--.43S2
-X-Coremail-Antispam: 1UD129KBjvJXoWrZrW3tw13Kr4rAry8Jr17trb_yoW8JrW5pa
-	yrWrWYkryrJF4Dtw4UGa1UCa45X3Z7CrWjgw1UCwnaqFn3AFyFq3WDGFyUXFZ8Xr1kuw42
-	yr15Jw1xuayDAr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkC14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+X-CM-TRANSID:rQCowAC3xZbQgOlqnWs5AA--.93S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7ZrWxtFy5AF17Xr43CF15urg_yoW8AF13pF
+	s8XrWYkrWrJFsrKa1xCw4UCasYy3Z7u3yYgr13Gw1Fqw13JF15Xa4UWayUArZ0krWkGr4q
+	yr1jga47uFWkAFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkK14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVW8Jr0_Cr1UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
-	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
-	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIY
-	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
-	v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
-	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfU5ku4UU
-	UUU
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwcAA2rpWtl1KwAAsd
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUtVWrXwAv7VC2z280aVAFwI0_Gr1j6F4UJwAm72CE4IkC6x0Yz7v_Jr
+	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkF7I0En4kS14v2
+	6r126r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrV
+	AFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUAVWUtwCI
+	c40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267
+	AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_
+	Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUjiL05
+	UUUUU==
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwIAA2rpWtl8QwAAs5
 
-pxa_cpu_init() obtains a reference to the core clock with clk_get_sys(),
-but neither an unsupported CPU nor a failed cpufreq_register_driver()
-releases it. The module exit path also leaves the reference held after
-unregistering the cpufreq driver.
+mtk_cpufreq_probe() registers the cpufreq driver and retains clocks,
+regulators, OPP tables and OPP notifiers in dvfs_info_list. There is no
+platform remove callback to undo this on device unbind or module unload.
+The devm-allocated DVFS information is freed while the list and cpufreq
+driver still refer to it, in addition to leaking the retained resources.
 
-Drop the clock reference when initialization fails and after unregistering
-the driver on exit.
+Unregister the cpufreq driver before releasing the DVFS resources and
+removing their entries from the list, as in the probe failure path.
 
-Fixes: d9278077385f ("cpufreq: pxa: convert to clock API")
+Fixes: 89b56047f6f9 ("cpufreq: mt8173: Move resources allocation into ->probe()")
 Cc: stable@vger.kernel.org
 Assisted-by: DeepSeek-V4.1-Flash and OpenAI Codex
 Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
 ---
- drivers/cpufreq/pxa2xx-cpufreq.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpufreq/mediatek-cpufreq.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-index ed1ae061a687..83cd5a5ec7ea 100644
---- a/drivers/cpufreq/pxa2xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-@@ -305,12 +305,15 @@ static int __init pxa_cpu_init(void)
- 
- 	if (cpu_is_pxa25x() || cpu_is_pxa27x())
- 		ret = cpufreq_register_driver(&pxa_cpufreq_driver);
-+	if (ret)
-+		clk_put(pxa_cpufreq_data.clk_core);
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index f9b1eca176eb..5776310d96c0 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -677,11 +677,24 @@ static int mtk_cpufreq_probe(struct platform_device *pdev)
  	return ret;
  }
  
- static void __exit pxa_cpu_exit(void)
- {
- 	cpufreq_unregister_driver(&pxa_cpufreq_driver);
-+	clk_put(pxa_cpufreq_data.clk_core);
- }
++static void mtk_cpufreq_remove(struct platform_device *pdev)
++{
++	struct mtk_cpu_dvfs_info *info, *tmp;
++
++	cpufreq_unregister_driver(&mtk_cpufreq_driver);
++
++	list_for_each_entry_safe(info, tmp, &dvfs_info_list, list_head) {
++		mtk_cpu_dvfs_info_release(info);
++		list_del(&info->list_head);
++	}
++}
++
+ static struct platform_driver mtk_cpufreq_platdrv = {
+ 	.driver = {
+ 		.name	= "mtk-cpufreq",
+ 	},
+ 	.probe		= mtk_cpufreq_probe,
++	.remove		= mtk_cpufreq_remove,
+ };
  
- 
+ static const struct mtk_cpufreq_platform_data mt2701_platform_data = {
 -- 
 2.34.1
 
