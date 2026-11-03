@@ -1,120 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793742266;
-	b=RfTh9Q1Cbhm8LkIBPS4yFZYt3phsBHaCBJPvFLRax2ZnwKc7Z4SUIhl2ZHuz5/ECRrW3
-	 JltDFZ2L8PiYm0cDpPpVes8gIkfcrsrldF3Kac/XRN5EuaxINLj7r44oEA8uelcvBNZZ0
-	 gW5D1Ck9+f1o6NKNmybJb63aaZNs/92LJ03m6Zo3KDJ6TrVUzegd3aJkjMyJbgERpj6Cy
-	 A+SvuYMCVfKerkEB6s/Re51wQrRLke+dpsrE7B5JWR9r1iMVj/fqjVVEq2pCf7GoyTmxl
-	 vfV5rwvuZ0lYVMMC2Cr9cI5aP7niwHD8jtPzs4E5iz9Pr0dOvqBRnFs863owKtBOdqA==
+	t=1793743074;
+	b=T7N0vvCUCiS0fseu+Xsy/4rW4kVKi+YaAZjeem39ImjnGCAk+yvk3YcNATsM8h9LlUMt
+	 q9YDq2eizjjNexvFkCnNLbqwcNVpH2us8/0co6G8CqAmhJpeUO4HwIVTUFItsi+wKhTWM
+	 NS4XuwaLNJKteEbH1GVcmIxhypcDvubaoQU3aws4OHuhKkNmU/Dv90EVYRez6bDP2lUTY
+	 tJsPZlJw+k6h6MG35bcFJWlR9GsX+SjWPJ7RdWzhBeCyg1FXgY3jtH62jr/frSyH4H94O
+	 nZ23YRJmSHbuRJPZtJY6h4ckiJW/ZkDlkdz9wp5g0MFOIMn7CJQCoy6zP35WDDOXhAA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793742266;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=+++IlRx433pq80T1LDRVDnLL2Oso/QXyI+O9jAXqPXg=;
-	b=bYYMKfXRGrySZsAv3B4vW/p2/KtF1ZdaTXrwE0FjUxfLTnaw7X0au/Uzd/fLSzNNG4AT
-	 AkkuTdmlqAvzJ3jyE8vCOKdcygRHO7Nqy4NOWmlmgA/KQ3HflV+OAUHSLiuZtiZpzSiaT
-	 YAji0jkNYtRuzhxGfQREgqWodtgMnG/X3kvGYKhxJC5E04ktzGGAomzkqUpN1DtqCbcsB
-	 ucdY3d0KhmaiEWgllLZyKQcJoftLK/PUS+7qpLXTLzq8/n662UWd/+0wG5sfXOFUcFN5Y
-	 BdX30xugCE8g7VUTJoN2ftSevxNaFAF8Vr1SCrOQx268c35JjyN9qYsjN+iv1lJbugg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793743074;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=4H8eU6z2JR3iXPnaXPV2uTwunMPI539+3YmBBPsTqq8=;
+	b=ZQRvunDFyxCjDRQtJH5TaPQbAZ1j6qm6xis5QMRJmGmv9WIr+ngv/3pTPBYEgdQVoc0o
+	 rz3rru3FHTe2so9yR2wJyepGP/84CD+GmpZOayk7/p5s1pkieZc2Db9QJP+liC2rgTGM9
+	 Kj4SPsVlIBIUUpK4EZkghwSZjMvCmqpKPXG6TIDH+0+5d+mHyi2/FUxISISZTSXniq2Cl
+	 2nfV8V1sdyK4A3XGFOn7RMrOvtHaogTYRgHRWMenx7Dg6YILgYMFjo7+vWT3BXNndfveQ
+	 8qf4dK4XeWZzj2RxPGf1Qk2p+0JxEJ/cpuZPKnhdC+YJLJaNhtQzdKhc3kHBXDBmGIg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=g9ml9lev;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Gh0FKk4t;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NN4zXVrv;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6F2E606A333
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 21:44:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C6F2E606A333
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B51D606D80E
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 21:57:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=g9ml9lev;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Gh0FKk4t
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A3LKhJi3472863
-	for <linux-pm@vger.kernel.org>; Tue, 3 Nov 2026 21:44:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=+++IlRx433pq80T1LDRVDnLL2Oso/QXyI+O
-	9jAXqPXg=; b=g9ml9levk01tTILlao9CA8SRgQa9XKCvYOA5mJX39srXFuPMF2g
-	lX1lVpSADQnqSE5AQWPZoPd5juDE3cEbEgfhhn45IBCmiHc43eDM04TDRSD+PV7k
-	NsmsoLSd9fB1y/iHO6a+LiVwAGcy99u+5dfTXbvw5Gc0WLdJv/WHMP808xbgBaR7
-	/TiulbR2XN3rcCGntbZfFq5GokWP8HWQ/Objqa0sZlOSyeMU3SkVndUL/4uwoiIE
-	Z9A5AldIrugJejiNlw3cMruNILm/WVHAFvrXPeyti6zEj+g4QGSGl3j1faJqPIbr
-	w+OHMyRf+idKiV//+HlOWAHH2tcn4uuXhnw==
-Received: from mail-ua1-f70.google.com (mail-ua1-f70.google.com [209.85.222.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hqn8y0k5c-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 21:44:25 +0000 (GMT)
-Received: by mail-ua1-f70.google.com with SMTP id a1e0cc1a2514c-99064f8c7efso34945241.2
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 13:44:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793742264; x=1794347064; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=+++IlRx433pq80T1LDRVDnLL2Oso/QXyI+O9jAXqPXg=;
-        b=Gh0FKk4t7r72BI8T0lbhKQEvm7Ns8nM7Y6Soxp1fPn6RvmodjWZHHov7WnCpOcsDI1
-         NaUoKsRqzXekVOUnPWfTu75IiF/f6jAanhx0M1Aj/i3g2DDZywvUZtTczUecwF4PgECd
-         /n1PrG49WxUSy9bGo7WeBLxi6McyBgiwKxMZvPCHfS64bSpg296YVCUleQIphR6FGQn1
-         ViwEJV+kCgDFq9QssAnt/9xEaNMaVm4MWcZ/PH3G0eiT+OEf4zkyjP8ExV+iFRUeleaj
-         lUQ9riVyGACh74eVkkoSqrc3MFWsPzCMialNIPZF/Y81zobeAMya/vqO8E7G1tevgIse
-         exQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793742264; x=1794347064;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=+++IlRx433pq80T1LDRVDnLL2Oso/QXyI+O9jAXqPXg=;
-        b=hREU5TjY7lYdmfikSoD+v3AJaDZvKFTeD4rZhBVRBKRzMAnDkW41fm3mkdUpWcc962
-         sEr73cM7aouAGXUJeAYBLUPAQeMoOk5UGQj1PEeE7mlw0s+SzUxsAAFjoFN6U2j2Qfme
-         7CB335IYmCTYIDx/RgoitAXy9b9veDiO6pDeAL5UFtB/gYnW+mpe9UIICUzD3FJ9nL0k
-         jr0CaYtAHuZhECllikP1Up8EjfG0PbsscXRtFyxX6Gjhbiirp4D5oWAXCBfjIm0S/Mp/
-         T/ma5mefAOOCqCnlo65Cil6Ovz78x8JF8bopqjyBMlMFm3agyFIBvkDBaXbshOydEs7z
-         OXFQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwTXXEP4yABp2SUMAG/RvJAwqFHezTIQ1IDdxv+kbqRlA1ftR2AA5OJgsG6P0Aq6oxsx9kjxxRBPg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+zSci3ohYnR/m4TFOixnIy94d3vqHD+s0hIU5RBpeSeF87ATDs
-	tp2j5oayyxbV6kDLNOZB0i3JUlxSEioWmv1JKHs2ZBLTYTkgMGPBUUTxMbtULsYnywPyvyvnO+q
-	bGgb0AH5y0X85bRP/dOtqqIVHohxaaHl1UfNBozQhREOUqJR9HNXnvxCblWFj5a7fbDQ2R38t
-X-Gm-Gg: AYBFou04cFWoNZBM65Usm80a3RiWxaCjCIutjqwLSYcWS9XQV8ckejQp3G0f0QKSLVl
-	1uRPcCJIT3obz4e445BWmtudc1x5sfPSBHcyJ8BJ/Lnb4qhoLHwgup+2f37h4gXPrFQ/Du70oQQ
-	EjkpGuKxOZ5qydHD5lFtHTlgeTZ9OeX3jplpOgpnrNUjogBxmAscYW4pBESQcnHJASaSEj5o1hw
-	92pZlOJCWTZyxHJXPHplinumqlSY9UwiShKtKlMBYYKkKro2XNhcDpxePefzKtDbq3NalOkP+lE
-	KbabeB1YM5hEla5E8/dg1sh8nJEA7DmWpD27dbzjH1opyNJkOof7FeXw/0KhMfz1HcCeQP64khI
-	SHbDEw4oyR+GhUKE/43Jtkac2KHFkUG1RfJb8CvtfIC0BMe+Z7ruRS74UMqYaA+/3C2Sdjs04NE
-	0R
-X-Received: by 2002:a05:6102:3ec5:b0:7c0:cdd9:31c1 with SMTP id ada2fe7eead31-7d072615564mr6302508137.12.1793742258834;
-        Tue, 03 Nov 2026 13:44:18 -0800 (PST)
-X-Received: by 2002:a05:6102:3ec5:b0:7c0:cdd9:31c1 with SMTP id ada2fe7eead31-7d072615564mr6302499137.12.1793742258366;
-        Tue, 03 Nov 2026 13:44:18 -0800 (PST)
-Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:eeba:6d3f:bd6f:18be])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48fece99a5dsm181674f8f.21.2026.11.03.13.44.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Nov 2026 13:44:16 -0800 (PST)
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-To: daniel.lezcano@oss.qualcomm.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        linux-pm@vger.kernel.org (open list:THERMAL),
-        devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] dt-bindings: thermal: Use signed integers for coefficients
-Date: Tue,  3 Nov 2026 22:43:57 +0100
-Message-ID: <20261103214357.2700244-1-daniel.lezcano@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NN4zXVrv
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 787D31F00A27
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 21:57:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793743074;
+	bh=4H8eU6z2JR3iXPnaXPV2uTwunMPI539+3YmBBPsTqq8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=NN4zXVrv4HX75rNjDW8n2rGhpIdcwT226SOYEzZIJkf4wky///aAUqXsW/LNjWIkB
+	 +jqhBmbKEGHqpB/RfJ3IOme2x4Uro3Y6FFkYU7Lcb9k3EYVAL1RdZOfZBIO6UiCdmd
+	 KU9/YPoFAEbimG8yPTj0+ET9beRolcznhTqYs/aM+V+aZskkRu62idx1+KnN4AwSau
+	 1qKaj1M79st+FVG6mdkANAoRT1WY2ezZ902n3LEXe1SUMJ3M1nio7P61uGsrtysmqO
+	 t+l8RFDh+9jqGqOg9Z/Kt58ZxPm2v6e40EATAVtiGV3R2E35gTnJzuKbjPNba1LZpc
+	 +CFP4IuYefF8g==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5bfa686881fso1728e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 13:57:54 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBy09bhC3OBwHkz7VBFijksFPsCU3w4sEcOkCI6CU/raPDlHBoR3993/cFRB1MBDOA/a3sqerzbbhw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+aTao5hsitK7vTa5XWE8ECNThGSgdPMfpfMxF+1+15ZyJpgrBM
+	N81bTKSygyyenixOJcbFANnCFlAX6FGj1adT2nDjp4hjwsO8vfW9Z6DYw10Xm2bJ9ZfNPd5PDvR
+	Fn6w7yugmwAbitkx+nFDl29gYvH2k4vs=
+X-Received: by 2002:a05:6512:a94:b0:5bf:b246:87a2 with SMTP id
+ 2adb3069b0e04-5bfd957b610mr4953868e87.10.1793743072116; Tue, 03 Nov 2026
+ 13:57:52 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -124,69 +59,72 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: ay9VRHcdYri1rwWzXxEL9Ow6GLHi1zYu
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAzMDA4NiBTYWx0ZWRfX0CsT9flLz/27
- jS+pfRsfVyRVopxq6sP/EevUx4jbmjKwD5y1NLldvgqxKF/tRxdlgNyVyWKCj37UJ66XDyVeiM8
- HMT9lj23hLQpXdwkoFb1cOb4rid3vqvR7tJmfQiGQw4SgOn3Li2IRpJDG9ZYqamd6hO4qLje3Oc
- cM1FSDpuzW330CR+hGlzn60Pxo+oHy4wejRjpRAKTvSUb93qJS4ZjATHqX4E5Xuh249jPYv//x+
- aeVMM/MK6qB7NV2oOxi4HRm9mzE1w3vu4XH8cFDYS1k23tJoSNwyw0Z3DxTlVCXluEnnlc5TGqe
- b1HMB7E3N5D/JTGaskYQXUHF0qJ4n/Vl3Pjwyg/EDZg9Dm+IVR5mnDtWl7+7rbbvzuRqoqxEWph
- yfYEWZCZEKI4XecWtAcaNBEprAWHOH0LTKdxXcGFQwPwjP8lF3mXPXLMK+drgp2Yjg4zQD+AQJt
- fwHjik2py+3DywsXQhw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAzMDA4NiBTYWx0ZWRfX/nBzzru7dlzi
- UhLuGoxF7z0+4TGAH720MG5uYZbXg8IShmu/Kl2g9z5tCzJtEiGxkDnVv+XPyKs7eZqDlwseg6N
- dmhylNqAahbMtSGKLwR7YFWNOajqVKo=
-X-Proofpoint-ORIG-GUID: ay9VRHcdYri1rwWzXxEL9Ow6GLHi1zYu
-X-Authority-Analysis: v=2.4 cv=NP5AaE6g c=1 sm=1 tr=0 ts=6aea55b9 cx=c_pps
- a=R6oCqFB+Yf/t2GF8e0/dFg==:117 a=xqWC_Br6kY4A:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_K5XuSEh1TEqbUxoQ0s3:22 a=EUspDBNiAAAA:8 a=W5l6zmR3omWN6YeRZy0A:9
- a=TD8TdBvy0hsOASGTdmB-:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-03_05,2026-11-03_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 bulkscore=0 suspectscore=0 adultscore=0
- phishscore=0 lowpriorityscore=0 malwarescore=0 spamscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611030086
+References: <20261102135330.2493332-1-robh@kernel.org>
+In-Reply-To: <20261102135330.2493332-1-robh@kernel.org>
+From: Linus Walleij <linusw@kernel.org>
+Date: Tue, 3 Nov 2026 22:57:39 +0100
+X-Gmail-Original-Message-ID: <CAD++jLm10TL4FkkyhvyF-CKNREA-mOSjbR5zKUisC_Wx1-nqgg@mail.gmail.com>
+X-Gm-Features: AclHuK-xZTzLWXlPWAOCiWHBj5C4K-MSmY2Fnjjj517UPimoWDCn2vjwhrapfPU
+Message-ID: <CAD++jLm10TL4FkkyhvyF-CKNREA-mOSjbR5zKUisC_Wx1-nqgg@mail.gmail.com>
+Subject: Re: [PATCH] dt-bindings: Use hex unit address patterns
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
+	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, Jiri Pirko <jiri@resnulli.us>, 
+	Ivan Vecera <ivecera@redhat.com>, Benson Leung <bleung@chromium.org>, 
+	Guenter Roeck <groeck@chromium.org>, Bartosz Golaszewski <brgl@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Jonathan Cameron <jic23@kernel.org>, 
+	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
+	Andy Shevchenko <andy@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Olivier Moysan <olivier.moysan@foss.st.com>, 
+	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
+	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Fabrice Gasnier <fabrice.gasnier@foss.st.com>, Lee Jones <lee@kernel.org>, 
+	Srinivas Kandagatla <srini@kernel.org>, Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, 
+	Ulf Hansson <ulfh@kernel.org>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Chunyan Zhang <zhang.lyra@gmail.com>, Paul Kocialkowski <paul.kocialkowski@bootlin.com>, 
+	Shawn Guo <shawnguo@kernel.org>, Chanh Nguyen <chanh@os.amperecomputing.com>, 
+	Alistair Francis <alistair@alistair23.me>, Julius Werner <jwerner@chromium.org>, 
+	Paul Cercueil <paul@crapouillou.net>, Dmitry Osipenko <digetx@gmail.com>, 
+	Florian Fainelli <f.fainelli@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, 
+	Ray Jui <ray.jui@broadcom.com>, Scott Branden <scott.branden@broadcom.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, dri-devel@lists.freedesktop.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	netdev@vger.kernel.org, chrome-platform@lists.linux.dev, 
+	linux-gpio@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-sound@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, mfd@lists.linux.dev, 
+	linux-arm-msm@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The coefficients property describes the coefficients of a linear
-equation used to derive a thermal zone temperature. Both the slope
-and the constant offset can be negative, and the thermal core stores
-them as signed integers.
+On Mon, Nov 2, 2026 at 2:53=E2=80=AFPM Rob Herring (Arm) <robh@kernel.org> =
+wrote:
 
-Existing Device Trees already rely on signed values. OMAP4460 uses
-an offset of -9301, while OMAP5 uses offsets of -1791 and -2992.
-Broadcom platforms also use negative slopes. Declaring the property
-as uint32-array does not represent these values correctly.
+> Unit-addresses by default (and most commonly) are hexadecimal. There's a
+> number of cases using decimal patterns. Fix all of them, limiting the
+> pattern to match the 'reg' limits if there are any.
+>
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 
-Change the property type to int32-array so schema validation decodes
-the cells as signed 32-bit integers, matching their intended meaning
-and the thermal implementation. The cell width and binary encoding
-remain unchanged, preserving compatibility with existing Device
-Trees.
+Acked-by: Linus Walleij <linusw@kernel.org>
 
-Fixes: 1202a442a31f ("dt-bindings: thermal: Add yaml bindings for thermal zones")
-Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
----
- Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-index 999ad40a20d5..72e419124f98 100644
---- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-+++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-@@ -101,7 +101,7 @@ patternProperties:
-           thermal zone.
- 
-       coefficients:
--        $ref: /schemas/types.yaml#/definitions/uint32-array
-+        $ref: /schemas/types.yaml#/definitions/int32-array
-         description:
-           An array of integers containing the coefficients of a linear equation
-           that binds all the sensors listed in this thermal zone.
--- 
-2.43.0
-
+Yours,
+Linus Walleij
