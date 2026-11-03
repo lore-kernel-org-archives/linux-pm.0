@@ -1,90 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=159.226.251.81
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793686568;
-	b=v1QUFbL3JjyC8BmHHERV1YwlgtATEI0d9lBMTAUq5Azzec3+eRQ4keudqtKM+CgNPV54
-	 hliBqi2PX+OqLEEftgXkhhr7oBveUJTvxrZ9z4qCB4DQYLL5/ntjWNhIb+tqNB8P8je1W
-	 zJZqeA/zJCNnolJktcIpbtCYA5ZbAyJfh5qYsLDg8O8DaE+e3qjLHMvMpQeUDTIezAp6L
-	 tAWAQYOHiNtaRAOwM1d9XDEQlzB1CV35daAVn0rfHr+7ypjDkGukOewbaWgykUr/SWvqr
-	 xfg54kg0cMCUmJGvsecN9IVopbMAF3inuxvVejdFAnZnKWOneMuinwpFksFRc36PwmQ==
+	t=1793687319;
+	b=KFNszpOyfc6CqMEhYYXMiT9SJGbPMwwB8uHBqtK8xfGaj1zacNrnZGb08i+PPlxBmd/x
+	 gzTCJdZ7+I7kbf/K8l1Vni92TS3ieL5XJ95XQR/yn32nNQLyqUou8idgcL0/SpsK2taTl
+	 MipSYpLPxIhAJ9qXjPqcBYa960H5eIpn4jHOiKb5X6G53qzXM8Ji7H+ODd1N/kD1ve3BP
+	 qYJyAan75o81lQw8gYrRBYHO3MYuHRixb3rc/RyX0jAIQR5pn3Zw3jc+kuGXoS7ugTnQj
+	 psvonPt5YodpXpkJDhOgi/lSUkM9Ak55brqXr4kQLih5XcJ0tOw8KDsoCks9dqXIhMg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793686568;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=ZqUBB7PtSXKumcEYR4tzRgEekrPzVWK1PQaLCTI55E4=;
-	b=BzBvL4k4ncgTMtgyKE7VZH5fS/VqZIls1JR6Ct0vfEJhTbzUOq/tz/TMauGpXWbxZzBn
-	 piVzFg4hBdWwf4pk95ImMeMPfcVQlOdJmn7asNnCbRnJ3iQNuTemlGSPZimOQBwj4M8tr
-	 5XcbxUkG3WSKVlAkXJYy97y1lMpgrjgiA7Ev4cuqtLwYljDj8wIqpzkfqf+CONF0y6j9X
-	 4YdHrr6Gn8qdXMzCjneOqMuSll8z7YvVE8BrFIoJ0geKXRl08tTu/2H9XPN1Ap7L8K0Fn
-	 EQkFMtW0JFVduk5p8UcGoY7t/yAxQJ/eQ9hztWFBtwpBiQw1eqlT5odmnjg9oA2UnJw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793687319;
+	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-Coremail-Antispam:X-Originating-IP:X-CM-SenderInfo;
+	bh=NGgi7FuzRvoo9lEIu1iCHQcCtHKx/g+aK20hu2ScPxo=;
+	b=Z7Ys1rRDc+S2KfMhlTOmPEEY9TsDGdIBnNCzYR/ejUVPt2bvYAoq09TAUjdmZC+QcI/H
+	 yeDVrnC7zDdl3KfgDV3LEyhdEMpJBoP/XRwnGd++7NlUCXf/wqpZpiNFHaV06UBexNvBu
+	 IqZwWgBIUqX1JnldbsTsoUIxdeej4+ogBeFzeCoqudF/LofV7kSWMmHONDYgZH/vEUjhq
+	 Q+lDW/YZtAMcK59Js8BCP0X6IbtX44ysfY6hzjiGWkf9nKU7+EMA+xPdU7g/LwBuRDgC5
+	 CyWMO+W8JqoWJPRnGRuLG4p2WqPk2TkSwDeFLbFHD6BaaGaYMpr6jvAr2rSC9s7Q3Cg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mt3u5A7q;
-	arc=none smtp.remote-ip=209.85.221.43
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=none header.from=iscas.ac.cn;
+	spf=pass smtp.mailfrom=iscas.ac.cn;
+	arc=none smtp.remote-ip=159.226.251.81
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60A6C606A329
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 06:16:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 60A6C606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mt3u5A7q
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-48dfdd0678dso2605066f8f.0
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 22:16:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793686566; x=1794291366; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ZqUBB7PtSXKumcEYR4tzRgEekrPzVWK1PQaLCTI55E4=;
-        b=mt3u5A7q2n6Lz0rX+xpoR6nrNWLRpmZjcm+IxMmCFEIL9W+I93gV7pXcsRNBWlFuyv
-         b/0G10Wtjf1PROs8GpnjK/5YDP72QakyvPwOAQOlWSNEOfEZjjO1xx2gmEAm0tXDama3
-         9zSvaxXxp2OPVM1XD5g/i7Rdpsu72X/tpma+Fg2Tze9in2uHm0ifWg8prPTpljPy0oKI
-         /omTZ6zlBkauyq3SBtZBR4OKxUjqMXlrjcyJGYWMHhxx5IGX9ki6LKXtZW+keOKRfBmB
-         D0rywTUlm6VBp5m6vM6Q6PyNflws5icUZAYT2/dpwNJ5f+z9iMwOnmK+mkXO1qUtvWnn
-         EgZg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793686566; x=1794291366;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=ZqUBB7PtSXKumcEYR4tzRgEekrPzVWK1PQaLCTI55E4=;
-        b=jnikZl+Jg2mcKOMNONMNhZThAZuYARpMnhLgzWoA1wg5ZvXfUsoHvw7SnXVG6DT2aV
-         HI/ScMrdwlIe4y39b6OjiZ1RxBZCaA6/fZZ2FiqFy/8nOIS8w8iufAGu/utwQkwbzMXu
-         rLFIaZ/WRH8YWmIQT8/BEf1KZV67YhkTqPOyaICzLgHaK2VDvCnQSH3MAmjz786UfInp
-         tpATs2qABofayueqZ5n7rVgXSZXcNqbCXxbacqF7jEfVw4mGGVCMoLdBGEFR5Nsmv5BO
-         SDYBMKQknFo6ZKdD+0iSPFrGsxuJtnFUIysnjjTgMBpAB6kBATAtwQzo6GwI+OaLR5Aj
-         Gsjg==
-X-Gm-Message-State: APuU4Z/pnDFJ4J4da9nqK8xKFhNFdJpD28VqfHR6Z7KoC9Oze5XHt8WY
-	Yb5GSd6nn40/I7PnxX5orfDztG40SDtiiElMm9ZK7goyGPLKpxUZjk0917UKFg==
-X-Gm-Gg: AYBFou3ery1GZFJhVGchH0mDSvJ/Vn/wuKI38wcTm6ThnK85rjokXBWP9JBZ9B3/nlw
-	j6VUV3bv2tI/S4+u1TEjiYVk6LrEAM8YkMh21FuhBkVu+evzqIz377P1Q8DvAbmKSvO60qS5SZF
-	eoxz2tisO8Xfh++OCuRcSbTiia4LJ6WcTT3F6yR31UZpMwt1CEp3oHe8SWQGGTgT3XCrujWIqfq
-	7+jDLp0knkOEHWuTXh3R3A/jeUZVnV03f+uOt61kA7t6lDerlK9Au68IXHkNExQrv2CI7Mvvb4u
-	J3dAeABisodBJ2N0Ac/j9U2YbPqDqmjTkDRtSDGPeC0dOn6ltqde6EkmmqutYuvEJZfzahymLtO
-	TCqx4SMVAhAkr8NhsmIwibWpXdFE6gnGLK3q8BaucPERruWQC8SlZusVEyHqUfkv7+VoSK4pQ9X
-	kV5u/oyIsVhurNNtf1AAVF/bhaOfISieHXt8gzUWnlUR15YaTvMK6YOhS/7oYFc0MxlncZNV87r
-	byI1C0LRSdxagxlGqbxMlJ5VQfA/E3QhIKCBPJWQBIuWdaRJJkiFBWmIv+ncnAgrdL/e3WIxvai
-	XkmacyuMpdWx8iJy9P04uS4lqxMZGe2d
-X-Received: by 2002:a5d:64a7:0:b0:48e:5e1f:9a36 with SMTP id ffacd0b85a97d-48e6e50191cmr20614162f8f.42.1793686565592;
-        Mon, 02 Nov 2026 22:16:05 -0800 (PST)
-Received: from thinkpad.lan ([2a06:c701:4745:6c00:243c:3b07:905:b6b5])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e71b79059sm23853708f8f.30.2026.11.02.22.16.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 22:16:05 -0800 (PST)
-From: Avi Weiss <thnkslprpt@gmail.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B7F9606A324;
+	Tue,  3 Nov 2026 06:28:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5B7F9606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from dfae2b116770.home.arpa (unknown [36.110.52.2])
+	by APP-03 (Coremail) with SMTP id rQCowAAHE5QSf+lq0Fs5AA--.43S2;
+	Tue, 03 Nov 2026 14:28:34 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
 To: rafael@kernel.org,
 	viresh.kumar@linaro.org
 Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Avi Weiss <thnkslprpt@gmail.com>
-Subject: [PATCH] cpufreq: schedutil: Skip busy-CPU hold when NOHZ is disabled
-Date: Tue,  3 Nov 2026 08:15:57 +0200
-Message-ID: <20261103061557.1235129-1-thnkslprpt@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	Wentao Liang <vulab@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] cpufreq: pxa: Release the core clock reference on failure and exit
+Date: Tue,  3 Nov 2026 06:28:43 +0000
+Message-Id: <20261103062843.1020546-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -95,36 +54,61 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowAAHE5QSf+lq0Fs5AA--.43S2
+X-Coremail-Antispam: 1UD129KBjvJXoWrZrW3tw13Kr4rAry8Jr17trb_yoW8JrW5pa
+	yrWrWYkryrJF4Dtw4UGa1UCa45X3Z7CrWjgw1UCwnaqFn3AFyFq3WDGFyUXFZ8Xr1kuw42
+	yr15Jw1xuayDAr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkC14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
+	jxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVW8Jr0_Cr1UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
+	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
+	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIY
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
+	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfU5ku4UU
+	UUU
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwcAA2rpWtl1KwAAsd
 
-With nohz=off, tick_nohz_idle_stop_tick() can return without
-incrementing idle_calls. sugov_hold_freq() then treats an unchanged
-counter as continuous CPU activity and can prevent frequency reductions
-even after the CPU has been idle.
+pxa_cpu_init() obtains a reference to the core clock with clk_get_sys(),
+but neither an unsupported CPU nor a failed cpufreq_register_driver()
+releases it. The module exit path also leaves the reference held after
+unregistering the cpufreq driver.
 
-Skip the busy-CPU hold heuristic when NOHZ is disabled.
+Drop the clock reference when initialization fails and after unregistering
+the driver on exit.
 
-Fixes: b7eaf1aab9f8 ("cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely")
-Signed-off-by: Avi Weiss <thnkslprpt@gmail.com>
+Fixes: d9278077385f ("cpufreq: pxa: convert to clock API")
+Cc: stable@vger.kernel.org
+Assisted-by: DeepSeek-V4.1-Flash and OpenAI Codex
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
 ---
- kernel/sched/cpufreq_schedutil.c | 3 +++
+ drivers/cpufreq/pxa2xx-cpufreq.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 14405a614991..111582876954 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -397,6 +397,9 @@ static bool sugov_hold_freq(struct sugov_cpu *sg_cpu)
- 	if (uclamp_rq_is_capped(cpu_rq(sg_cpu->cpu)))
- 		return false;
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index ed1ae061a687..83cd5a5ec7ea 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -305,12 +305,15 @@ static int __init pxa_cpu_init(void)
  
-+	if (!tick_nohz_enabled)
-+		return false;
-+
- 	/*
- 	 * Maintain the frequency if the CPU has not been idle recently, as
- 	 * reduction is likely to be premature.
-
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+ 	if (cpu_is_pxa25x() || cpu_is_pxa27x())
+ 		ret = cpufreq_register_driver(&pxa_cpufreq_driver);
++	if (ret)
++		clk_put(pxa_cpufreq_data.clk_core);
+ 	return ret;
+ }
+ 
+ static void __exit pxa_cpu_exit(void)
+ {
+ 	cpufreq_unregister_driver(&pxa_cpufreq_driver);
++	clk_put(pxa_cpufreq_data.clk_core);
+ }
+ 
+ 
 -- 
-2.53.0
+2.34.1
 
