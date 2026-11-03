@@ -1,95 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.182
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793735352;
-	b=JqQRpJwNOXyTKhQ22J4yJw4XfEh3Gz5KoIYQPqsj/KjeSIFNud9hf6DpT0tsD/lmPxVh
-	 f9i0fkWznVO+Y7NVQVRSsuAn2dcWE11u8jRBLy7aRO2HIPwiGeX+JWAyDPtgAHoSHtGfE
-	 dhAUkTQ9NJeINPxiqJWMwWRqRGPORex9LxmdsuYTSoAUuA6/XH7MYSptjP5CFMLbBJiY1
-	 DUCSQdeC3YGaf+0bwXKir3x8OxCMvyvO+7mI7XN/I7YwuAjNc5CY0L5pBo3DHAM2PmQYC
-	 NEUxdLu7Q30pOkKm5jxd8HJPfZpPpSwGvJ6FkQ+xkKI9vonvqL80rcoPxSkllJdEUfw==
+	t=1793735378;
+	b=fqlXuINKvwvC8nNWaZEnLhDwYpqGyvktmv7FgK69ZRBg/9zCHivfptHU2UJkMV8TmraN
+	 aPmoLS+bmjt3FCuuZBjwLgv4VEvN08CPOeGoSmLdFiNZMTtkDXCpqwNJTVYiUIQb2T8PC
+	 gPvh/FMeLy67cxETh6vUFsiVYlnUVEAmTaWsX+VV/VK8J6gDB/TeaOoi9sgD9hSeRNR5Z
+	 5bSvENhNpYZCWCysPbXKYikJgt+z14LoQ6+uR0I62Wt2YzcccNPClotQYtZruV1LgzR56
+	 lD9LidjDu2XFlUrZmv3a1iPZl2swSoB2RuABHv/g8POMv3d36mWmWZXhgTMoafvyO3g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793735352;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=P0AC+ymgXYnQmZ+rTAXF3fAS8FaKmkjFTCnbuMJ/sUM=;
-	b=ygoPjW3rhS7QLOmdzQso0Ol1wuxWhF7p+Hk4KbhUC7KmQeUB6EXdBkC+h7kls8qUEOo+
-	 Tk11vOEbyo4Luo/0SHB4+TTJNJ4BZI31H+FGb/fvIh5Na2ivnGslBta64XO6vU+wDNjRn
-	 Sg38SOEfJahLenI0SM3AwVVttMaClv2G8NNYmDIQwxyWANScp5dS5rrhUdqyJhGsV3Eqp
-	 eHvryUd/P2ZD2PLhOFv4o//aO3lD7pbigFJ6zBTbdggcV6By0tI/uUDi3qL2l3B0cqY2i
-	 JDXwQy0krvuKaRg/e30Q2VSk+/mvuxxJxZQb/8Cub6bIY/adNl/VdFvYYfjgIhIpMcg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793735378;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 Organization:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type;
+	bh=RgqDVbeyeNuM2Z4SYh9s/DEqR+ea6FLqa6X1Q3RCgy4=;
+	b=ljUEOcv7FRUicNx8yejtJuNtx1Kie17p0invAVRTYLuv+XURze87QY4+rDyTyzY8bCEV
+	 iPC9zfpe0gYuehUZbbTHItvu/PWrCPoK26BzpLihcmSipYvxjJW2CBmoaSMo/XBXpmyGB
+	 Lr51HnfnlcW+EhXpZFcOzljq4TIGRy4eCng3hcd7Pevr18Up5yHmGsROVDTvUy0ctq+5i
+	 y/jqWBSsj3wus1y7AOMQUb1LfveHsnkAb/FxfL9SPn3cgsVpJXWqlu4yDagwRsVkAeoJz
+	 UtgjoTMmYM2Paaf18/s54/vIy3ecwvmnj+k9NU3S/vg/y6FuE4XpZSPn6RxNRQxSmDA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=aGZ2Et9X;
-	arc=none smtp.remote-ip=74.125.82.182
-Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CgUxFOG7;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE91C606A326
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 19:49:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CE91C606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 024F4606A324
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 19:49:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=aGZ2Et9X
-Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-36a1947498bso5137871eec.1
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 11:49:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1793735351; x=1794340151; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=P0AC+ymgXYnQmZ+rTAXF3fAS8FaKmkjFTCnbuMJ/sUM=;
-        b=aGZ2Et9XRSoW7cbdfG5lGqV1+6xNkMS1R5B1w4VS3Ui4cwG+dA7ZizFdMHeq/+0/U2
-         BilbKO1Fm20PtDD+HMuAm41zwNmvgYD1/eu5ZYOqs0KvvAzMehsm4uvfUZwfY7oaLBib
-         FeozBa5ngKAi8pE181aL5qQbAJrKKuOySBVyw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793735351; x=1794340151;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=P0AC+ymgXYnQmZ+rTAXF3fAS8FaKmkjFTCnbuMJ/sUM=;
-        b=fNwLbhtXyuporrnAd2BhC3s3SaPU+q1CDgAWQYaNRXjWKrB8w5wvzUDRA9ikI85e3Z
-         5tQ9QDbzDgOvDV4FIuBFgltrrBIyABSMsR8n6Fj1ZQiqu0DcWX3wLUiAT/pnOWQR82dg
-         mBrHxiJUD7soAyMVgQNAMPLCXLb0Bvp885sm8jWaPiiiHr9qkOHyFox47M2lIK7vI3eR
-         4cJzIRsp/6bZt0cKYihCEmHzu6zo7S7OjmzbOxABWE6Nvk333gcetr+7enPByPAvoK4l
-         DT0xQNkZx2C0J982NALvWe7ZBt8KZMuOrPYgj8xtD17aTn3zaRz4Yow+Fe3bJ5krNTCD
-         /+EA==
-X-Forwarded-Encrypted: i=1; AKwUvByXYdY8FhErLimPYlQrtC0hOVNZXNvLoLdjWcYy+7mKOkewRajJ5IzpBqAEqs7Zwo2rzwMxJZ2ELw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9YKEdRHb1XPzG8RZ0EgOHwlbc6NBb+cis1uoZH6Hg5yViNXYa4
-	wb4jtYbR9izxrwLYlloqvlZx7Zhj9BRtPcysJACM4jl8iVl5a686unsz2XvCHVST/A==
-X-Gm-Gg: AYBFou33URysfPgxYGQXHmi9IY1fPUWrUApwIUeseh0i57666xxh/BnRGdma9BuXjoA
-	SktuNDi19sGk5eVGvRBetIJrb5zgbHpuBWtw726RiZaDlr8l9URxYxxjya5laoro5FXZoS9ielx
-	1o17qEiKzJllCgg1VYNRUAA5IUii2kGUw4gZdrVhELZM78v0OZfL+5C3Ij4tUqbVX/jCT7eWs88
-	m2zfXuQXlUpMoKgfWrLxC/7PvUOC9SA/eYsGgFyH+xci8LeRix8Ukcoc/Q7txFlWR2dMdu41PQ8
-	hM2qY0rKAoH6sFSkfCe7jXRr4oDFrY+xmuFYK4Xd9A4dGLFZvl0QVWdwibDwkoNsHXGv51xyjAi
-	g4v471TJGCsWsTFjVc5RS3pvmIqOKuNI6n+KixVkPovnikvymG8m5p7dd7JckL4xt2aKzfCaI/J
-	+7+DLSxlS42QspF8pT7TR0DEwZuh8k3cjY9uaY1962h/ZgLCDZofl2z417zWYEu/CqgqLVFoS8Y
-	eM3TxME/ZdgWvHIFoEFN+bQvvESZx3OqJfzW2xvBSBz0wTU7ToEQHpD1gmD9nlkA6h1YVA4ZDq4
-	F/7xELwNjB6MTZ11hxqHK9BE02MSzCC1Fp05YQKymx60cCzJngq++W/zTVCaK1fYwMnp
-X-Received: by 2002:a05:7301:4203:b0:36a:50f4:ed0d with SMTP id 5a478bee46e88-36a50f4ef92mr16355856eec.25.1793735350827;
-        Tue, 03 Nov 2026 11:49:10 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:ab71:b3df:693a:fbf2])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-36ca38a54ccsm382104eec.4.2026.11.03.11.49.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 03 Nov 2026 11:49:10 -0800 (PST)
-Date: Tue, 3 Nov 2026 11:49:08 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Stanley Jhu <stanleyjhu@google.com>, Jens Axboe <axboe@kernel.dk>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Praveen Talari <praveen.talari@oss.qualcomm.com>,
-	Alan Stern <stern@rowland.harvard.edu>, linux-block@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] block: Keep RPM_ACTIVE in blk_pre_runtime_resume() when
- already active
-Message-ID: <auo6tLmH0R4_TRG6@google.com>
-References: <20261029040001.2100001-1-stanleyjhu@google.com>
- <8125a75a-ea47-49f8-90e4-7f7c83db90e2@acm.org>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CgUxFOG7
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 147E51F000C1;
+	Tue,  3 Nov 2026 19:49:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793735377;
+	bh=RgqDVbeyeNuM2Z4SYh9s/DEqR+ea6FLqa6X1Q3RCgy4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=CgUxFOG7QuywY29K+XcJLbE52Zc8wl4qS67FDOebG4mHWW1/IjmptmARaJD8jvvxu
+	 Hy6/m8yoSTKA9uRpQ0CEm1Mi/LSMv496hLidbxbppzt7yL1tLc1ne6ym5LEMoMQrYy
+	 blbJqMlK6QZcta/lEazNKuPKT9XVeXUV/jIRQFyNNjZaAxdk3dgmwPl6OK5ladIw1s
+	 HNlu1pdLhqUgNGpMLbuh70/PQB3zrPJP+VGvWSz5eYNoPcUlYgL72zSZTETHsHtyVe
+	 8LI+EHKUWLkqsjVhn1O3HSACD5EDWDLjjgFuijYqo0Y5U1yXKQVjInN5lYx169Z9kj
+	 yHRb7+FBZknbA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Doug Smythies <dsmythies@telus.net>, Zak <zakbrightonknight@gmail.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Mario Limonciello <superm1@kernel.org>
+Subject:
+ [PATCH v2 3/3] cpufreq: intel_pstate: Clear last written P-state value on
+ suspend
+Date: Tue, 03 Nov 2026 20:49:06 +0100
+Message-ID: <14150222.uLZWGnKmhe@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
+In-Reply-To: <6065833.DvuYhMxLoT@rafael.j.wysocki>
+References: <6065833.DvuYhMxLoT@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -99,26 +64,68 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8125a75a-ea47-49f8-90e4-7f7c83db90e2@acm.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-Hi Bart,
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Thu, Oct 29, 2026 at 09:22:23AM -0700, Bart Van Assche wrote:
-> On 10/29/26 12:08 AM, Stanley Jhu wrote:
-> > 2. The first runtime resume fails in the driver callback, and
-> >     blk_post_runtime_resume() sets q->rpm_status to RPM_ACTIVE and calls
-> >     blk_clear_pm_only(), decrementing q->pm_only from 1 to 0 so recovery
-> >     commands can enter the queue (intended since
-> >     commit 6e1fcab00a23 ("scsi: block: pm: Always set request queue
-> >     runtime active in blk_post_runtime_resume()")).
-> 
-> q->rpm_status should be changed back to RPM_SUSPENDED if a runtime
-> resume fails. The changes made my this patch don't look right to me.
+Preserving cpu->pstate.current_pstate across system suspend-resume
+cycles, when running in the passive mode with HWP disabled, is a mistake
+because its value from before system suspend may become stale after the
+subsequent system resume and in some cases it prevents MSR_IA32_PERF_CTL
+from being updated properly after system resume [1].
 
-Pardon me if I'm misreading/misunderstanding, but I believe your
-suggestion is essentially to unwind the quoted commit 6e1fcab00a23,
-which might reintroduce a deadlock.
+Address this by clearing cpu->pstate.current_pstate after the governor
+has been stopped during system suspend.
 
-Brian
+Fixes: 001c76f05b01 ("cpufreq: intel_pstate: Generic governors support")
+Fixes: 4adcf2e5829f ("cpufreq: intel_pstate: Add ->offline and ->online callbacks")
+Link: https://lore.kernel.org/linux-pm/20261027143725.3763827-1-zakbrightonknight@gmail.com/ [1]
+Reported-by: Zak Brighton Knight <zakbrightonknight@gmail.com>
+Reported-by: Doug Smythies <dsmythies@telus.net>
+Cc: All applicable <stable@vger.kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v1 -> v2: No changes
+
+---
+ drivers/cpufreq/intel_pstate.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3389,10 +3389,11 @@ static void intel_cpufreq_cpu_exit(struc
+ 
+ static int intel_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
++	struct cpudata *cpu = all_cpu_data[policy->cpu];
++
+ 	intel_pstate_suspend(policy);
+ 
+ 	if (hwp_active) {
+-		struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 		u64 value = READ_ONCE(cpu->hwp_req_cached);
+ 
+ 		/*
+@@ -3403,6 +3404,17 @@ static int intel_cpufreq_suspend(struct
+ 		value &= ~HWP_DESIRED_PERF(~0L);
+ 		wrmsrq_on_cpu(cpu->cpu, MSR_HWP_REQUEST, value);
+ 		WRITE_ONCE(cpu->hwp_req_cached, value);
++	} else {
++		/*
++		 * Invalidate the cached P-state value that may be stale when
++		 * the governor is started again during resume and may prevent
++		 * MSR_IA32_PERF_CTL from being updated.
++		 *
++		 * This does not require synchronization because the core
++		 * prevents frequency updates for suspended policies from
++		 * occurring.
++		 */
++		cpu->pstate.current_pstate = 0;
+ 	}
+ 
+ 	return 0;
+
+
+
