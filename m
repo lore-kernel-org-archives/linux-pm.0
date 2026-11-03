@@ -1,49 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.15
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793729950;
-	b=K5K8hz0H+rgdhPs40CsQQTYnXvJ6n1pLfpxqAArZ8YyofKHkrhegGtgfzo1jMkbylCyR
-	 RNCyuF87ehXkYNRexd3C9cOymBWlkgXXtJtG0p7LNikkFpT+vClb869N6GwrDq1NVSQRt
-	 t/n6XRStG+m5Lza3cZTOUj/ysMKobvjEpRXCPL0Hz135/RFy1pW26QDpfnvA7m4fQYu61
-	 l9eTEqCNsS9PO/R9H0WAXFZkWdLSrPAqIYk338CP/APdf5ypeTiqF4cblyAOUcblZFbok
-	 gr2gWsKIfgUnJfg1uE2UJj9ibDQYTOl/9IDUWWPKXAzapnYNJotCE0eKBlpTXCxr9ig==
+	t=1793730748;
+	b=vTio4w0gque6/RFs+Dt2BHWqpmh1fgHMbhgbcbZ9ba3RAqFIx+FGdGLWRRjdlkYmF4ts
+	 HWLe4KaqtMarCnhNTCJOtMhdZt4ZapTsNCu0p2+2R+MWJ0KfpBMHiXoTYvI5KLSxyCU3R
+	 jODW4aWTSkiZLL1qYVRAz+Rl9KQL95wZUNUUHCMDlrn2hvlfW3p3lb8MlGHx3aZcpqZdZ
+	 AcxidnH8drMut8rj4cJQ/aHNZmmuVJWcCj05vFcuDho46QMRzXPtvcLtDmnaPapCBFVz2
+	 bMLs/hU6BgNMoX5csg4CtDC5W6xUf2jLKcCq5FvShzXUCaPP5cdInwf0tJVnnmMU7zQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793729950;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Content-Language:To:Cc:From:Subject:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=S3NR8+tH8Ja8EZBhStdlVvbKqTQGg0M1Pij1uvAsKrQ=;
-	b=gPHO7xZdtmGCsHed+2sxmNJvk3MRdDGlZvhiW4eLgqbEmk6Zn3HleXxkR8QJGycmrOIh
-	 bQUfK8aBd8Ff+NsQ6JfufBoEf8GlGq/RrEQKW40NBfW17RC9tVx/rQbNHMAb5Dr1RMINZ
-	 Q8QfvzwZKiS+64KPyTmZKM92emsKVGu6bTYo1pKOT/ZIfOdFBDECTrFw3LPwMAN1O6nAl
-	 mZ16d8gnIzbKxPP0pgZW2QrNQG8PdS3U5Idhiosbly16/NBE76i9C3bzbeYHD382nyXHS
-	 cFtHqeAtrmHftTkf2QRCKIUFXSbKDz+/i3hdl6uFWoufbM7FrOEUIQhb5Fb6t7tETBQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793730748;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:Organization;
+	bh=Pspx6UQNd/oTSgGq1UyOR3HL73qOWegJf7pwb3SkVe8=;
+	b=yi8+3I01zKtFerUCoMIYjuT49I2tXTkSQC4ZunYYI6LIoUMxtvnWIfMXmZygKRIDpZi4
+	 ueBevGP7c2amwyT3Sbp1u3lc9XBOXa1eaYHaxaTt3LRrKYgaB33DLmKfZACUXjFIXeF1k
+	 v7fBXVybtjipPkXD3I6ycWs6Amhaz2qP9+HM3j6u/kNrnDR5/YstZYyA0bOMzo0TLFsH3
+	 ePhoZUgrVElSj4nN/JWvbJpYZ7Ex6JbBysQEQLWsUh7SLBH0VVHDVR3CHsxErUIO+fGsc
+	 Bd2sDnOYOKD60mrf3qryXO4k9kshNjNyoF7T6+jMPeFRPPRELFip6vIg2EMXETSYrlA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=vvGvmaZ1;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5369F606A336;
-	Tue,  3 Nov 2026 18:19:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5369F606A336
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lkptlvVJ;
+	arc=none smtp.remote-ip=198.175.65.15
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 956CF606A33A
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 18:32:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 956CF606A33A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=vvGvmaZ1
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8270D1595;
-	Tue,  3 Nov 2026 10:19:05 -0800 (PST)
-Received: from [10.57.64.115] (unknown [10.57.64.115])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7AFA33F628;
-	Tue,  3 Nov 2026 10:19:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793729948; bh=nPvxwv/d4G12ox+75qW2valPIilnOBTndTK4vYOxYdQ=;
-	h=Date:To:Cc:From:Subject:From;
-	b=vvGvmaZ1lDrDvMcqhPuv0M7MEcmOV8J+bilz6qRXIJEZKVOrdF/nSV7aYqh0XjEEV
-	 6rJVObQvBKNA+SRedd3uUsaUSuXyExcD/FIL2bAN8giT0HDXZy38kawL/EJGIu/par
-	 FT9Lbkhmn1iJPGR8vgd/SW6LoUqKnKvAPDu16aAw=
-Message-ID: <be3739f8-e668-4711-912c-91459d77ed35@arm.com>
-Date: Tue, 3 Nov 2026 18:19:03 +0000
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lkptlvVJ
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793730746; x=1825266746;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=x3hhHXT2I4E3JNy9aGP2VSmh9c4QnlhI2i6kllQ9YUk=;
+  b=lkptlvVJJzc6XNsNHM60rcm9q3sogjDypx1tl/bu252W0FGXC0PJ0p3g
+   D6zth/hKkIScBCIb1NBrRbtlu5IlqVQ1DmxYaIGyDD7wGXNgsPB3RCJLn
+   h/lg7vzHR3A8YfKQWYZLI1U6qXzFZR5yrQu/A+CHh9Wobj2ypupw0dmBb
+   5PlyEfaGZ2ieXEHNEmdp6QXF6kkNrlQLMTEAWKuEBoOJeDtKoUoHT8pAO
+   UBwy5QAeaDaLioKNzglp+feu7iPt9pgbJs6cDsRoJaulGFz75frzHPJ3E
+   F971K+yyTqrGkp0ykAUZlzIbILdtjlfNVvRxfTJHrGcuCL9kbNVX6L+hc
+   A==;
+X-CSE-ConnectionGUID: FFmp/djMQSioQnT3TZgLQg==
+X-CSE-MsgGUID: PQoR03TRQgGk0rVaBFbqng==
+X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2477536"
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="2477536"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 10:32:26 -0800
+X-CSE-ConnectionGUID: kyWrdDAFQruQlxv+E2acHA==
+X-CSE-MsgGUID: d82j2FjMRgK5qcTY54OB1Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="6620534"
+Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.108])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 10:31:51 -0800
+Date: Tue, 3 Nov 2026 20:31:48 +0200
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 01/16] x86_energy_perf_policy: Rewrite Linux/Android MSR
+ path discovery
+Message-ID: <auoolFrNA_NajjRn@ashevche-desk.local>
+References: <20261027191550.369122-1-lenb@kernel.org>
+ <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,67 +79,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mario Limonciello <superm1@kernel.org>, Sumit Gupta <sumitg@nvidia.com>,
- Jie Zhan <zhanjie9@hisilicon.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-pm <linux-pm@vger.kernel.org>
-From: Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH] cpufreq: Hold the policy write lock when changing boost state
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <481006fbcb22ba1f134283c017aa3ae8a67e0d59.1793124601.git.len.brown@intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-The per-policy boost sysfs handler calls policy_set_boost() under
-policy->rwsem, but the global boost handler and cpufreq_online() do not.
-Consequently, global and per-policy boost changes can concurrently
-update policy->boost_enabled, invoke the driver callback and update the
-boost frequency QoS request. The driver callbacks also access policy
-state, e.g. CPPC updates cpuinfo.max_freq that assumes policy->rw_sem
-held.
+On Tue, Oct 27, 2026 at 03:01:55PM -0400, Len Brown wrote:
+> 
+> First check that the Linux MSR driver path exists, modprobe if no.
+> If still no, then check that the Android MSR driver path exists.
+> 
+> Read or Write permissions are handled at run-time
+> in the get_msr()/put_msr() error paths.
+> 
+> Create set_msr_path() helper.
+> 
+> Return -1 for all fatal errors.
 
-Take policy->rwsem around policy_set_boost() in both unlocked
-callers. Keep locking at the call sites because the per-policy sysfs
-handler already holds the lock.
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 
-Fixes: 218a06a79d9a ("cpufreq: Support per-policy performance boost")
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- drivers/cpufreq/cpufreq.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 54dde8419bdc..015962e6c1fe 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -576,6 +576,8 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
- {
- 	int ret;
- 
-+	lockdep_assert_held_write(&policy->rwsem);
-+
- 	if (policy->boost_enabled == enable)
- 		return 0;
- 
-@@ -1629,6 +1631,8 @@ static int cpufreq_online(unsigned int cpu)
- 	 */
- 	if (cpufreq_driver->set_boost && policy->boost_supported &&
- 	    (new_policy || !cpufreq_boost_enabled())) {
-+		guard(cpufreq_policy_write)(policy);
-+
- 		ret = policy_set_boost(policy, cpufreq_boost_enabled());
- 		if (ret) {
- 			/* If the set_boost fails, the online operation is not affected */
-@@ -2830,6 +2834,8 @@ static int cpufreq_boost_trigger_state(int state)
- 		if (!policy->boost_supported)
- 			continue;
- 
-+		guard(cpufreq_policy_write)(policy);
-+
- 		ret = policy_set_boost(policy, state);
- 		if (unlikely(ret))
- 			break;
 -- 
-2.34.1
+With Best Regards,
+Andy Shevchenko
+
+
