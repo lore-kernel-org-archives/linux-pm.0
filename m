@@ -1,98 +1,152 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.49
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793720784;
-	b=zV9EttHOmjSqBVy47cdxMI62LHHLeN3wzqY0vOAn5Ren60X7aYllG0ykSDLyMlL+746O
-	 sZgdx/XbNEKMkha3H1H8PvwrD4pn0UQ8YPWEttJkeUkPzDCZf7xGDVmrFO6BcI3sZE+5+
-	 R9VIVH+7XmE4ar+8yHrA7E3iv8KN0jbXER+CxtE5PsUEAuWqfCtKLo9s4t8E8zDPyV5is
-	 DMj9OopltzCI2t0b/bqN6Qj8OjU6x9vF2yDrASAKqzpWImJCK0kZ6W0knZLLXl1Jyvq3P
-	 SHcNkpLmhF69r0ZMI7lp2G3MERyvggjABouEPZkpUxYJDqb6SI3hktfUW/kLaEFilRg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793720784;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=f/WZYQLdPkHbIQApsbqkOqPa3g52v+aebL2Gv1OKZH0=;
-	b=xM0murm9cJ2rEM2Hkb73Vi3Waw2pkzSwEp9QUOnI4La3yOOYlN2nYrUSq4dqsHMiRT7F
-	 ovvjgMKaS7r6MGzSaVgP50MNXYzjq4zbiZb6hUSFJ8ilN8mTtwG1Omc/ywIAbsN3KY87V
-	 L9F9LLpBQgTnKSnTpKq/67xoo4fYKFg3PCjqeVcvqgxYr6tIjKmw4ChMxVU8AJkeZlULO
-	 aKtOAgtntim7EHkspgV+wkm3AQNiiO0x7WCr3fVm/Tqmyh1sHNwjf/JJtDfVXW9ZW+u54
-	 07lXyyyTEGY0aUGflpGCVvgSaUjAiVSRPqGfzhPy4X8Jgo4cgceBDNLNiGe08zd/mkA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UAjttzsT;
-	arc=none smtp.remote-ip=209.85.128.49
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=192.198.163.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
+	t=1793720812;
+	b=f1fTSIFiGVbGempjh+OIWLqnYBBRIOaecOtQpdtLW5wFkROSSUvxysHPn8ucJPZ2Zr8l
+	 8waAA9k64Bg2L+rFhv0RS7I64hP6PQYz4RHM74hbj0+TAYqN1bt8b5VateR0nZE7cLL5O
+	 +TqUlwa712bklPV4bwnh6uoaA58XGmcpDEIV6LjwdMC5f0WawNBOYdZO6z6WhqdJgBg23
+	 AIk5pI1lR0M9tqSiR7eljR4gKKGE5Iy7P/yH8YB9y8zS3V2/SBWN71aPbbYRt5KGpbcfp
+	 sHBZFtxCROU22+BHhKWOMqfi/t5xCu/e0dYFA5/hq0wLjgWxR0GZO0xjYg8cFvQDxBQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793720812;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
+	 Received:Received:Received:Message-ID:Date:User-Agent:From:Subject:To:
+	 CC:References:Content-Language:Organization:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-LD-Processed:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
+	bh=qVRTqzfaeVpKWt8kmwuMLd+abFPhafywgS2GXAiH+08=;
+	b=tWD+FPtCzT43QhQk/PbN24PEbZqv01OPojGrGbAfMCIkVBrmSaL0BaWY0I+VcZruk2Kl
+	 tQajWpbK45uoZUGg8rKPXatkhCIrRr7E/B3qaThMFetCU1sv9y++MAezytqKomv1jMQn8
+	 rtUIP2fI/EsC07F5dE37JIpVsBuqj8LavM8APBABtguHKihhahCS4d8iefN6haGYlz08U
+	 JOkW7hcNejJEOn5KUT9Ks+buHl2TDnlMDe5S1NXThLQArzzItS1v2U5bH4IjAfFxrChF4
+	 PZrSDfWQjU0aXIb/1F1dj1nVRBe6f1C2dYnFw84Ti4JlUFf0cHnAhTb8Hili7BKy15g==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=b6PpWy9T;
+	arc=fail smtp.remote-ip=192.198.163.18
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BEA1606A338
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 15:46:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8BEA1606A338
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17E1B606A324;
+	Tue,  3 Nov 2026 15:46:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 17E1B606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UAjttzsT
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4a5177d78c7so44004325e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 07:46:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793720782; x=1794325582; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=f/WZYQLdPkHbIQApsbqkOqPa3g52v+aebL2Gv1OKZH0=;
-        b=UAjttzsTfNvl7dxIbR5d7BqbeC2CMb8wBixKhjw58wn/iu2+dyv9vNdl+jqW9Dr3Sa
-         xghVO/HqPxWrZ8g0rDE7O/XOhk02zxbotvhAXpkQKa9trJUEWlJTlDgqP+hSpW2BVuI1
-         uXJVUle3uJbJgYHvNTOK4kbLzpugBRI7bcapy74OsatXrU4NQxRnuYDo0w60cDosh7Ma
-         atyqhuljGWimjdV9WUiqPo7x6cC0f0zF10g7mo79yzRRavIffWb1ZRIWRo2Im+vmHyiP
-         t2HefdOKEFOH0VFiHpiL9opWUiNBhiB4vQxwotTrhRPxBLp1q64iksEmsSm5DKoS12Iu
-         ei1A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793720782; x=1794325582;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=f/WZYQLdPkHbIQApsbqkOqPa3g52v+aebL2Gv1OKZH0=;
-        b=XS7t+lYa3kHGX/RWuqgyURyTksxGlwtCoovbgv46yOYSyxA5k1dSu7eR/u5SA8EJ5j
-         6AEVaqpmeUmp43YqhjKkZfkxuQzvjdAeYSJ/W9OvR2BYUVuws1pV3+xbMYtk7KGWkSAs
-         8FYFzYwll7509hOYgjlk6Lln+PYdWg+DRBPq+JzdhTR1M1dOvvl4kHKZ3GLhSGGhqJSe
-         0f4PrH6rbsMoA2eQAKpmvxL730H6wivQRkjWIm7EkgCAkOSiWKD8t7U4yweuVDdEb2mF
-         w9+UObLpobIiz5o9xxmVdsUHRioxF0goG0r1KCiBBWeBooVhR5gRFJFO4xTmqYE+Gm+/
-         R2UQ==
-X-Forwarded-Encrypted: i=1; AKwUvBy8T4B99ylUypUob2s95GIt4VX/rq+h2RMZibSDy7PGVjRgIUdxer60rO0ANCwZUYeGaKceKm/9/Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+r8dPk+0yI8hS6Zqcd5aey/QcHw8K7Np9AdO4CyPmqBtS58Qpg
-	zJq3UQCUO17P3C0TWV4ES/7o4U9fglslnUcQse2zcxcclsjXwxdYI85/
-X-Gm-Gg: AYBFou0JC//edBmYmiK54NYZ2eYpZgzqYDv95l53N110G3rRBTLIawMq5yd2LJnGELn
-	kxbj/9Quu2MosmbvoUFN+LTu/RHJw9oTWYY1Mcg8dK1SbqVAgzC4cGsvqSB5Ibmep59yrMMRTZM
-	iXIUQJmM2C2UJVYEuMD4D8U+tgy8X7Pl7kbXH48c48GjXML5aB2xFuEskU+Bh2b0vjnmdXyDI/L
-	PUc2Vt7tkqkeUjIVQXORYb04gtTHNK3WytmgcPTyZ8c0ScC5oERm5Qm4eyboxMOjRVd1Gwmy05s
-	x0d7Wt9H3fHpjPe+s4trZfMvamDBfj9XLXnzRDYbEVmTXHsOqRCG8wNtTQCXAAAvtpDEk314FRA
-	2F7y+H3FmLfRQmCFtl88GybGy7eqYKoMwbT75f3Wu3GwV8AdkEqtVi26rVo/ZOg83h3Ra79NwMG
-	tx9Acfvp4bzqGuiL7USzP3zU0MoWyV7ciGY7gep1Bal11BdvViAijl++OEMMonzhsyS1pkNEIUm
-	0jK1qGBtu1qb1w9J7xQEUkjstb/yCf3U4BjX0EQVFYT+zoLRQfxWIeFI80hZHH1zQuz5IN5TweJ
-	WBm46nn/8AEeDUHFsBE=
-X-Received: by 2002:a05:600c:4f0f:b0:4a1:e00b:a10b with SMTP id 5b1f17b1804b1-4ac17b2cde9mr354368685e9.7.1793720781489;
-        Tue, 03 Nov 2026 07:46:21 -0800 (PST)
-Received: from fedora ([2.35.201.240])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b2a8d60bc5sm70002245e9.8.2026.11.03.07.46.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Nov 2026 07:46:19 -0800 (PST)
-From: Francesco Nigro <nigro.fra@gmail.com>
-To: Ingo Molnar <mingo@redhat.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Valentin Schneider <vschneid@redhat.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	Mike Galbraith <efault@gmx.de>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Huang Rui <ray.huang@amd.com>,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [REPORT] sched: ITMT + DELAY_DEQUEUE: woken task waits ~1 ms behind another task on the preferred CPU while allowed CPUs are idle
-Date: Tue,  3 Nov 2026 16:46:03 +0100
-Message-ID: <20261103154603.1893325-1-nigro.fra@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=b6PpWy9T
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793720811; x=1825256811;
+  h=message-id:date:from:subject:to:cc:references:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=AOhhZRhkxukTShsoJWDaD4OELhUUv9rAMu+Ssi/ZtPw=;
+  b=b6PpWy9TSm0GGD8c6DrrqH1p1xQIqh0Y90wzujqnEX+eRXMopTTNh8XV
+   2gvBvOidAh2mvqi5Qs7WwVdV6QVfj8YAowY76tWsPAZYAatrvIXy2w9GZ
+   4HdaOtmBQyobIpRqx7kGCntXq+9xRGlgCwnz/dtFHs+DqKvadS2Aqf99B
+   ZTJpaaJVGTXTGVWIhwfkuh3Y2JI0gkktPbyCER8VqOXcQot8ANHJJBCCE
+   yCE1tF4llUwJiGGf4xKnff+noJBaDfcqQq6Tk0vQ/xWwEmMLpkIF9Yi/d
+   CNrrwdNObcQJbGqDa/cYD+HmFtV6Lu8TWiZkh1B2s4+tnAGVfIpLjZE+X
+   g==;
+X-CSE-ConnectionGUID: GSVtVZq1TDSYB4VIQvo21w==
+X-CSE-MsgGUID: GqMlqT9lQz+MPfUpH8yqEA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2477727"
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="2477727"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 07:46:50 -0800
+X-CSE-ConnectionGUID: lbPbrbHHR2SMaPhmD1QEiw==
+X-CSE-MsgGUID: FaEfT+8OQja0Qog+Bohbvw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="6780341"
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+  by fmviesa009.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 07:46:50 -0800
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Tue, 3 Nov 2026 07:46:48 -0800
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56 via Frontend Transport; Tue, 3 Nov 2026 07:46:48 -0800
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (52.101.43.23) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Tue, 3 Nov 2026 07:46:48 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=HzsemlkfhMwY61mK17aOXzu/Fx+ij+5lPTdjDXMBqc/BtviG8JiHSXrp7Dw++T//IxNEeuTxO0h9GKShLLreQLOKUWiRgxULNGZUCD+H26Hq+B0vGNDu8DDme4YSHYtbtOdtrObS3ceqSmjWJ+uzSv+BlSFdDkIxpOcXLCjXXTNYxlqUR8V/ga4/h9kQSEd0l1ZLLirA+FxET82WPqGWabsrYEOLPFWC7jp8j22oqly2T2xpDk5fzyD9v91NKEOKXifFpg8noohnTQxUj5/2oRO/LAXcVd41EmqCtSn7NZN4baaNrp/vDZqthb56D7f42sWlrzSSwUOp7sDq2+HaNQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=qVRTqzfaeVpKWt8kmwuMLd+abFPhafywgS2GXAiH+08=;
+ b=F1a24HTVZBzTIAIQXblrCDpCWdgqNBG9c03n3YOewnPgfPi58eJyqTqt6BNhUZRLtppobBTo2L8bAUf57mwnVf1jXSXLp0n8PSILwUrPlojMQjTRRt7+rDa/IIATe8QoL4PJTM5gekk3yjC9PoffKpJIdm2HmQjruv7rF7E4BzNpSWF8L013+iS2Ts6Xod1UXAhHvXnHRa3BYg/V+7lTx7HIuqgo9p+FX8P65Xis1LnVtbSXy9ZRATNMTT9nKkBnno3PluMzT5seNEBGucX7JPDS1m8cOhg1fnhuChRfyjRJ74pyqTbtxif/Modc6Gqj1rANfVELlVO5p1Dkg+nOiw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from IA1PR11MB7198.namprd11.prod.outlook.com (2603:10b6:208:419::15)
+ by SJ0PR11MB5213.namprd11.prod.outlook.com (2603:10b6:a03:2da::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.12; Tue, 3 Nov
+ 2026 15:46:40 +0000
+Received: from IA1PR11MB7198.namprd11.prod.outlook.com
+ ([fe80::2c4e:e92a:4fa:a456]) by IA1PR11MB7198.namprd11.prod.outlook.com
+ ([fe80::2c4e:e92a:4fa:a456%3]) with mapi id 15.21.0569.011; Tue, 3 Nov 2026
+ 15:46:40 +0000
+Message-ID: <2d6105b4-bd75-41b5-a7b2-da91bda31350@intel.com>
+Date: Tue, 3 Nov 2026 17:46:32 +0200
+User-Agent: Mozilla Thunderbird
+From: Adrian Hunter <adrian.hunter@intel.com>
+Subject: Re: [PATCH 1/6] irq_work: Re-raise pending irq_work after system
+ resume
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim
+	<namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Alexander
+ Shishkin" <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>,
+	Ian Rogers <irogers@google.com>, James Clark <james.clark@linaro.org>,
+	"Thomas Gleixner" <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>, Dave
+ Hansen <dave.hansen@linux.intel.com>, <x86@kernel.org>, "H. Peter Anvin"
+	<hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek
+	<pavel@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Danilo
+ Krummrich" <dakr@kernel.org>, Johan Hovold <johan@kernel.org>, "Mathieu
+ Desnoyers" <mathieu.desnoyers@efficios.com>, Jiayuan Chen
+	<jiayuan.chen@linux.dev>, "Steven Rostedt (Google)" <rostedt@goodmis.org>,
+	"Vineeth Pillai (Google)" <vineeth@bitbyteword.org>, Frederic Weisbecker
+	<frederic@kernel.org>, Andi Kleen <ak@linux.intel.com>,
+	<linux-perf-users@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, <driver-core@lists.linux.dev>
+References: <20261102074039.26983-1-adrian.hunter@intel.com>
+ <20261102074039.26983-2-adrian.hunter@intel.com>
+ <20261102090604.GR1779021@noisy.programming.kicks-ass.net>
+ <74511f6b-f5ff-498f-bf97-ebdc86c43d24@intel.com>
+ <20261102163937.KwllF-Pg@linutronix.de>
+Content-Language: en-US
+Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park,
+ 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 -
+ 4, Domiciled in Helsinki
+In-Reply-To: <20261102163937.KwllF-Pg@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: DB9PR05CA0001.eurprd05.prod.outlook.com
+ (2603:10a6:10:1da::6) To IA1PR11MB7198.namprd11.prod.outlook.com
+ (2603:10b6:208:419::15)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,151 +156,157 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA1PR11MB7198:EE_|SJ0PR11MB5213:EE_
+X-MS-Office365-Filtering-Correlation-Id: 714c4603-e174-4fef-1f07-08df39c1a6f1
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|6133799003|22082099003|18002099003|56012099006|261102123227099003|261009223027099003|261022075727099003|261021121427099003|261021123027099003|261022105027099003|11063799006|10067099003|4143699003|261028144727099003|261026140227099003|261026121527099003;
+X-Microsoft-Antispam-Message-Info: h4nf7Fny4p0ijY+7U8B5cbiCt/cehuu3TitdAe/Ey4PJBr+jJi4P/NqSt9rIieX5kW61xiCW2/66WliYlKqpeW+n5p/i+EesEpTPvm6hj9eYrvh4JVDSM1GnD5436CVotmUoNdioarDcyjQ3w12fQVqj7uujxDZY5yybUxp3ZwgLRZwbvwCVYa4wUChnBrdhC8iEhayd0xGEuRqCnq/Dt5UmgH3b6TTD3/H88oIlLWwEufKL39dVdOpU9KXLgUnQ6GEO25D3uZziYNecc4ByBPzgTUnAD363tbErVL/jNa0THM1SUPcz19cW3BpX91VpPDJlzyaIq5B2Oqvau9/Hyn958mUBD0s+gWH3fFn0T63pfph42zLn1blrUaWF+QYPy87Z2OLnsnGq8z/COMyCUJKBXY6Ln9couzhn9IhmtpZJ+PQ2d7DrdenPnUallWBpF+7IfjZgxiaPoAAVS0J4+9ujyhE3MXmbmiDNpOCMvKmbMMSYcAA/v/Srg5FvRzaDJIlmM7iUZk+C1K+EL7Qerz7Bdgul7Tjunuv3nDjm8aTbXyNunEo6M69c6t83bk4SeV+BAErIAnp5mWXTNUImMv5P1M0kESK9+ue0+xhB3GGMR01mEKVjxYjeBPMbn6Tps/cQYL3pV5/2iCOdSgiOjep7vQwyTt8UmBefSIXXgmM=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA1PR11MB7198.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(6133799003)(22082099003)(18002099003)(56012099006)(261102123227099003)(261009223027099003)(261022075727099003)(261021121427099003)(261021123027099003)(261022105027099003)(11063799006)(10067099003)(4143699003)(261028144727099003)(261026140227099003)(261026121527099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?RFpYWnl2WUhLSVlMaXMxeVdaeXV0c3RZeFp1d0N4RFI3QnNJbTFzL2N3cmJp?=
+ =?utf-8?B?Tlh1Q1dLRXlUd0I2U3dOUU5VQmEzbjZzcXVtQS9FQU42TjBmWk52OHVhOU4v?=
+ =?utf-8?B?dlppUUVieWdVQ3BMT09uL3Z4cmVPLzQ4L215UFZ5Zmw0N3pIemx1bjNpR0Zs?=
+ =?utf-8?B?NndQV1ZMTU5JYjM4amFUSHk3ZFlNKzJGNWp4bVVFRThhc29NdVFidGhoWllQ?=
+ =?utf-8?B?VGgvN2pMTTBxWXBYdjBXYjhnUWZTektWSVYvdWRyY01ua2x5Z3R0VjAvcFJm?=
+ =?utf-8?B?N0tVZnpRTThCQjloQldzTnVyRFVFL1Fxb1Y4UDEyZnF3NlNIczYzN0cvdlJ1?=
+ =?utf-8?B?c0ZWSjJuNmIxMGkxREFBUUUwSmdsV29iUkZVdkhWQzlZSmZaVG5ZcmFYUEFz?=
+ =?utf-8?B?R0RiUE1RMDR1V3VLUTJmLzhScFFMM2ZWa3ZYbmI2RXhNYTZKLzJ1Y09mTHdX?=
+ =?utf-8?B?c09YejlnNWRsYUhtbFNubFZoSW9qa1JhY1N2RHdHb2tSSzdlSHRzSTl0T3FB?=
+ =?utf-8?B?MStmRjdLT0pFaXBjVHFxSHB6TW5sQU1XT3ZSMEJjY1hzWFU2ZGdPNjZpZzB1?=
+ =?utf-8?B?ckJWZDFNaG4yVFpIem5JSWQvRGtNaHZCZ2hRamQzdVRrSy9naGJFUis5UWs3?=
+ =?utf-8?B?NWcxb3pYV0lHL0NCS3JORTRSOVZHTGZEeVVNV2ZuNWN0TWhpTGFrTmdkV2Rv?=
+ =?utf-8?B?ZmJ6c0hhcnIvZFV2QTdIMWIyTWZ1V0VGNjkwaDV2RyttbzlJVlpBc3Y1dVUx?=
+ =?utf-8?B?QkRvRktBNlZBOGQxSGRsd2JjaytnOXUvcThIeGEyOTc4OWJKemNUbUpJNjVv?=
+ =?utf-8?B?alpFT3RQVFJZd1dkSFZ5UlRmdDkwSElBZ3BxSE0ybkVCSjVnR01xRVF6RTRw?=
+ =?utf-8?B?bmhGSDNkd0Exb2Y0YjY1RENqcTZFL3c2OG1pMzB1alltZC95YUs4dDNPRE8w?=
+ =?utf-8?B?UHJsSUlqWEdzY0VXZ0wrYWx0aEt0VGVGM25ocFJnSENGdzh4S2UxdGVETlVj?=
+ =?utf-8?B?RjIvU2tEWGxwWGlMUE1Oc0M0QktqeTA2MUtYcXdxei92L1pXOS9kUDhPbWJL?=
+ =?utf-8?B?UUYzY2JhUm5vR1NnaW5PaThDb0p4Mm9pWWtsaS8rMWcvRHlDanpwdkJ0L3Q2?=
+ =?utf-8?B?cHBrbHBKTGUxd2dLTWhKcm10bXJ4R2M5VGJOaGZnOW5NYm1XV1dPRTlnaFFt?=
+ =?utf-8?B?cDdWZWFuNFR4dGdPRTlJOER2eXE1S29OelVjRjM1b2JoZWpVWjFuT0M3a3Uy?=
+ =?utf-8?B?aTZRbzV1VXJBYlYvbGdLMU9ob3ZZbW5Kc080bHNHN2ViWFdqR2NDNnc0cUM5?=
+ =?utf-8?B?NE9UYkRvalRuVzVvQTA2SGZIZHpjVEVBODhocW51TFc1QzBGTWs2d2NkMC9H?=
+ =?utf-8?B?QkJ4Tnp1ZTJIY0luLzlPNFBtb0R5cXUxSXJmL2FkQjhZWTNMWHFIVWlXb0NK?=
+ =?utf-8?B?WGFsMjJUMkpSMXROV0RlZ0ZCK04vQVpTODA2ZHFtMUVxRFpaZ2p2Q1U5SWZ5?=
+ =?utf-8?B?dVkwSXRyNUdpcTcySnpjbmJ4UnQ4RWNFcU9wQ1J3THZzc0YxVkZWUTZQUDVa?=
+ =?utf-8?B?M3k5RTE1L0dHTVNlS2FsRHN5dzcwazFoQ2Jod2g3d2d0Rk9SRkpvbjFza2RB?=
+ =?utf-8?B?SG56NitXbmovTWc5SGhyMjhURjd6dXJ3U1RETTZLS0s1ZVNsMWJwb1o2b0R1?=
+ =?utf-8?B?OEswMlZ3bVRVSUtjY1FDVlZybVprVCsrWVRqd2pMWkRkT3dsZldBWk81U2pz?=
+ =?utf-8?B?NjlwVytoUDQrMlhObXdoQlR4N2o5QVlEc1IyQjRmVUhRUzgwUURBQ0hKdWRN?=
+ =?utf-8?B?YlBsNVdsQzMwU2pKUkcxYVZPWDhkQURJR0E4U2lYL00wTkVIRnNCWVNTWGNB?=
+ =?utf-8?B?K0Q2a2NLZ2ZSZGczUlFDNUdheHJBcyt4V2s5SlYzdEpPWXA4Y3BMd1d3aFZW?=
+ =?utf-8?B?emJYVmFXWklNeFhoZUU5YndiRjdJRzQ2WDVMazFsandYMXVlMTNMc2NtOEZs?=
+ =?utf-8?B?STlVbGIwMXVUWWZHK3hKTFhBTkRwYVJ6WVlvdC9MTHRCb05KUUQzMzZYYjFq?=
+ =?utf-8?B?VFgrdnNBeVlhYldON2pGWC9CS0ROTXMxTmk3ampoSE02MXczNVc5Y2VNVCtr?=
+ =?utf-8?B?dU1aaVF5RFQybDFGRDNDM2xKOS9YbmU3YVZtdjM3RkR1TUpVV2JlUjc2WmRJ?=
+ =?utf-8?B?NDlNRW42T2J1SExlTkxJKzZvdXVIUGFNODBIZVUzczhnRWcvNEx4ckJScHJY?=
+ =?utf-8?B?Y1YzcEpZUTdpblRrVHhFdy9WNndPTlNxMVRaVGRNdVBNRzhORnYzU0Znd3dF?=
+ =?utf-8?B?OU55RmFhVUlSM0dhQ3VSSFF5c0t2Znhnc3JQaHFucW12ODI1WlYwMnpHd0wr?=
+ =?utf-8?Q?UeeUEn6rTUjejrZc=3D?=
+X-Exchange-RoutingPolicyChecked: 0yI3Bw7y2fRZ3Y0XhpUnRpIU5GvUlEDww1x6uXRkCd2bpGvT1ACIcE/XJ+PwKXYLIR+KvboReKL9Jk0mBA/sPmaSPNFat095v9gtpwKSo+Hnm65aLDrTabeWi2jccYEu5gyfQSF/8nfU2jplYuf7wuA012Sdp1gu8RK/VN3HPW92wnAAQnvpJWdw/iiMs5h6+uyq4Ucq191yjIYeThwMFrZRJxVIuXtAHWIRyieC5DUndAkHfzKXNhZvktIyInlhO8Qs3vK4kEpt7nxpwSuV+Yo0vjoPNIRCrvJBicRr/uCvVS0eDNNyVAo8kmsZMI4yjZz61U2m3d0xFu6DEMwiqw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 714c4603-e174-4fef-1f07-08df39c1a6f1
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB7198.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Nov 2026 15:46:40.4310
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: vn+hlKZk2WzHfBsLgk0R9unwMkQODuomvZAepCPxzQZQuFxx71B/cYEROzFlb1Gdx9voCEo3TeA445SLJKAK8w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB5213
+X-OriginatorOrg: intel.com
 
-Hi,
+On 02/11/2026 18:39, Sebastian Andrzej Siewior wrote:
+> On 2026-11-02 12:54:22 [+0200], Adrian Hunter wrote:
+>>
+>> Yes CPUs remain online for suspend2idle, but currently the choice between
+>> suspend2idle and "deep" (S3) suspend is a user space choice,
+>> refer /sys/power/mem_sleep.  Many modern systems do not support S3
+>> anymore, but it has not gone away.
+>>
+>>>
+>>> Anyway, I'm torn; I would much rather make this trigger a WARN and have
+>>
+>> AI now also identifies ftrace, BPF, GHES NMI, and #MC as possible causes,
+>> not just perf.  I haven't tried to confirm any of those.
+>>
+>> And, belatedly, AI is now saying an irq_work raised before lapic_resume()
+>> might result in #GP if the APIC is left in xAPIC mode at resume.  Also
+>> not confirmed.
+> 
+> Could we flush this before similarly to what happens during CPU-hotplug.
+> The question is if this event can stay enqueued during suspend (and
+> handled on resume) or should be taken care before entering suspend.
 
-A woken thread waits behind another running thread while other CPUs it
-is allowed to use are idle.
+WRT "might result in #GP if the APIC is left in xAPIC mode at resume",
+the systems I have checked restore the APIC in x2APIC mode, so the
+issue is theoretical at this point, although I can get "unchecked MSR
+access error: WRMSR to 0x83f" if I deliberately add code to change
+x2APIC to xAPIC early in S3 wake (in x86_acpi_suspend_lowlevel()),
+and then do:
 
-I see this on an AMD Ryzen 9 7950X running Fedora's 7.1.13 kernel, with
-ITMT (AMD preferred cores) and DELAY_DEQUEUE enabled. Two busy threads
-end up on the same CPU, the highest-ranked of the ones they are allowed
-on. When one of them is woken, it is queued behind the other one and
-starts one full CPU burst late (1 ms here). That happens to 0.08-0.36 %
-of wakeups. Reproducer, scripts and raw results (commit 49b6d72):
-https://github.com/franz1981/itmt-delay-dequeue-repro
+  perf record -e power:suspend_resume --filter 'action == "machine_suspend" && start == 0' --no-buffering -C 0 -o /tmp/x.data &
+  rtcwake -m mem -s 10
 
-Kernel and machine
+The error can be avoided with:
 
-  - Fedora 7.1.13-100.fc43.x86_64, untainted, Fedora's stock .config
-    (at the link above): HZ=1000, PREEMPT_DYNAMIC (lazy), SCHED_MC_PRIO,
-    SCHED_AUTOGROUP, FAIR_GROUP_SCHED, NO_HZ_FULL. Fedora's
-    patch-7.1-redhat.patch touches nothing under kernel/sched/, nor
-    itmt.c, amd-pstate or cpufreq. I cannot boot mainline or a patched
-    kernel on this machine.
-  - AMD Ryzen 9 7950X, SMT on, amd_pstate active with prefcore,
-    sched_itmt_enabled=Y. CPUs pinned at 4300 MHz, boost off.
-  - CPUs 4-7 have prefcore rankings 211, 216, 231, 221 and the same
-    amd_pstate_highest_perf (166): CPU 6 is not faster than the others.
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 08c9aa176c33..41f93586f22c 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -63,6 +63,7 @@ extern int apic_verbosity;
+ extern int local_apic_timer_c2_ok;
+ 
+ extern bool apic_is_disabled;
++extern bool lapic_suspended;
+ extern unsigned int lapic_timer_period;
+ 
+ extern enum apic_intr_mode_id apic_intr_mode;
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 40fa7bc7fb97..187cbfad0d76 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -2385,6 +2385,8 @@ void __init up_late_init(void)
+ }
+ #endif
+ 
++bool lapic_suspended;
++
+ /*
+  * Power management
+  */
+@@ -2454,6 +2456,8 @@ static int lapic_suspend(void *data)
+ 	 */
+ 	mask_ioapic_entries();
+ 
++	WRITE_ONCE(lapic_suspended, true);
++
+ 	disable_local_APIC();
+ 
+ 	irq_remapping_disable();
+@@ -2534,6 +2538,8 @@ static void lapic_resume(void *data)
+ 
+ 	irq_remapping_reenable(x2apic_mode);
+ 
++	WRITE_ONCE(lapic_suspended, false);
++
+ 	local_irq_restore(flags);
+ }
+ 
+diff --git a/arch/x86/kernel/irq_work.c b/arch/x86/kernel/irq_work.c
+index 308c62411ff4..32386b7cf84e 100644
+--- a/arch/x86/kernel/irq_work.c
++++ b/arch/x86/kernel/irq_work.c
+@@ -25,7 +25,7 @@ DEFINE_IDTENTRY_SYSVEC(sysvec_irq_work)
+ 
+ void arch_irq_work_raise(void)
+ {
+-	if (!arch_irq_work_has_interrupt())
++	if (!arch_irq_work_has_interrupt() || READ_ONCE(lapic_suspended))
+ 		return;
+ 
+ 	__apic_send_IPI_self(IRQ_WORK_VECTOR);
 
-Reproducer
-
-Two threads each run a calibrated 1 ms CPU burst and block on an eventfd.
-A waker thread on CPU 2 busy-polls and writes each eventfd 10 us after
-that thread's burst ends. A handoff (waker's timestamp before the write
-to read() returning) of 0.5 ms or more counts as a stall.
-
-    gcc -O2 -pthread -o asym_min asym_min.c
-    taskset -c 4-7 ./asym_min 1000 10 30 2
-
-asym_min.c (195 lines):
-https://github.com/franz1981/itmt-delay-dequeue-repro/blob/main/asym_min.c
-
-Results, 5 interleaved rounds of 30 s (results-final-min.txt):
-
-    setting                      stalls per run         total
-    defaults                     212  49  48  76 214    599 of 294616
-    sched_itmt_enabled=0           1   0   0   0   0      1 of 295349
-    NO_DELAY_DEQUEUE              21   9  11  26  14     81 of 295201
-    defaults, SMT siblings
-    20-23 also allowed            16  27  15  13   2     73 of 295215
-
-The median handoff is 3 us in every setting.
-
-Trace
-
-stackcheck.bt records, per wakeup, whether se.sched_delayed was set at
-try_to_wake_up() and whether select_task_rq_fair() ran. Two 30 s runs with
-the defaults (results-final-min-trace.txt):
-
-                                                    run 1    run 2
-    worker wakeups                                  58592    58770
-      delayed, no select_task_rq_fair()               340      174
-    waits >= 0.5 ms                                   310      153
-      on CPU 6 behind the other thread                288      137
-      after a delayed wakeup, no CPU selection        280      139
-      other thread moved to CPU 6 by
-        active_load_balance_cpu_stop()                 30       12
-
-In a third run (stackcheck-idle.bt), 3 of the 4 allowed CPUs were idle
-when the waiting thread was woken, in all 102 waits >= 0.5 ms.
-
-The code path in 7.1.13:
-
-    fair.c:dequeue_entity()
-        if (sched_feat(DELAY_DEQUEUE) && delay &&
-            !entity_eligible(cfs_rq, se)) {
-            ...
-            set_delayed(se);
-            return false;
-        }
-
-    core.c:try_to_wake_up()
-        if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
-            break;
-        ...
-        cpu = select_task_rq(p, p->wake_cpu, &wake_flags);
-
-    core.c:ttwu_runnable()
-        if (p->se.sched_delayed)
-            enqueue_task(rq, p, ENQUEUE_NOCLOCK | ENQUEUE_DELAYED);
-
-Sequence, from the trace flags and the code above (A waits, B runs):
-
-    CPU 6                                   CPUs 4, 5, 7
-    -----                                   ------------
-    A ends its burst and blocks while
-    not eligible: stays queued, delayed
-    B runs its 1 ms burst                   idle
-    the waker writes A's eventfd;
-    ttwu_runnable() re-queues A on CPU 6,
-    no select_task_rq()                     idle
-    B's burst ends, A runs ~1 ms late
-
-A task alone on its cfs_rq is always eligible, so A can only be delayed
-while B shares CPU 6. How the two first end up there is only partly
-traced (active balance in 30 and 12 of the waits above).
-
-Mainline (7.4-rc1) still re-queues a delayed task in place in
-ttwu_runnable(). I have not run it.
-
-Related, not tested here
-
-  - Mike Galbraith, "sched/fair: Dequeue sched_delayed tasks when waking
-    to a busy CPU" (tip sched/urgent, 2024-11-11; not in 7.1.13 or
-    7.4-rc1) and its V2 thread:
-    https://lore.kernel.org/all/bf4f50886c462ee1f33cc404843944fea4817616.camel@gmx.de/
-  - Peter Zijlstra, "[PATCH v2 11/12] sched: Change ttwu_runnable() vs
-    sched_delayed" (2025-07-02, not merged):
-    https://lore.kernel.org/all/20250702121159.535226098@infradead.org/
-  - "sched/fair: DELAY_DEQUEUE causes ~25% pipe IPC regression on
-    Raspberry Pi 5" (2026-04), a different symptom, no ITMT:
-    https://lore.kernel.org/all/20260423080453.GQ3126523@noisy.programming.kicks-ass.net/
-
-Questions
-
-  1. Is this cost expected when a delayed task is woken on a busy CPU
-     while other allowed CPUs are idle? Here the busy CPU is not faster
-     than the idle ones, and each stall costs one full burst.
-  2. Is the ttwu_runnable() change in the threads above still planned,
-     and would it be expected to cover this case?
-  3. What else would be useful to trace or measure on this machine?
-
-Notes
-
-  - Tested on this machine only; Intel ITMT is untested. Which settings
-    matter elsewhere is a guess: the allowed CPUs relative to the
-    preferred-core ranking, SMT siblings, the waker CPU. scan.sh at the
-    link above tries several CPU sets without root.
-  - asym_stack2.c at the link above is an earlier, longer version of the
-    reproducer. It showed the same pattern at about 3x the stall rate
-    (results-final.txt); I don't know why the rates differ.
-
-Tool use: an AI coding assistant (Claude Code, Claude Opus 5.5) wrote
-the scripts, ran the measurements on this machine and drafted this
-report; Codex helped with earlier analysis. I reviewed the method and
-the numbers against the raw files and can answer for them.
-
-Thanks,
-Franz
