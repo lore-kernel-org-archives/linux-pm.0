@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793747428;
-	b=SC+s5M6V6FlqzaR3lJBhv/b+GSCAfps4PeRMmQbaDE2Eng9MnwEF/+UsfY0fET1fz4bT
-	 sTtDjG7XR2Jlx2bmfzJfRDImBJWlzHVqApHNa3tWj8DAO2VYx3jNYiB2Hhk0EkAAiRn3A
-	 MroyDXPrLkYIBt5d8EPZatySLUIt0mklOJY3zbMyWBc2j7Rb8xZk/mi/zfPn+aFxa2xpY
-	 X5jThLzhIE44UF9CJ1hyFIIDuIrmfaGDqXG+WWtNG5ra+vS63EZqYbrHwxzrndq0Amo9J
-	 S7npLk4czcy3jOM/X5r7uO92lp9vlHTq+hCnZQ7i+P6BN7MQwTokP7zVMK6MlpHAJRA==
+	t=1793747441;
+	b=17xpg/CyrTCp8rC6DiIz7HuKcPLbfNcczQVVm7QSIY9C2eJNq2K0V4U6IPZUvqbJt+AT
+	 RcW6ivYdo4pIeNW/U1NYVZdd+EntNzJhmTBMRhVx2OXc6vaGpkC6SWe5rSj1iLnqOhMXJ
+	 DnUyC6KoHlH51iKhT0ev5QyVQ3eSNHsUIEXlwgLef0rJJ1OItF8pLAtJJTI39N/ZoASeO
+	 RGU/noj4ABigKoz6AbDsZaTqkbpQNqz8P13Hs3ywtaAXMiN0Ahb6Rrr1tdljSvvKVNUJE
+	 xSIaEJ0yT/zZ71OpsrTDfvMBJcTt0psDjLoUmk2FMJMFSXYdYYW0ByalvfAM2Br4rLQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793747428;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793747441;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
 	 Date:Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=mOCyYrBGB+XIqTdJaPvQ3XTFsjQ/DBugx4t6eCqUCuA=;
-	b=czW4koSsIDpEUreEHxW9BKzLCTaADG51czXW6dAPb2lRy/0hWdRy1yQpr1SGuObqqZIs
-	 l/O+CkLdm0NNci0U575Ks84II0UohyR2lq2KtjJTHDLFkwqmTEe/KTqweIImy/76L4a0S
-	 B8gdRlR8TLNWzdAer2U/ws0wMxx82hBAhCykS/Zp2bb0DJkW0YeHOKZAV49E7CWkOkjnJ
-	 LStNbhSA04XbFQ3QdPlVfUIuECvS8STdRbTUlMiv8rlWy1VG/62nMcJXaOATCwOHbAiWU
-	 pCeiWYueBImVKbKwgl8QHEeWqu3VHsZLWLlUxJawLJQPDccLccJGgVlAGE95KTwpgjw==
+	bh=uC6BgPvNlF/5g1lcsRTy3xYeGVm1mRnFm48t9CTnYYQ=;
+	b=zV+FEZDJnOjXbl3ZtdWtS5XM/f46LPnf4NI+/Qvcay760PFLdhv2NN+cADEnzHCbOKNZ
+	 Wcq6BWTRCrTg24YD/iJD2ZXPB21pZrrr/WNdvhUj7lr5xWLKUDRqgCg3PEBd9B6xle5u3
+	 yHJHQXVAwvfoz397F5vcpGALzcwJ7FmibM2Vc4f4xtzBgT4msvXsdmhyQDfhdN8jQcWq1
+	 wi3uK+9jvR+OLRkQsFW+z1GJhuP1eEgO8Hhltn0xYX4gQyrIN6av50UPYF1aVMifokLNb
+	 dfxfD/TRC1tHrtaW3hLAh30kUiJMTtLMqFBRjdoz7LspZsGSIWDvP2L1TlQa3UNtPVA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=arm.com;
 	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=M1MrVBR3;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=jvmYy7OF;
 	arc=none smtp.remote-ip=217.140.110.172
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 71E39606A338;
-	Tue,  3 Nov 2026 23:10:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 71E39606A338
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 711B1606A328;
+	Tue,  3 Nov 2026 23:10:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 711B1606A328
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=M1MrVBR3
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=jvmYy7OF
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EA22D1595;
-	Tue,  3 Nov 2026 15:10:23 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C9DB11650;
+	Tue,  3 Nov 2026 15:10:36 -0800 (PST)
 Received: from e121740.manchester.arm.com (e121740.arm.com [10.33.8.69])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 42F373F673;
-	Tue,  3 Nov 2026 15:10:24 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 21F9D3F673;
+	Tue,  3 Nov 2026 15:10:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793747427; bh=y2g9X2SaQHYi4HusJgestLX4YsHc6wB3lzeyqQD1keY=;
+	t=1793747439; bh=cRGgnFZQVKHOiOSQ+qbNegRvTsybdbXb0bPTQ3rcxgc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=M1MrVBR3HMrT3VqeqqrBt00IDvrB1gA5hmZEdfOJkOEANROTihNq/a4RtfN7ZcUSy
-	 JeL1CwturmS8eYO/TIjglpplCeePssPQHoBXvL0WUXN43Bq4gsTCciXjUvLVzRfymR
-	 ZdRpq4PAjgj7M8uhtJJv7GcrzW05xui5UsBgwMyA=
+	b=jvmYy7OFyiqj/Oxv4U/tg34FJq5n5VbgGKOPBceHWCa6WsRjet03K+FyrBM4g8wwF
+	 uiUX98MtlZ7Gibddr1AvS6XTgE0UZj/eXQhve4AJBjoN4UwOzge5Psw+pCMCF1if+N
+	 iM0jJpHfVHG7h74y76bKaCIuWRV3qycm+tz8184Y=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -58,11 +58,11 @@ Cc: sudeep.holla@arm.com,
 	dan.carpenter@linaro.org,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
-	Philip Radford <philip.radford@arm.com>,
-	Cristian Marussi <cristian.marussi@arm.com>
-Subject: [PATCH v10 02/13] firmware: arm_scmi: Add an optional custom parameter to fastchannel helpers
-Date: Tue,  3 Nov 2026 23:09:56 +0000
-Message-Id: <20261103231007.537082-3-philip.radford@arm.com>
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Philip Radford <philip.radford@arm.com>
+Subject: [PATCH v10 06/13] firmware: arm_scmi: Add SCMIV4.0 Powercap notifications support
+Date: Tue,  3 Nov 2026 23:10:00 +0000
+Message-Id: <20261103231007.537082-7-philip.radford@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20261103231007.537082-1-philip.radford@arm.com>
 References: <20261103231007.537082-1-philip.radford@arm.com>
@@ -77,148 +77,127 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Starting from SCMIv4.0 the protocols DESCRIBE_FASTCHANNEL commands allow
-to specify one additional per-protocol custom field in the outgoing message
-request in order to, optionally, further narrow down the scope of the
-fastchannel discovery request; the related message-reply format is instead
-unchanged.
+From: Cristian Marussi <cristian.marussi@arm.com>
 
-Add an optional custom protocol parameter to the common fastchannel helper
-so as to enable the caller to choose the kind of message to send based on
-the detected protocol version.
+Extend notification support to the new SCMIv4.0 Powercap format that carry
+also a CPL identifier where specified.
+
+Since this addition completes SCMIv4.0 Powercap support bump also the
+protocol version define.
 
 Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
- drivers/firmware/arm_scmi/driver.c    | 12 ++++++++++--
- drivers/firmware/arm_scmi/perf.c      |  8 ++++----
- drivers/firmware/arm_scmi/powercap.c  |  8 ++++----
- drivers/firmware/arm_scmi/protocols.h |  2 +-
- 4 files changed, 19 insertions(+), 11 deletions(-)
+V9->V10
+- use interval-specific validation for CPC-reported CAI values
+- allow all--zero CPC CAI values to mean teh platform did not report the interval
+---
+ drivers/firmware/arm_scmi/powercap.c | 37 +++++++++++++++++++++-------
+ include/linux/scmi_protocol.h        |  3 ++-
+ 2 files changed, 30 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
-index 1e6f69b14321..c49130dbadc3 100644
---- a/drivers/firmware/arm_scmi/driver.c
-+++ b/drivers/firmware/arm_scmi/driver.c
-@@ -1934,6 +1934,11 @@ static int scmi_iterator_run_bound(void *iter, unsigned int *start,
- struct scmi_msg_get_fc_info {
- 	__le32 domain;
- 	__le32 message_id;
-+	__le32 custom;
-+#define MSG_FC_INFO_SZ_EXTENDED	\
-+	(sizeof(struct scmi_msg_get_fc_info))
-+#define MSG_FC_INFO_SZ		\
-+	(sizeof(struct scmi_msg_get_fc_info) - sizeof(__le32))
- };
- 
- struct scmi_msg_resp_desc_fc {
-@@ -1962,7 +1967,7 @@ struct scmi_msg_resp_desc_fc {
- static void
- scmi_common_fastchannel_init(const struct scmi_protocol_handle *ph,
- 			     u8 describe_id, u32 message_id, u32 valid_size,
--			     u32 domain, void __iomem **p_addr,
-+			     u32 domain, u32 *custom, void __iomem **p_addr,
- 			     struct scmi_fc_db_info **p_db, u32 *rate_limit)
- {
- 	int ret;
-@@ -1993,13 +1998,16 @@ scmi_common_fastchannel_init(const struct scmi_protocol_handle *ph,
- 	}
- 
- 	ret = ph->xops->xfer_get_init(ph, describe_id,
--				      sizeof(*info), sizeof(*resp), &t);
-+				      custom ? MSG_FC_INFO_SZ_EXTENDED :
-+				      MSG_FC_INFO_SZ, sizeof(*resp), &t);
- 	if (ret)
- 		goto err_out;
- 
- 	info = t->tx.buf;
- 	info->domain = cpu_to_le32(domain);
- 	info->message_id = cpu_to_le32(message_id);
-+	if (custom)
-+		info->custom = cpu_to_le32(*custom);
- 
- 	/*
- 	 * Bail out on error leaving fc_info addresses zeroed; this includes
-diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index 4583d02bee1c..7f283f457e02 100644
---- a/drivers/firmware/arm_scmi/perf.c
-+++ b/drivers/firmware/arm_scmi/perf.c
-@@ -835,25 +835,25 @@ static void scmi_perf_domain_init_fc(const struct scmi_protocol_handle *ph,
- 		return;
- 
- 	ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--				   PERF_LEVEL_GET, 4, dom->id,
-+				   PERF_LEVEL_GET, 4, dom->id, NULL,
- 				   &fc[PERF_FC_LEVEL].get_addr, NULL,
- 				   &fc[PERF_FC_LEVEL].rate_limit);
- 
- 	ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--				   PERF_LIMITS_GET, 8, dom->id,
-+				   PERF_LIMITS_GET, 8, dom->id, NULL,
- 				   &fc[PERF_FC_LIMIT].get_addr, NULL,
- 				   &fc[PERF_FC_LIMIT].rate_limit);
- 
- 	if (dom->info.set_perf)
- 		ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--					   PERF_LEVEL_SET, 4, dom->id,
-+					   PERF_LEVEL_SET, 4, dom->id, NULL,
- 					   &fc[PERF_FC_LEVEL].set_addr,
- 					   &fc[PERF_FC_LEVEL].set_db,
- 					   &fc[PERF_FC_LEVEL].rate_limit);
- 
- 	if (dom->set_limits)
- 		ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--					   PERF_LIMITS_SET, 8, dom->id,
-+					   PERF_LIMITS_SET, 8, dom->id, NULL,
- 					   &fc[PERF_FC_LIMIT].set_addr,
- 					   &fc[PERF_FC_LIMIT].set_db,
- 					   &fc[PERF_FC_LIMIT].rate_limit);
 diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
-index 27e3c805e927..31b19967452f 100644
+index dd99f3eae9e9..bcfc2d8c5abb 100644
 --- a/drivers/firmware/arm_scmi/powercap.c
 +++ b/drivers/firmware/arm_scmi/powercap.c
-@@ -726,24 +726,24 @@ static void scmi_powercap_domain_init_fc(const struct scmi_protocol_handle *ph,
- 		return;
+@@ -18,7 +18,7 @@
+ #include "notify.h"
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_CAP_SET, 4, domain,
-+				   POWERCAP_CAP_SET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_CAP].set_addr,
- 				   &fc[POWERCAP_FC_CAP].set_db,
- 				   &fc[POWERCAP_FC_CAP].rate_limit);
+ /* Updated only after ALL the mandatory features for that version are merged */
+-#define SCMI_PROTOCOL_SUPPORTED_VERSION		0x20000
++#define SCMI_PROTOCOL_SUPPORTED_VERSION		0x30000
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_CAP_GET, 4, domain,
-+				   POWERCAP_CAP_GET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_CAP].get_addr, NULL,
- 				   &fc[POWERCAP_FC_CAP].rate_limit);
+ #define CPL0	0
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_PAI_SET, 4, domain,
-+				   POWERCAP_PAI_SET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_PAI].set_addr,
- 				   &fc[POWERCAP_FC_PAI].set_db,
- 				   &fc[POWERCAP_FC_PAI].rate_limit);
+@@ -156,7 +156,8 @@ struct scmi_powercap_cap_changed_notify_payld {
+ 	__le32 agent_id;
+ 	__le32 domain_id;
+ 	__le32 power_cap;
+-	__le32 pai;
++	__le32 avg_ivl;
++	__le32 cpli;
+ };
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_PAI_GET, 4, domain,
-+				   POWERCAP_PAI_GET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_PAI].get_addr, NULL,
- 				   &fc[POWERCAP_FC_PAI].rate_limit);
+ struct scmi_powercap_meas_changed_notify_payld {
+@@ -339,6 +340,7 @@ iter_powercap_cpls_process_response(const struct scmi_protocol_handle *ph,
+ 	const struct scmi_msg_resp_powercap_cpc *r = response;
+ 	struct scmi_cpls_priv *p = priv;
+ 	struct scmi_powercap_cpl_info *cpl;
++	int ret;
  
-diff --git a/drivers/firmware/arm_scmi/protocols.h b/drivers/firmware/arm_scmi/protocols.h
-index 8583159059e6..08edec705270 100644
---- a/drivers/firmware/arm_scmi/protocols.h
-+++ b/drivers/firmware/arm_scmi/protocols.h
-@@ -294,7 +294,7 @@ struct scmi_proto_helpers_ops {
- 				  u32 message_id, u32 *attributes);
- 	void (*fastchannel_init)(const struct scmi_protocol_handle *ph,
- 				 u8 describe_id, u32 message_id,
--				 u32 valid_size, u32 domain,
-+				 u32 valid_size, u32 domain, u32 *custom,
- 				 void __iomem **p_addr,
- 				 struct scmi_fc_db_info **p_db,
- 				 u32 *rate_limit);
+ 	cpl = &p->cpli[st->desc_index + st->loop_idx];
+ 
+@@ -348,17 +350,28 @@ iter_powercap_cpls_process_response(const struct scmi_protocol_handle *ph,
+ 	cpl->min_power_cap = le32_to_cpu(r->desc[st->loop_idx].min_power_cap);
+ 	cpl->max_power_cap = le32_to_cpu(r->desc[st->loop_idx].max_power_cap);
+ 	cpl->power_cap_step = le32_to_cpu(r->desc[st->loop_idx].power_cap_step);
+-	if (!cpl->power_cap_step && cpl->min_power_cap != cpl->max_power_cap)
+-		return -EINVAL;
++
++	ret = scmi_powercap_validate(cpl->min_power_cap,
++				     cpl->max_power_cap,
++				     cpl->power_cap_step,
++				     cpl->cap_config);
++
++	if (ret)
++		return ret;
+ 
+ 	cpl->min_avg_ivl = le32_to_cpu(r->desc[st->loop_idx].min_cai);
+ 	cpl->max_avg_ivl = le32_to_cpu(r->desc[st->loop_idx].max_cai);
+ 	cpl->avg_ivl_step = le32_to_cpu(r->desc[st->loop_idx].cai_step);
+-	if (!cpl->avg_ivl_step && cpl->min_avg_ivl != cpl->max_avg_ivl)
+-		return -EINVAL;
+-
+ 	cpl->avg_ivl_config = cpl->min_avg_ivl != cpl->max_avg_ivl;
+ 
++	ret = scmi_powercap_interval_validate(cpl->min_avg_ivl,
++					      cpl->max_avg_ivl,
++					      cpl->avg_ivl_step,
++					      &cpl->avg_ivl_config);
++
++	if (ret)
++		return ret;
++
+ 	strscpy(cpl->name, r->desc[st->loop_idx].name, SCMI_SHORT_NAME_MAX_SIZE);
+ 
+ 	return 0;
+@@ -1370,14 +1383,20 @@ scmi_powercap_fill_custom_report(const struct scmi_protocol_handle *ph,
+ 		const struct scmi_powercap_cap_changed_notify_payld *p = payld;
+ 		struct scmi_powercap_cap_changed_report *r = report;
+ 
+-		if (sizeof(*p) != payld_sz)
++		if (payld_sz < offsetofend(struct scmi_powercap_cap_changed_notify_payld,
++					   avg_ivl))
+ 			break;
+ 
+ 		r->timestamp = timestamp;
+ 		r->agent_id = le32_to_cpu(p->agent_id);
+ 		r->domain_id = le32_to_cpu(p->domain_id);
+ 		r->power_cap = le32_to_cpu(p->power_cap);
+-		r->pai = le32_to_cpu(p->pai);
++		r->avg_ivl = le32_to_cpu(p->avg_ivl);
++		if (payld_sz >= offsetofend(struct scmi_powercap_cap_changed_notify_payld,
++					    cpli))
++			r->cpli = le32_to_cpu(p->cpli);
++		else
++			r->cpli = 0;
+ 		*src_id = r->domain_id;
+ 		rep = r;
+ 		break;
+diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
+index b6bc7fabd099..e41e972c7e4f 100644
+--- a/include/linux/scmi_protocol.h
++++ b/include/linux/scmi_protocol.h
+@@ -1129,7 +1129,8 @@ struct scmi_powercap_cap_changed_report {
+ 	unsigned int	agent_id;
+ 	unsigned int	domain_id;
+ 	unsigned int	power_cap;
+-	unsigned int	pai;
++	unsigned int	avg_ivl;
++	unsigned int	cpli;
+ };
+ 
+ struct scmi_powercap_meas_changed_report {
 -- 
 2.34.1
 
