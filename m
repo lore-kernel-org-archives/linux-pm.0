@@ -1,47 +1,46 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793747425;
-	b=wFdxHdBPGpyTf6nGJoc1yQiVCiP1pyMHOhMVNkTl7UGEtpHEthkTQQl+InDhDIoD/NTo
-	 zkNB7zzaAdm/6miobxjRxGSlzVYZ1CIhkFGudjqi3wfyCjRExh9+g7iA3S4dmZxLABwEc
-	 UbW7IP1Ps1L0VnXISDQbMNXalzk2uGnC11nGncmg7RQT5tmju6L8ljYx07UJ85KFZ87cx
-	 y1FrxrzCcHOXbgx8xEu/Z9lW0k9L1z0HNArrH35g+KQGRaZ4bfRb77mMRdssVUvw/E71O
-	 4QC7r5AD3IvaFb+dwpY3cUxAtk8AvIrRyb5hBzg07s8axH7mtQLLF6LjVZLLtVF67Jw==
+	t=1793747424;
+	b=oNvPrvHjj6FIkuUkoRirIoSIvd4O5mkDAlyFMn9Cccj+jOwgLyaBeUEA9xzo3o4kn0jL
+	 FV1XqkP+PtU0DPlxXXbAxF5Z10qxBRnRbTHgZtvNrI2nJaRgWKmk2i9vXiQqvwSJPy6vt
+	 znj4VPXnzL0cUXn9x2qegVZnzropwma/cZvPq6tS8cyxbgsJniXLLe/SXzg/JmLZrCR4P
+	 tf517fObdCWnf0RY9ZSI3xCQ5feQItTYB4LpaYT33UEmDlrR97frv1xvAwwVhNsy7+dZw
+	 T7yfPMlpwY7ulKQbG5gIYoZeUUzj/FPLGWWV5EPwy68kwq2YblUdxQ+4rcs6GYFivgw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793747425;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793747424;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
-	 Date:Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=t6vdaU/yxePrUrRWUghg3cmrLMnFFTUJ28tlNRYh1tg=;
-	b=TCvz28rxpGLBwc3JLWv0D7FIM3iJyzJVLBsBXFyt729nMQoMPzv5Fl3skbFs3pwJ1Git
-	 jaDz2Ml4UZ8+kniuzH01mmPVp9qxpQ/fpacLmfUqmXV+BpR+VZ6ZJdmAGV8yQGDIJwNiQ
-	 jluXtfWfbVzVElmlBWPBTxr0X9vE8J69QfCCO9WzuuomjTniD2sKuNpewOxSrExXBhp+o
-	 s170xWfDjYYXCzAqVfTKi+HBBiRoa53YCBIug6QstTvbMQtqnMt6EJOChcEILnlyulSxO
-	 MiqJxfCDSOiqb9/YXtOE72hrsn6QdfZx4RW0AZpBhc275sGOAOeBJNyVJWxVbd8U6rA==
+	 Date:Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=rauzFWryPvLyBGmPfmCf4yU7zrPY15jbEucaJwu7RGA=;
+	b=jrBGhu207+0xIj8lpTte1z9BTXnNyv+Jsj+SphGhWQSybLlnfMWB8BFImvazlNw4AD95
+	 gEhveEiiZHcJ7vgW6RHm/lNedtoeLeYMeD+I0FQPxgbWoExOQKbSDnxB/vtZ5EV5syovR
+	 tQyfBxH7PqNipnN7p9Y1bkX5WA0T1rSMURCDLHdZ/bVoiUAq9D+sLQn2OfMbBS/5yT9VN
+	 sFJGJLGSJrqY/2BB7wWucMQf0BbSPbZxOXqLcZQegfUgAh5RF2TfH2URdSMcZfGbNhinH
+	 PyqMcx2B8VBovQKZW/ej6CHJtfmxxkSoVcGJRanO5mTplocFv5vaF4T2zM1CGvsPgkQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=arm.com;
 	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=SuPpvCBp;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=GcEcuEVL;
 	arc=none smtp.remote-ip=217.140.110.172
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7D112606A32C;
-	Tue,  3 Nov 2026 23:10:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7D112606A32C
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 16B6D606A324;
+	Tue,  3 Nov 2026 23:10:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 16B6D606A324
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=SuPpvCBp
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=GcEcuEVL
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C87D11650;
-	Tue,  3 Nov 2026 15:10:20 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CCCFE1595;
+	Tue,  3 Nov 2026 15:10:17 -0800 (PST)
 Received: from e121740.manchester.arm.com (e121740.arm.com [10.33.8.69])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 44EDF3F673;
-	Tue,  3 Nov 2026 15:10:21 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 465A43F673;
+	Tue,  3 Nov 2026 15:10:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793747423; bh=lSnoEjxkr8+bXgJvQDCUdnuOVMPOKr7qwpgfoczF5wk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=SuPpvCBpFfk5cYB+bazpJbkD+cL53FvqkjnJGH9Bk2XI/MRjHAERJNu3L2dOtTCyj
-	 NPiJo1xNcO7sNDsPWz1FrW0kjZ/1393Nz6RhdJZsgxlVqI1jdi0WyvV5V+rpFadvUo
-	 7X964iWl/ezCUZNnfC4/2v3fV2YE9AZCsfk1/uyw=
+	t=1793747420; bh=5PdF7S6Qt0U8B4kKlbu+dpwG2CeHusjyFfgxfiz/nq4=;
+	h=From:To:Cc:Subject:Date:From;
+	b=GcEcuEVLaqxRyNraEfi2BqD19fYcUKfCyiYHYmvH9jD2dzV9dahgwauNi3qrE6nLx
+	 d/Llbw6DsKhA22zNcI222guUs/bt5TyVz+J5L4YAvOXUmmREhp9gY0lUeVIGnpsXID
+	 hfbScpLWD8C8Ic3Y3qye9uChRFPN2cndq7DQBq70=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -59,12 +58,10 @@ Cc: sudeep.holla@arm.com,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v10 01/13] powercap: Add enable disable control-type
-Date: Tue,  3 Nov 2026 23:09:55 +0000
-Message-Id: <20261103231007.537082-2-philip.radford@arm.com>
+Subject: [PATCH v10 00/13] Add support for SCMIv4.0 Powercap Extensions
+Date: Tue,  3 Nov 2026 23:09:54 +0000
+Message-Id: <20261103231007.537082-1-philip.radford@arm.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20261103231007.537082-1-philip.radford@arm.com>
-References: <20261103231007.537082-1-philip.radford@arm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -76,236 +73,196 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add functionality to disable or enable the Powercap control-type by writing
-directly into sys/class/powercap/arm-scmi/enabled.
+Hi all,
 
-Signed-off-by: Philip Radford <philip.radford@arm.com>
+I have taken over this series from Cristian and in doing so I have
+addressed a couple of issues raised by the first version and added six
+additional patches since Cristian's original series:
+
+[1/13] addresses an omission from the original powercap functionality. The
+ABI documentation describes allowing enabling and disabling power capping
+for a control type via /sys/class/powercap/<control type>/enabled. This
+first patch implements this functionality but as stated before, this was an
+omission rather than a bug that requires fixing. Disabling the control type
+disables any immediate children of the control type.
+
+The logic for this patch is based on the logic I was using for enabling and
+disabling the synthetic node in the final patch of this series. As a result,
+the synthetic node enable/disable patch has now been significantly reduced.
+
+[7/13] exposes the measurement averaging interval (MAI) value when the
+agent has registered to receive power measurement change notifications
+for the power capping domain.
+
+[10/13] adds MAI get and set support for the powercap protocol.
+
+[11/13] introduces a synthetic root zone to act as a common parent for all
+top-level domains.
+
+[12/13] adds get_power_uw to synthetic root zone, summing the per-zone
+power of immediate child zones.
+
+[13/13] adds enable/disable functionality to synthetic root zone to
+enable/disable immediate children.
+
+Changes for this version are in response to numerous concerns identified
+by Sashiko review system and issues identified by Sudeep Holla (thank you
+for the review).
+
+The original series was based on v6.17-rc1 whereas this version has been
+based on v7.4-rc1.
+
+The rest of Cristian's series is explained below;
+
+SCMIv4.0 [1] introduces some new features and commands into the Powercap
+protocol. In a nutshell, such protocol changes add support for:
+
+ - setting multiple powercap limit/interval constraints for each SCMI
+   powercap domain which supports multiple Concurrent Power Limit
+ - enabling more Powercap commands to use Fastchannels mechanism
+ - adding multiple constraints support to the existing notifications
+
+After a bit of needed updates in the SCMI core this series adds:
+
+- support for the idea of optional multiple Concurrent Power Limit (CPLs)
+- support for the new FCs
+- support for extended notifications
+- enable usage of such multiple constraint in the ARM SCMI Powercap driver
+
+Tested on a single and multi-instance scenario on an emulated setup
+implementing the new protocol extensions.
+
+Based on v7.4-rc1.
+
+Thanks,
+Phil
 ---
 V9->V10
+- rebased on 7.4-rc1
 - changed control-type enable writes to snapshot per-zone state instead of
   aggregate
 - cancel enable/disable writes if a root child zone is not configurable
 - roll back changed zones on failure
 - changed control-type enable reads to report enabled if any root child zone
   is enabled
----
- drivers/powercap/arm_scmi_powercap.c | 175 ++++++++++++++++++++++++++-
- 1 file changed, 174 insertions(+), 1 deletion(-)
+- fixed remaining powercap_cap_config use after the CPL layout refactor
+- adjusted contorl-type enable handling to use cpli[0].cap_config after
+  refactor
+- added interval validation for CAI/PAI values
+- allow all-zero CAI/PAI values to mean teh plaform did not report the
+  interval
+- clear avg_ivl_config when CAI/PAI values are not reported
+- pass the powercap domain descriptor to avg interval get/set helpers
+- use firmware CPL identifiers for CAI_GET and CAI_SET instead of array
+  index
+- use firmware CPL identifiers when describing SCMIv4.0 Powercap fastchannels
+- use interval-specific validation for CPC-reported CAI values
+- allow all--zero CPC CAI values to mean teh platform did not report the interval
+- clamp exposed constraints to MAX_CONSTRAINTS_PER_ZONE instead of failing probe
+- warn when firmware advertises more CPLs than the powercap core can expose
+- use interval-specific validation for MAI values
+- allow all-zero MAI values to mean the platform did not report the interval
+- moved Powercap fastchannel firmware CPL identifier fix to fastchannel
+  support patch
+- skip immediate child zones that do not support power monitoring
+- return -ENODATA if none of the synthetic root children can be measured
+- add synthetic-root enable helper with per-zone state snapshot and roolback
+- abort synthetic-root enables writes if any root child zone is not configurable
+- restore each changed child zone to its previous state on failure
+V8->V9
+- rebased on 7.3-rc1
+- added check to powercap_set_root_children_enable to make sure it is configurable
+- added rollback in powercap_control_type_set_enable in case of failure of one root zone
+- included validation of the number of cpls in iter_powercap_cpls_update_state
+- re-ordered validation of cap_config and num_cpli in powercap_domain_attrs_process
+- included validation of length in powercap_domain_attributes_get
+- amended cap_get and cap_set referencing apl_id array index instead fo firmware CPL identifier
+- added bounds check to make sure cpl_id is less than num_cpli
+- fixed CAP_CHANGED notification paring to accept old payload without cpli
+- changed secondary CPL validation to use scmi_powercap_validate to catch
+  zero steps when min and max differ
+- Added validation check to make sure powercap domain doesn't have too
+  many constraints
+- Separated out domain specific fastchannel initialisation from per-cpl loop
+- Amended per-cpl fast channels to use firmware cpl id instead of relying on
+  num_cpli numbering
+- Removed redundant scmi_powercap_get_zone_height
+- Added scmi_powercap_parent_name helper
+- Replaced tiernary operator that checked empty parent->info->name
+- Removed redundant if (!pr) check from instance_root_get_power_uw()
+- Stopped returning a partial sum if one child read fails
+- Added mutex lock to instance_root_set_enable and instance_root_get_enable
+V7->V8
+- Rebased on v7.2-rc1
+- Fixed conflict due to updates to v7.2
+V6->V7
+- Added control type enable/disable patch
+- Refactored Synthetic zone enable disable patch
+- Corrected naming of define V2/V3 payload sizes
+- Prevent possible cpli[0] out-of-bounds access
+- Added cleanup for zones during scmi_powercap_probe
+- Prevent instance_root_get_enable reporting a stale state
+- Rebased on v7.1-rc7
+V5->V6
+- Re-worded existing comment for POWERCAP_MEASUREMENTS_NOTIFY
+- Added define for V2/V3 payload sizes
+- Used new definitions for payload sizes
+- Fixed comment length
+- Changed warning message warning
+- Fixed line lengths and alignment
+- Updated docs for new fields
+- Amended omission of spz initialization when unregistering powercap zones
+- Tested unloading and loading powercap module
+- Re-wrote commit message
+- Added use of to_scmi_powercap_root macro
+- Changed instance_root_set_enable_state to bail out on any error
+V4->V5
+- Added enable/disable functionality to synthetic node
+- Rebased on v7.1-rc1
+V3->V4
+- Rebased on v7.0-rc4
+- Added sythentic parent node and functionality
+- Moved fastchannel inits outside of loop
+- Renamed arguments for consistency
+V2->V3
+- Added powercap MAI get/set support
+V1->V2
+- Rebased on sudeep/for-next/scmi/updates
+- Amended Copyright to include 2026
+- Added patch to extend powercap report to include MAI
+- Removed creation of pi powercap_info struct due to legacy code change
+- Amended references to pi->version and similar, which were based on
+  legacy code
+- Wrapped two variables in le32_to_cpu() to appease Sparse warnings
+- Amended comparing operator value in response to feedback
 
-diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-index ab66e9a3b1e2..ba398048bf21 100644
---- a/drivers/powercap/arm_scmi_powercap.c
-+++ b/drivers/powercap/arm_scmi_powercap.c
-@@ -33,13 +33,171 @@ struct scmi_powercap_zone {
- 
- struct scmi_powercap_root {
- 	unsigned int num_zones;
-+	bool enabled;
-+	struct list_head node;
- 	struct scmi_powercap_zone *spzones;
- 	struct list_head *registered_zones;
- 	struct list_head scmi_zones;
- };
- 
-+static LIST_HEAD(scmi_powercap_roots);
-+static DEFINE_MUTEX(scmi_powercap_roots_lock);
-+
- static struct powercap_control_type *scmi_top_pcntrl;
- 
-+static bool scmi_powercap_is_control_type_child(const struct scmi_powercap_zone *spz)
-+{
-+	return spz->registered && !spz->invalid &&
-+	       spz->info->parent_id == SCMI_POWERCAP_ROOT_ZONE_ID;
-+}
-+
-+static int
-+scmi_powercap_read_root_children_enable_state(struct scmi_powercap_root *pr, bool *mode)
-+{
-+	struct scmi_powercap_zone *spz;
-+	bool enabled;
-+	int i, ret;
-+
-+	*mode = false;
-+
-+	for (i = 0; i < pr->num_zones; i++) {
-+		spz = &pr->spzones[i];
-+
-+		if (!scmi_powercap_is_control_type_child(spz))
-+			continue;
-+
-+		ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id, &enabled);
-+		if (ret)
-+			return ret;
-+
-+		if (enabled) {
-+			*mode = true;
-+			return 0;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+struct scmi_powercap_zone_state {
-+	struct scmi_powercap_zone *spz;
-+	bool prev_enabled;
-+	bool changed;
-+};
-+
-+static int
-+scmi_powercap_control_type_set_enable(struct powercap_control_type *pct, bool mode)
-+{
-+	struct scmi_powercap_zone_state *states;
-+	struct scmi_powercap_root *pr;
-+	struct scmi_powercap_zone *spz;
-+	int num_zones = 0, nr_states = 0;
-+	int i, ret = 0;
-+
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_for_each_entry(pr, &scmi_powercap_roots, node) {
-+		for (i = 0; i < pr->num_zones; i++) {
-+			spz = &pr->spzones[i];
-+
-+			if (scmi_powercap_is_control_type_child(spz))
-+				num_zones++;
-+		}
-+	}
-+
-+	states = kcalloc(num_zones, sizeof(*states), GFP_KERNEL);
-+	if (!states) {
-+		ret = -ENOMEM;
-+		goto out_unlock;
-+	}
-+
-+	list_for_each_entry(pr, &scmi_powercap_roots, node)	{
-+		for (i = 0; i < pr->num_zones; i++) {
-+			spz = &pr->spzones[i];
-+
-+			if (!scmi_powercap_is_control_type_child(spz))
-+				continue;
-+
-+			if (!spz->info->powercap_cap_config) {
-+				ret = -EOPNOTSUPP;
-+				goto out_free;
-+			}
-+
-+			states[nr_states].spz = spz;
-+
-+			ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id,
-+				&states[nr_states].prev_enabled);
-+
-+			if (ret)
-+				goto out_free;
-+
-+			nr_states++;
-+		}
-+	}
-+
-+	for (i = 0; i < nr_states; i++) {
-+		spz = states[i].spz;
-+
-+		if (states[i].prev_enabled == mode)
-+			continue;
-+
-+		ret = powercap_ops->cap_enable_set(spz->ph, spz->info->id, mode);
-+		if (ret)
-+			goto revert;
-+
-+		states[i].changed = true;
-+	}
-+
-+	goto out_free;
-+
-+revert:
-+	while (i--) {
-+		spz = states[i].spz;
-+
-+		if (!states[i].changed)
-+			continue;
-+
-+		powercap_ops->cap_enable_set(spz->ph, spz->info->id,
-+			states[i].prev_enabled);
-+	}
-+
-+out_free:
-+			kfree(states);
-+
-+out_unlock:
-+			mutex_unlock(&scmi_powercap_roots_lock);
-+
-+			return ret;
-+}
-+
-+static int
-+scmi_powercap_control_type_get_enable(struct powercap_control_type *pct, bool *mode)
-+{
-+	struct scmi_powercap_root *pr;
-+	int ret = 0;
-+
-+	*mode = false;
-+
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_for_each_entry(pr, &scmi_powercap_roots, node) {
-+		ret = scmi_powercap_read_root_children_enable_state(pr, &pr->enabled);
-+
-+		if (ret)
-+			break;
-+		if (pr->enabled) {
-+			*mode = true;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&scmi_powercap_roots_lock);
-+
-+	return ret;
-+}
-+
-+static const struct powercap_control_type_ops scmi_powercap_control_type_ops = {
-+	.set_enable = scmi_powercap_control_type_set_enable,
-+	.get_enable = scmi_powercap_control_type_get_enable,
-+};
-+
- static int scmi_powercap_zone_release(struct powercap_zone *pz)
- {
- 	return 0;
-@@ -495,6 +653,16 @@ static int scmi_powercap_probe(struct scmi_device *sdev)
- 	if (ret)
- 		return ret;
- 
-+	INIT_LIST_HEAD(&pr->node);
-+
-+	ret = scmi_powercap_read_root_children_enable_state(pr, &pr->enabled);
-+	if (ret)
-+		return ret;
-+
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_add_tail(&pr->node, &scmi_powercap_roots);
-+	mutex_unlock(&scmi_powercap_roots_lock);
-+
- 	dev_set_drvdata(dev, pr);
- 
- 	return ret;
-@@ -505,6 +673,10 @@ static void scmi_powercap_remove(struct scmi_device *sdev)
- 	struct device *dev = &sdev->dev;
- 	struct scmi_powercap_root *pr = dev_get_drvdata(dev);
- 
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_del(&pr->node);
-+	mutex_unlock(&scmi_powercap_roots_lock);
-+
- 	scmi_powercap_unregister_all_zones(pr);
- }
- 
-@@ -525,7 +697,8 @@ static int __init scmi_powercap_init(void)
- {
- 	int ret;
- 
--	scmi_top_pcntrl = powercap_register_control_type(NULL, "arm-scmi", NULL);
-+	scmi_top_pcntrl = powercap_register_control_type(NULL, "arm-scmi",
-+							 &scmi_powercap_control_type_ops);
- 	if (IS_ERR(scmi_top_pcntrl))
- 		return PTR_ERR(scmi_top_pcntrl);
- 
--- 
+Cristian Marussi (5):
+  firmware: arm_scmi: Add SCMIv4.0 Powercap basic support
+  firmware: arm_scmi: Add SCMIv4.0 Powercap FCs support
+  firmware: arm_scmi: Add SCMIV4.0 Powercap notifications support
+  include: trace: Add new parameter to trace_scmi_fc_call
+  powercap: arm_scmi: Enable multiple constraints support
+
+Philip Radford (8):
+  powercap: Add enable disable control-type
+  firmware: arm_scmi: Add an optional custom parameter to fastchannel
+    helpers
+  firmware: arm_scmi: Refactor powercap domain layout
+  firmware: arm_scmi: Extend powercap report to include MAI
+  firmware: arm_scmi: add Powercap MAI get/set support
+  powercap: arm_scmi: Create synthetic parent node for multi-instance
+  powercap: arm_scmi: Add get_power_uw to synthetic node
+  powercap: arm_scmi: Synthetic zone enable/disable
+
+ drivers/firmware/arm_scmi/driver.c    |   12 +-
+ drivers/firmware/arm_scmi/perf.c      |   16 +-
+ drivers/firmware/arm_scmi/powercap.c  | 1064 ++++++++++++++++++++-----
+ drivers/firmware/arm_scmi/protocols.h |    2 +-
+ drivers/powercap/arm_scmi_powercap.c  |  491 +++++++++++-
+ include/linux/scmi_protocol.h         |   97 ++-
+ include/trace/events/scmi.h           |   12 +-
+ 7 files changed, 1407 insertions(+), 287 deletions(-)
+
+--
 2.34.1
 
