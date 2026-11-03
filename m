@@ -1,101 +1,71 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.44
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793728665;
-	b=EI5mM8WNDni8wmR+uooktESYjvVbB8e/f7d4hxIryhy7auRz/3Jb8HpGD+Epww89JcWS
-	 9gi3nthQZz4V2qLAzWs+vkMkWvG0Ee8csWinWoZFgnj1oaJlQ+X63sy2sgV0nA+sJYl+i
-	 F6SaWQmQXMVfpzuAVzui/3TJxhFld46XEm/JbMaf0BINWamwoNfk6gXg03sv/FEnJXJnh
-	 9tq6CNYlLPdSdhX93RR/cJDiqF0kgd2YIjaK7y0AtNUaTUDfQwvNAo+MFZ8fS2uIE77H6
-	 xdrfMkhiN4I7kRygrE8K0e50P+VxR0YsttQkAh4owVglv1XARpo7Lj5hkgSsb4p1+Yw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793728665;
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.200
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793728800;
+	b=R+3vehu9FXntSYJjINjiVYPKSS4LviB/ApGkPJ4TVy0p5lEpMXl37JpYzp1d4o8ufVmE
+	 6aRc629gCjrvjnDLeePpBfZUY65YlGvTl3IBbYNqcjf7iyrEbg1J2VFmOkfcf3IIkQZLi
+	 qRhP2e0j3/cAVwQGQ3qJU48eUB0dAuJRXKm2LpPaAwxXb/Aj3+VGjoHhj/41s8KQthhCn
+	 cY/klIcLxNCcUwS4KPHKPMH4kCZ5NtQGAp3ZM2mcQwqNijLw2PaxtVdl1qTGfb7yjyh3A
+	 6nLm0yaMQSgq2uhOp2n+/X2mdbpe2aSPRo6rkA60u+e2heozvUlQtj5F8KFcNTZN1Gw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793728800;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=8gprV7xy1a71HLe2DJEJ0Eloi4n12O+LyzqN8PR9KuU=;
-	b=ckgADFV0Q8BlHtN4LFwrJtVMzndc5MsWZ2Bki1rzuxKpJ46TiGP4KJvcawB6WOJ6gqY9
-	 WdE2wUsI10JmNG2rZSZKlCCSlIetKG1tYUmq5kzfmm8Rk/snf0Q5nYkZIWyxHCXYUYrBl
-	 IPXVqs6wUCPn4pS+6DwMgSlAqz56v6U4JlloQg1QR9BFtcNqtET0+iVIUdq+vgxfllZJz
-	 Yi5pgTRFdNcbStULZ6pJCDJviakWEB+2oVR/VDex3ZJGT53DsyhhUpCSqLaruWiWB/Nhd
-	 sZJOppWQbqxzNNc+qeMVp0VawnawMxwFzOKn9pPJDVo5hSbBJss0jIrLNP68WJN7I6g==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
+	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
+	bh=FPwct+1U9T6oyA5Ruuz5LB/HvShMdpdhhsQD4HMVAhg=;
+	b=R4qPamvUqL5tEHMZ2gsypjStACV2p3w5r/eWWYK2TmNVv56C1OZ0wH3xfNJ2WP9xXj6h
+	 EteVwDIgyOggM+5GB4dk3etHw9St1PRGVhuvG0bBhs17RDKrySxspVWDyHVi4cboKDF8k
+	 moPGhdruKlxZHe4lVUrwloV2zSLSNLwCdidGYdeT0YaeQgmbKP7WdZfPZmLPgZFARR1d8
+	 BMAPR56nj6QsfKUjkaJLL01NKU3RVwUAiCX5KED71V2OougsQngoxmFdBAiS2PkpuW2fv
+	 tpMFwqst9rzCTSS7EDmtDoPiFJwEuQEZ8bl7kp18w2T3HxmkhSB5NmwxseDZEFUQGcA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=google.com;
-	spf=pass smtp.mailfrom=google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=mNNpBSfW;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.44
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+	spf=pass smtp.mailfrom=flex--wvw.bounces.google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=oKWTE9wx;
+	arc=none smtp.remote-ip=209.85.214.200
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F91B606A33C
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 17:57:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7F91B606A33C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2992606D802
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 17:59:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B2992606D802
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wvw.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=mNNpBSfW
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4a206f0b95bso685e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 09:57:45 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793728664; cv=none;
-        d=google.com; s=arc-20260327;
-        b=norV4r6ue4US8lh62io9ooJ8B3SmPPnKG/pQpwJ5KSNbRLztmH+/UjbF5ICR5izqM3
-         JJBG87x8oMQ6X4GQdiduU50b6OTV2McmthlUixiBmA6UtH85bLYTyVD8L9036HKCPdbK
-         8dR7o8Zd2IybV3KrlILeKlmIVHVCw5xEcF+9n3hd00ef7cFcQwT2LtNN8Gnef4xOGZ9p
-         +6U+DQ9ubfVcZJd+41309hYvGztFIgNa9yDp14tDS3i5B43idydG7bqhCr/HdwglJlDr
-         luh1hbB3DefSnKOjbmr/XyK4oFKuPYUhSUv3f9LSehHOyLUhTV1hWA45KQbuIgEIYuRB
-         XqkQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=8gprV7xy1a71HLe2DJEJ0Eloi4n12O+LyzqN8PR9KuU=;
-        fh=EMbbn7muqIWOz92DbThNgTdX64/6LKTCyQw3sKBFynI=;
-        b=X8/4xVfP7bIkDZhvFfmcHg8Vh8C/d1aWmgaD3ar3ly/IN5+a/vN6n2ZmDbGWcAmdO6
-         rZILR0ArMxs1XYLFeMi9SRT3NauAY+0JKfTkuOjL90OsyG87a5T2f8dBK3KLVht7ujRr
-         cqRn4BObawtTGJMmy9wlsMHApILmuhxdg2Efn42wT47qzt5qutONgIznSA0WTNoeM+BK
-         7mlgKh6N+TYpup6AG7Irh9Bwx9smHfZciu0O8vPvwCdQ8nOniB1pwR4fkZqJKT47bxF4
-         RAbLI0czfzBj/fCE7xhwIFrYB08FypyfUgozsmcDXsaSrfMc213m6d2if0Kedg2pDoWv
-         h4tQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=oKWTE9wx
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2e93e2f72bfso70509495ad.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 09:59:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793728664; x=1794333464; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=8gprV7xy1a71HLe2DJEJ0Eloi4n12O+LyzqN8PR9KuU=;
-        b=mNNpBSfW7U3oHqA/ynhmqeNxcf7VD5INJCcvqium3opsSQ6PpJHHG0HuQo6RrCGPRQ
-         eOPXJN/3o/36RWKzCXa+DvnnzN0JteLWM44hbndWrNgNK+8Dq2ekmEEUoiS3qqWHRVBU
-         AFM/SqwmHpALS8gQ108CebFr4blxw6ZjKVgDjh2F5bIvOshH0xMna3G15UGZYtJTpHE5
-         c7eRZYr6+KDC6Te+/Bl1ijRdhQnNTBvF5JrK2tYBOaQELzEVRqyyEu8DRbT4mFfzFnh7
-         IoyCQiGSL/6f/q/Eou0a7spJplQi+5xYxnh26wXm7ZE6QGeZWNE0btafYvSNrmOsadut
-         0hjw==
+        d=google.com; s=20260707; t=1793728794; x=1794333594; darn=vger.kernel.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FPwct+1U9T6oyA5Ruuz5LB/HvShMdpdhhsQD4HMVAhg=;
+        b=oKWTE9wxvvkr6zCRmGOi7MD8BifRNWWeKWlQl288hGhFeyWHixUsNw7NTaikjfsx+E
+         fl/68xwPzPUk2e/UEBmVVs41KowLq0QtKlvhIc47QqPmeD0M1otau9oULB6BOFOgWXIu
+         5aVDEyLHY+EYQ0QJKkPWr1Ja0np0kBEm1xdQKdlv295PWhkpy4fDI/snUTgmU7qN0epA
+         4wbVCoPw/xuYj/dhulM1DJVJxN3lD3yr16y0rwkMyt+0EaHFjkF5fr1M91lTR+AHIsda
+         xaTQtNbiTAHCX4YmdvieCD8sC52zOSmqojGRDrTuu6Z4YmnDC4wgjuZ9AUqzWcUPF740
+         OhgA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793728664; x=1794333464;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20260707; t=1793728794; x=1794333594;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=8gprV7xy1a71HLe2DJEJ0Eloi4n12O+LyzqN8PR9KuU=;
-        b=RI5n6ygS5PkV4X6w9BH7XmE/zzitCN6QNAN+C2QtchaVanMl8SZM1T2yzij4ht2vd0
-         usVDo1sqH/GSWXKwdaV2f40r5XuuOuUm3nD7uSJK89NYTsWRJB6ZBwkD8amMKljNVs8C
-         4Y9jOpaERQTRLfEWBUzuuTT83zXaDfIaD8Ezb6sL6GMfC0mc5qLV61MJlE4gTizm6e2l
-         giI/lYo3I1NA5RaXX6W7lHrxwbxJq9g74n+CZwlxHFeHOLbVmHBdxtG1ZUzfie0JRjLv
-         znE41SuKwaUcKYFhuyLkmAU/QLqAONmyUqG5KbqeC6PGOa0QLKNOT7SIJIb8x7QR5Vc7
-         Hctw==
-X-Forwarded-Encrypted: i=1; AKwUvByyVNOHo4qKkJqm1K1kBcS/X/RqLrQUhUAi4InJURJVBX1irk8hRNIZJ4WxiIlu9Vybmqft1QBQ8A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9nbGHff5IgJnb9JyxniviydNT8Coz/I2C/wVaOka+QMhGJl12D
-	jZLmsQ8jWMUnlPPmz4/pWFnkXJ5H47udNZS5CTteii5XgK1yRDNvYODaPR8Pj/8KQGaVzA1Wcmz
-	hhpRHY3p8oXCDrtNPOqnO9aQR8kJ+xZvNsH4UYL7F
-X-Gm-Gg: AYBFou1FtZHd7xjAQ4CWfWvrL2GMAMT5w4wJUdprZEJkO99TcCUe4xFquksIn0aWuxw
-	dKKY7IMCOXeKlVQ/0y9wUGvNl+ZpPUKvaj2SNR/h9ZxEEM6mzGVwsfidE4ctKZCxoeMipUSj7z7
-	U/KfKf7zVxEjbVD6k0WYw8UDVcpJ7PBQdrWqPG/+2WDPDwys3ih0/GVOTUxIphoFqRk1xZ5oVMe
-	dXGTZoDry+FO3H9g33f1XklA+Zm+XQIYBvyRNN47gcn8gEgj/akkaEPShv8HMMyN4y8mop2xm8Q
-	t1Qerr+gDrnvw3iYeENattc/X9HGodWq2QNOvKCUf1X63UnVmB4DPEFn2GX4s2e4n30ioW6wxxt
-	9Fab/W0gEy6NA7aZ9ojdqi29vitJQlppdBjX03AQ5LXDPdr2Pl9aDwFxJoFrVgfJKBPIp976XRK
-	Ag6j2KTX37QL1xVbhtNWV7
-X-Received: by 2002:a7b:ce01:0:b0:4a1:d75a:8b4 with SMTP id
- 5b1f17b1804b1-4b2e3c650b1mr815155e9.12.1793728663404; Tue, 03 Nov 2026
- 09:57:43 -0800 (PST)
+        bh=FPwct+1U9T6oyA5Ruuz5LB/HvShMdpdhhsQD4HMVAhg=;
+        b=sYg/48ySKJYeJZHj0joDYq46HRLV6HTbmycnShJ8Q52wbEOOeXkLO6m7kd5H7CUnxd
+         g/wDUe9CYTW826Nn1B9mmXlUWYq8hVtNXDAnOgBRM3ryFIHZoUPSBxFeK3XYm1o8wUZ7
+         MvlmeT1xLxD6LGsnTcyGenI9Wxo23oQSh4+iKkTk3xgVkMrXh4tjZyJLEj9E7EjtijiF
+         8GDspc2kt9Nf4LLHslDA3NWGn1n81o9rfJ4WiKqasIkfYM4TrOKe5PAk2J3AX++AaKaZ
+         lpqTYJzbhKqFsXHm67yCfhtfymeOzF+WQtuV+wgSXoj+xV1olzRN/yzrfl0cqNWyPKOv
+         MZ/g==
+X-Forwarded-Encrypted: i=1; AKwUvByR0mpMPyvO0NkYd4vaBuTD6xWsHZOUmXQtvzgS7j+oSCsNGPnlNEy0jJW3VDjWnYT6ScmQ+E8EIA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+xjAuexlKF52FibiEmZREvgDiV7quzBZh/O9aX77ZS+ul7ID7A
+	BOU6qrp/SKYoElubMRof+75NMHGLCvLJSLdyVs7JVwBso5BQG5xCqTijUlVV3T7mQVVqEw==
+X-Received: from pggs9.prod.google.com ([2002:a63:dc09:0:b0:ccb:62e:3f01])
+ (user=wvw job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4b0d:b0:3ac:9e5e:d1a9
+ with SMTP id 98e67ed59e1d1-3ae897ec5b1mr11095151a91.20.1793728793847; Tue, 03
+ Nov 2026 09:59:53 -0800 (PST)
+Date: Tue,  3 Nov 2026 17:59:41 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,49 +74,82 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20261102234813.1069156-1-wvw@google.com> <8f1ccb65-e4a2-450b-944c-9883ff12bc37@sirena.org.uk>
-In-Reply-To: <8f1ccb65-e4a2-450b-944c-9883ff12bc37@sirena.org.uk>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
+Message-ID: <20261103175941.1349818-1-wvw@google.com>
+Subject: [PATCH v2] arm64: suspend: Save and restore TPIDR2_EL0 across CPU suspend
 From: Wei Wang <wvw@google.com>
-Date: Tue, 3 Nov 2026 09:57:31 -0800
-X-Gm-Features: AclHuK8vz5vkqxj17UdSeFCslNabswTrlQCvg-mwh5UYxKg3Wjf31NJ5q0jNNus
-Message-ID: <CAGXk5yr4LqdguVMBeXP=pkraY7rbQWMePWs0Dq4tbGE-dCLe=A@mail.gmail.com>
-Subject: Re: [PATCH] arm64: suspend: Save and restore TPIDR2_EL0 across CPU suspend
-To: Mark Brown <broonie@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+To: catalin.marinas@arm.com, will@kernel.org
+Cc: broonie@kernel.org, mark.rutland@arm.com, rafael@kernel.org, 
 	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
-	wei.vince.wang@gmail.com
+	linux-kernel@vger.kernel.org, wei.vince.wang@gmail.com, 
+	stable@vger.kernel.org, Wei Wang <wvw@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 3, 2026 at 5:56=E2=80=AFAM Mark Brown <broonie@kernel.org> wrot=
-e:
->
-> On Mon, Nov 02, 2026 at 11:48:13PM +0000, Wei Wang wrote:
->
-> > On systems with FEAT_SME, TPIDR2_EL0 is part of userspace thread state:
-> > the AAPCS64 SME ABI uses it as the ZA lazy-save pointer, and the kernel
-> > context-switches it eagerly in tls_thread_switch(). While a task is
-> > running, the live register is the only copy of its value.
->
-> Thanks for catching this:
->
-> Reviewed-by: Mark Brown <broonie@kernel.org>
->
+TPIDR2_EL0 is a live EL0 register on systems with SME, but
+cpu_do_suspend()/cpu_do_resume() don't preserve it. Its value is
+UNKNOWN after a warm reset, so the task that initiates suspend can
+return to userspace with a corrupted TPIDR2_EL0.
 
-Thanks!
+Save and restore it alongside TPIDR_EL0 and TPIDRRO_EL0. The new slot
+fits in existing padding, so sizeof(struct cpu_suspend_ctx) is
+unchanged.
 
-> but I think we're missing some other registers, I made the same mistake
-> for GCS with GCSPR_EL0 and GCSCRE0_EL1 and I'm not seeing where POR_EL0
-> is handled either but possibly it's somewhere I didn't spot.  I can look
-> into those incrementally once this gets applied (or if you do a v2 and
-> roll them in that'd also be great!).
+Fixes: a9d691585950 ("arm64/sme: Implement support for TPIDR2")
+Cc: stable@vger.kernel.org
+Acked-by: Will Deacon <will@kernel.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Wei Wang <wvw@google.com>
+---
+v2:
+ - Trim commit message (Will)
+ - Keep mrs_s/msr_s as TPIDR2_EL0 isn't in tools/sysreg yet (Catalin)
+ - Collect Acked-by/Reviewed-by tags
+v1: https://lore.kernel.org/r/20261102234813.1069156-1-wvw@google.com
 
-I think you're right. As far as I can see, these are only switched in
-process.c and nothing touches them
-in the suspend path. Unfortunately the hardware I am testing doesn't
-implement GCS or POE per cpuinfo,
-so I couldn't test changes there. I'd rather keep this one minimal for
-stable and leave those as a follow-up.
+ arch/arm64/include/asm/suspend.h | 2 +-
+ arch/arm64/mm/proc.S             | 8 ++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
+index eb60c9735553..2cc5fb405769 100644
+--- a/arch/arm64/include/asm/suspend.h
++++ b/arch/arm64/include/asm/suspend.h
+@@ -2,7 +2,7 @@
+ #ifndef __ASM_SUSPEND_H
+ #define __ASM_SUSPEND_H
+ 
+-#define NR_CTX_REGS 14
++#define NR_CTX_REGS 15
+ #define NR_CALLEE_SAVED_REGS 12
+ 
+ /*
+diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
+index 7afbece885a3..c7b7fa6491c3 100644
+--- a/arch/arm64/mm/proc.S
++++ b/arch/arm64/mm/proc.S
+@@ -103,6 +103,10 @@ SYM_FUNC_START(cpu_do_suspend)
+ alternative_if ARM64_HAS_TCR2
+ 	mrs	x2, REG_TCR2_EL1
+ 	str	x2, [x0, #104]
++alternative_else_nop_endif
++alternative_if ARM64_SME
++	mrs_s	x2, SYS_TPIDR2_EL0
++	str	x2, [x0, #112]
+ alternative_else_nop_endif
+ 	ret
+ SYM_FUNC_END(cpu_do_suspend)
+@@ -142,6 +146,10 @@ alternative_if ARM64_HAS_TCR2
+ 	ldr	x2, [x0, #104]
+ 	msr	REG_TCR2_EL1, x2
+ alternative_else_nop_endif
++alternative_if ARM64_SME
++	ldr	x2, [x0, #112]
++	msr_s	SYS_TPIDR2_EL0, x2
++alternative_else_nop_endif
+ 
+ 	msr	sctlr_el1, x12
+ 	set_this_cpu_offset x13
+-- 
+2.56.0.385.gac671c819a-goog
+
