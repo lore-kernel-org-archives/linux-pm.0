@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793747449;
-	b=VdFzAvhXUE0SpqfF3/FCN1IOGsPNDMV1riTgcITajVgLfprgwjwZTud4wcXOAheQZVIE
-	 C26quAwiimUEvK7LwpLYzCnqV3N6cNU3Phk+WniAv9n3dXRyQbgeFm7tPtUWkSCzN3yoB
-	 cU3heITGxjQYOr8juCFvW1qXhRNfoD4TXuYIXo5LkrUpyw2pEbob18tTrF39feIzcdfF9
-	 MM42u5AjISEHpfFAnFVWYPXV41mkMMdh84QsH3ImR4VAGGc19DcwIk/3pE9hxT9+nX03/
-	 IEJv9lMdWAVo6+abHO3vUXuAveZCmIP9790+1wBdESlT6fVFL5mA5Jy4SyOMlRTTbqw==
+	t=1793747450;
+	b=m6Y+yIxqSMhffEqXpQ+et7oy3IAOSYdegSdXK2YqwIxXyjbRS7/O1aagKz70af1TDY6r
+	 cV+1vswk/2GzRVPEwT6YKU1WqsbHxKJ2TWY7OtxJwRDDRwj76l2iu7p4OnjqhW7vAMEW7
+	 UPZyHyPS9P3Vp8+1nUPc4omUIaro9GZujTxkdGvYtCjsFoZvQuKakdIq44V35y7nl9/6X
+	 ifV5axhoC+rUmUEx4heRBDn3TZmRXtiUyiQ3qXurg73Kbb1yB8RzZQi7tx9DzFrn4vyd4
+	 7p5TVyrE8zmBGp5t2BxBWxCX/OUCwZqyZNfCq5It1m/Q21aTbO1sYZq6ITT8yd4Nrpg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793747449;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793747450;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
 	 Date:Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=cxbutWg6i4wFHRwhf3YnsjzOn2o6h0xhLHPzCcEB5ls=;
-	b=St8hErC6+Aeh7e6a1aBcpPJ/lhax97Q6FcarBe54ccKZO+LtZJn6h3YQVqTB++qqMYdj
-	 QRqTMIlZlszaJ0h79aH/W/+LEDdHR32VqtMKRy53Jz4fVLJWcwxiP/eVQwwpIruAY/vNO
-	 W7zO/UZ1evRBqWqfPuGCgqyZrKlPQnxmwB/KEC+kuK0lzVeAKfUSLFKVpsA62ExWAuA5t
-	 hn18bsg7pfpf4hKTxz3yu7ULlc/kJDPq/IbJvIqaOhrzLbkSsfdLOtSfoCy0L7Br64wlO
-	 iUFIsVfQlui5OA4PUXfIT/Olj32K02ZHmx41CdAMY5CAWZiqyzqWyYxhIIiAjlBpWQQ==
+	bh=l8CeoFAiWciwWHbMHzBEA3tAAikKBiiZd2x+URbDIqs=;
+	b=M3fEotRzhcYMyw8ZhmNHIxCm8I5Z3hTTddgTCM6enHJrdx/Zgv30KSBV3xQpNl9yhl9G
+	 c0cGndLXH88UD74sbwZOnMP0NgNYKdDtfXlSIH38kqdontb9zE/9TKwnAKBOKhbj1Ak1t
+	 YFeOvL4xD6xSQKrQMQ5UdQ6a4B0pp4Os5g2HgXdPhiQa/0Eq/ZhwgGK98ghFDqSCFLtZ7
+	 G7bAjKmOEZoIdXzbxeSw5oAfmXQomEfetsDN1R5jyXYE+FZ0rUCqAvnrXxn2kA74nsE5x
+	 YKNm6S7LLF0sF2d5O+POpf/5K2ZPu834gdaJ5Pw41vqKiNjN1HHReGFn2HzDdGuo+EA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=arm.com;
 	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=eYoyLFzV;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=NZnzBvrd;
 	arc=none smtp.remote-ip=217.140.110.172
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 76E19606A336;
-	Tue,  3 Nov 2026 23:10:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 76E19606A336
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 03C92606A33E;
+	Tue,  3 Nov 2026 23:10:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 03C92606A33E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=eYoyLFzV
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=NZnzBvrd
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CABF91595;
-	Tue,  3 Nov 2026 15:10:39 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4BDE41595;
+	Tue,  3 Nov 2026 15:10:46 -0800 (PST)
 Received: from e121740.manchester.arm.com (e121740.arm.com [10.33.8.69])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 44E503F673;
-	Tue,  3 Nov 2026 15:10:40 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 720B63F673;
+	Tue,  3 Nov 2026 15:10:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793747442; bh=TODup+TmFI2DvvVOjdOpUsqzDIAgZx/aSSgK9KNsxJ4=;
+	t=1793747449; bh=V2Dfh3i0wYp9MNOKvKOfAQgrxIlDapReeG/2i0tOW5U=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=eYoyLFzVBjv8j5J3E0iZYWe8QzeWpJt9Em94PXylht4fNp2h3uoqQKvDTyZ9jgujG
-	 IyQzcPM3VsQfZLtlEAgei5ik5Y8QWAGu2cBhPDvRgNwHaSQ+G6jI59w54+uo2CqH1A
-	 ydTMghgljRQ5NJZ5KEC4nLfyW7n63Ho11otMXSTA=
+	b=NZnzBvrdOnrdJ0HZ0/sE/3uxl4dJ0SzVJxfQRb7YD+tHKjkJNvcYMKbAkDLeRaWFL
+	 ciRYzrrbpnWbd2Sd/Jv/ejZBBFDgWLyloyy+w2lZ3cWfCLL2BBCOrI+9QdmrSX3nH/
+	 CcFuZ4YBAk6qo4AZzg2+zuZrUSvIwbLUXqUSjXu4=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -58,10 +58,12 @@ Cc: sudeep.holla@arm.com,
 	dan.carpenter@linaro.org,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v10 07/13] firmware: arm_scmi: Extend powercap report to include MAI
-Date: Tue,  3 Nov 2026 23:10:01 +0000
-Message-Id: <20261103231007.537082-8-philip.radford@arm.com>
+Subject: [PATCH v10 09/13] powercap: arm_scmi: Enable multiple constraints support
+Date: Tue,  3 Nov 2026 23:10:03 +0000
+Message-Id: <20261103231007.537082-10-philip.radford@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20261103231007.537082-1-philip.radford@arm.com>
 References: <20261103231007.537082-1-philip.radford@arm.com>
@@ -76,105 +78,63 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Extend scmi_powercap_meas_changed_report to include MAI change
-notifications.
+From: Cristian Marussi <cristian.marussi@arm.com>
 
+Initialize the domains with all the discovered available constraints,
+making available multiple per-domain constraints when the platform has
+advertised support for multiple concurrent power limits.
+
+CC: "Rafael J. Wysocki" <rafael@kernel.org>
+CC: linux-pm@vger.kernel.org
+Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
+[Philip: Amended Copyright]
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
- drivers/firmware/arm_scmi/powercap.c | 28 +++++++++++++++-------------
- include/linux/scmi_protocol.h        |  1 +
- 2 files changed, 16 insertions(+), 13 deletions(-)
+V9->V10
+- clamp exposed constraints to MAX_CONSTRAINTS_PER_ZONE instead of failing probe
+- warn when firmware advertises more CPLs than the powercap core can expose
+---
+ drivers/powercap/arm_scmi_powercap.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
-index bcfc2d8c5abb..530e42e6a1fd 100644
---- a/drivers/firmware/arm_scmi/powercap.c
-+++ b/drivers/firmware/arm_scmi/powercap.c
-@@ -11,6 +11,7 @@
- #include <linux/io.h>
- #include <linux/module.h>
- #include <linux/scmi_protocol.h>
-+#include <linux/stddef.h>
+diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+index 0753a6938512..0c2a20f06979 100644
+--- a/drivers/powercap/arm_scmi_powercap.c
++++ b/drivers/powercap/arm_scmi_powercap.c
+@@ -2,7 +2,7 @@
+ /*
+  * SCMI Powercap support.
+  *
+- * Copyright (C) 2022 ARM Ltd.
++ * Copyright (C) 2022-2026 ARM Ltd.
+  */
  
- #include <trace/events/scmi.h>
+ #include <linux/device.h>
+@@ -461,15 +461,23 @@ static int scmi_powercap_register_zone(struct scmi_powercap_root *pr,
+ {
+ 	int ret = 0;
+ 	struct powercap_zone *z;
++	unsigned int nr_constraints;
  
-@@ -21,6 +22,8 @@
- #define SCMI_PROTOCOL_SUPPORTED_VERSION		0x30000
+ 	if (spz->invalid) {
+ 		list_del(&spz->node);
+ 		return -EINVAL;
+ 	}
  
- #define CPL0	0
-+#define SZ_V3 (sizeof(struct scmi_powercap_meas_changed_notify_payld))
-+#define SZ_V2 (SZ_V3 - sizeof(__le32))
- 
- enum scmi_powercap_protocol_cmd {
- 	POWERCAP_DOMAIN_ATTRIBUTES = 0x3,
-@@ -164,6 +167,7 @@ struct scmi_powercap_meas_changed_notify_payld {
- 	__le32 agent_id;
- 	__le32 domain_id;
- 	__le32 power;
-+	__le32 mai;
- };
- 
- struct scmi_msg_powercap_cpc {
-@@ -1271,24 +1275,18 @@ static int scmi_powercap_notify(const struct scmi_protocol_handle *ph,
- 		struct scmi_msg_powercap_notify_thresh *notify;
- 
- 		/*
--		 * Note that we have to pick the most recently configured
--		 * thresholds to build a proper POWERCAP_MEASUREMENTS_NOTIFY
--		 * enable request and we fail, complaining, if no thresholds
--		 * were ever set, since this is an indication the API has been
--		 * used wrongly.
-+		 * Build the POWERCAP_MEASUREMENTS_NOTIFY enable request using the
-+		 * most recently configured thresholds.
-+		 *
-+		 * The absence of thresholds is not considered an error:
-+		 * notifications can still be generated to report MAI changes, even
-+		 * when low and high are set to zero.
- 		 */
- 		ret = scmi_powercap_measurements_threshold_get(ph, domain,
- 							       &low, &high);
- 		if (ret)
- 			return ret;
- 
--		if (enable && !low && !high) {
--			dev_err(ph->dev,
--				"Invalid Measurements Notify thresholds: %u/%u\n",
--				low, high);
--			return -EINVAL;
--		}
--
- 		ret = ph->xops->xfer_get_init(ph, message_id,
- 					      sizeof(*notify), 0, &t);
- 		if (ret)
-@@ -1406,13 +1404,17 @@ scmi_powercap_fill_custom_report(const struct scmi_protocol_handle *ph,
- 		const struct scmi_powercap_meas_changed_notify_payld *p = payld;
- 		struct scmi_powercap_meas_changed_report *r = report;
- 
--		if (sizeof(*p) != payld_sz)
-+		if (payld_sz != SZ_V2 && payld_sz != SZ_V3)
- 			break;
- 
- 		r->timestamp = timestamp;
- 		r->agent_id = le32_to_cpu(p->agent_id);
- 		r->domain_id = le32_to_cpu(p->domain_id);
- 		r->power = le32_to_cpu(p->power);
-+		r->mai = 0;
-+		if (payld_sz == SZ_V3 && PROTOCOL_REV_MAJOR(ph->version) >= 0x3)
-+			r->mai = le32_to_cpu(p->mai);
++	nr_constraints = min_t(unsigned int, spz->info->num_cpli,
++			       MAX_CONSTRAINTS_PER_ZONE);
 +
- 		*src_id = r->domain_id;
- 		rep = r;
- 		break;
-diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index e41e972c7e4f..085ca1a1e3a7 100644
---- a/include/linux/scmi_protocol.h
-+++ b/include/linux/scmi_protocol.h
-@@ -1138,5 +1138,6 @@ struct scmi_powercap_meas_changed_report {
- 	unsigned int	agent_id;
- 	unsigned int	domain_id;
- 	unsigned int	power;
-+	unsigned int	mai;
- };
- #endif /* _LINUX_SCMI_PROTOCOL_H */
++	if (spz->info->num_cpli > MAX_CONSTRAINTS_PER_ZONE)
++		dev_warn(spz->dev, "Powercap domain %s advertises %u CPLs, exposing only %u constraints\n",
++			 spz->info->name, spz->info->num_cpli, nr_constraints);
++
+ 	z = powercap_register_zone(&spz->zone, scmi_top_pcntrl, spz->info->name,
+ 				   parent ? &parent->zone : NULL,
+-				   &zone_ops, 1, &constraint_ops);
++				   &zone_ops, nr_constraints, &constraint_ops);
+ 	if (!IS_ERR(z)) {
+ 		spz->height = scmi_powercap_get_zone_height(spz);
+ 		spz->registered = true;
 -- 
 2.34.1
 
