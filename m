@@ -1,61 +1,70 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793745949;
-	b=Ek709tY6IYlPMt1rMBt+IoKAUfle7eu+D3e2c8NUk2VvV+n06RksfG0x8WsDf8SR499C
-	 TPrLKgYcfG8PlFTGUaj5u8juBrxS7pRRzBGJb45WGJ7G835ij9/qaxNq7FvXNcx7AXq8b
-	 vsVj0gGOAipI7CSqyl1EqCBQQhjO80PKbkcT6bHbZhdcvnvEFGbpXEXUUtO3AeCA5P4Hh
-	 CaMSaWMYZQj9yrS9AbaAt9VTioGp5NxNw/hWUYhsp5BOEbWYJFjR25K0UrB3nNPKJ7hDZ
-	 GMEp5pvTTn2hXLcPvQJBe1tDutQzK1g7kcl8DmynFxlC6r+0hO1t3eClP1xjEirLa8Q==
+	t=1793745962;
+	b=izvtf+StfBci5pWkcyIVs2ErvN3VHhlQ0HXkbH1IPw/3Gm+DPFuxDkL8WbXGKJ8wrSVK
+	 cfFsDa9/x0QiNcIhiLxh5wHOWUxwhfiz1N4otGaKP6qrxMSIsEO+/J986Pr+WFvscadEW
+	 Zat1hnUxUHncQ4+IZk5gJcX5r0PxkXEij2aVRsFjPzTmd3M3mpGs/t6ocrHX3WF3m06dx
+	 opE6MyBwgpGKSocHcbYkEzhPx+8XRPukQIMpQ1dgvBFr2jd3n+ZiFSsVyjGrqGGnhdfI6
+	 xZ201Y7Yv/Pnw2ZOox8uWXyxeMmUzZtW8MFnV2cfJjSeo5iRYT0/gdBz5ax61/9M47w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793745949;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=ShVogAlnwemR+eSmdy++bj3DisqjTOdJ/lCnAjRwWDE=;
-	b=Feh2NiYptU7/PrN8Eih8vAo5MltUVpgHieuHw5PjYFOi64XLiG5Wi5RtL9cuO2MCt23W
-	 WRDLkSly42v2u5CPlaNEU852w97uCPRrKW8d/9FH3rVFvBMgtb67U9XWZa4zKYVK1OtVl
-	 nJRy8bzXuA5bnhYQD/agLOMcNd9L9eifSl3BxnbW+KJmiBRsizfIgVFgdCHTMgxPL324/
-	 fQggX+qMaEtoHF4DPK7CgBgL3dCnf7AFNGwHxV/EYgl9e3Hrw9e/H09piiohnZUVvYf4V
-	 hJzcs6/Syt3te/Sk3fMEBWDRcUEG3yyM2GcqBDOkRZXjCMgd/8UQmK8BzOv1ZezkyxQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793745962;
+	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 Content-Type;
+	bh=NnJsKtCTeD/Bzs882oxMSZxOAfNjNWrgvAYK1w0KvpE=;
+	b=SHSExW0eexoBtzKjCLF5GTPrMGPGQSMkKahUindLynoAciCv1qTZYa8ICziVbCEOCGFt
+	 HKe+jmUqdV3Jibtb6clsEpccMKf8z0Z9WjyJzQzxyeHnWpNdpmwavFfiq85JLtojWL+Zp
+	 qj7CB/fPHgwzZ4idflhhMUwG2nqor051SYGXGuuMhx9xjWYBN2KmHGRpNUu959UZmiwJb
+	 y5r/7QSLToKGnGmTRB7degX13QPnQzLa1xVtTfH0/EgzSuldLqTaP3J/3S4wRu6nsSoD/
+	 P3VxcrxRZUDIZ+cSt+EZF+JonPzcJ/0QCf81epzt4VSPDJyKqgpjvf6uurs9k4+0jaQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cn4BhSAY;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=sntech.de;
+	spf=pass smtp.mailfrom=sntech.de;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gbeLFUJU;
+	arc=none smtp.remote-ip=185.11.138.130
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DAD1606A326;
-	Tue,  3 Nov 2026 22:45:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D16C0606A328;
+	Tue,  3 Nov 2026 22:46:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D16C0606A328
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cn4BhSAY
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E8931F000C1;
-	Tue,  3 Nov 2026 22:45:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793745949;
-	bh=ShVogAlnwemR+eSmdy++bj3DisqjTOdJ/lCnAjRwWDE=;
-	h=From:To:Cc:Subject:Date;
-	b=cn4BhSAYBgR66HgNYoQCHTtzE1q5pV40RutOaAlvgfC8dAClClxqPfecHc6Vf3TLa
-	 vvDe63Pp9qYvgtfP6wTxlTaA0dlJBt0XgHaaCa19wDrUQHZSs5DkUPFsUfsRRYOCRo
-	 2JEgisHiQkVPPyYVk/ZpmHuBCxarh39mNuOEm//nBNZDOPtC7k620Y+g31C2xm/0K2
-	 g5lMjU0HrAZ0TGgPNQ30rm6mtFpRJr6XfnXxOBJxyrLLGmoQRTMZFFYzoKURsXvLh4
-	 euxiuyCSTrE3WLFwrOOgR1yhg/CD8OlNiwcXOCo05h98lktgmOqTa3a/QvGOLM/6SN
-	 g1dX6UqwekksA==
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Thierry Reding <thierry.reding@kernel.org>,
-	Viresh Kumar <vireshk@kernel.org>,
-	Nishanth Menon <nm@ti.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] dt-bindings: opp: Allow 'clock-latency' with dynamically populated OPPs
-Date: Tue,  3 Nov 2026 16:45:38 -0600
-Message-ID: <20261103224538.877008-1-robh@kernel.org>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key, unprotected) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gbeLFUJU
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=NnJsKtCTeD/Bzs882oxMSZxOAfNjNWrgvAYK1w0KvpE=; b=gbeLFUJUs+ZWxMstd2CPZDNWCJ
+	oEGwJz+eQinsoD8PgZ6HLv/YVXCRvnPBhA4Ww09HNNMGR8WL673bexx07d/W3ve1Ah4rdE70367T9
+	ib3wl7UXqSYXRNjkkyk9XcaK0PWB7xz1cEIYWdHhRF/1mArXTlyg8mOL0Mfk2p6T0DYAwfrvSjzth
+	7BmORiJf0icp2wMCCbv9zzVUGd+9W/QSwNR8jdlMaVyeBynCgDSRmUroyqnNbFAgiw0j4m8kRbfBW
+	8XT6UxDlm1gmfj2ynLX1HCI1d+gah7Yt/it3CKT28RI8Fqk+afe3ABDn1leZnfRiCSSkctZWI+RhV
+	Ri6bN5UQ==;
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: tomeu@tomeuvizoso.net, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, joro@8bytes.org, will@kernel.org, robin.murphy@arm.com,
+ ulfh@kernel.org, p.zabel@pengutronix.de, ogabbay@kernel.org,
+ zhangqing@rock-chips.com, Jiaxing Hu <gahing@gahingwoo.com>
+Cc: royalnet026@gmail.com, abel.vesa@oss.qualcomm.com,
+ sebastian.reichel@collabora.com, sidong.yang@furiosa.ai,
+ u.kleine-koenig@baylibre.com, chaoyi.chen@rock-chips.com,
+ diederik@cknow-tech.com, alchark@flipper.net, leonard@lausen.nl,
+ jeff.hugo@oss.qualcomm.com, rfoss@kernel.org,
+ dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
+ iommu@lists.linux.dev, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Jiaxing Hu <gahing@gahingwoo.com>
+Subject:
+ Re: [PATCH v15 02/15] accel/rocket: take the completion register writes under
+ job_lock
+Date: Tue, 03 Nov 2026 23:45:30 +0100
+Message-ID: <3317717.zE8UqtGg2D@diego>
+In-Reply-To: <20261101082307.151957-3-gahing@gahingwoo.com>
+References:
+ <20261101082307.151957-1-gahing@gahingwoo.com>
+ <20261101082307.151957-3-gahing@gahingwoo.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,41 +74,24 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-Tegra210 builds its CPU OPP table at runtime from fuse-derived process
-and speedo values and built-in CVB coefficients. Its CPU node therefore
-has clock-latency without a static operating-points property. The OPP
-core still reads that latency when initializing the table.
+Am Sonntag, 1. November 2026, 09:22:54 Mitteleurop=C3=A4ische Normalzeit sc=
+hrieb Jiaxing Hu:
+> rocket_job_handle_irq() writes OPERATION_ENABLE and INTERRUPT_CLEAR before
+> taking job_lock, while rocket_job_hw_submit() writes OPERATION_ENABLE und=
+er
+> it, so a completion can write its zero after a submit has written its one
+> and stop a task that has just started. Move both writes inside the existi=
+ng
+> scoped_guard().
+>=20
+> Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+> Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, i=
+nduced reset, JOB_TIMEOUT_MS=3D2
 
-Fixes: 80728bfa8c79 ("dt-bindings: arm/cpus: Add missing properties")
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
----
- Documentation/devicetree/bindings/opp/opp-v1.yaml | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
-diff --git a/Documentation/devicetree/bindings/opp/opp-v1.yaml b/Documentation/devicetree/bindings/opp/opp-v1.yaml
-index 61c080e50859..3dca8f7f146d 100644
---- a/Documentation/devicetree/bindings/opp/opp-v1.yaml
-+++ b/Documentation/devicetree/bindings/opp/opp-v1.yaml
-@@ -24,7 +24,8 @@ properties:
-   clock-latency:
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description:
--      The latency in nanoseconds for clock changes. Use OPP tables for new
-+      The latency in nanoseconds for clock changes. This also applies when
-+      operating points are populated dynamically. Use OPP tables for new
-       designs instead.
- 
-   voltage-tolerance:
-@@ -41,7 +42,6 @@ properties:
-         - description: Voltage for OPP in uV
- 
- dependencies:
--  clock-latency: [ operating-points ]
-   voltage-tolerance: [ operating-points ]
- 
- additionalProperties: true
--- 
-2.53.0
 
