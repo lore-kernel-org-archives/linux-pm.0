@@ -1,101 +1,53 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793697261;
-	b=E+sBaKWJKm0XPvtSuxhN0F39NmbQAghu1n+lgWL8k+19/zBaBQwytxMiC9YBx5o4CS/q
-	 Sn00Gx15EVbcXObehxPNpL+rtKX2kE5E3bowgCZf9WYv8qcVxKpPJmVQVn44482ew+ghj
-	 j3DCqZEE8I2cy87U9IAKqJTZ17BP0DYKoiNzo7UuLpAy9A8HDbcU9PFMSXMUepFxUoKPa
-	 Mh4p44DcCHnlnKPkMFpZnW3KqkqSUYxUB+65R6EZk/FD3WdddZg4EySp46O6NTXFKtmM1
-	 x9ifW47b2sOXGNjttt1MqtZW8vkjasU6cGq0UJup+9yK1vngi7lH4whI9hIbB0iPLWQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793697261;
-	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Subject:From:To:Cc:
-	 Date:In-Reply-To:References:Content-Type:Content-Transfer-Encoding:
-	 User-Agent:MIME-Version;
-	bh=xCKzQnE8sR8qGnyIMcveJ64Ln+A33qIBzCr/8Ncna5s=;
-	b=vEW3OyDTqdkJxDAMVs/AGBsZ+ZcEjrvA+di6RWih+AcWhEC2MTA4s7NNMLqYfmqAcwEw
-	 QV9FPEvtVgy2LNfRepoEaTHP6riKmLZczDwVR+bN9P0H81+NuoTE1RurpU2JEAd4mlTD9
-	 8m/Nz0UkajwnLLICi6I8W7BQ+q0KP2h72a4kuUYREkEWQokPdZLTtorUjqjKyhz/s4w17
-	 cN31zncz8rs5Dr9UwfE2UoNIAK1pYUqw7fRLPs5nt4SPtabgADAEnwPc5tAvvXc8IoQI8
-	 gAFK3yTUwUeK+Z4Oeur2LciZg9yjly0HMwku0c7+bg9hQruLffqZU64L/XY90lxwCJw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=none header.from=pengutronix.de;
-	spf=pass smtp.mailfrom=pengutronix.de;
-	dkim=pass header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b=Az16B1NT;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
-Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793697863;
+	b=Xwoger5/H+abrOTZ3Z4qM390lxGfYWEgbl7oWgJQzkoNilXXagwRR0BD/TBgMCA5W3Ya
+	 U0W1s8f73mp3rBwaAAuOjnN6OGnLpRplL77b3Df/V+ZEiKUifxPMPsBs9kt72hxJ0Xqc+
+	 OQU2EpqZ5rO5XQrvKTIJKsMsyDRD6d2pIkRws+9TCwDoLjpx+LKQl+drdv1qu7M2PVwQ9
+	 Tft4jBhz0r3hrXoRSlU0PE0TIJGqmuUrenUF0qOdoBRnKUSOCUgyxBK48AQuSFKSKAmjC
+	 BXsO+13Z2IL2c8qGwi5KseI0wn4Cj6P4nszH/ZFuNr/rWgmrAmK53Czjj5hgr92lJNg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793697863;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=My5g1/hWyVtaqeuolzLXvupHyj8u+fkqRULATYn+MrE=;
+	b=rzWtJcqRox8+ppLm5o1wFeASZuDfVjnkvmGpdWl8fWtfEy0cq7k7SxVLaOP4TczK4r6J
+	 sVAaGUVdii+iOvbWrhRgTsudB2w1S2n5gpdB2KJctCJqEvaKxMqUehlEa80iJ4vVIIK3X
+	 H905ZUMBvR7OaUoXlaGQk2VuwxzkwS+T0/DoEU3wHMcZV63pqK1bEBPm8LnvA341uMfvl
+	 LXlhVusyo/XQRBaKo66hcC4HCUy/AYORozcWs5+zbKO9kElEStLX/2Du/U+p4SwMI9Mk/
+	 Cfb+u0BlX2AgvPFPa+Q/g+660hs/HY31t34Dgi0fg/WONJIn6xIsOHon4RGj//i3hSw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FJYe8WqC;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 794B4606A324;
-	Tue,  3 Nov 2026 09:14:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 794B4606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1179606A327
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 09:24:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b=Az16B1NT
-Received: from [IPv6:2a0a:edc0:0:900:1d::4e] (lupine.office.stw.pengutronix.de [IPv6:2a0a:edc0:0:900:1d::4e])
-	(Authenticated sender: pza@pengutronix.de)
-	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id A9E7320103C;
-	Tue, 03 Nov 2026 10:14:17 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
-	s=20260414; t=1793697257;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=xCKzQnE8sR8qGnyIMcveJ64Ln+A33qIBzCr/8Ncna5s=;
-	b=Az16B1NT/o8u9bVz4Vr+qtoUJMO3XnS5rLrEvivYNfOeg/KeYGFKJa8LvN/V523v7lH/79
-	dKjT1Dj0L2tkZoPLOQYbfdaLEiI4+49lt+e0MAxy8rJLme1LJMizWuHIj3IuJqhIdplKzl
-	bLdN24LfJoTlqzgYGPzLR7nqq8CoC8dBkvg2VKgJL1LKp2XvwAUqf3Q/cBzK8GgB83tSLq
-	iJQT7CebcWCXUevcw24RNeD62XHc1PVw01VapBpiNKtOAGGnKnBK9rgWhkCY3EnEB6J/J/
-	TZDqOnUvRwt7btSCyUqCt3QOIkm1cCXRPqacLNsX22HxcLv1l68DnXQC2AxoCg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
-	s=20260414; t=1793697257;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=xCKzQnE8sR8qGnyIMcveJ64Ln+A33qIBzCr/8Ncna5s=;
-	b=IeFNgT0IVHiRepot8IhD9+8MZxksgKp8QtZ0Q+NkRQKSzRW3F1st38bGCwY408Qds7atpb
-	ASrtbeQfpuAnNb5kkd7A+fbJ8ddafXqTtv0cWMMKVkgzhTPcwxdGEQURAVF1Bq9QZ0rgTg
-	9Vy3wLWnvjju/NCLna2Jd9dKEalVQTk8EXyJGFG8zWnPj2aNmEqFl0MlVN2ji7XxzsVrsT
-	WQO+2MIY9f1v0UNM0UDw6LyRIoKSSMVnq3fAMy5ZR/NKyOiIELMNjRr/xIJYmGGI4VnjHD
-	4JiOPXyDQ1eksy1+MAANficJxkHsVtWHcA8cTuH9WeEIu9XiQesit2LyMZgpcA==
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=pza@pengutronix.de smtp.mailfrom=p.zabel@pengutronix.de
-ARC-Seal: i=1; s=20260414; d=pengutronix.de; t=1793697257; a=rsa-sha256;
-	cv=none;
-	b=MqelqDHcu32UrtpOsw3KKZGLgLnFSR66JSukkrD0iM4rky+LVtOW4DCdHiERKyp0wwyUUR
-	GpeDDOCAgBKM7K8U1C36Gv6NbS5q0c332HXHoL93qzyNgEhptnCF4Q7rWM42PJSwcutHq7
-	hj+C8jujlg6ifEOlQI652m1MHSw4+zhWckIyPos4F8hrlN7763yEA8xzS9Aogizms7TF/z
-	N9uxspC3AcdMXAscx5zzdN40nfJrBNAnohLxQCGiVeRKE+pr0x0NTROgrjV/fgvjOKINoW
-	XQbjuGVpvakYsEUAjDsft9Ml7OavlmNny2MoEjyxe4tOnmtQ082HCtQPFGF80g==
-Message-ID: <88963fd1fd87123496a55e2002bc8b0dc2466bd4.camel@pengutronix.de>
-Subject: Re: [PATCH 6/9] reset: google: Add CPM reset driver
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: Brian Norris <briannorris@chromium.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-  Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Brian
- Masney <bmasney+clk@redhat.com>,  Jerome Brunet <jbrunet+clk@baylibre.com>,
- Thomas Gleixner <tglx@kernel.org>, Ulf Hansson <ulfh@kernel.org>,  Peter
- Griffin <peter.griffin@linaro.org>, devicetree@vger.kernel.org, Tudor
- Ambarus <tudor.ambarus@linaro.org>,  =?ISO-8859-1?Q?Andr=E9?= Draszik	
- <andre.draszik@linaro.org>, linux-samsung-soc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Radu Rendec	
- <radu@rendec.net>, linux-arm-kernel@lists.infradead.org, Mariano Marciello	
- <mmarciello@google.com>, Douglas Anderson <dianders@chromium.org>, 
-	linux-clk@vger.kernel.org, Jakub =?UTF-8?Q?G=C5=82owacki?=
- <jglow@google.com>
-Date: Tue, 03 Nov 2026 10:14:17 +0100
-In-Reply-To: <aukyyYhDCBUdIH16@google.com>
-References: <20261026214359.3122870-1-briannorris@chromium.org>
-	 <20261026144346.6.I0b1ad34a718a9b5f667d2481041970ea45989dd3@changeid>
-	 <8d57f0a1dc8a07838bf1320f9b79588196264ff5.camel@pengutronix.de>
-	 <aukyyYhDCBUdIH16@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FJYe8WqC
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD25C1F00919;
+	Tue,  3 Nov 2026 09:24:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793697862;
+	bh=My5g1/hWyVtaqeuolzLXvupHyj8u+fkqRULATYn+MrE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=FJYe8WqCtSr8oQHf9X68ndEXwg6FcOpCaXeFHLKH5ED3M6xW2ukecnW62dR5UVK15
+	 C3ohnjh1E0IIr26thRh4mqpFvZj58WhTs6wsXu/9VGDxG/zNKzGv3d39fDtYfHVXj1
+	 eojoPUc9z3TOEEWUFTEZ0gCFZKOfQrNvz5gqRYlEYDfTf4I9IitwXCNzSs33pI00e/
+	 XY2yx+fBNy4Oe2fYzCCDGUhUUqYdRemRq+u0am4NZsFEWi3Mjr9lRXhg7ZYL7eQXsK
+	 KXQPNwyZTgKo3nsIUlvWomMYeajy9wJSosHlOOxsKl9+W203wM659T4FAyjtxXdIkG
+	 4Jy1FzHxTJsmA==
+Date: Tue, 3 Nov 2026 09:24:17 +0000
+From: Lee Jones <lee@kernel.org>
+To: Chris Morgan <macroalpha82@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
+	maccraft123mc@gmail.com, heiko@sntech.de, sre@kernel.org,
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: Re: [PATCH V2 0/4] Fix Incorrect State of Charge for RK817
+Message-ID: <20261103092417.GG13023@google.com>
+References: <20261102143942.305293-1-macroalpha82@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,68 +57,77 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261102143942.305293-1-macroalpha82@gmail.com>
 
-On Mo, 2026-11-02 at 17:03 -0800, Brian Norris wrote:
-> Hi Philipp,
->=20
-> On Wed, Oct 28, 2026 at 03:03:24PM +0100, Philipp Zabel wrote:
-> > On Mo, 2026-10-26 at 14:43 -0700, Brian Norris wrote:
-[...]
-> > > +DEFINE_DEBUGFS_ATTRIBUTE(goog_cpm_rst_assert_debugfs_fops, NULL,
-> > > +			 goog_cpm_rst_debugfs_assert_set, "%llu\n");
-> > > +
-> > > +DEFINE_DEBUGFS_ATTRIBUTE(goog_cpm_rst_deassert_debugfs_fops, NULL,
-> > > +			 goog_cpm_rst_debugfs_deassert_set, "%llu\n");
-> > > +
-> > > +static void goog_cpm_rst_add_debugfs(struct goog_cpm_rst_debugfs_ent=
-ry *entry,
-> > > +				     struct dentry *debugfs_root,
-> > > +				     const char *name)
-> > > +{
-> > > +	struct dentry *d =3D debugfs_create_dir(name, debugfs_root);
-> > > +
-> > > +	debugfs_create_file("assert", 0220, d, entry,
-> > > +			    &goog_cpm_rst_assert_debugfs_fops);
-> > > +	debugfs_create_file("deassert", 0220, d, entry,
-> > > +			    &goog_cpm_rst_deassert_debugfs_fops);
-> > > +}
-> >=20
-> > Please drop the debugfs functionality or explain what it is needed for.
->=20
-> Ack. I think I'll probably go with "drop", but some notes:
->=20
-> There's no real way to test and validate a "reset" driver without a
-> consumer. There is no direct (even for debug) interface into the reset
-> API, unlike in some other subsystems (e.g., GPIO). I believe the main
-> purpose here on Pixel drivers has been hardware+driver testing, so one
-> can test reset functionality before hooking it up to real client
-> drivers, and without adding fake drivers or extra debug code (a la
-> "printf debugging").
->=20
-> (One might observe these results either via /dev/mem-like access to
-> registers, or even through external debug peripherals/consoles that can
-> monitor the status of the underlying component that is being reset.)
->=20
-> This all would generally be in an early hardware bringup scenario, so
-> admittedly it probably doesn't have as much of a use case in the
-> upstream kernel  -- it's a long shot for this kind of hardware/product
-> development to *actually* work directly on an upstream kernel, with
-> upstream drivers.
->=20
-> ...but if I were imagining a better way to do this without bypassing
-> reference counting: perhaps it could be useful to a have a
-> debug-oriented "reset client" driver, that could bind to arbitrary reset
-> devices, if they're not already owned, and expose a sysfs or debugfs
-> interface like this? That could fill similar use cases for this sort of
-> hardware testing/validation area.
->=20
-> But anyway, I understand such a proposal should definitely come
-> separately from this driver submission.
+On Mon, 02 Nov 2026, Chris Morgan wrote:
 
-Thank you for explaining anyway. With that use case in mind, I think
-"drop" is the right choice for now. This functionality can be
-implemented in the core and use reset controls like any other consumer
-driver.
+> From: Chris Morgan <macromorgan@hotmail.com>
+> 
+> Users of the popular firmware RockNIX had identified a few bugs with
+> accurately displaying the correct state of charge for RK817 battery
+> devices. With the help of one user analyzing the code with Claude
+> they were able to identify a few potential bugs along with potential
+> solutions which I was then able to verify. These bugs are as follows:
+> 
+> 1) Incorrectly clamping a value with a max of 10000 instead of 100000.
+> This bug caused the state of charge to sometimes read as 10% instead
+> of 100% as it should have.
+> 
+> 2) Using the boot_voltage value to calibrate the battery in scenarios
+> where it could not be trusted. The boot_voltage register populates
+> immediately at power-on, and the driver would check if this value
+> was older than 30 minutes before using it. Unfortunately when combined
+> with the default behavior of the bootloader to turn the device off
+> when plugged in (requiring a user to explicitly power the device on)
+> the boot_voltage and boot_timer values were wrong. The boot voltage
+> would not account for any voltage added while the device was off,
+> and the boot_counter that tracks the time the device was off would
+> be reset. To fix this we changed the behavior to (outside of first-boot
+> scenarios) use a value saved to NVRAM, the value from the coulomb
+> counter directly, and an OCV lookup from the live battery voltage,
+> and then using those values provide an initial "guess" of the state
+> of charge and recalibrate with the OCV voltage once it is available.
+> 
+> Included in this series is another fix that would cause the battery
+> to drain while the system was shut down. This patch replicates the
+> Rockchip BSP driver to clear a shutdown register. Unlike the BSP there
+> is no behavior to bypass this since no boards have yet been observed
+> using the SYS_CAN_SD bypass on the BSP kernel.
+> 
+> Changes Since V1:
+>  - Dropped the sleep fixes, as I would like to test them a bit more
+>    extensively first.
+>  - Dropped the devicetree parameter, as since no boards have *yet*
+>    needed to alter the default behavior there's no need for it.
+>  - Changed the behavior of how we select the initial SOC and made
+>    it its own function to ease in code readibility. This new method
+>    was tested with various boot scenarios. The average error was less
+>    than 5%, and in a worst case scenario where the device was
+>    discharged to 0%, then left to charge at the bootloader the device
+>    over-reported its state of charge by about 10%. When this occurred
+>    the device reported its SOC as 100% but that it was charging, which
+>    was corrected by the new OCV logic that kicked in once charging
+>    completed.
+>  - Scrapped the more complicated sleep fix in favor of simply telling
+>    the battery to recalibrate at full after suspend, in case of a 
+>    counting anomaly. 
+> 
+> Chris Morgan (4):
+>   power: supply: rk817-charger: Fix NVRAM SoC Value
+>   power: supply: rk817-charger: Resolve boot state of charge from the
+>     coulomb counter
+>   power: supply: rk817-charger: Clear SYS_CAN_SD register by default
+>   power: supply: rk817-charger: Clear full charge cal on resume
+> 
+>  drivers/power/supply/rk817_charger.c | 313 ++++++++++++++++++++-------
 
-regards
-Philipp
+>  include/linux/mfd/rk808.h            |   3 +
+
+Acked-by: Lee Jones <lee@kernel.org>
+
+>  2 files changed, 239 insertions(+), 77 deletions(-)
+
+-- 
+Lee Jones
