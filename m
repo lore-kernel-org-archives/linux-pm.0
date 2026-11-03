@@ -1,87 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=114.242.206.163
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793690510;
-	b=2FHt3Qy+UdxOME9PsL5VFNrnW4VvSq7QaYMCoJdcffA17+mY1ArHqIMS3IcCgQSDPCyY
-	 R/lcyJqpOgq0wJb4SR7wFamL9MipOOTS5f5rfJtq7str6mIt7jMr0wHcDDp3tSTGyZMSi
-	 fyBqLkDaRANI1wh8HDpukLDVAwVTJ2FU9/dJyrqJESzSLkFOykPO0/LDBb1nwyZ+fqZQd
-	 EMdM5/8zKSjJ36SyWT4qmdJFcYewZrQRJPArLFBNTEURFqSJQ5lgSngfkqz9wPXiRUMug
-	 WVrZcR5P0Q34Ew9M+RKPsfTFxdpxX+nWHcvKYHB/k+/eeXREPdKnUY0ak4JF0Ep1O3Q==
+	t=1793690661;
+	b=F+CHq4XBT9NvP56pQ2el2ZYvfDH2si023P6+c+q546P6UVaMie+WGLe0JPfjsHFtxXdw
+	 nQ+BdH6FIr1c5tknqjWLem8JLv1cIq/vQ35sANyBmz6wCrzwrdyet+N/R6UatCuK7di9n
+	 zfxjvTqqlpu/aQljnjNMTIEY912iAvIyMYGiYCOVMGcUdzAtK3Cqv3qlWJdLN4I3xLlUD
+	 zXT9UFvhbGV2f0LCDMqqAXZlEVLl6ZzmcXoYZWpZ8LUKH9YD/lBQ2kl9bIW20bfApUXo9
+	 R9+H81+mCOt8JHZr+fnMK5swQ/LJC8CRhVd+XvMEXQlnNgrD1PyVS+zKDK+Mvq4ih3Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793690510;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=f/KnB4zhJgMl+hFjknvmtRA3SG022rMHPfbeZGqIblc=;
-	b=avrNEvXz8HbnqXHxiF/iG6pgyMVB9KZA7oESg0MVfXcfeRTrm9w3/ROOVXljZt6OD2Gz
-	 6ggBDNfehZQFnQXjDXCHxi4qUa0zqVVPAWksNM5gtKPRz2c7nhjoQgRyDNNvU8jjdZ5bS
-	 Q3CCQu38R1ZTHAbVqFyG0aEbV0gSc8hgc5Y/1y2qqq60UeDO91skBXGdLPlokecM+JI3o
-	 DOOkn8fej0U4MET4qubicUCNVgizgLVdb1Oc5VDBMSEjD/fc/dzD+GdcODYhrT2xTk5D4
-	 moK7H/1FfkGoqZYu7YjyUG6H5uJiuzGkCw2SZ3hCSSOSBQ2xJSzgDyHxaB/9AjmZqvA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793690661;
+	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-CM-TRANSID:X-CM-SenderInfo:
+	 X-Coremail-Antispam;
+	bh=JTbIuCE3NJIqXnZqTc/A3VxouAEQ0U5NKNLCXoF0qNw=;
+	b=SWSPY9nWilvizk0Qt6YWE5FMvPM6HSTQap3au6jT1nFLjeCNgropF9B0HCuOlC63jrXD
+	 dw42cuCf4T+UUwItPKBhLgbkLg5c54wQANuNKcsKemcMejwZsfctcq8I3P4yZMZ0p/CfV
+	 D8FQESiJXRqM9pCzsJJNHgozJRSYshG5PjTICAzLQ7LbWDsE50ordi7XIAYh4uHqHSgTg
+	 C9gAPvjYFHaclr2pROguAYrd2g3TyhvUO7F1hBkFFae/nmY5kDBBhSNsxFJapC3W+3zC6
+	 prVL70kNLbNe8uIoguBL1sueYZIxgXbs2bnc8IgMsxqlnWw7lVbfXDRt32OrD+wnYLA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rAc5e13a;
-	arc=none smtp.remote-ip=209.85.128.51
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BE58606A324
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 07:21:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0BE58606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rAc5e13a
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-4a2d6cf958bso17167475e9.1
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 23:21:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793690508; x=1794295308; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=f/KnB4zhJgMl+hFjknvmtRA3SG022rMHPfbeZGqIblc=;
-        b=rAc5e13ajULG1v3AnfLLIAD5cCrCxGudDlVWRdaYveV05iOKHOtx6s3SmbzF4RgQfc
-         ngE1LrUGF5rKL7pwoGri8s2Eb+TzsZqa77WH1ekA3cC5qiw2YKUL/BS9YypQOQDuXdL3
-         wo6Z/vHxOPrO5n1kkXCTOwIi8CrIlZe4NAL4OX9ZJHC0nYOodQZu6+62QUwfYYIDmSqJ
-         35pvTa60Z+HScl3f/0Aj9abXG84txnSzRtOon3j8uk13JMeC7tiyTAHQKkzdZOAl6Vzd
-         okqBPoNoZDwcJaffKKCNPlMTg0H3K43ZIrK4FG91Z3h2QYGhUSVo6MXDO9WjLlMSr3Kp
-         wVig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793690508; x=1794295308;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=f/KnB4zhJgMl+hFjknvmtRA3SG022rMHPfbeZGqIblc=;
-        b=AwdI1/m0R+qcT9tKjkhN+QlXsJdd05KJfdDxG4m1DAtJd0cQmtE8PA0LCgBs7VqU3k
-         NVZA35+VHKZu7XOcs9/ZX0pQvEYn/JUSmOAa5BlBeJ7IJ/Df7Zx3H5H2QOUOsUNj4Q42
-         r+ndyV9P0TRcsH3No/RqR29EFmcndrszLvWi+7DaHi2EOG3Cn/4/hYqlpJvrKq3MeEG3
-         DIprsgwIvIkar5mCOXjxFMKDK3rClalIBJEfKnutu/OIatDb/gICLWQoN61EsGByZ+9J
-         4H+YWbwjXhNvzFVcGcvRo8EIRjk627IkAkq1EQZnfRUDgQPxmFkZgEjKrLrPmYc7sBaF
-         6C1w==
-X-Gm-Message-State: APuU4Z/sWOf6VmegzhtT9TsYp2+bi3764Q4yz+koNS33uL11hp5grhUi
-	+vh5pm0JBCOA5zA7kcW8ilNOQzKUA17rp0S16O5Qc2RgbiMooRqmlIBNt1DYPw==
-X-Gm-Gg: AYBFou1h02+VzbR5JJ0QJvmMifQixL2Hs1gl5n+W13MqoHseEOWQ/LFcY4sQNPTy9OQ
-	PLhDMkcxzIZ29cn5Aszo8Vb89woi2zBIWRyWA6d6m/b2XymxuXvNYe+6LpWy4NrjZ5QBnMSCcmi
-	U9NiMcpzN9vDQ+qb5OS+b8JNNr6GXffpw15I5AiHcryXxyOYwBHRcjooskjJTYNlXkgQhtc85qQ
-	llPr9oU1y/++nx2+c5ew6bmv/kuXZEqPjtEPB1jXp4BK61cIt0ePwnuXERQo1AlX4xs+iPKZ7t3
-	PCB2PjpFLrRMMaiAlNmn29kL7Y0v4vtCZPkgKjYg2p6qHfYvMDPXb3Y9w3QgAoDR70J8t9H9Per
-	lgG+TgZHEtYg4LSnsvcNKMPnxJMLzm06fFft8GUW4lvk9G5KHcha2wl+Mqkz23HCy3MrRVkDVnE
-	d1xVhmvS0er0NCzJ/RyRq+upDyiTqComMeJBskKBi+Q+0ObBzcoJ0fl6Ta3SABAybnv3oFLgpjd
-	WakonTh9goaLOYhSVFvRNskLSdsAr0trZPrgWFhp1Ltr5hMcELwphZJ2ulzq3EeHxTsCScKRztl
-	pCLGEKV43LpE07++YJJy2npm5OUTBAipml8oHEuSzfgLQWEqAeSM4rOftKTXLh4G6sjpPiBOQ8j
-	h8K/Bae2rcpXUmvEr8uuir/qBF4b6ROXvWI4=
-X-Received: by 2002:a05:600c:e548:20b0:4ac:86c9:b09c with SMTP id 5b1f17b1804b1-4ac86c9b146mr172730365e9.13.1793690508288;
-        Mon, 02 Nov 2026 23:21:48 -0800 (PST)
-Received: from [10.77.100.5] (ipservice-092-209-215-046.092.209.pools.vodafone-ip.de. [92.209.215.46])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b2a80e0fe6sm43172275e9.1.2026.11.02.23.21.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 02 Nov 2026 23:21:47 -0800 (PST)
-Message-ID: <cdf44987-3a3e-41f2-a067-8181aea08880@gmail.com>
-Date: Tue, 3 Nov 2026 08:21:23 +0100
+	dmarc=none header.from=loongson.cn;
+	spf=pass smtp.mailfrom=loongson.cn;
+	arc=none smtp.remote-ip=114.242.206.163
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4833F606A32D;
+	Tue,  3 Nov 2026 07:24:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4833F606A32D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
+Received: from loongson.cn (unknown [223.64.69.17])
+	by gateway (Coremail) with SMTP id _____8BxLNIhjOlqyN0bAA--.15275S3;
+	Tue, 03 Nov 2026 15:24:17 +0800 (CST)
+Received: from kernelserver (unknown [223.64.69.17])
+	by front1 (Coremail) with SMTP id qMiowJBxpMwYjOlqxRUyAA--.11093S3;
+	Tue, 03 Nov 2026 15:24:16 +0800 (CST)
+From: Binbin Zhou <zhoubinbin@loongson.cn>
+To: Binbin Zhou <zhoubb.aaron@gmail.com>,
+	Huacai Chen <chenhuacai@loongson.cn>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	zhanghongchen <zhanghongchen@loongson.cn>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>
+Cc: Huacai Chen <chenhuacai@kernel.org>,
+	Xuerui Wang <kernel@xen0n.name>,
+	loongarch@lists.linux.dev,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Binbin Zhou <zhoubinbin@loongson.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH v8 1/7] thermal/drivers/loongson2: Fix negative trip conversion in set_trips
+Date: Tue,  3 Nov 2026 15:23:50 +0800
+Message-ID: <efffabbb8f7b59efdc0f8b3ecc86bfd2ef633ac6.1793690276.git.zhoubinbin@loongson.cn>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <cover.1793690276.git.zhoubinbin@loongson.cn>
+References: <cover.1793690276.git.zhoubinbin@loongson.cn>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -91,61 +68,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] power: supply: surface_battery: handle battery event 0x1a
-To: =?UTF-8?B?UmFtw7NuIEplc8O6cyBNaXJhbmRh?= <ramonjesusmiranda@gmail.com>,
- Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20261023173215.6233-1-ramonjesusmiranda@gmail.com>
-Content-Language: en-US
-From: Maximilian Luz <luzmaximilian@gmail.com>
-In-Reply-To: <20261023173215.6233-1-ramonjesusmiranda@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qMiowJBxpMwYjOlqxRUyAA--.11093S3
+X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAgEACGrpUP0DvgAAsY
+X-Coremail-Antispam: 1Uk129KBj93XoW7Cw4xuFy3XFWxGw17ZF18JFc_yoW8Aw4xpa
+	y3C34DCrZrJrWqvw1DAayrXFZ8A343tFZrWF4xGw15Aws8J3yagryUtFy5Z3yfGFy8XFyY
+	vr95KFWDuFWDA3gCm3ZEXasCq-sJn29KB7ZKAUJUUUU7529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUUBSb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r126r13M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+	xVW8Jr0_Cr1UM2kKe7AKxVWUXVWUAwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+	tVWrXwAv7VC2z280aVAFwI0_Cr0_Gr1UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x
+	0EwIxGrwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkE
+	bVWUJVW8JwCFI7km07C267AKxVWUXVWUAwC20s026c02F40E14v26r1j6r18MI8I3I0E74
+	80Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_GFv_WrylIxkGc2Ij64vIr41lIxAIcVC0
+	I7IYx2IY67AKxVWUCVW8JwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04
+	k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26F4j6r4UJwCI42IY6I8E87Iv6xkF
+	7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxU7hFxUUUUU
 
-Am 23.10.2026 um 19:32 schrieb Ramón Jesús Miranda:
-> On the Microsoft Surface Pro 11 (Snapdragon X Elite / X1E80100), the
-> Surface Aggregator Module (SAM) emits battery target category (0x02) event
-> CID 0x1a alongside standard battery status notifications. Because CID 0x1a
-> is currently unhandled in spwr_battery_event(), surface_battery logs:
-> 
->    surface_battery: unhandled battery event (cid = 0x1a)
-> 
-> Add SAM_EVENT_CID_BAT_0x1A (0x1a) and trigger a battery status recheck via
-> spwr_battery_recheck_full(), matching the existing battery state events.
-> 
-> Assisted-by: Antigravity:gemini-2.5-pro
-> Signed-off-by: Ramón Jesús Miranda <ramonjesusmiranda@gmail.com>
-> ---
->   drivers/power/supply/surface_battery.c | 2 ++
->   1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/power/supply/surface_battery.c b/drivers/power/supply/surface_battery.c
-> index c759add..a3fa899 100644
-> --- a/drivers/power/supply/surface_battery.c
-> +++ b/drivers/power/supply/surface_battery.c
-> @@ -26,6 +26,7 @@ enum sam_event_cid_bat {
->   	SAM_EVENT_CID_BAT_BST         = 0x16,
->   	SAM_EVENT_CID_BAT_ADP         = 0x17,
->   	SAM_EVENT_CID_BAT_PROT        = 0x18,
-> +	SAM_EVENT_CID_BAT_0x1A        = 0x1a,
+The `MILLI` is defined as an unsigned long constant. When the
+temperatures passed to loongson2_thermal_set_trips() are negative, the
+expression `low / MILLI` triggers implicit conversion of the signed
+operand to unsigned long, and the division is then carried out in
+unsigned arithmetic.
 
-I don't particularly like it being named 0x1A. Do we know what exactly
-triggers this event?
+For example, with a low trip of -40000 (milli-degree Celsius):
 
-Best,
-Max
+    -40000 / 1000UL = 18446744073709511   /* unsigned long */
 
->   	SAM_EVENT_CID_BAT_DPTF        = 0x53,
->   };
->   
-> @@ -368,6 +369,7 @@ static u32 spwr_notify_bat(struct ssam_event_notifier *nf, const struct ssam_eve
->   		break;
->   
->   	case SAM_EVENT_CID_BAT_PROT:
-> +	case SAM_EVENT_CID_BAT_0x1A:
->   		/*
->   		 * TODO: Implement support for battery protection status change
->   		 *       event.
+After truncation to the 32-bit register field this becomes
+1271310379, instead of the expected 60 (i.e. -40 + HECTO). Writing such
+bogus value into the trip register leaves most of the upper bits set,
+which may hit status/trigger bits and cause spurious thermal interrupts.
+
+Use MILLIDEGREE_PER_DEGREE instead of MILLI so that the division is
+performed in signed arithmetic.
+
+Cc: stable@vger.kernel.org
+Fixes: e7e3a7c35791 ("thermal/drivers/loongson-2: Add thermal management support")
+Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
+---
+ drivers/thermal/loongson2_thermal.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
+index 4d40fc706a53..54ddee47cb32 100644
+--- a/drivers/thermal/loongson2_thermal.c
++++ b/drivers/thermal/loongson2_thermal.c
+@@ -108,7 +108,8 @@ static int loongson2_thermal_set_trips(struct thermal_zone_device *tz, int low,
+ {
+ 	struct loongson2_thermal_data *data = thermal_zone_device_priv(tz);
+ 
+-	return loongson2_thermal_set(data, low/MILLI, high/MILLI, true);
++	return loongson2_thermal_set(data, low / MILLIDEGREE_PER_DEGREE,
++				     high / MILLIDEGREE_PER_DEGREE, true);
+ }
+ 
+ static const struct thermal_zone_device_ops loongson2_2k1000_of_thermal_ops = {
+-- 
+2.52.0
 
