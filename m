@@ -1,70 +1,70 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793746285;
-	b=kjlX8GDi8ZsoK/xbuUvzJzz/Gpn+U049MpkZBywRRDLDhQrja5VFPuxqdXJW27Z3K0Cs
-	 w/3DwRBHakiyi9RpxaeHEmp0hZaredeFu62hzPVZ0rj+2CLoiZhost3KSpT/cL4BbCABE
-	 AY+D45m9yZttXc1OJb0DnKMZYdKj5bne06cBTO9vqD83+LmO4EA8gIekcHcgAJmVQ+NJy
-	 Whm1dVYCGgHCo/4v4obZ65UnMb9WwoPLrxoDBWsKdf07wlt83J+hPu1dMMsQdBaf0NnSO
-	 Qk3r/K1Ev5b3nlG/mXoA3kzivkjAjSgOkKwrEBmeAOkJzzJXoZ9e//sjIAG4sxzo1Tw==
+	t=1793747425;
+	b=wFdxHdBPGpyTf6nGJoc1yQiVCiP1pyMHOhMVNkTl7UGEtpHEthkTQQl+InDhDIoD/NTo
+	 zkNB7zzaAdm/6miobxjRxGSlzVYZ1CIhkFGudjqi3wfyCjRExh9+g7iA3S4dmZxLABwEc
+	 UbW7IP1Ps1L0VnXISDQbMNXalzk2uGnC11nGncmg7RQT5tmju6L8ljYx07UJ85KFZ87cx
+	 y1FrxrzCcHOXbgx8xEu/Z9lW0k9L1z0HNArrH35g+KQGRaZ4bfRb77mMRdssVUvw/E71O
+	 4QC7r5AD3IvaFb+dwpY3cUxAtk8AvIrRyb5hBzg07s8axH7mtQLLF6LjVZLLtVF67Jw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793746285;
-	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
-	 Content-Type;
-	bh=o7HXQPomhFEfrYFjVcsrdsok+Tx5KNS+/so3Un5/lrc=;
-	b=JZjrtkpFm5V+pbUXUH3djJFuHH0JcPvKm9f6qDXhKXQ9T14auPBr3iLUhXMXweDdfALP
-	 pwhIg39x+iRmufmhF3rPKrfTGLmcNu7NAo3PGo0wQDl9LX0uDSuin2bkdav+njDhgWMP3
-	 KecRGcDOj0cttJqnTp5u+Uvd2cw+nhqjwyh1VXsuHDvJ5REa3zJgn/jCN6W/X9evUTdGM
-	 NAwGww4rngxxLkWx0DYjgQExnFFaldAX+5O26O7/g/8yPmnUGQJb9VpXgVdUpEkP/zKeD
-	 MosaEHcPHBqLCKWimxwYKXx9doEehXX4wRynXsC7MVbv3HElTv9viMYcHmayYK2Z0wg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793747425;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
+	 Date:Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=t6vdaU/yxePrUrRWUghg3cmrLMnFFTUJ28tlNRYh1tg=;
+	b=TCvz28rxpGLBwc3JLWv0D7FIM3iJyzJVLBsBXFyt729nMQoMPzv5Fl3skbFs3pwJ1Git
+	 jaDz2Ml4UZ8+kniuzH01mmPVp9qxpQ/fpacLmfUqmXV+BpR+VZ6ZJdmAGV8yQGDIJwNiQ
+	 jluXtfWfbVzVElmlBWPBTxr0X9vE8J69QfCCO9WzuuomjTniD2sKuNpewOxSrExXBhp+o
+	 s170xWfDjYYXCzAqVfTKi+HBBiRoa53YCBIug6QstTvbMQtqnMt6EJOChcEILnlyulSxO
+	 MiqJxfCDSOiqb9/YXtOE72hrsn6QdfZx4RW0AZpBhc275sGOAOeBJNyVJWxVbd8U6rA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=sntech.de;
-	spf=pass smtp.mailfrom=sntech.de;
-	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=e8agXrda;
-	arc=none smtp.remote-ip=185.11.138.130
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4257A606A31B;
-	Tue,  3 Nov 2026 22:51:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4257A606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=SuPpvCBp;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7D112606A32C;
+	Tue,  3 Nov 2026 23:10:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7D112606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=e8agXrda
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
-	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
-	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
-	bh=o7HXQPomhFEfrYFjVcsrdsok+Tx5KNS+/so3Un5/lrc=; b=e8agXrdauKRx9EGxkmib/g9VuU
-	mDkazXkDbRhtV8JTfmGehKVWbki2agxMfivjwj3H4Z7DrWaQ87OgZlnjv96V405f70UM8mEHiCoEK
-	TLd4STOnPAShQ8B5UpqgNF77zT0/kgRPw/bgf1mBJTSHL5/ItZgiw07vjqZMz8ri84ErO7Sqn5uY8
-	BjeUx54xkn3O/6fjaNdEbOCVTI2mJDProM+XKVHiSN1FuQdZXYUhw8KhN0mtqJkPCyJOTIMjnsun+
-	Ct9vIUE/vopzPCY8Sep1G/z0WMU8T4JLlqhKjt5CTs/Lcr32soSSG4RSYht1Z/bG5OHaAT0LNrfFx
-	R/xopxBA==;
-From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
-To: tomeu@tomeuvizoso.net, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, joro@8bytes.org, will@kernel.org, robin.murphy@arm.com,
- ulfh@kernel.org, p.zabel@pengutronix.de, ogabbay@kernel.org,
- zhangqing@rock-chips.com, Jiaxing Hu <gahing@gahingwoo.com>
-Cc: royalnet026@gmail.com, abel.vesa@oss.qualcomm.com,
- sebastian.reichel@collabora.com, sidong.yang@furiosa.ai,
- u.kleine-koenig@baylibre.com, chaoyi.chen@rock-chips.com,
- diederik@cknow-tech.com, alchark@flipper.net, leonard@lausen.nl,
- jeff.hugo@oss.qualcomm.com, rfoss@kernel.org,
- dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
- iommu@lists.linux.dev, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Jiaxing Hu <gahing@gahingwoo.com>
-Subject:
- Re: [PATCH v15 03/15] accel/rocket: wait for a running IRQ handler before
- resetting a core
-Date: Tue, 03 Nov 2026 23:50:58 +0100
-Message-ID: <3311623.TQGk6oTFT5@diego>
-In-Reply-To: <20261101082307.151957-4-gahing@gahingwoo.com>
-References:
- <20261101082307.151957-1-gahing@gahingwoo.com>
- <20261101082307.151957-4-gahing@gahingwoo.com>
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=SuPpvCBp
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C87D11650;
+	Tue,  3 Nov 2026 15:10:20 -0800 (PST)
+Received: from e121740.manchester.arm.com (e121740.arm.com [10.33.8.69])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 44EDF3F673;
+	Tue,  3 Nov 2026 15:10:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793747423; bh=lSnoEjxkr8+bXgJvQDCUdnuOVMPOKr7qwpgfoczF5wk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=SuPpvCBpFfk5cYB+bazpJbkD+cL53FvqkjnJGH9Bk2XI/MRjHAERJNu3L2dOtTCyj
+	 NPiJo1xNcO7sNDsPWz1FrW0kjZ/1393Nz6RhdJZsgxlVqI1jdi0WyvV5V+rpFadvUo
+	 7X964iWl/ezCUZNnfC4/2v3fV2YE9AZCsfk1/uyw=
+From: Philip Radford <philip.radford@arm.com>
+To: linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	arm-scmi@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Cc: sudeep.holla@arm.com,
+	james.quinlan@broadcom.com,
+	f.fainelli@gmail.com,
+	vincent.guittot@linaro.org,
+	etienne.carriere@st.com,
+	peng.fan@oss.nxp.com,
+	michal.simek@amd.com,
+	quic_sibis@quicinc.com,
+	dan.carpenter@linaro.org,
+	d-gole@ti.com,
+	souvik.chakravarty@arm.com,
+	Philip Radford <philip.radford@arm.com>
+Subject: [PATCH v10 01/13] powercap: Add enable disable control-type
+Date: Tue,  3 Nov 2026 23:09:55 +0000
+Message-Id: <20261103231007.537082-2-philip.radford@arm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261103231007.537082-1-philip.radford@arm.com>
+References: <20261103231007.537082-1-philip.radford@arm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,74 +74,238 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-Am Sonntag, 1. November 2026, 09:22:55 Mitteleurop=C3=A4ische Normalzeit sc=
-hrieb Jiaxing Hu:
-> drm_sched_stop() does not wait for a threaded handler that is already
-> running. Call synchronize_irq() after it, outside job_lock, which the
-> handler takes.
->=20
-> Before the sync, mask the block's interrupt and clear its raw status, so
-> that an active core cannot signal a completion after it. Do that under
-> job_lock, since rocket_job_hw_submit() arms the same mask under that lock,
-> and only when pm_runtime_get_if_active() returns a positive count: the
-> reset holds no runtime PM reference, and with the domain down a register
-> access takes an async SError.
->=20
-> Igor Paunovic's induced-reset runs on RK3588, including a two-task job th=
-at
-> puts hw_submit() on the IRQ thread, found no fault; as he put it, "this
-> does not show the race is closed".
->=20
-> Link: https://lore.kernel.org/all/20260819073530.6087-1-royalnet026@gmail=
-=2Ecom/
-> Link: https://lore.kernel.org/all/CAEWPSH5mxTbUkNouxm6yecMZYvDowquhvYvhaX=
-Q8HoMtHD5U1g@mail.gmail.com/
-> Link: https://lore.kernel.org/all/20260912113717.6819-1-royalnet026@gmail=
-=2Ecom/
-> Link: https://lore.kernel.org/all/20260916132824.13527-1-royalnet026@gmai=
-l.com/
-> Link: https://lore.kernel.org/all/20260919103422.148834-1-royalnet026@gma=
-il.com/
-> Suggested-by: Igor Paunovic <royalnet026@gmail.com>
-> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-> Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, i=
-nduced reset, JOB_TIMEOUT_MS=3D2
-> ---
->  drivers/accel/rocket/rocket_job.c | 71 +++++++++++++++++++++++++++++--
->  1 file changed, 68 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/roc=
-ket_job.c
-> index 03e5f094f60b..5b2abf40b618 100644
-> --- a/drivers/accel/rocket/rocket_job.c
-> +++ b/drivers/accel/rocket/rocket_job.c
-> @@ -401,9 +401,74 @@ rocket_reset(struct rocket_core *core, struct drm_sc=
-hed_job *bad)
->  	drm_sched_stop(&core->sched, bad);
-> =20
->  	/*
-> -	 * Remaining interrupts have been handled, but we might still have
-> -	 * stuck jobs. Let's make sure the PM counters stay balanced by
-> -	 * manually calling pm_runtime_put_noidle().
+Add functionality to disable or enable the Powercap control-type by writing
+directly into sys/class/powercap/arm-scmi/enabled.
 
-Also, why are you changing the original comment here?
-The new wording below, does say essentially the same and you're changing
-it again the next patch.
+Signed-off-by: Philip Radford <philip.radford@arm.com>
+---
+V9->V10
+- changed control-type enable writes to snapshot per-zone state instead of
+  aggregate
+- cancel enable/disable writes if a root child zone is not configurable
+- roll back changed zones on failure
+- changed control-type enable reads to report enabled if any root child zone
+  is enabled
+---
+ drivers/powercap/arm_scmi_powercap.c | 175 ++++++++++++++++++++++++++-
+ 1 file changed, 174 insertions(+), 1 deletion(-)
 
-[...]
-
-> +	/*
-> +	 * No handler is running now, but we might still have stuck jobs. Let's
-> +	 * make sure the PM counters stay balanced by manually calling
-> +	 * pm_runtime_put_noidle().
->  	 */
->  	scoped_guard(mutex, &core->job_lock) {
->  		if (core->in_flight_job)
->=20
-
-
-
+diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+index ab66e9a3b1e2..ba398048bf21 100644
+--- a/drivers/powercap/arm_scmi_powercap.c
++++ b/drivers/powercap/arm_scmi_powercap.c
+@@ -33,13 +33,171 @@ struct scmi_powercap_zone {
+ 
+ struct scmi_powercap_root {
+ 	unsigned int num_zones;
++	bool enabled;
++	struct list_head node;
+ 	struct scmi_powercap_zone *spzones;
+ 	struct list_head *registered_zones;
+ 	struct list_head scmi_zones;
+ };
+ 
++static LIST_HEAD(scmi_powercap_roots);
++static DEFINE_MUTEX(scmi_powercap_roots_lock);
++
+ static struct powercap_control_type *scmi_top_pcntrl;
+ 
++static bool scmi_powercap_is_control_type_child(const struct scmi_powercap_zone *spz)
++{
++	return spz->registered && !spz->invalid &&
++	       spz->info->parent_id == SCMI_POWERCAP_ROOT_ZONE_ID;
++}
++
++static int
++scmi_powercap_read_root_children_enable_state(struct scmi_powercap_root *pr, bool *mode)
++{
++	struct scmi_powercap_zone *spz;
++	bool enabled;
++	int i, ret;
++
++	*mode = false;
++
++	for (i = 0; i < pr->num_zones; i++) {
++		spz = &pr->spzones[i];
++
++		if (!scmi_powercap_is_control_type_child(spz))
++			continue;
++
++		ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id, &enabled);
++		if (ret)
++			return ret;
++
++		if (enabled) {
++			*mode = true;
++			return 0;
++		}
++	}
++
++	return 0;
++}
++
++struct scmi_powercap_zone_state {
++	struct scmi_powercap_zone *spz;
++	bool prev_enabled;
++	bool changed;
++};
++
++static int
++scmi_powercap_control_type_set_enable(struct powercap_control_type *pct, bool mode)
++{
++	struct scmi_powercap_zone_state *states;
++	struct scmi_powercap_root *pr;
++	struct scmi_powercap_zone *spz;
++	int num_zones = 0, nr_states = 0;
++	int i, ret = 0;
++
++	mutex_lock(&scmi_powercap_roots_lock);
++	list_for_each_entry(pr, &scmi_powercap_roots, node) {
++		for (i = 0; i < pr->num_zones; i++) {
++			spz = &pr->spzones[i];
++
++			if (scmi_powercap_is_control_type_child(spz))
++				num_zones++;
++		}
++	}
++
++	states = kcalloc(num_zones, sizeof(*states), GFP_KERNEL);
++	if (!states) {
++		ret = -ENOMEM;
++		goto out_unlock;
++	}
++
++	list_for_each_entry(pr, &scmi_powercap_roots, node)	{
++		for (i = 0; i < pr->num_zones; i++) {
++			spz = &pr->spzones[i];
++
++			if (!scmi_powercap_is_control_type_child(spz))
++				continue;
++
++			if (!spz->info->powercap_cap_config) {
++				ret = -EOPNOTSUPP;
++				goto out_free;
++			}
++
++			states[nr_states].spz = spz;
++
++			ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id,
++				&states[nr_states].prev_enabled);
++
++			if (ret)
++				goto out_free;
++
++			nr_states++;
++		}
++	}
++
++	for (i = 0; i < nr_states; i++) {
++		spz = states[i].spz;
++
++		if (states[i].prev_enabled == mode)
++			continue;
++
++		ret = powercap_ops->cap_enable_set(spz->ph, spz->info->id, mode);
++		if (ret)
++			goto revert;
++
++		states[i].changed = true;
++	}
++
++	goto out_free;
++
++revert:
++	while (i--) {
++		spz = states[i].spz;
++
++		if (!states[i].changed)
++			continue;
++
++		powercap_ops->cap_enable_set(spz->ph, spz->info->id,
++			states[i].prev_enabled);
++	}
++
++out_free:
++			kfree(states);
++
++out_unlock:
++			mutex_unlock(&scmi_powercap_roots_lock);
++
++			return ret;
++}
++
++static int
++scmi_powercap_control_type_get_enable(struct powercap_control_type *pct, bool *mode)
++{
++	struct scmi_powercap_root *pr;
++	int ret = 0;
++
++	*mode = false;
++
++	mutex_lock(&scmi_powercap_roots_lock);
++	list_for_each_entry(pr, &scmi_powercap_roots, node) {
++		ret = scmi_powercap_read_root_children_enable_state(pr, &pr->enabled);
++
++		if (ret)
++			break;
++		if (pr->enabled) {
++			*mode = true;
++			break;
++		}
++	}
++	mutex_unlock(&scmi_powercap_roots_lock);
++
++	return ret;
++}
++
++static const struct powercap_control_type_ops scmi_powercap_control_type_ops = {
++	.set_enable = scmi_powercap_control_type_set_enable,
++	.get_enable = scmi_powercap_control_type_get_enable,
++};
++
+ static int scmi_powercap_zone_release(struct powercap_zone *pz)
+ {
+ 	return 0;
+@@ -495,6 +653,16 @@ static int scmi_powercap_probe(struct scmi_device *sdev)
+ 	if (ret)
+ 		return ret;
+ 
++	INIT_LIST_HEAD(&pr->node);
++
++	ret = scmi_powercap_read_root_children_enable_state(pr, &pr->enabled);
++	if (ret)
++		return ret;
++
++	mutex_lock(&scmi_powercap_roots_lock);
++	list_add_tail(&pr->node, &scmi_powercap_roots);
++	mutex_unlock(&scmi_powercap_roots_lock);
++
+ 	dev_set_drvdata(dev, pr);
+ 
+ 	return ret;
+@@ -505,6 +673,10 @@ static void scmi_powercap_remove(struct scmi_device *sdev)
+ 	struct device *dev = &sdev->dev;
+ 	struct scmi_powercap_root *pr = dev_get_drvdata(dev);
+ 
++	mutex_lock(&scmi_powercap_roots_lock);
++	list_del(&pr->node);
++	mutex_unlock(&scmi_powercap_roots_lock);
++
+ 	scmi_powercap_unregister_all_zones(pr);
+ }
+ 
+@@ -525,7 +697,8 @@ static int __init scmi_powercap_init(void)
+ {
+ 	int ret;
+ 
+-	scmi_top_pcntrl = powercap_register_control_type(NULL, "arm-scmi", NULL);
++	scmi_top_pcntrl = powercap_register_control_type(NULL, "arm-scmi",
++							 &scmi_powercap_control_type_ops);
+ 	if (IS_ERR(scmi_top_pcntrl))
+ 		return PTR_ERR(scmi_top_pcntrl);
+ 
+-- 
+2.34.1
 
