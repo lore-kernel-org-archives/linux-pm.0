@@ -1,71 +1,98 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.198
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793663311;
-	b=P6km7OOKIYB7ocVPHorndqdz5Xj7P2u/zDa/GQSGLRq8DVi7IxCkauG76Wxp6D/yd/pz
-	 Lt7ewCIqLFoa37OagvxIqRA3oPsBOfk4xrN87KIdg9Mjien68Wacs5jj+3r2DZa34aYiz
-	 J/iLKOiNC5/3/ZTFIqdQdYhDPxij7XR/5keQvfO2uPbcaUyngFQIxuNK2D2xzvZ49fao/
-	 xMeWpxNUtgpMluldneIzUlm7LNgFx5vKrqlrMRdP157bjnzsP1xynnsBUoZrPDvOXWCmL
-	 2PE99Zz1dJCaur0L20XakCJpfGZPbNdnzaojMaFKW+drmb52gWOD2qgC9vLRVU6O5eA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793663311;
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.161.42
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793665535;
+	b=uXycVqL4a0ix+RAH7g2v8AhHAxYXvtJV4itdrBfPvRSCrbycAeiaEXbhpdKIvNFiqDm1
+	 i82maOREHaS95TIK6XspS0gE02HxwticceyRzDHbt+5cDu5ULLoR1d4b61rhBJ7cuL62W
+	 0tWtrbsMNGUvCOvaN6g5zNP714qpv7hMOVVec9u84ZmLLdkAVVCZa5ZBO1h6E31f77kEC
+	 yXXbBttt2J12UuuFSuXik3yESXrJrdEaABekBAANHX2y13+mDW/e0zjEg0/0RcgSFoDAa
+	 Dkt6N6kRAoQzdDEEhVTN169LMkjo9GNtgT6EqMykuvTTnd9wz3mhfvrwbjm0ofWCGvA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793665535;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
-	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
-	bh=IGU12cZi2tmQMvp1fhf4MEtvE65rIlZACEHRBr3EMUM=;
-	b=L1/EoGYFMkftNombaQPVbcolIPKt4yNgo4FJiLIffKnM7UsGjFd6UMmhhZ+GrCakcGOq
-	 iplKfZDtcCnHPM6geSoCoBmbWXYIIjvsafFYXTQToLV1uSokLnDH3glSe8U/XPilo49Nj
-	 0h5HnPphIFnEkSUC38GEPXT4VQP4uzFFn1Dg5RbThJMa9ty3tGm/7L2XJ4qg11FTcKXGA
-	 oPI9Fy2+PyL+putf2+DW9GICWEpmRFvYhInseUe7ZHItMXg6atzlihURiaFZW8UXMBWkn
-	 elOQfecGdqeXD8ElfsIkLP/BOTVQeP11UO47j0867O/3zs4+D6KGBDGyGhJKGwLEEEQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=google.com;
-	spf=pass smtp.mailfrom=flex--wvw.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=W2KfG5nC;
-	arc=none smtp.remote-ip=209.85.214.198
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
+	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
+	 Content-Type;
+	bh=5+VCCiM+D2qWYPG5zUwtRFwnvX7JDWRjCGt0HwL+73c=;
+	b=BJmbMGPMz9mNNGb6Sk5AiA2AiTAVLxlF+DHypqxkSVBQHiOv8gSaQUf3SFuBzybCGeBy
+	 Hejks/AoQU86PI3HgOeCTDdwNKg5fnNqU2EGq/tDp21Da+wvn4DfjF9TlpTT9UZrYfEz4
+	 BmhcCqAIy3/3aBubm/nRo7THtZS0Oy4wAaViB1HndbqGkIW9FPxt27tbVkm/ySbRksuPa
+	 99MRfAMG1bCrxI/wRckg3y0NZ71XejKHEX4iFMC3qctAN0hqiLEu2TFYH8HTSWV9iyI38
+	 HM+6jZiEP0lyalzKas/OtjMwK0G30my7+zVXyof7lhKC7Hp6wejQV+RY5Yseb0VM7Aw==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CQxDHnhh;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.161.42
+Received: from mail-oo1-f42.google.com (mail-oo1-f42.google.com [209.85.161.42])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 749D3606A334
-	for <linux-pm@vger.kernel.org>; Mon,  2 Nov 2026 23:48:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 749D3606A334
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wvw.bounces.google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77953606A324
+	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 00:25:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 77953606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=W2KfG5nC
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2eaf3f829b3so36843725ad.3
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 15:48:30 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CQxDHnhh
+Received: by mail-oo1-f42.google.com with SMTP id 006d021491bc7-7143451981fso2605415eaf.3
+        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2026 16:25:35 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793665534; cv=none;
+        d=google.com; s=arc-20260327;
+        b=LKV4P7KT+S0oIwnc05VKdSrLbJyTXW0810cKh+oq0cv8bvNABurBDIaaUd4yl+lGMe
+         /FfzoOf6grQrvZlYMGpZCKGdwX6hsC9xukmOpZryGRzFSmDHn7ll1H7ChgGdWrOLwwkh
+         TNuWdzD2pb7zm/AlSWlDpX82zTCKmxbykMcAfRRePWb993Bj7GdJJbBliXU7hTxl1ajw
+         4NpICAiAcANpRvBM83dMZLsZFS1sO9LYOQrJZOtuQSWCTm/zjBmifmMRJeLpy3CPzlv3
+         UlZu6XrGdLFIgAVCdgHnVwIhTNbqQfNW6BdhdlkyR3wNY+pXyFyN3A2bT2MX0FyPkoz3
+         CGlQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=5+VCCiM+D2qWYPG5zUwtRFwnvX7JDWRjCGt0HwL+73c=;
+        fh=AMDk5MWv7Id71qPUUme4X7eYHY76M4RV2p4QrtQnXyc=;
+        b=Vp4pOu4zTdZw6m0rp7FvAS/QX7KMZQEM0uih0sOgXIBM37vFDhF/gT+M68fDSzGe4P
+         cMy0SZ191QCcI9JJNtCTu5D+/AMEIrooQ/bY2mDTMVLa7CpV9ICrspo1uRvdnf3O9B1i
+         +GOU+cWPDhQoqvNeTurdkGWJ2TPvLrZw9jyXP+N0tZjAyWAl1DtH7mcQk6V2DFgas9/c
+         AowBiPl6nUw16B/6D6Zi87zE/Cn202aV0wrzNbbuSMxEdogbqY1MvOfZJ7fnqWxAJSm9
+         UZ/DPyjQsC+2CvMqFmSyzA91CVR41qAPyfw1PYtrfQGmsTZL1aObTBldgZi4OVHRhHVe
+         t6Xw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793663310; x=1794268110; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=IGU12cZi2tmQMvp1fhf4MEtvE65rIlZACEHRBr3EMUM=;
-        b=W2KfG5nCkXaahHYfdBYaC1C+Tu82n9C0Cs3aOnonE4V1eEw1Gr0v62d6a1UWZwHBsQ
-         xhpXUncfov5Sn51QZhe16GrzZalfaOBrrrVGfHYbm9s1CmBwNC5tfHRG/Id8RadVIhVE
-         CzZJvwJ6A0viyIBIkc+sBN7VaOcUIm5XIEw5WW0T/AJXSpM8otfwQz0/INSlcHecYIi6
-         rOrZ6dig7EdIH2wAHP7P7CD7hy8+JBdTLApTQHiQXq6mAF3578oW2+PsL9vzbakrBMiu
-         9WMbmbn9tKyuTYLWUfY1h+MTHb6J+xmheIfTt3rtGa6j0KfCbfLxsZj3Zbycq/t/5Bna
-         WDfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793663310; x=1794268110;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20260707; t=1793665534; x=1794270334; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=IGU12cZi2tmQMvp1fhf4MEtvE65rIlZACEHRBr3EMUM=;
-        b=qk3NH0J1H0DpZtSUXsEBmNRbHJg+2JV9hygcI1d4+sgmZ0aly1jyrZaoS7lWvLVP9p
-         GT8aGugrdUKXkcC3ZSzp7qKpqqUzQZHFxY4+qlKod3sjIPaS601HXlmOREvsjVgQjZ5J
-         2r96wI8AxXMtGiq/Eeh83MYy04vRSmjgmPb0AbH1k6lp9AIk+slCioAMVazjfi90OMQD
-         nZpOjGvUuIzd2rJjmPjFJgZz/85eeHX53Ir9+djKp1XJhLfoHdEC9Q18DZKMk6IH5Rag
-         x+QlP9NTiU7fzQLMl/WvyoQr7sKreZduTj79U9qWdEo5ZRCLpYnBHBqe6sUccwPpMj/7
-         8vPQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxsg8yUOXbBmShx51oL+ujuR0MM1G5GeTyGqTXEvcuwY3g3bjLNapAhr1bCaBIJ2pnQF4Gt3tMMQg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9jt5wgW3FTR9EAW8aWDkHrf1RSxxtQ73yaakyX3c67G1a0FXFv
-	pYyWFbhnnx/2NZNlVWS+eZ897AK3s1jnjy4LlAcjfl7pPLZlVwNSdRRsIpQ8nk75E8aH8Q==
-X-Received: from plil13.prod.google.com ([2002:a17:903:17cd:b0:2eb:515:b000])
- (user=wvw job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:2442:b0:2e2:cebe:d811
- with SMTP id d9443c01a7336-2eb3646de8amr99595635ad.46.1793663309587; Mon, 02
- Nov 2026 15:48:29 -0800 (PST)
-Date: Mon,  2 Nov 2026 23:48:13 +0000
+        bh=5+VCCiM+D2qWYPG5zUwtRFwnvX7JDWRjCGt0HwL+73c=;
+        b=CQxDHnhhqSffPR3aIxjd7o9Vao6/8xQZTATB+KrIJd06wLjpZd0wj2hlJC7kUu04UM
+         HmpPTQXEf0LodlLVLDgSNnU5TrNbDEUvZ6QM0VLa131GPlzvYWM86WhZyU7++ZvBVjFW
+         faPe/9HJjRQfpBxzvkZdaWVWZj62AREwBJJgOIcZwIq4RYwJ5L41c6NZP+6imT7mOS9N
+         FBBkV0yk552uoKhusEsleLuKGujPJ9dzhDYO5JfFlLa48BvhdpzflQIIpdPaPwZ6PTBe
+         HoOCl41cQE3AWjuxB3Qzvg9rstFTpPotYHCHEmwDyU2esTyEj0ZGHPrTQv3bLv47jj5b
+         UJ4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793665534; x=1794270334;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=5+VCCiM+D2qWYPG5zUwtRFwnvX7JDWRjCGt0HwL+73c=;
+        b=ET+amE0VeQ6ZoE97hJULM2+jk8U1cv1z25hKPwOzoqOmZJ/xYTij5PrrZSijXEVjVF
+         lN8eDL7Dwvmp8XEDGFAEGKkPqutw6+g15wLe9Dj+nO5Pvk1EseY7nagRCpvzwu754JVT
+         92A2CDM28tOSUnUE2sLPwonZxI04RMhUoJNsMse7XF6SZGODyFTBeauCLfd9zk64Z+tr
+         0tmw1OxARcY0tmvdFhWMcp14j2jq225sEvwbtJVV1ppY1WfkE4oLb/lH37K/NFtYF/FN
+         9lhnDGCTabgNWNTYosnkZE+jZh/oHChJN5yzPutb92UpCuDM5YJVEd/0k6aHZ9KbG5CE
+         NXXQ==
+X-Gm-Message-State: AFq9FYLftNT10/QZwgjyE78nmGGrryE9A52+H3esh5/yP1WBypR7dktz
+	1x0Dxik/T6OCFQH8H6u+2KejyadxCFAUcCLaJSlKu+lRR7yTqCSUN1KEGOOzvLhmea0uctyrq28
+	o9dIoA522AyS+t31NwYAx1SbTxN7n/QU=
+X-Gm-Gg: AYBFou1m458CpfRNI9Sc5tKSTyhUyIzaDakqV6TgE6bx6gxVS7YmZ/xid+QnTiDu8Mf
+	c/vx51+CytzMnJ/UESY7J6pYgUAWuxqV0PQCBwRXn1h3bKRyV5otg2pUlgqIpCmQBDZ+CVRsE1k
+	Du0WDRZ9l7LDu5Ny7mxcb0ra9WJQ6e3TRh0aJPIKO8rLOmUWfRlWLhNbboWpOV6a3a08UTuuNYn
+	gVbcna6KPibPaUFGgzJIUddcuKw57b44oJsD3Dfxr17YsZg/utk2o8m1q2ex9SUATAklg7m3X5E
+	nX314Ur68dLAle32Fouq1DJ31S06RbX3yPDx3s3Ivhm2o9xHTMPooBB+GR36UY+IXBc9TpO+pAU
+	Tsdl7hQEew2jzo1cVJVHV5jB0oOEPVHD3IUY=
+X-Received: by 2002:a05:6808:6718:b0:557:308a:9e9a with SMTP id
+ 5614622812f47-5640dcfd646mr7838339b6e.21.1793665534370; Mon, 02 Nov 2026
+ 16:25:34 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,105 +101,45 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261102234813.1069156-1-wvw@google.com>
-Subject: [PATCH] arm64: suspend: Save and restore TPIDR2_EL0 across CPU suspend
-From: Wei Wang <wvw@google.com>
-To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>
-Cc: Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, linux-arm-kernel@lists.infradead.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org, wei.vince.wang@gmail.com, Wei Wang <wvw@google.com>
+MIME-Version: 1.0
+References: <5162355.31r3eYUQgx@rafael.j.wysocki>
+In-Reply-To: <5162355.31r3eYUQgx@rafael.j.wysocki>
+From: Zak Brighton Knight <zakbrightonknight@gmail.com>
+Date: Tue, 3 Nov 2026 00:25:23 +0000
+X-Gm-Features: AclHuK-Tz4WuE1jJ3kcspMgxEl_lYHhIlKe-fuOjCB8i52WShhNl685O90vHwlI
+Message-ID: <CAJsH6h97tOHOmiG30un8_h6-mFNNxccwsB295z7N892vVrYgbg@mail.gmail.com>
+Subject: Re: [PATCH v1 0/4] cpufreq: Fix synchronization with system suspend/resume
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Christian Loehle <christian.loehle@arm.com>, Doug Smythies <dsmythies@telus.net>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	Mario Limonciello <superm1@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
-On systems with FEAT_SME, TPIDR2_EL0 is part of userspace thread state:
-the AAPCS64 SME ABI uses it as the ZA lazy-save pointer, and the kernel
-context-switches it eagerly in tls_thread_switch(). While a task is
-running, the live register is the only copy of its value.
+ Mon, 2 Nov 2026 at 19:52, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> This series fixes issues related to the synchronization between cpufreq
+> and the intel_pstate driver with system suspend/resume mentioned here:
+>
+> https://lore.kernel.org/linux-pm/CAJZ5v0hT6aoX4tuJM+rO_5iequFc_7rEXCoaFnHoJBaH3JP4KA@mail.gmail.com/
 
-The architecture defines TPIDR2_EL0 as UNKNOWN after a warm reset, so
-a CPU power-down through PSCI CPU_SUSPEND or SYSTEM_SUSPEND can lose it.
-cpu_do_suspend() and cpu_do_resume() already preserve TPIDR_EL0 and
-TPIDRRO_EL0, but not TPIDR2_EL0.
+Thanks for this. I tested the series on top of 7.4-rc1, with lockdep
+enabled, on the ThinkPad T520 where I hit the problem (i7-3840QM, no
+HWP, coreboot). One S3 cycle per case, compared with the Fedora 7.2.13
+kernel on the same machine. The numbers are the MSR_IA32_PERF_CTL
+ratio on all CPUs before suspend -> after resume:
 
-For CPU idle this is harmless: current is the idle task, and the next
-context switch reloads TPIDR2_EL0 from next->thread.tpidr2_el0. For
-suspend-to-RAM and hibernation, however, cpu_suspend() runs in the
-context of the userspace task that wrote /sys/power/state, and that
-task returns to EL0 with an UNKNOWN TPIDR2_EL0. On hardware where the
-reset value is non-zero, the next SME ABI lazy-save check in that
-thread faults. For example, bionic's fork() -> clone() ->
-__arm_za_disable() -> __arm_tpidr2_save() loads from the garbage
-pointer:
+- passive, performance: 38 -> 28 on 7.2.13, now 38 -> 38
+- the same with CPU3 offline across suspend: 38 -> 28, now 38 -> 38
+- passive, userspace at 2.0 GHz: 20 -> 28 on 7.2.13, now 20 -> 20
+- passive, schedutil (also with CPU3 offline): fine on both
+- active, performance: 38 -> 38 on both
+- active, powersave: fine on both
 
-  # echo mem > /sys/power/state; true
-  signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0xa3bad11bcaf72e93
-      x16 a3bad11bcaf72e89
-  #00 pc ... libc.so (__arm_tpidr2_save+24)
-  #01 pc ... libc.so (__arm_za_disable+32)
-  #02 pc ... libc.so (clone+480)
-  #03 pc ... libc.so (fork+60)
+With cpufreq dynamic debug on, each "cur 3800000 kHz -> target 3800000
+kHz" line after "Resuming Governors" is now followed by the two
+transition notifications, so the driver gets called for every policy;
+on 7.2.13 they were missing. No lockdep reports or warnings over the
+8 cycles. I haven't tested HWP or hibernation.
 
-Having firmware zero TPIDR2_EL0 on warm reset avoids the crash. It is
-not enough on its own, though: a thread that enters the kernel with a
-lazy save pending (TPIDR2_EL0 pointing at a valid TPIDR2 block) would
-see TPIDR2_EL0 == 0 on return. It would then wrongly conclude that ZA
-had been committed and restore stale data from its save buffer. The
-kernel owns this state and must preserve it.
-
-Save TPIDR2_EL0 in cpu_do_suspend() and restore it in cpu_do_resume()
-when SME is present. Placing this in proc.S covers both cpu_suspend()
-and hibernation. The new slot uses ctx_regs[14]; sp moves into what was
-previously tail padding, so sizeof(struct cpu_suspend_ctx) stays 128
-bytes. sp is only accessed through the CPU_CTX_SP asm-offset.
-
-Fixes: a9d691585950 ("arm64/sme: Implement support for TPIDR2")
-Signed-off-by: Wei Wang <wvw@google.com>
----
- arch/arm64/include/asm/suspend.h | 2 +-
- arch/arm64/mm/proc.S             | 8 ++++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
-index eb60c9735553..2cc5fb405769 100644
---- a/arch/arm64/include/asm/suspend.h
-+++ b/arch/arm64/include/asm/suspend.h
-@@ -2,7 +2,7 @@
- #ifndef __ASM_SUSPEND_H
- #define __ASM_SUSPEND_H
- 
--#define NR_CTX_REGS 14
-+#define NR_CTX_REGS 15
- #define NR_CALLEE_SAVED_REGS 12
- 
- /*
-diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
-index 7afbece885a3..c7b7fa6491c3 100644
---- a/arch/arm64/mm/proc.S
-+++ b/arch/arm64/mm/proc.S
-@@ -103,6 +103,10 @@ SYM_FUNC_START(cpu_do_suspend)
- alternative_if ARM64_HAS_TCR2
- 	mrs	x2, REG_TCR2_EL1
- 	str	x2, [x0, #104]
-+alternative_else_nop_endif
-+alternative_if ARM64_SME
-+	mrs_s	x2, SYS_TPIDR2_EL0
-+	str	x2, [x0, #112]
- alternative_else_nop_endif
- 	ret
- SYM_FUNC_END(cpu_do_suspend)
-@@ -142,6 +146,10 @@ alternative_if ARM64_HAS_TCR2
- 	ldr	x2, [x0, #104]
- 	msr	REG_TCR2_EL1, x2
- alternative_else_nop_endif
-+alternative_if ARM64_SME
-+	ldr	x2, [x0, #112]
-+	msr_s	SYS_TPIDR2_EL0, x2
-+alternative_else_nop_endif
- 
- 	msr	sctlr_el1, x12
- 	set_this_cpu_offset x13
--- 
-2.56.0.385.gac671c819a-goog
-
+Tested-by: Zak Brighton Knight <zakbrightonknight@gmail.com>
