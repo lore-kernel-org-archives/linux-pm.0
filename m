@@ -1,53 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793697863;
-	b=Xwoger5/H+abrOTZ3Z4qM390lxGfYWEgbl7oWgJQzkoNilXXagwRR0BD/TBgMCA5W3Ya
-	 U0W1s8f73mp3rBwaAAuOjnN6OGnLpRplL77b3Df/V+ZEiKUifxPMPsBs9kt72hxJ0Xqc+
-	 OQU2EpqZ5rO5XQrvKTIJKsMsyDRD6d2pIkRws+9TCwDoLjpx+LKQl+drdv1qu7M2PVwQ9
-	 Tft4jBhz0r3hrXoRSlU0PE0TIJGqmuUrenUF0qOdoBRnKUSOCUgyxBK48AQuSFKSKAmjC
-	 BXsO+13Z2IL2c8qGwi5KseI0wn4Cj6P4nszH/ZFuNr/rWgmrAmK53Czjj5hgr92lJNg==
+	t=1793698645;
+	b=2p1af+hsmjYlItOXAVn143L3QraC27524ipFRRrCx8GTvMdKdlgPKa6VMX6C2UHK11GO
+	 geH5j6iZty+kZx79Phx/lBLpS+T5J2yfsWoQ1R323/xH9V1B7frHcS7VDOAEE6vyr5m69
+	 E4GCBHe8EHAa15ncAZ64zOB7h7ntpYk1mk/qXGzgfwrJs+2JOeOIsSi0jTDTLc2LHbY+F
+	 iYCi9GwIELpY5iDbP4hj5SkzwsSJIZukgQcTpdvyFMIMrw55fnWgf/PbQHDZ2y/qURLHn
+	 QJ/fI53sCbkeFQK870GmzxMQtRfWjfyVgqEiklErpGxVf4zp88iacwV0LcP7hmWeD0g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793697863;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=My5g1/hWyVtaqeuolzLXvupHyj8u+fkqRULATYn+MrE=;
-	b=rzWtJcqRox8+ppLm5o1wFeASZuDfVjnkvmGpdWl8fWtfEy0cq7k7SxVLaOP4TczK4r6J
-	 sVAaGUVdii+iOvbWrhRgTsudB2w1S2n5gpdB2KJctCJqEvaKxMqUehlEa80iJ4vVIIK3X
-	 H905ZUMBvR7OaUoXlaGQk2VuwxzkwS+T0/DoEU3wHMcZV63pqK1bEBPm8LnvA341uMfvl
-	 LXlhVusyo/XQRBaKo66hcC4HCUy/AYORozcWs5+zbKO9kElEStLX/2Du/U+p4SwMI9Mk/
-	 Cfb+u0BlX2AgvPFPa+Q/g+660hs/HY31t34Dgi0fg/WONJIn6xIsOHon4RGj//i3hSw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793698645;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:From:Subject:To:Cc:References:
+	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=lZRs1mh8clZfojHLrAwgtXfzj6EvyuT7nj0JvBT+Z5E=;
+	b=SuLhe58brUaeJIuxxT4HgZo8AZ7LSlpoE9LODRrtpeR4iQWTk+p2I1mSiPWudktJwTEz
+	 Ffrhtjg0pKStC7elhWxAVm//Rh6bWuEjBVo4zWC9GIqL01RpGYRZ0EMrs9+ZyTF9C49nb
+	 chKstneiXsUEmM6aGvfaeAVx3ChLaARZ7HA+769hbuYwHwb91yVXLeJ1XgqAEXlpsJIBl
+	 K+DajQ75Ykv0RXc+dEmK6z9I5r8msoTesIa+EMT2sB9bNDcw/p3B97/fGPOhLHZTJYzgh
+	 A/lm7Q/e9sXeKJt9yFxKKHlSA2wXE9eMRfbE+HqmrXBz+wBBdw/EKIrAzEVXkHStYQg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FJYe8WqC;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1179606A327
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 09:24:22 +0000 (UTC)
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=j6z1gFE9;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 0DC39606A324;
+	Tue,  3 Nov 2026 09:37:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0DC39606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FJYe8WqC
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD25C1F00919;
-	Tue,  3 Nov 2026 09:24:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793697862;
-	bh=My5g1/hWyVtaqeuolzLXvupHyj8u+fkqRULATYn+MrE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=FJYe8WqCtSr8oQHf9X68ndEXwg6FcOpCaXeFHLKH5ED3M6xW2ukecnW62dR5UVK15
-	 C3ohnjh1E0IIr26thRh4mqpFvZj58WhTs6wsXu/9VGDxG/zNKzGv3d39fDtYfHVXj1
-	 eojoPUc9z3TOEEWUFTEZ0gCFZKOfQrNvz5gqRYlEYDfTf4I9IitwXCNzSs33pI00e/
-	 XY2yx+fBNy4Oe2fYzCCDGUhUUqYdRemRq+u0am4NZsFEWi3Mjr9lRXhg7ZYL7eQXsK
-	 KXQPNwyZTgKo3nsIUlvWomMYeajy9wJSosHlOOxsKl9+W203wM659T4FAyjtxXdIkG
-	 4Jy1FzHxTJsmA==
-Date: Tue, 3 Nov 2026 09:24:17 +0000
-From: Lee Jones <lee@kernel.org>
-To: Chris Morgan <macroalpha82@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
-	maccraft123mc@gmail.com, heiko@sntech.de, sre@kernel.org,
-	Chris Morgan <macromorgan@hotmail.com>
-Subject: Re: [PATCH V2 0/4] Fix Incorrect State of Charge for RK817
-Message-ID: <20261103092417.GG13023@google.com>
-References: <20261102143942.305293-1-macroalpha82@gmail.com>
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=j6z1gFE9
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1E74F16F3;
+	Tue,  3 Nov 2026 01:37:20 -0800 (PST)
+Received: from [10.57.15.76] (unknown [10.57.15.76])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BE8E73F632;
+	Tue,  3 Nov 2026 01:37:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793698643; bh=7QDQ7pc/gnWwpqj4MUth7NieA0YgqoBhtCAT6FAK5mk=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To:From;
+	b=j6z1gFE9FN6ZhKEuSuCr1zTfgj6efFtTQmZpYQKWkpGAqWkIxXGcGYEdE6tJQtL0k
+	 Fmf4hivKP1c0+iTQX1hXn4BLPhjHTd1TRISiMjuloQmS0ylhsTnU0qm+QBLWeDaPld
+	 9z5MEO2WiiV58NnfR9CUDT/Osmgpx14CozX6muwc=
+Message-ID: <2c3df215-3f64-4697-805f-11e6e39c7d4d@arm.com>
+Date: Tue, 3 Nov 2026 09:37:51 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -57,77 +53,82 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261102143942.305293-1-macroalpha82@gmail.com>
+User-Agent: Mozilla Thunderbird
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH] PM: EM: Rank boost and non-boost frequencies separately
+To: Guo Chen <guo.chen@oss.qualcomm.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Matthias Kaehlcke <mka@chromium.org>,
+ Vincent Donnefort <vincent.donnefort@arm.com>, Len Brown <lenb@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, xin.liu@oss.qualcomm.com,
+ aiqun.yu@oss.qualcomm.com, tengfei.fan@oss.qualcomm.com,
+ tingwei.zhang@oss.qualcomm.com, Pavel Machek <pavel@kernel.org>
+References: <20261030-em-rank-boost-separately-v1-1-238a6b2bb888@oss.qualcomm.com>
+ <3ed2a68b-d066-4a3a-b3ed-30a5ca00ae38@arm.com>
+ <738c61fa-0397-4faa-acae-e9b42f901d1d@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <738c61fa-0397-4faa-acae-e9b42f901d1d@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, 02 Nov 2026, Chris Morgan wrote:
+Hi Guo
 
-> From: Chris Morgan <macromorgan@hotmail.com>
+On 11/3/26 07:16, Guo Chen wrote:
 > 
-> Users of the popular firmware RockNIX had identified a few bugs with
-> accurately displaying the correct state of charge for RK817 battery
-> devices. With the help of one user analyzing the code with Claude
-> they were able to identify a few potential bugs along with potential
-> solutions which I was then able to verify. These bugs are as follows:
-> 
-> 1) Incorrectly clamping a value with a max of 10000 instead of 100000.
-> This bug caused the state of charge to sometimes read as 10% instead
-> of 100% as it should have.
-> 
-> 2) Using the boot_voltage value to calibrate the battery in scenarios
-> where it could not be trusted. The boot_voltage register populates
-> immediately at power-on, and the driver would check if this value
-> was older than 30 minutes before using it. Unfortunately when combined
-> with the default behavior of the bootloader to turn the device off
-> when plugged in (requiring a user to explicitly power the device on)
-> the boot_voltage and boot_timer values were wrong. The boot voltage
-> would not account for any voltage added while the device was off,
-> and the boot_counter that tracks the time the device was off would
-> be reset. To fix this we changed the behavior to (outside of first-boot
-> scenarios) use a value saved to NVRAM, the value from the coulomb
-> counter directly, and an OCV lookup from the live battery voltage,
-> and then using those values provide an initial "guess" of the state
-> of charge and recalibrate with the OCV voltage once it is available.
-> 
-> Included in this series is another fix that would cause the battery
-> to drain while the system was shut down. This patch replicates the
-> Rockchip BSP driver to clear a shutdown register. Unlike the BSP there
-> is no behavior to bypass this since no boards have yet been observed
-> using the SYS_CAN_SD bypass on the BSP kernel.
-> 
-> Changes Since V1:
->  - Dropped the sleep fixes, as I would like to test them a bit more
->    extensively first.
->  - Dropped the devicetree parameter, as since no boards have *yet*
->    needed to alter the default behavior there's no need for it.
->  - Changed the behavior of how we select the initial SOC and made
->    it its own function to ease in code readibility. This new method
->    was tested with various boot scenarios. The average error was less
->    than 5%, and in a worst case scenario where the device was
->    discharged to 0%, then left to charge at the bootloader the device
->    over-reported its state of charge by about 10%. When this occurred
->    the device reported its SOC as 100% but that it was charging, which
->    was corrected by the new OCV logic that kicked in once charging
->    completed.
->  - Scrapped the more complicated sleep fix in favor of simply telling
->    the battery to recalibrate at full after suspend, in case of a 
->    counting anomaly. 
-> 
-> Chris Morgan (4):
->   power: supply: rk817-charger: Fix NVRAM SoC Value
->   power: supply: rk817-charger: Resolve boot state of charge from the
->     coulomb counter
->   power: supply: rk817-charger: Clear SYS_CAN_SD register by default
->   power: supply: rk817-charger: Clear full charge cal on resume
-> 
->  drivers/power/supply/rk817_charger.c | 313 ++++++++++++++++++++-------
+> On 11/2/2026 11:28 PM, Lukasz Luba wrote:
+>>
+>>
+>> On 10/30/26 08:10, Guo Chen wrote:
+>>> em_compute_costs() ranks all the frequencies of the table, boost ones
+>>> included. A non-boost frequency can be marked inefficient only because
+>>> a faster boost frequency has a lower or equal cost, e.g.
+>>>
+>>>    3.9 GHz  4.0 GHz (cost C)  4.1 GHz (boost, cost C)
+>>>
 
->  include/linux/mfd/rk808.h            |   3 +
+[snip]
 
-Acked-by: Lee Jones <lee@kernel.org>
+>>> +        bool boost = table[i].frequency > max_nonboost;
+>>> +
+>>> +        if (boost != prev_boost) {
+>>
+>> We expect in EM fwk that the frequencies are sorted ascending
+>> and we return error during setup if the driver callback fails
+>> to provide that.
+>> Therefore, in this code we don't have to deal with random
+>> 'boost' labels with gaps between.
+>>
+> Hi Lukasz,
+> 
+> Thanks for the review.
+> 
+> You are right. The boundary is derived from the highest non-boost
+> frequency, so with an ascending table the boost states always form a
+> contiguous top segment, and prev_boost is redundant.
+> 
+>> Let's make all OPPs which are 'boost' equally possible
+>> to reach (at least in theory), so label them as
+>> 'efficient'. I think this is fair in 'boosting' case scenario
+>> and energy has not that importance in it.
+>>
+>> So simply something like, would be enough IMHO:
+>>
+>> if (boost)
+>>     prev_cost = ULONG_MAX;
+>>
+> Agreed, this is simpler and gives the same result for the non-boost
+> states. Boost states are no longer compared with each other, which is
+> also a sensible semantic. I will drop prev_boost and use the above in v2.
 
->  2 files changed, 239 insertions(+), 77 deletions(-)
+Cool, please make sure in your new implementation for the
+corner case with the first non-boost OPP from top to be marked as
+efficient (you can even force that).
 
--- 
-Lee Jones
+Regards,
+Lukasz
+
+> 
+> Thanks,
+> Guo
