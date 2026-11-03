@@ -1,71 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.200
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793728800;
-	b=R+3vehu9FXntSYJjINjiVYPKSS4LviB/ApGkPJ4TVy0p5lEpMXl37JpYzp1d4o8ufVmE
-	 6aRc629gCjrvjnDLeePpBfZUY65YlGvTl3IBbYNqcjf7iyrEbg1J2VFmOkfcf3IIkQZLi
-	 qRhP2e0j3/cAVwQGQ3qJU48eUB0dAuJRXKm2LpPaAwxXb/Aj3+VGjoHhj/41s8KQthhCn
-	 cY/klIcLxNCcUwS4KPHKPMH4kCZ5NtQGAp3ZM2mcQwqNijLw2PaxtVdl1qTGfb7yjyh3A
-	 6nLm0yaMQSgq2uhOp2n+/X2mdbpe2aSPRo6rkA60u+e2heozvUlQtj5F8KFcNTZN1Gw==
+	t=1793729950;
+	b=K5K8hz0H+rgdhPs40CsQQTYnXvJ6n1pLfpxqAArZ8YyofKHkrhegGtgfzo1jMkbylCyR
+	 RNCyuF87ehXkYNRexd3C9cOymBWlkgXXtJtG0p7LNikkFpT+vClb869N6GwrDq1NVSQRt
+	 t/n6XRStG+m5Lza3cZTOUj/ysMKobvjEpRXCPL0Hz135/RFy1pW26QDpfnvA7m4fQYu61
+	 l9eTEqCNsS9PO/R9H0WAXFZkWdLSrPAqIYk338CP/APdf5ypeTiqF4cblyAOUcblZFbok
+	 gr2gWsKIfgUnJfg1uE2UJj9ibDQYTOl/9IDUWWPKXAzapnYNJotCE0eKBlpTXCxr9ig==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793728800;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
-	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
-	bh=FPwct+1U9T6oyA5Ruuz5LB/HvShMdpdhhsQD4HMVAhg=;
-	b=R4qPamvUqL5tEHMZ2gsypjStACV2p3w5r/eWWYK2TmNVv56C1OZ0wH3xfNJ2WP9xXj6h
-	 EteVwDIgyOggM+5GB4dk3etHw9St1PRGVhuvG0bBhs17RDKrySxspVWDyHVi4cboKDF8k
-	 moPGhdruKlxZHe4lVUrwloV2zSLSNLwCdidGYdeT0YaeQgmbKP7WdZfPZmLPgZFARR1d8
-	 BMAPR56nj6QsfKUjkaJLL01NKU3RVwUAiCX5KED71V2OougsQngoxmFdBAiS2PkpuW2fv
-	 tpMFwqst9rzCTSS7EDmtDoPiFJwEuQEZ8bl7kp18w2T3HxmkhSB5NmwxseDZEFUQGcA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793729950;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Content-Language:To:Cc:From:Subject:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=S3NR8+tH8Ja8EZBhStdlVvbKqTQGg0M1Pij1uvAsKrQ=;
+	b=gPHO7xZdtmGCsHed+2sxmNJvk3MRdDGlZvhiW4eLgqbEmk6Zn3HleXxkR8QJGycmrOIh
+	 bQUfK8aBd8Ff+NsQ6JfufBoEf8GlGq/RrEQKW40NBfW17RC9tVx/rQbNHMAb5Dr1RMINZ
+	 Q8QfvzwZKiS+64KPyTmZKM92emsKVGu6bTYo1pKOT/ZIfOdFBDECTrFw3LPwMAN1O6nAl
+	 mZ16d8gnIzbKxPP0pgZW2QrNQG8PdS3U5Idhiosbly16/NBE76i9C3bzbeYHD382nyXHS
+	 cFtHqeAtrmHftTkf2QRCKIUFXSbKDz+/i3hdl6uFWoufbM7FrOEUIQhb5Fb6t7tETBQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=google.com;
-	spf=pass smtp.mailfrom=flex--wvw.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=oKWTE9wx;
-	arc=none smtp.remote-ip=209.85.214.200
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2992606D802
-	for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2026 17:59:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B2992606D802
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wvw.bounces.google.com
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=vvGvmaZ1;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5369F606A336;
+	Tue,  3 Nov 2026 18:19:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5369F606A336
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=oKWTE9wx
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2e93e2f72bfso70509495ad.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2026 09:59:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793728794; x=1794333594; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=FPwct+1U9T6oyA5Ruuz5LB/HvShMdpdhhsQD4HMVAhg=;
-        b=oKWTE9wxvvkr6zCRmGOi7MD8BifRNWWeKWlQl288hGhFeyWHixUsNw7NTaikjfsx+E
-         fl/68xwPzPUk2e/UEBmVVs41KowLq0QtKlvhIc47QqPmeD0M1otau9oULB6BOFOgWXIu
-         5aVDEyLHY+EYQ0QJKkPWr1Ja0np0kBEm1xdQKdlv295PWhkpy4fDI/snUTgmU7qN0epA
-         4wbVCoPw/xuYj/dhulM1DJVJxN3lD3yr16y0rwkMyt+0EaHFjkF5fr1M91lTR+AHIsda
-         xaTQtNbiTAHCX4YmdvieCD8sC52zOSmqojGRDrTuu6Z4YmnDC4wgjuZ9AUqzWcUPF740
-         OhgA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793728794; x=1794333594;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=FPwct+1U9T6oyA5Ruuz5LB/HvShMdpdhhsQD4HMVAhg=;
-        b=sYg/48ySKJYeJZHj0joDYq46HRLV6HTbmycnShJ8Q52wbEOOeXkLO6m7kd5H7CUnxd
-         g/wDUe9CYTW826Nn1B9mmXlUWYq8hVtNXDAnOgBRM3ryFIHZoUPSBxFeK3XYm1o8wUZ7
-         MvlmeT1xLxD6LGsnTcyGenI9Wxo23oQSh4+iKkTk3xgVkMrXh4tjZyJLEj9E7EjtijiF
-         8GDspc2kt9Nf4LLHslDA3NWGn1n81o9rfJ4WiKqasIkfYM4TrOKe5PAk2J3AX++AaKaZ
-         lpqTYJzbhKqFsXHm67yCfhtfymeOzF+WQtuV+wgSXoj+xV1olzRN/yzrfl0cqNWyPKOv
-         MZ/g==
-X-Forwarded-Encrypted: i=1; AKwUvByR0mpMPyvO0NkYd4vaBuTD6xWsHZOUmXQtvzgS7j+oSCsNGPnlNEy0jJW3VDjWnYT6ScmQ+E8EIA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+xjAuexlKF52FibiEmZREvgDiV7quzBZh/O9aX77ZS+ul7ID7A
-	BOU6qrp/SKYoElubMRof+75NMHGLCvLJSLdyVs7JVwBso5BQG5xCqTijUlVV3T7mQVVqEw==
-X-Received: from pggs9.prod.google.com ([2002:a63:dc09:0:b0:ccb:62e:3f01])
- (user=wvw job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4b0d:b0:3ac:9e5e:d1a9
- with SMTP id 98e67ed59e1d1-3ae897ec5b1mr11095151a91.20.1793728793847; Tue, 03
- Nov 2026 09:59:53 -0800 (PST)
-Date: Tue,  3 Nov 2026 17:59:41 +0000
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=vvGvmaZ1
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8270D1595;
+	Tue,  3 Nov 2026 10:19:05 -0800 (PST)
+Received: from [10.57.64.115] (unknown [10.57.64.115])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7AFA33F628;
+	Tue,  3 Nov 2026 10:19:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793729948; bh=nPvxwv/d4G12ox+75qW2valPIilnOBTndTK4vYOxYdQ=;
+	h=Date:To:Cc:From:Subject:From;
+	b=vvGvmaZ1lDrDvMcqhPuv0M7MEcmOV8J+bilz6qRXIJEZKVOrdF/nSV7aYqh0XjEEV
+	 6rJVObQvBKNA+SRedd3uUsaUSuXyExcD/FIL2bAN8giT0HDXZy38kawL/EJGIu/par
+	 FT9Lbkhmn1iJPGR8vgd/SW6LoUqKnKvAPDu16aAw=
+Message-ID: <be3739f8-e668-4711-912c-91459d77ed35@arm.com>
+Date: Tue, 3 Nov 2026 18:19:03 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,82 +52,68 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261103175941.1349818-1-wvw@google.com>
-Subject: [PATCH v2] arm64: suspend: Save and restore TPIDR2_EL0 across CPU suspend
-From: Wei Wang <wvw@google.com>
-To: catalin.marinas@arm.com, will@kernel.org
-Cc: broonie@kernel.org, mark.rutland@arm.com, rafael@kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, wei.vince.wang@gmail.com, 
-	stable@vger.kernel.org, Wei Wang <wvw@google.com>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mario Limonciello <superm1@kernel.org>, Sumit Gupta <sumitg@nvidia.com>,
+ Jie Zhan <zhanjie9@hisilicon.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-pm <linux-pm@vger.kernel.org>
+From: Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH] cpufreq: Hold the policy write lock when changing boost state
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-TPIDR2_EL0 is a live EL0 register on systems with SME, but
-cpu_do_suspend()/cpu_do_resume() don't preserve it. Its value is
-UNKNOWN after a warm reset, so the task that initiates suspend can
-return to userspace with a corrupted TPIDR2_EL0.
+The per-policy boost sysfs handler calls policy_set_boost() under
+policy->rwsem, but the global boost handler and cpufreq_online() do not.
+Consequently, global and per-policy boost changes can concurrently
+update policy->boost_enabled, invoke the driver callback and update the
+boost frequency QoS request. The driver callbacks also access policy
+state, e.g. CPPC updates cpuinfo.max_freq that assumes policy->rw_sem
+held.
 
-Save and restore it alongside TPIDR_EL0 and TPIDRRO_EL0. The new slot
-fits in existing padding, so sizeof(struct cpu_suspend_ctx) is
-unchanged.
+Take policy->rwsem around policy_set_boost() in both unlocked
+callers. Keep locking at the call sites because the per-policy sysfs
+handler already holds the lock.
 
-Fixes: a9d691585950 ("arm64/sme: Implement support for TPIDR2")
-Cc: stable@vger.kernel.org
-Acked-by: Will Deacon <will@kernel.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Wei Wang <wvw@google.com>
+Fixes: 218a06a79d9a ("cpufreq: Support per-policy performance boost")
+Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
-v2:
- - Trim commit message (Will)
- - Keep mrs_s/msr_s as TPIDR2_EL0 isn't in tools/sysreg yet (Catalin)
- - Collect Acked-by/Reviewed-by tags
-v1: https://lore.kernel.org/r/20261102234813.1069156-1-wvw@google.com
+ drivers/cpufreq/cpufreq.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
- arch/arm64/include/asm/suspend.h | 2 +-
- arch/arm64/mm/proc.S             | 8 ++++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
-index eb60c9735553..2cc5fb405769 100644
---- a/arch/arm64/include/asm/suspend.h
-+++ b/arch/arm64/include/asm/suspend.h
-@@ -2,7 +2,7 @@
- #ifndef __ASM_SUSPEND_H
- #define __ASM_SUSPEND_H
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 54dde8419bdc..015962e6c1fe 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -576,6 +576,8 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
+ {
+ 	int ret;
  
--#define NR_CTX_REGS 14
-+#define NR_CTX_REGS 15
- #define NR_CALLEE_SAVED_REGS 12
++	lockdep_assert_held_write(&policy->rwsem);
++
+ 	if (policy->boost_enabled == enable)
+ 		return 0;
  
- /*
-diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
-index 7afbece885a3..c7b7fa6491c3 100644
---- a/arch/arm64/mm/proc.S
-+++ b/arch/arm64/mm/proc.S
-@@ -103,6 +103,10 @@ SYM_FUNC_START(cpu_do_suspend)
- alternative_if ARM64_HAS_TCR2
- 	mrs	x2, REG_TCR2_EL1
- 	str	x2, [x0, #104]
-+alternative_else_nop_endif
-+alternative_if ARM64_SME
-+	mrs_s	x2, SYS_TPIDR2_EL0
-+	str	x2, [x0, #112]
- alternative_else_nop_endif
- 	ret
- SYM_FUNC_END(cpu_do_suspend)
-@@ -142,6 +146,10 @@ alternative_if ARM64_HAS_TCR2
- 	ldr	x2, [x0, #104]
- 	msr	REG_TCR2_EL1, x2
- alternative_else_nop_endif
-+alternative_if ARM64_SME
-+	ldr	x2, [x0, #112]
-+	msr_s	SYS_TPIDR2_EL0, x2
-+alternative_else_nop_endif
+@@ -1629,6 +1631,8 @@ static int cpufreq_online(unsigned int cpu)
+ 	 */
+ 	if (cpufreq_driver->set_boost && policy->boost_supported &&
+ 	    (new_policy || !cpufreq_boost_enabled())) {
++		guard(cpufreq_policy_write)(policy);
++
+ 		ret = policy_set_boost(policy, cpufreq_boost_enabled());
+ 		if (ret) {
+ 			/* If the set_boost fails, the online operation is not affected */
+@@ -2830,6 +2834,8 @@ static int cpufreq_boost_trigger_state(int state)
+ 		if (!policy->boost_supported)
+ 			continue;
  
- 	msr	sctlr_el1, x12
- 	set_this_cpu_offset x13
++		guard(cpufreq_policy_write)(policy);
++
+ 		ret = policy_set_boost(policy, state);
+ 		if (unlikely(ret))
+ 			break;
 -- 
-2.56.0.385.gac671c819a-goog
-
+2.34.1
