@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793787954;
-	b=HV/biW6SYg8mAfsn2YFPZwfA9qwaeszmTlCaCWRblXE8ImNjfx3yLHgQjqvz2WEyB8aQ
-	 NBz2KHmzNzUJAXoZPTJgCGrrQTKznMPz1xRDCJWqN91B79vnZAfueMwgScxEK2pfs7euy
-	 LSdWiUwptkkv3eVt2vp68Sloy6f+WEyZvvLbZZ7LbxurrfKMDkQfhJXDxfyvRPk7Ln2GJ
-	 0fGmJoAXYL9tRq2apadFPORhy51sVL63OJ10Ch0gITEzk8xasPSPp1e0yy4lGF0PtB8DX
-	 VdWSk1Yczt8Kq9mao/2kt7nWrY2FQDpZ3j6E6s36x3XaPRAcX+ZJO89O2gwP5Ne+sYQ==
+	t=1793788085;
+	b=t6scjRysV5kARAZzeVUfx52BNl4rzW0xFrf5yVCwWXu6Du9TPeEM6Y9lGn0Kv2Vqwi2M
+	 wX/zbfbG2df0/HnC2LVjq5gYs/ksTo2v3nKWtuCSPQdkK6gZnpW2am7+5ttZsOSjkPgKk
+	 UZg8oNbFR7J8AV+YlqFCeyfaYMJV0vsIjdiIwcTFfaxYFKaQEs0tHJv1KAtaxhItMZZn1
+	 IrorLmnejyyzOeASeiV2S12cEjaGn6IKtQFZzZSg2sjoBQrI7piCnrh2ypSSrD10zjfQA
+	 cA/j+PNVnyhno7wYK42THunt/SOrHmkQPJrmOUk42ikqTuyfxXKMXWumMUgyzQmQAIg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793787954;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793788085;
 	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 Content-Type;
-	bh=uRrdt0oAcAPfS+w2dQ61HkrI15khdaUCiJ5g7tU0p+Q=;
-	b=VmaI1gtY7OW4R3Z8JopkUPOmTUnw+Ybne9a+SX66xr1wyXVsePbnhwqZqILWTiVvwfQW
-	 +LJD5hwJKLfE+9gmkGQY80/0ySN92NJh/WsogVu/alLXgtbuwTOzhTXKBIefJrOWyQ1B4
-	 VRd7UazUsbkWlwuQbb+1urz4pnE1cTck5qxnoblBkM1b9wQNKqDjLRrLkrDS5nfbZ0E/B
-	 cnwI+RqFkM0SxAocP3sTdbq7rlVv+0SClLaNeCqdvkW3peyAOx0CFs6gem+TdqYI8CFUo
-	 wyI6SlVeMaUxzL5DlRP44QdYomKMu9tC15i88G4aTg1my+mqfnx6xxpzPEwfEZgOehw==
+	bh=GLaKKMhflH6c9HMj7tkIQiYSGOrte1eESSKQrGjfr70=;
+	b=gPIsV7ZoiGMPjVIHqHdzdmnX76du6zIR7L4EyWWa2/TlxNc2sx2rDsDYSGTuxbZ3A1rR
+	 Cusrqkr0Rm3aHBeCEneyaYCBJs2TfMXJCvFZ6Y657i/XFqsMrEPJU2B4N4P/WKH1zHqSa
+	 T9Dqib9luuoO1B9XF8Y1tEM/h/01dy8V0RaXgwHI2BWBxx2LH4Upx32P/NJSuy2w08hJ5
+	 ydgO3LBjPd4w13MfNsYZLRMZhOfm2ZdL56KbyD0Q9+TSrQZJkxNr05M6uT/Yl73RhBr0o
+	 zH3UxKjZGEWRQ3JUw8+F10DZtg7zDwMklRo23j19P5qTN+8rtGPUW1nklapWNcH7qvw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=sntech.de;
 	spf=pass smtp.mailfrom=sntech.de;
-	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=A+8t5vjZ;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=o5rbZXVq;
 	arc=none smtp.remote-ip=185.11.138.130
 Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D0F1606A329;
-	Wed,  4 Nov 2026 10:25:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3D0F1606A329
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72001606A332;
+	Wed,  4 Nov 2026 10:28:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 72001606A332
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=A+8t5vjZ
+	dkim=pass (2048-bit key, unprotected) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=o5rbZXVq
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
 	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
 	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
-	bh=uRrdt0oAcAPfS+w2dQ61HkrI15khdaUCiJ5g7tU0p+Q=; b=A+8t5vjZqpreZvPSLqn2rWHCfk
-	n20HzKOydnfedJfrqrbJoETErbWXGYMoVDxPotfS+pj30dhVa9kgt9ioE3h2XT9i+o0G+8YdGkx94
-	c3QBYW5k2mk+ni5jhkwtbJ0XyA5dPKbn2W67WeyaIRUJ548XcG9M2F372a+JG9Z4saOhjOzo+w3oC
-	eyhS0ZoraybqUEcq+Rs1ShIc64rINHDJig5KDlfjZqHUgloCWhUZhfDAow0U/X/rkbraLV4ZTsUbE
-	L8NNkvSjhwcAGWUz3HAevwzEEWEfjFK3ykebZUp2dFTL+4ugzZ2Y132qKzJFggyFXmgKN48nvtd3S
-	d5ApHuFg==;
+	bh=GLaKKMhflH6c9HMj7tkIQiYSGOrte1eESSKQrGjfr70=; b=o5rbZXVqXBOPz9MgAOGvVCI9OH
+	rfV9RhCslhaCfar5qBWNZHOGhTb40svSP/U9cZBARICeF1s85qeLm1BXEtT1FXRqf/AxyyViXG5JX
+	uIkNbXx6TybQeiCckwatSpovab7geUmVJWT0K8/k6CSMM106OEhaJ5IuD+HJk93478dgXIlLq1V4r
+	N9RVyxyPENrg82zAQ9/z5Ej+MN4xwZMgv64pxwVyEPWSqNSYhP4JmER2b3z8rz2+60vAtDieRB/ya
+	3mLn1L8ZILnwjvn3P0wwDdv+BlF8gERII7sgsrW/Io66GFLsiGRYShcjIZh/lpt2g4xaPqN5nSVLE
+	7GEI3XHg==;
 From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
 To: tomeu@tomeuvizoso.net, robh@kernel.org, krzk+dt@kernel.org,
  conor+dt@kernel.org, joro@8bytes.org, will@kernel.org, robin.murphy@arm.com,
@@ -57,13 +57,14 @@ Cc: royalnet026@gmail.com, abel.vesa@oss.qualcomm.com,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  Jiaxing Hu <gahing@gahingwoo.com>
 Subject:
- Re: [PATCH v15 04/15] accel/rocket: let the core suspend after a reset
-Date: Wed, 04 Nov 2026 11:25:30 +0100
-Message-ID: <3373678.NnENhoQgcM@diego>
-In-Reply-To: <20261101082307.151957-5-gahing@gahingwoo.com>
+ Re: [PATCH v15 05/15] accel/rocket: factor the completion tail out of the IRQ
+ handler
+Date: Wed, 04 Nov 2026 11:27:41 +0100
+Message-ID: <8888361.5OynTdThKG@diego>
+In-Reply-To: <20261101082307.151957-6-gahing@gahingwoo.com>
 References:
  <20261101082307.151957-1-gahing@gahingwoo.com>
- <20261101082307.151957-5-gahing@gahingwoo.com>
+ <20261101082307.151957-6-gahing@gahingwoo.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -76,54 +77,75 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
 
-Am Sonntag, 1. November 2026, 09:22:56 Mitteleurop=C3=A4ische Normalzeit sc=
+Am Sonntag, 1. November 2026, 09:22:57 Mitteleurop=C3=A4ische Normalzeit sc=
 hrieb Jiaxing Hu:
-> rocket_reset() drops the in-flight job's runtime PM reference with
-> pm_runtime_put_noidle(), which requests nothing, so the core does not
-> suspend until something else asks and its power domain does not cycle. On
-> RK3576 the domain's power-on resets the NPU bus interface; without it the
-> IOMMU stops answering and the job after a timeout fails.
+> Move the part of rocket_job_handle_irq() that starts the next task or
+> retires the job into rocket_job_next_locked(). No functional change.
 >=20
-> Use pm_runtime_put_autosuspend(), as the completion path does. On a ROCK =
-4D
-> the job after a timeout goes from 0 to 128 of 128 channels correct.
->=20
-> Link: https://lore.kernel.org/all/20260819073530.6087-1-royalnet026@gmail=
-=2Ecom/
-> Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
 > Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-> Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, i=
-nduced reset, JOB_TIMEOUT_MS=3D2
-> ---
->  drivers/accel/rocket/rocket_job.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/roc=
-ket_job.c
-> index 5b2abf40b618..152a9098634b 100644
-> --- a/drivers/accel/rocket/rocket_job.c
-> +++ b/drivers/accel/rocket/rocket_job.c
-> @@ -467,12 +467,12 @@ rocket_reset(struct rocket_core *core, struct drm_s=
-ched_job *bad)
-> =20
->  	/*
->  	 * No handler is running now, but we might still have stuck jobs. Let's
-> -	 * make sure the PM counters stay balanced by manually calling
-> -	 * pm_runtime_put_noidle().
-> +	 * make sure the PM counters stay balanced by putting the reference the
-> +	 * job took, and request idle while doing it so the core can suspend.
->  	 */
+> Reviewed-by: Igor Paunovic <royalnet026@gmail.com>
 
-with my comment in patch 3/15 fixed
+this makes the irq-handler more descriptive in what it does
 
 Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
->  	scoped_guard(mutex, &core->job_lock) {
->  		if (core->in_flight_job)
-> -			pm_runtime_put_noidle(core->dev);
-> +			pm_runtime_put_autosuspend(core->dev);
+> ---
+>  drivers/accel/rocket/rocket_job.c | 31 ++++++++++++++++++++-----------
+>  1 file changed, 20 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/roc=
+ket_job.c
+> index 152a9098634b..417d5ef06c09 100644
+> --- a/drivers/accel/rocket/rocket_job.c
+> +++ b/drivers/accel/rocket/rocket_job.c
+> @@ -365,6 +365,25 @@ static struct dma_fence *rocket_job_run(struct drm_s=
+ched_job *sched_job)
+>  	return ERR_PTR(ret);
+>  }
 > =20
->  		iommu_detach_group(NULL, core->iommu_group);
+> +/* Start the job's next task, or retire it. Caller holds job_lock. */
+> +static void rocket_job_next_locked(struct rocket_core *core)
+> +{
+> +	lockdep_assert_held(&core->job_lock);
+> +
+> +	if (!core->in_flight_job)
+> +		return;
+> +
+> +	if (core->in_flight_job->next_task_idx < core->in_flight_job->task_coun=
+t) {
+> +		rocket_job_hw_submit(core, core->in_flight_job);
+> +		return;
+> +	}
+> +
+> +	iommu_detach_group(NULL, iommu_group_get(core->dev));
+> +	dma_fence_signal(core->in_flight_job->done_fence);
+> +	pm_runtime_put_autosuspend(core->dev);
+> +	core->in_flight_job =3D NULL;
+> +}
+> +
+>  static void rocket_job_handle_irq(struct rocket_core *core)
+>  {
+>  	pm_runtime_mark_last_busy(core->dev);
+> @@ -378,17 +397,7 @@ static void rocket_job_handle_irq(struct rocket_core=
+ *core)
+>  		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+>  		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+> =20
+> -		if (core->in_flight_job) {
+> -			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_co=
+unt) {
+> -				rocket_job_hw_submit(core, core->in_flight_job);
+> -				return;
+> -			}
+> -
+> -			iommu_detach_group(NULL, iommu_group_get(core->dev));
+> -			dma_fence_signal(core->in_flight_job->done_fence);
+> -			pm_runtime_put_autosuspend(core->dev);
+> -			core->in_flight_job =3D NULL;
+> -		}
+> +		rocket_job_next_locked(core);
+>  	}
+>  }
 > =20
 >=20
 
