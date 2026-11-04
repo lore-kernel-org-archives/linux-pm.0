@@ -1,92 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793798801;
-	b=xRsDMmZ26SYFt1ye5HSKf2LPz/7l57tUv7DoEz09WNVnmxUJCeT73EfUUexo+15avyzJ
-	 2nV1tTu/DiX2jJ34VFp/5N7VDT+WHHglOKk2NaWDzGGnwgqJRzt/GJqEpJlYUiHKNJl5o
-	 9mKyYVCTItEwhSuDomMqGMZw6qdZH5CsMECoM7PWlLPV+xyivfwMDQFHbROENyh/jMTEA
-	 +1VptgjQFJKa2XJ5d+ARJ/VeF5qlr9CexSCC0NmDD4v5wV9eYXmlwyby17TWG9SAXY5FC
-	 D8aBvOH6iVHkvoV8+cnkDBhktJvfsFEGA7KRsQJ1zwo7vNd3ANm5EkcLTmB8irBJmPQ==
+	t=1793799276;
+	b=mX4Fv+DrtSRCRwkM3+oZ6i/PgdgIZ1XmV7NbveIc8JriABYkq/EZJ0RMK91QJpbK4Qz8
+	 /ajgrcquFstfdUiVvqKqVGXuadBxAI0B8BHLRFnGVQzJTv6K5WTffXh1U5IME+Oq2Pn47
+	 a5iDgdymfoAH8J0C8JFgxzq1uYiGn5hS42br040UxguvexWvkZY5XI70PJAlfnuc1E8qE
+	 68dYD+ehJdGkzkLOMhmKCfQBKBS1Mtv3JHR3vw277b2jmg5AuVds4q5trDeT8wrV5QwUg
+	 3aiNJTyO8aTaipw6FtiUj+j6jVwSm+7PII5cV6/yVW10VtQc0yIlBOwN/2QGClOPfFw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793798801;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=MPUiLFnTBdf7QRRqKCZEZSjQLoEuxmOxaBmyWSCYZVk=;
-	b=xZHBqtPtr1fuZBYOjohK/EV2gfimgZjWPwEacWR6xQpqDAbhNGZ3ZAXI8JU5MGohXma3
-	 9V0mcAYl8392fx6kM9HDu/rVFm3kgQhgP3Ggds10u+Lm2iRlvi3gj7wDAgGgmN1JURZe5
-	 HmqbCTSVimIPXSltvx/FBzrDnwMtXTbHR420+L2H1BN6hOSiPAhHchZbVSxxC8igKFDNu
-	 gCrOEgBAG3ATOOB+dW0cmrdNBWYCmI66ATgPJTKrxVFciDzw8P8IXpCgrc3fNsH4QfwTw
-	 TiXSWuh4rydalndKMhcWr/8Spv4y5c+yTNls61IUB1WBWd0GJpFzQAk+jL6qrbOb9pg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793799276;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=a2lfzSJOKyr9RKNMXful/dW4OAQJ/NKssbnEoTBgKj4=;
+	b=CleW05M5801MWsQUVJ1PORwZDE4s9UdoNnqXnRZJvyrTldMLLC0OEf81CxQV38xR/ckG
+	 Wd1duZ4JZyIHOwDM2VEuCSKBZoaIvD1KacKo2rD6cxvIhPA1SsAk+rypn4OXf7Xd35Qt9
+	 l1SXun4SQum6ZTv6mOaX3An+zenGA2hmbjdumwJv6Is2/qhGYUpNCV3KETTzayEwCjwy8
+	 v2z0cDMeWrfaa/EDkS4f++HGV5ZGzXCsBsFfJjo/9cgQjagtUXMCM+l76FDZCP7wzoCOl
+	 5SkGAr9YbULMjYP9720m1OgJ0vv1/MFM7ULFcwm8Z/L72jnfzLK0bKAHyaVwEc5gPUQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GGP57dCQ;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P6gLz+G8;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C99B606D82D;
-	Wed,  4 Nov 2026 13:26:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21DF2606A328
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 13:34:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GGP57dCQ
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D24C31F0093A;
-	Wed,  4 Nov 2026 13:26:39 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P6gLz+G8
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDB5D1F00A1C
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 13:34:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793798800;
-	bh=MPUiLFnTBdf7QRRqKCZEZSjQLoEuxmOxaBmyWSCYZVk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=GGP57dCQEvsELH0NCmMeNo9OYSLBlBr1CuaxanS9gitq0f13zE16Rj4HEg912BA3a
-	 jHAi0xgnf5mbwOvcFAqnxoTWo/uFCPp17dN+EOptGveLGJja2ISTiRvaAZqFzjXV4f
-	 jy+F3e4iKr6uWbeNGs4mnwgP57FbK+kogGG9a3Wto4Rt5KD5bug71IQBxB2F8xsD2p
-	 VFh4oL1WG13peDWe+KFd7Oh2xSJbJ5/uxq0pdKCYmBN5/K54Ak8t/uIKlzxPQP03lr
-	 kspb/xXqgBTpLDcB5XW6w5IsrQjlO6ZsLq2PjV9K98Wx6vv5U0To5OAyVcKfhN8ki3
-	 vuQeMPtWatfww==
-Date: Wed, 4 Nov 2026 14:26:38 +0100
-From: Thierry Reding <thierry.reding@kernel.org>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Vadim Fedorenko <vadim.fedorenko@linux.dev>, Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
-	Jiri Pirko <jiri@resnulli.us>, Ivan Vecera <ivecera@redhat.com>, 
-	Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
-	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
-	Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>, 
-	Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Olivier Moysan <olivier.moysan@foss.st.com>, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Fabrice Gasnier <fabrice.gasnier@foss.st.com>, Lee Jones <lee@kernel.org>, 
-	Srinivas Kandagatla <srini@kernel.org>, Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, 
-	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
-	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
-	Paolo Abeni <pabeni@redhat.com>, Vinod Koul <vkoul@kernel.org>, 
-	Neil Armstrong <neil.armstrong@linaro.org>, Manivannan Sadhasivam <mani@kernel.org>, 
-	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Orson Zhai <orsonzhai@gmail.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
-	Paul Kocialkowski <paul.kocialkowski@bootlin.com>, Shawn Guo <shawnguo@kernel.org>, 
-	Chanh Nguyen <chanh@os.amperecomputing.com>, Alistair Francis <alistair@alistair23.me>, 
-	Julius Werner <jwerner@chromium.org>, Paul Cercueil <paul@crapouillou.net>, 
-	Dmitry Osipenko <digetx@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Ray Jui <ray.jui@broadcom.com>, 
-	Scott Branden <scott.branden@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	netdev@vger.kernel.org, chrome-platform@lists.linux.dev, linux-gpio@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-sound@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-tegra@vger.kernel.org, mfd@lists.linux.dev, linux-arm-msm@vger.kernel.org, 
-	linux-mmc@vger.kernel.org, linux-phy@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Use hex unit address patterns
-Message-ID: <ausydkb2etcFJbYf@orome>
-References: <20261102135330.2493332-1-robh@kernel.org>
+	s=k20260515; t=1793799275;
+	bh=a2lfzSJOKyr9RKNMXful/dW4OAQJ/NKssbnEoTBgKj4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=P6gLz+G8i+HOKMo+639r6YKd/rhWNw9rePKfUWgcn98uAsNSl7aiQGXQoc7JLGwPX
+	 SqYTf6NoC4Uhk6VmWGmQpn8FwGrXWPLTx5IxYBF6fucx8LlhfkB0P1oK56kHPV3mTv
+	 2TglHiVre+V9lCVUtyYXbfBMp8uc1ihdKIKRRVCdK5a7b5EkpYXYmrizUpwF949Rh1
+	 mDsIDM2f/U8mK1O4oDIG3cX2rudlO/8luEE8Ua+9rnBujZn5uGM4pGP6C9IPzhI3qc
+	 su/dMlTDZKooYGCzyBdc1mYY6rqpK6BKNtyB07YXHszKZm5clNINueeUmz3Ktwf639
+	 9W+EAklyQ9wWg==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5be4a2d94adso630550e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 05:34:35 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvByswJ6xpY7QzKS9rCg/2CCkJJU2uM6y7LaZI8ZLutWNvlsAvXmh1alFYCE7FF/KXfZ1g2AqyGpjxw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8Va7bY0Xa+ZAMK0UxnyMIwgl1MPJJXcX+YLYhN9GnD9V32/kJm
+	ePMBDmjMlXJ69WMK1Fxp1SdTfCN3p35v+jgVMxFTafUHmJ25FKJl7/P2Aiz9LpTo5dCHbKAvLs3
+	/TlDWRhYr3FkaVPd7MbUtL23gVen3nTM=
+X-Received: by 2002:a05:6512:4607:b0:5bf:dc20:c3e3 with SMTP id
+ 2adb3069b0e04-5bfdc300879mr4834513e87.30.1793799274060; Wed, 04 Nov 2026
+ 05:34:34 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -96,42 +59,184 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="3alpfpswkxhlvmej"
-Content-Disposition: inline
-In-Reply-To: <20261102135330.2493332-1-robh@kernel.org>
+References: <20261103221717.3840215-1-briannorris@chromium.org> <20261103141442.v2.3.I40c0bc917fa0b13111251844e9a54feb1d9cd7d2@changeid>
+In-Reply-To: <20261103141442.v2.3.I40c0bc917fa0b13111251844e9a54feb1d9cd7d2@changeid>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 4 Nov 2026 14:34:22 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jWCz0XDgzeETbmMfGOmvh2G9qcx7xLODrpQ9NiwsddKA@mail.gmail.com>
+X-Gm-Features: AclHuK-dsyKqzlehLXWkaZgjbnv2J5XTRBwV6lWjoOrFTYLkmg6F7ScIDL-aHzU
+Message-ID: <CAJZ5v0jWCz0XDgzeETbmMfGOmvh2G9qcx7xLODrpQ9NiwsddKA@mail.gmail.com>
+Subject: Re: [PATCH v2 3/5] PM: runtime: Propagate last_busy from dependent to dependency
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Fabrice Gasnier <fabrice.gasnier@st.com>, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulfh@kernel.org>, 
+	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, 
+	Andy Shevchenko <andy@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+	David Lechner <dlechner@baylibre.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+	=?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+I should have responded to the v1 of this, but didn't manage to get to
+it.  Sorry about that.
 
---3alpfpswkxhlvmej
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Subject: Re: [PATCH] dt-bindings: Use hex unit address patterns
-MIME-Version: 1.0
+On Tue, Nov 3, 2026 at 11:23=E2=80=AFPM Brian Norris <briannorris@chromium.=
+org> wrote:
+>
+> When a child device suspends, it does not update the last_busy timestamp
+> for its parent. If that parent configured autosuspend and didn't
+> otherwise maintain its last_busy timestamp, it may now be immediately
+> eligible to suspend. This is probably not expected -- the parent should
+> wait for its autosuspend delay before suspending.
 
-On Mon, Nov 02, 2026 at 07:53:22AM -0600, Rob Herring (Arm) wrote:
-[...]
->  .../memory-controllers/nvidia,tegra20-emc.yaml       |  4 ++--
+Let's first talk about what autosuspend is for: My understanding is
+that it is there to avoid incurring the runtime PM suspend and resume
+latency (and cost in terms of energy) in the cases when the device is
+known or at least is expected to be needed in the near future.  IOW,
+we want to defer the runtime suspend of the device because if it
+suspended, it would be resumed shortly thereafter.
 
-Acked-by: Thierry Reding <treding@nvidia.com>
+I'm not sure if that is always the case when a dependent device
+suspends and its reference to the parent/supplier is dropped.
 
---3alpfpswkxhlvmej
-Content-Type: application/pgp-signature; name="signature.asc"
+The core calls pm_runtime_mark_last_busy() for resuming devices under
+the assumption that they are resumed for a reason and so it is likely
+that they will be needed in near future, but I'm not sure if that
+assumption can be extended to a child suspend case.  One might argue
+though that extending it to the child/consumer resume case would make
+sense.
 
------BEGIN PGP SIGNATURE-----
+> The effect of this behavior is that a parent device may suspend sooner
+> than its autosuspend delay, simply because its usage was accounted by
+> its children, and not by direct references to the parent device.
 
-iQIzBAABCgAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmrrMo4ACgkQ3SOs138+
-s6EKABAAqndqQDSMCzJ51pelaVEYbun/pEAy9SCFq/gar34Nw6/PUqr+4Ae8fNKG
-58DhWW5IKP0zFCmAz4Lg7vzWcf8pcqjEqor4P/6uGt4Sa/keBlY96dhT7fXB7vUU
-+Y4/cAb5vN2M+cj5QKI3/N2xjmH4vcTgMxzpR2oZINWc5q3SpBCYpH4dHWdZX5ON
-NU3IkE+IwIuBt/lTX256XDA2qocpbqk4PfhDPXDEgwHzw1KUGjW9mngNi7ReGJ7X
-h58XLcmeowbjEg3418OfZogzqIrg1IowSD/1kTwDb/BONZtAFXstReG/03FgHBDC
-TfXFyQRuzQpC9ry8hSrTY3AfmVE+br7dxxhHl/mTpK6xVTnygAdFj7r2eOEtKQuZ
-/71SgGxHyuMPxVhqWntmrNQe5bSouxg7K1qTjVERnNG/43QDs1Ak2ELHBVD2RsBc
-lh9RUpYN+TMPms8D1jVgFsj0uOeeTEniDuXCWH7B32tqyyYPNEue+BzP/MsSMMIB
-xNFF26OqFEjYj3sHYR6s5D7EjwvTEHxF3zkNRgMSbeRpfjQKQOGIJCfPKP/Chrf9
-nywLoaWqGVHoNzEGQdjjkR6VQ0RTmBHnBGjoUU8SgFesfF0+0UT3lvASBsDH8VJ5
-94axmWcy8Sg7LmNOo7vOf7+TW7Fumpqu/30f4HiRtFAecTTqHJQ=
-=MRzn
------END PGP SIGNATURE-----
+The distinction between "direct references to the parent device" and
+"usage accounted for by its children" is not clear to me TBH.
 
---3alpfpswkxhlvmej--
+There are references to the parent device in both cases and it is not
+like drivers can always expect all runtime PM references to come from
+specific code paths updating last_busy.  There is at least one
+reference controlled by user space (the "control" attribute in sysfs)
+and dropping it may also cause the device to suspend immediately if
+last_busy has not been updated recently.  How is this situation
+different from the one related to child/consumer suspend?
+
+> This was noticed in several cases, and some have implemented
+> workarounds, such as in commit c537d3457542 ("iio: adc: stm32-adc: fix
+> runtime autosuspend delay when slow polling"). At the same time, Ulf
+> suggested these problems "should be solved in the runtime PM core" [1].
+
+So I need to be explained how commit 9bdbb1139ca1 ("iio: adc:
+stm32-adc: add power management support") works because ATM I don't
+seem to understand it.  It looks to me like the .runtime_idle()
+callback updates last_busy for the device for which it is called, not
+for its parent.
+
+> Instead of working around the problem in drivers, we propagate last_busy
+> timestamps from a dependent device to its dependencies any time it may
+> allow a dependency to suspend -- i.e., when releasing a refcount for its
+> parent or suppliers. We take care to only propagate the timestamp if it
+> is larger than the existing busy timestamp.
+
+I'm not sure why propagating last_busy timestamps when dropping the
+reference to the parent/supplier is a good idea.
+
+Why is the child's last_busy timestamp suitable for the parent in the
+first place?
+
+Why isn't done when dropping the reference?
+
+> Note that this works best if the dependent device is using autosuspend
+> (and therefore updates its last_busy timestamps appropriately), but even
+> for a non-autosuspend child, this is still somewhat useful --
+> non-autosuspend devices still automatically update their last_busy every
+> time they resume.
+>
+> Link: https://lore.kernel.org/all/CAPDyKFp=3DKTf8=3DzGBSzPYqhjnZpY8xwvjCe=
+M1e-WTKT1QLSxaDA@mail.gmail.com/ [1]
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> ---
+> Cc: Ulf Hansson <ulfh@kernel.org>
+>
+> Changes in v2:
+>  * Update comments to explain when/why rpm_propagate_last_busy()
+>    performs the update
+>
+>  drivers/base/power/runtime.c | 23 ++++++++++++++++++++++-
+>  1 file changed, 22 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 2a117d6a776f..dd306cbabcd3 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -318,6 +318,22 @@ static int rpm_get_suppliers(struct device *dev)
+>         return 0;
+>  }
+>
+> +/*
+> + * Propagate last_busy timestamp from one device to another, typically w=
+hen a
+> + * device (@dev) releases a reference count on a dependency (@target) an=
+d might
+> + * allow it to (auto)suspend. This can, for example, prevent overactive =
+suspend
+> + * when a dependency's usage is primarily driven by one of its dependent=
+s.
+
+AFAIAC, you need to say much more than this to explain all of it.
+
+> + */
+> +static void rpm_propagate_last_busy(struct device *dev, struct device *t=
+arget)
+> +{
+> +       s64 busy =3D atomic64_read(&dev->power.last_busy);
+> +       s64 target_busy =3D atomic64_read(&target->power.last_busy);
+> +
+> +       while (target_busy < busy)
+> +               if (atomic64_try_cmpxchg(&target->power.last_busy, &targe=
+t_busy, busy))
+> +                       return;
+> +}
+
+And I'd rather not do anything like the above unless absolutely necessary.
+
+> +
+>  /**
+>   * pm_runtime_release_supplier - Drop references to device link's suppli=
+er.
+>   * @link: Target device link.
+> @@ -348,6 +364,7 @@ static void __rpm_put_suppliers(struct device *dev, b=
+ool try_to_suspend)
+>                 if (!device_link_test(link, DL_FLAG_PM_RUNTIME))
+>                         continue;
+>
+> +               rpm_propagate_last_busy(dev, link->supplier);
+>                 pm_runtime_release_supplier(link);
+>                 if (try_to_suspend)
+>                         pm_request_idle(link->supplier);
+> @@ -710,6 +727,8 @@ static int rpm_suspend(struct device *dev, int rpmfla=
+gs)
+>
+>         if (dev->parent) {
+>                 parent =3D dev->parent;
+> +               if (!parent->power.ignore_children)
+> +                       rpm_propagate_last_busy(dev, parent);
+>                 atomic_add_unless(&parent->power.child_count, -1, 0);
+>         }
+>         wake_up_all(&dev->power.wait_queue);
+> @@ -1368,8 +1387,10 @@ int __pm_runtime_set_status(struct device *dev, un=
+signed int status)
+>                 goto out_set;
+>
+>         if (status =3D=3D RPM_SUSPENDED) {
+> -               atomic_add_unless(&parent->power.child_count, -1, 0);
+>                 notify_parent =3D !parent->power.ignore_children;
+> +               if (notify_parent)
+> +                       rpm_propagate_last_busy(dev, parent);
+> +               atomic_add_unless(&parent->power.child_count, -1, 0);
+>         } else {
+>                 spin_lock_nested(&parent->power.lock, SINGLE_DEPTH_NESTIN=
+G);
+>
+> --
