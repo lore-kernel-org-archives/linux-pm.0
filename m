@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793801871;
-	b=ai/X9a7gGzxSAx+tKBSWlYmiRtfS/E5TLNTvcEfDLlmstQW2vNFB817jNQ17bpAVjDQE
-	 U4vrcs/zvowO2xB3c1yZ89T1O48jM/X9ZBdt+nDHOpC3HTCSRogvYuYSeMFyjZ9C0zEe+
-	 7k4WdXVNSh3AUFwqIVZO5Tt7iI5XrDDjX7kFTFMtMusrc5xvG2x2ANM8Sy/5YRNFuWl5Z
-	 LbtQS1GrHRPwxjGCL6jGpDOif62Cso864O1uGgc4Uf4awvlf1Q6SGXM6CY5Jk8J34nYRb
-	 JOhHCmAhz82NC/FKWpEm0qOQzzypgiJJw7oE1egT4G5moi39qqo4wdfjMuBBH+GHyig==
+	t=1793802303;
+	b=kwy/OLJPfxM2yGfzuvZfcp1Pr2baroMoUBiS4RjTsMDxgSBGZFWlg7Wn1YWCf2sWMTvB
+	 uNiKFBYgHUEXxOrCiIPreR7pVYqO7xxXa1hPJoEr74rzcl+5Dp/qb5CaGxcPbZ+S4O1xZ
+	 Aw7zYqg0eyCL2sY1DwOsx4uoyfQnv0u9oPVmP2wUmWZSUpwVEwJj35PcvaAhPBGguRfwx
+	 9Zq8sbffcOxEBrw8/bjRcN+LpsYtcrBWE++3f5fXmlHZajlSb5hWVeJbfE0mKiK3svu+b
+	 ICr9g76TefMmgX5TyYMVsN3eZW5C7nbd7gJDWVKCK6wChRaJFIGMSYYSk9CneBmsuRQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793801871;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793802303;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=mLazd9emzOWsv3JaPQ5UUfvKLht8lch/HQcvpq8y3GY=;
-	b=pddbshoCeMAN7Z26nuZNDjsaE+UKd+lDOgKl+8oFhmBST4JDJF59TZKeveuGtNGKTzei
-	 GHAVBbnDfiCiaEDTljyaXkkfRYYPiFj2bNOTluzPDgw+52T6cR9ptBjhhHrI8yWk4LCaY
-	 jJ38XmogTL185BRcnIny+8g6bOYEM3MXtc/wfUWeyKCc3wrjAuWgRpqDHaxQXNv1na2n7
-	 iDDGQhAij08oE6CHlpLYctIOVQrUEz5Q021W/mVwTZ5FqYgJw87ngt1VLI6hrGwnTi5J7
-	 ne9JOU1vdre+WhUWGXzQM5daeemV6V/7CsKCU+ayveDE3s0nAqYwZ1Ri84j0vs9BgSA==
+	bh=TvDBwQZo6/m82PHmQTlDUFZg6Jc+mwyR6EdZGMpMfhE=;
+	b=YRv5Drz02xT9xITDz1ESE4A05r8pK6/nHlEbN1wwLcP2Z21sVEnwrjcN34actWkEvZFo
+	 4sBMRdEhNj2AjYrNb3nxiOiGR+2Fvn41Va+UkWm0ubSELE2gvw3/dDDHzVRjczRIPTJM8
+	 XfLDAzIh1+DnufezoAjwlJ5FYWzLXg5DobKI4AEQKMxumwlTawk3Dv9gAsOSkKs+eA0JF
+	 lneL/qkvu1jPPvoW9xtHWjaY9z/wl85vy1R6nsDCGj0IOigEJp3UDJPph37oyBLuf2TZj
+	 HXJFh3ozz4QQ/WbcGUxyawEQz/DoTIqlbMbIEXfIZ45zz7+iFbDcg/rMLvPtmW+rxcw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Iamqxdwk;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nzidTxHN;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19EFF606A32E
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:17:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7067606A332
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:25:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Iamqxdwk
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C660E1F0093A
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:17:50 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nzidTxHN
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F6F91F00A1C
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:25:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793801870;
-	bh=mLazd9emzOWsv3JaPQ5UUfvKLht8lch/HQcvpq8y3GY=;
+	s=k20260515; t=1793802302;
+	bh=TvDBwQZo6/m82PHmQTlDUFZg6Jc+mwyR6EdZGMpMfhE=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Iamqxdwk2AMMca8i7/sa2z4aGVs1ZDXisqqarwuSEFO+3gX2/sSG4TUL+BC4uv/Bv
-	 L3j6c6puWYceKcRFV8e0mZmapVSU/u/ObthL2mpXj80NEkeGUTAj06Vf6WjZ9NrM59
-	 Q7KUn1rKqcnYl4SnHEq5ay1vrWT+gP0zKBNZiRRbxJWWmgPin+8mVjjZZtnnXG9bf7
-	 KByMP3W5TDkbOFQKDC2nhkOPA9VZmXeDF30DJP5h12OjObuRjoUEsvEetY9BLKQqnA
-	 klLIqTxkaJzOkmnYBs6TI3dyDt/Tt0qK1cI62kKq/CzOKxdqBwTnaXxvS+hYTLHTTF
-	 nuMpT3N5zxsGw==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5bccecba199so626251e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:17:50 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBys6kc/lu8Pq99c+TlmN8ECmKrwhy0WUSdrJfnDS4HfKbosAU9pnqMNJ7/Zrwc2bIyJCTOeigGwjA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/TqhuS56iac4ApBqKIZ7N8oDa13O6gt8CVrkJBxJ5zuAqZx2Fl
-	XH7DtQVZLt8ghjcqFqlZJry6SxV3ogjal3Rn/1tqPToszKGXdjhmfokISoHoo8l/jvmZODas+LK
-	HXNs696Ug2D9m9oSDhRAd3F86D7TKR9g=
-X-Received: by 2002:a05:6512:114c:b0:5bf:b7d8:f38a with SMTP id
- 2adb3069b0e04-5bfd95730ddmr5925507e87.37.1793801869245; Wed, 04 Nov 2026
- 06:17:49 -0800 (PST)
+	b=nzidTxHN45nMUeY/+EhDtWby3M3540v2pvHyNJPaSNgg7AC/5/wPzILWuUal+Wka7
+	 WHuiievjTU3eQn8D2RQOSwK2J8l2ji1lC+cQHRCPCbsE1tm/POBmnlggSutqNjw0Pb
+	 MkRCBH5IALFPXpNmTz82YFyYFcFFbAIAbt8E4KNqbMyFqLROCnnsVy/H2krQ7PNkP3
+	 UaUJ0w9hy660b00bcKz3VJhT67hMlbKiPU5a1LgRitHphQCsIgfJ3YdqMLcnqit1rx
+	 nVtsri3j0+fVhBEkSDHbxZVWbLe/ZWrW5bVbpNNUQaRERbJ1vGPwtIW03VNVQdCFls
+	 tu62oMSyAAlOw==
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5bfa686881fso545580e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:25:02 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvByL7OU+CTPF9YKWBmuUFXI5VcnVvvyjcCM70FCbg7v+TScS05WnhkqzaZgg2Uh37fBVpEgyPQHIqw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z868Oi3wSKxzQvL8qPmiMOOfHdZX5lk+lZAxIhUyraMxAemmzUF
+	AboIJ5PBD2w9T7tPot74uiVo2jTgN5/0AuRPPo9HGkoLB6LHuuSLtUS1MhecSWJ5Euf3frcGzdG
+	Wo3aXTH0HkBRYbOX+TQs5tGTeyKlN9sg=
+X-Received: by 2002:a05:6512:3a94:b0:5bf:d54c:1f1d with SMTP id
+ 2adb3069b0e04-5bfd9599874mr5967891e87.52.1793802301013; Wed, 04 Nov 2026
+ 06:25:01 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,88 +59,256 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261104070149.41393-1-lizhaoxin04@baidu.com>
-In-Reply-To: <20261104070149.41393-1-lizhaoxin04@baidu.com>
+References: <20261103193136.2410148-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <20261103193136.2410148-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 4 Nov 2026 15:17:36 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0i_fmYOzgiJhoe_NdWfEopnDGb_GHuKXtMp5HD_-2_uLQ@mail.gmail.com>
-X-Gm-Features: AclHuK98DawDgpC2GZl5mXQB82W_aFxlZCFZTOvGX1cOlWUoWcXsJEy8Rra_a3E
-Message-ID: <CAJZ5v0i_fmYOzgiJhoe_NdWfEopnDGb_GHuKXtMp5HD_-2_uLQ@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Use rdmsrq_safe() to read MSR_MISC_PWR_MGMT
-To: Li Zhaoxin <lizhaoxin04@baidu.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Date: Wed, 4 Nov 2026 15:24:47 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jCDGUL3ZzbOaiN2V0qeyPDDZGXaGmhrJhYCOToEo8p3w@mail.gmail.com>
+X-Gm-Features: AclHuK-zbzu2M6-J6vtZBI53zXXr4jA2ZGo354i2EqRYCxNRIruPVfgUbCGRoOY
+Message-ID: <CAJZ5v0jCDGUL3ZzbOaiN2V0qeyPDDZGXaGmhrJhYCOToEo8p3w@mail.gmail.com>
+Subject: Re: [PATCH v5] PCI/PME: Resume Catlow Lake Root Ports on PME with PME
+ Status clear
+To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H . Peter Anvin" <hpa@zytor.com>, Lukas Wunner <lukas@wunner.de>, 
+	Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 4, 2026 at 8:02=E2=80=AFAM Li Zhaoxin <lizhaoxin04@baidu.com> w=
-rote:
+On Tue, Nov 3, 2026 at 8:31=E2=80=AFPM Kuppuswamy Sathyanarayanan
+<sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
 >
-> From: lizhaoxin04 <lizhaoxin04@baidu.com>
+> Intel Catlow Lake PCH Root Ports do not set PME Status in the Root
+> Status register when they generate a PME for their own hotplug event.
+> The PME interrupt itself is delivered.  PMEs from devices below the Root
+> Port are reported correctly.
 >
-> Commit ed7cad0504e3 ("cpufreq: intel_pstate: Relocate platform
-> preference check") moved the intel_pstate_platform_pwr_mgmt_exists()
-> call to the beginning of intel_pstate_init(), right after the vendor
-> check, so it now runs before "no_load" (intel_pstate=3Ddisable) and the
-> other checks.
+> PME and hotplug share the same interrupt.  When a hotplug Root Port
+> runtime suspends to D3hot, pciehp disables hotplug interrupts and relies
+> on PME to resume the Port.  On a hot-add the Port signals PME, but Root
+> Status stays clear.  pcie_pme_irq() then returns IRQ_NONE.  pciehp_isr()
+> also returns IRQ_NONE because hotplug interrupts are disabled.  The Port
+> stays in D3hot and the new device is never enumerated.
 >
-> MSR_MISC_PWR_MGMT is model-specific and KVM does not emulate it. In a
-> KVM guest using a CPU model listed in intel_pstate_cpu_oob_ids[] (for
-> example "-cpu host" on Emerald Rapids), reading it raises #GP and the
-> unchecked rdmsrq() emits a warning with a call trace on every boot, even
-> with intel_pstate=3Ddisable:
+> Mark the affected Root Ports with a new PCI_DEV_FLAGS_PME_UNRELIABLE
+> flag.  If such a Port interrupts while not in D0 and PME Status is
+> clear, pcie_pme_irq() resumes the Port.  pciehp re-enables hotplug
+> interrupts on runtime resume, and pciehp_check_presence() finds the new
+> device.  pciehp itself is unchanged.
 >
->   unchecked MSR access error: RDMSR from 0x1aa at rIP: 0xffffffffa4009342=
- (native_read_msr+0x2/0x50)
->   Call Trace:
->    <TASK>
->    intel_pstate_platform_pwr_mgmt_exists+0x3b/0x220
->    intel_pstate_init+0x1e/0x500
->    do_one_initcall+0x59/0x350
->    ...
+> The workaround only applies to quirked Ports that are not in D0.  AER,
+> DPC and bandwidth notification also share the interrupt and stay enabled
+> in D3hot.  If one of them fires while a quirked Port is in D3hot, the
+> Port is resumed without need and runtime suspends again later.
 >
-> Before that commit, such guests typically returned from
-> intel_pstate_init() earlier, either because of intel_pstate=3Ddisable or
-> because intel_pstate_msrs_not_valid() failed on the zero ratios that
-> KVM reports in MSR_PLATFORM_INFO by default, so the MSR was not read.
+> This affects all steppings of the Catlow Lake PCH.  A public erratum is
+> not available yet.
 >
-> Use rdmsrq_safe() and treat a failing read as "no OOB mode". The
-> exception fixup already zeroes the result of a failed unchecked read,
-> so apart from the warning going away there is no functional change.
->
-> Fixes: ed7cad0504e3 ("cpufreq: intel_pstate: Relocate platform preference=
- check")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Li Zhaoxin <lizhaoxin04@baidu.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstat=
-e.c
-> index 0e6ae4cdda5d..67447280e86a 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -3649,12 +3649,12 @@ static struct acpi_platform_list plat_info[] __in=
-itdata =3D {
->  static bool __init intel_pstate_platform_pwr_mgmt_exists(void)
->  {
->         const struct x86_cpu_id *id;
-> -       u64 misc_pwr;
-> +       u64 misc_pwr =3D 0;
->         int idx;
->
->         id =3D x86_match_cpu(intel_pstate_cpu_oob_ids);
->         if (id) {
-> -               rdmsrq(MSR_MISC_PWR_MGMT, misc_pwr);
-> +               rdmsrq_safe(MSR_MISC_PWR_MGMT, &misc_pwr);
->                 if (misc_pwr & BITMASK_OOB) {
->                         pr_debug("Bit 8 or 18 in the MISC_PWR_MGMT MSR se=
-t\n");
->                         pr_debug("P states are controlled in Out of Band =
-mode by the firmware/hardware\n");
->
+> Suggested-by: Lukas Wunner <lukas@wunner.de>
+> Link: https://lore.kernel.org/linux-pci/ara-_IPXV_i90if1@wunner.de/
+> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@lin=
+ux.intel.com>
 
-Applied as 7.4-rc material, thanks!
+Makes sense to me.
+
+Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+
+> ---
+> Changes since v4:
+>  * Moved the workaround from pciehp to the PME driver (Lukas). pciehp
+>    now keeps clearing HPIE on suspend as before (Bjorn).
+>  * Noted in the commit log and in pcie_pme_irq() that PME and hotplug
+>    share the same interrupt (Bjorn).
+>  * Dropped the PME Requester ID reference, since the code doesn't use
+>    it (Bjorn).
+>  * Dropped the "D3hot to D0 transitions" wording (Bjorn).
+>  * Updated the quirk comment and message for the PME driver approach.
+>  * Dropped Reviewed-by from Lukas since the approach changed.
+>  * The v4 approach in pciehp also fixes the issue on Catlow Lake. I am
+>    happy to go back to it if that is preferred.
+>
+> Changes since v3:
+>  * Moved quirk from drivers/pci/quirks.c to arch/x86/pci/fixup.c (Lukas)
+>  * Renamed function to intel_pcie_pme_unreliable for x86-specific context=
+.
+>  * Added Reviewed-by tag from Lukas
+>
+> Changes since v2:
+>  * Switched from pm_runtime_disable() to PCI_DEV_FLAGS_PME_UNRELIABLE
+>    flag approach to avoid power regression (feedback from Rafael and Luka=
+s)
+>  * Keep hotplug interrupts (HPIE) enabled during D3hot instead of
+>    preventing D3hot entry entirely
+>  * Port still enters D3hot for power savings; testing confirms no impact
+>    on PC6 package C-state residency
+>  * Modified pciehp to check pme_is_broken() before disabling/enabling
+>    hotplug interrupts during suspend/resume
+>  * Made quirk comment generic to cover both PME notification and status
+>    update issues, with Catlow Lake specifics documented separately
+>
+> Changes since v1:
+>  * Removed hack in hotplug driver and disabled runtime PM on affected por=
+ts.
+>  * Fixed the commit log and comments accordingly.
+>
+> v4: https://lore.kernel.org/linux-pci/20260323223056.3119060-1-sathyanara=
+yanan.kuppuswamy@linux.intel.com/
+> v3: https://lore.kernel.org/linux-pci/20260316220807.2433661-1-sathyanara=
+yanan.kuppuswamy@linux.intel.com/
+> v2: https://lore.kernel.org/linux-pci/20260213231428.613164-1-sathyanaray=
+anan.kuppuswamy@linux.intel.com/
+> v1: https://lore.kernel.org/linux-pci/20260210172231.1465275-1-sathyanara=
+yanan.kuppuswamy@linux.intel.com/
+>
+>  arch/x86/pci/fixup.c   | 46 ++++++++++++++++++++++++++++++++++++++++++
+>  drivers/pci/pcie/pme.c | 24 +++++++++++++++++++++-
+>  include/linux/pci.h    |  2 ++
+>  3 files changed, 71 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/x86/pci/fixup.c b/arch/x86/pci/fixup.c
+> index 795d81c7a4de..eb3703e1cdbe 100644
+> --- a/arch/x86/pci/fixup.c
+> +++ b/arch/x86/pci/fixup.c
+> @@ -1180,3 +1180,49 @@ static void quirk_tuxeo_rp_d3(struct pci_dev *pdev=
+)
+>  }
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, 0x1502, quirk_tuxeo_rp_d3);
+>  #endif /* CONFIG_SUSPEND */
+> +
+> +/*
+> + * Intel Catlow Lake PCH Root Ports do not set PME Status in the Root
+> + * Status register for a PME they generate for their own hotplug events,
+> + * although the PME interrupt is delivered.  PMEs from devices below the
+> + * Port are reported correctly.
+> + *
+> + * pciehp disables hotplug interrupts when the Port runtime suspends and
+> + * relies on PME to resume it.  With PME Status clear, pcie_pme_irq()
+> + * ignores the interrupt, the Port stays in D3hot and the hot-add is
+> + * lost.  Mark these Ports so that the PME driver resumes them instead.
+> + */
+> +static void intel_pcie_pme_unreliable(struct pci_dev *dev)
+> +{
+> +       dev->dev_flags |=3D PCI_DEV_FLAGS_PME_UNRELIABLE;
+> +       pci_info(dev, "PME status unreliable, resuming port on PME interr=
+upt in D3hot\n");
+> +}
+> +/* Apply quirk to Catlow Lake PCH root ports (0x7a30 - 0x7a4b) */
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a30, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a31, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a32, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a33, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a34, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a35, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a36, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a37, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a38, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a39, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a3a, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a3b, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a3c, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a3d, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a3e, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a3f, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a40, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a41, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a42, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a43, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a44, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a45, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a46, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a47, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a48, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a49, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a4a, intel_pcie_pme_unre=
+liable);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x7a4b, intel_pcie_pme_unre=
+liable);
+> diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
+> index 4996cc4789f3..56c22e416788 100644
+> --- a/drivers/pci/pcie/pme.c
+> +++ b/drivers/pci/pcie/pme.c
+> @@ -276,11 +276,33 @@ static irqreturn_t pcie_pme_irq(int irq, void *cont=
+ext)
+>         spin_lock_irqsave(&data->lock, flags);
+>         pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
+>
+> -       if (PCI_POSSIBLE_ERROR(rtsta) || !(rtsta & PCI_EXP_RTSTA_PME)) {
+> +       if (PCI_POSSIBLE_ERROR(rtsta)) {
+>                 spin_unlock_irqrestore(&data->lock, flags);
+>                 return IRQ_NONE;
+>         }
+>
+> +       if (!(rtsta & PCI_EXP_RTSTA_PME)) {
+> +               spin_unlock_irqrestore(&data->lock, flags);
+> +
+> +               /*
+> +                * Some Root Ports don't set PME Status for a PME they
+> +                * generate for their own hotplug events.  PME shares its
+> +                * interrupt with hotplug and the other Port services, so
+> +                * only do this while the Port is not in D0.  Then PME is
+> +                * the only interrupt it can signal for such events, so
+> +                * resume it and let pciehp pick up the event.
+> +                */
+> +               if ((port->dev_flags & PCI_DEV_FLAGS_PME_UNRELIABLE) &&
+> +                   port->current_state !=3D PCI_D0) {
+> +                       pci_dbg(port, "PME Status clear in %s, resuming P=
+ort\n",
+> +                               pci_power_name(port->current_state));
+> +                       pci_wakeup_event(port);
+> +                       pm_request_resume(&port->dev);
+> +                       return IRQ_HANDLED;
+> +               }
+> +               return IRQ_NONE;
+> +       }
+> +
+>         pcie_pme_interrupt_enable(port, false);
+>         spin_unlock_irqrestore(&data->lock, flags);
+>
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index aa3765a20a96..d3915a3d59b9 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -266,6 +266,8 @@ enum pci_dev_flags {
+>          * integrated with the downstream devices and doesn't use real PC=
+I.
+>          */
+>         PCI_DEV_FLAGS_PCI_BRIDGE_NO_ALIAS =3D (__force pci_dev_flags_t) (=
+1 << 14),
+> +       /* Root Port does not set PME Status for its own hotplug PMEs */
+> +       PCI_DEV_FLAGS_PME_UNRELIABLE =3D (__force pci_dev_flags_t) (1 << =
+15),
+>  };
+>
+>  enum pci_irq_reroute_variant {
+> --
+> 2.43.0
+>
