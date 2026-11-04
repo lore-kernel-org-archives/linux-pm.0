@@ -1,122 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793796986;
-	b=4Acs5WApWb8wyjtAeffSItV/IhJmeW7mzM204vOHlLau2YkrBhVOnokv0GMVttlYkJd8
-	 6m1R8LLqNLm1+k21zhYZrC7v71AKt7kZEh9e/GB4aF3cpxKiPKHCfNK/lZUEyKFsluzFk
-	 Z2//kg6ONg+s2NkNF+6gXI7a8OCdNfPao/hCPweskrN+ODugcg+nUDbhrpN2o0lQ1kKE5
-	 cwPHbIuepKVhVU4ffLRTOJ+BtIX3cNvEr2FCUvtAP3YbuGIx2D6C/LDZlu3DTtmslImag
-	 kkEng91BTU6b1SgbN8fHYqLWHkFuaAC7WqI9+jalH7u4RjrcO252vXLAVyU98S12Hsg==
+	t=1793797467;
+	b=kbgzbF5ayZ/XHxke5g78qP6ERJ0U+coZszbavrbZSWpML4yspLI3aeI23AaCQELNqDSV
+	 mLvIOq5nvhIGDxnb3k9cRpapMJjbF3dxvh8Vxi4QQA12ZyEMipSTott8Inw5aGJgyh5U4
+	 LSyEBHtWnWen/ZW4ZeC5NW9ZTQy8GmCL8lJK9b/Y2n+mCYT8Q/dRhW5MMzAhlQn4EGDnh
+	 ehnVIDTX10Ls/N+yjIpwZby8uJYLq74Gb/Q9WTKOAWwwrsvXH7tzNict/cYEBBO8nhtPG
+	 iByQ9MjMIH1CAm80XqTB0/b5JkO8GW5ZfaHr0fH1P/jLpW0IN7zsbMQwcn55dd8P6vg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793796986;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=a3viuefWVHlkOcjcyLognlTI0g9S7LK7g5mw2hwAeX8=;
-	b=BFqz3d2UplxfJwM0lt4YGYObayQGED/u56VyHUcen80wc5tsi0B+xvVEzp079P46NqA1
-	 RbvMzL76twhnhiw0ZlVgibywYmakjPrZf2N26lXEi5mAEw6MpQdDOu950Kl/guKqTdYh3
-	 7Gatrx702SJeoxx/O+AVK1FzgwZFiAHFB6F91zu27qk2es6dbGxmn3GVyD28j9SD9PkoU
-	 J2cGqToYlAwyJkE4SO/N2oHBwB/EcJmF/7z9VPf0WI/QZj980KK2igGX2JjZgsRxlPAHi
-	 i9Lz4kZCGNwm0atido1rHozkM2A2kbpNhLviVvAHcajOaRYkLVivRv9o5A+a9jfXquw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793797467;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=0gGIxmVj15HwpHlgucVC67kzMBeDjNiHcqiz6hAOrv8=;
+	b=DAyT0XPofeQjjqF5AhQyArFtxcHnAhtwBeKeql/HqPTB4UiW4EKSUNq093G+0oIqfpU5
+	 zHQVRqZ6S1dmXFi9BajRRPici/Ef5R9LtFz85i3Nfo0qNpV0Qjo0Q9yjcJViWboPwPqCz
+	 ZewFm0FpftIc9kA/5Y6ioUEZUpxO54t3UUh5YcMMVu9qcxLKBNTy/8AvZNunQvvn/kFY5
+	 1bpZkgD3hMiRawE3KpehVTdsdWkaRd+DnOGCbKJPb37V6nrrlEERDIb3iin0wX26pt8RN
+	 nhQG3aHk0h8MVSx5gfTyS21qdI0ORAhJWxtlm4j+3eWCnhdUhpLIfxloJ2EQjLpdMuw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=tomeuvizoso.net;
-	spf=pass smtp.mailfrom=tomeuvizoso.net;
-	dkim=pass header.d=tomeuvizoso-net.20260707.gappssmtp.com header.i=@tomeuvizoso-net.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=E1HS4KvD;
-	arc=none smtp.remote-ip=209.85.128.51
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C182rFoz;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3554606A32E
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 12:56:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A3554606A32E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tomeuvizoso.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tomeuvizoso.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0548606D81D
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 13:04:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=tomeuvizoso-net.20260707.gappssmtp.com header.i=@tomeuvizoso-net.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=E1HS4KvD
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-4a1b07c3c5fso5975495e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 04:56:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tomeuvizoso-net.20260707.gappssmtp.com; s=20260707; t=1793796984; x=1794401784; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=a3viuefWVHlkOcjcyLognlTI0g9S7LK7g5mw2hwAeX8=;
-        b=E1HS4KvDMJ6h45stv1yXcg6I/LLEE/c9MaF6ggenro1/m0w4QKXVE9y6xXyOpyL8I1
-         29B115DvRQVFT2gq1ICuxfvi5sQcPumezfbyddX1fyWCeBLKcAlcXd9gZ6sezLvemTVh
-         WA21r+rWy83sQ/m6kgUSl2ALr1nRvpPTT8KofRZrcuEGlZYgSVrJ9ZMZV7qwYtO4LHF7
-         HzcCk0kdgJHlo2eL/5FbAbPCSVJ9QEk2LNE5mgFuUPOqAvKxeef40wNrU/qf5+6SgSJN
-         3jbWRt/ekMkLMiHRPqmhKWKA0LoSJTKgkQPcFG6EvmyifG5TyT8j3FPqrmkp5R6NonH4
-         EG6Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793796984; x=1794401784;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=a3viuefWVHlkOcjcyLognlTI0g9S7LK7g5mw2hwAeX8=;
-        b=uzImIaGxO2A0XsmG9QwGvDwhVVKqdOMBnddYp6//ls2BmgJVX6hakwSoEwzvN/AY0L
-         9LyNxViAcMTY3IRoRhlNDJgM9Yehgd9RvZ35/zr6Y3xupRDyUXEmOVWIrr+EIJcTn5cu
-         r3ZpAFlqmd+ysB3+H+VzOME+Ger1Z4G/Y/z/XvfRSow3dx7oWoxOm/XPUUOVjfj7o6Di
-         N1X0NKjHyaA/slR+PA6r2hOtjXi5XeOUxjnA9ONhzjc26ZleTSrBCY/nU0oO4XAp7T17
-         Sfx9j/QlbjFqyv4Ajjm7Vi9yEZp3/+QnCyZzFPZ/VZ0oq8HkUIYeLBjtc35dGcXr9EL1
-         bqdA==
-X-Forwarded-Encrypted: i=1; AKwUvByoDPP+OdamC45ce/amGdTTonB08xQdUqe4Gila0TFiNsfq8/iQtdJSzFDZl67XKmxQUBZBQXrPiw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8FOS6mjUicgmNBFzdV/z9t6knwU9XMBQnnFxrNORie4DH7011u
-	NaepbqiWZNYepmr7+//kV87mAXJ2QgsEpVG5Lwv/PFgWL+HVLdWjqJcRAbv/3tMhpRM=
-X-Gm-Gg: AYBFou2t/9pC4ojHUSYONhXIb3WmH8XuJghYIs7Eho/SAVgsYvRCY3/lOnO0fTv24Jk
-	n5Xz0repkKZ7yJKoewCgF00/rZMILJtHjogjesZzsFcyrEVcgKriELk1UiD5OWmSUmr/wBC3OIr
-	2XlHrUdvYllzdoQxsw91m6YXC+sfVJO6IEyFpQNzuELgJ4b+RNEYNKfut6UsnHb8IGBKBbE25wQ
-	eGISnUGdZMVn6WREMfmP+bMLkb0CCbijOTe01Z/Fb1olNark+s+TxFhNBVjib5Hun8J0kDWrV3s
-	WJ1Vgz0bDcIhwzHAbakHrqm4kFP2nyWIDRJVnxpHAj0oI5pdScRr9nUx2Q0tbjQd+laJmRO/oNf
-	PE/RRugv/k7Tk19ZTZE3wvB8zdhW2n8mLoOttj5pNa0NiGUyj8iPUYfDuvmdpL+P6u+0lxZXPqb
-	JWRCIhIz5nsPisi2zxfpDEwzT9cW4kxBXiRMBpgw6f8J8Ra/AQ2rHIOFXiBTLfJZORw+Woi2oUd
-	b9vmkQxPb7kztDmU+vOhLwMlnWp24P1BPl6YyqOVM83yKtVnuv1YtiQ4CPlTTlHE3xJvsmDfL/O
-	LdQL3QeslTFxKKVwSP2Qk5nN8e1bPl4aTcz2D65H+NKrtvc0OoIyjl7cNUuMRJmayvBdoo9WWaW
-	8vYd54QxQ02g2cfb2uGcCNtmtH6Nm/rg3pRLoBAx+T+prw9f4DzU9CgjZo7gxNnvamVgLmIc=
-X-Received: by 2002:a05:600c:1d28:b0:4a2:1612:637a with SMTP id 5b1f17b1804b1-4ac1793fb6bmr425311395e9.16.1793796983815;
-        Wed, 04 Nov 2026 04:56:23 -0800 (PST)
-Received: from alcachofa.home (cst-prg-36-190.cust.vodafone.cz. [46.135.36.190])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48feda20935sm3705844f8f.54.2026.11.04.04.56.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2026 04:56:23 -0800 (PST)
-From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
-To: Jiaxing Hu <gahing@gahingwoo.com>
-Cc: Tomeu Vizoso <tomeu@tomeuvizoso.net>,
-	heiko@sntech.de,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joro@8bytes.org,
-	will@kernel.org,
-	robin.murphy@arm.com,
-	ulfh@kernel.org,
-	p.zabel@pengutronix.de,
-	ogabbay@kernel.org,
-	zhangqing@rock-chips.com,
-	royalnet026@gmail.com,
-	abel.vesa@oss.qualcomm.com,
-	sebastian.reichel@collabora.com,
-	sidong.yang@furiosa.ai,
-	u.kleine-koenig@baylibre.com,
-	chaoyi.chen@rock-chips.com,
-	diederik@cknow-tech.com,
-	alchark@flipper.net,
-	leonard@lausen.nl,
-	jeff.hugo@oss.qualcomm.com,
-	rfoss@kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	iommu@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v15 03/15] accel/rocket: wait for a running IRQ handler before resetting a core
-Date: Wed,  4 Nov 2026 13:55:18 +0100
-Message-ID: <20261104125529.3229301-1-tomeu@tomeuvizoso.net>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261101082307.151957-4-gahing@gahingwoo.com>
-References: <20261101082307.151957-4-gahing@gahingwoo.com>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C182rFoz
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A205C1F00A16
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 13:04:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793797466;
+	bh=0gGIxmVj15HwpHlgucVC67kzMBeDjNiHcqiz6hAOrv8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=C182rFozjpn+i/0Ts1DVq3b+ldJzLaYXncXGSKU5f4XCAI4+yQi49mycFeAVy/gy7
+	 8i034pd2KQtcZ+CDX7gNbb1ARO9RfgRTbhmouZunnvcULJfaG9HPLVwZ3ytUngroM8
+	 egwAbMwpz9XNDrjkbvaFb7ks4aeC1jnf/7xgjiQSSRWyIkLiOi9LhuCZ0m05jFhICK
+	 nr+140ioY7Z+vWkH+hoTBBLG9p9apDmaJAyXwiVWq7Jj1yLXp7seJxi3P3EtW934rg
+	 oWpdYy+4j+63c1HAegqRqhpSl5cl6n6imJzOTlCBDI2RliYbTkTkC1EonSRTyah1Td
+	 f1twz4w1M1Eww==
+Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5bfc3292d90so486046e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 05:04:26 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBzgMX9/ZZZG5tXnRuaJTfls9W6OA5WLwoTGs9vDfuwNGh0rP+h2XdxrXIKn5ROOWq9+7UVfKV9eZQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8Snd4oEQ6AAi4s2ceX8EtcmYJaH5aaVctBGEmjJQU2UZ3OZxA+
+	KWh+z8Mpvf8X8hZWzmdpg6ICbwLDB47msXVsq3xUHlovmQHiygD2Col9J4xp3V4bafjcyxi0JKX
+	9HjMi0kDkOWNpZPUc2aUka2wcRvBqEPw=
+X-Received: by 2002:a05:6512:39cd:b0:5bf:b166:f58b with SMTP id
+ 2adb3069b0e04-5bfd95782a4mr5476115e87.55.1793797464785; Wed, 04 Nov 2026
+ 05:04:24 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -126,120 +59,53 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com> <20261022-add-board-ok3572-c-v1-5-0b0fd85a31ee@qq.com>
+In-Reply-To: <20261022-add-board-ok3572-c-v1-5-0b0fd85a31ee@qq.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Wed, 4 Nov 2026 14:04:12 +0100
+X-Gmail-Original-Message-ID: <CAD++jL=2Z3hP74dHRyE3Aabp+PvpcHX_90PQy+a_HMQwBdNx6g@mail.gmail.com>
+X-Gm-Features: AclHuK9_TlXav34NYeX4rfS2IYWnnq1y5c9wSfeOajfltWQaA7IZMQ4oBhaALpc
+Message-ID: <CAD++jL=2Z3hP74dHRyE3Aabp+PvpcHX_90PQy+a_HMQwBdNx6g@mail.gmail.com>
+Subject: Re: [PATCH 05/27] dt-bindings: pinctrl: rockchip: Add RK3572
+To: 1579567540@qq.com
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Heiko Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Elaine Zhang <zhangqing@rock-chips.com>, Lee Jones <lee@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Richard Cochran <richardcochran@gmail.com>, 
+	Ulf Hansson <ulfh@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Jisheng Zhang <jszhang@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, David Wu <david.wu@rock-chips.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Maxime Chevallier <maxime.chevallier@bootlin.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Vinod Koul <vkoul@kernel.org>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Thinh Nguyen <Thinh.Nguyen@synopsys.com>, Jaehoon Chung <jh80.chung@samsung.com>, 
+	Shawn Lin <shawn.lin@rock-chips.com>, linux-clk@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	mfd@lists.linux.dev, linux-gpio@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-phy@lists.infradead.org, 
+	linux-usb@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 01, 2026 at 09:22 PM, Jiaxing Hu <gahing@gahingwoo.com> wrote:
-> drm_sched_stop() does not wait for a threaded handler that is already
-> running. Call synchronize_irq() after it, outside job_lock, which the
-> handler takes.
+On Wed, Oct 21, 2026 at 6:12=E2=80=AFPM Cunhao Lu via B4 Relay
+<devnull+1579567540.qq.com@kernel.org> wrote:
+
+> From: Cunhao Lu <1579567540@qq.com>
 >
-> Before the sync, mask the block's interrupt and clear its raw status, so
-> that an active core cannot signal a completion after it. Do that under
-> job_lock, since rocket_job_hw_submit() arms the same mask under that lock,
-> and only when pm_runtime_get_if_active() returns a positive count: the
-> reset holds no runtime PM reference, and with the domain down a register
-> access takes an async SError.
-
-The above I understand.
-
-> Igor Paunovic's induced-reset runs on RK3588, including a two-task job that
-> puts hw_submit() on the IRQ thread, found no fault; as he put it, "this
-> does not show the race is closed".
-
-This is completely out of context for a commit message. How is somebody who is
-reading git log know who Igor is, and what his "induced-reset" is?
-
-> Link: https://lore.kernel.org/all/20260819073530.6087-1-royalnet026@gmail.com/
-> Link: https://lore.kernel.org/all/CAEWPSH5mxTbUkNouxm6yecMZYvDowquhvYvhaXQ8HoMtHD5U1g@mail.gmail.com/
-> Link: https://lore.kernel.org/all/20260912113717.6819-1-royalnet026@gmail.com/
-> Link: https://lore.kernel.org/all/20260916132824.13527-1-royalnet026@gmail.com/
-> Link: https://lore.kernel.org/all/20260919103422.148834-1-royalnet026@gmail.com/
-> Suggested-by: Igor Paunovic <royalnet026@gmail.com>
-> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-> Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, induced reset, JOB_TIMEOUT_MS=2
-> ---
->  drivers/accel/rocket/rocket_job.c | 71 +++++++++++++++++++++++++++++--
->  1 file changed, 68 insertions(+), 3 deletions(-)
+> Add the RK3572 pinctrl compatible.
 >
-> diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
-> index 03e5f094f60b..5b2abf40b618 100644
-> --- a/drivers/accel/rocket/rocket_job.c
-> +++ b/drivers/accel/rocket/rocket_job.c
-> @@ -401,9 +401,74 @@ rocket_reset(struct rocket_core *core, struct drm_sched_job *bad)
->  	drm_sched_stop(&core->sched, bad);
->  
->  	/*
-> -	 * Remaining interrupts have been handled, but we might still have
-> -	 * stuck jobs. Let's make sure the PM counters stay balanced by
-> -	 * manually calling pm_runtime_put_noidle().
-> +	 * Mask the block before waiting. hw_submit() arms INTERRUPT_MASK on
-> +	 * every submit and only the hardirq clears it, so on an ordinary
-> +	 * timeout it is still live and a completion can arrive after the sync
-> +	 * returns. The next submit re-arms it, so nothing is lost here.
-> +	 *
-> +	 * Only when the device is already awake, though. This function holds no
-> +	 * runtime PM reference of its own: the only one in the window belongs to
-> +	 * in_flight_job, and the completion path may have put it and cleared the
-> +	 * pointer before the timeout worker got here. drm_sched_stop() above can
-> +	 * block for a long time, and it drops every pending job's credits, so
-> +	 * rocket_job_is_idle() is true and nothing keeps the core resumed. On
-> +	 * this hardware a register access with the domain down takes an async
-> +	 * SError, so a reset must not be the thing that causes one.
-> +	 *
-> +	 * Only a positive answer will do. pm_runtime_get_if_active() tests
-> +	 * power.disable_depth before power.runtime_status, so -EINVAL MASKS a
-> +	 * suspended device rather than excluding one: pm_runtime_force_suspend(),
-> +	 * which is this driver's own system suspend callback, disables runtime PM
-> +	 * first and turns the clocks off second, and rocket_core_fini() suspends
-> +	 * the core and disables before it cancels the timeout worker. Both leave
-> +	 * the domain down with -EINVAL on offer.
-> +	 *
-> +	 * The cost is the other half of that ambiguity. A core that is still up
-> +	 * with runtime PM disabled (pm_runtime_force_suspend() before its
-> +	 * callback has run, or CONFIG_PM=n under COMPILE_TEST) is left unmasked,
-> +	 * because writing to it would mean writing to the half that is down as
-> +	 * well.
-> +	 *
-> +	 * Clear the raw status along with the mask, the way the completion path
-> +	 * does. Masking alone leaves the DPU bit latched until
-> +	 * rocket_core_reset(), and the hardirq decides on raw status alone, so a
-> +	 * fault from the IOMMU that shares this line would wake the thread again
-> +	 * and what the comment below asserts would stop being true.
-> +	 *
-> +	 * UNDER job_lock, because rocket_job_hw_submit() arms this same
-> +	 * register and always runs under that lock. reset.pending is set here
-> +	 * without the lock and read there with it, so a submit that has already
-> +	 * passed its check can re-arm the mask after this clears it, and then
-> +	 * the synchronize_irq() below fences a handler that is no longer the
-> +	 * one that matters: the block is left running a task with its
-> +	 * interrupt live. rocket_job_handle_irq() avoids the same race on
-> +	 * OPERATION_ENABLE by making its completion writes under this lock.
-> +	 *
-> +	 * pm_runtime_get_if_active() does not invoke a callback -- it only
-> +	 * takes a reference on an already-active device -- and
-> +	 * pm_runtime_put_autosuspend() is asynchronous, so neither can re-enter
-> +	 * this driver's runtime PM callbacks while the lock is held.
-> +	 */
+> Signed-off-by: Cunhao Lu <1579567540@qq.com>
 
-This is just absurd. The driver will quickly become unmaintainable if we merge
-this kind of comments. 
+This patch 5/27 applied to the pinctrl tree.
 
-Please remove all LLM-generated text (cover letter, commit messages, and code
-comments) from the accel/rocket patches in this series, and replace it with
-your own.  I don't mind if you write it first in your native language and use a
-LLM to translate it to english, but I need for you to understand the code you
-submit and write yourself any communication with humans.
-
-If you don't understand anything in the code well enough to write the commit
-messages, cover letter and comments, then I suggest you use the LLM to assist
-you in acquiring the knowledge that you are missing.
-
-Also, please read:
-
-Documentation/process/coding-assistants.rst
-Documentation/process/generated-content.rst
-
-Thanks,
-
-Tomeu
-
+Yours,
+Linus Walleij
