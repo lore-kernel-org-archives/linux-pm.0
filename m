@@ -1,110 +1,87 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.66.25
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793800947;
-	b=HI5BafssHGdgjmmAwDtB9k8rxgveLV2lCbDRFtLRGEVeVD2rAsmDqkRMXPOiYo9XoHhG
-	 /Kq0hQrMZPSKDNasKgkerT5lJu6uNUv6BDlQNLdh3ezx77mai6s1L/qLybzJovdu5PPJ5
-	 6TjA+L1TkmOAi7stc+xyonSrWvYgqNbI4lFsv8X/1Dd8UXB0oBhS0IeLd1p5QecA9bqMq
-	 qzU4Lm02SrmsKwzYajvfiECv33+nA9Aiyo5R2l16+PueaPY4jCy+5ix+5l590YC41BIpG
-	 C1lZLGd3BW7caZuuvI7MVoe5nH0TcbWldQeXYUcbPyLk7+2IhcAd7nx7HjPIZg/0yZQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793800947;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:
-	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
-	 Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
-	 References:MIME-Version:Content-Transfer-Encoding:Content-Type:
-	 X-Originating-IP:X-ClientProxiedBy:X-EOPAttributedMessage:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
-	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
-	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=clgnn/l0xxn+YplSr3tGwTORb9AMKRayHqXQE17fBq8=;
-	b=XPEGgdRujym01LClqoyjBNhVjiyeUJrqNxVvnBAOGl+3BrnUmqpRriNi97PgKahfQ/DB
-	 2Td5A+is2IRCEFHmzY18AoDibTKcrc0MznQc6LTyu+9dZGSXHoCkqOzudti9hKJBsiRKk
-	 b91BVrcQdNNEkHFE/jwDaF4EHnG6amobvv3VcTgND5BR4KS3Kql/z3I7YoR6RKtkGyzz/
-	 bDbKAdyi4Ua3/5vwEjgHo0FWDszybXO8M9xg7YJDEmeuPJ9UVC3m1n17BlZ6OKmA0CoMz
-	 65icBR5W+T8rdeZXwfxWzv/eZWxBpDlww1p//Xd+h2l9Nm3VJ/Tqo1L7dgz/oeu274w==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=foss.st.com;
-	spf=pass smtp.mailfrom=foss.st.com;
-	dkim=pass header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=SE4c+EIu;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.66.25
-Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012025.outbound.protection.outlook.com [52.101.66.25])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793801390;
+	b=mARfgcJH+MgwHKZAbxeWFcodz05feeI2seo5l8D5GNQdlNsrTWuK6NS9TzhzSnhevtLi
+	 qAt2hekvZL1kTWJVeE3nPdPIMUYLQDMmTxErM3J1aPSEH5apFFKXBFIRkuGJ8w98ALGbV
+	 nhcMZr4IcBO69lHkSSmgrTGn8sw4dFOJfozZFilmJPO+TJz1Rkw365IMXhHWUI2y8xuMK
+	 nupCn2/triA6h6Y+s18rwll1xNP24SkssF27HYPoJYpoddq/cPUj5VNg3qQ3sp3wQxO0I
+	 MwU3OT9dxdHOMzqSdWtg5HbG3hewNbum6S1mFRoSsYgbmUQla5x0WA/ZzCU5ijmSWJA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793801390;
+	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 Content-Type;
+	bh=Rja63v8SvhDJ5Nc3/E8dKLOwWZaN1vZYvJXp3TIYRyU=;
+	b=W51iHSQuiVFv/VifUMmI8iptnvdteV4vYkMBswZ0c643duySmRplkgmSgJIwonf6nCPG
+	 Cjyy4zzow0ze3O5sAjJSxygWyFDy5BCo1DrM9DMakdavA8E2RmWDCrss/K6RoYDZnshmL
+	 mExE8wrju4i/hiV3NKM2m6PpEpnZ1DqG/XCL2XbAcSmpPDxnMfbUWjAd9RmcKLfukg7jq
+	 XkEfp9oPMTBHYqJl+UTowvvKh+tu2L0LzRv8ZFAkJ/TEx2Bo6zOV/OVV01pfZf576/JJ3
+	 o6zXYbxIkElYl0/kLMtGo5BDABChy/PLcV0pU3vhOCP8zAaRTCP0TSFcCfc8Ef5jNPw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=sntech.de;
+	spf=pass smtp.mailfrom=sntech.de;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gvk23y7k;
+	arc=none smtp.remote-ip=185.11.138.130
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1FE9606A335;
-	Wed,  4 Nov 2026 14:02:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E1FE9606A335
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foss.st.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=foss.st.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7524606A31B;
+	Wed,  4 Nov 2026 14:09:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B7524606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=SE4c+EIu
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=TYWf9PwAtyH/xmuQUH1XSY8yzhSTmU/5QmVFBnQQpI3RLWzG0RgZ7yFFVJxDz78ARyHXyn5/oae6tWMEetCNeWkRrzdI/IvcmhPXD8f3ToTZ+uSYUCUBQroprJyyOwvomBBCuQsdbOgfSfYUNmPute7Hhjjy0dRDwAU82OD+JhDOUWr0gHdu9B/Jpmet0XkVcvVAER8GqPMeCHVabOVE0+CYmuFwRnEIea6lqOt7ccuA09+cuVibYIyMQEVE4NgIZEwo1UGKwvn5LdhemHGaNv80f0sMPVVhcdM9SPaq7pRiB7GOav6dAZ3h/sePvnhncf2u4mnVb3Bb15U0ijlirQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=clgnn/l0xxn+YplSr3tGwTORb9AMKRayHqXQE17fBq8=;
- b=ue5sgeEcMobs3k79fq2J65BVTZ2NMX5MqkcX6qJaMylJI6kC9+63AsMJbVVznLlyKHXV8EFYXsyjhUqLwlNRVH5T62+1EbiIf46OVaCPiag5goe/0Y9d7dXc8bJ+Y2QH1cA01d/Hpgu98H19kJoJf4kK2O5Pl7Mi50EnGQIvN+y1sdPArW6lE3ZxqLEMZLcWJ8X77HbbGMDIQm2giLnviUUEOs8wXjK8zs9FEdg/OYkNkLfDOg7+6VTO4iwyYi2m/+fVjVzPK0BzJRtSGi3VxIU8e77QEmfdSTWJfQLJv72njJfK42vnBrcenpf9YH5WFwL2IG4YkOuh1lBVBpWx+A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 164.130.1.60) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
- dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=clgnn/l0xxn+YplSr3tGwTORb9AMKRayHqXQE17fBq8=;
- b=SE4c+EIuDvpWGLv6MzGjSqErUegMg328m5mwtTUZxQN2VTDkcRw8w6JT1uk+/oTBpWILNS8KBsyzym+2LuZdvuyCuU7Bna3HUQeL8qgA4HjlOK9n5qDhGDyEjW+0lvMOZ770f3A3cnyr7iS99ZErehsijqJOSamsJeTyes/8j+GJT+LvimwE9GrjmcNA1w0dNu7Nku9K+oirGtPUQqBCTdnIkZwX0bwm0e/DOB+PqmZShMhEDERgVoMaE//73I9uLdkfD6dvo/pACw3bY0N8BSoYT3pK85KT7MiK2yBq8YkiujXV0OinCNFhgrTfdYPzCzKBMQXTrKK7vT2180uVtg==
-Received: from MI1P293CA0018.ITAP293.PROD.OUTLOOK.COM (2603:10a6:290:3::12) by
- PAXPR10MB7927.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:102:24d::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.8; Wed, 4 Nov 2026
- 14:02:24 +0000
-Received: from MI3PEPF0000848B.eurprd02.prod.outlook.com
- (2603:10a6:290:3:cafe::ac) by MI1P293CA0018.outlook.office365.com
- (2603:10a6:290:3::12) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.592.10 via Frontend Transport; Wed, 4
- Nov 2026 14:02:24 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=fail (sender IP
- is 164.130.1.60) smtp.mailfrom=foss.st.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=none header.from=foss.st.com;
-Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
- designate 164.130.1.60 as permitted sender) receiver=protection.outlook.com;
- client-ip=164.130.1.60; helo=smtpO365.st.com;
-Received: from smtpO365.st.com (164.130.1.60) by
- MI3PEPF0000848B.mail.protection.outlook.com (10.167.240.138) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.592.5 via Frontend Transport; Wed, 4 Nov 2026 14:02:24 +0000
-Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpO365.st.com
- (10.250.44.72) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 4 Nov
- 2026 15:03:05 +0100
-Received: from localhost (10.48.87.100) by STKDAG1NODE2.st.com (10.75.128.133)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 4 Nov
- 2026 15:02:20 +0100
-From: Patrick Delaunay <patrick.delaunay@foss.st.com>
-To: Ulf Hansson <ulfh@kernel.org>, Patrick Delaunay
-	<patrick.delaunay@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>
-CC: Linux STM32 <linux-stm32@st-md-mailman.stormreply.com>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>
-Subject: [PATCH 2/7] pmdomain: st: add STM32MP power domain
-Date: Wed, 4 Nov 2026 14:55:05 +0100
-Message-ID: <20261104145502.2.I59b2ea87f07947037b772c49c277092c887f4310@changeid>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261104135604.907283-1-patrick.delaunay@foss.st.com>
-References: <20261104135604.907283-1-patrick.delaunay@foss.st.com>
+	dkim=pass (2048-bit key, unprotected) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gvk23y7k
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=Rja63v8SvhDJ5Nc3/E8dKLOwWZaN1vZYvJXp3TIYRyU=; b=gvk23y7kJEBYZNbym5UkxTlO9P
+	MKtLMuI1GtzOfwN8IgqVVjghpttW9kmneskZ3WPq/IFiVAablWLBNFk56LfxqEGZgOvXx8WvwGT05
+	uz4Sv81J0cHGguIvDSvduHmMhSIfNBAj95p3wTrNBPahDYaU9e+A9h0uVd/bhcK5g/9mK3KfQIBKH
+	hamk2TPUX/tBy/e/UwM9Y16TZr6/oAnzSdpM+1QIsPJEsWK7mFUS2XPS7jTH9CWyW9D2brNDFzJkQ
+	mgaSr75asaqS8r0T2ezs8RyHv5WLRJu5WgA44hEXYBdaaw90q4zsL9XLuyJPoEi1oMbczaK+4tdt1
+	0yC29Khw==;
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ Elaine Zhang <zhangqing@rock-chips.com>, Lee Jones <lee@kernel.org>,
+ Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
+ Richard Cochran <richardcochran@gmail.com>, Ulf Hansson <ulfh@kernel.org>,
+ Andi Shyti <andi.shyti@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, David Wu <david.wu@rock-chips.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Maxime Chevallier <maxime.chevallier@bootlin.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Thinh Nguyen <Thinh.Nguyen@synopsys.com>,
+ Jaehoon Chung <jh80.chung@samsung.com>, Shawn Lin <shawn.lin@rock-chips.com>,
+ linux-rockchip@lists.infradead.org
+Cc: Cunhao Lu <1579567540@qq.com>, linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+ mfd@lists.linux.dev, linux-gpio@vger.kernel.org, netdev@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-mmc@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com, linux-phy@lists.infradead.org,
+ linux-usb@vger.kernel.org, 1579567540@qq.com
+Subject: Re: [PATCH 08/27] pinctrl: rockchip: Add RK3572 support
+Date: Wed, 04 Nov 2026 15:09:01 +0100
+Message-ID: <4309904.anssfa2V6d@diego>
+In-Reply-To: <20261022-add-board-ok3572-c-v1-8-0b0fd85a31ee@qq.com>
+References:
+ <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com>
+ <20261022-add-board-ok3572-c-v1-8-0b0fd85a31ee@qq.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -114,218 +91,389 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
- (10.75.128.133)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MI3PEPF0000848B:EE_|PAXPR10MB7927:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3eca88c4-5af3-4fe8-ebfe-08df3a7c4096
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|36860700016|82310400026|261022075727099003|11063799006|56012099006|261026140227099003|261009223027099003|261022105027099003|261028144727099003|261021135927099003|261102123227099003|261026121527099003|261021121427099003|261021123027099003|10067099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	O1tDYRQ/H56abgnZw4xSOE4gz9fGTGSfD8KL3fzE3U1V1rcHWbL3kpwLcmYD2eBjbpFfjmTa3mHbzrScnYMvagPT7E+s7NpbLw0JX7bvyZfK+aLhqoOifwySf8meZmnzKeZCz9iWPDw6moxOaeUymjreuqQYfZxSNQsFeNqfmukXIaNTIT0hWFN77Lh/7CT8CcHK7769Ksrn3mB3Lv49vSG0Q7o9DEOpcJfgWg3WlEwfyMUWtsLGr+UTBA+k5D9y9t8kRfDlLdvsLeMCTnc8UXhQBpGs73u3QzAeK9oz8pwYD2AGoAXVNjlM3NcFXXgQFUgFf3Ye6P/DwS2sx0AXaVnGVjYPbataxuDkItrY3qM97Vw/6SXm755uSLlDx8OVmTqnWCJQuMMxoOeUNPX1hZKmWAt5o3Npdl44iUD5hsFlS4i5vYai/Fp+LO+jdmVvrHJ81lkD7UgdFHY4w5pE/4M97Zv2FF4inLDw1uFy+0EkwoLVL0e4zU9+KFxa/oi9PEyMPC3J5Tl2Ftm+GxezK/8NCng17wBErzelMNqvJztmrfcxSj4FeH6WvjgepfDmiF25FcZ2NTzSbGAVNWWLVSAZWhd61RomNOJaKwpwbQ55+EKGx8jTdSbSsRjquTSZSotLSfH1NwsdtfnpG6Lv6si04vWp/Wosn/BIeZNOXiHg9JDbe4uFQzkmZEyU2ClTGfmMRHVdcrWspRdJ04w+wg==
-X-Forefront-Antispam-Report:
-	CIP:164.130.1.60;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(36860700016)(82310400026)(261022075727099003)(11063799006)(56012099006)(261026140227099003)(261009223027099003)(261022105027099003)(261028144727099003)(261021135927099003)(261102123227099003)(261026121527099003)(261021121427099003)(261021123027099003)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	YbaaWHY60epF3TWZWBYK0r77jH8PpXdBNFIWo7XHy04pwS8xqbp6cX6DkB6a26rVOdgIvyz3/20an31BSFC+xn/UMtBbtNNlwYRdfnSYe/aBtaBiuK2zeywZc3zMC+XevsHaqFSnocQ2moZEgdVp/t8uqOUcKMpFYmxTVS7W4Tii4COUZol5GX2mny7fjPo+BxK/5q2R84mw6CCymzol2W7fOCxHVSn0F++JTsR9UP1XZaOQiAOlE8hPLlOiERy3c6LT3SUA237TVPxkz3W55jegJA7lQcMYP2SwwfXzggqDcDyBQIuJP+/8vny5M3AnHPqeeMzNXzIsaRnLXxeUI8ij6Vo9gR4hKefRUP8R1fkiHCFLjzCSUlPp5fYmDkusjg58QdB9Rh3Ten7uuPgE/QkwHSZbo7g+8yFVPWB3+Zr5owleKa+CKDU65NgMgY7R
-X-OriginatorOrg: foss.st.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Nov 2026 14:02:24.3518
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3eca88c4-5af3-4fe8-ebfe-08df3a7c4096
-X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.60];Helo=[smtpO365.st.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	MI3PEPF0000848B.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR10MB7927
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-Add a generic PM domain for the STM32MP D1 domain, using the PM
-framework to manage attached devices.
+Am Mittwoch, 21. Oktober 2026, 18:11:05 Mitteleurop=C3=A4ische Normalzeit s=
+chrieb Cunhao Lu via B4 Relay:
+> From: Cunhao Lu <1579567540@qq.com>
+>=20
+> Support RK3572 pinmux, bias, drive-strength, and Schmitt controls.
+> Enable input buffers during mux changes for the RGMII receive clocks.
+>=20
+> Signed-off-by: Cunhao Lu <1579567540@qq.com>
 
-Make D1 a subdomain of the PSCI cluster domain, so active devices keep
-the Cortex-A35 cluster in Run1. Do not set GENPD_FLAG_ACTIVE_WAKEUP on
-D1: system wakeups are handled by EXTI1 through the RET_PD PSCI domain.
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
-Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
----
+> ---
+>  drivers/pinctrl/pinctrl-rockchip.c | 230 +++++++++++++++++++++++++++++++=
++++++-
+>  drivers/pinctrl/pinctrl-rockchip.h |   1 +
+>  2 files changed, 230 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/pinctrl/pinctrl-rockchip.c b/drivers/pinctrl/pinctrl=
+=2Drockchip.c
+> index ba47b6f323cc..6d9a6510b343 100644
+> --- a/drivers/pinctrl/pinctrl-rockchip.c
+> +++ b/drivers/pinctrl/pinctrl-rockchip.c
+> @@ -1363,6 +1363,10 @@ static int rockchip_get_mux(struct rockchip_pin_ba=
+nk *bank, int pin)
+>  	if (bank->recalced_mask & BIT(pin))
+>  		rockchip_get_recalced_mux(bank, pin, &reg, &bit, &mask);
+> =20
+> +	if (ctrl->type =3D=3D RK3572 && bank->bank_num =3D=3D 0 &&
+> +	    pin >=3D RK_PB4 && pin <=3D RK_PB7)
+> +		reg +=3D 0x2000;
+> +
+>  	if (ctrl->type =3D=3D RK3576) {
+>  		if ((bank->bank_num =3D=3D 0) && (pin >=3D RK_PB4) && (pin <=3D RK_PB7=
+))
+>  			reg +=3D 0x1ff4; /* GPIO0_IOC_GPIO0B_IOMUX_SEL_H */
+> @@ -1421,6 +1425,24 @@ static int rockchip_verify_mux(struct rockchip_pin=
+_bank *bank,
+>  	return 0;
+>  }
+> =20
+> +static int rk3572_enable_input(struct rockchip_pin_bank *bank, int pin)
+> +{
+> +	static const u32 offsets[] =3D { 0x300, 0x10310, 0x12320, 0x14330, 0x14=
+340 };
+> +	struct rockchip_pinctrl *info =3D bank->drvdata;
+> +	u32 reg, bit =3D pin % 8;
+> +
+> +	if (bank->bank_num >=3D ARRAY_SIZE(offsets))
+> +		return -EINVAL;
+> +
+> +	reg =3D offsets[bank->bank_num] + pin / 8 * 4;
+> +	if (bank->bank_num =3D=3D 0 && pin >=3D RK_PB4)
+> +		reg +=3D 0x2000;
+> +	else if (bank->bank_num =3D=3D 4 && pin >=3D RK_PC0)
+> +		reg -=3D 0x10000;
+> +
+> +	return regmap_write(info->regmap_base, reg, BIT(bit + 16) | BIT(bit));
+> +}
+> +
+>  /*
+>   * Set a new mux function for a pin.
+>   *
+> @@ -1498,6 +1520,10 @@ static int rockchip_set_mux(struct rockchip_pin_ba=
+nk *bank, int pin, int mux)
+>  	if (bank->recalced_mask & BIT(pin))
+>  		rockchip_get_recalced_mux(bank, pin, &reg, &bit, &mask);
+> =20
+> +	if (ctrl->type =3D=3D RK3572 && bank->bank_num =3D=3D 0 &&
+> +	    pin >=3D RK_PB4 && pin <=3D RK_PB7)
+> +		reg +=3D 0x2000;
+> +
+>  	if (ctrl->type =3D=3D RK3576) {
+>  		if ((bank->bank_num =3D=3D 0) && (pin >=3D RK_PB4) && (pin <=3D RK_PB7=
+))
+>  			reg +=3D 0x1ff4; /* GPIO0_IOC_GPIO0B_IOMUX_SEL_H */
+> @@ -1568,8 +1594,13 @@ static int rockchip_set_mux(struct rockchip_pin_ba=
+nk *bank, int pin, int mux)
+>  	rmask =3D data | (data >> 16);
+>  	data |=3D (mux & mask) << bit;
+>  	ret =3D regmap_update_bits(regmap, reg, rmask, data);
+> +	if (ret)
+> +		return ret;
+> =20
+> -	return ret;
+> +	if (ctrl->type =3D=3D RK3572)
+> +		return rk3572_enable_input(bank, pin);
+> +
+> +	return 0;
+>  }
+> =20
+>  #define PX30_PULL_PMU_OFFSET		0x10
+> @@ -3097,6 +3128,151 @@ static int rk3568_calc_drv_reg_and_bit(struct roc=
+kchip_pin_bank *bank,
+>  	return 0;
+>  }
+> =20
+> +#define RK3572_DRV_BITS_PER_PIN		4
+> +#define RK3572_DRV_PINS_PER_REG		4
+> +#define RK3572_DRV_GPIO0_OFFSET		0x100
+> +#define RK3572_DRV_GPIO1_OFFSET		0x10120
+> +#define RK3572_DRV_GPIO2_OFFSET		0x12140
+> +#define RK3572_DRV_GPIO3_OFFSET		0x14160
+> +#define RK3572_DRV_GPIO4_OFFSET		0x14180
+> +
+> +static int rk3572_calc_drv_reg_and_bit(struct rockchip_pin_bank *bank,
+> +				       int pin_num, struct regmap **regmap,
+> +				       int *reg, u8 *bit)
+> +{
+> +	struct rockchip_pinctrl *info =3D bank->drvdata;
+> +
+> +	*regmap =3D info->regmap_base;
+> +
+> +	switch (bank->bank_num) {
+> +	case 0:
+> +		*reg =3D RK3572_DRV_GPIO0_OFFSET;
+> +		if (pin_num >=3D 12)
+> +			*reg +=3D 0x2000;
+> +		break;
+> +	case 1:
+> +		*reg =3D RK3572_DRV_GPIO1_OFFSET;
+> +		break;
+> +	case 2:
+> +		*reg =3D RK3572_DRV_GPIO2_OFFSET;
+> +		break;
+> +	case 3:
+> +		*reg =3D RK3572_DRV_GPIO3_OFFSET;
+> +		break;
+> +	case 4:
+> +		*reg =3D RK3572_DRV_GPIO4_OFFSET;
+> +		if (pin_num >=3D 16)
+> +			*reg -=3D 0x10000;
+> +		break;
+> +	default:
+> +		dev_err(info->dev, "unsupported bank_num %d\n", bank->bank_num);
+> +		return -EINVAL;
+> +	}
+> +
+> +	*reg +=3D ((pin_num / RK3572_DRV_PINS_PER_REG) * 4);
+> +	*bit =3D pin_num % RK3572_DRV_PINS_PER_REG;
+> +	*bit *=3D RK3572_DRV_BITS_PER_PIN;
+> +
+> +	return 0;
+> +}
+> +
+> +#define RK3572_PULL_BITS_PER_PIN	2
+> +#define RK3572_PULL_PINS_PER_REG	8
+> +#define RK3572_PULL_GPIO0_OFFSET	0x200
+> +#define RK3572_PULL_GPIO1_OFFSET	0x10210
+> +#define RK3572_PULL_GPIO2_OFFSET	0x12220
+> +#define RK3572_PULL_GPIO3_OFFSET	0x14230
+> +#define RK3572_PULL_GPIO4_OFFSET	0x14240
+> +
+> +static int rk3572_calc_pull_reg_and_bit(struct rockchip_pin_bank *bank,
+> +					int pin_num, struct regmap **regmap,
+> +					int *reg, u8 *bit)
+> +{
+> +	struct rockchip_pinctrl *info =3D bank->drvdata;
+> +
+> +	*regmap =3D info->regmap_base;
+> +
+> +	switch (bank->bank_num) {
+> +	case 0:
+> +		*reg =3D RK3572_PULL_GPIO0_OFFSET;
+> +		if (pin_num >=3D 12)
+> +			*reg +=3D 0x2000;
+> +		break;
+> +	case 1:
+> +		*reg =3D RK3572_PULL_GPIO1_OFFSET;
+> +		break;
+> +	case 2:
+> +		*reg =3D RK3572_PULL_GPIO2_OFFSET;
+> +		break;
+> +	case 3:
+> +		*reg =3D RK3572_PULL_GPIO3_OFFSET;
+> +		break;
+> +	case 4:
+> +		*reg =3D RK3572_PULL_GPIO4_OFFSET;
+> +		if (pin_num >=3D 16)
+> +			*reg -=3D 0x10000;
+> +		break;
+> +	default:
+> +		dev_err(info->dev, "unsupported bank_num %d\n", bank->bank_num);
+> +		return -EINVAL;
+> +	}
+> +
+> +	*reg +=3D ((pin_num / RK3572_PULL_PINS_PER_REG) * 4);
+> +	*bit =3D pin_num % RK3572_PULL_PINS_PER_REG;
+> +	*bit *=3D RK3572_PULL_BITS_PER_PIN;
+> +
+> +	return 0;
+> +}
+> +
+> +#define RK3572_SMT_BITS_PER_PIN		1
+> +#define RK3572_SMT_PINS_PER_REG		8
+> +#define RK3572_SMT_GPIO0_OFFSET		0x400
+> +#define RK3572_SMT_GPIO1_OFFSET		0x10410
+> +#define RK3572_SMT_GPIO2_OFFSET		0x12420
+> +#define RK3572_SMT_GPIO3_OFFSET		0x14430
+> +#define RK3572_SMT_GPIO4_OFFSET		0x14440
+> +
+> +static int rk3572_calc_schmitt_reg_and_bit(struct rockchip_pin_bank *ban=
+k,
+> +					   int pin_num,
+> +					   struct regmap **regmap,
+> +					   int *reg, u8 *bit)
+> +{
+> +	struct rockchip_pinctrl *info =3D bank->drvdata;
+> +
+> +	*regmap =3D info->regmap_base;
+> +
+> +	switch (bank->bank_num) {
+> +	case 0:
+> +		*reg =3D RK3572_SMT_GPIO0_OFFSET;
+> +		if (pin_num >=3D 12)
+> +			*reg +=3D 0x2000;
+> +		break;
+> +	case 1:
+> +		*reg =3D RK3572_SMT_GPIO1_OFFSET;
+> +		break;
+> +	case 2:
+> +		*reg =3D RK3572_SMT_GPIO2_OFFSET;
+> +		break;
+> +	case 3:
+> +		*reg =3D RK3572_SMT_GPIO3_OFFSET;
+> +		break;
+> +	case 4:
+> +		*reg =3D RK3572_SMT_GPIO4_OFFSET;
+> +		if (pin_num >=3D 16)
+> +			*reg -=3D 0x10000;
+> +		break;
+> +	default:
+> +		dev_err(info->dev, "unsupported bank_num %d\n", bank->bank_num);
+> +		return -EINVAL;
+> +	}
+> +
+> +	*reg +=3D ((pin_num / RK3572_SMT_PINS_PER_REG) * 4);
+> +	*bit =3D pin_num % RK3572_SMT_PINS_PER_REG;
+> +	*bit *=3D RK3572_SMT_BITS_PER_PIN;
+> +
+> +	return 0;
+> +}
+> +
+>  #define RK3576_DRV_BITS_PER_PIN		4
+>  #define RK3576_DRV_PINS_PER_REG		4
+>  #define RK3576_DRV_GPIO0_AL_OFFSET	0x10
+> @@ -3441,6 +3617,18 @@ static int rockchip_get_drive_perpin(struct rockch=
+ip_pin_bank *bank,
+>  	if (ret)
+>  		return ret;
+> =20
+> +	if (ctrl->type =3D=3D RK3572) {
+> +		ret =3D regmap_read(regmap, reg, &data);
+> +		if (ret)
+> +			return ret;
+> +		data >>=3D bit;
+> +		if ((bank->bank_num =3D=3D 0 && pin_num < 12) ||
+> +		    (bank->bank_num =3D=3D 4 && (pin_num =3D=3D 24 || pin_num =3D=3D 2=
+5)))
+> +			return ((data & BIT(1)) >> 1) | ((data & BIT(0)) << 1);
+> +		return ((data & BIT(2)) >> 2) | ((data & BIT(0)) << 2) |
+> +		       (data & BIT(1));
+> +	}
+> +
+>  	switch (drv_type) {
+>  	case DRV_TYPE_IO_1V8_3V0_AUTO:
+>  	case DRV_TYPE_IO_3V3_ONLY:
+> @@ -3559,6 +3747,22 @@ static int rockchip_set_drive_perpin(struct rockch=
+ip_pin_bank *bank,
+>  		rmask_bits =3D RK3568_DRV_BITS_PER_PIN;
+>  		ret =3D (1 << (strength + 1)) - 1;
+>  		goto config;
+> +	} else if (ctrl->type =3D=3D RK3572) {
+> +		if (strength < 0 || strength > 7)
+> +			return -EINVAL;
+> +		rmask_bits =3D RK3572_DRV_BITS_PER_PIN;
+> +		if ((bank->bank_num =3D=3D 0 && pin_num < 12) ||
+> +		    (bank->bank_num =3D=3D 4 && (pin_num =3D=3D 24 || pin_num =3D=3D 2=
+5))) {
+> +			/* Only four drive-strength levels are supported. */
+> +			if (strength > 3)
+> +				return -EINVAL;
+> +			ret =3D ((strength & BIT(1)) >> 1) | ((strength & BIT(0)) << 1);
+> +		} else {
+> +			ret =3D ((strength & BIT(2)) >> 2) |
+> +			      ((strength & BIT(0)) << 2) |
+> +			      (strength & BIT(1));
+> +		}
+> +		goto config;
+>  	} else if (ctrl->type =3D=3D RK3576) {
+>  		rmask_bits =3D RK3576_DRV_BITS_PER_PIN;
+>  		ret =3D ((strength & BIT(2)) >> 2) | ((strength & BIT(0)) << 2) | (str=
+ength & BIT(1));
+> @@ -3717,6 +3921,7 @@ static int rockchip_get_pull(struct rockchip_pin_ba=
+nk *bank, int pin_num)
+>  	case RK3528:
+>  	case RK3562:
+>  	case RK3568:
+> +	case RK3572:
+>  	case RK3576:
+>  	case RK3588:
+>  		pull_type =3D bank->pull_type[pin_num / 8];
+> @@ -3786,6 +3991,7 @@ static int rockchip_set_pull(struct rockchip_pin_ba=
+nk *bank,
+>  	case RK3528:
+>  	case RK3562:
+>  	case RK3568:
+> +	case RK3572:
+>  	case RK3576:
+>  	case RK3588:
+>  		pull_type =3D bank->pull_type[pin_num / 8];
+> @@ -4084,6 +4290,7 @@ static bool rockchip_pinconf_pull_valid(struct rock=
+chip_pin_ctrl *ctrl,
+>  	case RK3528:
+>  	case RK3562:
+>  	case RK3568:
+> +	case RK3572:
+>  	case RK3576:
+>  	case RK3588:
+>  		return (pull !=3D PIN_CONFIG_BIAS_PULL_PIN_DEFAULT);
+> @@ -4296,6 +4503,7 @@ static const struct pinconf_ops rockchip_pinconf_op=
+s =3D {
+> =20
+>  static const struct of_device_id rockchip_bank_match[] =3D {
+>  	{ .compatible =3D "rockchip,gpio-bank" },
+> +	{ .compatible =3D "rockchip,rk3572-gpio-bank" },
+>  	{ .compatible =3D "rockchip,rk3188-gpio-bank0" },
+>  	{},
+>  };
+> @@ -5643,6 +5851,24 @@ static struct rockchip_pin_ctrl rk3568_pin_ctrl =
+=3D {
+>  					       PULL_TYPE_IO_1V8_ONLY,	\
+>  					       PULL_TYPE_IO_1V8_ONLY)
+> =20
+> +static struct rockchip_pin_bank rk3572_pin_banks[] =3D {
+> +	RK3576_PIN_BANK(0, "gpio0", 0, 0x8, 0x2010, 0x2018),
+> +	RK3576_PIN_BANK(1, "gpio1", 0x10020, 0x10028, 0x10030, 0x10038),
+> +	RK3576_PIN_BANK(2, "gpio2", 0x12040, 0x12048, 0x12050, 0x12058),
+> +	RK3576_PIN_BANK(3, "gpio3", 0x14060, 0x14068, 0x14070, 0x14078),
+> +	RK3576_PIN_BANK(4, "gpio4", 0x14080, 0x14088, 0x4090, 0x4098),
+> +};
+> +
+> +static struct rockchip_pin_ctrl rk3572_pin_ctrl __maybe_unused =3D {
+> +	.pin_banks		=3D rk3572_pin_banks,
+> +	.nr_banks		=3D ARRAY_SIZE(rk3572_pin_banks),
+> +	.label			=3D "RK3572-GPIO",
+> +	.type			=3D RK3572,
+> +	.pull_calc_reg		=3D rk3572_calc_pull_reg_and_bit,
+> +	.drv_calc_reg		=3D rk3572_calc_drv_reg_and_bit,
+> +	.schmitt_calc_reg	=3D rk3572_calc_schmitt_reg_and_bit,
+> +};
+> +
+>  static struct rockchip_pin_bank rk3576_pin_banks[] =3D {
+>  	RK3576_PIN_BANK(0, "gpio0", 0, 0x8, 0x2004, 0x200C),
+>  	RK3576_PIN_BANK(1, "gpio1", 0x4020, 0x4028, 0x4030, 0x4038),
+> @@ -5727,6 +5953,8 @@ static const struct of_device_id rockchip_pinctrl_d=
+t_match[] =3D {
+>  		.data =3D &rk3562_pin_ctrl },
+>  	{ .compatible =3D "rockchip,rk3568-pinctrl",
+>  		.data =3D &rk3568_pin_ctrl },
+> +	{ .compatible =3D "rockchip,rk3572-pinctrl",
+> +		.data =3D &rk3572_pin_ctrl },
+>  	{ .compatible =3D "rockchip,rk3576-pinctrl",
+>  		.data =3D &rk3576_pin_ctrl },
+>  	{ .compatible =3D "rockchip,rk3588-pinctrl",
+> diff --git a/drivers/pinctrl/pinctrl-rockchip.h b/drivers/pinctrl/pinctrl=
+=2Drockchip.h
+> index 950097699643..553197f6dc69 100644
+> --- a/drivers/pinctrl/pinctrl-rockchip.h
+> +++ b/drivers/pinctrl/pinctrl-rockchip.h
+> @@ -203,6 +203,7 @@ enum rockchip_pinctrl_type {
+>  	RK3528,
+>  	RK3562,
+>  	RK3568,
+> +	RK3572,
+>  	RK3576,
+>  	RK3588,
+>  };
+>=20
+>=20
 
- drivers/pmdomain/st/Kconfig             |  14 +++
- drivers/pmdomain/st/Makefile            |   1 +
- drivers/pmdomain/st/stm32mp-pm-domain.c | 128 ++++++++++++++++++++++++
- 3 files changed, 143 insertions(+)
- create mode 100644 drivers/pmdomain/st/stm32mp-pm-domain.c
 
-diff --git a/drivers/pmdomain/st/Kconfig b/drivers/pmdomain/st/Kconfig
-index a77a70211f61..da8a54d44158 100644
---- a/drivers/pmdomain/st/Kconfig
-+++ b/drivers/pmdomain/st/Kconfig
-@@ -1,4 +1,18 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+
-+config STM32MP_PM_DOMAIN
-+	tristate "STM32MP PM domain"
-+	depends on ARCH_STM32 || COMPILE_TEST
-+	select PM_GENERIC_DOMAINS
-+	default y
-+	help
-+	  Enable support for the STM32MP Power Management (PM) domain driver.
-+	  This driver implements a generic PM domain for STM32MP SoCs, allowing
-+	  the kernel to manage power domains for various hardware blocks using
-+	  the generic power management framework. It is typically used to
-+	  control the power state of devices and peripherals on STM32MP
-+	  platforms. If unsure, say Y.
-+
- config UX500_PM_DOMAIN
- 	bool "ST-Ericsson ux500 Power Domain"
- 	depends on ARCH_U8500 || COMPILE_TEST
-diff --git a/drivers/pmdomain/st/Makefile b/drivers/pmdomain/st/Makefile
-index 6d8b617eb834..0e8131b7fe9d 100644
---- a/drivers/pmdomain/st/Makefile
-+++ b/drivers/pmdomain/st/Makefile
-@@ -1,2 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_STM32MP_PM_DOMAIN)		+= stm32mp-pm-domain.o
- obj-$(CONFIG_UX500_PM_DOMAIN)		+= ste-ux500-pm-domain.o
-diff --git a/drivers/pmdomain/st/stm32mp-pm-domain.c b/drivers/pmdomain/st/stm32mp-pm-domain.c
-new file mode 100644
-index 000000000000..1a6393840f56
---- /dev/null
-+++ b/drivers/pmdomain/st/stm32mp-pm-domain.c
-@@ -0,0 +1,128 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Implements PM domain using the generic PM domain for STM32MP SoC.
-+ *
-+ * Copyright (C) STMicroelectronics 2026
-+ * Author(s): Patrick Delaunay <patrick.delaunay@foss.st.com>
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
-+#include <linux/pm_runtime.h>
-+
-+struct stm32mp_pm_subdomain_link {
-+	struct generic_pm_domain *domain;
-+	struct generic_pm_domain *subdomain;
-+};
-+
-+static void stm32mp_pm_domain_genpd_remove(void *data)
-+{
-+	struct generic_pm_domain *genpd = data;
-+
-+	pm_genpd_remove(genpd);
-+}
-+
-+static void stm32mp_pm_domain_release_subdomain(void *data)
-+{
-+	struct stm32mp_pm_subdomain_link *link = data;
-+
-+	pm_genpd_remove_subdomain(link->domain, link->subdomain);
-+}
-+
-+static void stm32mp_pm_domain_release_genpd_provider(void *data)
-+{
-+	struct device_node *np = data;
-+
-+	of_genpd_del_provider(np);
-+}
-+
-+static int stm32mp_pm_domain_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
-+	struct generic_pm_domain *pd;
-+	struct stm32mp_pm_subdomain_link *link;
-+	int ret;
-+
-+	if (!np)
-+		return -ENODEV;
-+
-+	/* The OF node must specify us as a power-domain provider. */
-+	if (!of_property_present(np, "#power-domain-cells")) {
-+		dev_warn(dev, "%pOF lacks #power-domain-cells\n", np);
-+		return 0;
-+	}
-+
-+	pd = devm_kzalloc(dev, sizeof(*pd), GFP_KERNEL);
-+	if (!pd)
-+		return -ENOMEM;
-+
-+	pd->name = dev_name(dev);
-+
-+	/*
-+	 * Domain based only on PM clk framework, no GENPD_FLAG_ACTIVE_WAKEUP
-+	 * support, the wake-up path is handled by interrupt driver with its
-+	 * power domain. GENPD_FLAG_NO_STAY_ON as domain no required sync state,
-+	 * domain allow low power modes even if devices are not probed
-+	 */
-+	pd->flags = GENPD_FLAG_PM_CLK | GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_NO_STAY_ON;
-+
-+	ret = pm_genpd_init(pd, NULL, false);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to init power domain\n");
-+
-+	ret = devm_add_action_or_reset(dev, stm32mp_pm_domain_genpd_remove, pd);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to add action\n");
-+
-+	link = devm_kzalloc(dev, sizeof(*link), GFP_KERNEL);
-+	if (!link)
-+		return -ENOMEM;
-+	link->domain = pd_to_genpd(dev->pm_domain);
-+	link->subdomain = pd;
-+
-+	ret = pm_genpd_add_subdomain(link->domain, link->subdomain);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to add subdomain\n");
-+
-+	ret = devm_add_action_or_reset(dev, stm32mp_pm_domain_release_subdomain, link);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to add action\n");
-+
-+	ret = of_genpd_add_provider_simple(np, pd);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to add power domain provider\n");
-+
-+	ret = devm_add_action_or_reset(dev, stm32mp_pm_domain_release_genpd_provider, np);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to add action\n");
-+
-+	ret = devm_pm_runtime_enable(dev);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to enable pm-runtime\n");
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id stm32mp_pm_domain_matches[] = {
-+	{ .compatible = "st,stm32mp-pm-domain", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, stm32mp_pm_domain_matches);
-+
-+static struct platform_driver stm32mp_pm_domain_driver = {
-+	.driver = {
-+		.name = "stm32mp_pm_domain",
-+		.of_match_table = stm32mp_pm_domain_matches,
-+	},
-+	.probe  = stm32mp_pm_domain_probe,
-+};
-+
-+module_platform_driver(stm32mp_pm_domain_driver);
-+
-+MODULE_AUTHOR("Patrick Delaunay <patrick.delaunay@foss.st.com>");
-+MODULE_DESCRIPTION("ST STM32MP power domain driver");
-+MODULE_LICENSE("GPL");
--- 
-2.43.0
+
 
