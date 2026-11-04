@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793802883;
-	b=lbf30iwzNfFnAGqWo7Tjah5clH8tr3qpvaVM11JtJYXlHt/GgRtgsW+HhvLczKLMp1+G
-	 YhATqIckmn/hkgTTHgi+yXpD8Sx3tzVh0SFEanmD2Gh+NjXSGqz3IhzDRamaxnPN52Kcy
-	 z40TbtY+9pC/rGjO2qkH3ZbcBqztUNkPScRc/8l+YojXFxzhPZzrr7365XrgGvmG7Y+eE
-	 J3f0WeX7VhhUewxliH+9kD2xEw6J75R1xHFrdgXMQWFoN1/RFnrH4ZxgUgCmhrPot/MHS
-	 gzk8u7ZuZWtyFYdK4L3/yZWVJdtqOkz6suXBTr8QoiADbt++23infGTaXHjcFy4KyOg==
+	t=1793803102;
+	b=Im5RITPG9tGgFQwovyufxDyMxbsvWhViMqJpFoNZbvA94gl+8imQAmVyY+hqs7+wj6ek
+	 FyV0dKs300k8/V5Ai8K2MiQ23VWrcD42POzdyF8+hImEX1SSD+bw9c+l362v/DKLio2GF
+	 wQggkq+T6ozT3TLcYPwBZTG4o/qhUuXiFy1p3U82R4bE1bUTFpGVqz2XHIto6tbNfFKdf
+	 YSCPEMdjWzMgMlr7e1IT6MRTPHMuGzUJBFWam9Jh++dk18B3guVTza3XJO/+0Z7TwLVUN
+	 yZrQ4h08DdvQLfc3bjnLnesKiS+5aU2QZJE9brqNzJ83/pONsJjssOTj/5nS3LsflVw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793802883;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793803102;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=miceYdDB+7PLPC/J0qgYQmDdAc3qF6Ff3jq4UUQkwZY=;
-	b=Tu9xHg/52qpTnot83SiGPxUMAz0B+HWeLu9gNbz0IgPDaaoa2AxZvD9PXl5DERMieov6
-	 VIg8/+CzNZ09VFoca4NLNzWXu02ymz+w5QviXVfeTiru839OnFsrsv+nuhqD/yeEGSsPp
-	 zz+mHSoqpST3bwgLlyXtb1u5dU8fPj/sorW/NG0p6Up9DpDPgcOTXJBNvmL2CgnSERWXK
-	 oKYT350ibc4T0VSHy7JJdfrGZkY4K5ZXSLlU+aDN0WZcItd6swM7zwXfYGbfxOSBtXZAE
-	 gbZWNRH2SsiMZZKEFN43WfAcnZ0MEa+KfUh9GZvlnu1P6pcKQbkiLqJB1DPosy50FSw==
+	bh=TQh3NLauPY1iVVeXcuDFWHu+HqpyEZbU2yQkADbmaQs=;
+	b=C6ZexbqTRKm7PBaRw/R2NOz6CAxnyuOTAFYn6gtmD6/80cLY3FNJiovPTfJ/s60KiSto
+	 HFnI5A+Z3W/Z/wxJ7fIturJxvnoRlc9Qeullx9nypH5qo/Y+1ajVsQ25lxk3OIXrLJpv0
+	 CD+Ssl7qY5SAEraYvO3py+Dnh4gZOUbqTukI82DWz/cGeNprBLXENCV/dZq/4wSDdiUWJ
+	 uQhE1urPDUjTJIYdazfJZf1DcMI1P+EFGJaJGcOWK/6rAoLKdNeWb/1+pKZhzMh9hlrLI
+	 gb3RcltbqbqzYPfOM3jZO7g89B3OQBOEMb0MqrgFMrgoC0P2CKSngzC3mLH50qV8CZg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZCQew7J4;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VfKhKgVm;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E94A4606A32C
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:34:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60549606A328
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:38:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZCQew7J4
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F4541F00A1A
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:34:42 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VfKhKgVm
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0211E1F00919
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:38:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793802882;
-	bh=miceYdDB+7PLPC/J0qgYQmDdAc3qF6Ff3jq4UUQkwZY=;
+	s=k20260515; t=1793803102;
+	bh=TQh3NLauPY1iVVeXcuDFWHu+HqpyEZbU2yQkADbmaQs=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ZCQew7J4C0cPbpFciKAO29xWInbT/Z9mDi4MngzVubYoiE/NbzT2woeIcapJeMO1d
-	 rOxhLT3GseRScwA22F7gUErzJFnWneWR8ELJ4/+aPneT3avjJDYLsymfA0og2a61Aw
-	 Td+crMWeYN2V0NTkV/ksXQvBalTAv6ZQDIpc32Z7ZlILQ7DaeMklE5gyS51OD4Ffqv
-	 y9ubd4J1tRS6KMYaJyiqAp1Nqd9tnk5Ly2DkSshSP5pAirdKjminDIUmG61Qar+l0w
-	 olOrzA9NoVYOWDFEIRj32Zj7BhbgBwa6xveznllTlS8//zKtVwUNIXIkBjzvW439Hr
-	 8pm9c2skhrRpg==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5bfc346401aso558007e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:34:42 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBx1GO9lZPAGISOkMYejzTG1GKHe6N6zuOPyUEqe8Z/mL2grgaQTl4W82+zQisL5BPtDbGbxXZ/3+Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9vZFEMfjDtslRy39zT8sAa/ZL3hTjrS+gssVH68KYXqwEFxik4
-	VCxhWi8nNQjBdaTmlgw4kTZz0m+N5m2WFYh6uY+QzgNDzTnAJogK0wUBOBH42467e8gUvgPcwk+
-	YEkLx5vKiWXbYU5YgTV8IeHou3iScc7A=
-X-Received: by 2002:ac2:4c4e:0:b0:5be:605c:fca2 with SMTP id
- 2adb3069b0e04-5bfd954bf17mr5907232e87.4.1793802880980; Wed, 04 Nov 2026
- 06:34:40 -0800 (PST)
+	b=VfKhKgVmXvQe2VRewqtDFVT3Z/6Dtd7+1cJreS9lRzXIAAkUnc5H2oJX9ssBZK3JX
+	 AWPrnhiuzCSj2FTM/6tRlbNTnvjd7y7nZk77uv5TZ86dFsccq+SB+0JJ4F2eY+C16m
+	 865v3OcqqLlGqjthBx7950hiNAYoevx/W/cNhXABD4mdfKS7S0OZhjove/5ihzff+J
+	 lhtnksdv0u6LFEafggI/Hmjhpnhph3fBWr4sZL3vCclpGarIsZjOzUZ/PCXSo1TFGy
+	 eva9+D6vDYz2OLgmNcF8TdV3pfHlUPo4GtfA6bjoSj5igS0XuaKDsGjLeuf98FzbyZ
+	 0NYLenDuMIn6w==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5be4a2d94adso698288e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:38:21 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBz2ENCvHVNkEHx5UuCaZ4MlO+afd4PSJML0b69plSynmjOKLUO8H3+rwjTYV5LLhOK1RxVj2u1hIA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9Fj/2Z76UYV5LNVSP8wM23YkyVF3WSox8Ojy3+PdaYFTU5ihUn
+	JGi2Np1aap6yLJdTqpNuJJtf5Ig0409pLLJlX3PEiEt0oKf1jMpJIKLOdMAM0EQmFGN3L6jYYUt
+	u/aA1VfmF8w5/7jfCi27XEgsk/GvPkag=
+X-Received: by 2002:a05:6512:6193:b0:5bf:bf86:d01a with SMTP id
+ 2adb3069b0e04-5bfd9562e8amr5915003e87.17.1793803100471; Wed, 04 Nov 2026
+ 06:38:20 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,134 +59,84 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261104112744.1630864-1-stanleyjhu@google.com>
-In-Reply-To: <20261104112744.1630864-1-stanleyjhu@google.com>
+References: <cover.1793715774.git.krystianmkaniewski@gmail.com> <417c773d1719006cc85a3468dc393f5e754bf855.1793715774.git.krystianmkaniewski@gmail.com>
+In-Reply-To: <417c773d1719006cc85a3468dc393f5e754bf855.1793715774.git.krystianmkaniewski@gmail.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 4 Nov 2026 15:34:28 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gWGVXeN9nq=cUe=ufeX5jC3oWpdms-2Eus13dFNxqxAw@mail.gmail.com>
-X-Gm-Features: AclHuK8_mlawzHb7grWA4pMsKYYbWB0rPIQSUSQOlRdZy4jfzqgdM01VFchXEqs
-Message-ID: <CAJZ5v0gWGVXeN9nq=cUe=ufeX5jC3oWpdms-2Eus13dFNxqxAw@mail.gmail.com>
-Subject: Re: [PATCH v2] block: Keep RPM_ACTIVE in blk_pre_runtime_resume()
- when already active
-To: Stanley Jhu <stanleyjhu@google.com>
-Cc: Jens Axboe <axboe@kernel.dk>, Bart Van Assche <bvanassche@acm.org>, 
-	Brian Norris <briannorris@chromium.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Praveen Talari <praveen.talari@oss.qualcomm.com>, Alan Stern <stern@rowland.harvard.edu>, 
-	linux-block@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org
+Date: Wed, 4 Nov 2026 15:38:08 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0j-WY=nwVvq6Ck7kDLZ_E6jXGsQHohB5uZtT3uSQ0-6Ng@mail.gmail.com>
+X-Gm-Features: AclHuK9myr72rVuqTOxZAZX_zcmWDtmvlF6GR5rcMcUu0FZVOtDo1SpAWRGZnAQ
+Message-ID: <CAJZ5v0j-WY=nwVvq6Ck7kDLZ_E6jXGsQHohB5uZtT3uSQ0-6Ng@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] PM: hibernate: refuse splice on /sys/power/resume
+To: Krystian Kaniewski <krystianmkaniewski@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tejun Heo <tj@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Ian Kent <raven@themaw.net>, Danilo Krummrich <dakr@kernel.org>, 
+	Johan Hovold <johan@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Jens Axboe <axboe@kernel.dk>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, driver-core@lists.linux.dev, 
+	linux-pm@vger.kernel.org, autofs@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 4, 2026 at 12:27=E2=80=AFPM Stanley Jhu <stanleyjhu@google.com>=
- wrote:
+On Tue, Nov 3, 2026 at 3:57=E2=80=AFPM Krystian Kaniewski
+<krystianmkaniewski@gmail.com> wrote:
 >
-> Since commit eef1d74bf88f ("PM: runtime: Only set runtime_error on
-> suspend callback failures"), a failed runtime resume leaves
-> dev->power.runtime_error at 0 with runtime_status set to RPM_SUSPENDED,
-> so later runtime resume requests run sdev_runtime_resume() again:
+> resume_store() passes the written string to lookup_bdev() before it
+> tries to parse it as a device number, so the string is resolved as a
+> path relative to the current directory of the writer. The syzbot
+> reproducer writes a relative name from the root of an indirect autofs
+> mount. Autofs writes a mount request to its daemon pipe while kernfs
+> holds of->mutex. Together with a splice into a writable kernfs file,
+> which takes of->mutex inside a pipe mutex, lockdep reports
 >
-> 1. A runtime suspend increments q->pm_only from 0 to 1 and sets
->    q->rpm_status to RPM_SUSPENDED.
-> 2. The first runtime resume fails in the driver callback, and
->    blk_post_runtime_resume() sets q->rpm_status to RPM_ACTIVE and calls
->    blk_clear_pm_only(), decrementing q->pm_only from 1 to 0 so recovery
->    commands can enter the queue (intended since
->    commit 6e1fcab00a23 ("scsi: block: pm: Always set request queue
->    runtime active in blk_post_runtime_resume()")).
-> 3. A retried runtime resume calls blk_pre_runtime_resume(), which
->    overwrites q->rpm_status from RPM_ACTIVE to RPM_RESUMING, so
->    blk_post_runtime_resume() sees old_status !=3D RPM_ACTIVE and calls
->    blk_clear_pm_only() a second time without a matching
->    blk_set_pm_only().
-> 4. q->pm_only underflows from 0 to -1 (triggering WARN_ON_ONCE in
->    blk_clear_pm_only()), blocking non-PM requests in blk_queue_enter()
->    and __bio_queue_enter() while the device is RPM_ACTIVE, and the next
->    runtime suspend increments q->pm_only from -1 to 0, letting non-PM
->    requests dispatch while RPM_SUSPENDED. This hits the UFS device
->    well-known LUN by default and SCSI disks with
->    manage_runtime_start_stop enabled (ATA and FireWire sbp2 defaults).
+>   Chain exists of:
+>     &pipe->mutex --> &of->mutex --> &sbi->pipe_mutex
 >
-> Transition q->rpm_status to RPM_RESUMING in blk_pre_runtime_resume()
-> only when it is RPM_SUSPENDED, and call blk_clear_pm_only() in
-> blk_post_runtime_resume() only when old_status is RPM_RESUMING, pairing
-> each clear with a completed runtime suspend.
+> A splice from the daemon pipe into /sys/power/resume deadlocks when
+> the written path triggers a mount request. Mark the attribute with
+> SYSFS_LOOKUP so that its writable opens refuse splice and use lockdep
+> classes of their own. Plain read() and write() keep their behavior, and
+> read-only opens retain splice support.
 >
-> Tested on QEMU ARM64 UFS in SDB and MCQ modes by injecting
-> runtime-resume START STOP UNIT failures on the UFS device well-known
-> LUN, confirming zero pm_only underflows and balanced runtime PM cycles.
->
-> Fixes: eef1d74bf88f ("PM: runtime: Only set runtime_error on suspend call=
-back failures")
-> Cc: stable@vger.kernel.org # v7.3+
-> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-> Signed-off-by: Stanley Jhu <stanleyjhu@google.com>
-
-LGTM
+> Fixes: 1e8c813b083c ("PM: hibernate: don't use early_lookup_bdev in resum=
+e_store")
+> Reported-by: syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
+> Closes: https://syzkaller.appspot.com/bug?extid=3D002fb7b2d0bc53bf7e75
+> Suggested-by: Tejun Heo <tj@kernel.org>
+> Link: https://lore.kernel.org/r/ec0c2add83f18d7a3c726d5d219dfe42@kernel.o=
+rg
+> Signed-off-by: Krystian Kaniewski <krystianmkaniewski@gmail.com>
 
 Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
 
+and I'm expecting this to be routed along with the first patch in the serie=
+s.
+
+Thanks!
+
 > ---
-> Differences from v1:
-> - Move SUSPENDED -> RESUMING explicitly in blk_pre_runtime_resume() and
->   clear pm_only only for RPM_RESUMING in blk_post_runtime_resume()
-> - Describe the QEMU UFS test coverage in the commit message
-> - Link to v1: https://lore.kernel.org/r/20261029040001.2100001-1-stanleyj=
-hu@google.com
+> v2:
+> - New patch. Together with patch 1, this replaces the v1 autofs change.
 >
->  block/blk-pm.c | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
+>  kernel/power/hibernate.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 >
-> diff --git a/block/blk-pm.c b/block/blk-pm.c
-> index 8d3e052f91da..34cc7c5ca04e 100644
-> --- a/block/blk-pm.c
-> +++ b/block/blk-pm.c
-> @@ -142,7 +142,8 @@ EXPORT_SYMBOL(blk_post_runtime_suspend);
->   *
->   * Description:
->   *    Update the queue's runtime status to RESUMING in preparation for t=
-he
-> - *    runtime resume of the device.
-> + *    runtime resume of the device if the queue is runtime suspended, or=
- keep
-> + *    RPM_ACTIVE if a previous failed runtime resume already reactivated=
- it.
->   *
->   *    This function should be called near the start of the device's
->   *    runtime_resume callback.
-> @@ -153,7 +154,9 @@ void blk_pre_runtime_resume(struct request_queue *q)
->                 return;
->
->         spin_lock_irq(&q->queue_lock);
-> -       q->rpm_status =3D RPM_RESUMING;
-> +       /* Keep RPM_ACTIVE if a prior failed resume reactivated the queue=
-. */
-> +       if (q->rpm_status =3D=3D RPM_SUSPENDED)
-> +               q->rpm_status =3D RPM_RESUMING;
->         spin_unlock_irq(&q->queue_lock);
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index e365e440cd5299..9dc5a27f674fa0 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -1316,7 +1316,8 @@ static ssize_t resume_store(struct kobject *kobj, s=
+truct kobj_attribute *attr,
+>         return n;
 >  }
->  EXPORT_SYMBOL(blk_pre_runtime_resume);
-> @@ -168,8 +171,8 @@ EXPORT_SYMBOL(blk_pre_runtime_resume);
->   *    driver or error handler will need to communicate with the device.
->   *
->   *    This function should be called near the end of the device's
-> - *    runtime_resume callback to correct queue runtime PM status and re-=
-enable
-> - *    peeking requests from the queue.
-> + *    runtime_resume callback to mark the queue runtime active and clear
-> + *    pm_only if the queue was resuming.
->   */
->  void blk_post_runtime_resume(struct request_queue *q)
->  {
-> @@ -185,7 +188,7 @@ void blk_post_runtime_resume(struct request_queue *q)
->         pm_request_autosuspend(q->dev);
->         spin_unlock_irq(&q->queue_lock);
 >
-> -       if (old_status !=3D RPM_ACTIVE)
-> +       if (old_status =3D=3D RPM_RESUMING)
->                 blk_clear_pm_only(q);
->  }
->  EXPORT_SYMBOL(blk_post_runtime_resume);
+> -power_attr(resume);
+> +static struct kobj_attribute resume_attr =3D
+> +       __ATTR_LOOKUP(resume, 0644, resume_show, resume_store);
+>
+>  static ssize_t resume_offset_show(struct kobject *kobj,
+>                                   struct kobj_attribute *attr, char *buf)
 > --
-> 2.56.0.385.gac671c819a-goog
+> 2.53.0
 >
