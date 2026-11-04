@@ -1,91 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793813567;
-	b=OG4FThYxbcgKrcTUs/6t6I66RSL4wlgKQvdy1FX43Kc833hDGEyRKyQd2jRTW3DVxT8D
-	 Hvbnns89kZD7z0kKcUg2DARTZgH8lomNuqld5wROpLQ2YqnLbBvx+BuX/WwoOdirgVwZg
-	 A8ZTzoOMT6H/7A6+fUKBRyaxTrlhnqVroQnNSuhdpwLdO3492e1DeCM0PB7gpXuHfLHnx
-	 +1yJzsCyettmnRaOE4JzLYk2GAHRQaMUS+tjHEGR24FWU0lXicnM/WbSmGEO2vwcOGizp
-	 4QMDVQGyo5c8R5bPVxvqtJp+VC9a6fafeGdXrpe4T1QnmxdOOcBpuxkdDVCcHrfzoHQ==
+	t=1793813957;
+	b=cHqss5bdygOV69kcpOTHvb2EM1P5FQzdQA0fhmC0QEaE4pVGUGXXMzMZlliH/wZHlyrh
+	 Xv0QGPRgzRw6mhmiOcKY3gwCJ/OaQ4lNiX41T7jS49yEWxHBQEnZjmtYJGMOcmR5fP/uI
+	 n2Jbwy5JTq23lJdHcWfG6cWucD8Iwcj4LjJ3Qu1JAVraf+AdndpRysCUlJc24wkVMznWX
+	 NLC7azRz2xl1OzgCpwEL9aDop/x2kENYf2lzUKgaZlebfH5YGyj/AJsZqRweyWtstHEnU
+	 ngWpA9mLS/S9yeh3j9mz1EOkL0tT6NtAZlfJESpvv6McRmiirv9VR0RVLjR5e7q44XQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793813567;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=4KWh+pCjEY3BH9ZXJBW3B3/Mt0CuTTrjLcItJI+O2b0=;
-	b=LGKzGTAo4SGnH3OPaA6NQ/5xryuvPIiKTcAJrx3bP+3N30nqjZt6NPIqXKmLV9+mK6tj
-	 tYM70qVb2sXiGN8fmEnRNCYBy30yIva6Sw1OQrgHTMSGau+YKiBqhH55Qd9NhGzKO+vL9
-	 XLfPs09dY/eD9r5nTEOSubC67yDIGWIiHDL8rtfIsAPf/TDAorHSemmk52wqK5XzpuVoG
-	 f0JC4dpV/SRj7XjrqsEFqOed90Y1EQpbj+tcRYyfko1q5zskmnYU0GwTMwXpvQ18/EdHO
-	 Y7hIrnbEC6GK5m7y7oVus3eg6v0P5OQnSLmNAqcpmaLWoZVp7mXQDqwT+eWdKmE7bnw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793813957;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=9CcDkjihi+yiVBZ4yDcPql+O9dE6UXuwMcC+J0dZmUE=;
+	b=cxOxJURE5/qGyCAv4MTD8oE3hv9Sd8qcmkM934IgZJhCemLJmWW6pjpgJkEtYxBjbr26
+	 ATJWLi4f9rpFf4ynwMlFv+VJOGaXGeRZKFjK2UzIVSYDqIXnOakFLeI/4Xg4xq07iKXYl
+	 mQBEW49Tk0I65CrLN3YneaWP6J3+CKZeYLIKBN+08GaQVpLHQOyVFYIVQ3uoDpD+KsGzX
+	 99leoN4g1kXSrFLO/TAkrPlN9411whkYTjRlGB8n9SJ2Jsp+ddgsK7TnddCjecTDVOh2z
+	 mrthd8J7FlG7i0zCANThlcRL04ds8fY8ppvRkzETJ8RCKNlBRa3JmXxAUkprW9enjew==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EmoIkpga;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 649A0606B903;
-	Wed,  4 Nov 2026 17:32:47 +0000 (UTC)
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=DVRMrYGo;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DCB32606A32E;
+	Wed,  4 Nov 2026 17:39:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DCB32606A32E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EmoIkpga
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBDFF1F000C1;
-	Wed,  4 Nov 2026 17:32:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793813567;
-	bh=4KWh+pCjEY3BH9ZXJBW3B3/Mt0CuTTrjLcItJI+O2b0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=EmoIkpga02mtSmXYZVQn9du3LHYfYYz+585s/PS+UgjsXg/FCvOmrZxU5rFUHZ4Kc
-	 RW4rhqpS4n3dFfRKO8x+a/rqSXZeMNtqoJk/PAMvtTPHidldiR0RNWuPhkUl5Udryh
-	 K0OZRedSeEqK4PfWHQTrv308SVTAoSNO8pALhkzOLoGRqIxAXKmzlYLtjaaWK21Afk
-	 g9ZdhfQJD7HMHHghQ3kYgQdyrMOv9/7V31ENvoFGNFW4fLM8UomjBlAwSX6CbB6Whr
-	 eQxEIfy92LUpsJv+hK5fIokNxiCsnOkTzS6xufVPBmdQ1YFlhlqo+6SIaWZWwTuraz
-	 PbT3jpG2TrNIg==
-Date: Wed, 4 Nov 2026 18:32:43 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
-	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, Jiri Pirko <jiri@resnulli.us>, Ivan Vecera <ivecera@redhat.com>, 
-	Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
-	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
-	Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>, 
-	Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Olivier Moysan <olivier.moysan@foss.st.com>, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thierry Reding <thierry.reding@kernel.org>, 
-	Jonathan Hunter <jonathanh@nvidia.com>, Fabrice Gasnier <fabrice.gasnier@foss.st.com>, 
-	Lee Jones <lee@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, 
-	Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Hans Ulli Kroll <ulli.kroll@googlemail.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Vinod Koul <vkoul@kernel.org>, 
-	Neil Armstrong <neil.armstrong@linaro.org>, Manivannan Sadhasivam <mani@kernel.org>, 
-	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Orson Zhai <orsonzhai@gmail.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
-	Paul Kocialkowski <paul.kocialkowski@bootlin.com>, Shawn Guo <shawnguo@kernel.org>, 
-	Chanh Nguyen <chanh@os.amperecomputing.com>, Alistair Francis <alistair@alistair23.me>, 
-	Julius Werner <jwerner@chromium.org>, Paul Cercueil <paul@crapouillou.net>, 
-	Dmitry Osipenko <digetx@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Ray Jui <ray.jui@broadcom.com>, 
-	Scott Branden <scott.branden@broadcom.com>, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org, chrome-platform@lists.linux.dev, 
-	linux-gpio@vger.kernel.org, imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-sound@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-tegra@vger.kernel.org, mfd@lists.linux.dev, linux-arm-msm@vger.kernel.org, 
-	linux-mmc@vger.kernel.org, linux-phy@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Use hex unit address patterns
-Message-ID: <20261104-vigorous-flat-dingo-3e5bd2@quoll>
-References: <20261102135330.2493332-1-robh@kernel.org>
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=DVRMrYGo
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ED35B1BB0;
+	Wed,  4 Nov 2026 09:39:12 -0800 (PST)
+Received: from [10.0.130.179] (e127648.arm.com [10.0.130.179])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D7CD13F673;
+	Wed,  4 Nov 2026 09:39:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793813956; bh=/kyJGjVyWY310MgT5Xs9DoLM2JJz9yZzou7eKEpHhQ0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=DVRMrYGopu7hfbBwieaIEXe7c7Z92PBAzHy7ulMbhJD+hoaYTBXEyH2ha7GUBsGBf
+	 zrurxqeaIA2Qs7md8EwI8Mv4t8mFutsixlKN6TlziDNGZREfw1mmJ90aRttF+MaFiI
+	 GGPPF+opoDATNdEYtaU7YNgBD8aOH5Dq3oXltZCs=
+Message-ID: <4b7d65dd-6103-4363-ac9b-cbcd2ece905b@arm.com>
+Date: Wed, 4 Nov 2026 17:39:10 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -95,59 +53,145 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261102135330.2493332-1-robh@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 1/3] ACPI: CPPC: Add ospm_nominal_perf support
+To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
+ zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, lenb@kernel.org,
+ mario.limonciello@amd.com, maciej.wieczor-retman@intel.com,
+ pawel.chmielewski@intel.com, linux-pm@vger.kernel.org,
+ linux-acpi@vger.kernel.org, acpica-devel@lists.linux.dev,
+ linux-kernel@vger.kernel.org
+Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
+ vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
+ mochs@nvidia.com, bbasu@nvidia.com
+References: <20261030172745.2045743-1-sumitg@nvidia.com>
+ <20261030172745.2045743-2-sumitg@nvidia.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20261030172745.2045743-2-sumitg@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 02, 2026 at 07:53:22AM -0600, Rob Herring (Arm) wrote:
-> Unit-addresses by default (and most commonly) are hexadecimal. There's a
-> number of cases using decimal patterns. Fix all of them, limiting the
-> pattern to match the 'reg' limits if there are any.
+On 10/30/26 17:27, Sumit Gupta wrote:
+> Expose the OSPM Nominal Performance register (ACPI 6.6, Section
+> 8.4.6.1.2.6), which conveys the nominal performance level at which the
+> platform may run. Unlike the read-only Nominal Performance register, it
+> is writable, so OSPM can ask for a nominal level below the
+> platform-reported one, which then becomes the boundary between boosted
+> and throttled operation.
 > 
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+> Add cppc_set_ospm_nominal_perf() to write the register. Per the spec,
+> the value must lie in [Lowest Performance, Nominal Performance], which
+> the caller is responsible for validating.
+> 
+> Add cppc_ospm_nominal_perf_supported() to report whether the platform
+> implements the register as writable, since a write-only register cannot
+> be probed by reading it. It uses the same cpc_is_writable() test as the
+> setter, so support is never reported for a register that a write would
+> reject, and takes cpc_desc_lock while looking the descriptor up.
+> 
+> The register also joins the writable set that the SystemMemory overlap
+> validation uses, as the driver now writes it and can compete with
+> another control sharing an access unit.
+> 
+> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+
+Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+
 > ---
->  .../bindings/display/xylon,logicvc-display.yaml      |  2 +-
->  .../devicetree/bindings/dpll/dpll-device.yaml        |  2 +-
->  .../bindings/embedded-controller/google,cros-ec.yaml |  4 ++--
->  .../intel,ixp4xx-network-processing-engine.yaml      |  2 +-
->  Documentation/devicetree/bindings/gpio/gpio-mxs.yaml |  4 ++--
->  .../devicetree/bindings/hwmon/maxim,max31790.yaml    |  2 +-
->  .../devicetree/bindings/iio/adc/st,stm32-adc.yaml    |  2 +-
->  .../bindings/iio/adc/st,stm32-dfsdm-adc.yaml         |  6 +++---
->  .../bindings/input/touchscreen/cypress,tt21000.yaml  |  2 +-
->  .../memory-controllers/ddr/jedec,sdram-channel.yaml  | 12 ++++++------
->  .../bindings/memory-controllers/ingenic,nemc.yaml    |  2 +-
->  .../memory-controllers/nvidia,tegra20-emc.yaml       |  4 ++--
->  .../devicetree/bindings/mfd/st,stm32-lptimer.yaml    |  2 +-
->  .../devicetree/bindings/mfd/st,stm32-timers.yaml     |  2 +-
->  .../devicetree/bindings/misc/qcom,fastrpc.yaml       |  2 +-
->  .../bindings/mmc/mmc-controller-common.yaml          |  2 +-
->  .../bindings/net/cortina,gemini-ethernet.yaml        |  2 +-
->  .../bindings/phy/brcm,cygnus-pcie-phy.yaml           |  2 +-
->  .../devicetree/bindings/phy/brcm,sata-phy.yaml       |  2 +-
->  .../bindings/phy/socionext,uniphier-usb2-phy.yaml    |  2 +-
->  .../devicetree/bindings/sound/qcom,q6asm-dais.yaml   |  2 +-
->  .../bindings/sound/qcom,q6dsp-lpass-ports.yaml       |  2 +-
->  .../devicetree/bindings/thermal/sprd-thermal.yaml    |  2 +-
->  23 files changed, 33 insertions(+), 33 deletions(-)
+>  drivers/acpi/cppc_acpi.c | 44 ++++++++++++++++++++++++++++++++++++++++
+>  include/acpi/cppc_acpi.h | 10 +++++++++
+>  2 files changed, 54 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/display/xylon,logicvc-display.yaml b/Documentation/devicetree/bindings/display/xylon,logicvc-display.yaml
-> index 76b804b7c880..3dd54636d23d 100644
-> --- a/Documentation/devicetree/bindings/display/xylon,logicvc-display.yaml
-> +++ b/Documentation/devicetree/bindings/display/xylon,logicvc-display.yaml
-> @@ -123,7 +123,7 @@ properties:
->          const: 0
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 5a1f84fddb7f..3a0ecdd1ab11 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -463,6 +463,7 @@ static bool cpc_reg_is_writable(unsigned int reg_idx)
+>  	case AUTO_SEL_ENABLE:
+>  	case AUTO_ACT_WINDOW:
+>  	case ENERGY_PERF:
+> +	case OSPM_NOMINAL_PERF:
+>  		return true;
+>  	default:
+>  		return false;
+> @@ -3232,6 +3233,49 @@ int cppc_set_epp(int cpu, u64 epp_val)
+>  }
+>  EXPORT_SYMBOL_GPL(cppc_set_epp);
 >  
->      patternProperties:
-> -      "^layer@[0-9]+$":
-> +      "^layer@[0-9a-f]+$":
-
-These two lines are looking good.
-
-Andy, it's okay if I give Rb tag?
-
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-
-Best regards,
-Krzysztof
+> +/**
+> + * cppc_set_ospm_nominal_perf() - Write OSPM Nominal Performance register.
+> + * @cpu: CPU on which to write register.
+> + * @ospm_nominal_perf: Value to write to the OSPM Nominal Performance register.
+> + *
+> + * OSPM Nominal Performance conveys the desired nominal performance level
+> + * at which the platform may run. Per ACPI 6.6, s8.4.6.1.2.6, the value
+> + * must lie within [Lowest Performance, Nominal Performance] and may be
+> + * set independently of Minimum, Maximum and Desired performance. The
+> + * caller is responsible for validating the range.
+> + *
+> + * Return: 0 on success, -EOPNOTSUPP if the platform does not implement the
+> + * register as writable, or another negative error code.
+> + */
+> +int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
+> +{
+> +	return cppc_set_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf);
+> +}
+> +EXPORT_SYMBOL_GPL(cppc_set_ospm_nominal_perf);
+> +
+> +/**
+> + * cppc_ospm_nominal_perf_supported() - Check OSPM Nominal Performance support.
+> + * @cpu: CPU to query.
+> + *
+> + * The OSPM Nominal Performance register is write-only, so its value
+> + * cannot be read back. This only reports whether the platform implements
+> + * it as a writable register.
+> + *
+> + * Context: Process context.
+> + * Return: true if the register is supported, false otherwise.
+> + */
+> +bool cppc_ospm_nominal_perf_supported(int cpu)
+> +{
+> +	struct cpc_desc *cpc_desc;
+> +
+> +	guard(mutex)(&cpc_desc_lock);
+> +	cpc_desc = per_cpu(cpc_desc_ptr, cpu);
+> +
+> +	return cpc_desc &&
+> +	       cpc_is_writable(&cpc_desc->cpc_regs[OSPM_NOMINAL_PERF]);
+> +}
+> +EXPORT_SYMBOL_GPL(cppc_ospm_nominal_perf_supported);
+> +
+>  /**
+>   * cppc_get_auto_act_window() - Read autonomous activity window register.
+>   * @cpu: CPU from which to read register.
+> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> index a5545fd3f8bd..2cec54b4d2e2 100644
+> --- a/include/acpi/cppc_acpi.h
+> +++ b/include/acpi/cppc_acpi.h
+> @@ -195,6 +195,8 @@ extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
+>  extern int cppc_get_epp_perf(int cpunum, u64 *epp_perf);
+>  extern int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable);
+>  extern int cppc_set_epp(int cpu, u64 epp_val);
+> +extern int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf);
+> +extern bool cppc_ospm_nominal_perf_supported(int cpu);
+>  extern int cppc_get_auto_act_window(int cpu, u64 *auto_act_window);
+>  extern int cppc_set_auto_act_window(int cpu, u64 auto_act_window);
+>  extern int cppc_get_auto_sel(int cpu, u64 *enable);
+> @@ -290,6 +292,14 @@ static inline int cppc_set_epp(int cpu, u64 epp_val)
+>  {
+>  	return -EOPNOTSUPP;
+>  }
+> +static inline int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +static inline bool cppc_ospm_nominal_perf_supported(int cpu)
+> +{
+> +	return false;
+> +}
+>  static inline int cppc_get_auto_act_window(int cpu, u64 *auto_act_window)
+>  {
+>  	return -EOPNOTSUPP;
 
