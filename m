@@ -1,66 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=199.89.1.16
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793817292;
-	b=AlfNIby6VGqCUE3AobOXEhKFSU2eNSB0g6gOLaarR82HuZSL43W01kY6l5djsRR3RJv1
-	 m0sU4SgAm2sQuMRvRpSjUAnPQOSLOfK3i+L19r7hPk+cjTpsIosaWgsa50sBp1qlIG4um
-	 iWLKHG9SZuk47PjE/sNrx83chBn4Hys1+Id7rkCY9UEs+lKSIVs1IsIXynqk/YSaoLmTb
-	 Z6YLao0k/uSYyMIf7GZymNq3hSf4bXSZBYLDYO54q1kbwXYjft0sT5B5oVCeJX8YQG8/H
-	 Z8F/lN/vnDIELYHvckKc8qw5h+cu8h9VwdibFuzih8L70lXMJ7s4pdvN9i5NvCyzhBA==
+	t=1793818693;
+	b=L+0g40HoMaBHlshX+31BE569raHz2dFF/avOF+kKRMKHj5I68J8MrB+IOYHKiobknUZD
+	 aA3GwX/NCiyUA0krUasLEZlKNPItt20vZvpS3SsjNuwBHfPh+cFZel+NYJ00+QkIcWMYJ
+	 gFd/ko4s+larx4kiAirrb5VlChEe9kWmMbbhKnt7EWv7FssJEbeUuOUKOZGMqpJTAax/D
+	 AUMbutsN3mZSdySjwzmhWxnmj7Yu8U133EiuOyCSU7mQMDBMFuYYa7OpqrU5MnQI3a7mr
+	 Ic7NwGY+/anIv5RD6vsVRAoCmc3dAdpNjySziT4X5Jbr4pup9rTW/EKZ/4u8Vyj0ZaQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793817292;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Virus-Scanned:Received:
-	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
-	 References:Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=NfxT0sqcleYaY8Ga2KzCjtCATlcCj9RfsbOGm3hC7pc=;
-	b=kmRn8GIrf3EZPYyl4NzwoEXyPgbCXGxi52l1a10zzS+EEseplLJfWK1wHcp17/5R0KxJ
-	 ODV3oqTKhufj+cVnCas/taTtCrbckQAh7D7K2hKbqfESwD/uckKW7PCCCWxVot4UTi/Hp
-	 rcF8cR0uhkll1KJU4A9HSwlTf+NyvJrghUxyS5iZbBmPbEje7kqT81MlqCdL1pYv/6MhA
-	 ny7SaOEd/BYkFQQHWTfl2x1WVw+08D9k95QvWB82k+5nt+90WJywdgET3moh35o2Txm4B
-	 O22L9lvozYU4/EoZGN3BZ8k/S4ToutJ78kRe9sJH2Aoyf4AI3k2/hMWv3uFBXxCXvYg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793818693;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=d1+wstvYt5ENfOYnNtU8qau41RWVGGt4+X4si2AOuLo=;
+	b=VppqpFo2cdZBnQS/9XBpRJ5ICrCz0INkh9gptou+bJUO9CjBpLEn4MfK8lheqcjObQNq
+	 AmrpO2fOmad4gFxkuJoqbaledIUGD8+hDGps29buC19IbyxL/sox41Eq2fPV95HLtCQdr
+	 75ISylpghGAHFUza5ePGjoGmQ4gQXZNCeRbxJSEfbBIa4G7yxnPUpYfIhNqsGbStBcAKR
+	 QXwYHkTUZMd1G6Ck4drT1C4H9Vj5OkwDcVe02mlvxC7S8klKMu8NT4w82j1dEdlEVw/KD
+	 RPAbA1yaQsXMyngqjz7e02VnS1Q2UvzxjMUN1B8q5hkQwgMJU/uV+++hurmEMT0HZ8A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=acm.org;
-	spf=pass smtp.mailfrom=acm.org;
-	dkim=pass header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=3I7Vj4tZ;
-	arc=none smtp.remote-ip=199.89.1.16
-Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UR6iXRcq;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CF34606A33D;
-	Wed,  4 Nov 2026 18:34:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1CF34606A33D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55B05606A32F
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 18:58:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=3I7Vj4tZ
-Received: from localhost (localhost [127.0.0.1])
-	by 013.lax.mailroute.net (Postfix) with ESMTP id 4jKYyM2nMFzlffvH;
-	Wed,  4 Nov 2026 18:34:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1793817289; x=1796409290; bh=NfxT0sqcleYaY8Ga2KzCjtCA
-	TlcCj9RfsbOGm3hC7pc=; b=3I7Vj4tZjRD5dWk+LQypRBd2dlG7y/f9/d/G3ndI
-	zzjbC7CmzfOsQhCpF9Wffqi91nVMzNDnIX+i4WeRYnGGOhdP3FCnAe3xE88qxqOA
-	+hJbfNbtDlovEiw0uGffeop7+Qo7f+lQCKu8jhymWj9VwfMc6OUF6M7LalcsgQGu
-	qdF3ogZHWTAhr6jqIMRGTHN7VtBW/q/J5CiiKgPRcVBBzmQAd0VMV1i+ZGtgwCzG
-	4rTZOY3cS2Vtxcr8w+PA3GauXfEiXkeYv8sD2HYHm+THrylQOrFLJBqY/naTily8
-	PI1sJEoJx5qGVtnoxtnYBPwso3tk8c/h9PlJEfER++rwGw==
-X-Virus-Scanned: by MailRoute
-Received: from 013.lax.mailroute.net ([127.0.0.1])
- by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id miuA7hPYHUMx; Wed,  4 Nov 2026 18:34:49 +0000 (UTC)
-Received: from [IPV6:2a00:79e0:2ed2:d:cf61:6f8e:9bfc:37ad] (unknown [104.135.182.41])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4jKYyJ6Jd6zlfl5v;
-	Wed,  4 Nov 2026 18:34:48 +0000 (UTC)
-Message-ID: <5f523a2c-c2ef-4285-9501-44d373569f7f@acm.org>
-Date: Wed, 4 Nov 2026 10:34:47 -0800
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UR6iXRcq
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D28A61F00A02
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 18:58:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793818691;
+	bh=d1+wstvYt5ENfOYnNtU8qau41RWVGGt4+X4si2AOuLo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=UR6iXRcq1/ELznnhempiS1KYwZ8aJRiAhsuZ6IfkMmwc8IhpsGplEOFfknVvj4XQT
+	 +ah1FqOS53UrvYuRVj/fgC1Mgn/qezU7+nQNER44LBp3SUAAqVQnv1PIk0CT/5gznx
+	 HqieFI3Pqm5mudINODGnR7Bfk/uqCSytzf/3ZWuhg0H+x7a9LIcK0k9S6aL6GUMZ1w
+	 TTR9Nb3IkSXw/dpO5oD7dkD78zmTThJP11/o3NNcRTcq1VC5H1Oxby1dgtO+Ia9jIf
+	 iWArTs5ifYK5htczPfvs6TP2HYnFUbPvOLy3mTxRrrj9UthuOf8itcOVODrTe35yDy
+	 6ASrWgMjf0qOQ==
+Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-3ab07d956f2so7708021fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 10:58:11 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBzs2ZDl0bP4SVgSfKa4O9scnanOGg+imLsifU1gGnuerDoh9BUUKI8mfniGbN0ewp1Npyn1ocb8hQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/lj1gkdlsPzMUIwSsek6dPjrYxndx/sNAafvda43FEsf7VWPtt
+	8Pv0y70f79eUkCo6OHFYZi524Po/fljirOo8tRmgZUnADf+H/2DrflTWd55KORefLXIJARgMhgN
+	PGgNeQm+FU1MUZtFF6uFOQTyvFMu15Gs=
+X-Received: by 2002:a05:6512:4007:b0:5bf:d653:ff04 with SMTP id
+ 2adb3069b0e04-5bfd9583e89mr5276949e87.60.1793818690241; Wed, 04 Nov 2026
+ 10:58:10 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -70,39 +59,284 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] block: Keep RPM_ACTIVE in blk_pre_runtime_resume()
- when already active
-To: Stanley Jhu <stanleyjhu@google.com>, Jens Axboe <axboe@kernel.dk>
-Cc: Brian Norris <briannorris@chromium.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Praveen Talari <praveen.talari@oss.qualcomm.com>,
- Alan Stern <stern@rowland.harvard.edu>, linux-block@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <20261104112744.1630864-1-stanleyjhu@google.com>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20261104112744.1630864-1-stanleyjhu@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20261102063610.3242714-1-saranya.gopal@intel.com>
+In-Reply-To: <20261102063610.3242714-1-saranya.gopal@intel.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 4 Nov 2026 19:57:57 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jWfj7utWdLrv24hqAW7SG7qvzmtk3V4ep8TxaGuFVzpw@mail.gmail.com>
+X-Gm-Features: AclHuK_B-1zFCyuTynmSU0b0tyNcIeGKP3AG5cyyvteFV6CKQTJod8msLV_24A4
+Message-ID: <CAJZ5v0jWfj7utWdLrv24hqAW7SG7qvzmtk3V4ep8TxaGuFVzpw@mail.gmail.com>
+Subject: Re: [PATCH v2] ACPI: s2idle: Handle shared _Ixx GPEs without an EC
+To: Saranya Gopal <saranya.gopal@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 11/4/26 3:27 AM, Stanley Jhu wrote:
-> Differences from v1:
-> - Move SUSPENDED -> RESUMING explicitly in blk_pre_runtime_resume() and
->    clear pm_only only for RPM_RESUMING in blk_post_runtime_resume()
+On Mon, Nov 2, 2026 at 7:37=E2=80=AFAM Saranya Gopal <saranya.gopal@intel.c=
+om> wrote:
+>
+> When first_ec is NULL, acpi_ec_dispatch_gpe() previously treated any
+> active GPE as a wake source. On platforms where an _Ixx GPE is shared
+> by user-wakeup and background events, that can cause unnecessary
+> wakeups.
+>
+> Return -ENODEV when no EC instance is available so the s2idle wake
+> path can handle that case. On x86, check active GPEs against those
+> registered from _Ixx methods. Preserve immediate wakeup for active
+> non-_Ixx GPEs; otherwise cancel the SCI wake request and dispatch
+> active _Ixx GPEs. The common s2idle path then synchronizes event
+> processing and checks whether a driver requested wakeup. Lookup or
+> dispatch failures conservatively request wakeup.
+>
+> The non-x86 fallback retains the previous any-GPE status check.
+>
+> Fixes: 46767b17fda3 ("ACPI: PM: s2idle: Add _Ixx GPE wake indicator suppo=
+rt")
+> Signed-off-by: Saranya Gopal <saranya.gopal@intel.com>
 
-Hi Stanley,
+First, please see Sashiko's feedback on this:
 
-Thank you for having addressed my concerns. There is an existing
-issues that you may want to address with a future patch: Queue ACTIVE,
-device suspended: after a failed resume, the queue is ACTIVE with
-pm_only == 0 while the device is still RPM_SUSPENDED. So
-blk_pm_resume_queue() never asks for a resume, and normal I/O goes to
-a device the PM core thinks is suspended. A retry only happens if
-something else calls pm_runtime_get*(). Commit 6e1fcab00a23 introduced
-this behavior on purpose.
+https://sashiko.dev/#/patchset/20261102063610.3242714-1-saranya.gopal%40int=
+el.com
 
-Thanks,
+and let me know what you think about it.
 
-Bart.
+> ---
+>  drivers/acpi/ec.c         | 10 ++++-----
+>  drivers/acpi/internal.h   |  6 +++---
+>  drivers/acpi/sleep.c      | 18 +++++++++-------
+>  drivers/acpi/sleep.h      |  8 ++++++++
+>  drivers/acpi/x86/s2idle.c | 43 +++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 70 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+> index 64ad4cfa6208..8be572af4115 100644
+> --- a/drivers/acpi/ec.c
+> +++ b/drivers/acpi/ec.c
+> @@ -2155,19 +2155,19 @@ static bool acpi_ec_work_in_progress(struct acpi_=
+ec *ec)
+>         return ec->events_in_progress + ec->queries_in_progress > 0;
+>  }
+>
+> -bool acpi_ec_dispatch_gpe(void)
+> +int acpi_ec_dispatch_gpe(void)
+>  {
+>         bool work_in_progress =3D false;
+>
+>         if (!first_ec)
+> -               return acpi_any_gpe_status_set(U32_MAX);
+> +               return -ENODEV;
+>
+>         /*
+>          * Report wakeup if the status bit is set for any enabled GPE oth=
+er
+>          * than the EC one.
+>          */
+>         if (acpi_any_gpe_status_set(first_ec->gpe))
+> -               return true;
+> +               return 1;
+>
+>         /*
+>          * Cancel the SCI wakeup and process all pending events in case t=
+here
+> @@ -2195,7 +2195,7 @@ bool acpi_ec_dispatch_gpe(void)
+>         spin_unlock_irq(&first_ec->lock);
+>
+>         if (!work_in_progress)
+> -               return false;
+> +               return 0;
+>
+>         pm_pr_dbg("ACPI EC GPE dispatched\n");
+>
+> @@ -2212,7 +2212,7 @@ bool acpi_ec_dispatch_gpe(void)
+>                 spin_unlock_irq(&first_ec->lock);
+>         } while (work_in_progress && !pm_wakeup_pending());
+>
+> -       return false;
+> +       return 0;
+>  }
+>  #endif /* CONFIG_PM_SLEEP */
+>
+> diff --git a/drivers/acpi/internal.h b/drivers/acpi/internal.h
+> index 40f875b265a9..d5435338d6ca 100644
+> --- a/drivers/acpi/internal.h
+> +++ b/drivers/acpi/internal.h
+> @@ -236,7 +236,7 @@ void acpi_ec_register_opregions(struct acpi_device *a=
+dev);
+>
+>  #ifdef CONFIG_PM_SLEEP
+>  void acpi_ec_flush_work(void);
+> -bool acpi_ec_dispatch_gpe(void);
+> +int acpi_ec_dispatch_gpe(void);
+>  #endif
+>
+>  #else
+> @@ -256,9 +256,9 @@ static inline void acpi_ec_remove_query_handler(struc=
+t acpi_ec *ec, u8 query_bit
+>  static inline void acpi_ec_register_opregions(struct acpi_device *adev) =
+{}
+>
+>  static inline void acpi_ec_flush_work(void) {}
+> -static inline bool acpi_ec_dispatch_gpe(void)
+> +static inline int acpi_ec_dispatch_gpe(void)
+>  {
+> -       return false;
+> +       return -EOPNOTSUPP;
+>  }
+>
+>  #endif
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index 132a9df98471..9366c3d927c2 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -787,13 +787,17 @@ bool acpi_s2idle_wake(void)
+>                         return true;
+>                 }
+>
+> -               /*
+> -                * Check non-EC GPE wakeups and if there are none, cancel=
+ the
+> -                * SCI-related wakeup and dispatch the EC GPE.
+> -                */
+> -               if (acpi_ec_dispatch_gpe()) {
+> -                       pm_pr_dbg("ACPI non-EC GPE wakeup\n");
+> -                       return true;
+> +               /* Check EC handling and other GPE wake sources. */
+> +               {
+> +                       int ret =3D acpi_ec_dispatch_gpe();
+> +
+> +                       if (ret =3D=3D -ENODEV) {
+> +                               if (acpi_x86_s2idle_check_ixx_gpes())
+> +                                       return true;
+> +                       } else if (ret > 0) {
+> +                               pm_pr_dbg("ACPI non-EC GPE wakeup\n");
+> +                               return true;
+> +                       }
+
+I would rewrite the above as
+
+if (ret > 0) {
+    pm_pr_dbg("ACPI non-EC GPE wakeup\n");
+    return true;
+} else if (ret < 0 && acpi_x86_s2idle_check_ixx_gpes() {
+    return true;
+}
+
+>                 }
+>
+>                 acpi_os_wait_events_complete();
+> diff --git a/drivers/acpi/sleep.h b/drivers/acpi/sleep.h
+> index 9c3cb109c5d2..955e9c22bf0d 100644
+> --- a/drivers/acpi/sleep.h
+> +++ b/drivers/acpi/sleep.h
+> @@ -20,6 +20,14 @@ extern int acpi_s2idle_prepare(void);
+>  extern bool acpi_s2idle_wake(void);
+>  extern void acpi_s2idle_restore(void);
+>  extern void acpi_s2idle_end(void);
+> +#if defined(CONFIG_X86) && defined(CONFIG_SUSPEND)
+> +extern bool acpi_x86_s2idle_check_ixx_gpes(void);
+> +#else
+> +static inline bool acpi_x86_s2idle_check_ixx_gpes(void)
+> +{
+> +       return acpi_any_gpe_status_set(U32_MAX);
+> +}
+> +#endif
+>
+>  extern void acpi_s2idle_setup(void);
+>
+> diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
+> index c278ea14c0b3..979684950f24 100644
+> --- a/drivers/acpi/x86/s2idle.c
+> +++ b/drivers/acpi/x86/s2idle.c
+> @@ -16,6 +16,7 @@
+>   */
+>
+>  #include <linux/acpi.h>
+> +#include <linux/bitmap.h>
+>  #include <linux/device.h>
+>  #include <linux/dmi.h>
+>  #include <linux/suspend.h>
+> @@ -24,6 +25,8 @@
+>
+>  #ifdef CONFIG_SUSPEND
+>
+> +static DECLARE_BITMAP(acpi_s2idle_ixx_gpes, 256);
+> +
+>  static void acpi_setup_ixx_gpes(void)
+>  {
+>         acpi_handle gpe_root;
+> @@ -47,11 +50,51 @@ static void acpi_setup_ixx_gpes(void)
+>
+>                 acpi_mark_gpe_for_wake(NULL, i);
+>                 acpi_set_gpe_wake_mask(NULL, i, ACPI_GPE_ENABLE);
+> +               set_bit(i, acpi_s2idle_ixx_gpes);
+>
+>                 pm_pr_dbg("ACPI: GPE0x%02x armed for wake via %s\n", i, g=
+pe_nr_str);
+>         }
+>  }
+>
+> +bool acpi_x86_s2idle_check_ixx_gpes(void)
+> +{
+> +       acpi_handle gpe_device;
+> +       acpi_event_status status;
+> +       u32 gpe;
+> +
+
+It would be good to add a comment describing what happens here.
+
+> +       for (gpe =3D 0; gpe < acpi_current_gpe_count; gpe++) {
+> +               if (ACPI_FAILURE(acpi_get_gpe_device(gpe, &gpe_device)))
+> +                       return true;
+
+Why does it return true on errors (here and below)?
+
+It will cause a system wakeup to happen on errors occurring here, so
+what's the rationale?
+
+> +
+> +               if (!gpe_device && gpe < 256 &&
+> +                   test_bit(gpe, acpi_s2idle_ixx_gpes))
+> +                       continue;
+> +
+> +               if (ACPI_FAILURE(acpi_get_gpe_status(gpe_device, gpe, &st=
+atus)))
+> +                       return true;
+> +
+> +               if ((status & ACPI_EVENT_FLAG_STATUS_SET) &&
+> +                   (status & ACPI_EVENT_FLAG_ENABLE_SET))
+> +                       return true;
+> +       }
+
+You'd need a variant of acpi_any_gpe_status_set() to do the above
+properly AFAICS.
+
+> +
+> +       pm_system_cancel_wakeup();
+
+What is the role of this call?
+
+> +
+> +       for_each_set_bit(gpe, acpi_s2idle_ixx_gpes, 256) {
+> +               if (ACPI_FAILURE(acpi_get_gpe_status(NULL, gpe, &status))=
+)
+> +                       return true;
+> +               if (!(status & ACPI_EVENT_FLAG_STATUS_SET) ||
+> +                   !(status & ACPI_EVENT_FLAG_ENABLE_SET))
+> +                       continue;
+> +
+> +               pm_pr_dbg("ACPI _Ixx GPE 0x%02x status set\n", gpe);
+> +               if (acpi_dispatch_gpe(NULL, gpe) !=3D ACPI_INTERRUPT_HAND=
+LED)
+> +                       return true;
+> +       }
+> +
+> +       return false;
+> +}
+> +
+>  static bool sleep_no_lps0 __read_mostly;
+>  module_param(sleep_no_lps0, bool, 0644);
+>  MODULE_PARM_DESC(sleep_no_lps0, "Do not use the special LPS0 device inte=
+rface");
+> --
