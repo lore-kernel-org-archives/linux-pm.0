@@ -1,76 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.161
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793829345;
-	b=rLRsRyvOfm3iFqy8hL9s1TCFPbNZQl3Ae/CiyeFU3j8TpNS79lAgn0GJIwDFFXigoZK4
-	 WnN+sok2z9K9aZOdHXuJzndQ0GNojsBcTgp+bstUL7mLKPrNt973KBHSE+dWjKv0+4Z4j
-	 JiBDymzkrVuKCpd+ATRttmRmsJmPuObuc/nUoNyO75n21gCgKYWTo2vEIooZ3VuNNPsJy
-	 Qtl1jalxJQt/WydMhyRYnDf3A8oHPdAoGadvo306FcfGkRFzj5Aar6Sm3kR1MeZ+jN8sw
-	 yHGepP/ttWUrPucShtZ+GBsQNGxdIylpV5rQPVkabpFZWb9/gbaugblNutUX7TD4xKQ==
+	t=1793830005;
+	b=5YCymF78dqTxErmdEfGqQ8kAjAb/i43ZBbBQgxJf2RFLI/Vl3nN/Ia06PWYtxviShzLm
+	 YOGkMhehRu9IygvSMHa9KkhO59w0r3zNBIDwvPcWwfocSRcoSoEUzvrKCqzldbV7I9+1O
+	 IFB4qIpQOl9sOK9pdYQrUdA+67E1sGKGKhm+Po4HH9Zrw6rk9/SgB9jTdzVqgak6lcA5h
+	 6MNeoavTG4Y6wf/VwIE7NWmgd8SH2E3kjCL6HTTTOaRIQMeuhxsaMyQLPydmtjbcFC5vu
+	 TPbgXywT9BEpAzThUczFoSnyQi9yF97BOoFPXjM1KRzJuywC/7xKXZ8NVi6Q4K20R4g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793829345;
-	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To:X-MBO-RS-ID:X-MBO-RS-META;
-	bh=1KM15pS674xkwzoKzXbfoGMlVw+mkKvC51O5xmcBcQ4=;
-	b=t0hlo8Su6lomWJQzGd5Nqf93NnCFkZGN/E4qEFYkYo58I5M1xYL/Q0GmuGDY7G/kXQta
-	 CMneGgDo2QQn5xGf+UEVPpZ4248MSEhr4/8wn6iOyGyV8MNPgckEOn5mT67SeecdpXZQq
-	 BLnondLiFeJKxjVaxRxOA6JIJ4+xuHYTyee7Ar69cAoZna+/7aPudC/yw85sA8NHWI1QV
-	 V2cTDK7LazoKN70nLEvnry9peKwrKCS789KT6NjushurHNEcEll0TtDw92/7GV4eq2+5H
-	 Pt2RP4LaQ7ffmtHIEf2uithoCC/I/4zR1aH+x05FJ2m2udkKB3rnl5RJ/GTSEUj9mdA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793830005;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=APyAEXSG9B0KEvsmlIgqb108CR+kX9ZzkkBiV+80GpM=;
+	b=RFbbrxFWOXWTnCx24Gx1IRPn6sgaqesLeq2jsM7ufRu3nBnw+4HN9UivAixaqv/wG9zp
+	 tmbWjt1dXhILkqtEA90gywX96VBy9/gi7L0CJl+DAjMe88mQm2lOki2jnsPi1IgJI9qdC
+	 iH/+Vp5gJH9QLQXurGyLKn+MfiAAb7krpecr6nlhOafGmh4rlLgjNWuGMVVGKQpOIk/Hj
+	 6yKZQOSsVC3aFagsFy6GvFJWx2HPzzSdpiuRNWP29St+gqbi860B9xROio8ds/GNJrGrj
+	 DrltE1L74/FANaeGglTBdbARVOC1gSYDYdlJrsVhwoscPbj0Q5xp8JJgnmwU8j0fxmA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mailbox.org;
-	spf=pass smtp.mailfrom=mailbox.org;
-	dkim=pass header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=h6Zhmgkl;
-	arc=none smtp.remote-ip=80.241.56.161
-Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nE1J3IvH;
+	arc=none smtp.remote-ip=209.85.128.42
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC3E560A5BD2;
-	Wed,  4 Nov 2026 21:55:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EC3E560A5BD2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6D38606A33A
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 22:06:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6D38606A33A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=h6Zhmgkl
-Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4jKfQ45tJbzKmTr;
-	Wed, 04 Nov 2026 22:55:40 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1793829340;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=1KM15pS674xkwzoKzXbfoGMlVw+mkKvC51O5xmcBcQ4=;
-	b=h6ZhmgklkVRwYt1n9X/n8y/F+89/7eFCzwSd2uXk55wsQ90Ro6crnRQRb1W+/3wBdTgGDs
-	rCgkbMrz+lPdFeq24VLUNk86fQWkG/Qmp6KRJki29gFw+aDzt0BI8/eGO4DfWF53mgQ00F
-	Vvtx/YuT8JfVPVJ335jZeVFTJMhxMS42kLvwZcgTlLMKk0LyIdGepefjq/dY3M4DDG5hHI
-	ls+7WPGd5m0yNMYTHmVUO2Wherq54OuGJFTmtAuOPtrmGN2wy+kpaCmxF3cjZ8PU9+jfvm
-	S2Z82043mZWjhHxFE2StoOuBkYEgjH39Nnh2b8Y0RWgBlymNfCmoHckwWGJ6/g==
-Date: Wed, 4 Nov 2026 22:55:35 +0100
-From: Anthony Ruhier <aruhier@mailbox.org>
-To: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, 
-	Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Sibi Sankar <sibi.sankar@oss.qualcomm.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
-	Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
-	Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@kernel.org>, 
-	Jonathan Hunter <jonathanh@nvidia.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rajendra Nayak <rajendra.nayak@oss.qualcomm.com>, 
-	Pankaj Patil <pankaj.patil@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, 
-	Amir Vajid <amir.vajid@oss.qualcomm.com>, 
-	Ramakrishna Gottimukkula <ramakrishna.gottimukkula@oss.qualcomm.com>
-Subject: Re: [PATCH RFC 07/10] PM / devfreq: Introduce the QCOM SCMI Memlat
- devfreq driver
-Message-ID: <auukrIsbbd3q-qh-@tour-anthony.aruhier.fr>
-References: <20260724-rfc_v8_scmi_memlat-v1-0-cb732bcff1f4@oss.qualcomm.com>
- <20260724-rfc_v8_scmi_memlat-v1-7-cb732bcff1f4@oss.qualcomm.com>
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nE1J3IvH
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4a35ac4475dso8168355e9.2
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 14:06:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793830003; x=1794434803; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=APyAEXSG9B0KEvsmlIgqb108CR+kX9ZzkkBiV+80GpM=;
+        b=nE1J3IvHMoQNzkY6NWqRvTSMsazSaZ3o2FOqE6Vkft2ehjTHn8aLnOYg8vT1EO270t
+         eN2FAdZlBp8+YwE8ukzqk0r9FrwOxyhmziNfpWj2ioOMKExpHNcgFJE5otJ9L0caAtyh
+         yau15/gp49jgw9swqjV53ow9czN9NUQdqeNf3T27Xa35gyFtoWXqTSc7pSL6GR08oAkM
+         b2DGAmy7a6UHSRwQp8Ohc3POW7QyBy4QRZZG0yMg1lf6J+mPIwmySw/yfAkqbiw4sbce
+         xBEOCYYleBJo/LjnRGx2+5aVtfNFXjhIGVB9Xv354q4SsV8Pa4rFQcR5uwVdllR7FUZH
+         auUA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793830003; x=1794434803;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=APyAEXSG9B0KEvsmlIgqb108CR+kX9ZzkkBiV+80GpM=;
+        b=gQ+P6YYccKDTSlrEVAZ+Y2GTcsugInfJu4zZLmdhx0gPoLkWD0gjs0LN6YCnSRb/BD
+         n7sSiMPDhe4eDwAzvhCSMAZiDYiFeBh9pDcdRIg7NypGM+KX0VszQdhHYySYd6eEcG1Z
+         OINfH1qaBwH//DGo/Iu0zR7TAb0agO9zHoI/fWIKl1ENkwWUNbNM+QWYSYCfBX5I2kED
+         N0kAuGZDKdjJKlKJd/6dcB52P821NNF/G6QCnhmYmSJc0YZr5ogiC4/cAdgHswGPt5HR
+         y1dJ0mm0oJgfo5XwX4Fvik1KQ8C8N+ccPN80/aSolAPNF2is53Qqx7X5aOpWu3aRyE1q
+         RCQg==
+X-Forwarded-Encrypted: i=1; AKwUvBxkr8JF3TrogDzxkPoKWVF4zOs4cb+5cT9CCex250RAdIjaPIvie7PfLjsuQ6rcX21AbE/VK1ekPg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z95qp/Jc9dkgh4WFIRR6sge3TMPux95zNIobGC7u6YqonYRmGCj
+	ZPn5e+PSBrYvsJUSKnL+F8JXQ4dTHxy7+gt4YELaqqzYxyJ+Eu4eFUrL
+X-Gm-Gg: AYBFou0vpQj3H5sQngyWIuAuRGl8g1YBb+tA411r9bBudQCKqYDCWJN1b9SIRMDk1V9
+	/iogd3Zl+hPEALUdTH6zWQXmt3aG/Wkj2lL5GkLaYBr5uaxHhlOsI0LjmUm74ouBFnyBSbZ69H4
+	FiLD2HonvcabZHE3aiLYUjPeGHohK53XEPHX7LifOlVF9JITh5YJCSJbLZOoOO0pgCeoedJewXl
+	kWHuq9qTRI3OcnKA38vhQe0wNdX3yNKbmZQruimQ+cxLBd13i/mD6w9l4D+ZdRA26ILzO+xWBw1
+	5nzpmHkhHO6cGk33YfDl5fR22SMwa/Z1q0nkAnokEvZXXgDPfQgZkJgaz/vhbgTQJRDKIaqxs7/
+	AGOe9RzP5SlAuFEznnY0oO5cZ3kR5/6K8lsCpiMzBEqWdQ6HVMXPaTVg9ox224F826+1/UZoz29
+	rNbWg+cRB4+5AjxnZtHcULG1zwT0ZJzJT8htK1HtnaTJhuPQQNCONByl24EW3+Ib9bCcSs9mZ0z
+	xowCoCfUTw+n7feffPxbafivYwvkfMjafSH+ansViCYXISVSpT59M6p+Go2YOiqqCi3LWpwNx5i
+	yenA9uAwhPP3Avt0jG6F
+X-Received: by 2002:a05:600c:470a:b0:4a1:7e77:c382 with SMTP id 5b1f17b1804b1-4ac16acfe61mr380977515e9.5.1793830002799;
+        Wed, 04 Nov 2026 14:06:42 -0800 (PST)
+Received: from fedora ([2.35.201.240])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b56fca22f4sm24879935e9.13.2026.11.04.14.06.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Nov 2026 14:06:41 -0800 (PST)
+From: Francesco Nigro <nigro.fra@gmail.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Huang Rui <ray.huang@amd.com>,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [REPORT] sched: ITMT + DELAY_DEQUEUE: woken task waits ~1 ms behind another task on the preferred CPU while allowed CPUs are idle
+Date: Wed,  4 Nov 2026 23:06:22 +0100
+Message-ID: <20261104220622.3542344-1-nigro.fra@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <32db09358aecb92c55c8c1295fa71b6a73306999.camel@gmx.de>
+References: <20261103154603.1893325-1-nigro.fra@gmail.com> <25edb6cd36cb77b82b40826b97232438f1443516.camel@gmx.de> <20261103233352.2282883-1-nigro.fra@gmail.com> <32db09358aecb92c55c8c1295fa71b6a73306999.camel@gmx.de>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,56 +105,31 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260724-rfc_v8_scmi_memlat-v1-7-cb732bcff1f4@oss.qualcomm.com>
-X-MBO-RS-ID: bdc02223a3e50c9f112
-X-MBO-RS-META: 5mbzo6rkf8d9aucpqd6mxur6iz7r7xd3
+Content-Transfer-Encoding: 8bit
 
-Hi,
+On Wed, 2026-11-04 at 04:13 +0100, Mike Galbraith wrote:
+> In your specific case, dunno.  In general, absolutely.
 
-On Fri, Jul 24, 2026 at 12:48:12PM +0530, Pragnesh Papaniya wrote:
-> From: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
-> +	for (i = 0; i < info->memory_cnt; i++) {
-> +		struct scmi_qcom_memory_info *memory = info->memory[i];
-> +		const struct scmi_qcom_memory_range *range = &memory->cfg->memory_range;
-> +		struct devfreq_dev_profile *profile = &memory->profile;
-> +
-> +		/*
-> +		 * CPUCP re-evaluates and re-votes at most once per cpucp_sample_ms,
-> +		 * so a new operating point can appear only that often. Polling at half
-> +		 * that period guarantees each distinct vote is observed in trans_stat
-> +		 * before it can change again.
-> +		 */
-> +		profile->polling_ms = max(1U, info->cfg_data->cpucp_sample_ms / 2);
-> +		profile->get_cur_freq = scmi_qcom_devfreq_get_cur_freq;
-> +		profile->initial_freq = range->max_freq_khz > 1 ?
-> +					(unsigned long)((u64)range->min_freq_khz * HZ_PER_KHZ) :
-> +					range->min_freq_khz;
-> +
-> +		faux_device_set_drvdata(memory->fdev, memory);
-> +
-> +		memory->devfreq = devfreq_add_device(&memory->fdev->dev, profile,
-> +						     DEVFREQ_GOV_REMOTE, NULL);
-> +		if (IS_ERR(memory->devfreq)) {
-> +			ret = PTR_ERR(memory->devfreq);
-> +			memory->devfreq = NULL;
-> +			ops->stop_activity(ph, NULL, 0, MEMLAT_ALGO_STR, MEMLAT_STOP_TIMER);
-> +			return dev_err_probe(&sdev->dev, ret, "failed to add devfreq device\n");
-> +		}
-> +	}
+I checked with boost on too, on the same box and kernel. I ran
+asym_min and tbench on CPUs 4-7, without SMT siblings, with clocks
+pinned and boost off, and with boost on and the full frequency
+range, DELAY_DEQUEUE on.
 
-I tried it on Hamoa (Yoga Slim 7x, x1e80100), loaded scmi_qcom_memlat_devfreq,
-and I see the apss_cpucp_mbox IRQ firing 3100 times per second. It raised the
-power consumption while idle, screen off, from 0.9W to 1.4W.
+With boost on, 0.82-1.09 % of asym_min wakeups per run waited at
+least 0.5 ms with ITMT on, and none with ITMT off.
 
-The polling seems to be the issue, as I didn't see hectic changes of frequency.
-Raising the polling from 2ms (default) to 20ms makes the power usage goes back
-to around 0.95W, with ~150 interrupts/s from apss_cpucp_mbox. It's still higher
-than with memlat off, but it seems to be a better trade-off for now.
+tbench throughput was the same with ITMT on or off in every setting
+(within 1 %), and so was the busy CPUs' clock (within 0.2 %).
+According to these new runs, with boost on ITMT gives no throughput
+advantage and still causes the long stalls.
 
-Can you check on similar platforms (hamoa, glymor) if you see the same issue?
+As a side note, I agree about DELAY_DEQUEUE: disabling it reduced
+tbench throughput at full load, with ITMT on or off.
+
+Scripts and raw output:
+https://github.com/franz1981/itmt-delay-dequeue-repro/tree/1400f15
+
+Tool use as in the report.
 
 Thanks,
---
-Anthony Ruhier
+Franz
