@@ -1,143 +1,71 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.49
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793822018;
-	b=Hbns25ErDd5zz+Mb0xBLMgai+h+6hYPVCfrG6bQkm+SnvRxYvSoGrMOZoNTvzzcFDapT
-	 GYMPtKRJ5808sjTxdOYWHqC5D9pTo/D3GNKH6ZgaXErrN/5O1UaXIA1QeV5ylIRNB8JDl
-	 mTb6/77L7avqm0Rjbz7Qo5BAbl1jdct9paIO2y/l9Z38rhRchwmo+BJ1CQ/i3MbOb5uq+
-	 7vHKL2gw7xOhld8nRRuPZ6vZM883u6GhoTvhxBFuYP28aEGsZxLCR0svfegBLl7cnGdwp
-	 9gQCfa1bqF/g86ryoLyPbtAO6178qlMhCJoQBvuhqRs/wxuRD5dlJoBodMoMTUkYhPA==
+	t=1793822171;
+	b=pv/B9NKp3+OuUc4qhOOUSbn3qygpLQVElLjQI0AOMEoXXjJ+AvnWuduIJ9/IL67LeFxV
+	 q0VejX8JAykkpW/fSqBrUA/u/ep9ixAJ96skal/SQd7mFAF2pCbllxgtvFr3mZIrD3Dga
+	 6RHCcDlLLUK4Bc83lnFImziaByPfeW8ASiK9+Sj/AedHOG7joUI9VGT8GkTSodurKwaEK
+	 MgPpAQYZIQI29aUQqINJ3EhQpp/vkt0xph82U8DXYtLX3kdCgcsD/Y4edNtUj5MJsrkHO
+	 +uo2/Wotext5mNy5YDLQdbRynDgSx2sB4LYB26z5FLmUD+KzACz76eFu2lddgeKrXoA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793822018;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=j77TQJheY9BNkuAUNT0wTTk7+HF7XEvTQj5keMW7u/I=;
-	b=YS6vE+zuJxU8J40dt5sS3MHZkBM8tQUiCGmNr3ta/56RVedTekJg6ufhgTdayPUzU4vL
-	 OzDHVEULUF2CnLbXhcFSiI98Sfx1myhTkH0xRvk7xq5lP4u+jdYauwJSbaITyRktLI8Tp
-	 tdDz/yA0Qe7ojJNT+eQiWQGQpqGteSBauQJGI1/Oh7FvaeAEApuKj8Irt6Jh/PRfTF4+4
-	 /f+cai1LuWGb/mou3dTSS9lD1nQWcAam7VY/wYSpUDsZMK5XLyWUVHpeBnfpAUM4L5Nld
-	 enHhHvyJ+JlIS306JXGolMR+9NXa1A0f/TIkSDX/cJlQD9/mxIHjYjjR0fKgvMKC0KQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793822171;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=HoHG7Q+v2F3yQx0ptCSEeaODxcO2rVUZD9LjR6JGOYE=;
+	b=NhdkRSwaXFCQyyKcZrxg4hHuWmURazeR2br4+iE5OavY4l9rbGiJmvOhkoFTIdnZgJvI
+	 nuU/4t/scBCK4J37gBn3aZoayvCt5U8vqZpAjy/7PnReCh/69gS1jCgOnEfv7sxgNzboA
+	 FDurtKreanHDXBCbYdRVVfekxUW0W/eVnyycD4PN+QGnSGgSw6S5DkEv4vCnX1jcvHwqR
+	 laURzEsuZ1lbfirerb4HmPtzfPE0N6v2UGJGXGLoQxoEhcFLWw9wtP1ubPokwyjKJVlIj
+	 Fl8bbVeg8bSCoQELDWyAmZGxdVrIEyrufzuzVVFYMed1l2mLFJtAwOlnt1CtG2RTQpA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=snwKVTUy;
-	arc=none smtp.remote-ip=74.125.82.49
-Received: from mail-dl1-f49.google.com (mail-dl1-f49.google.com [74.125.82.49])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Wps4oTA9;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB99560960A1
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 19:53:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BB99560960A1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95FCC60E4833;
+	Wed,  4 Nov 2026 19:56:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=snwKVTUy
-Received: by mail-dl1-f49.google.com with SMTP id a92af1059eb24-19305bcb72cso1062197c88.1
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 11:53:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793822017; x=1794426817; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=j77TQJheY9BNkuAUNT0wTTk7+HF7XEvTQj5keMW7u/I=;
-        b=snwKVTUy9LvBIeZYEhCXzEnRQp2wodIFGKY4wUJ7ztWzLVbTd1bI4nr3mGXqrQXFPO
-         83/HtfEisb8NH+6TKxRanc+LHldo4EqJ43kuJQJyWdqbEb2qaKJ6REpFD/Jt5EslTB+S
-         zscnal0Mvh+NX91kiP+siOH9v7tqEITC6j8TarPFAWvrj5zWcfX48CLTn8neQnUjk0aG
-         DdWT6beozrR7hgNmLfQYYUBVHi+K7i2h0gb1c9TLmiQO015gt7sDVMBLhaHB5Rgu8J3E
-         vDvOsMZkyxTj1DF9F5rnA3mHVh2Jx0j8rAylzbJGVo40aem9854GCIhJgMsA/lSZgxl8
-         K73A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793822017; x=1794426817;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=j77TQJheY9BNkuAUNT0wTTk7+HF7XEvTQj5keMW7u/I=;
-        b=jt3ad/PXjsMqdNblXCcfAO1mgf/p0pqsLZa5xYQyQvR0Ik8kuaWiiPtqDMYp6wCF6p
-         yI2/EVFCmQKYcHQezgeXtSdXm3i94oEMrlo8g/jwnK5UycOfTi+QRngs8TTPfz9HZR3t
-         mYtugVxBKd7RdGL8bvnVTcccTzVcMapxceFj0a8cJo4RuZ8k0MkUhPft6OzWguvhmQHe
-         AoCNFHsikhRz5xYMZZEKm7KoZJEMhkJ9vFhUZF5SxiUiLXWFjdi5jO6a4WL2HpSusFyk
-         FOtQVZMM8XRnygc1+Pctgj4Vzp7qKWCQAnC9nEcHZpnx41wVoIT6gEbKrVvU3eaqwJr6
-         jXxA==
-X-Forwarded-Encrypted: i=1; AKwUvBz9aZfrVvmrz23VszWlOpOJ98QtGDMdME6c5pxkcRmIHknxWy5jbMEd2AYUmLqDhKFxAomgJEPJIw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8eXgOInYPoRjEwWNjHRkcHib3I5mYwer5zc9uL/1raLjJBr3o8
-	vypl9GiNW0d1XNOAGHLJh/TWn/iRkCc8fu7tLzQ7XzmrlwuVdNVjjNo=
-X-Gm-Gg: AYBFou2conc8q4IEniDJDuwGMNPJ5BT0AoTS1OEGWWLiyc74t9V6GD3pl8zK+ic2stX
-	lpQGcwu+TjOhGVoy4LS4JvM/GgfcDobnIYB4v6/Y34fT/PP0HaaRMkHxPbXN3jS3+S+HxfifUER
-	+ltMVkQU/nwwSqwXkoc5dtyqstGoUGVh5yFcMSZmtOcfrxtxHUxeoHkeQxeWKtZLI7g0I27D12I
-	JAu/qH9bpr9zXd0/PJK6z/LHxUsMUexvv6CyaCAorFe5scE9hFdptQkEvwbQJv0n+ysbyIA2AlN
-	lTuiyGs4JpnouiIF854ewkwV6+QqvWIMOWJL565zm4fixEfDkBseWeDBcmzCbVMhWyZql8TFX0u
-	2S4rXNTinO/vaP96eqbO9j5Z44hOy4AzhmKWl/a53gIT7b00cqktRUIDkNt2fYHwzdgGSGeavrK
-	DTJvos/AHs59GHRhHU+r3BqWb6RXLP+MceWdIpDMMQP1jooJs9hLcIL0WrvRRB2G7WR0HFd2XxQ
-	YmkSnoOwiCDTio9AFf9j0PeKuVLRG3oEbJnN9l93sj5Av6Si3/shqcdb9UKsby9QpbP8oNDkadX
-	f8pq6tDec/bwX0h35DgaHxflDPG/dIRs06Mt41dcHOj2KKGp+bc7pjFkwXUE4/Yn
-X-Received: by 2002:a05:701b:4241:20b0:143:2968:564c with SMTP id a92af1059eb24-1ac5b9cb040mr26455364c88.26.1793822016817;
-        Wed, 04 Nov 2026 11:53:36 -0800 (PST)
-Received: from at-Standard-PC-Q35-ICH9-2009 ([106.194.66.249])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c2d69asm9239684c88.11.2026.11.04.11.53.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2026 11:53:36 -0800 (PST)
-From: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
-To: jic23@kernel.org
-Cc: alexandre.belloni@bootlin.com,
-	andy@kernel.org,
-	asahi@lists.linux.dev,
-	atharvatiwarilinuxdev@gmail.com,
-	bhelgaas@google.com,
-	bp@alien8.de,
-	brgl@kernel.org,
-	dave.hansen@linux.intel.com,
-	dlechner@baylibre.com,
-	dmitry.kasatkin@gmail.com,
-	eric.snowberg@oracle.com,
-	griffin@kroah.com,
-	hansg@kernel.org,
-	hpa@zytor.com,
-	ilpo.jarvinen@linux.intel.com,
-	j@jannau.net,
-	jarkko@kernel.org,
-	jmorris@namei.org,
-	keyrings@vger.kernel.org,
-	lee@kernel.org,
-	lenb@kernel.org,
-	linusw@kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	linux-hwmon@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	linux-integrity@vger.kernel.org,
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Wps4oTA9
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 29DE61F00919;
+	Wed,  4 Nov 2026 19:56:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793822171;
+	bh=HoHG7Q+v2F3yQx0ptCSEeaODxcO2rVUZD9LjR6JGOYE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Wps4oTA9ABsC72klO6frRDwdsYP7sS3fInX8HQ/nQQRLCkOO43eeYJkwzgne6GNa8
+	 3RJtphV4QcmGWw5rqEAqQDWjf4KsnrKNCUHbfECY+XZZdrt9Q3IqEooND/6KeNmtoQ
+	 V3Lf1qWhN9/IgWGkPo1L26IMtwrBI2g2LY6/lOET1wU0ca6v8qQorukIkzPSppVouh
+	 i2/eOegGj9fep0kZErEICBk2P5oR9lf6mpGUV8W2gJrnSzaG+dDmqSU6MIGQxVWNU8
+	 5zSJs51FbW1/PbmCXcrE53LG6Vrfuxsah91rggaWzJY5n2niNUtrjPMW1AYT55//cE
+	 tEyzIMd7vyYXQ==
+Date: Wed, 4 Nov 2026 13:56:09 -0600
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Sreeshankar K <sreeshankar0910@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Robert Marko <robimarko@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	linux-pm@vger.kernel.org, Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Brian Masney <bmasney+clk@redhat.com>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	linux-arm-msm@vger.kernel.org,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	Guru Das Srinagesh <linux@gurudas.dev>,
 	linux-kernel@vger.kernel.org,
-	linux-leds@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-rtc@vger.kernel.org,
-	linux-security-module@vger.kernel.org,
-	linux-watchdog@vger.kernel.org,
-	linux@roeck-us.net,
-	mfd@lists.linux.dev,
-	mingo@redhat.com,
-	neal@gompa.dev,
-	nuno.sa@analog.com,
-	paul@paul-moore.com,
-	pavel@kernel.org,
-	platform-driver-x86@vger.kernel.org,
-	rafael@kernel.org,
-	roberto.sassu@huawei.com,
-	serge@hallyn.com,
-	sre@kernel.org,
-	sven@kernel.org,
-	tglx@kernel.org,
-	wim@linux-watchdog.org,
-	x86@kernel.org,
-	zohar@linux.ibm.com
-Subject: [RFC PATCH 14/14] mfd/macsmc: add ioctl to access smc keys
-Date: Wed,  4 Nov 2026 14:53:17 -0500
-Message-ID: <20261104195317.8284-1-atharvatiwarilinuxdev@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261101013817.22d67ea7@jic23-hlaptop>
-References: <20261101013817.22d67ea7@jic23-hlaptop>
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Taniya Das <taniya.das@oss.qualcomm.com>,
+	Lukasz Luba <lukasz.luba@arm.com>, Amit Kucheria <amitk@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>, devicetree@vger.kernel.org,
+	linux-clk@vger.kernel.org
+Subject: Re: [PATCH v13 4/8] dt-bindings: thermal: lmh: Document SM7250 LMh
+Message-ID: <179382216871.3640746.15933620023263948476.robh@kernel.org>
+References: <20261104-master-v13-0-355b65c6f764@gmail.com>
+ <20261104-master-v13-4-355b65c6f764@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -147,21 +75,19 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261104-master-v13-4-355b65c6f764@gmail.com>
 
-> If this isn't matching some legacy interface, then we need more
-> on what these do.  Maybe they are suited to some other kernel
-> interface? In particular they might need the various controls
-> on how destructive they are that something like fwctl brings.
+
+On Wed, 04 Nov 2026 16:46:36 +0000, Sreeshankar K wrote:
+> Document the LMh compatible for Qualcomm SM7250 SoC.
 > 
-> Generally an arbitrary opaque path to firmware isn't a good idea...
+> Signed-off-by: Sreeshankar K <sreeshankar0910@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-lmh.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> Jonathan
 
-Here its required, if we write CPU/GPU Pstates and PPT to
-some keys (MSTS MSPC HE0N), we can reduce the temp by 10C
-And We can fix the dreaded PROCHOT signals on macs, Giving
-Same temps as macOS.
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
 
-But you and Sasha are right, that exposing all keys is a
-bad idea, so i have restricted writing to some keys only.
