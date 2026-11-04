@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793803102;
-	b=Im5RITPG9tGgFQwovyufxDyMxbsvWhViMqJpFoNZbvA94gl+8imQAmVyY+hqs7+wj6ek
-	 FyV0dKs300k8/V5Ai8K2MiQ23VWrcD42POzdyF8+hImEX1SSD+bw9c+l362v/DKLio2GF
-	 wQggkq+T6ozT3TLcYPwBZTG4o/qhUuXiFy1p3U82R4bE1bUTFpGVqz2XHIto6tbNfFKdf
-	 YSCPEMdjWzMgMlr7e1IT6MRTPHMuGzUJBFWam9Jh++dk18B3guVTza3XJO/+0Z7TwLVUN
-	 yZrQ4h08DdvQLfc3bjnLnesKiS+5aU2QZJE9brqNzJ83/pONsJjssOTj/5nS3LsflVw==
+	t=1793803483;
+	b=O8Cn1CwEDfRL9L0nC59wrTscwPJdEsMdVsrGdwCgSNS7SrWT/quZF3wFtG2XDaXaAHgV
+	 w4+kNtQuG/zAFKiNOwAxvcQj4ULdqivqFuc3OBgUSeGjDNf5hX1Zym2u5Eze8A6iEgasf
+	 4h2JQMNi90j23sUzrveUFzmE0Zg3b0T3UNkM9DkY6cnM5FBX9KS60vDYcneNLuhufFaPH
+	 3y//gviLtOpQwhHs+yv1lVVc69L1MYBYF2nfY0TWPbjof23eilRN1cIOK+WO/BBecg7lS
+	 fFfYkgxeWGxnX4SX5KjzPAyqgxhFMX8z2gimy+VSfapV8TU6h7w6rGIkgaMqbXh0WBg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793803102;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793803483;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=TQh3NLauPY1iVVeXcuDFWHu+HqpyEZbU2yQkADbmaQs=;
-	b=C6ZexbqTRKm7PBaRw/R2NOz6CAxnyuOTAFYn6gtmD6/80cLY3FNJiovPTfJ/s60KiSto
-	 HFnI5A+Z3W/Z/wxJ7fIturJxvnoRlc9Qeullx9nypH5qo/Y+1ajVsQ25lxk3OIXrLJpv0
-	 CD+Ssl7qY5SAEraYvO3py+Dnh4gZOUbqTukI82DWz/cGeNprBLXENCV/dZq/4wSDdiUWJ
-	 uQhE1urPDUjTJIYdazfJZf1DcMI1P+EFGJaJGcOWK/6rAoLKdNeWb/1+pKZhzMh9hlrLI
-	 gb3RcltbqbqzYPfOM3jZO7g89B3OQBOEMb0MqrgFMrgoC0P2CKSngzC3mLH50qV8CZg==
+	bh=gmZMoog7Knh/OMnJRYd6yhL9S4j+bQeuh5tH/D8XkYs=;
+	b=jTSMyfKxYsc4VPsFCZe6oGNwiXkSvFn7Mph5vDqpoYXrYnN5ZZP9hXRdwgS6E73AJ37T
+	 mDNXxRziOks8oFFFV52LGPM1E2vRUY5baXiAFUXH+HMRVZWOxdaqJpgnEZeCmpPN/XzdQ
+	 2BhczBKfXoj9EnhxCKsVBQ8divlIATsBSEtIA/GtXBji+xrW2fk3ftghES6VKiZcVsQ/4
+	 2tb/PypykghFWMyDdoZZsg8UZHGdJy9xW2aTJfMyaaKrif/GHwGm99NsJOE1zNDybbrYM
+	 YBy5YfLV2wbdRTDd/Q0c0wpZXS6MwTvuTnOING+Mw+Uof0nvCJ/po+4N0n8THaD4dqA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VfKhKgVm;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIpwWVJD;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60549606A328
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:38:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27C3E606A328
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:44:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VfKhKgVm
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0211E1F00919
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:38:22 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIpwWVJD
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB9CF1F00A18
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:44:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793803102;
-	bh=TQh3NLauPY1iVVeXcuDFWHu+HqpyEZbU2yQkADbmaQs=;
+	s=k20260515; t=1793803481;
+	bh=gmZMoog7Knh/OMnJRYd6yhL9S4j+bQeuh5tH/D8XkYs=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=VfKhKgVmXvQe2VRewqtDFVT3Z/6Dtd7+1cJreS9lRzXIAAkUnc5H2oJX9ssBZK3JX
-	 AWPrnhiuzCSj2FTM/6tRlbNTnvjd7y7nZk77uv5TZ86dFsccq+SB+0JJ4F2eY+C16m
-	 865v3OcqqLlGqjthBx7950hiNAYoevx/W/cNhXABD4mdfKS7S0OZhjove/5ihzff+J
-	 lhtnksdv0u6LFEafggI/Hmjhpnhph3fBWr4sZL3vCclpGarIsZjOzUZ/PCXSo1TFGy
-	 eva9+D6vDYz2OLgmNcF8TdV3pfHlUPo4GtfA6bjoSj5igS0XuaKDsGjLeuf98FzbyZ
-	 0NYLenDuMIn6w==
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5be4a2d94adso698288e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:38:21 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBz2ENCvHVNkEHx5UuCaZ4MlO+afd4PSJML0b69plSynmjOKLUO8H3+rwjTYV5LLhOK1RxVj2u1hIA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9Fj/2Z76UYV5LNVSP8wM23YkyVF3WSox8Ojy3+PdaYFTU5ihUn
-	JGi2Np1aap6yLJdTqpNuJJtf5Ig0409pLLJlX3PEiEt0oKf1jMpJIKLOdMAM0EQmFGN3L6jYYUt
-	u/aA1VfmF8w5/7jfCi27XEgsk/GvPkag=
-X-Received: by 2002:a05:6512:6193:b0:5bf:bf86:d01a with SMTP id
- 2adb3069b0e04-5bfd9562e8amr5915003e87.17.1793803100471; Wed, 04 Nov 2026
- 06:38:20 -0800 (PST)
+	b=JIpwWVJDSZthuxauytHZVpUBhT35lDXWU7JnrJh15d+/c76AHM0G2XtbpGRK6yUwf
+	 VQF2Ifo55xwfPF4A+jja/aQAfhdSlde//PwWH5cD4HLluPLXbGipFmpwf5K2MD1/rS
+	 WCarMKbC+QGEzjT/HvfGYm5il6FIpFWzOIJAXbyT7DWvlPwP7sp4IDwVfaP7iJamHJ
+	 JSB4ysBFQt3OOH/W9AAYLVcbE7i1edPrUT/j5+XyWCZbRr6ELD2oLY9czFMgHOt2yn
+	 9jriZr7SV03MOvWpif0KUNFbD9vFvXzXBrB2K3XtT4X4qLY9H9Dbck14UfQ1ZczE+8
+	 bBd2U/LyYauJQ==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5ba3ac592faso851545e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:44:41 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBweGuq8UBZSQrCl9w/g+iA0ynvhd6m+jyNG/uq4ZSOnTRWueNkubwEg+q97m0MI/nmIWkJv+nWEQQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/cn4XZA3JfuJeldda9ZT4pc/5iNq8894K5RvPMngOwmo9F5nkn
+	wZn3mkvzmeQwccdnWsNOi0egFgS2bSP+/5L213g3ngv3u4z/nxodiHf5HGjl06RxMyZsAs5Df/T
+	W6RQ9cTywBsrnhCLni8mqX3IAUhDoGeg=
+X-Received: by 2002:a05:6512:3e03:b0:5ba:41f0:5a45 with SMTP id
+ 2adb3069b0e04-5bfd9561f19mr5431515e87.21.1793803480211; Wed, 04 Nov 2026
+ 06:44:40 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,84 +59,60 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1793715774.git.krystianmkaniewski@gmail.com> <417c773d1719006cc85a3468dc393f5e754bf855.1793715774.git.krystianmkaniewski@gmail.com>
-In-Reply-To: <417c773d1719006cc85a3468dc393f5e754bf855.1793715774.git.krystianmkaniewski@gmail.com>
+References: <20261103221717.3840215-1-briannorris@chromium.org> <20261103141442.v2.1.If69ddc515c2e9fd4338441e87688b9d690d2ef36@changeid>
+In-Reply-To: <20261103141442.v2.1.If69ddc515c2e9fd4338441e87688b9d690d2ef36@changeid>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 4 Nov 2026 15:38:08 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0j-WY=nwVvq6Ck7kDLZ_E6jXGsQHohB5uZtT3uSQ0-6Ng@mail.gmail.com>
-X-Gm-Features: AclHuK9myr72rVuqTOxZAZX_zcmWDtmvlF6GR5rcMcUu0FZVOtDo1SpAWRGZnAQ
-Message-ID: <CAJZ5v0j-WY=nwVvq6Ck7kDLZ_E6jXGsQHohB5uZtT3uSQ0-6Ng@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] PM: hibernate: refuse splice on /sys/power/resume
-To: Krystian Kaniewski <krystianmkaniewski@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tejun Heo <tj@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Ian Kent <raven@themaw.net>, Danilo Krummrich <dakr@kernel.org>, 
-	Johan Hovold <johan@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Jens Axboe <axboe@kernel.dk>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, driver-core@lists.linux.dev, 
-	linux-pm@vger.kernel.org, autofs@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
+Date: Wed, 4 Nov 2026 15:44:27 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jb+=Wzp+awZmtk-PXB+oS+NQk+VXKCtXCFo8ELLUc9yQ@mail.gmail.com>
+X-Gm-Features: AclHuK9gTEmcX27Bq07hep_nJ7cMaPt2IP1nezlEMxrLMz_VLm2hu4KjJWZY_Xo
+Message-ID: <CAJZ5v0jb+=Wzp+awZmtk-PXB+oS+NQk+VXKCtXCFo8ELLUc9yQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/5] PM: runtime: Only queue an idle check for
+ RPM-linked suppliers (part 2)
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Fabrice Gasnier <fabrice.gasnier@st.com>, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulfh@kernel.org>, 
+	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, 
+	Andy Shevchenko <andy@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+	David Lechner <dlechner@baylibre.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+	=?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 3, 2026 at 3:57=E2=80=AFPM Krystian Kaniewski
-<krystianmkaniewski@gmail.com> wrote:
+On Tue, Nov 3, 2026 at 11:23=E2=80=AFPM Brian Norris <briannorris@chromium.=
+org> wrote:
 >
-> resume_store() passes the written string to lookup_bdev() before it
-> tries to parse it as a device number, so the string is resolved as a
-> path relative to the current directory of the writer. The syzbot
-> reproducer writes a relative name from the root of an indirect autofs
-> mount. Autofs writes a mount request to its daemon pipe while kernfs
-> holds of->mutex. Together with a splice into a writable kernfs file,
-> which takes of->mutex inside a pipe mutex, lockdep reports
+> Commit be5755f023e7 ("PM: runtime: Only queue an idle check for
+> RPM-linked suppliers") was incomplete. There are two other cases where
+> we perform idle checks on non-DL_FLAG_PM_RUNTIME suppliers -- in
+> pm_runtime_set_suspended(), and in cases where we failed to resume
+> suppliers.
 >
->   Chain exists of:
->     &pipe->mutex --> &of->mutex --> &sbi->pipe_mutex
->
-> A splice from the daemon pipe into /sys/power/resume deadlocks when
-> the written path triggers a mount request. Mark the attribute with
-> SYSFS_LOOKUP so that its writable opens refuse splice and use lockdep
-> classes of their own. Plain read() and write() keep their behavior, and
-> read-only opens retain splice support.
->
-> Fixes: 1e8c813b083c ("PM: hibernate: don't use early_lookup_bdev in resum=
-e_store")
-> Reported-by: syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
-> Closes: https://syzkaller.appspot.com/bug?extid=3D002fb7b2d0bc53bf7e75
-> Suggested-by: Tejun Heo <tj@kernel.org>
-> Link: https://lore.kernel.org/r/ec0c2add83f18d7a3c726d5d219dfe42@kernel.o=
-rg
-> Signed-off-by: Krystian Kaniewski <krystianmkaniewski@gmail.com>
-
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-
-and I'm expecting this to be routed along with the first patch in the serie=
-s.
-
-Thanks!
-
+> Fixes: 5244f5e2d801 ("PM: runtime: Defer suspending suppliers")
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
 > ---
-> v2:
-> - New patch. Together with patch 1, this replaces the v1 autofs change.
+> Noticed while touching this function in subsequent work.
 >
->  kernel/power/hibernate.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> (no changes since v1)
 >
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index e365e440cd5299..9dc5a27f674fa0 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -1316,7 +1316,8 @@ static ssize_t resume_store(struct kobject *kobj, s=
-truct kobj_attribute *attr,
->         return n;
->  }
+>  drivers/base/power/runtime.c | 3 +++
+>  1 file changed, 3 insertions(+)
 >
-> -power_attr(resume);
-> +static struct kobj_attribute resume_attr =3D
-> +       __ATTR_LOOKUP(resume, 0644, resume_show, resume_store);
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 304a2b123420..9d3508d9b4a2 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -343,6 +343,9 @@ static void __rpm_put_suppliers(struct device *dev, b=
+ool try_to_suspend)
 >
->  static ssize_t resume_offset_show(struct kobject *kobj,
->                                   struct kobj_attribute *attr, char *buf)
+>         list_for_each_entry_rcu(link, &dev->links.suppliers, c_node,
+>                                 device_links_read_lock_held()) {
+> +               if (!device_link_test(link, DL_FLAG_PM_RUNTIME))
+> +                       continue;
+> +
+>                 pm_runtime_release_supplier(link);
+>                 if (try_to_suspend)
+>                         pm_request_idle(link->supplier);
 > --
-> 2.53.0
->
+
+Applied as 7.4-rc material, thanks!
