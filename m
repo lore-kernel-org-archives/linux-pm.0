@@ -1,47 +1,114 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793814533;
-	b=j4KZCUthJMNbcMiZbAzoz29TxlIi1e92kmUCaQdD6PvvUAxnaxnIhNcR9mVJ4b3WyOiK
-	 Uzy/FnAplK6eDW65th8YOVHRt76E+DuWiMMjal5xl12okX/QataKBmGEaKVkP27N4mBQZ
-	 i8K9ANpsKQgGUhKV61V5+1FzZcoSGbSq1ojkQSO7RWW2vKxh/udEzxNxmFlXmAqdpfncj
-	 inSnG5XoPs9bdGFYIhj0RTExjO2X8m5IXmcRdjEoKWlnAN4bmZ23WbpS7F9ZAxpl8KCv+
-	 1SYMFgkDNt0x1DvnKwoV96MOk4FQpfSNUqxoxyNanSZeEDs8MIn4uAOq3rGJxo3TGQw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793814533;
-	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=bcezpuhf8jHaudjk12beSUxNoV1WoyCZJEHGgJ3QzvM=;
-	b=1L30uEuUoWbzFebALp4o8V7mjAZ67bpFp/D1D5A2hAqGxqeLSw0yvDQ/Xttcy+MZ1uOV
-	 xg7cGn64cnmFzMw6R7/j7b6nieJFqk1o7diKotq2T4lNLhxACDYpjVOvFzyQX1zHGNjIe
-	 ucPvBkOdtR4JfVK9N1y+cSw0+R4lbhS7GY8YoL2VdBzLNByZLdTPI40rJ3BEXQKtnSlfb
-	 AD2pMFgRbY/pD4djrA7dIioQ1q25VqUMYDoburxlzD2GsXdM02BkM28SOrv68Ef3slPZV
-	 yvIdBABMvw07/9iTZpyeHj11T3Wv1kZn+5muP8kWiHsfzcT4w6kE2p8FTq/58hDsCiQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b2p970Tn;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.56.62
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793816176;
+	b=bOlHSXVghOtHlGQl7wPIZYowSuxOydQFbOI5gxznNugyTXU6tJclwIan4pWfpsc+lFlL
+	 XVOz/7kK5fTBUVwXksjBuSuEiiejq1NYf3KWJo44L0rFPVCuyUIfDymllF9kFId6vfZzh
+	 lAEPyklfBerZd+rYwUkDiR0Aljcgz0xWdI4R2f7kySeglxvUmkBc+SlG7s+BH0VPZIcI/
+	 nnWywgsMmoWo2Ohpcmd0RQoJ3xxo40bSh+KcwFl5tmjv38jEyM7uUIeVt2vZ/iiobZzPD
+	 36l4P50bGpsEb5pp5o3t8E041NYE24yVHIWGk2h/ah9OXUqc4zYgHVmeF5i1HeJ/0tg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793816176;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+	 In-Reply-To:References:MIME-Version:X-NVConfidentiality:
+	 Content-Transfer-Encoding:Content-Type:X-NV-OnPremToCloud:
+	 X-EOPAttributedMessage:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=mmvwVsgKCKjEEKNf1Sb4GOacrpbCa2iMzkpiU0Nx0Js=;
+	b=NE811/UlQMC1UT+vfu/gTwgtSCcBNfBeYqytjicS2IN63hAQN1KekiIXog1FXrpHmcfg
+	 bZdfTEyf/6HED0FDE7rGHDwyVGVg35Ca0Bxo3T1VfYRCCf+ZNSqpZJ5r0GZNVzu0OJp7g
+	 w1/wn1UiqQM2dGye1lTl7uTvjrL8F2p600ne1JXUbDOSvanKa+kbIA/XF+oyy3Hq07ewV
+	 9K+od5g+HrU1POzzkAHo6ndFfLcuV+Yy8EiFhBUbwMrtabJnJpHnUav5GhWTA1irX9Syv
+	 PvWl864s8TC0GqeVYly49T4Xbs6yRaVCV4S8q0njsOGzn35MhK8AbvEPDijl5fokcEQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=nvidia.com;
+	spf=fail smtp.mailfrom=nvidia.com;
+	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=NfCER5zc;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.56.62
+Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010062.outbound.protection.outlook.com [52.101.56.62])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A06F606D822;
-	Wed,  4 Nov 2026 17:48:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A81FE606A332;
+	Wed,  4 Nov 2026 18:16:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A81FE606A332
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b2p970Tn
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 607D91F00A24;
-	Wed,  4 Nov 2026 17:48:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793814532;
-	bh=bcezpuhf8jHaudjk12beSUxNoV1WoyCZJEHGgJ3QzvM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=b2p970TnxvWKRo+rE6NnJ4OIho+4QePGvqRNZHl6anFONN9yJPTchJWUc0qBmLKMP
-	 JvkxHL9Xpazk/Huej+TwCJZHgiPgiAyRo9RJRGihF/6a+/CNo/3BdMkurHq6+gg9B5
-	 a7MwrwVrAK3vZfdnArgG9/HYd6cBVLWThLJ1ioEA5wfTs9oBWECQl7eJJfmnDUQfDP
-	 LaHC4vtifmzxhjEohgwt44TW9vNrVW+cAwxBcO0ff1SXrqyqyzsGk2Fdw4CFpfKDPJ
-	 wACbdW1zKWYZ9fjPVS/3n6oGT0Y6gKZdHlMydG6AuKxv5l5faXWx4/bMgBdafPz6V5
-	 gY61Q398MrSwg==
-Message-ID: <aa0e757f-dfd5-416a-aefa-3639d7bdf629@kernel.org>
-Date: Wed, 4 Nov 2026 18:48:39 +0100
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=NfCER5zc
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=aYUDkaXkiiZaNcF5EJ61r2vGC2gpE4A6yInTSTdYb8PPuTNL64UF+y5qpdb3u6OdnxMlVLPkSdEuX0Xi31UAVJZBrvTLNLN4YE6rh/sC14qLIwNBdFCv8nNXBFD4kfQ7fGVPw+TY7flVw+UHdAweswKmt6vddLU3FfdhzNeUknXaz1qd5/vRChdSZ7CIxS1xIro5NlNlfFF1nk/fEiLVQqq3gS94CqNujxhzofVJR9Q8bDAncofTex1Qond08lb+LWQbENiWcxe0seiD1pRMCdtc1Z7Kkn6gsV/jgm0A9EJRtShccXgVKr6CUKK9m1ZCCW2LFeK34/rZtsy0J39K6w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=mmvwVsgKCKjEEKNf1Sb4GOacrpbCa2iMzkpiU0Nx0Js=;
+ b=nhKpI3yK7fjxW+L06FTZ0jmssFrINlU/Cv7NkFtA1cOB2KXwtliJq6AG0hYw8sVsGmklecnm897YvjtiAXynsBGeiDcJFwkWSC2K2wociRpJqQBce9uO18n5PYK38R4MBRsAWK+CferZootTJ+eUvDNPMYmzgZ/ormrZcuNymPSW7lN1OJL0CA2XBXkOkeTJoX/pdxHTng4b371E6FCc7V4JXVGvH/DEWDemKfWhghzd31fMxuDADHarM2z/yYCiKFVWSjsy1jcz3xvpNaswxW1kvEh7UXqS62wU8N5kYuerYWyOISGiqqfiC0GmjGG0ThE6gcKk+uwMWh6ZopvkTw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.118.232) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=mmvwVsgKCKjEEKNf1Sb4GOacrpbCa2iMzkpiU0Nx0Js=;
+ b=NfCER5zcToylhTe5K/pdJnig6jSvjj2VysHEgyQTB4HJuALflybkHk/hp+KeCJ6yjVHwVYOKnj9qKC9kO2fiO1Q67bRPyShqzmhSA9vZe9UnsZVoKOMqawFB8kR4L6/M/102jAAbabmnhNnHvDTtAc/zmswd+p+8D8cnlxvXBjVQO6yhNc2xbZCsFvLqe7F2nBtVA/diLuConP6Y8PWFf7pD+I3g5CPEeUq3AHUu04zoXGJlhkEKLWqqZzDBd9V0yz+vBuPTdBs5pn62PJKLW4gLnl1B3La6RFRnzAxpzhm0Wv4yEsSafZDyTQAnHhRi7Ta9rlYJZabeMOjv8m5lMg==
+Received: from SJ0PR05CA0179.namprd05.prod.outlook.com (2603:10b6:a03:339::34)
+ by LV2PR12MB5750.namprd12.prod.outlook.com (2603:10b6:408:17e::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.8; Wed, 4 Nov 2026
+ 18:16:10 +0000
+Received: from BY1PEPF000264B2.namprd02.prod.outlook.com
+ (2603:10b6:a03:339:cafe::85) by SJ0PR05CA0179.outlook.office365.com
+ (2603:10b6:a03:339::34) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.4 via Frontend Transport; Wed, 4
+ Nov 2026 18:16:09 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 216.228.118.232) smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.118.232 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.118.232; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.118.232) by
+ BY1PEPF000264B2.mail.protection.outlook.com (10.167.242.118) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.592.5 via Frontend Transport; Wed, 4 Nov 2026 18:16:09 +0000
+Received: from drhqmail203.nvidia.com (10.126.190.182) by mail.nvidia.com
+ (10.127.129.5) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Wed, 4 Nov
+ 2026 10:15:38 -0800
+Received: from drhqmail202.nvidia.com (10.126.190.181) by
+ drhqmail203.nvidia.com (10.126.190.182) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Wed, 4 Nov 2026 10:15:38 -0800
+Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
+ (10.126.190.181) with Microsoft SMTP Server id 15.2.2562.56 via Frontend
+ Transport; Wed, 4 Nov 2026 10:15:34 -0800
+From: Sumit Gupta <sumitg@nvidia.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <robh@kernel.org>,
+	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <treding@nvidia.com>,
+	<jonathanh@nvidia.com>, <linux-pm@vger.kernel.org>,
+	<linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<devicetree@vger.kernel.org>
+CC: <bbasu@nvidia.com>, <sumitg@nvidia.com>
+Subject: [PATCH 2/9] cpufreq: tegra194: remove duplicate counter sampling loops
+Date: Wed, 4 Nov 2026 23:45:14 +0530
+Message-ID: <20261104181521.3003578-3-sumitg@nvidia.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261104181521.3003578-1-sumitg@nvidia.com>
+References: <20261104181521.3003578-1-sumitg@nvidia.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -51,99 +118,207 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/5] devfreq: Use %pe to print error pointers
- symbolically
-To: Sumeet Pawnikar <sumeet4linux@gmail.com>, rafael@kernel.org,
- amit.kachhap@gmail.com, daniel.lezcano@kernel.org, thara.gopinath@gmail.com,
- talel@amazon.com, hayashi.kunihiko@socionext.com, mhiramat@kernel.org,
- mmayer@broadcom.com, viresh.kumar@linaro.org, sumitg@nvidia.com,
- peter.griffin@linaro.org, myungjoo.ham@samsung.com,
- kyungmin.park@samsung.com, cw00.choi@samsung.com, Frank.Li@nxp.com,
- s.hauer@pengutronix.de, matthias.bgg@gmail.com,
- angelogioacchino.delregno@collabora.com, sven@kernel.org, j@jannau.net,
- marcan@marcan.st, casey.connolly@linaro.org, sre@kernel.org,
- wens@kernel.org, t.schramm@manjaro.org
-Cc: bcm-kernel-feedback-list@broadcom.com, linux-samsung-soc@vger.kernel.org,
- kernel@pengutronix.de, imx@lists.linux.dev,
- linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260912191156.185448-1-sumeet4linux@gmail.com>
- <20260912191156.185448-3-sumeet4linux@gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20260912191156.185448-3-sumeet4linux@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-NVConfidentiality: public
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: ExternallySecured
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BY1PEPF000264B2:EE_|LV2PR12MB5750:EE_
+X-MS-Office365-Filtering-Correlation-Id: 54147a74-2084-4eb5-7719-08df3a9fb39d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|376014|23010399003|82310400026|36860700016|921020|56012099006|261102123227099003|261021121427099003|11063799006|261009223027099003|261026121527099003|261021123027099003|10067099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	AymMedXsO+iBwIYQLnO90QcfjiTw66nt/hTCbIzbtt3GoR0N4MjwM9vzm/y0xhR3dASwNJPte0C8e7ZNsSsGn7BZ3/O7KTwUchjMmE6XbE3VhXyDk2xtfQBEoy2/ruVd88sdTT87vKADEjhFlzy6sWCiyZ4HpOSkpZwNCDkwLy1JyBIzmNeeoY+gCAdhFrbXs8EzXN8quhrNLU5QJnsvNAqFBd/POpc75TJf+szsLa2oOvzKHhFeUDZvHSBEmW9Sy1umTnuhrYMa5uxjJLLiyEPi7ztLQpHbfTfMB8BUQ+0jGuIisSi1BX5nxw5Vk2d2Z+4gVxU7nIlaVFJ9GgnlyGDfiCLymItUk0aa1KvYgHEcWFT9KyGtzYCTuaknJTVh3ayfQ6einzBQCeyPoZjt9YQHvxYctCH8BaOzCI3ziN8ibvsyezJqJ283VWvFebiVTGOEsrsBgRqGTaPBSeirGbWDV+4Il7jJEzsdlznTtzhE7nhC2etqPjd0g1zy04HKgfIKp0Z4Kz4vJMv/P0bB76C9y5sSteYP/YFpkPWlfRHNnse3zblCs9v4/1xPjM1p7wmprOO0Q0nOKDz+s/7PMjZwPyrC7BDSPtYUVi1y5jB0nz8IrOU8ehfi7KBqle2MMoblxzEYAXrWWAIjyPxDVuOv51YCH1KsSBn+pOPf+NfMREAc5+NBkwDWZWQ8+iXqVyYH0RMrKGrBef52KjTFbjnnIIiyYzkz5PXn36JVnsVPQ9Qh/I85ZvebNH6zKdH5
+X-Forefront-Antispam-Report:
+	CIP:216.228.118.232;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc7edge1.nvidia.com;CAT:NONE;SFS:(13230040)(1800799024)(376014)(23010399003)(82310400026)(36860700016)(921020)(56012099006)(261102123227099003)(261021121427099003)(11063799006)(261009223027099003)(261026121527099003)(261021123027099003)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	dm/H5LZT8YB8Z1aFTK2574Sc2ZudtfO21UA4aaBYYEbHpKLs6qMFcCEDfoe9xNA69YBVEjMfum73RvknuRBrX6d6qjHgKkUoPDkf8aF7l05LEx0tgoOwShFdgfkolXQE9bRWm9GXSha1Sj6pcITDi2RjFPZNRTUXXyVJ21FDRvYLenQkVjg+BMDUaiSUXYvew7UgPMC6EgFCJmn5kw+bEx9gCprRiEnTG6wN3jZpzkqgTNaJgH0gjovoWXaRvZuRWtaE9tvB/tJanbeg2r5O8SvFUILIzRe2s4cH6afCu8MItDuKMGblRxwnsTFrTHyS7bb3RNnDKMzExPevUVPdAWPVje+qPTpX97MpT9HXQYVKXTlcdrnDVvdY3rc6XPIX5PO5gLAUAaFLU8DmEV6Zxuz57LkEL3rAkyPFChMin47LI9NLonYm1iynlpowpe30
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Nov 2026 18:16:09.7382
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 54147a74-2084-4eb5-7719-08df3a9fb39d
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.118.232];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BY1PEPF000264B2.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR12MB5750
 
-On 12/09/2026 21:11, Sumeet Pawnikar wrote:
-> diff --git a/drivers/devfreq/imx-bus.c b/drivers/devfreq/imx-bus.c
-> index 49798f542d68..dba76d8b9e5a 100644
-> --- a/drivers/devfreq/imx-bus.c
-> +++ b/drivers/devfreq/imx-bus.c
-> @@ -75,8 +75,8 @@ static int imx_bus_init_icc(struct device *dev)
->  	priv->icc_pdev = platform_device_register_data(
->  			dev, icc_driver_name, -1, NULL, 0);
->  	if (IS_ERR(priv->icc_pdev)) {
-> -		dev_err(dev, "failed to register icc provider %s: %ld\n",
-> -				icc_driver_name, PTR_ERR(priv->icc_pdev));
-> +		dev_err(dev, "failed to register icc provider %s: %pe\n",
-> +				icc_driver_name, priv->icc_pdev);
->  		return PTR_ERR(priv->icc_pdev);
->  	}
+Tegra194 and Tegra234 read their counters differently. Tegra194 reads
+a system register and Tegra234 reads its ACTMON registers through MMIO.
+Each SoC therefore has its own read_counters op. Both ops open code the
+same sampling loop.
 
-Apparently reviewing only a few lines of entire patch is still reviewing:
+Move the loop to common code and replace read_counters with a
+sample_counters op that takes a single sample. Keeping the read per-SoC
+also prepares for adding support for Tegra264, which reads its counters
+from the AMU.
 
-https://lore.kernel.org/all/9e39502a-dd17-4fa2-98a3-9019523cb5e8@kernel.org/
+No functional change.
 
-Therefore:
+Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+---
+ drivers/cpufreq/tegra194-cpufreq.c | 93 ++++++++++++------------------
+ 1 file changed, 37 insertions(+), 56 deletions(-)
 
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/tegra194-cpufreq.c
+index be81ffd23edd..0f350b4db6cd 100644
+--- a/drivers/cpufreq/tegra194-cpufreq.c
++++ b/drivers/cpufreq/tegra194-cpufreq.c
+@@ -57,8 +57,11 @@ struct read_counters_work {
+ 	struct tegra_cpu_ctr c;
+ };
+ 
++struct tegra194_cpufreq_data;
++
+ struct tegra_cpufreq_ops {
+-	void (*read_counters)(struct tegra_cpu_ctr *c);
++	void (*sample_counters)(struct tegra194_cpufreq_data *data,
++				struct tegra_cpu_ctr *c);
+ 	void (*set_cpu_ndiv)(struct cpufreq_policy *policy, u64 ndiv);
+ 	void (*get_cpu_cluster_id)(u32 cpu, u32 *cpuid, u32 *clusterid);
+ 	int (*get_cpu_ndiv)(u32 cpu, u32 cpuid, u32 clusterid, u64 *ndiv);
+@@ -186,43 +189,22 @@ static void tegra234_set_cpu_ndiv(struct cpufreq_policy *policy, u64 ndiv)
+  *     [63:32] PLLP counter: Counts at fixed frequency (408 MHz)
+  *     [31:0] Core clock counter: Counts on every core clock cycle
+  */
+-static void tegra234_read_counters(struct tegra_cpu_ctr *c)
++static void tegra234_sample_counters(struct tegra194_cpufreq_data *data,
++				     struct tegra_cpu_ctr *c)
+ {
+-	struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
+ 	void __iomem *actmon_reg;
+-	u32 delta_refcnt;
+-	int cnt = 0;
+ 	u64 val;
+ 
+ 	actmon_reg = CORE_ACTMON_CNTR_REG(data, data->cpu_data[c->cpu].clusterid,
+ 					  data->cpu_data[c->cpu].cpuid);
+ 
+ 	val = readq(actmon_reg);
+-	c->last_refclk_cnt = upper_32_bits(val);
+-	c->last_coreclk_cnt = lower_32_bits(val);
+-
+-	/*
+-	 * The sampling window is based on the minimum number of reference
+-	 * clock cycles which is known to give a stable value of CPU frequency.
+-	 */
+-	do {
+-		val = readq(actmon_reg);
+-		c->refclk_cnt = upper_32_bits(val);
+-		c->coreclk_cnt = lower_32_bits(val);
+-		if (c->refclk_cnt < c->last_refclk_cnt)
+-			delta_refcnt = c->refclk_cnt + (MAX_CNT - c->last_refclk_cnt);
+-		else
+-			delta_refcnt = c->refclk_cnt - c->last_refclk_cnt;
+-		if (++cnt >= 0xFFFF) {
+-			pr_warn("cpufreq: problem with refclk on cpu:%d, delta_refcnt:%u, cnt:%d\n",
+-				c->cpu, delta_refcnt, cnt);
+-			break;
+-		}
+-	} while (delta_refcnt < data->soc->refclk_delta_min);
++	c->refclk_cnt = upper_32_bits(val);
++	c->coreclk_cnt = lower_32_bits(val);
+ }
+ 
+ static struct tegra_cpufreq_ops tegra234_cpufreq_ops = {
+-	.read_counters = tegra234_read_counters,
++	.sample_counters = tegra234_sample_counters,
+ 	.get_cpu_cluster_id = tegra234_get_cpu_cluster_id,
+ 	.get_cpu_ndiv = tegra234_get_cpu_ndiv,
+ 	.set_cpu_ndiv = tegra234_set_cpu_ndiv,
+@@ -280,35 +262,13 @@ static inline u32 map_ndiv_to_freq(struct mrq_cpu_ndiv_limits_response
+ 	return nltbl->ref_clk_hz / KHZ * ndiv / (nltbl->pdiv * nltbl->mdiv);
+ }
+ 
+-static void tegra194_read_counters(struct tegra_cpu_ctr *c)
++static void tegra194_sample_counters(struct tegra194_cpufreq_data *data,
++				     struct tegra_cpu_ctr *c)
+ {
+-	struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
+-	u32 delta_refcnt;
+-	int cnt = 0;
+-	u64 val;
++	u64 val = read_freq_feedback();
+ 
+-	val = read_freq_feedback();
+-	c->last_refclk_cnt = lower_32_bits(val);
+-	c->last_coreclk_cnt = upper_32_bits(val);
+-
+-	/*
+-	 * The sampling window is based on the minimum number of reference
+-	 * clock cycles which is known to give a stable value of CPU frequency.
+-	 */
+-	do {
+-		val = read_freq_feedback();
+-		c->refclk_cnt = lower_32_bits(val);
+-		c->coreclk_cnt = upper_32_bits(val);
+-		if (c->refclk_cnt < c->last_refclk_cnt)
+-			delta_refcnt = c->refclk_cnt + (MAX_CNT - c->last_refclk_cnt);
+-		else
+-			delta_refcnt = c->refclk_cnt - c->last_refclk_cnt;
+-		if (++cnt >= 0xFFFF) {
+-			pr_warn("cpufreq: problem with refclk on cpu:%d, delta_refcnt:%u, cnt:%d\n",
+-				c->cpu, delta_refcnt, cnt);
+-			break;
+-		}
+-	} while (delta_refcnt < data->soc->refclk_delta_min);
++	c->refclk_cnt = lower_32_bits(val);
++	c->coreclk_cnt = upper_32_bits(val);
+ }
+ 
+ static void tegra_read_counters(struct work_struct *work)
+@@ -316,6 +276,8 @@ static void tegra_read_counters(struct work_struct *work)
+ 	struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
+ 	struct read_counters_work *read_counters_work;
+ 	struct tegra_cpu_ctr *c;
++	u32 delta_refcnt;
++	int cnt = 0;
+ 
+ 	/*
+ 	 * ref_clk_counter(32 bit counter) runs on constant clk,
+@@ -333,7 +295,26 @@ static void tegra_read_counters(struct work_struct *work)
+ 					  work);
+ 	c = &read_counters_work->c;
+ 
+-	data->soc->ops->read_counters(c);
++	data->soc->ops->sample_counters(data, c);
++	c->last_refclk_cnt = c->refclk_cnt;
++	c->last_coreclk_cnt = c->coreclk_cnt;
++
++	/*
++	 * The sampling window is based on the minimum number of reference
++	 * clock cycles which is known to give a stable value of CPU frequency.
++	 */
++	do {
++		data->soc->ops->sample_counters(data, c);
++		if (c->refclk_cnt < c->last_refclk_cnt)
++			delta_refcnt = c->refclk_cnt + (MAX_CNT - c->last_refclk_cnt);
++		else
++			delta_refcnt = c->refclk_cnt - c->last_refclk_cnt;
++		if (++cnt >= 0xFFFF) {
++			pr_warn("cpufreq: problem with refclk on cpu:%d, delta_refcnt:%u, cnt:%d\n",
++				c->cpu, delta_refcnt, cnt);
++			break;
++		}
++	} while (delta_refcnt < data->soc->refclk_delta_min);
+ }
+ 
+ /*
+@@ -632,7 +613,7 @@ static struct cpufreq_driver tegra194_cpufreq_driver = {
+ };
+ 
+ static struct tegra_cpufreq_ops tegra194_cpufreq_ops = {
+-	.read_counters = tegra194_read_counters,
++	.sample_counters = tegra194_sample_counters,
+ 	.get_cpu_cluster_id = tegra194_get_cpu_cluster_id,
+ 	.get_cpu_ndiv = tegra194_get_cpu_ndiv,
+ 	.set_cpu_ndiv = tegra194_set_cpu_ndiv,
+-- 
+2.34.1
 
-
-Best regards,
-Krzysztof
