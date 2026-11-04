@@ -1,88 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.41
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793785693;
-	b=SPt4TCQN4kmNpPSHBLt3k98FuYwnBy6zAA1u2tU5zuccP8vMe326JJwmvCUs6qV7uwWb
-	 Ob2bk53x9NtLT8TNNUJVJHbeFxkxjcECXx9+a6mNOm8uasHe1/u4AqfRBKtQHpwrZNi2S
-	 ZNSayiZOjyPjuSSKtY1S3zYSvEDhVtrXK1WYJMA1U/8wPSh8avbVBQ0eoH/J/IjEXMqAU
-	 8g9G1WPJU3o7iO9iyQItAZjRdzLi687vG2N5B+rEQANwVMoxeBYhWXRJocZWI74TouDXn
-	 BWRcuNeTXauGOxUrnb6aFfxzlcM2iCcA+RL/OhViwaIhqX7O/J2LD7FMNOqOsKSfBMw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793785693;
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.222.171
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793786984;
+	b=gJ6ZbQxp2bR9opCZMXFfWnUECB37+zvPTeAxltoygTEY5Yg94K94Pm7hdBHvJ8dJvHp7
+	 UC02kQvlwrjIN1y49yRpCQ3TU5s6YTEi0S7YE85L9ZxlaZnSEOq8evDUqKugtapFVb/4+
+	 yORs3P1QgmmJIPyqZwOrCAf5CPaSEwSBqRcsm2aHqm2qS6NBb71PQQ0KmoP6wYnGlUCCI
+	 1ikfAG4D82pDwhvHfchB6efC0eYHKQW7045THuBAFyXhvVg1srqJTCtVpA3gvtFLbiX/j
+	 CXUWH35obWsbkNS7fn+j5ofpomZc1vZjsn3WpJWj9nQGqdMe4Unvrhfbzr3uGOqnz1g==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793786984;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:Date:Subject:Message-ID:To:Cc;
-	bh=csEO5ITGieiYfLlRHach8Sl5I2GDEIKt9+RVcncVde0=;
-	b=XXu7CwH5+bwQrd82421WO8aMttYycWxeNAeJlHFgFUMGE0SuOFiDJzj6YqSja/BsPi0I
-	 M81DfchiCyutBp/llWRbZ4pdW55f3Pn4xEQiJcxEBvaM/HJj7wMoeOs+0+FzNhejcArC9
-	 Vd0fiUDD7tAoooSJhoYRXzR0VbU86rappMBcEsd9pDobhxjDb6Y0NenF5SA/ctzazY5ye
-	 9Iizm4LVd9y84Em5/cUCYkQ50NOmwxEDIPe7T8gX/fi1DVcWcXGTJI9eTUxK02aZ4wVEk
-	 5LspB2b4W+PNoVdKJ4iiNyqUZRfYtOXosVr01vsW3b0YE91LAfCGoUVQKzttF+dB5AQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=srYIPxVn;
-	arc=none smtp.remote-ip=74.125.82.41
-Received: from mail-dl1-f41.google.com (mail-dl1-f41.google.com [74.125.82.41])
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=GRB1e0g/RzNosgVh22Q4nbJS5JXGJ4/s7oJ6tqlGbYg=;
+	b=BiuCdSOs7QVIWkXmKlT44ZBqXz9BuLuljUya1x34h/uxh6hqa6JOn5dIVfNlFXBPJVz4
+	 8sd9zELOUp8DSnc3JD6EDExfXrF8ycM5xW/3kAWLEn7UaR3vt3NlW23jz6Hg9nyZcRTL0
+	 wqmspO226Wmuo6u4junsAtxx4PEJaBVN3NMyZYfAdlIE5gVY7w58c4FOecfoNynRF1bTi
+	 6l0WCtol/YK6iEifnYuLaH5MbH+KMGccqMIcab173D9GWNC8pdm3txbcFOZWn1jH9spUg
+	 8cu5c4v2EDwj2DMorllmaEihFt8RShQ5ok7xvXjlVYBwVkh5uSCnnDojM1uYaMR7Omg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=none header.from=tomeuvizoso.net;
+	spf=pass smtp.mailfrom=tomeuvizoso.net;
+	dkim=pass header.d=tomeuvizoso-net.20260707.gappssmtp.com header.i=@tomeuvizoso-net.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=UcHCwjZk;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.222.171
+Received: from mail-qk1-f171.google.com (mail-qk1-f171.google.com [209.85.222.171])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1B3C606A328
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 09:48:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B1B3C606A328
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45CB6606A31B
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 10:09:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 45CB6606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tomeuvizoso.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tomeuvizoso.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=srYIPxVn
-Received: by mail-dl1-f41.google.com with SMTP id a92af1059eb24-1a2af4c8d00so1148832c88.0
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 01:48:12 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=tomeuvizoso-net.20260707.gappssmtp.com header.i=@tomeuvizoso-net.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=UcHCwjZk
+Received: by mail-qk1-f171.google.com with SMTP id af79cd13be357-93f2049ea7aso41810585a.2
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 02:09:38 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793786977; cv=none;
+        d=google.com; s=arc-20260327;
+        b=cE+buhiJyEWoegOdq3f5+a7hCKeBqbr9AXFahcA7G7PfUC2R638mSiaq4NKppvOta0
+         4bpUdp9H06Lbd+kJgpCa8W7lpY/bZLC7xvcZucTihXhGQ53gbBq/1gnv9Idv8xmi9wRR
+         yyrIDL9zCrbASiLzH2clSl7Hq/9g/whz3LSi8va9LrpCIuAw7GPha2lHx1L4W7p2OHeF
+         ZFGPB3kUlX6wVOx24iK/rIMv/6E/JYn+96C41areIP+MlID8SP+kYkoB6urtBmtjZSvH
+         FJh+wrWNXe+2e8wPss5GzA1RpEW50EtVRKe/G4uXi4ok9VjXEqBLdLHWivxZDnOVNysn
+         ylNw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=GRB1e0g/RzNosgVh22Q4nbJS5JXGJ4/s7oJ6tqlGbYg=;
+        fh=c40ASOSDMV2MshRCyT+WN3Wwe5h4m8y+cu0jmqCFM9Q=;
+        b=UqIYMBiR4tA3GNMh6nqT62mzeQIUbKSTL4ANUuL1yYU0K7LqHYkw2XFnAacNknhOGe
+         QlU0VXYifVKAJ0LwQtbt2mn1JxauRaLuRuqzV2mksYHqzdS6vmQ8Lx89hQQnTWWLVN6+
+         Xk2fMd6ensvt+/A4xj2nq67J6G1Dtklzcm8TOQo3UvL2PKqFP7MltmebOP1W7AzW12CS
+         gxAEmD70gP7/wLOHzT3z9c+s5xqWc3Jx1h4xMZgtFRFrfXfI0MAk3t60wEagXBKBsd6w
+         RQ17DX3xcEs8deTll0eJSaDdjETbO4lBoZYkVi/zxXxCjMnK/P2XUBWkZymD8B7rmYL/
+         kURw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793785692; x=1794390492; darn=vger.kernel.org;
-        h=cc:to:message-id:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=csEO5ITGieiYfLlRHach8Sl5I2GDEIKt9+RVcncVde0=;
-        b=srYIPxVn1p35OZGnV591eyvW5rxMAeWP3IoKZavPAoLLTkB36/TTZt9M6JWsHiHN9Y
-         Z3v/H38GN4NHtRy5cMC1aDVPFtY69ZbYjGlKwxk6WWq2FBoVC5hxWa6P4mzxYWHK1NqL
-         7mHN9tUseuPrBWxoV6lgrBnkjviN/VGEkO0cyEN4uOBBVb7tf1fYXu7FcrkbN8atxvuq
-         tbhgzBYvYelmTm9M8cl3q0bWf1p7VeYk1uSOnNeDQDXlyTvAWY6ZMyO47PD53n9doqMh
-         KDk2NIMkhZBxlQA9aIn2XF6pnmIZp/zc15jE+8b4PDqXw5TZIBvL/pdL8HJLRinZvV55
-         tc5g==
+        d=tomeuvizoso-net.20260707.gappssmtp.com; s=20260707; t=1793786977; x=1794391777; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=GRB1e0g/RzNosgVh22Q4nbJS5JXGJ4/s7oJ6tqlGbYg=;
+        b=UcHCwjZkxJdU7FrRZcBt1CxKGPzG2AJoKdOEXy6bT0/6tI1dlsBE9UxkNQCTTl9iFg
+         CzZsbKtm2Zhe8y6Iek5l+jWdVirGy65os5o0NtAw6vLC1uBwHyEz4DFZmAz9vXWKRjFA
+         FyJ0geUDEQnCktWcgRKGpHC5iCBkdyErjWGE7xcafrhlinEyZSdvmGyMbMt14g/ishMR
+         7aP+AcCLRYYxfJUen7AxTSj5XlIcIcy2Y4Oy1G37/F5M2NJirI03RNV9XL6KI1+WF1dP
+         e/vZncP8FzVcOBM8lQiXqWisOGl+f+l9GXvsQbpEn30kZ99OtKtdpyJju075XZ2QyLUF
+         sKyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793785692; x=1794390492;
-        h=cc:to:message-id:subject:date:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=csEO5ITGieiYfLlRHach8Sl5I2GDEIKt9+RVcncVde0=;
-        b=zNMVJ/jar10c8bV6WSxgLa1cM5asMbNja2qnyd6E1G6Oe66GNbGQHP8bnsLMWalFbV
-         boWPpZaIMNR+nwM16XEPcVNpmXf/oOvz+R7lOGqbOP1WV08ytKiMT4WNP7hHRVgb7SJQ
-         lLsweBnwKNGF3aWonOyZkqiBHQ98WmAhUl/Td95g2dRn3pytTDnTv06A3muVyahoyeSy
-         JFxtezRpGCfZZDg/4voqRAvwzLIf0skVTznaQ1msThwJgVVzzlrsU/sDq3vcO7NocCPX
-         l4RQstdOpVGFs6WXfW/a49Vc0373f/zgm3pqQjGtHbl8sgjojqQk99CFP6Pa8vw+M4jF
-         F1TA==
-X-Forwarded-Encrypted: i=1; AKwUvBzjF4xLp+Bqodj3BKezTMkxaZakpPmDsw0IeVSqZ20XHNQNAQKzcVmF4/5hZtRw3ySD4yY6mBuPDA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8UCMZtlNCJQR8ulcgxNItVxMYeLgt5QlBa4+sazgIkG9CF5I6V
-	cRpqRExxnvHek4o1TxlnnDLlzJ53VjNVG+fybK+TSGW9Gw9FRC+cKWxs
-X-Gm-Gg: AYBFou0dYs+Sp4T35t7cdTUtfzaNXNwKP4+y0lfKMLTl3SrzL3YLugUFtoWD1IkDlhv
-	a+kaymjSZWRLBH/OX+Yo5Gsoa7Pi/TkHJt8VUHPWxCkpiJNgYcOZj4FX/WTGUTlQGJQgwAlneky
-	RnD5ItfnYMgsP1lyn4m6gfHzj6inWdn3J1+7NTiu2tamcXscmQENrV0KFPTKaj1bGkHm9kDgmKG
-	LB6GP7XJudTkJTlKnHqC5S9MrxSWSX/fsxyHqudfq4lIGeOLCfPgbou6EdbkMHGUbJE9+q3An4d
-	PkG6t0v3BbjSvfnfUFK2NSDjquaye2H8LSTneAr8fz3x5DGk6zZN5XUHhdYVtiHYHdLz+d2RWhz
-	weDA26SYV+59Jcm0UxPW/o1eIOkl9bgYuZIVXoT65LEgpOrjdVMH4MQparPbSRmExFTqS6S5fu8
-	jk2ib3HI/JIGvCJimSgNnIcbs0658RmiDuuzWq0v0WgqoR3a8vhx4tOU0usFBjHqJI+R+W6Qe0L
-	4aLgkGJVh4sJ2fD5bAB26EIkodI5lE5ZQRmrobRM1rh6YyNul+Mn1QedWzZLsEtx3a9LdLVHzOD
-	yMUXUYPTsy0UeKYWpTNFqVnnSeX1N9Xgy5OrABeDt3sh3pDlNztmYshPK15q1r4sjGs1
-X-Received: by 2002:a05:7300:a98f:b0:360:8596:657d with SMTP id 5a478bee46e88-36a42401568mr33706705eec.32.1793785691546;
-        Wed, 04 Nov 2026 01:48:11 -0800 (PST)
-Received: from [127.0.1.1] ([23.247.137.158])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36d34d5960esm3323400eec.5.2026.11.04.01.48.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2026 01:48:11 -0800 (PST)
-From: Yaohan Li <shunsheng1218@gmail.com>
-Date: Wed, 04 Nov 2026 17:47:54 +0800
-Subject: [PATCH] power: supply: bq24190: stop IRQ and work before supply
- removal
-Message-ID: <179378567491.72692.9015711605062239156@gmail.com>
-To: sre@kernel.org
-Cc: johannes.goede@oss.qualcomm.com, krzysztof.kozlowski@oss.qualcomm.com,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+        d=1e100.net; s=20260707; t=1793786977; x=1794391777;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=GRB1e0g/RzNosgVh22Q4nbJS5JXGJ4/s7oJ6tqlGbYg=;
+        b=tEBWaSxSI29iT8naP+d5fSXP2C2Z+h1vaPLhN68V4Qey0G28HV+IDjyhX2ze2uzvtO
+         yNRbtmaATOH1D5jsC0juRvBiyw3wfmppEvhh/CrQ0ZOmH5MdzFQiD8kmcG2/UbJNkC1o
+         cF5lto91KV6Kp3lPQlVXhvd4rlIuP8lr7pF0l/qPfJ1Tp8RVtxFRS+xYVuSXwdyh2W9S
+         5tC+TyVSSGR4b8eQGOpRyea5fulBi9tqAOYak6Onfjonvyxl7fJoUdhftBPlkB8Jqsoc
+         UagEQrI/LbWN8eIO3DAFxQRQifU+vRasKHpOPGMcoFaiPlRYIeN6ardGjY15rbHcg6lS
+         6zqQ==
+X-Forwarded-Encrypted: i=1; AKwUvBygJEQYMvY8T795n1bJ3G84sEWd2tLGUPf3dmFinycWtjO+VEu01+nWcJPGL6ko6l/3IlHF0u045Q==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/8s7IhXWWPhHjrzMf56IVAMzOUfMfa+2sYbJtzNk3Rqa/MqH6b
+	eS9GFRq1m7TUnMzGwXRI74+UL4TdIC5ymqhEV3jyf4WRQA/I0r0n0b5jLZpmY3axPcALYX11Jqw
+	0Rp1kvCSGbkYdiS2Ky9kIcpnwAPj9dtvBJY/gdRKmZQ==
+X-Gm-Gg: AYBFou189AJc0xgKLNCf1vjzB3KLjo6/uoc7qwTBLP+GkYJvFvMT+GBfySunivCx09/
+	nRHB6TdBPzT+FuOjEcwQ8oS8XVpx9fHKZJDyPma9w2TwGVM2iDkUUTKbjYbaLwrkwZiMD4xbiTf
+	ch+PH5jz1Kdb+32ZzzBuNFWAqU/rgah92rlZdbObQwawzFyJ1fOEFF5YE367Gc1TzW+ZSXYvetA
+	7lgjP73LSAy4C7vc5irQXCp1pOQviOBZZ2QTrpbMcI+hB/iI+XrrIo8Lr59eMh2d12sv74cHMLT
+	ZtvA4tjo3J9G0CBy3DtSPQnmVVsn2AMjsuP0CH+J08HaozPMLK9pDujTqqa7NEk2ELHvggr0D6m
+	ghMSPaH/+NG47aprJHpKTAa3fdYqPNkCi9zyChvUEkicbbMkpGkxF7AEk7VBHRd7jXkGnwCa0CC
+	SCu+LgyZROYlAuPKC6DWc=
+X-Received: by 2002:a05:620a:460b:b0:937:6de8:b40 with SMTP id
+ af79cd13be357-944217194b4mr2663985585a.15.1793786977174; Wed, 04 Nov 2026
+ 02:09:37 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -91,57 +104,108 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+References: <20261101082307.151957-1-gahing@gahingwoo.com>
+In-Reply-To: <20261101082307.151957-1-gahing@gahingwoo.com>
+From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
+Date: Wed, 4 Nov 2026 11:09:25 +0100
+X-Gm-Features: AclHuK8sSyrPUh77ae7umfCvxuLdQ-s4Z2b2nFvZD8O11RHz5Wmhve3hcOyzmnA
+Message-ID: <CAPsqS2SOj-+VQxsFvMQ1Hqcep55J0yT++76QZ8or4a9kmF7Bdw@mail.gmail.com>
+Subject: Re: [PATCH v15 00/15] accel/rocket: RK3576 NPU (RKNN) enablement
+To: Jiaxing Hu <gahing@gahingwoo.com>
+Cc: heiko@sntech.de, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+	joro@8bytes.org, will@kernel.org, robin.murphy@arm.com, ulfh@kernel.org, 
+	p.zabel@pengutronix.de, ogabbay@kernel.org, zhangqing@rock-chips.com, 
+	royalnet026@gmail.com, abel.vesa@oss.qualcomm.com, 
+	sebastian.reichel@collabora.com, sidong.yang@furiosa.ai, 
+	u.kleine-koenig@baylibre.com, chaoyi.chen@rock-chips.com, 
+	diederik@cknow-tech.com, alchark@flipper.net, leonard@lausen.nl, 
+	jeff.hugo@oss.qualcomm.com, rfoss@kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-rockchip@lists.infradead.org, iommu@lists.linux.dev, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-bq24190_remove() unregisters its power supplies while a managed IRQ
-handler and input_current_limit_work may still access them. The
-managed IRQ is only released after remove() returns, so stopping the
-supplies first leaves a window for a callback to use freed memory.
+On Sun, Nov 1, 2026 at 9:31=E2=80=AFAM Jiaxing Hu <gahing@gahingwoo.com> wr=
+ote:
+>
+> This adds the RK3576 NPU to accel/rocket.
+>
+> v15 is v14 rebased onto next-20261030. v14's 12/15 no longer applied
+> there, because Sidong Yang's regcmd validation added two defines in the
+> spot where 12/15 adds its own. Nothing else changed, and the tags carry
+> over.
+>
+> Leonard Lausen has the series running on a NanoPi M5 and posted a board
+> patch on top of it:
+> https://lore.kernel.org/all/20261019090348.378183-2-leonard@lausen.nl/
+>
+> On Sashiko's two points about v14 9/15, I measured a CM5-IO. U-Boot
+> hands over with the NPU domains on, and the power domain driver still
+> probes. The NPU QoS is saved before its first power-on, so it is not
+> zeroed. The domain whose QoS does get zeroed is the GPU, on mainline
+> without this series, and that fix went out on its own:
+> https://lore.kernel.org/all/20261101055633.101309-1-gahing@gahingwoo.com/
+>
+> 1/15 is the patch that carries Igor Paunovic's name. It is also part
+> of his DVFS series, so whichever lands first, the other drops it.
+>
+> Ulf offered to take 7, 9 and 10. 1 to 5, 11 and 12 go through accel,
+> and 13 to 15 through rockchip. 15/15 needs 9, 10 and 12 to 14 first.
+> Without 9, 10 and 13, the ROCK 4D takes an SError at boot when the NPU
+> domain powers on.
+>
+> Link to v14: https://lore.kernel.org/all/20260924102135.92217-1-gahing@ga=
+hingwoo.com/
 
-Release and synchronize the IRQ before unregistering the supplies,
-and cancel the delayed current-limit work. Cancel the work once more
-after unregistering to drain any instance requeued by an in-flight
-power-supply callback.
+Hi,
 
-A KASAN test with a simulated I2C device and the in-tree charger
-driver reproduced the race during removal. The same test completed
-without the use-after-free after the change.
+Could you please add a GET_PARAM IOCTL to this series for userspace to
+query the hardware version? I think I would return an enum that
+matches the NPU DT compatibles one to one. Then userspace can have a
+hardware database indexed by that value with sram, register map, etc.
 
-Fixes: 4f73a52df7d28278 ("power: supply: bq24190: Avoid rescheduling after cancelling work")
-Assisted-by: ZCode:GLM-4
-Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
----
- drivers/power/supply/bq24190_charger.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Regards,
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 7a5867dd74c23..fd0ea5385f0dd 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -2265,9 +2265,24 @@ static void bq24190_remove(struct i2c_client *client)
- 		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
- 
- 	bq24190_register_reset(bdi);
-+
-+	/*
-+	 * The IRQ handler and the input current limit work both access the
-+	 * power supplies. Stop them before the supplies are unregistered
-+	 * and freed below: the devm cleanup only runs after .remove() has
-+	 * returned. The second cancel catches work re-queued by an
-+	 * external_power_changed() callback which was still running while
-+	 * the supplies were unregistered (the work has a 300 ms delay).
-+	 */
-+	devm_free_irq(bdi->dev, client->irq, bdi);
-+	cancel_delayed_work_sync(&bdi->input_current_limit_work);
-+
- 	if (bdi->battery)
- 		power_supply_unregister(bdi->battery);
- 	power_supply_unregister(bdi->charger);
-+
-+	cancel_delayed_work_sync(&bdi->input_current_limit_work);
-+
- 	if (error >= 0)
- 		pm_runtime_put_sync(bdi->dev);
- 	pm_runtime_dont_use_autosuspend(bdi->dev);
--- 
-2.34.1
+Tomeu
 
+> Igor Paunovic (1):
+>   accel/rocket: request the core clocks by name
+>
+> Jiaxing Hu (14):
+>   accel/rocket: take the completion register writes under job_lock
+>   accel/rocket: wait for a running IRQ handler before resetting a core
+>   accel/rocket: let the core suspend after a reset
+>   accel/rocket: factor the completion tail out of the IRQ handler
+>   dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
+>   dt-bindings: power: rockchip: allow resets in a power domain node
+>   dt-bindings: iommu: rockchip: describe the RK3576 NPU MMU
+>   pmdomain: rockchip: add optional per-domain power-on settle delay
+>   pmdomain: rockchip: cycle an optional power-domain reset on power-on
+>   accel/rocket: select the per-core clock and reset counts from match
+>     data
+>   accel/rocket: add RK3576 NPU (RKNN) support
+>   arm64: dts: rockchip: add NPU core domain clocks and resets to rk3576
+>   arm64: dts: rockchip: add NPU (RKNN) nodes to rk3576
+>   arm64: dts: rockchip: enable the NPU on rk3576-rock-4d
+>
+>  .../bindings/iommu/rockchip,iommu.yaml        |  28 ++++
+>  .../npu/rockchip,rk3588-rknn-core.yaml        |  47 +++++-
+>  .../power/rockchip,power-controller.yaml      |   8 +
+>  .../boot/dts/rockchip/rk3576-rock-4d.dts      |  22 +++
+>  arch/arm64/boot/dts/rockchip/rk3576.dtsi      |  86 +++++++++-
+>  drivers/accel/rocket/rocket_core.c            |  32 +++-
+>  drivers/accel/rocket/rocket_core.h            |  11 +-
+>  drivers/accel/rocket/rocket_device.c          |   7 +-
+>  drivers/accel/rocket/rocket_drv.c             |  42 ++++-
+>  drivers/accel/rocket/rocket_drv.h             |   2 +
+>  drivers/accel/rocket/rocket_job.c             | 157 +++++++++++++++---
+>  drivers/pmdomain/rockchip/pm-domains.c        |  89 +++++++---
+>  12 files changed, 467 insertions(+), 64 deletions(-)
+>
+>
+> base-commit: 7649ba73f9e7e1e04d0b46213e39c79ae09dd55c
+> --
+> 2.43.0
+>
