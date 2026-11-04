@@ -1,101 +1,50 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793830005;
-	b=5YCymF78dqTxErmdEfGqQ8kAjAb/i43ZBbBQgxJf2RFLI/Vl3nN/Ia06PWYtxviShzLm
-	 YOGkMhehRu9IygvSMHa9KkhO59w0r3zNBIDwvPcWwfocSRcoSoEUzvrKCqzldbV7I9+1O
-	 IFB4qIpQOl9sOK9pdYQrUdA+67E1sGKGKhm+Po4HH9Zrw6rk9/SgB9jTdzVqgak6lcA5h
-	 6MNeoavTG4Y6wf/VwIE7NWmgd8SH2E3kjCL6HTTTOaRIQMeuhxsaMyQLPydmtjbcFC5vu
-	 TPbgXywT9BEpAzThUczFoSnyQi9yF97BOoFPXjM1KRzJuywC/7xKXZ8NVi6Q4K20R4g==
+	t=1793832682;
+	b=nWV4KtrjzUrX/vG8DP1twUoXUZ1y4eqVxWHiP2hbJthYF4dli2gCs9iqJyTs9UqsYtSW
+	 pPAe6pMw0X3GFFdszCmpDn5HkjHkHX0ADuKKmvrEbxTngGmjbtOb2Ivyl5WAAl95Oy7+O
+	 0IS87BQaAd8jVjvnYzlvxJobUNzVt/ZWRr49nVam70gZMtmTRRSEYg2gDis6XnO/7XqHP
+	 FE/YagSTa9AeVdsHtDkv01Y5jctPZJjuDBMAdIpbFyOKokxLfQnKSI28LiKxByU8F4uGI
+	 oPtglqxPfsyrjNohj9UTFoHPjeeaNCnc+GpVtq9/szR6/Y5rCZirchrM8w9tz6nyPLQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793830005;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=APyAEXSG9B0KEvsmlIgqb108CR+kX9ZzkkBiV+80GpM=;
-	b=RFbbrxFWOXWTnCx24Gx1IRPn6sgaqesLeq2jsM7ufRu3nBnw+4HN9UivAixaqv/wG9zp
-	 tmbWjt1dXhILkqtEA90gywX96VBy9/gi7L0CJl+DAjMe88mQm2lOki2jnsPi1IgJI9qdC
-	 iH/+Vp5gJH9QLQXurGyLKn+MfiAAb7krpecr6nlhOafGmh4rlLgjNWuGMVVGKQpOIk/Hj
-	 6yKZQOSsVC3aFagsFy6GvFJWx2HPzzSdpiuRNWP29St+gqbi860B9xROio8ds/GNJrGrj
-	 DrltE1L74/FANaeGglTBdbARVOC1gSYDYdlJrsVhwoscPbj0Q5xp8JJgnmwU8j0fxmA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793832682;
+	h=Received:DKIM-Signature:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer;
+	bh=RUeutA5JYkN4XhBF86hLcNctDM+t6W84JjGNnMq4k/g=;
+	b=YC6zd7DW2HCHmxqfZYrpeukynRqQqJznaqDN+TKfExwDUw8gNfx3s3NYDeqRuFlsp7KH
+	 Ia6Mo2rBSRUVQ930UJ7SXJJo+Sq56ndsaOFSFBXW8HFuZ1YUaNuCzziNpA4LE5IL0VT0l
+	 KTzNvohJBSQi6l1Ygcdz3N5ySy9cp1WQutQMXS2zmdA0EQu+aZdHqs+hMlKtvidJydag+
+	 cANGsxmkXO4mi6/+rxqi/HDPAb5aB9+NS/LRvIku+N1Pik8kIFsY2fw87dFqwpNgYGltW
+	 yKkXEZZpaKw0eF1ZbI6N2mAm/+u/PPG6dzZd5PbmuhGuMLUS4zp9eSH79EkCiPWnP1A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nE1J3IvH;
-	arc=none smtp.remote-ip=209.85.128.42
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="ZXGekm/y";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6D38606A33A
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 22:06:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6D38606A33A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A3D4606A31B
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 22:51:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nE1J3IvH
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4a35ac4475dso8168355e9.2
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 14:06:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793830003; x=1794434803; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=APyAEXSG9B0KEvsmlIgqb108CR+kX9ZzkkBiV+80GpM=;
-        b=nE1J3IvHMoQNzkY6NWqRvTSMsazSaZ3o2FOqE6Vkft2ehjTHn8aLnOYg8vT1EO270t
-         eN2FAdZlBp8+YwE8ukzqk0r9FrwOxyhmziNfpWj2ioOMKExpHNcgFJE5otJ9L0caAtyh
-         yau15/gp49jgw9swqjV53ow9czN9NUQdqeNf3T27Xa35gyFtoWXqTSc7pSL6GR08oAkM
-         b2DGAmy7a6UHSRwQp8Ohc3POW7QyBy4QRZZG0yMg1lf6J+mPIwmySw/yfAkqbiw4sbce
-         xBEOCYYleBJo/LjnRGx2+5aVtfNFXjhIGVB9Xv354q4SsV8Pa4rFQcR5uwVdllR7FUZH
-         auUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793830003; x=1794434803;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=APyAEXSG9B0KEvsmlIgqb108CR+kX9ZzkkBiV+80GpM=;
-        b=gQ+P6YYccKDTSlrEVAZ+Y2GTcsugInfJu4zZLmdhx0gPoLkWD0gjs0LN6YCnSRb/BD
-         n7sSiMPDhe4eDwAzvhCSMAZiDYiFeBh9pDcdRIg7NypGM+KX0VszQdhHYySYd6eEcG1Z
-         OINfH1qaBwH//DGo/Iu0zR7TAb0agO9zHoI/fWIKl1ENkwWUNbNM+QWYSYCfBX5I2kED
-         N0kAuGZDKdjJKlKJd/6dcB52P821NNF/G6QCnhmYmSJc0YZr5ogiC4/cAdgHswGPt5HR
-         y1dJ0mm0oJgfo5XwX4Fvik1KQ8C8N+ccPN80/aSolAPNF2is53Qqx7X5aOpWu3aRyE1q
-         RCQg==
-X-Forwarded-Encrypted: i=1; AKwUvBxkr8JF3TrogDzxkPoKWVF4zOs4cb+5cT9CCex250RAdIjaPIvie7PfLjsuQ6rcX21AbE/VK1ekPg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z95qp/Jc9dkgh4WFIRR6sge3TMPux95zNIobGC7u6YqonYRmGCj
-	ZPn5e+PSBrYvsJUSKnL+F8JXQ4dTHxy7+gt4YELaqqzYxyJ+Eu4eFUrL
-X-Gm-Gg: AYBFou0vpQj3H5sQngyWIuAuRGl8g1YBb+tA411r9bBudQCKqYDCWJN1b9SIRMDk1V9
-	/iogd3Zl+hPEALUdTH6zWQXmt3aG/Wkj2lL5GkLaYBr5uaxHhlOsI0LjmUm74ouBFnyBSbZ69H4
-	FiLD2HonvcabZHE3aiLYUjPeGHohK53XEPHX7LifOlVF9JITh5YJCSJbLZOoOO0pgCeoedJewXl
-	kWHuq9qTRI3OcnKA38vhQe0wNdX3yNKbmZQruimQ+cxLBd13i/mD6w9l4D+ZdRA26ILzO+xWBw1
-	5nzpmHkhHO6cGk33YfDl5fR22SMwa/Z1q0nkAnokEvZXXgDPfQgZkJgaz/vhbgTQJRDKIaqxs7/
-	AGOe9RzP5SlAuFEznnY0oO5cZ3kR5/6K8lsCpiMzBEqWdQ6HVMXPaTVg9ox224F826+1/UZoz29
-	rNbWg+cRB4+5AjxnZtHcULG1zwT0ZJzJT8htK1HtnaTJhuPQQNCONByl24EW3+Ib9bCcSs9mZ0z
-	xowCoCfUTw+n7feffPxbafivYwvkfMjafSH+ansViCYXISVSpT59M6p+Go2YOiqqCi3LWpwNx5i
-	yenA9uAwhPP3Avt0jG6F
-X-Received: by 2002:a05:600c:470a:b0:4a1:7e77:c382 with SMTP id 5b1f17b1804b1-4ac16acfe61mr380977515e9.5.1793830002799;
-        Wed, 04 Nov 2026 14:06:42 -0800 (PST)
-Received: from fedora ([2.35.201.240])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b56fca22f4sm24879935e9.13.2026.11.04.14.06.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2026 14:06:41 -0800 (PST)
-From: Francesco Nigro <nigro.fra@gmail.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@redhat.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Valentin Schneider <vschneid@redhat.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Huang Rui <ray.huang@amd.com>,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [REPORT] sched: ITMT + DELAY_DEQUEUE: woken task waits ~1 ms behind another task on the preferred CPU while allowed CPUs are idle
-Date: Wed,  4 Nov 2026 23:06:22 +0100
-Message-ID: <20261104220622.3542344-1-nigro.fra@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <32db09358aecb92c55c8c1295fa71b6a73306999.camel@gmx.de>
-References: <20261103154603.1893325-1-nigro.fra@gmail.com> <25edb6cd36cb77b82b40826b97232438f1443516.camel@gmx.de> <20261103233352.2282883-1-nigro.fra@gmail.com> <32db09358aecb92c55c8c1295fa71b6a73306999.camel@gmx.de>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZXGekm/y
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68FCD1F000C1;
+	Wed,  4 Nov 2026 22:51:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793832681;
+	bh=RUeutA5JYkN4XhBF86hLcNctDM+t6W84JjGNnMq4k/g=;
+	h=From:Subject:Date:To:Cc;
+	b=ZXGekm/yVt5HIKgWlf/GxGofKphsJujgUoIGb3SBxsrOGYPG7QKNSh54c4DxMJxyn
+	 E8TEGDAq55igQoniZ7PNb0eBrVjEvddK1WhPaxBCOwjxJoBjfM17dpuO+aZsx8N/UK
+	 2h+vhGwDE1woaOzsJgXoxdabiySBD7VbRWh4wO++cTcbKCZ2asdRMUo8zlTs6kgAcB
+	 LF2dQstv3APFo19PEVWtz5ssCW6E5t8BnynHxglV9ZX5K6c/gTIBNR0eoSlKWoax2M
+	 G60C2ueH06OkMNepwm6Z6AxyWOMrjVngNET9WpHS4FBcm9DPnNNwnUmVKBL5ZALHVs
+	 Gx+7QijSIYqvQ==
+From: Linus Walleij <linusw@kernel.org>
+Subject: [PATCH 0/2] pmdomain: st: ux500: Implement DB8500 EPOD power
+ domains
+Date: Wed, 04 Nov 2026 23:51:17 +0100
+Message-Id: <20261104-b4-ux500-pd-genpd-v7-5-v1-0-4b4f256f340d@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,31 +54,52 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3MQQqDMBAF0KsMf+3AjCS25Cqli2pGO5s0JFQE8
+ e6FvgO8E92aW0eiE8127/4pSKQDYXm/ymbsGYkwyjipSuA58PeIIlwzb1Zq5v3GkVXCfZ10XoJ
+ EDITabPXjHz+e1/UD4wyYbGgAAAA=
+X-Change-ID: 20261104-b4-ux500-pd-genpd-v7-5-1048f61bc405
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>
+X-Mailer: b4 0.16.0
 
-On Wed, 2026-11-04 at 04:13 +0100, Mike Galbraith wrote:
-> In your specific case, dunno.  In general, absolutely.
+Populate the Ux500 power-domain provider with the DB8500 domains and
+implement hardware EPOD switching through the PRCMU. Voltage domains
+without a hardware EPOD remain bookkeeping-only domains. Keep the legacy
+EPOD regulator driver mutually exclusive with the power-domain driver.
 
-I checked with boost on too, on the same box and kernel. I ran
-asym_min and tbench on CPUs 4-7, without SMT siblings, with clocks
-pinned and boost off, and with boost on and the full frequency
-range, DELAY_DEQUEUE on.
+This two-patch series is based on v7.4-rc1 and targets the v7.5 genpd tree.
+It contains only the provider changes from the wider Ux500 conversion.
 
-With boost on, 0.82-1.09 % of asym_min wakeups per run waited at
-least 0.5 ms with ITMT on, and none with ITMT off.
+The related patches will be submitted independently to all affected
+subsystems once these patches are merged into the genpd subsystem. This
+includes the MCDE, DMA40, SRAM, audio, regulator/MFD, binding and DTS
+changes.
 
-tbench throughput was the same with ITMT on or off in every setting
-(within 1 %), and so was the busy CPUs' clock (within 0.2 %).
-According to these new runs, with boost on ITMT gives no throughput
-advantage and still causes the long stalls.
+The idea is to land these independently in each subsystem for v7.5
+once these patches are landed.
 
-As a side note, I agree about DELAY_DEQUEUE: disabling it reduced
-tbench throughput at full load, with ITMT on or off.
+The patch is split in two, if it feels unnecessary churny, just
+squash them.
 
-Scripts and raw output:
-https://github.com/franz1981/itmt-delay-dequeue-repro/tree/1400f15
+I authorize the ux500 Kconfig change as maintainer.
 
-Tool use as in the report.
+Signed-off-by: Linus Walleij <linusw@kernel.org>
+---
+Linus Walleij (2):
+      pmdomain: st: ux500: Implement more power domains
+      pmdomain: st: ux500: Control DB8500 EPODs
 
-Thanks,
-Franz
+ arch/arm/mach-ux500/Kconfig               |   2 +-
+ drivers/pmdomain/st/ste-ux500-pm-domain.c | 269 ++++++++++++++++++++++++++----
+ 2 files changed, 241 insertions(+), 30 deletions(-)
+---
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+change-id: 20261104-b4-ux500-pd-genpd-v7-5-1048f61bc405
+
+Best regards,
+--  
+Linus Walleij <linusw@kernel.org>
+
