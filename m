@@ -1,55 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793803483;
-	b=O8Cn1CwEDfRL9L0nC59wrTscwPJdEsMdVsrGdwCgSNS7SrWT/quZF3wFtG2XDaXaAHgV
-	 w4+kNtQuG/zAFKiNOwAxvcQj4ULdqivqFuc3OBgUSeGjDNf5hX1Zym2u5Eze8A6iEgasf
-	 4h2JQMNi90j23sUzrveUFzmE0Zg3b0T3UNkM9DkY6cnM5FBX9KS60vDYcneNLuhufFaPH
-	 3y//gviLtOpQwhHs+yv1lVVc69L1MYBYF2nfY0TWPbjof23eilRN1cIOK+WO/BBecg7lS
-	 fFfYkgxeWGxnX4SX5KjzPAyqgxhFMX8z2gimy+VSfapV8TU6h7w6rGIkgaMqbXh0WBg==
+	t=1793804265;
+	b=3S9WCwVR/gGg4ZrMytAa7nNpR3yks7bWeCTGEkt+DD8CsEbNmDIINpqI4zuwuOVGFb59
+	 7lAZ5oVgEDVRIGcT2dvNRpE8b+RR/OL/+6aI3xHFglzHOuw9YP7Xu5VqajuUuUKPVeChn
+	 GuFf1INTiFbSmEOWgd8OPAeE7iJMOgIlD8cccaCsH0i/zAPYzjFGqi2FpZiQ2DMSKA0hH
+	 +cndwkjnHCVcd5RCAqW5heSIvAWQY0JpnlTc3jTW+/mmSAbCCBlV1Sz3b5n0+OLzTZbFd
+	 TNrQYRqX6OTSMjimfI86afgedXJIejA7fFpzumhNK4GedVp95yvzDf8EXhymxmKIOaw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793803483;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=gmZMoog7Knh/OMnJRYd6yhL9S4j+bQeuh5tH/D8XkYs=;
-	b=jTSMyfKxYsc4VPsFCZe6oGNwiXkSvFn7Mph5vDqpoYXrYnN5ZZP9hXRdwgS6E73AJ37T
-	 mDNXxRziOks8oFFFV52LGPM1E2vRUY5baXiAFUXH+HMRVZWOxdaqJpgnEZeCmpPN/XzdQ
-	 2BhczBKfXoj9EnhxCKsVBQ8divlIATsBSEtIA/GtXBji+xrW2fk3ftghES6VKiZcVsQ/4
-	 2tb/PypykghFWMyDdoZZsg8UZHGdJy9xW2aTJfMyaaKrif/GHwGm99NsJOE1zNDybbrYM
-	 YBy5YfLV2wbdRTDd/Q0c0wpZXS6MwTvuTnOING+Mw+Uof0nvCJ/po+4N0n8THaD4dqA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793804265;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=KUz2D34UCSVw+yqhvoh+RPWtDjdbKvsiINtzwSInBU8=;
+	b=Xs51AOW0RPVYGNGbZTfKcfvw4tMIVaswULlUl1ueNEVDYjh3glAGSmLq52371hyTMuzy
+	 81M/R+RYX0C9Aykm6YJ3gghonUFyW4gDy1fyfwWYneyiaxTcXOQ5q0BxcLjfbpY14yDXp
+	 jK91p918hRYLZZcrx2OxOoVfQLDcesliP1bvN+Moc/L6WWb4ZlDXJwpOVLqBcFoGF0ZFO
+	 a+IwlJ8mPc3dRh4JTuqmfDaSS4zOSmkLhWWZeZ4R6X5Ei7udAWu7A5HE6BFg1uPogTgow
+	 1kCjT6hAYivbP7P288bU2gWLc+ZENJYZAmslqOiNxD7DqshAItQIIRZz12ZNHUUsOWQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIpwWVJD;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=none header.from=grische.xyz;
+	spf=pass smtp.mailfrom=grische.xyz;
+	arc=none smtp.remote-ip=209.85.221.50
+Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27C3E606A328
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:44:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIpwWVJD
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB9CF1F00A18
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:44:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793803481;
-	bh=gmZMoog7Knh/OMnJRYd6yhL9S4j+bQeuh5tH/D8XkYs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=JIpwWVJDSZthuxauytHZVpUBhT35lDXWU7JnrJh15d+/c76AHM0G2XtbpGRK6yUwf
-	 VQF2Ifo55xwfPF4A+jja/aQAfhdSlde//PwWH5cD4HLluPLXbGipFmpwf5K2MD1/rS
-	 WCarMKbC+QGEzjT/HvfGYm5il6FIpFWzOIJAXbyT7DWvlPwP7sp4IDwVfaP7iJamHJ
-	 JSB4ysBFQt3OOH/W9AAYLVcbE7i1edPrUT/j5+XyWCZbRr6ELD2oLY9czFMgHOt2yn
-	 9jriZr7SV03MOvWpif0KUNFbD9vFvXzXBrB2K3XtT4X4qLY9H9Dbck14UfQ1ZczE+8
-	 bBd2U/LyYauJQ==
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5ba3ac592faso851545e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:44:41 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBweGuq8UBZSQrCl9w/g+iA0ynvhd6m+jyNG/uq4ZSOnTRWueNkubwEg+q97m0MI/nmIWkJv+nWEQQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/cn4XZA3JfuJeldda9ZT4pc/5iNq8894K5RvPMngOwmo9F5nkn
-	wZn3mkvzmeQwccdnWsNOi0egFgS2bSP+/5L213g3ngv3u4z/nxodiHf5HGjl06RxMyZsAs5Df/T
-	W6RQ9cTywBsrnhCLni8mqX3IAUhDoGeg=
-X-Received: by 2002:a05:6512:3e03:b0:5ba:41f0:5a45 with SMTP id
- 2adb3069b0e04-5bfd9561f19mr5431515e87.21.1793803480211; Wed, 04 Nov 2026
- 06:44:40 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75603606A326
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 14:57:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 75603606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=grische.xyz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=grische.xyz
+Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-48afbd2c386so581559f8f.3
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 06:57:44 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793804263; x=1794409063;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=KUz2D34UCSVw+yqhvoh+RPWtDjdbKvsiINtzwSInBU8=;
+        b=PVh99XltizoiISkN0xoF571am/MdPdGsIfz/ujNMMouukYox8pBb1FmhR5Uw58yhSn
+         B8+MXFHxM2unVKpe1z/Hr2DJIqOveX4EXDwqXbu1jXnKdvbTOPxzWUF0gRytpBmP7wKd
+         w3E20WcPPLtFZ8Pp8IgrnLR1ZPSXDfAEItACM5QdKm6dt8EG2n8d4Lz4Qth5stofLhgd
+         CmENP91X3e9aCHO3ZEkSHVcbYnNmxXx4I/O6/KJ4nOP6kbEr5KiroSVYX+yxfXBeMGtd
+         eaqq22L3nwZIw0i9QkLnHw/6lDwIXm2A+jMGN6ZM7JGiRUqrHevMjkai3OYfInhVDJ3a
+         MGSQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxHvlwb4r5jZKXhP9PMBP63CtrsIKJooS4r52icdO6LT13SAKQh9Fu1QZBamlO05O7sQZc6pEDW5A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9Y7wZUl4iPcy0bycDVISQKeqFJWu7axjIx/QmyRzWbpUnBl7HQ
+	r3Fz9kNWuutnv/hDBWfvO5rBziEHC86kAyxEHBhaugX1WINJMv6kK9vNAhAv/nksmCc=
+X-Gm-Gg: AYBFou3fFi2xJxlwdtJLFSrYG6IL+8JSUMCRyg2Xqkrbi8Huj3cGiUg/FYD4G7bGJa4
+	T2PhGvuPutF6xmlnQPhUxHt7zzBkjmsTlXvcJCKVjLkrXrLWdr11I8ZxjMisFkcM7v0O/Z1pnJu
+	GvfUYPSCEjME8iq6R1sWmN/9RE+ShGQ7eD+TjLWm6FMUIQnUYfIgsRrm1vF80KwEN9ctSXvR8Rq
+	QphAh08xfs+OF774CLLRAEXQOcggCLOfZ3/RhrJWi6tMxjfQyaL5/9P106aPW6J8Nly+XTPjFnE
+	lwAGHOSC9EMUGXqquwBiJfq8cRoDDSY2U8L8+Al//WnbV7PaUON+diUfQELEDPbsPDBFXwSneJN
+	E6Izi/rUPMz3WpKm4o/4RU7ERDS6m449HUH7fL8hyWU0NACRvkK6hFL6+v1GsOqaj2IxUr4fO9R
+	4y1gvL854FsmPuR+A4YDY0W0iamxgNsHh7+9pg/qJ9xU4Hri81ReEuSA3x6S+TvgBuaRAJf9CUc
+	n6bBPqgZNJEz+ERByZVvsZykYQ1+PgeGYYAEbdfMuPSJSCXD5k5vn9uepVN8EYClxD8EJoE9+gD
+	JldfzMHsRRbVK+CSnmu2qXnmcwAehsSNEAZgGv1nE9CbdUo=
+X-Received: by 2002:a05:6000:310f:b0:488:83f7:6352 with SMTP id ffacd0b85a97d-48e6e2c33admr32579809f8f.4.1793804262816;
+        Wed, 04 Nov 2026 06:57:42 -0800 (PST)
+Received: from lake ([2a02:810d:d09:1b65:4366:70cb:bf82:f8ac])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48fecf8ef85sm4830051f8f.27.2026.11.04.06.57.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Nov 2026 06:57:42 -0800 (PST)
+From: Christian Schmidbauer <opensource@grische.xyz>
+To: Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Dmitry Baryshkov <lumag@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	linux-pm@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christian Schmidbauer <opensource@grische.xyz>
+Subject: [PATCH 1/2] thermal/drivers/qcom/tsens: Drop __init from init_common()
+Date: Wed,  4 Nov 2026 15:57:39 +0100
+Message-ID: <20261104145740.2623473-2-opensource@grische.xyz>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20261104145740.2623473-1-opensource@grische.xyz>
+References: <20261104145740.2623473-1-opensource@grische.xyz>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,60 +92,58 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261103221717.3840215-1-briannorris@chromium.org> <20261103141442.v2.1.If69ddc515c2e9fd4338441e87688b9d690d2ef36@changeid>
-In-Reply-To: <20261103141442.v2.1.If69ddc515c2e9fd4338441e87688b9d690d2ef36@changeid>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 4 Nov 2026 15:44:27 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jb+=Wzp+awZmtk-PXB+oS+NQk+VXKCtXCFo8ELLUc9yQ@mail.gmail.com>
-X-Gm-Features: AclHuK9gTEmcX27Bq07hep_nJ7cMaPt2IP1nezlEMxrLMz_VLm2hu4KjJWZY_Xo
-Message-ID: <CAJZ5v0jb+=Wzp+awZmtk-PXB+oS+NQk+VXKCtXCFo8ELLUc9yQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/5] PM: runtime: Only queue an idle check for
- RPM-linked suppliers (part 2)
-To: Brian Norris <briannorris@chromium.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Fabrice Gasnier <fabrice.gasnier@st.com>, linux-pm@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulfh@kernel.org>, 
-	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, 
-	Andy Shevchenko <andy@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
-	David Lechner <dlechner@baylibre.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	=?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Tue, Nov 3, 2026 at 11:23=E2=80=AFPM Brian Norris <briannorris@chromium.=
-org> wrote:
->
-> Commit be5755f023e7 ("PM: runtime: Only queue an idle check for
-> RPM-linked suppliers") was incomplete. There are two other cases where
-> we perform idle checks on non-DL_FLAG_PM_RUNTIME suppliers -- in
-> pm_runtime_set_suspended(), and in cases where we failed to resume
-> suppliers.
->
-> Fixes: 5244f5e2d801 ("PM: runtime: Defer suspending suppliers")
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> ---
-> Noticed while touching this function in subsequent work.
->
-> (no changes since v1)
->
->  drivers/base/power/runtime.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 304a2b123420..9d3508d9b4a2 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -343,6 +343,9 @@ static void __rpm_put_suppliers(struct device *dev, b=
-ool try_to_suspend)
->
->         list_for_each_entry_rcu(link, &dev->links.suppliers, c_node,
->                                 device_links_read_lock_held()) {
-> +               if (!device_link_test(link, DL_FLAG_PM_RUNTIME))
-> +                       continue;
-> +
->                 pm_runtime_release_supplier(link);
->                 if (try_to_suspend)
->                         pm_request_idle(link->supplier);
-> --
+Several tsens_ops instances store init_common() as their ->init
+callback, which tsens_probe() calls through priv->ops->init().
+init_common() is marked __init, but tsens_probe() is a normal platform
+driver probe and can run after free_initmem().
 
-Applied as 7.4-rc material, thanks!
+This happens on IPQ8064 when CONFIG_IPQ_LCC_806X is disabled.  In
+qcom-ipq8064.dtsi the tsens node is a child of gcc, which uses a clock
+from the LCC.  Because no driver binds the LCC, fw_devlink defers the
+probe of gcc until deferred_probe_timeout_work_func() runs.
+deferred_probe_initcall() schedules that work to run
+CONFIG_DRIVER_DEFERRED_PROBE_TIMEOUT seconds later, when kernel_init()
+has already freed init memory.  On an Aruba AP-325 the probe then
+crashes:
+
+  Unable to handle kernel execution of memory at virtual address c0e1ffe0
+  Workqueue: events_unbound deferred_probe_work_func
+  PC is at init_common+0x0/0x540
+  LR is at tsens_probe+0x138/0x4b4
+
+With CONFIG_QCOM_TSENS=m the driver has the same problem, because the
+module loader frees __init code once the module's init function returns
+and a later bind then calls into freed memory.
+
+Removing __init from init_common() covers the ops that store it
+directly, but the per-SoC init functions that wrap it are also marked
+__init and need the same change.
+
+Tested on an Aruba AP-325.
+
+Fixes: 9066073c6c27 ("thermal: qcom: tsens: Add a skeletal TSENS drivers")
+Cc: stable@vger.kernel.org
+Assisted-by: Claude:claude-opus-5
+Signed-off-by: Christian Schmidbauer <opensource@grische.xyz>
+---
+ drivers/thermal/qcom/tsens.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 4d7013fc79d6..710c78aff8bc 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -929,7 +929,7 @@ static const struct regmap_config tsens_srot_config = {
+ 	.reg_stride	= 4,
+ };
+ 
+-int __init init_common(struct tsens_priv *priv)
++int init_common(struct tsens_priv *priv)
+ {
+ 	void __iomem *tm_base, *srot_base;
+ 	struct device *dev = priv->dev;
+-- 
+2.54.0
+
