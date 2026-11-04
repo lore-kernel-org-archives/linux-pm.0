@@ -1,55 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793784938;
-	b=VWMYUjaaH6AggakziPM7tF0X2bPmZsrNTvhzYmA3S24W9//OKDISdx4SsPe3kNKDA/Yd
-	 Z/PHL/6bdejc1d+b8fNEjLglD/wL331T8l9PPXpdIURxxc2IqdVsQICEEG4dAC98V1UUy
-	 QPrqpMMF9plnvrtxovkz6kmW/TfVlEqlXWpJegaIHxHaTtGGZHTjF2L0RYH+Oi0rvNoET
-	 Cwql+D27US+qN50zZuaOrrgqHL0/BTO7l0jobUGq5t8lEKPnGI5Xqld7El379YuPSbYMP
-	 l9n6bbVhEO8ARvfVrYqqRvmpcJnDek2H9I6KNe46iZfHoEFLt5HlXefU6Z1nIDTMsWA==
+	t=1793785666;
+	b=q8wbQq5r21gAaHTOwtrOhlkQg4cLed7OHv0AMVZnPk26NfN4EAXW5P4E2PnU1MkWgM7r
+	 fZqcOOpYcZUkz0TNsgeYYGcQ8xiUWV6ReP9jIsIHa11+7chb0K2lJWkkvqvlYdpu+oL+d
+	 GEVrGfPA3dgc+xUa152mi1YcIPekCcL2bcs+9M8CAx2fq4N+l5CL16RWKKRWtU4XRXaoY
+	 JYIVHHnp2+u0nBZuVTEIm+arjc3pA5LodL7d5UeK2PGMgVKZBAJjoKixf2zGoOJptO1jb
+	 ZioBI1lzV7xaeR5kyjJ4hju3sUXxfOeRUYzrdhQyTPVJfTQqtQXCxiJOy2nEHcdeYZw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793784938;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=o10ez3oKAyY7/DQg9ITlG7hQMuT0WwV1t5DaJPX3Q/s=;
-	b=B45pZ+jon2ozgORxCdamXkpPhwjLeWOy4FNJ2RKuBnEXP5UD26x7JzWZcDAUF9mRoci6
-	 rdLMJJpq/4BpCKvcTuuzXdBi7weLP4wXP5GQytESXSqdUIUvaiIIR0E9wYe0lUmQhNRLs
-	 j5GWEYdplrL34XD4TBNa6pQtKCdpf8qumMxWmjgWJ5wsrY3WGW8p31yqfFkSjda+20yH+
-	 7lL10EG/XTB0nDNBSkwDtrMGykrFvesGiYx2Rgx3y7jsTytcT59v9fDj8jNuWvjoygXas
-	 A1iR1FpQU9My/Tou3kMBS3LMgImbJkxCDoYf+EgJbFwSTcgpI0mQj9jFq9vObY6Db6g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793785666;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:Date:Subject:Message-ID:To:Cc;
+	bh=Uh7Kzi5HknUWaE4263UOKqC/5G4430WqvI/t+055Hh8=;
+	b=WpxKgWX/4ovtZOSFhcDxl/2t2eagwTydShk5Is05SfCuOAhcTCVLGY34K7hgAXauSULl
+	 H0IQ3HCs470jUVN5wUdky6uaA1zD3CErQC8gaSu492BQAm+cV89aLeXZaMm9jNcl9aQJN
+	 UdICM3iCIqa9Ffy67lXkBIuAbqdnB6Jdb/ZYmEwkQETtPu4OBIYNBREQF6ZsSHLPI6Hhl
+	 hTFYK2J3DtVu4u+OvjgiPA29Y0KK/qv87CJgttSfmuU00nB/DGVXn+6TR0yJZ9xCGPSHJ
+	 WhRPMnKqpUz2ZaC3qaNgCB7wsoJyJ+58jgVv7MSP+vIZEQEN8JMBouXEPOk/d1egyhA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FAZAHuCz;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BcUl6U+U;
+	arc=none smtp.remote-ip=74.125.82.54
+Received: from mail-dl1-f54.google.com (mail-dl1-f54.google.com [74.125.82.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70619606A328
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 09:35:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5CDD606A32D
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 09:47:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A5CDD606A32D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FAZAHuCz
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 147F21F00A15
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 09:35:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793784937;
-	bh=o10ez3oKAyY7/DQg9ITlG7hQMuT0WwV1t5DaJPX3Q/s=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=FAZAHuCzmhgkfOw7vmJQYav2xKAHNlQsli+mf7WieR+rL7SxqE0Ty2IGm5t19a++W
-	 zHWfi3g4tw0y4BwawaQysuJZc/1QCzJ4UiiObUMZKAEhtMp4GxPClFh3QTi9Ib3QUn
-	 khdpAXgQ1GY42xPG5fBueK4q8jf1dI0zXQBhBIZ/MDNh0XmKsb5uFL+d+o8ncqFpKY
-	 TgPma+TsNtMV6Ae6oDjzwg3zVN9KmZcy4gkzXQc/iEcL/4AszDDdfq+VOUp5rM/wwO
-	 wolih07qG+Pahg0Ab7f2efonl/qO+Z6MEPdeS8dEdP2s/rKZ9wRnE2TnKVYNVCaDxy
-	 tIkZzkvkL25KA==
-Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-6a642495d81so655737a12.2
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 01:35:37 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBxIzoT34hqEPZ0fPOCT668b+8oTEmaGJX5iSTvsMLz7RcHaQjdVSI+wdm0G7SpjUl2EgjWKI+0MrA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/ddKiXujVPderUdFSuSWbUAJV9+MZ2lgdxHmaPFPa20h9BG2L4
-	ELcae9YZo/JznNuR4VI0r9fGdU1oRuMOym9C7dO39FxN8AP8h/p1rEQpIS++B6hb68q/jYs/jT/
-	WR9jCwIHYDUmDbgJatGUrE0BczFUjvJ0=
-X-Received: by 2002:a05:6402:543:b0:6aa:f809:ef44 with SMTP id
- 4fb4d7f45d1cf-6b4d497f272mr8302572a12.19.1793784935620; Wed, 04 Nov 2026
- 01:35:35 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BcUl6U+U
+Received: by mail-dl1-f54.google.com with SMTP id a92af1059eb24-15ea896ddc8so912556c88.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 01:47:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793785665; x=1794390465; darn=vger.kernel.org;
+        h=cc:to:message-id:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Uh7Kzi5HknUWaE4263UOKqC/5G4430WqvI/t+055Hh8=;
+        b=BcUl6U+U5Ou1V+OPIEa0wBAlKPH/Ca4ZNT6sIaYz1Iv156zEQdRXZgV6BJbM4PR9Ff
+         HrKfYe2WJnPoOBJznPFr/TpofGloVrSSBO3crPlG51Ef4OcmcKZqXHewSNPmKDb/3/Nc
+         nISBaemsAMd4wrBtLnKpKBWtvPWak3Hnb1K4V0e3sSYMH0EkAmhQKq80g3w0c8ruatf8
+         mlz4cjVUxtKrFWgCe8XuAwB/MGToaN4p/W2U9QElW+s3egYN+SDnLydHZZsGPI4u2SHA
+         p9/qC/5G/s+FyllFpaNq2Q/hwybrHAzYKLyUDZXBD0IX23LM7hiVKqf5skXHHLjVYOQu
+         rcHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793785665; x=1794390465;
+        h=cc:to:message-id:subject:date:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Uh7Kzi5HknUWaE4263UOKqC/5G4430WqvI/t+055Hh8=;
+        b=JRcMJZgjqWamaJVcBzyHEj8ZCJJpX22YATuEEqHZCc5LNVMYCNg7DkASu4dWf28T0b
+         M3qd93hoZBFR5F1nLpGI4nHu+Ju62TBihTOWdXiD0zK6ctzW35LhF9yEPADpErObsfgh
+         FX0likWfoVt93JUoAVX607dzVn5RId9gKg+5e69j9bTGyUvbJPfHFJnMc1lVW65PNVu5
+         d+imjTJDUerObihIEjUloQ4Tj2GyI4jdp9gdAx/t6/tiQQWBJDeYWPvq5WX6Wp7FERU8
+         G3x0lygZ2tKlW6JswmG5Aq27Xnrldyyond6IaPmjNjflZjhkew7eYggBROXxgqGLVJjS
+         UaGQ==
+X-Forwarded-Encrypted: i=1; AKwUvBy55QDkGitp8RNH1EMbW+icS6srpfoYhqiPvWCGJYvuPT8qIkCRzrZf2S//h/KH8B0X2kEChVxgDA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+QsXipX5cxpe+XsIiKIRN+tSjLOO/qbq6s0iFXDzNQRlr3at26
+	1sE8M6A0q5BOZM8o8EqkiC5RLqWZrAOClIrnM2ZhnY4T7YgCptY6oYrO
+X-Gm-Gg: AYBFou04s76yfgXBdXMCILoFcIsbt/QKXqZjsknCZnn1YLJVNgeXuKYccogxy4KgziM
+	AKPovVXY4mzA1FvcjSMHbjjq0xVW8AoDaGSq5fitkmlkjNGKHQOYVKGENeQWkD2RhRf4wNCec+F
+	bOteHw9VfFD8vYLkGF0VaMwNpyPRbOf57fF2mX9ko2wbkCHJNDV8moqaBVjxerTtrdM90Z4b+JA
+	fr1DARXggWSe6rcrodcoSk59Xi0ZdYF4CpYP7s7IYBp6hEAlFFFBX21NQZABZp7dWX/+VdUZxMi
+	7vYUiuNTj90QYYBhPfDwfJyWSDb/0ORfehlMERj/J6luBD6MGy5Pac3RUONqUXbsp8BIibTaDbs
+	X/QjT7o3f4GRba5QzLCSwOW1veUbr64HdbfyATh04EOPOHL+ayUyDqOB4vfzCdi3JTNiFx1mn4F
+	/WAFvUiM+ODloFsSQ7Tff/yOz0Z554rZ+6EepRKyOKl+EO/38IKaqtadje+/ZNe6GTylQokavhc
+	djWN2+5K6lkKkmtbcfHQIQi0pH1grzIrVsgtOF/gvSNSPw1tem56Mi2CilCkK4c5R+nnGp6RAYh
+	Btpg9H84eumBFZUOKur59f8Yhg1mx3b5Q/lb1U3nZ6dQDiZllCjGDnRWmxUKE3droXo=
+X-Received: by 2002:a05:7022:7f0b:b0:13b:3132:6e99 with SMTP id a92af1059eb24-1ac5af2da84mr21527601c88.20.1793785664520;
+        Wed, 04 Nov 2026 01:47:44 -0800 (PST)
+Received: from [127.0.1.1] ([23.247.137.158])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c2de58sm6065186c88.12.2026.11.04.01.47.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Nov 2026 01:47:44 -0800 (PST)
+From: Yaohan Li <shunsheng1218@gmail.com>
+Date: Wed, 04 Nov 2026 17:47:31 +0800
+Subject: [PATCH] power: supply: bq25890: cancel pump work before supply
+ removal
+Message-ID: <179378565123.72475.2497991563887142080@gmail.com>
+To: sre@kernel.org
+Cc: hansg@kernel.org, marex@denx.de, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,187 +91,67 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-References: <cover.1793690276.git.zhoubinbin@loongson.cn>
-In-Reply-To: <cover.1793690276.git.zhoubinbin@loongson.cn>
-From: Huacai Chen <chenhuacai@kernel.org>
-Date: Wed, 4 Nov 2026 17:35:23 +0800
-X-Gmail-Original-Message-ID: <CAAhV-H4R1eJ08PFzFDPK9VZZKwdzTcC+ttF=eVCKP9k6TT5MeA@mail.gmail.com>
-X-Gm-Features: AclHuK8wStkOlY_ZaRD_iGQLa7IK6kHakkz--62p0mmX43ie-RVsYBXeaxCxYr4
-Message-ID: <CAAhV-H4R1eJ08PFzFDPK9VZZKwdzTcC+ttF=eVCKP9k6TT5MeA@mail.gmail.com>
-Subject: Re: [PATCH v8 0/7] thermal/drivers/loongson2: Fix trip programming
- and add Loongson-2K0300 support
-To: Binbin Zhou <zhoubinbin@loongson.cn>
-Cc: Binbin Zhou <zhoubb.aaron@gmail.com>, Huacai Chen <chenhuacai@loongson.cn>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Yinbo Zhu <zhuyinbo@loongson.cn>, zhanghongchen <zhanghongchen@loongson.cn>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Xuerui Wang <kernel@xen0n.name>, loongarch@lists.linux.dev, devicetree@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-For the whole series:
+The existing devm cleanup for pump_express_work runs after the
+managed power supply has been unregistered. A delayed or running pump
+work item can therefore call power_supply_changed() with a freed
+power_supply pointer.
 
-Reviewed-by: Huacai Chen <chenhuacai@loongson.cn>
+Register an additional devm cleanup action after power-supply
+registration, so devres reverse ordering drains the work while the
+supply is still alive. Keep the original late cleanup as a backstop
+for work that might be queued again during supplier teardown.
 
-On Tue, Nov 3, 2026 at 3:24=E2=80=AFPM Binbin Zhou <zhoubinbin@loongson.cn>=
- wrote:
->
-> Hi all:
->
-> This series fixes trip-point handling in the Loongson-2 thermal driver,
-> refactors the driver around per-SoC chip data, and adds support for the
-> Loongson-2K0300 thermal sensor.
->
-> The first three patches are fixes and are marked for stable:
->
-> - Patch 1 fixes signed division when converting negative milli-degree
->   trip points to degrees Celsius.
-> - Patch 2 fixes the arguments to clamp() so trip points are limited to
->   the supported sensor range.
-> - Patch 3 fixes Loongson-2K2000 trip-point programming by adding a
->   per-SoC register callback and handling the split HI_GATE register.
->
-> Patches 4-5 are cleanups and preparation work:
->
-> - Patch 4 removes the unnecessary multi-sensor registration loop.
-> - Patch 5 moves the per-SoC ops and hardware initialization into chip
->   data.
->
-> Patch 6 adds the Loongson-2K0300 DT binding, and patch 7 adds driver
-> support for the Loongson-2K0300 thermal sensor.
->
-> The patchset have been validated on the Loongson-2K series development
-> boards.
->
-> Thanks.
-> Binbin
->
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D
-> V8:
-> Patch (1/7):
->  - Use MILLIDEGREE_PER_DEGREE macro instead of explicitly casting MILLI;
->
-> - Split patch-4 into two parts: the bitfields section will be merged into
->   patch-3, and the remaining changes will be merged into patch-6 as
->   preparation for introducing the new SoC.
->
-> Link to V7:
-> https://lore.kernel.org/all/cover.1791512067.git.zhoubinbin@loongson.cn/
->
-> V7:
-> Patch (1/8):
->  - New patch;
->  - Fix negative temperature conversion in set_trips;
-> Patch (3/8):
->  - Use writew()/writeb() in loongson2_2k2000_set_trips_regs;
-> Patch (4/8):
->  - Rewite the thermal sensor registration loop to clearer;
-> Patch (5/8):
->  - Fix `loognson2_thermal_set_trips` typo;
-> Patch (8/8):
->  - Read CHIP_ID1 only when EXTERN_ID is set;
->  - Simplify the Internal ID calculation;
->  - Add the necessary comments.
->
-> Link to V6:
-> https://lore.kernel.org/all/cover.1790561983.git.zhoubinbin@loongson.cn/
->
-> V6:
->  - Rebase on linux-pm/thermal;
-> Patch (2/7):
->  - New patch;
->  - Fix incorrect clamp() argument order for thermal trip points;
-> Patch (3/7):
->  - New patch;
->  - Fix Loongson-2K2000 trip point programming by adding a per-SoC
->    set_trips_regs callback and handling the split HI_GATE registers;
-> Patch (4/7):
->  - New patch;
->  - cleanup: use GENMASK/FIELD_* helpers, add named constants, and factor
->    common trip point setup;
-> Patch (5/7):
->  - New patch;
->  - refactor: move thermal_zone_device_ops into chip_data and replace the
->    Loongson-2K2000 flag special case with an optional init_extend_resourc=
-e
->    callback;
-> Patch (7/7):
->  - Updated the 10-bit output to 11-bit in commit message;
->  - Temporarily remove the implementation of `set_trips`;
->  - Remove unnecessary header files;
->  - Rewrite `get_temp`, separating `read_calib` and `detect_old_fuse` into
->    new functions to be called during the probe;
->  - Use macros to define the relevant numbers.
->
-> Link to V5:
-> https://lore.kernel.org/all/cover.1789546118.git.zhoubinbin@loongson.cn/#=
-t
->
-> V5:
->  - Rebase on linux-pm/thermal;
->  - Drop patch-3 for it was applied.
->
-> Link to V4:
-> https://lore.kernel.org/all/cover.1785829933.git.zhoubinbin@loongson.cn/
->
-> V4:
->  - Rebase on linux-mfd/for-mfd-next;
-> Patch (3/5):
->  - Remove the operation that adds `compatible` to the `select` node.
->
-> Link to V3:
-> https://lore.kernel.org/all/cover.1785480242.git.zhoubinbin@loongson.cn/
->
-> V3:
-> Patch (2/5):
->  - New patch for moving thermal_ops to chip_data;
-> Patch (3/5):
->  - Correct spelling errors;
-> Patch (4/5):
->  - Add Acked-by from Conor, thanks;
-> Patch (5/5):
->  - Keep loongson2_thermal_data->chip_data as const, and use
->    data->flags as the private data.
->  - Renmae LOONGSON2_THSENS_OUT_10B_MASK ->
->    LOONGSON2_THSENS_OUT_11B_MASK;
->
-> Link to V2:
-> https://lore.kernel.org/all/cover.1784619512.git.zhoubinbin@loongson.cn/
->
-> V2:
-> Patch (1/4):
->  - New patch form Sashiko;
-> Patch (2/4):
->  - New patch for adding chipid syscon compatible;
-> Patch (3/4):
->  - Use `loongson,chipid` phandle replace reg property;
-> Patch (3/4):
->  - Refact `calib_offset` calculate routing;
->  - Add LS2K0300_OLD_FUSE_FLAG flag.
->
-> Link to V1:
-> https://lore.kernel.org/all/cover.1783670011.git.zhoubinbin@loongson.cn/
->
-> Binbin Zhou (7):
->   thermal/drivers/loongson2: Fix negative trip conversion in set_trips
->   thermal/drivers/loongson2: Fix clamp() usage for thermal trip points
->   thermal/drivers/loongson2: Fix Loongson-2K2000 trip point programming
->   thermal/drivers/loongson2: Simplify thermal sensor registration
->   thermal/drivers/loongson2: Move per-SoC ops and init into chip data
->   dt-bindings: thermal: loongson,ls2k-thermal: Add compatible for
->     Loongson-2K0300
->   thermal/drivers/loongson2: Add Loongson-2K0300 support
->
->  .../thermal/loongson,ls2k-thermal.yaml        |  73 +++-
->  drivers/thermal/loongson2_thermal.c           | 359 ++++++++++++++----
->  2 files changed, 332 insertions(+), 100 deletions(-)
->
->
-> base-commit: 4358090906b01806ee483229e8d7163b806bd116
-> --
-> 2.52.0
->
->
+A KASAN test using a simulated I2C device and the real bq25890
+driver reproduced the use-after-free before the change and not under
+the corresponding teardown sequence afterward.
+
+Fixes: a7aaa80098d5b7608 ("power: supply: bq25890: Ensure pump_express_work is cancelled on remove")
+Assisted-by: ZCode:GLM-4
+Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
+---
+ drivers/power/supply/bq25890_charger.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index f7510ada6b734..a3e35e036b97b 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -1459,6 +1459,23 @@ static void bq25890_non_devm_cleanup(void *data)
+ 	}
+ }
+ 
++static void bq25890_cancel_pump_express(void *data)
++{
++	struct bq25890_device *bq = data;
++
++	/*
++	 * Cancel the delayed work while the power supply is still alive:
++	 * bq25890_pump_express_work() calls power_supply_changed() at its
++	 * end and must not run against an already released supply.
++	 *
++	 * bq25890_non_devm_cleanup() stays in place as well: it runs
++	 * after the devres-managed power supply has been unregistered,
++	 * catching work queued again from the supplier-change path
++	 * between this cancel and the unregister.
++	 */
++	cancel_delayed_work_sync(&bq->pump_express_work);
++}
++
+ static int bq25890_probe(struct i2c_client *client)
+ {
+ 	struct device *dev = &client->dev;
+@@ -1531,6 +1548,10 @@ static int bq25890_probe(struct i2c_client *client)
+ 	if (ret < 0)
+ 		return dev_err_probe(dev, ret, "registering power supply\n");
+ 
++	ret = devm_add_action_or_reset(dev, bq25890_cancel_pump_express, bq);
++	if (ret)
++		return ret;
++
+ 	ret = devm_request_threaded_irq(dev, client->irq, NULL,
+ 					bq25890_irq_handler_thread,
+ 					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+-- 
+2.34.1
+
