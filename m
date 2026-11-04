@@ -1,49 +1,72 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.197
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793805371;
-	b=KnnIScQMnxFc6mi65hkPvDfwx7ifvAxRXVRMtRCE0OUPFCbSUNZAOemSKyDPlp9JOjtc
-	 2V8rWC00WY2QKDkK0zmSbAy+ofMyuMBkngI6iitscSBe3Ba59so2gTVwiLcxUosGEQBIN
-	 cHRV0ZyKhrxZn6XmkxFb3cSc/1bqeKJgBEHLo0Wv3x1RHdEa7Ye9riFS0k8EMYWTNk856
-	 dei7PE9JderYiC5b5//U/KxNguJlRHut8zr6nJO5zTnl6NvWNaKb8hOLoMJyXiwriw7J3
-	 Y3NUFHf6wCHoFoCkGLfdmHEGTlsH249GRIpSuzcEcX5Ch2WbYI/CMlIbXaxvN42gBOg==
+	t=1793805414;
+	b=aUWmNHMbwMlFLDrv7gvMcr4oL89bspMQNVWGA0q4I04R/ShEOGY7l0Pxpa6NPDxHh3ea
+	 8+NdQwEZTzFeHt8G6yQBh8w6KPErbpOdDG7kO14UG6nR4hxAPdmJzshXsBKjc6XDQO1db
+	 IVqtfy0l3Y5HHmsji7fHWDnUhfqR7g7QTvVh/BA3XtNY560AGVK14kS+ysuW4p5bCQLO2
+	 WPD8+oiy3M7wk4T3NEA1ffFOjyJ210g4rm/Ha/Ocq+MLnA2qKXaMw5YXZ/sHmNtliAoTA
+	 +8Kvq0YnYYMfsqQJj14JHKHWqyFAdmHUyi/JhNWFO0hKs/OZunt8MAlCrwxKfjl5jpA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793805371;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=6BzJTf+9zOj6b1DI2tW45vlOMvFFlfpqxjqXrxOY85Q=;
-	b=RPdaGs6hf237UiFI5b55rY+rFlHHi84FoEAsbLub1MMOGdUUA3aPUgoo69mvhxzLWofm
-	 amC40KRp/t99Kkegwf2k735GYilCePCnwsLj0iuN2IeHkuLZi/gymi7NVqTMMGhPtUpyQ
-	 cL+FEeE+d3dcBscGclxEjGCWXqEFuz66LzzXxGeglfrcivNs9rHCEwdFm9aMJHCJDM9oM
-	 mJ6uscfZSEqEUqByX5wuNUNednfuUQuYXKQm/noqA6TNiOqTQTPikfVTNO4YMkrK/fEOG
-	 QDgta259uSoEo4JydRicnQ1+b/DgqZXMn4l8VRJEYQCQXX1mpyqd0sy5KxuemmjrtLw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793805414;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
+	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
+	bh=Uq1e7jWuoceT2x7ZhYRUZ6C4jiC0NbfgYNrjkiRron4=;
+	b=lL+WxfY7x4AqgVW89bnF9yCxPhMw1EOG9j/pcw+Jkn/iN4PmxRapzzS4tcFgvp1fpLnH
+	 Jz1K56VhGR4D9T0VBhEy3u+MeTr7DIVQFQg1veKEk+2vMksDTyK2bG8Zv3bSfdN74ZavD
+	 4ezp9agetoMIDple1PRcm1G3LFrW56uUYVFDfbYEPG1vEtdJHu3cz90MvGpAvrSv4wS3h
+	 2BsyjX8duE9SDtlJzA+8Q3IE4fRvL7sUcFNoNGr1enFwpDaB1C6dDoIVOIlh2cuEufWf6
+	 4clX9fDTJp5DJEHQix10Lc/AlRTANYgiN2gHvAKGBKSSJ2Ds3sUUxYQN0/B0Pqcj+Dw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=e0fUJcYt;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 653B86082BE9;
-	Wed,  4 Nov 2026 15:16:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 653B86082BE9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=google.com;
+	spf=pass smtp.mailfrom=flex--stanleyjhu.bounces.google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=V5qxMC8i;
+	arc=none smtp.remote-ip=209.85.215.197
+Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94AB9607476A
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 15:16:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 94AB9607476A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--stanleyjhu.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=e0fUJcYt
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 63D131576;
-	Wed,  4 Nov 2026 07:16:06 -0800 (PST)
-Received: from [10.0.130.179] (e127648.arm.com [10.0.130.179])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4722F3F632;
-	Wed,  4 Nov 2026 07:16:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793805369; bh=R3BE3Js5qTxa0hvvmDnseDfPGZ0ejh2HVouUW0zy5/c=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=e0fUJcYt12inwf8RZGmraI6jvQ2p7fdaOI9jFqHE181GTnyzQdb7oO9dLU0znMeZO
-	 ZzkX5lVQC4u7kbxEBBMtIDtGV0RkGwbP/yrcLNB4yirnvz1CueIrDPnvIFYOO2s80n
-	 Wvk2JrbqAYwCRNLIsaiOC2Zc4NRwbv60Xmt2Vqck=
-Message-ID: <79700c48-e031-422a-a6b6-8c4118131e98@arm.com>
-Date: Wed, 4 Nov 2026 15:16:02 +0000
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=V5qxMC8i
+Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-cc4ac5feaa4so581098a12.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 07:16:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1793805414; x=1794410214; darn=vger.kernel.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Uq1e7jWuoceT2x7ZhYRUZ6C4jiC0NbfgYNrjkiRron4=;
+        b=V5qxMC8iNZRNUbCry/IYAuCXjsz2S2to3mmREdQL2kfZUuTj1juBWz+30iE/aIiyVh
+         Nh6k0qHuKdq+p6gJXqz6NIGfOsBjLQKw79EaJ/OFVsblemYIH++/duGw4REg3H9mixk1
+         zxavgu7KdB/IYCfpdOYnKLcTq68HP92rwv63DXx8ZHX7QkjG2P6rtA4BNv8Ek3NGyS4C
+         6OU1A4wocJ7FZPg8DdyqykUFYoaD4mcsUva/MaMFM4gAzua4Ep7Nwy0VuZrP1NPCMghs
+         mCmGUnGcPA6PrSFj+pn6r3qe2Izap8G51Jh6+OOB7pKI5eQWRYz8e5KvGAOBe/t6oime
+         mZOg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793805414; x=1794410214;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Uq1e7jWuoceT2x7ZhYRUZ6C4jiC0NbfgYNrjkiRron4=;
+        b=hzDAC3Iz4hKCL5A0X/VAAivy4z743m5VUzutlOJkzRvHAP8aQvnjaIQ/aKlhEONojN
+         /WJEcHOm5gwiKA64E9A57BJ0G/cdVVIpZYsGGTDyncw26aKHhSBEx5wfcgPtqmchxYtw
+         k8HQogtdt54O1O2lTmJ9hlTTIMP2k/ZtxBdGnXhn6IdulxI0rWgkl8G2tQUXzIqKHwm9
+         tDfUyNRS3y3COcTXsXSVFR5ePOpZFD2Iu91xZi4Z0n36b+53UN16Mze+w0ddmjEqTVy/
+         7aLqpRTSlHr/COU6L5vgNxw4oOuUR0uEhw1uPbAv5UZV1bSr8cE5xg3y+I4ZTto37WLk
+         raPg==
+X-Forwarded-Encrypted: i=1; AKwUvByhrVA/1W09Bpa4ea0HFyx0q4nljH9l28rK7Ql3WH/bCXyyJXnZKmgvhhLLpbWZWErgusPDlMgYaA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8TqHZ2nwfjpaRKP4dbCCvzO9Om77vGQj4OuPaqyqMz1TuKXAMi
+	HU++hmFe0jRRTUyAC0+2FP30RoS2nzJHsq66cYJdFLctcw5ZXUeZuoKdreM4Zvc4Os9e3CL+XVI
+	i11dNLSv72Q/x34ZPft2nMw==
+X-Received: from pfblt3.prod.google.com ([2002:a05:6a00:7443:b0:89f:6242:b2d2])
+ (user=stanleyjhu job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:6a20:a107:b0:3e2:117a:6307 with SMTP id adf61e73a8af0-3e928d4476cmr14928062637.22.1793805413627;
+ Wed, 04 Nov 2026 07:16:53 -0800 (PST)
+Date: Wed,  4 Nov 2026 23:16:51 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,84 +75,85 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 3/3] cpufreq: CPPC: Reflect the OSPM nominal in boost
- and limits
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, lenb@kernel.org,
- mario.limonciello@amd.com, maciej.wieczor-retman@intel.com,
- pawel.chmielewski@intel.com, linux-pm@vger.kernel.org,
- linux-acpi@vger.kernel.org, acpica-devel@lists.linux.dev,
- linux-kernel@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- mochs@nvidia.com, bbasu@nvidia.com
-References: <20261030172745.2045743-1-sumitg@nvidia.com>
- <20261030172745.2045743-4-sumitg@nvidia.com>
- <6392b2cb-0cbf-455a-8c05-c273535b2c10@arm.com>
- <4d9aa879-316c-4188-bc5a-71e3b65e8a3b@nvidia.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <4d9aa879-316c-4188-bc5a-71e3b65e8a3b@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
+Message-ID: <20261104151651.3035537-1-stanleyjhu@google.com>
+Subject: [PATCH v2] PM: runtime: Update runtime_pm.rst for non-fatal resume errors
+From: Stanley Jhu <stanleyjhu@google.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Brian Norris <briannorris@chromium.org>, Len Brown <lenb@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Praveen Talari <praveen.talari@oss.qualcomm.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Mark Brown <broonie@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <axboe@kernel.dk>, 
+	Bart Van Assche <bvanassche@acm.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-block@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Stanley Jhu <stanleyjhu@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 11/4/26 15:08, Sumit Gupta wrote:
-> Hi Christian,
-> 
-> 
-> On 03/11/26 22:42, Christian Loehle wrote:
->> External email: Use caution opening links or attachments
->>
->>
->> On 10/30/26 17:27, Sumit Gupta wrote:
->>> Boost is the performance range above nominal, so lowering the OSPM
->>> Nominal Performance enlarges the boost range and drops the non-boost
->>> ceiling. Keep the policy limits consistent with the register.
->>>
->>> Add cppc_cpufreq_effective_nominal(), which returns the OSPM Nominal
->>> Performance when set and the platform nominal otherwise. Use it for the
->>> non-boost ceiling in set_boost(), and to update the policy limits when
->>> ospm_nominal_freq is written.
->>>
->>> The cpufreq core caps scaling_max_freq with a per-policy QoS request,
->>> boost_freq_req, that it sets to cpuinfo.max_freq and refreshes only when
->>> boost is toggled. A write to ospm_nominal_freq changes cpuinfo.max_freq
->>> without toggling boost, so cppc_cpufreq_update_nominal_limits() updates
->>> the request itself, rather than leaving scaling_max_freq at the old
->>> nominal.
->>>
->>> When boost is enabled the ceiling is highest_perf, not the nominal, so
->>> the update is skipped. set_boost() applies the new nominal when boost is
->>> turned off.
->>>
->>> A platform with highest_perf == nominal_perf has no boost range at boot.
->>> Lowering the OSPM nominal from sysfs can create one. The core, however,
->>> adds its boost FREQ_QOS_MAX request only at policy setup, and only if
->>> boost_supported is already set. Set boost_supported in init() when the
->>> OSPM register is supported and highest_perf > lowest_perf. Boost can
->>> then be enabled after the nominal is lowered.
->>>
->>> Suggested-by: Pierre Gondois <pierre.gondois@arm.com>
->>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->>
->> Thinking out loud here:
->> I'm curious if there's actually a use-case for this, presumably once we
->> let userspace effectively dictate boost allocation, we practically expect
->> userspace to sort out scheduling, too (e.g. by pinning?) and therefore this
->> becomes largely irrelevant?
->>
-> 
-> I think it is still needed. Lowering the OSPM nominal puts the levels
-> between it and the platform nominal into the boost range.
-> Without this patch, boost=0 still allows those levels. Userspace would
-> then need an extra frequency cap to stay out of boost. This patch makes
-> boost=0 cap the policy at the OSPM nominal.
+Since commit eef1d74bf88f ("PM: runtime: Only set runtime_error on
+suspend callback failures"), rpm_callback() no longer sets
+dev->power.runtime_error when ->runtime_resume() returns an error.
+However, Documentation/power/runtime_pm.rst still states in both the
+resume callback rules and the ->runtime_idle() comparison that the PM
+core treats ->runtime_resume() errors as fatal device errors and blocks
+runtime PM helper functions until the status is manually reset.
 
-Duh of course, I was somehow too focused on the cpufreq capacity pressure
-to not see the obvious one, nevermind and sorry for the noise.
+Update the resume callback semantics bullet to state that on error the
+PM core resets the runtime PM status to 'suspended', returns the error
+code from synchronous resume helpers, and unlike with the suspend
+callback never treats resume failures as fatal, leaving the Section 4
+runtime PM helpers unblocked so a subsequent resume request can run
+->runtime_resume() again. Also drop ->runtime_resume() from the
+->runtime_idle() fatal-error comparison.
 
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+Fixes: eef1d74bf88f ("PM: runtime: Only set runtime_error on suspend callback failures")
+Fixes: aedc51762a0d ("PM: runtime: Clarify ->runtime_idle() callback return value handling")
+Signed-off-by: Stanley Jhu <stanleyjhu@google.com>
+---
+Differences from v1:
+- Contrast resume failures with the suspend callback instead of citing
+  -EBUSY, -EAGAIN, or power.runtime_error (Brian Norris)
+- Add Fixes tag for commit aedc51762a0d covering ->runtime_idle()
+- Link to v1: https://lore.kernel.org/r/20261029040005.2100005-1-stanleyjhu@google.com
+
+ Documentation/power/runtime_pm.rst | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
+index 40a5c23d5259..09072c576087 100644
+--- a/Documentation/power/runtime_pm.rst
++++ b/Documentation/power/runtime_pm.rst
+@@ -222,11 +222,12 @@ what to do to handle the device).
+     I/O operations as needed.  The runtime PM status of the device is then
+     'active'.
+ 
+-  * If the resume callback returns an error code, the PM core regards this as a
+-    fatal error and will refuse to run the helper functions described in
+-    `Section 4`_ for the device, until its status is directly set to either
+-    'active', or 'suspended' (by means of special helper functions provided by
+-    the PM core for this purpose).
++  * If the resume callback returns an error code, the PM core sets the
++    device's runtime PM status back to 'suspended' and returns the error
++    code from synchronous resume helpers.  Unlike with the suspend
++    callback, failures in the resume callback are never considered fatal,
++    so the helper functions described in `Section 4`_ are not blocked and
++    a subsequent resume request can run the resume callback again.
+ 
+ The idle callback (a subsystem-level one, if present, or the driver one) is
+ executed by the PM core whenever the device appears to be idle, which is
+@@ -250,9 +251,9 @@ call to pm_runtime_autosuspend().
+ To prevent this suspension (for example, if the callback routine has scheduled
+ a delayed suspend or determined the device cannot be idle), the routine must
+ return a non-zero value (typically -EBUSY or -EAGAIN).  Unlike
+-->runtime_suspend() and ->runtime_resume(), the PM core does not treat negative
+-return codes from ->runtime_idle() as a fatal device error; any non-zero value
+-simply stops the PM core from suspending the device.
++->runtime_suspend(), the PM core does not treat negative return codes from
++->runtime_idle() as a fatal device error, and any non-zero value simply stops
++the PM core from suspending the device.
+ 
+ Core Guarantees and Synchronization Rules
+ -----------------------------------------
+-- 
+2.56.0.385.gac671c819a-goog
 
