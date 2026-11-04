@@ -1,58 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=91.218.175.27
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.157
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793772208;
-	b=sOJnedOUdVi8DgNLwyyxWFUq8a3wsu3W4Em53UhxWK5a7SsEmCaMLeEFv6GqNxJl+bcT
-	 psIMNrAhCNy2QNd7+NxhsfqAiD6lijfurmi0c5/svC5zgnYN58R9IicM2CzEGwYvbIDsk
-	 eZ9KhhhVZBv0SLa0amP1limGJ+XiSK9ILCx51aoI/bXUP+8dVIE2tj+BBqYPPaKVAjgEw
-	 PmxqpbEvvUrRhv8+IDlLeb5W1oYF7j/MYl1XrzR73vAumNbSDcYCSg5CESLh9nMk0Ent7
-	 DwA/SH/zc8t2g2kBZ1jxeXlWJD5IzEqwT7FIRh79qcB5rCwwEXxnMqhkSoZOdqwHd+g==
+	t=1793772220;
+	b=wfqRTi3s8WFRb4pFD7C4C+C6OI37pa0JQSjvhVyA0Zt+P/vPRjT1LmFlqphkXPhcAwQ7
+	 UtfY5CzTvfbO4ihzL0amsecvb+cEZz6MuX3A/OV8WPy1IYe2yJkwQmLllZ4sv4nXLAN9L
+	 tCoXZ9S/hZmgTSrJbkZztyL2CQYc4UeOefYsudM1+jiq+gud1YeyxSOzDmuBo4HGWgRD6
+	 pZ/L3cU2cR+XbKY9k4dqSQT92Q9X1Y7TmQH42PjxHj/dtuIzZuf8w9MFfpcf4AUvu60G6
+	 R5o82reypNORJyATwNv0Hdnkv/N/NxJuzYiTM5WVXzLBYSjYtBA9roZmAhOTmzkS8gQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793772208;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793772220;
 	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
 	 X-Mizu-Trace-ID:X-Migadu-Flow:Date:From:To:Cc:Subject:Message-ID:
 	 MIME-Version:Content-Type:Content-Disposition;
-	bh=9C1bXdGOKR+PmH+Cqcvj7KCFB3lYGXuYazohqnS6jcc=;
-	b=unpP9vobhX2D3uRkmqqdQM1oDzrsvHrtsURLiJ+rAn7MMr7mGvpdxr+j2VcZEazqh9v0
-	 ndJDhL8ekSukqJdD2tSkFvIQ69CDEvF6pfLb1ZtK4eKuE4zr0W+poxrXuj2q2zu43vGtC
-	 pxk82mkfzfPDKw/7uYwS7es+r7hqt3ngeAwW1YWgR4LGjoiqhMHdimKlqkTNmi/4wG2KR
-	 NGO91++vinZqqHTuVPszBuBpXY2JsKDecQXuGId0udBNLWASeocbb+heNky9Nl4q8WoTe
-	 peleqP+f2yCkdVVzoae0SDKYi0Gkd6aOj37y9R8wwvE/wvoTcD4jdQDZq5Q0o862fkQ==
+	bh=oJdaoXQy0/EociQacg1JYrKan8zsfdKLE8lvsvzxYko=;
+	b=fw024wULoGJ5dvW9gRDEwe/Fs11QStPJctyiiuN75rXUSKMdcq0GZw/oAnmNyCuTbBRY
+	 IBEQqohhYmJAy1aJTSUlMMQ/QdpSMeYFm8gjkV8ur2GX6nLbMccZwbDPxdhSW+DAc/R3Q
+	 13Ru65B0W3z/38Nz740/n7AYSQELX/0wjbkHqIqwSw6Mwc8brLGlwtB8CcRsElSTdrdp8
+	 n1YqmwyZdL6w0+zxQABu2nDODaLPph/Y2mTP9hVseZeqLg9CjJRqCwVKaUWG0n9espZtR
+	 vU39lEPXIWOJj/MouwTw+P/bKhNdbIFVyyuavAkHecvLkBoMiESxdwWjR5z43eFp05w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=wyuan.org;
 	spf=pass smtp.mailfrom=wyuan.org;
-	arc=none smtp.remote-ip=91.218.175.27
-Received: from mta0.migadu.com (out-27.mta0.migadu.com [91.218.175.27])
+	dkim=pass header.d=wyuan.org header.i=@wyuan.org header.a=rsa-sha256 header.s=key1 header.b=myaznaBl;
+	arc=none smtp.remote-ip=95.215.58.157
+Received: from mta1.migadu.com (out-157.mta1.migadu.com [95.215.58.157])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A237E606A31B
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 06:03:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A237E606A31B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C76C606A329
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 06:03:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9C76C606A329
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wyuan.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wyuan.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=wyuan.org header.i=@wyuan.org header.a=rsa-sha256 header.s=key1 header.b=myaznaBl
 X-Envelope-To: linux-pm@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=PFeFBO1qDD0bnuEjVR1ASo6qD+B8oZtcUsLJ4dMST/A=;
+DKIM-Signature: a=rsa-sha256; bh=NGIoOiZhsQ+tUdmKZIOEJBAFqqRsjnM3WeSbYqIv1Wg=;
  c=simple/simple; d=wyuan.org;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1793772201; v=1; x=1794377001;
- b=YO+o9sIy6QpPQk+cmKYsjU8zI+HHhFSf2a3CLbwU6FvSbMiip8Ou/uFHkCaZpMeCF2nx/Pw4
- y7HUJQD9AJo84TkGJQBGRU38YbTz01HBRp7D+Gw68WEko0QLYyAm7H0xtJv2SqQGdoM9I72HI3n
- LFA3nUYW48r+7LGevIlmOSwppCt5W6xztBXs6isPMVf5nA3LybNtKfY3CTG9h6OyGrv0v1DlUXQ
- YJr7XN4MceeDQNklX1KkA44XmX41o6cyI2+xjQ/O+GDvd6FheUcKfcQ2kOE2coAcJ53rVUX5qVa
- accwdmdWfyd1bCZR8qiaatmoRtnWMNbpFfirEz5KxPX5g==
+ t=1793772217; v=1; x=1794377017;
+ b=myaznaBlyYPaCSODhv3ZMdHwgqbS9RFZFOi7bIy7CJU9WjAo7bq07d0i+EhjBrj2jrLqasZ+
+ 8Mc8e6rk2oC0VPc0Ni2kUKgNNGrjBPBGR2EXHr7Q/vzvUCmrTf0BazHrhXL9WYrLfOBeY3oXaYi
+ KVqVoepmhYlygr4rfG+UFG+m1tCfLBCgdzaIGDa19MV2h8L1p8k9H/RmTaCt7V3uHl95q7vGPhb
+ yRlrXutjwmzz3PFP1aTMG0Ia41P4MjmYwIzmrYRAQWRd+YbURJyRei5mrIL8D62HM+Io5YiHye2
+ lzk20kKIFJIQ5iakuiG7TIMkGtFG4n1NjNOUBbu9d7Sag==
 X-Envelope-To: linux-pm@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id ae5187589c06f8b5;
-	Wed, 04 Nov 2026 06:03:21 +0000
-X-Mizu-Trace-ID: ae5187589c06f8b5
+Received: by smtp.migadu.com with ESMTPS id 91f073fbf216ee0e;
+	Wed, 04 Nov 2026 06:03:37 +0000
+X-Mizu-Trace-ID: 91f073fbf216ee0e
 X-Migadu-Flow: FLOW_OUT
-Date: Wed, 4 Nov 2026 14:03:16 +0800
+Date: Wed, 4 Nov 2026 14:03:33 +0800
 From: Weijie Yuan <kernel@wyuan.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] docs: power: supply: Mark property suffix patterns as
- literals
-Message-ID: <cf09a44bf6a9b0926084568b69f35a7b03a3c334.1793771310.git.wy@wyuan.org>
+Subject: [PATCH] docs: ABI: power: supply: Mark load-switch paths as literals
+Message-ID: <0c95ea265109a1af250f4156c92ea5ae313cced6.1793771310.git.wy@wyuan.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,37 +68,49 @@ Content-Disposition: inline
 
 From: Weijie Yuan <wy@wyuan.org>
 
-The *_NOW and *_AVG patterns start unclosed emphasis in the power
-supply class documentation, producing two docutils warnings.
+The load_switch paths in the RT9467 and RT9471 ABI descriptions
+contain wildcard asterisks that docutils interprets as unclosed
+emphasis when generating the ABI documentation.
 
-Render both patterns as inline literals so their wildcard asterisks
-are displayed correctly.
+Wrap the paths in inline literals while preserving the What entries.
 
 Signed-off-by: Weijie Yuan <wy@wyuan.org>
 ---
 
 * Sphinx complains:
-Documentation/power/power_supply_class.rst:211: WARNING: Inline emphasis start-string without end-string. [docutils]
-Documentation/power/power_supply_class.rst:211: WARNING: Inline emphasis start-string without end-string. [docutils]
+Documentation/ABI/testing/sysfs-class-power-rt9467:1: WARNING: Inline emphasis start-string without end-string. [docutils]
+Documentation/ABI/testing/sysfs-class-power-rt9471:1: WARNING: Inline emphasis start-string without end-string. [docutils]
 
- Documentation/power/power_supply_class.rst | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/ABI/testing/sysfs-class-power-rt9467 | 2 +-
+ Documentation/ABI/testing/sysfs-class-power-rt9471 | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/power/power_supply_class.rst b/Documentation/power/power_supply_class.rst
-index 0072b41d4d45..f7555239e642 100644
---- a/Documentation/power/power_supply_class.rst
-+++ b/Documentation/power/power_supply_class.rst
-@@ -209,8 +209,8 @@ TEMP_MAX
+diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9467 b/Documentation/ABI/testing/sysfs-class-power-rt9467
+index bfbfd78ec1c1..1c0f1d532edd 100644
+--- a/Documentation/ABI/testing/sysfs-class-power-rt9467
++++ b/Documentation/ABI/testing/sysfs-class-power-rt9467
+@@ -13,7 +13,7 @@ Description:
+ 		'Disable' also can help to leave it, but it's more like to
+ 		abort the action before the device really enter shipping mode.
  
- TIME_TO_EMPTY_NOW, TIME_TO_EMPTY_AVG
-   seconds left for battery to be considered empty
--  (i.e., while battery powers a load). *_NOW is a
--  momentary reading; *_AVG is averaged over a fixed period.
-+  (i.e., while battery powers a load). ``*_NOW`` is a
-+  momentary reading; ``*_AVG`` is averaged over a fixed period.
- TIME_TO_FULL_NOW, TIME_TO_FULL_AVG
-   seconds left for battery to be considered full
-   (i.e., while battery is charging). Same now/avg distinction.
+-		Note: use /sys/class/power_supply/rt9467-*/load_switch instead.
++		Note: use ``/sys/class/power_supply/rt9467-*/load_switch`` instead.
+ 
+ 		Access: Read, Write
+ 		Valid values:
+diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documentation/ABI/testing/sysfs-class-power-rt9471
+index 90cf94c1cbf6..5745303fcc57 100644
+--- a/Documentation/ABI/testing/sysfs-class-power-rt9471
++++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
+@@ -11,7 +11,7 @@ Description:
+ 		mode. 'Disable' also can help to leave it, but it's more like to abort
+ 		the action before the device really enter shipping mode.
+ 
+-		Note: use /sys/class/power_supply/rt9471-*/load_switch instead.
++		Note: use ``/sys/class/power_supply/rt9471-*/load_switch`` instead.
+ 
+ 		Access: Read, Write
+ 		Valid values:
 -- 
 2.56.0.438.g30c3f27cb8
 
