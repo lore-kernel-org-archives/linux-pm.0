@@ -1,77 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.21
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793755804;
-	b=0wMAKC3mVh/cRRa9cdfq2uEVz97iR4wyKyyxV1lWRkeyOY4rOmuCpfxpEAKExGc+3n3V
-	 sxLnID+xhuCwRvv/8SqdYwL1rCqxwyPAbSMsryRFbAzRNYTdidxZQLc7h97iTk7GYpCBq
-	 W+9rxFfQ6TYCJpO5I11Hbc8yTmfErrohmBlsQ1Ilr6P0cw70BSmmCebbehEXdm/+1yKdN
-	 5K8Mv2EZpO0Xga9kZVPvaoYrUV1zSW3CVSPeUszmZXFjgQhcbhf0191Y3v3ubTCjHLUGb
-	 MICsCFMq3vDdF5cM+raQu81e9H/9Ho0UlNJL6kvb/hMniIfA4QY6mpMMDNJ65jTxHVg==
+	t=1793756441;
+	b=b7MKMkjqksaD3sugahq5QQyMzVTZrno1WJFpv8g9cyvD5DMjo8p9/yrfxS8ms3/iBRAU
+	 I1pDVoUSAYZ/dJra56TKzb/gCHxBQZq2fD1Hlw4x7mOCiGhf56hOZ+xNYw0bNvUYEShwH
+	 H2QmgPhLvYWA81cZ8+Xd33XjS1FTOvdRkCxodimCf49oKgSnszMBACzIKjPhk761Ms4oy
+	 czmQkwdjUIOCUrZ+ZWa04szO0kjCiec/xClxM0wfkz3EzNa7hYX67OPwywI3+Vtv+7mOe
+	 blfnFfmvfF6Gi27ROMCrKfYaZ5ukxKOhOcYM6wKd2rQDb0pcClw1juV5gHjK/biGTKg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793755804;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
-	 Subject:Message-ID:MIME-Version:Content-Type:Content-Disposition;
-	bh=yEu6yyL0+xI2Dfe025H+amgRJZrDJT8P4ol1ESga1/w=;
-	b=Ie7ljCZjq2uDuZHMBjJ6kwGbtHVoR/UBAR5U7S6kBbdNOhpR+aTGnP30OmP8PsibuECa
-	 hplo9Fr7dkHYrAbEXX2JtUCHLA+9svKALVIkmYMLqQUDTlBri+XYT6W/qL+1fI1TWtIFA
-	 uu4moI/yIIR88XFUlXBq2a8i3fvOltHZKAkwHsl1zrFwQBROjn4KY1vREM5nK8+Yclz8f
-	 phfMtdcKQXZ9AyIyIfvj+wLuKmNB+ge2x6DT9NpBb87qSHlt0w2eUI9Tevdun1G2mhb+x
-	 4AAKy6HnL9pTEtL1uWsDspHQ0Uvnx+tj4vqdmOFRftRi6jU3JN/G3AyGbVuZDILJ+PQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793756441;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=ljoz0IZXV/fb7lLK+CyHT4EslT/P2ixwKVNk6JMrWWk=;
+	b=NYUNcGYAnJMailiDdKuNiCV98TsOb1zKdbjF4hF2AAlMZcif3Hmtzr2fm4RklbThRggM
+	 vdwg1OpKfzlmbjQFodl1nlRAjSdl9tUPOPnDkbzXp0ANH3VcCvtlfiApYdA58ky3ARLay
+	 OdgRSCzRjrbEal+ztJs5FBufhGVaaBf3WQnyTVOvhy34yoPip+cnwtDciyDGxXbZudb0T
+	 wcWrTuGM3qMyPcitswSpbG/EkgA/wVuYzjsrH9IIUOIGh1ZHgrVstNyjuE5sOU1yrEf6b
+	 XKnX2KFJ2wkfFe2zGYh546SwEJgFgnATi6ZyGkEW7GEVm0/bk5fbK5w+K70epXEaPxQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hSzOd2n3;
-	arc=none smtp.remote-ip=198.175.65.21
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gGSLhNHq;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D68E7606A31B;
-	Wed,  4 Nov 2026 01:30:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D68E7606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4929B606A32F;
+	Wed,  4 Nov 2026 01:40:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hSzOd2n3
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793755802; x=1825291802;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=syy6QjJl2jFKpWBfFodPKYB/m/8Hval3+l8xNhB4PjM=;
-  b=hSzOd2n3FsB8lMCs6o6wA6txzr4s4hvcRoqi8ytwwDK9zdFOct0Htf0f
-   gpNDtG+2Z4edJ79MY0iXIm6ENT2LOMWSzK5xglqcs7I0y7xh5GAgNgxta
-   9VWefhdIsU/naUMXj4KsacO2N+ucyA45cjtp4PBJILDG5wBg8zXviZwAT
-   Sv4JAJNQHHXO96D1onnGwyZ/Q3CwSe2GJ4mBlPJqotcKe76wk08opiFyq
-   X/cd4Yz8yYdlzHLoMMPaWYP6kAmEcNG5CU2woEyE1hJm6KHdsTTd1Jixb
-   h9yautDTYFDc66T84FZNWBKpOVebisN/8Vw8YLydeEioZ8CBb7Ky58yjj
-   A==;
-X-CSE-ConnectionGUID: P0mSutTBSDGUlhx7gXfZ/w==
-X-CSE-MsgGUID: z6AqXYyGRIe56E9BLTTmGQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2592900"
-X-IronPort-AV: E=Sophos;i="6.27,194,1787036400"; 
-   d="scan'208";a="2592900"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 17:30:02 -0800
-X-CSE-ConnectionGUID: i+t+TH98QdO/q+1wNBAJuQ==
-X-CSE-MsgGUID: ook4j2l8TWmULubw0mdFAA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,194,1787036400"; 
-   d="scan'208";a="6596283"
-Received: from ly-workstation.sh.intel.com (HELO ly-workstation) ([10.239.182.64])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 17:29:58 -0800
-Date: Wed, 4 Nov 2026 09:29:54 +0800
-From: kernel test robot <yi1.lai@intel.com>
-To: Borislav Petkov <bp@alien8.de>
-Cc: oe-lkp@lists.linux.dev, lkp@intel.com, linux-kernel@vger.kernel.org,
-	Nikolay Borisov <nik.borisov@suse.com>,
-	linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
-	kvm@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-	dm-devel@lists.linux.dev, platform-driver-x86@vger.kernel.org,
-	linux-pm@vger.kernel.org, yi1.lai@intel.com
-Subject: [linus:master] [x86/cpu]  3eaa50e1e2:
- WARNING:at_arch/x86/mm/tlb.c:#switch_mm_irqs_off
-Message-ID: <202611040239.b33be21c-lkp@intel.com>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gGSLhNHq
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EECA01F000C1;
+	Wed,  4 Nov 2026 01:40:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793756440;
+	bh=ljoz0IZXV/fb7lLK+CyHT4EslT/P2ixwKVNk6JMrWWk=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=gGSLhNHqVBzKwaf4HJL7lM2pZ/TPYOlAh7Y0eZkKQohx/dWkAsljuX3akBhY1jFQC
+	 Wl4hIyU2ToFGupDpg0XySxy+sBlNlAL3Tr8+ZVuB74X5TL6tjDp/Cm4dIQ/Fql4xmQ
+	 /lM9+uO5u7/yxYyX2FHMmL+XAS3FkCpkbsyA3rgHHHEzUP8LM+FzwQw03pjrgUlPnH
+	 zu2fjoRQtyPknxQY9pGdoj97RIayJkWeM04RRlBDpGFwzoo1cYTbcTMXfsc6V+F75D
+	 0n/rnU4p66QSXtFzR5RWxndilVNyB81DVIWabd8ohgl0/hr8qxj4Eq2lnDsl0ZvcMx
+	 cqwT/MJ2c7F+g==
+Date: Wed, 4 Nov 2026 01:40:31 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Fabrice Gasnier
+ <fabrice.gasnier@st.com>, linux-pm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulfh@kernel.org>,
+ linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, Andy Shevchenko
+ <andy@kernel.org>, David Lechner <dlechner@baylibre.com>, Alexandre Torgue
+ <alexandre.torgue@foss.st.com>, Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>
+Subject: Re: [PATCH v2 3/5] PM: runtime: Propagate last_busy from dependent
+ to dependency
+Message-ID: <20261104014031.2aed1419@jic23-hlaptop>
+In-Reply-To: <aup9LKewaLr2B5cR@google.com>
+References: <20261103221717.3840215-1-briannorris@chromium.org>
+	<20261103141442.v2.3.I40c0bc917fa0b13111251844e9a54feb1d9cd7d2@changeid>
+	<20261103231719.486a18de@jic23-hlaptop>
+	<aup9LKewaLr2B5cR@google.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -81,316 +68,195 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+
+On Tue, 3 Nov 2026 16:32:44 -0800
+Brian Norris <briannorris@chromium.org> wrote:
+
+> Hi Jonathan,
+> 
+> On Tue, Nov 03, 2026 at 11:17:19PM +0000, Jonathan Cameron wrote:
+> > On Tue,  3 Nov 2026 14:14:41 -0800
+> > Brian Norris <briannorris@chromium.org> wrote:
+> >   
+> > > When a child device suspends, it does not update the last_busy timestamp
+> > > for its parent. If that parent configured autosuspend and didn't
+> > > otherwise maintain its last_busy timestamp, it may now be immediately
+> > > eligible to suspend. This is probably not expected -- the parent should
+> > > wait for its autosuspend delay before suspending.  
+> > 
+> > So reading this again - I wonder if this text is describing the
+> > expected behaviour.  
+> 
+> Agreed, this might give the wrong impression, depending on the
+> assumptions the reader makes about autosuspend delay. (I think I had a
+> particular problem scenario in mind, but didn't translate that properly
+> here.)
+> 
+> > If the child is also using autosupend then, in extreme case, that time
+> > might be longer than the autosuspend time of the parent.
+> > If so it seems odd the parent still waits.  
+> 
+> Right, that seems wrong, and indeed that's not what this patch does.
+> 
+> > So most expected to me
+> > would be if the parent were to suspend it's autosuspend time after
+> > the parent or child was last used for something that indicate a
+> > desire not to suspend (that shouldn't include actions the child
+> > did whilst suspending).  
+> 
+> (Not sure I'm parsing this sentence quite right, but...)
+> 
+> The point is that last_busy should propagate (rather than, say, the
+> expiration time). So each device still gets its own-delay-based
+> autosuspend timer expiration. That may mean the parent waits longer than
+> the child, but it may not, if the child's delay was longer than the
+> parent's.
+> 
+> > Maybe there isn't a sensible way to deal with this and what you have here
+> > is the best we can do.  Note that this is just commenting on this
+> > statement in the commit description.  From what follows I think
+> > this is just a commit description thing rather than functional.  
+> 
+> If I'm understanding what you're saying correctly: maybe it would be an
+> improvement here to say:
+> 
+>   If that parent configured an autosuspend delay longer than its child's
+>   and didn't otherwise maintain its last_busy timestamp, it may now be
+>   immediately eligible to suspend.
+> 
+> I think that would more accurately describe the target problem, even if
+> it doesn't cover all cases (such as when the parent delay is shorter).
+
+Agreed. That covers the main case nicely.
+
+> 
+> > > The effect of this behavior is that a parent device may suspend sooner
+> > > than its autosuspend delay, simply because its usage was accounted by
+> > > its children, and not by direct references to the parent device.  
+> > 
+> > Sooner is indeed bad.
+> >   
+> > > 
+> > > This was noticed in several cases, and some have implemented
+> > > workarounds, such as in commit c537d3457542 ("iio: adc: stm32-adc: fix
+> > > runtime autosuspend delay when slow polling"). At the same time, Ulf
+> > > suggested these problems "should be solved in the runtime PM core" [1].
+> > > 
+> > > Instead of working around the problem in drivers, we propagate last_busy
+> > > timestamps from a dependent device to its dependencies any time it may
+> > > allow a dependency to suspend -- i.e., when releasing a refcount for its
+> > > parent or suppliers. We take care to only propagate the timestamp if it
+> > > is larger than the existing busy timestamp.  
+> > 
+> > So this sounds fine but I don't think aligns with that first paragraph.
+> >   
+> > > 
+> > > Note that this works best if the dependent device is using autosuspend
+> > > (and therefore updates its last_busy timestamps appropriately), but even
+> > > for a non-autosuspend child, this is still somewhat useful --
+> > > non-autosuspend devices still automatically update their last_busy every
+> > > time they resume.  
+> > 
+> > Can we set the last busy on the suspend of child devices that aren't
+> > suspending as a result of autosuspend timeout but for other reasons?
+> > (may be some fiddly corners!)  
+> 
+> Do you have concrete use cases in mind, or do you bring this up simply
+> because of my note?
+
+Just your note ;)
+> 
+> For one, I feel like for devices with power.use_autosuspend==true, it's
+> reasonable to expect drivers to use the appropriate helpers to update
+> last_busy at the appropriate times, and so any "corner cases" are from
+> misuse.
+> 
+> But if you mean non-use_autosuspend devices: I suppose it'd be possible
+> but I haven't reasoned through the implementation very far yet. It
+> almost seems like we'd need to plumb pm_runtime_mark_last_busy() into
+> *all* the put() helpers, including the non-autosuspend ones
+> (pm_runtime_put(), pm_runtime_put_sync()). I'm not quite sure if that's
+> desirable. But I could try to look a bit more, if you think there are
+> important use cases that would need this.
+If it is hard not a problem to leave it as is and call out the limitation
+as you have done.  Someone who needs it can figure it out!
 
 
+Jonathan
 
-Hello,
-
-kernel test robot noticed "WARNING:at_arch/x86/mm/tlb.c:#switch_mm_irqs_off" on:
-
-commit: 3eaa50e1e255ec261c757b9eea811ef3bac10d1e ("x86/cpu: Hide and rename static_cpu_has()") https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git master
-
-[test failed on linux-next/master 7649ba73f9e7e1e04d0b46213e39c79ae09dd55c]
-
-in testcase: trinity
-version: 
-with following parameters:
-
-	runtime: 300s
-	group: group-03
-	nr_groups: 5
-
-
-config: i386-randconfig-2302-20261020
-compiler: clang-22
-test machine: qemu-system-i386 -enable-kvm -cpu Icelake-Server-noTSX,enforce,lm=off -smp 4 -m 4G
-
-(please refer to attached dmesg/kmsg for entire log/backtrace)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <yi1.lai@intel.com>
-| Closes: https://lore.kernel.org/oe-lkp/202611040239.b33be21c-lkp@intel.com
-
-
-[    6.581068][    T0] ======================================================
-[    6.581069][    T0] WARNING: possible circular locking dependency detected
-[    6.581070][    T0] 7.2.0-rc2-00001-g3eaa50e1e255 #1 Not tainted
-[    6.581072][    T0] ------------------------------------------------------
-[    6.581073][    T0] swapper/1/0 is trying to acquire lock:
-[    6.581074][    T0] c31a3080 (console_owner){..-.}-{0:0}, at: console_lock_spinning_enable+0x2b/0x80
-[    6.581086][    T0]
-[    6.581086][    T0] but task is already holding lock:
-[    6.581086][    T0]
-[    6.581086][    T0] but task is already holding lock:
-[    6.581086][    T0]
-[    6.581086][    T0] but task is already holding lock:
-[    6.581087][    T0] e85ad118 (&rq->__lock){-.-.}-{2:2}, at: __schedule+0x1b4/0x940
-[    6.581676][    T0]
-[    6.581676][    T0] which lock already depends on the new lock.
-[    6.581676][    T0]
-[    6.581676][    T0] which lock already depends on the new lock.
-[    6.581676][    T0]
-[    6.581676][    T0] which lock already depends on the new lock.
-[    6.581676][    T0]
-[    6.581677][    T0]
-[    6.581677][    T0] the existing dependency chain (in reverse order) is:
-[    6.581677][    T0]
-[    6.581677][    T0] the existing dependency chain (in reverse order) is:
-[    6.581677][    T0]
-[    6.581677][    T0] the existing dependency chain (in reverse order) is:
-[    6.581678][    T0]
-[    6.581678][    T0] -> #4 (&rq->__lock){-.-.}-{2:2}:
-[    6.581678][    T0]
-[    6.581678][    T0] -> #4 (&rq->__lock){-.-.}-{2:2}:
-[    6.581678][    T0]
-[    6.581678][    T0] -> #4 (&rq->__lock){-.-.}-{2:2}:
-[    6.581683][    T0]        _raw_spin_lock_nested+0x20/0x40
-[    6.581686][    T0]        ___task_rq_lock+0x55/0x100
-[    6.581691][    T0]        wake_up_new_task+0xd5/0x2c0
-[    6.581693][    T0]        kernel_clone+0x1f4/0x3c0
-[    6.581696][    T0]        user_mode_thread+0x61/0x80
-[    6.581698][    T0]        rest_init+0x1a/0x1c0
-[    6.581700][    T0]        start_kernel+0x337/0x3c0
-[    6.581706][    T0]        i386_start_kernel+0xc6/0x100
-[    6.581708][    T0]        startup_32_smp+0x151/0x154
-[    6.581710][    T0]
-[    6.581710][    T0] -> #3 (&p->pi_lock){-.-.}-{2:2}:
-[    6.581710][    T0]
-[    6.581710][    T0] -> #3 (&p->pi_lock){-.-.}-{2:2}:
-[    6.581710][    T0]
-[    6.581710][    T0] -> #3 (&p->pi_lock){-.-.}-{2:2}:
-[    6.581713][    T0]        _raw_spin_lock_irqsave+0x33/0x80
-[    6.581715][    T0]        try_to_wake_up+0x3b/0x440
-[    6.581717][    T0]        default_wake_function+0x13/0x40
-[    6.581719][    T0]        autoremove_wake_function+0x10/0x40
-[    6.581723][    T0]        __wake_up_common_lock+0x6e/0xc0
-[    6.581726][    T0]        __wake_up+0x13/0x40
-[    6.581729][    T0]        tty_wakeup+0x50/0x80
-[    6.581732][    T0]        tty_port_default_wakeup+0x52/0x80
-[    6.581734][    T0]        tty_port_tty_wakeup+0x11/0x40
-[    6.581737][    T0]        uart_write_wakeup+0x12/0x40
-[    6.581739][    T0]        serial8250_tx_chars+0x184/0x1c0
-[    6.581741][    T0]        serial8250_handle_irq_locked+0x1bd/0x200
-[    6.581744][    T0]        serial8250_handle_irq+0x57/0x100
-[    6.581746][    T0]        serial8250_default_handle_irq+0x1c/0x40
-[    6.581748][    T0]        serial8250_interrupt+0x41/0xc0
-[    6.581750][    T0]        __handle_irq_event_percpu+0xac/0x3c0
-[    6.581752][    T0]        handle_irq_event+0x26/0x80
-[    6.581754][    T0]        handle_edge_irq+0x77/0x140
-[    6.581757][    T0]        __handle_irq+0x67/0x80
-[    6.581761][    T0]        __common_interrupt+0x74/0xc0
-[    6.581763][    T0]        common_interrupt+0x24/0x40
-[    6.581765][    T0]        asm_common_interrupt+0x137/0x140
-[    6.581768][    T0]        pv_native_safe_halt+0xe/0x40
-[    6.581769][    T0]        default_idle+0x8/0x40
-[    6.581771][    T0]        arch_cpu_idle+0x8/0x40
-[    6.581773][    T0]        default_idle_call+0x6c/0xc0
-[    6.581775][    T0]        do_idle+0xbc/0x240
-[    6.581779][    T0]        cpu_startup_entry+0x25/0x40
-[    6.581781][    T0]        start_secondary+0x9f/0xc0
-[    6.581785][    T0]        startup_32_smp+0x151/0x154
-[    6.581787][    T0]
-[    6.581787][    T0] -> #2 (&tty->write_wait){-...}-{3:3}:
-[    6.581787][    T0]
-[    6.581787][    T0] -> #2 (&tty->write_wait){-...}-{3:3}:
-[    6.581787][    T0]
-[    6.581787][    T0] -> #2 (&tty->write_wait){-...}-{3:3}:
-[    6.581790][    T0]        _raw_spin_lock_irqsave+0x33/0x80
-[    6.581791][    T0]        __wake_up_common_lock+0x15/0xc0
-[    6.581794][    T0]        __wake_up+0x13/0x40
-[    6.581796][    T0]        tty_wakeup+0x50/0x80
-[    6.581798][    T0]        tty_port_default_wakeup+0x52/0x80
-[    6.581801][    T0]        tty_port_tty_wakeup+0x11/0x40
-[    6.581802][    T0]        uart_write_wakeup+0x12/0x40
-[    6.581805][    T0]        serial8250_tx_chars+0x184/0x1c0
-[    6.581807][    T0]        serial8250_handle_irq_locked+0x1bd/0x200
-[    6.581809][    T0]        serial8250_handle_irq+0x57/0x100
-[    6.581811][    T0]        serial8250_default_handle_irq+0x1c/0x40
-[    6.581813][    T0]        serial8250_interrupt+0x41/0xc0
-[    6.581815][    T0]        __handle_irq_event_percpu+0xac/0x3c0
-[    6.581817][    T0]        handle_irq_event+0x26/0x80
-[    6.581818][    T0]        handle_edge_irq+0x77/0x140
-[    6.581820][    T0]        __handle_irq+0x67/0x80
-[    6.581822][    T0]        __common_interrupt+0x74/0xc0
-[    6.581825][    T0]        common_interrupt+0x24/0x40
-[    6.581827][    T0]        asm_common_interrupt+0x137/0x140
-[    6.581829][    T0]        pv_native_safe_halt+0xe/0x40
-[    6.581830][    T0]        default_idle+0x8/0x40
-[    6.581832][    T0]        arch_cpu_idle+0x8/0x40
-[    6.581834][    T0]        default_idle_call+0x6c/0xc0
-[    6.581835][    T0]        do_idle+0xbc/0x240
-[    6.581838][    T0]        cpu_startup_entry+0x25/0x40
-[    6.581840][    T0]        start_secondary+0x9f/0xc0
-[    6.581842][    T0]        startup_32_smp+0x151/0x154
-[    6.581844][    T0]
-[    6.581844][    T0] -> #1 (&port_lock_key){-.-.}-{3:3}:
-[    6.581844][    T0]
-[    6.581844][    T0] -> #1 (&port_lock_key){-.-.}-{3:3}:
-[    6.581844][    T0]
-[    6.581844][    T0] -> #1 (&port_lock_key){-.-.}-{3:3}:
-[    6.581847][    T0]        _raw_spin_lock_irqsave+0x33/0x80
-[    6.581848][    T0]        serial8250_console_write+0x57/0x640
-[    6.581851][    T0]        univ8250_console_write+0x20/0x40
-[    6.581853][    T0]        console_flush_all+0x26f/0x480
-[    6.581856][    T0]        console_unlock+0x65/0x100
-[    6.581858][    T0]        vprintk_emit+0x183/0x2c0
-[    6.581860][    T0]        vprintk_default+0x10/0x40
-[    6.581862][    T0]        vprintk+0xe/0x40
-[    6.581864][    T0]        _printk+0x20/0x40
-[    6.581866][    T0]        register_console+0x340/0x3c0
-[    6.581868][    T0]        univ8250_console_init+0x1b/0x40
-[    6.581871][    T0]        console_init+0x7b/0x280
-[    6.581874][    T0]        start_kernel+0x229/0x3c0
-[    6.581877][    T0]        i386_start_kernel+0xc6/0x100
-[    6.581879][    T0]        startup_32_smp+0x151/0x154
-[    6.581880][    T0]
-[    6.581880][    T0] -> #0 (console_owner){..-.}-{0:0}:
-[    6.581880][    T0]
-[    6.581880][    T0] -> #0 (console_owner){..-.}-{0:0}:
-[    6.581880][    T0]
-[    6.581880][    T0] -> #0 (console_owner){..-.}-{0:0}:
-[    6.581883][    T0]        __lock_acquire+0x16ac/0x2a80
-[    6.581886][    T0]        lock_acquire+0xa0/0x240
-[    6.581888][    T0]        console_lock_spinning_enable+0x44/0x80
-[    6.581890][    T0]        console_flush_all+0x253/0x480
-[    6.581893][    T0]        console_unlock+0x65/0x100
-[    6.581894][    T0]        vprintk_emit+0x183/0x2c0
-[    6.581896][    T0]        vprintk_default+0x10/0x40
-[    6.581898][    T0]        vprintk+0xe/0x40
-[    6.581900][    T0]        _printk+0x20/0x40
-[    6.581902][    T0]        __report_bug+0xa8/0x140
-[    6.581904][    T0]        report_bug+0x61/0x80
-[    6.581906][    T0]        handle_bug+0x92/0x240
-[    6.581908][    T0]        exc_invalid_op+0x24/0x80
-[    6.581911][    T0]        handle_exception_return+0x0/0xcb
-[    6.581913][    T0]        switch_mm_irqs_off+0x3bd/0x440
-[    6.581916][    T0]        __schedule+0x539/0x940
-[    6.581918][    T0]        schedule_idle+0x2a/0x40
-[    6.581920][    T0]        do_idle+0x1cf/0x240
-[    6.581923][    T0]        cpu_startup_entry+0x25/0x40
-[    6.581925][    T0]        start_secondary+0x9f/0xc0
-[    6.581927][    T0]        startup_32_smp+0x151/0x154
-[    6.581929][    T0]
-[    6.581929][    T0] other info that might help us debug this:
-[    6.581929][    T0]
-[    6.581929][    T0] other info that might help us debug this:
-[    6.581929][    T0]
-[    6.581929][    T0] other info that might help us debug this:
-[    6.581929][    T0]
-[    6.581930][    T0] Chain exists of:
-[    6.581930][    T0]   console_owner --> &p->pi_lock --> &rq->__lock
-[    6.581930][    T0]
-[    6.581930][    T0] Chain exists of:
-[    6.581930][    T0]   console_owner --> &p->pi_lock --> &rq->__lock
-[    6.581930][    T0]
-[    6.581930][    T0] Chain exists of:
-[    6.581930][    T0]   console_owner --> &p->pi_lock --> &rq->__lock
-[    6.581930][    T0]
-[    6.581933][    T0]  Possible unsafe locking scenario:
-[    6.581933][    T0]
-[    6.581933][    T0]  Possible unsafe locking scenario:
-[    6.581933][    T0]
-[    6.581933][    T0]  Possible unsafe locking scenario:
-[    6.581933][    T0]
-[    6.581934][    T0]        CPU0                    CPU1
-[    6.581935][    T0]        ----                    ----
-[    6.581935][    T0]   lock(&rq->__lock);
-[    6.581937][    T0]                                lock(&p->pi_lock);
-[    6.581939][    T0]                                lock(&rq->__lock);
-[    6.581940][    T0]   lock(console_owner);
-[    6.581941][    T0]
-[    6.581941][    T0]  *** DEADLOCK ***
-[    6.581941][    T0]
-[    6.581941][    T0]  *** DEADLOCK ***
-[    6.581941][    T0]
-[    6.581941][    T0]  *** DEADLOCK ***
-[    6.581941][    T0]
-[    6.581942][    T0] 3 locks held by swapper/1/0:
-[    6.581944][    T0]  #0: e85ad118 (&rq->__lock){-.-.}-{2:2}, at: __schedule+0x1b4/0x940
-[    6.581949][    T0]  #1: c31a3094 (console_lock){+.+.}-{0:0}, at: vprintk_emit+0x17a/0x2c0
-[    6.581954][    T0]  #2: c2e82dc4 (console_srcu){....}-{0:0}, at: rcu_try_lock_acquire+0x0/0x40
-[    6.581959][    T0]
-[    6.581959][    T0] stack backtrace:
-[    6.581959][    T0]
-[    6.581959][    T0] stack backtrace:
-[    6.581959][    T0]
-[    6.581959][    T0] stack backtrace:
-[    6.581962][    T0] CPU: 1 UID: 0 PID: 0 Comm: swapper/1 Not tainted 7.2.0-rc2-00001-g3eaa50e1e255 #1 PREEMPT(lazy)
-[    6.581965][    T0] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-[    6.581967][    T0] Call Trace:
-[    6.581969][    T0]  __dump_stack+0x18/0x40
-[    6.581973][    T0]  dump_stack_lvl+0x65/0xc0
-[    6.581976][    T0]  dump_stack+0xd/0x12
-[    6.581979][    T0]  print_circular_bug+0x2bf/0x300
-[    6.581982][    T0]  check_noncircular+0x106/0x140
-[    6.581986][    T0]  __lock_acquire+0x16ac/0x2a80
-[    6.581994][    T0]  lock_acquire+0xa0/0x240
-[    6.581997][    T0]  ? console_lock_spinning_enable+0x2b/0x80
-[    6.582000][    T0]  ? console_lock_spinning_enable+0x2b/0x80
-[    6.582003][    T0]  console_lock_spinning_enable+0x44/0x80
-[    6.582006][    T0]  ? console_lock_spinning_enable+0x2b/0x80
-[    6.582008][    T0]  console_flush_all+0x253/0x480
-[    6.582012][    T0]  console_unlock+0x65/0x100
-[    6.582016][    T0]  vprintk_emit+0x183/0x2c0
-[    6.582019][    T0]  vprintk_default+0x10/0x40
-[    6.582022][    T0]  vprintk+0xe/0x40
-[    6.582025][    T0]  _printk+0x20/0x40
-[    6.582027][    T0]  __report_bug+0xa8/0x140
-[    6.582030][    T0]  ? switch_mm_irqs_off+0x3bd/0x440
-[    6.582033][    T0]  ? switch_mm_irqs_off+0x3bf/0x440
-[    6.582036][    T0]  report_bug+0x61/0x80
-[    6.582038][    T0]  handle_bug+0x92/0x240
-[    6.582041][    T0]  ? switch_mm_irqs_off+0x3bd/0x440
-[    6.582043][    T0]  ? handle_bug+0x240/0x240
-[    6.582046][    T0]  exc_invalid_op+0x24/0x80
-[    6.582049][    T0]  handle_exception+0x168/0x168
-[    6.582052][    T0] EIP: switch_mm_irqs_off+0x3bd/0x440
-[    6.582054][    T0] Code: 89 55 e4 e8 25 3f 40 01 8b 55 e4 8b 45 f0 f7 45 e8 00 02 00 00 0f 85 31 fe ff ff e9 2d fe ff ff 0f 0b e9 b3 fd ff ff 8b 75 ec <0f> 0b 83 7d f0 08 73 13 8b 45 f0 f0 0f ab 86 00 05 00 00 8b 5d e0
-[    6.582057][    T0] EAX: 00000001 EBX: e85a0000 ECX: c0ecf380 EDX: c0ecf380
-[    6.582059][    T0] ESI: c0ecf380 EDI: 00000000 EBP: c031ff0c ESP: c031fee4
-[    6.582061][    T0] DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068 EFLAGS: 00210096
-[    6.582064][    T0]  ? handle_bug+0x240/0x240
-[    6.582067][    T0]  ? handle_bug+0x240/0x240
-[    6.582070][    T0]  ? switch_mm_irqs_off+0x3bd/0x440
-[    6.582074][    T0]  __schedule+0x539/0x940
-[    6.582079][    T0]  schedule_idle+0x2a/0x40
-[    6.582081][    T0]  do_idle+0x1cf/0x240
-[    6.582085][    T0]  cpu_startup_entry+0x25/0x40
-[    6.582087][    T0]  start_secondary+0x9f/0xc0
-[    6.582090][    T0]  startup_32_smp+0x151/0x154
-[    6.752586][    T0] WARNING: arch/x86/mm/tlb.c:859 at switch_mm_irqs_off+0x3bd/0x440, CPU#1: swapper/1/0
-[    6.754233][    T0] Modules linked in:
-[    6.754879][    T0] CPU: 1 UID: 0 PID: 0 Comm: swapper/1 Not tainted 7.2.0-rc2-00001-g3eaa50e1e255 #1 PREEMPT(lazy)
-[    6.756668][    T0] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-[    6.758441][    T0] EIP: switch_mm_irqs_off+0x3bd/0x440
-[    6.759346][    T0] Code: 89 55 e4 e8 25 3f 40 01 8b 55 e4 8b 45 f0 f7 45 e8 00 02 00 00 0f 85 31 fe ff ff e9 2d fe ff ff 0f 0b e9 b3 fd ff ff 8b 75 ec <0f> 0b 83 7d f0 08 73 13 8b 45 f0 f0 0f ab 86 00 05 00 00 8b 5d e0
-[    6.762672][    T0] EAX: 00000001 EBX: e85a0000 ECX: c0ecf380 EDX: c0ecf380
-[    6.763861][    T0] ESI: c0ecf380 EDI: 00000000 EBP: c031ff0c ESP: c031fee4
-[    6.765043][    T0] DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068 EFLAGS: 00210096
-[    6.766344][    T0] CR0: 80050033 CR2: b7d0600c CR3: 0435b000 CR4: 00350ed0
-[    6.767537][    T0] Call Trace:
-[    6.768079][    T0]  __schedule+0x539/0x940
-[    6.768799][    T0]  schedule_idle+0x2a/0x40
-[    6.769557][    T0]  do_idle+0x1cf/0x240
-[    6.770231][    T0]  cpu_startup_entry+0x25/0x40
-[    6.771029][    T0]  start_secondary+0x9f/0xc0
-[    6.771794][    T0]  startup_32_smp+0x151/0x154
-[    6.772571][    T0] irq event stamp: 11750
-[    6.773297][    T0] hardirqs last  enabled at (11749): [<c248ea58>] default_idle_call+0x98/0xc0
-[    6.774773][    T0] hardirqs last disabled at (11750): [<c2492d95>] __schedule+0x155/0x940
-[    6.776182][    T0] softirqs last  enabled at (11726): [<c249c90a>] __do_softirq+0xa/0xc
-[    6.777581][    T0] softirqs last disabled at (11721): [<c249c90a>] __do_softirq+0xa/0xc
-[    6.778962][    T0] ---[ end trace 0000000000000000 ]---
-
-
-The kernel config and materials to reproduce are available at:
-https://download.01.org/0day-ci/archive/20261104/202611040239.b33be21c-lkp@intel.com
-
-
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> 
+> Brian
+> 
+> > > Link: https://lore.kernel.org/all/CAPDyKFp=KTf8=zGBSzPYqhjnZpY8xwvjCeM1e-WTKT1QLSxaDA@mail.gmail.com/ [1]
+> > > Signed-off-by: Brian Norris <briannorris@chromium.org>
+> > > ---
+> > > Cc: Ulf Hansson <ulfh@kernel.org>
+> > > 
+> > > Changes in v2:
+> > >  * Update comments to explain when/why rpm_propagate_last_busy()
+> > >    performs the update
+> > > 
+> > >  drivers/base/power/runtime.c | 23 ++++++++++++++++++++++-
+> > >  1 file changed, 22 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > index 2a117d6a776f..dd306cbabcd3 100644
+> > > --- a/drivers/base/power/runtime.c
+> > > +++ b/drivers/base/power/runtime.c
+> > > @@ -318,6 +318,22 @@ static int rpm_get_suppliers(struct device *dev)
+> > >  	return 0;
+> > >  }
+> > >  
+> > > +/*
+> > > + * Propagate last_busy timestamp from one device to another, typically when a
+> > > + * device (@dev) releases a reference count on a dependency (@target) and might
+> > > + * allow it to (auto)suspend. This can, for example, prevent overactive suspend
+> > > + * when a dependency's usage is primarily driven by one of its dependents.
+> > > + */
+> > > +static void rpm_propagate_last_busy(struct device *dev, struct device *target)
+> > > +{
+> > > +	s64 busy = atomic64_read(&dev->power.last_busy);
+> > > +	s64 target_busy = atomic64_read(&target->power.last_busy);
+> > > +
+> > > +	while (target_busy < busy)
+> > > +		if (atomic64_try_cmpxchg(&target->power.last_busy, &target_busy, busy))
+> > > +			return;
+> > > +}
+> > > +
+> > >  /**
+> > >   * pm_runtime_release_supplier - Drop references to device link's supplier.
+> > >   * @link: Target device link.
+> > > @@ -348,6 +364,7 @@ static void __rpm_put_suppliers(struct device *dev, bool try_to_suspend)
+> > >  		if (!device_link_test(link, DL_FLAG_PM_RUNTIME))
+> > >  			continue;
+> > >  
+> > > +		rpm_propagate_last_busy(dev, link->supplier);
+> > >  		pm_runtime_release_supplier(link);
+> > >  		if (try_to_suspend)
+> > >  			pm_request_idle(link->supplier);
+> > > @@ -710,6 +727,8 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+> > >  
+> > >  	if (dev->parent) {
+> > >  		parent = dev->parent;
+> > > +		if (!parent->power.ignore_children)
+> > > +			rpm_propagate_last_busy(dev, parent);
+> > >  		atomic_add_unless(&parent->power.child_count, -1, 0);
+> > >  	}
+> > >  	wake_up_all(&dev->power.wait_queue);
+> > > @@ -1368,8 +1387,10 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
+> > >  		goto out_set;
+> > >  
+> > >  	if (status == RPM_SUSPENDED) {
+> > > -		atomic_add_unless(&parent->power.child_count, -1, 0);
+> > >  		notify_parent = !parent->power.ignore_children;
+> > > +		if (notify_parent)
+> > > +			rpm_propagate_last_busy(dev, parent);
+> > > +		atomic_add_unless(&parent->power.child_count, -1, 0);
+> > >  	} else {
+> > >  		spin_lock_nested(&parent->power.lock, SINGLE_DEPTH_NESTING);
+> > >    
+> >   
+> 
 
