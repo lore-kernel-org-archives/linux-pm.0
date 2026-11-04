@@ -1,56 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=220.197.31.3
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=180.76.5.236
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793773918;
-	b=49Dzbbixr0atxYAxLY4QBFufcV6nMPXzzZ1EHIsWK3LoF/bYrqEavxH2v8G5wAcDwAvX
-	 pCSzbzZ4J/6EZnFkLQfFYtMw8poQdjQnXtlXTnjhSzapfEccmENDD4Rru+yQYRUt8V7Ri
-	 pH2+zQ5XURGqLK60pt1Br/j6LD0S29gj0AmqyUzNZmWwc2CvxURyFjXVZxU6WojmPLQ+J
-	 sGvxD7pNdCjIAIA1ddxGAnqMo64rJvEHaRgqeqb7Y/XzY62SfLP0LYYsD1P5cmGkPzaCW
-	 psk/HJ26cpx8CHXeb51W2q8EWoiUaDIkuMFnqu9cN5arQq5IUlmrW0zYjyxOS4Bhsmw==
+	t=1793775726;
+	b=LAkhSMl5wVsS4PdeRyxePG7kU9KFA9z++TRIZy6hdUxYcAQoxVbh5dz3BanbOrnjz1V6
+	 Ch7TRMcOfsPSF+mEW9R53ak0Q9UGbOacH5csXhdwrNx8sxF9tC2gA4GYOS/+1Cv099a3V
+	 eNuKI2bRF8YRdYBlj8w2vfnfsvb9djHMo1o/UetBWTpmZkjzFN4LTNBfvNL/WERP104lv
+	 v+og2DktNYs3ggzDLugTxta0gLGhldDHJPg6TUaFE8XRo2eemEpxjqtHE1tP2nv77epEc
+	 KExh8KwZBj2OKrrX2anMHdWRtmBD4SY5cDWiNa+febi5GxNT4Blc8e96bpAnCGfubMA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793773918;
-	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-Id:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:
-	 MIME-Version:X-CM-TRANSID:X-Coremail-Antispam:Sender:X-CM-SenderInfo;
-	bh=Zfs1S8kl80WkxxB3XrF1vdS+43cOLDw0M4ufZrJjGZc=;
-	b=12Q4yFw3iz9ZZJ4ZdR52O/ti8/cZrSUJ4KBToCUmirulvOcu/93+WZZSNLTrl84xV70n
-	 GMODNrX2Gh+dd3Uthi2ECt1fkUtCgsF5zcXbsiRRkrEalfxtZwJF/+LF5ltHLaS1CUb9T
-	 Uh06aeUYarLrj27BHX8dNgunuqHE94JTf1vl2tcH21+y2Q37ajQkTbU+pCvhrhjJJFZ7K
-	 WL7g2YwAXGbhI8QSsU5gY38JgAXPAp52rYoLnSBU3spVVlYJVdVitpC0RqO8psyepPHYd
-	 LjhUnkINB3aV2H6+CGnwSTcmFerP4fddPr3MxKjX81rDTPGN7Rg0F4R5abY1I4AM59g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793775726;
+	h=DMARC-Filter:X-MD-Sfrom:X-MD-SrcIP:From:To:CC:Subject:Date:
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 Content-Type:X-Originating-IP:X-ClientProxiedBy:DKIM-Signature;
+	bh=cEoK95BmIiRTWYQ320m84PwqZyyVLheWWFuoNvEb4Us=;
+	b=jEIEpDIhVxO5h4a3nUkkfZvijEq+ZMe+0Tmvsm3yFETXJSl9j1nmFURbwxCD8E4gnb1p
+	 sQNDLnTkr6vHJUzkEwfdrwC3iz+/8fQBp+QHTKLmQV17oChbCTZ2ZknZvXEFyCpEx90Ip
+	 3uxzgIgcWGN1Ie6Ir8/PGiDCD6bVlTioyDsHAIujJpP6Qo0Ie6wzV/LtHeDL+TNww5+1H
+	 FBvy4GqAEjw1PTfsbslhqOd1T8eWRbrCphoULBSeCzL1HOYcEGcwKXRE3XiOkVCfnKmc2
+	 pAldI2FcIMfKkUbOz2+woJq0TZ3fO2hW2QjHVn9pYcc3I9HghdmIwcKG/Bz1BJpkNaQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=kylinos.cn;
-	spf=pass smtp.mailfrom=163.com;
-	dkim=pass header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=LsLUBMqN;
-	arc=none smtp.remote-ip=220.197.31.3
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BC5C606A326;
-	Wed,  4 Nov 2026 06:31:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2BC5C606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	dmarc=pass header.from=baidu.com;
+	spf=pass smtp.mailfrom=baidu.com;
+	dkim=pass header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=kdo1PtV1;
+	arc=none smtp.remote-ip=180.76.5.236
+Received: from outbound.baidu.com (outbound.baidu.com [180.76.5.236])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 4C103606A31B;
+	Wed,  4 Nov 2026 07:02:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4C103606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=LsLUBMqN
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:Content-Type:
-	MIME-Version; bh=Zfs1S8kl80WkxxB3XrF1vdS+43cOLDw0M4ufZrJjGZc=;
-	b=LsLUBMqNU9sCWJF0CQm2MjxAyaPkO19jUvhhDNTy0EtyFB/X4a9wyhzp/+QEvK
-	SOrMi//3o/nObw97qZV50d9EQbeDxvoKbAOo1GeTwcikg7ufSTJ/NKgi2SZnLaqi
-	Gb2IQNsrvuohP4pxD1CJbLVJJQoRDeCIiIZarlc0Zu5Q0=
-From: Yongxin Yang <yangyongxin@kylinos.cn>
-To: rafael@kernel.org
-Cc: lenb@kernel.org, pavel@kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] PM: hibernate: Log the hibernation mode on entry
-Date: Wed, 04 Nov 2026 14:31:19 +0800
-Message-Id: <20261104143119.7308635-ping-yangyongxin@kylinos.cn>
-In-Reply-To: <20261015081644.1353321-1-yangyongxin@kylinos.cn>
-References: <20261013023411.1364546-1-yangyongxin@kylinos.cn>
- <20261015081644.1353321-1-yangyongxin@kylinos.cn>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	dkim=pass (2048-bit key, unprotected) header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=kdo1PtV1
+X-MD-Sfrom: lizhaoxin04@baidu.com
+X-MD-SrcIP: 172.31.4.16
+From: Li Zhaoxin <lizhaoxin04@baidu.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J .
+ Wysocki" <rafael@kernel.org>
+CC: Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Li Zhaoxin
+	<lizhaoxin04@baidu.com>, <stable@vger.kernel.org>
+Subject: [PATCH] cpufreq: intel_pstate: Use rdmsrq_safe() to read MSR_MISC_PWR_MGMT
+Date: Wed, 4 Nov 2026 15:01:49 +0800
+Message-ID: <20261104070149.41393-1-lizhaoxin04@baidu.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -60,27 +51,80 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-CM-TRANSID:PigvCgCHKjdP0epqqg7FDw--.32566S2
-X-Coremail-Antispam: 1Uf129KBjvdXoW5tw4kGFykZF1rtF18Kw48Zwb_yoWxXFb_uF
-	y8WF97K3W2qrWxArWruw4xu39xWayrGr1UXrykXw1SkryrKrnrWr4DWrZ3XF97G3sxAr1D
-	KFZ0yryUCryUZjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUj-eOtUUUUU==
-Sender: yang_yongxin123@163.com
-X-CM-SenderInfo: 51dqwsp1rqw5tlqrjji6rwjhhfrp/xtbDABDde2rq0VCT2AAA38
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: bjkjy-exc6.internal.baidu.com (172.31.50.50) To
+ bjhj-exc18.internal.baidu.com (172.31.4.16)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
+	s=selector1; t=1793775720;
+	bh=cEoK95BmIiRTWYQ320m84PwqZyyVLheWWFuoNvEb4Us=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
+	b=kdo1PtV1rmaykAl+MYYH8xzRmVyG/Qr0SwYY6dEmISAoHCVugf6eQpVXeXnx1j4Nm
+	 Fq6yg5mB28GF8/aATQpXBbT28oCeYBJIwl6Ur1ZXXp3Oka+V7qBdgAxx7X+cCHkBAN
+	 HzT+sdqqgJrLBeG8JpugJ7PCGLgGTyDvoQCSUgVDYaMJVmWygYB/WeymlFEsAc2tCr
+	 YwNn8THXROuR1NKcXJ+AYccPhbmcL/peBDVo/R4lyrWxItB+y77lSfM1xe69FiolD6
+	 gsPwkzb142ydRKxpRd+w7kI80L30Eh12ARB8MT/gyjyK5JkfibAZq+N2zlFgdr/5qg
+	 a27mwDjyWHhog==
 
-Hi Rafael,
+From: lizhaoxin04 <lizhaoxin04@baidu.com>
 
-A gentle ping on this one -- is it still on your radar?  Nothing has changed
-since v4, and it still applies cleanly to the current mainline.
+Commit ed7cad0504e3 ("cpufreq: intel_pstate: Relocate platform
+preference check") moved the intel_pstate_platform_pwr_mgmt_exists()
+call to the beginning of intel_pstate_init(), right after the vendor
+check, so it now runs before "no_load" (intel_pstate=disable) and the
+other checks.
 
-One point I would like to close, since v4 was the answer to your last
-question.  v4 does drop the wrapper and looks the mode up in
-hibernation_modes[] directly, as you suggested.  To do that it also moves that
-table from above the /sys/power/disk comment up to the top of the file,
-because hibernate() prints at line 797 while the table sits at line 1134 and C
-needs the declaration first.  If you would rather keep the table where it is,
-say the word and I will rework that part.
+MSR_MISC_PWR_MGMT is model-specific and KVM does not emulate it. In a
+KVM guest using a CPU model listed in intel_pstate_cpu_oob_ids[] (for
+example "-cpu host" on Emerald Rapids), reading it raises #GP and the
+unchecked rdmsrq() emits a warning with a call trace on every boot, even
+with intel_pstate=disable:
 
-Thanks!
-Yongxin
+  unchecked MSR access error: RDMSR from 0x1aa at rIP: 0xffffffffa4009342 (native_read_msr+0x2/0x50)
+  Call Trace:
+   <TASK>
+   intel_pstate_platform_pwr_mgmt_exists+0x3b/0x220
+   intel_pstate_init+0x1e/0x500
+   do_one_initcall+0x59/0x350
+   ...
+
+Before that commit, such guests typically returned from
+intel_pstate_init() earlier, either because of intel_pstate=disable or
+because intel_pstate_msrs_not_valid() failed on the zero ratios that
+KVM reports in MSR_PLATFORM_INFO by default, so the MSR was not read.
+
+Use rdmsrq_safe() and treat a failing read as "no OOB mode". The
+exception fixup already zeroes the result of a failed unchecked read,
+so apart from the warning going away there is no functional change.
+
+Fixes: ed7cad0504e3 ("cpufreq: intel_pstate: Relocate platform preference check")
+Cc: stable@vger.kernel.org
+Signed-off-by: Li Zhaoxin <lizhaoxin04@baidu.com>
+---
+ drivers/cpufreq/intel_pstate.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 0e6ae4cdda5d..67447280e86a 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3649,12 +3649,12 @@ static struct acpi_platform_list plat_info[] __initdata = {
+ static bool __init intel_pstate_platform_pwr_mgmt_exists(void)
+ {
+ 	const struct x86_cpu_id *id;
+-	u64 misc_pwr;
++	u64 misc_pwr = 0;
+ 	int idx;
+ 
+ 	id = x86_match_cpu(intel_pstate_cpu_oob_ids);
+ 	if (id) {
+-		rdmsrq(MSR_MISC_PWR_MGMT, misc_pwr);
++		rdmsrq_safe(MSR_MISC_PWR_MGMT, &misc_pwr);
+ 		if (misc_pwr & BITMASK_OOB) {
+ 			pr_debug("Bit 8 or 18 in the MISC_PWR_MGMT MSR set\n");
+ 			pr_debug("P states are controlled in Out of Band mode by the firmware/hardware\n");
+
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+-- 
+2.43.0
 
