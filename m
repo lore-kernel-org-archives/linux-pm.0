@@ -1,66 +1,72 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.198
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793790147;
-	b=gshP1D1FMjglxPcURSvu1aCz3vxc1rFt5ebfIECyGtYGa6KqQ1ePXksACJtBg3eA7v/I
-	 PHMHJ9ruZqbqrRW+6LRymVrW6GxVaPW3abEGUYXobZ6r9DMRRTptl0OCtXbyks8GLsvUk
-	 UrP+nRN+kWlbgs85pjeoR4d1VgxsTFIEIn9Rc5o/9y6oTIVl0VrquWpXn4E7fEhGS4qAJ
-	 VZE7xEw6gXrVvxK1BUHaS/TQMH0DxLSMF/v6L6r2Mu9l3akgg6jKubLT8VFV26Ns17hRS
-	 9CJqY2ML3/n619thyN1+xFnaXyqt1Zo94DS5SUK56H/G9Rp4X8BoHw5+/0h0nW1Th1w==
+	t=1793791668;
+	b=vNUPhC9PRfAWAc7y3LTL1mQ8VKwB1tlG3Vf4etRVcYOQfa2rLYIZ6aaPR0UdN6NiY5gv
+	 rb/kespx8+AuuNmn3FoMVbFK2fdGtSg0AstiE+jpScr8fy0AkATLk8Pb22Qs3RUrSFfwp
+	 FmQV+0PRZcNC8a/IF6174GsNdy48HmSN42syEqpFrBzHgU62rgx7z57V6Ph4EXsZ/X0GD
+	 PU9UCTSD4piiglDFDi2Lb/G5Uxlah+rfuoyW16343zW4ztVzQwx89+saaW14qYaYAfKtR
+	 dUhLZxJxic4R4XvZjtrFzszY6IZ+x65g1adUPXFclDhhrQBc0FHZhDMb4u47IcpMGJw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793790147;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:
-	 Content-Transfer-Encoding:In-Reply-To;
-	bh=7VuWj7zEvZVZovhUG6+Wn2YICpsQy6MzIBw8j4mBmkc=;
-	b=N4qKn91ISZrdL/8gBSneEnwYrLuIg0l1RSm8LTGiZp62AZ9I7DS0KUrFavNAE9z4Ofcj
-	 3cg/cEhWzarJ2sLvVVjKSgRrV1lmhgKInQb1AgpFBeYHkF8dmeoLpXOeOgosHOgi9Vid8
-	 Ko9VoMclYD6Fc7Hx74c5kq/5y6Dj+YUogPewXNWdUyf4Mhc80v1AvhO+gQ1hu32DzW1oX
-	 dM8YcAOv8i0aCVlcE6HupxFSeIC5ijQR9iMxrdDIrZHt6YYmyVO//hzLHI6hU44ZS4kt7
-	 IAHPZm5n9A4mILIdx9K22ZEN5O1Mf5qw3VY2p4aJgF7IaECApMp1DnrcdMU1eLBG+9w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793791668;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
+	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
+	bh=pyY2wj3cJVqfa/dTdmvd0ISos1ijTzTPDWm7P9keHwc=;
+	b=cHTYocbCo07xC554SN+OfUz3a6G/RgT1nInaWivvGNy0FfYkLJAzRg/A1b/90HEOkMVZ
+	 JAWaLApv96uapsMnPfs3vjyyLpVuxqNkO1EGQPJLv249UrXqG0tIhD41zhWTRUCeX09Rx
+	 RGLv3h4+ydABf2k6jCngdutg22SqjSo9caMwlD5TrgQgJJ1xff9iVxHFpsOQHDKF63r00
+	 ljg6UXoWJXzUNH4SnWYhs2qyvQOn6NrrbbPy1VTvtJ8220ORvw6lAFFbBEbN2o0Z4oAWG
+	 bf8LoABpBwko1VIA+yrZZMaIh57xxKjT7hAmbZ9vfyQ6gYYl9pFN60LhkK4YOtzaneg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TYavcA3i;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=google.com;
+	spf=pass smtp.mailfrom=flex--stanleyjhu.bounces.google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=fXk1BHcc;
+	arc=none smtp.remote-ip=74.125.82.198
+Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 581ED606A335;
-	Wed,  4 Nov 2026 11:02:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC4FE606A32D
+	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 11:27:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DC4FE606A32D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--stanleyjhu.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TYavcA3i
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D778B1F00919;
-	Wed,  4 Nov 2026 11:02:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793790146;
-	bh=7VuWj7zEvZVZovhUG6+Wn2YICpsQy6MzIBw8j4mBmkc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=TYavcA3iWsNqIn2LSq2HAm/CowvFmf2BrmpRhdBUaFJu1pUOCNnlAR8n0xS2n/JMd
-	 pxm7pGu3WlBksxD8jLb8TcgR69x+mgMsM1QieFse5cQKNK0QWQCbVhmkNxkFcV3L/l
-	 OFJB1eg5Ri6Llp9lqbP+/FLgArUD7xM1Ue0tlvxoh011C5VUPWKPgQIEzXfH6dEhdt
-	 DwIbk2Jujduo9GEV8XkWgl52gzviiL8DMgrPjNnbJWYYuUs8Bylxi8WtTsKvAiwG9K
-	 NLkCpLES7XMD7/cLq2nbr/UZk7n9KJabkz6H5UYKlJxdBUGG/iGuhUB5mYow1URnWi
-	 dyjWrmmBcwoXA==
-Date: Wed, 4 Nov 2026 11:02:21 +0000
-From: Lee Jones <lee@kernel.org>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-	Ion Agorria <ion@agorria.com>,
-	=?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
-	Florian Krischer <florian.krischer@fkr.dev>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-input@vger.kernel.org, mfd@lists.linux.dev,
-	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v12 5/7] leds: Add driver for ASUS Transformer LEDs
-Message-ID: <20261104110221.GK792264@google.com>
-References: <20261019100406.103687-1-clamor95@gmail.com>
- <20261019100406.103687-6-clamor95@gmail.com>
- <179249575817.1833288.1089755405582445022@kernel.org>
- <CAPVz0n0=6Z7E9iSc84xL6Jt=Xi=a=qmSwVsT5g-LMZ+mENFkzg@mail.gmail.com>
- <20261104082839.GD792264@google.com>
- <CAPVz0n2aCy9Kx5kK1EZD3qxN=KCSf=cB7ZnP1SedrrJc13sh2g@mail.gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=fXk1BHcc
+Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-341eff9e381so1153975eec.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 03:27:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1793791667; x=1794396467; darn=vger.kernel.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=pyY2wj3cJVqfa/dTdmvd0ISos1ijTzTPDWm7P9keHwc=;
+        b=fXk1BHccVFgFL2XcIFK6TH7HehutMBNeWYP7scpQtF10DBbnkfjU9vEeP2Lyeb3JVf
+         aWgvXyVKWpfgm8PcYjhDbp/pWFpgUqmg0N64KdFw3ujsvWyKJgkd1aVc97gU/36coh6F
+         dO04GJ1Am/hsPTFUGv3yxntdeN/g+pASqWYCBkuclbq/rLyll8ckuhZuIIgsNWmFXTx7
+         30VPsrGWE95BTqmWa/vsSvEG+yhcpiQZOPzL0nWx6dK67jQ0aXbWZ4StHt0jIV87/RIN
+         45M7NgACwqrJfKeN2Eez6hvyh7s4zBqAW1jGlEfkLh69N9WTJEsrA+og0e5iGPAr2Au/
+         yxNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793791667; x=1794396467;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=pyY2wj3cJVqfa/dTdmvd0ISos1ijTzTPDWm7P9keHwc=;
+        b=upr9hUURL/kQ5qig46keCwEqA5DZQqaA9qDzEpA15j+Ea6xLvdCIymSVWq7BbiBlos
+         pmSPMUSMYNgjjChDcJbJhUfB4s8OcpZSs6WnY76Xh2kJhUWJZFwMgjqV/9nBi+K1EWcU
+         NhQCqBRR75plNjuHfASGrxpR9Ohf1mZwwSx4os4+Nft+N0umm5HUgilFRSdwxJuBGsRl
+         XyC635ZyOUmWx3n+0RlZYnLzEcLd0sGcS+05620JzOw2QeLGpbWCJkH3FbACn+jlAi2a
+         AeibL7e8WRCY+BF5016cURGOJ6r4LhAIpAbyjNc/1jmMxBf+fkzTZE/2/25BYFZC7oku
+         ljcQ==
+X-Forwarded-Encrypted: i=1; AKwUvBz+hVWy6CVcNaHES2ih96yMl2Qwa5q3dPiFyWGWi2Jhr2s9FpxMsKgHhFRaHL7y3uFLsUmpZN5Q9g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8VOvxNJUdts35EbN/JP6PHp7f54ZeufFw3FBGaKDOwEfxgabeZ
+	kueCHbefQkL/wPR3+J9kNj8ks1II05lemcaPtZiwYEyh5gGTEdY9258D3yG+KHKFxNjn2A/YSQ8
+	M8xHPIPybyidYjVeHI3t+vA==
+X-Received: from dybpl4.prod.google.com ([2002:a05:7301:4304:b0:369:dd6b:ac5c])
+ (user=stanleyjhu job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:693c:65d2:b0:369:1401:c5c2 with SMTP id 5a478bee46e88-36a423bf43fmr21671592eec.26.1793791666553;
+ Wed, 04 Nov 2026 03:27:46 -0800 (PST)
+Date: Wed,  4 Nov 2026 19:27:44 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,229 +75,115 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPVz0n2aCy9Kx5kK1EZD3qxN=KCSf=cB7ZnP1SedrrJc13sh2g@mail.gmail.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
+Message-ID: <20261104112744.1630864-1-stanleyjhu@google.com>
+Subject: [PATCH v2] block: Keep RPM_ACTIVE in blk_pre_runtime_resume() when
+ already active
+From: Stanley Jhu <stanleyjhu@google.com>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Bart Van Assche <bvanassche@acm.org>, Brian Norris <briannorris@chromium.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Praveen Talari <praveen.talari@oss.qualcomm.com>, 
+	Alan Stern <stern@rowland.harvard.edu>, linux-block@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
+	Stanley Jhu <stanleyjhu@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, 04 Nov 2026, Svyatoslav Ryhel wrote:
+Since commit eef1d74bf88f ("PM: runtime: Only set runtime_error on
+suspend callback failures"), a failed runtime resume leaves
+dev->power.runtime_error at 0 with runtime_status set to RPM_SUSPENDED,
+so later runtime resume requests run sdev_runtime_resume() again:
 
-> ср, 4 лист. 2026 р. о 10:28 Lee Jones <lee@kernel.org> пише:
-> >
-> > On Tue, 03 Nov 2026, Svyatoslav Ryhel wrote:
-> >
-> > > вт, 3 лист. 2026 р. о 16:03 Lee Jones <lee@kernel.org> пише:
-> > > >
-> > > > On Mon, 19 Oct 2026, Svyatoslav Ryhel wrote:
-> > > > > From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-> > > > >
-> > > > > ASUS Transformer tablets have a green and an amber LED on both the Pad
-> > > > > and the Dock. If both LEDs are enabled simultaneously, the emitted light
-> > > > > will be yellow.
-> > > > >
-> > > > > Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > > Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-> > > > > ---
-> > > > >  drivers/leds/Kconfig                    |  11 +++
-> > > > >  drivers/leds/Makefile                   |   1 +
-> > > > >  drivers/leds/leds-asus-transformer-ec.c | 125 ++++++++++++++++++++++++
-> > > > >  3 files changed, 137 insertions(+)
-> > > > >  create mode 100644 drivers/leds/leds-asus-transformer-ec.c
-> > > > >
-> > > > > diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> > > > > index 7ec2c8d785426..788e689fe875c 100644
-> > > > > --- a/drivers/leds/Kconfig
-> > > > > +++ b/drivers/leds/Kconfig
-> > > > > @@ -120,6 +120,17 @@ config LEDS_OSRAM_AMS_AS3668
-> > > > >         To compile this driver as a module, choose M here: the module
-> > > > >         will be called leds-as3668.
-> > > > >
-> > > > > +config LEDS_ASUS_TRANSFORMER_EC
-> > > > > +     tristate "LED Support for Asus Transformer charging LED"
-> > > > > +     depends on LEDS_CLASS
-> > > > > +     depends on MFD_ASUS_TRANSFORMER_EC
-> > > > > +     help
-> > > > > +       This option enables support for charging indicator on
-> > > > > +       Asus Transformer's Pad and its Dock.
-> > > > > +
-> > > > > +       To compile this driver as a module, choose M here: the module
-> > > > > +       will be called leds-asus-transformer-ec.
-> > > > > +
-> > > > >  config LEDS_AW200XX
-> > > > >       tristate "LED support for Awinic AW20036/AW20054/AW20072/AW20108"
-> > > > >       depends on LEDS_CLASS
-> > > > > diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-> > > > > index 4d4b089156e24..3da746279bb81 100644
-> > > > > --- a/drivers/leds/Makefile
-> > > > > +++ b/drivers/leds/Makefile
-> > > > > @@ -15,6 +15,7 @@ obj-$(CONFIG_LEDS_ADP5520)          += leds-adp5520.o
-> > > > >  obj-$(CONFIG_LEDS_AN30259A)          += leds-an30259a.o
-> > > > >  obj-$(CONFIG_LEDS_APU)                       += leds-apu.o
-> > > > >  obj-$(CONFIG_LEDS_ARIEL)             += leds-ariel.o
-> > > > > +obj-$(CONFIG_LEDS_ASUS_TRANSFORMER_EC)       += leds-asus-transformer-ec.o
-> > > > >  obj-$(CONFIG_LEDS_OSRAM_AMS_AS3668)  += leds-as3668.o
-> > > > >  obj-$(CONFIG_LEDS_AW200XX)           += leds-aw200xx.o
-> > > > >  obj-$(CONFIG_LEDS_AW2013)            += leds-aw2013.o
-> > > > > diff --git a/drivers/leds/leds-asus-transformer-ec.c b/drivers/leds/leds-asus-transformer-ec.c
-> > > > > new file mode 100644
-> > > > > index 0000000000000..1b129247ea6c6
-> > > > > --- /dev/null
-> > > > > +++ b/drivers/leds/leds-asus-transformer-ec.c
-> > > > > @@ -0,0 +1,125 @@
-> > > > > +// SPDX-License-Identifier: GPL-2.0-only
-> > > > > +
-> > > > > +#include <linux/err.h>
-> > > > > +#include <linux/leds.h>
-> > > > > +#include <linux/mfd/asus-transformer-ec.h>
-> > > > > +#include <linux/module.h>
-> > > > > +#include <linux/platform_device.h>
-> > > > > +#include <linux/slab.h>
-> > > > > +
-> > > > > +enum {
-> > > > > +     ASUSEC_LED_AMBER,
-> > > > > +     ASUSEC_LED_GREEN,
-> > > > > +     ASUSEC_LED_MAX
-> > > > > +};
-> > > > > +
-> > > > > +struct asus_ec_led_config {
-> > > > > +     const char *name;
-> > > > > +     unsigned int color;
-> > > > > +     u64 ctrl_bit;
-> > > > > +};
-> > > > > +
-> > > > > +struct asus_ec_led {
-> > > > > +     struct asus_ec_leds_data *ddata;
-> > > >
-> > > >
-> > > > Why do we need 'struct ' at all?
-> > > >
-> > > > If we put 'const struct asusec_core *ec;' directly into 'struct
-> > > > asus_ec_led', we can drop the outer wrapper struct and the back-pointer
-> > > > completely.
-> > > >
-> > >
-> > > You propose to allocate asus_ec_led for each led in a loop? I have not
-> > > seen this done by other leds. The asus_ec_leds_data is driver ddata,
-> > > asus_ec_led is each led individual structure.
-> >
-> > For your whole 2 LEDs, yes, I think that will be better.
-> >
-> > > > > +     struct led_classdev cdev;
-> > > > > +     u64 ctrl_bit;
-> > > > > +};
-> > > > > +
-> > > > > +struct asus_ec_leds_data {
-> > > > > +     const struct asusec_core *ec;
-> > > > > +     struct asus_ec_led leds[ASUSEC_LED_MAX];
-> > > > > +};
-> > > > > +
-> > > > > +static const struct asus_ec_led_config asus_ec_leds[] = {
-> > > > > +     [ASUSEC_LED_AMBER] = {
-> > > > > +             .name = "amber",
-> > > > > +             .color = LED_COLOR_ID_AMBER,
-> > > > > +             .ctrl_bit = ASUSEC_CTL_LED_AMBER,
-> > > > > +     },
-> > > > > +     [ASUSEC_LED_GREEN] = {
-> > > > > +             .name = "green",
-> > > > > +             .color = LED_COLOR_ID_GREEN,
-> > > > > +             .ctrl_bit = ASUSEC_CTL_LED_GREEN,
-> > > > > +     },
-> > > > > +};
-> > > > > +
-> > > > > +static enum led_brightness asus_ec_led_get_brightness(struct led_classdev *cdev)
-> > > > > +{
-> > > > > +     struct asus_ec_led *led = container_of(cdev, struct asus_ec_led, cdev);
-> > > > > +     const struct asusec_core *ec = led->ddata->ec;
-> > > > > +     u64 ctl;
-> > > > > +     int ret;
-> > > > > +
-> > > > > +     ret = asus_dockram_access_ctl(ec->dockram, &ctl, 0, 0);
-> > > >
-> > > > As requested on v6 and v8, why are we still using this bespoke accessor instead
-> > > > of Regmap?
-> > >
-> > > https://lore.kernel.org/lkml/CAPVz0n0imF_ESoGMJSrEX7NOnBShFj8wehDtQKXZV_DMcGqq=A@mail.gmail.com/
-> >
-> > Sorry, I've slept since then, and subsequently forgotten this
-> > conversation.  You can drop this request.
-> >
-> > > > > +     if (ret)
-> > > > > +             return LED_OFF;
-> > > > > +
-> > > > > +     return ctl & led->ctrl_bit ? LED_ON : LED_OFF;
-> > > > > +}
-> > > > > +
-> > > > > +static int asus_ec_led_set_brightness(struct led_classdev *cdev,
-> > > > > +                                   enum led_brightness brightness)
-> > > > > +{
-> > > > > +     struct asus_ec_led *led = container_of(cdev, struct asus_ec_led, cdev);
-> > > > > +     const struct asusec_core *ec = led->ddata->ec;
-> > > > > +
-> > > > > +     if (brightness)
-> > > > > +             return asus_dockram_access_ctl(ec->dockram, NULL,
-> > > > > +                                            led->ctrl_bit, led->ctrl_bit);
-> > > >
-> > > > Use 100-chars throughout to prevent early wrapping.
-> > > >
-> > > > > +     return asus_dockram_access_ctl(ec->dockram, NULL, led->ctrl_bit, 0);
-> > > > > +}
-> > > > > +
-> > > > > +static int asus_ec_led_probe(struct platform_device *pdev)
-> > > > > +{
-> > > > > +     const struct asusec_core *ec = dev_get_drvdata(pdev->dev.parent);
-> > > > > +     struct asus_ec_leds_data *ddata;
-> > > > > +     struct device *dev = &pdev->dev;
-> > > > > +     int ret;
-> > > > > +
-> > > > > +     ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
-> > > > > +     if (!ddata)
-> > > > > +             return -ENOMEM;
-> > > > > +
-> > > > > +     platform_set_drvdata(pdev, ddata);
-> > > >
-> > > > What consumes this?
-> > >
-> > > Seems to be an overlook, must have forgotten to remove it during 12
-> > > iterations over last 10 month
-> >
-> > No problem, it happens.
-> >
-> > > > > +     ddata->ec = ec;
-> > > > > +
-> > > > > +     for (int i = 0; i < ASUSEC_LED_MAX; i++) {
-> > > >
-> > > > `i` isn't just a random iterator here - maybe call it `led`?
-> > > >
-> > >
-> > > This is just a disposable iterator.
-> >
-> > It's a disposable iterator that is clearly a `led`.
-> >
-> > Thus my request for and improvement in the nomenclature remains valid.
-> >
-> > > v7 seem fine https://lore.kernel.org/lkml/20260702162425.GD2108533@google.com/
-> > > v9 as well https://lore.kernel.org/lkml/20260702162425.GD2108533@google.com/
-> >
-> > These are the same link.
-> >
-> 
-> Ooops, v7 https://lore.kernel.org/lkml/20260527144619.GA671544@google.com/
-> 
-> > > Yet again complains and nits
-> >
-> > That my job.  You're welcome.  =;-)
-> >
-> > Sometimes new things are found on re-review.
-> >
-> > Apologies for the disappointment.
-> >
-> 
-> I will incorporate all your requests, but please, may you apply/check
-> v13 a bit quicker. That would be awesome.
+1. A runtime suspend increments q->pm_only from 0 to 1 and sets
+   q->rpm_status to RPM_SUSPENDED.
+2. The first runtime resume fails in the driver callback, and
+   blk_post_runtime_resume() sets q->rpm_status to RPM_ACTIVE and calls
+   blk_clear_pm_only(), decrementing q->pm_only from 1 to 0 so recovery
+   commands can enter the queue (intended since
+   commit 6e1fcab00a23 ("scsi: block: pm: Always set request queue
+   runtime active in blk_post_runtime_resume()")).
+3. A retried runtime resume calls blk_pre_runtime_resume(), which
+   overwrites q->rpm_status from RPM_ACTIVE to RPM_RESUMING, so
+   blk_post_runtime_resume() sees old_status != RPM_ACTIVE and calls
+   blk_clear_pm_only() a second time without a matching
+   blk_set_pm_only().
+4. q->pm_only underflows from 0 to -1 (triggering WARN_ON_ONCE in
+   blk_clear_pm_only()), blocking non-PM requests in blk_queue_enter()
+   and __bio_queue_enter() while the device is RPM_ACTIVE, and the next
+   runtime suspend increments q->pm_only from -1 to 0, letting non-PM
+   requests dispatch while RPM_SUSPENDED. This hits the UFS device
+   well-known LUN by default and SCSI disks with
+   manage_runtime_start_stop enabled (ATA and FireWire sbp2 defaults).
 
-Sure.  =:-)
+Transition q->rpm_status to RPM_RESUMING in blk_pre_runtime_resume()
+only when it is RPM_SUSPENDED, and call blk_clear_pm_only() in
+blk_post_runtime_resume() only when old_status is RPM_RESUMING, pairing
+each clear with a completed runtime suspend.
 
+Tested on QEMU ARM64 UFS in SDB and MCQ modes by injecting
+runtime-resume START STOP UNIT failures on the UFS device well-known
+LUN, confirming zero pm_only underflows and balanced runtime PM cycles.
+
+Fixes: eef1d74bf88f ("PM: runtime: Only set runtime_error on suspend callback failures")
+Cc: stable@vger.kernel.org # v7.3+
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Stanley Jhu <stanleyjhu@google.com>
+---
+Differences from v1:
+- Move SUSPENDED -> RESUMING explicitly in blk_pre_runtime_resume() and
+  clear pm_only only for RPM_RESUMING in blk_post_runtime_resume()
+- Describe the QEMU UFS test coverage in the commit message
+- Link to v1: https://lore.kernel.org/r/20261029040001.2100001-1-stanleyjhu@google.com
+
+ block/blk-pm.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/block/blk-pm.c b/block/blk-pm.c
+index 8d3e052f91da..34cc7c5ca04e 100644
+--- a/block/blk-pm.c
++++ b/block/blk-pm.c
+@@ -142,7 +142,8 @@ EXPORT_SYMBOL(blk_post_runtime_suspend);
+  *
+  * Description:
+  *    Update the queue's runtime status to RESUMING in preparation for the
+- *    runtime resume of the device.
++ *    runtime resume of the device if the queue is runtime suspended, or keep
++ *    RPM_ACTIVE if a previous failed runtime resume already reactivated it.
+  *
+  *    This function should be called near the start of the device's
+  *    runtime_resume callback.
+@@ -153,7 +154,9 @@ void blk_pre_runtime_resume(struct request_queue *q)
+ 		return;
+ 
+ 	spin_lock_irq(&q->queue_lock);
+-	q->rpm_status = RPM_RESUMING;
++	/* Keep RPM_ACTIVE if a prior failed resume reactivated the queue. */
++	if (q->rpm_status == RPM_SUSPENDED)
++		q->rpm_status = RPM_RESUMING;
+ 	spin_unlock_irq(&q->queue_lock);
+ }
+ EXPORT_SYMBOL(blk_pre_runtime_resume);
+@@ -168,8 +171,8 @@ EXPORT_SYMBOL(blk_pre_runtime_resume);
+  *    driver or error handler will need to communicate with the device.
+  *
+  *    This function should be called near the end of the device's
+- *    runtime_resume callback to correct queue runtime PM status and re-enable
+- *    peeking requests from the queue.
++ *    runtime_resume callback to mark the queue runtime active and clear
++ *    pm_only if the queue was resuming.
+  */
+ void blk_post_runtime_resume(struct request_queue *q)
+ {
+@@ -185,7 +188,7 @@ void blk_post_runtime_resume(struct request_queue *q)
+ 	pm_request_autosuspend(q->dev);
+ 	spin_unlock_irq(&q->queue_lock);
+ 
+-	if (old_status != RPM_ACTIVE)
++	if (old_status == RPM_RESUMING)
+ 		blk_clear_pm_only(q);
+ }
+ EXPORT_SYMBOL(blk_post_runtime_resume);
 -- 
-Lee Jones
+2.56.0.385.gac671c819a-goog
+
