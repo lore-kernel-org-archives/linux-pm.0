@@ -1,55 +1,110 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793799856;
-	b=jn+rs+YEFXFSwNETdFfzki9OaoHWB14Y2rgfCAgrK86oygAoP/gb2Shi1PfZWOf78ofO
-	 a3I+ytKnqZWRpOoQYGZZZM6poeudFgewAUfNZ0y/8BOxEryo20kPpqRqcwKs8ol3i54Lk
-	 Qwqbf3X1Yi2DyOt1T8MsNBU7G1/1tWzRWwhpwir1kyB/Ll/zx36VzjtlUIZLL1AqsOxDp
-	 2hhyhivAz1xgznsDQdlsZDeEMIkI9X/AyBVTEcX54Gw2dHFxrI0rZsu+cc5vETBKo+2Zs
-	 gT3sSjWKC6FrgQYn3j97vaN/80Ac/hRxr6SglkmSTEOux3tZA0j04lAqTJsdRhOO2Gw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793799856;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=cOmIFwTPg4grUFjf5xJohI/b0Te3xOw9Vtme90eUUU0=;
-	b=IIEqKSc2RDJ2x5wq+xPVhCH6ooeZb+aauF8hqYw7fdel/+YJkW25910XCgCJY1gHgob2
-	 Z8EY8bj2nRdyaclrUGQCUcEhWjMlA6p21M6Irwa8dFFLwL1t3kQo/Mfm+HtbukmssoM2c
-	 NNHE/7A659Qagnf2VM0UdTQMfHyXEVzxh/G6E0smObJn5THSkux8OF1ziOegEHaAZSZOw
-	 38sx8ZsoVgLJvLmC5/U09Azu9U33PFQ1vtkWAPbUOG6OWDLySXMKDgkGqHo/dQJwQo90A
-	 UXxkJd/zQ5z4aVmQf2cx5V64PIyBkb+ucO83Su04kp4W7pzoMJ5yZFmHd1EMrOmFKtw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JWVUT4f+;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.66.71
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793800947;
+	b=VPbfQ2UE8uDPhWVd3TWA6Ocf/uxWGfYUpyqllRmPVyVTx7HZ3+F9riZxjj/s/S9fQyNJ
+	 Wlpq1ASH0WAv46KMH2lZJQSQESJ3ag2q0WMZkSQtt6wtd32VLVsXRlUH8tdHH6j2bIwDe
+	 mxCm85mcNPKx2zmhpVettvaLJ9Y7dGrLupTLemQttoucL1gPDgdgQ+ffNpVoP8CHYELxN
+	 71h2qEsyT6dwNy4giKyxDumbOVVIKrnKFX1g1QORK5sJJ/gzYgI1JIpXBUL7m4S0XhDgq
+	 IjhD4Gzrr9pkjv6/Cj9SSV+loyh2ruufW8lQeTLm/QsZekWK2JpaZSwaif88inRCGdg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793800947;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
+	 X-ClientProxiedBy:X-EOPAttributedMessage:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=5IH6dYVev4RYn7aCEz8B7Eh35JbiGfSg7f3KmIA1wP0=;
+	b=3jr21Hk/8M6JGn6TRXfymPTJbT/n1n0yALVfno4wTW5/MTuv58addDlMvrBCSn+nI5r3
+	 EJl8d/jy/kDJ/r92pJs6qtI6lkwa0WE57gYDQpJgTFB99xWWN5w1qjVhJRw8rum0gGn+2
+	 gz6MVN/XebKT81/pgbBLyFZbz61wZFg9JSk+wKz/j3bMoHax3RXwJKmkG7a02mLzM8ps4
+	 Teg5dtd4NpKTynGnqPRyU2Qhuryr/LbQgzkBLhRlHYOui9NGV/Vi0NuAJ4MUvEpdNx/35
+	 IKSUMfswjbhidoCvGJk5UjokzZtnibYKqx0XwWASw5Wk3Sl0dEyH9JNJ81R/7rx+P4A==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=foss.st.com;
+	spf=pass smtp.mailfrom=foss.st.com;
+	dkim=pass header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=iG7svQMA;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.66.71
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012071.outbound.protection.outlook.com [52.101.66.71])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 670AB606A328
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 13:44:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B89DB606A332;
+	Wed,  4 Nov 2026 14:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B89DB606A332
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foss.st.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=foss.st.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JWVUT4f+
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 357C91F00A1B
-	for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2026 13:44:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793799856;
-	bh=cOmIFwTPg4grUFjf5xJohI/b0Te3xOw9Vtme90eUUU0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=JWVUT4f+se+Y7fA7L3OjiENsaS44ZlEdSXx74NMgRX0M2y9uQn7XU6cNUf7nseyz5
-	 v3VRQZXRSE08/Vqd7vPDKH6iSms9LZclJGueRjHxry+3SfuDh87h/daN7S/wOyaxqR
-	 xcvexOhQSqNiM7O07PqqDjeIM5ZFdhvE0/MioF/sQ+rvDHlPI0XJfiOndXsKNLqaaa
-	 Afiae1LY2AgVrytxkiNyrhCOzXSncIecub8z7DtgPV/kdMDx0eiIQJ0fUIUOUeIcA8
-	 nSxjYNqCoyYuaf6u3cWH03sVLui//K+2hCJ2m4FrRykwtSVp9vxvVb8k29E4xB6kF3
-	 tLmy1csKx7yHg==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5bcb440d1cbso455833e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 05:44:16 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBwazImuXnaXdn2o9AM2zC2pNXl4CEpjFRs2sHKMqpiP+gEgbFsSWk+rKoEUfCqkMP67N1cG7E/8sA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+zi1MXTV9EvulGoN6Nz853jXVM5Zp7S7ZFpVyBdYsMeL130Df/
-	Bv+UAJg9tIPY89QQwuuBJDHI/YyLK9RUlUe0jlRywGgUUL2AA1SI6VWDtZgWO8nkUH9tCWtcOH1
-	VG3Wt/fwFOFOwlWWGTvGTVXD8oqE1o8I=
-X-Received: by 2002:a05:6512:158e:b0:5bf:ec95:41c7 with SMTP id
- 2adb3069b0e04-5bfec954566mr1655302e87.1.1793799854623; Wed, 04 Nov 2026
- 05:44:14 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=iG7svQMA
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=kdcS0nsqoYWbOX4gfrV04NzKu1kbpcps+7268lmodZpbDjk8314fML9T4sdUos/p3qEsRrStFoDXChMb1Ta4qKMvAN7YSg7iNTNzSo4FF657cAAEMIrbPp4oe/dptST5Wnfhw2ihC/wKQBZhRLcjjZQA07iNzMlILaedpD9m/ZEzNlwP+dqtPvMlczCXwcMLplhMO+caIgXAJye6H0Qf+UghlQ1uewGznSoehQbTmMcCnuMObJ6gdM1nCyCdO1zym5EZ2esnXXYhC7atLAwpKxdDolQH+LzGKVQfVR4wRai2vwoZdAKgqP1Zq38FO/Y2LnAS+Gq2IeGJ9RGG7fGUhA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=5IH6dYVev4RYn7aCEz8B7Eh35JbiGfSg7f3KmIA1wP0=;
+ b=rh140jh9MOf55RuDn8Fc+RML3pFFsaifpgX6CLXRx2T6hwoB046mK2zNr5kz5xlzBF/uPzeefjesIJMwrU5/MkYxOc6GjN29M4PevRcYy+LRepZNB+PPDzNF5rAx0mWQYkLZy7yTr4kHdX3H7sbZdJrVKvp382tnFbkNJytffuwktACqJqJhcVP1ontSYgScXiQTawKrDoYksY18eMQx8d78Xr6YxKPErdS3u++al7Ayg8B1r3uaF15UWAyN78IDEg2aBjIAYZtuE7ngUXfp9E/K+K8/RfSZnWXz9SoegsJ3OSAnYV19h23PyVqxluWM3+M/fbNAYV/ofmEjjPJ5NA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 164.130.1.60) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5IH6dYVev4RYn7aCEz8B7Eh35JbiGfSg7f3KmIA1wP0=;
+ b=iG7svQMANy1ortm1zHu3oknC3JzkJheC7rSU+TNZYsu/873EecwqTPkioAEyTCpSF+WFwVicRyK2Gq9tPipf2Z9mS409KJtH8QkkpzPozaXVB9v+AEpw42kr7wuCycegk29/Q7qD8dLq7kY5ZppGUtowVCuQJsht4W1fUjHkjcZbdhNVoLsuvZrXXm9Fax/97bgOerm2HHA1AfjS+cc2fkH/2KftFiSy+AilayZO4ztbDlSUNhLsV0m5A0mx7rjupocdVzqrtIBK6t86OIQJHkwFzsDmnaL1dWR39md3N0GO6BaEjfTDCRdLuLIGThKVE3iiiLDqmrexH+OVXRnixw==
+Received: from MI1P293CA0024.ITAP293.PROD.OUTLOOK.COM (2603:10a6:290:3::6) by
+ BESPR10MB992274.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:b10:10a::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.8; Wed, 4 Nov 2026
+ 14:02:24 +0000
+Received: from MI3PEPF0000848B.eurprd02.prod.outlook.com
+ (2603:10a6:290:3:cafe::51) by MI1P293CA0024.outlook.office365.com
+ (2603:10a6:290:3::6) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.592.10 via Frontend Transport; Wed, 4
+ Nov 2026 14:02:24 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=fail (sender IP
+ is 164.130.1.60) smtp.mailfrom=foss.st.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=foss.st.com;
+Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
+ designate 164.130.1.60 as permitted sender) receiver=protection.outlook.com;
+ client-ip=164.130.1.60; helo=smtpO365.st.com;
+Received: from smtpO365.st.com (164.130.1.60) by
+ MI3PEPF0000848B.mail.protection.outlook.com (10.167.240.138) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.592.5 via Frontend Transport; Wed, 4 Nov 2026 14:02:23 +0000
+Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpO365.st.com
+ (10.250.44.72) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 4 Nov
+ 2026 15:03:02 +0100
+Received: from localhost (10.48.87.100) by STKDAG1NODE2.st.com (10.75.128.133)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 4 Nov
+ 2026 15:02:17 +0100
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+To: Patrick Delaunay <patrick.delaunay@foss.st.com>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	"Alexandre Torgue" <alexandre.torgue@foss.st.com>, Ulf Hansson
+	<ulfh@kernel.org>
+CC: Linux STM32 <linux-stm32@st-md-mailman.stormreply.com>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH 0/7] arm64: dts: st: add STM32MP2 power domains
+Date: Wed, 4 Nov 2026 14:55:03 +0100
+Message-ID: <20261104135604.907283-1-patrick.delaunay@foss.st.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,200 +114,95 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <6065833.DvuYhMxLoT@rafael.j.wysocki> <1995295.tdWV9SEqCh@rafael.j.wysocki>
- <f6e8c9b9-3bda-4001-a08e-8484b58575ea@arm.com>
-In-Reply-To: <f6e8c9b9-3bda-4001-a08e-8484b58575ea@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 4 Nov 2026 14:44:02 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hQOjNP8tWfyKKV9UPUDSFWFsKVpcc_HZjpi8WHO6p_1Q@mail.gmail.com>
-X-Gm-Features: AclHuK9FAqaO9MDkMbRL-tAIwDQUkMs4UEQdRpRXb2V0SBjLYuFw7ingN06NQIE
-Message-ID: <CAJZ5v0hQOjNP8tWfyKKV9UPUDSFWFsKVpcc_HZjpi8WHO6p_1Q@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] cpufreq: Force passing target frequency to driver
- during resume
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, Doug Smythies <dsmythies@telus.net>, 
-	Zak <zakbrightonknight@gmail.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	Mario Limonciello <superm1@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
+ (10.75.128.133)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MI3PEPF0000848B:EE_|BESPR10MB992274:EE_
+X-MS-Office365-Filtering-Correlation-Id: fc0d658a-0e0f-4143-b110-08df3a7c404a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|23010399003|7416014|376014|82310400026|36860700016|261022075727099003|261022105027099003|11063799006|56012099006|261021123027099003|261009223027099003|261028144727099003|261026140227099003|261021121427099003|261026121527099003|261102123227099003|10067099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	gvzrh6nfqJnO4+wplDXV6b5sF6hwpArmYp/InKDtOz/72iSMrJ0+6rW6FokAsim9f15gQTRfP+P9H6YURbJmMPizfm+2iq5ACmUPTTv5vBnfmdJsofgVCMKijpndYyb8tbnzRBSUkcZhOl3vXhLS3R5q0qKzVpmzUJDJPDnFNEE/Ph0Oaz1N2iyaEkp5RCo3v8fP2aoKw2XPAXARO8X9S/INjVA9Wugx27au5wdd4olwAWLQM4YMz9RLEqAPG6oBQgHqcLWq24qhXO4jMxjik7Vy+3E0N3410on+9aK4wHH3nkHObAFeZSG6LAf2Ibr3M9Iz3Q4EAZ39GNzCZ1+q+9WztA0+U0kW/RtknDIML6bPQueLNcExsWlFFwfmTy/zfw/TM+08vbvFyTMaC5x7iJ1ns5A9rqa+XVWSOHGGy33UcrZmg9DiqJfuGZWKjoftUeernyko09rhsyIbHymVXN0tEAtyn9HH0uX2tPFFbwhZQQEDe3eA/BC1qHU5gdeaxgVyAorvjCxlwJosz3mkrjcvLvi2ks5Cp6L7mHQlnvkqSUH0Te+fyTI76Zjx9eKmu6xQgcx8BC1cBRoBpzixrqk7Zvx7/lvSvLgy6X2fLbYPrUmALGKBokkY8gRAxEs1eqfLVYm7jYOD9DdJ6aVzrrBEH9+huqrQODJy1EZnvOtI3whqHAG6H8mzstHhKtY6B62pDMB1EDjXXaHmLOPhmQ==
+X-Forefront-Antispam-Report:
+	CIP:164.130.1.60;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(7416014)(376014)(82310400026)(36860700016)(261022075727099003)(261022105027099003)(11063799006)(56012099006)(261021123027099003)(261009223027099003)(261028144727099003)(261026140227099003)(261021121427099003)(261026121527099003)(261102123227099003)(10067099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	jt/0Ihw35Pyf+mF3PpS0Z00KEGKQWEQ69yzB0eo7CFWEmmvKKqUhJQyB+y0BPabUupcx+3qFCPuQ8ZJrgN94hvgKU7SwQjmVadN+cyf1Vd9N+hE1NlBxFQnBd+O+XuqlhGzC68q53T4+1zbAOFM4mLFoJoxeaSb/M1K3rpgE07WRkbJ09UL6Tmw+tV7v3BMJjjvv20y2BPwqGBumlvcChEeNhWlhiIZVfHddK0P6jA3ll52Dr7pbfXzm5dTUIa5ZRLCcRbcm4Z4O2Fyq+iatNtsPcIhp/0vca2S3CtjI7JoDk2TiQ54NwxV2R3abn8qWMaibTCHXq+El3PFuw8ZiPlXilKRZgJ45gTh5eMMQLOAq4iyrHEJIVeLi6oAmF+9pk2sMX+cIfHQ18Aj6nxLuHJkcwQt5yPyhREM2/lrL7gnTcQfsbOOV3gHiB88mYUKR
+X-OriginatorOrg: foss.st.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Nov 2026 14:02:23.8494
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: fc0d658a-0e0f-4143-b110-08df3a7c404a
+X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.60];Helo=[smtpO365.st.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MI3PEPF0000848B.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BESPR10MB992274
 
-On Wed, Nov 4, 2026 at 12:56=E2=80=AFPM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 11/3/26 19:47, Rafael J. Wysocki wrote:
-> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> >
-> > The policy->cur value preserved across a system suspend-resume cycle
-> > may become stale in some cases and it may prevent the CPU performance
-> > scaling logic from being updated due to the target_freq =3D=3D policy->=
-cur
-> > check in __cpufreq_driver_target() [1].
-> >
-> > To address this, adjust the existing mechanism to force the invocation
-> > of the driver .target() callback in __cpufreq_driver_target() and make
-> > cpufreq_resume_policy() use it.
-> >
-> > This involves renaming update_limits in struct cpufreq_policy to
-> > force_target and moving the driver CPUFREQ_NEED_UPDATE_LIMITS flag chec=
-k
-> > from __cpufreq_driver_target() to cpufreq_set_policy(), where it is use=
-d
-> > as a condition for setting policy->force_target.
-> >
-> > In cpufreq_resume_policy(), policy->force_target is set for drivers tha=
-t
-> > implement the .target() callback, but don't implement the .get() one,
-> > which is the case when the driver callback needs to run if policy->cur
-> > becomes stale while suspended.
-> >
-> > Fixes: 2f0aea936360 ("cpufreq: suspend governors on system suspend/hibe=
-rnate")
-> > Link: https://lore.kernel.org/linux-pm/20261027143725.3763827-1-zakbrig=
-htonknight@gmail.com/ [1]
-> > Reported-by: Zak Brighton Knight <zakbrightonknight@gmail.com>
-> > Reported-by: Doug Smythies <dsmythies@telus.net>
-> > Cc: All applicable <stable@vger.kernel.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >
-> > v1 -> v2:
-> >    * Always clear policy->force_target if set in __cpufreq_driver_targe=
-t()
-> >      to avoid forcing the driver callback next time unnecessarily (Sash=
-iko)
-> >
-> >    * Replace an outdated comment in __cpufreq_driver_target()
-> >
-> >    * Set policy->force_target only if .target() is present and .get() i=
-s not
-> >      present because that is the only case in which it may matter
-> >
-> >    * Update changelog
-> >
-> > ---
-> >  drivers/cpufreq/cpufreq.c |   33 +++++++++++++++++++++------------
-> >  include/linux/cpufreq.h   |    4 ++--
-> >  2 files changed, 23 insertions(+), 14 deletions(-)
-> >
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -2023,6 +2023,15 @@ static void cpufreq_resume_policy(struct
-> >       if (!start)
-> >               return;
-> >
-> > +     /*
-> > +      * Force executing the driver .target() callback, if present, in =
-the
-> > +      * next invocation of __cpufreq_driver_target() in case policy->c=
-ur has
-> > +      * become stale while suspended, but do it only for drivers witho=
-ut a
-> > +      * .get() callback for which cpufreq_verify_current_freq() is a N=
-OP.
-> > +      */
-> > +     if (cpufreq_driver->target && !cpufreq_driver->get)
-> > +             policy->force_target =3D true;
-> > +
-> >       if (cpufreq_start_governor(policy))
-> >               pr_err("%s: Failed to start governor for CPU%u's policy\n=
-",
-> >                      __func__, policy->cpu);
-> > @@ -2400,17 +2409,14 @@ int __cpufreq_driver_target(struct cpufr
-> >               policy->cpu, policy->cur, target_freq, old_target_freq, r=
-elation);
-> >
-> >       /*
-> > -      * This might look like a redundant call as we are checking it ag=
-ain
-> > -      * after finding index. But it is left intentionally for cases wh=
-ere
-> > -      * exactly same freq is called again and so we can save on few fu=
-nction
-> > -      * calls.
-> > +      * Unless invoking the target callback is forced, skip the update=
- if the
-> > +      * frequency is not really changing.
-> >        */
-> > -     if (target_freq =3D=3D policy->cur) {
-> > -             if (!(cpufreq_driver->flags & CPUFREQ_NEED_UPDATE_LIMITS)=
- ||
-> > -                 !policy->update_limits)
-> > -                     return 0;
-> > -
-> > -             policy->update_limits =3D false;
-> > +     if (policy->force_target) {
-> > +             /* Avoid forcing the driver callback unnecessarily next t=
-ime. */
-> > +             policy->force_target =3D false;
-> > +     } else if (target_freq =3D=3D policy->cur) {
-> > +             return 0;
-> >  [snip]
->
-> This is too early though? Should be something like:
 
-I don't think so.
+Hello,
 
-If the driver has a problem, there is not much the core can do about it.
+This series adds support for the D1 power domain used by the STM32MP2
+families.
 
-Do you have any specific drivers in mind here?
+The new power-domain driver uses runtime PM and the clock framework to
+keep the Cortex-A35 cluster in Run1 for devices that require it, while
+S2Idle wake-up is handled through EXTI1 and retention PSCI power domain
+(RET_PD).
 
-> ---->8-----
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 5f0ddb8823cb..66bc53f13eef 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2398,6 +2398,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *=
-policy,
->                             unsigned int relation)
->  {
->         unsigned int old_target_freq =3D target_freq;
-> +       int ret;
->
->         if (cpufreq_disabled())
->                 return -ENODEV;
-> @@ -2412,12 +2413,8 @@ int __cpufreq_driver_target(struct cpufreq_policy =
-*policy,
->          * Unless invoking the target callback is forced, skip the update=
- if the
->          * frequency is not really changing.
->          */
-> -       if (policy->force_target) {
-> -               /* Avoid forcing the driver callback unnecessarily next t=
-ime. */
-> -               policy->force_target =3D false;
-> -       } else if (target_freq =3D=3D policy->cur) {
-> +       if (!policy->force_target && target_freq =3D=3D policy->cur)
->                 return 0;
-> -       }
->
->         if (cpufreq_driver->target) {
->                 /*
-> @@ -2427,13 +2424,18 @@ int __cpufreq_driver_target(struct cpufreq_policy=
- *policy,
->                 if (!policy->efficiencies_available)
->                         relation &=3D ~CPUFREQ_RELATION_E;
->
-> -               return cpufreq_driver->target(policy, target_freq, relati=
-on);
-> +               ret =3D cpufreq_driver->target(policy, target_freq, relat=
-ion);
-> +       } else if (cpufreq_driver->target_index) {
-> +               ret =3D __target_index(policy, policy->cached_resolved_id=
-x);
-> +       } else {
-> +               return -EINVAL;
->         }
->
-> -       if (!cpufreq_driver->target_index)
-> -               return -EINVAL;
-> +       /* Failed updates still need to be passed to the driver next time=
-. */
-> +       if (!ret)
-> +               policy->force_target =3D false;
->
-> -       return __target_index(policy, policy->cached_resolved_idx);
-> +       return ret;
->
->
+The power sub-domain D1 without GENPD_FLAG_ACTIVE_WAKEUP is required
+because PSCI domains manage the wake-up path since the commit
+bfd5859709ee ("cpuidle: psci: Activate GENPD_FLAG_ACTIVE_WAKEUP with
+OSI").
+
+This patch is a preliminary step to support PSCI OSI in STM32MP2
+platform and the same power domain will be used also in STM32MP1
+series.
+
+The first 3 patches introduce the new power domain drivers.
+
+The next patches add this power domain in device tree for each STM32MP2
+SoCs: STM32MP25, STM32MP23 and STM32MP21.
+
+Regards,
+Patrick
+
+
+Patrick Delaunay (7):
+  dt-bindings: power: st: add STM32MP PM domain binding
+  pmdomain: st: add STM32MP power domain
+  MAINTAINERS: add entry for ST STM32 power domain driver
+  arm64: dts: st: add D1 domain for STM32MP25 family
+  arm64: dts: st: fix power-domain labels DT coding style in STM32MP25
+  arm64: dts: st: add D1 domain for STM32MP23 family
+  arm64: dts: st: add power domains for STM32MP21 family
+
+ .../bindings/power/st,stm32mp-pm-domain.yaml  |  46 +++++++
+ MAINTAINERS                                   |   7 +
+ arch/arm64/boot/dts/st/stm32mp211.dtsi        |  37 +++++
+ arch/arm64/boot/dts/st/stm32mp231.dtsi        |  54 +++++---
+ arch/arm64/boot/dts/st/stm32mp233.dtsi        |   1 +
+ arch/arm64/boot/dts/st/stm32mp235.dtsi        |   2 +-
+ arch/arm64/boot/dts/st/stm32mp251.dtsi        | 126 ++++++++++-------
+ arch/arm64/boot/dts/st/stm32mp253.dtsi        |   9 +-
+ arch/arm64/boot/dts/st/stm32mp255.dtsi        |   2 +-
+ drivers/pmdomain/st/Kconfig                   |  14 ++
+ drivers/pmdomain/st/Makefile                  |   1 +
+ drivers/pmdomain/st/stm32mp-pm-domain.c       | 128 ++++++++++++++++++
+ 12 files changed, 353 insertions(+), 74 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml
+ create mode 100644 drivers/pmdomain/st/stm32mp-pm-domain.c
+
+---
+base-commit: 7b3f3e772d5107c3a59b9f2278e9aeab227b26db
+branch: master
+
+-- 
+2.43.0
+
