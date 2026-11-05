@@ -1,112 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793867339;
-	b=PbS2zwYK9TgiFOVC244g5NZ0HTgAI7nAi/neYdzptICOXpQMKyJb2HC8Exc6Fd2X9nOR
-	 QpB/1wNkKa+dGsUdlf823QizHakxKxHP8tD7U0XvFpTE7vs2rNWTwzPIoqFB1yGms1iWC
-	 hrnIDydVXFn1svWNmoNvJCZ9hhkAOaIZYqQfduJDMp1RhLPwz0czk/MjJqyYGRkMtLR84
-	 y7TwP+/mBMB1SXTcYEIZTPUt2vSOxUliQ0olz6lX59kr58iU3s+Gp56FFHnMBpzXPGDh1
-	 JhDK5z1Yuvjr6tEgxL9lm7SVl2Eq1tASSLj35pCs9ZZlC+7Y48II4z1N4lc0a/LojOQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793867339;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
-	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=8S9aOO2EEWm9Iuhm8V4mTtS5AaGJ3AEgVMfCGPAWGsk=;
-	b=cN6ame5sijZOSjFJZa9Sk5gXESjzNXy1vWTyafBWH4+tJeGqxHI8WRqIq7p25J5Ykizt
-	 2MQnlC7raF3Ky9whd6IIdfjFwERXouIVyjHkicteddZt4sAGeI9jNVun0NoUPaOp6uPrO
-	 3CIuq9cR4NZgsl95BkYbqDSjtJ9PT4zbnkkApoXC63tXbls7mftpgIfs4FF+V2pCckv2e
-	 2gSrsIX1LQEJSIKhUc6sPPc1lMyOvPMN/Pc7eczPQsPkzS7Ut7rbbaTZz5dyGIg4fBp5C
-	 aPR5xW6d3ORfkoCnzfJPieeS8x0RlgE4A3C2m/F6VsLPuKm/t0mwdsDLz1yRQavnfSw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Pm9BRPCQ;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VQwlpjw9;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.52.63
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793867682;
+	b=magWc4RTQ1U1RBro5Bvsqko393vDfd1t718yGdsXjk7uTqIt78vonse62Y6014j89mP/
+	 1znVDYiSEcc0ThoAre0yL2Kj7J4KF1h2za7dBqmgcew0rUVyR//BlpoCuZoDAHCRZsxqb
+	 JzkcB4dCm1lECa3Ab/tVgQ4oI/1O6MFOkcfO1r6N3OsUZ8dzGrFVuZkymVenzz/VM14/F
+	 0dt7jzYpy8AkdOpBGw3ZOC56nSecTmvn97SARjt2d18MAIAYB+El+BdaRrnkRc2KuC07Z
+	 Ww5T0cB/Z7qbrf4xfxFlwziJSKe67DdHdccfgvKHiCZgWMIdfZoC9q9WBLad7CyWMGA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793867682;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:CC:
+	 References:Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-EOPAttributedMessage:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=LpdruonP+IIU8qNNX8B+h/AfZa+v1QCw6qBbN7dyYHw=;
+	b=29vJfO/wJs/7dytzNNYf4mXDad/BTDjE8UETiisdbK7tLycoFU5gBwidez5mvwmjkk3U
+	 ymtLYnU0pq2gJD1td+5FCrRPd+lH5e0UdwX+t1sNUUPM7zhcR7ZXyGzpcam0GS/34j4Av
+	 fyffNO4HG9LmGFv6G3b8gQ9CMmf6gx5N41Mw0DG/pu6ARMm8ao3t+e385TKjSe/c867Uf
+	 p9njZjv9c9rHGQNqydgLWueQZ0zwBlVHuCRfKbOOGr6/tMhOwSlhjCisRW2ZvSaCFNX3y
+	 S0KL9GO3v+i7hGCTVQAHRbVhIBVkJmx0dXl1rqRl1tXtgx1o4OwQnJix4qrpWqydi9w==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=amd.com;
+	spf=fail smtp.mailfrom=amd.com;
+	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=WhCnMXBX;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.52.63
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011063.outbound.protection.outlook.com [52.101.52.63])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DDEF606A333
-	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 08:28:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9DDEF606A333
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A91AA606A31B;
+	Thu,  5 Nov 2026 08:34:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A91AA606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Pm9BRPCQ;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VQwlpjw9
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A56TogY3223016
-	for <linux-pm@vger.kernel.org>; Thu, 5 Nov 2026 08:28:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	8S9aOO2EEWm9Iuhm8V4mTtS5AaGJ3AEgVMfCGPAWGsk=; b=Pm9BRPCQ1BYidALm
-	LITCB/+F1RLv+O51ejxPLuA8bqU8QjGIHkhJ82XUyUrdzLA5Ra6COGHB1S2E4QIg
-	SWEm6Hk+Gv/rULZ1fFZ3Ypmckd8fWA4qd3VUEgLfsWI2VDWO1UOq8xip85gRIhjA
-	v6LIwoONco+x8HzFTEtCgdekE/cl5bGtlkH788JGUQC2fqmwyPLEg3XdYMqKPB9S
-	zhS+H3UbAYqIbTugXEKI/Q6DPmOuZIklqVWULQakLZRhymnyNb2Qr3WbL65F0ZDV
-	JFsW5D6F/lfLtSyweD+gTQZl23GmD4CINf+UsRcoj5bqENP7mfIQ/NgXyts1cELH
-	7FJsQA==
-Received: from mail-vs1-f70.google.com (mail-vs1-f70.google.com [209.85.217.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hrj43h2x1-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2026 08:28:45 +0000 (GMT)
-Received: by mail-vs1-f70.google.com with SMTP id ada2fe7eead31-7cc10da5ad4so481572137.2
-        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2026 00:28:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793867325; x=1794472125; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=8S9aOO2EEWm9Iuhm8V4mTtS5AaGJ3AEgVMfCGPAWGsk=;
-        b=VQwlpjw9VjKkicY3K9BUWO0GqcprF1EDRK/30IKU9FZzzSZN/1ci1EExnUO7mU8HGL
-         v4M5XRHvTMQEMQMaGjNyw8r8KeauNYMnfQkFUG/a5gYZcfJ4JAyUrQ4WLx4PoCucI5+g
-         Mmu/l2znoMJgxNC5nmta+Vyjiy+RAZwmnHIouDXCSXrT0ESvWRwPmgp40Xoh2ofoJLIb
-         /Vka0f5iGAT9s1CvWvlDJtaVZj5NCmrdy2XYi+hiQRTd52koEgD5y+l+Axf55MycaZl0
-         DVtZrcBIb6Fg7WrWVs4Y88uGiZ50Rn3a6oOX8XOY8tTDUhdNY55z4TsUBOjFtjfmaruK
-         dWKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793867325; x=1794472125;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=8S9aOO2EEWm9Iuhm8V4mTtS5AaGJ3AEgVMfCGPAWGsk=;
-        b=eBOXvDudPccGg4MC0lClGm7k20Z0J+1ItYtMwAgWFwG/rtjFV3I1V1fISqFlW/0iVK
-         /7U77Y200xzBff+A2N2ZI/TnBpZB22ZqgsQVURsfzhmcJsUg8zS/GNRHXjL3n2EY5vzV
-         6eF4ZkyNTEXzlzeM6NTZzq/13zbLhtRHdvDf00R7qzuh5lRvYOX8OxWevt87PnHPUEKe
-         Qtcfxbbo1pUNIVxDMFqfygFavO8NGTBDiNEzU3Z0CVEbf23yRrfFUFo+BKy+obfMCMCW
-         4MlC2RM3X/jlqyNXrLMe0N3eIUGyYFsalk1von17rWb+2cx98A7uRB/KvmFM4fNF5Obd
-         S9UQ==
-X-Forwarded-Encrypted: i=1; AKwUvBz4b2cXLVTuY03RVitbaA3qhI6EygGOWrN9k38K70JeZMzjGsEV8xH8dZ5s8qyE7upDPV4lO2BQYg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8yD0q77booJ8n+o/7/EO4wChKRW74x2q1izJA9bgPW2Lh0kWwe
-	nt1GiogSubGnToNhXBdlAsXghd/a6MBHeD2NrUt0MaB9d6D0Skl0dMfXf2LxugEXwNrk8hqvSBg
-	8NNA7gQLHJrct33BAb/HKuSTix5xImwhyJ07OoY/iFurvHeIVSwfNrPC4nqW8BmL+Bc8i7Q==
-X-Gm-Gg: AYBFou2Nw6gWmWibsY3nR2up86MZwX6sBHxvefStwfL4TgaLy67qU5UHvFenr26ORZj
-	hlY5BdaoBcOjof9C8umLyjgsonWEWX5x8PRb6jA2Cda91iCFKbuFmjtNd+K3X4PBN9Wriv1JkC3
-	HD3ChjVp0N+g2z14iYLucsccmRLQ31CSZywpQiwxjqCqiVxiFBMzrFEQ3Yjm4Yd6PXiiLMvsa7q
-	r1yS0ruBPu8eBHNHX6cHDasNX6Kv0fnitrzW+fh1fSA12pPrl1ho0npHy0CvBWwyWZTVFSYJHPv
-	8j0k2pSp4cwqZNuQsPQKSCBgORNkQ8Ipua+lss7/IAEJyLOireHsme9gA6Cshl6A6SuwsfeXe1k
-	XxJ7xpL4aKyri6bTRlz3Y89GDX1ovVo+dekmqRUgTTBdDWKF4o9wPEy9LtCTF5PKYw/WeezgfOF
-	2sMg==
-X-Received: by 2002:a67:e106:0:b0:7d2:7f93:7708 with SMTP id ada2fe7eead31-7d27f9383d3mr1921424137.8.1793867324836;
-        Thu, 05 Nov 2026 00:28:44 -0800 (PST)
-X-Received: by 2002:a67:e106:0:b0:7d2:7f93:7708 with SMTP id ada2fe7eead31-7d27f9383d3mr1921407137.8.1793867324353;
-        Thu, 05 Nov 2026 00:28:44 -0800 (PST)
-Received: from brgl-qcom.local ([2a01:cb1d:dc:7e00:8916:7b9b:97a2:6c96])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48fed55249csm7406821f8f.35.2026.11.05.00.28.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 00:28:43 -0800 (PST)
-From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Date: Thu, 05 Nov 2026 09:28:36 +0100
-Subject: [PATCH v2 2/2] power: sequencing: pcie-m2: use devm_mutex_init()
+	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=WhCnMXBX
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ImmzleKdxzZ+/isDkBuR7QSyJ4+r8oj0VuhPo2FIdKwM1iVVzo5c8Mh/5QJBK0EPj74dHH7SJWHpeCOFc98TgSq0TmEeFquourndKAcp3sjPtIlh0ZvhZu33OFhY6tXBLmqk4UdXTMmhI1IlHGyMG60AqC4N90i3rVRD6CHTMESDYv2tPdIrwxcbE9veMkEjXvZSaV8+/bgkbmYAX5Ufl7jVH0ekSXXQ3+gcKFtzEPZZ3UNcd2BH+H6nTceidgSnERJp+pRwFFpY4fuUgTzufw8XSUNxMacTv7Uz2ZCuvP0z3Km7iR/cSnEG9GwRnY9vmghgUaSsmoEM0CwHcBuKeA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LpdruonP+IIU8qNNX8B+h/AfZa+v1QCw6qBbN7dyYHw=;
+ b=LKKVLvEUMRDWQzDBvl3+NMFwBRx/RvFs8qAOVEQxOW8zsDkXzei4cz+GheT+sbgvbaVMHjPjM4hhV0jKHYsdyVweoyx+j8LMITFcVt75OmeckjDk5ZGTcsht7AoTcpZSGF47i2zJs42hwBWDwHi0LkXb6FESkopF4PcoHpwmLCknZD5urojJecsXNpZCRba2i9+QlPuO0XpTfSvzVxL3AG215dL88TGy1UqOhNY9WwAJ8es3pjm0yG8r94GVxAs7rXZvhCYbOJQzb22rG5R0hprwqM4pDOKIHS5Jb83xpaNiHL19hyFaPk+rst7VOGTSdOc/ycVnVumKPnMQlWBomg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=gmail.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LpdruonP+IIU8qNNX8B+h/AfZa+v1QCw6qBbN7dyYHw=;
+ b=WhCnMXBXyFrRPvlDSLyIBpx+XZvQ88QuOS7NRvBtjXML2SrZFrc/ctt7BA9v92rGF4tSO1xdmkRGoiWpcJJv8zsFGMRgqPGCziaxFc0AcrU97iF0ZG23dysi5z6lOx5etlOaSMBRGQmFuLSgzSfsJFGi7uCk3UxUTsmJbkhFsRg=
+Received: from DM6PR06CA0081.namprd06.prod.outlook.com (2603:10b6:5:336::14)
+ by DM4PR12MB7648.namprd12.prod.outlook.com (2603:10b6:8:104::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.12; Thu, 5 Nov
+ 2026 08:34:37 +0000
+Received: from CY8PEPF00000059.namprd21.prod.outlook.com
+ (2603:10b6:5:336:cafe::48) by DM6PR06CA0081.outlook.office365.com
+ (2603:10b6:5:336::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.592.10 via Frontend Transport; Thu, 5
+ Nov 2026 08:34:36 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ CY8PEPF00000059.mail.protection.outlook.com (10.167.247.22) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.615.2 via Frontend Transport; Thu, 5 Nov 2026 08:34:36 +0000
+Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.53; Thu, 5 Nov
+ 2026 02:34:36 -0600
+Received: from [10.136.35.83] (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.53 via Frontend
+ Transport; Thu, 5 Nov 2026 02:34:33 -0600
+Message-ID: <99366157-08b9-411f-b180-fa61bc5f5002@amd.com>
+Date: Thu, 5 Nov 2026 14:04:27 +0530
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,120 +101,137 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [REPORT] sched: ITMT + DELAY_DEQUEUE: woken task waits ~1 ms
+ behind another task on the preferred CPU while allowed CPUs are idle
+To: Francesco Nigro <nigro.fra@gmail.com>
+CC: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+	Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann
+	<dietmar.eggemann@arm.com>, Valentin Schneider <vschneid@redhat.com>, "Mike
+ Galbraith" <efault@gmx.de>, Mario Limonciello <mario.limonciello@amd.com>,
+	Huang Rui <ray.huang@amd.com>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>
+References: <20261103154603.1893325-1-nigro.fra@gmail.com>
+ <5af4860d-096a-4e9d-a3b3-0b8277924146@amd.com>
+ <20261105081245.81773-1-nigro.fra@gmail.com>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <20261105081245.81773-1-nigro.fra@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-pwrseq-pcie-m2-uaf-v2-2-3e1dd415af9a@oss.qualcomm.com>
-References: <20261105-pwrseq-pcie-m2-uaf-v2-0-3e1dd415af9a@oss.qualcomm.com>
-In-Reply-To: <20261105-pwrseq-pcie-m2-uaf-v2-0-3e1dd415af9a@oss.qualcomm.com>
-To: Manivannan Sadhasivam <mani@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>
-Cc: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1892;
- i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
- bh=VZh8aXZyr5sjhB5ZdfUSMMRl/sDHEV/BJMlTnMg/j+o=;
- b=kA0DAAoBBZ0uy/82hMMByyZiAGrsPjbIo3riAGok+LWsCI6ouC8rZbClyzAiUTPvBICS+BIxJ
- YkCMwQAAQoAHRYhBJHlEy3ltUYde6Jl/AWdLsv/NoTDBQJq7D42AAoJEAWdLsv/NoTDPwcP/3s5
- 41gXz0Ap6CofQJZghiKj9pkfEgS+Tu4Fpv01/qreaYxl9RnkIL/RHA/A528JlT/HJdumv86o+vq
- bfQckiVjjflswftkCBBZKLxBMUJeBb6yrb+GNxIkKmRpBB/RI44L8usDMLYwWxfpcylW0sfI2In
- iezZWx06H05otZCwm90D92UD4u8tqx+3Mh7hBQ89KR9Q8Z+xjZ/P6kcDnyUbkVYJXAuBTda6l7q
- irETCYuTqdnr9WcUQS0KZ3sHxpTvgOlQGhSP3zYVXOwl3/liUodMrNlJDhTxPTA92fnt4iRqZJ9
- ZBoIACPzFEQSmLlvJJg//WFlc/ZWaUUZRpwCxC1DbRAd1aHJSnPr0BNbhCtJ8J+zcLcqHbOzc7Y
- NLlWK0t/nkj+K3/jzlp95d740fgEgqwssbBYoznurQQ/CS769dfXpwlkv4G/lckm23IH6M53eOV
- hKreNaMprWrLbk0bg4vZgF9HhmE4wCoW1D0l47lyRHYx9Uc98jfWJQEVly5F/bSiSAjlrQtArhI
- BFJ33TDSn3t78DlxMJw3A/9G4qeDHrYmsd4FXPBybKjytPjM/zASQ3p94wVEr4jPNyf7gVhaw7D
- eucgsTxuS99axiCU3LM/nTDyxT82bqLTOGNDbbZK1I9tKtpmla9yWtL72bDzIIKxaAV6y1VPip/
- 39sOQ
-X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
- fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
-X-Proofpoint-ORIG-GUID: UBq2NH2sQ36RMfvnhdWm1AV4UWNWprQO
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDAzMyBTYWx0ZWRfX6zh1+5cZlD6k
- 4uH9a1qIYT4rg3TQ6t0Aeo8B90HeBGyoyPi4PqVcUe+5jh2Af2yeHHckp+1y55nslg4QsQq4h1r
- ibzpXMAnGurThIoEZfU8DfYg5Fm3CfVHFgXl3IYHG5Bpbsw/I/FOn+6o+nHmLMViSAKdq0XcGub
- EIh2Q8nJXMjAA5809FLlXQ3lGbM+qwCcjyoXlR73zTe5+hnurPTYIZz19UUZx5ar9yhOKxWJqjS
- bnQ5BfdaVDz9jCLp622cI+J/c+hy71Ifxh9ImSaqvI2uBDW32J8itvDyPIIDF8shjXAxuXrpCjV
- vPUoBOZLHC9VX49l54De2PE5mdJJB67clBDmgt0xiiN3sd5rgp96xGJwa1AA/Y3CD46qG22Nd/r
- /O7iBMRXEZPltW7dlqbEmLXMB0mvoK8fkYxnHb0vIvpHaqI66UKF8yOS1oWoCzfpK9fWAN0tXVk
- RXL2cbTdXm1OKxxcqmA==
-X-Proofpoint-GUID: UBq2NH2sQ36RMfvnhdWm1AV4UWNWprQO
-X-Authority-Analysis: v=2.4 cv=SZdi5fRu c=1 sm=1 tr=0 ts=6aec3e3d cx=c_pps
- a=N1BjEkVkxJi3uNfLdpvX3g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=EUspDBNiAAAA:8
- a=biZV0kq_lYyrW_oFkQgA:9 a=QEXdDO2ut3YA:10 a=crWF4MFLhNY0qMRaF8an:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDAzMyBTYWx0ZWRfX5FyrD3OSwggB
- urtOAZkrjingFPVJ3txX+cH/t0OkmPkwG4HE2UmOxfOInSQXbQYxgd4x1ZbEKLPEneJ0w7FWQ8i
- +9UE9t2ONsvzEMDpZjglhn7VmvA8NVw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-05_02,2026-11-04_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015 spamscore=0 adultscore=0 bulkscore=0
- suspectscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
- definitions=main-2611050033
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CY8PEPF00000059:EE_|DM4PR12MB7648:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8db08bed-f418-4338-f5c8-08df3b17a04b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|36860700016|376014|23010399003|1800799024|6133799003|10067099003|22082099003|18002099003|261102123227099003|13003099007|261009223027099003|261028144727099003|261022113327099003|261022105027099003|11063799006|4143699003|56012099006|261026121527099003|261026140227099003|261021121427099003|261021123027099003|261022075727099003;
+X-Microsoft-Antispam-Message-Info:
+	+1gqIZ/5eqtPf6CYIXYWGf4RSv9c1Y+VPXQHAFsPP++bNwF2YFebx1J9UXz8Rb6UIQkmaYjx/+0NWANZ7vSyB62XM0FdfkC0QDkKmoOzQWREY3EuW5f4/cY2PJe9aNexgjGXy/MIOmk42ujw8KcqbMlvvwLL/b3ULZmBwNDqD4h4wo1047koWRMlKuVopVFiVzZdZbauZdzZ+WxywP9f0BBFATdYKrNrb6rX/4ACTwRX8G2IvJlq+un9oys0G6fupr7WfUqmgpEO5uFSqolYGJexLtOk8lxMrUBPkIPNKMBt75A3cyRsNVlhlmEi+RZi7Z0aGnwGiCAOsfDGkUtdUK2TAhDoxCVyCHOfV0eENbguf7AewOZ4pFujXwmUBSuRa0J5BYNRvUB2lFYkgi+sTFzAQvLG2YPfiCgFH5nSOzK5Jj9O8X6hPIddJUZ3FyJ4uNQeq2rEL3nMiE748BNYatDIt4unNLxunfTJ+mvCZt9Rpk+GKzq2T1+7wbwL1aH6igiBPLQeyQdRFpyy7R8dWoGI+W1FwhkLnOvBz40mdTpEdFhnq4kbHCukv0fn0eHbBuxgcQcnGu3cGd7nzzVfGW+7d9hxyIKhEa3zo29O6n4jAUS65vfI3zizsgVQ6RkHruv82sXY9ctB8+nEwwClmhKueu2J7RukIG7H7sz9pNLJxeiae3JMnnPExLBzPvHDYwRql73rMnfiXARBegEXDg==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(376014)(23010399003)(1800799024)(6133799003)(10067099003)(22082099003)(18002099003)(261102123227099003)(13003099007)(261009223027099003)(261028144727099003)(261022113327099003)(261022105027099003)(11063799006)(4143699003)(56012099006)(261026121527099003)(261026140227099003)(261021121427099003)(261021123027099003)(261022075727099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	GEXw75chppsEbWg9fhPFdYlkBEqTm7uDE9YYITf3GDFSLGev4kaw6KQRuk4IR5l4oA6ELW/yWF92d++wHkRJr2ZOx73qfO7mUMEnKv+c0ARkJV+k9bBibuBXtVxxDS25Zk6OYzvl2m0ZgXwnQpyq/fvEwoRU5uKrf31U8DRW2EqOwiCn4HM5wviAFxTWxqDwICI5Hd6iIlQ03Dk64WmvQ8HAZU0y2T6RGhlB8t6vRqcVxywpIM4ARDryXp2peWe1+tLUFs3ACEGVXY2gMwKw/rx21FDHH0lc4OZ7lzU5qh+0E1nwpX5JMCEEKV3fOEgRpVzj1xrCBccDNF3BO6eUWFoHgliG1iioPLmwLufM5LU7/PfXYBPhMCLxZ+s2d42PUFozzvHKNR7xxE8rl+WXBM7gQpSGBIlRSTZfOUbD4afEcOpUKPLIrZgX5PAjAUIp
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Nov 2026 08:34:36.8624
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8db08bed-f418-4338-f5c8-08df3b17a04b
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CY8PEPF00000059.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB7648
 
-Shrink the probe() error path and remove() by switching to using the
-managed variant of mutex_init()
+Hello Francesco,
 
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
----
- drivers/power/sequencing/pwrseq-pcie-m2.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+On 11/5/2026 1:42 PM, Francesco Nigro wrote:
+> [You don't often get email from nigro.fra@gmail.com. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
+> 
+> On Thu, 2026-11-05 at 09:41 +0530, K Prateek Nayak wrote:
+>> Hello Francesco,
+> 
+> Hi Prateek,
+> 
+> thanks a lot for looking into this, and for the patch.
+> 
+> This is a corporate machine, so I can't promise I will be able to boot
+> a patched kernel on it, but I will try.
 
-diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index 60990760287fdd51c29ccf0e3b97a244669e4837..4f283af8b0147a3eeb322b777f5e52e7d1c3d753 100644
---- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-+++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -596,14 +596,17 @@ static int pwrseq_pcie_m2_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(ctx->pwrseq),
- 				     "Failed to register the power sequencer\n");
+No worries I'll try it on my end over the coming weekend.
  
--	mutex_init(&ctx->list_lock);
-+	ret = devm_mutex_init(dev, &ctx->list_lock);
-+	if (ret)
-+		return ret;
-+
- 	INIT_LIST_HEAD(&ctx->pci_devices);
- 	ctx->dev = dev;
- 
- 	/* Create serdev for available PCI devices (if required) */
- 	ret = pwrseq_pcie_m2_create_serdev(ctx);
- 	if (ret)
--		goto err_destroy_mutex;
-+		return ret;
+>> Since you say ITMT disabled actually solves this issue, I suspect there is a
+>> race between the idle balancer moving the delayed task to a preferred CPU vs
+>> a wakeup that also lands on the same CPU.
+> 
+> perf sched shows a race like that, but the task moved is the running
+> one, by active balance. One example (perf sched timehist, trimmed; ms):
+> 
+>     .654334  [6]  worker 482   awakened: migration/7
+>     .654337  [6]  worker 482   blocks
+
+I'm having a hard time understanding why asym_active_balance() would
+trigger before worker 482 blocks - also I'm assuming at this point
+482 is the only task on the CPU so it shouldn't get delayed since
+single task on CPU is always eligible.
+
+>     .654338  [7]  worker 481   preempted while running
+>     .654341  [7]  migration/7  migrated: worker 481 cpu 7 => 6
+>     .654341  [2]  waker        awakened: worker 482
+>     .655572  [6]  worker 482   ran 1.006 after 0.224 sch delay
+> 
+> Does your change cover the active balance path too?
+
+I think I was missing the other part of allowing a delayed task to
+migrate with the following diff:
+
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index b8c26a6ca82d..71dd82394006 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -11133,14 +11133,16 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
  
  	/*
- 	 * Register a notifier for creating protocol devices for
-@@ -611,14 +614,7 @@ static int pwrseq_pcie_m2_probe(struct platform_device *pdev)
+ 	 * We do not migrate tasks that are:
+-	 * 1) delayed dequeued unless we migrate load, or
++	 * 1) delayed dequeued unless we migrate load / migration to idle CPU, or
+ 	 * 2) target cfs_rq is in throttled hierarchy, or
+ 	 * 3) cannot be migrated to this CPU due to cpus_ptr, or
+ 	 * 4) running (obviously), or
+ 	 * 5) are cache-hot on their current CPU, or
+ 	 * 6) are blocked on mutexes (if SCHED_PROXY_EXEC is enabled)
  	 */
- 	ret = pwrseq_pcie_m2_register_notifier(ctx);
- 	if (ret)
--		goto err_remove_serdev;
--
--	return 0;
--
--err_remove_serdev:
--	pwrseq_pcie_m2_remove_serdev(ctx, NULL);
--err_destroy_mutex:
--	mutex_destroy(&ctx->list_lock);
-+		pwrseq_pcie_m2_remove_serdev(ctx, NULL);
+-	if ((p->se.sched_delayed) && (env->migration_type != migrate_load))
++	if ((p->se.sched_delayed) &&
++	    (!(env->flags & LBF_FIRST_MIGRATION) &&
++	     env->migration_type != migrate_load))
+ 		return 0;
  
- 	return ret;
- }
-@@ -629,7 +625,6 @@ static void pwrseq_pcie_m2_remove(struct platform_device *pdev)
- 
- 	bus_unregister_notifier(&pci_bus_type, &ctx->nb);
- 	pwrseq_pcie_m2_remove_serdev(ctx, NULL);
--	mutex_destroy(&ctx->list_lock);
- }
- 
- static const struct of_device_id pwrseq_pcie_m2_of_match[] = {
+ 	if (lb_throttled_hierarchy(p, env->dst_cpu))
+---
+
+This should allow for an idle CPU to see a delayed task and block it
+even if it is has not yet hit the "migrate_load" threshold but it
+still doesn't explain why the active balance gets triggered before
+blocking.
+
+
+>> So at this point, I would have expected B to have already been
+>> moved by a newidle / idle balance.
+> 
+> Not here: in 270 of 286 waits of 0.5 ms or more, neither worker left
+> CPU 6, and CPUs 4, 5 and 7 were idle for at least 98 % of the wait.
+> 
+> Trace summary and excerpt:
+> https://github.com/franz1981/itmt-delay-dequeue-repro/tree/827b6b2
+
+Thank you! Give me a wee bit more time to trace this path and I'll get
+back to you by next week. Thank you again for all the data.
 
 -- 
-2.47.3
+Thanks and Regards,
+Prateek
 
