@@ -1,74 +1,74 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793893772;
-	b=zCVjqjRkztpiUBR9J9Lc42y+HOjbhQOMtKTJrJYgWNe8M8dsYLmKzeGglRvSPY3Silw2
-	 mEHwHU1oyYJYsXiebJ2onkDmNYIU/XZ4HFHwS0tlFcbvClvS1OrHmUNmvEu9g1W+L0x26
-	 HMKFF/gwcGWiyQkkjrQp+hN3LGiKv09Nq1RGuF3Pmb4gv/DZFVVIoGaEc53EbvIqeE9aG
-	 EvKyVynHL8xmhXxUvb5N6dv2JvrPyV/lHSTTMktVKiYFnk1FuDy5fCIU0E04sxZku6x+O
-	 ULZrwcYzPI4D9hQ4hN9f+kPEbrqKvZT7WaeoMPtE78Fx4mDFWMUUDMDcA+mQzuuWYuw==
+	t=1793893773;
+	b=t0TPcLRx+naQSoYTewv7PIXur8/t4HlERsAJncokQlTO69GbBQfYDPCoC95st4tO46Z+
+	 82AaXUmQe+BzDDgPNGtkZtZUsOQ4sBSN5ccQkqUHlPUQ4GvSPuJio8BC7m63lMnvYtIlu
+	 IqYjAzK1RGSRsvzxabvmUk6Cl+r8OzWyjVGxLIO6fIzDSOhEjTGR7OjlvM541oC4zI2Ra
+	 YH5GG08VYRizbdtcR11nji2AqSJHUTqAWlI8sryDGyE3hbk1cBoSnrxRtww2IUhcFgLmL
+	 LzDOdE/Mbeor4XxNXYWIDppMxXwDjIwO0pbMdvgCzYOy6CWkQi6x5G3oA8OqZ2ByEgg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793893772;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793893773;
 	h=DMARC-Filter:Date:DKIM-Signature:DKIM-Signature:From:Sender:Reply-to:
 	 To:Subject:Cc:In-Reply-To:References:MIME-Version:Message-ID:Robot-ID:
 	 Robot-Unsubscribe:Precedence:Content-Type:Content-Transfer-Encoding;
-	bh=UwbaSl6CWOKQJqF9u3nY9lqR11TliAYhsL7rNvoMn1w=;
-	b=M8OqVRmoe5HLaWWZ4nBbshXnYisJNppeShfFgSjQKrzZyrV3boXxpJtKop9s5wT2HynD
-	 SHFvO1gf+cOPWRd6fXVbYvQcJ/yuxM8lakVlA9L5JhhsdIFKBFH+YbYApueVFq7Gv5C9S
-	 NLJfQY1ctv+6DYkQHmZQUNg/Gbdlinch4FMc9r9zzTY/bJtBj8CWOFDLnioOx3VQ1LyjZ
-	 yPc6FHWm7+DYfTsy3N8V/3FknawzOshTjRLHjhuvZ2+VPBh8G9Sv+vYUaL93K6Juzd30W
-	 Mot1r+bUNHn9ABJct9abzp3KFZclqtsXk48C4ejmLg2rdsOPYRJ+9tfXdjmv1WFI6Sg==
+	bh=B0xlsfBzzq53G9u6bldGuV7s36xo3a13EiwJE8NDYa8=;
+	b=AtUg7RPkdxP7lMUQ+D2ugyUq6Gx3UJ3Lgh740m6+NAg+wdkbaGRj/L/UWHrSajHRDLKr
+	 GFIbDRgmyLsrJ7YkPNf0FwIH5T5CJvtehV3WhkyODeFCMS685ThOgoWDnT2thDxo229wC
+	 ZeQhp7vmFsZsPKnx0tHPuVxYH1lLFEIVpW/L01fhy42mY0TDT2E15Oqavc50KZZwdSaoU
+	 SCFTXkxk97PZHuGjc/6xoRWLTsXYaAaDHA1hObWDkCppZD5AsHvqkJyBZnvGSWIJVnQWi
+	 TB3hxG3gOs1J8zXYR7Rfm+fneMndmQS0msbdx+eQ+QoC/WcJ3y/hBJmYi4fbcfjYT9A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linutronix.de;
 	spf=pass smtp.mailfrom=linutronix.de;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Ppe3q1UF;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vkK1Vs82;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HolMXL+9;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b="M/lfr2lc";
 	arc=none smtp.remote-ip=193.142.43.55
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B943760A5BC0
-	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 15:49:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B943760A5BC0
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54C6960A5BE0
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 15:49:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 54C6960A5BE0
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Ppe3q1UF;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vkK1Vs82
-Date: Thu, 05 Nov 2026 15:49:28 -0000
+	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HolMXL+9;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=M/lfr2lc
+Date: Thu, 05 Nov 2026 15:49:30 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1793893770;
+	s=2020; t=1793893771;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UwbaSl6CWOKQJqF9u3nY9lqR11TliAYhsL7rNvoMn1w=;
-	b=Ppe3q1UFIzIlKK11+BFaMVKP1XAuqGn7slf4T18EbWEI0KBL5l01rfdSrbGm1f2/hhHd+4
-	+l1XFeO17n5mKn5XueP3BLKNnauT8Drp81XY+j3Cp112noO38CZaSqSPKco0NS+m7K2Cd1
-	hLjif6gszEucYu2k5WbZ415JxHe7y27P0vPt872fF+qQacHUcR9c1yuM0H0KsYQzucG6Qz
-	h0saSYQLOfkCCy4irSxtLujS0AwriMAtQMEUIbm4BoSoQS589xMGhHYPZk0LkMLkupR1Iw
-	D0n/FNDCVjqrYt8UKdEWQtycdU7tZEOqfh1S45yYFbCNB0ec9iqhzZQGYR7SUA==
+	bh=B0xlsfBzzq53G9u6bldGuV7s36xo3a13EiwJE8NDYa8=;
+	b=HolMXL+9ZnroDQy7R994kFGXEmuU2GgzolxuTBuZiiEQtXs7RGgmz6pDCTLZBu6e3PPksk
+	k3pzFPf1cj1c95RMvSSo6QyvcI/5SZFkt8yqMfwHlCd4gGgrBy9ml7r6JsVHCMEDmAIfme
+	xI8lX3dQP5e+pMwnnu2PPXFLpduL4ufrm8SDlcxfEVmP5oPYZXBm9aqmjDwmpkgCtTv4gV
+	u5R+/+1idz/9L5TAMHT46gr9QBwqlh+3j43M7Gw0VvsZvrLkaL8tW3NGcXJMLMFk3Ofvuu
+	Nzein5qXcyK0+F1Zahefh5v6OqQdBt/nedtFaa3eIoGKiJkwG5JsAWFoAWC1rQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1793893770;
+	s=2020e; t=1793893772;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UwbaSl6CWOKQJqF9u3nY9lqR11TliAYhsL7rNvoMn1w=;
-	b=vkK1Vs82Ac2hvUGdyXjTWdBBtK9TUIMv1r8MPh5IG+E44ZQMkMKrNq377DgpdvaS81LgfI
-	PN/qipH13JaMZ4Cw==
+	bh=B0xlsfBzzq53G9u6bldGuV7s36xo3a13EiwJE8NDYa8=;
+	b=M/lfr2lcSu8WXEIS78+CEj7AgTFAhohQXUXD9f9hg/B+txDZSMmNochda6GXnr2MmdyXdg
+	9yG3gAoXG9lA8nBA==
 From: "thermal-bot for Tudor Ambarus" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [thermal: thermal/linux-next] thermal/drivers/samsung: acpm-tmu:
- Implement .change_mode() callback
-Cc: Tudor Ambarus <tudor.ambarus@linaro.org>,
+ Disable IRQ across system suspend/resume
+Cc: Sashiko <sashiko-bot@kernel.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
  Daniel Lezcano <daniel.lezcano@kernel.org>
-In-Reply-To: <20261026-acpm-tmu-fixes-v1-5-0637431b7268@linaro.org>
-References: <20261026-acpm-tmu-fixes-v1-5-0637431b7268@linaro.org>
+In-Reply-To: <20261026-acpm-tmu-fixes-v1-4-0637431b7268@linaro.org>
+References: <20261026-acpm-tmu-fixes-v1-4-0637431b7268@linaro.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,7 +78,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <179389376818.1009794.7017463131205959666.tip-bot2@tip-bot2>
+Message-ID: <179389377003.1009794.1793884789522136780.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -89,166 +89,90 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     09e928b13aaddbefc08aeca13b1a78bd8b0feb14
+Commit-ID:     e0e2dbdc45f208c1d14cf891175378e93dde5098
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//09e928b13aaddbefc08aeca13b1a78bd8b0feb14
+git//e0e2dbdc45f208c1d14cf891175378e93dde5098
 Author:        Tudor Ambarus <tudor.ambarus@linaro.org>
-AuthorDate:    Mon, 26 Oct 2026 16:01:22=20
+AuthorDate:    Mon, 26 Oct 2026 16:01:21=20
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Tue, 03 Nov 2026 19:51:50 +01:00
 
-thermal/drivers/samsung: acpm-tmu: Implement .change_mode() callback
+thermal/drivers/samsung: acpm-tmu: Disable IRQ across system suspend/resume
 
-Because acpm-tmu did not implement the .change_mode() callback and
-instead enabled the hardware sensor manually after registration, the
-hardware sensor state was out of sync with the thermal core:
+The PM core masks device IRQs in dpm_suspend_noirq() and unmasks them in
+dpm_resume_noirq(), leaving the TMU interrupt enabled after
+acpm_tmu_suspend() and before acpm_tmu_resume() while runtime PM is
+disabled and PCLK is gated:
 
-1. Disabling a thermal zone (e.g. via /sys/class/thermal/thermal_zone*/mode
-   or thermal_of_zone_unregister()) only set tz->mode to
-   THERMAL_DEVICE_DISABLED and stopped software polling, while leaving
-   sensor->enabled true and the ACPM TMU sensor active in hardware.
-   Consequently, crossing a trip threshold still fired the hardware IRQ
-   and ran acpm_tmu_thread_fn(), where thermal_zone_device_update()
-   returned early without updating the trip window. Direct sysfs and
-   hwmon temperature reads via thermal_zone_get_temp() also continued to
-   resume the device and query ACPM over IPC on a disabled zone.
-2. System suspend/resume paths in acpm_tmu_control() unconditionally
-   toggled all registered sensors without checking the thermal zone mode
-   or current hardware state. As a result, acpm_tmu_suspend() issued
-   redundant disable IPC calls for already-disabled zones,
-   acpm_tmu_resume() unconditionally re-enabled zones that had been
-   disabled via sysfs prior to suspend, and suspend error recovery sent
-   redundant enable IPC calls to sensors that had not yet been disabled.
-3. devm_thermal_of_zone_register() enables the zone and triggers an
-   initial thermal_zone_device_update() before returning. Because
-   sensor->enabled was still false during registration, the initial
-   acpm_tmu_get_temp() call failed with -EAGAIN and scheduled a retry,
-   requiring a manual sensor enable and a second
-   thermal_zone_device_update() call in acpm_tmu_probe().
+1. If acpm_tmu_thread_fn() runs in that window,
+   pm_runtime_resume_and_get() fails with -EACCES and returns IRQ_NONE
+   without clearing the level-high hardware interrupt, triggering an
+   unhandled IRQF_ONESHOT interrupt storm when the line is unmasked.
+2. If acpm_tmu_thread_fn() is already running when acpm_tmu_suspend()
+   executes, pm_runtime_force_suspend() ignores usage_count and gates
+   PCLK underneath MMIO INTPEND reads.
 
-Implement the .change_mode() callback to manage sensor hardware state
-transitions directly through the thermal core and record the requested
-zone mode in sensor->mode. Update acpm_tmu_control() to only toggle
-sensors whose zone mode is THERMAL_DEVICE_ENABLED and whose
-sensor->enabled state differs from the target state. Drop the redundant
-manual sensor enablement and thermal_zone_device_update() call from
-acpm_tmu_probe().
+Call disable_irq() at the start of acpm_tmu_suspend() to mask and
+synchronize the interrupt before tearing down sensors and runtime PM,
+and re-enable it with enable_irq() on acpm_tmu_suspend() rollback and
+before returning from acpm_tmu_resume().
 
 Fixes: 50a2c5d4062a ("thermal/drivers/samsung: Add Exynos ACPM TMU driver GS1=
 01")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-5-0637431b7268@lina=
+Link: https://sashiko.dev/#/patchset/20260603-acpm-tmu-v8-0-0f1810a356e6@lina=
+ro.org?part=3D2
+Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-4-0637431b7268@lina=
 ro.org
 ---
- drivers/thermal/samsung/acpm-tmu.c | 59 +++++++++++++++++++----------
- 1 file changed, 40 insertions(+), 19 deletions(-)
+ drivers/thermal/samsung/acpm-tmu.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acp=
 m-tmu.c
-index 55ee972..69793fc 100644
+index f490551..55ee972 100644
 --- a/drivers/thermal/samsung/acpm-tmu.c
 +++ b/drivers/thermal/samsung/acpm-tmu.c
-@@ -68,6 +68,7 @@ struct acpm_tmu_sensor {
- 	struct thermal_zone_device *tzd;
- 	struct acpm_tmu_priv *priv;
- 	struct mutex lock; /* protects sensor state */
-+	enum thermal_device_mode mode;
- 	bool enabled;
- };
+@@ -541,6 +541,8 @@ static int acpm_tmu_suspend(struct device *dev)
+ 	const struct acpm_tmu_ops *ops =3D &handle->ops->tmu;
+ 	int ret, restore_ret;
 =20
-@@ -188,9 +189,12 @@ static int acpm_tmu_control(struct acpm_tmu_priv *priv, =
-bool on)
- 		if (!sensor->tzd)
- 			continue;
++	disable_irq(priv->irq);
++
+ 	ret =3D acpm_tmu_control(priv, false);
+ 	if (ret)
+ 		goto err_restore_sensors;
+@@ -568,6 +570,8 @@ err_restore_sensors:
+ 		dev_err(dev, "Failed to re-enable TMU after suspend failure: %d\n",
+ 			restore_ret);
 =20
--		mutex_lock(&sensor->lock);
--		ret =3D acpm_tmu_op_tz_control(sensor, on);
--		mutex_unlock(&sensor->lock);
-+		scoped_guard(mutex, &sensor->lock) {
-+			ret =3D 0;
-+			if (sensor->mode =3D=3D THERMAL_DEVICE_ENABLED &&
-+			    sensor->enabled !=3D on)
-+				ret =3D acpm_tmu_op_tz_control(sensor, on);
-+		}
- 		if (ret && !err)
- 			err =3D ret;
- 	}
-@@ -313,7 +317,34 @@ static int acpm_tmu_set_trips(struct thermal_zone_device=
- *tz, int low, int high)
++	enable_irq(priv->irq);
++
  	return ret;
  }
 =20
-+static int acpm_tmu_change_mode(struct thermal_zone_device *tz,
-+				enum thermal_device_mode mode)
-+{
-+	struct acpm_tmu_sensor *sensor =3D thermal_zone_device_priv(tz);
-+	struct acpm_tmu_priv *priv =3D sensor->priv;
-+	struct device *dev =3D priv->dev;
-+	bool enable =3D (mode =3D=3D THERMAL_DEVICE_ENABLED);
-+	int ret;
+@@ -580,14 +584,19 @@ static int acpm_tmu_resume(struct device *dev)
+=20
+ 	ret =3D pm_runtime_force_resume(dev);
+ 	if (ret)
+-		return ret;
++		goto out_enable_irq;
+=20
+ 	/* APB clock not required for this specific msg */
+ 	ret =3D ops->resume(handle, priv->mbox_chan_id);
+ 	if (ret)
+-		return ret;
++		goto out_enable_irq;
 +
-+	ret =3D pm_runtime_resume_and_get(dev);
-+	if (ret)
-+		return ret;
-+
-+	scoped_guard(mutex, &sensor->lock) {
-+		ret =3D 0;
-+		if (sensor->enabled !=3D enable)
-+			ret =3D acpm_tmu_op_tz_control(sensor, enable);
-+		if (!ret)
-+			sensor->mode =3D mode;
-+	}
-+
-+	pm_runtime_put_autosuspend(dev);
++	ret =3D acpm_tmu_control(priv, true);
+=20
+-	return acpm_tmu_control(priv, true);
++out_enable_irq:
++	enable_irq(priv->irq);
 +
 +	return ret;
-+}
-+
- static const struct thermal_zone_device_ops acpm_tmu_sensor_ops =3D {
-+	.change_mode =3D acpm_tmu_change_mode,
- 	.get_temp =3D acpm_tmu_get_temp,
- 	.set_trips =3D acpm_tmu_set_trips,
- };
-@@ -463,17 +494,17 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ }
 =20
- 	for (i =3D 0; i < priv->num_sensors; i++) {
- 		struct acpm_tmu_sensor *sensor =3D &priv->sensors[i];
-+		struct thermal_zone_device *tzd;
-=20
- 		mutex_init(&sensor->lock);
- 		sensor->group =3D &data->sensor_groups[i];
- 		sensor->priv =3D priv;
-=20
--		sensor->tzd =3D devm_thermal_of_zone_register(dev, i, sensor,
--							    &acpm_tmu_sensor_ops);
--		if (IS_ERR(sensor->tzd)) {
--			ret =3D PTR_ERR(sensor->tzd);
-+		tzd =3D devm_thermal_of_zone_register(dev, i, sensor,
-+						    &acpm_tmu_sensor_ops);
-+		if (IS_ERR(tzd)) {
-+			ret =3D PTR_ERR(tzd);
- 			if (ret =3D=3D -ENODEV) {
--				sensor->tzd =3D NULL;
- 				dev_dbg(dev, "Sensor %d not used in DT, skipping\n", i);
- 				continue;
- 			}
-@@ -481,17 +512,7 @@ static int acpm_tmu_probe(struct platform_device *pdev)
- 			ret =3D dev_err_probe(dev, ret, "Failed to register sensor %d\n", i);
- 			goto err_rollback;
- 		}
--
--		mutex_lock(&sensor->lock);
--		ret =3D acpm_tmu_op_tz_control(sensor, true);
--		mutex_unlock(&sensor->lock);
--		if (ret) {
--			ret =3D dev_err_probe(dev, ret, "Failed to enable sensor %d\n", i);
--			goto err_rollback;
--		}
--
--		thermal_zone_device_update(sensor->tzd,
--					   THERMAL_EVENT_UNSPECIFIED);
-+		sensor->tzd =3D tzd;
-=20
- 		ret =3D devm_thermal_add_hwmon_sysfs(dev, sensor->tzd);
- 		if (ret)
+ static int acpm_tmu_runtime_suspend(struct device *dev)
