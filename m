@@ -1,55 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793874432;
-	b=bNvzKVOInMJcktSByXzc3Q/fdsoTo5uswPOlfoxnPegUNXaAohUCErN+PzlJmthSN1E4
-	 6epYJY75MfTMuZspOozMD6ChnBd2oioVh3w+Japivabs2pwc4WEq/lxAfYrc8JRK61JYB
-	 8RllZ3bFIEhFamdOHnhTis6q+RxgVIhc3ciulD0RvPPl6ZiKP8lm/ibwNTnEi8WvEqKFN
-	 8K9PGErXiuQMTXIcpnksf78MDRKlsl+oJXFKkVdqldbFSZOQ9ngORzrvZq/CQ0GAjHSmq
-	 +T784StO9GLCzvzSVkEefOjXYG8Yvfp1oYnb4jcra3m7fvzeM28jta3eD+QdkSmTvGQ==
+	t=1793875493;
+	b=VnooTsDlpA5jf33WvopyZaAGgI16So7KxgX9akqjjrpApjOAiCr3ymJtvKwUP3ueiqDm
+	 GSRS7in7nB8hDPUQDI4PYsEJtWrHf2V7U3GHagwodQMeV7bNzxxXQi34Ykkb/faWwiJLW
+	 3cXYSFK1dqECdUPJd1M2pvayh4N4b4dPH3ObMVv3ZNknNWgsHgxG/QlHGpyRb64qYSn0D
+	 o3pgpGsB75fxrBskxrVRAbeeBf0ERyyubX47a2dzdwEgxsJ5UJ5PAHYuNyaFFYr+5yl2Q
+	 jw+2O2qV/mm8C8nAzN8NNgZaV+Mv81/dIeCMe8YVdbZjlhBsfRlYv9FxP4G/yth0B3Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793874432;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=2mA51xaXmuBciRFmWNiBqx1RgwG77VmJ4pTU7nzmmbw=;
-	b=z129sMqr8X1W5RX6LAnm3RXtqTHX568tFrramXKIXeKWK62Oy9it19CQyCs9S3vkW6k0
-	 gUlDUGOu8N3eC879Jc9Ec5OBNx3pJ7y3Yv5+kn2DTmeXVyitTdkPmjl9mzPTP/fAa2deT
-	 6Q8tsHz4BPke8o7c+YaB89sD0oAlRrBDV4SFAdlN7uCSBDzQxyRRd9ZpS+Tk2M/1B/ChZ
-	 YH8qmHJOAXI3/GwqrIlLTf398rvGnhBNY5CdCrRuDpdqgLgMi0BnFRgvuBTZuX1UNH/2d
-	 QRRhqhc1Q6NvxTy/o3THrH3nWLTkwsU6VRV1n/XOJoIhegxyyBvmLFBEmMHKu/OJ34w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793875493;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=/361YtGqsPyOKwIWksN+u2NxEOEqDW3UHp20AyisReU=;
+	b=vrZptwRejWqIw7+Wbz7BXU0jIwDp5yr4hzIjEyC8eQg54IvPXG3Vu7n5CQBM0i3xAd1S
+	 eo9OuJUD/C9YVRq9bHQkkv0Uf95w0Go7JMYhDyw2Js98moH3TeqhQZUmi+4f++86jHk+6
+	 E6twz2u97DvMjXx6QABrrsR7mK/ZoQrBvDSJtgqGdx/mnxGKMqUyvHVeUg72hPyIFgrWY
+	 UyH9OeThpIYWug2GM8Q3tP54+Nye5hbterqqu2z1hwSqwYXUBmcgUbWby0rEVO+RaySO4
+	 BIXH7sw1DEf9qt0AKY0fq+O1lHtkoUoPGgm18259CDHKJvG8r7GgpPIo3CWQ4YS9Kzw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Iw3Dtt3A;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35ECE606A326
-	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 10:27:12 +0000 (UTC)
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=e0CgSm1Y;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7A0E5606A31B;
+	Thu,  5 Nov 2026 10:44:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7A0E5606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Iw3Dtt3A
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E85171F000C1;
-	Thu,  5 Nov 2026 10:27:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793874432;
-	bh=2mA51xaXmuBciRFmWNiBqx1RgwG77VmJ4pTU7nzmmbw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Iw3Dtt3AziW/7H40j7kbxpqS5h4NJ4dfBrACF8jX3MAsmJOuiecu+B0t09NomHTgo
-	 SE95bEqSTEbOLdpH63IHzcNTY4ZJxNzKYuwzF14QgvU7GT5s/47MELvofn4iL2XmNs
-	 DMLltLzRsPcONFoE3QpN2w3WM3sdm7UVZFE6eqkU75Iq8HtJ4S/uzyt/aY4tANILGL
-	 uuaWxvlu/rRakbVzXU2hCtbXcoAx3TffgEjG0lg7az4FxXd1btARDrQJp4m+PkgDdz
-	 7g15IeIf1BbbV7Vd/AvqFVXTq3e+GURlacxqy428I59Rcz2RWLGzCX0e+tL6Hb+PxZ
-	 7rsih9cCZY4BA==
-Date: Thu, 5 Nov 2026 10:27:09 +0000
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Kaiqian Zhu <zhukaiqian@xiaomi.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, rafael@kernel.org,
-	daniel.lezcano@kernel.org, christian.loehle@arm.com,
-	linux-pm@vger.kernel.org
-Subject: Re: [PING] Re: cpuidle: psci: Fix CPU PM domain state after failed
- runtime
-Message-ID: <20261105-logical-ruby-scorpion-29ba7b@sudeepholla>
-References: <20261021031709.42644-1-zhukaiqian@xiaomi.com>
- <20261105070658.18211-1-zhukaiqian@xiaomi.com>
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=e0CgSm1Y
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 44D93143D;
+	Thu,  5 Nov 2026 02:44:47 -0800 (PST)
+Received: from [10.57.10.82] (unknown [10.57.10.82])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3A2343F673;
+	Thu,  5 Nov 2026 02:44:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793875490; bh=IxjGppRiLkVgod0WaDW7XzKw99H8Qwfc7vGKAcV6TO8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=e0CgSm1Y7bxhpm4MerUzAFUUrD55l3h82sWS6NGbFBxG8DDhG3HDQ78PywiKVWGws
+	 4xaDwbQgOppazMyK7e8WBrTj8pACWEZ3VMWzPeYrKbWkOfN2alW663BHxhV3xM0Ff2
+	 lJdwJXgvf0NISzZpt9X6K60L1aLzU4D18LArDc3U=
+Message-ID: <a53ebde3-ca2b-46dc-b4bc-93379b05a1a8@arm.com>
+Date: Thu, 5 Nov 2026 10:45:20 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,21 +53,68 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261105070658.18211-1-zhukaiqian@xiaomi.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] dt-bindings: thermal: Use signed integers for
+ coefficients
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ "open list:THERMAL" <linux-pm@vger.kernel.org>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+References: <20261103214357.2700244-1-daniel.lezcano@oss.qualcomm.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <20261103214357.2700244-1-daniel.lezcano@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 05, 2026 at 03:06:31PM +0800, Kaiqian Zhu wrote:
+Hi Daniel,
 
-[...]
-
-> Thanks,
-> Kaiqian
-> #/******?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? This e-mail and its attachments contain confidential information from XIAOMI, which is intended only for the person or entity whose address is listed above. Any use of the information contained herein in any way (including, but not limited to, total or partial disclosure, reproduction, or dissemination) by persons other than the intended recipient(s) is prohibited. If you receive this e-mail in error, please notify the sender by phone or email immediately and delete it!******/#
+On 11/3/26 21:43, Daniel Lezcano wrote:
+> The coefficients property describes the coefficients of a linear
+> equation used to derive a thermal zone temperature. Both the slope
+> and the constant offset can be negative, and the thermal core stores
+> them as signed integers.
 > 
+> Existing Device Trees already rely on signed values. OMAP4460 uses
+> an offset of -9301, while OMAP5 uses offsets of -1791 and -2992.
+> Broadcom platforms also use negative slopes. Declaring the property
+> as uint32-array does not represent these values correctly.
 
-Deleted, get rid of these disclaimers to get review/feedback please.
+This looks like a good argument which was missed back then (that
+the negative values are possible).
 
--- 
+> 
+> Change the property type to int32-array so schema validation decodes
+> the cells as signed 32-bit integers, matching their intended meaning
+> and the thermal implementation. The cell width and binary encoding
+> remain unchanged, preserving compatibility with existing Device
+> Trees.
+> 
+> Fixes: 1202a442a31f ("dt-bindings: thermal: Add yaml bindings for thermal zones")
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+> ---
+>   Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> index 999ad40a20d5..72e419124f98 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> @@ -101,7 +101,7 @@ patternProperties:
+>             thermal zone.
+>   
+>         coefficients:
+> -        $ref: /schemas/types.yaml#/definitions/uint32-array
+> +        $ref: /schemas/types.yaml#/definitions/int32-array
+>           description:
+>             An array of integers containing the coefficients of a linear equation
+>             that binds all the sensors listed in this thermal zone.
+
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+
 Regards,
-Sudeep
+Lukasz
