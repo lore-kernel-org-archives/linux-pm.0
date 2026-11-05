@@ -1,58 +1,48 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=113.46.200.226
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=207.226.244.123
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793862279;
-	b=SrVdOLqIQgQjqkJWY9CXiSbfMig8GjJIOSJCE+L53Wy6b3ypQb/WsnMN3tJK6eSMnNvD
-	 PZnwqDekmVwabbKtf/g/HYvjpBi/ZknDxxKTow+Tq2PNFusXcgCnekBhgjSgRaALiTwq+
-	 WESlKFbDhY2Gy4kNh+unjx1kExzLOYYQcUE/OgwFJRRbC04D06HwROBZ+doaVoOJe5mdr
-	 LxgRHpSbbAJrDLK8ryn9au2ixDZpZDFqN0Oc1KE0wis9sn/XrsImkPB2YOObtBbp8WydA
-	 fGfQYXIH5CB1Z0EX/8ApsqSrzyfSsmPSVyX2tjHiwFSYfyv0vH5Z5IDJ6Hu6YLQYBEQ==
+	t=1793862482;
+	b=xjKsYHb/0Ecx8i7QP0G7RL9L5/uY6HooJvsl+flQX2aF87dyGEOFPxwMajrc7L8S4SBi
+	 cMgFSdUU7xDiFGlD33JX8cbEKdX8sTsV8HC5eMUSHE/G6Om+mNXgx8wRSi6VY2u+JvYCv
+	 hxvk3/Dh1vAlEPGxR+TrnU96YOpR53B9k3sCm/gak1zP5tqMrug4XbZc+vNv8SS+hn+6K
+	 GC5xXj70DDNKearWLBcW2gsYZo8DImx/EAtP0MspkdboTUj6+FflNM20h6J/icAwK92oH
+	 DH+IqBxsfzJtH8+Asa7y32YQufhW/BWpLhdMbUc/LX+matQvIgGU9CXKWxMNu22gkbA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793862279;
-	h=DMARC-Filter:dkim-signature:Received:Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Originating-IP:
+	a=rsa-sha256; c=relaxed/relaxed; t=1793862482;
+	h=DMARC-Filter:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:From:
+	 To:CC:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding:Content-Type:X-Originating-IP:
 	 X-ClientProxiedBy;
-	bh=JdMnDzdRM0/IH9TgjYdXutu31Ec/y4cSsVHoSh1h9ug=;
-	b=OPcLzpx1wQhTtYCIqP3Un5tonMpnBIu3E55ue83fbucepe16ARek5Zlqik5jJhZZ2fTM
-	 ynxC7vj/toaYib6Y4Rs9e9o4s9aNYsLXexaVPfVAdRNIk95fJTIyS1sdkRIkDfVTauq1b
-	 /i3DVW3wTbz/GgynMVpT8RDcB4TSLuU7k4KhlLqgxcnKT0MNmE37jXyquDn3A1qKlAUUJ
-	 5asiNq56VBcFaL41GebxWoalp91rF1r0hnTW9ejty9ZugdEkTPZizBhigyaXObo/eTjlN
-	 ypx4IlV/KTVM65kwK2u4gRqY9un02xOrHtOT7BlQEN3xzwqW3MpOV9zvl+cEfWS5VYA==
+	bh=qb91bGWABT9hIW+ineaegdCnCyxCvqX2gy9oqaZe+jg=;
+	b=EIGjLRxEjHwBnLhExAH9f+eQgvwtuB70DgPlX/9GvI5W4pj9LGOKLq53fPTgOxImTpUQ
+	 Rvuqxvo6U0aG7fY+hLEOh7xfwG8XTm6ScsRW2iwF3XtC+UK3B87+1D0HfeHVLgdqnZR6j
+	 IS2A7LuCrMZqBWSO3mBJ6KB7UFEMhB7uUfrxSeOhlWyc0hWxX/bUw7MthRJInOqXgtXsW
+	 1S7fvUkd738Rb6PYLX8w8fdC4h90t1PFSxJKDPB9uvbxfxUfYlUjxu/qyZ6yqvt4feLKu
+	 CzX+P76RnfmGsRKFr5R+oKfqSwzrVnWNHFDp3yih4uG++8fr19s7Ep9erMiMKCBVFtw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=huawei.com;
-	spf=pass smtp.mailfrom=huawei.com;
-	dkim=pass header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=A1KP31Ql;
-	arc=none smtp.remote-ip=113.46.200.226
-Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C5CC606A31B;
-	Thu,  5 Nov 2026 07:04:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3C5CC606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=A1KP31Ql
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=JdMnDzdRM0/IH9TgjYdXutu31Ec/y4cSsVHoSh1h9ug=;
-	b=A1KP31Ql6Wec4/VA+hU2jHrdRvNBCKGas9J2oBtTyvIAEeLqg149gbLWJp9jl8slSNMkahs2d
-	NJ9EWSrcgeQAQeKCyYwWbuUkaSWbU+LNnI+atFKmlHqlMicmk+/tKZFarHxwOZ84/75eB2L0Yr/
-	BuiGazHPOKmFvtmEp62Y8xs=
-Received: from mail.maildlp.com (unknown [172.19.163.163])
-	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4jKtbG55WBzKm6Y;
-	Thu,  5 Nov 2026 15:04:26 +0800 (CST)
-Received: from kwepemr200004.china.huawei.com (unknown [7.202.195.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id DFB644048B;
-	Thu,  5 Nov 2026 15:04:32 +0800 (CST)
-Received: from [10.67.121.62] (10.67.121.62) by kwepemr200004.china.huawei.com
- (7.202.195.241) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Thu, 5 Nov
- 2026 15:04:32 +0800
-Message-ID: <02dd34f0-c9fb-4dc5-bc1d-af83ae080724@huawei.com>
-Date: Thu, 5 Nov 2026 15:04:31 +0800
+	dmarc=pass header.from=xiaomi.com;
+	spf=pass smtp.mailfrom=xiaomi.com;
+	arc=none smtp.remote-ip=207.226.244.123
+Received: from outboundhk.mxmail.xiaomi.com (outboundhk.mxmail.xiaomi.com [207.226.244.123])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 55694606A31B
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 07:07:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 55694606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xiaomi.com
+X-CSE-ConnectionGUID: X5eX14tKR1G7WHtx2Y/MIg==
+X-CSE-MsgGUID: biHiAgL+SjuAKqfJztdKAA==
+X-IronPort-AV: E=Sophos;i="6.27,196,1786982400"; 
+   d="scan'208";a="194318370"
+From: Kaiqian Zhu <zhukaiqian@xiaomi.com>
+To: Ulf Hansson <ulfh@kernel.org>
+CC: Kaiqian Zhu <zhukaiqian@xiaomi.com>, <rafael@kernel.org>,
+	<sudeep.holla@kernel.org>, <daniel.lezcano@kernel.org>,
+	<christian.loehle@arm.com>, <linux-pm@vger.kernel.org>
+Subject: [PING] Re: cpuidle: psci: Fix CPU PM domain state after failed runtime
+Date: Thu, 5 Nov 2026 15:06:31 +0800
+Message-ID: <20261105070658.18211-1-zhukaiqian@xiaomi.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261021031709.42644-1-zhukaiqian@xiaomi.com>
+References: <20261021031709.42644-1-zhukaiqian@xiaomi.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -62,153 +52,35 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpufreq: CPPC: Enable boost by default when supported
-To: Christian Loehle <christian.loehle@arm.com>, <rafael@kernel.org>,
-	<viresh.kumar@linaro.org>
-CC: <linuxarm@huawei.com>, <zhanjie9@hisilicon.com>,
-	<prime.zeng@hisilicon.com>, <wanghuiqiang@huawei.com>, <xuwei5@huawei.com>,
-	<zhenglifeng1@huawei.com>, <yubowen8@huawei.com>, <pierre.gondois@arm.com>,
-	<sumitg@nvidia.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <mojunjun4@huawei.com>
-References: <20261022075901.3436021-1-zhangpengjie2@huawei.com>
- <d9fa8052-f562-4867-9e9f-1fd2a66fa794@arm.com>
- <940a9a70-71fb-491d-a1a7-1a7b4d6dc089@huawei.com>
- <f688c3fc-1375-4803-9775-9b4da78536c9@arm.com>
-From: Pengjie Zhang <zhangpengjie2@huawei.com>
-In-Reply-To: <f688c3fc-1375-4803-9775-9b4da78536c9@arm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- kwepemr200004.china.huawei.com (7.202.195.241)
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-ClientProxiedBy: BJ-MBX02.mioffice.cn (10.237.8.122) To YZ-MBX03.mioffice.cn
+ (10.237.88.123)
 
+Hi Ulf,
 
-On 11/5/2026 12:12 AM, Christian Loehle wrote:
-> On 11/4/26 07:43, Pengjie Zhang wrote:
->> On 10/29/2026 4:51 AM, Christian Loehle wrote:
->>> On 10/22/26 08:59, Pengjie Zhang wrote:
->>>> The CPPC driver leaves boost disabled by default when Highest Performance
->>>> exceeds Nominal Performance. Userspace must explicitly enable boost
->>>> before governors can use the full advertised performance range.
->>>>
->>>> Enable boost by default when at least one possible CPU reports support,
->>>> while users who prefer to stay within the sustained nominal limit can
->>>> still disable it via the boost knob without determining scaling_max_freq
->>>> for each policy.
->>>>
->>>> Check the performance capabilities before registering the driver so that
->>>> the cpufreq core enables boost for each policy that supports it.
->>>>
->>>> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
->>> Just to be clear I'm not blocking this per se, but continuing my comments:
->>>
->>> I just wonder if this is a configuration worth keeping.
->>> You mentioned your platforms have a BIOS to set nominal==highest or not.
->>> If we removed interpreting highest - nominal as boost entirely that
->>> would also make that BIOS setting obsolete. Userspace could still
->>> query nominal and restrict cpufreq to that if it wishes to do that,
->>> we could add that to cpupower for convenience (i.e. set all policies'
->>> max to nominal).
->>>
->>> With the changes that are coming with CPCv4 we would save ourselves
->>> some headache (like keeping track of boost status when ospm_nominal_perf
->>> is being written).
->>>
->>> The question is also how often the combination of "enable nominal < highest"
->>> and then explicitly toggling boost at runtime actually happens...
->>>
->>>> ---
->>>> Changes in v2:
->>>> - Drop "even" and clarify the commit message (Christian).
->>>> - Link to v1: https://lore.kernel.org/all/20261015015812.867988-1-zhangpengjie2@huawei.com/
->>>>
->>>>    drivers/cpufreq/cppc_cpufreq.c | 20 ++++++++++++++++++++
->>>>    1 file changed, 20 insertions(+)
->>>>
->>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->>>> index 80893844353c..0a4255a36f60 100644
->>>> --- a/drivers/cpufreq/cppc_cpufreq.c
->>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
->>>> @@ -1052,6 +1052,25 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
->>>>        .name = "cppc_cpufreq",
->>>>    };
->>>>    +static void __init cppc_cpufreq_default_boost_init(void)
->>>> +{
->>>> +    struct cppc_perf_caps caps;
->>>> +    bool enable = false;
->>>> +    int cpu;
->>>> +
->>>> +    for_each_possible_cpu(cpu) {
->>>> +        if (cppc_get_perf_caps(cpu, &caps))
->>>> +            continue;
->>>> +
->>>> +        if (caps.highest_perf > caps.nominal_perf) {
->>>> +            enable = true;
->>>> +            break;
->>>> +        }
->>>> +    }
->>>> +
->>>> +    cppc_cpufreq_driver.boost_enabled = enable;
->>> Any reason for the scan instead of just setting
->>> boost_enabled = true? Platforms without boost would
->>> also expose the toggle, but that's mostly in line with
->>> the other drivers? (also again the ospm_nominal_perf
->>> angle)
->> The reason for scanning here is to keep the initial sysfs state
->> consistent on platforms where highest_perf == nominal_perf on all CPUs
->> (i.e. policy->boost_supported is false everywhere). If we just set
->> boost_enabled = true unconditionally, the global cpufreq/boost file will
->> read 1 on boot while every policyX/boost reads 0 (and rejects writes
->> with -EINVAL).
-> FWIW, amd-pstate can already expose global boost=1 while all per-policy
-> boost knobs read 0 and writes to either knob then fail with -EINVAL AFAICS?
->
-> AFAIU the global sysfs knob represents permission to boost where
-> supported, rather than meaning boost is supported, too?
+Gentle ping for this genpd patch.
+Add Sudeep, Daniel and Christian as an extra reviewer.
+Please let me know if anything needs to be adjusted.
 
-Yes, Documentation/admin-guide/pm/cpufreq.rst also states that 1 in the
-global boost file "only means a permission to use the frequency boost
-mechanism (which still may never be used for other reasons)", while 0
-means it "is disabled and cannot be used at all".
-
-> PS:
-> Also another fun one I discovered...
-> power-orion-o6-01# cat /sys/devices/system/cpu/cpufreq/boost
-> 0
-> power-orion-o6-01# echo 1 > /sys/devices/system/cpu/cpufreq/boost
-> echo: write error: invalid argument
-> power-orion-o6-01# cat /sys/devices/system/cpu/cpufreq/boost
-> 0
-> power-orion-o6-01# echo 0 > /sys/devices/system/cpu/cpufreq/boost
-> echo: write error: invalid argument
-> power-orion-o6-01# cat /sys/devices/system/cpu/cpufreq/boost
-> 1
->
-> I'll go and fix that...
->
->> Also, since ospm_nominal_perf has a valid range of [lowest_perf,
->> nominal_perf], it actually pairs quite well with the boost knob: on
->> platforms with highest_perf > nominal_perf, ospm_nominal_perf will
->> always stay below highest_perf, and even on platforms with
->> nominal_perf == highest_perf, lowering ospm_nominal_perf could
->> dynamically define a nominal ceiling for when boost is disabled.
-> I don't think I agree with the latter. OSPM nominal has its own (platform)
-> semantics, but making boost=0 impose that value as a frequency ceiling
-> is just another way of setting scaling_max_freq.
-> I don't see why these two need to be coupled?
->
-> Also I think the fact that caps.highest_perf == caps.nominal_perf
-> but ospm_nominal_perf can change boost supported later is a reason
-> against the boot-time scan? (which would need to exclude
-> ospm_nominal_perf platforms?)
-
-Fair enough, ospm_nominal_perf doesn't need to be coupled with boost.
-
-Viresh, Rafael, any preference here? Should we keep the boot-time check
-in v2 (so global boost stays 0 on platforms without boost support), or
-drop the scan and just set .boost_enabled = true statically in
-cppc_cpufreq_driver?
+Link: https://lore.kernel.org/r/20261021031709.42644-1-zhukaiqian@xiaomi.co=
+m
 
 Thanks,
-Pengjie
-
+Kaiqian
+#/******=B1=BE=D3=CA=BC=FE=BC=B0=C6=E4=B8=BD=BC=FE=BA=AC=D3=D0=D0=A1=C3=D7=
+=B9=AB=CB=BE=B5=C4=B1=A3=C3=DC=D0=C5=CF=A2=A3=AC=BD=F6=CF=DE=D3=DA=B7=A2=CB=
+=CD=B8=F8=C9=CF=C3=E6=B5=D8=D6=B7=D6=D0=C1=D0=B3=F6=B5=C4=B8=F6=C8=CB=BB=F2=
+=C8=BA=D7=E9=A1=A3=BD=FB=D6=B9=C8=CE=BA=CE=C6=E4=CB=FB=C8=CB=D2=D4=C8=CE=BA=
+=CE=D0=CE=CA=BD=CA=B9=D3=C3=A3=A8=B0=FC=C0=A8=B5=AB=B2=BB=CF=DE=D3=DA=C8=AB=
+=B2=BF=BB=F2=B2=BF=B7=D6=B5=D8=D0=B9=C2=B6=A1=A2=B8=B4=D6=C6=A1=A2=BB=F2=C9=
+=A2=B7=A2=A3=A9=B1=BE=D3=CA=BC=FE=D6=D0=B5=C4=D0=C5=CF=A2=A1=A3=C8=E7=B9=FB=
+=C4=FA=B4=ED=CA=D5=C1=CB=B1=BE=D3=CA=BC=FE=A3=AC=C7=EB=C4=FA=C1=A2=BC=B4=B5=
+=E7=BB=B0=BB=F2=D3=CA=BC=FE=CD=A8=D6=AA=B7=A2=BC=FE=C8=CB=B2=A2=C9=BE=B3=FD=
+=B1=BE=D3=CA=BC=FE=A3=A1 This e-mail and its attachments contain confidenti=
+al information from XIAOMI, which is intended only for the person or entity=
+ whose address is listed above. Any use of the information contained herein=
+ in any way (including, but not limited to, total or partial disclosure, re=
+production, or dissemination) by persons other than the intended recipient(=
+s) is prohibited. If you receive this e-mail in error, please notify the se=
+nder by phone or email immediately and delete it!******/#
