@@ -1,74 +1,74 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793893763;
-	b=nilGt+ZFgns073EnQrWZrYc04CAWaocCNrHLKo16r931AIDC3QhZQi2JVo3EXnL1fCZu
-	 EyBx1OXqL4ZDYi2dyvBxSGacmi89klwGyZzi77YcuC9Be13NRUXOTH4jL1VkOzFa16OuT
-	 HeBuxQ0uyz6q71LZZM3cSEThkiTeD0qZ0X7HcA7188Wah1QRg0SUtRNs+O7NlUc9s5USE
-	 7sYcW9FsSoicjUBPYLFvkAGwTXspE3WMxDsZJQT2XN361p1NK39q4p56em9HVD2nAdFoa
-	 5iJQ17bMXP2GVgnn0mjjMUOIowHwG05+i159TfzYwH4qMW5x8P/leLo2nO/SU50Cm9A==
+	t=1793893770;
+	b=Fv+1d4JCsBm9LGfyHn069hB5N2VDKl4gclwL+3uJqd7ahRt4GND6ifJtdlCU1vPxX8YN
+	 DfhNK47iE+eQZFypyMKnx9qXng/Vhbx8yhJLqiO5yxswKgbVwebhMra8Su/Jfw6mnC5Ff
+	 jV93uxjWUAXoTooKKRHFay6esKH2O6pLps5x6nC+byhrTokjJ6mG7gTsr7qQlYvzzW7AU
+	 bs83qQKB9moN+jqTpqay8/+gIgutQLC7hSE3ZJM3npRDsRDSq1CyNso5zTQW17Pjf95Rc
+	 F/HYladJ7t/K2b00xbEhfMpkORlSZGkZ7VkvkhDxLryLMDXnipq+0xfZ+XP6alNBcPw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793893763;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793893770;
 	h=DMARC-Filter:Date:DKIM-Signature:DKIM-Signature:From:Sender:Reply-to:
 	 To:Subject:Cc:In-Reply-To:References:MIME-Version:Message-ID:Robot-ID:
 	 Robot-Unsubscribe:Precedence:Content-Type:Content-Transfer-Encoding;
-	bh=EypG+4Cc2jP6UiSvB7D9gOkF/vEE2iZ8kj3Os3j8HV0=;
-	b=hw8C9h8HEPhwJV47IyJPj9AteuaCuxEQB/LHqL3QWZ6e9HO63LIGkBSZr2naU4jQcRCK
-	 tDkoUq6RkT3R2OsE1ozBBlhQHYmG6dMNGnRRAwvGR9zdHjtdZDGKfduiPhHq+KuaWuc+6
-	 LkAFLrAQs7H9/Ylt+8ooLLHXGlJ3bvGW9N3JTHrAQd/1EI9dW6QKrmaZvZpyCliJzvzVN
-	 9x1wZF61CUQJmYjjWe6pNxR1mnkkfxiwgIHCIg6/D8bJDPByfBBxmY5AwLn/AuZL1rgk2
-	 AQqPZRDCZWQKXeFIh2BwOU8hkucJ00DgdEFuygNCeDgAfRZ7VztpBDzYOA20Dg+u78A==
+	bh=KBIWDwn0DY4hXd/ZQ26hdkPzxSwgJKY0rvjF4QEYw9s=;
+	b=nazhMt6Uau5E+c2P3gNDiljFDr3sE0PufmJEgiSqRHBmn80XD1WPThYvAKRVjV1OC9iD
+	 jZjnAxV1SwebTsv9tcQ8/q0g0HIUOSpeuMDVCkSuphAriKLoiQsNtMsyECXSPzy/FuZHi
+	 5Ep0Np7SWzA3e3cmYvPq6OrqNINDQtgZGzywgX0iR4zvwisvY5gKqRwW6da3K+eoe2w50
+	 jLe1bE/vLmuNAY64jZX0qzEhIbtNJCTVlWmUMKpTkgV55Fd/boZ4FywudYr9O2M8UeQB2
+	 DDsIOuHDJqapGjK+b1UB/3Rko/C2yqR2SCx/WSMukaZxfh6XXno5dWbgPBJviBnkTEw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linutronix.de;
 	spf=pass smtp.mailfrom=linutronix.de;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uDVwgHUK;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=P2J+Qfdp;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ehqzckyg;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=j37lCymf;
 	arc=none smtp.remote-ip=193.142.43.55
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B095608361D
-	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 15:49:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2B095608361D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C56C160A3819
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 15:49:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C56C160A3819
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uDVwgHUK;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=P2J+Qfdp
-Date: Thu, 05 Nov 2026 15:49:13 -0000
+	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ehqzckyg;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=j37lCymf
+Date: Thu, 05 Nov 2026 15:49:26 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1793893755;
+	s=2020; t=1793893768;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=EypG+4Cc2jP6UiSvB7D9gOkF/vEE2iZ8kj3Os3j8HV0=;
-	b=uDVwgHUKPia2V6dWQoNmPf6mB66829nmMX3OD9qrf8d5frI+GSx+y8mC6ZKeQDIgv655xt
-	RmCJGQrEs4ONenN3kHBjQUDX8E4GSaFTikI9L7Hvk/ZNcxCsWZ7W67SBeVyvsWWFptW98Y
-	1zNqdrUF+JBmiML1fFsUScIwI1bIE6UmrHZAtUXeHRokjZ1O0Yf0UY4uzLqA5wRWGWEkZN
-	CNpsFDTLe97YfxKrWRYs0bHhzR6SG81FREHqeb+bQHSDTuZ1xYPe+fYXTgtN/H+Lhvajfa
-	Ie6J/CZ0mXWw878ELO37nkZNqcTk+hNBNr6FY016I9o82MzhO3VuHgObynis6A==
+	bh=KBIWDwn0DY4hXd/ZQ26hdkPzxSwgJKY0rvjF4QEYw9s=;
+	b=ehqzckygFXow5rAVdBSC8HRLfQ74ONdUn/O6aku3LCjpxlq96PPZb62lCanduPzmxJi3Qr
+	9XxsHjXdlLKCHZqmmaqYFN5gY1Sksu1NFcfKPK3BI9F3bu/XEITXRQR3P/aQq+ilKUzBFA
+	1DQdVzCpv2mfu7eofunnv9JjnwOOvz3tI923hbNfR2WNGpV+oD2D3FpP1PjCFIv/nyRfmH
+	rintZMhtf0xS5O35ANr7WhXiKnyKIMKpJuUakvRjrKdM8QCJ4+36MzZGUjfk7y/g5vsapO
+	cxwdjTLAaKkF0p9hq5FHV2pgMHsxnQK8dVJQ4BcGOF1fJ5ZHAPoNM7dQ7ugJEQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1793893755;
+	s=2020e; t=1793893768;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=EypG+4Cc2jP6UiSvB7D9gOkF/vEE2iZ8kj3Os3j8HV0=;
-	b=P2J+QfdpaJp2HtZrw29tVcxIR0pxLL3jVVIRRJF9yTa32DOCXSPXacP2fHIRSIBDq3dgPP
-	VhRuOVtpfaVq2RCg==
+	bh=KBIWDwn0DY4hXd/ZQ26hdkPzxSwgJKY0rvjF4QEYw9s=;
+	b=j37lCymfp1vVHL+d+fZWixF5OHGSRtn9LPk154p0nDgG/3m/7IkBS+cNHG544EbmRWwMD+
+	o6tF6itBgrbTNEBA==
 From: "thermal-bot for Tudor Ambarus" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/linux-next] thermal/drivers/samsung: acpm-tmu:
- Clean up probe error logging
-Cc: Tudor Ambarus <tudor.ambarus@linaro.org>,
+Subject: [thermal: thermal/linux-next] thermal/drivers/samsung: acpm-tmu: Rely
+ on devres for probe error and remove teardown
+Cc: Sashiko <sashiko-bot@kernel.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
  Daniel Lezcano <daniel.lezcano@kernel.org>
-In-Reply-To: <20261026-acpm-tmu-fixes-v1-14-0637431b7268@linaro.org>
-References: <20261026-acpm-tmu-fixes-v1-14-0637431b7268@linaro.org>
+In-Reply-To: <20261026-acpm-tmu-fixes-v1-6-0637431b7268@linaro.org>
+References: <20261026-acpm-tmu-fixes-v1-6-0637431b7268@linaro.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,7 +78,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <179389375376.1009794.11135664432821362176.tip-bot2@tip-bot2>
+Message-ID: <179389376667.1009794.7287841820978986080.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -89,69 +89,154 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     f316fea84421e3ca569d861ebc7e17632ac54cc2
+Commit-ID:     3980362b31bf935b778dea1a8d90590ecef82e8d
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//f316fea84421e3ca569d861ebc7e17632ac54cc2
+git//3980362b31bf935b778dea1a8d90590ecef82e8d
 Author:        Tudor Ambarus <tudor.ambarus@linaro.org>
-AuthorDate:    Mon, 26 Oct 2026 16:01:31=20
+AuthorDate:    Mon, 26 Oct 2026 16:01:23=20
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Tue, 03 Nov 2026 19:51:51 +01:00
+CommitterDate: Tue, 03 Nov 2026 19:51:50 +01:00
 
-thermal/drivers/samsung: acpm-tmu: Clean up probe error logging
+thermal/drivers/samsung: acpm-tmu: Rely on devres for probe error and remove =
+teardown
 
-platform_get_irq(), devm_thermal_add_hwmon_sysfs(), and
-devm_request_threaded_irq() already log an error or warning message
-internally on failure, so drop the duplicate call-site messages in
-acpm_tmu_probe(). Also update the copy-pasted "Unable to map syscon
-registers" message on devm_regmap_field_bulk_alloc() failure to "Failed
-to allocate regmap fields".
+Disabling sensors manually on acpm_tmu_probe() failure or in
+acpm_tmu_remove() happens before devres unregisters the thermal zones,
+leaving live zones backed by disabled hardware.
 
+With .change_mode() implemented, devres tears down the IRQ, thermal
+zones, and runtime PM in reverse registration order:
+devm_thermal_of_zone_release() disables each sensor via
+thermal_zone_device_disable(), and devm_pm_runtime_enable() disables
+autosuspend and runtime PM.
+
+Drop acpm_tmu_remove(), acpm_tmu_control_rollback(), and the manual
+teardown in acpm_tmu_probe(), and switch acpm_tmu_control() to
+pm_runtime_put_autosuspend() since pm_runtime_put_sync() was only needed
+by acpm_tmu_remove().
+
+Fixes: 50a2c5d4062a ("thermal/drivers/samsung: Add Exynos ACPM TMU driver GS1=
+01")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
 Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-14-0637431b7268@lin=
-aro.org
+Link: https://sashiko.dev/#/patchset/20260603-acpm-tmu-v8-0-0f1810a356e6@lina=
+ro.org?part=3D2
+Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-6-0637431b7268@lina=
+ro.org
 ---
- drivers/thermal/samsung/acpm-tmu.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ drivers/thermal/samsung/acpm-tmu.c | 56 ++---------------------------
+ 1 file changed, 5 insertions(+), 51 deletions(-)
 
 diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acp=
 m-tmu.c
-index fd491b4..bce4674 100644
+index 69793fc..4257bec 100644
 --- a/drivers/thermal/samsung/acpm-tmu.c
 +++ b/drivers/thermal/samsung/acpm-tmu.c
-@@ -444,7 +444,7 @@ static int acpm_tmu_probe(struct platform_device *pdev)
- 					   data->reg_fields, REG_INTPEND_COUNT);
- 	if (ret)
- 		return dev_err_probe(dev, ret,
--				     "Unable to map syscon registers\n");
-+				     "Failed to allocate regmap fields\n");
+@@ -153,26 +153,6 @@ static int acpm_tmu_op_tz_control(struct acpm_tmu_sensor=
+ *sensor, bool on)
+ 	return 0;
+ }
 =20
- 	priv->clk =3D devm_clk_get(dev, NULL);
- 	if (IS_ERR(priv->clk))
-@@ -453,7 +453,7 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+-static void acpm_tmu_control_rollback(struct acpm_tmu_priv *priv, int start_=
+idx)
+-{
+-	int i;
+-
+-	for (i =3D start_idx; i >=3D 0; i--) {
+-		struct acpm_tmu_sensor *sensor =3D &priv->sensors[i];
+-		int ret;
+-
+-		if (!sensor->tzd)
+-			continue;
+-
+-		mutex_lock(&sensor->lock);
+-		ret =3D acpm_tmu_op_tz_control(sensor, false);
+-		mutex_unlock(&sensor->lock);
+-		if (ret)
+-			dev_err(priv->dev, "Rollback: Failed to disable sensor %d: %d\n",
+-				i, ret);
+-	}
+-}
+-
+ static int acpm_tmu_control(struct acpm_tmu_priv *priv, bool on)
+ {
+ 	struct device *dev =3D priv->dev;
+@@ -199,7 +179,7 @@ static int acpm_tmu_control(struct acpm_tmu_priv *priv, b=
+ool on)
+ 			err =3D ret;
+ 	}
 =20
- 	priv->irq =3D platform_get_irq(pdev, 0);
- 	if (priv->irq < 0)
--		return dev_err_probe(dev, priv->irq, "Failed to get irq\n");
-+		return priv->irq;
+-	pm_runtime_put_sync(dev);
++	pm_runtime_put_autosuspend(dev);
 =20
- 	pm_runtime_set_autosuspend_delay(dev, 100);
- 	pm_runtime_use_autosuspend(dev);
-@@ -494,16 +494,12 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ 	return err;
+ }
+@@ -489,7 +469,7 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ 	ret =3D acpm_handle->ops->tmu.init(acpm_handle, priv->mbox_chan_id);
+ 	if (ret) {
+ 		ret =3D dev_err_probe(dev, ret, "Failed to init TMU\n");
+-		goto err_pm_put;
++		goto out_pm_put;
+ 	}
+=20
+ 	for (i =3D 0; i < priv->num_sensors; i++) {
+@@ -510,7 +490,7 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ 			}
+=20
+ 			ret =3D dev_err_probe(dev, ret, "Failed to register sensor %d\n", i);
+-			goto err_rollback;
++			goto out_pm_put;
  		}
  		sensor->tzd =3D tzd;
 =20
--		ret =3D devm_thermal_add_hwmon_sysfs(dev, sensor->tzd);
--		if (ret)
--			dev_warn(dev, "Failed to add hwmon sysfs!\n");
-+		devm_thermal_add_hwmon_sysfs(dev, sensor->tzd);
- 	}
-=20
+@@ -522,39 +502,14 @@ static int acpm_tmu_probe(struct platform_device *pdev)
  	ret =3D devm_request_threaded_irq(dev, priv->irq, NULL,
  					acpm_tmu_thread_fn, IRQF_ONESHOT,
  					dev_name(dev), priv);
--	if (ret)
--		ret =3D dev_err_probe(dev, ret, "Failed to request irq\n");
+-	if (ret) {
++	if (ret)
+ 		ret =3D dev_err_probe(dev, ret, "Failed to request irq\n");
+-		goto err_rollback;
+-	}
 =20
- out_pm_put:
++out_pm_put:
  	pm_runtime_put_autosuspend(dev);
+-
+-	return 0;
+-
+-err_rollback:
+-	acpm_tmu_control_rollback(priv, i - 1);
+-err_pm_put:
+-	pm_runtime_dont_use_autosuspend(dev);
+-	pm_runtime_put_sync(dev);
+ 	return ret;
+ }
+=20
+-static void acpm_tmu_remove(struct platform_device *pdev)
+-{
+-	struct acpm_tmu_priv *priv =3D platform_get_drvdata(pdev);
+-
+-	/* Stop IRQ first to prevent race with thread_fn */
+-	disable_irq(priv->irq);
+-
+-	/*
+-	 * Disable autosuspend to force the subsequent pm_runtime_put_sync()
+-	 * inside acpm_tmu_control() to synchronously suspend the device
+-	 * immediately, preventing clock leaks when the driver is removed.
+-	 */
+-	pm_runtime_dont_use_autosuspend(&pdev->dev);
+-	acpm_tmu_control(priv, false);
+-}
+-
+ static int acpm_tmu_suspend(struct device *dev)
+ {
+ 	struct acpm_tmu_priv *priv =3D dev_get_drvdata(dev);
+@@ -648,7 +603,6 @@ static struct platform_driver acpm_tmu_driver =3D {
+ 		.of_match_table =3D acpm_tmu_match,
+ 	},
+ 	.probe =3D acpm_tmu_probe,
+-	.remove =3D acpm_tmu_remove,
+ };
+ module_platform_driver(acpm_tmu_driver);
+=20
