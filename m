@@ -1,58 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.62.58.211
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793897254;
-	b=GT4ymnKLq06UHkFINEffaLqjHRhCskF4Ump0/s1zIwJ5NunGrvgfhq5Uy8AS8u/qXkOm
-	 JKfeZlYHkZiRry1PLwaZmEO1Eb1MPJx2vOD/17pxLCyaocddHoJrGolhJrTMcSo6bOGDG
-	 +JXZKqCO0dvW7HmsBPNINqK1oqTOeSmfyW53/awE9uqHFoELSSRnR0v4O6+DlUVaQxAyf
-	 Mg2w0D3GMSTLgTj7LU/XiIvdkSBmO6pZv4atJJnV+VqXou8rhDzOOMwSdRHuDnOg2km1B
-	 ltIDHzg2ouaOiZ2Qn0NPjWLJq+jihpe7fciOaPGwb1V1LST83zx8yiVG9tvcrinoCeg==
+	t=1793898299;
+	b=rDkDMsaDljZLsCAHZlCZI9gfEbvizvqz4AleNzMYu/W+UfXFLD1RT6plNuJQI4NVcDFR
+	 hvl/oF6kxAhnhiyGiShIq/cKtKcNiktQnFhv8NWjzOpygHF+6lRNLS9y51lvCX7xNhlL7
+	 jJ8NPjTI+XqZ1OfMPJZLA2E8rdGNnupHvhPKoV213ugO5688nf0X0CGi+AxPLu0LJIQMu
+	 yJdlT1yx/u8nAaE2+CNKJATwZcOZN30mxrE8UqBiI7NEzSFPh59JIUlgcAjmeYGeIE7GK
+	 aluJJ6KwFf6K35t5TTRjqaltSSgGAw2AbZhW50cbr/0d0IkmDiyJRsfhw45YZoeHTYQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793897254;
-	h=Received:DKIM-Signature:Content-Type:Date:Message-Id:Subject:Cc:To:
-	 From:Mime-Version:Content-Transfer-Encoding:References:In-Reply-To;
-	bh=n/Nb1M7Wjdn2Q02uzRfmomGG9EAmUu41HnSfsPMt16I=;
-	b=pEx03+ih9EPNSiFF7qTb0oHQ9562+Tysfg87ugsUf/3WbqhtKxNJGkOAtaA5f1XN1m4v
-	 BSf7Hkm4PsuCtALRWbpzbY7gzgsvWuWEN5TItziOvzNF4ma7dm86f5zcHNS0SzB3a1V48
-	 57wqLwvOwGcmuEytI37PZolJ3Hgojj1ofqFrBXjAN2znJm7y664VpSGF0vPVoei0gSTsK
-	 IjLj4ZTYy7eNpI9v9s4dtuOql4ldnk7DbaBmZ2JRppm+q94uaW8xQ97C/DZV/2TxvFjQW
-	 JeJHou8iPkD6pKsCLdGj64Ra194DZk+RaEkQMie04jeQh0RnZ8ply96/v8MCucvmlPg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793898299;
+	h=DMARC-Filter:DKIM-Signature:Received:X-QQ-mid:Message-ID:
+	 X-QQ-XMAILINFO:X-QQ-XMRINFO:From:To:Cc:Subject:Date:X-OQ-MSGID:
+	 X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=19A+n+tPKF3BLTOEL99mW+EyDngEAPV7MLTE18m3yzQ=;
+	b=E8RH2xWG4rU5L6NySivuH/+xCCUPcZvw53IQbpKyJ8ao0XIlAenKZ5A/FPjZqkJaEbGy
+	 7VCiET7BTFsODIXuAoKseiP9GxHRaeRoZbY+jy6HwMkFoODN2Oq8Q7/K1pnxbQxpuRTqm
+	 OqdohQypJNiY8Aauqzc33dRkIw059BBK5QYzbdei3m2PCJuVuGjnXRopNNgaMghQSlheR
+	 DRFfxHi8CS7yQSDOw1e5gvV4C39Kik2WdhbYRcknJwzpU5Db8ZrPd+kgp3lbl5OewMjMc
+	 EZmXKAU9RMgxTI/XWQIr0jk4/6Dj11EE42ylWb/q1h9iGug2DYDQvpsgEfOrFSLUNCQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SU3JsF83;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=qq.com;
+	spf=pass smtp.mailfrom=qq.com;
+	dkim=pass header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=qKmPTA8I;
+	arc=none smtp.remote-ip=162.62.58.211
+Received: from out162-62-58-211.mail.qq.com (out162-62-58-211.mail.qq.com [162.62.58.211])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 641C8606A328;
-	Thu,  5 Nov 2026 16:47:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C376C606A32D
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 17:04:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C376C606A32D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SU3JsF83
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E41131F00919;
-	Thu,  5 Nov 2026 16:47:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793897253;
-	bh=n/Nb1M7Wjdn2Q02uzRfmomGG9EAmUu41HnSfsPMt16I=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To;
-	b=SU3JsF83cgmIhwrMxQ6tEcVQ6WV4woH2W3aj2MUWqRbbxiR5u0PDL7m8tHqsTiqt5
-	 hAGdO7XSqPo9Z/bb6SVshj2QEVEDtzmbh7AVqbyebuJgmCMvTdA64o7+BbGd10ONtM
-	 qTChhUNvMinDSF+6AEpADZnvyYBAqvm39w032qLFSwkME1iKH0sBSbQ0HHWTi/zW2u
-	 NNzEbYwMa+IeWDo0JelbGhogd1sWPd13yWQds47eCm9UJMxkLh+MprGvAtzF+X4WNI
-	 d1kxYp+yumkvNNuMpUX5xbZ5CfUZ22XiQv2GJKhWNE7faTBHCqLiz+HqrZ2vBG1H9C
-	 sjvfILnRUr29g==
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 05 Nov 2026 17:47:28 +0100
-Message-Id: <DMNFI31C8X12.3L2J0GKKNJN81@kernel.org>
-Subject: Re: [PATCH v5 1/3] rust: add runtime PM support
-Cc: <ojeda@kernel.org>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
- <aliceryhl@google.com>, <boqun@kernel.org>, <gary@garyguo.net>,
- <bjorn3_gh@protonmail.com>, <lossin@kernel.org>, <a.hindborg@kernel.org>,
- <tmgross@umich.edu>, <daniel.almeida@collabora.com>,
- <boris.brezillon@collabora.com>, <work@onurozkan.dev>,
- <samitolvanen@google.com>, <acourbot@nvidia.com>,
- <rust-for-linux@vger.kernel.org>, <driver-core@lists.linux.dev>,
- <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-To: "Beata Michalska" <beata.michalska@arm.com>
-From: "Danilo Krummrich" <dakr@kernel.org>
+	dkim=pass (1024-bit key, unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=qKmPTA8I
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1793898293; bh=19A+n+tPKF3BLTOEL99mW+EyDngEAPV7MLTE18m3yzQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=qKmPTA8IMCx+sQxs3A49oebVGmAoHpf0D3Mumv1VqyTjIvrGbGP5BxlAnA6dYGa14
+	 XuO985RhikxXuGvbw/iVxPpaZz9Hyx2JCK1dJtSBd4X83DLui0CxSwx4GeOqR8EpBI
+	 po8X330j6Jcn0FV3vD+E4NCRXDm/M0Asn/u0E4sk=
+Received: from localhost.localdomain ([180.164.23.12])
+	by newxmesmtplogicsvrsza63-0.qq.com (NewEsmtp) with SMTP
+	id 133170FE; Fri, 06 Nov 2026 01:04:51 +0800
+X-QQ-mid: xmsmtpt1793898291txuxm0f2b
+Message-ID: <tencent_E6852D1967C70433E84FE0F8C893BC8CFB0A@qq.com>
+X-QQ-XMAILINFO: NMOcRb7Tb1o3o4a9i8OKNvHa6Oc53gvuHUC5ukE06ZDohYu/uW9/mg+vyvgrfB
+	 +rftpnd76oK+FMvhfGZCkisqe47BKHPVk+Y5jrplRNomGSpgRuYwooTTF4tO9y+Q0QxiY8Zj3P7z
+	 BNGF4C1Qd27hMJacSJaamnrV72K1qi8eE9R4iDdKJOIv2VJh7HaB5KnKa0HBUMYk+FJAWCgrAHVh
+	 NgGRzsMDXfxoWnt5uVO/7oc/4JSSau0lSYHX1bPBwhgYIL60XZKJVQ9SezJgPiytrTD1GGkQ6VFb
+	 QbcbB5egI/lWaOS9jFVRIcztjJURJXF0ZQ8GCBkLLVPAbKeuEO8KwOdXN/vBeHkObkp6VOj0lYmv
+	 qG+Dv5DBT8yQdfnYV/sYTd6rM4MUaba4wqOV9Q2mRRjzbSXRKeZEfYz15/NGz2duLDukNELg+dpP
+	 JmJtp8Xt3pvSfAWjIvW+XSExemAhqN/MUnG/GjIDkoGlu0t6SZIkD3gYmi3ARFtBwz+hLPM6LpWj
+	 LOa/5ToaLECzaNv36YpQ9LZ6yZpXVISsNv17XxDDvLVe5rRh5/vQnkOKJM8gvSigfU3nIkT0ner3
+	 4UQrXikaRd7AEd59rhGVFkoBb8GWAEm1/opmeDae4BueD+aJHtIw1QjDvZwUSIQ/3Pa4YWHN+yJQ
+	 l7yvA5z3KI5Hp2TdglPj003x34xwdHRmY+hJq/7BrlPv5cH5KulajV9EzeEbYP5l7UaO121eG7TY
+	 mNmUF/Il3tCagKYwD6lydva5R1k12ZZ20kjRGvDnV+1jV0NS2A8RTt2riJpGOZVVwW45TWUy9iD3
+	 f+rj81rWYCN+tl8IODIWhEaKyn9y0mIJb3ttKCbpIdb7WCEyibFhnYrskncwd59FHMazITk3gmv/
+	 7N6xXzJ0D3RL7OFLcFTBXGyscjfqixXnkD/806WNSDswQjAXWFfc44D3ZZg9yQHKqS/DjdQsZERV
+	 Q74HweYktIt78Ry3smp9Yi8pDUJVDL0OBJb+U1PZy41IhfY3yn/BqaVaiYLJVIFSn8pQQ4y+fvod
+	 9jozdKdqmzX3ouWOAEvi5k/6XmR2SVdPb6kkfLxiPMUmiGcgBD+LXJDhZ0njU/Dt600hGXXXsRhe
+	 q6dyLBhOKqlwQ6VJEgT1JtWUmYA350oToW6GjiNURA6jv4atpDKwa/S37CCsM+YeKrKH18
+X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
+From: Kaiqian Zhu <362918296@qq.com>
+To: Sudeep Holla <sudeep.holla@kernel.org>
+Cc: Ulf Hansson <ulfh@kernel.org>,
+	rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	christian.loehle@arm.com,
+	linux-pm@vger.kernel.org,
+	Kaiqian Zhu <zhukaiqian@xiaomi.com>
+Subject: [PATCH] cpuidle: psci: Fix CPU PM domain state after failed runtime PM resume
+Date: Fri,  6 Nov 2026 01:04:38 +0800
+X-OQ-MSGID: <20261105170438.1559-1-362918296@qq.com>
+X-Mailer: git-send-email 2.22.0.windows.1
+In-Reply-To: <20261105-logical-ruby-scorpion-29ba7b@sudeepholla>
+References: <20261105-logical-ruby-scorpion-29ba7b@sudeepholla>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -61,372 +83,127 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-References: <20261026120523.526942-1-beata.michalska@arm.com>
- <20261026120523.526942-2-beata.michalska@arm.com>
-In-Reply-To: <20261026120523.526942-2-beata.michalska@arm.com>
 
-On Mon Oct 26, 2026 at 1:05 PM CET, Beata Michalska wrote:
->  drivers/base/base.h             |    4 +
->  rust/bindings/bindings_helper.h |    1 +
->  rust/helpers/helpers.c          |    1 +
->  rust/helpers/pm_runtime.c       |   89 +++
->  rust/kernel/lib.rs              |    1 +
->  rust/kernel/pm.rs               | 1106 +++++++++++++++++++++++++++++++
+In PSCI OSI mode with the hierarchical CPU topology, a CPU can come=0D
+out of idle after dpm_suspend_late() has already disabled runtime PM=0D
+for its device. The idle exit then restores the cluster PM domain through=0D
+the runtime PM path, however, since the runtime PM is disabled, it=0D
+becomes a no-op and the domain stays powered off in software while=0D
+the CPU is running. The CPU then silently stops requesting the cluster/=0D
+system power level in CPU_SUSPEND.=0D
+=0D
+The Race:=0D
+dpm_suspend_late() wakes all idle CPUs first and only then walks the=0D
+device list, disabling runtime PM per device as it goes:=0D
+=0D
+  dpm_suspend_late()=0D
+    wake_up_all_idle_cpus()               <-- asynchronous cpu wakeup=0D
+      device_suspend_late(dev, ...)=0D
+        __pm_runtime_disable(dev,false)    <-- disable_depth++=0D
+=0D
+wake_up_all_idle_cpus() only requests that the idle CPUs leave idle; it=0D
+does not wait for them. A CPU parked in a deep PSCI state can take a long=0D
+time to come back that its idle exit lands after the runtime disable:=0D
+=0D
+  CPU0: dpm_suspend_late()             CPUx: parked in idle=0D
+  ------------------------------       ----------------------------=0D
+  wake_up_all_idle_cpus()=0D
+                                       powering ON=0D
+  device_suspend_late(pd_dev)=0D
+    __pm_runtime_disable(pd_dev)=0D
+      disable_depth++=0D
+                                       powered ON=0D
+                                       __psci_enter_domain_idle_state()=0D
+                                       pm_runtime_get_sync(pd_dev)=0D
+                                       no-op: disable_depth > 0=0D
+=0D
+genpd_runtime_resume() never runs and the domain stays OFF. The next=0D
+idle entry skips the genpd suspend as the state is already OFF.=0D
+=0D
+Fix this by using the genpd interface when the runtime PM is disabled.=0D
+If the runtime resume failed to restore the domain, force it on by=0D
+calling the genpd suspend/resume pair directly.=0D
+=0D
+Signed-off-by: Kaiqian Zhu <zhukaiqian@xiaomi.com>=0D
+---=0D
+Resend note: No code changes. Resent only to remove the automatic=0D
+corporate email disclaimer footer from previous send.=0D
+Link: https://lore.kernel.org/r/20261021031709.42644-1-zhukaiqian@xiaomi.co=
+m=0D
+Link: https://lore.kernel.org/all/20261105-logical-ruby-scorpion-29ba7b@sud=
+eepholla/=0D
+=0D
+ drivers/cpuidle/cpuidle-psci.c | 28 +++++++++++++++++++++++++---=0D
+ 1 file changed, 25 insertions(+), 3 deletions(-)=0D
+=0D
+diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.=
+c=0D
+index b250d0dde760..5b56f279cc7e 100644=0D
+--- a/drivers/cpuidle/cpuidle-psci.c=0D
++++ b/drivers/cpuidle/cpuidle-psci.c=0D
+@@ -70,14 +70,23 @@ static __cpuidle int __psci_enter_domain_idle_state(str=
+uct cpuidle_device *dev,=0D
+        struct device *pd_dev =3D data->dev;=0D
+        struct psci_cpuidle_domain_state *ds;=0D
+        u32 state =3D states[idx];=0D
++       bool use_genpd;=0D
+        int ret;=0D
+=0D
+        ret =3D cpu_pm_enter();=0D
+        if (ret)=0D
+                return -1;=0D
+=0D
++       /*=0D
++        * The PM core disables runtime PM during a system-wide suspend, wh=
+ich=0D
++        * makes the pm_runtime_*() calls below no-ops.  The resume can the=
+n=0D
++        * no longer set the PM domains back ON, while the CPU is running.=
+=0D
++        * Use the genpd interface directly whenever runtime PM is unavaila=
+ble.=0D
++        */=0D
++       use_genpd =3D s2idle || !pm_runtime_enabled(pd_dev);=0D
++=0D
+        /* Do runtime PM to manage a hierarchical CPU toplogy. */=0D
+-       if (s2idle)=0D
++       if (use_genpd)=0D
+                dev_pm_genpd_suspend(pd_dev);=0D
+        else=0D
+                pm_runtime_put_sync_suspend(pd_dev);=0D
+@@ -90,11 +99,24 @@ static __cpuidle int __psci_enter_domain_idle_state(str=
+uct cpuidle_device *dev,=0D
+        ret =3D psci_cpu_suspend_enter(state) ? -1 : idx;=0D
+        trace_psci_domain_idle_exit(dev->cpu, state, s2idle);=0D
+=0D
+-       if (s2idle)=0D
++       if (use_genpd) {=0D
+                dev_pm_genpd_resume(pd_dev);=0D
+-       else=0D
++       } else {=0D
+                pm_runtime_get_sync(pd_dev);=0D
+=0D
++               /*=0D
++                * Whenever runtime PM is disabled while a CPU was idle (in=
+=0D
++                * the system-wide suspend progress), the resume above beca=
+me=0D
++                * a no-op and the domain is still OFF.=0D
++                * Force the genpd to update power state to ON, so that the=
+ next=0D
++                * suspend can see the correct state.=0D
++                */=0D
++               if (!dev_pm_genpd_is_on(pd_dev)) {=0D
++                       dev_pm_genpd_suspend(pd_dev);=0D
++                       dev_pm_genpd_resume(pd_dev);=0D
++               }=0D
++       }=0D
++=0D
+        cpu_pm_exit();=0D
+=0D
+        /* Correct domain-idlestate statistics if we failed to enter. */=0D
+--=0D
+2.53.0=
 
-I think this fits better under rust/kernel/device/pm.rs. This would also av=
-oid
-naming like DevPMOps, which can then just be device::PMOps.
-
-We should also add the file to POWER MANAGEMENT CORE in MAINTAINERS.
-
-> diff --git a/drivers/base/base.h b/drivers/base/base.h
-> index a5b7abc10ff0..e79108bc754a 100644
-> --- a/drivers/base/base.h
-> +++ b/drivers/base/base.h
-> @@ -103,6 +103,7 @@ struct driver_private {
->   *			   dev_err_probe() for later retrieval via debugfs
->   * @device: pointer back to the struct device that this structure is
->   *	    associated with.
-> + * @rust_private: private data used exclusively by the Rust driver core
->   * @dead: This device is currently either in the process of or has been
->   *	  removed from the system. Any asynchronous events scheduled for this
->   *	  device should exit without taking any action.
-> @@ -119,6 +120,9 @@ struct device_private {
->  	const struct device_driver *async_driver;
->  	char *deferred_probe_reason;
->  	struct device *device;
-> +#ifdef CONFIG_RUST
-> +	void *rust_private;
-
-Let's call this pointer pm_registration_data_rust. Or even just add
-
-	struct {
-		void *pm_registration_data;
-	} rust;
-=09
-> +use core::{cell::UnsafeCell, marker::PhantomData, mem::ManuallyDrop};
-
-NIT: Formatting.
-
-> +impl From<Mode> for core::ffi::c_int {
-> +    #[inline]
-> +    fn from(mode: Mode) -> core::ffi::c_int {
-> +        mode.0 as core::ffi::c_int
-> +    }
-> +}
-
-You can just use c_int, as it comes from the prelude. Also note that the pr=
-elude
-takes it from ::ffi, rather than ::core.
-
-> +    /// Explicitly release the scope
-> +    /// This should be used in favor of regular drop
-> +    /// when error handling is required.
-
-NIT:
-
-	// Explicitly release the scope.
-	//
-	// This should be used in favor of regular drop when error handling is
-	// required.
-
-> +    pub fn release(self) -> Result {
-> +        self.release_inner();
-> +        core::mem::forget(self);
-> +        Ok(())
-> +    }
-> +}
-> +
-> +impl<'a> Drop for RetainScope<'a> {
-> +    fn drop(&mut self) {
-> +        self.release_inner();
-> +    }
-> +}
-> +
-> +/// Runtime PM helpers - wrappers around C runtime PM interface.
-> +/// All methods require a reference to a bound device.
-
-I'd rather say a few words about what those helpers are. The fact they requ=
-ire a
-&Device<Bound> is rather obvious from the signature; if at all I'd rather
-mention why that is.
-
-> +struct Request;
-> +
-> +impl Request {
-> +    #[inline]
-> +    fn active(dev: &device::Device<device::Bound>) -> bool {
-> +        // SAFETY: `dev.as_raw()` must provide a valid pointer to
-> +        // `struct device` for the duration of the call.
-
-This reads like a requirement, but it rather is the justifiation for this
-requirement coming from pm_runtime_active().
-
-> +        // The `Device<Bound>` reference provides that guarantee.
-
-Plus that we are in a scope where the device is guaranteed that the device
-remains bound to the driver, which is a requirement as well.
-
-> +/// Common runtime PM callback entry point
-> +///
-> +/// The generated extern "C" callbacks call into this helper with the ra=
-w
-> +/// `struct device *` provided by the PM core. It rebuilds the Rust devi=
-ce
-> +/// reference, retrieves the device's PM registration data and performs
-> +/// handoff to corresponding driver callback.
-> +#[cfg(CONFIG_PM)]
-> +fn runtime_pm_callback<T, F>(dev: *mut bindings::device, cb: F) -> Resul=
-t
-
-This function has to be unsafe, given that it takes a raw pointer.
-
-> +where
-> +    T: PMOps,
-> +    F: FnOnce(
-> +        &<T as PMOps>::DeviceType,
-> +        <T as PMOps>::RuntimePayloadType,
-> +    ) -> PMCallbackResult<<T as PMOps>::RuntimePayloadType>,
-> +{
-> +    let dev: &device::Device<device::Bound>  =3D
-> +             // SAFETY: `dev` is provided by the PM core and remains
-> +             // valid for the duration of the callback.
-> +            unsafe { device::Device::from_raw(dev) };
-
-Please prefer Device::from_raw() plus Device::as_bound().
-
-> +
-> +    // SAFETY: `dev` is provided by the PM core and remains
-> +    // valid for the duration of the callback.
-> +    let ptr =3D unsafe { (*(*dev.as_raw()).p).rust_private };
-> +
-> +    if ptr.is_null() {
-> +        return Err(ENODEV);
-> +    }
-
-How can we ever reach this?
-
-> +/// Typed reference to a driver's runtime PM ops.
-> +///
-> +/// Instances of this type are generated from static [`DevPMOps`]
-> +/// and are used by bus registration code to install the matching
-> +/// C `dev_pm_ops` pointer into the driver object.
-> +/// The `A` parameter identifies the bus adapter that is allowed
-> +/// to install the table.
-> +pub struct DevPMOpsRef<'a, A> {
-> +    #[cfg_attr(not(CONFIG_PM), allow(unused))]
-> +    ops: &'a bindings::dev_pm_ops,
-> +    _p: PhantomData<fn() -> *const A>,
-> +}
-
-I'd probably rename this to pm::AdapterOpsRef<'a, A> and add a type alias:
-
-	pub type OpsRef<T> =3D AdapterOpsRef<'static, <T as PMOps>::Adapter>;
-
-so it looks cleaner in drivers:
-
-	 const DEV_PM_OPS: Option<device::pm::OpsRef<Self>> =3D Some(TYR_PM_OPS.pm=
-_ops());
-
-(I'd probably also rename DevPMOps to device::pm::Ops, as I think that read=
-s
-cleaner.)
-
-> +/// Runtime PM callbacks implemented by a driver.
-> +///
-> +/// Defines the [`PMOps`] trait and its corresponding [`bindings::dev_pm=
-_ops`].
-> +///
-> +/// The Adapter associated type identifies the bus adapter that installs
-> +/// the generated PM ops.
-> +/// Implementations should normally be enabled through a
-> +/// bus-specific constructor for [`DevPMOps`], which constrains
-> +/// [`Self::DeviceType`] to the correct bound device type for that bus.
-> +///
-> +/// Each C callback recovers the Rust bus device from the raw
-> +/// `struct device *`, borrows the registered runtime PM payload, and de=
-legates
-> +/// to the matching [`PMOps`] trait method.
-
-This kind of implementation detail doesn't belong in this doc-comment.
-
-> +#[vtable]
-> +pub trait PMOps: Sized {
-> +    /// The bus adapter that installs the generated PM ops.
-> +    type Adapter: driver::DriverLayout + 'static;
-> +
-> +    /// Type of the bound bus device passed to runtime PM callbacks.
-> +    type DeviceType: AsBusDevice<device::Bound>;
-> +
-> +    /// Type of the payload moved through runtime PM transitions.
-> +    type RuntimePayloadType: Send + 'static;
-
-I got back to this type after writing the below, because at first I thought=
- this
-is purely the data type that is cycled through suspend() and resume().
-
-However, reading further this is currently the Registration's private data.=
- This
-won't work. The Registration's private data must not require 'static as we =
-need
-device resources in this data.
-
-So, there should be at least two separate types:
-
-  (1) The private data of pm::Registration.
-
-  (2) An object that is created and returned by suspend() and passed by val=
-ue to
-      resume(), so it can store e.g. reverse guard types (see below).
-
-This should also get us rid of the PMPayload magic.
-
-> +
-> +    /// Runtime resume callback.
-
-It would be good to expand this doc-comment explaining the semantics of
-RuntimePayloadType.
-
-> +    fn runtime_resume<'a>(
-> +        _dev: &'a Self::DeviceType,
-> +        _payload: Self::RuntimePayloadType,
-> +    ) -> PMCallbackResult<Self::RuntimePayloadType> {
-> +        build_error!(VTABLE_DEFAULT_ERROR)
-> +    }
-> +
-> +    /// Runtime suspend callback.
-> +    fn runtime_suspend<'a>(
-> +        _dev: &'a Self::DeviceType,
-> +        _payload: Self::RuntimePayloadType,
-> +    ) -> PMCallbackResult<Self::RuntimePayloadType> {
-> +        build_error!(VTABLE_DEFAULT_ERROR)
-> +    }
-
-I think for Tyr it so far is sufficient to have a single RuntimePayloadType=
- that
-keeps cycling through the callbacks, but there will be use-cases where the =
-types
-differ.
-
-For instance, for a PCI driver you will have DeviceDisableGuard stored in
-suspend() and then you'll want to drop it in resume() so the device gets en=
-abled
-again.
-
-We should also avoid requiring 'static, as reverse guards will borrow the
-regular guard, e.g. pci::DeviceDisableGuard will borrow from
-pci::DeviceEnableGuard.
-
-For runtime_resume() I think of something like:
-
-	fn runtime_resume<'a>(
-	    dev: &Self::DeviceType,
-	    suspended: Self::SuspendData<'a>,
-	) -> Result<(), (Self::SuspendData<'a>, Error)>;
-
-
-> +/// Runtime PM context tied to a device.
-> +pub struct PMContext<'a, T: PMOps> {
-> +    // Preferably, PMContext could be shared via borrowed reference over
-> +    // a pm Registration's lifetime but that bears complications on its =
-own
-> +    // when the context needs to be shared across different Registration=
- types.
-> +    inner: Arc<PMContextInner<'a, T>>,
-
-Since we now have self-referencial pin-init, can we please avoid this Arc?
-
-> +impl<'a, T: PMOps> Registration<'a, T> {
-> +    /// Creates a runtime PM registration for `dev`.
-> +    ///
-> +    /// The provided profiles and configuration are stored in the associ=
-ated
-> +    /// [`PMContext`]. The `payload` is stored as a Registration data
-> +    /// and is used to service PM transitions.
-> +    ///
-> +    /// The device must use the callback represented by `ops`, generated
-> +    /// for the same bus adapter and driver pair `(D, T)`.
-> +    ///
-> +    /// # Safety
-> +    ///
-> +    /// The returned [`Registration`] object cannot be mem::forgotten,
-> +    /// or it's [`Drop`] implementation cannot be skipped in any way.
-> +    ///
-> +    pub unsafe fn new(
-> +        dev: &'a device::Device<device::Core<'_>>,
-> +        ops: &'static DevPMOps<T>,
-> +        profiles: Option<KVec<PMProfile>>,
-> +        configs: Option<KVec<PMConfig>>,
-> +        payload: T::RuntimePayloadType,
-
-This should be impl PinInit<T::PMRegistrationData<'a>, E> + 'a.
-
-> +    ) -> Result<Self> {
-
-This should be impl PinInit<Self, Error> + 'a.
-
-> +        // SAFETY: For the duration of this call, `dev` is a valid `Devi=
-ce<Core>`,
-> +        // and so is its raw `struct device` pointer.
-> +        unsafe {
-
-Please use separate unsafe blocks per unsafe operation.
-
-> +            let drv =3D (*dev.as_raw()).driver;
-> +            if drv.is_null() || (*drv).pm !=3D ops.as_raw() {
-
-drv.is_null() can't happen as we require Device<Core>.
-
-> +                return Err(EINVAL);
-> +            }
-> +        }
-> +
-> +        let payload =3D KBox::new(
-> +            RegistrationData::<T> {
-> +                data: PMPayload {
-> +                    in_flight: AtomicFlag::new(false),
-> +                    inner: UnsafeCell::new(ManuallyDrop::new(payload)),
-> +                },
-> +                _marker: PhantomData,
-> +            },
-> +            GFP_KERNEL,
-> +        )?;
-> +
-> +        let inner_ctx =3D Arc::new(
-> +            PMContextInner {
-> +                dev,
-> +                state: Atomic::new(PMContextState::Disabled),
-> +                profiles: profiles.unwrap_or_default(),
-> +                configs: configs.unwrap_or_default(),
-> +                _marker: PhantomData,
-> +            },
-> +            GFP_KERNEL,
-> +        )?;
-> +
-> +        // SAFETY: For the duration of this call, `dev` is a valid `Devi=
-ce<Core>`,
-> +        // and so is its raw `struct device` pointer.
-> +        // The payload allocation is converted into a foreign pointer
-> +        // and owned by this `Registration` until `Drop` clears
-> +        // `rust_private` and reconstructs the `KBox`.
-> +        unsafe {
-
-Same as above.
-
-> +            let ptr =3D (*(*dev.as_raw()).p).rust_private;
-
-This is accessed a couple of time, let's add a helper for this.
-
-> +            if !ptr.is_null() {
-> +                return Err(EBUSY);
-> +            }
-> +            (*(*dev.as_raw()).p).rust_private =3D payload.into_foreign()=
-;
-> +        }
-> +
-> +        Ok(Self {
-> +            ctx: PMContext { inner: inner_ctx },
-> +        })
-> +    }
