@@ -1,76 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793903131;
-	b=iA6jpk3ecRYd3o9XflNIF5+/mZvFAvXJnow2QmqoNW1i6rztc+2n1rZechxQzeNpfeIy
-	 m0cxFD+gxq9KvOfJ0YFeJ92fAhxdwFpf7UohM0AwwaiikjWiFsGd2n4cLPzTDbP+HtUdf
-	 M1720akB7pfjFkt52EwwbDBIBD9gNVJpflcwAkalSIGtZeAaDpz+h1frKGhS5vMrrz9Tc
-	 /xVQL+AgSfNMzHpgETqFPpJUw6WbnBwMtYQHzOLHyOzd50FQwIlo9P79midLq59Fw5Qo/
-	 xolZSXfs+ziDeFygam9HBp7b0Kfn4fdkV3CYk7Mu4lyOPS7QMcHCTfrxfoRP1MZkXgw==
+	t=1793904609;
+	b=Pv89nm4GUKwnBteaAVwo5rtmH4hstVvAFkSPT3bdFuF6nICKerggjn29dYmY5AccG3+1
+	 oPDXMEPlTvOxPkumRMdGWcCB0DBx6iN0qCS1ebPcxvP/ovoTGZSNcUXrZJv0HwjjaZD1y
+	 ddonzY67RpYJU0MY3s+dglNl5yDJX6httH3mkyxc0Zavq59Hcl3WKi2Gls1sUnYjkurAf
+	 YbkhoG/fH6GWDYAJubWV7XLGgAvAkzLCJoFG9r7bVGkMUYa5RB4xKkL/W32yzSsXArXDX
+	 0adNFibIA9ST2kYNZ/IXitQzu87+PXBk0FTFT1tfswtR4x0yjLaZDDnx92vTtfBSlOQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793903131;
-	h=DMARC-Filter:DKIM-Signature:DKIM-Signature:Date:From:To:CC:Subject:
-	 In-Reply-To:References:Message-ID:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=kRFmKBJ1bTsk0r4k62R1tR6K48M0BUczLV02WnOFo08=;
-	b=fW0pQsDR7RLxGC7AWWRYq3UvQSmdfVewcFCWK+/F1WbLxfJUyqdV4dt4alIUnI3Fza2p
-	 o7BeGT8taavPR/VS2qAEZrK6ECbxPJgguc76tI0zbc06PXat+tyusg54LS85PAURFLLfd
-	 pfvMY8qyD79Opxr7UysDLWuN3TR7ozan9vUQl/dztQUrxm61EwgDbx2JCGjJJzAZDsW8N
-	 lXGlX3RXHmvYosX03ygo9ILdZZXbQSWXn6MPJ7ZjGVZPAd6gg3QnihCRnJCRE+52o5EPu
-	 WogXgGGn5vG9xIXdQSqx4fnKsAr0BpiblGf0qIZZk03io9fIGNnepFqdqKDoslmXziw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793904609;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=3q99sV0CGTP0F9aCb/I8pvy3j/8x97xfdz7qAywgDfE=;
+	b=KPFq7w7q//mMHhVNzsdWljtbYK9WR236d81p8mB8O8u0lPVFBDJPhSNZD5TfkOerqWdQ
+	 nTd2KmNYvqe6J5VXPDBqA7FzRXZVkjrAdecb8iXLoBkgLT9xDNnPYxOYLJDu5XlsSe0ul
+	 IVggf6vp5vfea2T2P6Od6bQuzMspQIrf9S8tP0yO+rTZ8oOXoCsX2o/28HlbI6vKb43rX
+	 Z8QTh0J2K2otA+fnlJtO30l7lV7+laEGlkYGgONf/IYzxPPaqpLvbzLnkPvH38ecdzN+M
+	 RKhP9ixLssEjvquK5MVpR1+oGAEAnRuK0bwzCC++47/jIZ8N0K/PPax72MPv4b2IJVA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mainlining.org;
-	spf=pass smtp.mailfrom=mainlining.org;
-	dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=rsa-sha256 header.s=202507r header.b=otZSp2qt;
-	dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=ed25519-sha256 header.s=202507e header.b="t/G+WT5S";
-	arc=none smtp.remote-ip=5.75.144.95
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FIxGvI7O;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6920606A326;
-	Thu,  5 Nov 2026 18:25:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B6920606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB4F0606A328
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 18:50:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=mainlining.org header.i=@mainlining.org header.a=rsa-sha256 header.s=202507r header.b=otZSp2qt;
-	dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=ed25519-sha256 header.s=202507e header.b=t/G+WT5S
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1793903127; bh=kRFmKBJ1bTsk0r4k62R1tR6
-	K48M0BUczLV02WnOFo08=; b=otZSp2qtxJG37B/ApQTfBnhkp2XGFFU/z+4qbEbJkhy3OStcbq
-	RGof9IeEBw6N/qHY3Yu6r0uoEiqO67zc7qxUmyjbhUsUxBJ7qN2wdhpavhK/BZ7zgAxAGshZ6rT
-	v6i2Dxa+J/fpWw7e6U0t1vlkHDWh7xI8Z+DSwmHXj3OZK7ys8nfoSJ7vLuftMaVda8z2hSvp6bx
-	zJvLYqh19IBxxaKu+U/kNE9dyTNIrC6g+dNzzYOI6psdlh7PfzGYBwyO5JH0xwcC8aI273V30C2
-	uSiIuQJ4MkcJuIocSFzbgldpwfxcZJqgpOuw4FfhVNJNbig7vnN0vtyJG3DeGVL2yhQ==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1793903127; bh=kRFmKBJ1bTsk0r4k62R1tR6
-	K48M0BUczLV02WnOFo08=; b=t/G+WT5SdK1eYG0AuecJ0JuXuDjbTUb88Wr5cK0QcM/zMNPhHJ
-	NWzlDczieM7G/L/IhldS6YQWyVDnWMI/sIAA==;
-Date: Thu, 05 Nov 2026 18:25:29 +0000
-From: Bradley Morgan <brads@mainlining.org>
-To: Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
- Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>,
- Tzung-Bi Shih <tzungbi@kernel.org>, Guenter Roeck <groeck@chromium.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Matti Vaittinen <mazziesaccount@gmail.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Oleksij Rempel <o.rempel@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Sebastian Reichel <sebastian.reichel@collabora.com>
-CC: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, chrome-platform@lists.linux.dev,
- avaneesh.dwivedi@oss.qualcomm.com,
- Umang Chheda <umang.chheda@oss.qualcomm.com>, Ulf Hansson <ulfh@kernel.org>,
- Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
- kernel test robot <lkp@intel.com>, Francesco Valla <francesco@valla.it>,
- akpm@linux-foundation.org
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v17_0/6=5D_power?=
- =?US-ASCII?Q?=3A_reset=3A_Introduce_the_Pow?=
- =?US-ASCII?Q?er_State_Change_Reasons_Recording_=28PSCRR=29_framework?=
-In-Reply-To: <85e8effa-dc1d-441e-a721-e4078388c9ef@oss.qualcomm.com>
-References: <20261019-pscrr-framework-v17-0-69ea6cdf4731@oss.qualcomm.com> <85e8effa-dc1d-441e-a721-e4078388c9ef@oss.qualcomm.com>
-Message-ID: <A12AE726-6439-438B-B9E8-721179C47710@mainlining.org>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FIxGvI7O
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57B891F00919
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 18:50:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793904608;
+	bh=3q99sV0CGTP0F9aCb/I8pvy3j/8x97xfdz7qAywgDfE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=FIxGvI7OyYRa7FlYqStpvfldUehSTlvZazbEUiTJ6C24Z+Ua2ojcOWwgaWg/ozh3M
+	 ONo9GhyWX13WJTAVYf7jzGq1Zst0scwfSXJDTfbYeAiHMnHVll+0eeMJf6EVy9GgY4
+	 5KhaqzUgBnhcvYjM+I/fqKK4DUUAeg3kMdlZnJr9PvgY9q63HbtLUWqXY5ftOAcsvm
+	 mO0IYdHdl4BQuMiYpWjKtBN5h/YkTj5PRTh2BXqBOviYM22FH/d/FqnbpT9yk8RLoR
+	 dD/UO8gUe5F06DgkFo4NzwJ6PS3onfOfmJT42m3VO/xZY812CuJar9airQUDhi5NTZ
+	 k7/0wZCAZ0bsg==
+Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-3ab4c608a6dso27890641fa.1
+        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2026 10:50:08 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBxht2yfvVz8m4BYLxw6dSWqqe0VM9EHemaLW55vYL4NJZi3Oi5o5Mn4LS0Zc+0VXQVnj5VUZIzu4w==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8Z+JvpjhXO0ZVuEVI/CuARpyZPkr5RzeuTQvD5csOOiFOtxCfB
+	OVOREb/dHiYBbz4A8e6d2fipMrpRYIBiwWBC5dZsc8VIQosAXzE4B5U7KDxTw4EdTUm5t9NOhFl
+	vBnl9pRQdNDdTzfucQZDXml6xxd6CfQI=
+X-Received: by 2002:a05:6512:3996:b0:5bc:dd57:d0d8 with SMTP id
+ 2adb3069b0e04-5bfd95769b7mr7366100e87.58.1793904606841; Thu, 05 Nov 2026
+ 10:50:06 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,26 +59,73 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 8bit
+References: <20261105090311.1026648-1-christian.loehle@arm.com>
+ <20261105090311.1026648-3-christian.loehle@arm.com> <663e799b-9cb9-4e31-a6a4-5488d30ad14f@oss.qualcomm.com>
+In-Reply-To: <663e799b-9cb9-4e31-a6a4-5488d30ad14f@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 5 Nov 2026 19:49:54 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0i-Xo5VbiFrwkEEXxbRsnEHoNhU3T3zDAAdOPX+LaW=MQ@mail.gmail.com>
+X-Gm-Features: AclHuK9gSGNqyC8FM-TP7KH3eG3MRPPzTdrcWUcA8KnvyfWSZe5D-goEfiL-67A
+Message-ID: <CAJZ5v0i-Xo5VbiFrwkEEXxbRsnEHoNhU3T3zDAAdOPX+LaW=MQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] cpufreq: Serialize global boost updates
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
+	Christian Loehle <christian.loehle@arm.com>
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, sumitg@nvidia.com, zhanjie9@hisilicon.com, 
+	superm1@kernel.org, zhangpengjie2@huawei.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 5 November 2026 18:22:07 GMT, Faruque Ansari
-<faruque.ansari@oss.qualcomm.com> wrote:
->Hi everyone,
+On Thu, Nov 5, 2026 at 4:01=E2=80=AFPM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
 >
->I believe I took into account all the comments and got the different
->reviewed-by tags from the different maintainers for the changes touching
->the files out of the scope of the 'reset' area. Is it possible to consider
->this series for merging ?
-
-This series looks sane enough to me. I recommend this for merging too.
-
-Let's give akpm a try because he does loads of merging. 
-
-
+> On 11/5/2026 5:03 PM, Christian Loehle wrote:
+> > Serialize concurrent global boost sysfs writes with a mutex.
+> >
+> > Fixes: 6f19efc0a1ca ("cpufreq: Add boost frequency support in core")
+> > Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+> > Reviewed-by: Pengjie Zhang <zhangpengjie2@huawei.com>
 >
->Thanks,
->Faruque Ansari
+> The change looks good to me. It might be worth expanding the commit
+> message a little to describe the race between concurrent global boost
+> sysfs writes and why serialization is needed.
 
---- Thanks!
+Yeah, it would be good to say why this change is necessary.
+
+> With that minor comment:
+>
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+>
+> > ---
+> >   drivers/cpufreq/cpufreq.c | 4 ++++
+> >   1 file changed, 4 insertions(+)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index 23a77f5524df..d95c849f79c5 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -2810,6 +2810,8 @@ int cpufreq_boost_set_sw(struct cpufreq_policy *p=
+olicy, int state)
+> >   }
+> >   EXPORT_SYMBOL_GPL(cpufreq_boost_set_sw);
+> >
+> > +static DEFINE_MUTEX(cpufreq_boost_mutex);
+> > +
+> >   static int cpufreq_boost_trigger_state(int state)
+> >   {
+> >       struct cpufreq_policy *policy;
+> > @@ -2817,6 +2819,8 @@ static int cpufreq_boost_trigger_state(int state)
+> >       bool boost_enabled;
+> >       int ret =3D -EOPNOTSUPP;
+> >
+> > +     guard(mutex)(&cpufreq_boost_mutex);
+> > +
+> >       /*
+> >        * Don't compare 'cpufreq_driver->boost_enabled' with 'state' her=
+e to
+> >        * make sure all policies are in sync with global boost flag.
+>
+>
+> --
+> Thx and BRs,
+> Zhongqiu Han
