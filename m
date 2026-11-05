@@ -1,49 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=91.216.248.212
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793875493;
-	b=VnooTsDlpA5jf33WvopyZaAGgI16So7KxgX9akqjjrpApjOAiCr3ymJtvKwUP3ueiqDm
-	 GSRS7in7nB8hDPUQDI4PYsEJtWrHf2V7U3GHagwodQMeV7bNzxxXQi34Ykkb/faWwiJLW
-	 3cXYSFK1dqECdUPJd1M2pvayh4N4b4dPH3ObMVv3ZNknNWgsHgxG/QlHGpyRb64qYSn0D
-	 o3pgpGsB75fxrBskxrVRAbeeBf0ERyyubX47a2dzdwEgxsJ5UJ5PAHYuNyaFFYr+5yl2Q
-	 jw+2O2qV/mm8C8nAzN8NNgZaV+Mv81/dIeCMe8YVdbZjlhBsfRlYv9FxP4G/yth0B3Q==
+	t=1793875865;
+	b=4FweafQXTG72kYl6Ng107TdY5krhWjlemUAsTRSDOiVdXiJJ5+0DBB3UqH0NDYI26Ugd
+	 OfQpuv93+345sySK56LBcWSm1gEiMEeEwK4JtYpVtDMaNVCaYumIVVVDgf7Ce7rjpR4Xz
+	 I/kKNM2lQ1vNxZpebNV5jAXELShsWTufEed5L60ZlvDOJHVlbV3jpdMhP4geaJnYR5D2R
+	 j2/XFjKiQu7PfT/m0yX8j0M85zXXOpByEpfvXNfMK1ggNKezojjV8+JY24jSSzFHNLWhq
+	 JNOeauGVuN9l+R5uNqHvE/x4hC3wro5RrguKYvrp/BU72SPjV2+LDeXI2Fjn7bCORpg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793875493;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=/361YtGqsPyOKwIWksN+u2NxEOEqDW3UHp20AyisReU=;
-	b=vrZptwRejWqIw7+Wbz7BXU0jIwDp5yr4hzIjEyC8eQg54IvPXG3Vu7n5CQBM0i3xAd1S
-	 eo9OuJUD/C9YVRq9bHQkkv0Uf95w0Go7JMYhDyw2Js98moH3TeqhQZUmi+4f++86jHk+6
-	 E6twz2u97DvMjXx6QABrrsR7mK/ZoQrBvDSJtgqGdx/mnxGKMqUyvHVeUg72hPyIFgrWY
-	 UyH9OeThpIYWug2GM8Q3tP54+Nye5hbterqqu2z1hwSqwYXUBmcgUbWby0rEVO+RaySO4
-	 BIXH7sw1DEf9qt0AKY0fq+O1lHtkoUoPGgm18259CDHKJvG8r7GgpPIo3CWQ4YS9Kzw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793875865;
+	h=DMARC-Filter:Date:X-Lima-ML-UUID:DKIM-Signature:From:To:Cc:Subject:
+	 Message-ID:In-Reply-To:References:Organization:X-Mailer:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=7doXEY6tEGN5XpIzKlfdDifPRAKlhLQY5Fydrjzk0gk=;
+	b=1sHGGhbyPEb9+0UFYsZ2wk59SjHJ7hTN+omncSXY9xYQchFL/T48M2uuXnNyY3SaZD5H
+	 fJfP5tDhwNsgDxe+UDyvabb99d+++oMXRPuqCjjhpAD8TXtItPSYV3H0ukS1Q6OSks4qH
+	 X+G2FHpB/mZxDvcCVRptki+Ak/kmVQYXosYjHf0tM9C1hnNgm6wv0bpVpHmELkpMCuWai
+	 Wxb7om0Ub/EDZ7+IQQRkKG57sc8Su/vXczt5OLpH5K8LjikJIPtoblgIfncGtumJpekbb
+	 Vz0RtqfgLndo3QQRpxG/WGoQbkIU5rjQao0NzWgVVEHiSggnXLV0UFz3gIVk3ewvaPA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=e0CgSm1Y;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7A0E5606A31B;
-	Thu,  5 Nov 2026 10:44:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7A0E5606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=none header.from=deq.rocks;
+	spf=none smtp.mailfrom=deq.rocks;
+	dkim=pass header.d=deq.rocks header.i=@deq.rocks header.a=rsa-sha256 header.s=securedbylima-20251205 header.b=ZsDmta6p;
+	arc=none smtp.remote-ip=91.216.248.212
+Received: from bulk0.mail-out.lima-city.de (bulk0.mail-out.lima-city.de [91.216.248.212])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7FA5606A31B;
+	Thu,  5 Nov 2026 10:51:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B7FA5606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=deq.rocks
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=deq.rocks
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=e0CgSm1Y
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 44D93143D;
-	Thu,  5 Nov 2026 02:44:47 -0800 (PST)
-Received: from [10.57.10.82] (unknown [10.57.10.82])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3A2343F673;
-	Thu,  5 Nov 2026 02:44:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793875490; bh=IxjGppRiLkVgod0WaDW7XzKw99H8Qwfc7vGKAcV6TO8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=e0CgSm1Y7bxhpm4MerUzAFUUrD55l3h82sWS6NGbFBxG8DDhG3HDQ78PywiKVWGws
-	 4xaDwbQgOppazMyK7e8WBrTj8pACWEZ3VMWzPeYrKbWkOfN2alW663BHxhV3xM0Ff2
-	 lJdwJXgvf0NISzZpt9X6K60L1aLzU4D18LArDc3U=
-Message-ID: <a53ebde3-ca2b-46dc-b4bc-93379b05a1a8@arm.com>
-Date: Thu, 5 Nov 2026 10:45:20 +0000
+	dkim=pass (2048-bit key, unprotected) header.d=deq.rocks header.i=@deq.rocks header.a=rsa-sha256 header.s=securedbylima-20251205 header.b=ZsDmta6p
+Date: Thu, 5 Nov 2026 11:50:57 +0100
+X-Lima-ML-UUID: c2133058-0a16-48fd-a715-ac6746bedd72
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=deq.rocks;
+	s=securedbylima-20251205; t=1793875861;
+	bh=7doXEY6tEGN5XpIzKlfdDifPRAKlhLQY5Fydrjzk0gk=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=ZsDmta6pBve8jY+VNr/QVkzxn8A09WLJ74OFTgDN26hqDkDqbSOHckIow2DOHDyKh
+	 8YMj851StYI+d8UvNQwMkkgVrdpRo1YIDUz+GBMBVBxq/f0K9Om2yqOW4HmSU2xP1H
+	 gxoPkW3NObZ0e4/5evRovlFUqmN8w6zwSWMF6UBqqFzadLvvtaab/XDrhY5yJpbZYj
+	 PlokuxOw622TqnQZj5saXfktP4OfNqgDxznJeraSCkTyHI9b50tJqTh3kPbgXYuZMw
+	 q3VenZSSUQJwfewT6Wr03HfVkYFPIoQQUjci/HihwqB4P82iQs7Z1azSFkfc2APvHS
+	 LT2Mt5+CEyhEA==
+From: =?UTF-8?B?QW5kcsOp?= Eikmeyer <dev@deq.rocks>
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ <linux-acpi@vger.kernel.org>, "Len Brown" <lenb@kernel.org>, Thomas
+ Gleixner <tglx@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ACPI: x86: Apple T2 systems need early CPU offlining
+Message-ID: <20261105115057.573c3725@kait2en-mbp15-1>
+In-Reply-To: <9bc46362-6b3b-48e0-b1a0-0cc7e84fd151@intel.com>
+References: <20260812120326.155226-1-dev@deq.rocks>
+	<aoCJGj8HixmJ9oaZ@wunner.de>
+	<9bc46362-6b3b-48e0-b1a0-0cc7e84fd151@intel.com>
+Organization: KaiT2en
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,68 +68,39 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] dt-bindings: thermal: Use signed integers for
- coefficients
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- "open list:THERMAL" <linux-pm@vger.kernel.org>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
-References: <20261103214357.2700244-1-daniel.lezcano@oss.qualcomm.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20261103214357.2700244-1-daniel.lezcano@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Hi Daniel,
+On Tue, 18 Aug 2026 00:27:53 +0800
+"Chen, Yu C" <yu.c.chen@intel.com> wrote:
 
-On 11/3/26 21:43, Daniel Lezcano wrote:
-> The coefficients property describes the coefficients of a linear
-> equation used to derive a thermal zone temperature. Both the slope
-> and the constant offset can be negative, and the thermal core stores
-> them as signed integers.
-> 
-> Existing Device Trees already rely on signed values. OMAP4460 uses
-> an offset of -9301, while OMAP5 uses offsets of -1791 and -2992.
-> Broadcom platforms also use negative slopes. Declaring the property
-> as uint32-array does not represent these values correctly.
+> Glad it helped! At that time, it seemed that the issue might have
+> been related to broken Mac platforms, and we were changing the
+> generic x86 path. Maybe we can wait for Andre's feedback, I
+> can try again / or assist Andre - or just keep it out-of-tree;
+> that's also fine.
 
-This looks like a good argument which was missed back then (that
-the negative values are possible).
+And you waited for quite a long time! Sorry for that. I had to fix
+other things on our cursed Macs before being able to investigate this
+further. Hybryd graphics offload etc... And in the meanwhile, I forgot
+about.
 
-> 
-> Change the property type to int32-array so schema validation decodes
-> the cells as signed 32-bit integers, matching their intended meaning
-> and the thermal implementation. The cell width and binary encoding
-> remain unchanged, preserving compatibility with existing Device
-> Trees.
-> 
-> Fixes: 1202a442a31f ("dt-bindings: thermal: Add yaml bindings for thermal zones")
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> ---
->   Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> index 999ad40a20d5..72e419124f98 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> @@ -101,7 +101,7 @@ patternProperties:
->             thermal zone.
->   
->         coefficients:
-> -        $ref: /schemas/types.yaml#/definitions/uint32-array
-> +        $ref: /schemas/types.yaml#/definitions/int32-array
->           description:
->             An array of integers containing the coefficients of a linear equation
->             that binds all the sensors listed in this thermal zone.
+First of all, I tried Chenyu's patch and I can confirm it works as good
+as mine and as such we can forget about my bloaty early offlining.
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+But! The actual cause for slow smpboot is simply thunderbolt pm on
+suspend. We don't have that issue when using pcie_ports=3Dcompat or
+acpi_osi=3D!Darwin. It happens when using pcie_ports=3Dnative and also
+without param. The slow EC-unblock is caused by aer. pci=3Dnoaer solves
+that reliably. I could not find aer to be used in macos anywhere, so I
+think Apple doesn't use it.
 
-Regards,
-Lukasz
+Well, however - OSDW acpi tables are significantly larger and more
+complicated than !OSDW, so here is a bit of work to do for us in
+thunderbolt.c.
+First attempts are looking promising. Resume is even
+faster than with pci_ports=3Dcompat. A second or so. But we are
+struggling here and there. Especially with rtd3 and such. I would like
+to have this working before submitting.
+
+Andr=C3=A9
