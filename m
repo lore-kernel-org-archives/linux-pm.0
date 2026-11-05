@@ -1,80 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.62.58.211
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793898299;
-	b=rDkDMsaDljZLsCAHZlCZI9gfEbvizvqz4AleNzMYu/W+UfXFLD1RT6plNuJQI4NVcDFR
-	 hvl/oF6kxAhnhiyGiShIq/cKtKcNiktQnFhv8NWjzOpygHF+6lRNLS9y51lvCX7xNhlL7
-	 jJ8NPjTI+XqZ1OfMPJZLA2E8rdGNnupHvhPKoV213ugO5688nf0X0CGi+AxPLu0LJIQMu
-	 yJdlT1yx/u8nAaE2+CNKJATwZcOZN30mxrE8UqBiI7NEzSFPh59JIUlgcAjmeYGeIE7GK
-	 aluJJ6KwFf6K35t5TTRjqaltSSgGAw2AbZhW50cbr/0d0IkmDiyJRsfhw45YZoeHTYQ==
+	t=1793898486;
+	b=bPw8QxUCEsJmBCr4R3sqNdmuKi9jrnt0FnPk7S74MnYrdAhPlOBMSmnYBTZyGCIQlrOA
+	 BklZ7GenQ6x5lVEhGWvx3XUzEz6tqJQTP35GnY2WIsjXFtKDzo5LXAQbA2pZ/7ZAYak7a
+	 a3swJUCZAbx7rfW1J77bHreApB3lHk6u0HIBf+i8hjDixLEvv8ut0zDTOdeRhmHpV1jge
+	 CP7ic+XoiLhZXQetfwyaR4yQbzv5uFcEzd1XmGLXKFuaBqQydganl4KMer7wKKntGneD0
+	 K3W4qHDM556x+RVOFjS3WWXit1ORVwnH3NdkSNRIPueripJZL/9hDFh0H5YA5mM9RMg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793898299;
-	h=DMARC-Filter:DKIM-Signature:Received:X-QQ-mid:Message-ID:
-	 X-QQ-XMAILINFO:X-QQ-XMRINFO:From:To:Cc:Subject:Date:X-OQ-MSGID:
-	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=19A+n+tPKF3BLTOEL99mW+EyDngEAPV7MLTE18m3yzQ=;
-	b=E8RH2xWG4rU5L6NySivuH/+xCCUPcZvw53IQbpKyJ8ao0XIlAenKZ5A/FPjZqkJaEbGy
-	 7VCiET7BTFsODIXuAoKseiP9GxHRaeRoZbY+jy6HwMkFoODN2Oq8Q7/K1pnxbQxpuRTqm
-	 OqdohQypJNiY8Aauqzc33dRkIw059BBK5QYzbdei3m2PCJuVuGjnXRopNNgaMghQSlheR
-	 DRFfxHi8CS7yQSDOw1e5gvV4C39Kik2WdhbYRcknJwzpU5Db8ZrPd+kgp3lbl5OewMjMc
-	 EZmXKAU9RMgxTI/XWQIr0jk4/6Dj11EE42ylWb/q1h9iGug2DYDQvpsgEfOrFSLUNCQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793898486;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type;
+	bh=unpU2o0zWc/AsDEneSNeZzhchF2sV91HMnvUV4zyUMA=;
+	b=HUcR2le8/yjJWlb0ln63vDcR9U6iarhLS78DTLmeVLcYj/T4f7V+Lso6HsjqG24LoMok
+	 u/rr4JfIbATgCAbTASIf0RzUynSwz1CDTqFJf1FwihwS1pj+Vr3A2i3adnqxwmL6WAiih
+	 rhb3CVvvMbDJvMmr+i7SEfLSVjq3y0R2MpaozaoiI9NFVkySShRtHo2QQhKef8J6PI0Qr
+	 uc8vMlhpWcph6P8LGC0H8EakQ4IHhH7SiEqmBsbGSN1DqdE2C6bf263Jy4QD2qsj0QY8q
+	 Up3feda1WD7h9aFCqnTQiVgyemOlhGvCPAgrIhX4zzCuBZ7flbaVS/jSYU9WcYYiURw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=qq.com;
-	spf=pass smtp.mailfrom=qq.com;
-	dkim=pass header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=qKmPTA8I;
-	arc=none smtp.remote-ip=162.62.58.211
-Received: from out162-62-58-211.mail.qq.com (out162-62-58-211.mail.qq.com [162.62.58.211])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="c9/xKHdl";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C376C606A32D
-	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 17:04:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C376C606A32D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9754606A328
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 17:08:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=qKmPTA8I
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1793898293; bh=19A+n+tPKF3BLTOEL99mW+EyDngEAPV7MLTE18m3yzQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=qKmPTA8IMCx+sQxs3A49oebVGmAoHpf0D3Mumv1VqyTjIvrGbGP5BxlAnA6dYGa14
-	 XuO985RhikxXuGvbw/iVxPpaZz9Hyx2JCK1dJtSBd4X83DLui0CxSwx4GeOqR8EpBI
-	 po8X330j6Jcn0FV3vD+E4NCRXDm/M0Asn/u0E4sk=
-Received: from localhost.localdomain ([180.164.23.12])
-	by newxmesmtplogicsvrsza63-0.qq.com (NewEsmtp) with SMTP
-	id 133170FE; Fri, 06 Nov 2026 01:04:51 +0800
-X-QQ-mid: xmsmtpt1793898291txuxm0f2b
-Message-ID: <tencent_E6852D1967C70433E84FE0F8C893BC8CFB0A@qq.com>
-X-QQ-XMAILINFO: NMOcRb7Tb1o3o4a9i8OKNvHa6Oc53gvuHUC5ukE06ZDohYu/uW9/mg+vyvgrfB
-	 +rftpnd76oK+FMvhfGZCkisqe47BKHPVk+Y5jrplRNomGSpgRuYwooTTF4tO9y+Q0QxiY8Zj3P7z
-	 BNGF4C1Qd27hMJacSJaamnrV72K1qi8eE9R4iDdKJOIv2VJh7HaB5KnKa0HBUMYk+FJAWCgrAHVh
-	 NgGRzsMDXfxoWnt5uVO/7oc/4JSSau0lSYHX1bPBwhgYIL60XZKJVQ9SezJgPiytrTD1GGkQ6VFb
-	 QbcbB5egI/lWaOS9jFVRIcztjJURJXF0ZQ8GCBkLLVPAbKeuEO8KwOdXN/vBeHkObkp6VOj0lYmv
-	 qG+Dv5DBT8yQdfnYV/sYTd6rM4MUaba4wqOV9Q2mRRjzbSXRKeZEfYz15/NGz2duLDukNELg+dpP
-	 JmJtp8Xt3pvSfAWjIvW+XSExemAhqN/MUnG/GjIDkoGlu0t6SZIkD3gYmi3ARFtBwz+hLPM6LpWj
-	 LOa/5ToaLECzaNv36YpQ9LZ6yZpXVISsNv17XxDDvLVe5rRh5/vQnkOKJM8gvSigfU3nIkT0ner3
-	 4UQrXikaRd7AEd59rhGVFkoBb8GWAEm1/opmeDae4BueD+aJHtIw1QjDvZwUSIQ/3Pa4YWHN+yJQ
-	 l7yvA5z3KI5Hp2TdglPj003x34xwdHRmY+hJq/7BrlPv5cH5KulajV9EzeEbYP5l7UaO121eG7TY
-	 mNmUF/Il3tCagKYwD6lydva5R1k12ZZ20kjRGvDnV+1jV0NS2A8RTt2riJpGOZVVwW45TWUy9iD3
-	 f+rj81rWYCN+tl8IODIWhEaKyn9y0mIJb3ttKCbpIdb7WCEyibFhnYrskncwd59FHMazITk3gmv/
-	 7N6xXzJ0D3RL7OFLcFTBXGyscjfqixXnkD/806WNSDswQjAXWFfc44D3ZZg9yQHKqS/DjdQsZERV
-	 Q74HweYktIt78Ry3smp9Yi8pDUJVDL0OBJb+U1PZy41IhfY3yn/BqaVaiYLJVIFSn8pQQ4y+fvod
-	 9jozdKdqmzX3ouWOAEvi5k/6XmR2SVdPb6kkfLxiPMUmiGcgBD+LXJDhZ0njU/Dt600hGXXXsRhe
-	 q6dyLBhOKqlwQ6VJEgT1JtWUmYA350oToW6GjiNURA6jv4atpDKwa/S37CCsM+YeKrKH18
-X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
-From: Kaiqian Zhu <362918296@qq.com>
-To: Sudeep Holla <sudeep.holla@kernel.org>
-Cc: Ulf Hansson <ulfh@kernel.org>,
-	rafael@kernel.org,
-	daniel.lezcano@kernel.org,
-	christian.loehle@arm.com,
-	linux-pm@vger.kernel.org,
-	Kaiqian Zhu <zhukaiqian@xiaomi.com>
-Subject: [PATCH] cpuidle: psci: Fix CPU PM domain state after failed runtime PM resume
-Date: Fri,  6 Nov 2026 01:04:38 +0800
-X-OQ-MSGID: <20261105170438.1559-1-362918296@qq.com>
-X-Mailer: git-send-email 2.22.0.windows.1
-In-Reply-To: <20261105-logical-ruby-scorpion-29ba7b@sudeepholla>
-References: <20261105-logical-ruby-scorpion-29ba7b@sudeepholla>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=c9/xKHdl
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F8E51F00A15
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 17:08:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793898484;
+	bh=unpU2o0zWc/AsDEneSNeZzhchF2sV91HMnvUV4zyUMA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=c9/xKHdl+HM4V8XvLn+cBfws9k8acCiVHXXPdDhpItmXZZ3VVCfDqRVyVseZ/HBN+
+	 kLGmjkmrl/kzQa2gwLqVZIQ6nW4xxuZR7+Kz8sBEhNjSb0j5TD6kmqVGW6VVj2tudf
+	 G/ekdFP09zLXStyg8fNL5l0U/C1LS/kUGz1+aRbYvvyve5cF9z5WCEdd+eROpncvb9
+	 ZQbG5a2nMX0eAgNdHxibQ6dtecf3HosB1rIG9ECWTaOATfCewF/4Wt07bMYJJPYlPq
+	 HNT0/m01wuvQVor2nrp3KMiJWy2ELJnt3fHYcTxIYcHTro7mgSiZwML5gtgcl2aP2+
+	 vEYFsqU+3LBUw==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5be3cff0f6cso1445332e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2026 09:08:04 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBxXDCCb7mg9v/AZNBkR05/1rZac7sescZ6gQeVF3wAszYlIBmTlqpoCMRZqqWTi+Keg8sra2wFCMQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+7FuMJQWy0YkYDHA8BHbygk0SdlRcP8dSIVLI8i/JBoEQZpIMm
+	82egOe6IM0FUHRRqiptCrKx6+PeujNli4jzbQ/Qm3GAl2aJEXbeZqF7i+yTgw9m0hHXEEELSEFI
+	qtkLUkb7j2eRRXJtbGYaKdCqDvjUzF8w=
+X-Received: by 2002:a05:6512:3c8e:b0:5bf:9fc1:393f with SMTP id
+ 2adb3069b0e04-5bfd957cee8mr7858819e87.52.1793898482589; Thu, 05 Nov 2026
+ 09:08:02 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,126 +59,328 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+References: <20261105140357.1331894-1-zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20261105140357.1331894-1-zhongqiu.han@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 5 Nov 2026 18:07:49 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gkRC53e+==9xBZh=ZFTkgU5v=fwNCgJCRTdKoxcOFhng@mail.gmail.com>
+X-Gm-Features: AclHuK9b7f_CFGXeNM0N0dqJJ-bH3TkwROr7iA6_cC8OH3jaaB2F2CRCtxINtFA
+Message-ID: <CAJZ5v0gkRC53e+==9xBZh=ZFTkgU5v=fwNCgJCRTdKoxcOFhng@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: Only cache resolved frequency in cpufreq_driver_resolve_freq()
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, vincent.donnefort@arm.com, 
+	linux-pm@vger.kernel.org, stable@vger.kernel.org
+Content-Type: multipart/mixed; boundary="000000000000d17d01065f8a8928"
+
+--000000000000d17d01065f8a8928
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-In PSCI OSI mode with the hierarchical CPU topology, a CPU can come=0D
-out of idle after dpm_suspend_late() has already disabled runtime PM=0D
-for its device. The idle exit then restores the cluster PM domain through=0D
-the runtime PM path, however, since the runtime PM is disabled, it=0D
-becomes a no-op and the domain stays powered off in software while=0D
-the CPU is running. The CPU then silently stops requesting the cluster/=0D
-system power level in CPU_SUSPEND.=0D
-=0D
-The Race:=0D
-dpm_suspend_late() wakes all idle CPUs first and only then walks the=0D
-device list, disabling runtime PM per device as it goes:=0D
-=0D
-  dpm_suspend_late()=0D
-    wake_up_all_idle_cpus()               <-- asynchronous cpu wakeup=0D
-      device_suspend_late(dev, ...)=0D
-        __pm_runtime_disable(dev,false)    <-- disable_depth++=0D
-=0D
-wake_up_all_idle_cpus() only requests that the idle CPUs leave idle; it=0D
-does not wait for them. A CPU parked in a deep PSCI state can take a long=0D
-time to come back that its idle exit lands after the runtime disable:=0D
-=0D
-  CPU0: dpm_suspend_late()             CPUx: parked in idle=0D
-  ------------------------------       ----------------------------=0D
-  wake_up_all_idle_cpus()=0D
-                                       powering ON=0D
-  device_suspend_late(pd_dev)=0D
-    __pm_runtime_disable(pd_dev)=0D
-      disable_depth++=0D
-                                       powered ON=0D
-                                       __psci_enter_domain_idle_state()=0D
-                                       pm_runtime_get_sync(pd_dev)=0D
-                                       no-op: disable_depth > 0=0D
-=0D
-genpd_runtime_resume() never runs and the domain stays OFF. The next=0D
-idle entry skips the genpd suspend as the state is already OFF.=0D
-=0D
-Fix this by using the genpd interface when the runtime PM is disabled.=0D
-If the runtime resume failed to restore the domain, force it on by=0D
-calling the genpd suspend/resume pair directly.=0D
-=0D
-Signed-off-by: Kaiqian Zhu <zhukaiqian@xiaomi.com>=0D
----=0D
-Resend note: No code changes. Resent only to remove the automatic=0D
-corporate email disclaimer footer from previous send.=0D
-Link: https://lore.kernel.org/r/20261021031709.42644-1-zhukaiqian@xiaomi.co=
-m=0D
-Link: https://lore.kernel.org/all/20261105-logical-ruby-scorpion-29ba7b@sud=
-eepholla/=0D
-=0D
- drivers/cpuidle/cpuidle-psci.c | 28 +++++++++++++++++++++++++---=0D
- 1 file changed, 25 insertions(+), 3 deletions(-)=0D
-=0D
-diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.=
-c=0D
-index b250d0dde760..5b56f279cc7e 100644=0D
---- a/drivers/cpuidle/cpuidle-psci.c=0D
-+++ b/drivers/cpuidle/cpuidle-psci.c=0D
-@@ -70,14 +70,23 @@ static __cpuidle int __psci_enter_domain_idle_state(str=
-uct cpuidle_device *dev,=0D
-        struct device *pd_dev =3D data->dev;=0D
-        struct psci_cpuidle_domain_state *ds;=0D
-        u32 state =3D states[idx];=0D
-+       bool use_genpd;=0D
-        int ret;=0D
-=0D
-        ret =3D cpu_pm_enter();=0D
-        if (ret)=0D
-                return -1;=0D
-=0D
-+       /*=0D
-+        * The PM core disables runtime PM during a system-wide suspend, wh=
-ich=0D
-+        * makes the pm_runtime_*() calls below no-ops.  The resume can the=
-n=0D
-+        * no longer set the PM domains back ON, while the CPU is running.=
-=0D
-+        * Use the genpd interface directly whenever runtime PM is unavaila=
-ble.=0D
-+        */=0D
-+       use_genpd =3D s2idle || !pm_runtime_enabled(pd_dev);=0D
-+=0D
-        /* Do runtime PM to manage a hierarchical CPU toplogy. */=0D
--       if (s2idle)=0D
-+       if (use_genpd)=0D
-                dev_pm_genpd_suspend(pd_dev);=0D
-        else=0D
-                pm_runtime_put_sync_suspend(pd_dev);=0D
-@@ -90,11 +99,24 @@ static __cpuidle int __psci_enter_domain_idle_state(str=
-uct cpuidle_device *dev,=0D
-        ret =3D psci_cpu_suspend_enter(state) ? -1 : idx;=0D
-        trace_psci_domain_idle_exit(dev->cpu, state, s2idle);=0D
-=0D
--       if (s2idle)=0D
-+       if (use_genpd) {=0D
-                dev_pm_genpd_resume(pd_dev);=0D
--       else=0D
-+       } else {=0D
-                pm_runtime_get_sync(pd_dev);=0D
-=0D
-+               /*=0D
-+                * Whenever runtime PM is disabled while a CPU was idle (in=
-=0D
-+                * the system-wide suspend progress), the resume above beca=
-me=0D
-+                * a no-op and the domain is still OFF.=0D
-+                * Force the genpd to update power state to ON, so that the=
- next=0D
-+                * suspend can see the correct state.=0D
-+                */=0D
-+               if (!dev_pm_genpd_is_on(pd_dev)) {=0D
-+                       dev_pm_genpd_suspend(pd_dev);=0D
-+                       dev_pm_genpd_resume(pd_dev);=0D
-+               }=0D
-+       }=0D
-+=0D
-        cpu_pm_exit();=0D
-=0D
-        /* Correct domain-idlestate statistics if we failed to enter. */=0D
---=0D
-2.53.0=
+On Thu, Nov 5, 2026 at 3:04=E2=80=AFPM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
+>
+> Commit e3c062360870 ("cpufreq: add cpufreq_driver_resolve_freq()") added
+> policy->cached_resolved_idx so that "a subsequent fast_switch operation
+> can avoid repeating the same lookup", and made cpufreq_set_policy()
+> invalidate the cache instead of filling it. That is, the cached index is
+> only meant to be used by the frequency switch immediately following the
+> resolution that has produced it.
+>
+> However, two other places now access the cache without synchronizing
+> with its other users:
+>
+>  * Since commit f9ccdec24d91 ("cpufreq: Reuse cpufreq_driver_resolve_freq=
+()
+>    in __cpufreq_driver_target()"), __cpufreq_driver_target() reads the
+>    resolved index back from the cache before calling ->target_index().
+>    sugov_work() calls it without sg_policy->update_lock, so the scheduler
+>    path (a tick on the policy CPU or a remote update) can overwrite the
+>    index via cpufreq_driver_resolve_freq() meanwhile. This matters when
+>    sugov_hold_freq() discards the lower frequency resolved there, leaving
+>    the CPU below the frequency schedutil has kept for it.
+>
+>   CPU0 (sugov_work())                  CPU0 (tick interrupt)
+>   __cpufreq_driver_target(f_i)
+>     __resolve_freq()
+>       cached_resolved_idx =3D i
+>                                        sugov_update_single_freq()
+>                                          get_next_freq()
+>                                            cpufreq_driver_resolve_freq(f_=
+k)
+>                                              cached_resolved_idx =3D k
+>     __target_index(cached_resolved_idx)
+>       ->target_index(policy, k)
+>
+>  * Since commit 151717690694 ("cpufreq: Make policy min/max hard
+>    requirements"), cpufreq_set_policy() updates the cache as a side effec=
+t
+>    of __resolve_freq(), which can race with governors switching frequenci=
+es
+>    without policy->rwsem (schedutil, ondemand, conservative), and a simil=
+ar
+>    race was addressed by commit 7491cdf46b5c ("cpufreq: Avoid using
+>    inconsistent policy->min and policy->max"). qcom-cpufreq-hw and
+>    apple-soc-cpufreq ->fast_switch() read the cached index directly too.
+>
+>   CPU0 (sugov_work(), work_lock held)  CPU1 (handle_update(), rwsem held)
+>   __cpufreq_driver_target(f_i)
+>     __resolve_freq()
+>       cached_resolved_idx =3D i
+>                                        cpufreq_set_policy()
+>                                          __resolve_freq(min)
+>                                            cached_resolved_idx =3D j_min
+>     __target_index(cached_resolved_idx)
+>       ->target_index(policy, j_min)
+>
+> In both cases, schedutil does not call the driver again until its
+> selection changes, so the CPU can get stuck at a frequency it has not
+> selected. All drivers implementing ->target_index() are affected.
+>
+> The cache is only consumed by ->fast_switch() right after
+> cpufreq_driver_resolve_freq(), so only update it there and use a local
+> index in __cpufreq_driver_target().
+>
+> Fixes: f9ccdec24d91 ("cpufreq: Reuse cpufreq_driver_resolve_freq() in __c=
+pufreq_driver_target()")
+> Fixes: 151717690694 ("cpufreq: Make policy min/max hard requirements")
+> Cc: stable@vger.kernel.org # 5.14+
+> Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> ---
+> v1 -> v2:
+> - Initialize idx in __cpufreq_driver_target() to avoid a
+>   -Wmaybe-uninitialized warning with W=3D2, as reported by Sashiko.
+> - Link to V1: https://lore.kernel.org/all/20261104153042.3987338-1-zhongq=
+iu.han@oss.qualcomm.com/
+>
+>  drivers/cpufreq/cpufreq.c | 38 ++++++++++++++++++++++++++++++--------
+>  1 file changed, 30 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 54dde8419bdc..68009918e80a 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -471,10 +471,17 @@ void cpufreq_disable_fast_switch(struct cpufreq_pol=
+icy *policy)
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_disable_fast_switch);
+>
+> +/*
+> + * Note that this does not update the cached frequency lookup in @policy=
+,
+> + * because it may be running in parallel with a frequency switch carried=
+ out by
+> + * the governor that uses the cached index.  If @resolved_idx is not NUL=
+L, the
+> + * index of the resolved frequency in the frequency table is stored in t=
+he
+> + * location pointed to by it instead.
+> + */
+>  static unsigned int __resolve_freq(struct cpufreq_policy *policy,
+>                                    unsigned int target_freq,
+>                                    unsigned int min, unsigned int max,
+> -                                  unsigned int relation)
+> +                                  unsigned int relation, unsigned int *r=
+esolved_idx)
+>  {
+>         unsigned int idx;
+>
+> @@ -484,8 +491,8 @@ static unsigned int __resolve_freq(struct cpufreq_pol=
+icy *policy,
+>                 return target_freq;
+>
+>         idx =3D cpufreq_frequency_table_target(policy, target_freq, min, =
+max, relation);
+> -       policy->cached_resolved_idx =3D idx;
+> -       policy->cached_target_freq =3D target_freq;
+> +       if (resolved_idx)
+> +               *resolved_idx =3D idx;
+>         return policy->freq_table[idx].frequency;
+>  }
+>
+> @@ -505,6 +512,7 @@ unsigned int cpufreq_driver_resolve_freq(struct cpufr=
+eq_policy *policy,
+>  {
+>         unsigned int min =3D READ_ONCE(policy->min);
+>         unsigned int max =3D READ_ONCE(policy->max);
+> +       unsigned int freq, idx;
+>
+>         /*
+>          * If this function runs in parallel with cpufreq_set_policy(), i=
+t may
+> @@ -517,7 +525,20 @@ unsigned int cpufreq_driver_resolve_freq(struct cpuf=
+req_policy *policy,
+>         if (unlikely(min > max))
+>                 min =3D max;
+>
+> -       return __resolve_freq(policy, target_freq, min, max, CPUFREQ_RELA=
+TION_LE);
+> +       target_freq =3D clamp_val(target_freq, min, max);
+> +       freq =3D __resolve_freq(policy, target_freq, min, max, CPUFREQ_RE=
+LATION_LE,
+> +                             &idx);
+> +
+> +       /*
+> +        * Cache the lookup result for the subsequent ->fast_switch() cal=
+l, which
+> +        * is the only user of it.
+> +        */
+> +       if (policy->freq_table) {
+> +               policy->cached_resolved_idx =3D idx;
+> +               policy->cached_target_freq =3D target_freq;
+> +       }
 
+The extra clamping of target_freq above the __resolve_freq() call
+above is not nice.
+
+Also, all of this can be rearranged to avoid passing NULL pointers to
+__resolve_freq().
+
+Moreover, if I'm not mistaken, the direct policy->cached_target_freq
+update in cpufreq_set_policy() needs to be moved to the point where
+the governor has been stopped or it will still be racing with fast
+switching.
+
+Overall, the attached (untested) patch is what I would do, so please
+let me know if it works for you (sorry for the attachment, but GMail
+isn't good at handling appended patches).
+
+> +
+> +       return freq;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_driver_resolve_freq);
+>
+> @@ -2355,12 +2376,13 @@ int __cpufreq_driver_target(struct cpufreq_policy=
+ *policy,
+>                             unsigned int relation)
+>  {
+>         unsigned int old_target_freq =3D target_freq;
+> +       unsigned int idx =3D 0;
+>
+>         if (cpufreq_disabled())
+>                 return -ENODEV;
+>
+>         target_freq =3D __resolve_freq(policy, target_freq, policy->min,
+> -                                    policy->max, relation);
+> +                                    policy->max, relation, &idx);
+>
+>         pr_debug("CPU %u: cur %u kHz -> target %u kHz (req %u kHz, rel %u=
+)\n",
+>                 policy->cpu, policy->cur, target_freq, old_target_freq, r=
+elation);
+> @@ -2393,7 +2415,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *=
+policy,
+>         if (!cpufreq_driver->target_index)
+>                 return -EINVAL;
+>
+> -       return __target_index(policy, policy->cached_resolved_idx);
+> +       return __target_index(policy, idx);
+>  }
+>  EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
+>
+> @@ -2666,14 +2688,14 @@ static int cpufreq_set_policy(struct cpufreq_poli=
+cy *policy,
+>          * concurrently by cpufreq_driver_resolve_freq() during the updat=
+e.
+>          */
+>         freq =3D __resolve_freq(policy, new_data.max, new_data.min, new_d=
+ata.max,
+> -                             CPUFREQ_RELATION_H);
+> +                             CPUFREQ_RELATION_H, NULL);
+>         if (freq !=3D policy->max) {
+>                 WRITE_ONCE(policy->max, freq);
+>                 policy->update_limits =3D true;
+>         }
+>
+>         freq =3D __resolve_freq(policy, new_data.min, new_data.min, new_d=
+ata.max,
+> -                             CPUFREQ_RELATION_L);
+> +                             CPUFREQ_RELATION_L, NULL);
+>         freq =3D min(freq, policy->max);
+>         if (freq !=3D policy->min) {
+>                 WRITE_ONCE(policy->min, freq);
+> --
+> 2.43.0
+>
+
+--000000000000d17d01065f8a8928
+Content-Type: text/x-patch; charset="US-ASCII"; name="cpufreq-cached-resolved-idx.patch"
+Content-Disposition: attachment; 
+	filename="cpufreq-cached-resolved-idx.patch"
+Content-Transfer-Encoding: base64
+Content-ID: <f_mw3srv9w0>
+X-Attachment-Id: f_mw3srv9w0
+
+LS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgICA1NiArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgMzUgaW5zZXJ0aW9u
+cygrKSwgMjEgZGVsZXRpb25zKC0pCgotLS0gYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCisr
+KyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKQEAgLTQ3NCwyMiArNDc0LDI3IEBAIHZvaWQg
+Y3B1ZnJlcV9kaXNhYmxlX2Zhc3Rfc3dpdGNoKHN0cnVjdAogfQogRVhQT1JUX1NZTUJPTF9HUEwo
+Y3B1ZnJlcV9kaXNhYmxlX2Zhc3Rfc3dpdGNoKTsKIAotc3RhdGljIHVuc2lnbmVkIGludCBfX3Jl
+c29sdmVfZnJlcShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKLQkJCQkgICB1bnNpZ25l
+ZCBpbnQgdGFyZ2V0X2ZyZXEsCi0JCQkJICAgdW5zaWduZWQgaW50IG1pbiwgdW5zaWduZWQgaW50
+IG1heCwKLQkJCQkgICB1bnNpZ25lZCBpbnQgcmVsYXRpb24pCisKK3N0YXRpYyB1bnNpZ25lZCBp
+bnQgZ2V0X2luZGV4X2FuZF9mcmVxKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LAorCQkJ
+CQkgdW5zaWduZWQgaW50IG1pbiwgdW5zaWduZWQgaW50IG1heCwKKwkJCQkJIHVuc2lnbmVkIGlu
+dCByZWxhdGlvbiwgdW5zaWduZWQgaW50ICpmcmVxKQogewogCXVuc2lnbmVkIGludCBpZHg7CiAK
+LQl0YXJnZXRfZnJlcSA9IGNsYW1wX3ZhbCh0YXJnZXRfZnJlcSwgbWluLCBtYXgpOworCWlkeCA9
+IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlX3RhcmdldChwb2xpY3ksICpmcmVxLCBtaW4sIG1heCwg
+cmVsYXRpb24pOworCSpmcmVxID0gcG9saWN5LT5mcmVxX3RhYmxlW2lkeF0uZnJlcXVlbmN5Owor
+CXJldHVybiBpZHg7Cit9CiAKLQlpZiAoIXBvbGljeS0+ZnJlcV90YWJsZSkKLQkJcmV0dXJuIHRh
+cmdldF9mcmVxOworc3RhdGljIHVuc2lnbmVkIGludCByZXNvbHZlX2ZyZXEoc3RydWN0IGNwdWZy
+ZXFfcG9saWN5ICpwb2xpY3ksCisJCQkJIHVuc2lnbmVkIGludCBtaW4sIHVuc2lnbmVkIGludCBt
+YXgsCisJCQkJIHVuc2lnbmVkIGludCByZWxhdGlvbiwgIHVuc2lnbmVkIGludCAqZnJlcSkKK3sK
+KwkqZnJlcSA9IGNsYW1wX3ZhbCgqZnJlcSwgbWluLCBtYXgpOworCWlmIChwb2xpY3ktPmZyZXFf
+dGFibGUpCisJCXJldHVybiBnZXRfaW5kZXhfYW5kX2ZyZXEocG9saWN5LCBtaW4sIG1heCwgcmVs
+YXRpb24sIGZyZXEpOwogCi0JaWR4ID0gY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGVfdGFyZ2V0KHBv
+bGljeSwgdGFyZ2V0X2ZyZXEsIG1pbiwgbWF4LCByZWxhdGlvbik7Ci0JcG9saWN5LT5jYWNoZWRf
+cmVzb2x2ZWRfaWR4ID0gaWR4OwotCXBvbGljeS0+Y2FjaGVkX3RhcmdldF9mcmVxID0gdGFyZ2V0
+X2ZyZXE7Ci0JcmV0dXJuIHBvbGljeS0+ZnJlcV90YWJsZVtpZHhdLmZyZXF1ZW5jeTsKKwlyZXR1
+cm4gMDsKIH0KIAogLyoqCkBAIC01MjAsNyArNTI1LDE2IEBAIHVuc2lnbmVkIGludCBjcHVmcmVx
+X2RyaXZlcl9yZXNvbHZlX2ZyZXEKIAlpZiAodW5saWtlbHkobWluID4gbWF4KSkKIAkJbWluID0g
+bWF4OwogCi0JcmV0dXJuIF9fcmVzb2x2ZV9mcmVxKHBvbGljeSwgdGFyZ2V0X2ZyZXEsIG1pbiwg
+bWF4LCBDUFVGUkVRX1JFTEFUSU9OX0xFKTsKKwl0YXJnZXRfZnJlcSA9IGNsYW1wX3ZhbCh0YXJn
+ZXRfZnJlcSwgbWluLCBtYXgpOworCisJaWYgKCFwb2xpY3ktPmZyZXFfdGFibGUpCisJCXJldHVy
+biB0YXJnZXRfZnJlcTsKKworCXBvbGljeS0+Y2FjaGVkX3RhcmdldF9mcmVxID0gdGFyZ2V0X2Zy
+ZXE7CisJcG9saWN5LT5jYWNoZWRfcmVzb2x2ZWRfaWR4ID0gZ2V0X2luZGV4X2FuZF9mcmVxKHBv
+bGljeSwgbWluLCBtYXgsCisJCQkJCQkJIENQVUZSRVFfUkVMQVRJT05fTEUsCisJCQkJCQkJICZ0
+YXJnZXRfZnJlcSk7CisJcmV0dXJuIHRhcmdldF9mcmVxOwogfQogRVhQT1JUX1NZTUJPTF9HUEwo
+Y3B1ZnJlcV9kcml2ZXJfcmVzb2x2ZV9mcmVxKTsKIApAQCAtMjM5OCwxMiArMjQxMiwxMiBAQCBp
+bnQgX19jcHVmcmVxX2RyaXZlcl90YXJnZXQoc3RydWN0IGNwdWZyCiAJCQkgICAgdW5zaWduZWQg
+aW50IHJlbGF0aW9uKQogewogCXVuc2lnbmVkIGludCBvbGRfdGFyZ2V0X2ZyZXEgPSB0YXJnZXRf
+ZnJlcTsKKwl1bnNpZ25lZCBpbnQgaW5kZXg7CiAKIAlpZiAoY3B1ZnJlcV9kaXNhYmxlZCgpKQog
+CQlyZXR1cm4gLUVOT0RFVjsKIAotCXRhcmdldF9mcmVxID0gX19yZXNvbHZlX2ZyZXEocG9saWN5
+LCB0YXJnZXRfZnJlcSwgcG9saWN5LT5taW4sCi0JCQkJICAgICBwb2xpY3ktPm1heCwgcmVsYXRp
+b24pOworCWluZGV4ID0gcmVzb2x2ZV9mcmVxKHBvbGljeSwgcG9saWN5LT5taW4sIHBvbGljeS0+
+bWF4LCByZWxhdGlvbiwgJnRhcmdldF9mcmVxKTsKIAogCXByX2RlYnVnKCJDUFUgJXU6IGN1ciAl
+dSBrSHogLT4gdGFyZ2V0ICV1IGtIeiAocmVxICV1IGtIeiwgcmVsICV1KVxuIiwKIAkJcG9saWN5
+LT5jcHUsIHBvbGljeS0+Y3VyLCB0YXJnZXRfZnJlcSwgb2xkX3RhcmdldF9mcmVxLCByZWxhdGlv
+bik7CkBAIC0yNDMzLDcgKzI0NDcsNyBAQCBpbnQgX19jcHVmcmVxX2RyaXZlcl90YXJnZXQoc3Ry
+dWN0IGNwdWZyCiAJaWYgKCFjcHVmcmVxX2RyaXZlci0+dGFyZ2V0X2luZGV4KQogCQlyZXR1cm4g
+LUVJTlZBTDsKIAotCXJldHVybiBfX3RhcmdldF9pbmRleChwb2xpY3ksIHBvbGljeS0+Y2FjaGVk
+X3Jlc29sdmVkX2lkeCk7CisJcmV0dXJuIF9fdGFyZ2V0X2luZGV4KHBvbGljeSwgaW5kZXgpOwog
+fQogRVhQT1JUX1NZTUJPTF9HUEwoX19jcHVmcmVxX2RyaXZlcl90YXJnZXQpOwogCkBAIC0yNzEx
+LDE2ICsyNzI1LDE2IEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9zZXRfcG9saWN5KHN0cnVjdCBjcHUK
+IAkgKiBjb21waWxlciBvcHRpbWl6YXRpb25zIGFyb3VuZCB0aGVtIGJlY2F1c2UgdGhleSBtYXkg
+YmUgYWNjZXNzZWQKIAkgKiBjb25jdXJyZW50bHkgYnkgY3B1ZnJlcV9kcml2ZXJfcmVzb2x2ZV9m
+cmVxKCkgZHVyaW5nIHRoZSB1cGRhdGUuCiAJICovCi0JZnJlcSA9IF9fcmVzb2x2ZV9mcmVxKHBv
+bGljeSwgbmV3X2RhdGEubWF4LCBuZXdfZGF0YS5taW4sIG5ld19kYXRhLm1heCwKLQkJCSAgICAg
+IENQVUZSRVFfUkVMQVRJT05fSCk7CisJZnJlcSA9IG5ld19kYXRhLm1heDsKKwlyZXNvbHZlX2Zy
+ZXEocG9saWN5LCBuZXdfZGF0YS5taW4sIG5ld19kYXRhLm1heCwgQ1BVRlJFUV9SRUxBVElPTl9I
+LCAmZnJlcSk7CiAJaWYgKGZyZXEgIT0gcG9saWN5LT5tYXgpIHsKIAkJV1JJVEVfT05DRShwb2xp
+Y3ktPm1heCwgZnJlcSk7CiAJCWlmIChuZWVkX3VwZGF0ZV9saW1pdHMpCiAJCQlwb2xpY3ktPmZv
+cmNlX3RhcmdldCA9IHRydWU7CiAJfQogCi0JZnJlcSA9IF9fcmVzb2x2ZV9mcmVxKHBvbGljeSwg
+bmV3X2RhdGEubWluLCBuZXdfZGF0YS5taW4sIG5ld19kYXRhLm1heCwKLQkJCSAgICAgIENQVUZS
+RVFfUkVMQVRJT05fTCk7CisJZnJlcSA9IG5ld19kYXRhLm1pbjsKKwlyZXNvbHZlX2ZyZXEocG9s
+aWN5LCBuZXdfZGF0YS5taW4sIG5ld19kYXRhLm1heCwgQ1BVRlJFUV9SRUxBVElPTl9MLCAmZnJl
+cSk7CiAJZnJlcSA9IG1pbihmcmVxLCBwb2xpY3ktPm1heCk7CiAJaWYgKGZyZXEgIT0gcG9saWN5
+LT5taW4pIHsKIAkJV1JJVEVfT05DRShwb2xpY3ktPm1pbiwgZnJlcSk7CkBAIC0yNzMyLDggKzI3
+NDYsNiBAQCBzdGF0aWMgaW50IGNwdWZyZXFfc2V0X3BvbGljeShzdHJ1Y3QgY3B1CiAKIAljcHVm
+cmVxX3VwZGF0ZV9wcmVzc3VyZShwb2xpY3kpOwogCi0JcG9saWN5LT5jYWNoZWRfdGFyZ2V0X2Zy
+ZXEgPSBVSU5UX01BWDsKLQogCXByX2RlYnVnKCJuZXcgbWluIGFuZCBtYXggZnJlcXMgYXJlICV1
+IC0gJXUga0h6XG4iLAogCQkgcG9saWN5LT5taW4sIHBvbGljeS0+bWF4KTsKIApAQCAtMjc1OSw2
+ICsyNzcxLDggQEAgc3RhdGljIGludCBjcHVmcmVxX3NldF9wb2xpY3koc3RydWN0IGNwdQogCQlj
+cHVmcmVxX2V4aXRfZ292ZXJub3IocG9saWN5KTsKIAl9CiAKKwlwb2xpY3ktPmNhY2hlZF90YXJn
+ZXRfZnJlcSA9IFVJTlRfTUFYOworCiAJLyogc3RhcnQgbmV3IGdvdmVybm9yICovCiAJcG9saWN5
+LT5nb3Zlcm5vciA9IG5ld19nb3Y7CiAJcmV0ID0gY3B1ZnJlcV9pbml0X2dvdmVybm9yKHBvbGlj
+eSk7Cg==
+--000000000000d17d01065f8a8928--
