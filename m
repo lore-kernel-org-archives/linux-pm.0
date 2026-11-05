@@ -1,77 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.12
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793837616;
-	b=vnykt2PW2TqhLU1X+I5lB2vOf1TBD7AdGkhnrfKHMbwTlABspzB64270k8WF+Ed6hqyw
-	 CQsitWzqSJQSt8+AVMKzUyLTxKwDnVkbWTqaP2hnnVIv/IOAoY5dhXyINp7BeDtj0UiHj
-	 0ifHwMHM3mxGnrDCLXfrih24SHiacK+1JeSIavQD9fzTF+6pK5l+bGSVFBobStXlR1RJb
-	 wq0kkAarDlFtF7oz1udBad08qO4jS2mr9gOLJNvrdbI76vHRkiP6ptQOUos1a6SenPlcI
-	 BleuF0OozcdFf2tgi3bGb6i9rXZCTpheE4FiF5rU4zGrrG97RhpfymZ109aBAnEtMrA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793837616;
-	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-ZohoMailClient;
-	bh=fAbg06ow8H9QMQrvOxRXn8nTU+O0wuTG8Qx02cu++Jk=;
-	b=pKHM0kB7LF5HPr0kk4mmCYcy2bydIj1HF9vZ5hMGNr/vwkE4jTDcuyHRQ5trGmmDvHi5
-	 MJlncR1x1lgw5Ov4BQT46/CW1jtwGv4hNLk9+NJkX0Gkmbghan75slITqdw2/4esYCzsY
-	 RWyUxJuCxt+oxVxoIAhrDnBcA4st4XhStP/mztd41rk20uU9CFC9700MLavFoSqc/DRO0
-	 jfT8AlEUaxSHZ/Pfo8rI/Xzv0n552xmQrwxGQvmAXIPfyE7+IJ/ZdkdMeyhLziGXLXjdh
-	 23Fq2LuLF0xo1W0IeEOG8Y0vk64wbGYcAWe5NAZ+fah1kHUMVwrjxhtYMlOpDbGXAmg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ziyao.cc;
-	spf=pass smtp.mailfrom=ziyao.cc;
-	dkim=pass header.d=ziyao.cc header.i=@ziyao.cc header.a=rsa-sha256 header.s=zmail header.b=HdAPSFov;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.12
-Received: from sender5-op-o12.zoho.com (sender5-op-o12.zoho.com [165.173.182.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=54.204.34.129
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793846394;
+	b=hBOv30Rwl2kkaaxjM3AyH1opG0+mPewYhsSaQ+WCaGQ1Hb20BmBDIGiwmoEQyC8H78JP
+	 m0tToDIK6yb4NnoseuC38oJI5tAlkkVs8Fa51jCiUU3iy1kgBgw8hj5Ja9FPSdtl/cDoR
+	 2Cg7tjGGi6gASjqPgoJvXva1PUpVE3Wv6L5On1h/DTLjV8Tq56slbokttvGpNXDL6lrgv
+	 8Y+F3bAasbDqoqGr49FKLdvO6AcnvwY8HVwFIX/ln1yPpBKKDgRMn0/Nn0eJQtiTpOoU1
+	 BkbQ7ntGce0QywCGO7Cy5OJoeaR+bE9BWfLAFXD7EjI/ix/qPjofXSuTqtK79tpuM2w==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793846394;
+	h=DMARC-Filter:DKIM-Signature:X-QQ-mid:X-QQ-Originating-IP:Received:
+	 X-QQ-SSF:X-QQ-GoodBg:X-BIZMAIL-ID:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:X-QQ-SENDSIZE:Feedback-ID:X-QQ-XMAILINFO:
+	 X-QQ-XMRINFO:X-QQ-RECHKSPAM;
+	bh=8nHg2KK9YdUFsDyCN5OyhUk3RMp8EQBW/fDZ8x8OirA=;
+	b=SdIkZJywtbQObwbRSvTyL6eMuAgAkJtYuQssuU5Ej8XrKgZdVtIAfTo0UculF6xp1uHe
+	 Z5pgro7XTiNThHwjxZLULMpawsRDSu99vtvNkxX6+QoSztuTs0ltmBLMR1NdQEpCjCOrd
+	 fx3BTiUtAexKnvbMoeSmAhoVB9/aPYAwhMrGpWohGhA/cWtUEWh0jL92G8DQdRTmY7gdS
+	 NW7bfkdB0AzYPdsjADLsj4Gl1NawqiBixepacGv3cQ1NEXuvikXPJyVJ5HTsq8FExyaOF
+	 RYbCuDTQ1VV9Zuawe7AMaei9SOpheKHT/l/gxuNRLENyq09zgwLLF0+ek5//8pbRIPw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=none header.from=linux.spacemit.com;
+	spf=none smtp.mailfrom=linux.spacemit.com;
+	dkim=pass header.d=linux.spacemit.com header.i=@linux.spacemit.com header.a=rsa-sha256 header.s=mxsw2412 header.b=KM6jG51j;
+	arc=none smtp.remote-ip=54.204.34.129
+Received: from smtpbguseast1.qq.com (smtpbguseast1.qq.com [54.204.34.129])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBA71606A328;
-	Thu,  5 Nov 2026 00:13:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EBA71606A328
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ziyao.cc
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ziyao.cc
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0DFD606A32E
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 02:39:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A0DFD606A32E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.spacemit.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=ziyao.cc header.i=@ziyao.cc header.a=rsa-sha256 header.s=zmail header.b=HdAPSFov
-ARC-Seal: i=1; a=rsa-sha256; t=1793837597; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=DQ622xsHScW3Ad6bz6fv1d2xPqZQGJ/Dhm/Jc/AFkapPbUBCXsgj/iUJdXQMMk1eKXTMFbNS7Iai9ungUwuWB0KmGK+npgwQNdTTVrtqJC1cjh+qL90OFys6JhYCri0DY8kkt691dZ2ROsCOLuJqh2RajL2i8PGpZUSnF2g78j4=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793837597; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=fAbg06ow8H9QMQrvOxRXn8nTU+O0wuTG8Qx02cu++Jk=; 
-	b=nOpJnWVMboje3xbWS3M5AHr1Wl698euBo1vIPQq/aHlsoJ1ajMMPZILp4S/yVrVRVAWQPCa2Bdyvgu0caA3MRpygUFXXnAMXegeTeGdCYVl+HoRlb/iajt/LnBahi0ix3DNSrC4jkQu43zXzwmPEjHNezWNmJPziglMDWRPGJjQ=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=ziyao.cc;
-	spf=pass  smtp.mailfrom=me@ziyao.cc;
-	dmarc=pass header.from=<me@ziyao.cc>
-DKIM-Signature: a=rsa-sha256; b=HdAPSFovFwWtdTHK9ZmbCLVhAWpZPO0UWDZDjv2cWXNfcniGfG9oIixlWS6MgBRlUwPbvqR/HBUPfXzg4FT9OYynKNw7Ryyw7ivutwYO7jFMND8c1W/0z/rdhBVoyBLpA7H+F+EftEOn6QJEYM/0G98h6QE6TEhy0qZPI8X+kLM=; c=relaxed/relaxed; s=zmail; d=ziyao.cc; v=1; bh=fAbg06ow8H9QMQrvOxRXn8nTU+O0wuTG8Qx02cu++Jk=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793837597451328.75738105930157;
-	Wed, 4 Nov 2026 16:13:17 -0800 (PST)
-From: Yao Zi <me@ziyao.cc>
-To: Ulf Hansson <ulfh@kernel.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Shawn Lin <shawn.lin@rock-chips.com>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Yao Zi <me@ziyao.cc>,
-	Sergey Shtylyov <s.shtylyov@auroraos.dev>,
-	Midgy BALON <midgy971@gmail.com>,
-	Finley Xiao <finley.xiao@rock-chips.com>,
-	Frank Zhang <rmxpzlb@gmail.com>,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Kevin Hilman <khilman@linaro.org>,
-	Caesar Wang <wxt@rock-chips.com>,
-	Elaine Zhang <zhangqing@rock-chips.com>
-Cc: linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH 2/2] pmdomain: rockchip: Don't log when of_clk_get() fails with -EPROBE_DEFER
-Date: Thu,  5 Nov 2026 00:12:57 +0000
-Message-ID: <20261105001257.1368266-3-me@ziyao.cc>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261105001257.1368266-1-me@ziyao.cc>
-References: <20261105001257.1368266-1-me@ziyao.cc>
+	dkim=pass (1024-bit key, unprotected) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.a=rsa-sha256 header.s=mxsw2412 header.b=KM6jG51j
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
+	s=mxsw2412; t=1793846388;
+	bh=8nHg2KK9YdUFsDyCN5OyhUk3RMp8EQBW/fDZ8x8OirA=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To;
+	b=KM6jG51jfXUoSCb57V4cpBGaTQ+dTrgtvDKc7ult3QhPfcC4XqYOot3xI8+s56T5F
+	 4p78QdFKgK1wTJxD2na7iIGYuuw6fGfVhGkO0ZdIlBOgi/OtzDf3u8aEo1FEXJiFys
+	 Y9/rnd3Z+0HSwmDAR1GMB01LNKfhtvmSxzyyVA4M=
+X-QQ-mid: esmtpsz16t1793846385t065ceaee
+X-QQ-Originating-IP: 1qJ0Z0u4efqxxHNQ5zYtrNxVL5oaBlKpVLnn3sRJKbU=
+Received: from mail-pj1-f44.google.com ( [209.85.216.44])
+	by bizesmtp.qq.com (ESMTP) with SMTP id 0
+	for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2026 10:39:43 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 9340389161725991926
+Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-3b0a519049aso697633a91.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2026 18:39:44 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBykodDt6ApRKrMiJJIwK/fy+PhjkMdjqp9BIHqa4tkucuLW4E/0I7E6ihYL2xB1a+zKJh42d6Vgjw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z++HqtP4sSknuKu0wL+j6oWp7/0YWhj2RR4rBBaqEKi3UxHNwpZ
+	Yp06luhQ0XLVLKtDmLQh8GjeQtcAkhxp+k0GZoFx3pnq+rcLcpXAHVsEdUuByHNhbqhN2VIBahQ
+	53t4tev6d5JwX9BaoAeuqKhN/Mhrif6E=
+X-Received: by 2002:a17:90b:562d:b0:3ad:a462:f07f with SMTP id
+ 98e67ed59e1d1-3ae8982c1ffmr16206466a91.45.1793846382617; Wed, 04 Nov 2026
+ 18:39:42 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -81,78 +68,104 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-ZohoMailClient: External
+References: <20261102135330.2493332-1-robh@kernel.org>
+In-Reply-To: <20261102135330.2493332-1-robh@kernel.org>
+From: Chunyan Zhang <chunyan.zhang@linux.spacemit.com>
+Date: Thu, 5 Nov 2026 10:39:06 +0800
+X-Gmail-Original-Message-ID: <872B2B4EAE847E62+CAAfSe-uD=s0RpuqQ_h+_fErcEC+G=N_LA6e=p_sXJ=iG7jMc3Q@mail.gmail.com>
+X-Gm-Features: AclHuK-lEE7dv-iC1Lsio6aPGOufL5hgelB1hFojisk2-zoMsjC0hhsp9HraOXA
+Message-ID: <CAAfSe-uD=s0RpuqQ_h+_fErcEC+G=N_LA6e=p_sXJ=iG7jMc3Q@mail.gmail.com>
+Subject: Re: [PATCH] dt-bindings: Use hex unit address patterns
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
+	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, Jiri Pirko <jiri@resnulli.us>, 
+	Ivan Vecera <ivecera@redhat.com>, Benson Leung <bleung@chromium.org>, 
+	Guenter Roeck <groeck@chromium.org>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Jonathan Cameron <jic23@kernel.org>, 
+	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
+	Andy Shevchenko <andy@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Olivier Moysan <olivier.moysan@foss.st.com>, 
+	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
+	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Fabrice Gasnier <fabrice.gasnier@foss.st.com>, Lee Jones <lee@kernel.org>, 
+	Srinivas Kandagatla <srini@kernel.org>, Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, 
+	Ulf Hansson <ulfh@kernel.org>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Paul Kocialkowski <paul.kocialkowski@bootlin.com>, Shawn Guo <shawnguo@kernel.org>, 
+	Chanh Nguyen <chanh@os.amperecomputing.com>, Alistair Francis <alistair@alistair23.me>, 
+	Julius Werner <jwerner@chromium.org>, Paul Cercueil <paul@crapouillou.net>, 
+	Dmitry Osipenko <digetx@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Ray Jui <ray.jui@broadcom.com>, 
+	Scott Branden <scott.branden@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
+	chrome-platform@lists.linux.dev, linux-gpio@vger.kernel.org, 
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-sound@vger.kernel.org, 
+	linux-input@vger.kernel.org, linux-tegra@vger.kernel.org, mfd@lists.linux.dev, 
+	linux-arm-msm@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpsz:linux.spacemit.com:qybglogicsvrsz:qybglogicsvrsz3b-0
+X-QQ-XMAILINFO: OFTxDW6HahUO6h1dvtGMmdSPtexTzEAMspOOVnh3j51Kl07gyON3cTVx
+	3JNfADcVb9YovkiKPDwNO6+oBio7yKBV8SHyA6SydMaC07aGqor3yaRWE3D4svqtdFd0eRj
+	6L1HXcNu5a7AUFq+uLH5AB9RbnY6HCpttljkl4yuBOISdF+zK0wlftb176/gM5G1Cv3eYXT
+	4HZVtzYFqxN3W6oOYVxrmXA7wfTBr5tU5aR4v/4vHfEy+hdwmvdV/xoebCBGDLCKOlrhplb
+	8OU5qZ5yB8h0qU2DxnqQPIFMuFYIBCm9gFctgSAplg+QRHpAz/ExpNg7Bs7VTT31wkqBIVd
+	mhSJKkjSMz0VIyyIAhhQqkE5TmybVOyCs/9yghbEl02/BskDTe7+xMA24cOjPsloCk+pmQz
+	hsHWTDEcCPPatBbfMCG3XPydCTxrrb9EdyLvotsC7qTvric7xYhg1pUlHICScWE17XUsnkn
+	PgkHAT6VAc6seyI0AfwPEZrexJZxezOzHKfQvyJe1s3d5iNAyPIDEYITDBrwCjMfi8nuJzo
+	Bv1PFXlXH9xeV7vjlXfps7b46S1r8zcwBr3cWJzrFs+VgpgTbAKtn0mVmglLxZF8s0qfMeC
+	A1W2sDiXfuUvBAf05VwBz2Y3iAyXl7bJaKWjsLmckiC/KiGVyxcQ8IRqupn4OlQiGvR33vW
+	wNz3/BsJKFpokfNpuqz0H5ndnSqdS6ViGxEFlINlW6TfdF4oMwNbitVDgExuZMyUmX664em
+	py026IDMTxmW6A2ack3oXtoEBPvjnwptp+8NE/gh7rQS+cr0sKBXnOkXi3jjrAP4Ly5Spw9
+	ejcuEXSznIqIn0TMDK2Ufq5iNjVzq4XQkOL29qtK+qA5qxcULEkxw1WJ095ai3cDzyHUIqL
+	tbDB/tLZbpTWRMfehV8anEXjFiWPenPEfVVeQx2VNnVVjZI4d8UbB8bqekAoO5kwEugdRRJ
+	nOAareoGjmlSphtnJnDD3P5Ey+YOe9pE4zg7Z5Qd/4D5NNcmPq4VVG84r+9tL5NB5VzgLAC
+	v2UdBT9Rl0zp+oHfYb7kYlydi+mhVvLdctmufiVQ==
+X-QQ-XMRINFO: OD9hHCdaPRBwH5bRRRw8tsiH4UAatJqXfg==
+X-QQ-RECHKSPAM: 0
 
-Current error handling code considers -EPROBE_DEFER as hard errors,
-logs misleading dmesg like,
+On Mon, 2 Nov 2026 at 21:53, Rob Herring (Arm) <robh@kernel.org> wrote:
+>
+> Unit-addresses by default (and most commonly) are hexadecimal. There's a
+> number of cases using decimal patterns. Fix all of them, limiting the
+> pattern to match the 'reg' limits if there are any.
+>
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+> ---
 
-rockchip-pm-domain ff600000.power-management:power-controller: power-domain: failed to get clk at index 0: -517
-rockchip-pm-domain ff600000.power-management:power-controller: failed to handle node power-domain: -517
+[snip]
 
-Use dev_err_probe() at the callsite of of_clk_get(), and check for
--EPROBE_DEFER in places where its return value could propagate to.
+> diff --git a/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+> index afa551f6185f..222d70baef1e 100644
+> --- a/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+> @@ -47,7 +47,7 @@ properties:
+>      const: 0
+>
+>  patternProperties:
+> -  "^([a-z]*-)?sensor(-section)?@[0-9]+$":
+> +  "^([a-z]*-)?sensor(-section)?@[0-9a-f]+$":
 
-Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
-Fixes: 6be05b5ec161 ("soc: rockchip: power-domain: add support for sub-power domains")
-Signed-off-by: Yao Zi <me@ziyao.cc>
-Cc: stable@vger.kernel.org
----
- drivers/pmdomain/rockchip/pm-domains.c | 22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+Reviewed-by: Chunyan Zhang <zhang.lyra@gmail.com>
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 34c862e56aad..c147cc88edb1 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -851,9 +851,9 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 		pd->clks[i].clk = of_clk_get(node, i);
- 		if (IS_ERR(pd->clks[i].clk)) {
- 			error = PTR_ERR(pd->clks[i].clk);
--			dev_err(pmu->dev,
--				"%pOFn: failed to get clk at index %d: %d\n",
--				node, i, error);
-+			dev_err_probe(pmu->dev, error,
-+				      "%pOFn: failed to get clk at index %d: %d\n",
-+				      node, i, error);
- 			goto err_put_clocks;
- 		}
- 	}
-@@ -1006,8 +1006,10 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 
- 		error = rockchip_pm_add_one_domain(pmu, np);
- 		if (error) {
--			dev_err(pmu->dev, "failed to handle node %pOFn: %d\n",
--				np, error);
-+			if (error != -EPROBE_DEFER)
-+				dev_err(pmu->dev,
-+					"failed to handle node %pOFn: %d\n",
-+					np, error);
- 			return error;
- 		}
- 
-@@ -1102,15 +1104,17 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 	for_each_available_child_of_node_scoped(np, node) {
- 		error = rockchip_pm_add_one_domain(pmu, node);
- 		if (error) {
--			dev_err(dev, "failed to handle node %pOFn: %d\n",
--				node, error);
-+			if (error != -EPROBE_DEFER)
-+				dev_err(dev, "failed to handle node %pOFn: %d\n",
-+					node, error);
- 			goto err_out;
- 		}
- 
- 		error = rockchip_pm_add_subdomain(pmu, node);
- 		if (error < 0) {
--			dev_err(dev, "failed to handle subdomain node %pOFn: %d\n",
--				node, error);
-+			if (error != -EPROBE_DEFER)
-+				dev_err(dev, "failed to handle subdomain node %pOFn: %d\n",
-+					node, error);
- 			goto err_out;
- 		}
- 	}
--- 
-2.56.0
-
+Thanks,
+Chunyan
