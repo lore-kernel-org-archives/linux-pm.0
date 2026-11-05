@@ -1,74 +1,74 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793893764;
-	b=QkeW5k3/mzh2erkF94MmKrvggmmHireG5K/X1knbt17UrC/j1sGKgQJpu999qhhHFtqj
-	 PgYzOv5NBnYuND2clx81eCRxhFrW3Tmi0hHaWtCMhCmKGUxedFpr58RkeYMWs53aeyWQq
-	 qcDlztrAQzGEO0/Dt4H8phvc0MeaZhU3MmeRE6t0psX8soYf3FpIOgNAd520AXwEplsJI
-	 118vZtXIDGm6KW0F5m6iCkZ3vdGqDSFCt7grkttxb8tOrWHe0N894sHaVRe9kLW3PS9ve
-	 lMumkSrI6Hv1UyjPVxUMlYn1qPCWNvyZNZKcGWbCyAhB8MQ+FuIGjrNl9mxSgGquD8w==
+	t=1793893767;
+	b=ai1vqbtPEpNGERTzNAAWE4UlyB0uECulDqnRVI6SIi9sKrHv/WvgMlANgX/xV7X2a/bN
+	 4SurBCV9cGc78FEHCOeudy8G10wyjFJxEMooSEUnFH6Bh5TZVIk17f7nf+o2sn2+3rrdQ
+	 JS4xtHjRcTJZgeDyu8srqrk13CYm9JX1gXBDBw0oNoMkvou5BAJjftEFeeIpMNyitAvyj
+	 9TPthlZGtUV1NTLzkOPCftykFWSQLf+YYkTGvlK4tDHJvBnIC4G0bHeSYujmuVClNIx4j
+	 JUWLLulRR1t/AAJ0fm7mH2u450BHU7AXeVyAE6AhZ4HNo2vA0ENaNs60jbOqxGIDw/A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793893764;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793893767;
 	h=DMARC-Filter:Date:DKIM-Signature:DKIM-Signature:From:Sender:Reply-to:
 	 To:Subject:Cc:In-Reply-To:References:MIME-Version:Message-ID:Robot-ID:
 	 Robot-Unsubscribe:Precedence:Content-Type:Content-Transfer-Encoding;
-	bh=t4+ighO6n7JsA3HWUrWhxJMAbY0P+pSh55zjCpyBjD0=;
-	b=XklhAuJ9WEpAoznQLvZtoPGWP+8OvdvptjTXk9/znbl1LO7I5Cc56FOq/KuPEduiEAMz
-	 D0LpXXZGrb9LxahpmcsDf+MFwZdIrJxyotXseQNHE7WrMPxz3TWZaipKpyh9PXnH8moIt
-	 AgiYO8OCV9yIbd6wfCYTTp1t009FotQkWklFC0EAFWt7oUth8XES/61kwryMu2T6Z0/Qz
-	 W1cWJbaXQ8a90nH9VKj82hMxZV6PjNjZgURz/vyXGxESv6FyPcqipvEGGQRo+uPFjzEZf
-	 ovQCOLFVQWlYGjcmRUErq2YyOl2ZYfi6SRCvfGlHNh5PSZ4FaiIZNoONJWV6m37TQSQ==
+	bh=fbUHXct32v+OA8iZl21YZ5Jddk2BY3J3ehbC2c8AADE=;
+	b=T3QXaHrgrCpbNa7ac2Ua4+27RZE1wDIK+ACfioE/pCI6TO96M3KJtilW/fx+drmDrPSy
+	 lS048sbbrFQQbNRspak2ky9CrUnXtEJrgQa6zGak9cR7iNgskEcz3WPs2yP7W8fUZ33pz
+	 VE339ixObbR3yq3z2CMeTei9C14lDr5qqYw7FWYemNcxfJZq+SWcovP4SN1CkDNWWbO6R
+	 c9OoZk3vn79hvUTBCWj+Fr1eitH2nNHgC9jXhlEVkT8SnuAw2VFRDD+y/I1OhPpeOQpna
+	 G6Qb+6XrbskLPDYCEXod9j3W9O6Eq/CBRgbSuFh+TbOsX0cdPVBvSWXRMF7v30CwnQw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linutronix.de;
 	spf=pass smtp.mailfrom=linutronix.de;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=3gm4PzjP;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=3+Q0qotJ;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=POyR7vMa;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=6bdouINt;
 	arc=none smtp.remote-ip=193.142.43.55
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECF2A608362F
-	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 15:49:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org ECF2A608362F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76CA660A2622
+	for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2026 15:49:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 76CA660A2622
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=3gm4PzjP;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=3+Q0qotJ
-Date: Thu, 05 Nov 2026 15:49:15 -0000
+	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=POyR7vMa;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=6bdouINt
+Date: Thu, 05 Nov 2026 15:49:23 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1793893757;
+	s=2020; t=1793893765;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=t4+ighO6n7JsA3HWUrWhxJMAbY0P+pSh55zjCpyBjD0=;
-	b=3gm4PzjPgF9QsEWDSyApxpJSJwwz+EWiU6sduN7/NfjGr6hqVZJ8dKXnFvLkMREnr61JNE
-	84lT3nXfq+hMBP/bRRRk1rw2wyacZCrY8hunQVZHFZIsLqkYVFtQVlmjy347dxAVhIagYq
-	YMBFFTy6FoKm98I86x39qiV/yI7uM761ZHfpcDkVpteuTE6qgOrZoV60iDuk6aMsBTJqfZ
-	KeV18kxefc7qjWynKgkh/vTt4BiijLVPtcav0HV3eEfmeRBd5YWU8InAf2FEUv5BEAuBiu
-	I6wjWoHv7u/rwFSa+n0IarE65feJ8Mpuv6TTVzbh++l4P2Cv4YylP4MoGUKktw==
+	bh=fbUHXct32v+OA8iZl21YZ5Jddk2BY3J3ehbC2c8AADE=;
+	b=POyR7vMa3HRaF04miUBLx3CJA8Hp5a4KSOKXURBqnN8g/9DUreq8EaeYTfJNb2dqGJvO1J
+	8ffy145w3ixFKCZ/GpsqyUNK8adeFjKNJ3evnLcHwJQ5i2WlOvE1cARkOxL2lfLMOOE/pD
+	ZK4lZASO40OCYNFD5jSD360Kn/Eo5diJZ44WaABpPgxBM8q7rMlFss/rjtk8Q8naI946jD
+	+kCUgYhj/n3PT6Z+2MsJAH+OXJ6tAUbmn42S1hazfRcPBYzvA+2h2Z6pFij8PbDOypbSx/
+	h0h3ifLbCefisKxsEQ921OzIOsrQkfVRZWP2KL28qNwWdbniOVgR0zKJM4dChw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1793893757;
+	s=2020e; t=1793893765;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=t4+ighO6n7JsA3HWUrWhxJMAbY0P+pSh55zjCpyBjD0=;
-	b=3+Q0qotJ8G0eGC1HyPet/KQt6Soe9uk3Z23W9simhRaFx612yqATkD3Z8j/YdOK6nDsPjg
-	L1RgIlLMtFRNcxAQ==
+	bh=fbUHXct32v+OA8iZl21YZ5Jddk2BY3J3ehbC2c8AADE=;
+	b=6bdouINtsJ7I6I9d+KdRGiEsuMw+HfIdQb08KxwgdGcvZ9mhikHQm8tVkRn94lMRK4xfDl
+	1QB/gB1kjSzmk7DA==
 From: "thermal-bot for Tudor Ambarus" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [thermal: thermal/linux-next] thermal/drivers/samsung: acpm-tmu:
- Disable regmap locking for MMIO INTPEND reads
+ Annotate lockless sensor->enabled access
 Cc: Tudor Ambarus <tudor.ambarus@linaro.org>,
  Daniel Lezcano <daniel.lezcano@kernel.org>
-In-Reply-To: <20261026-acpm-tmu-fixes-v1-13-0637431b7268@linaro.org>
-References: <20261026-acpm-tmu-fixes-v1-13-0637431b7268@linaro.org>
+In-Reply-To: <20261026-acpm-tmu-fixes-v1-8-0637431b7268@linaro.org>
+References: <20261026-acpm-tmu-fixes-v1-8-0637431b7268@linaro.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,7 +78,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <179389375541.1009794.2469813661450890051.tip-bot2@tip-bot2>
+Message-ID: <179389376344.1009794.17597249664711249082.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -89,41 +89,66 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     6eb64c42a31531de51b735a1709ac8b7c24bbb4e
+Commit-ID:     95580915961eca39d4f3159cb4a235f25ea301b5
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//6eb64c42a31531de51b735a1709ac8b7c24bbb4e
+git//95580915961eca39d4f3159cb4a235f25ea301b5
 Author:        Tudor Ambarus <tudor.ambarus@linaro.org>
-AuthorDate:    Mon, 26 Oct 2026 16:01:30=20
+AuthorDate:    Mon, 26 Oct 2026 16:01:25=20
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Tue, 03 Nov 2026 19:51:51 +01:00
+CommitterDate: Tue, 03 Nov 2026 19:51:50 +01:00
 
-thermal/drivers/samsung: acpm-tmu: Disable regmap locking for MMIO INTPEND re=
-ads
+thermal/drivers/samsung: acpm-tmu: Annotate lockless sensor->enabled access
 
-The regmap in acpm-tmu is only used for full-width 32-bit relaxed MMIO
-reads of the INTPEND registers, with no read-modify-write operations or
-regmap cache. Set .disable_locking =3D true in gs101_regmap_config to
-avoid unnecessary regmap lock overhead on every INTPEND register read.
+acpm_tmu_get_temp() reads sensor->enabled outside sensor->lock as a fast
+path before resuming the device via runtime PM, while
+acpm_tmu_op_tz_control() updates sensor->enabled under sensor->lock.
+Because both accesses are plain C accesses, concurrent execution is a
+data race.
 
+Pair READ_ONCE() on the lockless fast-path read with WRITE_ONCE() in
+acpm_tmu_op_tz_control() to prevent compiler misoptimizations and KCSAN
+data-race warnings.
+
+Fixes: 50a2c5d4062a ("thermal/drivers/samsung: Add Exynos ACPM TMU driver GS1=
+01")
 Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-13-0637431b7268@lin=
-aro.org
+Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-8-0637431b7268@lina=
+ro.org
 ---
- drivers/thermal/samsung/acpm-tmu.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/samsung/acpm-tmu.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acp=
 m-tmu.c
-index 2324efc..fd491b4 100644
+index 1f56c69..65be888 100644
 --- a/drivers/thermal/samsung/acpm-tmu.c
 +++ b/drivers/thermal/samsung/acpm-tmu.c
-@@ -127,6 +127,7 @@ static const struct regmap_config gs101_regmap_config =3D=
- {
- 	.reg_stride =3D 4,
- 	.val_bits =3D 32,
- 	.use_relaxed_mmio =3D true,
-+	.disable_locking =3D true,
- 	.max_register =3D GS101_REG_INTPEND(15),
- };
+@@ -7,6 +7,7 @@
 =20
+ #include <linux/cleanup.h>
+ #include <linux/clk.h>
++#include <linux/compiler.h>
+ #include <linux/device/devres.h>
+ #include <linux/err.h>
+ #include <linux/firmware/samsung/exynos-acpm-protocol.h>
+@@ -148,7 +149,7 @@ static int acpm_tmu_op_tz_control(struct acpm_tmu_sensor =
+*sensor, bool on)
+ 	if (ret)
+ 		return ret;
+=20
+-	sensor->enabled =3D on;
++	WRITE_ONCE(sensor->enabled, on);
+=20
+ 	return 0;
+ }
+@@ -199,7 +200,7 @@ static int acpm_tmu_get_temp(struct thermal_zone_device *=
+tz, int *temp)
+ 	 * concurrent disabling is caught by the second check under the lock
+ 	 * after PM resume.
+ 	 */
+-	if (!sensor->enabled)
++	if (!READ_ONCE(sensor->enabled))
+ 		return -ENODATA;
+=20
+ 	ret =3D pm_runtime_resume_and_get(dev);
