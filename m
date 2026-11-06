@@ -1,48 +1,166 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793953657;
-	b=kGG/mw2U7cZoiHFKHrBWyy0NK6EX2gUWAZ+qhtEivRpvpHescZbw0DnmXfjTw8/2BOXl
-	 Vrz1BlCWmCDhR89sWtWk8zhxeN732CmLKRkXDTulyiSaMyq18WCe817fUkTFMJ59i/563
-	 YPVlreqmAxkVLIzLcl/Fu29Or1hSeUdbX2xaWRZ9S1GWOCyPmx8fepXhrDr4xDqpHbuVb
-	 SKr8QSUNgd6Mchn44ZXt3wlsMd5PfwYGLtGRiha/kl6YHHyWPVxMuL+EoYZPTihZ+K6l/
-	 Ip7U4lSvqqYWPpCvOLqdTYI7gtwZahtw090aGJ0R2WDYxnTObnEUuT3vftXHVYxRDRg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793953657;
-	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
-	 X-Mailer;
-	bh=01Nxm1BzjjlPQueNKRVIbAFcGO1ejGa2GGYStaQcVMw=;
-	b=zhLYfA0rZwvqEnkBwA6iQFcs/e9MEW8CFuB74DhWj3E/CPRExLCP+MtCA4C6cj/peD4p
-	 etIQI6ImAgy4bVTWa5LAGYINBqxPxwxdEbus11IK8iG6LARMYOri9kndTbExQIgit7qSP
-	 nKHJwaJHKS4of7sLir8brKhy8OjQkBMiFOKfHmB8MzPugPhc6vwSPdGSmV8765Plnj6zr
-	 PSnJWg1hqV1H4mXXzMitGegEiIH3Qau7jg4qeE4ABcuCmADNVmaXo9SOPWklom3gxUYmv
-	 m8egnkgbxpwDrOwYSNQptLHMfJU/nkjti6g0ZbFJA2ffw70J0tCJGZv5Vczun7Dhjkg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YoD9SSQr;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.74.27
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793953703;
+	b=NatAhCihBytmsfBPFFm8i79XJagNaqqLctijdPzIL2NMe6hdQrOJPjnCQF27SvYLApWx
+	 +L20ejxwcFYybMO0MQGUR0jHHKc6mwOpY8U1/pZ1nhcbOyQ+0Nr4kVf2unQmuCuSg0WN3
+	 XhgkHh6Kic0VUspHtxtcfILCUjoj2W/16QxnVLOEt9MIGwn0no1nd4UjqwzmxjA6l5sM4
+	 PxcKKXI2Zbp7kmO6lu8QFgBLoGOgYj+mLyUYolo6MU6ZtRd/8W8rh7OXBsNmEsIwfVe+8
+	 JT6Ku3ZzoQk4iJT2eOKLYJfT95aaKPPxFLMiAp0NlV8G2EiGBt8HPxGuo9nLqRYb2lw==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793953703;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:From:To:CC:Subject:
+	 Thread-Topic:Thread-Index:Date:Message-ID:References:In-Reply-To:
+	 Accept-Language:Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:
+	 x-ms-publictraffictype:x-ms-traffictypediagnostic:
+	 x-ms-office365-filtering-correlation-id:x-ld-processed:
+	 x-ms-exchange-senderadcheck:x-ms-exchange-antispam-relay:
+	 x-microsoft-antispam:x-microsoft-antispam-message-info:
+	 x-forefront-antispam-report:
+	 x-ms-exchange-antispam-messagedata-chunkcount:
+	 x-ms-exchange-antispam-messagedata-0:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-AuthAs:X-MS-Exchange-CrossTenant-AuthSource:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-originalarrivaltime:
+	 X-MS-Exchange-CrossTenant-fromentityheader:
+	 X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
+	 X-MS-Exchange-CrossTenant-userprincipalname:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=tVpsJ2n/X4k6FpgujDLFGBpkKOxTMiCTy4/NCKW+Yzg=;
+	b=QmNcAAdsmZZ8R75RVjKL6JxHCamPib+NYQp4YxzPxNCioY+hYiUmzsRkF59qm1tOHMCS
+	 IVk+fRKei81TNxrCo6M4EmnEyhutEUAvN3lH/0rSyQTsOwo22bYla7Oj23ko871kYojvl
+	 ZH4oemgS6eXhj9w0sjyDQlt1P/gPljPDDBXKtuax8z0R9wzdrfpufXNLuRgL5Set32WNo
+	 DH5F2d262fryMZ5scoapBUgC3hDjgkxWiYqrLm4ov4GTc1f5eDjRHPbS2VKP7x/oiTsvR
+	 HMl8FEmt5yXvGzOWAgw65wppb0DUMtvnY6zwogV7TWxNflc6ibb910J+Dqf6buDKwdA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=bp.renesas.com;
+	spf=pass smtp.mailfrom=bp.renesas.com;
+	dkim=pass header.d=bp.renesas.com header.i=@bp.renesas.com header.a=rsa-sha256 header.s=selector1 header.b=UjiyUnEO;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.74.27
+Received: from OS0P286CU010.outbound.protection.outlook.com (mail-japanwestazon11011027.outbound.protection.outlook.com [40.107.74.27])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D29B0606D817;
-	Fri,  6 Nov 2026 08:27:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3955C606A32E;
+	Fri,  6 Nov 2026 08:28:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3955C606A32E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bp.renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YoD9SSQr
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16E3D1F008A5;
-	Fri,  6 Nov 2026 08:27:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793953656;
-	bh=01Nxm1BzjjlPQueNKRVIbAFcGO1ejGa2GGYStaQcVMw=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=YoD9SSQrEJbSKdqdD0sq4tIuHN7BflNKZySmLGH5SlteyfG8+pSIjOazuwpTi1cgi
-	 rxuxlXLicuNyt29UyJJ4fPNMss3MDLM+9CA46ZMvIKzcDlAzYvbqZRQ0SEB4kT3jZU
-	 iLBfuaSTOfBuygZMcoYyC4lR+EcJzXcySck/+11aucrNihUnAVlI48QtSXR6vjetJA
-	 aiatG34rdz3DgdzTaoJd/2xlm2QQ+IdsBCHue9gjCmn2nu8yr7/lQKpIvz1hmsk1U1
-	 Ctwo8+T9Gv+MNFwZlWqWaMB4Q9SRCq28Az2AfCL7ZA0UC5mhrcjCtL/XREFVdR5aoa
-	 oBeV3Abu/id/g==
-From: Linus Walleij <linusw@kernel.org>
-Date: Fri, 06 Nov 2026 09:26:50 +0100
-Subject: [PATCH v3 7/7] hwmon: Add Broadcom PMB PVTMON monitoring
+	dkim=pass (1024-bit key, unprotected) header.d=bp.renesas.com header.i=@bp.renesas.com header.a=rsa-sha256 header.s=selector1 header.b=UjiyUnEO
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=eE1mfqQ2VokoL2lF+p5LVjg7V0T9IyjG8vQZESEteUK5k4lcJ/g2ycy2mKaNtqXwFkOanbo8JnUTg7aaaFppjm/L1wM5TyTn8M+pvXmI9sUPJP1BuAt451fB/cBfItcS0BnQAlHpW1tQrwPgGZ+M2cPOZ2E0Z5FECfdmOfJr8PV0+IyPnH15GxBa1HPwtbbCO5cIvVCk81S6km1fN8iZGt3pW2SFZ+prFbcJwzF4tUIkL1aVkzKGHxs8JA2Z5pChQ+pFCY7VxsHHv/5H25Dv51vXdzIsY8GAF1CfSoB/EPdwwIjHD5phum6DRVGXS3SLGSrt7d6NhizMifVLFTCmLQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=tVpsJ2n/X4k6FpgujDLFGBpkKOxTMiCTy4/NCKW+Yzg=;
+ b=MPbAiuKOMEIdz+JcUquxYshFbHhvltgAReiZUzhKTSy21T/vzKj7YCNyirSUqk8MwLrCLlbWrlewe6oYulmpc6aHpMd9sh5UIIbbf15OY6IxKufQAlQdI0eLk6gBNSAgS+ZJTxWUYIkZD5rMtrXlpXYDtj4iKjvq7vpKs6gGplVUf3zmsV3wdCYqjeRSfPDxFKIxGMUtzIF2vcpw0mbLFEGRG7BA7+6hDq8MmGhdmb3+fht+X2IT1+p4b946yVJs0YKJEV8bgItjs2X6zhLDhPZZrcnnm0oaVIILbg7HUok+1dklho8bQtzwwBzjU0f/K76er8tLOR5ya3gZWFDKpQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=bp.renesas.com; dmarc=pass action=none
+ header.from=bp.renesas.com; dkim=pass header.d=bp.renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bp.renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=tVpsJ2n/X4k6FpgujDLFGBpkKOxTMiCTy4/NCKW+Yzg=;
+ b=UjiyUnEO6f6ARWhoqUhu1I/XWiMYdL+Sx5ydE97JkNJTAIwqzxrPLTedN7QFspc9ZAjrQgh+2ie+8/CY1JK7+o0epNBbG5YeYrhEPmd+NpCbknQ0Jvs9M7Vqw09kw3DW1epStKGZsA1K3qMPVy2VZGSMfGOqx9wrCvzMqDUcasw=
+Received: from TY3PR01MB11346.jpnprd01.prod.outlook.com (2603:1096:400:3d0::7)
+ by TY4PR01MB14590.jpnprd01.prod.outlook.com (2603:1096:405:23d::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.10; Fri, 6 Nov
+ 2026 08:28:19 +0000
+Received: from TY3PR01MB11346.jpnprd01.prod.outlook.com
+ ([fe80::87d1:4928:d55:97de]) by TY3PR01MB11346.jpnprd01.prod.outlook.com
+ ([fe80::87d1:4928:d55:97de%6]) with mapi id 15.21.0592.009; Fri, 6 Nov 2026
+ 08:28:19 +0000
+From: Biju Das <biju.das.jz@bp.renesas.com>
+To: geert <geert@linux-m68k.org>
+CC: Fabrizio Castro <fabrizio.castro.jz@renesas.com>, Marc Kleine-Budde
+	<mkl@pengutronix.de>, Vincent Mailhol <mailhol@kernel.org>, "biju.das.au"
+	<biju.das.au@gmail.com>, Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>,
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Brian
+ Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Ulf Hansson <ulfh@kernel.org>, "magnus.damm" <magnus.damm@gmail.com>,
+	"linux-can@vger.kernel.org" <linux-can@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-renesas-soc@vger.kernel.org"
+	<linux-renesas-soc@vger.kernel.org>, "linux-clk@vger.kernel.org"
+	<linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
+	<linux-pm@vger.kernel.org>
+Subject: RE: [PATCH 3/9] can: rcar_canfd: Make clkp local
+Thread-Topic: [PATCH 3/9] can: rcar_canfd: Make clkp local
+Thread-Index: AQHdZ6ey9BsKmfUrHkS11C+eIKXt7rcgvtnwgAABdgCAAAE9kA==
+Date: Fri, 6 Nov 2026 08:28:19 +0000
+Message-ID:
+ <TY3PR01MB11346D9A55FCA3F226334FA9D86762@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+References: <cover.1793278754.git.geert+renesas@glider.be>
+ <415c8b26718e2e5d53f74e65daedf9986c76dcfe.1793278754.git.geert+renesas@glider.be>
+ <TY3PR01MB113465CCAA88F962CA6BA2E7186762@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+ <CAMuHMdXObreJN74sFpqmorWFHQ+uuYQ8E8z53YLy83QWzOhSmA@mail.gmail.com>
+In-Reply-To:
+ <CAMuHMdXObreJN74sFpqmorWFHQ+uuYQ8E8z53YLy83QWzOhSmA@mail.gmail.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=bp.renesas.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TY3PR01MB11346:EE_|TY4PR01MB14590:EE_
+x-ms-office365-filtering-correlation-id: 040b6eb0-7ae0-4647-76ae-08df3bdfe9b8
+x-ld-processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|7416014|23010399003|376014|366016|38070700021|11063799006|4143699003|56012099006|261022105027099003|261009223027099003|261026140227099003|261028144727099003|10067099003|18002099003|22082099003;
+x-microsoft-antispam-message-info:
+ LvFzTSDr+xACdVBDpVjZmxXMfktT8q9O4P4UjwAVKxneQhFzttYJ6ghwwo0QaunN7NfyEaJSquzhpBVyFQ0UyGw5htJdSaCK8ioCpdZmKZv0zw51eQAd2DhpjBVNraoS/3pNkcZzTpCy/ojFbJaCFlhLXOe0U9haL6w3nMdoB55INO2vwEsz/CyF0uILcyYCqt3LTuSRyFWaWE0PMpkXGZ7h6gFEzHmDZxgyTXW01cnQnW3XxJxGZ/V7Dystkma91qM/TlCcxCc8ezJQgwJ/Pog1WczG3ta8CO5Jtegd6JinfqxdTYXIydoXsoc7fWJa5pqZf9lT7FC2/rO68sBl2myK2PCg2Vbg2+VO5SzldXUKzescvk3XB62dFA29WRdavqecGewCa+888nfiloYwBkDDxVPR6ZaKzMRz6pd0+GuLy7XS9zjAqRjBluohA+/tSp3RZi0Os10vVtBxPOgCozfH43OdANkp7urJRaD3BMLjBMnxkAbV+nlhmbiseDaOGxXJm5//A+QZRbv30op9uhKqfByqL+h7fP047lRqonmm0tQDlD2JFG6172nh89ywJXi1dUJZfaGj0nOtNhcvB+ryMYDHBOAaEmAmEU+M2O55NJ7KUor+ZG4CiH0c8VVkkAqX1kxU7GUESyLFa9wYJjvCgEeaz+1q3l68iMPvLVhzd6h94VARqEANEgtlFGGV
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY3PR01MB11346.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(23010399003)(376014)(366016)(38070700021)(11063799006)(4143699003)(56012099006)(261022105027099003)(261009223027099003)(261026140227099003)(261028144727099003)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?b05KbmRMZm1jNllQbmJ5bVRNWnBuR1V0YUFEdkxDdTFFNFBWMUx5MHNtQXRr?=
+ =?utf-8?B?Wkg1cmJYL2I3OURPcjlMeEs1V0JUS2dVR2hISFp2amNaWVdkWnEzMFJXTjMw?=
+ =?utf-8?B?UUVhQ25OWWFqV2NoRDNvNzY5eWJFTGk1RTMxemFRQXZxN0JxbWJPZ2ltbVBy?=
+ =?utf-8?B?UEdMNnpxTERHaEtlU2FyMlZQVmpRNHhiNEROeGgzTlQ4dnd0cFAwOTkwczR3?=
+ =?utf-8?B?VGlGQk0xNGpXYnVHSlJsN2FkaFlhM0RlL1hLU0NQRmJqS2FBcTBPRXpMa0w2?=
+ =?utf-8?B?bVRQMkR0ZlNPT0Z3a1ozcDZ0VmRaN0dlS1YycnNTNkMzcDBzM3Vjc2xTTnRs?=
+ =?utf-8?B?NWJnYUFKTHhjMTdJOGhiY3diOEJ5RDRCeG81NXRWcHJkTkJKYmUwZ1NBZS9C?=
+ =?utf-8?B?SlhUbnRPNEI4VUJ0NVU3Q0FOUThSemlaLzRUaFNmME9salN1L0FNcUxDMTlN?=
+ =?utf-8?B?RStFODF2dGxabDBJTldMckcxdkRNTWgwVmo3dHA0eU91OEJxUThRL3dSNGph?=
+ =?utf-8?B?ZXRuTllkU2dEczEwYURyVVlFcFg1dVVOZlJtalM4WEtBdEZPYk5YK1ZXSTFG?=
+ =?utf-8?B?dVJMaCt5SDZVVnhwWmpySFoydGJCazJqYS84M3dzUE1LZ0Q4U2M3cnlQRm9v?=
+ =?utf-8?B?b3YwNW4vYUExaHJ2VVN6ZWVVWldhRGJJL3hRZ0MzY21FRENWYTRQbVlhVDBF?=
+ =?utf-8?B?UHZCYzdEbjFIUSswdVk2MzFLN1F6WmtZdFRDZVBzRHJtdTRYQWwyZmRwQldT?=
+ =?utf-8?B?L3BFRndPWnhOMEhoY2hia2VIYjZvQjBvLy9ZUmVuZ3YrNkExaDh3V1AvVFhv?=
+ =?utf-8?B?YTEybS85UmJlei92d3UwU1VxNmVNbTBDY2VlWTRqb09iTGVKWEFuZU5Kd21Q?=
+ =?utf-8?B?Y0dwcWxlalB1cllvNG5EcGN2U3VPc2pLQTB6WHkxWkgrUWVwQUJ2T0lOYkd1?=
+ =?utf-8?B?T2VpSEJrWUQwbitJcTBkSlNoVG1NS3FRVjViUjRqKzFJTGVWdEcveE1MWjlH?=
+ =?utf-8?B?R3BvdFQvYnV5U29VVFNYamIrb2p3ZnNnS2pObldMcDNHS1doeTRLVDZVZTJx?=
+ =?utf-8?B?VWRSRXFkUU96R0w5VFI1Q2tFVWpyc2ZzWlNaK2JpTEdGL3B1RXRkdjN4TG9p?=
+ =?utf-8?B?UWt5SFRZVWdEZlBKSVU4czlueENobEdkbDk3NDFnWWxKQUMzUTh4aEV5NFRJ?=
+ =?utf-8?B?bzFrZHB0NWhwLzNkdkgxLzlEV1I2Y1VSZGwxYTlrQ2Jld1NqNi9SSnBQOWJs?=
+ =?utf-8?B?blFWUTlwNWY1OG5UTFoyL3JrYlp2RG5sRW1xYnQ0QTVETVkzOHF0N2hVRG5R?=
+ =?utf-8?B?T05kbnRqb2o4MTl4Q3N4TGJmdlg3czEwckNFWDBVSk0zU0p2NldPNzROVzR4?=
+ =?utf-8?B?QU1OVWtaNGhJUHBwWXNoWHNESVZDRzF2SEZvU1BqdXJQakVkalBUNWxoeHNY?=
+ =?utf-8?B?OEtCbGd4N0RobzZ4Z0ZHMlE4QndhWjVOKzJmTnE0aWwrOWVaWmp1S2pta3Y4?=
+ =?utf-8?B?ay9vWlREakd6bG1HTmovUTViT0xSdGkrb0ZuZ2dTWTRENlkyTUtMRjBhSzU0?=
+ =?utf-8?B?K2NGdThjZVBQL1c0NzZMZ0xtZUh1Y2swa0hBRWF0bFBicGQ2ZHFqYVlPSWJE?=
+ =?utf-8?B?R1YvZW1pY1dzRmdRdGN1aW9iMjhROU13ano0anpLUDMzbWlaTjllU0hJbzJS?=
+ =?utf-8?B?dWZPTWcvRE8rQ20raUlITDQwMUg0Q2QxOW1ucGV6ZW9DRVlqZzNEdkt2ZWph?=
+ =?utf-8?B?czBMMVp4dzRWMlJFY3F4WkN0ZUI3Vm9yd2tUM0EwMUIwYlV6MWNxbzhnaDJz?=
+ =?utf-8?B?c1dEQ1JDRm00SlhHdFVzMFN6MERrS2lWdzVxeDRFSlpPbUtkVFFjNzZLVXFs?=
+ =?utf-8?B?NjNqR1dnVXAzeE16dUdXWkVReUlJRVZvdnVTZFA5SGJsS05lWXBtNGtUUGoy?=
+ =?utf-8?B?QW01VEJtdDRZWTFUdTVtbnZkQ0lWLzJzWUZyb1J6S0tGUU5JOVp3WldVRmN4?=
+ =?utf-8?B?NFg2M016NFlFcXFyakp1N0tEOHBORnZjVU83dlR5QVoxcmlvU3pyV0ZLc3U1?=
+ =?utf-8?B?Nm1sb0NrRjlSWEN5bDlIald0UWZFMWZWbVVUa2UwOXg4cllHeE84b2l2c3FM?=
+ =?utf-8?B?VVZGcTRNS3VtZmp1QmUzUWJ2TnByL1ZSUWpPN3FNeGtPSmhWUERKVXYvTWxB?=
+ =?utf-8?B?NW5XWnhMY1JXQjZTWnlYZ0dKeWVRVU80UmxQSTVCZnFnUHlTVDY0OXJUVzJy?=
+ =?utf-8?B?amlzNWtJM2VPdWd1TSttRXEzUThOVG9HcHNVMEZnVGZuMFhaWE9nNUhWRkdI?=
+ =?utf-8?B?bTZmUmdQSElZSnBLV2ZYYUx2aXBsODRXWElGZUtRN1NqRkdvSGJMQT09?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,416 +170,45 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261106-xg6846b-bcmbca-xrdp-reset-v3-7-d6adeb71afc9@kernel.org>
-References: <20261106-xg6846b-bcmbca-xrdp-reset-v3-0-d6adeb71afc9@kernel.org>
-In-Reply-To: <20261106-xg6846b-bcmbca-xrdp-reset-v3-0-d6adeb71afc9@kernel.org>
-To: Linus Walleij <linusw@kernel.org>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- William Zhang <william.zhang@broadcom.com>, 
- Anand Gore <anand.gore@broadcom.com>, 
- Kursad Oney <kursad.oney@broadcom.com>, 
- Florian Fainelli <florian.fainelli@broadcom.com>, 
- =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, 
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
- Jerome Brunet <jbrunet+clk@baylibre.com>, 
- Guenter Roeck <linux@roeck-us.net>, Philipp Zabel <p.zabel@pengutronix.de>, 
- Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, 
- Ulf Hansson <ulfh@kernel.org>, 
- Benjamin Larsson <benjamin.larsson@genexis.eu>
-Cc: mfd@lists.linux.dev, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
- linux-hwmon@vger.kernel.org, linux-pm@vger.kernel.org
-X-Mailer: b4 0.16.0
+X-OriginatorOrg: bp.renesas.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TY3PR01MB11346.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 040b6eb0-7ae0-4647-76ae-08df3bdfe9b8
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Nov 2026 08:28:19.4780
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: R4a/kU7KE7NrA8y1NuTho9/yJsqwz7AeibtGJabDBbeGV6AQDMrsqYYybzUVyufHEgzRkmTYxpVSIUhaCoNuQHEzgoZGePcEDDUZyyg1a7o=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY4PR01MB14590
 
-Expose the BCM6846 die temperature and seven voltage inputs through
-hwmon using the shared Processor Monitor Bus (PMB) regmap.
-
-Register the temperature channel with the thermal framework so
-existing zero-cell device-tree thermal sensor references work.
-
-Poll for valid samples with a bounded timeout, releasing the PMB lock
-between reads. Report temperature in millidegrees Celsius, including
-negative values, and voltages in millivolts.
-
-Acked-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Linus Walleij <linusw@kernel.org>
----
- Documentation/hwmon/bcm_pmb_pvtmon.rst |  53 ++++++++
- Documentation/hwmon/index.rst          |   1 +
- MAINTAINERS                            |   2 +
- drivers/hwmon/Kconfig                  |  18 +++
- drivers/hwmon/Makefile                 |   1 +
- drivers/hwmon/bcm_pmb_pvtmon.c         | 231 +++++++++++++++++++++++++++++++++
- 6 files changed, 306 insertions(+)
-
-diff --git a/Documentation/hwmon/bcm_pmb_pvtmon.rst b/Documentation/hwmon/bcm_pmb_pvtmon.rst
-new file mode 100644
-index 000000000000..7dba658bdc76
---- /dev/null
-+++ b/Documentation/hwmon/bcm_pmb_pvtmon.rst
-@@ -0,0 +1,53 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+Kernel driver bcm_pmb_pvtmon
-+============================
-+
-+Supported chips:
-+
-+  * Broadcom BCM6846 PVTMON
-+
-+    Access: Processor Monitor Bus (PMB), bus 1, device 6
-+
-+Author: Linus Walleij <linusw@kernel.org>
-+
-+Description
-+-----------
-+
-+The process, voltage and temperature monitor (PVTMON) measures die
-+temperature and seven voltage inputs. The driver uses the shared PMB MFD
-+transport and obtains its clock and reset from the sibling providers.
-+
-+With CONFIG_THERMAL_OF enabled, the temperature channel also supplies
-+device-tree thermal zones. The PVTMON node uses #thermal-sensor-cells = <0>;
-+voltage inputs do not have thermal sensor indices.
-+
-+Sysfs attributes
-+----------------
-+
-+All attributes are read-only. Temperature is reported in millidegrees
-+Celsius and voltages in millivolts, using the BCM6846 vendor conversion
-+formulas and input-divider ratios.
-+
-+================ ================================
-+Attribute        Description
-+================ ================================
-+temp1_input      Die temperature
-+in0_input        First 0.85 V input
-+in1_input        Second 0.85 V input
-+in2_input        VIN input
-+in3_input        1.0 V input
-+in4_input        1.8 V input
-+in5_input        3.3 V input
-+in6_input        Diagnostic test input
-+in0_label        V0.85_1
-+in1_label        V0.85_2
-+in2_label        VIN
-+in3_label        V1.0
-+in4_label        V1.8
-+in5_label        V3.3
-+in6_label        Vtest
-+================ ================================
-+
-+Labels follow the vendor channel names. Vtest is a diagnostic ADC input,
-+not a supply rail. The driver does not change the analog test routing.
-diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
-index 199ca79621e9..5a579391cf9e 100644
---- a/Documentation/hwmon/index.rst
-+++ b/Documentation/hwmon/index.rst
-@@ -54,6 +54,7 @@ Hardware Monitoring Kernel Drivers
-    axiado-pwm-fan
-    axiado-tsadc
-    bcm54140
-+   bcm_pmb_pvtmon
-    bel-pfe
-    bpa-rs600
-    cgbc-hwmon
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2a280ca7d162..f38003b144c5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5453,7 +5453,9 @@ F:	Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml
- F:	Documentation/devicetree/bindings/power/brcm,bcm6846-pmb-power.yaml
- F:	Documentation/devicetree/bindings/reset/brcm,bcm6846-pmb-reset.yaml
- F:	Documentation/devicetree/bindings/soc/bcm/brcm,bcm6846-pmb.yaml
-+F:	Documentation/hwmon/bcm_pmb_pvtmon.rst
- F:	drivers/clk/bcm/clk-bcmbca-pmb.c
-+F:	drivers/hwmon/bcm_pmb_pvtmon.c
- F:	drivers/mfd/bcmbca_pmc3_pmb.c
- F:	drivers/pmdomain/bcm/bcmbca-pmb.c
- F:	drivers/reset/reset-bcmbca-pmb.c
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 18c682e1a475..7e2bc32628d4 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -334,6 +334,24 @@ config SENSORS_AXIADO_TSADC
- 	  This driver can also be built as a module. If so, the module
- 	  will be called axiado-tsadc.
- 
-+config SENSORS_BCM_PMB_PVTMON
-+	tristate "Broadcom PMB PVTMON hardware monitoring"
-+	depends on ARCH_BCMBCA || COMPILE_TEST
-+	depends on MFD_BCMBCA_PMB
-+	depends on COMMON_CLK
-+	depends on RESET_CONTROLLER
-+	select CLK_BCMBCA_PMB
-+	select RESET_BCMBCA_PMB
-+	select REGMAP
-+	default MFD_BCMBCA_PMB
-+	help
-+	  Enable temperature and voltage monitoring through the Processor
-+	  Monitor Bus on Broadcom BCM6846. With THERMAL_OF enabled, the
-+	  temperature channel also supplies the thermal zones described in
-+	  the device tree.
-+
-+	  This driver can also be built as a module called bcm_pmb_pvtmon.
-+
- config SENSORS_K8TEMP
- 	tristate "AMD Athlon64/FX or Opteron temperature sensor"
- 	depends on X86 && PCI
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index d4c345ed7261..edf8e8d2f345 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -62,6 +62,7 @@ obj-$(CONFIG_SENSORS_ATXP1)	+= atxp1.o
- obj-$(CONFIG_SENSORS_AXI_FAN_CONTROL) += axi-fan-control.o
- obj-$(CONFIG_SENSORS_AXIADO_PWM_FAN) += axiado-pwm-fan.o
- obj-$(CONFIG_SENSORS_AXIADO_TSADC)	+= axiado-tsadc.o
-+obj-$(CONFIG_SENSORS_BCM_PMB_PVTMON) += bcm_pmb_pvtmon.o
- obj-$(CONFIG_SENSORS_CGBC)	+= cgbc-hwmon.o
- obj-$(CONFIG_SENSORS_CHIPCAP2) += chipcap2.o
- obj-$(CONFIG_SENSORS_CORETEMP)	+= coretemp.o
-diff --git a/drivers/hwmon/bcm_pmb_pvtmon.c b/drivers/hwmon/bcm_pmb_pvtmon.c
-new file mode 100644
-index 000000000000..3c58e0be3251
---- /dev/null
-+++ b/drivers/hwmon/bcm_pmb_pvtmon.c
-@@ -0,0 +1,231 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Broadcom BCM6846 process, voltage and temperature monitor (PVTMON).
-+ */
-+
-+#include <linux/bitfield.h>
-+#include <linux/clk.h>
-+#include <linux/hwmon.h>
-+#include <linux/mfd/bcmbca-pmb.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/reset.h>
-+
-+#define PVTMON_BUS		1
-+#define PVTMON_DEVICE		6
-+
-+/* PMB register offsets are in 32-bit words. */
-+#define PVTMON_CONFIG		17
-+#define PVTMON_RESET_N		BIT(0)
-+#define PVTMON_POWER_DOWN		BIT(1)
-+
-+#define PVTMON_ACQ_CONFIG		20
-+#define PVTMON_ACCUM_ENABLE	BIT(0)
-+#define PVTMON_SKIP_LENGTH	GENMASK(11, 8)
-+
-+#define PVTMON_CHANNEL_BASE	24
-+#define PVTMON_NUM_CHANNELS	8
-+#define PVTMON_VALUE		GENMASK(9, 0)
-+#define PVTMON_VALID		BIT(18)
-+#define PVTMON_SAMPLES		GENMASK(26, 24)
-+#define PVTMON_CHANNEL_ENABLE	BIT(31)
-+
-+/* BCM6846 voltage channel labels and input-divider ratios. */
-+static const struct {
-+	const char *label;
-+	unsigned int divisor;
-+} bcm6846_pvtmon_voltages[] = {
-+	{ "V0.85_1", 10 },
-+	{ "V0.85_2", 10 },
-+	{ "VIN", 7 },
-+	{ "V1.0", 7 },
-+	{ "V1.8", 4 },
-+	{ "V3.3", 2 },
-+	{ "Vtest", 10 },
-+};
-+
-+static int bcm_pmb_pvtmon_init(struct regmap *regmap,
-+			       struct reset_control *reset)
-+{
-+	unsigned int reg = BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE, PVTMON_CONFIG);
-+	u32 config, acq, channel;
-+	unsigned int i;
-+	int ret;
-+
-+	ret = regmap_read(regmap, reg, &config);
-+	if (ret)
-+		return ret;
-+
-+	/* Do not reset acquisition already running for the PMC firmware. */
-+	if ((config & (PVTMON_RESET_N | PVTMON_POWER_DOWN)) != PVTMON_RESET_N) {
-+		ret = regmap_update_bits(regmap, reg, PVTMON_POWER_DOWN, 0);
-+		if (ret)
-+			return ret;
-+		ret = reset_control_reset(reset);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	ret = regmap_read(regmap, BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE,
-+						 PVTMON_ACQ_CONFIG), &acq);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < PVTMON_NUM_CHANNELS; i++) {
-+		reg = BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE, PVTMON_CHANNEL_BASE + i);
-+		ret = regmap_read(regmap, reg, &channel);
-+		if (ret)
-+			return ret;
-+
-+		if (channel & PVTMON_CHANNEL_ENABLE)
-+			continue;
-+
-+		/* Average 32 samples. */
-+		ret = regmap_update_bits(regmap, reg, PVTMON_CHANNEL_ENABLE | PVTMON_SAMPLES,
-+					 PVTMON_CHANNEL_ENABLE | FIELD_PREP(PVTMON_SAMPLES, 5));
-+		if (ret)
-+			return ret;
-+	}
-+
-+	if (!(acq & PVTMON_ACCUM_ENABLE))
-+		return regmap_update_bits(regmap,
-+					  BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE,
-+							 PVTMON_ACQ_CONFIG),
-+					  PVTMON_SKIP_LENGTH | PVTMON_ACCUM_ENABLE,
-+					  PVTMON_ACCUM_ENABLE | FIELD_PREP(PVTMON_SKIP_LENGTH, 8));
-+
-+	return 0;
-+}
-+
-+static int bcm_pmb_pvtmon_read(struct device *dev, enum hwmon_sensor_types type,
-+			       u32 attr, int channel, long *val)
-+{
-+	struct regmap *map = dev_get_drvdata(dev);
-+	unsigned int index;
-+	u32 value;
-+	int ret;
-+
-+	switch (type) {
-+	case hwmon_temp:
-+		if (attr != hwmon_temp_input)
-+			return -EOPNOTSUPP;
-+		index = 0;
-+		break;
-+	case hwmon_in:
-+		if (attr != hwmon_in_input)
-+			return -EOPNOTSUPP;
-+		index = channel + 1;
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	/* Release the PMB between samples so other clients can make progress. */
-+	ret = regmap_read_poll_timeout(map,
-+				       BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE,
-+						      PVTMON_CHANNEL_BASE + index),
-+				       value, value & PVTMON_VALID, 1000, 100000);
-+	if (ret)
-+		return ret;
-+
-+	value = FIELD_GET(PVTMON_VALUE, value);
-+	if (type == hwmon_temp) {
-+		/* Signed arithmetic allows temperatures below zero Celsius. */
-+		*val = (41335000 - 49055 * (int)value) / 100;
-+	} else {
-+		/* 880 mV ADC reference, accounting for each input divider. */
-+		*val = 880 * value * 10 /
-+			(bcm6846_pvtmon_voltages[channel].divisor * 1024);
-+	}
-+
-+	return 0;
-+}
-+
-+static int bcm_pmb_pvtmon_read_string(struct device *dev,
-+				      enum hwmon_sensor_types type, u32 attr,
-+				      int channel, const char **str)
-+{
-+	if (type != hwmon_in || attr != hwmon_in_label)
-+		return -EOPNOTSUPP;
-+
-+	*str = bcm6846_pvtmon_voltages[channel].label;
-+	return 0;
-+}
-+
-+static const struct hwmon_ops bcm_pmb_pvtmon_ops = {
-+	.visible = 0444,
-+	.read = bcm_pmb_pvtmon_read,
-+	.read_string = bcm_pmb_pvtmon_read_string,
-+};
-+
-+static const struct hwmon_channel_info * const bcm_pmb_pvtmon_info[] = {
-+	HWMON_CHANNEL_INFO(chip, HWMON_C_REGISTER_TZ),
-+	HWMON_CHANNEL_INFO(temp, HWMON_T_INPUT),
-+	HWMON_CHANNEL_INFO(in,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL),
-+	NULL
-+};
-+
-+static const struct hwmon_chip_info bcm_pmb_pvtmon_chip_info = {
-+	.ops = &bcm_pmb_pvtmon_ops,
-+	.info = bcm_pmb_pvtmon_info,
-+};
-+
-+static int bcm_pmb_pvtmon_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct regmap *regmap = dev_get_regmap(dev->parent, NULL);
-+	struct device *hwmon;
-+	struct reset_control *reset;
-+	struct clk *clk;
-+	int ret;
-+
-+	if (!regmap)
-+		return -ENODEV;
-+
-+	reset = devm_reset_control_get_exclusive(dev, NULL);
-+	if (IS_ERR(reset))
-+		return dev_err_probe(dev, PTR_ERR(reset), "failed to get PVTMON reset\n");
-+
-+	clk = devm_clk_get_enabled(dev, NULL);
-+	if (IS_ERR(clk))
-+		return dev_err_probe(dev, PTR_ERR(clk), "failed to enable PVTMON clock\n");
-+
-+	ret = bcm_pmb_pvtmon_init(regmap, reset);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to initialize PVTMON\n");
-+
-+	hwmon = devm_hwmon_device_register_with_info(dev, "bcm6846_pvtmon", regmap,
-+						     &bcm_pmb_pvtmon_chip_info, NULL);
-+	if (IS_ERR(hwmon))
-+		return dev_err_probe(dev, PTR_ERR(hwmon), "failed to register hwmon device\n");
-+
-+	/* Acquisition remains enabled for the PMC firmware after unbinding. */
-+	return 0;
-+}
-+
-+static const struct of_device_id bcm_pmb_pvtmon_of_match[] = {
-+	{ .compatible = "brcm,bcm6846-pmb-pvtmon" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, bcm_pmb_pvtmon_of_match);
-+
-+static struct platform_driver bcm_pmb_pvtmon_driver = {
-+	.probe = bcm_pmb_pvtmon_probe,
-+	.driver = {
-+		.name = "bcm6846-pmb-pvtmon",
-+		.of_match_table = bcm_pmb_pvtmon_of_match,
-+	},
-+};
-+module_platform_driver(bcm_pmb_pvtmon_driver);
-+
-+MODULE_AUTHOR("Linus Walleij <linusw@kernel.org>");
-+MODULE_DESCRIPTION("Broadcom PMB PVTMON hardware monitoring driver");
-+MODULE_LICENSE("GPL");
-
--- 
-2.56.0
-
+SGkgR2VlcnQsDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogR2VlcnQg
+VXl0dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9yZz4NCj4gU2VudDogMDYgTm92ZW1iZXIg
+MjAyNiAwODoyMQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMvOV0gY2FuOiByY2FyX2NhbmZkOiBN
+YWtlIGNsa3AgbG9jYWwNCj4gDQo+IEhpIEJpanUsDQo+IA0KPiBPbiBGcmksIDYgTm92IDIwMjYg
+YXQgMDk6MTcsIEJpanUgRGFzIDxiaWp1LmRhcy5qekBicC5yZW5lc2FzLmNvbT4gd3JvdGU6DQo+
+ID4gPiBGcm9tOiBHZWVydCBVeXR0ZXJob2V2ZW4gPGdlZXJ0K3JlbmVzYXNAZ2xpZGVyLmJlPg0K
+PiA+ID4gU2VudDogMjkgT2N0b2JlciAyMDI2IDEzOjExDQo+ID4gPiBTdWJqZWN0OiBbUEFUQ0gg
+My85XSBjYW46IHJjYXJfY2FuZmQ6IE1ha2UgY2xrcCBsb2NhbA0KPiA+ID4NCj4gPiA+IFRoZSBw
+ZXJpcGhlcmFsIGNsb2NrIGlzIG9ubHkgdXNlZCBpbiByY2FyX2NhbmZkX3Byb2JlKCksIHNvIGNv
+bnZlcnQgY2xrcCB0byBhIGxvY2FsIHZhcmlhYmxlLg0KPiA+ID4NCj4gPiA+IFNpZ25lZC1vZmYt
+Ynk6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnQrcmVuZXNhc0BnbGlkZXIuYmU+DQo+IA0KPiA+
+ID4gLS0tIGEvZHJpdmVycy9uZXQvY2FuL3JjYXIvcmNhcl9jYW5mZC5jDQo+ID4gPiArKysgYi9k
+cml2ZXJzL25ldC9jYW4vcmNhci9yY2FyX2NhbmZkLmMNCj4gPiA+IEBAIC00NjcsNyArNDY3LDYg
+QEAgc3RydWN0IHJjYXJfY2FuZmRfZ2xvYmFsIHsNCj4gPiA+ICAgICAgIHZvaWQgX19pb21lbSAq
+YmFzZTsgICAgICAgICAgICAgLyogUmVnaXN0ZXIgYmFzZSBhZGRyZXNzICovDQo+ID4gPiAgICAg
+ICBzdHJ1Y3QgcmNhcl9jYW5mZF9mX2MgX19pb21lbSAqZmNiYXNlOw0KPiA+ID4gICAgICAgc3Ry
+dWN0IHBsYXRmb3JtX2RldmljZSAqcGRldjsgICAvKiBSZXNwZWN0aXZlIHBsYXRmb3JtIGRldmlj
+ZSAqLw0KPiA+ID4gLSAgICAgc3RydWN0IGNsayAqY2xrcDsgICAgICAgICAgICAgICAvKiBQZXJp
+cGhlcmFsIGNsb2NrICovDQo+ID4NCj4gPiBVbmxlc3MgSSBhbSBtaXNzaW5nIHNvbWV0aGluZywg
+SSBnZXQgYnVpbGQgZXJyb3INCj4gPg0KPiA+IGRyaXZlcnMvbmV0L2Nhbi9yY2FyL3JjYXJfY2Fu
+ZmQuYzogSW4gZnVuY3Rpb24gJ3JjYXJfY2FuZmRfcHJvYmUnOg0KPiA+IGRyaXZlcnMvbmV0L2Nh
+bi9yY2FyL3JjYXJfY2FuZmQuYzoyMjUwOjU1OiBlcnJvcjogJ3N0cnVjdCByY2FyX2NhbmZkX2ds
+b2JhbCcgaGFzIG5vIG1lbWJlciBuYW1lZA0KPiAnY2xrcCcNCj4gPiAgMjI1MCB8ICAgICAgICAg
+ICAgICAgICAgICAgICAgIGZjYW5fZnJlcSA9IGNsa19nZXRfcmF0ZShncHJpdi0+Y2xrcCk7DQo+
+IA0KPiBJZiB5b3VyIHRyZWUgaGFzIENsYXVkaXUncyAiW1BBVENIIHY0IDMvN10gY2FuOiByY2Fy
+X2NhbmZkOiBBbGxvdyB0aGUgQ0FOIEZEIGNsb2NrIHRvIGJlIHNvdXJjZWQgZnJvbQ0KPiBmY2si
+LCB5b3UgaGF2ZSB0byB1cGRhdGUgdGhlIG5ldyB1c2VyIG9mIGdwcml2LT5jbGtwLg0KDQpUaGF0
+IGV4cGxhaW5zIGl0Lg0KDQpDbGF1ZGl1J3MgcGF0Y2ggYWRkZWQgdGhhdCBjaGFuZ2UgYW5kIGl0
+IGlzIG5vdCBwcmVzZW50IGluDQpodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgv
+a2VybmVsL2dpdC9ta2wvbGludXgtY2FuLW5leHQuZ2l0L2xvZy8NCg0KQ2hlZXJzLA0KQmlqdQ0K
