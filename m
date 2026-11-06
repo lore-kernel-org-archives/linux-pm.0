@@ -1,59 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.84.56
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793957476;
-	b=Upn2EWIRvill3ZRtV9uZ/LAeR59BRZPsH+qIydMkiKfQt8epik1cfWsZj5EvQQXDTyJ2
-	 RtD+QYUYHf5mysg0gerthNf0MjQMmqrVDiyqcUpM6IQI/6rXjtr1xNKD/2WnLDAXcgcq4
-	 MgGVFiM0MdVJGl7PrUu02HCJTKIYOhI0tVvgyXs0QNeLa1H91+UPiSmNYylNzFy/cbjbJ
-	 d6agcBDVvkm0iSpLOU1kXSwTyAFaZHaAN3P5wSYaB7iYVsOi98yAKiXjO/MuKX7chPbcN
-	 4+VYdpom4K1OliT91KgOYWidWwcTMRN3p5YTQiOD0OVDm1BemW7Ee9Y9eBjgYtBOrWQ==
+	t=1793957482;
+	b=rPlYYrsnN9lKavpCY6a3os2xY1YE9uC3QUJuKTAG7mLDGAWBvrTmhOYj2A+aB592CNha
+	 oG6inDhvfzgVCb6owSIEGhonV4ZnA9aFy84vA5RinTPN2Bf17U4ti7MLI8/0XLVX8uXn0
+	 TjNjDMU536frasI/zrm2a7iST5Cutdh2qwtxbk6NsmCPBXHVeQaGeiHiMVq7sfUooKxb8
+	 ++rhs0If3eju9+rP/tupa/r/OZlLFWIRppo9pmpNEyATy5+rZsgf3iTsd9szQnIZoxsHW
+	 G3d6ZRDB19F8D+/8pEn0XfOhpZwhxqHRhNCqx5BQlTQz9QCt1458FpBy9EE2G0tmpfw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793957476;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793957482;
 	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:Date:
 	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Last-TLS-Session-Version;
-	bh=Rmm2T837u6dJV1SdY4aEJnvjZ90dwHMyQK/XGmxJ8Z0=;
-	b=vIbPEw1/Cn1l001MyQFSI44mhx/+mLXHfW4hMnGXd8QXu1aqVhmtHRyV56XqeW5kbm2X
-	 +ugu9v3qQQn313Tw+t6aTPJGRPEl85wOjCyIVfx4WDBAP+aSafx1XCKSKV00rcunBMM00
-	 MG8zpJEIgHhJYDNmLhz/DCFvTWdrYvmekecE912u2M9gBMyH1ugKWtNpTYetrTbsOs5QM
-	 4DjDxwqD+2OXqndk9MfJ1u5k8JQ0I6z9XGOR0niAIiHmqdVYBwtsBeZB8K000WsxAVSrJ
-	 qCngBetzKGZeujvAgie2ld5ZuiURxha0WAnrzq/lXY1crVtPOe2yDgrorGA4MEi/NJQ==
+	bh=QLYkWtEN7WalqBEHRAOhsQQEXGo0FNnoMfBxTpC6uGY=;
+	b=bQyBQ4dYBHGMpN3HDGlBOR8w3vs8lf027dmyFxY82RNh2bfuHuQnLTKiVMTfMmcHG+rQ
+	 amRmXESAk+MIKQZAaanx5Pv10gBrLpCl/ecmAn2ezDFkBxb3buv05xR8djLhyfgjyVap2
+	 hkY0ZEb/GGoJQpH775819hky2YqoqnWaYk6z/MUuwRlTgaZAX4xEQUbcY4Qm9k8yjV4r4
+	 0JC9QZX+WwisFpMLXISkP2HuhZtRPl4Ed8J4EHdTblfT6cwm85s9YNO0SHx1vGAENEV9d
+	 b+Y1SpS+epaHwU6vqUQnvXamd25vl5lYeyMCqwvoxVmy0i+DtmsEad/1qIWhGXOsOtw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=bootlin.com;
 	spf=pass smtp.mailfrom=bootlin.com;
-	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b="CnxHq/U2";
+	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=fhPaivNp;
 	arc=none smtp.remote-ip=185.246.84.56
 Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5AF6606A332;
-	Fri,  6 Nov 2026 09:31:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A5AF6606A332
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2382606D824;
+	Fri,  6 Nov 2026 09:31:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C2382606D824
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=CnxHq/U2
+	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=fhPaivNp
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 5CBB91A1350;
-	Fri,  6 Nov 2026 09:31:14 +0000 (UTC)
+	by smtpout-02.galae.net (Postfix) with ESMTPS id 6D3A81A0C32;
+	Fri,  6 Nov 2026 09:31:20 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 2E3A95FFBC;
-	Fri,  6 Nov 2026 09:31:14 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 4FCCB103292DE;
-	Fri,  6 Nov 2026 10:31:04 +0100 (CET)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 39F6A5FFBC;
+	Fri,  6 Nov 2026 09:31:20 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 30FA710329258;
+	Fri,  6 Nov 2026 10:31:11 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1793957470; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	t=1793957476; h=from:subject:date:message-id:to:cc:mime-version:content-type:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=Rmm2T837u6dJV1SdY4aEJnvjZ90dwHMyQK/XGmxJ8Z0=;
-	b=CnxHq/U2S7LWHHBVur1CL8xQ66beHxCokAadstTZzGIqQZip3L+k0p1km6vxeiEtmL//ax
-	CVYNIoiChcz11k2ixYMfnyX3GUUVl0X0a3zCcTQ5VpEdRwDluYpJM2OuBr8pYhDnBXy6XQ
-	QU1+B5b/JCq+TAOWdbtCreuN2iFkbjy/kt+Fa5KMmmm8pp6hBhWDPt9HkXO27O4RfeERzu
-	UGo6L1ESUHN3t6LtkpofKpNavxeMt1lXCvz99igo0vE+DNvrhLbqXXlX9M3hhwPrtMlhh6
-	J6bWyvlzNth9aayy/7nZEsMKVDBrMO8LxTpCbZCPcmD0whhASwOmgZ9AMWxEjA==
+	bh=QLYkWtEN7WalqBEHRAOhsQQEXGo0FNnoMfBxTpC6uGY=;
+	b=fhPaivNp/k0cCUWJfGKo8HFcZ2WHJAFR+CTRjfbiGfLQeZ4kwRAKx33IOsgm/CqXJFtJ5w
+	sJr27DBLIQ/hLOd3HYo0MDZAPDgEz3b+bweWVoxCHjR7ChTrUZOX1Aaj+tzaZ2IrUAMCvI
+	HPrqljvEQsNy3eku/1UFusY7pPLusv2wXDKsUveU3Q2+Mf2E8N66LRRw+9vwyfIx1kcqCS
+	OWLMe7hEH8DGDchj/na0s7ySL0JF8dgLW2yCik+0XplHYtJSogsREUrEN8iIzmC9/I/NIA
+	DElf9Yhie34muUDWk6bdzy6S94MxnTn2p8i1x9SjCfk8iKOEeKrBI45lexXPEg==
 From: =?utf-8?q?Beno=C3=AEt_Monin?= <benoit.monin@bootlin.com>
-Date: Fri, 06 Nov 2026 10:30:02 +0100
-Subject: [PATCH 05/25] dt-bindings: phy: add Metanoia USB2 PHY
+Date: Fri, 06 Nov 2026 10:30:03 +0100
+Subject: [PATCH 06/25] dt-bindings: cache: andestech,ax45mp-cache: add
+ MT2824 compatible
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261106-mt2824-v1-5-86087eaf5af4@bootlin.com>
+Message-Id: <20261106-mt2824-v1-6-86087eaf5af4@bootlin.com>
 References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 In-Reply-To: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -98,63 +99,28 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.16.0
 X-Last-TLS-Session-Version: TLSv1.3
 
-Document the USB2 PHY found in Metanoia MT2824 SoC.
+The MT2824 reuses the AX45MP L2 cache controller with its own cache
+configuration. Add a SoC-specific compatible in case there are additional
+differences between the two implementations.
 
 Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
 Signed-off-by: Benoît Monin <benoit.monin@bootlin.com>
 ---
- .../devicetree/bindings/phy/metanoia,usb2-phy.yaml | 43 ++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ Documentation/devicetree/bindings/cache/andestech,ax45mp-cache.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/phy/metanoia,usb2-phy.yaml b/Documentation/devicetree/bindings/phy/metanoia,usb2-phy.yaml
-new file mode 100644
-index 000000000000..0605e6d0f67d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/phy/metanoia,usb2-phy.yaml
-@@ -0,0 +1,43 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/phy/metanoia,usb2-phy.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Metanoia USB2 PHY
-+
-+description: |
-+  The Metanoia MT2824 USB2 PHY is controlled solely through a reset line.
-+
-+maintainers:
-+  - Jun Chang <jun.chang@metanoia-comm.com>
-+
-+properties:
-+  compatible:
-+    const: metanoia,mt2824-usb2-phy
-+
-+  resets:
-+    maxItems: 1
-+
-+  reset-names:
-+    const: usb2-phy
-+
-+  "#phy-cells":
-+    const: 0
-+
-+required:
-+  - compatible
-+  - resets
-+  - reset-names
-+  - "#phy-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    usb2phy: usb2-phy-reset {
-+        compatible = "metanoia,mt2824-usb2-phy";
-+        #phy-cells = <0>;
-+        resets = <&rst 18>;
-+        reset-names = "usb2-phy";
-+    };
+diff --git a/Documentation/devicetree/bindings/cache/andestech,ax45mp-cache.yaml b/Documentation/devicetree/bindings/cache/andestech,ax45mp-cache.yaml
+index b135ffa4ab6b..c94044a049b2 100644
+--- a/Documentation/devicetree/bindings/cache/andestech,ax45mp-cache.yaml
++++ b/Documentation/devicetree/bindings/cache/andestech,ax45mp-cache.yaml
+@@ -30,6 +30,7 @@ properties:
+     items:
+       - enum:
+           - andestech,qilai-ax45mp-cache
++          - metanoia,mt2824-ax45mp-cache
+           - renesas,r9a07g043f-ax45mp-cache
+       - const: andestech,ax45mp-cache
+       - const: cache
 
 -- 
 2.56.0
