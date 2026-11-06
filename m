@@ -1,64 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=180.181.231.80
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793964379;
-	b=4SLqoXq9vSz2tibSauoYwd5NR6gIYFxQOWovkYmTYmMthwGPs6Djggua/WUi/MWs4/fb
-	 vj0G1Zj/iTxKQ09Y8+nErKWfEIpDMyMyjrp2rmrd8T/03x3NnPqyu+1maeX8v5lGBlk+W
-	 PAkldZ1fiQNx4nR5aPE1G//QZu/9mv5U/95lzJw1ZUPuzPZbpynDi48cGOcPfzMV/nkUo
-	 JUr/NxKOsyAE5H/LQV4LXk3cFDMokCwXzsGTzMzXgutYuq9T+R6v8kTMkdW53OUopI3mI
-	 AAoH0xhMmQNrquuNEpl7unBIw0eOxV9Ilug3nIQ7wMZP7ovwn3ZjHzm8gxVPUqG7iyg==
+	t=1793964706;
+	b=kCRVc9dn07PX/muTHYCQtaOmf9KnSr1oD05OQ2ZrkK8IHNFXDODn77lvt+FHEc/6VAra
+	 s+ylhHqHw8aSM8tCFYqxEJUudD6PpS5iEpn6fybqrzUkBYWI1kw4wwSzf7yP+71m+J9JQ
+	 SGRgPuPJef7dZfBmN05HawcknVzZuXzK0dwaVkKfLHgG+mdMog9+B3uIYE/MRncZxrWSf
+	 7Rifz2KXXZRZmUuhjgtaxcMpBplje0yOQarqVPpETjF+XQWBqYc07AGdHewMQPZqmvBi4
+	 EOZErUu5K9dvsp8C+Kce7On7UOu3B33ar3ZcNBdSKQhQtkqXUHb+uLNdrbzmFivXZzQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793964379;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=IrtBx70IGrZR+xti2Gbk8jTJWI2O0dNnEpiHwlFt96Q=;
-	b=pmD7361tvFsW/dAnw3VM8WfgJwvuazmESfktuvNmqwsOweZGyi3gB0g9poTICQpWpB4B
-	 dfIBMlyZnxX7yNYdf1Ypo2WvO0A2rZLywfPi24xXSJyA9uhjkyZKymGPKgEh8R1RvlABl
-	 jOlOTxvSE/8S9qlVXqZ4PAApH//OEsQe31Uu1Qf+6GrYFMzDveUW/WCgN6FdEaiZ090cz
-	 sSd6h1FC+esE/s9E+fmvvlecGSnmOseoip0pBPmB4yEwtctg/YaiKuYGQVP7Z+R492Es8
-	 Md71eIoR5apHFEguX9iNkXlRzOj81WQdYlJVc5K0AKW6t3baHHXyoJ+fjrD6d56gq4A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793964706;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 Organization:MIME-Version:Content-Transfer-Encoding:Content-Type;
+	bh=IkZ4QsbIo6NB3CqXA++bJQKlV2FLxKl3SeIw8XijjNk=;
+	b=aeY7OzODI5+LiXuyhxizGwSCL/4tzft+afe4MKBy4BZqRpo1Lw+fBXjFWqpRDG5wBjgE
+	 5p/2ab0W0R9oCiXdkl6rm0rwq4COPAORx/+NqHXz0q6j3RfhrOf4U28ndH0D5nqCzTqFz
+	 HWErfIcb9zLXLC/NAr2RKULPKq1Yj9B/e1iJ0c1oTmOCQmTvy2Q7dyAG7/jV5KpobwzNH
+	 c5Ux2YdIJgrzwq0AbNTFi24kVwssn/EJL3C25byPeeSWhgx2VmSMe44f6OeCJD/UilJcB
+	 1NP3rkj8F7PSf7uNQAWhPTpWJCXGZL4ueYZk3XvutMaygqTJItmD3Rlsie4ygtTimvA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gondor.apana.org.au;
-	spf=pass smtp.mailfrom=gondor.apana.org.au;
-	dkim=pass header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=rsPfBbY9;
-	arc=none smtp.remote-ip=180.181.231.80
-Received: from abb.hmeau.com (abb.hmeau.com [180.181.231.80])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=II7FpDRr;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54AF9606A335;
-	Fri,  6 Nov 2026 11:26:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 54AF9606A335
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gondor.apana.org.au
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72ACD606D805;
+	Fri,  6 Nov 2026 11:31:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=rsPfBbY9
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=gondor.apana.org.au; s=h01; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:cc:to:subject:message-id:date:
-	from:content-type:reply-to; bh=IrtBx70IGrZR+xti2Gbk8jTJWI2O0dNnEpiHwlFt96Q=; 
-	b=rsPfBbY9RHC/vk1wSrMzXMjMU4qFpD8QxIE3NFfbKIkpdYIZDcu1MremiPFaGgQLTOc1Ob4mg3Z
-	nJ0gnaE8W3cssxfir2SalKGSEAPPjnLgtZLg+OpJBY2raBmD5b1u6m5WFa6WYye7VBF13l8w6DYY2
-	WsEvZ8CWhV5Sgdr1rbuizrXdz7HWAtvk3gGK7KhmOTbPcDVnTQUF+/pOGjPel6HrtnLpUWecPZefN
-	++u51lV1Hm5Rmn/lqcvhSIUYMMB+R7P5XMCqtqxdSH9CA1Rzt7nzhCQN8x3Ml9ZSR6EcD9ZETA7fD
-	gKAv5M0XtJYSj/usYkLAdxE+Bc1U4nsPtSmA==;
-Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
-	by formenos.hmeau.com with smtp (Exim 4.98.2 #2 (Debian))
-	id 1xPI5E-0000000Br0X-2ZhD;
-	Fri, 06 Nov 2026 19:26:13 +0800
-Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Fri, 06 Nov 2026 19:26:12 +0800
-Date: Fri, 6 Nov 2026 19:26:12 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Brian Norris <briannorris@chromium.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	Ulf Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org,
-	Hadar Gat <hadar.gat@arm.com>, Olivia Mackall <olivia@selenic.com>,
-	linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 01/13] hwrng: cctrng: Discard
- pm_runtime_put_autosuspend() return value
-Message-ID: <au25VCRKopC2NI4I@gondor.apana.org.au>
-References: <20261006231900.3230373-1-briannorris@chromium.org>
- <20261006161337.1.I8e0880001b352bc2b0e99c40b78cb57e03c88a12@changeid>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=II7FpDRr
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAF6D1F0089F;
+	Fri,  6 Nov 2026 11:31:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793964706;
+	bh=IkZ4QsbIo6NB3CqXA++bJQKlV2FLxKl3SeIw8XijjNk=;
+	h=From:To:Cc:Subject:Date;
+	b=II7FpDRrD1pbynr8pZEGJrrn3eQRufW6CYbct7E6l8lKd1EcAcXNlQrMEEEwJKhA7
+	 eHnXMXOSh59OVlxyPQhzFSUPTZxj3vkGtbU2Cr4+jOAOu6rnsG2iIQBEe7sPODpmVe
+	 FcSfkSn75eB4gFVosRFrm2AbOeTXuNeQN9rjpop4aG7nRKbEOs1Eezl1EeQh38gVJf
+	 INYiz+zbk1pWWjlipjrEHP/mFizhGJrdDpZGK5hQ6onMRExZ8PaJQnFb73gg8eTRwm
+	 aZUGDtSYp1qnLF1iC2RLuqPHxBbXJozwOy7vtu5uUM2tPRdIqU2K+d7bRkQYQriNP6
+	 K9vwBRCPOnMOQ==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Brian Norris <briannorris@chromium.org>,
+ Alan Stern <stern@rowland.harvard.edu>,
+ Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
+ Linux Driver Core Development <driver-core@lists.linux.dev>
+Subject:
+ [PATCH v1] PM: runtime: Update last_busy in rpm_resume() for active devices
+Date: Fri, 06 Nov 2026 12:31:41 +0100
+Message-ID: <13032301.O9o76ZdvQC@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -68,39 +59,52 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261006161337.1.I8e0880001b352bc2b0e99c40b78cb57e03c88a12@changeid>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-On Tue, Oct 06, 2026 at 04:13:29PM -0700, Brian Norris wrote:
-> Printing an error message on pm_runtime_put_autosuspend() returning a
-> non-zero value is not particularly useful.
-> 
-> Returning an error code from pm_runtime_put_autosuspend() merely means
-> that it has not queued up a timer or work item to check whether or not
-> the device can be suspended and there are many perfectly valid
-> situations in which that can happen, like after writing "on" to the
-> device's runtime PM "control" attribute in sysfs for one example.
-> 
-> Accordingly, update cc_trng_pm_put_suspend() to simply discard the
-> return value of pm_runtime_put_autosuspend().
-> 
-> This will facilitate a planned change of the
-> pm_runtime_put_autosuspend() return type to void in the future, similar
-> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
-> type to void").
-> 
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> ---
-> This patch is independent of the rest of the series, except for the end
-> (changing the return type). I expect it can be applied by individual
-> maintainers, and we pick up the end once the dust is settled.
-> 
->  drivers/char/hw_random/cctrng.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Patch applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Setting an autosuspend delay for a device can be expected to cause a
+runtime suspend of the device after calling, say, pm_runtime_put() to
+be deferred, so the time between the last successful attempt to resume
+the device and its subsequent suspend is at least equal to the
+autosuspend delay.
+
+However, that expectation is only met after the device has been actually
+resumed in rpm_resume() by invoking its runtime resume callback.  If the
+runtime PM status of the device is already "active" when rpm_resume()
+runs for it, the device's last_busy timestamp is not updated which may
+allow a subsequent pm_runtime_put() invocation (or similar) to suspend
+it right away.
+
+This is arguably inconsistent and confusing, so make rpm_resume() also
+update the device's last_busy timestamp when it finds that the device is
+already "active" and it is about to return 1 early.
+
+Fixes: 56f487c78015 ("PM / Runtime: Update last_busy in rpm_resume")
+Link: https://lore.kernel.org/linux-pm/CAJZ5v0jTX1FgeS9FCV=+V4uacSgLQBVsSPnU27ybgUGg57GUOA@mail.gmail.com/
+Reported-by: Brian Norris <briannorris@chromium.org>
+Cc: All applicable <stable@vger.kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/runtime.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -819,6 +819,12 @@ static int rpm_resume(struct device *dev
+ 		pm_runtime_deactivate_timer(dev);
+ 
+ 	if (dev->power.runtime_status == RPM_ACTIVE) {
++		/*
++		 * The attempt to resume the device means that it is needed for
++		 * something, so update its last_busy timestamp as in the case
++		 * in which it actually resumes below.
++		 */
++		pm_runtime_mark_last_busy(dev);
+ 		retval = 1;
+ 		goto out;
+ 	}
+
+
+
