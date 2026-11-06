@@ -1,99 +1,48 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=180.76.5.236
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793990374;
-	b=TAsDWp7UrXl0W/+rSg0G9LfA0XT2/w2TrsozZ6ckRfzxZM3LGZeeLVFtWzNCEtozHLV3
-	 jxj7AjI5pi4ZAqCANQmdYlGrjLP349Ndmn4YE20LtPvi7/3WrYW8EAzCqubrp+NUj1HBi
-	 cSYzBA/rYUDXFxd+2LVRuniiXSkeytfVwPF69lbbrh1WUFKwOIxufInHUHeZlMUKIEHJ+
-	 C29OlUF/aksEjS2KOKx6qKU8t3tyW63wqoHwY7bhgjCWcB3/vg0wiRMIrZ4E/Yv3LdB+S
-	 gdQJ2Xt/yfEGrDYZL/gCkYogyj5PiMyUq1t2jq/ORGhBAMtaMnzQCaFLQMwxRsHBjCA==
+	t=1793990433;
+	b=VKeKUI/CblT3vHQ9aW2DOxEJvJbBECHhbien3OlTQWQekUgByDsTHhSE1UE8rjfnbmxS
+	 Q56vVuixh0JE3O0em9yh5k9OWjwlWtmGOxd1vC358gRReUCqujFNPhPWJZneGIZfq4mP9
+	 5NBsdGUtqYGsDRfpgstnWi+ItqL2lVzrCuKTuc4Xs+o2QXhaNGLB2mYP5x/kC20KvQ3U1
+	 3zxztxdf56y2B1g9iMn4ib0Q7/6PI7xAL4kGKZv21H6F0IcbTGEX8GIONnaxBvgfuiBSz
+	 QHOdDCTOs7KayW0EuHSXyNSGo1ISjmuxh8jYdVH+5p8Z/GDIuF3KHlO/z2glWjrEWBQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793990374;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=WIwS4OC7s3U8Z4r3z87plyGX8aJlDTv0Ul5Ftw3BSuw=;
-	b=R9Z9FHchkkZbGE4k8OLOq6y0vfACH6vxHv43GnQto28hLKQr8FXTv+6p9xL4wTyxyadV
-	 jXg7NQ51K+oTrHNQ/hdkuMwDlp+a8l8DhYnzKH8nL+549c9MfYB3HdKS5VA20mBl+KIpd
-	 prKpfKWzeDiBVZbWG852aPjl1+3Rkv0AaK7RGWQ+Lmzuj0Ee9mED9u3uNyN+lW15v+NFM
-	 1dzM0WPe2umghzk2nFTFl1fZUFrYJ7gVFV5mYO1s+paFNbRnbNQxz8Qnj3bHIXkXjJNzi
-	 5hd4KL4iqk+8VFpx2XmJ7l/IdMc7okBApiTSzRP6fjlT4uwKTJKU6O3jhPqw5H3l74A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793990433;
+	h=DMARC-Filter:X-MD-Sfrom:X-MD-SrcIP:From:To:CC:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:Content-Type:
+	 X-Originating-IP:X-ClientProxiedBy:DKIM-Signature;
+	bh=MFFicYYQ+mNSIUaooGgcBVZSBqGvsWJI/FHwtFroL/U=;
+	b=jiTw8o+/yqKBJEtMd6EI7Zt3y8ErJRnjmEGXheqEYSoAW9GqGqsEtPDB9jTbYx2jG1pa
+	 JSNXNb3wGlq57503MPjT6VVViB1EQ+AMQWCqohYLHRosGie6naRt5y/wv12wdgU8/k5aM
+	 8zP1Y6jUtWX0oJv20lI/mexZqMgA186vGKVa7sKa/4yRqUBJRg39REJNixya28WKm5WsR
+	 lS5Ga82CgE0Llkog8qGwZSg+mYwHnleB5ubORT2JPy0G54SKXoCylmsGlwXPdMzX7XHrE
+	 W174fujwbWTmvZzGDAbuNgq2TQ0YYmYefmChHKqO2qAXHvU70TSq7qzUgUMYjQJc1qA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tN2ltPKz;
-	arc=none smtp.remote-ip=209.85.128.54
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10756606A32D
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 18:39:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 10756606A32D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	dmarc=pass header.from=baidu.com;
+	spf=pass smtp.mailfrom=baidu.com;
+	dkim=pass header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=kgvhIwIt;
+	arc=none smtp.remote-ip=180.76.5.236
+Received: from outbound.baidu.com (outbound.baidu.com [180.76.5.236])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 70AAA606A326;
+	Fri,  6 Nov 2026 18:40:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 70AAA606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tN2ltPKz
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a610c7e61cso675225e9.3
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 10:39:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793990371; x=1794595171; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=WIwS4OC7s3U8Z4r3z87plyGX8aJlDTv0Ul5Ftw3BSuw=;
-        b=tN2ltPKzR2Z1JRfPyYauSTPlV3eJeerY4K9aVMlRbW24glYzYkMMPHCOXFG7NV7g38
-         OYl/se9BorEGj0ykocHcjmvQddONJjpdmQ+8x3squcv2FKwnd7KGQV9J5Xreznu0ikWy
-         8swdkv6ZYPpCfpq4iAeDG+tWGO6COV2v6feJObwpKdEqmW/YyHKUdg2669ClmQVrMTxt
-         b7N+huwnpqpnrkPeMpJHAjQP+4sFm9RUlbE6WN5cQm2Z2L817m6l7Tc0uQk0EkJAgyNN
-         QakNzJdw6g+i1egEIy7c8djK8pR09egrN7lAkcheS956aO5WBhTVov08XV8Oc4WBxoQd
-         duOw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793990371; x=1794595171;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=WIwS4OC7s3U8Z4r3z87plyGX8aJlDTv0Ul5Ftw3BSuw=;
-        b=WOJk8XGj+N5vc4hEWp0prPEBQwnQ8aJr2df1DIArITdVmxlXBi9LG5jkFGLPT58O08
-         shgxigzOC3IKuIkentfGgUpiKTnk04H2FGpQR600z4iQrzQnMmzNm0jNzkFU8ajeS9h6
-         xuBdNRgZc81mhXR37Z3zvRj/qaKUNnE7dsJUocROL7iUfyWiPAIJPR0g4bNnMgfRiDT7
-         1dCyzfIB9lNyrU8F7S8uXNv4EtIN/AcII3Y1rGt00RYDIJBD5lu9sN5m3+4pLpPnlt9P
-         6IYgUgKpa8htkK7Qw8fi6PFv6BYUoi/G4me+rJI8SyXytjA5gAd330CLYyLIbM0awWMz
-         eboQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxps1t+mHrreGahzIIK0RDJbPtWMdqsXmYqv1Kl4Ac4QWs2ganWxGG9FHj8MNOC4yCZbtqAv5SmFQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/JYx20A12hASDr3LHSdxXLQ1exUSMhFDhnzwOHBMoTtB9Dj3R9
-	+fMUTBnJblOIfLne6vyZcH6WK8iIlS6dr3vHUa4qUOUz9J0yNwDGnP9V
-X-Gm-Gg: AYBFou2Y9SWvIAlVliLYtpLRMvh0UeBP9GW+MGxM6LCKDmgMiFZtP/NhgLFxJgzY/BL
-	8qbDo3AnTXNdn6lXPnzmKPTtI8bl5Zp14FoO7Dc5MAZqM7IzmRsRz+BrRFJymYq9DkAZRkhJN4v
-	RpUZakZi6CRDB5lT8E+UfDCLny5o92geN5c1I8nTbYj/Xyaz5d00ATIzjJFWcPBNVcQA4c+d1aR
-	2I3dMuW9TN5aqeK0XOXFqlDWWEIMRhtltKBULXIcq+CYX0Yo79pmWziVJpxvp5RdJ0ryvXTsE1x
-	YsMFIqjOXMVXf3+sveHdsOuuzS6EjHTUQBGEnX5G4SpcJ+khbT0Meh3BnkhWyqp093V3i2Ue+k+
-	DWtlEbB4xY23N/f7d43bRTIfDV2Id8PSy/04tXEGbx5PvxZB5T0dmAYymsZCRIYrL+q9AnevXkt
-	d02JWfJrtOdvDc0knMrHlRJE2NPd5bMS/iFyksk9yoA8WYSR3fv1+iadc/2tlzMwwz9wh0dV2GI
-	R2YZxXrVB5F1iDn92oXIkmUDlP3A24fUSHaKGPQRO6W3doi35uXJSndw7unYdpCFtGZ3OJa5YMr
-	DEZYEAsUyfPKkGW6q0VvplaBbxfSoezItDrGMMrJi5GPsq2dHUddn7M=
-X-Received: by 2002:a05:600c:c111:b0:4a1:715d:1913 with SMTP id 5b1f17b1804b1-4b6dcf861ebmr44070765e9.1.1793990371217;
-        Fri, 06 Nov 2026 10:39:31 -0800 (PST)
-Received: from scheduler.schedules ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b795038782sm4128115e9.3.2026.11.06.10.39.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 10:39:30 -0800 (PST)
-Date: Fri, 6 Nov 2026 21:39:26 +0300
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
-	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
-	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
-	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
-	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
-Subject: Re: [PATCH 04/20 v3] sched/eevdf: Reset lag when waking up on idle
- cpu
-Message-ID: <au4dOi6ASp5OnBWc@scheduler.schedules>
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-5-vincent.guittot@linaro.org>
+	dkim=pass (2048-bit key, unprotected) header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=kgvhIwIt
+X-MD-Sfrom: lirongqing@baidu.com
+X-MD-SrcIP: 172.31.50.47
+From: lirongqing <lirongqing@baidu.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+CC: <zhongqiu.han@oss.qualcomm.com>, Li RongQing <lirongqing@baidu.com>
+Subject: [PATCH v5 1/2] cpufreq: acpi-cpufreq: fix P-state index mismatch in get_cur_freq_on_cpu()
+Date: Sat, 7 Nov 2026 02:40:07 +0800
+Message-ID: <20261106184008.1728-2-lirongqing@baidu.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20261106184008.1728-1-lirongqing@baidu.com>
+References: <20261106184008.1728-1-lirongqing@baidu.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,71 +52,96 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261106151947.3991524-5-vincent.guittot@linaro.org>
+Content-Type: text/plain
+X-ClientProxiedBy: bjhj-exc7.internal.baidu.com (172.31.3.17) To
+ bjkjy-exc3.internal.baidu.com (172.31.50.47)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
+	s=selector1; t=1793990420;
+	bh=MFFicYYQ+mNSIUaooGgcBVZSBqGvsWJI/FHwtFroL/U=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
+	b=kgvhIwIthVhqHE+izRNAHoQPXJlQE36LSHrYVqaF7JKmghQCNw1rcchSslsQ2xVZr
+	 bc9TXEXeXyRAEiVnAq6E93PaBJq5gTgcvyS7zIJS9fLaSDC+ocXiUwxvTIVHuAHqlC
+	 mmOlWwAMNeST57lvxjNP7/WF77+tWANRz5wxkUear32SVhmN58rF3u/eRLb4PEjcSi
+	 k4zsYCZLNqbNfpivBfjgbo3hDntw2BMaFw4QX2gnAnT4TETS/HxIZzSaDKstuAuoYA
+	 F1g/m0S42v1v9ZDY508mtCxtnfJXoLGBaGCoEJ8L02DaHPbD7Blk+MMrQnf3VCaiaF
+	 RTaYE6+asQX3Q==
 
-On Fri, Nov 06, 2026 at 04:19:31PM +0100, Vincent Guittot wrote:
-> When several tasks wake up simultaneously on an idle CPU but their prev
-> CPUs were not idle, their final vlag will depend on the enqueue ordering
-> as the first one will lose its lag but not the next ones.
-> 
-> Reset the lag during the enqueue if no fair task has already been picked
-> and set as the running task.
-> 
-> As a typical example:
-> - CPU0 is idle
-> - TA with vlag 0ms and TB with vlag 5ms wake up on CPU0 simultaneously.
-> 
-> Depending which task grabs the lock 1st, the behavior will be different:
->  - If TA is enqueued 1st, TB will be enqueued with a positive lag and will
-> be picked 1st.
->  - If TB is enqueued 1st, it will lose its positive vlag and both TA and
-> TB will have 0 vlag when eevdf picks next task.
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  kernel/sched/fair.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 945de0215abb..6ce4162a7703 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -967,6 +967,14 @@ void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
->  	if (vlag <= 0)
->  		return;
->  
-> +	rq = rq_of(cfs_rq);
-> +
-> +	/* You can't claim any lag when waking on idle CPU */
-> +	if (rq->curr == rq->idle) {
-> +		se->vlag = 0;
-> +		return;
-> +	}
-> +
->  	/* No fast access to prev rq task clock */
->  	if (flags & ENQUEUE_MIGRATED)
->  		return;
-> @@ -977,8 +985,6 @@ void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
->  		return;
->  	}
->  
-> -	rq = rq_of(cfs_rq);
-> -
->  	/* Compute sleep time */
->  	delta_exec = rq_clock_task(rq) - se->exec_start;
->  	if (unlikely(delta_exec <= 0))
-> -- 
-> 2.53.0
-> 
+From: Li RongQing <lirongqing@baidu.com>
 
+get_cur_freq_on_cpu() uses perf->state, which is an index into
+perf->states[], to index policy->freq_table[]. However, freq_table[]
+is built by filtering _PSS entries that are not lower in frequency
+than the previous one, so its index space no longer matches
+perf->states[]. The original P-state index for each remaining
+freq_table entry is stored in driver_data.
 
-LGTM.
+Once an entry has been skipped, using perf->state as an index into
+freq_table[] can therefore select the frequency of a different
+P-state.
 
-Reviewed-by: Kayra Cizmeci <kayracizmeci@gmail.com>
+The reported current frequency itself remains correct because it is
+obtained from extract_freq(). The mismatch only affects the cached
+frequency used by get_cur_freq_on_cpu() to detect a firmware frequency
+change behind our back.
 
+If the wrong table entry contains a frequency different from the one
+the CPU is actually running at, the check falsely detects a frequency
+change and sets data->resume. The next ->target() call then performs a
+redundant control-register write even if the requested P-state is
+already the current P-state.
 
-Cheers,
+Conversely, if the wrong table entry happens to contain the frequency
+to which firmware has changed the CPU, the frequency change is missed
+and data->resume remains clear. A subsequent ->target() call for the
+P-state that the cpufreq core believes to be current can then
+short-circuit without rewriting the control register, leaving the CPU
+at the firmware-selected frequency until a different P-state is
+requested.
 
-Kayra
+Fix this by taking the cached frequency directly from
+perf->states[perf->state].core_frequency. perf->state and
+perf->states[] use the same P-state index space, and converting
+core_frequency to kHz yields the same value stored in the corresponding
+freq_table entry during initialization.
+
+This fixes the cached side of the comparison only. extract_msr() still
+reports freq_table[0].frequency when the status read from the hardware
+matches no freq_table entry, which defeats the comparison when the OS
+is already at the P-state corresponding to freq_table[0]. That is
+addressed by the next patch.
+
+Fixes: e56a727b023d ("[CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind our back.")
+Reported-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Suggested-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index f64fa37..2d7d147 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -353,6 +353,7 @@ static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *dat
+ 
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ {
++	struct acpi_processor_performance *perf;
+ 	struct acpi_cpufreq_data *data;
+ 	struct cpufreq_policy *policy;
+ 	unsigned int freq;
+@@ -368,7 +369,9 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ 	if (unlikely(!data || !policy->freq_table))
+ 		return 0;
+ 
+-	cached_freq = policy->freq_table[to_perf_data(data)->state].frequency;
++	perf = to_perf_data(data);
++	cached_freq = perf->states[perf->state].core_frequency * 1000;
++
+ 	freq = extract_freq(policy, get_cur_val(cpumask_of(cpu), data));
+ 	if (freq != cached_freq) {
+ 		/*
+-- 
+2.9.4
+
