@@ -1,60 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.85.4
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793957503;
-	b=yQZc5tpzZnSupeqduh8vPH4msq/75d/wTuhvlNSiSf/DKXwPKTMgC2H+HIpWtEFL7MUv
-	 5B8YD6U2mZPlUCZg9MMGGqZ8NFa2ENt+akC3BBO31rq162BfQVtmXRofFGKvB+PGSt4r2
-	 KXV65Y/94QndXCr8OO5oZ2i3l7QBxUCJsVvcjzKRO2Od7Cnv3bbBRKZHruVOyI7JWl1H5
-	 0qBwSNjse250pjlZl5CI7N6TBJ0MoCK8SVrohFbMz3vfXn1tFm4AFAFLbcquadQS4+qze
-	 Eyoeo6ODIi0PQ147PcOUqEZyWGjY7lXI9w2SQHmk5RD0bVYN4yvTZ+91IRm6NrPZV8w==
+	t=1793957496;
+	b=tvnolRVwFqz4Q8iqIe+nGteQeQ9Q7spiPMTbBpDNbaWp7A8yBctu7HAJaPgSn8ENugZO
+	 0Ll24JlRkOrYdpS7W9wIKGyKnthpgEgeY0U1LY2knTaM/eolEUD4qDM1fV8Nd2wEOoOIc
+	 yK6suZIuD5gEzfNZctnQn5fxmR2PTnBmLaZ5gE+X3MXjPUqNqzuej7eZLyZIVJz6DjsGS
+	 Y0l5gVpfYacaSoKihUaFmtVEkMt3jlUHoRO3bUjAt6pJi1F6VAN2FxC/uiGCKokda48Md
+	 PVmjZ9HAVmIDOvTMIurLcPjAXO2T9/ztfkZRospoJrE2vZSxKb7PdziK7lYxJjqaWDg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793957503;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793957496;
 	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:Date:
 	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Last-TLS-Session-Version;
-	bh=2RPHFJlKoNUsrHhH8iiJsLuk3l1owV1sHk6Qha4yz5k=;
-	b=F1pb34iUIUHGHiwfB2HO9Y/MxzKjC8cMmUEJR6gMPhJEGPtrY6JgxZXDma4iWMh+2ZZp
-	 XL9Q8RRKCDe1kcl6ViF3mvieaNtLUPuoQio44BPcGvVpihpYbEKn5KhyuKZlllIrRzWOq
-	 N5/GKB8f62YlR/snUYOkE+2KtLZes2PJh+o7/11Q6daXvxJnGpyE3cW7HvsYThgTe+cCD
-	 ODHb1muiFmdTQG+/2yiAfbabJ1Y8pNMgFmtILpZkq/ZvIUdUt3xYgiSq51NKVlqE9zf2O
-	 MK51O+ZaGkpJ+QpgC7mUAKHl/vnenuwMXrbnEUoJMAZtwlV0h2+nMGSz4ZTcJRFarVg==
+	bh=dGYVs8TEgGGOAbRpdMbC6rjsIyrgh7PeAJahuuixs7Y=;
+	b=cZ0lCgjB7tU64WGXp+/OZcpibs3r/OsSCHeTbgA/I73EY4zbX1oQywWKt0LI7jG/UUbg
+	 Lg3VyCV42VHejY8MlVlTGjk3dJnxjltP/qTOQkW93Dk7pwEDtNWm5cPoCW6xcx1UPbJJd
+	 DAPSDRoPcj7of/HvItMyzOYF3JjLAV85ghKrw0u7vn+owpomjA6Z/Ldz3hFEBiz9OQoPQ
+	 eh9bBA+K9xuLmkgJ/uHelLxNucM35/6jYO8u1Ni7jlEgFVmDV16RrlOqWtz7CAUPsD/jD
+	 M4jS36xYfnAX2nlsWvyom2m53DWfSsthLebpmlKGdYwwRuCJJ58FssWSbWTXgjk6g/Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=bootlin.com;
 	spf=pass smtp.mailfrom=bootlin.com;
-	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=spH+nNJF;
+	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=afgbf5zi;
 	arc=none smtp.remote-ip=185.246.85.4
 Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23E99606A338
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 09:31:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 23E99606A338
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44794606EE91;
+	Fri,  6 Nov 2026 09:31:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 44794606EE91
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=spH+nNJF
+	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=afgbf5zi
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id C74AF4E413F4;
-	Fri,  6 Nov 2026 09:31:41 +0000 (UTC)
+	by smtpout-03.galae.net (Postfix) with ESMTPS id EC13D4E413E9;
+	Fri,  6 Nov 2026 09:31:34 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 8FF2F5FFBC;
-	Fri,  6 Nov 2026 09:31:41 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id AFC16103292D3;
-	Fri,  6 Nov 2026 10:31:31 +0100 (CET)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id BEC8C5FFBC;
+	Fri,  6 Nov 2026 09:31:34 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 3D770103292CA;
+	Fri,  6 Nov 2026 10:31:24 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1793957498; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	t=1793957491; h=from:subject:date:message-id:to:cc:mime-version:content-type:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=2RPHFJlKoNUsrHhH8iiJsLuk3l1owV1sHk6Qha4yz5k=;
-	b=spH+nNJFFWCk19pHQNFzeMXVYdz39HUw/xGPcL2RmGUcas8FWu/FrKGp1YJWp9pAkfBrTN
-	Xz/J0Wdrfh+ohhqZXFioP2ukCpe9BcRFbRmuHpvu1qgkN86CxlD3rlMZJF8aU7fKPOvlyX
-	+AlqvA2YrULh37P1M0A3dvotE5JfL1qA/b9gDf1ohphSrOV172IJGPq0AGQOfkj0I5E+6u
-	J8hwOYXy6k6/Up48ENjrEujiKWFOpQ9q52jFEQtxzwZ5Ap5g6WZq9JOFlRBeXNlv/PINvb
-	H5QhvvrS1vTNsBfbvuryQ7ZsEGN4hEgVNsbTxmz2AAzX/5OGCYVapPgZicX3nw==
+	bh=dGYVs8TEgGGOAbRpdMbC6rjsIyrgh7PeAJahuuixs7Y=;
+	b=afgbf5ziCJaaBa6xX8Lhcriicf+ABvhzX1xI/3iuH1iI3bEnyB49sarXE2LXNlcaLL92pd
+	IJ1hHRgtEDuTrTvdIBWMEOoLIvG+5ZsdzDYtUqxdPAQDIqYXFZ43DdC3zfOojqugJd9sCx
+	ZgxroG8raOwWge2Jn+Sa0gyXkjTCWizM1G5OojdlmmmbowfI0A1UPnt0UNAuTbCMX2v8Oy
+	vvwxRfy6Y0oCTcdBvw0VVZqQgQlBXOIlzDeiOmw2rpeiUxHlw6lgVgTf5BqDOGB0lHV/xR
+	YgaO4Q1ns/9XXTaoHAJHJkmjxCbykJd9o8qyjjQ4Fy5IMl5LiLNk4j02Artfxg==
 From: =?utf-8?q?Beno=C3=AEt_Monin?= <benoit.monin@bootlin.com>
-Date: Fri, 06 Nov 2026 10:30:06 +0100
-Subject: [PATCH 09/25] dt-bindings: timer: andestech,plmt0: add Metanoia
- MT2824
+Date: Fri, 06 Nov 2026 10:30:05 +0100
+Subject: [PATCH 08/25] dt-bindings: interrupt-controller: andestech,plicsw:
+ add Metanoia MT2824
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -66,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261106-mt2824-v1-9-86087eaf5af4@bootlin.com>
+Message-Id: <20261106-mt2824-v1-8-86087eaf5af4@bootlin.com>
 References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 In-Reply-To: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -99,25 +99,26 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.16.0
 X-Last-TLS-Session-Version: TLSv1.3
 
-The Metanoia MT2824 integrates the Andes PLMT0 timer. Add its compatible
-string, with andestech,plmt0 as a fallback.
+The Metanoia MT2824 integrates the Andes PLICSW software interrupt
+controller. Add its compatible string, with andestech,plicsw as a
+fallback.
 
 Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
 Signed-off-by: Benoît Monin <benoit.monin@bootlin.com>
 ---
- Documentation/devicetree/bindings/timer/andestech,plmt0.yaml | 1 +
+ .../devicetree/bindings/interrupt-controller/andestech,plicsw.yaml       | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/timer/andestech,plmt0.yaml b/Documentation/devicetree/bindings/timer/andestech,plmt0.yaml
-index 90b612096004..b33350cf43a5 100644
---- a/Documentation/devicetree/bindings/timer/andestech,plmt0.yaml
-+++ b/Documentation/devicetree/bindings/timer/andestech,plmt0.yaml
-@@ -21,6 +21,7 @@ properties:
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/andestech,plicsw.yaml b/Documentation/devicetree/bindings/interrupt-controller/andestech,plicsw.yaml
+index eb2eb611ac09..a61fe7ca9023 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/andestech,plicsw.yaml
++++ b/Documentation/devicetree/bindings/interrupt-controller/andestech,plicsw.yaml
+@@ -23,6 +23,7 @@ properties:
      items:
        - enum:
-           - andestech,qilai-plmt
-+          - metanoia,mt2824-plmt
-       - const: andestech,plmt0
+           - andestech,qilai-plicsw
++          - metanoia,mt2824-plicsw
+       - const: andestech,plicsw
  
    reg:
 
