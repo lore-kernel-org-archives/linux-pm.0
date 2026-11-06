@@ -1,93 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.51
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=178.63.21.144
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793942493;
-	b=ZYt4FaUO7dVqREkx+A77QYWqJfKcpa+u4xXM8Mbp7mjWwuQ0l/CTbYhfpbnIGDHTbg+l
-	 zvu9u09BSgQ9N5ZJc+AmCPHp3GVNqSlJ/s3tPMHMIFyUBmLQupddxjyHna7+RmY9gxvIx
-	 4TewEfisKNtsAGoAslrfQnS6W9+A2XtTjAtMxlMvZQVxKeAaDK5HS8spieBEfNsLlcOAm
-	 4UWUobSNxZmi0vrFsw5YQ5og/drp83/y0rQhtqBKUmcKRwKTSPkGySuKPgVx3YlUrdENS
-	 l9KkiYp2KndNiU2DjS3Q+9lL86pLRxOHvrO8ahmer75KNBoBUIrxUyp9OeZkSrFaaSQ==
+	t=1793945284;
+	b=s/tEIf2+wbNc8V2MdaVECUBwQCYpGPM57kQRExJL0wNc0+A6leolb8Ga8I02CD/IQeyz
+	 SDyqsEbzPk7wbyUZtjexDewJQTHo/hc3nH+C5aw6GHUpgn321cASwoFa8tBoShB7bWNFg
+	 JVXSP1QtQgnco24BP1svQRkLl9W6C7AJ5322i53kzMTd1Y0R3HYVc2Gds03+5x852Ryz1
+	 XnQE8867p3BPOlt3w9N+RrDtYSNRC9q+gzAyox0ZMmMTyc7GVshN8YkZZj/UOBF5FipsU
+	 G4nWJOZrLYQkKV4h/G/Pivjm2gd+DJ6L4hPk/p0GlhhX9cUOFHLBxRxZWwNUH4uhvNQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793942493;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=N1u821A4KIwQB9OeDGNSa874HBrPBVuuOBBXo5yucbQ=;
-	b=YRoRz1oAhLYBRNRo9thPjqIcpgeqGnX7noYc4SyFXkHsyBlgpEk1PgsyBrC5E1I8rTId
-	 iYKx2R6o5UahBvTG+fbKsQf/T2tAl9hDRl5Aj68YkG3GkD8h2OPFvWMYbqGUhPT6Ui8f3
-	 MwVgDI26appUfmk1wSAqPqXWh6iOSnoFBDpYbal2TgkVhJ7ZBVkuIyBACAt9mzZup1Co5
-	 drCVvINet3oEcPKxoQ2EyiJdBMrKOdmRyLbW3n2kPlZuMA7FLDuP39qBQtGXTnfGUcTew
-	 vvBzze332xWkruXTmgpPXtBQDCfsj6TgvZN6PU3DbBZocvvufzuG3szBJ3tnn3wX6Hw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793945284;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Received:X-ME-Sender:
+	 X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:From:
+	 To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding:X-Greylist:X-Virus-Scanned:
+	 X-Virus-Status;
+	bh=a0zKFNSY5sEaJFF+2VZL4C671DXRma89VItapdXQj3I=;
+	b=IXxwhFAD7+ApucIrZftYBWCqK8WgkJmCJhJ5KZj/uZSXJFvQTkgkDMQhlzH6RkJOvhD7
+	 vmbb1Y2qZVHPJgpYnbryVSRzBYzkjmFLmWdEeRv0fTskuRm0K5UWj3Z9Ks53O+Wv7mrTb
+	 ruNrJlmhHnBq4zzC5CAMRLjAsp5IJtj0I9iejJEvCy4ZCeyeCbnEUFjLBP6QieGPMbZol
+	 zEIq8+p7juyQGYhpggx909hyd69+ydQsdJ3x5L3tQjlAZd+HOQgezrk7MTkvLK3lO4wZ7
+	 rP6yI7qYDG5XPq/WjkrnEw/Bd/FmIxuni/UDcKDspPGoPD5v2vWHheDYdEV9cMi5Qdg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xbxPQuVI;
-	arc=none smtp.remote-ip=74.125.82.51
-Received: from mail-dl1-f51.google.com (mail-dl1-f51.google.com [74.125.82.51])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=sericyb.com.au;
+	spf=pass smtp.mailfrom=shining.glasswings.com.au;
+	dkim=pass header.d=sericyb.com.au header.i=@sericyb.com.au header.a=rsa-sha256 header.s=shining header.b="Q/8Uck+A";
+	arc=none smtp.remote-ip=178.63.21.144
+Received: from shining.glasswings.com.au (shining.glasswings.com.au [178.63.21.144])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54B0C606A31B
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 05:21:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 54B0C606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3A73606A333;
+	Fri,  6 Nov 2026 06:08:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A3A73606A333
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=sericyb.com.au
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=shining.glasswings.com.au
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xbxPQuVI
-Received: by mail-dl1-f51.google.com with SMTP id a92af1059eb24-19305bcb72cso262079c88.1
-        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2026 21:21:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793942492; x=1794547292; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=N1u821A4KIwQB9OeDGNSa874HBrPBVuuOBBXo5yucbQ=;
-        b=xbxPQuVITKyj+xCm+P8jesjnI8ewU78j9O+4nQWHT51csxaEf+db0YTOTFJVH1zLme
-         tm/+21qmLBTvhvso+bJYM7g3c2ljXeV38agRiWC+fVChqYXWveQD8a75z97oHDAbQZmq
-         bOr6OFX6rRF1bM+Skl5cMLxrTFd1H9D7eBd4m0wP1Fx9711QG1GItQOoPEd37iwpT7X/
-         AzdQUjiSGSRyEc5/iu+An+lhOG/vflQzBSf7CDeo/hTSdUDpr48bn5ueSzfviX3yXpRP
-         VJVM2CkSjBA5/Vtivh05p+R/YBlkGcW94mEwqB6B68G4tAiLo1t8lqK3oCYw5djK9zPN
-         jfHw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793942492; x=1794547292;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=N1u821A4KIwQB9OeDGNSa874HBrPBVuuOBBXo5yucbQ=;
-        b=QXv64l6SJ9YPJCnQIhzfYz8CnIGhd0n+QaV57XX0dF8M1503lYlRkD21Jihy4c1F5P
-         5d6eSAahMHDC3vqxwVgH56GERzatXZiZlQimINvDQHoz26OlYfcr8ni2UPBTNIHC0qvy
-         ZjpjjrNRdpVdvVDraqsuamHvt9Udf9kAOw2ftvAzPqXQf1AH6J4dYZFvZGFCLoB00csr
-         cTeDboCzRvqbFQ8z0j9/apcQxtiZ7WP6grjdJ5JCRfAhXes2u5tsQNRBr9tXqSVbH/KF
-         eIURIRLPY9pSYPut5xtq0w+46uSB2+wF0sxz6jb87hrRfelzq7Ak2/8qIcT2SiXe3vB/
-         hW8Q==
-X-Forwarded-Encrypted: i=1; AKwUvBzGE22tfxZ39nnUMAnOU8CxNSt3xL3GSJm8HbQduqhJcXW+WKwBhxGbTBckR8TNU5vcu+mpsS/1Nw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/n0ewjLYgKsJ2uWWOmHxIRxGvgJOBXzXHiUSxr0veV9mqm6Qib
-	wLOug0YwND4QqJhXmgGQA0BG/KhRJhLupKlo1Ot90Dr+KfXZMS1lPFFde4ebM2tT4sHvRA==
-X-Gm-Gg: AYBFou04XXJPWAdZWhnDdIijJeZ3AqlgKYBskkR79NUe4H2i6FZfkk1VoqjlB3sgsQl
-	ffTQTnBK71/j0uggmnTa62TUtFHb47Jr9seM/lZLnmzq3OI9DxYjbjbeKCb10mArM+cqKD5qEMF
-	ZjtgAgOUv2urgIxhleJsvI0CWMM0uOdpMVoqQA9Q/nF99ZXaS2xfEMXUIxLCDvtlT4lLmaBoWWX
-	kEpYMWY/B4Z8PfY+n01Wo0vUURfE2vxZwC+l3wKjRYKkqDzwAdB3eg76cH/GCN7iDTRIOcH8+3q
-	8tr34X6Fw5VOYkWWVpWzRr9m07vW6l/lmg7Gcv/Rg22knU0t0pdbKhHjf5jwnezlIFPrq0rx5ZI
-	RnvwLhPs5m6XAPHW/QObJqwYgHLi8wONN4RMWRmpVyWwc4L1NzlragEVkYy6NGcivIWNDcXobjr
-	gTfUGbzxQwhPgrWmdSJO/OEdoz3qhrFZ+mLFwSmpPFD7h6p9PXeuOelqCIMFXOniJxYfaUk33wg
-	MMMrnVHrazOpTq5yPGrdZ8CM+4fHPjz5hgv0V6dMugvzhIbxG5A390OOv3yXtgOHWX9F2qtnLcL
-	yb5mUhRjfs2g+Xf0wBfb2ClPxj+a9eEeiM0D14730bbMjL53/DpjoWL0VDh4kCuLo33bnvXa7S6
-	s+4MbUhGDCFLKD+oHlRFJsrecog40Pcmpt4MjgfVNiVUFIiXC4uRqpEkbtBD8pRQLXTTL
-X-Received: by 2002:a05:701b:2719:b0:136:b50c:c0e9 with SMTP id a92af1059eb24-1b25d309c43mr1672095c88.21.1793942492079;
-        Thu, 05 Nov 2026 21:21:32 -0800 (PST)
-Received: from lwq-System-Product-Name.. ([2602:feda:30:cafe:1602:ecff:fe49:38a8])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b25e261962sm3495639c88.0.2026.11.05.21.21.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 21:21:31 -0800 (PST)
-From: Yaohan Li <shunsheng1218@gmail.com>
-To: sre@kernel.org
-Cc: hansg@kernel.org,
-	marex@denx.de,
+	dkim=pass (2048-bit key, unprotected) header.d=sericyb.com.au header.i=@sericyb.com.au header.a=rsa-sha256 header.s=shining header.b=Q/8Uck+A
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=sericyb.com.au;
+	s=shining; t=1793945282;
+	bh=Ymh5l37azzUz/iuGx3AJgxSfhjkIPytOYWVOy/hm0Yc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Q/8Uck+AlWNdUpZn0KeIrjOwP9Up7ItaWFVWReBYQscviBvQSTBDt5RzBpSb0xUEH
+	 ty5nnJhq0C8ATu6Gcmo93Gs1/oKB7lWUAHnSQjcPaQYW6PrydvT2Gt6zQwCdeOyy0X
+	 Df9ToEGmdsz9bMozU3kf2Yx9EAWSjmzvwtNoBpf/md/TTT4Fkz+cMnz2jc62UyjtTI
+	 qXY4YZS0ji1P3N/0HiwGILeYAi7hK/ybi4sWE85dx07pLbVsU8Awwa/YA5jBsn+ElG
+	 Mt5zDLC69UzzRCxU8DAAz4pKRrtpPo0MMwbb4cpu6YETnA+5Rw2wtAJ1jd9OcunKdo
+	 5dbPJJ96UYnaA==
+Received: from fauth-a2-smtp.messagingengine.com (fauth-a2-smtp.messagingengine.com [103.168.172.201])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by shining.glasswings.com.au (Postfix) with ESMTPSA id C818910924141;
+	Fri,  6 Nov 2026 06:08:00 +0000 (UTC)
+Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
+	by mailfauth.phl.internal (Postfix) with ESMTP id AAFFCF40066;
+	Fri,  6 Nov 2026 01:07:59 -0500 (EST)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-03.internal (MEProxy); Fri, 06 Nov 2026 01:07:59 -0500
+X-ME-Sender: <xms:v27tag_tQ6kpPoh49D3nayd77LQbNCI73cB8iUSKlPlW-5--A_BkQg>
+    <xme:v27tajF-8Ctjr2qz8ttG8eDD7ehAWfOeJr9DeOOSvj2mSQTst6fFs4V6MKfqjPY1m
+    vI7OOQz9lloNvGo0SxagW383CqYH8xQgOUuGtOVfjcoLXZbDk35w-3C>
+X-ME-Received: <xmr:v27tasJguEZ_kfGlp_OMNwgx2CY8RTRw86fqYthaXgIdyc-2WJ3GttPOffzwOTHKTbDMsDTs_srdC8SoCZLFA4fC-TUK624VU5OQMkYnmHc>
+X-ME-Proxy-Cause: dmFkZTGJt3n1PQXC/FQG1+B4dDYdd7jzhZlyl3cBdgxPjc5MzKuIVzENiuR0E8tXhVCYot
+    oOxwUXQVpp6VAEFUg+Uag3+jV3NxxQBqkuwqHRpa3avIMsMf5rLSrLvoU9/YiPtVmmw1Nh
+    zLPLiGNoLWEom9MXOxTuny0wuIwJj+YnwLd3gmlT78BD8tHIS3uMrtPiOeTkzb/BpfqHcJ
+    ZJYCN1MdLe92Bp5QjUXsKpkDjC+xSg0gfYGGYkLbuDh5Mj+BFcqCO2KyQpU99GhnUhksCQ
+    Jqp321gTZQ359Pfjg6F4oa2enLz7ZLclUfrma4OACrOvjp2Zeu6dpHGkjEpDMo+QrHIVMT
+    Y5NLUAZ7xttUV8yw2L/EAfMFcEtjUl8AVZ87rWCSUT7yFwClTc3zmQF126lj8Ob8X7Qp5X
+    yM4rnV27L+2vdh3HVpI6fHvASta3yTp7rhh3u2AyVtaPnrpsg230CZIdDdBo9Z2LNhpIXR
+    JHHmxVMbAA4iZpdKWtP9VrGXobnkYD93sPOofRYuGNpzZ2vMTvuJqvpVibkUvcGd7E6hO6
+    9wQv2QEQG6sgrRhi21IYcj9/7tQZH3rMRxQCmIbDNwGessANy1lOY++zusKFNpZfjrK2ay
+    DlBmUKXvr2qLRdeIwOHNXYXeso+IvJw5NIXkcWmgbjo7pGQfmnWtblnYPHWQ
+X-ME-Proxy: <xmx:v27tarmirk35R3bGqtQ1tb52nfv2PAUVt2WZtEwXhls1hCODcDGlDw>
+    <xmx:v27tatyDRP7PMqhVEOK9DOHeUWMfvrCcrGmlTFS_znC49FIVYSrjDQ>
+    <xmx:v27tats_HlyWNLUj_GFTmOH6FXL2G_kCKFbf1v5BBLcLTzdwey_Jvw>
+    <xmx:v27tanFiB48yJdQrQU_KzuH71hg_9bOqSlKqMZsKkSlh91kyypFEwg>
+    <xmx:v27tar4_VJ31TJ8MXHl2UUJiMNnaTOvqPRywI4V8O9A1p_ZNlWcv3W7k>
+Feedback-ID: i558e4b61:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
+ 6 Nov 2026 01:07:55 -0500 (EST)
+From: Andrew Pam <andrew@sericyb.com.au>
+To: Trond Myklebust <trondmy@kernel.org>,
+	Anna Schumaker <anna@kernel.org>
+Cc: Andrew Pam <andrew@sericyb.com.au>,
+	Chuck Lever <cel@kernel.org>,
+	Jeff Layton <jlayton@kernel.org>,
+	NeilBrown <neil@brown.name>,
+	Olga Kornievskaia <okorniev@redhat.com>,
+	Dai Ngo <Dai.Ngo@oracle.com>,
+	Tom Talpey <tom@talpey.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	linux-nfs@vger.kernel.org,
 	linux-pm@vger.kernel.org,
+	netdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] power: supply: bq25890: cancel the pump work before the supply is unregistered
-Date: Fri,  6 Nov 2026 13:21:00 +0800
-Message-Id: <20261106052100.1203225-1-shunsheng1218@gmail.com>
-X-Mailer: git-send-email 2.34.1
+Subject: [PATCH 3/3] SUNRPC: reconnect client transports after resuming from hibernation
+Date: Fri,  6 Nov 2026 17:07:31 +1100
+Message-ID: <20261106060735.637295-4-andrew@sericyb.com.au>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261106060735.637295-1-andrew@sericyb.com.au>
+References: <20261106060735.637295-1-andrew@sericyb.com.au>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -98,232 +109,202 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.6.2 (shining.glasswings.com.au [178.63.21.144]); Fri, 06 Nov 2026 06:08:02 +0000 (UTC)
+X-Virus-Scanned: clamav-milter 1.4.6 at shining
+X-Virus-Status: Clean
 
-bq25890_pump_express_work() ends with power_supply_changed(bq->charger).
-The work is initialized in probe and its only cancellation is a devres
-action registered before devm_power_supply_register().  Devres actions
-run in reverse order, so on driver detach the power supply is
-unregistered and freed first and the work is cancelled afterwards.  A
-work item that is still running at that point calls
-power_supply_changed() on the freed supply.
+With rpciod and xprtiod frozen across hibernation, no RPC is sent after
+the snapshot. TCP can still acknowledge data the server sends then,
+though: typically a reply that was in flight when the snapshot was
+taken. The restored image has not seen that data, and the server, which
+saw it acknowledged, will not send it again. The client then waits
+indefinitely for replies that never arrive.
 
-Switch to devm_delayed_work_autocancel(), which initializes the work and
-registers its cancellation, and keep both early in probe.  Because the
-action is registered before devm_power_supply_register(), it runs after
-the power supply has been unregistered.  At that point the power supply
-core has set ->removing under epc_sem and serialized with in-flight
-external_power_changed() callbacks, so no new work can be queued and the
-cancellation is final.
+Captured in a QEMU test (below): on the one cycle of six that hung, the
+client's TCP acknowledgement went backwards by 200 bytes after the
+restore, and the requests outstanding (WRITE, COMMIT, GETATTR) stayed
+queued on xprt_pending with no further progress.
 
-Cancelling the work twice is not enough by itself: a supplier callback
-can queue it again between the first cancellation and the power supply
-unregistration, and if the teardown then takes longer than the five
-second work delay, the work starts before the supply is gone and
-finishes after it has been freed.  Add a teardown fence that serializes
-the queueing decision with stopping:
+After resuming, disconnect every client transport. Requests in flight
+are retransmitted on the new connection, and the server answers any it
+has already executed from its reply cache. Because nothing was sent
+after the snapshot, NFSv4.1 session slot sequence ids still agree on
+both sides.
 
-- bq25890_stop_pump_work() sets pump_stopping under pump_lock and then
-  calls cancel_delayed_work_sync().  A supplier callback holds the same
-  lock around its check and queue_delayed_work(), so it either queues
-  before the flag is set (and is caught by the cancellation) or sees
-  the flag and does not queue at all.
-- bq25890_remove() calls the stop function before devres, draining a
-  work that is already running while the supply is still registered.
-- A devres action registered after the power supply covers probe
-  failures, which do not run bq25890_remove().
+The disconnect is done from a PM notifier at PM_POST_HIBERNATION, which
+runs in the restored kernel once everything has thawed. It is also sent
+when hibernation fails, where the reconnect is unnecessary but harmless.
+xprt_put() may sleep, so references to the transports are collected
+under the client list lock and RCU, and released afterwards.
 
-Initializing the work before the supply is registered also prevents a
-supplier-change callback from queueing an uninitialized work.
+Tested in the QEMU setup described in the first patch of this series,
+with 20 hibernations in test_resume mode back to back while NFS writes
+(8 MB, fsync) and reads ran continuously. Without the series the client
+hung on the first cycle; with only the first two patches, on the sixth.
+With this patch all 20 cycles completed and I/O progressed on every
+one. The capture shows the client's acknowledgement going backwards on
+two of the old connections, and the client reconnecting and carrying on
+both times. The single-hibernation test is unchanged apart from one
+extra connection per resume: nothing reached the server during the
+image write, and the client resumed without errors.
 
-The explicit cancellation in bq25890_non_devm_cleanup() is removed; the
-managed action and the fence replace it.
+Drafted with an AI coding assistant (Claude), which also ran the tests.
 
-This issue was investigated and the fix was developed with AI
-assistance (ZCode/GLM-4).
-
-Testing with QEMU and KASAN (lockdep and CONFIG_DEBUG_ATOMIC_SLEEP
-enabled in the test kernel), using a simulated I2C device, the real
-driver and a fake DCP supplier:
-
-- Unmodified driver, pump work running when the device is unregistered:
-  46 slab-use-after-free reports per run in power_supply_changed()
-  called from bq25890_pump_express_work().
-- Normal unload after the work has finished: no report.
-- Work running at unload: bq25890_remove() drains it before devres; the
-  work's power_supply_changed() completes while the supply is still
-  registered and the teardown reports nothing.
-- Probe failure after the supply was registered: the supplier storm
-  queues the work 160 times during a widened window before the failing
-  IRQ request; the devres stop action cancels it before the supply is
-  unregistered, and no report appears after the five second delay.
-- Requeue window with a six second (longer than the five second work
-  delay) teardown: the fence is set before power_supply_unregister()
-  and the supplier storm queues the work zero times.  Without the fence
-  the same run queues the work and produces 14 slab-use-after-free
-  reports in the running work after the supply is freed.  With the
-  fence, no report appears after waiting six seconds.
-
-Fixes: a7aaa80098d5b7608 ("power: supply: bq25890: Ensure pump_express_work is cancelled on remove")
-Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
-
+Signed-off-by: Andrew Pam <andrew@sericyb.com.au>
 ---
-Changes since v1:
-- Use devm_delayed_work_autocancel() as suggested by Sebastian Reichel.
-- Remove the explicit INIT_DELAYED_WORK(); the helper initializes the
-  work.
-- Register a teardown stop action after power_supply registration so it
-  runs before power_supply teardown, and call the same stop function
-  from bq25890_remove().
-- Serialize the supplier callback's queueing decision with the stop flag
-  under a spinlock, so work requeued before unregistration is either
-  cancelled or never queued.  A delayed work that is already running is
-  drained before the supply is unregistered.
-- Drop the cancellation from bq25890_non_devm_cleanup().
-- Revalidate normal removal, running work, probe failure and a six
-  second requeue window with KASAN, lockdep and
-  CONFIG_DEBUG_ATOMIC_SLEEP.
-v1: https://lore.kernel.org/r/179378565123.72475.2497991563887142080@gmail.com/
----
- drivers/power/supply/bq25890_charger.c | 73 +++++++++++++++++++++++---
- 1 file changed, 67 insertions(+), 6 deletions(-)
+ net/sunrpc/clnt.c        | 85 ++++++++++++++++++++++++++++++++++++++++
+ net/sunrpc/sunrpc.h      |  2 +
+ net/sunrpc/sunrpc_syms.c |  7 ++++
+ 3 files changed, 94 insertions(+)
 
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index f7510ada6b734..f6ed7c137125b 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -15,6 +15,7 @@
- #include <linux/gpio/consumer.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/devm-helpers.h>
- #include <linux/usb/phy.h>
+diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+index 6cedc824cf82..a488be2891be 100644
+--- a/net/sunrpc/clnt.c
++++ b/net/sunrpc/clnt.c
+@@ -32,6 +32,8 @@
+ #include <linux/in.h>
+ #include <linux/in6.h>
+ #include <linux/un.h>
++#include <linux/suspend.h>
++#include <net/net_namespace.h>
  
- #include <linux/acpi.h>
-@@ -117,6 +118,8 @@ struct bq25890_device {
- 	struct notifier_block usb_nb;
- 	struct work_struct usb_work;
- 	struct delayed_work pump_express_work;
-+	spinlock_t pump_lock; /* serializes pump_stopping with work queueing */
-+	bool pump_stopping;
- 	unsigned long usb_event;
- 
- 	struct regmap *rmap;
-@@ -760,9 +763,14 @@ static void bq25890_charger_external_power_changed(struct power_supply *psy)
- 	case POWER_SUPPLY_USB_TYPE_DCP:
- 		input_current_limit = bq25890_charger_get_scaled_iinlim_regval(bq, 2000000);
- 		if (bq->pump_express_vbus_max) {
--			queue_delayed_work(system_power_efficient_wq,
--					   &bq->pump_express_work,
--					   PUMP_EXPRESS_START_DELAY);
-+			unsigned long flags;
-+
-+			spin_lock_irqsave(&bq->pump_lock, flags);
-+			if (!bq->pump_stopping)
-+				queue_delayed_work(system_power_efficient_wq,
-+						   &bq->pump_express_work,
-+						   PUMP_EXPRESS_START_DELAY);
-+			spin_unlock_irqrestore(&bq->pump_lock, flags);
- 		}
- 		break;
- 	case POWER_SUPPLY_USB_TYPE_CDP:
-@@ -1446,11 +1454,27 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
- 	return 0;
+ #include <linux/sunrpc/clnt.h>
+ #include <linux/sunrpc/addr.h>
+@@ -878,6 +880,89 @@ int rpc_clnt_iterate_for_each_xprt(struct rpc_clnt *clnt,
  }
+ EXPORT_SYMBOL_GPL(rpc_clnt_iterate_for_each_xprt);
  
--static void bq25890_non_devm_cleanup(void *data)
-+static void bq25890_stop_pump_work(void *data)
- {
- 	struct bq25890_device *bq = data;
-+	unsigned long flags;
++struct rpc_pm_xprt {
++	struct list_head	list;
++	struct rpc_xprt		*xprt;
++};
 +
-+	/*
-+	 * Publish the stop state under the same lock that protects the
-+	 * queueing decision, so a supplier callback either queues before
-+	 * the flag is set (and is caught by the cancellation below) or
-+	 * observes the flag and does not queue at all.
-+	 */
-+	spin_lock_irqsave(&bq->pump_lock, flags);
-+	bq->pump_stopping = true;
-+	spin_unlock_irqrestore(&bq->pump_lock, flags);
- 
- 	cancel_delayed_work_sync(&bq->pump_express_work);
++/*
++ * After hibernation takes its snapshot, the kernel keeps running with the
++ * network up while it writes the image. rpciod and xprtiod are frozen by
++ * then, so no RPC is sent, but TCP still acknowledges anything the server
++ * sends, such as a reply that was in flight when the snapshot was taken.
++ * The restored image has not seen that data, and the server will not send
++ * it again, so the connection cannot make progress.
++ *
++ * Once the system has resumed, disconnect every client transport. Requests
++ * in flight are retransmitted on a new connection, and the server answers
++ * any it has already executed from its reply cache. Because nothing was
++ * sent after the snapshot, NFSv4.1 session slot sequence ids still agree.
++ */
++static int rpc_pm_notify(struct notifier_block *nb, unsigned long action,
++			 void *data)
++{
++	struct rpc_pm_xprt *entry, *tmp;
++	LIST_HEAD(xprts);
++	struct net *net;
++
++	if (action != PM_POST_HIBERNATION)
++		return NOTIFY_DONE;
++
++	/* xprt_put() may sleep, so collect references first */
++	down_read(&net_rwsem);
++	for_each_net(net) {
++		struct sunrpc_net *sn = net_generic(net, sunrpc_net_id);
++		struct rpc_clnt *clnt;
++
++		spin_lock(&sn->rpc_client_lock);
++		rcu_read_lock();
++		list_for_each_entry(clnt, &sn->all_clients, cl_clients) {
++			struct rpc_xprt_switch *xps;
++			struct rpc_xprt *xprt;
++
++			xps = rcu_dereference(clnt->cl_xpi.xpi_xpswitch);
++			if (!xps)
++				continue;
++			list_for_each_entry_rcu(xprt, &xps->xps_xprt_list,
++						xprt_switch) {
++				entry = kmalloc_obj(*entry, GFP_ATOMIC);
++				if (!entry)
++					break;
++				entry->xprt = xprt_get(xprt);
++				if (!entry->xprt) {
++					kfree(entry);
++					continue;
++				}
++				list_add(&entry->list, &xprts);
++			}
++		}
++		rcu_read_unlock();
++		spin_unlock(&sn->rpc_client_lock);
++	}
++	up_read(&net_rwsem);
++
++	list_for_each_entry_safe(entry, tmp, &xprts, list) {
++		xprt_force_disconnect(entry->xprt);
++		xprt_put(entry->xprt);
++		kfree(entry);
++	}
++	return NOTIFY_DONE;
 +}
 +
-+static void bq25890_non_devm_cleanup(void *data)
++static struct notifier_block rpc_pm_nb = {
++	.notifier_call = rpc_pm_notify,
++};
++
++int rpc_pm_notifier_register(void)
 +{
-+	struct bq25890_device *bq = data;
- 
- 	if (bq->id >= 0) {
- 		mutex_lock(&bq25890_id_mutex);
-@@ -1474,7 +1498,22 @@ static int bq25890_probe(struct i2c_client *client)
- 	bq->id = -1;
- 
- 	mutex_init(&bq->lock);
--	INIT_DELAYED_WORK(&bq->pump_express_work, bq25890_pump_express_work);
-+	spin_lock_init(&bq->pump_lock);
++	return register_pm_notifier(&rpc_pm_nb);
++}
 +
-+	/*
-+	 * Initialize the work and register its cancellation before the
-+	 * power supply is registered: an external_power_changed()
-+	 * callback could otherwise queue an uninitialized work.  The
-+	 * devres action is registered before devm_power_supply_register(),
-+	 * so it runs after the supply has been unregistered.  By then
-+	 * power_supply_unregister() has set ->removing under epc_sem and
-+	 * serialized with in-flight external_power_changed() callbacks,
-+	 * so no new work can be queued and this cancellation is final.
-+	 */
-+	ret = devm_delayed_work_autocancel(dev, &bq->pump_express_work,
-+					   bq25890_pump_express_work);
-+	if (ret)
-+		return ret;
- 
- 	bq->rmap = devm_regmap_init_i2c(client, &bq25890_regmap_config);
- 	if (IS_ERR(bq->rmap))
-@@ -1517,7 +1556,10 @@ static int bq25890_probe(struct i2c_client *client)
- 
- 	/*
- 	 * This must be before bq25890_power_supply_init(), so that it runs
--	 * after devm unregisters the power_supply.
-+	 * after devm unregisters the power_supply.  The delayed work is
-+	 * stopped by the teardown fence registered below and by
-+	 * bq25890_remove(); the managed action registered above is the
-+	 * final cleanup.
- 	 */
- 	ret = devm_add_action_or_reset(dev, bq25890_non_devm_cleanup, bq);
- 	if (ret)
-@@ -1531,6 +1573,16 @@ static int bq25890_probe(struct i2c_client *client)
- 	if (ret < 0)
- 		return dev_err_probe(dev, ret, "registering power supply\n");
- 
-+	/*
-+	 * Register the teardown fence after the supply: this action runs
-+	 * before devm unregisters the power supply, on normal removal and
-+	 * on probe failure, so supplier callbacks cannot queue the work
-+	 * once the supply is being torn down.
-+	 */
-+	ret = devm_add_action_or_reset(dev, bq25890_stop_pump_work, bq);
-+	if (ret)
-+		return ret;
++void rpc_pm_notifier_unregister(void)
++{
++	unregister_pm_notifier(&rpc_pm_nb);
++}
 +
- 	ret = devm_request_threaded_irq(dev, client->irq, NULL,
- 					bq25890_irq_handler_thread,
- 					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-@@ -1551,6 +1603,15 @@ static void bq25890_remove(struct i2c_client *client)
+ /*
+  * Kill all tasks for the given client.
+  * XXX: kill their descendants as well?
+diff --git a/net/sunrpc/sunrpc.h b/net/sunrpc/sunrpc.h
+index e3c6e3b63f0b..6d7581a115ce 100644
+--- a/net/sunrpc/sunrpc.h
++++ b/net/sunrpc/sunrpc.h
+@@ -40,6 +40,8 @@ struct svc_serv;
+ struct svc_rqst;
+ int rpc_clients_notifier_register(void);
+ void rpc_clients_notifier_unregister(void);
++int rpc_pm_notifier_register(void);
++void rpc_pm_notifier_unregister(void);
+ void auth_domain_cleanup(void);
+ void svc_sock_update_bufs(struct svc_serv *serv);
+ enum svc_auth_status svc_authenticate(struct svc_rqst *rqstp);
+diff --git a/net/sunrpc/sunrpc_syms.c b/net/sunrpc/sunrpc_syms.c
+index 1a3884a0376a..d32786f51ae5 100644
+--- a/net/sunrpc/sunrpc_syms.c
++++ b/net/sunrpc/sunrpc_syms.c
+@@ -116,6 +116,10 @@ init_sunrpc(void)
+ 	if (err)
+ 		goto out6;
+ 
++	err = rpc_pm_notifier_register();
++	if (err)
++		goto out7;
++
+ 	sunrpc_debugfs_init();
+ #if IS_ENABLED(CONFIG_SUNRPC_DEBUG)
+ 	rpc_register_sysctl();
+@@ -124,6 +128,8 @@ init_sunrpc(void)
+ 	init_socket_xprt();	/* clnt sock transport */
+ 	return 0;
+ 
++out7:
++	genl_unregister_family(&sunrpc_nl_family);
+ out6:
+ 	rpc_sysfs_exit();
+ out5:
+@@ -141,6 +147,7 @@ init_sunrpc(void)
+ static void __exit
+ cleanup_sunrpc(void)
  {
- 	struct bq25890_device *bq = i2c_get_clientdata(client);
- 
-+	/*
-+	 * devres runs after this callback returns, so a pump work that is
-+	 * still running when power_supply_unregister() executes would call
-+	 * power_supply_changed() on the freed supply.  Stop and drain it
-+	 * while the supply is still registered; the fence also prevents
-+	 * supplier callbacks from queueing it again.
-+	 */
-+	bq25890_stop_pump_work(bq);
-+
- 	if (!IS_ERR_OR_NULL(bq->usb_phy)) {
- 		usb_unregister_notifier(bq->usb_phy, &bq->usb_nb);
- 		cancel_work_sync(&bq->usb_work);
++	rpc_pm_notifier_unregister();
+ 	genl_unregister_family(&sunrpc_nl_family);
+ 	rpc_sysfs_exit();
+ 	rpc_cleanup_clids();
 -- 
-2.34.1
+2.53.0
 
