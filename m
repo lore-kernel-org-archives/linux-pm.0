@@ -1,49 +1,91 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.171
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793986353;
-	b=yn82YDguSJ1nAfu2Kg3PnOp7pwBbLuQSEgWE4Exnt96ArYsE84b8hQLSPMEl5kwFpFK4
-	 gUfinUtH9r3hjQQi5/Dz52WcVB+cChSrrfS5q/RhnYEZYQ+JgwZ01lf/m5OZ7+KfnvgsI
-	 xaprcmQMYP2y5S1l37IoWfOnHC5qi8wXb9Aeelnl744cf/w472ADgwy9Q6Y1GYfEK7Rk4
-	 ZzxsaYfY+RD+Oy0VqIiUbtJ9EL7ylt/ZCpt2V4MlV/L2Cr1nBgyJGdhG+8Vu1sSomhplb
-	 X6zX6D/XMaiy68vrfvNnZVRaSZsFxKXPoas8/CSNZLV0GfWmF3eD81DcJqghrrSiF8A==
+	t=1793987539;
+	b=V7u6FGNsB1h17mNYtIl1fenbHK6TxPnzbXE7gT73QsCUnxJQDp8nWffkcLqEgPTLTQtX
+	 4WY4QM0J9wGu07NhG+WRNpKOo/FegZMCtlTOwm3Wox9pIq3Vp0KI8jclHe0D0Py5Spv8H
+	 QAuseJxUiUcnZwt5kV1Cb5164qox3zoqp3llbDRU9nqs/FCtFZU4/tdwUKSSpuGMUktbs
+	 wTUf/m+OkY+ILZZiFzgqNxgHRN6vWBy7HWhB1Dp89juDpnGeqzPVDk658/SPHMw8CFOT5
+	 lGuTNOf23yHDkHsmhxbxGcgYXXxmVxl4o2ldamIgVKR52eYFAxuUPmX9x2AJwBzOK2w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793986353;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=QUjPQH1cL8N/9URMv3jru+HqYy9OSWW11sbMjvE7s6w=;
-	b=U+Q8uD7hQepPQBAZ7e7MRnUOAtZtFnLPfr54YoW4n4qcMXGye3d8MiBYzzjuygOG9G6L
-	 wXrAU4bBoPpXPLQufXoJ3oSuWYLSrFRoYKliLnt06KY+ZOlI3j9NmD04bZLKdOmgHIUyX
-	 l33MesmwwTHROOq13xSma7hqBqRp4b8WCDEJ8BKVCVzITetcKaWM1dMMOzYRjFW1Zwija
-	 ob+crP66Hi+k2Mee1r4VcOLEI0rKSN/0uNISo04SaUWqU79m8kIX4gpa9mY3K6x3VH7Lg
-	 vzVcStSRVmz2eys3Ia0v8gWZMH70qWO+1dgOqpnjxJbtqZP2PY1wUa5NNcpfBvaVnFA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793987539;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=OhbBWN1W+Znxr4DvvAnmIHPGTVMobupDzycWw/6MYfU=;
+	b=utMF8NvECijuPiMz8A6FfJ5SxfI4CN1xOiAqmN2hJLY2fu+648aM51e/YmUQVAbNZgVd
+	 NZ/WNTl63fHkkLqnhoMj4eYCkOLOO85fNPUKok8g51/rFlOQLqtV9vW3Jw4p1fx4NopWi
+	 K5DU48tItau64Q4pxguxgIKImH8cMfgJEgHuX4MqH9XGE3X0NjBWTZ1n85SD2CzjJamQ8
+	 xd53225UQDA/cXLyghDIegtBQvt+xsmOgsJUjZxDImxkwU/WHayYJX6hi9QzcgPN1n1ct
+	 nsxYUT88hGoIeJrxZN4UnBORZUY0fGbA9CxoCxdDLCttWGq0sQI8c6JM08O/c8D8wxQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=tMCdkqsG;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E4D40606A326;
-	Fri,  6 Nov 2026 17:32:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E4D40606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=chromium.org;
+	spf=pass smtp.mailfrom=chromium.org;
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=YZJ46xaj;
+	arc=none smtp.remote-ip=74.125.82.171
+Received: from mail-dy1-f171.google.com (mail-dy1-f171.google.com [74.125.82.171])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF913606A329
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 17:52:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CF913606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=tMCdkqsG
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 33D4D1477;
-	Fri,  6 Nov 2026 09:32:29 -0800 (PST)
-Received: from [10.57.68.162] (unknown [10.57.68.162])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4BD303F632;
-	Fri,  6 Nov 2026 09:32:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793986352; bh=3nfA1zsC2kWsMvZC6kHSJ1pTDsUMnfkun7dvKU5Nyno=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=tMCdkqsGitTUPwyMszbGU4m+j+P0i0dA5EGJ8UJPKWs21++tqlBNz25cSuXewzX/X
-	 gb62Ce/XhDh8M7hPeCwMrDhr3wtdUlJdthcLSQPW6w3pJ8B8AUyLVRAypR6nNQDOTA
-	 HKc5EKzNO2qOiOlsDIjb813xkSeMn0A2Qyt9pcVQ=
-Message-ID: <fcc2edad-9edf-4243-92ab-4c1949ef5de5@arm.com>
-Date: Fri, 6 Nov 2026 17:32:29 +0000
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=YZJ46xaj
+Received: by mail-dy1-f171.google.com with SMTP id 5a478bee46e88-36cad25b8b0so1493684eec.1
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 09:52:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1793987538; x=1794592338; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=OhbBWN1W+Znxr4DvvAnmIHPGTVMobupDzycWw/6MYfU=;
+        b=YZJ46xajYRMnoiAIc6MB6PeAo7kxcTJ/gpUv2GOhuoOq6UJohaRpfLi2Q8xyR4Vplv
+         IWCaVC3CZpqNzu1Ea702TaZsJ5uMZD5kgJlt8v9yee1JMrnzZHhG18Yv+fszjHXSc7dt
+         X8FbMSt9qZQh2MAwQJG/scljBsX7TF3jC5bPI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793987538; x=1794592338;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=OhbBWN1W+Znxr4DvvAnmIHPGTVMobupDzycWw/6MYfU=;
+        b=1rkBEUTXcR114Xpp58krIGYg13PoioDrpU1kRnxhXWCXCKych6nf1fvEyQLJnyOVlE
+         ++SGm61R6rtqg6iyTYnuhd2W85JvlqLcDCPq0zYAQeHYs5R3BetVmO1SHVsHp8ZCprEp
+         d5bPf+26pQsjZkrLgGmEeso2UD/KoKQA6/yj0JALIpV2mtpektIrkZs0r0Vs89MEbmJb
+         MB4E7TdMTWckYg8GMXA2NAAg+tGd87TdFjACFSg/5RyLLOfQ9Oi2ciGhKr4SjOZIHqYc
+         U2b/QlnxWrCfEBVqJ6sG/abu84PI70QpU9VBS/An2u/XEfDPPoglvnunCOmL57fFWv25
+         M/hw==
+X-Gm-Message-State: APuU4Z96XnciTVI94Lsk87eerbOcWzKHanEzpqak2H/AVtgXzLOwnGTO
+	10pGb9KnDaw3YRXHBlHwRTvEx2m1AqUN697gWA17uOJPPXMV75fhOpfekXMvwRSRxg==
+X-Gm-Gg: AYBFou0l8OO7z8+VK06cpP7GWiveL9m+GoNdgE32hEjV55/1i1Izi3V12HG7piGFFpM
+	En22p4X4GT15RSgaxgHa6mr6pa3PYbxXvkv5B2S5e94i463ltTwiz4ApEF7tOht09MOY8eUMWkj
+	qDmXZcJvFTfBqDrTn98+WBZBHJPDFli4guJ/2WCnP3m1b/6d0JltyWBrOgTc4Wiro3dvVIyYBCE
+	3yGFyDZeP2SoWNSPZ/Z+NMBZneaDIjC7tvmYjIGiXoueSVO1vbexSAlA0LpfYkfRDwpOJ5Au2YF
+	sxHmga5TmOMF1TwUH4TjCioV/IG0+F+q2m20pX0fJetygLO1NsCK5R+Rme36JCUrPpiUvl13YA1
+	Z5fydrcQDb2XfyB0dqL1iC2NVTKyP9fZKQwanyrwjFFKt+NcK1AC/X59q3YORsYtMv8268taZEX
+	gmgZHyCj+/gY0ir215qvoNWEkxlItL8Qw2vmEzT0cCTOVk1/4njDDscaS3C9OoQVcgzECbe2vc8
+	E3j9+y+eZJwBlfUgbkLusQk+uJCZN0VIhLP62yWaC6/yrTOwZrSRC9uHzraX2D4NEN1WFUnpY2n
+	8WZgGKltStQSYfuaIefekqUc8g4Kw15XzjddIvBfB6RwRMJHLt9l2u+DbNT8IFBKomo=
+X-Received: by 2002:a05:693c:884b:b0:351:7e5d:2de9 with SMTP id 5a478bee46e88-36f723e73cfmr640732eec.1.1793987537573;
+        Fri, 06 Nov 2026 09:52:17 -0800 (PST)
+Received: from localhost ([2a00:79e0:2e7c:8:bb6d:e00d:d359:7933])
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-36fa9be7077sm8332172eec.17.2026.11.06.09.52.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 06 Nov 2026 09:52:16 -0800 (PST)
+Date: Fri, 6 Nov 2026 09:52:14 -0800
+From: Brian Norris <briannorris@chromium.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
+	Linux Driver Core Development <driver-core@lists.linux.dev>
+Subject: Re: [PATCH v1] PM: runtime: Update last_busy in rpm_resume() for
+ active devices
+Message-ID: <au4TztbFDYqWR2BX@google.com>
+References: <13032301.O9o76ZdvQC@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,167 +95,39 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 2/2] cpufreq: Fix updates of cached resolved frequency
- and index
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Linux PM <linux-pm@vger.kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
- Linux ACPI <linux-acpi@vger.kernel.org>,
- Vincent Donnefort <vincent.donnefort@arm.com>
-References: <5176274.31r3eYUQgx@rafael.j.wysocki>
- <3472677.aeNJFYEL58@rafael.j.wysocki>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <3472677.aeNJFYEL58@rafael.j.wysocki>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <13032301.O9o76ZdvQC@rafael.j.wysocki>
 
-On 11/6/26 15:05, Rafael J. Wysocki wrote:
+On Fri, Nov 06, 2026 at 12:31:41PM +0100, Rafael J. Wysocki wrote:
 > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 > 
-> The cached resolved frequency and index, cached_target_freq and
-> cached_resolved_idx, respectively, may be updated concurrently if
-> cpufreq_driver_resolve_freq() is called by the schedutil governor
-> while cpufreq_set_policy() is running for the same policy.  Those
-> concurrent updates are not synchronized in any way and the values
-> written by cpufreq_set_policy(), if it wins the race, may confuse
-> drivers using those policy fields [1].
+> Setting an autosuspend delay for a device can be expected to cause a
+> runtime suspend of the device after calling, say, pm_runtime_put() to
+> be deferred, so the time between the last successful attempt to resume
+> the device and its subsequent suspend is at least equal to the
+> autosuspend delay.
 > 
-> To address this, use the observation that the only place where
-> cached_target_freq and cached_resolved_idx need to be updated is
-> cpufreq_driver_resolve_freq() because the only legitimate users of
-> them are .fast_switch() driver callbacks.  Although cached_resolved_idx
-> is also used in __cpufreq_driver_target(), that is in fact unnecessary
-> and it is better to use a local variable for storing the frequency
-> table index in that function.
+> However, that expectation is only met after the device has been actually
+> resumed in rpm_resume() by invoking its runtime resume callback.  If the
+> runtime PM status of the device is already "active" when rpm_resume()
+> runs for it, the device's last_busy timestamp is not updated which may
+> allow a subsequent pm_runtime_put() invocation (or similar) to suspend
+> it right away.
 > 
-> Accordingly, rearrange __resolve_freq() and its callers so that
-> cached_target_freq and cached_resolved_idx are only updated in
-> cpufreq_driver_resolve_freq().
+> This is arguably inconsistent and confusing, so make rpm_resume() also
+> update the device's last_busy timestamp when it finds that the device is
+> already "active" and it is about to return 1 early.
 > 
-> The cached_target_freq initialization in cpufreq_set_policy() is still
-> needed, but move it after stopping the old governor and before starting
-> the new one to avoid racing with cpufreq_driver_resolve_freq().
-> 
-> Fixes: f9ccdec24d91 ("cpufreq: Reuse cpufreq_driver_resolve_freq() in __cpufreq_driver_target()")
-> Fixes: 151717690694 ("cpufreq: Make policy min/max hard requirements")
-> Reported-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> Closes: https://lore.kernel.org/linux-pm/20261105140357.1331894-1-zhongqiu.han@oss.qualcomm.com/ [1]
-> Co-developed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Fixes: 56f487c78015 ("PM / Runtime: Update last_busy in rpm_resume")
+> Link: https://lore.kernel.org/linux-pm/CAJZ5v0jTX1FgeS9FCV=+V4uacSgLQBVsSPnU27ybgUGg57GUOA@mail.gmail.com/
+> Reported-by: Brian Norris <briannorris@chromium.org>
+
+Ha, I suppose you can call it Reported-by, even if it's somewhat of a
+tangent IMO :)
+
 > Cc: All applicable <stable@vger.kernel.org>
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
-
-> ---
->  drivers/cpufreq/cpufreq.c |   31 ++++++++++++++++++++-----------
->  1 file changed, 20 insertions(+), 11 deletions(-)
-> 
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -477,7 +477,7 @@ EXPORT_SYMBOL_GPL(cpufreq_disable_fast_s
->  static unsigned int __resolve_freq(struct cpufreq_policy *policy,
->  				   unsigned int target_freq,
->  				   unsigned int min, unsigned int max,
-> -				   unsigned int relation)
-> +				   unsigned int relation, unsigned int *idx_p)
->  {
->  	unsigned int idx;
->  
-> @@ -487,9 +487,10 @@ static unsigned int __resolve_freq(struc
->  		return target_freq;
->  
->  	idx = cpufreq_frequency_table_target(policy, target_freq, min, max, relation);
-> -	policy->cached_resolved_idx = idx;
-> -	policy->cached_target_freq = policy->freq_table[idx].frequency;
-> -	return policy->cached_target_freq;
-> +	if (idx_p)
-> +		*idx_p = idx;
-> +
-> +	return policy->freq_table[idx].frequency;
->  }
->  
->  /**
-> @@ -520,7 +521,10 @@ unsigned int cpufreq_driver_resolve_freq
->  	if (unlikely(min > max))
->  		min = max;
->  
-> -	return __resolve_freq(policy, target_freq, min, max, CPUFREQ_RELATION_LE);
-> +	policy->cached_target_freq = __resolve_freq(policy, target_freq, min, max,
-> +						    CPUFREQ_RELATION_LE,
-> +						    &policy->cached_resolved_idx);
-> +	return policy->cached_target_freq;
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_driver_resolve_freq);
->  
-> @@ -2398,12 +2402,13 @@ int __cpufreq_driver_target(struct cpufr
->  			    unsigned int relation)
->  {
->  	unsigned int old_target_freq = target_freq;
-> +	unsigned int idx = 0;
->  
->  	if (cpufreq_disabled())
->  		return -ENODEV;
->  
->  	target_freq = __resolve_freq(policy, target_freq, policy->min,
-> -				     policy->max, relation);
-> +				     policy->max, relation, &idx);
->  
->  	pr_debug("CPU %u: cur %u kHz -> target %u kHz (req %u kHz, rel %u)\n",
->  		policy->cpu, policy->cur, target_freq, old_target_freq, relation);
-> @@ -2433,7 +2438,7 @@ int __cpufreq_driver_target(struct cpufr
->  	if (!cpufreq_driver->target_index)
->  		return -EINVAL;
->  
-> -	return __target_index(policy, policy->cached_resolved_idx);
-> +	return __target_index(policy, idx);
->  }
->  EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
->  
-> @@ -2712,7 +2717,7 @@ static int cpufreq_set_policy(struct cpu
->  	 * concurrently by cpufreq_driver_resolve_freq() during the update.
->  	 */
->  	freq = __resolve_freq(policy, new_data.max, new_data.min, new_data.max,
-> -			      CPUFREQ_RELATION_H);
-> +			      CPUFREQ_RELATION_H, NULL);
->  	if (freq != policy->max) {
->  		WRITE_ONCE(policy->max, freq);
->  		if (need_update_limits)
-> @@ -2720,7 +2725,7 @@ static int cpufreq_set_policy(struct cpu
->  	}
->  
->  	freq = __resolve_freq(policy, new_data.min, new_data.min, new_data.max,
-> -			      CPUFREQ_RELATION_L);
-> +			      CPUFREQ_RELATION_L, NULL);
->  	freq = min(freq, policy->max);
->  	if (freq != policy->min) {
->  		WRITE_ONCE(policy->min, freq);
-> @@ -2732,8 +2737,6 @@ static int cpufreq_set_policy(struct cpu
->  
->  	cpufreq_update_pressure(policy);
->  
-> -	policy->cached_target_freq = UINT_MAX;
-> -
->  	pr_debug("new min and max freqs are %u - %u kHz\n",
->  		 policy->min, policy->max);
->  
-> @@ -2759,6 +2762,12 @@ static int cpufreq_set_policy(struct cpu
->  		cpufreq_exit_governor(policy);
->  	}
->  
-> +	/*
-> +	 * Initialize cached_target_freq while no governor is running to avoid
-> +	 * racing with cpufreq_driver_resolve_freq(), which updates it.
-> +	 */
-> +	policy->cached_target_freq = UINT_MAX;
-> +
->  	/* start new governor */
->  	policy->governor = new_gov;
->  	ret = cpufreq_init_governor(policy);
-> 
-> 
-> 
-
+Reviewed-by: Brian Norris <briannorris@chromium.org>
+Tested-by: Brian Norris <briannorris@chromium.org>
