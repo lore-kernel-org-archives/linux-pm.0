@@ -1,35 +1,35 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=180.76.5.236
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1793990433;
-	b=LIHxnTvGvypkZMfHrbsbM6rTbpfvMr8OjT20USK0SOJgQrqSDdx+Bm68tCyrCFDc3/IB
-	 Q7auUwkHesQBL1sSRJ2/unAQy5h/QxMbHkAmxrDaAVR8Tz7Wz1lyockxfecoawP0UwO1E
-	 Na2CvqqUe7HpdYlBAdKfrVFSTLGLtFXyFc6gmfYrl/fCR/srpZDjIjXAgnfDZ0Yg+bHl1
-	 cWS/M4HoQPttUKPOhh+Knyo7T3R5tlpLRcyVIBIBSFC26l2QBey2CAL9Og0o/DlwyJmCv
-	 mu6/frKqgoHtEk2WlHCGTJq/5cI/OAOj2/FBwVlDTSlgk4HjK9f/fkwtKg3DW0iL33g==
+	b=k6aXOd+U/rqXhYN+hViMVveuE7ncOtafJY/b0Wn25KlATmQJzmQ9s8saFxHu5YzIPf4m
+	 OzvQ5OyIthgaPBa5hklB8u6JcB8YFX1lDkFuOjmPsb4iU1heEBk2fYAzyf7hEaAGT0Dcl
+	 q4mzF5sDIjONCi9tRS4S37Ak6v5p/VssfjrdRLVSSvxChCTtCpNhJ5LBv6enqdyks+qiO
+	 ILgfwHvWshnjxhPDdN7OsDlpfRVZSaAC7rl9YNbxniZ+70xSq4lbozaiEBr0cEI5nJoMX
+	 UJFOZ3QzTv92L/Gc2LypF2+GrhwlNanKiShYDB4v4I+KEI9peCxl8LfDUfGXK+RxjvA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1793990433;
 	h=DMARC-Filter:X-MD-Sfrom:X-MD-SrcIP:From:To:CC:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:Content-Type:
-	 X-Originating-IP:X-ClientProxiedBy:DKIM-Signature;
-	bh=dD9Jc4MUJJjWX3IdDDc2c7Pi6LPWA9Vl7DVbTkz35WA=;
-	b=wayWZzXSN+nMaqoqEXIHV6NHk/6txW9+HMk3TvVAfS5Bse23zyQ0tH8I8HmfQnZaZsZW
-	 H/UARydqGKHD2LjiF+S+tcnDgjGZNU57GYTxCN2UeoA2Dyz5OzFQ9syxdHY8C5BxqQtJa
-	 zarCSHSJJLT3D3oou09U5wyPtuo65rS73dCMBeMT6fMjUxFppvpPm6V5ABb5ffNaQaQKq
-	 Zj0sDsSA6NejWl5OELcM8nTnN9QONC98//ZwpAQ+fK2ZRJ4w0DPOwsq679QneptLLbAh+
-	 /p2yWQJYKZ8hqsqUzBN/FJTucmau8WxLzuF/mvGxetMK+4zWQkkU2g75hDk+CFQkMCw==
+	 Message-ID:X-Mailer:MIME-Version:Content-Type:X-Originating-IP:
+	 X-ClientProxiedBy:DKIM-Signature;
+	bh=xw8y7NipFBtF37TOjU1QzM3pd2cVDyuZyFnPeUbK0KM=;
+	b=lHQiKrB2yt19ggiGFOJVeX+bOBeT+k5Gq5GX64mgYO+gXdTAdZ+mGPM7nxowzDdvl6t1
+	 9bz/jtYtrg4vIkPEzxSdZa6vist3tSzijmjweCYsdwhkva9MLNbiotkzY0Pgx5/1uHA0C
+	 TLrrYR10Sde89enUtaa6kQIG3d6hQZg3LbhwwF8EldylU6VDf0AB6l31Jp7D/oTgzgZLv
+	 BiQbxf10RVpB7jEp88Iwv/pdwnWCFcO4PjUMonbAtIobxdMjmBU/d7nzxkJWafmvMAYzd
+	 SjuGL2EFk7UlHCpxO+dn3A94Bv5r/AozuOh+Wx4DS8GG7U/MoCRDgO1MVGXt7ibWXDg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=baidu.com;
 	spf=pass smtp.mailfrom=baidu.com;
-	dkim=pass header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=L6hwz7HK;
+	dkim=pass header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=QfzpUOnt;
 	arc=none smtp.remote-ip=180.76.5.236
 Received: from outbound.baidu.com (outbound.baidu.com [180.76.5.236])
-	by smtp.subspace.kernel.org (Postfix) with SMTP id 2275E606A32C;
-	Fri,  6 Nov 2026 18:40:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2275E606A32C
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 70B40606A329;
+	Fri,  6 Nov 2026 18:40:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 70B40606A329
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=L6hwz7HK
+	dkim=pass (2048-bit key, unprotected) header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=QfzpUOnt
 X-MD-Sfrom: lirongqing@baidu.com
 X-MD-SrcIP: 172.31.50.47
 From: lirongqing <lirongqing@baidu.com>
@@ -37,12 +37,10 @@ To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
 	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
 CC: <zhongqiu.han@oss.qualcomm.com>, Li RongQing <lirongqing@baidu.com>
-Subject: [PATCH v5 2/2] cpufreq: acpi-cpufreq: don't mask firmware P-state changes
-Date: Sat, 7 Nov 2026 02:40:08 +0800
-Message-ID: <20261106184008.1728-3-lirongqing@baidu.com>
+Subject: [PATCH v5 0/2] cpufreq: acpi-cpufreq: fix P-state index mismatch between perf->states[] and freq_table[]
+Date: Sat, 7 Nov 2026 02:40:06 +0800
+Message-ID: <20261106184008.1728-1-lirongqing@baidu.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20261106184008.1728-1-lirongqing@baidu.com>
-References: <20261106184008.1728-1-lirongqing@baidu.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -56,88 +54,61 @@ Content-Type: text/plain
 X-ClientProxiedBy: bjhj-exc7.internal.baidu.com (172.31.3.17) To
  bjkjy-exc3.internal.baidu.com (172.31.50.47)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
-	s=selector1; t=1793990423;
-	bh=dD9Jc4MUJJjWX3IdDDc2c7Pi6LPWA9Vl7DVbTkz35WA=;
+	s=selector1; t=1793990420;
+	bh=xw8y7NipFBtF37TOjU1QzM3pd2cVDyuZyFnPeUbK0KM=;
 	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
-	b=L6hwz7HKrJRlIgewUpsC3itxSUudwcKAQi0p1FauYQKC7s7aJ/uB39u0c9cI0qiDk
-	 EN/LWPm3j8LxZL6JumgJlEFkdoMK1n6ShGsxGbqdwct7B7+/dY9/hQhJ7VBnfIcjpa
-	 l5xP1rYkNuPMnzJOP51NlH1RcKMsqpnG9gD0hC6ichZm4cJTqmxZg5LgKyhF9eZl/H
-	 OTRvp0+mhJ1XNVCZQC9T9af3d4GyvqtTDlyiByR7GPTxBr/Skbx/D8zeyAOPABSH1N
-	 uq4nkvJAfcQMiAS49MLpRly5tIUnARQowRVBN5MEwyZW8x6hhFZQ2YN/4evmj7B8sm
-	 H0pQZqHIi+Iqw==
+	b=QfzpUOntR53qSLC19f8ZPvL6ZBJUKbjAJUi3a/UxXfXxwFTzJfF9b5ioM6x7wUCOf
+	 sL3z88irQWF2MfNvk1CKRYkT37rUZWLphspLl69vNYlyNEWKcTZCn+8b2InW4h1NQp
+	 y86+deAWF95ttuhURHQEUNkIDae3JSHP1wmQX54aOTfZSpg654b9UV8zlpC7VJ8fKi
+	 t5PbSyi3Jlp7fMUWlfZrbiGPLkHmBR5iXm4S8qfvNCQC2EGVoTr5GzqoBEVrEssfdc
+	 R5dvKN2VF3fuUbH/ssC7qqa+U4cZyQV0fPlGfo+6HrH0AuwxL9kzeN7smQDK7VHAkv
+	 n4Cn71MgnbiFA==
 
 From: Li RongQing <lirongqing@baidu.com>
 
-get_cur_freq_on_cpu() detects a firmware frequency change behind the
-OS's back by comparing the frequency decoded from the hardware with the
-frequency cached by the cpufreq core. The previous patch fixes the
-cached side of that comparison; this patch fixes the decoded side.
-
 policy->freq_table is built by filtering out _PSS entries that are not
-lower in frequency than the previous one, so firmware may autonomously
-switch the CPU to one of the filtered-out P-states. The status of such
-a P-state matches no freq_table entry, and extract_msr() then falls
-back to freq_table[0].frequency, i.e. the highest frequency, instead of
-reporting that the status is unknown.
+lower in frequency than the previous one, and the original ACPI P-state
+index of each remaining entry is kept in freq_table[].driver_data.  The
+index spaces of perf->states[] and freq_table[] therefore differ, and
+mixing them up leads to the frequency of one P-state being attributed to
+another.
 
-As a result the comparison is defeated exactly when the OS is already
-at the P-state corresponding to freq_table[0], which is particularly likely 
-under the performance governor: freq equals cached_freq, data->resume is
-left clear, and the next ->target() call short-circuits without
-rewriting the control register, leaving the CPU at the firmware-selected
-P-state. Fixing the index mismatch alone therefore does not make the
-detection work in that case.
+Patch 1/2 is unchanged from v4 and fixes the cached frequency used by
+get_cur_freq_on_cpu() to detect a firmware frequency change behind the
+OS's back.
 
-Return 0 from extract_msr() when the status cannot be matched so that
-the fallback no longer hides the firmware change, and treat a zero
-result as a firmware frequency change in get_cur_freq_on_cpu(). Keep
-returning the cached frequency to the cpufreq core in that case: a zero
-return value there would be indistinguishable from a read failure and
-would feed 0 into the cpufreq statistics. This also covers the
-ACPI_ADR_SPACE_SYSTEM_IO path, where extract_io() already returns 0 for
-an unmatched status.
+Patch 2/2 is new in v5.  As Rafael pointed out, Sashiko observed that
+the extract_msr() fallback interferes with 1/2 and can render it
+ineffective: when the status read from the hardware matches no
+freq_table entry, extract_msr() returns freq_table[0].frequency instead
+of reporting the status as unknown.  If the OS is already at the P-state
+corresponding to freq_table[0], a firmware switch to a filtered-out
+P-state then compares equal to the cached frequency, data->resume is
+left clear and the next ->target() call does not rewrite the control
+register.  So 1/2 alone does not make the detection work in that case,
+and the two patches are posted together rather than separately as I had
+suggested earlier.
 
-check_freqs() is unaffected: it compares against a frequency taken from
-freq_table, which is never 0, so an unknown status keeps the
-verification loop from declaring success.
+v4: https://lkml.iu.edu/2609.1/07369.html
 
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/20260910111329.2220-1-lirongqing@baidu.com
-Fixes: e56a727b023d ("[CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind our back.")
-Signed-off-by: Li RongQing <lirongqing@baidu.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Changes since v4:
+ - Drop "cpufreq: acpi-cpufreq: fix P-state index mismatch in
+   extract_io()", which has been applied.  This series is based on top
+   of it.
+ - Add 2/2 to stop extract_msr() from masking firmware P-state changes,
+   as reported by Sashiko, and note the dependency in 1/2's changelog.
+ - 1/2: no functional change; changelog extended to say that it fixes
+   only the cached side of the comparison, and a duplicate
+   Signed-off-by was removed.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 2d7d147..1e7dc1c 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -225,7 +225,7 @@ static unsigned extract_msr(struct cpufreq_policy *policy, u32 msr)
- 	cpufreq_for_each_entry(pos, policy->freq_table)
- 		if (msr == perf->states[pos->driver_data].status)
- 			return pos->frequency;
--	return policy->freq_table[0].frequency;
-+	return 0;
- }
- 
- static unsigned extract_freq(struct cpufreq_policy *policy, u32 val)
-@@ -373,12 +373,14 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- 	cached_freq = perf->states[perf->state].core_frequency * 1000;
- 
- 	freq = extract_freq(policy, get_cur_val(cpumask_of(cpu), data));
--	if (freq != cached_freq) {
-+	if (!freq || freq != cached_freq) {
- 		/*
- 		 * The dreaded BIOS frequency change behind our back.
- 		 * Force set the frequency on next target call.
- 		 */
- 		data->resume = 1;
-+		if (!freq)
-+			freq = cached_freq;
- 	}
- 
- 	pr_debug("cur freq = %u\n", freq);
+Li RongQing (2):
+  cpufreq: acpi-cpufreq: fix P-state index mismatch in
+    get_cur_freq_on_cpu()
+  cpufreq: acpi-cpufreq: don't mask firmware P-state changes
+
+ drivers/cpufreq/acpi-cpufreq.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
 -- 
 2.9.4
 
