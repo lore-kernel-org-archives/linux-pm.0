@@ -1,79 +1,41 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793997121;
-	b=nlZ3Kk7MQqcPoS1h+JqW13Zu496B/YzdTr/wUdWUmap2hxWSkA+WJRmWShyTLV9r1X/Y
-	 BFp5sYJb82HhfjogAA2GtfQ/mVGa+zgCCTWGCB5rcjk+vOJCOejB7NqJ2z9CbLNUnNS6k
-	 6fgd3RwXjnA62JcCUjrKPNYSBLSBCadClYeSeBEWTA004XO4EI0LTzLsle/ev2RQFKPdD
-	 yip76H1PKMFsijq/9HPuQ/C5V9Cd0iKxiieq5TFjiltHS24WUbzTt78gZbitHdE4PvVEi
-	 3/OCOLVQQPm9wd5Qao8OLlQ3ndy/NlVPkToeosO2BDbnOUcR3KYeMzJctUWaPi/hxCw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793997121;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=bat6EXPt0m4/2kRoWfMYCbQkcNvBmzo6JgvQIOwR6Fs=;
-	b=KPBYBLS6cmT3/uDnoiTy+IgU/9quB+7xaRS8nc4u8sEdoRMubMMUFUB7CXBA9ydiCb63
-	 E883qA4dB37jq4BkEOmO2qe6vSlYOg2A6WoSdfozLbWarV8Iaf9hFVV1GgL9E/7pN+f6L
-	 fJclRByHxuj5vUkZ2FJ0GXh3zfmtaeENnC89RS1p6B/n43WWgo5UWALLC2IqlVss0/Tf8
-	 Fz1YBSr+j2cKLW3hBAJ27yG0fIDLcyMBGg5rXKY+iEAVgenNZJSggo95jjwHrm83J3amW
-	 Qwm6qlJg0B0xA9dzc3Nu1zdbdB0U/AcOm8O9+b6D3wTaVPZNapWbuZ9tgyPaN0X+nyA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kU7IgwyO;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.181.193.9
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793997465;
+	b=EXRYYigy7nFCVVJK4a5ZnOT7m8TDVUci8yUlSEEgObQVusqloaZNKIysmzZcye7Y/Wir
+	 4yDKFjApIPhzZypn39zgPYKTO1JRWBwR9P0IxXkwytBVHV85XxRyh96wYiRSIgeAVAmxU
+	 sp78r2rhJt5qogrvw24OwRE2lUsxdOrgt6Fjg2Xe1XnW4n0ggtVMc1GcmhnksCXVowAvk
+	 C+kU48SzKgnnO6WfW1F21IbKH58KtOIuo0sA9pS+tRSBxYa68HvtVv8Yuufk7uyUdz6kE
+	 pZ5Vaxnb9iRQmE/CrLL6SLzBciH6LNo8RU1ICihuUbxhGVQspVJnObMph6jF2vdMjNw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793997465;
+	h=DMARC-Filter:Received:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:CC:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-Originating-IP:
+	 X-ClientProxiedBy;
+	bh=73dt1ns3WoQ1A4eVfdflZRp8nnX8v2Q1WwP7myyWitU=;
+	b=TYjEQe+p4EfACe9Cvag/U9aD+k8S9OgXPEye514oQ2TYC7F6ab/OkR+oHQ1g9IFM0hIO
+	 ckbKesz4MVXrb3ExB76kvtI95dDB2ls6XDV6T4g+hpkj17nU4PmG3/5OuAvDrPqxVMw5J
+	 JOCFcqrdudtZS5IB90mxHTce0wQ43h78E9Hzga1TcJq8k2c5e3gP+8bDl7un1MBo1wNVv
+	 ZnwrbnouBi/vqDTHVMyXHekScdqxTaeXfYqVLCYRX6ubENead6y4l12Dtd2FUbNgNLniN
+	 HMjd6CcYQm24QRGjIuPj2BMipvXgY9XgskCNn+Te7LHVFYkRyWsXbAEkT2ZWtTCopjA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=auroraos.dev;
+	spf=pass smtp.mailfrom=auroraos.dev;
+	arc=none smtp.remote-ip=95.181.193.9
+Received: from mail.auroraos.dev (unknown [95.181.193.9])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB39A606A334;
-	Fri,  6 Nov 2026 20:32:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kU7IgwyO
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793997120;
-	b=wGHgrMLqdN0roChN9RWwVJE6nCCm/FThDwX2WwovUD/vBSYeMzdNoOO1KK3nqJR551S6
-	 Nx0uFIvl5tv+XrN+C3QfM81RbD3iNc+GRhP5QPSVnfzPXsbyccRcTx4zzk5blCPEs+U95
-	 VOVV8G0uNcw6ifZy3mWWGgo1FSxgLyhtnEHb4yRROuYtZejdkMUIJmeF3kVG5+G8QL9uz
-	 Sw1oRy/I56fV8ineKPsDiY/g4n+Ts439Ay78xVVGy3DhcIz8bt4LIiPb7dbIFrNHnnBr0
-	 FMmr3y2SqKla2HLuO+1N9i6oLN0aja3Wi9C8WdCeaSOtUzwpYQET/DaKbIs0lMHZmzA==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793997120;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=bat6EXPt0m4/2kRoWfMYCbQkcNvBmzo6JgvQIOwR6Fs=;
-	b=E/CpSoXQVtVTwDdHyVhOfT+OZY80xuHSCc2hlYzlLDSFvcJpi3jiIBWw9KlzO+wFOicI
-	 i1AiN2wCIIF+vz8MKjsaod8vQJ2v2BkxLZ0i3Zlk4ofUiQPo3RFNIAfXcC1KMDZQtQt6U
-	 OVwyFz+euVfrMbbTuGR1QoTlURnGGtRmfEQlsihMMoW1R6KX3byXLckbYDEREaV9FmUhF
-	 QbVUbmOocc8VjjqWQEyoJBx/RJMt8SekhdMYR/pKxJFASea9q/G09t668n5VRqW0xRE87
-	 sjafSW5CgEbY/S7/GhxKj3hruSw0zsEhZ+B9WXvwuAnm8LM1kU5IHXTHkJm8Xl9VdSA==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 50BEF1F008A2;
-	Fri,  6 Nov 2026 20:31:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793997120;
-	bh=bat6EXPt0m4/2kRoWfMYCbQkcNvBmzo6JgvQIOwR6Fs=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=kU7IgwyOgOHFMZRXyJ62iebdxN1vl1wHgzbKZgnORntaCyur1eIkNCQr7VY6D5iA/
-	 BJRH0c7dJhpc6KG+PLg87WItI7I42YGJJPcHOf6n4UechfKz5Kfcy6COojOKq2Dq5h
-	 E5qP+yuYfd+mDWBLLp/tH1hLcIYbSx+vlEhG64S7n4bpIewR9dGoD5hqHoEroMzofG
-	 JHILkdKWLTXdAq9Uj2GSlWDn0gU1ZzDZYVvujlsaA4kvYJEMDCcjvwRMq7cPxNVv7v
-	 iq9VAdCnTc90vdmJF0LkE42Xu6b/zUYQn0f/QmOPqETnf+i6s2Q/BZM+hkFAEFVUHM
-	 kYxkPUvs4DO7w==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id D532547873;
-	Fri,  6 Nov 2026 20:31:58 +0000 (UTC)
-From: Patrick Fischer via B4 Relay <devnull+admin.tsv-stahl-riesa.de@kernel.org>
-Date: Fri, 06 Nov 2026 21:31:56 +0100
-Subject: [PATCH 2/2] thermal/drivers/tegra: Avoid SOC_THERM calculation
- overflow on Tegra114
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8AF7606A326;
+	Fri,  6 Nov 2026 20:37:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B8AF7606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=auroraos.dev
+Received: from [192.168.2.104] (91.78.25.222) by exch16.corp.auroraos.dev
+ (10.189.209.38) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1847.3; Fri, 6 Nov 2026
+ 23:37:34 +0300
+Message-ID: <1b4d1203-4af9-469f-9c20-52dfda499916@auroraos.dev>
+Date: Fri, 6 Nov 2026 23:37:34 +0300
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,255 +45,69 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261106-upstream-soctherm-t114-v1-2-c875d1921084@tsv-stahl-riesa.de>
-References: <20261106-upstream-soctherm-t114-v1-0-c875d1921084@tsv-stahl-riesa.de>
-In-Reply-To: <20261106-upstream-soctherm-t114-v1-0-c875d1921084@tsv-stahl-riesa.de>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, 
- Thierry Reding <thierry.reding@kernel.org>, 
- Jonathan Hunter <jonathanh@nvidia.com>
-Cc: Svyatoslav Ryhel <clamor95@gmail.com>, 
- Mikko Perttunen <mperttunen@nvidia.com>, linux-pm@vger.kernel.org, 
- linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org, Patrick Fischer <admin@tsv-stahl-riesa.de>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793997117; l=9502;
- i=admin@tsv-stahl-riesa.de; s=20261020; h=from:subject:message-id;
- bh=phtH60/ywrZjJs3x+gxtlamVeIt7WyYa43cPSiih9qM=;
- b=A3u8jhN3RkUy6Ow6SJZSo336q6LKHsu0jdIqDQ3ldSfFBPIFskkKM1adjBOTjRSR7Im3hkQk1
- 8nOwDs6+j6GAdHbdALY4LRT5hBxoIvoGgb/kba915bqP6GU3izRiXjl
-X-Developer-Key: i=admin@tsv-stahl-riesa.de; a=ed25519;
- pk=D+v6EloYcEY9PIUHFyTM5sqcGIU/fIXzLUdkR8vjAtk=
-X-Endpoint-Received: by B4 Relay for admin@tsv-stahl-riesa.de/20261020 with
- auth_id=1251
-X-Original-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
-Reply-To: admin@tsv-stahl-riesa.de
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] pmdomain: rockchip: Don't log when of_clk_get() fails
+ with -EPROBE_DEFER
+To: Yao Zi <me@ziyao.cc>, Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner
+	<heiko@sntech.de>, Shawn Lin <shawn.lin@rock-chips.com>, Sebastian Reichel
+	<sebastian.reichel@collabora.com>, Midgy BALON <midgy971@gmail.com>, Finley
+ Xiao <finley.xiao@rock-chips.com>, Frank Zhang <rmxpzlb@gmail.com>, Chris
+ Morgan <macromorgan@hotmail.com>, Kevin Hilman <khilman@linaro.org>, Caesar
+ Wang <wxt@rock-chips.com>, Elaine Zhang <zhangqing@rock-chips.com>
+CC: <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-rockchip@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+	<stable@vger.kernel.org>
+References: <20261105001257.1368266-1-me@ziyao.cc>
+ <20261105001257.1368266-3-me@ziyao.cc>
+ <71b77625-8475-43da-a62b-983cf572229d@auroraos.dev> <au2UvnY0CdGTRnum@pie>
+Content-Language: en-US
+From: Sergey Shtylyov <s.shtylyov@auroraos.dev>
+In-Reply-To: <au2UvnY0CdGTRnum@pie>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: exch16.corp.auroraos.dev (10.189.209.38) To
+ exch16.corp.auroraos.dev (10.189.209.38)
 
-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
+On 11/6/26 11:50 AM, Yao Zi wrote:
 
-SOC_THERM calculates each sensor temperature in units of 0.5 C as
-THERMA * capture / 2^13 + THERMB. On Tegra114 the intermediate product
-THERMA * capture has to stay below 2^24. Above that the hardware sets
-TCALC_OVER in SENSOR_CONFIG0, clears TEMP_VALID in SENSOR_STATUS1 and
-the sensor drops out of its group. On a Tegra Note 7, 80 out of 80
-samples matched this rule: TEMP_VALID was set exactly when
-THERMA * capture < 2^24 (largest valid product 16747731, smallest
-invalid one 16877718).
+[...]
 
-The fuse calibration itself is fine. As Mikko pointed out in the review
-of the Tegra114 series, the fuse corrections are in 0.5 C units on
-Tegra114 just as on Tegra124 and Tegra210, and
-2 * NOMINAL_CALIB_XX + shifted_xx is correct. This patch keeps it that
-way. The problem is the range: with T in C,
-THERMA * capture = (2 * T - THERMB) * 2^13, so a sensor only gives a
-valid result for T < (2048 + THERMB) / 2. On Tegra114 THERMB is close
-to -2000 (between -2117 and -1812 on the chip tested), which leaves
-almost no headroom. On that chip the sensors were valid only up to
-45 C (cpu2), 53 C (pllx) and 32 C (gpu), and cpu0, cpu1 and cpu3 not
-even at room temperature. The gpu zone therefore always reads 0 C, the
-cpu zone stops following the CPU at about 45 C, and neither the
-throttle levels nor thermtrip ever see the temperatures they are
-programmed for.
+>>> Current error handling code considers -EPROBE_DEFER as hard errors,
+>>> logs misleading dmesg like,
+>>>
+>>> rockchip-pm-domain ff600000.power-management:power-controller: power-domain: failed to get clk at index 0: -517
+>>> rockchip-pm-domain ff600000.power-management:power-controller: failed to handle node power-domain: -517
+>>>
+>>> Use dev_err_probe() at the callsite of of_clk_get(), and check for -EPROBE_DEFER in places
+>>> where its return value could propagate to.
+>>
+>>    To where?
+> 
+> rockchip_pm_add_one_domain, rockchip_pm_add_subdomain, and
+> rockchip_pm_domain_probe. I think it's obvious in the diff and too
+> detailed to the commit message, so didn't add them here.
 
-NVIDIA's downstream driver runs Tegra114 in "lower precision" mode for
-this reason (tegra11_soctherm.c: "We must use lower precision (0) due
-to cp_fuse corrections"): the sensors count in 1 C units, the readback
-is scaled by two and all thresholds are in 2 C steps.
+   Ah, I was too hasty and misread the patch, sorry about that!
 
-Do the same with a lower_precision flag in the SoC data:
+>>    And I didn't understand why you couldn't just call dev_err_probe() everywhere --
+>> the error code seems to always be propagated...
+> 
+> This was what I originally wanted to do, but dev_err_probe() sets the
+> deferred probe reason, and if we call it several times, the earlier and
+> more specific messagess ("failed to get clk at index %d") get overridden
+> by the later and less descriptive ones ("failed to handle subdomain node
+> %pOFn"), which I think would make it harder to debug.
 
-- keep the fuse calibration in 0.5 C units and halve THERMA and THERMB
-  only in the final rounding step, so THERMA * capture stays around
-  2^23 and the sensors report the same temperatures at half the
-  resolution,
-- double the readback in translate_temp(),
-- use a threshold grain of 2000 so that thermtrip, the throttle levels
-  and the trip interrupts are programmed in 2 C steps.
+   Seeing it now, sorry again! :-)
 
-The use_lower_precision option in v3 of the Tegra114 series and the
-downstream driver halve the calibration temperatures before the
-calculation instead, which applies fuse_corr_beta at twice its weight.
-Here the result is exactly the current calibration divided by two. The
-PLLX hotspot offsets are left as they are, as in the downstream driver.
-Tegra124, Tegra132 and Tegra210 are unchanged.
+>>> Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
+>>> Fixes: 6be05b5ec161 ("soc: rockchip: power-domain: add support for sub-power domains")
+>>> Signed-off-by: Yao Zi <me@ziyao.cc>
+>>> Cc: stable@vger.kernel.org
 
-Tested on an NVIDIA Tegra Note 7 (P1640) together with the shifted_cp
-fix: THERMA * capture now stays between 7.7 and 9.2 million, and all
-eight sensors report TEMP_VALID in idle and after 60 s of load on all
-four cores at 1.12 GHz. The zones read cpu 43, gpu 39, pllx 43, mem
-39 C in idle (board thermistor 34 C) and cpu 63, gpu 55, pllx 62, mem
-53 C under load. Before, the gpu zone read 0 C and the cpu zone stopped
-at about 45 C. The thermtrip, throttle and trip thresholds are
-programmed as 51, 50 and 45, i.e. 102, 100 and 90 C.
+   Not sure the patch qualifies for stable though...
 
-Fixes: 9d522a877b6f ("thermal/drivers/tegra: Add Tegra114 specific SOCTHERM driver")
-Cc: stable@vger.kernel.org
-Link: https://lore.kernel.org/all/22816196.EfDdHjke4D@senjougahara/
-Signed-off-by: Patrick Fischer <admin@tsv-stahl-riesa.de>
----
- drivers/thermal/tegra/soctherm-fuse.c     | 15 ++++++++++++---
- drivers/thermal/tegra/soctherm.c          | 21 +++++++++++++--------
- drivers/thermal/tegra/soctherm.h          |  6 ++++++
- drivers/thermal/tegra/tegra114-soctherm.c |  4 +++-
- 4 files changed, 34 insertions(+), 12 deletions(-)
+[...]
 
-diff --git a/drivers/thermal/tegra/soctherm-fuse.c b/drivers/thermal/tegra/soctherm-fuse.c
-index 2de1d0cb676e..bba563961da7 100644
---- a/drivers/thermal/tegra/soctherm-fuse.c
-+++ b/drivers/thermal/tegra/soctherm-fuse.c
-@@ -118,7 +118,7 @@ int tegra_calc_tsensor_calib(const struct tegra_tsensor *sensor,
- 	u32 val, calib;
- 	s32 actual_tsensor_ft, actual_tsensor_cp;
- 	s32 delta_sens, delta_temp;
--	s32 mult, div;
-+	s32 mult, div, coeff;
- 	s16 therma, thermb;
- 	s64 temp;
- 	int err;
-@@ -147,11 +147,20 @@ int tegra_calc_tsensor_calib(const struct tegra_tsensor *sensor,
- 		((s64)actual_tsensor_cp * shared->actual_temp_ft);
- 	thermb = div64_s64_precise(temp, delta_sens);
- 
-+	/*
-+	 * With lower precision the sensors count in 1 C units, which keeps
-+	 * THERMA * capture within the 24 bits the hardware calculates with.
-+	 * Halve both coefficients in the final rounding step.
-+	 */
-+	coeff = CALIB_COEFFICIENT;
-+	if (shared->lower_precision)
-+		coeff *= 2;
-+
- 	temp = (s64)therma * sensor->fuse_corr_alpha;
--	therma = div64_s64_precise(temp, CALIB_COEFFICIENT);
-+	therma = div64_s64_precise(temp, coeff);
- 
- 	temp = (s64)thermb * sensor->fuse_corr_alpha + sensor->fuse_corr_beta;
--	thermb = div64_s64_precise(temp, CALIB_COEFFICIENT);
-+	thermb = div64_s64_precise(temp, coeff);
- 
- 	calib = ((u16)therma << SENSOR_CONFIG2_THERMA_SHIFT) |
- 		((u16)thermb << SENSOR_CONFIG2_THERMB_SHIFT);
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index f74acf13b24d..0f6e5455ebb4 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -413,9 +413,10 @@ static void enable_tsensor(struct tegra_soctherm *tegra, unsigned int i)
-  *   TTTTTTTT H______N
-  * where T's contain the temperature in Celsius,
-  * H denotes an addition of 0.5 Celsius and N denotes negation
-- * of the final value.
-+ * of the final value. With lower precision all of this is in
-+ * units of 2 Celsius.
-  */
--static int translate_temp(u16 val)
-+static int translate_temp(const struct tegra_soctherm *ts, u16 val)
- {
- 	int t;
- 
-@@ -424,6 +425,8 @@ static int translate_temp(u16 val)
- 		t += 500;
- 	if (val & READBACK_NEGATE)
- 		t *= -1;
-+	if (ts->soc->lower_precision)
-+		t *= 2;
- 
- 	return t;
- }
-@@ -435,7 +438,7 @@ static int tegra_thermctl_get_temp(struct thermal_zone_device *tz, int *out_temp
- 
- 	val = readl(zone->reg);
- 	val = REG_GET_MASK(val, zone->sg->sensor_temp_mask);
--	*out_temp = translate_temp(val);
-+	*out_temp = translate_temp(zone->ts, val);
- 
- 	return 0;
- }
-@@ -1287,7 +1290,7 @@ static int regs_show(struct seq_file *s, void *data)
- 		state = REG_GET_MASK(r, SENSOR_STATUS1_TEMP_VALID_MASK);
- 		seq_printf(s, "Temp(%d/", state);
- 		state = REG_GET_MASK(r, SENSOR_STATUS1_TEMP_MASK);
--		seq_printf(s, "%d) ", translate_temp(state));
-+		seq_printf(s, "%d) ", translate_temp(ts, state));
- 
- 		r = readl(ts->regs + tsensors[i].base + SENSOR_STATUS0);
- 		state = REG_GET_MASK(r, SENSOR_STATUS0_VALID_MASK);
-@@ -1325,14 +1328,14 @@ static int regs_show(struct seq_file *s, void *data)
- 
- 	r = readl(ts->regs + SENSOR_TEMP1);
- 	state = REG_GET_MASK(r, SENSOR_TEMP1_CPU_TEMP_MASK);
--	seq_printf(s, "Temperatures: CPU(%d) ", translate_temp(state));
-+	seq_printf(s, "Temperatures: CPU(%d) ", translate_temp(ts, state));
- 	state = REG_GET_MASK(r, SENSOR_TEMP1_GPU_TEMP_MASK);
--	seq_printf(s, " GPU(%d) ", translate_temp(state));
-+	seq_printf(s, " GPU(%d) ", translate_temp(ts, state));
- 	r = readl(ts->regs + SENSOR_TEMP2);
- 	state = REG_GET_MASK(r, SENSOR_TEMP2_PLLX_TEMP_MASK);
--	seq_printf(s, " PLLX(%d) ", translate_temp(state));
-+	seq_printf(s, " PLLX(%d) ", translate_temp(ts, state));
- 	state = REG_GET_MASK(r, SENSOR_TEMP2_MEM_TEMP_MASK);
--	seq_printf(s, " MEM(%d)\n", translate_temp(state));
-+	seq_printf(s, " MEM(%d)\n", translate_temp(ts, state));
- 
- 	for (i = 0; i < ts->soc->num_ttgs; i++) {
- 		seq_printf(s, "%s:\n", ttgs[i]->name);
-@@ -2159,6 +2162,8 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	if (err)
- 		return err;
- 
-+	shared_calib.lower_precision = soc->lower_precision;
-+
- 	/* calculate tsensor calibration data */
- 	for (i = 0; i < soc->num_tsensors; ++i) {
- 		err = tegra_calc_tsensor_calib(&soc->tsensors[i],
-diff --git a/drivers/thermal/tegra/soctherm.h b/drivers/thermal/tegra/soctherm.h
-index aa4af9268b05..67d4ca149e59 100644
---- a/drivers/thermal/tegra/soctherm.h
-+++ b/drivers/thermal/tegra/soctherm.h
-@@ -122,6 +122,7 @@ struct tegra_soctherm_fuse {
- struct tsensor_shared_calib {
- 	u32 base_cp, base_ft;
- 	u32 actual_temp_cp, actual_temp_ft;
-+	bool lower_precision;
- };
- 
- struct tegra_soctherm_soc {
-@@ -133,6 +134,11 @@ struct tegra_soctherm_soc {
- 	const int thresh_grain;
- 	const unsigned int bptt;
- 	const bool use_ccroc;
-+	/*
-+	 * Sensors count in 1 C instead of 0.5 C units: the readback and
-+	 * the thresholds are in 2 C steps then.
-+	 */
-+	const bool lower_precision;
- 	struct tsensor_group_thermtrips *thermtrips;
- };
- 
-diff --git a/drivers/thermal/tegra/tegra114-soctherm.c b/drivers/thermal/tegra/tegra114-soctherm.c
-index 688104f28052..0a30103c3f74 100644
---- a/drivers/thermal/tegra/tegra114-soctherm.c
-+++ b/drivers/thermal/tegra/tegra114-soctherm.c
-@@ -23,7 +23,8 @@
- #define TEGRA114_THERMCTL_LVL0_UP_THRESH_MASK	(0xff << 17)
- #define TEGRA114_THERMCTL_LVL0_DN_THRESH_MASK	(0xff << 9)
- 
--#define TEGRA114_THRESH_GRAIN			1000
-+/* thresholds are in 2 C steps because of the lower precision */
-+#define TEGRA114_THRESH_GRAIN			2000
- #define TEGRA114_BPTT				8
- 
- static const struct tegra_tsensor_configuration tegra114_tsensor_config = {
-@@ -206,4 +207,5 @@ const struct tegra_soctherm_soc tegra114_soctherm = {
- 	.thresh_grain = TEGRA114_THRESH_GRAIN,
- 	.bptt = TEGRA114_BPTT,
- 	.use_ccroc = false,
-+	.lower_precision = true,
- };
-
--- 
-2.56.0
-
+MBR, Sergey
 
