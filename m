@@ -1,82 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793978393;
-	b=AzmX8Qy00h/bYwhXB7xSiLZ9OlqddJEikoPOHSi9hZozm+ILHirm6zxnsQS9Z6RLQMjB
-	 tX4dmIW2uvLnUFGopFvLvgQT4PXVJm6MqKS3u5+HuM58f7GFqWfzEtoxSFndofb8qgDqZ
-	 fWc55pkBJwy1FxXcw6akmf4kYCLGnYweOsGs66p+7i8d2TXp2ahoIY12SaF/WUyGcOR7N
-	 Ny5EnTlGUoFlPVlKmlDWP4QTJ68at3pF/+rnF8DlM7qpedA66gN/QkqZkm62TC/lZZS13
-	 ZgyRbMksfRVsCK5Tm32zYK7y/8yJqmbENTE5qs6RxHrMbguRTu849gskvCkU1gwAXrw==
+	t=1793978394;
+	b=BzQ2/f/GvhS2oUDExOUIuvKJFcoUAQf1EU2FjX0yWNMwWuX17arffjlG32G2rl8yYPya
+	 CeY+Ng89OAis0oX1E+xuXM0j/o5sHkNrc9I4J03KSJ9biUjz9xUIX6JzZQ2yoTpmD4U0c
+	 ws3WMM9mmtIi2SjovU+BMqhQ6XFaf7f9WEOiNYST6i5JH0nG+Zxzn0rq/wux4OtQXTrC6
+	 Goj94EahiVQddNGXe5D06L//OA1a8TwutRdcpAVXovfXFtQOQLUmyYwNeSrOQklPhB/UU
+	 b57xGlQ2rC8UpAa8fFmzpXIJHjQtU30cQfKs/zs2XAYOp9dmZkQ5rAS8Mc1QWlnzw0g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793978393;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793978394;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=3gBLDmfOFqzDBEdd0Idmiin6AHrC4gxbENwGxw/e9rM=;
-	b=i94jC0Wk72EFDORw6NgeIy8JF8MXAnBsr9F8IoHB4jWdhchkf/Sylg/bIEEs+TU2UZ91
-	 WTCy9fRz6NBEVvTYpFM5JOkCXQPZF7tCAGcdZZbW42y1yyZctSNn4LCKI5tUYasF2RrP4
-	 NQWCJlDRiVbGcCneuIceAylKFIEhzBgSGl7iVkh/HlubeCCIMSUTVqvssnYFSz6a+MPQZ
-	 d89Egz4mdXRhe704ijEmB/e4bK1S8rYEgjzNyWcc+482W3z7fDNFHwPLWtGhDG0RJw5KE
-	 WoQcabeX9cbxNHwGvSkiTRnbu2ecaASFpi013vWVmqByOzjzru2Jin5Vj2DnJy0nBvw==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=F8VT8bYUpBknJkW/DEKgzXQmlXEu+lCYZieExjd9raE=;
+	b=SJdZW8myhkq4pLkYk86p2eZtWJatdFo8eFPYzAi739PlzuNbf/+EUObq//aoTZw+GTHt
+	 VGNptGLdE4gyKABn8yv/e5EKpwNDQCMiic8bDfpfGGmYz/ffn37MGWhLE/c+wWyh3hxCX
+	 Au6zWvQEJzuEL3Gw6/5MZX8tZQXJWvm58iEFFk014eTPNe7jhz1HpE7cA8gcJ6Ib+2LWu
+	 ydp096dAXvmq5w/3tLyibToNNgRT7RaV2dFVjxcq3kEuP1rHRfvtd3JVzDDxnH6rVCWIS
+	 DU3B73XY0zA0+FW961Lck9g5ulJ9JveR951Ho2KCyzFliPRl1BU5n4b1WHDpkxJsfFA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linaro.org;
 	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=qeIf3dVe;
-	arc=none smtp.remote-ip=209.85.221.54
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=g8K158OZ;
+	arc=none smtp.remote-ip=209.85.128.48
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A85FC606A331
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:19:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A85FC606A331
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16447606A335
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:19:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 16447606A335
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=qeIf3dVe
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-491971ac844so669975f8f.2
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:19:52 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=g8K158OZ
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4a3517554f7so7805515e9.2
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:19:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1793978391; x=1794583191; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=3gBLDmfOFqzDBEdd0Idmiin6AHrC4gxbENwGxw/e9rM=;
-        b=qeIf3dVerLw3j/BsyQCO6tua6vtNorh7+KV33OyfdM7dlEa0Ao7piVmtbbkbo1D4nV
-         T74IXaIbGpYwR8K6CMycoUuXR+buNYyuLM+VYYJp6uM5O732ks52xD1B1HjvElf6zsbG
-         TQ9OMcYa1G9BTyj46shZBtOzKBEj+qudwNdZ0R5+33+9VaELRIwS816/g9bDBjyMbo1J
-         zM1B4XgTz4CXfXYQY20bX/Xmpd3rMnXyEqjOaOlijwc/3B6zl9tamIPNgoQwSwEvWqNw
-         756yHSRhMDeikkI0+bU7BZDtyhBFviDZhHDHc1iz6zsCZMTz/O3JtNrvGPNIjur0ypR9
-         oIkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793978391; x=1794583191;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1793978392; x=1794583192; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=3gBLDmfOFqzDBEdd0Idmiin6AHrC4gxbENwGxw/e9rM=;
-        b=D4XJsdzp7dcD3Aj3abEyn2dsy6BdrYS7WT+d1brzTA7nr6phwqBf6u96X6kilZoY3z
-         u0rwG6oBNWVz4C48wJZly8DJk2CqXBxQOvgs1+FcW70va6XtMOwvYWzdPyCDbwFteMB/
-         K9YrLp6k96cqBB0i9TIwlxTM6vcUvrNy1x7Ox7LEp7PGx0IfboRWR7Rs7qOWLYBJXKPM
-         lNf/245PLxp/hSGiAfv0qO4MtUi2ordVVbO/Zbh1tt+USN/RlbRhDXAvDWEPqpPeacqV
-         56CAFH06RTmqfTXDKoqTR2FT+PVtAMMKaNoA8tZAsI1nhd6fVOSlvlxOscimbvMWhGqe
-         ePcg==
-X-Forwarded-Encrypted: i=1; AL+hErEH6wGYMrS6O0KwmR2+TVPGowQUvczTk5NPr1BOZYbWby+Ssnx4QR5zb/ihWfquIp/R2n/0kfWV8Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8O6096lri4GopWuK+hp0MIQ10HRTC5tkg/xutb7ej6s1Irj74W
-	qHjz99zuySRRdP8e1yfVp1ay6wKukGUn39Ajv39gpmpOvy1OsnQZ8uCmVG+9TDM47Hg=
-X-Gm-Gg: AYBFou1RJUrdG8A+/yDfsRj8MwxYY9LCjMySTFxpExjFr5BnO5flS2mCJzScF5SwFbA
-	87eRnN7IkqkYoGs9+iiA2QyLpdtXScegiymuwhrVTyfHy/tsOcM/kZmtkBMw2RlUVSmLfZ+S/Pe
-	MCwH2ROPgk4UTgsnQRXZ5fvMD40SvffDjGH5bRz4RbRd76u7W46tFv5lZ80ZYb/6cqWbF+nlook
-	O2DUXlz8M/cUDub5O5C+JyBjH7JjIZVQaa9CRyUMHR1EMQAMu5+8UgPmZIxU8ztFqWitIJif8Rt
-	uaiC0fqH8fgZIIFMger9kLyZLqCswIaJLAJzLHXBxMFt8J7EjwqtvZdbZrEtKzhX1Y+TBlf91Vd
-	Tb5GApYXRQJpE6207dfT70ZWbLxZc8o0UcXPINWc5vK4wMU5lzCdG/HxeUOMzSyNtOCkDZHagaN
-	clQ1pOeHFRPPJpOjAJeCOaR9OXFq0fhRlfMABqSv3+kjTsD6oXIeOCWHM5ryxUILD+2xetYvXU3
-	6wrAHLmNg6cU6todTOufzOXvZI34/sKnkysnuDFVsqg6B0yqk0NPuZf3DDsTVrug2OCbL5Azz3j
-	cepLqAz58FFZ5pPEr6pOKH8eBiVsrBBO6iT9mBNz6HX1LJs=
-X-Received: by 2002:a05:6000:1861:b0:493:803e:800f with SMTP id ffacd0b85a97d-493803e802cmr2233344f8f.29.1793978390924;
-        Fri, 06 Nov 2026 07:19:50 -0800 (PST)
+        bh=F8VT8bYUpBknJkW/DEKgzXQmlXEu+lCYZieExjd9raE=;
+        b=g8K158OZ23iDQti1eYSVQ5cpHwf65n3zh3k7KX4SMXxFadIzuE6o7AYd6w1tZla/r+
+         fzoxaM0ppo91sy1Ubzo2L66F66OS65ERG5eglxUg5LSRokwTSf8N3qTU0VqbUOE8C9Ab
+         oz1oEgZKDYmgCifvb4WHpFJGnTq403Qz7jHvO/mEunMfOl9cInOswOG6BoaMbV6XFwPo
+         WFa4rNNMuk5uqWhjWJKlfzYxpbhEzPv/yiRPgPdXv5ghs+TgrTG87vEQFS0m8GOsIT3L
+         n+ztF+3PjlEKSvcnI0T0k7hf84RsIz3rapm3W8Xn8Kt/Bc99DMaga6+KgEuRdi1+SrLb
+         F4ew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793978392; x=1794583192;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=F8VT8bYUpBknJkW/DEKgzXQmlXEu+lCYZieExjd9raE=;
+        b=patArMnNgiTrDMZ4WZcZDpEVDzkKiUaycVaGVZaHLtX5Sch7zwKnOd7TyxkiyGgvMN
+         6MQvizKRNPne9vGZTO/5GeRboovm9EBoqoTSfLHaJ0h+lIskgKmF0wc/webhxq8fxylS
+         yMysCMRD4jsPh+IWrNMd7Tl+u6oMQ9TN15xF3mK0k+0O6Zv8aCBKF9WR5KWeDKTLabds
+         2zyHdkpq723zHnKw9TShmjiBmuto6B5D1+UFp798LXWyGK8TBjLYJJhdtb28TzQLPRfi
+         JTv0RmXxtTsD1hmZ/6kcQXvBSozMXvn4OwQpdW79c/JjEY5CKKx6HaTTEDdvg/dfw1TC
+         VPUQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxaz+wWHy1SzvBFYmAmAi94StReNrOQkRSy2AzpfdXl+yiuxa65cTHmjOJdPWN/v/oYwKPeQxus2g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8DghJyKBg0ApAEub5+5gwqDy4aRosP2sdQ9b++RL9YMR/g+EHF
+	RN+Pp2Y2bqvVaplm/rMGx6A83th5Cq3dXrd9nkMwD+Brwzr5nmzUZ8TukcI9qxHydBQ=
+X-Gm-Gg: AYBFou12Zjv2Pfq0HCFq1LdenNFRRIN1Wjyn1YgQPxxcqMg5IKlR5ZVh8yEuJkpuHT5
+	Ruar42x5ZWwUkweypVgZ0mVbHYMd9JHtqmydgBXkdD7KCSHyovCcvxEyWl1UwDTpQ0VMqTN5fFg
+	3JKK33ctO4M/RxtGStUEfzKe1fAC5ihDgDbQe/Ta5hZER3/3+kXFUKqtYOIwnLtptpxABs9u5Vs
+	33tbKY0MUauwqyZrFZmfQRSm08ftA/55zwbAb93i9A6SmlLBb6s+gpPo6I7BY0mjVzEkD0IfG2R
+	kHzvMfQ+YEWsvRBm19kdlDIj55eql0YcqioEHnpD3NMvjcB47kQNzGEy+lLUrI0693PvkXlnfro
+	vfXgfcLoO/HNYWEKcaV47gvVE3qFgKmp+fizqmy0G8LsbFtAuXR6a0aGoiG4PKkSBFSwqkfSNVm
+	W2kC4O7EvN1tuihpSeOE0OhAj/J6vG9TN9hYTljxglDxAvHAx/RxM+5kisEWKQLm5BRdkYFYKiq
+	JPT3Fp1ssWGqN1WKBAvRq1fzaN9bkG21whpXMYpPviixMRV6i37i9vQNneF1B+c5Er+cgkY+1PV
+	+xo+vhbfH0iDX0ud5kWqeGjWpAbO6dY0430k1OtG3kldAbReXxZjU0iBD4qurUZS7Ckf
+X-Received: by 2002:a05:600c:64c5:b0:4a7:4697:dae3 with SMTP id 5b1f17b1804b1-4b6dfca2330mr52438285e9.24.1793978392407;
+        Fri, 06 Nov 2026 07:19:52 -0800 (PST)
 Received: from vingu-cube.home ([2a01:e0a:11f4:3020:ed97:32bc:977a:3b65])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.19.49
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.19.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 07:19:50 -0800 (PST)
+        Fri, 06 Nov 2026 07:19:51 -0800 (PST)
 From: Vincent Guittot <vincent.guittot@linaro.org>
 To: mingo@redhat.com,
 	peterz@infradead.org,
@@ -103,10 +104,12 @@ Cc: qyousef@layalina.io,
 	kayracizmeci@gmail.com,
 	tim.c.chen@linux.intel.com,
 	Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 00/18 v3] Improving latency of short slice tasks
-Date: Fri,  6 Nov 2026 16:19:27 +0100
-Message-ID: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+Subject: [PATCH 01/20 v3] sched/eevdf: Decay positive lag of sleeping entities
+Date: Fri,  6 Nov 2026 16:19:28 +0100
+Message-ID: <20261106151947.3991524-2-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -118,164 +121,183 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This is another round of scheduling latency improvements which fix
-some remaining corner cases and start to fix somes cases when multi
-short slice tasks are running simultaneously on the system.
+Similarly to delayed dequeue, which enables an entity to decay its negative
+lag while sleeping, a task should not keep a positive lag forever.
 
-This patchset gathers 5 different parts:
-- Patch 1-4 implement decay of positive lag
-- Patch 5-6 take into account slice when selecting CPU
-- Patch 7-12 add push callback for fair
-- Patch 13-15 use push for migrating short slice task that failed
-  to run at enqueue
-- Patch 16-19 modify feec to take into account slice when selecting CPU
-- Patch 20 handles case where several tasks select the same idle CPU
+The sleep duration and the weight are used to decay the positive lag at
+wakeup.
 
-I run my usual set of scheduling latency tests on dragonboard rb5
-- cyclictest with a 3777us period and a 8ms slice alone
-- cyclictest with a 3777us period and a 8ms slice. 2xNR_CPUS rt-app
-  tasks that run (8177us) and sleep (17777us) with a 16ms slice.
-- cyclictest with a 3777us period and a 8ms slice. Hackbench with
-  1 group using thread and pipe and a 16ms slice.
+Apply the decay when enqueueing on prev rq for which we hold the lock to
+get rq_clock_task().
 
-NB: periods and run duration have been chosen to minimize alignment
-with tick or other periodic activities.
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+---
+ kernel/sched/fair.c | 124 ++++++++++++++++++++++++++++++++------------
+ 1 file changed, 90 insertions(+), 34 deletions(-)
 
-Each test is 130 seconds long
-
-scheduling latency (us) for cyclictest
-                   tip/sched/core| this patchset
-slice                 8ms        |  8ms         
-99th Percentile               91 |    92 (- 1 %)
-99.9th Percentile            128 |   161 (-26 %)
-Maximum                      273 |   223 (+18 %)
-
-scheduling latency (us) for cyclictest and rt-app
-                   tip/sched/core| this patchset
-slice                 8ms / 16ms |  8ms  / 16 ms
-99th Percentile               65 |    68 (- 5 %)
-99.9th Percentile            986 |   913 (+ 7 %)
-Maximum                     6229 |  5715 (+ 8 %)
-
-scheduling latency (us) for cyclictest and hackbench
-                   tip/sched/core| this patchset
-slice                 8ms / 16ms |  8ms  / 16 ms
-99th Percentile               74 |    90 (-22 %)
-99.9th Percentile	     643 |   997 (-55 %)
-Maximum			   13501 |  4454 (+67 %)
-
-The 99.9th percentile are a bit worse mainly because of the decay/reset of
-positive lag. Eternal positive lag was beneficial for cyclictest which
-doesn't do anything while running and slowly decrease its large positive
-lag. Now its positive lag elapses while sleeping and cyclictest is
-enqueued with a null lag most of the time. On the other side this reduces
-cases where long sleeping task with large positive lag can preempt or
-prevent short task to run first.
-
-For testing cases w/ multi short slice tasks, I run a new rt-app test that
-wakes up simultaneously 4 short slice tasks while 16 normal tasks are
-also enqueued. All tasks wants to run 1ms every 7777ms. The 4 short tasks
-have an uclamp min of 512 to target the high and mid cores on my system
-(1 task per core)
-(SIS_UTIL is not disabled unlike for v2)
-
-tip/sched/core
-			Task-O		Task-1		Task-2		Task-3		
-Average              |	1051		  52		1051		1093
-Median (P50)         |	1091		  53		1091		1092
-90th Percentile      |	2133		  53		2132		2133
-99th Percentile      |	2400		  53		2398		2394
-99.9th Percentile    |	2519		 120		2518		2408
-Maximum              |	2523		1327		3097		2415
-
-+ The patchset
-			Task-O		Task-1		Task-2		Task-3		
-Average              |	61		61		60		61
-Median (P50)         |	60		60		60		60
-90th Percentile      |	62		62		62		62
-99th Percentile      |	62		62		62		62
-99.9th Percentile    |	1839		2012		63		2175
-Maximum              |	2175		2066		2176		2689
-
-On tip/sched/core, the 4 tasks tends to wake up on the same CPU whereas
-this patchset pushes the tasks which aren't picked on another CPU.
-
-Beside the results above I noticed significants performance improvements
-for hackbench with pipe which were not expected.
-"sched/eevdf: Decay positive lag of sleeping entities" is the patch that
-provides most of the performance improvements
-
-The test were run with the default 2.8ms slice to check for some
-performance regressions
-
-hackbench             tip/sched/core   this patchset
- 1 group process pipe 0,862(+/-3.9%)   0,839(+/-1.3%) (+ 3%)
- 4 group process pipe 0,725(+/-1.5%)   0,593(+/-1.3%) (+18%)
- 8 group process pipe 0,640(+/-4.2%)   0,546(+/-2.2%) (+15%)
-16 group process pipe 0,620(+/-3.9%)   0,528(+/-0.8%) (+15%)
- 1 group thread  pipe 0,917(+/-2.8%)   0,907(+/-2.2%) (+ 1%)
- 4 group thread  pipe 0,838(+/-4.5%)   0,697(+/-3.6%) (+17%)
- 8 group thread  pipe 0,774(+/-1.5%)   0,583(+/-2.5%) (+25%)
-16 group thread  pipe 0,628(+/-2.9%)   0,548(+/-2.1%) (+13%)
-
-Those tests have been run with perf scheduler (Using schedutil and EAS
-provides similar results)
-
-Changes since v2:
-- Remove min_slice comparison during wake_affine which didn't provide
-  benefit at the end
-- Added reset lag when migrating
-- Fixing stacking on idle cpu case
-- Tried to cover all the comments I received in v2 and more while running
-more test and reviewing the changes
-
-Changes since v1:
-- Change decay_entity_lag to take into account cfs load but not
-  migrated task yet.
-- Reset lag if the CPU entered idle while task was sleeping.
-- Move lockless min_slice in struct rq and use usigned long
-  which is enough for slice which stays in range [100us:100ms]
-- Merge min_slice rq selection in select_idle_capacity() and
-  select_idle_cpu()
-- Add push callback mecanism for cfs
-- Push short slice tasks that are not selected at wakeup
-- Update feec() to take into accoun slice when selecting a CPU
-
-Vincent Guittot (20):
-  sched/eevdf: Decay positive lag of sleeping entities
-  sched/eevdf: Reset lag at wakeup when prev CPU has been idle
-  sched/eevdf: Reset lag at wakeup when migrating and prev has been idle
-  sched/eevdf: Reset lag when waking up on idle cpu
-  sched/eevdf: Add per cpu cached min_slice
-  sched/eevdf: Add min slice check when selecting CPU
-  sched/fair: Prepare select_task_rq_fair() to be called for new cases
-  sched/fair: Add push task mechanism for fair
-  sched/fair: Optimize push task mechanism for fair
-  sched/core: Add rq flag to tick parameters
-  sched/fair: Add force push task mechanism for fair
-  sched/fair: Support not wakeup case in select_idle_sibling
-  sched/eevdf: Try to push short slice task on a better CPU
-  sched/eevdf: Push short slice task that are not picked
-  sched/fair: Enable push task for preempt short
-  energy model: Add a get previous state function
-  sched/fair: Rework feec() to use cost instead of spare capacity
-  energy model: Remove unused em_cpu_energy()
-  sched/fair: Take into account slice in EAS
-  sched/fair: Fix tasks stacking on same idle CPU
-
- include/linux/energy_model.h |  109 +--
- include/linux/sched.h        |    1 +
- kernel/sched/core.c          |    8 +-
- kernel/sched/deadline.c      |    2 +-
- kernel/sched/ext/ext.c       |    2 +-
- kernel/sched/fair.c          | 1244 ++++++++++++++++++++++++----------
- kernel/sched/idle.c          |    2 +-
- kernel/sched/rt.c            |    2 +-
- kernel/sched/sched.h         |    8 +-
- kernel/sched/stop_task.c     |    2 +-
- kernel/sched/topology.c      |    3 +
- 11 files changed, 938 insertions(+), 445 deletions(-)
-
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 0feec172fd37..5cd171f830d8 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -897,6 +897,91 @@ bool update_entity_lag(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 	return avruntime - vlag != se->vruntime;
+ }
+ 
++/*
++ * Signed add and clamp on underflow.
++ *
++ * Explicitly do a load-store to ensure the intermediate value never hits
++ * memory. This allows lockless observations without ever seeing the negative
++ * values.
++ */
++#define add_positive(_ptr, _val) do {                           \
++	typeof(_ptr) ptr = (_ptr);                              \
++	__signed_scalar_typeof(*ptr) val = (_val);              \
++	typeof(*ptr) res, var = READ_ONCE(*ptr);                \
++								\
++	res = var + val;                                        \
++								\
++	if (val < 0 && res > var)                               \
++		res = 0;                                        \
++								\
++	WRITE_ONCE(*ptr, res);                                  \
++} while (0)
++
++/*
++ * Remove and clamp on negative, from a local variable.
++ *
++ * A variant of sub_positive(), which does not use explicit load-store
++ * and is thus optimized for local variable updates.
++ */
++#define lsub_positive(_ptr, _val) do {				\
++	typeof(_ptr) ptr = (_ptr);				\
++	*ptr -= min_t(typeof(*ptr), *ptr, _val);		\
++} while (0)
++
++static inline unsigned long cfs_rq_load_avg(struct cfs_rq *cfs_rq);
++static unsigned long task_h_load(struct task_struct *p);
++
++static __always_inline
++void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
++{
++	struct sched_entity *se = &p->se;
++	s64 delta_exec, vlag = se->vlag;
++	unsigned long cfs_load;
++	struct rq *rq;
++
++	WARN_ON_ONCE(se->on_rq);
++
++	/* Negative lag is managed by delayed dequeue path */
++	if (vlag <= 0)
++		return;
++
++	rq = rq_of(cfs_rq);
++
++	/* No fast access to prev rq task clock */
++	if (flags & ENQUEUE_MIGRATED)
++		return;
++
++	/* Compute sleep time */
++	delta_exec = rq_clock_task(rq) - se->exec_start;
++	if (unlikely(delta_exec <= 0))
++		return;
++
++	/* For anything above ~4 seconds, save computation and clear the lag */
++	if (unlikely(delta_exec >> 32)) {
++		se->vlag = 0;
++		return;
++	}
++
++	/*
++	 * Use cfs' load and p's weight to estimate what would have been the
++	 * share for p. task's load contribution to cfs' load is replaced by
++	 * its weight.
++	 */
++	cfs_load = cfs_rq_load_avg(cfs_rq);
++	lsub_positive(&cfs_load, task_h_load(p));
++	if (cfs_load) {
++		unsigned long weight = scale_load_down(se->h_load.weight);
++
++		delta_exec *= weight;
++		delta_exec = div64_long(delta_exec, cfs_load + weight);
++	}
++
++	vlag -= calc_delta_fair(delta_exec, se);
++
++	/* vlag can't become neg while sleeping */
++	se->vlag = max(0, vlag);
++}
++
+ /*
+  * Entity is eligible once it received less service than it ought to have,
+  * eg. lag >= 0.
+@@ -4693,38 +4778,6 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 	cfs_rq->nr_queued--;
+ }
+ 
+-/*
+- * Signed add and clamp on underflow.
+- *
+- * Explicitly do a load-store to ensure the intermediate value never hits
+- * memory. This allows lockless observations without ever seeing the negative
+- * values.
+- */
+-#define add_positive(_ptr, _val) do {                           \
+-	typeof(_ptr) ptr = (_ptr);                              \
+-	__signed_scalar_typeof(*ptr) val = (_val);              \
+-	typeof(*ptr) res, var = READ_ONCE(*ptr);                \
+-								\
+-	res = var + val;                                        \
+-								\
+-	if (val < 0 && res > var)                               \
+-		res = 0;                                        \
+-								\
+-	WRITE_ONCE(*ptr, res);                                  \
+-} while (0)
+-
+-/*
+- * Remove and clamp on negative, from a local variable.
+- *
+- * A variant of sub_positive(), which does not use explicit load-store
+- * and is thus optimized for local variable updates.
+- */
+-#define lsub_positive(_ptr, _val) do {				\
+-	typeof(_ptr) ptr = (_ptr);				\
+-	*ptr -= min_t(typeof(*ptr), *ptr, _val);		\
+-} while (0)
+-
+-
+ /*
+  * Because of rounding, se->util_sum might ends up being +1 more than
+  * cfs->util_sum. Although this is not a problem by itself, detaching
+@@ -8152,7 +8205,7 @@ static void
+ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ {
+ 	int rq_h_nr_queued = rq->cfs.h_nr_queued;
+-	int task_new = !(flags & ENQUEUE_WAKEUP);
++	int task_wake = flags & ENQUEUE_WAKEUP;
+ 	struct sched_entity *se = &p->se;
+ 	struct cfs_rq *cfs_rq = &rq->cfs;
+ 	unsigned long weight;
+@@ -8185,6 +8238,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	if (p->in_iowait)
+ 		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
+ 
++	if (task_wake)
++		decay_entity_lag(cfs_rq, p, flags);
++
+ 	curr = (cfs_rq->curr == se);
+ 	/*
+ 	 * This can actually happen with CFS_BANDWIDTH, a task can be throttled
+@@ -8225,7 +8281,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	 * into account, but that is not straightforward to implement,
+ 	 * and the following generally works well enough in practice.
+ 	 */
+-	if (!task_new)
++	if (task_wake)
+ 		check_update_overutilized_status(rq);
+ 
+ 	assert_list_leaf_cfs_rq(rq);
 -- 
 2.53.0
 
