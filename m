@@ -1,59 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.84.56
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.85.4
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793957554;
-	b=dBlx7vJivejobLCYIbC6SS5+8vpU0mvOvUHD7L0kDK7HwOHP/wStQcNA9aR2rSZ/GPrz
-	 2OCMqqHXIcBjb0ySVV2Wu5jfvdwS0CFkuZ7A3xPySHOfK5BwGT4rHPBnRXRMdPk+xrGm3
-	 9NC/NI46Pl0xEPJbhjrZNBaQTyFtNFyt8wczeyrsmywPn1+4W60Vv7vj3MstZ+4VMsppK
-	 TKDEy0dLuYk21HHEkQqVpvZ+LAO+hi4lIWDXXv4Ffxx6eeiKC/siLUQ+XNN7/BKLIsRE+
-	 V0rKbFsrup5dcUHNrltSLWodTkb+4tFrju0C522v7+OlKyKsaRknxf/pq4l3A6F1QsQ==
+	t=1793957569;
+	b=lEqmWmovTttaBfK5O/ugIh3r9pNBmvvzXjgz6yb+23Yz3S/SySAIyMBpbTK+NLqynKBq
+	 /UxEYAfUTO6L9aSg2QLKg+tJ+sK+jppPbNJfRgvmqXCV9IQU5IHnExKidBalQy/6L0p4B
+	 guFT3tp6Ihs0ncNzgNT0hXoyv/kjm1WrRc/t+f05ei5Q5fr6LT0fIGJ30lhFbBI2LVp0R
+	 Drcl8yF5CWnZUSfphGiPEcJxWRzbROiYI77GPzSh2WIqTTxPfH57BTq7YTlNNb5piydnn
+	 n/TwlcN40b9aY7misdAW/vaujyuTk5/06nR917kRDyfdxE90gy04E13W54TdBz2R4rg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793957554;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793957569;
 	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:Date:
 	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Last-TLS-Session-Version;
-	bh=gBhA5ne0HzBSBsjNMeB0b97akpJDk47Q1STTVSn0v1g=;
-	b=GFp1IBcF9LFC7AI4e1SGUCf+pJkkxZ+K8SrVdMuV5uGl4xXBcXwt/HOl33+Sml4dwkUn
-	 uiA8MRfv6l9tmyj/v9HeKRw/Ui1frGtkp+hsLWK68cnV9HjEFh+F0URwf4HrdD+mafGB+
-	 viOndLknwmdORfVCSlFBGZj+N9jg3+Xcz2VoRP7y55Bjmz265diSGYpka4eOeWhHCUQtF
-	 +kmmlmj0c2PeJApptZYn8AvsENPaqbSWxcN7kHvNa+/ElLd45kjhZJ6ET6hFI9A+8gUFW
-	 dR2LNX66GNcoMf79kOfDAI+jx5XxG9FiUJxgwKUEi0fgMgGOSn4JTMWDCN58DV9luGw==
+	bh=Ol6OqvAnjB6xNfgKd5K3xVXQwuxfqgePZ/x70MPMbZ0=;
+	b=Rg1CAU2T8nYiBCrUjyX5OtcM7uFMPh8iQPV12rbbP7Yq64jnpLFmyOOjynM/v0I2u+ih
+	 u8V1I5dV04tk79mlfOXOVqlfyCYPZjIitZcRutK8qkrQQ0to0BY87bKOCylp+se2FGabW
+	 BM7zmWx5YTcqN6ifiZw/c3oo1jiI92qR8Ht+BQeTfQHd0QCXEhGQI2C7Nj7oPWhMY6ff8
+	 P6RjLxXQ6KYbNaE9WKK5Qu5vbOkEVdfGJTYiMInNYYPsQDu1FBgu2iuZOoWXzHQnKoZTJ
+	 /Zzmw9UR/HA+CbzcaadoBjXXTp3tjxPwGXuBMV4lM0/5pqPSGRXSCmoxzdCpCY6fgtA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=bootlin.com;
 	spf=pass smtp.mailfrom=bootlin.com;
-	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=HaixeoNX;
-	arc=none smtp.remote-ip=185.246.84.56
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=sAClafF5;
+	arc=none smtp.remote-ip=185.246.85.4
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E94476082BE8
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 09:32:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E94476082BE8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44B2C606EE8F;
+	Fri,  6 Nov 2026 09:32:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 44B2C606EE8F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=HaixeoNX
+	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=sAClafF5
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 887C71A0C32;
-	Fri,  6 Nov 2026 09:32:31 +0000 (UTC)
+	by smtpout-03.galae.net (Postfix) with ESMTPS id E04C44E413E9;
+	Fri,  6 Nov 2026 09:32:47 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 586C15FFBC;
-	Fri,  6 Nov 2026 09:32:31 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id AFE461032927D;
-	Fri,  6 Nov 2026 10:32:20 +0100 (CET)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id AD7745FFBC;
+	Fri,  6 Nov 2026 09:32:47 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 47C34103292D4;
+	Fri,  6 Nov 2026 10:32:35 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1793957547; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	t=1793957562; h=from:subject:date:message-id:to:cc:mime-version:content-type:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=gBhA5ne0HzBSBsjNMeB0b97akpJDk47Q1STTVSn0v1g=;
-	b=HaixeoNXbLBHSchvJYkZj08DvAcwni449GADLwNQTjY/eTlF+kt5/dEzlSVzXnxh1HCSgN
-	WWbP9KCYAEY4VNrrTPCJJmtrUvLb263bmiiry2aOxSbttRDgOv7t6PSAit7uiXW4OpjNSI
-	+xEQUj1vtvVNTLsNyJkI1cePniyzcJe6rFWzEyo06tgIDCIYLV05YnsFrvRcoLdore3o6v
-	hzQyVRtXML3AwTE8aG+7oE/ab1IBh60uT3aqjpJAUtWGD9r8eHxXmLd4oJzuNHqQVEX0j4
-	Rz+NI5WdWP5N7zdVlC9rtnEt5t9phhsb4+3q3+PO0a/mxxhYz96anvjPg5y3Jw==
+	bh=Ol6OqvAnjB6xNfgKd5K3xVXQwuxfqgePZ/x70MPMbZ0=;
+	b=sAClafF5dOAezz7dC47i/OrkTOw5xuRmEWg/B2Tb0Xvd159zH95MYBixLzaDBC5N5mNhQT
+	jstSxmvOV2z04dn6vh4WiExtwmuhvBHzQ4X3FtduoPQrh1M00nwCBYh28Nw6mp1gYQDMBN
+	VyxHbCINp7inn+84os5RZPoj2oPnsGTwdKWn3bAgci6/H2GBKZr7UCRr9/k7CyudIHU6BS
+	wNiR2yp+fnOPHqXd7QQyQLcgr6s5uggxpexyKbwbTV3GV5NjIqigpjI4+IQlZ/rVpb0pbY
+	EaUPEDnchwYltFiX1832wqGLFlmUEg3U47Oa6N6ydbP3PuvZAvZsLFSZnNuhgA==
 From: =?utf-8?q?Beno=C3=AEt_Monin?= <benoit.monin@bootlin.com>
-Date: Fri, 06 Nov 2026 10:30:13 +0100
-Subject: [PATCH 16/25] reset: simple: add Metanoia MT2824 support
+Date: Fri, 06 Nov 2026 10:30:15 +0100
+Subject: [PATCH 18/25] spi: atcspi200: allow building for Metanoia SoCs
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,7 +65,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261106-mt2824-v1-16-86087eaf5af4@bootlin.com>
+Message-Id: <20261106-mt2824-v1-18-86087eaf5af4@bootlin.com>
 References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 In-Reply-To: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -98,42 +98,28 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.16.0
 X-Last-TLS-Session-Version: TLSv1.3
 
-The Metanoia MT2824 integrates a simple reset controller with the same
-register layout as the other reset-simple controllers. Add its compatible
-string and build reset-simple for ARCH_METANOIA by default.
+The Metanoia MT2824 integrates the Andes ATCSPI200 SPI controller. Allow
+the driver to be built for ARCH_METANOIA.
 
 Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
 Signed-off-by: Benoît Monin <benoit.monin@bootlin.com>
 ---
- drivers/reset/Kconfig        | 2 +-
- drivers/reset/reset-simple.c | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ drivers/spi/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
-index eda9c698a95f..b42768d7b88a 100644
---- a/drivers/reset/Kconfig
-+++ b/drivers/reset/Kconfig
-@@ -297,7 +297,7 @@ config RESET_SCMI
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 49088e5886d3..f8188de1b802 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -152,7 +152,7 @@ config SPI_ARMADA_3700
  
- config RESET_SIMPLE
- 	bool "Simple Reset Controller Driver" if COMPILE_TEST || EXPERT
--	default ARCH_ASPEED || ARCH_BCMBCA || ARCH_BITMAIN || ARCH_REALTEK || ARCH_SOPHGO || ARCH_STM32 || (ARCH_INTEL_SOCFPGA && ARM64) || ARCH_SUNXI || ARC
-+	default ARCH_ASPEED || ARCH_BCMBCA || ARCH_BITMAIN || ARCH_METANOIA || ARCH_REALTEK || ARCH_SOPHGO || ARCH_STM32 || (ARCH_INTEL_SOCFPGA && ARM64) || ARCH_SUNXI || ARC
- 	depends on HAS_IOMEM
+ config SPI_ATCSPI200
+ 	tristate "Andes ATCSPI200 SPI controller"
+-	depends on ARCH_ANDES || COMPILE_TEST
++	depends on ARCH_ANDES || ARCH_METANOIA || COMPILE_TEST
  	help
- 	  This enables a simple reset controller driver for reset lines that
-diff --git a/drivers/reset/reset-simple.c b/drivers/reset/reset-simple.c
-index 79e94ecfe4f5..177df36235a5 100644
---- a/drivers/reset/reset-simple.c
-+++ b/drivers/reset/reset-simple.c
-@@ -148,6 +148,7 @@ static const struct of_device_id reset_simple_dt_ids[] = {
- 		.data = &reset_simple_active_low },
- 	{ .compatible = "brcm,bcm4908-misc-pcie-reset",
- 		.data = &reset_simple_active_low },
-+	{ .compatible = "metanoia,mt2824-reset" },
- 	{ .compatible = "snps,dw-high-reset" },
- 	{ .compatible = "snps,dw-low-reset",
- 		.data = &reset_simple_active_low },
+ 	  SPI driver for Andes ATCSPI200 SPI controller.
+ 	  ATCSPI200 controller supports DMA and PIO modes. When DMA
 
 -- 
 2.56.0
