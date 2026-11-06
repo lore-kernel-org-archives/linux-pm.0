@@ -1,59 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.84.56
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793957600;
-	b=bgyuiH8u78yCq8La3HT9TZlJZwl7f4VZMnUvEQAq/rMTqymClVca7MrqgeZ9BLdIrV2f
-	 5vcCcQsnsYle+BdIqn3a+w11LyvqO8px1kffJDCoG5kb3MxTKhwTbMIj2gCoOnLNNvQe1
-	 It9/aPGWjyfmp/NN509D4VepixVpQKQ0dAQiTrGPI4/j9B58/oMniYgrAXkl0UO5yAG7h
-	 XKiazzFKpFspSUHDVG1J8MT4UXiqfBkbrleiuTc3Y+JxG+EN9Gl29/2GTnd7aey9DDw+0
-	 s2MD8yIJ3uGn4gykxXk1acRYGe7CW3RMEr3/6RA7ad1zzz+hh2nZ5ibY9bqxQBD2MSg==
+	t=1793957615;
+	b=ie2pMZDhf5Iug6ZcVuKr2Eb0cpkUnUoJZJx/P6DDvlZoVGGexozf87HQRVS6wbRBRQOb
+	 4DFvE51le/giOck+Lb1+t7sDFDODF5IjBkm2eXDx3tRystcrMan8eaZobKZPdWjUDLSXh
+	 uXQT+I1AMlMCVLhc70+oQYEYd5Hwoo1mEELQCI9eL914jhF4wxtoY6tIWEB5l1bhSRl2n
+	 9iSujXIhvL0pmxsDwGYfaZdRZj1+8xYSi9ZWPB2I+TDpAHqII/9DVZAYghAG+8TM1yTsq
+	 zULyVeObM4tWMKyrtKbmEIH+fM8oND1S82JdlFfbPnLzR+PSV/4NcGfcUge+1ej5HzQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793957600;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793957615;
 	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:Date:
 	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Last-TLS-Session-Version;
-	bh=xNxhGNlUd/QAYjwS9+p2YRVic4RXKhAhrhTTLAcBT1A=;
-	b=Gh3ljB4HgKFIbyX+9S7h3aU6O4QwF7Kfnmf7+M1PI1Hi7wTs39iStJqMDv12KCmWJQ3f
-	 ju15r0fb5ExXLMKTh9JrFK9XxOLckBW0xyaFkCF3jQ9KGy20CpfWUVlQvlkGne6nnJy+I
-	 2yqXlEJ1oWBDL6RQA0BO279npnhynDXgQTSG8pKEoxecgn2hqOU/zVAUWwgzi/NseuNlT
-	 So8oAw/KNbHGYZBlsh3FaEdDHoJlDRrzFQUOrRB5IB2Cbx6VzgJ/vQj2897jO5ILqwb8N
-	 ASig19+JAfhoCHfYjfLn3Eq7+vfFEdEBxvq4ti/fr1zcMAQ4VeC1X2Wrf7s4b+zw5Bg==
+	bh=8v2nXWM9acZVitBgv0QvS1fHjlk1wPl9VrCyP3K4JUc=;
+	b=jEakuChBgA4UTAUQdGCoIWrT7NyEs31cRSsyBuzhQbDCL4bMMRZ+e+DZWHYkstvQIINw
+	 PEW8v3+eMuAJ0BlDU2olzDDrtZc5kpG6K2Coyt5TMAgqvA4k4MFfzxAbMJ0NLeUXWvYnD
+	 gauKzF9lm7tyJoxBm3YX9CTKdMfgjOuOrtDWI+k44pQe7KJqmcMqSLgRkJxsrPwJGnKcA
+	 tHYNpSBGVYIM/JXR0nQaSD0EBh/ogZKRhw1f/gympH2fvoXfHV1r2qjOkoyF9K0PnZytv
+	 jpbjx+IoVfqHxNKejFuePNHURn5s4mxMZTodOjYYUkFVl+w9+EKyzwvzjPr9Fg9zMZA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=bootlin.com;
 	spf=pass smtp.mailfrom=bootlin.com;
-	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=qzjngm6W;
+	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=jKw1Xz2M;
 	arc=none smtp.remote-ip=185.246.84.56
 Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16CC6606EE89;
-	Fri,  6 Nov 2026 09:33:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 16CC6606EE89
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64A9F6082BDC;
+	Fri,  6 Nov 2026 09:33:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 64A9F6082BDC
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=qzjngm6W
+	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=jKw1Xz2M
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id C9F101A1350;
-	Fri,  6 Nov 2026 09:33:18 +0000 (UTC)
+	by smtpout-02.galae.net (Postfix) with ESMTPS id 2F1301A1350;
+	Fri,  6 Nov 2026 09:33:33 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 843B35FFBC;
-	Fri,  6 Nov 2026 09:33:18 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id A2CAD10329258;
-	Fri,  6 Nov 2026 10:33:08 +0100 (CET)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id EEACB5FFBC;
+	Fri,  6 Nov 2026 09:33:32 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 68C4D103292CA;
+	Fri,  6 Nov 2026 10:33:22 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1793957595; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	t=1793957609; h=from:subject:date:message-id:to:cc:mime-version:content-type:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=xNxhGNlUd/QAYjwS9+p2YRVic4RXKhAhrhTTLAcBT1A=;
-	b=qzjngm6WnCz2RSJjNd87zanbSOH2E4/m7iNJaRu8O8NApdI6HB0JwSC9zihCXzReroWlBy
-	YbEr4t/R5C8POfP7mahglsIZLkb/jgbiht0kTGtezBFmH62HZx8bBVObq9zEUSYr2uCKn7
-	OPsvspCzw7u0i+M5RJygf1N7C+c/GORrrW5f0oREYTS7xvfuFqeluPN0vC9w7IBImagl1I
-	tvWtXPB6yRp/oxW/Z3wF3A41LIHDsu9DvFr7FvQTpdWc3eYenyQiltaVyrB9ADHBI8jAxK
-	miLKg/TcH/bOQIYypD7IvoCCmyertaDVNtwFs3eR+bX+MJM+qpe1zItVfCFxrg==
+	bh=8v2nXWM9acZVitBgv0QvS1fHjlk1wPl9VrCyP3K4JUc=;
+	b=jKw1Xz2MvUXksHPjJTP1yk73uoYewzoTb9B9XN5A5McCWsIoycHGGsvZ160KA2VUCsoiMs
+	bKtr4bEue/aGGnQtB9haq/BhiWs3PKyrr35KH95LVoz5KUBmOTm3QM7i+zFkmLFs769OJy
+	g0F0RhojgBFzq+d/QVVyBc23BueYRGINKy9RT4K5hgOFzPFcuPuNVYV5rYtIIthyxhsysB
+	wu+hIqfG65kuRuL31WvEVvbF1SIiZWyOUuu+BNqNv58tY3uVOgR9pOILslv0tEhEtWX1r2
+	gakTpxj9loWeMcuR4udMwrSgm7pf1hiYsw0pcsPeP4jMQmwFkYLibiZMAeBoUw==
 From: =?utf-8?q?Beno=C3=AEt_Monin?= <benoit.monin@bootlin.com>
-Date: Fri, 06 Nov 2026 10:30:19 +0100
-Subject: [PATCH 22/25] phy: metanoia: add USB2 PHY driver
+Date: Fri, 06 Nov 2026 10:30:21 +0100
+Subject: [PATCH 24/25] riscv: add Metanoia MT2824 SoC and MT5824 EVB
+ support
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261106-mt2824-v1-22-86087eaf5af4@bootlin.com>
+Message-Id: <20261106-mt2824-v1-24-86087eaf5af4@bootlin.com>
 References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 In-Reply-To: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -98,169 +99,470 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.16.0
 X-Last-TLS-Session-Version: TLSv1.3
 
-Add a minimal reset-only PHY provider for the Metanoia MT2824 USB2 PHY.
-It deasserts the PHY reset required by the DWC2 USB controller on init
-and asserts it again on exit.
+Add the device tree for the Metanoia MT2824, a dual-core Andes
+AX45MP-based SoC, and for the MT5824 evaluation board.
+
+The SoC device tree describes the CPUs and their L2 cache, the PLIC,
+PLICSW and PLMT, the reset controller, the reboot controller, the
+watchdog, two UARTs, the QSPI and eight SPI controllers, the DWC
+MSHC MMC controller, and the USB2 controller.
+
+The MT5824 EVB enables the watchdog, the two UARTs, the MMC
+controller, the QSPI port with its SPI-NOR flash, the first three SPI
+controllers, and the USB controller.
 
 Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
 Signed-off-by: Benoît Monin <benoit.monin@bootlin.com>
 ---
- drivers/phy/Kconfig             |  1 +
- drivers/phy/Makefile            |  1 +
- drivers/phy/metanoia/Kconfig    | 16 ++++++++
- drivers/phy/metanoia/Makefile   |  3 ++
- drivers/phy/metanoia/phy-usb2.c | 88 +++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 109 insertions(+)
+ arch/riscv/boot/dts/Makefile                |   1 +
+ arch/riscv/boot/dts/metanoia/Makefile       |   2 +
+ arch/riscv/boot/dts/metanoia/mt2824.dtsi    | 330 ++++++++++++++++++++++++++++
+ arch/riscv/boot/dts/metanoia/mt5824-evb.dts |  81 +++++++
+ 4 files changed, 414 insertions(+)
 
-diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
-index 105fbe408aa2..73ef61f1f53d 100644
---- a/drivers/phy/Kconfig
-+++ b/drivers/phy/Kconfig
-@@ -184,6 +184,7 @@ source "drivers/phy/intel/Kconfig"
- source "drivers/phy/lantiq/Kconfig"
- source "drivers/phy/marvell/Kconfig"
- source "drivers/phy/mediatek/Kconfig"
-+source "drivers/phy/metanoia/Kconfig"
- source "drivers/phy/microchip/Kconfig"
- source "drivers/phy/motorola/Kconfig"
- source "drivers/phy/mscc/Kconfig"
-diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
-index c6dd02003bbe..57991b50978c 100644
---- a/drivers/phy/Makefile
-+++ b/drivers/phy/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_GENERIC_PHY)		+= allwinner/	\
- 					   lantiq/	\
- 					   marvell/	\
- 					   mediatek/	\
-+					   metanoia/	\
- 					   microchip/	\
- 					   motorola/	\
- 					   mscc/	\
-diff --git a/drivers/phy/metanoia/Kconfig b/drivers/phy/metanoia/Kconfig
+diff --git a/arch/riscv/boot/dts/Makefile b/arch/riscv/boot/dts/Makefile
+index 69d8751fb17c..8e1e987ea089 100644
+--- a/arch/riscv/boot/dts/Makefile
++++ b/arch/riscv/boot/dts/Makefile
+@@ -4,6 +4,7 @@ subdir-y += andes
+ subdir-y += anlogic
+ subdir-y += canaan
+ subdir-y += eswin
++subdir-y += metanoia
+ subdir-y += microchip
+ subdir-y += renesas
+ subdir-y += sifive
+diff --git a/arch/riscv/boot/dts/metanoia/Makefile b/arch/riscv/boot/dts/metanoia/Makefile
 new file mode 100644
-index 000000000000..b8a49085bb95
+index 000000000000..7a685798d5a4
 --- /dev/null
-+++ b/drivers/phy/metanoia/Kconfig
-@@ -0,0 +1,16 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+#
-+# Phy drivers for Metanoia platforms
-+#
-+
-+config PHY_METANOIA_USB2
-+	tristate "Metanoia USB2 PHY reset support"
-+	depends on OF && (ARCH_METANOIA || COMPILE_TEST)
-+	depends on RESET_CONTROLLER
-+	select GENERIC_PHY
-+	help
-+	  Enable this to support the USB2 PHY reset block that is part
-+	  of Metanoia SoCs.
-+
-+	  This driver only toggles the reset line of the PHY needed by
-+	  the DWC2 USB controller.
-diff --git a/drivers/phy/metanoia/Makefile b/drivers/phy/metanoia/Makefile
-new file mode 100644
-index 000000000000..ce1b5f8af15d
---- /dev/null
-+++ b/drivers/phy/metanoia/Makefile
-@@ -0,0 +1,3 @@
++++ b/arch/riscv/boot/dts/metanoia/Makefile
+@@ -0,0 +1,2 @@
 +# SPDX-License-Identifier: GPL-2.0
-+
-+obj-$(CONFIG_PHY_METANOIA_USB2)	+= phy-usb2.o
-diff --git a/drivers/phy/metanoia/phy-usb2.c b/drivers/phy/metanoia/phy-usb2.c
++dtb-$(CONFIG_ARCH_METANOIA) += mt5824-evb.dtb
+diff --git a/arch/riscv/boot/dts/metanoia/mt2824.dtsi b/arch/riscv/boot/dts/metanoia/mt2824.dtsi
 new file mode 100644
-index 000000000000..b06d423eada7
+index 000000000000..5f73c6d3760b
 --- /dev/null
-+++ b/drivers/phy/metanoia/phy-usb2.c
-@@ -0,0 +1,88 @@
-+// SPDX-License-Identifier: GPL-2.0-only
++++ b/arch/riscv/boot/dts/metanoia/mt2824.dtsi
+@@ -0,0 +1,330 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
-+ * Copyright (C) 2026 Metanoia Communications Inc.
-+ *
-+ * Author: Jun Chang <jun.chang@metanoia-comm.com>
++ * Copyright (C) 2026 Metanoia Communications Inc.. All rights reserved.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
-+#include <linux/reset.h>
++#include <dt-bindings/interrupt-controller/irq.h>
 +
-+struct metanoia_usb2phy {
-+	struct reset_control *reset;
++/ {
++	#address-cells = <0x02>;
++	#size-cells = <0x02>;
++	compatible = "metanoia,mt2824";
++
++	cpus: cpus {
++		#address-cells = <0x01>;
++		#size-cells = <0x00>;
++		timebase-frequency = <20000000>;
++
++		cpu0: cpu@0 {
++			device_type = "cpu";
++			reg = <0x00>;
++			compatible = "andestech,ax45mp", "riscv";
++			riscv,isa-base = "rv64i";
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c",
++					       "zicntr", "zicsr", "zifencei",
++					       "zihpm", "xandespmu";
++			mmu-type = "riscv,sv39";
++			clock-frequency = <900000000>;
++			i-cache-size = <0x8000>;
++			i-cache-sets = <0x100>;
++			i-cache-line-size = <0x40>;
++			i-cache-block-size = <0x40>;
++			d-cache-size = <0x8000>;
++			d-cache-sets = <0x80>;
++			d-cache-line-size = <0x40>;
++			d-cache-block-size = <0x40>;
++			next-level-cache = <&l2_cache>;
++
++			cpu0intc: interrupt-controller {
++				#interrupt-cells = <0x01>;
++				interrupt-controller;
++				compatible = "andestech,cpu-intc", "riscv,cpu-intc";
++			};
++		};
++
++		cpu1: cpu@1 {
++			device_type = "cpu";
++			reg = <0x01>;
++			compatible = "andestech,ax45mp", "riscv";
++			riscv,isa-base = "rv64i";
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c",
++					       "zicntr", "zicsr", "zifencei",
++					       "zihpm", "xandespmu";
++			mmu-type = "riscv,sv39";
++			clock-frequency = <900000000>;
++			i-cache-size = <0x8000>;
++			i-cache-sets = <0x100>;
++			i-cache-line-size = <0x40>;
++			i-cache-block-size = <0x40>;
++			d-cache-size = <0x8000>;
++			d-cache-sets = <0x80>;
++			d-cache-line-size = <0x40>;
++			d-cache-block-size = <0x40>;
++			next-level-cache = <&l2_cache>;
++
++			cpu1intc: interrupt-controller {
++				#interrupt-cells = <0x01>;
++				interrupt-controller;
++				compatible = "andestech,cpu-intc", "riscv,cpu-intc";
++			};
++		};
++	};
++
++	clocks {
++		ext_clk: ext-clk {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <20000000>;
++			clock-output-names = "ext-clk";
++		};
++
++		pclk_div4: platform-clock-div4 {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <225000000>;
++			clock-output-names = "platform-clock-div4";
++		};
++
++		pll_soc_out3: pll-soc-out3 {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <180000000>;
++			clock-output-names = "pll-soc-out3";
++		};
++
++		usb_otg_ahb_clk: clock-usb-otg-ahb {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <60000000>;
++			clock-output-names = "otg";
++		};
++	};
++
++	soc: soc {
++		#address-cells = <0x02>;
++		#size-cells = <0x02>;
++		compatible = "simple-bus";
++		interrupt-parent = <&plic>;
++		ranges;
++
++		usb0: usb@4000000 {
++			compatible = "metanoia,mt2824-usb", "snps,dwc2";
++			reg = <0x0 0x04000000 0x0 0x100000>;
++			interrupts = <7 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&usb_otg_ahb_clk>;
++			clock-names = "otg";
++			dr_mode = "host";
++			resets = <&rst 19>, <&rst 20>;
++			reset-names = "dwc2", "dwc2-ecc";
++			phys = <&usb2phy>;
++			phy-names = "usb2-phy";
++			hnp-disable;
++			srp-disable;
++			disable-over-current;
++			status = "disabled";
++		};
++
++		mmcsd: mmc@4100000 {
++			compatible = "metanoia,mt2824-dwcmshc";
++			clocks = <&pll_soc_out3>;
++			clock-names = "core";
++			reg = <0x0 0x04100000 0x0 0x00100000>;
++			interrupts = <5 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		l2_cache: cache-controller@a000000 {
++			compatible = "metanoia,mt2824-ax45mp-cache",
++				     "andestech,ax45mp-cache", "cache";
++			reg = <0x0 0x0a000000 0x0 0x40000>;
++			interrupts = <1 IRQ_TYPE_LEVEL_HIGH>;
++			cache-line-size = <64>;
++			cache-level = <2>;
++			cache-sets = <1024>;
++			cache-size = <0x40000>;
++			cache-unified;
++		};
++
++		plic: interrupt-controller@c000000 {
++			compatible = "metanoia,mt2824-plic", "andestech,nceplic100";
++			reg = <0x0 0x0c000000 0x0 0x400000>;
++			interrupts-extended = <&cpu0intc 0x0b>, <&cpu0intc 0x09>,
++					      <&cpu1intc 0x0b>, <&cpu1intc 0x09>;
++			interrupt-controller;
++			#address-cells = <0x00>;
++			#interrupt-cells = <0x02>;
++			riscv,ndev = <0x47>;
++		};
++
++		plmt: timer@c400000 {
++			compatible = "metanoia,mt2824-plmt", "andestech,plmt0";
++			reg = <0x0 0x0c400000 0x0 0x00400000>;
++			interrupts-extended = <&cpu0intc 0x07>,
++					      <&cpu1intc 0x07>;
++		};
++
++		plicsw: interrupt-controller@c800000 {
++			compatible = "metanoia,mt2824-plicsw", "andestech,plicsw";
++			reg = <0x0 0x0c800000 0x0 0x400000>;
++			interrupts-extended = <&cpu0intc 0x03>,
++					      <&cpu1intc 0x03>;
++		};
++
++		reboot: reboot@10000004 {
++			compatible = "metanoia,mt2824-reboot";
++			reg = <0x0 0x10000004 0x0 0x08>;
++		};
++
++		rst: reset-controller@1000000c {
++			#reset-cells = <1>;
++			compatible = "metanoia,mt2824-reset";
++			reg = <0x0 0x1000000c 0x0 0x04>;
++		};
++
++		watchdog: watchdog@10090000 {
++			compatible = "metanoia,mt2824-wdt", "andestech,ae350-wdt";
++			reg = <0x0 0x10090000 0x0 0x10000>;
++			clocks = <&ext_clk>;
++			andestech,clock-source = <0>;
++			timeout-sec = <10>;
++			status = "disabled";
++		};
++
++		serial0: serial@100e0000 {
++			compatible = "ns16550a";
++			reg = <0x0 0x100e0000 0x0 0x1000>;
++			interrupts = <17 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&pclk_div4>;
++			current-speed = <115200>;
++			reg-shift = <0x02>;
++			reg-offset = <0x20>;
++			reg-io-width = <0x04>;
++			no-loopback-test;
++			status = "disabled";
++		};
++
++		serial1: serial@100f0000 {
++			compatible = "ns16550a";
++			reg = <0x0 0x100f0000 0x0 0x1000>;
++			interrupts = <18 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&pclk_div4>;
++			current-speed = <115200>;
++			reg-shift = <0x02>;
++			reg-offset = <0x20>;
++			reg-io-width = <0x04>;
++			no-loopback-test;
++			status = "disabled";
++		};
++
++		qspi: spi@10120000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10120000 0x0 0x10000>;
++			interrupts = <13 IRQ_TYPE_LEVEL_HIGH>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi0: spi@10130000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10130000 0x0 0x10000>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi1: spi@10140000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10140000 0x0 0x10000>;
++			interrupts = <19 IRQ_TYPE_LEVEL_HIGH>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi2: spi@10150000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10150000 0x0 0x10000>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi3: spi@10160000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10160000 0x0 0x10000>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi4: spi@10170000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10170000 0x0 0x10000>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi5: spi@10180000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10180000 0x0 0x10000>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi6: spi@10190000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x10190000 0x0 0x10000>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++
++		spi7: spi@101a0000 {
++			compatible = "metanoia,mt2824-spi", "andestech,ae350-spi";
++			reg = <0x0 0x101a0000 0x0 0x10000>;
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			num-cs = <0x01>;
++			clocks = <&pll_soc_out3>;
++			status = "disabled";
++		};
++	};
++
++	usb2phy: usb2-phy {
++		compatible = "metanoia,mt2824-usb2-phy";
++		#phy-cells = <0>;
++		resets = <&rst 18>;
++		reset-names = "usb2-phy";
++	};
++
++	reserved-memory {
++		#address-cells = <0x2>;
++		#size-cells = <0x2>;
++		ranges;
++
++		/* for the DSPs, configured as non-cacheable in openSBI */
++		rsc_table: rsc-table@81000000 {
++			reg = <0x0 0x81000000 0x0 0x10000>;
++			no-map;
++		};
++	};
++};
+diff --git a/arch/riscv/boot/dts/metanoia/mt5824-evb.dts b/arch/riscv/boot/dts/metanoia/mt5824-evb.dts
+new file mode 100644
+index 000000000000..d0e8eb0a49a4
+--- /dev/null
++++ b/arch/riscv/boot/dts/metanoia/mt5824-evb.dts
+@@ -0,0 +1,81 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (C) 2026 Metanoia Communications Inc.. All rights reserved.
++ */
++
++/dts-v1/;
++
++#include "mt2824.dtsi"
++
++/ {
++	model = "Metanoia MT5824 EVB";
++	compatible = "metanoia,mt5824-evb", "metanoia,mt2824";
++
++	aliases {
++		uart0 = &serial0;
++		uart1 = &serial1;
++		spi0 = &spi0;
++		spi1 = &spi1;
++		spi2 = &spi2;
++	};
++
++	chosen {
++		stdout-path = "uart0:115200n8";
++	};
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x80000000>,
++		      <0x1 0x00000000 0x0 0x80000000>;
++	};
 +};
 +
-+static int metanoia_usb2phy_init(struct phy *phy)
-+{
-+	struct metanoia_usb2phy *priv = phy_get_drvdata(phy);
-+	int ret;
-+
-+	ret = reset_control_deassert(priv->reset);
-+	if (ret)
-+		dev_err(&phy->dev, "failed to reset phy: %d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int metanoia_usb2phy_exit(struct phy *phy)
-+{
-+	struct metanoia_usb2phy *priv = phy_get_drvdata(phy);
-+
-+	return reset_control_assert(priv->reset);
-+}
-+
-+static const struct phy_ops metanoia_usb2phy_ops = {
-+	.init = metanoia_usb2phy_init,
-+	.exit = metanoia_usb2phy_exit,
-+	.owner = THIS_MODULE,
++&usb0 {
++	status = "okay";
 +};
 +
-+static int metanoia_usb2phy_probe(struct platform_device *pdev)
-+{
-+	struct phy_provider *phy_provider;
-+	struct device *dev = &pdev->dev;
-+	struct metanoia_usb2phy *priv;
-+	struct phy *phy;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->reset = devm_reset_control_get_exclusive(dev, "usb2-phy");
-+	if (IS_ERR(priv->reset))
-+		return dev_err_probe(dev, PTR_ERR(priv->reset),
-+				     "failed to get usb2-phy reset\n");
-+
-+	phy = devm_phy_create(dev, NULL, &metanoia_usb2phy_ops);
-+	if (IS_ERR(phy))
-+		return dev_err_probe(dev, PTR_ERR(phy),
-+				     "failed to create usb2 phy\n");
-+
-+	phy_set_drvdata(phy, priv);
-+
-+	phy_provider = devm_of_phy_provider_register(dev, of_phy_simple_xlate);
-+
-+	return PTR_ERR_OR_ZERO(phy_provider);
-+}
-+
-+static const struct of_device_id metanoia_usb2phy_of_match[] = {
-+	{ .compatible = "metanoia,mt2824-usb2-phy" },
-+	{}
++&mmcsd {
++	bus-width = <8>;
++	mmc-ddr-1_8v;
++	mmc-hs200-1_8v;
++	mmc-hs400-1_8v;
++	no-sdio;
++	disable-wp;
++	cap-mmc-hw-reset;
++	status = "okay";
 +};
-+MODULE_DEVICE_TABLE(of, metanoia_usb2phy_of_match);
 +
-+static struct platform_driver metanoia_usb2phy_driver = {
-+	.probe = metanoia_usb2phy_probe,
-+	.driver = {
-+		.name = "metanoia-usb2-phy",
-+		.of_match_table = metanoia_usb2phy_of_match,
-+	},
++&watchdog {
++	status = "okay";
 +};
-+module_platform_driver(metanoia_usb2phy_driver);
 +
-+MODULE_DESCRIPTION("Metanoia USB2 PHY driver");
-+MODULE_AUTHOR("Jun Chang <jun.chang@metanoia-comm.com>");
-+MODULE_LICENSE("GPL");
++&serial0 {
++	status = "okay";
++};
++
++&serial1 {
++	status = "okay";
++};
++
++&qspi {
++	status = "okay";
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		spi-rx-bus-width = <0x4>;
++		spi-tx-bus-width = <0x4>;
++		spi-max-frequency = <100000000>;
++		reg = <0x0>;
++	};
++};
++
++&spi0 {
++	status = "okay";
++};
++
++&spi1 {
++	status = "okay";
++};
++
++&spi2 {
++	status = "okay";
++};
 
 -- 
 2.56.0
