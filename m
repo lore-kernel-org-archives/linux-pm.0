@@ -1,112 +1,65 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793959482;
-	b=3aQg7/ds0eM2C5mrrF9aJ9HJisJWdf4/zuhDGT5SRfVXvJ/kIYVQgDD6LWyl5WGUJaxR
-	 tOiufaB0izJ4FchvTeeHeqrlRh1n72rht2ammLXV/69XKj05MkjcGTdEJBl10GW2AIKhl
-	 9oBOgJ9xT02XgeUrZseZkPQaybEN/kMmx+LE/+pWQl8QW9ueskS7tidwRtXEgcXKHTB9N
-	 nbIguRa6oYaIYwYzRTPKF2RbHElgpH4FQMFV/+XE1E/qPapGpD6kRvWmTYylU5YYvBJt+
-	 lEX0LVXAj3kvfambbkohAScxyuSlNg5kc6jEjKLm+taTEn0wdgUyuWITdt7OWrvdFNw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793959482;
-	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Subject:From:To:Cc:
-	 Date:In-Reply-To:References:Content-Type:Content-Transfer-Encoding:
-	 User-Agent:MIME-Version;
-	bh=E30LKCk16cx9qTN9HOhUZe7RDTiEawi3RYRVo2ca6qc=;
-	b=qTrjqoX4gqGU0/BwLKVPzaVanuJrAaJwvjN5SYBo7vze2zqn1oAiOhUSgIdcYjQDX2ph
-	 GVN0M9BU7RX5iRS1ksTSgUPzq09KjB1Eoney2tHr+DJlx3aJ/n22pe6joqbWQCALzN5eo
-	 QGcesrJ7QM0xxXzG2DJBN/08KZxxAea7z7D9S8/bju3bNbfM4qYnDy+JS+kHe6PAffk2j
-	 iizvqzsEasVLRpIziZLD+DuQ295XvScfFGQCSGrRTqrF1eHr8s/sQB5AkQa4BpVUjzsoQ
-	 nMJBxB/3XJPMx4R1qlWnXNr7N/Y632BlhCwZuUAYMj/k5ujeTNp/Vg5m+BrC514fXMQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=none header.from=pengutronix.de;
-	spf=pass smtp.mailfrom=pengutronix.de;
-	dkim=pass header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b="H9OK/dkj";
-	arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
-Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=138.232.1.140
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793960378;
+	b=4ZC5m8vwizCNxFNqvq02sj9zeGV4vGtwr811NacvXrwaQIsrkjt8anFekbhm43fia0rD
+	 JtexRNkmVPwFoWSuTcCNM49w1mwC7GIImVGJHb7xGmutuIwj6QrqhJAjcJlNbvqGPmTZI
+	 Hb0etN1rV2XjIhaZ0El0seAvGXYqX9AoJmwaw1BBzABwLNe0qPCpG9RcY2W62edz7fQQT
+	 eX9szDKDWGgUO3fcJEErKuTIDl+0OAI6i5z7vMzcf7XDGo6chjmpWLB2cRkg7QdO/O6YZ
+	 wypxBDucamk4ML3xTf3PKHxIUXTVLdBvtS4cZxuvn5FwnT631WtgHO9LsweDNafGQIg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793960378;
+	h=DMARC-Filter:Received:DKIM-Filter:DKIM-Signature:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-Spam-Score:X-Scanned-By;
+	bh=dSK6Qss+gWvybGICqOwyGsIjhnfJGdmoQt5OqdnLTHo=;
+	b=XPGUChBl5LuWW4vuYuY2sU14aWL0/Y3oWS5TunkkkyedexCZ/5doGH0FEEVcAik7a0eI
+	 RvzYNWx3Ny0BV/gSeRvJ1cqqQYdlOCmvL0MG/Uv+0YGdvv0zSBDQof+/7zF2Fr46sWANh
+	 b/2wfWM0v/RjERP8KSjTLr6DXYmJE0ECk3p495UBp2WGCNXjZup50ZOCOoqyB6ElIQh4T
+	 hBdTGeX1MXpDHEzPbj8gFekwhZiJSZvq7EnSkvxw9mZb7MQ3Y+1firHjAV9Yl3ZuNB7Ix
+	 p/OkvsNHXslwy5IS8ELCBDQX4TrKhrPyoKJsonLIIKnrnX2llVW+S1UjNSLK7q1M5xg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=student.uibk.ac.at;
+	spf=pass smtp.mailfrom=student.uibk.ac.at;
+	dkim=pass header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b=OTr64l7G;
+	arc=none smtp.remote-ip=138.232.1.140
+Received: from smtp.uibk.ac.at (smtp.uibk.ac.at [138.232.1.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1BAC606A329;
-	Fri,  6 Nov 2026 10:04:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A1BAC606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3D05606A33C;
+	Fri,  6 Nov 2026 10:19:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B3D05606A33C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=student.uibk.ac.at
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=student.uibk.ac.at
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b=H9OK/dkj
-Received: from [IPv6:2a0a:edc0:0:900:1d::4e] (lupine.office.stw.pengutronix.de [IPv6:2a0a:edc0:0:900:1d::4e])
-	(Authenticated sender: pza@pengutronix.de)
-	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id 60E23200B4C;
-	Fri, 06 Nov 2026 11:04:38 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
-	s=20260414; t=1793959478;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=E30LKCk16cx9qTN9HOhUZe7RDTiEawi3RYRVo2ca6qc=;
-	b=H9OK/dkjxwsZIZIcV+Hn9L5EPukiz/UuPQboeBcOiGsnIgm8EU8hlNH8ZEfC8eT890B9do
-	t/rVb6rpXkjXoACppi+7N/n7cVqNJSdPp8aqJEDW+PSEkbyYieVNpk7IxfAhDwiTKAo4xL
-	ado3BN8BtQG2+jWeulvtNUN0sRI8hMB6TUrLMnMdIaBwnpvCOnLQNSnfJG05+Fg8G6ekNx
-	wTLI3RyrFamrS95tpbWjU2DpyH0pHRLvdlYDV9INwKl9ANlUtS0gMOEillr9PYvhf0nAci
-	tlHTWlWPibrPVmhg/UBeAtmwpkx0cSwSe2O4flM5/za76ilVe0iFc5wMSZZi8Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
-	s=20260414; t=1793959478;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=E30LKCk16cx9qTN9HOhUZe7RDTiEawi3RYRVo2ca6qc=;
-	b=U0A/V3EsJYIkir8OlEXILK/QpaaTBcw+TopekKMn/NBDo9BnMSPBGSaMxFf7b71vee5BSS
-	XdsZo+oUKVHpOooM1bntAsnxElc4F0668OOL40DTxMbvJhD664+xzqWfSLGVl/6yrJlpx0
-	q6jwNN8j5amCXX0YZPdqg8yCJpxmx8gZ0zcLYdUQD4ZzO+eqHr1xXCcj6TkRFQkYP14un5
-	NbxmfHk72rsHovLcFS2Nqw/AjUPwzpyKA0petrgLmfqsG2bX2hmmJ+c7u9U2IfnGGJrnlv
-	NI3igvN4DvRU3w2u+mblG4zqDHeDvwYjSEx41O+1t10D9V0xDChRkvNIBYFzYQ==
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=pza@pengutronix.de smtp.mailfrom=p.zabel@pengutronix.de
-ARC-Seal: i=1; s=20260414; d=pengutronix.de; t=1793959478; a=rsa-sha256;
-	cv=none;
-	b=E5AANVgEXfZ4XGSE7OrvMeYfjW72YCl7fwTT5Jh29NZsLDpdrZf+uFVSoGpiOmSlCUZeWI
-	qzmWBNW9eUwtEarw1v4VhuAZbtXsakr1HiWvDX0mmQkT9A2VS580i4WJJjGhrxQkm1zBks
-	vHvLQtN6ncJiArAuBrEnY5UkDDuuPUSy/OrFmA9WSiQRSmhdDeb88zX3PJPg/E3SBAAda/
-	W2onN0t6PpOhdrPi6TixFlrTdDmqz9nHhtC0jkwPXdhg2YK5BUqySwvQfwouIwdO9W7Bdd
-	3T2Ve0hH3P0NvEOdJOUpeSZdH4rtKXSrVPZxoL0qEmcKBThow//f+ymqktcRGg==
-Message-ID: <35d9bc34110d1663af947189bc74f4ba758612cf.camel@pengutronix.de>
-Subject: Re: [PATCH 24/25] riscv: add Metanoia MT2824 SoC and MT5824 EVB
- support
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: =?ISO-8859-1?Q?Beno=EEt?= Monin <benoit.monin@bootlin.com>, Rob Herring	
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley	
- <conor+dt@kernel.org>, Jun Chang <jun.chang@metanoia-comm.com>, Paul
- Walmsley	 <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou	
- <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Sebastian Reichel
-	 <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>, Neil Armstrong	
- <neil.armstrong@linaro.org>, Manivannan Sadhasivam <mani@kernel.org>, Conor
- Dooley <conor@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Lad
- Prabhakar	 <prabhakar.mahadev-lad.rj@bp.renesas.com>, Thomas Gleixner
- <tglx@kernel.org>,  Radu Rendec <radu@rendec.net>, Samuel Holland
- <samuel.holland@sifive.com>, Ben Zong-You Xie	 <ben717@andestech.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Ulf Hansson	 <ulfh@kernel.org>,
- Jisheng Zhang <jszhang@kernel.org>, CL Wang	 <cl634@andestech.com>, Mark
- Brown <broonie@kernel.org>, Greg Kroah-Hartman	
- <gregkh@linuxfoundation.org>, Wim Van Sebroeck <wim@linux-watchdog.org>, 
- Guenter Roeck <linux@roeck-us.net>, Adrian Hunter
- <adrian.hunter@intel.com>, Minas Harutyunyan	 <hminas@synopsys.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Randolph Sheng-Kai
- =?UTF-8?Q?Lin=28=E6=9E=97=E8=81=96=E5=87=B1=29?=
-	 <randolph@andestech.com>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	linux-pm@vger.kernel.org, linux-phy@lists.infradead.org, Paul Walmsley
-	 <paul.walmsley@sifive.com>, linux-mmc@vger.kernel.org, 
-	linux-spi@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-watchdog@vger.kernel.org
-Date: Fri, 06 Nov 2026 11:04:38 +0100
-In-Reply-To: <20261106-mt2824-v1-24-86087eaf5af4@bootlin.com>
-References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
-	 <20261106-mt2824-v1-24-86087eaf5af4@bootlin.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	dkim=pass (1024-bit key, unprotected) header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b=OTr64l7G
+Received: from surface-pro-5 (ydWLT-U1-95-184.uibk.ac.at [172.25.95.184])
+	(authenticated bits=0)
+	by smtp.uibk.ac.at (8.15.2/8.15.2/F1) with ESMTPSA id 6A6AJFCX1863929
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 6 Nov 2026 11:19:22 +0100
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp.uibk.ac.at 6A6AJFCX1863929
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=student.uibk.ac.at;
+	s=prod24a; t=1793960362;
+	bh=dSK6Qss+gWvybGICqOwyGsIjhnfJGdmoQt5OqdnLTHo=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=OTr64l7Gdgk015jkXzpixEqd+24O/Iq8jMLOKPXrL6CcfNItxL+l92pF93/aP1Yz+
+	 TBt7ML469pTLmGeYHsv+uCEVdfb9J3qsRRKUiXt7QNP+lgjxNKNTDUzIS/Z28h7aSa
+	 ENho7H32ZN3yslUMDapFe0e/zH1SBNjEddNtfPwg=
+From: christian.koever-draxl@student.uibk.ac.at
+To: glaroque@baylibre.com, rafael@kernel.org, daniel.lezcano@kernel.org,
+        rui.zhang@intel.com, lukasz.luba@arm.com, robh@kernel.org,
+        krzk+dt@kernel.org, conor+dt@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        =?UTF-8?q?Christian=20Stefan=20K=C3=B6v=C3=A9r-Draxl?= <ckoever@outlook.de>,
+        Neil Armstrong <neil.armstrong@linaro.org>
+Subject: [PATCH v2 3/3] thermal/drivers/amlogic: do not log the secure monitor deferral as an error
+Date: Fri,  6 Nov 2026 11:19:13 +0100
+Message-ID: <20261106101913.46664-4-christian.koever-draxl@student.uibk.ac.at>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261106101913.46664-1-christian.koever-draxl@student.uibk.ac.at>
+References: <20261106101913.46664-1-christian.koever-draxl@student.uibk.ac.at>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,63 +69,43 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: () -13.0 ALL_TRUSTED,RCV_SMTP_AUTH,RCV_SMTP_UIBK,U_H_APTO_LONG,U_RCPTS_11_PLUS
+X-Scanned-By: MIMEDefang_3.2_at_uibk.ac.at
 
-On Fr, 2026-11-06 at 10:30 +0100, Beno=C3=AEt Monin wrote:
-> Add the device tree for the Metanoia MT2824, a dual-core Andes
-> AX45MP-based SoC, and for the MT5824 evaluation board.
->=20
-> The SoC device tree describes the CPUs and their L2 cache, the PLIC,
-> PLICSW and PLMT, the reset controller, the reboot controller, the
-> watchdog, two UARTs, the QSPI and eight SPI controllers, the DWC
-> MSHC MMC controller, and the USB2 controller.
->=20
-> The MT5824 EVB enables the watchdog, the two UARTs, the MMC
-> controller, the QSPI port with its SPI-NOR flash, the first three SPI
-> controllers, and the USB controller.
->=20
-> Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
-> Signed-off-by: Beno=C3=AEt Monin <benoit.monin@bootlin.com>
-> ---
->  arch/riscv/boot/dts/Makefile                |   1 +
->  arch/riscv/boot/dts/metanoia/Makefile       |   2 +
->  arch/riscv/boot/dts/metanoia/mt2824.dtsi    | 330 ++++++++++++++++++++++=
-++++++
->  arch/riscv/boot/dts/metanoia/mt5824-evb.dts |  81 +++++++
->  4 files changed, 414 insertions(+)
->=20
-[...]
-> diff --git a/arch/riscv/boot/dts/metanoia/mt2824.dtsi b/arch/riscv/boot/d=
-ts/metanoia/mt2824.dtsi
-> new file mode 100644
-> index 000000000000..5f73c6d3760b
-> --- /dev/null
-> +++ b/arch/riscv/boot/dts/metanoia/mt2824.dtsi
-> @@ -0,0 +1,330 @@
-> +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-> +/*
-> + * Copyright (C) 2026 Metanoia Communications Inc.. All rights reserved.
-> + */
-> +
-> +#include <dt-bindings/interrupt-controller/irq.h>
-> +
-> +/ {
-[...]
-> +	soc: soc {
-[...]
-> +
-> +		reboot: reboot@10000004 {
-> +			compatible =3D "metanoia,mt2824-reboot";
-> +			reg =3D <0x0 0x10000004 0x0 0x08>;
-> +		};
-> +
-> +		rst: reset-controller@1000000c {
-> +			#reset-cells =3D <1>;
-> +			compatible =3D "metanoia,mt2824-reset";
-> +			reg =3D <0x0 0x1000000c 0x0 0x04>;
-> +		};
+From: Christian Stefan Kövér-Draxl <ckoever@outlook.de>
 
-This looks unusual. Are you sure these are not both part of a single
-device @10000000 ?
+The thermal sensor usually probes before the secure monitor, so the
+first attempt always defers and logs "Failed to get secure monitor
+firmware" as an error on every boot, although the second attempt
+succeeds. Use dev_err_probe(), which records the reason for the
+deferral instead of logging it.
 
-regards
-Philipp=20
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
+Signed-off-by: Christian Stefan Kövér-Draxl <ckoever@outlook.de>
+---
+ drivers/thermal/amlogic_thermal.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+index 4c107b3100c0..bbf910ba8513 100644
+--- a/drivers/thermal/amlogic_thermal.c
++++ b/drivers/thermal/amlogic_thermal.c
+@@ -196,10 +196,9 @@ static int amlogic_thermal_probe_sm(struct platform_device *pdev,
+ 
+ 	pdata->sm_fw = meson_sm_get(ph_args.np);
+ 	of_node_put(ph_args.np);
+-	if (!pdata->sm_fw) {
+-		dev_err(dev, "Failed to get secure monitor firmware\n");
+-		return -EPROBE_DEFER;
+-	}
++	if (!pdata->sm_fw)
++		return dev_err_probe(dev, -EPROBE_DEFER,
++				     "Failed to get secure monitor firmware\n");
+ 
+ 	pdata->tsensor_id = ph_args.args[0];
+ 
+-- 
+2.56.0
+
