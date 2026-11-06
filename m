@@ -1,55 +1,89 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793964706;
-	b=kCRVc9dn07PX/muTHYCQtaOmf9KnSr1oD05OQ2ZrkK8IHNFXDODn77lvt+FHEc/6VAra
-	 s+ylhHqHw8aSM8tCFYqxEJUudD6PpS5iEpn6fybqrzUkBYWI1kw4wwSzf7yP+71m+J9JQ
-	 SGRgPuPJef7dZfBmN05HawcknVzZuXzK0dwaVkKfLHgG+mdMog9+B3uIYE/MRncZxrWSf
-	 7Rifz2KXXZRZmUuhjgtaxcMpBplje0yOQarqVPpETjF+XQWBqYc07AGdHewMQPZqmvBi4
-	 EOZErUu5K9dvsp8C+Kce7On7UOu3B33ar3ZcNBdSKQhQtkqXUHb+uLNdrbzmFivXZzQ==
+	t=1793965204;
+	b=P8L5VqXqptAMFwd91K8oXNfXtaZJLsoaH/lWdf+01DDqnAi00Ld9aG1/Cpu586uEYU3C
+	 K0k7LkUtR9ZSPFR94/5pANBWqZ89QLWPoDgXNwspIZjkycYB8lPoynmMFbucbWDdX+p0p
+	 mLdiANWn3q4N50HskTquD8BTMtGtq6H5WcCfKstQ35VM+G/gaGhD3MAh2yc94i4SZvUSh
+	 awfoIwyfjJT36jwujdAcnLMJAQebCBjP8wvKlxydvmDmVAzH/aPj7wMS2qpFWHXnZVK9o
+	 u0uLcePd1sZLeNvieMsqtBmJXS2X6mEx2nJqK5CsSDAlspZOuakssmHsB30VykgdVrg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793964706;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 Organization:MIME-Version:Content-Transfer-Encoding:Content-Type;
-	bh=IkZ4QsbIo6NB3CqXA++bJQKlV2FLxKl3SeIw8XijjNk=;
-	b=aeY7OzODI5+LiXuyhxizGwSCL/4tzft+afe4MKBy4BZqRpo1Lw+fBXjFWqpRDG5wBjgE
-	 5p/2ab0W0R9oCiXdkl6rm0rwq4COPAORx/+NqHXz0q6j3RfhrOf4U28ndH0D5nqCzTqFz
-	 HWErfIcb9zLXLC/NAr2RKULPKq1Yj9B/e1iJ0c1oTmOCQmTvy2Q7dyAG7/jV5KpobwzNH
-	 c5Ux2YdIJgrzwq0AbNTFi24kVwssn/EJL3C25byPeeSWhgx2VmSMe44f6OeCJD/UilJcB
-	 1NP3rkj8F7PSf7uNQAWhPTpWJCXGZL4ueYZk3XvutMaygqTJItmD3Rlsie4ygtTimvA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793965204;
+	h=Received:DKIM-Signature:Received:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
+	 X-Cookie;
+	bh=Imy96n3mofst6REH68Pim2J1L8h9RbLyJ5/t3nqBh0c=;
+	b=1TehG3K2AfTlOxNsAz6uY3MSEOmteKk6u+QzchLyTbQKwfJhBWrc1Fn13ERLXcpqedZY
+	 v0LzYJSt6sxEcZ8i0WHat6HbBMO6b6mzNmSpoLZBBeEgXVwKkL1PEMjhwkFQAXnq/CEzr
+	 oI21VyXcKl7tPfsn3M8xe63D8ZwQ5NM/eGanZzeAoh/58fk1M+7NIEJJhCoGGqEBthFEJ
+	 pIn094AZqJrqpVr8hYaDIVeodujxZ3dvUaI7xQ/t7ZmimTuvY4z09XMYsKlzUkIEQYssV
+	 NwXMdBgOW5YdKbutOrOSxJA1sZxU01YT6sV6dF6glZRQ/954c1sWhPETmHatpe1OXag==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=II7FpDRr;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GnbNNrmr;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72ACD606D805;
-	Fri,  6 Nov 2026 11:31:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E783606A914;
+	Fri,  6 Nov 2026 11:40:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=II7FpDRr
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAF6D1F0089F;
-	Fri,  6 Nov 2026 11:31:44 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GnbNNrmr
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE95C1F01564;
+	Fri,  6 Nov 2026 11:40:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793964706;
-	bh=IkZ4QsbIo6NB3CqXA++bJQKlV2FLxKl3SeIw8XijjNk=;
-	h=From:To:Cc:Subject:Date;
-	b=II7FpDRrD1pbynr8pZEGJrrn3eQRufW6CYbct7E6l8lKd1EcAcXNlQrMEEEwJKhA7
-	 eHnXMXOSh59OVlxyPQhzFSUPTZxj3vkGtbU2Cr4+jOAOu6rnsG2iIQBEe7sPODpmVe
-	 FcSfkSn75eB4gFVosRFrm2AbOeTXuNeQN9rjpop4aG7nRKbEOs1Eezl1EeQh38gVJf
-	 INYiz+zbk1pWWjlipjrEHP/mFizhGJrdDpZGK5hQ6onMRExZ8PaJQnFb73gg8eTRwm
-	 aZUGDtSYp1qnLF1iC2RLuqPHxBbXJozwOy7vtu5uUM2tPRdIqU2K+d7bRkQYQriNP6
-	 K9vwBRCPOnMOQ==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Brian Norris <briannorris@chromium.org>,
- Alan Stern <stern@rowland.harvard.edu>,
- Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
- Linux Driver Core Development <driver-core@lists.linux.dev>
-Subject:
- [PATCH v1] PM: runtime: Update last_busy in rpm_resume() for active devices
-Date: Fri, 06 Nov 2026 12:31:41 +0100
-Message-ID: <13032301.O9o76ZdvQC@rafael.j.wysocki>
-Organization: Linux Kernel Development - Intel
+	s=k20260515; t=1793965203;
+	bh=Imy96n3mofst6REH68Pim2J1L8h9RbLyJ5/t3nqBh0c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=GnbNNrmrJZr1EXhA6fczuX6JFcb+YECs2G+PhXagcPR6XFiRifzm/UVe/AWF8zDaG
+	 Sae75TZH85AQ+7wPNeaJaz8FIZ9hIeaIFUTcgeuoaXsXBBKp+nMQMnKs9heiiLHEdG
+	 zBciFaenaq/E3LSxKIGYlFIxsPLRR92PJVjNxixbzVsdzobsBag4sX2l0vfdjH3w5R
+	 E3H22Qr3GcNcn2aTtLIk1yR6yr9vpS/wpgd7vqwPBK8VbAdJEii6fR984SknkL+4g8
+	 w9uIl7I2ombovQsTaNdsCccEDyaFa9XlhtgqAjV+0hreoDytPoyhLGPaI/tgOsCRZb
+	 9VctFN5G0ELNQ==
+Received: by traversing.sirena.org.uk (Postfix, from userid 1000)
+	id B334F27E8CA1; Fri, 06 Nov 2026 11:39:39 +0000 (GMT)
+Date: Fri, 6 Nov 2026 11:39:39 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: =?iso-8859-1?Q?Beno=EEt?= Monin <benoit.monin@bootlin.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jun Chang <jun.chang@metanoia-comm.com>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Sebastian Reichel <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Conor Dooley <conor@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+	Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>,
+	Samuel Holland <samuel.holland@sifive.com>,
+	Ben Zong-You Xie <ben717@andestech.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
+	CL Wang <cl634@andestech.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Minas Harutyunyan <hminas@synopsys.com>,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	Randolph Sheng-Kai =?utf-8?B?TGluKOael+iBluWHsSk=?= <randolph@andestech.com>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-phy@lists.infradead.org,
+	Paul Walmsley <paul.walmsley@sifive.com>, linux-mmc@vger.kernel.org,
+	linux-spi@vger.kernel.org, linux-usb@vger.kernel.org,
+	linux-watchdog@vger.kernel.org
+Subject: Re: [PATCH 01/25] dt-bindings: vendor-prefixes: add Metanoia
+ Communications
+Message-ID: <4bc702d8-6f07-42f7-bdff-e0ce3ffceb35@sirena.org.uk>
+References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
+ <20261106-mt2824-v1-1-86087eaf5af4@bootlin.com>
+ <8c625e53-7944-47df-9b91-268d0cdced48@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,52 +93,37 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
-
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-
-Setting an autosuspend delay for a device can be expected to cause a
-runtime suspend of the device after calling, say, pm_runtime_put() to
-be deferred, so the time between the last successful attempt to resume
-the device and its subsequent suspend is at least equal to the
-autosuspend delay.
-
-However, that expectation is only met after the device has been actually
-resumed in rpm_resume() by invoking its runtime resume callback.  If the
-runtime PM status of the device is already "active" when rpm_resume()
-runs for it, the device's last_busy timestamp is not updated which may
-allow a subsequent pm_runtime_put() invocation (or similar) to suspend
-it right away.
-
-This is arguably inconsistent and confusing, so make rpm_resume() also
-update the device's last_busy timestamp when it finds that the device is
-already "active" and it is about to return 1 early.
-
-Fixes: 56f487c78015 ("PM / Runtime: Update last_busy in rpm_resume")
-Link: https://lore.kernel.org/linux-pm/CAJZ5v0jTX1FgeS9FCV=+V4uacSgLQBVsSPnU27ybgUGg57GUOA@mail.gmail.com/
-Reported-by: Brian Norris <briannorris@chromium.org>
-Cc: All applicable <stable@vger.kernel.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/runtime.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -819,6 +819,12 @@ static int rpm_resume(struct device *dev
- 		pm_runtime_deactivate_timer(dev);
- 
- 	if (dev->power.runtime_status == RPM_ACTIVE) {
-+		/*
-+		 * The attempt to resume the device means that it is needed for
-+		 * something, so update its last_busy timestamp as in the case
-+		 * in which it actually resumes below.
-+		 */
-+		pm_runtime_mark_last_busy(dev);
- 		retval = 1;
- 		goto out;
- 	}
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="8nfF2+6VCmfv48fU"
+Content-Disposition: inline
+In-Reply-To: <8c625e53-7944-47df-9b91-268d0cdced48@kernel.org>
+X-Cookie: Whoever dies with the most toys wins.
 
 
+--8nfF2+6VCmfv48fU
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, Nov 06, 2026 at 12:17:36PM +0100, Krzysztof Kozlowski wrote:
+> On 06/11/2026 10:29, Beno=EEt Monin wrote:
+
+> > Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
+
+> We do not have such tag (because we are not TIP). Drop everywhere,
+> except for subsystems which explicitly accept it.
+
+You might be thinking of Co-authored-by.
+
+--8nfF2+6VCmfv48fU
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQReagvpf3TrrA7BoYYv73Ows9A4iQUCau28ewAKCRAv73Ows9A4
+id0tAQDOS9TiaPXjKxL5DtuumtSrZ/580roAZS7tEFRF113ZjwD/VYY9nSrCQvZC
+HPSXOyFUJSaNLxctukdHGprNOTajWA4=
+=w0do
+-----END PGP SIGNATURE-----
+
+--8nfF2+6VCmfv48fU--
