@@ -1,83 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793978422;
-	b=WfyTWVlrPTTOTFqwVVVuZKq0GXgww2wHyOKnAVNjUrypswTKEjaEkfv3zF/zhRuxZ1MI
-	 wI4pjdxHM+k48KDs2F7Y3JCObVaih0nmFXhNJpugjN6dlTlwWxBKHbzwvWBPiRZt8KzPs
-	 T5C/5uSVb6kH9brrPkMToqWsZ7/W16iud4L6oQGgsdirkZ+aqqyDMnnjNwCitqD2fk90E
-	 zsWqaMBecaVrkgvwaJvmxB+sLjADJUEyTD3UdL/f/c4M8nePfSwPuADeB3m5EJZQXVlDG
-	 x2w98UQp37bPRhULrxc5pBvQR2vSxbR3c4OPtcsB5nC6P+RZ6Bxs/zC5sWoORBsxb0Q==
+	t=1793978425;
+	b=YsAVgfbnwrqWRdwyVgGtfeKVtNG3e+xM+CHta3wIkCY7odHLVwoXz5NIxPsway3oi2ue
+	 dgKQBy8e8lJ25mksDrHGhrtLvW3PNkkaCCXsAVsJNSYTGYVBdbQnI88tUiv9Cr6/b2tnN
+	 P57ATtMV5FC7uLpkpCVRP1GmPcHIjbkx3yWlfBiSnmmCDxKJ6FDvKFFwTU0KEKF5gXtrW
+	 osH7Uhx3pI1+AMebdPmKG60GN97otw7vHh+2RRVQwzzld7ZB+uis/BSAQRfigTyUt0j9w
+	 04WAOO07CfUDyR9qn9Q+1GUelN96LNg93I30x0Ha6dZgacN/HK0nATUoseBBD3c6eVg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793978422;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793978425;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=tX9HEYRWehVYzSumdU6wnzHc9q5GXalqxT96ZBMgpCY=;
-	b=RPylys3SLM4KX2WF8SkCizWsVftBituwp78OvTFeGWTg5S5n37aAbhRnssywPNK4eKLJ
-	 fNN16mKJaRFpdmt+0xTmthR2b+ub5eOhqha9daK1Rn8C6wRAvVdZHzYUWMd2RBL8rYDfK
-	 uuHwOpHGUe0/itE7W4M/5A0yyObu/9hNx74P1/a9xxpka+DZ2VRCvHWA+YUc0/nRe36gb
-	 I+foZSNnmfU0eLV6Jl5n89d6iwzIak58xNPDNJlQUlQqe+X3wli+EC1Vp2I1lRgMiWTkO
-	 Qcnp35hU1fYZWjTBR+enrR8OpX2QAleGcRAvvCdr+sIL4NvSkTbIhKCk2BrXJg46eHQ==
+	bh=1AczkvEVMwyiADmz9Aen/RP9scTy6HPzxTwLuS0NkCE=;
+	b=zdh1wSCKHpMMiph50UF2+674y8QTwIbql9/TQkUhOyDWT4DYPZ2K6eQHYeAv0wWj5Z5q
+	 c/itLVEw2eDnO5/Vib8QvQBnNSq5toVoJ3zmk2o9pQMowUG93P6OA8bnRAwIYfHvmYkWt
+	 x5pFk3cYzbnqB02hkEvQRii3z/DqVm3AjKuQOhas35lq7qWY4eOxJidjIMgE65jDZf0Fa
+	 6wFqMGFGytFycdl4SedHAq6EM4jC3RZtqR4O57IN2Lsa4ygkLskcGKzo+In2kklFVjdh4
+	 bqQz2KqZulWpf+jj3VEnNy68lRECohXOwHImyiUQa6w22+nWoe5w9/0VVYKMlNMZRlQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linaro.org;
 	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=oUaDCEwV;
-	arc=none smtp.remote-ip=209.85.221.42
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=CgcwZkLT;
+	arc=none smtp.remote-ip=209.85.221.54
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B61DA6083602
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:20:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B61DA6083602
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E83376083617
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:20:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E83376083617
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=oUaDCEwV
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-48e20ed3b9dso699620f8f.2
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:20:21 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=CgcwZkLT
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-48e09aa5264so428796f8f.2
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:20:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1793978418; x=1794583218; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1793978423; x=1794583223; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=tX9HEYRWehVYzSumdU6wnzHc9q5GXalqxT96ZBMgpCY=;
-        b=oUaDCEwVrwd7wVYPPsm0oJBpoZHHoBSabQQXobDkNX1E/yVA4GVnM6EJ2wRhRu9Nem
-         fXy0GSv7+LLM6mrTX7ub/JDoVi3llKrfkaWQtp5rSgdmfG9heTBixWcv1YfsMC9R9m/8
-         wQpPF5NKaAUGu82YN/HxZ5r1W9Ih5LCkruyQF59UHv3IEcRuroRLtw643mvMX0xeNxYG
-         KFsJwLKYLXvHgizNpv56l4kTCPx4E+9qkvyq0oFlA0LW1FQ0VbjzGVevyQtsszYH9Y1C
-         4Bkbn7leuF/WAf72QEY7eTiwlgRsKFMzz2xMAKNJ+auHdipQcYh0ZRalBeYFTLs0Rrsl
-         O72g==
+        bh=1AczkvEVMwyiADmz9Aen/RP9scTy6HPzxTwLuS0NkCE=;
+        b=CgcwZkLTdJjTamyQPWN3H3LGgBGtJcrCenPRp9EWTeGzgs1B+CfX0P/y6VwDJChjBS
+         lqIHhFuYol0h5rY581aHbOm55F8idncc2Q8hSqXmf3bTQGjREg6zkY0dBEK20zUNqYml
+         a9Y+JuIE02bs36jTeo4OGb4iptafjfp8f/ZZgsbdGrtC0FN5DV0QNQo1hC7TLLwH5wda
+         vNt182UXZYAPtTiFrcK0MqfYC2w907Ni2OmIDw8nxTUOwB9F1DM58BUYMOWGRO2WULH/
+         M4+a/XkMlY4dYX8HbSi22esxPHlcOtF2U06U4rJE5rDzTA3+4L+jHv/6MNkjg1gXTibx
+         XsDw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793978418; x=1794583218;
+        d=1e100.net; s=20260707; t=1793978423; x=1794583223;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=tX9HEYRWehVYzSumdU6wnzHc9q5GXalqxT96ZBMgpCY=;
-        b=dgjzxflyG+1GW4x8H3szg88zu+dF9xdFdgnMlT0GP59eZO83TxVDGaBYiHAXsEsroo
-         A8vL/d5iGJMvpA32vjJNOvBP51Dg0OccLLQj9XXJ50kRcMuZtWZFClAG8ISN2s10yu5H
-         GYA10G3XQNh4WBF5uuTcYZq2fPOdjrtY5E+TNRLt0+5yLSMlDkC/5c7JCwQohdvTrOd3
-         yazGoj2mBetnhydfbUmI+g414to2f3fu3wxpvSJwFY4P2yZ3AQ0fp4aOtdCVVQqlRACa
-         acuwDGxRSIExcEoFoWQ6ImjgpXwH8xVYHnf+oY/CIIeCBUlK03iJofC2gtZBM0noxfdO
-         yKIA==
-X-Forwarded-Encrypted: i=1; AL+hErFsVWT138/3+4WrhmlH45g/DTiZlKnFASQ/IwFOuP1ez47iF5QYEKqTvkGQ27lJmaFrspq+CW04xg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9K114gAd6tpYRThRA42Gs+gP6GvR0xv1NWkFJq+Mys3fGIAblC
-	5fJhPlZywkK8ymbi0W6D/KoadbP/zAsX6b1i19hwO+q2W3RTLZ29eNyIEWGStBZTkgA=
-X-Gm-Gg: AYBFou0ziN9u+8ErhE8srgnTWV+XJkHkvwSl1lQafXwyn/bqvKdophbdQ+OqcnY8+nR
-	0LE2chhiKfKaUeRWLfwrY5vYp+BDIOvoj5gW71vqQk/AhoieYOxMtk8p+JkH897aEu/5eun98c+
-	sQ/5U4Up0ZY0HUQJxPftS9hMSrfGCfxrmNphi9BFtgLfg5pym+W8PQLXSg2KoBrPf2z34PkvDVu
-	KkN5O9oIceadQpuCZWWpW931AmD3eppu6Z+iW8qzvWaBiutzbO8ffDqsWNb82nWQALHcpM9PP/6
-	ZRBw525+KCFAgjkxQq2CTIb8M/TDCGhzt8qEuceBet3GJ21dxOUo1lsCiZOzHQ/I4B64+4LY+SG
-	VVwY26AewecWkAhGrdA6TeLNZ40glf9bVYsiw1kI+ZBuXjmRHBJul7UZajn+K/50p/9VEUYSgr1
-	D4cZflBKYJkUukMGb9PWS5jtw63ncdQ5gurkbet71oJp0nPuxyS2Qdzqcl4k2crq0Y8xC/B6ko/
-	fpiStooyy9P2+KtkJyBeBlYOPA9CAJ5vjKzDSHJaCAhybFVD3bif+RJhspv2udP3V2/Qor0Cx90
-	xQLiD0FR6+jtm08gUgZcyGbTWcHL1fBPP20jYTojE+2op1rq
-X-Received: by 2002:a05:6000:2893:b0:48f:f26d:c5c with SMTP id ffacd0b85a97d-492761d00cdmr6320952f8f.9.1793978418032;
-        Fri, 06 Nov 2026 07:20:18 -0800 (PST)
+        bh=1AczkvEVMwyiADmz9Aen/RP9scTy6HPzxTwLuS0NkCE=;
+        b=W9BkD63+Dv84BYXtzIBa+2bPjBuzOqc9TMdmWATUm8Td2qSdDtazbk3uc00N+N9jyr
+         GsVXVGyzzjH8bRzovFpbwdNtP1hTt7IOCz4sH0Ba1ChGI1WVZh9fgznyYin5YJFL8DSY
+         lTSRn2TysYizQLLW7feSEScCzCkU15B5p6hYtXZFrrCbm+R+GuS0rtQSQcZ5xqa2D4py
+         zTEHgq+qu1S8tBSq5VdmIFdqqncuGlAbNWJF/HWhenYQc1cjJtIEdnAXz5bSTnY/rXfb
+         7BeEbLMbjlxJFFfTTMSfWlykqRhadtOfdp5Q3wsJ3ZkjtLl3kj5rq1O6avHQLwTKhHV4
+         bg9A==
+X-Forwarded-Encrypted: i=1; AKwUvBxHb8l7vOId3Iyq/ch/R/6JV3zAgNdG6pzKpHz2SWc+2iQaqSDGtD7i+en4U5hywr/SRwuzRD/MjA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/smf/MySSlxcVsfUzFEvaM+n1QPHygOHhPAIkr0fLXZRkpL6pE
+	nSRfMqmry8S7BdqcyU8tYRbyBVW5thbelH84y8ac3VlG02RkJyi1S3kIgpb5z+sr37g=
+X-Gm-Gg: AYBFou3GOeOv2qI1rfRYeHsw8r2PtqfYHQVEugdaxTsgwf6Dm3QiiRoteeSOOIhcfen
+	Wm1xqTeaGaI51N7GCiz71vRj7LoM4eqNo5HLQFKlEBGay0VpAk+DVGcM2lFjyE+3VxQH+amfbwo
+	epSgxzWQuuXTFFGEsLHcdCUBKv68Md6ek8H6gaqF6SZtMTmS38kqCbPKfiDT3ueEKkmrHDp7Vgs
+	Y5ULB9EkxoaVwlBOIm2mvzSP5V58c1AQJopEsPTqhKYiIpbNCOyFb/HNX14284gVAsEDrz02CWn
+	V/msKXNz/y4CCWJVkLDnrVvjGgpyq8XW9ktShG45+G7zgd2/CHq0LPgVq1sOJMNtge0Y+LNYe2J
+	00DJYW0APv4a6O/wMyv6LaQ1vtuRimj3ManBeyhBnsQPXxUOR3LbNHM1rInQupSxab8SCrzeyk/
+	2L+wON5eqXI+UJ8bkFsQ76t5wKzL9X1ygPdKRNHXkHbxfUxE3gzCTz0l5yDy//ccxI5eyeaFltw
+	uZbz9V0hQ7+4RCO7Nf8KlzYCaycvLNFREAoouQoXS2bKdfRgvf1tVgE2qwLjIMxRKO7sGtXG2cd
+	hhELiDyDQDO8p4SLMTk8ICj8jxYmRLM/yAY6NtT/l7Y4qde2e+wXqoqVDSzt5UIexjWP
+X-Received: by 2002:a05:600c:c491:b0:4a4:de70:2ad4 with SMTP id 5b1f17b1804b1-4b6dff83dc4mr53929695e9.22.1793978423274;
+        Fri, 06 Nov 2026 07:20:23 -0800 (PST)
 Received: from vingu-cube.home ([2a01:e0a:11f4:3020:ed97:32bc:977a:3b65])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.20.16
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.20.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 07:20:17 -0800 (PST)
+        Fri, 06 Nov 2026 07:20:22 -0800 (PST)
 From: Vincent Guittot <vincent.guittot@linaro.org>
 To: mingo@redhat.com,
 	peterz@infradead.org,
@@ -104,9 +104,9 @@ Cc: qyousef@layalina.io,
 	kayracizmeci@gmail.com,
 	tim.c.chen@linux.intel.com,
 	Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 15/20 v3] sched/fair: Enable push task for preempt short
-Date: Fri,  6 Nov 2026 16:19:42 +0100
-Message-ID: <20261106151947.3991524-16-vincent.guittot@linaro.org>
+Subject: [PATCH 18/20 v3] energy model: Remove unused em_cpu_energy()
+Date: Fri,  6 Nov 2026 16:19:45 +0100
+Message-ID: <20261106151947.3991524-19-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261106151947.3991524-1-vincent.guittot@linaro.org>
 References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
@@ -121,28 +121,128 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Enable push mecanism for the preempt short feature which is the
-1st feature using it.
+Remove the unused function em_cpu_energy()
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- kernel/sched/topology.c | 3 +++
- 1 file changed, 3 insertions(+)
+ include/linux/energy_model.h | 97 ------------------------------------
+ 1 file changed, 97 deletions(-)
 
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index 919d0fb00bd9..5481f2472e17 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -3497,6 +3497,9 @@ static void partition_sched_domains_locked(int ndoms_new, cpumask_var_t doms_new
- 	sched_energy_set(has_eas);
- #endif
+diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+index 89cf109cbca6..c4f9558b58d1 100644
+--- a/include/linux/energy_model.h
++++ b/include/linux/energy_model.h
+@@ -244,97 +244,6 @@ em_pd_get_previous_state(struct em_perf_state *table,
+ 	return -1;
+ }
  
-+	if (sched_feat(PREEMPT_SHORT) && !static_branch_likely(&sched_push_task))
-+		static_branch_enable_cpuslocked(&sched_push_task);
-+
- 	/* Remember the new sched domains: */
- 	if (doms_cur != &fallback_doms)
- 		free_sched_domains(doms_cur, ndoms_cur);
+-/**
+- * em_cpu_energy() - Estimates the energy consumed by the CPUs of a
+- *		performance domain
+- * @pd		: performance domain for which energy has to be estimated
+- * @max_util	: highest utilization among CPUs of the domain
+- * @sum_util	: sum of the utilization of all CPUs in the domain
+- * @allowed_cpu_cap	: maximum allowed CPU capacity for the @pd, which
+- *			  might reflect reduced frequency (due to thermal)
+- *
+- * This function must be used only for CPU devices. There is no validation,
+- * i.e. if the EM is a CPU type and has cpumask allocated. It is called from
+- * the scheduler code quite frequently and that is why there is not checks.
+- *
+- * Return: the sum of the energy consumed by the CPUs of the domain assuming
+- * a capacity state satisfying the max utilization of the domain.
+- */
+-static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
+-				unsigned long max_util, unsigned long sum_util,
+-				unsigned long allowed_cpu_cap)
+-{
+-	struct em_perf_table *em_table;
+-	struct em_perf_state *ps;
+-	int i;
+-
+-	lockdep_assert(rcu_read_lock_any_held());
+-
+-	if (!sum_util)
+-		return 0;
+-
+-	/*
+-	 * In order to predict the performance state, map the utilization of
+-	 * the most utilized CPU of the performance domain to a requested
+-	 * performance, like schedutil. Take also into account that the real
+-	 * performance might be set lower (due to thermal capping). Thus, clamp
+-	 * max utilization to the allowed CPU capacity before calculating
+-	 * effective performance.
+-	 */
+-	max_util = min(max_util, allowed_cpu_cap);
+-
+-	/*
+-	 * Find the lowest performance state of the Energy Model above the
+-	 * requested performance.
+-	 */
+-	em_table = rcu_dereference_all(pd->em_table);
+-	i = em_pd_get_efficient_state(em_table->state, pd, max_util);
+-	ps = &em_table->state[i];
+-
+-	/*
+-	 * The performance (capacity) of a CPU in the domain at the performance
+-	 * state (ps) can be computed as:
+-	 *
+-	 *                     ps->freq * scale_cpu
+-	 *   ps->performance = --------------------                  (1)
+-	 *                         cpu_max_freq
+-	 *
+-	 * So, ignoring the costs of idle states (which are not available in
+-	 * the EM), the energy consumed by this CPU at that performance state
+-	 * is estimated as:
+-	 *
+-	 *             ps->power * cpu_util
+-	 *   cpu_nrg = --------------------                          (2)
+-	 *               ps->performance
+-	 *
+-	 * since 'cpu_util / ps->performance' represents its percentage of busy
+-	 * time.
+-	 *
+-	 *   NOTE: Although the result of this computation actually is in
+-	 *         units of power, it can be manipulated as an energy value
+-	 *         over a scheduling period, since it is assumed to be
+-	 *         constant during that interval.
+-	 *
+-	 * By injecting (1) in (2), 'cpu_nrg' can be re-expressed as a product
+-	 * of two terms:
+-	 *
+-	 *             ps->power * cpu_max_freq
+-	 *   cpu_nrg = ------------------------ * cpu_util           (3)
+-	 *               ps->freq * scale_cpu
+-	 *
+-	 * The first term is static, and is stored in the em_perf_state struct
+-	 * as 'ps->cost'.
+-	 *
+-	 * Since all CPUs of the domain have the same micro-architecture, they
+-	 * share the same 'ps->cost', and the same CPU capacity. Hence, the
+-	 * total energy of the domain (which is the simple sum of the energy of
+-	 * all of its CPUs) can be factorized as:
+-	 *
+-	 *   pd_nrg = ps->cost * \Sum cpu_util                       (4)
+-	 */
+-	return ps->cost * sum_util;
+-}
+-
+ /**
+  * em_pd_nr_perf_states() - Get the number of performance states of a perf.
+  *				domain
+@@ -407,12 +316,6 @@ em_pd_get_previous_state(struct em_perf_state *table,
+ {
+ 	return -1;
+ }
+-static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
+-			unsigned long max_util, unsigned long sum_util,
+-			unsigned long allowed_cpu_cap)
+-{
+-	return 0;
+-}
+ static inline int em_pd_nr_perf_states(struct em_perf_domain *pd)
+ {
+ 	return 0;
 -- 
 2.53.0
 
