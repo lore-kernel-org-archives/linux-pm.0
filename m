@@ -1,55 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.53
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793981343;
-	b=aFleTvb91vGW9ostvn0OpVyXqyKzJiTqzqZgtONVwB1yusW5nSbitGtkRYz1K5ij2j8R
-	 nyZgeG+gnF7sM7dD2+A7yoLRlD42SRASpCrZjgFIMsReN1Kzf551blTgABexwbb8L64Mw
-	 ugrCWdZqGrKn/fqELYrLWBum0tW/fTz8jKwxGqLg9wjGqS5WJH9Bh+Wi0B2oDFoevMe/+
-	 HziWRqBKleFlS637tw8csszEDp4LmBs/MMNz50Sk5OAq6Bjnzbjy++JabnBcVdPjwnhOK
-	 krdhgcJ3dPP4vKIaNTyn0cozjMgawM+5s9DZbyq8ufVZOJpYBJiRkdphEOiYwurR62A==
+	t=1793982149;
+	b=LoIQDb1B2W4XBDh4EfX5sWUsFlb9foO7560qJ5k0XBg91O7FDcAwx7Lh4UhbppeH986U
+	 xJcpKximv3ifdCge0v+0rflcat1gQQwON3LMmzwU3Jjgy0Mzu0Slcg+hBg9H6Q66hh7T/
+	 QsQyuXd89v+WdK5qaSHX8me8nSqhVyEHvcjharb6ohyKJBEbjLeQ/Z8fp3OeYyB9ZlZ9S
+	 EHxJcJAReEXXhhFIHdBMi2pV7zcs/FXb6QCdgyrSySHLaj4Yr3F0Bl2R3hPDMRjotvHQv
+	 dbnjUXix2g3RAzGZPKNg9iMnfsp3JkDb6eUKXtUa10hxM6+pZVXvZaVuDg/ReCWQirA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793981343;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=QBFuPA5o7efP4jGw5Uh62IHRMOskGTud10helT98leM=;
-	b=nN9N0SrmzQuuhZHjKQwvU8nMDoVsZiutLOU6dQcYLDYONx7ePNsKok128POGb7HZLvnD
-	 BtPgaRipZovyYdyAFUpq1eWSaVD+yerRG1YTj+7kCLzBedfshAcmQpibtA3ywF2kn+z75
-	 IjD3AFA2nSsZ3F6UPC8xwOmnqodrvovifpwM0soS0ede03rwsT9RoPhbFhPJ0YL0QZ+nu
-	 JoGwj74Vw6zU3Q8wbyTVyX9cLFrRax/F/e8A1oVVy3TW9G6NyWnSI3rHZpmImA9RDWxH4
-	 Zr/JVpO2EjOJFIoaPIP+knDUD+XuV9C+JhW1MonkvI+uJOGYltUKylkt3wfTn04fvdQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793982149;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=5qoJPw+qIEyXRRR0ruoMunl9bad/9mwg4HzwIER48nI=;
+	b=UlA1M5sFnkTnsnKppW1prHt9C0GeQfqzypQ89fo2lXaAEcvdEd9RVE7cwwJcRPRTvqSp
+	 rvC06F27AJk0swtSjfVkcGXS4cn+UBplxwBX99fa88wewC0MrBJp6C+mliNFX6IBGH0np
+	 2p4taDWHZTLGB79y/aQ23vDUTUeiylsQjGK+7lEZBKSqHvK8kgsd0qn9FBREncBPI8DB3
+	 8/5KImkRd8nj3UjSZisyOKSH01ch9LukEt3bs+WrWIy+C/ks7ITD4HFPaoi2NEr4g0t/x
+	 NvsRH5cHrLWWXoJQqtPrambwBIze3gtIeTyXveVM9xZHaRjtRlRf6F4xg/FUr07/M9w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bnnlk1Xw;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C+n5sxOE;
+	arc=none smtp.remote-ip=209.85.221.53
+Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 625D160A5BDA
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 16:09:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 837A3606A32C
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 16:22:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 837A3606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bnnlk1Xw
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 355091F00931
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 16:09:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793981343;
-	bh=QBFuPA5o7efP4jGw5Uh62IHRMOskGTud10helT98leM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Bnnlk1XwsJhM714adLANGjs2OMsx5jXpuOo7Oli6q6eRdY7k/cqevHQ/Tx5uFAJnz
-	 PzdPTJxas6XIU8P4M9q/E2al+jaPpJjNVGoFFZeDTIjR7vimPttNIw62OrrY5SZ25x
-	 JmvgZ5vZTOySPcn2/YrNYTZKVicMXRNgMpVuQ9Kls6vCWhiDhu5Q8xLXolPqiaRirD
-	 sOWNmbLLxdT56ALxGEo+saT3ozxrPQTTMmFbH+lCrTgXJzGI1DAT9Hk3aJob+/m6Oh
-	 4gsYvgKkZpio6ITxQ5CSmoXrH0igYZs89xjAmqTpCWCVKQ2I+37mqvQTLryNybhiXX
-	 TNpdhS0/qxf6g==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5be4fea434bso1865249e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 08:09:03 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErHqNG+/lzQycfs7t+2T7hlIoSMSLzCdpfOEo8d+DVhvHlrKdprT8yEGG7iyg8dlnEYqQ0n8E/vz9g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/5ZFRTQsrVEHxg2bPzhwKcx9WlHxIwjplMA2i2hQMN/Oa9kERc
-	y+Gw4/Wk6YK5iJ0VoMEDJwLONhCvG6Cm15ESgUmXoGmIjobHyVEspTMJpyWeFNlKaSVhx6hGbSz
-	Aq1QgSb4Epx1RrsFb7meBnPtvu/e47cg=
-X-Received: by 2002:a05:6512:8399:b0:5c0:62:7fe7 with SMTP id
- 2adb3069b0e04-5c00062885emr928894e87.43.1793981341359; Fri, 06 Nov 2026
- 08:09:01 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C+n5sxOE
+Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-49083b985d2so39086f8f.2
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 08:22:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793982148; x=1794586948; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5qoJPw+qIEyXRRR0ruoMunl9bad/9mwg4HzwIER48nI=;
+        b=C+n5sxOE985uUnk8dQQXRVNC0HtjGMCyQUl2n3DTnj8kK0Qtw4uLms6awbAOzww2OG
+         tS6nfpqghjSLyFOec3ubyoXM1rncg1Pjx0d0z4bFEJ+jr3ftkBZpc/yieqqiqm0V22DX
+         KJqQ4QJlStK76jhQUIHUTJIdn/TjUZsUb8wkWkbp937yiVcl1jVJ/5YGg76sZ+n/SES6
+         Y/mzex/btJgGGq+jbljBzOC1vlPCLUKTeT5VyeGANPGN69NYldmv35IoNBjcwOsjxsjp
+         1nbKGaExDgWvD1TwZaGieH6wi4Sd6CD1CHc1X7Nl65O/C20M6j+1ERjcAUTdLFnplJpY
+         9tXg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793982148; x=1794586948;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5qoJPw+qIEyXRRR0ruoMunl9bad/9mwg4HzwIER48nI=;
+        b=QkyiSoSkptjPpbRdXta3xt9hghtWYBaW1okSsxrZpKLk7U8qv6c3G0GsIeACwu6Lh+
+         PlB4oG5Hd4syLZFZiP5pBB8pDMx4Ah5JICNrgbLljK6yASSzTn/Baj80dlAB7apQCodk
+         El46e1d1tNgfLbSx2Ty8MZHpZgqOLrE/POKrq6Nz5CtcG8KtLHo1LRSYuqxxQ63QuQ2H
+         bz4Y+pz5Ixu3naJy2De63cwysJ7RDlYRLygX4aDau3gHOrZkzL5nzrWJzdWjXTLWAI3b
+         Ofsl+zXRm560c47Kigr7lLpMTlmeOwEjHD8SnXTkIc2WX/XAibbEtJydXAcmAZsF4s4X
+         Pssg==
+X-Forwarded-Encrypted: i=1; AL+hErH6R+8uZk0tNBObdgAQr4hfdDNvxMElu+kGwXnS4oGkJL9bgkZOHe6vvRA4XRjDmbsLQrBUjR1oaw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8GzclBF4ozoIdN94NTObF9zP6EUWbMboggvyUphNeEzs7H2CTg
+	7bF0mNYtQjfXz18xXOcLr9RfgFrxqxYtHEMecdw1T+KtOda/+DUdwjHu
+X-Gm-Gg: AYBFou1QTSRfZjMETHZtSWf//izSB+9+82xJwlRaSloWqtg34aRKXGiJ3MZKTOIiYcm
+	7N/cCMRZxYDwmW0wBE/XBoYfnrZFC5z7pwQtrsTO2b4lbtHVR8w8MZQmckpAcvg8wW5m9DIhYX2
+	q5OUvbemdr7HVGH4jVjvui8U0HE6DHvQGG3v/pBPatDoB41XdeZUVXQOwB1P+z403dyXfvA9Xbe
+	5sIPg7Z5b0By3oZhsCe4IpqdxTmAIAGtRePXj6UWte8cZ3xyfowrAONf53jD/MCsy5BrbskZ0DH
+	NlArQy9trCXanGSNYqmwyHhM2oWfAHbBYDRzXj4ohr+hJDYGGpZm+h0SFzN4xonlFo0nx/g6pSB
+	udo+8/JWwncGnPhSLCtjScEbqk/0kBikCZFCo9mzg61tJC11/j6C7htc2Kj1+cHqMOXFLZ9RrI5
+	nTcGuCFe+g6WlN9jvV+oHT4vwcTswNtaUqCFSjSWYgycnmc6m9d+nz8b3lsZ5G7Yu4t5xlQzh/1
+	bHRNNWpoo1AV/7Y0dGJUdybBLJiRG7lBxJ5IByq1a9cA/0hWACkv8phTLCmzSa3r8Z2U9KPpnvU
+	LyZoYKG+T9WzjpvtGiZkIwXZGuf9m4GYsBRk78cvn3kdxSY0iT/lo8o=
+X-Received: by 2002:a05:6000:645:b0:48c:6611:82 with SMTP id ffacd0b85a97d-49272a3ab3fmr5316957f8f.1.1793982147441;
+        Fri, 06 Nov 2026 08:22:27 -0800 (PST)
+Received: from scheduler.schedules ([85.100.66.184])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d087a3c5sm3952650f8f.0.2026.11.06.08.22.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 06 Nov 2026 08:22:26 -0800 (PST)
+Date: Fri, 6 Nov 2026 19:22:22 +0300
+From: Kayra Cizmeci <kayracizmeci@gmail.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
+	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
+	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
+	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
+	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
+	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
+Subject: Re: [PATCH 02/20 v3] sched/eevdf: Reset lag at wakeup when prev CPU
+ has been idle
+Message-ID: <au38gSTzmvPKmqWT@scheduler.schedules>
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+ <20261106151947.3991524-3-vincent.guittot@linaro.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,103 +103,22 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261030172745.2045743-1-sumitg@nvidia.com>
-In-Reply-To: <20261030172745.2045743-1-sumitg@nvidia.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 6 Nov 2026 17:08:48 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hDm=FMftFfxnzthRQXWzUqcm8SkAaxzVWZcsyQtNLj6g@mail.gmail.com>
-X-Gm-Features: AclHuK_TjpF2X7DtDNnULSldqJeN07Zp0bFqVqftslA3UX5WlTorGVSf-fIrR3E
-Message-ID: <CAJZ5v0hDm=FMftFfxnzthRQXWzUqcm8SkAaxzVWZcsyQtNLj6g@mail.gmail.com>
-Subject: Re: [PATCH v8 0/3] ACPI / cpufreq: CPPC: Add ospm_nominal_perf support
-To: Sumit Gupta <sumitg@nvidia.com>
-Cc: rafael@kernel.org, viresh.kumar@linaro.org, pierre.gondois@arm.com, 
-	christian.loehle@arm.com, ionela.voinescu@arm.com, zhenglifeng1@huawei.com, 
-	zhanjie9@hisilicon.com, lenb@kernel.org, mario.limonciello@amd.com, 
-	maciej.wieczor-retman@intel.com, pawel.chmielewski@intel.com, 
-	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	acpica-devel@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com, 
-	vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, 
-	mochs@nvidia.com, bbasu@nvidia.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261106151947.3991524-3-vincent.guittot@linaro.org>
 
-Hi Sumit,
+On Fri, Nov 06, 2026 at 04:19:29PM +0100, Vincent Guittot wrote:
+> @@ -8376,6 +8383,9 @@ static bool __dequeue_task(struct rq *rq, struct task_struct *p, int flags)
+>  
+>  	dequeue_hierarchy(p, flags);
+>  
+> +	if (!(flags & DEQUEUE_SAVE) && !cfs_rq->h_nr_queued)
+> +		cfs_rq->idle_seq++;
 
-On Fri, Oct 30, 2026 at 6:28=E2=80=AFPM Sumit Gupta <sumitg@nvidia.com> wro=
-te:
->
-> This series adds support for the OSPM Nominal Performance register
-> (ACPI 6.6, Section 8.4.6.1.2.6) to the CPPC ACPI and cpufreq drivers.
->
-> Unlike the read-only Nominal Performance register, OSPM Nominal
-> Performance is writable and lets OSPM request a nominal level below
-> the platform-reported nominal. The platform treats performance above
-> this level as boost and below as throttle.
->
->  - Patch 1: adds ACPI helpers to write the register and to check that
->    the platform supports it.
->
->  - Patch 2: adds the per-policy ospm_nominal_freq attribute in kHz. The
->    value is kept across CPU hotplug and suspend/resume. The register
->    cannot be read back, so a read returns the last value written.
->
->  - Patch 3: uses the OSPM nominal as the maximum frequency while boost
->    is off. Lowering the nominal creates a boost range on a platform
->    that has none, and boost can then be enabled.
->
-> This series applies on top of v7 of:
->   cpufreq: CPPC: Preserve OSPM-set registers across hotplug and unload
->   https://lore.kernel.org/lkml/20261030092416.1993889-1-sumitg@nvidia.com=
-/
->
-> v7 -> v8:
->  - Rebase on Christian's CPPC fixes series.
->  - Patch 1:
->    - use cpc_is_writable() from that series and drop cpc_reg_writable().
->    - add the register to the list of controls the driver writes.
->    - take cpc_desc_lock in cppc_ospm_nominal_perf_supported(), so the
->      descriptor cannot be removed during the check.
->  - Patch 2:
->    - make ospm_nominal_freq read-write. A read returns the last value
->      written, or "<unset>" before the first write. (Christian, Mario)
->    - keep saving the values in the store handler, not at init(), so
->      the driver writes the register only after the OS sets it. (Pierre)
->  - Patch 3:
->    - document in the ABI file how the OSPM nominal sets cpuinfo_max_freq
->      and caps scaling_max_freq.
->
-> Sumit Gupta (3):
->   ACPI: CPPC: Add ospm_nominal_perf support
->   cpufreq: CPPC: Add ospm_nominal_freq attribute
->   cpufreq: CPPC: Reflect the OSPM nominal in boost and limits
->
->  .../ABI/testing/sysfs-devices-system-cpu      |  31 ++++
->  drivers/acpi/cppc_acpi.c                      |  44 +++++
->  drivers/cpufreq/cppc_cpufreq.c                | 173 +++++++++++++++++-
->  include/acpi/cppc_acpi.h                      |  10 +
->  4 files changed, 248 insertions(+), 10 deletions(-)
->
-> v7: https://lore.kernel.org/lkml/20260807214837.863209-1-sumitg@nvidia.co=
-m/
-> v6: https://lore.kernel.org/lkml/20260717215330.2215058-1-sumitg@nvidia.c=
-om/
-> v5: https://lore.kernel.org/lkml/20260615185934.2383514-1-sumitg@nvidia.c=
-om/
-> v4: https://lore.kernel.org/lkml/20260527194626.185286-1-sumitg@nvidia.co=
-m/
-> v3: https://lore.kernel.org/lkml/20260514194822.1841748-1-sumitg@nvidia.c=
-om/
-> v2: https://lore.kernel.org/lkml/20260430142430.755437-1-sumitg@nvidia.co=
-m/
-> v1: https://lore.kernel.org/lkml/20260427051823.280419-1-sumitg@nvidia.co=
-m/
->
-> --
+This needs WRITE_ONCE, no?  3/20 uses READ_ONCE().
 
-This would be good to go except that it doesn't apply for me on top of 7.4-=
-rc1.
 
-Can you please rebase it and resend, with Christian's tags included?
+Cheers,
 
-Thanks!
+Kayra
+
