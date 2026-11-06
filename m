@@ -1,55 +1,108 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793978170;
-	b=VbIoOMkAyAkMQRI8Jn6bUY5T5VSwq/xsM/4dsLv6s/td85TUdSwuZOrlaErxElPO+V9g
-	 8d7tJRs5dYIA4hOtSYN6lvzBNRA8o6XZjqfs5xIDzAK8QqWgutLUTnTWNuo7lT7wcXXGS
-	 WWNPD3AGMDWc6Dtsp+1zTrSlk6JRxz4UnE/pk4XAZEyolH+npWwFxE9svB/VL8biCja6r
-	 QAa20rsAxeyhYVZ2SpZH14fd3gVYjDaewPLo2NXEM5lIbklutEQYyZc+AzHGaPA/2SoyS
-	 YgAoPfHo7yYX014j91buvzvyMI1OxC0buclsAojCeAz0c9nt5f1hF2va5POA+U9bp8Q==
+	t=1793978184;
+	b=WMrubjwDp7HKF9xv1o+3v/fgs4YPr2kjJHDJb/fsI3wbA3ghuQa29wFU5K4CO8yywhgh
+	 pGxe/mn/C3ViYuChc5SDbdiq/DohAP0x1vIs+srXOD/wZfRwaqRA2VpF5bw9C9zeREegI
+	 UpJTkY1ByBhiQjcIt7mdpTB70nTmsD24wnDJwORPXsIt7bVddOKVm059iGyXUvCj6lJpy
+	 DW7nvZ1J3BDysAymGqgm9gSYxiWkAGGeJIpOBlOFnwZF8+1hrj/BKgC3P3x2HwtBaEsI3
+	 IMpSzF7GiCjhOY3X8Pus6BfW2oBBYFGrK0v3UMlpWJsDh5R4lFPjR36bY9NQ5yUK2jA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793978170;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=rZMDk9Fl24riUrNB7K+XznxHCLVlnKCyKDI+soAjJ0k=;
-	b=JcZMXY3w/bJVkzeeoqCq4SLam6heWGMHT9Ejy7kf+YgqUyEtBnEGJndp4KAbkncRz4Rx
-	 n3TA3aEcVM120a8NqIIjv4iKjB/txnueqXtK1rjcBsI9RITwzRod34uDCwd5pQKCT7cQ3
-	 lDu9qJYBS5hW540sqBn/zuVd34q0kSQQMwjK0jWPxCCpPqHAtK/6dyq/4nYJPDFgZIH1P
-	 3dG2PJ95ae6SGG/OAR5LXj20WBWRGwOrJkXGhjhaW9z0D4yD/ANakbSenDwnHQYnc5XHo
-	 rigu1xUQ4hrLNOeA2f+5fNvN4u4S4ZsAzS5Gx2hhp5x/cnL+UsDFuQKJrPV69RyfT+Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793978184;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=ZBDIYs4Y0It7dcl6v419n3JeAweftEEfsMmrD17e+80=;
+	b=RxW0KKZ0urHd+Hq6sdS26mhACCCt1XM3SpTlMpFL7vsq9Agv4KrOoPh3V9OibrojpLln
+	 c+iUSEPKHIY9bqQkCYBRG85Mqnl2Q87S/4jkHL1daNU01HDO/+jYf8t6AjzejLa4QH/ZR
+	 TgNVkBYpZ5QYQ7jRgDykDLVDRbdQy5mZIA/WDddmuGINZnDSTTs1tBnYCOT8kwXiOl+Iz
+	 crXqLn6VOxZzMKE05+2kkA7yEPzK/h8p64GawoTZI3WC48u/k8zBFbu4bNXJvT6XzIjP2
+	 XwmHsIRT1OcojYj/Y6M0jzuRMxme9+F/AvDRzKLDHSjMdMgJhioj/7OiYIFKRESu/BA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f6qAAugl;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=kxo8erlB;
+	arc=none smtp.remote-ip=209.85.128.54
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3216606A32D
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:16:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC95F606A330
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:16:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EC95F606A330
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f6qAAugl
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B0801F008A2
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:16:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793978169;
-	bh=rZMDk9Fl24riUrNB7K+XznxHCLVlnKCyKDI+soAjJ0k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=f6qAAuglGC1uHVECHvbaSqkxUJhisHonx3wyaXi3lx5Zxge8vwM6JvVxHtQzl+ycR
-	 hEowG0rcVavX1faMCYlcdEu4avo3JBs9YOm2eK1XtdliC3tek2eJGSCjfAGNeofxWC
-	 /HAel4bJ+mkweEy4aQbJE+VQPuA5F6wsgRd3omW1MRdqUJV8OtqwqmZD/NAuCBxMnD
-	 nDvfPTcFpu2P99iAdnH18hFOBi+diT40Y3yhJ8Q6BjXosJEfMITp1imgAyGDGTZHKl
-	 CHX8rMY5QbSis/JlMFQ5TyzkVEC61XdEhFZEv+QzghMABavVZ/tFES729FFvIomhJq
-	 y+RGsRtpEv4rQ==
-Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-5eaefe5b523so609395e0c.0
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:16:09 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBwNCvBRw0WByoWVcKtEoNT+YVaZfg5FSSooPIm193Uz2pWZLzeb05tCJAgrCjJEUQAseEmxuZFjHA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8AC9/zmKd1Pa+lcWwayAzfUqrEXA2DZ5Fgiiqm4F9BOvC+La+6
-	eQxSgXRPVZhU4m7hMQXkq2QGgYjxeD2gsVrn1ERIa2WWg22TAMWWf3eC5TV9x6ULLpJ2MpUVQDr
-	PL6HbpOd5/pPamZcXYPkP4OsDIc4uMI8=
-X-Received: by 2002:a05:6122:32cb:b0:5ea:b712:8281 with SMTP id
- 71dfb90a1353d-5ecc44220c0mr1534700e0c.18.1793978163673; Fri, 06 Nov 2026
- 07:16:03 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=kxo8erlB
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a2153c8525so5869285e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:16:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793978182; x=1794582982; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ZBDIYs4Y0It7dcl6v419n3JeAweftEEfsMmrD17e+80=;
+        b=kxo8erlBylITXb38m1wEtnfEDV3x/yMaJ29j0q0YIFU/H5cyQrsqLj5K598Wy9weJQ
+         A0DJbc4I/TN86jX1fGLlvJLWjkhURO4cOxuuAKH3apDJBtQTlXy2Qz4bO1avMzj8VPOf
+         uUL7kHWf2fTP9uFyfKLeCspQFLGH1ANd+tisjKG+IgGewKu52tBELtyTjX66BlA+4FBj
+         P4ys4PblaKABcVgEPv+IeHdWFIE/o3yZ0zqeQutuhpbbrCAV3N1kpXvFMBUL6v6aa0dT
+         P0STpQnsN0JpWBIWLbxZUipI6nyhf6kzfxKIr0c7XQ0L7LcBGKJ1P3t8gjHWzHgYrEm/
+         QYDw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793978182; x=1794582982;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ZBDIYs4Y0It7dcl6v419n3JeAweftEEfsMmrD17e+80=;
+        b=NOYCCWjmKXx8yEBuKLIu+00+rIDIxO4JgjnyVM0c/1aQwlWS3TnNvkiD4kczliNy8X
+         jZ9rCigkOB7S85kGetunOfzFBDLkztiiploaetJTOcjmH706BVVFDAP/pDaD1BfqvzK5
+         SyeOeb76miL+QYlNqeNZw75pi11HFSMn4TbksXQYKhOn3cDiEUhxwNug6QpFMdf7nr2H
+         3YMEswo8RGfDqK9JY+ycLKXmy343bTzl9mXn5ilz3g6PmV6hHrwRbYzc70B1mruNcxGG
+         vb//AbMguHDJKjv/TQchQm7QlcvtBN2tb6VY/0o/b8kEvBGaYqj9da+UIk3jz1n3cCWK
+         akLA==
+X-Forwarded-Encrypted: i=1; AKwUvBwMHNFZqv/pQ1heuTAKSfWb/ciBuewOUL6S4liMNq8fIeg9cVQt92qLjcNtjSJhDTMf4yalDT41Lg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+mAJbVxVot693F687sRFf9F4nGu3BYHVCuD5SjrbaEyf2vStU8
+	x/cKdhGTUbPKQF5HN/yZcRcZfS+WGwMzdSHfuKd/PrlArvoV52gcxoTQ
+X-Gm-Gg: AYBFou0ts20ngM4LXAs9Mb9v/I0AiZbpkUSjKitnWr7THfBPqsA/rCGkRmBsiipjQz2
+	BmBa3hDGSRZFxl72tpWT1PbxCaw51/UaNR8UIwHRxYVLnxCWW0tS7c+ebDfFCgcBiDOEacQmxSu
+	rC9QzjjVYEjPphLshpV5SIAjyL0lL5AHo254II6mVqWcB4djShgI4XSEJcOej8qOoCHSg+q3Hv1
+	NKU+cr9wRe0BS6Lr2lOnK5SWDClj5roIECoCKSJufRziIW29LHBnjFvItiNpXlFGCEivMRe0WKP
+	mD7xFnT3Gl2Wlkj82tfq5bGM/wm+gKbzTl87y9CenB6SWaA86W+4Jv9OyoBdubCkhEYsSiMiY6D
+	e1GlSKS1448m/IPvtwootrNKSsrlXykRVzRV+gEyTSjdajKlamblyzyiTnbZIz6zcDBNodqW0M3
+	ihIwHj/DiYce1TdMGWOy72xvn8KQR8ape014fwixeANQ3ahiYN7ymfyfkYQvMA4wUOmOQphUXvj
+	s6pevDjBZQtpL/FkjXYe8b1Jy8gwWtKDndBdFe5+Ju/5aydrRZRp0rxrGt3sRIPDAA00Vq1ugAa
+	3jU6lo2Lulx/vvFWHZze/LZvpu1X/bYzZip3Fzs2g4ICgaLNYYdYQnvFErgBWjYg/80k7WcKYhL
+	J8CkKM53/JmVvZCuVgP6R59aTEChk9KRoeskfOug81yvEJ3NPLBxVSLaJqPzY
+X-Received: by 2002:a05:600c:8509:b0:4a1:fa27:df7c with SMTP id 5b1f17b1804b1-4b6e091f195mr44253705e9.34.1793978182055;
+        Fri, 06 Nov 2026 07:16:22 -0800 (PST)
+Received: from Lord-Beerus.station ([93.146.104.162])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc6162sm4124688f8f.47.2026.11.06.07.16.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 06 Nov 2026 07:16:21 -0800 (PST)
+Date: Fri, 6 Nov 2026 16:16:19 +0100
+From: Stefano Radaelli <stefano.radaelli21@gmail.com>
+To: Johan Hovold <johan@kernel.org>
+Cc: Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-serial@vger.kernel.org,
+	luan.r@variscite.com, alifer.m@variscite.com,
+	pierluigi.p@variscite.com,
+	Stefano Radaelli <stefano.r@variscite.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Peng Fan <peng.fan@nxp.com>,
+	Shitalkumar Gandhi <shital.gandhi45@gmail.com>,
+	Hugo Villeneuve <hvilleneuve@dimonoff.com>,
+	Karl Mehltretter <kmehltretter@gmail.com>,
+	John Ogness <john.ogness@linutronix.de>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>,
+	Fugang Duan <fugang.duan@nxp.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v1 0/3] serial: Support driver-selected TTY wakeup
+ defaults
+Message-ID: <au3vQ7sSi6O3_hqv@Lord-Beerus.station>
+References: <cover.1793719239.git.stefano.r@variscite.com>
+ <au3diCrF5jPYH4Tu@hovoldconsulting.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,177 +112,48 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
-In-Reply-To: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 6 Nov 2026 16:15:48 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
-X-Gm-Features: AclHuK_kUFfE3cOrH15OQGXo65djIyEnQZhDGCnHMwtbYyC5w3H5uHm6PDEzr0Y
-Message-ID: <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
-Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency ranking
-To: Guo Chen <guo.chen@oss.qualcomm.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Vincent Donnefort <vincent.donnefort@arm.com>, Matthias Kaehlcke <mka@chromium.org>, 
-	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
-	xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com, 
-	tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <au3diCrF5jPYH4Tu@hovoldconsulting.com>
 
-On Tue, Nov 3, 2026 at 12:21=E2=80=AFPM Guo Chen <guo.chen@oss.qualcomm.com=
-> wrote:
->
-> em_compute_costs() ranks all the frequencies of the table, boost ones
-> included. A non-boost frequency can be marked inefficient only because
-> a faster boost frequency has a lower or equal cost, e.g.
->
->   3.9 GHz  4.0 GHz (cost C)  4.1 GHz (boost, cost C)
->
-> With boost disabled 4.1 GHz cannot be selected, but 4.0 GHz is still
-> skipped by governors rounding down to efficient frequencies (e.g.
-> ondemand with CPUFREQ_RELATION_HE), which land on 3.9 GHz instead of
-> the best selectable frequency. Several frequencies can be affected.
->
-> Exclude the boost frequencies from the ranking in em_compute_costs() and
-> keep them all efficient, using the highest non-boost frequency of the
-> CPUFreq table, returned by the new helper
-> cpufreq_table_max_nonboost_freq(), as the boundary.
->
-> Fixes: c8ed99533dbc ("PM: EM: Mark inefficient states")
-> Signed-off-by: Guo Chen <guo.chen@oss.qualcomm.com>
+On Fri, Nov 06, 2026 at 03:00:40PM +0100, Johan Hovold wrote:
+> On Tue, Nov 03, 2026 at 04:51:24PM +0100, Stefano Radaelli wrote:
+> > The initial goal was to enable TTY wakeup by default on NXP LPUART ports
+> > marked with wakeup-source, without requiring a userspace write. Instead
+> > of keeping this entirely within fsl_lpuart, this series introduces a
+> > common serial core mechanism that other UART drivers can also adopt.
+> > 
+> > The new tty_wakeup_default field in struct uart_port lets a driver request
+> > wakeup to be enabled when its TTY device is registered. Each driver
+> > decides whether to use it. This series adds wakeup-source to the LPUART
+> > binding and makes fsl_lpuart the first user, setting the field from that
+> > property. Other drivers retain their existing behavior, userspace can
+> > still change power/wakeup, and serdev wakeup policy is unchanged.
+> 
+> This is a policy decision that should be left for userspace, not
+> individual drivers. As documented in
+> Documentation/driver-api/pm/devices.rst:
+> 
+> 	The initial value in the :file:`power/wakeup` file is "disabled"
+> 	for the majority of devices; the major exceptions are power
+> 	buttons, keyboards, and Ethernet adapters whose WoL
+> 	(wake-on-LAN) feature has been set up with ethtool.
+> 
+> So no, this doesn't look like something we want. You should continue
+> enabling wakeup from userspace on systems that need it instead.
+> 
+> Note that the "wakeup-source" devicetree attribute also describes
+> capability, not policy:
+> 
+> 	Documentation/devicetree/bindings/power/wakeup-source.txt
+> 
+Hi Johan,
 
-Please see Sashiko's feedback regarding this patch
+Understood, thanks for clarifying.
+I incorrectly treated wakeup-source as a request to enable wakeup by default,
+rather than as a capability description.
+I will drop this series and keep wakeup enablement in userspace.
 
-https://sashiko.dev/#/patchset/20261103-em-rank-boost-separately-v2-1-5a13d=
-1b38d37%40oss.qualcomm.com
-
-and tell me what you think about it.
-
-Thanks!
-
-> ---
-> Changes in v2:
-> - Drop prev_boost and keep all boost states efficient by resetting
->   prev_cost for them, as suggested by Lukasz. Boost states are no
->   longer ranked against each other.
-> - Retitle the patch to match the new behaviour (was "Rank boost and
->   non-boost frequencies separately") and reword the commit message.
->
-> Link to v1: https://lore.kernel.org/all/20261030-em-rank-boost-separately=
--v1-1-238a6b2bb888@oss.qualcomm.com/
-> ---
->  include/linux/cpufreq.h     | 24 ++++++++++++++++++++++++
->  kernel/power/energy_model.c | 16 ++++++++++++++++
->  2 files changed, 40 insertions(+)
->
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index d3d0d9d02aa4..c93316141a11 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -1155,6 +1155,24 @@ cpufreq_table_set_inefficient(struct cpufreq_polic=
-y *policy,
->         return -EINVAL;
->  }
->
-> +static inline unsigned int
-> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
-> +{
-> +       struct cpufreq_frequency_table *pos;
-> +       unsigned int max =3D 0;
-> +
-> +       if (!policy->freq_table)
-> +               return 0;
-> +
-> +       /* The table may be unsorted, scan all of it for the highest one.=
- */
-> +       cpufreq_for_each_valid_entry(pos, policy->freq_table) {
-> +               if (!(pos->flags & CPUFREQ_BOOST_FREQ) && pos->frequency =
-> max)
-> +                       max =3D pos->frequency;
-> +       }
-> +
-> +       return max;
-> +}
-> +
->  static inline int parse_perf_domain(int cpu, const char *list_name,
->                                     const char *cell_name,
->                                     struct of_phandle_args *args)
-> @@ -1219,6 +1237,12 @@ cpufreq_table_set_inefficient(struct cpufreq_polic=
-y *policy,
->         return -EINVAL;
->  }
->
-> +static inline unsigned int
-> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
-> +{
-> +       return 0;
-> +}
-> +
->  static inline int of_perf_domain_get_sharing_cpumask(int pcpu, const cha=
-r *list_name,
->                                                      const char *cell_nam=
-e, struct cpumask *cpumask,
->                                                      struct of_phandle_ar=
-gs *pargs)
-> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> index d19a65461ae8..5b1d095fd376 100644
-> --- a/kernel/power/energy_model.c
-> +++ b/kernel/power/energy_model.c
-> @@ -255,15 +255,24 @@ static int em_compute_costs(struct device *dev, str=
-uct em_perf_state *table,
->                             unsigned long flags)
->  {
->         unsigned long prev_cost =3D ULONG_MAX;
-> +       struct cpufreq_policy *policy;
-> +       unsigned int max_nonboost =3D 0;
->         int i, ret;
->
->         /* This is needed only for CPUs and EAS skip other devices */
->         if (!_is_cpu_device(dev))
->                 return 0;
->
-> +       policy =3D cpufreq_cpu_get(dev->id);
-> +       if (policy) {
-> +               max_nonboost =3D cpufreq_table_max_nonboost_freq(policy);
-> +               cpufreq_cpu_put(policy);
-> +       }
-> +
->         /* Compute the cost of each performance state. */
->         for (i =3D nr_states - 1; i >=3D 0; i--) {
->                 unsigned long power_res, cost;
-> +               bool boost =3D max_nonboost && table[i].frequency > max_n=
-onboost;
->
->                 if ((flags & EM_PERF_DOMAIN_ARTIFICIAL) && cb->get_cost) =
-{
->                         ret =3D cb->get_cost(dev, table[i].frequency, &co=
-st);
-> @@ -284,6 +293,13 @@ static int em_compute_costs(struct device *dev, stru=
-ct em_perf_state *table,
->                         table[i].flags =3D EM_PERF_STATE_INEFFICIENT;
->                         dev_dbg(dev, "EM: OPP:%lu is inefficient\n",
->                                 table[i].frequency);
-> +               } else if (boost) {
-> +                       /*
-> +                        * Keep all boost states efficient. Resetting pre=
-v_cost
-> +                        * also keeps the highest non-boost state efficie=
-nt,
-> +                        * then rank the rest on their own.
-> +                        */
-> +                       prev_cost =3D ULONG_MAX;
->                 } else {
->                         prev_cost =3D table[i].cost;
->                 }
->
-> ---
-> base-commit: f1ac44c32cba88ad65dcecd4a279661d14e93651
-> base-tree: git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.=
-git master
-> change-id: 20261029-em-rank-boost-separately-a7e7c7d78058
->
-> Best regards,
-> --
-> Guo Chen <guo.chen@oss.qualcomm.com>
+Thank you,
+Best Regards,
+Stefano
