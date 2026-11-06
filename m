@@ -1,60 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.85.4
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.171.202.116
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793957540;
-	b=QCtnMY1LQIqZ86LurYttSZO4t70SIRrycDA6kXMvAfP0lwIu76kL+KXmYy8gdw1TQRA9
-	 xh8WkwZhbJ7ZxpxRuZLLdwj6nMmuz7rtBE6XwgVlfVRvfQYymyC4RYqFha/B+vZUe9dHs
-	 fcxMsb117lnPzB/P6+IO/5J1sudTGFk+/dcHVdvOXazTSvQuR8Gk1v1ARFbSWrn/qugKr
-	 jsyzRtgrObq3ypVA0eKXTFMO9RTf5eyX3fUdcByUSOAlxMmncYXy8waGjwSd0rj80zxQR
-	 w/6G79Q6xQgb6uUwZjedPVvqqnKaG/nW83s0scI5BBfQqCiQ6ECd4sv07DHMdXQTq5w==
+	t=1793957525;
+	b=jwtj/ZaDmCFEwQEo5G9X+D7UXnIUa+rFhd6Tgzl6cNKOFpaxu0XvIZJvvRCuhw3dMgat
+	 zFqqVfmNTgoYrl+zWrzzfKzJH5curl9+0ZJnz35Dq2lcnlmq6iH06yjyJlhAO+sPIRmBE
+	 u0HAY3Yh8BpVyfIJ3LOqHQTd+5/16Ncm9LIwTsnfO5dttyQkYiUtUsW/e1fxeYvHSsctG
+	 vLe2lOac+65Q+JsOrnj5CgXpAWKhE7YqTElE5QTJcRRqd9N8kcGS6DBuoAZ/aoHZmd1Jv
+	 wm7tLTEbxlxHEXmMuhTJeVB15rT7Z9vpM++bDy7ceBe8giW1Bq0yGz5tujow1jecS7Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793957540;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793957525;
 	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:Date:
 	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Last-TLS-Session-Version;
-	bh=YwyvrU3jJiDTxDxbsC0TfxtCg10y3nSj2oVv4WB1cAw=;
-	b=pf/reFAYBkDZOsvxPNwFgd7naZ1bKIclBFmQXq0yTiNmpEke3rGJHZB/3GhibbzZdSX+
-	 RQAMvYZ3f6fXn+m8KEqrMt27w7xUu4stk7yVpYcup7J/327ywkv2sAgW0c/Va0+NsFi5E
-	 DrkJp4imPcGKwatycC9HIh+yciEFt3u2qpXO4Bh1vGKKU0QVw9blH+wn5bBhZigO3Kv7z
-	 ZNcT6H0mjMNhJmgcdkTHuIy3ED+p3Qh7f3apmFWk8yDNMxfrpPlmOyHJJWr+bnokrCz7w
-	 a4cp1ghTTXWFZmIaTv8BzOpUuvDrAp9ofA+QoYx7zdfMjz1SNHgioB4TASYQQs3H+AQ==
+	bh=6dIjK3KQyPYo7BGeihqe5v2Q2WzvnIFuvucFmY8UZiM=;
+	b=GiOh4dmvGAHTFwzf/PpC4fA0jJaJKlH2RDX/WCXtQc2z0Kp9ghau2cq5ItRdfhcYHqxI
+	 fUOzpgttKRzmX9WpWE5MoIZDQBKv2ZaUPsCuoUac8XWOhxPZ1zeB9oafn8At+3R+oXDhf
+	 MXFN05aepx2aRaAhflm83frN0RuAPMQ/NKmkk4oI8iGktQu63KGxItEUqx/EM0iL/aRdA
+	 E5QiyiD5cCldfEEJXwyEIXgUtTtEulQmb/I5bIx/Ye2E/QcW8xS372eOlsbfJiepvq4em
+	 jjpmG+kL3U+DhmZekhu9YLVg5ej+Pdzvq70edUk3Ni3CUp1SmaukX/KfQW5Ea8la6tA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=bootlin.com;
 	spf=pass smtp.mailfrom=bootlin.com;
-	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=h2PElyJB;
-	arc=none smtp.remote-ip=185.246.85.4
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=wzk0AKUh;
+	arc=none smtp.remote-ip=185.171.202.116
+Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 759BF608362A;
-	Fri,  6 Nov 2026 09:32:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 759BF608362A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB9C2606EE81;
+	Fri,  6 Nov 2026 09:32:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BB9C2606EE81
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=h2PElyJB
+	dkim=pass (2048-bit key, unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=wzk0AKUh
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id CE6EB4E413E9;
-	Fri,  6 Nov 2026 09:32:17 +0000 (UTC)
+	by smtpout-04.galae.net (Postfix) with ESMTPS id 9CB8DC69166;
+	Fri,  6 Nov 2026 09:32:02 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id A17525FFBC;
-	Fri,  6 Nov 2026 09:32:17 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 3865A103292D3;
-	Fri,  6 Nov 2026 10:32:07 +0100 (CET)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 207F95FFBC;
+	Fri,  6 Nov 2026 09:32:03 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id AC820103292DF;
+	Fri,  6 Nov 2026 10:31:52 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1793957534; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	t=1793957519; h=from:subject:date:message-id:to:cc:mime-version:content-type:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=YwyvrU3jJiDTxDxbsC0TfxtCg10y3nSj2oVv4WB1cAw=;
-	b=h2PElyJBpGZNfSeGD85T77QnJ1LDeNgFwvr2DbU74Wx6hQ61H/+f2yV2iurSqdYcCgjPdM
-	NDySdw9dTb58cK88zriCRpiN63aIccjGh6v7d7NN/Nsg92hvnamiH0feBaM9tw6JtuNWno
-	V4DIzduZlKWoORHQjfBZDyC+xaCVrktUzRuusKcdvO+Hp0pwAYSaPxsBpF0k5G9ix1+qUg
-	X4CJrOi6hbN4RN5w9I4xr9T5BgDFDOVPvat0w+BU2q3Mob5pUOkcRUNw+eJEjbI95WO+6F
-	klr8R/fYW7DhchjG6CGUyNasvxIZ2g8pJ8H43JFP59laMxWN4aCMiTwn+g+GgQ==
+	bh=6dIjK3KQyPYo7BGeihqe5v2Q2WzvnIFuvucFmY8UZiM=;
+	b=wzk0AKUhHtXWvefoMAkphBOjTffVQzMnfddS4ZbG16AEUdu4SGMZCgxM1nEu40Kovb0ZbB
+	iiLRa03CunEJO+Gevda0SIEUaPwlx8z9towgjqw1NDpmIbPJZPdFIs6dpV/D0R2jjvZUsY
+	6sf+galb57+IV19d56T/C04vO/3WBIGf93TBBVoy1qHZAn57/yK8985rTav7wfm3pB4ew4
+	Tyb9hTHbz8Pgu8snCkrUXvWIhuir5xo/wPaNKJg9be66FdvG0Wc1+G9ltqQZ/YHxpb74Gr
+	8KVzL7vI6mKbgG14ahBCIhzqaxnuCA440p6LVcxQKW3fJ4nbA10u11XVAvcYlg==
 From: =?utf-8?q?Beno=C3=AEt_Monin?= <benoit.monin@bootlin.com>
-Date: Fri, 06 Nov 2026 10:30:11 +0100
-Subject: [PATCH 14/25] dt-bindings: watchdog: andestech,ae350-wdt: add
- Metanoia MT2824
+Date: Fri, 06 Nov 2026 10:30:09 +0100
+Subject: [PATCH 12/25] dt-bindings: spi: andestech,ae350-spi: add Metanoia
+ MT2824
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -66,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261106-mt2824-v1-14-86087eaf5af4@bootlin.com>
+Message-Id: <20261106-mt2824-v1-12-86087eaf5af4@bootlin.com>
 References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 In-Reply-To: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -99,26 +99,26 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.16.0
 X-Last-TLS-Session-Version: TLSv1.3
 
-The Metanoia MT2824 SoC integrates the Andes ATCWDT200 watchdog. Add its
-compatible string, with andestech,ae350-wdt as a fallback.
+The Metanoia MT2824 integrates the Andes ATCSPI200 SPI controller. Add
+its compatible string, with andestech,ae350-spi as a fallback.
 
 Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
 Signed-off-by: Benoît Monin <benoit.monin@bootlin.com>
 ---
- Documentation/devicetree/bindings/watchdog/andestech,ae350-wdt.yaml | 1 +
+ Documentation/devicetree/bindings/spi/andestech,ae350-spi.yaml | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/watchdog/andestech,ae350-wdt.yaml b/Documentation/devicetree/bindings/watchdog/andestech,ae350-wdt.yaml
-index f1107c552788..d8c6f38e1035 100644
---- a/Documentation/devicetree/bindings/watchdog/andestech,ae350-wdt.yaml
-+++ b/Documentation/devicetree/bindings/watchdog/andestech,ae350-wdt.yaml
-@@ -18,6 +18,7 @@ properties:
+diff --git a/Documentation/devicetree/bindings/spi/andestech,ae350-spi.yaml b/Documentation/devicetree/bindings/spi/andestech,ae350-spi.yaml
+index 91e04f5d354a..6e5dd8175aa9 100644
+--- a/Documentation/devicetree/bindings/spi/andestech,ae350-spi.yaml
++++ b/Documentation/devicetree/bindings/spi/andestech,ae350-spi.yaml
+@@ -15,6 +15,7 @@ properties:
        - items:
            - enum:
-               - andestech,qilai-wdt
-+              - metanoia,mt2824-wdt
-           - const: andestech,ae350-wdt
-       - const: andestech,ae350-wdt
+               - andestech,qilai-spi
++              - metanoia,mt2824-spi
+           - const: andestech,ae350-spi
+       - const: andestech,ae350-spi
  
 
 -- 
