@@ -1,55 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793975105;
-	b=bahVVEFx08DkhQ5Af1TlEtwu1eQfV7lcvNE1tjbt+DYf9LvismlKoRQx+YDTEVcMvllr
-	 8OxFGJQfQ6nsL8Keq05+5rhlwxwxT9wFTip4U6mBV50nnmP5/2m7tIeUK6yoBbuX+VZJn
-	 lnfWSRj3ett8IMYUyzJLPvZo53pUi6ofX5XUh8s1AebQQ2wJA913rcAStEJf+dJjkmQHf
-	 ACkDiQikBBJpWei35ixkTHHUDpJABAdbQe8SX2fHBJgoYRN8TXws8tHWq7kmj+w5IVW+r
-	 vE0lgLx1XgfdtsDJUYryS5W73mgDJOYNJ6A+sQfPJMEcrCv/Q9T+Pq4fTv+sDaUyFrg==
+	t=1793977530;
+	b=F2D5Ufmp68FiB5OXP+KQE+IM0/HUB08jNj0+tdnkF8Uy+5x9HcqkAv3J9sDTk+aUepYd
+	 wwwvUDPeEEQ8YumkABwABfuYitvYpuC0do434MqJX/3oKJlBk+52Ce6dWbMPheNGebgMm
+	 Uy7DoTipKtFVoLRaLRk6JI8FAFHFAk2PK/J7E1ZmEkZlRO+6g2kdrGYZnVBTn6oZ0hY7/
+	 vVz4+NrZ/8GNX4mjLbKcqCogYPwpspxmQ5pLFyO1zURPJkRxPhTO+ujFDqh3BZLUkn2yJ
+	 khLTuuFtqXutE1cwp4SkKRfFaseYFzSqJxA2YHSBvw7U8WtkqFgZ8lBTe1gWs45BkiQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793975105;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=bfsqRGhlipYfNzA5sToOoG4ijdsyQd2sXM0Uteq/zXE=;
-	b=M8+DZ2EXQDvryQhNsHUtgHOiXj07kdh6e/bRezGZcqRaCV+DVyOpfTCHwlSq+QEudwlk
-	 A4MyGg7VACNV15D+t/BL6YDuHTBLpZuIJrgMjT2LJu2bgCxxeIMPyCx9AnO7wDlELR5nE
-	 zxUL1H1N9rAJ3wJhwTqlfKuziyYGvm7lsI9HbCtK9FI0eVwKve3DmH+KBE8TnDSGqCFBi
-	 yHioKGM4OkGN78YtP8Suos/nvSlPrYigmYA8NQ7QUOu+RG92wywhBbrBQUfqFSpUOHaF+
-	 dBv+YyWiKPBduzsUEIlIoJErS6pUPbBARxGdJx8d6xIGeUmuzq/vgFTjKHtpufYWn2w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793977530;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 Organization:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type;
+	bh=Xvpo+iUQfW+f41TLIZncvutMmUua35K7LLGoQrMg57U=;
+	b=HeFo23ipNF+Ig6aLEXTMItvCIXn85al+Y/74Yq+6ap1Kt9ePHKJ3upyVl2/nW4Y8Kbql
+	 Kry/eOwwuc0qJlcXjfumH+UpcEAyhUJ+f9NtyepbW9yMgFZPAcx7MIoGPjMW3beIIWoiM
+	 STJPeZZvLsVySJqsEp8akerX9jpmFAQiDSRN8SJAxb4Ec6iNPUbLmTxiJIJkY9z7XGE6i
+	 vtY0VjxClZfDDkK74MT6lDA2tM3o2Nie97elFgPXwL2IpyrpRoOkl9h3w/Q/O5LQpMw2u
+	 reZuKbbyYX4/kqZJs7Angjae0JpeTRA2Ftr/OcfsZdpEXKXv41osJddiBNzvqgZ9LbA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aeMuFOKS;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CVUj3BEB;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4268D606D837
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 14:25:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08DE7606A32E;
+	Fri,  6 Nov 2026 15:05:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aeMuFOKS
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFE5F1F008BC
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 14:25:04 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CVUj3BEB
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 400331F0089F;
+	Fri,  6 Nov 2026 15:05:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793975104;
-	bh=bfsqRGhlipYfNzA5sToOoG4ijdsyQd2sXM0Uteq/zXE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=aeMuFOKSRav4BeEJPhQGgO1L9NIv+wlzwxWBBa1RPTQ90egyChklBbvYMPl1tWjaW
-	 8pqCt6ufjun22Vd4TYjDZCXToMdA9m+5YEiHbA0zhrny1wwKQ+7BejSNJChryax5ex
-	 XjzFwoF1qBK8kRf8MQxwgjNK8HHxkbB1tyVFNeNSOLCUlTuc689tSNI8BLvFswV9u0
-	 7HMxOZNf4E5h6+aB3lNWUy/K+eFQ28ZPiUwr3DzwM29hvbgSXtV02y30R4IrE/M1zE
-	 E/SLHzlszLFEQJeXG1rxmRzbu/OlwaKg0fVT72hH177tU0kG1BH6E7encdnYaBAHAz
-	 YxvHvCEQhOJ3w==
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-3ab01c46697so5551061fa.1
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 06:25:04 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBzHhr5P+2aZRzYJwMxfBjKOuB23zQBGdfvgy0RuytMufolsvJf3Ay9Cf+wYHvED3rl5S8FugJmFSw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/wGbyf9I6/SqewhphTwBXtp5syeaSuSRp9NpoWcX1qyPEt+YxE
-	uQzU7aCUDQcHGCwTeFSuLRLMHVZzTdCs69SbNe9fKypYxxP45rHVq8H6wHACdTAWQPfQPQYjB2N
-	gX3FCoDQHymrtkTHLValsOFnaCvHLHKY=
-X-Received: by 2002:a05:6512:3c96:b0:5be:4d35:c4c1 with SMTP id
- 2adb3069b0e04-5c00397e71amr894275e87.12.1793975103243; Fri, 06 Nov 2026
- 06:25:03 -0800 (PST)
+	s=k20260515; t=1793977529;
+	bh=Xvpo+iUQfW+f41TLIZncvutMmUua35K7LLGoQrMg57U=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=CVUj3BEB8Ez+BKN2xYnC6+lghLgkjoaGSovC9VY2MmJSvz3FCEdIhEaupw8IInwUm
+	 pRUmEyzOK8hwuOS9/NXucPe1DoDIjv1NwfZO+ANR3IbzL5CIfwYdQ76dOlmUvXsQ/C
+	 7ASjOz8Uu6BdViIX71hrP6+50W9qE43uhvPY+XYepaRUtrl6Iz+NF+0J19C0M1nRFE
+	 PplWyvM4Kplzsn/AZmCLdLWjqYAP+NKMQvZMqh25VESCW2PFpPmU80w751dnobpMlO
+	 3LKo5J4Y/T8for/oOq1t0HgVDuHqppsw0mxhQmNm0dB9XILfxPGdjeJ7NvfEttq34f
+	 8AAi4V2TSluEw==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
+ Linux ACPI <linux-acpi@vger.kernel.org>,
+ Vincent Donnefort <vincent.donnefort@arm.com>
+Subject:
+ [PATCH v1 1/2] cpufreq: Cache post-resolution target frequency in
+ __resolve_freq()
+Date: Fri, 06 Nov 2026 16:04:05 +0100
+Message-ID: <14161745.uLZWGnKmhe@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
+In-Reply-To: <5176274.31r3eYUQgx@rafael.j.wysocki>
+References: <5176274.31r3eYUQgx@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,237 +64,42 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261105140357.1331894-1-zhongqiu.han@oss.qualcomm.com>
- <CAJZ5v0gkRC53e+==9xBZh=ZFTkgU5v=fwNCgJCRTdKoxcOFhng@mail.gmail.com> <396aa96d-98f0-47fe-a4a7-b01376efd7ac@oss.qualcomm.com>
-In-Reply-To: <396aa96d-98f0-47fe-a4a7-b01376efd7ac@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 6 Nov 2026 15:24:50 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jx00qAZefw3u0_qenO5M4SJ2XbEq3ibGicDhmPDEcrZw@mail.gmail.com>
-X-Gm-Features: AclHuK_KXa13i8WXJYPjdluP2u0LSpoZFREWNWTLW2TeSnxtGZ8Nsi0Ix6Fx8uU
-Message-ID: <CAJZ5v0jx00qAZefw3u0_qenO5M4SJ2XbEq3ibGicDhmPDEcrZw@mail.gmail.com>
-Subject: Re: [PATCH v2] cpufreq: Only cache resolved frequency in cpufreq_driver_resolve_freq()
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, viresh.kumar@linaro.org, vincent.donnefort@arm.com, 
-	linux-pm@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-On Fri, Nov 6, 2026 at 3:00=E2=80=AFPM Zhongqiu Han
-<zhongqiu.han@oss.qualcomm.com> wrote:
->
-> On 11/6/2026 1:07 AM, Rafael J. Wysocki (Intel) wrote:
-> > On Thu, Nov 5, 2026 at 3:04=E2=80=AFPM Zhongqiu Han
-> > <zhongqiu.han@oss.qualcomm.com> wrote:
-> >>
-> >> Commit e3c062360870 ("cpufreq: add cpufreq_driver_resolve_freq()") add=
-ed
-> >> policy->cached_resolved_idx so that "a subsequent fast_switch operatio=
-n
-> >> can avoid repeating the same lookup", and made cpufreq_set_policy()
-> >> invalidate the cache instead of filling it. That is, the cached index =
-is
-> >> only meant to be used by the frequency switch immediately following th=
-e
-> >> resolution that has produced it.
-> >>
-> >> However, two other places now access the cache without synchronizing
-> >> with its other users:
-> >>
-> >>   * Since commit f9ccdec24d91 ("cpufreq: Reuse cpufreq_driver_resolve_=
-freq()
-> >>     in __cpufreq_driver_target()"), __cpufreq_driver_target() reads th=
-e
-> >>     resolved index back from the cache before calling ->target_index()=
-.
-> >>     sugov_work() calls it without sg_policy->update_lock, so the sched=
-uler
-> >>     path (a tick on the policy CPU or a remote update) can overwrite t=
-he
-> >>     index via cpufreq_driver_resolve_freq() meanwhile. This matters wh=
-en
-> >>     sugov_hold_freq() discards the lower frequency resolved there, lea=
-ving
-> >>     the CPU below the frequency schedutil has kept for it.
-> >>
-> >>    CPU0 (sugov_work())                  CPU0 (tick interrupt)
-> >>    __cpufreq_driver_target(f_i)
-> >>      __resolve_freq()
-> >>        cached_resolved_idx =3D i
-> >>                                         sugov_update_single_freq()
-> >>                                           get_next_freq()
-> >>                                             cpufreq_driver_resolve_fre=
-q(f_k)
-> >>                                               cached_resolved_idx =3D =
-k
-> >>      __target_index(cached_resolved_idx)
-> >>        ->target_index(policy, k)
-> >>
-> >>   * Since commit 151717690694 ("cpufreq: Make policy min/max hard
-> >>     requirements"), cpufreq_set_policy() updates the cache as a side e=
-ffect
-> >>     of __resolve_freq(), which can race with governors switching frequ=
-encies
-> >>     without policy->rwsem (schedutil, ondemand, conservative), and a s=
-imilar
-> >>     race was addressed by commit 7491cdf46b5c ("cpufreq: Avoid using
-> >>     inconsistent policy->min and policy->max"). qcom-cpufreq-hw and
-> >>     apple-soc-cpufreq ->fast_switch() read the cached index directly t=
-oo.
-> >>
-> >>    CPU0 (sugov_work(), work_lock held)  CPU1 (handle_update(), rwsem h=
-eld)
-> >>    __cpufreq_driver_target(f_i)
-> >>      __resolve_freq()
-> >>        cached_resolved_idx =3D i
-> >>                                         cpufreq_set_policy()
-> >>                                           __resolve_freq(min)
-> >>                                             cached_resolved_idx =3D j_=
-min
-> >>      __target_index(cached_resolved_idx)
-> >>        ->target_index(policy, j_min)
-> >>
-> >> In both cases, schedutil does not call the driver again until its
-> >> selection changes, so the CPU can get stuck at a frequency it has not
-> >> selected. All drivers implementing ->target_index() are affected.
-> >>
-> >> The cache is only consumed by ->fast_switch() right after
-> >> cpufreq_driver_resolve_freq(), so only update it there and use a local
-> >> index in __cpufreq_driver_target().
-> >>
-> >> Fixes: f9ccdec24d91 ("cpufreq: Reuse cpufreq_driver_resolve_freq() in =
-__cpufreq_driver_target()")
-> >> Fixes: 151717690694 ("cpufreq: Make policy min/max hard requirements")
-> >> Cc: stable@vger.kernel.org # 5.14+
-> >> Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> >> ---
-> >> v1 -> v2:
-> >> - Initialize idx in __cpufreq_driver_target() to avoid a
-> >>    -Wmaybe-uninitialized warning with W=3D2, as reported by Sashiko.
-> >> - Link to V1: https://lore.kernel.org/all/20261104153042.3987338-1-zho=
-ngqiu.han@oss.qualcomm.com/
-> >>
-> >>   drivers/cpufreq/cpufreq.c | 38 ++++++++++++++++++++++++++++++-------=
--
-> >>   1 file changed, 30 insertions(+), 8 deletions(-)
-> >>
-> >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> >> index 54dde8419bdc..68009918e80a 100644
-> >> --- a/drivers/cpufreq/cpufreq.c
-> >> +++ b/drivers/cpufreq/cpufreq.c
-> >> @@ -471,10 +471,17 @@ void cpufreq_disable_fast_switch(struct cpufreq_=
-policy *policy)
-> >>   }
-> >>   EXPORT_SYMBOL_GPL(cpufreq_disable_fast_switch);
-> >>
-> >> +/*
-> >> + * Note that this does not update the cached frequency lookup in @pol=
-icy,
-> >> + * because it may be running in parallel with a frequency switch carr=
-ied out by
-> >> + * the governor that uses the cached index.  If @resolved_idx is not =
-NULL, the
-> >> + * index of the resolved frequency in the frequency table is stored i=
-n the
-> >> + * location pointed to by it instead.
-> >> + */
-> >>   static unsigned int __resolve_freq(struct cpufreq_policy *policy,
-> >>                                     unsigned int target_freq,
-> >>                                     unsigned int min, unsigned int max=
-,
-> >> -                                  unsigned int relation)
-> >> +                                  unsigned int relation, unsigned int=
- *resolved_idx)
-> >>   {
-> >>          unsigned int idx;
-> >>
-> >> @@ -484,8 +491,8 @@ static unsigned int __resolve_freq(struct cpufreq_=
-policy *policy,
-> >>                  return target_freq;
-> >>
-> >>          idx =3D cpufreq_frequency_table_target(policy, target_freq, m=
-in, max, relation);
-> >> -       policy->cached_resolved_idx =3D idx;
-> >> -       policy->cached_target_freq =3D target_freq;
-> >> +       if (resolved_idx)
-> >> +               *resolved_idx =3D idx;
-> >>          return policy->freq_table[idx].frequency;
-> >>   }
-> >>
-> >> @@ -505,6 +512,7 @@ unsigned int cpufreq_driver_resolve_freq(struct cp=
-ufreq_policy *policy,
-> >>   {
-> >>          unsigned int min =3D READ_ONCE(policy->min);
-> >>          unsigned int max =3D READ_ONCE(policy->max);
-> >> +       unsigned int freq, idx;
-> >>
-> >>          /*
-> >>           * If this function runs in parallel with cpufreq_set_policy(=
-), it may
-> >> @@ -517,7 +525,20 @@ unsigned int cpufreq_driver_resolve_freq(struct c=
-pufreq_policy *policy,
-> >>          if (unlikely(min > max))
-> >>                  min =3D max;
-> >>
-> >> -       return __resolve_freq(policy, target_freq, min, max, CPUFREQ_R=
-ELATION_LE);
-> >> +       target_freq =3D clamp_val(target_freq, min, max);
-> >> +       freq =3D __resolve_freq(policy, target_freq, min, max, CPUFREQ=
-_RELATION_LE,
-> >> +                             &idx);
-> >> +
-> >> +       /*
-> >> +        * Cache the lookup result for the subsequent ->fast_switch() =
-call, which
-> >> +        * is the only user of it.
-> >> +        */
-> >> +       if (policy->freq_table) {
-> >> +               policy->cached_resolved_idx =3D idx;
-> >> +               policy->cached_target_freq =3D target_freq;
-> >> +       }
-> >
-> > The extra clamping of target_freq above the __resolve_freq() call
-> > above is not nice.
->
-> Agreed, it was only there to get the clamped value for
-> cached_target_freq.
->
-> >
-> > Also, all of this can be rearranged to avoid passing NULL pointers to
-> > __resolve_freq().
->
-> Right, splitting it into three levels (get_index_and_freq() for the
-> table lookup, resolve_freq() adding the clamping, and
-> cpufreq_driver_resolve_freq() as the only one updating the cache)
-> is much cleaner.
->
-> >
-> > Moreover, if I'm not mistaken, the direct policy->cached_target_freq
-> > update in cpufreq_set_policy() needs to be moved to the point where
-> > the governor has been stopped or it will still be racing with fast
-> > switching.
->
-> You're right, I missed that one. Moving it after stopping the governor
-> also means the limits-only path no longer resets it, which looks fine
-> to me because schedutil always calls cpufreq_driver_resolve_freq()
-> right before fast switching anyway.
->
-> >
-> > Overall, the attached (untested) patch is what I would do, so please
-> > let me know if it works for you (sorry for the attachment, but GMail
-> > isn't good at handling appended patches).
->
-> Yes, that looks good to me, thanks!
-> (If needed, I'd be happy to test it once I'm back from my business trip)
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Thanks for the input, but there's a new data point.
+get_next_freq() in the schedutil governor returns the resolved
+frequency from cpufreq_driver_resolve_freq(), and that resolved value
+is then passed to cpufreq_driver_fast_switch().  The only reader of
+cached_target_freq, acpi_cpufreq_fast_switch(), compares it with the
+post-resolution target frequency, but it holds the pre-resolution
+clamped frequency, so any request that falls between table entries
+misses the cache and falls back to a table scan.
 
-I ran this patch through Sashiko internally and it found a
-pre-existing problem in __resolve_freq() which is that
-__resolve_freq() should cache the post-resolution frequency instead of
-the clamped pre-resolution one (the only user of the cached frequency
-compares it to a post-resolution frequency value).  When this is
-addressed beforehand, the $subject patch becomes much more
-straightforward.
+Address this by making __resolve_freq() store the post-resolution
+frequency in cached_target_freq.
 
-I'll post the series of two patches, one addressing the issue flagged
-by Sashiko and a modification of $subject patch on top of it shortly.
+Fixes: e3c062360870 ("cpufreq: add cpufreq_driver_resolve_freq()")
+Cc: All applicable <stable@vger.kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -488,8 +488,8 @@ static unsigned int __resolve_freq(struc
+ 
+ 	idx = cpufreq_frequency_table_target(policy, target_freq, min, max, relation);
+ 	policy->cached_resolved_idx = idx;
+-	policy->cached_target_freq = target_freq;
+-	return policy->freq_table[idx].frequency;
++	policy->cached_target_freq = policy->freq_table[idx].frequency;
++	return policy->cached_target_freq;
+ }
+ 
+ /**
+
+
+
