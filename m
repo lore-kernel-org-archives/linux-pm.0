@@ -1,83 +1,83 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.43
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793978402;
-	b=5d9tHYBBoCN6B+jvd6Ke3fmha6t5pTEq/iPhSvQigy6YLVcXnXuid+161jx5eLRDsA4x
-	 +0Tkqij4Y0V/yvswOwM3aS6X7WHmiDAMSQMh+hBW7ipDDT3h4XSi429IPFPsWjD/Vm7u8
-	 ZdeGNZ+hRcE31yfZ6+qniTmWhaXqZ5osf7TcdWEJhu0EqXqnISBQXD/UX9YdyZI0lu4QL
-	 aZSanwz8fw2RxWVdiUX+t+nMnYsN65YvzZls1vPZPBkrMVHdkvLXAL3u+poA1KdRI0emF
-	 zieOalDLCMefxfENUiTJ1IhbkpbCncOTrRHguDF0ziQt7TJruG/jPGvIO6j53VpnQUw==
+	t=1793978404;
+	b=ReXaF510cTrb2D26VfWV2dQIte9LhrmvkTPEumuE90AGHZWjHHffY2Y06DNZfS5nFdUn
+	 lEG5ur+D8Aiz9blv2V3Ar6ISBU1Xk3PIaA5FNXj3ZibdGUeZDzro0OOQ6rLhuCZzkO4s0
+	 wcEWzuDOAZZkvsywfYfwaKAXbIWn9Xzi4alsIUQ4a1OzS4alifvUMNBnkOlwwegyn8qKg
+	 APwhHUeBh5chqrepZc7CCzvQNRd468TMCmgQvHUWTAdcctiFfz/asox+VjFpjfi5n7okB
+	 OrYAteuCmHSDBCcYc80I98UbQfMzmvtXcT9VyVT4ZXY+ycnTCssh9HHxrKPF9hduWtQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793978402;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793978404;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=7Pf+5maXqpAz569Db8vuW9XhpxdXWCoWb3bAlNcqK4w=;
-	b=t9+36G6P53QFplYpa/KaAbw/oYdnQ0CVhzavDjtr07JxQYW0mjWiGfwdY6L368qXQ+5P
-	 2j18XGLUiUGqBiQ55LJzUO49X5VAc1tI+LBAKP8Ifaca0v0QPMtqhVOu5cinGuEHHdZW8
-	 s3qkLyq8qjmB5EJi2VPfQ1j3O90H6KOw5HszSirAczyGdxM3l4J5LTEgZojZKtsdaKOm5
-	 hOeEGQA1dpyoPl0v8GNafEf56qcnHHtpII5DuueGphkVAPmwKxUx6bMST/KMl/RgC3RfL
-	 Mb4yoJwWVFuZZOEzHtciLTu9ngx2pY76wsvU2nvQ6WzywkDniIJPocqltPs0PjJC/Sw==
+	bh=bNvYaN9+IditNDhq23YRJI+wa1XYmfweeiUK+nE25zk=;
+	b=nv1j7FedBEnICSxrJJgjK079iguGUh9zAFbN1TkSrFUeyEvV85aVAyVOoHVKv/Qs4/rk
+	 SSHHXffGUMnWzbukMw+7XGPOt6iXXHH7YHaa9uoaXL8hU2MTtO698vD+EJ5pR8HDWDVJz
+	 qebyqTdYcSMA/etqm8gRKgZnyclkm7n/ppC/+8dj7HE27gxKOxPVTj+CRHzx9haFNU55K
+	 37oT64hon1BUj1AigVddTS6s2KkUr2z/Bxm2I/qu6yQ6ToPsKSOV70R1B/w5Uug79Vx2Y
+	 wFS7kvTmrT8OWKvDBv4/5Y/NpN6z0D7en21ENWeksICO3Yd75he5/OZ7WDGQDTtO8ow==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linaro.org;
 	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=t7SyoZBI;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=i1WasBA1;
 	arc=none smtp.remote-ip=209.85.128.43
 Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15885606A32F
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:20:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 15885606A32F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36858606A335
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:20:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 36858606A335
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=t7SyoZBI
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-4a207b02a2cso5072665e9.1
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:20:01 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=i1WasBA1
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-4b4571ff080so8033565e9.1
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:20:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1793978400; x=1794583200; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1793978401; x=1794583201; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=7Pf+5maXqpAz569Db8vuW9XhpxdXWCoWb3bAlNcqK4w=;
-        b=t7SyoZBIBoZFNXuyn5yZTnUuz98ANHEto6OEXdHoXX5qKE6pG5n2Sp1ufGGychaXgR
-         mFMLOL8xHq1i6qzBjW9mkHtESYxBi1uJF+goREKFJJZE1fEmzMwt6dxk8HUUuZ7Rjk6o
-         h7gIXbvjMhzPPTEKFY0O2A1giNPU4+so8IYk2WMVDsT1G4TI7NujitUx++lz7/t1xw7/
-         ulbnckEfFh6Nlc4665cymU14v/60bl6lQmRvoiOgW0xEz4p99sR9kLB2bfBwD9QlqRsG
-         pR+yEO71NDrjBxak0ssKcPl9nmG4RbnwTIjBttOlrr2jNKMJrfWCFLVDsQNmRyPO6BiD
-         LIRg==
+        bh=bNvYaN9+IditNDhq23YRJI+wa1XYmfweeiUK+nE25zk=;
+        b=i1WasBA1F8IdFNhWlR+IMa7LWgkopw9CDfif5WVvvAQKFyekauGD+r83mrBn+5GlZo
+         2q8L+3y46KKzp9rQPV5Dsz0mqpVhse1ezxCR9DjjE5Sq3/mdPwY8X/Sj2EvTTT5Qk7D8
+         tbEofTdoC347mEaYnKii9UfOaJ3Qsu7npWLZpeibfxI4JulP85ahQN2x85hJVOc5xqQJ
+         As4CYj4ihevSXyctUXDKHL9lvRJomMovq5d1c5ZvOAb/TJq3VX4NQ08M2YdFH+kdtq4n
+         BN518jPpwbj5V+Z4TCmC4QqAdwn+CPSq1GhW+KjDi5z5P899w9fWWEcQ0PYozjAZDbaD
+         tZJw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793978400; x=1794583200;
+        d=1e100.net; s=20260707; t=1793978401; x=1794583201;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7Pf+5maXqpAz569Db8vuW9XhpxdXWCoWb3bAlNcqK4w=;
-        b=nW4nKJwgMOiSR0cHxjtfW6vwlMn0R8jjjyGBc4/JGpSOHpkpVe3N1L1T1geJ3tiCSQ
-         6Wm+LBZHEmQV74WcysedhKXNIzS619tMX7jCm+BWAqrzKeiprH7yP+rvnA0DIlp3Qu61
-         TNUQPetylPdziGp/O4PQG7C1czd90CIqLOCQA0UKMn2p3OXLjKlr/N/bpJReh07oId3s
-         3dniirxI8QEbKC7/pmdp/fTO+EdbdssycTbFllbWdEeV5PoCezx9R8NnYukhKNQkcVWi
-         u2r3DXwbCaCLXOqniOc5suJihEAvhE0Y8CLNYkvwNc+n7CNsx/GhlpdPM9N9v+rPxvKF
-         ThcQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzpoywclq1yCLS6eIvLqpDsH2pJGlEujasu/NbSK9Q6Fi84LIY4SlOu1nSRwJw7FX+/iyVoLlqY0w==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/KM2nE+a40e3cmw30YDGbxMHPBXiFbo2S+U3hqSv6lgZ+uXDCS
-	XHVR5OXrsXD4t9YaUJtba2Vikyvld6EQ+wwB6cbt6JQRFYW/XE6WZbw9UYniP8PAkdI=
-X-Gm-Gg: AYBFou0H7PkM15UxDMTv21NN2E2eZhN804g77bVnye9EnRax9XetH1ho3Ydz3MvS3Jm
-	OluPfjoCKYQsbz5bBGfwfCooU6slmJxcm3uoQnmUQBDfcRV//wiSR1fuMmtnjKuEPROy9Q9Ipzv
-	tBMslidpWpMKLUWxlY7p+tkqRjHWW+EDe4KoSOOmuMpZELzulrnHutOkr3QA5+hHG9yEIB9iRZL
-	HoiiQS9G//MIHo2Ys/bO198AZO6TrI6DuZumKJjl/fIcnMJgEHITeX0oLa+zhyma4iCsDpoiCLJ
-	uFlWphpNhPkoio8CRtviceRsqU8PZSq/7AWf6JCPXTuQBGelmEN7TwXH15SOekRD0mOy31NyTlh
-	ZkjWppeUzvJP2IRoKD5ymL4FqNIrH01VBhu3cEX4jIp3Vq8W9l045HCp6jbrN7h2CGeLT981UNZ
-	hoQUOqeB6Ok2AEb6R4wjh9/Q2Cz7ag4ype/eRWfLbien7N7EkMK1dfIJfQTcy+5elOU9U1JX4Gz
-	oj12NkO3kPtVb2j64S93DsNJ8h0ETT840cjuGR9rMvh0SyAY1SkCbZess0gAPdBkJbAwgHj+MrE
-	WqRb1AscH3Aj9NJUX+8RXAJ7/oKR5VNNkLy/51yzBjcVa78=
-X-Received: by 2002:a05:600c:5294:b0:4a1:fb23:68f0 with SMTP id 5b1f17b1804b1-4b6dc40027cmr50426165e9.3.1793978400357;
-        Fri, 06 Nov 2026 07:20:00 -0800 (PST)
+        bh=bNvYaN9+IditNDhq23YRJI+wa1XYmfweeiUK+nE25zk=;
+        b=futd5v4NMowu5EbKcrkc1SxeIchYkPrZ5XAmgKbM+sWLMEE0VRDLhEbvThOmAWLea9
+         NNs1RYl0WNcKLhF341L2G6AceRyGMTsXgE/d07PJHAlWnWpbwHQPIfLnLsZ4IYYCGz0Q
+         JOqEUMJtG/IP1QwXmuKcm2rc+9NJrtCRKSRQwr3VGo/0Ce4M047lwhJE06nv6ewLpubh
+         xetJ529NJYHKoKUxIEpRGC8ZuloRo7riSGKF9uwR1SvejEdAnIqJnrpf64+HTCBYS5Kh
+         bJjt06J6EQgDfOsoyyXCHf1WRHpkqPbk/jlb0xibaspHXy7Is8SWF1yUQyHtoIo6mrXF
+         xYuw==
+X-Forwarded-Encrypted: i=1; AL+hErG82pap1GdP6NHUo6r5Hxtc3NJZ2Jy0pjsMsZpXt+jpivaMLSqOR19c+7Hxkkyb5LripJLDaNx56A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/cEnp4EtsuoAK+nsbRb9c0EdbnxAx3SRZP9iZ58t5Yt5kQf9Ob
+	YAfHYB4mowCvjONvo0t5FG9fZoFjuoiSBdID7J6lrtpMDg9Qg7OrhZ1gUuVYzQ1/5h8=
+X-Gm-Gg: AYBFou0+iqwfncHGFff3i/Pru6oA9xGLud5fZK+bNtv1rQAWe/EAm4FlZCb2gp+Sskm
+	okxHp5kPZNJdfyoT61BLYP2GU2OHav8E/fYk8FhgN//LtQs0bqfyphTpFTrPyNXiQu3MtIRBJO0
+	NwGPezD8QmasQrMwo6GO7cbjmjQPtXaDYuaIc5Dfwq09DvT0dCpEi1JVUBXCfR/X2ROfdnKaQQU
+	4mO1HbQkI7rQYyJ9bSVT4CM1zqAS2gdwmZ25q7Z7SouKRcMW0k4DWRDrf2EGyP1/SFu0ovZMpWJ
+	xhhf57mOr3C0D84+WBTjofMDnhJuIz7XcIfObyVeVeBRTqBstzAsr5+zJ549/ainB30iSVtZDSX
+	7zPdjuQUaaVLYD66KkDO5xJXjYsOTGz615nIp62krQT/7w2UFRp7t4/UQe/mGcGat14+6H27lA7
+	sCYMcez46CZ5QfOy3j6UCTGLPI6BEX+7E5iK28695hpdY/FEqa+VOcsF0XGr2oD7iG7O5SuGnrQ
+	ETHljcFh9kqnw/r3jn3iKnzN3FYK/ZNstRIBzk39bx0MOEP8xjqcqJ/m3b9806EqAExkQpi6OkI
+	/TWq3gK3yJiYD2sJuo8T2X427zpPQ4NExhSgkufjCaVPcrY=
+X-Received: by 2002:a05:6000:2203:b0:48e:2a6c:153b with SMTP id ffacd0b85a97d-493cb334277mr304843f8f.35.1793978401501;
+        Fri, 06 Nov 2026 07:20:01 -0800 (PST)
 Received: from vingu-cube.home ([2a01:e0a:11f4:3020:ed97:32bc:977a:3b65])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.19.59
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.20.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 07:19:59 -0800 (PST)
+        Fri, 06 Nov 2026 07:20:00 -0800 (PST)
 From: Vincent Guittot <vincent.guittot@linaro.org>
 To: mingo@redhat.com,
 	peterz@infradead.org,
@@ -104,9 +104,9 @@ Cc: qyousef@layalina.io,
 	kayracizmeci@gmail.com,
 	tim.c.chen@linux.intel.com,
 	Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 06/20 v3] sched/eevdf: Add min slice check when selecting CPU
-Date: Fri,  6 Nov 2026 16:19:33 +0100
-Message-ID: <20261106151947.3991524-7-vincent.guittot@linaro.org>
+Subject: [PATCH 07/20 v3] sched/fair: Prepare select_task_rq_fair() to be called for new cases
+Date: Fri,  6 Nov 2026 16:19:34 +0100
+Message-ID: <20261106151947.3991524-8-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261106151947.3991524-1-vincent.guittot@linaro.org>
 References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
@@ -121,338 +121,160 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add a new level for selecting CPU when select_task_rq_fair() fails to find
-an idle CPU. This last level compares the min slice to select a CPU where
-the task could run 1st.
-This helps a waking task to select a CPU where a longer slice runs
-instead of one where a task with the same or shorter slice already runs.
+Update select_task_rq_fair() to be called outside of the 3 current cases:
+- wake up
+- exec
+- fork
+
+We wants to select a rq in some new cases like pushing a runnable task on a
+better CPU than the local one. In such case, it's not a wakeup , nor an
+exec nor a fork. We ensure to not distrub these cases but still go through
+EAS and fast-path.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- kernel/sched/core.c |   2 +-
- kernel/sched/fair.c | 157 ++++++++++++++++++++++++++++----------------
- 2 files changed, 102 insertions(+), 57 deletions(-)
+ kernel/sched/fair.c | 75 +++++++++++++++++++++++++++++----------------
+ 1 file changed, 48 insertions(+), 27 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 031efe7d49fb..d71da9069218 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -9012,7 +9012,7 @@ void __init sched_init(void)
- 		rq->sd = NULL;
- 		rq->rd = NULL;
- 		rq->cpu_capacity = SCHED_CAPACITY_SCALE;
--		rq->min_slice = ULONG_MAX;
-+		rq->min_slice = 0;
- 		rq->balance_callback = &balance_push_callback;
- 		rq->active_balance = 0;
- 		rq->next_balance = jiffies;
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index cfc99b94d9ce..039dce244aaa 100644
+index 039dce244aaa..8f99c8bf1a80 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -8842,11 +8842,25 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
- 	return new_cpu;
+@@ -6170,6 +6170,18 @@ static void sync_entity_load_avg(struct sched_entity *se)
+ 	__update_load_avg_blocked_se(last_update_time, se);
  }
  
--static inline int __select_idle_cpu(int cpu, struct task_struct *p)
-+static inline bool choose_sched_slice_rq(struct rq *rq, struct task_struct *p)
- {
--	if (choose_idle_cpu(cpu, p) && sched_cpu_cookie_match(cpu_rq(cpu), p))
-+	if (p->se.slice < get_rq_min_slice(rq))
-+		return true;
++/*
++ * Synchronize task load avg of dequeued entity without locking
++ * the previous rq.
++ */
++static void sync_task_load_avg(struct task_struct *p)
++{
++	if (task_on_rq_queued(p))
++		return;
 +
-+	return false;
++	sync_entity_load_avg(&p->se);
 +}
 +
-+static inline int __select_idle_cpu(int cpu, struct task_struct *p, int *slice_cpu)
-+{
-+	if (!sched_cpu_cookie_match(cpu_rq(cpu), p))
-+		return -1;
-+
-+	if (choose_idle_cpu(cpu, p))
- 		return cpu;
+ /*
+  * Task first catches up with cfs_rq, and then subtract
+  * itself from the cfs_rq (task must be off the queue now).
+@@ -8802,7 +8814,7 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
+ 	 * prev_cpu's last_update_time.
+ 	 */
+ 	if (!(sd_flag & SD_BALANCE_FORK))
+-		sync_entity_load_avg(&p->se);
++		sync_task_load_avg(p);
  
-+	if (*slice_cpu == -1 && choose_sched_slice_rq(cpu_rq(cpu), p))
-+		*slice_cpu = cpu;
-+
- 	return -1;
+ 	while (sd) {
+ 		struct sched_group *group;
+@@ -9318,7 +9330,7 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
+ 	 * that the task fits with CPU's capacity.
+ 	 */
+ 	if (sched_asym_cpucap_active()) {
+-		sync_entity_load_avg(&p->se);
++		sync_task_load_avg(p);
+ 		task_util = task_util_est(p);
+ 		util_min = uclamp_eff_value(p, UCLAMP_MIN);
+ 		util_max = uclamp_eff_value(p, UCLAMP_MAX);
+@@ -9912,7 +9924,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
+ 
+ 	target = prev_cpu;
+ 
+-	sync_entity_load_avg(&p->se);
++	sync_task_load_avg(p);
+ 	if (!task_util_est(p) && p_util_min == 0)
+ 		return target;
+ 
+@@ -10060,46 +10072,55 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
  }
- 
-@@ -8937,7 +8951,8 @@ void __update_idle_core(struct rq *rq)
-  * sd_balance_shared->has_idle_cores and enabled through update_idle_core()
-  * above.
-  */
--static int select_idle_core(struct task_struct *p, int core, struct cpumask *cpus, int *idle_cpu)
-+static int select_idle_core(struct task_struct *p, int core, struct cpumask *cpus,
-+			    int *idle_cpu, int *slice_cpu)
- {
- 	bool idle = true;
- 	int cpu;
-@@ -8946,11 +8961,18 @@ static int select_idle_core(struct task_struct *p, int core, struct cpumask *cpu
- 		if (!available_idle_cpu(cpu)) {
- 			idle = false;
- 			if (*idle_cpu == -1) {
--				if (choose_sched_idle_rq(cpu_rq(cpu), p) &&
--				    cpumask_test_cpu(cpu, cpus)) {
-+				if (!cpumask_test_cpu(cpu, cpus))
-+					continue;
-+
-+				if (choose_sched_idle_rq(cpu_rq(cpu), p)) {
- 					*idle_cpu = cpu;
- 					break;
- 				}
-+
-+				if (*slice_cpu == -1 &&
-+				    choose_sched_slice_rq(cpu_rq(cpu), p))
-+					*slice_cpu = cpu;
-+
- 				continue;
- 			}
- 			break;
-@@ -8994,10 +9016,11 @@ static int select_idle_smt(struct task_struct *p, struct sched_domain *sd, int t
-  * comparing the average scan cost (tracked in sd->avg_scan_cost) against the
-  * average idle time for this rq (as found in rq->avg_idle).
-  */
--static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool has_idle_core, int target)
-+static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd,
-+			   bool has_idle_core, int *best)
- {
- 	struct cpumask *cpus = this_cpu_cpumask_var_ptr(select_rq_mask);
--	int i, cpu, idle_cpu = -1, nr = INT_MAX;
-+	int i, cpu, idle_cpu = -1, slice_cpu = -1, target = *best, nr = INT_MAX;
- 
- 	if (sched_feat(SIS_UTIL) && sd->shared) {
- 		/*
-@@ -9027,13 +9050,13 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
- 					continue;
- 
- 				if (has_idle_core) {
--					i = select_idle_core(p, cpu, cpus, &idle_cpu);
-+					i = select_idle_core(p, cpu, cpus, &idle_cpu, &slice_cpu);
- 					if ((unsigned int)i < nr_cpumask_bits)
- 						return i;
- 				} else {
- 					if (--nr <= 0)
--						return -1;
--					idle_cpu = __select_idle_cpu(cpu, p);
-+						goto abort_idle_cpu;
-+					idle_cpu = __select_idle_cpu(cpu, p, &slice_cpu);
- 					if ((unsigned int)idle_cpu < nr_cpumask_bits)
- 						return idle_cpu;
- 				}
-@@ -9044,14 +9067,14 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
- 
- 	for_each_cpu_wrap(cpu, cpus, target + 1) {
- 		if (has_idle_core) {
--			i = select_idle_core(p, cpu, cpus, &idle_cpu);
-+			i = select_idle_core(p, cpu, cpus, &idle_cpu, &slice_cpu);
- 			if ((unsigned int)i < nr_cpumask_bits)
- 				return i;
- 
- 		} else {
- 			if (--nr <= 0)
--				return -1;
--			idle_cpu = __select_idle_cpu(cpu, p);
-+				goto abort_idle_cpu;
-+			idle_cpu = __select_idle_cpu(cpu, p, &slice_cpu);
- 			if ((unsigned int)idle_cpu < nr_cpumask_bits)
- 				break;
- 		}
-@@ -9060,6 +9083,10 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
- 	if (has_idle_core)
- 		set_idle_cores(target, false);
- 
-+abort_idle_cpu:
-+	if (idle_cpu == -1 && !choose_sched_slice_rq(cpu_rq(target), p) && slice_cpu != -1)
-+		*best = slice_cpu;
-+
- 	return idle_cpu;
- }
- 
-@@ -9074,16 +9101,21 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
-  *
-  *   Rank                            Val  Tier    Meaning
-  *   ------------------------------  ---  ------  ---------------------------
-- *   ASYM_IDLE_UCLAMP_MISFIT         -4   core    Idle core; capacity fits
-+ *   ASYM_BUSY_FITS                  -6   core    Busy core but capacity fits
-+ *						  and task can preempt current.
-+ *   ASYM_IDLE_UCLAMP_MISFIT         -5   core    Idle core; capacity fits
-  *                                                util but uclamp_min misses.
-- *   ASYM_IDLE_COMPLETE_MISFIT       -3   core    Idle core; capacity does
-+ *   ASYM_IDLE_COMPLETE_MISFIT       -4   core    Idle core; capacity does
-  *                                                not fit. Still beats every
-  *                                                thread-tier rank: a busy
-  *                                                sibling cuts effective
-  *                                                capacity more than a
-  *                                                misfit hurts a quiet core.
-- *   ASYM_IDLE_THREAD_FITS           -2   thread  Busy SMT sibling; capacity
-+ *   ASYM_IDLE_THREAD_FITS           -3   thread  Busy SMT sibling; capacity
-  *                                                fits util + uclamp.
-+ *   ASYM_BUSY_THREAD_FITS           -2   thread  Busy CPU and SMT sibling but
-+ *						  capacity fits and task can
-+ *						  preempt current.
-  *   ASYM_IDLE_THREAD_UCLAMP_MISFIT  -1   thread  Busy SMT sibling; capacity
-  *                                                fits but uclamp_min misses
-  *                                                (native util_fits_cpu()
-@@ -9091,24 +9123,26 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
-  *   ASYM_IDLE_THREAD_MISFIT          0   thread  Busy SMT sibling; capacity
-  *                                                does not fit.
-  *
-- * ASYM_IDLE_CORE_BIAS (-3) is an offset, not a state. On an idle core,
-+ * ASYM_IDLE_CORE_BIAS (-4) is an offset, not a state. On an idle core,
-  * fits += ASYM_IDLE_CORE_BIAS rebases thread-tier ranks into the core tier:
-  *
-- *   ASYM_IDLE_THREAD_UCLAMP_MISFIT (-1) + BIAS -> ASYM_IDLE_UCLAMP_MISFIT   (-4)
-- *   ASYM_IDLE_THREAD_MISFIT         (0) + BIAS -> ASYM_IDLE_COMPLETE_MISFIT (-3)
-+ *   ASYM_IDLE_THREAD_UCLAMP_MISFIT (-1) + BIAS -> ASYM_IDLE_UCLAMP_MISFIT   (-5)
-+ *   ASYM_IDLE_THREAD_MISFIT         (0) + BIAS -> ASYM_IDLE_COMPLETE_MISFIT (-4)
-  *
-- * ASYM_IDLE_THREAD_FITS (-2) is never rebased because a fully-fitting idle-core
-+ * ASYM_IDLE_THREAD_FITS (-3) is never rebased because a fully-fitting idle-core
-  * candidate early-returns from select_idle_capacity().
-  */
- enum asym_fits_state {
--	ASYM_IDLE_UCLAMP_MISFIT = -4,
-+	ASYM_BUSY_FITS = -6,
-+	ASYM_IDLE_UCLAMP_MISFIT,
- 	ASYM_IDLE_COMPLETE_MISFIT,
- 	ASYM_IDLE_THREAD_FITS,
-+	ASYM_BUSY_THREAD_FITS,
- 	ASYM_IDLE_THREAD_UCLAMP_MISFIT,
- 	ASYM_IDLE_THREAD_MISFIT,
- 
- 	/* util_fits_cpu() bias for idle core */
--	ASYM_IDLE_CORE_BIAS = -3,
-+	ASYM_IDLE_CORE_BIAS = -4,
- };
  
  /*
-@@ -9127,6 +9161,7 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 	bool has_idle_core = sched_smt_active() && test_idle_cores(target);
- 	unsigned long task_util, util_min, util_max, best_cap = 0;
- 	int fits, best_fits = ASYM_IDLE_THREAD_MISFIT;
-+	unsigned long task_slice;
- 	int cpu, best_cpu = -1;
- 	struct cpumask *cpus;
- 	int nr = INT_MAX;
-@@ -9137,6 +9172,7 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 	task_util = task_util_est(p);
- 	util_min = uclamp_eff_value(p, UCLAMP_MIN);
- 	util_max = uclamp_eff_value(p, UCLAMP_MAX);
-+	task_slice = p->se.slice;
- 
- 	if (sched_feat(SIS_UTIL) && sd->shared) {
- 		/*
-@@ -9160,42 +9196,49 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 		if (!has_idle_core && --nr <= 0)
- 			return best_cpu;
- 
--		if (!choose_idle_cpu(cpu, p))
--			continue;
--
- 		fits = util_fits_cpu(task_util, util_min, util_max, cpu);
- 
--		/*
--		 * Perfect fit: capacity satisfies util + uclamp and the CPU
--		 * sits on a fully-idle SMT core, this is a !SMT system, or
--		 * there is no idle core to find.
--		 * Short-circuit the rank-based selection and return
--		 * immediately.
--		 */
--		if (fits > 0 && preferred_core)
--			return cpu;
--		/*
--		 * Only the min performance hint (i.e. uclamp_min) doesn't fit.
--		 * Look for the CPU with best capacity.
--		 */
--		else if (fits < 0)
-+		if (choose_idle_cpu(cpu, p)) {
-+			/*
-+			 * Perfect fit: capacity satisfies util + uclamp and the CPU
-+			 * sits on a fully-idle SMT core, this is a !SMT system, or
-+			 * there is no idle core to find.
-+			 * Short-circuit the rank-based selection and return
-+			 * immediately.
-+			 */
-+			if (fits > 0 && preferred_core)
-+				return cpu;
-+			/*
-+			 * Only the min performance hint (i.e. uclamp_min) doesn't fit.
-+			 * Look for the CPU with best capacity.
-+			 */
-+			else if (fits < 0)
-+				cpu_cap = get_actual_cpu_capacity(cpu);
-+			/*
-+			 * fits > 0 implies we are not on a preferred core, but the util
-+			 * fits CPU capacity. Set fits to ASYM_IDLE_THREAD_FITS
-+			 * so the effective range becomes
-+			 * [ASYM_IDLE_THREAD_FITS, ASYM_IDLE_THREAD_MISFIT], where:
-+			 *    ASYM_IDLE_THREAD_MISFIT - does not fit
-+			 *    ASYM_IDLE_THREAD_UCLAMP_MISFIT - fits with the exception of UCLAMP_MIN
-+			 *    ASYM_BUSY_THREAD_FITS - fits with the exception of idleness
-+			 *			      but can preempt current
-+			 *    ASYM_IDLE_THREAD_FITS - fits with the exception of preferred_core
-+			 */
-+			else if (fits > 0)
-+				fits = ASYM_IDLE_THREAD_FITS;
-+
-+		} else if (fits > 0 && task_slice < get_rq_min_slice(cpu_rq(cpu))) {
-+			fits = ASYM_BUSY_THREAD_FITS;
- 			cpu_cap = get_actual_cpu_capacity(cpu);
--		/*
--		 * fits > 0 implies we are not on a preferred core, but the util
--		 * fits CPU capacity. Set fits to ASYM_IDLE_THREAD_FITS
--		 * so the effective range becomes
--		 * [ASYM_IDLE_THREAD_FITS, ASYM_IDLE_THREAD_MISFIT], where:
--		 *    ASYM_IDLE_THREAD_MISFIT - does not fit
--		 *    ASYM_IDLE_THREAD_UCLAMP_MISFIT - fits with the exception of UCLAMP_MIN
--		 *    ASYM_IDLE_THREAD_FITS - fits with the exception of preferred_core
--		 */
--		else if (fits > 0)
--			fits = ASYM_IDLE_THREAD_FITS;
-+		} else {
-+			continue;
-+		}
- 
- 		/*
- 		 * If we are on a preferred core, translate the range of fits
--		 * of [ASYM_IDLE_THREAD_UCLAMP_MISFIT, ASYM_IDLE_THREAD_MISFIT] to
--		 * [ASYM_IDLE_UCLAMP_MISFIT, ASYM_IDLE_COMPLETE_MISFIT].
-+		 * of [ASYM_BUSY_THREAD_FITS, ASYM_IDLE_THREAD_MISFIT] to
-+		 * [ASYM_BUSY_FITS, ASYM_IDLE_COMPLETE_MISFIT].
- 		 * This ensures that an idle core is always given priority over
- 		 * (partially) busy core.
- 		 *
-@@ -9219,15 +9262,17 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
+- * select_task_rq_fair: Select target runqueue for the waking task in domains
+- * that have the relevant SD flag set. In practice, this is SD_BALANCE_WAKE,
+- * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
++ * select_task_rq_fair: Select a target runqueue for the task.
++ * There are 2 ways to select the target runqueue:
++ * - The fast path which only looks for an idle CPU in the LLC or the smallest
++ *   asymmetric domain (i.e. the lowest domain with all compute capacities).
++ * - The slow path which looks for the idlest CPU in the highest domain with
++ *   the relevant SD flag set.
+  *
+- * Balances load by selecting the idlest CPU in the idlest group, or under
+- * certain conditions an idle sibling CPU if the domain has SD_WAKE_AFFINE set.
++ * In practice, WF_EXEC and WF_FORK uses the slow path whereas WF_TTWU and no
++ * flag (Push) uses the fast path.
+  *
+- * Returns the target CPU number.
+  */
+ static int
+-select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
++select_task_rq_fair(struct task_struct *p, int prev_cpu, int select_flags)
+ {
+-	int sync = (wake_flags & WF_SYNC) && !(current->flags & PF_EXITING);
++	int sync = (select_flags & WF_SYNC) && !(current->flags & PF_EXITING);
++	int want_sibling = !(select_flags & (WF_EXEC | WF_FORK));
++	int new_cpu, cpu = smp_processor_id();
+ 	struct sched_domain *tmp, *sd = NULL;
+-	int cpu = smp_processor_id();
+-	int new_cpu = prev_cpu;
+-	int want_affine = 0;
+ 	/* SD_flags and WF_flags share the first nibble */
+-	int sd_flag = wake_flags & 0xF;
++	int sd_flag = select_flags & 0xF;
++	int want_affine = 0;
  
  	/*
- 	 * A value in the [ASYM_IDLE_UCLAMP_MISFIT, ASYM_IDLE_COMPLETE_MISFIT]
--	 * range means the chosen CPU is in a fully idle SMT core. Values above
--	 * ASYM_IDLE_COMPLETE_MISFIT mean we never ranked such a CPU best.
-+	 * range mean the chosen CPU is in a fully idle SMT core. Values
-+	 * ASYM_BUSY_FITS or above ASYM_IDLE_COMPLETE_MISFIT mean we never
-+	 * ranked such a CPU best.
- 	 *
- 	 * The asym-capacity wakeup path returns from select_idle_sibling()
- 	 * after this function and never runs select_idle_cpu(), so the usual
- 	 * select_idle_cpu() tail that clears idle cores must live here when the
- 	 * idle-core preference did not win.
+-	 * required for stable ->cpus_allowed
++	 * Required for stable ->cpus_allowed
  	 */
--	if (has_idle_core && best_fits > ASYM_IDLE_COMPLETE_MISFIT)
-+	if (has_idle_core && (best_fits > ASYM_IDLE_COMPLETE_MISFIT ||
-+			      best_fits == ASYM_BUSY_FITS))
- 		set_idle_cores(target, false);
+ 	lockdep_assert_held(&p->pi_lock);
+-	if (wake_flags & WF_TTWU) {
++
++	if (select_flags & WF_TTWU) {
+ 		record_wakee(p);
  
- 	return best_cpu;
-@@ -9381,7 +9426,7 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
- 		}
+-		if ((wake_flags & WF_CURRENT_CPU) &&
++		if ((select_flags & WF_CURRENT_CPU) &&
+ 		    cpumask_test_cpu(cpu, p->cpus_ptr))
+ 			return cpu;
++	}
+ 
+-		if (!is_rd_overutilized(this_rq()->rd)) {
+-			new_cpu = find_energy_efficient_cpu(p, prev_cpu);
+-			if (new_cpu >= 0)
+-				return new_cpu;
+-			new_cpu = prev_cpu;
+-		}
++	/*
++	 * We don't want EAS to be called for exec or fork but it should be
++	 * called for any other case such as wake up or push callback.
++	 */
++	if (!is_rd_overutilized(this_rq()->rd) && want_sibling) {
++		new_cpu = find_energy_efficient_cpu(p, prev_cpu);
++		if (new_cpu >= 0)
++			return new_cpu;
++	}
+ 
++	if (select_flags & WF_TTWU)
+ 		want_affine = !wake_wide(p) && cpumask_test_cpu(cpu, p->cpus_ptr);
+-	}
++
++	new_cpu = prev_cpu;
+ 
+ 	for_each_domain(cpu, tmp) {
+ 		/*
+@@ -10133,8 +10154,8 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
  	}
  
--	i = select_idle_cpu(p, sd, has_idle_core, target);
-+	i = select_idle_cpu(p, sd, has_idle_core, &target);
- 	if ((unsigned int)i < nr_cpumask_bits) {
- 		target = i;
- 		goto select_smt_priority;
+ 	/* Fast path */
+-	if (wake_flags & WF_TTWU)
+-		return select_idle_sibling(p, prev_cpu, new_cpu);
++	if (want_sibling)
++		new_cpu = select_idle_sibling(p, prev_cpu, new_cpu);
+ 
+ 	return new_cpu;
+ }
 -- 
 2.53.0
 
