@@ -1,57 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793985662;
-	b=bUUy92msSNfZEd7qgMmI3yV9B3izN/hjMatX3RyRbTtu9a3UJ4MxHCkz6ZeExl0leksA
-	 e4GLZ9FWzWjs4dbwhUbBHaXsMSM863DoOW8TLOvyrRbIo3GPtog3nWVrFh+I6tEee+gnq
-	 Ail65K7avoQH7JTPXkbXV2U00CzZ0UPldnGxSR0CPLwZrUzvugU6A2IkZ+51YBpCczHqc
-	 DJ/pLw1fU08RnsziNdtgKrToyECcWFMSklcKQpuWwjTCvgGEtAmHqVdzeXQE5TzgN+xF2
-	 TxwveCeWw+yK1voVgfCFVgVrKKVOjpnbE9+a2RavMkb1g53Mrt6bokINXqw4bvGq5UQ==
+	t=1793986353;
+	b=yn82YDguSJ1nAfu2Kg3PnOp7pwBbLuQSEgWE4Exnt96ArYsE84b8hQLSPMEl5kwFpFK4
+	 gUfinUtH9r3hjQQi5/Dz52WcVB+cChSrrfS5q/RhnYEZYQ+JgwZ01lf/m5OZ7+KfnvgsI
+	 xaprcmQMYP2y5S1l37IoWfOnHC5qi8wXb9Aeelnl744cf/w472ADgwy9Q6Y1GYfEK7Rk4
+	 ZzxsaYfY+RD+Oy0VqIiUbtJ9EL7ylt/ZCpt2V4MlV/L2Cr1nBgyJGdhG+8Vu1sSomhplb
+	 X6zX6D/XMaiy68vrfvNnZVRaSZsFxKXPoas8/CSNZLV0GfWmF3eD81DcJqghrrSiF8A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793985662;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=mlSihzr8pYdtWScxo62ogUk0KfJHGdqcjF1TEJEb7DY=;
-	b=pyx8l/t+V/k9B6RRxT+NXB+q+lHLmmUfzBUMWNGrDj7yPqSEDTTeNd6TGziRJeVj64GD
-	 OTWlzZeqKBRV0deDJK1SH4KK8dxM7Kyt/M7DfMVhQPJzDz2QnNxivT5ZixM0VC6G9CFHz
-	 lsn8gW5VPFk6IWSv84miunH3Vhq0TUpb+adzqHxl5aca2/8X48Ih7vA4sgah3AzXi4FeL
-	 SgZXev0I3T3Bon+hvSn5hXGWROW9rL1UvrUZtj9UXo7Z5KZjMHMEOXCmC3SrnEix+m7iA
-	 fgA9OyArXVDbW9peg9BErgSsymu0w/0uCyt9IvjOh8nbKBcz3j9yMHXUvQOcil4yo1g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793986353;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=QUjPQH1cL8N/9URMv3jru+HqYy9OSWW11sbMjvE7s6w=;
+	b=U+Q8uD7hQepPQBAZ7e7MRnUOAtZtFnLPfr54YoW4n4qcMXGye3d8MiBYzzjuygOG9G6L
+	 wXrAU4bBoPpXPLQufXoJ3oSuWYLSrFRoYKliLnt06KY+ZOlI3j9NmD04bZLKdOmgHIUyX
+	 l33MesmwwTHROOq13xSma7hqBqRp4b8WCDEJ8BKVCVzITetcKaWM1dMMOzYRjFW1Zwija
+	 ob+crP66Hi+k2Mee1r4VcOLEI0rKSN/0uNISo04SaUWqU79m8kIX4gpa9mY3K6x3VH7Lg
+	 vzVcStSRVmz2eys3Ia0v8gWZMH70qWO+1dgOqpnjxJbtqZP2PY1wUa5NNcpfBvaVnFA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FVAFAHzp;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA253606D814;
-	Fri,  6 Nov 2026 17:21:01 +0000 (UTC)
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=tMCdkqsG;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E4D40606A326;
+	Fri,  6 Nov 2026 17:32:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E4D40606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FVAFAHzp
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA6A91F008A6;
-	Fri,  6 Nov 2026 17:20:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793985661;
-	bh=mlSihzr8pYdtWScxo62ogUk0KfJHGdqcjF1TEJEb7DY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=FVAFAHzpuPHwNet8qjtzgoQhyvQ+HIyuWRIzFwjxmR69yiVWDf4Bjk8dDAeod7FDh
-	 73BsDPXG/OHWFl5rJs3ZyxF1waQq6nVtAWDwblVgxXXHrKWFB6Y+pCIkpN7K+im3BH
-	 btzWs8U0+K74gk6xCgMIRlFKAIyWfiHO29S9elOyGv/ePdZFy5mrb7F2EbIxHwGUKv
-	 UkMr/O/8bMsQvnJukcVT35rIUcnvkoFbbHj43+3o4zOnGrSIURLnbdleZmKY8UKUqo
-	 YsPYUeASvPXYiX9bXT6kZCl1Ox/QR3NMuTCN0PlcNxfoJsZeTJALRp/bcro9kg0kJ3
-	 PP36r2lsRlS5Q==
-Date: Fri, 6 Nov 2026 17:20:56 +0000
-From: Conor Dooley <conor@kernel.org>
-To: christian.koever-draxl@student.uibk.ac.at
-Cc: glaroque@baylibre.com, rafael@kernel.org, daniel.lezcano@kernel.org,
-	rui.zhang@intel.com, lukasz.luba@arm.com, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, linux-pm@vger.kernel.org,
-	linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Christian Stefan =?iso-8859-1?Q?K=F6v=E9r-Draxl?= <ckoever@outlook.de>
-Subject: Re: [PATCH v2 1/3] dt-bindings: thermal: amlogic: add S4
-Message-ID: <20261106-surfacing-catcall-223c1c454b8e@spud>
-References: <20261106101913.46664-1-christian.koever-draxl@student.uibk.ac.at>
- <20261106101913.46664-2-christian.koever-draxl@student.uibk.ac.at>
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=tMCdkqsG
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 33D4D1477;
+	Fri,  6 Nov 2026 09:32:29 -0800 (PST)
+Received: from [10.57.68.162] (unknown [10.57.68.162])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4BD303F632;
+	Fri,  6 Nov 2026 09:32:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793986352; bh=3nfA1zsC2kWsMvZC6kHSJ1pTDsUMnfkun7dvKU5Nyno=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=tMCdkqsGitTUPwyMszbGU4m+j+P0i0dA5EGJ8UJPKWs21++tqlBNz25cSuXewzX/X
+	 gb62Ce/XhDh8M7hPeCwMrDhr3wtdUlJdthcLSQPW6w3pJ8B8AUyLVRAypR6nNQDOTA
+	 HKc5EKzNO2qOiOlsDIjb813xkSeMn0A2Qyt9pcVQ=
+Message-ID: <fcc2edad-9edf-4243-92ab-4c1949ef5de5@arm.com>
+Date: Fri, 6 Nov 2026 17:32:29 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -61,74 +53,167 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wFxvJZ9ZE23zKehY"
-Content-Disposition: inline
-In-Reply-To: <20261106101913.46664-2-christian.koever-draxl@student.uibk.ac.at>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 2/2] cpufreq: Fix updates of cached resolved frequency
+ and index
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Linux PM <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
+ Linux ACPI <linux-acpi@vger.kernel.org>,
+ Vincent Donnefort <vincent.donnefort@arm.com>
+References: <5176274.31r3eYUQgx@rafael.j.wysocki>
+ <3472677.aeNJFYEL58@rafael.j.wysocki>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <3472677.aeNJFYEL58@rafael.j.wysocki>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
---wFxvJZ9ZE23zKehY
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 11/6/26 15:05, Rafael J. Wysocki wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> 
+> The cached resolved frequency and index, cached_target_freq and
+> cached_resolved_idx, respectively, may be updated concurrently if
+> cpufreq_driver_resolve_freq() is called by the schedutil governor
+> while cpufreq_set_policy() is running for the same policy.  Those
+> concurrent updates are not synchronized in any way and the values
+> written by cpufreq_set_policy(), if it wins the race, may confuse
+> drivers using those policy fields [1].
+> 
+> To address this, use the observation that the only place where
+> cached_target_freq and cached_resolved_idx need to be updated is
+> cpufreq_driver_resolve_freq() because the only legitimate users of
+> them are .fast_switch() driver callbacks.  Although cached_resolved_idx
+> is also used in __cpufreq_driver_target(), that is in fact unnecessary
+> and it is better to use a local variable for storing the frequency
+> table index in that function.
+> 
+> Accordingly, rearrange __resolve_freq() and its callers so that
+> cached_target_freq and cached_resolved_idx are only updated in
+> cpufreq_driver_resolve_freq().
+> 
+> The cached_target_freq initialization in cpufreq_set_policy() is still
+> needed, but move it after stopping the old governor and before starting
+> the new one to avoid racing with cpufreq_driver_resolve_freq().
+> 
+> Fixes: f9ccdec24d91 ("cpufreq: Reuse cpufreq_driver_resolve_freq() in __cpufreq_driver_target()")
+> Fixes: 151717690694 ("cpufreq: Make policy min/max hard requirements")
+> Reported-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Closes: https://lore.kernel.org/linux-pm/20261105140357.1331894-1-zhongqiu.han@oss.qualcomm.com/ [1]
+> Co-developed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Cc: All applicable <stable@vger.kernel.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Fri, Nov 06, 2026 at 11:19:11AM +0100, christian.koever-draxl@student.ui=
-bk.ac.at wrote:
-> From: Christian Stefan K=F6v=E9r-Draxl <ckoever@outlook.de>
->=20
-> The S4 temperature sensors are the G12A design, but like on T7 their
-> calibration value is only available through the secure monitor: the
-> ao-secure register used on G12A holds unrelated data on S4. Add a
-> compatible for them. As on T7 the sensor index is the argument of the
-> secure monitor phandle, so one compatible serves the CPU and the DDR
-> sensor. Each sensor has a bus clock gating register access (ts_pll /
-> ts_ddr in the S4 peripheral clock controller) besides the functional
-> clock, so it takes both, named.
+Reviewed-by: Christian Loehle <christian.loehle@arm.com>
 
-Why can this not use the t7 as a fallback? Driver suggest it can.
-
->=20
-> Signed-off-by: Christian Stefan K=F6v=E9r-Draxl <ckoever@outlook.de>
 > ---
->  .../devicetree/bindings/thermal/amlogic,thermal.yaml         | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.ya=
-ml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-> index e72cb39ac635..66dd572ff44b 100644
-> --- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-> @@ -23,6 +23,7 @@ properties:
->            - const: amlogic,g12a-thermal
->        - enum:
->            - amlogic,a1-cpu-thermal
-> +          - amlogic,s4-thermal
->            - amlogic,t7-thermal
-> =20
->    reg:
-> @@ -84,7 +85,9 @@ allOf:
->        properties:
->          compatible:
->            contains:
-> -            const: amlogic,t7-thermal
-> +            enum:
-> +              - amlogic,s4-thermal
-> +              - amlogic,t7-thermal
->      then:
->        properties:
->          clocks:
-> --=20
-> 2.56.0
->=20
+>  drivers/cpufreq/cpufreq.c |   31 ++++++++++++++++++++-----------
+>  1 file changed, 20 insertions(+), 11 deletions(-)
+> 
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -477,7 +477,7 @@ EXPORT_SYMBOL_GPL(cpufreq_disable_fast_s
+>  static unsigned int __resolve_freq(struct cpufreq_policy *policy,
+>  				   unsigned int target_freq,
+>  				   unsigned int min, unsigned int max,
+> -				   unsigned int relation)
+> +				   unsigned int relation, unsigned int *idx_p)
+>  {
+>  	unsigned int idx;
+>  
+> @@ -487,9 +487,10 @@ static unsigned int __resolve_freq(struc
+>  		return target_freq;
+>  
+>  	idx = cpufreq_frequency_table_target(policy, target_freq, min, max, relation);
+> -	policy->cached_resolved_idx = idx;
+> -	policy->cached_target_freq = policy->freq_table[idx].frequency;
+> -	return policy->cached_target_freq;
+> +	if (idx_p)
+> +		*idx_p = idx;
+> +
+> +	return policy->freq_table[idx].frequency;
+>  }
+>  
+>  /**
+> @@ -520,7 +521,10 @@ unsigned int cpufreq_driver_resolve_freq
+>  	if (unlikely(min > max))
+>  		min = max;
+>  
+> -	return __resolve_freq(policy, target_freq, min, max, CPUFREQ_RELATION_LE);
+> +	policy->cached_target_freq = __resolve_freq(policy, target_freq, min, max,
+> +						    CPUFREQ_RELATION_LE,
+> +						    &policy->cached_resolved_idx);
+> +	return policy->cached_target_freq;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_driver_resolve_freq);
+>  
+> @@ -2398,12 +2402,13 @@ int __cpufreq_driver_target(struct cpufr
+>  			    unsigned int relation)
+>  {
+>  	unsigned int old_target_freq = target_freq;
+> +	unsigned int idx = 0;
+>  
+>  	if (cpufreq_disabled())
+>  		return -ENODEV;
+>  
+>  	target_freq = __resolve_freq(policy, target_freq, policy->min,
+> -				     policy->max, relation);
+> +				     policy->max, relation, &idx);
+>  
+>  	pr_debug("CPU %u: cur %u kHz -> target %u kHz (req %u kHz, rel %u)\n",
+>  		policy->cpu, policy->cur, target_freq, old_target_freq, relation);
+> @@ -2433,7 +2438,7 @@ int __cpufreq_driver_target(struct cpufr
+>  	if (!cpufreq_driver->target_index)
+>  		return -EINVAL;
+>  
+> -	return __target_index(policy, policy->cached_resolved_idx);
+> +	return __target_index(policy, idx);
+>  }
+>  EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
+>  
+> @@ -2712,7 +2717,7 @@ static int cpufreq_set_policy(struct cpu
+>  	 * concurrently by cpufreq_driver_resolve_freq() during the update.
+>  	 */
+>  	freq = __resolve_freq(policy, new_data.max, new_data.min, new_data.max,
+> -			      CPUFREQ_RELATION_H);
+> +			      CPUFREQ_RELATION_H, NULL);
+>  	if (freq != policy->max) {
+>  		WRITE_ONCE(policy->max, freq);
+>  		if (need_update_limits)
+> @@ -2720,7 +2725,7 @@ static int cpufreq_set_policy(struct cpu
+>  	}
+>  
+>  	freq = __resolve_freq(policy, new_data.min, new_data.min, new_data.max,
+> -			      CPUFREQ_RELATION_L);
+> +			      CPUFREQ_RELATION_L, NULL);
+>  	freq = min(freq, policy->max);
+>  	if (freq != policy->min) {
+>  		WRITE_ONCE(policy->min, freq);
+> @@ -2732,8 +2737,6 @@ static int cpufreq_set_policy(struct cpu
+>  
+>  	cpufreq_update_pressure(policy);
+>  
+> -	policy->cached_target_freq = UINT_MAX;
+> -
+>  	pr_debug("new min and max freqs are %u - %u kHz\n",
+>  		 policy->min, policy->max);
+>  
+> @@ -2759,6 +2762,12 @@ static int cpufreq_set_policy(struct cpu
+>  		cpufreq_exit_governor(policy);
+>  	}
+>  
+> +	/*
+> +	 * Initialize cached_target_freq while no governor is running to avoid
+> +	 * racing with cpufreq_driver_resolve_freq(), which updates it.
+> +	 */
+> +	policy->cached_target_freq = UINT_MAX;
+> +
+>  	/* start new governor */
+>  	policy->governor = new_gov;
+>  	ret = cpufreq_init_governor(policy);
+> 
+> 
+> 
 
---wFxvJZ9ZE23zKehY
-Content-Type: application/pgp-signature; name=signature.asc
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCau4MeAAKCRB4tDGHoIJi
-0qkxAQC/MXuDpuDromjVxEip2g7fLcdreRxIw+GpS5nss/+w8wD+Ig8l8mJmB0PP
-rERuia+XhvRrf4GiiJF+FhFho4j97QQ=
-=LKGV
------END PGP SIGNATURE-----
-
---wFxvJZ9ZE23zKehY--
