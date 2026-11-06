@@ -1,104 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=178.63.21.144
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793945282;
-	b=GxeN762XN7V+bv3SvpJoXE8hPF2CtcuTr+8WPgElqWVm5ZceCVhM1EKMOk4dOpIV5ZJ4
-	 XwegXTn7ls0uCgCXuchz2IeKWecBYg8aTbAUmSgUXxWFq2fdXHj199A2+vI6ldY/pBKt6
-	 BQRHctjmeqT7XDWKEtfb+etFdkQ4kTgCZz3Aa0wXSNGWu2tLLh+kqqinpS0cvvw6f52ey
-	 F2VJAbNQMOcm/tcsaCoP5YAfGQPUJI2tCkbgKXj0SLMKP9f9u/EBT8CDeodpH/Ho9v2aW
-	 PgC4MI5EXSb6hrJd4zJM0reLHY9qYMw0mvL5B/QxzubysBdXCsqkgXdG3oWCiBQuPmA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793945282;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Received:X-ME-Sender:
-	 X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:From:
-	 To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding:X-Greylist:X-Virus-Scanned:
-	 X-Virus-Status;
-	bh=YWfrO+3PGngce3vAA+WeVwidWQAaCmbQuGPi06xHNro=;
-	b=VhRA7XSyEIyeFPxCP/iP+kyClBznwWgCUHE1Wx3Fv5cCKmu5fbtKZdpmrUgkrmMwzXHu
-	 WD345Vl2BQJU+os0A9lbAT20O+8CkPA82GUjoPtHn/K3ngnqMiPVpR5cbVVCwZo51y3gz
-	 g8eb6kKV4PbGc15UglKwL8Z/K61Z4/K1ttxU2GUL8oa7T3wY65g+aSg6x6iSozoYScdOI
-	 /bO/yUecMDmRQkX1E51AqQ1NCYierZDooXYAQFJAv0TXttv7JiLJ9JckxXMxKkAlkjL4J
-	 KBf6z1kSZOZdZnmfoQPTPaOpNRvlFID/fOWhgsx49BmOhOE+YXpAfjbrrxpeTJVZiVw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=sericyb.com.au;
-	spf=pass smtp.mailfrom=shining.glasswings.com.au;
-	dkim=pass header.d=sericyb.com.au header.i=@sericyb.com.au header.a=rsa-sha256 header.s=shining header.b=huNjMeSE;
-	arc=none smtp.remote-ip=178.63.21.144
-Received: from shining.glasswings.com.au (shining.glasswings.com.au [178.63.21.144])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.53
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793952002;
+	b=T1saQuregqKO0DfzKmOnP1ZolGIgHj3u2MrKCBDK+gcZq1vaRQs8M+Ew74S5MLGPUJWd
+	 ONGJcSta/x7tpW5ySBKxyA4QkQI64MMePLnDMQVomodRjGJiyRKFuvcVlqX2v3YF0zNox
+	 bfJ3JEit650oEJZmp3jhjBHxxoApCrPZdE4vi+CBeC3fO2hqJZcDKpqSbg+O918P9+RKp
+	 AZAYKcopy6JsGHjKKRIW7L9VhgEFec9MDZT6G1FIkaUWzoRdaeDTRll98Kmw1gLbq6Yut
+	 p6qWU5FpS0sH4762xPOgdky0hzHjhgI09U7Y19dOhyeXZ/08dhQuyVLsotTHjkgfXWw==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793952002;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=JL/ejsWQpZh4uIBI1fUZsT9Ty7diuDK7PLmVq35sQrc=;
+	b=CCWlS5i3MBmcd3CjESI3C+9m4vtpDpx05OZ2/oJGyM6ZOvSIntDKKaA5+h2ABERdIf5m
+	 D05xm9XB7Qzt/ziJJkmDXWH82Xplcb7n+touuUR8xoFFneb4hdfbYS8/T+VZEIwTIXb+7
+	 AFQOo67nhBAJIOnK9h7PnVjsc8NQpfgadjypOPDLy2OovrCkHSSGPuyjWQ4We9gX4HTFt
+	 o0yWqHZt2uqcTpk/HTDjZ+TYuW07cUPIe5MdDEBv5sZcvX9QOnO+bXqohBghy+rc73+I/
+	 KSmwGi6RMsNuYKp2cYvYn8yzRe4zwO2h7KL7w8d51arHo23JEkGSHmihw0ESV5S12gA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NZn45ghf;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.53
+Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com [209.85.208.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2320A606A329;
-	Fri,  6 Nov 2026 06:07:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2320A606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=sericyb.com.au
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=shining.glasswings.com.au
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1D3B608361F
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 08:00:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D1D3B608361F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=sericyb.com.au header.i=@sericyb.com.au header.a=rsa-sha256 header.s=shining header.b=huNjMeSE
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=sericyb.com.au;
-	s=shining; t=1793945273;
-	bh=oxQ/XatkM5jxRdXO267bhYI/CjAhkGUFXp033JxNLIA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=huNjMeSExGDy27bXgm9B5b3lZufUTUe4yjSuMqmGCphhmRecJ2JtV/3GUvjjjkXOV
-	 nwK7S1bMYhaVmNw1KUGvJO45by9C1fCRwRxUQ+DYcjHP8gWYLH0WJQq94CERFTDgC9
-	 JlWR5bg4CV+jaevCDxSh2C+R9i+Ipnq2etvMBr1ReKaqxCFoxkZIo2Sn/F3icILqmy
-	 Kf5qclY04nv7YNpTPe8BtH9RCfD9zOaUg9itx9tN9dJ6VgkTh4CderDQPHFLBj3atU
-	 S4MFixFNocuBy3SvmcrP4fnU2v5ZGeLMGUyAfYE48Zw7/KtaoiVCfjAp3zOpeKDcXE
-	 GqoR3QARhPEXw==
-Received: from fauth-a2-smtp.messagingengine.com (fauth-a2-smtp.messagingengine.com [103.168.172.201])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by shining.glasswings.com.au (Postfix) with ESMTPSA id 3883710924117;
-	Fri,  6 Nov 2026 06:07:52 +0000 (UTC)
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailfauth.phl.internal (Postfix) with ESMTP id 1127DF40066;
-	Fri,  6 Nov 2026 01:07:51 -0500 (EST)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Fri, 06 Nov 2026 01:07:51 -0500
-X-ME-Sender: <xms:t27taooP_xPYjbHlmXZ_RLLDecqBtppVYGKl6w7f890mVJNhXr5vAw>
-    <xme:t27tapCu_DEz1i-14dr6JoWPAjxvCBkqpz2C1vhe8upYM_qw2ddxpOjogAN3BlIVi
-    OsQU91HbRti0WHFh3J_m2uQwSikSXeFu3GzHCwEpgjdigjsLuB25G8O>
-X-ME-Received: <xmr:t27tajVT8sbmtTvvrJOe42AIwhmyyR11DVAj7LnlvVqqVMiN8r8fYQriKoX7PwDy9sSOOjrlIqrJ7wJ7F676PpAnXIQ4nK2kqEwywT3ObfY>
-X-ME-Proxy-Cause: dmFkZTGJt3n1PQXC/FQG1+B4dDYdd7jzhZlyl3cBdgxPjc5MzKuIVzENiuR0E8tXhVCYot
-    oOxwUXQVpp6VAEFUg+Uag3+jV3NxxQBqkuwqHRpa3avIMsMf5rLSrLvoU9/YiPtVmmw1Nh
-    zLPLiGNoLWEom9MXOxTuny0wuIwJj+YnwLd3gmlT78BD8tHIS3uMrtPiOeTkzb/BpfqHcJ
-    ZJYCN1MdLe92Bp5QjUXsKpkDjC+xSg0gfYGGYkLbuDh5Mj+BFcqCO2KyQpU99GhnUhksCQ
-    Jqp321gTZQ359Pfjg6F4oa2enLz7ZLclUfrma4OACrOvjp2Zeu6dpHGkjEpDMo+QrHIVq0
-    fPMM9bXKM6l+BG/yuRuKG111J+oroUSvT0iSmY9cALE5HIH87U21thWpHH6wHEgGQBiEtH
-    LntpzjCg88yRAeWhDp473vOfvzyI4VtD+LMyUNtFTBHpmgR//cy5duykjZy7NrqE3s7Atk
-    AeN4QILVnj7M7xU3FkkYEZUX4caYa8SC+PtRogk8XdWDnn+tIsSOGxNXeN1Sp87gpeQl5v
-    XLX8Lr8Lp+n85qJLkCNKagr4EhXLwYsx+CezzZQtxLXLmeKQ/wrO6ds6Z652jMUllzX/aa
-    ouFblC5kIhlM0jv2lkvZEMsqqSF4F5rjD6ey5P1IqGUybJe32nr0mCmQv7dA
-X-ME-Proxy: <xmx:t27tarAvMjJFfCKoMk1rogDHG53bwn-UI4vZMQA4lXh_SqEdgPcOnQ>
-    <xmx:t27tagdzoaA6rSFNBn5sN8c6lOJEW0eOFJNDUaZvCSm4-XdXYB_tgQ>
-    <xmx:t27taiq3NMLIoCTEcAMR_FsMIOf3xnBZLQGl_yHJ8map53LKJbICjQ>
-    <xmx:t27tahQpnbT_FgOeD1YdYjmmXJE_XpHFlYoATuDbFgVLZAKj-WcqgQ>
-    <xmx:t27taiVF1KYKvI0pyzH7ahYn11b_RUKhOiPUrIS1k0TzJHRreVnGe9lC>
-Feedback-ID: i558e4b61:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 6 Nov 2026 01:07:46 -0500 (EST)
-From: Andrew Pam <andrew@sericyb.com.au>
-To: Trond Myklebust <trondmy@kernel.org>,
-	Anna Schumaker <anna@kernel.org>
-Cc: Andrew Pam <andrew@sericyb.com.au>,
-	Chuck Lever <cel@kernel.org>,
-	Jeff Layton <jlayton@kernel.org>,
-	NeilBrown <neil@brown.name>,
-	Olga Kornievskaia <okorniev@redhat.com>,
-	Dai Ngo <Dai.Ngo@oracle.com>,
-	Tom Talpey <tom@talpey.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	linux-nfs@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] SUNRPC: freeze rpciod and xprtiod across system sleep
-Date: Fri,  6 Nov 2026 17:07:29 +1100
-Message-ID: <20261106060735.637295-2-andrew@sericyb.com.au>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261106060735.637295-1-andrew@sericyb.com.au>
-References: <20261106060735.637295-1-andrew@sericyb.com.au>
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NZn45ghf
+Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-6b6e8b6d424so84664a12.0
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 00:00:01 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793952000; cv=none;
+        d=google.com; s=arc-20260327;
+        b=m0bMRK2ZmOH0ZwgEUy+dCTiMQ85JCAnNRC4AHzcR+hTnxxZTvk37jYBINdo2FxCCXl
+         iW8BYB2INRPx5TURY8EIgc0FswcTS5ARwKV+CQfG2GSHCOt7lE9myESsVtz7an5o7fAK
+         rROlA33jTT27JcW18pLV1vrOFPsHy7pAGWHJMAGqIrc/zGQAH8Fgc3jvuSl14yHEkMu9
+         cmyzQ+07BTD8POQEIVQ/uA1jeZg5bISeVzveDvnanHcqStOAK62XpgBfAPCFHHUl9eVX
+         NR+sSEnPcKAj8NrFHWt00JXGpvvV7PMgfmQW622DBM1W0Tq072BxBZuH4DTVtk43wGmN
+         UhtQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=JL/ejsWQpZh4uIBI1fUZsT9Ty7diuDK7PLmVq35sQrc=;
+        fh=GiIHkrnW/BTiZJOi0exEHJZdV/NjAaP+mmHn2esWqpM=;
+        b=AFFp78kchyqNZ0nrNutygGCNs/bvVa1CMt6QyUwNXUnHZNKZ2X6ldrTd6ca63ysrBP
+         6TphTegsYtVHVKVD9K6oKsvebCIyZ1RYvzb4Z6ZgRC46Maf2laNrDLtvDg8ROscayyOJ
+         ULrpIcYQOD1abtMwKGkVywsZes6oKq8unYFlv1wFqRlLaDpTVYvJMgYmQqdEy8eAp4zo
+         XtwoqXgxjE5CI3qnF+1nL7zIUciQIanXCIx10BcENMC1RKEsUAfEwc+YmcgQ47/UIgFf
+         wl6Yt7lAT0GOhXpQkz/YEEaD3lt54qm/HW1KZ/P4o2UPMKvFzgtTkf+GOpdjiZXGipMa
+         gGPQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793952000; x=1794556800; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=JL/ejsWQpZh4uIBI1fUZsT9Ty7diuDK7PLmVq35sQrc=;
+        b=NZn45ghfBG0ZvdDOyynp1nFEfObT1pcptC1zoQJVefkfah5Cvf4KhBdfAtP45zAtAQ
+         UULmHj0hEPtCZn15bvzalYNRj9fhdp3uyVdEClRuRLkVnpOfV9ppeglAAdfxPS28qNaw
+         O+q0E4sjEMKTMoFNcQUz67xVF3I/KdEzY8yg+Tpd2afhiQuFsmYUaFLtm5Ti/Cv1nQCD
+         bntrz8dBI8l+pN19cS/mEKfoLl4E98jrhkuxDF+X3o30Z7L31Q/ieTJQlTrfBLk9dFV/
+         5CptV3jFVboDZT6yTQgUn6wxAwHGSAsVVrnPYMvRpyNWRmRF2c+DpLESNG1RwdqVq9wY
+         I3nQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793952000; x=1794556800;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=JL/ejsWQpZh4uIBI1fUZsT9Ty7diuDK7PLmVq35sQrc=;
+        b=epAbp/g4Rfyyy8TfTwlMct74/Y7KaC8zVI1xGOT+u8sw8Bchyzm4v3yBhIixvqSTeX
+         yanjmllc+Pb2w4jP//taiNDwPrfxuqZv5g2vqK1QjILAEh08Js4F/F0YX75zDSaN2Z9M
+         XfMjpcArRaqvfZkEWzVzNC/uhNQGaDaM38JScpE+zMTIG9dZZ+CPZH0jYrnHr0Kk5LK2
+         BFKc9EhCK6WAsvGDKxNkSJgvy2F91Mr9xLEupRRN0QAxwgQtlUPcINHAjlkelaIs9zoZ
+         ri46o4lJcvxCxu3XpaN+jSi9mpVkNo7gU7s8C4ckEmh1NqC9GHq4aawFpJQtPFVcK6Ze
+         rK8w==
+X-Forwarded-Encrypted: i=1; AKwUvBwuH7uigvKczRNJZJvhZezyQXOMrXVey+Dt0SSErvnR0xQPJQmt/PQc1Tx+Dr1eDqN3CGH8U1zh6g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/9Lo4EmCV0uvHHU3hCwxGQH+fpgWPnXFczXjrVraP2XxhxykXm
+	xRCp4xvBFqgsHyJQDP3TcfUGljfpYb2H/XxZlM3xhx6hfpC4exorFw/DLWjORH3ayoSRAiKkLPv
+	ex8n8EK+da3cZnlM/lzyh7NwA4ViKlao=
+X-Gm-Gg: AYBFou1rjBTB24aNnh4vBQLX0vCTyNtmb7NP5NeW37+P8wfraayySQNNupDAkZnZv1K
+	vNSq1LK5kMYzsjNY1AupFyB4XUI/O5xl1izWtN+K/3RjBQRVc9NGUbukeEE9gzt4G+F98zGt0Ah
+	hmI3nYuM19SmqmB/i4w3P/0dLtt1Him2CfaUsG8pBu9LnW33WBKXob2Wkzq4VtKYhCxWnUhTdYM
+	E55OzN9frxIhqOyH7u+Yibo96rhFeikNd628VgX4E1S6Z4c8KWq3JskmT3kD5aBkBoV1rwHFM59
+	bIMaIQbbUAqYAZky7Fftwf0sjGhyFEc8NDUxna5D77gczDmcLl9VhrkSEQE+nt0U7eIIFqXyn7q
+	Fs5bBz+u1ACAxdcvBCm9uXYJh4IeLdi5/G8jRXVwwbHH+ggg7sq7udm/0
+X-Received: by 2002:a05:6402:440b:b0:6b5:9849:e335 with SMTP id
+ 4fb4d7f45d1cf-6b5985927b4mr1117288a12.1.1793952000065; Fri, 06 Nov 2026
+ 00:00:00 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -108,117 +103,35 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.6.2 (shining.glasswings.com.au [178.63.21.144]); Fri, 06 Nov 2026 06:07:53 +0000 (UTC)
-X-Virus-Scanned: clamav-milter 1.4.6 at shining
-X-Virus-Status: Clean
+References: <20261021105109.199886-1-l.scorcia@gmail.com> <20261103150936.GB792264@google.com>
+In-Reply-To: <20261103150936.GB792264@google.com>
+From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+Date: Fri, 6 Nov 2026 08:59:48 +0100
+X-Gm-Features: AclHuK_yxwIK0Nk7bFmyEO_n6HuxXT4AJJgazikzKXrXwadabrKuwJfTV_QGR20
+Message-ID: <CAORyz2J_J0dYtg2BMKq9cuzo7U0j-cMQoFXn+2pOTztHz8dS-g@mail.gmail.com>
+Subject: Re: [PATCH v11 0/9] Add support for MT6392 PMIC
+To: Lee Jones <lee@kernel.org>
+Cc: linux-mediatek@lists.infradead.org, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>, 
+	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>, Val Packett <val@packett.cool>, Fabien Parent <parent.f@gmail.com>, 
+	Akari Tsuyukusa <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
+	linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mfd@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-After hibernation takes its snapshot, the kernel thaws devices to write
-the image, and the NIC with them. Freezable kernel threads and
-workqueues stay frozen until the image is restored, but rpciod and
-xprtiod are not freezable, so RPCs continue to be transmitted, and
-transports reconnected, until power-off. The server acts on them; the
-restored image knows nothing of them.
+> How many more Acks do you need now?
 
-With NFSv4.1 this wedges the mount after resume. Captured between a
-client that hibernated and its server (Linux 7.0 client, 6.12 server):
+Still missing acks for the regulator and pinctrl device. Yesterday I
+sent v12 of the series [1], rebased on v7.1-rc4.
+Thank you
 
-  - 05:06:02 last exchange before the snapshot; client snd_nxt
-    2711544997.
-  - 05:06:15 hibernation entry.
-  - 05:06:44 and 05:07:48, after the snapshot: a lease-renewal
-    SEQUENCE on slot 0 (seqid 192219), the next (192220), and
-    DELEGRETURNs on slots 1-5. The server executes all of them and
-    acknowledges up to TCP sequence 2711546645.
-  - 14 hours later, on resume: the client retransmits the slot 0
-    SEQUENCE from TCP sequence 2711544997. The server discards it as a
-    duplicate and acknowledges 2711546645, which the client ignores as
-    acknowledging unsent data. Nothing more crosses the connection.
-  - On reconnecting, slot 0 gets NFS4ERR_SEQ_MISORDERED (server at
-    192220, client at 192219) every 15 seconds indefinitely; the state
-    manager waits in nfs4_begin_drain_session() for that task, and
-    every other RPC waits behind it.
-
-Other resumes produced the same rollback with different symptoms:
-requests accepted by the server's TCP but never reaching nfsd, or a
-partial overlap that left nfsd reading a session ID as a record marker
-("svc_tcp_read_marker nfsd RPC fragment too large"). Restarting the
-server is the only recovery.
-
-Make both workqueues freezable, as the SMB client already does for all
-of its workqueues (WQ_FREEZABLE | WQ_MEM_RECLAIM). Work queued while
-frozen runs after thaw_processes(), in the restored kernel, which is
-consistent with the server. Memory preallocation for the image happens
-before freeze_kernel_threads(), so writeback through rpciod is still
-available then, and pm_restrict_gfp_mask() keeps reclaim from issuing
-I/O while the image is written.
-
-WQ_FREEZABLE is consulted only when freezing and thawing, not when work
-is queued or run, so normal operation is unaffected. Entering system
-sleep now waits for in-flight rpciod and xprtiod items to finish; these
-are short state-machine steps with non-blocking sends and connects. If
-one ever blocked for longer than freeze_timeout_msecs, suspend or
-hibernation would fail, naming the busy workqueue, where today it
-proceeds. The SMB client and XFS accept the same trade-off for their
-reclaim workqueues.
-
-This does not stop the network stack from acknowledging data the
-server sends after the snapshot, such as a callback or a reply to a
-request still in flight when the snapshot was taken; that remains
-a general hibernation and TCP problem.
-
-No Fixes: tag: rpciod has never been freezable, so no single commit
-introduced this.
-
-Tested in QEMU/KVM: an NFSv4.2 client hibernating in test_resume mode
-(the image is written, then restored at once) against a 7.4-rc2 nfsd
-with a 10 second lease, with 1.2 GB of incompressible data in memory and
-the swap device throttled so that writing the image takes 81 seconds.
-Without this patch the server received 12 SEQUENCE renewals during the
-image write, none of which the restored client knew of; after the
-restore the client's mountstats show a SEQUENCE error, two extra
-connections and 10 seconds of queueing before it recovered. With this
-series the server received nothing from the snapshot until the restore,
-and the client resumed without errors. The indefinite hang seen on real
-hardware was not reproduced in the VM: it also needs a request holding
-a session slot across the restore.
-
-Drafted with an AI coding assistant (Claude), which analysed the packet
-capture, wrote the change and this description, and ran the test above.
-
-Signed-off-by: Andrew Pam <andrew@sericyb.com.au>
----
- net/sunrpc/sched.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
-index 016f16ca5779..41f25309b8fb 100644
---- a/net/sunrpc/sched.c
-+++ b/net/sunrpc/sched.c
-@@ -1276,13 +1276,18 @@ static int rpciod_start(void)
- 	struct workqueue_struct *wq;
- 
- 	/*
--	 * Create the rpciod thread and wait for it to start.
-+	 * Both workqueues are freezable so that no RPC is transmitted, and
-+	 * no connection is made, between taking a hibernation snapshot and
-+	 * powering off. Anything sent then changes the server's state but is
-+	 * missing from the image, and is forgotten when the image is restored.
- 	 */
--	wq = alloc_workqueue("rpciod", WQ_MEM_RECLAIM | WQ_UNBOUND, 0);
-+	wq = alloc_workqueue("rpciod",
-+			     WQ_MEM_RECLAIM | WQ_UNBOUND | WQ_FREEZABLE, 0);
- 	if (!wq)
- 		goto out_failed;
- 	rpciod_workqueue = wq;
--	wq = alloc_workqueue("xprtiod", WQ_UNBOUND | WQ_MEM_RECLAIM, 0);
-+	wq = alloc_workqueue("xprtiod",
-+			     WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_FREEZABLE, 0);
- 	if (!wq)
- 		goto free_rpciod;
- 	xprtiod_workqueue = wq;
-
-base-commit: f66469d9905b39d2c260a15d7d6db450f4db67c1
--- 
-2.53.0
-
+[1] https://lore.kernel.org/linux-mediatek/20261105194426.1113050-1-l.scorcia@gmail.com/
+--
+Luca Leonardo Scorcia
+l.scorcia@gmail.com
