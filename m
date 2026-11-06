@@ -1,83 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.51
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.42
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793978419;
-	b=pFhh0GKPHUgm5s8p0zoWo5gXdV+hsw6hPqDABT/aK0ZQoesKiqM7L1xueC/CJnlrmOFd
-	 w7FwngeuW0+4+FGn0Per/6DGcI1PKOc35P1qqLbQGZALTmsGtaMBjT99JcYZzFhbIm3Yy
-	 1zLVvE7Mz21CRGxFQY8qSVAPSETKj/R6uCdM801ppYvk0XGp7wGxip5m443DCimxuuwHN
-	 WaKGDSsnJuXNb+zAH7PzXWZDyNvBBWHNiGhDLFGt60Ol2z1lDXIL/mvposB6xSh1akif4
-	 xrC/ouFg3GJpZzM50jCcb05OTvByJbygsK7oVYltOsOhURWm8XK2IMKQbCkLr6ceSgA==
+	t=1793978422;
+	b=WfyTWVlrPTTOTFqwVVVuZKq0GXgww2wHyOKnAVNjUrypswTKEjaEkfv3zF/zhRuxZ1MI
+	 wI4pjdxHM+k48KDs2F7Y3JCObVaih0nmFXhNJpugjN6dlTlwWxBKHbzwvWBPiRZt8KzPs
+	 T5C/5uSVb6kH9brrPkMToqWsZ7/W16iud4L6oQGgsdirkZ+aqqyDMnnjNwCitqD2fk90E
+	 zsWqaMBecaVrkgvwaJvmxB+sLjADJUEyTD3UdL/f/c4M8nePfSwPuADeB3m5EJZQXVlDG
+	 x2w98UQp37bPRhULrxc5pBvQR2vSxbR3c4OPtcsB5nC6P+RZ6Bxs/zC5sWoORBsxb0Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793978419;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793978422;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=43QcRTZ2xbLW2eh4U1VgtQuQohzOHYlTBhBh08gkyrE=;
-	b=DG9n5wHABGe3UtntTlQL42eM0OxyyemoKaOcprVLzUgAIvD8CLwDM/zlcWYLMGPvi5Xs
-	 gP6GtRW4y0RgyzZPMHnpc5U0pDmiSW/dwmKyrZOujykIyRD58YyQQETeSotkWLPfmYSQh
-	 XhdomjZok75KVC/NBbPXspZVYOhlTXEYSETHdy+YojnpGXIPjx7BRO2J+y5mnc9nGL/nx
-	 Q8UGW6FjGGRxu1AjW3iYZhXqpvAMOEh5EfElbuZuEKKd0tSW9tzQeXx+aQhpSoABtwxBB
-	 sTMgZ6x5erkaJDM1+HmRowUqJyLA1FPQbruciF2wlJr5Txnoq4pRhHI2Iqa/TZZM1FQ==
+	bh=tX9HEYRWehVYzSumdU6wnzHc9q5GXalqxT96ZBMgpCY=;
+	b=RPylys3SLM4KX2WF8SkCizWsVftBituwp78OvTFeGWTg5S5n37aAbhRnssywPNK4eKLJ
+	 fNN16mKJaRFpdmt+0xTmthR2b+ub5eOhqha9daK1Rn8C6wRAvVdZHzYUWMd2RBL8rYDfK
+	 uuHwOpHGUe0/itE7W4M/5A0yyObu/9hNx74P1/a9xxpka+DZ2VRCvHWA+YUc0/nRe36gb
+	 I+foZSNnmfU0eLV6Jl5n89d6iwzIak58xNPDNJlQUlQqe+X3wli+EC1Vp2I1lRgMiWTkO
+	 Qcnp35hU1fYZWjTBR+enrR8OpX2QAleGcRAvvCdr+sIL4NvSkTbIhKCk2BrXJg46eHQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linaro.org;
 	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=B99UTQcq;
-	arc=none smtp.remote-ip=209.85.221.51
-Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=oUaDCEwV;
+	arc=none smtp.remote-ip=209.85.221.42
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DE446082BFE
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:20:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1DE446082BFE
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B61DA6083602
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 15:20:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B61DA6083602
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=B99UTQcq
-Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-492f0a1b685so424542f8f.0
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:20:18 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=oUaDCEwV
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-48e20ed3b9dso699620f8f.2
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 07:20:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1793978416; x=1794583216; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1793978418; x=1794583218; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=43QcRTZ2xbLW2eh4U1VgtQuQohzOHYlTBhBh08gkyrE=;
-        b=B99UTQcqb/Kdi3E+lLCDL5A1ROyssp6z47+0gSXIlizQKHFZBVC+1HcElAn+egUcie
-         7S2Je9kSBpoGg1OZ+8tzqBRAuzbqDbng+jUFZUb8Yo2++GInPg1triAZc0MYK3A5EAAd
-         VJkJYiQa9blT7Du84H3pp9Q1P4YX+gBudoDriFcrXNV9QjEq6EGjurRVnnhxpgIG4eiD
-         4lgEncjwl+4mawiOHkdsFyw8vI+G9ij5RuJb8HVwLvxJWfkgKO+eOUloLFCMnEYm4/QX
-         tclCGEUpWZCYu+aVjQwrmiZpXyx56WrAtgBYlcWsrKbEcTG6EsZ/TIR2SI8xJseb4/ml
-         JKdw==
+        bh=tX9HEYRWehVYzSumdU6wnzHc9q5GXalqxT96ZBMgpCY=;
+        b=oUaDCEwVrwd7wVYPPsm0oJBpoZHHoBSabQQXobDkNX1E/yVA4GVnM6EJ2wRhRu9Nem
+         fXy0GSv7+LLM6mrTX7ub/JDoVi3llKrfkaWQtp5rSgdmfG9heTBixWcv1YfsMC9R9m/8
+         wQpPF5NKaAUGu82YN/HxZ5r1W9Ih5LCkruyQF59UHv3IEcRuroRLtw643mvMX0xeNxYG
+         KFsJwLKYLXvHgizNpv56l4kTCPx4E+9qkvyq0oFlA0LW1FQ0VbjzGVevyQtsszYH9Y1C
+         4Bkbn7leuF/WAf72QEY7eTiwlgRsKFMzz2xMAKNJ+auHdipQcYh0ZRalBeYFTLs0Rrsl
+         O72g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793978416; x=1794583216;
+        d=1e100.net; s=20260707; t=1793978418; x=1794583218;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=43QcRTZ2xbLW2eh4U1VgtQuQohzOHYlTBhBh08gkyrE=;
-        b=1dB93a7HBAiKvujyyOz0gRl+BqLrn24lF84RhAZAMTVv5nF/HG7Iq/Ih+hyXbRbIIH
-         NeCrYNVG2KFMqZ9/OS1K3LK6FrUCPGKyym2bMSMsa0QAMYIUitClHwAmdBCwej+Te5bg
-         CQ6KTuqxYvKiuGOkb27R/7rLGGkq6UyWpwmbycTnUO4QdnAMfsqtg+dT1BE53SJ3jFu9
-         IXPRTdM0tU8SO6iE0ay16X88Nj8EoUTjXede/rIjAJsxOBxWq1dXsvOMwGRChRTdZULt
-         gbh/LevYB+IvC79Pbpb0/6qqsbgg1QaMu7vGRbDvKOs5JrWdX61KgOabond+zOQHmHnM
-         P03Q==
-X-Forwarded-Encrypted: i=1; AL+hErFSlI5lloFYb7RxkjdXvmStjyevxAY9emBSY4ZYU2H7Enz4A1bpsNh1bQLRMEo7UyAKeNx70T2ndQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9xxxkMHP5cdLCVpXuvEtLfvcwllmY/0apyT7aA8rP9YiSERXR3
-	IXxpNKmZwz4MOQivw2BqqxC2UjKU3rcV7iuojryTvnzDHvRUKkijrDpq3oF/ydLpXcg=
-X-Gm-Gg: AYBFou3uLfcGcmsJFUJGUyhHRUccvudHeuR7XiK6boIsPOfz8XrNO+c+N7UrIsM3rMK
-	+idJT0tKqqyf5FF9EV5u3TrPTgyV4jauSWv/DdJ5c/9N7pYn3O49MxjxOBh5BHqpXpq9ReUWEFm
-	vIPpbYhY2rRTlNYN1aYXaTVgKQJibU92kuLWbq2g3er8HkeeIPD7jnDO0/jTAhadKwnGVd9ltxR
-	rxd7ZLEBvxYy51B2PxwzpSx2L0bl6AwT3MBy14lyuNTAF1SBgMqnA0Muu7pRl/fyZYshqP3SCjd
-	Pjq128ric4Loae6JxaHHg7MGh50OivvNHA4knngin7xu0X8DegWU4Ry7mbjm2lhDcRk5En9HGDJ
-	hdT8BFKkw7uoYnO/r4EcTm0VAHGrJK7uNeZ18pv8CCslfARPNkQeC2eRGIIUkV+vhVt/L/T5doO
-	Vd0lSwqIii7Wydm4MklzFDzrr+ONriHkyaYW4nEtvGGojyKDfq81QYZkCvFr2rCOdQER0lLUruN
-	JTs/jTy2Otb0tBTEpw77ml5hjXH+ybyMiZnnxtH1/Wbpaf8YIHUUuYKRpoPVv8EvNTzNxg7REbl
-	TjjdqHC0lximLqQhtFmSRLfs3uqt5ftYHmt3GG4YpS38abU=
-X-Received: by 2002:a05:6000:460c:b0:48e:c84:5be6 with SMTP id ffacd0b85a97d-49275fe4e54mr5481109f8f.14.1793978416458;
-        Fri, 06 Nov 2026 07:20:16 -0800 (PST)
+        bh=tX9HEYRWehVYzSumdU6wnzHc9q5GXalqxT96ZBMgpCY=;
+        b=dgjzxflyG+1GW4x8H3szg88zu+dF9xdFdgnMlT0GP59eZO83TxVDGaBYiHAXsEsroo
+         A8vL/d5iGJMvpA32vjJNOvBP51Dg0OccLLQj9XXJ50kRcMuZtWZFClAG8ISN2s10yu5H
+         GYA10G3XQNh4WBF5uuTcYZq2fPOdjrtY5E+TNRLt0+5yLSMlDkC/5c7JCwQohdvTrOd3
+         yazGoj2mBetnhydfbUmI+g414to2f3fu3wxpvSJwFY4P2yZ3AQ0fp4aOtdCVVQqlRACa
+         acuwDGxRSIExcEoFoWQ6ImjgpXwH8xVYHnf+oY/CIIeCBUlK03iJofC2gtZBM0noxfdO
+         yKIA==
+X-Forwarded-Encrypted: i=1; AL+hErFsVWT138/3+4WrhmlH45g/DTiZlKnFASQ/IwFOuP1ez47iF5QYEKqTvkGQ27lJmaFrspq+CW04xg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9K114gAd6tpYRThRA42Gs+gP6GvR0xv1NWkFJq+Mys3fGIAblC
+	5fJhPlZywkK8ymbi0W6D/KoadbP/zAsX6b1i19hwO+q2W3RTLZ29eNyIEWGStBZTkgA=
+X-Gm-Gg: AYBFou0ziN9u+8ErhE8srgnTWV+XJkHkvwSl1lQafXwyn/bqvKdophbdQ+OqcnY8+nR
+	0LE2chhiKfKaUeRWLfwrY5vYp+BDIOvoj5gW71vqQk/AhoieYOxMtk8p+JkH897aEu/5eun98c+
+	sQ/5U4Up0ZY0HUQJxPftS9hMSrfGCfxrmNphi9BFtgLfg5pym+W8PQLXSg2KoBrPf2z34PkvDVu
+	KkN5O9oIceadQpuCZWWpW931AmD3eppu6Z+iW8qzvWaBiutzbO8ffDqsWNb82nWQALHcpM9PP/6
+	ZRBw525+KCFAgjkxQq2CTIb8M/TDCGhzt8qEuceBet3GJ21dxOUo1lsCiZOzHQ/I4B64+4LY+SG
+	VVwY26AewecWkAhGrdA6TeLNZ40glf9bVYsiw1kI+ZBuXjmRHBJul7UZajn+K/50p/9VEUYSgr1
+	D4cZflBKYJkUukMGb9PWS5jtw63ncdQ5gurkbet71oJp0nPuxyS2Qdzqcl4k2crq0Y8xC/B6ko/
+	fpiStooyy9P2+KtkJyBeBlYOPA9CAJ5vjKzDSHJaCAhybFVD3bif+RJhspv2udP3V2/Qor0Cx90
+	xQLiD0FR6+jtm08gUgZcyGbTWcHL1fBPP20jYTojE+2op1rq
+X-Received: by 2002:a05:6000:2893:b0:48f:f26d:c5c with SMTP id ffacd0b85a97d-492761d00cdmr6320952f8f.9.1793978418032;
+        Fri, 06 Nov 2026 07:20:18 -0800 (PST)
 Received: from vingu-cube.home ([2a01:e0a:11f4:3020:ed97:32bc:977a:3b65])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.20.14
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d7cc5e23sm4477405f8f.45.2026.11.06.07.20.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 07:20:14 -0800 (PST)
+        Fri, 06 Nov 2026 07:20:17 -0800 (PST)
 From: Vincent Guittot <vincent.guittot@linaro.org>
 To: mingo@redhat.com,
 	peterz@infradead.org,
@@ -104,9 +104,9 @@ Cc: qyousef@layalina.io,
 	kayracizmeci@gmail.com,
 	tim.c.chen@linux.intel.com,
 	Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 14/20 v3] sched/eevdf: Push short slice task that are not picked
-Date: Fri,  6 Nov 2026 16:19:41 +0100
-Message-ID: <20261106151947.3991524-15-vincent.guittot@linaro.org>
+Subject: [PATCH 15/20 v3] sched/fair: Enable push task for preempt short
+Date: Fri,  6 Nov 2026 16:19:42 +0100
+Message-ID: <20261106151947.3991524-16-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261106151947.3991524-1-vincent.guittot@linaro.org>
 References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
@@ -121,50 +121,28 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Even when set as next buddy, a number of event can prevent short slice
-task to be picked. Add the task in the pushable list in case it is not
-picked so it get a chance to be pushed on a better CPU.
-
-This can typically happen when several short slice tasks are pushed on the
-same CPU at wake up.
-
-If the task is picked, it will be removed from the pushable list before we
-queue the callback otherwise we will look for a better CPU.
+Enable push mecanism for the preempt short feature which is the
+1st feature using it.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- kernel/sched/fair.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ kernel/sched/topology.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 3923587b66e0..894bee51b99a 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -10273,6 +10273,12 @@ static void fair_add_pushable_prev(struct rq *rq, struct task_struct *prev,
- 		__fair_add_pushable_task(rq, prev);
- }
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index 919d0fb00bd9..5481f2472e17 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -3497,6 +3497,9 @@ static void partition_sched_domains_locked(int ndoms_new, cpumask_var_t doms_new
+ 	sched_energy_set(has_eas);
+ #endif
  
-+static void fair_add_pushable_short(struct rq *rq, struct task_struct *p)
-+{
-+	if (sched_push_task_enabled() && __check_pushable_fair_task(rq, p))
-+		__fair_add_pushable_task(rq, p);
-+}
++	if (sched_feat(PREEMPT_SHORT) && !static_branch_likely(&sched_push_task))
++		static_branch_enable_cpuslocked(&sched_push_task);
 +
- static int active_load_balance_cpu_stop(void *data);
- 
- /*
-@@ -10723,8 +10729,10 @@ static void wakeup_preempt_fair(struct rq *rq, struct task_struct *p, int wake_f
- preempt:
- 	cancel_protect_slice(se);
- 
--	if (preempt_action == PREEMPT_WAKEUP_SHORT)
-+	if (preempt_action == PREEMPT_WAKEUP_SHORT) {
- 		set_short_buddy(cfs_rq, pse);
-+		fair_add_pushable_short(rq, p);
-+	}
- 
- 	resched_curr_lazy(rq);
- }
+ 	/* Remember the new sched domains: */
+ 	if (doms_cur != &fallback_doms)
+ 		free_sched_domains(doms_cur, ndoms_cur);
 -- 
 2.53.0
 
