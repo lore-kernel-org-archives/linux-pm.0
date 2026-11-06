@@ -1,65 +1,62 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=138.232.1.140
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1793960378;
-	b=4ZC5m8vwizCNxFNqvq02sj9zeGV4vGtwr811NacvXrwaQIsrkjt8anFekbhm43fia0rD
-	 JtexRNkmVPwFoWSuTcCNM49w1mwC7GIImVGJHb7xGmutuIwj6QrqhJAjcJlNbvqGPmTZI
-	 Hb0etN1rV2XjIhaZ0El0seAvGXYqX9AoJmwaw1BBzABwLNe0qPCpG9RcY2W62edz7fQQT
-	 eX9szDKDWGgUO3fcJEErKuTIDl+0OAI6i5z7vMzcf7XDGo6chjmpWLB2cRkg7QdO/O6YZ
-	 wypxBDucamk4ML3xTf3PKHxIUXTVLdBvtS4cZxuvn5FwnT631WtgHO9LsweDNafGQIg==
+	b=g09/hlclGVQ3XCQ54oBI6gCT1reS0igEWOY8faLPqmFAadbtHZXVts9cOHqaD2vvliV2
+	 PlGcW+J4qRv3Z4kDckjH1zvhyR6GLvkFxy/yMPXbgkYaF5QeWHD9yAUK8gKx63RRiysvU
+	 rOsVOmA1uX8mLlaJMvHU9jWt2b9cq4d4UunLTOQKQfhlHe8vJAFwkQk8rgdqN7/GkBxiE
+	 aASgl/+hAVXCPlMfu82ph8A/yC2a86hwAruQAP6qS3xoSWe7fvpWAb9jv+ZfqqAg4/0j0
+	 bCcR4ET9VDzh4gWT7rCti7Z5qWtCwhcm7EwOiNt8QIuSWCT3iEA476GjXgHrHizzjig==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1793960378;
 	h=DMARC-Filter:Received:DKIM-Filter:DKIM-Signature:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-Spam-Score:X-Scanned-By;
-	bh=dSK6Qss+gWvybGICqOwyGsIjhnfJGdmoQt5OqdnLTHo=;
-	b=XPGUChBl5LuWW4vuYuY2sU14aWL0/Y3oWS5TunkkkyedexCZ/5doGH0FEEVcAik7a0eI
-	 RvzYNWx3Ny0BV/gSeRvJ1cqqQYdlOCmvL0MG/Uv+0YGdvv0zSBDQof+/7zF2Fr46sWANh
-	 b/2wfWM0v/RjERP8KSjTLr6DXYmJE0ECk3p495UBp2WGCNXjZup50ZOCOoqyB6ElIQh4T
-	 hBdTGeX1MXpDHEzPbj8gFekwhZiJSZvq7EnSkvxw9mZb7MQ3Y+1firHjAV9Yl3ZuNB7Ix
-	 p/OkvsNHXslwy5IS8ELCBDQX4TrKhrPyoKJsonLIIKnrnX2llVW+S1UjNSLK7q1M5xg==
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-Spam-Score:X-Scanned-By;
+	bh=ARtDCbvM7wnTY2BVBSnKcT77iq7yVWGwS7A3lz5iolY=;
+	b=Xf0/W2piZPpsMyN12tAApo1xbMmap6sTsRuyDuJLR/c7TtfwVp2LftpIMkRx5lfbiwrW
+	 XZfk7XI/nB2X5EefBZS0ZTBZNrvR03/bUVMnBG9UA2dBGPeWZO/O7HjqTss7vE7/l7eaH
+	 BGZBa+M4vWl9va1c07s/CT4MllZ0foFVjOpotU1oVAL4oC2iOv4kC9axqQT4DIwFm5gPG
+	 H6ENoYuNX4iXbQH8W0OZ2BcIknFZXS+muuFQb9UX01lMvzgx2UQSX8MMnsvYXShndKqUZ
+	 o2dv0eeb37E6IOCqDQT5ZbDBN70/r0qhRh11Vn7aZsLY91X+wMP60TeX9sc+g4gIM1Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=student.uibk.ac.at;
 	spf=pass smtp.mailfrom=student.uibk.ac.at;
-	dkim=pass header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b=OTr64l7G;
+	dkim=pass header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b="GsX/eEPc";
 	arc=none smtp.remote-ip=138.232.1.140
 Received: from smtp.uibk.ac.at (smtp.uibk.ac.at [138.232.1.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3D05606A33C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3132E606D818;
 	Fri,  6 Nov 2026 10:19:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B3D05606A33C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3132E606D818
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=student.uibk.ac.at
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=student.uibk.ac.at
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b=OTr64l7G
+	dkim=pass (1024-bit key, unprotected) header.d=student.uibk.ac.at header.i=@student.uibk.ac.at header.a=rsa-sha256 header.s=prod24a header.b=GsX/eEPc
 Received: from surface-pro-5 (ydWLT-U1-95-184.uibk.ac.at [172.25.95.184])
 	(authenticated bits=0)
-	by smtp.uibk.ac.at (8.15.2/8.15.2/F1) with ESMTPSA id 6A6AJFCX1863929
+	by smtp.uibk.ac.at (8.15.2/8.15.2/F1) with ESMTPSA id 6A6AJFCU1863929
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 6 Nov 2026 11:19:22 +0100
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp.uibk.ac.at 6A6AJFCX1863929
+	Fri, 6 Nov 2026 11:19:17 +0100
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp.uibk.ac.at 6A6AJFCU1863929
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=student.uibk.ac.at;
-	s=prod24a; t=1793960362;
-	bh=dSK6Qss+gWvybGICqOwyGsIjhnfJGdmoQt5OqdnLTHo=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=OTr64l7Gdgk015jkXzpixEqd+24O/Iq8jMLOKPXrL6CcfNItxL+l92pF93/aP1Yz+
-	 TBt7ML469pTLmGeYHsv+uCEVdfb9J3qsRRKUiXt7QNP+lgjxNKNTDUzIS/Z28h7aSa
-	 ENho7H32ZN3yslUMDapFe0e/zH1SBNjEddNtfPwg=
+	s=prod24a; t=1793960358;
+	bh=ARtDCbvM7wnTY2BVBSnKcT77iq7yVWGwS7A3lz5iolY=;
+	h=From:To:Cc:Subject:Date;
+	b=GsX/eEPc4iPvQvkA6eX4tszgiT9kL8+ZiB23z9UIGaQzhzuqhbP0O9C9smdwBnFdY
+	 TdcW1lKTU0ebwdTo5IE4OiRIcGxsE2kXUQtS4PB0VUNPjjXzY1bqIj8zBEMWYrG6hX
+	 jwXLwFR26SAWphze31FY+GvuEvtl8jALgJGZXV4A=
 From: christian.koever-draxl@student.uibk.ac.at
 To: glaroque@baylibre.com, rafael@kernel.org, daniel.lezcano@kernel.org,
         rui.zhang@intel.com, lukasz.luba@arm.com, robh@kernel.org,
         krzk+dt@kernel.org, conor+dt@kernel.org
 Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        =?UTF-8?q?Christian=20Stefan=20K=C3=B6v=C3=A9r-Draxl?= <ckoever@outlook.de>,
-        Neil Armstrong <neil.armstrong@linaro.org>
-Subject: [PATCH v2 3/3] thermal/drivers/amlogic: do not log the secure monitor deferral as an error
-Date: Fri,  6 Nov 2026 11:19:13 +0100
-Message-ID: <20261106101913.46664-4-christian.koever-draxl@student.uibk.ac.at>
+        =?UTF-8?q?Christian=20Stefan=20K=C3=B6v=C3=A9r-Draxl?= <ckoever@outlook.de>
+Subject: [PATCH v2 0/3] thermal/drivers/amlogic: add S4 support
+Date: Fri,  6 Nov 2026 11:19:10 +0100
+Message-ID: <20261106101913.46664-1-christian.koever-draxl@student.uibk.ac.at>
 X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261106101913.46664-1-christian.koever-draxl@student.uibk.ac.at>
-References: <20261106101913.46664-1-christian.koever-draxl@student.uibk.ac.at>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -76,36 +73,49 @@ X-Scanned-By: MIMEDefang_3.2_at_uibk.ac.at
 
 From: Christian Stefan Kövér-Draxl <ckoever@outlook.de>
 
-The thermal sensor usually probes before the secure monitor, so the
-first attempt always defers and logs "Failed to get secure monitor
-firmware" as an error on every boot, although the second attempt
-succeeds. Use dev_err_probe(), which records the reason for the
-deferral instead of logging it.
+The S4 temperature sensors are the G12A design with the calibration read
+through the secure monitor, as on T7, so they reuse the T7 data on top of
+Ronald Claveau's secure monitor calibration support. Without calibration
+the CPU sensor reported about -144 degrees Celsius.
 
-Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
-Signed-off-by: Christian Stefan Kövér-Draxl <ckoever@outlook.de>
----
- drivers/thermal/amlogic_thermal.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+Patch 3 makes the expected first probe deferral (the secure monitor
+probes later) quiet.
 
-diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
-index 4c107b3100c0..bbf910ba8513 100644
---- a/drivers/thermal/amlogic_thermal.c
-+++ b/drivers/thermal/amlogic_thermal.c
-@@ -196,10 +196,9 @@ static int amlogic_thermal_probe_sm(struct platform_device *pdev,
- 
- 	pdata->sm_fw = meson_sm_get(ph_args.np);
- 	of_node_put(ph_args.np);
--	if (!pdata->sm_fw) {
--		dev_err(dev, "Failed to get secure monitor firmware\n");
--		return -EPROBE_DEFER;
--	}
-+	if (!pdata->sm_fw)
-+		return dev_err_probe(dev, -EPROBE_DEFER,
-+				     "Failed to get secure monitor firmware\n");
- 
- 	pdata->tsensor_id = ph_args.args[0];
- 
+Changes in v2:
+- Compatible renamed from amlogic,s4-cpu-thermal to amlogic,s4-thermal:
+  as on T7 the sensor index is the secure monitor phandle argument, so
+  one compatible covers the CPU and the DDR sensor.
+- The binding takes the bus clock (ts_pll / ts_ddr) besides the
+  functional clock, named, like T7; the driver reuses the T7 data.
+- Patch 3: Reviewed-by from Neil.
+- Link to v1: https://lore.kernel.org/r/20261025192244.209256-1-christian.koever-draxl@student.uibk.ac.at
+
+Tool use (Documentation/process/generated-content.rst):
+This work was done with the help of an AI coding assistant, Claude
+(Anthropic), used through Claude Code over many sessions. It did a large
+part of the hands-on work: it read the vendor kernel and the firmware
+interfaces, probed registers on the board, drafted the code and the
+changelogs, and ran the builds, checkpatch, dt_binding_check and the
+tests on the hardware. I directed the work, reviewed every change and
+the final patches, and take responsibility for them. There is no single
+prompt to quote; the sessions were of the form "find out why X fails on
+this board, fix it, test it on the box".
+
+Tested on an Amediatech X98Q TV box (Amlogic S905W2, S4 family, 2 GiB),
+vendor U-Boot and BL31/OP-TEE, Linux 7.3 plus this work.
+
+Christian Stefan Kövér-Draxl (3):
+  dt-bindings: thermal: amlogic: add S4
+  thermal/drivers/amlogic: add S4 support
+  thermal/drivers/amlogic: do not log the secure monitor deferral as an
+    error
+
+ .../devicetree/bindings/thermal/amlogic,thermal.yaml  |  5 ++++-
+ drivers/thermal/amlogic_thermal.c                     | 11 +++++++----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
+
+
+base-commit: 7be4bc52fd9e0e55dc9a2e0232b89427d2c4b614
 -- 
 2.56.0
 
