@@ -1,73 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793989869;
-	b=vg0eBhzvVwsPkuyGNhU0vjeRqiSR6oZY04KcpySM/H5k81Ipcsapv3/ajA7cpsZjAy6T
-	 dlsfWYSX68UdGDjNvgvHN3EzMt17M20wYzTRWscxtj7HAU6Wz+qTLIDIbeyKKp1p06+NA
-	 vU6VhzywJT9HlrYA/BbvVQiNL4lK6lmzOD9Lf/rOXRGeRaBAZEjS3cVHYn2HKrX+dMIb/
-	 8p0TN9vS5cAj80Ms5asUj/fgrY4tvvYbIZrhmyBPGUvMhRRfzEmgXsJYJ2uUdtyim9C+q
-	 6JgR+FcuPHf946bZzTTFElT2mtTBkYv7zznt0IC55q6g/e0l2mm5A7+nJ38rynUQmzg==
+	t=1793990374;
+	b=TAsDWp7UrXl0W/+rSg0G9LfA0XT2/w2TrsozZ6ckRfzxZM3LGZeeLVFtWzNCEtozHLV3
+	 jxj7AjI5pi4ZAqCANQmdYlGrjLP349Ndmn4YE20LtPvi7/3WrYW8EAzCqubrp+NUj1HBi
+	 cSYzBA/rYUDXFxd+2LVRuniiXSkeytfVwPF69lbbrh1WUFKwOIxufInHUHeZlMUKIEHJ+
+	 C29OlUF/aksEjS2KOKx6qKU8t3tyW63wqoHwY7bhgjCWcB3/vg0wiRMIrZ4E/Yv3LdB+S
+	 gdQJ2Xt/yfEGrDYZL/gCkYogyj5PiMyUq1t2jq/ORGhBAMtaMnzQCaFLQMwxRsHBjCA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793989869;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
-	 Message-ID:MIME-Version:Content-Transfer-Encoding:X-Scanned-By;
-	bh=lINQSLp1Gq3CX+BO3I8pHckQ/LjZgO4rP/j0aJx7QU4=;
-	b=Yvnyy9kQsDsNtArhUMZKsY5KF6YihaOVeSWkYC6b3aoyxfcTB8ix3dLqiW+l+kzuLNa3
-	 NO1y9eRSnLdoXq3p/Xd+Ree7cp5Jy8nRCJApsfUW6+Wj1AYE4AkfoJGPdU9OmPb4GptUs
-	 PkFb92saBngZe0+MormYV69/gILlFaU0ygRpujf/r1fO5Dv+UXKYuNOaYs5wyXxLK0Sc+
-	 S4LxDEad3WXl4OP+gpajjeQ/4atMKvkOGF9SlPuCuVvSMKfrpdITKbv4k67dC9sH9cT6M
-	 jDGmpb4XD3P+8Hq6aSL0vnP8x2QpHTAJn2yTCM4I/PQ+tX55x17Avld7WvO1zDN2+gA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793990374;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=WIwS4OC7s3U8Z4r3z87plyGX8aJlDTv0Ul5Ftw3BSuw=;
+	b=R9Z9FHchkkZbGE4k8OLOq6y0vfACH6vxHv43GnQto28hLKQr8FXTv+6p9xL4wTyxyadV
+	 jXg7NQ51K+oTrHNQ/hdkuMwDlp+a8l8DhYnzKH8nL+549c9MfYB3HdKS5VA20mBl+KIpd
+	 prKpfKWzeDiBVZbWG852aPjl1+3Rkv0AaK7RGWQ+Lmzuj0Ee9mED9u3uNyN+lW15v+NFM
+	 1dzM0WPe2umghzk2nFTFl1fZUFrYJ7gVFV5mYO1s+paFNbRnbNQxz8Qnj3bHIXkXjJNzi
+	 5hd4KL4iqk+8VFpx2XmJ7l/IdMc7okBApiTSzRP6fjlT4uwKTJKU6O3jhPqw5H3l74A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d9slEs28;
-	arc=none smtp.remote-ip=170.10.129.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tN2ltPKz;
+	arc=none smtp.remote-ip=209.85.128.54
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8CE5606A336
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 18:31:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A8CE5606A336
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10756606A32D
+	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 18:39:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 10756606A32D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d9slEs28
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793989867;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=lINQSLp1Gq3CX+BO3I8pHckQ/LjZgO4rP/j0aJx7QU4=;
-	b=d9slEs287HYZujMDJ0z6AmW4G6urOPEeNH3PHTIh6DEpMhwwwjMQefsFTJmRqyILX71KbQ
-	SihupCAENPOk+82p6M3g3AEggx83lxzstaoTdRahnPPasFxyWK6OQxSkhfECJwK3vYP4Nc
-	kqbe6ALqAa3GRqrZqU6q0T0lT/9So3E=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-271-mjTvFoKZPCy_EKI3ipHfLA-1; Fri,
- 06 Nov 2026 13:31:04 -0500
-X-MC-Unique: mjTvFoKZPCy_EKI3ipHfLA-1
-X-Mimecast-MFC-AGG-ID: mjTvFoKZPCy_EKI3ipHfLA_1793989862
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 5C97D1944D29;
-	Fri,  6 Nov 2026 18:31:02 +0000 (UTC)
-Received: from dechen-thinkpadp1gen8.rht.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 3EBD3195608B;
-	Fri,  6 Nov 2026 18:31:01 +0000 (UTC)
-From: Dennis Chen <dechen@redhat.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Dennis Chen <dechen@redhat.com>
-Subject: [PATCH] powercap: intel_rapl: Expose package CPUs in associated_cpus
-Date: Fri,  6 Nov 2026 13:30:46 -0500
-Message-ID: <20261106183046.208283-1-dechen@redhat.com>
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tN2ltPKz
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a610c7e61cso675225e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 10:39:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793990371; x=1794595171; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=WIwS4OC7s3U8Z4r3z87plyGX8aJlDTv0Ul5Ftw3BSuw=;
+        b=tN2ltPKzR2Z1JRfPyYauSTPlV3eJeerY4K9aVMlRbW24glYzYkMMPHCOXFG7NV7g38
+         OYl/se9BorEGj0ykocHcjmvQddONJjpdmQ+8x3squcv2FKwnd7KGQV9J5Xreznu0ikWy
+         8swdkv6ZYPpCfpq4iAeDG+tWGO6COV2v6feJObwpKdEqmW/YyHKUdg2669ClmQVrMTxt
+         b7N+huwnpqpnrkPeMpJHAjQP+4sFm9RUlbE6WN5cQm2Z2L817m6l7Tc0uQk0EkJAgyNN
+         QakNzJdw6g+i1egEIy7c8djK8pR09egrN7lAkcheS956aO5WBhTVov08XV8Oc4WBxoQd
+         duOw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793990371; x=1794595171;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=WIwS4OC7s3U8Z4r3z87plyGX8aJlDTv0Ul5Ftw3BSuw=;
+        b=WOJk8XGj+N5vc4hEWp0prPEBQwnQ8aJr2df1DIArITdVmxlXBi9LG5jkFGLPT58O08
+         shgxigzOC3IKuIkentfGgUpiKTnk04H2FGpQR600z4iQrzQnMmzNm0jNzkFU8ajeS9h6
+         xuBdNRgZc81mhXR37Z3zvRj/qaKUNnE7dsJUocROL7iUfyWiPAIJPR0g4bNnMgfRiDT7
+         1dCyzfIB9lNyrU8F7S8uXNv4EtIN/AcII3Y1rGt00RYDIJBD5lu9sN5m3+4pLpPnlt9P
+         6IYgUgKpa8htkK7Qw8fi6PFv6BYUoi/G4me+rJI8SyXytjA5gAd330CLYyLIbM0awWMz
+         eboQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxps1t+mHrreGahzIIK0RDJbPtWMdqsXmYqv1Kl4Ac4QWs2ganWxGG9FHj8MNOC4yCZbtqAv5SmFQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/JYx20A12hASDr3LHSdxXLQ1exUSMhFDhnzwOHBMoTtB9Dj3R9
+	+fMUTBnJblOIfLne6vyZcH6WK8iIlS6dr3vHUa4qUOUz9J0yNwDGnP9V
+X-Gm-Gg: AYBFou2Y9SWvIAlVliLYtpLRMvh0UeBP9GW+MGxM6LCKDmgMiFZtP/NhgLFxJgzY/BL
+	8qbDo3AnTXNdn6lXPnzmKPTtI8bl5Zp14FoO7Dc5MAZqM7IzmRsRz+BrRFJymYq9DkAZRkhJN4v
+	RpUZakZi6CRDB5lT8E+UfDCLny5o92geN5c1I8nTbYj/Xyaz5d00ATIzjJFWcPBNVcQA4c+d1aR
+	2I3dMuW9TN5aqeK0XOXFqlDWWEIMRhtltKBULXIcq+CYX0Yo79pmWziVJpxvp5RdJ0ryvXTsE1x
+	YsMFIqjOXMVXf3+sveHdsOuuzS6EjHTUQBGEnX5G4SpcJ+khbT0Meh3BnkhWyqp093V3i2Ue+k+
+	DWtlEbB4xY23N/f7d43bRTIfDV2Id8PSy/04tXEGbx5PvxZB5T0dmAYymsZCRIYrL+q9AnevXkt
+	d02JWfJrtOdvDc0knMrHlRJE2NPd5bMS/iFyksk9yoA8WYSR3fv1+iadc/2tlzMwwz9wh0dV2GI
+	R2YZxXrVB5F1iDn92oXIkmUDlP3A24fUSHaKGPQRO6W3doi35uXJSndw7unYdpCFtGZ3OJa5YMr
+	DEZYEAsUyfPKkGW6q0VvplaBbxfSoezItDrGMMrJi5GPsq2dHUddn7M=
+X-Received: by 2002:a05:600c:c111:b0:4a1:715d:1913 with SMTP id 5b1f17b1804b1-4b6dcf861ebmr44070765e9.1.1793990371217;
+        Fri, 06 Nov 2026 10:39:31 -0800 (PST)
+Received: from scheduler.schedules ([85.100.66.184])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b795038782sm4128115e9.3.2026.11.06.10.39.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 06 Nov 2026 10:39:30 -0800 (PST)
+Date: Fri, 6 Nov 2026 21:39:26 +0300
+From: Kayra Cizmeci <kayracizmeci@gmail.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
+	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
+	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
+	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
+	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
+	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
+Subject: Re: [PATCH 04/20 v3] sched/eevdf: Reset lag when waking up on idle
+ cpu
+Message-ID: <au4dOi6ASp5OnBWc@scheduler.schedules>
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+ <20261106151947.3991524-5-vincent.guittot@linaro.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,132 +103,71 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261106151947.3991524-5-vincent.guittot@linaro.org>
 
-Commit 525e0064f3d8 ("powercap: intel_rapl: Expose all package CPUs in
-PMU cpumask") expanded cpumask to include all CPUs in the package.
-Since perf opens an event for every CPU in cpumask, the value returned
-for power/energy-pkg/ is roughly scaled by the number of CPUs.
+On Fri, Nov 06, 2026 at 04:19:31PM +0100, Vincent Guittot wrote:
+> When several tasks wake up simultaneously on an idle CPU but their prev
+> CPUs were not idle, their final vlag will depend on the enqueue ordering
+> as the first one will lose its lag but not the next ones.
+> 
+> Reset the lag during the enqueue if no fair task has already been picked
+> and set as the running task.
+> 
+> As a typical example:
+> - CPU0 is idle
+> - TA with vlag 0ms and TB with vlag 5ms wake up on CPU0 simultaneously.
+> 
+> Depending which task grabs the lock 1st, the behavior will be different:
+>  - If TA is enqueued 1st, TB will be enqueued with a positive lag and will
+> be picked 1st.
+>  - If TB is enqueued 1st, it will lose its positive vlag and both TA and
+> TB will have 0 vlag when eevdf picks next task.
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+>  kernel/sched/fair.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 945de0215abb..6ce4162a7703 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -967,6 +967,14 @@ void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
+>  	if (vlag <= 0)
+>  		return;
+>  
+> +	rq = rq_of(cfs_rq);
+> +
+> +	/* You can't claim any lag when waking on idle CPU */
+> +	if (rq->curr == rq->idle) {
+> +		se->vlag = 0;
+> +		return;
+> +	}
+> +
+>  	/* No fast access to prev rq task clock */
+>  	if (flags & ENQUEUE_MIGRATED)
+>  		return;
+> @@ -977,8 +985,6 @@ void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
+>  		return;
+>  	}
+>  
+> -	rq = rq_of(cfs_rq);
+> -
+>  	/* Compute sleep time */
+>  	delta_exec = rq_clock_task(rq) - se->exec_start;
+>  	if (unlikely(delta_exec <= 0))
+> -- 
+> 2.53.0
+> 
 
-On a single-socket 72-core DMR machine the reported value is roughly
-72x higher than when perf is restricted to reading from a single CPU:
 
-$ perf stat -e power/energy-pkg/ -- sleep 1
- Performance counter stats for 'system wide':
+LGTM.
 
-          8,052.48 Joules power/energy-pkg/
+Reviewed-by: Kayra Cizmeci <kayracizmeci@gmail.com>
 
-       1.010483558 seconds time elapsed
 
-$ perf stat -C 5 -e power/energy-pkg/ -- sleep 1
+Cheers,
 
- Performance counter stats for 'CPU(s) 5':
-
-            112.15 Joules power/energy-pkg/
-
-       1.009685587 seconds time elapsed
-
-Revert cpumask to only include the CPU with the lowest ID in the
-package and instead expose CPUs which can read from the PMU in
-associated_cpus, akin to uncore PMU drivers with per-package counters.
-
-This retains flexibility for userspace tools while maintaining semantic
-consistency for perf's use of cpumask.
-
-Assisted-by: LLM
-Fixes: 525e0064f3d8 ("powercap: intel_rapl: Expose all package CPUs in PMU cpumask")
-Signed-off-by: Dennis Chen <dechen@redhat.com>
----
- drivers/powercap/intel_rapl_common.c | 43 ++++++++++++++++++++--------
- 1 file changed, 31 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 70cab5f08bc6..4197f7146afc 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -1139,7 +1139,8 @@ static struct rapl_pmu rapl_pmu;
- 
- /* PMU helpers */
- 
--static void set_pmu_cpumask(struct rapl_package *rp, cpumask_var_t mask)
-+static void rapl_pmu_collect_cpus(struct rapl_package *rp, cpumask_var_t mask,
-+				  bool all_online)
- {
- 	int cpu;
- 
-@@ -1151,9 +1152,15 @@ static void set_pmu_cpumask(struct rapl_package *rp, cpumask_var_t mask)
- 		return;
- 
- 	/* TPMI/MSR RAPL uses any CPU in the package for PMU */
--	for_each_online_cpu(cpu)
--		if (topology_physical_package_id(cpu) == rp->id)
--			cpumask_set_cpu(cpu, mask);
-+	for_each_online_cpu(cpu) {
-+		if (topology_physical_package_id(cpu) != rp->id)
-+			continue;
-+
-+		cpumask_set_cpu(cpu, mask);
-+		/* Stop at first CPU in package if not all CPUs are requested */
-+		if (!all_online)
-+			return;
-+	}
- }
- 
- static bool is_rp_pmu_cpu(struct rapl_package *rp, int cpu)
-@@ -1430,8 +1437,7 @@ static struct attribute_group pmu_events_group = {
- 	.attrs = attrs_empty,
- };
- 
--static ssize_t cpumask_show(struct device *dev,
--			    struct device_attribute *attr, char *buf)
-+static ssize_t rapl_pmu_cpus_show(char *buf, bool all_online)
- {
- 	struct rapl_package *rp;
- 	cpumask_var_t cpu_mask;
-@@ -1444,23 +1450,36 @@ static ssize_t cpumask_show(struct device *dev,
- 
- 	cpumask_clear(cpu_mask);
- 
--	/* Choose a cpu for each RAPL Package */
--	list_for_each_entry(rp, &rapl_packages, plist) {
--		set_pmu_cpumask(rp, cpu_mask);
--	}
-+	/* Choose a set of CPUs for each RAPL Package */
-+	list_for_each_entry(rp, &rapl_packages, plist)
-+		rapl_pmu_collect_cpus(rp, cpu_mask, all_online);
- 	cpus_read_unlock();
- 
- 	ret = sysfs_emit(buf, "%*pbl\n", cpumask_pr_args(cpu_mask));
--
- 	free_cpumask_var(cpu_mask);
--
- 	return ret;
- }
- 
-+static ssize_t cpumask_show(struct device *dev __always_unused,
-+			    struct device_attribute *attr __always_unused,
-+			    char *buf)
-+{
-+	return rapl_pmu_cpus_show(buf, false);
-+}
-+
-+static ssize_t associated_cpus_show(struct device *dev __always_unused,
-+				    struct device_attribute *attr __always_unused,
-+				    char *buf)
-+{
-+	return rapl_pmu_cpus_show(buf, true);
-+}
-+
- static DEVICE_ATTR_RO(cpumask);
-+static DEVICE_ATTR_RO(associated_cpus);
- 
- static struct attribute *pmu_cpumask_attrs[] = {
- 	&dev_attr_cpumask.attr,
-+	&dev_attr_associated_cpus.attr,
- 	NULL
- };
- 
--- 
-2.56.0
-
+Kayra
