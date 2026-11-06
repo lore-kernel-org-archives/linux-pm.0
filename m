@@ -1,100 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793988345;
-	b=pl/VjuVMWDBvUdy8Yltr5BbAA/bGjbLz+S0sLsioEcCCcDvWUx438zzIfTt0VPjbrfMf
-	 7bdTEuOwt0QB+nXesvU5a25TisNXNONNv1xSl9wid7oMWgn4DcD6GjqfPop7BSfARHEPA
-	 S0FQ7efONuRu/xBe8qLkdlUt1J9YCzwL6tpcSZFaCUms1KV+07Uq1cVHA6jLR2YFjO5tU
-	 bOeZm/CCxrm6oCtYc/vyt7aobR58EJyaDLu+fH7AZxpzQ01+jHm4sGEony2OemLAFHpAY
-	 bJ0dNGQyK5mgj+oJNV9btPeBY6VpGF4kR9d5a44R3gcOHHhpAFXa6EjIPksl2KbJCUA==
+	t=1793989197;
+	b=n6y8l1AJhWdW+hlZmVGakcdGebilWA+o3qYYSHbwbnMQbRXjDFv16O71JM73fN8JCAHa
+	 qgjsfWP0WMQDOIb2TpCjk/R/uE+FDHaOMELiU6PnefMp5Pdvqo17Gdi4r2TZwAaKB3Aiw
+	 tCN/KC2u66QVns8FqJ8AHgrwmxUrUDWa7RGawSf5mPbtF0Y/2ucNhsNLPBT38+6t5bziZ
+	 en637b+G9S/DD55ID26AxLVOmZwrA2Sbrni7nOIOKO5il++hd3F7aEIaFPmDzxgRepNdG
+	 UXhvcb2VdjrorOUEG8d3Kt5yAlSumSFgwekqw3E/SBCzM+5k39NYtC05rxKz+yXVoQQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793988345;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=3SJCRFOyyzqNtQQYZheoRjYTqtXjqo/uUdL5tCibwPE=;
-	b=gq5ODtFs7YeuuIr7NA9qslx4vhzeBJNO05lKX3urTiyZ3kl1AmQLaIhAkBnrmVSfgxHV
-	 sy3TaZtlpDeDcY39NnJmv6eV2Wf1XgdbtuNuY1pCPu89Ztt4ui5R+BdphLNCj3PyBfMSC
-	 QzWwDv+syedo0Cpz/T0ufdsxMPFVh+3BSOGDtzWJHgGJMRPLpTmirchLFMmYihjSSQfd1
-	 17GNjmTcnBhvwYe3EJTYcRTh6nRctytFDicCURMV09+fzRM/kfPmmEaj5iJ9pgbOyFd+3
-	 dASInmFovQxH/ReUEcEz2YPB33jhgSeXnk13oyDjbZDQdBbJ3Mv6Hfm+ub6644RmX4Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793989197;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=c/20RGI5WiHKKkpDTceQl002Lfa1bhsWYphTb3UDQkg=;
+	b=mPZBs2TM14nLJc3wsov37lkZouzwbOeit0toNP8Q5HCgGxfEfKRBLCSKKt/oChnBC60K
+	 STvGA0LZgdQgLi7xL9g0fgngKi/mQANLWsP2795FxAlXZLFXt/HXp8NMVpEGqYN/Xy4MD
+	 kVG5kViWzeuzRgStwSUxiHQ3jAvQ+BG1Pbs1KVW66hX9qUVQ8+jkr93r9xf9daPJZXlaZ
+	 6g1H/kadTaFO+X5bgQ5Zx45fWGnXzlfubvEB39+bi9kDvsAqT7HfhlPGmB+hZeROSaPgw
+	 ldugFruwAUPwuq0968nYFDB5aQNIiXLa36oND3aa+lvGUzDd7FS9rnszpmquItS2emg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=pDX+Zd25;
-	arc=none smtp.remote-ip=209.85.128.48
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KrBSVpvJ;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFC74606A32C
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2026 18:05:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CFC74606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65D8E606A333;
+	Fri,  6 Nov 2026 18:19:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=pDX+Zd25
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4ae34ad9bb6so836605e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2026 10:05:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793988343; x=1794593143; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=3SJCRFOyyzqNtQQYZheoRjYTqtXjqo/uUdL5tCibwPE=;
-        b=pDX+Zd251WQpm6lKliRaHGDE4tv6knRdEQFWJ0njTlCFH7tbNH7FFpgqz4w+S5kCbh
-         XOyWNB0UYTht3IXJnX5mbkTHDDIyCWwByjYpQmtKDL9+svTxEg4o+IX5+KkhgM64obXh
-         UM5pISQPtE+WC0a5DdXCim1A5jM/VPccMkCO+XtXYIOJdGG93TZg37uvMUK1FMRmSEwp
-         mj9Cfco4P7QxGVTa3Al8cKsk08PWurzasTwZVqHTMXrUYL7c+4AWn+vyxiKJxsiGrPQm
-         H/HxnJQMY8KWM3IfJly/NCNUhV/sPKs6ORlE0E0J4TfY1T22Bh4XemX6QCS7eUYBGKPH
-         epnA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793988343; x=1794593143;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3SJCRFOyyzqNtQQYZheoRjYTqtXjqo/uUdL5tCibwPE=;
-        b=dTKWWGjdaptBCsOZapkGDKVZXmqr9e7X/rQ3ErfA2mXW10PzKuUPHg3Gox7U9U6RLX
-         MmnQtwqxgJx47hK8ZiT7e4giT6HOC/++1wFFuEaF0HCzx3iFFcyx6AOrPL1uJpsprUw7
-         wOvWxdAwCRfnd5awn0KBUUKbNT64D2Bt17t6hQipd8HAlMD7mMLAtkzHqW1t1lpJoXy9
-         ajpEO64YCB+JAPx6ju15xSF9outgFI9AK2hJQVWvgVJsOR1AOMLT4NLrLgHr3P1YrOVU
-         //FT02SKMqa5AtyPxOMENYaQTmNksWcK9OON9GmgIUFz2nIWBCQJXSMcw6IVeRahhZUq
-         tI+g==
-X-Forwarded-Encrypted: i=1; AKwUvByPcUUiMKTzZ2biJLAj9zIbnfERIDhIOuNfGJNSX0fNHRsCorMJzA4FFFYWrAZYibAkkmQQNwomGg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+ScxMZhPGl+WVsuZ7saTMQk1IfXGYwKD8CgiSw0Nc3c9QBRQ82
-	WMbSeb0ZxZvt83ijuZKMASPogrk5hgd6wbTXp5VkrxJ92Qio6wI9aq+SJj+Riw==
-X-Gm-Gg: AYBFou0PqbyIub7x/pX2SmLD6hHLrt3iQaMEN+CVS2ROdI47lk3X140+w8RNYoN6Hwa
-	jTjdsek5kYe2OJU3nVlx1gFwDZlfARCbjMCQNGVbhEh/EonFcp8hnaxKN69iKs5JwlRTpdH83KZ
-	G0z5czVcgiPAIobISUGjhKOzN5kAc+XgIC/GvyIt9MqMyf09UfggioWrFY+XHWMkMF+5417mOsc
-	jaNddPj5Gpzj+Qijrhl60hx/euEzl6RPtGZwwMCB0D9lzS6LRxOW9MGqSldQScuOhh4ujnRuPnk
-	uqwvwpAUsS4OdrGoSHR7Lw6AI3BvZMUkq+YlXmSK4+lAa9oTaHa0npMmv1wAyaPjEumgh6zWqlF
-	xYmNg2+zehRReHyX5PH14YhipJf/8mQbhjPz4zh+Vj49/sX4nonk5wP8O/NuSaOFUyYW6nGOQjU
-	aelBXfT5+8NoZTqbf/caD0E+yI4OQP2J1fLUOVHo5Fh6Hj4qHwDmRFoIt2ozMkIGbzlIT5a4025
-	dqOk7ZXE0Uoo9/Q3kuh7xWiRDL8ElAOyv7ZGoB+jWTfEhWJG6VaEUug/T3SqaHHYYxMoK0Xb/+M
-	tVxQR5Bn2pKOEVdx4MPyFWifbVXCVTqic7X5bHoelJJKz2k7RVumra3gNn2T0OKsD5BHiO75Hw4
-	r
-X-Received: by 2002:a05:600c:8590:b0:4ad:5ec2:d3b3 with SMTP id 5b1f17b1804b1-4b6dcd99da1mr43174545e9.1.1793988343041;
-        Fri, 06 Nov 2026 10:05:43 -0800 (PST)
-Received: from scheduler.schedules ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b572caf48bsm171361085e9.11.2026.11.06.10.05.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 10:05:42 -0800 (PST)
-Date: Fri, 6 Nov 2026 21:05:38 +0300
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
-	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
-	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
-	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
-	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
-Subject: Re: [PATCH 03/20 v3] sched/eevdf: Reset lag at wakeup when migrating
- and prev has been idle
-Message-ID: <au3_SlJ-5Hh98m8Q@scheduler.schedules>
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-4-vincent.guittot@linaro.org>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KrBSVpvJ
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AC2E1F008A4;
+	Fri,  6 Nov 2026 18:19:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793989197;
+	bh=c/20RGI5WiHKKkpDTceQl002Lfa1bhsWYphTb3UDQkg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=KrBSVpvJM7vkY1slHDjt9v9csvTLVw6DZE9OLBCH6kHBWwi/iB0GMO52uMbFZPMu2
+	 aoxCVUIO3CfvqbM4ApUWQqMUyq7T507tTjGYhdLv9cHq0mKkBdnJcKicl10MAbOTO6
+	 l2bPh4z/TPbXDyBRgQauffurjJJKfxnf8R5aSi4pzmXXl5IiGbbZX+1B8VF3IZ5rwr
+	 0g7Tt8zM/nxj3oEc1nE9jrxUZVpbFdLHlwshhP4A3v/UkkQpvvX+reUCCcU7KAJ91b
+	 dy37lW9arn8Wu6MQyOfyX701vpirgwBIQ4tvzJCyh+t3BrRDSXQUnDmZ8+xFdidOMf
+	 sRqoiBHWy1upA==
+Date: Fri, 6 Nov 2026 18:19:47 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: =?iso-8859-1?Q?Beno=EEt?= Monin <benoit.monin@bootlin.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jun Chang <jun.chang@metanoia-comm.com>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Sebastian Reichel <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+	Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>,
+	Samuel Holland <samuel.holland@sifive.com>,
+	Ben Zong-You Xie <ben717@andestech.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
+	CL Wang <cl634@andestech.com>, Mark Brown <broonie@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Minas Harutyunyan <hminas@synopsys.com>,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	Randolph Sheng-Kai =?utf-8?B?TGluKOael+iBluWHsSk=?= <randolph@andestech.com>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-phy@lists.infradead.org,
+	Paul Walmsley <paul.walmsley@sifive.com>, linux-mmc@vger.kernel.org,
+	linux-spi@vger.kernel.org, linux-usb@vger.kernel.org,
+	linux-watchdog@vger.kernel.org
+Subject: Re: [PATCH 25/25] MAINTAINERS: add RISC-V Metanoia SoC support
+Message-ID: <20261106-comic-cupid-a8a3c127307f@spud>
+References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
+ <20261106-mt2824-v1-25-86087eaf5af4@bootlin.com>
+ <4f1e52d9-0788-4601-8f67-898256a776b4@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,107 +88,59 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="EI85CRMW6gBoUvVg"
 Content-Disposition: inline
-In-Reply-To: <20261106151947.3991524-4-vincent.guittot@linaro.org>
+In-Reply-To: <4f1e52d9-0788-4601-8f67-898256a776b4@kernel.org>
 
-On Fri, Nov 06, 2026 at 04:19:30PM +0100, Vincent Guittot wrote:
-> When prev CPU entered idle while a task was sleeping, we assume that the
-> latter received enough running time and the lag can be cleared similarly to
-> what happens for a negative lag.
-> While migrating the waking task to a new cpu, Check if prev CPU entered
-> idle in the meantime.
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  kernel/sched/fair.c | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 79f53811274e..945de0215abb 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -932,6 +932,27 @@ bool update_entity_lag(struct cfs_rq *cfs_rq, struct sched_entity *se)
->  static inline unsigned long cfs_rq_load_avg(struct cfs_rq *cfs_rq);
->  static unsigned long task_h_load(struct task_struct *p);
->  
-> +static __always_inline
-> +void entity_clear_lag(struct task_struct *p)
-> +{
-> +	struct sched_entity *se;
-> +	struct cfs_rq *cfs_rq;
-> +
-> +	if (READ_ONCE(p->__state) != TASK_WAKING)
-> +		return;
-> +
-> +	se = &p->se;
-> +	/* Negative lag implies delayed dequeue */
-> +	if (se->vlag <= 0)
-> +		return;
-> +
-> +	cfs_rq = &task_rq(p)->cfs;
-> +
-> +	/* CPU has been idle in between so the lag has been removed */
-> +	if (se->vlag_seq != READ_ONCE(cfs_rq->idle_seq))
-> +		se->vlag = 0;
-> +}
-> +
->  static __always_inline
->  void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
->  {
-> @@ -10049,6 +10070,12 @@ static void migrate_task_rq_fair(struct task_struct *p, int new_cpu)
->  	struct sched_entity *se = &p->se;
->  
->  	if (!task_on_rq_migrating(p)) {
-> +		/*
-> +		 * Clear the positive lag of a waking task before migrating to
-> +		 * the new cpu.
-> +		 */
-> +		entity_clear_lag(p);
-> +
->  		remove_entity_load_avg(se);
->  
->  		/*
-> -- 
-> 2.53.0
-> 
+--EI85CRMW6gBoUvVg
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yeah well looks good. I need to test this on my head tho:
+On Fri, Nov 06, 2026 at 12:22:15PM +0100, Krzysztof Kozlowski wrote:
+> On 06/11/2026 10:30, Beno=EEt Monin wrote:
+> > Add a maintainer entry for the Metanoia MT2824 SoC, covering the
+> > SoC-specific DT bindings, the SoC and the evaluation board device trees,
+> > and the phy driver.
+> >=20
+> > Originally-by: Jun Chang <jun.chang@metanoia-comm.com>
+> > Signed-off-by: Beno=EEt Monin <benoit.monin@bootlin.com>
+> > ---
+> >  MAINTAINERS | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> >=20
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 93abbb315065..310544f96204 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -24072,6 +24072,17 @@ T:	git git://git.kernel.org/pub/scm/linux/kern=
+el/git/iommu/linux.git
+> >  F:	Documentation/devicetree/bindings/iommu/riscv,iommu.yaml
+> >  F:	drivers/iommu/riscv/
+> > =20
+> > +RISC-V METANOIA SoC SUPPORT
+> > +M:	Jun Chang <jun.chang@metanoia-comm.com>
+>=20
+> So Jun will handle the patches? Can we get an Ack for this?
 
-CPU1:    CPU2:
-TA       TD
-TB
-TC
+There's no tree listed, so probably Jun is not handling any patches...
 
-Let's say TA sleeps and has 12 lags. And while its sleeping TB and
-TC leaves:
+I /could/ apply patches for this platform alongside the other one that I
+manage, but I don't really want to and someone that actually cares for
+this platform should be the one applying patches for it.
 
-CPU1:
-TA (Sleeping)
+Beno=EDt/Jun, please see Documentation/process/maintainer-soc.rst !
 
-Then some new tasks come:
+--EI85CRMW6gBoUvVg
+Content-Type: application/pgp-signature; name=signature.asc
 
-CPU1:
-TA (Sleeping)
-TW
-TR
+-----BEGIN PGP SIGNATURE-----
 
-Now TA wakes up, we enter try_to_wake_up(), from there we pick CPU2 and
-enter set_task_cpu(), from there migrate_task_rq_fair(), and to
-entity_clear_lag().
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCau4aQwAKCRB4tDGHoIJi
+0rbxAQDp+CX8P4FSxsxtp+sH+XOoVxSjimJET4S5CSWzGNHXFQD/b5cKyz3+v/zA
+eq6hyBYC7BQX3uGp2UiAkQX4EfPpDwQ=
+=dNYG
+-----END PGP SIGNATURE-----
 
-And from there this just works correctly.
-
-
-Reviewed-by: Kayra Cizmeci <kayracizmeci@gmail.com>
-
-
-
-Cheers,
-
-Kayra
-
-
-
-
-
+--EI85CRMW6gBoUvVg--
