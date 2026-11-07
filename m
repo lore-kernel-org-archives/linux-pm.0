@@ -1,99 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794041839;
-	b=myaFM7YZtzmC9ayHoyarHWg7VY/V1V1wCDV4KJ2gS8i2n0mDmlCamzk0HhHSespOrZk3
-	 EDAdPMFFQOVshi1LUyAcdFne3+MJAEAnn6l1HZxKOSFv96hLRpOz9A1yFf8yunkZGsi/7
-	 ri8wWi+s0rd3R0oqBNIAxGXKOeC//GDFqJb1Vp44kOjDnfA4/9IQs3F9d8lGd3FWNY1+w
-	 aZZ3h/gL59EeK5R93yrGFOhPDXt1MKMsf9HyFewOgHxRKdpDjlreCIr8X6OG699f7b9hO
-	 itU6WkOiEfBbZUhk05J/XElO1vn6ugNp7ZzC2/+zkeTWJXewVmNlrC0VHOggg1cjq5A==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794041839;
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.170
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794046690;
+	b=AtF6I5ImuHa3C7vZ+514gFQPtew7534QIhnsZRji2NFqWiBxsdpr0Q5PoYFzhDoD4tEO
+	 PfndMoXj+zMt+xRVDzUo7Pru1YPdaIail1tFzPIZ2z9ejGaQdRR67iOMgZliKd2+gLTcX
+	 ObCwH/JP/nQLNwz09SU+u858c0le663HeFQJ8rkTd2mU7FTuyGHn+sv8UhuyfkCIzwVFs
+	 heY9VGc/oSpfS8JhL9yCpHSTPltFKUxBIpxUBBV/1Kuz2CRmybyHVHapeBXtZVr1jcCyQ
+	 igdlXrYkCYVzk3mYarLOdqZXq64Xf+e4SYrpKlFElGdPS8BnMiTDhTEkb1oB5njLl8A==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794046690;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=o/S19kSM9lYLAGwga0DXgPXg/sfdJ1jaylcSZ4R6Qfs=;
-	b=RnvxcVw5TMIjmY+JobvlAbG19jvesMtsqa6rCQhTDWoUWNqWEvTzYh6nj/qMLAi7CrAp
-	 QtTMfAk41ynsHIqx6wvnhzOeAuNN5+3pGOqslShsPRqA6+byjvaFHhmD+EiK5wdJncjXS
-	 EWGcVPGrLuTvyiTqTB8id/lHN0Uyox7D/CRO6S8LQZQ/aR1hjHRLWBxmUsB/TU2Q7uqXr
-	 3MFlrLSBTxY4zULMIHRLrIGhv4FQVsMKXO+8nfbP4dx1JeXbGQNpSDWtDDUfCD2wOcsej
-	 ZfvWz3i7KPFKZ/8K7NXDULlDuDK0g0jPmQj8pRJaoELnA5r9hs5iBEwuavG10siK34w==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=LlYZSnhhBhztP5IWsnPRPqtaO1fn+3H5U4xPBBTTlKI=;
+	b=O1k6Yu8a+028nmSLeByKTfNeQ6VVthOU/7IILVamDqxNVqGrlL8qzVCTxPn2C3dzHM0w
+	 0z5kn0w9NWnZq9Wi/26cyM4XoyPzaT8RJR57rSKhnR153tWcvdYCzlT7ejlCOhzNjexi2
+	 cZf2pkcUZ8xa8+Mtt+D/HSFFR1ePIsfFdY7AMn68HFZhLfWQk48RK7dN1qVKmZXPJ69py
+	 JwEqJS9tSa2ylYm/qfOf7JqVhr9JGACgTmR1j1l9KPRbkr2AJpSmqw0IG1Svjqn3XvhIG
+	 j0eMxEqpGBVDtPEIZJIwv8iqmbS6tRCrvlIHbmojsH7rDi6U1fQkv1qtz5t+9aAANNg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gLuvHpI3;
-	arc=none smtp.remote-ip=209.85.128.54
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lP7jVZlF;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.170
+Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEC42606A32D
-	for <linux-pm@vger.kernel.org>; Sat,  7 Nov 2026 08:57:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DEC42606A32D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6E43606D83B
+	for <linux-pm@vger.kernel.org>; Sat,  7 Nov 2026 10:18:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6E43606D83B
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gLuvHpI3
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a1bc97805eso1465615e9.2
-        for <linux-pm@vger.kernel.org>; Sat, 07 Nov 2026 00:57:18 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lP7jVZlF
+Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-3645f0f3fcdso2377684eec.0
+        for <linux-pm@vger.kernel.org>; Sat, 07 Nov 2026 02:18:09 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794046689; cv=none;
+        d=google.com; s=arc-20260327;
+        b=BgPA8c2gTHhmEKRL7L+S9n2LUaD5zyJEvY+df5QUM4qm6VQYnY2KcGQ3loFqjxrlxz
+         9BjtWrhkhZp+3q/E4NmUDyOL41W6zBBRUm25mAAKPo2BdnB4Fdro8eiSRUFcuC314Wcy
+         73PxKKXF3TzVNflo9p9sxZ944thlIQJweKnmO+o3mBgD08jiYHpHYxulkdeiuaYjqznW
+         oT0kREsMAqoEZGqVKF6BU/K/F5jvK7w654DvkP0lnPURmrIKXGhzkTs6/lcAHVjp/+Jf
+         GlRUG7KsAqvHnXC3iu793L6s4aBfN69FFFBfr/ZOUpHkHwVDVp9O06Do4Saz5UVV+l2G
+         Ohaw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=LlYZSnhhBhztP5IWsnPRPqtaO1fn+3H5U4xPBBTTlKI=;
+        fh=VO/9V2I+1pcDnAZxDJhucrttY+Yg0+UlD7xXYb2qvVs=;
+        b=gA6rE5tdjZAcEZzaHhRnH/AtX8BEeLUfJz23V5yXQdeeOg+r4zeareFwyr+1lLU2TK
+         dymqYyVH/ffiKb3jj0UYDzy3Jr4U3wGGd0KwyecAuWmeAXO/2asnCAz0AiOPRe1Pxjj7
+         vTkBCeZzIuU6zbLD/Yj1V/W9c68mbdmeRLOrpXEYp0v8A88mBTKIjpBw6yoGkM7wttmH
+         7vvx06EHP1cDKve9vVL+OPfHHuonmjOhMQIQCSgxGr4voP94rsbs+hm/txVSb06A4Cdt
+         6n0SSqfDxLHUnOOFNdBgLW+i5PAZ1tCVyXPOe8tPobp2kEctwiv2MUUSvf++Tc9aroof
+         SoCQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794041837; x=1794646637; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1794046689; x=1794651489; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=o/S19kSM9lYLAGwga0DXgPXg/sfdJ1jaylcSZ4R6Qfs=;
-        b=gLuvHpI3QeuqX8VNFvkKvk4IcSBzjZUXZoeyw2xWPagKIGXAZu0KnpfluhyjvKZKG9
-         XY98Xl/pynZD9DbfYI4FvEnzBVwjszStlXb7wHZo9YVgyGr9iPWKUFzuCtjidgMWjlPg
-         OfTS8uktDVyikS2BPb/KPieBiuhObpMxTzGwtOsOIQ0vszbLxdbyvMxq4Djo6yM6YL5u
-         fKATF3pvYP7r6dXYZUyF3TOntuAOAXwNDsfKSJJJhtp7yrTZzNTHfiC3gWbYqq7Q1RAX
-         1/7/cg3ODZpF6eC4YESITncxvJ2BDm1EgRDP5QAZMxUNu6aN6wAXqmWdyTTW3wPeDdLF
-         2zkw==
+        bh=LlYZSnhhBhztP5IWsnPRPqtaO1fn+3H5U4xPBBTTlKI=;
+        b=lP7jVZlFvy1fTCONhPWDyL4pzmVoRjpo0Cd87RZmlWWt6Q7QRDEuDQkoFslzqtaodt
+         1RI7cSRBMHm6M1e25Wg6HMmzjbbdiCgJvEBCN4ODyKT1RR34cQTfuxMTfsvSj5tsrWfi
+         weR+zF8KcKUVMUaux8r4g/yNS5S0dOdnTM0HwsT4IgS829GvcVsdfjNkq1J9aCiDAof0
+         iLntN44/aK+yT3bzsqtUFByFKhH6mt/ZProSDKGMNziLedQKVy6IuOtecDmcI3rHN+Gi
+         PhakD0y9GvzTlClIc+8VbgPe9Gw+fWJfCW5NVAopvJqHPKCtinthbNzdF/WnMxqdFeQV
+         zYSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794041837; x=1794646637;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20260707; t=1794046689; x=1794651489;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=o/S19kSM9lYLAGwga0DXgPXg/sfdJ1jaylcSZ4R6Qfs=;
-        b=cMn+LYMcuHd1q94S03pSOQAsIMGOYCZ4F9lmNjaNKMXYjKWBEu10y0kwoQtOzMXdGV
-         dC7A+MjJoyTBbmye9nl6IejS6Rc4h7+0JkCb4kzto/wNFuj3i044eHau47OGr08cOptY
-         dbNo28GVXhJCrNiuCFF9uyHjgqG+QSQT69nP6u9pYS3pS7+aumR2SHL1S4bU+2jWR0oW
-         m58YxHdBnsjaIhjdmUj+AX9m/x1TS0xd9yqDGGQhvWp08ZUQ55FlSiHZjcRDgxNSTFU7
-         4mXg8c6QNCA0XUqKXU1al/rupGzQ++Lj+V7AtUBjWTOP31KPOPXtXlkU2n4Ej2DLG3XM
-         Oowg==
-X-Forwarded-Encrypted: i=1; AL+hErELz7rF8+isgIrPS4PWOBBm3tBwKcrL8+k7RGkttZ2+wEsj0zKTVFoBrwMrxw88ODqd70m5odY15A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9IfYIuLHM7vcVsK5HIXDA1TBTAqpJrYfO889x9lpU1GBTD9IKX
-	9E3G54WjVu85l5PS2FHattnYS4K9+Fk+NG7OjZLj7dRkWDil1p48ZGC6
-X-Gm-Gg: AYBFou2rgbTTSvcU4AvX2+3PgLi5NxQd8wKTB9XdKOTuOFSt1z6YQ4cENYwa6WAlUAj
-	lF2RET5He0RMvMD0Hd8Wfj3oxsr2/vWYHcE24J228XhNbBRiG1vyqVEsh4KfsK4X9TYswjPegOb
-	ZtveDuOHyppR6Zs3b+fPy3Y4DqUsBvKS2nvVA5TqO6KDqhb28PONk3QRyrs0h44rvRdJuu5aplT
-	SCHtIRx+RjvKV4O/Kexuu9wh5biSeOS4wnT1WJovTKXr3Yf/7ehXoG85dY8zQPPIiTJEo0Dg7VH
-	HZFzeGuiVeoTRsym4P+6YvY3l37Xvn5bK57tDPiTlzBZZnc23vOEIsqYH+zGiPZu7E/4WZjoFJy
-	oO3NZGwbeHpAbTdWU0o5p+OwWzEW0hlpAB7mSOIPPM/xS8C2j2fMsIU3/shrkbxU1DYhq8V/6kG
-	fQyUSs3m53kSqsFv/Jvo9jxCl+3lDiDtaJBuPCY0/65mqiE/oQTIW3EKU4Q0j4TCKKQze1461sd
-	VzTon/2XXMPixoL2hqrl4JmCb7sIBy6HWo2IzWq5jaNYdYGq7kLx2qYzmBtPY74rrjWIff2Rakl
-	ac96rBKrJMbP1MUTJ8cVyuJ5Ix0emJVSL7AYMYdpNp0fasUHt2krk+M=
-X-Received: by 2002:a5d:5a45:0:b0:493:9233:ce65 with SMTP id ffacd0b85a97d-4939233ce93mr4171013f8f.0.1794041836979;
-        Sat, 07 Nov 2026 00:57:16 -0800 (PST)
-Received: from scheduler.schedules ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-492d3d6085asm11840800f8f.3.2026.11.07.00.57.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 Nov 2026 00:57:16 -0800 (PST)
-Date: Sat, 7 Nov 2026 11:57:12 +0300
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
-	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
-	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
-	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
-	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
-Subject: Re: [PATCH 06/20 v3] sched/eevdf: Add min slice check when selecting
- CPU
-Message-ID: <au7SabL5pfbsApyB@scheduler.schedules>
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-7-vincent.guittot@linaro.org>
+        bh=LlYZSnhhBhztP5IWsnPRPqtaO1fn+3H5U4xPBBTTlKI=;
+        b=rzx68fL9mGFu4/OV/7OdrGbjVyXUWAoVm7UBqRvf0vE8fqSP92qWz6ysiZhcY0Wpun
+         atp3W/ISyhYIui6/VS72XhIV8Eem0ibA//OHFI7NQHJwtpjl5npMwjVgOrSuskn7A/jW
+         QK1foK9LLpR/fPXLKbO1H6NESjnhdRnThB8Mumx2InwuVdhMi0xtvkCVqhFzWpEox/ou
+         XqntnYothQixw0B47tloBX6mdlmsLHjMqHnTH0MtoDbLiu24ftAbReWnpZswpJpVxpAu
+         Y7XwAGgI0I30UytmHRS0MUJDeshNpW1cLEm5xeKM8gLl1r8Z85vYR3ZVYpGrSFd/VJ65
+         /NHQ==
+X-Forwarded-Encrypted: i=1; AL+hErGcoeQnzAM8HhIRst34ERG65md3QPzPiQVzc7q8OrtUx99QRkxKOwib8WIPAYkuH+3UhL6gZWt9mw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9ZUEgUoqdwcwEKeqKRATqZSTV+YFWc+8yLUsnPRYrrkWcI+aKU
+	qWcRkivGhei7C9eWjUP4WkVkrOJgA5m33kQj0TpKZ6dSwtj9CXW2oG6lEC8oqpLKdIFbReaXKjv
+	PyfwSol+TLysiUERquklSdvnwp5T+pUZYh0zU
+X-Gm-Gg: AYBFou1jwzIrelQDz2dSjByCMgGI5iuNCOoJ4nw7MFzAqXbi3JhrFKPCnLDnGz0KAOW
+	f3UOCrSix6KOEWwYGqSpu4eNXoXhx/AWcaWQIEUHMJblT7W/bHSkt+JlrUYDun+3m7IjqN6lz+C
+	Jjyk1VVQrgVenC8RjKJ27okokSXeKiSSP6yDqVZxAUGygwFVuIngDpzo2zy0TqiMNBRBjJvXO5h
+	FkgkhRIR9BUtTn7Wi4radLYqDb3VhWjHrUNndHyQOiFcr7RCQWU9zC5UPRk3NbigIetrMr2y45R
+	Dam2YqWxx5oSU0i0B0EL3em1bt+n4+UubkDlNcdBpL2TVgQANfGH1D146MDbHpuzqMnLI5SPTPc
+	VE49yZXBaY6uC/t7p6TlhUjoAVinKdLsH15ib0r+xZczSpStR1VCMihNKksw32QHDsYS6UN2pEg
+	qqiqvnjjdoPHiq94ySxOlIqzdDMPBrRw==
+X-Received: by 2002:a05:7300:de07:b0:36a:1294:59e0 with SMTP id
+ 5a478bee46e88-36f75f2622fmr6160193eec.24.1794046688723; Sat, 07 Nov 2026
+ 02:18:08 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,147 +105,98 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261106151947.3991524-7-vincent.guittot@linaro.org>
+References: <20261106-upstream-soctherm-t114-v1-0-c875d1921084@tsv-stahl-riesa.de>
+ <20261106-upstream-soctherm-t114-v1-2-c875d1921084@tsv-stahl-riesa.de>
+In-Reply-To: <20261106-upstream-soctherm-t114-v1-2-c875d1921084@tsv-stahl-riesa.de>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Sat, 7 Nov 2026 12:17:55 +0200
+X-Gm-Features: AclHuK_jIEdyr-up9S7mHl7KTEoo-13Z2jwrbx6ifXQMV0tTi0jUUh7MBAiai48
+Message-ID: <CAPVz0n2jFCxCa=t=XaxE7S9YxbYyF3WGbwXqBvkkQHjmiErqdA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] thermal/drivers/tegra: Avoid SOC_THERM calculation
+ overflow on Tegra114
+To: admin@tsv-stahl-riesa.de
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Mikko Perttunen <mperttunen@nvidia.com>, linux-pm@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-Hi Vincent,
-
-
-Sashiko reviewed this one so I'll just put here my own concerns instead
-of repeating.
-
-
-On Fri, Nov 06, 2026 at 04:19:33PM +0100, Vincent Guittot wrote:
-
-> Add a new level for selecting CPU when select_task_rq_fair() fails to find
-> an idle CPU. This last level compares the min slice to select a CPU where
-> the task could run 1st.
-> This helps a waking task to select a CPU where a longer slice runs
-> instead of one where a task with the same or shorter slice already runs.
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+=D0=BF=D1=82, 6 =D0=BB=D0=B8=D1=81=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 22:32=
+ Patrick Fischer via B4 Relay
+<devnull+admin.tsv-stahl-riesa.de@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> From: Patrick Fischer <admin@tsv-stahl-riesa.de>
+>
+> SOC_THERM calculates each sensor temperature in units of 0.5 C as
+> THERMA * capture / 2^13 + THERMB. On Tegra114 the intermediate product
+> THERMA * capture has to stay below 2^24. Above that the hardware sets
+> TCALC_OVER in SENSOR_CONFIG0, clears TEMP_VALID in SENSOR_STATUS1 and
+> the sensor drops out of its group. On a Tegra Note 7, 80 out of 80
+> samples matched this rule: TEMP_VALID was set exactly when
+> THERMA * capture < 2^24 (largest valid product 16747731, smallest
+> invalid one 16877718).
+>
+> The fuse calibration itself is fine. As Mikko pointed out in the review
+> of the Tegra114 series, the fuse corrections are in 0.5 C units on
+> Tegra114 just as on Tegra124 and Tegra210, and
+> 2 * NOMINAL_CALIB_XX + shifted_xx is correct. This patch keeps it that
+> way. The problem is the range: with T in C,
+> THERMA * capture =3D (2 * T - THERMB) * 2^13, so a sensor only gives a
+> valid result for T < (2048 + THERMB) / 2. On Tegra114 THERMB is close
+> to -2000 (between -2117 and -1812 on the chip tested), which leaves
+> almost no headroom. On that chip the sensors were valid only up to
+> 45 C (cpu2), 53 C (pllx) and 32 C (gpu), and cpu0, cpu1 and cpu3 not
+> even at room temperature. The gpu zone therefore always reads 0 C, the
+> cpu zone stops following the CPU at about 45 C, and neither the
+> throttle levels nor thermtrip ever see the temperatures they are
+> programmed for.
+>
+> NVIDIA's downstream driver runs Tegra114 in "lower precision" mode for
+> this reason (tegra11_soctherm.c: "We must use lower precision (0) due
+> to cp_fuse corrections"): the sensors count in 1 C units, the readback
+> is scaled by two and all thresholds are in 2 C steps.
+>
+> Do the same with a lower_precision flag in the SoC data:
+>
+> - keep the fuse calibration in 0.5 C units and halve THERMA and THERMB
+>   only in the final rounding step, so THERMA * capture stays around
+>   2^23 and the sensors report the same temperatures at half the
+>   resolution,
+> - double the readback in translate_temp(),
+> - use a threshold grain of 2000 so that thermtrip, the throttle levels
+>   and the trip interrupts are programmed in 2 C steps.
+>
+> The use_lower_precision option in v3 of the Tegra114 series and the
+> downstream driver halve the calibration temperatures before the
+> calculation instead, which applies fuse_corr_beta at twice its weight.
+> Here the result is exactly the current calibration divided by two. The
+> PLLX hotspot offsets are left as they are, as in the downstream driver.
+> Tegra124, Tegra132 and Tegra210 are unchanged.
+>
+> Tested on an NVIDIA Tegra Note 7 (P1640) together with the shifted_cp
+> fix: THERMA * capture now stays between 7.7 and 9.2 million, and all
+> eight sensors report TEMP_VALID in idle and after 60 s of load on all
+> four cores at 1.12 GHz. The zones read cpu 43, gpu 39, pllx 43, mem
+> 39 C in idle (board thermistor 34 C) and cpu 63, gpu 55, pllx 62, mem
+> 53 C under load. Before, the gpu zone read 0 C and the cpu zone stopped
+> at about 45 C. The thermtrip, throttle and trip thresholds are
+> programmed as 51, 50 and 45, i.e. 102, 100 and 90 C.
+>
+> Fixes: 9d522a877b6f ("thermal/drivers/tegra: Add Tegra114 specific SOCTHE=
+RM driver")
+> Cc: stable@vger.kernel.org
+> Link: https://lore.kernel.org/all/22816196.EfDdHjke4D@senjougahara/
+> Signed-off-by: Patrick Fischer <admin@tsv-stahl-riesa.de>
 > ---
->  kernel/sched/core.c |   2 +-
->  kernel/sched/fair.c | 157 ++++++++++++++++++++++++++++----------------
->  2 files changed, 102 insertions(+), 57 deletions(-)
-> 
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 031efe7d49fb..d71da9069218 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -9012,7 +9012,7 @@ void __init sched_init(void)
->  		rq->sd = NULL;
->  		rq->rd = NULL;
->  		rq->cpu_capacity = SCHED_CAPACITY_SCALE;
-> -		rq->min_slice = ULONG_MAX;
-> +		rq->min_slice = 0;
->  		rq->balance_callback = &balance_push_callback;
->  		rq->active_balance = 0;
->  		rq->next_balance = jiffies;
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index cfc99b94d9ce..039dce244aaa 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -8842,11 +8842,25 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
->  	return new_cpu;
->  }
->  
-> -static inline int __select_idle_cpu(int cpu, struct task_struct *p)
-> +static inline bool choose_sched_slice_rq(struct rq *rq, struct task_struct *p)
->  {
-> -	if (choose_idle_cpu(cpu, p) && sched_cpu_cookie_match(cpu_rq(cpu), p))
-> +	if (p->se.slice < get_rq_min_slice(rq))
-> +		return true;
-> +
-> +	return false;
-> +}
-> +
-> +static inline int __select_idle_cpu(int cpu, struct task_struct *p, int *slice_cpu)
-> +{
-> +	if (!sched_cpu_cookie_match(cpu_rq(cpu), p))
-> +		return -1;
-> +
-> +	if (choose_idle_cpu(cpu, p))
->  		return cpu;
->  
-> +	if (*slice_cpu == -1 && choose_sched_slice_rq(cpu_rq(cpu), p))
-> +		*slice_cpu = cpu;
-> +
->  	return -1;
->  }
+>  drivers/thermal/tegra/soctherm-fuse.c     | 15 ++++++++++++---
+>  drivers/thermal/tegra/soctherm.c          | 21 +++++++++++++--------
+>  drivers/thermal/tegra/soctherm.h          |  6 ++++++
+>  drivers/thermal/tegra/tegra114-soctherm.c |  4 +++-
+>  4 files changed, 34 insertions(+), 12 deletions(-)
+>
 
-
-Look here:
-
-CPU1: CPU2:
-FA    RA
-      FC
-
-CPU2 has 1 RT and 1 Fair tasks named RA and FC.
-Let's say RA is running on CPU2 and FC's slice is 10 ms.
-
-And let's say FA has 8 ms slice, and a fair task named TC is waking up
-with 9 ms slice:
-
-* We look to CPU1, 9 < 8 is false so we return false
-
-* We look to CPU2, 9 < 10 is true so we return it.
-
-But the problem is, CPU2 has a RT task running and we are going to
-compete with the RT task. In that case it can be worse than CPU1.
-
-So, I would suggest something like this or so:
-
-
-(My editor got crazy, so I had to copy this diff :<)
-
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 262626455497..8b0dd858f332 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -8876,10 +8876,8 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
- 
- static inline bool choose_sched_slice_rq(struct rq *rq, struct task_struct *p)
- {
--	if (p->se.slice < get_rq_min_slice(rq))
--		return true;
--
--	return false;
-+	return p->se.slice < get_rq_min_slice(rq) &&
-+		READ_ONCE(rq->curr)->sched_class == &fair_sched_class;
- }
- 
- static inline int __select_idle_cpu(int cpu, struct task_struct *p, int *slice_cpu)
-@@ -9193,7 +9191,6 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 	bool has_idle_core = sched_smt_active() && test_idle_cores(target);
- 	unsigned long task_util, util_min, util_max, best_cap = 0;
- 	int fits, best_fits = ASYM_IDLE_THREAD_MISFIT;
--	unsigned long task_slice;
- 	int cpu, best_cpu = -1;
- 	struct cpumask *cpus;
- 	int nr = INT_MAX;
-@@ -9204,7 +9201,6 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 	task_util = task_util_est(p);
- 	util_min = uclamp_eff_value(p, UCLAMP_MIN);
- 	util_max = uclamp_eff_value(p, UCLAMP_MAX);
--	task_slice = p->se.slice;
- 
- 	if (sched_feat(SIS_UTIL) && sd->shared) {
- 		/*
-@@ -9260,7 +9256,7 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
- 			else if (fits > 0)
- 				fits = ASYM_IDLE_THREAD_FITS;
- 
--		} else if (fits > 0 && task_slice < get_rq_min_slice(cpu_rq(cpu))) {
-+		} else if (fits > 0 && choose_sched_slice_rq(cpu_rq(cpu), p)) {
- 			fits = ASYM_BUSY_THREAD_FITS;
- 			cpu_cap = get_actual_cpu_capacity(cpu);
- 		} else {
-
-
-
-Cheers,
-
-Kayra :-)
+Tested-by: Svyatoslav Ryhel <clamor95@gmail.com> # Tegratab (P1988)
+and ASUS TF701T
