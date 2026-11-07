@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794063005;
-	b=gMkfXDzK2h1JeHMkwgFbATqhJfTHOhRHNThWXQAIl/iOtsPLbPCs7FlEULUB31xUP2HB
-	 qxfhi7J0ogGsAoc+DfBBGH6/IE8CeVTey9OkJKPKA/9rw4UThN8LvZdS7ICXBKvkOtYC3
-	 3Nx29PS4fSvj96ibWpjP4abp3ofPgNTvIfeEy5sD9HMZU8axrnpTtb1lEg7w6tUpdz1bY
-	 UjOV+TjCurY8K2ErqNSGYcvINJRazSdqzIV1HBQf++tNXMi/TASGYvWyTj9CR/XIBsZ+7
-	 0/YHOfdCFWB3Qg3EO+OZyRVNBWLE/7ZhMAd5j3SU8Qw03o6hZY+sOX39+ehSBeJ0jPw==
+	t=1794063322;
+	b=pJ5CouKoX9x3z+JQGhgCxha6Rtnv/KjvKTOQmhKGi01VQisqQNG3M2esLeN5OqplEVkV
+	 ppkf6xIPWefIFWVpxNz4pZpIU3c7EKY0hkHkuRMob/ijoDzsXD9QGcyUoz9nxO3DIaZWR
+	 UdAtEjL4f+YbAUAv3Xd74562ebjrI2u697nZ4SNDmDF/gky8Jd0G9xYZCmKt0bY8MhpCb
+	 +UkJebGb+Gm4gns9uTS7X5VDrI1a/Jces6bwKOJ3gO3eqvgGaJXu7UHdREyZx2aGEB9P7
+	 juITjXPA/ZBI2cawLVIJfLCDRpIkKIjiOhNFBYTk1LqQ3cyUz3Ny30DO3n+IW0wvgVA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794063005;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794063322;
 	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 Content-Type;
-	bh=rCtCLaXuoBajgUckhWEDWeKqUiY5Jp/q685S3dMTOBU=;
-	b=GYJ/Z1KGPtlq6EI/HxywVoiBfTowY8iF5u1vvR0kCH1PgAFQc5UjZEkbfuJi+qWnUxpz
-	 6n4mpTHVLS0Y+jTcWJtVvj5SEh5Ton4MacRhsKNUQec9SqMEErxtbV0NCHS5OSPY3ebow
-	 KSWmc70YmgoGc3kg9/0Qlvyc5K3wtNMktMJHHUw5HKr1hFXbc4Jofj1KcbPPy3ZETnTeQ
-	 XkPs9O10kyLw4WZYZdXtQV3FeztYNDIfs8jZC8eg5P0fYYP3/OZKC+2mada0ikXlqD9Wz
-	 4O6LFrwZirlQZlW3nI5smY7O3nzqz5N5AQDr6cJx1JAs1+nIDx67gGN98NFMe9OdXag==
+	bh=9fZSnTYT8MA9EbRBaUvLqKYLQu5iORlXOvx+G3Uf2Jc=;
+	b=LW9exvLR/ep8ccOpKo60rB9A5fSjwLQnXFAOOwGeLwViUYNNDwqB8INBRxGGR75Kq2DT
+	 z1238mP91j4xYPvaijw77hShk3ce7SnB13wzT+3mcqtehZi2MZsqK+4igIMTRPFjzWIOu
+	 3VKbKfh9/jKVmtHHFpDH3SbIsVUMIIerSkruAHLwCg3kmqh1Yb/RGGw8tHxSDHYGUAv1R
+	 SsImD26DPEQ20DWW9wy8Pz0Deev0sn56ROEtJKAAjIomtuZxGthTfqrvAIm+Ko8ggrgF5
+	 HbYlr4yhPxNJWiFgCPtI3JdthX+geMkffH7VqLQQlIyKzOWSriXIz5/fw8VHagBgVHw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=sntech.de;
 	spf=pass smtp.mailfrom=sntech.de;
-	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=XYuv4fYM;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=Vx4J4G9N;
 	arc=none smtp.remote-ip=185.11.138.130
 Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68855606A330;
-	Sat,  7 Nov 2026 14:50:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 68855606A330
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39DE3606A32C;
+	Sat,  7 Nov 2026 14:55:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 39DE3606A32C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=XYuv4fYM
+	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=Vx4J4G9N
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
 	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
 	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
-	bh=rCtCLaXuoBajgUckhWEDWeKqUiY5Jp/q685S3dMTOBU=; b=XYuv4fYMGfp8WiLCq7bsTniChM
-	x8V2AxaJTLLbaFlm3r5jQWBGYPawdLNVgYZ3MJX8dPrAcBBZU7fgEAfk+qJ0Jgc94vK6gMgg9HGCa
-	ty3mMgbt1Wl5eUiXOJMA5ZZNq6AcIFaEIO5aMZweUrTusjxTGXtN2IQdnQ1K/c0zaNeEN1y3NA/wv
-	Z2Uc4uXtjeGObyJf+ElqpA5FQci4z8n4oH+1tE6muB/lYxBW5MGNxybGdZJloi110/LC2IGU5yLkN
-	Ew0cFYosZD3ERCzLVZq4r29Mspj9YRYuv2mauBKSy6esUH3tT6nnjaYbw0L69ngw4jSJerd17qZcX
-	EWTDz4cw==;
+	bh=9fZSnTYT8MA9EbRBaUvLqKYLQu5iORlXOvx+G3Uf2Jc=; b=Vx4J4G9No9bGRJ4Vs0GPjrqjeT
+	ToMpI2Vl+Ww2kkw+zMNU1/iDDpUDu3YRotlBkpj9gKNB74bBHTypCnSy/xC6d1DK5LDIQooU3Vn91
+	o6AcmQvggAkz/uvzI1jyu03Km0tXEYX8qPdITP2+kuMINdoUeyob16qSdX45z4wObi5ieN66BW4ue
+	BlgYsfBOIb2JOxJ6hUKlbwpjiJbWc7qZq7ZNfsQWKZFAPa6g2PANLncMplYImLQAgsqbMNE5yxtfy
+	EccGTLdNgh9J4QLQXaN9VRoPbwqYorjGX0D+jkVxeA1ntzsyI4FcN8YGopY6zSra3Nd5Q2S7OUulz
+	BvedVQwA==;
 From: Heiko Stuebner <heiko@sntech.de>
 To: rafael@kernel.org, Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Shuah Khan <shuah@kernel.org>,
@@ -50,15 +50,14 @@ Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Shuah Khan <shuah@kernel.org>,
  linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-rockchip@lists.infradead.org, linux-kselftest@vger.kernel.org
 Subject:
- Re: [PATCH v5 3/6] powercap: dtpm: Remove duplicate RK3399 CPU hierarchy
- nodes
-Date: Sat, 07 Nov 2026 15:49:56 +0100
-Message-ID: <2454229.bcXerOTE6V@phil>
+ Re: [PATCH v5 4/6] powercap: dtpm: Use generic powercap hierarchy helpers
+Date: Sat, 07 Nov 2026 15:55:14 +0100
+Message-ID: <4204877.2iPT33SAM4@phil>
 In-Reply-To:
- <f9b6ff8250f27e117facd372735b6c1f46e74926.1793666444.git.daniel.lezcano@oss.qualcomm.com>
+ <bded992091c92baa7246b939f266297f99c8942b.1793666444.git.daniel.lezcano@oss.qualcomm.com>
 References:
  <cover.1793666444.git.daniel.lezcano@oss.qualcomm.com>
- <f9b6ff8250f27e117facd372735b6c1f46e74926.1793666444.git.daniel.lezcano@oss.qualcomm.com>
+ <bded992091c92baa7246b939f266297f99c8942b.1793666444.git.daniel.lezcano@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -71,84 +70,70 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
 
-Am Dienstag, 3. November 2026, 05:48:17 Mitteleurop=C3=A4ische Normalzeit s=
+Am Dienstag, 3. November 2026, 05:48:18 Mitteleurop=C3=A4ische Normalzeit s=
 chrieb Daniel Lezcano:
-> The DTPM CPU backend registers one powercap zone per cpufreq policy,
-> not per CPU. On RK3399, CPUs sharing the same cpufreq policy therefore
-> map to the same DTPM zone.
+> DTPM implements its own hierarchy creation and destruction logic while
+> the powercap core now provides generic helpers for this purpose.
 >=20
-> Remove the redundant CPU nodes from the RK3399 hierarchy and keep only
-> one CPU node per cpufreq policy. The backend already suppresses duplicate
-> registration through its per-CPU state, so the removed entries are
-> redundant descriptions of the same zones. Keep both CPU policy domains
-> and the GPU in the hierarchy, preparing for one created zone per generic
-> hierarchy node.
+> Convert DTPM to use the generic powercap hierarchy infrastructure.
+> Duplicate the platform hierarchy before creating it, and use
+> powercap_hierarchy_create() and powercap_hierarchy_destroy() to manage
+> the DTPM zones.
 >=20
-> Also fix indentation in the Rockchip device match table.
+> Add DTPM callbacks to create and destroy the zones associated with each
+> powercap hierarchy node. Adapt the CPU and devfreq backends to return
+> the created DTPM instance and use the node name provided by the
+> hierarchy.
+>=20
+> Convert the Rockchip RK3399 description to struct powercap_hierarchy
+> and keep the device tree path as DTPM-specific node data.
+>=20
+> This removes the DTPM-specific hierarchy traversal and destruction code
+> and leaves the hierarchy management to the powercap core.
+>=20
+> Preserve best-effort creation: an unavailable backend returns NULL to
+> skip its branch, and setup failures are warned about and skipped rather
+> than rolling back independent zones. Invalid node descriptors remain
+> fatal. Reject a DT node with a NULL path before calling
+> of_find_node_by_path(), treating it as an invalid descriptor rather
+> than an unavailable backend.
+>=20
+> When the representative CPU is offline, find an active policy through an
+> online sibling whose related_cpus mask contains it. Hold the CPU hotplug
+> read lock during selection and setup, and initialize the zone through the
+> policy's active CPU while keeping the hierarchy-provided name. An entirely
+> offline policy still has no active CPU to initialize through.
 >=20
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 > ---
 > Changes in v5 (since v4):
-> - Add Reviewed-by from Lukasz Luba; no code changes.
+> - Reject a NULL DT node path with -EINVAL before invoking
+>   dtpm_setup_dt(), as suggested by Lukasz Luba.
+> - Document that a missing path is an invalid hierarchy descriptor.
 >=20
 > Changes in v4 (since v3):
 > - Rebase on v7.3; no code or commit-description changes.
 >=20
 > Changes in v3 (since v2):
 > - Rebase on v7.3-rc7.
-> - Fix Rockchip match-table indentation here rather than in patch 1.
-> - Clarify that the existing backend suppresses duplicate registration.
+> - Preserve best-effort branch creation using the generic NULL result.
+> - Find an online policy sibling for offline CPU representatives and
+>   protect policy selection and setup against CPU hotplug.
+> - Keep generic API behavior and documentation in patch 1.
+> - Fix __initdata placement; match-table indentation is handled in patch 3.
+> - Name setup callback arguments and remove whitespace-only lines.
+> - Update the description.
 >=20
->  drivers/soc/rockchip/dtpm.c | 22 +++++-----------------
->  1 file changed, 5 insertions(+), 17 deletions(-)
->=20
-> diff --git a/drivers/soc/rockchip/dtpm.c b/drivers/soc/rockchip/dtpm.c
-> index b36d4f752c30..e71f315fbb6b 100644
-> --- a/drivers/soc/rockchip/dtpm.c
-> +++ b/drivers/soc/rockchip/dtpm.c
-> @@ -20,30 +20,18 @@ static struct dtpm_node __initdata rk3399_hierarchy[]=
- =3D {
->  	[2] =3D { .name =3D "/cpus/cpu@0",
->  		.type =3D DTPM_NODE_DT,
->  		.parent =3D &rk3399_hierarchy[1] },
-> -	[3] =3D { .name =3D "/cpus/cpu@1",
-> +	[3] =3D { .name =3D "/cpus/cpu@100",
->  		.type =3D DTPM_NODE_DT,
->  		.parent =3D &rk3399_hierarchy[1] },
-> -	[4] =3D { .name =3D "/cpus/cpu@2",
-> +	[4] =3D { .name =3D "/gpu@ff9a0000",
->  		.type =3D DTPM_NODE_DT,
->  		.parent =3D &rk3399_hierarchy[1] },
-> -	[5] =3D { .name =3D "/cpus/cpu@3",
-> -		.type =3D DTPM_NODE_DT,
-> -		.parent =3D &rk3399_hierarchy[1] },
-> -	[6] =3D { .name =3D "/cpus/cpu@100",
-> -		.type =3D DTPM_NODE_DT,
-> -		.parent =3D &rk3399_hierarchy[1] },
-> -	[7] =3D { .name =3D "/cpus/cpu@101",
-> -		.type =3D DTPM_NODE_DT,
-> -		.parent =3D &rk3399_hierarchy[1] },
-> -	[8] =3D { .name =3D "/gpu@ff9a0000",
-> -		.type =3D DTPM_NODE_DT,
-> -		.parent =3D &rk3399_hierarchy[1] },
-> -	[9] =3D { /* sentinel */ }
-> +	[5] =3D { /* sentinel */ }
->  };
-> =20
->  static struct of_device_id __initdata rockchip_dtpm_match_table[] =3D {
-> -        { .compatible =3D "rockchip,rk3399", .data =3D rk3399_hierarchy =
-},
-> -        {},
-> +	{ .compatible =3D "rockchip,rk3399", .data =3D rk3399_hierarchy },
-> +	{},
->  };
-> =20
->  static int __init rockchip_dtpm_init(void)
+>  drivers/powercap/dtpm.c         | 180 +++++++++++++++-----------------
+>  drivers/powercap/dtpm_cpu.c     |  62 ++++++++---
+>  drivers/powercap/dtpm_devfreq.c |  22 ++--
+>  drivers/soc/rockchip/dtpm.c     |  67 +++++++++---
+>  include/linux/dtpm.h            |   6 +-
+>  5 files changed, 198 insertions(+), 139 deletions(-)
 
-checked against the cpu clusters, this of course looks correct
+I tried to follow along and the changes look ok, but I don't know the
+more intricate details, so
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-
+Acked-by: Heiko Stuebner <heiko@sntech.de>
 
 
