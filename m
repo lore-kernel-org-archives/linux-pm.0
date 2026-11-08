@@ -1,75 +1,67 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.161.71
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794177600;
-	b=dPoHMbf2ULvq3S+lB4Zqc5unwKYsm2mBYdO8KgGFtGKM//bKrs768xwle5kA1HqjwzC1
-	 1RG402OXv8DSMx0wB0Pd8fA3Uv9BikJAIwuro9fIqsss7rnvBzxgTbxxxNVowqYNYPwWC
-	 WewHiSeCtq02F67QoQ3LSKTR/r0JQdLUej5rYVviewRvMsdtp8vOWkKr/Q332OTBFXeZj
-	 4SyGGOkC8NKSU3xp/NfTNub1ue7Df62AlWj9T+kqDmerl5CSK1yiDdjEf6tG7c6DjnVIL
-	 maF21ZoglgyDqmy2wHx6nguU4hspsB7+6Qd3yMZidQjn3v5OTn/QobESMvuHqK299tw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794177600;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
-	 Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
-	 Content-Type;
-	bh=cDMmI2UqRAqSDkjhtwDc5ZRUeFfMooMTF2CHO0kKXno=;
-	b=hyFWukJ/sGpELbeoB15oRyFMbNfp9UzkMAw0wfRc26rtK4c5dXtPT2hQn8UU7JdMEWyP
-	 U2pb/kTPBe5Sy6hs8JEgJS0ldyuGnFj2twrsAqVGlJLWH89y9JT4of941uH8IN16WR5in
-	 XUubiNZ98SYNazWuvBWBQkVfY/jEweHdtj8K3hLfk3S35qzF7GUt3ozSjVdaprRun8N4P
-	 xCzQ+v9jKtWObrBPhPaaVIpaUCnsFVSV3C5qVNunE1X3NlFaJCatS6BPAo1JpzFRqEiYb
-	 6pNvlE15tygzNxYVBPjtjCBxX183TxLmvXoeijpKPnAOfiu8DhL3rJFhyRCqZTJQZUg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=google.com;
-	spf=pass smtp.mailfrom=flex--irogers.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=EK0+dDqO;
-	arc=none smtp.remote-ip=209.85.161.71
-Received: from mail-oo1-f71.google.com (mail-oo1-f71.google.com [209.85.161.71])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794180971;
+	b=rOsq+epObZ3bL4ZjPIKyOhii35bqhV0V74A4i3leu8QHwQE00CrsaxrOrKjxO+ZifmzS
+	 58ejeOxRypvbbuyJOaeNSsQg698G3Iq12IbWM7fG3zswn5Hf1BYdFDZKpIGQzAIpowMB9
+	 7qq+38klGtx4Evp8AfRpUQeXj+W8498OLzeMzZ5fxJ44gL5StBjYTIVCgC4mhvapvGK2e
+	 i3zCCLjT7mtM7DI7Kdf/C4JLkdmaYuWaYENV8iYZVHfaxXJhDV4a1UUsHG1cAhBmusnXU
+	 vs6MpPt1BCs25iZ5OBEwaqUCUcE5nP7+LTUuVX21Nzrd88sa5PQ5D/iJ3D192UKvVGQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794180971;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:X-Zoho-Virus-Status:X-Zoho-AV-Stamp:
+	 X-ZohoMailClient;
+	bh=rzCWbVuBq4j3nQbn9qB9nnBWuWV6AYhMWDHBJ2VGzO0=;
+	b=5NTPfvGw+7g5nDyjVXFx9AtV6dN26cSJp3BX2Kzu+QaSF6sedX9l4OLNhj38uvfvP7Mi
+	 MbV2NJTs1KJGTSV2ratuedMislM/e6yv7ITZZ0KNgaOpS6AcyRrA5W3Lbor4XBo2oGvXf
+	 HiIM9x90/Mr6XbRwwlfypK3zr1L6nybB0nhAN2TAtNryMG3smgX85u4uvdUWfPYCxphXc
+	 iGXwbQGGcVgQCZzpPaJQMPcsXvnA+t4aZ22tTvHim+9LhxnsvQhbKX/Wly7YF0k3oxQPv
+	 7WqR4pK2n+j4spYkgPWyT6+DZ3XAKbu3ru8dCgMFUjWTX3eCJvbVbmopzQzrUzFbMDA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=collabora.com;
+	spf=pass smtp.mailfrom=collabora.com;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=in0tMNCz;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
+Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01569606EE87
-	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 22:39:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 01569606EE87
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--irogers.bounces.google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E1BC606A31C;
+	Sun,  8 Nov 2026 23:36:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8E1BC606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=EK0+dDqO
-Received: by mail-oo1-f71.google.com with SMTP id 006d021491bc7-6dd94f8fa25so264244eaf.2
-        for <linux-pm@vger.kernel.org>; Sun, 08 Nov 2026 14:39:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1794177599; x=1794782399; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=cDMmI2UqRAqSDkjhtwDc5ZRUeFfMooMTF2CHO0kKXno=;
-        b=EK0+dDqOpFLw139xcEsSE/h3pXv/6VVBPJS1WM+URga8tffu7VcQ4eApMGF7H7HVPq
-         vBTNgisLroxL1nR7GZ9aHH7YTZajcSQsu/YwMfQdkQFVn/txmUiS3GZ77rF8nbNctDH2
-         gP1J3w3kYG1mOz3bnrgxKhELIzb/NJ3m0ltupNTJiD0p9DqbYu4sheUEshjgUoMyF0fn
-         YwRqY0Vslay+VVCfCD9woAc/02Whb8n4YLUgskXEusqA8yypt7aceayv95xhFn5a0/X9
-         5JIYrwdjhR6mPafd8vMZuTlTGEVab/jEoarWeZ8lN+xesocrlOq6RRrPLUPDMuIC4EBd
-         ekCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794177599; x=1794782399;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=cDMmI2UqRAqSDkjhtwDc5ZRUeFfMooMTF2CHO0kKXno=;
-        b=DrBKnerMi5IDgL1Aq+HQbZkUcB26zhwXfhrwlo+Bk1ZZjfsPwIfvZo1xeVkwuXI1YS
-         haIM0WxajXQg6ZId5/KalkdtuL2zAQRW+XiPj5Hd68nIM5VUh91oUXaSA8RRbPpDMv/s
-         IIC8h8gy2jEpL3GCCqdlI0oNlTaGQZQQ/JIC20n6PEXGMm9cHKStFj6HJoH6An9NUUha
-         QMUeaR9ZbLFQT43srUtTx5gXLZX1JsvzcUafbAFcnqNTMSsRsYBbamARtvLX/ZGHNevB
-         L6VZCrmjph7xggUkgUxQxdOjGI7hAQMMnhPZAVYFHzPH/tS30hUImGFngtGP/O3D7BDK
-         Minw==
-X-Forwarded-Encrypted: i=1; AL+hErGIPmdNY1aOvHCDzJQ/icIalAItsNar4mAa5l37YAPGx0NfnVWGwIoQ6nQSpJSJOvca3+oFsRX1qQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z92OaaDh5Xa8E6EIT4pr1+NsdBE/3aUaBbVe0o23s/BtOdzFi7G
-	ZL6JmYR2Ta9ONJWZjMh0B1oOwt1saycoHQsGAq446xho5YWqG/yZx7fHjMFOpLzd79Q9D/hHHAC
-	Wf6YhCm6A1Q==
-X-Received: from jabkb9.prod.google.com ([2002:a05:6638:a489:b0:5fe:2546:25c9])
- (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6820:c0c3:10b0:6f6:b13f:5d2d
- with SMTP id 006d021491bc7-7170f1b1402mr914772eaf.12.1794177598756; Sun, 08
- Nov 2026 14:39:58 -0800 (PST)
-Date: Sun,  8 Nov 2026 14:39:13 -0800
-In-Reply-To: <20261108223913.3624571-1-irogers@google.com>
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=in0tMNCz
+ARC-Seal: i=1; a=rsa-sha256; t=1794180963; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=JCYazuEbG8u34Ja0jbuY/ajRP4PFqo4nbl2PtFWagZtmlqXsfcAJ+nu3QqI2A7Fv7RmI4uCK6n8gFivHcvruMNd+DLqWsoFP7t4akel2XH8AwuKF4KkWbO8lbj08OqnzEMDW9HKFo+dkuM8mmw3Pfem6+lNN/t+f5g3zBogNdcY=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1794180963; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=rzCWbVuBq4j3nQbn9qB9nnBWuWV6AYhMWDHBJ2VGzO0=; 
+	b=IKiczBuVEXhR+WpwkayFG1gP4Vt76Z0mbLzzZR02h15eCDghDxNaS/jT++JacySsfkXgUTzaicq3OWEvsB7jXzOSz2uf/BP211Lbp2N5mCG+Fdx60Mnh0n/XNO4l1dR6CxDrBns7l1FTDQd1Gn7spbMzgERlVe9mV58r6gR519k=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: a=rsa-sha256; b=in0tMNCzQwBgPx9EgkASniH97KM8xaaGsR4EMvsODd2Ew1duwFQ6Vl3JGy0XXDN21v0xSumbLgFy0acXiT2bkQXx8RFw2j28VLUHSJgjzyu1TE/TOoVafK54scYhiKyJrqftZBsNoZwk3YdlXlUas6h10bJv5WSF+3z8vZ/iQhE=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=rzCWbVuBq4j3nQbn9qB9nnBWuWV6AYhMWDHBJ2VGzO0=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1794180960667868.1735836710294;
+	Sun, 8 Nov 2026 15:36:00 -0800 (PST)
+Received: by venus (Postfix, from userid 1000)
+	id 7C75E1808E6; Mon, 09 Nov 2026 00:35:58 +0100 (CET)
+Date: Mon, 9 Nov 2026 00:35:58 +0100
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: servpol@tuta.io
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Subject: Re: [PATCH v2 2/2] power: supply: Add GL.iNet GL-E750 MCU battery
+ driver
+Message-ID: <avEHPVdx0NlX4dhy@venus>
+References: <20261021-gl-e750-mcu-v2-0-9bd7e7c2e0e1@tuta.io>
+ <20261021-gl-e750-mcu-v2-2-9bd7e7c2e0e1@tuta.io>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,451 +70,518 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20261108223913.3624571-1-irogers@google.com>
-X-Mailer: git-send-email 2.56.0.455.g6c5a503b38-goog
-Message-ID: <20261108223913.3624571-10-irogers@google.com>
-Subject: [PATCH v3 9/9] kobject: Require explicit initialization of struct kobj_type::release
-From: Ian Rogers <irogers@google.com>
-To: Danilo Krummrich <dakr@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Kees Cook <kees@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>, 
-	Srish Srinivasan <ssrish@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Juergen Gross <jgross@suse.com>, 
-	Stefano Stabellini <sstabellini@kernel.org>, 
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Nathan Chancellor <nathan@kernel.org>, 
-	Nick Desaulniers <ndesaulniers@google.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Alexander Aring <aahringo@redhat.com>, 
-	Felix Kuehling <felix.kuehling@amd.com>, 
-	"=?UTF-8?q?Christian=20K=C3=B6nig?=" <christian.koenig@amd.com>, Zhihao Cheng <chengzhihao1@huawei.com>, 
-	Sumanth Korikkar <sumanthk@linux.ibm.com>, Bill Wendling <morbo@google.com>, 
-	Justin Stitt <justinstitt@google.com>, driver-core@lists.linux.dev, llvm@lists.linux.dev, 
-	linux-hardening@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-sh@vger.kernel.org, linux-s390@vger.kernel.org, gfs2@lists.linux.dev, 
-	xen-devel@lists.xenproject.org, linux-mtd@lists.infradead.org, 
-	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, Ian Rogers <irogers@google.com>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="cujmmn73vk23w3r4"
+Content-Disposition: inline
+In-Reply-To: <20261021-gl-e750-mcu-v2-2-9bd7e7c2e0e1@tuta.io>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/294.158.93
+X-ZohoMailClient: External
 
-Documentation/core-api/kobject.rst states:
 
-  "One important point cannot be overstated: every kobject must have a
-  release() method, and the kobject must persist (in a consistent state)
-  until that method is called. If these constraints are not met, the code
-  is flawed. Note that the kernel will warn you if you forget to provide
-  a release() method. Do not try to get rid of this warning by providing
-  an \"empty\" release function."
+--cujmmn73vk23w3r4
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v2 2/2] power: supply: Add GL.iNet GL-E750 MCU battery
+ driver
+MIME-Version: 1.0
 
-Annotate struct kobj_type::release with __must_init so the compiler
-diagnoses any struct kobj_type initializer that omits .release.
+Hi,
 
-For the remaining legacy struct kobj_type definitions where the kobject
-is static, per-CPU, a permanent firmware structure, or embedded inside a
-devm- or parent-managed allocation rather than freed by kobject_put(),
-explicitly initialize .release = NULL with a comment documenting why no
-release callback is provided.
+On Wed, Oct 21, 2026 at 07:33:44PM +0000, Serv Pol via B4 Relay wrote:
+> From: Serv Pol <servpol@tuta.io>
+>=20
+> The status MCU of the GL.iNet GL-E750 (Mudi) travel router sits on the
+> SoC UART and talks in text lines: the host sends JSON objects whose values
+> are all strings, and a request containing "mcu_status": "1" is answered
+> with
+>=20
+>   {OK},<percent>,<temperature>,<charging>,<cycles>
+>=20
+> Poll that every 30 seconds and expose the result as a power_supply.
+>=20
+> When the power switch is turned off, the MCU sends {"shut_down": "1"},
+> without a line ending, and cuts the power a few seconds later. Shut the
+> system down cleanly in that case.
+>=20
+> The MCU also renders the status screen from JSON fields (SSIDs, clients,
+> cellular state...). That vendor-specific content is not handled here.
+>=20
+> Assisted-by: Claude:claude-opus-5-5
+> Signed-off-by: Serv Pol <servpol@tuta.io>
+> ---
 
-Many of these legacy sites are not safe with CONFIG_DEBUG_KOBJECT_RELEASE
-(for example when backing memory is freed, zeroed, or unmapped on module
-unload while delayed kobject cleanup is still pending). Fixing those
-lifetimes is left to follow-up patches; this change does not alter their
-behavior.
+The Sashiko analysis looks correct:
 
-Link: https://lpc.events/event/20/contributions/2392/
-Signed-off-by: Ian Rogers <irogers@google.com>
----
- arch/arm64/kernel/cpuinfo.c                   |  5 +++++
- drivers/acpi/sysfs.c                          |  2 ++
- drivers/dma/ioat/sysfs.c                      |  7 +++++++
- drivers/gpu/drm/amd/amdgpu/amdgpu_ualink.c    |  5 +++++
- drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c       | 10 +++++++++
- drivers/infiniband/hw/hfi1/sysfs.c            |  5 +++++
- drivers/infiniband/hw/usnic/usnic_ib_sysfs.c  |  5 +++++
- drivers/parisc/pdc_stable.c                   |  5 +++++
- drivers/power/supply/ab8500_fg.c              |  5 +++++
- drivers/s390/char/sclp_mem.c                  |  2 ++
- drivers/soc/hisilicon/kunpeng_hccs.c          | 21 +++++++++++++++++++
- .../fbdev/omap2/omapfb/dss/display-sysfs.c    |  7 +++++++
- .../fbdev/omap2/omapfb/dss/manager-sysfs.c    |  8 +++++++
- .../fbdev/omap2/omapfb/dss/overlay-sysfs.c    |  8 +++++++
- fs/erofs/sysfs.c                              | 10 +++++++++
- fs/f2fs/sysfs.c                               | 15 +++++++++++++
- fs/ocfs2/cluster/masklog.c                    |  5 +++++
- include/linux/kobject.h                       |  2 +-
- 18 files changed, 126 insertions(+), 1 deletion(-)
+https://sashiko.dev/#/patchset/20261005-gl-e750-mcu-v1-0-499d2e31f786%40tut=
+a.io
 
-diff --git a/arch/arm64/kernel/cpuinfo.c b/arch/arm64/kernel/cpuinfo.c
-index 94e6cd211d70..7a4ac8dd0b86 100644
---- a/arch/arm64/kernel/cpuinfo.c
-+++ b/arch/arm64/kernel/cpuinfo.c
-@@ -295,6 +295,11 @@ const struct seq_operations cpuinfo_op = {
- 
- 
- static const struct kobj_type cpuregs_kobj_type = {
-+	/*
-+	 * Pre-existing: info->kobj is embedded in per-CPU cpu_data;
-+	 * cpuid_cpu_offline() only calls kobject_del().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &kobj_sysfs_ops,
- };
- 
-diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
-index a4534b3e3cfb..a10f14524dd9 100644
---- a/drivers/acpi/sysfs.c
-+++ b/drivers/acpi/sysfs.c
-@@ -975,6 +975,8 @@ static struct attribute *hotplug_profile_attrs[] = {
- ATTRIBUTE_GROUPS(hotplug_profile);
- 
- static const struct kobj_type acpi_hotplug_profile_ktype = {
-+	/* Pre-existing: hotplug->kobj is embedded in static struct acpi_scan_hotplug objects. */
-+	.release = NULL,
- 	.sysfs_ops = &kobj_sysfs_ops,
- 	.default_groups = hotplug_profile_groups,
- };
-diff --git a/drivers/dma/ioat/sysfs.c b/drivers/dma/ioat/sysfs.c
-index 976134df8108..b9af60e198ef 100644
---- a/drivers/dma/ioat/sysfs.c
-+++ b/drivers/dma/ioat/sysfs.c
-@@ -167,6 +167,13 @@ static const struct attribute *const ioat_attrs[] = {
- ATTRIBUTE_GROUPS(ioat);
- 
- const struct kobj_type ioat_ktype = {
-+	/*
-+	 * Pre-existing: ioatdma_chan is freed by release_ioatdma(), not
-+	 * by kobject_put(). With CONFIG_DEBUG_KOBJECT_RELEASE the delayed
-+	 * kobject cleanup queued by ioat_kobject_del() may run after
-+	 * that kfree(), a use-after-free.
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &ioat_sysfs_ops,
- 	.default_groups = ioat_groups,
- };
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ualink.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ualink.c
-index 6cd3927a7e82..a2a027e4b118 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ualink.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ualink.c
-@@ -892,6 +892,11 @@ static const struct attribute_group ualink_xcp_info_group = {
- };
- 
- static const struct kobj_type ualink_xcp_info_ktype = {
-+	/*
-+	 * Pre-existing: xcp->ualink.kobj is embedded in struct amdgpu_xcp_mgr
-+	 * rather than freed individually by kobject_put().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &kobj_sysfs_ops
- };
- 
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c
-index ab14079d1c42..0847134a1391 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c
-@@ -797,6 +797,11 @@ static const struct sysfs_ops xcp_cfg_res_sysfs_ops = {
- };
- 
- static const struct kobj_type xcp_cfg_res_sysfs_ktype = {
-+	/*
-+	 * Pre-existing: xcp_res is embedded in struct amdgpu_xcp_cfg
-+	 * rather than freed individually by kobject_put().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &xcp_cfg_res_sysfs_ops,
- 	.default_groups = xcp_cfg_res_sysfs_groups,
- };
-@@ -1061,6 +1066,11 @@ static const struct attribute_group amdgpu_xcp_attrs_group = {
- };
- 
- static const struct kobj_type xcp_sysfs_ktype = {
-+	/*
-+	 * Pre-existing: xcp is embedded in struct amdgpu_xcp_mgr
-+	 * rather than freed individually by kobject_put().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &kobj_sysfs_ops,
- };
- 
-diff --git a/drivers/infiniband/hw/hfi1/sysfs.c b/drivers/infiniband/hw/hfi1/sysfs.c
-index 372cfd13dc61..5a1aca06b542 100644
---- a/drivers/infiniband/hw/hfi1/sysfs.c
-+++ b/drivers/infiniband/hw/hfi1/sysfs.c
-@@ -608,6 +608,11 @@ static const struct sysfs_ops sde_sysfs_ops = {
- };
- 
- static struct kobj_type sde_ktype = {
-+	/*
-+	 * Pre-existing: sdma_engine is embedded in dd->per_sdma array
-+	 * rather than freed by kobject_put().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &sde_sysfs_ops,
- };
- 
-diff --git a/drivers/infiniband/hw/usnic/usnic_ib_sysfs.c b/drivers/infiniband/hw/usnic/usnic_ib_sysfs.c
-index fdb63a8fb997..0c9dbf93a0e9 100644
---- a/drivers/infiniband/hw/usnic/usnic_ib_sysfs.c
-+++ b/drivers/infiniband/hw/usnic/usnic_ib_sysfs.c
-@@ -245,6 +245,11 @@ static struct attribute *usnic_ib_qpn_default_attrs[] = {
- ATTRIBUTE_GROUPS(usnic_ib_qpn_default);
- 
- static struct kobj_type usnic_ib_qpn_type = {
-+	/*
-+	 * Pre-existing: qp_grp->kobj is embedded in RDMA core-managed
-+	 * struct usnic_ib_qp_grp rather than freed by kobject_put().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &usnic_ib_qpn_sysfs_ops,
- 	.default_groups = usnic_ib_qpn_default_groups,
- };
-diff --git a/drivers/parisc/pdc_stable.c b/drivers/parisc/pdc_stable.c
-index 6b567a74fc2c..2f530e8c6757 100644
---- a/drivers/parisc/pdc_stable.c
-+++ b/drivers/parisc/pdc_stable.c
-@@ -484,6 +484,11 @@ ATTRIBUTE_GROUPS(paths_subsys);
- 
- /* Specific kobject type for our PDC paths */
- static const struct kobj_type ktype_pdcspath = {
-+	/*
-+	 * Pre-existing: pdcspath_entry instances are static; lifetime
-+	 * is not controlled by kobject_put().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &pdcspath_attr_ops,
- 	.default_groups = paths_subsys_groups,
- };
-diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
-index 069e7fee1d16..f71630d92231 100644
---- a/drivers/power/supply/ab8500_fg.c
-+++ b/drivers/power/supply/ab8500_fg.c
-@@ -2539,6 +2539,11 @@ static struct attribute *ab8500_fg_attrs[] = {
- ATTRIBUTE_GROUPS(ab8500_fg);
- 
- static const struct kobj_type ab8500_fg_ktype = {
-+	/*
-+	 * Pre-existing: fg_kobject is embedded in devm-allocated struct
-+	 * ab8500_fg; ab8500_fg_sysfs_exit() only calls kobject_del().
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &ab8500_fg_sysfs_ops,
- 	.default_groups = ab8500_fg_groups,
- };
-diff --git a/drivers/s390/char/sclp_mem.c b/drivers/s390/char/sclp_mem.c
-index 6df1926d4c62..2fb7271dce36 100644
---- a/drivers/s390/char/sclp_mem.c
-+++ b/drivers/s390/char/sclp_mem.c
-@@ -305,6 +305,8 @@ static ssize_t sclp_memmap_on_memory_store(struct kobject *kobj, struct kobj_att
- }
- 
- static const struct kobj_type ktype = {
-+	/* Pre-existing: permanent firmware kobjects, never freed */
-+	.release = NULL,
- 	.sysfs_ops = &kobj_sysfs_ops,
- };
- 
-diff --git a/drivers/soc/hisilicon/kunpeng_hccs.c b/drivers/soc/hisilicon/kunpeng_hccs.c
-index 0cc2953d59a5..da7a64c95058 100644
---- a/drivers/soc/hisilicon/kunpeng_hccs.c
-+++ b/drivers/soc/hisilicon/kunpeng_hccs.c
-@@ -1038,6 +1038,13 @@ static struct attribute *hccs_port_default_attrs[] = {
- ATTRIBUTE_GROUPS(hccs_port_default);
- 
- static const struct kobj_type hccs_port_type = {
-+	/*
-+	 * Pre-existing: hccs_port_info is allocated via devm_kzalloc()
-+	 * rather than freed by kobject_put(). With
-+	 * CONFIG_DEBUG_KOBJECT_RELEASE the delayed kobject cleanup may run
-+	 * after devm frees it on unbind, a use-after-free.
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &hccs_comm_ops,
- 	.default_groups = hccs_port_default_groups,
- };
-@@ -1110,6 +1117,13 @@ static struct attribute *hccs_die_default_attrs[] = {
- ATTRIBUTE_GROUPS(hccs_die_default);
- 
- static const struct kobj_type hccs_die_type = {
-+	/*
-+	 * Pre-existing: hccs_die_info is allocated via devm_kzalloc()
-+	 * rather than freed by kobject_put(). With
-+	 * CONFIG_DEBUG_KOBJECT_RELEASE the delayed kobject cleanup may run
-+	 * after devm frees it on unbind, a use-after-free.
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &hccs_comm_ops,
- 	.default_groups = hccs_die_default_groups,
- };
-@@ -1213,6 +1227,13 @@ static struct attribute *hccs_chip_default_attrs[] = {
- ATTRIBUTE_GROUPS(hccs_chip_default);
- 
- static const struct kobj_type hccs_chip_type = {
-+	/*
-+	 * Pre-existing: hccs_chip_info is allocated via devm_kzalloc()
-+	 * rather than freed by kobject_put(). With
-+	 * CONFIG_DEBUG_KOBJECT_RELEASE the delayed kobject cleanup may run
-+	 * after devm frees it on unbind, a use-after-free.
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &hccs_comm_ops,
- 	.default_groups = hccs_chip_default_groups,
- };
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-index ae937854403b..452920a4e2a9 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-@@ -304,6 +304,13 @@ static const struct sysfs_ops display_sysfs_ops = {
- };
- 
- static struct kobj_type display_ktype = {
-+	/*
-+	 * Pre-existing: dssdev->kobj is embedded in struct omap_dss_device
-+	 * and zeroed in display_uninit_sysfs() right after kobject_put().
-+	 * With CONFIG_DEBUG_KOBJECT_RELEASE that memset() clobbers the
-+	 * pending delayed kobject cleanup.
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &display_sysfs_ops,
- 	.default_groups = display_sysfs_groups,
- };
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-index 1b644be5fe2e..c343c33199af 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-@@ -496,6 +496,14 @@ static const struct sysfs_ops manager_sysfs_ops = {
- };
- 
- static struct kobj_type manager_ktype = {
-+	/*
-+	 * Pre-existing: mgr->kobj is embedded in dynamically allocated
-+	 * managers[], zeroed in dss_manager_kobj_uninit() right after
-+	 * kobject_put(), and freed in dss_uninit_overlay_managers(). With
-+	 * CONFIG_DEBUG_KOBJECT_RELEASE that clobbers and frees the pending
-+	 * delayed kobject cleanup.
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &manager_sysfs_ops,
- 	.default_groups = manager_sysfs_groups,
- };
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-index 1da4fb1c77b4..5c14446af9b3 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-@@ -429,6 +429,14 @@ static const struct sysfs_ops overlay_sysfs_ops = {
- };
- 
- static struct kobj_type overlay_ktype = {
-+	/*
-+	 * Pre-existing: ovl->kobj is embedded in dynamically allocated
-+	 * overlays[] and freed in dss_uninit_overlays() right after
-+	 * dss_overlay_kobj_uninit() calls kobject_put(). With
-+	 * CONFIG_DEBUG_KOBJECT_RELEASE the delayed kobject cleanup may run
-+	 * after kfree(overlays), a use-after-free.
-+	 */
-+	.release = NULL,
- 	.sysfs_ops = &overlay_sysfs_ops,
- 	.default_groups = overlay_sysfs_groups,
- };
-diff --git a/fs/erofs/sysfs.c b/fs/erofs/sysfs.c
-index dfcec9376cd5..2ea6773cd98f 100644
---- a/fs/erofs/sysfs.c
-+++ b/fs/erofs/sysfs.c
-@@ -238,6 +238,11 @@ static const struct kobj_type erofs_sb_ktype = {
- static const struct kobj_type erofs_ktype = {
- 	.default_groups = erofs_groups,
- 	.sysfs_ops	= &erofs_attr_ops,
-+	/*
-+	 * Pre-existing: erofs_root is a static struct kset; lifetime
-+	 * is not controlled by kobject_put().
-+	 */
-+	.release	= NULL,
- };
- 
- static struct kset erofs_root = {
-@@ -247,6 +252,11 @@ static struct kset erofs_root = {
- static const struct kobj_type erofs_feat_ktype = {
- 	.default_groups = erofs_feat_groups,
- 	.sysfs_ops	= &erofs_attr_ops,
-+	/*
-+	 * Pre-existing: erofs_feat is a static struct kobject; lifetime
-+	 * is not controlled by kobject_put().
-+	 */
-+	.release	= NULL,
- };
- 
- static struct kobject erofs_feat = {
-diff --git a/fs/f2fs/sysfs.c b/fs/f2fs/sysfs.c
-index 430356e500af..6e15695cb75f 100644
---- a/fs/f2fs/sysfs.c
-+++ b/fs/f2fs/sysfs.c
-@@ -1683,6 +1683,11 @@ static const struct kobj_type f2fs_sb_ktype = {
- 
- static const struct kobj_type f2fs_ktype = {
- 	.sysfs_ops	= &f2fs_attr_ops,
-+	/*
-+	 * Pre-existing: f2fs_kset is a static struct kset; lifetime
-+	 * is not controlled by kobject_put().
-+	 */
-+	.release	= NULL,
- };
- 
- static struct kset f2fs_kset = {
-@@ -1697,6 +1702,11 @@ static const struct sysfs_ops f2fs_feat_attr_ops = {
- static const struct kobj_type f2fs_feat_ktype = {
- 	.default_groups = f2fs_feat_groups,
- 	.sysfs_ops	= &f2fs_feat_attr_ops,
-+	/*
-+	 * Pre-existing: f2fs_feat is a static struct kobject; lifetime
-+	 * is not controlled by kobject_put().
-+	 */
-+	.release	= NULL,
- };
- 
- static struct kobject f2fs_feat = {
-@@ -1711,6 +1721,11 @@ static const struct sysfs_ops f2fs_tune_attr_ops = {
- static const struct kobj_type f2fs_tune_ktype = {
- 	.default_groups = f2fs_tune_groups,
- 	.sysfs_ops	= &f2fs_tune_attr_ops,
-+	/*
-+	 * Pre-existing: f2fs_tune is a static struct kobject; lifetime
-+	 * is not controlled by kobject_put().
-+	 */
-+	.release	= NULL,
- };
- 
- static struct kobject f2fs_tune = {
-diff --git a/fs/ocfs2/cluster/masklog.c b/fs/ocfs2/cluster/masklog.c
-index 563881ddbf00..ff8a1cf51e72 100644
---- a/fs/ocfs2/cluster/masklog.c
-+++ b/fs/ocfs2/cluster/masklog.c
-@@ -147,6 +147,11 @@ static const struct sysfs_ops mlog_attr_ops = {
- static struct kobj_type mlog_ktype = {
- 	.default_groups = mlog_default_groups,
- 	.sysfs_ops      = &mlog_attr_ops,
-+	/*
-+	 * Pre-existing: mlog_kset is a static struct kset; lifetime
-+	 * is not controlled by kobject_put().
-+	 */
-+	.release        = NULL,
- };
- 
- static struct kset mlog_kset = {
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 55e37a5d405e..8a1332030884 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -114,7 +114,7 @@ void kobject_get_ownership(const struct kobject *kobj, kuid_t *uid, kgid_t *gid)
- char *kobject_get_path(const struct kobject *kobj, gfp_t flag);
- 
- struct kobj_type {
--	void (*release)(struct kobject *kobj);
-+	void (*release)(struct kobject *kobj) __must_init;
- 	const struct sysfs_ops *sysfs_ops;
- 	const struct attribute_group **default_groups;
- 	const struct kobj_ns_type_operations *(*child_ns_type)(const struct kobject *kobj);
--- 
-2.56.0.455.g6c5a503b38-goog
+Greetings,
 
+-- Sebastian
+
+>  MAINTAINERS                        |   1 +
+>  drivers/power/supply/Kconfig       |  13 ++
+>  drivers/power/supply/Makefile      |   1 +
+>  drivers/power/supply/gl-e750-mcu.c | 369 +++++++++++++++++++++++++++++++=
+++++++
+>  4 files changed, 384 insertions(+)
+>=20
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 247432449..505aa205c 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -11110,6 +11110,7 @@ M:	Serv Pol <servpol@tuta.io>
+>  L:	linux-pm@vger.kernel.org
+>  S:	Maintained
+>  F:	Documentation/devicetree/bindings/power/supply/glinet,gl-e750-mcu.yaml
+> +F:	drivers/power/supply/gl-e750-mcu.c
+> =20
+>  GNSS SUBSYSTEM
+>  M:	Johan Hovold <johan@kernel.org>
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index ee7dc5f26..e87c76c18 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -1203,4 +1203,17 @@ config MACSMC_POWER
+> =20
+>  	  Say Y or M here if you have an Apple Silicon based Mac.
+> =20
+> +config BATTERY_GL_E750_MCU
+> +	tristate "GL.iNet GL-E750 status MCU battery driver"
+> +	depends on SERIAL_DEV_BUS
+> +	depends on OF || COMPILE_TEST
+> +	help
+> +	  Say Y or M here to enable the battery driver for the status
+> +	  microcontroller of the GL.iNet GL-E750 (Mudi) travel router.
+> +	  It reports the battery state and shuts the system down when
+> +	  the power switch is turned off.
+> +
+> +	  To compile this driver as a module, choose M here: the module
+> +	  will be called gl-e750-mcu.
+> +
+>  endif # POWER_SUPPLY
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> index f3c0d1006..5d405556e 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -78,6 +78,7 @@ obj-$(CONFIG_CHARGER_TWL4030)	+=3D twl4030_charger.o
+>  obj-$(CONFIG_CHARGER_TWL6030)	+=3D twl6030_charger.o
+>  obj-$(CONFIG_CHARGER_LP8727)	+=3D lp8727_charger.o
+>  obj-$(CONFIG_CHARGER_LP8788)	+=3D lp8788-charger.o
+> +obj-$(CONFIG_BATTERY_GL_E750_MCU)	+=3D gl-e750-mcu.o
+>  obj-$(CONFIG_CHARGER_GPIO)	+=3D gpio-charger.o
+>  obj-$(CONFIG_CHARGER_MANAGER)	+=3D charger-manager.o
+>  obj-$(CONFIG_CHARGER_LT3651)	+=3D lt3651-charger.o
+> diff --git a/drivers/power/supply/gl-e750-mcu.c b/drivers/power/supply/gl=
+-e750-mcu.c
+> new file mode 100644
+> index 000000000..37541915e
+> --- /dev/null
+> +++ b/drivers/power/supply/gl-e750-mcu.c
+> @@ -0,0 +1,369 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * GL.iNet GL-E750 (Mudi) status MCU battery driver
+> + *
+> + * The MCU sits on the SoC UART. It drives the OLED screen, monitors the
+> + * battery and watches the power switch. The host sends one JSON object =
+per
+> + * line, where every value is a string. When a line contains
+> + * "mcu_status": "1", the MCU answers with
+> + *
+> + *	{OK},<percent>,<temperature>,<charging>,<cycles>
+> + *
+> + * When the power switch is turned off, the MCU sends {"shut_down": "1"}=
+ and
+> + * cuts the power a few seconds later.
+> + *
+> + * Copyright (C) 2026 Serv Pol <servpol@tuta.io>
+> + */
+> +
+> +#include <linux/completion.h>
+> +#include <linux/ctype.h>
+> +#include <linux/devm-helpers.h>
+> +#include <linux/math.h>
+> +#include <linux/module.h>
+> +#include <linux/power_supply.h>
+> +#include <linux/property.h>
+> +#include <linux/reboot.h>
+> +#include <linux/serdev.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/string.h>
+> +#include <linux/workqueue.h>
+> +
+> +#define MCU_BAUDRATE		115200
+> +#define MCU_RX_LINE_MAX		128
+> +#define MCU_POLL_INTERVAL_MS	30000
+> +#define MCU_REPLY_TIMEOUT_MS	1500
+> +
+> +static const u8 mcu_status_req[] =3D "{ \"mcu_status\": \"1\" }\n";
+> +
+> +struct gl_e750_mcu {
+> +	struct serdev_device *serdev;
+> +	struct power_supply *psy;
+> +	struct delayed_work poll_work;
+> +	struct work_struct poweroff_work;
+> +	struct completion reply;
+> +
+> +	/* receive buffer and battery state, filled from the serdev callback */
+> +	spinlock_t lock;
+> +	char rx_line[MCU_RX_LINE_MAX];
+> +	size_t rx_len;
+> +	bool valid;
+> +	int capacity;		/* percent */
+> +	int temp;		/* tenths of a degree Celsius */
+> +	bool charging;
+> +	int cycles;
+> +};
+> +
+> +/* "37.4", "40" or "-1.5" -> tenths of a degree */
+> +static int mcu_parse_tenths(const char *s, int *out)
+> +{
+> +	const char *dot =3D strchr(s, '.');
+> +	char whole_str[8];
+> +	int whole, frac =3D 0;
+> +
+> +	if (!dot) {
+> +		if (kstrtoint(s, 10, &whole))
+> +			return -EINVAL;
+> +		*out =3D whole * 10;
+> +		return 0;
+> +	}
+> +
+> +	if (dot =3D=3D s || dot - s >=3D sizeof(whole_str))
+> +		return -EINVAL;
+> +	memcpy(whole_str, s, dot - s);
+> +	whole_str[dot - s] =3D '\0';
+> +	if (kstrtoint(whole_str, 10, &whole))
+> +		return -EINVAL;
+> +	if (isdigit(dot[1]))
+> +		frac =3D dot[1] - '0';
+> +	*out =3D whole * 10 + (*s =3D=3D '-' ? -frac : frac);
+> +	return 0;
+> +}
+> +
+> +/*
+> + * "{OK},<percent>,<temperature>,<charging>,<cycles>", called with the l=
+ock
+> + * held. Returns true if the line was a valid status reply.
+> + */
+> +static bool mcu_parse_status(struct gl_e750_mcu *mcu, char *line)
+> +{
+> +	char *p =3D line + 4, *f[4];
+> +	int capacity, temp, charging, cycles, i;
+> +	bool changed;
+> +
+> +	if (*p++ !=3D ',')
+> +		return false;
+> +	for (i =3D 0; i < ARRAY_SIZE(f); i++) {
+> +		f[i] =3D strsep(&p, ",");
+> +		if (!f[i] || !*f[i])
+> +			return false;
+> +	}
+> +
+> +	if (kstrtoint(f[0], 10, &capacity) || mcu_parse_tenths(f[1], &temp) ||
+> +	    kstrtoint(f[2], 10, &charging) || kstrtoint(f[3], 10, &cycles))
+> +		return false;
+> +	if (capacity < 0 || capacity > 100)
+> +		return false;
+> +
+> +	changed =3D !mcu->valid || mcu->capacity !=3D capacity ||
+> +		  mcu->charging !=3D !!charging || mcu->cycles !=3D cycles ||
+> +		  abs(mcu->temp - temp) >=3D 10;
+> +	mcu->capacity =3D capacity;
+> +	mcu->temp =3D temp;
+> +	mcu->charging =3D !!charging;
+> +	mcu->cycles =3D cycles;
+> +	mcu->valid =3D true;
+> +
+> +	complete(&mcu->reply);
+> +	if (changed)
+> +		power_supply_changed(mcu->psy);
+> +	return true;
+> +}
+> +
+> +/* called with the lock held */
+> +static void mcu_handle_line(struct gl_e750_mcu *mcu, char *line)
+> +{
+> +	if (!strncmp(line, "{OK}", 4))
+> +		mcu_parse_status(mcu, line);
+> +	else if (strstr(line, "\"shut_down\""))
+> +		schedule_work(&mcu->poweroff_work);
+> +	else
+> +		dev_dbg_ratelimited(&mcu->serdev->dev, "unhandled: %s\n", line);
+> +}
+> +
+> +/* hand the buffered message over, called with the lock held */
+> +static void mcu_flush_line(struct gl_e750_mcu *mcu)
+> +{
+> +	mcu->rx_line[mcu->rx_len] =3D '\0';
+> +	mcu_handle_line(mcu, mcu->rx_line);
+> +	mcu->rx_len =3D 0;
+> +}
+> +
+> +/* a status reply is waiting in the buffer, called with the lock held */
+> +static bool mcu_status_pending(struct gl_e750_mcu *mcu)
+> +{
+> +	return mcu->rx_len > 4 && !strncmp(mcu->rx_line, "{OK}", 4);
+> +}
+> +
+> +static size_t mcu_receive_buf(struct serdev_device *serdev, const u8 *da=
+ta,
+> +			      size_t count)
+> +{
+> +	struct gl_e750_mcu *mcu =3D serdev_device_get_drvdata(serdev);
+> +	unsigned long flags;
+> +	size_t i;
+> +
+> +	spin_lock_irqsave(&mcu->lock, flags);
+> +	for (i =3D 0; i < count; i++) {
+> +		char c =3D data[i];
+> +
+> +		if (c =3D=3D '\r' || c =3D=3D '\n') {
+> +			if (mcu->rx_len)
+> +				mcu_flush_line(mcu);
+> +			continue;
+> +		}
+> +
+> +		/*
+> +		 * Status replies and JSON events may come without a line
+> +		 * ending. Every message starts with '{', so a new one ends
+> +		 * the previous message, and a JSON event ends with '}'.
+> +		 */
+> +		if (c =3D=3D '{' && mcu->rx_len)
+> +			mcu_flush_line(mcu);
+> +		if (mcu->rx_len < MCU_RX_LINE_MAX - 1)
+> +			mcu->rx_line[mcu->rx_len++] =3D c;
+> +		if (c =3D=3D '}' && mcu->rx_line[0] =3D=3D '{' &&
+> +		    strncmp(mcu->rx_line, "{OK}", 4))
+> +			mcu_flush_line(mcu);
+> +	}
+> +	spin_unlock_irqrestore(&mcu->lock, flags);
+> +
+> +	return count;
+> +}
+> +
+> +static const struct serdev_device_ops mcu_serdev_ops =3D {
+> +	.receive_buf =3D mcu_receive_buf,
+> +	.write_wakeup =3D serdev_device_write_wakeup,
+> +};
+> +
+> +static void mcu_poll_work(struct work_struct *work)
+> +{
+> +	struct gl_e750_mcu *mcu =3D container_of(to_delayed_work(work),
+> +					       struct gl_e750_mcu, poll_work);
+> +	unsigned long timeout =3D msecs_to_jiffies(MCU_REPLY_TIMEOUT_MS);
+> +	unsigned long flags;
+> +	int ret;
+> +
+> +	/*
+> +	 * Only an earlier status reply is consumed here; a partially received
+> +	 * event stays in the buffer.
+> +	 */
+> +	spin_lock_irqsave(&mcu->lock, flags);
+> +	if (mcu_status_pending(mcu))
+> +		mcu_flush_line(mcu);
+> +	reinit_completion(&mcu->reply);
+> +	spin_unlock_irqrestore(&mcu->lock, flags);
+> +
+> +	ret =3D serdev_device_write(mcu->serdev, mcu_status_req,
+> +				  sizeof(mcu_status_req) - 1, timeout);
+> +	if (ret < 0) {
+> +		dev_warn_ratelimited(&mcu->serdev->dev, "write failed: %d\n", ret);
+> +	} else if (!wait_for_completion_timeout(&mcu->reply, timeout)) {
+> +		/* the reply may come without a line ending */
+> +		spin_lock_irqsave(&mcu->lock, flags);
+> +		if (mcu_status_pending(mcu))
+> +			mcu_flush_line(mcu);
+> +		else
+> +			dev_dbg(&mcu->serdev->dev, "no status reply\n");
+> +		spin_unlock_irqrestore(&mcu->lock, flags);
+> +	}
+> +
+> +	schedule_delayed_work(&mcu->poll_work,
+> +			      msecs_to_jiffies(MCU_POLL_INTERVAL_MS));
+> +}
+> +
+> +static void mcu_poweroff_work(struct work_struct *work)
+> +{
+> +	struct gl_e750_mcu *mcu =3D container_of(work, struct gl_e750_mcu,
+> +					       poweroff_work);
+> +
+> +	/* the MCU cuts the power a few seconds after reporting the switch */
+> +	dev_info(&mcu->serdev->dev, "power switch turned off, shutting down\n");
+> +	orderly_poweroff(true);
+> +}
+> +
+> +static const enum power_supply_property mcu_battery_props[] =3D {
+> +	POWER_SUPPLY_PROP_PRESENT,
+> +	POWER_SUPPLY_PROP_STATUS,
+> +	POWER_SUPPLY_PROP_TECHNOLOGY,
+> +	POWER_SUPPLY_PROP_CAPACITY,
+> +	POWER_SUPPLY_PROP_TEMP,
+> +	POWER_SUPPLY_PROP_CYCLE_COUNT,
+> +};
+> +
+> +static int mcu_battery_get_property(struct power_supply *psy,
+> +				    enum power_supply_property psp,
+> +				    union power_supply_propval *val)
+> +{
+> +	struct gl_e750_mcu *mcu =3D power_supply_get_drvdata(psy);
+> +	unsigned long flags;
+> +	int ret =3D 0;
+> +
+> +	spin_lock_irqsave(&mcu->lock, flags);
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_PRESENT:
+> +		val->intval =3D 1;
+> +		break;
+> +	case POWER_SUPPLY_PROP_TECHNOLOGY:
+> +		val->intval =3D POWER_SUPPLY_TECHNOLOGY_LION;
+> +		break;
+> +	case POWER_SUPPLY_PROP_STATUS:
+> +		if (!mcu->valid)
+> +			val->intval =3D POWER_SUPPLY_STATUS_UNKNOWN;
+> +		else if (mcu->charging)
+> +			val->intval =3D mcu->capacity >=3D 100 ?
+> +				      POWER_SUPPLY_STATUS_FULL :
+> +				      POWER_SUPPLY_STATUS_CHARGING;
+> +		else
+> +			val->intval =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> +		break;
+> +	case POWER_SUPPLY_PROP_CAPACITY:
+> +		if (mcu->valid)
+> +			val->intval =3D mcu->capacity;
+> +		else
+> +			ret =3D -ENODATA;
+> +		break;
+> +	case POWER_SUPPLY_PROP_TEMP:
+> +		if (mcu->valid)
+> +			val->intval =3D mcu->temp;
+> +		else
+> +			ret =3D -ENODATA;
+> +		break;
+> +	case POWER_SUPPLY_PROP_CYCLE_COUNT:
+> +		if (mcu->valid)
+> +			val->intval =3D mcu->cycles;
+> +		else
+> +			ret =3D -ENODATA;
+> +		break;
+> +	default:
+> +		ret =3D -EINVAL;
+> +	}
+> +	spin_unlock_irqrestore(&mcu->lock, flags);
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct power_supply_desc mcu_battery_desc =3D {
+> +	.name =3D "gl-e750-battery",
+> +	.type =3D POWER_SUPPLY_TYPE_BATTERY,
+> +	.properties =3D mcu_battery_props,
+> +	.num_properties =3D ARRAY_SIZE(mcu_battery_props),
+> +	.get_property =3D mcu_battery_get_property,
+> +};
+> +
+> +static int gl_e750_mcu_probe(struct serdev_device *serdev)
+> +{
+> +	struct device *dev =3D &serdev->dev;
+> +	struct power_supply_config psy_cfg =3D {};
+> +	struct gl_e750_mcu *mcu;
+> +	int ret;
+> +
+> +	mcu =3D devm_kzalloc(dev, sizeof(*mcu), GFP_KERNEL);
+> +	if (!mcu)
+> +		return -ENOMEM;
+> +
+> +	mcu->serdev =3D serdev;
+> +	spin_lock_init(&mcu->lock);
+> +	init_completion(&mcu->reply);
+> +	serdev_device_set_drvdata(serdev, mcu);
+> +	serdev_device_set_client_ops(serdev, &mcu_serdev_ops);
+> +
+> +	/*
+> +	 * devm teardown runs in reverse: the poll work is cancelled before the
+> +	 * port is closed, the power-off work (queued from the receive path)
+> +	 * and the battery only after it.
+> +	 */
+> +	psy_cfg.drv_data =3D mcu;
+> +	psy_cfg.fwnode =3D dev_fwnode(dev);
+> +	mcu->psy =3D devm_power_supply_register(dev, &mcu_battery_desc, &psy_cf=
+g);
+> +	if (IS_ERR(mcu->psy))
+> +		return dev_err_probe(dev, PTR_ERR(mcu->psy),
+> +				     "failed to register battery\n");
+> +
+> +	ret =3D devm_work_autocancel(dev, &mcu->poweroff_work, mcu_poweroff_wor=
+k);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret =3D devm_serdev_device_open(dev, serdev);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "failed to open serdev\n");
+> +
+> +	serdev_device_set_baudrate(serdev, MCU_BAUDRATE);
+> +	serdev_device_set_flow_control(serdev, false);
+> +	ret =3D serdev_device_set_parity(serdev, SERDEV_PARITY_NONE);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "failed to set parity\n");
+> +
+> +	ret =3D devm_delayed_work_autocancel(dev, &mcu->poll_work, mcu_poll_wor=
+k);
+> +	if (ret)
+> +		return ret;
+> +
+> +	schedule_delayed_work(&mcu->poll_work, 0);
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id gl_e750_mcu_of_match[] =3D {
+> +	{ .compatible =3D "glinet,gl-e750-mcu" },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(of, gl_e750_mcu_of_match);
+> +
+> +static struct serdev_device_driver gl_e750_mcu_driver =3D {
+> +	.probe =3D gl_e750_mcu_probe,
+> +	.driver =3D {
+> +		.name =3D "gl-e750-mcu",
+> +		.of_match_table =3D gl_e750_mcu_of_match,
+> +	},
+> +};
+> +module_serdev_device_driver(gl_e750_mcu_driver);
+> +
+> +MODULE_AUTHOR("Serv Pol <servpol@tuta.io>");
+> +MODULE_DESCRIPTION("GL.iNet GL-E750 status MCU battery driver");
+> +MODULE_LICENSE("GPL");
+>=20
+> --=20
+> 2.47.3
+>=20
+>=20
+
+--cujmmn73vk23w3r4
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmrxB1oACgkQ2O7X88g7
++pouoQ//WSRwx391K55NU+UejsUfSYt1PrbKjsTAUB20+HIjDmVjJVYgjch9nrpH
+xeyhsh8x9pXoLFQCDfySusglqvrdWuD3uWY/+dDS2eeOh0GWJi7GGwpHsPbDY8re
+XxBFQDYMrt89JLyxCQ31bEvoYBfcIfr+HPx4efmoIHE/WoF0nPnwTBh8UL2pG0E/
+gA6mwWd0S7YmRgEfangk6lyZdBOKbqgE4BcA2C6l1LmJ8UzJ1mY8IlAlfB3QFqvq
+BcAKbremD8+4VULLm2392xp/dPOWy+R8QEbGqPAoecGlut1B9Auim7XJxL+w9s5O
+eRByX1k5CfqyxgK6j2CZ6duoj0+DYpoGmc8Zob4zQ/pj+jtORbBX6P2Dmjg+iPxw
+oK9UXp3Zj5lVwM54DMynnsdsouF+Z7T005/krMKAQtjVIEJnXoZCNiJ/2CQzkJB3
+JNgdm/eQIFYmX/XCoA5WtSMEA7lE58x+dqkoihgpsxw7CfcFgditXOiW77rIexXg
+VMM7j/bH2bxyBOGg6fYjRG+clJIs/Ao0f3lzbZX1vgIcwT1ER8vhDLQtd60WoKrk
+GXT++I0pEC6rvw+fP/yYKLmMatHUFAmufYRxBt3OBJEplM6WiKc8FJ9YdJwZufAZ
+c8nco2wq5uNiJMBRri4yiMSzaYqVZb8mnJOfwq7DHNe3Uf16oW4=
+=Uy5S
+-----END PGP SIGNATURE-----
+
+--cujmmn73vk23w3r4--
