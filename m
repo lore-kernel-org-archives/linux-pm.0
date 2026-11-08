@@ -1,100 +1,72 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.53
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794174317;
-	b=B1D5oIPMzXBJOM0WIWcn9WhDvpd/LgU2MNflstS708Fh4luFq0SbFYlsPCye5+WuLq0O
-	 cInNVJriT7+rjgW4UF17I1luMopD6ufxyT7XvSDYa1pxwAVdRNYKVRUvf5NQVcsAM8Y/F
-	 1VHlOSeegg3g0TuFhnmMvV0e8lMCuiPa3l5Qo/pv9PtbFGQnHr/QOiwOpWFoYaXKq1rFO
-	 jWMxMCFHiGlzK8f2F+Mahe1lCV0Fwxuv0O4dkmYZPHnujGdW/gmWY3+Oa/kiOMobUMtJw
-	 QUDpDX55eK/tfohv9lvniTeh2DyTBAstkjuxvMCyWzroLOlWqk3AJsFCbHPVqsYyhbA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794174317;
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.199
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794177582;
+	b=bIyiP6VPKqJZ1T2EsI/B0vU05m7sNn4NlTa1Iq9asMpKeWNeMZPV0jsafpFuFhS+fSI1
+	 4FGfP0QBFni8I6uAmKM8licY/JZVLaC6jeGWJvPDBe1HabLXvSVER9ePNU66iGakv3FJS
+	 DcSzTsiVJ5/QaLLoEmdhaK13F8tEY09bLyQjkIrSi3DzjqBPZ74gRwjQEQdSfPyl0SSv+
+	 Xe8hBqdR9lNqMAGF+yuwHTP41qCztzbiO0ZpSzxCTXjzQh5Y8tJxEaBeoxXH976O7Tv/c
+	 MqQO7E5m2z0U4cqduVwgbRxq1THniaSEvdSJG9TWM3EacLOoVNuUHdeS00EvhaAPyaw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794177582;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=yP+R+yf5xY4dHL5c8agyL0IxXu0xVt/tENjfyE274v8=;
-	b=sXQ9FOEfxNXmUrDtIfmEMdeLObFZO+tPLoDSKPcYXT1Gp5aq4dhbBEavC1dRtn2g9ncA
-	 8VD2KmaIzI4FBVTcImWFCHcUlb72OYVppVYp8L3GHJYWApGos3IDnnGmTNFg9K9GmFb8o
-	 U8OvKvNWLG8J+VSUSSsiqDiQj38WgSySRWPafz1L7P3Dur/bkrHiccB4VLkSIZfOEVTUE
-	 t3MtNW13kxXFJsZQks/gBFdwYtEoL4VXyk/D0bBoj4eg3vWjbAzXhCY4CbsogLzCqC2PP
-	 3fJr3jI42jVDv7FdYMH9OvbNlUYc9MrUvTYRrcrt8tucJD6QU3TgAvzrsAGYyJhWLWw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=googlemail.com;
-	spf=pass smtp.mailfrom=googlemail.com;
-	dkim=pass header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20260707 header.b=I7bKQwoM;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.53
-Received: from mail-yx1-f53.google.com (mail-yx1-f53.google.com [74.125.224.53])
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
+	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
+	bh=dh1tm53EjhTHyh6SV5ixAXTcy4PG9n9Z3Dkm6AKA6MM=;
+	b=zF2RV808bUq1VaHi6q++AfryUAFvRcxqlHxg0rlTw6pQLn3aibXOGcL5rOHiYRZw5I+f
+	 doC2IrBAi+7TcBbSi5mjAeI4+fR9ut67D0d1bOzoSap/7biIeA/V/J6QH3cI7JGROINq5
+	 U54ucZF5Mdah6+LatfQ/FBF2+cKtP2yPgbkWzP+LvgDD15eYP2JGoKvkr/acwbxJEsNYm
+	 R6OVKI1wXA1rJUsiibGKEHf/Os4O+c/cY34Ey5cmL3d/3tFecv0n6Au6aPRr4bEG8P4c3
+	 QWDiDTpaXGVEncXqfg0m3/kBMVAFG1OZ6s04RezF6GnQaAJyhEzxlC8AO0VnZgp2XRQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=google.com;
+	spf=pass smtp.mailfrom=flex--irogers.bounces.google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=ldVjID6l;
+	arc=none smtp.remote-ip=74.125.82.199
+Received: from mail-dy1-f199.google.com (mail-dy1-f199.google.com [74.125.82.199])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89BE7606D803
-	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 21:45:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 89BE7606D803
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=googlemail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=googlemail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46A81606A325
+	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 22:39:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 46A81606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--irogers.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20260707 header.b=I7bKQwoM
-Received: by mail-yx1-f53.google.com with SMTP id 956f58d0204a3-67be6030c9fso168839d50.3
-        for <linux-pm@vger.kernel.org>; Sun, 08 Nov 2026 13:45:16 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794174315; cv=none;
-        d=google.com; s=arc-20260327;
-        b=myEcXAssepFaR2NXCiCsNrqqTw8CQGkwAQ+as03z4EHtLNlpIC9bKrTRmqfwrUDtqA
-         8oEY14S0WZgaNGdjfg3/bKob7CNyewPwLt20b1EOzRb/bDolItgF1CiYvOwLOR9/SX2K
-         0Xuv9T0VC4PxvLmB93V08a82a3gwWyNX3s355tpZUbbSMnzWm7OGODOtb1JwiDytqcZ6
-         D76U4KlvwJt91cNuKwuzKuMEvp2LOajb9f0OjQjhlB1LCwiqPRndWjmj08jSlf9GPjB3
-         lUnplCadHkqf1ZGRuaLFkCuO3lMcSoS056cWJe35YF0sWwCsssVzJYd++qwu/RC2Pi/3
-         bfcg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=yP+R+yf5xY4dHL5c8agyL0IxXu0xVt/tENjfyE274v8=;
-        fh=8WQaDz74Y4fP3YGz+EvVIpjYDzvH/O4eQH4vzJcq21o=;
-        b=a5g6AWIJ4w1eF1HsKmRijycEWMQfl8Qo/HQXMoCoSKIs8nHKvBU2BTX3abM9KHYED3
-         WmzumT7N3Uw14mH3NlUJtDfXJuCToWX0+qTbYj9qw0fyEBtN+J+g+PBmxECey/uJe4f1
-         uGuASUa+roaT9TzaWXumi3wvsikUeGRitcurMC6lFOs9j4WG/xmpAtINe6w09tARBUTm
-         BgiF2kVTYFI1i1v3lIMUcT+VRGD6XMemHsN8v7D55r74dk7yLHebdGNSA+rFU6/5PqLO
-         LH8N9Zgu0YhNZ9nWNoWJeKVo1jX2exA1EMihJmmPWhgm2pQU+UAMSP4Nx+2pVXTexpC0
-         wdaw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=ldVjID6l
+Received: by mail-dy1-f199.google.com with SMTP id 5a478bee46e88-36fe0b57d91so352119eec.0
+        for <linux-pm@vger.kernel.org>; Sun, 08 Nov 2026 14:39:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=googlemail.com; s=20260707; t=1794174315; x=1794779115; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=yP+R+yf5xY4dHL5c8agyL0IxXu0xVt/tENjfyE274v8=;
-        b=I7bKQwoM9NWBQhf/Z2M9xaKE9MTHjD5dWnIDH+Adr4H9RUTtmKRZOsxmHeKofyz7Ny
-         5CvujknEZ2FdsKIfyVT1R/rHukzSbfqfbeZUoQ+mq5SSuAh7eETCg3UZ2Yzhcc390cJc
-         Zt5++zvN/LBhhOI0WX2rUMsM3vl7LlqS8cWL0xnNAo3zoyfEoHzc6QOlQAADgd8Huoz9
-         b9/JNUX5sv6svQjd9bfDrqaDY9Qwcig38CZz0q48zwybotVFcalNJBzlnbMyDvaoWmMd
-         guEyM0VcxBpgZ4weamoFg+D7LcqcGJE0rbwmFiVSs7DrY6WzveUPYpQmqAAdKIwmNcub
-         bL3g==
+        d=google.com; s=20260707; t=1794177580; x=1794782380; darn=vger.kernel.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=dh1tm53EjhTHyh6SV5ixAXTcy4PG9n9Z3Dkm6AKA6MM=;
+        b=ldVjID6loqmnPNFD/OaQ1ryvyuLqFJ8E4Rmks8oFWxH8wb56ZGhOTinJd6AgOSJN6X
+         eyQWYvinnqT6zEG01/RQdCnGd6x2V0Jftj7n4U/vmVkJUAhXm9rpFjoL01D6FYnKlWMB
+         Se/KJEsvGUwegaaKRjgstvqc+0E4NQMuqMIJdhVIGH4bcKeGAMpeJ2uStDl2Agul0sFQ
+         YSe6vinpwXu6tG+d9D+72/I67lvbThO1xg3qGRJUtBZaFA/7UJHqfOcZnShjW51+jr0M
+         Zgd8zjOIOlB2rBdIFJRuAFHSOb8t2TN7R5dw1AvU8DbOcav9gt8mQ58ntKfCqbONMFCX
+         d4zg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794174315; x=1794779115;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20260707; t=1794177580; x=1794782380;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=yP+R+yf5xY4dHL5c8agyL0IxXu0xVt/tENjfyE274v8=;
-        b=qA+DkTs6YomxRasXm3Rlp2MJFSoE9QHBSeETZk/ehzYNmYq467syWr82dAF3EiEbpK
-         TAVD6pbzYMgnpSBX6hDQsKCWoHGRw8K5etoec9MtNL0pg5gcarrl85H5Cyl6WJe5QBxN
-         qVO8/xMSVJu0tDZ+4wV1/IXMpLIeZ1bcUVbSFoCFhNAT2hgOmNaUp7gbq8edZ8nYR/NA
-         3f7THztpLTpN6W7P+5wc1pTbXVF6d0B//hl0Rwx1mrPlZg3g0XhoeIAx8z6PVK2QoToj
-         Lk1/OU8TGhed1SkMlM/GO5h22feb6c1fiPloIlvjMbKYMHmgfs+bGPsqYMnh54tviE3W
-         7Z4g==
-X-Forwarded-Encrypted: i=1; AL+hErHSur9FI1yC2oytp8Xe3BzWUdR4zUxg6Q4RqUCfBV42DXtqu3NKi4jpCsxeh6hKzjm34V+bTNKRyw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9DhNTcEMp/jDH9Exyxcbmi5mw34lgx0Qvs3hihN7pq/migMyLD
-	YGYocqaKLwIAKDC/5/rb7IBHE9K0kWADBrzoX5Z6YFkLYjz9huT32rfTEvmqNyudfZ5d3MBinUA
-	Z3H1Ucu33F0Mwe3WCmFzUvXgSlu7zzqU=
-X-Gm-Gg: AYBFou08JcIUY1atCLzRArnbu3OI2aYooWvMjxBDLKWsUMbyjg8dZBq3Kktx5wgKqCJ
-	IAKLlHU9lUEJ0Zw/ER9DiUfJnY9DU+kala3Qg9R4PNkqhwcLAFceXwEqpxPVgZC+VnmCLVbiCxx
-	5CQ7/q7nEVXq7DfcK6D2qT9/MmaLDAHehd7fgxNRhFUx2QZuY/U5h44AV2Np9Qr2nJ0Uzm8ahtL
-	kx8jvxB6NpfGekxMqjTVPGAs32nVnsKg4IPLgnGCElvVcfepKa558+oV8ZwWE1zCPTg6fK4oOB6
-	8D5PZxj0AD9ly6wm9J5GaJLwPg0PbHFc8gGV+L6ngoOnVoGSsJxthD1UxscFOwcKXVN4gPV3fw6
-	/X8YvJNqP5tUIAEU4isttDUkyFzWFG8d37q+Lse43Q8YyND0+ISJKT3YwlMspkwiHniSa0g==
-X-Received: by 2002:a05:690e:bca:b0:67c:1dca:7f9 with SMTP id
- 956f58d0204a3-67c3d9bb63cmr1402384d50.48.1794174315509; Sun, 08 Nov 2026
- 13:45:15 -0800 (PST)
+        bh=dh1tm53EjhTHyh6SV5ixAXTcy4PG9n9Z3Dkm6AKA6MM=;
+        b=pZ6NF+XjYhA95/m6YS8oVda2Gnpjk0iBGMr4nLXyl/2eO+f6FxUVrHk1B1WSC5J9Qe
+         IOUy61zIqoPLTzRNWhAmEzqCvH3udJIupiEcwT2dAvqpPvvdn7l2ag0A6iiTL2we+uYz
+         qoAyiFZzuapJ18KoF2pxJ+9wWrQ6W+LUj4XZKKJGjXDeYp5IzyYLuWPoS8mAiY4NYHWC
+         kiYmhlfI2dPV3DGXEt9j4+6zIMdyKvohMGnCiup3S+zABENokIjaKfUYPiuXf/weOb3R
+         840Ly0X0TXRNh3kQrPgrzuZk7+5I6gzoSYbSod6ISyUPKTKVcIUiRwco5KKKYdhCg1bE
+         XLEQ==
+X-Forwarded-Encrypted: i=1; AL+hErG68xuMBuSz0ykyrdD+rVVIgI5u9XB4R8RqaaIwcSLRGDROVf3y2msPSJqIOCsVUONZCFwnkpbhlw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9Ru+XuLlLV3Jv861m7bOME2paSzwaedr1SbrPDhq+RQAZIdAi+
+	2QqgHKci0UcIbtW1PWOCbELTQD6UKNEHQ2fmtmfBq+UHs/d8WkkFUX9L3HJq30RozXDLR48XZYc
+	cqshzOmhTMQ==
+X-Received: from dyba7.prod.google.com ([2002:a05:693c:63c7:b0:372:278c:c777])
+ (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7300:e5cb:b0:370:d6e4:e8aa
+ with SMTP id 5a478bee46e88-3725826f58cmr4715450eec.41.1794177579956; Sun, 08
+ Nov 2026 14:39:39 -0800 (PST)
+Date: Sun,  8 Nov 2026 14:39:04 -0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,120 +75,188 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20261025192219.209137-1-christian.koever-draxl@student.uibk.ac.at>
- <20261025192219.209137-5-christian.koever-draxl@student.uibk.ac.at>
- <at7lXEqds7ukoR2V@vireshk-B250M-D3H> <1jbj8gkff1.fsf@starbuckisacylon.baylibre.com>
- <at8WfX_G0tfTlFrm@vireshk-B250M-D3H> <9556e959-daf3-4c85-8794-9613e7e7a9ae@gmail.com>
- <A45EC676-5B14-4932-A4CF-87ED3B71108D@gmail.com> <4a51e879-708c-49dc-a08a-3f64eeec8bbf@amlogic.com>
- <CAFBinCBkJJeRPKLFBA9KYjwXMxFjow_NOtvFoKRQdxD=rOPW3w@mail.gmail.com> <48b333a3-ef88-4739-a087-3ed9d8ec60a4@amlogic.com>
-In-Reply-To: <48b333a3-ef88-4739-a087-3ed9d8ec60a4@amlogic.com>
-From: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Date: Sun, 8 Nov 2026 22:45:04 +0100
-X-Gm-Features: AclHuK-tzL5nxnrCwLMP_029tOJZYuTko3n3lDgTKGXJ3pWmAcdiBipcjDbfc6k
-Message-ID: <CAFBinCCgmRmk--W53wqdJhF-SzJbai--s7wyzDNt3LpfN00spw@mail.gmail.com>
-Subject: Re: [PATCH 4/4] cpufreq: add an Amlogic speed-bin driver
-To: Chuan Liu <chuan.liu@amlogic.com>
-Cc: Christian Hewitt <christianshewitt@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Jerome Brunet <jbrunet@baylibre.com>, christian.koever-draxl@student.uibk.ac.at, 
-	neil.armstrong@linaro.org, sboyd@kernel.org, bmasney+clk@redhat.com, 
-	khilman@baylibre.com, rafael@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, linux-kernel@vger.kernel.org, 
-	linux-amlogic@lists.infradead.org, linux-clk@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, 
-	=?UTF-8?B?Q2hyaXN0aWFuIFN0ZWZhbiBLw7Z2w6lyLURyYXhs?= <ckoever@outlook.de>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.56.0.455.g6c5a503b38-goog
+Message-ID: <20261108223913.3624571-1-irogers@google.com>
+Subject: [PATCH v3 0/9] Add __must_init and require explicit kobj_type::release
+From: Ian Rogers <irogers@google.com>
+To: Danilo Krummrich <dakr@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Kees Cook <kees@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>, 
+	Srish Srinivasan <ssrish@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Juergen Gross <jgross@suse.com>, 
+	Stefano Stabellini <sstabellini@kernel.org>, 
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Nathan Chancellor <nathan@kernel.org>, 
+	Nick Desaulniers <ndesaulniers@google.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Alexander Aring <aahringo@redhat.com>, 
+	Felix Kuehling <felix.kuehling@amd.com>, 
+	"=?UTF-8?q?Christian=20K=C3=B6nig?=" <christian.koenig@amd.com>, Zhihao Cheng <chengzhihao1@huawei.com>, 
+	Sumanth Korikkar <sumanthk@linux.ibm.com>, Bill Wendling <morbo@google.com>, 
+	Justin Stitt <justinstitt@google.com>, driver-core@lists.linux.dev, llvm@lists.linux.dev, 
+	linux-hardening@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-sh@vger.kernel.org, linux-s390@vger.kernel.org, gfs2@lists.linux.dev, 
+	xen-devel@lists.xenproject.org, linux-mtd@lists.infradead.org, 
+	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, Ian Rogers <irogers@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 3, 2026 at 10:46=E2=80=AFAM Chuan Liu <chuan.liu@amlogic.com> w=
-rote:
->
-> Hi Martin,
->      Thank you for joining this discussion. :)
->
-> I have re-examined the capabilities provided by pm_opp and cpufreq-dt,
-> and it seems that we may also be able to adapt A9 fairly well based on
-> the amlogic-cpufreq.c here. So we have no objections to the driver
-> implementation in amlogic-cpufreq.c here.
->
-> I was most worried about before was that cpufreq-dt might not fully
-> handle the complicated clock and supply adjustment logic between
-> multiple clusters, which would have required adding a separate
-> cpufreq_driver. But it now looks like this can be solved by adding the
-> corresponding config_clks() and config_regulators() callbacks in
-> dev_pm_opp_set_config().
-That's great news, indeed!
+Clang supports the 'require_explicit_initialization' attribute on struct
+fields to enforce that the field is explicitly initialized when an
+aggregate object is constructed, emitting -Wuninitialized-explicit-init
+(enabled by default) if the field is omitted.
 
-[...]
-> > - Meson8/8b/8m2 (32-bit ARM Cortex-A5/A9) where we need to reparent
-> > the CPU clock to XTAL for stable operating during clock changes (which
-> > should go into a cpufreq driver that implements target_intermediate).
-> > There's no secure monitor or firmware involved for CPU clocks.
->
-> BTW, could we put the CPU clock handling logic in the clock driver like
-> G12A does (though, of course, handling it in the cpufreq driver might
-> minimize the coupling between the clock and cpufreq drivers)? That way
-> we could fully reuse the existing cpufreq-dt?
-Common clock framework maintainers don't want muxes to be programmed
-magically in clock notifiers (which is what G12A and Meson8* do).
-So there's a chance that for new drivers they would just NACK that approach=
-.
-I don't recall the exact reason anymore - but from my perspective
-using a cpufreq driver for this is the cleanest approach (although a
-few lines of code extra).
+Following discussion at the Linux Plumbers Conference [1], patch 1 adds
+the attribute to include/linux/compiler_attributes.h as __must_init. In
+v1 it was called __require_explicit_initialization. Kees picked up that
+patch with a first seq_file user [2], and in that thread Greg suggested
+the shorter __must_init spelling, which Kees and Miguel agreed to. As
+the attribute did not land in the v7.4 merge window, Kees asked that
+this series carry the renamed attribute.
 
-Additionally: I believe the udelay(100) in the G12A and Meson8*
-implementation is not even clock related but a delay to wait for the
-regulator to become stable.
+As Documentation/core-api/kobject.rst notes:
+  "One important point cannot be overstated: every kobject must have a
+  release() method, and the kobject must persist (in a consistent state)
+  until that method is called. If these constraints are not met, the
+  code is flawed."
 
-> > - GXBB/GXL/GXM use SCPI firmware CPU clock control so to my knowledge
-> > we're good with what we have (meaning: no custom cpufreq driver
-> > needed)
-> > - G12A single cluster, no DSU: needs a cpufreq driver that implements
-> > target_intermediate (currently it's managed on clock driver side in
-> > kernel space, no firmware involved)
-> > - G12B multi cluster, no DSU: needs a cpufreq driver that implements
-> > target_intermediate (currently it's managed on clock driver side in
-> > kernel space, no firmware involved)
->
-> The cpufreq-related resources on the SoCs mentioned above are relatively
-> clean: each cluster has only one independent clock and supply of its
-> own, and these SoCs also do not support voltage selection based on chip
-> binning.
-That makes things simple, indeed: each cluster follows the same logic
-using it's own resources.
+Annotating struct kobj_type::release caught struct kobj_type definitions
+across the tree that omitted .release:
+- Patches 2-8 fix struct kobj_type definitions where dynamically
+  allocated kobjects, ksets, or enclosing structures were either leaked
+  on kobject_put(), freed prematurely before kobject release, or missing
+  proper static initializers.
+- Patch 9 annotates struct kobj_type::release with __must_init and
+  explicitly sets .release = NULL (with explanatory comments prefixed
+  with "Pre-existing:") on the remaining legacy struct kobj_type
+  definitions whose kobjects are static, per-CPU, permanent firmware
+  structures, or embedded in devm- or parent-managed allocations.
 
-> > - SM1 single cluster and DSU: needs a cpufreq driver that implements
-> > target_intermediate (currently it's managed on clock driver side in
-> > kernel space, no firmware involved)
->
-> Compared with the SoCs above, the difference for SM1 is that it needs to
-> additionally manage a DSU clock. In this case, the clock-related
-> handling can be added in dev_pm_opp_set_config() in amlogic-cpufreq.c
-> (by implementing clk_names and config_clks in struct dev_pm_opp_config).
-I think so far mainline is not touching the DSU clock at all.
+Danilo Krummrich offered to route the series as a whole through the
+driver-core tree [3]. Subsystem maintainer Acked-by tags are still
+needed (and would be much appreciated!) for the following three patches:
+- Patch 2: powerpc/secvar: Add missing kobject release callback to secvar_ktype
+- Patch 3: sh: sq: Add missing kobject release callback to ktype_percpu_entry
+- Patch 6: xen/sys-hypervisor: Add release callback to hyp_sysfs_kobj_type
 
-[...]
-> All in all, it looks like we can currently support all Amlogic SoCs in a
-> single amlogic-cpufreq.c? Then, for the specific characteristics of
-> different SoCs, we can differentiate them through the "compatible"
-> property and add the corresponding drvdata for each.
->
-> I'll also try to support S7/A9 with representative differences based on
-> this patch.
-Great, let's look at some code rather than discussing theory on how to
-write code :-)
+Note on tool use: An LLM coding assistant was used to help audit the
+compiler diagnostics across the tree, draft the fixes and changelog
+descriptions, and verify builds and review feedback.
 
-There's one last detail that we have to manage in case we also want to
-include the Meson8* code into the same file:
-config MESON_SM depends on ARM64_4K_PAGES
-32-bit kernel builds can't satisfy this (meaning: we end up with
-linker errors). I think a simple way to get around this is to add stub
-functions to include/linux/firmware/meson/meson_sm.h.
-I'll take care of that once I can submit Meson8 support patches for
-your upcoming amlogic-cpufreq.c!
+Changes in v3:
+- Rebased on v7.4-rc1.
+- Note in cover letter that patches 2 (powerpc/secvar), 3 (sh: sq), and
+  6 (xen/sys-hypervisor) are still awaiting subsystem Acked-by tags for
+  merging through the driver-core tree, and CC those maintainers on the
+  cover letter.
+- Patch 1: Add Reviewed-by from Kees Cook; clarify that LLVM issue
+  #232483 affects Clang versions prior to its upstream fix (pointed out
+  by Nathan Chancellor).
+- Patch 4 (cpufreq): Drop obsolete reference to cpufreq_governor_dbs in
+  the commit message per Zhongqiu Han; add Reviewed-by from Zhongqiu Han
+  and Acked-by from Rafael J. Wysocki and Viresh Kumar.
+- Patch 5 (dlm): Add Acked-by from Alexander Aring.
+- Patch 8 (drm/amdkfd): Add Reviewed-by from Felix Kuehling.
+- Patch 9 (kobject): Fix omapfb manager-sysfs.c and overlay-sysfs.c
+  comments to describe managers[] and overlays[] as dynamically
+  allocated rather than static and note the CONFIG_DEBUG_KOBJECT_RELEASE
+  hazard, fix a struct-vs-member wording nit in usnic_ib_sysfs.c, and
+  generalize the commit message note on CONFIG_DEBUG_KOBJECT_RELEASE
+  (reported by Sashiko).
+
+Changes in v2:
+- Rebased on v7.3-16928-g83f32c773255 (v7.4 merge window).
+- Patch 1: Rename __require_explicit_initialization to __must_init per
+  Greg Kroah-Hartman; document the Clang >= 20 requirement per Miguel
+  Ojeda; note the Clang gap for file-scope objects without an
+  initializer reported by Kees Cook; add tags from v1 and from Kees's
+  posting.
+- Move LLM assistance attribution from Assisted-by tags to this cover
+  letter per commit 1e035297ffda ("docs: remove Assisted-by
+  references").
+- Patch 4 (cpufreq): Use "cpufreq: governor:" prefix, drop Fixes tag,
+  fix typo, and remove the redundant runtime assignment in
+  cpufreq_dbs_governor_init() per Zhongqiu Han.
+- Dropped v1 patch 5 (ACPI: CPPC), already fixed upstream by
+  commit 27954e29d7de ("ACPI: CPPC: Release CPC descriptors through
+  kobject").
+- Patch 5 (dlm): Call kobject_del() before dlm_recoverd_stop() in
+  release_lockspace() and the new_lockspace() error path, and wait on a
+  new ls_kobj_done completion before freeing the lockspace or dropping
+  the module reference, avoiding races with delayed kobject release.
+- Dropped v1 patch 8 (s390/sclp_mem) per Sumanth Korikkar: the
+  /sys/firmware/memory/memoryX kobjects are permanent, so sclp_mem.c is
+  folded into patch 9 with .release = NULL.
+- Patch 7 (ubifs): Add Tested-by and Reviewed-by from Zhihao Cheng.
+- Patch 8 (drm/amdkfd): Check q->kobj.state_in_sysfs before
+  kobject_del() in kfd_procfs_del_queue().
+- Patch 9 (kobject): Cover sclp_mem.c and the new amdgpu_ualink.c
+  ualink_xcp_info_ktype, fix the overlay-sysfs.c comment, and prefix
+  legacy .release = NULL comments with "Pre-existing:".
+- Patch 9 (kobject): The ioat, kunpeng_hccs and omapfb display comments
+  now say that the existing teardown can use-after-free under
+  CONFIG_DEBUG_KOBJECT_RELEASE (reported by Sashiko). Fixing those
+  drivers is left to follow-up patches.
+
+v2: https://lore.kernel.org/all/20261027223847.652884-1-irogers@google.com/
+v1: https://lore.kernel.org/all/20261013223946.1836757-1-irogers@google.com/
+[1] https://lpc.events/event/20/contributions/2392/
+[2] https://lore.kernel.org/lkml/20261014225811.i.852-kees@kernel.org/
+[3] https://lore.kernel.org/all/DMLWX8NY1N1N.2OMQMQCIVRR18@kernel.org/
+
+Ian Rogers (9):
+  Compiler Attributes: Add __must_init macro
+  powerpc/secvar: Add missing kobject release callback to secvar_ktype
+  sh: sq: Add missing kobject release callback to ktype_percpu_entry
+  cpufreq: governor: Initialize kobj_type release callback statically
+  dlm: Free dlm_ls in kobject release callback
+  xen/sys-hypervisor: Add release callback to hyp_sysfs_kobj_type
+  ubifs: sysfs: Use kset_create_and_add() for ubifs_kset
+  drm/amdkfd: Free queue in procfs_queue_type kobject release callback
+  kobject: Require explicit initialization of struct kobj_type::release
+
+ Documentation/conf.py                         |  1 +
+ arch/arm64/kernel/cpuinfo.c                   |  5 ++++
+ arch/powerpc/kernel/secvar-sysfs.c            |  6 +++++
+ arch/sh/kernel/cpu/sh4/sq.c                   |  6 +++++
+ drivers/acpi/sysfs.c                          |  2 ++
+ drivers/cpufreq/cpufreq_conservative.c        |  5 +++-
+ drivers/cpufreq/cpufreq_governor.c            |  4 +--
+ drivers/cpufreq/cpufreq_governor.h            |  1 +
+ drivers/cpufreq/cpufreq_ondemand.c            |  5 +++-
+ drivers/dma/ioat/sysfs.c                      |  7 +++++
+ drivers/gpu/drm/amd/amdgpu/amdgpu_ualink.c    |  5 ++++
+ drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c       | 10 +++++++
+ drivers/gpu/drm/amd/amdkfd/kfd_process.c      | 12 ++++++---
+ drivers/gpu/drm/amd/amdkfd/kfd_queue.c        |  5 +++-
+ drivers/infiniband/hw/hfi1/sysfs.c            |  5 ++++
+ drivers/infiniband/hw/usnic/usnic_ib_sysfs.c  |  5 ++++
+ drivers/parisc/pdc_stable.c                   |  5 ++++
+ drivers/power/supply/ab8500_fg.c              |  5 ++++
+ drivers/s390/char/sclp_mem.c                  |  2 ++
+ drivers/soc/hisilicon/kunpeng_hccs.c          | 21 +++++++++++++++
+ .../fbdev/omap2/omapfb/dss/display-sysfs.c    |  7 +++++
+ .../fbdev/omap2/omapfb/dss/manager-sysfs.c    |  8 ++++++
+ .../fbdev/omap2/omapfb/dss/overlay-sysfs.c    |  8 ++++++
+ drivers/xen/sys-hypervisor.c                  |  6 +++++
+ fs/dlm/dlm_internal.h                         |  1 +
+ fs/dlm/lockspace.c                            | 26 ++++++++++++++-----
+ fs/erofs/sysfs.c                              | 10 +++++++
+ fs/f2fs/sysfs.c                               | 15 +++++++++++
+ fs/ocfs2/cluster/masklog.c                    |  5 ++++
+ fs/ubifs/sysfs.c                              | 24 +++++------------
+ include/linux/compiler_attributes.h           | 12 +++++++++
+ include/linux/kobject.h                       |  2 +-
+ scripts/checkpatch.pl                         |  1 +
+ tools/lib/python/kdoc/xforms_lists.py         |  1 +
+ 34 files changed, 211 insertions(+), 32 deletions(-)
 
 
-Best regards,
-Martin
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+-- 
+2.56.0.455.g6c5a503b38-goog
+
