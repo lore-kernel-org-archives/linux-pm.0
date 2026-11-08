@@ -1,63 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=94.231.106.230
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.47
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794149173;
-	b=T1XEa1ScnG1iu8To7tGQkCK558BNA6VvfiPj64S++L5EV3SlCLlQ1TPWWTGIEUQblEvR
-	 ztp5Z7OTp5BJ9k+4ROzck3+hQTVtxxkAAttu7fuFZawxjON22xhWLfISBTZ4mmo30UdaV
-	 Rq+mT85/RcDowQhh8AegURMdxLUNDgLiBzWZ/EFC0AbnyJjXyQawZG7//gvFVq4tzKhrP
-	 VHlR7dqm8ksuYjlS9XZ5GTM02EGCEVoLEOGO8CcDYnCsR8B0TVkNKaaJ4fNKc/UDeEaqR
-	 mFHbPhjOLoIW9v9jfXxkq2wFnHfib/blstbAxqACTwEgYlCaIhJnRdrT3QYHaN+6hPQ==
+	t=1794149435;
+	b=33RGNl0fL8DQWxWiIfLuxetB7U/cgOW+KBa4/lruDnoNX8rpgIvsXouO8c5T/EVnZ29g
+	 7Le/TmSZaH6lJD+XpjqG7I7JzqG1+yKXFQttSA0zkDdx3v/Jpu8Rlkj5QG8+FK0m95He5
+	 fBT0n6BhTT9uQOe0w5v3tINSl/NFAHlT4zZSNgLykRd/rBITRD1ktXys02878LivvGr3+
+	 oT9/0aCIX0EWfEVB5PzMWLpTYIS9jcCRQfdCzvF3EQME64nvnWMmc0lyaD8MJLE1lv6T8
+	 Qh8pXMr0PiRMMyPCGffE9YqqMfeJqjpPvJJQOQck+HzZGSPNLlr81QKtSAi2QnHvfdw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794149173;
-	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=bsxNgTzNgJB2xWQa4hLNl48h0PrbifHfCY0FD++wrQ0=;
-	b=miRhobE5R9XwGseGrY93ATYH3yrrcP5+sbmZgw57s2WX+soJ0RCKKxM5gbMsPGidqGtM
-	 IOPgXdoyEL8zRfXlX1S9yID3rzjs4Xbo+T/arune+pK5iTuE7XNti3Z9jQyIuMLJNfctx
-	 uUSem/U9FUkvIAWr2KQUhO6j4lv5DzPCp9CWEFi2OhF8CDmuFJVwjXN1SBIRSEUtZ+Gn7
-	 x33GgSqFlu0dq1mGacRyLV3LUjBbJgmxqt37K2+ueeIKTml/g3p9rDfO2Sv2n2bBorTIQ
-	 4xcSyg/EDbYHi8e3DqjtJPuQNl374qzrWT2If7Z/WUmxKRAfwIpa3fG2RY7IwP2ozPg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794149435;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=cEyRyjk6OI+iUhMYK1UgnN10zyMryNz1Exvd9CmPK78=;
+	b=HjsViGBnPXdb94EAv1zg7Ro7WGDjGERgGNoRljxbi17Hg6uj2HhFjRzHShVsPiVKxC+/
+	 wDEtGqKzpx/1TeIDDIwXZzf0rph/kydk9aZ5IgyTLfItRGf8ZTHlnwfIz/+ZQ882AJM1T
+	 l//m3DDOBM8gjm1yBKqRZMs2jU3aa/g7AJ3MyCYFi/aZnBsxkiSnHOzW6F08Y2Yn0VTbS
+	 zlEvzmURSJVtHXJ9lD+UJmcZB7MuonTWt8k7eM4J3vGcwKDiGpQHt9qYhb67wi64Mtl3U
+	 xqmf9lSoX5hLz3NifLse5LHeBURalG7AILlIvJsExVIq+s9FBXn7F/TuwrUz0h4PW5A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=klattorp.se;
-	spf=pass smtp.mailfrom=klattorp.se;
-	dkim=pass header.d=klattorp.se header.i=@klattorp.se header.a=rsa-sha256 header.s=simplycom2 header.b=QWrn2LoF;
-	arc=none smtp.remote-ip=94.231.106.230
-Received: from smtp-out2.simply.com (smtp-out2.simply.com [94.231.106.230])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Uz5or+x8;
+	arc=none smtp.remote-ip=209.85.128.47
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E22DF606A321
-	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 14:46:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E22DF606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=klattorp.se
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=klattorp.se
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EAF6606A320
+	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 14:50:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6EAF6606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=klattorp.se header.i=@klattorp.se header.a=rsa-sha256 header.s=simplycom2 header.b=QWrn2LoF
-Received: from localhost.localdomain (81-228-203-110-no2102.tbcn.telia.com [81.228.203.110])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.simply.com (Simply.com) with ESMTPSA id 4jMwhV1jbyz1DQsp;
-	Sun,  8 Nov 2026 15:46:01 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=klattorp.se; s=simplycom2;
-	t=1794149167;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=bsxNgTzNgJB2xWQa4hLNl48h0PrbifHfCY0FD++wrQ0=;
-	b=QWrn2LoF9NWuADeg6eiR+lrPiF556rWLL3ydKtQvOLsvWS4NxQc/96jlxRPjZ59/1EWByb
-	Eo4qrpfAgzfKpzCkzMY3soeInBAhNKjkkeQvur6cOq4mly2axM101uZHjZnsZLkHsIdWgP
-	wFudwN16AnFHBT5ufUI/6izDe4wweRO5GcTHwntoYyIx2I46bIQyDmfL1BJtdNT53955/2
-	Uj71Isi6C67WRGAF7P6LJpg0u7drEtXzZeqBCvKA3yZx13xvfjeo18IrAoG2GPk/JD+DjE
-	kEDQT9St//uX6WSToDxFP+czSySTmme63pL3tuqO7E3uLyszsQl5dGvtvg/JeA==
-From: Hugo Karlsson <huggek@klattorp.se>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	matheus@castello.eng.br,
-	Hugo Karlsson <huggek@klattorp.se>
-Subject: [PATCH 0/3] power: supply: max17040: report charging status from a gpio-charger
-Date: Sun,  8 Nov 2026 15:45:45 +0100
-Message-ID: <20261108144548.190622-1-huggek@klattorp.se>
-X-Mailer: git-send-email 2.55.0.windows.5
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Uz5or+x8
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4a35ac4475dso472035e9.2
+        for <linux-pm@vger.kernel.org>; Sun, 08 Nov 2026 06:50:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794149434; x=1794754234; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=cEyRyjk6OI+iUhMYK1UgnN10zyMryNz1Exvd9CmPK78=;
+        b=Uz5or+x8VV4+vxKRyC0WjD/O1dt6rPOP0C/8LCbhHKwxVQU+qvISn1+YlDEcQk0vi2
+         Vp2FN2OOS9j0GTc8fv3Qot/kxnIAuCLpiYrjLJfVJGrV5zDY2njPfz9yqrFjR1QTtPJt
+         HnjLqnpirqmWaiFK6pP6pOGy+jIuYi3DV+UeyYhlD7D7UX4iuHzugrfW2BdFwRFg7MXz
+         X1IVipPFQlbtFM9eKU2KkTBaZV0JNHlgtAqQy71PWhvB+5644zwrIghsmZx4Ku7zos66
+         +T7eCVKI71z0+/WyWjyhp/uXKLnHblQs6Un66Dt2yntxJ7enf1skwtpbmdl14P+p9Q/j
+         jARw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794149434; x=1794754234;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=cEyRyjk6OI+iUhMYK1UgnN10zyMryNz1Exvd9CmPK78=;
+        b=JZmKxknO84ClIVQuCKS8QHLn6cltDjAas5otTpZRRa0lmzVT0reSnQdDxNMvscx7pL
+         m8AGnyTrgFC0Ba5yMEitI3hIMQi4gtL+c1Ya3XMywBXBS/68OYCrh5imCIjhbIUw6Qp3
+         hKzrGSqy6oBryngaXRqNIgtbl+n9K8L/CEHeJjzcU/0AKSGaOVAXdPgT9Rhg3ylQmaxC
+         ehx83IBCZWpFLJdfidrpeUSQdqH+U64fReRrfIY+oXpqWEwvf6UONjdobllVw/oxFYzt
+         TXbqvICiS7/a6XSn314O94p+EtJJUv0uMX5KY+8TWDF5DCNfotI+Z1tIgB3jiivXnBp3
+         hxsg==
+X-Forwarded-Encrypted: i=1; AL+hErGC8df1Q2SVevjItRLkghBRzTScRLxWA4mMlk/PvXd3G7PYaPKYD/qUBsfQpbKBblEhoApjRrUlQQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+uBTted3t6qPGApWjnK48/1HUN4jclpwDz/3PC0Jiws1H/XUrf
+	DD1EcjWM7U0hjNJF73U0Dndd8al4kW0gyesU7L+mN2jUPX2AP12Mhfzb
+X-Gm-Gg: AYBFou0C/j/olXLvlsDlmdjuzOUTQW5xoO7wIPCwpyQmRkiegO/6ga/UzpQobUGAU0q
+	fpAqKu+CamF3kPOTn7mR5Df2bfLK8BH/ix9dMRQJfdbXucbF+KlNKJF/tLUDj6H9TYG0Gn33+bn
+	p4MIopclfUHmqoPii5vifgSMZzh1mhb8EcktXRqzODqD1md92soimj4rpWi15mNnoc66ZNFn8Aw
+	nqrwMnF9xrGqQsArLEXYpMyx0Kw1mPwOhIMuoB4Ckup2DE6/A5a5AUzn9SmPSABtGnp+opDjJ4F
+	FovAAU2xRL5XNNsD5G6v6X2/rhGWecrZPto7OLVTY9IMSuQzS4iuzckcRQ+txhUs2VGiFH7/J6J
+	l96IzNXzna6r2akN5yzI95Arz5HSJnYKvZMumAL3+QMFwzpJCIvvh9RkSmxcdSAcf02Et+w2/4S
+	zy6t1N3QywphblEmX+WRz9Kt/MYnZzEtptpVW4oVH+Yem4MsXwcJCgjAbrGskwt8IZd8L6myWXe
+	8020je1YlewcibAfgeFvclFRbDhF5PHcfiZHR5n2eQlJthZ0GwIHUb+QpSX4uQ3ikEPWeS4RIlN
+	m990R8LTiberLKmiw5itilY5QuW3gCYOg19T
+X-Received: by 2002:a05:600c:1d08:b0:4a1:f377:5c6c with SMTP id 5b1f17b1804b1-4b960d9bae2mr31054665e9.10.1794149433516;
+        Sun, 08 Nov 2026 06:50:33 -0800 (PST)
+Received: from LAPTOP-AVI.lan ([2a06:c701:474b:1700:5392:d94f:6171:6773])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b90ee2b8c0sm69612945e9.9.2026.11.08.06.50.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Nov 2026 06:50:33 -0800 (PST)
+From: Avi Weiss <thnkslprpt@gmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org
+Cc: mingo@redhat.com,
+	peterz@infradead.org,
+	juri.lelli@redhat.com,
+	vincent.guittot@linaro.org,
+	zhanxusheng1024@gmail.com,
+	zhongqiu.han@oss.qualcomm.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] cpufreq: schedutil: Skip busy-CPU hold when NOHZ is inactive
+Date: Sun,  8 Nov 2026 16:50:28 +0200
+Message-ID: <20261108145028.2483131-2-thnkslprpt@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,65 +103,42 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi,
+sugov_hold_freq() uses the NOHZ idle-call counter to determine whether
+a CPU has been idle recently. When NOHZ is disabled or fails to
+activate, the counter does not advance, causing schedutil to treat
+the CPU as continuously busy and potentially prevent frequency
+reductions.
 
-I work on OpenFlight [1], an open-source golf launch monitor built on a
-Raspberry Pi 5 with a Geekworm X1202 UPS board. The board pairs a
-MAX1704x fuel gauge at I2C address 0x36 with a GPIO that is high while
-input power is present.
+Skip the busy-CPU hold when tick_nohz_is_active() is false. This
+also handles systems where NOHZ was enabled but never activated.
 
-With the gauge and a gpio-charger described in DT and linked by
-power-supplies, the battery still always reports status "Unknown", and
-capacity reads above 100 when the cell is full (103 here). Desktop
-battery indicators then show the wrong state, so we have been shipping
-a patched taskbar plugin to work around it.
+Fixes: b7eaf1aab9f8 ("cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely")
+Cc: stable@vger.kernel.org
+Signed-off-by: Avi Weiss <thnkslprpt@gmail.com>
+---
+v2:
+- use tick_nohz_is_active() instead of tick_nohz_enabled to also
+  handle NOHZ enabled but never activated, as suggested by Zhan Xusheng
 
-Patch 1 passes the device fwnode to the power supply core. Without it,
-power-supplies is never parsed, so the supplier status lookup added in
-commit f4b782af61ae never finds a supplier.
+ kernel/sched/cpufreq_schedutil.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Patch 2 covers suppliers that only report "online", such as a
-gpio-charger without a charge-status GPIO: the status is derived from
-power_supply_am_i_supplied(), and the battery now sends a change event
-when its supplier changes.
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 14405a614991..50249cc1a594 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -397,6 +397,9 @@ static bool sugov_hold_freq(struct sugov_cpu *sg_cpu)
+ 	if (uclamp_rq_is_capped(cpu_rq(sg_cpu->cpu)))
+ 		return false;
+ 
++	if (!tick_nohz_is_active())
++		return false;
++
+ 	/*
+ 	 * Maintain the frequency if the CPU has not been idle recently, as
+ 	 * reduction is likely to be premature.
 
-Patch 3 clamps the reported capacity to 100.
-
-The series is based on for-next. I tested it on a Raspberry Pi 5 with an
-X1202, on rpi-6.18.y (6.18.50), where max17040_battery.c only differs
-in the style of the i2c_device_id table:
-
-  stock driver:          status Unknown, capacity 103
-  on mains at 100 %:     Full, capacity 100
-  unplugged:             Discharging
-  plugged in at 98 %:    Charging
-
-The battery's uevent follows the charger's within 1 ms.
-
-Related changes for the same boards, for context:
-  - Raspberry Pi overlay that links the gauge to the charger [2]
-  - Raspberry Pi OS taskbar battery plugin reading capacity [3]
-
-The patches and changelogs were written with Claude Code
-(claude-opus-5-5) from my description of the problem. I reviewed them
-and did the hardware testing above.
-
-[1] https://github.com/open-flight/openflight
-[2] https://github.com/raspberrypi/linux/pull/7744
-[3] https://github.com/raspberrypi-ui/pplug-batt/pull/17
-
-Thanks,
-Hugo
-
-Hugo Karlsson (3):
-  power: supply: max17040: pass the device fwnode to the power supply
-    core
-  power: supply: max17040: derive status from an online supplier
-  power: supply: max17040: clamp the reported capacity to 100 %
-
- drivers/power/supply/max17040_battery.c | 28 +++++++++++++++++++++++--
- 1 file changed, 26 insertions(+), 2 deletions(-)
-
+base-commit: fa4ad798f6f681031775266044ba1b0cf3c670bd
 -- 
-2.55.0.windows.5
+2.43.0
 
