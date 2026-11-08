@@ -1,80 +1,63 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794169366;
-	b=ee3+M5WxkWNGd68gMjGSRYgmKlP6VEcm1zPaMIm9G0MsE+qRZEid66Lnzt+K8bYe6Lfs
-	 nhEdRpzYeagkelFyMAjcSFiNP+0U7mTkCDBybGBVM1EtFuA99sxhmklW/qPhvIlW1Ewym
-	 1Jg49kEvCzy0JMV8URUgEKbFC+fxGTHvh+2CT4VbQR0Z4tQBRW9co2jPm2hqo20UAzrl8
-	 jv61H0Wnc+8HdaFvmQvLSjVfCofZX0k2V/Fs1JsSVH7T4Y7crw3nFv5k/hnzBXngsNOZI
-	 A9zDjSISYsrlOTc5mtGy/KX23J2tq3imAeQSu2I8d/hr6bMRftOBpYAVW0YGu9WGpNA==
+	t=1794169382;
+	b=qesDKyTW8TJMbiVVu/nw3GVf+ykY0JAOXBhtz8YVmG8iz2DY2e2g3gm7KmJZ/6ByEldH
+	 UJkt2HgZvaYQvgIlM/eggI0lUUwWgMS6FDo8HYwury5Xynq9EsZNoV6c+93kzF+hW5p3M
+	 cwIMenV7WyzUlX8Q4S0jdoy0h/lD09GMmLlMIwmScdMtVNUDgH0++SdRbH7zoiLoJXYZb
+	 WiOLJfPdHPFVPmUbLjhX0OxRD1qfNbJkFXbE3vPuvWdg5u8KwAbx0z4+nXMqBAcst6035
+	 raz99H1crK3WqAf18EMCUU4x8XWm821TiDI6/tpH7181HQclXf0816vpkMNqWWrm6TA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794169366;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794169382;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=YpvmXan4lbBMaRPxIka8UXE77WvsxJ91tdRQfWX0O/k=;
-	b=N3Od7d9v420V5Y3d+ysE3NP6Sn/YVSRbtI1wsYpUr5i9iUtIWlR0NjCPIgRV3i6yGvE3
-	 ItP0wjdeLNV0TYZgCErgvGMq7lR5tAIoMueSywMMzQO+kLYnlEJoNYaeAbqiqQ5yCFT4y
-	 RHdgRBHVYquwcbIn6dGEtLkKorGQR792Ot+xEKJJplC0GfPHvtmVYMlcRNSaTlHiG45Pq
-	 w+hbU75pIN34+G+8htKjKPH1IosLaFLmWPaW0t9MqxDkFi6F2UtrLWQg3Cxa5cTObbtdS
-	 a9YPfLYJFKRhA7l1SH3LsakgaL1gYPDje90WE6z8nILclU7XfJEjv+ILpRn7RFeSkPg==
+	bh=un5KME5VaqGRyFymJ1U5KruFxksDbs/z7sIbDgLE1d4=;
+	b=Sq/3Qz9EOzCob4gUcQGJ9MhWRLQICV4GJm7PHGQNDJ0AaOyKa5RrrSuR4EwlITThRLaB
+	 5D3S4EA3ly9hSovq901Xr8yvRrHvEsG63mclSZYFCuIPslfcm5DbbphdSgRkkNTWDdvnj
+	 WqKZE86/5au87vXCAk8r9TBRUVXCIjXJ8/lgWkra7t9KV2pvvcleEBxAPlSVL9CWWREZy
+	 aFMoOi5DrLXf3koS5nzdG753Ll0dSyCdnPhEQ55/uUhsWDZCfzmGgBZlisNbz2+D859fq
+	 wj3Bx/j1V7QnW4i6LJ8ibPPWGYnM9w3pgpnm9HQ9vCMxSz7D3it2TswBmuWzRLROung==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PerGWQ6c;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="L/ec+uta";
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A955606B121;
-	Sun,  8 Nov 2026 20:22:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1454606C772;
+	Sun,  8 Nov 2026 20:23:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PerGWQ6c
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48E021F008A3;
-	Sun,  8 Nov 2026 20:22:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L/ec+uta
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65F111F008A2;
+	Sun,  8 Nov 2026 20:23:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794169366;
-	bh=YpvmXan4lbBMaRPxIka8UXE77WvsxJ91tdRQfWX0O/k=;
+	s=k20260515; t=1794169382;
+	bh=un5KME5VaqGRyFymJ1U5KruFxksDbs/z7sIbDgLE1d4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=PerGWQ6cfPhU4g26hwZ/wCmdAxN4fYQu7aYlQSSylD1DhcxBB4tOhLOdblHXR7/v8
-	 2a2xRsrTpLigpJ7aboomYvObTDCFXmhFS0Q1BolkHfoCJKxii2wm6H9pBBk9eZAlj1
-	 bYtxrPorCA01PGrqEql52GChNY8B7WW7D0rg/Ex/WBhBBttbsFJdLbnhegS1fdfyZ7
-	 ZBmq1/8Nek8stD9VdSvbDA3bboyO7/R5THnorDEpk2MfyE3hciCV79n0AfJzbcJede
-	 5sncrHyTTJRyq+fhdAtM/le4wnEhH5x2mvKL2gpOr6Fd7wNOSuDBz/j7vUuTNHAzga
-	 atJLuCs38rnKg==
+	b=L/ec+utavsY8iBqw++e/nOeROwDx9p1l+BGDvUSPB/x6PGhhnQLadBDy8q8MgJBoX
+	 J+BvFryg3jLMl1cVgQANHzzhrvBTt4vaQpoLKk2wai03wWxo1JPpELRN1YQyBThx6v
+	 fZXdsp8MKvMI4w/np7N9/bXMVhkOAvE+rz33SfvcvjdBMlklEOGf/qAjZ+jeTEuKkP
+	 i5oPh7feOb/HuAuPoOd4igUcxIBkJGeudxBA+TuJmWhEGxv0LSjH4JRk3v05vDoiXL
+	 lr/cgQ5fLNot9LKb0H9IwSg4UtsPns7dQWz2Bnz/t555mHjEsU1oSg3sp7SX9QNjyo
+	 zcRHX4xxBhkkg==
 From: Bjorn Andersson <andersson@kernel.org>
-To: Mathieu Poirier <mathieu.poirier@linaro.org>,
+To: Sebastian Reichel <sre@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>,
 	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-	Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
-	cros-qcom-dts-watchers@chromium.org,
-	Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org,
-	linux-remoteproc@vger.kernel.org,
-	devicetree@vger.kernel.org,
+	Reza Kurniawan <imkyufie@gmail.com>
+Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-hardening@vger.kernel.org,
-	manaf.pallikunhi@oss.qualcomm.com,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	Casey Connolly <casey.connolly@linaro.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Dipa Ramesh Mantre <dipa.mantre@oss.qualcomm.com>,
-	Abel Vesa <abel.vesa@oss.qualcomm.com>
-Subject: Re: (subset) [PATCH v8 0/9] Add support for Qualcomm remoteproc subsystem cooling
-Date: Sun,  8 Nov 2026 14:19:46 -0600
-Message-ID: <179416929226.628393.17390672415084673437.b4-ty@b4>
+	linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: Re: (subset) [PATCH v2 0/2] Enable USB support (peripheral mode) for Xiaomi Redmi 5A (riva)
+Date: Sun,  8 Nov 2026 14:19:54 -0600
+Message-ID: <179416929246.628393.13881108135908117642.b4-ty@b4>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260809-b4-qmi-tmd-v8-0-b15d47adc379@oss.qualcomm.com>
-References: <20260809-b4-qmi-tmd-v8-0-b15d47adc379@oss.qualcomm.com>
+In-Reply-To: <20260912-riva-usb-v2-0-997fe0171ee5@gmail.com>
+References: <20260912-riva-usb-v2-0-997fe0171ee5@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -88,30 +71,22 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
 
-On Sun, 09 Aug 2026 17:58:56 +0530, Gaurav Kohli wrote:
-> This series introduces Qualcomm Messaging Interface based Thermal
-> Mitigation Device (QMI TMD) support to control thermal mitigation
-> on remote subsystems such as the Modem and CDSP.
+On Sat, 12 Sep 2026 22:18:10 +0700, Reza Kurniawan wrote:
+> The purpose of this series is to enable the device to act as a USB peripheral.
+> It enables USB-related DT nodes (controller and PHY) and modifies the
+> charger driver (BQ256XX) to expose its VBUS state through extcon.
 > 
-> The QMI TMD is an interface that instructs a remote subsystem to adjust
-> the performance level of the devices it manages, reducing power consumption
-> in response to critically low battery charge, overcurrent alerts, or
-> overheating conditions.
+> Driver change is required since the device has its VBUS connected to the
+> charger IC, which means cable connection/disconnection events must be fed
+> from the charger IC, to the controller driver to dynamically enable/disable
+> the USB gadget functionality.
 > 
 > [...]
 
 Applied, thanks!
 
-[5/9] arm64: dts: qcom: kodiak: Enable CDSP & Modem cooling
-      commit: aaef1df06a7b65778498801995997c42b7b33ee9
-[6/9] arm64: dts: qcom: lemans: Enable CDSP cooling
-      commit: 49b2314dc280fbb4b316676d83a0f03ea44b954e
-[7/9] arm64: dts: qcom: talos: Enable CDSP cooling
-      commit: 0ae7c4dd65f2b7fdab267eb021daec5fcde8cf34
-[8/9] arm64: dts: qcom: monaco: Enable CDSP cooling
-      commit: 59e3a973584a8ff3d8867f352df092c796d3ee7c
-[9/9] arm64: dts: qcom: hamoa: Enable CDSP cooling
-      commit: 682fc950ce3daf460164be075e445e6ea66b40c9
+[2/2] arm64: dts: qcom: msm8917-xiaomi-riva: Enable USB support (peripheral mode)
+      commit: f6a4df4921fb88f1e729a19a48e7aede852ed6a6
 
 Best regards,
 -- 
