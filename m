@@ -1,151 +1,105 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.138
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794121490;
-	b=J8LAdVcly4qUYkCPFO8vz0I+99VXZdMkw6+V76rQwc5ufrEcOMyRsNs9Vd+jKRhNRiCp
-	 APjbAcnfzyD9p54z0qLgt1rAYnsfik1pO2vqHmcZxgyF4gt3ywwyZFVnRmP546mDuBrZD
-	 oEPJbXPBiXFFLX04+a2//P3Y8tz8uBmpVjA9XKUy4SnyXJPf/oaUdqzNM9dkmnmiGb4/v
-	 did+UjmJOCvIwjgVlNNilfkrhPeqyyMgQxtwBJVh0byrrvhMWvj5sAe4+WgH9ClM1RSzl
-	 bSzRLeulC0TMo79CRuUa00H2ndiWo0Cd1y0NTz3gKJwYMQsZCy334BXj+y2h7tfoUVA==
+	t=1794121953;
+	b=4fWjw9ppZ6iYQJsso1diGH89wwA3IknB576EwxDC0PPonkY5w7TZJ0TCv+s93LHN/4u0
+	 OqOte3P7RLPKMnBg16LanJ5iHkI0nEUfvi6BvEEv6FHTapPLFG5Ofc2sIWOCYqBVtN2jT
+	 fLI76XYODESfogGgCH1LewrXEw1vJShQtksPLW2+Ip2MK0RvfUiyTOyolxcttYZgPIFhq
+	 MVHfMrJzlT/FDrrwglImSjI2Ls1F+uVuBSJfadl6Gc54AkkiWfHHq4c358otpRS2zs6Q3
+	 5eJq5vknZyFhdutKZ8pNur9OypFX8VpX4b2LtuXAL6JZFyHNMuRdBQAs62gPfVEiu6g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794121490;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
-	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
-	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
-	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
-	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=RZ8RxqpqPtXLtkqQ8uu7GqbITUoPwUdPcfQ3eLF9C0Y=;
-	b=Zu8GJIiYd+uc9zbFbD3sk9xnEI+cm6AxLjnpgIJAK0jfvvu5ljB4twdz61qOD85hibRC
-	 jYs/RF9qDw7uGHAw2kznq/VUkPixcyr6HNmQTmvMk+eLxJaM1YEVAT4idBmEcwAuTKNVM
-	 KjQYUi9tSR9jqXvZqQwtoynRzpSSDTZs2pu74Pq0Sg6LGVQ6dMHh11JYdXb9bVDe6D2O8
-	 cCvKSAbYgIqg+7wEsyuALnvH+iAQuGiAnybGAQdNUG/j8mNmhffcFQg6oTJOA5Z2zZkQj
-	 ELwsarZqt3aAisp1x3ec7QxaHsz6SFh650wnYqHHj1ZhT5coOisSRCPoIpAVI7XUAoA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794121953;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=QaX11FKlbrrxel5yt5lItqhWglhL95q0Q/UWvFGwSEM=;
+	b=L4PAcLCY6HWiUgA+RhfakYmiej6NQXH5GZ+WAbiqHN/3ufQMoB2lyPKxPoTOnEIi6CaL
+	 bMjsyZrdMPEwAn3xAx3aWLBx4TEAAQLyA98tVGnwzb+LD5nqcdqjL0iPFWHwsTOJjw5MX
+	 BaDcq6r/vBPdFv+0XoJAglMvhdofk6qfUT1Y9/96MIeAdL0HJLULnTxzx9q/VSDKLcler
+	 a0FuYm9dV4lWqV79hIfozpKspl9QYYtaJ07w/kQJ/TmkeHT9Nc450Fr/NgVhq/Qk/rZcG
+	 TDbiLKqEWxi+wkqGWo4TFia2mT1PK0JiqP/0Ga2nMrF1zhBEoxbw3Kpo41V+8F/M36Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gahingwoo.com;
-	spf=pass smtp.mailfrom=gahingwoo.com;
-	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=gF8gDtt2;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=FAoSMHWU;
-	arc=none smtp.remote-ip=202.12.124.138
-Received: from flow-b3-smtp.messagingengine.com (flow-b3-smtp.messagingengine.com [202.12.124.138])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UhNZ3HwP;
+	arc=none smtp.remote-ip=209.85.221.54
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87E8A606A31C
-	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 07:04:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 87E8A606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C42B7606A31C
+	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 07:12:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C42B7606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=gF8gDtt2;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=FAoSMHWU
-Received: from phl-compute-07.internal (phl-compute-07.internal [10.202.2.47])
-	by mailflow.stl.internal (Postfix) with ESMTP id 0391C1302AB9
-	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 02:04:43 -0500 (EST)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-07.internal (MEProxy); Sun, 08 Nov 2026 02:04:44 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
-	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
-	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm1; t=1794121479; x=
-	1794128679; bh=RZ8RxqpqPtXLtkqQ8uu7GqbITUoPwUdPcfQ3eLF9C0Y=; b=g
-	F8gDtt2AyXEhvH15cXZw4nuFgnFE0mqImQ8wb+iqj+zY8wqpwk5tk2jDM2KYNyJE
-	1mtyH2plcTHjzGrOjDlgl/SScTv7N1zI3/hG3L9t7cm7+3S00oMWYqUx3PR8RCWY
-	4oI0/daTpWGjp5zMjQAY7ljjAQP5yQ114GjlLIb5mTBzmAF0Inx9oReyD4rwd2bF
-	0M9q48WCD0Qk9PjqBMkLbrDgwHL7C5AhtKx4+jVmGs25pXE1RleziDgR8wGkbH36
-	cfPZi6PAE29txTcxojavPBzCzaS0/JAFKFyQfhuudcbLULAP5l63n/HLu+XDm2SL
-	cWBiqjFN38cwwSAN2vI7Q==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1794121479; x=1794128679; bh=R
-	Z8RxqpqPtXLtkqQ8uu7GqbITUoPwUdPcfQ3eLF9C0Y=; b=FAoSMHWUR7dujBsHi
-	m4Isbj6w4hrzPH7ymtpDgqwYnUzC7/zBSWOXE74Ybn02TPSYBlP12KapR3iyJ1G1
-	1zTGUv1E82/ybWYvxxI7evXnKbAoBgnaB/okKUxPPwugMQgdnlAF0OxpgCiZmBRr
-	B1uk/Ef9fZBRG6KczWclzkidPQ08LPO0n1IeehHlJNVNwtxEw1CE2h3JzKf5TZhC
-	lBBpomvaKujJTE9mVDMTE991KXF8gOt6UqqKLAZeMm3oFYwdR0E81zqazzIMX7Zg
-	nngOb4it2J4yMYTfadVOVi5CzIS5PdRe069HiHGKRi2RWM1ytwqnbGq51zX2CfyL
-	9Jf0g==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=gahingwoo.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794121479; d=gahingwoo.com;
-	mf=PGdhaGluZ0BnYWhpbmd3b28uY29tPg==;
-	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm1:rsa-sha256:Q1Q6gcMF0c0071Qi5zqwMSCBvqQH7duRc5LiXcMxtHfHOF3
-	LoEOqh6LZVwLvEigj/UvvUvYzwyG+cdkaZo8FPYgDout4JgFv/wAhSukB5cbe8Py
-	SmasaWS1/65Jgbf6QMCeBkeTPWiJBD9lOfITsCyiHMvfvkaXktHjS9Je0A1rmy6H
-	NbzVlppimEu32QHQJoEHN4yvnS0LmK9TW6waQ5ZizUndg9mXmMWNCrkkTSQDE8YX
-	IuxARrfVGXWhspMQvrU6ArMnKs1q8pB2sqX/qdI5VmXjAvySBH569ojaIWGAURCA
-	mrfbCzu0Wn8G5alDJJ7wcFa/051NXCQ9kYoxuvw==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=11;
-	hn=cc,content-transfer-encoding,date,feedback-id,from,
-	in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:PHwmtPat0dF7NtP1dql65wy0UbD0vgQGVZAO1EMeALc=:RZ8RxqpqPtXLtkqQ8uu7GqbITUoPwUdPcfQ3eLF9C0Y=;
-X-ME-Sender: <xms:Bh_waoHjMjH9rdgZPk0naIHH5zeTHsUWQ1gWyJVmuhwYPJCAoP9fPQ>
-    <xme:Bh_watxEjCcEudc_9uYX8_3kqYS2Oh_tesyPWyBCBckXDmzCjTvWPa1hZWd9xoF0V
-    epto-mY6ySnVxnXoRT7_pLdNRiyPUlpK96ln3F8LttRUZU01PKCKOU>
-X-ME-Received: <xmr:Bh_wapZERSoz7jRVeIhKQatR7AjjAs8u3Ug8ttonC2keB6f_3UOhOxwfnC3NLeKCJ3GIIaY5>
-X-ME-Proxy-Cause: dmFkZTGFrF9gbXLYK57uxfZb1bQmjwR88m5VJ3LeQ7NQGYG1ObiBENpJjk+SxbTOoy2Z2O
-    oKHwECRp3KS9jz7dDXznSf0ApUhoJsyilamEIdtEYTXT10k2VMjwh1zf0cCss0F0U7et5q
-    L+zOCc3HzDw5Xb8dRMNNSgRoLf8s8gmdw0zdOLPrclPF3+buMgXTngk72aEbrLF22hnWgA
-    VTZOp0VJBWYDhR/uABWc6oI0e0YlG+k3JEp3i4IsBNKCJV8sn1xzPbHcY5M/PywatYwjQk
-    mSiyzFHruIdZcWT8k1yuaF/RAaV2sqpoWiKHEvJK1TBYApnym0EbdVB7c741b+jRJy/rXR
-    0fs+ib2N9bpAbYdcCy3wdG/dDRPzcqwQtZLAnM0q2ppIj37havxdw0noBYd2aGjOG4hW0a
-    NmO8w2kyv30tTZknQr2+k1TQFU8XbYfbSfZmI7mJkkHCl3fDmaNsdHh/9C3X0sGIR6tsDU
-    2sqb/y4hRf+3sbrBB0Razqxoh0cdEQSielLoNE7Br7H5QxN4iWHrw51qoZ3KrFOqlkzJqs
-    a6VH4Z/rwz4HrIJtdfEPIHz9d9+poSKTtO4KXQ0u9Bmz9arT6L/aJYCLzAXUb2OZUj2Ptq
-    M5a8Mak4f1pKJKdoUb9gRX1dtVQZYyhvDn5hmMkwpskKLj0hnIoWw7g84CIw
-X-ME-Proxy: <xmx:Bh_wagkUukZt1evp60Wz3mcD6K-idNfXMEjvvdSOwFTwPVqigPafPQ>
-    <xmx:Bx_waukCauVj9Nl87oGoNoCkO5lYNY31knt6tLv6Ynj6RlZ20FiY3Q>
-    <xmx:Bx_wajOKDADVAVEdTO5Cm2VXH9bY7wfICoVdhzRa0AAsnPqo3zopUA>
-    <xmx:Bx_waoqeZr-C9HwljvpFikWi6oaTkLqKo6X0bPS2Iq13zebK7HqFLQ>
-    <xmx:Bx_wavpwQCJEHa-6bvfZz0o1Q2FIVPD3mKDrJHWx4p1qI-cGpL9_EGyM>
-Feedback-ID: i7a5e4b5f:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 8 Nov 2026 02:04:29 -0500 (EST)
-From: Jiaxing Hu <gahing@gahingwoo.com>
-To: tomeu@tomeuvizoso.net,
-	heiko@sntech.de,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joro@8bytes.org,
-	will@kernel.org,
-	robin.murphy@arm.com,
-	ulfh@kernel.org,
-	p.zabel@pengutronix.de,
-	ogabbay@kernel.org,
-	zhangqing@rock-chips.com
-Cc: royalnet026@gmail.com,
-	abel.vesa@oss.qualcomm.com,
-	sebastian.reichel@collabora.com,
-	sidong.yang@furiosa.ai,
-	u.kleine-koenig@baylibre.com,
-	chaoyi.chen@rock-chips.com,
-	shawn.lin@rock-chips.com,
-	finley.xiao@rock-chips.com,
-	diederik@cknow-tech.com,
-	alchark@flipper.net,
-	leonard@lausen.nl,
-	jeff.hugo@oss.qualcomm.com,
-	rfoss@kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	iommu@lists.linux.dev,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UhNZ3HwP
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-4922dbcee23so108690f8f.0
+        for <linux-pm@vger.kernel.org>; Sat, 07 Nov 2026 23:12:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794121951; x=1794726751; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=QaX11FKlbrrxel5yt5lItqhWglhL95q0Q/UWvFGwSEM=;
+        b=UhNZ3HwPUWb+xsU+LrB9nBdbR1CFNHYoIhf8bYXVRaVpgKnz85xHpaEmfk/PNrPQz2
+         mkMtHK2+IOess921ezEeH1kaRuBfb1gRfzVjCmdCWR9LH7w2KHZGG68DeZhrcceB2OU1
+         nLjzBlJ96rhGWGjufIbJWTcZUd36JkJIaSs/tRDfWq1Spntglf+D+fYA+1Bt1w+Ques8
+         VW75Ng9OJxgQQ7+E7v/TaEC3oUbpdnkI0pKBR5Swp4G9Q6ql8S3Gwo+ouc8SlzXxCVki
+         17aStwfzlHx+IEg63Da0M4w1/j//VSshjYL7I284x4JTIumEQokRrMouIruXdmvbSUOH
+         jtfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794121951; x=1794726751;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=QaX11FKlbrrxel5yt5lItqhWglhL95q0Q/UWvFGwSEM=;
+        b=eWs/B401IcM/TIWyEOaIBk0kyMiNSRlSKiCvyOahSI6EtxdRvDFqqbL1txCkH1i1hH
+         6qneN3h6ySyZdzqSMLJCDKXVkXwtXmP50dybm9Lu6/GY3rmW8C9fqf7Uq9qqx6azSDXz
+         SBwbjNASNM1JKpPvqbM99MGTt5+nm1DuXDEUN9bK5YMagfXw3mME8CsEHiHCwhBRXidY
+         1V5fqTI7371GMi91YF4zapEQzW2owu7HLV6s9vyrLpZUU6R9L6jLnw7xJ2w4z6deMvin
+         hhYPfXnAQhFWDQe9Abn3M5yJhZs+AhOhjVbJ1Uc9I4o8aaqKkgCje9S58opjyw9tg4T4
+         PWAQ==
+X-Forwarded-Encrypted: i=1; AL+hErGwlF7eUqBtHlzS0himBJRo5dEW7nY4t7CrXoN/4aNux8CJyh9QFcWwSppB9V397fuXg9Prw+jrKQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8TCZn09dq65Wr+Bu61amBO/SMpQyctZVefTD6jOR4zWSEJTVLW
+	QdwgwH04t0ClSU21wUvWR4YeMN/srIJcKUJEUNO9fziXiDRqT2puE2F5
+X-Gm-Gg: AYBFou0T6HsV5eiLL8mG8DV+i4vvg8Y/YvQqadIumiG6sYZbXKONpt9HeuE0KddDUuU
+	w0WcF8vQAngZT8GcJ4p10WcQa+Bs7TV1oOeEPJA/o2Ua7n1xugz4dG0geSMEaMm2aI7UEwvMECX
+	yhwhqkrA0EHjaJ6XxEW9Uqjg/KUvDwJcaonUgk7m3yxposUPsjU0vYkclh0pKdrsQirn+fpqFC9
+	0OVYxRDRIGiz+5BTwQjdkTmsVBMY9OUu8B49poZUF9wxG5khi9m0vwfh41Bz2rsRCumrsGCapNV
+	k7MFh8LRgyDqNltDbZQ4chUCLk52VROplVdyb+YuLQTIlARxgMO+Iy0EKFo0zkRr23qOSRZRNm7
+	olgtUsRMBrnIgoRZA1gb4wj3kHQ990SGeq8bSVL8NbAD9RhNDs20w3Qq2AMRdRBveMVoMvY79oh
+	zzLmP9NjdSF67i1aP0L/WL0ydE5yhWtTCvkOcg6fQk/cwoWIVVxgkhytPOcTRbaS8ObBZPElkJn
+	QRRjXWTQSLY3K/+Y2LsKAvjs8MUPquF1asdpvcP5eXZtNz6o9ymtqleyNNak030dScBbJ+6R2Uk
+	enGvtEfPtKkXby0Skv+bauAT584NblkW4KdTfiuSN4jzvi0+gvdJ3jA4R8gvqGexI+OfKy+ZTfc
+	8i/o3LaDIMxU84LYRlA==
+X-Received: by 2002:adf:e193:0:b0:491:e28b:1e1e with SMTP id ffacd0b85a97d-4958335a7efmr1603970f8f.28.1794121950867;
+        Sat, 07 Nov 2026 23:12:30 -0800 (PST)
+Received: from localhost.localdomain (bba-217-164-30-115.alshamil.net.ae. [217.164.30.115])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-495b90701c7sm2609204f8f.10.2026.11.07.23.12.28
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sat, 07 Nov 2026 23:12:30 -0800 (PST)
+From: Ximing Zhang <xzhangjr@gmail.com>
+To: Hugo Sales <hugo@hsal.es>
+Cc: Ximing Zhang <xzhangjr@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Len Brown <lenb@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	"Ashton A." <me@ashtonantila.com>,
 	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: Re: [PATCH v15 03/15] accel/rocket: wait for a running IRQ handler before resetting a core
-Date: Sun,  8 Nov 2026 20:04:08 +1300
-Message-ID: <20261108070408.136140-2-gahing@gahingwoo.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <3654048.cLl3JjQhRp@diego>
-References: <20261101082307.151957-4-gahing@gahingwoo.com> <3654048.cLl3JjQhRp@diego>
+	linux-acpi@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/4] cpufreq: intel_pstate: Send CPUFREQ_UPDATE_CPUINFO on max_freq changes
+Date: Sun,  8 Nov 2026 11:12:25 +0400
+Message-ID: <20261108071225.54656-1-xzhangjr@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261101185807.112449-3-hugo@hsal.es>
+References: <20261101185807.112449-1-hugo@hsal.es> <20261101185807.112449-3-hugo@hsal.es>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -157,27 +111,56 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi Heiko,
+Hi Hugo,
 
-On 3/15 you're right. With synchronize_irq() added, the original comment
-already describes what happens, so v16 no longer changes it.
+I tested the four patches unchanged on an Intel Core i7-10510U using
+intel_pstate in active/HWP mode, on the stated base commit
+5854d2ce4b0b9ccb37b154319d8283bad889a694.
 
-In 4/15 the code no longer uses pm_runtime_put_noidle(), so only the last
-part of that comment changes to match.
+Cooling states 0 through 3 followed Turbo changes in both directions.
+I also ran 100 CPU 7 offline/online cycles concurrently with Turbo and
+cooling-state writes, followed by the same sequential checks, and a
+suspend/resume via rtcwake -m mem -s 15. Turbo was disabled before suspend
+and enabled afterward. Those checks passed with lockdep enabled and no
+new warnings. The test kernel was already tainted by unsigned modules;
+that taint did not change during the tests.
 
-I've shortened the commit messages of 3/15 and 1/15 in v16. 1/15 is
-Igor's patch, so the change is marked in its tag block; Igor, say if you'd
-rather keep your text.
+There is one remaining Intel hotplug case: changing Turbo while CPU 7
+is offline leaves that policy's cpuinfo.max_freq stale when it returns.
+I reproduced the same stale CPU information on the stock
+7.2.5-1-cachyos kernel, so this behavior predates the RFC.
 
-On the power domains in 14/15: I tested each core with only its own power
-domain. With both cores running the results are correct, so v16 uses one
-power domain per core and drops the driver code that handled more than
-one.
+On the patched kernel, starting with all CPUs online, Turbo enabled and
+cooling state 0, I ran the following as root:
 
-On the IOMMU clocks in 8/15: I tested different combinations. With only
-aclk and iface the IOMMU reset fails, and without either one of the CBUF
-clocks it does not work either. With all four clocks it works, and the
-npu clock is not needed, so v16 lists four.
+    cpu=/sys/devices/system/cpu
+    cdev=/sys/class/thermal/cooling_device0
+    echo 1 > $cpu/intel_pstate/no_turbo
+    echo 1 > $cdev/cur_state
+    echo 0 > $cpu/cpu7/online
+    echo 0 > $cpu/intel_pstate/no_turbo
+    echo 1 > $cpu/cpu7/online
+    cat $cpu/cpufreq/policy7/cpuinfo_max_freq
+    cat $cpu/cpufreq/policy7/scaling_max_freq
+
+These report 1800000 and 1440000 kHz. The policies for the other CPUs
+report 4900000 and 3920000 kHz. With the Turbo transition reversed,
+CPU 7 returns with a cpuinfo maximum of 4900000 instead of 1800000,
+and an effective cap of 1800000 instead of 1440000 kHz.
+
+I restored the starting state with all CPUs online:
+
+    echo 1 > $cpu/intel_pstate/no_turbo
+    echo 0 > $cpu/intel_pstate/no_turbo
+    echo 0 > $cdev/cur_state
+
+intel_pstate_update_max_freq() uses cpufreq_cpu_get(), whose raw lookup
+rejects an offline CPU. The reused policy then takes
+intel_pstate_cpu_online(), which does not refresh cpuinfo.max_freq.
+This appears to prevent the new notification from covering that case.
+
+Is this case intended to be covered by this series, or would a separate
+intel_pstate follow-up be more appropriate?
 
 Thanks,
-Jiaxing
+Ximing
