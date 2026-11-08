@@ -1,79 +1,67 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794136948;
-	b=tXSqDPrLh3TduOCjkg21D5+OsXe/1+D7iauBFKLDg1+Knk0rY8/HylbuY6O6rNmGdSDC
-	 Gqudfo13qlav4m5RQRhk7r3iff1Xt5zAvOtRN/5eV8h2yaBlWudvp9dNrvJw2Rd0joznd
-	 60ZSO/Eev2aL9jDPWIwizduz/lXFftx1srndYSUbxi5HbeUEPas8BaeXZ7Ms9WOD/sXFl
-	 mJSThuVdFFayXc9cUcPgFieD4V9sqXBHh02P8f8Szlrd36yt5zSdRKZ/7lOmGhsUblhe0
-	 zhLr6hoUXbgIF2zITsLYL80W4KSuL3ypu0JsP7RChhgirBaTn3zJzUTSWaNj5nn0i4A==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794136948;
-	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=W/58ODSxMLt+iMgV2qP5B56+KOjf7jLiaxB4ZCqjUs8=;
-	b=sDiYsQyte1hQ1vR28Bqxe3pqQ7OYxi1p2EBgS8ZvzWmZKiimr26yYBNVNQpK7mfTrFHZ
-	 E9yBgCsLksvzyEiCOGJJeVC8d7mP4eLJzaRaLkQF6TfNXQTOeYqPEXw2qIUz6twXs57yh
-	 rBJHS8vkHolQCAjdUU+PWiNbgKSXlqZR8SmIr4qGfm5+rbKqd5rPTgktmzjtGlpgg1IGg
-	 JK6lQff+BZwC51RdcZozhwjiBV0eIpiLkLW1Pk88LS1rNMzAE98AaHIJ8cbgNzVjRYFQO
-	 2bAqAr8bsbQf5Fv4ekb67DRcBAJwYXioDoJn+VNwNB00hzajEUg1TBsZX0zPLu1jzzw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HJBuJWin;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDCC3606A326;
-	Sun,  8 Nov 2026 11:22:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HJBuJWin
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794136947;
-	b=rD25eM3YFrdn6UqBCPlR3/A/FO5oq8ikT8k9vQkx5zR1Z09pLFOPw2Nb2e/a83kAJwtH
-	 BZGtgayJokoY5PWlAO04rkt8ddqwoDZv1Vne5mf/wNms3ArdssZy3F+N/4/GWX9vsTfFS
-	 Ie4Ln8Kqji7QZu3Bo8my6yEPj23PT0lCYbovLHzJEoT63vIphXwslVpeVVgmgzSwRdFFH
-	 5CBSwOd4KUOmBCI2CofXWLjxga4wN2ZjmOV5MG/18DawG/mY28cwRasFwR6TSmKNO2XE6
-	 N/5HN5gEtZZbh6359a6XR7jW2NdVq+pi1mcEK3xE7EaLFpqwA5JcDJc1eY83fAU94Qw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794136947;
-	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=W/58ODSxMLt+iMgV2qP5B56+KOjf7jLiaxB4ZCqjUs8=;
-	b=IIYOFJ1SDT7VqbJRjEL6gchT1CsZwYCx9C1wqE0S3qZ55onGg/H/rpW6aZN2SdNQJqu+
-	 yBP4fvyYtPhZwbJCxYpMXOCqHGTbakgKKYKiw0DAuS3Dd+DHmEGhhoER/jiIeS50erRMO
-	 DRPKasfsHTsD07lWeK+sKhu+CLUnqWVy9WV1ZhW4nJdMLQ0d11Ls7R0MZrM0N107+b1f7
-	 wUWRWW2Tx6SdX+RJCYKFCaltzSt5fPkL+ks8kaWkt+GhhHVtLXtxFkqsMt/rTV7ZTyFLH
-	 GaZqEZ3ruvHjPhyTt8E3fF1FjElyOq/yWAAks5OjSkfMBw7QfnE3E6AY+CiDIPDWkzA==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=94.231.106.230
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794149173;
+	b=d3gZnosMfRI5zGMn6mzRQP58u7kJ++tmLi6xE/dNWB1PORmKY9TA4mAmHQK7x+1rfHkI
+	 yijvgmsls/FGQs5VNhYOpMvwJiIj9lmR1ITftnQr+4aIufOg7tb/9cmulmkroQXb6SfeW
+	 HLS1RjaHEkVhQEh7n859oh7ONbehnadR7ZNeEjHJn5HxnskdwfuN5t9NWQqIOf6V5tLhi
+	 Y0SJPI76u7GJC1ElN5ziiiFexoOSm+uRDbsjPJqqdWCE+YQBJKDRjPVa+d7eHoxvLFG/L
+	 NYO+S4K/o5IkDWlUgVziymjUrVzQ/ifyJyTvb1InvhfIHKOwuZXKUzCR46kGJNqsFnQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794149173;
+	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=7v88RxTHzZk8rIHyWA5xKvmrSHFtutYKfdxnJwgX7Cc=;
+	b=W0N8PMYAvW6R/BSc7epC4ewbPH8Ys5+Xpbdr4pWxMhlpP8OjfqTqgzyeVfHabHrp88S1
+	 1WiXQRlytR5QzwV8Q+nYkO9CCSwSDIcs/vj77qyQql8AogL1u5REwYUmL/VtlEw4LjC80
+	 kdrsJqX6teuhc872mU4DggF86VTgANbl4gVuHe7Pqpj95comoqmeg+NKcuN1k/Y7axh4e
+	 FcqpPAKNlAS9fT9bFg4QUTBuogCHr0ZG87jUwYlNOELWUDM4gtiNUF77QE/7WzrErjd12
+	 J1S9uohkA7VuYK9oS+LSm1jDyHeEDYoohpM3ZylECzTuR2fsITqZugAEpuL91igkUaQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=none header.from=klattorp.se;
+	spf=pass smtp.mailfrom=klattorp.se;
+	dkim=pass header.d=klattorp.se header.i=@klattorp.se header.a=rsa-sha256 header.s=simplycom2 header.b=oYswFuFT;
+	arc=none smtp.remote-ip=94.231.106.230
+Received: from smtp-out2.simply.com (smtp-out2.simply.com [94.231.106.230])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id DCDEF1F0089F;
-	Sun,  8 Nov 2026 11:22:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794136947;
-	bh=W/58ODSxMLt+iMgV2qP5B56+KOjf7jLiaxB4ZCqjUs8=;
-	h=From:Subject:Date:To:Cc:Reply-To;
-	b=HJBuJWinfAlmCSZWcUeH5DhJFOIs2vshonr3ZYyrWpi7ILudZL8Ta8G2v6pLuHlFc
-	 NYem7zRlE48yUPzMcL/EC6K9Sb4y5Qu7VxP5+DjmCZ2OO5xw6hlgVeRyCapWfhud8D
-	 UmgXiF2+XkugIkP+LJWgMSecRbZrFOfJtTBOhQRJbK1f938gkhIAQ1+h0Cj1tj6MA3
-	 tXnKBc2l1OxQzOvSA+KVTk9jUVWvdS4/8Qa8XwoPmCbXztCUH1wlGzmiooQdZZ2zwB
-	 LaZJXJjdb6qRTJI7eMyxnIVT6b0CdQk79zF9jVv4Jknx6JCo4AqMhb3R0ZSgUQRdww
-	 sBgCm0L/UGytg==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 72F3347EFF;
-	Sun,  8 Nov 2026 11:22:26 +0000 (UTC)
-From: Nizat Mikayilli via B4 Relay <devnull+nacht.dxdmail.cc@kernel.org>
-Subject: [PATCH 0/2] power: supply: Add Silicon Mitus SM5714 fuel gauge
-Date: Sun, 08 Nov 2026 12:22:24 +0100
-Message-Id: <20261108-b4-sm5714-fuel-gauge-v1-0-c659b6c0884a@dxdmail.cc>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E230E606A322
+	for <linux-pm@vger.kernel.org>; Sun,  8 Nov 2026 14:46:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E230E606A322
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=klattorp.se
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=klattorp.se
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=klattorp.se header.i=@klattorp.se header.a=rsa-sha256 header.s=simplycom2 header.b=oYswFuFT
+Received: from localhost.localdomain (81-228-203-110-no2102.tbcn.telia.com [81.228.203.110])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.simply.com (Simply.com) with ESMTPSA id 4jMwhb4cfrz1DR34;
+	Sun,  8 Nov 2026 15:46:07 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=klattorp.se; s=simplycom2;
+	t=1794149167;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7v88RxTHzZk8rIHyWA5xKvmrSHFtutYKfdxnJwgX7Cc=;
+	b=oYswFuFTH3h8ohFtqSPv/lVZxdc8KzjTYfN6Fdfa6/i9Irkr7ej0LbDYdqQgSVhT7P8FIb
+	K1QBkIMxvwheKU7fBEPv0KR1wfWjTlWbhOl5kPu8dsiKlAnshrZ/C2U0MVIWiLCBPk4Hni
+	Xol8rttq62PHbHol13KbCDdlcnXKMu4psMxcZKh14QOdqOq2GTXIDpCxgnEdMzfQez8H9p
+	o+k7FUgHJ9gdeU9mmyNjwQPmA5sF+SRewBK0gajXwQLWdZq6orovPeUcknIfV+u8xSm5n8
+	f1h1dvIrqR+ylEI2RVQl72OXBpuUKXxKzF8i0QhWQXParOko+rGnfiepZM/dhg==
+From: Hugo Karlsson <huggek@klattorp.se>
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	matheus@castello.eng.br,
+	Hugo Karlsson <huggek@klattorp.se>
+Subject: [PATCH 2/3] power: supply: max17040: derive status from an online supplier
+Date: Sun,  8 Nov 2026 15:45:47 +0100
+Message-ID: <20261108144548.190622-3-huggek@klattorp.se>
+X-Mailer: git-send-email 2.55.0.windows.5
+In-Reply-To: <20261108144548.190622-1-huggek@klattorp.se>
+References: <20261108144548.190622-1-huggek@klattorp.se>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,58 +71,82 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2M2wpAQBBAf0XzbGpHWPyKPDDGmnJrN1Ly7zaPp
- 845DwTxKgGa5AEvlwbdtwiUJsBzvzlBHSNDZrKSyFQ45BjWwlKO0ykLuv6MDvMglqkmNgwxPbx
- Mev/btnvfD/4vLNlmAAAA
-X-Change-ID: 20261108-b4-sm5714-fuel-gauge-ccbe7c191c0c
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Nizat Mikayilli <nacht@dxdmail.cc>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794136945; l=1211;
- i=nacht@dxdmail.cc; s=20261004; h=from:subject:message-id;
- bh=G4eLbQVc7Ut3i550ga26bqAGN7kV6jqBGKLCtmfUKLc=;
- b=DLCmbW5H/qvvM7izdoeqCMWESI+C+PhwFfIouDn7sRaNwibvHzMEW6u7cfLiekx19DKpR0/gR
- J9d0opx947kC8Ha8ouYy5QjlR+HeIG24m4AGgGYHnQ0+/XhvrdcGWKc
-X-Developer-Key: i=nacht@dxdmail.cc; a=ed25519;
- pk=Kay3P3pOJq5klUD+0/I8QX8JGOh0CeQXEwRVv7CMm4k=
-X-Endpoint-Received: by B4 Relay for nacht@dxdmail.cc/20261004 with
- auth_id=1111
-X-Original-From: Nizat Mikayilli <nacht@dxdmail.cc>
-Reply-To: nacht@dxdmail.cc
+Content-Transfer-Encoding: 8bit
 
-The Samsung Galaxy Tab S9 Wi-Fi uses the fuel gauge of the Silicon
-Mitus SM5714. This series adds a binding and a small driver for it,
-which reports the state of charge, voltage, current and status.
+The MAX1704x gauges cannot tell whether the cell is charging, so
+POWER_SUPPLY_PROP_STATUS is taken from a supplier. A supplier that only
+reports input power, such as a gpio-charger without a charge-status
+GPIO, has no STATUS property, and the battery then reports
+POWER_SUPPLY_STATUS_UNKNOWN even though the core knows whether it is
+being supplied.
 
-The fuel gauge node for the tablet will be sent with its board series:
-https://lore.kernel.org/r/20261022-gts9wifi-dts-v4-0-a361428fe59c@dxdmail.cc
+This is the case on the Geekworm X1202/X1206 UPS boards for the
+Raspberry Pi 5, which pair a MAX1704x gauge with a GPIO that signals input
+power.
 
-I tested it on the tablet, with the USB cable in and out, and the
-power-supply selftest passes.
+When no supplier reports a status, fall back to
+power_supply_am_i_supplied(): report Discharging when no supplier is
+online, Full when one is online and the gauge reads 100 %, and Charging
+otherwise. Keep Unknown when the battery has no supplier at all.
 
-Signed-off-by: Nizat Mikayilli <nacht@dxdmail.cc>
+Also notify userspace when a supplier changes, so the status follows
+the charger being plugged in or removed without waiting for the next
+SOC change.
+
+Assisted-by: Claude:claude-opus-5-5 [Claude Code]
+Signed-off-by: Hugo Karlsson <huggek@klattorp.se>
 ---
-Nizat Mikayilli (2):
-      dt-bindings: power: supply: Add Silicon Mitus SM5714 fuel gauge
-      power: supply: Add Silicon Mitus SM5714 fuel gauge driver
+ drivers/power/supply/max17040_battery.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
- .../supply/siliconmitus,sm5714-fuel-gauge.yaml     |  47 +++++
- MAINTAINERS                                        |   7 +
- drivers/power/supply/Kconfig                       |  10 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/sm5714-battery.c              | 221 +++++++++++++++++++++
- 5 files changed, 286 insertions(+)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261108-b4-sm5714-fuel-gauge-ccbe7c191c0c
-
-Best regards,
+diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+index 4cb26eca56..d93c3daebb 100644
+--- a/drivers/power/supply/max17040_battery.c
++++ b/drivers/power/supply/max17040_battery.c
+@@ -228,6 +228,26 @@ static int max17040_get_online(struct max17040_chip *chip)
+ 	return 1;
+ }
+ 
++/*
++ * Used when no supplier reports a status, e.g. a gpio-charger that only
++ * signals input power: derive the status from whether a supplier is online.
++ */
++static int max17040_get_supplied_status(struct power_supply *psy,
++					struct max17040_chip *chip)
++{
++	int ret;
++
++	ret = power_supply_am_i_supplied(psy);
++	if (ret < 0)
++		return POWER_SUPPLY_STATUS_UNKNOWN;
++	if (!ret)
++		return POWER_SUPPLY_STATUS_DISCHARGING;
++	if (max17040_get_soc(chip) >= 100)
++		return POWER_SUPPLY_STATUS_FULL;
++
++	return POWER_SUPPLY_STATUS_CHARGING;
++}
++
+ static int max17040_get_of_data(struct max17040_chip *chip)
+ {
+ 	struct device *dev = &chip->client->dev;
+@@ -423,7 +443,7 @@ static int max17040_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_STATUS:
+ 		ret = power_supply_get_property_from_supplier(psy, psp, val);
+ 		if (ret == -ENODEV)
+-			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
++			val->intval = max17040_get_supplied_status(psy, chip);
+ 		else if (ret)
+ 			return ret;
+ 		break;
+@@ -467,6 +487,7 @@ static const struct power_supply_desc max17040_battery_desc = {
+ 	.get_property		= max17040_get_property,
+ 	.set_property		= max17040_set_property,
+ 	.property_is_writeable  = max17040_prop_writeable,
++	.external_power_changed	= power_supply_changed,
+ 	.properties		= max17040_battery_props,
+ 	.num_properties		= ARRAY_SIZE(max17040_battery_props),
+ };
 -- 
-Nizat Mikayilli <nacht@dxdmail.cc>
-
+2.55.0.windows.5
 
