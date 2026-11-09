@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794218805;
-	b=TPHPdzifQ7vZ23WA+gf1bNVGsFaXibfmVPT164BvRTHATTBcw8E7GLRuZdyyk0VTuiUe
-	 3CG9HD41343YlhLkzSRTh9I9d3/rFYF+0OFB1o9cf2cN+MpGQKG8Qn5PaL1mzJvx/G2kP
-	 DdQdWMHzadgg5sn1ZBS/gFpxB91KPyS1TPHFdja6dY2aohnb+FHUpgRBbM43KPX/TvnlR
-	 egs0diFm0CKbpjc7yPx/VgBYkP3V1JeVV8EP2cZOjsS9F9Hwv6HgtlaQe9BuH/EBRNoPD
-	 KRdNpAzSXzrqDNACSplE8OYz+3k1+v+EIXJjtKEVhHomuJhmQYCfL0FW+70vYmgIEuQ==
+	t=1794218858;
+	b=BY8TPUULHhq47PugdvBcANXZFD2C66ya+MVwe3eLc1nff+gDxf94ZDVQV73jzDgWNS4g
+	 sKTKlvoSdXk4ylXyq327VHhlqs8yR7uYGsyas46OH5Lcn797zb+axNMPtUgkRf9UvAZBU
+	 ao6dPHQjoT7S1ovZYEghuOkX9RBnCkWqU/J+ALwdcHDp/SmwL0JhcLce182czw+Usbabl
+	 Q6ZUW91JRfVIiFSDYIrAXypXKGLWV8S6AjlVg4tocaKvXRiHKNBcAPT6NLlsvj9GUzh3Q
+	 fuN3FwwLsFt7VRmrybwEDs8hU05VVScQVbwbvmBoiZ3ap/mPloLrwhMWs2B9wSuR5gg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794218805;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794218858;
 	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
 	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding;
-	bh=8w4ouvn8GAV3fcHokFzFm1nhmbZuRMSblkfq3Ny21VM=;
-	b=wGvUcMBPXRzt7ZQLPo2Mv+zz0vU8VVvYa6bST4cK9yBnuh7+E8+k/KCrVf2SRVH3HXhD
-	 wEOfIfN5sxeIUaqWiI1qL/vvPPAkHabxLFberg7lZ/OOycrG7N68VvALSLY3wmwZ1zyif
-	 YnVhUBQNcFHhNO+yNvmqv3PrDdemhrYIvw8pbLryaQorvjLprBEd0mZQOE0FAZZOOZUQE
-	 Q3vuZxh0DGWmYLUYNM7dCbRhkEg5qILHv+jVB0VejjucWC2CgyTs3z9ULFueAXtXGoCuE
-	 JPh0vg7Dvpocg+q4SZ711oqHzN5iuwBsEDB4wAh/MA6U9SSejIVojUrigRNcrt5Lw0g==
+	bh=Bz0xvoYzYwh65/jPnpZ9VDL5Ou4lONvp9lP3X3Nkvgs=;
+	b=qYsQiC3jP0trKsyJDw6PVzKoAV3RxSA7onawj907aEibyBGxU32r4tmFTLUN4voxEtk9
+	 QmxdMwto/tVBnRmy5s3uojrELGyLjsY29Ok3IaFfFgGP/u6rCRuzfI+sT0UC5OlLJQ3qq
+	 ngiC3L65LXDVv6+MPrxXXSJaPzyUIyD0h+N//kVNbWcW1zLayoiaBzuZRtYeAXrH8mmyO
+	 rGvw+XCQofd6IcCuDWiTIJ/3TirW+3M6GGSqISFlQHV/K0E3nu0wCZXQKKLJT0tKi9P0w
+	 jN7AVjUsI8qdTW2QHWxLNo0XnZMDTCW74rb+361h0tHQEY0tDx2c2fXTi12kCZwMkAA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ozGw+CCs;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=afUEFwZ3;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09D51606A321;
-	Mon,  9 Nov 2026 10:06:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA874606D809;
+	Mon,  9 Nov 2026 10:07:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ozGw+CCs
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70FB91F0089F;
-	Mon,  9 Nov 2026 10:06:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=afUEFwZ3
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 369121F008A1;
+	Mon,  9 Nov 2026 10:07:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794218804;
-	bh=8w4ouvn8GAV3fcHokFzFm1nhmbZuRMSblkfq3Ny21VM=;
+	s=k20260515; t=1794218857;
+	bh=Bz0xvoYzYwh65/jPnpZ9VDL5Ou4lONvp9lP3X3Nkvgs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=ozGw+CCs2dwrEqQXpZ6bC52PnXO0aaKwY0bVubxDrDy/7IGPG3nuFY8sg1V4ELuGX
-	 tqExMyCubR8D8Pu6Djc5xNYXblC0emOLA6FxMqkrFj5KcsW6RTmHmSFbeB2+oSV7eK
-	 V68U07qFmhkvTR8YDUq8FFP/X8AHDp5UDQf+HlP9t/xymhpDWYSTr5xLsnJJDZZzTQ
-	 dA6zz4VGVef0hCvfnm1UH2MO0YsNm+6QHjVBFpLxvLop39Z2QNRVvXhy6HxCe5RYxC
-	 3auwWQTi7V0LsVynqdiIo/4e0rHX+FGrl3QkLqg28cKrGqavCdL0vAkWY49ot7Qwrr
-	 wYApfAIv+3zvA==
-Message-ID: <d16585cc-44bb-4f8d-9853-a67cb63d49b3@kernel.org>
-Date: Mon, 9 Nov 2026 11:06:39 +0100
+	b=afUEFwZ3A+zm2lwlCnUzjkL95kbVoJfAR2yvV9Fn2PZvdR/l6AfU6PNJYmnm50Rdl
+	 9fungTpc0+mhQ6bOjVsHeurtsZQROOSCvnaZbdpO66gIlDf90UA5faJBKu7YaZiYza
+	 gMEYRN9389/tFmdz3+HvDJ84kU99IHKAHCaYm6UtjNypCnHoHYlFNCIdG+7VtWAs5G
+	 fRUziMTM2kT4LXkhh3QiuaWdL4jHGz7NhFhqNtipyi6E9sfcCvBwpu81u4k8BQ6Kyu
+	 YrOFrYPqUgrUSKfaCadmzDrgd/w9WJDK1x0l7XgyA0r8CnlzoEHeF/md8CQSCFLDAJ
+	 lv0m06dTE3M9g==
+Message-ID: <4eaff54b-39ae-45c5-a982-44325eacee63@kernel.org>
+Date: Mon, 9 Nov 2026 11:07:20 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,16 +52,39 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RESEND PATCH 1/3] power: supply: max17040: pass the device
- fwnode to the power supply core
-To: Hugo Karlsson <huggek@klattorp.se>, sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- matheus@castello.eng.br, me@iskren.info, m.szyprowski@samsung.com,
- clamor95@gmail.com, sebastian.reichel@collabora.com
-References: <20261108154241.198160-1-huggek@klattorp.se>
- <20261108154241.198160-2-huggek@klattorp.se>
- <3b4d9f8a-2b5b-49c6-a2fa-666548029975@kernel.org>
- <b7672bea-edea-40e2-a4b9-b06d026265a1@klattorp.se>
+Subject: Re: [PATCH 16/17] arm64: dts: qcom: Add initial Halliday dtsi
+To: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Robert Marko <robimarko@gmail.com>,
+ Guru Das Srinagesh <linux@gurudas.dev>, Thomas Gleixner <tglx@kernel.org>,
+ Radu Rendec <radu@rendec.net>, Lee Jones <lee@kernel.org>,
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+ "Joerg Roedel (AMD)" <joro@8bytes.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Wesley Cheng <wesley.cheng@oss.qualcomm.com>, Vinod Koul <vkoul@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Alim Akhtar <alim.akhtar@samsung.com>, Bart Van Assche <bvanassche@acm.org>,
+ Bean Huo <beanhuo@micron.com>, Stanley Jhu <stanleyjhu@google.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Georgi Djakov <djakov@kernel.org>,
+ Sibi Sankar <sibi.sankar@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ mfd@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ iommu@lists.linux.dev, linux-usb@vger.kernel.org,
+ linux-phy@lists.infradead.org, linux-scsi@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20261109-halliday-dts-v1-0-289114ab8197@gmail.com>
+ <20261109-halliday-dts-v1-16-289114ab8197@gmail.com>
+ <9dbfc665-089c-45f7-bca2-74caee322885@kernel.org>
+ <20261109085019.1751534-1-lightofmysoul@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -107,25 +130,23 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <b7672bea-edea-40e2-a4b9-b06d026265a1@klattorp.se>
+In-Reply-To: <20261109085019.1751534-1-lightofmysoul@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 09/11/2026 09:53, Hugo Karlsson wrote:
->  > Please run scripts/checkpatch.pl on the patches and fix reported
->  > warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
->  > patches and (probably) fix more warnings.
+On 09/11/2026 09:50, Stanislav Aleksandrov wrote:
+> On 09/11/2026 09:29, Krzysztof Kozlowski wrote:
+>> Odd license, suggests you copied it.
+>>
+>> You should retain original copyrights as well.
 > 
-> Thanks, sorry in regards to that. I ran both, the only findings are
-> for the "Assisted-by: " line, which checkpatch does not recognise
-> ("Non-standard signature" and "Unrecognized email address"); --strict
-> reports no checks on the code itself
-> 
-> It seems it was removed in 1e035297ffda at the 13 October as Sebasation 
-> could just drop it on the applied series, but that´s maybe something I 
-> need to do myself and send a patch v2? Or is that just cosmetic?
+> The license is BSD-3-Clause because I used sm8550.dtsi as the template
+> for the node layout. The values come from Qualcomm's downstream
+> anorak.dtsi, which has no license or copyright header. v2 will add the
+> Linaro copyright from sm8550.dtsi. I'll fix the other comments in v2
+> too.
 
-It's cosmetic, please drop assisted-by if you send v2.
+Sounds good.
 
 Best regards,
 Krzysztof
