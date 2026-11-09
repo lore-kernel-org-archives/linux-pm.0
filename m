@@ -1,136 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794245938;
-	b=Al79HuPdG2LYPGGP+dGr1yVY9NAwATYrkxUR6JPP6FvFUV60VC8TEdInsRu84O22fckI
-	 oLtLIo4gbOUAylwpPKiykZgAXxeRL+ybTe4+vGsBVddujxfWnv8g4ScEQ+86Bb9cbiOqk
-	 cFYjgj7irz6uGdsEIrJ/fTuVv59STPAFFlBbhTsKkQSABPCbnUoXMxoRmVdB3tKpK9Np9
-	 hGBdqi/WnXIvH/Iw/1w21Sase0BhfLd98jUIKlWzZa/pqMNdfr/JUszolqgGQi//sFfdN
-	 lDGdHwJeUOMIJi4jLRG0x9akzj/OgJXrothrTOltsdOVKrjzwvpSy+MJPZtoPIpuqBg==
+	t=1794245998;
+	b=fbUeAmZAiEyIVceHPEgEI9vsfpsSlQuZX9iBpYTwp8qZ/N7V54gIXe+uq4/XPd9W7NMY
+	 11CE6rgRF19VInbKeWwX5CEWcOFIVOJFakvLGdUSFrJidIClzvGpBfNOWuWQu6+GPtorq
+	 JjfHYb2ged9bCuWZUUlHtnM1BgpIF87IhdQZCuVS6g02MvveURqimhBCoGAOVIUHTIqd7
+	 wUrMoMCuQpNchfGC1XmoCe/tfkLJ+b25IbnYm0X8NSgj6ZtDa5COapWW2KlbndHM1IvPK
+	 7N3ceTiaQXS1j67T/Zo+Iio6PlxTpIRaxLCn5bpL6HxG5KCziOqiWIL3l98447FS36g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794245938;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=VSgAu1YCz0/TBDQtz025D2yh3sRQq8BFfiF0sq3qrAw=;
-	b=jEKHrFOktqNRIG1+JXohBiG2tiNlKdHIldP57/9yiaWk8CCqr5HaD3PUUtg77sWtx4Ec
-	 cr23H1dGvRIiHPOa49LuvePza2rWxOUDJouC2MYb0jVqV6+vihhCfqP1LsBnXC2BX917p
-	 YSlLgn649oRjW0olGPs/Sm0gO6dRw+7BbHM77cPKBEXKDVYY1rDqlFcs9zZYXNyN+XwO9
-	 EBpPGoNbz59EJuURS+tvHkhILhHHAEvhMWBnXkM6kHgKOz1jhkx1FaX9NE4F12E2hjm/p
-	 poFmkP4ACFi1K4Q0cJaDUGshu4mRvL/WzNy4uv0xNTxkiotGA8rxwOnWbJmdvKejMDA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794245998;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:Content-Language:To:Cc:References:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=o5Udb0XWqFBLDvZNe6CnQotNEj65tbZoPfPX1A5XjZQ=;
+	b=X77SC5PWyxVncsktC8zokMfiC5Kn/3GK+5LhyWQ37aJ6AH87DRjkgLURgAZQ7iu6hTRw
+	 Z0I7TaC684ShSUSu/huQ/wV9eV4xKS+7Hr0SVs3dbDrZqarL4aPoNiQFHBfRdi9C5zeFp
+	 mMIlAcy12aX4VFyv2vIKTubbK5CaMZ7HRbpg+kADtNnoiH9GHxrbcuHjbaq2jwai3KdCF
+	 rWnJGm+Ord7+fjifuGnqEL52uLxz5ojvYWIDOzOA3EAoRvsvYiHvPCaVv23sJU6Nd8qBO
+	 p3gD2cHGwM228XqKgO4lGaWqyf9BYw/0uj+KefxxYJ5uTEZkl6atKnvjkzGoveufcIg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ET4UmX4l;
-	arc=none smtp.remote-ip=209.85.128.50
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mcZce49I;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27594606A331
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 17:38:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 27594606A331
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6031606A32A;
+	Mon,  9 Nov 2026 17:39:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ET4UmX4l
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4b79502c27aso12250495e9.1
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 09:38:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794245936; x=1794850736; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=VSgAu1YCz0/TBDQtz025D2yh3sRQq8BFfiF0sq3qrAw=;
-        b=ET4UmX4lnrqCC21B5oGoVYsMQvX/uO5ZDK9wo7RPCXLUSHAzor2KKP7C7D4g9dOSKl
-         T9tIynx1iZ7nScEbu/rROoW0ihwiLqJhnnQ61YL9jqzvok+DK3S1a+gguxLlBKC8w5O1
-         moTFTURhfavgIUyQOJfzNwN7KB0x4LD4UGwaMonewXo+m5sWjx57U6MMJmglEzxfuxMO
-         LmUAzY4EtqQeiNxES10G3nMFPkiJj/jPtOOkesOWKBy7x6Ryd1/Cph6kqfXQpWmPijOY
-         8IbZFuODa/za16J/GDh0DmEFHyP77cWRenI/CjjMSrzXFx4Mn5aU+7EARh+lKdHOYquD
-         rC7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794245936; x=1794850736;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=VSgAu1YCz0/TBDQtz025D2yh3sRQq8BFfiF0sq3qrAw=;
-        b=0/Vy6WATdiVwugRVzYW6qesuA3L1SIzl4vwgeDjx7+tfWWj0obnQR+xO4rNiK1xUxN
-         v6T2dTNV5cxozrTgHsJfu3mTrgZadqOqma68LFPYT+gesHWdVZUn2TRWqOoqVIg4otbn
-         IZ3S7vjAYReYsZz97zT0v40wBiGrpOO0zzFwRvfFrdJTaNs/c676ODNdzUT075ffCHno
-         mpn5uLi9sObyRZsObFAeurVebTw97X9exdxjngozzEyjUhHgTxqLmAY/nxIUgPzJCXUj
-         fQP0IafDqAg7BMceLzKLyKQTzkc9CinBXlGnhkcQ9Og1m7FJu1m+CJzZhO7XqRAdXzrl
-         JVdg==
-X-Forwarded-Encrypted: i=1; AL+hErH0OZ02xsXdkLl9DqzxG36JfNd6uj+eyxS1U8g7sSw7UMCZMyfP/+tb4W1BqDguild6oO6w5lnoiA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+0F+GTokTyXEAZpb5WThveqNbv1v8aacMQ18W5TeAtU4b1QLIa
-	u35uUCCOgIdi2G0IZSSWaVrG8hb8xpIHET5c5A4kgp6yXK9U6g0kfKXo
-X-Gm-Gg: AYBFou3ecH4IfntvgaOyqwe6CCa3aZRx/bnifx5v5nd/BUIBT17Z07cHSZ86IA0W4iP
-	QIF6L5ruS9qK/2bzHHkmFP08nJiJMhrs4sTl8eD9NPQHyJt1c14dDG5baIFmXOazGBdkRt2P6WQ
-	kvpenUy2CuuVNoWQVWW2QRIK5RouhI/nN0UN4JyWQrJUtmu1E+VNcJOYF2jZ4PJfFYRbv7ryyKS
-	g4m5vkU9janIO1huuQmJxTFJC4MU/gVXpfvyZgsMZpT2cWPK3v49XBgBPB3uBV9Ho2eA222du9t
-	uHFIrYeqsc/ELPsQ6xi91eDmu8/IS6xOR/URmPBGusIzYG47UwKSjX1dcUyZ+lqyr9hnPZoVcrA
-	AooSKyvmk+MSKOLlCLgthKGFJQFJvZ7/zrxAxa4IaZlnusaGOIWkUphDOIhc9U8fQ5KbbKNGsf/
-	pBLO0ldcHC7dhXP3E1MjCDw6XHOECMIVNGDf1HfaocaTzl6z+5pyZ+nViwH+1TDulOLAd43T/kS
-	cVXMiQwf7yqQCyRK+CYM5ia69jtUbP3Ah3Ozxis3RkL7/JfMDCSUo+TfB29cQXP6ViFCj8TL41e
-	Y6uzS1xOeMPG0tVH94K5nBAjXf4=
-X-Received: by 2002:a05:600c:608a:b0:4a0:1b14:e283 with SMTP id 5b1f17b1804b1-4b94d76329cmr92154365e9.1.1794245936334;
-        Mon, 09 Nov 2026 09:38:56 -0800 (PST)
-Received: from flare5 ([212.58.121.92])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4ba0157b707sm2522005e9.0.2026.11.09.09.38.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 09:38:54 -0800 (PST)
-From: Stanislav Aleksandrov <lightofmysoul@gmail.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Robert Marko <robimarko@gmail.com>,
-	Guru Das Srinagesh <linux@gurudas.dev>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Radu Rendec <radu@rendec.net>,
-	Lee Jones <lee@kernel.org>,
-	Will Deacon <will@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	"Joerg Roedel (AMD)" <joro@8bytes.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Wesley Cheng <wesley.cheng@oss.qualcomm.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Bean Huo <beanhuo@micron.com>,
-	Stanley Jhu <stanleyjhu@google.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
-	linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	mfd@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	iommu@lists.linux.dev,
-	linux-usb@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	linux-scsi@vger.kernel.org,
-	linux-crypto@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH 01/17] dt-bindings: arm: qcom-soc: Add Halliday
-Date: Mon,  9 Nov 2026 17:38:37 +0000
-Message-ID: <20261109173837.2084788-1-lightofmysoul@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <78a88d4d-11af-40c1-b063-b6a4d4298ecd@kernel.org>
-References: <20261109-halliday-dts-v1-0-289114ab8197@gmail.com> <20261109-halliday-dts-v1-1-289114ab8197@gmail.com> <78a88d4d-11af-40c1-b063-b6a4d4298ecd@kernel.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mcZce49I
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 960C91F008A2;
+	Mon,  9 Nov 2026 17:39:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794245997;
+	bh=o5Udb0XWqFBLDvZNe6CnQotNEj65tbZoPfPX1A5XjZQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=mcZce49IknFj31vX4Xra8sKoPHS+KWe0CPypUVmYctDDPIfVyg6WGQcd567XIWafz
+	 pMQ9dKpJaRrXQD963nd+n9G4wzQvQ5zo6pjrlqeo2Hxgv3xz4lDTl1KiY0bOBqyxO0
+	 LYfUjeFGfIQDHcHQ+IIlVIQTp853nXxRlMN21vRlTUCV30+txQ8Vq5UPXsRU8KQ+5s
+	 DTDYNnOuCb0olwpTj7dJlsJVwhMkWxSR+sNphtL7PH+Tvl/C7nIXCo9C8Mx6zU1UiY
+	 C0DFl2Jw5PkhzuZZ0S2kI75jZqTfg7RLumyIOs/BsmlaKnhmW1bmsxl6tWoc0b7Ife
+	 wGMkuTnUaP1gQ==
+Message-ID: <34c23beb-88d5-4456-b84f-f00e31578468@kernel.org>
+Date: Mon, 9 Nov 2026 11:39:54 -0600
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -140,14 +51,48 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/4] Make platform profiles firmware independent
+Content-Language: en-US
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, Viresh Kumar
+ <viresh.kumar@linaro.org>, Hans de Goede <hansg@kernel.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Maximilian Luz <luzmaximilian@gmail.com>,
+ Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+ Mark Pearson <mpearson-lenovo@squebb.ca>,
+ "Derek J. Clark" <derekjohn.clark@gmail.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Armin Wolf <W_Armin@gmx.de>,
+ Jai Luthra <jai.luthra@ideasonboard.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jack Wu <jackbb_wu@compal.com>, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org
+References: <20261024223501.1420953-1-daniel.lezcano@oss.qualcomm.com>
+ <ed4aac63-ac58-4e2a-ae45-ebf4da158228@oss.qualcomm.com>
+ <CAJZ5v0gGeKEqMWvP3cQrXztZt-faFZJF+yNfygcBPT57f-a8Lw@mail.gmail.com>
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <CAJZ5v0gGeKEqMWvP3cQrXztZt-faFZJF+yNfygcBPT57f-a8Lw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On 09/11/2026 09:25, Krzysztof Kozlowski wrote:
-> This should be squashed with patch #15. Also, there is no benefit in
-> organizing patches within patchset where patches to the SAME subsystem
-> are split all over. #1 and #2 targets SoC, then there is a break and
-> again we are at SoC at #15.
+On 11/9/26 10:46, Rafael J. Wysocki (Intel) wrote:
+> On Mon, Nov 9, 2026 at 5:37 PM Daniel Lezcano
+> <daniel.lezcano@oss.qualcomm.com> wrote:
+>>
+>>
+>> Hi,
+>>
+>> sashiko validated this series
+>>
+>> Is there any other comments for these changes I should take care of ?
+> 
+> I'd love to see some feedback from someone having a vested interest in
+> this interface.  Mario?  Mark?
+> 
+I am onboard with the new approach.
 
-Thanks, I'll squash it into #15 and keep the SoC patches together in v2.
-
-Stanislav
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
