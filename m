@@ -1,100 +1,71 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.52
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794238085;
-	b=lNYjwC44bZC/VDIPwUOoNst2gqCf5U4MBu4hveSnb5sv36WDK+FoJjLj1/WY60kAg7C2
-	 xppAsXzqdNCYLezYcFdUXri/qyp7rlM3TSv2rjrwQSz0RjqDOf0BNtHV+TECM66n94is4
-	 YuGe/anSgvjSBXtz64KJ9IW28Ja6l+M+z5ZjuTt+agvpK2Akwdc2V1sTfLFQ5VB7HK03Y
-	 KofFpSCslBvzuzaQPeZFGWTTRSoMx3gZ5Q6ldMPmOllh4PHg67h4xkCnm/mGhaMoCUrEj
-	 Kz8BnnchBYIXOaVLHNupen0e1C8XbhSR5ngOe6Mj+UaxmW0UhZTDR3OOTUIADWOIWoA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794238085;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=rc8neeysb2lhJi4v3fQWNja46WdfiOwuQ6GoM/+JvzI=;
-	b=AAggO7joBUqHnyb9lhuQvIYHpQsOmhIMRPbZQClnQdQ6+wIDogtBp6gY3/PPBnYyNAlM
-	 Wj30uROnUk55ullzjAbvHmTZ64zsabrvexiwtEnd9D83cfWUXTVxk98D3MwaoDhUMjz+A
-	 Yg4oVAOf8EZOMVKI99L8XodvxSv0Fl0zb9m1KChzOrz1RJiTNFORbe9kbe5+frlUf4a/0
-	 rVdGQF3mtc+NUiAk5wxyd0v2/nlAoa77Sz3dlAsj0BRfZ7UzMcUIIIDtNjtD80BEU4/3H
-	 q+ZIGz6L1lOEWH/fFGkq9yFMv3RB+8oByar1ufMF4eSqpXcqh5fKQr77lQk/q+LmnpQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zHmolP8k;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.52
-Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794238128;
+	b=oKYu73/PbfwlnvkMu4k2kyFpaYwuHYklp9fyMoaCXkk5NEUo/xDnScejR56u9M5/tcva
+	 9AifvoLyzT3wNrKsKy0AjX7Cgm8UQbj+5OIw7rtOxVUuwnx3LTY0H0V64H1MbdEuf1a8/
+	 +yJhidp2AkoQ7/VHQl8V5cuIWv+5qbcU/V4ixfAPCHlzXwDEW3LvOqxn9Jf9kVxo0r2SA
+	 giiKCgrQp1e0Rouh5QcoSW/lGRryWTWob0yZY9ShE05rpn337UgNJMNNdZxKo9ZCCDFex
+	 gaGSB9N8YwSbh+gQF6b+GLGXcV45sxigQSvDDSRGkRAFQTBaFdhM6NmpXgoUwH4eQBw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794238128;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To;
+	bh=mCRGrIzDRdJ3fj5LcFpJR8WKCIeELn3A3rZQ9kvKhd0=;
+	b=EnkfCT3u6r5FJ+uWddEsKcloVHUl1Y2M4HZPpzPCqSHKXoNEn9DrCpeV1Cidzx9PQY/O
+	 sL8gKws1bVHt+uAkx0rskItxsbt9eNIajlK0K+arTuMTkOplKGcRBwGb6prPC3DmjZ0Za
+	 rk6JtNRPZz4ysgfifk3r0HTkyanZmqEVaO5frTEMxobJFvHTSLNfvooUL6928ln75mRBs
+	 WTNLkQz31APRafZlw1u7u3HdB5uGobez22bqdvicGiDLmkzB1sckVNv+4XcEkYrcDmPOI
+	 TT4hy/dcCDY9p3g/WoQ7FVFSGzGfKwCWBQnJc53Bw+jR08AlVCDK+qwwYdZX28tYlXg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mt+BvO99;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76994606A332
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 15:28:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 76994606A332
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E7A9606A321;
+	Mon,  9 Nov 2026 15:28:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zHmolP8k
-Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-6b587538a37so1442085a12.2
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 07:28:04 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794238083; cv=none;
-        d=google.com; s=arc-20260327;
-        b=ZRMJqJj0/jPeBEn71oGS/8NPf//cYnMRQf6Qua0+TUt2jj6Pna+G/CwwN/j+p/ON9M
-         UqCQf/ZfjwnClJi3Ue/k/zwhbad0mn9d83OSRfrOTcovws9KMWj7Nkwp4mDYB0h+ocoL
-         wTvRvcbIrfb/O9/OTqcpwNkzU3b8ajsKuJYCAxEUQ0GsKzWKD96W8/S2RiVg4/0XoHIb
-         jqewU2lwm4HDxzM7eA6c4r3eVduq9/C568T76leS5V+oHKBnUjsnpePyIArazVUgsaTN
-         14GQfBgKSErLwN2PW8RsXVP7DMhEQ/ILzNw5C0TRN+vueuF4CwlFIIS5qhjML0WlssOu
-         lh6A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=rc8neeysb2lhJi4v3fQWNja46WdfiOwuQ6GoM/+JvzI=;
-        fh=FZzC74WjHD8qZsZltMp/ZxldrDWMueTarjEFLMHrCGw=;
-        b=MSddLnZaU8jgBrmOuxVXZr/m+le/W3cIwuj+NPfhBmJOTD9Cavnt+KGIxKvRaXf4Lw
-         8Y3fS9GbG+EKElvUJFy7Tpegyx+AwOA1ASa0I4mMlPN24V2seM/rseV9jDguIc0+HDZ1
-         FFQTkDZwcrRpSAvASHjBrsPW2eK98EuZ05H4ml65VdSTchtlch2ABTAAoDzJHTB62x4P
-         jiJZ0XGFJ7B9x8u8RVslo+TOzDHZvt73ZvdkjftUeDFBaDlqUkXOrYHPtFUGw2wWX93Q
-         eU/bSdbH+oCVQMh23gAv7dSDbUuRtQs5NCi1hyt4aYrclNbl9oRmKGgUwV2kkrt5UH7s
-         Rfiw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1794238083; x=1794842883; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rc8neeysb2lhJi4v3fQWNja46WdfiOwuQ6GoM/+JvzI=;
-        b=zHmolP8kJzpNhKmXGS2JUdry8wd7hwRK2Fk6tq465Zy6uEp9nOp3OCbY4ANUd4YEWF
-         xPIl0WZdHEcYrtwZNvQoCcSOgc1P3tWKyTyFVLPmorOnHudnj2LU+lg4DjXl5iB2PsQ0
-         FEDRDDp/jVCw/TSQ2qydBzZcfMgi5J/4ZlT0suLyU6wmscIj07i8ciz7KHhhDBMj/h8L
-         njOMLbxga9zrlTjCohbg5oj3C495NMsr9PzYOd1b7GGomW2a1jP69x4yDhaLJvCBEnXE
-         G/vS/cgHvmdNowld9azpMV0CzMdlKKZBqlIbDJeOgTRw70tdC2cgeajqJ8rxDlqQVdwK
-         hbnQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794238083; x=1794842883;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=rc8neeysb2lhJi4v3fQWNja46WdfiOwuQ6GoM/+JvzI=;
-        b=fS+Oy06BGIw3PlOmRemXHJgMJDka0cAqc0UXBCmpG3rgXlMw+XQJ3dvSXih6mNw4Zn
-         lxl6twZ+1Uhqi5r+Jndk3RLYdP7hTO/ykS6pf7llNsHMZ7yyW+8XeTQOaoFBzHX/uzIx
-         lQo3Q7G3Qo0jA8QPcjxzSXLkdRY1VWeUxEPy5rpA05Vf3+DgGK88DOGchlugJinDuEOP
-         lOwJC7AVlfb7SliMTR313chuzaDuaV0HEd4imVb/qspEWLRTsdiZaq7pgYW+k0Exe9/T
-         iZk5btAurLKlU8cGw+C66Ai/72jYgZ36PIO/VP3mILKG0Qzche1ApOn6Yc+j6qTwhAt9
-         5k+A==
-X-Forwarded-Encrypted: i=1; AL+hErF8v/4bCIZ7+m134LwpF5q0rZPCXqywl+exyT66xtB4sdJTBzI6Zx3/V+42MmZ+cVNbadJcNWdxCQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/7iZOC9zDHmzxJ3NBWUwt74/m0PWaTmIWrVaUZkEfSlsns88r3
-	1Wi3jsF/wBJYdi01X4pVG0W524Cr6s+yNuOrr3iJbRrcfZ5GfoQcntGzVJzGC1rSarRQX3lncig
-	CAXdMc9bP2epPWINVv5tDn0hhCv58u951akDjl91y3Q==
-X-Gm-Gg: AYBFou0v3quwxLOxeyjzcBarAWrnszXUZ8TsLdqte6pU4blTo/WBXC2TU1zYo0/q6QZ
-	X0O9anqMERuLqMRWXom+RFGalJ6ynAHJSWNchub+2s/etpaar88+RNGHkpCbDwoHliTgmb8zSzN
-	n0IavwGdp7tAlAnN9aQVa7MdmkedfDhqLyt/khRHfCiPO55V4BxppV0t9EeNbG6ArV6lvUFYAYj
-	WWkVX8ZVy9R8gnE9e4NQ0d+MdTE6TsVSNHvNH2ojrQPtRAddNJblGQtCazKd2/454ZsXTVpjFhm
-	iBKYiPSzSzPMkMeULuKNVOYyI1b6fURciwCc/FX5BVO3cu+g1ist6g3Cjnlc8HXvEfNyimh5t4y
-	KyFnZ3G+5M1N9SuFxDo8qxYC+eeSZMiU+JpW0Q+WeUt/8tD74iWsRtZkZGDtfFD5hqFeThpVtG/
-	xC2yuaYU58uZFYw0w=
-X-Received: by 2002:a05:6402:4513:b0:6b7:28b9:f357 with SMTP id
- 4fb4d7f45d1cf-6b728b9f818mr2731473a12.40.1794238083112; Mon, 09 Nov 2026
- 07:28:03 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mt+BvO99
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 412481F0089F;
+	Mon,  9 Nov 2026 15:28:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794238127;
+	bh=mCRGrIzDRdJ3fj5LcFpJR8WKCIeELn3A3rZQ9kvKhd0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=mt+BvO99SAb4PB7qhXL0QzsqKiFAgnV29mtcED/SiQZtMrENK8xK+1dS8lTaZvifa
+	 o4UOQ+ZgJw9dpcRbDjABLR0oiNJ4wz/Q3n0r16ne0irTox6ilYYFZ257xe5/tqFdht
+	 u4mmr/NkRvEDymrd8c0F1y/EtoMatF5tNhvKkwGhZdCK/5UmesFdUX5D46e8f9oxJs
+	 3np7sBELOph7fdAwU43PDmuKJWjzf7kU0qxnclfBUAmXLVP0MLuFLTL2kNQXxbtZX8
+	 CCCEbL+9kgtzYVpKUL/99P0VF1p2dN6oxSA5uICLriH/+W9GaDxH3eqv40hqdFtmc6
+	 Jv4dnSTzbsFtQ==
+Date: Mon, 9 Nov 2026 15:28:43 +0000
+From: Sudeep Holla <sudeep.holla@kernel.org>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Maulik Shah <maulik.shah@oss.qualcomm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH 2/3] pmdomain: Add support for system-suspend-only states
+Message-ID: <20261109-swinging-inventive-wrasse-e82ec8@sudeepholla>
+References: <20261006-romantic-stalwart-seriema-90e71d@sudeepholla>
+ <CAPx+jO-T_0KT3GytYu8w6QvrhXFQNZQzR496RL=McU6rnMtnPA@mail.gmail.com>
+ <20261009-frisky-rottweiler-from-avalon-6c409e@sudeepholla>
+ <CAPx+jO-_aY5pMnWyy1hAs1WRmfW33vc317jdtBsEXYBoHsPfxA@mail.gmail.com>
+ <20261009-skilled-mature-bittern-2206fc@sudeepholla>
+ <CAPx+jO87gkTumF=Tg=UPWpJO6O-CRF4njT2KxQ3f=4nF5m7GiQ@mail.gmail.com>
+ <20261014-prudent-mini-duck-377cb6@sudeepholla>
+ <CAPx+jO_BOwbKeRytBezm+piLhb8Z5N2eQO=LRwBQoSZ3kXOpwQ@mail.gmail.com>
+ <20261028-imported-pistachio-unicorn-2ecfec@sudeepholla>
+ <CAPx+jO-0Vmah=2mewp-kspV7Nqr+Ay_nnO9fTFB_TMbOoHJp5Q@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,58 +75,49 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-6-vincent.guittot@linaro.org> <au4i4IWFvJw-7Q0Q@scheduler.schedules>
-In-Reply-To: <au4i4IWFvJw-7Q0Q@scheduler.schedules>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Mon, 9 Nov 2026 16:27:51 +0100
-X-Gm-Features: AclHuK-rDLMXgdJprNmM67KERGYoPJj3EfP3DSZ08EHC8kkLhXMU79a1MZdCg4I
-Message-ID: <CAKfTPtAwAkm1NaZac2HKDPgAOh=7OjasQRwgr=e5jfSeQe_R7A@mail.gmail.com>
-Subject: Re: [PATCH 05/20 v3] sched/eevdf: Add per cpu cached min_slice
-To: Kayra Cizmeci <kayracizmeci@gmail.com>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
-	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
-	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
-	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
-	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
-	sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAPx+jO-0Vmah=2mewp-kspV7Nqr+Ay_nnO9fTFB_TMbOoHJp5Q@mail.gmail.com>
 
-On Sat, 7 Nov 2026 at 07:53, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
->
-> On Fri, Nov 06, 2026 at 04:19:32PM +0100, Vincent Guittot wrote:
-> > In order to use min_slice during CPU selection, update a cached value when
-> > needed after en/dequeing a new task. This cached value includes current
-> > task.
+On Mon, Nov 09, 2026 at 04:05:56PM +0100, Ulf Hansson wrote:
+> On Wed, Oct 28, 2026 at 12:48 PM Sudeep Holla <sudeep.holla@kernel.org> wrote:
 > >
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >  kernel/sched/core.c  |  1 +
-> >  kernel/sched/fair.c  | 28 ++++++++++++++++++++++++++++
-> >  kernel/sched/sched.h |  1 +
-> >  3 files changed, 30 insertions(+)
+
+[...]
+
+> > Now I understood the requirement much better. The core issue with OSI is
+> > that it fails unless the platform downgrades special system states to
+> > non-system states during routine CPUIdle paths.
 > >
-> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > index d7c3b43158de..031efe7d49fb 100644
-> > --- a/kernel/sched/core.c
-> > +++ b/kernel/sched/core.c
-> > @@ -9012,6 +9012,7 @@ void __init sched_init(void)
-> >               rq->sd = NULL;
-> >               rq->rd = NULL;
-> >               rq->cpu_capacity = SCHED_CAPACITY_SCALE;
-> > +             rq->min_slice = ULONG_MAX;
+> > This leaves us with two directions for OSI:
+> > 1. Firmware Resolution: Handle state transitions entirely in firmware.
+> > 2. OS Intervention: Enforce the handling via the OS.
+> >
+> > Though I personally prefer (1), I don't have strong arguments against (2)
+> > now that you made me understand the requirement. Sorry for taking time,
+> > but mentally I was assuming (1) even for OSI until your above response.
+> >
+> > Since PC mode relies on the firmware to manage these states natively, this
+> > binding isn't required for it. Therefore, Could we restrict this specific
+> > binding exclusively to OSI implementations ?
+> 
+> I guess we could, but that seems rather messy. According to earlier
+> discussions, if I recall correctly, we deliberately avoided OSI
+> specific DT bindings/properties, since support for OSI mode should be
+> detected through the FW.
 >
-> This is already getting changed to 0 in 6/20, instead of changing there,
-> wouldn't it be better if we changed it here from the start?
 
-Yes, the rq->min_slice = 0 in patch 6 should have been part of this
-patch. I merged it to the wrong patch
+Fair enough, we should at the least warn if used on the systems in
+PC CPU suspend mode.
 
+> Also note that the domain-idle-state DT bindings
+> (Documentation/devicetree/bindings/power/domain-idle-state.yaml) are
+> generic and used by RISC-V SBI as well.
+> 
 
+Agreed.
 
->
-> Aside from that,
->
-> Reviewed-by: Kayra Cizmeci <kayracizmeci@gmail.com>
+-- 
+Regards,
+Sudeep
