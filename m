@@ -1,63 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=114.242.206.163
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794211814;
-	b=WD+yOSKHtC1faJzRWGuUWdUArxh1aLvxJdZtwCxv5ZgVLVzHuqm5h2/Hj+JCw7TutrYP
-	 VPq8c+4O/fSjn6byYIUGGqxuICW6mzdqF/VXLupv4mGgRT/ZNcPv/vFvSf7QeIse4M/a0
-	 QdHskwc2Duj/8XToDKRyEuhUKVjf7JAmy8nvgscshDCN25hneIKfHXkAIpSPCMUKlKKFA
-	 IHvxZPUdFRuCFgSbG3W31d1WSJ9Ss2dBcjxz/7rOmT9M6POdl47gL1IqC+ztBBY9Rbm/Q
-	 xIt7zVTuy4+Udx802R4mzMQBdV/epjwS4LlP29wCNfqBVthvocuJ8u3u6WXCsgKt9zw==
+	t=1794212772;
+	b=GNv3x1D9kaeenyLj9c5M5P/i4RmNBXAiaSaJq6gfq2uYDUcGMnHLA2beXeT0wO7MjzXV
+	 7eY6ktzdZTBS9aSGT4ExsA02sc98rwJL2wzNU0DDAP67msm7Csozub8gy8aBG/e4qgzAN
+	 FmfcuEXt27t9l8FmZlh9OC1/3LR/xoVwMfsb5ejwAqOjPx1ezdfX9GmnSJVUa0xs9XbPM
+	 eI1M5SSp6Ej++rc53i22CwVmENRngAOLDDxr654Fzjg8kzAjL6mXv4xi7P3nHQmOLTACC
+	 vA+ikRSBEpKGRwVymcloFE9LF+uzLCUwkIRcbGDS+zAfnvmW4Ldr+IRlgFaFDqhmaUw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794211814;
-	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-ID:
-	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-CM-TRANSID:X-CM-SenderInfo:
-	 X-Coremail-Antispam;
-	bh=cfQs218hEfiPmp95dYiG+HifWnorDku0ftPAGJMkuVY=;
-	b=okPcNQkqXk+J841QeYY42CfQ8F4ejIMhasCgNzpujBOfBRoHofEFQR4wlIbpPQPqhBfg
-	 fJtLZjSWdhSxHz7/K4nOV3marJ5P3J6DGwkp+lP2wEVjuyy2IethIFkuNwZjdZkbmd0CJ
-	 v7PsPTc/DFZYL51YjzRBCBCwdsCIwSRSumbwgNPWZJk5Yfa2zkzUuEyuqeBdVa/FFqc1J
-	 i0bIR7OK245EaSbH/8lGoL6plC7ANnNQg2FLfKgB++dBiI6u+8NPXpk+v4oGAQUNpND/9
-	 z4ofAUitQVvSDsjIKXEFjULitXIgMLh39wfdlGXiC1+FMxQMi+O4XQibwW6xuOFZruw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794212772;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=zWuQ3p27UIemdCXPGPIrkkPUH0IJBHZ4roQ2dSRcIvo=;
+	b=0M+WayD4pHw1nBwmicSO+0AmrQ2yYHLnggw6pU2+yJcn02hbiwExpuhxLK7lNcrGpVOZ
+	 72w2LScu2eraeBsU4Ztorzh+PrljMfyMrfIXmklzg3gwR8aE0Gh78h2FCxzvw+uB6weOx
+	 R0eIuu2x5pC/YmCAjzNt5bi7zjsk7hXQlgM93IEcrPD3uHEkcQ2gj/nZ6ccAzbbDTSACU
+	 wq0vWKpBsEDcRVJXYyomrJZ8IRSZGlfNzizvD2KuuFOR7DTMSQD7KhjtPVZXQRmdpZJRK
+	 NmS7qjbs4mdu02rwTAhRqP6+JbanXz00nujexnycEcywpbuIMjpOpvHxCnPGeI3OCFQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=loongson.cn;
-	spf=pass smtp.mailfrom=loongson.cn;
-	arc=none smtp.remote-ip=114.242.206.163
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 606FC606A322;
-	Mon,  9 Nov 2026 08:10:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 606FC606A322
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
-Received: from loongson.cn (unknown [223.64.69.17])
-	by gateway (Coremail) with SMTP id _____8Bxn9Hjf_Fq8L8dAA--.19574S3;
-	Mon, 09 Nov 2026 16:10:11 +0800 (CST)
-Received: from kernelserver (unknown [223.64.69.17])
-	by front1 (Coremail) with SMTP id qMiowJCxf8_gf_FqjCQzAA--.40900S2;
-	Mon, 09 Nov 2026 16:10:09 +0800 (CST)
-From: Binbin Zhou <zhoubinbin@loongson.cn>
-To: Binbin Zhou <zhoubb.aaron@gmail.com>,
-	Huacai Chen <chenhuacai@loongson.cn>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Yinbo Zhu <zhuyinbo@loongson.cn>,
-	zhanghongchen <zhanghongchen@loongson.cn>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>
-Cc: Huacai Chen <chenhuacai@kernel.org>,
-	Xuerui Wang <kernel@xen0n.name>,
-	loongarch@lists.linux.dev,
-	devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Binbin Zhou <zhoubinbin@loongson.cn>
-Subject: [PATCH v9 7/7] thermal/drivers/loongson2: Add Loongson-2K0300 support
-Date: Mon,  9 Nov 2026 16:10:01 +0800
-Message-ID: <038de1cc102684e0abad6c25cac0138f065a0311.1794211535.git.zhoubinbin@loongson.cn>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1794211535.git.zhoubinbin@loongson.cn>
-References: <cover.1794211535.git.zhoubinbin@loongson.cn>
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DDJzs3gM;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9351606A322;
+	Mon,  9 Nov 2026 08:26:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DDJzs3gM
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21B6F1F0089F;
+	Mon,  9 Nov 2026 08:25:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794212771;
+	bh=zWuQ3p27UIemdCXPGPIrkkPUH0IJBHZ4roQ2dSRcIvo=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=DDJzs3gMF7pz5Mlv0wt7rZUXIIuiPDhYBkLsRf+HANOIyMcGMt1c+pAjW5PHIyYKi
+	 nYCeMjGIa3MyTCqLn6eDYpsweHwQxjHZNL/M8lS2nGf8TCjOhjMQl9XRkDnzhZU0hM
+	 jWz+hHslZDUnc/E3j470EUFJ7majXC/rON+kq1NckUlowF1ZIzNTN9TQj4jTu4x8IY
+	 Gc0WhTLaPb80aUSREr1NcMxqLYxL2225xVi9FzQB4wCTwmqQHaXQCrNBuLaf6IVN/Q
+	 WUNSX0ejaKQUcZGSLsWUWjb18W4W7wKvWkSob988ZtEoNY1jJm7764VwIWIBDym5kE
+	 D+0TzXxZRVepQ==
+Message-ID: <78a88d4d-11af-40c1-b063-b6a4d4298ecd@kernel.org>
+Date: Mon, 9 Nov 2026 09:25:54 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,271 +51,100 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qMiowJCxf8_gf_FqjCQzAA--.40900S2
-X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAgEGCGrxOf4EVAABsA
-X-Coremail-Antispam: 1Uk129KBj93XoW3JFWxGryfJF17Xr4rZF4UKFX_yoW3KFW5pa
-	y5AFyYyrZ5Gr48uw4Iyr4kZF4Yqr9rtFy3ZFs7Kw4ruwsxt34aqFy8tFyYvry8CrWDJFy7
-	ZrZ09rWUCayDX3gCm3ZEXasCq-sJn29KB7ZKAUJUUUU7529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUUBGb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E
-	14v26r4UJVWxJr1ln4kS14v26r1Y6r17M2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6x
-	kI12xvs2x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v2
-	6rWY6Fy7McIj6I8E87Iv67AKxVWxJVW8Jr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
-	kI7VAKI48JMxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCj
-	c4AY6r1j6r4UMxCIbckI1I0E14v26r1Y6r17MI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxV
-	Cjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY
-	6xIIjxv20xvE14v26F1j6w1UMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8Jr0_Cr1UMIIF0x
-	vE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWxJVW8Jr1lIxAIcVC2z280
-	aVCY1x0267AKxVW8Jr0_Cr1UYxBIdaVFxhVjvjDU0xZFpf9x07jxvtAUUUUU=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 01/17] dt-bindings: arm: qcom-soc: Add Halliday
+To: Stanislav Aleksandrov <lightofmysoul@gmail.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Robert Marko <robimarko@gmail.com>,
+ Guru Das Srinagesh <linux@gurudas.dev>, Thomas Gleixner <tglx@kernel.org>,
+ Radu Rendec <radu@rendec.net>, Lee Jones <lee@kernel.org>,
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+ "Joerg Roedel (AMD)" <joro@8bytes.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Wesley Cheng <wesley.cheng@oss.qualcomm.com>, Vinod Koul <vkoul@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Alim Akhtar <alim.akhtar@samsung.com>, Bart Van Assche <bvanassche@acm.org>,
+ Bean Huo <beanhuo@micron.com>, Stanley Jhu <stanleyjhu@google.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Georgi Djakov <djakov@kernel.org>,
+ Sibi Sankar <sibi.sankar@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, mfd@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev,
+ linux-usb@vger.kernel.org, linux-phy@lists.infradead.org,
+ linux-scsi@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-pm@vger.kernel.org
+References: <20261109-halliday-dts-v1-0-289114ab8197@gmail.com>
+ <20261109-halliday-dts-v1-1-289114ab8197@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20261109-halliday-dts-v1-1-289114ab8197@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The Loongson-2K0300 sensor provides an 11-bit output and requires
-calibration data from the CHIP ID registers. Read the calibration offset
-through the `loongson,chipid` syscon phandle, initialize the sensor
-configuration register, and calculate the temperature with the
-calibrated slope and offset.
+On 09/11/2026 01:33, Stanislav Aleksandrov wrote:
+> Add Halliday to the SoC codenames allowed in Qualcomm compatibles.
+> 
+> Signed-off-by: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/arm/qcom-soc.yaml | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Early Loongson-2K0300 fuse revisions may provide unusable calibration
-data. If the calibrated formula reports a temperature outside the valid
-sensor range, fall back to the old-fuse slope with a zero calibration
-offset.
+This should be squashed with patch #15. Also, there is no benefit in
+organizing patches within patchset where patches to the SAME subsystem
+are split all over. #1 and #2 targets SoC, then there is a break and
+again we are at SoC at #15.
 
-Trip-point programming for Loongson-2K0300 will be added later.
-
-Reviewed-by: Huacai Chen <chenhuacai@loongson.cn>
-Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
----
- drivers/thermal/Kconfig             |   1 +
- drivers/thermal/loongson2_thermal.c | 150 ++++++++++++++++++++++++++++
- 2 files changed, 151 insertions(+)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 810eeccedfba..b91032d90aa8 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -522,6 +522,7 @@ config LOONGSON2_THERMAL
- 	tristate "Loongson-2 SoC series thermal driver"
- 	depends on LOONGARCH || COMPILE_TEST
- 	depends on OF
-+	depends on MFD_SYSCON
- 	help
- 	  Support for Thermal driver found on Loongson-2 SoC series platforms.
- 	  The thermal driver realizes get_temp and set_trips function, which
-diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
-index 4ce162dfb122..68e6105051c6 100644
---- a/drivers/thermal/loongson2_thermal.c
-+++ b/drivers/thermal/loongson2_thermal.c
-@@ -8,10 +8,12 @@
- #include <linux/bitfield.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/minmax.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/property.h>
-+#include <linux/regmap.h>
- #include <linux/thermal.h>
- #include <linux/units.h>
- 
-@@ -32,11 +34,41 @@
- #define LOONGSON2_THSENS_CTRL_SEL_MASK	GENMASK(11, 10)
- 
- #define LOONGSON2_THSENS_OUT_8B_MASK	GENMASK(7, 0)
-+#define LOONGSON2_THSENS_OUT_11B_MASK	GENMASK(10, 0)
- #define LOONGSON2_THSENS_OUT_16B_MASK	GENMASK(15, 0)
- 
- #define LOONGSON2_LOWEST_VALID_TEMP     (-40000)
- #define LOONGSON2_HIGHEST_VALID_TEMP    (125000)
- 
-+/* Loongson-2K0300 CHIP ID syscon registers */
-+#define LS2K0300_SYSCON_CHIP_ID0	0x10
-+#define LS2K0300_SYSCON_CHIP_ID1	0x14
-+
-+/* Loongson-2K0300 thermal sensor registers */
-+#define LS2K0300_THSENS_CFG_REG		0x18
-+
-+#define LS2K0300_THSENS_INIT_MASK	0xff03
-+
-+#define LS2K0300_EXTERN_ID		BIT(4)
-+/* Internal ID: 12-bit unsigned compensation value */
-+#define LS2K0300_ID0_VAL_MASK		GENMASK(31, 20)
-+/* External ID: 16-bit signed compensation value */
-+#define LS2K0300_ID1_VAL_MASK		GENMASK(15, 0)
-+
-+#define LS2K0300_COMP_VAL_MASK		GENMASK(14, 0)
-+#define LS2K0300_COMP_SIGN_BIT		BIT(15)
-+
-+#define LS2K0300_TEMP_SLOPE		(570)	/* calibrated */
-+#define LS2K0300_TEMP_SLOPE_OLD		(569)	/* old fuse */
-+#define LS2K0300_TEMP_OFFSET		(394700)
-+
-+/*
-+ * Set when the on-chip calibration data is unusable (early LS2K0300
-+ * fuse revision). The driver then uses LS2K0300_TEMP_SLOPE_OLD with
-+ * calib_offset = 0 instead of the calibrated formula.
-+ */
-+#define LS2K0300_UNCALIBRATED_FLAG	BIT(0)
-+
- /* Loongson-2K2000-Specific Registers */
- #define LS2K2000_THSENS_HI_GATE_HI_REG	0x18
- #define LS2K2000_THSENS_HI_GATE_LOW_REG	0x1c
-@@ -62,6 +94,9 @@ struct loongson2_thermal_chip_data {
- struct loongson2_thermal_data {
- 	void __iomem *ctrl_reg;
- 	void __iomem *extend_reg;
-+	struct regmap *regmap_cfg;
-+	unsigned int flags;
-+	int calib_offset;
- 	const struct loongson2_thermal_chip_data *chip_data;
- };
- 
-@@ -87,6 +122,107 @@ static int loongson2_thermal_set_trips(struct thermal_zone_device *tz, int low,
- 	return 0;
- }
- 
-+static int ls2k0300_thermal_adc_to_temp_mc(struct loongson2_thermal_data *data, int slope)
-+{
-+	int raw_adc;
-+
-+	raw_adc = FIELD_GET(LOONGSON2_THSENS_OUT_11B_MASK,
-+			    readl(data->ctrl_reg + LOONGSON2_THSENS_OUT_REG));
-+
-+	return (raw_adc + data->calib_offset) * slope - LS2K0300_TEMP_OFFSET;
-+}
-+
-+static int ls2k0300_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
-+{
-+	struct loongson2_thermal_data *data = thermal_zone_device_priv(tz);
-+	int slope = LS2K0300_TEMP_SLOPE;
-+
-+	if (data->flags & LS2K0300_UNCALIBRATED_FLAG)
-+		slope = LS2K0300_TEMP_SLOPE_OLD;
-+
-+	*temp = ls2k0300_thermal_adc_to_temp_mc(data, slope);
-+
-+	return 0;
-+}
-+
-+static void ls2k0300_thermal_detect_old_fuse(struct device *dev,
-+					     struct loongson2_thermal_data *data)
-+{
-+	int temp;
-+
-+	temp = ls2k0300_thermal_adc_to_temp_mc(data, LS2K0300_TEMP_SLOPE);
-+
-+	if (temp < LOONGSON2_LOWEST_VALID_TEMP ||
-+	    temp > LOONGSON2_HIGHEST_VALID_TEMP) {
-+		dev_warn(dev, "calibrated temperature %d mC out of range [%d, %d], using old fuse formula",
-+			 temp, LOONGSON2_LOWEST_VALID_TEMP, LOONGSON2_HIGHEST_VALID_TEMP);
-+		data->flags = LS2K0300_UNCALIBRATED_FLAG;
-+		data->calib_offset = 0;
-+	}
-+}
-+
-+static int ls2k0300_thermal_read_calib(struct loongson2_thermal_data *data)
-+{
-+	int calib_data, calib_offset, ret;
-+	u32 chip_id0, chip_id1;
-+
-+	ret = regmap_read(data->regmap_cfg, LS2K0300_SYSCON_CHIP_ID0, &chip_id0);
-+	if (ret)
-+		return ret;
-+
-+	if (chip_id0 & LS2K0300_EXTERN_ID) {
-+		ret = regmap_read(data->regmap_cfg, LS2K0300_SYSCON_CHIP_ID1, &chip_id1);
-+		if (ret)
-+			return ret;
-+
-+		/*
-+		 * External ID: the signed compensation value is stored in
-+		 * CHIP_ID1, with bit 15 as the sign and bits 14:0 as the
-+		 * magnitude.
-+		 */
-+		calib_data = FIELD_GET(LS2K0300_ID1_VAL_MASK, chip_id1);
-+		calib_offset = FIELD_GET(LS2K0300_COMP_VAL_MASK, calib_data);
-+		if (calib_data & LS2K0300_COMP_SIGN_BIT)
-+			calib_offset = -calib_offset;
-+	} else {
-+		/*
-+		 * Internal ID: the compensation value is unsigned and is
-+		 * stored in CHIP_ID0[31:20].
-+		 */
-+		calib_offset = FIELD_GET(LS2K0300_ID0_VAL_MASK, chip_id0);
-+	}
-+
-+	data->calib_offset = calib_offset;
-+	return 0;
-+}
-+
-+static int ls2k0300_thermal_hw_init(struct platform_device *pdev,
-+				    struct loongson2_thermal_data *data)
-+{
-+	struct device *dev = &pdev->dev;
-+	int ret;
-+
-+	data->regmap_cfg = syscon_regmap_lookup_by_phandle(dev->of_node, "loongson,chipid");
-+	if (IS_ERR(data->regmap_cfg))
-+		return PTR_ERR(data->regmap_cfg);
-+
-+	ret = ls2k0300_thermal_read_calib(data);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to read calibration data");
-+
-+	writel(LS2K0300_THSENS_INIT_MASK, data->ctrl_reg + LS2K0300_THSENS_CFG_REG);
-+
-+	/*
-+	 * Wait for the ADC to produce the first valid conversion before
-+	 * using OUT_REG for the old-fuse sanity check.
-+	 */
-+	usleep_range(1000, 2000);
-+
-+	ls2k0300_thermal_detect_old_fuse(dev, data);
-+
-+	return 0;
-+}
-+
- static int ls2k1000_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- {
- 	struct loongson2_thermal_data *data = thermal_zone_device_priv(tz);
-@@ -178,6 +314,10 @@ static int ls2k2000_thermal_hw_init(struct platform_device *pdev,
- 	return 0;
- }
- 
-+static const struct thermal_zone_device_ops ls2k0300_thermal_zone_ops = {
-+	.get_temp = ls2k0300_thermal_get_temp,
-+};
-+
- static const struct thermal_zone_device_ops ls2k1000_thermal_zone_ops = {
- 	.get_temp = ls2k1000_thermal_get_temp,
- 	.set_trips = loongson2_thermal_set_trips,
-@@ -188,6 +328,12 @@ static const struct thermal_zone_device_ops ls2k2000_thermal_zone_ops = {
- 	.set_trips = loongson2_thermal_set_trips,
- };
- 
-+static const struct loongson2_thermal_chip_data ls2k0300_thermal_chip_data = {
-+	.thermal_sensor_sel = 0,
-+	.thermal_ops = &ls2k0300_thermal_zone_ops,
-+	.hw_init = ls2k0300_thermal_hw_init,
-+};
-+
- static const struct loongson2_thermal_chip_data ls2k1000_thermal_chip_data = {
- 	.thermal_sensor_sel = 0,
- 	.thermal_ops = &ls2k1000_thermal_zone_ops,
-@@ -256,6 +402,10 @@ static int loongson2_thermal_probe(struct platform_device *pdev)
- }
- 
- static const struct of_device_id of_loongson2_thermal_match[] = {
-+	{
-+		.compatible = "loongson,ls2k0300-thermal",
-+		.data = &ls2k0300_thermal_chip_data,
-+	},
- 	{
- 		.compatible = "loongson,ls2k1000-thermal",
- 		.data = &ls2k1000_thermal_chip_data,
--- 
-2.52.0
-
+Best regards,
+Krzysztof
