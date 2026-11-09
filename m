@@ -1,99 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.170
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794199290;
-	b=YZ5Vgy46ElV5hgbnkUAMr0HIEUwJK9xn/4G/j7G19+Z7l9wucfooGVEgSpUymqallN1U
-	 OesXOwpXnLJ8R9e37zBMcaZrNJ7hAFCJksA+TLvhsiCL1X/Lul1Yi+qj8islUfQY416cO
-	 wV4tiMPyBJv/VKsNZYbGqamkowL/KJ0zNnyt+hiPNTK8StPHPoqIM+0MnVT6wVrUl/zDl
-	 QeY5qLxlH90N2Z278I/8o53s+6JfapXnnCi+hPhzZe31Gyzng4LBSQg/Tdr/6vvK3qtve
-	 qcHb20TWI0GsHeGYNcjs5UlqRfk2yjcUgzQ5gvu7JCn5Cl+/7NU7A3ETDHibaLwq2IA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794199290;
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.178
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794199350;
+	b=b97JHXwhy24l3kF3W/X0zE5GYB/9lxlpJ1CHxupWQFIwmvVpzXhlBKJs6voPJpL3DP99
+	 oXTXg05yyAjVeOZNcYAZDxYxMY20/Vctmsz7+6LvvuI2gqGgOqjP9tdPFDd+gX/0cHKJ4
+	 +9Zucs9vPWg74AtC7xYGH8y60R7PArBGlsN2Wzy0mUs/e9I6PgwyMA6gDY0Kl2NQhml9s
+	 8l0BnKaNJHZymR6Ogq4rBazTUdPcj9kgQku+iepcrwAiRoXeL8QTL94Afr8bqfPLa+zs3
+	 i4mGV9sGNapeTLUdt29NWaEB6I3xfUpWvyQv18hqJh7akXS9GJIMqh2Syl0EWyLzkHA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794199350;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=WPUgjz9yrlSKqR8e85QEERzjQTMyzYLvqAjjoRM1I1A=;
-	b=mj5l5i7H43+ZL5ZtoptVXgvtoqEaVKi03qYYrqB6v/cwGLncayi3TCy0B80T8U81Wdlh
-	 RSnGu9vOgG2l+pry8PJU2J4Gush2GfFg86Xp6Wm83eY8Z+E7cbLYrw+V+/qFWopQQXNbM
-	 bhSYm/YGgA1GhCoDV2/eCAvRWIixYW0tFW9oyq1TGW2LFc9dW8bY3LzAE6UcSOg9CVKYf
-	 4NFO6K3T3im1QfKY+zXnhs5P4pjXAer9abWJuEUnF5bIDXElVotGAbdNZjDLcG3Cf/gUg
-	 oFw5GvFlntRhXuMtzwDzKwIh0rVSoNlueHxEsM2Mtu4/wNXy+3YT/clWSJ43AfP2UEQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=SGLgpUjp0TJQzDOLsYW8InDECLAZK5y2ohFSm3d5WTc=;
+	b=U03+enOvvlelhwlrT3xZhiRvQhw2mhEQELiUxGP02YWsp/3Al4cTGZOm89GkLLOU94iy
+	 hAUCN/uuRiwYBIFs4gWXbmjlztsp1WM5zd0yVbXZRh8T3N/tMO823l+TPxdhAy3nG8Sgx
+	 fZS1NtU9ERvZk9JSndKvv4O+AfoweQQvJhrl3xTZpxJJyrpa2A8ERETZauHFOl5c7nsys
+	 M3vwMxQgftKotDLs1GoLz5l1ADkIrDT8mLhYB73F6fZ07bpQkwFXP265VjJ0f3r+dMk83
+	 rcHRyuCi5t8GVBNTdYQqnAct2yPDxG6OkmFGfDp1WE538rqS448w2keGl97S0ZXt8wQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="qWzyW8/u";
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.170
-Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=SEkn3dZ3;
+	arc=none smtp.remote-ip=74.125.82.178
+Received: from mail-dy1-f178.google.com (mail-dy1-f178.google.com [74.125.82.178])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26AC7606A322
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 04:41:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 26AC7606A322
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE1A1606A326
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 04:42:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AE1A1606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qWzyW8/u
-Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-3700ed8dbe3so1183874eec.0
-        for <linux-pm@vger.kernel.org>; Sun, 08 Nov 2026 20:41:29 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794199289; cv=none;
-        d=google.com; s=arc-20260327;
-        b=A7m8BtZLwrnl7iUfgorwup5w5kvYzkzwRyWnTlsaO3ZGtN9BnVC9MM9cpgOxDwd/1N
-         IMcN5ahdlgYCrGZM7IwAyX8i/lst/A+P4d0v619f8oX/puxVTO2kRYonL45n0ArxnN5z
-         k/xEQPjiJiYoqV2UtNAGwwXCRNLycoeJhdE0yco7XiDSMx2krpndKlGqH39f0EUHvb/g
-         DkZSE6nzD+RxbKeJ5HqYKMr1YE5O9XXmtG41jd4IhwXlL/nnnCw+NoNS8b6fq6WfWwXa
-         CKrBCfXsdyrb+1C2c2jYFvrqi0PgEIm8TQqti0ybH3J3rcVUqsRqwtTUD/6MFTuzdYTQ
-         aqzQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=WPUgjz9yrlSKqR8e85QEERzjQTMyzYLvqAjjoRM1I1A=;
-        fh=uQbEQUIeAg79xlmW0T5rgt+YyjEtBR/mpLSzRoO4tKY=;
-        b=nQx3kDOqMBAwIt2b9fHg3gEXbZ6SqkyasV2WW3x/Ztqi0jvC6i3E/EYGRNbxejj8Pv
-         7vk52Waq3NGWRoKrOhRrS/Eov0Z6VO21/TiTRT7zucmroI49ZiiWTtZDCqG0hBOQkYZT
-         0zc2oDrtMWDgLSV8HRUrCurzLL6sRb9zo6f+ZImoCM2p8eldTsf3fevddoEtstj45N7Y
-         BP0UIR7clp5Oc1zjxHgqfP25FJThyb/n0DBDdntyFS89fY6f52ckEtANKMRlizOK/FYX
-         gLsn8JIq5EYxjrslaXV+0AgdoWZKWi+tTTpqiFzNNwfxRvCIWKWl+f1Wq4yrw9zat7TK
-         7xJw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=SEkn3dZ3
+Received: by mail-dy1-f178.google.com with SMTP id 5a478bee46e88-372bdb942dbso654779eec.1
+        for <linux-pm@vger.kernel.org>; Sun, 08 Nov 2026 20:42:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794199289; x=1794804089; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=WPUgjz9yrlSKqR8e85QEERzjQTMyzYLvqAjjoRM1I1A=;
-        b=qWzyW8/uDqqZV968N5KMa+aeZcBBcxYqwpr0/9uFEACzVarzJn7M4ZXAcInHD+Iags
-         WhCbpkaDQ/9NNQte6f9vGtRS76hEzry90XVMO0itGzxrEdLe2sbGinMrC+/gIVrgvWfK
-         gPDLMDVzLSwdAkaWSknCY+DGn+bfibCfcNtHtV1+NBFvliwTCB66hgl/SBeEYptEr1LF
-         MUovj3LVM1XdPGgRzvOcjiiB6G7rG6UZgK0fxjK4RGlnVcx4JyoYoaeByMwyCV5NzoYG
-         tKM6eZ2IE6Ciq4whjh3oUr1hvfTkQ6fCjA79BYWdP6zX3YsvZ0PqwUMUfTtydn0qmR2/
-         qLWA==
+        d=gmail.com; s=20260707; t=1794199349; x=1794804149; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=SGLgpUjp0TJQzDOLsYW8InDECLAZK5y2ohFSm3d5WTc=;
+        b=SEkn3dZ3Dhm0ayrX5XWGwr2O8QZ4/4IYdJhisBIoiyVXuzcBivcRLJha5Ecw7gRtbm
+         e2isRw/YG9RMQk4KxDxlMGIUDGX9ZbUTlSinamICEU7VQHj53/IWt9bAMV4oCEq1VC7h
+         xvzlB8noKsH05vDpKXNR8cokriBUsI/tKBPESV0IZGwW6KrdbHkLAn31cDR2DTJJ11/s
+         FxZ0/dxnHrFP2gUk9FRTzTJK5rCJyiUHXBFIIY34Ci0yx2/aLffYNTcwQNVp0Nww7I3O
+         QoehyF6+lpwk/B35HkCHbHOc1gWLq5/Yxy/LQ3+pXQ+njiMXopiHGo4Y1RHIsKbJXV4C
+         5CXA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794199289; x=1794804089;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=WPUgjz9yrlSKqR8e85QEERzjQTMyzYLvqAjjoRM1I1A=;
-        b=nfs5xwaTcrgSKNJ7ghwlpsDrQd66AyjWYR/vCBxE9W/9evimaeug1NyxjTzn3RTwCC
-         Dvn94jI5svswyKYTJy6KTPM7FN6ZuTbHzzDRLqlZYZULLjhbkIWCVBolXt9blvDu34o5
-         H3BGNaiRqzbqW5UcURvEC5QwqjyCp2hbXGSR99/kPo0fqkcentrBgU3eF3xwlryEeBGu
-         ZU1ppY6LlF+1281qINiAzAwC6OxkXqHZNwX0Ggs3oAg0H3Z6JahtwEhnMmYggP7yG4/1
-         NfiCMMTD1xToY1YI/W4rap1380FBBMnNGgqjKBJ1XofIUmWRsvNaVCCXj/NwL71flqjS
-         pw1w==
-X-Gm-Message-State: APuU4Z+vbvHXUe4xiMwfF+Pi2ZmQLI8oCs5QFIxYjgGgff1NSyRU+Uwr
-	E9+hrckNOPCSZnMDkIXyTibFyLygwrtwGxZmXQ/ktooc54VDHkTSP8cltha+9VQLgZ83aClUg6r
-	QUBTrzCCOB2trxWEcYhc2ThFpNDeGXyg=
-X-Gm-Gg: AYBFou34ERryIbRfFCgImEpztBjzza0OIW4fZ6F2QI8Pu+KiaO7FJUmpedY9QiPEGQz
-	ZBGzPUOMqHQNH9anY8f3jZ4N+8vNWjRJw8mVZOmn1uRWry7osUHA4NYmdFxcpNJ4gYQduGVrxD9
-	O4Hzn4Coa04pvwNiwYvu3S+n8fLF35zQhGH5y5ZKdeVhHPghwdlI8XMCjO0V7n3bINOg5PV4mnF
-	1eRXtlQsU4YwhF8hK9s7+QJokwptoW+xpEyuffd4Zg67BTuHxUBSIC7hdVSTu5uhF/TkYiXZw3+
-	89g7X8neFN7WH/iUsVyA4/bU3WSHxcDdO6QTFZURI9QVefpV3ss6+/BcI+EmKRUZuIjcefbf+6A
-	i2fklV0x8cuQM50qqOtgA66ruBTMoga7oL3etXFPZQus0XoAftlfaDoC3jMZ9OKJhxWl9
-X-Received: by 2002:a05:7301:1285:b0:343:9eb1:9940 with SMTP id
- 5a478bee46e88-3725e33de65mr8199608eec.26.1794199288994; Sun, 08 Nov 2026
- 20:41:28 -0800 (PST)
+        d=1e100.net; s=20260707; t=1794199349; x=1794804149;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=SGLgpUjp0TJQzDOLsYW8InDECLAZK5y2ohFSm3d5WTc=;
+        b=MNVJQ0fbk0HvSNdWvyluPPT5CEo0n+tC+zWhwvffLYIQgMZdkWJZPZqO2li9b0AJjA
+         xoLvmROOznab/ML7iygBcU8E42oSZ26J0mNbvqPtDFDEM9cTXMaZdAX/gRGtFV0XphT0
+         Ix113fA2PL5Quh8W3vAPDZ4NeXJn1xfu6qpi1AhKcSMC07la9SnqvVSNFF1sfoKuHaZK
+         88cPZJu0SbNY48WGwi7ZwfPBAC04Efd5aBHsFh4p7Dans6u/smztv2XnFSXT8MoYC3Gm
+         lsqbePu+gwHqkqps02pb5vmXslBbZPsFSyK6KlStHGAoezqzPr+gXFugCYt4kIBIkUVX
+         5MEg==
+X-Forwarded-Encrypted: i=1; AL+hErFMYYT1odNTw0U5Tw0mAi6lx6phK7jb8nJk7sclUM62ZaRrHWGWMhVSIRKTyb6LutwEF9rUt1RGuA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9cM7BULuajawaQZQDWT1bUEFVYkzwO7fUd8+PLhM4vsXfs1wuY
+	5CHtNr5AbwYqZBgLRq8i82BeiAwK9EI/jtFLHroUHiSzna4tK3avLC21
+X-Gm-Gg: AYBFou3moO+EETRBPkFnVYRch7V5f5euDWRzE4RFO++F6F3MJziLfqSMnMlOa0TrJ7g
+	kJ6qgwkascia8j8zb4Ochao0I2MXbUjCETUhTTppDpzUePvMs8t8Q7nayGY/NVaa+IZqO4vq792
+	Z9hON60DCv239jRtCdpfhtcc4LgXACG8W9hZ3ygSaWnjdhBcHk0WL4mr3cC95+C1lASF0qHf3Vd
+	Kn6Arc9ZkpY6O768BzJmD7i2MXML4U/xt6ccWLEtme8j3SGlxKNc3BCX4AejZ3P4ZhTakdExd2p
+	AfhuitZKGvJGu50bt/zm3wYSNSqICXF9cn4McVaYYzkrXIR4luI+iRilXv1LGJOapRRArIWMQuF
+	MI20KMIPyJvpxZ5Aq8As4gxaVgbERvQ8+3wc79L8t8y+5fPKidwqvJG/tswemJFJBr4oxegD57F
+	u5k8JECyvpVZwqHp49CJPIIhA7zRXdOH6lG7w0rfc+DhAzl1F3XUG9hLwNQY4QSeGIQtt5UwaMv
+	pXn4nkDrTjZ4A3whUgYsVzDqiGgt7NNx9Uzbq8p5EqcJNXndT+z7ShPa9HwRDWComAdo6QBbgzT
+	PsnbXhmwcUwM6IAtb3SB8i22+qZC6+uGKB729tJdiw2ceqM/5Zmj9XHsJ3MN6fORE1X7jw==
+X-Received: by 2002:a05:7300:c8c6:b0:369:f420:8679 with SMTP id 5a478bee46e88-37257d9496emr5721564eec.38.1794199348727;
+        Sun, 08 Nov 2026 20:42:28 -0800 (PST)
+Received: from hj.. ([163.239.22.29])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3726561851esm10154026eec.4.2026.11.08.20.42.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Nov 2026 20:42:28 -0800 (PST)
+From: hyunjungg <hj351016@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>,
+	linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>,
+	Chen-Yu Tsai <wens@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Hyunjung Ko <hj351016@gmail.com>
+Subject: [PATCH v2 0/3] power: supply: fix work-vs-devres teardown use-after-free
+Date: Mon,  9 Nov 2026 13:42:09 +0900
+Message-ID: <20261109044212.1157357-1-hj351016@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,83 +101,35 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261106160057.2754689-1-hj351016@gmail.com> <avEdYFDUHIj6mq0Z@venus>
-In-Reply-To: <avEdYFDUHIj6mq0Z@venus>
-From: khj <hj351016@gmail.com>
-Date: Mon, 9 Nov 2026 13:41:17 +0900
-X-Gm-Features: AclHuK_VP_O81IVVw6nsjch_EUlJXziP3JNmGnD4QyN0YGW8m1KTdax5oeelWrE
-Message-ID: <CAGr5VtNJwmMej+90yoLa6su5fcBc1gwOPviMGtjj7pis+Y7jjQ@mail.gmail.com>
-Subject: Re: [PATCH 0/3] power: supply: fix work-vs-devres teardown use-after-free
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: linux-pm@vger.kernel.org, Chen-Yu Tsai <wens@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Sebastian,
+From: Hyunjung Ko <hj351016@gmail.com>
 
-Sorry about that.... and thanks for taking the time to look.
+Three power-supply drivers register a poll/detect work for devm
+cancellation before devm_power_supply_register(). devres unwinds in
+reverse, so on unbind the power supply is freed before the work is
+cancelled, and the work's power_supply_changed() then dereferences the
+freed supply. Each patch moves the devm work-cancel registration to after
+devm_power_supply_register() so teardown drains the work first. No
+functional change.
 
-You're right that the commit messages were far too long. I had added the
-"how found / tested" note out of habit -- another subsystem I send to asks
-for exactly that information, so I carried it over here without
-thinking -- but that is no excuse for the length.
-My mistake...
-I'll resend as v2: commit messages cut down to the bug and the fix, the
-inline comments dropped, no functional change.
+v2 (thanks Sebastian Reichel):
+ - trim the commit messages down to the bug and the fix
+ - drop the inline comments
+ - no code change vs v1 other than that comment removal
 
-Thanks,
-Hyunjung
+Hyunjung Ko (3):
+  power: supply: ltc2941: drain poll work before unregistering the supply
+  power: supply: axp20x_usb_power: drain vbus_detect work before
+    unregistering the supply
+  power: supply: mt6360_charger: drain chrdet_work before unregistering
+    the supply
 
-2026=EB=85=84 11=EC=9B=94 9=EC=9D=BC (=EC=9B=94) =EC=98=A4=EC=A0=84 10:11, =
-Sebastian Reichel
-<sebastian.reichel@collabora.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=B1:
->
-> Hi,
->
-> On Sat, Nov 07, 2026 at 01:00:54AM +0900, hyunjungg wrote:
-> > From: Hyunjung Ko <hj351016@gmail.com>
-> >
-> > Three power-supply drivers register a poll/detect/charger-detect work f=
-or
-> > device-managed cancellation (devm_[delayed_]work_autocancel()) in their=
- probe
-> > *before* they register the power_supply via devm_power_supply_register(=
-). devres
-> > unwinds in reverse order, so on unbind the power_supply device is relea=
-sed first
-> > and the work is cancelled last. The work handlers call power_supply_cha=
-nged()
-> > and dereference the power_supply, so a work instance still pending/runn=
-ing in
-> > that window touches the already-freed power_supply device -> use-after-=
-free.
-> >
-> > Each patch moves the devm work-cancel registration to *after*
-> > devm_power_supply_register() (and before the IRQ/poll that arms the wor=
-k), so
-> > teardown drains the work before the power_supply is freed. No functiona=
-l change
-> > otherwise. The relocated devm_[delayed_]work_autocancel() still runs it=
-s INIT
-> > before the work's first queue site, so no queue-before-INIT window is a=
-dded.
-> >
-> > This is the same class as the recently-applied cimax2/extcon work-vs-de=
-vres
-> > fixes. Found by static analysis / code review; none is reproduced on ha=
-rdware
-> > (each needs its charger/PMIC/gauge chip and is not QEMU-reproducible) -=
-- treat
-> > accordingly.
->
-> Please don not send direct AI output. You need to drop useless
-> comments and trim down / rewrite commit messages to a sensible
-> length. Instead of huge amount of spam.
->
-> Greetings,
->
-> -- Sebastian
+ drivers/power/supply/axp20x_usb_power.c      | 10 +++++-----
+ drivers/power/supply/ltc2941-battery-gauge.c | 10 +++++-----
+ drivers/power/supply/mt6360_charger.c        |  7 ++++---
+ 3 files changed, 14 insertions(+), 13 deletions(-)
+
+-- 
+2.43.0
+
