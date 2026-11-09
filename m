@@ -1,100 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.215.172
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794210021;
-	b=bx9c27BZWhmv3iZJmcKaQ5ms3zLTnEtAKc90BqDSOQewUat+8WkzAZUI3EABQT0mcefR
-	 +7IGu8I4cKek6eZn11j/V0EW6Q2uXI3gw9sRFaGHUBvYHPGsjoRSwajy3gZx43n8n/L4S
-	 7Ge65IDBIi61VTUMTW8ANSVT1iUNT1VzwDNaUKwYv4wYiIaeEhCgbvEWgIlfv6JIZWqxn
-	 ot5NSMgWllAEskbxqsCo+olDIs2kK0fMmNJD18uBsZhEUGGEylIjfgU4/NdWCRJ8LNqO6
-	 3/vdeEGK8KTzS6fogVZuNMvDIFNeh2d1Ast6EbAl3lMXVskc7a+PwXDHUJUdIcl48hA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794210021;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=qbtFVfAV0d//avrt7X6KHwZhQyPReObvw80fRr8okBY=;
-	b=uMT7PPaZf/qi/vcqW6bpsf1W/2E9ithPJGL0SNt0uL/TU1ymFy60YVwbXezQ9rVDdgnR
-	 FpSOlCcWIdC6aVA6HMPIuhPnWdjtAGndlDrA1q7DYnxldY+mVbD0H8bWGji9nDYpAH4fH
-	 0tUmHYiLAFASFjbaLLf6l1sKUul0T5soDcBWC2DGtzrZlqNqaI8F4TeKYU68Xdi6UEBBR
-	 IQg33Ff7ecsLNbAUTZThnm8QjS25Js5ZS/u6bT/DoPisYq4nvnw2RvG6K98ht/W/e1ngG
-	 1IHmu4CUx6pcQjL34GA7R1KLwln5n3TpPl4EoOpSnRIrhHDtu/Wngh79MlEK8q+Fs0A==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Fw1HJ3eB;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.215.172
-Received: from mail-pg1-f172.google.com (mail-pg1-f172.google.com [209.85.215.172])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70D64606A333
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 07:40:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 70D64606A333
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Fw1HJ3eB
-Received: by mail-pg1-f172.google.com with SMTP id 41be03b00d2f7-cdab6ae1ee9so228663a12.1
-        for <linux-pm@vger.kernel.org>; Sun, 08 Nov 2026 23:40:20 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794210020; cv=none;
-        d=google.com; s=arc-20260327;
-        b=fXjK850oj/HaBVwZuLpN5mKsTKGID5szXyqXanPK6SZzUHUPdLdz3j8gFh7/OeMjRo
-         pAqNlgJu6QIb8TTjwBRGHrLREHdp0mQ/46HxgoZ/PZ+8wBvP/dVP5Di+Fu3IqOjvRMiP
-         wL57BWECzHqmPUnrxOO5GLjhrwLB6ZVdhlMel2ZYmYmliCSIKuWalUeJqs+LZTJkdJAx
-         pMODdFG8tHLEHaN1bkEOiK/QnnkzbPU2YJ56jzQIj96OlxBYJo69F2HhCFLrG08vykk0
-         SVtJzZOjjrA/uHJgmvsARdGR5XQwaJ8GaU/czvuve7c5eWlTKzBI2mI0akRwZqe1DFZH
-         i1Cw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=qbtFVfAV0d//avrt7X6KHwZhQyPReObvw80fRr8okBY=;
-        fh=verEXaT7CN+Ph3p7F3v905Usv9123Kf2ElCuuVozL74=;
-        b=AdUJadskP0Un4tibQzObkgqdMS0JfMAREHfNQKObajc3cMVTsJNcBWo2yiuU9fbhey
-         GfT1K2GtsDze9OPxRAukd3XZoZf484+uMC+Pv+bMJYUrPNs03gle/p20aLSlu8IznjwP
-         FlTme2FaOJ5ZX3+l9jaJ9eiJQIDrDhPeGrVRhMFo/tKUaLdNV1iRMHNfkCCPhaqRTBfq
-         75bAoq5rwMVt3NOdtxfpPUQt1LA2GBvNGjD1dQ7ULCj5OwUTHIsi0//hysfT41zRenV6
-         l8jLjY2wX5k6G1koLKXufOfEbenXIuOBOfmhSOgF60lR4WaF8u+xzYJC5jRQf4MFYXZP
-         7yYA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794210020; x=1794814820; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=qbtFVfAV0d//avrt7X6KHwZhQyPReObvw80fRr8okBY=;
-        b=Fw1HJ3eBrEG+YcG2OfXIKNyXLbtxL6pFyShNR64xnTBicLVJTLcqI70PP7XlmXPNx6
-         VWmQ662eksYGc8vJo+lcMpjTIaYcJB9aokKPIxavS8OWhjpOs8W89bix1ozwYvKeb3b4
-         M7C1Y4n+R7cdsAeFDh3I3fT0WNvzf0CnRZWDlQZYC+5M2rSyX8wMQx9uS+vQs8QSo0d/
-         2FLip2Uo0zLuYIubK7TNTBZ4sl8ZrZ+JeHk7SDm/ZlHHFtWu1M3YyNEi+YttPBGWC2RM
-         X/hXAhXzRlZNf20NwByFmIPl+GnzmQCqAB4nehLzmm3jWxLA5k3xC+msTg/JbR6XvUqv
-         ep4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794210020; x=1794814820;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=qbtFVfAV0d//avrt7X6KHwZhQyPReObvw80fRr8okBY=;
-        b=Co8Bx8zoRmBICa8KJED3q1s2oWbSAeAJ9pQMEM5SjQ2EQLBEyA5IhzV0HxuhcZWfqJ
-         A4eOvOEv/kSOXV/zsfIjyxCZDr9nQhls1xAiPc7AO19KrEc2jr2024MGcaBRmV0/W65S
-         nWHE0AnKdf5MrQTIsExeq6zpvAhV3L/lzzDlSV3fv6mSpMCuYqBU1o6gNH23yFl5WwBQ
-         a2tZM36FEjiiZ3zgiTGSHk5WWjAsa4cSucjZAt7QotXSDx2e4QNk8Tj9yxudPJLYK6t/
-         KttygkoaBGtQXSzCXHi+o7jCFpEzBrdsWqmks5xdh6mkWBtL8TL1dMNEy/Hrth6CYUME
-         B1Ag==
-X-Forwarded-Encrypted: i=1; AL+hErFbzOD7orsKiMAX8m3Sp+A03GnC82mkuzddbCyPKBz1P/POMCRrVdnGhN3V6/H2hDZgnz5HQytorQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8CCZ8wLn3KRNbYd7rFXu7ly9fw2ctrMjJxPzRRT8Z81UqfH7Q0
-	mSaIR4ytoLw9L+5HLk3u7upn4yyPmnoUQoVY2ptFWlNbGuJ4VBGiPmTcsJIg+PEKSxtHmH1xWMi
-	zY6zu98y8CxBGKwk7QDTZAf2BnTpBUHw=
-X-Gm-Gg: AYBFou2OoLyM3i9aRDJX82dt+uclM+yp5sZGfNRPLlPQDjxAuaYudmqVUskf2a6xwTJ
-	PgoW/Pg5AWVSWzUQKM4TKztuqqX25uMJ7Tcir2t/5MpIl+pLh9KJlChUsZQtWqigBp0IvelVxjd
-	fOISTz8i6AV/kxyIFrMCZv99YT3sWEp98T3cnKMOXmd4iZI/0lxtCdOYbPmF/1H6RIY5HRnirfp
-	WzyBdhUrKhsjG5vN7b1t4tnPhH8NB2Ax3lYXiXoHeZrznR0b30yg3lE3Yl/1xReICsQCWRZ4Pbu
-	tV6snZmmwNOTM18TPnVPsMzoLUYXC6c8v0Q6xICd3Kmy2auLpJzPqlFoDa5d4q8PfoSmbPSaKK7
-	doTKU9Qw8pVXg1T0K2cLPJbv+sGKsTh5/PjU=
-X-Received: by 2002:a17:90b:384c:b0:3ad:a270:a623 with SMTP id
- 98e67ed59e1d1-3b12d107e44mr3364118a91.4.1794210019701; Sun, 08 Nov 2026
- 23:40:19 -0800 (PST)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=114.242.206.163
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794211718;
+	b=H74tcdfDNhVEw8+YuxNUSxb3J8Vc2vYGjkdh1wTDNGzvf2CM4L2R9AaQrFrk25O1RUBV
+	 ZlqJ9ZZJ7L+bsvjzo6juZVutnVBHf6p++kRks/QMdl4ZZVQzpgZEFvYZRFI1N9Bg3g2Iw
+	 gQ3lxuzh/1KtDmecndj8OxoLRlpqC5J6qJxJ1c/5C6SlcUaGuQGpUirA7VtqSWXE8UpKk
+	 XC08x5lPT+BNJQltN7lCIDkAwGGlEzvT7u4lcM8IF/rPWv0Hc1f4Q1aNyKthZxKAJSmzT
+	 y3qOxxaPNLIhagB9JQedxwkAe5dxg0IMgCDsXuLp24wtFOXsmsJOtuDbp6CjEPHU1QQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794211718;
+	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-CM-SenderInfo:X-Coremail-Antispam;
+	bh=Ux/zH2eSKuK+chXZyJ1t8r33Q2S7GEJ5ITkj8yH25OI=;
+	b=Tr8JPftxN5FVRw0DDsLrZ8scF7YbbcuPuL36WhvACaxK/cGsFlo5E6vGPVYbIvlhTKRg
+	 75XKqwE/0XKRaRhWEOx2XOWs1dsr3w8ThfmtdOZgu4Y/8w3rlrcTh1g1Stn76ZFjf8LKj
+	 GHyGvR0Vi1YJlvEQZt58LTd4jL4sct1Jdsyn4BI1aAVLZAKs15xtm0JS45EFnsbVv+TQv
+	 QQ/nxNcpgD34W4DAdz92jSeYyKra+FGsv30NbwkLq5xSsnlUtXrPeH6Hwdsy0n+HKqPfc
+	 jhMA4RAmsaa6Z8vRC2PZIi+34Q6sM8O7PZEccfwv3xSZJmOzWObbfit8CKnhcIdfdNQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=none header.from=loongson.cn;
+	spf=pass smtp.mailfrom=loongson.cn;
+	arc=none smtp.remote-ip=114.242.206.163
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 0C707606A321;
+	Mon,  9 Nov 2026 08:08:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0C707606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
+Received: from loongson.cn (unknown [223.64.69.17])
+	by gateway (Coremail) with SMTP id _____8BxhvCCf_FqZb8dAA--.19964S3;
+	Mon, 09 Nov 2026 16:08:34 +0800 (CST)
+Received: from kernelserver (unknown [223.64.69.17])
+	by front1 (Coremail) with SMTP id qMiowJAxmM15f_FqWiQzAA--.37920S2;
+	Mon, 09 Nov 2026 16:08:26 +0800 (CST)
+From: Binbin Zhou <zhoubinbin@loongson.cn>
+To: Binbin Zhou <zhoubb.aaron@gmail.com>,
+	Huacai Chen <chenhuacai@loongson.cn>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	zhanghongchen <zhanghongchen@loongson.cn>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>
+Cc: Huacai Chen <chenhuacai@kernel.org>,
+	Xuerui Wang <kernel@xen0n.name>,
+	loongarch@lists.linux.dev,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Binbin Zhou <zhoubinbin@loongson.cn>
+Subject: [PATCH v9 0/7] thermal/drivers/loongson2: Fix trip programming and add Loongson-2K0300 support
+Date: Mon,  9 Nov 2026 16:08:15 +0800
+Message-ID: <cover.1794211535.git.zhoubinbin@loongson.cn>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,98 +64,194 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261102135330.2493332-1-robh@kernel.org> <CAAfSe-uD=s0RpuqQ_h+_fErcEC+G=N_LA6e=p_sXJ=iG7jMc3Q@mail.gmail.com>
-In-Reply-To: <CAAfSe-uD=s0RpuqQ_h+_fErcEC+G=N_LA6e=p_sXJ=iG7jMc3Q@mail.gmail.com>
-From: Chunyan Zhang <zhang.lyra@gmail.com>
-Date: Mon, 9 Nov 2026 15:39:42 +0800
-X-Gm-Features: AclHuK_dnPMk52UN3-2_wspDGRy5a6s-cwmnh8paY6ZY-G54Qz5KZ0bygsAWCVc
-Message-ID: <CAAfSe-shr1+0YpxEvf+4k+DyGe3==PUiD72CwjE+RC4gX-ShiQ@mail.gmail.com>
-Subject: Re: [PATCH] dt-bindings: Use hex unit address patterns
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
-	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, Jiri Pirko <jiri@resnulli.us>, 
-	Ivan Vecera <ivecera@redhat.com>, Benson Leung <bleung@chromium.org>, 
-	Guenter Roeck <groeck@chromium.org>, Linus Walleij <linusw@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Jonathan Cameron <jic23@kernel.org>, 
-	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>, Olivier Moysan <olivier.moysan@foss.st.com>, 
-	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Fabrice Gasnier <fabrice.gasnier@foss.st.com>, Lee Jones <lee@kernel.org>, 
-	Srinivas Kandagatla <srini@kernel.org>, Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, 
-	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
-	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
-	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Ray Jui <rjui@broadcom.com>, 
-	Scott Branden <sbranden@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
-	Paul Kocialkowski <paul.kocialkowski@bootlin.com>, Shawn Guo <shawnguo@kernel.org>, 
-	Chanh Nguyen <chanh@os.amperecomputing.com>, Alistair Francis <alistair@alistair23.me>, 
-	Julius Werner <jwerner@chromium.org>, Paul Cercueil <paul@crapouillou.net>, 
-	Dmitry Osipenko <digetx@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Ray Jui <ray.jui@broadcom.com>, 
-	Scott Branden <scott.branden@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
-	chrome-platform@lists.linux.dev, linux-gpio@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-sound@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-tegra@vger.kernel.org, mfd@lists.linux.dev, 
-	linux-arm-msm@vger.kernel.org, linux-mmc@vger.kernel.org, 
-	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qMiowJAxmM15f_FqWiQzAA--.37920S2
+X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAQEGCGrxKfoDLgABsq
+X-Coremail-Antispam: 1Uk129KBj93XoWxtF48Zw4kJFyxZw4fGr1kCrX_yoW7Zryxpa
+	y3uwn0kr4DWr48JwsxA3s5ZF4Ygw1rtrZFqF4Sk3s8uan8GrWav3yxtan8Zr9rCrs5XFy2
+	qr4kKr4kCFWDCFXCm3ZEXasCq-sJn29KB7ZKAUJUUUUr529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUUB2b4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+	xVW8Jr0_Cr1UM2kKe7AKxVWUXVWUAwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+	XVWUAwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7V
+	AKI48JMxkF7I0En4kS14v26r126r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY
+	6r1j6r4UMxCIbckI1I0E14v26r1Y6r17MI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7
+	xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xII
+	jxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw2
+	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x02
+	67AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjxUc9a9UUUUU
 
-On Thu, 5 Nov 2026 at 10:39, Chunyan Zhang
-<chunyan.zhang@linux.spacemit.com> wrote:
->
-> On Mon, 2 Nov 2026 at 21:53, Rob Herring (Arm) <robh@kernel.org> wrote:
-> >
-> > Unit-addresses by default (and most commonly) are hexadecimal. There's =
-a
-> > number of cases using decimal patterns. Fix all of them, limiting the
-> > pattern to match the 'reg' limits if there are any.
-> >
-> > Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> > ---
->
-> [snip]
->
-> > diff --git a/Documentation/devicetree/bindings/thermal/sprd-thermal.yam=
-l b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
-> > index afa551f6185f..222d70baef1e 100644
-> > --- a/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
-> > +++ b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
-> > @@ -47,7 +47,7 @@ properties:
-> >      const: 0
-> >
-> >  patternProperties:
-> > -  "^([a-z]*-)?sensor(-section)?@[0-9]+$":
-> > +  "^([a-z]*-)?sensor(-section)?@[0-9a-f]+$":
->
-> Reviewed-by: Chunyan Zhang <zhang.lyra@gmail.com>
+Hi all:
 
-Following up on Andy's note about this:
+This series fixes trip-point handling in the Loongson-2 thermal driver,
+refactors the driver around per-SoC chip data, and adds support for the
+Loongson-2K0300 thermal sensor.
 
-Please disregard my Reviewed-by. Even though I did look at some of
-the other hunks, given that I'm not familiar with the other hardware,
-I don't feel comfortable giving a whole-patch Reviewed-by out of
-caution. And since I'm no longer the SPRD maintainer, an Acked-by
-wouldn't be appropriate either. So withdrawing is the best option =E2=80=94
-sorry for the inconvenience.
+The first three patches are fixes and are marked for stable:
 
-Thanks,
-Chunyan
+- Patch 1 fixes signed division when converting negative milli-degree
+  trip points to degrees Celsius.
+- Patch 2 fixes the arguments to clamp() so trip points are limited to
+  the supported sensor range.
+- Patch 3 fixes Loongson-2K2000 trip-point programming by adding a
+  per-SoC register callback and handling the split HI_GATE register.
+
+Patches 4-5 are cleanups and preparation work:
+
+- Patch 4 removes the unnecessary multi-sensor registration loop.
+- Patch 5 moves the per-SoC ops and hardware initialization into chip
+  data.
+
+Patch 6 adds the Loongson-2K0300 DT binding, and patch 7 adds driver
+support for the Loongson-2K0300 thermal sensor. 
+
+The patchset have been validated on the Loongson-2K series development
+boards.
+
+Thanks.
+Binbin
+
+=========
+V9:
+- Add Reviewed-by from Huacai, thanks;
+- Fix issues reported by Sashiko AI:
+Patch (3/7):
+  - extract gate_lo with FIELD_GET(GENMASK(7, 0), gate) before FIELD_PREP()
+    to avoid the __BF_FIELD_CHECK_MASK() BUILD_BUG_ON();
+  - disable INTEN while updating the 16-bit gate to prevent a torn
+    {old_hi, new_lo} threshold from latching a spurious interrupt.
+Patch (7/7):
+  - add depends on MFD_SYSCON;
+  - delay after writing LS2K0300_THSENS_CFG_REG to avoid misdetecting old
+    fuse on a premature OUT_REG read.
+
+Link to V8:
+https://lore.kernel.org/all/cover.1793690276.git.zhoubinbin@loongson.cn/
+
+V8:
+Patch (1/7):
+ - Use MILLIDEGREE_PER_DEGREE macro instead of explicitly casting MILLI;
+
+- Split patch-4 into two parts: the bitfields section will be merged into
+  patch-3, and the remaining changes will be merged into patch-6 as
+  preparation for introducing the new SoC.
+
+Link to V7:
+https://lore.kernel.org/all/cover.1791512067.git.zhoubinbin@loongson.cn/
+
+V7:
+Patch (1/8):
+ - New patch;
+ - Fix negative temperature conversion in set_trips;
+Patch (3/8):
+ - Use writew()/writeb() in loongson2_2k2000_set_trips_regs;
+Patch (4/8):
+ - Rewite the thermal sensor registration loop to clearer;
+Patch (5/8):
+ - Fix `loognson2_thermal_set_trips` typo;
+Patch (8/8):
+ - Read CHIP_ID1 only when EXTERN_ID is set;
+ - Simplify the Internal ID calculation;
+ - Add the necessary comments.
+
+Link to V6:
+https://lore.kernel.org/all/cover.1790561983.git.zhoubinbin@loongson.cn/
+
+V6:
+ - Rebase on linux-pm/thermal;
+Patch (2/7):
+ - New patch;
+ - Fix incorrect clamp() argument order for thermal trip points;
+Patch (3/7):
+ - New patch;
+ - Fix Loongson-2K2000 trip point programming by adding a per-SoC
+   set_trips_regs callback and handling the split HI_GATE registers;
+Patch (4/7):
+ - New patch;
+ - cleanup: use GENMASK/FIELD_* helpers, add named constants, and factor
+   common trip point setup;
+Patch (5/7):
+ - New patch;
+ - refactor: move thermal_zone_device_ops into chip_data and replace the
+   Loongson-2K2000 flag special case with an optional init_extend_resource
+   callback;
+Patch (7/7):
+ - Updated the 10-bit output to 11-bit in commit message;
+ - Temporarily remove the implementation of `set_trips`;
+ - Remove unnecessary header files;
+ - Rewrite `get_temp`, separating `read_calib` and `detect_old_fuse` into
+   new functions to be called during the probe;
+ - Use macros to define the relevant numbers.
+
+Link to V5:
+https://lore.kernel.org/all/cover.1789546118.git.zhoubinbin@loongson.cn/#t
+
+V5:
+ - Rebase on linux-pm/thermal;
+ - Drop patch-3 for it was applied.
+
+Link to V4:
+https://lore.kernel.org/all/cover.1785829933.git.zhoubinbin@loongson.cn/
+
+V4:
+ - Rebase on linux-mfd/for-mfd-next;
+Patch (3/5):
+ - Remove the operation that adds `compatible` to the `select` node.
+
+Link to V3:
+https://lore.kernel.org/all/cover.1785480242.git.zhoubinbin@loongson.cn/
+
+V3:
+Patch (2/5):
+ - New patch for moving thermal_ops to chip_data;
+Patch (3/5):
+ - Correct spelling errors;
+Patch (4/5):
+ - Add Acked-by from Conor, thanks;
+Patch (5/5):
+ - Keep loongson2_thermal_data->chip_data as const, and use
+   data->flags as the private data.
+ - Renmae LOONGSON2_THSENS_OUT_10B_MASK ->
+   LOONGSON2_THSENS_OUT_11B_MASK;
+
+Link to V2:
+https://lore.kernel.org/all/cover.1784619512.git.zhoubinbin@loongson.cn/
+
+V2:
+Patch (1/4):
+ - New patch form Sashiko;
+Patch (2/4):
+ - New patch for adding chipid syscon compatible;
+Patch (3/4):
+ - Use `loongson,chipid` phandle replace reg property;
+Patch (3/4):
+ - Refact `calib_offset` calculate routing;
+ - Add LS2K0300_OLD_FUSE_FLAG flag.
+
+Link to V1:
+https://lore.kernel.org/all/cover.1783670011.git.zhoubinbin@loongson.cn/
+
+Binbin Zhou (7):
+  thermal/drivers/loongson2: Fix negative trip conversion in set_trips
+  thermal/drivers/loongson2: Fix clamp() usage for thermal trip points
+  thermal/drivers/loongson2: Fix Loongson-2K2000 trip point programming
+  thermal/drivers/loongson2: Simplify thermal sensor registration
+  thermal/drivers/loongson2: Move per-SoC ops and init into chip data
+  dt-bindings: thermal: loongson,ls2k-thermal: Add compatible for
+    Loongson-2K0300
+  thermal/drivers/loongson2: Add Loongson-2K0300 support
+
+ .../thermal/loongson,ls2k-thermal.yaml        |  73 +++-
+ drivers/thermal/Kconfig                       |   1 +
+ drivers/thermal/loongson2_thermal.c           | 383 ++++++++++++++----
+ 3 files changed, 355 insertions(+), 102 deletions(-)
+
+
+base-commit: 4358090906b01806ee483229e8d7163b806bd116
+-- 
+2.52.0
+
