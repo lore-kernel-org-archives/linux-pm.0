@@ -1,83 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.171
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794236322;
-	b=A+NT0tOVAoCVaw2Y0cw7eONgo8/OAkv3NJH+xYR8um8peuPilBbJXfGybWJnio/FuZlA
-	 vJjSaSSF9srcL2Xh8oE1ap/0cnyLBCbrAY/AaajA5AGV4G/PEiy98BLNDZuFtPThF/0sy
-	 beDyMvP8XnXIOkOKeSXBvQ0KlzQfl75jxnsN571YMA1cz+/I15JN7Q54Sj8HUEAjBNAHc
-	 Nq2wyGZG8+X4Mlu2I9Ci/iNK+6YF/hBJLkf7mr6bjD4IePVrgvouBl5T855APCNKqr/+G
-	 W88GoR8/iuD7srYWBuJ7PJL+oFmTLwPMleV1FK+pDJI94cfG+eH/s66nxvoomaSctgQ==
+	t=1794236323;
+	b=kEr8o7ZrLGEkvGdPfOt29TaQ47nQqXEvXO6jA0/IokB5RUUhUGFl8AyDbP1/F1qFXP6r
+	 Hm952ppxrdi3tHBf99QEMX82/p+BAA12lLG9RZiczTaFivbHt9Xcaaox52ukozGlTonKZ
+	 mIbiq70uyuFH9xAoD6AkSyQF2GoqR8RgSQM3U//nqb6ekEHTqugtLBrB4cg/dxWdrDDLA
+	 NF2q1XLu+JFsVqzBsT+Z0kdvm2elTmOqkgo/i8jtB4VF+hJj0TBzRZ7vesSZi54h1lK1U
+	 CVOQjQG41VIpHpBSW2vX/0PgjIOIvF88Ns8MOHoMfXQJbvtj4zXnHPLipVYEdmuG1qg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794236322;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794236323;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=qGWgS1kK7bTN+UKMspP8Lj57f8piI162PVpn3s78g9w=;
-	b=mFLsIhD4VsvJsdTnc0nOTGyynoM4ZpFQlVhY1N211quY/UgwBXL743TJoHHOrbkvul2Z
-	 dqUpaxDtdW31oJmGjStrxIVRelthVdJutCZL4IOioeyMZq3oQgtNKzrlcNsbrBApebSSI
-	 ODjNMO2Y5CqnlBaJE0KGiQKBYlvSJ7/lSjpZpZbTMB4F6O40YDWWFXADvdA6M6v4Q3VcX
-	 XzFtpUUqxMe1I4prnUxAX1F6oAfc3JBjltzQH7h3pWpd+DjafBrRe9FZPxgkON5+JlAgJ
-	 4c7VhqqFYpGZVxa1GxG/ZbSiYB4H4ruHdEWJ5S3be+PVdfjX1FPnM3CM/BCgFmcDx2Q==
+	bh=lvwOfzLc6z0XT7JDSFybwf/dtG+Oy9O6aFTtJV96gfk=;
+	b=XPBVeHV6EeYLV7h30fsInz5XaUnmgcUW2KGbFRWACgiHi3EymDXanfIIZZjk3ibwd3kh
+	 MfsdQrlvpwiU35sD9K/kIbWBi6ZwwTGnxHHf42Asbar5ICOFoLVHjCpFRIhkK6gd9Wi0L
+	 6sYlhFhRlesn/WIwTM3Am9vMh3mm9UKev+tAt+cqyodqU2HpWIO4Z0NzoMxpksBZ+mlk/
+	 D/PF1653yj9Ba7XBlz6sS6jxhys0iCal5xKou6dQUHlBhYgmXF01zePKJQDYc8MSyyLGv
+	 FloL8DmvcGbE+HSZ+Wc/a6g/bLAXvfJJBGrmgeIh3gYYXmhyFkq3Y1Bd7QE3+CQW78w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hDvcH3nI;
-	arc=none smtp.remote-ip=209.85.167.171
-Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sh9za5mc;
+	arc=none smtp.remote-ip=209.85.210.50
+Received: from mail-ot1-f50.google.com (mail-ot1-f50.google.com [209.85.210.50])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00B21606A322
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 14:58:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 00B21606A322
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C91D6606A326
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 14:58:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C91D6606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hDvcH3nI
-Received: by mail-oi1-f171.google.com with SMTP id 5614622812f47-55e02e89f78so242672b6e.0
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 06:58:41 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sh9za5mc
+Received: by mail-ot1-f50.google.com with SMTP id 46e09a7af769-8439fe796ebso580642a34.3
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 06:58:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794236321; x=1794841121; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794236322; x=1794841122; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=qGWgS1kK7bTN+UKMspP8Lj57f8piI162PVpn3s78g9w=;
-        b=hDvcH3nIIjCWo9HjMsANVey5i425zlj+OUxGKudcwVlpTCs3+6nBG6xrHNnih78HIN
-         boIEmLJVQzdNVuB4HVhassKK/BNnQdocEgj3qicEXPc265PvoiTyut4qoPpiKuw5qE3k
-         eEmX0BjnSOW9lZVMcdDhnQNocR6SG86UAgo8/Mro40N5u4XxH+IlhxQG8R8IUO55UXTN
-         10J9WOVIhygmKcZpRmUqa/a3EoM03Pnn39hQGg9x+Epr1A+8d11Gl3v4LVm/kcjTVlzt
-         Za0L7kqVTj1qwG0tp9idUJ9lv1+r02AUM762Kxc0tb8BP+AN+yDD8CvbPWuQHB7RSuJi
-         RGTA==
+        bh=lvwOfzLc6z0XT7JDSFybwf/dtG+Oy9O6aFTtJV96gfk=;
+        b=sh9za5mc5Tv06+esieacrQk3ReQmeEcBmSQrRnR9avmlxBnT2Dpbyjj6Ux88o37zzB
+         WRLapzAhX2VQ4E5mJGuatCPLUZkd4oRkMUnQ5KD0xXR39rU3TQgFv8ePeboLMphZW0I6
+         hNd4tUBrc0OpKi70nsr/hcJnnsPp5xnlejnwijLVjsb7fy2t4ZZ6wyu1+03c5Tp25Qoi
+         nb+NARliQiNTdfU1Anwd300X868/ikrNTDbHl+qmxcHpomanaBttOiKW5irpwjFIEg4N
+         DufJUnZFIo8c9Ym8pAoXOvyTexb2yAf0Tj2eEWrTBSiQ/+tbPly++6zausxI3/pnXf9R
+         6NNg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794236321; x=1794841121;
+        d=1e100.net; s=20260707; t=1794236322; x=1794841122;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=qGWgS1kK7bTN+UKMspP8Lj57f8piI162PVpn3s78g9w=;
-        b=ESivQq1TTStC/we+SIXUgvV5jKnmzQ/YqCb7E70By4tZ2xfE7EXhJkykhDHFJMNU80
-         O6UdLH3CEE6enzOXDxW7Ry6M0//VrU24/E06cyWRL0/RoyjTX+RciQn93IRy1JdTqb1z
-         3Rgmjnt1gBUIkexSHrBmdlZUPnL3iOJJKuSO44KW6wvAxJcGlOj358viYB7hdnlteXDy
-         Yf+zqm4AH/vR0np8CtjTVySnbLNgTsdsyLgBtMS/xcpGLUe25JeymMPHCNqNTHHV92MP
-         ryHUsJPVJ279ZuI2eAOBTQl587Xd83266mWmwDmyYAkX03YvREe6JlWeRGt2qfTCHVNN
-         ZBwg==
-X-Forwarded-Encrypted: i=1; AL+hErHhv6V4aQ3Urib41DwIQbUbhAhAEFnqOwsTaUnVpnZefiuSBoRIvEeubFdnreo9ZjDSluXco38jhA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+kzNnFGuv5J/35l0EYk0HtJrQ5rJ76bG+wnOn4FoaoWzrqBEsn
-	opUq4UxZytgjc9cqxFy0nQ+qQHZeK/0LCdyZbx+GjXKsPC81EPtjGNSY
-X-Gm-Gg: AYBFou3ms8tHt3xZvqcMxRUB3VLYQcdCuk6vKNFAK2JI0k58BUXABt6SsAsazAJDZU8
-	433Hogs0EnnOfOKh+4kq+KFkyYHDbis8L778oG2Iarab5TBaEIbxo5YDC1ju47t8hZMcv1uP72E
-	+omHtm0MWM+j0VnYmhOWZpqcR2MuxCPutDhlBMEkMSXtm4wkYD6+1rbXMg2FbXr1jY/llLwTNWU
-	0+QFLXukr1aZvBTEZfxqrXUE4q0iObP1Db+Vz7n9nclMA4XRcLAf482D13i8s2IwHEQ/A8NfW8S
-	bCrxZOPs0nHs+jXPr4K2TtPN1OKw6K5qwSpbgtagF7awKZv0gsw4Jrsewk59JeluCQzwesaue1o
-	QQvnGmhGHBqleem93yzYwxLQ0fhPxTqzMZ2cFGoaCS/dvDS00RlIbAyr1J8C1heaAUyBg5MNhcE
-	EwvBnWdCJ9pIUts9n1aSz6w9+38/LfuqWLcZs/YOQwQvJFNdDW1ek3DKFJecGdQ+h51vyVYQbjU
-	gt2Yhn6PC9ttOzdHPltySdZZO4NqqAvAJZXHoTnz0DrihOH90mNIksxEAZZ0ZsqCKnUY8zfe0fv
-	aDQfOLgjkiCAKxQMMsALEPTPkVJmjQ==
-X-Received: by 2002:a05:6808:2211:b0:551:eea6:9397 with SMTP id 5614622812f47-5681463f7b5mr2639979b6e.59.1794236321012;
+        bh=lvwOfzLc6z0XT7JDSFybwf/dtG+Oy9O6aFTtJV96gfk=;
+        b=2CZeYI3xnTATC3rJEA9Z3EVSkViFs0iz4kAvIMVi2/T9U8D3ZvJd9LXzylLRttNB9F
+         Nqd/KX0T+H6r5QoxpIk98tdu7hfj1UC4LkFehxn6c+6Q28nOdTsJYDUJkmfm8sKMYkik
+         q+hUiOVssBMAADoWEzwf1KkVDAthQqCUsODroOpPuq4QPLexyKVhpInS8m78CkcTvTsX
+         yR9eu+jlm/HDw+0aWSUnJWB8C+tEYQpPfybXyPAPDI/NXFtU1ZDkD4xJFNdNi4qA4YwO
+         GefEoQJhVEPl2lncGPuHjv2PWZ0hZNKnhokudfvuDaLsG6s7CWvaAv8yYss+0kfmUitI
+         5XWA==
+X-Forwarded-Encrypted: i=1; AL+hErFlXBSOShAGBwEriS9ODtAGFtToK55WNxxV+8p7VbDR7xEGRflB98UV/dHzO5Hlm2NN2eyLdsnI9w==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+Lv2QBbaVamuiTgWxHyeMgRlYThx6Da0fw6vCr4wHIfwXJW1Q/
+	9q2Iu/MPW4aw9faTnQI6ola29EPiaeh0InFPAIKlZibSlRYVjs6q79BS
+X-Gm-Gg: AYBFou2GT8DUQJ1kwgj1Fz8g87xtZyEadMiToxaJCvNhw1HpC0UrgBqW2hbArvHZF5+
+	oqF7neDysQK64Ycae1IPg9bUj8fFRRRrK3etQ1E2E/modoMWql2FrzEr5/9lhgON5WJEZQDHS9d
+	2Gd5bryOeoGzu2qpdgrejedi2sCkf8q09jZIPqCv74qW/KvwAXHpjILpXhkE2LizgSvyuwrfUn9
+	+p3LBSb43bRyEX4UMRFRRPryEsLIEkBBgzW/Spx4ekqIzXwfkdSjyMJDNIVyFhAe+xn60F4gnx6
+	ChFexNMVkW58OTDsGF14qfw5DWu45c/DKCetk1cLMH9S0/jY67ZoX9EYmiJoUrdm+udq5VflyB/
+	DF1L6dQq8lUkwrB5XjnMciBiQhkBylSoFLz2gud9Et6jT5tKv4YOAytGbWyycs9m8jIufisK9BB
+	5kuw3W7MkaNcjHJmdwZ9e9gK326R7nLvVRc7f6uCNCCv0rv/ITCU2MLhw07EQtWUE4YCyOe7HWr
+	zHeXhjsAVzteyIx1st+7a0LsWlzgJu/ugJAzcv9qvCFEli0JJsH5b6TJO6RKaLSE1awlgEdltVE
+	bOyC8m7+ntsDchBF5YmcyXwG4NTBHg==
+X-Received: by 2002:a05:6808:4f49:b0:4e8:f740:f03a with SMTP id 5614622812f47-56814379845mr3502958b6e.27.1794236321610;
         Mon, 09 Nov 2026 06:58:41 -0800 (PST)
 Received: from neuromancer ([75.28.21.198])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-56813e54ff0sm4667618b6e.16.2026.11.09.06.58.39
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-56813e54ff0sm4667618b6e.16.2026.11.09.06.58.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 06:58:40 -0800 (PST)
+        Mon, 09 Nov 2026 06:58:41 -0800 (PST)
 From: Chris Morgan <macroalpha82@gmail.com>
 To: linux-rockchip@lists.infradead.org
 Cc: mfd@lists.linux.dev,
@@ -86,11 +86,10 @@ Cc: mfd@lists.linux.dev,
 	heiko@sntech.de,
 	lee@kernel.org,
 	sre@kernel.org,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Jacob Cook <jacobmcook1984@gmail.com>
-Subject: [PATCH V3 2/7] power: supply: rk817-charger: Fix NVRAM SoC value
-Date: Mon,  9 Nov 2026 08:58:28 -0600
-Message-ID: <20261109145833.1363319-3-macroalpha82@gmail.com>
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: [PATCH V3 3/7] power: supply: rk817-charger: simplify re-initializing coulomb counter
+Date: Mon,  9 Nov 2026 08:58:29 -0600
+Message-ID: <20261109145833.1363319-4-macroalpha82@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261109145833.1363319-1-macroalpha82@gmail.com>
 References: <20261109145833.1363319-1-macroalpha82@gmail.com>
@@ -107,42 +106,98 @@ Content-Transfer-Encoding: 8bit
 
 From: Chris Morgan <macromorgan@hotmail.com>
 
-The NVRAM value is stored as a value between 0 (0%) and 100000 (100%),
-but the bounds checking checks and truncates with a max of 10000,
-causing a value of 100% to get read as 10%.
+There are multiple places we re-initialize the coulomb counter. Create
+a function to do this to make the code easier to read.
 
-Fixes: 11cb8da0189b ("power: supply: Add charger driver for Rockchip RK817")
-Suggested-by: Jacob Cook <jacobmcook1984@gmail.com>
 Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
 Acked-by: Lee Jones <lee@kernel.org>
 ---
- drivers/power/supply/rk817_charger.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/power/supply/rk817_charger.c | 44 +++++++++++++++-------------
+ 1 file changed, 23 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/power/supply/rk817_charger.c b/drivers/power/supply/rk817_charger.c
-index 674622398efa..39c945622c4d 100644
+index 39c945622c4d..8843871948b9 100644
 --- a/drivers/power/supply/rk817_charger.c
 +++ b/drivers/power/supply/rk817_charger.c
-@@ -728,7 +728,7 @@ static int rk817_read_battery_nvram_values(struct rk817_charger *charger)
+@@ -167,6 +167,20 @@ static int rk817_chg_cur_from_reg(u8 reg)
+ 	}
+ }
  
- 	/*
- 	 * Read the nvram for state of charge. Sanity check for values greater
--	 * than 100 (10000) or less than 0, because other things (BSP kernels,
-+	 * than 100 (100000) or less than 0, because other things (BSP kernels,
- 	 * U-Boot, or even i2cset) can write to this register. If the value is
- 	 * off it should get corrected automatically when the voltage drops to
- 	 * the min (soc is 0) or when the battery is full (soc is 100).
-@@ -738,8 +738,8 @@ static int rk817_read_battery_nvram_values(struct rk817_charger *charger)
- 	if (ret < 0)
++static int rk817_initialize_coulumb_counter(struct rk817_charger *charger,
++					    u32 charge_ua)
++{
++	int tmp = CHARGE_TO_ADC(charge_ua, charger->res_div);
++	u8 bulk_reg[4];
++	int ret;
++
++	put_unaligned_be32(tmp, bulk_reg);
++	ret = regmap_bulk_write(charger->rk808->regmap, RK817_GAS_GAUGE_Q_INIT_H3,
++				bulk_reg, 4);
++
++	return ret;
++}
++
+ static void rk817_bat_calib_vol(struct rk817_charger *charger)
+ {
+ 	uint32_t vcalib0 = 0;
+@@ -242,6 +256,7 @@ static int rk817_bat_calib_cap(struct rk817_charger *charger)
+ 	struct rk808 *rk808 = charger->rk808;
+ 	int charge_now, charge_now_adc;
+ 	u8 bulk_reg[4];
++	int ret;
+ 
+ 	/* Don't do anything if there's no battery. */
+ 	if (!charger->battery_present)
+@@ -281,11 +296,9 @@ static int rk817_bat_calib_cap(struct rk817_charger *charger)
+ 		 */
+ 
+ 		charger->soc = 100000;
+-		charge_now_adc = CHARGE_TO_ADC(charger->fcc_mah,
+-					       charger->res_div);
+-		put_unaligned_be32(charge_now_adc, bulk_reg);
+-		regmap_bulk_write(rk808->regmap, RK817_GAS_GAUGE_Q_INIT_H3,
+-				  bulk_reg, 4);
++		ret = rk817_initialize_coulumb_counter(charger, charger->fcc_mah);
++		if (ret)
++			return ret;
+ 
+ 		charger->soc_cal = 1;
+ 		dev_dbg(charger->dev,
+@@ -313,17 +326,9 @@ static int rk817_bat_calib_cap(struct rk817_charger *charger)
+ 			dev_dbg(charger->dev,
+ 				"Recalibrating coulomb counter to %d uah\n",
+ 				charge_now);
+-			/*
+-			 * Order of operations matters here to ensure we keep
+-			 * enough precision until the last step to keep from
+-			 * making needless updates to coulomb counter.
+-			 */
+-			charge_now_adc = CHARGE_TO_ADC(charger->fcc_mah,
+-					 charger->res_div);
+-			put_unaligned_be32(charge_now_adc, bulk_reg);
+-			regmap_bulk_write(rk808->regmap,
+-					  RK817_GAS_GAUGE_Q_INIT_H3,
+-					  bulk_reg, 4);
++			ret = rk817_initialize_coulumb_counter(charger, charger->fcc_mah);
++			if (ret)
++				return ret;
+ 		}
+ 	}
+ 
+@@ -846,11 +851,8 @@ rk817_read_or_set_full_charge_on_boot(struct rk817_charger *charger,
+ 	boot_charge_mah = charger->soc * charger->fcc_mah / 100 / 1000;
+ 	if (boot_charge_mah > charger->fcc_mah)
+ 		boot_charge_mah = charger->fcc_mah;
+-	tmp = CHARGE_TO_ADC(boot_charge_mah, charger->res_div);
+-	put_unaligned_be32(tmp, bulk_reg);
+-	ret = regmap_bulk_write(rk808->regmap, RK817_GAS_GAUGE_Q_INIT_H3,
+-			  bulk_reg, 4);
+-	if (ret < 0)
++	ret = rk817_initialize_coulumb_counter(charger, boot_charge_mah);
++	if (ret)
  		return ret;
- 	charger->soc = get_unaligned_le24(bulk_reg);
--	if (charger->soc > 10000)
--		charger->soc = 10000;
-+	if (charger->soc > 100000)
-+		charger->soc = 100000;
- 	if (charger->soc < 0)
- 		charger->soc = 0;
  
+ 	/* Set QMAX value to max design capacity. */
 -- 
 2.53.0
 
