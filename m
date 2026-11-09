@@ -1,49 +1,49 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794215320;
-	b=iKYgBAnd9So4njozrTl0zeboLgQMIMSAUqCL+LvbaBgpLev28WkrdadOGKAEGq0AHFId
-	 X/wonTK1NNc9HuenkaFE/wJmkQgLViJX7cwd6DA4Xs5+kVvWqUgDrWAkxhOpKKXF0UqfS
-	 NjCEoTFkcBwVwTxFO68lYLjh+NSAgr3+gjksajK/GnLEcFNaQEescSyDOQJ12K4AKhojz
-	 CPW/v5CrdgKzSWRSJKIxnbKF3Ek+q6sL6UEEu8BdiF/1WrgnI9jxkNd9zNHF3RrDM7l7b
-	 begWPSXvezQ/qH3D+S5ViHYXSc6J0m9F7Ap49PauYfd22JcfTWWaR6fNA53JsuA0Uuw==
+	t=1794217182;
+	b=rT+O6a1MWFA8c5i+tMcNPPL4Kqzcqe1SECaV0PwGO2CUfK7byBJFlhlEpMrFU2ZKBCJa
+	 av1onHnkuRZhRZeEi06KsSPe5qL++ZPCm1jd+ou5SxU0jyUYH53BNVyhLgybtaJg572P9
+	 Q/i5IfRVYMlRKDaOc8PXb6lRJpjgtYLW4nTWQYxca6l3J1wtxexF6BZ+VAEYWILhcLztg
+	 B7fQfG+6URIMY6QE9MCSuFDQAltBQLZw+ZTHrbTLmnZTUU7Y7I4MbggUfeKJa0P8nCm3I
+	 m0dY/QQH3d1xGASqdKu7zMN2glAUd/gmheBWXPH31Gu52wip8skIZVMmA8BPWFSXIig==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794215320;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794217182;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
 	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
 	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=asv+L+6XrSQhvTA+x8KlHG7bpla/glF8wUGDppGecfM=;
-	b=Qf0kjWiINDBb1YauY+ewdoUpgjoiQ9ePfLxkcR27zquRC50c+3qiMP1tVgvUa389o8o4
-	 dn/obf3wOumNODlrMLOVMa4vElmdBcx3wV5hp+XYLEunI9ha7DbbiL6LQTlcbhfRViGul
-	 WRwFcwf4gckNlWtWsj9SaSrrvH29o84u/mnE/LIgs94XUJchKcDeuzUGtmVH3TtBfKJlV
-	 T/9Y5QXmcO4rzjvgCSUejOYQkZ1r8ryoUsaVkITn6luaT3UzNPtTqmL5aOMS3z38KsZ3Q
-	 cyNk6bxT+FKxK8h4dKOcqXoiV0eurbS0Sykf6MU9QcoC+VyCpVImd3n5u5ZfHEGxzrQ==
+	bh=G3C25bcrXiGlB5VNFdFYaNBvU4OVWzQaHEDb15i4OMw=;
+	b=BKEYcHj0XwsUMnTDE/Q/7lw4EAvCViBB0l8k6kpPNj9vg0lm+SWY6Wtg7hOIK1Untj17
+	 PWHiKfIn4CradolzgZNmnhDEUh3+rVmIiknQNRmkYPQh48BRUCpob0j9cM7fTwsyHhNTu
+	 CbrtgG0OUz7gMtp4MGnsqdF5rjCdn4HAh5Gjz88Oy0OBL0h7J+cIS93jN89dvcR6XOHrg
+	 T+usytun6C78tBPXJdihKTIBIM124zgVXq/gv1DIXcTEJohJrlldj9uhzmaQlkmmwv2MW
+	 a2QyX7BmmTpSqasxwMFObJbjQUd36vP/qMSurRwrsIK4CQP0M8lm9TDcBvDEkCVCgTg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=arm.com;
 	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Ozg8aZ+6;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=AOrGYWBf;
 	arc=none smtp.remote-ip=217.140.110.172
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6CAF7606A321;
-	Mon,  9 Nov 2026 09:08:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6CAF7606A321
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1A0FB606A33F;
+	Mon,  9 Nov 2026 09:39:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1A0FB606A33F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Ozg8aZ+6
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=AOrGYWBf
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 891F114BF;
-	Mon,  9 Nov 2026 01:08:35 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EF2CE1516;
+	Mon,  9 Nov 2026 01:39:36 -0800 (PST)
 Received: from [10.57.12.22] (unknown [10.57.12.22])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ABB8E3F85F;
-	Mon,  9 Nov 2026 01:08:36 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7A7303F85F;
+	Mon,  9 Nov 2026 01:39:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794215318; bh=b/Z8FOQeGGjUmR5j+LUi8n9Jv3kX2zKWVa4aDbKzjXE=;
+	t=1794217179; bh=GPuTwtxoypPcBye9GF2p0EwiGxkCh8DuIQyAQOS76eU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Ozg8aZ+6ju7WL3UUHR16QwAhksplV/ASDDZW3dQr9NmR9+OrjSnwnB/YOwK6Sn6eT
-	 +kIEQtT4khd5vClwnlxABv+rMZ8rWsoTdj93yBRbD6f4dn+ZaVIkqT/uh+26cpQaZ/
-	 O1NXsHR5Qj7I7BU7NBsc33Kqv2YFefS6QtncQW+8=
-Message-ID: <bcb0bfcb-e359-4710-aa6f-8de032327d03@arm.com>
-Date: Mon, 9 Nov 2026 09:09:09 +0000
+	b=AOrGYWBfXyZZY5SmVc5arh4b0KoNuwHhiyfcKv/xj4kOQ2TP9vqnV+PmS1NcCkn/z
+	 Q0QkWVsLd4NfiROX7uvM6mXQ3c+j7V90kSagqtWkUwlwXChQtXNMwmyHgSxNaqn/5j
+	 JWE7SMUux0boIK4gxqFmA0UiN+WlMkHs8WkqH2lA=
+Message-ID: <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
+Date: Mon, 9 Nov 2026 09:40:11 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -54,86 +54,198 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 4/6] powercap: dtpm: Use generic powercap hierarchy
- helpers
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, rafael@kernel.org,
- Heiko Stuebner <heiko@sntech.de>, Shuah Khan <shuah@kernel.org>,
- Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-kselftest@vger.kernel.org
-References: <cover.1793666444.git.daniel.lezcano@oss.qualcomm.com>
- <bded992091c92baa7246b939f266297f99c8942b.1793666444.git.daniel.lezcano@oss.qualcomm.com>
+Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency
+ ranking
+To: Guo Chen <guo.chen@oss.qualcomm.com>,
+ "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <lenb@kernel.org>, Vincent Donnefort <vincent.donnefort@arm.com>,
+ Matthias Kaehlcke <mka@chromium.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com,
+ tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com
+References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
+ <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
+ <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
 Content-Language: en-US
 From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <bded992091c92baa7246b939f266297f99c8942b.1793666444.git.daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
 
 
-On 11/3/26 04:48, Daniel Lezcano wrote:
-> DTPM implements its own hierarchy creation and destruction logic while
-> the powercap core now provides generic helpers for this purpose.
+On 11/9/26 06:47, Guo Chen wrote:
 > 
-> Convert DTPM to use the generic powercap hierarchy infrastructure.
-> Duplicate the platform hierarchy before creating it, and use
-> powercap_hierarchy_create() and powercap_hierarchy_destroy() to manage
-> the DTPM zones.
+> On 11/6/2026 11:15 PM, Rafael J. Wysocki (Intel) wrote:
+>> On Tue, Nov 3, 2026 at 12:21 PM Guo Chen <guo.chen@oss.qualcomm.com> 
+>> wrote:
+>>> em_compute_costs() ranks all the frequencies of the table, boost ones
+>>> included. A non-boost frequency can be marked inefficient only because
+>>> a faster boost frequency has a lower or equal cost, e.g.
+>>>
+>>>    3.9 GHz  4.0 GHz (cost C)  4.1 GHz (boost, cost C)
+>>>
+>>> With boost disabled 4.1 GHz cannot be selected, but 4.0 GHz is still
+>>> skipped by governors rounding down to efficient frequencies (e.g.
+>>> ondemand with CPUFREQ_RELATION_HE), which land on 3.9 GHz instead of
+>>> the best selectable frequency. Several frequencies can be affected.
+>>>
+>>> Exclude the boost frequencies from the ranking in em_compute_costs() and
+>>> keep them all efficient, using the highest non-boost frequency of the
+>>> CPUFreq table, returned by the new helper
+>>> cpufreq_table_max_nonboost_freq(), as the boundary.
+>>>
+>>> Fixes: c8ed99533dbc ("PM: EM: Mark inefficient states")
+>>> Signed-off-by: Guo Chen <guo.chen@oss.qualcomm.com>
+>> Please see Sashiko's feedback regarding this patch
+>>
+>> https://sashiko.dev/#/patchset/20261103-em-rank-boost-separately- 
+>> v2-1-5a13d1b38d37%40oss.qualcomm.com
+>>
+>> and tell me what you think about it.
+>>
+>> Thanks!
 > 
-> Add DTPM callbacks to create and destroy the zones associated with each
-> powercap hierarchy node. Adapt the CPU and devfreq backends to return
-> the created DTPM instance and use the node name provided by the
-> hierarchy.
+> Thanks for the review.
 > 
-> Convert the Rockchip RK3399 description to struct powercap_hierarchy
-> and keep the device tree path as DTPM-specific node data.
+> I did consider this case. If no policy is found, max_nonboost stays 0 and
+> the new logic is bypassed, i.e. the ranking falls back to the old
+> behaviour, which looked like the least intrusive option. I also thought
+> about warning and returning an error, but most of the in-tree callers of
+> em_recalc_and_update() ignore the return value (e.g.
+> em_adjust_new_capacity() and exynos_asv_update_opps()), so the update would
+> just be dropped without anyone noticing.
 > 
-> This removes the DTPM-specific hierarchy traversal and destruction code
-> and leaves the hierarchy management to the powercap core.
+>>> ---
+>>> Changes in v2:
+>>> - Drop prev_boost and keep all boost states efficient by resetting
+>>>    prev_cost for them, as suggested by Lukasz. Boost states are no
+>>>    longer ranked against each other.
+>>> - Retitle the patch to match the new behaviour (was "Rank boost and
+>>>    non-boost frequencies separately") and reword the commit message.
+>>>
+>>> Link to v1: https://lore.kernel.org/all/20261030-em-rank-boost- 
+>>> separately-v1-1-238a6b2bb888@oss.qualcomm.com/
+>>> ---
+>>>   include/linux/cpufreq.h     | 24 ++++++++++++++++++++++++
+>>>   kernel/power/energy_model.c | 16 ++++++++++++++++
+>>>   2 files changed, 40 insertions(+)
+>>>
+>>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+>>> index d3d0d9d02aa4..c93316141a11 100644
+>>> --- a/include/linux/cpufreq.h
+>>> +++ b/include/linux/cpufreq.h
+>>> @@ -1155,6 +1155,24 @@ cpufreq_table_set_inefficient(struct 
+>>> cpufreq_policy *policy,
+>>>          return -EINVAL;
+>>>   }
+>>>
+>>> +static inline unsigned int
+>>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
+>>> +{
+>>> +       struct cpufreq_frequency_table *pos;
+>>> +       unsigned int max = 0;
+>>> +
+>>> +       if (!policy->freq_table)
+>>> +               return 0;
+>>> +
+>>> +       /* The table may be unsorted, scan all of it for the highest 
+>>> one. */
+>>> +       cpufreq_for_each_valid_entry(pos, policy->freq_table) {
+>>> +               if (!(pos->flags & CPUFREQ_BOOST_FREQ) && pos- 
+>>> >frequency > max)
+>>> +                       max = pos->frequency;
+>>> +       }
+>>> +
+>>> +       return max;
+>>> +}
+>>> +
+>>>   static inline int parse_perf_domain(int cpu, const char *list_name,
+>>>                                      const char *cell_name,
+>>>                                      struct of_phandle_args *args)
+>>> @@ -1219,6 +1237,12 @@ cpufreq_table_set_inefficient(struct 
+>>> cpufreq_policy *policy,
+>>>          return -EINVAL;
+>>>   }
+>>>
+>>> +static inline unsigned int
+>>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
+>>> +{
+>>> +       return 0;
+>>> +}
+>>> +
+>>>   static inline int of_perf_domain_get_sharing_cpumask(int pcpu, 
+>>> const char *list_name,
+>>>                                                       const char 
+>>> *cell_name, struct cpumask *cpumask,
+>>>                                                       struct 
+>>> of_phandle_args *pargs)
+>>> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+>>> index d19a65461ae8..5b1d095fd376 100644
+>>> --- a/kernel/power/energy_model.c
+>>> +++ b/kernel/power/energy_model.c
+>>> @@ -255,15 +255,24 @@ static int em_compute_costs(struct device *dev, 
+>>> struct em_perf_state *table,
+>>>                              unsigned long flags)
+>>>   {
+>>>          unsigned long prev_cost = ULONG_MAX;
+>>> +       struct cpufreq_policy *policy;
+>>> +       unsigned int max_nonboost = 0;
+>>>          int i, ret;
+>>>
+>>>          /* This is needed only for CPUs and EAS skip other devices */
+>>>          if (!_is_cpu_device(dev))
+>>>                  return 0;
+>>>
+>>> +       policy = cpufreq_cpu_get(dev->id);
+>>> +       if (policy) {
+>>> +               max_nonboost = cpufreq_table_max_nonboost_freq(policy);
+>>> +               cpufreq_cpu_put(policy);
+>>> +       }
+>>> +
 > 
-> Preserve best-effort creation: an unavailable backend returns NULL to
-> skip its branch, and setup failures are warned about and skipped rather
-> than rolling back independent zones. Invalid node descriptors remain
-> fatal. Reject a DT node with a NULL path before calling
-> of_find_node_by_path(), treating it as an invalid descriptor rather
-> than an unavailable backend.
+> The lookup can be made more robust though: on the update paths dev->id may
+> be offline while other CPUs of the performance domain are online. In v3, if
+> dev->id has no policy and the performance domain already exists, I will use
+> an active CPU of the performance domain instead, as
+> em_cpufreq_update_efficiencies() does, and only warn and fall back to the
+> old behaviour if that fails as well.
 > 
-> When the representative CPU is offline, find an active policy through an
-> online sibling whose related_cpus mask contains it. Hold the CPU hotplug
-> read lock during selection and setup, and initialize the zone through the
-> policy's active CPU while keeping the hierarchy-provided name. An entirely
-> offline policy still has no active CPU to initialize through.
+> I did not use the performance domain for every lookup because at
+> registration time dev->em_pd is not assigned yet (it is set after
+> em_create_perf_table() has returned):
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> ---
-> Changes in v5 (since v4):
-> - Reject a NULL DT node path with -EINVAL before invoking
->    dtpm_setup_dt(), as suggested by Lukasz Luba.
-> - Document that a missing path is an invalid hierarchy descriptor.
+> policy = cpufreq_cpu_get(dev->id);
+> if (!policy && dev->em_pd) {
+>      cpu = cpumask_first_and(em_span_cpus(dev->em_pd), cpu_active_mask);
+>      if (cpu < nr_cpu_ids)
+>          policy = cpufreq_cpu_get(cpu);
+> }
 > 
-> Changes in v4 (since v3):
-> - Rebase on v7.3; no code or commit-description changes.
+> if (policy) {
+>      max_nonboost = cpufreq_table_max_nonboost_freq(policy);
+>      cpufreq_cpu_put(policy);
+>   } else {
+>      dev_warn(dev, "EM: no CPUFreq policy, boost states are "
+>                          "not excluded from the ranking\n");
+> }
 > 
-> Changes in v3 (since v2):
-> - Rebase on v7.3-rc7.
-> - Preserve best-effort branch creation using the generic NULL result.
-> - Find an online policy sibling for offline CPU representatives and
->    protect policy selection and setup against CPU hotplug.
-> - Keep generic API behavior and documentation in patch 1.
-> - Fix __initdata placement; match-table indentation is handled in patch 3.
-> - Name setup callback arguments and remove whitespace-only lines.
-> - Update the description.
+> This makes it much less likely to miss the policy, but cannot rule it out:
+> the CPU can still go offline between picking it and calling
+> cpufreq_cpu_get(). em_cpufreq_update_efficiencies() has the same
+> limitation.
 > 
->   drivers/powercap/dtpm.c         | 180 +++++++++++++++-----------------
->   drivers/powercap/dtpm_cpu.c     |  62 ++++++++---
->   drivers/powercap/dtpm_devfreq.c |  22 ++--
->   drivers/soc/rockchip/dtpm.c     |  67 +++++++++---
->   include/linux/dtpm.h            |   6 +-
->   5 files changed, 198 insertions(+), 139 deletions(-)
-> 
+> Would that work for you?
+I also thought about that possible racy corner case, where
+CPU can go offline (or already be offline). Although, in current
+usage this should be OK, since we do this in boot phase and
+platforms are sane.
 
-Thank you Daniel for addressing that, LGTM
+We can can add that step with 'cpu_active_mask' to play safe,
+but no hard promises it would be atomic.
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+The warning also would help, for bring-up phase, so engineers would
+notice it and address the racy hot-plug booting system when it's there.
+
