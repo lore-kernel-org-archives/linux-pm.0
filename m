@@ -1,50 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794187379;
-	b=LywSMW0NuFsvXdpneM+7Tf8Afn0aWi9mcyRbmkIXD3jo/XsmSdodd+N4JP0Lwnny4ygv
-	 +k13lTLSMuqOrf8ejS4JhTG+z1nJ1y6kk44Q+KDdnEdSB4WCoedqN+EAXqZb1NZ0RBpjZ
-	 76VfI7ldrHEXC39EwPSWEZZo+gC0/DRT/FNzEPp19mV5EzS+68hosgaywdCJK0s8qYQox
-	 azw226ScgGExQzQb0pamnoMZGBSl1ti4Nh9OSU06AWA1WZ3lvlP2br0v+Ic3KKZi5B52N
-	 0ADXwU6u0nGhanCGsBXjiv5kDMfFkPjeUzFSsE6dwf/3QmVRJeD/DLu/j1WbaUB4r1A==
+	b=U09X/TAyjesqGQYUtiVCwHnzgy4ACPZWtzTmh4ykH9as3I5Ebym6/jvY8ND/kwOcqfrk
+	 QWxRXNnRMGo/eqQ+55+wbTw+GA0ppmM1/w9GU/k9NiNxebCnww35L4qO2182drNlwFDi7
+	 rR2wZy1j7J4zH9/M64jcnKRO6h7B0vWEY7UlopCruLydNKPc3TNPYPB52IhVdHHr9/AeE
+	 fa1cg3AA2abP3C0+pimH2IVNigbhJJiUbVeRj1VeX5QtgZJrkOrUqOZhqb6IAkqvW8wY4
+	 a/TEBhlZt87vI/6oS28mq1TTbgy2tb3I7pGuAakNqSY6OG1FKVY/hHLBgYBegepTYxg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794187379;
 	h=Received:Received:From:To:Cc:In-Reply-To:References:Subject:
 	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 X-Mailer;
-	bh=Qb706ZL5O4KWbud0y2CpZF3/LcpSoCg7jFWxoHu4Cgc=;
-	b=dbhVhyo8qtKM3n5oY0YigaahiSmcM6UiyZ6nOk6bwzXfHubVRsdsJLIbWACIaekhmucm
-	 urPcRRci852EOlhFEw6yfdOXOUOUds3q82Lqd5SyNG22iC3spABjomuThGWmVI9UKOQys
-	 xHjOcoDxU5IoQXvV24oGFbwsymMVBxvPkNtIrUXljwKD0W553uANMrlBVEnZVwBMFTh8C
-	 NbkDAyfcq9htJLbWIFqFEnQymWJdDML2Df8M+w8t9oJIUJjz8b2PvQTLKAA/U3QaVx3rG
-	 1zYbww8x+wqfrj0a9EpYg0gcwlPD05cIsld/yViN+QY/AQUoaOTEOC6gypKviHYcCVw==
+	bh=qeZmb5IMlSPvU0b1v39iOru57XmnQkLJjCf3ruNByZ8=;
+	b=cgkcfWqerK7DMuDJoWrQDnYhRTzk8ADxTBExZuT70Sv18NzSTYtdSy0o+lefJFf6pEip
+	 4sguNb+v7Jp7UF9Eof5URodUeQnVMv9pUE+PS4bNjuwkPDo2xdzmPsH6ImwdcoH+SjtW0
+	 byHx8A3oKU18mTXK6/flrmO2symQMyD8mJUExql6W+sGhcWqOWkNpu0Rw9VJYuCJxI4FN
+	 59FVDLYVz+RhsRHy5i5hmaPXYs33z4D+XXeQr++NpbHR5z8d22Nq6WDiteBTr+leci+y9
+	 TQelG5QQJj++VvKkqYRa8PS8f+JR09RFp9gLfMdhxmSeSZIyvv6Otg3y3RpfOCDJiIg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1019C606D82E;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FD9F606D837;
 	Mon,  9 Nov 2026 01:22:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ADF261F00902;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB0901F00900;
 	Mon,  9 Nov 2026 01:22:58 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id DAAEC181B0F; Mon, 09 Nov 2026 02:22:59 +0100 (CET)
+	id E1CDA181C1F; Mon, 09 Nov 2026 02:22:59 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Casey Connolly <casey.connolly@linaro.org>, 
- Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+To: Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
- Fabricio Akio <fabricioakio@gmail.com>
-Cc: Robin Snyders <robin@snyders.xyz>, David Heidelberg <david@ixit.cz>, 
- phone-devel@vger.kernel.org, Richard Acayan <mailingradian@gmail.com>, 
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20261003-qcom-smbx-chg-state-change-v1-0-fffaef446932@gmail.com>
-References: <20261003-qcom-smbx-chg-state-change-v1-0-fffaef446932@gmail.com>
-Subject: Re: (subset) [PATCH 0/4] power: supply: qcom_smbx: report charger
- state changes
-Message-Id: <179418737988.1255445.8261851488253335768.b4-ty@b4>
+ Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+ Stanislav Zaikin <zstaseg@gmail.com>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20261005164303.1208127-1-zstaseg@gmail.com>
+References: <20261005164303.1208127-1-zstaseg@gmail.com>
+Subject: Re: (subset) [PATCH v5 0/3] Add Xiaomi 12 Lite 5G (taoyao) battery
+ support
+Message-Id: <179418737991.1255445.16032370498421134763.b4-ty@b4>
 Date: Mon, 09 Nov 2026 02:22:59 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,24 +57,27 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.16.0
 
 
-On Sat, 03 Oct 2026 16:45:20 -0300, Fabricio Akio wrote:
-> qcom_smbx does not handle the charger's chg-state-change interrupt, so
-> a charge completing is not notified and consumers can keep a stale
-> status. Allow the interrupt in the binding, handle it in the driver,
-> and describe it for PM660 and PMI8998.
+On Mon, 05 Oct 2026 18:43:00 +0200, Stanislav Zaikin wrote:
+> Xiaomi 12 Lite 5G (taoyao) has an additional property with ID 12 that
+> breaks the parsing in qcom_battmgr. Fix that by introducing separate
+> maps for lookups properties in both directions.
 > 
-> Tested on a Motorola Moto X4 (PM660) with the sdm660-mainline 7.2.3
-> tree: each charging-state change is notified and the battery status
-> follows. The PMI8998 patch is untested on hardware.
+> The other approach that I tried is manual shifting properties:
+> 
+> +	if (battmgr->variant == QCOM_BATTMGR_TAOYAO && prop > BATT_CHG_CTRL_LIM_MAX)
+> +		prop++;
+> ...
+> +		if (battmgr->variant == QCOM_BATTMGR_TAOYAO && property > BATT_CHG_CTRL_LIM_MAX + 1)
+> +			property--;
 > 
 > [...]
 
 Applied, thanks!
 
-[1/4] dt-bindings: power: supply: qcom,pmi8998-charger: add chg-state-change
-      commit: 4e5927d83004c2ee0b3567f649eb63c5e444bde9
-[2/4] power: supply: qcom_smbx: report charger state changes
-      commit: 275c40e43b0d3671d79fa143e664eb4fc0bed96f
+[1/3] dt-bindings: soc: qcom: qcom,pmic-glink: Document Xiaomi taoyao compatible
+      commit: 0d9bdfd21820c8f4900ec304979972e4948f0005
+[2/3] power: supply: qcom_battmgr: add Xiaomi taoyao support
+      commit: 385b733ad1a94af3c6f3bd4bf418f2f30a3b2bae
 
 Best regards,
 -- 
