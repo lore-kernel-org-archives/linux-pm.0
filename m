@@ -1,52 +1,73 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=90.155.92.199
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794231356;
-	b=qpgtQIC830TUJXRKG+rr/t1LS+aQ8DvnAFzgn8pmAKtSKBiPNaaUI9SON0SI2lhxSCZA
-	 EK3nfpmuEiF/hsIJjQ+HfUQAiJT9Ck49OioJh6zNdqZHKoV3rSiyVL7lpf467ivd61QIn
-	 gALsQkpuwnpE4sO6TloO/qu2s/htHwrgZfhcjsBSyvoOnJZBFic1Wejw+PN/p+qUmWF8S
-	 eE0G/aC0fGXFRDKhmdjnyxxbHNrdv1YsayjV9pNaUJceYlQf4ZAvyQtSn1SQbvqVHhUA0
-	 5jdaPa3GSqEKYFyP3kKY5x14wX8TcXFKz0mwcYBkJ/pUhEHP4Zw0Y1LtLKsh7YkJ2LA==
+	t=1794232567;
+	b=qKqfZpBPvF8FRwKeVEFre0xzmip0vDyjiHmTlbRH4zBzkwzJ7LeMugXUcidbQazoJtYl
+	 O7qHW+dPjjzpJKrHjSEeGja1Hy1+mVuARDq9OFvRCyt9vXDqW9IXqmm+zWIFUvp0YbJ6H
+	 VSaNyGWso8ies91YHtkTjtabYKpPv54Ly5mHw9j8eh8cY06tfuxYzsscMcoTEtpwDQoIS
+	 sE4PZzkScpnktwXSaKmSW8qbIbuUEtjrbsOGH2JbOJe/IX0akcu2sC6LafVsrzybSt2zV
+	 RQ/oeY2LN/CDiSGtpDIDzH7d7d0aQXI57sSeo0JMmID87ozjetMebddjl1FoDNCak+Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794231356;
-	h=DMARC-Filter:Received:DKIM-Signature:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
-	 In-Reply-To:To:Cc:X-Mailer;
-	bh=tgP4XviTGIz0oLC0rNHIuVfneaVy2vOwc2jM4Exgjbw=;
-	b=PT8wVX82S417HMAGkbdZRHTO+cIcn8nB3r33WrONDrOXYBS5yLqOW+jhDXlSbfsLOcdB
-	 /MwcB4I7mrB6yzJ+Ctz7gZIXtViy8Qfo2RCPsdJoSkq+MCfZmIl2qriRfaps/IeYIDRSh
-	 cPr45OcNoeKMLJmvuVOPpQA26DjRrSOO+g+mgYr2MKfa1xe590BKngICCsKCvdrUxgkMT
-	 rW6ZXsLgUkuAQzQu9DrArylCL32AHJeG7RXEyEvvZeV9kF2j7Kf2HxRzBo6CHitigiPJS
-	 1xCW0qp+ANHjFYEsxO1mBknGrKJBx5hLoQGDU2hWPcqR2zm8fEvEnecbsg2taNa1ndQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794232567;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=B6WcZ6IMkcLgiSPsNKkvOLd/yuLh+SF0+P0jadmaCpk=;
+	b=Iz2vokCHDAlonwXVsDZ4sqwHSbctGl33jtY0A1l9RrYUrWUpjfWhDTs842nZaMJ/G9D8
+	 KVIv9q4e+v8m2pZx8q6tjeF+v2f7om4kzA2p9GM1yG2nHkKOpPwmQv4lEwF3kt0hg+pfI
+	 MGbwCk7YxunogkXeFvpmx5+Fp2FDfaDqiLW7vYipMLVuFJpLDEetWgcGnhjLYQjtjwVsQ
+	 iNMnADW3AhH8cGkRWhZjXC29/NSoEfmWDYeTTm/QqlfFd+L0UhHiB+pAMYNKq87K2oCpj
+	 oRKDk8ug4JunkL1wf60fdG5lHIXjtUyKSn4koRgMIDID3QIvIQ2hZapv34HumKMRWOA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ideasonboard.com;
-	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=tIGD1wmI;
-	arc=none smtp.remote-ip=213.167.242.64
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	dmarc=pass header.from=infradead.org;
+	spf=pass smtp.mailfrom=infradead.org;
+	dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=e3QgGhPW;
+	arc=none smtp.remote-ip=90.155.92.199
+Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7D87606D810;
-	Mon,  9 Nov 2026 13:35:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A7D87606D810
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3996A606A31C;
+	Mon,  9 Nov 2026 13:56:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3996A606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=tIGD1wmI
-Received: from neptunite.rasen.tech (unknown [IPv6:2400:2411:160:2f00:7074:f4f4:e983:bf17])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id C5B1DDA8;
-	Mon,  9 Nov 2026 14:33:27 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1794231213;
-	bh=CgJnLgnX5CuxDpunc/vPz+9rP/dBSdnVQgPc8N5Uilw=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=tIGD1wmIInmnPvodb8cAyyag37DpzaiTu0V0eXsFfJVy8YJxlD7nfzbOD9cBd13ke
-	 uIhlwEzjgU+2aQBeD8xusyzXIB0JAohgTbIGbA8JgF4H0bXLe0PdyJoloOVWsYqWd2
-	 STjwxiDEE86db6Q41tc3gZNpWcwEufP+yRN6Z0yc=
-From: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Date: Mon, 09 Nov 2026 22:34:33 +0900
-Subject: [PATCH v4 12/13] media: vsp1: Complete buffers as queued in
- start_streaming error path
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=e3QgGhPW
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=B6WcZ6IMkcLgiSPsNKkvOLd/yuLh+SF0+P0jadmaCpk=; b=e3QgGhPW8XV8DfJb8YQ/4HEgoJ
+	U4IFQYEzqPjouU8aHCMblUV2i+NnRybd8VYi95AKn0ZAqQZy116TWV+YcYLFymNYOYrbi4kdmC5t9
+	NWde+S9aG3YsniqLmJ8M48KmW/GKAvyns5AubTUA7pQ7SYM26svNc0+wn5sRmkER3n+8GgUNubK4j
+	8OnJ+He0SZ5QZot4NKpBpXKKqv9hAq4s/sJTCflv/l9p14krxiIK02vRYPTGHpRBrnh+Bwu/ePDUc
+	hM5Nu7F4r7XyKJILxOU4n47tgmQ9kxtvsuzteQYSX96TrKixzJFIBCOXS1bdrEncV7csV2hIWOa0A
+	oRDLGHNw==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xQPqk-00000006niR-3sTy;
+	Mon, 09 Nov 2026 13:55:55 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 2394E30057E; Mon, 09 Nov 2026 14:55:53 +0100 (CET)
+Date: Mon, 9 Nov 2026 14:55:53 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kayra Cizmeci <kayracizmeci@gmail.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, mingo@redhat.com,
+	juri.lelli@redhat.com, dietmar.eggemann@arm.com,
+	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+	vschneid@redhat.com, kprateek.nayak@amd.com,
+	linux-kernel@vger.kernel.org, lukasz.luba@arm.com,
+	rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org,
+	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com,
+	sched-ext@lists.linux.dev, qyousef@layalina.io,
+	christian.loehle@arm.com, pierre.gondois@arm.com,
+	sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
+Subject: Re: [PATCH 06/20 v3] sched/eevdf: Add min slice check when selecting
+ CPU
+Message-ID: <20261109135553.GC2668564@noisy.programming.kicks-ass.net>
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+ <20261106151947.3991524-7-vincent.guittot@linaro.org>
+ <au7SabL5pfbsApyB@scheduler.schedules>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -56,91 +77,38 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-12-1b2072e8c37e@ideasonboard.com>
-References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
-In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>, 
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
- Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
- Ulf Hansson <ulfh@kernel.org>, 
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
- Mauro Carvalho Chehab <mchehab@kernel.org>, 
- Philipp Zabel <p.zabel@pengutronix.de>, 
- Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
-Cc: linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-media@vger.kernel.org, 
- Paul Elder <paul.elder+renesas@ideasonboard.com>, 
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-X-Mailer: b4 0.14.2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <au7SabL5pfbsApyB@scheduler.schedules>
 
-In the error path of vsp1_video_start_streaming, the queued buffers are
-released via vsp1_video_release_buffers with the state
-VB2_BUF_STATE_ERROR. This causes subsequent start_streaming calls to hit
-the following warning in vb2_start_streaming:
+On Sat, Nov 07, 2026 at 11:57:12AM +0300, Kayra Cizmeci wrote:
 
-	/*
-	 * If done_list is not empty, then start_streaming() didn't call
-	 * vb2_buffer_done(vb, VB2_BUF_STATE_QUEUED) but STATE_ERROR or
-	 * STATE_DONE.
-	 */
-	WARN_ON(!list_empty(&q->done_list));
+> (My editor got crazy, so I had to copy this diff :<)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 262626455497..8b0dd858f332 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -8876,10 +8876,8 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
+>  
+>  static inline bool choose_sched_slice_rq(struct rq *rq, struct task_struct *p)
+>  {
+> -	if (p->se.slice < get_rq_min_slice(rq))
+> -		return true;
+> -
+> -	return false;
+> +	return p->se.slice < get_rq_min_slice(rq) &&
+> +		READ_ONCE(rq->curr)->sched_class == &fair_sched_class;
+>  }
 
-Fix this by completing the queued buffers with the state set to
-VB2_BUF_STATE_QUEUED in the error path of vsp1_video_start_streaming.
+that wants to be rcu_dereference_all() or somesuch, rather than
+READ_ONCE().
 
-Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
----
- drivers/media/platform/renesas/vsp1/vsp1_video.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+The think I noticed is that it will only select one slice_cpu; it will
+not consider another once its has found one.
 
-diff --git a/drivers/media/platform/renesas/vsp1/vsp1_video.c b/drivers/media/platform/renesas/vsp1/vsp1_video.c
-index b85351986fae50aa678032b05b0352dff2b5a26a..46e0d6f8a66bddb4064e52e1521f3c9da7192868 100644
---- a/drivers/media/platform/renesas/vsp1/vsp1_video.c
-+++ b/drivers/media/platform/renesas/vsp1/vsp1_video.c
-@@ -765,7 +765,8 @@ static int vsp1_video_setup_pipeline(struct vsp1_pipeline *pipe)
- 	return 0;
- }
- 
--static void vsp1_video_release_buffers(struct vsp1_video *video)
-+static void vsp1_video_release_buffers(struct vsp1_video *video,
-+				       enum vb2_buffer_state state)
- {
- 	struct vsp1_vb2_buffer *buffer;
- 
-@@ -773,7 +774,7 @@ static void vsp1_video_release_buffers(struct vsp1_video *video)
- 	guard(spinlock_irqsave)(&video->irqlock);
- 
- 	list_for_each_entry(buffer, &video->irqqueue, queue)
--		vb2_buffer_done(&buffer->buf.vb2_buf, VB2_BUF_STATE_ERROR);
-+		vb2_buffer_done(&buffer->buf.vb2_buf, state);
- 	INIT_LIST_HEAD(&video->irqqueue);
- }
- 
-@@ -802,7 +803,7 @@ static int vsp1_video_start_streaming(struct vb2_queue *vq, unsigned int count)
- 		if (pipe->stream_count == pipe->num_inputs) {
- 			ret = vsp1_video_setup_pipeline(pipe);
- 			if (ret < 0) {
--				vsp1_video_release_buffers(video);
-+				vsp1_video_release_buffers(video, VB2_BUF_STATE_QUEUED);
- 				vsp1_video_cleanup_pipeline(pipe);
- 				return ret;
- 			}
-@@ -858,7 +859,7 @@ static void vsp1_video_stop_streaming(struct vb2_queue *vq)
- 	}
- 
- 	video_device_pipeline_stop(&video->video);
--	vsp1_video_release_buffers(video);
-+	vsp1_video_release_buffers(video, VB2_BUF_STATE_ERROR);
- 	vsp1_video_pipeline_put(pipe);
- }
- 
+This means it picks the oldest option, rather than the most recent one.
+And given this is all racy as heck, the most recent one might in fact be
+the better choice. It will have had less time to go stale.
 
--- 
-2.47.3
 
