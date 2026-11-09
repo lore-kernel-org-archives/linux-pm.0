@@ -1,102 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794233755;
-	b=ENNDes0gFiLJrI5QzixqEFbQiI4rJIqjKikTrIscjLHQoEjSTru67q4blAISFwHB2MKb
-	 Bvnrgc/wU812SX3b8ZJbae0+o8Bx7RikLb0w41Vq/pAv3ccYppbYSEifTJUfGpEclVATy
-	 t6XBwqkPX9ASdtrr59Jx9QrmcPpAWhGBoM3NKsxCYtWXrxVlRsaEVGjo6sUt/tiZnRSL6
-	 zDUrVRCN7KXVFwyeH1ibJ7G0kKV/pBkG9dlyHxVjGr2ckumepY08+kqCXy1y4JDIxKk8W
-	 3bgCos1df4M2qiYCOkxQq+//OGNHFSMZL1Wbpk7/6jsK3TaS1Q20NxHIXPBIJ+fRoyA==
+	t=1794233933;
+	b=Sa97vq0w1VUxoVd/kLL3ul2Z/iIvUVX8T+4ZUAWLKuRVM+6Rdf9Rzl0ElrG3wxkDk0tG
+	 KIQJayO2z0cHfPrUficD5dCw+AwI6ZloL35y4+nlYpBS2LuK6VzbN4O5Mm0epFDlruK2Y
+	 sB35rWcp/046PGk0/Kh2N9HSuTsbXb/SoRucxRCTOU6065iHoYVSZVOG3+PlhjJ8E97Js
+	 R0TOymWjZ4rWA3ZQkuziQysH904/uAFZZuKpmSc5QxUvh+wW+O/Hs0w4qDIMlpfpn/vb/
+	 /eyBauegO1vfyyoK2TpHJR8ePBD2Pd3KnJ6vwDdf+jtgr5kCebRhObbM4PVmOXmiAxw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794233755;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=BRzYSlxPXB9SayIbet1ssxpRWLhzXzCtSQdIz3Apaiw=;
-	b=vYbZN4lIc6TC/pzR0RHTX78V2AUC252HiJDWBtKxeoFIK3/0mPWFF6lHBhkae9b8JEPf
-	 Th4WeJHyL8U5++/yYl443OCeq7G3TYRnIrV0dHRVLQsht2i7W8VR79lqyghXw1ysG7zBM
-	 KN311AJ1rKeCGP6OIHqXuSEFvde5mS7f5FxxnIZ305f7TkYXMIGeUN69kc8Ol8frsSf3E
-	 lbOpAeV9M0/jvVVdzjCfHUja0Vrel33/FWqrp911+65D6WA8JfZIIPtiWNbPY191IaC4Z
-	 sWicZCxxv5UFZjlCp2lNjcKkno87polSxEkcRRAMxD5rq76VtpkKU+t687X5ltKmPGw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794233933;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
+	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type;
+	bh=Tz1cDpa5AepSCwsliEOBWV2ZbIXpdMUmAVTrHLbgBBk=;
+	b=GgTp8VimG0m6ub/OPAh+b1R3NlsxYK96Dh6MzWO5EUQnv3rZwV0pOgPrTt08G4MBF7E1
+	 8koIhiDvAqLBSk0amufTsyE+5eL/va4pL375zUjd26dair9/yBGvwbac2vbV2vQFIcSmp
+	 395CX7OC4JET3fIao2+0ow/6QzkB6buiUaDeQ24jDzaxG5wPRotkRMMEF1TZcmfVU4UK9
+	 /UUBaUrj8vz/GVA/k+a115QwSFML04jjI9eIVeUitEj+tmFZp4W4QavcFSHwENnc4IIKa
+	 8+OcpYxgV5kUBqnYqbqVwWuC2D1tuIgMJ4gpdoz3zVTbYnYqd6pMU+dFvsxZXTUdpTQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
+	dmarc=none header.from=linux-m68k.org;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HVWEf1Ho;
-	arc=none smtp.remote-ip=209.85.128.50
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+	arc=none smtp.remote-ip=209.85.167.48
+Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9D9C606A326
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 14:15:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E9D9C606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49D67606A321
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 14:18:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 49D67606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HVWEf1Ho
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4a599e9110eso2625135e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 06:15:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794233753; x=1794838553; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=BRzYSlxPXB9SayIbet1ssxpRWLhzXzCtSQdIz3Apaiw=;
-        b=HVWEf1HozV7xPNGU2o+rDt3myeLyN86ifegA2DnnFH2fnxkqpp8ACtc/UcqYnLLmF6
-         MkuqR7zOAQI1T/BlqOhQ03kJ11hJfI3YQFZ182AMWimkbpA4HMsck/rT3Goo6dUB0iJa
-         d3UK6GI88ejCLl093/6+BxtyG8K0MtEhNvkATo5TQGJ7YXyczmbofwhIHhDO+WKPLzfF
-         IA+wMR49GkiQqIOEP4W1shBAm8vFG3JnWpgA92H37H7rfxWAt5t/C+u0GH3N3uz4TKCM
-         WaVgxacHYvgShMR+TUCTmS1lRlUKGZlytIqhjL48l0kmt1WGZVpUC5kc9UAT9L6r2rbi
-         p+nQ==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5c14f7768acso643273e87.3
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 06:18:52 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794233753; x=1794838553;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=BRzYSlxPXB9SayIbet1ssxpRWLhzXzCtSQdIz3Apaiw=;
-        b=Fi9C+34eWb327zCKyGEAmnm/c5cRjEfh94se5ysWPqNhZnU7FgpEse8BCwe1JwtiSB
-         xWgUsyVvx9Q7X/5Lo5Elclfejm08l/oJdtIBGZeEcAER1Yt5u5SPnPWsTb24vIz3NL5w
-         qGw6YckAoOXoTzmH8ZozEMCfmBUBKL93RB1yiJTgL/uZoOA0fMz2vVquiKfn4Pv302G6
-         MNB9WnB3nrogaq9/yiSIhpO8ofdQ183OYI9VIBimC1EHArQPQxsdJe8wh9ab6Iaa2yOk
-         I0nZ9jr1PbF5/PEYAwmoJBW/+Ly027RAGhDmk1KZpd7TdlSXheACM4Mq+OcxG/G+WOQD
-         29Jg==
-X-Forwarded-Encrypted: i=1; AL+hErG7s4fDz5j+rbsQ+U7sfxApuDkFpJXvVmf9TvSWOWCqTglIRnYKj/CYx0flKmA2zv/3RZVG4Sj66w==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+EILGBt0GS5YSR8nvgDOcWVdj1f61YQoLD1HGo8sldBTaNVvUz
-	BiLudKmZfAE6BVzHUEqI2zzuDXwSaucXhfl5zdkkyqQ64TJQtnkm3+4V
-X-Gm-Gg: AYBFou3d7CeQpuG0+Ke/TyDyeSrN3baBXE0jJ4ONblNUNxfpcR27RS8U9oCfCTa9gwp
-	lEhovx9avFbRjtHgHKEuOiLErlp8wwxIE+8uLMi9dNDpYNTpZrlqGC9fFBgVlQGuUClAzw+FSa7
-	DAW9cPPvULYPg+qp3X/fmait2URsu1rHv+PzExtelucG6tcN+cJeZ2TZj1tHhC9LqXbwgZs8HvS
-	I5l95cviDE4fUEOByDpGfvhyV/e5/fTg8lGo74kjh4TxaXNu340Q9F406PPD2uFrI7uqMuazm75
-	VVpVlxDoK7+RrKCjMJAwfAvPk/kPi7zv7MUPZKKJw/nBfpr5DbvoZbhf4yOjAzW/u+88Ll4LZz/
-	13p8uJ27oRtihALHGPskhizq2XJekRWeHtU0GOQQty7FilfLGufRz5YlCbUbMcR59tsrvaSO8Jb
-	tu4wpB2ZC6ipw/rwmzwnoz0WGh+qGGaSPe+KNhAA0XsDWXsrUlCPfP54aWfkbYQ4roqxMqRXQ83
-	b7OjHmpXngyrqaRT9hoVp1/N/sHGxWkmskGy0DHOXgyCl0KqbwauYTcHLgI9n6g4TRGOjM9HlwA
-	cr37DZyiCog7nwYk95E19rIhuOMKN/PcglGfia7avuigWsfSom+tx8HqGGDXklThKSuxzw89ECC
-	O
-X-Received: by 2002:a5d:6f04:0:b0:48a:f5c5:d067 with SMTP id ffacd0b85a97d-495810d5813mr7394605f8f.2.1794233753069;
-        Mon, 09 Nov 2026 06:15:53 -0800 (PST)
-Received: from scheduler.schedules ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-495966f36besm9520949f8f.14.2026.11.09.06.15.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 06:15:52 -0800 (PST)
-Date: Mon, 9 Nov 2026 17:15:48 +0300
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, mingo@redhat.com, 
-	juri.lelli@redhat.com, dietmar.eggemann@arm.com, rostedt@goodmis.org, 
-	bsegall@google.com, mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
-	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, 
-	tj@kernel.org, void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
-	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
-	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
-Subject: Re: [PATCH 06/20 v3] sched/eevdf: Add min slice check when selecting
- CPU
-Message-ID: <avHR3lIV2TB9SWSZ@scheduler.schedules>
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-7-vincent.guittot@linaro.org>
- <au7SabL5pfbsApyB@scheduler.schedules>
- <20261109135553.GC2668564@noisy.programming.kicks-ass.net>
+        d=1e100.net; s=20260707; t=1794233931; x=1794838731;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=Tz1cDpa5AepSCwsliEOBWV2ZbIXpdMUmAVTrHLbgBBk=;
+        b=PPY8/bGeqGudIXagPy7KdrwxdoMfCCMETHzhdESVJ3QG/Yo1jaikspPXJ32T7MBCn2
+         BhYS/ed3T2mlZ5wRiWDik+U+YOfZmDDUO6mExiho6hwdI3pz2IUHmRLN07j6dlNq8vmB
+         qHSXH1V0uvNgm069tlyZ7PIxgmhdmjYq6wntJR0lOX8NIJN+ZliApUVkJaM+/lHT8o3q
+         TobsPWbtyY+YLoTIB86m3BfrkKxIuIdlwJZcm0nWPpY4NJHO6+x9b34T2Pk9g/ohsv5I
+         Mx1UReNQoJOGyQLnQsAgDzoUv0ntT2+xiez9SnRtGv37nySqcqDlOW8LBUgy5j0tkkLD
+         s/Fg==
+X-Forwarded-Encrypted: i=1; AL+hErGwijkOvm7C3oCo72zXS8X5AWH9M6gCAz5ij7y+3c07d4PbT7N/5iMmrHk8PT7JVlJ1zSnF1D+ctQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/i36UHBzXpp9QL83DVrZeNAuJ+rSX9OAc6xeOboNxgey91QY+K
+	Fw29oHgPJfLrUbJBPZwl2j9+g1rth2G4ACKs/Hbq3J3PE9me16xXNvpZ2QXLw8ay0vc=
+X-Gm-Gg: AYBFou3B7U7Z3dkyhAt3ssnRHd3X0c9uB3rjJBrXknBzvpccxJ4qYAySeonENRFQgTv
+	2ezAfq4qUi5PIliomrIlX5qsChuMEyZKVWZ93N12mFCFDo/XY9IEMq76lFm/wgYmP5wpUr7bGyA
+	CNIhRwjh92Equ8jrr5mbl3hBFUdjI3Ijvy49dR5Zx1wkxA23KxEROcJVnvd2UFHfpz9gWQumF8m
+	7McJ3FwofzIS6q44HnufvpKF7++dWERFzV0yQIxe+iQ5YxODjfj+NG6runLh2K9Xeie5Gtygu3b
+	TSTjMb3fpfAcd/SdPt3PFwIiG/nQsbl76bQTtXlt7N7zGc/EtRRylxZSebBRPExoeIu750NOgXE
+	tmsPiCHU2mx2NrDsEbUg4MxNwxoGNUXidCWURD+5gSOUKF+ykxRYNWyP8DHlepN6ErTwog7VpwT
+	4lOLTLcRa7EiMph7qVFTLjZ0kTMO1loyWlJUd955vluSS55iNRbqfa/+6opSJf7esssGdsyaKVI
+	vlbXp+KXDcZ+bDfkfnDQ9/5nN3f7NKRr2XJRsfRK3ww/nweHBqrwER8049/2eUbZysbSXjqGvUn
+	ZwKIAjWFl6t79F7b5/cgZcE19cpWUynUNZ5TsdMIPkdiod/WTztYwjXsEOUCE6frIT/ysVs=
+X-Received: by 2002:a05:6512:3b81:b0:5bf:dc20:c3e3 with SMTP id 2adb3069b0e04-5c14c015228mr1177242e87.30.1794233931256;
+        Mon, 09 Nov 2026 06:18:51 -0800 (PST)
+Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com. [209.85.208.169])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5c14b8070cfsm925279e87.39.2026.11.09.06.18.50
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 09 Nov 2026 06:18:50 -0800 (PST)
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-3ab27b4924aso7234481fa.2
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 06:18:50 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErH1eD39Gt8RP/xvPQHZx1TMWSxeMbOgSn+VOy9KSLYmJSOc+SoAMmcz0X+NbMg0asVmLt38teb84A==@vger.kernel.org
+X-Received: by 2002:a05:6402:51d0:b0:6af:9a96:5324 with SMTP id
+ 4fb4d7f45d1cf-6b722473406mr2715103a12.33.1794233454340; Mon, 09 Nov 2026
+ 06:10:54 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -106,53 +80,90 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261109135553.GC2668564@noisy.programming.kicks-ass.net>
+References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
+ <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-13-1b2072e8c37e@ideasonboard.com>
+In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-13-1b2072e8c37e@ideasonboard.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 9 Nov 2026 15:10:41 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVh2RiRhBHmuYupK5H81njgaqNCuFWVUiHjTN17+8a+dQ@mail.gmail.com>
+X-Gm-Features: AclHuK_UOMGJNMSt7XpVPImhuSlb374iqFlByrKa5-w4LBZZoP4MvZOgp7Ag9nE
+Message-ID: <CAMuHMdVh2RiRhBHmuYupK5H81njgaqNCuFWVUiHjTN17+8a+dQ@mail.gmail.com>
+Subject: Re: [PATCH DNI v4 13/13] media: rcar-fcp: Check device revision at
+ probe time
+To: Paul Elder <paul.elder+renesas@ideasonboard.com>
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-media@vger.kernel.org, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Mon, Nov 09, 2026 at 02:55:53PM +0100, Peter Zijlstra wrote:
-> On Sat, Nov 07, 2026 at 11:57:12AM +0300, Kayra Cizmeci wrote:
-> 
-> > (My editor got crazy, so I had to copy this diff :<)
-> > 
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 262626455497..8b0dd858f332 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -8876,10 +8876,8 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
-> >  
-> >  static inline bool choose_sched_slice_rq(struct rq *rq, struct task_struct *p)
-> >  {
-> > -	if (p->se.slice < get_rq_min_slice(rq))
-> > -		return true;
-> > -
-> > -	return false;
-> > +	return p->se.slice < get_rq_min_slice(rq) &&
-> > +		READ_ONCE(rq->curr)->sched_class == &fair_sched_class;
-> >  }
-> 
-> that wants to be rcu_dereference_all() or somesuch, rather than
-> READ_ONCE().
+Hi Paul,
 
-Ah, my bad :-).
+On Mon, 9 Nov 2026 at 14:36, Paul Elder
+<paul.elder+renesas@ideasonboard.com> wrote:
+> From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+>
+> Verify that the device revision register reports a valid value,
+> otherwise reject the device.
+>
+> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
 
-> 
-> The think I noticed is that it will only select one slice_cpu; it will
-> not consider another once its has found one.
-> 
-> This means it picks the oldest option, rather than the most recent one.
+Thanks for the update!
 
-So you mean by the time CPU loop ends, the CPU that we selected
-might not be a good option anymore.
+> ---
+> Changes since v2:
 
-> And given this is all racy as heck, the most recent one might in fact be
-> the better choice. It will have had less time to go stale.
-> 
+You missed the changes since v3...
 
-Makes sense to me. So then we gonna overwrite slice_cpu everytime we
-find a new one?
+> --- a/drivers/media/platform/renesas/rcar-fcp.c
+> +++ b/drivers/media/platform/renesas/rcar-fcp.c
+> @@ -14,28 +14,80 @@
 
+>
+> -#define RCAR_FCP_REG_RST               0x0010
+> -#define RCAR_FCP_REG_RST_SOFTRST       BIT(0)
+> -#define RCAR_FCP_REG_STA               0x0018
+> -#define RCAR_FCP_REG_STA_ACT           BIT(0)
+> +#define RCAR_FCP_REG_VCR                       0x0000
+> +#define RCAR_FCP_REG_VCR_CATEGORY              (1 << 8)
+> +#define RCAR_FCP_REG_VCR_REVISION_H3_ES1       (1 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_M3W          (2 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_V3M          (3 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_H3           (4 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_D3           (5 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_M3N          (6 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_V3H          (7 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_E3           (8 << 0)
 
-Cheers,
+For R-Car V3U, the revision number is 9 (according to the documentation,
+I haven't boot-verified this), which is missing.
 
-Kayra
+> +#define RCAR_FCP_REG_VCR_REVISION_V4H          (10 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_V4M          (11 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_X5H_V1       (12 << 0)
+
+"git grep -l renesas,fcp -- arch/arm64/boot/dts/renesas/*dtsi"
+shows a few more SoCs having FCP blocks.
+
+Interestingly, the documentation for all of the recent RZ parts (G2UL,
+G2L, V2L, G3L, G3E, V2N, V2H, T2H, N2H) claims they use 9, just like
+R-Car V3U.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
