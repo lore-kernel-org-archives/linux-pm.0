@@ -1,99 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.54
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.49
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794239738;
-	b=c9cJK5UKTp6CFbEZBT7XxFXDKUxA1h5N8ein8kjdkmjod2/6RoDLQaUuRi8qRWxsOEk1
-	 xZWAUCKrKKuoGRzMIQXg25FTGomAEY5t9lsIsUNXSHDsyiKdIgF6ZDO68TFkp5xw5DiQd
-	 IB2dZUsW5dkQDhFy3shknAdC9PYpWcfiQTTW40bRYAB9Z+naNAw25QcQJfpALnFoOk/xm
-	 R+X8UMkK1dGCW2vLgyM622b+6A17V9SNBulGa/FO5CA0Ud21/TkjiNKg/r741RsM7f+8s
-	 Q8KwjVxaI0XcToUvIOaU+R4TZWx3UdrjCcnzAK6fQCDRi7hPfRs7Qw8uvhbGGyakBxQ==
+	t=1794240475;
+	b=XLXf9G1TDQ52HNE2d/12Ki1e/ZSTu5PPSPTyH8Iefn6phuzw7PW62fLQe/F2PyboalD/
+	 BnGrNlgR6T5Mvg+WCWqzWWjxvoIC41RTMqyaVyca3zUmgkZSAJ5YKy4zTY2OxqNuKlAoy
+	 R11a0bqdQ8hpL3wFpQ0xUBZSvqYnGCXWfdrK3lVuSbb1pH//1qNlEZe/YxwdiMALOgnD5
+	 xpi2PrWnIQw/Npuc5sMcguYxGkBJMruJ9dSygz4wX/jW+f6X+t4x/JhbhAzqLmr4l6A2g
+	 VQChNbngOlr3tJ3vsbTCIbX45mSTI2V2i0AmC+oaS+OI3tlN9xguY/5EC+fFzUU465w==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794239738;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794240475;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
 	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
 	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=U0Jsq4W3eeFxH08Ha1MiRKApbxlSGjDxuaxUFi4tWRw=;
-	b=DYTv0qcYcOyCA7E3IoReYX4bRiOpoQWI1pJOcGDy/cZL/qPmcxb+0spyLrL1G8ZXExOo
-	 vzZtE6AGF+a+Pmj6fYtZqLCv8WBJqYUPwtkrsM7WxMvKicarZlq8UbdY5WYwWb2e0lztn
-	 CRT9UxCVoUbLyzCgCw+jxC/y+uIjV8x00AntVhw3bTQJiqZRLPaQMWtpxxOCaImrEWEne
-	 Q8MlotGf7X+b5TeKk/J1N+cwjSJue94r6jV3L/zWm1LFo3n71PYC8JqJ7McKIH6BGumtq
-	 5tfkhrr3ApoNj8OJqcGpTbRUAT8ZwQm6FqTlweIZoLFtC2+yAK6VGWtsSAqjuJN+izw==
+	bh=MbwONemvQTwiYEvnpJlP+l9rrcIEBnFd/b+PD1QFDBQ=;
+	b=zZ0nkNPrgLm71YH6RGq+onrFTJuw82UdHV2VeqaZ2cUDsdOLxJ1CiNq8l37pf825qFgt
+	 pFOuyKhFi+naaLKXWJzLivwUxfyzwgRRfr5hRENldFLeDckmE6QRcM+H4bQx/+O0+mk2a
+	 EuQrHyeJiALheIhiuEMz7QNHW1SHE83c5Wm9AC2Zy2qhU9GuEkj0vEFh4H/9Rltj8im1x
+	 u34MYH6RbMH7oCBlmdoOkruTYQ7v/+SMf1y+rnq6c8mjlZMaY8xeg3FwNuqvTKR+TjhkI
+	 Zo00Oogzvz/XXLos8blf8Rl/KeSDktk/4OXPz6pBOW9ZZ3O2ivst/OcyXrijmKP4LDg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linaro.org;
 	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=HW1wRTVA;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.54
-Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=bqGE6uj9;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.49
+Received: from mail-dl1-f49.google.com (mail-dl1-f49.google.com [74.125.82.49])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5ACD606A325
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 15:55:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5ACD606A325
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E998606EE86
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 16:07:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3E998606EE86
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=HW1wRTVA
-Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-6ae305e3bd9so1714463a12.0
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 07:55:37 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794239736; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=bqGE6uj9
+Received: by mail-dl1-f49.google.com with SMTP id a92af1059eb24-1931ff67a29so2785526c88.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 08:07:54 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794240474; cv=none;
         d=google.com; s=arc-20260327;
-        b=ORAHeRIY/j1ObA01rIUKr4cgUtBIVwJlYeI1IZniP3FaROco3+LSV2dsSUodKyBXT7
-         YnTSWa9to1KPK3nDvtapPAPODd/C5plIYMYvBCJxvb2L6OnmjSjlouA5SSZ5ZTiIzOW9
-         0tbAEut/gOMDVepSJft5ZGp5WaYL37pls3BGxAj79x1VRzX5XHbIBuDYcErGy70kbfKd
-         DP01LMPvr/tBrE494LxcmEB8z4pM6NIilgr9SPk9I++949+XBM7iUd1CWixH8WCQyxAU
-         yEHIydPgudq1nT/Jnt4aMKRqiZUnQucFNY1hQNKVTg0Wbi7XRJaXp0ooIrjoODhys7Ia
-         4rUQ==
+        b=mQqQoK0TT9AeoWFqx7C+oabhdVuC+KIi6lb2hWtxkRLJYpqMgp1Pzb4D/+hz/ixy3Q
+         35qzxykEGAaccF0e4s09ABoClASMxRYILWrSGE9mm4tb7Z4RGwzUTtB9keBQuaFdqodd
+         jDmeH6jqMVjp8QX75gK4dKTAZhFIhiCSxbMxP768K42fBZWmKNFSZXm3rPbpXa5TL/DX
+         97DnUoJSRMCaEi5IwWNfnn1XNK1Bs18FLkikbZBgfnN3uCn8dud4tvg/3I2wmjT6D+O7
+         E95f+yeHtq3d/jcKuDn9bKqdVOqnZ27+jJaWAty49P7WwFfkY+EDsC8Te3pt/u0SNgye
+         BOAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=U0Jsq4W3eeFxH08Ha1MiRKApbxlSGjDxuaxUFi4tWRw=;
-        fh=31ceDwyUHqs1B2L0lC5brTsbSz/M1V5r5Ag7irCX/3k=;
-        b=i1ABCNr1yk9pek4NlyooncTYq4Z5pNsNNy0uM1GrLkk4nkTLgAdVGXVaOjq4hsXR81
-         O+LYXFz69k7JwoxSZ2DVYTP23ofEXb6lEOhDYQfnL9YtK+2P5h8VEP36yOd3G7F283Xc
-         uDeaHGIty77VN+szSLVFIuKpsve8kF7LxHD2Oz4InSDHxOIYxM7BSz0UaISPB4MKZpXt
-         AzeUHeFHPikp+1JEAkggOv8u2Q5cnVXj1KoFuvYxGvOQ6UnJ1dMYdBqrj+FWeBP1c2nI
-         P3SkOZK6WWCZlyEu+DeFtXk+4CZWsXmFoWxkiB1UHxvV+0OMoGx2RGJT3nErZC8EzCcR
-         cuVw==;
+        bh=MbwONemvQTwiYEvnpJlP+l9rrcIEBnFd/b+PD1QFDBQ=;
+        fh=1/83b+5TngiCw9G9zluB5ETg6ITLpc/JPN7G2l1pOXc=;
+        b=odt3Ni4uVwWImsZZ/Y/nds4Ek/nncFetOisqV129SY8ZwXC8C9+zukx1oUbU3MR877
+         D2+qGZtzuoCyvPLdvRYXBQMb/xhxvBu0V9S9aePezOxutz2HueBpCiGtZvqIQUoBm4pc
+         cklh5/yEsiskdYkLM/NSFmnFC6TfG0WX9HlAuHiUdu5D/fvRM8+u1dtRag4omsa8SBSB
+         PfuZspSvF5s1dOfykU0TIqKPmEzNfGdYO1o6KSDAWPzLzlUiW0IYu8qXOvx33F5bz3mA
+         V4WANAX10E6mt6sE/lOKebN1UVFJg5cXZtPyB2A4TEUmuCJ3zuYLVh8ZwgMQjLqHO2Wm
+         hJ8A==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1794239736; x=1794844536; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1794240474; x=1794845274; darn=vger.kernel.org;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=U0Jsq4W3eeFxH08Ha1MiRKApbxlSGjDxuaxUFi4tWRw=;
-        b=HW1wRTVAhKtUfRmelOIEsw4AclL5bmEWoRQz0cHDEZ1imHxc3EYOZWOk3pO9cNaNyS
-         US/qgf8pAyvyGA60AugAkd/aMcQf9vxOIZAnM1zfwFJfqfftroT6qgDKfBglkBuSch9o
-         /2HLdgkOTsuckeJYr8CbaQ9WfQLm7H2sejii56gGsNRhH2irilTzFlY/Vhbgx6nST6za
-         PggdINlnXx4Ym4q1dSE+PQCQ/neZbuTC31wGPny9rQk/GZngdul2tQXFE55fXFREYswO
-         T6XyVtTk/UE/L6HYufZGdErT8DgWxKbjhIkBm63k8sOjRQSOVTcG6DK+QwDEorxgibvd
-         cjlw==
+        bh=MbwONemvQTwiYEvnpJlP+l9rrcIEBnFd/b+PD1QFDBQ=;
+        b=bqGE6uj9fKNrG3w60stdKMh4HkVt8FhOYmdsnCe4TVSocwnXywOb+5yHbPTKcgBfcB
+         24sIIhOCRIpBIAHL8ykVKY6f1y9oj6FVgZNKihX+p7xXKXhf2hd9n18VlVZRd5UEK2TC
+         360/o11TUVm8T2JwYmSC9DN7xhrMXgjAf3UzdZ5LwFHaNXt/ewz9OrucTI1Kq47o6hpj
+         zb83MyoEqsO0ZR05PKUu5U10cJr2zvZO5ICX+FlyUxmtUdMikqYc5HxQ0hSaqc8rFk2z
+         /oVTW00zFJcwb3FEQQiz06zNvurrx5ypDVuEpVFB0joXKVBkl9pD8dr5TxhzRVPGQlmg
+         ne2w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794239736; x=1794844536;
+        d=1e100.net; s=20260707; t=1794240474; x=1794845274;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=U0Jsq4W3eeFxH08Ha1MiRKApbxlSGjDxuaxUFi4tWRw=;
-        b=Luk9yBmTbCzwO16Nkwbh/IlXSRNJPcfaW+1OycHo+0dIFUR7/vaqZi0SSMFxQY8WVE
-         amdjQw3sKujfYMVgzlBSwur6PLOWm4R2PYfaTg1TzJzs5gv2H9/bGY5pwebRnIJMh0H5
-         QJB131/FE36GNblo2Hy8ReB5qzLSWHQ9sUcLSxjPzaoewxZDbTPmK4D2TUgv4SWKG3M7
-         cK9DEvmZcxgeou3fXmEv62qESZopDNNRsSnSCexHlbufNw9srxvtux2OAvk3wP5NHZfD
-         WjYJncRHFqpU1yrq4dAa2s+3qYYXRUf2imszcBU5HHgXrjOgYpG5vjNmLobZLFjZV/iW
-         Qfsg==
-X-Forwarded-Encrypted: i=1; AL+hErHLEQgn6IXgIiq8S06PXp00tv57VFRbikrtHwOW60DcCmswtb8w441Om44S+oz+V/XNEFlX3gV7cQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8FCDmkKzZ9ELW/NTCyLmSDDSaGfXwZ6KTpKZMbghnZGeIG7JKJ
-	KqHCkH6IvjEPxg9XBWOjdYwp574npwUovBBr1nTN2QT/U7ro43JX0S3PqfYw8veuc1IjKJ7VqUW
-	8QKcBB1wZ6epmXaLP/9Mno3Nl4UUA0XLgyYx+1dZKRA==
-X-Gm-Gg: AYBFou3wNvHxCtBxIQzhFuvIs1XTGQq0adsdXGOn/yqe8De7Zd7RvBv1iLwElFwxC3X
-	GVRO9/luYpp5TAGLEdWZ0q9anNOx+U+0PvGs6tPqu0fEEdnnLv3iYn6asRmyDusTMqQ3T17pkMK
-	AG2OunxIFhYuz1SSwOsfcWhhyNLYkFX1gyFvyana9rr7yeosQVzi6W1AsJdR4LTONl7O/Gfjq8P
-	igzInLvximtPWuSWa8yjzflc1OiozwWtJpVNDE0LDSDn8C01mwusRk2wn3xOa1nC/UCKjwurxez
-	je8zC8UgkGq6CpuSgn6LmI+GScVMLkj16Jy8ciOMf2eCXgzE3lFQNK9lnWXjJ3OvBThNoqkJTdv
-	YPsrZAA0qOYjQD1a/jwz61U1UKgMBbgdYk6puQ4xi/3xdfx1toZeG9AADB354JqBEMGKAxw==
-X-Received: by 2002:a05:6402:561f:b0:6b3:d0e9:2e87 with SMTP id
- 4fb4d7f45d1cf-6b755e86651mr30882a12.5.1794239735838; Mon, 09 Nov 2026
- 07:55:35 -0800 (PST)
+        bh=MbwONemvQTwiYEvnpJlP+l9rrcIEBnFd/b+PD1QFDBQ=;
+        b=ibTeT2kaoOwQzM+JOZ7Mr/qybVESNlbdQiHvUUpIW/w+qEUW4q35MlWtiMfEDca3wk
+         iHSCxgxObfzNDzDZbNYmR32L/q4xq+AcVSSts4b3nZ4AU9Eey7iOBW7nsS9eqcuSMctn
+         SebVLdKmJ81Ik7O1QaEKg6uu9WCKAvonyM9BSDOh0CUK4wAJiXNCb1+mCwsgR2wGhoUq
+         MUqeuHrOSJ2y1/bB+QA/KYkFcCdi+qAbTRTgfrIrMTMPMPmIWwzlEEShySePp0UBaUrb
+         FhZjAI8UBg+5cSn0fYVryC5QRkctbvdoOKJBNbP7dLmhdYEuQ7LR4mK639STWqhk6CoN
+         xbQg==
+X-Forwarded-Encrypted: i=1; AL+hErEGcy93hd8uYXwedRvHnhsMmYzlxTSyW8JNLDNIdcaNatFTXyH99btwIQ0wGMY1akeDa5xCdwUZeg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/NkJu7CnIlXh3TdyvLiCCn1K5aNq3wi5w/H+nTPhvjZbKTFBFw
+	lVdUzVG2OXKJlgEfq/Bcy5bHfHJf+wB0TNqnjfswCOiGaM3qmBMbKKpSz5CdnkDTGVq8RO9B1/4
+	uOYTpel8SMgCVI13WrDehV1o2tZ0vGdzswF8iPFI+fw==
+X-Gm-Gg: AYBFou1zqng+NgE6jqo1D9RouX4e6IZDpqMuvVbO7Y/cFersV0IHwVNEKb8uwdQg1t9
+	X2MsdqDDTUnrDHer4IBELNRVbg1HoJ6Ixqy2i8+e3oEZ8AgKIYMdSQrUXQeKpWw88pz9zuRPPo7
+	qtrhbPge4A5VJneCcEwD/6Dnt/1lIby7srQkLxdrPT4rBjZumEUfleCUgCclCxLu1+SOVHmAZs9
+	AZmnqqFG+2zUI2Z/2RfMrlJ+bRVEK9564sgJkwtffOX+wFEsZz6Rk6jBgplMwY6Bx0ogoSbo6us
+	69LhoxMFXOv5Q4S4OWJXNUO8TZC6UhZ9Pg2bowrOcAjqxa88I2BNXUJZ0bRI1wwisPPO8vaeNXq
+	1RD9YOU4Ev37+VsTycT8YrH0BrnFg/Z/+LuwzBeAN6K9tFCssklwmYVcSWLDohKfyWmpdhCY=
+X-Received: by 2002:a05:701b:4284:10b0:194:3a84:e67a with SMTP id
+ a92af1059eb24-1b39ff06096mr7491026c88.41.1794240473701; Mon, 09 Nov 2026
+ 08:07:53 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,192 +104,62 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-7-vincent.guittot@linaro.org> <au7SabL5pfbsApyB@scheduler.schedules>
-In-Reply-To: <au7SabL5pfbsApyB@scheduler.schedules>
+ <20261106151947.3991524-9-vincent.guittot@linaro.org> <20261109144350.GD2668564@noisy.programming.kicks-ass.net>
+In-Reply-To: <20261109144350.GD2668564@noisy.programming.kicks-ass.net>
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Mon, 9 Nov 2026 16:55:23 +0100
-X-Gm-Features: AclHuK9poa26sv5bNbXpCPCpPoDt4sJTZSu0qBPd_Ku0HfRlx1XeQt-Jp_S2E7s
-Message-ID: <CAKfTPtBfXOcAd=5RkYepRn15Hg=id9FQ3jh1tQoewOtUSrsjHw@mail.gmail.com>
-Subject: Re: [PATCH 06/20 v3] sched/eevdf: Add min slice check when selecting CPU
-To: Kayra Cizmeci <kayracizmeci@gmail.com>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
-	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
-	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
-	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
-	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
-	sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
+Date: Mon, 9 Nov 2026 17:07:31 +0100
+X-Gm-Features: AclHuK8HkNgfirok1D7dYwfSows5oKF3C-rSYYm8dDteUYYcSG8yjSHtd3IxClM
+Message-ID: <CAKfTPtDcu6HS-G75bG7xp10t-n-XceneFtqxa_cAd+B96zCJiw@mail.gmail.com>
+Subject: Re: [PATCH 08/20 v3] sched/fair: Add push task mechanism for fair
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, juri.lelli@redhat.com, dietmar.eggemann@arm.com, 
+	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, vschneid@redhat.com, 
+	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, lukasz.luba@arm.com, 
+	rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
+	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
+	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
+	pierre.gondois@arm.com, sshegde@linux.ibm.com, kayracizmeci@gmail.com, 
+	tim.c.chen@linux.intel.com
 Content-Type: text/plain; charset="UTF-8"
 
-On Sat, 7 Nov 2026 at 09:57, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+On Mon, 9 Nov 2026 at 15:43, Peter Zijlstra <peterz@infradead.org> wrote:
 >
->
-> Hi Vincent,
->
->
-> Sashiko reviewed this one so I'll just put here my own concerns instead
-> of repeating.
-
-Regarding sashiko's feedback about cpu state ranking, I chose this
-ranking on purpose.
-For !SMT :
-- 7 CPU is idle and fully fits (i.e. return immediately)
-- 6 CPU fully fits and is not idle but we can preempt current because
-of slice so the task will run on the best CPU immediately
-- 5 CPU is idle but doesn't fit uclamp min. On such a CPU, the task
-can easily miss its deadline
-- 4 CPU is idle but doesn't fit at all. This is even worse
-
-For SMT
-- 7:CPU is idle and fully fits (i.e. return immediately)
-- 6: CPU is busy and fully fits. Although CPU is not idle, task can
-preempt current because of its slice and run immediately on a CPU.
-This is similar to an idle CPU (and maybe even better). While writing
-this, I realize that I should probably check the lag too
-- 5: CPU is idle but doesn't fit uclamp min. On such a CPU, the task
-can easily miss its deadline
-- 4: CPU is idle but doesn't fit at all. This is even worse than -5
-- 3: CPU is idle and fits for task but sibling is busy
-- 2: CPU and sibling are busy and fits for task and like-6 task will
-run immediately
-- 1: CPU is idle and doesn't fit uclamp and sibling is busy
-  0: CPU is idle but doesn't fit at all, and sibling is busy.
-
-Note that with the push mecanism we could look for another CPU for the
-task that will be preempted
-
->
->
-> On Fri, Nov 06, 2026 at 04:19:33PM +0100, Vincent Guittot wrote:
->
-> > Add a new level for selecting CPU when select_task_rq_fair() fails to find
-> > an idle CPU. This last level compares the min slice to select a CPU where
-> > the task could run 1st.
-> > This helps a waking task to select a CPU where a longer slice runs
-> > instead of one where a task with the same or shorter slice already runs.
-> >
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >  kernel/sched/core.c |   2 +-
-> >  kernel/sched/fair.c | 157 ++++++++++++++++++++++++++++----------------
-> >  2 files changed, 102 insertions(+), 57 deletions(-)
-> >
-> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > index 031efe7d49fb..d71da9069218 100644
-> > --- a/kernel/sched/core.c
-> > +++ b/kernel/sched/core.c
-> > @@ -9012,7 +9012,7 @@ void __init sched_init(void)
-> >               rq->sd = NULL;
-> >               rq->rd = NULL;
-> >               rq->cpu_capacity = SCHED_CAPACITY_SCALE;
-> > -             rq->min_slice = ULONG_MAX;
-> > +             rq->min_slice = 0;
-> >               rq->balance_callback = &balance_push_callback;
-> >               rq->active_balance = 0;
-> >               rq->next_balance = jiffies;
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index cfc99b94d9ce..039dce244aaa 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -8842,11 +8842,25 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
-> >       return new_cpu;
-> >  }
-> >
-> > -static inline int __select_idle_cpu(int cpu, struct task_struct *p)
-> > +static inline bool choose_sched_slice_rq(struct rq *rq, struct task_struct *p)
-> >  {
-> > -     if (choose_idle_cpu(cpu, p) && sched_cpu_cookie_match(cpu_rq(cpu), p))
-> > +     if (p->se.slice < get_rq_min_slice(rq))
-> > +             return true;
-> > +
-> > +     return false;
-> > +}
-> > +
-> > +static inline int __select_idle_cpu(int cpu, struct task_struct *p, int *slice_cpu)
+> On Fri, Nov 06, 2026 at 04:19:35PM +0100, Vincent Guittot wrote:
+> > +static struct task_struct *pick_next_pushable_fair_task(struct rq *rq)
 > > +{
-> > +     if (!sched_cpu_cookie_match(cpu_rq(cpu), p))
-> > +             return -1;
+> > +     struct task_struct *p;
 > > +
-> > +     if (choose_idle_cpu(cpu, p))
-> >               return cpu;
-> >
-> > +     if (*slice_cpu == -1 && choose_sched_slice_rq(cpu_rq(cpu), p))
-> > +             *slice_cpu = cpu;
+> > +     if (!has_pushable_tasks(rq))
+> > +             return NULL;
 > > +
-> >       return -1;
-> >  }
+> > +     p = plist_first_entry(&rq->cfs.pushable_tasks,
+> > +                           struct task_struct, pushable_tasks);
+> > +
+> > +     WARN_ON_ONCE(rq->cpu != task_cpu(p));
+> > +     WARN_ON_ONCE(task_current(rq, p));
+> > +     WARN_ON_ONCE(p->nr_cpus_allowed <= 1);
+> > +     WARN_ON_ONCE(!task_on_rq_queued(p));
+> > +
+> > +     /*
+> > +      * Remove task from the pushable list as we try only once after that
+> > +      * the task has been put back in enqueued list.
+> > +      */
+> > +     plist_del(&p->pushable_tasks, &rq->cfs.pushable_tasks);
+> > +
+> > +     return p;
+> > +}
 >
+> This means a task will only be pushed once? After which it needs to be
+> re-enqueued on the runqueue?
+
+Yes, my goal is to keep the list small to avoid ending up with many
+tasks to push. So I only check if prev could be pushed somewhere else
+
 >
-> Look here:
->
-> CPU1: CPU2:
-> FA    RA
->       FC
->
-> CPU2 has 1 RT and 1 Fair tasks named RA and FC.
-> Let's say RA is running on CPU2 and FC's slice is 10 ms.
->
-> And let's say FA has 8 ms slice, and a fair task named TC is waking up
-> with 9 ms slice:
->
-> * We look to CPU1, 9 < 8 is false so we return false
->
-> * We look to CPU2, 9 < 10 is true so we return it.
->
-> But the problem is, CPU2 has a RT task running and we are going to
-> compete with the RT task. In that case it can be worse than CPU1.
->
-> So, I would suggest something like this or so:
->
->
-> (My editor got crazy, so I had to copy this diff :<)
->
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 262626455497..8b0dd858f332 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -8876,10 +8876,8 @@ static inline int sched_balance_find_dst_cpu(struct sched_domain *sd, struct tas
->
->  static inline bool choose_sched_slice_rq(struct rq *rq, struct task_struct *p)
->  {
-> -       if (p->se.slice < get_rq_min_slice(rq))
-> -               return true;
-> -
-> -       return false;
-> +       return p->se.slice < get_rq_min_slice(rq) &&
-> +               READ_ONCE(rq->curr)->sched_class == &fair_sched_class;
->  }
->
->  static inline int __select_idle_cpu(int cpu, struct task_struct *p, int *slice_cpu)
-> @@ -9193,7 +9191,6 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
->         bool has_idle_core = sched_smt_active() && test_idle_cores(target);
->         unsigned long task_util, util_min, util_max, best_cap = 0;
->         int fits, best_fits = ASYM_IDLE_THREAD_MISFIT;
-> -       unsigned long task_slice;
->         int cpu, best_cpu = -1;
->         struct cpumask *cpus;
->         int nr = INT_MAX;
-> @@ -9204,7 +9201,6 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
->         task_util = task_util_est(p);
->         util_min = uclamp_eff_value(p, UCLAMP_MIN);
->         util_max = uclamp_eff_value(p, UCLAMP_MAX);
-> -       task_slice = p->se.slice;
->
->         if (sched_feat(SIS_UTIL) && sd->shared) {
->                 /*
-> @@ -9260,7 +9256,7 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
->                         else if (fits > 0)
->                                 fits = ASYM_IDLE_THREAD_FITS;
->
-> -               } else if (fits > 0 && task_slice < get_rq_min_slice(cpu_rq(cpu))) {
-> +               } else if (fits > 0 && choose_sched_slice_rq(cpu_rq(cpu), p)) {
->                         fits = ASYM_BUSY_THREAD_FITS;
->                         cpu_cap = get_actual_cpu_capacity(cpu);
->                 } else {
->
->
->
-> Cheers,
->
-> Kayra :-)
+> So if it was found during migrate_disable(), its thereafter stuck? --
+> this seems a little weird.
+
+If a task is migrate disabled while we are about to look for a
+possibly better CPU, it will have to wait until after the next time it
+becomes current. This is a simple way to pace the number of tasks to
+push in one callback
