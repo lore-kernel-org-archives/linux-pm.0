@@ -1,136 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=94.231.106.230
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794214238;
-	b=uWh8cpRaUpss8cGhbmCLKNLr9eaV8v2y+8X+ia20ATdhW6WSr/vG+htMwjqkCHjJjSgO
-	 h5/YMXDr97baxK7IgTP8DqeZ+8vh5XK6LW7G4SFVLvpCkIczAJhEzkKwFbNK1dnoYZ6da
-	 opOc5iLXpR7XQifE0A3n5qllOYqfQckRFNW4wWP/+1R62s1HCz8nO094baKHVDKSnZifw
-	 tliV4YaRwKLNKkZPwdgqMaEmlKNeYXkSosYttn9HfkYrSk3a9bntcbSMP9xN/VifSEcaK
-	 YF1L1S7IxhMQb0DOx6VoQU9ceNHN2lukEB/mY6LwUSd3tHOziVG0cF+ifl1fhpPaYew==
+	t=1794214392;
+	b=teKQorEbQJbQFmPpFbhgOnGdk6bqSvtOodvOvvAFxg2Flc/SYiivcisSeubFyRqfodiI
+	 eG+WWRd+Izwx8cJyYrxWec994FE1ytHyQMEsTXLamYUm83Xuve03M01dTpo1V8HBOy7A/
+	 kFWaIuIillh94oXlD11b2jJHpn7GVmoThnIDXROSo9f6O+GSn1XUno2X4W53or2HjyHAd
+	 Rlqio5IGviHAjhUuku1ehuQOVzMrvfH1g9Q6vxiknATnkfm7nnnC8UGvajsSesGTEU1jL
+	 zagHPwe5EQmu9BCuzFUTbsZChfDOmKW1ntEl33qqRgmtP9G7a89XNz5IQ3LfI7RVxhA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794214238;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=Vjj4rdSbpcMkkjnNoByhSOYk/2BEXBPon42q9R20zeY=;
-	b=Z+BtIQDg2lvzkd3/omrxCMqS1nLwJ+uWdukmh6oQJju3oCOw10okGpqTsGCeSfz3rASM
-	 wZVELvPY9gJQYnyyjagGuFXWxKpIy2jRix034fqTSqR1r4BLgaLxLpptSNWZkLLsofUJV
-	 dTZNX9GIa53BizSYlmJsnP1uWPsBM5RZDWE3Q67H8hBfu/cGRGLYfa5/Ic02KBlqXi/IX
-	 PIRVs5iqDn9gBIiEQGTqkjwE9yjXAP/63IOhdl1BMRhE6jEldtZwgYROOIXsznqt0KZXf
-	 9FlybjrcbVZ/YVvLYuOlKTEOwG+80uBeMyWORz9EInohLSrsBwZ48YNvkhv7WKCdgCA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794214392;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=ZKf2DBGb+N2gDS9fHvgM+A7zfG0IQY/8ss3YlANSh/w=;
+	b=OclcIS0oaVJ4XXMCBDnh4z47+UnTuVipM8R6Ne/Q9sQSFpsLTv9qMKbtbLngiBVjIHda
+	 FliE5Pc0WLMT0UMRnQGejUNxueNeWe5+4ErlqlSSFD++somA5/knrkjHoez5C+YmZB2D0
+	 O3G4CQvuB1DnoB8lhQlfRiwnjiqjgBlTXjyu/nSzCdIdV5kLhnP03rlv9YwKwPqPUkxSo
+	 UCxpxEakd71EMPvx+6AR7YvpD2IeO9dwKEOWqVNAkVNvVFa5wslUR8ax2TXR1ZzRJ7lpb
+	 AymsBXHjrHZ5/ieyGIOTiLq5N0hpmhaD+NNhx/51suI7w1bD1h07TbxEXrAUN9lNNxg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TGqde3Ho;
-	arc=none smtp.remote-ip=209.85.128.54
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=none header.from=klattorp.se;
+	spf=pass smtp.mailfrom=klattorp.se;
+	dkim=pass header.d=klattorp.se header.i=@klattorp.se header.a=rsa-sha256 header.s=simplycom2 header.b=PdC0AioF;
+	arc=none smtp.remote-ip=94.231.106.230
+Received: from smtp-out2.simply.com (smtp-out2.simply.com [94.231.106.230])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B715F606A33C
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 08:50:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B715F606A33C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 474A560735C9;
+	Mon,  9 Nov 2026 08:53:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 474A560735C9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=klattorp.se
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=klattorp.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TGqde3Ho
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a2167bd087so5478865e9.3
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 00:50:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794214236; x=1794819036; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Vjj4rdSbpcMkkjnNoByhSOYk/2BEXBPon42q9R20zeY=;
-        b=TGqde3Hoeoi+P+P1MJHy6yFa7TDuVfP4g4ZGwX2ih4xjRGjRFWnypRzOP1Xa4L0IPm
-         s/DPVbSTnEn6+vQabgyMvzXoPqHofh2/mImSCnYL5a12zXk5bVCjZsmkY8NnMPUi2SVc
-         xAgwi/orvf9pFkFiAXO532yOUQEFgNvW8m3sxgUIowoBqxTIMXeJ2WTdj1dQHwKMPf0V
-         cCNQoCDDyIF0nns6PDu+LZixogYHFd2CbQ0mtJSAP17FhsmRFJQnz4kJM2w5Emebd5cL
-         Ug3ZqCYI9cMwu6iJ7WzAlyerv17zrvmPyC1IUPu31nRNXyg9pX/XYW5Pjf8n++ZvU2Ya
-         pTew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794214236; x=1794819036;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Vjj4rdSbpcMkkjnNoByhSOYk/2BEXBPon42q9R20zeY=;
-        b=gZZhGgDgcJi+7ntO5YroB32vR2vnwYMY2OC/uhH1ebZf4Riir8l5jWy3bxAr3JS5iC
-         fQsMSj00nXcvqTXfVZYly76HM+DGPruvRjs6ECHdyUOjAlicm2GetAH1DXhzsV5gkx8u
-         4n+0BegNtmwCGs5yzXGdgRj0MmPdpejKQPGLV6cymtajWrRQb7Yr+394oCJ/bDE944jR
-         EHV0HWwG7YldFZVmETcvn44ZLjZe3wVOpqfPQfilXUnWBbSeONsE8DCGMatl4JZZ8XUn
-         jVuSFtsTOla75qr7xyJrzDPEoZc2bJbrKPT5D7rwG98CCTM1dsI5/fOQybYKFnuuDzzV
-         FaCg==
-X-Forwarded-Encrypted: i=1; AL+hErE5r/Hu5dSK8KrrgwHRDaAVQfYVUwCFSXjQMx/QE+lqCVCHKEYUEL9sr06kDSG6wx2ji37E1eY1wA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/xf5mI5I2du66ymfEnLZXNijA2jBb31i0zMIubtjE/3sBkP7fG
-	A+qYlcSniQPoCMtOtNYBVTQvWxG9GKTltWS0C//Hlhw7Bf5CG5InEZo4
-X-Gm-Gg: AYBFou00cnMBtWmeSJkI0pCAxXeXVqi5Ri6/z7f2umaGUA63hD3z10tgjTRoNJjaMms
-	P0vtBQBHL6miK6l34SDzhxiJ3HH7aLk7c2emkUK0+k60p+WnMHbjeq+lUS6bwyJVb6RFOhBNtHu
-	qq6ObwIa3daGUIrPOpK/bdy+uB2MtkXbcJU8iKCc/kcFKiUdOUzbjgGgNXlJqG161yFu48dmqgD
-	qfoajicFFRClwUqAa3uPbERRF8rJvv09PQyOOz10gS7yABHvZVUqvd+4B2f4hnINSet+sWJrrua
-	w50HQKqeQiMzgzMEUe1tmtfRt7J0nU6LszZZQtBRu+GczBtg6gRH3MAlZAGFzTIXe90KXzWI1+n
-	MiMwkOtOVtC2uFo9yybFjre+H1Q1mqo7lJbCrOk8PlbxppcFpt/6vips911B8LrCSe3edG7ERYB
-	eoYUXkdDEDIglQav7u/Hd8kLgKQ/+P9JxjXAJRuDM/eHShcrqxkbGftB6DEt+1GZANuPWMCgEcN
-	hwgciy+OYPqp24zwtB8HX7kzewnybx1P9irzHKCka22/3spReMYOL4+hVfUCIF5S9hu1YNDbNBp
-	IZ78pXpE4EidQcx58caQ+6XPSJo=
-X-Received: by 2002:a05:600c:3b1a:b0:4a1:cf60:dcc3 with SMTP id 5b1f17b1804b1-4b963c7e496mr65389125e9.29.1794214235848;
-        Mon, 09 Nov 2026 00:50:35 -0800 (PST)
-Received: from flare5 ([212.58.121.92])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b79502d5b1sm147015055e9.5.2026.11.09.00.50.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 00:50:35 -0800 (PST)
-From: Stanislav Aleksandrov <lightofmysoul@gmail.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Robert Marko <robimarko@gmail.com>,
-	Guru Das Srinagesh <linux@gurudas.dev>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Radu Rendec <radu@rendec.net>,
-	Lee Jones <lee@kernel.org>,
-	Will Deacon <will@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	"Joerg Roedel (AMD)" <joro@8bytes.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Wesley Cheng <wesley.cheng@oss.qualcomm.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Bean Huo <beanhuo@micron.com>,
-	Stanley Jhu <stanleyjhu@google.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
-	linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	mfd@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	iommu@lists.linux.dev,
-	linux-usb@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	linux-scsi@vger.kernel.org,
-	linux-crypto@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH 16/17] arm64: dts: qcom: Add initial Halliday dtsi
-Date: Mon,  9 Nov 2026 08:50:19 +0000
-Message-ID: <20261109085019.1751534-1-lightofmysoul@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <9dbfc665-089c-45f7-bca2-74caee322885@kernel.org>
-References: <20261109-halliday-dts-v1-0-289114ab8197@gmail.com> <20261109-halliday-dts-v1-16-289114ab8197@gmail.com> <9dbfc665-089c-45f7-bca2-74caee322885@kernel.org>
+	dkim=pass (2048-bit key, unprotected) header.d=klattorp.se header.i=@klattorp.se header.a=rsa-sha256 header.s=simplycom2 header.b=PdC0AioF
+Received: from [192.168.1.45] (81-228-203-110-no2102.tbcn.telia.com [81.228.203.110])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.simply.com (Simply.com) with ESMTPSA id 4jNNpq3fWTz1DQqk;
+	Mon,  9 Nov 2026 09:53:07 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=klattorp.se; s=simplycom2;
+	t=1794214387;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ZKf2DBGb+N2gDS9fHvgM+A7zfG0IQY/8ss3YlANSh/w=;
+	b=PdC0AioF2fohvlmAvsbaoBURs17nOU1vxanKjwgtkWcobgVFm6x7MOVxvAdN3+JzEghKYx
+	orHPk3FzHn6QApUr3wRDspdeQjEV6Tsl/muUd/i/rrCZ56wAkG1oaBTYOZEADyGwrSFlrZ
+	09wZqCS0emuOKp/tHOVlTIGLHKrfAMm/CuGG8gVXDwbk483k/mZ1iVtHHQxIXctnXBn/6r
+	IYl1TJYraVxwiPLvE/PQ0Lcd2lJKdm+hqYrwFYvIaKIIShC5CfjftXC/t5Jm7j9Ph1edZu
+	HG9BmIfjYEuKQCw0c3G2uZQOKbluYHOBg+9RvgSVzC598VX+IiayqDTm6NsSew==
+Message-ID: <b7672bea-edea-40e2-a4b9-b06d026265a1@klattorp.se>
+Date: Mon, 9 Nov 2026 09:53:06 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -140,17 +62,61 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RESEND PATCH 1/3] power: supply: max17040: pass the device
+ fwnode to the power supply core
+To: Krzysztof Kozlowski <krzk@kernel.org>, sre@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ matheus@castello.eng.br, me@iskren.info, m.szyprowski@samsung.com,
+ clamor95@gmail.com, sebastian.reichel@collabora.com
+References: <20261108154241.198160-1-huggek@klattorp.se>
+ <20261108154241.198160-2-huggek@klattorp.se>
+ <3b4d9f8a-2b5b-49c6-a2fa-666548029975@kernel.org>
+Content-Language: en-US, sv-SE
+From: Hugo Karlsson <huggek@klattorp.se>
+In-Reply-To: <3b4d9f8a-2b5b-49c6-a2fa-666548029975@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On 09/11/2026 09:29, Krzysztof Kozlowski wrote:
-> Odd license, suggests you copied it.
+ > Please run scripts/checkpatch.pl on the patches and fix reported
+ > warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
+ > patches and (probably) fix more warnings.
+
+Thanks, sorry in regards to that. I ran both, the only findings are
+for the "Assisted-by: " line, which checkpatch does not recognise
+("Non-standard signature" and "Unrecognized email address"); --strict
+reports no checks on the code itself
+
+It seems it was removed in 1e035297ffda at the 13 October as Sebasation 
+could just drop it on the applied series, but that´s maybe something I 
+need to do myself and send a patch v2? Or is that just cosmetic?
+
+
+Hugo
+
+On 09/11/2026 08:30, Krzysztof Kozlowski wrote:
+> On 08/11/2026 16:42, Hugo Karlsson wrote:
+>> Since commit f4b782af61ae ("power: max17040: pass status property from
+>> supplier") the driver forwards POWER_SUPPLY_PROP_STATUS to its supplier,
+>> and the DT binding documents a power-supplies property for naming that
+>> supplier. The driver never passes its device node to
+>> devm_power_supply_register(), however, so the power supply core cannot
+>> parse power-supplies and the battery never gets a supplier from
+>> firmware. The status lookup then always returns -ENODEV and userspace
+>> sees POWER_SUPPLY_STATUS_UNKNOWN.
+>>
+>> Set psy_cfg.fwnode the way max17042_battery and cw2015_battery already
+>> do.
+>>
+>> Fixes: f4b782af61ae ("power: max17040: pass status property from supplier")
+>> Assisted-by: Claude:claude-opus-5-5 [Claude Code]
+> If you are resending, then at least you could run checkpatch.
 >
-> You should retain original copyrights as well.
-
-The license is BSD-3-Clause because I used sm8550.dtsi as the template
-for the node layout. The values come from Qualcomm's downstream
-anorak.dtsi, which has no license or copyright header. v2 will add the
-Linaro copyright from sm8550.dtsi. I'll fix the other comments in v2
-too.
-
-Stanislav
+> Please run scripts/checkpatch.pl on the patches and fix reported
+> warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
+> patches and (probably) fix more warnings. Some warnings can be ignored,
+> especially from --strict run, but the code here looks like it needs a
+> fix. Feel free to get in touch if the warning is not clear.
+>
+> Best regards,
+> Krzysztof
