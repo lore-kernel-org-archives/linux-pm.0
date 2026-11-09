@@ -1,67 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=85.13.135.14
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=54.204.34.129
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794208195;
-	b=XFtWs8Ghks24H2DvV7Ls7ZzyQ3iuJfggt2XKLPCdg5QprhQrlGI5NyenxEFcy7D3E+iH
-	 vOYG1drXjUOcFi+UUDKjbDoRJSJieYRAT5YKrPcYnVsECKMn5VG45Q4J14n0obKBznUs6
-	 8abgjAphzH0US7HTprQdPuiiIJVSVyqoeucu4gHy7Y8a5u9ALRBPbRWOQ8K9sGglbIJhD
-	 5Tbtq2b2snupOUjKiHdGYBoCFeadOELFqOoeOKtsgXDtFxQ8lmxNZuN4XnX+li0WGJ5cr
-	 aRxs084IQibIBVJ+MQfUJcdOX4FaHI1q+/hZ+Ac/HoBtt3LfFcHSVVfdwsTlrCY8ckg==
+	t=1794208442;
+	b=09YoNDFAlh3RK6FWuN8MqdI9zqiY95F8Ye6dsQ7ywXhYKuuaGIEUwAV/Frl52fSrwv2Z
+	 NMoupNE0Lru7pA+pdx4P9edVhPuEJXXP7kEp7SAwT3xgVlVs+v9j2aAPWWUgwjl1R42jx
+	 IpCmKsT6bISTh042Bh5jvT6YPma+/XkEMV4290PWwR1+rsbXJWullTEH8oO1H5wACxFz1
+	 /yNXBNOWFl+QEHQD/+qiiFe0tOBLPzIhHKFFRgCy4iM+TffLz1XlHJepWkx3q9keCvq3J
+	 vceJ6IDydpP/W0FHxGkAXKsiSyfBSJ+ekivg1wlJWQ9vlgWZMNnTyZjl0bkWC8SZr/g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794208195;
-	h=DMARC-Filter:DKIM-Signature:X-KAS-Sym:Received:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spamd-Bar;
-	bh=WIcm00QviXN2rNTolIZmfmXUKosJ6HOgWPDQhqzg86w=;
-	b=qi1vn5laRtDij2mBf2xbefVAeDF2NvsjtNrSbUGqkwXN4v8wbj7r5jKZmMC0WxHgE84x
-	 ol2akxWDg6sWmU0bOdGny/XLtyvu+PVUgiHrPRy5WO5+Sw8wM4Y2CxW+6gOskwWcVDZfW
-	 DJDQzpyKDUUBxjstVYG3blztv0IAeqJz38dMaeEXwghE30PunhKE2Z0W3s//XBrQntv0y
-	 zAcQAY76vM6L0lI/brAwjFIijS8ziKgFBqQnBtIOrYvIE3F+VtmGXPWLHxVXix275nO0Z
-	 Dp73xBgN8Si4BqSPSBnLJD5vhdFJBOIW77T8IZajwIjIQ1y2NrGNCUyrgk2b48wXqdQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794208442;
+	h=DMARC-Filter:DKIM-Signature:X-QQ-mid:X-QQ-Originating-IP:Received:
+	 X-QQ-SSF:X-QQ-GoodBg:X-BIZMAIL-ID:EX-QQ-RecipientCnt:Mime-Version:
+	 Content-Type:Date:Message-Id:From:To:Cc:Subject:In-Reply-To:
+	 References:Content-Transfer-Encoding:X-QQ-SENDSIZE:Feedback-ID:
+	 X-QQ-XMAILINFO:X-QQ-XMRINFO:X-QQ-RECHKSPAM;
+	bh=kJVLZj1Pk3xwWcg8tK9L4RRH3pYszRMc7fN60jkYOvc=;
+	b=BCxdYvJSQbQxzaaw+skaNyDR+vYplj+8I2epyv1KAMUJG8trCfAzgtDLT+UUN+f0PDxA
+	 gQuM1rVO0jo+LzHEaKlGFiDsELGGBY+DbMS00ipql0mK0m+IexnMG1RPnP3O6s7sgAN6f
+	 hrz6qTjqOqSnPxAya5AA8ZP/UKID8wbTBombQeZF2bdnKptwTUhrv3UaxjiveJAMpqq53
+	 tNs/LLlozsK7cKyKy/ftKInPDx8Klx52Gq9qS9aSnf7Y5yFqzOcPWTbk3FZvQM/DykUs5
+	 eRM/B5cRd9KmKX563xhIdt98a91OanjCR2/YLc2y5wQgc6aGUQ9w2qBGj4cnjLfO1Gw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=tsv-stahl-riesa.de;
-	spf=pass smtp.mailfrom=tsv-stahl-riesa.de;
-	dkim=pass header.d=tsv-stahl-riesa.de header.i=@tsv-stahl-riesa.de header.a=rsa-sha256 header.s=kas202608160020 header.b=FEoM7VCN;
-	arc=none smtp.remote-ip=85.13.135.14
-Received: from dd13108.kasserver.com (dd13108.kasserver.com [85.13.135.14])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=none header.from=linux.spacemit.com;
+	spf=none smtp.mailfrom=linux.spacemit.com;
+	dkim=pass header.d=linux.spacemit.com header.i=@linux.spacemit.com header.a=rsa-sha256 header.s=mxsw2412 header.b=RzuplUmV;
+	arc=none smtp.remote-ip=54.204.34.129
+Received: from smtpbguseast1.qq.com (smtpbguseast1.qq.com [54.204.34.129])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 040CC606A323;
-	Mon,  9 Nov 2026 07:09:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 040CC606A323
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tsv-stahl-riesa.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tsv-stahl-riesa.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A919606A330;
+	Mon,  9 Nov 2026 07:13:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5A919606A330
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.spacemit.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=tsv-stahl-riesa.de header.i=@tsv-stahl-riesa.de header.a=rsa-sha256 header.s=kas202608160020 header.b=FEoM7VCN
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=tsv-stahl-riesa.de;
-	s=kas202608160020; t=1794208185;
-	bh=WIcm00QviXN2rNTolIZmfmXUKosJ6HOgWPDQhqzg86w=;
-	h=Date:Subject:To:Cc:From:In-Reply-To:From;
-	b=FEoM7VCNH2YoqXlEnfoGBAY5Vi6OleT9YSEzr6w3tfQAA73irlffttHm0hmdcfYQW
-	 Bkw4tcOUFy4oTMFpuWhZeJulh4NLfjd1Vp+XDt8MS/BOePPuoJLgyvDnigbTjQc9K7
-	 rjo46IntC+1Nhz53Rh0BQl0Qku9FiM92j12erBCUuF13gPXDZoWuYwH/lXJvmRXdfv
-	 BjVuuqXpDz9pkiIpzFYSP4uv48+w6RjAJ2a1RquCinkNZULAFGAFxHSoR/C6fkl/h+
-	 MVUlx2iS6I+du4OCP962d8ScOxM198uachDVpoWRW4a1gzsa2eherofaqTLtgxzAqj
-	 d4XUAAE+XHtPQ==
-X-KAS-Sym: v3:f51bdf72230551df:lm+kJ516X/vXvgW5UsIIwQ+AHHFNVUKD+7Vv7dsrSsBco
-	NsPVQ/9+7hwD7YbJbBgXB6kUTXlJPuG0llkl3AZcSV2LiA/TpbBhYO+hh7PGemKDSrtQ/DoeuvG
-	/jq4ixEZ9qvRBxwige5OMr4HIAOC7YCdsL/oyAA4EaWOehSym3yButKt0e0HZpd+85IJs4nyGJO
-	AHHMYqRlKYJaU6WgIZP7bl/9mKlzFDLOaTSSrSJ1EN2RcwM1IsmsW6YlTVa3apYoDSo5aAFB7dQ
-	7hK9xfiJ5GzM1M6SzQf/OjBuaTzSOwUKTZ33HEZDYhfBFn/nZoaqa9MeEkZ9Xbi4++uMxfhg==:
-	72YJeMoxJbw15IPXYrVE+Oc0B3tn6bjuWJZbggJMIEtGEzRDoYEQYtdzJSNFs5P85ThIkVqHbT1
-	cIk13H3tFWTDnJs1Z0/x/ebcTYkrkbRKC8DXLJGIP9016KniDXUYS94rtFhPFTiyIMSbTqePwbf
-	LEaKizW6e8Y7Fv98vxrlKe5R8PT82Z8A6Yg7seT1jgFlqb1cudYzTuDudwP/jurTfTc0gIJ7fby
-	hEnsjn0lw092gj4kP8OxKS2Zu7IVcc8CnUESgYedfm/QJ4uJDUgBSpXvHZIjJH2aoaLTYgdWLsm
-	IosQC329EbRfWag6BQJDhVPDwS0sBWBojAy8AA0ThbJcXNDXS7k3UJaCVWP+S1eRJv0mPER0I53
-	JltrklaAl4TBSQPowVtd2u0s6pXZ1AIVRsmuFzLrNQ8Ui8v+4pEoVBsSZH838EDyJ0zVysvBlOw
-	CN8iUDhuHOZrVNedF+2eEftSMOfNJpoEGZghDHI4bu8rkxzIH3xgRKKNUKG/nb8ltiJFLMV2TD0
-	eIcH7595Y5fRYkkKWTQT9NsizUtF8KJOIjRyqS8aC3MROtDDFuG5cIYITFqi4oHS0q5bJi2+x2P
-	vQ3OYQ==
-Received: from [192.168.2.174] (dslb-188-098-199-015.188.098.pools.vodafone-ip.de [188.98.199.15])
-	by dd13108.kasserver.com (Postfix) with ESMTPSA id 14006782709E;
-	Mon,  9 Nov 2026 08:09:45 +0100 (CET)
-Message-ID: <669e55df-e86c-45ac-a898-f28fec8b3e41@tsv-stahl-riesa.de>
-Date: Mon, 9 Nov 2026 08:09:44 +0100
+	dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.a=rsa-sha256 header.s=mxsw2412 header.b=RzuplUmV
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
+	s=mxsw2412; t=1794208403;
+	bh=kJVLZj1Pk3xwWcg8tK9L4RRH3pYszRMc7fN60jkYOvc=;
+	h=Mime-Version:Date:Message-Id:From:To:Subject;
+	b=RzuplUmVenoVBR2noYVOzk8sONCpodCMQ/wb13eFDN3vf3VLIFTBSngZ+yzt/KBbU
+	 VqMr2aDeQ1j9hVrT2Y8s4gnDUChgjte8U9T+PkOKVGslVRE7pR/G/uZNA0Enjzmo5y
+	 hlKlIXYjLz3imXPZkgbytCWZiLsubur8qeqGdoGY=
+X-QQ-mid: esmtpgz10t1794208400t3ad1583a
+X-QQ-Originating-IP: qo40GlWADYFxTR7NC+gq0T9seFJa2UapBBDpklvpw/U=
+Received: from = ( [58.254.68.27])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Mon, 09 Nov 2026 15:13:17 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 14165528735187761627
+EX-QQ-RecipientCnt: 17
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -70,62 +58,135 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] power: supply: bq24190: Fix NTC status decoding for
- BQ24193
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: Aaron Kling <webgeek1234@gmail.com>, Svyatoslav Ryhel
- <clamor95@gmail.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20261026-upstream-bq24190-ntc-v1-1-fdc12d795a99@tsv-stahl-riesa.de>
- <avEObsi3nkr_-kaf@venus>
-Content-Language: en-US
-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
-In-Reply-To: <avEObsi3nkr_-kaf@venus>
+Mime-Version: 1.0
+Content-Type: multipart/signed;
+ boundary=e332fbce858a9fc00b10f2e696db37e3970b3372689d66af046121bcb587;
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+Date: Mon, 09 Nov 2026 07:12:57 +0000
+Message-Id: <DMQHSDTR177I.1HWHAF4FWTFQ5@linux.spacemit.com>
+From: "Troy Mitchell" <troy.mitchell@linux.spacemit.com>
+To: "Yixun Lan" <dlan@kernel.org>
+Cc: "Rob Herring" <robh@kernel.org>, "Krzysztof Kozlowski"
+ <krzk+dt@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>, "Ulf Hansson"
+ <ulfh@kernel.org>, "Paul Walmsley" <pjw@kernel.org>, "Palmer Dabbelt"
+ <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>, "Alexandre
+ Ghiti" <alex@ghiti.fr>, "Icenowy Zheng" <uwu@icenowy.me>, "Iker Pedrosa"
+ <ikerpedrosam@gmail.com>, <devicetree@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <spacemit@lists.linux.dev>,
+ <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Troy Mitchell"
+ <troy.mitchell@linux.spacemit.com>
+Subject: Re: [PATCH v3 2/2] pmdomain: spacemit: Add power domain driver
+In-Reply-To: <20261108-04-k3-pm-support-v3-2-b9dc0857039b@kernel.org>
+References: <20261108-04-k3-pm-support-v3-0-b9dc0857039b@kernel.org>
+	<20261108-04-k3-pm-support-v3-2-b9dc0857039b@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpgz:linux.spacemit.com:qybglogicsvrgz:qybglogicsvrgz3a-0
+X-QQ-XMAILINFO: MIODS64eMatOtLYkCYprGJLH8gStOTN7ayneCZEb7cAqjI18Lf7bOP+S
+	R4U+GuZxC4R65LKC2xE6bBE7HXg4bZOgeCJFKRInnBN8Q7K4xF3nUtUFh7l0uctRu1ivNnh
+	pBU6oDfmtYDNa9Qhw/Ijc/TTAgIDVSBdrtZiPcyOIrJ8a53hf5j5WsHMT/GSFQaK5p6M777
+	VMnI3IVLHQc+OM/bqX+MA4V20izD/ZZKAgE5oKnVe/rJDAPuYXH7OWLZ09W4yDo6IHTwV8H
+	X+7WEW8Abyxn7AcEXt/9E4LNgpKpliHRZrwB3Nb4Tcb2A07q9yiX0I5qYPV2UgJ/KHw7wHj
+	/rxkbECA+TaNPWAGp54XsGcI9XDsU3AFm2siCkPcsmcsN+9pt3HYT7daSf9O9+4I49Z89cV
+	BlhNTr8tjo1m5ltBI3s5hUPQdk9P65rC8bHIXUWrIWyrqOJ8AQTpOeJQLgaLJIJv4DISIss
+	3I8DuYT8oDFNWr3nSGSBF00rKDucMtovTIbAVEQT7KipGOXMvcYBBfzLO2ij9EL+XYd1BDk
+	+L6kAbw3vT+aKV+YnQ+ymOA6+gVuQWcs/Mn1teZutlnTd91SxUbCsmWUJ+OniyNDSCKyM0S
+	udNaZO2gGXwgwswcv+1dhz94t0YEbJKV5TVWP6Mg3EPtdqLkPcRMGVouNJNglS2gjTx0IkZ
+	VoexwHmdMaf+nxIjBhWiEcc6iqZAoAQ7Vu6Hxs9tHsN3D3ySzv1ZyWqzUJh7tj1P4ETmP4d
+	uG0HMnN3ctNAbUAG0lgEft+ZkQu/AY8BOuWnrjdsMEj6nWP8Nx6EJCukr5mefs57368aLvT
+	Ha7ldmpfuxI4dFO5k9r6czpeghO1kG1vpbgRpIcyaIZs+0L94mGrwYFZePPoWHzWNHokk6+
+	jjWBFNI5F0q+vBOdT5qgXZxdJ9Z/TRCKUIxyuuTeIk5smXXWniTz5ewk07vqJUfGaB7RyjN
+	41QZgA6Yv2c2fiVmgAkxfVj6FHQCss2U3EKST7fJApCIu3/2nKNjYp5kYpSLNKrPnoTN4Bc
+	YF2NxxMj0xOg/W09EwpeVBq053aFQtBkbyvDPZ1GK9rkCGRB8oyFe2DCbQsf/+ZE+POrtUa
+	4fX2XLlZit3
+X-QQ-XMRINFO: MPJ6Tf5t3I/ylTmHUqvI8+Wpn+Gzalws3A==
+X-QQ-RECHKSPAM: 0
+
+--e332fbce858a9fc00b10f2e696db37e3970b3372689d66af046121bcb587
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spamd-Bar: --
 
-Hi Sebastian,
+Hi Yixun,
 
-On Mon, Nov 09, 2026 at 01:08:13AM +0100, Sebastian Reichel wrote:
-> Looks like bq24190_charger_get_ntc_status can just be updated to
-> handle a single temperature sensor as warm/cool and dual-sensor as
-> overheat/cold?
+On Sun, 08 Nov 2026 10:36:02 +0000, Yixun Lan wrote:
+> +config SPACEMIT_PM_DOMAINS
+> +	tristate "PM Domain driver for SpacemiT SoC"
+[...]
+> +	  Say y to enable device power management through PM domains.
+This is tristate now, so "Say Y or M".
 
-Thanks for looking at this. If I understand you correctly, codes 1-4
-(one sensor out of range) would become warm/cool and codes 5/6 (both
-sensors) cold/overheat, for all chips.
+[...]
+> +#include <linux/io.h>
+> +#include <linux/err.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/regmap.h>
+> +#include <linux/auxiliary_bus.h>
+io.h, err.h and platform_device.h are not used right now.
 
-I don't think that is right for the BQ24190, BQ24192 and BQ24192I. Their
-datasheet (SLUSAW5B) says for both TS pins "Charge suspends when either
-TS pin is out of range", so a single hot or cold sensor stops charging
-there. Reporting that as Warm or Cool would understate it.
+[...]
+> +static int spacemit_pd_power_off(struct generic_pm_domain *domain)
+[...]
+> +	if (ret) {
+> +		dev_err(&domain->dev, "failed to power off domain %s: %d\n",
+> +			p->name, pd->pm_index);
+> +		return -EBUSY;
+> +	}
 
-The BQ24193 is different in that its TS1 and TS2 must be connected
-together and its codes are a JEITA profile (SLUSBG7A): 010 is Warm and
-011 is Cool, and charging continues in both states.
+-EBUSY drops the -ETIMEDOUT returned by regmap_read_poll_timeout();
+why not print ret and return it? Same in spacemit_pd_power_on().
 
-That is why I used the per-chip .get_ntc_status hook, like the BQ24296.
-I can make it smaller, though, by handling only the two JEITA states and
-falling back to the existing function for everything else:
+[...]
+> +static bool spacemit_pm_is_off_state(struct spacemit_pmu *pmu,
+> +				     struct spacemit_pm_domain *pd)
+[...]
+> +	return (reg & bit) ? false : true;
+return !(reg & bit);
 
-static int bq24193_charger_get_ntc_status(u8 value)
-{
-	switch (value >> BQ24190_REG_F_NTC_FAULT_SHIFT & 0x7) {
-	case 0x2: /* Warm */
-		return POWER_SUPPLY_HEALTH_WARM;
-	case 0x3: /* Cool */
-		return POWER_SUPPLY_HEALTH_COOL;
-	default:
-		return bq24190_charger_get_ntc_status(value);
-	}
-}
+[...]
+> +static void spacemit_pm_domain_cleanup(struct spacemit_pmu *pmu)
+> +{
+> +	struct spacemit_pm_domain *pd;
+> +	int i, ret;
+> +
+> +	for (i =3D 0; i < pmu->genpd_data.num_domains; i++) {
+> +		if (!pmu->domains[i])
+> +			continue;
+> +
+> +		pd =3D to_spacemit_pd(pmu->domains[i]);
+> +		ret =3D pm_genpd_remove(pmu->domains[i]);
+> +		if (ret)
+> +			dev_err(pmu->dev, "failed to remove domain %s: %d - state may be inco=
+nsistent\n",
+> +				pd->param->name, ret);
+> +	}
+> +}
+[...]
+> +static void spacemit_pm_domain_remove(struct auxiliary_device *adev)
+> +{
+> +	struct spacemit_pmu *pmu =3D auxiliary_get_drvdata(adev);
+> +	struct device *dev =3D &adev->dev;
+> +
+> +	of_genpd_del_provider(dev->of_node);
+> +	spacemit_pm_domain_cleanup(pmu);
+> +}
+pm_genpd_remove() fails with -EBUSY while a consumer is still attached,
+but pd is freed by devres anyway. Set suppress_bind_attrs like most
+pmdomain drivers?
 
-Would that work for you, or did you have something else in mind? I'll
-send a v2 once I know which way you prefer.
+--=20
+Troy Mitchell
 
-Greetings,
+--e332fbce858a9fc00b10f2e696db37e3970b3372689d66af046121bcb587
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Patrick
+-----BEGIN PGP SIGNATURE-----
+
+iJcEABYKAD8WIQSL4Ay2cExaPXAQcU2YCe+A+TM0LwUCavFyeSEcdHJveS5taXRj
+aGVsbEBsaW51eC5zcGFjZW1pdC5jb20ACgkQmAnvgPkzNC9MtQD/aDe7GEsQxXem
+tqumpi4bxtTDHQPVsbj5Wnjdb4MV1uIBAM48sFNsLNa4JF/Fk4zZ+5Dmf0vEjAGt
++OkFbGjc5/oK
+=gTan
+-----END PGP SIGNATURE-----
+
+--e332fbce858a9fc00b10f2e696db37e3970b3372689d66af046121bcb587--
