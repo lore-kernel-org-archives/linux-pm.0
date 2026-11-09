@@ -1,51 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794231309;
-	b=2AiKMIbgwAafKwj151HIac2Uq1vQNDrlbq79lC3sGUGSo8Y1ESf/CCXqKiQPrqlXtw7v
-	 iIOmgO/67U+1LW9/pfNrjJvyn3cxNUlqlScyxMEGZ80ruHWZI1RfQoQ2VnD2Ptf4Rq5+j
-	 8DDeQ1utRwmOhEgzVuvCgw7kQqdZ0V1IiTQ8Sbm0jLkQp4bRcNBKhcwtgOVH3joQDCFih
-	 70IBqWQ8BPSLyHqqOCeQnzPo8qky1tJEeW5tEah5XZIrGW5Sw8PMaRT8JSN8y9VfTZNDt
-	 PAWChA2VOb8aruvB91ujZvoy31LFBVTLeypGQOzUUnmy1J+KsJwCxT7EpDrHtv94EsQ==
+	t=1794231321;
+	b=NnRI276VAcNqtmK6d2NHzlzCPoNfJMNYbusiI6y8MYzaaVcHJ5wRct6ZomJtvTo/0ROz
+	 AKp3r9OIfpMi7GMUVXESrEkICbkAQxT1ft08dywIdK4s51BwBBu593432DZSbFc/brJWm
+	 qait2YGW/M6+pizj9PBzt50fTfY3vgXXnMrqUpjRZgVOWis0pVApuMPO4j9aKoPGZf4Er
+	 Xt5yO998g0eAxtx+hu8yhTF6E8MiekQxunvn2vYLLNPZhxSJojd/23yxNRDvISlcB8x9f
+	 n0DHRzzks2gcT7MY79KQmng2G6J9bnOvuEtOs6R2Qwr9+uAf1ZejZ9D+Hf82mVVZ7mQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794231309;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794231321;
 	h=DMARC-Filter:Received:DKIM-Signature:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=5et8XaaCmEn01nOvfNyf5nZqOOXUaaxa5VM6+8a+de0=;
-	b=rADImcG8bXRSDwnjc/g6qa/b7R/UdbPLMroya+bWpOkonWhp5TAQMEJ1MW6qRYaLYumg
-	 8ieYlCemqVQdpO5yJk2GWn0LnSVwednYOKOlTGZhbG67Mi0rDETYQ0kNm9EAjahUk0AE0
-	 V0Uf9ZbHSeCL0u5yrPsuMqWSFwfW39viZPladjJkzrvSH3W6Z/8Z2HssehV8ltRap84Yz
-	 07i1rweU2/ypRXZ+6nWNwpdJCqj3/axbTOShYxjvvK242rEVd8iSJvUKQBxnqX1zDLkaH
-	 f07u7voeBKw6zvxj7qN+KwjXLjdUsA25S6a1uPsIegiS6Xz+0Kwbdg17bZshds8qEQw==
+	bh=RHbobrqtkCfVlo6cAi/46bOTcxdKLYt7G6907V67RpU=;
+	b=2o9/j51pM4kAiRxHq/2yI2z31oCeHTTVZpwNB0mh/I85loJzwL7c1xrlurXK337TKrt+
+	 F2anHLwAa/Sacr+4xhDFk3JSUFzCZknyF1UjmajI/CT2cqCQJ7HmbqEpL0Ej0IDYiPUkJ
+	 eF5qNFw8xCZ5MivcJNXG1gS040sjPS62Te4LWs/uljAJ4aFS63YyiyzJKRRrSCmaB5z0e
+	 wK2RXjM04K5ReWtHwgTGcNwlD6tUcyYIU+HUshevAe7e5PC93T4gg7X/dwN8xW5SXxKTu
+	 J23gut6dpZ/Zc9b7BjyMFmqIxAHFqQ2Mhtc2VeMq3auVTfubTi3Dkx237OLAdViQXuQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=ideasonboard.com;
 	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=KOPMDeia;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b="nfO+R05/";
 	arc=none smtp.remote-ip=213.167.242.64
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 221C8606A32A;
-	Mon,  9 Nov 2026 13:35:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 221C8606A32A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCDF8606D806;
+	Mon,  9 Nov 2026 13:35:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CCDF8606D806
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=KOPMDeia
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=nfO+R05/
 Received: from neptunite.rasen.tech (unknown [IPv6:2400:2411:160:2f00:7074:f4f4:e983:bf17])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 396ADDDE;
-	Mon,  9 Nov 2026 14:32:40 +0100 (CET)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id B551ADA8;
+	Mon,  9 Nov 2026 14:32:52 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1794231166;
-	bh=ny3UDlwL1HP5bdBzQYWH1FAw8K7SExExRCAMGvyzUd0=;
+	s=mail; t=1794231177;
+	bh=bpXqtsWqrM7gLL19B+WOY0IajzWlW8W1W+pHV9t3RfU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=KOPMDeiazDv5gMw93ebdE0GxllirtCbSBzGuEhT/jTCE7FQP4nJlpRzL8aKA39RkB
-	 16HmNZnylEKHm2CjmO6G0KucFMGUDQBzfMF+CQhtJK2nbooVbgOrUfXzuSy+uCFHqP
-	 5MNfIlAdMVhOJnL7Tdg/AtZUmRSxLKv0sYTPoKuY=
+	b=nfO+R05/8lny3xwqOQq7VCdtcyJajKfIR+ijISm1FDsptMAeOGKEpDnpNd4fhqkKx
+	 dDQmecBTrZBN6gOaTBZqT2IKGs8SFgtttOdrz6VXZZfR7HGIT5jW80C9mDL1xuUKOL
+	 LEVWozrhYmP9SORQDTuUurcUYhmpRsr0pD2lcCTI=
 From: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Date: Mon, 09 Nov 2026 22:34:25 +0900
-Subject: [PATCH v4 04/13] arm64: renesas: r8a78000: Add VSP[BI] nodes
+Date: Mon, 09 Nov 2026 22:34:27 +0900
+Subject: [PATCH v4 06/13] media: vsp1: Support full VSPB on R-Car M3-W,
+ M3-N and E3
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -57,7 +58,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-4-1b2072e8c37e@ideasonboard.com>
+Message-Id: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-6-1b2072e8c37e@ideasonboard.com>
 References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
 In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
 To: Geert Uytterhoeven <geert+renesas@glider.be>, 
@@ -79,132 +80,73 @@ X-Mailer: b4 0.14.2
 
 From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
-Add DT nodes for the VSPB and VSPI IP cores in the R-Car X5H SoC.
+The M3-W, M3-N and E3 SoCs integrate a VSPB that reports the same
+version ID as the VSPBD in the H3 and H3-N, but includes additional
+entities compared to the VSPBD. The VSPBD device entry in the driver
+matches on the version ID only, which results in the VSPB being handled
+as a VSPBD. The driver therefore doesn't support the CLU, LUT and HGO
+entities in the M3-W, M3-N and E3 SoCs.
 
-Use the SGD1 clock as it is likely to be the clock used for data flow.
+To fix it, split the device entry in two, one for the VSPBD with an
+additional SoC ID match, and one for the VSPB. The VSPBD entry needs to
+be listed first, otherwise the VSPB entry will match on H3 and H3-N as
+well.
+
+The VI6_IP_VERSION_MODEL_VSPBD_GEN3 macro is renamed to
+VI6_IP_VERSION_MODEL_VSPB_GEN3 to indicate that the VSPBD is the special
+case.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Tested-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-
 ---
-Changes in v4:
-- change clock from SGD4 to SGD1
----
- arch/arm64/boot/dts/renesas/r8a78000.dtsi | 99 +++++++++++++++++++++++++++++++
- 1 file changed, 99 insertions(+)
+ drivers/media/platform/renesas/vsp1/vsp1_drv.c  | 13 ++++++++++++-
+ drivers/media/platform/renesas/vsp1/vsp1_regs.h |  2 +-
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a78000.dtsi b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-index 5caa9ab1c83a93a606c5191b71f5172158b0cc53..6db03112eaf3e37bb2577b286621d6825205cffe 100644
---- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-@@ -1646,6 +1646,105 @@ fcpvb4: fcp@c503c000 {
- 			resets = <&mdlc_vio 0x106>;
- 		};
- 
-+		vspi0: vsp@c5080000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc5080000 0 0x8000>;
-+			interrupts = <GIC_SPI 643 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0xfe>;
-+			resets = <&mdlc_vio 0xfe>;
-+
-+			renesas,fcp = <&fcpvi0>;
-+		};
-+
-+		vspi1: vsp@c5088000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc5088000 0 0x8000>;
-+			interrupts = <GIC_SPI 644 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0xff>;
-+			resets = <&mdlc_vio 0xff>;
-+
-+			renesas,fcp = <&fcpvi1>;
-+		};
-+
-+		vspi2: vsp@c5090000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc5090000 0 0x8000>;
-+			interrupts = <GIC_SPI 645 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0x100>;
-+			resets = <&mdlc_vio 0x100>;
-+
-+			renesas,fcp = <&fcpvi2>;
-+		};
-+
-+		vspi3: vsp@c5098000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc5098000 0 0x8000>;
-+			interrupts = <GIC_SPI 646 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0x101>;
-+			resets = <&mdlc_vio 0x101>;
-+
-+			renesas,fcp = <&fcpvi3>;
-+		};
-+
-+		vspb0: vsp@c50c0000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc50c0000 0 0x8000>;
-+			interrupts = <GIC_SPI 618 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0xf9>;
-+			resets = <&mdlc_vio 0xf9>;
-+
-+			renesas,fcp = <&fcpvb0>;
-+		};
-+
-+		vspb1: vsp@c50c8000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc50c8000 0 0x8000>;
-+			interrupts = <GIC_SPI 619 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0xfa>;
-+			resets = <&mdlc_vio 0xfa>;
-+
-+			renesas,fcp = <&fcpvb1>;
-+		};
-+
-+		vspb2: vsp@c50d0000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc50d0000 0 0x8000>;
-+			interrupts = <GIC_SPI 620 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0xfb>;
-+			resets = <&mdlc_vio 0xfb>;
-+
-+			renesas,fcp = <&fcpvb2>;
-+		};
-+
-+		vspb3: vsp@c50d8000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc50d8000 0 0x8000>;
-+			interrupts = <GIC_SPI 621 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0xfc>;
-+			resets = <&mdlc_vio 0xfc>;
-+
-+			renesas,fcp = <&fcpvb3>;
-+		};
-+
-+		vspb4: vsp@c50e0000 {
-+			compatible = "renesas,vsp2";
-+			reg = <0 0xc50e0000 0 0x8000>;
-+			interrupts = <GIC_SPI 622 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg R8A78000_CPG_SGD1_VIO_DP_OTHER>;
-+			power-domains = <&mdlc_vio 0x07 0xfd>;
-+			resets = <&mdlc_vio 0xfd>;
-+
-+			renesas,fcp = <&fcpvb4>;
-+		};
-+
- 		mdlc_cmnn: system-controller@ca410000 {
- 			compatible = "renesas,r8a78000-mdlc";
- 			reg = <0 0xca410000 0 0x1000>;
+diff --git a/drivers/media/platform/renesas/vsp1/vsp1_drv.c b/drivers/media/platform/renesas/vsp1/vsp1_drv.c
+index 762a9e776a94d50accad070068f92f6dabb81035..5597595414fe787413c7daa5a3142faa9ced8408 100644
+--- a/drivers/media/platform/renesas/vsp1/vsp1_drv.c
++++ b/drivers/media/platform/renesas/vsp1/vsp1_drv.c
+@@ -781,14 +781,25 @@ static const struct vsp1_device_info vsp1_device_infos[] = {
+ 		.wpf_count = 1,
+ 		.uapi = true,
+ 	}, {
+-		.version = VI6_IP_VERSION_MODEL_VSPBD_GEN3,
++		.version = VI6_IP_VERSION_MODEL_VSPB_GEN3,
+ 		.model = "VSP2-BD",
++		.soc = VI6_IP_VERSION_SOC_H3,
+ 		.gen = 3,
+ 		.features = VSP1_HAS_BRU | VSP1_HAS_WPF_VFLIP,
+ 		.rpf_count = 5,
+ 		.wpf_count = 1,
+ 		.num_bru_inputs = 5,
+ 		.uapi = true,
++	}, {
++		.version = VI6_IP_VERSION_MODEL_VSPB_GEN3,
++		.model = "VSP2-B",
++		.gen = 3,
++		.features = VSP1_HAS_BRU | VSP1_HAS_CLU | VSP1_HAS_HGO
++			  | VSP1_HAS_LUT | VSP1_HAS_WPF_VFLIP,
++		.rpf_count = 5,
++		.wpf_count = 1,
++		.num_bru_inputs = 5,
++		.uapi = true,
+ 	}, {
+ 		.version = VI6_IP_VERSION_MODEL_VSPBC_GEN3,
+ 		.model = "VSP2-BC",
+diff --git a/drivers/media/platform/renesas/vsp1/vsp1_regs.h b/drivers/media/platform/renesas/vsp1/vsp1_regs.h
+index 10cfbcd1b6e0b3a9c0a8daaa990babfaeb8dde0c..4c0315656e9f81a9656b58fb6f0233f8a22ac0e1 100644
+--- a/drivers/media/platform/renesas/vsp1/vsp1_regs.h
++++ b/drivers/media/platform/renesas/vsp1/vsp1_regs.h
+@@ -792,7 +792,7 @@
+ #define VI6_IP_VERSION_MODEL_VSPS_V2H	(0x12 << 8)
+ #define VI6_IP_VERSION_MODEL_VSPD_V2H	(0x13 << 8)
+ #define VI6_IP_VERSION_MODEL_VSPI_GEN3	(0x14 << 8)
+-#define VI6_IP_VERSION_MODEL_VSPBD_GEN3	(0x15 << 8)
++#define VI6_IP_VERSION_MODEL_VSPB_GEN3	(0x15 << 8)
+ #define VI6_IP_VERSION_MODEL_VSPBC_GEN3	(0x16 << 8)
+ #define VI6_IP_VERSION_MODEL_VSPD_GEN3	(0x17 << 8)
+ #define VI6_IP_VERSION_MODEL_VSPD_V3	(0x18 << 8)
 
 -- 
 2.47.3
