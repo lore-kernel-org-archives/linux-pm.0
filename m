@@ -1,55 +1,136 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794243867;
-	b=dmK36FnW+ykkGvFyK8oAAWLUAhh3nE01Y92alqrgx/LqOQ2bLJXqkACt7PKupWcJR7Tt
-	 dtU6tgVI4OIuksNletOCT1e2mXLHETo2itSA3KhBP0Uo5PQqGNBQX0PtbsYmLtcSATqi3
-	 bnI1/FD4u7bg5Qr9r8OhgCeeM54/QYmRX2COQHDhMvt6uirL3I/UWYsuOkinrd1LXdgxZ
-	 wO7Du0F412mDdrDlPdV2kUGKaqzX7tGeU8nOj0jsuj7L3tekMO2Jzpj9IKYuErNqVngvD
-	 vHX6Jn49AzXeIyDl5Aj0Na6XthkhPkqwVVLpwDzOXeKXbg1bGFoOopDI5ITMCN9JIAg==
+	t=1794245938;
+	b=Al79HuPdG2LYPGGP+dGr1yVY9NAwATYrkxUR6JPP6FvFUV60VC8TEdInsRu84O22fckI
+	 oLtLIo4gbOUAylwpPKiykZgAXxeRL+ybTe4+vGsBVddujxfWnv8g4ScEQ+86Bb9cbiOqk
+	 cFYjgj7irz6uGdsEIrJ/fTuVv59STPAFFlBbhTsKkQSABPCbnUoXMxoRmVdB3tKpK9Np9
+	 hGBdqi/WnXIvH/Iw/1w21Sase0BhfLd98jUIKlWzZa/pqMNdfr/JUszolqgGQi//sFfdN
+	 lDGdHwJeUOMIJi4jLRG0x9akzj/OgJXrothrTOltsdOVKrjzwvpSy+MJPZtoPIpuqBg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794243867;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=98uplep4b6LqU0B6PhASQmtAA3ME48ucaufzOGjIC4Q=;
-	b=o5Z1erdmaSzfzrIoxQmvH/GoGyVXh02FGN+oPRcps034gOClVMna3uYoSHmt0kVMOyUi
-	 CBUQ+MrD5/ZSh4fwCuXDj2P4nd4XNnmfjRLqiD5nd8y4k7wvIO3IVMs9RjVtBTipI2zzy
-	 sbfZ0jPI0RSvevfTibf5C60GVt8tw6iS/UDmNvjPPegSrQ3gY92UQWlE1K1FXIpLwXyMY
-	 f0Tfhp8Z55I7Esa+o6ZOl1Cqj4uIGAcdKvryQAoR4FWyExl8InwRd92qvl+YeoQnE3S8t
-	 S9EClsxLcKeL1cESiQND3voEwofiW6yQCSiwcqwRpzD+iaL9atIbacsm+N6uvFzbQjw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794245938;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=VSgAu1YCz0/TBDQtz025D2yh3sRQq8BFfiF0sq3qrAw=;
+	b=jEKHrFOktqNRIG1+JXohBiG2tiNlKdHIldP57/9yiaWk8CCqr5HaD3PUUtg77sWtx4Ec
+	 cr23H1dGvRIiHPOa49LuvePza2rWxOUDJouC2MYb0jVqV6+vihhCfqP1LsBnXC2BX917p
+	 YSlLgn649oRjW0olGPs/Sm0gO6dRw+7BbHM77cPKBEXKDVYY1rDqlFcs9zZYXNyN+XwO9
+	 EBpPGoNbz59EJuURS+tvHkhILhHHAEvhMWBnXkM6kHgKOz1jhkx1FaX9NE4F12E2hjm/p
+	 poFmkP4ACFi1K4Q0cJaDUGshu4mRvL/WzNy4uv0xNTxkiotGA8rxwOnWbJmdvKejMDA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="CEDKgZl/";
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ET4UmX4l;
+	arc=none smtp.remote-ip=209.85.128.50
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1F08606A335
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 17:04:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27594606A331
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 17:38:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 27594606A331
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CEDKgZl/
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A41F1F00936
-	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 17:04:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794243866;
-	bh=98uplep4b6LqU0B6PhASQmtAA3ME48ucaufzOGjIC4Q=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=CEDKgZl/xaRZRuAjx30DASO6mcydIyq7HmjVgvLZ1L8dCf4QWBZZN7euKRRNsAOa5
-	 nkQtEKBpUpxeJU6nUYWsnuswTvMSka3+Xr7i7cK1Hvg0899mUFcTZkfxjyC+VM1oVQ
-	 0eUoybmqMCmEhluWN/c81AjhMvyXZ6NKExjIKcx+05kIIpRXM35gguJrd59CQ2QgQY
-	 c3bVlXmI1+bvf9gkp09+8XBQKSixMHE1/MVQYz9+9LqRrn0G6Eo+Q1JW020tT2lZOE
-	 kNoRTBZYfuXJ6ofKK8hzwahkQ8xDDQiacEPWDsVigBjd4AkSJn2w2czvHNKDD+72PP
-	 qVbEDVDSgoYDQ==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5be47aa555cso985873e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 09:04:26 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErE2CCzEC8pGZ8ODnDPue9UArDYQlZH7ARYBy1+9CsbvWxsaydT6URd/YujKZG5aDkmnl52nh0ZfgQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+okHKqhS7mKmiioBBwGhKQeK5YKsYxQLwsJZG6iCLNNSMMWT+E
-	SHVid7Is/6vaJlY351RGEH1YOPKSvUB/+cQVUzKdIEvIcfySf6o+nu3qaocUynuiDfPJEPZloEO
-	3QPQs+R6HBcQ0lcCWQ4YUtb7rLKKjDhE=
-X-Received: by 2002:a05:6512:3e04:b0:5c0:cba:7d30 with SMTP id
- 2adb3069b0e04-5c14bfff517mr1529840e87.14.1794243864765; Mon, 09 Nov 2026
- 09:04:24 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ET4UmX4l
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4b79502c27aso12250495e9.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 09:38:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794245936; x=1794850736; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=VSgAu1YCz0/TBDQtz025D2yh3sRQq8BFfiF0sq3qrAw=;
+        b=ET4UmX4lnrqCC21B5oGoVYsMQvX/uO5ZDK9wo7RPCXLUSHAzor2KKP7C7D4g9dOSKl
+         T9tIynx1iZ7nScEbu/rROoW0ihwiLqJhnnQ61YL9jqzvok+DK3S1a+gguxLlBKC8w5O1
+         moTFTURhfavgIUyQOJfzNwN7KB0x4LD4UGwaMonewXo+m5sWjx57U6MMJmglEzxfuxMO
+         LmUAzY4EtqQeiNxES10G3nMFPkiJj/jPtOOkesOWKBy7x6Ryd1/Cph6kqfXQpWmPijOY
+         8IbZFuODa/za16J/GDh0DmEFHyP77cWRenI/CjjMSrzXFx4Mn5aU+7EARh+lKdHOYquD
+         rC7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794245936; x=1794850736;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=VSgAu1YCz0/TBDQtz025D2yh3sRQq8BFfiF0sq3qrAw=;
+        b=0/Vy6WATdiVwugRVzYW6qesuA3L1SIzl4vwgeDjx7+tfWWj0obnQR+xO4rNiK1xUxN
+         v6T2dTNV5cxozrTgHsJfu3mTrgZadqOqma68LFPYT+gesHWdVZUn2TRWqOoqVIg4otbn
+         IZ3S7vjAYReYsZz97zT0v40wBiGrpOO0zzFwRvfFrdJTaNs/c676ODNdzUT075ffCHno
+         mpn5uLi9sObyRZsObFAeurVebTw97X9exdxjngozzEyjUhHgTxqLmAY/nxIUgPzJCXUj
+         fQP0IafDqAg7BMceLzKLyKQTzkc9CinBXlGnhkcQ9Og1m7FJu1m+CJzZhO7XqRAdXzrl
+         JVdg==
+X-Forwarded-Encrypted: i=1; AL+hErH0OZ02xsXdkLl9DqzxG36JfNd6uj+eyxS1U8g7sSw7UMCZMyfP/+tb4W1BqDguild6oO6w5lnoiA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+0F+GTokTyXEAZpb5WThveqNbv1v8aacMQ18W5TeAtU4b1QLIa
+	u35uUCCOgIdi2G0IZSSWaVrG8hb8xpIHET5c5A4kgp6yXK9U6g0kfKXo
+X-Gm-Gg: AYBFou3ecH4IfntvgaOyqwe6CCa3aZRx/bnifx5v5nd/BUIBT17Z07cHSZ86IA0W4iP
+	QIF6L5ruS9qK/2bzHHkmFP08nJiJMhrs4sTl8eD9NPQHyJt1c14dDG5baIFmXOazGBdkRt2P6WQ
+	kvpenUy2CuuVNoWQVWW2QRIK5RouhI/nN0UN4JyWQrJUtmu1E+VNcJOYF2jZ4PJfFYRbv7ryyKS
+	g4m5vkU9janIO1huuQmJxTFJC4MU/gVXpfvyZgsMZpT2cWPK3v49XBgBPB3uBV9Ho2eA222du9t
+	uHFIrYeqsc/ELPsQ6xi91eDmu8/IS6xOR/URmPBGusIzYG47UwKSjX1dcUyZ+lqyr9hnPZoVcrA
+	AooSKyvmk+MSKOLlCLgthKGFJQFJvZ7/zrxAxa4IaZlnusaGOIWkUphDOIhc9U8fQ5KbbKNGsf/
+	pBLO0ldcHC7dhXP3E1MjCDw6XHOECMIVNGDf1HfaocaTzl6z+5pyZ+nViwH+1TDulOLAd43T/kS
+	cVXMiQwf7yqQCyRK+CYM5ia69jtUbP3Ah3Ozxis3RkL7/JfMDCSUo+TfB29cQXP6ViFCj8TL41e
+	Y6uzS1xOeMPG0tVH94K5nBAjXf4=
+X-Received: by 2002:a05:600c:608a:b0:4a0:1b14:e283 with SMTP id 5b1f17b1804b1-4b94d76329cmr92154365e9.1.1794245936334;
+        Mon, 09 Nov 2026 09:38:56 -0800 (PST)
+Received: from flare5 ([212.58.121.92])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4ba0157b707sm2522005e9.0.2026.11.09.09.38.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Nov 2026 09:38:54 -0800 (PST)
+From: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Robert Marko <robimarko@gmail.com>,
+	Guru Das Srinagesh <linux@gurudas.dev>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Radu Rendec <radu@rendec.net>,
+	Lee Jones <lee@kernel.org>,
+	Will Deacon <will@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	"Joerg Roedel (AMD)" <joro@8bytes.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Wesley Cheng <wesley.cheng@oss.qualcomm.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Bean Huo <beanhuo@micron.com>,
+	Stanley Jhu <stanleyjhu@google.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
+	linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	mfd@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	iommu@lists.linux.dev,
+	linux-usb@vger.kernel.org,
+	linux-phy@lists.infradead.org,
+	linux-scsi@vger.kernel.org,
+	linux-crypto@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH 01/17] dt-bindings: arm: qcom-soc: Add Halliday
+Date: Mon,  9 Nov 2026 17:38:37 +0000
+Message-ID: <20261109173837.2084788-1-lightofmysoul@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <78a88d4d-11af-40c1-b063-b6a4d4298ecd@kernel.org>
+References: <20261109-halliday-dts-v1-0-289114ab8197@gmail.com> <20261109-halliday-dts-v1-1-289114ab8197@gmail.com> <78a88d4d-11af-40c1-b063-b6a4d4298ecd@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,77 +140,14 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261106193304.3347374-1-sumitg@nvidia.com> <20261106193304.3347374-7-sumitg@nvidia.com>
- <CAJZ5v0h=iH01rZeXARa3F3rE61qgp0K6U4Fm9wRp+LYq_zD94w@mail.gmail.com>
-In-Reply-To: <CAJZ5v0h=iH01rZeXARa3F3rE61qgp0K6U4Fm9wRp+LYq_zD94w@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 9 Nov 2026 18:04:12 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gYO4cw8CFbeRJAv1_cQ1WxrsTBC9yJ15NsrBX4rDM6LQ@mail.gmail.com>
-X-Gm-Features: AclHuK-WBxJsK7zT3GOZHOAjjrXQX2TasxeJszPwN6pPO8DsKH9AdlJccVyZZeM
-Message-ID: <CAJZ5v0gYO4cw8CFbeRJAv1_cQ1WxrsTBC9yJ15NsrBX4rDM6LQ@mail.gmail.com>
-Subject: Re: [PATCH v9 6/8] ACPI: CPPC: Add ospm_nominal_perf support
-To: Sumit Gupta <sumitg@nvidia.com>
-Cc: viresh.kumar@linaro.org, pierre.gondois@arm.com, christian.loehle@arm.com, 
-	ionela.voinescu@arm.com, zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, 
-	ray.huang@amd.com, mario.limonciello@amd.com, perry.yuan@amd.com, 
-	kprateek.nayak@amd.com, maciej.wieczor-retman@intel.com, 
-	pawel.chmielewski@intel.com, linux-pm@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, acpica-devel@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, treding@nvidia.com, 
-	jonathanh@nvidia.com, vsethi@nvidia.com, ksitaraman@nvidia.com, 
-	sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Mon, Nov 9, 2026 at 6:01=E2=80=AFPM Rafael J. Wysocki (Intel)
-<rafael@kernel.org> wrote:
->
-> On Fri, Nov 6, 2026 at 8:35=E2=80=AFPM Sumit Gupta <sumitg@nvidia.com> wr=
-ote:
-> >
-> > Expose the OSPM Nominal Performance register (ACPI 6.6, Section
-> > 8.4.6.1.2.6), which conveys the nominal performance level at which the
-> > platform may run. Unlike the read-only Nominal Performance register, it
-> > is writable, so OSPM can ask for a nominal level below the
-> > platform-reported one, which then becomes the boundary between boosted
-> > and throttled operation.
-> >
-> > Add cppc_set_ospm_nominal_perf() to write the register. Per the spec,
-> > the value must lie in [Lowest Performance, Nominal Performance], which
-> > the caller is responsible for validating.
-> >
-> > Add cppc_ospm_nominal_perf_supported() to report whether the platform
-> > implements the register as writable, since a write-only register cannot
-> > be probed by reading it. It uses the same cpc_is_writable() test as the
-> > setter, so support is never reported for a register that a write would
-> > reject, and takes cpc_desc_lock while looking the descriptor up.
-> >
-> > The register also joins the writable set that the SystemMemory overlap
-> > validation uses, as the driver now writes it and can compete with
-> > another control sharing an access unit.
-> >
-> > Reviewed-by: Christian Loehle <christian.loehle@arm.com>
-> > Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> > ---
-> >  drivers/acpi/cppc_acpi.c | 44 ++++++++++++++++++++++++++++++++++++++++
-> >  include/acpi/cppc_acpi.h | 10 +++++++++
-> >  2 files changed, 54 insertions(+)
-> >
-> > diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> > index 5a1f84fddb7f..3a0ecdd1ab11 100644
-> > --- a/drivers/acpi/cppc_acpi.c
-> > +++ b/drivers/acpi/cppc_acpi.c
-> > @@ -463,6 +463,7 @@ static bool cpc_reg_is_writable(unsigned int reg_id=
-x)
-> >         case AUTO_SEL_ENABLE:
-> >         case AUTO_ACT_WINDOW:
-> >         case ENERGY_PERF:
-> > +       case OSPM_NOMINAL_PERF:
->
-> Sashiko is unhappy about this change:
->
-> https://sashiko.dev/#/patchset/20261106193304.3347374-1-sumitg%40nvidia.c=
-om
+On 09/11/2026 09:25, Krzysztof Kozlowski wrote:
+> This should be squashed with patch #15. Also, there is no benefit in
+> organizing patches within patchset where patches to the SAME subsystem
+> are split all over. #1 and #2 targets SoC, then there is a break and
+> again we are at SoC at #15.
 
-So I've queued up patches [1-5/8] for 7.5 and I'll wait for a
-clarification here.
+Thanks, I'll squash it into #15 and keep the SoC patches together in v2.
+
+Stanislav
