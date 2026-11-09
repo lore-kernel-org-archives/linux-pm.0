@@ -1,49 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794217182;
-	b=rT+O6a1MWFA8c5i+tMcNPPL4Kqzcqe1SECaV0PwGO2CUfK7byBJFlhlEpMrFU2ZKBCJa
-	 av1onHnkuRZhRZeEi06KsSPe5qL++ZPCm1jd+ou5SxU0jyUYH53BNVyhLgybtaJg572P9
-	 Q/i5IfRVYMlRKDaOc8PXb6lRJpjgtYLW4nTWQYxca6l3J1wtxexF6BZ+VAEYWILhcLztg
-	 B7fQfG+6URIMY6QE9MCSuFDQAltBQLZw+ZTHrbTLmnZTUU7Y7I4MbggUfeKJa0P8nCm3I
-	 m0dY/QQH3d1xGASqdKu7zMN2glAUd/gmheBWXPH31Gu52wip8skIZVMmA8BPWFSXIig==
+	t=1794217316;
+	b=0vgKDcjzwPc0JFUIEd31fBzbYGnQxYpt8ysS1w5x7skLzqIDP/FOqXpGex4QQRHYdytk
+	 ZN5WscIBQl8dlwnh7yWLMFhOeBaItcquezselUhBhmT527/rwtpPRT6YeCCotZbPKJvg6
+	 3yuLIxds9EDwBw+MgY/DVXH3M8IhuE4Qcve2NOr60D/kjfh0XhdZkqiU42RrKTGZHUfQM
+	 PjWMlH8zbiaE5I7H1EQ1wSEhV5d4vRnZnBnh5JbwAAaT0nbOXe5WvjUbrD0uHxjp/L6ls
+	 xeaB8sviaqPnuHBVBTU2iLTMBJml5pWPOPHmiA3Rj6akO6LBEh2Iz0xFi8k4IEiW13w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794217182;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=G3C25bcrXiGlB5VNFdFYaNBvU4OVWzQaHEDb15i4OMw=;
-	b=BKEYcHj0XwsUMnTDE/Q/7lw4EAvCViBB0l8k6kpPNj9vg0lm+SWY6Wtg7hOIK1Untj17
-	 PWHiKfIn4CradolzgZNmnhDEUh3+rVmIiknQNRmkYPQh48BRUCpob0j9cM7fTwsyHhNTu
-	 CbrtgG0OUz7gMtp4MGnsqdF5rjCdn4HAh5Gjz88Oy0OBL0h7J+cIS93jN89dvcR6XOHrg
-	 T+usytun6C78tBPXJdihKTIBIM124zgVXq/gv1DIXcTEJohJrlldj9uhzmaQlkmmwv2MW
-	 a2QyX7BmmTpSqasxwMFObJbjQUd36vP/qMSurRwrsIK4CQP0M8lm9TDcBvDEkCVCgTg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794217316;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Subject:Date:
+	 Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:
+	 X-Developer-Key;
+	bh=OxNDojNk4xU4HyXcTA0bs35MHLi3QbYkHxDUvC4/Ink=;
+	b=NYkEAy018Gr1gwUtpaZbXlQ+GjENsbayurUjKzv9bSpw6VKn4sWXm8Kx2WXCC8F7RN1H
+	 WxKcTwXYsu6tVP0yaveBMn5qUtLoP5n9x9uT+BW+ZMaoJlRPbf4iO8BEpBd/lsedjhQvK
+	 OLeFszkqDPZ2lmRkOonILNmWxk8RCuIBFuZxkwhIJ4OQe3NIfI8sfhw9maPfCiTNSAKVp
+	 qfMgY1Xcrl1GK7eDv97DI6XaMAkNVvw2CQyj7H5uPS5f/x2oRGreokm9b6PYlX/YgR4iu
+	 +DGje4oHbrR81+t3EbxyZ+TCMpytrVSRfuS9kTppQk1viAVVawNiuFTdHbRD1yISL7w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=AOrGYWBf;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1A0FB606A33F;
-	Mon,  9 Nov 2026 09:39:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1A0FB606A33F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=flipper.net;
+	spf=pass smtp.mailfrom=flipper.net;
+	dkim=pass header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=23oAPPjV;
+	arc=none smtp.remote-ip=209.85.221.54
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F841606A31C
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2026 09:41:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6F841606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=AOrGYWBf
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EF2CE1516;
-	Mon,  9 Nov 2026 01:39:36 -0800 (PST)
-Received: from [10.57.12.22] (unknown [10.57.12.22])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7A7303F85F;
-	Mon,  9 Nov 2026 01:39:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794217179; bh=GPuTwtxoypPcBye9GF2p0EwiGxkCh8DuIQyAQOS76eU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=AOrGYWBfXyZZY5SmVc5arh4b0KoNuwHhiyfcKv/xj4kOQ2TP9vqnV+PmS1NcCkn/z
-	 Q0QkWVsLd4NfiROX7uvM6mXQ3c+j7V90kSagqtWkUwlwXChQtXNMwmyHgSxNaqn/5j
-	 JWE7SMUux0boIK4gxqFmA0UiN+WlMkHs8WkqH2lA=
-Message-ID: <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
-Date: Mon, 9 Nov 2026 09:40:11 +0000
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=23oAPPjV
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-490f38e9688so502064f8f.0
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2026 01:41:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1794217314; x=1794822114; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=OxNDojNk4xU4HyXcTA0bs35MHLi3QbYkHxDUvC4/Ink=;
+        b=23oAPPjVuoyJSsO6zIw9EtgP7YPqi78BBG2FKZBW5WVw95R8MCQ7Vo9HrJkkKGz91+
+         4ZpDawTEpE8LE8RhIffrlBr3LRTai/ndQ3YU489ImxInXWjIaitfD60i+qb2iT6fFwt5
+         egEi6IemEF8Gr2WxG5z499SZ1s3dkeDWYtU+/qW6FibUwYZc+dRDRH1v1FU5Q5e03LgB
+         rm/ycVY+em2qzVbRZB8fk1QkcBOBCbzoxif0PS/uh1BnrEQFZg5izhTgAlVulpSrfhol
+         n0qpy6YNCPbHZYmAU29OUWLup1cwBCnZHXjEqUNeToQbY1azt2883uopiTv/qMX1OaTQ
+         hxdg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794217314; x=1794822114;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=OxNDojNk4xU4HyXcTA0bs35MHLi3QbYkHxDUvC4/Ink=;
+        b=JTNEN/jkxKnFrJA7NTN1+cEOkS7ORNQF2xQRUvFSeUSP2FsOptUow+aB9tej21QXqB
+         p3vOd6EICHUnGTQ6v16zQUpok0SlXVvb7OKcbkfoZA43XBfEVRcWPZY4/FXtFjK8tTIz
+         zFV/Zq5/jCWOQhAq+vjm5h/q8k3Rn3JD4MfGOQGBlSDasMmldcKOoTv/LVh2RCSm+ekd
+         8IqNZMaSHKLDOaznLylTvkVezs3DYCgEoW2JPCe0yw4usY5uKKeaOMJo6BYY2OVyj2Q2
+         V63fsKZ9Pgv4Vr3TY+kUdm4Phnk4HkUR7HWWA+TkcjGNKhXfXQvyC6AMNAf5RYfiBJyi
+         4vIw==
+X-Gm-Message-State: APuU4Z8jasezVPPoCIKnfduWRBOYSKi7yHMd+J5QxfWKty8+JYQdWuWy
+	oy0AvMhGZEwIsngIh/ZC4hnrDa3JGbKmmZb91M96mUf1DIlYSUPA4xnuxGoXXzmm6Bs=
+X-Gm-Gg: AYBFou13kJwuq1NRhlC0P4NhvFU5Jev5BHtXrNusv4NbgOyXLHFczTdtzSVAA8Wvzkt
+	gIEFzQ+hpMwASKW11V6LxrWtJ0kuPHKGLOnAaBWCbDI+px/DF/dLiLWEftVmQ2Pu/mRi8AUKjBM
+	rm61jpzd/HhjIXgQDSJ3aa0lrSzCgmqpZvr1K2SndPhSNvFZJIcIFQKQEJlzHGSz1DAifKhcumN
+	nraCH0vt0r4ljZcH4ch7TFdVnrucKJOEEBclYL5U5giqrw4snpg2aJNS01qiiHgWhK4DslA0GJz
+	x7HmAlCIMd7fi+mT/GKGFlyE4LpYZM+sn1NTlxjmGeMINjtG4T7pNHWdfvUH65vjlKqlVYRpuxw
+	sJoP+2qTfRgmF/RtcaXVxga++tqrTBhM2unZyNDdFZ8zQol5q4ZFc/vV1iKSuyXQ/2HLT/lwUXU
+	Xwr5IGj4ELY+hKMdzsKAK7Cfyd4oJFxBBaAz4z0OMevAhY6VTRzGtqWIE8pW45IiPjrmLz/guF2
+	Xgk5luGqYIKHqQ6Aj/6WfjBH4SZSTL+dxprcMusgbwAtWzC3bYMDTDxAwYypNS+PWurkMID11bX
+	REyFAaGI8iAwyjo7lHJdT4wuzZ8dm8BPWYTaBXbb6FW0p51H7QVcevP9/zdTeUqNwzl5JLwCSZF
+	L/oI7Xp1P
+X-Received: by 2002:a05:6000:26c8:b0:48f:bbb5:61c2 with SMTP id ffacd0b85a97d-4958852d3b8mr7998933f8f.4.1794217313738;
+        Mon, 09 Nov 2026 01:41:53 -0800 (PST)
+Received: from alchark-surface.localdomain (bba-86-98-194-229.alshamil.net.ae. [86.98.194.229])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-496150c6e90sm7278409f8f.2.2026.11.09.01.41.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Nov 2026 01:41:53 -0800 (PST)
+From: Alexey Charkov <alchark@flipper.net>
+Subject: [PATCH 0/3] power: supply: battery: Allow separate charging limits
+ vs. discharging
+Date: Mon, 09 Nov 2026 13:41:47 +0400
+Message-Id: <20261109-battery-charge-temp-range-v1-0-a967abd8b80c@flipper.net>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,199 +93,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency
- ranking
-To: Guo Chen <guo.chen@oss.qualcomm.com>,
- "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Vincent Donnefort <vincent.donnefort@arm.com>,
- Matthias Kaehlcke <mka@chromium.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com,
- tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com
-References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
- <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
- <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWM0Q6CMBAEf4XcM00oRYn+CvGhlEWPRCTXSiCEf
+ +fEx8nszkYRwoh0zzYSzBz5MyrYPKPw8uMThjtlKovyam1xM61PCbIataI24T0ZOYeu7sOl6io
+ 470j/k6Dn5Ww3jz/HbzsgpF+Q9v0AQllllH0AAAA=
+X-Change-ID: 20261109-battery-charge-temp-range-37fc54d4e3a3
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1478; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=+odnf1TlzZclfLwdtnwN+ooYti1FGicx+mmm5eDR3iI=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWR9nBrfpsZzxLjaVyC47kzHj5OLZBo+2d8zemZWUB3zb
+ PkB24nbOyayMIhxMViKKbLM/bbEdqoR36xdHh5fYeawMoEMkRZpYAACFga+3MS8UiMdIz1TbUM9
+ QyMdYx0jBi5OAZhqdTNGhusuU2+Zfn3Z/YS3ZtH139My3ltUZgZfv7fmxO+8Hclt9QaMDBM+TWn
+ P3Vl4xv5whvveTU+yfH4GTlHLeFH+caH8/+f9b3kA
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
+Some batteries specify different operating temperature ranges when
+charging vs. when discharging, e.g. charge at 0C to 45C, but discharge
+at up to -20C to 60C. Current DT bindings and power supply core don't
+allow that, so extend them with additional properties so that a separate
+limit could be programmed for when a charger should cut voltage going into
+the battery vs. when the system itself should shut down.
 
+Additionally, allow the DT to specify voltage/current limits to be applied
+when the battery is being charged in the "alert" band (either high or low
+temperature, which often requires derating especially at the low end).
 
-On 11/9/26 06:47, Guo Chen wrote:
-> 
-> On 11/6/2026 11:15 PM, Rafael J. Wysocki (Intel) wrote:
->> On Tue, Nov 3, 2026 at 12:21 PM Guo Chen <guo.chen@oss.qualcomm.com> 
->> wrote:
->>> em_compute_costs() ranks all the frequencies of the table, boost ones
->>> included. A non-boost frequency can be marked inefficient only because
->>> a faster boost frequency has a lower or equal cost, e.g.
->>>
->>>    3.9 GHz  4.0 GHz (cost C)  4.1 GHz (boost, cost C)
->>>
->>> With boost disabled 4.1 GHz cannot be selected, but 4.0 GHz is still
->>> skipped by governors rounding down to efficient frequencies (e.g.
->>> ondemand with CPUFREQ_RELATION_HE), which land on 3.9 GHz instead of
->>> the best selectable frequency. Several frequencies can be affected.
->>>
->>> Exclude the boost frequencies from the ranking in em_compute_costs() and
->>> keep them all efficient, using the highest non-boost frequency of the
->>> CPUFreq table, returned by the new helper
->>> cpufreq_table_max_nonboost_freq(), as the boundary.
->>>
->>> Fixes: c8ed99533dbc ("PM: EM: Mark inefficient states")
->>> Signed-off-by: Guo Chen <guo.chen@oss.qualcomm.com>
->> Please see Sashiko's feedback regarding this patch
->>
->> https://sashiko.dev/#/patchset/20261103-em-rank-boost-separately- 
->> v2-1-5a13d1b38d37%40oss.qualcomm.com
->>
->> and tell me what you think about it.
->>
->> Thanks!
-> 
-> Thanks for the review.
-> 
-> I did consider this case. If no policy is found, max_nonboost stays 0 and
-> the new logic is bypassed, i.e. the ranking falls back to the old
-> behaviour, which looked like the least intrusive option. I also thought
-> about warning and returning an error, but most of the in-tree callers of
-> em_recalc_and_update() ignore the return value (e.g.
-> em_adjust_new_capacity() and exynos_asv_update_opps()), so the update would
-> just be dropped without anyone noticing.
-> 
->>> ---
->>> Changes in v2:
->>> - Drop prev_boost and keep all boost states efficient by resetting
->>>    prev_cost for them, as suggested by Lukasz. Boost states are no
->>>    longer ranked against each other.
->>> - Retitle the patch to match the new behaviour (was "Rank boost and
->>>    non-boost frequencies separately") and reword the commit message.
->>>
->>> Link to v1: https://lore.kernel.org/all/20261030-em-rank-boost- 
->>> separately-v1-1-238a6b2bb888@oss.qualcomm.com/
->>> ---
->>>   include/linux/cpufreq.h     | 24 ++++++++++++++++++++++++
->>>   kernel/power/energy_model.c | 16 ++++++++++++++++
->>>   2 files changed, 40 insertions(+)
->>>
->>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->>> index d3d0d9d02aa4..c93316141a11 100644
->>> --- a/include/linux/cpufreq.h
->>> +++ b/include/linux/cpufreq.h
->>> @@ -1155,6 +1155,24 @@ cpufreq_table_set_inefficient(struct 
->>> cpufreq_policy *policy,
->>>          return -EINVAL;
->>>   }
->>>
->>> +static inline unsigned int
->>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
->>> +{
->>> +       struct cpufreq_frequency_table *pos;
->>> +       unsigned int max = 0;
->>> +
->>> +       if (!policy->freq_table)
->>> +               return 0;
->>> +
->>> +       /* The table may be unsorted, scan all of it for the highest 
->>> one. */
->>> +       cpufreq_for_each_valid_entry(pos, policy->freq_table) {
->>> +               if (!(pos->flags & CPUFREQ_BOOST_FREQ) && pos- 
->>> >frequency > max)
->>> +                       max = pos->frequency;
->>> +       }
->>> +
->>> +       return max;
->>> +}
->>> +
->>>   static inline int parse_perf_domain(int cpu, const char *list_name,
->>>                                      const char *cell_name,
->>>                                      struct of_phandle_args *args)
->>> @@ -1219,6 +1237,12 @@ cpufreq_table_set_inefficient(struct 
->>> cpufreq_policy *policy,
->>>          return -EINVAL;
->>>   }
->>>
->>> +static inline unsigned int
->>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
->>> +{
->>> +       return 0;
->>> +}
->>> +
->>>   static inline int of_perf_domain_get_sharing_cpumask(int pcpu, 
->>> const char *list_name,
->>>                                                       const char 
->>> *cell_name, struct cpumask *cpumask,
->>>                                                       struct 
->>> of_phandle_args *pargs)
->>> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
->>> index d19a65461ae8..5b1d095fd376 100644
->>> --- a/kernel/power/energy_model.c
->>> +++ b/kernel/power/energy_model.c
->>> @@ -255,15 +255,24 @@ static int em_compute_costs(struct device *dev, 
->>> struct em_perf_state *table,
->>>                              unsigned long flags)
->>>   {
->>>          unsigned long prev_cost = ULONG_MAX;
->>> +       struct cpufreq_policy *policy;
->>> +       unsigned int max_nonboost = 0;
->>>          int i, ret;
->>>
->>>          /* This is needed only for CPUs and EAS skip other devices */
->>>          if (!_is_cpu_device(dev))
->>>                  return 0;
->>>
->>> +       policy = cpufreq_cpu_get(dev->id);
->>> +       if (policy) {
->>> +               max_nonboost = cpufreq_table_max_nonboost_freq(policy);
->>> +               cpufreq_cpu_put(policy);
->>> +       }
->>> +
-> 
-> The lookup can be made more robust though: on the update paths dev->id may
-> be offline while other CPUs of the performance domain are online. In v3, if
-> dev->id has no policy and the performance domain already exists, I will use
-> an active CPU of the performance domain instead, as
-> em_cpufreq_update_efficiencies() does, and only warn and fall back to the
-> old behaviour if that fails as well.
-> 
-> I did not use the performance domain for every lookup because at
-> registration time dev->em_pd is not assigned yet (it is set after
-> em_create_perf_table() has returned):
-> 
-> policy = cpufreq_cpu_get(dev->id);
-> if (!policy && dev->em_pd) {
->      cpu = cpumask_first_and(em_span_cpus(dev->em_pd), cpu_active_mask);
->      if (cpu < nr_cpu_ids)
->          policy = cpufreq_cpu_get(cpu);
-> }
-> 
-> if (policy) {
->      max_nonboost = cpufreq_table_max_nonboost_freq(policy);
->      cpufreq_cpu_put(policy);
->   } else {
->      dev_warn(dev, "EM: no CPUFreq policy, boost states are "
->                          "not excluded from the ranking\n");
-> }
-> 
-> This makes it much less likely to miss the policy, but cannot rule it out:
-> the CPU can still go offline between picking it and calling
-> cpufreq_cpu_get(). em_cpufreq_update_efficiencies() has the same
-> limitation.
-> 
-> Would that work for you?
-I also thought about that possible racy corner case, where
-CPU can go offline (or already be offline). Although, in current
-usage this should be OK, since we do this in boot phase and
-platforms are sane.
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
+---
+Alexey Charkov (3):
+      dt-bindings: power: supply: battery: Add a charging temperature range
+      power: supply: core: Read the charging temperature range and alert settings
+      power: supply: samsung-sdi-battery: Set the charging temperature range
 
-We can can add that step with 'cpu_active_mask' to play safe,
-but no hard promises it would be atomic.
+ .../devicetree/bindings/power/supply/battery.yaml  | 45 +++++++++++++++++++++-
+ drivers/power/supply/power_supply_core.c           | 16 ++++++++
+ drivers/power/supply/samsung-sdi-battery.c         | 12 ++++++
+ include/linux/power_supply.h                       | 16 ++++++--
+ 4 files changed, 83 insertions(+), 6 deletions(-)
+---
+base-commit: ddfe51b0a0f5dc9e415cc2c8ad8db17532dd426b
+change-id: 20261109-battery-charge-temp-range-37fc54d4e3a3
 
-The warning also would help, for bring-up phase, so engineers would
-notice it and address the racy hot-plug booting system when it's there.
+Best regards,
+--  
+Alexey Charkov <alchark@flipper.net>
 
