@@ -1,45 +1,43 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794187381;
-	b=Gyu0bXhzmtolQBYh7g3jnHraV9mCFX4FjG7oqX5EGkbpWY9m70YdqibgeWdM0qZt2rJN
-	 12bvr4phz2MnKXfKsh3wwZfvT9CXbSYcCoixXYcpG6fAKRYJaDTIQ23/UPYiEsvPSpX4o
-	 VhP20ZuzF9Xsypu6X/Wn0GRO/hwwb+XEhQtjuCIUykEe3Ev8in7ZtT0Q7SMSc6vJqghUX
-	 SPFfh5tZuj2G29qM7FREtTSGL9zT1CBeLrypgq/OsJrjaAA0GzmdH2/yvHXV7J2PFpL7J
-	 xxqOufFi/fEzccA6FgENvM368Zra+ivo4SauSvUUZu6SF7I1VNAdVGX71/1PsU81F0Q==
+	b=di1VWEM6JtOq9OxkzomgE/GWRrpvfPr3w9RFRZ3oS3hbQbRH67bWadtjGX3arZrq1I3Q
+	 PYwbRP3qR/Ex8jjRXdciKMPtt9O3taemRt17b5lA21OucqMv9pS/uFeP5+vbDue0K/Fwx
+	 qNyQRV78V2vhZmiRfS6uY/WDW1y7WSYNb/6QapIdgm4Aq9+/oGuE16q1iqRtWFWSAEG4x
+	 IFtjRLKYu/cUlEOyIiDjnGq3vJ0DVsFl6+PJdiV2PVm71Iv5FrdNNj3Fe5Dr+FfCc6qgs
+	 NVgmpuSoa68Bsnwkr9lAI6xZ3hvQYunxQEU5WsEKrds3jyXHWSlY6kJcRrGMhO7Wppw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794187381;
 	h=Received:Received:From:To:Cc:In-Reply-To:References:Subject:
 	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 X-Mailer;
-	bh=zUTznsOQNFhFrl3ORUaK4Hi1bs02g/3gwLsJjq54hTU=;
-	b=vcLPByXdHVNTW2rGva2KrsgHnfvsOy8XZ7oiQwjSSY2ZG3tUsVjU7vhMT9SHm/hzH46P
-	 YDZC8ogf1Fz5O0B446FaPORisuS46wy+zeGLc8IsLwr4jSc08uptRv+zBwFkNxTqZggUi
-	 HJawkwvPcAA4SiB4QFbOIetb4dWZRWkBtDlT+3IOgUZfCNi0XQtXvyfm6hGaV5obDh2n1
-	 g3CeB6SQD2SH6lV5LapUG8yWIzIfOWItSPk0f9NGRrXq7rml2pyvH7/sfNyx9m2hImJiA
-	 mZPpDRNwdp0ZdYssITN3F2JcmfAkTaBpu1Om69iHPzaJBoCepNCPjnbc6N5MwGhI2zw==
+	bh=0kVcu/JNDWUktCuDKFwAchMbXZMnSrRaD0G8OkNqLrc=;
+	b=EQVHcbjYnHakiY32Dxt4AeN78BeHnyzVtXXa57y+UOzN3sTgrPa+VOytaO8PpbmduIad
+	 qTdyxwyjzIdsDUmBJ6UGcHgwezyZ6ZTRcYooROlvp/hMu6ojuVEdZsMMrxe+u43O8+Us/
+	 gd0uNcRbK8Rfc33ZrLdZZLyvx/mL+KZozgoDKQEjdYTstp8BS8YSugyH3TxuI0+N6UuZ/
+	 UuVmVUIxggDc8w3LFirOP3rB2tKK1cgKZ4KtUpt8ujt7d/ZHofmAh+CUCAh7ATi+yI5w5
+	 tlhazHJm1yK1uADyX5HXHdZIpa+4Gc+/AbE1bsrSko0fskpuc4szaBLdJTLz2qLvEfA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8102D608360C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 810E76083610;
 	Mon,  9 Nov 2026 01:23:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FBF71F00A0A;
-	Mon,  9 Nov 2026 01:23:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E83001F00A04;
+	Mon,  9 Nov 2026 01:23:00 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 0B78F1828F2; Mon, 09 Nov 2026 02:23:00 +0100 (CET)
+	id 1F02B182C51; Mon, 09 Nov 2026 02:23:00 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Derek Ross <derekross@gmail.com>
-Cc: Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, kernel@puri.sm, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20261019143307.2109629-1-derekross@gmail.com>
-References: <20261019143307.2109629-1-derekross@gmail.com>
-Subject: Re: [PATCH] power: supply: max17042_battery: infer the status when
- no supplier is described
-Message-Id: <179418738003.1255445.15692501249871604792.b4-ty@b4>
+To: linux-pm@vger.kernel.org, David Yang <mmyangfl@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Feng Kan <fkan@apm.com>, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20261026092049.84858-1-mmyangfl@gmail.com>
+References: <20261026092049.84858-1-mmyangfl@gmail.com>
+Subject: Re: [PATCH] power: reset: syscon-reboot: Use
+ devm_register_sys_off_handler(RESTART)
+Message-Id: <179418738011.1255445.10152041360397038577.b4-ty@b4>
 Date: Mon, 09 Nov 2026 02:23:00 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,24 +53,23 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.16.0
 
 
-On Mon, 19 Oct 2026 10:33:02 -0400, Derek Ross wrote:
-> When no power supply is described as supplying the battery,
-> power_supply_am_i_supplied() returns -ENODEV and the driver reports
-> POWER_SUPPLY_STATUS_UNKNOWN, even though the gauge measures the battery
-> current itself.
+On Mon, 26 Oct 2026 17:20:47 +0800, David Yang wrote:
+> The driver registers its restart handler but never unregisters it:
+> there is no remove callback and the notifier block lives in the
+> devm-allocated context. After unbind the freed notifier stays on the
+> handler list and the next reboot oopses on it, observed on a
+> Hi3798MV100 board (PC is at 0x0, LR is at notifier_call_chain).
 > 
-> That is the case on the Pixel 7 Pro, where the charger is left running
-> by the bootloader and no charger driver is bound yet. The battery read
-> "Unknown" while taking in 1.2 A, so the desktop showed no charging
-> indicator and upower treated the phone as discharging: at its critical
-> percentage it put a charging phone to sleep.
+> Use the device-managed registration, which unregisters the handler on
+> driver unbind; the DT-configured priority is passed through. This
+> mirrors the conversion of the syscon-poweroff sibling.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: max17042_battery: infer the status when no supplier is described
-      commit: c9797f02962f784d5920eacc4d6cad1369a8c20a
+[1/1] power: reset: syscon-reboot: Use devm_register_sys_off_handler(RESTART)
+      commit: 808914f0c0141a5e0bd66e13daff7f9d2aa12155
 
 Best regards,
 -- 
