@@ -1,52 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=207.46.229.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794317676;
-	b=eFT7igBgkXOnDm26qBrIJBcdY57z1IcnfIbraImFIcSQk389lBW8xtYmb5v+CMLqVS5m
-	 5F6XLSTcnb+dyfgnanUNzfl9ax1sWR+Xhx9+6VTjUeW3mt5doSKA4+5fKv6gy/vo8APzY
-	 VjlwxIT21h3Vn59YuRdM1yfBVzkocDg+jdF9gQKjKACQdW8dbgim/t56s9IkHGFHLBpQv
-	 qJmLb7o8dR1WGLIwMyySjuUdl7fUkXrScwtiiX7wmDvCURP7rRiqML1Og70EdcIRTuMWP
-	 yQTpp1XyfIMAQcyNS4cgYkwfUtGuyPhCwCOC0/79L1LHGQfsGwuSBuIHkpQMw/ozQEg==
+	t=1794318221;
+	b=y/Cv8jVKJu6FS7y+xFO2+uNnJdINOWMglIPpc/t9P1vPFOf9TyAQIkxzMmizlZYVu0Kf
+	 0RKYet1KssaJOeaou/LIwEJD09mDfK1hRMzm/V810riTZ5xKCChAlFdqmdajjEEN8ymy+
+	 P4a3d7bHDarDih/YGXczwN6XLjefTummgsiDDeSDySaGJFz34LL/+kR4YbVyOD49vENB3
+	 bUCPtsOlmRZmRZ8StqmYmvu4crMQ/AWPyeUrEhME3qhWfWsmx/Amo4JHNTJgozxrDeQA+
+	 awy9TAzyKLGuqYPWpF/Xw/nsHQUh+QzVl6Dg52AylNwgeCmd0mlIVxH67Q6XeweR0Gw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794317676;
-	h=DMARC-Filter:Received:X-Originating-IP:Date:X-CM-HeaderCharset:From:
-	 To:Cc:Subject:X-Priority:X-Mailer:In-Reply-To:References:
-	 X-CM-CTRLMSGS:Content-Transfer-Encoding:Content-Type:MIME-Version:
-	 Message-ID:X-Coremail-Locale:X-CM-TRANSID:X-CM-SenderInfo:
-	 X-Coremail-Antispam;
-	bh=XsAr4O89duvEBbigSHHNVV6Ye8RdzbpA0oQFcH49mZk=;
-	b=Bu72tjXpO/cufQVf9tkQwXdlny3Y/XfGHo5V4YJAWtx9+zSWG6iOrz5QECvOp+LzyZI0
-	 VQtyALjRJ605GKZ9DZKvqIno3B4M/+bOaDmgEBqrFtaYCJi8wBwjVXS9pmtf5Uak/3jsp
-	 c9G8kvlQYK41N1czqkGvnW6qGHy2hyB/Lbp8s9BlPd12NMhawvpf638pXMBYFbFx5MCWw
-	 zIaLYrUjGm93OGlIMx6l+teXfDekhs422lLMyElWSAfJih9ft7ab1KJsZbqUBo5etQA0X
-	 litt2M47wKqzbm1fyU+QY8DSGPM+WKi2fWEjirZvWaIwZzoqTuzb+AZrvYlL9c4rwTg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794318221;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=O/pJHAniufO7T+Qw3N8oZy2xDYQiP7/ckPKZfGD+HG0=;
+	b=lNXYe0KiipdbJtt5RWC7S6fS2XmQNIMnh4yT2QyK5QroBAiqt1j9jSmb4wDyHdWLLJ7K
+	 G+jHnv+Hf30D0PTPmK2S88Nw9f3KhqOw+rzHDqDLibZ6OZiDmKCnq0U5EoJZRuFzAaJRi
+	 slmn+OyVL6R9HzQ2NyTkQzRtkR/K3D77ZY/xsQnPrFZvpCiHsg8tWKNJhRnVrL11EYpuX
+	 YoFLJUU4RupKXh2e6AiLxHavaisR8a+rQ4Vu6F9FyCZOy9/zTXf34PcKANILyUUq/SMEW
+	 Q+5QmK0G2hCqw3um2/6s1I5vqVAdcOjfBzPMyrUONx6c8TvEIH9SrlE5zplQD+0fekg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=hust.edu.cn;
-	spf=pass smtp.mailfrom=hust.edu.cn;
-	arc=none smtp.remote-ip=207.46.229.174
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [207.46.229.174])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E44F9606A330;
-	Tue, 10 Nov 2026 13:34:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E44F9606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=hust.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hust.edu.cn
-Received: from xuhx$hust.edu.cn ( [10.12.190.107] ) by ajax-webmail-app2
- (Coremail) ; Tue, 10 Nov 2026 21:34:27 +0800 (GMT+08:00)
-Date: Tue, 10 Nov 2026 21:34:27 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From: =?UTF-8?B?5b6Q5pmX57+U?= <xuhx@hust.edu.cn>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: power: supply: bq24190: IRQ handler can call  power_supply_changed
- after the psy is unregistered
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2025.3-cmXT6 build
- 20260810(6c94e3b5) Copyright (c) 2002-2026 www.mailtech.cn hust
-In-Reply-To: <2026102727-data-sequel-ce41@gregkh>
-References: <4c7f9772.192e1.1a17d5c2ed5.Coremail.xuhx@hust.edu.cn>
- <2026102727-data-sequel-ce41@gregkh>
-X-CM-CTRLMSGS: =?B?3TQ4QTiH6nJ5xwDR7hwMki1N8jM=
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Le6etORR;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AE6C606A334
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 13:43:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Le6etORR
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F22581F008BE
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 13:43:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794318221;
+	bh=O/pJHAniufO7T+Qw3N8oZy2xDYQiP7/ckPKZfGD+HG0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Le6etORR1eNnSfG3ik6OP+DePHzyBVmiJFZ9ttKFLckEyHJakH1/Pz2AeNS73F97k
+	 hya2OdnbKdwUterZSnrEJqAQOVNhY4LnDCtZKr7iX2smq0P3Bgd05p9OJj5gte/IJi
+	 J2+sqkM/YFaA5vz31ZryQax7yQSVepKTDpA3BXb74IjrxlOtsQvqQTCKqRWVyMbDwo
+	 n1UhaAW/cBKKuH/stx4udqgYJZDjhL6pOPIGi+m6sqjxBLSTxH9w4NQrm/mMpwfLjB
+	 90NHCwKp07O9fX23HmtgjmdwTBgRCaPs7NLcCtc1iTu45p3K1vzJ2gSRRLrCsGwsSC
+	 5oDVdMXLsztAQ==
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5c15956ce07so425006e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 05:43:40 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErEbx2ODowjmVWA4tbFOgto1JGgI5N/DauACK7zYJfLtqp9QiNqlfdhTyzkbNQZ1Ft6uzfaVSt01Ig==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/IykVzI/76/vBi91aeNd6L0C/t01hwKxvYmd7JfKRxi0Pw8CAE
+	iHucb6TDlesQ9cY7HPkdu2BruoWUiyPn81w6hHAoz1Wd9AEUbLUDNkrbcX5cGai++Cf6Ei2SW5j
+	zaGtlRzTbIkbpz13Z6taYCHvFiWZQx/M=
+X-Received: by 2002:a05:6512:138f:b0:5be:409b:9456 with SMTP id
+ 2adb3069b0e04-5c156df0efcmr715179e87.34.1794318219335; Tue, 10 Nov 2026
+ 05:43:39 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -56,77 +59,105 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <53a5f0c4.22b5a.1a1c5aacb18.Coremail.xuhx@hust.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:IQEQrMAGL8dkHfNqYqQNAA--.9972W
-X-CM-SenderInfo: bgsqjkayqyjmo6kx23oohg3hdfq/1tbiAgMHB2rx8m6VIgAAsx
-X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VWDJw
-	CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
-	daVFxhVjvjDU=
+References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
+ <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
+ <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com> <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
+ <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com> <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
+ <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com> <4f0c8581-a8fb-4bc4-82cc-d30f2f56d2ce@arm.com>
+In-Reply-To: <4f0c8581-a8fb-4bc4-82cc-d30f2f56d2ce@arm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 10 Nov 2026 14:43:26 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iX8wYDUo9uUjkqkKq1tpLAu7iaZk+iQzWGigNAqfrsNg@mail.gmail.com>
+X-Gm-Features: AclHuK-pcwwNwXj_L6iW3-vvSkvrQjC7ziz7J5YFE42wW0pgOcr3E-9SlUnpCf4
+Message-ID: <CAJZ5v0iX8wYDUo9uUjkqkKq1tpLAu7iaZk+iQzWGigNAqfrsNg@mail.gmail.com>
+Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency ranking
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Guo Chen <guo.chen@oss.qualcomm.com>, Vincent Donnefort <vincent.donnefort@arm.com>, 
+	Matthias Kaehlcke <mka@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org, xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com, 
+	tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-YnEyNDE5MF9yZW1vdmUoKSB1bnJlZ2lzdGVycyB0aGUgYmF0dGVyeSBhbmQgY2hhcmdlciBwb3dl
-cl9zdXBwbGllcwpiZWZvcmUgcG1fcnVudGltZV9kaXNhYmxlKCk7IHRoZSBJUlEgaXMgcmVxdWVz
-dGVkIHdpdGggZGV2bSBhbmQgaXMKdGhlcmVmb3JlIGZyZWVkIG9ubHkgYWZ0ZXIgcmVtb3ZlIHJl
-dHVybnMuICBBIHRocmVhZGVkIElSUSBoYW5kbGVyIHRoYXQKaXMgYWxyZWFkeSBydW5uaW5nLCBv
-ciBvbmUgdGhhdCBydW5zIGluIHRoZSB3aW5kb3cgYmV0d2VlbiB0aGUgdHdvCnVucmVnaXN0ZXJz
-IGFuZCBwbV9ydW50aW1lX2Rpc2FibGUoKSwgY2FsbHMgYnEyNDE5MF9jaGVja19zdGF0dXMoKSAt
-Pgpwb3dlcl9zdXBwbHlfY2hhbmdlZCgpIG9uIGEgcHN5IHRoYXQgaGFzIGFscmVhZHkgYmVlbiB1
-bnJlZ2lzdGVyZWQgKGFuZAptYXkgYmUgZnJlZWQpLiAgVGhpcyBpcyBhIGRyaXZlciByZW1vdmUt
-b3JkZXIgYnVnOyB0aGUgd2luZG93IGlzCm5hcnJvd2VyIHRoYW4gYnEyNTg5MCBidXQgcmVhbC4K
-ClRoZSBkZXRhaWxlZCBkZXNjcmlwdGlvbjoKCiogVGVzdCBlbnZpcm9ubWVudCAvIGFmZmVjdGVk
-IHZlcnNpb24KCiAgTGludXggNy4zLjAgc291cmNlIHRyZWUgKHVubW9kaWZpZWQga2VybmVsLm9y
-ZyA3LjMpLCB4ODZfNjQuICBUaGlzIGlzCiAgYSBzb3VyY2UtbGV2ZWwgcmVwb3J0LiAgSSBkaWQg
-bm90IHJ1biBpdCBvbiBicTI0MTkwIGhhcmR3YXJlOiB0aGUKICBLQVNBTiBidWlsZCB1c2VkIGZv
-ciBteSBjb3JlIHRlc3RzIGRvZXMgbm90IGVuYWJsZQogIENPTkZJR19DSEFSR0VSX0JRMjQxOTAg
-YW5kIGhhcyBubyBJMkMgYnEyNDE5MCBkZXZpY2UuICBObyByZXByb2R1Y2VyCiAgaXMgYXR0YWNo
-ZWQuICBMaW5lIG51bWJlcnMgYXJlIGZyb20gNy4zLgoKKiBNZWNoYW5pc20KCiAgUHJvYmU6Cgog
-ICAgICA6MjEyMSAgcG93ZXJfc3VwcGx5X3JlZ2lzdGVyKGJkaS0+YmF0dGVyeSwgLi4uKQogICAg
-ICA6MjEzMyAgcG93ZXJfc3VwcGx5X3JlZ2lzdGVyKGJkaS0+Y2hhcmdlciwgLi4uKQogICAgICA6
-MjE2MCAgZGV2bV9yZXF1ZXN0X3RocmVhZGVkX2lycSguLi4sIGJxMjQxOTBfaXJxX2hhbmRsZXJf
-dGhyZWFkLCAuLi4pCgogIEJvdGggcG93ZXJfc3VwcGxpZXMgYXJlIG5vbi1kZXZtLiAgVGhlIElS
-USBpcyBkZXZtLCBzbyBpdCBpcyByZWxlYXNlZAogIGJ5IGRldnJlcyBhZnRlciBicTI0MTkwX3Jl
-bW92ZSgpIHJldHVybnMsIG5vdCBiZWZvcmUuCgogIGJxMjQxOTBfcmVtb3ZlKCkgKDoyMTg5LTIy
-MDYpOgoKICAgICAgOjIyMDAgIHBvd2VyX3N1cHBseV91bnJlZ2lzdGVyKGJkaS0+YmF0dGVyeSk7
-CiAgICAgIDoyMjAxICBwb3dlcl9zdXBwbHlfdW5yZWdpc3RlcihiZGktPmNoYXJnZXIpOwogICAg
-ICA6MjIwMi0yMjA0ICBwbV9ydW50aW1lX3B1dC4uLgogICAgICA6MjIwNSAgcG1fcnVudGltZV9k
-aXNhYmxlLi4uCgogIFRoZSB0aHJlYWRlZCBoYW5kbGVyICg6MTgzNC0xODUwKSBjYWxscyBicTI0
-MTkwX2NoZWNrX3N0YXR1cygpCiAgKDoxODI0LTE4MjkpLCB3aGljaCBjYWxscyBwb3dlcl9zdXBw
-bHlfY2hhbmdlZChiZGktPmNoYXJnZXIvYmF0dGVyeSkuCgogIFdpbmRvdyBBOiBhbiBJUlEgaXMg
-ZGVsaXZlcmVkIGFmdGVyIDoyMjAxIGFuZCBiZWZvcmUgOjIyMDU7IHRoZQogIGhhbmRsZXIgcnVu
-cyB3aGlsZSBib3RoIHBzeSBhcmUgYWxyZWFkeSB1bnJlZ2lzdGVyZWQuICBXaW5kb3cgQjogYQog
-IGhhbmRsZXIgaXMgYWxyZWFkeSBydW5uaW5nIHdoZW4gOjIyMDAvOjIyMDEgZXhlY3V0ZTsgaXQg
-Y2FuIHJlYWNoCiAgcG93ZXJfc3VwcGx5X2NoYW5nZWQoKSBhZnRlciB1bnJlZ2lzdGVyLiAgQWZ0
-ZXIgOjIyMDUsCiAgcG1fcnVudGltZV9kaXNhYmxlKCkgbWFrZXMgbmV3IElSUSBoYW5kbGluZyBs
-ZXNzIGxpa2VseSB0byByZWFjaCB0aGUKICBjYWxsYmFjaywgc28gSSBkbyBub3QgY2xhaW0gYXJi
-aXRyYXJ5IHBvc3QtcmVtb3ZlIElSUXM7IHRoZQogIGRldGVybWluaXN0aWMgd2luZG93IGlzIDoy
-MjAxLToyMjA1LCBwbHVzIHRoZSBpbi1mbGlnaHQgaGFuZGxlci4KCiogQ29uY3JldGUgY29ycnVw
-dGlvbiAvIGltcGFjdAoKICBwb3dlcl9zdXBwbHlfY2hhbmdlZCgpIGRlcmVmZXJlbmNlcyBwc3kt
-PmNoYW5nZWRfbG9jazsgaWYgdGhlIHBzeSBoYXMKICBiZWVuIGZyZWVkLCB0aGlzIGlzIGEgc2xh
-Yi11c2UtYWZ0ZXItZnJlZSBhbmQgY2FuIGNvcnJ1cHQgdGhlCiAgd29ya3F1ZXVlIG9yIGNyYXNo
-LiAgSWYgYSBjb25zdW1lciByZWZlcmVuY2Uga2VlcHMgdGhlIHBzeSBhbGl2ZSwgdGhlCiAgY2Fs
-bCBpcyBhIHVzZS1hZnRlci11bnJlZ2lzdGVyIGFuZCBjYW4gcmVhY2ggdGhlIGZyZWVkIExFRCB0
-cmlnZ2VycwogIGRlc2NyaWJlZCBpbiB0aGUgY29yZSA1QiByZXBvcnQgb24gYSA3LjMga2VybmVs
-IHdpdGhvdXQgdGhlCiAgOWY3ZjdhODU5NDUxIGdldC9zZXQgZ3VhcmQuICBJIGhhdmUgbm90IGRl
-bW9uc3RyYXRlZCBwcml2aWxlZ2UKICBlc2NhbGF0aW9uLCBhbmQgSSBoYXZlIG5vdCBydW4gdGhp
-cyBvbiBoYXJkd2FyZS4KCiogVHJpZ2dlciBtb2RlbAoKICBicTI0MTkwIHdpdGggYSBjaGFyZ2Vy
-IGludGVycnVwdCAoQUMgcGx1Zy91bnBsdWcsIGZhdWx0LCBvciBjaGFyZ2VyCiAgc3RhdHVzIGNo
-YW5nZSkgY29uY3VycmVudCB3aXRoIHVuYmluZC9yZW1vdmUuICBUaGUgd2luZG93IGlzIG5hcnJv
-dwogIChiZXR3ZWVuIHRoZSB0d28gdW5yZWdpc3RlcnMgYW5kIHBtX3J1bnRpbWVfZGlzYWJsZSwg
-b3IgYW4gaW4tZmxpZ2h0CiAgaGFuZGxlciksIHNvIGl0IGlzIGEgcmFjZSByYXRoZXIgdGhhbiBh
-IGRldGVybWluaXN0aWMgc2VxdWVuY2UuCiAgVW5iaW5kaW5nIHJlcXVpcmVzIHJvb3Q7IGEgcGh5
-c2ljYWwgY2hhcmdlciBldmVudCBpcyB0aGUgbmF0dXJhbAogIHRyaWdnZXIuICBObyBnZW5lcmlj
-IHVucHJpdmlsZWdlZCB1c2Vyc3BhY2UgaW50ZXJmYWNlLgoKKiBSZXByb2R1Y2VyIC8gcmVzdWx0
-cwoKICBObyByZXByb2R1Y2VyIGF0dGFjaGVkLiAgVGhpcyBpcyBhIHNvdXJjZS1sZXZlbCByZXBv
-cnQ7IEkgY2FuIHRlc3QgYQogIHByb3Bvc2VkIGZpeCBpZiBicTI0MTkwIGhhcmR3YXJlIGlzIGF2
-YWlsYWJsZS4gIFRoZSByZWxldmFudCBjYWxsCiAgY2hhaW4gaXMgZnVsbHkgdmlzaWJsZSBpbiA3
-LjMgYXQgdGhlIGxpbmUgbnVtYmVycyBhYm92ZS4KCgoqIFN1Z2dlc3RlZCBkaXJlY3Rpb24gCgog
-IERpc2FibGUgdGhlIElSUSBhbmQgd2FpdCBmb3IgYW4gaW4tZmxpZ2h0IGhhbmRsZXIgYmVmb3Jl
-IHVucmVnaXN0ZXJpbmcKICB0aGUgcG93ZXJfc3VwcGxpZXM6IGNhbGwgZGlzYWJsZV9pcnEoKS9m
-cmVlX2lycSgpIChvciBhbiBleHBsaWNpdAogIGRpc2FibGVfaXJxICsgc3luY2hyb25pemVfaXJx
-KSBiZWZvcmUgOjIyMDAsIGFuZCBtb3ZlCiAgcG1fcnVudGltZV9kaXNhYmxlKCkgYmVmb3JlIHRo
-ZSB1bnJlZ2lzdGVycy4gIEFsdGVybmF0aXZlbHkgaGF2ZSB0aGUKICBoYW5kbGVyIGNoZWNrIGEg
-InJlbW92ZWQiIGZsYWcgc2V0IHVuZGVyIGEgbG9jayBiZWZvcmUKICBwb3dlcl9zdXBwbHlfY2hh
-bmdlZCgpLiAgUmVwb3J0LWZpcnN0LCBubyBwYXRjaCBhdHRhY2hlZDsgaGFwcHkgdG8KICB0ZXN0
-IGEgcHJvcG9zYWwuCgoKICBQbGVhc2Uga2VlcCBtZSBpbiBDYzsgSSBhbSBub3Qgc3Vic2NyaWJl
-ZCB0byB0aGUgbGlzdHMuCgoKUmVnYXJkcywKSGFueGlhbmcgWHUKeHVoeEBodXN0LmVkdS5jbgo=
+On Tue, Nov 10, 2026 at 2:11=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.com> w=
+rote:
+>
+> Hi Rafael,
+>
+> On 11/10/26 12:15, Rafael J. Wysocki (Intel) wrote:
+> > On Tue, Nov 10, 2026 at 10:58=E2=80=AFAM Lukasz Luba <lukasz.luba@arm.c=
+om> wrote:
+>
+> [snip]
+>
+>
+> >>
+> >> That's fine, please continue.
+> >
+> > I have a couple of questions though.
+> >
+> > First, why is the ondemand governor mentioned in the changelog?  In
+> > the mainline, the ondemand governor cannot work with EAS, so it
+> > shouldn't matter for this issue, should it?
+>
+> The ondemand is affected by the EM setup code and set 'inefficient'
+> flags for some OPPs. The EM is also present for cooling devices
+> and can work w/o EAS and schedutil, w/ just ondemand governor.
+>
+> Because EM marks the OPPs kind of 'globally' as inefficient, then
+> they become CPUFREQ_INEFFICIENT_FREQ entries in the CPUfreq fwk.
+> In the EM code we have:
+> cpufreq_table_set_inefficient(policy, table[i].frequency);
 
+So maybe this is the one that needs to be fixed?  What about simply
+skipping boost frequencies in it?
+
+> Then ondemand check for CPUFREQ_RELATION_HE will skip them and
+> pass to __cpufreq_driver_target() with that flags as well.
+
+Thanks for explaining and all of that needs to be said in the patch changel=
+og.
+
+> >
+> > Second, why is the issue regarded as a defect in the code and not in
+> > the energy model?  Arguably, boost frequencies should be more costly
+> > than the non-boost ones.  At least the idea behind the boost is making
+> > higher-cost OPPs temporarily available.  If they are sustainable,
+> > treating them as boost OPPs is rather pointless.
+>
+> IMHO it was a bug in the commit mentioned in this patch fix tag.
+> It is affecting more than just EAS or EM, since the EM is working with
+> all generic code and all cpufreq governors.
+
+To be precise, the EM initialization may affect cpufreq in general
+because inefficient frequencies are used for CPU cooling.  Fair
+enough, but I'm not talking about this.
+
+I'm talking about a reason for giving boost frequencies lower or equal
+cost relative to non-boost frequencies in the energy model because
+this doesn't make sense to me TBH.
+
+And I get that such energy models were there before the commit in
+question and now they are not working properly, but IMO they are
+broken, not that commit.
+
+> >
+> > TBH, I'm too comfortable with looking at cpufreq frequency from within
+> > the EM code.  If that needs to be done, something is amiss at the
+> > design level.
+>
+> I think this edge case is special, as I described above.
+>
+> I'm happy to hear your view on this EM influence to some global
+> setting in cpufreq. Maybe it was too far to establish this
+> 'inefficiency' flags in there for many usage?
+
+There's nothing wrong with using the information from the energy
+model, when available, to amend cpufreq, but the patch goes the other
+way around: It tries to amend the energy model with information taken
+from cpufreq (in order to avoid making mistakes later when amending
+cpufreq with the energy model information).
+
+I think that cpufreq should simply refuse to set
+CPUFREQ_INEFFICIENT_FREQ for boost frequencies.  Wouldn't that work?
