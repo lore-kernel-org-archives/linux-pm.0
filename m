@@ -1,11 +1,11 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.13
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794281811;
-	b=mamkLJ/Ph//NdyPZ9qIxI2vI9RjjjA2I95Uu/aE4GTPJyaynpsfQsY+A620OobIM70XC
-	 8Gm4p9Stw7DXG838pX3C+JELEUmxTiiZNIX9OWEihS4cC+lpP/30viPuHf+y5eVRbkB8B
-	 TOs3bf+UUgFus/oEHkW19UaNE60O1oBMXyOGHfAP5vRfEnF3qW8RbthWHikQlZCDtuMRj
-	 2qDkNM2EvlYrjqk74mKLsoGBaJMAoanPMAaxG+NAMr6TINInlXLjk1t3K+T8IzJCOQ7kR
-	 pKIBvEYhLfO4PPrYCG6EQbdKl3Dd5+WZlMEF+3TAXE6eNh4bjBSvVed8Zu5SlvtMqsA==
+	b=2N4zthGwD41YLbNGbwLoJDO7bZ6zrS/RXwO2v3nHSX908e2fN/VT7bdXHJvzCx7eQnsM
+	 ndayafTGI/RjGKERPkys4Y/dH15bILv9ARDKIg4UoyQ1WWQnQLRc8Jvs9SB64Z/YMVuTl
+	 q41OqsZCtko/OjOaqHB/rNrcZ4RjdGjOcE79b+CmeXt7Eg0tN1Tt9MlVyZ3OuGZabooGi
+	 n4K99GCWm4RoRyUue/lTkZLXGNbF0+DhK9V0b1gTP3qTpkd4AsHgwV/bhXRtx7SdMhpSH
+	 R7JpMPvCY1jmy1uaRFkMFHPgoYA/PwZ6fN1+azrCZcxYYgRhnLhqym+06kk+qzGl3Tw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794281811;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
@@ -14,58 +14,58 @@ ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
 	 References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
 	 X-Developer-Key;
-	bh=kJbDn5H6PtWqLobFK7X6Ceu4bpjFcn3bnz2ZcPIRE8Y=;
-	b=Kj5N9LWevqQakpcKNP7QsUuHe1P3yW2kNlkS/AJgtPLFtYVUMje5Vef0RGQ4Gffr9pEf
-	 DLApsoJ2+gRBctiu8QKlj/Jbg7K5E9+stbVBt1dbQFyBranArx3jDnVIcWCrw59KRsH20
-	 DG94VpOcIL4bY2M7dRfp0VcmC1hk/Nhc3Bu5P6fatZJZucIN4+AYajH0hXLVltUMz9IZG
-	 242dPTd/sEI1f/9qe9RD/4mkEJ5JOWaPxH5YVYoTXBB6fJgo4zEfu7B8C99Ks05YuVsGd
-	 8t3MoSWNktU1yjyoDMks4wUMg9iXprjeDgjo43UHBPg4AVmHFd2xaHnnHCAqUGWM3iw==
+	bh=oBvjhj5mA9cP+8HQy3MmppUNwq6KXbqmuj5mAbRfZdw=;
+	b=x3KouQJEXcf6WONDh0hjKw99SNZc1DXNujl6GvhykmrCDX0oLzIEDY91YfodE1eQ+WuG
+	 gzeV11AJt3oTnCAAv184hv0VmXxADzoDfZWRq+GkQ/09DYeCVoCapPahS2A+ikftIKTMs
+	 zQFZlZrVcrzvguQayCAYbZVMq/mbfAeg/nOYMXZaORR1KOmZQSYM8y7fAcUq6IklONv0h
+	 xYBOa+cdE8SdQpszyOKQuKxOspfwG6WymmlGx3m4SxL5S4rdhjsuv41/hYUX7yLDynB4i
+	 fmL+IutcwjvWQv7niO5+szVmBX6pG4it82Ttnjuvb+YXY8VyJaI8QBqkNIdgUOXQdcA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linux.intel.com;
 	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jRYvADLr;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=covzX1+5;
 	arc=none smtp.remote-ip=192.198.163.13
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAACA606A333;
-	Tue, 10 Nov 2026 03:36:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AAACA606A333
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BC1160A2600;
+	Tue, 10 Nov 2026 03:36:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5BC1160A2600
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jRYvADLr
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=covzX1+5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1794281811; x=1825817811;
   h=from:date:subject:mime-version:content-transfer-encoding:
    message-id:references:in-reply-to:to:cc;
-  bh=sF+i+4NrUPBmnWX1u/tZDKshMYm3QXe8ru3BETSGZ/E=;
-  b=jRYvADLr+P65XUEkAxPjYXL83EWUC0fa+iKJVR8YrqQn4+CGbG63OJxl
-   UY91UgEXNuCsu8Idg+7cKtJPPPPgBtip61Y7LnGkzVwpwkMn1jjAHCff2
-   AunVBJyQWTYTdYWl9kJw0vM6bBnTApUBRFYWVskejGU2c8jjTA4XhK1rg
-   KDg1MLRllpF5pIvGhxValb/LCbGrlKUb4Ll1S3ep+7sajqUmGtYidUx++
-   NBYrp65gj+/boPf0JjTj+vKhAOOhpRoDIrs7gDVbYaN34emBA6YOS4yNe
-   /MQ/ZDksMVXheKUpzk3WB5bUQ8V7eAxHaQgv9xZrRiWcsUDCqxgikuSPr
+  bh=WCMIOAy3+UdQk6bUXBwe+jyEPO6jPfwHW80F+W581Zk=;
+  b=covzX1+5NDAvIpa/xgQat0FcapeDsxlYfodkSM1jbeKrIeE/8VwkKBa5
+   sqU84LZyrWwk6jnbCWUunKNOt3O7ibDqEi0cEQwgLzNQ3+LNKi1v/qXlh
+   ciFHskOkQ6a6/EfJv4S9rZP/X8KzjWJPaVy2keyID+zh2I72SHdPeAWUk
+   tYPaXwELmDww5fU1SAijxbPzQ+5LPW1+dKmNBtHv1N9y5+V0R1O5WloY+
+   MM3dZUUM99AhieOxymj8VH9ngGGUKwOkrG+SAcmB1sjwvuYStIengmhl6
+   fVXUo49AmgBv3jtbf2yFrcl9dXOlfCJ7q0YZrEyylFedQVeAX3yDrD3gX
    Q==;
-X-CSE-ConnectionGUID: giDfyBI0RTyT63yrfmGz2A==
-X-CSE-MsgGUID: G5K9m58OQTey3fprWQ9/cA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11961"; a="3010640"
+X-CSE-ConnectionGUID: YodkH1rsRHStvBTAZ4Takw==
+X-CSE-MsgGUID: OPhWjMXpRtWVdSswQRhv5Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11961"; a="3010649"
 X-IronPort-AV: E=Sophos;i="6.27,205,1787036400"; 
-   d="scan'208";a="3010640"
+   d="scan'208";a="3010649"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
   by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Nov 2026 19:36:48 -0800
-X-CSE-ConnectionGUID: 2T8bewCJTKW9bbSHqSYvHQ==
-X-CSE-MsgGUID: DO0eVP7cQEWK6d0g4BvL5g==
+X-CSE-ConnectionGUID: HKttpJ3SRB+SVkvqACq3Dg==
+X-CSE-MsgGUID: 0OX97Z6/RzWwRyb/IZfioQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,205,1787036400"; 
-   d="scan'208";a="8370792"
+   d="scan'208";a="8370801"
 Received: from unknown (HELO [172.25.112.21]) ([172.25.112.21])
   by fmviesa001.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Nov 2026 19:36:48 -0800
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Date: Mon, 09 Nov 2026 19:36:30 -0800
-Subject: [PATCH 03/13] thermal: intel: Move the sysfs device helpers next
- to their callers
+Date: Mon, 09 Nov 2026 19:36:33 -0800
+Subject: [PATCH 06/13] thermal: intel: dpti: Introduce struct dpti_pkg for
+ per-package state
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,7 +77,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261109-dpti-custom-cpu-v1-3-ead8e2d2067e@linux.intel.com>
+Message-Id: <20261109-dpti-custom-cpu-v1-6-ead8e2d2067e@linux.intel.com>
 References: <20261109-dpti-custom-cpu-v1-0-ead8e2d2067e@linux.intel.com>
 In-Reply-To: <20261109-dpti-custom-cpu-v1-0-ead8e2d2067e@linux.intel.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
@@ -88,168 +88,147 @@ Cc: linux-pm@vger.kernel.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org, ricardo.neri@intel.com, 
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794281807; l=4660;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794281807; l=4114;
  i=ricardo.neri-calderon@linux.intel.com; s=20250602;
- h=from:subject:message-id; bh=sF+i+4NrUPBmnWX1u/tZDKshMYm3QXe8ru3BETSGZ/E=;
- b=iAkpfe1E1mr5ajRxKrcOJMwL9JvdF+K+dXU1Oe0Z7v1+12fmXglbcHZJyTMUSX1AMl9nryhBS
- 9Ht3OAH1pLxAU8aYACfGC+VS/90wnDMCUZQc+4FZJ67FCA9S8Bo8Y1p
+ h=from:subject:message-id; bh=WCMIOAy3+UdQk6bUXBwe+jyEPO6jPfwHW80F+W581Zk=;
+ b=GzJ+k3SGno3K1RHBNjdMsU9rxQrcus35VRpy/ys2U8eINTa7ztzHYgujvlX0qoFhWS5pzDChB
+ 6idkcrBX3S+AjI5VC6NWDUIM+XGLsrFz4LrlM72K4ty+ZklNarAUHXM
 X-Developer-Key: i=ricardo.neri-calderon@linux.intel.com; a=ed25519;
  pk=NfZw5SyQ2lxVfmNMaMR6KUj3+0OhcwDPyRzFDH9gY2w=
 
-thermal_throttle_add_dev() and thermal_throttle_remove_dev() sit at the
-top of the second CONFIG_SYSFS block, more than 300 lines above
-thermal_throttle_online() and thermal_throttle_offline(), their only
-callers. Anything the add path needs must therefore be declared ahead of
-it, even when the definition lives far below.
+The array dpti_owner_cpus[] tracks the CPU that owns the directed
+package-level thermal interrupt (DPTI) for each package.
 
-Wiring a sysfs interface for the directed package-level thermal interrupt
-owner into thermal_throttle_add_dev() would need forward declarations.
-
-Move both helpers down, immediately above thermal_throttle_online().
+A sticky, per-package owner CPU that the user selects through sysfs will
+need a field of its own. Rather than adding a second parallel array, wrap
+the state in a struct. Future members can be added in one place without
+churning every call site again.
 
 No functional change intended.
 
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- drivers/thermal/intel/therm_throt.c | 118 ++++++++++++++++++------------------
- 1 file changed, 59 insertions(+), 59 deletions(-)
+ drivers/thermal/intel/therm_throt.c | 38 ++++++++++++++++++++++---------------
+ 1 file changed, 23 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
-index afbccd367c0b..d89362dc5075 100644
+index ac719e2407ac..a0a3842e2760 100644
 --- a/drivers/thermal/intel/therm_throt.c
 +++ b/drivers/thermal/intel/therm_throt.c
-@@ -477,65 +477,6 @@ static int __init int_pln_enable_setup(char *s)
- __setup("int_pln_enable", int_pln_enable_setup);
- 
- #ifdef CONFIG_SYSFS
--/* Add/Remove thermal_throttle interface for CPU device: */
--static int thermal_throttle_add_dev(struct device *dev, unsigned int cpu)
--{
--	int err;
--	struct cpuinfo_x86 *c = &cpu_data(cpu);
--
--	err = sysfs_create_group(&dev->kobj, &thermal_attr_group);
--	if (err)
--		return err;
--
--	if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable) {
--		err = sysfs_add_file_to_group(&dev->kobj,
--					      &dev_attr_core_power_limit_count.attr,
--					      thermal_attr_group.name);
--		if (err)
--			goto del_group;
--	}
--
--	if (cpu_has(c, X86_FEATURE_PTS)) {
--		err = sysfs_add_file_to_group(&dev->kobj,
--					      &dev_attr_package_throttle_count.attr,
--					      thermal_attr_group.name);
--		if (err)
--			goto del_group;
--
--		err = sysfs_add_file_to_group(&dev->kobj,
--					      &dev_attr_package_throttle_max_time_ms.attr,
--					      thermal_attr_group.name);
--		if (err)
--			goto del_group;
--
--		err = sysfs_add_file_to_group(&dev->kobj,
--					      &dev_attr_package_throttle_total_time_ms.attr,
--					      thermal_attr_group.name);
--		if (err)
--			goto del_group;
--
--		if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable) {
--			err = sysfs_add_file_to_group(&dev->kobj,
--					&dev_attr_package_power_limit_count.attr,
--					thermal_attr_group.name);
--			if (err)
--				goto del_group;
--		}
--	}
--
--	return 0;
--
--del_group:
--	sysfs_remove_group(&dev->kobj, &thermal_attr_group);
--
--	return err;
--}
--
--static void thermal_throttle_remove_dev(struct device *dev)
--{
--	sysfs_remove_group(&dev->kobj, &thermal_attr_group);
--}
--
- static int check_directed_thermal_pkg_intr_ack(void)
- {
- 	unsigned int count = 15000;
-@@ -802,6 +743,65 @@ static void cleanup_directed_pkg_thermal_intr(void)
- 	directed_intr_handler_cpus = NULL;
+@@ -515,12 +515,21 @@ static void dpti_config(void *info)
+ 	wrmsrq(MSR_IA32_THERM_INTERRUPT, msr_val);
  }
  
-+/* Add/Remove thermal_throttle interface for CPU device: */
-+static int thermal_throttle_add_dev(struct device *dev, unsigned int cpu)
-+{
-+	int err;
-+	struct cpuinfo_x86 *c = &cpu_data(cpu);
++/**
++ * struct dpti_pkg - Per-package DPTI state
++ * @owner:	CPU currently programmed to receive the package-level
++ *		interrupt, or nr_cpu_ids when the package has no owner.
++ */
++struct dpti_pkg {
++	unsigned int owner;
++};
 +
-+	err = sysfs_create_group(&dev->kobj, &thermal_attr_group);
-+	if (err)
-+		return err;
-+
-+	if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable) {
-+		err = sysfs_add_file_to_group(&dev->kobj,
-+					      &dev_attr_core_power_limit_count.attr,
-+					      thermal_attr_group.name);
-+		if (err)
-+			goto del_group;
-+	}
-+
-+	if (cpu_has(c, X86_FEATURE_PTS)) {
-+		err = sysfs_add_file_to_group(&dev->kobj,
-+					      &dev_attr_package_throttle_count.attr,
-+					      thermal_attr_group.name);
-+		if (err)
-+			goto del_group;
-+
-+		err = sysfs_add_file_to_group(&dev->kobj,
-+					      &dev_attr_package_throttle_max_time_ms.attr,
-+					      thermal_attr_group.name);
-+		if (err)
-+			goto del_group;
-+
-+		err = sysfs_add_file_to_group(&dev->kobj,
-+					      &dev_attr_package_throttle_total_time_ms.attr,
-+					      thermal_attr_group.name);
-+		if (err)
-+			goto del_group;
-+
-+		if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable) {
-+			err = sysfs_add_file_to_group(&dev->kobj,
-+					&dev_attr_package_power_limit_count.attr,
-+					thermal_attr_group.name);
-+			if (err)
-+				goto del_group;
-+		}
-+	}
-+
-+	return 0;
-+
-+del_group:
-+	sysfs_remove_group(&dev->kobj, &thermal_attr_group);
-+
-+	return err;
-+}
-+
-+static void thermal_throttle_remove_dev(struct device *dev)
-+{
-+	sysfs_remove_group(&dev->kobj, &thermal_attr_group);
-+}
-+
- /* Get notified when a cpu comes on/off. Be hotplug friendly. */
- static int thermal_throttle_online(unsigned int cpu)
- {
+ /*
+  * Accessed from CPU hotplug callbacks and from code that runs while CPU
+  * hotplug is inactive: the init and cleanup paths as well as syscore callbacks.
+  * No extra locking needed.
+  */
+-static unsigned int *dpti_owner_cpus;
++static struct dpti_pkg *dpti_pkgs;
+ 
+ /*
+  * Set by the syscore shutdown callback before it disables the directed
+@@ -541,7 +550,7 @@ static bool dpti_supported(void)
+ 	if (!boot_cpu_has(X86_FEATURE_DPTI))
+ 		return false;
+ 
+-	if (!dpti_owner_cpus)
++	if (!dpti_pkgs)
+ 		return false;
+ 
+ 	return true;
+@@ -562,14 +571,14 @@ static void dpti_clear_all(void)
+ 		return;
+ 
+ 	/*
+-	 * No need to reset the owners: callers free dpti_owner_cpus or have shut
++	 * No need to reset the owners: callers free dpti_pkgs[] or have shut
+ 	 * DPTI down.
+ 	 */
+ 	for (i = 0; i < topology_max_packages(); i++) {
+-		if (dpti_owner_cpus[i] == nr_cpu_ids)
++		if (dpti_pkgs[i].owner == nr_cpu_ids)
+ 			continue;
+ 
+-		smp_call_function_single(dpti_owner_cpus[i], dpti_config,
++		smp_call_function_single(dpti_pkgs[i].owner, dpti_config,
+ 					 &enable, true);
+ 	}
+ }
+@@ -590,7 +599,7 @@ static int dpti_online(unsigned int cpu)
+ 		return 0;
+ 
+ 	/* Another CPU in this package already owns the directed interrupt. */
+-	if (dpti_owner_cpus[pkg_id] != nr_cpu_ids)
++	if (dpti_pkgs[pkg_id].owner != nr_cpu_ids)
+ 		return 0;
+ 
+ 	thermal_clear_package_intr_status(PACKAGE_LEVEL,
+@@ -598,7 +607,7 @@ static int dpti_online(unsigned int cpu)
+ 
+ 	dpti_config(&enable);
+ 	if (!dpti_wait_for_ack()) {
+-		dpti_owner_cpus[pkg_id] = cpu;
++		dpti_pkgs[pkg_id].owner = cpu;
+ 		return 0;
+ 	}
+ 
+@@ -626,7 +635,7 @@ static void dpti_offline(unsigned int cpu)
+ 		return;
+ 
+ 	/* Not the owner of the directed interrupt. */
+-	if (dpti_owner_cpus[pkg_id] != cpu)
++	if (dpti_pkgs[pkg_id].owner != cpu)
+ 		return;
+ 
+ 	/*
+@@ -673,7 +682,7 @@ static void dpti_offline(unsigned int cpu)
+ 	 */
+ 	dpti_config(&enable);
+ 
+-	dpti_owner_cpus[pkg_id] = (new_cpu < nr_cpu_ids) ? new_cpu : nr_cpu_ids;
++	dpti_pkgs[pkg_id].owner = (new_cpu < nr_cpu_ids) ? new_cpu : nr_cpu_ids;
+ }
+ 
+ /*
+@@ -720,13 +729,12 @@ static __init void dpti_init(void)
+ 	if (!boot_cpu_has(X86_FEATURE_DPTI))
+ 		return;
+ 
+-	dpti_owner_cpus = kmalloc_objs(*dpti_owner_cpus,
+-				       topology_max_packages());
+-	if (!dpti_owner_cpus)
++	dpti_pkgs = kmalloc_objs(*dpti_pkgs, topology_max_packages());
++	if (!dpti_pkgs)
+ 		return;
+ 
+ 	for (i = 0; i < topology_max_packages(); i++)
+-		dpti_owner_cpus[i] = nr_cpu_ids;
++		dpti_pkgs[i].owner = nr_cpu_ids;
+ 
+ 	register_syscore(&dpti_syscore);
+ }
+@@ -738,8 +746,8 @@ static void dpti_cleanup(void)
+ 
+ 	unregister_syscore(&dpti_syscore);
+ 	dpti_clear_all();
+-	kfree(dpti_owner_cpus);
+-	dpti_owner_cpus = NULL;
++	kfree(dpti_pkgs);
++	dpti_pkgs = NULL;
+ }
+ 
+ /* Add/Remove thermal_throttle interface for CPU device: */
 
 -- 
 2.43.0
