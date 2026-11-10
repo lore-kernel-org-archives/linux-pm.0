@@ -1,113 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.222.170
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794337090;
-	b=2FO8DD67frIJkzuCqrP3k7ffNO9dbKrkz9zzosp5JCVQwMTfG6RBx9HFS0AwEFviNlw2
-	 nDaMWrb/zbTk92RvXz9epvPBhaUZ3sJwvvehsdNKpJrR31UtT96zf8Yr02k4DPyHvNGcm
-	 90PuKRBwlNbt7bhruGeUuwl5XU5DwrC54lsenv//Cn21nLCwfiPZPslw6gwi5/+Mc831q
-	 ZCkQyoGIfwlnH02reixtVXCPLyY+kT5p+806Ixcizl6erpbqgfWJcG7y/nR+Xg7Z0gHe9
-	 HGUL3ncb3mB1ysWjuVLQSEy1/nIlebA2SeLVgoE78F1xUzGWPWo9ddXXnIbjsA0SSKw==
+	t=1794337116;
+	b=UtcWYYXzQ6czW4WzLiMO3p/JEEhJwW4uGVVzKb4lJseBUhW+Hd0mtb0v8X4aal4ECkMS
+	 GhpS4Wt4uspUsR33lG87TAuV5d9+bF7XMywetrlGULWwlfOzdXZA0kBaYdfXtRWfeNs/7
+	 J3GYAJwfptEsceWl5RHDMiWOkrFh7r8curk9PGxZYt32ue3teXntVcHzZbSo/gJNOhQRh
+	 DVMlNg0KeJM4yN+cQjugE9wUizeOoDla/9G+chBQUiyG9j4w7Jomv1P2hnB+0cgdYlSDX
+	 xD+FNoMT+vS/Qe6H1ZWTxVt8gczvpClUj6jFWiMQZV7gFQB8FZWAxPdWN7i5MroKWZQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794337090;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=uax/a+Cf5PnYF3LAag3fOWDgi1ERLoTCpA7WArwoVB4=;
-	b=APhtpWsboGoXBEb0wKznVDGbK5ptqV22y/jCn1OnEWMkMgU/AvL70JVkSHk5bPf3yAME
-	 lB22m6RlF4v4T1MaIT47oi8xaihnuYBdap08Bzjmb9wqTldXg9KUKNs+wGlzoh2EWEVh2
-	 0mBCXc4BTMZ/b50Vq5H8PpQUv8ZeRS0jnX5DSjxY7hTiI5rnF23sdnD7t9pFCpZTkOLUs
-	 Pwsguy9zXWszWPM2TF3Y/pTfcwkNQ7z8WGddxa9zVpg0A2rswJrDpKMtKFKRyW6J7fm6d
-	 /SZb1vL0NM4EWbPTcquhxgvFN8onDUyXDr8mA9YsgcuhHh+FK30HzYHyeWI9lF0+ocA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794337116;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=yXBR4nSuR7ncsnkQ7nHWqyhXuViQEk7eAKifs6Evowg=;
+	b=tuFwCwMpnJHh9Wot0UCM+Hw3ovjUyqCfo143bJrjnk+iISOCDsDcHvYitudusgduvOhp
+	 goDtycN1FHVbwMziCAcYP4LuFa2BPoIkZEpeMWhU/PEO2iRtaWmihf4UXFmYGfa5rrv8Q
+	 x/BmOfxcos6SgAdlYHtAhvi1574s7MAnPtCmPdJxExAePzIjC5EngX7/19EB5ZDUF1UDd
+	 mGDIOUmteclUIfj05v/XNGr5c8aagsPAI8yAAO3Jvljx2zA2aUg8m/j9KnkgKHSwhcL3s
+	 TGl/nk/GpfRZf+Z1RUAOlJQrWBq3VrgFPYENJSV9o1Vy3+MOW/e/L6GsGhsEYEkutdQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hC8j81W4;
-	arc=none smtp.remote-ip=209.85.222.170
-Received: from mail-qk1-f170.google.com (mail-qk1-f170.google.com [209.85.222.170])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=hHCviO5e;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DA23606A334
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 18:58:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2DA23606A334
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 693E8606A31C;
+	Tue, 10 Nov 2026 18:58:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hC8j81W4
-Received: by mail-qk1-f170.google.com with SMTP id af79cd13be357-93e64d52949so207652685a.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 10:58:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794337089; x=1794941889; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=uax/a+Cf5PnYF3LAag3fOWDgi1ERLoTCpA7WArwoVB4=;
-        b=hC8j81W4XVy6GM6NSCd0k/bnKZL9dDfHbCnjIHZEMV4YCCxJo+rbG8Q2gJ1ziBpLGq
-         b/WGl7uM+GbW0ScCbcGRV81gVeRTeNgz0MizF5kMHCM5ZPPdbitL1rbaLNattI6y9fcm
-         0DpQSnY4WXKFOr6Wn7dT2dmcAELqKsJEKzR++vApSbK2g+bqtAQ3mQs5BCzW7QtRSntj
-         GWWCQkNu74fERR+RfULkWg5huVt0eR7NbF0yCDO4S9QOY3TsdNE17R5IVmsDeMYlMoLP
-         36wy31vJ31vDKQ9MKJyqWq+R6e/unEw5WoidBXKtWmZIODw2TxbkPGzvtWf17iNMm5uC
-         b7ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794337089; x=1794941889;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=uax/a+Cf5PnYF3LAag3fOWDgi1ERLoTCpA7WArwoVB4=;
-        b=lLvdXG231yYgbZLaZh49SprTN6lDX3n6OcpBvBk3ktqJzj3IAIt++woYLS5tY71IMu
-         12IrsAjrthFp/1Daxif382cY9RS1O0sowbfaBZRU+O5JlhehaVAC3D/r/GrXXqKDYDtv
-         XC3nhIdjuLUI2j2hk1CQ0Nd6kqp3zue68rjlCSPWRstnSu1OywdWLtp/RV0JbcRL1rYI
-         9SNe9MSBgsJNPNoEJYdTvBm7LL86+/W+UBlLdXDIaF7ZXpW9fFDANxZX5wFXkVmvDnEK
-         osmeGWqCTmq59KaFFyVBtSkzUMZjAPIup1cawQIZvQVETIRK/Vbh9VNLr5kGgkfwtYSd
-         hjsg==
-X-Forwarded-Encrypted: i=1; AL+hErFZAz0JHTGHIwQ/5gGmCtnd6wdVdJUe33bCP88RoHV38aA9ZtEfPPcCJM/I75av79abomzbANK2TA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/fTNSZKKk1pNDwv2vT+qtOtTjvkdbJGspTJiIN+BAGzZvnyaQN
-	vug1+7bWcZpUPoTl6KmQ/c63IZSanzXwBCbiHgJ5ayLD4SeUi4uBz8O+
-X-Gm-Gg: AYBFou2Z8aeTk8SvMAWO+9KoEtVTN47AjNoPSNNJwluM+ZBH4L+tzAxNvDDeT6bNP8d
-	mv1cV31DtbBEtokoMyxScpyvMSNwTzlnXjpQc6EmZdvGYqFxIWkpPQQUO2nNiWjf0mXc1YI8tIr
-	UXRMjLN6SSlNbYyqWhHhSfqiKQ6xUzQHQ2I10J9lK9yf8NAy2yyBwqF6sT4cMi3fejJAqP5XHXh
-	RZBvP0+fK5+7OTmWqmLwMvGYnLutgZaWgrgGw5MlDzvPDcFoYyBMU8//fdnUAhePtbnYbQXl8Sg
-	72tz4mXjGMT6gFWoY7aH+Gdb0o4kivCunSq6WTedP9yOnLXC/nBtMGUPyDuT+7J8gQWVwaetv5C
-	YibiJhhs/w7V2XFriUA1Vr8W4Ac5gEeUBfta81/+0Nwzkeb8wyXLsN42NcoVdKpCzdLDvvGBjpT
-	Urq99MNMFotrgpj+LBR2BP6cpVS/7nn4OM5KlvOOOhOJZTEg/mJBS5OWpljFP4P4NQH/UbAbo5M
-	n+5hzg3NRNeV+QU5SnCzTzom/plkHcSJsQKQJX+9teGlFw3+mqQVWcev3EVv39tbpE5sECuVa6y
-	9sePZzJ7plQTrYTybL5WHuEds/RRgpNE8EotIioPxguCqr+dG4QB9SwM1KFyNW4sdZhVYdFSJa4
-	CtgPjKQ4DhLRgHPEFbJyTQItQVse53rLFP3r9Li1sQitDWBBXz3zX1l2LPJx2+AfMPBCXl4jSrl
-	0KuE7yzlDo+MiMXRgPgm9TsNdFzoKAscN3oq125cabF29ne7v8hk3Spiyb38PVtTYY/PkdGrac3
-	Z6UV3Xmtlte00epkzs2brB7yeR5XrZagea078xNY5GAPQ==
-X-Received: by 2002:a05:620a:4041:b0:93e:c12c:f127 with SMTP id af79cd13be357-9479f38d707mr575616785a.83.1794337089011;
-        Tue, 10 Nov 2026 10:58:09 -0800 (PST)
-Received: from LRMS.tailf8556c.ts.net ([2600:4041:5024:4b00:940a:c6ea:f292:3644])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9479e619affsm290954085a.4.2026.11.10.10.58.08
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 10 Nov 2026 10:58:08 -0800 (PST)
-From: Jesse Casco <jesse.casco@gmail.com>
-To: Loic Poulain <loic.poulain@oss.qualcomm.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Marcel Holtmann <marcel@holtmann.org>,
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-bluetooth@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Wei Deng <wei.deng@oss.qualcomm.com>
-Subject: Re: [PATCH v7 1/8] Bluetooth: hci_qca: Add M.2 Bluetooth device support using pwrseq
-Date: Tue, 10 Nov 2026 13:58:04 -0500
-Message-ID: <20261110185804.56861-1-jesse.casco@gmail.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261005-monza-wireless-v7-1-5a6de7662dcb@oss.qualcomm.com>
-References: <20261005-monza-wireless-v7-1-5a6de7662dcb@oss.qualcomm.com>
+	dkim=pass (1024-bit key, unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=hHCviO5e
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D49FD1F0089F;
+	Tue, 10 Nov 2026 18:58:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1794337116;
+	bh=yXBR4nSuR7ncsnkQ7nHWqyhXuViQEk7eAKifs6Evowg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=hHCviO5eLEwPg9unugj5/9gIPwWd30F7cpV7KEuKgLd7XZwsGzp4B445sRGuhWPPa
+	 hB5k6JQMlUhXBV9zmw4wUc6l6XLDDtsIQzUSXjx6JVl/g/UQT76fDuKfH19sITNbo+
+	 gxiQEAn7T2K70X05MQgyGPKOyMjRCUTNxpd5SqW8=
+Date: Tue, 10 Nov 2026 13:58:34 -0500
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Joshua Crofts <crofts@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+	Johan Hovold <johan@kernel.org>, linux-pm@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
+	Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH 2/3] PM: add sysfs attributes for additional
+ suspend/resume metrics
+Message-ID: <2026111004-landmine-residue-a660@gregkh>
+References: <20261110-pm-runtime-summary-v1-0-12ebf283db78@kernel.org>
+ <20261110-pm-runtime-summary-v1-2-12ebf283db78@kernel.org>
+ <2026111023-padlock-deluge-4173@gregkh>
+ <20261110195020.7d07ae63@systembl0wer>
+ <2026111027-purifier-revolver-37c3@gregkh>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -117,16 +61,40 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2026111027-purifier-revolver-37c3@gregkh>
 
-Tested on an ASUS Zenbook A16 (UX3607OA, X2 Elite), whose mainline DT
-connects Bluetooth through the M.2 E connector (W_DISABLE2# on GPIO
-116), with the QCC2072 support from [1] on top. Without this patch
-hci_qca asks for a "bluetooth" pwrseq target the connector doesn't
-provide, W_DISABLE2# stays asserted and reading the version times out
-(-110). With it, W_DISABLE2# is released, setup completes and a phone
-connects.
+On Tue, Nov 10, 2026 at 01:54:05PM -0500, Greg Kroah-Hartman wrote:
+> On Tue, Nov 10, 2026 at 07:50:20PM +0100, Joshua Crofts wrote:
+> > On Tue, 10 Nov 2026 12:29:11 -0500
+> > Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
+> > 
+> > ...
+> > 
+> > > > +static ssize_t runtime_resume_count_show(struct device *dev,
+> > > > +					 struct device_attribute *attr,
+> > > > +					 char *buf)
+> > > > +{
+> > > > +	u64 count;
+> > > > +
+> > > > +	spin_lock_irq(&dev->power.lock);
+> > > > +	count = dev->power.resume_count;
+> > > > +	spin_unlock_irq(&dev->power.lock);  
+> > > 
+> > > Why is a lock needed at all?  The value isn't going to "smear", it will
+> > > change right after the lock anyway.
+> > 
+> > On 64-bit systems an aligned u64 read is atomic, but on 32-bit systems it
+> > gets split into two 32-bit loads. Without locking, the read can tear
+> > between the upper and lower halves.
+> 
+> Are you sure?  ANd if so, is that so bad?  The value is "best effort" as
+> it can, and will, change right after reading it.
 
-[1] https://lore.kernel.org/r/20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com
+And even more relevant, what specific 32bit system are you using that
+this new api is going to be relying on?
 
-Tested-by: Jesse Casco <jesse.casco@gmail.com> # ASUS Zenbook A16 (UX3607OA)
+thanks,
+
+greg k-h
