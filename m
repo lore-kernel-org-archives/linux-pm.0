@@ -1,64 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794337371;
-	b=md1G9fSsFiTp+jCaeY/c13yLy/8mx7zQuqUNut8w+szHYLDDn2GWzTsvAdflblQWTWtE
-	 2/NjjFfAFB9AA0IT4qbl7gwpmT6VwAmNvTFTShCkN8zzrFS2mRC5E8boJjgHYbHg5tDVi
-	 UuHr8qxQNAcc62LWdISm+oVCyIhpm/I9hCCmF0IpuxskjLwxqJxOOA9nEjEUVVe5yvy2z
-	 G6GrW5MurNFkG7Nt4UKemMt9iUpTSTCN/NVRboqnzLOceZ3YMbBW7FW4YWvmtn4JT/KVB
-	 GRACJfO0TM+VcNM5bUCl/yE3QgNlPqOsX7RRRJAVWGYXFTfbs3Q3628Ml7u/evLRjNg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794337371;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=xoc0r9cIuuLQ+SRXLemVDvG4xZ8PX+lZLE8aI8ExJwQ=;
-	b=zCkYyUlMCjo/I2DgnNJMSCt2XoCxJXqJMpyBS8APofMiZHUkyg7yOq0xilee7+Qal6r3
-	 p3+WZoxxBhOwa0QcTsqCqcgrHIntfJRVzDUeICoN9JieQa2SbgCLiyXHaPe3ttxhbGx3L
-	 6Lc1z4CG9w+LC32y0QJ34Lp/Xy/HCEtmHGLM61nTxJavRPUDWPy8bBQa5ya+se9299gmd
-	 IA7b72R6JUZ+5yFCEflrzzJBNLizaujhQuKwV6v12IyI3RH7F6p2GGn+wKVz5t+RKALvp
-	 AcTlg13I9+CDPHXkDXIWs5C1oA4xLBXZQnt63O53/o4A0hpg+lILsk6XrETXTV55S0A==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=acJp32zh;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.172
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794338277;
+	b=wQO7flVZzH6ExKggPSqc/z3htstuEF5D3d7LNep2E3/6VPEc2xn4LecB2NX70kz4Wsqs
+	 rNS7o++I70Igjm87/ugMHQAwOTUFLyCutCdzWqyFSkLHf899PGWNUk4xwC3zvASnQU4pm
+	 /lTWtKl5CK3PwxTEtp+XT+osq9R2Bwmm/77n7KoHtbvv0VMcG4tncTRoJcvy6f7w8IT83
+	 joEVftRkKouvNm5inj0XxloXU9ouRGrhFexJO1wcW0DzLq2xR1r3+OApSAWAfhvomNIME
+	 Q298MQX74uMH+hWQbsqm/O00z4w7XIfsmcPiG8ZqhogdF9ECXpME34dUrNQIkHa/9mA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794338277;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=puDDZt/C2f5Dzo58o7lKVRrUWtH4KzZHgOy66M1m2I0=;
+	b=mVEnqrlttqshRzIzRGkjMO69dqr22xAdXyXaIU+wotRs6qsC0URLu9JAG4/3cuZA2vL3
+	 S4iHOeCwfunOgIkMQACyNYucTsEBUrr0ANzuFwz4KQxadt8Rh9NUiS++hKa/QpABUgBDj
+	 k17wOTgpfPQYZMvgFX69nvtOdf2AefQ4pOBKtwhpORcMNlRP0ybvQNU2VdQAwSeP31nvY
+	 jTM1SHwN1KdK6QgEqOyMTPcRknA3EXZhsBlHmfYIYyimJqwEXmuK4R4nRkqi9C5Tpw8yj
+	 JoZsZ0LPct4zVC2hr33DeLa3r9CnhS7BHc+OKJ22SwBMlbJTROTzT+G2DzCXkknyXXQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=wG23Iavn;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.172
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FA6A606A320;
-	Tue, 10 Nov 2026 19:02:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A7A1606A33C
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 19:17:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9A7A1606A33C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=acJp32zh
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E9FD1F0089F;
-	Tue, 10 Nov 2026 19:02:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794337371;
-	bh=xoc0r9cIuuLQ+SRXLemVDvG4xZ8PX+lZLE8aI8ExJwQ=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=acJp32zh1qd/bwVyojJEZCsoGEtZPPjFvqOVloeQwhivSjdGTbgbvNAJtGIhAc9Y+
-	 hqrKqfDcuHnrApuNTwByCttBPFLY0iXSAQqwwLRmHut6bgLK50KcfglC3Ue1i42rOQ
-	 TUBKEvcl5PfgdFhxxzHd0P17hxEzuE57P/4pGo8s05GZPPMfcC2Y6eo0z6kCnNHOIf
-	 X9IicCZEN3piDOr/jIRBUOFZIsgpkv05P1I1XrFmeg3qQKrL8x5HMxbD2zLJUvVSrZ
-	 L6RIjT4TXpNbZaJW1mCJVGPXfEEn5uYo3AXRuyaa3H9hnNSbRxlw5w4W6FpW0K1emr
-	 PVsrkzHn+itBQ==
-Date: Tue, 10 Nov 2026 20:02:42 +0100
-From: Joshua Crofts <crofts@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
- Pavel Machek <pavel@kernel.org>, Danilo Krummrich <dakr@kernel.org>, Johan
- Hovold <johan@kernel.org>, linux-pm@vger.kernel.org,
- driver-core@lists.linux.dev, linux-kernel@vger.kernel.org, Dominik
- Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH 2/3] PM: add sysfs attributes for additional
- suspend/resume metrics
-Message-ID: <20261110200242.70e533e9@systembl0wer>
-In-Reply-To: <2026111004-landmine-residue-a660@gregkh>
-References: <20261110-pm-runtime-summary-v1-0-12ebf283db78@kernel.org>
-	<20261110-pm-runtime-summary-v1-2-12ebf283db78@kernel.org>
-	<2026111023-padlock-deluge-4173@gregkh>
-	<20261110195020.7d07ae63@systembl0wer>
-	<2026111027-purifier-revolver-37c3@gregkh>
-	<2026111004-landmine-residue-a660@gregkh>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=wG23Iavn
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-8b0cf2c0785so25290747b3.3
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 11:17:56 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794338275; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Q7UuUybCXKAeIGLfvCgXnL0APJALgjjP3zfFYJBvuoa2MOeQiXRXlKoyu4BbMHu4RJ
+         RSDf0woTO3JGUq8DRbekPbg3C7cN4v1h7s2QjQshHLPIu11dwWhnTD142JLVhkG78W8g
+         7q4aV6iCcp0jcfc8aPLz9bRLiL2QJE2eja1tmpIzvT55v4b1lqiU+/w6yQujfdNTbmhC
+         r8fRgxahd0g++CYynidFHHkWQxpD9MlQnRvodthk01RlEXH4AN7u+qVcAoRP2/La9BH/
+         gyhxjUj/MBEQljdV1FxxTa3M7XYzFDOO/lEMfOAMJ01ySJdT5yCqSQKUEhNCSmYqAuCM
+         YIew==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=puDDZt/C2f5Dzo58o7lKVRrUWtH4KzZHgOy66M1m2I0=;
+        fh=q1GXbeqJBr+YITUrlcPuLSvM7suVxjb2vRaZVj6Q51c=;
+        b=qCIX+LeGMicStxUqSQJ+cQxB5hf15uUZ04j+7seT9rgb7gp7+39Oz6580Hr96X1ffC
+         eE4rsPFL95Wmln6kSh1sAhSLZya9onzB0d7yvBjKtcHEdeKbY2BPBfibTXkQ8CsI0Mi7
+         3//wAIBOkT0Hjf6XPaazf63E0fLMq8qI0DNoUTDazYx/xGU5FapiIbB4v/yNHb1C3ksg
+         IiuUeuGVjHYwE3C6vBrULTPEumfTCnwMz8dE31KHQ4rQxXySF638bSCw2pXm32RLvtPq
+         zFzNmepoT24O538ZNYW6T7RKXD18Pm7ANkBZQoLVqb5JS8pUE9ZtyUv0ygVhfRRMV56Y
+         5jlA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794338275; x=1794943075; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=puDDZt/C2f5Dzo58o7lKVRrUWtH4KzZHgOy66M1m2I0=;
+        b=wG23IavnEf5PBf4OCbe0axelDdxvC0oY3LCq/Qk5QPxH/rJRPbl1XXe8r3rYttBY0E
+         fjHM/7cXvWIJOf+q2vNQIwIEjoTrZ4lcPzTPR0Cbory6gtpcZYQ0tn/+iq+VhxnsqAOh
+         KOcWZkFlnc03XwyF5ACIQ/5jRaIbKXQNf/1yc+DJPkNi5vpBGaJKAAMxubQtbxkEiH+j
+         0nTJQT/37sk8uPHbwHW1hKInsYKMDL7+SMKU7BZGWXjXPlbjMcOy2l6agl9UyQSrvPAw
+         LQ8IzBeiVAawq7CUrMxeSucHicW7iOyBOnZJFtiQCNxlMz14X7B4ZKECymH4sJsjiOiR
+         lBVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794338275; x=1794943075;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=puDDZt/C2f5Dzo58o7lKVRrUWtH4KzZHgOy66M1m2I0=;
+        b=bMMTR/GfHQqUHW4fyjCdsYzwlaPo/b2PykI1VXyj7WEZyE4UKn8WP+Zga0siVVOwHX
+         v5dCD/XnCfaUhVLjiJp+at0bDVAPOxeAL3hGH3j/umS3UB9dmAgxxFfIvEiqwh/RH/UN
+         Ch1QAcIPyQMn110hD31UqpdAhXWZNtQp/8EetW+4HSV+jvL/hcUOMQaT6IdLP0p78Vvt
+         2WnIDe4VcQg0A/qnm+LW8yobqUIR8hvgRPkaVmWUqzdTlKieYYKh9wEgmfKqJ0lGWWIi
+         ogwG1XJjhXnY26zjBN+WDkGdUb1pmFQPn81N6NSC7soZIKLJU420Vjmv6BqpU9h3L9py
+         8RaA==
+X-Forwarded-Encrypted: i=1; AL+hErHAgad6vsfv1l6z9HVXckkd9eAWfop/HN/DfK59DLs7llE0xz2l6mt2gHfcQ5/Nod5HH6d2nDqA7A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/xHKMBUgrWrBzekBdSZo7VaZm8/lwuqgFyU8yKIQYB1zhft0gT
+	B1RulwTlbmpcd/LjX9bX4nf8bTJTy27TWAQnWyWtNmKj7nnAOf6UrrXBtjB4dvwQ+p79VeY+prE
+	NyEqPUW3Sv7U8zvuka9AkMcqo+HH3p+Y=
+X-Gm-Gg: AYBFou2hVJSpD0JCauMlVjxp4qpck/9VqiGmw31xV4WFC/l//0u+Sv1XCaC0BMFnld9
+	qXU7wuYyw5zFzpXQuCp76avuRlaCMC84XvcXTnm/P2rcSdvCjoWAPMp4WpBLCrrL90OEGlIQKBa
+	RyMtp3HIgzihXgn6ELzbzsKwqOCGOJKCiPFnRt3jIkyXEXYT5rIDG4RWNZekc35ramHh2Vy0iTL
+	LtKr1f8UZ7+8KTbEmGIApCIJpiMsN4OnsiZRooj2mv/Qqhfd8xykT/NXIGt/fDm31AF99ca+Wtw
+	hYcgFSooCfs/CHZWxTlzuybsCcS2lPocIV/bkpxPdOC9YPiTRWnjWhKQXZFfEbxJx+nnNF36EwH
+	wtfn7B52dkjNMMV78KmdkAVhLOdPEl1wnDPMs2A==
+X-Received: by 2002:a05:690c:a045:b0:8b3:59dd:11bb with SMTP id
+ 00721157ae682-8b3a80904bbmr1548667b3.32.1794338275490; Tue, 10 Nov 2026
+ 11:17:55 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -68,48 +103,25 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20261108-04-k3-pm-support-v3-0-b9dc0857039b@kernel.org> <20261108-04-k3-pm-support-v3-1-b9dc0857039b@kernel.org>
+In-Reply-To: <20261108-04-k3-pm-support-v3-1-b9dc0857039b@kernel.org>
+From: Iker Pedrosa <ikerpedrosam@gmail.com>
+Date: Tue, 10 Nov 2026 20:16:00 +0100
+X-Gm-Features: AclHuK8pMvnG1Q-j9dHb2iJ_gKQ1ShQm5guoJXhhleP_Gp1CskmuEJKcLhqrA_k
+Message-ID: <CABdCQ=NCwHn_Qtg-KZCRYWrruDWrP5Fdpeq_Ci_vtcbm92hEkw@mail.gmail.com>
+Subject: Re: [PATCH v3 1/2] dt-bindings: power: spacemit: Add power domain
+ controller IDs
+To: Yixun Lan <dlan@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Icenowy Zheng <uwu@icenowy.me>, devicetree@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Conor Dooley <conor.dooley@microchip.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 10 Nov 2026 13:58:34 -0500
-Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
+Patch 1/2 is unchanged from v2.
 
-> On Tue, Nov 10, 2026 at 01:54:05PM -0500, Greg Kroah-Hartman wrote:
-> > On Tue, Nov 10, 2026 at 07:50:20PM +0100, Joshua Crofts wrote:  
-> > > On Tue, 10 Nov 2026 12:29:11 -0500
-> > > Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> > > 
-> > > ...
-> > >   
-> > > > > +static ssize_t runtime_resume_count_show(struct device *dev,
-> > > > > +					 struct device_attribute *attr,
-> > > > > +					 char *buf)
-> > > > > +{
-> > > > > +	u64 count;
-> > > > > +
-> > > > > +	spin_lock_irq(&dev->power.lock);
-> > > > > +	count = dev->power.resume_count;
-> > > > > +	spin_unlock_irq(&dev->power.lock);    
-> > > > 
-> > > > Why is a lock needed at all?  The value isn't going to "smear", it will
-> > > > change right after the lock anyway.  
-> > > 
-> > > On 64-bit systems an aligned u64 read is atomic, but on 32-bit systems it
-> > > gets split into two 32-bit loads. Without locking, the read can tear
-> > > between the upper and lower halves.  
-> > 
-> > Are you sure?  ANd if so, is that so bad?  The value is "best effort" as
-> > it can, and will, change right after reading it.  
-
-Fair enough, I agree this is "best effort", so no problem on my end with
-dropping the locks. 
-
-> And even more relevant, what specific 32bit system are you using that
-> this new api is going to be relying on?
-
-I'm not using any 32-bit system, this issue was flagged by a local Sashiko
-run and at the time it made sense to me.
-
--- 
-Kind regards,
-Joshua Crofts
+Tested-by: Iker Pedrosa <ikerpedrosam@gmail.com>
+Reviewed-by: Iker Pedrosa <ikerpedrosam@gmail.com>
