@@ -1,55 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794312953;
-	b=28ymxX1dH20f8y/rYu0b+opdTX0EVKZjhVVZD6ZTUH9KayYRM7cPZDZLCjilhXXUHsv+
-	 38MtBUdQAj5f6KH2v9dN78k06WmrxPmLMt0sZAcgPa3cPbK6TtVUEVq3UR4NajINbtW4t
-	 olLzNdfa/NR9f/jZgCvGKr4oNpi/SQ1mqSEsn/7d02QIBEeoAutE4TDztUJAMPLspV/UZ
-	 bbDchhps405zHamcUBE/C6pmBnVWwdYNsezkydGucyNGG1AvIxtnKLLfMjnTdf+Oj1dxG
-	 UnHBCWQZ/QZqbhrbeVaOhIMmZUz04q2WeBqVgA2OArDHYW86yzVgnU4qHPU68MmhdxA==
+	t=1794313533;
+	b=myf9LpHz78mn06VUM9GfX++RTHklBJALeY+7/sTq/6p4lS3Q957p9hoLDycQUr9tc2m9
+	 LbVFytoxvhVvSfKTEdui8X7bjSh/TrEAqXzGeve6OB4L5R8SAGi8ghyYZJfFuL/PxuT0F
+	 5gv3+LgPKA2zibZ4ckqt4Ehjv9diNc4Uxm+UhMMidZHibgP5ilTOIPQESCtdW6+27q3kE
+	 7VEpRQBeA7+DzZj/ThtSgpJZhWv2TR0Gj7fH3I9NLBchdi/W1yin8YUmrRMqOSWnb9Xc4
+	 RWedDtYIf/NzkwtLwaFoNk6+u5bgvstQOQuk7qg1oAl4Y9ZP5faZ3ByoiW7OJjcsKBQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794312953;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=5hOITWXir7kny7IKdUAWvpDSOoIC1UGozOF9nqauv6I=;
-	b=XuB8ytgC/mXQEdu0G2qJTHhT4ha/O2xpaOvzfKF9X0Ldy1SlYW+YmTwfSLSeDmly4RNP
-	 PTmKbxJ9x2iVF+elaE/nnZEEFr6uHwSelNRvgEPKpJ6Os5vQvZgQTsT1m/n3MIiXEqfwc
-	 ueSW1AM1eU826iLW7Ave/c/VSfYwk/IXiwt02T32tpFIPMeDWyQJTqD4Q3yzvRd30u3Ib
-	 sDvRLijukvXK4IA55nhf4PgZ8N+p5DlNOQpde62IyomOmS87Iqah5TW5iCGJoe+oYwZpQ
-	 Sd0BR2s7RiCuL16/52cXgs8sgj7bw32LyKEDeWMThvOgSoYQolvA02oiA+q2f3MRJYw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794313533;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:From:
+	 Subject:To:Cc:References:Content-Language:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=o8vOqPjQp+qIgT4SjBM1vuuP9NkLzsqzq4almCwh0ns=;
+	b=oFQ1RvRXS406PJsCj+QZ3nmxN4FQMJSwNxDmPp6y0MI4P1A5rNsJpOXT7zMx1yhYn1aW
+	 Ci3fTwyfSCCcjN+Ib0ST0u4abDM9kFBhWClJP9SipalzSk5A4awWWuN7lSY3tKe0M7lR0
+	 lCmQCCHc1ZiijrSbRRx8ph3E/tCsQd9NTnKuIuqMZ/rJifKpCus2ssalM55pkKz2k5pfZ
+	 uZFaEt4ZE3VcWZP/K76qrRY1b5QDNC90wsSWaMCo4F5Tr5q+ymQQ+aI6waPkb+wOeHxaJ
+	 Hte7eSR3a3y/++xAGCiYdTr2mYxDhyRQh6JRw8xK3vw6YIGSfCDJG2cCI2AJVW/+29A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zz3fdush;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gr5nohgX;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98CCA606A325
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 12:15:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF9AC606A32A;
+	Tue, 10 Nov 2026 12:25:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zz3fdush
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 717A81F008A2
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 12:15:52 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gr5nohgX
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2A651F008A2;
+	Tue, 10 Nov 2026 12:25:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794312952;
-	bh=5hOITWXir7kny7IKdUAWvpDSOoIC1UGozOF9nqauv6I=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Zz3fdushU502exI+atrd9blr+XX1n00PdrDajjxMg4DuEerrCBwvfTANY9vmqedyl
-	 YRY90Wh09uTB3iirUfqQTfYe2YcNc6NqfTvG2BMF/WhkxsFSMzWfQLh7qpwqyHD0ju
-	 EKsjes9HfdBToTgmUzyGloO7RvMV8I/GMjQr9DGLliAMKNYig991wAtCrc9OZoS2ob
-	 lrjArMK9oqFzOfqSjYDke/104n/dM3kie3VBfRT7ffGpUZzYV8RDA9cT4/M1B7rLyA
-	 1sKHdXHMSi0y+fv/8E95CXRcWTPpgdNYIHX5qukkjcgJKDix/CPU2P+AggUR1XPDbt
-	 pda14wS8L9+Xw==
-Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5c126f80426so1384951e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 04:15:52 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErGZ92Id3A/a22NDg3Fd3QwbxApECMIdQHxp90O64yqEiiouDXEXierrUpK7+BPGOQXgGfKqH9LopA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/r0rldm1xBfayM0PBLtIQBlNuu9sgBs9QLXNuc5sMpo1Rvh3u5
-	o5FqfqDpnnx+9VMkYpCujT/PmCY6DD8YGLkuvnusdtiLbP5vFJmh4tVRZY3FIoAX3hgsYMCD2eE
-	FZ0T3bET2xVkJCQFuZiny3ARDNrnclwE=
-X-Received: by 2002:a05:6512:3b21:b0:5bf:e7af:8dc8 with SMTP id
- 2adb3069b0e04-5c156ece655mr949807e87.58.1794312950826; Tue, 10 Nov 2026
- 04:15:50 -0800 (PST)
+	s=k20260515; t=1794313532;
+	bh=o8vOqPjQp+qIgT4SjBM1vuuP9NkLzsqzq4almCwh0ns=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To;
+	b=Gr5nohgXHm1YYyj6tvLEZ2lSM8AwTngl7Y9YhcAEKBH+Qk95txebAZ9NtKzrDhbMu
+	 /kcVhI4wBuCa61a001FzAROnBPqNtiO/ytzlzOWo7XJ5chQlrrTZ0jAur7hkGa2Dea
+	 9e8VcncC+5ovHWHZPm9Udas/YhDeQJz+/Hw/DgiFOKQphYC3tCbIwtuUfnQDwnkr0A
+	 NlkNf0d03csKo9TcHJmIS39u4zkv/CzH2xeQIMrUlC8N+o3OuHRReJJo3cYKVKlsnW
+	 Ok7Bxat5Tx0PnCcbiQSm1rkYigOOsx53IhuLC4CVONUmhMnelBCuvRRROviPHPq5B4
+	 hzmGl2iyPjB0A==
+Message-ID: <69a3552e-1fca-49e9-a9c0-66963319d2a9@kernel.org>
+Date: Tue, 10 Nov 2026 13:25:23 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,253 +51,89 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
- <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
- <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com> <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
- <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com> <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
-In-Reply-To: <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 10 Nov 2026 13:15:37 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com>
-X-Gm-Features: AclHuK9ZLEAPkvvEAm9cRuOlTdQ1KKTPJ64KYDiiOwhZqZAGkBN8s4gQExD7A8I
-Message-ID: <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com>
-Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency ranking
-To: Lukasz Luba <lukasz.luba@arm.com>, Guo Chen <guo.chen@oss.qualcomm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Donnefort <vincent.donnefort@arm.com>, 
-	Matthias Kaehlcke <mka@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org, xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com, 
-	tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com, 
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+From: Hans Verkuil <hverkuil+cisco@kernel.org>
+Subject: Re: [PATCH 03/14] mfd: remove unused si476x driver
+To: Arnd Bergmann <arnd@kernel.org>, Lee Jones <lee@kernel.org>,
+ mfd@lists.linux.dev
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>,
+ Jingoo Han <jingoohan1@gmail.com>, Mauro Carvalho Chehab
+ <mchehab@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
+ Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
+ Jonathan Cameron <jic23@kernel.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek
+ <pavel@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
+ Support Opensource <support.opensource@diasemi.com>,
+ Sebastian Reichel <sre@kernel.org>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ linux-doc@vger.kernel.org, linux-media@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-hwmon@vger.kernel.org,
+ patches@opensource.cirrus.com, linux-watchdog@vger.kernel.org,
+ linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev
+References: <20260909132153.1596191-1-arnd@kernel.org>
+ <20260909132153.1596191-4-arnd@kernel.org>
+Content-Language: en-US, nl
+In-Reply-To: <20260909132153.1596191-4-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 10, 2026 at 10:58=E2=80=AFAM Lukasz Luba <lukasz.luba@arm.com> =
-wrote:
->
->
->
-> On 11/10/26 09:49, Guo Chen wrote:
-> >
-> > On 11/9/2026 5:40 PM, Lukasz Luba wrote:
-> >>
-> >>
-> >> On 11/9/26 06:47, Guo Chen wrote:
-> >>>
-> >>> On 11/6/2026 11:15 PM, Rafael J. Wysocki (Intel) wrote:
-> >>>> On Tue, Nov 3, 2026 at 12:21=E2=80=AFPM Guo Chen <guo.chen@oss.qualc=
-omm.com>
-> >>>> wrote:
-> >>>>> em_compute_costs() ranks all the frequencies of the table, boost on=
-es
-> >>>>> included. A non-boost frequency can be marked inefficient only beca=
-use
-> >>>>> a faster boost frequency has a lower or equal cost, e.g.
-> >>>>>
-> >>>>>    3.9 GHz  4.0 GHz (cost C)  4.1 GHz (boost, cost C)
-> >>>>>
-> >>>>> With boost disabled 4.1 GHz cannot be selected, but 4.0 GHz is stil=
-l
-> >>>>> skipped by governors rounding down to efficient frequencies (e.g.
-> >>>>> ondemand with CPUFREQ_RELATION_HE), which land on 3.9 GHz instead o=
-f
-> >>>>> the best selectable frequency. Several frequencies can be affected.
-> >>>>>
-> >>>>> Exclude the boost frequencies from the ranking in
-> >>>>> em_compute_costs() and
-> >>>>> keep them all efficient, using the highest non-boost frequency of t=
-he
-> >>>>> CPUFreq table, returned by the new helper
-> >>>>> cpufreq_table_max_nonboost_freq(), as the boundary.
-> >>>>>
-> >>>>> Fixes: c8ed99533dbc ("PM: EM: Mark inefficient states")
-> >>>>> Signed-off-by: Guo Chen <guo.chen@oss.qualcomm.com>
-> >>>> Please see Sashiko's feedback regarding this patch
-> >>>>
-> >>>> https://sashiko.dev/#/patchset/20261103-em-rank-boost-separately-
-> >>>> v2-1-5a13d1b38d37%40oss.qualcomm.com
-> >>>>
-> >>>> and tell me what you think about it.
-> >>>>
-> >>>> Thanks!
-> >>>
-> >>> Thanks for the review.
-> >>>
-> >>> I did consider this case. If no policy is found, max_nonboost stays 0
-> >>> and
-> >>> the new logic is bypassed, i.e. the ranking falls back to the old
-> >>> behaviour, which looked like the least intrusive option. I also thoug=
-ht
-> >>> about warning and returning an error, but most of the in-tree callers=
- of
-> >>> em_recalc_and_update() ignore the return value (e.g.
-> >>> em_adjust_new_capacity() and exynos_asv_update_opps()), so the update
-> >>> would
-> >>> just be dropped without anyone noticing.
-> >>>
-> >>>>> ---
-> >>>>> Changes in v2:
-> >>>>> - Drop prev_boost and keep all boost states efficient by resetting
-> >>>>>    prev_cost for them, as suggested by Lukasz. Boost states are no
-> >>>>>    longer ranked against each other.
-> >>>>> - Retitle the patch to match the new behaviour (was "Rank boost and
-> >>>>>    non-boost frequencies separately") and reword the commit message=
-.
-> >>>>>
-> >>>>> Link to v1: https://lore.kernel.org/all/20261030-em-rank-boost-
-> >>>>> separately-v1-1-238a6b2bb888@oss.qualcomm.com/
-> >>>>> ---
-> >>>>>   include/linux/cpufreq.h     | 24 ++++++++++++++++++++++++
-> >>>>>   kernel/power/energy_model.c | 16 ++++++++++++++++
-> >>>>>   2 files changed, 40 insertions(+)
-> >>>>>
-> >>>>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> >>>>> index d3d0d9d02aa4..c93316141a11 100644
-> >>>>> --- a/include/linux/cpufreq.h
-> >>>>> +++ b/include/linux/cpufreq.h
-> >>>>> @@ -1155,6 +1155,24 @@ cpufreq_table_set_inefficient(struct
-> >>>>> cpufreq_policy *policy,
-> >>>>>          return -EINVAL;
-> >>>>>   }
-> >>>>>
-> >>>>> +static inline unsigned int
-> >>>>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
-> >>>>> +{
-> >>>>> +       struct cpufreq_frequency_table *pos;
-> >>>>> +       unsigned int max =3D 0;
-> >>>>> +
-> >>>>> +       if (!policy->freq_table)
-> >>>>> +               return 0;
-> >>>>> +
-> >>>>> +       /* The table may be unsorted, scan all of it for the
-> >>>>> highest one. */
-> >>>>> +       cpufreq_for_each_valid_entry(pos, policy->freq_table) {
-> >>>>> +               if (!(pos->flags & CPUFREQ_BOOST_FREQ) && pos-
-> >>>>> >frequency > max)
-> >>>>> +                       max =3D pos->frequency;
-> >>>>> +       }
-> >>>>> +
-> >>>>> +       return max;
-> >>>>> +}
-> >>>>> +
-> >>>>>   static inline int parse_perf_domain(int cpu, const char *list_nam=
-e,
-> >>>>>                                      const char *cell_name,
-> >>>>>                                      struct of_phandle_args *args)
-> >>>>> @@ -1219,6 +1237,12 @@ cpufreq_table_set_inefficient(struct
-> >>>>> cpufreq_policy *policy,
-> >>>>>          return -EINVAL;
-> >>>>>   }
-> >>>>>
-> >>>>> +static inline unsigned int
-> >>>>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
-> >>>>> +{
-> >>>>> +       return 0;
-> >>>>> +}
-> >>>>> +
-> >>>>>   static inline int of_perf_domain_get_sharing_cpumask(int pcpu,
-> >>>>> const char *list_name,
-> >>>>>                                                       const char
-> >>>>> *cell_name, struct cpumask *cpumask,
-> >>>>>                                                       struct
-> >>>>> of_phandle_args *pargs)
-> >>>>> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_mode=
-l.c
-> >>>>> index d19a65461ae8..5b1d095fd376 100644
-> >>>>> --- a/kernel/power/energy_model.c
-> >>>>> +++ b/kernel/power/energy_model.c
-> >>>>> @@ -255,15 +255,24 @@ static int em_compute_costs(struct device
-> >>>>> *dev, struct em_perf_state *table,
-> >>>>>                              unsigned long flags)
-> >>>>>   {
-> >>>>>          unsigned long prev_cost =3D ULONG_MAX;
-> >>>>> +       struct cpufreq_policy *policy;
-> >>>>> +       unsigned int max_nonboost =3D 0;
-> >>>>>          int i, ret;
-> >>>>>
-> >>>>>          /* This is needed only for CPUs and EAS skip other devices=
- */
-> >>>>>          if (!_is_cpu_device(dev))
-> >>>>>                  return 0;
-> >>>>>
-> >>>>> +       policy =3D cpufreq_cpu_get(dev->id);
-> >>>>> +       if (policy) {
-> >>>>> +               max_nonboost =3D
-> >>>>> cpufreq_table_max_nonboost_freq(policy);
-> >>>>> +               cpufreq_cpu_put(policy);
-> >>>>> +       }
-> >>>>> +
-> >>>
-> >>> The lookup can be made more robust though: on the update paths dev-
-> >>> >id may
-> >>> be offline while other CPUs of the performance domain are online. In
-> >>> v3, if
-> >>> dev->id has no policy and the performance domain already exists, I
-> >>> will use
-> >>> an active CPU of the performance domain instead, as
-> >>> em_cpufreq_update_efficiencies() does, and only warn and fall back to
-> >>> the
-> >>> old behaviour if that fails as well.
-> >>>
-> >>> I did not use the performance domain for every lookup because at
-> >>> registration time dev->em_pd is not assigned yet (it is set after
-> >>> em_create_perf_table() has returned):
-> >>>
-> >>> policy =3D cpufreq_cpu_get(dev->id);
-> >>> if (!policy && dev->em_pd) {
-> >>>      cpu =3D cpumask_first_and(em_span_cpus(dev->em_pd), cpu_active_m=
-ask);
-> >>>      if (cpu < nr_cpu_ids)
-> >>>          policy =3D cpufreq_cpu_get(cpu);
-> >>> }
-> >>>
-> >>> if (policy) {
-> >>>      max_nonboost =3D cpufreq_table_max_nonboost_freq(policy);
-> >>>      cpufreq_cpu_put(policy);
-> >>>   } else {
-> >>>      dev_warn(dev, "EM: no CPUFreq policy, boost states are "
-> >>>                          "not excluded from the ranking\n");
-> >>> }
-> >>>
-> >>> This makes it much less likely to miss the policy, but cannot rule it
-> >>> out:
-> >>> the CPU can still go offline between picking it and calling
-> >>> cpufreq_cpu_get(). em_cpufreq_update_efficiencies() has the same
-> >>> limitation.
-> >>>
-> >>> Would that work for you?
-> >> I also thought about that possible racy corner case, where
-> >> CPU can go offline (or already be offline). Although, in current
-> >> usage this should be OK, since we do this in boot phase and
-> >> platforms are sane.
-> >>
-> >> We can can add that step with 'cpu_active_mask' to play safe,
-> >> but no hard promises it would be atomic.
-> >>
-> >> The warning also would help, for bring-up phase, so engineers would
-> >> notice it and address the racy hot-plug booting system when it's there=
-.
-> >
-> > Thanks Lukasz,
-> >
-> > I=E2=80=99ll add the 'cpu_active_mask' check and the warning in v3. As =
-the
-> > overall approach is unchanged, I=E2=80=99ll keep your reviewed-by.
-> > Please let me know if you=E2=80=99d rather have it removed.
->
-> That's fine, please continue.
+On 09/09/2026 15:21, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> The si476x driver was added in linux-3.9 without devicetree
+> support, and has always failed the probe function in the
+> absence of a si476x_platform_data definition.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-I have a couple of questions though.
+For drivers/media/radio, include/media/drv-intf/si476x.h,
+Documentation/admin-guide/media and include/uapi/linux/v4l2-controls.h:
 
-First, why is the ondemand governor mentioned in the changelog?  In
-the mainline, the ondemand governor cannot work with EAS, so it
-shouldn't matter for this issue, should it?
+Acked-by: Hans Verkuil <hverkuil+cisco@kernel.org>
 
-Second, why is the issue regarded as a defect in the code and not in
-the energy model?  Arguably, boost frequencies should be more costly
-than the non-boost ones.  At least the idea behind the boost is making
-higher-cost OPPs temporarily available.  If they are sustainable,
-treating them as boost OPPs is rather pointless.
+Regards,
 
-TBH, I'm too comfortable with looking at cpufreq frequency from within
-the EM code.  If that needs to be done, something is amiss at the
-design level.
+	Hans
+
+> ---
+>  .../admin-guide/media/radio-cardlist.rst      |    1 -
+>  Documentation/admin-guide/media/si476x.rst    |  160 --
+>  .../admin-guide/media/v4l-drivers.rst         |    1 -
+>  drivers/media/radio/Kconfig                   |   17 -
+>  drivers/media/radio/Makefile                  |    1 -
+>  drivers/media/radio/radio-si476x.c            | 1523 ----------------
+>  drivers/mfd/Kconfig                           |   13 -
+>  drivers/mfd/Makefile                          |    3 -
+>  drivers/mfd/si476x-cmd.c                      | 1543 -----------------
+>  drivers/mfd/si476x-i2c.c                      |  861 ---------
+>  drivers/mfd/si476x-prop.c                     |  233 ---
+>  include/linux/mfd/si476x-core.h               |  532 ------
+>  include/linux/mfd/si476x-platform.h           |  256 ---
+>  include/linux/mfd/si476x-reports.h            |  154 --
+>  include/media/drv-intf/si476x.h               |   28 -
+>  include/uapi/linux/v4l2-controls.h            |    4 +-
+>  sound/soc/codecs/Kconfig                      |    5 -
+>  sound/soc/codecs/Makefile                     |    2 -
+>  sound/soc/codecs/si476x.c                     |  263 ---
+>  sound/soc/fsl/fsl-asoc-card.c                 |    8 -
+>  20 files changed, 2 insertions(+), 5606 deletions(-)
+>  delete mode 100644 Documentation/admin-guide/media/si476x.rst
+>  delete mode 100644 drivers/media/radio/radio-si476x.c
+>  delete mode 100644 drivers/mfd/si476x-cmd.c
+>  delete mode 100644 drivers/mfd/si476x-i2c.c
+>  delete mode 100644 drivers/mfd/si476x-prop.c
+>  delete mode 100644 include/linux/mfd/si476x-core.h
+>  delete mode 100644 include/linux/mfd/si476x-platform.h
+>  delete mode 100644 include/linux/mfd/si476x-reports.h
+>  delete mode 100644 include/media/drv-intf/si476x.h
+>  delete mode 100644 sound/soc/codecs/si476x.c
+> 
