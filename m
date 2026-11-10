@@ -1,55 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.154.119.183
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794341818;
-	b=K2MUkif1PgmEZV2odiHX227hloNJz98Fwty6vnEKJVV6EW/KIg41WIt9Jw387zCMxNaV
-	 sx29jHrwTtOx8xFXY+xDJzlIGV0rfFrQwIyohFY1E+pFkdNaPoKE7HzOO9+idAXvqnqPc
-	 2qQ2AWO191l9kXb8Y4q24MX2T80Hc9KLreq0LkTLKma23aGykZBYZoyloydtNtL1ff3zv
-	 9BrSQpIDktjUvU1/+YVvPW2wCzo5Y8M6ZMPlnUtJ5ORancJssbH5bkILEUzGMZb0UwadL
-	 V3qRe+HglMHzIECiIjx2vlgGq4f0mkKV3zbnYs70sp9MJrCsT/IRtSgZ2KQPTvHIeww==
+	t=1794343755;
+	b=DU2qAF0G8BbEqoITnboQvZSZj5JB5/18L7VOr7wy7VHo/D7ixt1TgYAnWEHVRJ6V3Aqq
+	 gRyBsQKfjtj3SjOvQvMlwhghse1U4WrcgXyVNp7aJa5jw5i6gaaoo6Z74DHwBplJT4GLl
+	 bHlKziK2308bjn/0h8Nq/Elki0MSdonG0VKPsyzxGgdZgw76C4WNsfj2+nsqy49ebogDm
+	 VABVYldRgiTp2HC5fKPPqpqU24pzOSeV9zPWNesKIsz3sRsdWExPt9T1nrsiUphLaXxbr
+	 e5w0TLmkQB3OrMFuZh6AeT9IZAY8e2qeTD+U9IPKO3HKmkGpTZ5T8ea6UurZZfRLbrQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794341818;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=pYtPkUI7Dh1RNH2VeAVgBJNKX/twRK/Upm9OW0R/ajA=;
-	b=d/UvCUfVOzCIW4skiOmaJVM0tx9rvRauyBZU14EgbSuM6VfVpEZpZRto4DV86AJvGZ7B
-	 AqIWBmfiqJNFcAm1Rgv4s7gPMDJMAeqfKE9r3A4j085hXxpMukR1URqlDERw832h9OdNW
-	 K9h7sHjN+OMVd0K/f/VbkyxR/Kx+DKcG1L7iiKs4RkOP5zw7iPSOttucIpFJ93fMnkLmI
-	 TjZuMzwPs/ncjWW4OwtfzJZw3OP7ratZ3pC0qwpjWFpYlTOGXgE6hR1kZy3EbcvM3BwXX
-	 /UacvB4rGtogT6QFgGYhs+q6LFrNkgq/9TuDMyv9w//SZIDZ/RSdjSNpJUiUrxP1Blg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794343755;
+	h=DMARC-Filter:DKIM-Signature:Received:Date:From:To:Cc:Subject:
+	 Message-ID:Mail-Followup-To:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:User-Agent;
+	bh=Bf/AaZlKXJsIZfpfcnPrYCQ8TrA8wpK1qNvneo+qbhA=;
+	b=wvMcxkKj2SeVUqhoewku7ubUmoSi1xcjinl4RnMEep2r9HwmLB+qIOpvs4VVottk0QbH
+	 ecV8KlXugSlde4rpB0fm2NLl5zYyDMIZPrGZoN/pzFrZC37zzle1jUpxz0C/kCb5Vg9ho
+	 sTey5y1nbe0pDeQOiz9IbrxuJEYkcg9V0abat7a5FdoYbJYfJzjetfoUjsrx2GdC8Rgwf
+	 8pPWY24/726Sw6H+rEffTtk4xMiiRFdVJrxwkEOr0kHDVPe/JXVjT3YZ5NfYEUwt0j74W
+	 I6WqFrsFEzDTyCwsipZibXigwAzyDfYAooxvms8VyYyVllB2JjEVY87xrV6Ek6gfmPA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JPyEeTdp;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=aurel32.net;
+	spf=pass smtp.mailfrom=aurel32.net;
+	dkim=pass header.d=aurel32.net header.i=@aurel32.net header.a=rsa-sha256 header.s=202004.hall header.b=pmYBiPny;
+	arc=none smtp.remote-ip=195.154.119.183
+Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1CE6606A32D
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:16:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4130606A31C;
+	Tue, 10 Nov 2026 20:49:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C4130606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JPyEeTdp
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8DE041F008A4
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:16:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794341817;
-	bh=pYtPkUI7Dh1RNH2VeAVgBJNKX/twRK/Upm9OW0R/ajA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=JPyEeTdp5bt9iCZOQpam9VLMdEB5QqWAZ1YX9qFW1gsRHd3woufZ20K9R2MMKsx8+
-	 6T8Jg2A4VPFgpbKZzPEPnLl0BA9QI+F9aKVAfj3s0lxm+SojJD68ILjVolTFi/4xDu
-	 7zTxXY3E7Bpi9u4pSqi9R2mBqczOzC5XTsYNI5yiZhMIlmCB9qxsY9YgQDS7Gzzh+B
-	 c5+XKCjbOpurvf21WxizpL1yHvXjhWzISS4vB1HAqYGRMEN2S7nw61mbUHX4fcNLpl
-	 6/xBxICEk0LZrNDRwyrnuqyC9bj8acZ6uAi+320NKngjOB+lBHXjxSGUBPDe4LSOW1
-	 Y1oygoOxxkmYQ==
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5c102ad8420so1900265e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 12:16:57 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErEU9rhamP1en1iMJ7Aaw3SZePJVcV/YN+S3XDnTyst5b58KxYg+9DSMPlDNWLy7uYHtkMqcaoAgEQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+n+45Z0SHg+t9riV/4BFaMxFCEpulzR7JImUuENLONIOepLOY3
-	RgVyxexSEg/8EJe31OzDXHvYBwbCrLPi+X3TlvRntfGbx7Q6vANAAsLV2E7y8ToQjYXZX6olAOk
-	oQaFnkHc4Fp9EWsxbGDWtpQFKW53Di5A=
-X-Received: by 2002:a05:6512:b88:b0:5bf:b93e:89f0 with SMTP id
- 2adb3069b0e04-5c15d6539bcmr57933e87.62.1794341816005; Tue, 10 Nov 2026
- 12:16:56 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=aurel32.net header.i=@aurel32.net header.a=rsa-sha256 header.s=202004.hall header.b=pmYBiPny
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
+	; s=202004.hall; h=In-Reply-To:Content-Type:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Content-Transfer-Encoding:From:Reply-To:
+	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
+	bh=Bf/AaZlKXJsIZfpfcnPrYCQ8TrA8wpK1qNvneo+qbhA=; b=pmYBiPnySBBL4gRZjkA7D5oEG4
+	qsoLjT/oqrSpb2nB1K2BiwI7t+BYONzCkNvW/vYMaSImd9sOQHenUmUl4En53uLq8OhLPUfRFmWSK
+	ZiBhdv8Ihhfe4SUK1fnnM4aXnxQWIltfmsqdgMkzFVufirT+q6Tk6DYT6K4QIqZ1O35exzSFfq+dJ
+	iHhsnArmCOxOFTmplXA/boQc8H2a8T5+C4dTSCxPTcp7M8a7qYwfRnOT0wvIufmdXGVHTJI2lYsz/
+	xaqYynG2gonG3JUWoCGzcJDqmHWPHjYrzAV+HVzCG4Lxw9g/OSxqgl8/iKFqeguAmrwPlWUpyxeis
+	/Wvb8Oxw==;
+Received: from authenticated user
+	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <aurelien@aurel32.net>)
+	id 1xQsm8-00000006IgS-0eMv;
+	Tue, 10 Nov 2026 21:49:04 +0100
+Date: Tue, 10 Nov 2026 21:49:02 +0100
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Anand Moon <linux.amoon@gmail.com>
+Cc: Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Yixun Lan <dlan@kernel.org>,
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>,
+	"open list:RISC-V SPACEMIT SoC Support" <linux-riscv@lists.infradead.org>,
+	"open list:RISC-V SPACEMIT SoC Support" <spacemit@lists.linux.dev>,
+	Alex Elder <elder@riscstar.com>
+Subject: Re: [PATCH v1 1/2] i2c: spacemit: Avoid sleeping during bus reset in
+ atomic context
+Message-ID: <avODPs8yytWCMxn3@aurel32.net>
+Mail-Followup-To: Anand Moon <linux.amoon@gmail.com>,
+	Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Yixun Lan <dlan@kernel.org>,
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>,
+	"open list:RISC-V SPACEMIT SoC Support" <linux-riscv@lists.infradead.org>,
+	"open list:RISC-V SPACEMIT SoC Support" <spacemit@lists.linux.dev>,
+	Alex Elder <elder@riscstar.com>
+References: <20261110061429.2036-1-linux.amoon@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,92 +84,47 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261030083633.1699270-1-christian.loehle@arm.com> <20261030083633.1699270-2-christian.loehle@arm.com>
-In-Reply-To: <20261030083633.1699270-2-christian.loehle@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 10 Nov 2026 21:16:43 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0g7gZH=Eod5xXcP0adN1r=-eLqpKA-CpS+hYXjgndZFHg@mail.gmail.com>
-X-Gm-Features: AclHuK-c2tERy5hYqLMoSBtQDXi7bKgCvm_08vbDsnBplRnFCjtcI8dpHRK7M14
-Message-ID: <CAJZ5v0g7gZH=Eod5xXcP0adN1r=-eLqpKA-CpS+hYXjgndZFHg@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cpuidle: Skip miss accounting for timer broadcast fallbacks
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261110061429.2036-1-linux.amoon@gmail.com>
+User-Agent: Mutt/2.4.1 (2026-07-04)
 
-On Fri, Oct 30, 2026 at 9:36=E2=80=AFAM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> A failed tick_broadcast_enter() can force a shallower state than the
-> governor selected. Exclude successful broadcast fallbacks from above/belo=
-w
-> miss accounting while retaining their usage, residency and governor
-> feedback.
-
-Is this a theoretical problem, or can it be observed in practice?
-
-In either case, it would be good to add some information on that here.
-
-> Fixes: 04dab58a39d4 ("cpuidle: Add 'above' and 'below' idle state metrics=
-")
-> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+On 2026-11-10 11:44, Anand Moon wrote:
+> The spacemit_i2c_conditionally_reset_bus() function uses usleep_range()
+> to wait after triggering a bus reset request. However, this function can
+> be invoked during atomic I2C transfers (such as power-off or restart
+> handlers running in atomic notifier chains), where sleeping is illegal.
+> 
+> Replace the sleep operation with the driver's internal helper,
+> spacemit_i2c_delay(), which conditionally uses udelay() when running in
+> an atomic context, avoiding "scheduling while atomic" bugs.
+> 
+> Assisted-by: LLM
+> Cc: Troy Mitchell <troy.mitchell@linux.spacemit.com>
+> Cc: Alex Elder <elder@riscstar.com>
+> Signed-off-by: Anand Moon <linux.amoon@gmail.com>
 > ---
->  drivers/cpuidle/cpuidle.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 2d2f40a2cb81..faa29f58738e 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -222,6 +222,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device=
- *dev,
->
->         struct cpuidle_state *target_state =3D &drv->states[index];
->         bool broadcast =3D !!(target_state->flags & CPUIDLE_FLAG_TIMER_ST=
-OP);
-> +       bool broadcast_failed =3D false;
->         ktime_t time_start, time_end;
->
->         instrumentation_begin();
-> @@ -232,6 +233,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device=
- *dev,
->          * CPU as a broadcast timer, this call may fail if it is not avai=
-lable.
->          */
->         if (broadcast && tick_broadcast_enter()) {
-> +               broadcast_failed =3D true;
->                 index =3D find_deepest_state(drv, dev, target_state->exit=
-_latency_ns,
->                                            CPUIDLE_FLAG_TIMER_STOP, false=
-);
->
-> @@ -306,6 +308,13 @@ noinstr int cpuidle_enter_state(struct cpuidle_devic=
-e *dev,
->                 dev->states_usage[entered_state].time_ns +=3D diff;
->                 dev->states_usage[entered_state].usage++;
->
-> +               /*
-> +                * The broadcast constraint forced a shallower state, do =
-not
-> +                * account for it as a cpu_idle_miss.
-> +                */
-> +               if (broadcast_failed)
-> +                       goto out;
-> +
->                 if (diff < drv->states[entered_state].target_residency_ns=
-) {
->                         for (i =3D entered_state - 1; i >=3D 0; i--) {
->                                 if (dev->states_usage[i].disable)
-> @@ -338,6 +347,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device=
- *dev,
->                 dev->states_usage[index].rejected++;
->         }
->
-> +out:
->         instrumentation_end();
->
->         return entered_state;
-> --
-> 2.34.1
->
+>  drivers/i2c/busses/i2c-k1.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-k1.c b/drivers/i2c/busses/i2c-k1.c
+> index ff32876e24d3..f4b21d7efaaf 100644
+> --- a/drivers/i2c/busses/i2c-k1.c
+> +++ b/drivers/i2c/busses/i2c-k1.c
+> @@ -332,7 +332,7 @@ static void spacemit_i2c_conditionally_reset_bus(struct spacemit_i2c_dev *i2c)
+>  		writel(FIELD_PREP(SPACEMIT_RCR_FIELD_RST_CYC, 1),
+>  		       i2c->base + SPACEMIT_IRCR);
+>  		writel(SPACEMIT_CR_RSTREQ, i2c->base + SPACEMIT_ICR);
+> -		usleep_range(20, 30);
+> +		spacemit_i2c_delay(i2c, 20);
+>  	}
+>  
+>  	/* check sda again here */
+> 
+> base-commit: b3dfbde62cf1981c4638939c159dfd087b7a72e9
+
+Reviewed-by: Aurelien Jarno <aurelien@aurel32.net>
+
+-- 
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien@aurel32.net                     http://aurel32.net
