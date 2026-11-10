@@ -1,49 +1,73 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794319486;
-	b=WDiX/+riF7K+xGUSiS4j3QHNO7N5gz/rAHwiUkJ1CaC7xVjGkXmvWddptHRblK/2/XnZ
-	 wt7w8iCrHIGYohEwNbvRl0DuCt6o+Lkl8osAWUfvA9wI54NjDoX5pSoaEZs/NyczS+WnG
-	 yFBiHzcHu3xcMSm8dbggUY5qqVYejLwZqQo9oHVgpiUdHpAMQzlchkNcFqjQekQHkO4NH
-	 nanzhN++lOVuRQAfvaYhYBN+N3UhWOQ4EOIXz79p4cfdAhOd053mh67VK8e0cyG3Y/Yfa
-	 wn6Z4jEpCQebU8T5o88qx8mbUEsT4aY33hvPwucGJBxdMSb9Wouu891OLHoTUdRM/QQ==
+	t=1794320031;
+	b=ANFwL6i78D2hQqeB0/vlssvxi9drCeOjS/uAHKcAW1YAu6b1lqXS8wkf1yyA3KITCub2
+	 EwuSXATqD5jg2i4df68digu50r2ilJKWCkjswCJPQzoTl3JfNluYmY4K7cuZDzTxkHb6V
+	 gZ6rAZwPCPc5RUUvNme9LcqI3+6+z6VoAKpuv2JQCIl9Aiup58pVT5Q1HNB33CIfaQG9s
+	 e2nJfrNI+Z+KWrtj9brhTeLDwagYldpDO9pH2y1a2xkHjox+SxCKkt/zW+pAg9Psa8QMI
+	 drd19uPecFttZ1FMzzJasOSSdk6VkWbekVEUfEn/8B3s0AO3V1BV9oBSbZZip0HcYQA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794319486;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=i3BnkwwX1QpJuZSXpGnT1o2/p8maiFIvIlJFgd8ousU=;
-	b=0ZBwK/bditIvjGJ7OgSs502h/yV/xhtqNsULRZEEUpcAKUMmB0POXIxbFhJuexLA0oXx
-	 aaiLa0+Jf/wqIUT4CBr5lEiqDUXbXZ7TsJhYEifGaM8D5W7BXTltsDlURmGB7OTxBhzYn
-	 oyqoftahnQNpRCqlFuT7lnW+/NeKnNwGDfOVNEy+925GMIUQtmokw7odvnfSS2BJhRCQ8
-	 7HJIbCl7bGrIOjP9ngbsx8u8+8YCiHp8hKDWsPAcGwb09kUeiCaXjwRf85yuYj+Pas9VL
-	 UuMh9PEdIRq+brPP26FwQOfTDsSAaMLBRkbBqmHb/pNaQdMJyUskWO+p8lz8LeFUp1A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794320031;
+	h=Received:DKIM-Signature:Received:Received:X-ME-Sender:
+	 X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
+	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
+	 References:Subject:Content-Type:Content-Transfer-Encoding;
+	bh=SB3rUG673jXG4Vj+317Do25EeGkV2iNNqDl371D64rg=;
+	b=NodrQ1OaggSLNN2KpD7BeAV/mLc9B6x+RrljNrOSLjwd7cCLwvZbjq09WHLOX7vJtAdS
+	 WD9magrkHfanNSvaVOnFOVYUlwG7PoTQbyvV29h2O09YQBpjMQep6V6kA1excguAYwNJG
+	 2h3MaTlLZkAiNkwl5PUN/EodsVkt8wL98H8JjU1P5tV39OKPwcG6xixHmba1dmGTb/UCG
+	 qMq21kR7zCht9TQwLV5BQF7R+xlnkhEG+H4UewbqK+2tavczuJUDv1W1EWavnth+iHjRy
+	 yCI+17qo7x/T/Hf++zc3AU+lQzrYrHkTa/PoHHgV3LZzCNTYc6Y990w8+c4R8L3IKUw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b="dv/Ghu2h";
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 71CA0606A32A;
-	Tue, 10 Nov 2026 14:04:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 71CA0606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nyCTn4ml;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3774C606A326;
+	Tue, 10 Nov 2026 14:13:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dv/Ghu2h
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B314F143D;
-	Tue, 10 Nov 2026 06:04:41 -0800 (PST)
-Received: from [10.57.10.132] (unknown [10.57.10.132])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A51853F632;
-	Tue, 10 Nov 2026 06:04:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794319484; bh=BlHcBR7XX57WikFwdYmvtykbeUsCkBngls9+R/yKh6Q=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=dv/Ghu2hcXhyZsdzum0Qj+KYMSpRnrdxXFCaVwePrPvToPowei/9jMA30yVCil2dK
-	 49YFj+/dj03TnWCuz3fzCHb54refDhICi9kVBS42rqgHZdXMjO3Vmh92IDnY4sG6/s
-	 sg7dxeAcKd5AvJ2pG41DCd3as0OkbuWM47N62woc=
-Message-ID: <bb99aa3f-fd15-4bdd-9319-ccedffc281c8@arm.com>
-Date: Tue, 10 Nov 2026 14:05:16 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nyCTn4ml
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 033771F008A2;
+	Tue, 10 Nov 2026 14:13:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794320029;
+	bh=SB3rUG673jXG4Vj+317Do25EeGkV2iNNqDl371D64rg=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject;
+	b=nyCTn4mlDw2PL51UfwmKIVIR2VFQEGi8AVTF/ook9asBzX0oaJQd1oDDAzXlLewlt
+	 1UsE1sA+senk11xfl3Hkg6gN0jVuyjmjZNAvgtG4URg9hpynND62rUGPRuKIhsi3NE
+	 BV8pKUClskR6WmFnFcsnhnNMc01Q8gOp0WGB30dbP1k+N/2eyi7cJt8ZzhtZe81S+x
+	 NKJcyw7EcObq8oOZ4LZVyeOhVHmVDvMVGvN9xXxwee+BpjKs/KnlwaP+zrgnSCyHd7
+	 QdBiSVvTkJGmWLQ6zinlbq/6yC+WL0FivwKGR7KHu1bDUwXLd1v9a1fScpypjmcOw2
+	 aP2nX/hijI8JQ==
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailfauth.ams.internal (Postfix) with ESMTP id 306B1198004A;
+	Tue, 10 Nov 2026 09:13:47 -0500 (EST)
+Received: from ams-imap-11 ([10.64.2.31])
+  by ams-compute-02.internal (MEProxy); Tue, 10 Nov 2026 09:13:47 -0500
+X-ME-Sender: <xms:mSbzam2woU5rDYxWYavOJtFUK9VBlTwbeek47UTOTxZX5ywuzvMmAg>
+    <xme:mSbzaj7gZMWeemxYpwx2mN2DZt1vdcF12Rp37yL4Fh1xB6kAKG9J4LWJ0uuJTfciR
+    ujferwl5zVe-_zOihT_lnCyGwfcznqnfTT9cb0id6KXEXghD4I_iCDK>
+X-ME-Proxy-Cause: dmFkZTETUIPcQO+7r1jL3zHMc2zDWEsdIsz6OTVQLHFZerN0uJ3l2e5Sf+iZDRrdvNjpzm
+    I80n0eWH3kmUk8O9X0qxOLwRZhGRkBBvUNR2Pvvms3GdHNlbJJzR0vp+56Cy6ZAtxdnlTu
+    4CZsjQ+VKjrPwcNwst8DaS8TwAVaGX+GoVu6plGGvacKAn9LYAVjQSP8A9WbCvyE61u3uw
+    TqOCoZHqEFTdAfo5Cpp3yHEO51r06MmJmBXWFJz9ABWbH66CB4tG/NEmcnzCc8yyTV4+tW
+    TWQT1tSOA88ldeeV3MaOW/A51Idztc92b0ENlGZ+7zoW1mWQFQqTVs1XlmgxPiFp0i0mjQ
+    1x+yR1Jdnw2lGVIKqS83fH06rCfwFJQKq4w1rlxmzxiBEiNydusjoeTXphm84IRPo6bjDl
+    HCY8CNccOU+zx0ZBvQRqGAxC/Ycs5t3BnEDKxo4GkQf2MH6L8/4nDSYotLlthCuD5/f/7b
+    yZzG5RFEzA4fWh1oudtCiRrt3VN5dmcP3wIgK+sxj+oTkQU2Sgi7QVjVJfyjdDJFp+2uqE
+    A4hebxIpA14b/2ETciLLep+9m8M35YW+8tABaMVKhnB60nyHq7kEZQRcHZsOf3htRP4all
+    yxj1+IOvMJJnSy8lJPrxLuTRf3uOVoiLUaRd0HbD2ZNAeWihwvMr1K+enKUg
+X-ME-Proxy: <xmx:mybzaubmxWfkXpLyE0qaUx6HGiakMeDaKMTY-sly8K_vz7ICaBD1Cg>
+    <xmx:mybzai8xbH__dNGk47XBYIUPYjKlZ2-XcVEGhGPBRkICddVfd6FmRQ>
+    <xmx:mybzaoPBH9XKlsKpDmJd2ubK3hv34pKFnHjbeMrY_-IaYwg-VRgS1w>
+    <xmx:mybzanHoI3BNp4eOvH3haO1S4YJEK6Gi8GkFm7RqxFYD-d81MzIQ3w>
+    <xmx:mybzauyL5BF6Y0gWfV_nyGtImYNTxRnPcWP2yJFKktlTLn4pvhpBPKtt>
+Feedback-ID: ice86485a:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id 5601DF80096; Tue, 10 Nov 2026 09:13:45 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,118 +77,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency
- ranking
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- Guo Chen <guo.chen@oss.qualcomm.com>,
- Vincent Donnefort <vincent.donnefort@arm.com>,
- Matthias Kaehlcke <mka@chromium.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com,
- tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com
-References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
- <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
- <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
- <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
- <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com>
- <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
- <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com>
- <4f0c8581-a8fb-4bc4-82cc-d30f2f56d2ce@arm.com>
- <CAJZ5v0iX8wYDUo9uUjkqkKq1tpLAu7iaZk+iQzWGigNAqfrsNg@mail.gmail.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <CAJZ5v0iX8wYDUo9uUjkqkKq1tpLAu7iaZk+iQzWGigNAqfrsNg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-ThreadId: AawJh95GV0ns
+Date: Tue, 10 Nov 2026 15:13:25 +0100
+From: "Ard Biesheuvel" <ardb@kernel.org>
+To: yoxcu <mick@yoxcu.de>, "Georgi Djakov" <djakov@kernel.org>
+Cc: "Rob Herring" <robh@kernel.org>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>,
+ "Bjorn Andersson" <andersson@kernel.org>,
+ "Konrad Dybcio" <konradybcio@kernel.org>, linux-arm-msm@vger.kernel.org,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Message-Id: <959a716b-c055-4fb5-8b37-04bcb2c382d5@app.fastmail.com>
+In-Reply-To: <20261013202611.3070778-3-mick@yoxcu.de>
+References: <20261013202611.3070778-1-mick@yoxcu.de>
+ <20261013202611.3070778-3-mick@yoxcu.de>
+Subject: Re: [PATCH RFC 2/2] interconnect: qcom: sdm845: Own the ALC BCM to drop its
+ boot vote
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
 
+On Tue, 13 Oct 2026, at 22:26, yoxcu wrote:
+> From: Michael Auer <mick@yoxcu.de>
+>
+> On the OnePlus 6 the bootloader leaves a vote on the ALC BCM
+> (rpmh_read() on the APPS DRV returns 0x2000000f). No driver owns this
+> BCM, so the vote is never removed and the SoC never reaches AOSS sleep
+> or CX collapse (qcom_stats aosd and cxsd stay at 0).
+>
+> Add a node without consumers for the ALC BCM on mem_noc. The provider
+> then owns the BCM and drops the vote at sync_state.
+>
+> With this change ALC reads 0 after boot and suspend reaches CX
+> collapse. The average current in an idle push standby test (Wi-Fi on)
+> was 35.6 mA, against 43.7 mA with the ALC vote kept in the sleep set.
+>
+> Assisted-by: LLM
+> Signed-off-by: Michael Auer <mick@yoxcu.de>
+> ---
+>  drivers/interconnect/qcom/sdm845.c | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>
 
-On 11/10/26 13:43, Rafael J. Wysocki (Intel) wrote:
-> On Tue, Nov 10, 2026 at 2:11 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
->>
->> Hi Rafael,
->>
->> On 11/10/26 12:15, Rafael J. Wysocki (Intel) wrote:
->>> On Tue, Nov 10, 2026 at 10:58 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
->>
->> [snip]
->>
->>
->>>>
->>>> That's fine, please continue.
->>>
->>> I have a couple of questions though.
->>>
->>> First, why is the ondemand governor mentioned in the changelog?  In
->>> the mainline, the ondemand governor cannot work with EAS, so it
->>> shouldn't matter for this issue, should it?
->>
->> The ondemand is affected by the EM setup code and set 'inefficient'
->> flags for some OPPs. The EM is also present for cooling devices
->> and can work w/o EAS and schedutil, w/ just ondemand governor.
->>
->> Because EM marks the OPPs kind of 'globally' as inefficient, then
->> they become CPUFREQ_INEFFICIENT_FREQ entries in the CPUfreq fwk.
->> In the EM code we have:
->> cpufreq_table_set_inefficient(policy, table[i].frequency);
-> 
-> So maybe this is the one that needs to be fixed?  What about simply
-> skipping boost frequencies in it?
-> 
->> Then ondemand check for CPUFREQ_RELATION_HE will skip them and
->> pass to __cpufreq_driver_target() with that flags as well.
-> 
-> Thanks for explaining and all of that needs to be said in the patch changelog.
-> 
->>>
->>> Second, why is the issue regarded as a defect in the code and not in
->>> the energy model?  Arguably, boost frequencies should be more costly
->>> than the non-boost ones.  At least the idea behind the boost is making
->>> higher-cost OPPs temporarily available.  If they are sustainable,
->>> treating them as boost OPPs is rather pointless.
->>
->> IMHO it was a bug in the commit mentioned in this patch fix tag.
->> It is affecting more than just EAS or EM, since the EM is working with
->> all generic code and all cpufreq governors.
-> 
-> To be precise, the EM initialization may affect cpufreq in general
-> because inefficient frequencies are used for CPU cooling.  Fair
-> enough, but I'm not talking about this.
-> 
-> I'm talking about a reason for giving boost frequencies lower or equal
-> cost relative to non-boost frequencies in the energy model because
-> this doesn't make sense to me TBH.
-> 
-> And I get that such energy models were there before the commit in
-> question and now they are not working properly, but IMO they are
-> broken, not that commit.
-> 
->>>
->>> TBH, I'm too comfortable with looking at cpufreq frequency from within
->>> the EM code.  If that needs to be done, something is amiss at the
->>> design level.
->>
->> I think this edge case is special, as I described above.
->>
->> I'm happy to hear your view on this EM influence to some global
->> setting in cpufreq. Maybe it was too far to establish this
->> 'inefficiency' flags in there for many usage?
-> 
-> There's nothing wrong with using the information from the energy
-> model, when available, to amend cpufreq, but the patch goes the other
-> way around: It tries to amend the energy model with information taken
-> from cpufreq (in order to avoid making mistakes later when amending
-> cpufreq with the energy model information).
-> 
-> I think that cpufreq should simply refuse to set
-> CPUFREQ_INEFFICIENT_FREQ for boost frequencies.  Wouldn't that work?
+Tested-by: Ard Biesheuvel <ardb@kernel.org> # Lenovo C630 Yoga
 
-I see your point now, about the direction. Yes, you're right.
-
-Since we are taking the information about 'boost' from the
-cpufreq, then refusing to set OPPs inefficient in the first
-place makes more sense.
-
-
+With this change (and a few others), my Yoga now suspends properly,
+to the point where it shows the pulsating LED in the power button.
+Battery seems much happier too.
