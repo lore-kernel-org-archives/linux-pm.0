@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794340882;
-	b=NZtrLCA9utkDlK+0AKN7ZpRlYXPdu7VmnIx2cSgw5a2T30HVXmuZLI8RNhYiY5XCO5jY
-	 Dcd9qbM4k1xe7nRlXbxKiDn1jkcd3l9uniHxoBb+tDnstFr9UdGzpw2XN1XiIE0zX199G
-	 RVkRAggcgucyzeTUVhxq1DM+1PVPYoGYBHHlcS0wuLtBF1WgD3No3nG0qvNT/0ifXqYnu
-	 nolxtX5dKisEE7HqB9+9P04GJG6UEpFla3jfhszsKkwalbYr8sR0Owla1yPvSjnVQBVwT
-	 SfyBUSoKRPK/EfCWP89lynWT3dw7Szra5EeE/CCOLe/FDa0YXGL5gVO0W7gqUjdyduw==
+	t=1794341296;
+	b=n0+9XSjXGAN4M99jfxBdAYu+KgwJnHbhyySUoL4GIqNh3wjSwWvK2lsjlKC6qV7/XciC
+	 OhVn5zbAn5ToFzduqMgPsHKaDptCgiz+EQWue6OhUXZAXr83loNkAD6mEah6TXkUXJRsn
+	 dAzKwbxVdvsK/P29hyN8pzJk//BJLjV9kjNTtqMyidXEOwm4AT0ZtF5LNwC65MMEtecwk
+	 vaCF8C7LVw2lE8SLdYTaaQdEhRqE71hRTY7dagDeZwKyooyM4SrJOV29zA4t154Fc+1lY
+	 hkhujO6QL2Nnja8Lo+1VVbeMcK1rRKnfBfYgVO0dzWUkGrasvrSzaVRNcW4CZiZo6eg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794340882;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794341296;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=D9z0hUJMabcU8YBNpOYZdchyxPfKbVjxxRlkMtSmlg0=;
-	b=cDckygsv3R5dXDnR69ExmjfIhWSTJHFCV/RxwPJ+ocePh46hqtAnAmZOTykXrdQUAG8E
-	 md3Yc8ayrSLX1+OaEee9Thlg5G3MLd4C5NCOUJxOJ+E7RkvAmz0x9vNtTS+3XcfVWqrjD
-	 FDw5fJyLzVauos7gJzcnEO+3HkEI0F2UZ2cj/T6qcOkAW4x0NnEBVE7eLgiIi9jHlK+DA
-	 5jGGpJ30/wM4Wy32TTb42IdsdOFIEftt8TRdAMAms1ZSJmsJroZhOrCmipCHxacMNIdia
-	 yvMAPDjez1OQ7KNTnGyA3vyy+uFsp9GrkqOLe3AfNKBZUoFEKER3+/BUhxG3HUYDUMA==
+	bh=aZHkO6bQKS08fSFgnDFG2tKeYq7/D8f27wfiKMAH7bU=;
+	b=KwnsOmjO88O6t8XIaI8Tf3brHAqYIIkSMq0b2ONlZHBgWYTra+2rn9P+rZq8k8yYrExh
+	 j6FDJmTcMB7VQDK7fvWHzCs5mKRsq0igSzobKsqHj10Dsa4ayaNvdhYxyotOphAmLjXAH
+	 iPRaAhAt8Gv9DoqZvIVzUIfJQmKaxCSDj8Jpbp2VpGAYedEzSTb+XTzMTTZlve/NlYELc
+	 6R/acSV1StRdLG73jNZsMjW2/dhdhUmn+MOqMbQM2i3+CRfoAUIRE5z1i9QaeFuIXQtGH
+	 J4oqIZsyZHQcl9tbXsHCnCMrmM+mYmtxFnKVSJVVlbcMXwTf28UrbyjmdgUEWyZ33tg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OzKn+XqP;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QtAi854F;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D59CC606A320
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:01:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0387606A321
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:08:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OzKn+XqP
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78C691F008A5
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:01:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QtAi854F
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A0241F008A2
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:08:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794340881;
-	bh=D9z0hUJMabcU8YBNpOYZdchyxPfKbVjxxRlkMtSmlg0=;
+	s=k20260515; t=1794341295;
+	bh=aZHkO6bQKS08fSFgnDFG2tKeYq7/D8f27wfiKMAH7bU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=OzKn+XqPRV92FvSgh7X5useqpv/drr9LaxR30eVR951fjBgEdDLvJAWk9ugstA2WC
-	 O72uRQE43XNW9wtsRHxjR6Z4pIM3WAKJxF1z7ZnCQMd1GO6HP1oyUZCdeuj4j3Ua/I
-	 7iKC+jfrEUQWD2vY4wuLZJ7UzIe/alwNvE/NreUEQoGN8oX3zplJl2dJQRfE69zv9e
-	 n0DYdZYrMHbPTIwTCdqkik3bFHpt4Qs64Klj/Yc+UjBHbtdmMtmnm9ByyGUkLqRrwG
-	 rTx8D7M6KrF4j0M2r0BoZpDb4FW86GRhWOw8LbrzV6Hb+X7ZRxN6n1XhVW8OSFyGlJ
-	 EASdQyix8Uz6g==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5bfa65c8617so1447016e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 12:01:21 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErERfQ/zioeGHMN/N3iz2rgnTQDyQRaU5MrLBBVaqMOCZb5soKZFV3x6GxkR2mcSCdYhSdKtuq3P5g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+IH3wcBe3G2J2LRsNWxZe6ATeghIptkFtg1owyNSqOL/UqfatO
-	tSrkoHc9usw9saRbmJBrO/pFHLl5vcdXCCyWQnKFs+P80Jwn3FcsgmGLBal8QNHqfoNvb+bjuUW
-	gt6h56kjUS/F8H0SI9SbLmvxw1kQDXF0=
-X-Received: by 2002:ac2:5686:0:b0:5bf:b994:5f91 with SMTP id
- 2adb3069b0e04-5c15d643ba1mr49174e87.15.1794340879856; Tue, 10 Nov 2026
- 12:01:19 -0800 (PST)
+	b=QtAi854F3laJGtshXjSl+ghMmjgdlvCeQILg+iErmB1QHd8olXUIpvP0uickvlvBn
+	 iKDi8ttQSIELEYSrsKv7xrgzLdoEifyDrjud8AZhtdcDJJob45fT38fj4OLHz6hG4a
+	 FVp41Ux+VG2+l9qKEZdt7ayGCNsT4gJKfXcvlNZpqiClS6PfTNaqEaT4g+eA6/yNL/
+	 g/FVZgAYZlzV+uLTkLu+nbm4ccWs/Wefeej5daavYNEGj7mjjpWqAI1mVubThEGEYe
+	 5Pjmo/4WAdlJskWdhSnPO+nxwOvPwDC9isXwMQwn/4TfwQWgwBzDta3ZqOmZexXhva
+	 yjDKqchlk3kYQ==
+Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-3acf82fdcdbso23829921fa.0
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 12:08:15 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErHgxiod0kjolD8JrHyX7WZSOxb08GxaUZXFUgw2OIFBOYTk+xko1mq/kdjArlRxKzX7jJ3tOOL1og==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+s1fVg249qb6m6lZ4Jz+Lv5yy5Yi6zGwM9IKfH2kvinlrEwRqM
+	1mgaU6zekn+hQvvDnmblzvMPrhY6GhxNTYAr9amenhxDtkeeCzna0WSO7dS2nC+7vmyamJYPrgP
+	MayYr+oddj5VRnonlvL6L8TyNuLjuPKE=
+X-Received: by 2002:a2e:be21:0:b0:3a9:d70c:f75e with SMTP id
+ 38308e7fff4ca-3ae096315e6mr7823711fa.7.1794341294060; Tue, 10 Nov 2026
+ 12:08:14 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,74 +59,146 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261106184008.1728-1-lirongqing@baidu.com>
-In-Reply-To: <20261106184008.1728-1-lirongqing@baidu.com>
+References: <20261030104213.2030283-1-xiongyining1480@phytium.com.cn> <a6840be7-bd50-4e64-af1b-0ab9334d8ec7@oss.qualcomm.com>
+In-Reply-To: <a6840be7-bd50-4e64-af1b-0ab9334d8ec7@oss.qualcomm.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 10 Nov 2026 21:01:07 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gHXCKvvHPXevx4U5WSVsS91Z3WuiMCwiYSQzQBEB5jNw@mail.gmail.com>
-X-Gm-Features: AclHuK8yAa0We67mGYcCmtxqAz4cYCS5W1KgeKUgqW5tPPUQLUeK9Og0fALrKm4
-Message-ID: <CAJZ5v0gHXCKvvHPXevx4U5WSVsS91Z3WuiMCwiYSQzQBEB5jNw@mail.gmail.com>
-Subject: Re: [PATCH v5 0/2] cpufreq: acpi-cpufreq: fix P-state index mismatch
- between perf->states[] and freq_table[]
-To: lirongqing <lirongqing@baidu.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Date: Tue, 10 Nov 2026 21:08:00 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jWW6Dg5fgMnj1R4eBOtKmGZYmj-5qTBzjtYQ7q9e4=ZQ@mail.gmail.com>
+X-Gm-Features: AclHuK_x7n05SR8j9DhdHMfZxJ7deHY9ClNLJVZNgAl_LZFa8GIt_2FxgsIBC-E
+Message-ID: <CAJZ5v0jWW6Dg5fgMnj1R4eBOtKmGZYmj-5qTBzjtYQ7q9e4=ZQ@mail.gmail.com>
+Subject: Re: [PATCH v3] selftests: cpufreq: stop CPU hotplug loop after
+ cpufreq update test
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
+	xiong yining <xiongyining1480@phytium.com.cn>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shuah Khan <shuah@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	chenbaozi@phytium.com.cn
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 6, 2026 at 7:40=E2=80=AFPM lirongqing <lirongqing@baidu.com> wr=
-ote:
+On Fri, Oct 30, 2026 at 4:12=E2=80=AFPM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
 >
-> From: Li RongQing <lirongqing@baidu.com>
+> On 10/30/2026 6:42 PM, xiong yining wrote:
+> > Original test uses a fixed 5000 iteration loop to trigger CPU hotplug
+> > for verifying cpufreq synchronization between CPU hotplug and sysfs
+> > writes.
+> >
+> > Two issues exist:
+> > 1. Background hotplug task keeps running after test completes, causing
+> > redundant CPU on/offline operations.
+> > 2. When cpufreq frequency setup is slow, the hotplug loop may exit
+> > before frequency updates finish, which breaks test purpose.
+> >
+> > Use signal notification to terminate the infinite hotplug loop, and
+> > add an EXIT trap to clean up the hotplug child when this test function
+> > terminates abnormally.
+> >
+> > This makes hotplug run only during cpufreq sysfs write test,
+> > align with test objective.
+> >
+> > Signed-off-by: xiong yining <xiongyining1480@phytium.com.cn>
 >
-> policy->freq_table is built by filtering out _PSS entries that are not
-> lower in frequency than the previous one, and the original ACPI P-state
-> index of each remaining entry is kept in freq_table[].driver_data.  The
-> index spaces of perf->states[] and freq_table[] therefore differ, and
-> mixing them up leads to the frequency of one P-state being attributed to
-> another.
->
-> Patch 1/2 is unchanged from v4 and fixes the cached frequency used by
-> get_cur_freq_on_cpu() to detect a firmware frequency change behind the
-> OS's back.
->
-> Patch 2/2 is new in v5.  As Rafael pointed out, Sashiko observed that
-> the extract_msr() fallback interferes with 1/2 and can render it
-> ineffective: when the status read from the hardware matches no
-> freq_table entry, extract_msr() returns freq_table[0].frequency instead
-> of reporting the status as unknown.  If the OS is already at the P-state
-> corresponding to freq_table[0], a firmware switch to a filtered-out
-> P-state then compares equal to the cached frequency, data->resume is
-> left clear and the next ->target() call does not rewrite the control
-> register.  So 1/2 alone does not make the detection work in that case,
-> and the two patches are posted together rather than separately as I had
-> suggested earlier.
->
-> v4: https://lkml.iu.edu/2609.1/07369.html
->
-> Changes since v4:
->  - Drop "cpufreq: acpi-cpufreq: fix P-state index mismatch in
->    extract_io()", which has been applied.  This series is based on top
->    of it.
->  - Add 2/2 to stop extract_msr() from masking firmware P-state changes,
->    as reported by Sashiko, and note the dependency in 1/2's changelog.
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
-So Sashiko has feedback on this one now:
+Applied as 7.5 material, thanks!
 
-https://sashiko.dev/#/message/20261106184008.1728-2-lirongqing%40baidu.com
-
->  - 1/2: no functional change; changelog extended to say that it fixes
->    only the cached side of the comparison, and a duplicate
->    Signed-off-by was removed.
+> > ---
+> > Changes in v3:
+> > - Start the hotplug child after governor switch and sysfs frequency rea=
+ds,
+> > to avoid -EBUSY errors when the target CPU is offline.
+> >
+> > Changes in v2:
+> > - Stop the hotplug child process by signal notification instead of
+> > a stop file, avoiding the predictable temporary path.
+> > - Add an exit trap so the hotplug child is also cleaned up when the
+> > main shell terminates abnormally.
+> > - Link to v1:
+> > https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2662696.ht=
+ml
+> >
+> > This addresses the security and robustness concerns raised by Sashiko.
+> > ---
+> >   .../selftests/cpufreq/special-tests.sh        | 30 +++++++++++++++---=
+-
+> >   1 file changed, 24 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/t=
+esting/selftests/cpufreq/special-tests.sh
+> > index e87ed7c8e5e5..0665da8f2444 100755
+> > --- a/tools/testing/selftests/cpufreq/special-tests.sh
+> > +++ b/tools/testing/selftests/cpufreq/special-tests.sh
+> > @@ -16,6 +16,8 @@ source cpu.sh
+> >   source cpufreq.sh
+> >   source governor.sh
+> >
+> > +HOTPLUG_PID=3D""
+> > +
+> >   # Test 1
+> >   # $1: policy
+> >   __simple_lockdep()
+> > @@ -92,6 +94,16 @@ governor_race()
+> >       restore_all_governors
+> >   }
+> >
+> > +hotplug_cleanup()
+> > +{
+> > +     if [[ -n "$HOTPLUG_PID" ]]; then
+> > +             kill -s SIGTERM "$HOTPLUG_PID"
+> > +             wait "$HOTPLUG_PID"
+> > +
+> > +             HOTPLUG_PID=3D""
+> > +     fi
+> > +}
+> > +
+> >   # Test 4
+> >   # $1: cpu
+> >   hotplug_with_updates_cpu()
+> > @@ -101,14 +113,18 @@ hotplug_with_updates_cpu()
+> >       # switch to ondemand
+> >       __switch_governor_for_cpu $1 "ondemand"
+> >
+> > -     for i in `seq 1 5000`
+> > -     do
+> > -             reboot_cpu $1
+> > -     done &
+> > -
+> >       local freqs=3D$(cat $filepath/scaling_available_frequencies)
+> >       local oldfreq=3D$(cat $filepath/scaling_min_freq)
+> >
+> > +     (
+> > +             local quit=3D0
+> > +             trap 'quit=3D1' SIGTERM
+> > +             while [ "$quit" -eq 0 ]; do
+> > +                     reboot_cpu "$1"
+> > +             done
+> > +     ) &
+> > +     HOTPLUG_PID=3D$!
+> > +
+> >       for j in `seq 1 5000`
+> >       do
+> >               # Set all frequencies one-by-one
+> > @@ -117,14 +133,16 @@ hotplug_with_updates_cpu()
+> >               done
+> >       done
+> >
+> > +     hotplug_cleanup
+> > +
+> >       # restore old freq
+> >       echo $oldfreq > $filepath/scaling_min_freq
+> >   }
+> >
+> >   hotplug_with_updates()
+> >   {
+> > +     trap 'hotplug_cleanup' EXIT
+> >       save_all_governors
+> >       for_each_non_boot_cpu hotplug_with_updates_cpu
+> > -     wait
+> >       restore_all_governors
+> >   }
 >
-> Li RongQing (2):
->   cpufreq: acpi-cpufreq: fix P-state index mismatch in
->     get_cur_freq_on_cpu()
->   cpufreq: acpi-cpufreq: don't mask firmware P-state changes
->
->  drivers/cpufreq/acpi-cpufreq.c | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
 >
 > --
-> 2.9.4
->
+> Thx and BRs,
+> Zhongqiu Han
