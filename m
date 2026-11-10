@@ -1,49 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794349990;
-	b=yyp0Hf9dVSxLZA1hw20882aTOA/rIrExj1gwkqFmNG76RO6jQyj2byIRnyAenEPu3oQI
-	 G/ZAiZqddczjx166PChdCv0LvohOX5aOBzWzE1loFD1snpDx76TUDkpDDrWXB0bljV86V
-	 IwZ9bgDcrYpa2Rb1Mhi0eJ17oS0QoCJLsT3Nc3hcZlVePQ/fvZn+OfgmiA0SG/6EXIFGe
-	 YzX6ulH8sDssMv0XR15ElQcBrGqZ3btIujPeZC1RY8zNOTydf5yFNd5ebqkM7rj0lLa2z
-	 JfM5rld+IaBl+CR/htrBVJAzByzCtoUvStb833nhp+arEZV11ja11fgsBan8WaZnc4Q==
+	t=1794352595;
+	b=MdwWV5SXeeDcGH/u4OCoJ1rigFd1r7xkziMwVH4aZb1jEq/KT2vHImyWP+LL0OvZwVXM
+	 QyYiXqkB+IMuaKPf3mYWrarh811y5u+ZxirTJqMu+XB/SHqXLvYEbAQSLM4qlfEAO4t5b
+	 /8nsqqITe7fih/u1WdD5dFG25VPZsZtFeGH3tPeCbRgeCmYC2HACS2d5Rl1M04/1QjzyP
+	 6Ne+E/aqFvdeMXcrfzqkGRvdjyeCqb6iatuBvM4XWlKFJ5IDgP7Gklu7reoENGdPVRr8b
+	 g+pBwzPG1HTCW6cfAWurLSXQh1lNnFNT/AFPYzhI4Zkar0HhHFuLodP1Tqd81Y7Fvqw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794349990;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=3FW5diCNs3k06MVtdXteUz+yE0Gf9dxem9tHiJxG8HU=;
-	b=YueS4NqnaDeGK1sA5gE6hlkY8WPTwBNU6FFTjFEKhkiKmnddxlj1E5ViMPb8gNQ1AXgt
-	 BfW/rSzY783SG8rOvsBPVMt419osVu10FdTYJjxPMw3emkdbKudW/CM0dpQUWvKI7Qknu
-	 YR64eDbduONhBfQbzjHLa7Ew82wl52wq0ElaX5ic7XsUGkARCkF43D5ttjX2jgn5Ql7QS
-	 /5tAZMez6ywk+xFFoZCB3fD9G2tDmzJ77nWgIcEDG85AyobbT1IpeLSb1tYYoMKkL2o1q
-	 ISYNKi3Tv7h/PdjULOJ2Akhc7dQvxevQiIqk/4Uq6ILE4BHxMVadjbO0hQSEwNN4dWA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794352595;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:X-Developer-Signature:X-Developer-Key:
+	 Content-Transfer-Encoding;
+	bh=6nTsZ/RgXNuXFvUEOOod+VrfRUKjmcSNKfCi4mcdtew=;
+	b=JSvpbhlm6DVU3iTsMolEMsVBRPNjj+eXdJL4kJYUdvVx6W0qGdkx0vXvdq6l4AzzKYSt
+	 LIryIY2iOuu/On8jX6aAjQ3JkccLW4bU+96s0DahUFSgn5Ek6bkMSmSijqNYcYizmiTfE
+	 UceQEO+5CfRsg/3zXueam8UX1y/hM3NQ4xj8eUoJ+1Gb+iWm12GmcxOZ99f+hTdfzB0dK
+	 Wf5HCFZbMVUsAE4tDw/8LeviOQ7CZLxN+/G8obm8cqX3aRQp/lzBwCiXiSCNcUl0Hjf5k
+	 eYblmq6ekrvoYvsNT43qqwuPpoaUJw9fb1hBJ3lu7zAISMBxAG2yJzBqMt78ZF+fo2Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b="auH9Gj/1";
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 57716606A320;
-	Tue, 10 Nov 2026 22:33:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 57716606A320
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AD0+5cJ9;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5D2A606A31C;
+	Tue, 10 Nov 2026 23:16:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=auH9Gj/1
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2BBD41477;
-	Tue, 10 Nov 2026 14:33:06 -0800 (PST)
-Received: from [10.57.15.53] (unknown [10.57.15.53])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 737653F85F;
-	Tue, 10 Nov 2026 14:33:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794349989; bh=/s5ep/M3Ae57ab7uvm+FMMfWrp1SR7obtdv62rAoWE4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=auH9Gj/16YGZKmARwNrs44bJrVUuA9N1jwWMHJiMpRVeWPo0+vA52am9//HxLtas0
-	 axTSU6PPQeMiXAI5fiL/JMSuh9NlOzWNH+LZy9y8EMWmBhVwhoubJPMBhyaQuUMcvZ
-	 2RSjimOYChaQss5vJOfAoNV8FlaC1CBECAGpNLY4=
-Message-ID: <f50285a8-61b6-4173-8f91-6259d3e595e8@arm.com>
-Date: Tue, 10 Nov 2026 22:33:06 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AD0+5cJ9
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 279C21F0093C;
+	Tue, 10 Nov 2026 23:16:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794352595;
+	bh=6nTsZ/RgXNuXFvUEOOod+VrfRUKjmcSNKfCi4mcdtew=;
+	h=From:To:Cc:Subject:Date;
+	b=AD0+5cJ9U8heCaFLs2Es9NkLfx4HqcOuXJkT1M3r8+4nKh2OURint6h+q3uNC8Qff
+	 wuBZubxaCng9wbhXozeNsp8EJkpHEbAfPPkVXnht0EZExN3JLE8hvCnRHK5uDhRs69
+	 qjtm2rfFgOHFErby0I/HKC45MSlaTrCZun1JS/zgqKlFKLC96ciNt7bO9RMIUuMvDb
+	 kdV+nVtEoM/g6WbOHeHA2Txc+vuQEbYnVb3B4GUCdDB6McXLvk0vfngu7pK0q5DMc0
+	 xpuu5WBcv4gD8MlYq0C9sBSVFUuqSc/6xh0tEphKjWNCLxdB8gZSIGsdVWQTxLPlR8
+	 nB61MKSTwocTg==
+From: Thorsten Blum <blum@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Yury Norov <ynorov@nvidia.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal: intel: powerclamp: Use guard(mutex) to simplify the code
+Date: Wed, 11 Nov 2026 00:16:08 +0100
+Message-ID: <20261110231611.7159-2-blum@kernel.org>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,75 +63,189 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] cpuidle: Respect latency constraints when accounting
- below misses
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20261030083633.1699270-1-christian.loehle@arm.com>
- <20261030083633.1699270-3-christian.loehle@arm.com>
- <CAJZ5v0g2wqNDxe-R9fSQW4uF5XE1uW+8UP1u2UjnDDEWRO3LpQ@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0g2wqNDxe-R9fSQW4uF5XE1uW+8UP1u2UjnDDEWRO3LpQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5274; i=blum@kernel.org; h=from:subject; bh=E8eRpZAaRYrtKKN/A57Tver+fDtXhcLGt9YXI+b+VYo=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFmfl+42ZTrL1xswQb1+jXfpt61n+BXTduUveVUm1p94W /pgaXJORykLgxgXg6yYIsuDWT9m+JbWVG4yidgJM4eVCWQIAxenAExEroHhr8B7wRPf7nuFVeUf neUXnftK7NIm7cvHJsgtq1UO+lMr387wz/5ehffu1dmFqkuk7B8ldLUfVO07a7246vkarfAf7l/ 3MgEA
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
 
-On 11/10/26 20:13, Rafael J. Wysocki (Intel) wrote:
-> On Fri, Oct 30, 2026 at 9:36 AM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> Only count a below miss when an enabled deeper state meets the latency
->> constraint. Save the applicable limit before entry so QoS changes during
->> idle do not affect accounting. Continue checking disable flags on exit.
->>
->> Fixes: 04dab58a39d4 ("cpuidle: Add 'above' and 'below' idle state metrics")
->> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
->> ---
->>  drivers/cpuidle/cpuidle.c | 6 +++++-
->>  1 file changed, 5 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index faa29f58738e..e9195ea8cfb6 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -219,6 +219,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
->>                                  int index)
->>  {
->>         int entered_state;
->> +       s64 latency_req;
->>
->>         struct cpuidle_state *target_state = &drv->states[index];
->>         bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
->> @@ -244,6 +245,8 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
->>         if (target_state->flags & CPUIDLE_FLAG_TLB_FLUSHED)
->>                 leave_mm();
->>
->> +       latency_req = cpuidle_governor_latency_req(dev->cpu);
->> +
-> 
-> What if this is different from what the governor has used?  The limits
-> may change at any time.
+Use guard(mutex) to replace explicit mutex_{lock,unlock}() calls.
 
-Right, it's just a few cycles after selection, but you're correct.
-I will resend with a version that saves the used latency_req in dev.
+Simplify the return paths and drop redundant ret initializations in
+duration_set(), window_size_set(), and powerclamp_set_cur_state().
 
-> 
->>         /* Take note of the planned idle state. */
->>         sched_idle_set_state(target_state);
->>
->> @@ -327,7 +330,8 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
->>                         }
->>                 } else if (diff > delay) {
->>                         for (i = entered_state + 1; i < drv->state_count; i++) {
->> -                               if (dev->states_usage[i].disable)
->> +                               if (dev->states_usage[i].disable ||
->> +                                   drv->states[i].exit_latency_ns > latency_req)
->>                                         continue;
->>
->>                                 /*
->> --
->> 2.34.1
->>
+Signed-off-by: Thorsten Blum <blum@kernel.org>
+---
+ drivers/thermal/intel/intel_powerclamp.c | 71 ++++++++++--------------
+ 1 file changed, 28 insertions(+), 43 deletions(-)
 
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index 1ffcb0a699e5..8461ba868248 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -80,25 +80,22 @@ static unsigned int window_size;
+ 
+ static int duration_set(const char *arg, const struct kernel_param *kp)
+ {
+-	int ret = 0;
++	int ret;
+ 	unsigned long new_duration;
+ 
+ 	ret = kstrtoul(arg, 10, &new_duration);
+ 	if (ret)
+-		goto exit;
++		return ret;
+ 	if (new_duration > 25 || new_duration < 6) {
+ 		pr_err("Out of recommended range %lu, between 6-25ms\n",
+ 			new_duration);
+-		ret = -EINVAL;
+-		goto exit;
++		return -EINVAL;
+ 	}
+ 
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 	duration = new_duration * 1000;
+-	mutex_unlock(&powerclamp_lock);
+-exit:
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int duration_get(char *buf, const struct kernel_param *kp)
+@@ -149,17 +146,14 @@ static int cpumask_set(const char *arg, const struct kernel_param *kp)
+ 	cpumask_var_t new_mask;
+ 	int ret;
+ 
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 
+ 	/* Can't set mask when cooling device is in use */
+-	if (powerclamp_data.clamping) {
+-		ret = -EAGAIN;
+-		goto skip_cpumask_set;
+-	}
++	if (powerclamp_data.clamping)
++		return -EAGAIN;
+ 
+-	ret = alloc_cpumask_var(&new_mask, GFP_KERNEL);
+-	if (!ret)
+-		goto skip_cpumask_set;
++	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL))
++		return 0;
+ 
+ 	ret = bitmap_parse(arg, strlen(arg), cpumask_bits(new_mask),
+ 			   nr_cpumask_bits);
+@@ -182,8 +176,6 @@ static int cpumask_set(const char *arg, const struct kernel_param *kp)
+ 
+ free_cpumask_set:
+ 	free_cpumask_var(new_mask);
+-skip_cpumask_set:
+-	mutex_unlock(&powerclamp_lock);
+ 
+ 	return ret;
+ }
+@@ -263,25 +255,22 @@ static struct powerclamp_calibration_data cal_data[MAX_TARGET_RATIO];
+ 
+ static int window_size_set(const char *arg, const struct kernel_param *kp)
+ {
+-	int ret = 0;
++	int ret;
+ 	unsigned long new_window_size;
+ 
+ 	ret = kstrtoul(arg, 10, &new_window_size);
+ 	if (ret)
+-		goto exit_win;
++		return ret;
+ 	if (new_window_size > 10 || new_window_size < 2) {
+ 		pr_err("Out of recommended window size %lu, between 2-10\n",
+ 			new_window_size);
+-		ret = -EINVAL;
+-		goto exit_win;
++		return -EINVAL;
+ 	}
+ 
+ 	window_size = new_window_size;
+ 	smp_mb();
+ 
+-exit_win:
+-
+-	return ret;
++	return 0;
+ }
+ 
+ static const struct kernel_param_ops window_size_ops = {
+@@ -506,10 +495,9 @@ static void poll_pkg_cstate(struct work_struct *dummy)
+ 	msr_last = msr_now;
+ 	tsc_last = tsc_now;
+ 
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 	if (powerclamp_data.clamping)
+ 		schedule_delayed_work(&poll_pkg_cstate_work, HZ);
+-	mutex_unlock(&powerclamp_lock);
+ }
+ 
+ static struct idle_inject_device *ii_dev;
+@@ -633,9 +621,8 @@ static int powerclamp_get_max_state(struct thermal_cooling_device *cdev,
+ static int powerclamp_get_cur_state(struct thermal_cooling_device *cdev,
+ 				 unsigned long *state)
+ {
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 	*state = powerclamp_data.target_ratio;
+-	mutex_unlock(&powerclamp_lock);
+ 
+ 	return 0;
+ }
+@@ -643,15 +630,15 @@ static int powerclamp_get_cur_state(struct thermal_cooling_device *cdev,
+ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
+ 				 unsigned long new_target_ratio)
+ {
+-	int ret = 0;
++	int ret;
+ 
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 
+ 	new_target_ratio = clamp(new_target_ratio, 0UL,
+ 				(unsigned long) (max_idle - 1));
+ 
+ 	if (powerclamp_data.target_ratio == new_target_ratio)
+-		goto exit_set;
++		return 0;
+ 
+ 	if (!powerclamp_data.target_ratio && new_target_ratio > 0) {
+ 		pr_info("Start idle injection to reduce power\n");
+@@ -659,23 +646,21 @@ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
+ 		ret = start_power_clamp();
+ 		if (ret)
+ 			powerclamp_data.target_ratio = 0;
+-		goto exit_set;
+-	} else	if (powerclamp_data.target_ratio > 0 && new_target_ratio == 0) {
++		return ret;
++	}
++
++	if (powerclamp_data.target_ratio > 0 && new_target_ratio == 0) {
+ 		pr_info("Stop forced idle injection\n");
+ 		end_power_clamp();
+ 		powerclamp_data.target_ratio = 0;
+-	} else	/* adjust currently running */ {
+-		unsigned int runtime;
+-
+-		powerclamp_data.target_ratio = new_target_ratio;
+-		runtime = get_run_time();
+-		idle_inject_set_duration(ii_dev, runtime, duration);
++		return 0;
+ 	}
+ 
+-exit_set:
+-	mutex_unlock(&powerclamp_lock);
++	/* adjust currently running */
++	powerclamp_data.target_ratio = new_target_ratio;
++	idle_inject_set_duration(ii_dev, get_run_time(), duration);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ /* bind to generic thermal layer as cooling device*/
