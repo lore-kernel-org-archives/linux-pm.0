@@ -1,49 +1,112 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794322052;
-	b=E6ahrImH8e2OW4vEjNB9oS8OoUXKU28PwwWIBKUwHFzQ6d3kcLZpk80ZaH2B1+VQA52o
-	 Bv+I0Pd8c2i9x2c59sxvj4XH2S75A8g2A1HGVmR3o+xRsrLoerDECFM+SEsZiKhbEVWoa
-	 fOkmsqpvwLuhevmAK1ikn+OFJO45vzet+lZwytZhKmlmN9eAmf6lBXQ06ZTkoWWDnftOV
-	 dmB5Gs0BgXhBjw2b8RKr3FNRXC59jL0s6OmXwYPvofyCdF/q0OESO60sdQ6dhrFu63Ss7
-	 HMIJhlk8Q/BL0phF3i3ZBaaoBl56PTvIu3P8wuyW9qobLfaocq2YqZ3prceSZPnIdVw==
+	t=1794322566;
+	b=QzdZ/+vNXzTDp76KfwfHEaLbb/hMZy36M+gkTOtk1vjxtNggwiALAMJcXBPliz5ZT7pv
+	 lRrw6fBmzNhxzdFwGv6R8uQTE6u9cFpMEE6gsovyzoJN9JLa7veQbgmYGnCclETw1/uqR
+	 rSbSGtqxULpVNQeCDQhPbI6PJWgef0cvlW+1KmotJ8bdMItM3PDojh/3s44OT03a1FL7R
+	 AP9xp+et7FSb+dIaJqwMxrIBVow6sE4zbsxelciHqJzzztNu9Ek/GDXpLRehEwN0Syg5g
+	 cN14IQCLKfos03UadGlYdUnE8eewXAQ81dYNAVOsTNi38e9XuXK4LasNgtRDgc897iA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794322052;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=zYrbKUrrhiWhuUIHfWppc5eatCVfJErJZhYrxtExoA0=;
-	b=o9OOJwinLEtcpeCJOzqSidDJYAjNg9DmlvI03nuTQy2NYJvDoEFPliynNBTlZcLiKIir
-	 LL6iPZp0nbGr4EuCB6GYFsCvolI54bAEkhSTu9ZlZj3nvHjeZ47iUU2MOktd0xBgBxjvZ
-	 9WlRh5ZqwIcQlV+gCJN4q17kVVqwUxRwyhu1U1QjPtaDUI5Ycapp+c9S9UokR9wlm1wVH
-	 CpzsJ3PHu2BJNA2WoIUkU9NvJn1AKYGl7p2UXntdBaSORJxTUkCiduzBM4Y2KrRDcYVW7
-	 bMUHAg4VHicBEArdGT1kjqGIHr37NneF6mXFph9JXnkghBuLBaUkTTQjOoTefFa9o8Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794322566;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
+	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Info:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=kBSuW3DJj66pWv9LhnTXClJVrp/4F7tizZPGCuZVtlU=;
+	b=dr2+/khh7+5vjAL5eP2UFe3EkF8bta5CMMZGXinQygwRWG/76nTQ3AjwDrqVvmCCfYt2
+	 eng0XJnIQXQZVgf+zCGnwVNKgavGbVXh5KKDO1aBskvEQb6IVkoGcM+v44x2Jg2380ebt
+	 C9vwrjaCNBXUwgTG4llY6qbTZmsVsVbU8EXgTR8Lnww+r+i0VmXbhg5ZP76RZp+hn3O8c
+	 voD2VvYwFWMUwUDQf10RepCs0ns+AmyJOO7kxxuuBR8Dwk822XjuUsui2VFOizk9OJm4h
+	 9dmhgYbeuxzUbwo6byrJps9Xiv0Ivcjiv7hmgpuuTDp00CYhu2NXjXtRp+cU5195yTg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=KesO+rgT;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B354E606A325;
-	Tue, 10 Nov 2026 14:47:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B354E606A325
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=jvd4w0At;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=a2WL5baf;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47D47606A325
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 14:56:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 47D47606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=KesO+rgT
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0679C1477;
-	Tue, 10 Nov 2026 06:47:28 -0800 (PST)
-Received: from [10.57.15.53] (unknown [10.57.15.53])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 442823F632;
-	Tue, 10 Nov 2026 06:47:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794322051; bh=XYUpXMXpunbRvsnV8H46R4geCfYL9eeevnHVAJ65qbQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=KesO+rgTQUiN+M15PMxPKVf7Sqs7H9386kSssQ0Manrf1HK4S3tTpIBb3LGzvOgji
-	 q9xo+aPeDwk0/LauDKLJAMawnwEwiy6ryzrVikTFfwfQ0VLDuiwIEuwoQIcfLCE7Nu
-	 dUjcxw4hu8vKq09o9g7foqpJozr2MUwduLUhB38s=
-Message-ID: <5a593b56-2f16-4b86-bcc4-e0f632b47577@arm.com>
-Date: Tue, 10 Nov 2026 14:47:21 +0000
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=jvd4w0At;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=a2WL5baf
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AABA56c4186865
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 14:56:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	kBSuW3DJj66pWv9LhnTXClJVrp/4F7tizZPGCuZVtlU=; b=jvd4w0AtVDDY6hFh
+	LiVK7tYp/2YXmymDlxhtHlCyAZSSvjiSDUMVzU+wdQ3aCK2ybKFXB723eXzKst0B
+	tn35EummHhkTZcAQy5muxTHja+2W4hJ7yowhKKcg3z3AabUBI9wUk9Cvw0mJ3UvS
+	g+Itlk7ZqfFiJ64ebGHHBn82ZsLInb7A1L9E/c7d9mYi79qcnEhdtb2k0IPKCcGh
+	12sdS27F1It1Y5PzY9dUcRE3Nt/FRO7etVJbSH2cxFnjFKS/PdXsNFAp1uejEG0C
+	Ci3ZURyKJA//mdqp6mKHmO7H4vUZuwVYVhBAM88XTL7Gi8BUEhv2I88E9AK2JtV8
+	Woc5VQ==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4huyvwh9ug-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 14:56:05 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-8b5d8de9619so2613374b3a.0
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 06:56:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1794322564; x=1794927364; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=kBSuW3DJj66pWv9LhnTXClJVrp/4F7tizZPGCuZVtlU=;
+        b=a2WL5bafQrNipdbZxvs/LTPTCmHGqm8LlkN5w2R+WHp/ZM42CbSJM7tQM9gKNfyeG4
+         jlO4FIc6ES2X6YObIFs5f1CdYESIPLUxzMs6eABL2mBK2WVUAd4VhFIyEvRluIgxcmeV
+         F1aWpUrP40lGTskPyp37lsydUZ0uZdfuriINAe5ZjQMmPv3vnFvxEJDj5vVpydryS7MN
+         fmXD3/M7Iddsz5+HUeWwKVZchBvg0iicFcm1Mlc+YJrgJBtWJ/X7cASTzBfqxqnbxPQE
+         io5jKDQejIOG5ut4K31vJRnRDuS16UusjVCExPOiE50D6lzlx5Rve226iNsngo/WX8r1
+         1WMg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794322564; x=1794927364;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=kBSuW3DJj66pWv9LhnTXClJVrp/4F7tizZPGCuZVtlU=;
+        b=y4aqsloK3Rmcxa+uO1vvROZiRIjCzFlLiEqB3WehfR45cgm7+bzRPZzLToS4QRSNsL
+         GrcA3mIy6+YCqM2kSmxy3oBkdRszgqYITwsIwK/m0wOYX6SjvssWCRjEJwqxXHyXP7di
+         O7cOOjLVd8Xayx5ci+cep4dcnIF+jHAjLnWyaQy5X0bSwBG/ldBbIjbOJtrW9J27liVK
+         Nsi6tvdB/BS8vhEUJgQ0ZJqEVFT2CQntaqntkpYvk2myGvvTKl1zdYXKp3KMLr4RAtOD
+         mvKrvFh16mI/u1+O/wfJnRvDIM4NEBvNyRf+15q5zgPq+HGodS+Jc+3iSZoQsq8CIQRE
+         qKYw==
+X-Forwarded-Encrypted: i=1; AL+hErGj8SbD69B6sOtSNFScfxql7x+ggEQYlcPr4rPQEYbwpAHD7K7PoiAHxaCLR6i9mHfAMSJkj62g2A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8C/5WQJt8jAUZw2ZJ1NDO35QRS3+05hbfkZU42SVq+hhXvrcU+
+	SNDgzF3qQzMwXcsPu9S4nrBVbtXY0vDgtzJuoasbYFENaqEI0tA+2yllxBwOk+B+W4DJIJVqG3x
+	VUNnllfKoUDW8j4uzBS2m0mF9UV4JYaMOkz+TVm6Jud8c5hYbLVYhjzGRh+Wq1w==
+X-Gm-Gg: AYBFou2J1OxRcb+O13h7IdhMRiTigyMV0WcW0saOXUyGh5piYG0b3NEzXIZCUOnTpcc
+	xECRSIfXSlxxdu53pJ2UOXPYqhTpt0dNYT+gQXAuttHEwcSujPQfqyb9EgG4dT2Vr79TS4e6hCy
+	L0Ak3+TO0NfcSSGVrzU09yR8dTJmKB8Acavsi2UmvvtZjIUxOp+n/Gmjg084Ss6WDoZdGS9FBMI
+	tjEbMXY0hcpWvq3YvU8eRVCrV+pgk4o3K7cgEADEZO/TC7gx7RYtNmz297efYGoqLz3nBiz39h2
+	O+C0emrei8qKr32Sgzpbb6kN6n/OWxsQayAc5euXtNUaTymdZjfQFMBe0AsvY+XO0QR99XsR88R
+	zTrIpz+xeArNkouUpscoEyoihfM98VJv4UP1Vj6HIchrApQSNEhTZLiKogMPM2YVu37zLJpkWZ3
+	YBkSfFXVuNEyFNduvQyYbEvjhArg/5Y8+3
+X-Received: by 2002:a05:6a00:9289:b0:886:c8d1:632f with SMTP id d2e1a72fcca58-8ba87647402mr2915908b3a.42.1794322564392;
+        Tue, 10 Nov 2026 06:56:04 -0800 (PST)
+X-Received: by 2002:a05:6a00:9289:b0:886:c8d1:632f with SMTP id d2e1a72fcca58-8ba87647402mr2915863b3a.42.1794322563587;
+        Tue, 10 Nov 2026 06:56:03 -0800 (PST)
+Received: from [10.133.33.220] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8baaa1b1bf1sm1005284b3a.12.2026.11.10.06.55.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 10 Nov 2026 06:56:03 -0800 (PST)
+Message-ID: <ec04f795-6cc6-444a-bbee-70c7982932e3@oss.qualcomm.com>
+Date: Tue, 10 Nov 2026 22:55:57 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -54,188 +117,171 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: ACPI: CPPC: shared PCC subspace data can be freed while another
- CPU probes, reads, or tears it down
-To: =?UTF-8?B?5b6Q5pmX57+U?= <xuhx@hust.edu.cn>, rafael@kernel.org,
- sudeep.holla@kernel.org, jassisinghbrar@gmail.com
-Cc: linux-acpi@vger.kernel.org, viresh.kumar@linaro.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org
-References: <4c7f9772.192e1.1a17d5c2ed5.Coremail.xuhx@hust.edu.cn>
- <2026102727-data-sequel-ce41@gregkh>
- <7e7371c7.22ae1.1a1c591c7ae.Coremail.xuhx@hust.edu.cn>
+Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency
+ ranking
+To: Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+        Guo Chen <guo.chen@oss.qualcomm.com>,
+        Vincent Donnefort <vincent.donnefort@arm.com>,
+        Matthias Kaehlcke <mka@chromium.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com,
+        tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com,
+        Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
+ <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
+ <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
+ <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
+ <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com>
+ <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
+ <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com>
+ <4f0c8581-a8fb-4bc4-82cc-d30f2f56d2ce@arm.com>
+ <CAJZ5v0iX8wYDUo9uUjkqkKq1tpLAu7iaZk+iQzWGigNAqfrsNg@mail.gmail.com>
+ <bb99aa3f-fd15-4bdd-9319-ccedffc281c8@arm.com>
 Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <7e7371c7.22ae1.1a1c591c7ae.Coremail.xuhx@hust.edu.cn>
-Content-Type: text/plain; charset=UTF-8
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <bb99aa3f-fd15-4bdd-9319-ccedffc281c8@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: uN-9d4efCluiEROmr5bqQQey-UK5G6-i
+X-Proofpoint-ORIG-GUID: uN-9d4efCluiEROmr5bqQQey-UK5G6-i
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDA1OSBTYWx0ZWRfX7T0XVbFZIEdy
+ mXI1gxXVqnL8Ma5wJ84yktFnszMaKpeqTrA+WBBfpw9nYpuJ3ADBlLcj68C/RRH1BvY8vxDHtV8
+ qDSKNjSbEW7mSjSwdFwtrKfg3nc1jcs=
+X-Authority-Analysis: v=2.4 cv=NNpAaE6g c=1 sm=1 tr=0 ts=6af33085 cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=7CQSdrXTAAAA:8 a=rel-l89U2fr21mIbaAEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=IoOABgeZipijB_acs4fv:22 a=a-qgeE7W1pNrGK8U0ZQC:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDA1OSBTYWx0ZWRfX6ijkq6hAASdn
+ Hz8FGrNDAm+ZrE8Jrw7IM9ywgDQFI1x9N+XQjchnCTzvFqBLzQG5aJ4RftQIL4jF80wdvQ0Xv3s
+ P5ZdOZ0AgaSsL0O2nTyqFyJHCShPlRKvo1mctnazw7R6pJUSNm23UtnEvD9otiSlUxovaaUr/nY
+ GO65yRIKS3NSPszUzxSZoByZGz1yRUo7w1pgkcwc+BfRbCe1B+Ox90/Zh9Pf6TmQ30jq/IqMWBX
+ kCY1ew7NEIhMu4wcZ5opqCb1f0QdObHWqo7jJ35ynKEqjVCRmo4Ow9wuPOoizD8kpaMHdyyHGzN
+ 3eWhXgOhXSkiJXsUL6F1wm5myvOhMZMLyLC25sEy+sxdy/YgFgk+jVo0VTZt4Xn4ds4o4d2SE+f
+ 0yWjvY5uEitncWAscBWw1C1MgBlEk9MUxZP5hG0vRS3MpoRqOgZEQCzYA9SkZ5p9wlftBT/Q5Ij
+ YO8NqM+zW/Pc4Y17AZQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-10_04,2026-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 adultscore=0 phishscore=0 priorityscore=1501
+ bulkscore=0 clxscore=1015 impostorscore=0 malwarescore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611100059
 
-On 11/10/26 13:07, 徐晗翔 wrote:
-> pcc_data[] is a global array of shared PCC-subspace objects.  The
-> reference count is an ordinary int updated without a lock, and
-> acpi_cppc_processor_exit() can kfree() the object and set the slot to
-> NULL while another CPU's accessor is using it, while another CPU's
-> first-online probe is allocating/registering it, or while another
-> remove is decrementing the same count.  The result is a UAF, a NULL
-> dereference, a lost refcount update/leak, and a PCC channel/shmem
-> lifetime problem.  This report is source-level: the test environment
-> does not have a PCC/PCCT controller, so no dynamic reproducer is
-> attached.  I am not claiming the double-free variant.
-> 
-> The detailed description:
-> 
-> * Test environment / affected version
-> 
->   Linux 7.3.0 source (verification/linux-7.3), line numbers from 7.3.
->   The available QEMU/KASAN guest used for the sibling CPPC report has
->   no PCCT table and no PCC mailbox controller, so it cannot create a
->   real pcc_data object.  I did not fake a pcc_data object or call the
->   teardown path with a synthetic pointer; that would not be a valid
->   dynamic reproduction.  The affected code is the normal
->   CONFIG_ACPI_CPPC_LIB path in drivers/acpi/cppc_acpi.c plus the PCC
->   mailbox release in drivers/mailbox/pcc.c.
-> 
-> * Mechanism
-> 
->   A PCC subspace can be shared by multiple CPUs.  pcc_data[pcc_ss_id]
->   is the global slot, and its refcount is the number of participating
->   CPUs (cppc_acpi.c:48-83).
-> 
->   Allocation (cppc_acpi.c:714-729) is:
-> 
->     if (pcc_data[pcc_ss_id])
->             pcc_data[pcc_ss_id]->refcount++;
->     else {
->             pcc_data[pcc_ss_id] = kzalloc(...);
->             ...
->             pcc_data[pcc_ss_id]->refcount++;
->     }
-> 
->   There is no lock, and the slot check, allocation, publication and
->   increment are not atomic.
-> 
->   Teardown (cppc_acpi.c:1037-1051) is:
-> 
->     if (pcc_ss_id >= 0 && pcc_data[pcc_ss_id]) {
->             if (pcc_data[pcc_ss_id]->pcc_channel_acquired) {
->                     pcc_data[pcc_ss_id]->refcount--;
->                     if (!pcc_data[pcc_ss_id]->refcount) {
->                             pcc_mbox_free_channel(...);
->                             kfree(pcc_data[pcc_ss_id]);
->                             pcc_data[pcc_ss_id] = NULL;
->                     }
->             }
->     }
-> 
->   This is a plain read-modify-write, followed by a separate read for
->   the zero test, with no pcc_lock and no teardown mutex.  The release
->   happens before kobject_put(&cpc_ptr->kobj), so the kernfs drain that
->   protects the cpc_desc sysfs object does not protect pcc_data at all.
-> 
->   Accessors take the global slot and immediately use it:
-> 
->     cppc_get_reg_val_in_pcc(): pcc_ss_data = pcc_data[pcc_ss_id];
->                                down_write(&pcc_ss_data->pcc_lock);
->     cppc_set_reg_val_in_pcc(): cpc_write(...); then the same lookup
->     cppc_get_perf_caps():     same pattern (cppc_acpi.c:1488 onwards)
->     cppc_get_perf_ctrs():     same pattern (cppc_acpi.c:1678 onwards)
->     GET_PCC_VADDR():          pcc_data[id]->pcc_channel->shmem directly
-> 
->   None of these check for NULL, and none hold a reference that would
->   keep pcc_data alive across the use.
-> 
->   Four independent interleavings follow:
-> 
->     A. exit vs accessor.  The last CPU is unbound while its tick,
->        cpuinfo_cur_freq, or an already-running acpi_cppc sysfs show is
->        in a PCC accessor.  exit frees pcc_data and iounmap()s the
->        channel shmem; the accessor then calls down_write() on freed
->        memory or dereferences NULL.  This is the simplest UAF and does
->        not require two CPUs to be removed at once.
-> 
->     B. remove vs remove.  Two CPUs sharing the subspace both read
->        refcount == 2, both write 1, and neither frees: the object and
->        channel leak.  If one remove has already freed and cleared the
->        slot while the other has a stale non-NULL value, the second
->        remove can dereference NULL or freed memory.  The exact
->        double-free requires both removals to observe zero, which needs
->        an under-count or another remove path; I am not claiming it.
-> 
->     C. first-online probe vs remove.  CPU B is doing its first
->        physical online and runs acpi_cppc_processor_probe(); CPU A is
->        being unbound and runs acpi_cppc_processor_exit().  They share
->        the subspace but hold different CPU device locks.  The probe's
->        pcc_data_alloc() can read the slot just before exit frees it,
->        then increment freed memory; or it can enter register_pcc_channel(),
->        sleep in pcc_mbox_request_channel(), and then write the channel
->        pointer into a slot that exit has already freed and cleared.
->        acpi_cppc_processor_probe() also dereferences
->        pcc_data[pcc_subspace_id]->pcc_channel_acquired at
->        cppc_acpi.c:981 without a NULL check.
-> 
->     D. channel release vs in-flight send.  pcc_mbox_free_channel()
->        (drivers/mailbox/pcc.c:431-448) only iounmap()s the shmem and
->        calls mbox_free_channel(); it does not wait for an in-flight
->        mbox_send_message()/txdone or for send_pcc_cmd() to finish.
->        An accessor already in send_pcc_cmd() can therefore use the
->        revoked mapping or the freed channel.
-> 
->   The probe failure path is a separate, non-race lifetime defect:
->   acpi_cppc_processor_probe()'s out_free path iounmap()s and
->   kfree()s cpc_ptr but does not decrement the pcc_data refcount that
->   pcc_data_alloc() just took (cppc_acpi.c:1015-1023).  It can leak the
->   channel/object, but it is not the concurrent UAF above.
+On 11/10/2026 10:05 PM, Lukasz Luba wrote:
 > 
 > 
-> * Reproducer and results
+> On 11/10/26 13:43, Rafael J. Wysocki (Intel) wrote:
+>> On Tue, Nov 10, 2026 at 2:11 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
+>>>
+>>> Hi Rafael,
+>>>
+>>> On 11/10/26 12:15, Rafael J. Wysocki (Intel) wrote:
+>>>> On Tue, Nov 10, 2026 at 10:58 AM Lukasz Luba <lukasz.luba@arm.com> 
+>>>> wrote:
+>>>
+>>> [snip]
+>>>
+>>>
+>>>>>
+>>>>> That's fine, please continue.
+>>>>
+>>>> I have a couple of questions though.
+>>>>
+>>>> First, why is the ondemand governor mentioned in the changelog?  In
+>>>> the mainline, the ondemand governor cannot work with EAS, so it
+>>>> shouldn't matter for this issue, should it?
+>>>
+>>> The ondemand is affected by the EM setup code and set 'inefficient'
+>>> flags for some OPPs. The EM is also present for cooling devices
+>>> and can work w/o EAS and schedutil, w/ just ondemand governor.
+>>>
+>>> Because EM marks the OPPs kind of 'globally' as inefficient, then
+>>> they become CPUFREQ_INEFFICIENT_FREQ entries in the CPUfreq fwk.
+>>> In the EM code we have:
+>>> cpufreq_table_set_inefficient(policy, table[i].frequency);
+>>
+>> So maybe this is the one that needs to be fixed?  What about simply
+>> skipping boost frequencies in it?
+>>
+>>> Then ondemand check for CPUFREQ_RELATION_HE will skip them and
+>>> pass to __cpufreq_driver_target() with that flags as well.
+>>
+>> Thanks for explaining and all of that needs to be said in the patch 
+>> changelog.
+>>
+>>>>
+>>>> Second, why is the issue regarded as a defect in the code and not in
+>>>> the energy model?  Arguably, boost frequencies should be more costly
+>>>> than the non-boost ones.  At least the idea behind the boost is making
+>>>> higher-cost OPPs temporarily available.  If they are sustainable,
+>>>> treating them as boost OPPs is rather pointless.
+>>>
+>>> IMHO it was a bug in the commit mentioned in this patch fix tag.
+>>> It is affecting more than just EAS or EM, since the EM is working with
+>>> all generic code and all cpufreq governors.
+>>
+>> To be precise, the EM initialization may affect cpufreq in general
+>> because inefficient frequencies are used for CPU cooling.  Fair
+>> enough, but I'm not talking about this.
+>>
+>> I'm talking about a reason for giving boost frequencies lower or equal
+>> cost relative to non-boost frequencies in the energy model because
+>> this doesn't make sense to me TBH.
+>>
+>> And I get that such energy models were there before the commit in
+>> question and now they are not working properly, but IMO they are
+>> broken, not that commit.
+>>
+>>>>
+>>>> TBH, I'm too comfortable with looking at cpufreq frequency from within
+>>>> the EM code.  If that needs to be done, something is amiss at the
+>>>> design level.
+>>>
+>>> I think this edge case is special, as I described above.
+>>>
+>>> I'm happy to hear your view on this EM influence to some global
+>>> setting in cpufreq. Maybe it was too far to establish this
+>>> 'inefficiency' flags in there for many usage?
+>>
+>> There's nothing wrong with using the information from the energy
+>> model, when available, to amend cpufreq, but the patch goes the other
+>> way around: It tries to amend the energy model with information taken
+>> from cpufreq (in order to avoid making mistakes later when amending
+>> cpufreq with the energy model information).
+>>
+>> I think that cpufreq should simply refuse to set
+>> CPUFREQ_INEFFICIENT_FREQ for boost frequencies.  Wouldn't that work?
 > 
->   No dynamic reproducer is attached.  The current QEMU test
->   environment has no PCCT/PCC mailbox controller, so a real pcc_data
->   cannot be created; I did not substitute a fake object.  The evidence
->   for this report is the source-level lifetime above, with the exact
->   line references in the mechanism section.
+> I see your point now, about the direction. Yes, you're right.
 > 
->   Static evidence summary:
-> 
->     - cppc_acpi.c:714-729: plain refcount++ in pcc_data_alloc()
->     - cppc_acpi.c:1037-1051: plain refcount--, zero test, free, NULL,
->       all without pcc_lock
->     - cppc_acpi.c:981-989: probe reads pcc_data[...] without a NULL
->       check and calls register_pcc_channel()
->     - cppc_acpi.c:644-675: register_pcc_channel() writes the channel
->       after a sleeping pcc_mbox_request_channel()
->     - cppc_acpi.c:1313-1336, 1366-1389, 1488+, 1678+: accessors use
->       pcc_data[] without a reference or NULL check
->     - cppc_acpi.c:97-98: GET_PCC_VADDR() dereferences the slot directly
->     - drivers/mailbox/pcc.c:431-448: free does not wait for in-flight
->       sends
+> Since we are taking the information about 'boost' from the
+> cpufreq, then refusing to set OPPs inefficient in the first
+> place makes more sense.
 > 
 > 
-> * Suggested direction
-> 
->   Make pcc_data refcounted with refcount_t and update it under a
->   dedicated teardown mutex (or pcc_lock), with the slot lookup and
->   increment done atomically.  Accessors should acquire a reference (or
->   use RCU) before dropping the lock, and the free path should clear the
->   slot first, then wait for readers/in-flight sends before
->   pcc_mbox_free_channel().  Free pcc_data after the kernfs drain, or
->   make the sysfs show hold a pcc_data reference for its whole call.
->   The probe error path should roll back the pcc_data_alloc() increment.
->   Report-first, no patch attached; I can test a proposal on PCC
->   hardware or a suitable QEMU model if one is available.
-> 
-> 
-> 
->   Please keep me in Cc; I am not subscribed to the lists.
-> 
-> 
-> 
-> Regards,
-> Hanxiang Xu
-> xuhx@hust.edu.cn
 
-Thanks, both ACPI CPPC reports were already on the list:
-https://lore.kernel.org/all/c1190e23-2043-46d9-ae7e-f95103363b0b@arm.com/
-https://lore.kernel.org/all/20260830115644.2056983-1-christian.loehle@arm.com/
-https://lore.kernel.org/all/20260916162805.1039247-1-christian.loehle@arm.com/
+I also agree this should be fixed in cpufreq rather than by feeding
+cpufreq information into the EM. However, refusing
+CPUFREQ_INEFFICIENT_FREQ for boost frequencies seems not help the
+example in the changelog, because the frequency marked as inefficient
+there is 4.0 GHz, which is not a boost one. The problem is not specific
+to boost either: with 3.9 GHz, 4.0 GHz, 4.1 GHz and a 4.2 GHz boost OPP
+at costs C - d, C, C and C + d, 4.0 GHz is rightly inefficient, but if
+policy->max is capped at 4.0 GHz by scaling_max_freq, thermal or QoS,
+RELATION_HE for 4.0 GHz still resolves to 3.9 GHz. I think the lookup
+should not skip an inefficient frequency when the next efficient
+frequency above it is beyond the max limit, which can be done in
+cpufreq_frequency_table_target() without touching the EM or looking at
+boost flags.
 
-I will fix them.
+> 
+
+
+-- 
+Thx and BRs,
+Zhongqiu Han
