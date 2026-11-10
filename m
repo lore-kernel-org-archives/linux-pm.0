@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.17.22
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794329625;
-	b=FC094IqXO2HHoQv0d6oYXFj9lBIE3CujNyoc/RGt6UoSc1HgJbIAYkdFV6u3M32eO553
-	 9lzGwbbkgM0Cgz/8k+00nm0WGQdFGgb1kIPLynA+bcXY1/zsxJWU2qtoT8LkSMaa/EgAY
-	 QvDeTeUMfMNPiOcLs7GI6qckvc2rpDlCeQuazY/CX4aFpgL5zqir/T6txNLxZWa45sdAB
-	 9sbn/SKsPd/WKGSiuQoj0bTvg3G8OuD1y+b9VZH+t9B8Vu7/OCr0RasWIyUkEH/Wgpyna
-	 f4Sg0CHBXAYA0tSJkseFpr388zQlHUJOskteSuelVMh8XuIuMiObIi9BdpWrQ2ylzfA==
+	t=1794329622;
+	b=AtgaOk7OMLgaWufcF977d8oIb/1IRIM0j+tXOYlLsrjDEbT+nOegew3c0BW+F9G4zY1n
+	 1FHcpJBAZ8+EjFNi4Pcs0Rl5zXR9CYleQ3cpe1SAsCZ/7Wrghnd5FzYHI7unry4/kw4/y
+	 IY0KUmCJTudCJXU39kHA1tsKB3dRzo6JtwkC+0qzgd6WpkLEbDlzr1NFlljWSXoGgzSLt
+	 /qxU8jrGlYZRzbikYY0nQkpDo4HnTxrGuA8A5tah8G1PHF+Ll8oBz8AQjjUtqOmGL2sq7
+	 i1TlvK2ErCIYdJG7fvB5gqiTdUBFdhvNkaXdhNM3fdeHVo4h1gwdnW8AR9mSC0b3zRg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794329625;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794329622;
 	h=DMARC-Filter:DKIM-Signature:X-UI-Sender-Class:Received:From:To:Cc:
 	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:UI-OutboundReport;
-	bh=SaGWrPfjgnfhc91g2CLib8vdRx1sIMhhVJ4htpbuQDE=;
-	b=cVLyYXO23JG2PlapGv9Ley35oPZKun+VqhWG/adxsKJptx9egHbJMufhesJP+j+EwqEl
-	 bG3O0cOiFN7vyU4GiogK8SwWUEOBnud0N9FCGxGQ0+fFTJAMK0+GFF+7ArPE0QNXBLg9G
-	 JhE8HsUKl5ILQfyicNEktmSr4JxGoaFJQvSFtqUxRvdegYbecfcTsormNJMrZCleASwAk
-	 9BllYnH1m8siboEV5G6Y3CMJAjru2LCwdij9CZFRZgOXnWZQ1imReTjfxsipjpQD+K2JB
-	 VnsaL7jN6ajsTb6HA2c9tpK7PBwwjhGTluz1Np+g99xkhVRbqqZLFmvrZ5UUrZVVzMA==
+	bh=hULrbJGfxN1aFBxrCF1/tspKsEc7TI66kVN/0eRNgNw=;
+	b=ijX6r8/WRcUvh18thWpbRpD0byz/swiYKzPPoH83E9s0utmCF4KpCKP4ed65xzwoicfQ
+	 tFu9VsoDlerjY3+vyhR97D1vB46BsNmD798cri7727CTOEuEtjPsH59nWrNds/rGcNjhn
+	 8XR11+CAbhl9Pxt3MrLjmjJIoLcXdRwc76pJzOhszeY53wqwkVaAr2nzpfHXW6bl9fr1R
+	 ucUzqVgbHPXVNGpJED+KYfQrY3yYdqX74VANN8tOsUxp486UX8rN7rDAwOc7B5iDj3BiS
+	 UdX2mGcAXR7BGYAzPfXNXpX1+LW2z8y48WNtBR/PbzDMuQpe1MPixs7R09cyF3Fgy7w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmx.de;
 	spf=pass smtp.mailfrom=gmx.de;
-	dkim=pass header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=NFrGmR3g;
+	dkim=pass header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=ivRoBLP+;
 	arc=none smtp.remote-ip=212.227.17.22
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 079C9606D223;
-	Tue, 10 Nov 2026 16:53:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 079C9606D223
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1E1460A382E;
+	Tue, 10 Nov 2026 16:53:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D1E1460A382E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=NFrGmR3g
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=ivRoBLP+
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1794329607; x=1794934407; i=w_armin@gmx.de;
-	bh=SaGWrPfjgnfhc91g2CLib8vdRx1sIMhhVJ4htpbuQDE=;
+	s=s31663417; t=1794329612; x=1794934412; i=w_armin@gmx.de;
+	bh=hULrbJGfxN1aFBxrCF1/tspKsEc7TI66kVN/0eRNgNw=;
 	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding:cc:
 	 content-transfer-encoding:content-type:date:from:message-id:
 	 mime-version:reply-to:subject:to;
-	b=NFrGmR3gM6SBadvhheKX0zWlTWrmTOXUUCbkYFQHtWC9GVnB++S7IA4a/tN6kxjT
-	 CPHpxGeXFlSqL0yJlntmlAWaxNOIiiklcuOvt21EiAHNlMNNwnE0zPcnoS00iLn31
-	 FVNcnBQ4ETUa6OVTKO6uyfr2rbdQKGfMFt/YiQxccMbFH5n88BHxP49WG81CB764d
-	 zFVGNbYrproqmAXVzSI3OxXV74xW+0It2zTXUEO+MsUSabhu74brxskmUNNMs8TL4
-	 nXWBFsKTLe1rJQlMdSaVdp2POZVpd+lC9kHqSKDFv/PfRyuYSLqj9InIdrxQ6o5bR
-	 8t1sZ28YGVxMR9zzAw==
+	b=ivRoBLP+3fJE90p7zr65XcRlezy11QVFO497V5G1NbixZoA6ovFLvkoOiNQSch/5
+	 nHzmIz2npAIodKxq0g+MHtuMXvVyjv0pzesSuSUmdrIuS0wk/ZgkOkboR46KGLH7j
+	 2qb0uFnEH/fgwVqqy1h9PkzqzhOWFo5ofLnSWsRlkEZ5WIDre2AIgFhBtbGd/n0Og
+	 UCH2dIgD2bfmZ0RoEHuFOoYhIRASaCjNzS0+a4twtVhhoe5vVwbHU6/B28SIU8IEq
+	 EpGziwE+b0TPkZfS+2r3vnztwiAMHbO3UAJp1yvY9ZPie5zoRDQHjtCzehRQCOZdv
+	 D3AVKtaScSMw6fi26A==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MxlzC-1wYS890x3u-010aOH; Tue, 10
- Nov 2026 17:53:27 +0100
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MLR1f-1x8Km835gR-00YeJu; Tue, 10
+ Nov 2026 17:53:31 +0100
 From: Armin Wolf <W_Armin@gmx.de>
 To: hansg@kernel.org,
 	ilpo.jarvinen@linux.intel.com
@@ -60,9 +60,9 @@ Cc: platform-driver-x86@vger.kernel.org,
 	sre@kernel.org,
 	linux-pm@vger.kernel.org,
 	wse@tuxedocomputers.com
-Subject: [PATCH v2 3/9] platform/x86: uniwill-laptop: Report battery cycle count
-Date: Tue, 10 Nov 2026 17:50:04 +0100
-Message-ID: <20261110165318.631010-4-W_Armin@gmx.de>
+Subject: [PATCH v2 7/9] platform/x86: uniwill-laptop: Add support for MECHREVO Yilong15Pro
+Date: Tue, 10 Nov 2026 17:50:08 +0100
+Message-ID: <20261110165318.631010-8-W_Armin@gmx.de>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261110165318.631010-1-W_Armin@gmx.de>
 References: <20261110165318.631010-1-W_Armin@gmx.de>
@@ -76,354 +76,178 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:2yAou2QAdaLFxk8uhBeohct6jawR5SrNn65NQgnDaK1QvgMmkCm
- XbIsSGNB/0RWWOFiuzhRSDrl1ecgkwaJEBhrjzKGk5Wp6R8DCcO1/nfQBAGEdccVYUM+1zx
- 1r51xC6VcA5djrzqeGno/dRtU95aja6RPBG1+iauDdnNBasWLl66+ZB3spp7YnKrlq5ym74
- BkxnCJQ5ny4CKkUr70WJg==
+X-Provags-ID: V03:K1:dFRPyrvyio3D76Kre44XSscevHT8pgBQPinLCczzNtLbxTZkuEW
+ 3b0VLkETBUoAGSGrlXb2Ld3CAiutsiSRwC1w1WptonR00d8wDJ2Qa2cnNtOiV390q/OAZZp
+ hzSMUY/hLrJmbTAEoa0pry8MS7NHX2BCb5v6mzT5AEWbwZWHrpqXJ8dKllXtW+HpcTjufzu
+ AMtCj1Buk7eWTQ6XMmD6A==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:OpWoN/GKU7I=;fZLWdaT8245clBn5Lfi7fpEwsK0
- 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
+UI-OutboundReport: notjunk:1;M01:P0:PJSVwFuIgnI=;AdrLE4J1jq+V6Hc5MtCagirz9q+
+ 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
 
-It turns out that nearly all Uniwill-based devices do not support
-the _BIX ACPI control method for ACPI battery devices, instead only
-providing the legacy _BIF ACPI control method. This prevents them
-from reporting the cycle count of the battery, even when the EC
-reports this value.
+A user reported that the MECHREVO Yilong15Pro works with this driver.
+Add it to the DMI whitelist to let the driver automatically load on
+this device.
 
-Fix this by supplying the battery cycle count using the power supply
-extension on devices where the ACPI battery does not.
-
+Reported-by: Bi Fang <bifangknt@qq.com>
+Closes: https://lore.kernel.org/platform-driver-x86/tencent_D521DAA244039D=
+BFC3919D4EFD176E383607@qq.com
+Tested-by: Bi Fang <bifangknt@qq.com>
 Signed-off-by: Armin Wolf <W_Armin@gmx.de>
 =2D--
- drivers/platform/x86/uniwill/uniwill-acpi.c | 94 ++++++++++++---------
- 1 file changed, 55 insertions(+), 39 deletions(-)
+ drivers/platform/x86/uniwill/uniwill-acpi.c | 24 +++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/drivers/platform/x86/uniwill/uniwill-acpi.c b/drivers/platfor=
 m/x86/uniwill/uniwill-acpi.c
-index 060324ed3c4d..1958a1bfc880 100644
+index fbb704cf6e66..b71e7a73b4ff 100644
 =2D-- a/drivers/platform/x86/uniwill/uniwill-acpi.c
 +++ b/drivers/platform/x86/uniwill/uniwill-acpi.c
-@@ -392,6 +392,9 @@ struct uniwill_data {
- 		};
- 		unsigned int last_charge_ctrl;
- 	};
-+	enum power_supply_property extension_props[3];
-+	struct power_supply_ext standard_extension;
-+	struct power_supply_ext cycle_count_extension;
- 	bool last_fn_lock_state;
- 	bool last_super_key_enable_state;
- 	bool last_touchpad_toggle_enable_state;
-@@ -639,6 +642,8 @@ static bool uniwill_readable_reg(struct device *dev, u=
-nsigned int reg)
- 	case EC_ADDR_SECOND_FAN_RPM_1:
- 	case EC_ADDR_SECOND_FAN_RPM_2:
- 	case EC_ADDR_BAT_ALERT:
-+	case EC_ADDR_BAT_CYCLE_COUNT_1:
-+	case EC_ADDR_BAT_CYCLE_COUNT_2:
- 	case EC_ADDR_OEM_9:
- 	case EC_ADDR_PROJECT_ID:
- 	case EC_ADDR_AP_OEM:
-@@ -686,6 +691,8 @@ static bool uniwill_volatile_reg(struct device *dev, u=
-nsigned int reg)
- 	case EC_ADDR_SECOND_FAN_RPM_1:
- 	case EC_ADDR_SECOND_FAN_RPM_2:
- 	case EC_ADDR_BAT_ALERT:
-+	case EC_ADDR_BAT_CYCLE_COUNT_1:
-+	case EC_ADDR_BAT_CYCLE_COUNT_2:
- 	case EC_ADDR_BIOS_OEM:
- 	case EC_ADDR_PWM_1:
- 	case EC_ADDR_PWM_2:
-@@ -1966,6 +1973,7 @@ static int uniwill_get_property(struct power_supply =
-*psy, const struct power_sup
- 	struct uniwill_data *data =3D drvdata;
- 	union power_supply_propval prop;
- 	unsigned int regval;
-+	__le16 cycle_count;
- 	int ret;
+@@ -2781,6 +2781,22 @@ static struct uniwill_device_descriptor machenike_l=
+16p_descriptor __initdata =3D {
+ 	.kbd_led_max_brightness =3D 4,
+ };
 =20
- 	switch (psp) {
-@@ -2010,6 +2018,14 @@ static int uniwill_get_property(struct power_supply=
- *psy, const struct power_sup
-=20
- 		val->intval =3D POWER_SUPPLY_HEALTH_GOOD;
- 		return 0;
-+	case POWER_SUPPLY_PROP_CYCLE_COUNT:
-+		ret =3D regmap_bulk_read(data->regmap, EC_ADDR_BAT_CYCLE_COUNT_1, &cycl=
-e_count,
-+				       sizeof(cycle_count));
-+		if (ret < 0)
-+			return ret;
++static struct uniwill_device_descriptor mechrevo_yilong15pro_descriptor _=
+_initdata =3D {
++	.features =3D UNIWILL_FEATURE_FN_LOCK |
++		    UNIWILL_FEATURE_SUPER_KEY |
++		    UNIWILL_FEATURE_BATTERY_CHARGE_MODES |
++		    UNIWILL_FEATURE_CPU_TEMP |
++		    UNIWILL_FEATURE_GPU_TEMP |
++		    UNIWILL_FEATURE_PRIMARY_FAN |
++		    UNIWILL_FEATURE_SECONDARY_FAN |
++		    UNIWILL_FEATURE_NVIDIA_CTGP_CONTROL |
++		    UNIWILL_FEATURE_KEYBOARD_BACKLIGHT |
++		    UNIWILL_FEATURE_AC_AUTO_BOOT |
++		    UNIWILL_FEATURE_USB_POWERSHARE,
++	.kbd_led_single_color =3D false,
++	.kbd_led_max_brightness =3D 4,
++};
 +
-+		val->intval =3D le16_to_cpu(cycle_count);
-+		return 0;
- 	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
- 		ret =3D regmap_read(data->regmap, EC_ADDR_CHARGE_CTRL, &regval);
- 		if (ret < 0)
-@@ -2093,54 +2109,23 @@ static int uniwill_property_is_writeable(struct po=
-wer_supply *psy,
- 	}
- }
-=20
--static const enum power_supply_property uniwill_charge_limit_properties[]=
- =3D {
--	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD,
--};
--
--static const struct power_supply_ext uniwill_charge_limit_extension =3D {
--	.name =3D DRIVER_NAME,
--	.properties =3D uniwill_charge_limit_properties,
--	.num_properties =3D ARRAY_SIZE(uniwill_charge_limit_properties),
--	.get_property =3D uniwill_get_property,
--	.set_property =3D uniwill_set_property,
--	.property_is_writeable =3D uniwill_property_is_writeable,
--};
--
--static const enum power_supply_property uniwill_charge_modes_properties[]=
- =3D {
--	POWER_SUPPLY_PROP_CHARGE_TYPES,
--	POWER_SUPPLY_PROP_HEALTH,
--};
--
--static const struct power_supply_ext uniwill_charge_modes_extension =3D {
--	.name =3D DRIVER_NAME,
--	.charge_types =3D BIT(POWER_SUPPLY_CHARGE_TYPE_TRICKLE) |
--			BIT(POWER_SUPPLY_CHARGE_TYPE_STANDARD) |
--			BIT(POWER_SUPPLY_CHARGE_TYPE_LONGLIFE),
--	.properties =3D uniwill_charge_modes_properties,
--	.num_properties =3D ARRAY_SIZE(uniwill_charge_modes_properties),
--	.get_property =3D uniwill_get_property,
--	.set_property =3D uniwill_set_property,
--	.property_is_writeable =3D uniwill_property_is_writeable,
--};
--
- static int uniwill_add_battery(struct power_supply *battery, struct acpi_=
-battery_hook *hook)
- {
- 	struct uniwill_data *data =3D container_of(hook, struct uniwill_data, ho=
-ok);
- 	struct uniwill_battery_entry *entry;
-+	const struct power_supply_ext *ext;
- 	int ret;
-=20
- 	entry =3D kzalloc_obj(*entry);
- 	if (!entry)
- 		return -ENOMEM;
-=20
--	if (uniwill_device_supports(data, UNIWILL_FEATURE_BATTERY_CHARGE_LIMIT))
--		ret =3D power_supply_register_extension(battery, &uniwill_charge_limit_=
-extension,
--						      data->dev, data);
-+	if (power_supply_has_property_direct(battery, POWER_SUPPLY_PROP_CYCLE_CO=
-UNT))
-+		ext =3D &data->standard_extension;
- 	else
--		ret =3D power_supply_register_extension(battery, &uniwill_charge_modes_=
-extension,
--						      data->dev, data);
-+		ext =3D &data->cycle_count_extension;
-=20
-+	ret =3D power_supply_register_extension(battery, ext, data->dev, data);
- 	if (ret < 0) {
- 		kfree(entry);
- 		return ret;
-@@ -2158,6 +2143,7 @@ static int uniwill_remove_battery(struct power_suppl=
-y *battery, struct acpi_batt
- {
- 	struct uniwill_data *data =3D container_of(hook, struct uniwill_data, ho=
-ok);
- 	struct uniwill_battery_entry *entry, *tmp;
-+	const struct power_supply_ext *ext;
-=20
- 	scoped_guard(mutex, &data->battery_lock) {
- 		list_for_each_entry_safe(entry, tmp, &data->batteries, head) {
-@@ -2169,10 +2155,12 @@ static int uniwill_remove_battery(struct power_sup=
-ply *battery, struct acpi_batt
- 		}
- 	}
-=20
--	if (uniwill_device_supports(data, UNIWILL_FEATURE_BATTERY_CHARGE_LIMIT))
--		power_supply_unregister_extension(battery, &uniwill_charge_limit_extens=
-ion);
-+	if (power_supply_has_property_direct(battery, POWER_SUPPLY_PROP_CYCLE_CO=
-UNT))
-+		ext =3D &data->standard_extension;
- 	else
--		power_supply_unregister_extension(battery, &uniwill_charge_modes_extens=
-ion);
-+		ext =3D &data->cycle_count_extension;
-+
-+	power_supply_unregister_extension(battery, ext);
-=20
- 	return 0;
- }
-@@ -2180,6 +2168,9 @@ static int uniwill_remove_battery(struct power_suppl=
-y *battery, struct acpi_batt
- static int uniwill_battery_init(struct uniwill_data *data)
- {
- 	unsigned int value, threshold, sanitized;
-+	u32 charge_types =3D BIT(POWER_SUPPLY_CHARGE_TYPE_TRICKLE) |
-+			   BIT(POWER_SUPPLY_CHARGE_TYPE_STANDARD) |
-+			   BIT(POWER_SUPPLY_CHARGE_TYPE_LONGLIFE);
- 	int ret;
-=20
- 	if (uniwill_device_supports(data, UNIWILL_FEATURE_BATTERY_CHARGE_LIMIT))=
- {
-@@ -2203,6 +2194,8 @@ static int uniwill_battery_init(struct uniwill_data =
-*data)
- 			if (ret < 0)
- 				return ret;
- 		}
-+
-+		data->extension_props[0] =3D POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRES=
-HOLD;
- 	} else if (uniwill_device_supports(data, UNIWILL_FEATURE_BATTERY_CHARGE_=
-MODES)) {
- 		ret =3D devm_mutex_init(data->dev, &data->charge_type_lock);
- 		if (ret < 0)
-@@ -2211,10 +2204,33 @@ static int uniwill_battery_init(struct uniwill_dat=
-a *data)
- 		ret =3D uniwill_read_charge_type(data, &data->last_charge_type);
- 		if (ret < 0)
- 			return ret;
-+
-+		data->extension_props[0] =3D POWER_SUPPLY_PROP_CHARGE_TYPES;
-+		data->standard_extension.charge_types =3D charge_types;
-+		data->cycle_count_extension.charge_types =3D charge_types;
- 	} else {
- 		return 0;
- 	}
-=20
-+	data->extension_props[1] =3D POWER_SUPPLY_PROP_HEALTH;
-+	/* Needs to come last */
-+	data->extension_props[2] =3D POWER_SUPPLY_PROP_CYCLE_COUNT;
-+
-+	data->standard_extension.name =3D DRIVER_NAME;
-+	data->standard_extension.properties =3D data->extension_props;
-+	/* POWER_SUPPLY_PROP_CYCLE_COUNT is usually already provided by the ACPI=
- battery */
-+	data->standard_extension.num_properties =3D ARRAY_SIZE(data->extension_p=
-rops) - 1;
-+	data->standard_extension.get_property =3D uniwill_get_property;
-+	data->standard_extension.set_property =3D uniwill_set_property;
-+	data->standard_extension.property_is_writeable =3D uniwill_property_is_w=
-riteable;
-+
-+	data->cycle_count_extension.name =3D DRIVER_NAME;
-+	data->cycle_count_extension.properties =3D data->extension_props;
-+	data->cycle_count_extension.num_properties =3D ARRAY_SIZE(data->extensio=
-n_props);
-+	data->cycle_count_extension.get_property =3D uniwill_get_property;
-+	data->cycle_count_extension.set_property =3D uniwill_set_property;
-+	data->cycle_count_extension.property_is_writeable =3D uniwill_property_i=
-s_writeable;
-+
- 	ret =3D devm_mutex_init(data->dev, &data->battery_lock);
- 	if (ret < 0)
- 		return ret;
+ static struct uniwill_device_descriptor lapqc71a_lapqc71b_descriptor __in=
+itdata =3D {
+ 	.features =3D UNIWILL_FEATURE_SUPER_KEY |
+ 		    UNIWILL_FEATURE_LIGHTBAR |
+@@ -3134,6 +3150,14 @@ static const struct dmi_system_id uniwill_dmi_table=
+[] __initconst =3D {
+ 		},
+ 		.driver_data =3D &machenike_l16p_descriptor,
+ 	},
++	{
++		.ident =3D "MECHREVO Yilong15Pro",
++		.matches =3D {
++			DMI_MATCH(DMI_SYS_VENDOR, "MECHREVO"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "GM5HG0A"),
++		},
++		.driver_data =3D &mechrevo_yilong15pro_descriptor,
++	},
+ 	{
+ 		.ident =3D "XMG FUSION 15 (L19)",
+ 		.matches =3D {
 =2D-=20
 2.56.0
 
