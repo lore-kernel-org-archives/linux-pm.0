@@ -1,67 +1,78 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=54.243.244.52
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794289848;
-	b=nDgtslHMw1RaDeVDCOg478ldWRPTDLLWzhVUjH2G0iqPLeqxdMKdzwJPN6KvttApopxx
-	 pBdvsiqkTlfQ7MKk0QJrwedNAp1O2ejJoUoXdukBNdj7Xym8VwzMWFHKQNEWH55X8w3fx
-	 92nPzDcpvMjFei0GTaPWLP+XuTJPUvYb4xA9vOtwAvsssn8OsFttUmszD1k3Kqv9mCv/s
-	 IlcU1ksEoLpDL/XlmYuDmdMYuDg6RVU7booqghx35sf1OdHu6ScEECQPg4Zft0ubfUrZo
-	 Nwm2jUBS1lnL6UdZeiDfAFogUJBDCNNnrkU06aTALHSQLIxE86+4NqhFmUwKytOqQMQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794289848;
-	h=DMARC-Filter:DKIM-Signature:X-QQ-mid:X-QQ-Originating-IP:Received:
-	 X-QQ-SSF:X-QQ-GoodBg:X-BIZMAIL-ID:EX-QQ-RecipientCnt:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:X-QQ-SENDSIZE:Feedback-ID:X-QQ-XMAILINFO:
-	 X-QQ-XMRINFO:X-QQ-RECHKSPAM;
-	bh=GQhdVSS7zODy0kJ7ys7A6cBk+yn7TDp6NFcxMO+tZ0A=;
-	b=G7za19XX4BJtSe6Z/AvRYqmeAF3aAl8spR7CJS0Z4jOIPsYdAV4+W9Bh3S9TX2DF+B3g
-	 zBmSMf++JHfRB4//6svNwjN4pMNiKFJ4M/l59R+TBL3e9qM49lNwy8ruz110kRCCzltHy
-	 YrV6qe+02xvgSdph/05cuhQATzxrQShEIDOkm3DowXqRPC9lpKUeViGL64vGM3UqXj1jG
-	 I2MKVf9nEK0QrCrQW13GBS2FZIsIdfCxZ5JilZiD3xmM4ERLW39vhRGkVpwWEstF/+npN
-	 JwN3fZ0MQ5nfreaoZVMtdpaMt87BcNJPwMIXEmjdCWoIWBcqS50RKiHwc4lG+nkuRFw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=uniontech.com;
-	spf=pass smtp.mailfrom=uniontech.com;
-	dkim=pass header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b="Y9/pnu1a";
-	arc=none smtp.remote-ip=54.243.244.52
-Received: from smtpbguseast3.qq.com (smtpbguseast3.qq.com [54.243.244.52])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794290267;
+	b=iPsVSVZ6qzve/frMkO5cYeQ9ln1AWqm7Wii6H7/a/8tPfCgNFP9jSJQNTmwcsKnE7ciN
+	 EwhGTm3x6OzzZSuThizMam8ANHQiMv5B90TlTQoVcUlZjclHsYielbH0fG/4i/xt1cN4L
+	 hYz65ltJXIzXQXb16/rBQaIywmtScK672lJ2WoP/b/33EJbXQEWKtqI4+BDJ75dpJxGRu
+	 veMpfZ9eBhVsdu9GroH0yoS39NJFnqOYRVO3Fl6j+0DUjFUyMXfGWySAig7UWTgryDN1u
+	 jAfJ2bkt2KsKvIanQNRKPMnxe3ftCmybrxylCYaHE6X1sR0cQBsmhxv7jycp+QkiPgA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794290267;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=0NUhR6yhNUL4+ELGoSgMHNPURFuH94K4EA7n1oL0VZo=;
+	b=VVwtzu2aKgvGfzgG9U9NOoxX7ouvvku+b8gvg7t4t693uHVwpth0D3DK8SRhrOr90+B6
+	 g9/F9M8aThCyxFW2zQ4fMRtgGescSIDqIJG84iVIi77O8kW6hYSb8qHw/6XHb696hSmjp
+	 D2K6P1MPIzmRZ1JoQ+vODJu/mbe67GxKZTkuZ3o29P+GdLUkqlX+CQ/CaQ0l8xnZDDIMo
+	 A5XGUgViW7r+9zG2wjVfPMFhYMMtXZZEe1FcMqz8sI4HLE+vOmmSastQLR3o8rhkGeWVX
+	 gcwQdxbIhoLWQ8KUBtjL/uIE5oLkzq7VXo96A6zpkpgie4AKf0eVPnfv0m+NHpiJucA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UCbCy5XQ;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 367C3606A31C;
-	Tue, 10 Nov 2026 05:50:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 367C3606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E14FD606A31C;
+	Tue, 10 Nov 2026 05:57:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=Y9/pnu1a
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1794289828;
-	bh=GQhdVSS7zODy0kJ7ys7A6cBk+yn7TDp6NFcxMO+tZ0A=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=Y9/pnu1auoAwgfZcn8yFKJWSWzddCq1JjBFGhufKd8fv9VYN4cyi3JErZEoepfxlm
-	 yWH+yHcCtq7/1pApIJMNEG7A8QFywmS2bL09Qbwb0HO3M7P/BAWrQyxg6+es7Jj9wH
-	 uK1SOCx5QeyNV2HjGR0E2kwa0dJI0h2oQkpv5xF8=
-X-QQ-mid: esmtpgz13t1794289824ted8b4a7e
-X-QQ-Originating-IP: OTEMxqyzXc7rWMgb1H/tkZN8A+JjhUSoicioysD1g+k=
-Received: from PEN202512010004 ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Tue, 10 Nov 2026 13:50:22 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 11791463934339592707
-EX-QQ-RecipientCnt: 7
-From: raoxu <raoxu@uniontech.com>
-To: sre@kernel.org
-Cc: linusw@kernel.org,
-	robh@kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	raoxu@uniontech.com,
-	stable@vger.kernel.org
-Subject: [PATCH] power: supply: gpio-charger: Keep properties per device
-Date: Tue, 10 Nov 2026 13:50:21 +0800
-Message-ID: <91858196CE770E42+20261110055021.263296-1-raoxu@uniontech.com>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UCbCy5XQ
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1794290266;
+	b=2gdjz6DQOXz6lS/5Il1f3BM7/U3RgbYCiNIMWVTFfTwBE0/4r3jIMQhxfgaKRHnqQIAn
+	 Sa75QlQRKhqETQG+dj5dbcXxVzu96/Xu52jEqLgAuq77Oi0IUnowIZG/qTacElgfyG+qM
+	 dct8EQza7rWET1qHwJIfiRH6hVTtmlUuPJyE3F+4Rr5sONTuqDWPO+xTeZhr+TaNuTMSP
+	 7of3PQk+GVjmOJ13MISmCaTv89g+xjLgl9S7trfJqdjD7DI2yj/YL4+ucf4FekjbhcMPB
+	 NlAQVqZEDCH+0psotmahVh6F2uCT/vDu/TfgO7VFfWPmYmaicWX2X+yWRL1DY6E1vNw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794290266;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=0NUhR6yhNUL4+ELGoSgMHNPURFuH94K4EA7n1oL0VZo=;
+	b=BC4ZGGQ/W62zmw0vhYZV7VMJUe7qYhEqPeB0ZQ+BvjNQhx1gEUYa63aqS55P/hznuXGG
+	 XIHKI9kX16EU30EDeMf+GuQT18nRgSa6Okmc/XbQkgNTJG2mAPQ9QgrGy2O8xk44KARRK
+	 JwP2myjRWof/L4Z/Y31AY4OFzEovh5RAYhDTCcgSjYtIARFkls3NDOzvZbN44URb1li2C
+	 uinOd2ZtzdJtEdiCFGmmR/LxZq6QE0nR/88FinyqdcIO2cYgmIPKkueOodiU8BahduOY5
+	 8vG+WEwEOgjSf0xJUpgN0xNbEIy2I/ZHlp7Ts2FGrfX17+ujBSBFRQCn8Rrpczcba3g==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.kernel.org (Postfix) with ESMTPS id E62DB1F0089F;
+	Tue, 10 Nov 2026 05:57:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794290266;
+	bh=0NUhR6yhNUL4+ELGoSgMHNPURFuH94K4EA7n1oL0VZo=;
+	h=From:Date:Subject:To:Cc:Reply-To;
+	b=UCbCy5XQfhiqItKcd4AEgqOZs9hsJR1GPs3nPqPXiaVtxmMNwtXwE4QOUBAlcAnhw
+	 N+QEVbnsowMMTbb4g6/RS2FxtJjVcBlebXkc44mCP102Q4h74lqJomi82Zx8tKvowi
+	 JlyQloVkLAOgfN+pca7o47ebOQYfDH2i7NS2JzXN/B7CWkJswNCycXDNblWHZit68I
+	 ZaJIRBnTlJTp7nETgPtLzQgSZ/ylqR4jbdKZ60lE0bb6M6dGA8exz/qCAYjxkEV+1E
+	 L45TK1rv0dXS0Kaw3oONK3UorCPHRpGyFqhXwTjgFY9Yugvo3xJYT1b4HP9PTMzQlw
+	 lejQAXYmZpcZA==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 2FF9548893;
+	Tue, 10 Nov 2026 05:57:45 +0000 (UTC)
+From: Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
+Date: Tue, 10 Nov 2026 05:57:45 +0000
+Subject: [PATCH] PM / devfreq: Resume at the frequency from before suspend
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -71,110 +82,103 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: NU4e3V92LJuQ4czWvYlTU8cSWUqMasLWaZNi01iuWh41TU7M/TS77+fe
-	4TKqS6cXa3iVgQ/czjiWnFnRVu7tWWRux70UOfCsWmePbuf5sWbR9WuaXsC58h5faQkiM5+
-	1lrRWWe9H4NWc0R6YcEBwI+u4KR8cATkpr4sTENB2usm7t1nDnmOUp6kk9W3H5HB2f4+vge
-	ccJJP22GgcG90fZnPrsiAh/qz6EDiLPAJgyu0ut6M0lXZCbpyKx79FHZ/TKDQO/ywXrbo9y
-	qA0R1Cwaiexo6WfSitbz9S5/MsurI0C00wrom3bFQlzBueG9xaxQiDmq7BmZlma9iIehs6N
-	yk/aaVoQxjlGrKKVSiTx3pXR56HB0wgaQJyaDJFmrshm+6TeiC9N9q+FTN9spdVYET5NP0y
-	qrV0fG3f5dvyb4/CAT9lN7AxT1YllO+e49WFO6a8N/PCZwIeZcXLoeTbGSzOGwZk9gW4Aoz
-	8bsTDa9WqX0eaBmqOvDXC2mrHw64HUKP4PZDjeCIZcO2l/Ii9Cjd1qVY2384bOF5ltFZo5h
-	z3HaEKAmsez4aYl4u6tH04tWeQsdvOKfe6tBYNBwg1AT41qq96Ga8saPv7asuCdzDoeEkUu
-	/6pr/ffnseuA/kPtf3EgSCLfeNLtuy9b65pyvcYjfvsf2A66jYnFe0nJxL1x8oLwrk2ZEiM
-	mLfZI4yw0d1zKJUwLdArQvT9x5oDHuMXAovrUuKCXQL5JNICRJn5eNNB5l1JbcBHT2adlXs
-	vBKi++yEn1uoxfow4hffA17YuR9M1WhAPe6InVQzU4LZusxklmL7niOu14X/Rh1jB+TutnL
-	6o+ByR5gvrnvFeAqHpHqn3fTu2sPWd81AXTdTYN/ozAcCD68+cLadrAXlhOgAX/tYjINN0F
-	mAA6gx4YwnjEtRsKB660JRywBL4OD0lGio7hRU/SnVpBfmzCatj3P1gR6WHoLBP5c17wHRP
-	LRNw8LVZdoNK3gWVqzspmqBoRUexYulT8eIniF78GZjP7CCHxGemYSTx5Z9kJYFv3X+LpaQ
-	ZMuxci0EWnsHlQ9KS96BRB5wkTZxASfip6p4fzNgyQkKyRlfvZQ9eSLXCOpX8=
-X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
-X-QQ-RECHKSPAM: 0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261110-devfreq-resume-freq-v1-1-90de450ccbd0@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMwQ5EQBCE4VeRPpvETETEq2wcGDW0hLXdSyTi3
+ Q1u9R3qP0ghDKUqOUiwsfJ3jrBpQn5o5h6Gu2hymSustZnpsAXBzwh0nWCejdyhQVuEMpQUn4s
+ g8P5UP/VrXdsR/n+n6DwvjWdj2ncAAAA=
+X-Change-ID: 20261110-devfreq-resume-freq-e42eaeb6f8f8
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Kyungmin Park <kyungmin.park@samsung.com>, 
+ Chanwoo Choi <cw00.choi@samsung.com>, Dong Aisheng <aisheng.dong@nxp.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Arun Iyengar <aiyengar1990@gmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794290264; l=2896;
+ i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
+ bh=tdlutxMME+GnXd+M6y/2TwHqtzvKQ3bamAdqTwwxsDk=;
+ b=/P0AlERKNeMv1oK1rQ9ScANECsCNBtd20fQ+QTuJVNIhjjR+2oRX3S8mzeF6DN85r7uIEXRt6
+ D+sclVwSoGcA/oxPBAyDjs1RGYKWO/3ti1RlG4PrSyDGbGCzBc0tWZG
+X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
+ pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
+X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
+ auth_id=1480
+X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
+Reply-To: aiyengar1990@gmail.com
+Content-Transfer-Encoding: 7bit
 
-From: Xu Rao <raoxu@uniontech.com>
+From: Arun Iyengar <aiyengar1990@gmail.com>
 
-gpio_charger_properties is a global array that is overwritten during
-each device probe according to the optional GPIO features present on
-that device. When more than one gpio-charger is registered, a later
-probe can therefore change the property list referenced by an already
-registered power supply.
+devfreq_suspend_device() moves a device that has a suspend OPP to that
+frequency with devfreq_set_target(). Since commit 62453f1ba5d5 ("PM /
+devfreq: Use more accurate returned new_freq as resume_freq"),
+devfreq_set_target() records the frequency it has just set as
+resume_freq, so the suspend transition itself overwrites the frequency
+to resume at with the suspend frequency. devfreq_resume_device() then
+"restores" the suspend frequency and the device stays there until the
+governor next re-evaluates it.
 
-Store the property array in struct gpio_charger so each power supply
-keeps the property list built for its own device.
+For system suspend that only costs one polling interval. For a driver
+that calls devfreq_suspend_device() from runtime PM, such as panthor,
+every runtime resume starts at the lowest OPP: with a 50 ms autosuspend
+delay and a 50 ms polling interval, short bursts of GPU work after an
+idle period run at the suspend frequency.
 
-Fixes: 1d85f6d1b0c1 ("power: supply: gpio-charger: Make gpios optional")
-Signed-off-by: Xu Rao <raoxu@uniontech.com>
-Cc: stable@vger.kernel.org
+Save the frequency the device ran at before the suspend transition and
+use that as resume_freq, as the code did before that commit. Requests
+made while the device is suspended still update resume_freq through
+devfreq_set_target(), as before.
+
+Fixes: 62453f1ba5d5 ("PM / devfreq: Use more accurate returned new_freq as resume_freq")
+Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
 ---
- drivers/power/supply/gpio-charger.c | 20 +++++---------------
- 1 file changed, 5 insertions(+), 15 deletions(-)
+The bug was found on an RK3588 board (panthor, runtime PM through
+devfreq_suspend_device()). The patch runs in that board's v7.3-based
+kernel. I could not test it on a second platform: my Allwinner H616
+board has no suspend OPP, so the changed path is not taken there.
 
-diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-index 1dad49acc424..99c1af99dd88 100644
---- a/drivers/power/supply/gpio-charger.c
-+++ b/drivers/power/supply/gpio-charger.c
-@@ -30,6 +30,7 @@ struct gpio_charger {
+This patch was developed with Claude (Anthropic) as a coding
+assistant: it wrote the code and the commit message.
+I reviewed it and tested it as described above.
+---
+ drivers/devfreq/devfreq.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
- 	struct power_supply *charger;
- 	struct power_supply_desc charger_desc;
-+	enum power_supply_property properties[3];
- 	struct gpio_desc *gpiod;
- 	struct gpio_desc *charge_status;
-
-@@ -262,17 +263,6 @@ static int init_charge_current_limit(struct device *dev,
- 	return 0;
- }
-
--/*
-- * The entries will be overwritten by driver's probe routine depending
-- * on the available features. This list ensures, that the array is big
-- * enough for all optional features.
-- */
--static enum power_supply_property gpio_charger_properties[] = {
--	POWER_SUPPLY_PROP_ONLINE,
--	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
--};
--
- static int gpio_charger_probe(struct platform_device *pdev)
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index f08fc6966eae..043cdc37bd0b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1146,6 +1146,7 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
+  */
+ int devfreq_suspend_device(struct devfreq *devfreq)
  {
- 	struct device *dev = &pdev->dev;
-@@ -307,7 +297,7 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 	}
++	unsigned long resume_freq;
+ 	int ret;
+ 
+ 	if (!devfreq)
+@@ -1163,7 +1164,15 @@ int devfreq_suspend_device(struct devfreq *devfreq)
+ 
+ 	if (devfreq->suspend_freq) {
+ 		mutex_lock(&devfreq->lock);
++		/*
++		 * devfreq_set_target() records the frequency it sets as the
++		 * one to resume at. Keep the frequency from before suspend
++		 * instead, so that the device does not resume at its suspend
++		 * frequency.
++		 */
++		resume_freq = devfreq->previous_freq;
+ 		ret = devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
++		devfreq->resume_freq = resume_freq;
+ 		mutex_unlock(&devfreq->lock);
+ 		if (ret)
+ 			return ret;
 
- 	if (gpio_charger->gpiod) {
--		gpio_charger_properties[num_props] = POWER_SUPPLY_PROP_ONLINE;
-+		gpio_charger->properties[num_props] = POWER_SUPPLY_PROP_ONLINE;
- 		num_props++;
- 	}
+---
+base-commit: 9a222650d9e70d0027126e4df5b00b1b5b678a97
+change-id: 20261110-devfreq-resume-freq-e42eaeb6f8f8
 
-@@ -316,7 +306,7 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		return PTR_ERR(charge_status);
- 	if (charge_status) {
- 		gpio_charger->charge_status = charge_status;
--		gpio_charger_properties[num_props] = POWER_SUPPLY_PROP_STATUS;
-+		gpio_charger->properties[num_props] = POWER_SUPPLY_PROP_STATUS;
- 		num_props++;
- 	}
+Best regards,
+--  
+Arun Iyengar <aiyengar1990@gmail.com>
 
-@@ -324,13 +314,13 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
- 	if (gpio_charger->current_limit_map) {
--		gpio_charger_properties[num_props] =
-+		gpio_charger->properties[num_props] =
- 			POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX;
- 		num_props++;
- 	}
-
- 	charger_desc = &gpio_charger->charger_desc;
--	charger_desc->properties = gpio_charger_properties;
-+	charger_desc->properties = gpio_charger->properties;
- 	charger_desc->num_properties = num_props;
- 	charger_desc->get_property = gpio_charger_get_property;
- 	charger_desc->set_property = gpio_charger_set_property;
---
-2.50.1
 
