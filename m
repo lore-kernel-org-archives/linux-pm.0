@@ -1,52 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=13.76.78.106
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794317022;
-	b=zJ5kPqNfHvolbnql1+WPHt8wc/Gja7JWl0NUnICKbkDCx9JJoTXZjOIDoV6ttkRVTrxb
-	 021ES/JJsyYoHwfCGGfIHhuH2C2kZdK1kYqgVqGQQaT4zEZng6CX/xiEqwPjUoX6JLQwG
-	 31x+LlYW1+jjKkIYgT84bHVnrszXe5ZdZblajEae7ptJOnt375e230ECknaC3ANKgb7qR
-	 BUMYLc8gwp1Y7LJwv033wmrjl7hOcIuE2nndAhrxM7BW5Tk2VG1rlsMo+m2JuS7AgxwJ2
-	 RWHq1g8vTjVSzPiW7fRxUsq9uArC/4J1aA30x26KudLUXP80+VkJ22kus0frQAWZGpA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794317022;
-	h=DMARC-Filter:Received:X-Originating-IP:Date:X-CM-HeaderCharset:From:
-	 To:Cc:Subject:X-Priority:X-Mailer:In-Reply-To:References:
-	 X-CM-CTRLMSGS:Content-Transfer-Encoding:Content-Type:MIME-Version:
-	 Message-ID:X-Coremail-Locale:X-CM-TRANSID:X-CM-SenderInfo:
-	 X-Coremail-Antispam;
-	bh=XsAr4O89duvEBbigSHHNVV6Ye8RdzbpA0oQFcH49mZk=;
-	b=ZtHMU6M5exkLT3gpMnniVUH2EP8dVuYdq8GN2LeeHOMgQuea8xo0lGui3/RQkdqrZYjO
-	 PfsuyAUNSmhapOGzOvSd5gK94d7EG8CmCWg0Z+M3Oq066jshDEZdf+xN2H4nrDOKve/lG
-	 nzNEWcAJOIAyVid8mQ724IQwwY/XrNpdnYA8qyvsqzpj1UTADpLrvA9udFSdGD/YYhhz4
-	 rlnArcU5bZsWDQAIy7FfYEnbp/gMSRl4PEJPrd38Io1HSLFFvo70fC/7TLvnDdm0+x4tD
-	 yxbMH52pSrezn3fxYcjiRIL56gpkkO3ypfpqtxZdvf5tDCgf3o5MeM8Tk+vqmmkk9Nw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=hust.edu.cn;
-	spf=pass smtp.mailfrom=hust.edu.cn;
-	arc=none smtp.remote-ip=13.76.78.106
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [13.76.78.106])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2DDDE606A7E0;
-	Tue, 10 Nov 2026 13:23:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2DDDE606A7E0
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=hust.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hust.edu.cn
-Received: from xuhx$hust.edu.cn ( [10.12.190.107] ) by ajax-webmail-app2
- (Coremail) ; Tue, 10 Nov 2026 21:23:31 +0800 (GMT+08:00)
-Date: Tue, 10 Nov 2026 21:23:31 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From: =?UTF-8?B?5b6Q5pmX57+U?= <xuhx@hust.edu.cn>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: power: supply: bq24190: IRQ handler can call  power_supply_changed
- after the psy is unregistered
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2025.3-cmXT6 build
- 20260810(6c94e3b5) Copyright (c) 2002-2026 www.mailtech.cn hust
-In-Reply-To: <2026102727-data-sequel-ce41@gregkh>
-References: <4c7f9772.192e1.1a17d5c2ed5.Coremail.xuhx@hust.edu.cn>
- <2026102727-data-sequel-ce41@gregkh>
-X-CM-CTRLMSGS: =?B?FYbFWziH6nJ5xwDR7hwMki1N8jM=
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.49
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794317538;
+	b=sQYZ8/OBRPBD8B8ZutK4Csh1S3pY149hIBUZnyzFptfAOK3kzcZsCmOEoOgS6xuchYCh
+	 2kpexPqZiX65GCg39YdNJ/dz6GHMkkSATXGxBrvM8UjDXK1Wcngp1IiqQFAJUY9k2pJe8
+	 Zi9wNp3IT1LPU8EM6OFq2Um0POHHuvXvxooX8JxSVVUYxt82BUPoGbUE4lfaXwgRDBk4f
+	 08z4FZ+FaBrwtYrTv8iBycIiI8F9kJFzd4sk/Bz8XeCLK6N5HsFjianeU3TxsHxircDc4
+	 NOQgLsZsiB3kB0Sa2Jlnn+ckES62XeD6YAAOK908YarJgoLXV5qM/IkhgSrOsMA2PHQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794317538;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=Pj4rH1eXEm9TWaNRKej2G25c6TaNFuIIDHh9BKw0CNc=;
+	b=xmbTgPYbMEjZuU5bMb7vIWjhBQaF/aH1rrsS/gwm1lJIuud/dvjs4fCrSljuq0UqYrHv
+	 2cFzRY/HW2q81MHYJ49UJBB2CoOM+PnY+KIcsgTFvMIXjJhw5jB7OJ79IPY2YeDpwBCuR
+	 2ajL6+F1dqrd2mPDlmICFLY1rhh03YPIv9d8ZNHIjMTqLOdfIr/zXcze8EPFtm03wqyQh
+	 Gh9lTaU5sEqloQD24h4WY3zS7X32uNbvFnwu/T9ktB5j7q+mWqJM3xvMuSkUL/TkHyTHA
+	 gpM90CtHLn9oixbzNSoGgQqr4nqtp6oNdkEvOFsU7rccIcL/kN172OCp/mRPitmPybQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=AOSlpnfj;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.49
+Received: from mail-dl1-f49.google.com (mail-dl1-f49.google.com [74.125.82.49])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61782606ACDC
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 13:32:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 61782606ACDC
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=AOSlpnfj
+Received: by mail-dl1-f49.google.com with SMTP id a92af1059eb24-1b244fb7fffso2492590c88.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 05:32:18 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794317537; cv=none;
+        d=google.com; s=arc-20260327;
+        b=MaujHNnvXs92xhl0e8UqQMDxaNqq3bgkvGfJsY3nmzs1gxDnJtbUf4mEEssEfUhMj3
+         sw6IssTAEAe7KCYDJoL0LR0SXSTh+l6Ws4S2DNsMGrF+XFQ0fTeI8CCExDRhkw9y2mTc
+         NJfH7MmtB7soj66jlsFCMjaRheWGLgawStkbY62QsyqE97vnSUkjKYiSY4VOwATOfIUh
+         PBOBP55YL7O8ssolfLoAWtfxwQZNxlXYCZGlXo9NkKOfwcFq/d8FxIKKFQ9MO9vpDvsY
+         y/wqZMk+DeVlu5ZNHwtv1njzS+M4trjyf1ZXSijwmlyNXSOKyUaobJkFRDYwKzedHaNQ
+         wfbg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=Pj4rH1eXEm9TWaNRKej2G25c6TaNFuIIDHh9BKw0CNc=;
+        fh=m4lidOJJWHBT6sldgzPZaOIPmNM2r7iOM9qWGYrzuI0=;
+        b=P1owf8glDvIPxt3Oc3++SVA1+hzr/inz2CEfOZaOeLogMPSY31+TAirb2ui2Av+F5D
+         OtaQL+o1HTuXqDY0G3OuJbN4bRPAplRC8CaG5OvZv7LBUAKkoPBesXNR4mrWkkqf1JYV
+         24P8/AV1IUiM1zXaluk2xtNEkIf23cfg/GQfl3TrBu4RTAFY0QnTqQKPD/uWGD5iLDQN
+         3VgKVuS9JaTl5f3YtF5Lceu1c96WiTAbmU/hRQ5B+ZoPfREpn6rapg2tdS9eUAWLDLVI
+         4xnzLDodB7e/5q2Rn2Uv+mQ0L15nwjyrUq1ee1dBq79jueSURhe5l/6cGyu7C9xzX18X
+         fGJQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1794317537; x=1794922337; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Pj4rH1eXEm9TWaNRKej2G25c6TaNFuIIDHh9BKw0CNc=;
+        b=AOSlpnfjZLSdTii0+zDJrGn3cSjSlOKo01Bh6g/kFMKvSJ+DKq4x1l7SMLbeXpk79l
+         3XWUq4INy0Oo9JBLC1491DiVPdhcxFeF9kQ+sBxrZD/39kaERAbhLvmdoP/LoT9jPERI
+         +MYoqnOeqbXh/BRaZ93A+LPLN/1Ir7kG3cM/Xrvm5w/5y3OMagRaHGRW8VYyu+Xt2Hkd
+         UVeiqRhVft42tCfpLwX1Q0L22lXby+7lchvA/nmYlPb1V04ePyu3dxYu2PpAzuHZCoS7
+         aYnAcDdDkRF9cZDwn1D6moy7tDRvGM8p9KIdGPxR66oTIo3P1w8w5GMR0WKNi/mf4mA9
+         F4Tg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794317537; x=1794922337;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=Pj4rH1eXEm9TWaNRKej2G25c6TaNFuIIDHh9BKw0CNc=;
+        b=XBEJHUupDyVUo3Q43kntHPijBvwcnRx6YTq+L/Yl/+BgLV4mb0nPh2iAE+ZTDj8Lfa
+         oH2pACKCTgv7ZnY84VXWEnkTWSlGgy2VtJBYh+BcpnsOOzFr5gBT1KrHcjjGntux7vmr
+         sMkEbYQBzrgHrpyEy+MYpQvWQMAR0H/b+Wj2O3V5PaH50g2oEp0ht/9v2XwI9hYcdZtt
+         fT4QvObOJtmRcRZkn8Mx+PIgFiT8cTmTqIjWw+XBgFtSncUe7jw23TqkQsAPWRWYd8BX
+         W5NUPkkdyvuFvcPchVwiedw6Q9dCuxMqzOkdAvmQv2Df/2b378gsThFeKQgr/muEphLu
+         CGmw==
+X-Forwarded-Encrypted: i=1; AL+hErE/mELXqxdUA88CcfS3kTqQLe+zO+EWNakT3NdqT8RmkB4R3Y0rcSJ3MdNHL9cJ3apNqe3+cfUh5A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9zlHEh4qoH5evdOHYdHdf1oqeuQ2yoNZ1xvWYcGz3rq54WODBl
+	mzFnlzbvNjIjhTCl7V1BJ25/UYqe9UUz63/cGwPM8yeY6FbCXZQmndEo4+SDY98Sj+wIj6ovZXo
+	7R/tea67V5QZqQHjlf5GDG3q0F1KeqmOA72KXvgOPJA==
+X-Gm-Gg: AYBFou1OdVlYld7grW2e9KZVwpsbHIJvtgs+7xNxlYsmyJafDHzK5Zm/z3ifnCp+cuM
+	imOeH2aWcWk1/xuJJbMi1gZwhoIQniXKs9hzjSkisb+lcFm/yyw/QW1em1vug7t37IYcMM7XM+8
+	X07zDJCNOuEkUBd9Z0FotVPoWjZs1VrgXiP1xcxBXhW1Ayx6HLhoGjK4zHEs+xVEREtTCfgK8nW
+	2Kr+LGx1JUT5Wpg41sPZ/EV3eT/u22WqP0tX+PgoodpGWHR5a5lvz6NZviy+9NVsCusjSQh8vJ6
+	iTTjyWzElTDjG4YeG9Gxss0tigW/SRk4Gx/zjaviQYDu/44Dx1GL7Pc+qXvJAs+bKJCTQJGo1EK
+	XxhhwSUFjR8w40hx5AA5YEKDr5dNuZfT95LCX/cU6/WdT9YhNaU7b5tB4pjO2PkPqi7rwVw==
+X-Received: by 2002:a05:7022:7f01:b0:1b2:43ac:d3a3 with SMTP id
+ a92af1059eb24-1b3b5fee2aamr3361789c88.24.1794317537291; Tue, 10 Nov 2026
+ 05:32:17 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -56,77 +103,99 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <544415a1.22b25.1a1c5a0c926.Coremail.xuhx@hust.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:IQEQrMC23sbTGvNqn58NAA--.9886W
-X-CM-SenderInfo: bgsqjkayqyjmo6kx23oohg3hdfq/1tbiAgMHB2rx8m6T4AABs0
-X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VWDJw
-	CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
-	daVFxhVjvjDU=
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+ <20261106151947.3991524-7-vincent.guittot@linaro.org> <au7SabL5pfbsApyB@scheduler.schedules>
+ <CAKfTPtBfXOcAd=5RkYepRn15Hg=id9FQ3jh1tQoewOtUSrsjHw@mail.gmail.com> <avIh4MZjVyQuF6Yo@scheduler.schedules>
+In-Reply-To: <avIh4MZjVyQuF6Yo@scheduler.schedules>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Tue, 10 Nov 2026 14:32:01 +0100
+X-Gm-Features: AclHuK_-u2urQ3RFkBLSdBCNdaeJlRcvSlcfMQXUBnI1scU56PsAWcpbh6wLOOg
+Message-ID: <CAKfTPtALwo_aQ_31nF631_7hs1YfYzNUXdY1zC=jUB7P7_QRmw@mail.gmail.com>
+Subject: Re: [PATCH 06/20 v3] sched/eevdf: Add min slice check when selecting CPU
+To: Kayra Cizmeci <kayracizmeci@gmail.com>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
+	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
+	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
+	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
+	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
+	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
+	sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
+Content-Type: text/plain; charset="UTF-8"
 
-YnEyNDE5MF9yZW1vdmUoKSB1bnJlZ2lzdGVycyB0aGUgYmF0dGVyeSBhbmQgY2hhcmdlciBwb3dl
-cl9zdXBwbGllcwpiZWZvcmUgcG1fcnVudGltZV9kaXNhYmxlKCk7IHRoZSBJUlEgaXMgcmVxdWVz
-dGVkIHdpdGggZGV2bSBhbmQgaXMKdGhlcmVmb3JlIGZyZWVkIG9ubHkgYWZ0ZXIgcmVtb3ZlIHJl
-dHVybnMuICBBIHRocmVhZGVkIElSUSBoYW5kbGVyIHRoYXQKaXMgYWxyZWFkeSBydW5uaW5nLCBv
-ciBvbmUgdGhhdCBydW5zIGluIHRoZSB3aW5kb3cgYmV0d2VlbiB0aGUgdHdvCnVucmVnaXN0ZXJz
-IGFuZCBwbV9ydW50aW1lX2Rpc2FibGUoKSwgY2FsbHMgYnEyNDE5MF9jaGVja19zdGF0dXMoKSAt
-Pgpwb3dlcl9zdXBwbHlfY2hhbmdlZCgpIG9uIGEgcHN5IHRoYXQgaGFzIGFscmVhZHkgYmVlbiB1
-bnJlZ2lzdGVyZWQgKGFuZAptYXkgYmUgZnJlZWQpLiAgVGhpcyBpcyBhIGRyaXZlciByZW1vdmUt
-b3JkZXIgYnVnOyB0aGUgd2luZG93IGlzCm5hcnJvd2VyIHRoYW4gYnEyNTg5MCBidXQgcmVhbC4K
-ClRoZSBkZXRhaWxlZCBkZXNjcmlwdGlvbjoKCiogVGVzdCBlbnZpcm9ubWVudCAvIGFmZmVjdGVk
-IHZlcnNpb24KCiAgTGludXggNy4zLjAgc291cmNlIHRyZWUgKHVubW9kaWZpZWQga2VybmVsLm9y
-ZyA3LjMpLCB4ODZfNjQuICBUaGlzIGlzCiAgYSBzb3VyY2UtbGV2ZWwgcmVwb3J0LiAgSSBkaWQg
-bm90IHJ1biBpdCBvbiBicTI0MTkwIGhhcmR3YXJlOiB0aGUKICBLQVNBTiBidWlsZCB1c2VkIGZv
-ciBteSBjb3JlIHRlc3RzIGRvZXMgbm90IGVuYWJsZQogIENPTkZJR19DSEFSR0VSX0JRMjQxOTAg
-YW5kIGhhcyBubyBJMkMgYnEyNDE5MCBkZXZpY2UuICBObyByZXByb2R1Y2VyCiAgaXMgYXR0YWNo
-ZWQuICBMaW5lIG51bWJlcnMgYXJlIGZyb20gNy4zLgoKKiBNZWNoYW5pc20KCiAgUHJvYmU6Cgog
-ICAgICA6MjEyMSAgcG93ZXJfc3VwcGx5X3JlZ2lzdGVyKGJkaS0+YmF0dGVyeSwgLi4uKQogICAg
-ICA6MjEzMyAgcG93ZXJfc3VwcGx5X3JlZ2lzdGVyKGJkaS0+Y2hhcmdlciwgLi4uKQogICAgICA6
-MjE2MCAgZGV2bV9yZXF1ZXN0X3RocmVhZGVkX2lycSguLi4sIGJxMjQxOTBfaXJxX2hhbmRsZXJf
-dGhyZWFkLCAuLi4pCgogIEJvdGggcG93ZXJfc3VwcGxpZXMgYXJlIG5vbi1kZXZtLiAgVGhlIElS
-USBpcyBkZXZtLCBzbyBpdCBpcyByZWxlYXNlZAogIGJ5IGRldnJlcyBhZnRlciBicTI0MTkwX3Jl
-bW92ZSgpIHJldHVybnMsIG5vdCBiZWZvcmUuCgogIGJxMjQxOTBfcmVtb3ZlKCkgKDoyMTg5LTIy
-MDYpOgoKICAgICAgOjIyMDAgIHBvd2VyX3N1cHBseV91bnJlZ2lzdGVyKGJkaS0+YmF0dGVyeSk7
-CiAgICAgIDoyMjAxICBwb3dlcl9zdXBwbHlfdW5yZWdpc3RlcihiZGktPmNoYXJnZXIpOwogICAg
-ICA6MjIwMi0yMjA0ICBwbV9ydW50aW1lX3B1dC4uLgogICAgICA6MjIwNSAgcG1fcnVudGltZV9k
-aXNhYmxlLi4uCgogIFRoZSB0aHJlYWRlZCBoYW5kbGVyICg6MTgzNC0xODUwKSBjYWxscyBicTI0
-MTkwX2NoZWNrX3N0YXR1cygpCiAgKDoxODI0LTE4MjkpLCB3aGljaCBjYWxscyBwb3dlcl9zdXBw
-bHlfY2hhbmdlZChiZGktPmNoYXJnZXIvYmF0dGVyeSkuCgogIFdpbmRvdyBBOiBhbiBJUlEgaXMg
-ZGVsaXZlcmVkIGFmdGVyIDoyMjAxIGFuZCBiZWZvcmUgOjIyMDU7IHRoZQogIGhhbmRsZXIgcnVu
-cyB3aGlsZSBib3RoIHBzeSBhcmUgYWxyZWFkeSB1bnJlZ2lzdGVyZWQuICBXaW5kb3cgQjogYQog
-IGhhbmRsZXIgaXMgYWxyZWFkeSBydW5uaW5nIHdoZW4gOjIyMDAvOjIyMDEgZXhlY3V0ZTsgaXQg
-Y2FuIHJlYWNoCiAgcG93ZXJfc3VwcGx5X2NoYW5nZWQoKSBhZnRlciB1bnJlZ2lzdGVyLiAgQWZ0
-ZXIgOjIyMDUsCiAgcG1fcnVudGltZV9kaXNhYmxlKCkgbWFrZXMgbmV3IElSUSBoYW5kbGluZyBs
-ZXNzIGxpa2VseSB0byByZWFjaCB0aGUKICBjYWxsYmFjaywgc28gSSBkbyBub3QgY2xhaW0gYXJi
-aXRyYXJ5IHBvc3QtcmVtb3ZlIElSUXM7IHRoZQogIGRldGVybWluaXN0aWMgd2luZG93IGlzIDoy
-MjAxLToyMjA1LCBwbHVzIHRoZSBpbi1mbGlnaHQgaGFuZGxlci4KCiogQ29uY3JldGUgY29ycnVw
-dGlvbiAvIGltcGFjdAoKICBwb3dlcl9zdXBwbHlfY2hhbmdlZCgpIGRlcmVmZXJlbmNlcyBwc3kt
-PmNoYW5nZWRfbG9jazsgaWYgdGhlIHBzeSBoYXMKICBiZWVuIGZyZWVkLCB0aGlzIGlzIGEgc2xh
-Yi11c2UtYWZ0ZXItZnJlZSBhbmQgY2FuIGNvcnJ1cHQgdGhlCiAgd29ya3F1ZXVlIG9yIGNyYXNo
-LiAgSWYgYSBjb25zdW1lciByZWZlcmVuY2Uga2VlcHMgdGhlIHBzeSBhbGl2ZSwgdGhlCiAgY2Fs
-bCBpcyBhIHVzZS1hZnRlci11bnJlZ2lzdGVyIGFuZCBjYW4gcmVhY2ggdGhlIGZyZWVkIExFRCB0
-cmlnZ2VycwogIGRlc2NyaWJlZCBpbiB0aGUgY29yZSA1QiByZXBvcnQgb24gYSA3LjMga2VybmVs
-IHdpdGhvdXQgdGhlCiAgOWY3ZjdhODU5NDUxIGdldC9zZXQgZ3VhcmQuICBJIGhhdmUgbm90IGRl
-bW9uc3RyYXRlZCBwcml2aWxlZ2UKICBlc2NhbGF0aW9uLCBhbmQgSSBoYXZlIG5vdCBydW4gdGhp
-cyBvbiBoYXJkd2FyZS4KCiogVHJpZ2dlciBtb2RlbAoKICBicTI0MTkwIHdpdGggYSBjaGFyZ2Vy
-IGludGVycnVwdCAoQUMgcGx1Zy91bnBsdWcsIGZhdWx0LCBvciBjaGFyZ2VyCiAgc3RhdHVzIGNo
-YW5nZSkgY29uY3VycmVudCB3aXRoIHVuYmluZC9yZW1vdmUuICBUaGUgd2luZG93IGlzIG5hcnJv
-dwogIChiZXR3ZWVuIHRoZSB0d28gdW5yZWdpc3RlcnMgYW5kIHBtX3J1bnRpbWVfZGlzYWJsZSwg
-b3IgYW4gaW4tZmxpZ2h0CiAgaGFuZGxlciksIHNvIGl0IGlzIGEgcmFjZSByYXRoZXIgdGhhbiBh
-IGRldGVybWluaXN0aWMgc2VxdWVuY2UuCiAgVW5iaW5kaW5nIHJlcXVpcmVzIHJvb3Q7IGEgcGh5
-c2ljYWwgY2hhcmdlciBldmVudCBpcyB0aGUgbmF0dXJhbAogIHRyaWdnZXIuICBObyBnZW5lcmlj
-IHVucHJpdmlsZWdlZCB1c2Vyc3BhY2UgaW50ZXJmYWNlLgoKKiBSZXByb2R1Y2VyIC8gcmVzdWx0
-cwoKICBObyByZXByb2R1Y2VyIGF0dGFjaGVkLiAgVGhpcyBpcyBhIHNvdXJjZS1sZXZlbCByZXBv
-cnQ7IEkgY2FuIHRlc3QgYQogIHByb3Bvc2VkIGZpeCBpZiBicTI0MTkwIGhhcmR3YXJlIGlzIGF2
-YWlsYWJsZS4gIFRoZSByZWxldmFudCBjYWxsCiAgY2hhaW4gaXMgZnVsbHkgdmlzaWJsZSBpbiA3
-LjMgYXQgdGhlIGxpbmUgbnVtYmVycyBhYm92ZS4KCgoqIFN1Z2dlc3RlZCBkaXJlY3Rpb24gCgog
-IERpc2FibGUgdGhlIElSUSBhbmQgd2FpdCBmb3IgYW4gaW4tZmxpZ2h0IGhhbmRsZXIgYmVmb3Jl
-IHVucmVnaXN0ZXJpbmcKICB0aGUgcG93ZXJfc3VwcGxpZXM6IGNhbGwgZGlzYWJsZV9pcnEoKS9m
-cmVlX2lycSgpIChvciBhbiBleHBsaWNpdAogIGRpc2FibGVfaXJxICsgc3luY2hyb25pemVfaXJx
-KSBiZWZvcmUgOjIyMDAsIGFuZCBtb3ZlCiAgcG1fcnVudGltZV9kaXNhYmxlKCkgYmVmb3JlIHRo
-ZSB1bnJlZ2lzdGVycy4gIEFsdGVybmF0aXZlbHkgaGF2ZSB0aGUKICBoYW5kbGVyIGNoZWNrIGEg
-InJlbW92ZWQiIGZsYWcgc2V0IHVuZGVyIGEgbG9jayBiZWZvcmUKICBwb3dlcl9zdXBwbHlfY2hh
-bmdlZCgpLiAgUmVwb3J0LWZpcnN0LCBubyBwYXRjaCBhdHRhY2hlZDsgaGFwcHkgdG8KICB0ZXN0
-IGEgcHJvcG9zYWwuCgoKICBQbGVhc2Uga2VlcCBtZSBpbiBDYzsgSSBhbSBub3Qgc3Vic2NyaWJl
-ZCB0byB0aGUgbGlzdHMuCgoKUmVnYXJkcywKSGFueGlhbmcgWHUKeHVoeEBodXN0LmVkdS5jbgo=
+On Mon, 9 Nov 2026 at 20:56, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+>
+> On Mon, Nov 09, 2026 at 04:55:23PM +0100, Vincent Guittot wrote:
+> > On Sat, 7 Nov 2026 at 09:57, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+> > >
+> > >
+> > > Hi Vincent,
+> > >
+> > >
+> > > Sashiko reviewed this one so I'll just put here my own concerns instead
+> > > of repeating.
+> >
+> > Regarding sashiko's feedback about cpu state ranking, I chose this
+> > ranking on purpose.
+> > For !SMT :
+> > - 7 CPU is idle and fully fits (i.e. return immediately)
+> > - 6 CPU fully fits and is not idle but we can preempt current because
+> > of slice so the task will run on the best CPU immediately
+> > - 5 CPU is idle but doesn't fit uclamp min. On such a CPU, the task
+> > can easily miss its deadline
+> > - 4 CPU is idle but doesn't fit at all. This is even worse
+> >
+> > For SMT
+> > - 7:CPU is idle and fully fits (i.e. return immediately)
+> > - 6: CPU is busy and fully fits. Although CPU is not idle, task can
+> > preempt current because of its slice and run immediately on a CPU.
+> > This is similar to an idle CPU (and maybe even better). While writing
+> > this, I realize that I should probably check the lag too
+> > - 5: CPU is idle but doesn't fit uclamp min. On such a CPU, the task
+> > can easily miss its deadline
+> > - 4: CPU is idle but doesn't fit at all. This is even worse than -5
+> > - 3: CPU is idle and fits for task but sibling is busy
+> > - 2: CPU and sibling are busy and fits for task and like-6 task will
+> > run immediately
+> > - 1: CPU is idle and doesn't fit uclamp and sibling is busy
+> >   0: CPU is idle but doesn't fit at all, and sibling is busy.
+> >
+> > Note that with the push mecanism we could look for another CPU for the
+> > task that will be preempted
+> >
+>
+> Thanks for the great explanation! My only concern is on 6 and 2, as I
+> explained in my first message, below.
+>
+> Sashiko also pointed out other concerns, it would be good to check them
+> all out.
 
+Yeah, will fix the set_idle_cores too
+
+>
+> > >
+> > >
+> > > Look here:
+> > >
+> > > CPU1: CPU2:
+> > > FA    RA
+> > >       FC
+> > >
+> > > CPU2 has 1 RT and 1 Fair tasks named RA and FC.
+> > > Let's say RA is running on CPU2 and FC's slice is 10 ms.
+> > >
+> > > And let's say FA has 8 ms slice, and a fair task named TC is waking up
+> > > with 9 ms slice:
+> > >
+> > > * We look to CPU1, 9 < 8 is false so we return false
+> > >
+> > > * We look to CPU2, 9 < 10 is true so we return it.
+> > >
+> > > But the problem is, CPU2 has a RT task running and we are going to
+> > > compete with the RT task. In that case it can be worse than CPU1.
+> > >
+>
+>
+> Thanks,
+>
+> Kayra
