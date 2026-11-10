@@ -1,49 +1,112 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794304710;
-	b=s07W9dPCRVc3RfwWKFDjkhL1y24nU8jRf5MrzX0PBTaz1YwDoY0aTu2kMLF9i4FdDCTC
-	 ugec+T++aI4eOnOEQ1RZRGaVcgU8JMZiXs8nHU5Q9x0svqYDdf7jvCLCAGIgYNyReIS30
-	 b8TZhmHzjpYkbplztznoytyW3Y+D9Z5ujzxa97fhJsIXV1xf2twnc4WuGlUckz5PuLn/y
-	 3p9A/s3ai/o4ZxvusbnV4EeDY2raocsgzPPkse8l9hzPaGYeq8vYNLZ0KXjHay/9RgWsD
-	 iExwtb34R0HBYNJwFRzn5R4wI790M1wYjfDNoMs8VQwRHAdgThrqt56Z4nVUoXXJGLg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794304710;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=aKWtMimAzs9FtFLNAxoB9LpXG09KeXXS7v1Lqn6/z0c=;
-	b=YQvfwHiPKkwcohR6m9szJoUznKwUHs6NDH773gM9imRmj7FVtCyf8ROkMD9O29uLomte
-	 9JA60x34+iqHv+q4JeG9sqkNVfHeGMgPFyAE1QMub1U8bntLghJEm8yMq7CInSwIwnFeK
-	 gb6tu0WaVNs+rkw4MUggE2rHrlJixIgiQY2AcHFUROZZnyD/aYULJEp17WdrZfDHUGF/G
-	 ftlTPCCX0Znu5B5L5VJ8ipJUiGSUDr9OYHM3jjLnUgXNT717fBxiRp5id5BbZUrmiqozA
-	 /K/0TxHajtLhOTGxNGe8eQUE0lBMevPfrhAKu5vitf/1zjOa/hg2vvZFUcbXRBEC5zA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=LyTjt6KP;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2579D60A3824;
-	Tue, 10 Nov 2026 09:58:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2579D60A3824
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.201.63
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794305595;
+	b=2Cy7bba3h39D7iSMZlVWmY2fZET5lM4bUxrMUXPCMHRoe25veo2pKs8ehHe2ZdbITUOL
+	 VL4Wzthw5JdIGBHn0IOxNaPXyFsvBtLYb09v8257KcAWYSNd6cww1GtEn4QQ87s+/e2+Y
+	 KQrxhpsDuRbljjdIeITxi+t8pT5B/6cXjGd2rLoPXLpD5FbjzQ/kBBBfKUqJWHPd5PTc8
+	 WPzzzZPkzhS8zb6E3cKeHITgf95k0C9EOzMapvQQL4B8NKNPx5DrG9fK5An3xoa/m053x
+	 xDCdWWIUsNAHfC7gH+3BRa2pALg9UFCpeMqEwFgO+nth19STVdWnlwfCuHTHd8RfXjQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794305595;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:X-NVConfidentiality:Content-Transfer-Encoding:
+	 Content-Type:X-NV-OnPremToCloud:X-EOPAttributedMessage:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=9/nG/58UggFfe2uO9QMMBeLWjpJu8dLuVbabhL8V1DY=;
+	b=AvIlX+VsmTHfZxPxIKjbFcrdBWErknjj94X/Dqw4Ra9pnvf/Z+2iNChzXzlWHGftdavT
+	 vJstYWFT1KrO7chmz3VponVmo+aWvLOqK3myvDOvponbQeZT349JZ1y3MP3/m20Rd1UNa
+	 S1m6XAA0mUHz9tZ5LLSkWZgircw85qxVU+cQ3csdAucCLnHCae2QRv/5z/UOGfBfQhFI5
+	 MUtSBxWmWtu6z4+DYo4oPVPLoZoBWSuB6ARwnqqDQgH+p6HHWo/JbYdt9nakLxQVQTSn4
+	 2XfYz1UYE0drFBGJeE/zunn6AQwpkOP43N1alOpifds6y6VyQ8WaMHmaa4Ew2ovi1sA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=nvidia.com;
+	spf=fail smtp.mailfrom=nvidia.com;
+	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=cRZud1BA;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.201.63
+Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010063.outbound.protection.outlook.com [52.101.201.63])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE822606A337;
+	Tue, 10 Nov 2026 10:13:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DE822606A337
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=LyTjt6KP
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 247FB1F02;
-	Tue, 10 Nov 2026 01:58:25 -0800 (PST)
-Received: from [10.57.10.132] (unknown [10.57.10.132])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 838663F632;
-	Tue, 10 Nov 2026 01:58:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794304708; bh=OaSSUQ5bjaPlPJgtFjZgGOlZ6nsuLWkgpygjRXS19rk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=LyTjt6KPKYpVruT5LpmqMU9EEUTtg3VIZAp9Cs4wi1EyysJnb+//1Kd+fdLpajyfT
-	 3pvEOD/LBNPpMlhQwf53+T6vlSv4TiEkpSpPTH1bbmWVsSa8g8x+3nswLd1etgKdK9
-	 fszQY5e4Ej4XdXajga/AOWVG+FP0Pw2pjXxINXkg=
-Message-ID: <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
-Date: Tue, 10 Nov 2026 09:58:58 +0000
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=cRZud1BA
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=YcMNP3FdOpv92RGR+6OkdOVs5LkaPslXototz8oRsHMls9hH4uAJc6xyx6idOEKl2zYpKIOnMsbZgHvZGI1Unf0JcZrRdV78y/QDlwM84dnTyGqrwmbuP8ybzEbmoPa0SZev37IKzjAwZfoATbGtpTDh2ZwBTgrjJcp8b3zzocPPD2ZY5NJf4GrbY0A7FtXH8GkgSuC5m+IrZJVDIy/NHic0xg2A79gOJkbwlhNHzldLbVMRf2NO7BqXoGb2JZ9OcccAKa9LsB60vV+ITHCiYgnbDjU9o8dChogZMnC64oukMIQw2Pt9KoY0BVTExqOJsiKGNk6Oqv2QOukZuAqwQQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9/nG/58UggFfe2uO9QMMBeLWjpJu8dLuVbabhL8V1DY=;
+ b=HuFtp0f+ciE+gIdJHrztpEtOUiB2Rla31HbtWd8FmISV5KamFYXOsKJSqWTQMp4Hrqn/QuaMQ605N/+bicOAUrmO+/uHPy9MlQXvee+QJe8E40IYV1Fj3hP4rWX+7Om1HsIKrCW9x+rv5rCFlZXwPQIc9bWkKU3OTuqXC9Y1i6BzEn2YblmE+RSwnLvMYRbv/jcqN6SjIIDYHEk75th2W7gwq0lsbl3Pt/hUrLApmPjO3PLtqY+Z1DxWbXRQGHN4NqujrNdyrj34STdHmMCSClxjPUr9sMPhqQg/iVJInzOxklofRc9R3dc8rAaBLOrwf06bypP81Kt25WaqZbq+1A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.118.233) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9/nG/58UggFfe2uO9QMMBeLWjpJu8dLuVbabhL8V1DY=;
+ b=cRZud1BAvnLC2tjxrl9GJttK2hwq9qimf3NOKqu/VGL/0WS4R6flS72+oi3c1AvKk4LaTRkeJ/LOCBN/X/ukB0XgJB1TxYv0vl7Xu/Pz2jBGNLUhuujKxwXg1VHCe6a18fgAT+m+dIm4qqxuimxqx6+PArkOrKbz2uOBCiEp+ltDAeLW9ItKtb2QRlg42VGXpwTHJe1+1QN6Fg8UeWXEp3r2AGt80+FPDehYAoCzNca0FdDeAZUKiONLOaseYyGFMjIwgPgaGJQQkEQPx34dnMsWGCFPOhw9l7zSTck7yp8Zg9g580rmNO90TpYLMswrYehGFjV8pO1iu09gGSLvCg==
+Received: from BN9PR03CA0736.namprd03.prod.outlook.com (2603:10b6:408:110::21)
+ by DS2PR12MB108293.namprd12.prod.outlook.com (2603:10b6:8:404::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.8; Tue, 10 Nov
+ 2026 10:13:10 +0000
+Received: from MN1PEPF00079401.namprd05.prod.outlook.com
+ (2603:10b6:408:110:cafe::5c) by BN9PR03CA0736.outlook.office365.com
+ (2603:10b6:408:110::21) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.592.13 via Frontend Transport; Tue,
+ 10 Nov 2026 10:13:10 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 216.228.118.233) smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.118.233 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.118.233; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.118.233) by
+ MN1PEPF00079401.mail.protection.outlook.com (10.167.249.197) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.615.4 via Frontend Transport; Tue, 10 Nov 2026 10:13:10 +0000
+Received: from drhqmail203.nvidia.com (10.126.190.182) by mail.nvidia.com
+ (10.127.129.6) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Tue, 10 Nov
+ 2026 02:12:55 -0800
+Received: from drhqmail202.nvidia.com (10.126.190.181) by
+ drhqmail203.nvidia.com (10.126.190.182) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Tue, 10 Nov 2026 02:12:54 -0800
+Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
+ (10.126.190.181) with Microsoft SMTP Server id 15.2.2562.56 via Frontend
+ Transport; Tue, 10 Nov 2026 02:12:50 -0800
+From: Sumit Gupta <sumitg@nvidia.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <zhanjie9@hisilicon.com>,
+	<zhenglifeng1@huawei.com>, <christian.loehle@arm.com>, <jbenc@redhat.com>,
+	<linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+CC: <treding@nvidia.com>, <jonathanh@nvidia.com>, <vsethi@nvidia.com>,
+	<ksitaraman@nvidia.com>, <sanjayc@nvidia.com>, <mochs@nvidia.com>,
+	<bbasu@nvidia.com>, <sumitg@nvidia.com>, <stable@vger.kernel.org>
+Subject: [PATCH v2] cpufreq: CPPC: Set CPPC Enable register in cpu_init
+Date: Tue, 10 Nov 2026 15:42:46 +0530
+Message-ID: <20261110101246.3665797-1-sumitg@nvidia.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,223 +116,104 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency
- ranking
-To: Guo Chen <guo.chen@oss.qualcomm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Vincent Donnefort <vincent.donnefort@arm.com>,
- Matthias Kaehlcke <mka@chromium.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com,
- tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com,
- "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
- <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
- <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
- <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
- <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-NVConfidentiality: public
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: ExternallySecured
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN1PEPF00079401:EE_|DS2PR12MB108293:EE_
+X-MS-Office365-Filtering-Correlation-Id: 74185d4b-1629-4f20-316e-08df3f1338fe
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|82310400026|1800799024|376014|7416014|23010399003|56012099006|11063799006|18002099003|10067099003|261009223027099003|261102123227099003|261026140227099003|261021123027099003|261021121427099003|261022105027099003|261028144727099003|13003099007;
+X-Microsoft-Antispam-Message-Info:
+	8CgwY4Aq9WC1nd043MKjiqEdyA4ZamCFA5QL7INnqyY6BJNH/AXDcifX2c66RYckkNcHlVTAeC6OmRtvN5WmbidBGfJndxpSmekj+V6YR+S0u50+ffyVYyxFqQaQCbJ+HEw2EC+vbKZFI3UpQWGOBBbJfBYcEyvRj8M7oV3UiBkF1FOUhcxJdqey0HpvYVyxEm3e1uv8cbUozEb4Jk3eJhbqvwogCPq10rJ1sgmXpg8yRuMoiSws5vLHoyMEX5uy6EEQBJcSmcHc1rC4ilCkqh3QADGocldY2g5ZJbeAkbruqAPO+MNHr/464r4dQ4rpVWY6U2SIP9QH33qNTiUCSRxxHyHs1xcaZsYFmW12Vme1JOr+zAwP1pMkoavALDQKIAUxONzIvm/1x2lLw+OeUHeuN/J54L11ibIL9Z+zuIlOyxClvOpp6Bf88p2Zt7L2mEjLn4h9tPBCInsCqoDqCRHunzSGAE20dPBLOzITuLb226Yx+hJJz6QPBON739tMwgj6yD4rl7QuLr3z+U1+d2TboASszHz7L4iUTu3tIScQz2R10cZSyWt9TTz2adugBSH+xnh9hjPkBzmB0Llqvjp9F0AVFDvnJalQMvnzXniznBQ88F7gK4kj+M6OdHoTiunoKEoPGWYYFFPL6fur1uoWkk88Adv6v0cLGRQ66ngzZ0u44w2WspGAcjMfPC+jkAJGkElA1z+Y/ns3777ZMQ==
+X-Forefront-Antispam-Report:
+	CIP:216.228.118.233;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc7edge2.nvidia.com;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(1800799024)(376014)(7416014)(23010399003)(56012099006)(11063799006)(18002099003)(10067099003)(261009223027099003)(261102123227099003)(261026140227099003)(261021123027099003)(261021121427099003)(261022105027099003)(261028144727099003)(13003099007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	fw2V6ZyeRXumNIYwUbsbApZq2v7MJlS4n2/Q/NZh7ZgBTrqsDiDpXA1O0cvu8etncrhOno5W3vU6S6MGWe7UXWVLRjxSeUvutzHXHR5nsWFPfR5Pp7M5f+IsbXY+kQbUBrWWdaKrc/huP+nYG4vFlSQ4Ufw8fazS3+awkPrdun5YjYkubqcG+x6g+rxtCjhnDkUBUK8HJ5wqWCQ89/FqhROI9iqhbwKtnESVHsUZ2EidCeUCWn15eq2v8KGxf7Ki5XmulJo5dtIaNxDbXDSfiRJ3ZbU+MRUlfWH7e7Tk+ZGRcHdk/ywJiz9wGLpMpSV/I86kVWxdP+EGSkjMqj8zoTOgiaclUJBAcqUN6H7Bx+IbAjCnCJ60ORz4cVu8EMBK+1cyMmOO5dghzjUfpnanqrMU83rWd60SkowWtvwho7IWUP4+3yKaU6ql7oMd1m32
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Nov 2026 10:13:10.1047
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 74185d4b-1629-4f20-316e-08df3f1338fe
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.118.233];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MN1PEPF00079401.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS2PR12MB108293
 
+As per ACPI 6.x s8.4.6.1.4 (CPPC Enable Register):
+  "If supported by the platform, OSPM writes a one to this register
+   to enable CPPC on this processor. If not implemented, OSPM assumes
+   the platform always has CPPC enabled."
 
+The driver never writes this register. CPPC therefore stays disabled
+on platforms such as NVIDIA GB10 that wait for OSPM to enable it.
 
-On 11/10/26 09:49, Guo Chen wrote:
-> 
-> On 11/9/2026 5:40 PM, Lukasz Luba wrote:
->>
->>
->> On 11/9/26 06:47, Guo Chen wrote:
->>>
->>> On 11/6/2026 11:15 PM, Rafael J. Wysocki (Intel) wrote:
->>>> On Tue, Nov 3, 2026 at 12:21 PM Guo Chen <guo.chen@oss.qualcomm.com> 
->>>> wrote:
->>>>> em_compute_costs() ranks all the frequencies of the table, boost ones
->>>>> included. A non-boost frequency can be marked inefficient only because
->>>>> a faster boost frequency has a lower or equal cost, e.g.
->>>>>
->>>>>    3.9 GHz  4.0 GHz (cost C)  4.1 GHz (boost, cost C)
->>>>>
->>>>> With boost disabled 4.1 GHz cannot be selected, but 4.0 GHz is still
->>>>> skipped by governors rounding down to efficient frequencies (e.g.
->>>>> ondemand with CPUFREQ_RELATION_HE), which land on 3.9 GHz instead of
->>>>> the best selectable frequency. Several frequencies can be affected.
->>>>>
->>>>> Exclude the boost frequencies from the ranking in 
->>>>> em_compute_costs() and
->>>>> keep them all efficient, using the highest non-boost frequency of the
->>>>> CPUFreq table, returned by the new helper
->>>>> cpufreq_table_max_nonboost_freq(), as the boundary.
->>>>>
->>>>> Fixes: c8ed99533dbc ("PM: EM: Mark inefficient states")
->>>>> Signed-off-by: Guo Chen <guo.chen@oss.qualcomm.com>
->>>> Please see Sashiko's feedback regarding this patch
->>>>
->>>> https://sashiko.dev/#/patchset/20261103-em-rank-boost-separately- 
->>>> v2-1-5a13d1b38d37%40oss.qualcomm.com
->>>>
->>>> and tell me what you think about it.
->>>>
->>>> Thanks!
->>>
->>> Thanks for the review.
->>>
->>> I did consider this case. If no policy is found, max_nonboost stays 0 
->>> and
->>> the new logic is bypassed, i.e. the ranking falls back to the old
->>> behaviour, which looked like the least intrusive option. I also thought
->>> about warning and returning an error, but most of the in-tree callers of
->>> em_recalc_and_update() ignore the return value (e.g.
->>> em_adjust_new_capacity() and exynos_asv_update_opps()), so the update 
->>> would
->>> just be dropped without anyone noticing.
->>>
->>>>> ---
->>>>> Changes in v2:
->>>>> - Drop prev_boost and keep all boost states efficient by resetting
->>>>>    prev_cost for them, as suggested by Lukasz. Boost states are no
->>>>>    longer ranked against each other.
->>>>> - Retitle the patch to match the new behaviour (was "Rank boost and
->>>>>    non-boost frequencies separately") and reword the commit message.
->>>>>
->>>>> Link to v1: https://lore.kernel.org/all/20261030-em-rank-boost- 
->>>>> separately-v1-1-238a6b2bb888@oss.qualcomm.com/
->>>>> ---
->>>>>   include/linux/cpufreq.h     | 24 ++++++++++++++++++++++++
->>>>>   kernel/power/energy_model.c | 16 ++++++++++++++++
->>>>>   2 files changed, 40 insertions(+)
->>>>>
->>>>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->>>>> index d3d0d9d02aa4..c93316141a11 100644
->>>>> --- a/include/linux/cpufreq.h
->>>>> +++ b/include/linux/cpufreq.h
->>>>> @@ -1155,6 +1155,24 @@ cpufreq_table_set_inefficient(struct 
->>>>> cpufreq_policy *policy,
->>>>>          return -EINVAL;
->>>>>   }
->>>>>
->>>>> +static inline unsigned int
->>>>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
->>>>> +{
->>>>> +       struct cpufreq_frequency_table *pos;
->>>>> +       unsigned int max = 0;
->>>>> +
->>>>> +       if (!policy->freq_table)
->>>>> +               return 0;
->>>>> +
->>>>> +       /* The table may be unsorted, scan all of it for the 
->>>>> highest one. */
->>>>> +       cpufreq_for_each_valid_entry(pos, policy->freq_table) {
->>>>> +               if (!(pos->flags & CPUFREQ_BOOST_FREQ) && pos- 
->>>>> >frequency > max)
->>>>> +                       max = pos->frequency;
->>>>> +       }
->>>>> +
->>>>> +       return max;
->>>>> +}
->>>>> +
->>>>>   static inline int parse_perf_domain(int cpu, const char *list_name,
->>>>>                                      const char *cell_name,
->>>>>                                      struct of_phandle_args *args)
->>>>> @@ -1219,6 +1237,12 @@ cpufreq_table_set_inefficient(struct 
->>>>> cpufreq_policy *policy,
->>>>>          return -EINVAL;
->>>>>   }
->>>>>
->>>>> +static inline unsigned int
->>>>> +cpufreq_table_max_nonboost_freq(struct cpufreq_policy *policy)
->>>>> +{
->>>>> +       return 0;
->>>>> +}
->>>>> +
->>>>>   static inline int of_perf_domain_get_sharing_cpumask(int pcpu, 
->>>>> const char *list_name,
->>>>>                                                       const char 
->>>>> *cell_name, struct cpumask *cpumask,
->>>>>                                                       struct 
->>>>> of_phandle_args *pargs)
->>>>> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
->>>>> index d19a65461ae8..5b1d095fd376 100644
->>>>> --- a/kernel/power/energy_model.c
->>>>> +++ b/kernel/power/energy_model.c
->>>>> @@ -255,15 +255,24 @@ static int em_compute_costs(struct device 
->>>>> *dev, struct em_perf_state *table,
->>>>>                              unsigned long flags)
->>>>>   {
->>>>>          unsigned long prev_cost = ULONG_MAX;
->>>>> +       struct cpufreq_policy *policy;
->>>>> +       unsigned int max_nonboost = 0;
->>>>>          int i, ret;
->>>>>
->>>>>          /* This is needed only for CPUs and EAS skip other devices */
->>>>>          if (!_is_cpu_device(dev))
->>>>>                  return 0;
->>>>>
->>>>> +       policy = cpufreq_cpu_get(dev->id);
->>>>> +       if (policy) {
->>>>> +               max_nonboost = 
->>>>> cpufreq_table_max_nonboost_freq(policy);
->>>>> +               cpufreq_cpu_put(policy);
->>>>> +       }
->>>>> +
->>>
->>> The lookup can be made more robust though: on the update paths dev- 
->>> >id may
->>> be offline while other CPUs of the performance domain are online. In 
->>> v3, if
->>> dev->id has no policy and the performance domain already exists, I 
->>> will use
->>> an active CPU of the performance domain instead, as
->>> em_cpufreq_update_efficiencies() does, and only warn and fall back to 
->>> the
->>> old behaviour if that fails as well.
->>>
->>> I did not use the performance domain for every lookup because at
->>> registration time dev->em_pd is not assigned yet (it is set after
->>> em_create_perf_table() has returned):
->>>
->>> policy = cpufreq_cpu_get(dev->id);
->>> if (!policy && dev->em_pd) {
->>>      cpu = cpumask_first_and(em_span_cpus(dev->em_pd), cpu_active_mask);
->>>      if (cpu < nr_cpu_ids)
->>>          policy = cpufreq_cpu_get(cpu);
->>> }
->>>
->>> if (policy) {
->>>      max_nonboost = cpufreq_table_max_nonboost_freq(policy);
->>>      cpufreq_cpu_put(policy);
->>>   } else {
->>>      dev_warn(dev, "EM: no CPUFreq policy, boost states are "
->>>                          "not excluded from the ranking\n");
->>> }
->>>
->>> This makes it much less likely to miss the policy, but cannot rule it 
->>> out:
->>> the CPU can still go offline between picking it and calling
->>> cpufreq_cpu_get(). em_cpufreq_update_efficiencies() has the same
->>> limitation.
->>>
->>> Would that work for you?
->> I also thought about that possible racy corner case, where
->> CPU can go offline (or already be offline). Although, in current
->> usage this should be OK, since we do this in boot phase and
->> platforms are sane.
->>
->> We can can add that step with 'cpu_active_mask' to play safe,
->> but no hard promises it would be atomic.
->>
->> The warning also would help, for bring-up phase, so engineers would
->> notice it and address the racy hot-plug booting system when it's there.
-> 
-> Thanks Lukasz,
-> 
-> I’ll add the 'cpu_active_mask' check and the warning in v3. As the
-> overall approach is unchanged, I’ll keep your reviewed-by.
-> Please let me know if you’d rather have it removed.
+Call cppc_set_enable() in cppc_cpufreq_cpu_init(). Fail init if
+enabling CPPC fails. If init fails after CPPC is enabled, disable it
+again. The register is optional, so -EOPNOTSUPP is not an error.
 
-That's fine, please continue.
+This relies on commit ab482f1bac6b ("ACPI: CPPC: Refactor register
+value get and set ABIs") from v6.16. Before it, cppc_set_enable()
+returned -EFAULT instead of -EOPNOTSUPP when the Enable register is
+not implemented. On an older kernel this change would make init fail
+on every platform without the register, so the stable range starts
+at v6.16.
+
+Fixes: 5477fb3bd1e8 ("ACPI / CPPC: Add a CPUFreq driver for use with CPPC")
+Cc: stable@vger.kernel.org # v6.16+
+Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+---
+v1 -> v2:
+- Fail init if enabling CPPC fails and disable CPPC again if init
+  fails after enabling it (Christian).
+- Move enable after the policy->shared_type check, so cppc_set_perf()
+  is the only failure after it.
+- Mention NVIDIA GB10 in the commit message (Christian).
+
+v1: https://lore.kernel.org/lkml/20261105123244.3132560-1-sumitg@nvidia.com/
+
+ drivers/cpufreq/cppc_cpufreq.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 957fa7775260..b2af24ae5008 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -714,7 +714,17 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		pr_debug("Unsupported CPU co-ord type: %d\n",
+ 			 policy->shared_type);
+ 		ret = -EFAULT;
+-		goto out;
++		goto out_put;
++	}
++
++	/*
++	 * Enable CPPC. The Enable register is optional - some platforms
++	 * may not support it.
++	 */
++	ret = cppc_set_enable(cpu, true);
++	if (ret && ret != -EOPNOTSUPP) {
++		pr_err("Failed to enable CPPC for CPU%u (%d)\n", cpu, ret);
++		goto out_put;
+ 	}
+ 
+ 	policy->fast_switch_possible = cppc_allow_fast_switch(policy->cpus);
+@@ -742,6 +752,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	return 0;
+ 
+ out:
++	cppc_set_enable(cpu, false);
++out_put:
+ 	cppc_cpufreq_put_cpu_data(policy);
+ 	return ret;
+ }
+-- 
+2.34.1
 
