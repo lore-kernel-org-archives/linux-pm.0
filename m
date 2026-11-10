@@ -1,73 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794320031;
-	b=ANFwL6i78D2hQqeB0/vlssvxi9drCeOjS/uAHKcAW1YAu6b1lqXS8wkf1yyA3KITCub2
-	 EwuSXATqD5jg2i4df68digu50r2ilJKWCkjswCJPQzoTl3JfNluYmY4K7cuZDzTxkHb6V
-	 gZ6rAZwPCPc5RUUvNme9LcqI3+6+z6VoAKpuv2JQCIl9Aiup58pVT5Q1HNB33CIfaQG9s
-	 e2nJfrNI+Z+KWrtj9brhTeLDwagYldpDO9pH2y1a2xkHjox+SxCKkt/zW+pAg9Psa8QMI
-	 drd19uPecFttZ1FMzzJasOSSdk6VkWbekVEUfEn/8B3s0AO3V1BV9oBSbZZip0HcYQA==
+	t=1794322052;
+	b=E6ahrImH8e2OW4vEjNB9oS8OoUXKU28PwwWIBKUwHFzQ6d3kcLZpk80ZaH2B1+VQA52o
+	 Bv+I0Pd8c2i9x2c59sxvj4XH2S75A8g2A1HGVmR3o+xRsrLoerDECFM+SEsZiKhbEVWoa
+	 fOkmsqpvwLuhevmAK1ikn+OFJO45vzet+lZwytZhKmlmN9eAmf6lBXQ06ZTkoWWDnftOV
+	 dmB5Gs0BgXhBjw2b8RKr3FNRXC59jL0s6OmXwYPvofyCdF/q0OESO60sdQ6dhrFu63Ss7
+	 HMIJhlk8Q/BL0phF3i3ZBaaoBl56PTvIu3P8wuyW9qobLfaocq2YqZ3prceSZPnIdVw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794320031;
-	h=Received:DKIM-Signature:Received:Received:X-ME-Sender:
-	 X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
-	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
-	 References:Subject:Content-Type:Content-Transfer-Encoding;
-	bh=SB3rUG673jXG4Vj+317Do25EeGkV2iNNqDl371D64rg=;
-	b=NodrQ1OaggSLNN2KpD7BeAV/mLc9B6x+RrljNrOSLjwd7cCLwvZbjq09WHLOX7vJtAdS
-	 WD9magrkHfanNSvaVOnFOVYUlwG7PoTQbyvV29h2O09YQBpjMQep6V6kA1excguAYwNJG
-	 2h3MaTlLZkAiNkwl5PUN/EodsVkt8wL98H8JjU1P5tV39OKPwcG6xixHmba1dmGTb/UCG
-	 qMq21kR7zCht9TQwLV5BQF7R+xlnkhEG+H4UewbqK+2tavczuJUDv1W1EWavnth+iHjRy
-	 yCI+17qo7x/T/Hf++zc3AU+lQzrYrHkTa/PoHHgV3LZzCNTYc6Y990w8+c4R8L3IKUw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794322052;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=zYrbKUrrhiWhuUIHfWppc5eatCVfJErJZhYrxtExoA0=;
+	b=o9OOJwinLEtcpeCJOzqSidDJYAjNg9DmlvI03nuTQy2NYJvDoEFPliynNBTlZcLiKIir
+	 LL6iPZp0nbGr4EuCB6GYFsCvolI54bAEkhSTu9ZlZj3nvHjeZ47iUU2MOktd0xBgBxjvZ
+	 9WlRh5ZqwIcQlV+gCJN4q17kVVqwUxRwyhu1U1QjPtaDUI5Ycapp+c9S9UokR9wlm1wVH
+	 CpzsJ3PHu2BJNA2WoIUkU9NvJn1AKYGl7p2UXntdBaSORJxTUkCiduzBM4Y2KrRDcYVW7
+	 bMUHAg4VHicBEArdGT1kjqGIHr37NneF6mXFph9JXnkghBuLBaUkTTQjOoTefFa9o8Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nyCTn4ml;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3774C606A326;
-	Tue, 10 Nov 2026 14:13:49 +0000 (UTC)
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=KesO+rgT;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B354E606A325;
+	Tue, 10 Nov 2026 14:47:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B354E606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nyCTn4ml
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 033771F008A2;
-	Tue, 10 Nov 2026 14:13:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794320029;
-	bh=SB3rUG673jXG4Vj+317Do25EeGkV2iNNqDl371D64rg=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject;
-	b=nyCTn4mlDw2PL51UfwmKIVIR2VFQEGi8AVTF/ook9asBzX0oaJQd1oDDAzXlLewlt
-	 1UsE1sA+senk11xfl3Hkg6gN0jVuyjmjZNAvgtG4URg9hpynND62rUGPRuKIhsi3NE
-	 BV8pKUClskR6WmFnFcsnhnNMc01Q8gOp0WGB30dbP1k+N/2eyi7cJt8ZzhtZe81S+x
-	 NKJcyw7EcObq8oOZ4LZVyeOhVHmVDvMVGvN9xXxwee+BpjKs/KnlwaP+zrgnSCyHd7
-	 QdBiSVvTkJGmWLQ6zinlbq/6yC+WL0FivwKGR7KHu1bDUwXLd1v9a1fScpypjmcOw2
-	 aP2nX/hijI8JQ==
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfauth.ams.internal (Postfix) with ESMTP id 306B1198004A;
-	Tue, 10 Nov 2026 09:13:47 -0500 (EST)
-Received: from ams-imap-11 ([10.64.2.31])
-  by ams-compute-02.internal (MEProxy); Tue, 10 Nov 2026 09:13:47 -0500
-X-ME-Sender: <xms:mSbzam2woU5rDYxWYavOJtFUK9VBlTwbeek47UTOTxZX5ywuzvMmAg>
-    <xme:mSbzaj7gZMWeemxYpwx2mN2DZt1vdcF12Rp37yL4Fh1xB6kAKG9J4LWJ0uuJTfciR
-    ujferwl5zVe-_zOihT_lnCyGwfcznqnfTT9cb0id6KXEXghD4I_iCDK>
-X-ME-Proxy-Cause: dmFkZTETUIPcQO+7r1jL3zHMc2zDWEsdIsz6OTVQLHFZerN0uJ3l2e5Sf+iZDRrdvNjpzm
-    I80n0eWH3kmUk8O9X0qxOLwRZhGRkBBvUNR2Pvvms3GdHNlbJJzR0vp+56Cy6ZAtxdnlTu
-    4CZsjQ+VKjrPwcNwst8DaS8TwAVaGX+GoVu6plGGvacKAn9LYAVjQSP8A9WbCvyE61u3uw
-    TqOCoZHqEFTdAfo5Cpp3yHEO51r06MmJmBXWFJz9ABWbH66CB4tG/NEmcnzCc8yyTV4+tW
-    TWQT1tSOA88ldeeV3MaOW/A51Idztc92b0ENlGZ+7zoW1mWQFQqTVs1XlmgxPiFp0i0mjQ
-    1x+yR1Jdnw2lGVIKqS83fH06rCfwFJQKq4w1rlxmzxiBEiNydusjoeTXphm84IRPo6bjDl
-    HCY8CNccOU+zx0ZBvQRqGAxC/Ycs5t3BnEDKxo4GkQf2MH6L8/4nDSYotLlthCuD5/f/7b
-    yZzG5RFEzA4fWh1oudtCiRrt3VN5dmcP3wIgK+sxj+oTkQU2Sgi7QVjVJfyjdDJFp+2uqE
-    A4hebxIpA14b/2ETciLLep+9m8M35YW+8tABaMVKhnB60nyHq7kEZQRcHZsOf3htRP4all
-    yxj1+IOvMJJnSy8lJPrxLuTRf3uOVoiLUaRd0HbD2ZNAeWihwvMr1K+enKUg
-X-ME-Proxy: <xmx:mybzaubmxWfkXpLyE0qaUx6HGiakMeDaKMTY-sly8K_vz7ICaBD1Cg>
-    <xmx:mybzai8xbH__dNGk47XBYIUPYjKlZ2-XcVEGhGPBRkICddVfd6FmRQ>
-    <xmx:mybzaoPBH9XKlsKpDmJd2ubK3hv34pKFnHjbeMrY_-IaYwg-VRgS1w>
-    <xmx:mybzanHoI3BNp4eOvH3haO1S4YJEK6Gi8GkFm7RqxFYD-d81MzIQ3w>
-    <xmx:mybzauyL5BF6Y0gWfV_nyGtImYNTxRnPcWP2yJFKktlTLn4pvhpBPKtt>
-Feedback-ID: ice86485a:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 5601DF80096; Tue, 10 Nov 2026 09:13:45 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=KesO+rgT
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0679C1477;
+	Tue, 10 Nov 2026 06:47:28 -0800 (PST)
+Received: from [10.57.15.53] (unknown [10.57.15.53])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 442823F632;
+	Tue, 10 Nov 2026 06:47:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1794322051; bh=XYUpXMXpunbRvsnV8H46R4geCfYL9eeevnHVAJ65qbQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=KesO+rgTQUiN+M15PMxPKVf7Sqs7H9386kSssQ0Manrf1HK4S3tTpIBb3LGzvOgji
+	 q9xo+aPeDwk0/LauDKLJAMawnwEwiy6ryzrVikTFfwfQ0VLDuiwIEuwoQIcfLCE7Nu
+	 dUjcxw4hu8vKq09o9g7foqpJozr2MUwduLUhB38s=
+Message-ID: <5a593b56-2f16-4b86-bcc4-e0f632b47577@arm.com>
+Date: Tue, 10 Nov 2026 14:47:21 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,51 +53,189 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AawJh95GV0ns
-Date: Tue, 10 Nov 2026 15:13:25 +0100
-From: "Ard Biesheuvel" <ardb@kernel.org>
-To: yoxcu <mick@yoxcu.de>, "Georgi Djakov" <djakov@kernel.org>
-Cc: "Rob Herring" <robh@kernel.org>,
- "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>,
- "Bjorn Andersson" <andersson@kernel.org>,
- "Konrad Dybcio" <konradybcio@kernel.org>, linux-arm-msm@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Message-Id: <959a716b-c055-4fb5-8b37-04bcb2c382d5@app.fastmail.com>
-In-Reply-To: <20261013202611.3070778-3-mick@yoxcu.de>
-References: <20261013202611.3070778-1-mick@yoxcu.de>
- <20261013202611.3070778-3-mick@yoxcu.de>
-Subject: Re: [PATCH RFC 2/2] interconnect: qcom: sdm845: Own the ALC BCM to drop its
- boot vote
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: ACPI: CPPC: shared PCC subspace data can be freed while another
+ CPU probes, reads, or tears it down
+To: =?UTF-8?B?5b6Q5pmX57+U?= <xuhx@hust.edu.cn>, rafael@kernel.org,
+ sudeep.holla@kernel.org, jassisinghbrar@gmail.com
+Cc: linux-acpi@vger.kernel.org, viresh.kumar@linaro.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org
+References: <4c7f9772.192e1.1a17d5c2ed5.Coremail.xuhx@hust.edu.cn>
+ <2026102727-data-sequel-ce41@gregkh>
+ <7e7371c7.22ae1.1a1c591c7ae.Coremail.xuhx@hust.edu.cn>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <7e7371c7.22ae1.1a1c591c7ae.Coremail.xuhx@hust.edu.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+On 11/10/26 13:07, 徐晗翔 wrote:
+> pcc_data[] is a global array of shared PCC-subspace objects.  The
+> reference count is an ordinary int updated without a lock, and
+> acpi_cppc_processor_exit() can kfree() the object and set the slot to
+> NULL while another CPU's accessor is using it, while another CPU's
+> first-online probe is allocating/registering it, or while another
+> remove is decrementing the same count.  The result is a UAF, a NULL
+> dereference, a lost refcount update/leak, and a PCC channel/shmem
+> lifetime problem.  This report is source-level: the test environment
+> does not have a PCC/PCCT controller, so no dynamic reproducer is
+> attached.  I am not claiming the double-free variant.
+> 
+> The detailed description:
+> 
+> * Test environment / affected version
+> 
+>   Linux 7.3.0 source (verification/linux-7.3), line numbers from 7.3.
+>   The available QEMU/KASAN guest used for the sibling CPPC report has
+>   no PCCT table and no PCC mailbox controller, so it cannot create a
+>   real pcc_data object.  I did not fake a pcc_data object or call the
+>   teardown path with a synthetic pointer; that would not be a valid
+>   dynamic reproduction.  The affected code is the normal
+>   CONFIG_ACPI_CPPC_LIB path in drivers/acpi/cppc_acpi.c plus the PCC
+>   mailbox release in drivers/mailbox/pcc.c.
+> 
+> * Mechanism
+> 
+>   A PCC subspace can be shared by multiple CPUs.  pcc_data[pcc_ss_id]
+>   is the global slot, and its refcount is the number of participating
+>   CPUs (cppc_acpi.c:48-83).
+> 
+>   Allocation (cppc_acpi.c:714-729) is:
+> 
+>     if (pcc_data[pcc_ss_id])
+>             pcc_data[pcc_ss_id]->refcount++;
+>     else {
+>             pcc_data[pcc_ss_id] = kzalloc(...);
+>             ...
+>             pcc_data[pcc_ss_id]->refcount++;
+>     }
+> 
+>   There is no lock, and the slot check, allocation, publication and
+>   increment are not atomic.
+> 
+>   Teardown (cppc_acpi.c:1037-1051) is:
+> 
+>     if (pcc_ss_id >= 0 && pcc_data[pcc_ss_id]) {
+>             if (pcc_data[pcc_ss_id]->pcc_channel_acquired) {
+>                     pcc_data[pcc_ss_id]->refcount--;
+>                     if (!pcc_data[pcc_ss_id]->refcount) {
+>                             pcc_mbox_free_channel(...);
+>                             kfree(pcc_data[pcc_ss_id]);
+>                             pcc_data[pcc_ss_id] = NULL;
+>                     }
+>             }
+>     }
+> 
+>   This is a plain read-modify-write, followed by a separate read for
+>   the zero test, with no pcc_lock and no teardown mutex.  The release
+>   happens before kobject_put(&cpc_ptr->kobj), so the kernfs drain that
+>   protects the cpc_desc sysfs object does not protect pcc_data at all.
+> 
+>   Accessors take the global slot and immediately use it:
+> 
+>     cppc_get_reg_val_in_pcc(): pcc_ss_data = pcc_data[pcc_ss_id];
+>                                down_write(&pcc_ss_data->pcc_lock);
+>     cppc_set_reg_val_in_pcc(): cpc_write(...); then the same lookup
+>     cppc_get_perf_caps():     same pattern (cppc_acpi.c:1488 onwards)
+>     cppc_get_perf_ctrs():     same pattern (cppc_acpi.c:1678 onwards)
+>     GET_PCC_VADDR():          pcc_data[id]->pcc_channel->shmem directly
+> 
+>   None of these check for NULL, and none hold a reference that would
+>   keep pcc_data alive across the use.
+> 
+>   Four independent interleavings follow:
+> 
+>     A. exit vs accessor.  The last CPU is unbound while its tick,
+>        cpuinfo_cur_freq, or an already-running acpi_cppc sysfs show is
+>        in a PCC accessor.  exit frees pcc_data and iounmap()s the
+>        channel shmem; the accessor then calls down_write() on freed
+>        memory or dereferences NULL.  This is the simplest UAF and does
+>        not require two CPUs to be removed at once.
+> 
+>     B. remove vs remove.  Two CPUs sharing the subspace both read
+>        refcount == 2, both write 1, and neither frees: the object and
+>        channel leak.  If one remove has already freed and cleared the
+>        slot while the other has a stale non-NULL value, the second
+>        remove can dereference NULL or freed memory.  The exact
+>        double-free requires both removals to observe zero, which needs
+>        an under-count or another remove path; I am not claiming it.
+> 
+>     C. first-online probe vs remove.  CPU B is doing its first
+>        physical online and runs acpi_cppc_processor_probe(); CPU A is
+>        being unbound and runs acpi_cppc_processor_exit().  They share
+>        the subspace but hold different CPU device locks.  The probe's
+>        pcc_data_alloc() can read the slot just before exit frees it,
+>        then increment freed memory; or it can enter register_pcc_channel(),
+>        sleep in pcc_mbox_request_channel(), and then write the channel
+>        pointer into a slot that exit has already freed and cleared.
+>        acpi_cppc_processor_probe() also dereferences
+>        pcc_data[pcc_subspace_id]->pcc_channel_acquired at
+>        cppc_acpi.c:981 without a NULL check.
+> 
+>     D. channel release vs in-flight send.  pcc_mbox_free_channel()
+>        (drivers/mailbox/pcc.c:431-448) only iounmap()s the shmem and
+>        calls mbox_free_channel(); it does not wait for an in-flight
+>        mbox_send_message()/txdone or for send_pcc_cmd() to finish.
+>        An accessor already in send_pcc_cmd() can therefore use the
+>        revoked mapping or the freed channel.
+> 
+>   The probe failure path is a separate, non-race lifetime defect:
+>   acpi_cppc_processor_probe()'s out_free path iounmap()s and
+>   kfree()s cpc_ptr but does not decrement the pcc_data refcount that
+>   pcc_data_alloc() just took (cppc_acpi.c:1015-1023).  It can leak the
+>   channel/object, but it is not the concurrent UAF above.
+> 
+> 
+> * Reproducer and results
+> 
+>   No dynamic reproducer is attached.  The current QEMU test
+>   environment has no PCCT/PCC mailbox controller, so a real pcc_data
+>   cannot be created; I did not substitute a fake object.  The evidence
+>   for this report is the source-level lifetime above, with the exact
+>   line references in the mechanism section.
+> 
+>   Static evidence summary:
+> 
+>     - cppc_acpi.c:714-729: plain refcount++ in pcc_data_alloc()
+>     - cppc_acpi.c:1037-1051: plain refcount--, zero test, free, NULL,
+>       all without pcc_lock
+>     - cppc_acpi.c:981-989: probe reads pcc_data[...] without a NULL
+>       check and calls register_pcc_channel()
+>     - cppc_acpi.c:644-675: register_pcc_channel() writes the channel
+>       after a sleeping pcc_mbox_request_channel()
+>     - cppc_acpi.c:1313-1336, 1366-1389, 1488+, 1678+: accessors use
+>       pcc_data[] without a reference or NULL check
+>     - cppc_acpi.c:97-98: GET_PCC_VADDR() dereferences the slot directly
+>     - drivers/mailbox/pcc.c:431-448: free does not wait for in-flight
+>       sends
+> 
+> 
+> * Suggested direction
+> 
+>   Make pcc_data refcounted with refcount_t and update it under a
+>   dedicated teardown mutex (or pcc_lock), with the slot lookup and
+>   increment done atomically.  Accessors should acquire a reference (or
+>   use RCU) before dropping the lock, and the free path should clear the
+>   slot first, then wait for readers/in-flight sends before
+>   pcc_mbox_free_channel().  Free pcc_data after the kernfs drain, or
+>   make the sysfs show hold a pcc_data reference for its whole call.
+>   The probe error path should roll back the pcc_data_alloc() increment.
+>   Report-first, no patch attached; I can test a proposal on PCC
+>   hardware or a suitable QEMU model if one is available.
+> 
+> 
+> 
+>   Please keep me in Cc; I am not subscribed to the lists.
+> 
+> 
+> 
+> Regards,
+> Hanxiang Xu
+> xuhx@hust.edu.cn
 
-On Tue, 13 Oct 2026, at 22:26, yoxcu wrote:
-> From: Michael Auer <mick@yoxcu.de>
->
-> On the OnePlus 6 the bootloader leaves a vote on the ALC BCM
-> (rpmh_read() on the APPS DRV returns 0x2000000f). No driver owns this
-> BCM, so the vote is never removed and the SoC never reaches AOSS sleep
-> or CX collapse (qcom_stats aosd and cxsd stay at 0).
->
-> Add a node without consumers for the ALC BCM on mem_noc. The provider
-> then owns the BCM and drops the vote at sync_state.
->
-> With this change ALC reads 0 after boot and suspend reaches CX
-> collapse. The average current in an idle push standby test (Wi-Fi on)
-> was 35.6 mA, against 43.7 mA with the ALC vote kept in the sleep set.
->
-> Assisted-by: LLM
-> Signed-off-by: Michael Auer <mick@yoxcu.de>
-> ---
->  drivers/interconnect/qcom/sdm845.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->
+Thanks, both ACPI CPPC reports were already on the list:
+https://lore.kernel.org/all/c1190e23-2043-46d9-ae7e-f95103363b0b@arm.com/
+https://lore.kernel.org/all/20260830115644.2056983-1-christian.loehle@arm.com/
+https://lore.kernel.org/all/20260916162805.1039247-1-christian.loehle@arm.com/
 
-Tested-by: Ard Biesheuvel <ardb@kernel.org> # Lenovo C630 Yoga
-
-With this change (and a few others), my Yoga now suspends properly,
-to the point where it shows the pulsating LED in the power button.
-Battery seems much happier too.
+I will fix them.
