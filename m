@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794340575;
-	b=izbsXJZzy6vK3wmOrwCTAP7Rv5U4Q0u1ZIo6XBpX1ZTqEtEeU8TlJPbCnXFUTORsRoJT
-	 JxYicWUapHbd8YJphHHFrVkyhdu8lyLmSvE//LJKZwBvMB8WXA2cyJA7Y/IyyzR4BAA/H
-	 TthZ5gxnFU0EAGkLpxVVQAl7Xe43m/VMrExpvJiWQVYAUwPnVMBqGI9nTtn39umayIgVx
-	 lAMKPtFsYQtDdYljyQGUoFA4Jxs4WAmiMDyHo5qgUlfwti/ZSWpvta78tQjhroT9QvUNe
-	 Hioiewu9Vqr3xpPd/rjoJwV8tBZXaTcAfO31rF71wjLSL9+wTIig9W3dPDbbSkslg4A==
+	t=1794340882;
+	b=NZtrLCA9utkDlK+0AKN7ZpRlYXPdu7VmnIx2cSgw5a2T30HVXmuZLI8RNhYiY5XCO5jY
+	 Dcd9qbM4k1xe7nRlXbxKiDn1jkcd3l9uniHxoBb+tDnstFr9UdGzpw2XN1XiIE0zX199G
+	 RVkRAggcgucyzeTUVhxq1DM+1PVPYoGYBHHlcS0wuLtBF1WgD3No3nG0qvNT/0ifXqYnu
+	 nolxtX5dKisEE7HqB9+9P04GJG6UEpFla3jfhszsKkwalbYr8sR0Owla1yPvSjnVQBVwT
+	 SfyBUSoKRPK/EfCWP89lynWT3dw7Szra5EeE/CCOLe/FDa0YXGL5gVO0W7gqUjdyduw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794340575;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794340882;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=4e9zTEEepAH07YcZ7jQL8z3Ph2Jplxj/qCJ27ebIFzk=;
-	b=sTjdohPemk4jzh+/XOEOUN8pfjWKUyBi6UmN+0hldSXJRgC9h6Hy4eFoITuOCOzrWItx
-	 sZHYR7UsfSVQnypMI7fS9Mao70+DgBJ9jfJ7W00pw059PsWjMTlUKz7AvjFXOH1duuUH2
-	 xz4VU7qePxS1pSklhzhmSFCJfArC3LNt28PgbOag1vO1iMDOL59w8QhzA2cvT85nHuvcT
-	 DlABkmZL+DjRgyv7zA+HqxcQgTfIhRYygBdMrrXbjlupRY+yW2cdtEcgVkWHQfbQDM7Pl
-	 JHJpRJ0Mbe/Ifa2J7q0XGL4kQZrEnXuppDUfvlZ6XYveX8kJnpf/42NQcfgsjalUXxA==
+	bh=D9z0hUJMabcU8YBNpOYZdchyxPfKbVjxxRlkMtSmlg0=;
+	b=cDckygsv3R5dXDnR69ExmjfIhWSTJHFCV/RxwPJ+ocePh46hqtAnAmZOTykXrdQUAG8E
+	 md3Yc8ayrSLX1+OaEee9Thlg5G3MLd4C5NCOUJxOJ+E7RkvAmz0x9vNtTS+3XcfVWqrjD
+	 FDw5fJyLzVauos7gJzcnEO+3HkEI0F2UZ2cj/T6qcOkAW4x0NnEBVE7eLgiIi9jHlK+DA
+	 5jGGpJ30/wM4Wy32TTb42IdsdOFIEftt8TRdAMAms1ZSJmsJroZhOrCmipCHxacMNIdia
+	 yvMAPDjez1OQ7KNTnGyA3vyy+uFsp9GrkqOLe3AfNKBZUoFEKER3+/BUhxG3HUYDUMA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cg5Faxr9;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OzKn+XqP;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9787A60A2609
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 19:56:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D59CC606A320
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:01:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cg5Faxr9
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27AE91F008A4
-	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 19:56:14 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OzKn+XqP
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78C691F008A5
+	for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:01:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794340574;
-	bh=4e9zTEEepAH07YcZ7jQL8z3Ph2Jplxj/qCJ27ebIFzk=;
+	s=k20260515; t=1794340881;
+	bh=D9z0hUJMabcU8YBNpOYZdchyxPfKbVjxxRlkMtSmlg0=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Cg5Faxr9v+zaSU1I7eWru+ybfPtVRmrNfap/AxS1DesuT1U3ymnw3FbJBp0/Y4PF0
-	 Vpwaabish9VkJVp4qp9kqbJTNM48JC7Lob+NV73I3VmpFr0lVS4U51WePY8svJ/q/0
-	 BnF6AfVCJB/c5LGl+rgFGGH7apLWY56LmjtWyk0uxIJ1/Q+PyQEADiiYqdcEKpidPv
-	 H1DkVOT2g6swHoq5YJ3ec5OCJfmabgQnp0uTi1836mRBKR+371sq89cHtJVddn+giK
-	 lHnzlRFL2PCbRHVXngUtsgvDKBv2oMK9ALhH39kIHL4v6SP1cwq+Vdf0aGe+SI0FDs
-	 MSO7iY7LZBepg==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5be4a2d94adso2215502e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 11:56:14 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErEdaAUD47Fk/F1DTdBcSu6B9nZgoQK6PFMX6+QGuwZPkIcFcJFwaKCJXhNhImNR42f0jlZjTEIUow==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/FMATGl3vH+a4rtXHfgN40mNNOJXerevSW9T1mwNdJ/6ODs46K
-	m+stw9aOGYByd3XBRyvtrBm3QmwSnaNLVoH1CExxftHi51tRXFsjTd82K5JfwqwYXwYiZh5DazA
-	Ji8/tuXMVNKisrVgDWFwSAsCD9xKUpW8=
-X-Received: by 2002:a05:6512:4023:b0:5c0:46a:af07 with SMTP id
- 2adb3069b0e04-5c15d633aa6mr41569e87.24.1794340572514; Tue, 10 Nov 2026
- 11:56:12 -0800 (PST)
+	b=OzKn+XqPRV92FvSgh7X5useqpv/drr9LaxR30eVR951fjBgEdDLvJAWk9ugstA2WC
+	 O72uRQE43XNW9wtsRHxjR6Z4pIM3WAKJxF1z7ZnCQMd1GO6HP1oyUZCdeuj4j3Ua/I
+	 7iKC+jfrEUQWD2vY4wuLZJ7UzIe/alwNvE/NreUEQoGN8oX3zplJl2dJQRfE69zv9e
+	 n0DYdZYrMHbPTIwTCdqkik3bFHpt4Qs64Klj/Yc+UjBHbtdmMtmnm9ByyGUkLqRrwG
+	 rTx8D7M6KrF4j0M2r0BoZpDb4FW86GRhWOw8LbrzV6Hb+X7ZRxN6n1XhVW8OSFyGlJ
+	 EASdQyix8Uz6g==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5bfa65c8617so1447016e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 12:01:21 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErERfQ/zioeGHMN/N3iz2rgnTQDyQRaU5MrLBBVaqMOCZb5soKZFV3x6GxkR2mcSCdYhSdKtuq3P5g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+IH3wcBe3G2J2LRsNWxZe6ATeghIptkFtg1owyNSqOL/UqfatO
+	tSrkoHc9usw9saRbmJBrO/pFHLl5vcdXCCyWQnKFs+P80Jwn3FcsgmGLBal8QNHqfoNvb+bjuUW
+	gt6h56kjUS/F8H0SI9SbLmvxw1kQDXF0=
+X-Received: by 2002:ac2:5686:0:b0:5bf:b994:5f91 with SMTP id
+ 2adb3069b0e04-5c15d643ba1mr49174e87.15.1794340879856; Tue, 10 Nov 2026
+ 12:01:19 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,99 +59,74 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org> <20261106151947.3991524-17-vincent.guittot@linaro.org>
-In-Reply-To: <20261106151947.3991524-17-vincent.guittot@linaro.org>
+References: <20261106184008.1728-1-lirongqing@baidu.com>
+In-Reply-To: <20261106184008.1728-1-lirongqing@baidu.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 10 Nov 2026 20:55:56 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0j9MvRWz276XfR+FK+jZTyj88CEpV9i-Vtb-crhXLswvg@mail.gmail.com>
-X-Gm-Features: AclHuK_hRY2h3ib4gYJGswYHP1kc8kMT9CG7yVECgP2MQJGZ6hr3Nt_oO0vb9a4
-Message-ID: <CAJZ5v0j9MvRWz276XfR+FK+jZTyj88CEpV9i-Vtb-crhXLswvg@mail.gmail.com>
-Subject: Re: [PATCH 16/20 v3] energy model: Add a get previous state function
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
-	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
-	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
-	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
-	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
-	sshegde@linux.ibm.com, kayracizmeci@gmail.com, tim.c.chen@linux.intel.com
+Date: Tue, 10 Nov 2026 21:01:07 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gHXCKvvHPXevx4U5WSVsS91Z3WuiMCwiYSQzQBEB5jNw@mail.gmail.com>
+X-Gm-Features: AclHuK8yAa0We67mGYcCmtxqAz4cYCS5W1KgeKUgqW5tPPUQLUeK9Og0fALrKm4
+Message-ID: <CAJZ5v0gHXCKvvHPXevx4U5WSVsS91Z3WuiMCwiYSQzQBEB5jNw@mail.gmail.com>
+Subject: Re: [PATCH v5 0/2] cpufreq: acpi-cpufreq: fix P-state index mismatch
+ between perf->states[] and freq_table[]
+To: lirongqing <lirongqing@baidu.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 6, 2026 at 4:21=E2=80=AFPM Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
+On Fri, Nov 6, 2026 at 7:40=E2=80=AFPM lirongqing <lirongqing@baidu.com> wr=
+ote:
 >
-> Instead of parsing the entire EM table everytime, add a function to get t=
-he
-> previous state.
+> From: Li RongQing <lirongqing@baidu.com>
 >
-> Will be used in the scheduler feec() function.
+> policy->freq_table is built by filtering out _PSS entries that are not
+> lower in frequency than the previous one, and the original ACPI P-state
+> index of each remaining entry is kept in freq_table[].driver_data.  The
+> index spaces of perf->states[] and freq_table[] therefore differ, and
+> mixing them up leads to the frequency of one P-state being attributed to
+> another.
 >
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Patch 1/2 is unchanged from v4 and fixes the cached frequency used by
+> get_cur_freq_on_cpu() to detect a firmware frequency change behind the
+> OS's back.
+>
+> Patch 2/2 is new in v5.  As Rafael pointed out, Sashiko observed that
+> the extract_msr() fallback interferes with 1/2 and can render it
+> ineffective: when the status read from the hardware matches no
+> freq_table entry, extract_msr() returns freq_table[0].frequency instead
+> of reporting the status as unknown.  If the OS is already at the P-state
+> corresponding to freq_table[0], a firmware switch to a filtered-out
+> P-state then compares equal to the cached frequency, data->resume is
+> left clear and the next ->target() call does not rewrite the control
+> register.  So 1/2 alone does not make the detection work in that case,
+> and the two patches are posted together rather than separately as I had
+> suggested earlier.
+>
+> v4: https://lkml.iu.edu/2609.1/07369.html
+>
+> Changes since v4:
+>  - Drop "cpufreq: acpi-cpufreq: fix P-state index mismatch in
+>    extract_io()", which has been applied.  This series is based on top
+>    of it.
+>  - Add 2/2 to stop extract_msr() from masking firmware P-state changes,
+>    as reported by Sashiko, and note the dependency in 1/2's changelog.
 
-No objections from me.
+So Sashiko has feedback on this one now:
 
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+https://sashiko.dev/#/message/20261106184008.1728-2-lirongqing%40baidu.com
 
-> ---
->  include/linux/energy_model.h | 32 ++++++++++++++++++++++++++++++++
->  1 file changed, 32 insertions(+)
+>  - 1/2: no functional change; changelog extended to say that it fixes
+>    only the cached side of the comparison, and a duplicate
+>    Signed-off-by was removed.
 >
-> diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-> index c909a8ba22e8..89cf109cbca6 100644
-> --- a/include/linux/energy_model.h
-> +++ b/include/linux/energy_model.h
-> @@ -224,6 +224,26 @@ em_pd_get_efficient_state(struct em_perf_state *tabl=
-e,
->         return max_ps;
->  }
+> Li RongQing (2):
+>   cpufreq: acpi-cpufreq: fix P-state index mismatch in
+>     get_cur_freq_on_cpu()
+>   cpufreq: acpi-cpufreq: don't mask firmware P-state changes
 >
-> +static inline int
-> +em_pd_get_previous_state(struct em_perf_state *table,
-> +                        struct em_perf_domain *pd, int idx)
-> +{
-> +       unsigned long pd_flags =3D pd->flags;
-> +       int min_ps =3D pd->min_perf_state;
-> +       struct em_perf_state *ps;
-> +       int i;
-> +
-> +       for (i =3D idx - 1; i >=3D min_ps; i--) {
-> +               ps =3D &table[i];
-> +               if (pd_flags & EM_PERF_DOMAIN_SKIP_INEFFICIENCIES &&
-> +                   ps->flags & EM_PERF_STATE_INEFFICIENT)
-> +                       continue;
-> +               return i;
-> +       }
-> +
-> +       return -1;
-> +}
-> +
->  /**
->   * em_cpu_energy() - Estimates the energy consumed by the CPUs of a
->   *             performance domain
-> @@ -375,6 +395,18 @@ static inline struct em_perf_domain *em_pd_get(struc=
-t device *dev)
->  {
->         return NULL;
->  }
-> +static inline int
-> +em_pd_get_efficient_state(struct em_perf_state *table,
-> +                         struct em_perf_domain *pd, unsigned long max_ut=
-il)
-> +{
-> +       return 0;
-> +}
-> +static inline int
-> +em_pd_get_previous_state(struct em_perf_state *table,
-> +                        struct em_perf_domain *pd, int idx)
-> +{
-> +       return -1;
-> +}
->  static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
->                         unsigned long max_util, unsigned long sum_util,
->                         unsigned long allowed_cpu_cap)
+>  drivers/cpufreq/acpi-cpufreq.c | 11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
+>
 > --
-> 2.53.0
->
+> 2.9.4
 >
