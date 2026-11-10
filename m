@@ -1,54 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794316034;
-	b=KSD1/wAiGv4xrtMYFJPV92v+ZWY2/T39WEH1ncdILd8a9ZbCt5P3VTmchBqibv81Obsf
-	 oIP9Gelrqk00L5j87TKfaLtq4TrlQVDozuBvyi0TnERnLBg9FOYGHg9SuS8OYEPojMdez
-	 TV5aPC3+Q1ltOQHhg2OrwyRS/2qBTcJQMTVtLbBv2dQLgwpEPoAcOh5yq2HY+7kB/9BZh
-	 KK8jTONFAGsrFBCxGIrOTOHNdgcvi0RklAqSp81QyjwQYij14pPmZPDS+hmi1hTUCuYEL
-	 7LoliQt5j+1/PBLw08fb8mVtL9DSpfErsYGh2B10AFjlg+pLgh3goaR1jWZMNjHdmnQ==
+	t=1794316267;
+	b=X8P9ixKXuZfYld0j6LAqBkFcRDZbcnPxrAmHCDKnHoDdCqbgN9oLe72Gw8h3dpz60rwh
+	 yitYxTGiR6myKylCUOGRDOH/Q57/DiEcBefwoG3m7Y+abvga8rSdM3u5Y4WZFgqY5TLKS
+	 EnKIP9TaxYF1m8STgkkvcY5rg8l1Jl+Uaj9TLTf+OWCmv91QN+0FgcxHQqSOzxPhl7suy
+	 J3dY+Tzkai2bOZ8N4CDxn1nxukusbiLf6JvA08kQJMPU4gtypg6rLYSUjUnOzqJcUlCN5
+	 Jh5WybQBJQfTeHAshycLYUHPX3wcyI5JYPOQaPkLplz0LqESkdVoDkFCru0tB/0htoQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794316034;
-	h=DMARC-Filter:Received:X-Originating-IP:Date:X-CM-HeaderCharset:From:
-	 To:Cc:Subject:X-Priority:X-Mailer:In-Reply-To:References:
-	 X-CM-CTRLMSGS:Content-Transfer-Encoding:Content-Type:MIME-Version:
-	 Message-ID:X-Coremail-Locale:X-CM-TRANSID:X-CM-SenderInfo:
-	 X-Coremail-Antispam;
-	bh=wqelae6FwvZv7TATekt4BSlN+Z+PwLT3NdN3rlcY/1s=;
-	b=shlBkRJ6xEQ5nhjqsEughR+A2AQqN4rSOQc2guyhTK7VfNjK+FsHBscKbb8tirJ4YwmD
-	 65Jk9ckGMB+lkpY051NU5jtdsism14/nJX/gNxU6t60MkCSMkMIIIBVZtaum6q2aa2aMv
-	 AXObTQOSTxMy8ZjkrjPk7OQhJpi3ili1hftNcJ8WUn+7pgi//g450ZoIMf/4TslhjCLHL
-	 4GG1hz2r90cpDvyS2hlh2WFpeWneLLioJEdPnlhyMPEhrnuaBYsIyDSSUMmJ2DjUlcFDj
-	 vG24gMqauHaJ2sxi063K1DQC5WeL1Xy6lvfpElUkch+Wv7bVl5lpap+Zc/wprhK37xQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794316267;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=HVwTPv0aAkMcnMSXVyynB+Ri9xfpkvP9QwlW++M+nbk=;
+	b=fmbcX41UWTIGtqPDAnJ9dP4Fpc8nq1UnGuJAIL1EoO7Z39vhiSFmo9qZBDr/GVByE8/y
+	 NPETx3DrV3z1wQK62JmygkrbjFtjfHpEwVwKPlTh0BAKUQB8p3BAsSdGMEwnbn6dTQIA8
+	 3SxFAZu2AwNLoyQ0m5GTw1/WlmmBPPg0xoejo8AuyNe6jnammyQhCQWl3hPqE9zjHjOGI
+	 aHQLJ/g1SQBLjnMghGtsPyaPI1S+U1hEW0ZsM2/m4bO6DG5gvthfmRLGRoCYoG4eQTXk3
+	 1wk7uzS8czudnrzudSCuo0EyWS2vRCk8Zpy9dSdFBhZ4k2N8PhenySgghpJXmJR2cHQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=hust.edu.cn;
-	spf=pass smtp.mailfrom=hust.edu.cn;
-	arc=none smtp.remote-ip=162.243.164.118
-Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7837D606BFDF;
-	Tue, 10 Nov 2026 13:07:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7837D606BFDF
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=hust.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hust.edu.cn
-Received: from xuhx$hust.edu.cn ( [10.12.190.107] ) by ajax-webmail-app2
- (Coremail) ; Tue, 10 Nov 2026 21:07:07 +0800 (GMT+08:00)
-Date: Tue, 10 Nov 2026 21:07:07 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From: =?UTF-8?B?5b6Q5pmX57+U?= <xuhx@hust.edu.cn>
-To: rafael@kernel.org, sudeep.holla@kernel.org, jassisinghbrar@gmail.com
-Cc: linux-acpi@vger.kernel.org, viresh.kumar@linaro.org,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	lenb@kernel.org
-Subject: ACPI: CPPC: shared PCC subspace data can be freed while another
-  CPU probes, reads, or tears it down
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2025.3-cmXT6 build
- 20260810(6c94e3b5) Copyright (c) 2002-2026 www.mailtech.cn hust
-In-Reply-To: <2026102727-data-sequel-ce41@gregkh>
-References: <4c7f9772.192e1.1a17d5c2ed5.Coremail.xuhx@hust.edu.cn>
- <2026102727-data-sequel-ce41@gregkh>
-X-CM-CTRLMSGS: =?B?Rd9I3DiH6nJ5xwDR7hwMki1N8jM=
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=AfwVAG+u;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9B003606A7F1;
+	Tue, 10 Nov 2026 13:11:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9B003606A7F1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=AfwVAG+u
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C0086339;
+	Tue, 10 Nov 2026 05:11:02 -0800 (PST)
+Received: from [10.57.10.132] (unknown [10.57.10.132])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9DC9B3F632;
+	Tue, 10 Nov 2026 05:11:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1794316265; bh=thV59Vj2cTuwftZJRbXLZrc4Kc/P0jvK+3eu/9gZEUU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=AfwVAG+uI+ZgDWDEdxSg5XkJOwdNS/aY3MlutxrjVZp/Q3XZRJygBOXhxIwxGXAN3
+	 RRh3GxhbgiXoKOLWs8CEFT71TotYUP6HcbQoLq/UvtUPJYte9gSN1yQuenqv9rkngA
+	 GKltRZkoZPILdMvyX8VbrXZ9yX7a0oIf0o5PRseE=
+Message-ID: <4f0c8581-a8fb-4bc4-82cc-d30f2f56d2ce@arm.com>
+Date: Tue, 10 Nov 2026 13:11:37 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,139 +53,85 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <7e7371c7.22ae1.1a1c591c7ae.Coremail.xuhx@hust.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:IQEQrMDW_cX7FvNqlJgNAA--.8725W
-X-CM-SenderInfo: bgsqjkayqyjmo6kx23oohg3hdfq/1tbiAgQHB2rx8m6R6QACs7
-X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VWkKw
-	CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
-	daVFxhVjvjDU=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency
+ ranking
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ Guo Chen <guo.chen@oss.qualcomm.com>,
+ Vincent Donnefort <vincent.donnefort@arm.com>,
+ Matthias Kaehlcke <mka@chromium.org>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com,
+ tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com
+References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
+ <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
+ <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
+ <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
+ <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com>
+ <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
+ <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-cGNjX2RhdGFbXSBpcyBhIGdsb2JhbCBhcnJheSBvZiBzaGFyZWQgUENDLXN1YnNwYWNlIG9iamVj
-dHMuICBUaGUKcmVmZXJlbmNlIGNvdW50IGlzIGFuIG9yZGluYXJ5IGludCB1cGRhdGVkIHdpdGhv
-dXQgYSBsb2NrLCBhbmQKYWNwaV9jcHBjX3Byb2Nlc3Nvcl9leGl0KCkgY2FuIGtmcmVlKCkgdGhl
-IG9iamVjdCBhbmQgc2V0IHRoZSBzbG90IHRvCk5VTEwgd2hpbGUgYW5vdGhlciBDUFUncyBhY2Nl
-c3NvciBpcyB1c2luZyBpdCwgd2hpbGUgYW5vdGhlciBDUFUncwpmaXJzdC1vbmxpbmUgcHJvYmUg
-aXMgYWxsb2NhdGluZy9yZWdpc3RlcmluZyBpdCwgb3Igd2hpbGUgYW5vdGhlcgpyZW1vdmUgaXMg
-ZGVjcmVtZW50aW5nIHRoZSBzYW1lIGNvdW50LiAgVGhlIHJlc3VsdCBpcyBhIFVBRiwgYSBOVUxM
-CmRlcmVmZXJlbmNlLCBhIGxvc3QgcmVmY291bnQgdXBkYXRlL2xlYWssIGFuZCBhIFBDQyBjaGFu
-bmVsL3NobWVtCmxpZmV0aW1lIHByb2JsZW0uICBUaGlzIHJlcG9ydCBpcyBzb3VyY2UtbGV2ZWw6
-IHRoZSB0ZXN0IGVudmlyb25tZW50CmRvZXMgbm90IGhhdmUgYSBQQ0MvUENDVCBjb250cm9sbGVy
-LCBzbyBubyBkeW5hbWljIHJlcHJvZHVjZXIgaXMKYXR0YWNoZWQuICBJIGFtIG5vdCBjbGFpbWlu
-ZyB0aGUgZG91YmxlLWZyZWUgdmFyaWFudC4KClRoZSBkZXRhaWxlZCBkZXNjcmlwdGlvbjoKCiog
-VGVzdCBlbnZpcm9ubWVudCAvIGFmZmVjdGVkIHZlcnNpb24KCiAgTGludXggNy4zLjAgc291cmNl
-ICh2ZXJpZmljYXRpb24vbGludXgtNy4zKSwgbGluZSBudW1iZXJzIGZyb20gNy4zLgogIFRoZSBh
-dmFpbGFibGUgUUVNVS9LQVNBTiBndWVzdCB1c2VkIGZvciB0aGUgc2libGluZyBDUFBDIHJlcG9y
-dCBoYXMKICBubyBQQ0NUIHRhYmxlIGFuZCBubyBQQ0MgbWFpbGJveCBjb250cm9sbGVyLCBzbyBp
-dCBjYW5ub3QgY3JlYXRlIGEKICByZWFsIHBjY19kYXRhIG9iamVjdC4gIEkgZGlkIG5vdCBmYWtl
-IGEgcGNjX2RhdGEgb2JqZWN0IG9yIGNhbGwgdGhlCiAgdGVhcmRvd24gcGF0aCB3aXRoIGEgc3lu
-dGhldGljIHBvaW50ZXI7IHRoYXQgd291bGQgbm90IGJlIGEgdmFsaWQKICBkeW5hbWljIHJlcHJv
-ZHVjdGlvbi4gIFRoZSBhZmZlY3RlZCBjb2RlIGlzIHRoZSBub3JtYWwKICBDT05GSUdfQUNQSV9D
-UFBDX0xJQiBwYXRoIGluIGRyaXZlcnMvYWNwaS9jcHBjX2FjcGkuYyBwbHVzIHRoZSBQQ0MKICBt
-YWlsYm94IHJlbGVhc2UgaW4gZHJpdmVycy9tYWlsYm94L3BjYy5jLgoKKiBNZWNoYW5pc20KCiAg
-QSBQQ0Mgc3Vic3BhY2UgY2FuIGJlIHNoYXJlZCBieSBtdWx0aXBsZSBDUFVzLiAgcGNjX2RhdGFb
-cGNjX3NzX2lkXQogIGlzIHRoZSBnbG9iYWwgc2xvdCwgYW5kIGl0cyByZWZjb3VudCBpcyB0aGUg
-bnVtYmVyIG9mIHBhcnRpY2lwYXRpbmcKICBDUFVzIChjcHBjX2FjcGkuYzo0OC04MykuCgogIEFs
-bG9jYXRpb24gKGNwcGNfYWNwaS5jOjcxNC03MjkpIGlzOgoKICAgIGlmIChwY2NfZGF0YVtwY2Nf
-c3NfaWRdKQogICAgICAgICAgICBwY2NfZGF0YVtwY2Nfc3NfaWRdLT5yZWZjb3VudCsrOwogICAg
-ZWxzZSB7CiAgICAgICAgICAgIHBjY19kYXRhW3BjY19zc19pZF0gPSBremFsbG9jKC4uLik7CiAg
-ICAgICAgICAgIC4uLgogICAgICAgICAgICBwY2NfZGF0YVtwY2Nfc3NfaWRdLT5yZWZjb3VudCsr
-OwogICAgfQoKICBUaGVyZSBpcyBubyBsb2NrLCBhbmQgdGhlIHNsb3QgY2hlY2ssIGFsbG9jYXRp
-b24sIHB1YmxpY2F0aW9uIGFuZAogIGluY3JlbWVudCBhcmUgbm90IGF0b21pYy4KCiAgVGVhcmRv
-d24gKGNwcGNfYWNwaS5jOjEwMzctMTA1MSkgaXM6CgogICAgaWYgKHBjY19zc19pZCA+PSAwICYm
-IHBjY19kYXRhW3BjY19zc19pZF0pIHsKICAgICAgICAgICAgaWYgKHBjY19kYXRhW3BjY19zc19p
-ZF0tPnBjY19jaGFubmVsX2FjcXVpcmVkKSB7CiAgICAgICAgICAgICAgICAgICAgcGNjX2RhdGFb
-cGNjX3NzX2lkXS0+cmVmY291bnQtLTsKICAgICAgICAgICAgICAgICAgICBpZiAoIXBjY19kYXRh
-W3BjY19zc19pZF0tPnJlZmNvdW50KSB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBwY2Nf
-bWJveF9mcmVlX2NoYW5uZWwoLi4uKTsKICAgICAgICAgICAgICAgICAgICAgICAgICAgIGtmcmVl
-KHBjY19kYXRhW3BjY19zc19pZF0pOwogICAgICAgICAgICAgICAgICAgICAgICAgICAgcGNjX2Rh
-dGFbcGNjX3NzX2lkXSA9IE5VTEw7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9
-CiAgICB9CgogIFRoaXMgaXMgYSBwbGFpbiByZWFkLW1vZGlmeS13cml0ZSwgZm9sbG93ZWQgYnkg
-YSBzZXBhcmF0ZSByZWFkIGZvcgogIHRoZSB6ZXJvIHRlc3QsIHdpdGggbm8gcGNjX2xvY2sgYW5k
-IG5vIHRlYXJkb3duIG11dGV4LiAgVGhlIHJlbGVhc2UKICBoYXBwZW5zIGJlZm9yZSBrb2JqZWN0
-X3B1dCgmY3BjX3B0ci0+a29iaiksIHNvIHRoZSBrZXJuZnMgZHJhaW4gdGhhdAogIHByb3RlY3Rz
-IHRoZSBjcGNfZGVzYyBzeXNmcyBvYmplY3QgZG9lcyBub3QgcHJvdGVjdCBwY2NfZGF0YSBhdCBh
-bGwuCgogIEFjY2Vzc29ycyB0YWtlIHRoZSBnbG9iYWwgc2xvdCBhbmQgaW1tZWRpYXRlbHkgdXNl
-IGl0OgoKICAgIGNwcGNfZ2V0X3JlZ192YWxfaW5fcGNjKCk6IHBjY19zc19kYXRhID0gcGNjX2Rh
-dGFbcGNjX3NzX2lkXTsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRvd25fd3JpdGUo
-JnBjY19zc19kYXRhLT5wY2NfbG9jayk7CiAgICBjcHBjX3NldF9yZWdfdmFsX2luX3BjYygpOiBj
-cGNfd3JpdGUoLi4uKTsgdGhlbiB0aGUgc2FtZSBsb29rdXAKICAgIGNwcGNfZ2V0X3BlcmZfY2Fw
-cygpOiAgICAgc2FtZSBwYXR0ZXJuIChjcHBjX2FjcGkuYzoxNDg4IG9ud2FyZHMpCiAgICBjcHBj
-X2dldF9wZXJmX2N0cnMoKTogICAgIHNhbWUgcGF0dGVybiAoY3BwY19hY3BpLmM6MTY3OCBvbndh
-cmRzKQogICAgR0VUX1BDQ19WQUREUigpOiAgICAgICAgICBwY2NfZGF0YVtpZF0tPnBjY19jaGFu
-bmVsLT5zaG1lbSBkaXJlY3RseQoKICBOb25lIG9mIHRoZXNlIGNoZWNrIGZvciBOVUxMLCBhbmQg
-bm9uZSBob2xkIGEgcmVmZXJlbmNlIHRoYXQgd291bGQKICBrZWVwIHBjY19kYXRhIGFsaXZlIGFj
-cm9zcyB0aGUgdXNlLgoKICBGb3VyIGluZGVwZW5kZW50IGludGVybGVhdmluZ3MgZm9sbG93OgoK
-ICAgIEEuIGV4aXQgdnMgYWNjZXNzb3IuICBUaGUgbGFzdCBDUFUgaXMgdW5ib3VuZCB3aGlsZSBp
-dHMgdGljaywKICAgICAgIGNwdWluZm9fY3VyX2ZyZXEsIG9yIGFuIGFscmVhZHktcnVubmluZyBh
-Y3BpX2NwcGMgc3lzZnMgc2hvdyBpcwogICAgICAgaW4gYSBQQ0MgYWNjZXNzb3IuICBleGl0IGZy
-ZWVzIHBjY19kYXRhIGFuZCBpb3VubWFwKClzIHRoZQogICAgICAgY2hhbm5lbCBzaG1lbTsgdGhl
-IGFjY2Vzc29yIHRoZW4gY2FsbHMgZG93bl93cml0ZSgpIG9uIGZyZWVkCiAgICAgICBtZW1vcnkg
-b3IgZGVyZWZlcmVuY2VzIE5VTEwuICBUaGlzIGlzIHRoZSBzaW1wbGVzdCBVQUYgYW5kIGRvZXMK
-ICAgICAgIG5vdCByZXF1aXJlIHR3byBDUFVzIHRvIGJlIHJlbW92ZWQgYXQgb25jZS4KCiAgICBC
-LiByZW1vdmUgdnMgcmVtb3ZlLiAgVHdvIENQVXMgc2hhcmluZyB0aGUgc3Vic3BhY2UgYm90aCBy
-ZWFkCiAgICAgICByZWZjb3VudCA9PSAyLCBib3RoIHdyaXRlIDEsIGFuZCBuZWl0aGVyIGZyZWVz
-OiB0aGUgb2JqZWN0IGFuZAogICAgICAgY2hhbm5lbCBsZWFrLiAgSWYgb25lIHJlbW92ZSBoYXMg
-YWxyZWFkeSBmcmVlZCBhbmQgY2xlYXJlZCB0aGUKICAgICAgIHNsb3Qgd2hpbGUgdGhlIG90aGVy
-IGhhcyBhIHN0YWxlIG5vbi1OVUxMIHZhbHVlLCB0aGUgc2Vjb25kCiAgICAgICByZW1vdmUgY2Fu
-IGRlcmVmZXJlbmNlIE5VTEwgb3IgZnJlZWQgbWVtb3J5LiAgVGhlIGV4YWN0CiAgICAgICBkb3Vi
-bGUtZnJlZSByZXF1aXJlcyBib3RoIHJlbW92YWxzIHRvIG9ic2VydmUgemVybywgd2hpY2ggbmVl
-ZHMKICAgICAgIGFuIHVuZGVyLWNvdW50IG9yIGFub3RoZXIgcmVtb3ZlIHBhdGg7IEkgYW0gbm90
-IGNsYWltaW5nIGl0LgoKICAgIEMuIGZpcnN0LW9ubGluZSBwcm9iZSB2cyByZW1vdmUuICBDUFUg
-QiBpcyBkb2luZyBpdHMgZmlyc3QKICAgICAgIHBoeXNpY2FsIG9ubGluZSBhbmQgcnVucyBhY3Bp
-X2NwcGNfcHJvY2Vzc29yX3Byb2JlKCk7IENQVSBBIGlzCiAgICAgICBiZWluZyB1bmJvdW5kIGFu
-ZCBydW5zIGFjcGlfY3BwY19wcm9jZXNzb3JfZXhpdCgpLiAgVGhleSBzaGFyZQogICAgICAgdGhl
-IHN1YnNwYWNlIGJ1dCBob2xkIGRpZmZlcmVudCBDUFUgZGV2aWNlIGxvY2tzLiAgVGhlIHByb2Jl
-J3MKICAgICAgIHBjY19kYXRhX2FsbG9jKCkgY2FuIHJlYWQgdGhlIHNsb3QganVzdCBiZWZvcmUg
-ZXhpdCBmcmVlcyBpdCwKICAgICAgIHRoZW4gaW5jcmVtZW50IGZyZWVkIG1lbW9yeTsgb3IgaXQg
-Y2FuIGVudGVyIHJlZ2lzdGVyX3BjY19jaGFubmVsKCksCiAgICAgICBzbGVlcCBpbiBwY2NfbWJv
-eF9yZXF1ZXN0X2NoYW5uZWwoKSwgYW5kIHRoZW4gd3JpdGUgdGhlIGNoYW5uZWwKICAgICAgIHBv
-aW50ZXIgaW50byBhIHNsb3QgdGhhdCBleGl0IGhhcyBhbHJlYWR5IGZyZWVkIGFuZCBjbGVhcmVk
-LgogICAgICAgYWNwaV9jcHBjX3Byb2Nlc3Nvcl9wcm9iZSgpIGFsc28gZGVyZWZlcmVuY2VzCiAg
-ICAgICBwY2NfZGF0YVtwY2Nfc3Vic3BhY2VfaWRdLT5wY2NfY2hhbm5lbF9hY3F1aXJlZCBhdAog
-ICAgICAgY3BwY19hY3BpLmM6OTgxIHdpdGhvdXQgYSBOVUxMIGNoZWNrLgoKICAgIEQuIGNoYW5u
-ZWwgcmVsZWFzZSB2cyBpbi1mbGlnaHQgc2VuZC4gIHBjY19tYm94X2ZyZWVfY2hhbm5lbCgpCiAg
-ICAgICAoZHJpdmVycy9tYWlsYm94L3BjYy5jOjQzMS00NDgpIG9ubHkgaW91bm1hcCgpcyB0aGUg
-c2htZW0gYW5kCiAgICAgICBjYWxscyBtYm94X2ZyZWVfY2hhbm5lbCgpOyBpdCBkb2VzIG5vdCB3
-YWl0IGZvciBhbiBpbi1mbGlnaHQKICAgICAgIG1ib3hfc2VuZF9tZXNzYWdlKCkvdHhkb25lIG9y
-IGZvciBzZW5kX3BjY19jbWQoKSB0byBmaW5pc2guCiAgICAgICBBbiBhY2Nlc3NvciBhbHJlYWR5
-IGluIHNlbmRfcGNjX2NtZCgpIGNhbiB0aGVyZWZvcmUgdXNlIHRoZQogICAgICAgcmV2b2tlZCBt
-YXBwaW5nIG9yIHRoZSBmcmVlZCBjaGFubmVsLgoKICBUaGUgcHJvYmUgZmFpbHVyZSBwYXRoIGlz
-IGEgc2VwYXJhdGUsIG5vbi1yYWNlIGxpZmV0aW1lIGRlZmVjdDoKICBhY3BpX2NwcGNfcHJvY2Vz
-c29yX3Byb2JlKCkncyBvdXRfZnJlZSBwYXRoIGlvdW5tYXAoKXMgYW5kCiAga2ZyZWUoKXMgY3Bj
-X3B0ciBidXQgZG9lcyBub3QgZGVjcmVtZW50IHRoZSBwY2NfZGF0YSByZWZjb3VudCB0aGF0CiAg
-cGNjX2RhdGFfYWxsb2MoKSBqdXN0IHRvb2sgKGNwcGNfYWNwaS5jOjEwMTUtMTAyMykuICBJdCBj
-YW4gbGVhayB0aGUKICBjaGFubmVsL29iamVjdCwgYnV0IGl0IGlzIG5vdCB0aGUgY29uY3VycmVu
-dCBVQUYgYWJvdmUuCgoKKiBSZXByb2R1Y2VyIGFuZCByZXN1bHRzCgogIE5vIGR5bmFtaWMgcmVw
-cm9kdWNlciBpcyBhdHRhY2hlZC4gIFRoZSBjdXJyZW50IFFFTVUgdGVzdAogIGVudmlyb25tZW50
-IGhhcyBubyBQQ0NUL1BDQyBtYWlsYm94IGNvbnRyb2xsZXIsIHNvIGEgcmVhbCBwY2NfZGF0YQog
-IGNhbm5vdCBiZSBjcmVhdGVkOyBJIGRpZCBub3Qgc3Vic3RpdHV0ZSBhIGZha2Ugb2JqZWN0LiAg
-VGhlIGV2aWRlbmNlCiAgZm9yIHRoaXMgcmVwb3J0IGlzIHRoZSBzb3VyY2UtbGV2ZWwgbGlmZXRp
-bWUgYWJvdmUsIHdpdGggdGhlIGV4YWN0CiAgbGluZSByZWZlcmVuY2VzIGluIHRoZSBtZWNoYW5p
-c20gc2VjdGlvbi4KCiAgU3RhdGljIGV2aWRlbmNlIHN1bW1hcnk6CgogICAgLSBjcHBjX2FjcGku
-Yzo3MTQtNzI5OiBwbGFpbiByZWZjb3VudCsrIGluIHBjY19kYXRhX2FsbG9jKCkKICAgIC0gY3Bw
-Y19hY3BpLmM6MTAzNy0xMDUxOiBwbGFpbiByZWZjb3VudC0tLCB6ZXJvIHRlc3QsIGZyZWUsIE5V
-TEwsCiAgICAgIGFsbCB3aXRob3V0IHBjY19sb2NrCiAgICAtIGNwcGNfYWNwaS5jOjk4MS05ODk6
-IHByb2JlIHJlYWRzIHBjY19kYXRhWy4uLl0gd2l0aG91dCBhIE5VTEwKICAgICAgY2hlY2sgYW5k
-IGNhbGxzIHJlZ2lzdGVyX3BjY19jaGFubmVsKCkKICAgIC0gY3BwY19hY3BpLmM6NjQ0LTY3NTog
-cmVnaXN0ZXJfcGNjX2NoYW5uZWwoKSB3cml0ZXMgdGhlIGNoYW5uZWwKICAgICAgYWZ0ZXIgYSBz
-bGVlcGluZyBwY2NfbWJveF9yZXF1ZXN0X2NoYW5uZWwoKQogICAgLSBjcHBjX2FjcGkuYzoxMzEz
-LTEzMzYsIDEzNjYtMTM4OSwgMTQ4OCssIDE2NzgrOiBhY2Nlc3NvcnMgdXNlCiAgICAgIHBjY19k
-YXRhW10gd2l0aG91dCBhIHJlZmVyZW5jZSBvciBOVUxMIGNoZWNrCiAgICAtIGNwcGNfYWNwaS5j
-Ojk3LTk4OiBHRVRfUENDX1ZBRERSKCkgZGVyZWZlcmVuY2VzIHRoZSBzbG90IGRpcmVjdGx5CiAg
-ICAtIGRyaXZlcnMvbWFpbGJveC9wY2MuYzo0MzEtNDQ4OiBmcmVlIGRvZXMgbm90IHdhaXQgZm9y
-IGluLWZsaWdodAogICAgICBzZW5kcwoKCiogU3VnZ2VzdGVkIGRpcmVjdGlvbgoKICBNYWtlIHBj
-Y19kYXRhIHJlZmNvdW50ZWQgd2l0aCByZWZjb3VudF90IGFuZCB1cGRhdGUgaXQgdW5kZXIgYQog
-IGRlZGljYXRlZCB0ZWFyZG93biBtdXRleCAob3IgcGNjX2xvY2spLCB3aXRoIHRoZSBzbG90IGxv
-b2t1cCBhbmQKICBpbmNyZW1lbnQgZG9uZSBhdG9taWNhbGx5LiAgQWNjZXNzb3JzIHNob3VsZCBh
-Y3F1aXJlIGEgcmVmZXJlbmNlIChvcgogIHVzZSBSQ1UpIGJlZm9yZSBkcm9wcGluZyB0aGUgbG9j
-aywgYW5kIHRoZSBmcmVlIHBhdGggc2hvdWxkIGNsZWFyIHRoZQogIHNsb3QgZmlyc3QsIHRoZW4g
-d2FpdCBmb3IgcmVhZGVycy9pbi1mbGlnaHQgc2VuZHMgYmVmb3JlCiAgcGNjX21ib3hfZnJlZV9j
-aGFubmVsKCkuICBGcmVlIHBjY19kYXRhIGFmdGVyIHRoZSBrZXJuZnMgZHJhaW4sIG9yCiAgbWFr
-ZSB0aGUgc3lzZnMgc2hvdyBob2xkIGEgcGNjX2RhdGEgcmVmZXJlbmNlIGZvciBpdHMgd2hvbGUg
-Y2FsbC4KICBUaGUgcHJvYmUgZXJyb3IgcGF0aCBzaG91bGQgcm9sbCBiYWNrIHRoZSBwY2NfZGF0
-YV9hbGxvYygpIGluY3JlbWVudC4KICBSZXBvcnQtZmlyc3QsIG5vIHBhdGNoIGF0dGFjaGVkOyBJ
-IGNhbiB0ZXN0IGEgcHJvcG9zYWwgb24gUENDCiAgaGFyZHdhcmUgb3IgYSBzdWl0YWJsZSBRRU1V
-IG1vZGVsIGlmIG9uZSBpcyBhdmFpbGFibGUuCgoKCiAgUGxlYXNlIGtlZXAgbWUgaW4gQ2M7IEkg
-YW0gbm90IHN1YnNjcmliZWQgdG8gdGhlIGxpc3RzLgoKCgpSZWdhcmRzLApIYW54aWFuZyBYdQp4
-dWh4QGh1c3QuZWR1LmNuCg==
+Hi Rafael,
+
+On 11/10/26 12:15, Rafael J. Wysocki (Intel) wrote:
+> On Tue, Nov 10, 2026 at 10:58 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
+
+[snip]
+
+
+>>
+>> That's fine, please continue.
+> 
+> I have a couple of questions though.
+> 
+> First, why is the ondemand governor mentioned in the changelog?  In
+> the mainline, the ondemand governor cannot work with EAS, so it
+> shouldn't matter for this issue, should it?
+
+The ondemand is affected by the EM setup code and set 'inefficient'
+flags for some OPPs. The EM is also present for cooling devices
+and can work w/o EAS and schedutil, w/ just ondemand governor.
+
+Because EM marks the OPPs kind of 'globally' as inefficient, then
+they become CPUFREQ_INEFFICIENT_FREQ entries in the CPUfreq fwk.
+In the EM code we have:
+cpufreq_table_set_inefficient(policy, table[i].frequency);
+
+
+Then ondemand check for CPUFREQ_RELATION_HE will skip them and
+pass to __cpufreq_driver_target() with that flags as well.
+
+
+> 
+> Second, why is the issue regarded as a defect in the code and not in
+> the energy model?  Arguably, boost frequencies should be more costly
+> than the non-boost ones.  At least the idea behind the boost is making
+> higher-cost OPPs temporarily available.  If they are sustainable,
+> treating them as boost OPPs is rather pointless.
+
+IMHO it was a bug in the commit mentioned in this patch fix tag.
+It is affecting more than just EAS or EM, since the EM is working with
+all generic code and all cpufreq governors.
+
+
+> 
+> TBH, I'm too comfortable with looking at cpufreq frequency from within
+> the EM code.  If that needs to be done, something is amiss at the
+> design level.
+
+I think this edge case is special, as I described above.
+
+I'm happy to hear your view on this EM influence to some global
+setting in cpufreq. Maybe it was too far to establish this
+'inefficiency' flags in there for many usage?
+
+Regards,
+Lukasz
+
+
