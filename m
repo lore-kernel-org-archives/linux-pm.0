@@ -1,55 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.53
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794391271;
-	b=In5esqH9qxPakIDH8GzqbsXDoJmUL7qFg6PediwTnzYuUBiZdJzN2Sm3g1RKUeVktaTX
-	 EMmtcy/2ouF4UMsg8NQFtlHZlK5jNiuy4tHKZwR4ha3hpTuG78kqMGbjTkPIoXbadWwiy
-	 gs/XlwyEI/UQgG0w2kPaUCddSIUTWkO1c4VEhSa2mTYACp9uGGbrzk0A3PhLCkptn0Q8l
-	 I7mu/HxCJhQdzChlkiX6Y2UKFhWr0IvxrhMRrP15eKLp3fJPmRQ9VTycYEGlJdE9TGkeF
-	 iBqu1pem1vm6JVBOFQf6R/PIS8BkT6B7GmI8GVs9de9NkU3mjuUSEY9IVLE5UkgsZyg==
+	t=1794391356;
+	b=oSHoYF7VMH70WBHz9og8H4p8jG5mNuNx+6Y6Yzr2oXUMhVBVbbEYBeCQsrTlG+Z9XS9n
+	 EBPG4Ge9MequIXklbit9M3UgHfSsRVbv2jMQWvWAMmbVXoaFbr8rVaIlonfNx1h4BVtkt
+	 38vwehjT+qGNtHC/KmzfFkMCuhY8gPbwnBM3g+3c42uHE2zhtwTscNtjAxBDJWqcw2urb
+	 WTdGtmMxzKwUJvsAYJBHyrMdPOH+upzYvNP+wYiNhbQVdxPsqzdHpt0RbAeMy3tg/AxOq
+	 oar7xo/p20kmInVCcPV7OWa+97/DDF6lxomz9jLBui8wQ46L3ee2TGEWONxpL2BnU+w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794391271;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=mUmhg+XzSgOizBM/HTfpUu2nybv+pdSuGATpu3ukT5k=;
-	b=GITa0Q0UGREvAiqraQx/s7IOunTIomCMtC9uG+YUSHeJWaITIWsPUfOL6YXns8v5tGif
-	 3Um7YV8iSj0ftkXbRLxiofFDyEvj4dq203SbG+mVmqM3rRDD3dxf5tDnnm/qynmEv90rI
-	 Hxx8BBQqoQPmVUD+zHxuaI+qJfdRi+ISnu4vl81M82t+nxgcSivXJgzqvxgYMyYVgZiTt
-	 lhok28c7zJSJ8rU7S1XxNp3TQBGYr7axxLJjKB1DNIkbB3xkURrW177RDbMzk1zmVjMaC
-	 pIoPrTuz3adrPSS6Md/fxovG5Jtxl/62HD3dGXVF/Yhhe5PozBy6drc5l/UVAaFR90g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794391356;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=6Uf8NjTATLaSx0T6xJbOfk8n0GZJkRQt+2l2OmlV7/s=;
+	b=Hv7l3wsoYiuFHe2jUUi/2odYMCRlXnstNF4bzoHKd3ewzBJYL+IDrZmxTVn7RpcGssrw
+	 9th5oaZBHMemNLcf/M/yP9k2w7MRk5n5nmqJ9XBXHfminNORFvQM47SClgBBOXcKmFgZo
+	 79jQVW+WRzt7mFjaQvEo6BzdWos7txkS84vB1QiJ0PD7LZIULpwBab7beYCYH5F1V52S2
+	 VB5sS5sI23OUzDF7lfWazS+3PCydjA6cpQV8cVZso1UzGcnfVuxBzLkSqBlktvaJPdE4V
+	 3mPT3LIc/gWc3im+VRWCwSQfOL/gj91FQZFzE+b0tsHHlPk86luyJO0VuDVhtCtuThg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fykzx5cC;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=h0U2KI9H;
+	arc=none smtp.remote-ip=209.85.221.53
+Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C21B260A6F7C
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 10:01:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 083F3606A339
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 10:02:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 083F3606A339
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fykzx5cC
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73D601F00A10
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 10:01:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794391271;
-	bh=mUmhg+XzSgOizBM/HTfpUu2nybv+pdSuGATpu3ukT5k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=fykzx5cC3L9jM8/I6Rfitp1+muWVGMx62FgpMlSvqHw2GSFdoPfuIJu+N/ZvQiXqN
-	 13oYocRR2C/gD0bXPlhifDPN77+ETJKd7NRjZSHMcHrlUC4r267dV9XIXRh0vPrfTm
-	 RbskapgDNObCfzbG64FXCS2xVy36+Csu+vUjuiCR5B616m+p3B049AD1EKPmO7CLQh
-	 xJ2xs0zQ0tgL6ZJ9gfae6nCTpXUo8euAdOc9/LqaJfSd94T1oMUYuupRitH7xdaJ2t
-	 23cqsfeTWiYrnlu4b5CvipqjimjtgXoDybiN8Lpjzl4Fvtj1M1AZGcs/Il4HScKt3S
-	 s/lgUgRPxbY9A==
-Received: by mail-oo1-f45.google.com with SMTP id 006d021491bc7-716ea2598eeso1733762eaf.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 02:01:11 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErG16X5MnPEglfeYkgb3YvjIgkHRb9IbU0qhDfo8XfR13dunhiCGNbeVCOXyrVHJyzzb8eI+Zi3I8Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/uiXvOQ8kC7R5Y1QeSQC/n60S5SWQ7OQuGj/wmrDGI8K5UfduS
-	jtE8fTN2IwZnXP3DPPkcWuENgbPPcaElvr17MkgIgpEYH+t6z++meE7YUpWSeda6q0wLWExUdb9
-	46pccnQoflCofM5+IX6CmEtdHKRzjAlE=
-X-Received: by 2002:a05:6820:c453:10b0:716:c485:eba4 with SMTP id
- 006d021491bc7-719179c7cdamr758103eaf.85.1794391270535; Wed, 11 Nov 2026
- 02:01:10 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=h0U2KI9H
+Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-492690dd5daso2318710f8f.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 02:02:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1794391354; x=1794996154; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=6Uf8NjTATLaSx0T6xJbOfk8n0GZJkRQt+2l2OmlV7/s=;
+        b=h0U2KI9Ho3jaYsUkDK5Fn9tyFwbypvCXXUNlfq5rS+pYSn4ZWsgiwyV/pdkqvTjDA+
+         z6ZKvdaYbjQ17EYoNNC+EFELKj1jdE59psVlK6fnVag4qu+cTVc6XqNnmtFgh7Vy5Z7X
+         QnwyOkRLsdL4Jc1XSO2j/x3bC7y820cojw8HTyVPpGZTFHQFG3cIdL3eKPfWolG22ZTT
+         uFnol787+UL2MgjSwk6ipu8tWjxFiAh7ey2AtVznp1Q6dsl1U8qFxm1aLzHWt8Qi7DVt
+         MuAgEQ+Md/6RetRneZV8tKuZd+0Ywx02jhUTmncLH4XCZC2HC1En7KBC5mEhZLsjKlEI
+         Unjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794391354; x=1794996154;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=6Uf8NjTATLaSx0T6xJbOfk8n0GZJkRQt+2l2OmlV7/s=;
+        b=eMPQ5oTk+exb3jb0njZP6rMnzFOCjGotwbx1bHj7mC29vIDD0NuQsfYam6n1T9fIVU
+         NKSf5T2kRna+2z0qb4dbpckRRvkUiMrKuLzPjHK9YN3mlg6I3RmfIANcXnF2CTMVGonQ
+         Sk5MBEg/RS0nRPGoqRCLiMiDQPGJ3JvGGY2zBbY49t2H3livzFJd4o+w9oIA/FL48E+8
+         df/v/WCVnR3nCiZA/A3rZgbDSvnf/Hec/QXQr/Ab4RWgjhcI98wCKcGdvYIMlRtx/FRI
+         Z4rYjg0YrKu9rVPvRZPnVzoztYF1w50lV6JDmqEREVl0c/3cr4XddHM2DuwtkkBE8Wlx
+         TaMg==
+X-Forwarded-Encrypted: i=1; AL+hErHK5TCB44wZvguiFyiZWDIuWwKlduXsGv1CWPGW7UImGEMrZEcVV/kwv+eXkTVkWEWxkQ/uHmLhNw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+PEAmXQ491xvQovfEvLPeXKZ1L3pyO8y8dPEkTrLyZ2fs0HG1y
+	rIW+wBYQMiwraALQ8rCv/VVlmX2u6RwB4kjsiRPEbTPdBUg06N/MlY7K60ubtu0q1ShRvTWIHzL
+	khO6C
+X-Gm-Gg: AYBFou332WK5pOle+m23HCvQbkY6XH9GOYO4jmN3TlUJE2BfZm5/otQMLVfnI3qPJWi
+	5coGoJj8RCPnJXxbd4gmky6MK2OzTqRDj/8mOvhOagyOMKpFbKemCcP2+pk4hVT4qFGrKw1AFXY
+	dCDyd8lHl7Jxhnl+yD4RL+QGErmk6SUThwx3oXaejY/l1zvLBF9b1a33MYo4MeYWa1kdu0uezHP
+	mK6EFZU3eANqaTGcyzH2J33io1pj4qv9qZ6qGwnJ0DBqyUZFdue3t1mMwpmSK9SD0kX67Liv9p1
+	WoymBee8gFvvKmPVJmnkhezTM3ls8nZnrCDaPeH4YfE2uUOC6264QEtWACPeIvVuq8HLS9NG3b4
+	i9p73RdwvDAMCVbYRq06Q/vC/j0qtVae96TUtf/jrkBeU7BJSINJkPc3ZOinxV/s5qAch29YQN4
+	/INJY+CsaSrLIPhXgvBf2xQiVEO6AvmQniCIz9il4gD5BYqzkWL+WiXaIXusBDgeDoZCg5n/Fqj
+	yND+9ojFb9/LWwedi1D710x3t6bVCX3MjhwzwDpdFpeQAbO8YkHdsAIzK6dwJgxB405xqE/6JOG
+	YmWcC30pwVxDZkrfx96lZlEoALzuBUz9MqhDz9ilFWixkAbGr9nNLUxyarGdGA==
+X-Received: by 2002:a5d:64e3:0:b0:48d:ff71:dd9d with SMTP id ffacd0b85a97d-499c903d741mr3207711f8f.23.1794391354282;
+        Wed, 11 Nov 2026 02:02:34 -0800 (PST)
+Received: from [10.11.12.111] ([79.115.63.240])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-499823761f5sm4941304f8f.2.2026.11.11.02.02.33
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 11 Nov 2026 02:02:33 -0800 (PST)
+Message-ID: <e7621060-bf25-4677-bfaf-2549fc5e6ea1@linaro.org>
+Date: Wed, 11 Nov 2026 12:02:31 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,73 +93,91 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261106-xg6846b-bcmbca-xrdp-reset-v3-0-d6adeb71afc9@kernel.org>
- <20261106-xg6846b-bcmbca-xrdp-reset-v3-5-d6adeb71afc9@kernel.org> <22be96ba4139cad12e46b5e64ae95b0033bde60a.camel@pengutronix.de>
-In-Reply-To: <22be96ba4139cad12e46b5e64ae95b0033bde60a.camel@pengutronix.de>
-From: Linus Walleij <linusw@kernel.org>
-Date: Wed, 11 Nov 2026 11:00:55 +0100
-X-Gmail-Original-Message-ID: <CAD++jL=-VYB23V-vD91Pfsae7QJjoQmv7M7Yu+FobDY90s+NVA@mail.gmail.com>
-X-Gm-Features: AclHuK-czsJQZI3zTXq1LXffjfdefI2Xg2qfnJzhUIoxyF6N0VNLuNo5D59OV-k
-Message-ID: <CAD++jL=-VYB23V-vD91Pfsae7QJjoQmv7M7Yu+FobDY90s+NVA@mail.gmail.com>
-Subject: Re: [PATCH v3 5/7] reset: Add BCMBCA block resets through the PMB
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	William Zhang <william.zhang@broadcom.com>, Anand Gore <anand.gore@broadcom.com>, 
-	Kursad Oney <kursad.oney@broadcom.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Guenter Roeck <linux@roeck-us.net>, Jonathan Corbet <corbet@lwn.net>, 
-	Randy Dunlap <rdunlap@infradead.org>, Ulf Hansson <ulfh@kernel.org>, 
-	Benjamin Larsson <benjamin.larsson@genexis.eu>, mfd@lists.linux.dev, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-clk@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [thermal: thermal/linux-next] thermal/drivers/samsung: acpm-tmu:
+ Rename platform driver to "exynos-acpm-tmu"
+To: Alexey Klimov <alexey.klimov@linaro.org>, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+References: <20261026-acpm-tmu-fixes-v1-11-0637431b7268@linaro.org>
+ <179389375857.1009794.283716939057872036.tip-bot2@tip-bot2>
+ <DMRYQFZGG5ZI.2T97YA5MCL74Y@linaro.org>
+Content-Language: en-US
+From: Tudor Ambarus <tudor.ambarus@linaro.org>
+In-Reply-To: <DMRYQFZGG5ZI.2T97YA5MCL74Y@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 6, 2026 at 12:59=E2=80=AFPM Philipp Zabel <p.zabel@pengutronix.=
-de> wrote:
-> On Fr, 2026-11-06 at 09:26 +0100, Linus Walleij wrote:
 
-> > Implement the BCM6846 XRDP reset group through the shared PMB regmap.
-> > Assert all blocks before releasing any of them, preserving the vendor
-> > reset masks and ordering. Provide the independent PVTMON acquisition
-> > reset as well. Serialize complete sequences and hold blocks in reset
-> > on failure.
-> >
-> > Power domain consumers must enable their domains before requesting a
-> > reset.
->
-> Before requesting or before (de)asserting?
 
-Before (de)asserting, I'll clarify or just drop the comments because
-it's kinda obvious.
+On 11/11/26 2:42 AM, Alexey Klimov wrote:
+> On Thu Nov 5, 2026 at 3:49 PM GMT, thermal-bot for Tudor Ambarus wrote:
+>> The following commit has been merged into the thermal/linux-next branch of thermal:
+>>
+>> Commit-ID:     ba446bdd27d4a2a6c0cb267f51a6ecc47cf19cf9
+>> Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ba446bdd27d4a2a6c0cb267f51a6ecc47cf19cf9
+>> Author:        Tudor Ambarus <tudor.ambarus@linaro.org>
+>> AuthorDate:    Mon, 26 Oct 2026 16:01:28 
+>> Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
+>> CommitterDate: Tue, 03 Nov 2026 19:51:51 +01:00
+>>
+>> thermal/drivers/samsung: acpm-tmu: Rename platform driver to "exynos-acpm-tmu"
+> 
+> Also, the fix for this problem was sent here earlier:
+> https://lore.kernel.org/linux-samsung-soc/20261020-acpm-thermal-drv-name-fix-v1-1-71f72280583b@linaro.org/
+> 
+> Why taking this one and ignoring the fix that was sent earlier -- this
+> should be at least explained.
 
-> > Zone transitions belong to the PMB power domain subdriver.
->
-> Why mention it here?
+I guess it slipped through the cracks, as it did for me.
+> 
+>> Rename the platform driver from "gs-tmu" to "exynos-acpm-tmu" to reflect
+>> that the ACPM TMU architecture is shared across Samsung Exynos SoCs
+>> (such as GS101, AutoV920, and Exynos850) rather than being specific to
+>> GS101, matching "exynos-acpm-protocol" in drivers/firmware/samsung/.
+>>
+>> Suggested-by: Alexey Klimov <alexey.klimov@linaro.org>
+> 
+> I don't recall suggesting this. Reporting -- yes, but not renaming to
+> "exynos-acpm-tmu".
 
-Thinking aloud while working on the whole patch series.
+my apologies, it wasn't intended. If you have a strong opinion on the
+tag type, I guess Daniel can drop it.
 
-> > +static struct platform_driver bcmbca_pmb_reset_driver =3D {
-> > +     .probe =3D bcmbca_pmb_reset_probe,
-> > +     .driver =3D {
-> > +             .name =3D "brcm-pmb-reset",
-> > +             .of_match_table =3D bcmbca_pmb_reset_of_match,
-> > +             .suppress_bind_attrs =3D true,
->
-> This is new. Why?
+> 
+> This was reported months ago and was never fixed in the updated
+> series for acpm-tmu.c.
+> 
+>> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
+>> Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-11-0637431b7268@linaro.org
+>> ---
+>>  drivers/thermal/samsung/acpm-tmu.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acpm-tmu.c
+>> index 42b338d..2324efc 100644
+>> --- a/drivers/thermal/samsung/acpm-tmu.c
+>> +++ b/drivers/thermal/samsung/acpm-tmu.c
+>> @@ -597,7 +597,7 @@ static const struct dev_pm_ops acpm_tmu_pm_ops = {
+>>  
+>>  static struct platform_driver acpm_tmu_driver = {
+>>  	.driver = {
+>> -		.name   = "gs-tmu",
+>> +		.name   = "exynos-acpm-tmu",
+> 
+> It is minor but it potentially clashes with exynos-acpm-tmu firmware
 
-Other patches in the series got review comments (I think from Sashiko)
-that as usual it is possible to build a system where you can wreac
-havoc in sysfs by interectively unbinding and binding the drivers
-if you wanna, and it's seen as a bad thing.
+There's no driver name for the firmware tmu commands helpers but I see
+your point.
 
-So I made the same change everywhere.
+> file name. All other names in file acpm-tmu.c are "acpm-tmu".
 
-I'll look into the rest of the comments and (hjopefully) fix them.
+I think "exynos-acpm-tmu" is fine, it aligns with "exynos-acpm-protocol"
+from drivers/firmware/samsung/exynos-acpm.c. I guess you may rename
+"acpm-clocks" (drivers/clk/samsung/clk-acpm.c) to "exynos-acpm-clocks",
+but I wouldn't bother too much. If you have a strong opinion on
+"acpm-tmu" send a patch on top please.
 
-Yours,
-Linus Walleij
+Cheers,
+ta
