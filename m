@@ -1,107 +1,90 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.178
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794415355;
-	b=CQk7vVgiKdgFqqiTrrtdGYPVlGd8d2BhZBkhIp5lNiYqyitjtu5aRBN1RfJsOuP9x3VY
-	 PrnWQ1tE8tIzK9OKTcPpzS8oJl240U69y6U6KzUQtSMFvuta8qlBbBD7FuA2s0gV+pK7s
-	 rgURIHzeTN7hrw4jTrjM/lEudO1zcyeSd2OtIuaEtmPe5C2J0jQ3MF8PfaOOkW0kGUYxF
-	 HwaE0HCmwCZX7V3fxG1QzhngFyoy5RZeK9JtYLpOPwD5SpBUmYGG1exPA+xgMbG09Up/x
-	 /7/f0/M6B1e8OQYBmna54sM3erELZ1+66UbcF6QNFCh9y6z/6oN3lUVN/W+p1Fb8ijA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794415355;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=j26EAR/dzc2upvRIQcmRb74iTI2baBkwNia6YMWLcb0=;
-	b=Hj32/qmaQxcEk5AEOszpJMw3m5JkokEd54wp9LUNTf+W+kk/LUSpnx+Jkui//iYgn3Xh
-	 RsfE3fy8UWUfYPmcGoQD3LwX0HEEXV/gvPTuAFSGIBgGWKi9zt/4qdE/ahJmcGewtNZmH
-	 kjxchE+lk/rkX9Bjp2irWEtYtC7a7Sim3lIXu/a/EFJi9sSe5t8nz5R5UAj6ZLHQT9IBm
-	 TRGP1PUb2P1aK2kXxwBGib3KF0I3bjdZkxcnCKvDgmBMBVutUcdbV1/3ycupLo9kb9E9R
-	 7m0MCnylCXHlCMrMg2Zh5PgM589nk5stjMWbtRHLkmfbH+9YYinyvdKtW82fdZ/qYdA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WilOHMSs;
-	arc=none smtp.remote-ip=74.125.82.178
-Received: from mail-dy1-f178.google.com (mail-dy1-f178.google.com [74.125.82.178])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794416098;
+	b=Ppp4aPirZB3ZUjxTnnejucHR4jwndTvQd+R16VR2xeJiFTmIBQ/H3DYzxvFaFPRznmUz
+	 obcaren5xmhFJLcO8RIhTElxRhbY6ciiVYo0ZFwyOqDnPvuxVsXcToD69FTRTPwADSZtD
+	 XNFMBChZYc+2ANAKArRZFSrfGXRt+EDcQ7z3IrdxtRqAqcTVmiRDvQz0RI3I8+IclXOr8
+	 GirCJDQ5A3eZQfkBQxtgPZYyX9pVKvByqdyNf3e5LyhOQ8bfgEWCqYUjfv+XFK90U1Uvv
+	 w5n+tFHU74l6Hr1jmi4jcBEmDdNbYzlrHxQzhIPiAdQiGVDHY8m+RtyAIpS0TeziSyQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794416098;
+	h=DMARC-Filter:DKIM-Signature:Received:Date:From:To:Cc:Message-ID:
+	 In-Reply-To:References:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Importance:User-Agent:X-Mailer;
+	bh=anBX1iahvKt8bwlS8JRUYhxSTZUTNVrvDroUXrWSpb8=;
+	b=lXaxgHlQHIrJn1d+inkax5TX+UefExrlZ7ZEY/uz/+CQuem6btV8Lb1eEYpBNgfVPnYw
+	 GRDbqz0zzU3u0dje9uoSRCepdL2kLV9JsWeII56z/Psh2aIpTDYyQf36900Z/LRerfTdc
+	 lKbiBcudUxhrUHvGsc29tgPiGDwD3/ngxDoYPHd0e3Mq/ks9kNIeF95NQEvDdsDu6c81q
+	 qP8XFKB3AjzclwcAE094DmraYf/1Z9DLg+Vj96lgjrZR22GKlcI7Vv5DhAD9qqeo52+2c
+	 /De/j6IsCsvuvJVt0xwT47bfM0a3u49N+cj+/dXv/F4RD8uUR70adNp2U2ragEZOF0A==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=collabora.com;
+	spf=pass smtp.mailfrom=collabora.com;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b="YrRCI/SC";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
+Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 094CC606A326
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 16:42:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 094CC606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66EB2606A338;
+	Wed, 11 Nov 2026 16:54:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 66EB2606A338
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WilOHMSs
-Received: by mail-dy1-f178.google.com with SMTP id 5a478bee46e88-3720addb068so6054997eec.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 08:42:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1794415354; x=1795020154; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=j26EAR/dzc2upvRIQcmRb74iTI2baBkwNia6YMWLcb0=;
-        b=WilOHMSsQ9/jscG6ljE4lyLwA+KOIJa0Q8EIPDGseTny19jiw0ZJ+cs9NpA9Sq/n1d
-         IvR7Pc/CH5BmanR4cFVF3APRepjdWrWmot/wNJB6rn7uTBD4yDk5tBh95tX2urCx+Blu
-         il5ulDDVNrR46fCUZFvmzbml/fRkfasN8Lrfw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794415354; x=1795020154;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=j26EAR/dzc2upvRIQcmRb74iTI2baBkwNia6YMWLcb0=;
-        b=PGxypKm68KJKHsbGAyh/uf0MB/hsoD6ebtw0YsqrSNZqG39/afiDPcqKD50y11c0fH
-         rzDEtg6KcFxc18PRxXdHxLIIvji1AOnzWHTDFa//0RIV/eo0sqIypLBZq1HMzgzjDiOq
-         VOLa9qg1dNTiRHLK7PgBqFFuFjE1YNnFv06oZf3CtaIBkVTRMvoK9wIxY/k4YTVwxKnd
-         UByf/uIn873XM5CiRMK+Ss1y/bZ+V2gJmGVty+EAijw7cwk2xgMPg2Fx8BRWNWTmdPEr
-         tfocs64luh2SJf388I6ZFHhhgJAM8swDlS5l0aeBn+/DsxthMxh6iUDQCsUFKzW9UfI2
-         4UZA==
-X-Forwarded-Encrypted: i=1; AL+hErGsDPgQdu121GmOI+fvi363tzp2VkRbUpQerWAVbdOYZdnSzdMu3o6ClQL90Cfj3IReEg4bS3HAEA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/lEG2sWf8vTawjvz//59lOcnh4qhL71bM8fUbw5PQZlXC7lWjz
-	boFFubdJLHz4tMF2R9iLRHoITNYGPsQPdZGmyVMJYuRFi642UiPCP5qafzJ9eQlQoA==
-X-Gm-Gg: AYBFou19bAwBlsx8e5cIhobQg7SYQ7xBBZz0KjZl8qciHRMVmtFDkpHq2bX5FKWj0O1
-	6T9muJhm656ZnknouOWkMTAIs4Egl4ed2/MsG3XjTyQCkcCjgBv0IhXnIulwMSKePy8ejfVaNkj
-	OzKRl3c2tUKFmhT+EmkPzNljheJNdsZjQjfYIfVFZali4qLfE4DKRkMABZSmxtMRMfSvcvIe+f7
-	N/nQ5/w/Ijjvvh1DegnQDiDGeUx2fmHOKdyLrcNYfMCpwM/t/IE73UONqH+O+HjsszgNKVFuzyG
-	epbrjt64ydlKlLh+3Wu2Z8Oe7g491hdbsMPSVB2KwLh2w42XIPguJlcP0jmtXcMaVZ0+MuE0NUs
-	AkjuFxVg4UprJF8v0OvChgNKXnQSD2jl4dyuH0fc9RG11KhmD8/Cy0WOWJoDwJgUFE3CGhvkrMx
-	l/L2EX0T/hqRN48NPYcPnkPRnAsQrbkoZuBGwmXSEldmWb4ldsm5tFnP2JUEVpy4BMqwzOEEKZf
-	wwNIY752jP/cOm/hZ4ey/Wiraeu2MU/Bt84Q20C4PjRO0EDzo1Erp+PHTrONHWnR1ySJgzOKbiY
-	zFGczcScbrQ3qoqJI1bK2i4zrAXmPY+rrRo/Z9+HxZCFPeFakmZond3wfihypA4joOI=
-X-Received: by 2002:a05:693c:40c7:b0:36a:15ee:c20e with SMTP id 5a478bee46e88-37686755924mr3880718eec.33.1794415353952;
-        Wed, 11 Nov 2026 08:42:33 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:1fca:3f2:2d78:dd60])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-37520cfe07dsm18544278eec.20.2026.11.11.08.42.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 11 Nov 2026 08:42:33 -0800 (PST)
-Date: Wed, 11 Nov 2026 08:42:31 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
-	Fabrice Gasnier <fabrice.gasnier@st.com>, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulfh@kernel.org>,
-	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-	Andy Shevchenko <andy@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>
-Subject: Re: [PATCH v2 3/5] PM: runtime: Propagate last_busy from dependent
- to dependency
-Message-ID: <avSa97F1Nu1LTSCA@google.com>
-References: <20261103141442.v2.3.I40c0bc917fa0b13111251844e9a54feb1d9cd7d2@changeid>
- <CAJZ5v0jWCz0XDgzeETbmMfGOmvh2G9qcx7xLODrpQ9NiwsddKA@mail.gmail.com>
- <auuICAm4BC_8Pzs5@google.com>
- <CAJZ5v0jTX1FgeS9FCV=+V4uacSgLQBVsSPnU27ybgUGg57GUOA@mail.gmail.com>
- <auzlLwlleGLPsLcw@google.com>
- <CAJZ5v0g25xQeRaLJWJyAo2fcJko+gZ7w6JhX7FzMgRx2+uuimw@mail.gmail.com>
- <au0oKFb9CmNzc6Cg@google.com>
- <CAJZ5v0hKpjMsGQm8Cpa89x5wkNxqkggDNbp+eQ0S-E52DETWjQ@mail.gmail.com>
- <avOw_4ZkqtKFHu1B@google.com>
- <2c3bda2b-ccc3-4430-8e09-81b25f6fcda7@rowland.harvard.edu>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=YrRCI/SC
+ARC-Seal: i=1; a=rsa-sha256; t=1794416045; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=MtTGZx4kbRO7jubVIf2+B7jKJWmy8aP1wK1Az6LPjajCTNhMbkLd2PNQiwCvjmGlnzknYrpNeEHEc5du38u8KKGdwpW6CjFFyFPn5qO2oXmaiiVmb271fBaTUVqMoV/n7JEbyc98/PwElPfLfyX0AGWBlGbynLWgPE839jFaF3o=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1794416045; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=anBX1iahvKt8bwlS8JRUYhxSTZUTNVrvDroUXrWSpb8=; 
+	b=bIrPcfQGvmUstLvfOrclgBBgRWPfxLaVD8Gu3ouqkSC7SaumggN/2V0dyH8QeCY3NHw+8FXywTw229MAegdvhYAmTCf/oUjnwcQGHkR8ib5Rt5EhwbGsvlaCYJ1vD5RaNEk3q/80HpqBblqnG4zXAM5cIE/w8ztTG733YYDcx10=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
+	dmarc=pass header.from=<daniel.almeida@collabora.com>
+DKIM-Signature: a=rsa-sha256; b=YrRCI/SCYZnWGK6UWC56IKByqgiyk5EnemJkzINpCd5B08tLFoIuKCQ4HvHJlIywJ3bo9w3FD73tl7qFmbP0rtHWWra6odsIjsk0KLa/caLmx6vXuq4DhElAxyPoPFyWKiSDoNajrGIDJ6XJdNd5zbXjK7HC0Ltv2YDoMnRHQ6I=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=anBX1iahvKt8bwlS8JRUYhxSTZUTNVrvDroUXrWSpb8=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: from mail.zoho.com by mx.zohomail.com
+	with SMTP id 1794416041785477.2653723756649; Wed, 11 Nov 2026 08:54:01 -0800 (PST)
+Date: Wed, 11 Nov 2026 13:54:01 -0300
+From: Daniel Almeida <daniel.almeida@collabora.com>
+To: "Daniel Almeida" <daniel.almeida@collabora.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	"Viresh Kumar" <viresh.kumar@linaro.org>,
+	"Danilo Krummrich" <dakr@kernel.org>,
+	"Alice Ryhl" <aliceryhl@google.com>,
+	"David Airlie" <airlied@gmail.com>,
+	"Simona Vetter" <simona@ffwll.ch>,
+	"Michal Wilczynski" <m.wilczynski@samsung.com>,
+	"Drew Fustini" <fustini@kernel.org>, "Guo Ren" <guoren@kernel.org>,
+	"Fu Wei" <wefu@redhat.com>,
+	=?UTF-8?Q?=22Uwe_Kleine-K=C3=B6nig=22?= <ukleinek@kernel.org>,
+	"Stephen Boyd" <sboyd@kernel.org>,
+	"Brian Masney" <bmasney+clk@redhat.com>,
+	"Jerome Brunet" <jbrunet+clk@baylibre.com>,
+	"Miguel Ojeda" <ojeda@kernel.org>, "Boqun Feng" <boqun@kernel.org>,
+	"Gary Guo" <gary@garyguo.net>,
+	=?UTF-8?Q?=22Bj=C3=B6rn_Roy_Baron=22?= <bjorn3_gh@protonmail.com>,
+	"Benno Lossin" <lossin@kernel.org>,
+	"Andreas Hindborg" <a.hindborg@kernel.org>,
+	"Trevor Gross" <tmgross@umich.edu>,
+	"Tamir Duberstein" <tamird@kernel.org>,
+	"Alexandre Courbot" <acourbot@nvidia.com>,
+	"linux-pm" <linux-pm@vger.kernel.org>,
+	"linux-kernel" <linux-kernel@vger.kernel.org>,
+	"dri-devel" <dri-devel@lists.freedesktop.org>,
+	"linux-riscv" <linux-riscv@lists.infradead.org>,
+	"linux-pwm" <linux-pwm@vger.kernel.org>,
+	"linux-clk" <linux-clk@vger.kernel.org>,
+	"rust-for-linux" <rust-for-linux@vger.kernel.org>,
+	"Boris Brezillon" <boris.brezillon@collabora.com>,
+	=?UTF-8?Q?=22Onur_=C3=96zkan=22?= <work@onurozkan.dev>,
+	"Maurice Hieronymus" <mhi@mailbox.org>
+Message-ID: <1a1cb87df11.2c57f9fa237371.844135553238709982@collabora.com>
+In-Reply-To: <20261013-clk-type-state-v6-0-a5e9977b3509@collabora.com>
+References: <20261013-clk-type-state-v6-0-a5e9977b3509@collabora.com>
+Subject: Re: [PATCH v6 0/7] Clk improvements
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,181 +94,177 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2c3bda2b-ccc3-4430-8e09-81b25f6fcda7@rowland.harvard.edu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Importance: Medium
+User-Agent: Zoho Mail
+X-Mailer: Zoho Mail
 
-Hi Alan,
 
-On Tue, Nov 10, 2026 at 10:47:59PM -0500, Alan Stern wrote:
-> On Tue, Nov 10, 2026 at 04:04:15PM -0800, Brian Norris wrote:
-> > (+CC Alan, since he wrote much of the autosuspend stuff, but also
-> > because he might(?) have better context for some of the .runtime_idle()
-> > + pm_runtime_mark_last_busy() questions)
-> 
-> I'm coming into this discussion in the middle, so I probably don't have 
-> a good picture of all the issues you've been talking about.  From what I 
-> gather, it sounds like this is mostly a question of how long a parent 
-> device should delay autosuspending after all its children go into 
-> runtime suspend.  Is that right?
+Hi all,
 
-How long, and when should the inactivity timer start. (The latter more
-than the former, really.)
+ > This series contains a few improvements that simplify clock handling for
+ > drivers.
+ > 
+ > Patch 1 converts clk.rs to the kernel-vertical style for imports.
+ > 
+ > Patch 2 replaces OptionalClk with Clk::get_optional(). There is no struct
+ > optional_clk in C, and Clk already allows a NULL pointer.
+ > 
+ > Patch 3 implements the same typestate pattern that has been used
+ > successfully for Regulators. This is needed because otherwise drivers
+ > will be responsible for unpreparing and disabling clocks themselves and
+ > ultimately handling the reference counts on their own. This is
+ > undesirable. The patch automatically encodes this information using the
+ > type system so that no misuse can occur.
+ > 
+ > Patch 4 adds guards that prepare and/or enable a clock for the lifetime
+ > of the guard without consuming the Clk, so that a driver can keep a
+ > long-lived Clk<Prepared> and enable it for scoped sections.
+ > 
+ > Patch 5 makes things more convenient by offering devres-managed APIs. This
+ > lets drivers set clock parameters once and forget about lifetime
+ > management.
+ > 
+ > Patch 6 adds ExclusiveClk<T>, which holds rate exclusivity over a Clk<T>
+ > in any state until it is dropped.
+ > 
+ > Patch 7 uses it in pwm-th1520 to lock the clock rate for the lifetime of
+ > the driver data.
+ > 
+ > ---
+ > Changes in v6:
+ > - Rebased onto the latest clk-next.
+ > - Moved the import style conversion to the front (Alexandre, Onur).
+ > - Kept Alexandre's and Onur's Reviewed-by on the imports patch, and
+ >   Alexandre's on the devres patch. Dropped Alexandre's Reviewed-by on the
+ >   type-state patch, which changed too much since v5.
+ > - Split the OptionalClk removal into its own patch (Gary).
+ > - Replaced "rust: clk: implement Clone for Clk<T>" with EnabledGuard,
+ >   PreparedGuard and PrepareEnabledGuard (Alexandre, Gary). Clones shared
+ >   a single struct clk, so per-consumer state such as the rate
+ >   exclusivity taken by clk_rate_exclusive_get() was shared between them.
+ > - Dropped Clk::<Prepared>::with_enabled(), superseded by EnabledGuard.
+ > - Named the ClkState constants ENABLED and PREPARED from the start
+ >   (Alexandre).
+ > - Implemented Debug for Error<State> (Alexandre).
+ > - Documented that dropping a prepared or enabled Clk may sleep
+ >   (Alexandre).
+ > - Used a different connection id for the second clock in the example
+ >   (Alexandre).
+ > - Used `?` in the per-state get() and get_optional() shortcuts.
+ > - Dropped the trailing `//` from doctest imports (Alexandre).
+ > - Removed the intra-doc links from SAFETY comments (Onur) and reworded
+ >   the devm_enable_optional() documentation (Alexandre).
+ > - Expanded the devres commit message (Gary).
+ > - Added ExclusiveClk and its pwm-th1520 user, based on Maurice
+ >   Hieronymus's series [1], with ExclusiveClk made generic over the clock
+ >   state, ExclusiveClk::new() in place of Clk::rate_exclusive_get(), and
+ >   a new ExclusiveClk::into_inner().
+ > - Link to v5: https://patch.msgid.link/20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com
+ > 
+ > [1] https://lore.kernel.org/rust-for-linux/20260711-rate-exclusive-get-th1520-v4-0-8244a0666a71@mailbox.org/
+ > 
+ > Changes in v5:
+ > - Rebased onto the latest clk-next.
+ > - New patch: "rust: clk: implement Clone for Clk<T>". Each clone is an
+ >   independent view of the same underlying clock, owning its own
+ >   prepare/enable counts; the raw pointer is shared through an Arc so
+ >   clk_get()/clk_put() stay balanced. Follows the v3 discussion with
+ >   Boris Brezillon and Gary Guo.
+ > - Moved rate() and set_rate() from Clk<Enabled> to all states; the C API
+ >   does not restrict these to enabled clocks, and some clocks can only
+ >   change rate before being prepared.
+ > - Made Clk::<Enabled>::disable() infallible, matching unprepare() and
+ >   the void C API (Onur).
+ > - Fixed a typo in the "# Invariants" section, fixed SAFETY comments
+ >   that referred to the non-existent `self.0` field, and added missing
+ >   INVARIANT comments on the state transitions.
+ > - Added the missing rustdoc link definitions for clk_unprepare and
+ >   clk_put (Maurice).
+ > - Dropped the redundant `Result` import and the `use
+ >   kernel::error::Result;` lines from the doctests; the prelude already
+ >   provides it (Miguel).
+ > - Added #[inline] to the devm_* helpers.
+ > - Link to v4: https://patch.msgid.link/20260618-clk-type-state-v4-0-8be082786080@collabora.com
+ > 
+ > Changes in v4:
+ > - Rebased onto clk-next. Alice Ryhl's "rust: clk: implement Send and Sync"
+ >   series is now merged upstream, so it is no longer carried as a dependency.
+ > - Fixed the build with CONFIG_CPUFREQ_DT_RUST=y. The generic DT cpufreq
+ >   driver only has the (unbound) per-CPU device, so it cannot hand a
+ >   &Device<Bound> to Policy::set_clk(). Added a pub(crate) Clk::get_unbound()
+ >   for the few in-tree abstractions that operate on a device outside a bind
+ >   scope; set_clk() now takes &Device and uses it. Clk::get()/get_optional()
+ >   and the devm_* helpers still require &Device<Bound>.
+ > - Added impl From<Error<State>> for kernel::error::Error, so the fallible
+ >   state transitions can be used with `?` (and chained) instead of
+ >   .map_err(|e| e.error).
+ > - Added Clk::<Prepared>::with_enabled(), which runs a closure with the clock
+ >   temporarily enabled, scoping the Enabled state without giving up the
+ >   prepared clock.
+ > - Documented how to change a clock's state at runtime via an enum, for
+ >   drivers that enable/disable across resume/suspend.
+ > - Link to v3: https://lore.kernel.org/r/20260107-clk-type-state-v3-0-77d3e3ee59c2@collabora.com
+ > 
+ > Changes in v3:
+ > - Rebased on top of 6.19-rc4
+ > - Dropped patch 1 (from Alice), added her series as a dependency instead
+ > - Fixed Tyr, PWM_TH1520 drivers
+ > - Changed clk.rs imports to kernel-vertical style
+ > - Added support get_optional shortcut for Prepared and Enabled (i.e.:
+ >   Clk::<Enabled>::get_optional())
+ > - Fixed misplaced #[inline] tag
+ > 
+ > Thanks, Danilo {
+ >   - Moved the devres changes into its own patch
+ >   - Require &Device<Bound> for all functions where a &Device is used
+ >   - Account for con_in in SAFETY comments where applicable
+ >   - Added backticks
+ > }
+ > 
+ > - Link to v2: https://lore.kernel.org/r/20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com
+ > 
+ > Changes in v2:
+ > - Added Alice's patch as patch 1, since it is a dependency.
+ > - Added devm helpers (like we did for Regulator<T>)
+ > - Fixed missing clk_put() call in Drop (Danilo)
+ > - Fixed missing parenthesis and wrong docs (Viresh)
+ > - Removed extra "dev" parameter from "shutdown" example (Danilo)
+ > - Removed useless type annotation from example (Danilo)
+ > - Link to v1: https://lore.kernel.org/rust-for-linux/20250729-clk-type-state-v1-1-896b53816f7b@collabora.com/#r
+ > 
+ > ---
+ > Daniel Almeida (6):
+ >       rust: clk: use 'kernel vertical style' for imports
+ >       rust: clk: replace `OptionalClk` with `Clk::get_optional()`
+ >       rust: clk: use the type-state pattern
+ >       rust: clk: add guards for scoped prepare and enable
+ >       rust: clk: add devres-managed clks
+ >       rust: clk: add `ExclusiveClk`
+ > 
+ > Maurice Hieronymus (1):
+ >       pwm: th1520: Lock clock rate with clk_rate_exclusive_get
+ > 
+ >  drivers/cpufreq/rcpufreq_dt.rs |   7 +-
+ >  drivers/gpu/drm/tyr/driver.rs  |  32 +-
+ >  drivers/pwm/pwm_th1520.rs      |  25 +-
+ >  rust/kernel/clk.rs             | 834 +++++++++++++++++++++++++++++++++++------
+ >  rust/kernel/cpufreq.rs         |   8 +-
+ >  5 files changed, 748 insertions(+), 158 deletions(-)
+ > ---
+ > base-commit: d3645b43ad60fe1ab3b4a869f6908414d5831a65
+ > change-id: 20250909-clk-type-state-c01aa7dd551d
+ > 
+ > Best regards,
+ > --  
+ > Daniel Almeida <daniel.almeida@collabora.com>
+ > 
+ > 
 
-> The idea behind autosuspend was simple enough: Try to optimize energy 
-> usage by putting a device into runtime suspend only when it seems likely 
-> that the device will remain suspended for more than a brief period of 
-> time -- long enough to make the extra work of suspending and resuming 
-> worthwhile.  In principle the driver core could collect statistics for 
-> each device about how long it remains resumed and suspended, but the 
-> benefits of such a detailed analysis didn't seem worth the effort.  And 
-> given that drivers know more about how their devices will tend to behave 
-> than the core does, it made sense to let drivers determine the best 
-> autosuspend delay time for each device individually.
-> 
-> In theory, a driver or bus type might want to have differing delay 
-> values for the time after all children are suspended vs. the time after 
-> the device had some other work to do (not related to its children).  How 
-> much of an advantage would that yield?  I don't know, but I felt that it 
-> wasn't large enough to put support for it into the first implementation 
-> of autosuspend.
 
-Right, I don't think anybody is asking for this right now. We're just
-trying to clean up the corners on how the existing timer works.
+Gentle ping here.
+There's been no further comments, should I assume this is good?
 
-> So yes, in the current scheme a parent's inactivity period doesn't start 
-> until all its children are suspended (unless the ignore_children flag is 
-> set, but never mind that now).
+-- Daniel
 
-But to be clear, that's not actually how runtime PM works today. It only
-works this way for the very small handful of drivers where the parent
-calls pm_runtime_mark_last_busy() in .runtime_idle(). I think several
-people have acknolwedged that this is a bit of a hack, or at least a
-missing feature in runtime PM, and probably should be extended more
-widely.
-
-> The parent's autosuspend delay therefore 
-> should take into account the expected time before one of the children 
-> may have to be resumed, as well as the expected time before the parent 
-> itself may be asked to do something that doesn't involve any children.
-> (Note that if a device has more than one child, the expected time before 
-> any of its children will be resumed can be different from the expected 
-> time before any single particular child will be resumed.)
-
-"Expected time before a child may have to resume": isn't that child
-last_busy + child delay? So that expected time is already in the past by
-the time the child autosuspends.
-
-But:
-
-> The simplest way to carry this out is to do pm_runtime_mark_last_busy() 
-> whenever a child suspends.  But other approaches to the same goal are 
-> conceivable.
-
-Yes, I agree it's simple. Maybe the distinction I'm making doesn't
-matter that much.
-
-> Of course it's not possible to determine an "ideal" autosuspend delay 
-> time.  In fact, I suspect that in most cases we aren't even close.  But 
-> I think doing it this way is still better than anything else that isn't 
-> a lot more complex.
-
-Ack.
-
-> > I don't think we should be treating current autosuspend delays for
-> > parent devices as meaningful at all, per the above. So I think this is a
-> > chance to try to improve the architecture so it makes sense, and then
-> > figure out if any existing delays should be tuned/reduced.
-> > 
-> > Ideally, yes, we can avoid making significant system power changes to
-> > the negative, but I don't think that we should prioritize that above all
-> > else, as long as it's *possible* to tune the autosuspend delays in a way
-> > that makes sense.
-> 
-> Of course it's possible to tune the autosuspend delays.  That's what 
-> /sys/.../power/autosuspend_delay_ms is for.  Whether it's possible to do 
-> so in a way that makes sense will depend very heavily on the type of 
-> device in question and the way the system is used.  One possible 
-> approach might be to have a userspace daemon that tracks all runtime PM 
-> transitions and tries to do some sort of dynamic tuning.  How well would 
-> that work?  I don't know, but it would be a good research project for 
-> somebody.
-
-My point here was that I think Rafael was overly concerned about
-precisely tuning parent autosuspend delays at the same time as changing
-the runtime PM core behavior. Yes, they clearly can be tuned in user
-space; but he was suggesting a phase-in / opt-in approach to this
-change, because it might harm system power if it's not re-tuned.
-
-> > Side note: I think .runtime_idle() should be removed. As far as I can
-> > tell, it's only used for working around architectural problems in
-> > runtime PM (like $subject), or for implementing autosuspend without
-> > actually using autosuspend (usually because they predated autosuspend).
-> 
-> I have never given much thought to runtime_idle().  When we were doing 
-> the initial implementation of runtime PM I didn't see any use for it, 
-> but Rafael was quite certain that it had its place and the issue wasn't 
-> important enough to argue about.  I wouldn't mind a bit if it were 
-> eliminated, but I also don't really mind the extra overhead of the idle 
-> callback pointers and support routines.
-
-The overhead isn't my concern. The mental overhead is. There are several
-rough edges that would be smoother without it, IMO.
-
-> > At the same time, it makes it harder to reason about the runtime PM API
-> > surface -- because currently, .runtime_idle() is a primary reason that
-> > pm_runtime_put() and pm_runtime_put_autosuspend() are different.
-> 
-> I wouldn't put it that way.  My feeling is that pm_runtime_put() could 
-> be replaced by pm_runtime_put_autosuspend(), since they should behave 
-> identically for devices that don't use autosuspend.
-
-Ah, but that's not actually true! pm_runtime_put_autosuspend() skips
-.runtime_idle(). It (semi)directly calls rpm_suspend().
-
-> (If there are any 
-> devices that _do_ use autosuspend and also use pm_runtime_put() -- well, 
-> I'd say that sounds like either a design error or a simple oversight.)  
-> The reason for having two different routines is mainly historical: 
-> pm_runtime_put_autosuspend() was added some time after pm_runtime_put() 
-> and we didn't want to mess up the existing callers.  Maybe this 
-> judgement was a mistake.
-> 
-> > "Last PM reference" can be a bit subtle; particularly, the child only
-> > drops a reference on its parent once it *completes* autosuspend (even if
-> > it was last "busy" much earlier). That means autosuspend delays become
-> > additive along the hierarchy. Is that desirable?
-> 
-> That's up to the maintainers of the device and its bus subsystem.  They 
-> can arrange the default autosuspend delays any way they like, taking the 
-> children's autosuspend delays into account if they want -- and the user 
-> can always override the defaults.  But one thing that does _not_ make 
-> sense would be to have non-additive delays where a parent's delay is 
-> shorter than its child's.
-> 
-> Your email was fairly long, and I have touched on only a few of the 
-> issues it brought up.  Is there anything significant you still want to 
-> discuss?
-
-I appreciate all the responses. One particular part I did have questions
-on, which I'll mostly copy/paste:
-
-[Rafael:]
-> Now, let me acknowledge that some drivers evidently want rpm_idle() to
-> always set the autosuspend timer instead of suspending the device
-> right away.  That may be because of the "unwanted parent suspends"
-> problem at hand or for other reasons.
-
-Do we have any idea what the "other reasons" could be? For example,
-because driver writers found it too difficult to find all the
-appropriate places to call pm_runtime_mark_last_busy()? (Does commit
-b3db492e8335 ("PM: runtime: Mark last busy stamp in
-pm_runtime_put_autosuspend()") help? Or should pm_runtime_put() behave
-similarly?)
-
-I see that USB is one of the subsystems where .runtime_idle() calls
-pm_runtime_mark_last_busy(), and I thought you (Alan) might have some
-more background on that.
-
-Thanks,
-Brian
