@@ -1,44 +1,44 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=156.224.83.219
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=160.236.53.96
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794383190;
-	b=Yn+x5HCAyTYY0RrVCZoKm6CsUZxaok9tLVfgoIfICdS4A5NPc4Nmdr0+giwm0c6NT9zX
-	 Jz5ohMp6gH+dt/aWNs1eWHgkbIRqoYzyXNxKfmOamMX33+Oj0ySinnRVrndbA6th7QtFY
-	 ct5zDD8wHM5667FCa8y3v8ziPGDuYmawtzeD4hIs9WLzBGXFOOkhkzwy9evyz6vU9CGAF
-	 15ZPg4cUiW0xw2bNCKJm5OwrOfiqCuBhGK/i5eoyg8STL/L7M6i5RqUvGlqsfQN4EU3eJ
-	 FAaS6y/kKy2N8BKP41ZhiO5y+JWtzWrY6J7XVZUXFrGTSYe1w0oo3iMZvdt5ZLIPNXg==
+	t=1794385448;
+	b=iEY8olPiuTMb2AObTCe2C0cXDECwd5o6wvo8GyoBfUcmYAraaJt3wp65aIYDAMrbZJ8k
+	 8dqvEcj07JB4OdOg24SwtjWqeObXhyx1D3CDtfxrEqRQWbyfY8EhG3sybR26tblRG9RYh
+	 7LEwNNSrEzOyRX7oI9V6W1d69hmgejM3lNIkWAPLGN+3O3iVPJ4NNsfiPKPSmbOjgCZuX
+	 xRsEmIX7vmYkbwnGN8/tLR1BN6Tub1Rex0sN9V7I1bSLnYzPB3deaIiPDdf/D/y/erF2l
+	 xxAaSp41H9ko3KoynzIIPlKJXyPlAddjP4d0XFh+8IqMckKJXVOf5r6o/b/u3uyPioQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794383190;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794385448;
 	h=DMARC-Filter:Received:Message-ID:Date:MIME-Version:User-Agent:
 	 Subject:To:Cc:References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:X-HM-Spam-Status:
 	 DKIM-Signature;
-	bh=c1VSYUCW8DjIZRH9cT9PKM8BeqoT2mVv/wXrHisLhI0=;
-	b=n01JEaUZ0UGvI7Xk6+1CIeoGRpDJth8pDtCgDMMl33HPdLpp5MssIttbWcg9cMl1tbk4
-	 zEqBerwXAE1uHNrv40L3dl6zbMFxVCLQYAP9sHHBNkLPb0zqZNQOd3ZlNYsukEFHaXRlc
-	 txK5QkScINMozIw8yqNH6gAjyZm5RX4pd30zmJfzvwYr3ghQ5TiGlfoHDJhtqG8LhGFwV
-	 4T/xBCaNKHsKrlNgvuBjaVYokcpSAv5LC4YM6RKvwxSMJCaUcgYg5jT47YgtXxA6ETSvi
-	 raEceQZj9tDJFg38y6Waj40iHmFxzyqft+fzJ79+nFF0P2V1NWd/kpyNG0Qo/Ot2vPQ==
+	bh=HIGazGLFZ+omnPFGXPeDAtvbrPwPKBLIFOy6gFksbCA=;
+	b=pztsf76jB/cTfyi8zijQNM6Oo9iFsBzrjd+JIPU10K4cjctMK1fpb6aLXd4n3C7Zn6YS
+	 PjDpU1lr17Rdt2sCxPk/9e4xDylBrqV9RieP1E/L+okLFrXNsUvwGOY2njgdxWJ87HyQK
+	 5BqG3rHvnl66mcUxQU1EU3KgiiSmOwwPRGP09lgNtNIuEl9mijrx952doS9ufjB2uN5EX
+	 wS1/f2zfZHVHUVutKsuTsaxN21yJelYxtqrZ7aWiaV/tfXzCV38cIa0nHYSJHtGmtkuB3
+	 PpkVKj7D2dwsXT9nT2dSCQEFh6HIWgIS6Thi+MvPnY7hgMGlyLMNq5v8qosF+k84YCg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=rock-chips.com;
 	spf=pass smtp.mailfrom=rock-chips.com;
-	dkim=pass header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b="DsS/fXyT";
-	arc=none smtp.remote-ip=156.224.83.219
-Received: from mail-m83219.xmail.ntesmail.com (mail-m83219.xmail.ntesmail.com [156.224.83.219])
+	dkim=pass header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=PNe5BUeX;
+	arc=none smtp.remote-ip=160.236.53.96
+Received: from mail-m1602365396.xmail.ntesmail.com (mail-m1602365396.xmail.ntesmail.com [160.236.53.96])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 265B0606A31C;
-	Wed, 11 Nov 2026 07:46:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 265B0606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A0A6606A321;
+	Wed, 11 Nov 2026 08:24:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3A0A6606A321
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=DsS/fXyT
-Received: from [172.16.12.11] (gyproxy-mailtls0-entmail-virt215.gy.ntes [61.154.14.86])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 544786367;
-	Wed, 11 Nov 2026 15:46:07 +0800 (GMT+08:00)
-Message-ID: <4043eb42-ce62-41ff-9a7d-d840bb90364d@rock-chips.com>
-Date: Wed, 11 Nov 2026 15:46:07 +0800
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=PNe5BUeX
+Received: from [172.16.12.11] (gyproxy-mailtls1-entmail-virt216.gy.ntes [61.154.14.86])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 544931115;
+	Wed, 11 Nov 2026 16:23:45 +0800 (GMT+08:00)
+Message-ID: <ca90a994-70cc-410a-902d-5c4c0aacc9b7@rock-chips.com>
+Date: Wed, 11 Nov 2026 16:23:45 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -49,8 +49,8 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v16 09/16] pmdomain: rockchip: add optional per-domain
- power-on settle delay
+Subject: Re: [PATCH v16 10/16] pmdomain: rockchip: cycle an optional
+ power-domain reset on power-on
 To: Jiaxing Hu <gahing@gahingwoo.com>, tomeu@tomeuvizoso.net,
  heiko@sntech.de, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
  joro@8bytes.org, will@kernel.org, robin.murphy@arm.com, ulfh@kernel.org,
@@ -64,171 +64,143 @@ Cc: royalnet026@gmail.com, abel.vesa@oss.qualcomm.com,
  iommu@lists.linux.dev, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 References: <20261108065917.135194-1-gahing@gahingwoo.com>
- <20261108065917.135194-10-gahing@gahingwoo.com>
+ <20261108065917.135194-11-gahing@gahingwoo.com>
 From: Finley Xiao <finley.xiao@rock-chips.com>
-In-Reply-To: <20261108065917.135194-10-gahing@gahingwoo.com>
+In-Reply-To: <20261108065917.135194-11-gahing@gahingwoo.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa1c9923f9203a8kunm2dd9fb713a378a
+X-HM-Tid: 0aa1c9b4b55703a8kunm2d5d490d3aa52c
 X-HM-MType: 1
 X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkaSU1IVh9CHRpNQh1NH0pLHVYVFA
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlDTE5OVh5ITUIdGRoZS05CH1YVFA
 	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSE
 	pKQk1VSktLVUpCWQY+
 DKIM-Signature: a=rsa-sha256;
-	b=DsS/fXyTLnDgYvp4+HkqNssTj/QM61Fo3GnodXNmaCRPr2KWX7UWDRpIfJDDkszxhbuKwJP9MLaKB2+aG2VRLw1doWXQEajCGSYqF1Zu2Ok6Z8JZ2525aVYsklSN7UjrZex71vfnr33sqgYx00j4eu0zWgq2vrGIHnuomDKY/V4=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=c1VSYUCW8DjIZRH9cT9PKM8BeqoT2mVv/wXrHisLhI0=;
+	b=PNe5BUeXIVF4MzdxsakPs8/fbX+x0vjN/3ButBeQnwAzztEQ3I7la/27YHllx5kc1gRV4ixYgpoX1S3VjkkRgaqWsU9UlWaVfc3sYg1A0zzfrMFB2c5xo3ARIWcAg+yLjwkUGuiSG43F1a1sPJfl4bh9g4zSQLZugv05/J69mD8=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=HIGazGLFZ+omnPFGXPeDAtvbrPwPKBLIFOy6gFksbCA=;
 	h=date:mime-version:subject:message-id:from;
 
 
 在 2026/11/8 14:59, Jiaxing Hu 写道:
-> The RK3576 NPU power domains need some time to settle after the idle
-> request is released.
+> The bus interface of some power domains can be left in an undefined state
+> after power-on.
 >
-> Without that wait, the QoS registers are written while the domain is not
-> fully up, and the first cold power-on raises an SError.
+> On the RK3576 NPU this shows up as a hang on the first register access
+> after power-on. Resetting the power domain once makes access work again.
 >
-> Add an optional delay_us field and wait that long after releasing the
-> idle request and before restoring QoS.
+> When the power domain node has a reset, the driver gets it and cycles it
+> after releasing the idle request and before restoring QoS.
 >
-> Rename the DOMAIN_M_O_R_G macro to DOMAIN_M_O_R_G_W.
->
-> The NPU power domain is switched off when the driver probes, so the first
-> power-on goes through this wait even when the bootloader left the NPU on.
->
-> With delay_us set to 0, an SError still happens even with the regulator
-> kept always on; with 15 us, 536 cold power-ons in a row are all clean.
+> This is optional. Power domains without a reset are not affected.
 >
 > Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 > Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 > ---
->   drivers/pmdomain/rockchip/pm-domains.c | 56 ++++++++++++++++----------
->   1 file changed, 34 insertions(+), 22 deletions(-)
+>   drivers/pmdomain/rockchip/pm-domains.c | 33 +++++++++++++++++++++++++-
+>   1 file changed, 32 insertions(+), 1 deletion(-)
 >
 > diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-> index db3879846db6..e3cc60fa2277 100644
+> index e3cc60fa2277..0f4ea5471792 100644
 > --- a/drivers/pmdomain/rockchip/pm-domains.c
 > +++ b/drivers/pmdomain/rockchip/pm-domains.c
-> @@ -18,6 +18,7 @@
->   #include <linux/of_address.h>
+> @@ -19,6 +19,7 @@
 >   #include <linux/of_clk.h>
 >   #include <linux/clk.h>
-> +#include <linux/delay.h>
+>   #include <linux/delay.h>
+> +#include <linux/reset.h>
 >   #include <linux/regmap.h>
 >   #include <linux/regulator/consumer.h>
 >   #include <linux/mfd/syscon.h>
-> @@ -59,6 +60,7 @@ struct rockchip_domain_info {
->   	u32 pwr_offset;
->   	u32 mem_offset;
->   	u32 req_offset;
-> +	u32 delay_us;
+> @@ -103,6 +104,7 @@ struct rockchip_pm_domain {
+>   	struct clk_bulk_data *clks;
+>   	struct device_node *node;
+>   	struct regulator *supply;
+> +	struct reset_control *reset;
 >   };
 >   
->   struct rockchip_pmu_info {
-> @@ -185,7 +187,7 @@ struct rockchip_pmu {
->   	.need_regulator = regulator,			\
->   }
->   
-> -#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, wakeup)	\
-> +#define DOMAIN_M_O_R_G_W(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, delay, wakeup, regulator)	\
->   {							\
->   	.name = _name,					\
->   	.pwr_offset = p_offset,				\
-> @@ -200,8 +202,10 @@ struct rockchip_pmu {
->   	.req_mask = (req),				\
->   	.idle_mask = (idle),				\
->   	.clk_ungate_mask = (g_mask),			\
-> +	.delay_us = (delay),				\
->   	.ack_mask = (ack),				\
->   	.active_wakeup = wakeup,			\
-> +	.need_regulator = regulator,			\
->   }
->   
->   #define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator)	\
-> @@ -258,8 +262,11 @@ struct rockchip_pmu {
->   #define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
->   	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
->   
-> -#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
-> -	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
-> +#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, delay, wakeup)	\
-> +	DOMAIN_M_O_R_G_W(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, delay, wakeup, false)
-> +
-> +#define DOMAIN_RK3576_R(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, delay, wakeup)	\
-> +	DOMAIN_M_O_R_G_W(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, delay, wakeup, true)
->   
->   /*
->    * Dynamic Memory Controller may need to coordinate with us -- see
-> @@ -681,6 +688,10 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+>   struct rockchip_pmu {
+> @@ -688,6 +690,21 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
 >   		if (ret < 0)
 >   			goto out;
 >   
-> +		/* Some domains need to settle before the QoS registers answer. */
-> +		if (pd->info->delay_us)
-> +			udelay(pd->info->delay_us);
+> +		/*
+> +		 * Optional: some domains need their reset cycled once power
+> +		 * is on. This goes BEFORE the settle delay, not after: a
+> +		 * domain that asks for both is asking to settle before the
+> +		 * QoS registers answer, and a reset deasserted after the
+> +		 * delay would leave nothing between it and the QoS writes.
+> +		 * On RK3576 the reset being cycled is the NPU core's bus
+> +		 * interface, which is what those writes go through.
+> +		 */
+> +		if (pd->reset) {
+> +			reset_control_assert(pd->reset);
+> +			usleep_range(10, 20);
+> +			reset_control_deassert(pd->reset);
+> +		}
 > +
->   		rockchip_pmu_restore_qos(pd);
->   	}
->   
-> @@ -1314,25 +1325,26 @@ static const struct rockchip_domain_info rk3568_pm_domains[] = {
->   };
->   
->   static const struct rockchip_domain_info rk3576_pm_domains[] = {
-> -	[RK3576_PD_NPU]		= DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       false),
-> -	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  false),
-> -	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     false),
-> -	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  false),
-> -	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), BIT(15), false),
-> -	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       0,       false),
-> -	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  false),
-> -	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  false),
-> -	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  false),
-> -	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  true),
-> -	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  false),
-> -	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   false),
-> -	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  false),
-> -	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  false),
-> -	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  false),
-> -	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    false),
-> -	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    false),
-> -	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    false),
-> -	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  false),
-> +	/*                                            name    p_offset pwr      status  r_status r_offset req      idle     g_mask   delay wakeup */
-> +	[RK3576_PD_NPU]		= DOMAIN_RK3576_R("npu",  0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       0,    false),
-> +	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  0,    false),
-> +	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     0,    false),
-> +	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  0,    false),
-> +	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), BIT(15), 0,    false),
-> +	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       0,       0,    false),
-> +	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  0,    false),
-> +	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  0,    false),
-> +	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  0,    false),
-> +	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  0,    true),
-> +	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  0,    false),
-> +	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   0,    false),
-> +	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  0,    false),
-> +	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  0,    false),
-> +	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  0,    false),
-> +	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    15,   false),
-> +	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    15,   false),
-> +	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    15,   false),
-> +	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  0,    false),
->   };
+We have tested this across a large number of RK3576 chips and have
+never seen this problem. From the design side there is no such issue
+either: the bus interface does not come up in an undefined state
+after the power domain switches on, so no reset cycle is needed.
 
-1. The settle requirement is on the top-level NPUTOP domain only.
-    PD_NPU0 and PD_NPU1 do not need the delay: when a device is attached
-    to npu0/npu1, genpd powers the parent (nputop) first, and by the time
-    the child domain switches on, the settle time has long elapsed. Cold
-    power-on of npu0/npu1 without any delay has been clean in our
-    validation. You can just drop delay_us from both entries; keeping it
-    on nputop is enough.
+The settle delay, on the other hand, is needed - but as discussed
+earlier in this series, only on NPUTOP, not on PD_NPU0/PD_NPU1 and
+not together with a reset.
 
-2. The same failure mode exists on the display pipeline. PD_VOP needs a
-    15 us settle as well.Please add delay_us = 15 to RK3576_PD_VOP.
-
+If you are seeing a hang on the first register access, could you
+share the exact conditions (which code performs the access and
+whether its clocks are enabled, firmware/boot state)? That would
+help us understand the difference from our testing.
+>   		/* Some domains need to settle before the QoS registers answer. */
+>   		if (pd->info->delay_us)
+>   			udelay(pd->info->delay_us);
+> @@ -873,6 +890,14 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+>   	if (error)
+>   		goto err_put_clocks;
 >   
->   static const struct rockchip_domain_info rk3588_pm_domains[] = {
+> +	pd->reset = of_reset_control_get_optional_exclusive(node, NULL);
+> +	if (IS_ERR(pd->reset)) {
+> +		error = dev_err_probe(pmu->dev, PTR_ERR(pd->reset),
+> +				      "%pOFn: failed to get reset\n", node);
+> +		pd->reset = NULL;
+> +		goto err_unprepare_clocks;
+> +	}
+> +
+>   	pd->num_qos = of_count_phandle_with_args(node, "pm_qos",
+>   						 NULL);
+>   
+> @@ -943,11 +968,13 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+>   	clk_bulk_unprepare(pd->num_clks, pd->clks);
+>   err_put_clocks:
+>   	clk_bulk_put(pd->num_clks, pd->clks);
+> +	reset_control_put(pd->reset);
+>   	return error;
+>   }
+>   
+>   static void rockchip_pm_remove_one_domain(struct rockchip_pm_domain *pd)
+>   {
+> +	struct reset_control *reset;
+>   	int ret;
+>   
+>   	/*
+> @@ -962,11 +989,15 @@ static void rockchip_pm_remove_one_domain(struct rockchip_pm_domain *pd)
+>   	clk_bulk_unprepare(pd->num_clks, pd->clks);
+>   	clk_bulk_put(pd->num_clks, pd->clks);
+>   
+> -	/* protect the zeroing of pm->num_clks */
+> +	/* protect the zeroing of pd->num_clks and pd->reset */
+>   	mutex_lock(&pd->pmu->mutex);
+>   	pd->num_clks = 0;
+> +	reset = pd->reset;
+> +	pd->reset = NULL;
+>   	mutex_unlock(&pd->pmu->mutex);
+>   
+> +	reset_control_put(reset);
+> +
+>   	/* devm will free our memory */
+>   }
+>   
 
 -- 
 Best regards,
