@@ -1,56 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.65
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.74
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794439594;
-	b=CK1huwW78Ip05d+m97I+mvDqYdfn6k4KCDL8GY9U5b/ZI87W2cj0ed8NlCwp5nqmcb61
-	 ejjmx2SJWJqooweczfmkKu+rQ5rKRhcUMe5ILpM1e/12iCJFD46rQfBGtsEjmPLf+hH9O
-	 9ytLbpcjPUc1N5E5rE68vMbALN6/Myz8n6qT7gOw+F8rQcgTy8kZy9pXhmase0iDH1784
-	 L7MbGcJPPiwVpJUV6vCrRLpuLUFYoDNEBynmGtWICz82B6XUGyo7IDeGZqq2P32CS4rLP
-	 zl+amF338LxR/Z/D24fE3cP72cdsMVOU2oE5Le+0og8fZauyjYgleWcChirB78kUEWw==
+	t=1794439602;
+	b=ugnKPcfaGJYwNTS3OZFeKSboje4yIv9MzCmvX/5DYApcX2GqYcHOD0fTWiu9TcwrutTB
+	 yDcGCeN1bdA5VjbaCGVUNEAG+YVh9aZBVLc9dLS/ZQZ04J06n/yegJpR/jw2nmMUC9ULU
+	 TsgQH8TUasinGBgvdoiIEsxdWHOpTMyvymaLim1g1LvZvSk755qLZXNSFl8++xDywIVaw
+	 gjHI6Ut+IrqI4locxnaidcMl1a2r5r4dHWW+55A3AbTv8/yUPuCgbzAYlQg266Csgei2N
+	 LqHBKlMJXmWHW/64D4XAAXaeFEKMXIYfm0DInxoKZz3tSoJ1YoOxbR1lP4vxSo9VanQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794439594;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794439602;
 	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
 	 X-Mizu-Trace-ID:X-Migadu-Flow:From:Subject:To:Cc:X-Mailer:
 	 MIME-Version:Content-Type:Content-Transfer-Encoding:Date:Message-Id:
 	 In-Reply-To:References;
-	bh=RyEZLtXdOEy6YUs0iF5WO14oNHotCxIJ28slgWaTiiU=;
-	b=ABqjISW0QIWTCVoxXC5oP3dk2HBt7gopos6YVTgrb3ugzpTxEy53RGkrMTmEDN7hbkSZ
-	 7m2C8ksYneLxNNnbZSaS4eCneceVxwBZAtOmuaGM8XJxt3BKoe/5hiWKD2HUQ9vJtChC+
-	 K0+eLe4SrXCZhIu5B4Sj0780wu1nIPSTeQuFKzf7F4wV5hCz6gy9d9tEK8tFvAfSqanJF
-	 eTEIr/cCwduDMLtIRs4sjRVhajq6+3P8uT/QlYBSX2zP5V2Ifg0bok7ZBoxvpPcG9PMwN
-	 EH6yXBJCuoqGY51x+75lNkePrFry+1DaHuoZJZrkKLX7HyZZ9UQBY2w6rwMlEsBWtjA==
+	bh=WahUUMKEHUeaMrdXRtQv7EG1eIBXgpGshBhrE00jyNM=;
+	b=eCBz9gbdtjB300w5Oe6ypETuNo4xzS93vQlQGKtKq2+CsdRhM+ry1lLFUfwTF0FRNQ8F
+	 BE9l0RxXWa7nJyc2/GBX12wz7J2guJY7VGmX3Bcc9adhubkAuBkSSHaUkYc3svvBJXt39
+	 pfBPF3xHiYDtyp9NFK35TfwmBwRVi+KprVW8q3UWmCvRu8uU/aAv25xGnbPnzdhDPZw5c
+	 bialGJ3poaVdxUUjScsUhCtXkl19dFDDCEGcoRieuHhqm1Iex2c8a3n4DheWZtxb6e0AX
+	 geyltNFg9jXAkpQCDPAeUUOHsO+brJf1iL+PgKrw7WVsJd9oT17nifWS8gWuxioNkQA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=cressey.dev;
 	spf=pass smtp.mailfrom=cressey.dev;
-	dkim=pass header.d=cressey.dev header.i=@cressey.dev header.a=rsa-sha256 header.s=key1 header.b=Sn33619E;
-	arc=none smtp.remote-ip=95.215.58.65
-Received: from mta1.migadu.com (out-65.mta1.migadu.com [95.215.58.65])
+	dkim=pass header.d=cressey.dev header.i=@cressey.dev header.a=rsa-sha256 header.s=key1 header.b=RigteQrK;
+	arc=none smtp.remote-ip=95.215.58.74
+Received: from mta1.migadu.com (out-74.mta1.migadu.com [95.215.58.74])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99099606A883
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 23:26:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 99099606A883
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38A12606A33D
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 23:26:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 38A12606A33D
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=cressey.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cressey.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=cressey.dev header.i=@cressey.dev header.a=rsa-sha256 header.s=key1 header.b=Sn33619E
+	dkim=pass (2048-bit key, unprotected) header.d=cressey.dev header.i=@cressey.dev header.a=rsa-sha256 header.s=key1 header.b=RigteQrK
 X-Envelope-To: linux-pm@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=Z+IeZxbPjIvbK3g0gOTsghY/BOFs/EzEtXZfgL4WUf8=;
+DKIM-Signature: a=rsa-sha256; bh=h5LWrU32M/8PYtvSz81JoK1EB8yX4lPH2icFhRh33Xs=;
  c=simple/simple; d=cressey.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794439591; v=1; x=1795044391;
- b=Sn33619EXcFGXCJK9LnzuueZXjZ9jbMi1mpw0G48KB9e2lRh9CHxJZP3OSp9X01dciXn80UK
- 5zueYCDAo+Ky4oeq3N4IEd0zCdxK1lxYosEKo+Z88gl3driG7qIQ+LKae/JZscfJkOBk/juiZxq
- lV31+W1vYpD0MaXXOTDxOTCaCd7gTuvBNFkw/yMzStUtiTi/5bc6FfTZZ9NSx9Km10umlvGpl+O
- mC+u3ZH+MxOMreOEpahEhK+tf7aMp3y6P3n1kec9Oj8myFa7NHQbEznXAEgQBw7FTAV8k6W+JV5
- Ya+Oly/3jwGB/x1HysV0wgEMLlRF6egx5bUKSYXUJfARw==
+ t=1794439599; v=1; x=1795044399;
+ b=RigteQrK5VRm8azwDsH8qyHTX2/2fk3BXo9EfMKxRJv1QEwTDwnhCMbq20cGOs3XkiRJHWOg
+ 4h/MDlGgwCdOXRrzYU4Oyf1WHE6KFhE30qrAVgOAmfrwx1KgyeA/ubmUEFuhu8wb17Da+ofndQV
+ G7BZtRkHHD+vFY+2VNrUh4PKGn37HWM7XoqZ/ObCW4FEwKzVk21gq3XuAj/2har+9l2A4Fanh85
+ VQmj4YaaoVTASX6n1BYu7pr869enVe31ZfXMKkVkwwpoEc1KkwrgEuTgg5GWIhUNs5WwPMUNjPU
+ 3jCskbfZFJ0RBdhHY131FUdf1mcK46+gPa/05pVz8V+3w==
 X-Envelope-To: linux-pm@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id fa50d89f0875e7b8;
-	Wed, 11 Nov 2026 23:26:31 +0000
-X-Mizu-Trace-ID: fa50d89f0875e7b8
+Received: by smtp.migadu.com with ESMTPS id 4d58726ca1813656;
+	Wed, 11 Nov 2026 23:26:39 +0000
+X-Mizu-Trace-ID: 4d58726ca1813656
 X-Migadu-Flow: FLOW_OUT
 From: Ben Cressey <ben@cressey.dev>
-Subject: [PATCH v2 1/2] arm64: kexec: use a typed entry to fix kCFI oops
+Subject: [PATCH v2 2/2] arm64: hibernate: use a typed entry to drop __nocfi
 To: Catalin Marinas <catalin.marinas@arm.com>, 
  Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
  Pasha Tatashin <pasha.tatashin@soleen.com>, 
@@ -60,7 +60,7 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  Sami Tolvanen <samitolvanen@google.com>, kexec@lists.infradead.org, 
  llvm@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>, 
  Zhaoyang Huang <zhaoyang.huang@unisoc.com>, 
- Jeson Gao <jeson.gao@unisoc.com>, stable@vger.kernel.org
+ Jeson Gao <jeson.gao@unisoc.com>
 X-Mailer: b4 0.15.2
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -73,145 +73,151 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 11 Nov 2026 15:26:04 -0800
-Message-Id: <20261111-arm64-kexec-nocfi-v2-1-ddf0c4aa326f@cressey.dev>
+Date: Wed, 11 Nov 2026 15:26:05 -0800
+Message-Id: <20261111-arm64-kexec-nocfi-v2-2-ddf0c4aa326f@cressey.dev>
 In-Reply-To: <20261111-arm64-kexec-nocfi-v2-0-ddf0c4aa326f@cressey.dev>
 References: <20261111-arm64-kexec-nocfi-v2-0-ddf0c4aa326f@cressey.dev>
 
-An arm64 Linux kernel built with CONFIG_CFI=y oopses after "Bye!" on
-every kexec that relocates the image. Crash images load in place and are
-not affected. The oops reproduces under QEMU:
+swsusp_arch_resume() calls the safe page's copy of
+swsusp_arch_suspend_exit() indirectly, without a kCFI check. The MMU is
+on at the call and TTBR0 maps only that page. The copy starts at the
+page's first byte, so the check's load of the type hash in front of it
+would fault. SYM_CODE_START() also gives the routine no hash.
+Commit e2f8216ca2d8 ("arm64: Set __nocfi on swsusp_arch_resume()")
+disabled the check "for now", since the entry had to be first
+in .hibernate_exit.text.
 
- Unable to handle kernel paging request at virtual address 00000000544bfffc
- pc : machine_kexec+0x104/0x274
- Code: d5182008 d5033fdf aa1303e0 f9418a68 (b85fc110)
+SYM_TYPED_FUNC_START() emits the hash inside that section, and
+create_safe_exec_page() already copies the whole section, at most 4 KiB,
+to the page's start, so the page holds both hash and entry. Relax the
+linker script's ASSERT, so the entry need only be in the section.
 
-b85fc110 is "ldur w16, [x8, #-4]", the kCFI check's load of the type
-hash in front of the callee. Commit efc2d0f20a9d ("arm64: kexec: keep
-MMU enabled during kexec relocation") made machine_kexec() call the
-control page's copy of arm64_relocate_new_kernel() indirectly, while
-TTBR0 maps only that page. The copy starts at the page's first byte, so
-the load faults. SYM_CODE_START() also gives the routine no hash.
+Fix by typing the routine, with a C prototype, entering the copy at the
+symbol's offset in the section, and dropping __nocfi.
 
-SYM_TYPED_FUNC_START() emits the hash inside .kexec_relocate.text, and
-machine_kexec_post_load() already copies that whole section, at most
-4 KiB, to the page's start, so the mapped page holds both hash and
-entry.
-
-The ASSERT from commit dc4824faa265 ("arm64: avoid executing padding
-bytes during kexec / hibernation") kept the entry first, since C
-branched to the page's start. Relax it, so the entry need only be in the
-section.
-
-Fix by typing the routine with SYM_TYPED_FUNC_START() and a C prototype,
-and entering the copy at the symbol's offset in the section.
-
-The code is Kees Cook's, as posted in review, with two comments and the
-ASSERT message reworded.
-
-An LLM diagnosed the oops.
-
-Fixes: efc2d0f20a9d ("arm64: kexec: keep MMU enabled during kexec relocation")
-Cc: stable@vger.kernel.org
-Suggested-by: Kees Cook <kees@kernel.org>
-Link: https://lore.kernel.org/linux-arm-kernel/202609241804.BB23BF10@keescook/
+Suggested-by: Mark Rutland <mark.rutland@arm.com>
+Link: https://lore.kernel.org/linux-arm-kernel/arZSe8hNnRPM5FqY@J2N7QTR9R3.cambridge.arm.com/
 Signed-off-by: Ben Cressey <ben@cressey.dev>
 ---
- arch/arm64/include/asm/kexec.h      |  2 ++
- arch/arm64/kernel/machine_kexec.c   |  7 +++++--
- arch/arm64/kernel/relocate_kernel.S | 11 +++++++----
- arch/arm64/kernel/vmlinux.lds.S     |  5 +++--
- 4 files changed, 17 insertions(+), 8 deletions(-)
+ arch/arm64/include/asm/suspend.h  |  5 +++++
+ arch/arm64/kernel/hibernate-asm.S |  7 +++++--
+ arch/arm64/kernel/hibernate.c     | 14 +++++++++-----
+ arch/arm64/kernel/vmlinux.lds.S   |  5 +++--
+ 4 files changed, 22 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
-index 892e5bebda95..0be042ec22c1 100644
---- a/arch/arm64/include/asm/kexec.h
-+++ b/arch/arm64/include/asm/kexec.h
-@@ -100,6 +100,8 @@ void cpu_soft_restart(unsigned long el2_switch, unsigned long entry,
- 		      unsigned long arg0, unsigned long arg1,
- 		      unsigned long arg2);
+diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
+index e9ce68d50ba4..e75aa3681414 100644
+--- a/arch/arm64/include/asm/suspend.h
++++ b/arch/arm64/include/asm/suspend.h
+@@ -45,6 +45,11 @@ void _cpu_resume(void);
  
-+void arm64_relocate_new_kernel(struct kimage *kimage);
-+
- int machine_kexec_post_load(struct kimage *image);
- #define machine_kexec_post_load machine_kexec_post_load
- #endif
-diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
-index 48f343704cb5..24366b5b3259 100644
---- a/arch/arm64/kernel/machine_kexec.c
-+++ b/arch/arm64/kernel/machine_kexec.c
-@@ -147,9 +147,12 @@ int machine_kexec_post_load(struct kimage *kimage)
- 	kimage->arch.ttbr1 = __pa(trans_pgd);
- 	kimage->arch.zero_page = __pa_symbol(empty_zero_page);
+ int swsusp_arch_suspend(void);
+ int swsusp_arch_resume(void);
++void __noreturn swsusp_arch_suspend_exit(phys_addr_t tmp_pg_dir,
++					 phys_addr_t ttbr1_el1,
++					 void *reenter_kernel, void *pblist,
++					 phys_addr_t hyp_stub_vectors,
++					 phys_addr_t zero_page);
+ int arch_hibernation_header_save(void *addr, unsigned int max_size);
+ int arch_hibernation_header_restore(void *addr);
  
-+	/* Copy the whole section: a kCFI hash may precede the entry point */
- 	reloc_size = __relocate_new_kernel_end - __relocate_new_kernel_start;
- 	memcpy(reloc_code, __relocate_new_kernel_start, reloc_size);
--	kimage->arch.kern_reloc = __pa(reloc_code);
-+	kimage->arch.kern_reloc = __pa(reloc_code) +
-+		((unsigned long)arm64_relocate_new_kernel -
-+		 (unsigned long)__relocate_new_kernel_start);
- 	rc = trans_pgd_idmap_page(&info, &kimage->arch.ttbr0,
- 				  &kimage->arch.t0sz, reloc_code);
- 	if (rc)
-@@ -204,7 +207,7 @@ void machine_kexec(struct kimage *kimage)
- 		restart(is_hyp_nvhe(), kimage->start, kimage->arch.dtb_mem,
- 			0, 0);
- 	} else {
--		void (*kernel_reloc)(struct kimage *kimage);
-+		typeof(arm64_relocate_new_kernel) *kernel_reloc;
- 
- 		if (is_hyp_nvhe())
- 			__hyp_set_vectors(kimage->arch.el2_vectors);
-diff --git a/arch/arm64/kernel/relocate_kernel.S b/arch/arm64/kernel/relocate_kernel.S
-index 6cb4209f5dab..064db5856bba 100644
---- a/arch/arm64/kernel/relocate_kernel.S
-+++ b/arch/arm64/kernel/relocate_kernel.S
-@@ -8,6 +8,7 @@
-  * Pasha Tatashin <pasha.tatashin@soleen.com>
+diff --git a/arch/arm64/kernel/hibernate-asm.S b/arch/arm64/kernel/hibernate-asm.S
+index 2baefe7a82d3..ef8c0b926dcb 100644
+--- a/arch/arm64/kernel/hibernate-asm.S
++++ b/arch/arm64/kernel/hibernate-asm.S
+@@ -6,6 +6,7 @@
+  * Author:	James Morse <james.morse@arm.com>
   */
- 
-+#include <linux/cfi_types.h>
- #include <linux/kexec.h>
  #include <linux/linkage.h>
++#include <linux/cfi_types.h>
+ #include <linux/errno.h>
  
-@@ -32,11 +33,13 @@
-  * new image to its final location.  To assure that the
-  * arm64_relocate_new_kernel routine which does that copy is not overwritten,
-  * all code and data needed by arm64_relocate_new_kernel must be between the
-- * symbols arm64_relocate_new_kernel and arm64_relocate_new_kernel_end.  The
-- * machine_kexec() routine will copy arm64_relocate_new_kernel to the kexec
-+ * symbols __relocate_new_kernel_start and __relocate_new_kernel_end.  The
-+ * machine_kexec_post_load() routine will copy that whole region to the kexec
-  * safe memory that has been set up to be preserved during the copy operation.
+ #include <asm/asm-offsets.h>
+@@ -31,6 +32,8 @@
+  * switches to a copy of the linear map in ttbr1, performs the restore, then
+  * switches ttbr1 to the original kernel's swapper_pg_dir.
+  *
++ * Called indirectly by swsusp_arch_resume(), this code needs a kCFI type hash.
 + *
-+ * Called indirectly by machine_kexec(), this routine needs a kCFI type hash.
+  * All of memory gets written to, including code. We need to clean the kernel
+  * text to the Point of Coherence (PoC) before secondary cores can be booted.
+  * Because the kernel modules and executable pages mapped to user space are
+@@ -45,7 +48,7 @@
+  * x5: physical address of a  zero page that remains zero after resume
   */
--SYM_CODE_START(arm64_relocate_new_kernel)
-+SYM_TYPED_FUNC_START(arm64_relocate_new_kernel)
+ .pushsection    ".hibernate_exit.text", "ax"
+-SYM_CODE_START(swsusp_arch_suspend_exit)
++SYM_TYPED_FUNC_START(swsusp_arch_suspend_exit)
  	/*
- 	 * The kimage structure isn't allocated specially and may be clobbered
- 	 * during relocation. We must load any values we need from it prior to
-@@ -98,4 +101,4 @@ SYM_CODE_START(arm64_relocate_new_kernel)
- 	mov	x2, xzr
- 	mov	x3, xzr
- 	br	x28				/* Jumps from el1 */
--SYM_CODE_END(arm64_relocate_new_kernel)
-+SYM_FUNC_END(arm64_relocate_new_kernel)
+ 	 * We execute from ttbr0, change ttbr1 to our copied linear map tables
+ 	 * with a break-before-make via the zero page
+@@ -93,5 +96,5 @@ alternative_insn "dc cvau, x4",  "dc civac, x4",  ARM64_WORKAROUND_CLEAN_CACHE
+ 	mov	x0, #HVC_SET_VECTORS
+ 	hvc	#0
+ 3:	ret
+-SYM_CODE_END(swsusp_arch_suspend_exit)
++SYM_FUNC_END(swsusp_arch_suspend_exit)
+ .popsection
+diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
+index 8c39863d2d63..d5a066ece8b2 100644
+--- a/arch/arm64/kernel/hibernate.c
++++ b/arch/arm64/kernel/hibernate.c
+@@ -418,15 +418,15 @@ int swsusp_arch_suspend(void)
+  * Memory allocated by get_safe_page() will be dealt with by the hibernate code,
+  * we don't need to free it here.
+  */
+-int __nocfi swsusp_arch_resume(void)
++int swsusp_arch_resume(void)
+ {
+ 	int rc;
+ 	void *zero_page;
+ 	size_t exit_size;
+ 	pgd_t *tmp_pg_dir;
+ 	phys_addr_t el2_vectors;
+-	void __noreturn (*hibernate_exit)(phys_addr_t, phys_addr_t, void *,
+-					  void *, phys_addr_t, phys_addr_t);
++	phys_addr_t exit_page;
++	typeof(swsusp_arch_suspend_exit) *hibernate_exit;
+ 	struct trans_pgd_info trans_info = {
+ 		.trans_alloc_page	= hibernate_page_alloc,
+ 		.trans_alloc_arg	= (__force void *)GFP_ATOMIC,
+@@ -463,14 +463,18 @@ int __nocfi swsusp_arch_resume(void)
+ 	exit_size = __hibernate_exit_text_end - __hibernate_exit_text_start;
+ 	/*
+ 	 * Copy swsusp_arch_suspend_exit() to a safe page. This will generate
+-	 * a new set of ttbr0 page tables and load them.
++	 * a new set of ttbr0 page tables and load them. The whole section is
++	 * copied: a kCFI hash may precede the entry point.
+ 	 */
+ 	rc = create_safe_exec_page(__hibernate_exit_text_start, exit_size,
+-				   (phys_addr_t *)&hibernate_exit);
++				   &exit_page);
+ 	if (rc) {
+ 		pr_err("Failed to create safe executable page for hibernate_exit code.\n");
+ 		return rc;
+ 	}
++	hibernate_exit = (void *)(exit_page +
++				  ((unsigned long)swsusp_arch_suspend_exit -
++				   (unsigned long)__hibernate_exit_text_start));
+ 
+ 	/*
+ 	 * KASLR will cause the el2 vectors to be in a different location in
 diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
-index 1869b44ae190..c95243a8b24e 100644
+index c95243a8b24e..641074a6e6ca 100644
 --- a/arch/arm64/kernel/vmlinux.lds.S
 +++ b/arch/arm64/kernel/vmlinux.lds.S
-@@ -440,6 +440,7 @@ ASSERT(swapper_pg_dir - tramp_pg_dir == TRAMP_SWAPPER_OFFSET,
- ASSERT(__relocate_new_kernel_end - __relocate_new_kernel_start <= SZ_4K,
-        "kexec relocation code is bigger than 4 KiB")
- ASSERT(KEXEC_CONTROL_PAGE_SIZE >= SZ_4K, "KEXEC_CONTROL_PAGE_SIZE is broken")
--ASSERT(__relocate_new_kernel_start == arm64_relocate_new_kernel,
--       "kexec control page does not start with arm64_relocate_new_kernel")
-+ASSERT(arm64_relocate_new_kernel >= __relocate_new_kernel_start &&
-+       arm64_relocate_new_kernel < __relocate_new_kernel_end,
-+       "kexec relocation code does not contain arm64_relocate_new_kernel")
+@@ -412,8 +412,9 @@ ASSERT(__idmap_text_end - (__idmap_text_start & ~(SZ_4K - 1)) <= SZ_4K,
+ #ifdef CONFIG_HIBERNATION
+ ASSERT(__hibernate_exit_text_end - __hibernate_exit_text_start <= SZ_4K,
+        "Hibernate exit text is bigger than 4 KiB")
+-ASSERT(__hibernate_exit_text_start == swsusp_arch_suspend_exit,
+-       "Hibernate exit text does not start with swsusp_arch_suspend_exit")
++ASSERT(swsusp_arch_suspend_exit >= __hibernate_exit_text_start &&
++       swsusp_arch_suspend_exit < __hibernate_exit_text_end,
++       "Hibernate exit text does not contain swsusp_arch_suspend_exit")
  #endif
+ #ifdef CONFIG_UNMAP_KERNEL_AT_EL0
+ ASSERT((__entry_tramp_text_end - __entry_tramp_text_start) <= 3*PAGE_SIZE,
 
 -- 
 2.56.0
