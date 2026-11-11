@@ -1,92 +1,45 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794435692;
-	b=mreO5l0JuS5fnnw6bZ2R0glUdV1hTj0SUk+cPBeW/F3e8u1NNpxe3kBV5WLoThwLB2Jf
-	 n1o1QjY4DZ+DqOOogjHaGQ7j8/rXn+P3/R91NW0DB2345jOQ5bD/ARs4tYFkFnMeiLB8w
-	 WIYyOhavpAtRdZj5iwYpgu6wRk8ZolHOxs8ldYTpnialPIo/wqUzCL+7rD2/dsG1L0eP5
-	 5i8pzTLU7WLuOj3JpDOw3haFUkLiCvy/20H8s0lS+55sG/x2dwS/YB98889IQQx3gTt74
-	 D5BL5OJ8JR48nXH7LZzStNTY0Kd9yvb3V3SmbjNP3FXX+L2cPjr7hMBJ8GFhTs3E10w==
+	t=1794437139;
+	b=OdIjaF7kZbN9fnhEXu0SYXgyuk0Oi0dfhs5ASLdAkWFOdr015lQaP/2HQQd9cyBFi/vM
+	 /In/I8re09IZ9HdanqH+h0SKdEypK4ZUxTR0leegxTMKELRzsSpQUxVwJ8yNkPV/nap3f
+	 sRxtbuOK0NXx3r3zsatI0F+N5Gb5Mus4p/pWD7A7jNP2FTrGL+bsfKYugZiBBVFeWbfOE
+	 25F6rq0GSYzThnOKd4ZVCaN5AesuUWpCZxDyPW5/gIYS9DW2JKKiv0ullvgtRDOPQIUhK
+	 pLXQE5/aAauZ4UY9tW+yy5dTnGmmIUxZz+Qh2aAII/HfJ65lm1LIWEUNeZqo3n7VEmg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794435692;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=TmtKdF1AWiRH6We9YcRb8zDEzdlOz4E493C6LB5k0/I=;
-	b=CXgL7cRAfE2rryeRmmQheu21NfSYf6DjoBD8NFlkVNeKFyc5NiWPyfTnw2jIGId40Ssu
-	 bY/TUVEPjPfRkBB18v5ORDQkwNH1EoAreNbkrUT8taoWqQ5WpHuBH1dQddzVikyCdLscD
-	 rvR+g1WSbpC5ENjAQTNklnvEHmpQR2ErLLoPSzhZBL60VLM2SD122iBmsnhm/ouA8nU6K
-	 5U28QjRC2ncNKhCRlOVc6gaVHL4haZPIBsv9MXkC/WV/zDZ2nvxFFeC/tT+XB751ukKRx
-	 Y2ir+xTmzXtUX5+vIKwhDFfWtrsWDYp3ct+s2gTh8g5k+p5UFzqi5LGmRCVukMGmLXw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794437139;
+	h=Received:DKIM-Signature:Mime-Version:Content-Transfer-Encoding:
+	 Content-Type:Date:Message-Id:Subject:Cc:To:From:References:
+	 In-Reply-To;
+	bh=bTNRrDyJIaQzdjvKuykbPAaKt2GSUHxJV8jWSJimVFY=;
+	b=JSO40vI7ZoGTkB9f6osIsQQ1tsh/o0Z+uDKU4bDDK63O7hC/1FlTyArJqXf+FEC9z1H1
+	 S73duWlHFX5MY3kiv1bStz1xTIeTRP5lUmfTeHkKxMpQuUKlmdTrjnxHz1fUxVKKEEjp4
+	 A8aUkGjMKtuOuRWhi4eXtDe1I+w+dtWflUNk4ZdaFaF9VhwyGiCajEPF1mQ6J9ef4muDF
+	 TN76Mj/qUkp33Sa3Ccw8ayCsE85wtbn3rCpZR3ZUM/KnpbFpFTtjt7owIhmfnF2+JeSzu
+	 fPPcFqU1s6muRuA0Jy1PHGzuZxLOAffPNJyPthG3Lxr1cS1C1ajxIhwCGYPGHliwFZw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=GAhkWesh;
-	arc=none smtp.remote-ip=209.85.128.41
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R3pZgORl;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86112606A326
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 22:21:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 86112606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC334606AECE;
+	Wed, 11 Nov 2026 22:45:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=GAhkWesh
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-4a549cd7fd2so2888845e9.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 14:21:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794435690; x=1795040490; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=TmtKdF1AWiRH6We9YcRb8zDEzdlOz4E493C6LB5k0/I=;
-        b=GAhkWeshmXeULO0RrMSF/TEbMI1rd1Dbu9ohLHmmwmxzRDiTMT2sMZNOQ0a/2G4tSa
-         H43L05tjDvA1Bxxt1FR0x7e35oZYwRvJ1bPbenazsGlsk6ItPwLVNWaA8oLMlpAkjEMS
-         N1eitSPCAEted5vZEUqrFL1vZplEM9l6Qz1nDytE6InIAI6DDiR7kdkNiqHS3v5905vR
-         Aj2onbDH/JimL5zPsjwpBGJkuAdihvFqTbdkbnw57v9zXPy5MYzjSmc9abLm6CNH+Ri5
-         ol5v1SfAiMPfJRhlzhf4IPiRSgTD4nrdqYu0lLd92MoaB+d6cjc14Q7V5WsmiC9hHrTP
-         qOew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794435690; x=1795040490;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=TmtKdF1AWiRH6We9YcRb8zDEzdlOz4E493C6LB5k0/I=;
-        b=Vt8qXrgraD6PI9M9HDJblQlZGEzonVIlPY6to5MoKX9Yl9N9s3llDfS5ltBVxUeWnf
-         0OzOOXpeKH4EO5fRKU8BtupuJWv0TSy0ERiQ+xBkzje1tPvwTxn/hr/J6O+GJLHbDgtY
-         AtyGj0mgxMp0SSbwVE4UxQ083KA6RVqC/0Fd/VUt5ddtZRnEK5k6OUPsvNcZO2SSh7HC
-         lDdlmZjCBhdWxBx6+cdJft00n3pbgw8Oc090hfmkMQvFgyKEJ+In487zRxbKKBnVWIO2
-         LhiAP1Ktq0FCOrL8U0/r0RGbh2XdDlJD4oeswUeXVQuw8cgSsIVYdq6PGPMwGmJSsiSx
-         q9WA==
-X-Forwarded-Encrypted: i=1; AL+hErE/HD4in8oPW8jl5ywBGNITu+Dr/vaJBmm/eFEwTsrXdUVZDS1rriZDcWT8eCJ0mmDmXdQ3Ddh1rw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9YakFDZM/oCTdlqi5+9XCln8llvFRJVc8PqQRHXC8PSKLTozvG
-	5cANy9cMyWadPRUUmvyWnYcKsb+LuTZlRaqIFJ7uWOtyZtD7XA0EYYyP
-X-Gm-Gg: AYBFou0tMDV9RQsuNS7T3a6yXHRH1pG9N6KWHL5onzLkEz398YmlDNDvGIFCw136RED
-	ZX62Vk6la9y3TXqtgISnYihnRDeeQ5CRe6D5Yfjvre7eCB77ppS0DPS8Au+4ogfEUb5L6e4dz22
-	lMm+ryNyTTzTSLBLz2HIaAV3XhLvoRVUPOIK2UpAo2opIazWo7mPL79kUrrgFIgf9zIID+eog8R
-	uMa63T30pAnpooFWCRWVJxFjqGYZ+Rp9cQfiP3fDgB+ddfqYkUiuqOSbadlqtXBjAijN7vBH147
-	/+XZedD4ZkQ0fLOTKwsECsvPzMghxVmek6NY5kG2UbfRAYQbVlpIVCpsybh80w+1vZrRoY3Kemq
-	tihXk5yZpDqiF9yX0VSWSjFGnfemYXYd0vMKcl1LvpKTM1MQO8yX39cbNxuPrYktMC/a6PkVGai
-	jHyaYTvQcJ320qEecRKS1t/g1ofWF56lAlTriAXz99zdHJrgiFlDWifA1bd9SwCvVcxONbRhnHJ
-	b6t4ElkofWwZRdTNT6gTIxGvYWDf1vzjUHIcQxIwyJm2YqyS8ZnOMLviqrRqRSpYGSzX9w95fvP
-	fAcy0wXOGaiOL+mKmac+BtAYUE3/iLNUegzraTw74dVYr3fZ
-X-Received: by 2002:a05:600c:c0cf:b0:4ba:4928:8aec with SMTP id 5b1f17b1804b1-4bb4e283f7dmr11079755e9.9.1794435689714;
-        Wed, 11 Nov 2026 14:21:29 -0800 (PST)
-Received: from localhost ([5.83.201.131])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4ba08e35e44sm78893405e9.1.2026.11.11.14.21.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 14:21:27 -0800 (PST)
-From: Colin Ian King <colin.i.king@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>,
-	linux-pm@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH][next] power: supply: Kconfig: Fix two spelling mistakes
-Date: Wed, 11 Nov 2026 22:21:24 +0000
-Message-ID: <20261111222124.1035303-1-colin.i.king@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R3pZgORl
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77ECC1F00A05;
+	Wed, 11 Nov 2026 22:45:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794437139;
+	bh=bTNRrDyJIaQzdjvKuykbPAaKt2GSUHxJV8jWSJimVFY=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=R3pZgORlFaXTx2QdOC7R+40DS85tapWRsKWDW73ehK8H+6O6ri1GVPiLnHSADM6R6
+	 NVlPZ8gjnruhlVfWHxVWdbYl+BXT10VMOxRXyi+XroCHWY8NB+iGVLgVcIy2ydHymi
+	 LUpKGPP33QL1h2gPPSzp4BqqXxF8ENv5qfkWZFyGiRyBNPtdWxNX8g0nMEcIVWxT8R
+	 mtwkozKxUH6SXatGn/vNbQNQaNc4XVxyTrAFz1anW7y5Bdi6hjKID8W87041VErtua
+	 gZFQxISflM36ayVV95nYbtz/c9pZAoSQt7i6aRl/taaNzEgauBYGzHY9OE/welk1P8
+	 ZlQjbBz996ZhQ==
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -95,39 +48,160 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 11 Nov 2026 23:45:23 +0100
+Message-Id: <DMSQVECFDJK0.2G5WLV9WPQN3M@kernel.org>
+Subject: Re: [PATCH v5 1/3] rust: add runtime PM support
+Cc: <ojeda@kernel.org>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+ <aliceryhl@google.com>, <boqun@kernel.org>, <gary@garyguo.net>,
+ <bjorn3_gh@protonmail.com>, <lossin@kernel.org>, <a.hindborg@kernel.org>,
+ <tmgross@umich.edu>, <daniel.almeida@collabora.com>,
+ <boris.brezillon@collabora.com>, <work@onurozkan.dev>,
+ <samitolvanen@google.com>, <acourbot@nvidia.com>,
+ <rust-for-linux@vger.kernel.org>, <driver-core@lists.linux.dev>,
+ <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+To: "Beata Michalska" <beata.michalska@arm.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20261026120523.526942-1-beata.michalska@arm.com>
+ <20261026120523.526942-2-beata.michalska@arm.com>
+ <DMNFI31C8X12.3L2J0GKKNJN81@kernel.org> <avTT5VuspuFKbnBv@arm.com>
+In-Reply-To: <avTT5VuspuFKbnBv@arm.com>
 
-There are a couple of spelling mistakes in the Kconfig text, fix them.
+On Wed Nov 11, 2026 at 9:45 PM CET, Beata Michalska wrote:
+> On Thu, Nov 05, 2026 at 05:47:28PM +0100, Danilo Krummrich wrote:
+>> On Mon Oct 26, 2026 at 1:05 PM CET, Beata Michalska wrote:
+>> > +#[vtable]
+>> > +pub trait PMOps: Sized {
+>> > +    /// The bus adapter that installs the generated PM ops.
+>> > +    type Adapter: driver::DriverLayout + 'static;
+>> > +
+>> > +    /// Type of the bound bus device passed to runtime PM callbacks.
+>> > +    type DeviceType: AsBusDevice<device::Bound>;
+>> > +
+>> > +    /// Type of the payload moved through runtime PM transitions.
+>> > +    type RuntimePayloadType: Send + 'static;
+>>=20
+>> I got back to this type after writing the below, because at first I thou=
+ght this
+>> is purely the data type that is cycled through suspend() and resume().
+>>=20
+>> However, reading further this is currently the Registration's private da=
+ta. This
+>> won't work. The Registration's private data must not require 'static as =
+we need
+>> device resources in this data.
+>>=20
+>> So, there should be at least two separate types:
+>>=20
+>>   (1) The private data of pm::Registration.
+>>=20
+>>   (2) An object that is created and returned by suspend() and passed by =
+value to
+>>       resume(), so it can store e.g. reverse guard types (see below).
+>>=20
+>> This should also get us rid of the PMPayload magic.
+>>=20
+> The `'static' lifetime is definitely a shortsighted idea on my side.
+> Splitting the data does seem reasonable, though I'm not sure how that wou=
+ld allow
+> us to get rid of moving around the `PMPayload`, as this is what I assume =
+you
+> are referring to by 'magic'. The pm framework still needs to keep the cal=
+lback
+> data between the transitions. Also I am not convinced the pm should disti=
+nguish
+> between suspend and resume data - my thinking was it should be handled by=
+ the
+> driver. We just need 'an' object to move back and forth.
 
-Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
----
- drivers/power/supply/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+For data that does outlive all the suspend/resume cycles (i.e. data that li=
+ves
+as long as the pm::Registration), it should go into pm::Ops::RegistrationDa=
+ta.
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 16d0a38b41b7..1ab617326791 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -246,7 +246,7 @@ config BATTERY_S2MU005
- 	select REGMAP_I2C
- 	help
- 	  Say Y to enable support for the Samsung S2MU005 PMIC integrated
--	  fuel gauge, which works indepenently of the PMIC battery charger
-+	  fuel gauge, which works independently of the PMIC battery charger
- 	  counterpart, and reports battery metrics.
- 
- 	  This driver, if built as a module, will be called s2mu005-fuel-gauge.
-@@ -463,7 +463,7 @@ config BATTERY_MAX17042
- 	  MAX17042 is fuel-gauge systems for lithium-ion (Li+) batteries
- 	  in handheld and portable equipment. The MAX17042 is configured
- 	  to operate with a single lithium cell. MAX8997 and MAX8966 are
--	  multi-function devices that include fuel gauages that are compatible
-+	  multi-function devices that include fuel gauges that are compatible
- 	  with MAX17042.
- 	  Supported devices: max8966, max8997, max17042, max17047, max17050,
- 	  max17055, max77693, max77849.
--- 
-2.55.0
+For Tyr this would e.g. be:
 
+	let runtime_payload =3D TyrPmRegistrationData {
+	    clks: Clocks {
+	        core: core_clk,
+	        stacks: stacks_clk,
+	        coregroup: coregroup_clk,
+	    },
+	    _regulators: Regulators {
+	        _mali: mali_regulator,
+	        _sram: sram_regulator,
+	    },
+	};
+
+pm::Ops::SuspendData and pm::Ops::ResumeData (if needed) should only live
+throughout suspend and resume, so they can carry e.g. reverse guard types s=
+uch
+as pci::DeviceDisableGuard, which should only live during a a suspend (it c=
+an't
+live in resume data for obvious reasons, so a single type is not sufficient=
+).
+
+If we have both, pm::Ops::SuspendData and pm::Ops::ResumeData, nothing prev=
+ents
+drivers to make those types share fields or even be identical, so you can s=
+till
+cycle things around. Although I don't really see what would be the use case=
+ of
+that.
+
+I assume that my below function signature caused some confusion, because I
+messed it up. What I actually meant is:
+
+	fn runtime_resume<'a>(
+	    dev: &Self::DeviceType,
+	    reg_data: Self::RegistrationData<'>,
+	    suspended: Self::SuspendData<'a>,
+	) -> Result<(), (Self::SuspendData<'a>, Error)>;
+
+>> > +
+>> > +    /// Runtime resume callback.
+>>=20
+>> It would be good to expand this doc-comment explaining the semantics of
+>> RuntimePayloadType.
+>>=20
+>> > +    fn runtime_resume<'a>(
+>> > +        _dev: &'a Self::DeviceType,
+>> > +        _payload: Self::RuntimePayloadType,
+>> > +    ) -> PMCallbackResult<Self::RuntimePayloadType> {
+>> > +        build_error!(VTABLE_DEFAULT_ERROR)
+>> > +    }
+>> > +
+>> > +    /// Runtime suspend callback.
+>> > +    fn runtime_suspend<'a>(
+>> > +        _dev: &'a Self::DeviceType,
+>> > +        _payload: Self::RuntimePayloadType,
+>> > +    ) -> PMCallbackResult<Self::RuntimePayloadType> {
+>> > +        build_error!(VTABLE_DEFAULT_ERROR)
+>> > +    }
+>>=20
+>> I think for Tyr it so far is sufficient to have a single RuntimePayloadT=
+ype that
+>> keeps cycling through the callbacks, but there will be use-cases where t=
+he types
+>> differ.
+>>=20
+>> For instance, for a PCI driver you will have DeviceDisableGuard stored i=
+n
+>> suspend() and then you'll want to drop it in resume() so the device gets=
+ enabled
+>> again.
+>>=20
+>> We should also avoid requiring 'static, as reverse guards will borrow th=
+e
+>> regular guard, e.g. pci::DeviceDisableGuard will borrow from
+>> pci::DeviceEnableGuard.
+>>=20
+>> For runtime_resume() I think of something like:
+>>=20
+>> 	fn runtime_resume<'a>(
+>> 	    dev: &Self::DeviceType,
+>> 	    suspended: Self::SuspendData<'a>,
+>> 	) -> Result<(), (Self::SuspendData<'a>, Error)>;
+>>=20
