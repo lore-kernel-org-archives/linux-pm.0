@@ -1,110 +1,110 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794399718;
-	b=hVCy337gKoPnUNMLtkyBAAomSZca/+ZQFesEAuUjYjyWZyrYz14Uq1IIuKJqWG1QjBZS
-	 IAEUsjno3N2M1iSNUmGpq4qK5x0+vaYy27LzbzHI8mvTNM9WV0j1rY4QAc+cd3Ya3MMy+
-	 wEOfAdDSjCJpAUycqmtVya1s1O+TIFzEdpyoP7PgZkEvbHxO/P0UNGVWfH5a2/c8F879F
-	 2Ca66nFnKu3huf5ofhl8Eq84nLMlrPSAN/cGu5ADKoMBxbjk2gdXEwJXBGbq+mHKZ76uw
-	 rhVE0lBtO+s/cUzz9wgsiNIjq2DCax/XDG2hWUDGX7PLwxLZLacUjMckX4s42MsdIcg==
+	t=1794400049;
+	b=exBvVEo7ZwNQ2iZk4nfORcLztzzoquq80ekqZGN2f8BhMkEgMyXRqngy8NvpRjCV34ax
+	 eI9vGjeOLeeohrfQ1l9dWdCldGIFwF2siFtu7S9vNzH/lIJwPZ/oETfDH1nRvqQYHfAde
+	 DLbdjUygIu6EanE0T4DpASUuh6ffASw/gZAgTtS8qU9k5aL8Ldf2mtvhIrh2+oKg0myPE
+	 8pIOw4RGut0dgE1Kmv9hLo0dATTTeY1Iau87f6ZzsnWalz+WCCrnQxkWOpTypKB5pXdKR
+	 k9EpBf3cxV8tB3VDQGGRU8vCPUONJcBqTs2tcs0VgS2Q4GwUBkhmq0ydn6W4QUnfbuQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794399718;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794400049;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Date:From:
 	 To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=rEnsFZzlpyzFwAmK5owjX1ORB7VURNjWd4s4pQhdDGM=;
-	b=EIU9w6YGvllJP70W4GHnYAxSbWVNXPU/hx6cQSeRUg+5U++urH18FqHXt8J6Gl9xhBgg
-	 I9LVgS+Ku+Fey2Yi4vafzd37UgpWf/Lautv3w1ZMbzLHHY+AxydMLnv5fZGSZ8FJ+cW+q
-	 Of2yKufFWd8s3J+0F1mYLhqW/MV4A91ynDdGJsKt4sLI/qdviwx/RyF72my7vwUcryx2x
-	 nNE8VSGJKGufMQ+Ftc7EG7ztzAAeiAPx3PBErteyhAbg03O7YbVhSNdAugCD1XDlpajVL
-	 zD0dZeZXtP4nBe2vUUtxUKYBTjM/1QiCi2L5G1dY15L3+Wyh/LRCXMQhefjIASZoECg==
+	 Content-Disposition:In-Reply-To:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-GUID:X-Authority-Analysis:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=svc0vgDYFwBl6hVKJjHTfBuPN1VEmv+TcUmZfTB8SLw=;
+	b=UckIFo8e+BpbB9GcvBxDp+Uh0DX2qY7PHO2hxkIQ29ARpbGzKVPKG279KkAzOUsV2TEU
+	 U79rQ6M4zykBQ2WbunnUSdJvh72okMELnvNvJvqPbpeYPTn+lnh09YhTTbXX8cMPHl9Fc
+	 sk/4Xi3MgqechPob77aKsX0vBtgFY7ALIW/jgvW8nsiacdAb7kZ3Lpgvn14Rmpbiz5PUZ
+	 7x4KTY0G0jg8tHm8gB/agtpsLP8yi4FCXcUIvK3v8/Wlg8/8MzsuMi9xNXsWT6Jgz4qTo
+	 TH9Ihl7GxfBykoKzxb1S3hDJFXiVbSS+htTwKQbySguoTcsZTmOPnDAUYQPlysHQ/Uw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ZyUigaQu;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=euolciG4;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=oLJJPizK;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=JRMEQPkP;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF0F8606A31C
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 12:21:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DF0F8606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15913606A31C
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 12:27:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 15913606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ZyUigaQu;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=euolciG4
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ABBVSHL864189
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 12:21:57 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=oLJJPizK;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=JRMEQPkP
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ABCQ4XR2317541
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 12:27:28 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=rEnsFZzlpyzFwAmK5owjX1OR
-	B7VURNjWd4s4pQhdDGM=; b=ZyUigaQuy41E2c5G19su31Xc/jqb/gKyPXDjcewM
-	QwreyS6yEc363VV99LD2H6rJCX8FpJiGd2P4CpYa8q8f0OKgeYtn+nhP7BgtuWZi
-	go1ccZmztAwnrFOAY3kg/d+fbLt/ZNSntbPhWuW87S3P2yISkswGgkRBMfFgcpOf
-	VxVRbhpAZasJQeAL016IKvrI7SgfodIE8UiApbrxtPn6lqJAiZXcY2Vur4Yj6m0r
-	wPKa+0J/Yxj8SIi55sMdehrXNaDn/q0x6JN/m2AaR2TnvGUX4Cz2c9rb0tGBrHp2
-	fpGItqBGcD+AwRAhZoYkWdffk/lGeh34/tOPkEHOSMqTow==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hvfawj37k-1
+	:references:subject:to; s=qcppdkim1; bh=svc0vgDYFwBl6hVKJjHTfBuP
+	N1VEmv+TcUmZfTB8SLw=; b=oLJJPizKWuoveTH+O48KXBTXUn6nPwdC+PcZb6af
+	2MIm/MSSCiV2Z7cQVVFtunwvcEdr6K/hzA20MNrH2YIWYrIWOpLfNOW1faslZqtY
+	sPg1xVZG+xjHPpoyJfG3/XkoPaKP2vhMXLY1VJyYB2aOlpKqCN/oC3c9+6J24r7K
+	c4QTWMLg9jEHmRw14dAxUj0iawoTcFsrkHcd5FBApgLe8BeKs/mHzKfDpuWNJ299
+	+cfCvBgXLMArH0BywroWC00xK7ybV4NkZZZ8ZrFOX0OSF+w5tSJv9wJ+p1ZZUs+l
+	D4mYtrUIbLH8O593Nv+wEjGGvb+4bHuawmH6RRFZCJo3UQ==
+Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hvdnmajd3-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 12:21:56 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-3ade5b3ae97so2475292a91.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 04:21:56 -0800 (PST)
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 12:27:27 +0000 (GMT)
+Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-37628596fc9so1479237eec.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 04:27:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794399716; x=1795004516; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1794400047; x=1795004847; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=rEnsFZzlpyzFwAmK5owjX1ORB7VURNjWd4s4pQhdDGM=;
-        b=euolciG4d08G51U366Vxf2N2vdn1HVGehtNzI/kQWrRCCXpwY+lndXfMvm7PkzYx6t
-         yjX+IzvscRt1Hbw+8xnxMGUYXqYGx6OEyVzwLFThiVjXX9UYz/WkQ3Y5mjyI3XaX75ip
-         lp9yr7K7r+hRDtRm5fAFa1y88M2A3X2zqg7J9++qSnUOT32g+QsnJquk8xhDTAfdre5i
-         u9ldpKVJ4RbNvcu6+yntJuyulXQsJISJlZ+0fCmmrDsPlO+iqCTZnN/RSPDslsxwOxZe
-         TzIo/aXf44nGMg5Wg0yr5Zc2gb183ytmPCtX7KpEugsQNv3+k8rvqdnza56lTrnXsBIR
-         5wVA==
+        bh=svc0vgDYFwBl6hVKJjHTfBuPN1VEmv+TcUmZfTB8SLw=;
+        b=JRMEQPkPTfTog7fWMXYVgDVHQxqR4RXPnYOLwDR2FDnPIOEYyfSS6ixuDsBj1wWHGL
+         rudH9KQ+YUlGLh2n45voJ8T6gl43svmXHqJ/s+so8tg7/sMCaFsBoe/NxuXhlfo3niDU
+         dHgZyeJa3hgCM7RtbXAlW8kFeVX/iD7WdBKdGbvyRYCRi/Ggh5jI/jO4FjI+sMMQkNLp
+         HTupJcS7Q/RdLCMPK2iNE11VWydiQHJl5dmo7oORbshLHYNtpvhDj8Ql3vHjRJ+6r6sV
+         L7WLyygbP5MFVIi3DgVNs6Eqpxuq6F+kEhL9UtTqUwU4GP/FIipngZ+l9H3vP9gRSFT4
+         VdPA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794399716; x=1795004516;
+        d=1e100.net; s=20260707; t=1794400047; x=1795004847;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=rEnsFZzlpyzFwAmK5owjX1ORB7VURNjWd4s4pQhdDGM=;
-        b=nZIkN3QCkWg+muTw449mHUjEzAdvwZvKgCc7J8DUXzgHVAgsWYeCyoQj3CMuxaGSXm
-         WjBdARNdI3zZMzsXrtqQda6i0hBO+Ek/s6j+fV5R3Gx4ZunuydblCNUntf7ytgXZ+PDo
-         2+Bme/NbJ+LQzRzLBoGvoEGWaHHnMjcAkFIJYa++IVjQEWdrCk6XbLY4QrNUed+01jL/
-         xYx6fOeP5wqH/7EhSajX2vihFcr8ITxAOvKWUqS7vYoSSb699+mgAPen6XSdTrTY9MQb
-         QzEK3TGuAA6vNeSwQt4RcjYabYUjm5jUGL05/eI+6PuGK1LeX0UPazz6GSyFt4gdKI/a
-         TPFg==
-X-Forwarded-Encrypted: i=1; AL+hErEIZLfpdk3AzLoGtRJT+q7D7gko8hd+PyPR3Ez2VR3xpQtM6qaAOgSalIiLMrhzlbgMbeVGpXuBpg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z85GSA20jpsWyPYfVpxYa4vmzHrbdXirwMv6P7m36NYpwqnDg9L
-	FhDkNzEBvHRmtEzUDP2dQGCmRGJlBvqxKYkp5Fi/vtsVTfwzWbeLZ8rwelaO7qIIdIJiCCaKXoh
-	ZcBOAFXsLsW6daZydCeA5NssWfqokrdr5obwCFMg4SJyWiOajIU8EJt1jBwsgEw==
-X-Gm-Gg: AYBFou2PDOtOZqLMiP6M9ZASQc/nQhMuZNf50KbiOAhp56adNXyQQgBVJGwUYVWUMBw
-	+3wbwr2WTMl+eekUI0O/qoGAQrprKHFo82BkGlS61lIBKLTcLiFjGqaVyqB04WFbaiBzI4qD7o7
-	nH4bgegk5ewUpZky1yk67rw+iFMTpTNhv3NxfTX1cnElHlUJ1FRErET1tOAZ05zjSRICw1ZFIGf
-	ztpFmB5doauI0BmBFK7psO7AIzjOlVKKrM4eLO676YgJzcc6vLay0VkXjh4T4ZrEK8UQMLm1zDb
-	HDk8tHkbltU584NvXhm8CrGyxMADvju0cDtnlMgz+/Cnv9Ne8HH0bzlCOTByeJblIzY53NomY48
-	aFOMrsidTUOxNZDGtsrRVllsGOxo/Vw0peO+6+z6G4gEh6a/5xpxMV8KypBYf0Qy3YzL8XrdQmW
-	QpCcAcvwqaGDw7E0xYujlCwZs/hGT+Xv/AaiJuG58hCMRNoFA4vBLOcS/ZxehHlno=
-X-Received: by 2002:a17:90b:5345:b0:3b0:e388:d9c9 with SMTP id 98e67ed59e1d1-3b182edecf2mr1500144a91.12.1794399716186;
-        Wed, 11 Nov 2026 04:21:56 -0800 (PST)
-X-Received: by 2002:a17:90b:5345:b0:3b0:e388:d9c9 with SMTP id 98e67ed59e1d1-3b182edecf2mr1500126a91.12.1794399715646;
-        Wed, 11 Nov 2026 04:21:55 -0800 (PST)
+        bh=svc0vgDYFwBl6hVKJjHTfBuPN1VEmv+TcUmZfTB8SLw=;
+        b=l/AwkYg2noya5B0cKm2V/VKFgzB/mU++UI3eA1d8EO1vz2sGdmPiGp3s4qsEOKWdov
+         YQrsj13Zc8JhnDoIBIMI97B+pZHWCVmKKDMwBp7zfxdnbeOUNbLn4Nb3ZPjrZcnRQdek
+         9gx1tGzYMFCVYaJIOqx/WgcJSuf5qvP8uR/WqpqvSdzVBO8gPBEgwvVQ2t0BQpfFrFek
+         h8ATo8iy1+Ykay103btRadKt9Q3/yL38a9QjQk/jEbZ0p/HmUBPs2i1Ao3vS+se0a/uc
+         AWuoeITH2rTVn053qRi8YrUxDu9p1scyT2H82QUsikqLK1M7T1Wks7AVpJoGlfBpuOe3
+         jrcQ==
+X-Forwarded-Encrypted: i=1; AL+hErGPbVq7Y1D8AeOS/D5GLuXjZLzZkoa7LNqacPTirb0a/n34OP3N9jzCbMzm6s3LeMLo8WwmnqHVUg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+kTuhLbmj/1znLLrG8K2Z18eLal+KPxx0FRI6mYuYLj8De/Zbz
+	sSXZkxGG3zRAhMDSh8WNfaPf5yZytV2B5JsTInaTAYP5XulcRgQYnaDSiG31blQLon1ncDq3EPw
+	tNc85zn5Q3IsrHvE5DF9uVZykJs9f0OhinceB0i+J+g3xLBZdmrlzYezisqFURw==
+X-Gm-Gg: AYBFou1MbGcZDYNjadPpmOskbIaS8ZEmzV6+3Yzds1ZBuRaHuhpgQN+iO6QrCnIx8P1
+	2rgRnLjWlkY2w1mRa9Ek2d+H2r/9Axb3tstKWwKj16QUO/n4HATVyBlDTXfuCqGi2/V+m9uMiJg
+	OhG7fQSRkgoA6vx3AvE9Xj4HsaQSXRxsaXd0CCmopvmfuji9woERvmwLRKvSQV2MuEf9Ba0+cWp
+	MV0KUNVYzohip80pOrYeKcL9stSXRT5cGuNbOlqK0sJJ2trYPQwVyPH0sb+Ugdb7efqYQUU34ZU
+	iDGluu8NOz8rPAsAHJ3VswP4Ow5IFokE5OzgOqBELOIOb/g5dnCErKkYnd5pSs4WHvQYkY2KXcW
+	kUvg83YQ8vw7UEAuEKkL0e8jeda/gmUzvQ+bf05XSqpJ/mx2/G2zuzAU/UZa+gLtKiwVwmEGNeJ
+	IVMFPxcYM2RAvDS7jtLzEl3Jf3iEiSTkeruLRoPKBwvUXYZRZXtn+2RKd9VePTj/Dn
+X-Received: by 2002:a05:693c:41da:20b0:36a:79e7:2fd with SMTP id 5a478bee46e88-3768721410bmr2952379eec.40.1794400046640;
+        Wed, 11 Nov 2026 04:27:26 -0800 (PST)
+X-Received: by 2002:a05:693c:41da:20b0:36a:79e7:2fd with SMTP id 5a478bee46e88-3768721410bmr2952343eec.40.1794400045893;
+        Wed, 11 Nov 2026 04:27:25 -0800 (PST)
 Received: from hu-anancv-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b17e0d550dsm4315816a91.8.2026.11.11.04.21.51
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3766146551asm7902709eec.1.2026.11.11.04.27.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 04:21:55 -0800 (PST)
-Date: Wed, 11 Nov 2026 17:51:49 +0530
+        Wed, 11 Nov 2026 04:27:25 -0800 (PST)
+Date: Wed, 11 Nov 2026 17:57:19 +0530
 From: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: Vincent Guittot <vincent.guittot@linaro.org>,
         Sudeep Holla <sudeep.holla@kernel.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -118,10 +118,10 @@ Cc: Vincent Guittot <vincent.guittot@linaro.org>,
         Oleg Keri <okerixx@gmail.com>
 Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to
  non-boost freq on boost disable
-Message-ID: <avRd3YVDXs26hrow@hu-anancv-blr.qualcomm.com>
+Message-ID: <avRfJ8ikcDJsfrqO@hu-anancv-blr.qualcomm.com>
 References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
  <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
- <41f328b2-0825-4023-b86c-48136ba6ecd2@oss.qualcomm.com>
+ <33d9cbb5-d4fb-4f16-b63e-5ae89051952a@arm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -133,129 +133,105 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <41f328b2-0825-4023-b86c-48136ba6ecd2@oss.qualcomm.com>
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTExMDA0OSBTYWx0ZWRfXx1JLhYOnyztP
- mQq7eecZF0D6lukfCCAREgCJpxJcyfE8Z7VOL1Yt7RHel3d83qymdZNsuj2L+Biq0vwsnsIQqWN
- 1AUrIdaE7ZMK69gRiEaMB4FrRpw9qPE=
-X-Proofpoint-ORIG-GUID: Lo-Znbgh1pTGiAg12gE3GVfYQFhpdPIZ
-X-Proofpoint-GUID: Lo-Znbgh1pTGiAg12gE3GVfYQFhpdPIZ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTExMDA0OSBTYWx0ZWRfXzAF44d6k6Jc5
- HsQiteuykrdvI6L9wW/OxDih4i87DpFELIN7XPl0Iv3Yt1cpmmWkbR34soet/3ej+qqc5Q7ONvq
- KM6FRkNlyd/NahXoZiCqbZ1l5TaKbpPZV8rPQFcOBUoI9j+5ROu42E9UTXk9z/sXM9u6gdfeUms
- Eto3wbP+HZDnSwh/SABrTfOeC4TXU2x21DNbaJaw1d5sVxbUfgxt7atrzZmpGmrL6Ogu/O1FZQ/
- TwtBo9/QWvo2ORy0HeBl0F/PR7GFTKWwrVQqDyOcLuCFa6I5uhn2YwXKNsLhGB11E3ogYUZlB1s
- kiMGlkrJ05lszZcHWcg8ufIxMgqNzv9KklqfXPTOwfPL4lXm8dxRLraK7d8gd1gElgrLpXUBc4/
- W7kxzFAUetb+K+huila8bKrzisKAtOuh+/VlUIJKq9rOsWShMovTusWFRFSqUwif+qIumECmYxM
- 4CTKdI0wNc2PkfSbC0w==
-X-Authority-Analysis: v=2.4 cv=CZadd7rl c=1 sm=1 tr=0 ts=6af45de4 cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+In-Reply-To: <33d9cbb5-d4fb-4f16-b63e-5ae89051952a@arm.com>
+X-Proofpoint-ORIG-GUID: hCIrPUA-GTlmtt5SGzGMawVKwS5YGJBr
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTExMDA0OSBTYWx0ZWRfXwzU8GVJ/DRVX
+ 6/UO3gTmU12/iDCm8d/om1AH2Al7LoWJ6gQTMFVje+PNLiPjtfPYHt+lHFtr+tcWH6YN3ZVeXXP
+ XNQUyNHJ9abQ+x3kU8KoU9ql7oVZ06k=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTExMDA0OSBTYWx0ZWRfX4ZeQ4ddgjMTB
+ 06+DW7iQV86DDB2V3KkhmnrgteTthTz99DmpdEX55hh/LOZCgju1Sob/jBNKH8L3xF+IMNN0dYo
+ N8S8IzCD89m8UEQ874ciuhV8cfJtNDBb/NEo93apvwA5CTZP0RSqBlZMjFBEerVuy0i1WMSO2xJ
+ QHTPc/D0pTo4+0GU4SM5t7q1EOUZM9ZfIKmCgODowfXGQG55lU8wtym5HjvtlLi/A3jFja/HE/a
+ bxm+UrzV7aVeFrt1+laoi0Iq+mvDOFunrDMhDqOos5tV9NTAjGgEb5Gn/RxF8LX2G92p/CdO0tr
+ MEy/XSL3OtSrlHz+V15do9SYwnUj/T1hPg4AiyV+K6nVfp1vuJ3BS3NNmGwZ5593buBrovNlb9z
+ XRLp3xrRvOheEPGJvhN6ZLXt87fmyEa9bJOIb5sdg6VfJ59vNSkrNX7MV6SPu2cbcY0UiqMSYaB
+ sdX8AsHPeuiZVtBM85A==
+X-Proofpoint-GUID: hCIrPUA-GTlmtt5SGzGMawVKwS5YGJBr
+X-Authority-Analysis: v=2.4 cv=MpzHeGae c=1 sm=1 tr=0 ts=6af45f2f cx=c_pps
+ a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=CKxPtk3aFwTzAyx1bQcA:9 a=CjuIK1q_8ugA:10 a=rl5im9kqc5Lf4LNbBjHf:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=EUspDBNiAAAA:8 a=z0i6psv0inyxDjA-2G0A:9 a=CjuIK1q_8ugA:10
+ a=bBxd6f-gb0O0v-kibOvt:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-11_02,2026-11-06_01,2025-10-01_01
+ definitions=2026-11-11_02,2026-11-11_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0
- phishscore=0 adultscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ bulkscore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0 phishscore=0
+ suspectscore=0 spamscore=0 malwarescore=0 priorityscore=1501 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611110049
 
-Hi Zhongqiu,
+Hi Dietmar,
 
-On Sun, Oct 11, 2026 at 10:17:14PM +0800, Zhongqiu Han wrote:
-> Patch 2/2 currently depends on a helper introduced by patch 1/2, which
-> prevents it from being backported independently. Since 2/2 is an
-> independent fix that should be backported to stable on its own, I think
-> it should be placed before patch 1/2 in the series and kept self
-> contained.
-
-The idea was that currently patch 2/2 would serve no actual value without the
-fix in patch 1/2, and that is why it was the second one. But yes, we cannot
-fix 1/2 and leave 2/2 as is, which would turn the current benign issue to an
-actual problem, so the order should be probably reversed. I'll work on that.
-
-> To avoid introducing a new member that is only used by frequency-table
-> drivers, please consider the following implementation instead:
-> 
-> If there are boost entries in the frequency table, the table is the only
-> source of cpuinfo.max_freq, so let cpufreq_frequency_table_cpuinfo() set
-> it unconditionally in that case.
-> 
-> 
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index ea99464..8c8bad2 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -33,14 +33,17 @@ int cpufreq_frequency_table_cpuinfo(struct
-> cpufreq_policy *policy)
->  	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
->  	unsigned int min_freq = ~0;
->  	unsigned int max_freq = 0;
-> +	bool has_boost = false;
->  	unsigned int freq, i;
-> 
->  	cpufreq_for_each_valid_entry_idx(pos, table, i) {
->  		freq = pos->frequency;
-> 
-> -		if ((!cpufreq_boost_enabled() || !policy->boost_enabled)
-> -		    && (pos->flags & CPUFREQ_BOOST_FREQ))
-> -			continue;
-> +		if (pos->flags & CPUFREQ_BOOST_FREQ) {
-> +			has_boost = true;
-> +			if (!cpufreq_boost_enabled() || !policy->boost_enabled)
-> +				continue;
-> +		}
-> 
->  		pr_debug("table entry %u: %u kHz\n", i, freq);
->  		if (freq < min_freq)
-> @@ -50,17 +53,20 @@ int cpufreq_frequency_table_cpuinfo(struct
-> cpufreq_policy *policy)
->  	}
-> 
->  	policy->cpuinfo.min_freq = min_freq;
-> +
-> +	if (min_freq == ~0)
-> +		return -EINVAL;
-> +
->  	/*
->  	 * If the driver has set its own cpuinfo.max_freq above max_freq, leave
-> -	 * it as is.
-> +	 * it as is.  This does not apply to tables with boost entries, because
-> +	 * the table is the only source of cpuinfo.max_freq then and it needs
-> +	 * to go down again when boost is disabled.
->  	 */
-> -	if (policy->cpuinfo.max_freq < max_freq)
-> +	if (has_boost || policy->cpuinfo.max_freq < max_freq)
->  		policy->cpuinfo.max_freq = max_freq;
-> 
-> -	if (min_freq == ~0)
-> -		return -EINVAL;
-> -	else
-> -		return 0;
-> +	return 0;
->  }
-> 
->  int cpufreq_frequency_table_verify(struct cpufreq_policy_data *policy)
-> 
-> 
-> >   	/* in 10^(-9) s = nanoseconds */
-> >   	unsigned int		transition_latency;
-> > @@ -791,6 +792,8 @@ struct cpufreq_frequency_table {
-> >   int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy);
-> > +bool policy_has_boost_freq(struct cpufreq_policy *policy);
+On Mon, Oct 12, 2026 at 01:42:39AM +0200, Dietmar Eggemann wrote:
+> On 29.09.26 13:38, Ananthu C V wrote:
+> > Commit 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq directly if
+> > max boost is known") introduced a guard for cpuinfo max updates to only
+> > increase, to preserve driver-set values above the freq table maximum.
+> > Later commit db80ad776cd2 ("cpufreq: Remove driver default policy->min/max
+> > init") dropped the 'policy->max = max_freq' assignment from
+> > cpufreq_frequency_table_cpuinfo, leaving that one-way-guard to be the only
+> > path for cpuinfo max and consequently policy max to be updated, causing
+> > both values to be stuck at boost frequency even when boost is disabled.
+> > 
+> > Unconditionally track the highest non-boost frequency (max_base_freq)
+> > in the freq table. If boost frequencies are available, use the highest
+> > frequency from the table/max_base_freq instead of cpuinfo->max_freq to
+> > control boost values, so the value can decrease again when boost is
+> > disabled.
+> > 
+> > Fixes: db80ad776cd2 ("cpufreq: Remove driver default policy->min/max init")
+> > Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
+> > ---
+> >  drivers/cpufreq/cpufreq.c    | 16 +++++++++++++++-
+> >  drivers/cpufreq/freq_table.c |  9 ++++++++-
+> >  include/linux/cpufreq.h      |  3 +++
+> >  3 files changed, 26 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index 96515880b4ac..5e6afb6f8826 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -574,6 +574,8 @@ static ssize_t show_local_boost(struct cpufreq_policy *policy, char *buf)
+> >  
+> >  static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
+> >  {
+> > +	unsigned int max_freq;
+> > +	unsigned int max_table_freq;
+> >  	int ret;
+> >  
+> >  	if (policy->boost_enabled == enable)
+> > @@ -587,7 +589,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
+> >  		return ret;
+> >  	}
+> >  
+> > -	ret = freq_qos_update_request(&policy->boost_freq_req, policy->cpuinfo.max_freq);
+> > +	max_table_freq = cpufreq_frequency_table_max(policy);
 > > +
-> >   int cpufreq_frequency_table_verify(struct cpufreq_policy_data *policy);
-> >   int cpufreq_generic_frequency_table_verify(struct cpufreq_policy_data *policy);
+> > +	if (policy_has_boost_freq(policy)) {
+> > +		max_freq = enable ? max_table_freq : policy->cpuinfo.max_base_freq;
+> > +
+> > +		if (!max_freq)
+> > +			/* when the freq table contains only boost frequencies */
+> > +			max_freq = max_table_freq;
+> > +	} else {
+> > +		max_freq = policy->cpuinfo.max_freq;
+> > +	}
+> > +
+> > +	ret = freq_qos_update_request(&policy->boost_freq_req, max_freq);
+> 
+> This looks pretty convoluted. You have to find the correct freq argument
+> for freq_qos_update_request() for freq_table drivers but work around
+> this for e.g. the CPPC driver.
 
-I wanted more discussion on this part regarding finer implementation details
-and hence went with a working version, and I think I asked in the last revision
-thread regarding what are people's thoughts on this added field. I am also not
-keen on adding more fields, so this is useful suggestion. If we are to continue
-this implementation route, I'll keep this in mind, thanks.
-
-> Thx and BRs,
-> Zhongqiu Han
+We do need quite a bit of wrangling to account for every case, which is why I
+didn't like the idea of having to deal with all of this in core to begin with.
+My initial idea (revision 1) was to simply drop the one way guard from core
+and have the drivers deal with it in some way, but we wanted to keep it,
+I suppose. I am open for suggestions, but my guess is that if we have to keep
+implementing these fixes in core itself, it will be convoluted in one way or
+other.
 
 Best,
 Ananthu
