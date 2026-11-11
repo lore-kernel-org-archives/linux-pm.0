@@ -1,49 +1,112 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794389457;
-	b=UWxj0rlbdNVWmFo7CaXLpFf+g6yW2MOSCnESznlKZE4BIL1+4A7YNXbLc8KraUrb+USB
-	 y+uSeBr3zoXc551ZbJtiwisHBbtJY7b/bWrW71W5tCeM6IUQAMcf7eOZn+kPItFuVEqkt
-	 FMbNpj62LMomcOmSzCu48RISAabKfSE6jZ16p5SQKGd/II/veYadJ/G6NwTqwGS4/Yzpp
-	 oswMId0RhK7NL3D3ibqpMPg+A6m57ygyXa64k5Dh1DTSfGS1H1l28K/ESpcZrATvVHmGv
-	 0lZFm6wvVKOtFKadcT8Ma+LfRouW9k7zFlTuEH1bmj9DlNyiXXIsDd5B6iYAW+6Fszg==
+	t=1794391260;
+	b=QDkouGWL2SOova5vFxER3HTIAB0fHORG81LONr9RDSpexJSJF0QIDNn/LHtSTLWNZyio
+	 4lKD/FiiGHxJGuimVbO2Hl35aVF6WZ5IJbpBd37vB/yw7Z+6ZwIQRClZ5uY25PJ4GueRE
+	 GC+Cp7xMe6LQ7nqd/EtaetQNgiO/purB+gXycFQZES9OnF3vI7XiPnzL6XQvuHe0wgLfx
+	 T0gCkpJDhJ3S2PyKvXj1aADbmGIS14eRs8SWiQHJfgRCguriwUfc+BFIK50Q/MYBz2jcs
+	 5NeV2rN/Y5dj6OtqudvXc693FcHp/iUJvVGfYO9wmhhLmB176ZoySR2FVjpc/ZerJ/g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794389457;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=rI3fyWPikHC3KnbTk+u+776sCpBpqD6BG00/t5fbWDI=;
-	b=Jwji7JJDcMMHSZL1+hDYfXafpV4HlebVl6oUiES7Nx7GINC/UfNUiQmjuDUnOXmb0UmM
-	 yEt5luxEztMdmAh4Myfy7bXzUgOSMT+xJbh15IJXty/4kTxr2TitSgbr97lSJe0VjXdCp
-	 kY92pLAnzkDFu0EU7RQsbYXeU8Kc/qHNjkNq+eWFW36+ijWY/QjUMBr+9N6MkWRtj2rK8
-	 Xhfaf2TxAwy8CP0nMRLjH+VQ8E5akPiWuSL9fULvkBPCnsfsuL1BVbIvU4vfDOUsYRxWH
-	 CTDBaaAgT4vQtLCJLQxKMdQofvEUgnFxqmN2XsAMoBuIxS7S+wpa5Ul//gEr7Fyii9w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794391260;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:
+	 Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-GUID:X-Authority-Analysis:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=v6371ZwO/zAJsKINRttU2qdrq8Z8ZGN1i9eIzeAJUqc=;
+	b=JiF76p82tLej1aQhlMgkaITuGTyWcIaoLtKDMr2f+xdAyiUpfL5xJOKiT6IUbu8Huh1I
+	 CZpVihOyi5uu16CqP53XU3WxYrwpcG8Duablt/yqSGdiDaQHUpjM98iKxHsNuaMyG48+p
+	 HT/xsZwUTrDf4zqqw3s//xtivLFCuSNVJiv4DqtEVbfTDMcYXOk/UWzSWYq60JAc93UE8
+	 TqrPcLEv9Au6OdmNO1sfllW6dg86b6GOxjtLBzSiQat4bhPzWLoQst78hGpiwkDPb8Me1
+	 8VmzbXATjrsDh8eV8lt9uiANUIPLd2x45mNYSwJxBsZ9+HDaFmplmJnJNLOmayLW9FA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ki+k69Rv;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 803C360A3809;
-	Wed, 11 Nov 2026 09:30:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 803C360A3809
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=EgdJAR7y;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=cwFPhT6v;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18101606A33F
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 10:00:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 18101606A33F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ki+k69Rv
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 888971576;
-	Wed, 11 Nov 2026 01:30:52 -0800 (PST)
-Received: from [10.57.14.48] (unknown [10.57.14.48])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 404C93F673;
-	Wed, 11 Nov 2026 01:30:53 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794389455; bh=iQV6cbskz8rW4tIn0+/kGZ2A6niHv3407z7apgiZQPc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ki+k69Rv2i2f99td1C2vOKbmx0eIsxakkK4RJ9rTu6ArE+ObEarzlhaZiigTLSXWW
-	 WJCLwoPjFWnBeAf7cWMTQ8Tjw8ISg0hd+At2+G46C+msHf1QEykjG3p29Uw8epxIkV
-	 H6LLKNkRrr0brKEIvxtJNKG9JdjtT9we3LUwNM7o=
-Message-ID: <cdfaaf7d-8b7a-46d4-bf40-e0dc5300eb08@arm.com>
-Date: Wed, 11 Nov 2026 09:31:27 +0000
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=EgdJAR7y;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=cwFPhT6v
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AB5KKW31386397
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 10:00:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=v6371ZwO/zAJsKINRttU2q
+	drq8Z8ZGN1i9eIzeAJUqc=; b=EgdJAR7ymcJOO8bQxiHAAkLF5VE/0Uj+614Co5
+	Ksv9ip7RStWBdziGphGa0SHGA/CdbszlhpNyMe8SnHFtNBA/wyQMsGuyMajfmkUL
+	QOmje9t0zCebqIMXbT0fTUM2DszOoz9kd5Gw0W5E792O3JY80QOnfoxKQzem198T
+	I+BeyxL13lqmyFRWPUjnhPE3Sl81V17QSKDckzbQmX432I0Iewx6i2UkWpE/Tlir
+	Sx+SZn42oS1zDf4gbMSS/YlhcKLjkfbWypJ51DCvIgap4gGRn3uPC+xrijU7eros
+	rR0W4/PBFFVItC5F80NiEpPlUp1McmUGvs04wuk7jVxSe4eA==
+Received: from mail-oi1-f197.google.com (mail-oi1-f197.google.com [209.85.167.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hvdnma0dt-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 10:00:58 +0000 (GMT)
+Received: by mail-oi1-f197.google.com with SMTP id 5614622812f47-4ab260600easo4250085b6e.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 02:00:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1794391258; x=1794996058; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=v6371ZwO/zAJsKINRttU2qdrq8Z8ZGN1i9eIzeAJUqc=;
+        b=cwFPhT6vOfOE7I98cCiZw2WppVMNhRXpw2wvesNxhA3uJP9n8NirgTiarB8Dm8psCZ
+         X8v7fpLJkhPJzy/sOctdSHQT1ZZsJ/HO3q6gW/e16r2BWhvL8mIMwtXT8dQpA9gkvv3H
+         P5trDSCdUUau/msTwsOiwTW0YrgERW9saZKyN+/V9qEIlQiPbVYznVRDE/kXunVb2+BV
+         DSl10jmOBra5AaUk2mAJOh988rx/AgWKx4xbtdImSlrR72fjyGx/MBsZt1nziyd1VImr
+         /8ZWysZAAq4K1mzkeW9Qdo2J4Bswce8Do9oLOIU4i1oY44nGADH/27zljolXi0ILvYI5
+         c3Jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794391258; x=1794996058;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=v6371ZwO/zAJsKINRttU2qdrq8Z8ZGN1i9eIzeAJUqc=;
+        b=WBxIs1OljnU54n6Ir0ZgakcPnb8wyTzu9reC8ZTrp7YVgitupyqcPRqvT3cmlVqOHR
+         Rcdq9x/9m5mlHge/g/8Wi5NrQCtSQqiV3oBw5NJE3ABWEk468dsYyHQSP7OB8kZlMgqM
+         zrtqcL0pFlnlZ3btHgsO+LKJKIp2528nWRk873qmdAmPJTWCMGEWYf7tRtu5rldigH3w
+         nWZ5pGlWKlMdRppBm97MsXYno6R0yudloRU8VC+Ea5dmt3V1x+a4SL1qByyWUeix9p3C
+         VBsz2Lrna9vj5Z/z7i2OOelZB39UfFwxUCsJ/M08P4QoB6QE7RsVIJ13ogs6KSJ0WCSE
+         WY4A==
+X-Forwarded-Encrypted: i=1; AL+hErHpgCDNOdZt4wTsKeYUoUwLLEJzG5rtG+ow87k0e+a2I+SuvO3cElTLJjJiC6fd4KWWSCmqzovm/A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/HP2Z4mOV9ZP/7XJslDXdIxKjPxsxgu2+N6uVbaVUG+hvyANG+
+	h/7g2Tf+6Pl2xiGWFAVCxaMJmq7ZccDHyc15m2sv4SJPDqqXKkAxTqXj3QqLz6aJlWc2XFyQrA+
+	HSdxp28OREwI/NVXDR+dO5njxCMF1cb9TL8kMfebVXl4qquu4RLaZ/JTmy5qg1Q==
+X-Gm-Gg: AYBFou21rS3eXH3LI+ufLL+HtR1AC8/Yf6RcGBh3k5ibnryYxeY91dP6HoUe6Ey2peV
+	30eeP747YupVQeXuRS8ZzQ8iLIXu190HHyLhIXLxvS/kOzXOjDO2CDaBszd/AKwx8I51dmBBxMI
+	KBRGuQd8ikUgZHvLJ3+MDmbCRdEDZrwhb/9uVcp6bNobCsc4U0qvCEsqse6i1dm/zv7wqUJrvzM
+	RCDLMSVYX2qUGA09DEJePXGnK7PU6mtvJkmNRyEVz+HM2o22JGVNjx++TI4FCPkA7BKWNmrjXzy
+	brYeaMeDa53OLbhuDxD2hadtFCU5hTe3wv/aOw+zswLxkFEMtCPADp9Zpf/TMyWy19tH1s+mTeO
+	RKARHMs3TUXkusloRHFsg9VeKOrFvDoQZAQrcZmtF0NX/6b3EZIX54amu8B28i7zipfBkNhG8xM
+	86UkubJJ8knwC12xzp
+X-Received: by 2002:a05:6808:c126:b0:546:306d:45eb with SMTP id 5614622812f47-5688134bac2mr2879926b6e.35.1794391258141;
+        Wed, 11 Nov 2026 02:00:58 -0800 (PST)
+X-Received: by 2002:a05:6808:c126:b0:546:306d:45eb with SMTP id 5614622812f47-5688134bac2mr2879910b6e.35.1794391257731;
+        Wed, 11 Nov 2026 02:00:57 -0800 (PST)
+Received: from hu-luoj-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-5690504c276sm4686111b6e.4.2026.11.11.02.00.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Nov 2026 02:00:56 -0800 (PST)
+From: Luo Jie <jie.luo@oss.qualcomm.com>
+Subject: [PATCH v2 0/3] clk: qcom: Add NSS clock controller support for
+ IPQ5210 SoC
+Date: Wed, 11 Nov 2026 02:00:54 -0800
+Message-Id: <20261111-qcom_ipq5210_nsscc-v2-0-7e2c1dda3ed2@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,267 +116,106 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] PM: EM: Exclude boost frequencies from inefficiency
- ranking
-To: Guo Chen <guo.chen@oss.qualcomm.com>,
- "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
- Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- Vincent Donnefort <vincent.donnefort@arm.com>,
- Matthias Kaehlcke <mka@chromium.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- xin.liu@oss.qualcomm.com, aiqun.yu@oss.qualcomm.com,
- tengfei.fan@oss.qualcomm.com, tingwei.zhang@oss.qualcomm.com
-References: <20261103-em-rank-boost-separately-v2-1-5a13d1b38d37@oss.qualcomm.com>
- <CAJZ5v0hy1D7anTe=CXNXZyMNSN_yHh5hOt6B0bEHTEONRJFMhQ@mail.gmail.com>
- <3e7c3a82-6a99-4c2f-9568-2382ea77ba0e@oss.qualcomm.com>
- <1dadcd02-19b0-482b-b16d-293430227c5c@arm.com>
- <901516c9-d1be-4918-840e-e3617f2a1782@oss.qualcomm.com>
- <6b0ee061-38b9-413e-9a83-90446b484859@arm.com>
- <CAJZ5v0i8a98rjFdQ2Jhu_Xk=qCGiNafMfhzNs26cEJNCYB6Xdg@mail.gmail.com>
- <4f0c8581-a8fb-4bc4-82cc-d30f2f56d2ce@arm.com>
- <CAJZ5v0iX8wYDUo9uUjkqkKq1tpLAu7iaZk+iQzWGigNAqfrsNg@mail.gmail.com>
- <bb99aa3f-fd15-4bdd-9319-ccedffc281c8@arm.com>
- <ec04f795-6cc6-444a-bbee-70c7982932e3@oss.qualcomm.com>
- <CAJZ5v0js0pbcKRp-cNVu_aPstT4meF-u_z012Q-AA=pvvOY=qA@mail.gmail.com>
- <58dbf12d-dae7-44c3-b7da-b65a4800c3b0@oss.qualcomm.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <58dbf12d-dae7-44c3-b7da-b65a4800c3b0@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIANY89GoC/22NQQ6CMBBFr0K6tqStrSGuvIchhE6LjFEKHSAaw
+ t0tGHduJnnJm/8WRj6iJ3bOFhb9jIShS6AOGYO27m6eo0vMlFAnKYXmA4Rnhf1glBRVRwTAG6+
+ tgsJpJwuWHvvoG3zto9fyyzTZu4dxW9qMFmkM8b1XZ7l5v4D5F5glF9zpBqyBo7JGXgJRPkz1I
+ 7nPPB1Wruv6ASoesijNAAAA
+X-Change-ID: 20261104-qcom_ipq5210_nsscc-fe4b2c8d4d18
+To: Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+        Jerome Brunet <jbrunet+clk@baylibre.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Georgi Djakov <djakov@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Luo Jie <jie.luo@oss.qualcomm.com>,
+        Richard Cochran <richardcochran@gmail.com>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, netdev@vger.kernel.org,
+        quic_kkumarcs@quicinc.com, quic_linchen@quicinc.com,
+        quic_leiwei@quicinc.com
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794391255; l=1980;
+ i=jie.luo@oss.qualcomm.com; s=20251128; h=from:subject:message-id;
+ bh=ssQwJ0NVkXEo1RNZ7AhR+p1xjTksM72Hbr1MyGjEOHo=;
+ b=ELfTtgQHmQKAVD+I8fcjmKdoSmQ63d3HgGAPghBonQAWNbJzX2cwn6xE89AK6bbrIHcF97a/R
+ n1K7+DMC6nEAdr74VE+WswAMjq8sxzA0eAfb0UaHCo88wp1qmqZt3ig
+X-Developer-Key: i=jie.luo@oss.qualcomm.com; a=ed25519;
+ pk=gSsYMDakxtd6UDFYDdA9y9yjIs5Etp5GK/3DoXWPyS0=
+X-Proofpoint-ORIG-GUID: G6sXqvn4O8zdj4318aCRVRCe30InpGq4
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTExMDAzOSBTYWx0ZWRfXzKyNc1axdnhc
+ 1KkyRdYBIFv9tzA2iZ4Cal6JSW/yno1xb83QVaZ8wavf8oj6BnjWPIwB6QzYuMauG2mTgnQhfdy
+ ySJZ53jKDX6lnY1AxH45X2A9DP4E0jk=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTExMDAzOSBTYWx0ZWRfX+bdtiIjDjyAJ
+ /Qmi/J7BlUFN122w5m7uW2IT+bYD00zZiTdapVpuRm3UekA/DcULFI3EUquRxFVkxNNJ4WK7xcn
+ lwwhEkRLFb/NQkBgGJ4MQdSPuKh1bwlz4craTzpEE7sV3Wbk9hMUq9z9n0G+5Q5xPmhCrQwwwT+
+ 2Vkg2B/x5xB2Cu+/xxddQPh2hP/lpRDqhyJw/dZdNbWYP3L/edR7w7j/n5iqeh5JS3LiouL09gp
+ M9lXg8RIR28jxJmTxJEe4cWLAUkGVKDMZu0EQoSJyID+Hdw4LdPuKaToc8pLBBjsB3aTl0CxKiY
+ I8fPGyT/qUbGkFkCsIdC0HW31afxfzeOL3zNLHRMLkuATYw6KxNMhih9voCPI14eSEpHT00RCKb
+ EJ4rTKHwL7cFl4uz5Wp1ttTf45H99/uekfcmBUtsprP58YoojHhbQpl3902yzLeC/Dm2GpqIKnT
+ 3zXbcLMeMDd4/qlWrtA==
+X-Proofpoint-GUID: G6sXqvn4O8zdj4318aCRVRCe30InpGq4
+X-Authority-Analysis: v=2.4 cv=MpzHeGae c=1 sm=1 tr=0 ts=6af43cda cx=c_pps
+ a=WJcna6AvsNCxL/DJwPP1KA==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=cYQ6PdjOCuHZ1sjPTfwA:9 a=QEXdDO2ut3YA:10
+ a=_Y9Zt4tPzoBS9L09Snn2:22 a=FO4_E8m0qiDe52t0p3_H:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-11_02,2026-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0 phishscore=0
+ suspectscore=0 spamscore=0 malwarescore=0 priorityscore=1501 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611110039
 
+The NSS (Network Subsystem) clock controller on the IPQ5210 SoC provides
+clocks and resets to the networking related hardware blocks such as the
+Packet Process Engine (PPE), the six ports, XGMAC PTP reference clocks,
+PON, EIP crypto engine, and the SoC-integrated EPHY (2.5G Ethernet PHY).
+Its parent clocks are sourced from the GCC and CMN PLL blocks.
 
+The NSS NoC clocks are also enabled to use the icc-clk framework, enabling
+the creation of interconnect paths for the network subsystem's connections
+with these NoCs.
 
-On 11/11/26 06:57, Guo Chen wrote:
-> 
-> On 11/10/2026 10:59 PM, Rafael J. Wysocki (Intel) wrote:
->> On Tue, Nov 10, 2026 at 3:56 PM Zhongqiu Han
->> <zhongqiu.han@oss.qualcomm.com> wrote:
->>> On 11/10/2026 10:05 PM, Lukasz Luba wrote:
->>>>
->>>> On 11/10/26 13:43, Rafael J. Wysocki (Intel) wrote:
->>>>> On Tue, Nov 10, 2026 at 2:11 PM Lukasz Luba <lukasz.luba@arm.com> 
->>>>> wrote:
->>>>>> Hi Rafael,
->>>>>>
->>>>>> On 11/10/26 12:15, Rafael J. Wysocki (Intel) wrote:
->>>>>>> On Tue, Nov 10, 2026 at 10:58 AM Lukasz Luba <lukasz.luba@arm.com>
->>>>>>> wrote:
->>>>>> [snip]
->>>>>>
->>>>>>
->>>>>>>> That's fine, please continue.
->>>>>>> I have a couple of questions though.
->>>>>>>
->>>>>>> First, why is the ondemand governor mentioned in the changelog?  In
->>>>>>> the mainline, the ondemand governor cannot work with EAS, so it
->>>>>>> shouldn't matter for this issue, should it?
->>>>>> The ondemand is affected by the EM setup code and set 'inefficient'
->>>>>> flags for some OPPs. The EM is also present for cooling devices
->>>>>> and can work w/o EAS and schedutil, w/ just ondemand governor.
->>>>>>
->>>>>> Because EM marks the OPPs kind of 'globally' as inefficient, then
->>>>>> they become CPUFREQ_INEFFICIENT_FREQ entries in the CPUfreq fwk.
->>>>>> In the EM code we have:
->>>>>> cpufreq_table_set_inefficient(policy, table[i].frequency);
->>>>> So maybe this is the one that needs to be fixed?  What about simply
->>>>> skipping boost frequencies in it?
->>>>>
->>>>>> Then ondemand check for CPUFREQ_RELATION_HE will skip them and
->>>>>> pass to __cpufreq_driver_target() with that flags as well.
->>>>> Thanks for explaining and all of that needs to be said in the patch
->>>>> changelog.
->>>>>
->>>>>>> Second, why is the issue regarded as a defect in the code and not in
->>>>>>> the energy model?  Arguably, boost frequencies should be more costly
->>>>>>> than the non-boost ones.  At least the idea behind the boost is 
->>>>>>> making
->>>>>>> higher-cost OPPs temporarily available.  If they are sustainable,
->>>>>>> treating them as boost OPPs is rather pointless.
->>>>>> IMHO it was a bug in the commit mentioned in this patch fix tag.
->>>>>> It is affecting more than just EAS or EM, since the EM is working 
->>>>>> with
->>>>>> all generic code and all cpufreq governors.
->>>>> To be precise, the EM initialization may affect cpufreq in general
->>>>> because inefficient frequencies are used for CPU cooling.  Fair
->>>>> enough, but I'm not talking about this.
->>>>>
->>>>> I'm talking about a reason for giving boost frequencies lower or equal
->>>>> cost relative to non-boost frequencies in the energy model because
->>>>> this doesn't make sense to me TBH.
->>>>>
->>>>> And I get that such energy models were there before the commit in
->>>>> question and now they are not working properly, but IMO they are
->>>>> broken, not that commit.
->>>>>
->>>>>>> TBH, I'm too comfortable with looking at cpufreq frequency from 
->>>>>>> within
->>>>>>> the EM code.  If that needs to be done, something is amiss at the
->>>>>>> design level.
->>>>>> I think this edge case is special, as I described above.
->>>>>>
->>>>>> I'm happy to hear your view on this EM influence to some global
->>>>>> setting in cpufreq. Maybe it was too far to establish this
->>>>>> 'inefficiency' flags in there for many usage?
->>>>> There's nothing wrong with using the information from the energy
->>>>> model, when available, to amend cpufreq, but the patch goes the other
->>>>> way around: It tries to amend the energy model with information taken
->>>>> from cpufreq (in order to avoid making mistakes later when amending
->>>>> cpufreq with the energy model information).
->>>>>
->>>>> I think that cpufreq should simply refuse to set
->>>>> CPUFREQ_INEFFICIENT_FREQ for boost frequencies.  Wouldn't that work?
-> 
-> 
-> Got your point. Having cpufreq directly refuse to set
-> CPUFREQ_INEFFICIENT_FREQ might be the simplest approach. Let me
-> summarize my understanding. There are two cases where we can
-> simply avoid setting the CPUFREQ_INEFFICIENT_FREQ flag:
-> 1. boost frequencies.
-> 2. the highest non-boost frequency.
-> 
-> However, there is another issue. If we refuse to set
-> CPUFREQ_INEFFICIENT_FREQ for certain frequencies, I think the
-> corresponding EM_PERF_STATE_INEFFICIENT flags in the Energy Model
-> also need to be updated. Otherwise, the EM state would be inconsistent
-> with the frequencies used for energy estimation in the EAS path.
-> 
-> I think we also need to update the EM_PERF_STATE_INEFFICIENT flags
-> accordingly, something like the following:
-> 
-> for (i = 0; i < pd->nr_perf_states; i++) {
->      int ret;
-> 
->      if (!(table[i].flags & EM_PERF_STATE_INEFFICIENT))
->          continue;
-> 
->      /*Return -EOPNOTSUPP if the rejection condition is met. */
->      ret = cpufreq_table_set_inefficient(policy, table[i].frequency);
->      if (!ret)
->          found++;
->      else if (ret == -EOPNOTSUPP)
->          table[i].flags &= ~EM_PERF_STATE_INEFFICIENT;
-> }
-> 
->>>> I see your point now, about the direction. Yes, you're right.
->>>>
->>>> Since we are taking the information about 'boost' from the
->>>> cpufreq, then refusing to set OPPs inefficient in the first
->>>> place makes more sense.
->>>>
->>>>
->>> I also agree this should be fixed in cpufreq rather than by feeding
->>> cpufreq information into the EM. However, refusing
->>> CPUFREQ_INEFFICIENT_FREQ for boost frequencies seems not help the
->>> example in the changelog, because the frequency marked as inefficient
->>> there is 4.0 GHz, which is not a boost one. The problem is not specific
->>> to boost either: with 3.9 GHz, 4.0 GHz, 4.1 GHz and a 4.2 GHz boost OPP
->>> at costs C - d, C, C and C + d, 4.0 GHz is rightly inefficient, but if
->>> policy->max is capped at 4.0 GHz by scaling_max_freq, thermal or QoS,
->>> RELATION_HE for 4.0 GHz still resolves to 3.9 GHz. I think the lookup
->>> should not skip an inefficient frequency when the next efficient
->>> frequency above it is beyond the max limit, which can be done in
->>> cpufreq_frequency_table_target() without touching the EM or looking at
->>> boost flags.
-> 
-> 
-> @Zhongqiu: thanks for the example. I think the two cases are different in
-> nature.
-> 
-> In the case of the changelog, the highest non-boost frequency of cluster is
-> marked inefficient because of the boost frequency. A sustainable 
-> frequency is
-> being affected by an unsustainable one, but it is not really inefficient: I
-> don't think these two kinds of frequencies should be compared with each 
-> other
-> in terms of energy. So I think this should be fixed at the source, by not
-> marking such frequencies as inefficient.
-> 
-> The case you describe looks different, as it is dynamic: policy->max is
-> changed at runtime by scaling_max_freq, thermal or QoS, which would mean
-> ignoring the inefficient flag every time policy->max lands on an 
-> inefficient
-> frequency. Whether this is really necessary seems to me to deserve a
-> discussion. Thermal and QoS limits are there to keep the frequency from 
-> going
-> above the cap. In your example (3.9 GHz, 4.0 GHz, 4.1 GHz), if the 
-> frequency is
-> limited to 4.0 GHz at some point and ends up on 3.9 GHz because 4.0 GHz is
-> inefficient, the original purpose of the limit, not going above the cap, is
-> still honoured.
+The patch series is organised as follows:
 
-There are platforms which have ~20 OPPs and the difference is ~100MHz.
-Those at the top frequency they are inefficient but exist for this
-thermal purpose. The throttled frequency can be more stable and
-predictable in time, thus also capacity delivered to randomly
-scheduled tasks (which might be unfair if the freq gets lower
-by a lot and some latency sensitive task got a spin at the same time).
-Therefore, we do care by making each OPP (at least) available...
+1/3  dt-bindings + clock/reset/interconnect ID headers for IPQ5210 NSSCC
+2/3  NSS clock controller driver for IPQ5210
+3/3  DTS: add NSS clock controller node in ipq5210.dtsi
 
-> 
-> So I am not sure that handling the dynamic case is needed, and I would 
-> like to
-> hear what you, Rafael and Lukasz think about it.
-> 
+Changes in v2:
+- Use RUNTIME_PM_OPS() and pm_ptr() for dev_pm_ops.
+- Rebase on next-20261110; drop the CMN PLL DTS patches, which are now
+  merged.
+- Link to v1: https://patch.msgid.link/20261105-qcom_ipq5210_nsscc-v1-0-d4fcb5c32b51@oss.qualcomm.com
 
-This becomes even more convoluted now.
-1. The only call to cpufreq_table_set_inefficient() is in the EM.
-2. EM works with thermal and all governors, not only EAS and schedutil
-3. CPUfreq fwk holds those 'inefficient' flags in generic, global way
-4. Inefficient flags were introduces mainly for EAS, now impacts
-    non-EAS setup (as patch states 4.0GHz is valid but not reachable).
+---
+Luo Jie (3):
+      dt-bindings: clock: qcom: Add NSS clock controller for IPQ5210 SoC
+      clk: qcom: Add NSS clock controller driver for IPQ5210 SoC
+      arm64: dts: qcom: ipq5210: Add NSS clock controller node
 
-Here is an example from mainline DT platform. The goal was to avoid
-the frequencies which have the same voltage but lower freq, e.g.
-those from 200MHz to 700MHz and pick 800MHz instead.
-Same for 900MHz and 1200MHz.
-That was the main motivation back then and research we've made
-with a few platforms and EAS.
+ .../bindings/clock/qcom,ipq9574-nsscc.yaml         |   47 +-
+ arch/arm64/boot/dts/qcom/ipq5210.dtsi              |   40 +
+ drivers/clk/qcom/Kconfig                           |   12 +
+ drivers/clk/qcom/Makefile                          |    1 +
+ drivers/clk/qcom/nsscc-ipq5210.c                   | 2202 ++++++++++++++++++++
+ include/dt-bindings/clock/qcom,ipq5210-nsscc.h     |  106 +
+ include/dt-bindings/interconnect/qcom,ipq5210.h    |   18 +
+ include/dt-bindings/reset/qcom,ipq5210-nsscc.h     |   60 +
+ 8 files changed, 2483 insertions(+), 3 deletions(-)
+---
+base-commit: 793807ca13bf3072fc6d16ce6d90e9ab9beff2a5
+change-id: 20261104-qcom_ipq5210_nsscc-fe4b2c8d4d18
 
-   freq MHz   opp-microvolt
-   2000       <1312500 1312500 1500000>
-   1900       <1262500 1262500 1500000>
-   1800       <1237500 1237500 1500000>
-   1700       <1250000 1250000 1500000>
-   1600       <1250000 1250000 1500000>
-   1500       <1100000 1100000 1500000>
-   1400       <1100000 1100000 1500000>
-   1300       <1100000 1100000 1500000>
-   1200       <1000000 1000000 1500000>
-   1100       <1000000 1000000 1500000>
-   1000       <1000000 1000000 1500000>
-   900        <1000000 1000000 1500000>
-   800        <900000 900000 1500000>
-   700        <900000 900000 1500000>
-   600        <900000 900000 1500000>
-   500        <900000 900000 1500000>
-   400        <900000 900000 1500000>
-   300        <900000 900000 1500000>
-   200        <900000 900000 1500000>
-
-
-
-Therefore, I would suggest to tackle this is steps.
-
-1st, let's go ahead with this fix which is for mainly EM.
-The EM confuses the cpufreq and then the clients like ondemand, IMHO.
-This can go maybe into the stable kernels, since it's small.
-
-2nd, let's think about that 'boost' thing wider. There are
-already investigations how to handle correctly the CPU's capacity
-and to not confuse the task scheduler. This might create
-the right infrastructure.
-
-
-Side note:
-I personally don't like calling some frequencies 'boost', because
-such frequencies were there but not labeled that way and they were
-OK. In this example, 4.0GHz is non-boost freq, but 4.1GHz is 'boost'.
-At the same time 4.0GHz is 'inefficient', which can only happen
-when 4.1GHz has the same voltage. I have seen such platforms ~13years
-ago and the 'boost' flag wasn't needed to handle them properly.
-
-
+Best regards,
+--  
+Luo Jie <jie.luo@oss.qualcomm.com>
 
