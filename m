@@ -1,112 +1,87 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.13
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794404830;
-	b=mSILXQjjrYRVkUZ4PMbMT8nEzoEgI4zoLcbgA25SQ16SFRiwxKAFxk2z3Dj1M55KOdbk
-	 uIJltAfFsSL9kTmFog26DEhxgcYgs1L6uXJUDnFu9xEDqfq3utrBTnC6t66f6Y099W+sJ
-	 y0LAiuGCgppDQGA/UfS4wJSqrTpp8DQeo75qHSzBGGyXfzurSBaxO/lQXtlxehXZXIcFD
-	 lA6Xttb0NWblTEaAOqYAFLiUaAPjTA0iZ+pyNdU+Hf041Um3NSYnkJEO1YsPzhNws7Zea
-	 u0PZoXHC5Jgq6T/pDEVIDFVltm4dPmLB5zznOdmRR2trGnhsEoFhgYLzk+va26NLgvg==
+	t=1794406508;
+	b=pSGYrDUuXKmMEfEDkvvD7YiXI66VZDlFPmADegQHr9UpDNFRZ5uS+f6s6cKoLpHrHmPP
+	 nh+TTZbT20H2SjttTXJhI8k8fJ2/6yAqiNjdR7auaS4UN59XUDhSgNtcRo9EjxMJsQNu5
+	 bYeOzLgiz6SaeXugZbEKZjCF4kq1pO983KCmdwD7/TuSevbByHG33mheNyVTriVhv7ugS
+	 H063HIlPQXgFRG/+35pbsTObsjFT2IP9RV3ZPdFAt4kpDE/68+SksCGRcIbftZbG4inV7
+	 +1lgtu6vVOYMSqawD2jpQQko9CsN4n4M/CyujwDNucrE/RH4xnvj3T5jLG6jrmemh3w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794404830;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=B0t7gR4bEucbc8jZShMdnCoiT4kfG+r/AXQtiP9TGNo=;
-	b=4y6eWh2YJe+m27Uh4Ps0PKeh8fwMR3NlLSHavVPauYkmd9y+WIhPn24NvyBDDQDf/24O
-	 m33e9LT7iORognbz7nbNLxPEbQDLN07pg1SEpFSjlnC2eCZj7rIyQZcnvlZiWf8uEUL6Q
-	 5vDCMpV5lUMMBr/Uu5EamdMhnpU9y+B2xGFaS3PJKLeeryFR8QL9R1RdKnHn57UMPyLfV
-	 8y8WENCR5p7m5GE0KPezCAIKnEeRBI0914QxC5D0wjOQOQC4xEpVJI0GSpaTqs/7cZdya
-	 WhN3KmatoEYx/J80/1JPKM5eZD6KRrqgsu0ApJFI8BDo8GPBaZuLOF+4YsIHej7y1eA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794406508;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=RRKrPiiXLxIqqSj5iQKbou4siQUwjTukbqJQ8BaYzM0=;
+	b=oB8KrxGhBmzd/H/Gk6rwir4XYVpwXpdWOaggjjQYTX9xsZOZE3MOZDKuQ2+CVMobpOtg
+	 1YohUKFy42RVvWt6tsOxFffwyDhwyVRMAxaH8LTljzGBVu6r9TMEH7x6Ty43yOpOnEI7w
+	 Iopvyawvv9qju1bKk/plQEvVIiRzLXjTjIkYr6KD3yXzW7OP09TfDPh0tlIH/bc/g1yIV
+	 lER4UKjx18VPmy2tFC4wmZ9/MW3By/bLHDIoHE+N0hNyI0qLGtrJqzJZRrfFf8R+C5rqG
+	 Q/AanUUV1ySQwFYqFCBCnZLZ3+fT/U6ccHoDbLwA1voh1CGA3UIj4ND9wkT0Wa8xBNQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=P1NI9ZXK;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gmvtSrqX;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lmcpmJrs;
+	arc=none smtp.remote-ip=192.198.163.13
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A16F606A324
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 13:47:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3A16F606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DB70606A334;
+	Wed, 11 Nov 2026 14:15:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7DB70606A334
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=P1NI9ZXK;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gmvtSrqX
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ABCZ26S3292079
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 13:47:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	B0t7gR4bEucbc8jZShMdnCoiT4kfG+r/AXQtiP9TGNo=; b=P1NI9ZXKpPpLefpB
-	T3jRSQKTdCHlEJxCBLZcI8vT3iWGPPydxpLKXAaJhtexVFFrEoWcIMwtEIjJFan3
-	FngfDNeafJTexxx7+8fS+CyhF+fidjkTM04SWz9+37XWiMHELmIS0dNjyy3RMv1f
-	fyJKo7B2LRVEAcTfr4EwnLyb/0Dglh2Octj0XY6HB1zpipBui9yPL+jYU2paRntD
-	gSiwZFC37NRpTAHhcaIB0Rtt/s0zrYvd7FfmVd05fxrOZxAZjSwCmxzxnNzzrVej
-	BpHRpbhJPqBQ6cnWyfdaMqrrGKjyIUOSIg+tysqWd0H8NUaG0nTJgbWLoeXmz/Y9
-	CdGaXQ==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hvdnp2qk0-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 13:47:09 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-3ade5b3ae97so2534692a91.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 05:47:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794404829; x=1795009629; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=B0t7gR4bEucbc8jZShMdnCoiT4kfG+r/AXQtiP9TGNo=;
-        b=gmvtSrqX4mRvMroqfG5OzQo75GbOUuARbiiGbCbb9X+JRuXVxg4ebyHJ/2W/qb7c1w
-         EQrH7Th+pidgu0q0fC8o6rWQRUsNlc83sTMngHXKkk9SPj0fNRFOOCoUlThuDvdI5OXI
-         Z5n+dTEgIHQ2kX/DbyxulVU63GpCL/EBocjJPFF0Ya9IhBfaWBUZrogan9fX+YgES1BK
-         80nwjCI045HAgiB5yRsTT7NEfsAftkqBv4m8YlUaM/r0vO6is3MpS7UvxWI3KxFSVnE0
-         yXrX4qRQmCOUQQI0IKI6gZmOsdRdCiqvyEVQ+RWj5kjQBQs9N4qfveigreqvmBvhr4CZ
-         sqxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794404829; x=1795009629;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=B0t7gR4bEucbc8jZShMdnCoiT4kfG+r/AXQtiP9TGNo=;
-        b=DUFLz1azq/z49XkHU/CfomyXxXVofv9z3/UU7HsCwM3K+QAXLgjLmGugpapnJ10j2k
-         DkXyrejZrVnxWUb+qAy3T4C6RDaNEEN4GVRqOe8Nu5JqT2qVQPH/OJYav+C1oWLVTl9v
-         VFG5Kak9K+LLwgirt3OMMM6m2mmYHUxyVCiSFk2At/dIc2fFPeVHYVdGg3n7iZ7ERdpJ
-         t5/j6NU+qQweJZ09ZQk8cFsh2kQdzBMSJda3zdkfrKLrrIlVglOtxW/mMG2ssZl55Arx
-         8RZvqvDxyfEK1rfRhlux4dwTLkWPOGxYOtUTb+UDKPogzqUxKz3J4iwQT6rLsT63W5JB
-         q15Q==
-X-Forwarded-Encrypted: i=1; AL+hErHdIRwa1bTwSGd+MlrjyH84Pkr8XgNwsgy/buXpVQtjOEM0dgAKbexrOTTpcxCr0lgTVbFCV34RuQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/h1sKs161+CMEXc+ZxdzszdB7HpkBPp++YRYExUKXLl6QTQCcB
-	zqXlC8JPHRWoma9BVd+LoynTbRk7Lo2/kfsRiEUejXU2rL+gbIueOusqVfxdofF4pH29ti8uOeJ
-	kge0LuZks2QxROqSrmkWm+bQv2l+ln0bkvuIGamrlLJjvsDzhS++8RhOLN/Dm8A==
-X-Gm-Gg: AYBFou0XvYEdWrxls6TmLZodr4fUTMA5fsp/tMb4N6URjhB+kN3kyVwaMByp+/k1zNv
-	FZFzdQLy3pTCTiL8MFOklwuFxUOUdBuDUPZuADtyLieCN+uwRHbPjGobqcTtxhV9BRJz0dBlxTq
-	AbkJCITkr2zZuX83ZAG4yYqIMBBQAwMGL+/Eel6FvtKX0+jy92qmU5t+s13vBxLwujgPy4rEg68
-	TqlGcRxYoirN24LXMvEJklB4cUcxsViKZMk0k+1OXoqE0qNaikeJjvjr29TLCgAjuR7orUZ5WvO
-	KyfZ71gsm7IL9khs/8g3JXP/lvPX9Pp5WEq+Vm7ZWSiETsGNil2o7bdKb1eGRG1NitQjyizGfBt
-	VEWN47Hn1DHkEKeVOzPEOmvU+DKlu0O2j6GtRzC1G8E5AEwMxuO2B9nz3hfRO5dhZI9KWYsgP8P
-	vWnhXj60QqcMCNZZOCkA460Ne4s6IG1cbk
-X-Received: by 2002:a17:90b:3886:b0:3a6:d850:bf16 with SMTP id 98e67ed59e1d1-3b182f2570fmr1699709a91.23.1794404828635;
-        Wed, 11 Nov 2026 05:47:08 -0800 (PST)
-X-Received: by 2002:a17:90b:3886:b0:3a6:d850:bf16 with SMTP id 98e67ed59e1d1-3b182f2570fmr1699688a91.23.1794404828126;
-        Wed, 11 Nov 2026 05:47:08 -0800 (PST)
-Received: from [10.133.33.220] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b17dfb9827sm4890431a91.1.2026.11.11.05.47.03
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 11 Nov 2026 05:47:07 -0800 (PST)
-Message-ID: <18db783d-afef-4cd7-8192-00f1970da7ae@oss.qualcomm.com>
-Date: Wed, 11 Nov 2026 21:47:01 +0800
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lmcpmJrs
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794406507; x=1825942507;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=FYWLjmEyrSr5TGZ1v1f2UI6FyVNvdj9IceZa13vfjIY=;
+  b=lmcpmJrsuMgWKU2qIpXa1N71U/OSi1JA8slN454odjMspoWwDG0IvGGf
+   XmSKpR1B59rtFrrDy2r4MzyPQEfkixKPX6P+3CoAz6o3xROXUko1ZdXiw
+   2ZPN8UM4f7GjT0QoCinYAf66lrtHHQGl1QswHjmh/vE5FqJ3F454eM0/j
+   6hTdnk6sHGilnVOVWjuWmr8p25JUoVHP5LXDO0vJfKj9NedjfU2yGjVK+
+   OWGWeaFtU6lUQ49M4IiozkEx0GGYek9a2lBNxujki0qa9URSel4x5FYNF
+   Buphf8fnWgAYR+ud/LFTdR9cOb95UWZMa/W1F2jRzAOg2EXgFKogxN12Z
+   Q==;
+X-CSE-ConnectionGUID: Me4vqCoMQ0ugg9cQlzpPaw==
+X-CSE-MsgGUID: gLyZldH0RUOcH3ZJo553CQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11963"; a="3175625"
+X-IronPort-AV: E=Sophos;i="6.27,207,1787036400"; 
+   d="scan'208";a="3175625"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Nov 2026 06:15:01 -0800
+X-CSE-ConnectionGUID: fJ2hYlQmRhGtC2EHUopSdg==
+X-CSE-MsgGUID: 641PaO2GQqyGf0BX8BN1Qg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,207,1787036400"; 
+   d="scan'208";a="8424156"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+  by orviesa002.jf.intel.com with ESMTP; 11 Nov 2026 06:14:57 -0800
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1xR96E-00000000yzd-0mnJ;
+	Wed, 11 Nov 2026 14:14:54 +0000
+Date: Wed, 11 Nov 2026 22:14:12 +0800
+From: kernel test robot <lkp@intel.com>
+To: Xueqin Luo <luoxueqin@kylinos.cn>, rafael@kernel.org,
+	viresh.kumar@linaro.org, sudeep.holla@kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, zhanjie9@hisilicon.com,
+	christian.loehle@arm.com, zhenglifeng1@huawei.com,
+	sumitg@nvidia.com, lenb@kernel.org, maciej.wieczor-retman@intel.com,
+	pawel.chmielewski@intel.com, gregkh@linuxfoundation.org,
+	dakr@kernel.org, johan@kernel.org, ionela.voinescu@arm.com,
+	pierre.gondois@arm.com, linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	acpica-devel@lists.linux.dev, driver-core@lists.linux.dev,
+	Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: Re: [PATCH v6 3/3] arch_topology: Add topology_update_cpu_capacity()
+ for runtime updates
+Message-ID: <202611112222.Q0bXZAjq-lkp@intel.com>
+References: <20261111085022.1229866-4-luoxueqin@kylinos.cn>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,168 +91,58 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to non-boost
- freq on boost disable
-To: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Jie Zhan <zhanjie9@hisilicon.com>,
-        Pierre Gondois <pierre.gondois@arm.com>, linux-kernel@vger.kernel.org,
-        driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Oleg Keri <okerixx@gmail.com>,
-        Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
- <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
- <41f328b2-0825-4023-b86c-48136ba6ecd2@oss.qualcomm.com>
- <avRd3YVDXs26hrow@hu-anancv-blr.qualcomm.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <avRd3YVDXs26hrow@hu-anancv-blr.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTExMDA1NCBTYWx0ZWRfX/AaaHbj/s2uW
- uUjpdNqMV5O+qSgO6v/bNbNXL8UAJLtbf8/ezhEQeYvHwk0AoRCqPPIIRNhKx/aocW7nKCCXQ3N
- TtXCTybaLRbRDIfzEUFW61sHRTu8kokCNV5iipF9wx0TBBbQ9c9rp4uhclrxGw5x1avjppZ8T9C
- VGK/JWffkdOuqeNaezHAg9fn0lS0P3PLMSGT3zlbaZGJKiLmvj0wgc8WIPvrdnFLpppdJUrVt7z
- 10Tzk8BUmRQyHFrthpYX6dwJa7Z1jnCAgeUP20v1dLA+cdOdkK7QtyzPeydECHsSkxm6goUF4f3
- DZ0U4Nw3eTakQtLktaDef6pfAahS9CNIS1lbVAMUoGq+tsjBf12tzaVMe51usJu9VjEwI5uKEzv
- rPkNXYD8qaPOfOeBm4Qaw/Iph0kJIeTkBgtwvcRXyyXCGpuREV+uZJKq9XoYkq+sD3PTC1pNI/u
- 0RkzpFVrlYzDiImvnww==
-X-Proofpoint-GUID: FfGvaAE7xJUA8U-lUXXdXjuxm-v31fRv
-X-Proofpoint-ORIG-GUID: FfGvaAE7xJUA8U-lUXXdXjuxm-v31fRv
-X-Authority-Analysis: v=2.4 cv=NK1AaE6g c=1 sm=1 tr=0 ts=6af471dd cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=qZlHrcwyowrLkl4W26AA:9 a=QEXdDO2ut3YA:10 a=uKXjsCUrEbL0IQVhDsJ9:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTExMDA1NCBTYWx0ZWRfX6DkJmRPtTlsR
- QoIPD2M0UnXje2XIaFPaIVGHgbbxnMO0vZnDOC/SzBq4yBeQyBU+C6MS0vGFiLWIHJX5JTKuas6
- ljwQYggw1dgxlNeV9bctJ3xEpCxb52E=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-11_02,2026-11-11_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 spamscore=0 clxscore=1015 suspectscore=0 lowpriorityscore=0
- adultscore=0 malwarescore=0 priorityscore=1501 impostorscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611110054
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261111085022.1229866-4-luoxueqin@kylinos.cn>
 
-On 11/11/2026 8:21 PM, Ananthu C V wrote:
-> Hi Zhongqiu,
-> 
-> On Sun, Oct 11, 2026 at 10:17:14PM +0800, Zhongqiu Han wrote:
->> Patch 2/2 currently depends on a helper introduced by patch 1/2, which
->> prevents it from being backported independently. Since 2/2 is an
->> independent fix that should be backported to stable on its own, I think
->> it should be placed before patch 1/2 in the series and kept self
->> contained.
-> 
-> The idea was that currently patch 2/2 would serve no actual value without the
-> fix in patch 1/2, and that is why it was the second one. But yes, we cannot
-> fix 1/2 and leave 2/2 as is, which would turn the current benign issue to an
-> actual problem, so the order should be probably reversed. I'll work on that.
-> 
+Hi Xueqin,
 
-As I mentioned before, patch 2/2 addresses a separate issue that should
-be fixed in its own right and backported to stable kernels, because with
-policy->max stuck at the boost ceiling, scaling_max_freq keeps reporting
-the boost frequency after boost is disabled (as shown in the cover
-letter), and governors such as performance can still select boost
-frequencies. Anyway, please go ahead.
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on driver-core/driver-core-testing]
+[also build test WARNING on driver-core/driver-core-next driver-core/driver-core-linus amd-pstate/linux-next amd-pstate/bleeding-edge linus/master v7.4-rc2]
+[cannot apply to rafael-pm/linux-next rafael-pm/bleeding-edge next-20261110]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Xueqin-Luo/cpufreq-cppc-Add-update_limits-support-for-Highest-Performance-changes/20261111-165020
+base:   driver-core/driver-core-testing
+patch link:    https://lore.kernel.org/r/20261111085022.1229866-4-luoxueqin%40kylinos.cn
+patch subject: [PATCH v6 3/3] arch_topology: Add topology_update_cpu_capacity() for runtime updates
+config: riscv-allnoconfig (https://download.01.org/0day-ci/archive/20261111/202611112222.Q0bXZAjq-lkp@intel.com/config)
+compiler: riscv64-linux-gcc (GCC) 16.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261111/202611112222.Q0bXZAjq-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202611112222.Q0bXZAjq-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+   In file included from include/linux/seqlock.h:20,
+                    from include/linux/mmzone.h:17,
+                    from include/linux/gfp.h:7,
+                    from include/linux/slab.h:17,
+                    from include/linux/resource_ext.h:11,
+                    from include/linux/acpi.h:14,
+                    from drivers/base/arch_topology.c:9:
+>> drivers/base/arch_topology.c:232:21: warning: 'raw_capacity_lock' defined but not used [-Wunused-variable]
+     232 | static DEFINE_MUTEX(raw_capacity_lock);
+         |                     ^~~~~~~~~~~~~~~~~
+   include/linux/mutex.h:87:22: note: in definition of macro 'DEFINE_MUTEX'
+      87 |         struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
+         |                      ^~~~~~~~~
 
 
->> To avoid introducing a new member that is only used by frequency-table
->> drivers, please consider the following implementation instead:
->>
->> If there are boost entries in the frequency table, the table is the only
->> source of cpuinfo.max_freq, so let cpufreq_frequency_table_cpuinfo() set
->> it unconditionally in that case.
->>
->>
->> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
->> index ea99464..8c8bad2 100644
->> --- a/drivers/cpufreq/freq_table.c
->> +++ b/drivers/cpufreq/freq_table.c
->> @@ -33,14 +33,17 @@ int cpufreq_frequency_table_cpuinfo(struct
->> cpufreq_policy *policy)
->>   	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
->>   	unsigned int min_freq = ~0;
->>   	unsigned int max_freq = 0;
->> +	bool has_boost = false;
->>   	unsigned int freq, i;
->>
->>   	cpufreq_for_each_valid_entry_idx(pos, table, i) {
->>   		freq = pos->frequency;
->>
->> -		if ((!cpufreq_boost_enabled() || !policy->boost_enabled)
->> -		    && (pos->flags & CPUFREQ_BOOST_FREQ))
->> -			continue;
->> +		if (pos->flags & CPUFREQ_BOOST_FREQ) {
->> +			has_boost = true;
->> +			if (!cpufreq_boost_enabled() || !policy->boost_enabled)
->> +				continue;
->> +		}
->>
->>   		pr_debug("table entry %u: %u kHz\n", i, freq);
->>   		if (freq < min_freq)
->> @@ -50,17 +53,20 @@ int cpufreq_frequency_table_cpuinfo(struct
->> cpufreq_policy *policy)
->>   	}
->>
->>   	policy->cpuinfo.min_freq = min_freq;
->> +
->> +	if (min_freq == ~0)
->> +		return -EINVAL;
->> +
->>   	/*
->>   	 * If the driver has set its own cpuinfo.max_freq above max_freq, leave
->> -	 * it as is.
->> +	 * it as is.  This does not apply to tables with boost entries, because
->> +	 * the table is the only source of cpuinfo.max_freq then and it needs
->> +	 * to go down again when boost is disabled.
->>   	 */
->> -	if (policy->cpuinfo.max_freq < max_freq)
->> +	if (has_boost || policy->cpuinfo.max_freq < max_freq)
->>   		policy->cpuinfo.max_freq = max_freq;
->>
->> -	if (min_freq == ~0)
->> -		return -EINVAL;
->> -	else
->> -		return 0;
->> +	return 0;
->>   }
->>
->>   int cpufreq_frequency_table_verify(struct cpufreq_policy_data *policy)
->>
->>
->>>    	/* in 10^(-9) s = nanoseconds */
->>>    	unsigned int		transition_latency;
->>> @@ -791,6 +792,8 @@ struct cpufreq_frequency_table {
->>>    int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy);
->>> +bool policy_has_boost_freq(struct cpufreq_policy *policy);
->>> +
->>>    int cpufreq_frequency_table_verify(struct cpufreq_policy_data *policy);
->>>    int cpufreq_generic_frequency_table_verify(struct cpufreq_policy_data *policy);
-> 
-> I wanted more discussion on this part regarding finer implementation details
-> and hence went with a working version, and I think I asked in the last revision
-> thread regarding what are people's thoughts on this added field. I am also not
-> keen on adding more fields, so this is useful suggestion. If we are to continue
-> this implementation route, I'll keep this in mind, thanks.
-> 
->> Thx and BRs,
->> Zhongqiu Han
-> 
-> Best,
-> Ananthu
+vim +/raw_capacity_lock +232 drivers/base/arch_topology.c
 
+   230	
+   231	static u32 *raw_capacity;
+ > 232	static DEFINE_MUTEX(raw_capacity_lock);
+   233	
 
--- 
-Thx and BRs,
-Zhongqiu Han
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
