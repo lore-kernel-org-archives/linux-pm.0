@@ -1,89 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.53
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794391356;
-	b=oSHoYF7VMH70WBHz9og8H4p8jG5mNuNx+6Y6Yzr2oXUMhVBVbbEYBeCQsrTlG+Z9XS9n
-	 EBPG4Ge9MequIXklbit9M3UgHfSsRVbv2jMQWvWAMmbVXoaFbr8rVaIlonfNx1h4BVtkt
-	 38vwehjT+qGNtHC/KmzfFkMCuhY8gPbwnBM3g+3c42uHE2zhtwTscNtjAxBDJWqcw2urb
-	 WTdGtmMxzKwUJvsAYJBHyrMdPOH+upzYvNP+wYiNhbQVdxPsqzdHpt0RbAeMy3tg/AxOq
-	 oar7xo/p20kmInVCcPV7OWa+97/DDF6lxomz9jLBui8wQ46L3ee2TGEWONxpL2BnU+w==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794391356;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=6Uf8NjTATLaSx0T6xJbOfk8n0GZJkRQt+2l2OmlV7/s=;
-	b=Hv7l3wsoYiuFHe2jUUi/2odYMCRlXnstNF4bzoHKd3ewzBJYL+IDrZmxTVn7RpcGssrw
-	 9th5oaZBHMemNLcf/M/yP9k2w7MRk5n5nmqJ9XBXHfminNORFvQM47SClgBBOXcKmFgZo
-	 79jQVW+WRzt7mFjaQvEo6BzdWos7txkS84vB1QiJ0PD7LZIULpwBab7beYCYH5F1V52S2
-	 VB5sS5sI23OUzDF7lfWazS+3PCydjA6cpQV8cVZso1UzGcnfVuxBzLkSqBlktvaJPdE4V
-	 3mPT3LIc/gWc3im+VRWCwSQfOL/gj91FQZFzE+b0tsHHlPk86luyJO0VuDVhtCtuThg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=h0U2KI9H;
-	arc=none smtp.remote-ip=209.85.221.53
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.201.16
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794391483;
+	b=J6iUNeJP5HG1uARWiTchilpi5EX0aA7lczP6cBVR33Sru7msS28rbwb9kwziHyawMWh1
+	 KziNYo8pYhCA5BqZ46ft9FstfKUa97+HkewGn9xMwkpQ4P40OEkVD6uGWeE4UD5B1RiPL
+	 KXo5RWG35DWJXEWjZ1Fb9QSBRagXQgLWYTxhRGx4UMtH+ULSxhGw5Jy54CGy2ZycYkcid
+	 TaYinF/El0/xc1QTmsW6w6dZ3JfcUA0+UiPIdSlAFNYUa4xS2Q6E5NHKqA3SoTxfxR23Y
+	 CSLUPkh4YQWwLIH5KUmKXhggXMBEKZw7zyD4qE62Vd4rTQpVV3WFNRXH2iMm3jLK00w==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794391483;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:CC:
+	 References:Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-EOPAttributedMessage:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=oVhgG1D34iAaFPpyW2HKAfJcIy1AudwUf4aBHqGSZjY=;
+	b=rZHSWYGsO1kbL0HUpmKTaVPSeayOJgjCyX5bdmeGL9v9sHz4aCrytr1nb6w+LcFEe9Ht
+	 yPbAL5aMzCg0GgXYUHc5Ps1l61psaxIYJ86ddnolvW2/gXS0EnBvBgrJn/lbOsI9Q9i3B
+	 8pRi3sFndJZV3pIXfdaLL8Dj9KMWU3sE1Cg1XtfgfUB8bOVjmrsqvETjQVKqqvsXrKQx6
+	 dOmNrmgTOi1Fa7qsCSUsLUUKkTowRYcGdm6p8oNq6xmiaHWJ+T4/QaPaICrq0bSdTKZwr
+	 GqoKq6Pqiq3DFp3g8fs3q7fcXniQ+sWzJA7wzcLlcrokNOrM2gvmRCCASTgV751/CpQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=amd.com;
+	spf=fail smtp.mailfrom=amd.com;
+	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=UKu6c68L;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.201.16
+Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013016.outbound.protection.outlook.com [40.93.201.16])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 083F3606A339
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 10:02:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 083F3606A339
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 063B5606A324;
+	Wed, 11 Nov 2026 10:04:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 063B5606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=h0U2KI9H
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-492690dd5daso2318710f8f.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 02:02:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1794391354; x=1794996154; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=6Uf8NjTATLaSx0T6xJbOfk8n0GZJkRQt+2l2OmlV7/s=;
-        b=h0U2KI9Ho3jaYsUkDK5Fn9tyFwbypvCXXUNlfq5rS+pYSn4ZWsgiwyV/pdkqvTjDA+
-         z6ZKvdaYbjQ17EYoNNC+EFELKj1jdE59psVlK6fnVag4qu+cTVc6XqNnmtFgh7Vy5Z7X
-         QnwyOkRLsdL4Jc1XSO2j/x3bC7y820cojw8HTyVPpGZTFHQFG3cIdL3eKPfWolG22ZTT
-         uFnol787+UL2MgjSwk6ipu8tWjxFiAh7ey2AtVznp1Q6dsl1U8qFxm1aLzHWt8Qi7DVt
-         MuAgEQ+Md/6RetRneZV8tKuZd+0Ywx02jhUTmncLH4XCZC2HC1En7KBC5mEhZLsjKlEI
-         Unjg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794391354; x=1794996154;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6Uf8NjTATLaSx0T6xJbOfk8n0GZJkRQt+2l2OmlV7/s=;
-        b=eMPQ5oTk+exb3jb0njZP6rMnzFOCjGotwbx1bHj7mC29vIDD0NuQsfYam6n1T9fIVU
-         NKSf5T2kRna+2z0qb4dbpckRRvkUiMrKuLzPjHK9YN3mlg6I3RmfIANcXnF2CTMVGonQ
-         Sk5MBEg/RS0nRPGoqRCLiMiDQPGJ3JvGGY2zBbY49t2H3livzFJd4o+w9oIA/FL48E+8
-         df/v/WCVnR3nCiZA/A3rZgbDSvnf/Hec/QXQr/Ab4RWgjhcI98wCKcGdvYIMlRtx/FRI
-         Z4rYjg0YrKu9rVPvRZPnVzoztYF1w50lV6JDmqEREVl0c/3cr4XddHM2DuwtkkBE8Wlx
-         TaMg==
-X-Forwarded-Encrypted: i=1; AL+hErHK5TCB44wZvguiFyiZWDIuWwKlduXsGv1CWPGW7UImGEMrZEcVV/kwv+eXkTVkWEWxkQ/uHmLhNw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+PEAmXQ491xvQovfEvLPeXKZ1L3pyO8y8dPEkTrLyZ2fs0HG1y
-	rIW+wBYQMiwraALQ8rCv/VVlmX2u6RwB4kjsiRPEbTPdBUg06N/MlY7K60ubtu0q1ShRvTWIHzL
-	khO6C
-X-Gm-Gg: AYBFou332WK5pOle+m23HCvQbkY6XH9GOYO4jmN3TlUJE2BfZm5/otQMLVfnI3qPJWi
-	5coGoJj8RCPnJXxbd4gmky6MK2OzTqRDj/8mOvhOagyOMKpFbKemCcP2+pk4hVT4qFGrKw1AFXY
-	dCDyd8lHl7Jxhnl+yD4RL+QGErmk6SUThwx3oXaejY/l1zvLBF9b1a33MYo4MeYWa1kdu0uezHP
-	mK6EFZU3eANqaTGcyzH2J33io1pj4qv9qZ6qGwnJ0DBqyUZFdue3t1mMwpmSK9SD0kX67Liv9p1
-	WoymBee8gFvvKmPVJmnkhezTM3ls8nZnrCDaPeH4YfE2uUOC6264QEtWACPeIvVuq8HLS9NG3b4
-	i9p73RdwvDAMCVbYRq06Q/vC/j0qtVae96TUtf/jrkBeU7BJSINJkPc3ZOinxV/s5qAch29YQN4
-	/INJY+CsaSrLIPhXgvBf2xQiVEO6AvmQniCIz9il4gD5BYqzkWL+WiXaIXusBDgeDoZCg5n/Fqj
-	yND+9ojFb9/LWwedi1D710x3t6bVCX3MjhwzwDpdFpeQAbO8YkHdsAIzK6dwJgxB405xqE/6JOG
-	YmWcC30pwVxDZkrfx96lZlEoALzuBUz9MqhDz9ilFWixkAbGr9nNLUxyarGdGA==
-X-Received: by 2002:a5d:64e3:0:b0:48d:ff71:dd9d with SMTP id ffacd0b85a97d-499c903d741mr3207711f8f.23.1794391354282;
-        Wed, 11 Nov 2026 02:02:34 -0800 (PST)
-Received: from [10.11.12.111] ([79.115.63.240])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-499823761f5sm4941304f8f.2.2026.11.11.02.02.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 11 Nov 2026 02:02:33 -0800 (PST)
-Message-ID: <e7621060-bf25-4677-bfaf-2549fc5e6ea1@linaro.org>
-Date: Wed, 11 Nov 2026 12:02:31 +0200
+	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=UKu6c68L
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=RX08IaMGtklfnl9qZdTq+oo2PWWg7ib3ZS/R5cP4ph2oicplgiXZ3+bgqIfLElpdBawhJO8kDqDc/iYn7CEZe1cvcsS0sxwkBNcl4NJ3bwfKXFAEk7gc003KM/Q70kaX9ohLL5mDsGn3yEhSSlWkHvJYJESElu/Jn2GI3TxlgU2IAiF0BKxRR/0v+AyYZK1taTZYY2sP5NvdxCWIdjp3AVS/7mY29L2LwcfRAHFmsr1yP4WC6Ng8VXRJ5BY9BCKa5um9KBMqnEPEnbrp5dSPaZt7SEOiY055EuUiowMOwA5abbVpFXGJ8DWL2/i35ZQ0ZhAHpk8WMdJJ53sfZsF9mA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=oVhgG1D34iAaFPpyW2HKAfJcIy1AudwUf4aBHqGSZjY=;
+ b=olId59uIUT9jEN99u8eTbYomB/gZUqVr+wnkK99yA5Tt9hIS56sT0inmcSa1LkA+j7nEvXuaWxuqDDhKR0Qark4FGqUpUj+WfgTKvqrY/sqW7c5CBwcDa6CKptdlZOoOQ2uFpNKX1Jo+DC29lEpiq20YUKhZobnPAZdi9ZO8ftLl4zihol38rK+UYYhYvMbLod/pCGRV0jddOlOD7hkmYNZbuoDdE8Ye30FtvzpMCTjIsKZLErzZkN3Ryhmuxkye1Y7PYFZc/BM84i8Zbfw1fcK5AU1sFpXZhmfPHeDWvV+xihFepwe0wIPW+jbyFk6ATgXpwIZmmMxM8LweO+sUwA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=linaro.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=oVhgG1D34iAaFPpyW2HKAfJcIy1AudwUf4aBHqGSZjY=;
+ b=UKu6c68LO1yzr+OaNC1Xz7WdPcOONVbXuq/XvAQBLjWBC+FfXlKqDjrlWdR/rakyRs4O2Dk9+vd+ngg6s9TnAZmUWQQH0RD1gzxWsPNIHqwF9fuAAvRMvTCkNq24Ks+DPMNyx1hh8UinnJFOCza/YyGSc3wH6PUYOs4IHZaQyes=
+Received: from PH7PR02CA0008.namprd02.prod.outlook.com (2603:10b6:510:33d::27)
+ by IA3PR12MB692094.namprd12.prod.outlook.com (2603:10b6:208:712::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.9; Wed, 11 Nov
+ 2026 10:04:39 +0000
+Received: from BY1PEPF000264B2.namprd02.prod.outlook.com
+ (2603:10b6:510:33d:cafe::9b) by PH7PR02CA0008.outlook.office365.com
+ (2603:10b6:510:33d::27) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.9 via Frontend Transport; Wed, 11
+ Nov 2026 10:04:39 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ BY1PEPF000264B2.mail.protection.outlook.com (10.167.242.118) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.615.4 via Frontend Transport; Wed, 11 Nov 2026 10:04:39 +0000
+Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.53; Wed, 11 Nov
+ 2026 04:04:38 -0600
+Received: from [10.85.41.63] (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.53 via Frontend
+ Transport; Wed, 11 Nov 2026 04:04:32 -0600
+Message-ID: <f0bdf36b-4453-4d2f-b82c-85d1d62c5f78@amd.com>
+Date: Wed, 11 Nov 2026 15:34:30 +0530
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -94,90 +102,72 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [thermal: thermal/linux-next] thermal/drivers/samsung: acpm-tmu:
- Rename platform driver to "exynos-acpm-tmu"
-To: Alexey Klimov <alexey.klimov@linaro.org>, linux-pm@vger.kernel.org,
- Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-References: <20261026-acpm-tmu-fixes-v1-11-0637431b7268@linaro.org>
- <179389375857.1009794.283716939057872036.tip-bot2@tip-bot2>
- <DMRYQFZGG5ZI.2T97YA5MCL74Y@linaro.org>
+Subject: Re: [PATCH 02/20 v3] sched/eevdf: Reset lag at wakeup when prev CPU
+ has been idle
+To: Vincent Guittot <vincent.guittot@linaro.org>, <mingo@redhat.com>,
+	<peterz@infradead.org>, <juri.lelli@redhat.com>, <dietmar.eggemann@arm.com>,
+	<rostedt@goodmis.org>, <bsegall@google.com>, <mgorman@suse.de>,
+	<vschneid@redhat.com>, <linux-kernel@vger.kernel.org>, <lukasz.luba@arm.com>,
+	<rafael@kernel.org>, <linux-pm@vger.kernel.org>, <tj@kernel.org>,
+	<void@manifault.com>, <arighi@nvidia.com>, <changwoo@igalia.com>,
+	<sched-ext@lists.linux.dev>
+CC: <qyousef@layalina.io>, <christian.loehle@arm.com>,
+	<pierre.gondois@arm.com>, <sshegde@linux.ibm.com>, <kayracizmeci@gmail.com>,
+	<tim.c.chen@linux.intel.com>
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+ <20261106151947.3991524-3-vincent.guittot@linaro.org>
 Content-Language: en-US
-From: Tudor Ambarus <tudor.ambarus@linaro.org>
-In-Reply-To: <DMRYQFZGG5ZI.2T97YA5MCL74Y@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <20261106151947.3991524-3-vincent.guittot@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BY1PEPF000264B2:EE_|IA3PR12MB692094:EE_
+X-MS-Office365-Filtering-Correlation-Id: f6274983-a2a1-4606-96bd-08df3fdb32c7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|23010399003|82310400026|1800799024|376014|7416014|261028144727099003|261026140227099003|261022105027099003|261022075727099003|921020|11063799006|4143699003|56012099006|10067099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	vXvqy3euHbzuDjjvP4JTZ53YB05+P7CjkVqQIAOPDx5C+yS8asfBQFZ4DOL0DUAPfv1AOw41QCSGyHPGy0QJlJ5ytjY0c36B4NhlnB8ji7eXPDbXfV8FFIESpAiBqyPvmQJ4QuxknDtLdxrEdvpivT7AvtknKbST8yRsTdGA7IEKNixc0DPEiZGtbwdW6AKO3QceherRgVF+BRogE3PtM9w811ymykzUXHRgZeJCzRBoJ+ga2/x+4qOOG56+1iXt8Jy+72PYyxdQ7pc66sTi6OEyWKbyh7oaJ8wAVsFA8Wlvfg1z1per9kqLn3uVsLZx6EoBbM63ThFRvDsTmeEEmeWzDuQzrkurQiyPMDUFAkf0MlCY41S2g+r6M5hhYxvz+n82co0yUtVD1L9x2iRepx1DPl2M5nbsQgBKm67LDwjS/nq+Cs5rOa3QUVTZmG26z7hIubRirlEd8Gu5bOiqbQzp9m3Mk5QgiEZchG0UAqBMzZa4yS5Hqjj7C86rfc+dKQEJAhsm8PXgvqwivLIEqQghU8gzTQe0OYQK6FIs4GTrgsdrQgmixTBkh5Q2He2QlZypu4UlSvwj1Ah6iGUi7mEzS67F27ibm5e54zCIyjFLRKw1C9NcgM6xoFfI2DGqVgYqmvo35wYQAUmYKVFnUoJ7vKkhOMkGyMNgfuUAcSCM3NrVnfnn7a5Yi4egv8x8jRQdwwz5t3tUjXzxYMqZ7p5xrjFjm94pN3dYqZKG0eDLcTWxAsYmcIR7HhKmm3G0
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(23010399003)(82310400026)(1800799024)(376014)(7416014)(261028144727099003)(261026140227099003)(261022105027099003)(261022075727099003)(921020)(11063799006)(4143699003)(56012099006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	FV8SwxJT8IFAYGCu6fIVnByz1XYwKmhWVgOF/Xbev6IJxRvNJcNuWqgx2qC7PxZutq9gaCMHnks+AHA2zly1wbJc8+z3TAPSolGmDyKyWCtxf5i5Oa80dNeLqC2mRGGyVkQm6wIL4QHJfuRtANfQ14tPonHuMI7RJ/LfKoug3/SIooYnRu4RikBDkafnaLupiUttUlX72zyqh8sssHew3R+QtxyDK5oEFBHSScGa9ziaoaHn28CsbTR6Gpy0PK2628kXKcGJjy3xjaSj8uhTX2TAwwtWhTpCNdE9H7T7pT/TXuLlphMMs98k1V0WLG42j6yGt8EOe61fC0WSl2XusNHh2i3u+0X2I3yDcPARMbsyPlwDLWRWICDc5cVr8TPaWxS0ijyxNlm8wAqkPGkIBh8A+fxH8ubrLsLs8m+J+6dLcbPr+RiSEhVEHfCBToEg
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2026 10:04:39.1481
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: f6274983-a2a1-4606-96bd-08df3fdb32c7
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BY1PEPF000264B2.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA3PR12MB692094
 
+Hello Vincent,
 
+On 11/6/2026 8:49 PM, Vincent Guittot wrote:
+> @@ -8376,6 +8383,9 @@ static bool __dequeue_task(struct rq *rq, struct task_struct *p, int flags)
+>  
+>  	dequeue_hierarchy(p, flags);
+>  
+> +	if (!(flags & DEQUEUE_SAVE) && !cfs_rq->h_nr_queued)
 
-On 11/11/26 2:42 AM, Alexey Klimov wrote:
-> On Thu Nov 5, 2026 at 3:49 PM GMT, thermal-bot for Tudor Ambarus wrote:
->> The following commit has been merged into the thermal/linux-next branch of thermal:
->>
->> Commit-ID:     ba446bdd27d4a2a6c0cb267f51a6ecc47cf19cf9
->> Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ba446bdd27d4a2a6c0cb267f51a6ecc47cf19cf9
->> Author:        Tudor Ambarus <tudor.ambarus@linaro.org>
->> AuthorDate:    Mon, 26 Oct 2026 16:01:28 
->> Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
->> CommitterDate: Tue, 03 Nov 2026 19:51:51 +01:00
->>
->> thermal/drivers/samsung: acpm-tmu: Rename platform driver to "exynos-acpm-tmu"
-> 
-> Also, the fix for this problem was sent here earlier:
-> https://lore.kernel.org/linux-samsung-soc/20261020-acpm-thermal-drv-name-fix-v1-1-71f72280583b@linaro.org/
-> 
-> Why taking this one and ignoring the fix that was sent earlier -- this
-> should be at least explained.
+Should this also consider DEQUEUE_CLASS which will move the task out
+of fair class and leave the rq idle? setscheduler just adds it with
+DEQUEUE_SAVE when moving classes.
 
-I guess it slipped through the cracks, as it did for me.
-> 
->> Rename the platform driver from "gs-tmu" to "exynos-acpm-tmu" to reflect
->> that the ACPM TMU architecture is shared across Samsung Exynos SoCs
->> (such as GS101, AutoV920, and Exynos850) rather than being specific to
->> GS101, matching "exynos-acpm-protocol" in drivers/firmware/samsung/.
->>
->> Suggested-by: Alexey Klimov <alexey.klimov@linaro.org>
-> 
-> I don't recall suggesting this. Reporting -- yes, but not renaming to
-> "exynos-acpm-tmu".
+> +		cfs_rq->idle_seq++;
+> +
+>  	if (sched_feat(PLACE_REL_DEADLINE) && !task_sleep) {
+>  		se->deadline -= se->vruntime;
+>  		se->rel_deadline = 1;
 
-my apologies, it wasn't intended. If you have a strong opinion on the
-tag type, I guess Daniel can drop it.
+-- 
+Thanks and Regards,
+Prateek
 
-> 
-> This was reported months ago and was never fixed in the updated
-> series for acpm-tmu.c.
-> 
->> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
->> Link: https://patch.msgid.link/20261026-acpm-tmu-fixes-v1-11-0637431b7268@linaro.org
->> ---
->>  drivers/thermal/samsung/acpm-tmu.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acpm-tmu.c
->> index 42b338d..2324efc 100644
->> --- a/drivers/thermal/samsung/acpm-tmu.c
->> +++ b/drivers/thermal/samsung/acpm-tmu.c
->> @@ -597,7 +597,7 @@ static const struct dev_pm_ops acpm_tmu_pm_ops = {
->>  
->>  static struct platform_driver acpm_tmu_driver = {
->>  	.driver = {
->> -		.name   = "gs-tmu",
->> +		.name   = "exynos-acpm-tmu",
-> 
-> It is minor but it potentially clashes with exynos-acpm-tmu firmware
-
-There's no driver name for the firmware tmu commands helpers but I see
-your point.
-
-> file name. All other names in file acpm-tmu.c are "acpm-tmu".
-
-I think "exynos-acpm-tmu" is fine, it aligns with "exynos-acpm-protocol"
-from drivers/firmware/samsung/exynos-acpm.c. I guess you may rename
-"acpm-clocks" (drivers/clk/samsung/clk-acpm.c) to "exynos-acpm-clocks",
-but I wouldn't bother too much. If you have a strong opinion on
-"acpm-tmu" send a patch on top please.
-
-Cheers,
-ta
