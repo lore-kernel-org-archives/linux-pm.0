@@ -1,79 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1794411301;
-	b=q4kI5mezJbJD7piC2tFXJMpwYgvkdvvsa8idbAXcb7kkpfVTxLac8wUc9qJ5YeFytmDS
-	 qieqXJn986nIK/aln6hJSe8Rf2BmQmo9RG+4qA7bAGZg/vFYyxfhdbRd7KDthvhDIaHls
-	 7eO3+DuxvGMzWT9XDtZq/ZcPjSEoEmrYoQ3z69cwqXMbHSIyq3cs+U/c8+eo5zwnVGhI3
-	 COIeqC1U1G190N0zyDArtr6upOuB+f/TYerfnIIalg9Rz45uwt6SJxpxrOKuW4JMgmhA5
-	 tsYjlTWqi0SWkAlh3/0p/3riQmju4GKPuKTEehr3+j0v6mpFRGLZGm8K5CdRAulYz5w==
+	b=jwcLDmY0uzTijnCse2kMDJKgTJOfoXELTBy683sLVqB2mRjM0QF6BGdcy2QA5Egq0Wg2
+	 Lo5sYV1g5cMA9sUI/EGUU+1ZX1/fOa5qfqTO/iPEsYhDPVC9M8zyCOaMPn3w/UwPHjyBq
+	 Wkmz4Z1JoYDtiHqIPbswfYzaHrtcvwmUlZklXBxv+/fMmVlwFVnWY9h26XK6Nj+p7JcN3
+	 7Tg2iQhs4ryVrTN3q+OlywzGWDiVVbmAqLaO8191ltNNX1ABGkLo4Kb78FrNvKUiRpqiI
+	 HDWBFJ/o29TE5KAg3/WsEodNSojREZoIk0amwtKs64Abfr+R27VyXRlu7kXU//y6vxw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794411301;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=QAj6gtHaGtEaBXpANO4ITchfgvOEsGwGT9yZbvqX0MY=;
-	b=xunvzytcO3PhjsNKV6m4CgMWquSO/DQhd7q3HYGGsjiW08V/nZ6VQiE4H3dCyAgFiM7l
-	 +HZr2lKPgsVfcU4s/wzSR9bs6VTzIqbOXkoTMZ2tdRIvlXrCyNxT9agIPbrQbcmMMzG5m
-	 KWTQn3O7yN6Od74GbBz0t8goW9WDFOPAse5fNimRx4MUE+0CHKCFQUc3G4JlYDh3B2HYi
-	 duk6heMoRPfy2jqSdDMw25vLFA6fg/rywPfM8sm7NetG2/6kn68spDreiNmXLw5T1pQCV
-	 YXMqnsPfSBtCyQ83aMkrLG2xxp1BPLlltsMmFA6HK5q2ufWeLH6VVrdfUSO2tcIGqdA==
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=j+b4RdtPuBh7amsSTwAr9llsAjhTDfOm1btLEdeiDO4=;
+	b=5bZQdueurkSBuVml4rq1Tvpkai7SU1yLAzTLbi34yy26mgwoEh/tUG4dxHWb0vHdRuZB
+	 am7PPzdqXydy+ecXbvyNZnI5kI1AZOdQpuZpgDLBf7IFUuZZeYp9zbqCVNkGtFaHjp34v
+	 VIDtXxhBILtz1kY1vYuLeSiQUOtD086Y2n1JkzM3gX2DpTzPfVFuU2jWl6rRn8idK5fT0
+	 jZq3w8sod1mX/NZeCGX7cp/Y1je/avT5SwOPZxJJLWsxWVbIMBh6fpajWb6kj7RNDgqCK
+	 xrOfPzp+KjI3v5PgsBrVjF6tm8XwWxDNce1R4dpzh4xP1jJ8kA8JK1wgaJiLhBpgYWg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hv0fsQzP;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SC9o1fiu;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85C27606A326;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2EBF606A8AA;
 	Wed, 11 Nov 2026 15:35:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hv0fsQzP
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SC9o1fiu
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
 	t=1794411301;
-	b=kZol0yB2JntlXuppNvipiOppltI6PEusx0mLpQ3Pv19cyN4aP9DmMwKbdlZGplcTv5Bk
-	 pGPqBGKfQhhFV7Yc+m8L8gdKJTtSS7Mt/E1D7YfK34jAV3T9W+SSV8SVa5guZXtJ59+De
-	 DPDnhuVx1SG3sxooXfJqBJTb1ksWIEXNmTzdaCehjNnI+5Gp4lVqOYmDyOxfwq72+5lDg
-	 BEo3TrrCbFAldoUAD5KT8XJXF7P1k6dl4ZKXqrmPoSqvnf0z2lI8KiNW2zBgbSHv1gTLs
-	 2l89wUeLJmycIEcWCBcS6K180vd1MbPc30kmcKujPXOnrQBrKWfB0DcVdxys6L2+LjA==
+	b=bbK9G6T7hUKbEsrmfBmeqw09YIPdGWBXZN94JxOdb+4JGdVCwCpxX+F94zXN2Xf93psx
+	 EhEJ6IetYWlctAp5RA/MxDoh7Y7s5Nsef3RLSHJZTMxBU+FN+485tGaBG6pDAhabRMQ30
+	 YEZ9DAYnOiKPZ6SHNvZk4D3RpYfMq1FEpNembUPIp/tnQVoNb260R5kWx2Zn4cOgvMSrU
+	 vLTxvVdy277DaC4bSv34L5r9vfH2grQK6KhJi7N8e5N++RrHswPc05BY+a2988SvJU0nI
+	 uwSgVcP3fFst6ZoyW3zSbthOHb6Ghl3wTrzDTzyQaSDTzqeYr6ivx6J7HTLw78KCjVA==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
 	c=relaxed/relaxed; t=1794411301;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=QAj6gtHaGtEaBXpANO4ITchfgvOEsGwGT9yZbvqX0MY=;
-	b=t7vqQ1zxO25bf6PauAT2PMBB59Loz3g0fXGL1CntAVUyUSLKCql9/gHGIcr1kWDKukgr
-	 HH9zldBCkvLGJYptPJlqnld/QTc/GH1nAET3MpBOYr/v5a+X1szFHf5d+j8xT0joLAB++
-	 MpDCQF5/9948wCW9hPPKZ2bYusPZZ2t1RGZEwcUGhzNoMdF3kM9Mf4u6AaOy0q60hwqHi
-	 U0ikAn9v0F32Wa7Bj9Z1ZcW+wAHKQdVDwS5WLYlEi3Vcl43o7p7uoNQOPHtERflizOzEF
-	 p+kE74TzL4cDEPIsVZJKrRPjicnkT/hGuxPFPQkwd9NNl5qpjHJc7R4AWooD3+MncpA==
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=j+b4RdtPuBh7amsSTwAr9llsAjhTDfOm1btLEdeiDO4=;
+	b=gIiXmaYcSOLQf5i80xbZ34Bg4+2inI2wHLu+xQkhFkbHw53T8yLNRVgHRfA+48nUfheM
+	 +DMSXNP3tuqvc2bHA6xDjipjGk4wRbJl83uPBe5MdWFNfeDCndIGWPz56rOivZZ9uYTBX
+	 o09kxnc587/DksyyinUh6iG+bg+WHpiwV8SRn+MDjsBWmH9VGduE6NsTn89k/GeFT9I2V
+	 /Vgm9zMeV0DEvYrc+T9BZwBgcAa5PuHkZamzxHAqbSQT1gXzHNjXrdKYqf9BGjkR57GJV
+	 gMM1NU1oY1k1qLLVohYxSjH0Mi00gqD6bA51xxOVDgfNRn/pRveemJpIOK+z6dQZyZw==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 94F051F00A05;
+	by smtp.kernel.org (Postfix) with ESMTPS id 94F191F00A06;
 	Wed, 11 Nov 2026 15:35:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1794411301;
-	bh=QAj6gtHaGtEaBXpANO4ITchfgvOEsGwGT9yZbvqX0MY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=Hv0fsQzPiAlCa45UL5CUToud5m22ud5BQcf+KmDErqoPikvcytsVQGW7HBNvkGOWt
-	 LfRFgG2WHHsBWStMWTC7QpbiQZc/lO6s07ywkcCiWsYOOHGzpykjA+eC5U9ss/yEl6
-	 fErRD1TplXc1DXQ3YzGo7bMUHBN5u6uB2EH2Lig+5Gg8dCR6PQ6J63+909eOfMukKa
-	 ETfTN6kMK2ob3Jbf0SXq2p/vsPLz/qsdZbbbOx1wsCWBPwL+P5rMRfA0HqW1a3QqTn
-	 1jP3LrUJYUtcjBsvkl1SkfxIs2A7LU1C7bkja9yeTBUKC1x9yxVu9wiSdSwAkIb8rz
-	 7fnXJerZGLzQA==
+	bh=j+b4RdtPuBh7amsSTwAr9llsAjhTDfOm1btLEdeiDO4=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=SC9o1fiuCEQO+Ugs5HcjxGDkZ8XKSM/1x8FTM2y43r6jxMCdKU0zWGWVkyxWMsJ8S
+	 OnAzcU6CaiSS0yp2Kx0seBNBYWV5Hbm9U+VMUibr0oW4OJhZC4j3isT0hM+7RSmX6J
+	 QnWGVs829qRBBymQlLz5653T8fk0YUTN/s/ZYtD9/C8KDwBZXtVIbBeHZWIjPAoGHj
+	 xBTPuJh9fsZsBx/qgc6Va06Iiu/H/APdu5n3sRAQyKD2wnhXOhXEScgjz8HEzcARpo
+	 fD2gcvHDHkUUk+MW0FnPZs0r7ACfEinecTsudw6BJvf33I2xR1DKJIobqjGxnoBUwq
+	 gwKp51nno/Iug==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 13C2949000;
-	Wed, 11 Nov 2026 15:35:00 +0000 (UTC)
+	by lkml.kernel.org (Postfix) with ESMTP id E173A49005;
+	Wed, 11 Nov 2026 15:34:59 +0000 (UTC)
 From: Asdlerto Korry via B4 Relay <devnull+korryasdlerto.gmail.com@kernel.org>
-Date: Wed, 11 Nov 2026 17:34:59 +0200
-Subject: [PATCH 1/2] dt-bindings: power: supply: Add Silicon Mitus SM5714
- fuel gauge
+Subject: [PATCH 0/2] power: supply: Add Silicon Mitus SM5714 fuel gauge
+Date: Wed, 11 Nov 2026 17:34:58 +0200
+Message-Id: <20261111-sm5714-fuel-gauge-v1-0-b9d163fff6ff@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,104 +84,66 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261111-sm5714-fuel-gauge-v1-1-b9d163fff6ff@gmail.com>
-References: <20261111-sm5714-fuel-gauge-v1-0-b9d163fff6ff@gmail.com>
-In-Reply-To: <20261111-sm5714-fuel-gauge-v1-0-b9d163fff6ff@gmail.com>
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIACKL9GoC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzNDINAtzjU1NzTRTStNzdFNTywFKkg2TjYzNDcwtzAyMVAC6isoSk3LrAC
+ bGR1bWwsANTEWw2MAAAA=
+X-Change-ID: 20261111-sm5714-fuel-gauge-c3c617078240
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, Asdlerto Korry <korryasdlerto@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794411298; l=2367;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794411298; l=1685;
  i=korryasdlerto@gmail.com; s=20261104; h=from:subject:message-id;
- bh=l9dRAjJonPbniX5sdrRnnL5yQqFuAZe21X2uph8Yb7s=;
- b=oBEF4DLZSmYt5qhnuCWRprl7mJpMOgHC+cZY1+lCyQmqM2f2vWsfHYW1skKFWv3IpKTgwsCg/
- ThQzAUvqTk2A52gsXON6Thy64SeI+6Ts8BpCm01d0GwDdnd5HXFEkw5
+ bh=76ei+RgM9hKvisAUftK3npdW06X58VHxTiIil5MR6B0=;
+ b=TkmNnO8CvraYln5cWpyEJnk+YbdPl6bcnr+37wPdYhFCMhmxzda+T+C7zs/egAxxNprrt+JSk
+ jOtDwliwEtGCKk0cu7Yf1YzqtygFkO+Qrn5nNLb7b74FJFcffRLUCo1
 X-Developer-Key: i=korryasdlerto@gmail.com; a=ed25519;
  pk=RqttIGkm2XZ8NhLQBzPgpXXawOdVa1uODGsk+sagbxs=
 X-Endpoint-Received: by B4 Relay for korryasdlerto@gmail.com/20261104 with
  auth_id=1411
 X-Original-From: Asdlerto Korry <korryasdlerto@gmail.com>
 Reply-To: korryasdlerto@gmail.com
-Content-Transfer-Encoding: 7bit
 
-From: Asdlerto Korry <korryasdlerto@gmail.com>
+The Silicon Mitus SM5714 is a power management chip for mobile phones
+with a charger, a USB Type-C port controller, a MUIC and a fuel gauge,
+each on its own I2C address. It is used in the Samsung Galaxy M52 5G
+(SM7325).
 
-The SM5714 is a power management chip for mobile phones that combines a
-charger, a USB Type-C port controller, a MUIC and a fuel gauge, each on
-its own I2C address. It is used in the Samsung Galaxy M52 5G.
-
-Add a binding for the fuel gauge. The temperature measured by the gauge
+This series adds a binding and a read-only driver for the fuel gauge
+part. It reports the state of charge, the battery voltage and current
+and the battery temperature. The temperature measured by the gauge
 itself rises with the charge current, so an optional ADC channel can
 point at the battery thermistor.
 
+Tested on a Samsung Galaxy M52 5G with the driver backported to 7.1:
+the voltage, open-circuit voltage and current match the out-of-tree
+driver used before, and the status follows the cable (discharging when
+unplugged, full when plugged in with a full battery).
+
+The charger and Type-C parts of the chip, and the devicetree nodes for
+the M52, will come in separate series.
+
 Signed-off-by: Asdlerto Korry <korryasdlerto@gmail.com>
 ---
- .../supply/siliconmitus,sm5714-fuelgauge.yaml      | 53 ++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+Asdlerto Korry (2):
+      dt-bindings: power: supply: Add Silicon Mitus SM5714 fuel gauge
+      power: supply: Add Silicon Mitus SM5714 fuel gauge driver
 
-diff --git a/Documentation/devicetree/bindings/power/supply/siliconmitus,sm5714-fuelgauge.yaml b/Documentation/devicetree/bindings/power/supply/siliconmitus,sm5714-fuelgauge.yaml
-new file mode 100644
-index 000000000000..af51db8cf13d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/siliconmitus,sm5714-fuelgauge.yaml
-@@ -0,0 +1,53 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/siliconmitus,sm5714-fuelgauge.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Silicon Mitus SM5714 fuel gauge
-+
-+maintainers:
-+  - Asdlerto Korry <korryasdlerto@gmail.com>
-+
-+description:
-+  The SM5714 is a power management chip for mobile phones with a charger,
-+  a USB Type-C port controller, a MUIC and a fuel gauge, each on its own
-+  I2C address. This binding describes the fuel gauge, which reports the
-+  battery state of charge, voltage and current.
-+
-+allOf:
-+  - $ref: power-supply.yaml#
-+
-+properties:
-+  compatible:
-+    const: siliconmitus,sm5714-fuelgauge
-+
-+  reg:
-+    maxItems: 1
-+
-+  io-channels:
-+    maxItems: 1
-+    description:
-+      ADC channel that reports the temperature of the battery thermistor.
-+      The temperature measured by the fuel gauge itself rises with the
-+      charge current, so the battery temperature is taken from this
-+      channel when it is present.
-+
-+required:
-+  - compatible
-+  - reg
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    i2c {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      fuel-gauge@71 {
-+        compatible = "siliconmitus,sm5714-fuelgauge";
-+        reg = <0x71>;
-+        io-channels = <&pmk8350_vadc 0x14b>;
-+      };
-+    };
+ .../supply/siliconmitus,sm5714-fuelgauge.yaml      |  53 ++++
+ MAINTAINERS                                        |   7 +
+ drivers/power/supply/Kconfig                       |  13 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/sm5714_fuel_gauge.c           | 315 +++++++++++++++++++++
+ 5 files changed, 389 insertions(+)
+---
+base-commit: 7649ba73f9e7e1e04d0b46213e39c79ae09dd55c
+change-id: 20261111-sm5714-fuel-gauge-c3c617078240
 
+Best regards,
 -- 
-2.25.1
+Asdlerto Korry <korryasdlerto@gmail.com>
 
 
