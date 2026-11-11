@@ -1,47 +1,69 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=188.68.63.102
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794388607;
-	b=k51QhcvgfC/ae9fqYdJBlhckVHLU1dQr/EEU7O3HFllkcz6BVAkS9WKxCY1nHN+fRUux
-	 ltHiOiFN9p04N4ySqoC5oixo77xF8u/uhMBTG3PMIjH0s3WWs2hKi4vVQszljJXq3gpcV
-	 QGnZXTumjLm+Sz4zlvkSdlBdQsawvW2h+lFItNDoOtNJ6c3yPfOngGNubKH2H76yRvqau
-	 KvJZI3eqnGd+PnvMOP+on8YQz3RmN+iqP6l01Kv7HeryJ5afooco4lRXEvQaZr0RraGxA
-	 Qk8DeynDCeQz5rh5XMMaokDvIOJJTd+K/XKDRiKv7D/IgwBoYIComXKoFlKF5SocX7Q==
+	t=1794388905;
+	b=MBa6sSShIBAvlb2Hjo07oRg8h9ix8y2TKwb+u6MwvfwdcvicxvwkLVXjDLxky/kNJ33g
+	 vERb2D1CAqHvc4OHSERsGpsX015mGVjw//jw/Nx58pRaNlm6tCVHSb2SzfwEtfoRFohW+
+	 C9V3qjG/ApXcJk+dYlAW7T3FbaJiUwJOdatyBz0bIXIhNINwJvr74yFnixIkqU37CtKGX
+	 svuPUxcUlM+o/fY7GQcxmsh+JUe2sktSwXil8hK0pMDcCUHe5z5mH1CU4+LXoc6amPf5b
+	 Vsy5GFbP/Mj71PeBPSJhlJBPo/wodL+advCg8FGLf8o3TZCHx732uRYCq6eQ9DYc1RA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794388607;
-	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=SjCTJIdrUaZqb+/BC8WM1DYxfIdbJM1w55fNRx5CsMY=;
-	b=d0n5u5WuB3ZHN3qWhebIfrRKAWdH5mvA4zrA8zABdryUQ83l/DY+ewSLOwsWSoNzirFj
-	 e5XpJJnKMbj/44Uvc/vHY4QkX6RYiIeqxAH0joEGPHjyWuBuEMB3oP0TPa2fAxgTQgehv
-	 zbKZeGnrTZoV+xSvXx3kK0XNIqulxA1a8owX4tYlDnXZ9KoDCRemItoKgh9UhJu3ZHtoa
-	 4Q9+HCI811Mw2vsui0I1R6Veu6obl4d18IL6BVXtiaanNIDtowlhda9+qVtFfmwBmK3DV
-	 ftvX6+X/2uuyXdLF6o4FpM6hRQJAksatmrAerVcBjB+xelnDowLUYAz0jUaIeMaNUXw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794388905;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:Received:
+	 Received-SPF:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
+	 References:From:Content-Language:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-PPP-Message-ID:X-NC-CID;
+	bh=aIRoXJDNqceBdKb+7VcVD0zb/w7fLipsmo4NYHpzbxA=;
+	b=t4Xy4hNxaZpuqJHGXO9CdOOQZDl73SzKegFgLuZ+4uEqu0lT2JnWF2oeVRzfyXqD0t9O
+	 WOXKBulaZO4GwZkzWyF32PSNy7+ajcRE/P01YXi2Cc9PXuZmWTArrc/55KybRGbLVRct0
+	 sCGakm0Q9PpICmJHOjK5LZAtDBTIw0UQLLX61is66bV9wKism2sybGtaBAjyVwiTupVw6
+	 v7CZ59WrVu+9+Huj/3bLd/MMQJgedtM6p9rd8UVAjAM+FSRuM2iUiNVfm0jGxQK0OztxL
+	 fb3AilClrjoC19+4Sq0OBqZ7iUk0eVQw2M5wFnpBOUVo2+DzQecKOyFJEuGzHIKLcjg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="jMqMQ/F+";
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=leemhuis.info;
+	spf=pass smtp.mailfrom=leemhuis.info;
+	dkim=pass header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=key2 header.b=XWTLav8F;
+	arc=none smtp.remote-ip=188.68.63.102
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.102])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66AD2606A31C;
-	Wed, 11 Nov 2026 09:16:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFCE5606A31C;
+	Wed, 11 Nov 2026 09:21:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AFCE5606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=leemhuis.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jMqMQ/F+
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B93FC1F00A05;
-	Wed, 11 Nov 2026 09:16:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794388607;
-	bh=SjCTJIdrUaZqb+/BC8WM1DYxfIdbJM1w55fNRx5CsMY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=jMqMQ/F+i7XvEnoLCVxBn4KkTxNZl1zsCZ2ttQh+9adYSA8l3TtjPbMetLKQc/TXw
-	 d6aKHRMry4fM0Myuy8hJL/eFwJlGzwBGa2Z0lwMfz1rPXXI5UJq/oxCcrRiUOyxR7X
-	 4ahEqcQ9UlcZgYJ3tjc0+1cGRgyLPiVb16itAS8flJBx6q9TsoMl6axC6RFyCdodDS
-	 QUAkHTQnBJ7v3H9SYPUQFFPCCD4H+nKLF2hLAAnDmCXXClHiKlzItzq2DKVD0IAsFM
-	 q5nWWSPhET8dfCq3QMD9C0OH4/6RXuzeR054FG1lK3TBiEz46S7HqyNtIwilLN+ndu
-	 BdP6z4lk3iCYA==
-Message-ID: <e179b228-3f18-4b99-9c54-93699d13e63b@kernel.org>
-Date: Wed, 11 Nov 2026 10:16:38 +0100
+	dkim=pass (2048-bit key, unprotected) header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=key2 header.b=XWTLav8F
+Received: from mors-relay-2502.netcup.net (localhost [127.0.0.1])
+	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4jPdLD3NM8z6WXB;
+	Wed, 11 Nov 2026 10:21:08 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
+	s=key2; t=1794388868;
+	bh=7pdryiipz0j+iu+O9ky1Ab58BI7pr16Jg8JAQ1379Q0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=XWTLav8FutN8UmK2+geCara6gCpeOBKuxKRLarsz+LQRfOqFzJZGxLbsxjCyBjKFV
+	 79TZOgSYui3duOF5Tl+ZWdqkkc1mRS9sfzmEUBmE0S89Euk4XpxFbl5S5qfsyXTgum
+	 QiU+NOA/4fiEbr2YDoBTPRcAGUcbZgrBkETGX8KRfsXldHZZUWmKmpR/stS5ownhQm
+	 3I93C5pYi+zjLFnPJUHPvByXCqdHKW9BfClnGuoKaOnqWrFwqjSKBDVH2g/f/dCc8N
+	 bVJqXSFMPWOcAVVnAuk4MqJ8wTM/zeyLdzcIQV5dUF69mbSSi+hHa5lKBySTfhLErD
+	 SA+Kws+c2L+wA==
+Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
+	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4jPdLD2fj0z52NB;
+	Wed, 11 Nov 2026 10:21:08 +0100 (CET)
+Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by policy02-mors.netcup.net (Postfix) with ESMTPS id 4jPdLB5SqLz8svk;
+	Wed, 11 Nov 2026 10:21:06 +0100 (CET)
+Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
+	by mxe9fb.netcup.net (Postfix) with ESMTPSA id DDE155F9C5;
+	Wed, 11 Nov 2026 10:20:57 +0100 (CET)
+Authentication-Results: mxe9fb;
+        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
+Received-SPF: pass (mxe9fb: connection is authenticated)
+Message-ID: <c92bf044-3a04-4fd7-b1a3-e7ea89cf1e4c@leemhuis.info>
+Date: Wed, 11 Nov 2026 10:20:57 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,109 +74,57 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 01/13] dt-bindings: clock: renesas,r8a78000-cpg: Add
- CPG_SGDn_VIO_DP_{TX,OTHER}
-To: Paul Elder <paul.elder@ideasonboard.com>,
- Paul Elder <paul.elder+renesas@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
- Ulf Hansson <ulfh@kernel.org>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Philipp Zabel <p.zabel@pengutronix.de>,
- Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
- linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-media@vger.kernel.org
-References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
- <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-1-1b2072e8c37e@ideasonboard.com>
- <20261110-steady-kangaroo-of-mastery-5fcd7f@quoll>
- <179438844820.272237.18262716067322018404@neptunite.rasen.tech>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <179438844820.272237.18262716067322018404@neptunite.rasen.tech>
+Subject: Re: [PATCH] sched/idle: Stop the tick when no cpuidle driver is
+ available
+To: Florian Fainelli <florian.fainelli@broadcom.com>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Joseph Salisbury <joseph.salisbury@oracle.com>,
+ "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: rafael.j.wysocki@intel.com, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, frederic@kernel.org,
+ linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ regressions@lists.linux.dev
+References: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
+ <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
+ <5f5cb821-92ae-4539-ae81-a43e33a7ded5@arm.com>
+ <f5946a8a-43be-49d4-a827-25149112b21f@oracle.com>
+ <774c3a68-6a6b-4e2e-a347-03e36953b750@arm.com>
+ <0b9b9c3d-8ba0-4329-9504-b9d33c627649@arm.com>
+ <097f4855-eca1-414a-932c-107d9eee5088@broadcom.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Content-Language: de-DE, en-US
+In-Reply-To: <097f4855-eca1-414a-932c-107d9eee5088@broadcom.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-PPP-Message-ID: <179438885852.683699.2690732334273648782@mxe9fb.netcup.net>
+X-NC-CID: XD/K3O4gQ183UQRoZIs2OH3cLb2x+hy0xzzYw5B1Oui9uqVdcTc=
 
-On 11/11/2026 10:14, Paul Elder wrote:
-> Quoting Krzysztof Kozlowski (2026-11-10 18:30:50)
->> On Mon, Nov 09, 2026 at 10:34:22PM +0900, Paul Elder wrote:
->>> Add the CPG_SGDn_VIO_DP_TX and CPG_SGDn_VIO_DP_OTHER clocks that are
->>> used by FCPV, VSP, VCON, and DPTX cores.
->>>
->>> It should be noted that there is likely a discrepancy regarding the
->>> clocks. In practice it ought not to be an issue as all the clocks derive
->>> from the same SGD1_VIO_MAIN clock and none of them are programmable or
->>> gateable.
->>>
->>> According to the datasheet, the FCPV[BID] and VSPD cores use
->>> SGD*_VIO_DP_TXφ while the VSP[BI] cores use SGD*_VIO_DP_OTHERφ.
->>> However, educated guessing suggests that IP cores in the same pipeline
->>> should be using the same clocks:
->>> - FCPV[BI] -> VSP[BI]:                  SGD*_VIO_DP_OTHERφ
->>> - FCPVD -> VSPD -> VCON -> DPTX:        SGD*_VIO_DP_TXφ
->>>
->>> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
->>>
->>> ---
->>> Changes in v4:
->>> - Add all the clocks
->>> - remove DNI
+On 11/6/26 00:59, Florian Fainelli wrote:
+> On 7/28/26 09:37, Christian Loehle wrote:
+>> Commit f4c31b07b136 ("sched: idle: Consolidate the handling of two
+>> special cases") changed the no-cpuidle-driver path to use the previous
+>> tick wakeup heuristic.
 >>
->> What is DNI?
+>> Oracle reported a substantial sysbench regression on small OCI VM shapes
+>> with no cpuidle driver available. Reverting the commit recovered the lost
+>> performance.
+>>
+>> Restore the previous tick handling for the no-driver case while retaining
+>> the heuristic for the single-state cpuidle case.
+>>
+>> Fixes: f4c31b07b136 ("sched: idle: Consolidate the handling of two
+>> special cases")
+> [...]
 > 
-> Do not integrate. Most of the patches here were DNI in previous versions
-> because they depended on a lot of downstream things, but now those dependencies
-> are in the process of upstreaming so these can graduate from DNI status.
+> We also hit this issue after it got back ported into stable trees (5.15,
+> 6.1, etc.) and this is seen during a network throughput test. 
+FWIW, a fix for the above-mentioned commit recently hit mainline, so I
+wonder if that might change anything:
 
-Upstream clock indices ABI does not depend on downstream at all, so
-seeing this unmergeable is just confusing.
+96a494c9cfd8f4 ("sched/cputime: Don't account idle time twice after
+dyntick-idle") [v7.4-rc1]
+https://lore.kernel.org/all/20261005194010.168299-1-stian@itx.no/
 
-Best regards,
-Krzysztof
+Ciao, Thorsten
