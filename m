@@ -1,60 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=109.224.244.17
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794366342;
-	b=rmj1p33DRUYXUhE0+sOIkrbda1g8VgfsfQCAXd94lwgPlsAgGak4tCnKupasMDcMA1T5
-	 gWO0sRSkhkq4B0fKK3aGQ9F0YYg0KAmHN69GHxWZapEz93SrWtjlWW8Z4iofHzds19L9N
-	 dwDrXyDXLZowdJC+MO9H2gjLzwFMxhvaFFp9tgk5nv9B6JIq0aGmWd5bT444TD/7N4YMR
-	 UxeUYIWy9W1jLO6Gq6XRH+Smf+r4vE2+7ZiYjyltYbvzf922P+qga+8ksZk4mJ3uNxia9
-	 NIZKMAZEsjNlUyA+mvOt/AjbZiIJOrmUuQfQwgnglLqGMt2Fn3SuMY0yA77XdwLJYGQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794366342;
-	h=DMARC-Filter:DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:
-	 In-Reply-To:References:Feedback-ID:X-Pm-Message-ID:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=uMTNYUkii6qLQJ9ZEEqnYSkjnjc4c5VnVsIGkdlEd14=;
-	b=4/99ApTqeZKpF7JY4alN1ohXyYk5BvVQniEsMEsUfPOr7Jf5UApYOCUxhELdMuqTgtnv
-	 McDnUj4SFN0XNL5MIcXcUs3H1/hozQHy8GH2OgDAqG23TKh42v5VNtbgvHIK2XjExcltq
-	 t1MdJCSMryQwE6kzQsnBkU4zfg5sGxxaLygGxJ5Si/j6IPbciQf48pSL2CLhbBnUc3fjO
-	 joOcgo3ZaTxeU6V3lG15jdAIj1sOgx+qcvqUBUPngksK1tGZRvHrq2sV6/yzTonNM5f0I
-	 2n2H2OFsYjGOKFWE/pk/u0Z4oVG9evhoyormrjkBZiNpeWPhJGPrEh9SwMKNur7MuZQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=pm.me;
-	spf=pass smtp.mailfrom=pm.me;
-	dkim=pass header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=mAJk9qXe;
-	arc=none smtp.remote-ip=109.224.244.17
-Received: from mail-24417.protonmail.ch (mail-24417.protonmail.ch [109.224.244.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.48
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794368335;
+	b=uELckUrCbE4ju02qrWEwAYimHn1PeE3mQoDwHvwhtnuGodYWRdY0LJiNsMFxne+BIoWj
+	 k8mlytZZsL+zL6MGG7OR9gCBeX+JXUW3CWZsthdn9wkmNmVZ5/I/fL+y2F1MTv2lCxXG0
+	 OF02cqVwpCNKEssndYvxFfUx5fmSmc7X+CUtatpMRraWfx2ZbEMnsZx6VfpsKsqvjUtY2
+	 co5LwTq5wCSM6E6Mes6lz6JPp7ABPtFLKbEK1pC94sCcQoDOVl4/Qdwm7wMqpw+uBSrat
+	 S83bx4U9k4pR4mJ1cmHVZ6FIcP8vhs5XJrtJI98qrYRJL1UufkXe/kSap2qz6HNUZ7A==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794368335;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=Z2ET6l1kFZ7646cHbCayQI5WEMFcXf1kwxAiWCRuN1g=;
+	b=Tpw7D/VijxEd73G4/5u4op1cdtk4B85dUsSw3Tbu0PlyvX2TB2MaX7Fk4YUm5yLGh1Kf
+	 kV65JVgUPfcbz4Lu4Uwo9K+6vhrwWkJj/Yujq+cCFeDKq7vQb6tzulqUu6DCaD5CL/qOs
+	 f+yCbEr/wGeiIzdtWb2/VJRPyyKwcyT2RzGKCPgw72aAVxmSMVJ/aTH/a3pD9UlpiFxYq
+	 rxAyPyR1dSzXnZB50LTlNr5h1IVHWC2DyuVMFqGdoVOow7nxyggLLdfTHxOwWOafU78zu
+	 gBDnbiFTHB7hUtmZdGIdtP6aZb3CCyy0S3rAwrhRCECiKGry+x0A6E/Gz3PybzZmDFg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=google.com;
+	spf=pass smtp.mailfrom=google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=Q48DEDPK;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.48
+Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8755E606A32E;
-	Wed, 11 Nov 2026 03:05:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8755E606A32E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63332606A320
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 03:38:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 63332606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.a=rsa-sha256 header.s=protonmail3 header.b=mAJk9qXe
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
-	s=protonmail3; t=1794366339; x=1794625539;
-	bh=uMTNYUkii6qLQJ9ZEEqnYSkjnjc4c5VnVsIGkdlEd14=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=mAJk9qXef5Dg92eNFgL1RRe5OnKLf1i0HsXA+8ARikr6+LWggcz8YnnZ0V5PncB/t
-	 Ojz8P7QUm+rYOjpXVaXOBSXbULCSXHtp8DZFqLMZ/sQenvK1IonhyF3/cUdqIAnvVS
-	 8+O+JPUmuhPnDxxe9oBKZbhEKkEh6+v1bVQ8UHsG6ur5t0UsRPKiTHkYNxRTlBxC/p
-	 TtePKLvBY0Bu+YbefdTscuwyWQmglSmWFHFbiaQUptV8Qn+zHzGG1TqazMQQ5t2wqT
-	 0ZAm0lJWuakoyuB2b8ydv+poW7XTlRIthyO3ZgNh1VVTu78b/8C0BsFhvM/OMGW5Y/
-	 d25vK0KqGLdwA==
-Date: Wed, 11 Nov 2026 03:05:33 +0000
-To: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>, Sibi Sankar <sibi.sankar@oss.qualcomm.com>
-From: Birk Skyum <birk.skyum@pm.me>
-Cc: sudeep.holla@kernel.org, cristian.marussi@arm.com, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, digetx@gmail.com, thierry.reding@kernel.org, jonathanh@nvidia.com, andersson@kernel.org, konradybcio@kernel.org, rajendra.nayak@oss.qualcomm.com, pankaj.patil@oss.qualcomm.com, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: Re: [PATCH RFC 09/10] arm64: dts: qcom: hamoa: Enable LLCC/DDR/DDR_QOS DVFS
-Message-ID: <179436632843.48104.13255943696510307622@pm.me>
-In-Reply-To: <20260724-rfc_v8_scmi_memlat-v1-9-cb732bcff1f4@oss.qualcomm.com>
-References: <20260724-rfc_v8_scmi_memlat-v1-0-cb732bcff1f4@oss.qualcomm.com> <20260724-rfc_v8_scmi_memlat-v1-9-cb732bcff1f4@oss.qualcomm.com>
-Feedback-ID: 21326998:user:proton
-X-Pm-Message-ID: 4df2f6e52051d98663eb4d196577dc26e996a70d
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=Q48DEDPK
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-c4d28f75d62so373132266b.0
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 19:38:54 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794368333; cv=none;
+        d=google.com; s=arc-20260327;
+        b=DBrW2HGnroUzDNTxd4zXRIZFQTw1L6ypa7/iX+I+k0cqGjMDEh+wflYf3W2fecVOZX
+         5Exabe7AKzhA+kZHeLzURuMywlYrJSQVbi2X1IhLnXXpBE2jp1+SyME/3j/pUHyUh2Pv
+         NCyXtPLDFbsBDG0qZOJsKHTlhQwjPUSYnxG3J5gE2MFDaSYL3PS3XzzFIrLvsR7SVi/K
+         x/uEziIsw4SLoeLgH3PMkkdBxeTn+FyQu9qhSH/q5lHW2SmflEikbxmfidi+6MBHnlXc
+         IAaBB6tQMnowwdcV7Bbt4yzuATHtjBfqYaR+nAWTQUO8jmFGWJsUBi7zUOXHfbHj/0fT
+         65xA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Z2ET6l1kFZ7646cHbCayQI5WEMFcXf1kwxAiWCRuN1g=;
+        fh=3otpeBqPBDrH+03EVNOEy0+fSKaEzVCUvPWR07AJglM=;
+        b=NoeH8/xIEvWd/pLgQKTMHk49Lq65pTINNdb5X2NAZhTtlL0GSpQ4/BT61mcQtqa9Gl
+         jiwh5l60p4hSzEtVMlAZUeLBbEGFK0RIiOODLfEKsoF3rHcMQ4it+cUmmXoNtWgTjH1p
+         UJOLqC4H+nwXdC/NiO1SAnLtQwIbuvjd75bkzkcrNZTA8SnWQ0krdmMOnv3Bt/zc+0Y0
+         OOaT033witxDSLNyXQuDYF20u1IpthXpo4E8iQ+EbzOQ9PPH7vJBgihFgMBBwu+Z07Zc
+         +O49r4gSff/4wJ0TDwcwtRSWM4Zy95WmF1LWzDYwuw/vXMAW1ZgNEvi3O3SsiyW+OnZS
+         8vsA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1794368333; x=1794973133; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Z2ET6l1kFZ7646cHbCayQI5WEMFcXf1kwxAiWCRuN1g=;
+        b=Q48DEDPK3Of2iJ2kM6UKtQiZRfJnMg7PyITt8bFmZHKKWWyFDhm1OJuxNnIOt/aTgT
+         4bh8Y8ReU9hiLWFjht2jSVZITzhyJbDqR6fXNRhud4YAFKX3Uiw99skP5j1XYatYxLY3
+         gDMzKgqAbw8BWKRZyGpJC09abkkh6f+MKiwXaa4NmlWXMjRWfZeE1b53DMUe4h3/v7NI
+         D/oJCcbaLwyfi1rAwa0YEZoCngyaU9qmRWFrpK9AXsDauYUC3/MWazSQAIkOO5DvYhSi
+         9AITZcX0gGxQSRfuIIwS7ZmCZzbja+jLDTMkekuCm1RM7Hfa1n3kB9ZE8K2qSyVmUSVO
+         1qnQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794368333; x=1794973133;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Z2ET6l1kFZ7646cHbCayQI5WEMFcXf1kwxAiWCRuN1g=;
+        b=b5KfDrithlu7wcvF0ODSNFpwPj6EHujuanJNWIyYVPp+xc8FAkyyAJZeIYygMqiA5O
+         zS3eEhKjKz6VVmgOPyfHADpXkaPVejYUKdQnv+t2LuJ8K4LSG4F4qep0TAx+6lR+Mo6/
+         SIgzLko+/S8g8z1HYaGV+/x2oQtRZ3r/sPsQRrxnBYxUX1BPtBOVvDHaMPFCIyRuZlPc
+         XRFj2zEHUuVlGPPZ6vYWPBPr4PIormFEo8zXyuCnijZFrVPV1u6zZ9KPk64oUqmJ3AFp
+         fzYMdvZBAWFimjPBZ2uzhGcC3hPqS3ARtfHlxZ8MXE+1e3dgCin2h8Bq643l0srXQePb
+         IDpw==
+X-Forwarded-Encrypted: i=1; AL+hErFfmanfgXtXMPY+FzHUrABgc2mDKwMtwtSkbVf+X4YLLQzlNO27buD8BbWKwxrv5orztIrXBc14vA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8uXay3XSdSk3jrm6MJEgweCH703KOP1UCJjkRlwoGww/4Jx4F0
+	pgdVKRiTpFb5IQBqxdkYJosxyMJBz+JKP6PSVXplDTSQCzI/P3hheXzBp73WpkncmtKgWlPKtFk
+	FglOQ3DBhrg/y1Z4OL3o4Vn+BfsHll6KOg1TTB5/t
+X-Gm-Gg: AYBFou2fKxn6yw9wBJFiY38yGZWUgxpae8vgcLnQvjsdxJ8XmyxqDIStcjek4WgLBP7
+	GjpCjMNjiQb+5tQ4D2o0orD06eEhqXROkEjLjGK/GP7nop5XSv8NFkp16E3OA7SUGUF1iDV+AOP
+	/sUUmpB7Qmg9nhA7bLVnoBaU3J0K05pr5uC2FV2uYLFe74lDJOcjDH9Oh7ZCs3DwUB4BZua2no0
+	TMLD6Jp03hoXnX+aeDDSySJNQvEt1Pbbx+YsEYWpScKmmykhQPGAiWWTfJay7ShKEDKIGeRb4Xm
+	6LikC8IQMUBodVtpsPOHfJglI/ty7SzSZ/3ym1pGdbThSYFfhgVkDQH8P5K+r0kksaIF+jIC4lt
+	Zta3ta94/D2sAPgXYHamMrk+VsGsaIApu9ZW72Mu5F/RalK4tJTbedxnrjVkrCjoiWtayCKWg7y
+	1ycwb+DGivGgo1TJ8=
+X-Received: by 2002:a17:907:3e8f:b0:c31:c767:adfb with SMTP id
+ a640c23a62f3a-c50662a8062mr90474166b.0.1794368332418; Tue, 10 Nov 2026
+ 19:38:52 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,48 +105,97 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+References: <20261110-pm-runtime-summary-v1-0-12ebf283db78@kernel.org>
+In-Reply-To: <20261110-pm-runtime-summary-v1-0-12ebf283db78@kernel.org>
+From: Samuel Wu <wusamuel@google.com>
+Date: Tue, 10 Nov 2026 19:38:39 -0800
+X-Gm-Features: AclHuK8W422emwCtXaoFuChUjWHORL2ljfu7vHUC1vM8aNEtLmFd_5-AJv8NDRY
+Message-ID: <CAG2KctpRRDMXR8wG40PeohsTyAdoNC=+4Nc9pHGQc1fmw9AXeQ@mail.gmail.com>
+Subject: Re: [PATCH 0/3] PM: runtime: add new runtime metrics and summary
+To: Joshua Crofts <crofts@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Johan Hovold <johan@kernel.org>, linux-pm@vger.kernel.org, driver-core@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Pragnesh, Sibi,
+On Tue, Nov 10, 2026 at 3:34=E2=80=AFAM Joshua Crofts <crofts@kernel.org> w=
+rote:
+>
+> Add a new set additional PM runtime metrics to improve power management
+> debugging and reporting (these metrics may be useful to userspace
+> utilities such as Powertop).
+>
+> MOTIVATION:
+> The current implementation only measures the duration a device spends in
+> suspended or active mode, which is very limiting. We can't find out how
+> many times a device changed state or what its shortest suspend cycle
+> was (to detect a sort of power "thrashing" behaviour).
+>
+> NEW FEATURES:
+> This series introduces the following new metrics:
+> - resume_count : number of successful transitions to active
+> - suspend_count: number of successful transitions to suspended
+> - last_suspended_time: duration of the most recent sleep cycle (ns)
+> - min_suspended_time / max_suspended_sleep: shortest and longest sleep
+>   cycle durations to help detect power thrashing (ns)
+>
+> By reading the debugfs file /sys/kernel/debug/pm_runtime_summary, you
+> get the following table describing the power stats of each device with
+> runtime PM enabled:
+>
+> Device                           Status        Resumes Suspends   Active(=
+ms)  Suspend(ms)   Last(ms)    Min(ms)    Max(ms)
+> -------------------------------------------------------------------------=
+-------------------------------------------------
+> 0000:00:02.0                     active              1        0        45=
+688            0          0          0          0
+> 0000:00:1f.0                     active              1        0        45=
+687            0          0          0          0
+> 0000:00:1f.2                     active              1        0        45=
+686            0          0          0          0
+> 0000:00:1f.3                     suspended           1        1         1=
+658        44028          0          0          0
+> 00:03:0                          active             15       14        19=
+627        25899         42          5      14811
+> 00:03:0.0                        active             14       13        19=
+626        25900         42          5      14811
+>
+> TESTING:
+> Tested with an x86_64 defconfig kernel and QEMU.
+>
+> AI ASSISTANCE:
+> Gemini was used to prepare this series.
+>
+> Signed-off-by: Joshua Crofts <crofts@kernel.org>
+> ---
+> Joshua Crofts (3):
+>       PM: runtime: add additional suspend/resume metrics
+>       PM: add sysfs attributes for additional suspend/resume metrics
+>       PM: runtime: add debugfs entry for pm_runtime_summary
+>
+>  Documentation/ABI/testing/sysfs-devices-power |  36 ++++++
+>  drivers/base/power/runtime.c                  | 156 ++++++++++++++++++++=
++++++-
+>  drivers/base/power/sysfs.c                    |  81 +++++++++++++
+>  include/linux/pm.h                            |  12 ++
+>  4 files changed, 281 insertions(+), 4 deletions(-)
+> ---
+> base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+> change-id: 20261110-pm-runtime-summary-8dd29a1383bc
+>
+> Best regards,
+> --
+> Joshua Crofts <crofts@kernel.org>
 
-I tried this on a Lenovo Yoga Slim 7x (X1E80100, 83ED, firmware
-NHCN62WW) running 7.3 with patches 1-8 of this series and the
-protocol@80 node from this patch added to the board's DTB.
+What is the vision for using these runtime PM stats once surfaced to
+userspace? Runtime PM and suspend have disjoint portions, but I'm
+curious if you see any non-obvious areas where these stats would be
+insightful.
 
-Memlat probes, and the ddr, llcc and ddr-qos devfreq devices come up
-under the remote governor. CPU read bandwidth goes from about 51 GB/s
-to 117 GB/s with six threads, and suspend and resume work.
+And is there a reason the stats need to be surfaced in both sysfs and debug=
+fs?
 
-Under GPU load it isn't stable here, though. I ran Speedometer 3.1 in
-Chrome twice with memlat active:
-
-- The first time the run finished, but after a warm reboot into a
-  kernel whose DTB lacks protocol@80, the GPU never came up:
-
-  adreno_gmu 3d6a000.gmu: [drm:a6xx_hfi_wait_for_msg_interrupt [msm]] *ERRO=
-R* Message HFI_H2F_MSG_GX_BW_PERF_VOTE id 34 timed out waiting for response
-  adreno_gmu 3d6a000.gmu: [drm:a6xx_gmu_set_oob [msm]] *ERROR* Timeout wait=
-ing for GMU OOB set GPU_SET: 0x4
-
-  A cold boot of the same kernel was fine.
-
-- The second time the machine reset partway through the run, with
-  nothing in pstore.
-
-Four runs without the GPU load (a CPU bandwidth test, with and without
-a suspend), each followed by the same warm reboot, were clean, as were
-about ten boots without memlat.
-
-Separately, the memlat driver sends MEMLAT_STOP_TIMER only from its
-.remove callback, and the SCMI bus has no shutdown hook, so on a
-reboot the monitors keep running on the CPUCP into whatever boots
-next. That would fit the first failure if the GMU's GX bandwidth votes
-and the CPUCP's DDR votes get in each other's way. Would it make sense
-to stop the timers from a reboot notifier as well?
-
-I'm happy to test a follow-up on this machine.
-
-Thanks,
-Birk
-
+Thanks!
+Sam
