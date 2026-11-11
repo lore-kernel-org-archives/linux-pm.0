@@ -1,112 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794371077;
-	b=nW82AF9sGU4T8QwaxI5qvS+PdPInbdK4VBvkA23lQvu3qmL3EdSNPmisX74lMPM462XM
-	 9TVJl9Z9kGnxFAnMG0t63xlrcBFzk1bcS+J3Me+BGZKjGLFUzlqzZPff1i2mawfWslzhS
-	 ziwlP7cG3SKe8sKqUiwHY1AsYaSv3S8eUWYYFJeOJGJAMv4SZ2AShHza8fMpArE0tPBcQ
-	 KRbad7ypwQpOAuXMi6UjBgbMzIZFwFlIB7mN9zoHbVrAXngmCtF8tDELv5xhj7f022zUr
-	 lA6IY6suMDKx6WKAvXyofqrFtkIf+U8YoE+P/W3cZ31mWMLweJrE8ctwJ+Utu4ZfC7A==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794371077;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
-	 X-Authority-Analysis:X-Proofpoint-Spam-Info:X-Proofpoint-GUID:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=vWUrzMN8nC3qw9C+l9CmsKFKxbiwV/1FiCWDbdTG840=;
-	b=HumZ98oQefs0rUsX46x9KB0kbrazfjD770HIpa81Ea91O0VXnT19lW9X+8GRBqD8u27L
-	 ApeI/1qhLgOljcQAC7uFh2DiuSvfVYrFaocNvEMULBgn5ELqnPXryhUyK3pEGl0XTbcO8
-	 RUqzSG0wis7aIpl3s6CNiN6EeCNuQrDKto3+ZWDUvpPuWLIvSxfukh3iYFAC1F43rATDE
-	 UHDexti4As0ytoURceBCnBJROz6Rd9JoahtuUmuvMdgpDG/QboFW7D/le85mUofx7e73F
-	 p34j9XyGVAnMx1Lv4fZaCM2/Fe0g2A8RK4ManDJfydgexKXBCVnPo1I3WIRMX2kDnsw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=PWrhjmw6;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="g53d/L4+";
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.75.74
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794377053;
+	b=Q6uIMUn52d090YxOr/7Kz8Qlar2ryrr3rvbsqJ4JjlgbAmCI6eIadun3miT1uNulSjvw
+	 6ih18UR/43Tb6sAeS18Ru7mKIxkZJlIBtHdycjdjj2usYkRgfkp1v28Smtw9dZ9yxjvS3
+	 3RsLY+xABL37SS8xoo9u1D9JTMxvGpzaoyI165rSEXwJW5WWSiR+joxp/XU98LL4MalWR
+	 sF9gfJ0T6dg54PYn9E0VWaQB/iH5JfwIrsmfumNe9K2y8hv09nbirUy5uOvC54QtEf1n0
+	 bRzrKTVFBIT/RKmt4zqCLeIFjjeJlHUz9wWuJVGoidWMEhzGhAWch5XJKwvseoIq+ww==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794377053;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
+	 User-Agent:Subject:Content-Language:To:Cc:References:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=GfxPGAV3vAK9GHPr8FAumGT8crwX8V9VIz/rlqREHYI=;
+	b=EcAMsydCuTUZVVwcqu8I+grqhttk3X8qPq7fSHbTPb7vTNWEs3pLGsNIhsbTQLE4c2n3
+	 4km5dmlrCDTYtmb91m+ASq+xpecsRYk+G28mTx6XrLmgDiWETdU6EvhJg+5NGfJYZkJ7J
+	 A4qkSC+aWhQ4axB+BGPWzNqmPhAyNX1wv418ggV2kzxIXhvD9Sr0Js8URTm3CzCkUIbbO
+	 0FHG3cb2cqG+g/rODQpSRqBOrMhFxUxmfJ3WTi0IdpuX6Zge63663F4khAnJZpuoR/YZV
+	 wBQV/WjsqDxpKOzVEG7RdRDwS+CbiQWEunaUldwaZunscLV/EzArk6Vkm7uXu/IRv/A==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=amlogic.com;
+	spf=pass smtp.mailfrom=amlogic.com;
+	dkim=pass header.d=amlogic.com header.i=@amlogic.com header.a=rsa-sha256 header.s=selector1 header.b=cU0PSkVp;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.75.74
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022074.outbound.protection.outlook.com [40.107.75.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 726E4606A32A
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 04:24:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 726E4606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 607B7606A33A;
+	Wed, 11 Nov 2026 06:04:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 607B7606A33A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amlogic.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amlogic.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=PWrhjmw6;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=g53d/L4+
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AB1sx0r4167139
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 04:24:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	vWUrzMN8nC3qw9C+l9CmsKFKxbiwV/1FiCWDbdTG840=; b=PWrhjmw6cWiAIUOR
-	nBxnNT8cuBsNpQspycxSw3FhkVArCWOtiHpP+9QEaHqPVqHRw70dmX8aqaQBfAU0
-	iSZxnMb8TrjLC/4nDBbKGnK3AuWxMYxp/htIhqnJ0WPfiVKtiQmOeqdKPVdVIiG/
-	xXFBynvSMycO/H+NV76X1knr0B/Z/bOoj5VbzxoDPswFl86HCta+EBWmnWRjdhFp
-	5jbZ11CqvfgCOHpaScsXW1LiLxTyGMltVDkk0Z9uvbT3XvGaT2FhyhoroHACNgTP
-	K19gk9CdvMLJ7fBQp7lQdwxkgTgoj1+MXoxYqPw8gxcaOxGxLbwI1+qxXcmwZoWF
-	94PuSA==
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4huyw4ca0g-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 04:24:35 +0000 (GMT)
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-cdd97f89731so636605a12.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 20:24:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794371075; x=1794975875; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=vWUrzMN8nC3qw9C+l9CmsKFKxbiwV/1FiCWDbdTG840=;
-        b=g53d/L4+RGl2Wb2GgCTc/4kf6IH79alfY7m7YcSOmGU/12MMQnQCZG8abz+p+IHPLd
-         ZN+wph10O8FB97tlScX8BPIiUDBxA+4w8T50DINoRR3riumt147KmOZbHBcPvEcwSXEo
-         KxJviEGhhLGgbkiOvoDE0HQOIkNSbOZGn2LIS7Yd0yp8ZvfS5MYV8qwzPBGWHylSrsqk
-         ukek0/KNJtykyETChz/MFfFnpoyis5FI757ZMW3ZzLtvLNLeAf/evKlaeOfPlreos+de
-         Bg9OqLUNp8acrCUumyBI/+GmzVFYi2730RnTBu594psuwRDMcRq/au2dRhnFghDSai34
-         pxeg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794371075; x=1794975875;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=vWUrzMN8nC3qw9C+l9CmsKFKxbiwV/1FiCWDbdTG840=;
-        b=q6pLeyCLHNaS8DSaKM6EFO4BCmQxT0iu2cRTP9/uMTwwGKtuO9Lkg/luPuTD3S9Y/I
-         YNJwK4nTiEczsp6u5z4SQLUNvCE8qMHVQNb6qgPgCA4kHCgqevRjQuqX1mwjjqYhf0AJ
-         J1Hri/1sEWlGhXyACrWZDX3jQ5lW0crK7pqkPnZPHA9w/LO6TLCvJk0w/iw5e7PoWrxU
-         BRCyx2+ZgX7CczK0Qo6G3h75SjWqWfxKp008YO5vplf/WC/wy3a26gtosexZuxTQgzKE
-         J8a2vXCSTV+9Dqebf+I9MT3vCt30lRLQp8WR5aDOmIM4kgPxOlZPTGRk6C6WbQ0yzdCf
-         TM3g==
-X-Forwarded-Encrypted: i=1; AL+hErFl4TENJ5TIb69RRz+LWF4civxt4COx3rJpyv6jUbwP6Bp/x4mUp5rTMQh8wMYRBqkWIB2X3wZWFA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/dhM315ukB2Wx8NwRsce4j9pKSnnDjUx4r4HGIvuzx6JgB4Hpj
-	6E/EZRXgd1IHdRiUihAhhQ0EiZEJICpwYJlYrO7HnXbhE27dR/J97nR0q1eFYX9YCFjdAJ4D4Km
-	LYxcmgdGUr/MRc4e8rL+hFxOJ361aeveJqTaotynijHfNo7JtCmt8ywyM4j9x5A==
-X-Gm-Gg: AYBFou37isQSMeMyIL1h5elUMRprsDSk6FtTQcIdfQCCnKnmjjH+3XcII0Upxw18m4+
-	Q3WMk9WohRH2lqiiX9/L7VjO0EdcS/ijeda+fCzL9agtztew64OsmiXbt3TUrNz/5C/M6a/IkBg
-	/D9/0Bzjylm0SKkCA5pK4QF3ed2mWWIRNVGu3lAbWzPzfE1ABUpxlW/WlY/7Qmw/ZqLxAN+ar1r
-	5IfwyvrIJ0ZsQV1CRFBS1nNQy/X9ntrcphf+8o3Tdhh7ra+VqR/h2sz+EmIq+7i7Pu9KsANwRcB
-	1PIPibzJOg7itV1vRFMfi9dFnHKDRc2F1+2KnYVScNOgWMMCI/GLJ8rS9uUn4jG94pDwQYJozVr
-	MZFRyndFwM0+e8xJzeKA7cenMchjJ4/ilsClOtdIxt+vmLf2++6u+ZDWqFZ7Gl/sxbQx713f4/M
-	0VL+dVXZm2eJji9LALsl8kVEuE37im/twg
-X-Received: by 2002:a05:6a21:7010:b0:3e2:3392:53f4 with SMTP id adf61e73a8af0-3f2fda98bb2mr939339637.18.1794371074785;
-        Tue, 10 Nov 2026 20:24:34 -0800 (PST)
-X-Received: by 2002:a05:6a21:7010:b0:3e2:3392:53f4 with SMTP id adf61e73a8af0-3f2fda98bb2mr939310637.18.1794371074260;
-        Tue, 10 Nov 2026 20:24:34 -0800 (PST)
-Received: from [10.133.33.220] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8baaad41578sm1712051b3a.32.2026.11.10.20.24.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Nov 2026 20:24:33 -0800 (PST)
-Message-ID: <cbd2aee7-95ae-4d30-8458-b7da2910867f@oss.qualcomm.com>
-Date: Wed, 11 Nov 2026 12:24:29 +0800
+	dkim=pass (2048-bit key, unprotected) header.d=amlogic.com header.i=@amlogic.com header.a=rsa-sha256 header.s=selector1 header.b=cU0PSkVp
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=PFh64LTOcwIOy4NU6AKkbscKqpfPZDHvU95OM2VmGiyRf5nzeKLaF7jrgQv0bBlA6UlhIhwriDxxa8GCs66JSKzFZ2TNqFTyF119/rRpJSemOgWXO2RTg6PA7yp54kZ8XJzy0PBEY2VOT2JZC9D/GP33TuzoFaHXTgzme8q1wBy904mZBEiin3e1qcrWSsodhBXTTRxhUIfGaqxEjxrIqqoY0xBq5x4y9FQe8rm0IhZXoyoSxgCRBY3O95KzsvL02AEc95gkw9sqeQTO/yy6gOPrPGhdejpY7WtA1Hr+S4ScKFO/kK9TrVQnsvd0b21XF2ydRroDd2mbh11TmnekSg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=GfxPGAV3vAK9GHPr8FAumGT8crwX8V9VIz/rlqREHYI=;
+ b=IxAe9j4BB9Ip1ODWMv4IYl25SWJnhimrRb5MWrC3Tae+dyzh1LsqmVjgfgoQTUzImdK54pViyoidRkFexhAK7ZXpXrXe+u6vnFKYrDw01OYVo9ENuApslCHVKPvJ3O5cpQTY3XnCqC0fIqnSrx1suhDaAB5Hlbuk8mR481yYWNz8W6c0NeGH4Z9nF7ci6EbOhGNRK83LSU8eT70ONswEiPuZ8J/r0OcSKLYUmWr0dGb4t6dv436RLwhBBRv8kr63ZfgDyhfKw0K19161Oj8bEy5WGdrl/1CKgrzxxdIMfgLix9VOUzKAvJ92mbdOBhC7+Yw8KEyyQp14z7YpboNwFQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amlogic.com; dmarc=pass action=none header.from=amlogic.com;
+ dkim=pass header.d=amlogic.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amlogic.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=GfxPGAV3vAK9GHPr8FAumGT8crwX8V9VIz/rlqREHYI=;
+ b=cU0PSkVpxepf/MaM+dT1oKLhcTYEAKthTNxqRx+9UPPJ6Es57PgfYr9sr8Mduf8fB/qUHE99UHtUj08mIXsApychHC6l+Ye4QTtSeud9nH/e/EGZA5Z+5TpipsGybvhkEcev7p2Z599lz328m/0nJoiVjkvROgVMSIhR1/cR7/7gFTJUF2XSjnetk8wjH4HGeURUh4MlPpxyw70eNY7OlpEY6Czr927HlIVea7IMek14PO4LOwlIou403G2QK01CW4G9Z+5QNo77+da+6uuJqGhjS71mP9cArbi16De/pl5Z+4ZIF0wIpY2qgxR/saskTR1PF/HZSpNe4vpsWAdIjg==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amlogic.com;
+Received: from TYZPR03MB6896.apcprd03.prod.outlook.com (2603:1096:400:289::14)
+ by KL1PR03MB8305.apcprd03.prod.outlook.com (2603:1096:820:115::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.8; Wed, 11 Nov
+ 2026 06:04:07 +0000
+Received: from TYZPR03MB6896.apcprd03.prod.outlook.com
+ ([fe80::78d4:9dee:2e32:d1e4]) by TYZPR03MB6896.apcprd03.prod.outlook.com
+ ([fe80::78d4:9dee:2e32:d1e4%7]) with mapi id 15.21.0615.007; Wed, 11 Nov 2026
+ 06:04:07 +0000
+Message-ID: <0b49c0b3-1089-47a6-8020-8aa0fab0cf30@amlogic.com>
+Date: Wed, 11 Nov 2026 14:04:01 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/3] arm64: dts: amlogic: a9: Add power domain controller
+ node
+Content-Language: en-US
+To: Neil Armstrong <neil.armstrong@linaro.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Jianxin Pan <jianxin.pan@amlogic.com>, Ulf Hansson <ulfh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+References: <20260722-a9-pm-v1-0-1fe20a44bf2d@amlogic.com>
+ <20260722-a9-pm-v1-3-1fe20a44bf2d@amlogic.com>
+ <9dffc605-2ab6-42b4-a7f9-565bc16d8c07@linaro.org>
+From: Xianwei Zhao <xianwei.zhao@amlogic.com>
+In-Reply-To: <9dffc605-2ab6-42b4-a7f9-565bc16d8c07@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: SI2P153CA0012.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:4:140::15) To TYZPR03MB6896.apcprd03.prod.outlook.com
+ (2603:1096:400:289::14)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,144 +106,122 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [rafael-pm:bleeding-edge 9/22]
- drivers/platform/x86/acer-wmi-battery.c:292:16: error: implicit declaration
- of function 'devm_battery_hook_register'; did you mean
- 'acpi_battery_hook_register'?
-To: kernel test robot <lkp@intel.com>,
-        "Rafael J. Wysocki"
- <rjw@rjwysocki.net>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
-        linux-pm@vger.kernel.org, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-        jelle@vdwaa.nl,
-        =?UTF-8?Q?Ilpo_J=C3=A4rvinen?=
- <ilpo.jarvinen@linux.intel.com>
-References: <202611111027.YYwIlIDB-lkp@intel.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <202611111027.YYwIlIDB-lkp@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTExMDAxNyBTYWx0ZWRfX+Fgp4XJcYOcP
- tYT+zOekNNmCX83CAVt3+d+1vST7JEAxvp8nFVLkl8Ly6Jh5IBz4p0DSb0FkE8m/J+ITJygTj0k
- kyEkXU4GHP5sEI7h6PIIL+8FHNsoKfRDlpgusrT2xR9+Rp3ESjGgGUBkKnfZGp0ENOoq+o0cp1D
- BtO+UsvkKPCQ7wOxDCXv4kS/1jxYUlSfyyfwpf0NTOHEHymyw4Ngsm+FQAWFQMwhnN5Bd7thJw6
- 7/Np9KIOhXLmul229ADwsasAlrmVSoL6COVBAzBabIBDB0sQA2UJVkRVsFte3srnA14JogEqBTM
- iM3hXOFPJ6IeoiBSvOh5n5aikKMysE2EweNi3jcwn92/1cMGjewIe1nGVVEpQAQmvg2GpNk+gV/
- yt4j6H2jQm884ryTO198wbuTzuY5o3qzXZdhDmDo0kucmSIljn3T0I333k0W/y/V4Th0EHozONo
- gKjaTcv168Plpmwix1w==
-X-Authority-Analysis: v=2.4 cv=Ee1d0/mC c=1 sm=1 tr=0 ts=6af3ee03 cx=c_pps
- a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
- a=VwQbUJbxAAAA:8 a=i3X5FwGiAAAA:8 a=QyXUC8HyAAAA:8 a=NEAV23lmAAAA:8
- a=Q1K4HTE4AAAA:8 a=O2upucybYjXuBVFjdQwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=_Vgx9l1VpLgwpw_dHYaR:22 a=mmqRlSCDY2ywfjPLJ4af:22 a=v8M4KpxsNpHYtUgu9mhN:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTExMDAxNyBTYWx0ZWRfX7MxryTLF0DIK
- 69+duSOnHH+jYkkRj244pCy1vAJsgTsXOIqhxMQyOcM7z08fol2SyTDAYO22twQ/v58metTb8FG
- xKDVm8y4KkYuwK7rTQCs9CgwFxcNi9w=
-X-Proofpoint-GUID: Lq3sAZ0onPyYmgn6vVs-8kanuddOZt71
-X-Proofpoint-ORIG-GUID: Lq3sAZ0onPyYmgn6vVs-8kanuddOZt71
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-11_01,2026-11-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 priorityscore=1501 malwarescore=0 bulkscore=0
- suspectscore=0 clxscore=1015 adultscore=0 phishscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611110017
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TYZPR03MB6896:EE_|KL1PR03MB8305:EE_
+X-MS-Office365-Filtering-Correlation-Id: ff0caab8-4fec-4b7f-1886-08df3fb998b2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|23010399003|1800799024|366016|10067099003|11063799006|4143699003|261026121527099003|261026140227099003|261022105027099003|261021121427099003|56012099006|261028144727099003|261102123227099003|261009223027099003|22082099003|18002099003|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	T6Rcc8/kr9J9ovd5b0vqY1p3WFoCcwt2rc0Hv7kzr3JNGSKN4+IeGZnfAO+KTzwEXhC2FhAl7zjpPi1nWB2+hMGhFSuassJ5DU/GlMxs9oRE4r7FrxkDW+KmuP+jdDskLElpC/zodChd6VpDyYMAf0sBXR9V7Vf1KVnLzkqRRNdDmHHQrcLd8kgHjGgFQCYf0iat4VnrB4Jq3kWqkaXJsS8FwouFjqI8GgO/JeteWYpegmjXld4aARmKJEdprnpB9IdkCdSy8Ihn4OElyQ/r9V+6V7zwgZ0jFJjMaDtxQ35AA9PF0iORBYjFeTYP6uXIi44Wum1ebbNfxdHVBrJs/GgB2sXK9I3sMu9aO8mGzPA/fLN4iDMWMGehXYLaNoTdbdEh2ueDeP2Mo2q3dI4STD5jorFM1efXB8Gok+9BdWI6zXL5VhlFZoXff263x1SLyyQ0IQjf9PEVXoGTVNig0PLlZylBmK3CJ4yDfU0IvPjWUCkr0FkByy7z02PDE3Nvtftht8de6535E6JP1wjNHPpHa9iK+gwLFKjgl4T209/Z9qZM3fYdwBC8feOW+CiQroBvXwRA1a3cMRbGsTzTvbZoNVxxItN+VsFTZJ+QiqCLNbpkCNNtZIuYCYoJtCzjPFOqKuwlABjAd0OA9tN0/A==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR03MB6896.apcprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(1800799024)(366016)(10067099003)(11063799006)(4143699003)(261026121527099003)(261026140227099003)(261022105027099003)(261021121427099003)(56012099006)(261028144727099003)(261102123227099003)(261009223027099003)(22082099003)(18002099003)(6133799003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?WjNCa0JlNmxVOGdnNFRuT0oycVFHcW5KUWc2ZEJ4ZTgzaXp4NEEvNndpVDdO?=
+ =?utf-8?B?K0tFZXhESWJpaXpBMjlKYlFZSzl0bHhkakJ6dlJ6ODdCdTJvTjFDNmlYakdz?=
+ =?utf-8?B?aU1GS1QwVnBKU1AxSStvR0gvZTB4aGh3U2I4NXhCdWF5bzE2WjltWTkzc2V3?=
+ =?utf-8?B?YVdORXV1L2F4dnRnNld0R1d2VGpwcFU1ZXVQTEt4SHlIdnlya25EczhSaG1W?=
+ =?utf-8?B?Q1NCMjVSZ2NBdWF1UFZyWlc2RlNGNVlkK0RGNVkvY3hsRWU2NFpud2hqRk9i?=
+ =?utf-8?B?M1A1M0JiU0F5MjF6OHkvTnYxSTE3MHRuaUU0SjNTbFNXT0dqbEFoUnpXOHRt?=
+ =?utf-8?B?VjBSdktYMnpOcTZuVzNQQ0plVXE2N1ZPK3czbGVleTRRdnhXWnRGdC9ZMzl6?=
+ =?utf-8?B?WWdvOW5aclFmTEk5Nk1lVmxuUkpPdmdFOVRDamp3dmlIRnJUQjZ1dTV2cngy?=
+ =?utf-8?B?NS9ELzNSVGNuOTBBcTRtN0lweVFaeWNOT0RMK3N0SFBTNmhEWTcraTU4UW1x?=
+ =?utf-8?B?Y3dGeDhVQTJseGQ4QXEwWkQ0NWs0SlpSUXZkY0daY1pOSjNYcmRmd2xrbmRx?=
+ =?utf-8?B?VEVQTTQyTlFnMjRQd29GWmdlVzJIUTFvNlc0a1FQcS9rWFFBNTFPSnpLYWNr?=
+ =?utf-8?B?YVorQ2dGZ0QycTUxdmpiVHM3TkR2Q1hXdnF3a2Qwb1UvZ2FhQ0RScVFrRnZq?=
+ =?utf-8?B?M2VrSk4xTnR3Q2JIZHc5VXhrQytsQ1kvSkNCVWhEbTNtRXFQQnVFcFY5bTIx?=
+ =?utf-8?B?aHIwVTBBR1VmS0pGa0h6TmNSaG56TGpGSXkrQ3Q5bHpUSDVQRXJZMzl3N2g4?=
+ =?utf-8?B?eHluNFh3cjYyc2ptSW1wQ29TQ0tXZ0theU01VUJLam9uaFNMdjFBWDd2SmtE?=
+ =?utf-8?B?WkJ4cGEzU2hwb1M1VWJ1bU4yVDUybmxhWWFoTnRRODBhNEFvV2lkRHdWQTd1?=
+ =?utf-8?B?angwZkl1eHJ1WjZ0ZkFIMlc5VVlNUWE4SFlZS2F5Vkc2VXhVc0hWYmVrczJx?=
+ =?utf-8?B?VjZXbkdDWG95T2VnRzBaSU9zRU01M0YwMEtpaW0zNmxHZkJwb2QzcG5NamdK?=
+ =?utf-8?B?aWx1ejRKdE4xTGh6YTZaZHU1MXd0S2kzYzdWNVJsSTZvUldBTjdJRTV2N08z?=
+ =?utf-8?B?RUs2SGlpbDUzTytmN0hmQy9XblZzdmhBeFRPUEEyMVBDdCtvd3FSVFk5amVR?=
+ =?utf-8?B?MFp4ckdhbjBGRFhxUkFWZ1dJbXcwZ3FteklaeXBxZ3lCRHlFekhvNEZLYlFS?=
+ =?utf-8?B?TzlKZjJCdUhIZTdLM1JwMWhDMU9FK1FJRGVCSXVsNTczeXFqbkhWMWttU0lr?=
+ =?utf-8?B?NjQrZDloeHNyU2pQRm0vNHpHU2psMFlBTktzZ3FMN3RXaUZ6T3RxMElPMkRF?=
+ =?utf-8?B?SStJWkI1YmZBUmw4UVlKODQ0azIwQ0tJZk9vRzhsSm1zMG5OQmsyQ2gwc1Vh?=
+ =?utf-8?B?Q1hnOTEyOW00eTFjTVJnL0p1MGE2MDZseklTZlFKKy9IZWxqMG5ibnJDblU0?=
+ =?utf-8?B?SkJ6S0YydFNlNk5NZWhjWDRIVWMvSzNYd2xKSkxySlhpU3JLRzB1cHFMSlhX?=
+ =?utf-8?B?QWRMV042RWZvVHJLRk9zSWNhb1VLakttcjhjUjJMeFRZRTh5djBIRWZPUkp6?=
+ =?utf-8?B?RENMcW5GRnc4VXZiSThIbHllTXRCNiszV2w1TUpQcWk1WHQxdHFMZ0VmcnJk?=
+ =?utf-8?B?Qlo1VjVBV3BIcTdoOE95d2RNU2lxZXJBV0FqZ1plSG8rZU0rUHhxdE16QWd4?=
+ =?utf-8?B?RkVxZ1cvTFIvVzhHVTlaS3ZuNmlpNFEySHZhL1hzcExlTFJSM25FMmhwU080?=
+ =?utf-8?B?cG1xN3hvdXQ1THk4SDNRMDhLT1owR2xzNlFQRUtNbHFuekg1UlU1TzVidHlk?=
+ =?utf-8?B?VFJnaHhXaVFCSGpsZmlSMzBIZmJQbTg1SmQ5dFMreDZFWnFWMjFvOWhkRTM2?=
+ =?utf-8?B?VDFNMk96Qit1QWJCZkxrS2tDWGVKWjhhQU1jQW4zOXVCV3FXMVBtN2E1My82?=
+ =?utf-8?B?azZFUmVNYndUNDl3NGV5WVpCbmUwNEdhdm9OcTlhejRRUWlxYWo3RlkrckE0?=
+ =?utf-8?B?SEhGWU9acUFaRndFV25FL3lObmkvVkZsY0tVK2ltSnUzL0ZtcFZNSFZlOVg0?=
+ =?utf-8?B?OVd1TGZ4QlM4RGh4UW5hdjFWZ1NzM0U5TUdrR3h3cWxVQ1pTWElNR3UrdlJz?=
+ =?utf-8?B?N3ZxZGZ6UE44WWJtN1htL1kyZExkb2gvRWRnSlBQbHAxeFZUeWFSWmErdVhC?=
+ =?utf-8?B?dTVKdEdjTHZudVU4aWlKak9pNU5ScnA3cEZwa214NHBCcXNEd3cxY25tU2pI?=
+ =?utf-8?B?OE9PcVR4OEdEZGkvRnJsa3g1T0RpOVVwcXBna2VZREh3VmlrbjRjdz09?=
+X-OriginatorOrg: amlogic.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ff0caab8-4fec-4b7f-1886-08df3fb998b2
+X-MS-Exchange-CrossTenant-AuthSource: TYZPR03MB6896.apcprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2026 06:04:07.4582
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 0df2add9-25ca-4b3a-acb4-c99ddf0b1114
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: oxcHcjNqoWQGZU5cMlxIzQ3AT5UMAzZ480EfczdDE13y4jqsWNCbuMPClw3samwt8rDcKtOz4T/rEDrpkX1spWeySDN5TK3lJG+9TiwoeFk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1PR03MB8305
 
-On 11/11/2026 10:33 AM, kernel test robot wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-> head:   51bafe2e7302403a43ba45415bf9a268a7fcaa05
-> commit: fafe4f5166bc3d43e28967efb9ea82b1f456b798 [9/22] Merge branch 'acpi-battery' into bleeding-edge
-> config: x86_64-randconfig-1011-20261111 (https://download.01.org/0day-ci/archive/20261111/202611111027.YYwIlIDB-lkp@intel.com/config)
-> compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261111/202611111027.YYwIlIDB-lkp@intel.com/reproduce)
+Hi Neil,
+
+On 2026/7/28 16:34, Neil Armstrong wrote:
+> On 7/22/26 10:39, Xianwei Zhao via B4 Relay wrote:
+>> From: Xianwei Zhao <xianwei.zhao@amlogic.com>
+>>
+>> Add power domain controller node for Amlogic A9 SoC.
+>>
+>> Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
+>> ---
+>>   arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi | 10 ++++++++++
+>>   1 file changed, 10 insertions(+)
+>>
+>> diff --git a/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi 
+>> b/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi
+>> index b0e0fadeed82..3652b2034c96 100644
+>> --- a/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi
+>> +++ b/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi
+>> @@ -7,6 +7,7 @@
+>>   #include <dt-bindings/interrupt-controller/arm-gic.h>
+>>   #include <dt-bindings/gpio/gpio.h>
+>>   #include <dt-bindings/pinctrl/amlogic,pinctrl.h>
+>> +#include <dt-bindings/power/amlogic,a9-pwrc.h>
+>>
+>>   / {
+>>       interrupt-parent = <&gic>;
+>> @@ -72,6 +73,15 @@ cpu7: cpu@700 {
+>>               };
+>>       };
+>>
+>> +     sm: secure-monitor {
+>> +             compatible = "amlogic,meson-gxbb-sm";
+>> +
+>> +             pwrc: power-controller {
+>> +                     compatible = "amlogic,a9-pwrc";
+>> +                     #power-domain-cells = <1>;
+>> +             };
+>> +     };
+>> +
+>>       timer {
+>>               compatible = "arm,armv8-timer";
+>>               interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
+>>
 > 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202611111027.YYwIlIDB-lkp@intel.com/
-> 
-> All errors (new ones prefixed by >>):
-> 
->     drivers/platform/x86/acer-wmi-battery.c: In function 'acer_wmi_battery_probe':
->>> drivers/platform/x86/acer-wmi-battery.c:292:16: error: implicit declaration of function 'devm_battery_hook_register'; did you mean 'acpi_battery_hook_register'? [-Wimplicit-function-declaration]
->       292 |         return devm_battery_hook_register(&data->wdev->dev, &data->hook);
->           |                ^~~~~~~~~~~~~~~~~~~~~~~~~~
->           |                acpi_battery_hook_register
-
-
-I took a quick look at this merge-ordering problem:
-
-devm_battery_hook_register() gained two new callers in v7.4-rc1 while
-the rename was still pending:
-
-Old API (devm_battery_hook_register) users:
-
-   c72dd9994952 ("platform/x86: add Acer battery control driver")
-     committed:  2026-09-18
-     file:       drivers/platform/x86/acer-wmi-battery.c
-     branch:     platform-drivers-x86 -> mainline v7.4-rc1
-
-   929433336e0a ("platform/x86: hp-wmi: add charge_behaviour support for 
-Spectre 8C15/8C17")
-     committed:  2026-10-14
-     file:       drivers/platform/x86/hp/hp-wmi.c
-     branch:     platform-drivers-x86 -> mainline v7.4-rc1
-
-New API (devm_acpi_battery_hook_register):
-
-   c27a6fd6b403 ("ACPI: battery: add acpi_ prefix to the battery hook
-API")
-     committed:  2026-11-10
-     branch:     linux-pm bleeding-edge (via the acpi-battery branch,
-                 based on v7.3-rc2)
-
-(Please note that the robot only reported acer-wmi-battery. The hp-wmi
-should fail the same way when CONFIG_HP_WMI is enabled)
-
-
-> 
-> 
-> vim +292 drivers/platform/x86/acer-wmi-battery.c
-> 
-> c72dd9994952eb Jelle van der Waa 2026-09-13  275
-> c72dd9994952eb Jelle van der Waa 2026-09-13  276  static int acer_wmi_battery_probe(struct wmi_device *wdev, const void *context)
-> c72dd9994952eb Jelle van der Waa 2026-09-13  277  {
-> c72dd9994952eb Jelle van der Waa 2026-09-13  278  	struct acer_wmi_battery_data *data;
-> c72dd9994952eb Jelle van der Waa 2026-09-13  279
-> 4dd10fbbeb9c33 Kees Cook         2026-10-28  280  	data = devm_kzalloc_obj(&wdev->dev, *data);
-> c72dd9994952eb Jelle van der Waa 2026-09-13  281  	if (!data)
-> c72dd9994952eb Jelle van der Waa 2026-09-13  282  		return -ENOMEM;
-> c72dd9994952eb Jelle van der Waa 2026-09-13  283
-> c72dd9994952eb Jelle van der Waa 2026-09-13  284  	dev_set_drvdata(&wdev->dev, data);
-> c72dd9994952eb Jelle van der Waa 2026-09-13  285  	data->wdev = wdev;
-> c72dd9994952eb Jelle van der Waa 2026-09-13  286  	data->battery_ext = health_mode ? &acer_wmi_battery_extension_v2
-> c72dd9994952eb Jelle van der Waa 2026-09-13  287  					: &acer_wmi_battery_extension_v1;
-> c72dd9994952eb Jelle van der Waa 2026-09-13  288  	data->hook.name = "Acer Battery Extension";
-> c72dd9994952eb Jelle van der Waa 2026-09-13  289  	data->hook.add_battery = acer_battery_add;
-> c72dd9994952eb Jelle van der Waa 2026-09-13  290  	data->hook.remove_battery = acer_battery_remove;
-> c72dd9994952eb Jelle van der Waa 2026-09-13  291
-> c72dd9994952eb Jelle van der Waa 2026-09-13 @292  	return devm_battery_hook_register(&data->wdev->dev, &data->hook);
-> c72dd9994952eb Jelle van der Waa 2026-09-13  293  }
-> c72dd9994952eb Jelle van der Waa 2026-09-13  294
-> 
-> :::::: The code at line 292 was first introduced by commit
-> :::::: c72dd9994952eb09442827caecb945474ae3072b platform/x86: add Acer battery control driver
-> 
-> :::::: TO: Jelle van der Waa <jelle@vdwaa.nl>
-> :::::: CC: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
-> 
-> --
-> 0-DAY CI Kernel Test Service
-> https://github.com/intel/lkp-tests/wiki
+> Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
 > 
 
+The DT binding and driver patches have already been merged.
+Just wondering if there is anything else needed for the DTS patch to be 
+merged.
 
--- 
-Thx and BRs,
-Zhongqiu Han
+Thanks!
+
+> Thanks,
+> Neil
