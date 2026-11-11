@@ -1,70 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794417343;
-	b=W7YczGavkjOxBZAzvFWIH2JE2ZeesP2dS0udoFB+3jfoEOEca7kczTHrVn0sqYcgpBt1
-	 fIA2mP4tQKgvSV+pQUhm8r8uuSaHvQLpyPHKbloqvtO3icVN7HWnSa8WBjFxIrzMkJPD+
-	 sNtvu5n0Gk6+/hYpme0zJHsa/x4XWaFM9gciXX6Rb9lFXp34eS2MAsWPeqyrivZlyyIO+
-	 4kwABFofYClSo4rCIcssE1dNbjpnjFSvRI1b7lW3lHfaSTJOO8BBkDXNZbdKhShz35fd3
-	 QgqlSzhE99x+Ws4ZdKwqGFjoOhajIJVzsX6GdDdNyIV26ZK9J2K/qYBsiCY2YIpyCMQ==
+	t=1794417815;
+	b=qKBAnXyaq2+M9juaI9w3vK2QLILGwOXhELZEg9xw6BRsPKFHqbrPTYDNeeD+pCwepTF+
+	 FQTMPeyISpmWWKvRVJFRuwNLCqt2hA82IP/7EcSQVoLj7IPq984bV0J2BExwLC9nqNhcS
+	 5fj9/iHgMwzeRmseegsGeQ+TMlEmOqtJ059yq4E8W/8j1LjPmTLY+00hKEJp+SH/3ofjQ
+	 G65z+hppJn/RMfSLFIdXbN0JRCniU1UoiJR2BmHlcBplLoC7k/VFzH9IDeEO8jkB/Ju+n
+	 YN9u68TluH2SMdIYrB7+jcLukx8ZmUAC5jqWFrIh3nx4ENeFmqfr43o4vaquCw5dRRA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794417343;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=w8vNoC9Nxsw0YxO6Po42QLoQ5/fTPMksdeWkGWXJRYg=;
-	b=QHcv/swl4Qg1GIavMNkvHwwmT4slDFl3UfOw0sqpbcCbjptT3k5Ed7zbBjT0PMY6jcwc
-	 +ap1QfUkx2PAvJ15KuLlHy0Hf1kdmx0lVtRqZwfQyaZcN2flc/X+Gem5tLIxqXEbiKB6p
-	 dN6oqolkD65pEkPZ1u4AZ9L7I38VMdBoG9sXGkzyzblp6tHbY/Wjvy4xcU970w+fwGTY7
-	 eAYpKQnLK2pO8cFAmpyiugdaCQItPcURdk4/ZnKludTAll0SGQo5SOB+pYLGYoIafYWjw
-	 dad9vnAFupWI3LS9NJSvmCESVtxRVHFhZRukMn+ZLc/SaaXSE2Whu96lniuJUXE4C9A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794417815;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Reply-To:Organization:Content-Transfer-Encoding;
+	bh=amdozvEXKjSjaaYnV4Mv1pVbh2XMgfKLrjXQ4vsAgUI=;
+	b=f3CKrSO/dAJmTpPPrYcMO6UorXoBsnpo1ha/BM+M0WPg26gJ3v31bGIunkl8Tsq/O0Rr
+	 I16QTL8DskvMMhS/m7gLy2eMp0TF5GVsK1+QfWDAGXYlFzuCRNJh9XP3K3Kj6uo08KeCE
+	 3LyPedD5qS4CG20zYfwJqlcZhzBDM8OK0jcL/QRjXP722TSRPKoQIE/0+J/Bj6HZLWW+S
+	 rrH8UkM9eFdfYceD76KV6tVTZISiP/fo4td28tjTakfpnI6MP2UognLUn5EuNusaNLYm6
+	 CUgHnhdXbQIVlCBDQF5vWeXAtbiHJB43ecROOts8XF5+2GevldpiNFXpRfWrRwFfpsQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YBbd5mtS;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ooY2l0aw;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C58E606A321;
-	Wed, 11 Nov 2026 17:15:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1449606A337;
+	Wed, 11 Nov 2026 17:23:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YBbd5mtS
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88D0A1F00A05;
-	Wed, 11 Nov 2026 17:15:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ooY2l0aw
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D72661F00A05;
+	Wed, 11 Nov 2026 17:23:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794417342;
-	bh=w8vNoC9Nxsw0YxO6Po42QLoQ5/fTPMksdeWkGWXJRYg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=YBbd5mtSUp/RiEVHPeFjrL7da0RxMdI9MfB0nbzxVOv7RTGdcgZpyua3TNCwi5Dib
-	 +Z3PbFFN4/4ztEmPqd/4p47SQA6+h066iQzBEDxlRtmsZXKhNPjIg+PKpCtC+zyy69
-	 8QHRCtTfXQb7GL16zBWUvAn+uI9nQVFSW1bpEa3iQH2DH8wPRt8B1Nuib5QYhWcp7V
-	 Y3a4aaXC4HILFVFU0N6GrG1s6+RHSBGsbq3iEH4jrcgB1X2aHe27spSiqRsbxDvQRr
-	 v1/0iHch+2nhANOHGJRXmRg67o58Ue8nhnfIDI7lBoa1IE6GIAuxtjDbzTl9agaycG
-	 K6p3Sb+ZkDSvw==
-Date: Wed, 11 Nov 2026 11:15:40 -0600
-From: Rob Herring <robh@kernel.org>
-To: Linus Walleij <linusw@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	William Zhang <william.zhang@broadcom.com>,
-	Anand Gore <anand.gore@broadcom.com>,
-	Kursad Oney <kursad.oney@broadcom.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	=?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Randy Dunlap <rdunlap@infradead.org>, Ulf Hansson <ulfh@kernel.org>,
-	Benjamin Larsson <benjamin.larsson@genexis.eu>, mfd@lists.linux.dev,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-clk@vger.kernel.org, linux-hwmon@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v4 2/7] dt-bindings: mfd: Describe the BCM6846 PMC complex
-Message-ID: <20261111171540.GA3718375-robh@kernel.org>
-References: <20261111-xg6846b-bcmbca-xrdp-reset-v4-0-17035a5e8ad2@kernel.org>
- <20261111-xg6846b-bcmbca-xrdp-reset-v4-2-17035a5e8ad2@kernel.org>
+	s=k20260515; t=1794417815;
+	bh=amdozvEXKjSjaaYnV4Mv1pVbh2XMgfKLrjXQ4vsAgUI=;
+	h=From:To:Cc:Subject:Date:Reply-To;
+	b=ooY2l0awGQBdAUWEwaogJFVPGkUGlz3YBBCBOt56rW5Y6r4PGf3lNQAKSoTkKXZCh
+	 kMZKQHa74jlSh+lZPzfj9ltJkj0O3igk6fOQVOzj6Tqonu0AQtuFaK/YDAeD1Fttqr
+	 eMzYgQWFQH/v/Lx6ZOrkYpTtxEsDoUAtg9VrlyU/65QuJsfK/JOKceYOJS+caDr4gn
+	 szJAWqVzhh7ZnIwv9MsejDg1mWjk8BaJ55OZ+fa+nbRBphyAUP87F099BGfWUQ2ZS0
+	 cB1cGWtYuIGZJvEtQ1FgCvFXFbFiUMKL2UtTOk7cc8T52Of4EDa7pzOUJP3WwkERd5
+	 N6uDlRsgH4W0g==
+From: Len Brown <lenb@kernel.org>
+To: rafael@kernel.org,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: linux-pm@vger.kernel.org,
+	mhi@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] bus: mhi: pci_generic: Fix erroneous system suspend abort
+Date: Wed, 11 Nov 2026 14:23:26 -0300
+Message-ID: <b47282f1514a9012ac51d0915afb83782c3c0050.1794417398.git.len.brown@intel.com>
+X-Mailer: git-send-email 2.45.2
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,90 +59,48 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261111-xg6846b-bcmbca-xrdp-reset-v4-2-17035a5e8ad2@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+Content-Transfer-Encoding: 8bit
 
-On Wed, Nov 11, 2026 at 12:00:43PM +0100, Linus Walleij wrote:
-> The third generation Power Management Controller (PMC3) has
-> different subdevices.
-> 
-> Identify the parent with the BCM6846-specific "brcm,bcm6846-pmc"
-> compatible.
-> 
-> Describe the complex as a simple-mfd with a PMB bus child owning its
-> register resource. Include the PMB power, clock and reset controllers and
-> PVTMON, with its acquisition clock and reset resources.
-> 
-> Signed-off-by: Linus Walleij <linusw@kernel.org>
-> ---
->  .../devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml  | 87 ++++++++++++++++++++++
->  MAINTAINERS                                        |  1 +
->  2 files changed, 88 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml b/Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml
-> new file mode 100644
-> index 000000000000..6082e30d37ec
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml
-> @@ -0,0 +1,87 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mfd/brcm,bcm6846-pmc.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Broadcom BCM6846 Power Management Controller
-> +
-> +maintainers:
-> +  - Linus Walleij <linusw@kernel.org>
-> +
-> +description:
-> +  The third generation Power Management Controller (PMC3) contains several
-> +  register banks. This binding describes the Power Management Bus (PMB)
-> +  interface within Procmon. The PMB child owns its register bank. The parent
-> +  provides address translation and does not own a register bank.
-> +
-> +properties:
-> +  compatible:
-> +    items:
-> +      - const: brcm,bcm6846-pmc
-> +      - const: simple-mfd
-> +
-> +  ranges:
-> +    maxItems: 1
-> +
-> +  "#address-cells":
-> +    const: 1
-> +
-> +  "#size-cells":
-> +    const: 1
-> +
-> +patternProperties:
-> +  '^bus@[0-9a-f]+$':
-> +    $ref: /schemas/soc/bcm/brcm,bcm6846-pmb.yaml#
-> +    description: PMB configuration, keyhole and address mapping registers
+From: Len Brown <len.brown@intel.com>
 
-This causes the bus node to be validated twice (once here and once when 
-applied by compatible). And then because the pmb schema does the same 
-thing with its child nodes, those will be validated 3 times. Twice I can 
-live with, 3 times not so much. The fix for all this is either merge the 
-schemas to 1 file or do:
+mhi sometimes aborts system suspend on the thinkpad T16 gen3:
 
-'^bus@[0-9a-f]+$':
-  type: object
-  additionalProperties: true
-  properties:
-    compatible:
-      contains:
-        const: brcm,bcm6846-pmb
+mhi-pci-generic 0000:08:00.0: failed to suspend device: -16
+mhi-pci-generic 0000:08:00.0: PM: pci_pm_suspend(): mhi_pci_suspend [mhi_pci_generic] returns -16
+mhi-pci-generic 0000:08:00.0: PM: dpm_run_callback(): pci_pm_suspend returns -16
+mhi-pci-generic 0000:08:00.0: PM: pci_pm_suspend returned -16 after 15145 usecs
+mhi-pci-generic 0000:08:00.0: PM: failed to suspend async: error -16
 
-  required:
-    - compatible
+When a driver returns -EBUSY for its runtime suspend method,
+that means "try again later".
 
-That ensures the node contains enough to apply the child schema. 
+But when a driver returns anything but 0 from its system-suspend
+method, that means "abort system suspend".
 
-Since there's 3 levels here, you could also do some combination of both.
+Always return 0 from mhi_pci_suspend().
 
-Rob
+Fixes: d3800c1dce24 ("bus: mhi: pci_generic: Add support for runtime PM")
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/bus/mhi/host/pci_generic.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/bus/mhi/host/pci_generic.c b/drivers/bus/mhi/host/pci_generic.c
+index 7193a384cca4..b036fa6e06c4 100644
+--- a/drivers/bus/mhi/host/pci_generic.c
++++ b/drivers/bus/mhi/host/pci_generic.c
+@@ -1727,7 +1727,8 @@ static int __maybe_unused mhi_pci_runtime_resume(struct device *dev)
+ static int  __maybe_unused mhi_pci_suspend(struct device *dev)
+ {
+ 	pm_runtime_disable(dev);
+-	return mhi_pci_runtime_suspend(dev);
++	mhi_pci_runtime_suspend(dev);
++	return 0;
+ }
+ 
+ static int __maybe_unused mhi_pci_resume(struct device *dev)
+-- 
+2.45.2
 
