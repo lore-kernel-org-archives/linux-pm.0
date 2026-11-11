@@ -1,48 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794394892;
-	b=zarqMlFJoHEvv2nASwUaRRHHmif3Y7NDJBUtpxhNuBJbSVF0OOcU45wrHccq4iE0JNhS
-	 e5YIwpoc/FVXbXmpm8ZS5QJE9eSXcJQ+T0mJyBShPJyj2Tnmmr5/LN7BJdXr7+3sraWMn
-	 hFYypnbCqois3sRTV0SD5lpChbCi2FqehIFaldN+ukxDyGV8mupQIgTo6bQAkEpDTJiIg
-	 QvndP8msez12SUGp/hmFIIoWakV6YTrI2kxIE26jyng2RTGoG1m69BCEE8DK1vutV+9qV
-	 7UvvX8tn8Cl/IK0r30+I+ls6ZFY3XmCknSOQFn0MAfF230DPtpdsLI4r4HzrhyrTxAw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794394892;
-	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
-	 X-Mailer;
-	bh=7EiMwrN0A12jRz6jRWufega4W1uF32LJMSPAr3p7uWQ=;
-	b=FCWmU88ad6TrZv0a7+88ArG8YST2JkCNPA9c7J/jioLg+g7k5j3Ze+2sTY10pG/24ANk
-	 akuZt5lCbvmLRgunIKlb5sgQDz28V7vaKnaIWQgimZotzRKqhq2RFmxrpJ9WUTqJ1nroV
-	 YNIBZjgOJKnP/8brLKUjjdhe14orBs27BbuJOt/T6dyLrv7HKsp0QnGVw5nWFznF0lUQF
-	 N+fAbY5ZE/K+FQepz8K/0s+tvSnY4aSGl0YSnNc9ainCStWruuhZRpjrXDwT8zPzPOdHZ
-	 D+mh+McJSmzowbg4PJQXD0gGMd6ZmklX0B/OEcxwTkihuT6u4zBr/0Cx0kPIdqKExIg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y0BgrmrD;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=209.85.208.50
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
+	t=1794395152;
+	b=J9CukEkpWMq/6oWBOH5DupaeluuBam18sPGFsXAlwMp5H78cufUg/X62j5UxHGuFgTkM
+	 AtJp6vpOPKP4uYlVzyZdSfLJIZEDFpGCtgXq4ZlBobaJn63hYidMryBmWVwQ7JkDO5Jxg
+	 20ksWOnd//GY5b83oRMldGz+jc1KCcefUyjX0CwvB2CcbofM7/kbmiKAEON1fetPt9MDb
+	 T4MGusB9Ei2/4wfYlMifyEzVrwEZPMmsAKCokdzzmFxTx4x6ouKG2f2MNnF4IuOnrwoiK
+	 JCauLa6C7GCb6oUO20o8XsAioPB+HKihjlHvV8sUMy3c28L8BIgiY9M1b+7TmWIhQCg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794395152;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Content-Type;
+	bh=1din0TNnBV2KJ8sSuRJVbvK1d3dMFjZgO4N2assoioU=;
+	b=fn1E0qo5/+MZgIgNq07sejvKmOCMpq0HmkiUlIRiw8cdwdpg23RgyVA4TOJY4Xqk+LBv
+	 mdUDbdx5uxx6V408KNF6edUV3IK3lX8Jyvx4kCr6lJFSIuildtFVw4aNcdz9x1UAYWxGA
+	 ynXEARN85JHCGX8GB098MpygYawJl1+aq2XcNLWbHg6wlruwr+dcv8xNH/wgU7i/ZYa+H
+	 tMk6pW1skmOrQeo8Tt//A4CMJnPjNR9NgGqQvLnX8tZk4U9UenIjMttPb7mAOXsNB/uJ6
+	 RQZR6MXVnKHrsUt1dQuBFNOPcyrao/d9qkmANFnfzcVVtyNli3mqrp8BE5yVpp30zsg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S9Oe343o;
+	arc=fail smtp.remote-ip=209.85.208.50
+Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95FAF606A324;
-	Wed, 11 Nov 2026 11:01:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8EBB606A321
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 11:05:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C8EBB606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y0BgrmrD
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE2EA1F00A07;
-	Wed, 11 Nov 2026 11:01:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794394892;
-	bh=7EiMwrN0A12jRz6jRWufega4W1uF32LJMSPAr3p7uWQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Y0BgrmrDJVlGngFMPSacIwTlNjapKi8EC4vjjT6/1wPF/KP9S03hIVsYuntDzlYhZ
-	 Wo6iir/U+wYLOpYSDlcaNo5SiJe3l/ELdVBiZPkEcFD8fyA5HHSG0/rC/yfxguoEyh
-	 2VcPOD3ry9gLNg4Rcv5G3pCNHeySgUySkW9CtFEkLY7Wwhb1/biJYDXC72kuDd4jbF
-	 /+8m/2sGhgp59oWlWT5mkin7nsS64U347agKicdcy5H1Z8sMGyB9bkXd2nvUN6WWq7
-	 jMGjLk/9PUwQm2B2bn3J5JU6pmc3FNdt4tB6+VCiPVScST+j+L8SNK+fO9ciyFy4Na
-	 o6xmApGtNihTw==
-From: Linus Walleij <linusw@kernel.org>
-Date: Wed, 11 Nov 2026 12:00:48 +0100
-Subject: [PATCH v4 7/7] hwmon: Add Broadcom PMB PVTMON monitoring
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S9Oe343o
+Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-6b7221c0f2cso2498525a12.3
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 03:05:51 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794395150; cv=none;
+        d=google.com; s=arc-20260327;
+        b=dKL8fL67m/xeABTHLNoV2CQpQDulHrJuZchbssCXCyqAoI58LbbBQmxCkgZ1t4gqnT
+         CJQmuFRqJBtMMXs4RlO0R4JvDJMlZ/D9gbiHPO5qW3L2dJggSDnQqIWbLJb4Fw9J33fU
+         weNBT6BeG/Mlj0pJ+MNR6UyW+v3/qJdW6V6XY3PRscVbOhBvXShvISpHorYwxAVKmNFw
+         n3YER3IRO+kmSXVpEMWh/AU9aYm6xT/fENjSPKAdDbPIsBInS39BBvrVyNf5jp+jd8W1
+         3jJRyyDV/7aQROfElghyiuBgMiqrGy+TuuM+ZOUBk457nb/eTx3mktthdxd1aD6vW3GA
+         cIjQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=1din0TNnBV2KJ8sSuRJVbvK1d3dMFjZgO4N2assoioU=;
+        fh=AkwTDnQUlSWpwCx3VFw71TLrSDAo1PoWXSblPgZd2To=;
+        b=cK3VjvrSxNRhUPNkiF06HuZW7xZVvWTdNpYNzcbbkJfxtDTKJSvCbQVXfm3LxvVx7M
+         YA+jcfkpVUbE8fQ835VJaMU9tBxP19/mvJ7RglnieUFljSy9UCoe58pXAewD27DenP8i
+         icxcPsIJniQWHTYY15SlssN2N0CljiYESSFWHAW+3wT382OdR8JRRFpgvmPsIzuQdX54
+         PeqJ1dn01GmnazOynBSN3pTTh2qtHuu/WJmj2ivnJu2cOQfw+XWGgUJ6K6+2fdVU44a9
+         Gokn9txxlayhi8b0D97JFhjvHhZfCA19bMI3bS+JT4uz1xNnYkUt27bGmafdXzJ7X0H+
+         N6ZQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794395150; x=1794999950; darn=vger.kernel.org;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=1din0TNnBV2KJ8sSuRJVbvK1d3dMFjZgO4N2assoioU=;
+        b=S9Oe343oExiTS2KfqhZKo8v9uzSzroybxuYjiW8R/Epw+w2UBG78inWqMxbr9l/twP
+         IDfc5RiZTs0v3oNc30kUYhmeFjo6joVPSdzWo9eDD2E56eKpbXMMggSFIt4pw/Xsh7Mp
+         jg0IQcZK/HSW3c4+/RwSwMF5/WeoGpyQ711u4rm/d46EmrPOT3AVokqdONUfWCXM7cW1
+         q+rx2pezIcC36mdu99xLYU03oreM5hPxRRJ/YkBoL8BKnLgshzid8AdfzXlBPvQ3sQVj
+         k0oTp68pmXdeJAwHt69hJ7KCvAKvvDtOy7E5283OJ7zKW4mHzxvEmTgAq4sQOs1gi8jI
+         HkVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794395150; x=1794999950;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=1din0TNnBV2KJ8sSuRJVbvK1d3dMFjZgO4N2assoioU=;
+        b=cJoHruLGYaEwoblaonpcKLH33y45hFTPSo5KrazDY6JINEu/RynPh1qpsBPKYjBFUk
+         tcCPw4ApOAVpT5O1EOqgVFn8R6dPvlNpKsTOA62hz/Q/FSqJGRJnm0yl29iza+Oe16OK
+         JB9o1HnJM0SJ1N2MIG/N8Jd041jlqDpHRIvVNXEx98KjVBd2oppMPT9B3QBYUfuL21Pa
+         o2VzOe1Z3LwueoIQmrTue4Vha9Z8a95GzfO2fyW63vHKgysUo4fSWfaVf180/g0I1wXu
+         6i8KuTOOHMiTq7CdXdJtdG9i7AlJULb51sIXZRVAGOBcIuPWq3h0c/0iJbQqb1GoQokv
+         LpxA==
+X-Forwarded-Encrypted: i=1; AL+hErExvYfrHxGTpD35dFAp0pw21+XbwIeE/vMQ8AFiJn4A940aG3aUw7oMJ30QV072rO/HM7mowrPjdQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+53g1nt6BxSraRIKownXTowMi5Cqe5rXmDAqDq5cFc/Cnbyclc
+	TVGFq7tn89R5mI1501YiCw0E74TMuKxuRSyXXmkT93QB6X/ub37nUyQK6ozhbhd5AK2brDHrrus
+	x0kHt5MXV43lGH2fBGvz8uUq8XjL3NnI=
+X-Gm-Gg: AYBFou0ukpXruxlRyysSTr0p0gIS4HeVWEMMQn2XHU7gvKP9pmuE16r3bag6WTL2GdF
+	FV7F1pwIWq39XhZZgPS8+YA3qgLJNOf0R8XEhev8d/u3oMA/41v9oGf5mBTMLS691TV8mMzdYNO
+	MYwQ/kQ1d5gl9VxnkwJHjWPQ7Bt4u3GlcPk7HXXe64U4ECW41BJ/tgsLWUcABXHyb7kX4ilc6Qd
+	w7CX8uDvdG3TuPx0l2DbMHeuyYxIJOWARml44GhTawjvjKxgKKDUdqKtuT+TVXodcUGRdquNDcC
+	4fGPdOz3tjSwI/cENboHS43rHSur7Iled0zPK4/WRCfpLC3LyW6RwPvXILVM5EPczYmawkeO9S4
+	vJzbV13w1G/1y0HULG9USLd6MWvEO4RtGtq0=
+X-Received: by 2002:aa7:cd5b:0:b0:6b4:87b8:1348 with SMTP id
+ 4fb4d7f45d1cf-6b77780f23fmr1150131a12.27.1794395149944; Wed, 11 Nov 2026
+ 03:05:49 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,416 +103,193 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261111-xg6846b-bcmbca-xrdp-reset-v4-7-17035a5e8ad2@kernel.org>
-References: <20261111-xg6846b-bcmbca-xrdp-reset-v4-0-17035a5e8ad2@kernel.org>
-In-Reply-To: <20261111-xg6846b-bcmbca-xrdp-reset-v4-0-17035a5e8ad2@kernel.org>
-To: Linus Walleij <linusw@kernel.org>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- William Zhang <william.zhang@broadcom.com>, 
- Anand Gore <anand.gore@broadcom.com>, 
- Kursad Oney <kursad.oney@broadcom.com>, 
- Florian Fainelli <florian.fainelli@broadcom.com>, 
- =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, 
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
- Jerome Brunet <jbrunet+clk@baylibre.com>, 
- Guenter Roeck <linux@roeck-us.net>, Philipp Zabel <p.zabel@pengutronix.de>, 
- Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, 
- Ulf Hansson <ulfh@kernel.org>, 
- Benjamin Larsson <benjamin.larsson@genexis.eu>
-Cc: mfd@lists.linux.dev, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
- linux-hwmon@vger.kernel.org, linux-pm@vger.kernel.org
-X-Mailer: b4 0.16.0
+References: <20261110061429.2036-1-linux.amoon@gmail.com> <20261110061429.2036-2-linux.amoon@gmail.com>
+ <avOL1mCkI4YSaDeO@aurel32.net> <DMRZGMGRLD4S.KT6VEU28902E@linux.spacemit.com> <avQ1kVTvdCmS1MxN@aurel32.net>
+In-Reply-To: <avQ1kVTvdCmS1MxN@aurel32.net>
+From: Anand Moon <linux.amoon@gmail.com>
+Date: Wed, 11 Nov 2026 16:35:27 +0530
+X-Gm-Features: AclHuK9H8LcNFBf6OiW50_NDYDV5SRfOSw_9EFpDafFKu57Cw77PmBIsH4iiL2Y
+Message-ID: <CANAwSgQgtEvgEfkBMC6meDzT4O28oEX-R16STeiUnP77UOQe_Q@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] power: reset: spacemit-p1: Use atomic I2C
+ transfers for power-off and restart
+To: Troy Mitchell <troy.mitchell@linux.spacemit.com>, Anand Moon <linux.amoon@gmail.com>, 
+	Andi Shyti <andi.shyti@kernel.org>, Sebastian Reichel <sre@kernel.org>, Yixun Lan <dlan@kernel.org>, 
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>, 
+	"open list:RISC-V SPACEMIT SoC Support" <linux-riscv@lists.infradead.org>, 
+	"open list:RISC-V SPACEMIT SoC Support" <spacemit@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
 
-Expose the BCM6846 die temperature and seven voltage inputs through
-hwmon using the shared Power Management Bus (PMB) regmap.
+Hi Troy. Aurelien,
 
-Register the temperature channel with the thermal framework so
-existing zero-cell device-tree thermal sensor references work.
+Thanks for your review comments.
 
-Poll for valid samples with a bounded timeout, releasing the PMB lock
-between reads. Report temperature in millidegrees Celsius, including
-negative values, and voltages in millivolts.
+On Wed, 11 Nov 2026 at 14:59, Aurelien Jarno <aurelien@aurel32.net> wrote:
+>
+> Hi Troy,
+>
+> On 2026-11-11 01:16, Troy Mitchell wrote:
+> > Hi Aurelien,
+> >
+> > On Tue Nov 10, 2026 at 9:25 PM GMT, Aurelien Jarno wrote:
+> > > Hi Anand,
+> > >
+> > > On 2026-11-10 11:44, Anand Moon wrote:
+> > >> The SpacemiT P1 power-off and restart handlers use regmap_set_bits()
+> > >> to access the PMIC. However, these handlers run in an atomic notifier
+> > >> context (specifically within an rcu_read_lock() critical section), while
+> > >> the I2C-backed regmap uses a sleepable mutex.
+> > >>
+> > >> This triggers a "WARNING: suspicious RCU usage" warning due to an illegal
+> > >> context switch in the RCU read-side critical section during shutdown on the
+> > >> Banana Pi BPI-F3:
+> > >>
+> > >> [  563.803475] WARNING: suspicious RCU usage
+> > >> [  563.807813] 7.3.1-ARCH-RISC-V #1 Not tainted
+> > >> [  563.816614] ./include/linux/rcupdate.h:387 Illegal context switch in RCU read-side critical section!
+> > >> ...
+> > >> [  563.841445] locks held by shutdown/1: 2, last CPU#0:
+> > >> [  563.846694]  #0: ffffffff8404fb20 (system_transition_mutex){+.+.}-{4:4}, at: __do_sys_reboot+0x230/0x29e
+> > >> [  563.856806]  #1: ffffffff84167860 (rcu_read_lock){....}-{1:3}, at: atomic_notifier_call_chain+0x4a/0x1c2
+> > >>
+> > >> Replace the regmap operations with atomic I2C transfers to avoid sleeping
+> > >> in an atomic context. Preserve unrelated register bits through
+> > >> read-modify-write operations and check for atomic I2C support before
+> > >> registering the handlers.
+> > >>
+> > >> Obtain the I2C client from the parent device and verify that the adapter
+> > >> supports atomic transfers before registering the handlers.
+> > >>
+> > >> Tested on the Banana Pi BPI-F3 (SpacemiT K1).
+> > >
+> > > While the patch looks correct, I am not sure this is the correct
+> > > approach, as opposed to the one proposed by Troy [1].
+> > >
+> > > Indeed bypassing regmap and using i2c atomic transfers needs to be done
+> > > by all affected drivers. For instance the VisionFive 2 board, which use
+> > > an axp15060 PMIC is also affected by this issue. And the corresponding
+> > > driver is shared between architectures, which make this kind of change
+> > > more difficult.
+> > >
+> > > For the BPI-F3, note that with OpenSBI 1.9, the reboot is handled
+> > > through the SBI SRST extension, preventing this issue to happen. On the
+> > > long term, I am not sure we should keep this driver.
+> > >
+> > That only covers restart. The SBI restart handler is registered at
+> > priority 192 and runs before the P1 one at SYS_OFF_PRIO_DEFAULT. Power
+> > off is the other way around: sbi_srst_power_off() goes through
+> > register_platform_power_off(), i.e. SYS_OFF_PRIO_PLATFORM, so the P1
+> > power-off handler still runs first and still hits this on shutdown,
+> > even with OpenSBI 1.9.
+> >
 
-Acked-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Linus Walleij <linusw@kernel.org>
----
- Documentation/hwmon/bcm_pmb_pvtmon.rst |  53 ++++++++
- Documentation/hwmon/index.rst          |   1 +
- MAINTAINERS                            |   2 +
- drivers/hwmon/Kconfig                  |  18 +++
- drivers/hwmon/Makefile                 |   1 +
- drivers/hwmon/bcm_pmb_pvtmon.c         | 231 +++++++++++++++++++++++++++++++++
- 6 files changed, 306 insertions(+)
+I had previously tested the OpenSBI P1 PMIC driver in a Yocto-based environment:
 
-diff --git a/Documentation/hwmon/bcm_pmb_pvtmon.rst b/Documentation/hwmon/bcm_pmb_pvtmon.rst
-new file mode 100644
-index 000000000000..8d2412daeed1
---- /dev/null
-+++ b/Documentation/hwmon/bcm_pmb_pvtmon.rst
-@@ -0,0 +1,53 @@
-+.. SPDX-License-Identifier: GPL-2.0-only
-+
-+Kernel driver bcm_pmb_pvtmon
-+============================
-+
-+Supported chips:
-+
-+  * Broadcom BCM6846 PVTMON
-+
-+    Access: Power Management Bus (PMB), bus 1, device 6
-+
-+Author: Linus Walleij <linusw@kernel.org>
-+
-+Description
-+-----------
-+
-+The process, voltage and temperature monitor (PVTMON) measures die
-+temperature and seven voltage inputs. The driver uses the shared PMB MFD
-+transport and obtains its clock and reset from the sibling providers.
-+
-+With CONFIG_THERMAL_OF enabled, the temperature channel also supplies
-+device-tree thermal zones. The PVTMON node uses #thermal-sensor-cells = <0>;
-+voltage inputs do not have thermal sensor indices.
-+
-+Sysfs attributes
-+----------------
-+
-+All attributes are read-only. Temperature is reported in millidegrees
-+Celsius and voltages in millivolts, using the BCM6846 vendor conversion
-+formulas and input-divider ratios.
-+
-+================ ================================
-+Attribute        Description
-+================ ================================
-+temp1_input      Die temperature
-+in0_input        First 0.85 V input
-+in1_input        Second 0.85 V input
-+in2_input        VIN input
-+in3_input        1.0 V input
-+in4_input        1.8 V input
-+in5_input        3.3 V input
-+in6_input        Diagnostic test input
-+in0_label        V0.85_1
-+in1_label        V0.85_2
-+in2_label        VIN
-+in3_label        V1.0
-+in4_label        V1.8
-+in5_label        V3.3
-+in6_label        Vtest
-+================ ================================
-+
-+Labels follow the vendor channel names. Vtest is a diagnostic ADC input,
-+not a supply rail. The driver does not change the analog test routing.
-diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
-index 199ca79621e9..5a579391cf9e 100644
---- a/Documentation/hwmon/index.rst
-+++ b/Documentation/hwmon/index.rst
-@@ -54,6 +54,7 @@ Hardware Monitoring Kernel Drivers
-    axiado-pwm-fan
-    axiado-tsadc
-    bcm54140
-+   bcm_pmb_pvtmon
-    bel-pfe
-    bpa-rs600
-    cgbc-hwmon
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2a280ca7d162..f38003b144c5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5453,7 +5453,9 @@ F:	Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml
- F:	Documentation/devicetree/bindings/power/brcm,bcm6846-pmb-power.yaml
- F:	Documentation/devicetree/bindings/reset/brcm,bcm6846-pmb-reset.yaml
- F:	Documentation/devicetree/bindings/soc/bcm/brcm,bcm6846-pmb.yaml
-+F:	Documentation/hwmon/bcm_pmb_pvtmon.rst
- F:	drivers/clk/bcm/clk-bcmbca-pmb.c
-+F:	drivers/hwmon/bcm_pmb_pvtmon.c
- F:	drivers/mfd/bcmbca_pmc3_pmb.c
- F:	drivers/pmdomain/bcm/bcmbca-pmb.c
- F:	drivers/reset/reset-bcmbca-pmb.c
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 18c682e1a475..5e42c3dc70f1 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -334,6 +334,24 @@ config SENSORS_AXIADO_TSADC
- 	  This driver can also be built as a module. If so, the module
- 	  will be called axiado-tsadc.
- 
-+config SENSORS_BCM_PMB_PVTMON
-+	tristate "Broadcom PMB PVTMON hardware monitoring"
-+	depends on ARCH_BCMBCA || COMPILE_TEST
-+	depends on MFD_BCMBCA_PMB
-+	depends on COMMON_CLK
-+	depends on RESET_CONTROLLER
-+	select CLK_BCMBCA_PMB
-+	select RESET_BCMBCA_PMB
-+	select REGMAP
-+	default MFD_BCMBCA_PMB
-+	help
-+	  Enable temperature and voltage monitoring through the
-+	  Power Management Bus on Broadcom BCM6846. With THERMAL_OF enabled, the
-+	  temperature channel also supplies the thermal zones described in
-+	  the device tree.
-+
-+	  This driver can also be built as a module called bcm_pmb_pvtmon.
-+
- config SENSORS_K8TEMP
- 	tristate "AMD Athlon64/FX or Opteron temperature sensor"
- 	depends on X86 && PCI
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index d4c345ed7261..edf8e8d2f345 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -62,6 +62,7 @@ obj-$(CONFIG_SENSORS_ATXP1)	+= atxp1.o
- obj-$(CONFIG_SENSORS_AXI_FAN_CONTROL) += axi-fan-control.o
- obj-$(CONFIG_SENSORS_AXIADO_PWM_FAN) += axiado-pwm-fan.o
- obj-$(CONFIG_SENSORS_AXIADO_TSADC)	+= axiado-tsadc.o
-+obj-$(CONFIG_SENSORS_BCM_PMB_PVTMON) += bcm_pmb_pvtmon.o
- obj-$(CONFIG_SENSORS_CGBC)	+= cgbc-hwmon.o
- obj-$(CONFIG_SENSORS_CHIPCAP2) += chipcap2.o
- obj-$(CONFIG_SENSORS_CORETEMP)	+= coretemp.o
-diff --git a/drivers/hwmon/bcm_pmb_pvtmon.c b/drivers/hwmon/bcm_pmb_pvtmon.c
-new file mode 100644
-index 000000000000..3c58e0be3251
---- /dev/null
-+++ b/drivers/hwmon/bcm_pmb_pvtmon.c
-@@ -0,0 +1,231 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Broadcom BCM6846 process, voltage and temperature monitor (PVTMON).
-+ */
-+
-+#include <linux/bitfield.h>
-+#include <linux/clk.h>
-+#include <linux/hwmon.h>
-+#include <linux/mfd/bcmbca-pmb.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/reset.h>
-+
-+#define PVTMON_BUS		1
-+#define PVTMON_DEVICE		6
-+
-+/* PMB register offsets are in 32-bit words. */
-+#define PVTMON_CONFIG		17
-+#define PVTMON_RESET_N		BIT(0)
-+#define PVTMON_POWER_DOWN		BIT(1)
-+
-+#define PVTMON_ACQ_CONFIG		20
-+#define PVTMON_ACCUM_ENABLE	BIT(0)
-+#define PVTMON_SKIP_LENGTH	GENMASK(11, 8)
-+
-+#define PVTMON_CHANNEL_BASE	24
-+#define PVTMON_NUM_CHANNELS	8
-+#define PVTMON_VALUE		GENMASK(9, 0)
-+#define PVTMON_VALID		BIT(18)
-+#define PVTMON_SAMPLES		GENMASK(26, 24)
-+#define PVTMON_CHANNEL_ENABLE	BIT(31)
-+
-+/* BCM6846 voltage channel labels and input-divider ratios. */
-+static const struct {
-+	const char *label;
-+	unsigned int divisor;
-+} bcm6846_pvtmon_voltages[] = {
-+	{ "V0.85_1", 10 },
-+	{ "V0.85_2", 10 },
-+	{ "VIN", 7 },
-+	{ "V1.0", 7 },
-+	{ "V1.8", 4 },
-+	{ "V3.3", 2 },
-+	{ "Vtest", 10 },
-+};
-+
-+static int bcm_pmb_pvtmon_init(struct regmap *regmap,
-+			       struct reset_control *reset)
-+{
-+	unsigned int reg = BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE, PVTMON_CONFIG);
-+	u32 config, acq, channel;
-+	unsigned int i;
-+	int ret;
-+
-+	ret = regmap_read(regmap, reg, &config);
-+	if (ret)
-+		return ret;
-+
-+	/* Do not reset acquisition already running for the PMC firmware. */
-+	if ((config & (PVTMON_RESET_N | PVTMON_POWER_DOWN)) != PVTMON_RESET_N) {
-+		ret = regmap_update_bits(regmap, reg, PVTMON_POWER_DOWN, 0);
-+		if (ret)
-+			return ret;
-+		ret = reset_control_reset(reset);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	ret = regmap_read(regmap, BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE,
-+						 PVTMON_ACQ_CONFIG), &acq);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < PVTMON_NUM_CHANNELS; i++) {
-+		reg = BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE, PVTMON_CHANNEL_BASE + i);
-+		ret = regmap_read(regmap, reg, &channel);
-+		if (ret)
-+			return ret;
-+
-+		if (channel & PVTMON_CHANNEL_ENABLE)
-+			continue;
-+
-+		/* Average 32 samples. */
-+		ret = regmap_update_bits(regmap, reg, PVTMON_CHANNEL_ENABLE | PVTMON_SAMPLES,
-+					 PVTMON_CHANNEL_ENABLE | FIELD_PREP(PVTMON_SAMPLES, 5));
-+		if (ret)
-+			return ret;
-+	}
-+
-+	if (!(acq & PVTMON_ACCUM_ENABLE))
-+		return regmap_update_bits(regmap,
-+					  BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE,
-+							 PVTMON_ACQ_CONFIG),
-+					  PVTMON_SKIP_LENGTH | PVTMON_ACCUM_ENABLE,
-+					  PVTMON_ACCUM_ENABLE | FIELD_PREP(PVTMON_SKIP_LENGTH, 8));
-+
-+	return 0;
-+}
-+
-+static int bcm_pmb_pvtmon_read(struct device *dev, enum hwmon_sensor_types type,
-+			       u32 attr, int channel, long *val)
-+{
-+	struct regmap *map = dev_get_drvdata(dev);
-+	unsigned int index;
-+	u32 value;
-+	int ret;
-+
-+	switch (type) {
-+	case hwmon_temp:
-+		if (attr != hwmon_temp_input)
-+			return -EOPNOTSUPP;
-+		index = 0;
-+		break;
-+	case hwmon_in:
-+		if (attr != hwmon_in_input)
-+			return -EOPNOTSUPP;
-+		index = channel + 1;
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	/* Release the PMB between samples so other clients can make progress. */
-+	ret = regmap_read_poll_timeout(map,
-+				       BCMBCA_PMB_REG(PVTMON_BUS, PVTMON_DEVICE,
-+						      PVTMON_CHANNEL_BASE + index),
-+				       value, value & PVTMON_VALID, 1000, 100000);
-+	if (ret)
-+		return ret;
-+
-+	value = FIELD_GET(PVTMON_VALUE, value);
-+	if (type == hwmon_temp) {
-+		/* Signed arithmetic allows temperatures below zero Celsius. */
-+		*val = (41335000 - 49055 * (int)value) / 100;
-+	} else {
-+		/* 880 mV ADC reference, accounting for each input divider. */
-+		*val = 880 * value * 10 /
-+			(bcm6846_pvtmon_voltages[channel].divisor * 1024);
-+	}
-+
-+	return 0;
-+}
-+
-+static int bcm_pmb_pvtmon_read_string(struct device *dev,
-+				      enum hwmon_sensor_types type, u32 attr,
-+				      int channel, const char **str)
-+{
-+	if (type != hwmon_in || attr != hwmon_in_label)
-+		return -EOPNOTSUPP;
-+
-+	*str = bcm6846_pvtmon_voltages[channel].label;
-+	return 0;
-+}
-+
-+static const struct hwmon_ops bcm_pmb_pvtmon_ops = {
-+	.visible = 0444,
-+	.read = bcm_pmb_pvtmon_read,
-+	.read_string = bcm_pmb_pvtmon_read_string,
-+};
-+
-+static const struct hwmon_channel_info * const bcm_pmb_pvtmon_info[] = {
-+	HWMON_CHANNEL_INFO(chip, HWMON_C_REGISTER_TZ),
-+	HWMON_CHANNEL_INFO(temp, HWMON_T_INPUT),
-+	HWMON_CHANNEL_INFO(in,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL,
-+			   HWMON_I_INPUT | HWMON_I_LABEL),
-+	NULL
-+};
-+
-+static const struct hwmon_chip_info bcm_pmb_pvtmon_chip_info = {
-+	.ops = &bcm_pmb_pvtmon_ops,
-+	.info = bcm_pmb_pvtmon_info,
-+};
-+
-+static int bcm_pmb_pvtmon_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct regmap *regmap = dev_get_regmap(dev->parent, NULL);
-+	struct device *hwmon;
-+	struct reset_control *reset;
-+	struct clk *clk;
-+	int ret;
-+
-+	if (!regmap)
-+		return -ENODEV;
-+
-+	reset = devm_reset_control_get_exclusive(dev, NULL);
-+	if (IS_ERR(reset))
-+		return dev_err_probe(dev, PTR_ERR(reset), "failed to get PVTMON reset\n");
-+
-+	clk = devm_clk_get_enabled(dev, NULL);
-+	if (IS_ERR(clk))
-+		return dev_err_probe(dev, PTR_ERR(clk), "failed to enable PVTMON clock\n");
-+
-+	ret = bcm_pmb_pvtmon_init(regmap, reset);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to initialize PVTMON\n");
-+
-+	hwmon = devm_hwmon_device_register_with_info(dev, "bcm6846_pvtmon", regmap,
-+						     &bcm_pmb_pvtmon_chip_info, NULL);
-+	if (IS_ERR(hwmon))
-+		return dev_err_probe(dev, PTR_ERR(hwmon), "failed to register hwmon device\n");
-+
-+	/* Acquisition remains enabled for the PMC firmware after unbinding. */
-+	return 0;
-+}
-+
-+static const struct of_device_id bcm_pmb_pvtmon_of_match[] = {
-+	{ .compatible = "brcm,bcm6846-pmb-pvtmon" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, bcm_pmb_pvtmon_of_match);
-+
-+static struct platform_driver bcm_pmb_pvtmon_driver = {
-+	.probe = bcm_pmb_pvtmon_probe,
-+	.driver = {
-+		.name = "bcm6846-pmb-pvtmon",
-+		.of_match_table = bcm_pmb_pvtmon_of_match,
-+	},
-+};
-+module_platform_driver(bcm_pmb_pvtmon_driver);
-+
-+MODULE_AUTHOR("Linus Walleij <linusw@kernel.org>");
-+MODULE_DESCRIPTION("Broadcom PMB PVTMON hardware monitoring driver");
-+MODULE_LICENSE("GPL");
+[1] https://lore.kernel.org/all/20260419150857.2705843-3-aurelien@aurel32.net/
 
--- 
-2.56.0
+With this driver registered in OpenSBI, Linux can delegate reboot and power-off
+operations to firmware through the SBI SRST extension.
 
+The power-off sequence is:
+    Linux kernel_power_off()
+      -> RISC-V machine power-off
+      -> SBI SRST shutdown
+      -> OpenSBI system_reset()
+      -> SpacemiT P1 PMIC
+      -> Power off
+
+I have now rebuilt the Linux kernel with:
+
+ # CONFIG_POWER_RESET_SPACEMIT_P1 is not set
+
+Both reboot and power-off work correctly on the Banana Pi BPI-F3,
+and I have not observed any issues.
+
+alarm@k1:~$ sudo poweroff
+
+Broadcast message from root@k1 on pts/1 (Wed 2026-11-11 10:34:03 UTC):
+
+The system will power off now!
+
+[ 1744.735287] systemd-shutdown[1]: Sending SIGTERM to remaining processes...
+[ 1745.071304] systemd-journald[245]: Received SIGTERM from PID 1
+(systemd-shutdow).
+[ 1745.504595] systemd-shutdown[1]: Sending SIGKILL to remaining processes...
+[ 1745.790159] systemd-shutdown[1]: Unmounting file systems.
+[ 1745.822902] (sd-umount)[658]: Unmounting
+'/run/credentials/systemd-journald.service'.
+[ 1745.861214] (sd-remount)[659]: Remounting '/' read-only with options ''.
+[ 1746.079291] EXT4-fs (mmcblk1p7): re-mounted
+ccb95ca0-2804-4ade-938f-23116f90c193 ro.
+[ 1746.272104] systemd-shutdown[1]: All filesystems unmounted.
+[ 1746.272471] systemd-shutdown[1]: Deactivating swaps.
+[ 1746.273712] systemd-shutdown[1]: All swaps deactivated.
+[ 1746.273956] systemd-shutdown[1]: Detaching loop devices.
+[ 1746.464867] systemd-shutdown[1]: All loop devices detached.
+[ 1746.465346] systemd-shutdown[1]: Stopping MD devices.
+[ 1746.471149] systemd-shutdown[1]: All MD devices stopped.
+[ 1746.471417] systemd-shutdown[1]: Detaching DM devices.
+[ 1746.476047] systemd-shutdown[1]: All DM devices detached.
+[ 1746.476377] systemd-shutdown[1]: All filesystems, swaps, loop
+devices, MD devices and DM devices detached.
+[ 1746.533569] systemd-shutdown[1]: Successfully changed into root pivot.
+[ 1746.533862] systemd-shutdown[1]: Entering exitrd...
+[ 1746.686127] shutdown[1]: Syncing filesystems and block devices.
+[ 1746.701832] shutdown[1]: Sending SIGTERM to remaining processes...
+[ 1746.934370] shutdown[1]: Sending SIGKILL to remaining processes...
+[ 1747.164219] shutdown[1]: Unmounting file systems.
+[ 1747.203935] (sd-umoun[662]: Unmounting '/run/credentials'.
+[ 1747.232643] (sd-umoun[663]: Unmounting '/oldroot/sys/kernel/config'.
+[ 1747.269882] (sd-umoun[664]: Unmounting '/oldroot/sys/kernel/tracing'.
+[ 1747.298218] (sd-umoun[665]: Unmounting '/oldroot/sys/kernel/debug'.
+[ 1747.327488] (sd-umoun[666]: Unmounting '/oldroot/dev/hugepages'.
+[ 1747.359053] (sd-umoun[667]: Unmounting '/oldroot/dev/mqueue'.
+[ 1747.387798] (sd-umoun[668]: Unmounting '/oldroot/run'.
+[ 1747.425939] (sd-umoun[669]: Unmounting '/oldroot/proc'.
+[ 1747.473927] (sd-umoun[670]: Unmounting '/oldroot/sys/fs/bpf'.
+[ 1747.527910] (sd-umoun[671]: Unmounting '/oldroot/sys/fs/pstore'.
+[ 1747.588367] (sd-umoun[672]: Unmounting '/oldroot/sys/fs/cgroup'.
+[ 1747.630489] (sd-umoun[673]: Unmounting '/oldroot/sys/kernel/security'.
+[ 1747.664244] (sd-umoun[674]: Unmounting '/oldroot/sys'.
+[ 1747.704716] (sd-umoun[675]: Unmounting '/oldroot/dev/pts'.
+[ 1747.755218] (sd-umoun[676]: Unmounting '/oldroot/dev/shm'.
+[ 1747.791652] (sd-umoun[677]: Unmounting '/oldroot/dev'.
+[ 1747.826501] (sd-umoun[678]: Unmounting '/oldroot'.
+[ 1748.451336] EXT4-fs (mmcblk1p7): unmounting filesystem
+ccb95ca0-2804-4ade-938f-23116f90c193.
+[ 1748.643359] shutdown[1]: All filesystems unmounted.
+[ 1748.643640] shutdown[1]: Deactivating swaps.
+[ 1748.644512] shutdown[1]: All swaps deactivated.
+[ 1748.644722] shutdown[1]: Detaching loop devices.
+[ 1748.732490] shutdown[1]: All loop devices detached.
+[ 1748.732764] shutdown[1]: Stopping MD devices.
+[ 1748.754002] shutdown[1]: All MD devices stopped.
+[ 1748.754286] shutdown[1]: Detaching DM devices.
+[ 1748.759617] shutdown[1]: All DM devices detached.
+[ 1748.759885] shutdown[1]: All filesystems, swaps, loop devices, MD
+devices and DM devices detached.
+[ 1748.770510] shutdown[1]: Syncing filesystems and block devices.
+[ 1748.791699] shutdown[1]: Powering off.
+[ 1749.009246] reboot: Power down
+
+Given that OpenSBI already handles both operations,
+I agree that the Linux P1 power-off and reset driver may no longer be necessary,
+at least on systems using firmware with the appropriate SBI SRST support.
+
+> > So until this driver goes away, BPI-F3 still needs the arch fix [1]
+> > for power-off.
+> >
+> > Link: https://lore.kernel.org/linux-riscv/20261104-v7-0-rc1-rv-dis-int-before-restart-v5-1-956ec09c900d@linux.dev/ [1]
+>
+> We also need a more global fix for the other boards like the VisionFive
+> 2, so definitely we need the above fix instead of patching the drivers.
+>
+Maybe we need an opensbi driver for VisionFive 2 dev boards; any thoughts
+> Aurelien
+>
+> --
+> Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+> aurelien@aurel32.net                     http://aurel32.net
+
+Thanks
+-Anand
