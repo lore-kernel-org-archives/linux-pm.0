@@ -1,97 +1,44 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=209.85.128.176
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
-	t=1794381369;
-	b=iKm5rwwagBkCHpoKVRXm/TlYEoBf0kAqCIJyp4msNOGYIuc2/At/c51AkVq67RKbtrHd
-	 B5bukuxWn/ZsRRfzjkUYETX5sRAY1bM76Vv9FZdfimXAeE7TAaDeGflxFtNj9m3SQJQ5W
-	 vfr6QuzNzg+TiPMk1Lg25HHq627IH3FowwE0ri61xBX2ZKYHoukzWRo61lwKhWQAoUbSL
-	 Xuj/Cfbos/kFYeeu4OyBm7ID80JU1UfXrDa2dNgFNyjTmEvG8zEToPYhz07hWcgvehmll
-	 YgI6HBNjUm//HfGX6CrHbN+Q33BoHhMQtnaNlFN0ZVbAYSjc8UfgkynBB6ryuCHJwNQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794381369;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=PS5LMiKFzIUnURDmLwbpwh2C/rUlEP4/H22PiA88mjc=;
-	b=kZQQjtOCIp95UvudaAJC6TpcresKJn+ePNvtl4aqTcHV9FyJi+Lck4Mt1lwFvaqOC2jZ
-	 ky9SyRLOC05LJAbsHWWnXhjuNA+UGktzahp29Ylhq/VN2SPkH9jnI+lfqmNM3t/inAfxt
-	 p+8nUFpMDy+RFfLo/UF/cb98K3mLeNObOgC1dkgXWoKv58f2TIyTTw1Y0v/YPK5GNjom5
-	 8wTZzCrbPs/dnzyD7XVw3iWjHttkehgcBJT/SQ3iH1IkTIkhx0nzOBoMRnvLTEzXzVCn8
-	 NdQA2a5QHO+ZeriCx5rZ98RRqIx+7Xwj78IMiMF+P29S5A2e8fj0YNfEFTZTCb+gVyQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amarulasolutions.com;
-	spf=pass smtp.mailfrom=amarulasolutions.com;
-	dkim=pass header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=pAiwqPtb;
-	arc=fail smtp.remote-ip=209.85.128.176
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=156.224.83.219
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794383190;
+	b=Yn+x5HCAyTYY0RrVCZoKm6CsUZxaok9tLVfgoIfICdS4A5NPc4Nmdr0+giwm0c6NT9zX
+	 Jz5ohMp6gH+dt/aWNs1eWHgkbIRqoYzyXNxKfmOamMX33+Oj0ySinnRVrndbA6th7QtFY
+	 ct5zDD8wHM5667FCa8y3v8ziPGDuYmawtzeD4hIs9WLzBGXFOOkhkzwy9evyz6vU9CGAF
+	 15ZPg4cUiW0xw2bNCKJm5OwrOfiqCuBhGK/i5eoyg8STL/L7M6i5RqUvGlqsfQN4EU3eJ
+	 FAaS6y/kKy2N8BKP41ZhiO5y+JWtzWrY6J7XVZUXFrGTSYe1w0oo3iMZvdt5ZLIPNXg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794383190;
+	h=DMARC-Filter:Received:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:X-HM-Spam-Status:
+	 DKIM-Signature;
+	bh=c1VSYUCW8DjIZRH9cT9PKM8BeqoT2mVv/wXrHisLhI0=;
+	b=n01JEaUZ0UGvI7Xk6+1CIeoGRpDJth8pDtCgDMMl33HPdLpp5MssIttbWcg9cMl1tbk4
+	 zEqBerwXAE1uHNrv40L3dl6zbMFxVCLQYAP9sHHBNkLPb0zqZNQOd3ZlNYsukEFHaXRlc
+	 txK5QkScINMozIw8yqNH6gAjyZm5RX4pd30zmJfzvwYr3ghQ5TiGlfoHDJhtqG8LhGFwV
+	 4T/xBCaNKHsKrlNgvuBjaVYokcpSAv5LC4YM6RKvwxSMJCaUcgYg5jT47YgtXxA6ETSvi
+	 raEceQZj9tDJFg38y6Waj40iHmFxzyqft+fzJ79+nFF0P2V1NWd/kpyNG0Qo/Ot2vPQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=rock-chips.com;
+	spf=pass smtp.mailfrom=rock-chips.com;
+	dkim=pass header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b="DsS/fXyT";
+	arc=none smtp.remote-ip=156.224.83.219
+Received: from mail-m83219.xmail.ntesmail.com (mail-m83219.xmail.ntesmail.com [156.224.83.219])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14D4F606A31C
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 07:16:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 14D4F606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=amarulasolutions.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amarulasolutions.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 265B0606A31C;
+	Wed, 11 Nov 2026 07:46:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 265B0606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=pAiwqPtb
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-8b336de3d38so22366967b3.2
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2026 23:16:09 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794381368; cv=none;
-        d=google.com; s=arc-20260327;
-        b=P+pj5BUSN5HMdRaHtQrXal8E4KSmET5C8KrQTRgqyq7y/JwUb1SABKkYdxZO4nJR45
-         UtpfZQgOjO9+p8/NeHnjVlOqirDRedPgk7KElqx/GeFzRvrdAE5YCA91DXal4+Ur6HfS
-         lUpYjVH7bnak1XbXs2TTMvjihsp6fe/1kh/VWx+4vTPZ9/yxq0JPuZyNsQE2bB/741w+
-         TDLbvvEfeuDxeIhoVQ5roNP5zaLW+apbzNF2hCYR+xq2WSQRajpdFfeluk5W3f7tHISP
-         PhkvcLz0r/vtLpILcdwbmWd4w9+F+NnG+nJHcfQXgmgiY2sQFRUZ6NaAKgvqyxSQaYqB
-         oG1Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=PS5LMiKFzIUnURDmLwbpwh2C/rUlEP4/H22PiA88mjc=;
-        fh=KxOYe2yNesV39t6/vzi+wjgrlP/oM0/7CmzLfzfBTqo=;
-        b=Awdl9sv1STeIo8yUjSx/q7RbljDq/hVf1O9AByi90aShBeW8MMWiqR1gMh2XULi98G
-         dAI8oIYQhUs1a3tl6HYUkW1RXdXRL1+OThVls751hLNIbth5GEsGTmUs7N+MW6GSVLYF
-         uq+FbY/p/kUW6+QvZ+Czpx1qO7KEtajZwXSj47TI+YAoA5Ixo9Fqdy4JpEFDZiXBSGbh
-         ZSMBHhM+B8S4jAhDCBiIV8ciVW28hGzrolXfyehPNuou6w0FnTIFNYvcaWd4BmCgDC7+
-         y0vK1aWoBi0+cIrXn3lahCKwNyxq+068gHf1lo3lJoteYlzSWa3+q7tEI7htAPtw+OtJ
-         F7qw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amarulasolutions.com; s=google; t=1794381368; x=1794986168; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=PS5LMiKFzIUnURDmLwbpwh2C/rUlEP4/H22PiA88mjc=;
-        b=pAiwqPtbWeaRH/ZqGVLMtQHwvrxsDdIZe9E35wf1oi/7nOx7xeahW0IAJRLJYHR7ia
-         Wx1Wg3BuG1Ku46S+uDvtGxCs22uEQs8H/6bzvaGSMBwHf+dOq6ybmI1eUEU1YgfqN3ad
-         /j6cBxti7HsCNg9WA5QfxwHUvXCnlQTCf20NU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794381368; x=1794986168;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=PS5LMiKFzIUnURDmLwbpwh2C/rUlEP4/H22PiA88mjc=;
-        b=VrVfQl901a8gsGYVmFMKksFBJblV2FrV1b+lYB0f2gqqWiYssv+t/iHuqfnfW6jw35
-         x8Dj2itsnecuUlUfXbVgCY+ZMUjvibqqIL4XzCj24FVKQ2WEbffzvVVBMINfBZdlG/et
-         /r7hygMaH6bjh7EMg8nHYQJGDDN3Ex4jh9FejZYqxNi/Bwbht0AnV0s5Sd0FHs4DHMOH
-         /lCbxNL0GE2l+N14tiCMa2MTfJ4jsJ5MgVDaKsi1HLP9gE+K/ipzF4DVU70Y7cnIa1aL
-         +HlIKmAiuMBg0BZNenbLHE8VCnpHoFlJWH6OjtoEDfItGxMUyPMhBBbHGtp/g1Ev/1E9
-         +88Q==
-X-Forwarded-Encrypted: i=1; AL+hErElaW5OXW2HEHW+YFmfX6RmVELNJCV7zPnvsH2bxDtDaI5p9f1dwYI0ZUkE6AhHxz3+MrhPSGvBCA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+VqrqCwkqMRANedvT82YuE1YKhh0lgvV+y8/ThqGFZ2rvS3tuy
-	TzQCxrfZsCio6RYPxvOR7yf1Kit4/VnZ0ISmG8jv8jIjRJUcKyxfPjA0gcjxXNZeMBekMa735gx
-	UzDtmCch2MOtD8lxXZvqpWMlopar1t1W0EsxmOyG42w==
-X-Gm-Gg: AYBFou1gJvofUvdc4zsOyJKioKyqaNlOgme5lFImKf9KzaULkovuu59/TYuHAjNZwJ+
-	hsgX/vLIEEChec93XHl90RzvmG2jXxoIpSdB+nlumrKpZ/sBpjOUI3KPeMzqmAoWPgUfhv3Dt/t
-	xyOEyz5T0H6aBy6TcPpFaKHAQpv9JuZCM8N2rwwNOVn0Rl2LNcaCZ39aSlRyC1zPxAsu6S248fz
-	MaO5+8kG1sKqRWotA0e8NiRuzweNh4AakpkWdguJ2Cuprybocm+eZ2B3h0pv19E6BmuxWRM6wTQ
-	OH5TYt0ntYQsRqw4s+svFjWKmZctZbAccqgO44s6xwG+JaJr4anLJ5DnJeQ1WdK22/04e5ijfkI
-	UMEzSKbtjNSxSu17xDjicgUVZcZrLimChqtp1idw7r3LSn2SEZSxc7UYu3fc6R0uThoE=
-X-Received: by 2002:a05:690e:1504:b0:677:cbfc:be28 with SMTP id
- 956f58d0204a3-67c67f7bcdemr1039946d50.75.1794381368118; Tue, 10 Nov 2026
- 23:16:08 -0800 (PST)
+	dkim=pass (1024-bit key, unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=DsS/fXyT
+Received: from [172.16.12.11] (gyproxy-mailtls0-entmail-virt215.gy.ntes [61.154.14.86])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 544786367;
+	Wed, 11 Nov 2026 15:46:07 +0800 (GMT+08:00)
+Message-ID: <4043eb42-ce62-41ff-9a7d-d840bb90364d@rock-chips.com>
+Date: Wed, 11 Nov 2026 15:46:07 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -101,87 +48,197 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261030171910.2822677-1-dario.binacchi@amarulasolutions.com> <f5ddf27a-9771-4967-a9d0-13c09f588402@leemhuis.info>
-In-Reply-To: <f5ddf27a-9771-4967-a9d0-13c09f588402@leemhuis.info>
-From: Dario Binacchi <dario.binacchi@amarulasolutions.com>
-Date: Wed, 11 Nov 2026 08:15:57 +0100
-X-Gm-Features: AclHuK_y6USQFhQ1AriRJr3BWyE_Wi1fKklRA36_ipXu6i6f67Qj9RIWxt--J7M
-Message-ID: <CABGWkvor=2AWC06iRvONAAPu6b8SS-JnJYmeALCYg_r4bh3wtQ@mail.gmail.com>
-Subject: Re: [REGRESSION] cpuidle: psci: boot stall/hang on i.MX8MP
-To: Thorsten Leemhuis <regressions@leemhuis.info>
-Cc: Ulf Hansson <ulfh@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	Sudeep Holla <sudeep.holla@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
-	Russell King <linux@armlinux.org.uk>, Suzuki K Poulose <suzuki.poulose@arm.com>, 
-	Mike Leach <mike.leach@arm.com>, James Clark <james.clark@linaro.org>, Leo Yan <leo.yan@arm.com>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org, coresight@lists.linaro.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, regressions@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v16 09/16] pmdomain: rockchip: add optional per-domain
+ power-on settle delay
+To: Jiaxing Hu <gahing@gahingwoo.com>, tomeu@tomeuvizoso.net,
+ heiko@sntech.de, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ joro@8bytes.org, will@kernel.org, robin.murphy@arm.com, ulfh@kernel.org,
+ p.zabel@pengutronix.de, ogabbay@kernel.org, zhangqing@rock-chips.com
+Cc: royalnet026@gmail.com, abel.vesa@oss.qualcomm.com,
+ sebastian.reichel@collabora.com, sidong.yang@furiosa.ai,
+ u.kleine-koenig@baylibre.com, chaoyi.chen@rock-chips.com,
+ shawn.lin@rock-chips.com, diederik@cknow-tech.com, alchark@flipper.net,
+ leonard@lausen.nl, jeff.hugo@oss.qualcomm.com, rfoss@kernel.org,
+ dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
+ iommu@lists.linux.dev, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <20261108065917.135194-1-gahing@gahingwoo.com>
+ <20261108065917.135194-10-gahing@gahingwoo.com>
+From: Finley Xiao <finley.xiao@rock-chips.com>
+In-Reply-To: <20261108065917.135194-10-gahing@gahingwoo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa1c9923f9203a8kunm2dd9fb713a378a
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkaSU1IVh9CHRpNQh1NH0pLHVYVFA
+	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSE
+	pKQk1VSktLVUpCWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=DsS/fXyTLnDgYvp4+HkqNssTj/QM61Fo3GnodXNmaCRPr2KWX7UWDRpIfJDDkszxhbuKwJP9MLaKB2+aG2VRLw1doWXQEajCGSYqF1Zu2Ok6Z8JZ2525aVYsklSN7UjrZex71vfnr33sqgYx00j4eu0zWgq2vrGIHnuomDKY/V4=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=c1VSYUCW8DjIZRH9cT9PKM8BeqoT2mVv/wXrHisLhI0=;
+	h=date:mime-version:subject:message-id:from;
 
-Hi Thorsten,
 
-On Tue, Nov 10, 2026 at 10:12=E2=80=AFAM Thorsten Leemhuis
-<regressions@leemhuis.info> wrote:
+在 2026/11/8 14:59, Jiaxing Hu 写道:
+> The RK3576 NPU power domains need some time to settle after the idle
+> request is released.
 >
-> On 10/30/26 18:19, Dario Binacchi wrote:
-> > Hi Ulf,
-> >
-> > on an i.MX8M Plus Dual board (Engicam i.Core MX8M Plus), mainline
-> > c339f4010dea sometimes stalls for ~0.9 s at boot, or hangs until the
-> > watchdog resets the board, right after:
-> >
-> >   [    0.806123] ledtrig-cpu: registered to indicate activity on CPUs
-> >
-> > On a good boot the next message comes ~11 ms later.
-> >
-> > About 1 boot out of 3 stalls or hangs. With cpuidle.off=3D1, or
-> > with commit 65705b18162b ("cpuidle: psci: Move initialization a bit
-> > earlier in the boot sequence") reverted, 10 out of 10 boots are fine.
+> Without that wait, the QoS registers are written while the domain is not
+> fully up, and the first cold power-on raises an SError.
 >
-> Hmmm, nothing happened here. Might have fallen through the cracks, so
-> maybe this mail will get thing rolling. If not, I'd suggest you submit a
-> revert.
+> Add an optional delay_us field and wait that long after releasing the
+> idle request and before restoring QoS.
 >
-> Or was there progress or even a fix and I just missed it?
-
-Sorry for not following up. I can't reproduce it anymore with
-current mainline (b3dfbde62cf1, v7.4-rc2+) on my current setup, and
-I'm not sure what changed. I'll keep an eye on it in my next tests
-and report back if it shows up again.
-
-#regzbot inconclusive: can't reproduce anymore
-
-Grazie e ciao,
-Dario
-
+> Rename the DOMAIN_M_O_R_G macro to DOMAIN_M_O_R_G_W.
 >
-> Ciao, Thorsten
+> The NPU power domain is switched off when the driver probes, so the first
+> power-on goes through this wait even when the bootloader left the NPU on.
 >
-> > I haven't dug into it much. The stall seems to be in
-> > pl330_driver_init(), so my guess is that it is related to the AMBA bus
-> > reading the ID registers of the CoreSight ETMs while a CPU is already
-> > in cpu_pd_wait, but I may well be wrong.
-> >
-> > Any idea?
-> >
-> > #regzbot introduced: 65705b18162b
-> >
-> > Thanks,
-> > Dario
+> With delay_us set to 0, an SError still happens even with the regulator
+> kept always on; with 15 us, 536 cold power-ons in a row are all clean.
 >
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+> Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+> Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+> ---
+>   drivers/pmdomain/rockchip/pm-domains.c | 56 ++++++++++++++++----------
+>   1 file changed, 34 insertions(+), 22 deletions(-)
+>
+> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+> index db3879846db6..e3cc60fa2277 100644
+> --- a/drivers/pmdomain/rockchip/pm-domains.c
+> +++ b/drivers/pmdomain/rockchip/pm-domains.c
+> @@ -18,6 +18,7 @@
+>   #include <linux/of_address.h>
+>   #include <linux/of_clk.h>
+>   #include <linux/clk.h>
+> +#include <linux/delay.h>
+>   #include <linux/regmap.h>
+>   #include <linux/regulator/consumer.h>
+>   #include <linux/mfd/syscon.h>
+> @@ -59,6 +60,7 @@ struct rockchip_domain_info {
+>   	u32 pwr_offset;
+>   	u32 mem_offset;
+>   	u32 req_offset;
+> +	u32 delay_us;
+>   };
+>   
+>   struct rockchip_pmu_info {
+> @@ -185,7 +187,7 @@ struct rockchip_pmu {
+>   	.need_regulator = regulator,			\
+>   }
+>   
+> -#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, wakeup)	\
+> +#define DOMAIN_M_O_R_G_W(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, delay, wakeup, regulator)	\
+>   {							\
+>   	.name = _name,					\
+>   	.pwr_offset = p_offset,				\
+> @@ -200,8 +202,10 @@ struct rockchip_pmu {
+>   	.req_mask = (req),				\
+>   	.idle_mask = (idle),				\
+>   	.clk_ungate_mask = (g_mask),			\
+> +	.delay_us = (delay),				\
+>   	.ack_mask = (ack),				\
+>   	.active_wakeup = wakeup,			\
+> +	.need_regulator = regulator,			\
+>   }
+>   
+>   #define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator)	\
+> @@ -258,8 +262,11 @@ struct rockchip_pmu {
+>   #define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
+>   	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
+>   
+> -#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
+> -	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
+> +#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, delay, wakeup)	\
+> +	DOMAIN_M_O_R_G_W(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, delay, wakeup, false)
+> +
+> +#define DOMAIN_RK3576_R(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, delay, wakeup)	\
+> +	DOMAIN_M_O_R_G_W(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, delay, wakeup, true)
+>   
+>   /*
+>    * Dynamic Memory Controller may need to coordinate with us -- see
+> @@ -681,6 +688,10 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+>   		if (ret < 0)
+>   			goto out;
+>   
+> +		/* Some domains need to settle before the QoS registers answer. */
+> +		if (pd->info->delay_us)
+> +			udelay(pd->info->delay_us);
+> +
+>   		rockchip_pmu_restore_qos(pd);
+>   	}
+>   
+> @@ -1314,25 +1325,26 @@ static const struct rockchip_domain_info rk3568_pm_domains[] = {
+>   };
+>   
+>   static const struct rockchip_domain_info rk3576_pm_domains[] = {
+> -	[RK3576_PD_NPU]		= DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       false),
+> -	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  false),
+> -	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     false),
+> -	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  false),
+> -	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), BIT(15), false),
+> -	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       0,       false),
+> -	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  false),
+> -	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  false),
+> -	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  false),
+> -	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  true),
+> -	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  false),
+> -	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   false),
+> -	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  false),
+> -	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  false),
+> -	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  false),
+> -	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    false),
+> -	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    false),
+> -	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    false),
+> -	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  false),
+> +	/*                                            name    p_offset pwr      status  r_status r_offset req      idle     g_mask   delay wakeup */
+> +	[RK3576_PD_NPU]		= DOMAIN_RK3576_R("npu",  0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       0,    false),
+> +	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  0,    false),
+> +	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     0,    false),
+> +	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  0,    false),
+> +	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), BIT(15), 0,    false),
+> +	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       0,       0,    false),
+> +	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  0,    false),
+> +	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  0,    false),
+> +	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  0,    false),
+> +	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  0,    true),
+> +	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  0,    false),
+> +	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   0,    false),
+> +	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  0,    false),
+> +	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  0,    false),
+> +	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  0,    false),
+> +	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    15,   false),
+> +	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    15,   false),
+> +	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    15,   false),
+> +	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  0,    false),
+>   };
 
+1. The settle requirement is on the top-level NPUTOP domain only.
+    PD_NPU0 and PD_NPU1 do not need the delay: when a device is attached
+    to npu0/npu1, genpd powers the parent (nputop) first, and by the time
+    the child domain switches on, the settle time has long elapsed. Cold
+    power-on of npu0/npu1 without any delay has been clean in our
+    validation. You can just drop delay_us from both entries; keeping it
+    on nputop is enough.
 
---=20
-Dario Binacchi
-Senior Embedded Software Engineer
-M. +39 328 0625246
-dario.binacchi@amarulasolutions.com
-=E2=80=95=E2=80=95=E2=80=95=E2=80=95=E2=80=95=E2=80=95=E2=80=95=E2=80=95=E2=
-=80=95=E2=80=95=E2=80=95=E2=80=95=E2=80=95=E2=80=95=E2=80=95
-Amarula Solutions SRL
- Via Felice Cavallotti 25D, 41012 Carpi, MO, IT
-info@amarulasolutions.com
-www.amarulasolutions.com
+2. The same failure mode exists on the display pipeline. PD_VOP needs a
+    15 us settle as well.Please add delay_us = 15 to RK3576_PD_VOP.
+
+>   
+>   static const struct rockchip_domain_info rk3588_pm_domains[] = {
+
+-- 
+Best regards,
+
+底层平台中心 肖锋（Finley Xiao）
+************************************************************************************
+瑞芯微电子股份有限公司
+Rockchip Electronics Co., Ltd.
+福建省福州市铜盘路软件大道89号软件园A区21号楼 350003
+No.21 Building, A District, Fuzhou Software Park, Fuzhou, Fujian 350003, P.R. China
+Tel: 0591-83991906-8602 Mobile: 18506057603
+************************************************************************************
+
