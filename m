@@ -1,44 +1,85 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.209.128.204
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794387994;
-	b=tPGV2rYuQTdULp32l5p/f+4cCj33DkrrIGrPkg2NXWyv9KeVuP7fWZtljKHPV7DDxf+y
-	 Dm0w1EACWy7gwpY2k9NRksBkLek5WvEgMTX0p8bsUvtJ6yvtH9VCrpQqjpZuJFtXvme0B
-	 40cz2qOy7s9Sx/1mbbV9IDAn8kRKFTObhnPnmhzf+G6y0TObCgtlYVoKH8jplndiHFRzt
-	 TbeKpjJK7+jukKfVjYiBuhyG3tkRxlPFnugMYJa9NWIatlLsZcjlvYmP7a7k9YVsI5MWx
-	 45Ln6lKrTaJ3+kqQMVwPopiwB7lKTR5hEQZqefMgaX+ZEifbeJy6lE/g1cDkBhb7wRA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794387994;
-	h=DMARC-Filter:Received:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:X-HM-Spam-Status:
-	 DKIM-Signature;
-	bh=tMdgjX8bYijLnolxyoTC/q9AKx2reNTEQu7tjnwBrUk=;
-	b=eO6b9JEwq5xIF6YC2o/rxEPf3A//n6g6em727pQhNiVmQx2JXTdrWZCZFizOLG24E3AT
-	 gNtTEGsOLYlEVGmAm3TfXmuL+89owqVPpEwG/PtNSfjsIm0Tcu+Zmt2ZizHjjGAPVHZNU
-	 J4Dyov2Pr4ISLXXRNJZVhLMlsg2+KS/JbIxTVFc3geelN5rUBqNVMS7IMrqxUEM/0SPrh
-	 ZNFSg94/BciYXEm79t+NoD7ANvxxTkO9lG/Wr2SttlY9rVqNVz+PrvvS6StwZX+iPAzLd
-	 SqYlacBQXjWi3KhPHmv3W1NQM23uTmnP6Qk8P7085GVkGGAWIEwICK2WAMacd2D5QKA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=rock-chips.com;
-	spf=pass smtp.mailfrom=rock-chips.com;
-	dkim=pass header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=bmsQEOzU;
-	arc=none smtp.remote-ip=103.209.128.204
-Received: from mail-m128204.netease.com (mail-m128204.netease.com [103.209.128.204])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794388321;
+	b=mTeFvB3m46EjnP62PXRfXzjGZY5g8fENVzb5KbBx7YaXspBGdQ3TqlUPQ0X+qufbwq7h
+	 hNhStGp5uFgNIJs5WH7NBO5YYZAJW3P8oBB7VqEKNjuEc39vgOf0WX5FLSDSSCNMYL0YS
+	 OrJ0lcB1Q1SHwLoipjfOdYDuTQRQEiGcXnFZ9VKUtaUS20VXREtGREs04rDtcduEmCtyF
+	 yAkwhL/ps6OU0MZpcpglVGttt7bSPUMTv/HInwii0TQ76a4MGqpDrkq35Q/gxYufQK6Vn
+	 Kq8Xv4pGHAb4MTPwK+5qArpivt0d2bFmh9o/c4TEpGP2n4jjpnV7C9RtIz/lCzYx/Fg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794388321;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=xMsUgCsGYtAuzjV6fXKjB5LSgRF1fx8Yzkw480NcByU=;
+	b=rCOxqVXBhqnxPZJSaQgjIxd9YLvflSVsi5zL9kNQLu79n60Xs/sq31halLejzDj0yjwx
+	 aNaYtn6UbCjaVSQb4y5b/Rb+khRoI0j+j9XPHZRuQXtz9qUWFGjlsEtf8BET1vqoHiLjq
+	 uoRXttqplp81goqwMHPXfKT6abb1PW0B2brHV4WgytVD8gFTG7leCbfP1SE2hEd27xikJ
+	 tsBmSJCQSwE17xd7iAGR+cND80vgVHqJoNR7MHoWzaimAeczsM7hA1OkvbuQJR7IIID74
+	 5+kdEJHH7iCNbKdHnsSsl/0VyIfWXsqxBMU5Ll/Vwudj8koPsAoPqDxQy88yKwKRSPg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jJ6mlt9Y;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0EF4606A31C;
-	Wed, 11 Nov 2026 09:06:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C0EF4606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A49A6606A31C;
+	Wed, 11 Nov 2026 09:12:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=bmsQEOzU
-Received: from [172.16.12.11] (gyproxy-mailtls2-entmail-virt217.gy.ntes [61.154.14.86])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 544afe262;
-	Wed, 11 Nov 2026 17:06:11 +0800 (GMT+08:00)
-Message-ID: <20e74412-e4d5-40bb-9565-249f029324a3@rock-chips.com>
-Date: Wed, 11 Nov 2026 17:06:10 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jJ6mlt9Y
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=90.182.112.124
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1794388321;
+	b=iFfVSkaJR6km2bunnsvcj4jYwqm/fPWR1KdLi0pwL0w6+1vFvfVErfzWMFKd5ajaDLdE
+	 YKFTK9BP9mpYrb0vXrSB/lWouSyPF9Gf0XSuboHWfzSPVDSFMF0GWetzykXu+SgDmYNmy
+	 fde2Lf0nEK5zZUrMMNEfZ8ure4itvQCUqeQd+w7fvRUz9U0sMVez94BatZGFk49ShxrmD
+	 BFVonLj2aQQzcDlMs4IJO7qNxC6vs9kV5HJ24Q4XaGZ2QTCRvrQHSqWA++FJAGkHz9Gwo
+	 hCPZMfoRmR/YbMl6s8SsFPW/dLPIAuH//6Rc/aROkidSdjkuv5DEjvASAQ9zWVv0pAw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794388321;
+	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:
+	 References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=xMsUgCsGYtAuzjV6fXKjB5LSgRF1fx8Yzkw480NcByU=;
+	b=WLOH2uCGVB1192Ov09Md8reL0SLS7ODjVSj9gmyKDrtbfEk8uHeJ6PYYiidZ1CZmlnA0
+	 dfmHuQJLWIuSvz57tNMthUOEvPHA5Gdh9+rPq/LZzc/2EvJkQMy/zgNuaIR7q9F7l4Hje
+	 e7pz0CGlwqzgCOVK5akxhTv7swYQtRAwvs4f84Gx3VMd+l/931xhg0MT43UZDXDNQb4DJ
+	 oo4zr6GSuDLfKWmJQuT+qbuipY200nLel6y5YHp/gCsHDealM3ObJlNd/qdYtIMfDlwgq
+	 Qn5mw6o+MNrrOFxnqvcqrtC14szqaL7Iqjry3ZbiMYwHqyZIXI1NeKrflrMMpoxLcRQ==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=90.182.112.124
+Received: from localhost (90-182-112-124.rcp.o2.cz [90.182.112.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.kernel.org (Postfix) with ESMTPSA id 60E031F00A05;
+	Wed, 11 Nov 2026 09:11:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794388321;
+	bh=xMsUgCsGYtAuzjV6fXKjB5LSgRF1fx8Yzkw480NcByU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=jJ6mlt9Y0hvWgVq3eymBZ6VNr8zYwwRBVTHJel4Zbbd5K6jpqi9NlNzcFAiBHgdS+
+	 TK0hSyyZDYm6NK8sb78zk3Px/O0QSZTtOOmzebKgC1uSAdnUYoy3L4GGlVms2Kg/Tj
+	 7o9Jb7+gldIxrzLOifi/ASAdHPttA816EYbMp2WuxDgu8npCESb93MOy1mgvFAy+47
+	 9k9XJU6rE+cBiGwfVFqTwLDSgGHTAJdM19TsqNYikWXmi2tuSr1PX48Qk7aiQ9jVpl
+	 rqooqOR+qL9AVO+phwSH1AhbAMv3PJCNlLamD0/uSXLNC8uqViSgGHFsljsi9nYCV9
+	 GOeGpVVfzldtw==
+Date: Wed, 11 Nov 2026 10:11:52 +0100
+From: Joshua Crofts <crofts@kernel.org>
+To: Samuel Wu <wusamuel@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, Johan
+ Hovold <johan@kernel.org>, linux-pm@vger.kernel.org,
+ driver-core@lists.linux.dev, linux-kernel@vger.kernel.org, Dominik
+ Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH 0/3] PM: runtime: add new runtime metrics and summary
+Message-ID: <20261111101152.00007785@kernel.org>
+In-Reply-To: <CAG2KctpRRDMXR8wG40PeohsTyAdoNC=+4Nc9pHGQc1fmw9AXeQ@mail.gmail.com>
+References: <20261110-pm-runtime-summary-v1-0-12ebf283db78@kernel.org>
+	<CAG2KctpRRDMXR8wG40PeohsTyAdoNC=+4Nc9pHGQc1fmw9AXeQ@mail.gmail.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.51; x86_64-w64-mingw32)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -48,104 +89,46 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v16 14/16] arm64: dts: rockchip: add NPU core domain
- clocks and resets to rk3576
-To: Jiaxing Hu <gahing@gahingwoo.com>, tomeu@tomeuvizoso.net,
- heiko@sntech.de, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- joro@8bytes.org, will@kernel.org, robin.murphy@arm.com, ulfh@kernel.org,
- p.zabel@pengutronix.de, ogabbay@kernel.org, zhangqing@rock-chips.com
-Cc: royalnet026@gmail.com, abel.vesa@oss.qualcomm.com,
- sebastian.reichel@collabora.com, sidong.yang@furiosa.ai,
- u.kleine-koenig@baylibre.com, chaoyi.chen@rock-chips.com,
- shawn.lin@rock-chips.com, diederik@cknow-tech.com, alchark@flipper.net,
- leonard@lausen.nl, jeff.hugo@oss.qualcomm.com, rfoss@kernel.org,
- dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
- iommu@lists.linux.dev, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20261108065917.135194-1-gahing@gahingwoo.com>
- <20261108065917.135194-15-gahing@gahingwoo.com>
-From: Finley Xiao <finley.xiao@rock-chips.com>
-In-Reply-To: <20261108065917.135194-15-gahing@gahingwoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa1c9db8bbe03a8kunm0e16dd9f3b1c8b
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkaTEIfVkIfTUtNGUMaSE0aS1YVFA
-	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSE
-	pKQk1VSktLVUpCWQY+
-DKIM-Signature: a=rsa-sha256;
-	b=bmsQEOzUtCVRFu14odnqTs+fbRAN150MTPhXy26iN1vXi9lISKGIld9fP4bwih8bhnZXxhlw2jJ/5ikLqqUDLJ13t7MhEsYXsBxUc/UqdChMjyufdvzqRPn7EVrtcZBoUO8Twfo0YLGib0/0uTkv8pnEenLBwOO+hEL6oFopsTE=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=tMdgjX8bYijLnolxyoTC/q9AKx2reNTEQu7tjnwBrUk=;
-	h=date:mime-version:subject:message-id:from;
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 10 Nov 2026 19:38:39 -0800
+Samuel Wu <wusamuel@google.com> wrote:
 
-在 2026/11/8 14:59, Jiaxing Hu 写道:
-> The two NPU cores of the RK3576 share the CBUF and the DSU, so PD_NPU0
-> and PD_NPU1 also need the three clocks that PD_NPUTOP already lists.
->
-> Also add a BIU reset to each NPU power domain. The pmdomain driver cycles
-> it when the domain powers on, so the bus interface works.
->
-> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-> ---
->   arch/arm64/boot/dts/rockchip/rk3576.dtsi | 12 ++++++++++--
->   1 file changed, 10 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-> index 7828736bf9ac..508ed48b7bee 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-> +++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-> @@ -1159,14 +1159,22 @@ power-domain@RK3576_PD_NPUTOP {
->   						power-domain@RK3576_PD_NPU0 {
->   							reg = <RK3576_PD_NPU0>;
->   							clocks = <&cru HCLK_RKNN_ROOT>,
-> -								 <&cru ACLK_RKNN0>;
-> +								 <&cru ACLK_RKNN0>,
-> +								 <&cru CLK_RKNN_DSU0>,
-> +								 <&cru ACLK_RKNN_CBUF>,
-> +								 <&cru HCLK_RKNN_CBUF>;
-   1. CLK_RKNN_DSU0 is the parent of ACLK_RKNN0/1 (see clk-rk3576.c).
-   The common clock framework enables a clock's parents
-   automatically, so DSU0 is already held during the switch window
-   through the ACLK_RKNN0/1 entries the nodes already list; adding
-   it explicitly is redundant.
+...
 
-   2. Per the design, a power domain switch only performs the idle
-   request handshake and the QoS save/restore accesses, and those
-   paths only require ACLK_RKNN0/1 and HCLK_RKNN_ROOT - exactly what
-   the nodes already list. The CBUF clocks are not on the switch
-   flow's access path, and the clk_ungate_mask support in the driver
-   (0x1a/0x1c on PMU_CRU_GATEDIS_CON0 for npu0/npu1) keeps the shared
-   paths alive during the switch window anyway - that is what the
-   g_mask support was added for.
-> +							resets = <&cru SRST_A_RKNN0_BIU>;
->   							pm_qos = <&qos_npu_m0>;
->   							#power-domain-cells = <0>;
->   						};
->   						power-domain@RK3576_PD_NPU1 {
->   							reg = <RK3576_PD_NPU1>;
->   							clocks = <&cru HCLK_RKNN_ROOT>,
-> -								 <&cru ACLK_RKNN1>;
-> +								 <&cru ACLK_RKNN1>,
-> +								 <&cru CLK_RKNN_DSU0>,
-> +								 <&cru ACLK_RKNN_CBUF>,
-> +								 <&cru HCLK_RKNN_CBUF>;
-> +							resets = <&cru SRST_A_RKNN1_BIU>;
->   							pm_qos = <&qos_npu_m1>;
->   							#power-domain-cells = <0>;
->   						};
+>=20
+> What is the vision for using these runtime PM stats once surfaced to
+> userspace? Runtime PM and suspend have disjoint portions, but I'm
+> curious if you see any non-obvious areas where these stats would be
+> insightful.
 
--- 
-Best regards,
+The main things this is useful for are detecting power "thrashing" and
+tuning autosuspend delays. Currently, sysfs only shows the total time
+a device spent in active and suspended mode; from an energy standpoint,
+a continuous 50 second suspension is different from a device cycling
+1000 times for 50ms each (these transitions can be pretty power-hungry).
+This could help userspace utilities like PowerTOP to more effectively
+determine what is causing an increased power consumption.
 
-底层平台中心 肖锋（Finley Xiao）
-************************************************************************************
-瑞芯微电子股份有限公司
-Rockchip Electronics Co., Ltd.
-福建省福州市铜盘路软件大道89号软件园A区21号楼 350003
-No.21 Building, A District, Fuzhou Software Park, Fuzhou, Fujian 350003, P.R. China
-Tel: 0591-83991906-8602 Mobile: 18506057603
-************************************************************************************
+=46rom the kernel dev standpoint - this is genuinely useful when testing
+runtime PM functions in new drivers (for example in the IIO subsystem we
+deal with a lot of runtime PM stuff).
 
+> And is there a reason the stats need to be surfaced in both sysfs and deb=
+ugfs?
+
+sysfs definitely, as you should definitely be able to access this info
+per-device (and this is the way userspace tools would get this info).
+
+The debugfs summary is however pretty elegant IMO and useful. I'm sure a lot
+of people investigating odd device behaviour would like this (plus there
+are overviews like this in the kernel already - clk_summary for example).
+
+I'll add these points to the cover letter in v2.
+
+Thanks.
+
+--=20
+Kind regards,
+Joshua Crofts
