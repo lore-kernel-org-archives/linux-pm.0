@@ -1,110 +1,93 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.227.129
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794386565;
-	b=1MDaeM9u2OvYgtG7dzWuMv2PgmFzGJ20OkC9gjNVgDu0G7vTurOR3i8fe4yQrFYZZm75
-	 YUF0e8Jti1N1DPbdF111cD1Y4yCEKvVmopZLTJPOqKwrQwKo253fvyIU88Vd+qfxijvdU
-	 G+zLCPqj8p5VHRWSKLzclZ6nlhOmru1+ii7JL4MIURgjs0jR5duXpGn/nfwzTTwgZDH9Q
-	 qVmtmVbgYZzktB2xV8sWSrNbo/7VW3hlj0PwzIuROBCffSHnKLDuBMjo7ZwTYeIIvTLQE
-	 zXqvGiHayuryZiui/vRK/HJ6es1zEt2vUZVabWAJgf/GtO+SCfd3kRyg2Olo93RxCcg==
+	t=1794387040;
+	b=1Fui9v5TpEInjcCiUbgYhovHYeccb3ehycVMteWR5BxahCd/M8+nd7WPZwFppqwslfhe
+	 UMG+dHkqlmcNShyYO6XR0Y9jBqvDZNPBBPP1rpP6I59C1SIYIf9SpLjp2/6lkBk4yARrJ
+	 FsqlkjEWNH62vHYx4zwPO0Hoc/4B/5ORcIjzSt6W5HSr4teyVcYHZgRGXlxzu0JgI2YvV
+	 gs+jCQ0Ma9H/qTpVBrYdT7UstvqyACwEb/mNR8sePnfDNZUBJj3wyaMzoxY4BVuvKW56A
+	 WueiIbUh+LAfoucp15ZDij8d7Y1cIldIVB43/QgvzYihwxiHQGr+cMcASsoBNK1YGJA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794386565;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
-	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=caKD8K2XUp1y25/Ss8VDsXr99ruFvls35VJEqEvKLcI=;
-	b=yuMXBWEKeffWghwpGE9Y+DvgDSHmXtnkC6frpkKwDkozRjN2+4lBDc5f6Yqv0LvOSlzP
-	 JHucGf8kdktshiw8RfiPmjbO0pWBvnkAC4X/vDYvuVtE18vsbSDs9OMZfDvc/5nWzcJLP
-	 ZHISDLlP48UlgKA6foSI4iG97Vfy2dC5MTbdzFLjLBghDTI+l4qOr7B6het0diSCiohK7
-	 wvIzEsZ6Jm1J7NQCIy6ZN692bUmg7+uCOANBmaUZBliWjWso22ApYMOXHCgOKS44cCmUh
-	 kkHtA6wIrAWib9g0Xnv1lazv4xoJKgkDq473y8qFdEaZy8+QzOE2UCRS5Lw9dXiAWWA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794387040;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=zCRooG2x6MjJhhdGz/yUbWYEgmkxtWTULJ4B2gjVcXc=;
+	b=DiCFLjMF8lQG8w163T/YwE2feBVCiC5O3HFr+DFseebgFaxWkXyTyacnAz8DfwzuJ6hb
+	 mmXJ/JjjSHczRbvEIla5LW1sh6SFctA/jQOHWDr4H06xFV9yI+LHWa0NIpv9mdqBHWrae
+	 z/iJAVvdjEYm2w+3/FnbqZp0iFkprlOUMdkNsrNBjzlMbMw6DQrxnSugDLTmnKRR37MSv
+	 GR4NxN+pw5CkjMmg/i0cw9Urv/CE2c+tvTFam8C5xNPh7OB3sp5DyfQcoDkW+VjhprZeQ
+	 TAACx21NDpiQNGbg9Adnav5DrM/XJFaiJC8BvFMdpqjSHVFzLKsncpFGhSKUCNVFSyg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Rec6yN0e;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dVGM+QhR;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=none header.from=kylinos.cn;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=none smtp.remote-ip=74.125.227.129
+Received: from mail-pj2-f1.google.com (mail-pj2-f1.google.com [74.125.227.129])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF9E7606A32E
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 08:42:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DF9E7606A32E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Rec6yN0e;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dVGM+QhR
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AB5Kgk0300701
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 08:42:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=caKD8K2XUp1y25/Ss8VDsX
-	r99ruFvls35VJEqEvKLcI=; b=Rec6yN0e87PEOwVvEWwEvLsNMe8lpmhlpCqpvE
-	ZZri7l9Z7cOkFM1U40I+NorpNHT1lsHPPlywK2Si0i1fTKpl3LfxNzxbwbjsMDlw
-	1egtonUD4cg34wjkX8E2BNwadssXnvauhuflderm8ROGGMU9lmAxWqX5NzVgBvkx
-	U8IbUmz16beFrTQWSO6E6JCrlb75YsM1qgzCOmxvIA4eiSk3LHRVuxslOQ5dgQEp
-	NKmaU03U9aYDZiI4wqdZIzk3xpuwZRmLV5OOxho8IOgNH6sdrePgYbidja0wC/RE
-	723tA6Ar5H//NuB8etpQaC6tEaUSsqLm5yr9kyLfQLqGB+hg==
-Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hv7c5kbvu-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 08:42:43 +0000 (GMT)
-Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-3763bd79663so1117045eec.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 00:42:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794386563; x=1794991363; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=caKD8K2XUp1y25/Ss8VDsXr99ruFvls35VJEqEvKLcI=;
-        b=dVGM+QhRUiROM+1IZ8Sku5VPqBtIMpxs878v9jhTH2oqA9cB7BZeVi5PhUpXQDM5UZ
-         FTPb+El0GUCnCX76kENRZBqoz+vOBThmLzx1MDbvGULf7JZfYdPk19VFMAh8I9b2OQrC
-         jyDoJb30FODx6hopjS0hJH7jTrTbk0lJo5dFzkrh/p1/SjzEfEt0wWYkxBo2vI4o3JUm
-         AnRN4eB4EZlMd73JYYJhmFJNxI1r3c1dZRFExpOSkuCsQXLoq3OSvgZDxdyGC2Q7ON4v
-         vTAxAjdgJTV+P7CtzFKR7FCkIMQWWOq1UUKBG67yIDoENhiRo42rD7SsbfPb+4XUOIq1
-         pevA==
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D392606A321
+	for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 08:50:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1D392606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-pj2-f1.google.com with SMTP id 98e67ed59e1d1-3b0d11b85f0so1780670a91.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 00:50:39 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794386563; x=1794991363;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=caKD8K2XUp1y25/Ss8VDsXr99ruFvls35VJEqEvKLcI=;
-        b=XJJt0NG6cK3zuIIrHzuOlsQ1etHCxuDU/H6cpc08W1B2yEUar4Z7Tdss537FG4K5wA
-         v7fSCOCsacEfRBD1xBknUIEllaTuacFlBbibSuDnX72399bimK4FAyDf4FdWD7mpmB7c
-         jPUYDx/cjpt7zJF3HLLPblp3aFEO9by7sRncJzFR75/wv7Gora53n6kqozFLAnm2DsL8
-         EPVuqub58gaVJ+W/BAVuUIAs5cc38CdbFdaLrrSkvS4cfKVAAq5/r3GGWsRwsWfsdecb
-         yZkm1k+ZqJ8rjGBGYHrJRjUQ1B39I2lRM1f4fvy3u6MrTcnWy72jpEVkuxEFdKqovAGn
-         3vfg==
-X-Forwarded-Encrypted: i=1; AL+hErHMBoNTryDBT6C7O+Ah8l/SP7y9TeCZkaK4YlWOHXuZFf9oc2K3PiXtiUJ4IJbwp5q7BYa2q63aTg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8u9+jlLEQ3eeU3xfaEAyeL98DncxA+KJCoXYvw5abLFSeEybkf
-	dnQ4rZIbPXfm4F3MdH5qUg3Xy223xOgRny1k6IX0Q9vktrjwLRxRBnLO6W9jSmM8hC1H036kCNR
-	OU5e8F1zYKIgCMkCVqpioVDs/l5wN+jybHSikZ23OMUUt1k4NGGBvubPe/JrYLA==
-X-Gm-Gg: AYBFou07q2geNQRHZTjzGOvfpFXiB26UxY4rRQcK0xfHMuhypzfBHiG5phxZrNchlHJ
-	Gh6F3f3MOd4NM84MwxHfpg7brmh8GF2PHuh8h5KY5nmWTproTzBaTSDVzFI21yrUV/bXXmD1Mb4
-	5eQUlulppYDDbzoPMenKfm/VcLkTdB6uY+HC4ebItN5N1I9XQCXLocxr88htDn/B95omTiXmS32
-	rYCEo+B4S2KomD2LQ6RYq7fTecxd3wRz4Bu980JKyoIABSSEhud7InrjwfBG/czt5DYdXYIl9Nq
-	XZWYpsjru1UJf9xcA7N8PtQxz1CJnOsbKR1ywHSIdadMqewqVTFbNnCgCazPBJKaxUD7Pwz0axl
-	PJpT2g6JhIDzMDwh/BeZJ8d4PKWh2e0rmYXdFrIiOOal/2//hpTdBAaU3tyh3RDbAB4g=
-X-Received: by 2002:a05:693c:87d6:10b0:36e:c85c:3bbc with SMTP id 5a478bee46e88-37685c7a8fcmr2405514eec.12.1794386562575;
-        Wed, 11 Nov 2026 00:42:42 -0800 (PST)
-X-Received: by 2002:a05:693c:87d6:10b0:36e:c85c:3bbc with SMTP id 5a478bee46e88-37685c7a8fcmr2405472eec.12.1794386561715;
-        Wed, 11 Nov 2026 00:42:41 -0800 (PST)
-Received: from [10.213.109.130] ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3766146551asm5935916eec.1.2026.11.11.00.42.35
+        d=1e100.net; s=20260707; t=1794387039; x=1794991839;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=zCRooG2x6MjJhhdGz/yUbWYEgmkxtWTULJ4B2gjVcXc=;
+        b=mxTpAKrR0RtFCohf+wkl0wf+q9ipwXHQmFeKXbDp+KPgX3TSp60i243H7t1sGkaL5u
+         gDlKN2fy4JeFeHuuCKhxH6sq5Uq0Em5zvj8MeRD07nSCXiLoNLtJxUHwai9kwecKwcsc
+         0o18is6L4ZhvcrrinvaAOeNDvEOM1XkITplcOPNBUwmXm4sInF1mwvoaDzIDeai5BVk2
+         MYBHDBN2zredSLKQHBKS2DnO0aKhZGYDh+AmCZgZzd6EYbxoVWjORcWU3QoJrwoSqRUC
+         qFl9t/gAmu01xdKvEndBkuBRKHBuWlPVf/Prhkd6eNIXUzEA4059qSel6LmZsi0/Nvft
+         XpKw==
+X-Forwarded-Encrypted: i=1; AL+hErFhDXFUHCXZPFvgEkApyuIsGLzy59Pg4Ktg3nxEPFU/K9QvfS51Ni/HP/+c+/H0OLK2SY+ekQPxtw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/madRGUCI+yaV/DlF2bYaW5SyWA8RfvPm83rXfyz3s+6IvBKDs
+	p8gTq/cSWPdxFejHDywS7I8r4p5x50QNykTYdkq/7lWJGofwcEQz+fgn
+X-Gm-Gg: AYBFou0HfR/qTIz39vZbxKJq0lxSDY31S2fQHrlMcrAV9Lx/zxqW2A37AYKN+X1R6/n
+	gkyWiNZ3s+nK6pmOWN1bIH0BpJIMoBnmdv4ij3IenTUqKWEDlMuYznoiUCRRsGV/HRGLCdgCZW4
+	C4BbiSp77NPDwnMgPg3x/dWhzJLGN0KfLDl0v7Rorb+cJOnQIu7Ux681VjuikPp1bDfpVIfKkpj
+	vdvaN10ykG4ilSY0hGvkmmkFXb9slzdSW9yYdKB/hEpTQD9NNr7qnyhxe9A8R3TwklP4XQqNuw5
+	3oO7KJMALXRFkyNWamkXX93iXFoq9qbASw6icXIrs3icPCuaeKg6ilFhnqbNAEkIdk3jX52RVrU
+	9WO9uTITtMOSci+F7apmWrqko2I587g2hK7mCQuAldBy0m6PcqqaWtc+2vq/8bYwSsc/ehbvJv6
+	tn62DyMffetIKfr1zzgWrgy4CFxPH/2+6ljnj/AGZE+u3WHBK01yIXOuKEz4iIZ0PPxH/npmS0O
+	KOxsd7TWLsh3E21AAS3kfuQX+BHb+f9a6l3zfvRChk5wU/JMr4GjcBa+BYVaUZ07Z/88owF0DYI
+	VSE1B6qOwbjeYtL8AIKGeWhS789Z4Rsj5ZMWaoqGtwqOc20guKQ=
+X-Received: by 2002:a17:90b:4fd0:b0:3ac:9f00:3bc7 with SMTP id 98e67ed59e1d1-3b182eee784mr1752558a91.33.1794387039460;
+        Wed, 11 Nov 2026 00:50:39 -0800 (PST)
+Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.169])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1838e616dsm2396406a91.4.2026.11.11.00.50.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 00:42:40 -0800 (PST)
-From: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Date: Wed, 11 Nov 2026 14:12:01 +0530
-Subject: [PATCH] thermal: qcom-spmi-adc-tm5-gen3: move hardirq actions into
- threaded handler
+        Wed, 11 Nov 2026 00:50:39 -0800 (PST)
+From: Xueqin Luo <luoxueqin@kylinos.cn>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	sudeep.holla@kernel.org
+Cc: zhanjie9@hisilicon.com,
+	christian.loehle@arm.com,
+	zhenglifeng1@huawei.com,
+	sumitg@nvidia.com,
+	lenb@kernel.org,
+	maciej.wieczor-retman@intel.com,
+	pawel.chmielewski@intel.com,
+	gregkh@linuxfoundation.org,
+	dakr@kernel.org,
+	johan@kernel.org,
+	ionela.voinescu@arm.com,
+	pierre.gondois@arm.com,
+	linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	acpica-devel@lists.linux.dev,
+	driver-core@lists.linux.dev,
+	Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: [PATCH v6 0/3] cpufreq: cppc: Handle Highest Performance changes at runtime
+Date: Wed, 11 Nov 2026 16:50:19 +0800
+Message-ID: <20261111085022.1229866-1-luoxueqin@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -114,190 +97,105 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261111-adctm5_gen3_hardirq_removal-v1-1-536ed503396c@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAFgq9GoC/yXMQQqDMBBA0avIrBswak3pVYqEaTLVkRp1oiKId
- 2/a/t3b/AMiCVOEe3aA0MaRx5CgLxm4DkNLin0yFHlR65RC75bhalsKpe1QPMtshYZxw7eqaoN
- VadDcSEM6TEIv3n/3R/N3XJ89ueW7hPP8AHePloF/AAAA
-X-Change-ID: 20261111-adctm5_gen3_hardirq_removal-467a437a78e1
-To: Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kamal.wadhwa@oss.qualcomm.com,
-        Pankaj Patil <pankaj.patil@oss.qualcomm.com>,
-        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794386555; l=4621;
- i=jishnu.prakash@oss.qualcomm.com; s=20251014; h=from:subject:message-id;
- bh=/VgbWEVvLV7IIi9813+uAXJpHlnNKj3SGal/MqgZqao=;
- b=S4MejmbHBPlwKkgHBsgY4SsrhFgMBa8twu+tU/QhLpmkMaPUbWccTZbnI2mTpRdNoVPH9NOty
- qp4XEeFA+RzDTRu4kChTK/0pRdftRwBJyU0ddQASJPKr2X5Rfb7IZAZ
-X-Developer-Key: i=jishnu.prakash@oss.qualcomm.com; a=ed25519;
- pk=g89pXdLVwRjdTeQ+uX1QzvBO346E3hQAc1N7fcTXgmk=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTExMDAzNCBTYWx0ZWRfXytsgIFKEiwIu
- i2ZRnbu6UBN4Yk4Bfz2Kp7Q/0Awvq7aATPj4M3vHwq/h0EYzI9ezwLOn0YLCQ1Gdj5UOWZsYe3G
- paqoMe+Y0PDSfdpsjBH33NyNdJzXuF52oBxShC1GR+EMmg+dxV9fEuSyki/X3jw+AWS2ygGocmi
- iaj135z5T+qyV1FiiroF3+b03Icx0W0Eed7YVsbE4D52n7HpyjqZkezdFi7exiy+emjICBy2yuy
- r4HcmZk3nnr0lJpDVTV3XmW8ckQVQ7gttQ8+/L7U8TrwcVqGMD2BD5cvTtKha+pxWs5/NsKQ45M
- AuQwFt9ViRdYZhT2/aqTqiWAWliVcszD+qxTCQPaJLP31xHHybG92UI3KaRNs4UMNU4NNyB2Deq
- E7GQ5Czlg24hmt43hgkh8u44HZ3v8Y35QxdMDKGzTtzm6Qa93dFDaV7K06wkCbucFjZbwUJTM3l
- KvBHvKm5MzdlOUsX9oQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTExMDAzNCBTYWx0ZWRfX/DDy6Lus5IjZ
- akjssApZIyX9Q8Dyr9DRPMrmqJkOkn3+Z1UavWBX6R6XljfxFr5jeBt2pORd5kKW9QK7JqTIAKu
- til3cgZ4aObhjW9du2TuHJW1NLQ7jpQ=
-X-Proofpoint-ORIG-GUID: XJr4Bt-Q03ROHtr0QLp0UaJeFGIHqi2z
-X-Authority-Analysis: v=2.4 cv=eq9KXYpX c=1 sm=1 tr=0 ts=6af42a83 cx=c_pps
- a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=zlfbmXi6rwQ6R9OsHyEA:9 a=QEXdDO2ut3YA:10
- a=O8hF6Hzn-FEA:10 a=6Ab_bkdmUrQuMsNx7PHu:22
-X-Proofpoint-GUID: XJr4Bt-Q03ROHtr0QLp0UaJeFGIHqi2z
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-11_02,2026-11-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0 clxscore=1011
- malwarescore=0 spamscore=0 phishscore=0 priorityscore=1501 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611110034
+Content-Transfer-Encoding: 8bit
 
-adc_tm5_probe() registers the ADC_TM interrupt with both a primary
-handler and thread function (adctm5_gen3_isr/adctm5_gen3_isr_thread)
-with IRQF_ONESHOT. The primary handler calls adc5_gen3_read(), which
-takes the SPMI regmap's lock (a regular, non-raw spinlock) from hardirq
-context. With CONFIG_PROVE_LOCKING enabled, this leads to a warning
-about an attempt to take a lock in an invalid wait context:
+Hi Rafael, Pierre, Christian, Jie,
 
-  swapper/0/0 is trying to lock:
-  ffff000b67201018
-  (qcom_spmi_pmic:259:(&spmi_regmap_config)->lock){....}-{3:3}, at:
-  regmap_lock_spinlock+0x20/0x40
-  other info that might help us debug this:
-  context-{2:2}
-  locks held by swapper/0/0: 0, last CPU#0
-  stack backtrace:
+This series adds support for handling ACPI CPPC Highest Performance
+register changes at runtime, triggered by Notify(0x85) on a processor
+device. When the platform changes the Highest Performance value, the
+OSPM must re-evaluate the cached capability and propagate the change
+to the cpufreq policy, the scheduler's CPU capacity model, and the
+frequency invariance engine.
 
-  CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted 7.4.0-rc1 #1 PREEMPT(full)
+Concrete use cases discussed during review of the previous versions:
 
-  Call trace:
-  check_wait_context.isra.0+0x2d8/0x380
-  __lock_acquire+0x2ec/0x840
-  lock_acquire.part.0+0xe0/0x250
-  lock_acquire+0x8c/0x1e0
-  _raw_spin_lock_irqsave+0x6c/0xd8
-  regmap_lock_spinlock+0x20/0x40
-  regmap_raw_read+0x88/0x328
-  regmap_bulk_read+0x10c/0x340
-  adc5_gen3_read+0x38/0x50 [qcom_spmi_adc5_gen3]
-  adctm5_gen3_isr+0x90/0x130 [qcom_spmi_adc_tm5_gen3]
+- A processor can age over time and its core frequency degrades. It
+  is good if platforms can make OSPM and userspace aware of this
+  (Jie, Christian).
 
-There is no requirement for any of the work done in the primary handler
-to run in hardirq context. Drop the primary handler and move all the
-actions in it to the threaded handler, which removes the invalid wait
-context warning.
+- Platform operating mode changes between "performance" and
+  "powersave" (longer battery life) when the top-most OPP is a
+  high-cost one (Rafael).
 
-Reported-by: Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-Closes: https://lore.kernel.org/all/1cb6d902-73f3-4d65-96f4-4b3c5217253c@oss.qualcomm.com/
-Fixes: 948ee3a74f35 ("thermal/drivers/qcom: add support for PMIC5 Gen3 ADC thermal monitoring")
-Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
----
- drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c | 41 +++++++--------------------
- 1 file changed, 10 insertions(+), 31 deletions(-)
+The mode-switch use case can also move Highest Performance back up,
+e.g. when switching from powersave back to performance. update_limits
+therefore accepts changes in both directions, capped at the Highest
+Performance probed at policy init, as proposed by Christian: any
+value above the first probe is ignored, since it would allow boost
+support to appear after policy init, which the cpufreq core cannot
+handle today (the boost QoS request is only created at policy init).
+A policy that started without boost cannot gain it at runtime;
+supporting that would need runtime QoS request creation in the core
+and is left for later.
 
-diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-index 910b241fa94d..996bfcfcac35 100644
---- a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-+++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-@@ -73,58 +73,38 @@ static int get_sdam_from_irq(struct adc_tm5_gen3_chip *adc_tm5, int irq)
- 	return -ENOENT;
- }
- 
--static irqreturn_t adctm5_gen3_isr(int irq, void *dev_id)
-+static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
- {
- 	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
--	int ret, sdam_num;
-+	int sdam_index, ret;
- 	u8 tm_status[2];
- 	u8 status, val;
- 
--	sdam_num = get_sdam_from_irq(adc_tm5, irq);
--	if (sdam_num < 0)
-+	sdam_index = get_sdam_from_irq(adc_tm5, irq);
-+	if (sdam_index < 0)
- 		return IRQ_NONE;
- 
--	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_STATUS1,
-+	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_index, ADC5_GEN3_STATUS1,
- 			     &status, sizeof(status));
- 	if (ret)
- 		return IRQ_NONE;
- 
- 	if (status & ADC5_GEN3_STATUS1_CONV_FAULT) {
- 		val = ADC5_GEN3_CONV_ERR_CLR_REQ;
--		adc5_gen3_status_clear(adc_tm5->dev_data, sdam_num,
-+		adc5_gen3_status_clear(adc_tm5->dev_data, sdam_index,
- 				       ADC5_GEN3_CONV_ERR_CLR, &val, 1);
- 		return IRQ_HANDLED;
- 	}
- 
--	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_TM_HIGH_STS,
--			     tm_status, sizeof(tm_status));
--	if (ret)
--		return IRQ_NONE;
--
--	if (tm_status[0] || tm_status[1])
--		return IRQ_WAKE_THREAD;
--
--	return IRQ_NONE;
--}
--
--static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
--{
--	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
--	u8 tm_status[2];
--	int sdam_index;
--
--	sdam_index = get_sdam_from_irq(adc_tm5, irq);
--	if (sdam_index < 0)
--		return IRQ_NONE;
--
- 	scoped_guard(adc5_gen3, adc_tm5) {
--		int ret;
--
- 		ret = adc5_gen3_read(adc_tm5->dev_data, sdam_index, ADC5_GEN3_TM_HIGH_STS,
- 				     tm_status, sizeof(tm_status));
- 		if (ret)
- 			return IRQ_NONE;
- 
-+		if (!(tm_status[0] || tm_status[1]))
-+			return IRQ_NONE;
-+
- 		ret = adc5_gen3_status_clear(adc_tm5->dev_data, sdam_index,
- 					     ADC5_GEN3_TM_HIGH_STS_CLR, tm_status,
- 					     sizeof(tm_status));
-@@ -405,8 +385,7 @@ static int adc_tm5_probe(struct auxiliary_device *aux_dev,
- 
- 		ret = devm_request_threaded_irq(dev,
- 						adc_tm5->dev_data->base[i].irq,
--						adctm5_gen3_isr,
--						adctm5_gen3_isr_thread,
-+						NULL, adctm5_gen3_isr_thread,
- 						irq_flags,
- 						adc_tm5->dev_data->base[i].irq_name,
- 						adc_tm5);
+v5 -> v6:
 
----
-base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
-change-id: 20261111-adctm5_gen3_hardirq_removal-467a437a78e1
+- Cap runtime Highest Performance changes at the value probed at
+  policy init (Christian): any value above the first probe is
+  ignored, since it would allow boost support to appear after policy
+  init, which the cpufreq core cannot handle today (the boost QoS
+  request is only created at policy init). Within that bound both
+  decreases and increases are accepted, so a platform switching back
+  to a performance mode restores the previous Highest Performance
+  (Rafael's mode-switch use case).
 
-Best regards,
---  
-Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+- Refresh the topology capacity for every CPU of the policy
+  (policy->related_cpus, covering offline CPUs of the domain as
+  well) instead of only policy->cpu, so a shared-policy Notify(0x85)
+  targeting any CPU of the policy refreshes the whole domain at
+  once (Christian).
 
+- Trim the internal helper comments (cppc_cpufreq_sync_boost_limits(),
+  cppc_cpufreq_set_autonomous_perf()) down to the essential notes,
+  drop the debug-only value dump, and report boost QoS sync failures
+  through pr_err (Jie).
+
+- Ignore values that would drop Highest Performance below Nominal:
+  they violate the CPPC invariant and cannot be handled cleanly, so
+  the special-casing for them is gone; such
+  values are now warned about (Jie).
+  topology_update_cpu_capacity() rejects such values as well, to
+  match the boot-time validation.
+
+- Return early from cppc_cpufreq_update_limits() when the policy is
+  inactive: a concurrent CPU offline may have freed the driver data
+  after cpufreq_update_limits() acquired the policy reference.
+
+Note: proposed spec extensions would allow nominal_perf to change
+at runtime [1] and introduce a highest_freq value; neither is
+handled here.
+
+[1] https://lore.kernel.org/all/20260430142430.755437-3-sumitg@nvidia.com/
+
+The series is split into three patches:
+  Patch 1: Core update_limits callback with boost QoS handling;
+           runtime changes capped at the boot-probed value.
+  Patch 2: Refactor autonomous perf bounds into a reusable helper
+           and wire it into update_limits with error logging.
+  Patch 3: Topology subsystem runtime capacity updates with
+           validation, early-return optimization, and concurrent-safe
+           normalization for all CPUs of the policy.
+
+The v5 series was tested on an arm64 8-core big.LITTLE system with runtime
+highest_perf changes injected through a debugfs hook that exercises
+the same code path as ACPI Notify(0x85), including values above
+1024 and full capacity re-normalization (see the v5 discussion for
+the measured capacities).
+
+Xueqin Luo (3):
+  cpufreq: cppc: Add update_limits support for Highest Performance
+    changes
+  cpufreq: cppc: Refactor autonomous perf bounds into helper
+  arch_topology: Add topology_update_cpu_capacity() for runtime updates
+
+ drivers/base/arch_topology.c   |  77 ++++++++++++++++
+ drivers/cpufreq/cppc_cpufreq.c | 157 ++++++++++++++++++++++++++++++---
+ include/acpi/cppc_acpi.h       |   1 +
+ include/linux/arch_topology.h  |  13 +++
+ 4 files changed, 235 insertions(+), 13 deletions(-)
+
+Cc: Ionela Voinescu <ionela.voinescu@arm.com>
+
+-- 
+2.43.0
