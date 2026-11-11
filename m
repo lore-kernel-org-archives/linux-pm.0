@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794388575;
-	b=wz7W7NulV1Q0GjeX8pN6o9BUXDlf2USUns3hXEfRhc4+Km+Oermj49qI0r6r6EWDvVUE
-	 J0f4Mvs0SskhvrjUav2DOnnBZgwqrrahKOfgst52pWRwfQth2E7g8svLBydOiz/MNtnyD
-	 y3tfb349dPrkVcfmeeHSMkeMijy5916lm88srMc92NL2uq/QR33CjmiiJm2xVmTt0ol1A
-	 UqwnTeH7+cYqWPYwNomMrCKSGw3PUQ2oNcIh6zxi37u3F3JDB+tLmiLKMwOzgDN0bXHJ5
-	 2jN+DC8mpp+arsDQe1ux74D2/egWXZDwF/Kv2ATKhpkWa2917UsSxne9bClzWbXyGVw==
+	t=1794388607;
+	b=k51QhcvgfC/ae9fqYdJBlhckVHLU1dQr/EEU7O3HFllkcz6BVAkS9WKxCY1nHN+fRUux
+	 ltHiOiFN9p04N4ySqoC5oixo77xF8u/uhMBTG3PMIjH0s3WWs2hKi4vVQszljJXq3gpcV
+	 QGnZXTumjLm+Sz4zlvkSdlBdQsawvW2h+lFItNDoOtNJ6c3yPfOngGNubKH2H76yRvqau
+	 KvJZI3eqnGd+PnvMOP+on8YQz3RmN+iqP6l01Kv7HeryJ5afooco4lRXEvQaZr0RraGxA
+	 Qk8DeynDCeQz5rh5XMMaokDvIOJJTd+K/XKDRiKv7D/IgwBoYIComXKoFlKF5SocX7Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794388575;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794388607;
 	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
 	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding;
-	bh=Bo36VVa5AUrVZXOcsL+dPkK8qFDS9YtVnrODFGnDWIA=;
-	b=Gejs28uQAhOQigbg/eDQeztcqo3VbpEClqCg/Xrj2cL1NW7V/Wh9PxQgHdhQpR2e0Oza
-	 eIfZV5In6lEIOuW3Bt6svyrBnW1FyGELkqXjksAqURQzsyF32hFfYAZzE/pus/IFqXOk4
-	 Xs97NZCWvQyHH6gvspFN0zQYcR3aRZYIavV5XauFIUnueCyhu6WxFpj8OnSciJ22mcEmI
-	 jzA72pJakidIN4EVRQLk7+HXQ2TYMERkeGD4dJ9zmueDE/Mwpf6x4uvpdTeEqdi7F4uWA
-	 F6Gid+Y29vHRAEZ7rJJZ3C8O2FzIm+iDNZyprQ1FsfqLsWGdfuYbZuinbFyHkDohYmA==
+	bh=SjCTJIdrUaZqb+/BC8WM1DYxfIdbJM1w55fNRx5CsMY=;
+	b=d0n5u5WuB3ZHN3qWhebIfrRKAWdH5mvA4zrA8zABdryUQ83l/DY+ewSLOwsWSoNzirFj
+	 e5XpJJnKMbj/44Uvc/vHY4QkX6RYiIeqxAH0joEGPHjyWuBuEMB3oP0TPa2fAxgTQgehv
+	 zbKZeGnrTZoV+xSvXx3kK0XNIqulxA1a8owX4tYlDnXZ9KoDCRemItoKgh9UhJu3ZHtoa
+	 4Q9+HCI811Mw2vsui0I1R6Veu6obl4d18IL6BVXtiaanNIDtowlhda9+qVtFfmwBmK3DV
+	 ftvX6+X/2uuyXdLF6o4FpM6hRQJAksatmrAerVcBjB+xelnDowLUYAz0jUaIeMaNUXw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I6Z3hxcS;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="jMqMQ/F+";
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA787606A31C;
-	Wed, 11 Nov 2026 09:16:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66AD2606A31C;
+	Wed, 11 Nov 2026 09:16:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I6Z3hxcS
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C39081F00A05;
-	Wed, 11 Nov 2026 09:16:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jMqMQ/F+
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B93FC1F00A05;
+	Wed, 11 Nov 2026 09:16:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794388574;
-	bh=Bo36VVa5AUrVZXOcsL+dPkK8qFDS9YtVnrODFGnDWIA=;
+	s=k20260515; t=1794388607;
+	bh=SjCTJIdrUaZqb+/BC8WM1DYxfIdbJM1w55fNRx5CsMY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=I6Z3hxcSXdN+n4hJFdsAY2ZaDdew6W+6r1Lyd61iJe/0kU0gOrPvuk3gfZ86ik+wC
-	 c+PW+8gtK/axinPRdUk+0aHc/cAPOYLT7M21ZtCmMGh4C3FSMAxW2YK49kjccyJL7W
-	 1onQEu1LN1AfSxyvWZaRNvGK+m3nFVAKHUMclIUNosyIpyCaB2cWSEcocxdnYXmP+n
-	 CeZDCwZg8X3JoEapctoJGFtD3VYGtg4iE3EJHZyUw8jVdvUYEIUgKkHlSaj7krWvWe
-	 BfPcTPAZQHuJoOUpXMrwg3mo8+c4KyT/D8ncaCAVZ9z35P2OICrU4H2huczc1C2rcz
-	 y1KdAAWMxypMA==
-Message-ID: <b36d8e8a-3e09-4660-8261-93a8ea51418f@kernel.org>
-Date: Wed, 11 Nov 2026 10:16:04 +0100
+	b=jMqMQ/F+i7XvEnoLCVxBn4KkTxNZl1zsCZ2ttQh+9adYSA8l3TtjPbMetLKQc/TXw
+	 d6aKHRMry4fM0Myuy8hJL/eFwJlGzwBGa2Z0lwMfz1rPXXI5UJq/oxCcrRiUOyxR7X
+	 4ahEqcQ9UlcZgYJ3tjc0+1cGRgyLPiVb16itAS8flJBx6q9TsoMl6axC6RFyCdodDS
+	 QUAkHTQnBJ7v3H9SYPUQFFPCCD4H+nKLF2hLAAnDmCXXClHiKlzItzq2DKVD0IAsFM
+	 q5nWWSPhET8dfCq3QMD9C0OH4/6RXuzeR054FG1lK3TBiEz46S7HqyNtIwilLN+ndu
+	 BdP6z4lk3iCYA==
+Message-ID: <e179b228-3f18-4b99-9c54-93699d13e63b@kernel.org>
+Date: Wed, 11 Nov 2026 10:16:38 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -54,9 +54,10 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v4 01/13] dt-bindings: clock: renesas,r8a78000-cpg: Add
  CPG_SGDn_VIO_DP_{TX,OTHER}
-To: Paul Elder <paul.elder+renesas@ideasonboard.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>, Stephen Boyd
- <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+To: Paul Elder <paul.elder@ideasonboard.com>,
+ Paul Elder <paul.elder+renesas@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
  Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
@@ -64,12 +65,14 @@ To: Paul Elder <paul.elder+renesas@ideasonboard.com>,
  Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
  Philipp Zabel <p.zabel@pengutronix.de>,
- Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
-Cc: linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+ Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+ linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
  linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-pm@vger.kernel.org, linux-media@vger.kernel.org
 References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
  <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-1-1b2072e8c37e@ideasonboard.com>
+ <20261110-steady-kangaroo-of-mastery-5fcd7f@quoll>
+ <179438844820.272237.18262716067322018404@neptunite.rasen.tech>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -115,31 +118,43 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-1-1b2072e8c37e@ideasonboard.com>
+In-Reply-To: <179438844820.272237.18262716067322018404@neptunite.rasen.tech>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 09/11/2026 14:34, Paul Elder wrote:
-> Add the CPG_SGDn_VIO_DP_TX and CPG_SGDn_VIO_DP_OTHER clocks that are
-> used by FCPV, VSP, VCON, and DPTX cores.
+On 11/11/2026 10:14, Paul Elder wrote:
+> Quoting Krzysztof Kozlowski (2026-11-10 18:30:50)
+>> On Mon, Nov 09, 2026 at 10:34:22PM +0900, Paul Elder wrote:
+>>> Add the CPG_SGDn_VIO_DP_TX and CPG_SGDn_VIO_DP_OTHER clocks that are
+>>> used by FCPV, VSP, VCON, and DPTX cores.
+>>>
+>>> It should be noted that there is likely a discrepancy regarding the
+>>> clocks. In practice it ought not to be an issue as all the clocks derive
+>>> from the same SGD1_VIO_MAIN clock and none of them are programmable or
+>>> gateable.
+>>>
+>>> According to the datasheet, the FCPV[BID] and VSPD cores use
+>>> SGD*_VIO_DP_TXφ while the VSP[BI] cores use SGD*_VIO_DP_OTHERφ.
+>>> However, educated guessing suggests that IP cores in the same pipeline
+>>> should be using the same clocks:
+>>> - FCPV[BI] -> VSP[BI]:                  SGD*_VIO_DP_OTHERφ
+>>> - FCPVD -> VSPD -> VCON -> DPTX:        SGD*_VIO_DP_TXφ
+>>>
+>>> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
+>>>
+>>> ---
+>>> Changes in v4:
+>>> - Add all the clocks
+>>> - remove DNI
+>>
+>> What is DNI?
 > 
-> It should be noted that there is likely a discrepancy regarding the
-> clocks. In practice it ought not to be an issue as all the clocks derive
-> from the same SGD1_VIO_MAIN clock and none of them are programmable or
-> gateable.
-> 
-> According to the datasheet, the FCPV[BID] and VSPD cores use
-> SGD*_VIO_DP_TXφ while the VSP[BI] cores use SGD*_VIO_DP_OTHERφ.
-> However, educated guessing suggests that IP cores in the same pipeline
-> should be using the same clocks:
-> - FCPV[BI] -> VSP[BI]:                  SGD*_VIO_DP_OTHERφ
-> - FCPVD -> VSPD -> VCON -> DPTX:        SGD*_VIO_DP_TXφ
-> 
-> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
-> 
+> Do not integrate. Most of the patches here were DNI in previous versions
+> because they depended on a lot of downstream things, but now those dependencies
+> are in the process of upstreaming so these can graduate from DNI status.
 
-
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Upstream clock indices ABI does not depend on downstream at all, so
+seeing this unmergeable is just confusing.
 
 Best regards,
 Krzysztof
