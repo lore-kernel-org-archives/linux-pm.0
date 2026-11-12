@@ -1,98 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.179
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794468586;
-	b=lYhuzT2A9/7as8womJ+2wu2JaBEKv9hHETTdsY317QcN7vJdI1dkE6xdXoYkTJYzKE2d
-	 m7pokl31SZHiG7mRsIbYlzHsYulzY+iLiqTkgEoThhUmThK411nq1yksIcYvllvv07aU/
-	 KtQNMhBBwer7RPuyj9Ko1JzRu+zbBAxg2oVLgdhzc6YQSenWikNpz+ykZOcmbMC0oMUcQ
-	 m18HMgHVZDxPTyU39n02NRf2pLr7O/z40tFpH7FoF2CiJ/+xIRjkagmm+pUGnMoBOKN+j
-	 zo2hvt7urO9V6AAmyZoHUguV23qD2vL3yadmiY/LRfEEsZG6Vp5hfFc5YdF+RHhicoA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794468586;
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.44
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794468801;
+	b=VBYlXcpK2VhE2JpcA59FXkQAGYRUDTQANc0GDiIwU+ACYSW+VCOLavirIJlrM2aqW1c0
+	 zSLyNkQnpyQRjEFDb8BtG8Ic6YiD0ykeO0A6wZEVZN8/Y9Q0ub43AlZNkTSPf/dJSJQ7t
+	 /d6M7S+qgnRESLu6q0/XghQdmLsjqTJ5QH7b9M/gunbOUaVYxwr5VNCvF2g3XlIbFqS4Q
+	 Rt2TPDpuaJQrizVpbOLahF8b/vEC8bSnH7rjFd7WVqQkWcTOquq9osoqjlqexxmQ+46pD
+	 I4klAfTQJhKiW71zNzG7cVjP9pXoW+tpvtz9f2uBgRtMDZaaq6Csz+NkhiJdd0qKluQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794468801;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=EeCGyqkm0JqSOK4vQP3xUOcJ8X0Mgwj1dqLLK6KYn3E=;
-	b=4yC2BA/Zgxbc4Ti7J7pJrkEOr19P5ruj7I0oLbMlL+tZXdSvwxE8mv536557Yyy4KXLq
-	 rWjxzEHo3oNgKjVnYDFhNfNndr7USJLLWb01JT6TfIAr6lF7uzhrqKcWndfVhZ5H6an/0
-	 hFFj5Q6zbfNlpXIBl0VkS3UgcvqOt0aNDfjvlPnM8aHm2JuKjk77MzFz2NrVQ3bj0tMZa
-	 q5zECIdCweISlcdxJiEKr3tN44qI1/LsDELqul15zQKzAWEP68uAkAqjiMYTCkM5fgk2x
-	 E10MhqOKO2A8vJ8ibEPgeT+iL+iFz/ZlKdR22FE693oS4yAABarP2UobGMQX86nJc8w==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gOmxHypx;
-	arc=none smtp.remote-ip=209.85.210.179
-Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=1O8ABzkG8YTENTJXF3DXPni2PNJOE/E2+2rzStU6Ez8=;
+	b=l/R86QWWEEsy2L5GCi/Bi5cLMwiDeRSrtIsfxMqKWX2AgEDppI29G14vfVXbh0jxtb5W
+	 +SDTBRNFJen+kS6VlyAl0iaZ0WBT0hGJ7oKs+n/iI883DqgG2olayZH9YKvauaDTwmkRv
+	 8fmsdU+oQ/5BsPnoiYkxPfHG1vpcRQXpYYXFpfSwPpivQUy+5EDVvBTbx5A8GtuiXL21V
+	 gOm9Voi4tP298NVXLvVs7If7pIKB+CviAiG/NYFCQbG2GrLuvCMEJQTNESnYBJAEk30Sn
+	 FpjUxSQS7PP8BVQAPHH9hfsGb7GUbIW+nHk40djtIUhyqeu+8l/VnsMZtp1rUzGLYLg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=amYZ82FW;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.44
+Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31E71606A327
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:29:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 31E71606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C528606A31C
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:33:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9C528606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gOmxHypx
-Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-8a0880a46e7so339154b3a.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 23:29:46 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=amYZ82FW
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-6b750e40ce2so628931a12.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 23:33:20 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794468799; cv=none;
+        d=google.com; s=arc-20260327;
+        b=MKsbY+SA6EVPFJR4Knh0CCMPqkJ/93OB+0wCXICb6b4lTAHgdp8ft48qBrg+hBTRdw
+         N9EojgYNqS48/hfDwss4TRlCCc7ChacFrcSipP3O0gXaFoWbn+Yy2pAo1Ulh+Ci4yXJ+
+         9uGCyeih4+fsQVX5UjELurnWPhD0m+wueY57RmDfNNTeHrf0y4W9Tq2n9rY5DnVbM2fm
+         Zd4oqtKFSW+lH1uA0IJ/1wRiujOLU8cSS5ME5g6N6FF/nssbVQt9mxsSZKS469zIEIpe
+         zDN4ttUdTtzGJwgd77akdxY/vI67bRW+T69p7hnioF486atHY8r8aSLfCGVMDHtyImCs
+         WokQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=1O8ABzkG8YTENTJXF3DXPni2PNJOE/E2+2rzStU6Ez8=;
+        fh=gMZ1A5xpq1EPpxma47/oHqCMo+RdidNMkYwLyMPVWQ0=;
+        b=FsDh7FU7jMMZg3QPIEyGljnKjx+xApQILr7Zh1yrzS1xKJlFKQOokUhgudnFzNFFuO
+         1i78qsuvFd15L+AWL8GF9AGQzNNy9eM1Atu9uq/Qe5EMPf/BN4fqFRZWCSzDdhRs3E+g
+         vCOjkc82IGpH+7bzIHYuScFy1kuhMa83JvjQDc1j7s649g6d8ZT/S5ZWodZlUMLkJtlD
+         +CDWDOc7NO6k1dm/f1pmGmX4erLFBynKnilLN1y1xt6yKSuPxFJ1DLiDz/oD5PdoO8xS
+         fYOutTyQjNsIMEszCR1F3X5lSYufngRJqzWkHuoUAfJJaXbOtnQ1Dp1q0sa2/j+otJ7x
+         ubvA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794468585; x=1795073385; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=EeCGyqkm0JqSOK4vQP3xUOcJ8X0Mgwj1dqLLK6KYn3E=;
-        b=gOmxHypxd4O4PUIV8u4WBmDa9ZbYNZauWX/5z3f7n4qIiWsDVvKE5ksPpqLRja/Fx7
-         syfnGKTMQKsemE9DYKzof9wMvwuaztIhowiACaT0TZDl2pOO81i/quJBa3z/LYcLeLFb
-         LHLT3TGVFFu9puCuj5J7I9JfcDHOGL64+8CR7MaaFPNUfRBXnXAQC57Tm8yTM6qXapGi
-         ShbuZ7OSvxHpcu/7LR3pJtuh50Q+rJ69QRVvanQmFu5dygF7+yJcjuuClLFJIrfc8bqC
-         l1LgjEVXtzdnU0e25i2m6CSiRhIjPPcTq2p9iM6NWTrI8vjlOl6RkQIiXUNbYY7i20HI
-         l0Xw==
+        d=linaro.org; s=google; t=1794468799; x=1795073599; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=1O8ABzkG8YTENTJXF3DXPni2PNJOE/E2+2rzStU6Ez8=;
+        b=amYZ82FW3o6g+B/GcoNBqV5OTDLk8i6gPvFLe5TaaVQamS+IHvnLV8zt5oNTkwR3jl
+         J/K3mDVJSWLJDjfnzvNRmcJUrSZjCo0jvD/eO1DlNYzeV0cmAgz3h/lEa/qUNWqqIhIY
+         kDq+f5rXK2VzB5kSYSQZBOEeQZatz0TGSSfovehcSsJ3pns0y+/SmEnwNIY+Hj2HV7z6
+         WGEwyY002cYx7a5+ikVJhYi+4iU1txTjvTjqR5NZOScN7241mI42dXXOASFUrHURMGOg
+         4j2xHzzd3s4IIN2WGMIMA8m9eKhtA9t3Vtp5JzSuGWrdStCwF0AiOWT/kNfRUmgHRrxw
+         /H1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794468585; x=1795073385;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=EeCGyqkm0JqSOK4vQP3xUOcJ8X0Mgwj1dqLLK6KYn3E=;
-        b=G0kt7NEmOcGqzOv7XWENumAlEqcE7XJlSAwDLPlKIHZkSusT9uurZwkb7Ufo3Yd2lZ
-         B+iYjNQVh4KCmg1P2EJsdYhBzpqGSv66HFLtrfKK0vbATKdBzt//Tq3vjMnbwK49eQUP
-         MQ9uTeRES7qYWWWv4IrSy1snGS7gdvulC9iARC+qqu5yvYJBikdC0v4BZ7gjfjLJYS7C
-         LMnqVFIOIfl/nGcwnIcNqTuKDQhH3KoNVpMntFtU2BZGGP/crI/hyIt8X5zrpzAcRaWm
-         2hiqPRNctZyVqzoVjN4SqIWE58Qs5GIAio1+6m8FQMTaMeAgbXc647iP/wwPixOOxu4t
-         UFZQ==
-X-Forwarded-Encrypted: i=1; AL+hErFK6dhROwlu6gRw1gYY9hMwh4kjQBnjRPAAE+vURRko+Mn1u3SswndUDOwAqVfUuPt8Mymleuhi+Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9X0qSkWtOP3cKxA36LgIp5aVwjV4Om/b3QQQEKAHN+0+bwPtPq
-	Hrdkv+4ij0yxCvaZBmnNSOuQiZPh1rHhn1wj97Sx3iqKbfW8azhnWqTM
-X-Gm-Gg: AYBFou21pidEw0kd+eQB+vTNZm2nyVFa6oYDANy8aZwMdrSZwH9EuYftrlR5Blc+jpC
-	kj3CtMq8b2/QrQ9HhrCO66nRwR3S6LqH1429kwdyrUSeXKZkmmkbeBUQJq09NAzqU6k5lSgLvok
-	4ULAgvP3JtRw/pii0ITArEn6eaAJAPVHweeygrJNdzTfnCXdtwUlmHh1oq+/z6JGOfzSDt/4Hwo
-	WkNwFvqcfqTaF/rxdDdOejQe9Kry6NYDkGsOGnqyHXlk7Gh2YfSmFuOXEXlasxDlLxNmDl4oY4l
-	PzJrdb39dPlo9osWqx5G40P0IsCn7bamNpjs9nZ1YrQD0oGRBTuCcvudvZ8MBjzXSS3rey+38X/
-	Qyoaz8pm6+d9whfMZAxpgdX/jeGgo3mHtWgzNVyBZbveR1jOzqF1ysu2YjvQqkxHqiorV2MQn2+
-	kjHptLwCG5H/R8t8DPVj1v9oVhjNuabjBOBvbdu29m8IwkNrOv2QPRGbW0wORBD5kVjFy310DzA
-	AMW8v3imw66XO9IvMIw36JdPGnMNtMRhRJS9J8TVxlYrpY20Z0ptJR40ssHZvDGOxgJ4tWWaEbq
-	4NXU3zoJDeniQLTO64NQWaNRNBvcl63ZND/n3gdTRULbak5ABwLoSKLDxNSP
-X-Received: by 2002:a05:6a00:451a:b0:8a9:b07c:7709 with SMTP id d2e1a72fcca58-8bd5cd78ad6mr1206200b3a.19.1794468585366;
-        Wed, 11 Nov 2026 23:29:45 -0800 (PST)
-Received: from shaunak ([43.242.208.118])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8baab8dd5b4sm2980797b3a.53.2026.11.11.23.29.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 23:29:44 -0800 (PST)
-From: Shaunak Datar <shaunakkdatar@gmail.com>
-To: rafael@kernel.org
-Cc: daniel.lezcano@kernel.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Shaunak Datar <shaunakkdatar@gmail.com>
-Subject: [PATCH] dt-bindings: thermal: kirkwood-thermal: Convert to DT Schema
-Date: Thu, 12 Nov 2026 12:59:25 +0530
-Message-ID: <20261112072925.22075-1-shaunakkdatar@gmail.com>
-X-Mailer: git-send-email 2.53.0
+        d=1e100.net; s=20260707; t=1794468799; x=1795073599;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=1O8ABzkG8YTENTJXF3DXPni2PNJOE/E2+2rzStU6Ez8=;
+        b=Cv9M+fgfZVEM1getoCjOtrnDhO02swtEtNkraz4Qh8LF7XkeRBe8prH4HuB41x1vek
+         sXNR8lb0MYW6dUR1z7WGBSsh3JQerzMGd58Wcsr7sOEBvR1kp1Nk1hR1glfAZmVzWcTe
+         IHNcYF2Ultbw0JabwEgWHwLwqbZAfsM125feYkf7cUxEJ8eI6cHml3qJ7zmlJkYKZA3G
+         d15Tmf738ZdbOGuHRQb9+e5gk3nprNEoOHmXTtXYZH2p8bU2kS5phwfJfel8gHq4ihpc
+         geAWkVsyN0ZpJGjL382kS68t5yXqw1szamCtqxeIy+yz0QIw9dVmoF+UK5qT2I+gceHl
+         MxQg==
+X-Forwarded-Encrypted: i=1; AL+hErF3eJILKiZsSz+gYZrn1VHJAJYosL3CRJoUVl7G3dVo/fr5xw/ymwRpqTlvciHzxd+t4cSwFjdV9g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z86pfc/QgwhUJdnS9u5BCHsiL0WUIxKpwZ/6wClnaH7QUS4oPlU
+	i/kRwRRXwHk/jFOMw4osnNJCqL++bLEpafoBNPeEj8XThCdy63fEkEh1VU5uJKt0yEkdBRmng3N
+	8/AjmJ3Q7fEWjX7CktGjkazhO4bdmbJoXK0c6Zd4olw==
+X-Gm-Gg: AYBFou0LOpOpWP+b17S8y9pBHkLYnKY0LRZ2qWQ4F3qeLdHotkIJCDTgZivtItWUSGu
+	ijBdwPsrvRFAsAu8K7n5mBRIuigF5rePwxPPFryvgiNsvp7spPApKXB2n9XPk2Y8C7rZ/pnht9K
+	qqaT6xUmvSjhOv36/uEr57Z5v995EEAaUSuD+NtrRVmSOtgL6SywqfRGPM3kvNWlBMtifkdFxcS
+	QWSLH4mWfRcBvC4ISKTN2No0FTF9EdSk28x9RcJYe1vEfUlT/wHTICErGGA3596kvm10/zfreAO
+	JtSRhG829pHOK1YEbOxQfUV7ohfqHDJmGPuFDklASKLE7Iznmlvus7jlTs/eBylFf+NWe8M6eMt
+	GECLEsN4CTI7pDCHJPwxoH0/oVoD97Mhv/RXdilpyFz7T2rQ5P5HlW2e/oyJpwjW/sv4cLiFgFp
+	yJVqFR7gJSIlTDT9w=
+X-Received: by 2002:a05:6402:1514:b0:6b5:e088:eb92 with SMTP id
+ 4fb4d7f45d1cf-6b7777064a4mr2609898a12.34.1794468798919; Wed, 11 Nov 2026
+ 23:33:18 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,79 +104,52 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+ <20261106151947.3991524-3-vincent.guittot@linaro.org> <f0bdf36b-4453-4d2f-b82c-85d1d62c5f78@amd.com>
+In-Reply-To: <f0bdf36b-4453-4d2f-b82c-85d1d62c5f78@amd.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Thu, 12 Nov 2026 08:33:05 +0100
+X-Gm-Features: AclHuK92tODV1WML6aevk1idgLovQjoH53-Z16DSkLaGxCj8dkYMqR5c5OIoS3U
+Message-ID: <CAKfTPtBT1anicEwxsFRNbO4FAmfmpAWT0q-EyHqW2EHgJeORUA@mail.gmail.com>
+Subject: Re: [PATCH 02/20 v3] sched/eevdf: Reset lag at wakeup when prev CPU
+ has been idle
+To: K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
+	mgorman@suse.de, vschneid@redhat.com, linux-kernel@vger.kernel.org, 
+	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, 
+	tj@kernel.org, void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
+	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
+	pierre.gondois@arm.com, sshegde@linux.ibm.com, kayracizmeci@gmail.com, 
+	tim.c.chen@linux.intel.com
+Content-Type: text/plain; charset="UTF-8"
 
-Convert the Kirkwood thermal binding from the legacy text format to YAML
-schema to enable validation with dtbs_check.
+On Wed, 11 Nov 2026 at 11:04, K Prateek Nayak <kprateek.nayak@amd.com> wrote:
+>
+> Hello Vincent,
+>
+> On 11/6/2026 8:49 PM, Vincent Guittot wrote:
+> > @@ -8376,6 +8383,9 @@ static bool __dequeue_task(struct rq *rq, struct task_struct *p, int flags)
+> >
+> >       dequeue_hierarchy(p, flags);
+> >
+> > +     if (!(flags & DEQUEUE_SAVE) && !cfs_rq->h_nr_queued)
+>
+> Should this also consider DEQUEUE_CLASS which will move the task out
+> of fair class and leave the rq idle? setscheduler just adds it with
+> DEQUEUE_SAVE when moving classes.
 
-Signed-off-by: Shaunak Datar <shaunakkdatar@gmail.com>
----
- .../bindings/thermal/kirkwood-thermal.txt     | 15 ---------
- .../bindings/thermal/kirkwood-thermal.yaml    | 32 +++++++++++++++++++
- 2 files changed, 32 insertions(+), 15 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/kirkwood-thermal.yaml
+Yes you're right, we have to update idle_seq when
+DEQUEUE_SLEEP or DEQUEUE_CLASS
 
-diff --git a/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
-deleted file mode 100644
-index 8c0f5eb86da7..000000000000
---- a/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
-+++ /dev/null
-@@ -1,15 +0,0 @@
--* Kirkwood Thermal
--
--This version is for Kirkwood 88F8262 & 88F6283 SoCs. Other kirkwoods
--don't contain a thermal sensor.
--
--Required properties:
--- compatible : "marvell,kirkwood-thermal"
--- reg : Address range of the thermal registers
--
--Example:
--
--	thermal@10078 {
--		compatible = "marvell,kirkwood-thermal";
--		reg = <0x10078 0x4>;
--	};
-diff --git a/Documentation/devicetree/bindings/thermal/kirkwood-thermal.yaml b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.yaml
-new file mode 100644
-index 000000000000..1f9b97bdd48f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.yaml
-@@ -0,0 +1,32 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/kirkwood-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Kirkwood Thermal
-+
-+maintainers: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-+
-+description:
-+  Thermal sensor present in the Marvell Kirkwood 88F8262 and 88F6283 SoCs.
-+
-+properties:
-+  compatible:
-+    const: marvell,kirkwood-thermal
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    thermal@10078 {
-+        compatible = "marvell,kirkwood-thermal";
-+        reg = <0x10078 0x4>;
-+    };
-\ No newline at end of file
--- 
-2.53.0
-
+>
+> > +             cfs_rq->idle_seq++;
+> > +
+> >       if (sched_feat(PLACE_REL_DEADLINE) && !task_sleep) {
+> >               se->deadline -= se->vruntime;
+> >               se->rel_deadline = 1;
+>
+> --
+> Thanks and Regards,
+> Prateek
+>
