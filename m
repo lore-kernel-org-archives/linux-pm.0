@@ -1,76 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.222.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.178
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794495447;
-	b=nnCpe1nWAblrOe+8ATyQHUwI6AFfagfZQnFrVJx1LoeKCDBFQcuev7MEo4awNQ/upJAo
-	 lZsibvRveizbgnHR9bwZUaTWbSm5UWHIVmQbt/i2YGhbcS6wUcANjG5DOxG3wQX2TuWqC
-	 ncBeFw+lm2x/vXzqZnEr1l8snG0VvKAtgVIhaFL9bsPl9R+tJ8B4ccjIRV8CafSwzmH3B
-	 zK+ygFzzSU5mi71/0Yp4yDtDMeS+VrDo2thKMC1RNHBzlAL61c+v+FApG4nEvCeQy7tmU
-	 3ituqDltVVVxuPrhKreWyA8Veh2uUd9oFv0R/Yy2YOtDvi3CA3VMrf+WT/6Fv1JJzPQ==
+	t=1794496161;
+	b=jr2TuiW00E5A15Wje5oIyauiGnV53KgGVrljFMh3aKSfKE3Nov5p4PscO/A71kDuteRi
+	 9DuhXA5qQ29+2dvVpwElFc2mbngVOmAFaeLFB51qq9Ylk63sj2Vfe33hu/JsuV128+HbV
+	 SkdNS9IJyzxiWadpXIiLDUjeCeLzGvLMuBK6UzgJqpimI22GD6MsXC2vAnU4mfEvPt8Vy
+	 rtm+H2wzWjzb11bg1oGXbRH8NIKdeMfTfpa4lBG4IYhPm7PHGzFpa/dqVRrD+2o6NsRnO
+	 G+j0sytJILJBoJRNRJscuZxGxxWwnnU05AH3k4EuyAt/vKOz/e4vCOrFtfSlv1IDqCg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794495447;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794496161;
 	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
 	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type;
-	bh=mS1ut25pAkhX06KpI5+b6SzLMFwF8RaPMcofkkPb8+I=;
-	b=rpAwamOJtuaISr5wc0WKrBRCCuAKE3v7qfKFE+aKtTmheeWAL8rUkJuWhAEycXLdhjxp
-	 SEuyi1oo/xN2g8RI8z1/ZXPftAKIaVstuPsbXAWcrpe7z76b/GKGa0HPeiiI4VFKyEqD9
-	 q6fV4T1Pb+pwU9qIF4gDIf6zei+q9bMMg23S8oF1X9ituXovI5lPEAbr6xQMTvF+s2dfn
-	 eTNucjDPkENzWnMFl3jwNRmsdlY2+53t9iS6nRUS3cBYeqQ+pNm5BuJ+cgTlSWlZRxNzF
-	 RPczUiM5qHotChQXK+Y4lPpIBP2gBy5VHfoMSL66FHRdHHgjLjcl84CZvG4Xlm4S1Fw==
+	bh=f2HclZgC7BHSQ1+tdHxuenXtHwqaRuALZpayUv998n0=;
+	b=eBS9+Au4sqMYRvyYhPPl8Ux+kURjpgmJxWpCPn3nY7qlnfbTdYe67uk/CjXBdnSJqy9v
+	 Jp84nXGUPivOSJAYmjVtoGYaidWFCN1p12TsZSYoabU6R+LWNMcvxkYysRaaAn0B2vbUy
+	 qJnKK2+ldC9yua8xL2yERGwReVJAI8uTVg9bli7XrMs9tJZAaMclCIeI7LUMfcE3gztAz
+	 ETAFU6qR1YFx3drEO6uoHx/wbphKINTimQQ+fzO7/mJJNFNz6FobGBqUI7hVkzIij9deL
+	 sIYZrCB50C0MdLk3g52TVrUOB98k84YEnJtQPsROf+a3d0Qjrt7nvHZvkVMPdl+8ugw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=none header.from=linux-m68k.org;
 	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.222.42
-Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com [209.85.222.42])
+	arc=none smtp.remote-ip=209.85.221.178
+Received: from mail-vk1-f178.google.com (mail-vk1-f178.google.com [209.85.221.178])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1A7A606A32D
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 14:57:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C1A7A606A32D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C9DD606A32E
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 15:09:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3C9DD606A32E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ua1-f42.google.com with SMTP id a1e0cc1a2514c-996eeadfbeaso2290110241.3
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 06:57:26 -0800 (PST)
+Received: by mail-vk1-f178.google.com with SMTP id 71dfb90a1353d-5eac6c5f927so1736307e0c.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:09:21 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794495446; x=1795100246;
+        d=1e100.net; s=20260707; t=1794496160; x=1795100960;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=mS1ut25pAkhX06KpI5+b6SzLMFwF8RaPMcofkkPb8+I=;
-        b=rf488ZdYEMpRtM5VeQA0psto+B+TD0MW+fWGtCQz7QbgVJy7y3eqWXVqZf8Vm3x6Ln
-         pM6t8gNX213mZN2rmKwg7QmBDhyluK0u4y9/GsAZhCDOPJBeYqexm5rHULhuJrlVlgfb
-         WIrJ7bNLQH38p8JKMBYmqf3IgCyjXwq3rgdk6HCbdDgZGsTLSajys9OIQj4DcyohvKpQ
-         iRuaJ7nZzZ4s/1qVdbYivXqOxfb525m1RIpik9ExvzoAto6oEgX41vsKY2W1YO9snN7l
-         RDKj3sf4NE7Pj1RDBndbEx/skNg7spVlJKVQNqbBQEFxThYxSVbLUfcwN+xoSi3w65/8
-         h3Rg==
-X-Forwarded-Encrypted: i=1; AL+hErFxBDXCDTSHvY/fa+QYg8fyWXk8hu7E0B+5Xf3xI+evOD2jM6pFeiIOw8P3PyAEWHCbkSdjMqY+iw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9ywm+lrRchxNYrdHkTf9gdIWTv4OQncJxz2wnBVEBbREfOFaTW
-	grZzEeqNsZgxI9SpiDO3EBt7Mgs+beUV+pOf+MayFt+t3qXEajc0zGE5Bt29gi747vs=
-X-Gm-Gg: AYBFou1GC36EET513BGNTXW2C5O/v0WJKu16wqxrcfKan2Y1ScwIs6prkl65v+aafa7
-	3od65siRMInnzsG2nQB2HqCsI6N6cgwpEEa5Z+0AcE5YyO/kuAKxknnlHZJpMMv0fQ9rsfx3Ney
-	UcVIGOAFqGRJFntf5al70OiKtT+geRaQjKXMUkUFlMNiuJw2lCZwLQETuobBAAeLVBL31v8shRa
-	nDM2DI2E/CDtQl98NG4tfQsSXqIuQ5BwkP+cMoBSGSUkDEtUhY75yAnE5RQxD5f3FQKQl9WNtmb
-	yrCJebiIRLl3fjzOwuXaWBS9IPoOp9M25OEajyfvq8l1VJ846wFsX4wa09GSONzjsTA2xxXTe0L
-	fA50sSpzRG/orsKeRUaFb7mrY/oX8Fk5wJCx65Ag/lacnkQS8qmt3kyasbV/KYW0dpuFw5UFKMn
-	IWmCz3rpT+5J3ouyay4CmFJO/h4TDgUmTPa9q884mw0wxvfiLKedNMB6qYR/uojfA/ThDIsswOz
-	zJcD3U5g8M9vbryre3sxwVTmixjzikKN+pt+uFE4PB4tJeC334plFIoatJB/wxMT/wMZVwSz4FG
-	Nil04iktMr6nMyG42wMtvBcTOKjstACTFVWG7gs6ySX1v8dQr51aQ8M9Rb29KBhKOao=
-X-Received: by 2002:a05:6102:512b:b0:7d2:c786:5a95 with SMTP id ada2fe7eead31-7d4fb2a5924mr2500124137.13.1794495445856;
-        Thu, 12 Nov 2026 06:57:25 -0800 (PST)
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7d62241eca6sm2975315137.11.2026.11.12.06.57.24
+        bh=f2HclZgC7BHSQ1+tdHxuenXtHwqaRuALZpayUv998n0=;
+        b=DWvIP0KQDJ923leEUA++tib9vontkmgYb9KfThoZnhBhA42xpJbGaE/RIuUat4T/s3
+         Vyb4Qsk5yqoM/8Ba7F79RyuvqAGoRXsU58QjukfrHmxGaCL0CRIA3+RByFtWInXrITLa
+         1INlpMYDB7Qy7upFPzgnruUQDJ2Vni7p/axxufVKi4sGznfP9EUB0f98c54ghOh6swxz
+         tTgaanLiLwNr26a3ahcszBDYlOPElX6xp6/+T3L75QCSBep/v3hNqgjGbmfCbGLvuf7A
+         lJISPT+AN44Jo3StGJJAi5qGhTtmtwJzUP5b5dju+k/P+B696uDfStqR38Xs5dzsdqwi
+         t7vg==
+X-Forwarded-Encrypted: i=1; AL+hErFkaIn0tvloy9euP9+ISAdUekuSIVbvTO+RfHcnSiz2yt2pwTqV1hz7gfIjPtTBLAou2TOQ7M2Q5w==@vger.kernel.org
+X-Gm-Message-State: APuU4Z98DY4EyVrJ/Vpcin1Yfy7ZaoBhgnLgE57Fsl0xA+FhYfLE26df
+	jrZoryTykfKrrns8hGbn0R5qA18cgF86Ru8m4AVoHrRifIC77N4cOKbAuq7YKvFsLJ4=
+X-Gm-Gg: AYBFou29+SwfFEtqGBoyZRzr059Z8n+BCi96m9F5kpRo0yA/h7daOSsvx9rz6kQMhBT
+	otZ1NpsNDLHezBOQO0gXID0i1tUvz/Oo8DCjPeE52fxLG+reLPFPjaGREk4mdOqIZX2+/ThV78n
+	UF6/Ivw3YLXnkOHOWSXJKkcM7D0X3jZydOY2s7k7A2yJrJ6CfSjOOhXC9HXeCOJG5n9Na0TXC82
+	c2hXlS2Qb+W8jKjxx+3jDkyHLenODrCwuX/EnAXxwJ5NMu/g7TJtKpyS493SE2ENwCJ8k7b/ihB
+	vRhh2LsIXYEuAJfBGQp9O4cFtB/OKh+HROqZYZlGnO4kY67Yr9A9Ur4winHdqdhGm+N9QSrKRZH
+	prbUQIraMHIRegCBepcQfRsej6TAsnDvTMZhPVpzBBZi4Ad9/Y0qH8ijYrQ/gozUGZWC/dA2pnk
+	uUr8c92fM/9BCf2siNIM8Wh3Is2vGKRPSh3BcMMrkjd2yxJAppk+UHK00a5sZgfSHrjhPiDbuUH
+	OGBNQzfoaUoSKHExariJ/Nn1ThUFVf8WshilnPKhELtkXqlI+iCHNHoZGor9wPOifKljM0mQAOl
+	firpxXEQfdAkMhuYq0C450OtaEKmwx+ZbDrPsMosEfKOmadWTcfslqADqtOds0y66z0d73E=
+X-Received: by 2002:a05:6122:e248:b0:5ec:3e18:b06a with SMTP id 71dfb90a1353d-5ee1bf5d992mr2466545e0c.0.1794496159658;
+        Thu, 12 Nov 2026 07:09:19 -0800 (PST)
+Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com. [209.85.221.175])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-99c1fec26fcsm5682721241.2.2026.11.12.07.09.18
         for <linux-pm@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 Nov 2026 06:57:25 -0800 (PST)
-Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-7a6e560f580so3197100137.1
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 06:57:24 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErHLsr6uvXrU91X+pwO61gIvsEpNrng+m+MfHO3ilA1RYlg8a/GnnCrugGwJWOweAF27SdE0lEdxrg==@vger.kernel.org
-X-Received: by 2002:a05:6102:f10:b0:7c3:9982:67d7 with SMTP id
- ada2fe7eead31-7d50609c9damr2546296137.16.1794495444511; Thu, 12 Nov 2026
- 06:57:24 -0800 (PST)
+        Thu, 12 Nov 2026 07:09:18 -0800 (PST)
+Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-5ed2f163a2fso1333332e0c.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:09:18 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErG4EheSDhMRe3kghs94X7bX9NTqkQykW6DkzHZ8dhw9SkzfmCRbw+lDCjD9wSD8coJhfBT3jyfLOg==@vger.kernel.org
+X-Received: by 2002:a05:6122:54b:b0:5ea:b294:f0ab with SMTP id
+ 71dfb90a1353d-5ee1c298abdmr2507584e0c.2.1794496158519; Thu, 12 Nov 2026
+ 07:09:18 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -81,14 +81,15 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
- <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-5-1b2072e8c37e@ideasonboard.com>
-In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-5-1b2072e8c37e@ideasonboard.com>
+ <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-11-1b2072e8c37e@ideasonboard.com>
+In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-11-1b2072e8c37e@ideasonboard.com>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 12 Nov 2026 15:57:11 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUUvhf=zEmd2tfodo7zf1hh9n8m88Okk7KZpq0n=mDR2A@mail.gmail.com>
-X-Gm-Features: AclHuK_otbzgK2u3WYfd1DmRW9SD98NHgBcVxYwHNEPtms-IkWdgisCPqESp0Ec
-Message-ID: <CAMuHMdUUvhf=zEmd2tfodo7zf1hh9n8m88Okk7KZpq0n=mDR2A@mail.gmail.com>
-Subject: Re: [PATCH v4 05/13] arm64: renesas: r8a78000: Add FCPVD and VSPD nodes
+Date: Thu, 12 Nov 2026 16:09:05 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdUBEjh6YSazKAyBv8xAq1+oFG-dfEf=O58otP1wB9gRvA@mail.gmail.com>
+X-Gm-Features: AclHuK9Zmur2PVIdNvv46swJ-VbufJjxD1dvyJf5R-d3EopJYyWzLSJYUjPuDQE
+Message-ID: <CAMuHMdUBEjh6YSazKAyBv8xAq1+oFG-dfEf=O58otP1wB9gRvA@mail.gmail.com>
+Subject: Re: [PATCH v4 11/13] dt-bindings: Increase Renesas X5H MDLC PD
+ specifier bit width
 To: Paul Elder <paul.elder+renesas@ideasonboard.com>
 Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
 	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
@@ -100,6 +101,7 @@ Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
 	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
 	linux-media@vger.kernel.org, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
 	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 Content-Type: text/plain; charset="UTF-8"
 
@@ -107,78 +109,61 @@ Hi Paul,
 
 On Mon, 9 Nov 2026 at 14:35, Paul Elder
 <paul.elder+renesas@ideasonboard.com> wrote:
-> Add DT nodes for the FCPVD and VSPD IP cores in the R-Car X5H SoC.
->
-> Use the SGD1 clock as it is likely to be the clock used for data flow.
+> In the Renesas R-Car X5H, the module controller's power domain specifier
+> cell's bit width has been increased. Update the bindings documentation
+> to reflect this.
 >
 > Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
+> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 > Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
 Thanks for your patch!
 
-> --- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> +++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> @@ -1574,6 +1574,196 @@ mdlc_aon: system-controller@c1338000 {
->                         bootph-all;
->                 };
+> I'm guessing that the maximum number is now 512 but I can't find
+> definite proof of this.
+
+As the Module System Reset Registers are at offset 0x900 + l * 4,
+and the Module System Reset Status Registers at offset 0x960 + l * 4,
+there is room for 24 registers holding bitfields for 16 modules each,
+thus maximum 384 modules.
+
+> --- a/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+> +++ b/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+> @@ -12,7 +12,8 @@ maintainers:
+>  description:
+>    Each instance of the R-Car X5H Module Controller (MODULE CONTROL) provides
+>    Power Gating for up to 64 Power Domains, and Module Standby and Reset for up
+> -  to 256 modules in the Power Domain of each Module hierarchy.
+> +  to 256 modules in the Power Domain of each Module hierarchy. Recent hardware
+> +  versions have increased the number of supported modules.
+
+Just change 256 to 384?
+
 >
-> +               fcpvd0: fcp@c5010000 {
+>  properties:
+>    compatible:
+> @@ -32,14 +33,14 @@ properties:
+>          are always on, and for which there are no MPDG bits to control them.
+>
+>        - The second power domain specifier cell is the module standby part, and
+> -        must be the module number (0x00-0xff), composed of the Module System
+> +        must be the module number (0x00-0x1ff), composed of the Module System
 
-Please preserve sort order:
-  1. Sort by unit address,
-  2. Keep similar nodes together.
+0x17f
 
-[...]
+>          Reset (MSRES) register index in the high nibble, and the Module Reset
+>          Destination bitfield index in the low nibble.
+>      const: 2
+>
+>    '#reset-cells':
+>      description:
+> -      The single reset specifier cell must be the module number (0x00-0xff),
+> +      The single reset specifier cell must be the module number (0x00-0x1ff),
 
-> +               fcpvd9: fcp@c5019000 {
+0x17f
 
-> +               vspd0: vsp@c4800000 {
-
-Do you want to sort the VSPs within the VSP group by unit address,
-or by label?
-
-By unit address:
-
-    "vspd0: vsp@c4800000"
-    "vspb0: vsp@c50c0000"
-
-Note that adding the vspd* in a later patch than the vspb*
-means the latter need to be moved in front of the fcp* :-(
-
-By label:
-
-    "vspb0: vsp@c50c0000"
-    "vspd0: vsp@c4800000"
-
-> +               vspd1: vsp@c4808000 {
-
-> +               vspd2: vsp@c4810000 {
-
-> +               vspd3: vsp@c4818000 {
-
-> +               vspd4: vsp@c4820000 {
-
-> +               vspdb0: vsp@c4828000 {
-
-> +               vspdb1: vsp@c4830000 {
-
-> +               vspdb2: vsp@c4838000 {
-
-> +               vspdb3: vsp@c4840000 {
-
-> +               vspdb4: vsp@c4848000 {
-
->                 fcpvi0: fcp@c5030000 {
-
-Shouldn't we keep al FCP nodes together?
-Same for the VSP nodes.
-
->                         compatible = "renesas,fcpv";
->                         reg = <0 0xc5030000 0 0x1000>;
-
-For the contents of the nodes (except for the renesas,fcp properties,
-as I couldn't find the VSP<->FCP links in the documentation):
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>        and thus identical to the second power domain specifier cell.
+>      const: 1
 
 Gr{oetje,eeting}s,
 
