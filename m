@@ -1,83 +1,77 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.20
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.52
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794490766;
-	b=eUObc4W+TXcV8WM7yla/Pou4SA6yd75Eyru18VzugTt9on5I9VrnzeQAfwJzmNb9cw4V
-	 skNwi+yqvELs1lVO28vMmI9d0oQ4eey1DnJh/2jKK+oIUerXhF9E+se7Ah2Syd9dewh6/
-	 AsWysruA7gBlDhdsv2HIofZ6Mi9FzzQvMp4ws2ng9SSANlS2I6ma+f1Cnxb2dI2+EpGYT
-	 37+3ZPMAPeeShf5Aw8Vi7gKNzKO7hdNw5GkHMB6R5pIyxZHfUj9d3DnTQS+2XZx7lDRcX
-	 +4g6D+/innD4KvgYs6jzR6BDKkyJ05/2NePc357a2ZXInKxl9s3CocxcBjIGp8NWA4g==
+	t=1794491118;
+	b=5YrZ7Un9alglXshRXEYz4eajZSs0jWLuz7O70nFyaglNTocUzRuqZxIoMgAQHJaO3Ims
+	 0Hzwboh06av1wqs9n1d87DomdTD4ViojIVBZRpaK+9GWVN+1ev755gbjJbHwYYM+alcg3
+	 JOUdoa8F54S/qq/HUihCpzlnBC8WTDSvlaBG2Yu7il7orGH89LG8nr3mJKe0VGm0WU6/O
+	 c3+Ntl7I8oxSR/qwWU5JmjjyV4aMPgHumxffIy3INQ0DSunWwTWzA6a51m20u1ip1AZXr
+	 RWYle7JF5HH5dF0S5teQf2MtGfWu5hAV8UCFaiyD7eHbN5nIMpxkcXGtP3bpSnv7okw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794490766;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:Organization;
-	bh=6mTsU7SiJn/LCB9rHS17WTPqu/JpjhK0J6xpMHSVII8=;
-	b=vQVN7MzsN2oX0DDomRFg6kk6LZOeN1RKqIDQRl2oUsOCjQP22pZclNcRNGKLCxrBm0Uc
-	 6y4jb18yCRmsuGOnVirG2Uz3eSLowf4u+bAXBAiiO9JsEL4w40YLHV+gugGTC2l3L8VQG
-	 VEg/1VJpmtAiWTCqozP3PRwI9vBXzqH2i4qOsX5hvpaHG/gv05bdRBR8GJbmR90g6WbOT
-	 9j5mD5tJUtYxPktoa9fp3NJOSneGnbZ1x+Zm1rN1W1ll2KGPEXiRw+Kt1qcvitly8TnzH
-	 SPXiMLqeeVOKRipb7MdPDRvGQwZ40rLgwyPsxQlCufBW941tMoIvYSIIH6RoNZLqIeQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794491118;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
+	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type;
+	bh=4m5/EFtVtJMcX32G0Py/nICnHfPv/lKNQS3VJ6V35d0=;
+	b=sVK3Gm2axtLf6wwTvzcovf/p1IHXAaICR3zF4SM2lSOqwxKjadhYbsNOpFZ+ou5rtdlu
+	 xuJR5eQgUlnfLQO7FI8ueUt7fl5Q4WfruUsCqYyZCrG5vdRbaShrdrGSIZNZaU11hcynH
+	 yEKB7V4CHl+A9mxzBszgtyLJcAd9+aoucdCF3uhu+8bvvqDgh1UP9cAvbE/DCzXAiJM1J
+	 b+AuARQ0lgWjvxMw34Ce9KOptB3cx4Xkj385FA7haY9rNYHbQHOj7WYORW/4tSVW5/+nq
+	 w8x729KpDcAtIxwmrUbHFSSLoF4D3B0r+eoF8qe2aHkTsVzNyJYgeOyPtV+ZwKs/ZMA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GpLKvZTW;
-	arc=none smtp.remote-ip=198.175.65.20
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=none header.from=linux-m68k.org;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=none smtp.remote-ip=209.85.218.52
+Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FAF2606A31C;
-	Thu, 12 Nov 2026 13:39:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5FAF2606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GpLKvZTW
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794490766; x=1826026766;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=SFwVMt/H0xErcXlhJS33OEJlSasnR5vPHpX9RH9wU5A=;
-  b=GpLKvZTWD7OyTv5fB62EcSB+Lv2cgaWBlUA6x94vRRvZJ/1K5yS2x/7p
-   7zQVhCBiOJQYdHgWUQScSsPjpjeeTJ0ahaih5NuR6e5MPb3zn0wQ+FOta
-   bWYiRVx3Hpd3889bOc9jTJA+txs5Eb/OUdkVY7c7EsR2+WZQJm8bj0VgQ
-   oRVXUv9N/FEz/d+k2NE+/IPsaJblVRPJas28F7i9Wqr7ofDleKe7sQq8s
-   xLNftvRfJuDSoDwwNMtJmEwVCuoGy4lG/YtWHJDkowBBZ1EaZBJU107hP
-   BOaIuP6yCXWAKSWzkDpiJvs0TNDAQqEUE/rmzW95dubKPSU3a/ypQDm+1
-   A==;
-X-CSE-ConnectionGUID: dgKHZlPqSi6tSNN0aDXF8A==
-X-CSE-MsgGUID: w7UZFzg6QCmUf81+x8cBTw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11963"; a="3305821"
-X-IronPort-AV: E=Sophos;i="6.27,209,1787036400"; 
-   d="scan'208";a="3305821"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Nov 2026 05:39:25 -0800
-X-CSE-ConnectionGUID: tpYu0zSdRsWVI3EnQFrG1w==
-X-CSE-MsgGUID: SrVBhbs8TpuaatP+Ljp65w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,209,1787036400"; 
-   d="scan'208";a="8485126"
-Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.6])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Nov 2026 05:39:22 -0800
-Date: Thu, 12 Nov 2026 15:39:19 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kamal.wadhwa@oss.qualcomm.com,
-	Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-Subject: Re: [PATCH] thermal: qcom-spmi-adc-tm5-gen3: move hardirq actions
- into threaded handler
-Message-ID: <avXBhyKMlqaLUeGQ@ashevche-desk.local>
-References: <20261111-adctm5_gen3_hardirq_removal-v1-1-536ed503396c@oss.qualcomm.com>
- <avR6cHb6ZUsDzIV2@ashevche-desk.local>
- <5c879271-6e88-4683-a280-eef292c442ba@oss.qualcomm.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3A17606A323
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 13:45:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E3A17606A323
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-c4c9abc1824so606312266b.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 05:45:17 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794491116; x=1795095916;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=4m5/EFtVtJMcX32G0Py/nICnHfPv/lKNQS3VJ6V35d0=;
+        b=L40HOTDjko/rhOA/HOLgrBOjIOEEkPxoyh8OI8aM9tZVbsv3SC4TaU8I/7N61BQ6fe
+         4qFo2uXoaPe6UxBRz0di02Z5EPb12RcgKIK6QvBRZmboyeMJ5oZxigA8m9nIKOro3Mf0
+         7O14GerpjVgnq3ZkIXZHAHbdGo0gQxln5TE4Mz3s9s/r7ILIXZyy+l6pxOR+jtjYiXkF
+         KMsdZvGLlFbkeMTKic96z0zxyUqyD9a8W0zNAQJtCpIm7hHZdk62hpvCGjDUt6K8W3vv
+         t0sD9L2SIFmqemQcBP71G1OXzuK5TvmVYNCdPmDsbqRgtD13T8H5ofyZi8J2GVUHzCfk
+         fDuQ==
+X-Forwarded-Encrypted: i=1; AL+hErE2VKTTYfeL1OCPoVNjhIFzCHr6FUhXvoWN88AT/sj8lbPaPw8/7WKIhYVTcA0bG1BAVxRHDgBRrw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/n6S/vca4vhwOcz89NgTxNvOVMCvsQ4WcsU+XYHZU3dyB0G/K7
+	9H7SgH+Wc5kQc/VilYbUUYKN9mSUswd1OP9WaCleAMVM6URGj3jzqOuI1hoFOuE61Fk=
+X-Gm-Gg: AYBFou3KZpqwvOKqSXh1Py6KcKiCMcjEZ4BpVdgwz1sQYlolWsBx4LBp7QlpdTtHbec
+	SOEMoiPcVvPTaFwNaYPIaLEJT4QZA/2JOIelgK1W6B1gS7qX2y7O9qoNx8rBm+Ji/xbGgT3CQW1
+	HP847zKmZx/GmWBoub9sCNtI2WtTYHQ438wdMTrfwZOppQHHoFah5ShBpTnFp0Ej1ZsM0oZn8S0
+	DBsyo+kez2c7d6LcF3vVfmCWC+Hm+mJu29MLM3B/peYBjc8zEDDIpBDoTHAjkqNwpWf2fEUP0nl
+	Q/iUiANELDadyZXoaFjPh38x0bLIHDIzzoyRrOuhjnGMMJ7pjwoIQumk7kJ4KybYDzScO3PBnNU
+	vBksTFVZrw8MtMZx7dFXQ2HyJDLUvcV93vykUu6SqvbLZBNhCGO5/I60tO96le9dOuvpmG6B//l
+	IHCGNB7mLBv9H9ZE8qeFTa0GR2X17BjhvnhNv2j3XxR3ibzUOHTp2GJeb+av4AIoPhHGqIe1AJn
+	PAVOTXYVPPx1QpChvKNwHJtB9OP8a0KFx35kpibFTnkcFJQTYH0WtC/2JEfvPxWlrhTXbeZYfWE
+	hWx7y5yZEjdnEPSnlaNukuulQ6B/CZ7tfzCLCIT7+jly18xLzlAwevOnTtQZVZVWQ3ptzk/LKA=
+	=
+X-Received: by 2002:a17:907:2d2c:b0:c46:7ec3:fde7 with SMTP id a640c23a62f3a-c5066b32327mr477340566b.31.1794491116179;
+        Thu, 12 Nov 2026 05:45:16 -0800 (PST)
+Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com. [209.85.218.49])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c504a683d72sm346070366b.81.2026.11.12.05.45.15
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 12 Nov 2026 05:45:15 -0800 (PST)
+Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-c4cdc606b47so673772166b.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 05:45:15 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErGZCtmrj84jkQBjTuKFVYEK+Jah2iyTlXGjKcKNaVM4QMOeZnXA9+C1izyawjdFhLsgqFC9nU+5rg==@vger.kernel.org
+X-Received: by 2002:a05:6402:1bc1:b0:6b4:5a9c:4e44 with SMTP id
+ 4fb4d7f45d1cf-6b77770644dmr2967919a12.37.1794490681628; Thu, 12 Nov 2026
+ 05:38:01 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -87,65 +81,98 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5c879271-6e88-4683-a280-eef292c442ba@oss.qualcomm.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
+In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 12 Nov 2026 14:37:46 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVeX=6DCLv5GZo1UFU2Nn1Y4zGxCMovxyQGefO+JpuZ8w@mail.gmail.com>
+X-Gm-Features: AclHuK8Bvm66uPuRAPPxi-MPPvPl-KdDJtyohfMgnqBqTlOChWJE1Vd3ab7DaZs
+Message-ID: <CAMuHMdVeX=6DCLv5GZo1UFU2Nn1Y4zGxCMovxyQGefO+JpuZ8w@mail.gmail.com>
+Subject: Re: [PATCH v4 00/13] media: rcar-fcp, vsp1: Enable on R-Car X5H
+To: Paul Elder <paul.elder+renesas@ideasonboard.com>
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-media@vger.kernel.org, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, 
+	Phong Hoang <phong.hoang.wz@renesas.com>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, Nov 12, 2026 at 01:54:13PM +0530, Jishnu Prakash wrote:
-> On 11/11/2026 7:53 PM, Andy Shevchenko wrote:
-> > On Wed, Nov 11, 2026 at 02:12:01PM +0530, Jishnu Prakash wrote:
+Hi Paul,
 
-...
+On Mon, 9 Nov 2026 at 14:34, Paul Elder
+<paul.elder+renesas@ideasonboard.com> wrote:
+> This series is based on Geert's
+> "topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v4-rebased" branch [0].
+> A branch including this series is available here [1].
+>
+> This series enables the FCPV{B,I,D} and the VSP{B,I,D} blocks on the Renesas
+> R-Car X5H SoC.
+>
+> This has been tested on an Ironhide with the vsp-tests test suite [2].
+>
+> Full summary:
+> /dev/media0 (VSP2-D (a)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media1 (VSP2-D (a)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media10 (VSP2-I): 157 tests: 150 passed, 0 failed, 7 skipped
+> /dev/media11 (VSP2-I): 157 tests: 150 passed, 0 failed, 7 skipped
+> /dev/media12 (VSP2-I): 157 tests: 150 passed, 0 failed, 7 skipped
+> /dev/media13 (VSP2-I): 157 tests: 150 passed, 0 failed, 7 skipped
+> /dev/media14 (VSP2-B): 127 tests: 116 passed, 0 failed, 11 skipped
+> /dev/media15 (VSP2-B): 127 tests: 116 passed, 0 failed, 11 skipped
+> /dev/media16 (VSP2-B): 127 tests: 116 passed, 0 failed, 11 skipped
+> /dev/media17 (VSP2-B): 127 tests: 116 passed, 0 failed, 11 skipped
+> /dev/media18 (VSP2-B): 127 tests: 116 passed, 0 failed, 11 skipped
+> /dev/media2 (VSP2-D (a)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media3 (VSP2-D (a)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media4 (VSP2-D (a)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media5 (VSP2-D (b)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media6 (VSP2-D (b)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media7 (VSP2-D (b)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media8 (VSP2-D (b)): 114 tests: 99 passed, 0 failed, 15 skipped
+> /dev/media9 (VSP2-D (b)): 114 tests: 99 passed, 0 failed, 15 skipped
+>
+> The last patch checks the device revision and prints it, which is useful
+> for debugging but is unnecessary processing for driver operation so it
+> is marked as DNI as well.
+>
+> In v3, most of the patches have become DNI because they depend on wip
+> cpg and mdlc driver work. The non-DNI patches are targets for immediate
+> upstreaming though.
+>
+> In v4, thanks to Geert's new rebased branch, all the clocks and power
+> domains that were in DNI limbo have now graduated from DNI status.
+>
+> [0] https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git/log/?h=topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v4-rebased
+> [1] https://git.ideasonboard.com/epaul/linux/src/branch/epaul/v7.4-rc1/x5h/vsp/fcp
+> [2] https://git.ideasonboard.com/renesas/vsp-tests/src/branch/epaul/fix
+>
+> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
 
-> >> -static irqreturn_t adctm5_gen3_isr(int irq, void *dev_id)
-> >> +static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
-> >>  {
-> >>  	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
-> >> -	int ret, sdam_num;
-> >> +	int sdam_index, ret;
-> > 
-> > Was the variable rename so important for the fix? Can we defer it to the later
-> > cleanups, if ever needed?
-> > 
-> >>  	u8 tm_status[2];
-> >>  	u8 status, val;
+Thanks for the update!
 
-...
+> Changes in v4:
+> - Change the clocks in the dt nodes to use SGD1 instead of SGD4. (see
+>   patch 1 for details)
+> - Removed "clk: renesas: r8a78000: Add clock for FCPV and VSP for SCP FW SDKv4.36"
 
-> >> -	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
-> >> -	u8 tm_status[2];
-> >> -	int sdam_index;
-> > 
-> > Okay, I see the reason now why it's done, but I noticed no mention of this in
-> > the commit message. Also it's unclear which variable is used more often and
-> > what is the real semantics of its value. Is it number or index?
+And it still works without providing these clocks because the fcpv
+and vsp2 drivers do not manage clocks, right?
 
-> > With all this
-> > in mind, please at bare minimum elaborate in the commit message and, if it's
-> > actually a number, replace the other part instead.
+Gr{oetje,eeting}s,
 
-^^^
-
-> In both adctm5_gen3_isr() and adctm5_gen3_isr_thread(), we needed a variable to
-> store the index of the SDAM whose IRQ was triggered. We called it 'sdam_num'
-> in adctm5_gen3_isr() and 'sdam_index' in adctm5_gen3_isr_thread(). In the rest
-> of the file, it is called 'sdam_index', so ideally that same name should have
-> been used in adctm5_gen3_isr() too, as it is more accurate than 'sdam_num'.
-> 
-> As I mentioned at the end of the commit message, I just meant to drop adctm5_gen3_isr()
-> and expand adctm5_gen3_isr_thread() to include the actions formerly done in
-> adctm5_gen3_isr(), but I see the diff makes it look more like I modified adctm5_gen3_isr()
-> into adctm5_gen3_isr_thread() with a variable rename, which is a bit misleading.
-> 
-> I can add a line in the commit message to emphasize that 'sdam_num' is the same as
-> 'sdam_index' if you think it helps.
-
-Yes, see above.
+                        Geert
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
