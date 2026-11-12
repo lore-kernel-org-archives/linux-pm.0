@@ -1,108 +1,108 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.72.42
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794500604;
-	b=IM34b2eXHyGWe9ncna7X43YFqZG4KBwAfd+/8UyEVht9vW2hGZcKzdWp8dC7tqjh5XrB
-	 sGrS5tHQi/H7CMVlquFw2tmOBBf5kbkdi0THxOFrvOrT4W7cebrcX0o6b2LUA9+Lm6YJO
-	 M6KStIIWhRnopFvC0DzEHkc7dQBj4TGroZ08rktL66z0fgYxlA0wp8mPJFQecUukOneug
-	 57lIKMNQjtGyIEiLehlAdQE0wLgTP92pdbinrUXLeMCtZKXgZFji4L/tcq/UtAI6QG1fd
-	 jTXdqivp4bzct49A4coyBegU/YklGkShB67vOUcCVF53oqLOVvYCzgZPFxXzzHH2ahA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794500604;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:
-	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
-	 Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
-	 X-ClientProxiedBy:X-EOPAttributedMessage:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=Sg+KvGZYhVzYOkLqPIQhsfe/5idg5NwqYT0AfUXheas=;
-	b=vxFUnQtRBclbbnoztelXvvoYS/e+J8Rsa4S0/j3TCDUHazI10W69w2KChCai1xQW1STI
-	 mmkmMToLG0FFZRUza22rXeWumgJgtrQV7kaRcbB2cssXbHX990ZfElCsY+7mdW8ecsFR0
-	 2QGQLZlZKQU8TNOtK3HLQabPWXKPJU3BwU3F6As/OB5rmLC3o0jfExm+n/piyjCFoT0BZ
-	 8T9whfw4ybsl2z0b3pLrVnejrfJe2uoshOtz1DnlMO3M2yvO1lN2BCqthLwL3URKscb5w
-	 SlWgqRJLv+FvSWi/ZCK2bVAvTAz4dhk0fE9tj5MxghFo7qow3fGF8mO9XMhHH6uahyQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=foss.st.com;
-	spf=pass smtp.mailfrom=foss.st.com;
-	dkim=pass header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=bJQwmF1H;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.72.42
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013042.outbound.protection.outlook.com [52.101.72.42])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.51
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794501880;
+	b=Uzjnr6vnOI5FKGbD+uzEIIQDq/xAI+aNeDlwbG91qv0B8xvXpVe/JJMAo7GlQWwJRs0H
+	 r+zjhHpZKHqDEIYORODV50SBpMNYpFDuTiWJVwT+0ijoYb53t7dSwFZnE/pYht9ABelRY
+	 /wq86DSGBqBKHfj2jgf+vmMCsXrgQYsQ4E7G43RsDbU9G+CIWYbcIc5uBXa8bh6Nnurou
+	 uLIzyGV0bP74d7YdtRWKkFJeuy76sQGkLp1+3XoyoSOshOwqU39WlxKb0M4HjSDLqDzEt
+	 t1qkp+rspXuZjqDfYnygbsIM9DxHf2BVU8K4KLccFFsAk+CpbteRP27M2X4Nky51z1g==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794501880;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
+	 In-Reply-To;
+	bh=L0I0n48oV5o7BRj/oH4f6pc2kqveIFdpMiqQByS78r4=;
+	b=NuQmqyvfzq0ObbS3SVZ5jxZqq64iKv6k5/nsdxKXV3Ho4UommSw+okYmPG8RobeiCGyR
+	 JIh0OA7pn2bpxYpO6ik4BPNyDz2/FkhLvVI+3xo21ZwObRSAh39aA46odyP1zcMVo328m
+	 ZrVT1IG4IJtuC9UyZbgPoz5Oi2tGbdA46Hh2YSvgYgaXhgRd8X/1PWTNGIrW1YBfKyNCa
+	 Gtd/BtREiQmOQttRC5z7rKly5NZaEzJVQJ3M7Stz8M1w5o3AA0DiLri13kibt/MAob4CM
+	 0pbuozFSxGNIJ8X+aT2Ll1drwSFUXPk/mhongorCrZiohozCX2rALPlv10xHbFZQuWA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=chromium.org;
+	spf=pass smtp.mailfrom=chromium.org;
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=SuIlegSD;
+	arc=none smtp.remote-ip=74.125.82.51
+Received: from mail-dl1-f51.google.com (mail-dl1-f51.google.com [74.125.82.51])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4AE0606A321;
-	Thu, 12 Nov 2026 16:23:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D4AE0606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foss.st.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=foss.st.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CCFC606A330
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 16:44:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5CCFC606A330
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=bJQwmF1H
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=O57N6PFvuEOYa91l9oqgZ+y//i/WB5kWAHnDEE60gPcZBn60tNucAv5f2yTF/ASWthWY6MkP+OYpMLCe9y/BngNoTpWNYtHVZU7QwaQAsVJFHogBqST4y+iPDfW/mwQrJcCNuSWtbiB6SNAxKk7EwFxRXhG1uZxBcVgMCfhzeRUfmjhjLgYJIgXmGbs3I8OAeUcipYx5mSqHbSlzwe98DLO7mfiBXfjjsl91zyoIHrEH8Ushv56kT+R7cW0307Bs6czt0Q1x3cWBIQECXTBh98uEjMjWpfZqAXKIN5Pns/wrX7HFtZWaDKQUAk3bw+jhXWevy+4sw2zGydhP2hAiEg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Sg+KvGZYhVzYOkLqPIQhsfe/5idg5NwqYT0AfUXheas=;
- b=lssxlnGn+vicS/gPfSBHNw4WzKhEUt0fIxsgerrHLS0CNLyh5+VViZLsce84CRz1MAR65DwVYRXABIoALatRdbUTOl65G2hwPpXu8HerCQ13KVNKaO/WQbFtCZWugR57vRWAN7TpcMFAf5YiySx8xG4GGyvj33ma/maMIfuhAc0cxOf3I89twmS0F5PCGhSnahrPodEtcs9jWD+3mfgNTkD2QsJ7Xrt0KyhHx3DmwMlfAYpEwHiCMLlc/m+O8l/kVqCMWCRut6/ua2P6kki3Y+PH9ds/sr97F9Lhx7fXEZUTvzAgbh7xgQOgHlgZ20Fyg/uOe6eS9EXVEuNFE1kllw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 164.130.1.60) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
- dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Sg+KvGZYhVzYOkLqPIQhsfe/5idg5NwqYT0AfUXheas=;
- b=bJQwmF1H9gPhl9YON8Idd2oXLd7O/o8MzKdwphbVqZP7EbAKWfsGw+AnHAhMdeMi33WmEwvloU3AI4wcDq9BzD5ydxwJtTaZzcVXzhPmLtJ/KLb9kML+euap0CR9zkEDmzyslbBNf34taX3M0LBxgsHz4FDIrPrGFftKF6r7URySPDjcly1o8kN/05K6hKds62lYBvkWPiRb8Psljse0B3Tg/4gcZW5wwJJZe4aJo5KYtzIPpCmHxucfToMyzofk6BX7OS/+UjZY/f+EQdkWk3uL4rR/0cNetJNO+qyRmoUgum+hFpzSPymhm6ro4WjrIBUYjb/rTetl9TWQBW2pfQ==
-Received: from OS6P279CA0106.NORP279.PROD.OUTLOOK.COM (2603:10a6:e10:3c::8) by
- DU2PR10MB7743.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:10:46e::21) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.615.8; Thu, 12 Nov 2026 16:23:20 +0000
-Received: from WA1PEPF00009B3B.eurprd05.prod.outlook.com
- (2603:10a6:e10:3c:cafe::1a) by OS6P279CA0106.outlook.office365.com
- (2603:10a6:e10:3c::8) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.10 via Frontend Transport; Thu,
- 12 Nov 2026 16:23:20 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=fail (sender IP
- is 164.130.1.60) smtp.mailfrom=foss.st.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=none header.from=foss.st.com;
-Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
- designate 164.130.1.60 as permitted sender) receiver=protection.outlook.com;
- client-ip=164.130.1.60; helo=smtpO365.st.com;
-Received: from smtpO365.st.com (164.130.1.60) by
- WA1PEPF00009B3B.mail.protection.outlook.com (10.167.242.41) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.615.4 via Frontend Transport; Thu, 12 Nov 2026 16:23:19 +0000
-Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpO365.st.com
- (10.250.44.72) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Thu, 12 Nov
- 2026 17:24:04 +0100
-Received: from localhost (10.48.87.100) by STKDAG1NODE2.st.com (10.75.128.133)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Thu, 12 Nov
- 2026 17:23:05 +0100
-From: Patrick Delaunay <patrick.delaunay@foss.st.com>
-To: Ulf Hansson <ulfh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle
-	<christian.loehle@arm.com>, Maulik Shah <quic_mkshah@quicinc.com>
-CC: <dario.binacchi@amarulasolutions.com>, Linux STM32
-	<linux-stm32@st-md-mailman.stormreply.com>, Patrick Delaunay
-	<patrick.delaunay@foss.st.com>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH] cpuidle: psci: Skip SET_SUSPEND_MODE when OSI is unsupported
-Date: Thu, 12 Nov 2026 17:22:42 +0100
-Message-ID: <20261112172241.1.Ibe6dddf06a4b7e5b24af24dc85d053e36f940549@changeid>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=SuIlegSD
+Received: by mail-dl1-f51.google.com with SMTP id a92af1059eb24-15dd124bbe7so7289422c88.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 08:44:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1794501879; x=1795106679; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=L0I0n48oV5o7BRj/oH4f6pc2kqveIFdpMiqQByS78r4=;
+        b=SuIlegSDTiqLxvrjbgM1Q95iPFjnvtJm1AHCpbYH/Aa1M6ec3/6OeF0Inudj0wOHYZ
+         yZ7mAckhOQmOJVRTYUhe2ll5Ca8hBUUGL8CDuNM+jE2if7teqm7z7i2a60bjAqE65pzp
+         K1mWu1/+QywHczH0apEZY2OsitrAMzx8FfRoo=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794501879; x=1795106679;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=L0I0n48oV5o7BRj/oH4f6pc2kqveIFdpMiqQByS78r4=;
+        b=x001t9ZY71oOIWbAeqhVIdgo5+IdS2uA3Zh1mQyhI1YckIb27JnCuSnpXVcPPzsLvD
+         AVnHR4nViLcjR0Yj24pLs5wtU8fAw205+7uLTDkQtgr8A7V/r/G1tkbgRXEPV5IqMQ8C
+         7gDd76NboFNFkaM/kVV+fvozeYWeetRU0Fz06X6TOdaXDbG9FAuggxMfGU8E9lYEZpMV
+         Dc4TFr1im7tzCkGwvaNUZcDOfIAHe2Vm/etolBGtJU/wdD+G/ofowaLxI6wsropzl+9S
+         LMkcTV093DTR9WmwLw/2EK0SX+0pQeLP0UGlc6wXVU/TvKbpT13xGmLrc/391dwb0Mfj
+         Psfg==
+X-Forwarded-Encrypted: i=1; AL+hErGGaIcK2ijdvsYsYarfhJ9B9FtsFonsYGm9RF5qJWloR4nX9qVVB6svcghoPssUd093kVulGQmJ3g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+DByjTccu7+ZyRB7tyzyuk0UmtUEva0zVdoTK4MB2nSPlIHINt
+	vV1Zp2386hk0W1SNkKFtV+7Rv2TrhQK9Oo1HTWW9AMqQEGdGWZdpaW0onwXKCDFyuA==
+X-Gm-Gg: AYBFou2fYsJlBoeO7W5BZfT5D/+z3pznhedgVxX4gX8OO0YxEXyzZdBhMQRLcdhPnHc
+	wuONeBuZF9VZps98b7W5fjfnYw9p7SUvoAXZJz8ZFMpGEy6cbfS7oDgf2X9jrA436Mb48776Pqd
+	/6FT+orBE8jcmSqxbCTBwv/+RWgNMBphnVYyvaA21iZ4Iwo5WxfZ3EzZ59f/FqG0lTvrqJAOxC9
+	qC3Fh9chFS+9VKgTZzwJYbjkQRp1JBZMMalYI4nsPdNDf5H9h0uqBfaAc9Jza4nuPrXW2InWivU
+	9Q00kyUgCgSPuIlCapfmPivhPP3jA4merq6kHu/2+zW3gtwKwZKD3PQj2GkXLvtzVwf4+f7L/4W
+	A+y0ovAsNcUU0bbE46f16HaXleLhuF8gQHuCuxp7A08G+DvoP0nD7c0DqOWX8mWbWNXQ1gAfny3
+	BQRL2/6FR9HA2v1WzH+8SBosa1fZ5itU6heaJZNo5e/wHx/oHNd9PuKDRaidtHb4a/lm7otdaVH
+	SEqGCghjamfA09Cf/Hw8m1NoPFyDZfs05AayorkSfG4dC2qLr6DheD1Gx1a9RYwn4R/zJ72vqXu
+	kIaWqNeFoeug8yBmMH2BTOl3j/7nKRVVpu+R8BdHbOykGHPDQ8uvcUtE0+JPLJ14qiFK
+X-Received: by 2002:a05:701b:4551:20b0:194:3a84:e67d with SMTP id a92af1059eb24-1b5031b37dcmr81202c88.44.1794501879423;
+        Thu, 12 Nov 2026 08:44:39 -0800 (PST)
+Received: from localhost ([2a00:79e0:2e7c:8:5446:563c:ac92:43a8])
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1b5031b2519sm137097c88.13.2026.11.12.08.44.36
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 12 Nov 2026 08:44:37 -0800 (PST)
+Date: Thu, 12 Nov 2026 08:44:35 -0800
+From: Brian Norris <briannorris@chromium.org>
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Fabrice Gasnier <fabrice.gasnier@st.com>, linux-pm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulfh@kernel.org>,
+	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+	Andy Shevchenko <andy@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v2 3/5] PM: runtime: Propagate last_busy from dependent
+ to dependency
+Message-ID: <avXs826ikSctpUnA@google.com>
+References: <auzlLwlleGLPsLcw@google.com>
+ <CAJZ5v0g25xQeRaLJWJyAo2fcJko+gZ7w6JhX7FzMgRx2+uuimw@mail.gmail.com>
+ <au0oKFb9CmNzc6Cg@google.com>
+ <CAJZ5v0hKpjMsGQm8Cpa89x5wkNxqkggDNbp+eQ0S-E52DETWjQ@mail.gmail.com>
+ <avOw_4ZkqtKFHu1B@google.com>
+ <2c3bda2b-ccc3-4430-8e09-81b25f6fcda7@rowland.harvard.edu>
+ <avSa97F1Nu1LTSCA@google.com>
+ <fc43eb13-816b-4cd0-9711-848fdab605ef@rowland.harvard.edu>
+ <avUHG8mLuTOUMr8O@google.com>
+ <CAJZ5v0j+8_fOc_EEGx4tquqcaH3-nmHd0YMJRb38t2Rw40iV3g@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -112,112 +112,73 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: STKCAS1NODE1.st.com (10.75.128.134) To STKDAG1NODE2.st.com
- (10.75.128.133)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: WA1PEPF00009B3B:EE_|DU2PR10MB7743:EE_
-X-MS-Office365-Filtering-Correlation-Id: 46a012e4-9f5a-409d-a3d6-08df40d943a6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|1800799024|7416014|23010399003|376014|36860700016|18002099003|10067099003|11063799006|261102123227099003|261021121427099003|261021123027099003|261022105027099003|56012099006|261028144727099003|261026140227099003|261026121527099003|261009223027099003;
-X-Microsoft-Antispam-Message-Info:
-	wdxGxjGUSrvKR8BJZUi2x1qLwUtSMIIWjrAPnQaohIOekktThh0zh5Km7WiOs1IM5e8fg6hLIZkbxyQj7rFyiztVrMCWpZm4GHM9mTG50A6qUNaVXiJeU07yexkg3eFQBH5tCgvZem01yMS2a3oTGOoa+NC3lLPQmnQlOspqHEHCxka0fQ0K2P9XCtDhD2Ht0R4zVpzAcFmg71ZvvRWT0Y98Cihp0prfNQ7n4w2QDJJU4fPGQBE/KTHi3i+LiFFThoGYhDxX7J0c5y2PEE5XQ+FDyXQ4n2uIDDICh9GzNDiyhSEosGhYDAVxndnXcaGySu5upm1VICyptxE8/YUAephNyO7TgOWoHT/5vJ2RZgsO0YUkjWQvlSI3zwJfBRV1pXyCTLPZzflfZr42KXm+gi9H8IxBl+B8OE8e3/VFejE8Gc31ggcHgp23ykHXcBHFsttv+E2KhncC/hzraeASEOPMN5rk1Xqr/hfJtgKQblPofDW9kuuHb3P+pgSwYFFZzucK5p0M+RSNFi4p9hgNuVeeJA+vVFnSQiGAsx8ARgOEig8SRVbU08EngqkMBZ2YaZggASomQ08qtsckO22gqBrBEBGGJggn33/L3q4ww0QsFovG0SpKfdR07rWG+cfu1IbFo+pWvNDfgisriKE0e8VxbVlJfzgGIJ82L7X1/bE=
-X-Forefront-Antispam-Report:
-	CIP:164.130.1.60;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(7416014)(23010399003)(376014)(36860700016)(18002099003)(10067099003)(11063799006)(261102123227099003)(261021121427099003)(261021123027099003)(261022105027099003)(56012099006)(261028144727099003)(261026140227099003)(261026121527099003)(261009223027099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	TNdOyRVOS74iH6U4QyNpJsyNtgTKta0Rr7HRML6Lr8t8gYyiETPtydBlLsz6+DrMgRwetuVJ2ikT48gen2U9LBN5qaeTTpLX7JkH3Wxm0eVgHUVODbWe1K3uwAKIn/avGsAbKdtWDgZOdE43ua8epYwiATZU2Pp1CR371wxfy183UlCatdeOlsCyoJinQx9lbRwd9gRgZ0Dhxst1lnA3ks6/6rBooiEpEO+egZcvyC4S55qKmc/Nx8+S9U6KNyC94bMaIbXXMhW7Wd/4HD3OWhxTIEMxgCyT4I2TJXkobMiCielR0+n4govLHdvhOrVUaZe0FUo57PbDKz3DxBlu5W+T+ANKr5S2hdGRhtgLFxXa99+T5rSqrCJklW1/tDvo1gbaJNga8FKWE1nibgWr5wh+PLVgaDV/WYXNsDaOkzfsQiIveGrYba4L1YIhNV7k
-X-OriginatorOrg: foss.st.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Nov 2026 16:23:19.5753
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 46a012e4-9f5a-409d-a3d6-08df40d943a6
-X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.60];Helo=[smtpO365.st.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	WA1PEPF00009B3B.eurprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR10MB7743
+In-Reply-To: <CAJZ5v0j+8_fOc_EEGx4tquqcaH3-nmHd0YMJRb38t2Rw40iV3g@mail.gmail.com>
 
-The PSCI cpuidle domain probe calls psci_set_osi_mode(use_osi) after
-creating the power domains. When OSI is unsupported, this still calls
-SET_SUSPEND_MODE to select platform-coordinated mode. Firmware that
-does not implement this optional function may return NOT_SUPPORTED,
-causing the probe to fail with -EOPNOTSUPP.
+On Thu, Nov 12, 2026 at 05:13:09PM +0100, Rafael J. Wysocki (Intel) wrote:
+> On Thu, Nov 12, 2026 at 1:24 AM Brian Norris <briannorris@chromium.org> wrote:
+> > I'll give this some time in case Rafael had any other thoughts/replies,
+> > but unless something major changes, I'll plan to write/test/submit v3
+> > where rpm_idle() calls pm_runtime_mark_last_busy() (part of Rafael's
+> > proposal), and *not* make it conditional (i.e., no
+> > pm_runtime_use_autosuspend_always()).
+> 
+> That will work for me.
+> 
+> > (Or, Rafael is free to do so, since it's his idea. Just let me know so I
+> > don't waste my time on it. But I figure he'd rather someone else do the
+> > work.)
+> 
+> I can cut that patch.  It is going to be a one-liner if I'm not
+> mistaken and I'd like to write a changelog for it.
 
-When OSI is unsupported, the PSCI specification allows the OS to assume
-platform-coordinated mode. Skip the call in that case, and request OSI
-mode only when psci_has_osi_support() is true.
+OK.
 
-Fixes: 12acb348fa45 ("cpuidle: psci: Move enabling OSI mode after power domains creation")
-Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
----
-Hi,
+There's potentially quite a bit of follow-up, including patch 5 of this
+series (to drop now-redundant .runtime_idle() callbacks), but I can roll
+that separately if you'd like. (Would you want to make an immutable
+branch for other subsystems to pick the 1-liner up? Or just apply such
+patches to your tree, as it seems the IIO maintainer was probably OK
+with that?)
 
-This patch replaces the previous patch [1] in SCMI lib
+I also feel like there's probably room for unit tests in this area, but
+again, I can do that separately if they still seem valuable.
 
-The PSCI specification v1.3 describes the PSCI_SET_SUSPEND_MODE with:
+> After that patch though, using pm_runtime_mark_last_busy() elsewhere
+> will be mostly redundant except for pm_runtime_*_autosuspend().  Since
+> all of them call pm_runtime_mark_last_busy() (AFAICS), it looks like
+> last_busy can be updated directly in rpm_suspend() when RPM_AUTO is
+> passed to it, but if so, rpm_suspend() can simply set the autosuspend
+> timer unless it is already running and so last_busy can be eliminated
+> entirely.  I guess that should be done too (in follow-up patches)?
 
-"
-5.21 PSCI_SET_SUSPEND_MODE
-5.21.3 Caller responsibilities
-The caller must be able to cope with the following error return codes:
-* NOT_SUPPORTED, in which case the calling OS can assume the platform
-will work in platform-coordinated mode. In this case,
-the PSCI_FEATURES feature flag 0 for CPU_SUSPEND is also 0.
-"
+__pm_runtime_put_autosuspend() still sticks out, but it's nearly gone.
+Its only user is just re-implementinng pm_runtime_put_autosuspend(), so
+obviously it doesn't actually make a difference. I've been waiting for
+someone to finish this patch...
+https://lore.kernel.org/all/20260806-smmu-rpm-v4-1-8183d007331c@oss.qualcomm.com/
 
-This patch implements the expected behavior:
+So I think you may be correct.
 
-PC mode by default when OSI is not supported, i.e. CPU_SUSPEND
-(optional) are not supported; PSCI_FEATURES(CPU_SUSPEND) return
-NOT_SUPPORTED or return psci_func_id Bit[0]=0 for OS-initiated mode
-not supported.
+> Moreover, after all of that the difference between pm_runtime_put()
+> and pm_runtime_put_autosuspend() will become somewhat academic, so is
+> the difference worth retaining?  Or can we just say "If you set the
+> autosuspend delay, all async suspends will be deferred" and drop the
+> "autosuspend" variant?.
 
-When OSI is not supported PSCI_SET_SUSPEND_MODE (optional) can report
-NOT_SUPPORTED and by default the platform will boot in
-platform-coordinated mode.
+That's my preference. I think having so many put() variants hurts a lot
+more than it helps, and especially so if the differences are nearly
+nonexistent.
 
-[1] "firmware: psci: handle unsupported SET_SUSPEND_MODE in PC mode"
-    https://patchwork.kernel.org/project/linux-arm-kernel/patch/20261029191624.1.I5f8f3d75a566b72250d629ac6f43cf0d387c0218@changeid/
-    https://lore.kernel.org/all/20261029191624.1.I5f8f3d75a566b72250d629ac6f43cf0d387c0218@changeid/
+> I also have to say that I agree with your remarks regarding the
+> .runtime_idle() callback.  I don't think it has ever been particularly
+> useful and life without it would have been simpler.  I'd be happy to
+> just get rid of it at one point.
 
-Regards,
+Great! If a few other things settle, and I find that I'm able to clean
+up my existing patches to my liking, then I hope to submit such patches
+at a later time.
 
-Patrick
-
- drivers/cpuidle/cpuidle-psci-domain.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
-index 5722365b943e..eed9ad94659a 100644
---- a/drivers/cpuidle/cpuidle-psci-domain.c
-+++ b/drivers/cpuidle/cpuidle-psci-domain.c
-@@ -159,10 +159,12 @@ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto remove_pd;
- 
--	/* let's try to enable OSI. */
--	ret = psci_set_osi_mode(use_osi);
--	if (ret)
--		goto remove_pd;
-+	if (use_osi) {
-+		/* let's try to enable OSI. */
-+		ret = psci_set_osi_mode(true);
-+		if (ret)
-+			goto remove_pd;
-+	}
- 
- 	pr_info("Initialized CPU PM domain topology using %s mode\n",
- 		use_osi ? "OSI" : "PC");
----
-base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
-branch: master
-
--- 
-2.43.0
-
+Brian
