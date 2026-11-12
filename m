@@ -1,124 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794471795;
-	b=xYYyFQpVyNTZjEvgA7r8d9W4UslS1VaHBDaTPlf03cuLhi0VuLJZuC2hOjKc0e7GOWGE
-	 3NjdhL3EjotWO7NdGcb1IpCx+JM5LrpdZF4zBH2tOUrhGC8WQSxF9i1AluCD3jrUb10+C
-	 PqXZI7JI4ROiPnUtHi4kdko+3zE4H3ALZzypIbrJyQ8CtYaejZ1ZiDaEmAxZY7Hny7AOf
-	 xiY/aXFTG4fWKMoTItte+XsbPKI2Sd1N+V+LMnBfp4X38wHkralB9dl1GnIVkfz7DvvZM
-	 o7GiTfAMGL010Z8HCDgVFAc1x8aotzGEqQlL6X4/NmSgF25gN+nhJg0CpYr4gUpicLg==
+	t=1794471811;
+	b=aMn7r7648dqFQ39VVTOQ4fY9FVIPL4ZHQ5JBQB9X0vqNpsrLWDeK+sIQExzoazFgFrTS
+	 WE/poT7rTQ+vSfedu2pVOSY8Fuxh2nSZeFgTuLk0HSFE0aD/aI+bgfp5Gtg6fc7NGdwU7
+	 1fSEl/4gEibQVfCVmdwB/m3Z7kXegprPTqe3VppduAAnVBCUrr/SVI2QmXqstVAcHXX0Z
+	 iJ+LhyTSFjjJYgcLJbialth5dWF2SyRWvX29VwyfNrQSigsjhFQp4VMtsEVOZU9q7fD+K
+	 3MV4xqpm/6sk2hXqydty4dbtCn50Dx0iAGZbXd2o/Y8gSXCVZ6HvHzmkx42K+0ZSNbg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794471795;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:Content-Transfer-Encoding:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Info:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=08cEaQh1yyLsKkm7fAFIcqkmwiaYr3emRrdLH1THyPs=;
-	b=CRR/IvMBIytSFhfv1H/xtrmVnSfxVK3xAV8NxiFNGj46/sKjIXIFelhN5ZULn4xrQq/4
-	 l1TAyBwXuuPIrThMdKTdZ5faiZFvZ2Aoijqa3Tf1NmNymJDQlX3y/+itdxwtm2ZnJNdiv
-	 IIB+pyy5neKu4RLktEPp9CAI0of+MROddHlZF0CYTSUFMJnvg+mdp8qwDlYXJziV8dmt4
-	 ea99yejPCTyY359+QKiZs6wFsTz1JKW1OwHU0G3k4Fb2zeZjBgsq8JKti7tCqFvLzlHKV
-	 bljF/1v7aPLWxYvAxRnW6WRtM0Wew/FfQSghwhrJGwQapqvHenQjLsqYFkql6UVR+VA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794471811;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=mOIDWOADODdIdFZtlIHRbJVwOJgcYqrpFp/gYJAH4aM=;
+	b=mZF2AyUl6Mc/zj6g6mGsCZun06iilUqaT3zlq+mwgk2OZ3bIaB43FMn4j3IH8kKX+2DD
+	 ayU+2F0kcx/Lxf/AeiCiV6Znu2nYC0/FiMCXrta/llMz92DY4VRdo1tXk8Uvm/rsPQzGj
+	 pIlYWkvPaJdLrOFIKrR/yjY9n/0slJdwx4jYchIMXN3yqr2A4uoylIPxD4QbPPmnxHOb2
+	 ckNY4d8kcDBeSGxklobotFOqXhbHuq83xnfI6AU8h2VX3Flv0mgNuLFGKBrkRbIDl+xB7
+	 di2apqT/EF4L9SwlzQ1joJLBj/CaAlhf2ggjyGzae8HEIaFUC8obX+XlF+LWfuPzxWg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=jHzFKtbM;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=MqbJugZm;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JDqze4QM;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A266606A327;
+	Thu, 12 Nov 2026 08:23:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JDqze4QM
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1794471811;
+	b=hEaqwFmTBAqXpHNzymmkOoD71UeeIj9QF6A4uWMBfg4xAyuVN1MAgUFhOy+cmeB7LpwI
+	 jfgYXMd9G5M9b0PZMm91XiYEpJjmOWY73o4zknn0SlIUYyWiJSQjFru2dTenDrtf0c/k0
+	 RzPljdk4VrskODNIA6HmxezeSJsZsZQcgbcSL8iE3wtvLwGfpfmWjw776qqJ4/q3/qff+
+	 RES8rSKlReM4JKThk/Vzy8mG39NoFkBzVyJ5WB/+suPKTWPgg8trYFgsJx8a6pOVpdvHy
+	 kf1nC9/326H4CY+jy9T6Z1ei28VY8AoGiUdmi5P2vnMZjcvkKbWbU8nqfOA6KzEa8Bw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794471811;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=mOIDWOADODdIdFZtlIHRbJVwOJgcYqrpFp/gYJAH4aM=;
+	b=oF4CMGVqt7FZwndZkV0Q5QYpItwrKbiBd7qGr+9XO08MZvBslADq2IeiC3Au6TKEYjIt
+	 ikUhjp/aV50f1+G8LyW+mSNMPO+UlAtb3AvuV2GHTyxn4+1HLRKzomOyQ7SmKbH7bumlt
+	 rm3UxRKTJiiOa9KzHYfXW2WNfHIwG3C91A+LzUA66f1qqyjGaAUaKl14I5+Q0CICQYI3p
+	 1L5JLb9biqfsM19BoQNhqmFGcDylAz6ZP4XPz/aSualoc+Qp27sPYeyNU8dwriRRT+omz
+	 ktvzCbnv8bBbThr8XbaTLSy54j2xcAyNCaQNBdUnHXIMA1Hu5TJfHe/OXE5PdMJcsgQ==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43716606A88C
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 08:23:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 43716606A88C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=jHzFKtbM;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=MqbJugZm
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC7jFRv126967
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 08:23:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	08cEaQh1yyLsKkm7fAFIcqkmwiaYr3emRrdLH1THyPs=; b=jHzFKtbMwpCy1Da7
-	/prLV5AfMnIY39wIw5nH5xtdfd+kAKw5CxvWGVuSrryNdVeLUoC8GBnlG4UT5kXc
-	DQ5KunDrMLJyc2xY06+KjdsKhi89YI4WXkkN4olzW8P2ZJI1/sJhZw6dWL+VPBmE
-	8zS9pcDDzZpy7JMZJLgDJ8IswLGkb1P+VJa2X5TRG4uxSb6s2av0A2R4ypBbmPEi
-	S4l+6nuvYjCOtRfTxWlq1eNK+Sn0tzHBzIZ8bp+qD3KSvF9BuvssEn98BxCGnEiV
-	FzEiuNwWM6UVIA/ay9NDuXZE5Sug2kttrn3e3o89ZVeudFIfPcgkyJkp3sng8ymM
-	S+C/Gg==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hw9a08552-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 08:23:14 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-944101e6367so121511685a.1
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 00:23:14 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794471793; cv=none;
-        d=google.com; s=arc-20260327;
-        b=c1KDegcSjIHN4ytUyFlho8y9f1BGGJQGmbtES9ZynKzumZf6qPeAnUJUYf02dHH4CR
-         66sWO1E7FRDV5koZmurcdqAX+0OGY0O0pWidMsL9DEWIByKgrL6C8vGF6Dr5pVhbkUW4
-         zbqWVsveiiOQk4aaD7LOPmvH39Xg69cmQQi+AJon3KEFgObEIbtJqzNYpJM4hdvDHH/D
-         UIrl45odu+vBerTVzCwQkARFtKy6zhRby6GH0B5HSlB9BHwZJ19n9HEnKhhvklYCSqmu
-         rzlAKKXg+wFGRXq8vCAZserXNzg33RfiEoDqJFh7sw6cieIzfvpnUFuKewK6+8C80tV6
-         wCOg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=08cEaQh1yyLsKkm7fAFIcqkmwiaYr3emRrdLH1THyPs=;
-        fh=f8VuG+4CQEuYeZKUqgyA5pMSyb+4d8B85jymtAq6rqE=;
-        b=k1WGnlsSrgx9iEdt4SlXPfWtyRG+X3te3eZkHGuO36WQk1EQnt/eA/xlVnRWoO/gM9
-         GfQTCtyh7OFNDiTYb9bi3W/mTv1aj03wUiBFjoALAZRK3Fcp9tKnHzOLAEsfgkXZYTzu
-         4BzjqfT7uW0uMexPR4sp0bYEDU556ogPc47nr5la3vqDi+qFvixvwSAcqPbnQbhVF6Gq
-         Gt5zcP07K7t7yuDfhojOeqXI5G3ISby9c5Tc7ir+3ylQ+BxH2Sia5qrhNlYZeZ/a6+Ek
-         LYNrncx/TnScopn7nV+MknLeymUzzg5UNoLR0vpLjKvXeLG0+bYhAFha9N9PuyVJbKpf
-         Y/iA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794471793; x=1795076593; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=08cEaQh1yyLsKkm7fAFIcqkmwiaYr3emRrdLH1THyPs=;
-        b=MqbJugZm4CdFJZBaPEq3mZGVrQrAByMAoeo/qIAK8sZG+q+UVOaPcp9whXgGBG5htM
-         IpPYlarJTMdRaCdoXhbCRKIxxZvgkj2PQqiRvJtIDqSVIqhAmyBU4VPWyzz9Vrc/ON5U
-         hsQ4jfttgIJdjRhvxWz1Sw5x3tOObvC399sDE9NX/A6Ry8ZjrJDR01mAPh7JOJZvIv4B
-         wfxcNS9Y8fwIy0iY5wggTqsvE1MTqEj+vS8PhSKllhCEs/4GCVru9opZzRzbQSGfbLJk
-         m3kABOdhj7CVmBGs0id4NEG4K8vlRwLcc7j7BMX2wlewraaFa5QmO80xWWnOmSIPcVkz
-         LVLw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794471793; x=1795076593;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=08cEaQh1yyLsKkm7fAFIcqkmwiaYr3emRrdLH1THyPs=;
-        b=06L9U0DXiEOvTkblKXJDyKwHlCmdqxik/P1LZMUG+UcyBH0BGfR5SyITYaufcf/v9b
-         axYH4pitB+jZlpgSTzcaNpODihIHvreJ0fF5M3ddHt7RA1SKHG1NegIUptFoMAr4XsW/
-         MEJaVtndAG75LpCO133x2ljzxPNi4ise49hkdRcUTnmb1hx47zTr1oedSQU6E52iTTPM
-         4tT78K3jOwXEQIIBPG2eCpThQlcDuT08OxVTIzx1NhKsBWssoLWgqJy/9nGTBYcEUwom
-         pZGPFaeRAYLfmbKmp0bRkxpnA70oUiFkVM6ubBbA0pi8n3PCou5mi6sqLwxERANVeE9d
-         biwA==
-X-Forwarded-Encrypted: i=1; AL+hErF57XxraB6FuxRXkHO8QcRY9MHdfI+EEoUznJVPFhMZmjJqCJRIqda19b1ibeZmxx69In6AJQ1muA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8tqdGRPhhNxy4krd8yJOERVJGNCh9vnlXve9/eRgurpPWaWIke
-	NwnFGGbh716ZouY/nKDUoO1rqy/dmy4zG4bWt/+I4PVlelkmBlYqs7X7Wcjm+bgn9q4+pXIueU4
-	PbEWpgc1nKBXTIuBScQ/6qsIe9A9kxf9sa+0c5bLEBzj5ddKaZJITz15b3ht02wzdI3FeY5rSEV
-	JFgBwAevYNa2jJiQ5xdyKCqZUy0SvcGlUGufkm
-X-Gm-Gg: AYBFou0x3yVwMKiW46uUNQG2thjhkM0A97BCZS/SHQ9KCf+cxQR0VS0SrzaMARMjx3W
-	7rR3wiTUtkAp3sekFglyA/zMDey+V86RTpH1E1uS4lxCBd+Qqb2lD4Og3d51L3yXPkxSqvpZUCK
-	EMMN4Fch/4nLkCFWy0CP9Es6RM8CPqYgRb1GS+aZmf7wkhYxVFgxiNIsHA7ESBfZWLwmgYcLCtv
-	Yfhec9pYqfnvCG7KxuZ86lNl0jbTSP7yXgozAKhYAYv5Jer3xPR9ygZV4Q6Kk+nWL6ZpZ8W4BE=
-X-Received: by 2002:a05:620a:4107:b0:93c:891b:90f1 with SMTP id af79cd13be357-949330d463amr311772385a.26.1794471793456;
-        Thu, 12 Nov 2026 00:23:13 -0800 (PST)
-X-Received: by 2002:a05:620a:4107:b0:93c:891b:90f1 with SMTP id
- af79cd13be357-949330d463amr311770185a.26.1794471792988; Thu, 12 Nov 2026
- 00:23:12 -0800 (PST)
+	by smtp.kernel.org (Postfix) with ESMTPS id 40DF01F00A05;
+	Thu, 12 Nov 2026 08:23:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794471810;
+	bh=mOIDWOADODdIdFZtlIHRbJVwOJgcYqrpFp/gYJAH4aM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=JDqze4QM2XpDIM4Whf0EvJrt4ihMt03bT0XxLarNnZSzhzzyADvOztQ4R9/sWqR+W
+	 xo8a5NmRpDoQzQgBwDgrI5/dtjmQetybyql6LGaTYHbRqUW9jATvc742fld4U0tSki
+	 fbg5H9bHAmr5ha3kna6aGz4LXY7lzbAKjwXdvqdz0+Ms2Tl8rkGqCuhYxs7BO+LGYf
+	 5viwFseSXFeZ3c/dhG0gSrFmSq2Pel8sVkrhy0TSFhC5Us+y/+xccno3QKUIWjYVCp
+	 hvvyVuwPWlCr6uUFKhIzmlT663p06jp9mKY15/AGoIES1EXStUosX/dvhyfc/WXLTZ
+	 +E5ZzJ6Q+AWpg==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id BD1C049351;
+	Thu, 12 Nov 2026 08:23:29 +0000 (UTC)
+From: Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
+Date: Thu, 12 Nov 2026 08:23:30 +0000
+Subject: [PATCH v2 2/2] pmdomain: rockchip: report domain errors once, with
+ dev_err_probe()
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -128,106 +83,241 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <b47282f1514a9012ac51d0915afb83782c3c0050.1794417398.git.len.brown@intel.com>
-In-Reply-To: <b47282f1514a9012ac51d0915afb83782c3c0050.1794417398.git.len.brown@intel.com>
-From: Loic Poulain <loic.poulain@oss.qualcomm.com>
-Date: Thu, 12 Nov 2026 09:22:59 +0100
-X-Gm-Features: AclHuK9mf73E_udLBsal6MmjRAHMEHwg4PirGobwKujBcW0eeFtgBfzQgE6Dh_U
-Message-ID: <CAFEp6-0yj-+7uYnj5PCvaP39ruQ=xduBbQgJc7MyakuPLJhmvw@mail.gmail.com>
-Subject: Re: [PATCH] bus: mhi: pci_generic: Fix erroneous system suspend abort
-To: Len Brown <lenb@kernel.org>
-Cc: rafael@kernel.org, Manivannan Sadhasivam <mani@kernel.org>,
-        linux-pm@vger.kernel.org, mhi@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-GUID: WGDehPBUf8DV9Gvh_R0SoCGy3HGWzK2I
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDAzMyBTYWx0ZWRfX79MZsCh9QDiO
- nEKiGuGy6nsGUWjjO2xXxb42iLXOfn2qq60bgeMjYzqXP5+L6eKMC13qli3UUH+C/zr9DyR+QSY
- R1O6ryX37ywrIJha1IY4GXEfqxg2zEixsoJ/veCAwRbqpvwYtpef+kDpjzgqlCsivHAqUEAgNZk
- JwQscIB/p9zkv+vE+mVG9rR9wyh2BN0BAdcnUdU9pVWpoUNqew2PiwrA1lhc8Lo68B/N0c6JqTU
- wC71c6JIzE4vkSuQAwM//8mNkCCYf/poKHc/uar5hUWtunhAksEM4Ly6tgQZm43YBzUhj82TMG+
- Q/5U4Z7tUG2aC4aLXvKKF/3OHefimTtGpzV4NkcwAcf7j1GLlhHhluPK/6Evn9iH8hsfedqwLXl
- Uwln9lnGvrDVw66nCqXWqWx5RQOLX3fP9jZAEIMnQBT2Ypx6IzwigXzmNYwO6SNpMMjMPzTxODG
- kLM3FVHDoQBo0QpVNqw==
-X-Proofpoint-ORIG-GUID: WGDehPBUf8DV9Gvh_R0SoCGy3HGWzK2I
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDAzMyBTYWx0ZWRfXxsXsxN60TZ9H
- za3Zl8vPOl+j2bEozOsOwkIwfg2sPperkegsY/ypMl8+JI7GEUubHGPJs3qdWeo99b2HZ7gfMi3
- +SZgnNYVQTTeZENQyLGHDAJEyDYuBrw=
-X-Authority-Analysis: v=2.4 cv=COG/zhrD c=1 sm=1 tr=0 ts=6af57772 cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yx91gb_oNiZeI1HMLzn7:22 a=VwQbUJbxAAAA:8 a=QyXUC8HyAAAA:8
- a=RwBrVW2nJu9fPh6-OooA:9 a=QEXdDO2ut3YA:10 a=PEH46H7Ffwr30OY-TuGO:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 adultscore=0 spamscore=0 phishscore=0
- lowpriorityscore=0 bulkscore=0 clxscore=1015 malwarescore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120033
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261112-pmdomain-rockchip-v2-2-5cd942a23df7@gmail.com>
+References: <20261112-pmdomain-rockchip-v2-0-5cd942a23df7@gmail.com>
+In-Reply-To: <20261112-pmdomain-rockchip-v2-0-5cd942a23df7@gmail.com>
+To: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Shawn Lin <shawn.lin@rock-chips.com>, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ Kevin Hilman <khilman@linaro.org>, Caesar Wang <wxt@rock-chips.com>, 
+ Elaine Zhang <zhangqing@rock-chips.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ Yao Zi <me@ziyao.cc>, Igor Pecovnik <igor@armbian.com>, 
+ Arun Iyengar <aiyengar1990@gmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794471809; l=7366;
+ i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
+ bh=NjDgN0qxUNb8P6mWj/gQ4TDMTDd100w9vcSH2E4Nnws=;
+ b=uCNgNWReaauPLf0MyoPtleQYM2BzI10ZFEpvl6R03KZd4/DcFIva5RZJU8iUeSG0tN/b2CUrr
+ dHYBRH+bmoAAaOSJG2J8OpsPMJGNdyxyhJOehfNBhVULRcqM4WsYcC/
+X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
+ pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
+X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
+ auth_id=1480
+X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
+Reply-To: aiyengar1990@gmail.com
+Content-Transfer-Encoding: 7bit
 
-Hi Len,
+From: Arun Iyengar <aiyengar1990@gmail.com>
 
-On Wed, Nov 11, 2026 at 6:23=E2=80=AFPM Len Brown <lenb@kernel.org> wrote:
->
-> From: Len Brown <len.brown@intel.com>
->
-> mhi sometimes aborts system suspend on the thinkpad T16 gen3:
->
-> mhi-pci-generic 0000:08:00.0: failed to suspend device: -16
-> mhi-pci-generic 0000:08:00.0: PM: pci_pm_suspend(): mhi_pci_suspend [mhi_=
-pci_generic] returns -16
-> mhi-pci-generic 0000:08:00.0: PM: dpm_run_callback(): pci_pm_suspend retu=
-rns -16
-> mhi-pci-generic 0000:08:00.0: PM: pci_pm_suspend returned -16 after 15145=
- usecs
-> mhi-pci-generic 0000:08:00.0: PM: failed to suspend async: error -16
->
-> When a driver returns -EBUSY for its runtime suspend method,
-> that means "try again later".
->
-> But when a driver returns anything but 0 from its system-suspend
-> method, that means "abort system suspend".
->
-> Always return 0 from mhi_pci_suspend().
+When a power domain clock is not available yet,
+rockchip_pm_add_one_domain() returns -EPROBE_DEFER, and both it and its
+callers rockchip_pm_domain_probe() and rockchip_pm_add_subdomain() print
+that with dev_err():
 
-Two things:
-- I think we should simply use pm_runtime_force_suspend() /
-pm_runtime_force_resume() for the system sleep callbacks instead of
-implementing separate suspend/resume handling.
-- Rather than silently ignoring the error, I think it would be worth
-looking at the mhi_pm_suspend() implementation to understand what can
-be returned here and under which conditions the MHI device fails to
-suspend.
+  rockchip-pm-domain ...: power-domain: failed to get clk at index 1: -517
+  rockchip-pm-domain ...: failed to handle node power-domain: -517
 
-Regards,
-Loic
+once per probe attempt, and the second line twice for a nested domain.
+On an RK3588 board whose NPU domain clock appears late this is more than
+20 error lines before the domain finally probes, and the reason of the
+deferral is not recorded. Other failures are reported twice (once where
+they happen and once by the callers), or only by the callers, which name
+the node but not what failed: a missing pm_qos phandle and a pm_qos node
+without a regmap print nothing in rockchip_pm_add_one_domain(), and a
+failed clk_bulk_prepare() only has the message of the clk core, which
+names neither the device nor the domain.
 
->
-> Fixes: d3800c1dce24 ("bus: mhi: pci_generic: Add support for runtime PM")
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  drivers/bus/mhi/host/pci_generic.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/bus/mhi/host/pci_generic.c b/drivers/bus/mhi/host/pc=
-i_generic.c
-> index 7193a384cca4..b036fa6e06c4 100644
-> --- a/drivers/bus/mhi/host/pci_generic.c
-> +++ b/drivers/bus/mhi/host/pci_generic.c
-> @@ -1727,7 +1727,8 @@ static int __maybe_unused mhi_pci_runtime_resume(st=
-ruct device *dev)
->  static int  __maybe_unused mhi_pci_suspend(struct device *dev)
->  {
->         pm_runtime_disable(dev);
-> -       return mhi_pci_runtime_suspend(dev);
-> +       mhi_pci_runtime_suspend(dev);
-> +       return 0;
->  }
->
->  static int __maybe_unused mhi_pci_resume(struct device *dev)
-> --
-> 2.45.2
->
+Report every error once, where it happens, with dev_err_probe(), and
+drop the "failed to handle (subdomain) node" messages from the callers.
+A deferral is then quiet and keeps its specific reason in
+/sys/kernel/debug/devices_deferred, such as "failed to get clk at index
+1", and -ENOMEM, which the callers used to print, is quiet as well. The
+return values are unchanged, except that a failed
+syscon_node_to_regmap() for a pm_qos node now returns its own error
+instead of -ENODEV: it can be -EPROBE_DEFER (a syscon regmap that is
+not registered yet, or a syscon clock or hwlock that is not available
+yet), which must not turn into a probe failure.
+
+Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
+Fixes: 6be05b5ec161 ("soc: rockchip: power-domain: add support for sub-power domains")
+Suggested-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
+---
+ drivers/pmdomain/rockchip/pm-domains.c | 98 +++++++++++++++-------------------
+ 1 file changed, 43 insertions(+), 55 deletions(-)
+
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index 00c7e78f89b5..be077fb52f40 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -804,28 +804,22 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 	int error;
+ 
+ 	error = of_property_read_u32(node, "reg", &id);
+-	if (error) {
+-		dev_err(pmu->dev,
+-			"%pOFn: failed to retrieve domain id (reg): %d\n",
+-			node, error);
+-		return -EINVAL;
+-	}
++	if (error)
++		return dev_err_probe(pmu->dev, -EINVAL,
++				     "%pOFn: failed to retrieve domain id (reg)\n",
++				     node);
+ 
+-	if (id >= pmu->info->num_domains) {
+-		dev_err(pmu->dev, "%pOFn: invalid domain id %d\n",
+-			node, id);
+-		return -EINVAL;
+-	}
++	if (id >= pmu->info->num_domains)
++		return dev_err_probe(pmu->dev, -EINVAL,
++				     "%pOFn: invalid domain id %d\n", node, id);
+ 	/* RK3588 has domains with two parents (RKVDEC0/RKVDEC1) */
+ 	if (pmu->genpd_data.domains[id])
+ 		return 0;
+ 
+ 	pd_info = &pmu->info->domain_info[id];
+-	if (!pd_info->pwr_mask && !pd_info->req_mask) {
+-		dev_err(pmu->dev, "%pOFn: undefined domain id %d\n",
+-			node, id);
+-		return -EINVAL;
+-	}
++	if (!pd_info->pwr_mask && !pd_info->req_mask)
++		return dev_err_probe(pmu->dev, -EINVAL,
++				     "%pOFn: undefined domain id %d\n", node, id);
+ 
+ 	pd = devm_kzalloc_obj(pmu->dev, *pd);
+ 	if (!pd)
+@@ -849,17 +843,20 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 	for (i = 0; i < pd->num_clks; i++) {
+ 		pd->clks[i].clk = of_clk_get(node, i);
+ 		if (IS_ERR(pd->clks[i].clk)) {
+-			error = PTR_ERR(pd->clks[i].clk);
+-			dev_err(pmu->dev,
+-				"%pOFn: failed to get clk at index %d: %d\n",
+-				node, i, error);
++			error = dev_err_probe(pmu->dev,
++					      PTR_ERR(pd->clks[i].clk),
++					      "%pOFn: failed to get clk at index %d\n",
++					      node, i);
+ 			goto err_put_clocks;
+ 		}
+ 	}
+ 
+ 	error = clk_bulk_prepare(pd->num_clks, pd->clks);
+-	if (error)
++	if (error) {
++		dev_err_probe(pmu->dev, error,
++			      "%pOFn: failed to prepare clocks\n", node);
+ 		goto err_put_clocks;
++	}
+ 
+ 	pd->num_qos = of_count_phandle_with_args(node, "pm_qos",
+ 						 NULL);
+@@ -884,13 +881,18 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 		for (j = 0; j < pd->num_qos; j++) {
+ 			qos_node = of_parse_phandle(node, "pm_qos", j);
+ 			if (!qos_node) {
+-				error = -ENODEV;
++				error = dev_err_probe(pmu->dev, -ENODEV,
++						      "%pOFn: failed to get pm_qos %d\n",
++						      node, j);
+ 				goto err_unprepare_clocks;
+ 			}
+ 			pd->qos_regmap[j] = syscon_node_to_regmap(qos_node);
+ 			of_node_put(qos_node);
+ 			if (IS_ERR(pd->qos_regmap[j])) {
+-				error = -ENODEV;
++				error = dev_err_probe(pmu->dev,
++						      PTR_ERR(pd->qos_regmap[j]),
++						      "%pOFn: failed to get pm_qos %d regmap\n",
++						      node, j);
+ 				goto err_unprepare_clocks;
+ 			}
+ 		}
+@@ -1038,39 +1040,31 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
+ 		u32 idx;
+ 
+ 		error = of_property_read_u32(parent, "reg", &idx);
+-		if (error) {
+-			dev_err(pmu->dev,
+-				"%pOFn: failed to retrieve domain id (reg): %d\n",
+-				parent, error);
+-			return error;
+-		}
++		if (error)
++			return dev_err_probe(pmu->dev, error,
++					     "%pOFn: failed to retrieve domain id (reg)\n",
++					     parent);
+ 		parent_domain = pmu->genpd_data.domains[idx];
+ 
+ 		error = rockchip_pm_add_one_domain(pmu, np);
+-		if (error) {
+-			dev_err(pmu->dev, "failed to handle node %pOFn: %d\n",
+-				np, error);
++		if (error)
+ 			return error;
+-		}
+ 
+ 		error = of_property_read_u32(np, "reg", &idx);
+-		if (error) {
+-			dev_err(pmu->dev,
+-				"%pOFn: failed to retrieve domain id (reg): %d\n",
+-				np, error);
+-			return error;
+-		}
++		if (error)
++			return dev_err_probe(pmu->dev, error,
++					     "%pOFn: failed to retrieve domain id (reg)\n",
++					     np);
+ 		child_domain = pmu->genpd_data.domains[idx];
+ 
+ 		error = pm_genpd_add_subdomain(parent_domain, child_domain);
+-		if (error) {
+-			dev_err(pmu->dev, "%s failed to add subdomain %s: %d\n",
+-				parent_domain->name, child_domain->name, error);
+-			return error;
+-		} else {
+-			dev_dbg(pmu->dev, "%s add subdomain: %s\n",
+-				parent_domain->name, child_domain->name);
+-		}
++		if (error)
++			return dev_err_probe(pmu->dev, error,
++					     "%s failed to add subdomain %s\n",
++					     parent_domain->name, child_domain->name);
++
++		dev_dbg(pmu->dev, "%s add subdomain: %s\n",
++			parent_domain->name, child_domain->name);
+ 
+ 		error = rockchip_pm_add_subdomain(pmu, np);
+ 		if (error)
+@@ -1141,18 +1135,12 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 
+ 	for_each_available_child_of_node_scoped(np, node) {
+ 		error = rockchip_pm_add_one_domain(pmu, node);
+-		if (error) {
+-			dev_err(dev, "failed to handle node %pOFn: %d\n",
+-				node, error);
++		if (error)
+ 			goto err_out;
+-		}
+ 
+ 		error = rockchip_pm_add_subdomain(pmu, node);
+-		if (error < 0) {
+-			dev_err(dev, "failed to handle subdomain node %pOFn: %d\n",
+-				node, error);
++		if (error < 0)
+ 			goto err_out;
+-		}
+ 	}
+ 
+ 	if (error) {
+
+-- 
+2.55.0
+
+
