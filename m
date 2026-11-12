@@ -1,88 +1,92 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.182
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.52
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794511429;
-	b=saLWmcBWYH3pUa5gVzK5r/BtxrLSQOHx/UzOn4iNKZBnAUi0kGRdHmy6eD2pUy8dYqOt
-	 2jgKjMkNl5BWAAGZMrZnx0Lk69vtX60Jz6y2lO17vy9JbW+ZfDbvG+BNMiiT2aGkPBahi
-	 2VFjxUjPp2wuP2ZNa5VcavI2sDuAbLBjX2w4wfEh87sv/hrnIUCS27ynE0WRDQoV8DAZ3
-	 6W71+ndMqe2nxTIWc7sFP2grWKg31v2ygND3z+Q8v4Q1F177jy82EhVlOkHLmKGaDF5xg
-	 sVjP4d9NC2PT38/CzGPuDuM/1z+I8ywZeJ+X/dJlcI9B8chJ2ExumJn6tjxErFFuUHA==
+	t=1794511649;
+	b=lAC18/S1HQobV8VMOtJ2uQ4aG9Go7xACD+M4wDbuNiUEGspA6bjtmAEnYJWhpU7ZzYUF
+	 qWY7xLJta0JhRgKdaubj6o/gL7FMATC2+58wTkL72tnl0htsRd5K38vnVXA0Jx9chMVtO
+	 fesW/eR9QGH4SmjmBDNtI776Q0RcTHvarJEuHCBf0EM7/SwhXyflzqLZ2reEZvj8SpW8t
+	 mFSZN2MpRNBofbENISGr6+61LAIuDg79QbawS/uiSapv0n9YoV+uc9qPsaF/Npg605xnd
+	 +jQi41G8VDkUzin8Y/9vjR6B+yq93lHrEBW/qLOVPiJj2DWdmdqrAwTz4+VmOV2LLeA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794511429;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794511649;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=1/JyIzcdfP+G4sJFpml9e8PwacQNaxxoJDK/M4g8mt4=;
-	b=DiGiWfN8Igkuf8NzWveOrTZL1AEcFOymhV7rPwYDBn42TxDNGylBz+Uh2COrQyv7+U67
-	 KEDQ6KbcOCv8Y1VlLeT8qTvE/T43G9G+tOqHU5E8/3Jd6LFADDvM4UFYSm4zUa8xSt7aN
-	 b+MXHq825dLU3Pr9Ze2/ccTycM3LbKq1vEecjJLZEWO6BCop1f/As74FcUTLXVN+K0FLI
-	 W6SGRoRnPi1XikkzYzwPNlHrFY4DSY5HhavOrY2IA3A1xZFqRBhnNWrtwepzwNxx6nu4V
-	 duq9cP3Sqefww0Jh6bDszOBZvPp+M97uhN5wNywtg5zK98mndjNAi0imv6ONzMSfynA==
+	bh=WK76SX0nrcCBNXP9LIGbyNxGyxl1rLl1GLyCozITqPY=;
+	b=xkSUp1pMvKE2ZJati2YpOroKkk1N9C+rhsCQHrNxz4eBh5gBm+JxgBnMz60pznwy7vMO
+	 Jka7Bz5Lc/Bej01DfxILcP9k/5AYzi3J40yM2S+f7gJT1YZ9p1g6Y5CtiUHINrDtXeID4
+	 QcKCwNkn0ufo0SIxJBf663NQeOJkoUSkKnRgL2JFyJ5E7EZAZZXVJ4IMGi+lbnV3AwcAO
+	 +osvE59wzn6eL7cnxWYZhVHrBhPssI/QECBAu71PTm+sOFAphRwyJTARA6jFhlewNDJaN
+	 9V1L122zh01xHdmI/U36ceWqVHaX/3dXiNAC/Hla83JQJ3HzDvB5Rs+D43MxmuXDDlQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=dqtPs6UR;
-	arc=none smtp.remote-ip=74.125.82.182
-Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WG5ACeJA;
+	arc=none smtp.remote-ip=74.125.82.52
+Received: from mail-dl1-f52.google.com (mail-dl1-f52.google.com [74.125.82.52])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26AB8606A31C
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 19:23:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 26AB8606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB1EB606A321
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 19:27:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CB1EB606A321
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=dqtPs6UR
-Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-3720addb068so317815eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 11:23:48 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WG5ACeJA
+Received: by mail-dl1-f52.google.com with SMTP id a92af1059eb24-1b3beeaf6f9so99989c88.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 11:27:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1794511428; x=1795116228; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1794511648; x=1795116448; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=1/JyIzcdfP+G4sJFpml9e8PwacQNaxxoJDK/M4g8mt4=;
-        b=dqtPs6URbnv/BkUff0yIwzy+M78+2+4alrPlun7JdSzYxaYQg+KTetix6xPwBoY5vJ
-         pROgF5njY2aqLKISsTNewn50Pp6o5elVHmfN4tWXoQHqRK98Mat6LWExDjDnWHMYmXnD
-         wska+KlMBH/+JQT1fB5GWa3gU5y0SVwYxQbDk=
+        bh=WK76SX0nrcCBNXP9LIGbyNxGyxl1rLl1GLyCozITqPY=;
+        b=WG5ACeJAfsAqI/SNo4EQzMNroNtqgr9YtZsBgMQPriWcH3f0MVw5r34UoB/ls3CUCi
+         0AINdQ6584CpYLZwc6rxWtc2SykkFLUSRQ8b19368uBwvvXS3rvFLB6wIQXXm0MOuc75
+         RyXvi3kaJ2XdVHBEH3p8FNm6KFDkv60AA6ftw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794511428; x=1795116228;
+        d=1e100.net; s=20260707; t=1794511648; x=1795116448;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=1/JyIzcdfP+G4sJFpml9e8PwacQNaxxoJDK/M4g8mt4=;
-        b=TbYpFPyXU79iS/H1R5joOhHoeUGMnXBjMYtk6ydzqLslMwIshepTXr7G2Z7AUFpow1
-         el2ZaD3sHKKRn84JKvIYW8cy8rZbqSHgWOv7iMeuttkjKWuFKufEDQeztjsdTyFQwqao
-         3KN87b/QmXJBj2ki1MVXCRgmZ+MitgkjQDkgftG1gxHhRf4gZH2GIgSIgGHrAv3Z69/x
-         Y6YDFDFzhLuzwNWfeTX6DqrLeeKQ6ZhvqJcXjN/y2Gp8X9wL0YPRBFiagR8mLr/ZnD/o
-         o0TPf5W7Jmxgfz/YbiC3vhhTOJH/GS/qTSVCmmcvgBIsqf7ivi7Tr+keHrq0xg1AcPdu
-         jN8A==
-X-Forwarded-Encrypted: i=1; AL+hErFIKmOjCnxZy2IC9j4rujsFoAptM7Wx6TqBC0aGOwhVVCbuY3QyNNgIV790UnhUXE8xmRY4vdLhWA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z86rJo3rfJKt5fD6W4IR5uxdNbbIs4+5yLtlGN5yxMZq0IblcFE
-	DhEqUUl62y9331R8Y9vh6z5wEy6hrkrpsWcdUiEsmuXUhpPUErfG1lJxycnkzCoCUA==
-X-Gm-Gg: AYBFou07o5nI1q6DDV/EkVMEIC4WiMoPWvX4SlyfD/Ow9xXhMf+R1/tONqkjZnOVBCP
-	qAU+EvFmkGyhFyLBO0cmKe30T4kBgRvIWpMz0WF4DN6wbS5LVSCreumYb+DFXfQfkfvvYOaVX0O
-	sIxvu0sxvYg/xO6ce89XzsauK0uCBAgJv0mTSmAgMc9bEyuGtnaBRHYKLw5fpvGxWT6HKShWlcs
-	TxpPPeBrN9UeD61m+iDYYWxwiohF4R6KT0SieFeQ5uTupRdE8ygx6TGu5WWODJGWcDZaOxgVLr3
-	prsa6ApeCYGDbb5QpojdUB1bungAUMposHkS43s7uR3oVWe4/CkfQk5q0Do6C1kg56IsvHicYfg
-	vCszHu9gSQDzXb5l6rR7f0kYyE11C9as/lu/MIuSL0VKbtJoOvOEtVtq7ZqGrc6BlSgApRokJ03
-	f/UCLaM9xMVW33+EIr5hFcPFmtsIkmYprIa3Z93FpEWxORKnZNkNoSrn6moPE0Hpw/0oiUznJas
-	Py/+4ONjHYV2YGQzQFOAJzPjnt4RD8l5+llRpWZzE26doNFUINfsMjHUaRL8gJRLx3t2z//OOS7
-	XSHYokMqkvMbhgd3YHLrRodvu7jPUcdp5xe3WoJPLa5s/oBBdQAH/e58XQU74RIW+ueiEOQIMd1
-	BoyF3z4Oxqg2H3Q==
-X-Received: by 2002:a05:7300:fb8c:b0:376:a62b:ae09 with SMTP id 5a478bee46e88-3796676a1e8mr149029eec.16.1794511428235;
-        Thu, 12 Nov 2026 11:23:48 -0800 (PST)
+        bh=WK76SX0nrcCBNXP9LIGbyNxGyxl1rLl1GLyCozITqPY=;
+        b=mnqSX7uWkJUeK8FGc5oxX3cW9cGrjqvEE+bDxKF4dygnqZl6n5/KMWupfqZtpm7H4d
+         6rg7wa0t9iq1eX2tKHsp/YVu8u6eFsgrZ1MP8IxDh16pzNIIHJms2IUMws2gW7VTEWDb
+         HDK8HSpi9KU+IrVAZqz19El4w/gFtWK7FWTycxQn7qghRjBt98/TKjvreArUHLbMjsDm
+         3THCn4N/mXEEVk8wz5BSvPn2t9pKtrJV1h0slPC6G3cIuCgFx6Frf67RsDSkspRs1YeC
+         9ujywyYmMgMgnGjgJ41GDrAI/4mT61Rxz1W2z8vWMLmQU3QoGPjKPjJi+XdpXqbh8r34
+         61Cg==
+X-Forwarded-Encrypted: i=1; AL+hErFGazaBUotXa8DhQfxKypveUkUOZEpBaCbahWf+eYNHlS+2FtYPqeyx5B6bYwJnul6YNYM7B+Nxjw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+joi8i6PdDT1Mkxsr3JKmQcV3kE4hOYsWfclY8MzfKXDoe5Jpy
+	X8YcWq3TmnxqN+2+KgsDhRsV2PrbIG/us21CE8UlHsL+0tEXj8cVvyt49feHoAFMUw==
+X-Gm-Gg: AYBFou10R3c9LVflFGDGmxMEllfoWHTScUDTQABGOibr6NaOH3w7fW0Fr9AlgyHd52o
+	Wd0QaXgYupwA62QZNjC2PC3nz4txa69cxU/KKmc1fzsEbi/nyZ551Dsh/IH4gEDwWPSTaJM522x
+	/Zd2uVJThiGYTjbx2p1dUbR0ZsEnGX1OiBFUl7Q4L0ntAAnwktjy2VumdEYJon/j/kFCuLytaWV
+	sds1iBNCKsIOOnKMqAdtIxYEu+cCbRaOZuDdID+2iSy3sNuH/ggVqov7Nh8ULTd39JG76KcJVZN
+	ExfN0/esMfIB4RZSWJap+9Y1+uKvGA7YabbHvFhlXin7bneE+SoiqE/w3jsygqS3xZ7/ZE/M1nX
+	i1p7Nvq0mYD/rjEKf0lVjMhUwVTG+C3blbdqGsVVMXuKjYJdG+L0mas4zdz3DJb9Kq8k2fY8AUd
+	MtiW/oLG7JL99u9BWwIVwpm9sRj6t6u/D85i0wtT6nI642w7e0NZJsZz1vawUYnOrsmNjQjCqhB
+	g2e4nLlHlakSA9Uk72Ot/nwCP1GcbU/EpRYX/59GxD+sguD8EIyrEvJpIgv16/6YOn5vip65Qml
+	lAdlLgcRRL6+uDuK/Q2l5BPoNs4nGiewONUnlXSr2f4ZqqXhnEBHqUF6YFdGkDDsmNyalje+0M7
+	dt/adwlYWywE0fjs=
+X-Received: by 2002:a05:7022:3704:b0:189:d6bf:7eaa with SMTP id a92af1059eb24-1b5030d404cmr428948c88.16.1794511647718;
+        Thu, 12 Nov 2026 11:27:27 -0800 (PST)
 Received: from localhost ([2a00:79e0:2e7c:8:5446:563c:ac92:43a8])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3795591f4f8sm491585eec.13.2026.11.12.11.23.47
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1b5031bc518sm886774c88.15.2026.11.12.11.27.26
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 Nov 2026 11:23:47 -0800 (PST)
+        Thu, 12 Nov 2026 11:27:27 -0800 (PST)
 From: Brian Norris <briannorris@chromium.org>
-To: Mark Brown <broonie@kernel.org>
-Cc: Brian Norris <briannorris@chromium.org>,
+To: Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
+	Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>,
+	"Bryan O'Donoghue" <bod@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: linux-media@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-spi@vger.kernel.org
-Subject: [RESEND PATCH] spi: ti-qspi: Discard pm_runtime_put_autosuspend() return value
-Date: Thu, 12 Nov 2026 11:23:34 -0800
-Message-ID: <20261112112334.RESEND.1.Ia678a25bddd5942c7f3e11ff0eb807754d7e2aa2@changeid>
+	Brian Norris <briannorris@chromium.org>
+Subject: [PATCH] media: venus: Discard pm_runtime_put_autosuspend() return values
+Date: Thu, 12 Nov 2026 11:26:50 -0800
+Message-ID: <20261112112650.1.I574fc3def9965f603755a968ae88309aafdfa285@changeid>
 X-Mailer: git-send-email 2.56.0.611.g1030f0b940-goog
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -95,8 +99,8 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Failing SPI setup due to pm_runtime_put_autosuspend() returning a
-negative value is not particularly useful.
+Propagating the pm_runtime_put_autosuspend() return value to callers is
+not particularly useful.
 
 Returning an error code from pm_runtime_put_autosuspend() merely means
 that it has not queued up a timer or work item to check whether or not
@@ -104,8 +108,8 @@ the device can be suspended and there are many perfectly valid
 situations in which that can happen, like after writing "on" to the
 device's runtime PM "control" attribute in sysfs for one example.
 
-Accordingly, update ti_qspi_setup() to simply discard the return value
-of pm_runtime_put_autosuspend().
+Accordingly, update the Venus vdec and venc drivers to simply discard
+the return value of pm_runtime_put_autosuspend().
 
 This will facilitate a planned change of the
 pm_runtime_put_autosuspend() return type to void in the future, similar
@@ -115,31 +119,93 @@ type to void").
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
 This patch was originally sent as part of a larger series here:
-https://lore.kernel.org/all/20261006161337.6.Ia678a25bddd5942c7f3e11ff0eb807754d7e2aa2@changeid/
+https://lore.kernel.org/all/20261006161337.4.I574fc3def9965f603755a968ae88309aafdfa285@changeid/
 
 I expect it should be merged by subsystem maintainers, and we can make
 the return type change later.
 
- drivers/spi/spi-ti-qspi.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/media/platform/qcom/venus/vdec.c | 10 ++++------
+ drivers/media/platform/qcom/venus/venc.c | 10 ++++------
+ 2 files changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/spi/spi-ti-qspi.c b/drivers/spi/spi-ti-qspi.c
-index 091a8b8842f5..c21b8adbbfc6 100644
---- a/drivers/spi/spi-ti-qspi.c
-+++ b/drivers/spi/spi-ti-qspi.c
-@@ -158,11 +158,7 @@ static int ti_qspi_setup(struct spi_device *spi)
- 		return ret;
+diff --git a/drivers/media/platform/qcom/venus/vdec.c b/drivers/media/platform/qcom/venus/vdec.c
+index 6a43ea191da1..35c1b6ec1f9f 100644
+--- a/drivers/media/platform/qcom/venus/vdec.c
++++ b/drivers/media/platform/qcom/venus/vdec.c
+@@ -644,12 +644,12 @@ static int vdec_pm_put(struct venus_inst *inst, bool autosuspend)
+ {
+ 	struct venus_core *core = inst->core;
+ 	struct device *dev = core->dev_dec;
+-	int ret;
++	int ret = 0;
+ 
+ 	mutex_lock(&core->pm_lock);
+ 
+ 	if (autosuspend)
+-		ret = pm_runtime_put_autosuspend(dev);
++		pm_runtime_put_autosuspend(dev);
+ 	else
+ 		ret = pm_runtime_put_sync(dev);
+ 
+@@ -671,7 +671,7 @@ static int vdec_pm_get_put(struct venus_inst *inst)
+ 		if (ret < 0)
+ 			goto error;
+ 
+-		ret = pm_runtime_put_autosuspend(dev);
++		pm_runtime_put_autosuspend(dev);
  	}
  
--	ret = pm_runtime_put_autosuspend(qspi->dev);
--	if (ret < 0) {
--		dev_err(qspi->dev, "pm_runtime_put_autosuspend() failed\n");
--		return ret;
--	}
-+	pm_runtime_put_autosuspend(qspi->dev);
+ error:
+@@ -1200,9 +1200,7 @@ static int vdec_start_streaming(struct vb2_queue *q, unsigned int count)
+ 		if (ret)
+ 			goto put_power;
  
- 	return 0;
- }
+-		ret = vdec_pm_put(inst, true);
+-		if (ret)
+-			goto error;
++		vdec_pm_put(inst, true);
+ 
+ 		ret = vdec_start_output(inst);
+ 	}
+diff --git a/drivers/media/platform/qcom/venus/venc.c b/drivers/media/platform/qcom/venus/venc.c
+index 79acf7c1ec9a..3c7c24dd7159 100644
+--- a/drivers/media/platform/qcom/venus/venc.c
++++ b/drivers/media/platform/qcom/venus/venc.c
+@@ -617,12 +617,12 @@ static int venc_pm_put(struct venus_inst *inst, bool autosuspend)
+ {
+ 	struct venus_core *core = inst->core;
+ 	struct device *dev = core->dev_enc;
+-	int ret;
++	int ret = 0;
+ 
+ 	mutex_lock(&core->pm_lock);
+ 
+ 	if (autosuspend)
+-		ret = pm_runtime_put_autosuspend(dev);
++		pm_runtime_put_autosuspend(dev);
+ 	else
+ 		ret = pm_runtime_put_sync(dev);
+ 
+@@ -644,7 +644,7 @@ static int venc_pm_get_put(struct venus_inst *inst)
+ 		if (ret < 0)
+ 			goto error;
+ 
+-		ret = pm_runtime_put_autosuspend(dev);
++		pm_runtime_put_autosuspend(dev);
+ 	}
+ 
+ error:
+@@ -1275,9 +1275,7 @@ static int venc_start_streaming(struct vb2_queue *q, unsigned int count)
+ 	if (ret)
+ 		goto put_power;
+ 
+-	ret = venc_pm_put(inst, true);
+-	if (ret)
+-		goto error;
++	venc_pm_put(inst, true);
+ 
+ 	ret = venc_set_properties(inst);
+ 	if (ret)
 -- 
 2.56.0.611.g1030f0b940-goog
 
