@@ -1,80 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.190
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.205
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794503376;
-	b=FVAoUN3B0DjB1jOPsfm9LKVHZUhH8FJJQeyBdF1jsqO1pcnUSubwhNNs8ZITYXCAUPVr
-	 +xE9PKtyF/PyNaWQGZrSKCuntpUOYLlxyhJ+AiwUSqC2/P5MpPbwDATxM5G0Ag1WICqb+
-	 +WvlK4EoeU8hqikNAYzsgkz1r5wi2MTwNTGykW3j5Qy3xxvvDFsRtV7GrjvA4HzHGOKp/
-	 xHFaH/7R/aKaTPxWqdKvSLO1ClQT5cPMmo7HZNPo+FAioh+V3EC67vP5WidIOdO3L6DSQ
-	 BfR9VUPvpreEjVQyttYVwQ7E0OYo4+5OOhMrePt4047A+/h6O2EjnTyuJEQQ+1k4WhQ==
+	t=1794503389;
+	b=t3my/KxayousmNNWEhgpVqLBMUfWY2g6TJu83kddX9g09tpScerMfRHxin/YX6WTahkI
+	 ByFMHJqpsBwWGHk+Cc8SvRQhJiA4PLgg2TD3JJCUShbzH3aeX5juZ663LIaOZ9IXePpgt
+	 o3MMekhnpnSKFXbd8y03yTglWeMKEHwnro9ghYWdzRypVS4OqCoyw1KbC0ET3D1FdiUMP
+	 lmow6Ci8CT9VFZfC0i4vaWiJ0AuvgO++x8ww668XwzH7tXmG3XOk9RqQP8FTmYxiwgzKE
+	 MWgtSkRhid3eQXaT4aQF9RaIZWYm1JceC6qCkzkBflB/HWDDpXSFNBjEh2r2ChE8xUQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794503376;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794503389;
 	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
 	 X-Mizu-Trace-ID:X-Migadu-Flow:From:To:Cc:Subject:Date:Message-ID:
 	 X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=KP1JdI3LAGwl+0wH2rIIsGhgKcmcgw/sG8waMUn76dY=;
-	b=Nw5Lwst78xsAnGmvaob1gG+PuN/+ahdfGXlujN5VJVd9AtFEk0DPB3BXZpKL6j+t9IjB
-	 NYYHPowxXQLHDuBIKczcMRUtI4gwW3RWb4MNhs50tsCj6TOZlSj1E08GQZdlc6MSNzy3e
-	 2cizVX8XBmra6xevd6Pd/GjDl3jatEbl1NZ+AFGaqpCm1H/FOpxHe/1p0jzaowuXA3S6j
-	 X2WQmx27fzMvpTwiEne2yfnjZqtmrgjg3n9/v6uMwryDYUUPPOlgUC8pT2xer7onv0M7f
-	 Z2EAD6aeXyyelj1KX16lV/BGbyYNPjcZdcnttsI/1t/0WF0P4c/1R7yluau0FpFe90w==
+	bh=BGgWKkrRQl2lSND/U2uqoO60aN3FWXpk1m/u2Tb52v0=;
+	b=Tmjp+VNmqEqVTLjRyIA84PXB1XqzIzEecdm7xjvmTe7pbONBZqnyNYP82UN73N/gWvb1
+	 JfDD+Nk7gJg0Kd53meWqBEJ7lOU4+O6cneN8DJexO2TF6tc0XpggiOZl0O+bleZVHnNIG
+	 qJWEf6LJYxtPa/SAwiOWbVgEF/gtH0w5TzhB/cWX2jxjlBzyfNs/gI4bZl7mbRZlNnU3N
+	 iXLvZgeU4kzRFwPgSyEjfRBrM9Gpv2GXjQ5w9WcO0kmWPB8eTDZHGPm+L5xQe0dhlwN/5
+	 /PXX2bVZNKHKHGhM3hcKP25p0Vi1h1OBYsu5aSaubp22R2Kj6PFlGKXMsbd6cgOoQ8A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=packett.cool;
 	spf=pass smtp.mailfrom=packett.cool;
-	dkim=pass header.d=packett.cool header.i=@packett.cool header.a=rsa-sha256 header.s=key1 header.b=F7eXa39Q;
-	arc=none smtp.remote-ip=95.215.58.190
-Received: from mta1.migadu.com (out-190.mta1.migadu.com [95.215.58.190])
+	dkim=pass header.d=packett.cool header.i=@packett.cool header.a=rsa-sha256 header.s=key1 header.b=pYPsXGqL;
+	arc=none smtp.remote-ip=95.215.58.205
+Received: from mta1.migadu.com (out-205.mta1.migadu.com [95.215.58.205])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDD18606A89B
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 17:09:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EDD18606A89B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DF40606A88B
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 17:09:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8DF40606A88B
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=packett.cool
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=packett.cool header.i=@packett.cool header.a=rsa-sha256 header.s=key1 header.b=F7eXa39Q
+	dkim=pass (2048-bit key, unprotected) header.d=packett.cool header.i=@packett.cool header.a=rsa-sha256 header.s=key1 header.b=pYPsXGqL
 X-Envelope-To: linux-pm@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=rHBbY6wUiRXUSIKaXV3BHpBvZUXlc1KXuZaN1eMIdp4=;
+DKIM-Signature: a=rsa-sha256; bh=qPsNvOqpGJ3pwA3WfkNEk+1ZJzUEL1h3NDg+2/5l8xs=;
  c=simple/simple; d=packett.cool;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794503374; v=1; x=1795108174;
- b=F7eXa39QL7GO9Vl2RceT7cGbxLQDZn6LP5mOSTmicdPRyEGQO6TxhvJFh/zlDviKZrDob0k7
- M8wBrXzGlXpx0UFORAGxdjc242BuMTPFoq9XPiIIANfQBI7xZLbd4D+Hi/dwzLc0Gi0DynKrcj7
- fdwIFFYP9/OJeRK3RnodAzHrt0DJ2N9oL0BE1b34kLYtH39zmfBArC34uqAL+djSK389RFD1Ky8
- 9DhJPkQsvEKnQCFe3hzQ1ZjwyetLxgncuLV23s9a1kLu963ravg87mXTaOJbKjuYQL8Z670/+xD
- 4pPYESEKNwyKHhCBeJvwXWyQd8BtC5bybi2TQv0M1WMUQ==
+ t=1794503386; v=1; x=1795108186;
+ b=pYPsXGqL45Wq3wn8jbxvE4KpZ24WxNKrk0W6akWqsfsjl7D4QrRL3+sFHXdih63yAxLJ8jBH
+ m7F4y8htTxmp8KggwazeJmY7eFoJ7h8AY6bATXE7P6j73ohQYQJYLwjmzVpcY4b0FBrev8f+lKY
+ bDh6xP2+qAp5KKqbbZXI0BhIBAjROVyBj0P2wyfh2XANGO2DV2JRiVySwMCe556nPjofW0jzNNO
+ C3skSyunXr3EXExiH9GWYgYEXwiHA2/oH5T6gRH+J8GCWwjRe4Kfl3hsi4oiNuAjn0VIa0nNaGW
+ vtNKt+CbzYRbPrM7VCAHxdXPs4+P3C0cRH3aXNic4Q3Ww==
 X-Envelope-To: linux-pm@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id be20e513b24f0ae8;
-	Thu, 12 Nov 2026 17:09:33 +0000
-X-Mizu-Trace-ID: be20e513b24f0ae8
+Received: by smtp.migadu.com with ESMTPS id 3082e74ed36220db;
+	Thu, 12 Nov 2026 17:09:46 +0000
+X-Mizu-Trace-ID: 3082e74ed36220db
 X-Migadu-Flow: FLOW_OUT
 From: Val Packett <val@packett.cool>
-To: Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>
+To: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
 Cc: Val Packett <val@packett.cool>,
 	Marc Lainez <marc.lainez@gmail.com>,
 	Luca Weiss <luca.weiss@fairphone.com>,
 	=?UTF-8?q?Barnab=C3=A1s=20Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>,
 	Danila Tikhonov <danila@jiaxyga.com>,
 	Sebastian Reichel <sre@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
 	linux-arm-msm@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	phone-devel@vger.kernel.org,
 	linux-iio@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] iio: adc: qcom-spmi-adc5: Add ADC5_BAT_THERM_100K_PU
-Date: Thu, 12 Nov 2026 14:07:29 -0300
-Message-ID: <20261112170841.2189322-4-val@packett.cool>
+Subject: [PATCH 4/5] arm64: dts: qcom: pmi632: Add missing bat_therm ADC channel
+Date: Thu, 12 Nov 2026 14:07:30 -0300
+Message-ID: <20261112170841.2189322-5-val@packett.cool>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261112170841.2189322-1-val@packett.cool>
 References: <20261112170841.2189322-1-val@packett.cool>
@@ -89,27 +89,32 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Even though it existed in bindings for the longest time,
-ADC5_BAT_THERM_100K_PU was never assigned in the driver. Do so.
+Add the temperature channel that is used with the battery fuel gauge.
 
 Signed-off-by: Val Packett <val@packett.cool>
 ---
- drivers/iio/adc/qcom-spmi-adc5.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm64/boot/dts/qcom/pmi632.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
-index d57ba8526e0c..c27ff89429f5 100644
---- a/drivers/iio/adc/qcom-spmi-adc5.c
-+++ b/drivers/iio/adc/qcom-spmi-adc5.c
-@@ -542,6 +542,8 @@ static const struct adc5_channels adc5_chans_pmic[ADC5_MAX_CHANNEL] = {
- 					SCALE_HW_CALIB_DEFAULT)
- 	[ADC5_XO_THERM_100K_PU]	= ADC5_CHAN_TEMP("xo_therm", 0,
- 					SCALE_HW_CALIB_XOTHERM)
-+	[ADC5_BAT_THERM_100K_PU]	= ADC5_CHAN_TEMP("bat_therm", 0,
-+					SCALE_HW_CALIB_THERM_100K_PULLUP)
- 	[ADC5_BAT_ID_100K_PU]	= ADC5_CHAN_TEMP("bat_id", 0,
- 					SCALE_HW_CALIB_DEFAULT)
- 	[ADC5_AMUX_THM1_100K_PU] = ADC5_CHAN_TEMP("amux_thm1_100k_pu", 0,
+diff --git a/arch/arm64/boot/dts/qcom/pmi632.dtsi b/arch/arm64/boot/dts/qcom/pmi632.dtsi
+index ab850050eb22..82b5d7b7bb5b 100644
+--- a/arch/arm64/boot/dts/qcom/pmi632.dtsi
++++ b/arch/arm64/boot/dts/qcom/pmi632.dtsi
+@@ -124,6 +124,14 @@ channel@9 {
+ 				label = "chg_temp";
+ 			};
+ 
++			channel@4a {
++				reg = <ADC5_BAT_THERM_100K_PU>;
++				qcom,hw-settle-time = <200>;
++				qcom,pre-scaling = <1 1>;
++				qcom,ratiometric;
++				label = "bat_therm";
++			};
++
+ 			channel@4b {
+ 				reg = <ADC5_BAT_ID_100K_PU>;
+ 				qcom,hw-settle-time = <200>;
 -- 
 2.56.0
 
