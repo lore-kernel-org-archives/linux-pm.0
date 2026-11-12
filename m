@@ -1,65 +1,68 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794479579;
-	b=nd8BYtgYFhedaZ86r6JDcU6SMmlmjQhrRxfDsY7kYgbhPn7exNilaF9LWdN5BaLUJU9R
-	 oEFQUhY6C2O6G8tZxIvoponZLhEc9ecY+Oaul4ZYUmyf4DuM6EGvfGCd29s6qR9i3eLX9
-	 efqk/cFDH8LUbkYxbyoberJ6IA5S4gvIVGB0Tf3X3Sh1uNpwfVSHezd8kXEhyMQKMZXq9
-	 CVWXeEZnFdTmWxqz4R33tmu8PhGawGgjnTZVDevENNg539fBXdcZb0A6QgaaJd2DedxQ6
-	 S6r+t5jNXjjyteuObNDNgQxGs9iy/FZLTDV7QRECO4yjfuMNgAGwfpCAlTz8usyPKdA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794479579;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:
-	 Content-Transfer-Encoding:In-Reply-To;
-	bh=7asrFaHTzZllDDUNciX3JSRX5gXUC5F4fBVc9Jkwf0E=;
-	b=0UJdqs4GhwfSDAoko7yE4+1jniLZacCE97EDZPG6OXzvnlFDRHItjcKT7s7GcCJkPLvf
-	 dFlCK+gmuB+gAIcq/rLIEK9uCW/xWPsftRWSnKg7oU/TnmL2nY+L3DYdCx7V5TMiZ+rDK
-	 p+PvP4dp5MRZ5bVVr8rBy7yj2XMS7MuO0q0yazR8hI767tKNeLGrKLsOdTfjuata0xqm9
-	 yI3XNLVhb2M4o4ydlMxRW25s8Bd8U0WSwk/O3RYl0k4pG/fDDFsAvHS77i7rmFaHC7DBU
-	 rEDfZ+eQmMvWS1MxCyNZGB45XOUbs75/p/xdD9K/DARy0t1BTiJCN7lJbKtrn0SF9ag==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SGb2yDtZ;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.12
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794480808;
+	b=pHH9o1v71oBXEeonJs6TfHSqN82xdCKhG9PAptudJSOcAdbj/tJXZg4jdsqLd1sw9gLe
+	 HtICrz9wOfZsML2m1a2IrQDkLwkusuM5hhZQkMJxz6d8pJMWrkSQZv74284JYiCrxEwmG
+	 SUcxaEHjxf9ba2eT5A96G5A6X8pnsTa5c06wLAqFrxemAxyc/jHWWTYlAxVkHLb1HLoXQ
+	 03PmX7UgDkME3m791H6mHoLfepiLIwVh/kFM+bbFupSa3zTzTUstDx2LYykuLnxgkvprs
+	 mNBMAGsnxkIPNE4J+E3JL8GTH2ZcFagC552kzFuDL4J9igw3SdTa2p6oqQEBOVY2/1g==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794480808;
+	h=DMARC-Filter:DKIM-Signature:Received:Date:From:To:Cc:Subject:
+	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
+	 In-Reply-To:X-Zoho-Virus-Status:X-Zoho-AV-Stamp:X-ZohoMailClient;
+	bh=tLqa2FMlsnasCoo7Flq+ndrdNn8MeKqOwSnsMbw1pOY=;
+	b=Wxenffg9eYSwmpR/yVOatTgt/r9DaSmwyshBYaQgiQ4OuWKCpKl7LmdYd2wnV1dYC5v4
+	 seMis7YBeU9JYcTB4JR7UqniA58esEcRjsCKDskcMRnQWrxRBDepH2ov3ODf7TWjFW2Oi
+	 wekYXdTqBE0lwgAGH3UkHZpetiXpcfa/SaR3HW2gJbXf7OQuP1kS6dt2ICdHmW/uvT2Sh
+	 QMlmNphw22Et0CHdwDsL1/S/IilW/eAUueTJzeS+02Gjl4ObSvwrC/zdHDTdmgipk+DqN
+	 sxIUD+CExfkkCC5cvXIYrmMbFU8jmB2qee5sx2vpFkn6Pd74kVBJoYGyf6nMUs2d0GA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=ziyao.cc;
+	spf=pass smtp.mailfrom=ziyao.cc;
+	dkim=pass header.d=ziyao.cc header.i=@ziyao.cc header.a=rsa-sha256 header.s=zmail header.b=gTIN1Kf1;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.12
+Received: from sender5-op-o12.zoho.com (sender5-op-o12.zoho.com [165.173.182.12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CF86606A31C;
-	Thu, 12 Nov 2026 10:32:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CBED606A323;
+	Thu, 12 Nov 2026 10:53:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2CBED606A323
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ziyao.cc
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ziyao.cc
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SGb2yDtZ
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1E9D1F00A05;
-	Thu, 12 Nov 2026 10:32:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794479579;
-	bh=7asrFaHTzZllDDUNciX3JSRX5gXUC5F4fBVc9Jkwf0E=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=SGb2yDtZZqWFVT0guABW2rgY6yde91AMAt54K9zUMc6UNmu7S/V4fgWu69fKsfyPV
-	 7Es8RO7tpcRecCeER9guaREA7sPOuG3WBLnorqOoYS6/o/S+jqXwzN2exs1B8sA3N/
-	 ZF4JGs3m2/skadvs75aHgR/H6ByuPWU7sQ1BdFy1mJYih50uf3Zp+ccuiPVeVwtDCA
-	 bR7Q5WXN7kDBxMaW3Jvayc6JUP0xbthJyaw/KGsHM7Svirv2yXY2jesLK5/Jg9PZyO
-	 7OsRdD1RmzyyESGfks3oK20chkDsepDNhUJxWgPddg2c6NE2aQVDzmY1ONk0PsuEG1
-	 X2DZOwBkjArtw==
-Date: Thu, 12 Nov 2026 16:02:46 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Val Packett <val@packett.cool>
-Cc: Loic Poulain <loic.poulain@oss.qualcomm.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Wei Deng <wei.deng@oss.qualcomm.com>
-Subject: Re: [PATCH v7 5/8] Bluetooth: hci_qca: Support QCA2066 on M.2
- connector via pwrseq
-Message-ID: <avWVnjF86FLFvfOC@debian>
-References: <20261005-monza-wireless-v7-0-5a6de7662dcb@oss.qualcomm.com>
- <20261005-monza-wireless-v7-5-5a6de7662dcb@oss.qualcomm.com>
- <bc7730e4-8b47-4c2b-84ef-277749f2aab8@packett.cool>
- <CAFEp6-3Mt-CCJEz=RAJUh6pxH-Ssgkqfx3QQfyzvS9HwzFp9QQ@mail.gmail.com>
- <906ebec9-de19-4a1e-9472-dcf8529fa232@packett.cool>
+	dkim=pass (1024-bit key) header.d=ziyao.cc header.i=@ziyao.cc header.a=rsa-sha256 header.s=zmail header.b=gTIN1Kf1
+ARC-Seal: i=1; a=rsa-sha256; t=1794480779; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=BTHypljfRAlk3PgTfQxskdtuHNyT2eHhwDSiPxWGcIxxpp5EKRnJ9l+nwrKju1zF32gR5z4S+iYv6e0UOFFOJVukfdb78fs5wDpiizkF3aMI9YuQIHDRiOUHu1oYn4wFVQnzBD0whvsnuWpeVq2kHHZ9mEQOh1x+KGICvTM65bk=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1794480779; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=tLqa2FMlsnasCoo7Flq+ndrdNn8MeKqOwSnsMbw1pOY=; 
+	b=CH5rP2keafftl/e1MuUB8BRJ33woDqE+wNT/OnRtWXmlfi0E5Gt6anyAJ6nxg0Pe62OJ1t3oTh+JITovKbcfT3eeIQ8BnYkBps3ThTSFFnNzdFJ/lqE1rf6w7Ex/JT7PWP1aGzNJCIweSHxFLYC62xkN/gXRllCOXFyHQxBK+sg=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=ziyao.cc;
+	spf=pass  smtp.mailfrom=me@ziyao.cc;
+	dmarc=pass header.from=<me@ziyao.cc>
+DKIM-Signature: a=rsa-sha256; b=gTIN1Kf1OSDmSisFgXIGp5nzx0VF2FjdVAGWgze/GM97/5ObZWtXtixYOhOLTr5oOTMCHDXorlaH4phnj1Ijw0LsTX2uCTBCgF0TGLh3mNdZJPOpthgOr3pRIIJpI9Y9+OzZrIUx0AlL3cHOa6dmeFr8HOhPr59+d/J2v/9qirE=; c=relaxed/relaxed; s=zmail; d=ziyao.cc; v=1; bh=tLqa2FMlsnasCoo7Flq+ndrdNn8MeKqOwSnsMbw1pOY=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1794480778136240.92925563025153;
+	Thu, 12 Nov 2026 02:52:58 -0800 (PST)
+Date: Thu, 12 Nov 2026 10:52:43 +0000
+From: Yao Zi <me@ziyao.cc>
+To: aiyengar1990@gmail.com, Ulf Hansson <ulfh@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Shawn Lin <shawn.lin@rock-chips.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	Kevin Hilman <khilman@linaro.org>, Caesar Wang <wxt@rock-chips.com>,
+	Elaine Zhang <zhangqing@rock-chips.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Yao Zi <me@ziyao.cc>, Igor Pecovnik <igor@armbian.com>
+Subject: Re: [PATCH v2 2/2] pmdomain: rockchip: report domain errors once,
+ with dev_err_probe()
+Message-ID: <avWae91pfLv9vyUv@pie>
+References: <20261112-pmdomain-rockchip-v2-0-5cd942a23df7@gmail.com>
+ <20261112-pmdomain-rockchip-v2-2-5cd942a23df7@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,95 +72,96 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <906ebec9-de19-4a1e-9472-dcf8529fa232@packett.cool>
+In-Reply-To: <20261112-pmdomain-rockchip-v2-2-5cd942a23df7@gmail.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/294.473.96
+X-ZohoMailClient: External
 
-On Mon, Oct 12, 2026 at 04:10:26PM -0300, Val Packett wrote:
+On Thu, Nov 12, 2026 at 08:23:30AM +0000, Arun Iyengar via B4 Relay wrote:
+> From: Arun Iyengar <aiyengar1990@gmail.com>
 > 
-> On 10/9/26 1:40 PM, Loic Poulain wrote:
-> > Hi Val,
-> > 
-> > On Thu, Oct 8, 2026 at 12:58 AM Val Packett <val@packett.cool> wrote:
-> > > 
-> > > On 10/5/26 9:21 AM, Loic Poulain wrote:
-> > > > For QCA2066 (and other QCA chips) on M.2 connectors, the UART enable is
-> > > > controlled by the W_DISABLE2# signal managed by the pcie-m2 power sequencer
-> > > > rather than a dedicated BT enable GPIO.
-> > > > 
-> > > > When the serdev controller has an OF graph (indicating it is connected to
-> > > > an M.2 connector), acquire the 'uart' pwrseq target from the connector's
-> > > > power sequencer and use it to control BT power instead of the bt-enable
-> > > > GPIO. This is factored out into qca_serdev_get_m2_pwrseq().
-> > > > 
-> > > > Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
-> > > > Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> > > > Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> > > > Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
-> > > > ---
-> > > >    drivers/bluetooth/hci_qca.c | 47 +++++++++++++++++++++++++++++++++++----------
-> > > >    1 file changed, 37 insertions(+), 10 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-> > > > index 1d27ff98034ba99d0783e48db5c605f3b31117ea..b6ec1a57248e2cf4bd138898ffc5cad45b1b4a8b 100644
-> > > > --- a/drivers/bluetooth/hci_qca.c
-> > > > +++ b/drivers/bluetooth/hci_qca.c
-> > > > @@ -1875,6 +1875,9 @@ static int qca_power_on(struct hci_dev *hdev)
-> > > >                        /* Controller needs time to bootup. */
-> > > >                        msleep(150);
-> > > >                }
-> > > > +
-> > > > +             if (qcadev->bt_power.pwrseq)
-> > > > +                     pwrseq_power_on(qcadev->bt_power.pwrseq);
-> > > >        }
-> > > > 
-> > > >        clear_bit(QCA_BT_OFF, &qca->flags);
-> > > > @@ -2396,6 +2399,34 @@ static int qca_init_regulators(struct qca_power *qca,
-> > > >        return 0;
-> > > >    }
-> > > > 
-> > > > +static void qca_serdev_put_pwrseq(void *data)
-> > > > +{
-> > > > +     pwrseq_put(data);
-> > > > +}
-> > > > +
-> > > > +static int qca_serdev_get_m2_pwrseq(struct qca_serdev *qcadev)
-> > > > +{
-> > > > +     struct serdev_device *serdev = qcadev->serdev_hu.serdev;
-> > > > +     struct pwrseq_desc *pwrseq;
-> > > > +
-> > > > +     if (!of_graph_is_present(dev_of_node(&serdev->ctrl->dev)))
-> > > > +             return 0;
-> > > Seems like of_graph_is_present does *not* return false for the existing
-> > > (non-connector) setup which is currently used in all the laptop device
-> > > trees..
-> > If I understand the issue correctly, this can only occur when a UART
-> > 'port' is left unconnected, in which case the failure is legitimate.
-> > The laptop device trees should be fixed accordingly, either by
-> > connecting the port to the corresponding M.2 device or by using the
-> > usual Bluetooth UART child-node approach. I don't see this issue in
-> > mainline.
+> When a power domain clock is not available yet,
+> rockchip_pm_add_one_domain() returns -EPROBE_DEFER, and both it and its
+> callers rockchip_pm_domain_probe() and rockchip_pm_add_subdomain() print
+> that with dev_err():
 > 
-> So it looks like this is because commit 014501d141ed ("arm64: dts: qcom:
-> hamoa: Add graph port/endpoint anchors to pcie4_port0 and uart14")
-> unconditionally added the uart14 endpoint to hamoa.dtsi itself in
-> preparation for the future transition to proper M.2 descriptions.
+>   rockchip-pm-domain ...: power-domain: failed to get clk at index 1: -517
+>   rockchip-pm-domain ...: failed to handle node power-domain: -517
 > 
-> The laptop dts'es themselves still have the older child-node description for
-> bluetooth, with a dummy port { uart14_ep: endpoint {}; }; that's not used
-> yet.
+> once per probe attempt, and the second line twice for a nested domain.
+> On an RK3588 board whose NPU domain clock appears late this is more than
+> 20 error lines before the domain finally probes, and the reason of the
+> deferral is not recorded. Other failures are reported twice (once where
+> they happen and once by the callers), or only by the callers, which name
+> the node but not what failed: a missing pm_qos phandle and a pm_qos node
+> without a regmap print nothing in rockchip_pm_add_one_domain(), and a
+> failed clk_bulk_prepare() only has the message of the clk core, which
+> names neither the device nor the domain.
 > 
-> Could the check be extended to actually verify that there's actually
-> something the graph endpoint is connected to? Or should that commit be
-> reverted?
+> Report every error once, where it happens, with dev_err_probe(), and
+> drop the "failed to handle (subdomain) node" messages from the callers.
+> A deferral is then quiet and keeps its specific reason in
+> /sys/kernel/debug/devices_deferred, such as "failed to get clk at index
+> 1", and -ENOMEM, which the callers used to print, is quiet as well. The
+> return values are unchanged, except that a failed
+> syscon_node_to_regmap() for a pm_qos node now returns its own error
+> instead of -ENODEV: it can be -EPROBE_DEFER (a syscon regmap that is
+> not registered yet, or a syscon clock or hwlock that is not available
+> yet), which must not turn into a probe failure.
 > 
+> Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
+> Fixes: 6be05b5ec161 ("soc: rockchip: power-domain: add support for sub-power domains")
+> Suggested-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
+> ---
+>  drivers/pmdomain/rockchip/pm-domains.c | 98 +++++++++++++++-------------------
+>  1 file changed, 43 insertions(+), 55 deletions(-)
+> 
+> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+> index 00c7e78f89b5..be077fb52f40 100644
+> --- a/drivers/pmdomain/rockchip/pm-domains.c
+> +++ b/drivers/pmdomain/rockchip/pm-domains.c
+> @@ -804,28 +804,22 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+>  	int error;
+>  
+>  	error = of_property_read_u32(node, "reg", &id);
+> -	if (error) {
+> -		dev_err(pmu->dev,
+> -			"%pOFn: failed to retrieve domain id (reg): %d\n",
+> -			node, error);
+> -		return -EINVAL;
+> -	}
+> +	if (error)
+> +		return dev_err_probe(pmu->dev, -EINVAL,
+> +				     "%pOFn: failed to retrieve domain id (reg)\n",
+> +				     node);
+>  
+> -	if (id >= pmu->info->num_domains) {
+> -		dev_err(pmu->dev, "%pOFn: invalid domain id %d\n",
+> -			node, id);
+> -		return -EINVAL;
+> -	}
+> +	if (id >= pmu->info->num_domains)
+> +		return dev_err_probe(pmu->dev, -EINVAL,
+> +				     "%pOFn: invalid domain id %d\n", node, id);
 
-Taken care now: https://lore.kernel.org/linux-arm-msm/20261112-hamoa-dt-fix-v1-1-55efbac840f4@oss.qualcomm.com/
+These look like code clean-up instead of fixes, thus should be split
+into a separate patch, especially when we probably want to backport the
+real fixes. This applies for many places below.
 
-I shouldn't have given my r-b tag for the offending patch :/
+Aside these unnecessary code changes, this patch seems in a better shape
+than the very first version[1] I submitted a week ago, which seems,
+unfortunately, being ignored.
 
-- Mani
+I'll drop the second patch in my series and use yours instead. But
+please search before sending patches next time to avoid duplicated work.
 
 -- 
-மணிவண்ணன் சதாசிவம்
+Thanks,
+Yao Zi
+
+Meow-mrrp-mrow, I'm a cat.
+
+[1]: https://lore.kernel.org/linux-rockchip/20261105001257.1368266-1-me@ziyao.cc/
