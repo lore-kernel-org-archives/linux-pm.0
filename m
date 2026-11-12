@@ -1,64 +1,126 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=111.22.67.137
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794467799;
-	b=CMaeHk5z93HALFoNqm/uNIOZfX7hqRZDD0NfnNf4kiBwgWBltjLq38pJv/+qvyf9FsJp
-	 zH2MBymeNDonoviMIVvVH7cdqn6i7ICIkZXm498KYGFS635UBIRyYNwiJVEo48PH0Fzi3
-	 hpz0MyF97fi3mEAnbHsCR9+wym7cD19VA3A4HmbLw68rI91GBqfN2iEb+icDM1UXrXhAd
-	 8E4k9RZeWSE/8Tpg/exJ/FSPRI1H1FhETwO9DSZRTdEEkiYoLr2of8VFlpH3ZBilC7kjN
-	 t1qrJhGquNlY5CLFVgCuX+I+vJwYUB4I79EtqUDTfSjLpuKpXfUlrlHuMbWQOnzvyqA==
+	t=1794468023;
+	b=M27GwOMUT1t25h01wDU7gh0WGP9h7WBYWeL/uorG1aC1Kp+1b1trGR+v/9kBP11/k/1B
+	 4JmwAHCFmS9Z11rQMV4+mXVG47BjGwxWph77LOEl2X1T6K/w8equapIb2n0Xi1iPWePU4
+	 rjvLuNiebZR7FYLCJP3fztKxMvV/kPqMr0wNqxC9oDnFTo1Lx2eDqF0ja9cXBtKiHC4LS
+	 L5Fh3oti2ZOhbepfjF2k1D6yFZFyqHzfVpBW/OnsytvAzLAhUjLY+aPPzN/7Mter/lXI/
+	 n0zPt1BRUfSCd1M1ijUgwHgx6dSsQteIPbrgh6G9TwLlX+gvRol2DphvEuTXm0M8NgQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794467799;
-	h=DMARC-Filter:DKIM-Signature:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:
-	 X-RM-TRANSID:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:X-RM-TRANSID:From:
-	 To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=QVPvIHQguRWgS45z+PI0g6Rpq7Vb348caqI1na1A57E=;
-	b=uTQcLDmM7YCORcMyGER6KyA0POOitFJutLOfwdyNeJiMpSu6z0l8la18t7eMdHm01JGi
-	 yldZvxZnjKW84ys43upbFw2YuyiW1IC07IFxcSmm3uvd15NAr3W89usuIDG7yP07kS0Pw
-	 zrbvFyNauZ8WSQam93fWgNZLmcPy/X3a3alj1U4IdYSJPQQRHBqvyhPD+kiORPC2ifZYx
-	 dv9hScI9djB11/E03sS2VGIRl7Q8YfKIN9zvF5bZoHB3IXLJiICgba8yhsux7W4I29h1Z
-	 PoLEcQIkCJYiH8gLynsMM5Z8G7FZJ49pJk6RIq2GJN1nFQd/rTqsmPtMm+G7aKgBFew==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794468023;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
+	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-Proofpoint-Spam-Info:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Details-Enc:
+	 X-Authority-Analysis:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=i9jbtsLDZsS4FE9dYCV+4UGl52plCiZyJEyDlwed5Yw=;
+	b=ktSYxTnHmSjOQWX0JbDFEwsMvi9aV1pC9u1OYsSjIpbN8XLVwBw+OFDXi2uAoJhvXznV
+	 jPERBMwpaftdjV8s7ASnQCKM7VI3PtD/kFmTcFkLKrxr2+//ptnY1uw6rLDt2Eaz/OlJr
+	 jO/Q3A2lUaGzDM3UpjqFfmZsB5c44EBiXnRqwvoOCXJ4OWzaWJOHhgV5KZ18HXlL5Sgge
+	 lT8+rJc/xlWdk3Xj4vmprAfeYZ809HT/zm5czMkS/P3S8ClIJk3eCrOxFUN2OZ5yk6tKi
+	 KXZASD4jyKiRTNpaZ7WE/G06hqFJaotBChxnYLWXKJl7IZC5ufo1UmQKF3S9sr+9zlQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=cmss.chinamobile.com;
-	spf=pass smtp.mailfrom=cmss.chinamobile.com;
-	dkim=pass header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=PkvfMEFx;
-	arc=none smtp.remote-ip=111.22.67.137
-Received: from cmccmta4.chinamobile.com (cmccmta4.chinamobile.com [111.22.67.137])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 94938606A31C;
-	Thu, 12 Nov 2026 07:16:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 94938606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cmss.chinamobile.com
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pKCBwgYw;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=ZwykinUd;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04D1C606A339
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:20:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 04D1C606A339
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=PkvfMEFx
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pKCBwgYw;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=ZwykinUd
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2ZQtI4092474
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:20:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=i9jbtsLDZsS
+	4FE9dYCV+4UGl52plCiZyJEyDlwed5Yw=; b=pKCBwgYwBrnc/LxUl1E/mt5JksF
+	tdlEVy+2HRxQhIjIY79Z7zmU6XbZp79c1JqTYYCF7IFim/q40yJ3b2+64HrLpS+T
+	UQKlNTUsnCx44Kz6rK6zeTM0hVAgT2Jx8kCO1GE6VPbTpnsT/jZuAqZU4PmWc/Ir
+	2ql8Voi9P5wr9oXDF/HmNREpFBDzm+yWm/HhS5fpoxaAFTxZcBiPjZlDjXMJ547u
+	3XRMh1JK3Z1TbhiQA6zwonZIenU3qIQ1HbgAbbirDaTXcaF6eCiqYhY4sVWe3LSa
+	jfCVWHKJojLfdZPlj221wCCfLQuAwdUbXeuGf4JC0AxbStE26VC4TfpQbuQ==
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hw0m8hppy-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:20:22 +0000 (GMT)
+Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2e9a4052726so3707815ad.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 23:20:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=cmss.chinamobile.com; s=default; l=0;
-	h=from:subject:message-id:to:cc:mime-version;
-	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
-	b=PkvfMEFxpeESPYxklVrDDW7PCboCO+/2EgWUOtgXP3JkKXRGh/8rS/+dsBZzku/N2OCMXqNvXpLL8
-	 f5RYLSjhWxD2QS0E95IM0sW9R7Up7wa8nUbGqK5g1HWPyxUK5Kv5gSUPiJV6kKwHa7rto7F88JX+Rn
-	 ny8kBFxUgazyeCa0=
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
-	by rmmx-syy-dmz-app08-12008 (RichMail) with SMTP id 2ee86af567d3e07-7f08a;
-	Thu, 12 Nov 2026 15:16:35 +0800 (CST)
-X-RM-TRANSID:2ee86af567d3e07-7f08a
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from devin-VMware-Virtual-Platform.localdomain (unknown[10.55.1.72])
-	by rmsmtp-syy-appsvr10-12010 (RichMail) with SMTP id 2eea6af567d2298-f67fa;
-	Thu, 12 Nov 2026 15:16:35 +0800 (CST)
-X-RM-TRANSID:2eea6af567d2298-f67fa
-From: Zhu Jun <zhujun2@cmss.chinamobile.com>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Zhu Jun <zhujun2@cmss.chinamobile.com>
-Subject: [PATCH] power: supply: max77705: Propagate battery health read errors
-Date: Thu, 12 Nov 2026 15:16:34 +0800
-Message-ID: <20261112071634.154426-1-zhujun2@cmss.chinamobile.com>
-X-Mailer: git-send-email 2.51.0
+        d=oss.qualcomm.com; s=google; t=1794468021; x=1795072821; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=i9jbtsLDZsS4FE9dYCV+4UGl52plCiZyJEyDlwed5Yw=;
+        b=ZwykinUdbLtRi2qdcSWDBINHpcS6tBsTqcvPJe1gYyoO5ndV2/Rs+vCo5N2is6A4/g
+         jWZkr1nzaJj/x/6v52qVAL2ZM7Hgr6llhiOqT72vHbNpnzpIXFMZVGxNxzNahTetNS7N
+         8wJZx4qm6bSqoL+U7mxrHgl7F9WO+dOMobv+pl5JhAElydLDBp3N/xjQwi07MRvkFX9I
+         LRgMlacLt2SPCofncLeWcdzTBEOQs2wSUHHiorSa0KKM2vK6iIGX6uLZkUsUYm/gZH4e
+         0zj3UZgLS8AFDidSh1YaD0u8BH7pcyGbDDrJ9J7XZ935uortET3JZ4Jj6xEfR78pel82
+         uaRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794468021; x=1795072821;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=i9jbtsLDZsS4FE9dYCV+4UGl52plCiZyJEyDlwed5Yw=;
+        b=hvarznSUAanQCqb6qT4IAP1ksnFBPQGpL6f5yL4/GCQDTv/5W+VzG6Xah0CH7OeHeS
+         5XSh4caeuRbO5FItqoIhlMYyB/KIltEjlZJPi0X/Rtc/8H1pN+GpJ1HxGXkONngR0c7Y
+         LypqrOX0G9feAyp2AQL72340Kh4c5qqUg7HYTx9jjb9fjkOymWD03VI+Z9jZ/2OdNqOG
+         NaiHYI2+CwVmETNDFfHqtph4+ilf2WOsz/GFtn8ClBKYUj2AtkAW18GbKsDzQmlzEram
+         +Q4EkkP5aTX256/+nST4J8hjBX5esapo8VEJjPQUUFCR+mhOlNj8txjIIV0k4oLrGKtS
+         OelA==
+X-Forwarded-Encrypted: i=1; AL+hErEL0ngHAKMFcypl/qZFCzuI9H8hqvn1gij3njAgcpOk9JADiDo+78HZcsgCXfH5pjrsbf3jfx0iKg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/cXRFiDYzqtElWFyzkggDDUY6+m1A0vTj77oJmitlY/aH61fI3
+	IfFYK9rpIkoYyaITGAkjCEgs9FIYVjSM3/zCwztUSfboaxyWamGWM4VFms4B6/E2jj8f5Gm1TcH
+	9KHipacjkJQxt9/yOt4kbOavB0BrygURawZMOf/Dm5298OfVINxQ1ycWEgh88UA==
+X-Gm-Gg: AYBFou2Dyo2CuOXv9qzG86fKmdLL0i+X8ugO1zhybnbDQrrP/eOmSPnHiOMfGfc+6YQ
+	RKXMmD/V+lq1K/xgeAkHDICCzLHdKGeuDHFYVvLqxkf0HblQ6orNpUVpPmjD4J9EMAJ8arRMQ+J
+	AkBH91qLxHV32Feb2QQfxy/Ypie33XjGhUNB65HlHMU/iVWcqOLxZfnbnPEJfgUVrTB/ah+yrEL
+	Je9aAxwi6gIRK9JdrUHOyumJVH93jwzBJ+jkRaYSuZ4LPfIY0EvTXPmkmJLUZ6IprWSN2e0ZZ96
+	0aKZHURcjb0/5he06CnvZthgzApsmwEUHYBxVV/T3BGBdExec215BuYe/vy/Qy2KGnBgzEN7bux
+	ROyiFV3LlydXkxEH8WLrGTkgmxOS8oxsAnxN+mQxXmwYOuCxs5vggydEQPqJpjAGlFrsIcseJ5i
+	KjcA==
+X-Received: by 2002:a17:90b:4b0e:b0:3ab:be66:ddc5 with SMTP id 98e67ed59e1d1-3b182f3642cmr7324454a91.6.1794468021432;
+        Wed, 11 Nov 2026 23:20:21 -0800 (PST)
+X-Received: by 2002:a17:90b:4b0e:b0:3ab:be66:ddc5 with SMTP id 98e67ed59e1d1-3b182f3642cmr7324412a91.6.1794468020967;
+        Wed, 11 Nov 2026 23:20:20 -0800 (PST)
+Received: from sdciot-sh07-lnx.qualcomm.com ([114.94.8.21])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b197c73e27sm3149185a91.9.2026.11.11.23.20.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Nov 2026 23:20:20 -0800 (PST)
+From: Linghui Wu <linghui.wu@oss.qualcomm.com>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+        Miaoqing Pan <miaoqing.pan@oss.qualcomm.com>,
+        Hangtian Zhu <hangtian.zhu@oss.qualcomm.com>,
+        Shuai Zhang <shuai.zhang@oss.qualcomm.com>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Linghui Wu <linghui.wu@oss.qualcomm.com>
+Subject: [PATCH v4 0/3] power: sequencing: qcom-wcn: support SW_CTRL wake IRQ
+Date: Thu, 12 Nov 2026 15:20:06 +0800
+Message-ID: <20261112072009.3815276-1-linghui.wu@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261019093911.3199891-1-linghui.wu@oss.qualcomm.com>
+References: <20261019093911.3199891-1-linghui.wu@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,39 +131,76 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDAyOSBTYWx0ZWRfXyR5tQjdQTZy9
+ ikTua1EIBHzXPB8FeS9EpQn5SOOm+0HgxVnDpdZBd6TGYbgHoPOH4LdPaKbHv0BSYLfBQ3j6uk8
+ n+9z1u4Jv12Addnew9o0ybx2wmvThZ4=
+X-Proofpoint-GUID: Y50gi1djnwiYmtgGzIihGE6FxhqhAF0s
+X-Proofpoint-ORIG-GUID: Y50gi1djnwiYmtgGzIihGE6FxhqhAF0s
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDAyOSBTYWx0ZWRfX0Q9Cwbirhyfy
+ TzhdZ6G25+UJM9Mrly//DAq+7fSJckydoEqq+HyyomXQ+Cc/Na/w32FqavC7v4Ik9HYNg89e0oD
+ fwqcsgiNvfMG72Y4/+4KttnQyIZdpPUaXusBFB8LWaF7d09pQyNhkTuYnDcw6XfBzHOBdhOYHcz
+ 0F8fKytTVJWdYeBmHKoi6J/eYIr8id6uC7csFPVMEoBg9UkhK4T7mVHfoYjTUSzoNdYAFFACcic
+ yIEJ2t925Ggy0nrsU01kjZ529G+xEilY56k3ijQbUx6Cy2Gi/QVm6v8WmhPax0P1jruceMH0Q5C
+ yEerqL0Zw79WLSSObAM9ArK+vW8dt51yUPOusZFSIGTORbSXe/yBenAxcwK9WGVJeNiO9WiN8dK
+ cFk5My/aZjPDbySjMFgnxlmqCsqOp04WuHOcbbSTmfq/DLMzuz/Ty+pfTGyvwRTiU9vpZc0oCIx
+ jy2UFvojfOYBbyATVjA==
+X-Authority-Analysis: v=2.4 cv=Q9dHcI2a c=1 sm=1 tr=0 ts=6af568b6 cx=c_pps
+ a=cmESyDAEBpBGqyK7t0alAg==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
+ a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=FZ15NAR4OWdYCF8lCvYA:9
+ a=1OuFwYUASf3TG4hYMiVC:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0 impostorscore=0 adultscore=0 bulkscore=0
+ suspectscore=0 priorityscore=1501 spamscore=0 clxscore=1015
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611120029
 
-max77705_get_battery_health() decodes bat_dtls even when the register
-read fails. The helper then returns success and can report a battery
-health state derived from an uninitialized value.
+Some WCN3990-family devices use the SW_CTRL GPIO to indicate that
+resources need to remain available while the application processor is
+suspended.
 
-Check the read result before decoding the battery status. The existing
-health and property callbacks already propagate the helper's error.
+Teach the Qualcomm WCN power-sequencing driver to use the existing
+SW_CTRL GPIO as a dedicated wake IRQ when the power sequencer is marked
+as a wakeup source. The PM core keeps the IRQ disabled during normal
+operation and arms it for system suspend.
 
-Fixes: a6a494c8e3ce ("power: supply: max77705: Add charger driver for Maxim 77705")
-Signed-off-by: Zhu Jun <zhujun2@cmss.chinamobile.com>
----
- drivers/power/supply/max77705_charger.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+The series documents wakeup-source for the WCN PMU binding and enables
+it for the Shikra CQM, CQS and IQS EVKs.
 
-diff --git a/drivers/power/supply/max77705_charger.c b/drivers/power/supply/max77705_charger.c
-index ca9ad041f1ed..f9878358e53d 100644
---- a/drivers/power/supply/max77705_charger.c
-+++ b/drivers/power/supply/max77705_charger.c
-@@ -278,8 +278,11 @@ static int max77705_get_battery_health(struct max77705_charger_data *chg,
- {
- 	struct regmap *regmap = chg->regmap;
- 	unsigned int bat_dtls;
-+	int ret;
- 
--	regmap_read(regmap, MAX77705_CHG_REG_DETAILS_01, &bat_dtls);
-+	ret = regmap_read(regmap, MAX77705_CHG_REG_DETAILS_01, &bat_dtls);
-+	if (ret)
-+		return ret;
- 	bat_dtls = ((bat_dtls & MAX77705_BAT_DTLS) >> MAX77705_BAT_DTLS_SHIFT);
- 
- 	switch (bat_dtls) {
+The series has been validated on linux-next on Shikra hardware.
+
+Changes in v4:
+- Rebase onto linux-next next-20261111.
+- Revalidate the complete series against linux-next.
+
+Changes in v3:
+- Use the "dt-bindings: regulator:" prefix for the binding patch.
+- Drop the RFC marker.
+- Replace the "must" wording in the wake behavior description.
+- Report runtime validation on qcom-next and kernel 6.18.y.
+
+Changes in v2:
+- Derive the wake IRQ from the existing SW_CTRL GPIO with gpiod_to_irq().
+- Drop the separate interrupt description from the binding and DTS.
+- Focus the description on the functional behavior.
+- Rebase onto next-20261014.
+
+Linghui Wu (3):
+  dt-bindings: regulator: qcom,wcn3990-pmu: document wakeup-source
+  power: sequencing: qcom-wcn: support SW_CTRL wake IRQ
+  arm64: dts: qcom: shikra: enable WCN SW_CTRL wakeup
+
+ .../bindings/regulator/qcom,wcn3990-pmu.yaml  |  6 ++++
+ arch/arm64/boot/dts/qcom/shikra-cqm-som.dtsi  |  1 +
+ arch/arm64/boot/dts/qcom/shikra-iqs-som.dtsi  |  1 +
+ drivers/power/sequencing/pwrseq-qcom-wcn.c    | 36 +++++++++++++++++++
+ 4 files changed, 44 insertions(+)
+
+
+base-commit: aaa2f954c21b205a0bcd0961e5b2be4e82e58455
 -- 
-2.51.0
-
-
-
+2.43.0
