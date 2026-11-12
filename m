@@ -1,76 +1,107 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.217.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.208.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794492903;
-	b=oAoG2U6wGamA7fmJau1KQ+yMsOIwwpR0EQYiWY9zIi4qV3pNCyaUJc1yNcoTltmkrcGy
-	 rtkFv1RbLKY1tvNgLck1dbXlTbjAFq//wFObLt80HR4ROSlZPEMrPXbXEnuLsNqYCKoCf
-	 0TYRf5DjNmKyhq+N6+HAbyOThGq8mTCoFZPCSUdy5Bb1KG+zXs2cQb1T8NkUH9Eu9CkXl
-	 d41FPxhYi5QUunIJa0rdG7uhN9+hIjgLvov0sXgTPanC7G/Ly98vg0viWsGtJIojDFqga
-	 jvCrAnvF2Q1xsFP+HTknV2kg9bIoVBj4aeubpRQhB+VD2q9KaYSpD3IyCAoyMkUVDoA==
+	t=1794493028;
+	b=g8BiRO2iMuap9blVe0TExyA7cmvj57Ho8T5zY8h3rFruqgMEHTwWn9XDl0pPrvB4owfq
+	 m/gnIQoWaiTmKAbC/AbdOlc+pBvHGA1CBzmFhP5bDmQJIMC5onJ80DzRiwQOvKYZPan7R
+	 FTQdLmapaJwjkrRnvKrVHtvQrGoytZfpkerAZmTU0cvFikA5rgfWUMBTpoDJJj0fQDm+9
+	 5K5OVo/kvR8SSDxNS70f0DlHhtWNoXPYMDwoOJMjb47e77QBD0cZHJ9w0s5TWcQPefipx
+	 h1h7BnWScOKUGwbZ2JOzR50c4LHFtYPD5vFyxe05fGvwDAWiLnKrzczCAb5CP3t0zxw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794492903;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=p9x4nyKp58U6HRLjvUMttJNHFZj1/ft861x7cFqIKgw=;
-	b=WnXc9GhsE4oVX518ua8VYihisnVRq7ze7AKpELt9NCPzfPbmbpr6TLg+VVLTFYjMbDVf
-	 EmYKhCDFZpXH1HaJhVfvYoG24ncQXVyr9C90GmakJtOjDqq5eYb0EBhIC74k443t+k3b6
-	 0uYMpMzxLvYpdj7fDWqp5y1E5EZC0+QYGtg63Hluhst5VSZT+BW2spioe8EqMDeDHJ2rt
-	 cvDpoNxTYigy0/TQE97oUPC6NwbMubLLnkwj7HXaAgLgW3VTdDQjCbXT3XQjpU0c6cT3k
-	 zDkpwv6pIX2QPBBO87CVrlgK+GAv5wHna6N7HEF8m/kXCSbuRN6XV7MdLKrZz2RB6kQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794493028;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=qrF09GR+ihkQ4thcmIGrsAzK57Wx7VRqM+yLsEJ4p3o=;
+	b=KxUeTqcDanL+uNNga+Kx/lUldU5k+XT80Ht4pwQgUuR4ZT9KAQqsL5C1J92Nq8PAsyCU
+	 nROdxXGuJVbyUKtX0Hy01Y91xYmYxpV0ta0LZudhSDuPJZUiES0DxvwGgYTOjodrO0sJZ
+	 YGr1iRULxkFLZLIdPBvV3rfjTRneA2cdhFfMP79nAGReMSb2NPtLxyLa5LU47w/98vOwM
+	 PAO+1nNTeK409MC4mV3fMpMT0lNCjl4/LS/dAHZNp/uMdwtXKzeRZ5uquaCvzFPu0zX6T
+	 F+MheE+GbMFfOCe/SHE9DrI/BBQPQmIH6SA4CwWHTTt6ILDTCxNuLJjtHcLmu9n76kg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=linux-m68k.org;
+	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.217.46
-Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com [209.85.217.46])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="BUc/oAiX";
+	arc=none smtp.remote-ip=209.85.208.48
+Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2234460A3816
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 14:15:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2234460A3816
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12097606A335
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 14:17:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 12097606A335
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-7cc2bb73cd9so1421824137.3
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 06:15:02 -0800 (PST)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BUc/oAiX
+Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-6b47c1a3c74so5353207a12.3
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 06:17:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794493026; x=1795097826; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=qrF09GR+ihkQ4thcmIGrsAzK57Wx7VRqM+yLsEJ4p3o=;
+        b=BUc/oAiX8fnhkktLnZFvgLNatm2C/o2PyMn9TAlcNkOqWquh+iDGcpCDApB4TUPIJe
+         szU1ye7M0VlqedHpuHo/UjjBFRdDNznR8n86L+9cZfulBPjCPrQtsGj7cS9Jew+uiz/j
+         BPM2QVXwGTts7clvGUtG+K8M67nUK8uC0Cy7JTV+R5igmEOwF9B6Ay83mcEKDbgyCzU8
+         0ba3S1RFeRz9kOPxUzfcbou1wF6kupEGcm1Essy2qdmZWVGY/Xt6wD9LDnb1R/zYFUWf
+         G+vAbannvJsIZA29ZLhmQMtaQPfFA7Irx7D2rAaAr+v3W5Di5r++BfmcU77pSyYkI8e7
+         hmEw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794492902; x=1795097702;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=p9x4nyKp58U6HRLjvUMttJNHFZj1/ft861x7cFqIKgw=;
-        b=tz0TnfwA74ejgYaEjvGCJq0kqglT7NRIlzqoWT98O0ny35ylV+a9zTnxtKY7ihjNBX
-         HCowEa3256BF5AzSSo2wnxcmgzU/3hdX7BOnv5ePqpASJmFESn9WHS2roO7QpMLVxLOX
-         ANRMhXa6d9KHcYKkgaSMb5u54+xzQE6EgqgPlLoYHz5vUfBrpYy31Ezq2i7199Ohgrd1
-         o40t1DYB/cM0v6cMfz9Bxp7XOslEq151DYkaiddIIwo8lgwQjRpjLEjmCYgyxhH1F9qP
-         0doZZYb69uocl2oW7/DILv3d2LHE03aYMzxK/OBFwmDMA9CFxUN4LKmonwUD5OJqvwDH
-         f+tQ==
-X-Forwarded-Encrypted: i=1; AL+hErFOwIee/j0oXvRFyUphGs9WYM52b8DCBB9Zi2klKuvz1MCzY0StY0stAR2vpb4oERV9ixfyCMe4HQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z//fiEtwTuYZ639iUQkbTbqnbvXm8Rff8zw3JM+BPWJr2B1Kt3L
-	umatDCqxy7yyO7EUIOxTcm25Q3sfUppWrI+gBLUea50h2gLTvB2RGt27dGbDD+o3c5g=
-X-Gm-Gg: AYBFou19Bp7RYzmrzK/ifdF7PhrzDj5w1gxbAzfdGfIy0o/0fsB/EfrI+6cS8gPU0Ap
-	qll1SMWNqBqfnbExGhKkIOux8703P5fMPVFDsNJbflLndW4z0KjYq7dvZw1D7dPxTucGDy9J9LB
-	EUdtVQxJ2D2aiKnfe94WpzUV3WqtKKpTq1b7xtyD7LlbU01JDy21vAlm4sXFFzD2oD7GojMTrIW
-	J46QbEo5pNNvh3cqxMIaxRto59n5nn4EKSS8YB/h0VMnjUzv5IxEZKlCen7FZFKIADyqY+mtnSK
-	n0BWf0uYkqsyKF74pxXiqw2UBxYa+Dwtdi/uYjklBhzTAsm4pgYIUvhvStyKZZN0Lc+w3r4wLm0
-	p1C03UKMboBe/XLZBVlhoCtuIjyNwXqUVZS2/nS7/hhL/1/ny9d7C2YFCFrMLsmEeyCkk/hLBvv
-	FcoHv+QgsgVkAjsrYspxuq+pH4wKRM/ktitCGsKTYfWfXVH8oF5sPpnDNwhyzQQ+nGWF/Kq1cAd
-	bJXQzUlMrmDv1U/a+Hzmwu5GtVPaN90Lplou6qiOKGH3cJootlZWG3YggRQvuCRxgKDG4VggKnp
-	OTlIMvF6uCTzrqpKXkN+/Fi4HtBPHGrYegtpAs5UF+o55Po+pLLM2DLv3SSrLO395qI=
-X-Received: by 2002:a05:6102:508e:b0:7d2:b199:6712 with SMTP id ada2fe7eead31-7d50618ccdcmr2078612137.30.1794492902016;
-        Thu, 12 Nov 2026 06:15:02 -0800 (PST)
-Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com. [209.85.222.47])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-99c2003b37csm5626319241.6.2026.11.12.06.15.00
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 Nov 2026 06:15:00 -0800 (PST)
-Received: by mail-ua1-f47.google.com with SMTP id a1e0cc1a2514c-99be509f943so997013241.0
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 06:15:00 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErFil4c2Tiw9b1H00PvLwdi68oyGA//WND/+LbznEw1dRt5GWjag5K0SPG0qSTX4MzwxD90l8S0yQw==@vger.kernel.org
-X-Received: by 2002:a05:6102:5798:b0:7c3:881f:b620 with SMTP id
- ada2fe7eead31-7d5060e293emr2040092137.21.1794492899954; Thu, 12 Nov 2026
- 06:14:59 -0800 (PST)
+        d=1e100.net; s=20260707; t=1794493026; x=1795097826;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=qrF09GR+ihkQ4thcmIGrsAzK57Wx7VRqM+yLsEJ4p3o=;
+        b=aAfmHc+7svPSv5y1sIvOIJdI340ngSjCP7sy6sEFZkAOb43tcURhHuaaHg2LhxCdJv
+         PLuWMGvxrTQiJJM7+nwtRovO/V18/eENyvoSU7uViStg6wyL+tKHDEH5M0LvulZJe6mH
+         Vb39ATDpe7oDw/ly1cOeWheO7qAyqA/TRE8Xu1TVsPXbe93Dm1n2fQjq83lqlEnFePU5
+         v8bwqPdfa1wQRM7IZ8dttA9LU9h7RbwbYBmr1pNEi5yo6+ip9SEKBqBgmr/qjWdxeX7L
+         W9QSeEwkDKeiF56GzvbW0XB7JTzIIGP5sjYf4L1HqP8QeYr8ts1B9jO9tle5W9HT22Ca
+         29qA==
+X-Forwarded-Encrypted: i=1; AL+hErF0tE7UhvK0Wtn0Ml4Q7MWp086UvVwYvyUQO8dZYeSYPvQJ3nah/1e2b+Bi9+d/sDlvT7pqtgzZng==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8CV+zt8A49cP3w2V+pEWj2c0nMW08OoOCyxWcn1P26+4X+LNYp
+	ns4K8Q0XHuEt6bMO4wF/NwXHuW9bh9MT/vAvhi6FL67hF4zQiJjbhsmN
+X-Gm-Gg: AYBFou1htacYgofIKuuPkHcsg3YIog/gp34GSNdjhkhym/NbrQOVLEJFryjo9HIzApR
+	HRoySBes34puqO9Y+aptjacQOqCoTsJqZWflyEss/Nxin9UIoBBbhe/Pex7zcWJhNPC5sSgb1jZ
+	pvl8EXr+Yzh8zlubQz8OR4P7+tzhNmCTyYIrZEtbcKbBqgi8v9K0C1HZg7jc4eBFL1i+5K6vnnT
+	JzOJySzAkyMyXd92Mwr2oH3ot2PLXapth7f/KiFAKiP2jkYx0FfEipTpCJcyGhcSiVYtnXftzsL
+	aKcUAR5we8d2CkpzbEUPtoIyLg5RXe5I/UxjSf07pLrKL0I3/N41fMkJmQLZWXP7T44KKEKwwEi
+	KvVx0jhmAwsF+ZztS9N3LDQzFcFrf7fH4jKjwA6qrr9YsYu1AhMd81+j7NN3+Fu3N71LG85KRuK
+	/cSZhZ7xS7ywciYk2C4EuJ4nJvxm3RvZZOCDNjI6WneTBGgl8kc+iSE0QND1HYIzLgInxVpoyMO
+	Gj0qt5fF+lWaAa3jMx36/7glDxJsJJutuVJU1/S1wG3h2W0L3u+gbvsedhYStnkKgDeKxZ+JcwF
+	TK23WIsg7xUIXrNW4N1EAyn1dqFjS1ZAdmm44sWX7RxsQgpUyYR8a1NFQKVISrtMxX09YVZCchL
+	Lxzc8frS6/9l8kPEltD4ef6apMF+rwhYJsi/exdVkyRh52IOMQD600XlPRqPKDZiDAKmIHa0cJT
+	haiahFW1hYaSENbsJgaBRhBgt7a3/U5QDaQuY8DZF5mDzFUznkcg==
+X-Received: by 2002:a17:906:9fc4:b0:c41:5a0e:3356 with SMTP id a640c23a62f3a-c5066cf82b8mr489669866b.41.1794493026263;
+        Thu, 12 Nov 2026 06:17:06 -0800 (PST)
+Received: from Ubuntu (87-205-15-91.static.ip.netia.com.pl. [87.205.15.91])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c504a56b772sm360156466b.16.2026.11.12.06.17.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Nov 2026 06:17:05 -0800 (PST)
+From: Krystian Kaniewski <krystianmkaniewski@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Tejun Heo <tj@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ian Kent <raven@themaw.net>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Johan Hovold <johan@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Jens Axboe <axboe@kernel.dk>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Jan Kara <jack@suse.cz>,
+	driver-core@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	autofs@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
+Subject: [PATCH v3 0/2] kernfs, sysfs: refuse splice on /sys/power/resume
+Date: Thu, 12 Nov 2026 15:17:00 +0100
+Message-ID: <cover.1794479968.git.krystianmkaniewski@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,46 +111,69 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-0-1b2072e8c37e@ideasonboard.com>
- <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-2-1b2072e8c37e@ideasonboard.com>
-In-Reply-To: <20261109-epaul-v7-3-rc1-x5h-vsp-fcp-v4-2-1b2072e8c37e@ideasonboard.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 12 Nov 2026 15:14:48 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVBBySyLE=5gG5HvQV95811asBZ7LKwsQXAVPdUPjjTTw@mail.gmail.com>
-X-Gm-Features: AclHuK_i81THT_hnDNfFBzoyAYqo67SKua85inNQRuBh9I9Xk4b1lG_6SVOc53s
-Message-ID: <CAMuHMdVBBySyLE=5gG5HvQV95811asBZ7LKwsQXAVPdUPjjTTw@mail.gmail.com>
-Subject: Re: [PATCH v4 02/13] pmdomain: renesas: r8a78000: Add SCMI maps for VIO
-To: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-media@vger.kernel.org, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Mon, 9 Nov 2026 at 14:34, Paul Elder
-<paul.elder+renesas@ideasonboard.com> wrote:
-> Add SCMI maps for the VIO domain to map the VSP and FCPV power domains
-> and module controls.
->
-> Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
-> Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+This series refuses splice on writable opens of /sys/power/resume and
+gives those opens separate lockdep classes, as Tejun suggested in the
+v1 discussion.
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+The reported cycle is assembled from two operations. Splice into an
+ordinary writable kernfs file records pipe->mutex before of->mutex. A
+normal write to /sys/power/resume records of->mutex before the autofs
+pipe locks when resume_store() resolves a relative path.
 
-Gr{oetje,eeting}s,
+Patch 1 adds SYSFS_NO_SPLICE and kernfs_ops->no_splice. Writable opens
+of a marked file refuse both splice directions. Their of->mutex and
+seq_file lock use separate classes. Read-only opens retain splice
+support.
 
-                        Geert
+Patch 2 marks /sys/power/resume. Normal reads and writes stay unchanged,
+including a write which resolves a relative path through autofs. Rafael
+acked it to go together with patch 1.
 
+Other stores also look up paths. They remain outside this minimal series
+and can be marked in follow-up patches.
+
+Tested on v7.4-rc1 in a QEMU guest with the syzbot kernel config.
+Without the series, the C and syz reproducers trigger the reported
+lockdep cycle, and a splice from the autofs daemon pipe into
+/sys/power/resume deadlocks. With the series, neither reproducer
+triggers a lockdep report although autofs receives the same requests,
+and that splice fails with EINVAL. Plain reads and writes of
+/sys/power/resume, read-only splice and splice on other sysfs and
+cgroup files work as before.
+
+v3:
+- Rename SYSFS_LOOKUP and ->may_lookup to SYSFS_NO_SPLICE and
+  ->no_splice (Tejun).
+- Drop the mmap, prealloc and binary attribute checks (Tejun).
+- Add Rafael's Acked-by to patch 2.
+
+v2:
+- Replace the v1 locking changes with per-attribute splice control.
+- Preserve splice on read-only opens.
+- Split both the open-file mutex and seq_file lock classes.
+- Reject incompatible mmap and preallocated-buffer combinations.
+- Reject SYSFS_LOOKUP on binary attributes.
+- Rebase onto v7.4-rc1.
+
+v2: https://lore.kernel.org/r/cover.1793715774.git.krystianmkaniewski@gmail.com
+v1: https://lore.kernel.org/r/cover.1792577179.git.krystianmkaniewski@gmail.com
+
+Krystian Kaniewski (2):
+  kernfs, sysfs: add SYSFS_NO_SPLICE to refuse splice on writable opens
+  PM: hibernate: refuse splice on /sys/power/resume
+
+ fs/kernfs/file.c         | 46 +++++++++++++++++++++++++++++++++++++---
+ fs/sysfs/file.c          | 18 ++++++++++++++++
+ fs/sysfs/group.c         |  4 ++--
+ include/linux/kernfs.h   |  9 ++++++++
+ include/linux/sysfs.h    | 22 +++++++++++++------
+ kernel/power/hibernate.c |  3 ++-
+ 6 files changed, 90 insertions(+), 12 deletions(-)
+
+
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.53.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
