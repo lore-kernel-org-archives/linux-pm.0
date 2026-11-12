@@ -1,49 +1,91 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.43
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794492362;
-	b=Rag08tfOc6W76yqOVhHOVc8jHoX2AZzZrjNQ4kh5vsorIb98RuIxW9CbLrivYvZBQDwX
-	 xBaBqKP3iarzrJ6XroxTKTQCNoxkkXySbnCGVzNB69XAV6Etk9iAFNRaUnz1ULD6JfMWm
-	 UFvgi2AJwuLQX0gGlSJ7l9/NWm7eD/ZLmDkbHGqY9/2p0rahoiKIgpsMkgmLm/hD6dufP
-	 dU2RzSEjyMQT8QJ1Vd9/EM5REYo2qJ7AnGZGjrxivpBmaqfHl041UF7t/R1Gmed7leRXl
-	 F1BsXskCVJDGM8bsvG7MAnnBaxJ3P24QJWHqxM5ZMAiKNVhzke9ksXQo3fiHqaBxrWQ==
+	t=1794492397;
+	b=nBp/HEMmp2h2gEyu1uANH8q0uULs72q3Lrlyz21sxWqV77uqO05kTafq7aBrKU0XDTEs
+	 FHz/GA9uF4DsLd78lJJQ+IOxxvFqC04ns1VYFawOOOiqn5DP/ToZYKrYe++nLJ/ACK2pK
+	 GVvphEDerHVk0dkbeIShKw9Ax4qtvVdk2Pb5T/tSNf3L2DQLhtFYIUCb/2SQJDb/hPeEv
+	 oEnvss0wrjM/0c4AaoiAarHzcEf++2rONq5ZcUJQg/wVbAjkYpXOxwb5fT0MGQHoHxqWp
+	 YyaKFNsXnHdS6IDjhUICc+EMmESBYKmrkwKcIwhIUA8JReE3F8cHfmHG7uEUNfH0UMQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794492362;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=UHcEtyB0yA1THnFsWZ2Wl79PiRGX6jv8MGr7r5Mm5oQ=;
-	b=TcGthZDha1RVakDIhLZKpZFKwlycfT1XgaK1fSJTo4EGivHtg7nKkxdJTK58a5A53izz
-	 BFDWaMaw38NnOLx4u+qayGWq8dc4CiDLVwQ9ICzZ4jYpDSlHmdFkTaSnrPWzOADIGQmF3
-	 N+5Nn+0d7TMooD1NoEauxPOk6NAzFTP8ohQ8jnDtf7MarY0f3psxkPuiqXKqbm0LBCRuS
-	 tTJOwj2vQl+JgpU8NHqBDZVWX5RfIIjWLDYuwJABA66l+oaoGrTsj5zrG9hMBU38ZVYNJ
-	 wXnXnQSFE+oep53jZGoKU9DQBCWl0FfoPl756tzMhAEWzAGvem0EELJAUfh8+1ef4zQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794492397;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=LXIm36iFMZ8kOBujPBh4eH/qjfWvYnVfBxH0cH6iwsM=;
+	b=4czsrrED8CFzlnTNctSdf82KJ76KI6VqTuA/U139oZa/2Pmxsj9oJalMSo9qj1MWzNTj
+	 JP/x2CzosBsWAykaRDlZfLflcsVT/lIaHmwRZnLlQi6YoNE/O6kVMmXk27IOzjNmFWqxS
+	 odGdjhFyw6bvEhdhtH/JOkwbeV/YOwSZ+UnvLZv/rq8TzeFZYIi+nXzTADePMvVREwVhF
+	 Fwekf+kgDxTn+kv+2yOX8fCEPgwzsLsOshSNWCvpl5NpfW/ZyFKCPJV6aTvmPjdCOsBEw
+	 0cHYUFumQ/5TeDogy/l5t9/w1/zRH+wG/CjxtWm2eCPMBwg7vsyXHaseTxve7Ry4b1Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dzUgcZgR;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id AC392606A321;
-	Thu, 12 Nov 2026 14:06:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AC392606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=iJ0O8ptU;
+	arc=none smtp.remote-ip=209.85.218.43
+Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 324B860A262A
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 14:06:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 324B860A262A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dzUgcZgR
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0E7631477;
-	Thu, 12 Nov 2026 06:05:57 -0800 (PST)
-Received: from [10.0.130.226] (e127648.arm.com [10.0.130.226])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3BDF23F673;
-	Thu, 12 Nov 2026 06:05:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794492360; bh=Mxm+FO/LqIX2SxX0HPT4J1sozJkLEgywzHYHr0SPB3k=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=dzUgcZgR6mSbU6ehR2kKUguPjL8mrH+cCHUyX2a5LritajwPynqZ5KV4gxy+3k6Mt
-	 cQioLIOkIoQlpW5m6VM+RmA5lltiBWC8OYCSUISQJkNAVt/CxxbDKDbvG1ttr42bRq
-	 mgm0u3bUSmSerrzgcc6q1Z1kd/cTrtGo2H8bryKk=
-Message-ID: <f8d23034-0d28-4726-829e-51cf687e5589@arm.com>
-Date: Thu, 12 Nov 2026 14:05:55 +0000
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=iJ0O8ptU
+Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-c505186727fso436715966b.3
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 06:06:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794492396; x=1795097196; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=LXIm36iFMZ8kOBujPBh4eH/qjfWvYnVfBxH0cH6iwsM=;
+        b=iJ0O8ptUFgqzUF0HS2nnVTaNoVhPcmUF74R8wDy41neP7vq8HMRXJc7K5zqFIyWN50
+         OQ2Kui+CINP4jSWel6CZfma+s5yUJ+g0EH99NZ3Zvfld8OwRHv88d2jr1L/vA3RSM74J
+         HPRGuwMFgZ4DHsxcYpPV1O/i31el9yT2KWGfyqtInfS9sidP7NwZ60CxiXUOCROqoaka
+         Dbs35OKCAs+OEVnFzQb2wsESoXa2IW/ATT6rBkW+P+HhV76RoMgrIgmiMR5kdb1KUQN+
+         fmR3iGk+RPAT7sBQAKFNlKkqseCiRLmBwx64KRd2OABz+/XaX/jJSLMVvxItD5VFNZyW
+         6qYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794492396; x=1795097196;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=LXIm36iFMZ8kOBujPBh4eH/qjfWvYnVfBxH0cH6iwsM=;
+        b=vFOyV7S7uVWw3KZACqIYoYBqiufCqlGW/B6roEuW23zpiYdceeQDId1XtgT/JHHH05
+         UdZfFiIlrPUpX1UvTrVtfS4VEmouVOcMohVa3Jp+4UPxjNtR5c/l9PIZ0U3XrgryuRnu
+         RDZZR9H6SgabELiQJx2FVM/1vca23YJe6LgSU4BnJSNW3CsdImbBWuhMj457mIFbqC3B
+         QTJ9Leroy78zZ//eLrnfnlTUMBBmA2ezlTTXxnPoBz4L24axbmgkJ0xjrPCksV9VqXS+
+         +UgSUcFPPPfKgn29Rw/H1vYsSCuYrGJTi4v/TFgQ7K8fJhFBzB6hkuOFcf4jF0/agq3E
+         5nSA==
+X-Forwarded-Encrypted: i=1; AL+hErHqyQINEmJlf7zsY3zU8eBIRkD+f8NyCi+Z/U0TESxjhiDCf3OJAx9N8UmevU3+eoKittcOUX2Vpg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/vnWHHrbLsIXi537XpZNqN47lmOaVVGqL8tBAwUBYiABjOc9g0
+	jwagNieswJRhZDodF5UsMPWsgcg54hH9TC9M8rUksuFB+7cqdj/+ty5N
+X-Gm-Gg: AYBFou0VI1tmdaOX6ecMb79yfKOefX2SfIpKkpwejLQy6xSj//8nPsjRJLiVwmX2NQw
+	do/qCmOWBKSqfziuHxKVtskbmzTeryh1hvaHWnxgekLrzoLiJcjbijCYI0eJizBO3oqNdT9xsfL
+	CMWkKeJp69Vl7RiraTkathiblf+CmOUaEafuiEvr0tfzkJLLGDllf2mbOLyEBNqNNVhxP6zrBlT
+	RZ4NbWGjhLs4aLkDEC9FHqDUFsgs+rY88dkzIKSWYxlLfFCZTNUG5jp4DLYVwZrUGJxu0KipaXf
+	UoNqFdH4tKVdC3sH84c4G859MQP8/7un3LBltezHj9uW2ZTAvqDcXg5BO6EJwfgZGC6VIk82ZgN
+	6OA2mrKYIms8ceh1fDMpNkrXlanTIxs6m6xNtC6QFtKtv0oHDQcUw/oiEGXqCknZ4jfCna0aWUw
+	caXhmNZ0qVi/vYcMKv3oVQ05zV2yH9iw+l9lglGby8RFyUaKuX1tZc0zVyWsRjEui2ZVTyEaUuA
+	SNUDsG2asZwF74pjW5i3/FcKTPyxSEH1g7Gxo4XDeEIoPbKOm41mTtHZDkvJlhLjHx6XvgUxtK0
+	jHCW/DlZq5pqhjjbiftXTMFcg+qtj342vMhZ2D5zX9U7bh0JLfsd+IkMbp+1SzpCXNiVMoxLRjn
+	AfwsImGSzCYIa7g5Yx7onvzFdMVfaPBj0ul4352suc79ZPYaLfP15PsN0TbBC2Z53TPYEYjfZhs
+	pXix/UbYvjuBrgEum0hIXJn4OSYhXUZU+eBIOFx7nYI9g+dfJNt27mKGdayiTEt1JxjL24psa3i
+	e4XjyeMQWcheQ==
+X-Received: by 2002:a17:907:1b1d:b0:c4d:31c5:e30 with SMTP id a640c23a62f3a-c5066d3db13mr442488966b.49.1794492395421;
+        Thu, 12 Nov 2026 06:06:35 -0800 (PST)
+Received: from [192.168.100.100] (87-205-15-91.static.ip.netia.com.pl. [87.205.15.91])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c504a593b5esm363017266b.34.2026.11.12.06.06.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 12 Nov 2026 06:06:34 -0800 (PST)
+Message-ID: <c1af6845-bfa6-480d-a240-7b918331234f@gmail.com>
+Date: Thu, 12 Nov 2026 15:06:33 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -54,188 +96,60 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ACPI: CPPC: Scale EPP values to the register width
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, zhanjie9@hisilicon.com, superm1@kernel.org,
- zhangpengjie2@huawei.com, Sumit Gupta <sumitg@nvidia.com>
-References: <20261112131316.827708-1-christian.loehle@arm.com>
- <592580a1-ba88-4e22-b586-4aa2425f9760@arm.com>
- <CAJZ5v0gXjngKSxX0Ku2wccWj9+oDQ7YqS6ziFZXDzMgm5GjVzg@mail.gmail.com>
+Subject: Re: [PATCH v2 0/2] kernfs, sysfs: refuse splice on /sys/power/resume
+To: Tejun Heo <tj@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Ian Kent <raven@themaw.net>,
+ Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
+ Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ Jens Axboe <axboe@kernel.dk>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+ driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
+ autofs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
+References: <cover.1793715774.git.krystianmkaniewski@gmail.com>
+ <c943b8e768ef766b0f6563b6085e99fe@kernel.org>
 Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0gXjngKSxX0Ku2wccWj9+oDQ7YqS6ziFZXDzMgm5GjVzg@mail.gmail.com>
+From: Krystian Kaniewski <krystianmkaniewski@gmail.com>
+In-Reply-To: <c943b8e768ef766b0f6563b6085e99fe@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 11/12/26 14:01, Rafael J. Wysocki (Intel) wrote:
-> On Thu, Nov 12, 2026 at 2:58 PM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 11/12/26 13:13, Christian Loehle wrote:
->>> The EPP sysfs interface uses 0-255, but ACPI permits 4-8 bit fields.
->>> Writing 128 to a 4- or 6-bit SystemMemory field currently succeeds but
->>> stores zero, selecting maximum performance.
->>>
->>> Scale writes to supported narrow EPP registers and normalize reads to
->>> 0-255. Cover both EPP setters and cppc_get_perf() so saved firmware values
->>> round-trip correctly.
->>>
->>> Fixes: 922607a2b462 ("cpufreq: CPPC: Add support for autonomous selection")
->>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
->>> ---
->>>  .../ABI/testing/sysfs-devices-system-cpu      |  5 ++
->>>  drivers/acpi/cppc_acpi.c                      | 46 +++++++++++++++++--
->>>  2 files changed, 47 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
->>> index d219fc27a0c9..c63b5cfd993c 100644
->>> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
->>> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
->>> @@ -322,6 +322,11 @@ Description:     Energy performance preference
->>>               performance increase/decrease and the result of the hardware's
->>>               energy efficiency and performance optimization policies.
->>>
->>> +             For supported EPP registers narrower than eight bits, values are
->>> +             scaled and rounded to the nearest hardware preference.
->>> +             Reads use the same 0-255 scale and may differ from the requested
->>> +             value due to the reduced precision.
->>> +
->>>               Writing to this file only has meaning when Autonomous Selection is
->>>               enabled.
->>>
->>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->>> index 11a9f9eb6b4a..10b52163eb56 100644
->>> --- a/drivers/acpi/cppc_acpi.c
->>> +++ b/drivers/acpi/cppc_acpi.c
->>> @@ -38,6 +38,7 @@
->>>  #include <linux/iopoll.h>
->>>  #include <linux/ktime.h>
->>>  #include <linux/list.h>
->>> +#include <linux/math64.h>
->>>  #include <linux/mutex.h>
->>>  #include <linux/rbtree.h>
->>>  #include <linux/rwsem.h>
->>> @@ -2841,6 +2842,25 @@ int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
->>>  }
->>>  EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
->>>
->>> +/* Keep the EPP interface on an 8-bit scale, including firmware readback. */
->>> +static u64 cppc_scale_epp(const struct cpc_register_resource *reg,
->>> +                       u64 epp, bool to_reg)
->>> +{
->>> +     unsigned int width = reg->cpc_entry.reg.bit_width;
->>> +     u32 max;
->>> +
->>> +     if (reg->type != ACPI_TYPE_BUFFER || width < 4 || width >= 8)
->>> +             return epp;
->>> +
->>> +     max = BIT(width) - 1;
->>> +     if (to_reg)
->>> +             return DIV_ROUND_CLOSEST_ULL(epp * max,
->>> +                                          CPPC_EPP_ENERGY_EFFICIENCY_PREF);
->>> +
->>> +     return DIV_ROUND_CLOSEST_ULL(epp * CPPC_EPP_ENERGY_EFFICIENCY_PREF,
->>> +                                  max);
->>> +}
->>> +
->>>  /**
->>>   * cppc_get_epp_perf - Get the epp register value.
->>>   * @cpunum: CPU from which to get epp preference value.
->>> @@ -2850,7 +2870,15 @@ EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
->>>   */
->>>  int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
->>>  {
->>> -     return cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
->>> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
->>> +     int ret;
->>> +
->>> +     ret = cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
->>> +     if (!ret)
->>> +             *epp_perf = cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_PERF],
->>> +                                        *epp_perf, false);
->>> +
->>> +     return ret;
->>>  }
->>>  EXPORT_SYMBOL_GPL(cppc_get_epp_perf);
->>>
->>> @@ -3150,6 +3178,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>       bool auto_sel_non_pcc;
->>>       bool epp_pcc;
->>>       bool epp_non_pcc;
->>> +     u64 epp;
->>>       int ret;
->>>
->>>       if (!cpc_desc) {
->>> @@ -3159,6 +3188,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>
->>>       auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
->>>       epp_set_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
->>> +     epp = cppc_scale_epp(epp_set_reg, perf_ctrls->energy_perf, true);
->>>       if (!enable && auto_sel_reg->type == ACPI_TYPE_INTEGER &&
->>>           auto_sel_reg->cpc_entry.int_value == 1)
->>>               return -EOPNOTSUPP;
->>> @@ -3177,7 +3207,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>                       return ret;
->>>       }
->>>       if (epp_non_pcc) {
->>> -             ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
->>> +             ret = cpc_write(cpu, epp_set_reg, epp);
->>>               if (ret)
->>>                       return ret;
->>>       }
->>> @@ -3205,7 +3235,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>               }
->>>
->>>               if (epp_pcc) {
->>> -                     ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
->>> +                     ret = cpc_write(cpu, epp_set_reg, epp);
->>>                       if (ret)
->>>                               goto out_unlock;
->>>               }
->>> @@ -3235,9 +3265,17 @@ EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
->>>   */
->>>  int cppc_set_epp(int cpu, u64 epp_val)
->>>  {
->>> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
->>> +
->>>       if (epp_val > CPPC_EPP_ENERGY_EFFICIENCY_PREF)
->>>               return -EINVAL;
->>>
->>> +     if (!cpc_desc)
->>> +             return -ENODEV;
->>> +
->>> +     epp_val = cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_PERF],
->>> +                              epp_val, true);
->>> +
->>>       return cppc_set_reg_val(cpu, ENERGY_PERF, epp_val);
->>>  }
->>>  EXPORT_SYMBOL_GPL(cppc_set_epp);
->>> @@ -3496,7 +3534,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
->>>               if (ret)
->>>                       goto out_err;
->>>       }
->>> -     perf_ctrls->energy_perf = energy_perf;
->>> +     perf_ctrls->energy_perf = cppc_scale_epp(energy_perf_reg, energy_perf, false);
->>>
->>>       if (CPC_SUPPORTED(auto_sel_reg)) {
->>>               ret = cpc_read(cpu, auto_sel_reg, &auto_sel);
->>
->> +CC Sumit's actual email, sorry about that.
+On 11/3/26 16:51, Tejun Heo wrote:
+> Hello, Krystian.
 > 
-> So I'm assuming that this one is for Sumit to pick up and send again
-> along with a new version of
+> On Tue, Nov 03, 2026 at 03:57:41PM +0100, Krystian Kaniewski wrote:
+>> Patch 1 adds SYSFS_LOOKUP and kernfs_ops->may_lookup. Writable opens of a
+>> marked file refuse both splice directions. Their of->mutex and seq_file lock
+>> use separate classes. Read-only opens retain splice support.
 > 
-> https://lore.kernel.org/linux-acpi/20261112080442.4007723-1-sumitg@nvidia.com/
+> Can we be explicit and name the flag after what it does, e.g.
+> SYSFS_NO_SPLICE and kernfs_ops->no_splice?
 > 
-> Or please let me know if that is not the case.
 
-Yup, while it fixes an issue by itself technically, I don't think there
-are any affected platforms.
-I'm hoping that Sumit this (and the limit-write-at-init) patch as a series
-for all our convenience (and hopefully to get Sashiko to review them too).
-(I guess I should've mentioned that in the notes.)
+Yes, that is clearer. I renamed the flag to SYSFS_NO_SPLICE and the
+kernfs_ops member to no_splice in v3.
 
-And sorry about ACPI/CPPC having such high traffic lately, I'm expecting once
-we've got the issues ironed out and the new features supported it'll be a
-lot more boring :)
+>> The new property cannot be combined with mmap or preallocated buffers.
+>> Kernfs rejects those combinations for direct callers, and sysfs rejects
+>> SYSFS_LOOKUP together with SYSFS_PREALLOC before selecting operations.
+>> Binary attributes do not support SYSFS_LOOKUP and reject it at creation.
+> 
+> Can we keep the rest minimal? With /sys/power/resume the only user, I don't
+> think things like the mmap and prealloc combination checks or the binary
+> attribute rejections are needed.
+> 
+> Thanks.
+> 
+> --
+> tejun
+
+Agreed. I dropped the mmap and prealloc combination checks and the binary
+attribute rejections. /sys/power/resume remains the only user.
+
+I'll send v3 shortly with these changes.
+
+Thanks,
+-- 
+Krystian Kaniewski
