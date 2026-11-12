@@ -1,73 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=23.251.234.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=124.126.103.232
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794459390;
-	b=X6Uf8e+Y8pf6w5bnyYz0yQPXJSlZYB9VDb9IBGOw5Liq3F1cLYIHDF1M5lMlYQbHMF5Q
-	 bHUZXmNhSCANw/nfP0q9cop0EkD+AUpdsuD910Dc+QdEjRv3B3SeD8ANPpMC+TCVIig6C
-	 HVO0/utdTCr9DVbTqj6MxwNvbVgj3xW0gb2minY14JNtEqQJ9NP6Y6wu8Tk6VllrchUoi
-	 1Gj9JOIFVP4aDTK39Sui8TWFSFcqWli39zRBW7iy5K/hYF6X5LHtWMchSpe0bX0TwWqZB
-	 wCTH4YkaPj3mJA63thi+AQZv5+kxht3szm/0AEaiGXM2KBsSNwILX8n5rtbZzAx8jyA==
+	t=1794460416;
+	b=jRz3t3sfp4Rsv/bzNHNm2kE6H8H/72CWma/a8pw4FknMfQmes2EnFNwNVe3RM9rYelll
+	 n3Whd/tI1LvVtpwNT9LOErLXr4a/TilieneMTwSacHYP8jGaurfT7pWdtBjEry1YJr7xK
+	 +9PJeRX/X6iY+zUMWgjSxYUhUHVuYmku2qQbffhgA1uJpOgriWbLsMJG8xX6l1vapdEEH
+	 nikzurjP4cKaVmx2P4MFKlWXXLYtPvHEylW2+YD/SUK/7/R7AMk2sXPU0XmXjKQDt6mdi
+	 ugwAd34eDVmIoGLSfE57sapAhTn5l2wb6yKx2eh+KmXounWB4+4Xtje0UB0fSPnWlYw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794459390;
-	h=DMARC-Filter:DKIM-Signature:DKIM-Signature:In-Reply-To:Message-ID:
-	 References:X-Pmail-ID:From:To:Cc:Subject:Content-Transfer-Encoding:
-	 Date:MIME-Version:Content-Type:Feedback-ID:X-SES-Outgoing;
-	bh=Q1rbgVKVyvSxLpe93nEfXpS3xxVAJMIczVR08si5z58=;
-	b=WA8ZFP4N2Iof3vip10S9+yAC8fZmsgz8Q2uh8PAhrgTR3n4etSkOckkIIRcTevoU7r54
-	 fL0oJBYEF5zq2Qa196p/mj6Ym165hhJIIVNaHvK2/GjM1ZdXWuPnH68GOUz4uzyfTfc52
-	 TUlW5TRIY2VVvHhYLCHUXm4s+PSTKSq6QAV5BUJxs0xFzyChuSUmh+1RDZE9wQRVpfJ6y
-	 +XeL5BxrO2QEgLxEW3UAkn6IKAIvAQ8OFGpcprHHFjcspDLMDhhW9F5Itb1M4qBbRn64r
-	 XkUA/uozu+kuLO+hDfJ7CmDis73qPpHf+fwjxhvAvQ4i64Su9nJ25/mWRT19YEAkS9A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794460416;
+	h=DMARC-Filter:X-UUID:X-CID-P-RULE:X-CID-O-INFO:X-CID-META:X-CID-BVR:
+	 X-CID-BAS:X-CID-FACTOR:X-CID-RHF:X-UUID:X-User:Received:Message-ID:
+	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=cRUDGnLfO0bI/ZKYLMo/IPOSFBGiK0gdMvTEjCrwYl8=;
+	b=xK7Sp05FT6QufObuEi6xWyqP2tVmVrDQEaDImXn/LYJQjQ3bfeH3XkgM/Hqzk68APGIr
+	 PjUTQREVyEUIeQvJEx/QQ0uetc/RGoKqHK+lCAgk9In1XFbZ/DLm0J1jHWwbFtMcHQLBD
+	 yFwkw6rNiODoMWtPRKPGmG3G4RpGQRUL3BSe1sCnClAnwy8UpxJixYgW4/dImwO6TqICI
+	 mxf54djZ0U9k1ydFhuFcxuxoamORZ9Avt0PTZPbF7NuopxIO/oJsGKD3f+6Z5e2QP52Dj
+	 2N4vOB6sFE5QUuNXh4A+QIDMr940ILr5IHHVbCT46+WICcrm66gLXIiNeS8TthIX9EQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=brar.si;
-	spf=pass smtp.mailfrom=rsend.brar.si;
-	dkim=pass header.d=brar.si header.i=@brar.si header.a=rsa-sha256 header.s=resend header.b=Af7TODiB;
-	dkim=pass header.d=amazonses.com header.i=@amazonses.com header.a=rsa-sha256 header.s=zh4gjftm6etwoq6afzugpky45synznly header.b=mMvswtux;
-	arc=none smtp.remote-ip=23.251.234.54
-Received: from e234-54.smtp-out.ap-northeast-1.amazonses.com (e234-54.smtp-out.ap-northeast-1.amazonses.com [23.251.234.54])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=none header.from=kylinos.cn;
+	spf=pass smtp.mailfrom=kylinos.cn;
+	arc=none smtp.remote-ip=124.126.103.232
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E030606A321;
-	Thu, 12 Nov 2026 04:56:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1E030606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=brar.si
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rsend.brar.si
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=brar.si header.i=@brar.si header.a=rsa-sha256 header.s=resend header.b=Af7TODiB;
-	dkim=pass (1024-bit key, unprotected) header.d=amazonses.com header.i=@amazonses.com header.a=rsa-sha256 header.s=zh4gjftm6etwoq6afzugpky45synznly header.b=mMvswtux
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple; s=resend;
-	d=brar.si; t=1794459388;
-	h=In-Reply-To:Message-ID:References:From:To:Cc:Subject:Content-Transfer-Encoding:Date:MIME-Version:Content-Type;
-	bh=hqpDdIUJjjOih1dA6yXpKW8zONvOpjnNAKL20f2cAtg=;
-	b=Af7TODiBmaooroEgOtetU4rXexs7uvDwKShRRXmYVVQYN4gydEVv2Kq2Ye8x31rN
-	FerXQ6A0IyT7qrI50ooSGuXRcyrmEG2u1RJiom13VsD2IthcMEmqOTL0+yYZ4mOAzVI
-	fxppEBM5M/fxVBms/D3HnFyGYvbOwA+SDqJhFg6o=
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
-	s=zh4gjftm6etwoq6afzugpky45synznly; d=amazonses.com; t=1794459388;
-	h=In-Reply-To:Message-ID:References:From:To:Cc:Subject:Content-Transfer-Encoding:Date:MIME-Version:Content-Type:Feedback-ID;
-	bh=hqpDdIUJjjOih1dA6yXpKW8zONvOpjnNAKL20f2cAtg=;
-	b=mMvswtux5JuzzuunQucOE57LRO0G6qwL7rhUI4AI33nP3xOFzNMk0DL2bBJgljPc
-	X24MuzP7W58j+cj3lQ0zDUBhJEyozkP5E12La9c7+6Yjr2PdV8HlvsAyuUpdyVBSrua
-	bwU6GjPO5d1vBzSAfl5wdAmmzHJxeV/58qbEI/Eo=
-In-Reply-To:
- <010601a190662577-fd93bfc1-739a-45ce-9847-727776271c84-000000@ap-northeast-1.amazonses.com>
-Message-ID: <010601a1ce1d4a7f-b86fd687-39b4-43bb-a9c2-b438b92418e3-000000@ap-northeast-1.amazonses.com>
-References: <20261027-icc-sm7250-v4-0-f9bdaa3c1c7b@brar.si>
- <010601a17d6212dc-ed028a84-ea72-48e7-a4d8-fea315dc42cc-000000@ap-northeast-1.amazonses.com>
- <20261028-classic-sloppy-harrier-72dfcf@quoll>
- <b0d99121-06a2-4674-bbc0-0edeb426e072@kernel.org>
- <010601a190662577-fd93bfc1-739a-45ce-9847-727776271c84-000000@ap-northeast-1.amazonses.com>
-X-Pmail-ID: <1794459387709.d8761bad7b35@brar.si>
-From: Ishu Brar <patches@brar.si>
-To: patches@brar.si
-Cc: krzk@kernel.org, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-pm@vger.kernel.org, konradybcio@kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 1/2] dt-bindings: interconnect: qcom: Add SM7250
- RPMh NoC
-Content-Transfer-Encoding: quoted-printable
-Date: Thu, 12 Nov 2026 04:56:28 +0000
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A56A3606A321;
+	Thu, 12 Nov 2026 05:13:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A56A3606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: ca2f8160de5711f19a56ed5b684f684d-20261112
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.19,REQID:5fdecb04-0666-42c4-9ebb-c02f989342c4,IP:0,U
+	RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:-5
+X-CID-META: VersionHash:7db8b62,CLOUDID:68529bbf875d0f11b69a9fa443e77b28,BulkI
+	D:nil,BulkQuantity:0,SF:80|81|82|83|102|136|865|898,TC:nil,Content:0|15|52
+	|99,EDM:-3|-100,IP:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,CO
+	L:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: ca2f8160de5711f19a56ed5b684f684d-20261112
+X-User: luoxueqin@kylinos.cn
+Received: from [10.42.13.56] [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <luoxueqin@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
+	with ESMTP id 766716511; Thu, 12 Nov 2026 13:13:26 +0800
+Message-ID: <c6227bc2-beff-40f0-a76f-f2e296de5081@kylinos.cn>
+Date: Thu, 12 Nov 2026 13:11:43 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,37 +62,73 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Feedback-ID: :1.ap-northeast-1.5YL5VvZ+qZ0e19wo5UdMspzrKjMAjMWs/SlfuwHJq77JVCQWpVGwyETo7FaXf+sztO4bYMxF6WHssrYHSY+K7X2T1EZhOskwm44pQQStdKG0Jdj3d5ybzIXFkMTcPBXllY63oWIrFhJN26LFqLzTuHiXuqj9UCHxIuFhxi7IM0GCfceBHtKocmWdFsR9dK9X:1.ap-northeast-1.TOS0vxEE3Ar6ai29fkp2i/jb+l2iigajCGeLfF7S3sk=:AmazonSES
-X-SES-Outgoing: 2026.11.12-23.251.234.54
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 3/3] arch_topology: Add topology_update_cpu_capacity()
+ for runtime updates
+To: kernel test robot <lkp@intel.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, sudeep.holla@kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+ zhanjie9@hisilicon.com, christian.loehle@arm.com, zhenglifeng1@huawei.com,
+ sumitg@nvidia.com, lenb@kernel.org, maciej.wieczor-retman@intel.com,
+ pawel.chmielewski@intel.com, gregkh@linuxfoundation.org, dakr@kernel.org,
+ johan@kernel.org, ionela.voinescu@arm.com, pierre.gondois@arm.com,
+ linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, acpica-devel@lists.linux.dev,
+ driver-core@lists.linux.dev
+References: <20261111085022.1229866-4-luoxueqin@kylinos.cn>
+ <202611120358.5eM3xOiA-lkp@intel.com>
+Content-Language: en-US
+From: luoxueqin <luoxueqin@kylinos.cn>
+In-Reply-To: <202611120358.5eM3xOiA-lkp@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Sat, 31 Oct 2026 05:19:35 +0000, Ishu Brar wrote:
-> On Wed, 28 Oct 2026 09:10:21 +0100, Krzysztof Kozlowski wrote:
->> On 28/10/2026 08:59, Krzysztof Kozlowski wrote:
->>>> +  clocks:
->>>> +    items:
->>>> +      - description: aggre UFS PHY AXI clock
->>>> +      - description: aggre USB3 PRIM AXI clock
->>>> +
->>>> +patternProperties:
->>>> +  '^interconnect-[0-9]+$':
->>>=20
->>> We actually do not need to enforce -0: '^interconnect(-[0-9]+)?$'
->>
->> Actually is this really a pattern? How many children are there?
->
-> No, not a pattern. there is at most one child per provider:
-> 	aggre2-noc  -> compute-noc
-> 	gem-noc     -> mc-virt
-> 	system-noc  -> qup-virt
->
-> The other providers have no child. v5 would =
-replace the pattern with a
-> single fixed "interconnect" child node.
->
-> Should the binding also allow the child only under these three
-> providers (and "interconnect: false" for the rest), or is the plain
-> child node enough?
+Thanks for the report. Fixed: the mutex is now defined inside the
+CONFIG_ACPI_CPPC_LIB block, next to its only user, so ACPI-less
+configs no longer warn. It will be folded into the next revision of
+the series.
 
- Gentle ping on the question above. If the plain =
-child node is enough, I'll send v5 with it.
+在 2026/11/12 03:30, kernel test robot 写道:
+> Hi Xueqin,
+> 
+> kernel test robot noticed the following build warnings:
+> 
+> [auto build test WARNING on driver-core/driver-core-testing]
+> [also build test WARNING on driver-core/driver-core-next driver-core/driver-core-linus amd-pstate/linux-next amd-pstate/bleeding-edge linus/master v7.4-rc2]
+> [cannot apply to rafael-pm/linux-next rafael-pm/bleeding-edge next-20261110]
+> [If your patch is applied to the wrong git tree, kindly drop us a note.
+> And when submitting patch, we suggest to use '--base' as documented in
+> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> 
+> url:    https://github.com/intel-lab-lkp/linux/commits/Xueqin-Luo/cpufreq-cppc-Add-update_limits-support-for-Highest-Performance-changes/20261111-165020
+> base:   driver-core/driver-core-testing
+> patch link:    https://lore.kernel.org/r/20261111085022.1229866-4-luoxueqin%40kylinos.cn
+> patch subject: [PATCH v6 3/3] arch_topology: Add topology_update_cpu_capacity() for runtime updates
+> config: arm-defconfig (https://download.01.org/0day-ci/archive/20261112/202611120358.5eM3xOiA-lkp@intel.com/config)
+> compiler: clang version 24.0.0git (https://github.com/llvm/llvm-project e73e336290028f26553b46c9fba844c13da38c9c)
+> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261112/202611120358.5eM3xOiA-lkp@intel.com/reproduce)
+> 
+> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202611120358.5eM3xOiA-lkp@intel.com/
+> 
+> All warnings (new ones prefixed by >>):
+> 
+>>> drivers/base/arch_topology.c:232:21: warning: unused variable 'raw_capacity_lock' [-Wunused-variable]
+>       232 | static DEFINE_MUTEX(raw_capacity_lock);
+>           |                     ^~~~~~~~~~~~~~~~~
+>     1 warning generated.
+> 
+> 
+> vim +/raw_capacity_lock +232 drivers/base/arch_topology.c
+> 
+>     230	
+>     231	static u32 *raw_capacity;
+>   > 232	static DEFINE_MUTEX(raw_capacity_lock);
+>     233	
+> 
+> --
+> 0-DAY CI Kernel Test Service
+> https://github.com/intel/lkp-tests/wiki
+
