@@ -1,91 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.208.44
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.170
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794509898;
-	b=suP5JDpnoqryY4M+O8lStZbm1CWH548rG3MY386ne8lStUIYHZn7FC634MBfac6OZHJM
-	 sx9LHupP5ISn3++kz3wDejYF79jGaXbeuHecnStq4XyUBBfsEAAqKk6EUdg4wroQME5Ya
-	 0v6lHfAIdHjSysbr2T+5ZXagmobh55ngOjIn/hdaCRW99c6VYOamn9aNFt5I+pYB2O6q0
-	 4XN+trGt8RSCxZD++qYtLzZn27uSADrNw2oHINAt1JGuYcoZE6Wa4VjETZ0IEHDj+Ow37
-	 HzNJRgkbLuCi5+4D/9LXow6+lZ/Y9CkvK6fK8cBYILtQHy2wXiBD5HbdsGoKDjZh9Ng==
+	t=1794511218;
+	b=qkU844waEgtn4Dng3fF4OlzYv8yuXP1JAyCyxisOFDYcPsWTfmEB3FVTgo/23tc0jBQv
+	 7kxMuqPIvyEhgXDOZLC3DRoCiscLnv43l6ix86rp+VttlrNDPOUPDuyxkOF7Y7miVRT06
+	 EKWnwL2Nfg7INtM223J87TUaIYYshkYmvFJnbsguUzkhO8OTw+Yobeo0R7nOYyso3XZ6n
+	 /Y8X4uyUQbNic3RdTP2F8GQXqiEJRW9ewGaqSvKV0EyIiM1m4QIV1Uu8oec5mwRtaCaKa
+	 yrJPDtFFVrpovzn1+bNCbbW4moIy9zEBMYXCydNNHyMX3S7XySh1y86qnvZGFLoUU3A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794509898;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794511218;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Received:X-Forwarded-Encrypted:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=Z0LqVPtG90eWIMD2SZHKU3bFXknR8F28KDHs5gdoi8g=;
-	b=jL0PaewRe0JZa8FOn9aiiQ0LbNrpB85UGWOX3ybvwndQAk2zSMugmKdAO6TCjSkUMCmA
-	 FoLmWKK+KnvIPYmGzAQgei5cc2zuRp1Vw4AhQlOr2QLLIXcRo0qWVpsZ7lg9siJ1YbfDC
-	 iEMsGjNX6MbQLgFid+f3zUIyiA5ChK0iblGcwfwgsukDJ18X9YtLYuZ5Y2So/UMObIgHl
-	 3axjmj4iKrIjWPuryfhrOJU2XJmU/H5/GzRuTi1gnScZkeLFkcGhN2xusT9SpBvBP58RP
-	 elwrp8BnIeRWDRr5LWuWX2wBO9ykFk/w5A1qWyux7XARoaCKGkUaGKOIQirBTL2sZ3g==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=PVPJ6zKdJ7kgvRyUlRiPX5ovk6pUYsEuwV1lOtnjEfA=;
+	b=SfGyYilNPWwfDdkxNlTmX1xqKPzLPUYE5ItAV02KxOKkbgkda7cDpSbJ3rjKSZ2DJIlL
+	 0cLLt8vHtcUbxW9BdYXRdKliBh+bU7bBA8djL9JgSR9guBt8VjIquyS9rZ+D64Bhvz19f
+	 Lb/+YPji9OFHS31pY8YkzS+/rUeAk3V0YKaYvEdTlk12pIaCRAfQuIBz8l7Q9HlEujUwW
+	 z+1CL6BeTc27ZifP5W6Ei/JfoF0+bPPakvvDubw/CYmZgMMpXzgVPAKNK450I5b+zaCmu
+	 jQg8d9DfHfPQh1e5ZsUE9Z0eTUwPpaWWitLm7dXRw4GGogxm3JgcE9Z0J2Gf3Z0VwhA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b="H6/u6aMe";
-	arc=none smtp.remote-ip=209.85.208.44
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=BFbfdZRs;
+	arc=none smtp.remote-ip=74.125.82.170
+Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3DD7606A8A4
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 18:58:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B3DD7606A8A4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0C7C606A335
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 19:20:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B0C7C606A335
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=H6/u6aMe
-Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-6b56221d361so164005a12.3
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 10:58:17 -0800 (PST)
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=BFbfdZRs
+Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-3704d30b84fso295175eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 11:20:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1794509896; x=1795114696; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Z0LqVPtG90eWIMD2SZHKU3bFXknR8F28KDHs5gdoi8g=;
-        b=H6/u6aMevFmaek2eIrsT9Js2G+OK1wpOUy0QJBVKr+4eLcwImjTGc0i1uPouEQRKUN
-         HE4SHejC/eY2k9C0mc+1amAnDVXmFVPa3GSUTshA3EOfCmbqB6/8o1FnGIWbSZqP4tRH
-         Gi9DmPc5ye/t3PsVVgPyj7pWV2MgLl+zXJWa4=
+        d=chromium.org; s=google; t=1794511217; x=1795116017; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=PVPJ6zKdJ7kgvRyUlRiPX5ovk6pUYsEuwV1lOtnjEfA=;
+        b=BFbfdZRsrkf/O6yYdWUn/qjrTGRP1SnCuPyAnUf2g31z+r8f7LYKu4p1+7P9M286HU
+         rBcyk3gcIDdHrIYRAqc+TxMKHp87rsNzKzXKXZvJyeukjWLefmDIOk+d3F07qpOrczbF
+         l6hPPcQqjo5KuDUR09wdAGQFYzn682P6Udnbs=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794509896; x=1795114696;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Z0LqVPtG90eWIMD2SZHKU3bFXknR8F28KDHs5gdoi8g=;
-        b=uJaIdMVHmicDiAXUuQj9FSjaENsshoq2ukQPeEk6SGRHCtYEV1u1UF5EVngTaKJD05
-         Fb+Tlnp94IPi0okbPQlkeyKxyFQODflUkpr2jlkMUOp2x9ccYdtQy9MZhXlqAqZLeD3o
-         Coo5MCdLGdvZXiSQTiXKnUrcS0a7b/4CX9L6ytdwwU1R7yfiy4ECPL80woQcW84ebzfv
-         fgRldYfdxwctO20pz2TxuY7M4it7W78g+BCk5/lAGUwx57jzLHs8AuqRhH20MqNUpSxx
-         +u9mGUkgDj9dwIv+zcq0CE4bsmMCYIX3KM20o6dnYs1KCNj0FGXeCNly3AbtUk9xlJkM
-         tFBg==
-X-Forwarded-Encrypted: i=1; AL+hErExkuUnKBgZBC1RLZghkg5p5cyKjijBb9rIgYASQvDB+0VLLKEljur8oi4MPfF8n8CQ7JCHzV1FTg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8UzS2Kd42NnFkbyNIArW9ck/1VmchWKyUy9R+dbKJfTKbSqkAz
-	DFEjksaEhX5Tor2wtqRXm4/SJjWLU6IVv7aiFH0BrTTVQ4FkpdLWCAUVf8DF8G5EOghKJvldHli
-	8Das7QA==
-X-Gm-Gg: AYBFou38XFu2tPvFRAQrUQ3es+2OHQZXDLHG7bI1U178dhU4zJ1kvEXlyqSnPdiPg/B
-	YJeuKa9e2IllzqjW7P6UySWPYOjBmLeQSxu5Y24ftuZV2SIlbgde2T+C8M4Ot2NOQnTWO8RHUs1
-	LRwjMY/rvH//m4YwoSV5fc4N5jcSbJRup3/lo/VEixw+HrfFZQsqyvYPtFdN1GZGGIDfDp1icsZ
-	DWPMDV6khJBVSRUXOC79rN/xeYEE6UgK9q8hGY9fNMJKbUC2W78k+iIoT369zaSkQNoZimq76KD
-	/2RFe0eJpphThRD6HPqjZM/GfV9lsfbs8n3LVfnSoBK5B49Wr6pr+ND0LT70nXaLGcpRzrzVQ9j
-	2Kh9pbSmpLkyDYLeHZrXGtQ9zNdUMUcdgujEtLOL0q7m1Fx/1ne1kuuprUlEWSQIieDpyWuN55e
-	dV+OuNSf0qUOxBYgGGImMecJQ2dJDLLl4HzxZmX+sP9kmpbbohHDQ1eB1qztiMryO7v46z1/r25
-	GblrrVLmjCEZEFt3s2H8sdGgB1SIx8AOMYTCvglnWm2PrFAlqx1IbLYQIcRoDoTAfoZ25B5fDM9
-	IPs+dvbEiNEYFbpdAIvrgUlrCboIXdkS4sxgIg8Y2GxagVK1NW76meFFQfRcL6FPvbn1qA9koyl
-	t+Gf0E1g/FNy70w==
-X-Received: by 2002:a05:6402:280d:b0:6b6:4dcd:967e with SMTP id 4fb4d7f45d1cf-6b7c0bbc394mr457402a12.20.1794509896038;
-        Thu, 12 Nov 2026 10:58:16 -0800 (PST)
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com. [209.85.128.54])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c5095b79d19sm7543166b.71.2026.11.12.10.58.13
-        for <linux-pm@vger.kernel.org>
+        d=1e100.net; s=20260707; t=1794511217; x=1795116017;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=PVPJ6zKdJ7kgvRyUlRiPX5ovk6pUYsEuwV1lOtnjEfA=;
+        b=IxAIL1Js7aTs9gYPe6FBLttU5NANg8TG/Po7IVgruUKwA7ESqai/U62fxspv0/2SOQ
+         99si/TDHoeyGS5bDEDzZ21wkM9//WdUdnGt6qA9Fw9V0PAinlug6/TCiIavOVxzKAKUp
+         nyLwNHg8tew8yOLORUrRiz4VKaJ/0VNE6xyhNyhqxHV8DXbAABg52CT+hVS9OA3SuTZx
+         VWcxTMIrvd2kW8ueWt8/CGvX5D9PSrTUw8IeMNY9hmt5jIF5f7YhZkAXZEsDNXiiZPOd
+         SHFk7mmvm+3x2W3OxbunMhbHZYghIs89VuqjQQ1LazfT6luX4fmogtlq6a/IHJqFyjdB
+         RmLw==
+X-Forwarded-Encrypted: i=1; AL+hErE2gAo855uJr2LtEhP1uHemP0aLgh4pTDTB/ZGas40ewTaTRqNY+fBz5ITEV5Myqj7tYYLxl85a4Q==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9Oj266bQ/iy6ZPtcwBG9CAhMgN/SlXbtkWHKS56qyBPIenfzUO
+	N526IuS5AfGov3mcZAk8y52tdds8XVLbjq9D2yAeWHoJwS1MBZyw+c+UmmoSZN4+EQ==
+X-Gm-Gg: AYBFou2d1EBZlC5ahkvzIHJMzVt6XfzuOPPbmMz6Ba1c2yjKM8GWV+g9re4eeq+FhFH
+	JW6vum4UT3O8V31LmbXreDjSoJ4WwnCbc1LvQIxWSuKdMVX276T1jkvQq5kpcyvwrQvTS1NJP+e
+	ECH6yXNQq1pNmY7fzi4sc/GeXqJ7rPWSkYLkx0iH/3vTkcFc6c+6sTpWBg/IEl6uYOP+CJQzizE
+	HUgLIiwGoBBKxlI7IJhf8DyIaA1Av9itqPEkY85bcxqFHHRA5cDDcBndAi9hnMiXjoCrdTO2Nis
+	cIS89Jb4XlVxoy2vO05OP18ZL6XgnvgptFPPvaFVD04jRIN01EXcWyH7zGEBMXpNBJoGHKHJr/I
+	oRcqGnrhpsyLUyyT65vwBrH+c0waiwYDZUDPcOjSh7fmqmC2SzdM5m/NiNAjEAEnlCSQulGZzC0
+	c2SKne/Y1uhvjoOzAWr8t452fe7TvTcXEqoSaD+b52+0l1AHza3krNRCrdo03k3LcOurSRIlE/C
+	N0GQWOwBsGqn5BO2clZXVkkW0clurkHA3l514yHGRxvLuRntINTXydJvK9X3wAEr0nBp1FXTLjy
+	bwnOLNYFOHqcHM4wyw50Z8UDNTRB8Gv81Xc7co8o8lQiI0pjGAnVMQmKxN3vOHmaEyve
+X-Received: by 2002:a05:7301:2a9c:b0:372:79a0:e8a3 with SMTP id 5a478bee46e88-37963374fdemr130138eec.1.1794511216522;
+        Thu, 12 Nov 2026 11:20:16 -0800 (PST)
+Received: from localhost ([2a00:79e0:2e7c:8:5446:563c:ac92:43a8])
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-379558231eesm516606eec.12.2026.11.12.11.20.14
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 Nov 2026 10:58:15 -0800 (PST)
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a35db1f202so1055585e9.3
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 10:58:13 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErEkRMan9kpWAz2IVEx4um4Z0aoL70iywnPRxiR8EW3ejPSpvgE64FS9Ott8XSLhjxkqPpZrCSy6iw==@vger.kernel.org
-X-Received: by 2002:a05:600c:1c18:b0:4a7:9044:a87 with SMTP id
- 5b1f17b1804b1-4bb55ac0e34mr2161075e9.27.1794509892596; Thu, 12 Nov 2026
- 10:58:12 -0800 (PST)
+        Thu, 12 Nov 2026 11:20:15 -0800 (PST)
+From: Brian Norris <briannorris@chromium.org>
+To: Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Cezary Rojewski <cezary.rojewski@intel.com>,
+	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+	Bard Liao <yung-chuan.liao@linux.intel.com>,
+	Daniel Baluta <daniel.baluta@nxp.com>,
+	linux-pm@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
+	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
+	Brian Norris <briannorris@chromium.org>,
+	linux-arm-msm@vger.kernel.org
+Subject: [RESEND PATCH 1/3] ASoC: codecs: lpass: Discard pm_runtime_put_autosuspend() return values
+Date: Thu, 12 Nov 2026 11:19:37 -0800
+Message-ID: <20261112111937.RESEND.1.I5cd238b1d4516d4d6980565e0a4e1b83d9abce63@changeid>
+X-Mailer: git-send-email 2.56.0.611.g1030f0b940-goog
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -95,73 +104,151 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261006231900.3230373-1-briannorris@chromium.org> <20261006161337.2.If1822f9a34be06cf5939be44ac6465c543087c75@changeid>
-In-Reply-To: <20261006161337.2.If1822f9a34be06cf5939be44ac6465c543087c75@changeid>
-From: Doug Anderson <dianders@chromium.org>
-Date: Thu, 12 Nov 2026 10:58:00 -0800
-X-Gmail-Original-Message-ID: <CAD=FV=VbcYGJP6ag_pxwNB3s2iedeF8rey9QUZo3B2YQm25diw@mail.gmail.com>
-X-Gm-Features: AclHuK_PiPmNrCWJDrFpHZHvHvTj2hKqQgB_JTPOXCKXOf56_rtdlcICXQ5xuAY
-Message-ID: <CAD=FV=VbcYGJP6ag_pxwNB3s2iedeF8rey9QUZo3B2YQm25diw@mail.gmail.com>
-Subject: Re: [PATCH 02/13] drm: Discard pm_runtime_put_autosuspend() return values
-To: Brian Norris <briannorris@chromium.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
-	Ulf Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org, 
-	=?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>, 
-	Jessica Zhang <jesszhan0024@gmail.com>, Jyri Sarha <jyri.sarha@iki.fi>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Melissa Wen <mwen@igalia.com>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
-	dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi,
+Printing warning messages on pm_runtime_put_autosuspend() returning
+negative values is not particularly useful.
 
-On Tue, Oct 6, 2026 at 4:19=E2=80=AFPM Brian Norris <briannorris@chromium.o=
-rg> wrote:
->
-> Several DRM drivers use or propagate the pm_runtime_put_autosuspend()
-> return value, which is not particularly useful.
->
-> Returning an error code from pm_runtime_put_autosuspend() merely means
-> that it has not queued up a timer or work item to check whether or not
-> the device can be suspended and there are many perfectly valid
-> situations in which that can happen, like after writing "on" to the
-> device's runtime PM "control" attribute in sysfs for one example.
->
-> For this reason, modify these drivers to simply discard the
-> pm_runtime_put_autosuspend() return value, and change the return type of
-> v3d_pm_runtime_put() (whose return value is never used) to void.  Also
-> drop the redundant pm_runtime_mark_last_busy() calls right before
-> pm_runtime_put_autosuspend().
->
-> This will facilitate a planned change of the
-> pm_runtime_put_autosuspend() return type to void in the future, similar
-> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
-> type to void").
->
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> ---
-> This patch is independent of the rest of the series, except for the end
-> (changing the return type). I expect it can be applied by individual
-> maintainers, and we pick up the end once the dust is settled.
->
->  drivers/gpu/drm/panel/panel-simple.c | 8 +-------
->  drivers/gpu/drm/tidss/tidss_drv.c    | 7 +------
->  drivers/gpu/drm/v3d/v3d_drv.h        | 4 ++--
->  3 files changed, 4 insertions(+), 15 deletions(-)
+Returning an error code from pm_runtime_put_autosuspend() merely means
+that it has not queued up a timer or work item to check whether or not
+the device can be suspended and there are many perfectly valid
+situations in which that can happen, like after writing "on" to the
+device's runtime PM "control" attribute in sysfs for one example.
 
-FWIW, the hunk against tidss_drv.c goes away on the top of
-drm-misc-next, since it's 100% identical to what landed in commit
-2cc797f73768 ("drm/tidss: Drop WARN_ON() from tidss_runtime_put()").
+Accordingly, update the LPASS macro codec drivers to simply discard the
+return value of pm_runtime_put_autosuspend().
 
-The changes to the other two files look fine to me.
+This will facilitate a planned change of the
+pm_runtime_put_autosuspend() return type to void in the future, similar
+to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+type to void").
 
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+---
+This patch was originally sent as part of a larger series here:
+https://lore.kernel.org/all/20261006161337.9.I5cd238b1d4516d4d6980565e0a4e1b83d9abce63@changeid/
 
-Pushed to drm-misc-next.
+I expect it should be merged by subsystem maintainers, and we can make
+the return type change later.
 
-[02/13] drm: Discard pm_runtime_put_autosuspend() return values
-        commit: c88084027d0e922dd925b96e5a0d184ba04a8f43
+ sound/soc/codecs/lpass-rx-macro.c  |  4 +---
+ sound/soc/codecs/lpass-tx-macro.c  |  4 +---
+ sound/soc/codecs/lpass-va-macro.c  | 17 ++++-------------
+ sound/soc/codecs/lpass-wsa-macro.c |  8 ++------
+ 4 files changed, 8 insertions(+), 25 deletions(-)
 
--Doug
+diff --git a/sound/soc/codecs/lpass-rx-macro.c b/sound/soc/codecs/lpass-rx-macro.c
+index ab8a1c2b0489..c703275fc442 100644
+--- a/sound/soc/codecs/lpass-rx-macro.c
++++ b/sound/soc/codecs/lpass-rx-macro.c
+@@ -3919,9 +3919,7 @@ static int rx_macro_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_rpm_put;
+ 
+-	ret = pm_runtime_put_autosuspend(dev);
+-	if (ret < 0)
+-		dev_warn(dev, "runtime PM put failed after probe: %d\n", ret);
++	pm_runtime_put_autosuspend(dev);
+ 
+ 	return 0;
+ 
+diff --git a/sound/soc/codecs/lpass-tx-macro.c b/sound/soc/codecs/lpass-tx-macro.c
+index def7dcc2058d..26e8486ce041 100644
+--- a/sound/soc/codecs/lpass-tx-macro.c
++++ b/sound/soc/codecs/lpass-tx-macro.c
+@@ -2370,9 +2370,7 @@ static int tx_macro_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_rpm_put;
+ 
+-	ret = pm_runtime_put_autosuspend(dev);
+-	if (ret < 0)
+-		dev_warn(dev, "runtime PM put failed after probe: %d\n", ret);
++	pm_runtime_put_autosuspend(dev);
+ 
+ 	return 0;
+ 
+diff --git a/sound/soc/codecs/lpass-va-macro.c b/sound/soc/codecs/lpass-va-macro.c
+index 61b24a1e4dde..a090b3e7b5e1 100644
+--- a/sound/soc/codecs/lpass-va-macro.c
++++ b/sound/soc/codecs/lpass-va-macro.c
+@@ -1352,7 +1352,7 @@ static int fsgen_gate_enable(struct clk_hw *hw)
+ {
+ 	struct va_macro *va = to_va_macro(hw);
+ 	struct regmap *regmap = va->regmap;
+-	int ret, rpm_ret;
++	int ret;
+ 
+ 	ret = pm_runtime_resume_and_get(va->dev);
+ 	if (ret < 0)
+@@ -1360,11 +1360,7 @@ static int fsgen_gate_enable(struct clk_hw *hw)
+ 
+ 	ret = va_macro_mclk_enable(va, true);
+ 	if (ret) {
+-		rpm_ret = pm_runtime_put_autosuspend(va->dev);
+-		if (rpm_ret < 0)
+-			dev_warn(va->dev,
+-				 "runtime PM put failed in fsgen enable unwind: %d\n",
+-				 rpm_ret);
++		pm_runtime_put_autosuspend(va->dev);
+ 		return ret;
+ 	}
+ 	if (va->has_swr_master)
+@@ -1378,7 +1374,6 @@ static void fsgen_gate_disable(struct clk_hw *hw)
+ {
+ 	struct va_macro *va = to_va_macro(hw);
+ 	struct regmap *regmap = va->regmap;
+-	int ret;
+ 
+ 	if (va->has_swr_master)
+ 		regmap_update_bits(regmap, CDC_VA_CLK_RST_CTRL_SWR_CONTROL,
+@@ -1386,9 +1381,7 @@ static void fsgen_gate_disable(struct clk_hw *hw)
+ 
+ 	va_macro_mclk_enable(va, false);
+ 
+-	ret = pm_runtime_put_autosuspend(va->dev);
+-	if (ret < 0)
+-		dev_warn(va->dev, "runtime PM put failed in fsgen disable: %d\n", ret);
++	pm_runtime_put_autosuspend(va->dev);
+ }
+ 
+ static int fsgen_gate_is_enabled(struct clk_hw *hw)
+@@ -1693,9 +1686,7 @@ static int va_macro_probe(struct platform_device *pdev)
+ 		goto err_rpm_put;
+ 	}
+ 
+-	rpm_ret = pm_runtime_put_autosuspend(dev);
+-	if (rpm_ret < 0)
+-		dev_warn(dev, "runtime PM put failed after probe: %d\n", rpm_ret);
++	pm_runtime_put_autosuspend(dev);
+ 
+ 	return 0;
+ 
+diff --git a/sound/soc/codecs/lpass-wsa-macro.c b/sound/soc/codecs/lpass-wsa-macro.c
+index e3fe8d0af8be..6d330bd4eddb 100644
+--- a/sound/soc/codecs/lpass-wsa-macro.c
++++ b/sound/soc/codecs/lpass-wsa-macro.c
+@@ -2559,9 +2559,7 @@ static int wsa_swrm_clock(struct wsa_macro *wsa, bool enable)
+ 				   CDC_WSA_SWR_CLK_EN_MASK, 0);
+ 		wsa_macro_mclk_enable(wsa, false);
+ 
+-		ret = pm_runtime_put_autosuspend(wsa->dev);
+-		if (ret < 0)
+-			dev_warn(wsa->dev, "runtime PM put failed: %d\n", ret);
++		pm_runtime_put_autosuspend(wsa->dev);
+ 	}
+ 
+ 	return 0;
+@@ -2833,9 +2831,7 @@ static int wsa_macro_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_rpm_put;
+ 
+-	ret = pm_runtime_put_autosuspend(dev);
+-	if (ret < 0)
+-		dev_warn(dev, "runtime PM put failed after probe: %d\n", ret);
++	pm_runtime_put_autosuspend(dev);
+ 
+ 	return 0;
+ err_rpm_put:
+-- 
+2.56.0.611.g1030f0b940-goog
+
