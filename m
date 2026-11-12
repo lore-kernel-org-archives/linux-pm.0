@@ -1,60 +1,65 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794478396;
-	b=mEyXTLb59MBtdexa+HP0gr2X0rRFktGI1rhqUEoeupK2DEbSm0rau5pwuVq7M7QkJE6o
-	 tjfq/gC0g/gTatALKnevwgBUhhb1yo8ZNq6e4vBzYYbJESzyNqfPu9ixHSO7rVCPIa6Hy
-	 M6YiFVyUHb33J3HZWhPIDshBXubDTzF32ar1qWoLqqsPedsngkTgtLoQXgTgAWmjdmTPd
-	 Z25a0E4LCLtEkawhYsvVRpn2o1/RKeStgiUlIyLZ1RjAgE9TPseVnvZjG1CimmMikDNyM
-	 EzA+WiWwNFoyOBtGDcwKrQxGdA3gZvXOqQHQFvSaXa2CBlTFdSTsBQW4NnB89LJv3bw==
+	t=1794479579;
+	b=nd8BYtgYFhedaZ86r6JDcU6SMmlmjQhrRxfDsY7kYgbhPn7exNilaF9LWdN5BaLUJU9R
+	 oEFQUhY6C2O6G8tZxIvoponZLhEc9ecY+Oaul4ZYUmyf4DuM6EGvfGCd29s6qR9i3eLX9
+	 efqk/cFDH8LUbkYxbyoberJ6IA5S4gvIVGB0Tf3X3Sh1uNpwfVSHezd8kXEhyMQKMZXq9
+	 CVWXeEZnFdTmWxqz4R33tmu8PhGawGgjnTZVDevENNg539fBXdcZb0A6QgaaJd2DedxQ6
+	 S6r+t5jNXjjyteuObNDNgQxGs9iy/FZLTDV7QRECO4yjfuMNgAGwfpCAlTz8usyPKdA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794478396;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794479579;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=wtvm4bUz4M3LTVqusNXCR/CjAB5YqrK+oM377d5ahbo=;
-	b=fYY0UEFEpfVW6xMQ+Spfi8piJ4kz4dg1zjOmBXml3ywmSHr2itE4n7VBbWJxQ6z9gIPP
-	 c2mCwSZ7ZTfx4DLhkXU5H/CWbokkNaIbiJT/SPuO0ysNaC5Z7P/kZf48dE323Xnja07nE
-	 qYTvhuIGZUVeLfP+XdZiR38B8+SWTh7udYNumuwZXUT6JFo9qQINgbmyCcYCK6uPKrRBi
-	 8/7MjwhzLUfeG6T9ZBXlnT337gmuI1x+z7OCK3715L9Kq1FNm5DXE92ooO2sFy8Dzkxc0
-	 iiXGCOiAWC83QFW3C5qkeOKZAWGYiJdqOoqov+sRVxfx+cwbbdOPNOjdDqRmE+wI8MA==
+	 References:MIME-Version:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To;
+	bh=7asrFaHTzZllDDUNciX3JSRX5gXUC5F4fBVc9Jkwf0E=;
+	b=0UJdqs4GhwfSDAoko7yE4+1jniLZacCE97EDZPG6OXzvnlFDRHItjcKT7s7GcCJkPLvf
+	 dFlCK+gmuB+gAIcq/rLIEK9uCW/xWPsftRWSnKg7oU/TnmL2nY+L3DYdCx7V5TMiZ+rDK
+	 p+PvP4dp5MRZ5bVVr8rBy7yj2XMS7MuO0q0yazR8hI767tKNeLGrKLsOdTfjuata0xqm9
+	 yI3XNLVhb2M4o4ydlMxRW25s8Bd8U0WSwk/O3RYl0k4pG/fDDFsAvHS77i7rmFaHC7DBU
+	 rEDfZ+eQmMvWS1MxCyNZGB45XOUbs75/p/xdD9K/DARy0t1BTiJCN7lJbKtrn0SF9ag==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=et7P3CEt;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SGb2yDtZ;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with UTF8SMTPS id 78151606A33D;
-	Thu, 12 Nov 2026 10:13:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CF86606A31C;
+	Thu, 12 Nov 2026 10:32:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=et7P3CEt
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 3BF161F00A06;
-	Thu, 12 Nov 2026 10:13:14 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SGb2yDtZ
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1E9D1F00A05;
+	Thu, 12 Nov 2026 10:32:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794478396;
-	bh=wtvm4bUz4M3LTVqusNXCR/CjAB5YqrK+oM377d5ahbo=;
+	s=k20260515; t=1794479579;
+	bh=7asrFaHTzZllDDUNciX3JSRX5gXUC5F4fBVc9Jkwf0E=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=et7P3CEtmIsa+Oex5SrpZMGXuy0LFl5uTSPe+GnmBwygD9vZLtxlcwNZQP/2NiL04
-	 fdWQ8/XxZX3c4EtM/QhsWmTmCbliYZ29uO25MANGCdd6ofuRZNcbAzx+xvLLmu8B5I
-	 +PTlMEQxwo9GOvUbwE/rH/joIQC/ClD5J9VuegfBJ4xx8dY7mB+45CvSpGj1Nt4ZFY
-	 eDC6PgdBGfFQBalRYzydyskDi/wkYdRD/DBbgBLniYfjM8OMZ5wyHY3pZ77aaI0CSo
-	 XwAicgA0lfLkcUAFXTB7YEh2tYsnecXWy8nt5vNRZBTOb9axnovgAJiRSTri0tL4uN
-	 h8IPyJRZppnAA==
-Date: Thu, 12 Nov 2026 11:13:12 +0100
-From: Bartosz Golaszewski <brgl@kernel.org>
-To: Linghui Wu <linghui.wu@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Miaoqing Pan <miaoqing.pan@oss.qualcomm.com>, 
-	Hangtian Zhu <hangtian.zhu@oss.qualcomm.com>, Shuai Zhang <shuai.zhang@oss.qualcomm.com>, 
-	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 0/3] power: sequencing: qcom-wcn: support SW_CTRL wake
- IRQ
-Message-ID: <ixgltkv3v6soazi6h335tm3eiuomiyw6lcdlxl4sczngcoe7jl@2jlv7z6dyrrt>
-References: <20261019093911.3199891-1-linghui.wu@oss.qualcomm.com>
- <20261112072009.3815276-1-linghui.wu@oss.qualcomm.com>
+	b=SGb2yDtZZqWFVT0guABW2rgY6yde91AMAt54K9zUMc6UNmu7S/V4fgWu69fKsfyPV
+	 7Es8RO7tpcRecCeER9guaREA7sPOuG3WBLnorqOoYS6/o/S+jqXwzN2exs1B8sA3N/
+	 ZF4JGs3m2/skadvs75aHgR/H6ByuPWU7sQ1BdFy1mJYih50uf3Zp+ccuiPVeVwtDCA
+	 bR7Q5WXN7kDBxMaW3Jvayc6JUP0xbthJyaw/KGsHM7Svirv2yXY2jesLK5/Jg9PZyO
+	 7OsRdD1RmzyyESGfks3oK20chkDsepDNhUJxWgPddg2c6NE2aQVDzmY1ONk0PsuEG1
+	 X2DZOwBkjArtw==
+Date: Thu, 12 Nov 2026 16:02:46 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Val Packett <val@packett.cool>
+Cc: Loic Poulain <loic.poulain@oss.qualcomm.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pci@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Wei Deng <wei.deng@oss.qualcomm.com>
+Subject: Re: [PATCH v7 5/8] Bluetooth: hci_qca: Support QCA2066 on M.2
+ connector via pwrseq
+Message-ID: <avWVnjF86FLFvfOC@debian>
+References: <20261005-monza-wireless-v7-0-5a6de7662dcb@oss.qualcomm.com>
+ <20261005-monza-wireless-v7-5-5a6de7662dcb@oss.qualcomm.com>
+ <bc7730e4-8b47-4c2b-84ef-277749f2aab8@packett.cool>
+ <CAFEp6-3Mt-CCJEz=RAJUh6pxH-Ssgkqfx3QQfyzvS9HwzFp9QQ@mail.gmail.com>
+ <906ebec9-de19-4a1e-9472-dcf8529fa232@packett.cool>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,28 +69,95 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261112072009.3815276-1-linghui.wu@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <906ebec9-de19-4a1e-9472-dcf8529fa232@packett.cool>
 
-On Thu, Nov 12, 2026 at 03:20:06PM +0800, Linghui Wu wrote:
-> Some WCN3990-family devices use the SW_CTRL GPIO to indicate that
-> resources need to remain available while the application processor is
-> suspended.
+On Mon, Oct 12, 2026 at 04:10:26PM -0300, Val Packett wrote:
 > 
-> Teach the Qualcomm WCN power-sequencing driver to use the existing
-> SW_CTRL GPIO as a dedicated wake IRQ when the power sequencer is marked
-> as a wakeup source. The PM core keeps the IRQ disabled during normal
-> operation and arms it for system suspend.
+> On 10/9/26 1:40 PM, Loic Poulain wrote:
+> > Hi Val,
+> > 
+> > On Thu, Oct 8, 2026 at 12:58 AM Val Packett <val@packett.cool> wrote:
+> > > 
+> > > On 10/5/26 9:21 AM, Loic Poulain wrote:
+> > > > For QCA2066 (and other QCA chips) on M.2 connectors, the UART enable is
+> > > > controlled by the W_DISABLE2# signal managed by the pcie-m2 power sequencer
+> > > > rather than a dedicated BT enable GPIO.
+> > > > 
+> > > > When the serdev controller has an OF graph (indicating it is connected to
+> > > > an M.2 connector), acquire the 'uart' pwrseq target from the connector's
+> > > > power sequencer and use it to control BT power instead of the bt-enable
+> > > > GPIO. This is factored out into qca_serdev_get_m2_pwrseq().
+> > > > 
+> > > > Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
+> > > > Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> > > > Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> > > > Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
+> > > > ---
+> > > >    drivers/bluetooth/hci_qca.c | 47 +++++++++++++++++++++++++++++++++++----------
+> > > >    1 file changed, 37 insertions(+), 10 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+> > > > index 1d27ff98034ba99d0783e48db5c605f3b31117ea..b6ec1a57248e2cf4bd138898ffc5cad45b1b4a8b 100644
+> > > > --- a/drivers/bluetooth/hci_qca.c
+> > > > +++ b/drivers/bluetooth/hci_qca.c
+> > > > @@ -1875,6 +1875,9 @@ static int qca_power_on(struct hci_dev *hdev)
+> > > >                        /* Controller needs time to bootup. */
+> > > >                        msleep(150);
+> > > >                }
+> > > > +
+> > > > +             if (qcadev->bt_power.pwrseq)
+> > > > +                     pwrseq_power_on(qcadev->bt_power.pwrseq);
+> > > >        }
+> > > > 
+> > > >        clear_bit(QCA_BT_OFF, &qca->flags);
+> > > > @@ -2396,6 +2399,34 @@ static int qca_init_regulators(struct qca_power *qca,
+> > > >        return 0;
+> > > >    }
+> > > > 
+> > > > +static void qca_serdev_put_pwrseq(void *data)
+> > > > +{
+> > > > +     pwrseq_put(data);
+> > > > +}
+> > > > +
+> > > > +static int qca_serdev_get_m2_pwrseq(struct qca_serdev *qcadev)
+> > > > +{
+> > > > +     struct serdev_device *serdev = qcadev->serdev_hu.serdev;
+> > > > +     struct pwrseq_desc *pwrseq;
+> > > > +
+> > > > +     if (!of_graph_is_present(dev_of_node(&serdev->ctrl->dev)))
+> > > > +             return 0;
+> > > Seems like of_graph_is_present does *not* return false for the existing
+> > > (non-connector) setup which is currently used in all the laptop device
+> > > trees..
+> > If I understand the issue correctly, this can only occur when a UART
+> > 'port' is left unconnected, in which case the failure is legitimate.
+> > The laptop device trees should be fixed accordingly, either by
+> > connecting the port to the corresponding M.2 device or by using the
+> > usual Bluetooth UART child-node approach. I don't see this issue in
+> > mainline.
 > 
-> The series documents wakeup-source for the WCN PMU binding and enables
-> it for the Shikra CQM, CQS and IQS EVKs.
+> So it looks like this is because commit 014501d141ed ("arm64: dts: qcom:
+> hamoa: Add graph port/endpoint anchors to pcie4_port0 and uart14")
+> unconditionally added the uart14 endpoint to hamoa.dtsi itself in
+> preparation for the future transition to proper M.2 descriptions.
 > 
-> The series has been validated on linux-next on Shikra hardware.
->
+> The laptop dts'es themselves still have the older child-node description for
+> bluetooth, with a dummy port { uart14_ep: endpoint {}; }; that's not used
+> yet.
+> 
+> Could the check be extended to actually verify that there's actually
+> something the graph endpoint is connected to? Or should that commit be
+> reverted?
+> 
 
-When addressing sashiko comments in v5, please make sure to send this as
-a new thread, not a reply to existing threads on the list.
+Taken care now: https://lore.kernel.org/linux-arm-msm/20261112-hamoa-dt-fix-v1-1-55efbac840f4@oss.qualcomm.com/
 
-Thanks,
-Bart
+I shouldn't have given my r-b tag for the offending patch :/
+
+- Mani
+
+-- 
+மணிவண்ணன் சதாசிவம்
