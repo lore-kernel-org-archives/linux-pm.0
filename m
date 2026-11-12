@@ -1,60 +1,72 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794483140;
-	b=d0H/AH3iRtbRXSzhFW3/b6NcIM+He20eegSt4emX6u5a/v73pzdtsF67EDit4mOmaflR
-	 y3EzA+jrqq70vsLPhkdD3ZaCfnAavl8yHD5WobMIR+BpnbJkn0HAXfIyU6mSCC8AqTraD
-	 w9g9JlkigSxIi3bbOBXvOvabUWlORXtuDRsSEwZD6BJpd5BnjHShIkQI4XF5REoVMQAcd
-	 xSaAq/xzr0tCeUFTF/YQcPTF4odPwcDUTChLb+b1Jhli5wlFGNJXNG62ZenGjnwbVbSGo
-	 47GYy/wYcOvxeH4IIUCOHmdC1NO7vYw2CDZOi0qFDtPnWTwfdyn8J13bfDJbKWslThQ==
+	t=1794484368;
+	b=FWhOcBH8gA/qLGc2/VtFjZs2Cl3FwseaT7iEMWGaz6JTH30fh5l8VFWecFKTGRBv7YkB
+	 WJZemZNCl/rZhf5bx2/4ZQ9LKxesJRJNL4bAqGx2XWUTux1GGUd7OE5bEXcwzwhflypL/
+	 48Q1W8D5sSBuVdWrVnmE9AHdiJCqCkPSXZerAJqOmcIO/23MpZz+xsjItCt5R4x/WH+5k
+	 APm4kKREwDfysgAN2u0Buf6sJC6pe6Eqs6JlnJ+B+GmCa2dg7d2LoNvANgmiMeZzi03DE
+	 RezU2J31VMQCFK7FiN13aDcA5podQ77joERcbzP20Qqjhs10fRwBWjJp2I6b0Ph8ovA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794483140;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
-	 Date:Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=oVVhe0CcwYsh26sRbUGAFXELiPdmcYARYiDIsm/ESwM=;
-	b=NgYeqIV1wJ/MAjTnxn4ZeI8ijcQ5mmKxSUL/3g8xgfyKYinry5O+qOTzXeSlVSfbJSyw
-	 TMITWlo3IYRWTq1cCwMyoGvjL/esHopygSu1yOU2NWAfE34Iwtk72VPxcP3kQc43lFRP0
-	 71XXvgg5koCSMB7f8fUlYIjozf8P/mbfh2kk683zXwrF9eb4ZUKbTfWs5NglEw5t3ld3Y
-	 CfHGsP9HAAImbR5NeI/aIcNw8weJcf64gZ52xqXItGYRg29KBKTEX3OnziIhSvAubtWUq
-	 Z0wKhSIQdapEdr2Zw0Cp9lgsIfl3vYoBaL/MVC1p6+D+EhMxtCbpmjTpBi+uRyXL8Dg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794484368;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=ab65Y+/YS/ftn0XtRf+D21POuuZDeeWSaeiwjaGmWKM=;
+	b=Dk1YwI5CFPnQpABSCxNcrJ9903L85NBkNO+r2arbu9XBA1zlNh0GLcZ1utBxpAyIFlPu
+	 PrV7J7Oi+VGFzAgvPmBSbnqjzXEKKRKmkJeSYSuOKydUtAPEkjheaChb78+ZgaVR+ynPv
+	 TpiCkKq9tIbZwd4Jqwp7LEnH/mU1yoOB96M/pwbgXqJQHu7EhxbvsGPTLHTc1lIe5nzRD
+	 vfKJdMMdR9njaMvVSGltAvi8ywoppnGrqYJwv1avFhLcw84fnB4bGayI6tXEI6WW+6aDe
+	 WlbUYfZpfIogeuvXjg+wS+wmbgUaL302sADJnmGd3FHVXFkRAwKZUWPfCLSqJN20bsQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=XYfg0c19;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E4258606A330;
-	Thu, 12 Nov 2026 11:32:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E4258606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JciomXZa;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06967606A321;
+	Thu, 12 Nov 2026 11:52:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=XYfg0c19
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 49198153B;
-	Thu, 12 Nov 2026 03:32:16 -0800 (PST)
-Received: from e127648.cambridge.arm.com (e127648.arm.com [10.0.130.226])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 493E03F632;
-	Thu, 12 Nov 2026 03:32:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794483139; bh=KRsTSirdGDIuNU6C2SAhAHBsx8rK7wqFVbQpwUQ8dXk=;
-	h=From:To:Cc:Subject:Date:From;
-	b=XYfg0c19MpFXDRLdxkG3gVF8rUQ6yujUhK/HFeJWTf3J8aF8hTT5QxyLTWvc5Py8X
-	 XiO4pm5X/8J3MwZEqrGChWZSxpfiUQJWjbyTRrRnQW1xI5eLNiOw0QzD1G+S0aj9Rv
-	 IRDBJnvkxtLKt5EWuj4MS1AX6MnP2DIJ4pGPO5+0=
-From: Christian Loehle <christian.loehle@arm.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	sumitg@nvidia.com,
-	zhanjie9@hisilicon.com,
-	zhangpengjie2@huawei.com,
-	Christian Loehle <christian.loehle@arm.com>,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH] cpufreq: CPPC: Program policy limits during initialization
-Date: Thu, 12 Nov 2026 11:32:04 +0000
-Message-Id: <20261112113204.778904-1-christian.loehle@arm.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JciomXZa
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDF661F00A05;
+	Thu, 12 Nov 2026 11:52:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794484367;
+	bh=ab65Y+/YS/ftn0XtRf+D21POuuZDeeWSaeiwjaGmWKM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=JciomXZaUjqGr0rn+i52tzTnVMKf61Ev/r6LPScfy3/DHjKOGHeScELqCPIMBBPlE
+	 ctID8uzarSzJ+lo7upBGVmq2V8xtl5tnfs/cB+SqHYLHbajDMl3JXyuXoq6iIMGLaS
+	 P/y1+WblHvuQml3Bi8eNhvWXoq1nttW3GnSWLFokZJcUeOM6yIoklaaYb3p4yq09r+
+	 kwLPkSBfkFsF+Tiucs3ZfCvR/I4CEgOuCSjcFU0Xwm5gWwbn/fGHeHGO2k6DhfnfU7
+	 DuXsXuV9XgADgIxMopbBrjiRn2Fm6wsL5HTd3PVU2pQnTVkJerK9EXIz1ZTrThwqaH
+	 di4aUgCf/gR1w==
+Date: Thu, 12 Nov 2026 12:52:44 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Robert Marko <robimarko@gmail.com>, Guru Das Srinagesh <linux@gurudas.dev>, 
+	Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>, Lee Jones <lee@kernel.org>, 
+	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
+	"Joerg Roedel (AMD)" <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Wesley Cheng <wesley.cheng@oss.qualcomm.com>, Vinod Koul <vkoul@kernel.org>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alim Akhtar <alim.akhtar@samsung.com>, Bart Van Assche <bvanassche@acm.org>, 
+	Bean Huo <beanhuo@micron.com>, Stanley Jhu <stanleyjhu@google.com>, 
+	Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Georgi Djakov <djakov@kernel.org>, 
+	Sibi Sankar <sibi.sankar@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, mfd@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	iommu@lists.linux.dev, linux-usb@vger.kernel.org, linux-phy@lists.infradead.org, 
+	linux-scsi@vger.kernel.org, linux-crypto@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 02/17] dt-bindings: firmware: qcom,scm: Document Halliday
+ SCM
+Message-ID: <20261112-fabulous-nautilus-of-joviality-dd8d5a@quoll>
+References: <20261109-halliday-dts-v1-0-289114ab8197@gmail.com>
+ <20261109-halliday-dts-v1-2-289114ab8197@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,81 +76,20 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261109-halliday-dts-v1-2-289114ab8197@gmail.com>
 
-cppc_cpufreq_cpu_init() keeps valid firmware MIN/MAX limits and relies on
-the governor to update them. If its first target equals policy->cur, the
-core can skip the driver callback, allowing autonomous selection below
-scaling_min_freq.
+On Mon, Nov 09, 2026 at 12:33:14AM +0000, Stanislav Aleksandrov wrote:
+> Document the SCM on the Qualcomm Halliday SoC.
+> 
+> Signed-off-by: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/firmware/qcom,scm.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Program MIN from Lowest Nonlinear and MAX from Nominal or Highest according
-to the boost state before starting the governor. Set Desired to MAX and
-publish policy->cur only after the write succeeds. Leave policy->max unset
-so the initial maximum QoS request does not restrict later boost use.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Link: https://sashiko.dev/#/patchset/20261106193304.3347374-1-sumitg@nvidia.com
-Fixes: ea3db45ae476 ("cpufreq: cppc: Update MIN_PERF/MAX_PERF in target callbacks")
-Link: https://lore.kernel.org/all/CAJZ5v0jQVRQhJzLoAy3btKovHGYkqGKJAP_5VfENM_WAREQnyQ@mail.gmail.com/
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 34 +++++++++++++---------------------
- 1 file changed, 13 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index a62589c0674f..92a5bb28571c 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -1018,29 +1018,20 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		policy->boost_supported = true;
- 
- 	/*
--	 * The request starts from the live limits, which may be unusable.
--	 * Firmware may leave them zeroed. An interrupted earlier update may
--	 * have left MIN above MAX. cppc_set_perf() would reject either, so
--	 * request the full range instead.
--	 */
--	if (!cpu_data->perf_ctrls.max_perf ||
--	    cpu_data->perf_ctrls.min_perf > cpu_data->perf_ctrls.max_perf) {
--		cpu_data->perf_ctrls.min_perf = caps->lowest_perf;
--		cpu_data->perf_ctrls.min_perf_valid = true;
--		cpu_data->perf_ctrls.max_perf = caps->highest_perf;
--	}
--
--	/*
--	 * Keep the initial request within controls left by an earlier driver
--	 * instance or firmware. The governor will update the full tuple later.
-+	 * Program the initial policy bounds before starting the governor. Its
-+	 * first target request may be skipped if it already matches policy->cur.
-+	 * cppc_set_perf() orders the writes against the live firmware limits.
-+	 *
-+	 * New policies start with boost disabled, so this matches the initial
-+	 * cpuinfo.max_freq. The core applies global boost after governor startup
-+	 * and handles any resulting limit change through QoS.
- 	 */
--	desired_perf = caps->highest_perf;
--	if (cpu_data->perf_ctrls.max_perf)
--		desired_perf = min(desired_perf, cpu_data->perf_ctrls.max_perf);
--	if (cpu_data->perf_ctrls.min_perf_valid)
--		desired_perf = max(desired_perf, cpu_data->perf_ctrls.min_perf);
-+	cpu_data->perf_ctrls.min_perf = caps->lowest_nonlinear_perf;
-+	cpu_data->perf_ctrls.min_perf_valid = true;
-+	cpu_data->perf_ctrls.max_perf = policy->boost_enabled ?
-+					caps->highest_perf : caps->nominal_perf;
- 
--	policy->cur = cppc_perf_to_khz(caps, desired_perf);
-+	desired_perf = cpu_data->perf_ctrls.max_perf;
- 	cpu_data->perf_ctrls.desired_perf = desired_perf;
- 
- 	cppc_cpufreq_policy_state(policy)->suspend_regs_handled = false;
-@@ -1057,6 +1048,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto out;
- 	}
- 	cpu_data->perf_limits_valid = true;
-+	policy->cur = cppc_perf_to_khz(caps, desired_perf);
- 
- 	cppc_cpufreq_cpu_fie_init(policy);
- 	return 0;
--- 
-2.34.1
+Best regards,
+Krzysztof
 
