@@ -1,49 +1,123 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794489265;
-	b=pyyBRtzelAu7Z5R5moYLBdGEpotSd9r0cKYqR5h3NYsn0otNi9QxykKjMp1ADhEnZynl
-	 3NrxwXiGI7tOmncmZAOF1d/jZh3LIP7vqS400P1PTaSBMitexORl2Gq5g/k3jZZOZjNdF
-	 rtfGUG/aLfuz3HmOyRtPunoPETXasA05M1ne0P8uqTtOrV6F4IAv2ISBRc4yx07jhiqef
-	 Js0lpN411Ug2HRrBlj8613H+sic3cfk9xFiFXjdkw4kabWAlL3Znel+fYi2JBAt4rktD8
-	 oZQmaramDDB3Xckb3mV03xBPDRFhU/KNro8efQyHae9YVsupKufZNRCprTl7sda58BA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794489265;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=9mxKg6PFH2mKgwRlY7JWxXK8RldI6RUjgfddAJpwc7I=;
-	b=UrLA8vjS8hsmaNvbyRYqEN4ChKTSBSK/qGmxiK3Q5mmu6FzhHOggwGyP9CaQ4oUXkTio
-	 8LEWhvkc/Hc25oeQIxipuOSTp6/3yULxIrfA/bt4m9iTjs5fVE6TKqJe9YB21OxMOUp6f
-	 tqE3MTLxblEl9kuiiaM0eDtUWc+yMPT6B05Hz5XQK/c7KQZBpua3dBVWBtSylCPPDkL/Q
-	 z/Vi6a5CeYyknjm6QhuJ/e8JviTWR305v5PFEBkVzfTPGxL8c6SRX39eX6OsxW5NoMjn/
-	 oxbnP7CqD9kz3B7FF4cWHXnhdWR9zVBLYyWvL/W3PiS5Uxl5P6ZftG7S3PU1u2nz1CA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=eTo2jkKY;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C02E560A2627;
-	Thu, 12 Nov 2026 13:14:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C02E560A2627
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794490144;
+	b=CgQd7buKjQnig8+di4clayz0RsiMiI3QT/pYi7YYsWuwH7Jl1F3Xgh+/ugiCpiWFfjPs
+	 E4cuIsIF0G1ykOXNStXyRBQPgfc+hSatijUQjsjO618rLNJtK1A6yAuFuQIs6dW9iosCp
+	 wzAQFpECNUmXcdqX74rbctxHtx+Atj18B/Orr6zz+w0Rb0ndJMiUxUGE4yNY7VA7kBxmE
+	 l5DAx+kPe9s8cVKkWvBsorMeBLM+EaL/B6uE/vCWCEdkTX2pRYIBdgprT6FK5UzIZnLAh
+	 Hp3dYVH1n/+oKNnb116fCxQgMTqU2snRy8JezAA4y+BzX2vmVueauQKXGTH4TzsuRLg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794490144;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
+	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Cc:Content-Type:Content-Transfer-Encoding:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:
+	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=G3Q7qE6C41WE2EwR7PBZ31iNaUmwvqxyBhTAIBDkPGg=;
+	b=LgH1d86qGdclzVz7Qm8PLZtxpPJ5lSDnBYO85i82g3LP0mGHHqWSVSR9AFlxUVhoqzqh
+	 OZhtYqt98QMh4MFcK+GQYRDKCaANCjqFdWdHoMNebYgM0qM9+NY9GuBTLTasOWJEwEY/t
+	 dc6CHhh7CR4CVEb/PyinJkzkTU/7N8TuqV6olc0yJ6da4XV+AzXfdz+qjX4ptVmi3TqWf
+	 57UkGDULURtE/rXxt+pqoqRZRw7CvhT+ekzGUFvjrUAJ7Fkyjsapg2+gvytytxLvCmrRP
+	 EatAZwzw5XqO+8rFnrSaVL3MPqUKD4o9YhEvKYPWeS82I1P8vy3mCH2Ch+IHYCFOtEQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=aHKb5eDi;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=C0bQsvZc;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21B2A606A336
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 13:29:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 21B2A606A336
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=eTo2jkKY
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D3981477;
-	Thu, 12 Nov 2026 05:14:21 -0800 (PST)
-Received: from [10.0.130.226] (e127648.arm.com [10.0.130.226])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8E4913F632;
-	Thu, 12 Nov 2026 05:14:18 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794489264; bh=sJI57U+WQOiBy+zdKsRY1/z8s+X/kd45XllUmlTevYM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=eTo2jkKY3U51csyMMrfFFecVyff9fAh9wtLCDpLVnzECVxAuLlgP6dRXs3hc9xvT1
-	 HnmFmYqbfi2H67ZLhTUvZnjQ1xOhfn/mNez+PQo06bYMt1d1YHpgd7q99t+tuhgW/O
-	 smFX5zUsYOoS8bP4A869wo2NHR9ZF2gmtUcPXuLk=
-Message-ID: <8d335175-7d1e-4e12-b28b-d6f2ee13edee@arm.com>
-Date: Thu, 12 Nov 2026 13:14:16 +0000
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=aHKb5eDi;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=C0bQsvZc
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ACBe25O441573
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 13:29:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	G3Q7qE6C41WE2EwR7PBZ31iNaUmwvqxyBhTAIBDkPGg=; b=aHKb5eDiJpJBZRFN
+	dRbClG27Ae9U79uxSNr929uJvTBsePeZmwMFP3+eDEXVhbw4wfjnyg1JPybA8N3G
+	+qmEq+oY953GmpmWM8i/ru2g6aexJeAFwthKXyWr1FNvfS8mD2cM+QSA4YByU9yC
+	fAgJHz3YO/43bTF7pM74x9pKJSJGocSqZ+6Grq6M+tO45wV9GAaP6kALoHFrKjGc
+	RQRkQAv5mtOJYmxjtaiTu68Jg+5S7rfBPCbK2iPM9I/QzFFkLMqTldmoAfr577yP
+	gWO3W/JiqEAGig25TIPQaU9lp6XMR0r0BRmJAd5bh2vlj52oUhR/X/JY1Vw9Dj+5
+	0pxj2Q==
+Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com [209.85.221.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hw7nc1md7-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 13:29:03 +0000 (GMT)
+Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-5ecd4f564d3so1084662e0c.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 05:29:03 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794490142; cv=none;
+        d=google.com; s=arc-20260327;
+        b=b7qvxpqbD8b/lm8FaRUKAmL6AuX/AQavcUQCzQ3gcaxFJbYmDARPknMD2m9cMy9Woc
+         9R2yvMVh6AzDvOSEJGwOT2Wfm5efCCAHNUSx4Mqqq29ItK6Gv4euVvF2zB6Or0NswneS
+         QtUBe/lDzGLb/88k38ebqE/x5u4LLpwaMaFrHeM6KkRJTuLqJNg9eP0GFjRO/VerqWbA
+         qcn1Ii33TQshA4M07iJ2mBMHPlS7F2sNNr8897CULOqZuAYWOx27yvmSN+21XWBxTctt
+         EQfMgoSU+5Rcfa9JzZVKF5IBq7yDaiBdp4HYRtW3edBBy4S0zoVP/1LaTccl+ehbZY5l
+         wvxQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=G3Q7qE6C41WE2EwR7PBZ31iNaUmwvqxyBhTAIBDkPGg=;
+        fh=5yXAwo5ESOTm13f5lcVDkWDlGZPLRJpXcHjq2BqhFIo=;
+        b=abdPoykAtD/KC+gzsfRp81MjINh4jWUnbofNxketw2Ys/RupzRAvCKYqny9HCx7SF/
+         xwQ/QMg64tQWnF0MneO8ozSMqPL8v48EA3Yql68opvtZbaXCzY4gDGrTNN6CsypeECxo
+         ffmu9t2gRX5H9H3UGdL5k+YeisTu0Cd+XFqU4fz4L2+gPY3DNGyGNbEtEmjD7KB0nBqJ
+         JBWk6cC+OcRolLZysBlNflWmvA1SkA0mLQYSNjOVMqDwc74Cd5PSwL0XR3OAcrDz6mpm
+         b//GwlQM7ngz+qrx4nmbLMqO3nyT+V/sULjjeMYQs+2XeX4iCQbFgIxBZeTxKWJYRrbq
+         wVnA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1794490142; x=1795094942; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=G3Q7qE6C41WE2EwR7PBZ31iNaUmwvqxyBhTAIBDkPGg=;
+        b=C0bQsvZcLSG3G+FUDQMbBHnANZDfLe6x7EFQosPHhfJoEwGw+dCy0doUj76ujJCuN7
+         qFP2YT0rIqESS7uHX4EIvDrKpM38V5KYPalkz3KRxuQ5rpmREUoLO/KxNFyQl4qs5nFp
+         FT5XTwxct1D/AyoyVX0Z9Oi8liXbFA7wMQ4CikjphnsJPKgMpwuZ3Zg0Ro+Dw3SiCT0Q
+         YHhBZv5mJhu+jmNd/ygNKwNoYmnMm0HiySlbWd4OCeTnzPANdeHhEe9pDqBLfOWAvzCo
+         v4R4fyAJAC6ZF2CmL1twKgXoZFgabVtsVRLt3GLd4LFFd2H+78oK8ZXW5jXr1Cst4brA
+         ViPQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794490142; x=1795094942;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=G3Q7qE6C41WE2EwR7PBZ31iNaUmwvqxyBhTAIBDkPGg=;
+        b=M6SQDsJ9NCcg2W1/RW20jg8w77VadMPNCwlUs0OuPCJXiD+b5rWfNPU90ZPc3k7dn3
+         WmIA4Wmccb+rvx2xxcnKyBJTkNwx65U0/TGNlkyEMehg3R2I6ww4XVL+KB6H2EQW2M7h
+         nsKMNVSK+LX/jHVlQX+rz5djMERtPZ2v25yQsnn4qyRWWSKcaljfx2vdJKzY24hM1zpY
+         oCi+RcMsVSl3F3MIIdMYbLu+WwQF09Sv06PyL+V5aCVNBggWMLdsNapKhyg03CnVBMg2
+         QS9tymt/sakbrDl3id1LZAIN2FyP/PCgvqSbB2zS0+u2u+DH6+TKK0bpOpgPpL0QUxHT
+         6V1A==
+X-Forwarded-Encrypted: i=1; AL+hErEaPDA3jJfvE6m/v4+AxGuDfoe9lk5wCPhbeERjdOfrNV8t2tIM7DZQEm4AFpiy7uekIboxyVpPmQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9Plo33scpBp795sNqL6Mta0OF2LxvMGuJgBR2Bf3/OJ3y4+VH3
+	/N6nJWqM1Rt19eFqoWAUveNHukDzMcG1TlvSzZzpjP9YbJYke3sxDzjWjTrC1e2PkBqAlkMmu32
+	uPmKMw8nzq/d07hd62h1f+OjXqX9OWjGlvP3OUbmN3gyNlr306KnYtTHKTkgc1qiW0Yt1JChhXk
+	8RfEuiHZ7ioLODGEWtzwSsq8vEc+N7YDFUmAbm
+X-Gm-Gg: AYBFou332fiw6wrS4rjVAhd9ub7e7xOuWd6KKwIKwU6LFcRa4CGQyBTHx+QOi0ulrB5
+	4CUintAuid/YTi403KXcy/dz8S7sZZ7APTz+TwhQ0C3VJlQtXBaR5l1FOjL6nA0ORg3CiiXDpSw
+	hLM6CGzXgKaPxyB4gwsXAss9uj4TSP0PUxkE3cHiI83a8XxMjK+JWU5flxKQ==
+X-Received: by 2002:a05:6122:e153:b0:5ea:d649:d1bc with SMTP id 71dfb90a1353d-5ee1c4862bemr2162813e0c.18.1794490142316;
+        Thu, 12 Nov 2026 05:29:02 -0800 (PST)
+X-Received: by 2002:a05:6122:e153:b0:5ea:d649:d1bc with SMTP id
+ 71dfb90a1353d-5ee1c4862bemr2162804e0c.18.1794490141804; Thu, 12 Nov 2026
+ 05:29:01 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,308 +127,177 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 RESEND] cpufreq: CPPC: Add autonomous mode boot
- parameter support
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, zhanjie9@hisilicon.com, zhenglifeng1@huawei.com,
- pierre.gondois@arm.com, ionela.voinescu@arm.com, mario.limonciello@amd.com,
- maciej.wieczor-retman@intel.com, pawel.chmielewski@intel.com,
- lenb@kernel.org, corbet@lwn.net, skhan@linuxfoundation.org,
- rdunlap@infradead.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-References: <20261112080442.4007723-1-sumitg@nvidia.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20261112080442.4007723-1-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20261013-genpd-boot-performance-floor-v1-0-a765dc83e6d7@oss.qualcomm.com>
+ <20261013-genpd-boot-performance-floor-v1-2-a765dc83e6d7@oss.qualcomm.com>
+In-Reply-To: <20261013-genpd-boot-performance-floor-v1-2-a765dc83e6d7@oss.qualcomm.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Thu, 12 Nov 2026 14:28:49 +0100
+X-Gm-Features: AclHuK_Jzud3kBQ84L6hP3FUx4DNmy2hVYEuv1wt_UfgwdBavzJj52wOLQfTyB0
+Message-ID: <CAPx+jO8krEjuMvgCP5Hy1V=oV+13dRj0WQkGCjUpN1cQn5XwNw@mail.gmail.com>
+Subject: Re: [PATCH 2/4] pmdomain: core: Prepare boot performance floors
+ before system suspend
+To: Abel Vesa <abel.vesa@oss.qualcomm.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-ORIG-GUID: Eoaoylm-0qQO8d9gGcPHYrSEOPEnro1C
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDA1MyBTYWx0ZWRfX9t1Z8Oas9myV
+ og3vDn6hGePoFtJOwMlZO38TK5fmpt5Hu+P2PB/qkzdMt6u970onREowFzD6FA/aNomYVrcPGRi
+ L6E4T7X1P3cmYYYK4nMmMuybH94UX7c=
+X-Proofpoint-GUID: Eoaoylm-0qQO8d9gGcPHYrSEOPEnro1C
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDA1MyBTYWx0ZWRfX8M5P6svkAJWG
+ 721U6+8eqebdd0ym+E4a78kIJopUOxXHYbv2rXnmsblEu8isRqlStz0H9Fso1aFak09lrDi37S6
+ kpjSCEzPqca8mPua3hBz8h6kzpn3xotpugnS7InC3Jo1DoNF2tEaWKT3H5ENIpnaQEELn6guYVD
+ zTQhjhQTQVBOZ0hpUL/020Cg2TnO1ahHIgreA1TYH7UzcMKDze9o6TLGIL9MgKtzb69ohQ2tYRp
+ yXi0JUTCnB/6EWX6vLI91Dwkxpbc1II6S+eUiL34R4clfp6YV8k9GtkEEKmk8oEuWAwi0lEyNDb
+ k7Tv5ml0D/+Ci2HNCB/M36Q4LBZ9kI0ShbT8xp+qaSq8B7R0qBRfJ1HZQf7pIFMz6jih4h08BRq
+ JBSJYwJBVHQ4zPOFrzmnnpBdPBdCgOkb/ShoYqqBUwZ8uL3xGp2k83hD5iVwYnoqafngl+FhFGh
+ f5SdCP6RCFa8voQINLQ==
+X-Authority-Analysis: v=2.4 cv=A8b5rKWG c=1 sm=1 tr=0 ts=6af5bf1f cx=c_pps
+ a=wuOIiItHwq1biOnFUQQHKA==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=Um2Pa8k9VHT-vaBCBUpS:22 a=EUspDBNiAAAA:8 a=CEUtmdPz_awSc1UMDkkA:9
+ a=QEXdDO2ut3YA:10 a=XD7yVLdPMpWraOa8Un9W:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 malwarescore=0 spamscore=0 clxscore=1015 impostorscore=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 suspectscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120053
 
-On 11/12/26 08:04, Sumit Gupta wrote:
-> Configuring autonomous selection and Energy Performance Preference (EPP)
-> at every boot currently requires per-policy sysfs writes.
-> 
-> Add the 'cppc_cpufreq.auto_sel_mode' boot parameter to enable autonomous
-> selection during policy initialization and optionally set EPP. In
-> autonomous mode, the platform selects the performance level within the
-> MIN and MAX limits, which the driver sets from the policy limits. The EPP
-> hint guides that selection.
-> 
-> The parameter accepts:
-> - performance: enable autonomous selection and set EPP to 0x00
-> - balance_performance: enable it and set EPP to 0x80
-> - balance_power: enable it and set EPP to 0xc0
-> - power: enable it and set EPP to 0xff
-> - default_epp: enable it and preserve firmware EPP
-> - disabled: preserve the firmware configuration (default)
-> 
-> Warn about unrecognized values and ignore them.
-> 
-> Skip policies without autonomous-selection support. The driver enables
-> autonomous selection before writing EPP, as the platform may ignore EPP
-> while autonomous selection is disabled.
-> 
-> Record successful writes so the existing online and resume paths reapply
-> the requested values. The offline and suspend paths restore the saved
-> firmware values, including during driver unload.
-> 
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+On Tue, Oct 13, 2026 at 2:49=E2=80=AFPM Abel Vesa <abel.vesa@oss.qualcomm.c=
+om> wrote:
+>
+> A system suspend can occur before a provider has received sync_state().
+> If a domain has not been used through runtime PM, its boot performance
+> floor may not have been applied when genpd_sync_power_on() enables it
+> during resume-noirq.
+
+Would you mind elaborating a bit more why this is a problem for the
+platforms in question?
+
+>
+> Prepare boot performance floors from genpd_prepare(), where performance
+> callbacks may sleep. Walk the parent hierarchy even when the device's
+> own domain has no boot floor: a parent without direct consumers would
+> otherwise miss preparation entirely. Take parent locks in the existing
+> child-to-parent order and propagate preparation failures to the PM core.
+
+Question, if doing this in genpd_prepare() how would that protect us
+from changes happening later on during system suspend, when a consumer
+driver decides to update the performance state vote for its device?
+
+In regards to system suspend, even if the sync state has not happened
+yet, we are doing a power off of the genpd. I assume this is okay,
+while still keeping the current genpd->performance_state or maybe it
+isn't?
+
+If there is no problem with that above, maybe it's easier to continue
+to let the genpd provider (through its ->power_on() callback) manage
+the restoring of the genpd->performance_state itself? In that case, we
+don't need to care about the genpd->boot_performance_state, as it
+should be indirectly applied anyway, right?
+
+>
+> Also retain boot power protection in genpd_sync_power_off() for domains
+> with a boot performance floor. This prevents the system-sleep path from
+> withdrawing their power vote while boot protection remains active.
+
+I don't get this, sorry. What is "boot power protection"?
+
+>
+> Keep performance programming out of resume-noirq. Domains with their
+> floor already satisfied do not need another performance update, and
+> no floor is imposed after sync_state() releases boot protection.
+
+Please rephrase this. I don't understand what "releases boot protection" me=
+ans.
+
+>
+> Assisted-by: LLM
+> Signed-off-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+
+Kind regards
+Uffe
+
 > ---
-> Resending v6 with base-commit info and Pierre added to Cc.
-> No changes to the code or commit message.
-> 
-> This is based on the "Preserve OSPM-set registers" [1] and
-> "ospm_nominal_perf" [2] series, which are applied for 7.5.
-
-I've sent out
-https://lore.kernel.org/lkml/20261112113204.778904-1-christian.loehle@arm.com/
-as a follow up, if it looks sound to you, feel free to pick it up
-as a series to go in before $SUBJECT?
-
-> 
-> v5 -> v6:
-> - Split "Set CPPC Enable register in cpu_init" into a separate fix [3].
-> - Accept strings only (Pierre [4]).
-> - Move the setup into cppc_cpufreq_setup_auto_sel_mode() and check
->   autonomous selection support first (Pierre [4]).
-> - Drop the last_governor check, as init() now runs only for a new
->   policy (Pierre [4]).
-> - Drop the MIN/MAX seeding, Desired hint and policy->min/max override,
->   as init() and the governor already set valid values (Pierre [4]).
-> - Apply the parameter at the end of init(), after the usual
->   performance controls write.
-> - Save auto_sel and EPP through the saved-register code from [1]
->   (Sashiko [5]).
-> - Drop the cppc_cpufreq_exit() loop that cleared auto_sel on all
->   present CPUs (Pierre [4], Sashiko [5]).
-> - Enable autonomous selection before writing EPP.
-> - Set EPP also when firmware has already enabled autonomous selection.
-> - Add the balance_power (0xc0) and power (0xff) modes.
-> - Ignore an unrecognized value instead of treating it as disabled.
-> 
-> v5: https://lore.kernel.org/lkml/20260623080652.3353386-1-sumitg@nvidia.com/
-> [1] https://lore.kernel.org/lkml/20261106193304.3347374-1-sumitg@nvidia.com/
-> [2] https://lore.kernel.org/lkml/20261109195400.3600561-1-sumitg@nvidia.com/
-> [3] https://lore.kernel.org/lkml/20261110101246.3665797-1-sumitg@nvidia.com/
-> [4] https://lore.kernel.org/lkml/f61f592a-bc9c-4a83-bde1-e999c8101c36@nvidia.com/
-> [5] https://sashiko.dev/#/patchset/20260623080652.3353386-1-sumitg@nvidia.com
-> 
->  .../admin-guide/kernel-parameters.txt         |  26 ++++
->  drivers/cpufreq/cppc_cpufreq.c                | 120 ++++++++++++++++++
->  include/acpi/cppc_acpi.h                      |   2 +
->  3 files changed, 148 insertions(+)
-> 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index 0b3c140babd9..5714c0d30fce 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -1015,6 +1015,32 @@ Kernel parameters
->  			Format:
->  			<first_slot>,<last_slot>,<port>,<enum_bit>[,<debug>]
->  
-> +	cppc_cpufreq.auto_sel_mode=
-> +			[ACPI,CPU_FREQ] Enable ACPI CPPC autonomous performance
-> +			selection on all CPUs at boot. In autonomous mode, the
-> +			platform selects the performance level within the CPPC
-> +			Minimum and Maximum Performance limits. The driver sets
-> +			these limits from scaling_min_freq and scaling_max_freq.
-> +			The Energy Performance Preference (EPP) hint guides the
-> +			platform toward performance (0x00) or energy efficiency
-> +			(0xff).
-> +			Requires the ACPI CPPC Autonomous Selection Enable
-> +			register. EPP is set only if the platform implements it.
-> +			Format: <string>
-> +			  performance:
-> +				  enable autonomous selection, set EPP to 0x00
-> +			  balance_performance:
-> +				  enable autonomous selection, set EPP to 0x80
-> +			  balance_power:
-> +				  enable autonomous selection, set EPP to 0xc0
-> +			  power:
-> +				  enable autonomous selection, set EPP to 0xff
-> +			  default_epp:
-> +				  enable autonomous selection, keep firmware EPP
-> +			  disabled:
-> +				  keep the firmware configuration (default)
-> +			An unrecognized value is ignored with a warning.
-> +
->  	cpuidle.off=1	[CPU_IDLE]
->  			disable the cpuidle sub-system
->  
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index a62589c0674f..c9bed93cf0c9 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -238,6 +238,58 @@ static void cppc_cpufreq_apply_saved_regs(struct cpufreq_policy *policy,
->  					     saved_type);
->  }
->  
-> +/* Autonomous Selection boot parameter modes */
-> +enum {
-> +	AUTO_SEL_MODE_DISABLED,
-> +	AUTO_SEL_MODE_PERFORMANCE,
-> +	AUTO_SEL_MODE_BALANCE_PERFORMANCE,
-> +	AUTO_SEL_MODE_BALANCE_POWER,
-> +	AUTO_SEL_MODE_POWER,
-> +	AUTO_SEL_MODE_DEFAULT_EPP,
-> +};
-> +
-> +static const char * const auto_sel_mode_names[] = {
-> +	[AUTO_SEL_MODE_DISABLED]		= "disabled",
-> +	[AUTO_SEL_MODE_PERFORMANCE]		= "performance",
-> +	[AUTO_SEL_MODE_BALANCE_PERFORMANCE]	= "balance_performance",
-> +	[AUTO_SEL_MODE_BALANCE_POWER]		= "balance_power",
-> +	[AUTO_SEL_MODE_POWER]			= "power",
-> +	[AUTO_SEL_MODE_DEFAULT_EPP]		= "default_epp",
-> +};
-> +
-> +static int auto_sel_mode;
-> +
-> +static int auto_sel_mode_set(const char *val, const struct kernel_param *kp)
-> +{
-> +	int *mode = kp->arg;
-> +	int ret;
-> +
-> +	ret = sysfs_match_string(auto_sel_mode_names, val);
-> +	if (ret < 0) {
-> +		pr_warn("Invalid auto_sel_mode \"%s\", ignoring it\n", val);
-> +		return 0;
-> +	}
-> +
-> +	*mode = ret;
-> +	return 0;
-> +}
-> +
-> +static int auto_sel_mode_get(char *buffer, const struct kernel_param *kp)
-> +{
-> +	int *mode = kp->arg;
-> +
-> +	return sysfs_emit(buffer, "%s\n", auto_sel_mode_names[*mode]);
-> +}
-> +
-> +static const struct kernel_param_ops auto_sel_mode_ops = {
-> +	.set = auto_sel_mode_set,
-> +	.get = auto_sel_mode_get,
-> +};
-> +
-> +module_param_cb(auto_sel_mode, &auto_sel_mode_ops, &auto_sel_mode, 0444);
-> +MODULE_PARM_DESC(auto_sel_mode,
-> +		 "Autonomous selection mode: performance, balance_performance, balance_power, power, default_epp, disabled");
-> +
->  #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
->  static enum {
->  	FIE_UNSET = -1,
-> @@ -938,6 +990,72 @@ static u32 cppc_cpufreq_effective_nominal(struct cpufreq_policy *policy)
->  	return (u32)ospm_nominal;
->  }
->  
-> +/*
-> + * Apply the auto_sel_mode boot parameter in init(). Enable autonomous
-> + * selection unless it is already enabled. Then set EPP for the selected mode.
-> + *
-> + * Enable auto_sel before writing EPP, as the platform may ignore EPP while
-> + * autonomous selection is disabled. Save each value written, so that online()
-> + * and resume() write it again.
-> + */
-> +static void cppc_cpufreq_setup_auto_sel_mode(struct cpufreq_policy *policy)
-> +{
-> +	struct cppc_policy_state *st = cppc_cpufreq_policy_state(policy);
-> +	struct cppc_cpudata *cpu_data = policy->driver_data;
-> +	unsigned int cpu = policy->cpu;
-> +	u64 auto_sel, epp;
-> +	int ret;
-> +
-> +	if (auto_sel_mode == AUTO_SEL_MODE_DISABLED)
-> +		return;
-> +
-> +	/* U64_MAX means the platform does not implement the register. */
-> +	auto_sel = st->regs[CPPC_SAVED_AUTO_SEL][CPPC_SAVED_FIRMWARE];
-> +	if (auto_sel == U64_MAX) {
-> +		pr_info_once("Autonomous selection is not supported, ignoring auto_sel_mode\n");
-> +		return;
-> +	}
-> +
-> +	if (!auto_sel) {
-> +		ret = cppc_set_auto_sel(cpu, true);
-> +		if (ret) {
-> +			pr_warn("Failed to enable auto_sel for CPU%u (%d)\n",
-> +				cpu, ret);
-> +			return;
-> +		}
-> +		cppc_cpufreq_save_requested(policy, CPPC_SAVED_AUTO_SEL, true);
-> +	}
-> +	cpu_data->perf_ctrls.auto_sel = true;
-> +
-> +	switch (auto_sel_mode) {
-> +	case AUTO_SEL_MODE_PERFORMANCE:
-> +		epp = CPPC_EPP_PERFORMANCE_PREF;
-> +		break;
-> +	case AUTO_SEL_MODE_BALANCE_PERFORMANCE:
-> +		epp = CPPC_EPP_BALANCE_PERFORMANCE_PREF;
-> +		break;
-> +	case AUTO_SEL_MODE_BALANCE_POWER:
-> +		epp = CPPC_EPP_BALANCE_POWER_PREF;
-> +		break;
-> +	case AUTO_SEL_MODE_POWER:
-> +		epp = CPPC_EPP_ENERGY_EFFICIENCY_PREF;
-> +		break;
-> +	default:
-> +		/* default_epp keeps the EPP value set by firmware. */
-> +		return;
-> +	}
-> +
-> +	/* EPP is optional. */
-> +	ret = cppc_set_epp(cpu, epp);
-> +	if (ret) {
-> +		if (ret != -EOPNOTSUPP)
-> +			pr_warn("Failed to set EPP for CPU%u (%d)\n", cpu, ret);
-> +		return;
-> +	}
-> +	cpu_data->perf_ctrls.energy_perf = epp;
-
-So EPP is also allowed to be 4 or 6 bits wide and we might wanna account
-for that either here or in acpi-cppc.
-That being said that's already not working, I usually think all these
-technically compliant platforms should just be filtered out on
-acpi-cppc probe and we don't support EPP then and not worry about it.
-That being said amd-pstate requires EPP for active mode and in this case
-just handling the read/writes seems the pass of less resistance:
-https://lore.kernel.org/all/20261112131316.827708-1-christian.loehle@arm.com/
-
-
-> +	cppc_cpufreq_save_requested(policy, CPPC_SAVED_EPP, epp);
-> +}
-> +
->  static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  drivers/pmdomain/core.c | 35 ++++++++++++++++++++++++++++++++++-
+>  1 file changed, 34 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> index 6f2b406ce049..4ff55175d899 100644
+> --- a/drivers/pmdomain/core.c
+> +++ b/drivers/pmdomain/core.c
+> @@ -1538,7 +1538,9 @@ static void genpd_sync_power_off(struct generic_pm_=
+domain *genpd, bool use_lock,
 >  {
->  	unsigned int cpu = policy->cpu;
-> @@ -1058,6 +1176,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	}
->  	cpu_data->perf_limits_valid = true;
->  
-> +	cppc_cpufreq_setup_auto_sel_mode(policy);
+>         struct gpd_link *link;
+>
+> -       if (!genpd_status_on_unlocked(genpd) || genpd_is_always_on(genpd)=
+)
+> +       if (!genpd_status_on_unlocked(genpd) || genpd_is_always_on(genpd)=
+ ||
+> +           (genpd_is_power_unknown(genpd) && genpd->stay_on &&
+> +            genpd->boot_performance_state))
+>                 return;
+>
+>         if (genpd->suspended_count !=3D genpd->device_count
+> @@ -1623,6 +1625,31 @@ static void genpd_sync_power_on(struct generic_pm_=
+domain *genpd, bool use_lock,
+>         genpd->status =3D GENPD_STATE_ON;
+>  }
+>
+> +/* Called with the domain lock held, before entering noirq. */
+> +static int genpd_prepare_boot_performance(struct generic_pm_domain *genp=
+d,
+> +                                        unsigned int depth)
+> +{
+> +       struct gpd_link *link;
+> +       int ret;
 > +
->  	cppc_cpufreq_cpu_fie_init(policy);
->  	return 0;
->  
-> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> index 2cec54b4d2e2..3d47c07f494b 100644
-> --- a/include/acpi/cppc_acpi.h
-> +++ b/include/acpi/cppc_acpi.h
-> @@ -42,6 +42,8 @@
->  #define CPPC_AUTO_ACT_WINDOW_SIG_CARRY_THRESH 129
->  
->  #define CPPC_EPP_PERFORMANCE_PREF		0x00
-> +#define CPPC_EPP_BALANCE_PERFORMANCE_PREF	0x80
-> +#define CPPC_EPP_BALANCE_POWER_PREF		0xC0
->  #define CPPC_EPP_ENERGY_EFFICIENCY_PREF		0xFF
->  
->  #define CPPC_PERF_LIMITED_DESIRED_EXCURSION	BIT(0)
-> 
-> base-commit: a917b5968c17196b98b514158de800194d09e505
-
-Actual $SUBJECT looks okay to me, I'd wait with the R-b for the
-series, though.
+> +       /* Parents may need a boot floor even when this domain does not. =
+*/
+> +       list_for_each_entry(link, &genpd->child_links, child_node) {
+> +               struct generic_pm_domain *parent =3D link->parent;
+> +
+> +               genpd_lock_nested(parent, depth + 1);
+> +               ret =3D genpd_prepare_boot_performance(parent, depth + 1)=
+;
+> +               genpd_unlock(parent);
+> +               if (ret)
+> +                       return ret;
+> +       }
+> +
+> +       if (genpd_needs_boot_performance_state(genpd))
+> +               return _genpd_set_performance_state(genpd,
+> +                                                  genpd->performance_sta=
+te, depth);
+> +
+> +       return 0;
+> +}
+> +
+>  /**
+>   * genpd_prepare - Start power transition of a device in a PM domain.
+>   * @dev: Device to start the transition of.
+> @@ -1644,6 +1671,12 @@ static int genpd_prepare(struct device *dev)
+>                 return -EINVAL;
+>
+>         genpd_lock(genpd);
+> +       /* Performance callbacks may sleep; prepare the hierarchy before =
+noirq. */
+> +       ret =3D genpd_prepare_boot_performance(genpd, 0);
+> +       if (ret) {
+> +               genpd_unlock(genpd);
+> +               return ret;
+> +       }
+>         genpd->prepared_count++;
+>         genpd_unlock(genpd);
+>
+>
+> --
+> 2.54.0
+>
