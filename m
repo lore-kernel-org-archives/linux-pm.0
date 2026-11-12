@@ -1,45 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794491915;
-	b=NlMuMQTlpAYZYGH3OoJ1cJQi88YOa2Mn0k1oms9jRaX/NWFCIFDOn86TrRt7NWihHZHt
-	 3l0k19M0umB7vABr632WghATNR/wc+b9QAtTDUJda5C+0ZqOtV9q+b0QH8eXQ5+iOof3l
-	 BczRZmCyhgg2m+5xSI9yFmNctYxJkeINto3QkmQPUAx0lbd/Bg3VFPfhbDI8Mnu7Ot3Lh
-	 snoi/WDRKo0ISxoXw3QP7pIpWQeDUy/PRZY3zlrH2uRukqWFEkytaLor2BjhKd8aTEQlk
-	 ACbcl1er+y7ZofcQsfEw5ZJvsfGSu5u/2cKeeshoAgTisqmWg3jmvS0NXpoXlAMiBew==
+	t=1794492093;
+	b=Uz1EgVkqcOJ+gcmoCcjnbpbi3NAywpKxRollQ/KniuQvsDSKe/HO2RBQpEn3lcplJfbb
+	 mfVr8tn7Hgia0QYyf4nWBKBrJOCmscSpsJGuDOT9jb7+ozMUHQYjP9TlBI2ZkV7dtLL9j
+	 DM7tvRiySJ69OK9NU7klqOwjNvuRZbTX/0h/Oj0yBSEl4Eb+Nl7fKzyf3Hv4lGhFfuuxO
+	 /IxRg8blJWkg4/q+cX/6gGJMFpj1LW2XoG7wG/MyRGMSZ/EO9AlnaFcv9RqYkhO//xKcp
+	 yFp9UQVXElYf++1CTZcJr1FC9NRp3PGWbQ+lIycNb0ys/a5crOn053TJFN+NAki3PKA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794491915;
-	h=Received:DKIM-Signature:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Subject:From:To:Cc:In-Reply-To:References:
-	 Date:Message-Id:X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=3qK75ks52nk2OhdqDIRGQrGiq6Cnz7HxfpZQKI/KNAQ=;
-	b=gaZSWGLlloEfp9tPW3ZNRQcxqLiDvEZjsE4clQK3IOPzh3xp6L3tlSIN4eFl7PFOwOeS
-	 exiKbh+hqUzWyw/ld+diiW5s7pQpuaM/SZV4bhrhG4RxHRRGis7AjO5BeYbSCqX6RkGP1
-	 edTC985KNcNilHZjfHoWkZZhAZGB5RkcYiw7eSAj5TxkZV7UwniyEascLv1Hw3hrib4MC
-	 52tb+DJpmdIipi4VCCuHY04CATaEjf9qIBrBxbat0T3YO14c3cLNSKaZ4zWsW9xPki5rL
-	 YbT1dZOMX9Emg7t8y+nb1FQn/V0sVHLCOddQJCoQbnmDE9CCsa3KuGDxsf33RBdk2uQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794492093;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=764lZTg/NhvIYaTpTie22VuhlBpY81awqhBAg4I321U=;
+	b=fFI14qQ0Mii+4AIzLYchYKOMnkCG8twgg2EqyupO65oUQqVl5+6xu7mAu1/O8afLFw2F
+	 xSvef+BM4MTu0L6MxqDTlSadaG2drAqSvhQIxMhK/YiAZ8iJwQOjZtY/jnSoZKsD+1C9z
+	 YZfZ7toM7cQvOmYWQoXPT4RtluESEQtyXMASfFR9FpRLfoGaYY8FxenOT2ITRfLsW38MU
+	 bhjFOvYz/8wu/Grpc4mTsaEaoz9qYquH9YUpbHPkz480UJ0qzQ+qpBcx7Qwla/2IqZHWr
+	 2SuVNbmnI3KxTHqy9PMOURqy2Byqg8HqdgO/RdbdDF6k9uzyItBKBKfncNrVNfUUCYQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y3uIJDmV;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T4ijPizp;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABF3B606A330;
-	Thu, 12 Nov 2026 13:58:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DD0B60A6F52
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 14:01:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y3uIJDmV
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E52581F00A0A;
-	Thu, 12 Nov 2026 13:58:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T4ijPizp
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD8DC1F00A08
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 14:01:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794491915;
-	bh=3qK75ks52nk2OhdqDIRGQrGiq6Cnz7HxfpZQKI/KNAQ=;
-	h=Subject:From:To:Cc:In-Reply-To:References:Date;
-	b=Y3uIJDmVvCDh5voNMl19wu28hbwD1rXp14sZthY/q01Zk2uaF6DFEd131ALHyzC10
-	 DihF5Xt+moRHhZjRQvA41Jeiprq3ljUHjeWx+M8cZcf5aWXewYNtmPpf64pHxXJZWl
-	 ltOok2ej+oXTHLidcpZMc+aSo9rvEUipi2AKiJ+iMQkJK06QjYA5BYPi0qDzlOpE/I
-	 JaLV7L4MdFVAKtT1LhMcebQOhegcEBgnGeprqhRgON13eEyfVI1gk5GcC14i+qDAch
-	 YSnR9Jdjf5crPsROHeV0FuplwrFVCTsZsbdrqCVLXbC5BJAg1JaSIb0nT/p0P24kwb
-	 EXopyZ/myjaKA==
+	s=k20260515; t=1794492092;
+	bh=764lZTg/NhvIYaTpTie22VuhlBpY81awqhBAg4I321U=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=T4ijPizp1sLAMmzqVFYSeloRM6VokFN4yLEQEykYqw/LbaVHrr0OIjn7e3Ma06K3t
+	 1M12WWinSAgOQFrY1SbpSQEYpMoB1i4Uw1pAmtQCYnNLJV/4bTWeHbrOYf143HhrJw
+	 L6d0ye0NVep/s3tVYMEuO8UzlSe3xf+buQYss3nLIhBxLiBwOdE64DwFG+zOyHSmko
+	 pSHcKiEzuL1y9w3n7L3tPUYgehhxUsSQaWMFHACFBy6mRKGw19F2Fv45jk0fzK4hO4
+	 MOEccEo3sjI53dIvXYzxPblCqcAhzYDuWMzDQOQzJAfyRgO0oLPWKT2ZxZiQrKw37r
+	 pDWUCe1Sozl5g==
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-3adfe77d35aso34693541fa.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 06:01:32 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErF37uFzVb2rthWTYI1DLSF+EbjbfiuMp8Ix5ief5pGdW9WeCHnvXQIiNE379P/N2rY1OsxgDW4jYA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/8IAyhJLgcnXAPmhyoVtWCAy5pHxmlBPWLUZQJefpetR1ujgni
+	Z/CN9ufRb0Cg/c0cMfr1N3Bp4KIS3qNPuhSMqM6lbui2sR7lluWA5DOOswF9QiqIjwU5n2uHbWB
+	NpBNTnVLroPuSL4Q9VHsmImguRPZtmdk=
+X-Received: by 2002:a05:651c:31c6:b0:3ad:f267:a741 with SMTP id
+ 38308e7fff4ca-3ae125cd6a1mr12452531fa.1.1794492091241; Thu, 12 Nov 2026
+ 06:01:31 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -49,62 +59,200 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH v4 6/7] clk: bcm: Add BCMBCA PMB clocks
-From: Brian Masney <masneyb@kernel.org>
-To: Linus Walleij <linusw@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- William Zhang <william.zhang@broadcom.com>, 
- Anand Gore <anand.gore@broadcom.com>, 
- Kursad Oney <kursad.oney@broadcom.com>, 
- Florian Fainelli <florian.fainelli@broadcom.com>, 
- =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, 
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
- Jerome Brunet <jbrunet+clk@baylibre.com>, 
- Guenter Roeck <linux@roeck-us.net>, Philipp Zabel <p.zabel@pengutronix.de>, 
- Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, 
- Ulf Hansson <ulfh@kernel.org>, 
- Benjamin Larsson <benjamin.larsson@genexis.eu>, mfd@lists.linux.dev, 
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-clk@vger.kernel.org, linux-hwmon@vger.kernel.org, 
- linux-pm@vger.kernel.org, Brian Masney <masneyb@kernel.org>
-In-Reply-To: <20261111-xg6846b-bcmbca-xrdp-reset-v4-6-17035a5e8ad2@kernel.org>
-References: <20261111-xg6846b-bcmbca-xrdp-reset-v4-0-17035a5e8ad2@kernel.org>
- <20261111-xg6846b-bcmbca-xrdp-reset-v4-6-17035a5e8ad2@kernel.org>
-Date: Thu, 12 Nov 2026 08:58:26 -0500
-Message-Id: <179449190684.1220086.2034099469330026473.b4-review@b4>
-X-Mailer: b4 0.17-dev-7ca47
-X-Developer-Signature: v=1; a=openpgp-sha256; l=626; i=masneyb@kernel.org;
- s=20250903; h=from:subject:message-id;
- bh=7vI5ainOfrrxAECdVE4Ka6p8NFP0cAJd1sALUJmEwV4=;
- b=owGbwMvMwCW2/dJd9di6A+2Mp9WSGLK+HmPJy+0ydnl+an6y7JIgz5tKZQ9NwnRFHHb/5smab
- O+zQd6zo5SFQYyLQVZMkWVJrlFBROoq23t3NFlg5rAygQxh4OIUgIm8zGH4H6fCddeBw/vGjX+/
- RfbXlS/XrPaVW2Uc67zr90SHQ9xvSxkZvh2/yrfn26z34k92CNyqP+1mJDft3ObnPxdcN578OJ8
- jgAsA
-X-Developer-Key: i=masneyb@kernel.org; a=openpgp;
- fpr=A46D32705865AA3DDEDC2904B7D2DD275D7EC087
+References: <20261112131316.827708-1-christian.loehle@arm.com> <592580a1-ba88-4e22-b586-4aa2425f9760@arm.com>
+In-Reply-To: <592580a1-ba88-4e22-b586-4aa2425f9760@arm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 12 Nov 2026 15:01:18 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gXjngKSxX0Ku2wccWj9+oDQ7YqS6ziFZXDzMgm5GjVzg@mail.gmail.com>
+X-Gm-Features: AclHuK-dIn4zlzG7z1bwRaMnbDOUGK6LpjeQHSgY2JmmwqDleE1ed34FxyT4g9w
+Message-ID: <CAJZ5v0gXjngKSxX0Ku2wccWj9+oDQ7YqS6ziFZXDzMgm5GjVzg@mail.gmail.com>
+Subject: Re: [PATCH] ACPI: CPPC: Scale EPP values to the register width
+To: Christian Loehle <christian.loehle@arm.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, zhanjie9@hisilicon.com, superm1@kernel.org, 
+	zhangpengjie2@huawei.com, Sumit Gupta <sumitg@nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+On Thu, Nov 12, 2026 at 2:58=E2=80=AFPM Christian Loehle
+<christian.loehle@arm.com> wrote:
+>
+> On 11/12/26 13:13, Christian Loehle wrote:
+> > The EPP sysfs interface uses 0-255, but ACPI permits 4-8 bit fields.
+> > Writing 128 to a 4- or 6-bit SystemMemory field currently succeeds but
+> > stores zero, selecting maximum performance.
+> >
+> > Scale writes to supported narrow EPP registers and normalize reads to
+> > 0-255. Cover both EPP setters and cppc_get_perf() so saved firmware val=
+ues
+> > round-trip correctly.
+> >
+> > Fixes: 922607a2b462 ("cpufreq: CPPC: Add support for autonomous selecti=
+on")
+> > Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+> > ---
+> >  .../ABI/testing/sysfs-devices-system-cpu      |  5 ++
+> >  drivers/acpi/cppc_acpi.c                      | 46 +++++++++++++++++--
+> >  2 files changed, 47 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Docum=
+entation/ABI/testing/sysfs-devices-system-cpu
+> > index d219fc27a0c9..c63b5cfd993c 100644
+> > --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
+> > +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+> > @@ -322,6 +322,11 @@ Description:     Energy performance preference
+> >               performance increase/decrease and the result of the hardw=
+are's
+> >               energy efficiency and performance optimization policies.
+> >
+> > +             For supported EPP registers narrower than eight bits, val=
+ues are
+> > +             scaled and rounded to the nearest hardware preference.
+> > +             Reads use the same 0-255 scale and may differ from the re=
+quested
+> > +             value due to the reduced precision.
+> > +
+> >               Writing to this file only has meaning when Autonomous Sel=
+ection is
+> >               enabled.
+> >
+> > diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> > index 11a9f9eb6b4a..10b52163eb56 100644
+> > --- a/drivers/acpi/cppc_acpi.c
+> > +++ b/drivers/acpi/cppc_acpi.c
+> > @@ -38,6 +38,7 @@
+> >  #include <linux/iopoll.h>
+> >  #include <linux/ktime.h>
+> >  #include <linux/list.h>
+> > +#include <linux/math64.h>
+> >  #include <linux/mutex.h>
+> >  #include <linux/rbtree.h>
+> >  #include <linux/rwsem.h>
+> > @@ -2841,6 +2842,25 @@ int cppc_get_highest_perf(int cpunum, u64 *highe=
+st_perf)
+> >  }
+> >  EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
+> >
+> > +/* Keep the EPP interface on an 8-bit scale, including firmware readba=
+ck. */
+> > +static u64 cppc_scale_epp(const struct cpc_register_resource *reg,
+> > +                       u64 epp, bool to_reg)
+> > +{
+> > +     unsigned int width =3D reg->cpc_entry.reg.bit_width;
+> > +     u32 max;
+> > +
+> > +     if (reg->type !=3D ACPI_TYPE_BUFFER || width < 4 || width >=3D 8)
+> > +             return epp;
+> > +
+> > +     max =3D BIT(width) - 1;
+> > +     if (to_reg)
+> > +             return DIV_ROUND_CLOSEST_ULL(epp * max,
+> > +                                          CPPC_EPP_ENERGY_EFFICIENCY_P=
+REF);
+> > +
+> > +     return DIV_ROUND_CLOSEST_ULL(epp * CPPC_EPP_ENERGY_EFFICIENCY_PRE=
+F,
+> > +                                  max);
+> > +}
+> > +
+> >  /**
+> >   * cppc_get_epp_perf - Get the epp register value.
+> >   * @cpunum: CPU from which to get epp preference value.
+> > @@ -2850,7 +2870,15 @@ EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
+> >   */
+> >  int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
+> >  {
+> > -     return cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
+> > +     struct cpc_desc *cpc_desc =3D per_cpu(cpc_desc_ptr, cpunum);
+> > +     int ret;
+> > +
+> > +     ret =3D cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
+> > +     if (!ret)
+> > +             *epp_perf =3D cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_P=
+ERF],
+> > +                                        *epp_perf, false);
+> > +
+> > +     return ret;
+> >  }
+> >  EXPORT_SYMBOL_GPL(cppc_get_epp_perf);
+> >
+> > @@ -3150,6 +3178,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_c=
+trls *perf_ctrls, bool enable)
+> >       bool auto_sel_non_pcc;
+> >       bool epp_pcc;
+> >       bool epp_non_pcc;
+> > +     u64 epp;
+> >       int ret;
+> >
+> >       if (!cpc_desc) {
+> > @@ -3159,6 +3188,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_c=
+trls *perf_ctrls, bool enable)
+> >
+> >       auto_sel_reg =3D &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
+> >       epp_set_reg =3D &cpc_desc->cpc_regs[ENERGY_PERF];
+> > +     epp =3D cppc_scale_epp(epp_set_reg, perf_ctrls->energy_perf, true=
+);
+> >       if (!enable && auto_sel_reg->type =3D=3D ACPI_TYPE_INTEGER &&
+> >           auto_sel_reg->cpc_entry.int_value =3D=3D 1)
+> >               return -EOPNOTSUPP;
+> > @@ -3177,7 +3207,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_c=
+trls *perf_ctrls, bool enable)
+> >                       return ret;
+> >       }
+> >       if (epp_non_pcc) {
+> > -             ret =3D cpc_write(cpu, epp_set_reg, perf_ctrls->energy_pe=
+rf);
+> > +             ret =3D cpc_write(cpu, epp_set_reg, epp);
+> >               if (ret)
+> >                       return ret;
+> >       }
+> > @@ -3205,7 +3235,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_c=
+trls *perf_ctrls, bool enable)
+> >               }
+> >
+> >               if (epp_pcc) {
+> > -                     ret =3D cpc_write(cpu, epp_set_reg, perf_ctrls->e=
+nergy_perf);
+> > +                     ret =3D cpc_write(cpu, epp_set_reg, epp);
+> >                       if (ret)
+> >                               goto out_unlock;
+> >               }
+> > @@ -3235,9 +3265,17 @@ EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
+> >   */
+> >  int cppc_set_epp(int cpu, u64 epp_val)
+> >  {
+> > +     struct cpc_desc *cpc_desc =3D per_cpu(cpc_desc_ptr, cpu);
+> > +
+> >       if (epp_val > CPPC_EPP_ENERGY_EFFICIENCY_PREF)
+> >               return -EINVAL;
+> >
+> > +     if (!cpc_desc)
+> > +             return -ENODEV;
+> > +
+> > +     epp_val =3D cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_PERF],
+> > +                              epp_val, true);
+> > +
+> >       return cppc_set_reg_val(cpu, ENERGY_PERF, epp_val);
+> >  }
+> >  EXPORT_SYMBOL_GPL(cppc_set_epp);
+> > @@ -3496,7 +3534,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls=
+ *perf_ctrls)
+> >               if (ret)
+> >                       goto out_err;
+> >       }
+> > -     perf_ctrls->energy_perf =3D energy_perf;
+> > +     perf_ctrls->energy_perf =3D cppc_scale_epp(energy_perf_reg, energ=
+y_perf, false);
+> >
+> >       if (CPC_SUPPORTED(auto_sel_reg)) {
+> >               ret =3D cpc_read(cpu, auto_sel_reg, &auto_sel);
+>
+> +CC Sumit's actual email, sorry about that.
 
-> Add a BCM6846 clock provider for the Power Management Bus (PMB) MFD
-> cell. Expose six outputs from each of the RDP and BIU PLLs, the Runner
-> clock divided from RDP PLL channel 1, the crystal output, PVTMON and
-> block-zone clock gates.
-> 
-> PVTMON and zone clocks provide gate control only.
-> 
-> Signed-off-by: Linus Walleij <linusw@kernel.org>
+So I'm assuming that this one is for Sumit to pick up and send again
+along with a new version of
 
-I missed that you sent a v4 yesterday and I left comments and a question
-on the v3 that are still relevant.
+https://lore.kernel.org/linux-acpi/20261112080442.4007723-1-sumitg@nvidia.c=
+om/
 
-https://lore.kernel.org/linux-clk/179440936574.1126566.13988760065429157595.b4-review@b4/
-
-Brian
-
--- 
-Brian Masney <masneyb@kernel.org>
+Or please let me know if that is not the case.
