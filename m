@@ -1,108 +1,81 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.51
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.162
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794501880;
-	b=Uzjnr6vnOI5FKGbD+uzEIIQDq/xAI+aNeDlwbG91qv0B8xvXpVe/JJMAo7GlQWwJRs0H
-	 r+zjhHpZKHqDEIYORODV50SBpMNYpFDuTiWJVwT+0ijoYb53t7dSwFZnE/pYht9ABelRY
-	 /wq86DSGBqBKHfj2jgf+vmMCsXrgQYsQ4E7G43RsDbU9G+CIWYbcIc5uBXa8bh6Nnurou
-	 uLIzyGV0bP74d7YdtRWKkFJeuy76sQGkLp1+3XoyoSOshOwqU39WlxKb0M4HjSDLqDzEt
-	 t1qkp+rspXuZjqDfYnygbsIM9DxHf2BVU8K4KLccFFsAk+CpbteRP27M2X4Nky51z1g==
+	t=1794503344;
+	b=vF7swxMdKMCUDG9cjnO1XvUzDS5FvYvPofln7I/jmgFtoiFJP/rgf0I5zajiz1THyLbF
+	 ULi0ryL5rBSHF1YuR+GKzXuTx631VtRopi8fPk+hA2UyZTiL06lIyUL3IimpNOem7Vu1J
+	 kn1XU5I5/I6dzoqXLIn+OPSLYZhS9N0BGvYGFzS9/XAf+2rfb9t1n2yRPstWEqZif3Sni
+	 TTghkdZfIpoHoSp8/TGds0i1Gm1ijruennJfk8YlkfSocIuEPq9y6g/m55CKuLJMYvunA
+	 nN7X0JF4qdAgZXNE74XLVQfawkNO+DytoKobaxxvVt1IfhoEiWmvsJC9t9h9iJaVgfg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794501880;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
-	 In-Reply-To;
-	bh=L0I0n48oV5o7BRj/oH4f6pc2kqveIFdpMiqQByS78r4=;
-	b=NuQmqyvfzq0ObbS3SVZ5jxZqq64iKv6k5/nsdxKXV3Ho4UommSw+okYmPG8RobeiCGyR
-	 JIh0OA7pn2bpxYpO6ik4BPNyDz2/FkhLvVI+3xo21ZwObRSAh39aA46odyP1zcMVo328m
-	 ZrVT1IG4IJtuC9UyZbgPoz5Oi2tGbdA46Hh2YSvgYgaXhgRd8X/1PWTNGIrW1YBfKyNCa
-	 Gtd/BtREiQmOQttRC5z7rKly5NZaEzJVQJ3M7Stz8M1w5o3AA0DiLri13kibt/MAob4CM
-	 0pbuozFSxGNIJ8X+aT2Ll1drwSFUXPk/mhongorCrZiohozCX2rALPlv10xHbFZQuWA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794503344;
+	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
+	 X-Mizu-Trace-ID:X-Migadu-Flow:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=oj2TNmHu0aGvGVnFAhxBXVtL1PvBAFJMiuWObtt4eU8=;
+	b=s+M9p6gsCOm2uBiel2xL6dRbBLj2y0MM2jeYqUh3zcCvFVmzXLaFvnFkEqRT9WQaSJVy
+	 7WZnJ1vfszEgeTpQBnM/VeqmK6c2RYYrfmtGDNE/F3kQYqwEoeySa4U0HVRpNQwD1bh2R
+	 LmKHd54mfPq6/Wmg59W6S+jNw7lo1Egh4C0uOes9p6LQFZtk/Yh1PxPU7Vlq9yix52AXQ
+	 KIt4zHTZSWDRHHU9ux5nyhk6TvYbP2ibPhMhxZFX+lpvsYzDpR/PBhn4xFCdWh1hFI0Hb
+	 FOd1Fx67IIwP0Et1eVa9ZGCCPUu7mjOSC0A0Wvx6Ale4atME8Hi22wA0ggOa9FllEGg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=SuIlegSD;
-	arc=none smtp.remote-ip=74.125.82.51
-Received: from mail-dl1-f51.google.com (mail-dl1-f51.google.com [74.125.82.51])
+	dmarc=pass header.from=packett.cool;
+	spf=pass smtp.mailfrom=packett.cool;
+	dkim=pass header.d=packett.cool header.i=@packett.cool header.a=rsa-sha256 header.s=key1 header.b=KNTpMS5P;
+	arc=none smtp.remote-ip=95.215.58.162
+Received: from mta1.migadu.com (out-162.mta1.migadu.com [95.215.58.162])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CCFC606A330
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 16:44:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5CCFC606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6C45606A334
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 17:09:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B6C45606A334
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=packett.cool
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=SuIlegSD
-Received: by mail-dl1-f51.google.com with SMTP id a92af1059eb24-15dd124bbe7so7289422c88.1
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 08:44:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1794501879; x=1795106679; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=L0I0n48oV5o7BRj/oH4f6pc2kqveIFdpMiqQByS78r4=;
-        b=SuIlegSDTiqLxvrjbgM1Q95iPFjnvtJm1AHCpbYH/Aa1M6ec3/6OeF0Inudj0wOHYZ
-         yZ7mAckhOQmOJVRTYUhe2ll5Ca8hBUUGL8CDuNM+jE2if7teqm7z7i2a60bjAqE65pzp
-         K1mWu1/+QywHczH0apEZY2OsitrAMzx8FfRoo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794501879; x=1795106679;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=L0I0n48oV5o7BRj/oH4f6pc2kqveIFdpMiqQByS78r4=;
-        b=x001t9ZY71oOIWbAeqhVIdgo5+IdS2uA3Zh1mQyhI1YckIb27JnCuSnpXVcPPzsLvD
-         AVnHR4nViLcjR0Yj24pLs5wtU8fAw205+7uLTDkQtgr8A7V/r/G1tkbgRXEPV5IqMQ8C
-         7gDd76NboFNFkaM/kVV+fvozeYWeetRU0Fz06X6TOdaXDbG9FAuggxMfGU8E9lYEZpMV
-         Dc4TFr1im7tzCkGwvaNUZcDOfIAHe2Vm/etolBGtJU/wdD+G/ofowaLxI6wsropzl+9S
-         LMkcTV093DTR9WmwLw/2EK0SX+0pQeLP0UGlc6wXVU/TvKbpT13xGmLrc/391dwb0Mfj
-         Psfg==
-X-Forwarded-Encrypted: i=1; AL+hErGGaIcK2ijdvsYsYarfhJ9B9FtsFonsYGm9RF5qJWloR4nX9qVVB6svcghoPssUd093kVulGQmJ3g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+DByjTccu7+ZyRB7tyzyuk0UmtUEva0zVdoTK4MB2nSPlIHINt
-	vV1Zp2386hk0W1SNkKFtV+7Rv2TrhQK9Oo1HTWW9AMqQEGdGWZdpaW0onwXKCDFyuA==
-X-Gm-Gg: AYBFou2fYsJlBoeO7W5BZfT5D/+z3pznhedgVxX4gX8OO0YxEXyzZdBhMQRLcdhPnHc
-	wuONeBuZF9VZps98b7W5fjfnYw9p7SUvoAXZJz8ZFMpGEy6cbfS7oDgf2X9jrA436Mb48776Pqd
-	/6FT+orBE8jcmSqxbCTBwv/+RWgNMBphnVYyvaA21iZ4Iwo5WxfZ3EzZ59f/FqG0lTvrqJAOxC9
-	qC3Fh9chFS+9VKgTZzwJYbjkQRp1JBZMMalYI4nsPdNDf5H9h0uqBfaAc9Jza4nuPrXW2InWivU
-	9Q00kyUgCgSPuIlCapfmPivhPP3jA4merq6kHu/2+zW3gtwKwZKD3PQj2GkXLvtzVwf4+f7L/4W
-	A+y0ovAsNcUU0bbE46f16HaXleLhuF8gQHuCuxp7A08G+DvoP0nD7c0DqOWX8mWbWNXQ1gAfny3
-	BQRL2/6FR9HA2v1WzH+8SBosa1fZ5itU6heaJZNo5e/wHx/oHNd9PuKDRaidtHb4a/lm7otdaVH
-	SEqGCghjamfA09Cf/Hw8m1NoPFyDZfs05AayorkSfG4dC2qLr6DheD1Gx1a9RYwn4R/zJ72vqXu
-	kIaWqNeFoeug8yBmMH2BTOl3j/7nKRVVpu+R8BdHbOykGHPDQ8uvcUtE0+JPLJ14qiFK
-X-Received: by 2002:a05:701b:4551:20b0:194:3a84:e67d with SMTP id a92af1059eb24-1b5031b37dcmr81202c88.44.1794501879423;
-        Thu, 12 Nov 2026 08:44:39 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:5446:563c:ac92:43a8])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1b5031b2519sm137097c88.13.2026.11.12.08.44.36
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 Nov 2026 08:44:37 -0800 (PST)
-Date: Thu, 12 Nov 2026 08:44:35 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Fabrice Gasnier <fabrice.gasnier@st.com>, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulfh@kernel.org>,
-	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-	Andy Shevchenko <andy@kernel.org>,
+	dkim=pass (2048-bit key, unprotected) header.d=packett.cool header.i=@packett.cool header.a=rsa-sha256 header.s=key1 header.b=KNTpMS5P
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=W6VeXoYsDeuooRLOPur5oKNEUPcbNXvMYUsUnI6yMhQ=;
+ c=simple/simple; d=packett.cool;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794503340; v=1; x=1795108140;
+ b=KNTpMS5PiD58A1ons/DpdJZmpZOCajmxxKBM5F/RE+ZjoQuNDaELQmTkqYAwdvagMjqJPCOH
+ VyVorLwW83zHYFDRVk9P6fnbphJ1ZPIVuU/7JmkCTfDGeBw/ma+fwnFbeaP6RRKc9ypS1qR3P2h
+ ipGeKR709smjl2/rMw2zt6CDTkzPrBN71Ds1fLAaz78BUPpwF+3E83msDbhgNXUZh4jt2ri2HIj
+ Sak3LhdsE0QAL95+jlxE2NM8uPvNuHnRUNWNPQa5+3MHZsX0n2eNmAk1Nr1zRLXLyh7V9Be9bEH
+ Et+M8i7ydeO2Z0C2nSxkkowNxTqr+0WISXwIcDxn9lV2Q==
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id cc99491184bea011;
+	Thu, 12 Nov 2026 17:09:00 +0000
+X-Mizu-Trace-ID: cc99491184bea011
+X-Migadu-Flow: FLOW_OUT
+From: Val Packett <val@packett.cool>
+To: 
+Cc: Val Packett <val@packett.cool>,
+	Marc Lainez <marc.lainez@gmail.com>,
+	Luca Weiss <luca.weiss@fairphone.com>,
+	=?UTF-8?q?Barnab=C3=A1s=20Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>,
+	Danila Tikhonov <danila@jiaxyga.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>,
 	Jonathan Cameron <jic23@kernel.org>,
 	David Lechner <dlechner@baylibre.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2 3/5] PM: runtime: Propagate last_busy from dependent
- to dependency
-Message-ID: <avXs826ikSctpUnA@google.com>
-References: <auzlLwlleGLPsLcw@google.com>
- <CAJZ5v0g25xQeRaLJWJyAo2fcJko+gZ7w6JhX7FzMgRx2+uuimw@mail.gmail.com>
- <au0oKFb9CmNzc6Cg@google.com>
- <CAJZ5v0hKpjMsGQm8Cpa89x5wkNxqkggDNbp+eQ0S-E52DETWjQ@mail.gmail.com>
- <avOw_4ZkqtKFHu1B@google.com>
- <2c3bda2b-ccc3-4430-8e09-81b25f6fcda7@rowland.harvard.edu>
- <avSa97F1Nu1LTSCA@google.com>
- <fc43eb13-816b-4cd0-9711-848fdab605ef@rowland.harvard.edu>
- <avUHG8mLuTOUMr8O@google.com>
- <CAJZ5v0j+8_fOc_EEGx4tquqcaH3-nmHd0YMJRb38t2Rw40iV3g@mail.gmail.com>
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	phone-devel@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 0/5] Add driver for Qualcomm QGauge (qcom_qg) fuel gauge
+Date: Thu, 12 Nov 2026 14:07:26 -0300
+Message-ID: <20261112170841.2189322-1-val@packett.cool>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -112,73 +85,63 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0j+8_fOc_EEGx4tquqcaH3-nmHd0YMJRb38t2Rw40iV3g@mail.gmail.com>
 
-On Thu, Nov 12, 2026 at 05:13:09PM +0100, Rafael J. Wysocki (Intel) wrote:
-> On Thu, Nov 12, 2026 at 1:24 AM Brian Norris <briannorris@chromium.org> wrote:
-> > I'll give this some time in case Rafael had any other thoughts/replies,
-> > but unless something major changes, I'll plan to write/test/submit v3
-> > where rpm_idle() calls pm_runtime_mark_last_busy() (part of Rafael's
-> > proposal), and *not* make it conditional (i.e., no
-> > pm_runtime_use_autosuspend_always()).
-> 
-> That will work for me.
-> 
-> > (Or, Rafael is free to do so, since it's his idea. Just let me know so I
-> > don't waste my time on it. But I figure he'd rather someone else do the
-> > work.)
-> 
-> I can cut that patch.  It is going to be a one-liner if I'm not
-> mistaken and I'd like to write a changelog for it.
+Hi o/
 
-OK.
+This series adds a driver for the "qgauge" battery fuel gauge
+present in Qualcomm PMICs like PMI632, PM6150, PM7250B, PM2250.
+The PMI632 is used in SDM632, SM6115/SM4250, SM6125 based phones.
 
-There's potentially quite a bit of follow-up, including patch 5 of this
-series (to drop now-redundant .runtime_idle() callbacks), but I can roll
-that separately if you'd like. (Would you want to make an immutable
-branch for other subsystems to pick the 1-liner up? Or just apply such
-patches to your tree, as it seems the IIO maintainer was probably OK
-with that?)
+This series was tested on sm6115-motorola-{cebu,guamp}, whose basic
+dts has been submitted as [1].
 
-I also feel like there's probably room for unit tests in this area, but
-again, I can do that separately if they still seem valuable.
+There have been two attempts at making this driver, the first one
+"WIP! power: supply: Add rude driver for QGauge" as found in
+various development forks [2] was rather infamous for wild capacity%
+swings due to load variation :D
 
-> After that patch though, using pm_runtime_mark_last_busy() elsewhere
-> will be mostly redundant except for pm_runtime_*_autosuspend().  Since
-> all of them call pm_runtime_mark_last_busy() (AFAICS), it looks like
-> last_busy can be updated directly in rpm_suspend() when RPM_AUTO is
-> passed to it, but if so, rpm_suspend() can simply set the autosuspend
-> timer unless it is already running and so last_busy can be eliminated
-> entirely.  I guess that should be done too (in follow-up patches)?
+The second one was submitted to msm8953-mainline at [3] by
+Marc Lainez, and it behaved much better thanks to the use of
+power_supply_batinfo_ocv2cap.
 
-__pm_runtime_put_autosuspend() still sticks out, but it's nearly gone.
-Its only user is just re-implementinng pm_runtime_put_autosuspend(), so
-obviously it doesn't actually make a difference. I've been waiting for
-someone to finish this patch...
-https://lore.kernel.org/all/20260806-smmu-rpm-v4-1-8183d007331c@oss.qualcomm.com/
+This is a continuation of that work, carrying his From/S-o-b on
+modified patches with explicit permission. I have added the
+SDAM read via NVMEM API, fixed the batt_info leak and did some
+general cleanup.
 
-So I think you may be correct.
+With the SMB5 work also going on right now, we'll finally have
+full battery support on these awkward pre-battmgr generations!
 
-> Moreover, after all of that the difference between pm_runtime_put()
-> and pm_runtime_put_autosuspend() will become somewhat academic, so is
-> the difference worth retaining?  Or can we just say "If you set the
-> autosuspend delay, all async suspends will be deferred" and drop the
-> "autosuspend" variant?.
+[1]: https://lore.kernel.org/all/20261109221453.658316-1-val@packett.cool/
+[2]: https://github.com/sm7150-mainline/linux/commit/76879bf7a71f4f8f66b9bcd7175069ca7bbf4274
+[3]: https://github.com/msm8953-mainline/linux/pull/242
 
-That's my preference. I think having so many put() variants hurts a lot
-more than it helps, and especially so if the differences are nearly
-nonexistent.
+Thanks,
+~val
 
-> I also have to say that I agree with your remarks regarding the
-> .runtime_idle() callback.  I don't think it has ever been particularly
-> useful and life without it would have been simpler.  I'd be happy to
-> just get rid of it at one point.
+---
 
-Great! If a few other things settle, and I find that I'm able to clean
-up my existing patches to my liking, then I hope to submit such patches
-at a later time.
+Marc Lainez (2):
+  dt-bindings: power: supply: add Qualcomm QGauge fuel gauge
+  power: supply: add Qualcomm QGauge (qcom_qg) fuel gauge driver
 
-Brian
+Val Packett (3):
+  iio: adc: qcom-spmi-adc5: Add ADC5_BAT_THERM_100K_PU
+  arm64: dts: qcom: pmi632: Add missing bat_therm ADC channel
+  arm64: dts: qcom: pmi632: Add battery fuel gauge node
+
+ .../bindings/power/supply/qcom,qg.yaml        | 105 +++
+ MAINTAINERS                                   |   7 +
+ arch/arm64/boot/dts/qcom/pmi632.dtsi          |  41 +
+ drivers/iio/adc/qcom-spmi-adc5.c              |   2 +
+ drivers/power/supply/Kconfig                  |  13 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/qcom_qg.c                | 807 ++++++++++++++++++
+ 7 files changed, 976 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/qcom,qg.yaml
+ create mode 100644 drivers/power/supply/qcom_qg.c
+
+-- 
+2.56.0
+
