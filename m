@@ -1,49 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794503990;
-	b=2Yufd4ldJUcEWOYzj42mWt0grBTVQN0Vry9O+GleKIXhs4Y7Y9fSgyFUTI1neSZT6Koa
-	 hNA8KvQRXstYacP389dwNabSCGBdR74ug9+dmgCE56/2dNcJ/ctjTRpgTU379uM2MPVJ7
-	 goWK9wbeaS1ma1VqNAMgsEodSJGlh3d+Pu46PBiomTJL3jM7LJKU6mMDvCd7J7x/lLs96
-	 aD74tDfXd/jjqv6f8rI75XDbv06M+R999oozKQphzDvSMKd8i6lxyH6ey9s374aI6ZrQX
-	 sXwg+hXrZkavOeG4YzPqASRSMqgrYm7tIVcq1WtnxJh2+wbaD1BpVR3JZdmd0tj965A==
+	t=1794504964;
+	b=rOwiaiZumYVayc3Zry9pPQjvsGDBl3ZP0xibgJb4unWUe7TWMERSCVyh1PVDLc7bUJgQ
+	 OXLuQf5i2Ljs4c3iui+I4EAmn/WyY6zMFYNkHmxiZm/TgzYG6IfNfbbiSg4FI+RkYgUkW
+	 H2E3/YpzmX0KHiSUvHVGqGmg5G0aC1n7htOBIct81pxR6s9IZ1NodfBbSI0kywjcLxoBx
+	 JPOsUNqeucyOB3xawliyXSkDe4whDWsVMBV1fuDzX+7e+Z+wIlLzc40nqxX7QORwe/Bjc
+	 oC2784nxU6UMu8g1lW7d1zkwGLDLb0eONbrj/OV1BB270auOcyb78Ew27aHSPA71EmQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794503990;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=OuWljefIe47FheRZQekaa/h5+XJ+ArJ7Bu8J3hooFpY=;
-	b=WSKRhAds8h0ph30C0mTQA7/NRl0qbl3hSOrrPHeT1jJ5rrwrWaHq9qpz2SuPZ3nQDbLx
-	 sKUAPkLm8BJXEeVxbscte0GzuwUaHFMRJocwv8HSHT+y+SQOf4YNklJF3YOS+Fk/2guSi
-	 KMKUirvPW0AFqJBdWIsTDtrPqUOFVgXvp+fD09mYijXcMT9n8U1/9lBG53tRISnWsrzj8
-	 AgkH5ZTKsNV/V38IsYKjYnr6kxXvgi5bGNc/jdQisb409MZ41bm/csl4zjs20kO4lCWbr
-	 R4yO5o8JNb3tnCwpLExt6qSRcC9pffNb3v2XqhX8EGkj91TgKvbrkDD0lkZohsgsyxg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794504964;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 Organization:MIME-Version:Content-Transfer-Encoding:Content-Type;
+	bh=XhxgWrP797phjOpTexJgWgQVJECHcKMfK1ahai2mOS0=;
+	b=wMeqHCf586PwMSYCsuqnbaJcZ/Cw1a/kfQfmU+Lu0ffPYvw1Wu2dcp1OCb+mFb9hhnJu
+	 riWEFdqSm1K3q2c9qZD7LdtlQt0oai1J2nXk3CawhieB2Bsb1cY0d8eZqcg+grPZ6jG/m
+	 eT4f2xHXXW8K58YKnGslleiebeswCkO5DIe+2vg4+GLL8oA+9jH0/Il54hU0ecVmFA5xp
+	 We2uMpnPforA/HIXmy02kQ3QzmyQg4Pt/wWMgSB2bt1YMaZrPnLEznKgQGw0s+SZLeGMP
+	 XV8cOZcqv0q0z9vMCuNrj+4sd99WaOoe/cjmcCBhJ0iGMO9pHc53w+c/rFGk8OJ5fBA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=uvf+Td5S;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B75F9606A33D;
-	Thu, 12 Nov 2026 17:19:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B75F9606A33D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZylkNu7s;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FE29606A327;
+	Thu, 12 Nov 2026 17:36:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=uvf+Td5S
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 34C771516;
-	Thu, 12 Nov 2026 09:19:46 -0800 (PST)
-Received: from [10.57.15.226] (unknown [10.57.15.226])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C7BA53F632;
-	Thu, 12 Nov 2026 09:19:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794503989; bh=m/JJbDDO8o+/xWGSjwozr58rGxDH/UU0ZgQbDHEuFS4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=uvf+Td5SmCSfKYpJEd3FDVqu6q7HpVV0lD4Agt7VCfhTgB381OZmyXdAYlMZFmP18
-	 TByEWmsqFv4vqgEXz2vZHbtZ6E8L337qAGhDOz0Mst8zNbru2cjJM755WPAtdIuS5J
-	 svb2rTh93dTcnyqutkG7s9uOe63Hisll76oXZE0I=
-Message-ID: <4d9261e9-fc66-4197-b3ba-edcc98ffaaf7@arm.com>
-Date: Thu, 12 Nov 2026 17:19:45 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZylkNu7s
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E9CF1F000C4;
+	Thu, 12 Nov 2026 17:36:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794504963;
+	bh=XhxgWrP797phjOpTexJgWgQVJECHcKMfK1ahai2mOS0=;
+	h=From:To:Cc:Subject:Date;
+	b=ZylkNu7sVJGhfrNW/PL+gVqZuwKyxtR7GS45RP5h9XAspP/r5N78f5mwobf2h3jgl
+	 5Fid2pcXj7l5Q12vJmWbJfhEofNGWf44d+xbIIphXUE3zvGLDhjV3fntDVS6Gbe6hZ
+	 it6+6+n6OL67PGeIA1n7MwskHRov8oGwIXJd4GXu4KvmprlZjwMYCXcB4sDn87Wemi
+	 +31Qfu1OVRdiFRMUz2vIhRzQCnF6bZn0tq99DSWqZ8FDaeaATdsRkdi7uPMnMvqgcx
+	 ACPC2SWmL10U5qYzbUE8Ew56Zf6tJ0zukefqik7KnEngMVgiUsN/+VjAZOxmF72tfU
+	 dOpLUPGPTSBvA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Christian Loehle <christian.loehle@arm.com>,
+ Linux PM <linux-pm@vger.kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject:
+ [PATCH v1] ACPI: CPPC: Drop two compliance checks involving nominal
+ performance
+Date: Thu, 12 Nov 2026 18:35:59 +0100
+Message-ID: <13049690.O9o76ZdvQC@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,202 +59,49 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ACPI: CPPC: Scale EPP values to the register width
-To: Mario Limonciello <superm1@kernel.org>,
- "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, zhanjie9@hisilicon.com,
- zhangpengjie2@huawei.com, Sumit Gupta <sumitg@nvidia.com>
-References: <20261112131316.827708-1-christian.loehle@arm.com>
- <592580a1-ba88-4e22-b586-4aa2425f9760@arm.com>
- <CAJZ5v0gXjngKSxX0Ku2wccWj9+oDQ7YqS6ziFZXDzMgm5GjVzg@mail.gmail.com>
- <f8d23034-0d28-4726-829e-51cf687e5589@arm.com>
- <37efae02-1f49-45ff-9e51-5a6a921ed1d5@kernel.org>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <37efae02-1f49-45ff-9e51-5a6a921ed1d5@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-On 11/12/26 17:11, Mario Limonciello wrote:
-> On 11/12/26 08:05, Christian Loehle wrote:
->> On 11/12/26 14:01, Rafael J. Wysocki (Intel) wrote:
->>> On Thu, Nov 12, 2026 at 2:58 PM Christian Loehle
->>> <christian.loehle@arm.com> wrote:
->>>>
->>>> On 11/12/26 13:13, Christian Loehle wrote:
->>>>> The EPP sysfs interface uses 0-255, but ACPI permits 4-8 bit fields.
->>>>> Writing 128 to a 4- or 6-bit SystemMemory field currently succeeds but
->>>>> stores zero, selecting maximum performance.
->>>>>
->>>>> Scale writes to supported narrow EPP registers and normalize reads to
->>>>> 0-255. Cover both EPP setters and cppc_get_perf() so saved firmware values
->>>>> round-trip correctly.
->>>>>
->>>>> Fixes: 922607a2b462 ("cpufreq: CPPC: Add support for autonomous selection")
->>>>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
->>>>> ---
->>>>>   .../ABI/testing/sysfs-devices-system-cpu      |  5 ++
->>>>>   drivers/acpi/cppc_acpi.c                      | 46 +++++++++++++++++--
->>>>>   2 files changed, 47 insertions(+), 4 deletions(-)
->>>>>
->>>>> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>> index d219fc27a0c9..c63b5cfd993c 100644
->>>>> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>> @@ -322,6 +322,11 @@ Description:     Energy performance preference
->>>>>                performance increase/decrease and the result of the hardware's
->>>>>                energy efficiency and performance optimization policies.
->>>>>
->>>>> +             For supported EPP registers narrower than eight bits, values are
->>>>> +             scaled and rounded to the nearest hardware preference.
->>>>> +             Reads use the same 0-255 scale and may differ from the requested
->>>>> +             value due to the reduced precision.
->>>>> +
->>>>>                Writing to this file only has meaning when Autonomous Selection is
->>>>>                enabled.
->>>>>
->>>>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->>>>> index 11a9f9eb6b4a..10b52163eb56 100644
->>>>> --- a/drivers/acpi/cppc_acpi.c
->>>>> +++ b/drivers/acpi/cppc_acpi.c
->>>>> @@ -38,6 +38,7 @@
->>>>>   #include <linux/iopoll.h>
->>>>>   #include <linux/ktime.h>
->>>>>   #include <linux/list.h>
->>>>> +#include <linux/math64.h>
->>>>>   #include <linux/mutex.h>
->>>>>   #include <linux/rbtree.h>
->>>>>   #include <linux/rwsem.h>
->>>>> @@ -2841,6 +2842,25 @@ int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
->>>>>   }
->>>>>   EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
->>>>>
->>>>> +/* Keep the EPP interface on an 8-bit scale, including firmware readback. */
->>>>> +static u64 cppc_scale_epp(const struct cpc_register_resource *reg,
->>>>> +                       u64 epp, bool to_reg)
->>>>> +{
->>>>> +     unsigned int width = reg->cpc_entry.reg.bit_width;
->>>>> +     u32 max;
->>>>> +
->>>>> +     if (reg->type != ACPI_TYPE_BUFFER || width < 4 || width >= 8)
->>>>> +             return epp;
->>>>> +
->>>>> +     max = BIT(width) - 1;
->>>>> +     if (to_reg)
->>>>> +             return DIV_ROUND_CLOSEST_ULL(epp * max,
->>>>> +                                          CPPC_EPP_ENERGY_EFFICIENCY_PREF);
->>>>> +
->>>>> +     return DIV_ROUND_CLOSEST_ULL(epp * CPPC_EPP_ENERGY_EFFICIENCY_PREF,
->>>>> +                                  max);
->>>>> +}
->>>>> +
->>>>>   /**
->>>>>    * cppc_get_epp_perf - Get the epp register value.
->>>>>    * @cpunum: CPU from which to get epp preference value.
->>>>> @@ -2850,7 +2870,15 @@ EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
->>>>>    */
->>>>>   int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
->>>>>   {
->>>>> -     return cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
->>>>> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
->>>>> +     int ret;
->>>>> +
->>>>> +     ret = cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
->>>>> +     if (!ret)
->>>>> +             *epp_perf = cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_PERF],
->>>>> +                                        *epp_perf, false);
->>>>> +
->>>>> +     return ret;
->>>>>   }
->>>>>   EXPORT_SYMBOL_GPL(cppc_get_epp_perf);
->>>>>
->>>>> @@ -3150,6 +3178,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>        bool auto_sel_non_pcc;
->>>>>        bool epp_pcc;
->>>>>        bool epp_non_pcc;
->>>>> +     u64 epp;
->>>>>        int ret;
->>>>>
->>>>>        if (!cpc_desc) {
->>>>> @@ -3159,6 +3188,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>
->>>>>        auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
->>>>>        epp_set_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
->>>>> +     epp = cppc_scale_epp(epp_set_reg, perf_ctrls->energy_perf, true);
->>>>>        if (!enable && auto_sel_reg->type == ACPI_TYPE_INTEGER &&
->>>>>            auto_sel_reg->cpc_entry.int_value == 1)
->>>>>                return -EOPNOTSUPP;
->>>>> @@ -3177,7 +3207,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>                        return ret;
->>>>>        }
->>>>>        if (epp_non_pcc) {
->>>>> -             ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
->>>>> +             ret = cpc_write(cpu, epp_set_reg, epp);
->>>>>                if (ret)
->>>>>                        return ret;
->>>>>        }
->>>>> @@ -3205,7 +3235,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>                }
->>>>>
->>>>>                if (epp_pcc) {
->>>>> -                     ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
->>>>> +                     ret = cpc_write(cpu, epp_set_reg, epp);
->>>>>                        if (ret)
->>>>>                                goto out_unlock;
->>>>>                }
->>>>> @@ -3235,9 +3265,17 @@ EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
->>>>>    */
->>>>>   int cppc_set_epp(int cpu, u64 epp_val)
->>>>>   {
->>>>> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
->>>>> +
->>>>>        if (epp_val > CPPC_EPP_ENERGY_EFFICIENCY_PREF)
->>>>>                return -EINVAL;
->>>>>
->>>>> +     if (!cpc_desc)
->>>>> +             return -ENODEV;
->>>>> +
->>>>> +     epp_val = cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_PERF],
->>>>> +                              epp_val, true);
->>>>> +
->>>>>        return cppc_set_reg_val(cpu, ENERGY_PERF, epp_val);
->>>>>   }
->>>>>   EXPORT_SYMBOL_GPL(cppc_set_epp);
->>>>> @@ -3496,7 +3534,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
->>>>>                if (ret)
->>>>>                        goto out_err;
->>>>>        }
->>>>> -     perf_ctrls->energy_perf = energy_perf;
->>>>> +     perf_ctrls->energy_perf = cppc_scale_epp(energy_perf_reg, energy_perf, false);
->>>>>
->>>>>        if (CPC_SUPPORTED(auto_sel_reg)) {
->>>>>                ret = cpc_read(cpu, auto_sel_reg, &auto_sel);
->>>>
->>>> +CC Sumit's actual email, sorry about that.
->>>
->>> So I'm assuming that this one is for Sumit to pick up and send again
->>> along with a new version of
->>>
->>> https://lore.kernel.org/linux-acpi/20261112080442.4007723-1-sumitg@nvidia.com/
->>>
->>> Or please let me know if that is not the case.
->>
->> Yup, while it fixes an issue by itself technically, I don't think there
->> are any affected platforms.
->> I'm hoping that Sumit this (and the limit-write-at-init) patch as a series
->> for all our convenience (and hopefully to get Sashiko to review them too).
->> (I guess I should've mentioned that in the notes.)
->>
->> And sorry about ACPI/CPPC having such high traffic lately, I'm expecting once
->> we've got the issues ironed out and the new features supported it'll be a
->> lot more boring :)
-> 
-> So the basic idea with this patch that the userspace interface is always 8 bit so higher level software will not need to know the lower level implementation detail at the expense of some granularity.
-> 
-> Makes sense to me, but I'd like to know how realistic this hardware is going to be.  If it's purely hypothetical hardware; how about proposing to ASWG that this field must always be 8 bit?
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Good point, IMO it's hypothetical hardware that hopefully doesn't and won't exist.
-I'll try to raise this through that channel as well.
-Thanks!
+On a number of Intel platforms in the field, the nominal performance
+value in ACPI _CPC (which is an integer) is larger than the guaranteed
+performance value and it may even be larger than the highest performance
+value (that come from register reads).
+
+The new specification compliance checks involving those values added
+by commit 32299b29a887 ("ACPI: CPPC: Validate _CPC entry and control
+semantics") cause the CPPC library to refuse to work for some CPUs
+on the affected systems which in turn causes the intel_pstate driver
+to overestimate the maximum performance levels for those CPUs.  One
+of the affected systems is Dell Pro 5 14 P514260.
+
+In this particular case, the fact that the specification is not
+exactly followed has no implications and the checks enforcing
+compliance are not useful, so drop them from the CPPC library.
+
+If really necessary, they will need to be done elsewhere.
+
+Fixes: 32299b29a887 ("ACPI: CPPC: Validate _CPC entry and control semantics")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/cppc_acpi.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -2940,9 +2940,8 @@ int cppc_get_perf_caps(int cpunum, struc
+ 	if (!high || !low || !nom || !ref || !min_nonlinear ||
+ 	    high > U32_MAX || low > U32_MAX || guaranteed > U32_MAX ||
+ 	    nom > U32_MAX || ref > U32_MAX || min_nonlinear > U32_MAX ||
+-	    high < nom || nom < min_nonlinear || min_nonlinear < low ||
+-	    (CPC_SUPPORTED(guaranteed_reg) &&
+-	     (guaranteed < low || guaranteed > nom))) {
++	    nom < min_nonlinear || min_nonlinear < low ||
++	    (CPC_SUPPORTED(guaranteed_reg) && guaranteed < low)) {
+ 		ret = -EFAULT;
+ 		goto out_err;
+ 	}
+
+
+
