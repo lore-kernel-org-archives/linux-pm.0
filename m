@@ -1,100 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.54
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.53
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794466891;
-	b=BlZy1HWx/wOu9IF2+vulLCczY2XdiJIGu0JytdHjlz6eALjoQFOGGPx6/qfiCG1FkfsL
-	 Fq3Z4p0RBs113IOZMqVGvuOVSrE5uUC0zQZqZq5Jwj6hKau2hQcULM4CsPHP9ZDTbi2xr
-	 p1F2yyBPnGBGf8qdAk6MYoDx2GqB1WI7oiUb/yDBLtkd/j6kr8J15VgYZxU0HT+NGCQdw
-	 w105W1GxfWjQRXTRBflEQwh8zoN6zfBSEv2kOlhT9bGeSIjzTyIHXGAzsZZ6rho62xKnm
-	 iAl+SG1WUS09tmcP2shhqD0LXdfiODAKaBpWpb4pzQnaoK/v5sIhXylU6h2QFGsZJbg==
+	t=1794466916;
+	b=yGjknO6GMO74ndLDPb4uJ9N9OgQ2nqydfXuNC62T5PMmyoq6le6k1ZqzhHZRoPOyIKRk
+	 Xr1rnZp7P7ww1ZIluYHJ8NXiiR/TU3NB5eof0nN7NvM3fwfdM/s1hmB7Yfqft40aW1X3f
+	 4/AtFYHu7o2en/9MVWCQxMTN7PWl7NBo7p6s+Xb2Ru3iIYyOvA1AWdejOT5rnIbTNt3u1
+	 PLeqbJfsv9RrChPuNweY2iUULkiAo9oHfFhYRjdDqF4W/mtmHjvTcP+mx42G20EP+738s
+	 KoSTKDXoVmTvslQLG0her315GsWrR4FHO5FEK3UFI/n1ytkZEAh4j3sXkVBczGOpmnw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794466891;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794466916;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
 	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
 	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=MSgj+o0QjwP2h00l2eEN+Ttef4mTAsT4O3zROWvRIfE=;
-	b=ObHsJSHdmhS1oPVxdA+65dc8kJQUIZ2jpP5+VySIRWNbMp7z0xzmeUMEHpZtGROBB+j/
-	 1eJyqNLbFWoTg63YhNGsSDHqE01YQkVNq5oR3VgWFXasltE4S+vqpHn6u3znZ4b7bQJd0
-	 9PbHhTfWZGdc9mKVNOCHghrkQj56rdpeUrnr7/gotKUILRGZAdw8TWgBBHM0QcJqIHcbF
-	 PzW1j4PzR4clMawkl1/3JfYkySJdxryhbEIJvFbabSwZzkUL/TSqR+moCOmqTMS/RouFy
-	 xXL5VsX5lfrkm9KxHfLIxB2XmCQ2pi0x9uYPrn2F8Ngqqi0px1f97bHUpPcguLEjqyA==
+	bh=UE2S/v9lUpY69MJ7L+FzJG1ltivTSX3+KzjoTbLuPuc=;
+	b=jcTRCzbWuwnqPWcSHPQCKJZRQogXoAE+yyS0brI0oBZF4UJC6e/e1/03+f2a4eEy94Lc
+	 sVcjyMmHZTQ0GhjJC26hLXvjOHL3ZXleBqlhjC7Cz5gmCqBcUIaCaOaM481lZ6x4G6CrE
+	 WAEutlssRlVriEApDa6IMtfIx//DnTh8RHZXCmoEctaVzKKA+65/uGDtpoFoCFMLT61op
+	 FkL3HUFt/rfgCOlaO9gVbarzlRiWBbpKt625XhRCN4O7aJXogDXHRvVeM61sh5qwx5olz
+	 oF09wRnqLJtObnO1dVaP00XdP8hg6j39lw4X+p9gcXybRm8v+UqV37F8T7qtJX+YGMg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linaro.org;
 	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=bIpAcp2q;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.54
-Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=UiAixHN1;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.53
+Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com [209.85.208.53])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 518EB606A321
-	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:01:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 518EB606A321
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48CCA606A327
+	for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 07:01:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 48CCA606A327
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=bIpAcp2q
-Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-6b167ffd132so830655a12.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 23:01:31 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794466889; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=UiAixHN1
+Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-6b587591414so4547341a12.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2026 23:01:56 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794466915; cv=none;
         d=google.com; s=arc-20260327;
-        b=ectmICEB7nbHzHgSsPHMKf45lwpGmSUbqiNTlgH97en7QL7xoTBqfyMIbpZgJq2ydp
-         jq7vdl6DVyu5uv+gbe7LIRb25dZZGlyx3T8qjiH46Moh3qlbAOLEwoqbzoPYzSf9thc1
-         gZD7uoLhOy2aAWXCDcpeuZymwrWNjrdck54HvQgE9UjtCbgSiigN9K3JJHlpYWhm+mr4
-         rwGtNZ8c84PCJOp8gBZPbAUZGBRiVddtyK/BgUx+X6Kf+c+bi5cqbbXaoszL/GrTHKTF
-         UwrEJIhzwTALj4slIcW1cQYmBddQ21QmOUJLtyAytPQChyFDRokhGIFL3RnxyXQ7zeE6
-         bvGg==
+        b=fZsKP0lMiKCXF9jvw3DeeUCCHCGAA0nrwpHFT9i9XLzD2lkX0vP79cpEg2uScAfvCl
+         xB2Cdc6gurjK5cJmcsVZ26bSGRd3AbioDi3Ph3m7asE6QxVu7oTiYzGtSUaj4OxjvcmT
+         FaZyZbTIkVNuWmILQrcoOPJI5rKN7ywHFJlFUoprmnfMtZiBs4d6IOqCW72xxMv3mv+m
+         2Q9Y7QvzURA/fHjr5V9pFltpYzuO3ZNNlIAeFZ1pA9yeYofLXFj7Qe07kwtN80Fs0JWP
+         NzgMJX1E++EdK7Y0iJFAIm1zTko8+Jl01DkumIp4ByxMfe6jQej9wJMpjtj2hKXx8YdY
+         BwEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=MSgj+o0QjwP2h00l2eEN+Ttef4mTAsT4O3zROWvRIfE=;
-        fh=x156VmvH5kxIncHqephahsXndCSXGtTy1+pHcrUJa8o=;
-        b=PqmrTr1Es2uNYOjjzwfT+4a9PDmgCxg7epMWInmrHTl27pRL7K9c7IqIK5yO4Py0Cw
-         ZVEr+mT0KwxgaTFOrX2yoBUpGk5Aceq9q0mqGy0gMisyKvcRB9AjI7N1T0k8KYs7vuU9
-         Umj/EUX5BPouBGQ4Oj3U1bV3NYRmxZV9j6JFQ+qjfHHPwxoZwX/eqD/FRZKaN+64bOyF
-         HKyVbMfH86gZBAsHpNbD58tpEahFuubnEkkcarcP7VuVfI8euek+Gj9Lyhbxfj1QPQrw
-         MBY+tH4UaNKRS6HqNdmmFVrtC9UboMdxyWW0JKOfF1bc+u+PGTStBaD+9OXhy7sdBTW8
-         EYIA==;
+        bh=UE2S/v9lUpY69MJ7L+FzJG1ltivTSX3+KzjoTbLuPuc=;
+        fh=IcvVe96Na6G4rblzPi1qvAbXOap97j4n9fYZig1xU+g=;
+        b=ElRcqdGeCmCLiO/zcd6jyculF1nQ7QaMeoYL6qyYkk2IDinAmk8wIET2RobynOBorB
+         WnIrQy40wCrGy8jxtZNwNrLPhL1VjCUBCasRhql0lbkyurkQqu7MCzyENoh/e+SgRt6l
+         jX6bzJJDRUdtkXG1bTE1n9H4ruy3l3enIL15W7tSaBXzBStwHU0X3NLuGoOeV+9/uvLu
+         oKz2CKRTLXjMbA/0ir5zR0cbgWq3rmSHZ5/vrT5rQjRXoNyTNJh4Sd6CjUQfHTRn+WvJ
+         tuUvCjtrmHMjcAx6J1XFKAtTZJJICk1xQ4NVd9NkT3tZCg7ntdMyCC6C8ByYj0Hp7fXy
+         4bbA==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1794466889; x=1795071689; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1794466915; x=1795071715; darn=vger.kernel.org;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=MSgj+o0QjwP2h00l2eEN+Ttef4mTAsT4O3zROWvRIfE=;
-        b=bIpAcp2qreVIVwcFgyLpVXjX7iiaMc9q2ep0+vdt6k2iMXzJsY/oB1Vm9qDTcGuo3N
-         O1EQIp++X5cYQuDLwjuH0LPk+F/L5OY2D5+mqvafj9A+riFZXjmAA51TveP9ma6A7v8u
-         T3+fo2hrzvtronss649/uOS1y9Nn8nbGu0TQj19yYPZM8wLr3/njU82QaMPsxO0m0+xt
-         4+7GxU4Ka63LpFTYuKMhcliw+mt0IjilzvgbJZUWOQUveGzm5CLIUkI0T8K3gU/EKtLk
-         I2gxNBCICd7ps0/I4IEAdvsDBM+ZDDU4EqFbqw6LxAHFUfbgUKBFYh4tOrzBGDZEe+5P
-         ALnw==
+        bh=UE2S/v9lUpY69MJ7L+FzJG1ltivTSX3+KzjoTbLuPuc=;
+        b=UiAixHN1FUbfDe7klDgIiMH62rnQAf9KRkO3u1AfWrm5CI0uh82tN0eXc3T9wbA1Vk
+         Z8e2YZ2ub0b4ecefSp1MlLEP9YoKN9hs3yBnqsQ79R6LmoTehDvWMcwTehXLsJ0k85ZT
+         aPlsOaL6jxHi8jiee/UUZhJlaJ3V25Tw2gI4OROVD5eqcmSqr79oxLXkhIMmwqd3Qoo8
+         aRpxd5FzCw1PnCPlkVLYqjlR1eqckLU6ezpDBr1aIrEQNs3/CuzwLXhXWvW3ZzGUKW4N
+         /Wne4+lV9YUhnr8P2O4p4+yZRSNJ2yOF6S5fMPm1PGN79bYpHqjnD7jZCNaySrLT6Beg
+         A8xw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794466889; x=1795071689;
+        d=1e100.net; s=20260707; t=1794466915; x=1795071715;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=MSgj+o0QjwP2h00l2eEN+Ttef4mTAsT4O3zROWvRIfE=;
-        b=u9Bi5NwMwoPYH7loOhTQTXQs0q5P8j7pVsya+SuoAxTVoGYXlJHjx97zZxweHoBh57
-         eIDs96Y31iys+X8vopmVDXbjtm1dGXI/hapmgLOIBvd3YnqASqSdIDncR0kd6Uqt3GOY
-         zXeBecIrkXlPJjXOVBVYGpPddVmQYJyztnQ7M55Z7lqpgbQpDk4iDEXnVG6A12euup7S
-         H8+/cK67r4751EOSDYsd2oOY18u3grOK0SuH6ZOjHaRBaUyiLicScI+1o28qu3G7IEFT
-         yW19X/ZYWBWo+xOpvt2SXt67xkg+0LrNOenmZ+Tkw1K8Lvw2hKnqVAEBngsZC4aiCGuT
-         v+Ig==
-X-Forwarded-Encrypted: i=1; AL+hErHlw3O/xkySHyojwLHEvFKXYbwFnzLhYlKT/oAxgVhPSjX/4Qouovlyxp/bKm3NtaUfY/EagARdCA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/arVS3/EFf71q7hrKRrL+HIKqt8OmORouktmRiWBsjFhxWME5f
-	SpM8NHKHM+j2aGT2KPhNzgmeS49wbBjvDIb0SjvPObCNrE55+milj5E4+wJYBbCQWkqYF8dMT0N
-	LInk0nAB3ts3DppmKwg/YxQm9O9TEgKr6nJyBY2NVWQ==
-X-Gm-Gg: AYBFou0p/FumzXrAifij5YhWzthkLmEERaY9w1+xlq6NDV3vyDnejj7+hzMA7E9AskX
-	o4/z4mSxaRXCMKN370s2RasI5cKd/AYMOY83IJY/lO3ZeEciOzFK1c4+dSJs6qVtX0wf5MW9XOS
-	/l7XRFwbNbMQbhrX9eyLjy417cbYUVV5tlOCKS414gsC3jDElOxKA8QXqweXJgvI1wIb+wEKliy
-	pjmbzX1bK89Rwl9pG5J7q3RcYm3ukZO6s9CKJmUfV2iiB93ED+qjwVaAWtCJCv5Oh8BfGW5e2Kh
-	udhDDP72WmW3ERGDomBTXV/6WK2pwW9AU7bbv6MRtBQGse+B9eeEfIkcIeyGt3TofRbusY4rAyE
-	rIHxY41yIp+A1ZZTH5xhVDk6bLH2gawHoeC/v/jHoWBwrjgC3dOwhi5QQcgRQZB6Pgk2B6WdYfy
-	ekR8WLHiXqd+gw60Y=
-X-Received: by 2002:aa7:c606:0:b0:6b5:94d9:10f8 with SMTP id
- 4fb4d7f45d1cf-6b7773f5a18mr2509828a12.21.1794466889315; Wed, 11 Nov 2026
- 23:01:29 -0800 (PST)
+        bh=UE2S/v9lUpY69MJ7L+FzJG1ltivTSX3+KzjoTbLuPuc=;
+        b=LBUcn95o539Q+EmbAi0Oy+BNbGfB3ySmup7VTFUjdXmkTJHrGdNrzgnHn2bjcZ5Qrs
+         0d6K41jRdiG2cg8zCHh2cqZXyXGZgWKznMZ5a9K/ULO0iMD6gvpTil3aw6S0JajG8GQ+
+         xI0orjWGw/VJ3U63Fup4tlaIPuzGaw13G/RWLtuS+JfNVnAjzPXIzeakqBFCaF9BOGxB
+         z3AS/t1GB8eCgD58MxsBjVfnX64NGWtKYs6ZvVnGgyMvzwTUbin6yb6OZaX4B7ynH2Gk
+         WVCSncosGR+A+z5Po4V8dnybVwQKMtRwXViAZLS+gdsWLOd4PqGOQnE+E0l+9EZjSqgX
+         KNRA==
+X-Forwarded-Encrypted: i=1; AL+hErFTmJAkBnmVw1/9w9S9JO1uSpnCSEia9t78sQuB3y+Cb22NmXFRdQimE/E5pi3eb8mAM9W9deH6Rg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+vYkH965ko7vycoKqQz6XMKAdqyH2YoK0MFvMye0KLN86tTFXY
+	43vhFdAb8gDX39YKfAC0sMdhx/2cMEh3gCeWbWFqBG3hubXUmDb3Q5fcp4mWMRgQyy4PqOOkkeB
+	eU+waPAD15zfZq+pQ7ffBDxbzDJ+SfsGqW+xnnvGdIw==
+X-Gm-Gg: AYBFou2A7ukN6dBukTbTSIgGpZoxnS5QoLC92rbnX+SvdWow6RNS1BHU9Q/D7spKJLK
+	mdtlUNEoQlESbKT37u4DKfVuX+2rjKx5eew3AdZ38zj/Uuecz+d1ZqTA8EHG0KJ6A7TMYCbc6Yx
+	fqunK4W9Ovx0woK3N0DU82pZ23P5vJ7gqUQJ9NAv3w89T1iNvLQrOJT7GIw/OJxiVELXQhQJmcE
+	FrmBZOb5ImLVojp0Yn09C+sbTX3TkJZcYkg21Tt+S5tFWZmRgROil0TaUmVeRHp1DqO9/UBa+ps
+	8Xk6DHnWXp9u782XM28ERc8Xi29s08EdKAi4QK4k8oV6Cz4d6u2jQFPveqgHplBTYqidSlxxhoC
+	HLWCf3ZcKxTeKmPJvSKWi/qxPY9puVIrRJj7fG+5Qhid7UWmsIMMukOmwEnPeieSpcnjzDg==
+X-Received: by 2002:a05:6402:1f03:b0:6b5:767e:f030 with SMTP id
+ 4fb4d7f45d1cf-6b77733a4b5mr3291059a12.2.1794466914501; Wed, 11 Nov 2026
+ 23:01:54 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,13 +104,13 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-9-vincent.guittot@linaro.org> <20261109155418.GL1779021@noisy.programming.kicks-ass.net>
- <CAKfTPtA-nrgGQGcBPqNoPk4atOHakyZK9Fk-4AsrHBrnvPXTLQ@mail.gmail.com> <20261111090155.GF2668564@noisy.programming.kicks-ass.net>
-In-Reply-To: <20261111090155.GF2668564@noisy.programming.kicks-ass.net>
+ <20261106151947.3991524-9-vincent.guittot@linaro.org> <20261109144350.GD2668564@noisy.programming.kicks-ass.net>
+ <CAKfTPtDcu6HS-G75bG7xp10t-n-XceneFtqxa_cAd+B96zCJiw@mail.gmail.com> <20261111085928.GE2668564@noisy.programming.kicks-ass.net>
+In-Reply-To: <20261111085928.GE2668564@noisy.programming.kicks-ass.net>
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Thu, 12 Nov 2026 08:01:17 +0100
-X-Gm-Features: AclHuK8UVt3x6vMPLZS8pSfeYTsVIPRoQvrz41V51tB_Ja3VDFaTVes1TsX82JE
-Message-ID: <CAKfTPtBfQd5nD9jNdayGbEW_P2bDMvOm=GZ3Q-gu+O6KkQmKbA@mail.gmail.com>
+Date: Thu, 12 Nov 2026 08:01:42 +0100
+X-Gm-Features: AclHuK-gkc4M-jSyE1nXnvG2bMRR6frusiPuC8UsfPnuglBYeu9svvaRxrdoStY
+Message-ID: <CAKfTPtD054JHb38LdY-Dgdo4LTOVU1f80tL9hf9i629kEc6wkA@mail.gmail.com>
 Subject: Re: [PATCH 08/20 v3] sched/fair: Add push task mechanism for fair
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: mingo@redhat.com, juri.lelli@redhat.com, dietmar.eggemann@arm.com, 
@@ -124,46 +123,61 @@ Cc: mingo@redhat.com, juri.lelli@redhat.com, dietmar.eggemann@arm.com,
 	tim.c.chen@linux.intel.com
 Content-Type: text/plain; charset="UTF-8"
 
-On Wed, 11 Nov 2026 at 10:02, Peter Zijlstra <peterz@infradead.org> wrote:
+On Wed, 11 Nov 2026 at 09:59, Peter Zijlstra <peterz@infradead.org> wrote:
 >
-> On Mon, Nov 09, 2026 at 05:14:39PM +0100, Vincent Guittot wrote:
-> > On Mon, 9 Nov 2026 at 16:54, Peter Zijlstra <peterz@infradead.org> wrote:
->
-> > > Can't we add the 'p->nr_cpus_allowed > 1' condition to rq->cfs_tasks and
-> > > use that, rather than adding yet another list? I mean, its used for
-> > > migration, so excluding all pinned tasks actually makes sense.
+> On Mon, Nov 09, 2026 at 05:07:31PM +0100, Vincent Guittot wrote:
+> > On Mon, 9 Nov 2026 at 15:43, Peter Zijlstra <peterz@infradead.org> wrote:
+> > >
+> > > On Fri, Nov 06, 2026 at 04:19:35PM +0100, Vincent Guittot wrote:
+> > > > +static struct task_struct *pick_next_pushable_fair_task(struct rq *rq)
+> > > > +{
+> > > > +     struct task_struct *p;
+> > > > +
+> > > > +     if (!has_pushable_tasks(rq))
+> > > > +             return NULL;
+> > > > +
+> > > > +     p = plist_first_entry(&rq->cfs.pushable_tasks,
+> > > > +                           struct task_struct, pushable_tasks);
+> > > > +
+> > > > +     WARN_ON_ONCE(rq->cpu != task_cpu(p));
+> > > > +     WARN_ON_ONCE(task_current(rq, p));
+> > > > +     WARN_ON_ONCE(p->nr_cpus_allowed <= 1);
+> > > > +     WARN_ON_ONCE(!task_on_rq_queued(p));
+> > > > +
+> > > > +     /*
+> > > > +      * Remove task from the pushable list as we try only once after that
+> > > > +      * the task has been put back in enqueued list.
+> > > > +      */
+> > > > +     plist_del(&p->pushable_tasks, &rq->cfs.pushable_tasks);
+> > > > +
+> > > > +     return p;
+> > > > +}
+> > >
+> > > This means a task will only be pushed once? After which it needs to be
+> > > re-enqueued on the runqueue?
 > >
-> > rq->cfs_tasks can be quite large (we even take a breath during LB)
-> > whereas this list should be 1 task most of the time (except during
-> > wakeup)
->
-> Like in the other email; detach_one_task() is also just one task :-)
-
-but in some case I want to do more than one like the case described in patch 20
-
->
-> > > Also, I'm still not sure why we need a plist. The rq->cfs_tasks list is
-> > > MRU per set_next_task_fair() moving the current task to the front.
+> > Yes, my goal is to keep the list small to avoid ending up with many
+> > tasks to push. So I only check if prev could be pushed somewhere else
 > >
-> > The plist was only to reuse struct plist_node pushable_tasks; in
-> > struct task that is already there for RT
->
-> So while plist makes sense for RT, it doesn't make sense for fair or DL.
-> Notably for DL we keep pushable tasks in a RB tree.
-
-I can use a rb tree as well my gaol was only to reuse the
-pushable_tasks as those pushable list are exclusive
-
->
-> > > So reserve iterating rq->cfs_tasks, skipping blocked and current and
-> > > such, should get you much the same over-all.
+> > >
+> > > So if it was found during migrate_disable(), its thereafter stuck? --
+> > > this seems a little weird.
 > >
-> > Yes but I was afraid by the overhead of iterating this list which can
-> > be very long; We have already seen email about bug with thousands of
-> > tasks queued on the rq
+> > If a task is migrate disabled while we are about to look for a
+> > possibly better CPU, it will have to wait until after the next time it
+> > becomes current. This is a simple way to pace the number of tasks to
+> > push in one callback
 >
-> Right, so just take one of the tail and stop there.
+> There is still a worst case where a lot of tasks get woken, they all get
+> enqueued and then they all get on this list and you need to iterate them
+> all.
 
-I don't want to take any random task from the rq but only one that is
-meaningful. Why do you think having a dedicated pushable list like rt
-and deadline isn't worthwhile?
+Yes but this case still limits the number of tasks added to the list
+because of the case which involves short slice preemption and
+simultaneous enqueue on an idle CPU
+
+>
+> If you want to bound this thing, you might as well do like
+> detach_one_task(). Only ever consider the first task from the end that
+> is suitable.
+>
