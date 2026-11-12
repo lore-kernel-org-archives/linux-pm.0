@@ -1,103 +1,73 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=23.251.234.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794458519;
-	b=P62j516bphTA8mffFw6xT+BqdQeqY1knMy274BbZvQAA9IcV/3huXNp+97bCzkBUOdyY
-	 hhq+zaeg0gr3zGL2sdGHSslPpvJMl/GKeRfJc/CsuerVZwyG9A/OaQ6VjNvTzZH7kR+oi
-	 ucT04c0FuMQR0+9z+DWXbJMJZ7LADVXnAhb7TypB/9J7955TRorcS/3gmtcpimcSkmRxo
-	 zD1RFYsdz0rMriBeubwGpfd4rxIZN8oKfRVRvm0uQs6COxkZTR55srj7RuxiGjsgeAnpn
-	 1XY0wfjlvrdk5/+C0DAN7m/RKqNg3zbmmfvkJtugfTDcpDb0SjRZZ1j+k1uOUpnfeVg==
+	t=1794459390;
+	b=X6Uf8e+Y8pf6w5bnyYz0yQPXJSlZYB9VDb9IBGOw5Liq3F1cLYIHDF1M5lMlYQbHMF5Q
+	 bHUZXmNhSCANw/nfP0q9cop0EkD+AUpdsuD910Dc+QdEjRv3B3SeD8ANPpMC+TCVIig6C
+	 HVO0/utdTCr9DVbTqj6MxwNvbVgj3xW0gb2minY14JNtEqQJ9NP6Y6wu8Tk6VllrchUoi
+	 1Gj9JOIFVP4aDTK39Sui8TWFSFcqWli39zRBW7iy5K/hYF6X5LHtWMchSpe0bX0TwWqZB
+	 wCTH4YkaPj3mJA63thi+AQZv5+kxht3szm/0AEaiGXM2KBsSNwILX8n5rtbZzAx8jyA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794458519;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=WBFaXiQf/AiU+Oy/oOiJP2JtXZtaF5fsy5mmLC1bpDA=;
-	b=yPsdt7zcz16YdhwaF/KTXesncmVFRtPrX7gg6HFtoOQj/1Wbjvc3ZV4CiHVKFiCZp3JD
-	 xBER7sz2twa+af2z9tZF67X2nb42MY96tRCqJWxGx7+8PAaNMTVRQZVUvz293gexjonsE
-	 yPM5iQOVY7dzCecVr9K5oCqnA9PnRaKOAQB0qSmvsKucWt1kbH6CRy7qYqQ3Lxx/nwDM5
-	 Hkfti6Fe7aiI8YSgxleJeab3ud8MgcLg/1LiT4Irbj7Kfalv/3SXTW5fk/KeRBiMcLnMF
-	 HdxXK3wR9z6d6Qs/93GjABQji50fU39/Vwzs05gVcm8kjgK5X2MKsQ0WRdmte1x869A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794459390;
+	h=DMARC-Filter:DKIM-Signature:DKIM-Signature:In-Reply-To:Message-ID:
+	 References:X-Pmail-ID:From:To:Cc:Subject:Content-Transfer-Encoding:
+	 Date:MIME-Version:Content-Type:Feedback-ID:X-SES-Outgoing;
+	bh=Q1rbgVKVyvSxLpe93nEfXpS3xxVAJMIczVR08si5z58=;
+	b=WA8ZFP4N2Iof3vip10S9+yAC8fZmsgz8Q2uh8PAhrgTR3n4etSkOckkIIRcTevoU7r54
+	 fL0oJBYEF5zq2Qa196p/mj6Ym165hhJIIVNaHvK2/GjM1ZdXWuPnH68GOUz4uzyfTfc52
+	 TUlW5TRIY2VVvHhYLCHUXm4s+PSTKSq6QAV5BUJxs0xFzyChuSUmh+1RDZE9wQRVpfJ6y
+	 +XeL5BxrO2QEgLxEW3UAkn6IKAIvAQ8OFGpcprHHFjcspDLMDhhW9F5Itb1M4qBbRn64r
+	 XkUA/uozu+kuLO+hDfJ7CmDis73qPpHf+fwjxhvAvQ4i64Su9nJ25/mWRT19YEAkS9A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=j0HYexEU;
-	arc=none smtp.remote-ip=198.175.65.12
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=brar.si;
+	spf=pass smtp.mailfrom=rsend.brar.si;
+	dkim=pass header.d=brar.si header.i=@brar.si header.a=rsa-sha256 header.s=resend header.b=Af7TODiB;
+	dkim=pass header.d=amazonses.com header.i=@amazonses.com header.a=rsa-sha256 header.s=zh4gjftm6etwoq6afzugpky45synznly header.b=mMvswtux;
+	arc=none smtp.remote-ip=23.251.234.54
+Received: from e234-54.smtp-out.ap-northeast-1.amazonses.com (e234-54.smtp-out.ap-northeast-1.amazonses.com [23.251.234.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7D67606A321;
-	Thu, 12 Nov 2026 04:41:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D7D67606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E030606A321;
+	Thu, 12 Nov 2026 04:56:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1E030606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=brar.si
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rsend.brar.si
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=j0HYexEU
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794458519; x=1825994519;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=to9WP0yYAsg2FwMUJoPAJl9KXn//Llym/25xqUG9m3o=;
-  b=j0HYexEUv97gtHZ64HDRAPDkdXQSrCwRqokDMo4PofFUgp0aGVabSlR5
-   FpHoBadUy7O2D3nY9+lMQo1ZDdydZjKs0BcTj5lB1Roe5Xgs1F64/3YDS
-   yLosYWMo7SUad6SxxMCgoq9INuA1fWfIxkEjDt1sfNYlIsgOU2l+BrHMY
-   fc1Z1qFPhRWld1yFH/oYJjmXk9ab+jqrB+Ysb2AExkPWZvhwsMaDKq9qJ
-   rX0aPbqRaHFC9CYZDh8LADPMQArxF3PeRPvDrr7XKtUXG+BZq33cy30Uo
-   XVFzHsBjPstV2oRL82QurujZsRR61qLMuXfm8enXEA//KFeQGj5uip2QA
-   g==;
-X-CSE-ConnectionGUID: b3+iCPGYTza/wsQiD6L7hQ==
-X-CSE-MsgGUID: TZRE5MKMQ0SKpXvuv2osRw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11963"; a="3112117"
-X-IronPort-AV: E=Sophos;i="6.27,209,1787036400"; 
-   d="scan'208";a="3112117"
-Received: from fmviesa013.fm.intel.com ([10.60.135.153])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Nov 2026 20:41:58 -0800
-X-CSE-ConnectionGUID: +omkRXtHQhGqp8nFWjl2Wg==
-X-CSE-MsgGUID: PkOyTieZTVC7Yy4/j9hDKQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,209,1787036400"; 
-   d="scan'208";a="10451688"
-Received: from black.igk.intel.com ([10.91.253.5])
-  by fmviesa013.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Nov 2026 20:41:51 -0800
-Date: Thu, 12 Nov 2026 05:41:48 +0100
-From: Raag Jadav <raag.jadav@intel.com>
-To: Pavel Popov <pavel.e.popov@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Peter Huewe <peterhuewe@gmx.de>,
-	Jarkko Sakkinen <jarkko@kernel.org>,
-	Tom Lendacky <thomas.lendacky@amd.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Leon Romanovsky <leon@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Logan Gunthorpe <logang@deltatee.com>,
-	Arnd Bergmann <arnd@arndb.de>, Len Brown <lenb@kernel.org>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>, David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	"David S . Miller" <davem@davemloft.net>, x86@kernel.org,
-	linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org,
-	platform-driver-x86@vger.kernel.org,
-	linux-integrity@vger.kernel.org, linux-crypto@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org, andriy.shevchenko@linux.intel.com
-Subject: Re: [PATCH 2/7] drm/i915: Include <asm/cpu_device_id.h>
- unconditionally
-Message-ID: <avVDjIW5jd4rHw11@black.igk.intel.com>
-References: <20261111234821.4814-1-pavel.e.popov@intel.com>
- <20261111234821.4814-3-pavel.e.popov@intel.com>
+	dkim=pass (1024-bit key, unprotected) header.d=brar.si header.i=@brar.si header.a=rsa-sha256 header.s=resend header.b=Af7TODiB;
+	dkim=pass (1024-bit key, unprotected) header.d=amazonses.com header.i=@amazonses.com header.a=rsa-sha256 header.s=zh4gjftm6etwoq6afzugpky45synznly header.b=mMvswtux
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple; s=resend;
+	d=brar.si; t=1794459388;
+	h=In-Reply-To:Message-ID:References:From:To:Cc:Subject:Content-Transfer-Encoding:Date:MIME-Version:Content-Type;
+	bh=hqpDdIUJjjOih1dA6yXpKW8zONvOpjnNAKL20f2cAtg=;
+	b=Af7TODiBmaooroEgOtetU4rXexs7uvDwKShRRXmYVVQYN4gydEVv2Kq2Ye8x31rN
+	FerXQ6A0IyT7qrI50ooSGuXRcyrmEG2u1RJiom13VsD2IthcMEmqOTL0+yYZ4mOAzVI
+	fxppEBM5M/fxVBms/D3HnFyGYvbOwA+SDqJhFg6o=
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=zh4gjftm6etwoq6afzugpky45synznly; d=amazonses.com; t=1794459388;
+	h=In-Reply-To:Message-ID:References:From:To:Cc:Subject:Content-Transfer-Encoding:Date:MIME-Version:Content-Type:Feedback-ID;
+	bh=hqpDdIUJjjOih1dA6yXpKW8zONvOpjnNAKL20f2cAtg=;
+	b=mMvswtux5JuzzuunQucOE57LRO0G6qwL7rhUI4AI33nP3xOFzNMk0DL2bBJgljPc
+	X24MuzP7W58j+cj3lQ0zDUBhJEyozkP5E12La9c7+6Yjr2PdV8HlvsAyuUpdyVBSrua
+	bwU6GjPO5d1vBzSAfl5wdAmmzHJxeV/58qbEI/Eo=
+In-Reply-To:
+ <010601a190662577-fd93bfc1-739a-45ce-9847-727776271c84-000000@ap-northeast-1.amazonses.com>
+Message-ID: <010601a1ce1d4a7f-b86fd687-39b4-43bb-a9c2-b438b92418e3-000000@ap-northeast-1.amazonses.com>
+References: <20261027-icc-sm7250-v4-0-f9bdaa3c1c7b@brar.si>
+ <010601a17d6212dc-ed028a84-ea72-48e7-a4d8-fea315dc42cc-000000@ap-northeast-1.amazonses.com>
+ <20261028-classic-sloppy-harrier-72dfcf@quoll>
+ <b0d99121-06a2-4674-bbc0-0edeb426e072@kernel.org>
+ <010601a190662577-fd93bfc1-739a-45ce-9847-727776271c84-000000@ap-northeast-1.amazonses.com>
+X-Pmail-ID: <1794459387709.d8761bad7b35@brar.si>
+From: Ishu Brar <patches@brar.si>
+To: patches@brar.si
+Cc: krzk@kernel.org, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, konradybcio@kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] dt-bindings: interconnect: qcom: Add SM7250
+ RPMh NoC
+Content-Transfer-Encoding: quoted-printable
+Date: Thu, 12 Nov 2026 04:56:28 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -107,51 +77,37 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261111234821.4814-3-pavel.e.popov@intel.com>
+Content-Type: text/plain; charset=utf-8
+Feedback-ID: :1.ap-northeast-1.5YL5VvZ+qZ0e19wo5UdMspzrKjMAjMWs/SlfuwHJq77JVCQWpVGwyETo7FaXf+sztO4bYMxF6WHssrYHSY+K7X2T1EZhOskwm44pQQStdKG0Jdj3d5ybzIXFkMTcPBXllY63oWIrFhJN26LFqLzTuHiXuqj9UCHxIuFhxi7IM0GCfceBHtKocmWdFsR9dK9X:1.ap-northeast-1.TOS0vxEE3Ar6ai29fkp2i/jb+l2iigajCGeLfF7S3sk=:AmazonSES
+X-SES-Outgoing: 2026.11.12-23.251.234.54
 
-Cc: Andy
+On Sat, 31 Oct 2026 05:19:35 +0000, Ishu Brar wrote:
+> On Wed, 28 Oct 2026 09:10:21 +0100, Krzysztof Kozlowski wrote:
+>> On 28/10/2026 08:59, Krzysztof Kozlowski wrote:
+>>>> +  clocks:
+>>>> +    items:
+>>>> +      - description: aggre UFS PHY AXI clock
+>>>> +      - description: aggre USB3 PRIM AXI clock
+>>>> +
+>>>> +patternProperties:
+>>>> +  '^interconnect-[0-9]+$':
+>>>=20
+>>> We actually do not need to enforce -0: '^interconnect(-[0-9]+)?$'
+>>
+>> Actually is this really a pattern? How many children are there?
+>
+> No, not a pattern. there is at most one child per provider:
+> 	aggre2-noc  -> compute-noc
+> 	gem-noc     -> mc-virt
+> 	system-noc  -> qup-virt
+>
+> The other providers have no child. v5 would =
+replace the pattern with a
+> single fixed "interconnect" child node.
+>
+> Should the binding also allow the child only under these three
+> providers (and "interconnect: false" for the rest), or is the plain
+> child node enough?
 
-On Wed, Nov 11, 2026 at 04:48:15PM -0700, Pavel Popov wrote:
-> <asm/cpu_device_id.h> now has a generic version, so the #ifdef
-> CONFIG_X86 around the include is no longer needed.
-> 
-> <asm/intel-family.h> is included by <asm/cpu_device_id.h>. The CPU
-> match table still needs CONFIG_X86 for the INTEL_* model defines.
-> 
-> Signed-off-by: Pavel Popov <pavel.e.popov@intel.com>
-
-Reviewed-by: Raag Jadav <raag.jadav@intel.com>
-
-> ---
-> Depends on <asm-generic/cpu_device_id.h> from [1]; please apply after
-> it is in mainline.
-> 
-> [1] https://lore.kernel.org/r/20261111234439.4098-1-pavel.e.popov@intel.com
-> 
->  drivers/gpu/drm/i915/intel_cpu_info.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/i915/intel_cpu_info.c b/drivers/gpu/drm/i915/intel_cpu_info.c
-> index e52d0ac713a..a6b46cc841a 100644
-> --- a/drivers/gpu/drm/i915/intel_cpu_info.c
-> +++ b/drivers/gpu/drm/i915/intel_cpu_info.c
-> @@ -6,12 +6,11 @@
->   * intel_device_info.h by having a separate file.
->   */
->  
-> +#include <asm/cpu_device_id.h>
-> +
->  #include "intel_cpu_info.h"
->  
->  #ifdef CONFIG_X86
-> -#include <asm/cpu_device_id.h>
-> -#include <asm/intel-family.h>
-> -
->  static const struct x86_cpu_id g8_cpu_ids[] = {
->  	X86_MATCH_VFM(INTEL_ALDERLAKE,		NULL),
->  	X86_MATCH_VFM(INTEL_ALDERLAKE_L,	NULL),
-> -- 
-> 2.54.0
-> 
+ Gentle ping on the question above. If the plain =
+child node is enough, I'll send v5 with it.
