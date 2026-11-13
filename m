@@ -1,100 +1,106 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.50
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.16
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794602069;
-	b=pJAQ1JB0ox7UrJK+k5sm3KQeydhkBy6SZRrykIaNtQwyzTnP69f0qgjK5tQgjZv9JzQl
-	 SyvuJU+ylOuJfP/H4aLYdY4gEJGjrRKC/94EcvcsEdl5DVJXIIhtYa0LJl1PQXbSFBWvQ
-	 BDYiXxu4M0rYLgNrcVEYAKBYz2NfSMaFMkEUssyJRUs4EWBP4nu+zSiD/wRkHW+BWSMLT
-	 9A59iFskqkRykTSfj7QU20CmzH/OHbcD8iNwOmopbQrS8nDxS5pa7yhuWuH8GDPm8g7iY
-	 cyKM60IxiZwVgwvNBaNIhR5b7Qp5j1OmwDLPjXOES1c7tKmpDemuZJtcJwpdbkoOZCQ==
+	t=1794605654;
+	b=XP++pAfFs/UPfZMnCUZQWRM44eEhns5cuzQAYM6wizdB9toFpScqsMJzKnWCVZ6NcCCc
+	 P8d/Jhm4+0eFPbdCxwQ1cfdrW0z6fgomH7E6KrA1eVCBaX/0mpwwboco49Qqgn2NHqCJy
+	 YvCm1GpqsvGft2nYhvru4WXgHNXwZT7xyAJsfrSpsM+BzJqzA3vc+Cj9re3rf4fHAHRk9
+	 Rb6Kpv7JZb1Hi4JwXvTni70o4n7A6ymx8CQ9ykdGyuZ39KbxBwGLkscrFVc6SDqTBwqt8
+	 CTmWviXQygP6A97Tg0D8+0Wffit8AkzpxUJUb4TfUyFd1H/aTuQ9RPrq85jYuGCFCYQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794602069;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 In-Reply-To:References:Date:Message-ID:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version;
-	bh=gEAEhBrLJ603lWBwjrR04mty+xeSSypartbn3lk9UKk=;
-	b=z8pwwZQKwYKYrdgZaPcenGHmIkPizzKLd+22nGJKKEAGSm27j8n4EL6yjQBEeN4k91Jg
-	 NF6zhmANMoPhs1Xd5iRCDXu9Xrf9OxrNwhUzvxWVV5fdOuRqIuamVK/ONel/IpXSTnOfd
-	 fVd9bgw+uJFWpe8s+7RTdkvsf2TAUQpmQbwMd3ZR9odGU/atz2Pda2QYBYouz6VEhQ/nB
-	 wChIdiOKQ9JqrU0QVcif5xLEflfHExw6fSJosPhgWvfx3AClrvCVvxk3b2trWP77qbwcr
-	 CTG2T859hQUy7rDTdaIs2tuUJqryEpWuLtxoKli4wpPahdoBOk3TY/aAXoCKKMI1/EA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794605654;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:
+	 Organization:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=AfGkZPNe0g6Nw9LmU0I8+cKHSNqAZxOuxjNAJhbRjIw=;
+	b=YxUGlg/z+qtCv9p6G8BUQ/FdWHYZuS17M2ghE/Kxv8w2XKSJuH4wpBpjsIBDGoqxA5DJ
+	 MfU4+348KLpVWBV/eIRrmgw4+EALSBvYEd8V6Nsk5Oyq5Vn19ZoGkiioaI5WFPij1B1Vi
+	 N6d7g76uGz4xyL7Uj/acwZ8kZzfWGfv9713rskEwfmLLOPpFMC16rvGSDknoC6UbPQsC9
+	 5QAUEB9tKKoIUJGNdDud7OL3VH1UpAJrdB3E9fxUoUndl9Iq4bETbj/ocIB9RyMB1qYIm
+	 AZycvSE/AfWdagROzta9+TtOBd3wb9aZksGe7XuQUWiuJUau/I5bzQ+5lTyc3a8xefA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DW8Zo59X;
-	arc=none smtp.remote-ip=209.85.216.50
-Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kVy3Le0q;
+	arc=none smtp.remote-ip=198.175.65.16
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EDFF606A327
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 20:34:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5EDFF606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 476AC606A889;
+	Fri, 13 Nov 2026 21:34:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 476AC606A889
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DW8Zo59X
-Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-3b09cc7ed1aso220481a91.2
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 12:34:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794602069; x=1795206869; darn=vger.kernel.org;
-        h=mime-version:content-transfer-encoding:content-type:message-id:date
-         :references:in-reply-to:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=gEAEhBrLJ603lWBwjrR04mty+xeSSypartbn3lk9UKk=;
-        b=DW8Zo59X8T/60vX6Wek7BeGGM2whjE3KD2aFk7aeZlGjN9tguh1s9BJ87QgebqpCjJ
-         lunbDjM34L42SYpPeIuuIUHZbGpGih3ngRrlEewe5ntepA1LyQLewSUHxlkwsiOGM3pO
-         3Sh9MlkwKMF2JxiDlLRJuFv079leRpiJxgWBAQls74qktgjLcP90B4BzTd7fdSxQUsf+
-         5FdBdKwd4xe7v0Mf2UqGhJicpjZrT2AzHXQFjG8rGd0+mtrndNKjATrCD3KfbzENGezU
-         1YWGaKoHp5WdBFsBISOxJGaCFy/PWgAosyjX1E++54l9xtN5bWZV7iiXoFDOivQbcJEt
-         5y3Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794602069; x=1795206869;
-        h=mime-version:content-transfer-encoding:content-type:message-id:date
-         :references:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=gEAEhBrLJ603lWBwjrR04mty+xeSSypartbn3lk9UKk=;
-        b=Y0C/qfmVI0mj4SEAxnc402wN1ycFtuXrHOgn7JnJbULbvKULiYbF09rr8YC/wwMYHi
-         8YTWnkQ1rEiTziKXOrkE8nGxcpTbt80wvV6BwKVM+ehILaf1mOU5EdoviqAHSHliw38W
-         aRV8jWAfkTaP3fxf6HD+HpihPKpHfoGLgrv2DrR0XrVoyDKU9CCpLqCNRLz1QhLIVysH
-         74x4s25ZTgyGcmqeQd0lCQ5SVDmpCmC/hHB4SrTtA5qW+nus6xHvDHJ+iTmPlOnBWvtU
-         4s91JnrrcKcKwyzFmvm4xr3eo8HwfV+fja5A6Gb3C3kWwQBTs8bA8cCkRPlHy1G2FeER
-         Q10Q==
-X-Gm-Message-State: APuU4Z+80ROq5ii7ibhfAPs/GfWK49SmaEvSuwPu3QMp/JojDNv9eJPT
-	sKlDMaU0y4hT7jts67uAmBZX0UbpzUs/e4LPQEs9Er86AXWNvblg2CT+snTCS1Bpc0s=
-X-Gm-Gg: AYBFou22jNlagxm4/8EWgH/ZuMqDRWdrDfhGXwhoKCezB4AaJBiotgLD7nzYPBY/5fr
-	8UCdJChkaXH5xRYY1kejpp3qkh259U0izfzQOXd+PypaF5kMC2pr+v93Lzizor9n1porIQvYNWw
-	ncamFUxeSLP4JPBXuerUPmIamWIsMvr2MYja+HrJAGVTTqiV/y1Wruy1GQDVmmC8jKmt7fiw+fa
-	7D1E58aU+QfMVVHHB6lT/ejo0ZuQIO8ORBfqTAbFsjvBgPzf10lM19CfrI7fOGR3/hPiq2AVgmh
-	wd4s4KyjxXtMUGY3W72A3qfBqCLo/lWyfyPGZKIxTLM9gFSrSwENLjMBRRprgb/K21vO0g3+aNw
-	UDcdgO1L1e/8CLVh1Dfpw9UEYDkEOm2gy8reQ/Ogp/cPpm1+rZS3K49Ui4GfS4SaOSCueSuzw9g
-	+4QWJygBp9JKzpOuV4gTe4sU1uhUKWLdxAI4QXAWjMrD2FECfDC95vBXlK3Hsb5Xs4VtQauy5D/
-	BWymn0n5SvxY9Pa+ZlBJIsaTbQOYGNsg1gRE0n6og2dSWoaRBnccZG+Mx1aS8rkYdMBlrkQf4j/
-	yQqEMQZ+21+xwnMYanonxgQCdlt3DCq56Ky1MTx7adkfwCpH0plEnRVrdmRra8EHZheJlkPNd2O
-	xhMzWsg48wCjnIo5Hnw5UTPBINIw=
-X-Received: by 2002:a17:90b:2e90:b0:3ac:77a2:18b1 with SMTP id 98e67ed59e1d1-3b1b0a44b0amr5406901a91.5.1794602068720;
-        Fri, 13 Nov 2026 12:34:28 -0800 (PST)
-Received: from claudebox.iyengar.cloud ([50.39.139.68])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1ae98151dsm5954809a91.2.2026.11.13.12.34.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Nov 2026 12:34:28 -0800 (PST)
-From: Arun Iyengar <aiyengar1990@gmail.com>
-To: MyungJoo Ham <myungjoo.ham@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Boris Brezillon <boris.brezillon@collabora.com>,
- Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>,
- Jonas Karlman <jonas@kwiboo.se>
-Subject:
- Re: [PATCH] PM / devfreq: Do not change the frequency of a suspended device
-In-Reply-To: <20261112-devfreq-suspend-sync-v1-1-af64603ef43e@gmail.com>
-References: <20261112-devfreq-suspend-sync-v1-1-af64603ef43e@gmail.com>
-Date: Fri, 13 Nov 2026 20:34:27 -0000
-Message-ID: <179460206763.199714.13518791714665074913@gmail.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kVy3Le0q
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794605653; x=1826141653;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=5H18aAry4/GXJ6hd2/WDeC5xY+R/z+QH0pzgy9iRGOQ=;
+  b=kVy3Le0qh2EnrkBBmHiVtyIxrqVoNnkk+N3X68mUvHqQAdjH1TgoEeu4
+   YezJ6Je3WUz4UTzDkJlEItV+T9g7xjmRvRy0p4zAPFXA58LjXy++h97wp
+   c1NKsKoxDt+P4KfbUjs10cT0NlClEMmuGfl5solZxem/2E0uMWEgWjyeq
+   fTs+eYj2rSpo8UJdNuNTEFC2yUHdLmqSeg2s92ftTlDy+X9CbOYErUFmM
+   RvHfpTs7QrrKeb6Hi5L2oUUN3YigiE/IPBPdUkNvSxK6blmkhCpITAPXk
+   gMnpM1D0jBhZp5/adF1341hufASYfnkKgCJBMB8MudlN5bTLm4zvXrLsO
+   Q==;
+X-CSE-ConnectionGUID: jA+ZCfHoSPaWk2BfJA6oSw==
+X-CSE-MsgGUID: Ln2bkXw/SAS5VY9O2fUYnA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11965"; a="3410644"
+X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
+   d="scan'208";a="3410644"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 13:34:13 -0800
+X-CSE-ConnectionGUID: 5uaN0zGOSKClUoi4WnQggg==
+X-CSE-MsgGUID: v1L1tUjtRSSjwXDnysT+fA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
+   d="scan'208";a="8829869"
+Received: from ettammin-mobl3.ger.corp.intel.com (HELO kekkonen.fi.intel.com) ([10.245.244.254])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 13:34:06 -0800
+Received: from kekkonen.localdomain (localhost [IPv6:::1])
+	by kekkonen.fi.intel.com (Postfix) with SMTP id 5F3FB11F7E7;
+	Fri, 13 Nov 2026 23:34:07 +0200 (EET)
+Date: Fri, 13 Nov 2026 23:34:07 +0200
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+To: Pavel Popov <pavel.e.popov@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Peter Huewe <peterhuewe@gmx.de>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Tom Lendacky <thomas.lendacky@amd.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Leon Romanovsky <leon@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Logan Gunthorpe <logang@deltatee.com>,
+	Arnd Bergmann <arnd@arndb.de>, Len Brown <lenb@kernel.org>,
+	Jason Gunthorpe <jgg@ziepe.ca>, David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	"David S . Miller" <davem@davemloft.net>, x86@kernel.org,
+	linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org,
+	platform-driver-x86@vger.kernel.org,
+	linux-integrity@vger.kernel.org, linux-crypto@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] ACPI: mipi-disco-img: Include <asm/cpu_device_id.h>
+ unconditionally
+Message-ID: <aveCT1hwhMcJ_Efm@kekkonen.localdomain>
+References: <20261111234821.4814-1-pavel.e.popov@intel.com>
+ <20261111234821.4814-2-pavel.e.popov@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,19 +110,20 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261111234821.4814-2-pavel.e.popov@intel.com>
 
-Please don't apply this version. The Sashiko review found bugs in it:
+On Wed, Nov 11, 2026 at 04:48:14PM -0700, Pavel Popov wrote:
+> <asm/cpu_device_id.h> now has a generic version, so the #ifdef
+> CONFIG_X86 around the include is no longer needed.
+> 
+> <asm/intel-family.h> is included by <asm/cpu_device_id.h>. The CPU
+> match table still needs CONFIG_X86 for the INTEL_* model defines.
+> 
+> Signed-off-by: Pavel Popov <pavel.e.popov@intel.com>
 
-- A limit change on a suspended passive device stores 0 in
-  pending_freq, so devfreq_resume_device() can then fail with -EINVAL.
-- After a deferred update, resume asks the governor instead of
-  restoring resume_freq, so a userspace governor without set_freq
-  stays at the suspend OPP.
-- Two error paths leave the device marked suspended or skip
-  DEVFREQ_GOV_RESUME.
-- The passive question in the cover: exynos-bus children need to
-  follow their parent to its suspend OPP, also at shutdown.
+Reviewed-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 
-v2 will fix these.
-
-Arun
+-- 
+Sakari Ailus
