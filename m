@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794593527;
-	b=zsWPkQliZ+KizIawc99bHkVEq97A9CNTYf0kNO7nLIsya18eWoQn2Wz9kHcti7ReSE8p
-	 EOejqM/zYl4i4Gs9hHkSZcIi25qfOe0SeievcLqRqxpMb/zSZZAzb8w3uVe9FTzLqegH0
-	 CHwDJUB9s8lMwyT6vnVIqhM3aipOtd5DjjOQAmDGIXcNVS66Z/+8N2i6GgUDN7ZodOJ9r
-	 9fjQPwDv66UoU/bM+9CXW50K9dxqwMefpLSa8Al4S0y1alhogdTy0LiLrADDndei5fG6l
-	 ZlwNwO/46xm4ki+PaNcFEns2xayQwN9og9VcbVH/ToAJBBUFwGYJSOg158moe/EKNwA==
+	t=1794593746;
+	b=zhixxxQ49EheJuD3PRgjyy2YoPlrh4JOsElRAoy9dtDBls1dcIJc9Scp0fLwIW47zc2D
+	 nWU8XrlQ8mP6YfTHz/VIHi9fciPVR1HKr1EUuHKIAXiROcDaJbK9cm4F3VqIiQL5XHt+v
+	 SMhZo/WN9JN3jAU6PDehJ7CEjqhSZ7x2fYCzBynmxdwHbsT/IyQ32D1WT8wJ5SnwirQA3
+	 bIIgGCqVTCLFMK7z+nd6ZPoTptsQ52xa5Rw/S16bBlkfJmoDtWFS9DrGVdm7+RXXpolwu
+	 ui7chpvthXG9/W3P0N27Y8wP5KiJj0tJ82SRyL2b+FqxvgcXQY6QbHipx9ZXkw6JvmQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794593527;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794593746;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=nyxWtYc20DJP4u8pz2LdUF3hk9Hp+2qBVra998XMy24=;
-	b=gQ85nCLZA28QL2XGnR1Vk/D78CaeZo6jVliuQSGoVRaj+gTNk2bwdPQuyThttjtGhhqP
-	 739hM9aK6+A0W8k5oYnGczadf9RYG9lZY/4R3NX7bKXv7c6j5HTMoNWamn5Zs3LDN0EMG
-	 v1n1b2l5cgORsZKeKnc+hK1CZhKoGODSIUG2dazsgeqazEwKDNK/JSKjXVNAUaoOvOwG1
-	 WpV37hudglsUaQRuORh2VrV367e9eMRWLnY4zQ/FjrfiK3SMS1M3p2LtpQAbEYIAtdqxt
-	 YMXLyrOuK1MWXhPStsOL67/RVzDjRVY+/dGbtxMfm2SdOLgp7yAFzWKAdBsz2oSwQ0Q==
+	bh=c3P0NnvUOaRmzXzchRLD85s11hxVJbX7eztaK5VSXoA=;
+	b=vfWMxbm8w68QirdB1yvKlsLpTPV1ZNaXLDO2LLUvr0FaQhqoVWd3DwcIQsYppvtUX//L
+	 BvELIl8xX+bU/PVM9iq1dypMS7mkXx04ZxfpdOV/LNfOUZ1YPQj6ujs9kSSVaPVllSYjW
+	 3QmsYVHjlLHyZq5+zO1jCQgS5zdPbEcWZ0tpuUxx+PX9v9HV8jDZIP1J0G+ZUVvq0wJMK
+	 Bo6HM/r6GeK0CaV4r0fLnhf7C9p9Kh2x9pPGfHeuqjt3d5jx5hqiCnpw8VRGTPqBT+IK5
+	 aqTWAKB346HTgZmz7biTAo1G/ao0QOUm+9uxwC5okDLx1SLSIPHneUEyNjbJ6bslEOQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S29yPnPP;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ye6jPgYV;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9864606A327
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 18:12:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B49260A2613
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 18:15:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S29yPnPP
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 653C61F000C7
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 18:12:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ye6jPgYV
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0CB7D1F000C5
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 18:15:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794593527;
-	bh=nyxWtYc20DJP4u8pz2LdUF3hk9Hp+2qBVra998XMy24=;
+	s=k20260515; t=1794593746;
+	bh=c3P0NnvUOaRmzXzchRLD85s11hxVJbX7eztaK5VSXoA=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=S29yPnPP31FnVRMo4m0A8Pf5Peraz7K3IqtzgaSRIGL1vKp8fO0ycGq7Zy0Im0lD3
-	 HgqGcXdk1GX0hyBAzy5SLqDWlfLmOz7zvhWiexe0zk8PAG7mjf+dV8qD8ahS6xrJH4
-	 l+SuzR71Dz/fIjhXXkzn2C9/BBtFrR+Drdw0bx3ItDUsVoXXWz1vYCUIsuwJvqcooQ
-	 TowXKTuUkiL8GVazoGLjD6SsSJd4nzTZsc31nVthubXukJGNsquSRT1fUv6xxGkF8/
-	 bMo/3GD2eTEPWPJNtoky8qaqUkhKzS+EpOIRjy4aY9cEsTZLFqKbaeL2chkv2RjGSM
-	 TbYU88yCL04Wg==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5c1479a959aso1390872e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 10:12:07 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErEsEKMgORUWAGwh5TPYQhkntbQyiO7yZORGdNDd+9ePezh/CZFcTDltx/Lx+ckRT2otxsCtbGP0/A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+7DmrWOkT1RWxmISZKwBOnt1dO1ljz6AxpLdrQgqM0OdTesN46
-	K4oHNPTnLKXXfaKbCmGjXYCGTlWrg9+6BrZrt9n4QBesHYW9URzVGJFBIyEpXTw4KVJ1lPjmH/8
-	7U5hLc9tg6V6/jEAkGXVO2q+BJp/RrGk=
-X-Received: by 2002:a05:6512:2385:b0:5bf:b5a1:3c09 with SMTP id
- 2adb3069b0e04-5c1709ca3c0mr1111732e87.31.1794593525814; Fri, 13 Nov 2026
- 10:12:05 -0800 (PST)
+	b=Ye6jPgYVaf97mLuuA1ARed3yBkwWrqQEbppkWlhBDkyBU31/hYVlhPE++lV2VIbT1
+	 2gX3l1ffb6wGpdKl2ajCard9SXNzuypE+iIM0LXtfqwnh2f233eWJQIIQL15uOayac
+	 ugYP1/XB6IfrzaYVZKV7xAgDuNZF0Yob2GGUUnAzViKkGnFFOMwYUqLmszyNuRgm7F
+	 EOeaTBZP3zoiPR7Api4S3nYPZc3TFUdp4XtbBrEJfLXj7dlB0rcHBnDQmOKPeUUU0p
+	 MOtatNqEiaW8fi6prXIn1ZyeBczp3knG0AxvYZroygw6EBt94N/s27WKHhYyqXZMt5
+	 594TCyLYoeJdg==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5c14f3dab09so1331939e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 10:15:45 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErFLWSpNAu4NDZ/2VFg6G9NTdjqxVY9XerwYhF6JRCtK5lJcX2Rkhj8LW8WyKtWjKx0BxJ5EjQbt3w==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9UHFQmeKufS1PvkiwFiAgnz/xTnOYGzvyKDVJLsM8mKzoHvwTd
+	upb4WCH1A8JJIjBF/VA5uYNk/Ci6RVnXaAc1FF3pM67MVk1mqR/sjG/zS+z5P7gYYbcZ8dhEy3h
+	TPTkrInSQBhwb2od+FMoqICfhtbIz8pM=
+X-Received: by 2002:a05:6512:33d5:b0:5c1:5be1:2ecf with SMTP id
+ 2adb3069b0e04-5c170b3285fmr1271962e87.51.1794593744489; Fri, 13 Nov 2026
+ 10:15:44 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,98 +59,76 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261013023411.1364546-1-yangyongxin@kylinos.cn> <20261015081644.1353321-1-yangyongxin@kylinos.cn>
-In-Reply-To: <20261015081644.1353321-1-yangyongxin@kylinos.cn>
+References: <20261018164004.132785-1-cole@unwrap.rs>
+In-Reply-To: <20261018164004.132785-1-cole@unwrap.rs>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 13 Nov 2026 19:11:52 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jcUvFH7PN6h4tVL1Dbimh-+ZJynggTrAww5ffsD3hrWA@mail.gmail.com>
-X-Gm-Features: AclHuK_qdOyIKNUeu22nNU6_Fc1p_bGAtc1PeZzbUBR4_sUPD0EoxkyjDYY6xkg
-Message-ID: <CAJZ5v0jcUvFH7PN6h4tVL1Dbimh-+ZJynggTrAww5ffsD3hrWA@mail.gmail.com>
-Subject: Re: [PATCH v4] PM: hibernate: Log the hibernation mode on entry
-To: Yongxin Yang <yangyongxin@kylinos.cn>
-Cc: rafael@kernel.org, lenb@kernel.org, pavel@kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 13 Nov 2026 19:15:32 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iJPQER8p0MGHneuyFiFqCbh__tWi9g-u6gQpxwMzhRpw@mail.gmail.com>
+X-Gm-Features: AclHuK-C26Nmb3e-mNuXczuZd0qjnVm4jfUsKXsqoBO3McbLrqMBv_ig-_tPAgU
+Message-ID: <CAJZ5v0iJPQER8p0MGHneuyFiFqCbh__tWi9g-u6gQpxwMzhRpw@mail.gmail.com>
+Subject: Re: [PATCH] PM: hibernate: Don't lose create_image() errors to arch_resume_nosmt()
+To: Cole Leavitt <cole@unwrap.rs>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Josh Poimboeuf <jpoimboe@kernel.org>, Jiri Kosina <jikos@kernel.org>, 
+	Thomas Gleixner <tglx@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 15, 2026 at 10:17=E2=80=AFAM Yongxin Yang <yangyongxin@kylinos.=
-cn> wrote:
+On Sun, Oct 18, 2026 at 6:40=E2=80=AFPM Cole Leavitt <cole@unwrap.rs> wrote=
+:
 >
-> The hibernation flow is the only place where the kernel decides what
-> to do after a successful image write: hand over to the platform
-> firmware (ACPI S4), power the system off, reboot it, or resume from
-> the image right away. That decision leaves no trace in the log. If the
-> resume path later fails or hangs, the tester cannot tell which outcome
-> was requested, so a report of "the system rebooted instead of powering
-> off" cannot be attributed to configuration or to platform behavior.
+> create_image() calls arch_resume_nosmt() on every path that returns
+> with in_suspend cleared and assigns its return value to error.  That
+> includes the error paths taken when pm_sleep_disable_secondary_cpus()
+> or syscore_suspend() fails, which jump to Enable_cpus/Enable_irqs.
 >
-> The mode is selected through /sys/power/disk and stored in
-> hibernation_mode. Append its name to the existing "hibernation entry"
-> message, so that the line reads "hibernation entry (platform)",
-> "hibernation entry (shutdown)", "hibernation entry (reboot)",
-> "hibernation entry (suspend)" or "hibernation entry (test_resume)"
-> instead of a bare "hibernation entry".
+> When SMT is not disabled (for example on CPUs without SMT, where
+> cpu_smt_control is CPU_SMT_NOT_SUPPORTED), arch_resume_nosmt() returns
+> 0, so the failure is lost:  create_image() returns 0 with in_suspend
+> unset, hibernation_snapshot() treats that as a successful restore and
+> hibernate() reports success to user space although no image was
+> created.  A wakeup event that aborts image creation in syscore_suspend()
+> is thus indistinguishable from resuming a hibernation image.
 >
-> The name comes from hibernation_modes[], the same table that
-> /sys/power/disk uses, looked up directly by mode index.
+> Only call arch_resume_nosmt() when image creation succeeded.  Failures
+> now propagate, so a wakeup event that makes syscore_suspend() fail
+> returns -EBUSY to user space, like wakeup aborts in freeze_processes()
+> and dpm_suspend() already do.
 >
-> No functional change.
->
-> Signed-off-by: Yongxin Yang <yangyongxin@kylinos.cn>
+> Fixes: ec527c318036 ("x86/power: Fix 'nosmt' vs hibernation triple fault =
+during resume")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Cole Leavitt <cole@unwrap.rs>
+
+Sashiko has feedback on this that needs to be addressed:
+
+https://sashiko.dev/#/patchset/20261018164004.132785-1-cole%40unwrap.rs
+
 > ---
->  kernel/power/hibernate.c | 24 ++++++++++++------------
->  1 file changed, 12 insertions(+), 12 deletions(-)
+>
+> Notes:
+>     Tested on a Lenovo ThinkPad P16 Gen 3 (Core Ultra 9 275HX, JHL9580
+>     Barlow Ridge host, I226 Ethernet), in daily use since 2026-09-17.
+>
+>  kernel/power/hibernate.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index e365e440cd52..2bbfd7ffafe5 100644
+> index c13f68ab7f6e..f53f844114a1 100644
 > --- a/kernel/power/hibernate.c
 > +++ b/kernel/power/hibernate.c
-> @@ -72,6 +72,16 @@ enum {
->  #define HIBERNATION_MAX (__HIBERNATION_AFTER_LAST-1)
->  #define HIBERNATION_FIRST (HIBERNATION_INVALID + 1)
+> @@ -380,7 +380,7 @@ static int create_image(int platform_mode)
+>         pm_sleep_enable_secondary_cpus();
 >
-> +static const char * const hibernation_modes[] =3D {
-> +       [HIBERNATION_PLATFORM]  =3D "platform",
-> +       [HIBERNATION_SHUTDOWN]  =3D "shutdown",
-> +       [HIBERNATION_REBOOT]    =3D "reboot",
-> +#ifdef CONFIG_SUSPEND
-> +       [HIBERNATION_SUSPEND]   =3D "suspend",
-> +#endif
-> +       [HIBERNATION_TEST_RESUME]       =3D "test_resume",
-> +};
-> +
->  static int hibernation_mode =3D HIBERNATION_SHUTDOWN;
+>         /* Allow architectures to do nosmt-specific post-resume dances */
+> -       if (!in_suspend)
+> +       if (!in_suspend && !error)
+>                 error =3D arch_resume_nosmt();
 >
->  bool freezer_test_done;
-> @@ -794,7 +804,8 @@ int hibernate(void)
->                 goto Unlock;
->         }
+>   Platform_finish:
 >
-> -       pr_info("hibernation entry\n");
-> +       pr_info("hibernation entry (%s)\n",
-> +               hibernation_modes[hibernation_mode]);
->         pm_prepare_console();
->         error =3D pm_notifier_call_chain_robust(PM_HIBERNATION_PREPARE, P=
-M_POST_HIBERNATION);
->         if (error)
-> @@ -1130,17 +1141,6 @@ static int __init software_resume_initcall(void)
->  }
->  late_initcall_sync(software_resume_initcall);
->
-> -
-> -static const char * const hibernation_modes[] =3D {
-> -       [HIBERNATION_PLATFORM]  =3D "platform",
-> -       [HIBERNATION_SHUTDOWN]  =3D "shutdown",
-> -       [HIBERNATION_REBOOT]    =3D "reboot",
-> -#ifdef CONFIG_SUSPEND
-> -       [HIBERNATION_SUSPEND]   =3D "suspend",
-> -#endif
-> -       [HIBERNATION_TEST_RESUME]       =3D "test_resume",
-> -};
-> -
->  /*
->   * /sys/power/disk - Control hibernation mode.
->   *
+> base-commit: 32c52ec87d6245ee2d12ed5dd509e40062939b50
 > --
-
-Applied as 7.5 material, thanks!
+> 2.54.0
+>
+>
