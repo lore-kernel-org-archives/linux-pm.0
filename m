@@ -1,79 +1,80 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794559328;
-	b=QHdYijmlg4Pi+mfCuais5sQmhL0oVaB7RoG79qeWVbGAUIDu+guI2uRCOaNfNySZbImB
-	 xrdAdzZyie8mThaNhBvNrVsXkxpVLFYkVvlT1IcBIqCMU+7m17C97zTxpCvThd+QtABxy
-	 lvta/iokKL/AVZmlidEqDDWYQYA0rYCK8ge9Q+F+NRoI122S4LGg1bRKMP9D/DfIb+rlT
-	 N+5sTZZDLwVuBPpviqN4e9sYM27mm4mWNHlKXy3sD6NLeUXekBLGPfiGg7/bQ4uHo4ko1
-	 1PqBowvTVGWRrGeOFi6/snxs2P9FFcZ436OA3cT2GiHdxcQKJnsRwRIQNIigB/lTa3w==
+	t=1794559327;
+	b=Ck/rffDUKWRvwwQoXDwl5qjc4bqdTufTMy8pLSxGu9e0i8h8Cly+XiKmG/ACeoiZ7Lym
+	 uuFS6vMNXeFEBdZbLhRWaGSaqdhtusCgoZpZkCITlE25ZrND8iR3XNfea0QaO7FkTgAgp
+	 Nq9A5MvOdPraBgwTkNyBTZnG3R3CsaMbdMafSf5Mn85cG8PZY/RHtVOhlsOTajgFEn15R
+	 AvyffoobmNAE2UODsonzHLxDg6cm93ZppFUIXtrlBFncLkHVxyNJAmDbXf+IhweJXu3on
+	 FYutG0zMPMnbMilwKzqUFI09WqIdp+1ZKwtKio00FUGdNA8oMrulHEm/woTXpvcQaLw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794559328;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=6RD0iRHyV3oSIEvxm5WOpCDh4YoqPaiKGn/YFrw8//Y=;
-	b=D4dIllGSIcMW57cED+H+ylSzncSzGbrQ/MX2KuKG8hlv3bY3PIxeku3BYl3LW08/wkFa
-	 ZWVKMXWEJmWvd/i1nEkc8L7+5V4pROIpR3ex6v+tM7SGV59YjRPZAv58WYxs2TZLEe26M
-	 lfWlt6S5X8eUab1niIQaJmj2WZJ3MJTA5Obt5knlyJKZRNskXr4LzFsyv7aH1J7yXxsiO
-	 jRwpIH4JpbxJSC/2YUzSnHWdls0uSttnvjDKQxCDodr7eBqayNmfqbcrcx0X4n+utdKE+
-	 pAEmjI0qwj9dCxQZ/PuH5FnOHYm3RGvnAmCn95Z3AhSyrJ1eJZSTYMOwAgaQeye09og==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794559327;
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=3L+zxWNfGQ3ohdk9s8cAjHw2DOnWTnCAudFmGfLCLoY=;
+	b=QiEXVUI99k2Ggai28AucK12qhK5JYOhjEoFNnVz12Lk1VrN6uewu28hvhOcKtu4ycV4f
+	 BQfIGCImVK+6P/9HyuVFxCyEWwjZ0fLz8i6SDqjgIXI1r8sc5G76AhdbEtWhzaML8BY5x
+	 ZeoVkGQ73OUwsgdnyZkEZ+i8f8tk0q0bun7QfrqAngaFGFxDGcwnMzKr6rzp5u1jX0Ac+
+	 /hP4wbhqhVs+t3Fqddl/HSdWp+dNlNsppv61Tpw4wSovjZ0qR1u/U6laQJdZEQ6JLtL1o
+	 igwG3ukI3PKd+4comkva328WYOps0Vfxe+xS4ljQfpRDtGH9MMLSDfxJ0CH+WG8O0Gg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MMsH+WPX;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=niV7EMUU;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A454606B1DC;
-	Fri, 13 Nov 2026 08:42:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8580606A327;
+	Fri, 13 Nov 2026 08:42:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MMsH+WPX
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=niV7EMUU
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794559327;
-	b=P4PjPkgmu3vywuSjo9I5pEe9Hs8csbN+UeK5nnxdVuyG+XD5bDsXErPqEgykxWDc+w3M
-	 hZNS+HnGUzYNOasCc4ix6LyZbOHIeJUGNIGbyDCXPPkc6aFoqNlUcGPo1gm0DdyF3Te2L
-	 Jb1u+YWm+MTaXVeNMBuwy9HsJ4ucdr6zPw+0PMnEFTr+fxnxNpQ5ZZEzWqP7H36iejNJW
-	 Qeps6rCU0vBfZwaVcEG63UZLMCStcBe3BNY/Ez4N7nbtKhp3yUGRPpQTWZ2ABS1Ft+NBI
-	 7lJTSN9t0d0T+xI9aaVHCoY6/TqdYBZrAzlXusYv8aVWaUUbwk/jihikRgdVNJCqv4Q==
+	t=1794559326;
+	b=i6Kx9sDoU0LC3Y8npzh9GTYbaPTLR9sYZj+P1oy8ljcVHmKpeg15wGO5OEgEDB0L6vk1
+	 FNvQdL3sEchSYfgN0tWR6kCq6ILeSKOxIZ8Fv0ZfGUvRTxnIDeecrvrMuNwhlojoOXUvc
+	 ce90a6U22JWoJbWCfGKyFveZmhLiMaX4D4VFLp20VMlKdrt135oRtTTbMamYMgA65V8T/
+	 hN+Kc9aOYF0jXGELKY2abq6iDF+1Ow/ODq8kdRaz5MnMvIZFfsv/Lbb6Rn7DHr4Y5IUk0
+	 kKX8Q+IOtvUWSfXP9HZKSaPRs1OyUMbs9At4T2wg5yMXdcPJ5CR6lGvG8SatIg/tZfQ==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794559327;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=6RD0iRHyV3oSIEvxm5WOpCDh4YoqPaiKGn/YFrw8//Y=;
-	b=hx8AXGLqqmvyFuYGJc7zRoPL41T2S1E1gG08cFg5rNemgfb2alwz2GrWN6ssx6GIzHNK
-	 eLwxCxr8qkfWqzLoSyJ9h/vJ0UpuMchw0BEA3N/YT+LrKOKC1PLXmyxixiQdu7xT2e0+f
-	 9teLJKOO7PD1T57niM2+hb6NPYyjbR3JLbNjki3kTxxgSJIGgsA4LuBJonVQhifBHHxMt
-	 J9ty7DdsF6z/IAxONSUO/1D7i1UFKus3yclFlaTRyFEaTH2pB8tQ5JaDWILgxUpHK7bQv
-	 oTAmXMJxHGYu3vGl9O3X2R6qOUbTEGTsWpzp3QIqZWejMehrz3iMhm2fvtdXHUJw1Sw==
+	c=relaxed/relaxed; t=1794559326;
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=3L+zxWNfGQ3ohdk9s8cAjHw2DOnWTnCAudFmGfLCLoY=;
+	b=bmA7UMx13HIqNkEgRB2WsjXf3kWU3Bz2LYHizdafaRI1+rl0MxwPJvv7Wv46XgHCthz2
+	 MuhBt8P6edXH71e97N+qHCHyK1TVAQpc+GERb5OA5Vhpvp54UiPK0Joxv5+J2wBRz01AE
+	 qemy/xWC7AQ9a7Hzh6TfJzRJriReKhz4BLjt0AaVCbLeQhPuZatr2cvu6ahe8OLuyJfwe
+	 tbXHXdCoPIbvw7VWXyT3xOhDAq5x1PnyKV9hYFT9ioYewcmWP0qZxlF4qXiNtnYmUTEq1
+	 MHipZPF3hHbqcnfqxG/jmRyz4pZbPKSl8FKVoL0bKYSBfhgUzL7oX49C8DU0+MPEfTg==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 6010B1F000C7;
+	by smtp.kernel.org (Postfix) with ESMTPS id 15AB11F000C4;
 	Fri, 13 Nov 2026 08:42:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794559327;
-	bh=6RD0iRHyV3oSIEvxm5WOpCDh4YoqPaiKGn/YFrw8//Y=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=MMsH+WPXSW5g03fhNoNtt7cw3UnrFOWLkgYxCXyqZV255DVD6WGGBEiSsVXz4kFT8
-	 NQ17Rc5Hw+cuqHA3UdCBsF1IqbyZ7klyXvf/JSlr5OsJRCniNYI49ETBx3Nds+Q/1e
-	 f3H3PaI0LrPrbZy8BUmn+QY+gY8oY+xO4o422s9Kl8Lt9QwvOWXkG6P24MdTZkwVuN
-	 WsxyTyh6Lef9FgImuk6hoU+cHT2QyO5WLoZrria4Ky0DT8YcT5s5/Q5KFsHRPBJWHS
-	 M4pi/ZFLw7e7VBZv28g+U3GshkQUiWacENWqqvyQ0JyMWEM1O/SJWzxz9m9eGUaPre
-	 ltPINig6f02cQ==
+	s=k20260515; t=1794559326;
+	bh=3L+zxWNfGQ3ohdk9s8cAjHw2DOnWTnCAudFmGfLCLoY=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=niV7EMUUwD9rnkdZShoxVFOU5gOifKnzPezcP9pZl7DtSS8E3QXURbvbz9sxB8T0M
+	 0XWZcQtTbaRiN7wJ9in9uBHQ1w4dHnh66XT8ob4SjhRajBXjNXD9kqfqch7f23BSWR
+	 XrpXKWt5ZMTB3mAIWB8G/ASr+yEDqR7lEBA8XkO+RTvOVtsjryRVtJoCndkde8t4HO
+	 r4RdcMr28Rt4ylNkBJo6nJOvau9AUOo3u6Ue0h2Op5gg5fzsOMgTO0dtVCx03Rgsrp
+	 eFuQax5agcp4mX0I4JNa4T65J1ZTai/WcQI8TzYjXApURYslIUvaxmUlD+LzFpgWGx
+	 UTs4bjX5WKV8w==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id DFB50476C0;
+	by lkml.kernel.org (Postfix) with ESMTP id 9CC94476B2;
 	Fri, 13 Nov 2026 08:42:05 +0000 (UTC)
 From: Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
-Date: Fri, 13 Nov 2026 08:42:07 +0000
-Subject: [PATCH v3 3/3] pmdomain: rockchip: use dev_err_probe() for the
- other probe errors
+Subject: [PATCH v3 0/3] pmdomain: rockchip: fix the probe error and
+ deferral paths
+Date: Fri, 13 Nov 2026 08:42:04 +0000
+Message-Id: <20261113-pmdomain-rockchip-v3-0-b7039ca30b87@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,9 +85,14 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261113-pmdomain-rockchip-v3-3-b7039ca30b87@gmail.com>
-References: <20261113-pmdomain-rockchip-v3-0-b7039ca30b87@gmail.com>
-In-Reply-To: <20261113-pmdomain-rockchip-v3-0-b7039ca30b87@gmail.com>
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/32PyU7EMBBEfyXyGSOv7SQn/gNx8NYTA1lwMhFoN
+ P9OZ+YyB8SlpZKqX1Vd2JprySvrmwureS9rmScS+qlhcfDTKfOSSDMlFEgpBV/GNI++TLzO8SM
+ OZeHadM6r7DChZfS31Izl+8Z8fbvr9Rzec9wO0OEYyrrN9ecWusvD9x9/l1xwCB16yMH7Fl5OZ
+ Ph8jvPIDv6uHgnqL4Iigo2pM8orndA9Eq73ijV/nWn9du/NFr/Fgbb3TVQoos0BwEqKd8YggDY
+ qBbqt9QCtxeDkMSz4NXOijmXrG2eczb4NtgUJQesojMfQOYgokEipSwk0Bqpw/QVhMQgXiAEAA
+ A==
+X-Change-ID: 20261110-pmdomain-rockchip-3497a2e7fdf5
 To: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
  Shawn Lin <shawn.lin@rock-chips.com>, 
  Sebastian Reichel <sebastian.reichel@collabora.com>, 
@@ -95,129 +101,69 @@ To: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
 Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
  Yao Zi <me@ziyao.cc>, Igor Pecovnik <igor@armbian.com>, 
- Arun Iyengar <aiyengar1990@gmail.com>
+ Arun Iyengar <aiyengar1990@gmail.com>, stable@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794559325; l=3464;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794559325; l=2265;
  i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
- bh=jsmPibxPhjpxlHK/IvT+cnklg4OFYYz83AQUwqAU878=;
- b=IxrL+3A5riS6YjEWmsnRPjrFOrTBBTPynh/cLXIdnCQWyRorfP27Dcq+Qjq41YBlxgtMDHm7T
- pEmaV2g5x4aCsz07hRhmfpf/4qmWXbuYs4ejSfC+8lyeROsKf5XfWLg
+ bh=k1mLNrWfIj7RN8Bh3VsWtx7wapkXv0tU4C3AAvkt4b0=;
+ b=Mi0cR6vTMB643sMCpH7Z5f77UEcQyS32zt8DJ8ItoWOMCFw+PtT9juZ6YpgxIR2PZkr0XOrLe
+ ZW3cw1yl2tyBacelDOkpFGjTreD09rBGEAKPATbJqP1ns6LkCCxxjAA
 X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
  pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
 X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
  auth_id=1480
 X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
 Reply-To: aiyengar1990@gmail.com
-Content-Transfer-Encoding: 7bit
 
-From: Arun Iyengar <aiyengar1990@gmail.com>
+Fixes for a Rockchip power domain controller probe that fails or defers,
+for example on a domain clock that is not available yet. They apply on
+top of 1/2 of Yao Zi's series [1], which has to go in first; patch 2
+replaces 2/2 of [1]. On the pmdomain next branch, 1/2 of [1] conflicts
+with "cycle an optional power-domain reset on power-on" in one line.
 
-Convert the remaining dev_err() and return pairs in the probe path to
-dev_err_probe(). The return values do not change.
+Tested with v1 on an Orange Pi 5 (RK3588S), v7.3 based kernel, with a
+test device tree that makes the PD_FEC clock appear late: no freed
+domain left on gpd_list, no -517 errors, and the controller binds later
+with all 26 domains. The v2/v3 changes are build-tested only.
+
+[1] https://lore.kernel.org/r/20261105001257.1368266-1-me@ziyao.cc
+
+Developed with Claude (Anthropic), which wrote the code and the commit
+messages. I reviewed every change.
 
 Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
 ---
- drivers/pmdomain/rockchip/pm-domains.c | 63 ++++++++++++++--------------------
- 1 file changed, 26 insertions(+), 37 deletions(-)
+Changes in v3:
+- Split 2/2 into the fix (2/3: deferral, pm_qos error code, callers'
+  messages) and a clean-up of the other messages without Fixes tags
+  (3/3) (Yao Zi)
+- Shorter commit messages and comments (Heiko Stuebner)
+- No code change from v2 apart from the comments in 1/3
+- Link to v2: https://patch.msgid.link/20261112-pmdomain-rockchip-v2-0-5cd942a23df7@gmail.com
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index a0b47d8c4b2a..d132fdd11a56 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -804,28 +804,22 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	int error;
- 
- 	error = of_property_read_u32(node, "reg", &id);
--	if (error) {
--		dev_err(pmu->dev,
--			"%pOFn: failed to retrieve domain id (reg): %d\n",
--			node, error);
--		return -EINVAL;
--	}
--
--	if (id >= pmu->info->num_domains) {
--		dev_err(pmu->dev, "%pOFn: invalid domain id %d\n",
--			node, id);
--		return -EINVAL;
--	}
-+	if (error)
-+		return dev_err_probe(pmu->dev, -EINVAL,
-+				     "%pOFn: failed to retrieve domain id (reg)\n",
-+				     node);
-+
-+	if (id >= pmu->info->num_domains)
-+		return dev_err_probe(pmu->dev, -EINVAL,
-+				     "%pOFn: invalid domain id %d\n", node, id);
- 	/* RK3588 has domains with two parents (RKVDEC0/RKVDEC1) */
- 	if (pmu->genpd_data.domains[id])
- 		return 0;
- 
- 	pd_info = &pmu->info->domain_info[id];
--	if (!pd_info->pwr_mask && !pd_info->req_mask) {
--		dev_err(pmu->dev, "%pOFn: undefined domain id %d\n",
--			node, id);
--		return -EINVAL;
--	}
-+	if (!pd_info->pwr_mask && !pd_info->req_mask)
-+		return dev_err_probe(pmu->dev, -EINVAL,
-+				     "%pOFn: undefined domain id %d\n", node, id);
- 
- 	pd = devm_kzalloc_obj(pmu->dev, *pd);
- 	if (!pd)
-@@ -1033,12 +1027,10 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 		u32 idx;
- 
- 		error = of_property_read_u32(parent, "reg", &idx);
--		if (error) {
--			dev_err(pmu->dev,
--				"%pOFn: failed to retrieve domain id (reg): %d\n",
--				parent, error);
--			return error;
--		}
-+		if (error)
-+			return dev_err_probe(pmu->dev, error,
-+					     "%pOFn: failed to retrieve domain id (reg)\n",
-+					     parent);
- 		parent_domain = pmu->genpd_data.domains[idx];
- 
- 		error = rockchip_pm_add_one_domain(pmu, np);
-@@ -1046,23 +1038,20 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 			return error;
- 
- 		error = of_property_read_u32(np, "reg", &idx);
--		if (error) {
--			dev_err(pmu->dev,
--				"%pOFn: failed to retrieve domain id (reg): %d\n",
--				np, error);
--			return error;
--		}
-+		if (error)
-+			return dev_err_probe(pmu->dev, error,
-+					     "%pOFn: failed to retrieve domain id (reg)\n",
-+					     np);
- 		child_domain = pmu->genpd_data.domains[idx];
- 
- 		error = pm_genpd_add_subdomain(parent_domain, child_domain);
--		if (error) {
--			dev_err(pmu->dev, "%s failed to add subdomain %s: %d\n",
--				parent_domain->name, child_domain->name, error);
--			return error;
--		} else {
--			dev_dbg(pmu->dev, "%s add subdomain: %s\n",
--				parent_domain->name, child_domain->name);
--		}
-+		if (error)
-+			return dev_err_probe(pmu->dev, error,
-+					     "%s failed to add subdomain %s\n",
-+					     parent_domain->name, child_domain->name);
-+
-+		dev_dbg(pmu->dev, "%s add subdomain: %s\n",
-+			parent_domain->name, child_domain->name);
- 
- 		error = rockchip_pm_add_subdomain(pmu, np);
- 		if (error)
+Changes in v2:
+- Dropped "pmdomain: rockchip: put only the clocks that were got on
+  error" for 1/2 of [1], which fixes the same bug
+- 2/2: drop the callers' messages and use dev_err_probe() where the
+  errors happen (Sebastian Reichel)
+- 2/2: a pm_qos syscon error keeps its own code
+- Link to v1: https://patch.msgid.link/20261110-pmdomain-rockchip-v1-0-6b9fa6ebaa86@gmail.com
 
--- 
-2.55.0
+---
+Arun Iyengar (3):
+      pmdomain: rockchip: remove subdomain links before the domains on error
+      pmdomain: rockchip: don't report probe deferral as an error
+      pmdomain: rockchip: use dev_err_probe() for the other probe errors
+
+ drivers/pmdomain/rockchip/pm-domains.c | 131 +++++++++++++++++++--------------
+ 1 file changed, 76 insertions(+), 55 deletions(-)
+---
+base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
+change-id: 20261110-pmdomain-rockchip-3497a2e7fdf5
+prerequisite-patch-id: c2f0c5eb6651baa744f66342db63485a6685fb71
+
+Best regards,
+--  
+Arun Iyengar <aiyengar1990@gmail.com>
 
 
