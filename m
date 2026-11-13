@@ -1,99 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.182
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794601616;
-	b=NphNJRGtQY0MzWVbhMIRg2ey987HSoauMvJnvQNkhFQf9hM6Mr6HlyNNPVBIzSD58iSg
-	 JrG5AYIhUTcaOCz8cWLNtd6iDD56Kgj+pDoHF1AQukFk0A2chDMNOh85yBFpoPkMIkvOe
-	 mXZfiZOomb0PCS7gfV6BOmDlq06yAZ4Va+lSPxknHoN3vNYuvEH8OSSFBnerENFFwxBN4
-	 pZEJoiZpLgHK0nZSi+/4KIirhh0a3jWlskHrBWNoh9E6Y/1hMtSVCK8WP37hv5LB0FhYN
-	 nXk2H7jsqt7qk5WSnrIEHzU6VIzso3dsp6RN3gEk42QkiXvW6Fn4fPOssDDHyFOJKuA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794601616;
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.49
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794601902;
+	b=erPoGK2t27IbCXU0Li43TWjHuLwQPOexOgTJqTEY2uQGYGoRJ9ig/tr6GiIof80s77xG
+	 F3C443u6RMhSviJzcPXWUeRz6wl1tYPS4JE4kcxks3dKP0V0U3g8DP0A2PiYnrRGzHvaS
+	 oMEJVX5sgIVSXAvYldF1YEO1a5S1XDqisK7Z95sPzpvS5oMLX8tkhYKVBC01sxbq8uN5n
+	 ucN1p2oT9MfUlLymTENK8y9w+MKP282+g2jFTugJd2qn2vlx3AdV5G13toxwCF3/i8SZG
+	 7FM3qPxAt6yn2ldA+IXdFhYX4uam9IN8WYIho6ri7HZjI+EEMD+8ejnkrts13JutEBA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794601902;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=2O2TnvNsnknB44ezKCjK5OImxLFDNz8sdbJ2VBlzgdc=;
-	b=jNVSieaq4b0+33EargCcQ1GC7+x7+Nouz3RNxC9im8Bo7iZ6klBu9jG7poiTpQnkUp7a
-	 QMPRKKNS14+4KgdJhKM9c901xK6JM7lymMvBQQPg02OTXG9eWjoEcyWl5x8aZ21/nx/oG
-	 YouEJ7rIsrJ/Hc59e/Xrnh82OhA5v18olbw+B1ZbG/hpm8BS2sUZPMQu2VDB5ro8iIbwN
-	 d4P3vvdBTXClqPOvwTCQ3pO2MAp3thYnQyl92mBU0XbxZox2XBz4OhzuD4tdKbBozdiNd
-	 RVThVo6LvaLxLGBDT1B9DWXvOxnUx2RB6DWj6PxncjlRbYoQhq7rpthgrgOsgu4vBUg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 Content-Type:Content-Transfer-Encoding:MIME-Version;
+	bh=YiZ77gIfuRvrG4OhaqVJrXWfgW4P+h0z/eTCC1VVgzo=;
+	b=JrT8OgOXnWTWHUTFRsZ6TodCxwHNVxalwmquOijf7XBAimll4WQsRgOjQ1o4tS7BU7LL
+	 RIGVVdBruWRTuNseW7tdatBW6Ue37DGG6gOS2Hdjds1OmVnsZ3s6Q84aWNmTDSg4cyyAz
+	 okUBpMYEahhaeKNZ2UMWpe03tfSZ3WgXHtala8MnzuDtkBjOpbOoV03+hi1+JaTbS+GAT
+	 ah5E5p0qiYZrY66H2LKY7sSJp9ttubJS3hhyrtn+c/r8xKTdTqKAMKY+rDW9N7tk8HvPZ
+	 2879ynOEr+MXzcfQUv0694zjvdYtmLk9wieglsbTNOGeE1duNV2oRZB/ljkj7whC92w==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DUcqmEYa;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.182
-Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0eqIt7jX;
+	arc=none smtp.remote-ip=209.85.216.49
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25919606A334
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 20:26:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 25919606A334
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF3B1606A32E
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 20:31:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DF3B1606A32E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DUcqmEYa
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-3ae3b5b1027so248621fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 12:26:55 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794601614; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Cufvk/Y0XEMUs3GV3Q5NJXX80J8oCP8ze4Ap56rhVT1/bSWQsCUlWzxao5jRRh12sA
-         jdoX04dHCSOFGadxTObatvSq6kVWb8XE+P1eUxio6TLuVQTQtynym6nmhRPp82r8xCT5
-         GpH91nlVLWUg3z/pxm5R/NBqNLmExAfa3eiPSFo97jN0JY3tf2Lnk8duXiVvaoSiMQBY
-         HHiWJ+q0ClJ2OYZnV1J08MLOenwzVC4PG/XTKCBY58gSL3HIkhGUq/XkJTa0BfIud8TJ
-         qlNcEcxMrp8saG4/gDjedBfVHYPfsREW66HoRs4F8ihe6E9zxAeUDzaUXk53Z+cmbMCp
-         Wtmg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=2O2TnvNsnknB44ezKCjK5OImxLFDNz8sdbJ2VBlzgdc=;
-        fh=0upGPsgeegiiWFOiy8sq8vUKhfFGGJuvqxG50ebmaQA=;
-        b=G32GbaAvVvQdfbelQjhxNLsxzEq9aMZ99ehNqbwqPVbZ0CEewcf8qPvOea43vsDgQA
-         bQfX7uZeuCnbJGz4cnlKCYh5EzKA+5DnNs15cduF4Zpygvkf10r4wgUCiv79uQw3iD46
-         pcC0dhWGslKVtE9AVmxp0wsmqjbxRkJ8m2RemTBzD6k1yOOjMcuGCwsWXmqNV/Ax7ebH
-         Q0vVCoZEkCMiWGSxzoir7o9zvXuWuXIeN0jDkxR20XJXm50PjUb7YwEXLWaPvZGX4Eug
-         6dHShj+9eM8q9O9PweTu3Amq7fPw/cilXmru6hDG4aOTOPa6qvczlztlGj+wn84sf5xw
-         mQLg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0eqIt7jX
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-3b0b8b5d28cso174155a91.1
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 12:31:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794601614; x=1795206414; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=2O2TnvNsnknB44ezKCjK5OImxLFDNz8sdbJ2VBlzgdc=;
-        b=DUcqmEYayYoveruRS1dgsIUc5UcHBRASHp8a+d/bIN+Fs50f1gjQZ7Kk658yW7/nt+
-         yr4oEZdZPuk1DmIXUBNpGF/uffpzVqxmL+I/T4mO5L1CPMdoePvIVGGrTZjkLdPjoV/a
-         +3sQAX9jjJClmgcgkyUQGqNKDI66T1oh43/ArNUT4rls/tCqCNzVlJ1S5zyay0E36B2r
-         v2wzxCKkLZEoN9TeonnoK3yxCyARxoW+wHUMnIHir0nm+5FJXY2cEBfBJ4i7sitCa+FJ
-         mSIhgyvW8Z3p5jJ0IRGb+dFBJHT6ed27qbIsFNbK4ZlWz4BD6qHCaEkrOngoQW71W4wX
-         PPaw==
+        d=gmail.com; s=20260707; t=1794601901; x=1795206701; darn=vger.kernel.org;
+        h=mime-version:content-transfer-encoding:content-type:message-id:date
+         :references:in-reply-to:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=YiZ77gIfuRvrG4OhaqVJrXWfgW4P+h0z/eTCC1VVgzo=;
+        b=0eqIt7jXVqDpxvabrVe0KQBlX7BnF53VF/MF1sBMtS1BWLZtZcTYCrhX9bVfHRiKQm
+         z9wQpmxs2sofJeTIcAY18T6FhFvLh3qN7tC57AgNBI5drGp/OOR2e9mhM3IKgL5lRjJa
+         95vB8WZsBSjGP8fnKSJrqC0uCLGMdk9PYBRFIorS3oIBol7UNRrhAuSMCKKIxRVO7R14
+         N1gxW+i630qYTk91T1x8kMq4q1/GZ/gTS6qS8wtzRSNYA1Q44/Gwdo/Dx6A46e+GABFX
+         FygH8wTF3JWBT/Zjhdd8yuPK+Jtay6GrY5BpNjqKb8aOAkf83KKSaMQyF1kMZeS8jt/m
+         H0BQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794601614; x=1795206414;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=2O2TnvNsnknB44ezKCjK5OImxLFDNz8sdbJ2VBlzgdc=;
-        b=eQmnodLR4JWBDz7l8Y4xkxUNfYamJYJJwohbu/Qvyi7EhwE4i8i/HYmUGrqudVXQtl
-         ZJlI46UvO4nC/95wkg10XXC9f8cnQtOpfmm7hNNQbDpuErboUr3+JOmvfcYrYSls3h38
-         fJIo6NIVEON9h8kMpzSZkBsm68WRqFTDRtSiK0fCO+bAnirbIi/NZfUY/vfb3fGxTQtO
-         2wHkFZSkaLBrgqG4/Kd4M0mcxACAe9Jhcq2fW04zL+0EatzkWMs9N1ZH2A71l/niYJCN
-         QgEtU0SfvwbwByND1ddd2wlUNMY81y4Iu1cDDSYPT+mnsJJwhQ50BqqgcBnHYml+1Lzn
-         QYKQ==
-X-Forwarded-Encrypted: i=1; AL+hErFc+TXN9+qS90CyXHYcxNY8Ar/yEhFCm81kGspRa1QCKqInAcMcmCByb7TkbCwqgYtfQDBE2DOpeg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/dCMbZrVqnAaonRjr2nwRsLLaDeCae58nwuskoeHunZ3sUVYqu
-	GcBm/PoJScXsi2Xf2ApPzfuWlt6fR4iqiKMvM/pXpuF77AbRO8yd5+COkjy+mYFe0s/RtNz9jSj
-	wBPKHfPKxUO3hRbZHy+D8uN41ZfiACYslShLpiERkiA==
-X-Gm-Gg: AYBFou2MGnIZ7zVv2zThw3o1/RypimBd9C/uYBfD6c/dTsXR9mREYWzvvdGXmbLLBtR
-	RRCgcLNNjSI+1XJmT4JND1xtEUaOaPVbOxIYEpyYua8KuA+DKrF7JYFTz6yg5rlkGMKHvDE7rY1
-	hrb8OrUP2Ci6cBvswUa3XZEffcWNrfxHbkGAjPahV510SPjTngJj9eAA2j5PMaYBJZq7jBxvc+F
-	jF6CFN37UJAueVs0odCyaPGMk/2Z66ORKyAtIIL+tlty2IcR+35k5NPE/lnpIY2dQXYYFeghI7T
-	2jVc7QUx5J4Txg7Pc07CSCgu0Uj7SyDRs7+80HQqroqVA5rU5iHpuPOAwWqW6qn6hhxmulnQt5H
-	+J342sV9CQ7h3a5/V5Yq+b3BopAM6EqxvnW1zfaCu8HFI37bn1miNE2B9uBT5JGlqd9ITb1A=
-X-Received: by 2002:a05:6512:3d20:b0:5c1:4a47:b86b with SMTP id
- 2adb3069b0e04-5c1709e0a05mr1672668e87.3.1794601614323; Fri, 13 Nov 2026
- 12:26:54 -0800 (PST)
+        d=1e100.net; s=20260707; t=1794601901; x=1795206701;
+        h=mime-version:content-transfer-encoding:content-type:message-id:date
+         :references:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=YiZ77gIfuRvrG4OhaqVJrXWfgW4P+h0z/eTCC1VVgzo=;
+        b=jSXH9mEg5luGZiMWi5BRo0At9CmIT62ngWHEcI4p4pnXt+ksuaWC0ZaLt+4n8HY9oB
+         F4ct2xobrLrS0/6UxFf6nGdtPvk4V+E763DMWT+DovwpFvzIereOhpb1LHf6sbxgJQx3
+         JjS+lNWn+6szmrcJSIi+rQNNPtL951UKjUnF0oNMhfb9bbFduXMmbTK7f+HJP23hELpS
+         nPmSJx7cJksBlLuOMw0uK1l+FGb6e8hgVeiSQhhG51zA2FjCBzxrEs7Z/Xune2DRuqLH
+         NomOsNj1hrVeYJ/bhjfzukK3sw8MAkIIFMoDmzR6ZgPBKliXUJxEetvkFrQVK1+NHzK6
+         Jm4w==
+X-Forwarded-Encrypted: i=1; AL+hErEmG6xGc7arOPRS7TYtmuZ+XI38YztJFUv/MYf8k8WD4cGlPMGtBaVIYCNKjc1ahsb/PqPWTLFnEw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/Swjn8GRZ2XMT5dabDhWFEMXkyvCk53L4yuY0d/cTPSlmlevwZ
+	N0fGNEHTWR+neXP4rUbt4TFpFzkfp5eYvk36l29gPUyhweBhsRu/qyXn
+X-Gm-Gg: AYBFou24EeQWkwNXk/F6ieCjykZnlWJSbZNBki9f2mcWgGt2hQf4WixOWcDMRwXwMso
+	T1bKCn0lKJO1Z2J+DMZ0GZJFIt5CEP8Ul2SgCMEdsae0555vl0gg8vGC+6ssITphkvS+c0XdlWW
+	Y276wBD4LzKed6w4EQ5l6ShodbB8B9uG2+t843zmENjlg6xm51knR9kwfvvKwdG/f4WGNi0Pgcn
+	9gIvkdshm/3BkZnVAollm6tIcI70DNux+jBP0hUzoYYBP+nC5uzL4/3UIHS4WDyt5hjjiMD3Ys4
+	RsqYcFYnADyht+cI4K02EnYfnk876zURn5Y/PAZn8rINd4EXxkeBxSd93/qrEwWP+YLHrVjcwKp
+	81WoKgnjJC9BAP3RVaSgPPUwUpYpSjj8Bc1KMmLQUx/1LI/5AMyXvYa6UPkSUcmAk5Xt/7S5pBP
+	OFQwDSZhvtMMILLUa99IQc62u1cRao0wtEFfhbP+C9+t72wnbZNwWUsyvhg4SmpdZ3Bo4UqT0aT
+	8tPPI/OYdMw0lgs2FFn54PJK5Jk6ugJ3hwvx/5N/ejuRdKSn+3YMzW24VDZwjvcasaOswreS9GQ
+	ePjWVLE7wc/KBlNqNT+h8IAfqliu+bb3DHmOicdwmr3ncpAiy8xqW5sm/34pox2/e/0kCY4ZOQk
+	Jj/Nv4w==
+X-Received: by 2002:a17:90b:590e:b0:3a6:e1d1:e511 with SMTP id 98e67ed59e1d1-3b1b0b85d16mr5379769a91.4.1794601901202;
+        Fri, 13 Nov 2026 12:31:41 -0800 (PST)
+Received: from claudebox.iyengar.cloud ([50.39.139.68])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b197d35525sm11051461a91.16.2026.11.13.12.31.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 13 Nov 2026 12:31:40 -0800 (PST)
+From: Arun Iyengar <aiyengar1990@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+ Johan Hovold <johan@kernel.org>, Heiko Stuebner <heiko@sntech.de>
+Cc: driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ Saravana Kannan <saravanak@kernel.org>,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] driver core: fw_devlink: Don't report refused
+ sync_state-only links as errors
+In-Reply-To: <20261110-fw-devlink-sync-state-v1-1-6385be961c2b@gmail.com>
+References: <20261110-fw-devlink-sync-state-v1-1-6385be961c2b@gmail.com>
+Date: Fri, 13 Nov 2026 20:31:39 -0000
+Message-ID: <179460189995.183918.12921536578133287930@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,25 +106,22 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261110-devfreq-resume-freq-v1-1-90de450ccbd0@gmail.com>
-In-Reply-To: <20261110-devfreq-resume-freq-v1-1-90de450ccbd0@gmail.com>
-From: Arun Iyengar <aiyengar1990@gmail.com>
-Date: Fri, 13 Nov 2026 12:26:43 -0800
-X-Gm-Features: AclHuK-ahf_hbv0JWK-ZmP02YMwbUIbSPumHjPuGK0NbDWVoZDeErVULM14wNLg
-Message-ID: <CAEy9hNXV1Lr01gy1V1rZsDwWOt328nZOxsNomEk=vKLqXhNMDA@mail.gmail.com>
-Subject: Re: [PATCH] PM / devfreq: Resume at the frequency from before suspend
-To: aiyengar1990@gmail.com
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
 
-A correction to the commit message: no mainline panthor platform has a
-GPU suspend OPP, so the panthor example does not happen there. I hit it
-with an RK3588 device tree change that is not upstream.
++Cc Saravana, Sebastian, Ulf, linux-pm.
 
-A mainline case is lima on RK3528: the lowest GPU OPP is marked
-opp-suspend and lima calls devfreq_suspend_device() from runtime
-suspend. I have not tested that board. The fix is unchanged.
+This message was explained before, and I should have cited it:
+https://lore.kernel.org/all/aixze8zFboY3huSf@venus/
+Sebastian writes there that it comes from one power-controller device
+providing all Rockchip power domains, and that it is not harmless: the
+kernel misses dependency information. So "harmless" in my commit
+message is wrong; the patch does not fix that, it only lowers the log
+level. It also lowers it for every other failure to create a
+sync_state-only link (found by the Sashiko review), which it should
+not. One such case is being fixed at its cause: on RK3576, Sebastian's
+"clk: rockchip: rk3576: create proper platform device" removes the
+lines for power domains with a clock phandle:
+https://lore.kernel.org/all/20261112-rk3576-clk-platform-device-v1-1-2f3ac9f09403@collabora.com/
+
+Please drop this patch.
 
 Arun
