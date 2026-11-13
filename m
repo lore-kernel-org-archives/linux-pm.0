@@ -1,80 +1,123 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.14
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794590894;
-	b=nte3jgg/uJE4nKG+bRtgsvXPPtB/FSsjrSu1bEpu0y0nh8MVxUQwEwTxA+rBq76kUD/r
-	 9qkCnpo2qetvj8JEJVGtt8zjdQen1Eh9VHP5c8QNmZYxa6IpkbPWfTbAdsNUnFm+ONAwd
-	 Jxczh3MqRcQ/hkuttkY/EtrfTTZDBpWhFZ6cuj9pug46ug68wxrIn3ccMZfu+27fkYeBy
-	 mCEYBYIKhUgnW7r1I3ktXgv82OXFEJVQM0kvaxWVR90/g+X2zz+zt5zYK1WPPWoUiTHF0
-	 6m++LTpByVLuw10kMAfkwKS/0rTKqZcYtUFwVzcAvsJ8a4A73oT6SqO/chiWJlfi+5g==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794590894;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Message-ID:Subject:
-	 From:To:Cc:Date:In-Reply-To:References:Content-Type:
-	 Content-Transfer-Encoding:User-Agent:MIME-Version;
-	bh=ziSO+YmPUxunJfjCoEZ5Rsa7KblfwfRchxzctNwTgbc=;
-	b=sePbRH7s7V/4Kj63rqTelE+0kZpDdEyo5RlEAcr74JIqkcLi3OavpnJsp2NVUDe4dypi
-	 LZ+9rrC4Rwg3R0WtbZEzfe5ib6uHKfMge9mx+ORhzIwFyYXbYPcFk9ozir+9Us6ARPwoX
-	 k7bFkDQFp8GIXgpaixPMK34e7K9JULCym4+R2z5gbznFG7lRFz0NydXjEIDFV4xz7dIBc
-	 qTv57KNLUJVTMUw3gTDAH/WscPWxH0LCn0IUyNxXPEwNl1ZnXsOe1HCuYseMw6i6dsXgW
-	 ODgUJ4o2QpVY5YrR8BO4ASXeZP4tj5VpNKXHsaB98mQXVdJgpbAYoqCIVpNFRgnYu3w==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.intel.com;
-	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b="B/wsx2Kq";
-	arc=none smtp.remote-ip=198.175.65.14
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794592036;
+	b=u1QqAGsqtw44WZRGV5x9znbBYZyX/v76ENnmDeaW1uCXnnLb/vzbfWlQfmUGIA/cQGYT
+	 mfrCDZDMFAyln9YXbxILzasR6ucdWU5pqj0XZPk+h8WpHW6kiC5qIFMzqFL3jiRli2ErN
+	 ie/3XbnjNjcHQh11fFhtkZTZiS2ZR7YjGtUQ+rJ03XNnAcpAnf+YxR0VfbVmg375rTx70
+	 M/zw5pFgOsJbJZ5PTXIQVagcJdvejdRKK3YlTgKkXHucPvQvFQSb7UOiIu02LX9Id+e55
+	 F0NVTW/81/b8zfEhhAaB2theF+wFk65wzfG5LHbfqbxCUvDLbV/mycHzpvue1B5EILg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794592036;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
+	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Cc:Content-Type:Content-Transfer-Encoding:X-Authority-Analysis:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=XUtAykq3hDRsL0/US7WOum9GrsDms9AB2V3NWupV8pE=;
+	b=tAQl4LdejidzZAxJzAAlkT4SBlVeosrQoQLc+PfKk0LKVY7h5ojhW3njPZ5jIrgy7Hvv
+	 MRdzMH/RIMW6L6aKyIor81CcRjNdGSQKq8LuAXNTBjOnGs01mY5TAE96PDE0zSOwPU2s2
+	 ZIoPjB8AkqKaUZdk6x9/W9HJlbeEwYAlbpa9rgauOCrUFJWdpWUUWRG0TvSAxVQqVjPF/
+	 o6E+t0UqdrIulkmbnnjMeckiGTWoEWwBplgP+/dJ7faWjjFtN5KGUF64bC+TSiKOw9VGs
+	 ViwHTuTkIrnD9O1nop+GUfC9z9AsgsO34lav2xg31lQOYwsh3dcHU4VZYuavbpsKSbw==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=XLgYD711;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="c+/JnLdQ";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD85D606E216;
-	Fri, 13 Nov 2026 17:28:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BD85D606E216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54D3A606B205
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 17:47:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 54D3A606B205
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=B/wsx2Kq
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794590893; x=1826126893;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=16waxDqNSYau/xhki9mDXaindSEi2mDzGfPV5tNqWpo=;
-  b=B/wsx2KqI6nvYAVt7h4RtIfMIh+Lstn+3i2MBcHAm7oi60sqL/hFzRiK
-   RGXHkwid+y+yahqSC/mCLwvpuqfgfJT0dHbAWjiNhSyeYagB7MyRkxjYF
-   WkJFxp/ZiSJDvYQLL73jfEbZyuUGUSMiOzg3zMjhQcDFRpgYZvf4NM0Ta
-   VJ+fliT8i+yFAX9qTURaJtX/lRw70/aTaoMUaWswbfDBVAyb1U8j4Tr00
-   vL9Ne9c1OJv/EsQdktaUU5rAd8NVhlQx/cSUvmEhbpFvCLBXKcTccFCHI
-   p5EoCShK7ALcYDUOwoLZx/fnMaZE7Rstfu6KDzySHv3sUdeLeSucaUpqv
-   Q==;
-X-CSE-ConnectionGUID: 5tvrC0lBTxuV9/pCaMp+2A==
-X-CSE-MsgGUID: cIr0SZBmQ/GZgY2hJ1QW9w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11965"; a="3293893"
-X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
-   d="scan'208";a="3293893"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 09:28:12 -0800
-X-CSE-ConnectionGUID: AVoqca5TQXCY+xN4GC9JEQ==
-X-CSE-MsgGUID: Y9yyWH/rRM+pifxsca/I+A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
-   d="scan'208";a="9138763"
-Received: from spandruv-desk2.jf.intel.com ([10.24.80.14])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 09:28:12 -0800
-Message-ID: <dc5506e2d145bf98ea55b861cac74d7805137470.camel@linux.intel.com>
-Subject: Re: [PATCH] thermal: int340x: processor_thermal: Fix Nova Lake-S
- PCI device ID
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: Sankara Tankala <sankara.narayana@intel.com>, rafael@kernel.org, 
-	daniel.lezcano@kernel.org
-Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Date: Fri, 13 Nov 2026 09:28:11 -0800
-In-Reply-To: <20261113154001.2081-1-sankara.narayana@intel.com>
-References: <20261113154001.2081-1-sankara.narayana@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-2.fc44) 
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=XLgYD711;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=c+/JnLdQ
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ADFR5kx551933
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 17:47:15 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	XUtAykq3hDRsL0/US7WOum9GrsDms9AB2V3NWupV8pE=; b=XLgYD711Nb6RdnRZ
+	pQM/51Q183vY/GeyYUbr8tGR4RkZZkYV2YZLlpgqyAn6ep8vMEH3k7k5XmsTr6Zm
+	dg4JtobSMy2N/EQQcfrNKmRJT5MRHku+6LyZ696Kz4uqWEnfZDpGBQIiY5yMuVtq
+	/vvumqxB+tt/zkmIDA6XX7vwN/iLx/oPCpTqQsI6KcS5POxjqi3RVrrQzff1UhCu
+	qb8l4Ow38i8jqlUuWr8EBtw+dWgLGU2bfB1M33C6drxYHw5GpzI/bDQRlKe0GEuI
+	4xveG2iHz8mEJb50e8UCyeyD2PMSmP8dSapmmAeePBNVReEyHsGi+9Eo+37VDu6M
+	5P6New==
+Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hwkgwc3wa-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 17:47:15 +0000 (GMT)
+Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-cddc4bde4adso530120a12.2
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 09:47:15 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794592034; cv=none;
+        d=google.com; s=arc-20260327;
+        b=BGGQ4aEysk+qyCz+zlQ7w/aT+p1TMCp6jYjSyj/04Ry3hcJaYmZyUiHS2r332op08k
+         /7x/YTTKOmmjXUAhlzaY9lzD35OLPddwXoe14iEu/5z+CN2LH/AlzezXvqFpt41FvYW0
+         Wumxb6g5szN5B/vTx+f8QVm5BI4aplMDF7oE5Pt+GRBXxW+wWSOGSaGaei/YyJjcChVW
+         vn+2U4FSxPErHJIvnyvHNH0vSSupxPk0lmWwhWzmrC3QWrpt8JmILf8pZ4wnQULYvuhj
+         3nHTPGNUFNsODbnUk1NPSBikkGek6NS9YjWpF3aOE0ccP4iMPrj3tI818gqbx4UxWyu1
+         E3aA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=XUtAykq3hDRsL0/US7WOum9GrsDms9AB2V3NWupV8pE=;
+        fh=Gc1/fc29g/8CTKkyrjPSrgtEEG1Tnmt6vJclKp+G9Ls=;
+        b=KI2cLuQTyFbxhSkCVPE+p9+vf9JDm7upSDEuTHQgGvszPM7LLZVOOYYENd9tEdR8N1
+         MvppWHpyS/lOksa6+PVUYRVlJhTrPUImUuu9QRI96EQ5fcQdl2a/0a2yHSaylSlsIPKF
+         c2QuDvAiVwKcP4jqTwoK9xeLt2JuEietLHdjqzFT7+pxZ6RIhrgUijT1PvIawUNrLxUA
+         9bo4jf/JY8tJOZbFs/Sqa2AaSAC6Klq2JM9zvOVLNP0GW9DLtf8auI+j2msPTQP8O5KG
+         cXy0eIjezgZBAPEY1viGpR+FAwNIG1EvFhn6OrErYbF9Xz3KhMh+cKCmQxOFfiyD5Kmm
+         Q5ow==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1794592034; x=1795196834; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=XUtAykq3hDRsL0/US7WOum9GrsDms9AB2V3NWupV8pE=;
+        b=c+/JnLdQhX6F1a7DHfl1cUH4zp8dgXgNYqDJxHsjF5oXW5dxAFIUA7TbUy+LwlDKbS
+         CsMFj3E+scMnV5FV3X/fc+fzU3robIDtwnv5pZpyz97MXlgTkHboihJb6W/J9ygdIqpq
+         57ACxjlSYOwx2kilV1OKEeCNZEk1oGbH77L16dkR3GO+DFY9esQMICUlXbu1ABQZlfAw
+         ffquzZvlNY3Tr7mj/y1D/0Q/Tjyq3hFbhtmpOFYekGtDteWgx1ekN65ndpaD4JFewqnH
+         2r0mhhzp+YKvWGdH6rqXjVp4qzcbvu3pCbZRzatdY5BmOas2rrsz4bvdYr/r2dI8BYGB
+         OQxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794592034; x=1795196834;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=XUtAykq3hDRsL0/US7WOum9GrsDms9AB2V3NWupV8pE=;
+        b=ez8em0D/LlQUa2A81u3w1qKYyZIcPV8pIKDbMSopuj79RYgfxK3I6+ex5FfSgnpD17
+         WmyaCCgx1dbYU79/9ow1UWpVJJvQbdeTaLta5gC8TgUG/sJ0sDrVNLHT0b7fDs263pc9
+         SpFdwye8skd5TUV3FnZ1jkseG4ig9QmZxhuvxpzWLucKjgu7I2PMxAVfo4eO179wVELi
+         K3l/TrY+659Y8F3w/IWe4OYEyilpR2bE+ox66VGGk/+UwkEwIVOhZexB00tvMkNoSUY2
+         R61uOkEDYHh5sqE/Lu+bA0HHzbLnru4N5+YUO1rTawMk7j/20cp7oUhPS9v6ZyriX2e6
+         cODA==
+X-Forwarded-Encrypted: i=1; AL+hErFXO1uemJaX2JptqABAroY48xtqo81NrZJ7xy0p3kPPUcKviaif7t2NQLzAqM603UaYA38Gti/MnA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+NDzwpPwP05eq6tnHr6mTICAISNczj71J7pNd1F9LCbiLI+7Ww
+	8mqORvbDfBJOMFySE/Tcid6mp6BjOrq+WSTALXhOOqywxaBSo1WOhquasTaJL5DGch237Y0V1Vq
+	nlqQlKAFaGUs3jz9kWqEob9DEMqtbxDIu04QwrcffG58TZXCWIkm66d05R90rSq8skvq/iuGJMf
+	dYYAVsk8TWTJgD2FV6FEaO4DmewaoeHcAjPTUv
+X-Gm-Gg: AYBFou17IPX99GJyMLYwSDE89IBf0f8ALG3CkTnlsp2xrmS9w7k0bx2WdmvS5zEMf5O
+	/tDrMEzU1NTKZb6cgCwlHAcGE2mJgde9RuMOoyJSSy8ZznsJlB1IvZhKxDTBaXpmDbNZJeyh6O9
+	ySdpXQSg3jtg6gV1FVFqM+iACQ3UvRzTlwUleLW2bZCwbJC/YGMDZRz4I4/A==
+X-Received: by 2002:a17:902:f603:b0:2ed:4456:fb2a with SMTP id d9443c01a7336-2ee0dedd363mr31379235ad.36.1794592034226;
+        Fri, 13 Nov 2026 09:47:14 -0800 (PST)
+X-Received: by 2002:a17:902:f603:b0:2ed:4456:fb2a with SMTP id
+ d9443c01a7336-2ee0dedd363mr31378845ad.36.1794592033770; Fri, 13 Nov 2026
+ 09:47:13 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,108 +127,84 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+References: <20261101082307.151957-1-gahing@gahingwoo.com> <6777074.j6PcuT4dK6@diego>
+ <CAPx+jO_gRtipR7iuh0D7G2Wi25GZoqFD1JHVbJNmhd1UyC3Bmg@mail.gmail.com> <20261112072146.41218-1-gahing@gahingwoo.com>
+In-Reply-To: <20261112072146.41218-1-gahing@gahingwoo.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Fri, 13 Nov 2026 18:47:02 +0100
+X-Gm-Features: AclHuK_xZYTfne11hVPWnloCpcRGvh8w3tWYpN49I_tY52oUY-lip7RnFHUhpQI
+Message-ID: <CAPx+jO-KKvgRS0br-3QGh6Jt4efWJ+A6YoRZKFV_bcfB+8sm6w@mail.gmail.com>
+Subject: Re: [PATCH v15 00/15] accel/rocket: RK3576 NPU (RKNN) enablement
+To: Jiaxing Hu <gahing@gahingwoo.com>
+Cc: heiko@sntech.de, finley.xiao@rock-chips.com, shawn.lin@rock-chips.com,
+        tomeu@tomeuvizoso.net, robh@kernel.org, krzk+dt@kernel.org,
+        conor+dt@kernel.org, joro@8bytes.org, will@kernel.org,
+        robin.murphy@arm.com, ulfh@kernel.org, p.zabel@pengutronix.de,
+        ogabbay@kernel.org, zhangqing@rock-chips.com, royalnet026@gmail.com,
+        abel.vesa@oss.qualcomm.com, sebastian.reichel@collabora.com,
+        sidong.yang@furiosa.ai, u.kleine-koenig@baylibre.com,
+        chaoyi.chen@rock-chips.com, diederik@cknow-tech.com,
+        alchark@flipper.net, leonard@lausen.nl, jeff.hugo@oss.qualcomm.com,
+        rfoss@kernel.org, dri-devel@lists.freedesktop.org,
+        linux-rockchip@lists.infradead.org, iommu@lists.linux.dev,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Authority-Analysis: v=2.4 cv=DNgacCNb c=1 sm=1 tr=0 ts=6af74d23 cx=c_pps
+ a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=yx91gb_oNiZeI1HMLzn7:22 a=VwQbUJbxAAAA:8 a=s8YR1HE3AAAA:8 a=9GNsruGHAAAA:8
+ a=KA_qeCUQCZmkxMg8J8kA:9 a=QEXdDO2ut3YA:10 a=_Vgx9l1VpLgwpw_dHYaR:22
+ a=jGH_LyMDp9YhSvY-UuyI:22 a=gf-oSkQAjqHFJRp-GQfY:22
+X-Proofpoint-ORIG-GUID: BcN5c4PL0prPX2PdXVIfrQgrJtZ-KWqG
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEzMDA3MCBTYWx0ZWRfXzKZw4pPnl4DD
+ po5zp/Hz5gx+SEWskFBhtDewNTRa7J2BLcQrlS1EcGqt0ohMcNug9KFqecAW3UEOfYH81vbooRF
+ 7gWpR/htbRiQlLUTI/DPI7LuuN5e2zwO5gXSHslBV1sfULQbSP6R3iQJbphYFj3+CqDjEOsFZW2
+ 4glJx32fY7Hhr+MSoJFZ9kXNr9yqixq+S6q9O09ewCejsjf0CrB6+SeDCn0AGoKOaCfC0ozxhK+
+ CUGhP7aNDAQNxWjPXhrnug3kiKsK0L6fSroquFgdU8AKrC1ca10Be4Zrz1zkyCuwr1K0rUcwuUj
+ WuduXjfEbwwvMW+0vusDrIcqZ7thLG+rNIs5RjrebSS5ptzetJHPerzWm9fea22NWCN9HfbZBvG
+ WdJY7/bPVlB49szlFSY3QW8mfZe4ohY2pKy4yGaTJB8ej5C1g31jTBM+NCoBlVxKBrD5PlwVh+y
+ AMJEEo0Jmjxdb2sWSnw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEzMDA3MCBTYWx0ZWRfXxlnGnJjPljbH
+ L/hV3RAAL7/pYa1stmQCLy/+aGlGsWeo/rlngXv1etq+ZnNXXXa3w3feaYSynx4WOqXLy5Cmm1p
+ ViIx0eFZWehRQwL5qT/pK8UGOD41wk0=
+X-Proofpoint-GUID: BcN5c4PL0prPX2PdXVIfrQgrJtZ-KWqG
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-13_05,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 malwarescore=0 suspectscore=0 lowpriorityscore=0 phishscore=0
+ impostorscore=0 priorityscore=1501 clxscore=1015 adultscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611130070
 
-On Fri, 2026-11-13 at 21:10 +0530, Sankara Tankala wrote:
-> Nova Lake-S uses the same processor thermal PCI device ID as Nova
-> Lake-H, 0xD703. The 0xAD03 ID added for Nova Lake-S is the Arrow
-> Lake-S ID (PCI_DEVICE_ID_INTEL_ARL_S_THERMAL).
->=20
-> The ARL-S entry comes first in the PCI ID table, so the NVL-S entry
-> never matched. However, proc_thermal_rfim_add() matches on the device
-> ID alone, so Arrow Lake-S, which has DLVR, wrongly gets the Nova Lake
-> DLVR register map.
->=20
-> Replace the separate NVL_H and NVL_S IDs with a single NVL ID,
-> 0xD703,
-> and drop the 0xAD03 entries.
->=20
-> Fixes: af1b80b94126 ("thermal: int340x: processor_thermal: Add Nova
-> Lake processor thermal device")
-> Fixes: dbd911a07f14 ("thermal: intel: int340x: Add DLVR support for
-> Nova Lake")
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Sankara Tankala <sankara.narayana@intel.com>
+On Thu, Nov 12, 2026 at 8:22=E2=80=AFAM Jiaxing Hu <gahing@gahingwoo.com> w=
+rote:
+>
+> Thanks Ulf!
+>
+> On second thought, I think it would be best to drop patch 7 (the
+> binding) and patch 10 (the reset) from next. Once patch 10 is gone,
+> patch 7 is no longer needed either.
+>
+> Finley Xiao from Rockchip pointed out on v16 that the reset is not
+> needed, and testing on the current code confirms it:
+> https://lore.kernel.org/all/ca90a994-70cc-410a-902d-5c4c0aacc9b7@rock-chi=
+ps.com/
+>
+> Patch 9 can stay. I will send a separate small patch to fix the delay
+> table.
+>
+> Thanks!
+>
+> Jiaxing
 
-    Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+I have dropped them all, let's start over! I needed to apply a fix for
+the rockchip power domain driver anyway, which caused conflict with
+these patches.
 
+Please rebase on my next branch and submit a new version.
 
-> ---
-> =C2=A0.../intel/int340x_thermal/processor_thermal_device.h=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 | 3 +--
-> =C2=A0.../intel/int340x_thermal/processor_thermal_device_pci.c=C2=A0=C2=
-=A0 | 7 +----
-> --
-> =C2=A0.../thermal/intel/int340x_thermal/processor_thermal_rfim.c | 3 +--
-> =C2=A03 files changed, 3 insertions(+), 10 deletions(-)
->=20
-> diff --git
-> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-> index b79937a386ec..87d8ff9c7173 100644
-> ---
-> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-> +++
-> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-> @@ -27,8 +27,7 @@
-> =C2=A0#define PCI_DEVICE_ID_INTEL_JSL_THERMAL	0x4E03
-> =C2=A0#define PCI_DEVICE_ID_INTEL_LNLM_THERMAL	0x641D
-> =C2=A0#define PCI_DEVICE_ID_INTEL_MTLP_THERMAL	0x7D03
-> -#define PCI_DEVICE_ID_INTEL_NVL_H_THERMAL	0xD703
-> -#define PCI_DEVICE_ID_INTEL_NVL_S_THERMAL	0xAD03
-> +#define PCI_DEVICE_ID_INTEL_NVL_THERMAL	0xD703
-> =C2=A0#define PCI_DEVICE_ID_INTEL_RPL_THERMAL	0xA71D
-> =C2=A0#define PCI_DEVICE_ID_INTEL_SKL_THERMAL	0x1903
-> =C2=A0#define PCI_DEVICE_ID_INTEL_TGL_THERMAL	0x9A03
-> diff --git
-> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
-> c
-> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
-> c
-> index 7d6fee59ade2..f218ee247ab4 100644
-> ---
-> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
-> c
-> +++
-> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
-> c
-> @@ -501,12 +501,7 @@ static const struct pci_device_id
-> proc_thermal_pci_ids[] =3D {
-> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_HINT |
-> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_POWER_FLOOR |
-> PROC_THERMAL_FEATURE_PTC |
-> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
-> -	{ PCI_DEVICE_DATA(INTEL, NVL_H_THERMAL,
-> PROC_THERMAL_FEATURE_RAPL |
-> -	=C2=A0 PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
-> -	=C2=A0 PROC_THERMAL_FEATURE_MSI_SUPPORT |
-> PROC_THERMAL_FEATURE_WT_HINT |
-> -	=C2=A0 PROC_THERMAL_FEATURE_POWER_FLOOR |
-> PROC_THERMAL_FEATURE_PTC |
-> -	=C2=A0 PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
-> -	{ PCI_DEVICE_DATA(INTEL, NVL_S_THERMAL,
-> PROC_THERMAL_FEATURE_RAPL |
-> +	{ PCI_DEVICE_DATA(INTEL, NVL_THERMAL,
-> PROC_THERMAL_FEATURE_RAPL |
-> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
-> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_MSI_SUPPORT |
-> PROC_THERMAL_FEATURE_WT_HINT |
-> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_POWER_FLOOR |
-> PROC_THERMAL_FEATURE_PTC |
-> diff --git
-> a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
-> b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
-> index 96279756177f..1832f13634d8 100644
-> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
-> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
-> @@ -472,8 +472,7 @@ int proc_thermal_rfim_add(struct pci_dev *pdev,
-> struct proc_thermal_device *proc
-> =C2=A0			dlvr_mmio_regs_table =3D lnl_dlvr_mmio_regs;
-> =C2=A0			dlvr_mapping =3D lnl_dlvr_mapping;
-> =C2=A0			break;
-> -		case PCI_DEVICE_ID_INTEL_NVL_H_THERMAL:
-> -		case PCI_DEVICE_ID_INTEL_NVL_S_THERMAL:
-> +		case PCI_DEVICE_ID_INTEL_NVL_THERMAL:
-> =C2=A0			dlvr_mmio_regs_table =3D nvl_dlvr_mmio_regs;
-> =C2=A0			ddr_data_rate_reg =3D &nvl_ddr_data_rate_reg;
-> =C2=A0			break;
+Kind regards
+Uffe
