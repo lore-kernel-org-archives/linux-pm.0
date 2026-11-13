@@ -1,94 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.229.134
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794608269;
-	b=I+NcuNQkrKQsBK05muWJ+rJOqgfCNRE/ezI0bpvTffkOAthEmxWT8QuoWTB19uLfhaNP
-	 HbdKcQ5Opg9UOx7X3B4XwJG+bgXkFcuyxYGsVPJXCzBmKr9EZJhQDCPnhIdhQQ7EczpXB
-	 lt7EwwPNh9wNCRiGRmJA0O8V8VXZ0URCaqDo19lYWpTsPUPDX7lQgf0twZ/GPvmIhWxiz
-	 8PFVT5cbs/oDJQAnJwus+sImCwf2Dv2AH7UzUSzAYXS4sf2uIjFwHSdpSHm78alQYBHvP
-	 l3HMw3feStAccS1J0ybqVaJcKWhTgIl+olVcuKqg/WEsfNSFYzpW1MNTRQyo/qWDOoA==
+	t=1794609351;
+	b=D7sezzEH3p1JCM4y/RT9uZrNf8ShVRwiVyDQcC+9QRnAw2EbkHNFGWKhmiDr4suX6/aY
+	 ZqAJtt3MrDQ92ZQUmhv81BdtP0BjaSA91x3+1GiCJ3EBq2AvDIo0Vr7+VLdpdANU1LNRY
+	 0t6ntXBbWJhGhu8ZfkDzPxV6S1sfn3ulhPIkdM/YnU3MvcJR3/iRPo+35Kkwfebbkgu4/
+	 L2nsRtPmCxYKO+VGBiRSiDFt5IZyvlVMMM1IYLYXZPA0rP1MeJpPQQ7G7OjwU3xTUCtX0
+	 xlpKlcyX2QoS70lxrYBwXvITDjrrrEQGBxgMhb5hw4+xhIOo/4V1/Q7xCXF0ZbNqhSA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794608269;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	a=rsa-sha256; c=relaxed/relaxed; t=1794609351;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:X-Developer-Signature:X-Developer-Key:
 	 Content-Transfer-Encoding;
-	bh=RoOMKJstRsz6kzVltt6LynRLltK4wJnMWDIO5lBxAHs=;
-	b=q9Gs6fUHJQZ9YObO6a7wFI7kYM9Ael3rewmnllMVDt04a5/hOqYgh8vmBSoAMia1vZFP
-	 2Gi+nKe1rsbySkJ2n7DVRWG4G5L3a3sCHPQa0lyrzlG0RdmVpP+KYWAwCauO8GCGU9pt6
-	 GxMY9CeOvDKCzqlmeT5vl9feDhOmLhs3uk4lT6CRUQXBltzHUMXpnBeD4NsP59yam0cyz
-	 p+ktOlSyhHh6rf6tmpzZTmr51R2KAIxSWjqlrgaKLPlEXJ9mqz+S+cC9D4RvZzXuUkUiE
-	 x3n/2UuGPpKEjH3S84lvVxDBl0p93tOyQddNpxJOSBeCW1qLzcDl9fZCrDQ5L2yrO9A==
+	bh=PX1ttxKVOZxrJeyGfGlzT4IGS7bABbDeROC86QayIBs=;
+	b=0ELagyXO9fdzviYj+E4oOkvxLS2REMTl1kk/Tc+sN2Fy5YD9ZmciaR6zmHOPfNfJDFx8
+	 D0epYTBs4SVhU3HW79xRrs9yWkKAucDct+4OR8TrKh1Y2yNEB0HH2+yo/qCySDlZA9c7j
+	 7KWLkWKoua6rph/IQRODK4OM/5nP/NWhGqEDxqVrY+2vKPmfP9xrLOlK2yjmhXhOjd/2U
+	 cDw32tboT1RKcfkD1jW24atGLTq69t6NgnbwUbM4AC80cvrBJivWvGOUSdlPhM9nFrD9s
+	 4W6/nLTQbOfIkkjKT1dTsKA1epwU28O3RUEb1ekHqgBkX9X0dx31YUpxwaets8vFmtQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JUm7RyM+;
-	arc=none smtp.remote-ip=74.125.229.134
-Received: from mail-dl2-f6.google.com (mail-dl2-f6.google.com [74.125.229.134])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gPLuOZ9G;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8900B606A32D
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 22:17:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8900B606A32D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E117606A54B;
+	Fri, 13 Nov 2026 22:35:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JUm7RyM+
-Received: by mail-dl2-f6.google.com with SMTP id a92af1059eb24-1b3a6a69818so231284c88.1
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 14:17:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794608268; x=1795213068; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=RoOMKJstRsz6kzVltt6LynRLltK4wJnMWDIO5lBxAHs=;
-        b=JUm7RyM+AXnjvlrIH2lobJSVH0t/Th2jSkDpo0OPg7nx87/mKmOc4/Y+3HOngLad3B
-         O1GBloJGH/x7tNHFVTdP0y+A/2aZxz+nOV+Qy8hdKmVzwcUGBN2stSRPPaqbmvd42lyO
-         v8mk3Ku0eL/v/nhnAgp5pucHc9Qk5NkSJCE5jCGtfLCI/poehuw5Z8YD5UfBdwog0rHE
-         pQJeQieHsN0wksmeC2iEel4yEuYNnbUdNpAmNfOaQQ/GJ1Fjx4E7SnKu7Ezb9Fg0bS0P
-         uqikaNy+J/mIloWXi+sX3FcbCuEjzNl00L3Faaz4FXfxkqQQk+kxq7wSz+XPnioI98uz
-         +u1A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794608268; x=1795213068;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=RoOMKJstRsz6kzVltt6LynRLltK4wJnMWDIO5lBxAHs=;
-        b=2Z8E0ZI9SpgBnXClEzPc7v9s85WS/5zNfB9OIiiEzX/KNXw9smXD0CzctDYSq4kIbu
-         Tnhb7u/62Ul0DRXFM3r3x2Vxnlrggwh8bxBuo/bsTghhi1c4sUeHmp4LwVfDLI6xiO/V
-         fU/UoOr5xLMhsoZlRcIsu9JSFE5UtsJLMXQor/O36AKEdS+Ebhqkb4EpbMn2QZCZU7Zu
-         XZq3WhL0E09ibQMVPmtm2ukDZ7QQJJH9Aw/lfDU+BxxqavjCHwKysBjpuz/0WX/cflEP
-         /QH5Zncl63J2urf5Z13pj1Qe69UhFe0jmzChqmOWvF/UKalgipUmQuipo+yOVAttFLul
-         mhrA==
-X-Forwarded-Encrypted: i=1; AL+hErH7tekXeyXggMauC6Cf1FcM9AiBhUf3uh6kp/cbQcT6KjNo3m/63XlC6+uncteRjeT1Za1CocHd9A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+kU/pCNnmhLP4YwEw8NE7UVV08fygBpA+ijVzKCCMYgUMpKjnM
-	/0465H1/kYDwYYneCYCQNmjfSYbugPbE/LRk5GSzJ45L1FUV2N7BFC1i5abXqD+xjEgG9w==
-X-Gm-Gg: AYBFou2B+G8CGD2RbsHCU+2EPXu2qVuVvjbK7kEsLbs56WZeW3GI49kqTNjzHOSD+S+
-	7UZnL1xfH0HRR363gHqr99bpILNGQ3snWbZLZWCOzk2vsSOvm6lRXSHIADS9KeIRnN6zNE7mvfj
-	6BFbYJmU3dbx1DHnTcP+VJeEKyGyqowdL84FWRzGVNYNdvNbzmFXxAwpFgE6arb6l/S1/e6Q6dX
-	LxeNkB84pJkt3LCmmtsYe7T5+iZBbeAGgpRvM/0e0gG7oelHrzrGLsbjQzZ9NgGCgdkOpDRh2KN
-	1F2nn57EJfMBHxKIR3fGu3YVrRPXmI//8KO4F3LIYTyn2ZuUoEmZNnVj2HmrV9H4+jvCsfePyBk
-	t9E3fJ0Arb5v6zkaREUSaKVGs9xTxtTlI9foT/SR9Dd3lh/mtMaB9ep+hAVn47S8zIu1DGWbSip
-	NJYthSG5JA8YnV4xbX8eDQOD1fFa86ZEMnvr3uN+0l7YKQlgu2CXExD/+6iUEQDZgLhx44PA4Wv
-	Czl7XjEwee9NxjwZStai7cRXCmthaRc2fPlHrbB0cmWAFqd0lJme1VkAmomb9krJ8JHzUF+HEzF
-	KRohDwTSxDy2tlZrgBsE9gjD/CQ0NqlQEPWTH28ppyPIY+uPPvXXcpZI06FEDQAdF3GcGTl894B
-	i6c8WgAS0tAE3WdGYVyNS9nwq3jshobpiSltYQQ==
-X-Received: by 2002:a05:701b:230b:b0:1b5:10cf:c458 with SMTP id a92af1059eb24-1b510cff4a1mr939693c88.23.1794608267442;
-        Fri, 13 Nov 2026 14:17:47 -0800 (PST)
-Received: from localhost.localdomain ([98.148.34.5])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b50313d8f5sm16886713c88.3.2026.11.13.14.17.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Nov 2026 14:17:47 -0800 (PST)
-From: Hungyu Lin <dennylin0707@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Fenglin Wu <fenglin.wu@oss.qualcomm.com>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gPLuOZ9G
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8E381F000C4;
+	Fri, 13 Nov 2026 22:35:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794609351;
+	bh=PX1ttxKVOZxrJeyGfGlzT4IGS7bABbDeROC86QayIBs=;
+	h=From:To:Cc:Subject:Date;
+	b=gPLuOZ9G9+5ioK6UnQg9TAukeq7aXe6VvCu3jlgVfCfjjSJQx/OZTpNRskzTwEcFo
+	 f/jLIRJMYuw9+RnEQlX4qFoXIhS8vFPCYBF7Ot5JwSrmdu2OAHrutsVXkeEf9erR5e
+	 YylST9VykjjsB83A8fCM1JpqApK6k3hiiR2+Z1OwbBG+B9sj481ZWV1k0Xp9c5k5Ni
+	 LtPTAKXt8IR5xeG+xkxT3AHrrsPYAbltabnspFeaf3olWahTKKC7Y0vD87NccSThsh
+	 Sya45Z1lxpoCqF7ZpTUalDS1m+nCF76lGCbOrxvAlOzytChYlC5mz9PyMfekzdruOH
+	 2cALqnmWiY9OA==
+From: Thorsten Blum <blum@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Yury Norov <ynorov@nvidia.com>,
+	Breno Leitao <leitao@debian.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
 	linux-pm@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH] power: supply: qcom_battmgr: return charge threshold write errors
-Date: Fri, 13 Nov 2026 22:17:32 +0000
-Message-ID: <20261113221732.97506-1-dennylin0707@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] thermal: intel: powerclamp: Use guard(mutex) to simplify the code
+Date: Fri, 13 Nov 2026 23:34:59 +0100
+Message-ID: <20261113223501.1581-3-blum@kernel.org>
+X-Mailer: git-send-email 2.56.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -98,45 +64,219 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6225; i=blum@kernel.org; h=from:subject; bh=Ft2oU+13SjjohTS76xXk9TD/fRnsbZv26a4tbuMWwoQ=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnfJ0xVU/n8KTNligXjS+4VjRGqu4QtHDZ/+f37VNoxd 8GpdcEtHaUsDGJcDLJiiiwPZv2Y4VtaU7nJJGInzBxWJpAhDFycAjCRpEOMDBeetn+daVWZOjM6 ofHUr51S67zdJhmfXr0qkf89U8uxGZIMf3guvs3qXltTut/LoUm0I2cz+yZN+xK37iiXicsq2mw PcwMA
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
 
-Both charge threshold setters return success even when
-qcom_battmgr_set_charge_control() fails. If the PMIC GLINK transport
-returns an error or the firmware does not reply in time, the sysfs write
-still reports that it consumed the input while the cached thresholds
-retain their previous values.
+Use guard(mutex) to replace explicit mutex_{lock,unlock}() calls.
 
-Return the request status from both setters so userspace can detect the
-failed write.
+Simplify the return paths and drop redundant ret initializations in
+duration_set(), window_size_set(), and powerclamp_set_cur_state().
 
-Fixes: cc3e883a0625 ("power: supply: qcom_battmgr: Add charge control support")
-Cc: stable@vger.kernel.org
-Signed-off-by: Hungyu Lin <dennylin0707@gmail.com>
+In cpumask_set(), use __free(free_cpumask_var) to remove all goto
+statements.
+
+Signed-off-by: Thorsten Blum <blum@kernel.org>
 ---
- drivers/power/supply/qcom_battmgr.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/intel/intel_powerclamp.c | 89 +++++++++---------------
+ 1 file changed, 33 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index 636d6f6acecc..f14d731e0283 100644
---- a/drivers/power/supply/qcom_battmgr.c
-+++ b/drivers/power/supply/qcom_battmgr.c
-@@ -704,7 +704,7 @@ static int qcom_battmgr_set_charge_start_threshold(struct qcom_battmgr *battmgr,
- 		battmgr->info.charge_ctrl_end = target_soc;
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index df898fc3f3e6..3c031ce2a80c 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -80,25 +80,22 @@ static unsigned int window_size;
+ 
+ static int duration_set(const char *arg, const struct kernel_param *kp)
+ {
+-	int ret = 0;
++	int ret;
+ 	unsigned long new_duration;
+ 
+ 	ret = kstrtoul(arg, 10, &new_duration);
+ 	if (ret)
+-		goto exit;
++		return ret;
+ 	if (new_duration > 25 || new_duration < 6) {
+ 		pr_err("Out of recommended range %lu, between 6-25ms\n",
+ 			new_duration);
+-		ret = -EINVAL;
+-		goto exit;
++		return -EINVAL;
  	}
  
--	return 0;
-+	return ret;
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 	duration = new_duration * 1000;
+-	mutex_unlock(&powerclamp_lock);
+-exit:
+ 
+-	return ret;
++	return 0;
  }
  
- static int qcom_battmgr_set_charge_end_threshold(struct qcom_battmgr *battmgr, int end_soc)
-@@ -725,7 +725,7 @@ static int qcom_battmgr_set_charge_end_threshold(struct qcom_battmgr *battmgr, i
- 		battmgr->info.charge_ctrl_end = end_soc;
+ static int duration_get(char *buf, const struct kernel_param *kp)
+@@ -146,31 +143,25 @@ static bool check_invalid(const struct cpumask *mask, u8 idle)
+ 
+ static int cpumask_set(const char *arg, const struct kernel_param *kp)
+ {
+-	cpumask_var_t new_mask;
++	cpumask_var_t new_mask __free(free_cpumask_var) = CPUMASK_VAR_NULL;
+ 	int ret;
+ 
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 
+ 	/* Can't set mask when cooling device is in use */
+-	if (powerclamp_data.clamping) {
+-		ret = -EAGAIN;
+-		goto skip_cpumask_set;
+-	}
++	if (powerclamp_data.clamping)
++		return -EAGAIN;
+ 
+-	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL)) {
+-		ret = -ENOMEM;
+-		goto skip_cpumask_set;
+-	}
++	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL))
++		return -ENOMEM;
+ 
+ 	ret = bitmap_parse(arg, strlen(arg), cpumask_bits(new_mask),
+ 			   nr_cpumask_bits);
+ 	if (ret)
+-		goto free_cpumask_set;
++		return ret;
+ 
+-	if (cpumask_empty(new_mask) || check_invalid(new_mask, max_idle)) {
+-		ret = -EINVAL;
+-		goto free_cpumask_set;
+-	}
++	if (cpumask_empty(new_mask) || check_invalid(new_mask, max_idle))
++		return -EINVAL;
+ 
+ 	/*
+ 	 * When module parameters are passed from kernel command line
+@@ -179,14 +170,7 @@ static int cpumask_set(const char *arg, const struct kernel_param *kp)
+ 	 * cpumask can be allocated and copied before here. Also
+ 	 * in this case this cpumask is used as the default mask.
+ 	 */
+-	ret = allocate_copy_idle_injection_mask(new_mask);
+-
+-free_cpumask_set:
+-	free_cpumask_var(new_mask);
+-skip_cpumask_set:
+-	mutex_unlock(&powerclamp_lock);
+-
+-	return ret;
++	return allocate_copy_idle_injection_mask(new_mask);
+ }
+ 
+ static int cpumask_get(char *buf, const struct kernel_param *kp)
+@@ -264,25 +248,22 @@ static struct powerclamp_calibration_data cal_data[MAX_TARGET_RATIO];
+ 
+ static int window_size_set(const char *arg, const struct kernel_param *kp)
+ {
+-	int ret = 0;
++	int ret;
+ 	unsigned long new_window_size;
+ 
+ 	ret = kstrtoul(arg, 10, &new_window_size);
+ 	if (ret)
+-		goto exit_win;
++		return ret;
+ 	if (new_window_size > 10 || new_window_size < 2) {
+ 		pr_err("Out of recommended window size %lu, between 2-10\n",
+ 			new_window_size);
+-		ret = -EINVAL;
+-		goto exit_win;
++		return -EINVAL;
  	}
  
--	return 0;
-+	return ret;
+ 	window_size = new_window_size;
+ 	smp_mb();
+ 
+-exit_win:
+-
+-	return ret;
++	return 0;
  }
  
- static int qcom_battmgr_charge_control_thresholds_init(struct qcom_battmgr *battmgr)
+ static const struct kernel_param_ops window_size_ops = {
+@@ -507,10 +488,9 @@ static void poll_pkg_cstate(struct work_struct *dummy)
+ 	msr_last = msr_now;
+ 	tsc_last = tsc_now;
+ 
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 	if (powerclamp_data.clamping)
+ 		schedule_delayed_work(&poll_pkg_cstate_work, HZ);
+-	mutex_unlock(&powerclamp_lock);
+ }
+ 
+ static struct idle_inject_device *ii_dev;
+@@ -634,9 +614,8 @@ static int powerclamp_get_max_state(struct thermal_cooling_device *cdev,
+ static int powerclamp_get_cur_state(struct thermal_cooling_device *cdev,
+ 				 unsigned long *state)
+ {
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 	*state = powerclamp_data.target_ratio;
+-	mutex_unlock(&powerclamp_lock);
+ 
+ 	return 0;
+ }
+@@ -644,15 +623,15 @@ static int powerclamp_get_cur_state(struct thermal_cooling_device *cdev,
+ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
+ 				 unsigned long new_target_ratio)
+ {
+-	int ret = 0;
++	int ret;
+ 
+-	mutex_lock(&powerclamp_lock);
++	guard(mutex)(&powerclamp_lock);
+ 
+ 	new_target_ratio = clamp(new_target_ratio, 0UL,
+ 				(unsigned long) (max_idle - 1));
+ 
+ 	if (powerclamp_data.target_ratio == new_target_ratio)
+-		goto exit_set;
++		return 0;
+ 
+ 	if (!powerclamp_data.target_ratio && new_target_ratio > 0) {
+ 		pr_info("Start idle injection to reduce power\n");
+@@ -660,23 +639,21 @@ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
+ 		ret = start_power_clamp();
+ 		if (ret)
+ 			powerclamp_data.target_ratio = 0;
+-		goto exit_set;
+-	} else	if (powerclamp_data.target_ratio > 0 && new_target_ratio == 0) {
++		return ret;
++	}
++
++	if (powerclamp_data.target_ratio > 0 && new_target_ratio == 0) {
+ 		pr_info("Stop forced idle injection\n");
+ 		end_power_clamp();
+ 		powerclamp_data.target_ratio = 0;
+-	} else	/* adjust currently running */ {
+-		unsigned int runtime;
+-
+-		powerclamp_data.target_ratio = new_target_ratio;
+-		runtime = get_run_time();
+-		idle_inject_set_duration(ii_dev, runtime, duration);
++		return 0;
+ 	}
+ 
+-exit_set:
+-	mutex_unlock(&powerclamp_lock);
++	/* adjust currently running */
++	powerclamp_data.target_ratio = new_target_ratio;
++	idle_inject_set_duration(ii_dev, get_run_time(), duration);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ /* bind to generic thermal layer as cooling device*/
 
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+base-commit: b9d700d6f727936a58df7361f439597ca1d84a5a
