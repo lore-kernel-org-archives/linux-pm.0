@@ -1,67 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=172.232.15.166
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794594696;
-	b=hx2iuZWf9FKNfqMjLHO0qZDWNxVd0ABBRQKwbxFVQaO8ewqexNK4q5BkY9bPy8pD2pIb
-	 dESZISE72MAEDhSBBLtKrPqQ7aC2I38NSszOhl10pZenyA1qJlH/GalMpXnVDvhzcKwf1
-	 Qbt9O6BlCeutSnUP7NkkFRhzMzsGluxRweXRnfHj/x6r8iPEANkR35ourXE7JfCbnW7MH
-	 RaTXpu4KSv3HXIS8jUtlcPM7jZSNz1Phs1o5wxW3p2iTkamLGmGG9GinEWhFRM8849gS1
-	 HYkuSmDRWNytpUwtyVGVnX2qrhV8L+PCz+DIQ79bVD+KAxACpqSr+zhmnRwTLI7B0kA==
+	t=1794595854;
+	b=SaCSc+w3fS3x8Azs36CcrstG6KAN5Sj5OstxgBJEGHRPs+AL9GI9rUA5zhEgXRPmKGXI
+	 zuqBbCVw5wjDJyMqNBDuBw0ocIcwmqUlJ3s9jFTBa0Q548F3Aqaj/YYlV2tk22JN+BFC+
+	 XDVZzUjALARb4/JkbK1FY67U3XbwPaFqWree5D6/Fgq7L55K2vzSZB3YzbQNo5oSgloH0
+	 sJrbY9kjdRh4BDHD1XAONOEf2JW+amOgDS7oeRQnYvPLTLC33clZjkV6TYIaW3/3RCUgG
+	 c+6pWY6A+ec7r/+9JoL+a7tOqzowCzy4cKN59BY1BuVTM4hEHErseVq+CL6FCGq/hTA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794594696;
-	h=DMARC-Filter:DKIM-Signature:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=iO8ZVHxDJQl+61ZeOGiXewTmyRWa4tlHv6blsuVY0ns=;
-	b=rxaFGlDdfD5j/WoDwu82SBe2F9WoGZbU+yHl9aGMpHbrXX2XhJEwm2ok+7WMkQyY50TP
-	 8LZBzx7a+FMKjKZqtFKmpGm1ENTwsVkD9wRnPBbDDeih1I+z82xHaPihhLKdwwT9bGtMo
-	 IlirbJLGYLTZKult0BbRIgjlatKWMrjew353T3BaBWxGL+AvIydjV41iy5ZATjs5FJWWT
-	 ROT0dI1pCmiQdiaxf5dMAG5K3iO3ZKdgpGEwa4m24aVCirv3ttPZ4S3+65dG8340FUjkR
-	 EGqc36oOUqOBal0aH4vxhHMa+Zq8QCOBtWHi0X4Kvu75T0dImJeE7sIFBOYx5X8K2gQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794595854;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=cjhG7Bzi1tsnaOBL0/3qmbPStuw8rhrR+V7LVA+Ywdw=;
+	b=Sf/VmtsGhYxVR+wrcuO4ozUAaZkArRB+6EK6yn089n/eyO+SMMXvMvgS6cfSJvFuf6eU
+	 siruBYamcp6ma6qRb2LQh8z1GPtszFxmA8RxVDp2lSQaf16gHBC4KwFnw1Vz2eMNwYwpw
+	 qw7EW3BJUm2vCKWITAb5ZkKIumkhRwx2D9MbjgkCnelxz/U6Lbyl5CYnRyDYVHRiQPG5i
+	 RKprXOUF2NMJVEIgcLUILVGxDpVEUl/JemMAIhlW1pjp89JifdPLrJ7RmCiVs7bR0Ry6p
+	 m3dEe9Fny/uTZe4LqJ27jR1OgsiwQuq0KUSecv/8nmyhcxmK+Npq3DYVOkAkZeyc23Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=unwrap.rs;
-	spf=pass smtp.mailfrom=unwrap.rs;
-	dkim=pass header.d=unwrap.rs header.i=@unwrap.rs header.a=rsa-sha256 header.s=202503r header.b=YNpUQn35;
-	dkim=pass header.d=unwrap.rs header.i=@unwrap.rs header.a=ed25519-sha256 header.s=202503e header.b=+iQ2tAwa;
-	arc=none smtp.remote-ip=172.232.15.166
-Received: from mail.unwrap.rs (mail.unwrap.rs [172.232.15.166])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UVgpn0Wz;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFB61606A330;
-	Fri, 13 Nov 2026 18:31:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EFB61606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=unwrap.rs
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unwrap.rs
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C40CF606A32D;
+	Fri, 13 Nov 2026 18:50:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=unwrap.rs header.i=@unwrap.rs header.a=rsa-sha256 header.s=202503r header.b=YNpUQn35;
-	dkim=pass header.d=unwrap.rs header.i=@unwrap.rs header.a=ed25519-sha256 header.s=202503e header.b=+iQ2tAwa
-DKIM-Signature: v=1; a=rsa-sha256; s=202503r; d=unwrap.rs; c=relaxed/relaxed; r=y;
-	h=Message-ID:Date:Subject:To:From:Content-Type; t=1794594682; bh=iO8ZVHxDJQ
-	l+61ZeOGiXewTmyRWa4tlHv6blsuVY0ns=; b=YNpUQn358VEX4vZF9u2GQnvbA/ThCeBhRgb8+
-	1fpxdQnr1EJnIhT5ReRpwYEM/QtC8c+7B7VYorRxmXwxjfu1kfeaZAYtphBNYkAZ0mdgUDm8m2C
-	Iz58Fk1a7L/PEDij97GZzO2MIv8olzQ9jxFeX7dAobFQOSe6kKZlr2uCNd+5+hdmRvrC3iuDsbu
-	LvBpkKZI5jvJk+sjImuo4BD35+UKq0Huhq+/2NQr2XJHDcvzKjpRcbj2943Si3NErjTeTbm/WT/
-	ArMnIfsBlY5Zz1/ZOcejrPrzoduyNtEL0dcsKVcus1P5G/tknjYv7yjsBu15VRBQ81k4wdhB+PR
-	beYuQ==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202503e; d=unwrap.rs; c=relaxed/relaxed;
-	h=Message-ID:Date:Subject:To:From:Content-Type; t=1794594682; bh=iO8ZVHxDJQ
-	l+61ZeOGiXewTmyRWa4tlHv6blsuVY0ns=; b=+iQ2tAwaechiL5NHF/ZPxvpSvxBhmO62ppdfb
-	MsTBzI4QsfHghCF54G5nMHr5iy6HWBkTDcIghDc8hurb3ysBQ==;
-From: Cole Leavitt <cole@unwrap.rs>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Josh Poimboeuf <jpoimboe@kernel.org>,
-	Jiri Kosina <jikos@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PM: hibernate: Don't lose create_image() errors to arch_resume_nosmt()
-Date: Fri, 13 Nov 2026 13:31:08 -0500
-Message-ID: <20261113183108.3982607-1-cole@unwrap.rs>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <CAJZ5v0iJPQER8p0MGHneuyFiFqCbh__tWi9g-u6gQpxwMzhRpw@mail.gmail.com>
-References: <20261018164004.132785-1-cole@unwrap.rs> <CAJZ5v0iJPQER8p0MGHneuyFiFqCbh__tWi9g-u6gQpxwMzhRpw@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UVgpn0Wz
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 342F01F000C4;
+	Fri, 13 Nov 2026 18:50:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794595854;
+	bh=cjhG7Bzi1tsnaOBL0/3qmbPStuw8rhrR+V7LVA+Ywdw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=UVgpn0WzoFhIdaDcho/bQqb7ril090RQfOnX/VijF+DvoHH0Y72fNWgWhmJ4EvAR8
+	 4zB5sg31cdpBewBdyn8bfzlTgTH/KOEF1QRjM1XOD9FCg6KNRBbJtdE6+Cqo1mWjbX
+	 38lAMLpT3Yt7J5idBo0tzpGbZ1p+khrdFloyuFRdEzDKcG/Zp0OOqgVzxtsX0tLy1/
+	 zG7WTraWKezTiSqkqkGEI2tiSXS3SH7bYP67wneO48jTvX5X9m8nmo5z4EmSXyuf/b
+	 ko6fK5PwhpOf2QGvdms7NSFTthaukAKDvXokMjw8kmpKkedd0qmWApWV0S+Xrm97UK
+	 afrnnnALFIbvQ==
+Date: Fri, 13 Nov 2026 18:50:47 +0000
+From: Lee Jones <lee@kernel.org>
+To: Ryan Brue <ryanbrue.dev@gmail.com>
+Cc: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Eddie Huang <eddie.huang@mediatek.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	linux-pm@vger.kernel.org, mfd@lists.linux.dev,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org, linux-rtc@vger.kernel.org
+Subject: Re: [PATCH 2/2] rtc: mt6397: provide the 32 kHz output as a clock
+Message-ID: <20261113185047.GH6323@joneslee-macbookpro.roam.internal>
+References: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-0-9758f38d7053@gmail.com>
+ <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-2-9758f38d7053@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -71,29 +68,190 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-2-9758f38d7053@gmail.com>
 
-On Fri, Nov 13, 2026 at 7:15 PM Rafael J. Wysocki (Intel) <rafael@kernel.org> wrote:
-> Sashiko has feedback on this that needs to be addressed:
->
-> https://sashiko.dev/#/patchset/20261018164004.132785-1-cole%40unwrap.rs
+On Sun, 01 Nov 2026, Ryan Brue wrote:
 
-Thanks for pointing me to it.  Sashiko is right that devices are resumed
-with PMSG_RESTORE when hibernation aborts before the image is taken,
-because in_suspend is only set right before swsusp_arch_suspend().  This
-is older than my patch: before it, arch_resume_nosmt() reset error to 0
-on those paths and the message was PMSG_RESTORE as well.  A dpm_suspend()
-failure in hibernation_snapshot() gets the same message.
+> The RTC's 32 kHz output is gated by RTC_CON.F32KOB, which the vendor
+> kernel clears before it powers the Wi-Fi/Bluetooth combo chip. Mainline
+> never touches it, so on a board whose bootloader leaves it set, such a
+> chip has no sleep clock and does not come up.
+> 
+> Register the output as a clock when the RTC node has #clock-cells, so
+> the chip's power sequence can enable it.
+> 
+> Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+> ---
+>  drivers/rtc/rtc-mt6397.c       | 85 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/mfd/mt6397/rtc.h |  6 +++
+>  2 files changed, 91 insertions(+)
+> 
+> diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+> index d6e156516aa6..5130fecffa7b 100644
+> --- a/drivers/rtc/rtc-mt6397.c
+> +++ b/drivers/rtc/rtc-mt6397.c
+> @@ -6,6 +6,7 @@
+>  
+>  #include <linux/array_size.h>
+>  #include <linux/bitfield.h>
+> +#include <linux/clk-provider.h>
+>  #include <linux/err.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/mfd/mt6397/core.h>
+> @@ -317,6 +318,84 @@ static int mtk_rtc_nvram_write(void *priv, unsigned int offset, void *val,
+>  	return ret;
+>  }
+>  
+> +#ifdef CONFIG_COMMON_CLK
+> +static int mtk_rtc_clkout_set(struct clk_hw *hw, bool on)
+> +{
+> +	struct mt6397_rtc *rtc = container_of(hw, struct mt6397_rtc, clkout);
+> +	int ret;
+> +
+> +	mutex_lock(&rtc->lock);
+> +	ret = regmap_update_bits(rtc->regmap, rtc->addr_base + rtc->data->con,
+> +				 RTC_CON_F32KOB, on ? 0 : RTC_CON_F32KOB);
+> +	if (!ret)
+> +		ret = mtk_rtc_write_trigger(rtc);
+> +	mutex_unlock(&rtc->lock);
+> +
+> +	return ret;
+> +}
+> +
+> +static int mtk_rtc_clkout_prepare(struct clk_hw *hw)
+> +{
+> +	return mtk_rtc_clkout_set(hw, true);
+> +}
+> +
+> +static void mtk_rtc_clkout_unprepare(struct clk_hw *hw)
+> +{
+> +	mtk_rtc_clkout_set(hw, false);
+> +}
+> +
+> +static int mtk_rtc_clkout_is_prepared(struct clk_hw *hw)
+> +{
+> +	struct mt6397_rtc *rtc = container_of(hw, struct mt6397_rtc, clkout);
+> +	u32 con;
+> +
+> +	if (regmap_read(rtc->regmap, rtc->addr_base + rtc->data->con, &con))
+> +		return 0;
+> +
+> +	return !(con & RTC_CON_F32KOB);
+> +}
+> +
+> +static unsigned long mtk_rtc_clkout_recalc_rate(struct clk_hw *hw,
+> +						unsigned long parent_rate)
+> +{
+> +	return 32768;
+> +}
+> +
+> +static const struct clk_ops mtk_rtc_clkout_ops = {
+> +	.prepare = mtk_rtc_clkout_prepare,
+> +	.unprepare = mtk_rtc_clkout_unprepare,
+> +	.is_prepared = mtk_rtc_clkout_is_prepared,
+> +	.recalc_rate = mtk_rtc_clkout_recalc_rate,
+> +};
+> +
+> +/* The 32 kHz output the PMIC drives to other chips, such as a combo chip */
+> +static int mtk_rtc_register_clkout(struct device *dev, struct mt6397_rtc *rtc)
+> +{
+> +	struct clk_init_data init = {
+> +		.name = "mt6397-rtc-32k",
+> +		.ops = &mtk_rtc_clkout_ops,
+> +	};
+> +	int ret;
+> +
+> +	if (!rtc->data->con || !of_property_present(dev->of_node, "#clock-cells"))
+> +		return 0;
+> +
+> +	rtc->clkout.init = &init;
+> +
+> +	ret = devm_clk_hw_register(dev, &rtc->clkout);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return devm_of_clk_add_hw_provider(dev, of_clk_hw_simple_get,
+> +					   &rtc->clkout);
+> +}
+> +#else
+> +static int mtk_rtc_register_clkout(struct device *dev, struct mt6397_rtc *rtc)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +
+>  static int mtk_rtc_probe(struct platform_device *pdev)
+>  {
+>  	struct resource *res;
+> @@ -380,6 +459,11 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+>  	if (ret)
+>  		return ret;
+>  
+> +	ret = mtk_rtc_register_clkout(&pdev->dev, rtc);
+> +	if (ret)
+> +		return dev_err_probe(&pdev->dev, ret,
+> +				     "failed to register the 32k clock\n");
+> +
+>  	nvmem_cfg.priv = rtc;
+>  
+>  	return devm_rtc_nvmem_register(rtc->rtc_dev, &nvmem_cfg);
+> @@ -416,6 +500,7 @@ static const struct mtk_rtc_data mt6358_rtc_data = {
+>  
+>  static const struct mtk_rtc_data mt6397_rtc_data = {
+>  	.wrtgr = RTC_WRTGR_MT6397,
+> +	.con = RTC_CON_MT6397,
+>  };
+>  
+>  static const struct of_device_id mt6397_rtc_of_match[] = {
+> diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rtc.h
+> index f4da579ec638..a8130d726c59 100644
+> --- a/include/linux/mfd/mt6397/rtc.h
+> +++ b/include/linux/mfd/mt6397/rtc.h
+> @@ -9,6 +9,7 @@
+>  #ifndef _LINUX_MFD_MT6397_RTC_H_
+>  #define _LINUX_MFD_MT6397_RTC_H_
+>  
+> +#include <linux/clk-provider.h>
+>  #include <linux/jiffies.h>
+>  #include <linux/mutex.h>
+>  #include <linux/regmap.h>
+> @@ -22,6 +23,9 @@
+>  #define RTC_WRTGR_MT6397       0x003c
+>  #define RTC_WRTGR_MT6323       RTC_WRTGR_MT6397
+>  
+> +#define RTC_CON_MT6397         0x003e
+> +#define RTC_CON_F32KOB         BIT(5)
+> +
+>  #define RTC_IRQ_STA            0x0002
+>  #define RTC_IRQ_STA_AL         BIT(0)
+>  #define RTC_IRQ_STA_LP         BIT(3)
+> @@ -72,6 +76,7 @@
+>  
+>  struct mtk_rtc_data {
+>  	u32                     wrtgr;
+> +	u32                     con;
 
-I don't think the suggested fix of choosing PMSG_RECOVER whenever error
-is set is right, though.  arch_resume_nosmt() can also fail after a real
-restore, and there the devices need their ->restore*() callbacks.
+These are terrible variable names.
 
-I'll send a v2 with a separate patch that records whether the snapshot
-was taken and uses PMSG_RECOVER only for errors before that point.  v2
-also adds a patch that makes a wakeup event pending after
-syscore_suspend() fail image creation with -EBUSY.  That case currently
-returns 0 and is reported as a successful restore.
+The nomenclature should be self-describing.
 
-Thanks,
-Cole
+>  };
+>  
+>  struct mt6397_rtc {
+> @@ -83,6 +88,7 @@ struct mt6397_rtc {
+>  	int                     irq;
+>  	u32                     addr_base;
+>  	const struct mtk_rtc_data *data;
+> +	struct clk_hw           clkout;
+>  };
+>  
+>  #endif /* _LINUX_MFD_MT6397_RTC_H_ */
+> 
+> -- 
+> 2.55.0
+> 
+
+-- 
+Lee Jones
