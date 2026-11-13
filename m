@@ -1,112 +1,103 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.45
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794551231;
-	b=U3DtMpy38cdsmN8TJkoxwpDkdBpQpxyjvX/QuGXNiClTUqMGCOip+Dw+hilLaMfyC+BD
-	 ehfR3/MfPg/01qql1vq80hoRpB/l4YKt+E65E5R15PiCG3nO6E6V2nVGnG+Rj6KIvzLZK
-	 aFlNDGiKC9yx5AOZ0r8yBlD7fhq+0o5VrNHbBFmO2kSKNvIFl2us7+xPvcH4LEQ90eaDj
-	 /TGGt0nMtjFEWrrshp1KBhEf8spPsJdmP/oWjHqKePQ6vnvPs3Oie9uWoBfgbQd7XlAJP
-	 6KJBvN87qX6f+fb45TjO8K8pOqJQJWp5btbKa0Zr2hGtEkdkbvJKzSegs4oSqOS6hrQ==
+	t=1794551230;
+	b=3O/mF/FgnKkAJivQwqYw2onQF96aO7IAN0iLV6qWPNKdnbDwwrGRh7PdIhKjVlBNaEf5
+	 g0nW6mc0UyXr5tmQf4A9IpdbpczlBBD9yqMXDfmgBuqqmsMuE/Fe3ND4x56fVMm5gzZFE
+	 xVhEAZodiNvjFH6gIEGraFRw/Qb7o/ypWwst/mutI60iTG3wzXPeZ2mCBReqghJYvagIS
+	 ff9VTfZsqoYeylewMWfkXZwcPVDdcNlmrtvWVSF9RMlNQSTeZgYxFx6pWATzflWVQyovb
+	 exhtACwzQ4FlK/H3L/evHgWLmx0HGAsq7vMFKwqeCL5QxS0XrO8EWZL7WEbtMLsHnRA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794551231;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=AlgFrUiA3pOQ3uGH57qpKKGg8XjQji+BQGfvlCSkshY=;
-	b=SEtRBuo+XqNKxrWFU1+nv7DZV7KejhF1278foS1EWGCwVUlzxYqbr0051AeI2VvzVdMF
-	 p5ZVWT/MQO5EIKpFKv6yhf21kU0sCQDggeyCwc01pu1e4SYR4TpBA4S9BWr+TdkVuQdsS
-	 BqNqin4X4+twGw/A7ExEsm/DzQRKmyOlawOUZJ9WuevtqtDkObKeiKjH1a/zD/mTIBv2E
-	 U4Y+GwY6wnNByJe3/2jcXk8YqTJwLo5iEh/wBd3NdgPur0JHoWmGg1Bb6nKld15g9PSJ2
-	 XyW7dlpOkIaPWPRWR977P7SCOS3u3onqcbgbsStE+M3yi9+jpirdFfS3a2+Mhbk7eVg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794551230;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=XltNWiKtwG9iBw8+GH1SYk3VMgJFEJVDDOL9ejVnQFk=;
+	b=b1Xoc1WfZ+fncRBJz0/QnY5SL8T4zh7GgQpcWS9UxnP2e+8omT5zjrhu4oPgiHLHpcVR
+	 AYqQ6pIywkwI2HWSbgPZWFlpwOhsPuq+FaUeyquqjQ2TAQ4GR7QGcnhyg5KLPhqsSAw7G
+	 1qOgtZZSQUnxqnFLvHc3TPVhY7XSagigHEN9CojKwgiz5LCV3NxfwvDOv55qPUJkwosIq
+	 jG43y0vLjKxinCa36bLj+YgOOnE1f3wuWsZHao/7Bu1Bv8G+RnB8oh3KDS5zhA9sdydSg
+	 kv8gvM8AEG77S3LFXmVjfWyCWHDxybw8MP5ZsCXrSRm3wQzLsrF2m9IinUPhkM6KDag==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lmzINXMx;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=S31CyudU;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=baylibre.com;
+	spf=pass smtp.mailfrom=baylibre.com;
+	dkim=pass header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=MUvxZhYm;
+	arc=none smtp.remote-ip=209.85.128.45
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D394606A323
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 06:27:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4D394606A323
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B451606A321
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 06:27:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6B451606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lmzINXMx;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=S31CyudU
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AD56vUC3556917
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 06:27:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	AlgFrUiA3pOQ3uGH57qpKKGg8XjQji+BQGfvlCSkshY=; b=lmzINXMx0AmdeTqv
-	TQv9Bx+8GBJzu9iAlM0skxs+1qq7+LEWCvOlL9ykD9RmL9sEo88/DP/5joFs9ezE
-	wXbs87mfKQ5JpbFSKE4ELeIeof2IcuaehYkckVnbC3nF4sPEVNIVd0bEwWCVoIBI
-	7/0fLqsKf3vpSBqtStS3IRHdZXutEvfRE7fAjIym6CGbP4Je47MEWwMaTZdj+YTq
-	KCNdoVR57RcLaiPxN0reGKPCYfyTiONNM3wqMDlc04eqMLjPutJ4r6YQtG3lA0Do
-	PJwG5mDB9N2x2EJbNsvKyF8M+IFhr5OAf1KnQLGF41US7z2XcaaNz1PhUDjfz80i
-	YSO13A==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hwkfdhwqj-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 06:27:10 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-3ad53f538d2so452489a91.3
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=MUvxZhYm
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4a59100fa83so3681875e9.0
         for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 22:27:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794551230; x=1795156030; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=AlgFrUiA3pOQ3uGH57qpKKGg8XjQji+BQGfvlCSkshY=;
-        b=S31CyudU2BtYAHssNXbWU6WfJ4C5edX1FTBwws9xvxNe3ULba2pgGnmKF95DzzsHtw
-         sFCC9r3wO51xRww2KYcYGE1cwlU0wQ48qS4Gd1cWwqUmCbq6mW63UGLXWmG1Y2MyyMUr
-         5kFOyRtSG0d3jUIET0w/qSTvYzonTB8Sj/IC2oDFSGf8xu1PwI5KpgIs5a1irkBgz/2V
-         kyxLQ4TTOFm06/7Idjue7/cUbd3eyVYyoRFiHX2BIK89PvTp3bcjLbyXzI3Kt/HStjm/
-         nD4FktwT0NxlnbX+h53YKS+BqSCQAMqJUpgb5T8U9Uqafg3wYpE1pmHg5ufOnwzH1c4F
-         Wyyw==
+        d=baylibre.com; s=google; t=1794551229; x=1795156029; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=XltNWiKtwG9iBw8+GH1SYk3VMgJFEJVDDOL9ejVnQFk=;
+        b=MUvxZhYm5+xi+SJfP8nHhsZ1GXHZRgKcmtYpFlDoXTjjRpAAhHrxK/sL0p5zR3UDxZ
+         zoFe6J+qpK86Rz4t3v2DUKvCLnSK0WziR5goLmM6ybJ96s52a7n4l6ssjhqsUYaR+Jm/
+         Xs9hOLXj9PE+uwryRlkvLuERCrqJTf3zLvvS2FCslyTZTd9wswIAMULtnwF8vJn7f2H0
+         3wTzjD8Hp6/wsmtQJ0eNgdgUe4JwuhUhUM8UnvqdKeyZwp2YYRSg+jZBqsj6tEhsE3zD
+         Pz/u5C9YRb5rfcke4Gy7OJXnRI/iCfjiVWknhEe2HE/M51peV4kwHUDOt1TkMoov2shs
+         xFfA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794551230; x=1795156030;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=AlgFrUiA3pOQ3uGH57qpKKGg8XjQji+BQGfvlCSkshY=;
-        b=wiX7s/r4xco+wVFivXzseDmu19fRGAHbjM+Ql6rcDRK2hZWrsvnPK2Ys7otWujAAYt
-         /A9cEh0AamuFQ9auDrsPQCml+jFp626sfXYKhgi2DeoWcEY53HU/n977kxKGmeHF37C5
-         NtNHKXTrAIC21yw79CJo8ih/dyBwwS+xP8QSSglDK/uR1wwUL7j7qC0aF2lKgM+YuSWk
-         tBv1EqPNxQ6JECzsNkKjRk4XTcLjcpzzg3iYALElQOVa3h7h04jxTf5UhR6mzICea2p3
-         q0qq2p6tEGaqyrGlJk/6Kzrz+bYbcrA2hGaKWC8Y7N13cnRAoxZAXMG+4gvXr8fW/KJv
-         KJYw==
-X-Forwarded-Encrypted: i=1; AL+hErEzDB5FqyY8OZRnOLzqJIk9zKlmTFqDD9Fixw6FMwH/fDZ/wklwcvNXUVOelALbIqk2lwaFtbC4ZQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+QVxR2JfwnhwggbqkrnUbPtNn9iiJtmJWw/bpRUOD9CeiQNqgM
-	bd74giG0x/1unjl0wljhm3YjvRpayGWkFjIbzDMzC8nqSg2Sb6TqMkv/hM3fTYPtgiypr3LO4R4
-	L+4/dcJ90PfF02ygNhPnHVEMtzd/m/QMeuGcYS4TLhjRfIhlOMxIqEM8anwngVg==
-X-Gm-Gg: AYBFou1TyjEkT6XgMpU3lxi0Je8grQT1wsKs+LW4IYJUXD3sw/Jzs0e+VuiGsNRnLs3
-	AIVfFP32T/ykahDbgrN3n5y6se+FquuN+wgEMLnA3Vx/Xs8E981lx1TQDz9hSvfmud0Epmxd6um
-	97AM7cyOqGqepG2RnsFDb8DbJ/RcA0E2C7xtQbjA7ORTvosi1K8c/CQjS+K6yAdtHjUGwVhdPsK
-	GnOMXXP8xtCA2aXNS/7EX/NTgttFUcHfaZabsCm1yEmqpcnydszGSgLI6WgaqgjAxKB5cxF6gGJ
-	gHwvGWBsSWGNyyhX9cg04V2t4N1JqWAJL0NU2cnTc+/PWYhWkeg1iZhN51xk6Fo8RSNFbxWMna8
-	wnnbNo4/4U1GzwWRZy7wxNbKUmq2RErQYqCulsWtCgq75hWRWivKZKN0wtGd9/JnOyk0GCTmd+u
-	Jw5oYQeLzZyHwd13OXCuDdosr7Z1JtAhASUceMbVAwSR0q
-X-Received: by 2002:a17:90b:5647:b0:3ac:b2e6:3181 with SMTP id 98e67ed59e1d1-3b1b0a0eafbmr1304916a91.37.1794551229559;
-        Thu, 12 Nov 2026 22:27:09 -0800 (PST)
-X-Received: by 2002:a17:90b:5647:b0:3ac:b2e6:3181 with SMTP id 98e67ed59e1d1-3b1b0a0eafbmr1304887a91.37.1794551229084;
-        Thu, 12 Nov 2026 22:27:09 -0800 (PST)
-Received: from [10.133.33.220] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1b24938bdsm1066615a91.1.2026.11.12.22.27.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        d=1e100.net; s=20260707; t=1794551229; x=1795156029;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=XltNWiKtwG9iBw8+GH1SYk3VMgJFEJVDDOL9ejVnQFk=;
+        b=VRvt4bdgmiYIKZ/zc3o1npSjNnRXLE4HF8rNrZOyDiyH3hZTJB7nuOgw+WMq1U8o9K
+         uibcskhm83+jGqvzKH4lK9JAUUuYaduU8SILrOEfZPL7G1fNEjRUst1twEObyZZzwLy8
+         iYzUfASixPLfhzybwzVso+lFd/UXoBi8eeIrsqBYaESrRuJK5fMyQRTm9JGeHXmMq/GX
+         sQOfYofXQXyv4rya37E8+iZZw19uwt3SHPA2q3WJth5+uQRlXRb1joaDFb6a+K2ZT6tL
+         5kANgw2FgabaN6GylnKdrEMqFvnbrdNTwgyjHtu7A/bDoPl5C9QbbI/ZMPT2qdEywiOz
+         KSmg==
+X-Forwarded-Encrypted: i=1; AL+hErFhWzh0g5Pi+1vgvBmHHpW2O4EbiuDmi+qdVJivwlDbysHLofQLdqI6wSlsKnXt55UxJUNrK3F7NQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9bHD8cd4X/ITNiuZ6nlvsWsbO6/xsOru8BUWJkiYYupun46XzJ
+	esBUoLJCsZy6QIzO4AkB5FtYHPCw4+jh1QhJxC4y3MV1bkgjHIBLDqJQ0Il5OTKJpYY=
+X-Gm-Gg: AYBFou1OXxrF0C451eCbhJH8sP7+e1f3MAi6g75oC1mWEJeilxWUXbr9XPa9y+3cxTV
+	9+ifl6YwR6ABlz9n+/EVt2DYYAuhX9xFOTXK0HhQt5AX9vB3kvNK+XrLpzYkjEBPfe8WeB8kJUY
+	RYHiQmuMYHu2wsgNLsLjyTJohq7Q0+9DCbeOpO9HYgQpyTHtoX5KgF4FyplwY6cScVDddkuhu4f
+	brCaHBoEfHLwvAgMQ2JyWVSMVy8Cu6NuDFYmZjkossjI1/L7cwpz57De3KRZ5lSR0Yd8P1XPoVH
+	nTe+5ol09nRTFuCcrux4J5ex93uIZjTvMuDjuVH37acFbZi/2fj570PjuAw/O8lnW9Joa/d35ac
+	r59KI3AakYzjjVCS0pasLFGhyyINTVeL+1kKuOynlTg8CWSz8PPK/72oKN+4A3owRn21KrB+kEi
+	jXDmRnT3x63V3rtnQGRtijCqJfyq+lbp8Wbgl/DhZ+K2GQcWRoWx5uLGpzMf+HXvFSiI/vdRltc
+	h6LLZPqTcyOb+fn2Fc7E6r58R+ZcMt300mNvcc6kROoEzfDlxF3ZVcz7tMpoHCytnAS3y1C0EGQ
+	QxLjKm307+eZCgYnaoihQHvTPXI2ow6+BHchu3v4YzjukZElPrgie7FVeFA02Jb1t5roKHHIyQ=
+	=
+X-Received: by 2002:a05:600c:4ecd:b0:4a1:e6a9:4086 with SMTP id 5b1f17b1804b1-4bb5599a73fmr36037725e9.0.1794551228841;
+        Thu, 12 Nov 2026 22:27:08 -0800 (PST)
+Received: from localhost (ip-091-089-005-024.um28.pools.vodafone-ip.de. [91.89.5.24])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4bb4e29daa5sm133039875e9.12.2026.11.12.22.27.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Thu, 12 Nov 2026 22:27:07 -0800 (PST)
-Message-ID: <b3125fa1-6a7a-4f87-a7fa-64c42f6b98e2@oss.qualcomm.com>
-Date: Fri, 13 Nov 2026 14:27:02 +0800
+Date: Fri, 13 Nov 2026 07:27:06 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Val Packett <val@packett.cool>
+Cc: Sebastian Reichel <sre@kernel.org>, 
+	Marc Lainez <marc.lainez@gmail.com>, Luca Weiss <luca.weiss@fairphone.com>, 
+	=?utf-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>, Danila Tikhonov <danila@jiaxyga.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+	Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>, 
+	Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, linux-arm-msm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, phone-devel@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] power: supply: add Qualcomm QGauge (qcom_qg) fuel
+ gauge driver
+Message-ID: <avatRCrAgoPjV7rP@monoceros>
+References: <20261112170841.2189322-1-val@packett.cool>
+ <20261112170841.2189322-3-val@packett.cool>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,182 +107,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/9] cpufreq: tegra194: move MPIDR read to CPU hotplug
- callback
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
-        viresh.kumar@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
-        conor+dt@kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
-Cc: bbasu@nvidia.com, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-References: <20261104181521.3003578-1-sumitg@nvidia.com>
- <20261104181521.3003578-2-sumitg@nvidia.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20261104181521.3003578-2-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEzMDAyNSBTYWx0ZWRfX0Aw0DXrgvGYT
- Gmd5ZVOZLcsUWLn2L1DmRiUu+WRIBs4nu9x593Hnkw8IgQHwP7efYzHOqX5veJ3x3xCBBxLyeL4
- riPuzV4Zgyl2db3FNhVZH1cqGKlcZJ4=
-X-Proofpoint-ORIG-GUID: c2c9hrZnrN_6VCH_maALbYh-4koecfeM
-X-Authority-Analysis: v=2.4 cv=DoTDa2/+ c=1 sm=1 tr=0 ts=6af6adbe cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=Ikd4Dj_1AAAA:8 a=YW4SVfrvFGduW5-3T3kA:9 a=QEXdDO2ut3YA:10
- a=uKXjsCUrEbL0IQVhDsJ9:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEzMDAyNSBTYWx0ZWRfXwFn+Qb+JI2uc
- BgxooS6LgWGuKvkZUig2gaSLZ6Zrpyvr58ZiTNoqDFJTkErbuj2dO/zR+LhVuPaCkA7ZXov+zTY
- b671lnBOgw77eO8H9t2tJ8w8h6bm48XWBDUC0jL+SUTKTCqeKyz6nlaOhhnXO2a/RUQ4O79Ky6v
- IEtfZRQZhC/EWciHmRCIKrsb6GQHo0n+4nnZr6ezpBcauOI9jOO3LZaUrIqkFA1xSD61wdnm3ue
- CDNYMjS4iNd1Ew3caAqjnK7XRV+JbtS2DazU2e7DUdbZqKtRrEvUSOr2NEF4VUMci4zxMqLIzvd
- ZA4JEUvsXSUeBKxIkNN2AVvzQpHlPPZstTHQn80i5a4dAgjDdQy6QXLNOtv1BpQQKVqfHJleyZg
- csaKoRS7WEd2joR8OZ8z2oM/QTC3YuYl/kYpNeIaARNIRHW7yBy7Db/YUz84dX7CabVYHAZtC3C
- 13pGFYxl8blNkHYlWyg==
-X-Proofpoint-GUID: c2c9hrZnrN_6VCH_maALbYh-4koecfeM
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-13_02,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 adultscore=0 priorityscore=1501 malwarescore=0
- spamscore=0 impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611130025
-
-On 11/5/2026 2:15 AM, Sumit Gupta wrote:
-> At probe the driver reads the MPIDR of every possible CPU with
-> smp_call_function_single(). For a CPU that is offline at boot, the call
-> fails and the error is ignored, so the CPU's core and cluster IDs come
-> from an uninitialised variable.
-> 
-> Read MPIDR from a CPU-hotplug online callback instead, which runs on the
-> target CPU and caches its core and cluster IDs and MMIO scratch address.
-> This covers CPUs online at probe and CPUs onlined later.
-> 
-> The check that the SoC data covers all CPUs moves to probe, against
-> nr_cpu_ids. A CPU whose MPIDR does not fit the SoC data gets no scratch
-> address, and its NDIV access is skipped.
-> 
-> Fixes: 6b121b4cf7e1 ("cpufreq: tegra194: save CPU data to avoid repeated SMP calls")
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->   drivers/cpufreq/tegra194-cpufreq.c | 114 ++++++++++++++++++++---------
->   1 file changed, 79 insertions(+), 35 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/tegra194-cpufreq.c
-> index 1eb96e9f3310..be81ffd23edd 100644
-> --- a/drivers/cpufreq/tegra194-cpufreq.c
-> +++ b/drivers/cpufreq/tegra194-cpufreq.c
-> @@ -5,6 +5,7 @@
->   
->   #include <linux/cpu.h>
->   #include <linux/cpufreq.h>
-> +#include <linux/cpuhotplug.h>
->   #include <linux/dma-mapping.h>
->   #include <linux/module.h>
->   #include <linux/of.h>
-> @@ -13,7 +14,7 @@
->   #include <linux/slab.h>
->   #include <linux/units.h>
->   
-> -#include <asm/smp_plat.h>
-> +#include <asm/cputype.h>
->   
->   #include <soc/tegra/bpmp.h>
->   #include <soc/tegra/bpmp-abi.h>
-> @@ -77,6 +78,8 @@ struct tegra194_cpufreq_data {
->   	const struct tegra_cpufreq_soc *soc;
->   	bool icc_dram_bw_scaling;
->   	struct tegra_cpu_data *cpu_data;
-> +	enum cpuhp_state cpuhp_state;
-> +	struct hlist_node cpuhp_node;
->   };
->   
->   static struct workqueue_struct *read_counters_wq;
-> @@ -113,7 +116,7 @@ static void tegra234_get_cpu_cluster_id(u32 cpu, u32 *cpuid, u32 *clusterid)
->   {
->   	u64 mpidr;
->   
-> -	smp_call_function_single(cpu, tegra_get_cpu_mpidr, &mpidr, true);
-> +	tegra_get_cpu_mpidr(&mpidr);
->   
->   	if (cpuid)
->   		*cpuid = MPIDR_AFFINITY_LEVEL(mpidr, 1);
-> @@ -121,11 +124,44 @@ static void tegra234_get_cpu_cluster_id(u32 cpu, u32 *cpuid, u32 *clusterid)
->   		*clusterid = MPIDR_AFFINITY_LEVEL(mpidr, 2);
->   }
->   
-> +static int tegra_cpufreq_cpu_online(unsigned int cpu, struct hlist_node *node)
-> +{
-> +	struct tegra194_cpufreq_data *data;
-> +	u32 cpuid, clusterid;
-> +
-> +	data = hlist_entry(node, struct tegra194_cpufreq_data, cpuhp_node);
-> +
-> +	data->soc->ops->get_cpu_cluster_id(cpu, &cpuid, &clusterid);
-> +
-> +	data->cpu_data[cpu].cpuid = cpuid;
-> +	data->cpu_data[cpu].clusterid = clusterid;
-> +
-> +	/* Derive per-core register address only when ccplex MMIO is mapped. */
-> +	if (data->regs) {
-> +		if (clusterid >= data->soc->num_clusters ||
-> +		    cpuid >= data->soc->maxcpus_per_cluster) {
-> +			pr_warn_once("cpufreq: cpu%u: bad MPIDR (cluster %u, core %u)\n",
-> +				     cpu, clusterid, cpuid);
-> +		} else {
-> +			u32 index = clusterid * data->soc->maxcpus_per_cluster + cpuid;
-> +
-> +			data->cpu_data[cpu].freq_core_reg =
-> +				SCRATCH_FREQ_CORE_REG(data, index);
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->   static int tegra234_get_cpu_ndiv(u32 cpu, u32 cpuid, u32 clusterid, u64 *ndiv)
->   {
->   	struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
-> +	void __iomem *reg = data->cpu_data[cpu].freq_core_reg;
-> +
-> +	if (!reg)
-> +		return -EINVAL;
->   
-> -	*ndiv = readl(data->cpu_data[cpu].freq_core_reg) & NDIV_MASK;
-> +	*ndiv = readl(reg) & NDIV_MASK;
->   
->   	return 0;
->   }
-> @@ -135,8 +171,12 @@ static void tegra234_set_cpu_ndiv(struct cpufreq_policy *policy, u64 ndiv)
->   	struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
->   	u32 cpu;
->   
-> -	for_each_cpu(cpu, policy->cpus)
-> -		writel(ndiv, data->cpu_data[cpu].freq_core_reg);
-> +	for_each_cpu(cpu, policy->cpus) {
-> +		void __iomem *reg = data->cpu_data[cpu].freq_core_reg;
-> +
-> +		if (reg)
-> +			writel(ndiv, reg);
-> +	}
->   }
->   
->   /*
-> @@ -208,7 +248,7 @@ static void tegra194_get_cpu_cluster_id(u32 cpu, u32 *cpuid, u32 *clusterid)
->   {
->   	u64 mpidr;
->   
-> -	smp_call_function_single(cpu, tegra_get_cpu_mpidr, &mpidr, true);
-> +	tegra_get_cpu_mpidr(&mpidr);
-
-.get_cpu_cluster_id() now reads the local MPIDR, so the cpu argument is
-ignored. Could it be dropped?
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="mwyna4jkd5v6s5iv"
+Content-Disposition: inline
+In-Reply-To: <20261112170841.2189322-3-val@packett.cool>
 
 
+--mwyna4jkd5v6s5iv
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Subject: Re: [PATCH 2/5] power: supply: add Qualcomm QGauge (qcom_qg) fuel
+ gauge driver
+MIME-Version: 1.0
 
--- 
-Thx and BRs,
-Zhongqiu Han
+On Thu, Nov 12, 2026 at 02:07:28PM -0300, Val Packett wrote:
+> +#include <linux/mod_devicetable.h>
+> [...]
+> +#include <linux/platform_device.h>
+
+Please don't include <linux/mod_devicetable.h>. That introduces a bunch
+of unneeded build dependencies and of_device_id is already provided
+(without these dependencies) by <linux/platform_device.h>.
+
+> [...]
+> +static const struct of_device_id qcom_qg_of_match[] = {
+> +	{ .compatible = "qcom,pm6150-qg" },
+> +	{ .compatible = "qcom,pmi632-qg" },
+> +	{}
+
+Please make this { } (i.e add a space) to match the most common style.
+
+> +};
+> +MODULE_DEVICE_TABLE(of, qcom_qg_of_match);
+
+Best regards
+Uwe
+
+--mwyna4jkd5v6s5iv
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmr2rbYACgkQj4D7WH0S
+/k7nbgf/b6/rA4kIW1NyMoOtnNVBeGIHHHNfMkct33HHb1h0CiT6Hd1RLEJ6HH+F
+sW4pjg7G0QStID55MbOeFsfsHKUaOEsaLwutZ3fATturnz7k7RZRvLfAjNtR3k18
+hiWFbFdsTjH6SuQ/g7OijXpDO+E2v/5FHg8g/V0U5xwL0w4sWAME2Gxrc9Aed+1Z
+yb1H38UcmdaYkNs0WgAyYt2rGVtGDyt5nQqLm9gBfrCvoxDzCIxgiXJ61C9JMF0t
+UIk/sLbujBcPF2qrtmodX0CUE07kBKD7PV1TOWjB7Gcz+f3E/X3eQGPNNOk8mEQn
+pqgA7hr5DNGO6zRenFbDHgtssAhenA==
+=HgBt
+-----END PGP SIGNATURE-----
+
+--mwyna4jkd5v6s5iv--
