@@ -1,83 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.170
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.12
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794611371;
-	b=qZAW+mXQtWen7FUnCNiVPbMvDLl9TvxncSyvBZPjVtwnrtWsFXLzk0+uZ8qA/Rx6/szj
-	 d6a0eFuJQCx04nd2abWXD55lY3gLmzLdSf+WIzT8v0n1OPkHRz+py11IExGuHHYDKuxOF
-	 SzFkElOVeLioaGPS1qBRS7b9UR+87pOSkJwLeSubIxrtDGIjguzqK1FRDjbW2PhBzHt2I
-	 oIwgRij0npiOb9UY0h0UvJDaSiuW+7tPtTwW+/oiRF+HaA2CBWopkM8k70+Aa2Fd+T5L/
-	 3Fg5NwWBQjy2LLDdFLwEaSEu2BxVuOlVKgiAlbKrimm1y3KeO5mgTG51J3cnA3fiRLA==
+	t=1794613610;
+	b=eXIGj0eu31Ehs69Bz8fT9IYXBLkNpcPrPB24+MUv9Ezbm8GyzzrnGALKnYqcwtRj4L1/
+	 ZtUaUYd5psxI9yP5/cwi+whX0TIk+jBlz+Oc5CxCGJsfAxypcB0RpUbtcuL08fPVQ/fCB
+	 rjnfo+CwFaQHHkv4BZSQtvKjwQZlma5CKJAnFE+05/AuoYRh1z7q2OOEuvi6qvYiAlZkp
+	 o87zu2DJJZtTs/2G2iu5SQlX7PC/GG9ATy4KEl1z1s+PyE+/5VUSbkWeibB3AGsQIpZuv
+	 P2cNjGAMDbg7XCTi6ZKISOqyw9gwd2zw3BW+ot4q9DqnEQrj2QrfEgYpaagZqxKDEtQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794611371;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=fB0t+BHdm8gquUsqjkMApis458GyXNfzybJEV2rTreg=;
-	b=1VsArIcBOb7MYyPKC+0dhf5sxcdnfkCaEbB5tdr19a5jM61y46W1dUaZfFAGXBywYv15
-	 EgZVeriAeyil1DZLnTJmzARh8Rt2Et1S0xMhJDJRmPLGeFtIT9lBH0zlOPpEhfeIQSFTH
-	 8Me2PLkzR/I3zuL/4yXThQV9owThm4qqSaLAjkiIcGg92SAaDdcAWiZzIhKmnQUKPI7N2
-	 VsqrCiSTcF4HLkkNDVC6FI44YRR2bkeS8JOEJwhhEIJygsXrBDdQ8ewyU1tbAuzgMvkCT
-	 ZK3TTc/MWsbwyamLWqWJ+KE4Gool35/x+Pgk4th+kT11QBYD2DcABbf7LKoOtXhEkVg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794613610;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+	 Cc:Subject:Message-ID:User-Agent;
+	bh=7tJDv5ccq5HJF1ptcKwPh0CmyAFkZnGtAorubG/U1R8=;
+	b=WPR7P/N3ZqQPsoJWFu27o+0i/roYVdCrNRPBjtWf5XDIaKaRWGj0eajAZEn6rdKPCJRu
+	 JylYCnyem/BAuWfc9z7xIS728HsJgvoEETnll7DN6DOAU+VccvcZ1qn6TmKzHDkyF6J5h
+	 9332ND5avg05NDOmIhmr5hLN070SkmCyzPpjQmXTM2KHRDstaz5bt3PFNxBgk4ywvn7lF
+	 Xw/xobv9wZ/y8PknGXBel1NWZOW7h/ipxSVHR9nICQTq3HGiiKI49C3VbrU+r+iR/wNfr
+	 k1gRElcQYbz2Vcke6j0umvzs9ti/lA9LsRZf80zTn7osQCrVEDcg/+sxnzBTKQRZyLw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linuxfoundation.org;
-	spf=pass smtp.mailfrom=linuxfoundation.org;
-	dkim=pass header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=K7YvMn41;
-	arc=none smtp.remote-ip=209.85.167.170
-Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com [209.85.167.170])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=dlGtB64I;
+	arc=none smtp.remote-ip=192.198.163.12
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 752A3606A88F
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 23:09:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 752A3606A88F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 231A5606A337;
+	Fri, 13 Nov 2026 23:46:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 231A5606A337
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=K7YvMn41
-Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-571eb508ebbso12473b6e.2
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 15:09:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1794611366; x=1795216166; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=fB0t+BHdm8gquUsqjkMApis458GyXNfzybJEV2rTreg=;
-        b=K7YvMn41KR6tVPwBeJl91RFDq29ZYp/ZlzDyqPQCS2X+nfer5MYiNrnPHp1Z58Jd9r
-         3Q0xPLOugNSX3jQfPiiF2UnhssorwnbShaj20/BFNP+Dj9emq9QAB+h9RI7Jr+qRNIj7
-         KjpCq6QmkuLc/bFVP9TJduftQv+0z4nyf/N2c=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794611366; x=1795216166;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=fB0t+BHdm8gquUsqjkMApis458GyXNfzybJEV2rTreg=;
-        b=Kqo/NK4t9/aQYSgETDKgoyUdHY6wGFhGDFrtAKP6Z4FOliPbgpoKJNmBoZg7FP804G
-         0mO7MEuvPPf/4XQO1yY0j346SPu/oey34vpodI/Y9uoNBYxJXQMWLCmCI20vjFrMA5d0
-         JOIZY1uKCcNKrGluI96bAnNuOPq2qrbKRulNDzqv6iGzuiqs+0AFPnacfbH2yTTKim7C
-         TtcMhRMrdO8jhLg6DiKyOKGDuHJ8Z7Lwl7kPDdHnjED2gSVZ43aAYGaUl+e9XBydH5Ck
-         3hdvIcjwP3OL69usWiCQtD94+WfUCO8xNvSvCb3QZhWihPtw33gZuaVUZX8KR5v+Ahip
-         nzzQ==
-X-Gm-Message-State: APuU4Z89Gga6EgfN7hSZOYN7Rpxxl7DskmbuJJ60ceiQ7xSzKu7/kEA9
-	+z4qC4WuZzugpnpMhAVSf4by3bX7XC48LnQYF0SDsZ1wMLruHz8VXpsPQE4qglxSOzk=
-X-Gm-Gg: AYBFou2Lh23oHu8Hd2WNQVRAGC/zXHBa2kQrsOQymVZ9oDnFnPY+i2fYTik9JMFPb+p
-	l8fb1EMQw0qIRVBNLzAOho7monn45vAW7L2miWbm7bRDHIWKKAhi5VwsOJ2m9pgnyxbKErxiF77
-	PgoW6faJMkKHT8Q4Xx+hpE/70dmlu0GEM2blE+FlQU5tJ5tntqj2dQ3tk8OAGA5D5uVa1xFdMbz
-	LqhG4vG6zKXB0eWR3mkiUm9JlnaxEBF3zVt+kd9vhnh18zHYJ+TJUWWbX38TX9SmK/2why7J/Pb
-	yG9S0MKxL4g75BwpdqkGiDVNlhE7q+w/Cydu7cYcaYI1p3ciNc0VzSkX0LcBAEAjji0oUZ/Ll/4
-	qCW58Nd4Wn9xPdXQq19V2HuvQXgyeNodfadxpZvQ9LfpfaHU6TSnLXfNWHXfmn9vmN/hL8sQNUg
-	p4zXDsGMDe60lqFthufsBPmjU1vW7U3dWAdF0i/4jSWJUT7qCOIpY/SDJKPhrEtlgXU+iJcfVMv
-	xLygZiStRIDSw/OheJw+p/Nhj7WuDUp+/Kwaec5Z++tAXpPfXiNIQANcy3n2z9B+XdnOOlYZ15a
-	YvmKc++fZYL2ZriIf8lLf26PmsrIWJEWmp1yBQ==
-X-Received: by 2002:a05:6808:3505:b0:536:611a:7fd9 with SMTP id 5614622812f47-56e6015e8cfmr3238393b6e.7.1794611366089;
-        Fri, 13 Nov 2026 15:09:26 -0800 (PST)
-Received: from [192.168.1.128] ([38.15.57.99])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-56e6dcfcf4esm3285492b6e.2.2026.11.13.15.09.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 13 Nov 2026 15:09:25 -0800 (PST)
-Message-ID: <1bb7b407-0e69-421d-8ee3-81489abd1dda@linuxfoundation.org>
-Date: Fri, 13 Nov 2026 16:09:23 -0700
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=dlGtB64I
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794613609; x=1826149609;
+  h=date:from:to:cc:subject:message-id;
+  bh=x9wNikM+q/wqcnGV3U1/SGq1gizBJquuYCI53296osI=;
+  b=dlGtB64IeBYMC+S+5YffWHTnCgZ+jcg/Hu/+RgyezNH/A424SK8JE/gs
+   n0uBGG2me/O4JRU+Tu9Soxa/hRx29O+AaujkSBubUqWJvuzKJ8s/oxzwv
+   gAiN+Wg6yOZi74o5HZzLYS66rtZLKYZxmNZpmNl/L04xktR3a1eOQuEmI
+   23RckE0p6a0TqpYT2s23vXfSMplwcu3KVy7S3pFSonUif3fbVvHpEmIJr
+   Sad+OsuUeTcMxZRfAKRlCdwNDJyhRDxtn++i7yAin64lp7xxnZmdXs6fI
+   F/pOenwzGhd1HISnICHsBmCQnNufbaCcFh9Zpzb7jB0IR9IqKFu9cY0lX
+   g==;
+X-CSE-ConnectionGUID: YK+iS1m5SUy3NJePGydNLw==
+X-CSE-MsgGUID: 5IzQwsM0SHewNHp3bZcr9g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11965"; a="3336193"
+X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
+   d="scan'208";a="3336193"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 15:46:49 -0800
+X-CSE-ConnectionGUID: buH+NC02Rnu+IAbRyqnacw==
+X-CSE-MsgGUID: fHWja3LaQp6DOeU4Tjmxcg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
+   d="scan'208";a="8892270"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+  by orviesa005.jf.intel.com with ESMTP; 13 Nov 2026 15:46:47 -0800
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1xS0yi-000000014S5-37aT;
+	Fri, 13 Nov 2026 23:46:44 +0000
+Date: Sat, 14 Nov 2026 07:46:29 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 5fcaa701fd2d61b003dff89bbb9dd29ed6123740
+Message-ID: <20261114074629.eyzkUG7I-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -86,202 +79,205 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpupower: fix use-after-free and stale limits in
- frequency-set
-To: Lukas Beckmann <lbckmnn@mailbox.org>, Thomas Renninger <trenn@suse.com>,
- Shuah Khan <shuah@kernel.org>, "John B. Wyatt IV" <jwyatt@redhat.com>,
- John Kacur <jkacur@redhat.com>,
- Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
-References: <20261112-cpupower-freq-set-use-after-free-v1-1-4e0034927b3f@mailbox.org>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20261112-cpupower-freq-set-use-after-free-v1-1-4e0034927b3f@mailbox.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-On 11/12/26 12:49, Lukas Beckmann wrote:
-> cmd_freq_set() currently has two issues:
-> 
-> 1. use-after-free
-> 
-> When cmd_freq_set() is invoked with --max and --min, it eventually calls
-> do_new_policy() for every selected CPU with the same cpufreq_policy
-> struct. do_new_policy() first retrieves the current policy and copies
-> the governor pointer to new_pol.governor. After that the policy is
-> applied and cur_pol (including the string to which new_pol.governor is
-> pointing) is freed. For the next CPU, cpufreq_set_policy() reads that
-> already freed memory leading to an error message (because verify_gov()
-> fails).
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 5fcaa701fd2d61b003dff89bbb9dd29ed6123740  Merge branch 'thermal-intel' into linux-next
 
-> 2. max/min is not retrieved for each individual CPU:
-> 
-> If cmd_freq_set() is invoked with e.g. --min and --governor, max is set
-> by do_new_policy() on the first selected CPU by retrieving it from the
-> current policy. Since the same struct is passed to the next selected
-> CPU, it is not retrieved again, resulting in writing the first CPU's
-> max to all selected CPUs.
-> 
-> Fix both issues by using a local copy in do_new_policy().
+elapsed time: 1011m
 
-Good find. The change log is rather long and confusing to follow.
+configs tested: 185
+configs skipped: 7
 
-> 
-> Fixes: 7fe2f6399a84 ("cpupowerutils - cpufrequtils extended with quite some features")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Lukas Beckmann <lbckmnn@mailbox.org>
-> ---
-> Testing:
-> 
-> Issue 1:
-> ASAN run of the (unpatched) cpupower example:
-> 
-> ./cpupower frequency-set -d 2500MHz -u 2500MHz
-> Setting cpu: 0
-> Setting cpu: 1
-> =================================================================
-> ==386949==ERROR: AddressSanitizer: heap-use-after-free on address 0x7c17340e0350 at pc 0x7ff73559241c bp 0x7fff5d8114a0 sp 0x7fff5d810c58
-> READ of size 2 at 0x7c17340e0350 thread T0
->      #0 0x7ff73559241b  (/usr/lib/libasan.so.8+0x8841b) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
->      #1 0x7ff7353cb475 in verify_gov lib/cpufreq.c:585
->      #2 0x7ff7353cc0dd in cpufreq_set_policy lib/cpufreq.c:631
->      #3 0x55f590fb79ab in do_new_policy utils/cpufreq-set.c:163
->      #4 0x55f590fb79ab in do_one_cpu utils/cpufreq-set.c:192
->      #5 0x55f590fb79ab in cmd_freq_set utils/cpufreq-set.c:327
->      #6 0x55f590fb3ee6 in main utils/cpupower.c:235
->      ...
-> 
-> 0x7c17340e0350 is located 0 bytes inside of 11-byte region [0x7c17340e0350,0x7c17340e035b)
-> freed by thread T0 here:
->      #0 0x7ff735634e91  (/usr/lib/libasan.so.8+0x12ae91) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
->      #1 0x7ff7353cb8ef in cpufreq_put_policy lib/cpufreq.c:283
->      #2 0x55f590fb79b6 in do_new_policy utils/cpufreq-set.c:165
->      #3 0x55f590fb79b6 in do_one_cpu utils/cpufreq-set.c:192
->      #4 0x55f590fb79b6 in cmd_freq_set utils/cpufreq-set.c:327
-> 
-> previously allocated by thread T0 here:
->      #0 0x7ff73562efce in strdup (/usr/lib/libasan.so.8+0x124fce) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
->      #1 0x7ff7353cb1c8 in sysfs_cpufreq_get_one_string lib/cpufreq.c:156
->      #2 0x7ff7353cb845 in cpufreq_get_policy lib/cpufreq.c:262
->      #3 0x55f590fb7a4f in do_new_policy utils/cpufreq-set.c:146
->      #4 0x55f590fb7a4f in do_one_cpu utils/cpufreq-set.c:192
->      #5 0x55f590fb7a4f in cmd_freq_set utils/cpufreq-set.c:327
-> 
-> Running ASAN with the patch shows only an unrelated memory leak which
-> was already reported in [1]. I can fix that in another patch if needed.
-> 
-> Issue 2:
-> Minimal example without the patch:
-> 
->      echo 2000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
->      echo 3000000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
->      cat /sys/devices/system/cpu/cpu[0,1]/cpufreq/scaling_max_freq
->      2000000
->      3000000
-> 
->      ./cpupower -c 0,1 frequency-set --min 1GHz -g performance
->      Setting cpu: 0
->      Setting cpu: 1
-> 
->      cat /sys/devices/system/cpu/cpu[0,1]/cpufreq/scaling_max_freq
->      2000000
->      2000000
-> 
-> The maximum of CPU1 is set to the one of CPU0.
-> 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-The real issue here is not that the maximum of CPU1 is set to
-the one of CPU0.
+tested configs:
+alpha                              allnoconfig    gcc-16.2.0
+alpha                             allyesconfig    gcc-16.2.0
+alpha                                defconfig    gcc-16.2.0
+arc                               allmodconfig    clang-24
+arc                                allnoconfig    gcc-16.2.0
+arc                               allyesconfig    clang-24
+arc                                  defconfig    gcc-16.2.0
+arc                   randconfig-1000-20261113    gcc-10.5.0
+arc                   randconfig-1001-20261113    gcc-10.5.0
+arc                         vdk_hs38_defconfig    gcc-16.2.0
+arm                                allnoconfig    gcc-16.2.0
+arm                               allyesconfig    clang-24
+arm                          assabet_defconfig    gcc-16.2.0
+arm                                  defconfig    gcc-16.2.0
+arm                   randconfig-1000-20261113    gcc-10.5.0
+arm                   randconfig-1001-20261113    gcc-10.5.0
+arm                   randconfig-1002-20261113    gcc-10.5.0
+arm                   randconfig-1003-20261113    gcc-10.5.0
+arm64                             allmodconfig    clang-24
+arm64                              allnoconfig    gcc-16.2.0
+arm64                                defconfig    gcc-16.2.0
+csky                              allmodconfig    gcc-16.2.0
+csky                               allnoconfig    gcc-16.2.0
+csky                                 defconfig    gcc-16.2.0
+hexagon                           allmodconfig    gcc-16.2.0
+hexagon                            allnoconfig    gcc-16.2.0
+hexagon                              defconfig    gcc-16.2.0
+hexagon               randconfig-1000-20261113    clang-24
+hexagon               randconfig-1001-20261113    clang-24
+i386                              allmodconfig    clang-22
+i386                               allnoconfig    gcc-16.2.0
+i386        buildonly-randconfig-1000-20261113    clang-22
+i386        buildonly-randconfig-1001-20261113    clang-22
+i386        buildonly-randconfig-1002-20261113    clang-22
+i386        buildonly-randconfig-1003-20261113    clang-22
+i386        buildonly-randconfig-1004-20261113    clang-22
+i386        buildonly-randconfig-1005-20261113    clang-22
+i386                                 defconfig    gcc-16.2.0
+i386                  randconfig-1000-20261113    clang-22
+i386                  randconfig-1001-20261113    clang-22
+i386                  randconfig-1002-20261113    clang-22
+i386                  randconfig-1003-20261113    clang-22
+i386                  randconfig-1004-20261113    clang-22
+i386                  randconfig-1005-20261113    clang-22
+i386                  randconfig-1006-20261113    clang-22
+loongarch                         allmodconfig    clang-24
+loongarch                          allnoconfig    gcc-16.2.0
+loongarch                            defconfig    clang-24
+loongarch             randconfig-1000-20261113    clang-24
+loongarch             randconfig-1001-20261113    clang-24
+m68k                              allmodconfig    gcc-16.2.0
+m68k                               allnoconfig    gcc-16.2.0
+m68k                              allyesconfig    clang-24
+m68k                                 defconfig    clang-24
+m68k                          nettel_defconfig    gcc-16.2.0
+microblaze                         allnoconfig    gcc-16.2.0
+microblaze                        allyesconfig    gcc-16.2.0
+microblaze                           defconfig    clang-24
+mips                              allmodconfig    gcc-16.2.0
+mips                               allnoconfig    gcc-16.2.0
+mips                              allyesconfig    gcc-16.2.0
+mips                       pic32mzda_defconfig    gcc-16.2.0
+nios2                             allmodconfig    clang-20
+nios2                              allnoconfig    clang-24
+nios2                                defconfig    clang-24
+nios2                 randconfig-1000-20261113    clang-24
+nios2                 randconfig-1001-20261113    clang-24
+openrisc                          allmodconfig    clang-20
+openrisc                           allnoconfig    clang-24
+openrisc                             defconfig    gcc-16.2.0
+parisc                            allmodconfig    gcc-16.2.0
+parisc                             allnoconfig    clang-24
+parisc                            allyesconfig    clang-17
+parisc                               defconfig    gcc-16.2.0
+parisc                randconfig-1000-20261113    gcc-13.5.0
+parisc                randconfig-1000-20261114    gcc-8.5.0
+parisc                randconfig-1001-20261113    gcc-13.5.0
+parisc                randconfig-1001-20261114    gcc-8.5.0
+parisc64                             defconfig    clang-24
+powerpc                           allmodconfig    gcc-16.2.0
+powerpc                            allnoconfig    clang-24
+powerpc                        eiger_defconfig    gcc-16.2.0
+powerpc               randconfig-1000-20261113    gcc-13.5.0
+powerpc               randconfig-1000-20261114    gcc-8.5.0
+powerpc               randconfig-1001-20261113    gcc-13.5.0
+powerpc               randconfig-1001-20261114    gcc-8.5.0
+powerpc                      stx_gp3_defconfig    gcc-16.2.0
+powerpc                       tqm8xx_defconfig    gcc-16.2.0
+powerpc64             randconfig-1000-20261113    gcc-13.5.0
+powerpc64             randconfig-1000-20261114    gcc-8.5.0
+powerpc64             randconfig-1001-20261113    gcc-13.5.0
+powerpc64             randconfig-1001-20261114    gcc-8.5.0
+riscv                             allmodconfig    clang-24
+riscv                              allnoconfig    clang-24
+riscv                             allyesconfig    clang-24
+riscv                                defconfig    gcc-16.2.0
+riscv                 randconfig-1000-20261113    gcc-12.5.0
+riscv                 randconfig-1001-20261113    gcc-12.5.0
+s390                              allmodconfig    clang-17
+s390                               allnoconfig    clang-24
+s390                              allyesconfig    gcc-16.2.0
+s390                                 defconfig    gcc-16.2.0
+s390                  randconfig-1000-20261113    gcc-12.5.0
+s390                  randconfig-1001-20261113    gcc-12.5.0
+sh                                allmodconfig    gcc-16.2.0
+sh                                 allnoconfig    clang-24
+sh                                allyesconfig    clang-17
+sh                                   defconfig    gcc-14
+sh                    randconfig-1000-20261113    gcc-12.5.0
+sh                    randconfig-1001-20261113    gcc-12.5.0
+sh                    rts7751r2dplus_defconfig    gcc-16.2.0
+sparc                              allnoconfig    clang-24
+sparc                                defconfig    gcc-16.2.0
+sparc                 randconfig-1000-20261113    gcc-8.5.0
+sparc                 randconfig-1000-20261114    gcc-12.5.0
+sparc                 randconfig-1001-20261113    gcc-8.5.0
+sparc                 randconfig-1001-20261114    gcc-12.5.0
+sparc64                           allmodconfig    clang-20
+sparc64                              defconfig    gcc-14
+sparc64               randconfig-1000-20261113    gcc-8.5.0
+sparc64               randconfig-1000-20261114    gcc-12.5.0
+sparc64               randconfig-1001-20261113    gcc-8.5.0
+sparc64               randconfig-1001-20261114    gcc-12.5.0
+um                                allmodconfig    clang-17
+um                                 allnoconfig    clang-24
+um                                allyesconfig    gcc-16.2.0
+um                                   defconfig    gcc-14
+um                              i386_defconfig    gcc-14
+um                    randconfig-1000-20261113    gcc-8.5.0
+um                    randconfig-1000-20261114    gcc-12.5.0
+um                    randconfig-1001-20261113    gcc-8.5.0
+um                    randconfig-1001-20261114    gcc-12.5.0
+um                            x86_64_defconfig    gcc-14
+x86_64                             allnoconfig    clang-24
+x86_64      buildonly-randconfig-1000-20261113    clang-22
+x86_64      buildonly-randconfig-1001-20261113    clang-22
+x86_64      buildonly-randconfig-1002-20261113    clang-22
+x86_64      buildonly-randconfig-1003-20261113    clang-22
+x86_64      buildonly-randconfig-1004-20261113    clang-22
+x86_64      buildonly-randconfig-1005-20261113    clang-22
+x86_64                               defconfig    gcc-14
+x86_64                                   kexec    clang-22
+x86_64                randconfig-1000-20261113    clang-22
+x86_64                randconfig-1000-20261114    gcc-14
+x86_64                randconfig-1001-20261113    clang-22
+x86_64                randconfig-1001-20261114    gcc-14
+x86_64                randconfig-1002-20261113    clang-22
+x86_64                randconfig-1002-20261114    gcc-14
+x86_64                randconfig-1003-20261113    clang-22
+x86_64                randconfig-1003-20261114    gcc-14
+x86_64                randconfig-1004-20261113    clang-22
+x86_64                randconfig-1004-20261114    gcc-14
+x86_64                randconfig-1005-20261113    clang-22
+x86_64                randconfig-1005-20261114    gcc-14
+x86_64                randconfig-1006-20261113    clang-22
+x86_64                randconfig-1006-20261114    gcc-14
+x86_64                randconfig-1007-20261113    clang-22
+x86_64                randconfig-1007-20261114    gcc-14
+x86_64                randconfig-1008-20261113    clang-22
+x86_64                randconfig-1008-20261114    gcc-14
+x86_64                randconfig-1009-20261113    clang-22
+x86_64                randconfig-1009-20261114    gcc-14
+x86_64                randconfig-1010-20261113    clang-22
+x86_64                randconfig-1010-20261114    gcc-14
+x86_64                randconfig-1011-20261113    clang-22
+x86_64                randconfig-1011-20261114    gcc-14
+x86_64                randconfig-1012-20261113    gcc-14
+x86_64                randconfig-1013-20261113    gcc-14
+x86_64                randconfig-1014-20261113    gcc-14
+x86_64                randconfig-1015-20261113    gcc-14
+x86_64                randconfig-1016-20261113    gcc-14
+x86_64                randconfig-1017-20261113    gcc-14
+x86_64                                rhel-9.4    clang-22
+x86_64                            rhel-9.4-bpf    gcc-14
+x86_64                           rhel-9.4-func    clang-22
+x86_64                     rhel-9.4-kselftests    clang-22
+x86_64                          rhel-9.4-kunit    gcc-14
+x86_64                            rhel-9.4-ltp    gcc-14
+x86_64                           rhel-9.4-rust    clang-22
+xtensa                             allnoconfig    clang-24
+xtensa                            allyesconfig    clang-20
+xtensa                randconfig-1000-20261113    gcc-8.5.0
+xtensa                randconfig-1000-20261114    gcc-12.5.0
+xtensa                randconfig-1001-20261113    gcc-8.5.0
+xtensa                randconfig-1001-20261114    gcc-12.5.0
 
-The real problem is that stale new_pol is used for all cpus
-from do_one_cpu() slow path when more than one policy value
-changes.
-
-Please re-write this in your own words in a simplifies way
-describing what lead to the problem.
-
-
-> Minimal example with the patch:
-> 
->      echo 2000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
->      echo 3000000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
->      cat /sys/devices/system/cpu/cpu[0,1]/cpufreq/scaling_max_freq
->      2000000
->      3000000
-> 
->      ./cpupower -c 0,1 frequency-set --min 1GHz -g performance
->      Setting cpu: 0
->      Setting cpu: 1
-> 
->      cat /sys/devices/system/cpu/cpu[0,1]/cpufreq/scaling_max_freq
->      2000000
->      3000000
-> 
-> The maximum of CPU1 is no longer set to the maximum of CPU0.
-> 
-> [1] https://lore.kernel.org/all/20250827-power-memoryleak-v1-1-e4baf7b59a41@uniontech.com/
-
-The above patch doesn't make sense. I need more information
-to determine, if it is needed.
-
-> ---
->   tools/power/cpupower/utils/cpufreq-set.c | 17 +++++++++--------
->   1 file changed, 9 insertions(+), 8 deletions(-)
-> 
-> diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
-> index 06cd4b280132..d9f6ca522fe5 100644
-> --- a/tools/power/cpupower/utils/cpufreq-set.c
-> +++ b/tools/power/cpupower/utils/cpufreq-set.c
-> @@ -141,9 +141,10 @@ static unsigned long string_to_frequency(const char *str)
->   	}
->   }
->   
-> -static int do_new_policy(unsigned int cpu, struct cpufreq_policy *new_pol)
-> +static int do_new_policy(unsigned int cpu, const struct cpufreq_policy *new_pol)
->   {
->   	struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
-> +	struct cpufreq_policy pol = *new_pol;
-
-Don't assign new_pol to pol.
-
-
->   	int ret;
->   
->   	if (!cur_pol) {
-> @@ -151,16 +152,16 @@ static int do_new_policy(unsigned int cpu, struct cpufreq_policy *new_pol)
->   		return -EINVAL;
->   	}
->   
-> -	if (!new_pol->min)
-> -		new_pol->min = cur_pol->min;
-		pol->min = cur_pol->min;
-
-Use new_pol in the if logic using pol as temp - changing
-pol to temp_pol
-
-> +	if (!pol.min)
-> +		pol.min = cur_pol->min;
->   
-> -	if (!new_pol->max)
-> -		new_pol->max = cur_pol->max;
-> +	if (!pol.max)
-> +		pol.max = cur_pol->max;
->   
-> -	if (!new_pol->governor)
-> -		new_pol->governor = cur_pol->governor;
-> +	if (!pol.governor)
-> +		pol.governor = cur_pol->governor;
->   
-> -	ret = cpufreq_set_policy(cpu, new_pol);
-> +	ret = cpufreq_set_policy(cpu, &pol);
->   
->   	cpufreq_put_policy(cur_pol);
->   
-
-
-thanks,
--- Shuah
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
