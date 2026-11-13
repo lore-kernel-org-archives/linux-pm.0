@@ -1,93 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.222.177
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.171
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794543738;
-	b=HJ+0gQyUI5iaW7aoZk6+bHdxtfmdAVWTRMbyUTY4+ESFWKwRnNJMSqWFWHIiDNlJWbio
-	 pU2WCklLY+408xr+NtiOrWShiVh5e4HZ/B7933uHyqtz3IMSpMYkF0DxNjsNlZOlSBD1M
-	 LlpMKwSzEX8sDKsu1KO946kB0jYAWO9yTumI78/OYHkvAk3KjfON7bTXiW/+xLxxCjq1I
-	 /C6AzPJoXuTCov7e5LfznCx+FsRdfakE8yFNxFcCg1h4WqWrSsL4Mr/aRDapUzuSWR6mP
-	 WnRLffniKaR7l2BuexRt4ED4HgiGRWYQz4Ftf5ktvnqnyKzx2x8tuS0ww8bG/DKk/WQ==
+	t=1794545713;
+	b=Z87TnWGmkevB3NVcNsj8RAIkq4cVIiUC1KgKDjVwP0sRIeb4wY1Sdus84yFRY4kT7pwI
+	 NKa07L5ZXj7MhDdqivT9LZ4101N3xGdMa1FkP6mCbbWmPSbWSDaUo6/lfnHvLnT0xuE2G
+	 tkVrRH8pHXrZryZ/vlZTo7ZmWm6LucYEz0maJC1qQ1lWumw66DbXtc0kiJThqih2F9/xr
+	 k55Ky8SqoE5wiyrP3Hcow+fXrk8Tbf0Qfn0le8kVQVUMCjJxGHUdV3gznBMIuBQS0t0i2
+	 atWFc0rLsQ/r7bBwIhBL2Wm54jR/biLVMTBn8yZGFfsuihoE6CRL7Mrmk4rFrgmIiRQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794543738;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794545713;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=zpeqGzgkBsHUF5zjr/0o42AjYScikuGzKIUBtwN8qSA=;
-	b=COLmAyugefMaUl8DdjLw3wpx+Zy9OGeNRv9Luwy3N87BNDVkvTv8OjtMd4sbAzX7hWJJ
-	 lSNaAyyMpMb7wa5s8bgSQOXXHhIKxpH0XlMpfPsaZ2wgtK5CpjZrbjqe0Z5IrluPbmfHl
-	 4zKPqj/BizdHScoo5LrangYYF6XlIDmK7yQy0dCI8EuhqtDWUxRpXqdE8g/a2r8cDoRvb
-	 6XplI2Bw3yjuNMSrlBj7UmSVrYot7A4B+1uW9Ri+86T+cU2nGpl/5L2o3cg533WxhT+ts
-	 fypzF0yqwQMC56sW+io46QDkiO/E7FHvh7OJ2HxlLFyjs0cOVprq5LTVNdQhcPG/LTw==
+	bh=VTWR5mkpuIgueh87MON9g3ptDUiISJcOv6zs0rvvEGI=;
+	b=H8NwXWHhOGC1mK3terfKNDR1CdIFqce79wcx1vRxGMSN5rLrtZkFtllslB8vOvu9yqKV
+	 whKgMg052bAfZF+fefulgGvfNlboxlUyLFRiOgSnbYlaFZSUufWChGFQjuNR3vBGkNaja
+	 CIQi5Qj6clN2DOo4V/LRFb89x0v+kp1x6eC7bDgtl0F7NiS+eXAlwpk6hITSgJx0GOybl
+	 zAudgH2U02NEqP5rsZLBDm4d4mMeUuVA09bJqXRpjje3f30uP6f0qEcsY6hd2EB6vCFyA
+	 huViMml5BPKuhr1DNoT4saIJife3O1kLYuaeq14w/zIddXxXxpNnF6WCfZcMFSgibjw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T9nlG7GI;
-	arc=none smtp.remote-ip=209.85.222.177
-Received: from mail-qk1-f177.google.com (mail-qk1-f177.google.com [209.85.222.177])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o5Dp50SO;
+	arc=none smtp.remote-ip=209.85.214.171
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55F95606A32A
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 04:22:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 55F95606A32A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B321606A32D
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 04:55:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5B321606A32D
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T9nlG7GI
-Received: by mail-qk1-f177.google.com with SMTP id af79cd13be357-93e63ee7b4cso85429885a.2
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 20:22:18 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o5Dp50SO
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2e9995ce866so8633155ad.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 20:55:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794543737; x=1795148537; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794545711; x=1795150511; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=zpeqGzgkBsHUF5zjr/0o42AjYScikuGzKIUBtwN8qSA=;
-        b=T9nlG7GIUb5RoyvvlJpX9tW/JjbWjc80qOYRsirNuNvga+cfTfj2DB0/T3odVWckua
-         5beGgZqbFsj36scUnef21+K+lhQMNymd1a22h2R2/XwGMRfACBfdWLPDEcfnUeLtEo8+
-         IQye1PTY2Vi0SRjBdV5169aX1HgPXZLh+GBd12atNqoY8+5QhXztxOSVBwkAqksE/mKD
-         Dz8u037lMkSryvPCLFB/iyOuX93i9ChPUI5hFSUoCFR7RaN89Sy0fP02PGYGLRyqKt9s
-         T2gxI+NDMNb9kn0NCAbzpU4gus0Zq7BqUqEH4cr7B1+W5pF2j+3kKjzNyrR4ZZ4+SwUm
-         sXFg==
+        bh=VTWR5mkpuIgueh87MON9g3ptDUiISJcOv6zs0rvvEGI=;
+        b=o5Dp50SOZkUrzjKbIIU8LlnPQjbFGb16tD2KhJeRlPSr6wee5OnvJ51J9zKJX6C83a
+         MG6APBbNkBwKu3WPc4Ygh4ByhnF33znwc5M0bcsbkXnAWe5Lw+XKkpYgAGjJDf/yKqSV
+         eUaIYDdSAKsoCDUDEDLnL9wtGr3D/4QdG9FUNQJaW7YnRSRN9gtu1/vpzOBQllMNL2mj
+         pxM79K9zH/lil7gcQXc3v4qarmSjXu//xvIJHUg/y+rc31B/pZosOxcBu4DErd6LDGKf
+         IM2VatuMQFJdWVBKcVB4RvY0JeTdobbMXFfQu0qqyLXUxPp28zFpNKquw85v+mCDq/8w
+         4iLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794543737; x=1795148537;
+        d=1e100.net; s=20260707; t=1794545711; x=1795150511;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=zpeqGzgkBsHUF5zjr/0o42AjYScikuGzKIUBtwN8qSA=;
-        b=rc6NzRe6I1sjxJLz55pF9jCIA5+m+kNJ/Vko4Z9Akx16bn6oKCl5adV7WMa7ghAqaM
-         p9ZnDMCt0h0zhQXd/U/kjUlXna+9OnQRAAvdFwSWRsM+DHZNgUWWSnLOWaPCnyJwCYeJ
-         D5OX6O80kW+RtDQteHhGmzy1OjhXL66eKTTyXshQRN7KUZsdX0L55mpx3lBvQdiQcx/t
-         f9ExQrw0s72ggFL4hLuFDvzW0VQoJT7ER/BD+TgQcRcFZqJ19AYNlKNVb6WjAfQ/HyQy
-         B0FrC7b1boCocEpo4ZYbuHSaz0VVDRxHbfIMNlzDsgV944CVVvz3bQkVgzR/ZmL2kJkE
-         814Q==
-X-Forwarded-Encrypted: i=1; AL+hErEfkwPjZancs3Comgmnj96BHcSZXFER16RYJdlAZPFCyTT1qC1syLKvCdZzXUwdrWzfDX65GfP+RA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/FEw/c9ab0pPMy3Hzus7OG7s8Z0DIGmwWUOgb3ddv9Bdlbf3KW
-	OAG+Bk9n15667Z0cPbUBI2HfkLboLTc0FZIWY+SDK9q/8EheRzza+J3d
-X-Gm-Gg: AYBFou2kwv3HdLcrDNWPTter0gZQ3Cwmeq0yozabeaazYOxQSoR35OdaZQTXevlQPlH
-	JBunB29iykGebXT9gSWJ4SsFMJUQAHeWh3GTz+bT9yubnYkw/1mPTk6o+cNUJk92j/OX1912Tgy
-	XwKBL49AamAv3geijcz/zt+EEPlgtCt84LDrOV93Lz6uaPMwIxRMPA4xi9Lt3Z1CrcFgC4HTKXl
-	6Bp1AuB/F5bdKOwd9YxUccM8N1QAK4StVINPc6juBXWdk/yq7HD58R7FeU4UnPL5msFwxvMA1DR
-	maTobgK256B3ylIr2OFvRoY7jkBv7ysCDgYZTtcRNbkMXB/D2XVRdDj6zHms6125x/uwbRJGUT7
-	6u9Ix4vHLx4HCmLSu3xpVTpzrtbip2g8Tl8T67dTfVYXqrv7QHbR4bk/0VQrXd56fE6lfEXA4ih
-	f+wgGgiE2ERsLssC/iLfq0fjU8A8pRzUbB910G85zzv+qBhzjsEPR6aML2GBiqqk7eyShaxa9Yi
-	5vaFh63ivfi3JsBb3TGnlBJML1alEJxhuI3BWqoLH2b4kG6/3Q9SpnpHnm8MDATXNfpwVvSrv55
-	62r8tw1ZxEV21nPykE/NY4LJFWdK5eqIT1VaIx3jTgbLfHx/iXUb39KDJ/jGEyviiKYJ2QNdpgA
-	=
-X-Received: by 2002:a05:620a:6192:b0:939:b099:d52f with SMTP id af79cd13be357-9494ba7dfd0mr224512985a.20.1794543737300;
-        Thu, 12 Nov 2026 20:22:17 -0800 (PST)
-Received: from linux.. ([8.34.174.240])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9494c8a8757sm96426485a.31.2026.11.12.20.22.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Nov 2026 20:22:16 -0800 (PST)
-From: Changyul Lee <lcy8047@gmail.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        bh=VTWR5mkpuIgueh87MON9g3ptDUiISJcOv6zs0rvvEGI=;
+        b=klQBUC9nPQJLFJuN5lpYOXZUmAEGDx3Z3O2LGCZ2QMz8vFcxGm6V0sEIBQumuWZiR4
+         4fN3qaQZAS6+FZC3jclF4M5Vfo74/el5mf9uS42CB3rwMrwYZk3ytGcBJEoT6IjRi4FK
+         VEnU868+WBR2YlwB5LuXwaEZ3EZVZDzX3DIpz2Cnv58XPTnJLvkJusCw5nq3OcNZURMU
+         bpXUEIMnwhnr5/5IgF9y6mwPbBWg6MYwyKOeDYszZaKLij5hBod2Nh0z7aF4k18+W86l
+         4+MxlEi3NZEab+aBOBDf9x2cpUy9f4A2Y50fr7LnIQvGvMTluwjyFS3WLQBiLPdB+Vio
+         o4SA==
+X-Forwarded-Encrypted: i=1; AL+hErEcbx2MIdoRJ/GvOBjsznb38z00KNJJSsO4BkVnze4pXu+WqShhW9/24JGLDEUpdUaCnHglC3u+gQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9WdIeujsaJgRFwppiWitS73CvA3hbwToGUe3SzMK1OJnk/gzYL
+	UFc5L7k6KsScr3wy/cpMDVmuD5lgG6Tx1nN8jH6W3nVMVle9q2y0g/sZ
+X-Gm-Gg: AYBFou3GoxVu7uf3gN4IZ7EshLNitOaskO4t9t1uFYUu0YobQwg3vnAYv47mYKCRl2d
+	7YjuOknMfHLOJ7u7g2rB6tAFly9EEGx8oxASvSsMaWAPBsrvt+kWAZnI9+BvXH6YJSyQu773+2f
+	0DlKD9ndZWS/nW1VJfYats4ckPuZxZGakValmIf18zGX4od/0KMB+OT7hrd/1mMzVYWgbQOJEif
+	8zi6MJ96uug/weRO8tidebhv/ymiKT4omOFYWJlkVQMsHC0yv+VjcOQc2xyoJ9ZmGbqqza0HQeb
+	sFawzZJTfhCX7gZczCIXjJE//X6hi8dqwMtNt8bs09OxHagnCNeHs8fjpWvPEPh4AXgfmfNTjgC
+	aUVVF4Zzx7CBQxcMH6isp0b2yXxTqDXb2qZRqL+QsUBh+dYR3aE0sWGBd1SYnxOfQfgtoemQvpQ
+	jDU+3J9jVeJpd3/64m+rZYpiJxTFYwSyVoxqNViE/aWDhAmrHJvh1k7WFSyW4VZzlF1aXq7gSUv
+	fyCkoNHluEMvB9bKCPEOzCHSvWMvHuGKldbfQk7LilNq9MS322apat4E7pgu0mMXp/19GcxmGGg
+	EBYP9JvaUKEoaJC+9zAtfhEJVH0hpgO8DNJZhKJzrhn3uDeU/Kol3A5qvbdhCUvBXaPr5YJpWAj
+	SdnV7JXVcUibE14eTTCkSYocvEA1aV/7JlEfLngNOU1Z7l8gR+We/V0/+vYcybXJ/d6OgIuEwEC
+	8N
+X-Received: by 2002:a17:902:f688:b0:2ed:379:158d with SMTP id d9443c01a7336-2ee0da98d27mr14360145ad.9.1794545711133;
+        Thu, 12 Nov 2026 20:55:11 -0800 (PST)
+Received: from EAIT-H54D9Q2FJQ.eait.uq.edu.au ([130.102.10.9])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ee10bdd1a4sm3805145ad.11.2026.11.12.20.55.07
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Thu, 12 Nov 2026 20:55:10 -0800 (PST)
+From: Yu Zhang <yuz08559@gmail.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Changyul Lee <lcy8047@gmail.com>
-Subject: [PATCH] powercap: Hold control_type->lock when removing a zone ID
-Date: Thu, 12 Nov 2026 23:22:14 -0500
-Message-ID: <20261113042214.2155381-1-lcy8047@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	stable@vger.kernel.org,
+	Yu Zhang <yuz08559@gmail.com>
+Subject: [PATCH] thermal: sysfs: take the zone lock in the tzp attribute handlers
+Date: Fri, 13 Nov 2026 14:55:02 +1000
+Message-ID: <20261113045502.68053-1-yuz08559@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -99,75 +103,107 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-powercap_register_zone() allocates the zone ID from the parent IDR
-under control_type->lock, but powercap_release() removes it without
-that lock. powercap_unregister_zone() calls device_unregister() after
-dropping the lock, so removing one zone can change the IDR at the same
-time as registering another zone of the same control type. The IDR can
-then hand out an ID that is still in use, so device_register() fails
-with -EEXIST, or keep an ID that was removed. intel_rapl_tpmi can do
-this, as all packages share one control type and each package device
-is bound and unbound on its own.
+The thermal zone parameter (tz->tzp) sysfs attributes - sustainable_power,
+k_po, k_pu, k_i, k_d, integral_cutoff, slope and offset - dereference
+tz->tzp without holding the zone lock:
 
-Take control_type->lock in powercap_release(). The device_register()
-error path of powercap_register_zone() drops the last reference with
-the lock held, so drop the lock before put_device() there.
+	if (!tz->tzp)
+		return -EIO;
+	...
+	tz->tzp->name = value;
 
-Fixes: 75d2364ea0ca ("PowerCap: Add class driver")
-Signed-off-by: Changyul Lee <lcy8047@gmail.com>
+For a zone registered without thermal zone parameters (tzp == NULL at
+registration - the thermal testing zones, ACPI thermal and every driver
+using thermal_zone_device_register_with_trips(..., NULL, ...)),
+power_allocator_bind() allocates tz->tzp and power_allocator_unbind()
+frees it and sets it back to NULL, both under the zone lock:
+
+	tz->tzp = kzalloc(sizeof(*tz->tzp), GFP_KERNEL);
+	...
+	params->allocated_tzp = true;
+	/* unbind */
+	if (params->allocated_tzp) {
+		kfree(tz->tzp);
+		tz->tzp = NULL;
+	}
+
+bind/unbind run from policy_store() -> thermal_zone_device_set_policy()
+under the zone lock when the governor is switched to or away from
+power_allocator.  The tzp attribute handlers take no lock, so a read or
+write of one of these files racing a governor switch dereferences a
+freed tz->tzp or a NULL pointer.  The read side (0644) is reachable by
+an unprivileged user.
+
+KASAN, one test thermal zone, one loop switching the policy between
+power_allocator and step_wise and one loop writing k_pu, panics in
+seconds:
+
+  BUG: KASAN: slab-use-after-free in k_pu_store+0xd7/0x130
+  Write of size 4 at addr ffff8880064e5c94 by task init
+   k_pu_store+0xd7/0x130
+   dev_attr_store+0x46/0x70
+   sysfs_kf_write+0xed/0x110
+   kernfs_fop_write_iter+0x29f/0x380
+   vfs_write+0x5df/0x950
+   ksys_write+0xfd/0x1e0
+  Allocated by task:
+   power_allocator_bind+0x51a/0x600
+   thermal_set_governor+0x86/0x170
+   thermal_zone_device_set_policy+0x58/0xb0
+  Freed by task:
+   power_allocator_unbind+0xad/0xd0
+   thermal_set_governor+0x57/0x170
+   thermal_zone_device_set_policy+0x58/0xb0
+
+Take the zone lock in the tzp attribute handlers, as mode_show() and
+weight_store() already do ("Don't race with governors using the
+'weight' value").  The governor already reads these fields under the
+zone lock, so this also serialises the PID constant updates against a
+running power_allocator.
+
+Fixes: f5cbb182586e ("thermal: power_allocator: don't require tzp to be present for the thermal zone")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yu Zhang <yuz08559@gmail.com>
 ---
-Found with a static analysis tool we are developing.
+ drivers/thermal/thermal_sysfs.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-This is on top of commit 3d1c2693d809 ("powercap: Do not release the
-zone when device_register() fails") in linux-pm.
-
-Reproduced in QEMU (x86_64, KASAN, lockdep) with a test module that
-runs four kthreads for 20 seconds. Each kthread registers and
-unregisters a top-level zone of one control type in a loop. Without
-this patch, powercap_register_zone() failed with -EEXIST 7 to 12 times
-per run in three runs, the highest zone ID was 4 to 8 although at most
-four zones existed at a time, and up to four IDs were left in the IDR
-at the end. With it, there was no failure, the highest ID was 3 and the
-IDR was empty at the end, in all three runs. The module also makes one
-device_register() fail on purpose, and with this patch that error path
-ran without a lockdep report.
-Not tested on Intel RAPL hardware.
-
- drivers/powercap/powercap_sys.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-index eacbc3c96db1..e9aa1feb5e3c 100644
---- a/drivers/powercap/powercap_sys.c
-+++ b/drivers/powercap/powercap_sys.c
-@@ -388,11 +388,15 @@ static void powercap_release(struct device *dev)
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -258,6 +258,8 @@ sustainable_power_show(struct device *de
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
  
- 	if (dev->parent) {
- 		struct powercap_zone *power_zone = to_powercap_zone(dev);
-+		struct powercap_control_type *control_type =
-+						power_zone->control_type_inst;
++	guard(thermal_zone)(tz);
++
+ 	if (tz->tzp)
+ 		return sysfs_emit(buf, "%u\n", tz->tzp->sustainable_power);
+ 	else
+@@ -271,6 +273,8 @@ sustainable_power_store(struct device *d
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+ 	u32 sustainable_power;
  
- 		/* Store flag as the release() may free memory */
- 		allocated = power_zone->allocated;
- 		/* Remove id from parent idr struct */
-+		mutex_lock(&control_type->lock);
- 		idr_remove(power_zone->parent_idr, power_zone->id);
-+		mutex_unlock(&control_type->lock);
- 		/* Destroy idrs allocated for this zone */
- 		idr_destroy(&power_zone->idr);
- 		kfree(power_zone->name);
-@@ -561,8 +565,8 @@ struct powercap_zone *powercap_register_zone(
- 		 * ->release(), which may free the zone.
- 		 */
- 		power_zone->ops = NULL;
--		put_device(&power_zone->dev);
- 		mutex_unlock(&control_type->lock);
-+		put_device(&power_zone->dev);
++	guard(thermal_zone)(tz);
++
+ 	if (!tz->tzp)
+ 		return -EIO;
  
- 		return ERR_PTR(result);
- 	}
-
-base-commit: 3d1c2693d8091a6529cf7ed8079c4968527d58b4
--- 
-2.43.0
-
+@@ -289,6 +293,8 @@ sustainable_power_store(struct device *d
+ 	{								\
+ 		struct thermal_zone_device *tz = to_thermal_zone(dev);	\
+ 									\
++		guard(thermal_zone)(tz);				\
++									\
+ 		if (!tz->tzp)						\
+ 			return -EIO;					\
+ 									\
+@@ -302,6 +308,8 @@ sustainable_power_store(struct device *d
+ 		struct thermal_zone_device *tz = to_thermal_zone(dev);	\
+ 		s32 value;						\
+ 									\
++		guard(thermal_zone)(tz);				\
++									\
+ 		if (!tz->tzp)						\
+ 			return -EIO;					\
+ 									\
