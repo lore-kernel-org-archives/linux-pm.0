@@ -1,104 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.173
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794536987;
-	b=vzFmexTcNrHKy33ByWO2C3Ko5/kRgnOwRlClbQvxDHU29Dbe2vQEK94UTjIxC8FKK+GD
-	 eKNIW6ZCuP1Cm/m/Voe3BMME+1X+SRmwYN/CQTwDrtq96LNQWhA/XT9P2GQz75ygiBmqQ
-	 B2sRoCJpk83go1wbhbXMQmuZo/NY1GGTqfbm4cjsvRSYZvErT8WD812xtnRjSrzCIGulI
-	 CFw8nOb4I6iTL8LGlaskJoMq+kK1wNkrVYgCu+TZ+mkE5VOnEVSIWFZBOTSJSCJz2njij
-	 WeXJj41m28Jb4O7AGAkn1F5aNC0H7Je6IAuHNWXK6uqlx25K9Is9bA1pwTaqJ+oWHaQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794536987;
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.52
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794538509;
+	b=mqpIdAPxUBK1eq3MDpJgNoRGp5Po89wcT+NK9bohE50ZnkDpcvofaXAErSK6JMgGdeKb
+	 tCvvnhCpsjjJgXWuM3Psg1AjEvsEAykzcpbj0uU+pAmreoP3YbPnJfoTz2IUspSFfSB6J
+	 DrOfOTNvOfOIbcXrRWkNOwdio946G4deA6N7HHzn5AcYBkWvWyzpxJPG2dDUOb0wlQP3O
+	 /L5qVSTC5+t/St7nceevvSxvxA0shNtIrE10hQCXdxRfAtkGakYuoKLID2OntDmF6q4on
+	 qSud+VOdAwJOB0WN62Z8dnl1rkD3czLcGq3ZOXInWc57gZgt4Ed36ag7+Of1DGYvbAw==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794538509;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=7I35fCoKkVfk5KSv8b+fmiXqz9ZRpBgphgxQccwd6TU=;
-	b=v+xadFyoEYEH7W08vt2EqnYM9XK1rKX8ara3uAajm8b3OF3LRYMGkH7YAwfHiLkIVcZj
-	 mTfqeJCckKbvfJg1jPZud0wheezdJVpr5xBbm1/iDNY3DdXmKv3ITJKyFYIb2T1FU+5H3
-	 k2keuYtaGKhyMZn0XqcteeGRORAVBoJ8Bu4p/BBola5X8yPfj3WOF4Ywr+BM6ePF8gtA9
-	 NDfJEv7IXQJSqb42glFC52sjwo9oX3QbRdDT0kH/115/XbIagE+9FGmtNY6p/uu8XBF6r
-	 iuL6kWS5jV5+W8+j7vVN21qTXm2dFgvYnCqNoVReDlrE594E/ZQllWChxoIK0d8x0nA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BEe0gk9r;
-	arc=none smtp.remote-ip=209.85.210.173
-Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=ww5MKM6poDK+IczcuuMJkcSdFtjq/phga8CrflKC7U4=;
+	b=2D/+OdE8DPg98FOvzU1gyun9H7DnS8dm8tzvXo/qUd0uJPBPJJgHYtm7DNhlv/Uj3CIt
+	 MSuWNeTC9+/Ac45M4gtzxedLwb6yreIwlCl+0Xm8zZPtfr4mA3L/0M3QnwF5XCXCIl6ZV
+	 u+GanFJELrusXGLBScACEtpkRmUeVmOx94RtNK2ZPXehlRu1iiW8oYaSbA8kuA88CeRTk
+	 hxLMNdeJQMuLCOi/h4tUZ1+Gy7EXwbjTL2M5/3CsFmVSUDKIyCE3OrLezP1oe6kxlhZ6k
+	 uMkrzO9D0eNpAQrNzuJyAVUgLPHLOiYehIVBom7E4MMiS8XLlYLHpmg1PBnj+a2jSMg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=chromium.org;
+	spf=pass smtp.mailfrom=chromium.org;
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=cfMDacLG;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.52
+Received: from mail-yx1-f52.google.com (mail-yx1-f52.google.com [74.125.224.52])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6695F606A89E
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 02:29:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6695F606A89E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EDBA606A32A
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 02:55:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1EDBA606A32A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BEe0gk9r
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-8b67f25e6e1so226963b3a.0
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 18:29:46 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=cfMDacLG
+Received: by mail-yx1-f52.google.com with SMTP id 956f58d0204a3-67c05273c38so568801d50.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 18:55:08 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794538508; cv=none;
+        d=google.com; s=arc-20260327;
+        b=pzsRT3s0OpLG0GPGNcPAOyYz1J1CXKUIeVmjYoWUnIhDh2Jx7fouQmqnYrnNFUKriK
+         vGD9cnLSaGub9OAQ/d1+dGIp2TXQnBGVfr322hTKzqT60hukVBWxvseF1RP1enJ/Ik+C
+         z4iDEg233fG7NMegW2tlJJvQGVrEM7xjPAeh5KUDeh5YH3MYWHo0eqj0TpIBuffPlXMa
+         3Ca0IhMsjVV28OKWREhVe7bKImKiKm0idrCpk3JBoprDbVHXQqH0QDpg/85vjLgcobay
+         Qbn0N6sPELk23/PMw0/YC9h+2jFWzUucU+PFpI7/Z2ysOC3lb64CgKuIT+zCd1IUuBh/
+         WQ7g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=ww5MKM6poDK+IczcuuMJkcSdFtjq/phga8CrflKC7U4=;
+        fh=IK+myBWKgQiOMql89nBRv2ZVSdBctaBATSWXfBcWu+Q=;
+        b=knLMOC+l7uqF2g+jVqgytYI6i671YTI1+WCMnyRwMzeZHs+NmIIVinkTFQInterb7E
+         npjxrnJKCIZ8iP1DVCNoUaS4XddQ4CAFpopkknUj83mQ/JZPYDusCaYwXEftWhQkmQH/
+         E0Vq/RGeiLHkzFgMELK+efV+IuEa+TGRUe6OCZbh2g/zv1eI4pYKTheMVToWlgBPw3g8
+         n6jClCCYk9IQCNn1w9rVAQ2zmVWdU2u4pwq3/M0iTjFCnDgiX+NpwVL+eV8eczBKVZ6l
+         ZKHbi6q++6JjZiQF+nGkFvMa9cyqTBnjNzVkVZ8V1gy1aRX/dJMHejWAR0ZD+iZFdwjQ
+         Q2Bg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794536985; x=1795141785; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=7I35fCoKkVfk5KSv8b+fmiXqz9ZRpBgphgxQccwd6TU=;
-        b=BEe0gk9rJJ/sCix7PNHn8gpFi2QFKUvMayh5qS4PioR+eiEtn4ZoOu9CULd/95dokj
-         Wlf80o950cLiMHjUwJk5Dwjuh1ggHVwObo2kRFNXwKEzyck5lOJzCezS2W6SL2L0BsAa
-         MaHeaPYM6LTYVPuVUECBkKc7XG8BjHKOBoCg5ETRKE6708q/37g+TxQzOO6wzEGl65jR
-         hr5NoFh56rtHi7K6MG+rCVuQiXBFG8xY9E+kyOnTAw0k5nE8BzFSqRceUoz3Kb7SUn8t
-         kf4X9jPVoikGWft+7yggmKMmkBOt9Ukg1iVw5PT5dYZ62dktmDOY2jxf0+UvtzM44t8g
-         zbjA==
+        d=chromium.org; s=google; t=1794538508; x=1795143308; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ww5MKM6poDK+IczcuuMJkcSdFtjq/phga8CrflKC7U4=;
+        b=cfMDacLG8z5L1KijJ6WpfqoVtMnSg7D8XZ5tsiDdz2CqKktuXLlbD7h94kpjdl1/7b
+         C9aE2Mt+Vmjn0zOJ228wsa6m/1EYkj4AUAvK4/n1l2fZDAxmemJ4JmrlN72c7nlHGDua
+         tkc/zZ81gRVblWv/lVLluemgBz6hCHNVaSc1c=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794536985; x=1795141785;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7I35fCoKkVfk5KSv8b+fmiXqz9ZRpBgphgxQccwd6TU=;
-        b=KjeKU+7bo0CplBv957f/teQRx0VA35a285qzj0mGmIEuJo7qEF1uDySSKiqVpHgZjW
-         dkhKCG0CMoc88w0KL/sTendAyDRG6MOMZsxAADORXRe4amodwxVh1vd4TPWwJQXlZ+aq
-         CNQXkEypEkJAB+J1T0tmh3RnePUGfjotqn6X2IiXVKDvuIC70M/q6Xa8HBvJ3EwFuKEC
-         68klTBlfMC3SabdrnvAh0jxs1d6TfdkpMo627QdwQuQZpA3axxbd/2u2/GL8ZwdI4xXT
-         +JzMZ6CpuXpUgVLGbgPNrDIYg+t5fer+ITkPauZA2/pVRpIgbKwaefe55LKU24Xr85KF
-         cwrg==
-X-Forwarded-Encrypted: i=1; AL+hErHxxeAvDnLUfMbqIpE3BKMRPnk5L61ARvHeRCcUUS8beHlF1tXVuaew1Uhz2Ry1ibtMEQP9AvLp2A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/tINPRzmiZSaxr6wT3uzKJ6uoEux3bJkQ7fJbn3sO9K4faz+c+
-	mkUR1DvJspbMwdLd7gmGuz6Zlcgu36fDneXuAB7kO86x6RlsiqNuKWRf
-X-Gm-Gg: AYBFou2H4UcBS8gn45fgLNNaydRN/AoLhRgxLDUYGCOyz+f2WLdKqvgqigxpJrJv4Hw
-	RvNFrCQ3Sk4sgNgb7D5G4lJZt7diKxLTeHG2XaNSGtiHdrv+xQXllxUuYjlImou3jy/k0zGEH8v
-	tN3cRENRPlpNSYWP7CCo20dR2aXe+s9HI29C4iZyzMgGMxkiMASRviCFlCfyucs6dfJ+v/wLkdg
-	LkjC2E0MmNbOEbo+jALIP0D/cBod9nKNPyogG343L88uBuGOsvTAAW7NMq4vRbCLpx4afJ07Qkn
-	rswQcbVhK8Vocbe1t0H+hQHb0qm7eJSiMqd3vS88a+SP1C0HmTbSZYQL4I9yvtpFF188+TYYxq3
-	9qI+BucnYtVX6NjLC0U6HgSkCssIDA57PGOS0n7yj671zQCk1tzNUKuVjOk5kbDMKJuoxbkBHwJ
-	NuweX/9ZYve8LBPqYIUs+jFUAedi1YSe+Lq1wsDPB6goCKdNOkkDWA4h9o78+F7WA5waw8HyggA
-	vYnvEMiH4LDF+UCZUmklKzuIHOu04E8c9qMhK9oXqPL5Yfw3neyr/E/7HOokfa6PbbkTSK8qPQ4
-	MIawdhfq3q4/CICHgGVw7NzUWfU+0f5bK10KHpx+
-X-Received: by 2002:a05:6a21:6444:b0:3e2:2fb7:844a with SMTP id adf61e73a8af0-3f7a9bfa3c6mr670282637.61.1794536985497;
-        Thu, 12 Nov 2026 18:29:45 -0800 (PST)
-Received: from fedora ([2601:600:cb86:7af0::c952])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8bed12a8682sm335547b3a.10.2026.11.12.18.29.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Nov 2026 18:29:45 -0800 (PST)
-From: Aiden Hecker <heckeraiden@gmail.com>
-To: Huang Rui <ray.huang@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Hans de Goede <hansg@kernel.org>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Cc: Ingo Molnar <mingo@redhat.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	linux-pm@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Aiden Hecker <heckeraiden@gmail.com>
-Subject: [PATCH v2 2/2] platform/x86/amd/hfi: Rank SMT siblings below primary cores for ITMT packing
-Date: Thu, 12 Nov 2026 18:29:34 -0800
-Message-ID: <20261113022934.13397-3-heckeraiden@gmail.com>
-X-Mailer: git-send-email 2.56.1
-In-Reply-To: <20261113022934.13397-1-heckeraiden@gmail.com>
-References: <20261113022934.13397-1-heckeraiden@gmail.com>
+        d=1e100.net; s=20260707; t=1794538508; x=1795143308;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ww5MKM6poDK+IczcuuMJkcSdFtjq/phga8CrflKC7U4=;
+        b=W/HG6ZeguhZCFWA49aerO2DJfoSFWXpI1hEdTzdbMb0AjfTZ64IZIGgVuFCGGFtJfF
+         dyAge7CazhHjiBikXKGvlCKdVc6BrGBWuravhuoVkV2DX7k/ML1xHcym8ApvX7Gyvk/I
+         X1VgwiBbfwBzGLHuUKIZvSxVqu8EY+TftgAc1pzFz2/UXdTiXBJZ5XJo2IlJUr4jqdJN
+         B8jrcMyWar/vSPlmFtZJgju0mYYl8T4lpRYPit86Pgc2RMsjn0XLbgL8HcAMqH3szjM3
+         x88UBYIlgbQ3hSleD4MzNZz2TUOgiYAtOs8rBD0wis38LJ1cPQco7cb3qq0jh4EQV8p9
+         +UWA==
+X-Forwarded-Encrypted: i=1; AL+hErEWClrYn9aVvpQOd+y8LdLahSo+V/51BrvyLh8EVj5CyAk8vFG9WZH/S9wDLWodk9TslWjRlhJYxw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+ay+NhUY8AcBjS/ja5ObtwTyvNKsag3eevMJoQAtFavDBQdc+N
+	lj2arbBO1N39OK20F1UNv3s5O2DB+gImIZBj+bDIyvQYHBmo6UwZglfktCu70rYCwNXuIqRJd2z
+	LPmeJRISnRcNVn3+dcL3H10iBxWkbs2w/F8eIL1DS
+X-Gm-Gg: AYBFou2tIqku7P1H3nkXPl6YecrsRP90SO2jvU1ctszZ1XK7ifUpojA7CMVnVM6SgsJ
+	hDmL6WxJMZAbamFnCvdTkuA23YpB4UZj3PjEHgCEu7HNeIdqMiIrKf3XJlT3y3dX7VegHnrUzET
+	VyLqgDuXOEuwjE2tHw96x5S7GDGiPvFGWc7qVUG7osM5Gywr1qujqPB2IjESU0TFmZMb77srchG
+	EzO/I9Ih27bHecPw+eJx1YVzwPUuojv365aOx79fqjJp66+6eyLUYWNMkE07jMJg7sVkAVwqgPH
+	nx5NFp3+x5W+ekpayjPO8iTXtBjinlkHfKPN24xCLEm8iJVryfuen9tu3QscayNsFJW3Iw9J/Ie
+	7PY9yGugckBR/ewbMUqqKjJxsszBKWqIX+/FPVg==
+X-Received: by 2002:a53:d5c2:0:b0:67c:7317:de93 with SMTP id
+ 956f58d0204a3-67d8976bb2cmr676238d50.91.1794538508154; Thu, 12 Nov 2026
+ 18:55:08 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -108,67 +101,53 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20261026214359.3122870-1-briannorris@chromium.org>
+ <20261026144346.2.Ib692ddd35c1dbea1757d9b1db6c1c7e938fc4ea6@changeid>
+ <20261028-rapid-daffodil-rat-0adc6a@quoll> <aulIoq2oVjJ3DVzL@google.com>
+ <d4a430de-715a-4936-8adb-35ff57a52b5f@kernel.org> <avZkfg6WMlMzOxpn@google.com>
+In-Reply-To: <avZkfg6WMlMzOxpn@google.com>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Fri, 13 Nov 2026 11:54:56 +0900
+X-Gm-Features: AclHuK-84j9IBFkhrVUuvk8buFltZEjB8ro1aPwuBHaC_xvB0gZrSc9m2OIxmfE
+Message-ID: <CAGXv+5G5z75HGP8nv_i_nwEeSd3qkvyL_h_MYzV_XPT9BpR4jg@mail.gmail.com>
+Subject: Re: [PATCH 2/9] dt-bindings: soc: google: Add Google Tensor CPM binding
+To: Brian Norris <briannorris@chromium.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Thomas Gleixner <tglx@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Peter Griffin <peter.griffin@linaro.org>, devicetree@vger.kernel.org, 
+	Tudor Ambarus <tudor.ambarus@linaro.org>, =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+	linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>, 
+	linux-arm-kernel@lists.infradead.org, 
+	Mariano Marciello <mmarciello@google.com>, Douglas Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org, 
+	=?UTF-8?Q?Jakub_G=C5=82owacki?= <jglow@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On heterogeneous AMD processors (X86_FEATURE_AMD_HTR_CORES) with 2-way
-SMT enabled on both Zen 5 and Zen 5c cores, amd_set_hfi_ipcc_score()
-assigns identical ITMT priorities to primary threads and their SMT
-siblings.
+On Fri, Nov 13, 2026 at 11:48=E2=80=AFAM Brian Norris <briannorris@chromium=
+.org> wrote:
 
-Scale secondary SMT sibling ITMT priorities slightly below their primary
-thread sibling (7/8 of the primary IPCC score) using
-topology_sibling_cpumask(). This preserves the SMT > dense-core advantage
-of classic Zen 5 SMT siblings ahead of Zen 5c cores while guiding
-SD_ASYM_PACKING to prefer idle physical cores first.
+[...]
 
-Developed with coding assistance from Antigravity (Google DeepMind).
+> If I do keep these as literal firmware IDs: does that mean you'd prefer
+> these not be in dt-bindings/? Many of them (especially the IRQ IDs
+> you're pointing at) are not needed at all in the kernel side; they serve
+> more as naming documentation than anything else. I can just inline them
+> into the DTS. But I'd prefer having macro names for LPCM IDs and
+> similar, as it vastly helps DTS readability.
 
-Tested-by: Aiden Hecker <heckeraiden@gmail.com>
-Signed-off-by: Aiden Hecker <heckeraiden@gmail.com>
----
- drivers/platform/x86/amd/hfi/hfi.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+I think Krzysztof said as much when we added macros for MediaTek pinctrl
+numbers. They are just symbolic names for easier reference. OTOH a binding
+is a contract between the device tree and the software implementation.
+And if it's not a binding, then it doesn't belong in the bindings directory=
+.
 
-diff --git a/drivers/platform/x86/amd/hfi/hfi.c b/drivers/platform/x86/amd/hfi/hfi.c
-index 86a7f4332..d7e35a2bf 100644
---- a/drivers/platform/x86/amd/hfi/hfi.c
-+++ b/drivers/platform/x86/amd/hfi/hfi.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/acpi.h>
- #include <linux/cpu.h>
-+#include <linux/cpumask.h>
- #include <linux/debugfs.h>
- #include <linux/gfp.h>
- #include <linux/init.h>
-@@ -261,11 +262,26 @@ static void amd_hfi_remove(struct platform_device *pdev)
- 
- static int amd_set_hfi_ipcc_score(struct amd_hfi_cpuinfo *hfi_cpuinfo, int cpu)
- {
-+	const struct cpumask *sib_mask;
-+	int prio;
-+
- 	for (int i = 0; i < hfi_cpuinfo->nr_class; i++)
- 		WRITE_ONCE(hfi_cpuinfo->ipcc_scores[i],
- 			   hfi_cpuinfo->amd_hfi_classes[i].perf);
- 
--	sched_set_itmt_core_prio(hfi_cpuinfo->ipcc_scores[0], cpu);
-+	/*
-+	 * Rank secondary SMT siblings slightly below primary threads so
-+	 * SD_ASYM_PACKING fills idle physical cores first while still keeping
-+	 * classic Zen 5 SMT siblings ordered ahead of dense Zen 5c cores.
-+	 */
-+	prio = hfi_cpuinfo->ipcc_scores[0];
-+	if (cpu_feature_enabled(X86_FEATURE_AMD_HTR_CORES)) {
-+		sib_mask = topology_sibling_cpumask(cpu);
-+		if (!cpumask_empty(sib_mask) && cpumask_first(sib_mask) != cpu)
-+			prio = (prio * 7) / 8;
-+	}
-+
-+	sched_set_itmt_core_prio(prio, cpu);
- 
- 	return 0;
- }
--- 
-2.56.1
+What MediaTek did was put the header files together with the .dts files.
 
+Hope that helps.
+
+
+ChenYu
