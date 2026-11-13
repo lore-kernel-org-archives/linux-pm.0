@@ -1,57 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=115.124.28.73
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794561961;
-	b=fPk1ljbEyb1n4kG0vfv4DH1RpfrG5mWZmqjxwek04q/8VGVgJZGTPs6sdJy55rp66JyM
-	 D0Qre/OwFHowTVfjUgZYc1wQu01R9L3mu01Mt4Bsoy2mkuPC+zDOatSmuvLe1Rz5ydPZz
-	 oc6CKq7xmHIYMtvk4FgcJrIvhom3oQ6/zzGfSBuL0UBDbjuNi8Z7ufiYJjCzXlNzykqBV
-	 D8+Q0tIfiuw7/vrwQfxEGb8lmVm4NtT9HboFozN2tAfiFzhf9tRbEXzYd8LRBDsNAJFF3
-	 uL6+ymBPMNFQCr70Fjht8EOvIEv6Qp2rjvf6FMoA/QsAWnSV8tVpzjl8RfsTa0hFBlQ==
+	t=1794563483;
+	b=nDm/aQDBQRVv25nQwseDBT7ssoDkEG++DVzFKdAhpBr9Ej7Qtg9dQIi8uEZWBsjBNRxy
+	 Eb7Kex+F/Ruuu9MQ3DEQU7R4GLP7nivcZ9Y0/vrVoGlO05DNCD52sdIAYYjGSlihcfA4a
+	 2Ce0wUvDSkGXGHdTXHL234rRaTJpWImjCFHbGGmZ+OSVzeAYcKRZN5F22sC1U6mvdr2aJ
+	 zKybwLeEvj+jyBlbu2/02nmc5xVWJKPKF/pQxVWVIrD/+2/8mTysjwxhSJC5ZamuYgGou
+	 cy1cJFC6vTkFdC/ZH9RUmq86Zl6f7u8IPEytXrOp3gQhNeYuaB/rEL4iNiNMDRilzXQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794561961;
-	h=DMARC-Filter:X-Alimail-AntiSpam:Received:Subject:To:Cc:References:
-	 From:Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=Cmlk37tKcDHGEQEkS96XUk1sqWPWdpBp23HETVNGO2M=;
-	b=EW2BdAudA2luI7aBPs+TA0dQ92lTtvtjND9Bwy6dHdcTe1omoFvFgW98vtPBz0jA2bpA
-	 X4ClzIdkwndybuXtBQ5dSePRxcS4HzsItoKmpYKlnfmij0JCW8wboGNmelSXIKrTUMGjh
-	 qzaTFLlJGY5T0Brisc2VczCY65eQ89jfBvR3yotP0Py/gVAgekeiS2/ZZYAw+Cg9GEuc2
-	 GRzgmgcmn28wFR0v81hZ6rT+FT1312k2Q9OCYG2sF/V8TLO0hIOdVVAm4wiTfChQ3cg8v
-	 gZH+r9gFMjg+Lx2X//EQZdHIDIH8otp54qf8D8819ASHgOqTD1S+nmwcB0usGg3GTKg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794563483;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=qM35vwS1YLDmGN+uv5ChOSkJ1AQ+cagXNb3hozKL5uQ=;
+	b=k0GR6AALbH8Xlu79accZsuVz6Qk29xqspf6mKjXfOt6pxllMxJw+lEKo2vmtfmOpqAtz
+	 6QM8c62GhNE39YXp4LYZ3mp+RArznBwvOlxwHnCE+jDH2EU0nyrQZxQ+IQLhqImMUd2Yq
+	 t6AMOUNtE8PiZPmKxzug4Kbi2AK4N4zF3dXUIk0WD/VA8UcNuvxf5uGZFC+XAi/Ddlczf
+	 +OR5ZJ0VZS1sxwH2ycjVExQslE36T1xef1JeM+uVqrl+xgEneOSFyj/GCSWzS6qI7po4h
+	 LC8SDsjBHoiKmHBsJEcxIetvSNhSktyFmRP7mlkJK7xOstuE2I2FkouiEKU91UDWaOQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=open-hieco.net;
-	spf=pass smtp.mailfrom=open-hieco.net;
-	arc=none smtp.remote-ip=115.124.28.73
-Received: from out28-73.mail.aliyun.com (out28-73.mail.aliyun.com [115.124.28.73])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OzPAZyKh;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CF29606A327;
-	Fri, 13 Nov 2026 09:25:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2CF29606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=open-hieco.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=open-hieco.net
-X-Alimail-AntiSpam:AC=CONTINUE;BC=0.07733507|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_system_inform|0.644173-0.00282016-0.353007;FP=3946660559307230458|0|0|0|0|-1|-1|-1;HT=maildocker-contentspam033045099153;MF=likunyu@open-hieco.net;NM=1;PH=DS;RN=25;RT=25;SR=0;TI=SMTPD_---.k1AyX04_1794561952;
-Received: from 172.18.25.145(mailfrom:likunyu@open-hieco.net fp:SMTPD_---.k1AyX04_1794561952 cluster:ay29)
-          by smtp.aliyun-inc.com;
-          Fri, 13 Nov 2026 17:25:54 +0800
-Subject: Re: [PATCH 13/20] sched/eevdf: Try to push short slice task on a
- better CPU
-To: Vincent Guittot <vincent.guittot@linaro.org>, mingo@redhat.com,
- peterz@infradead.org, juri.lelli@redhat.com, dietmar.eggemann@arm.com,
- rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
- vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
- lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org,
- tj@kernel.org, void@manifault.com, arighi@nvidia.com, changwoo@igalia.com,
- sched-ext@lists.linux.dev
-Cc: qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com,
- sshegde@linux.ibm.com, kayracizmeci@gmail.com, tim.c.chen@linux.intel.com
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-14-vincent.guittot@linaro.org>
-From: Li kunyu <likunyu@open-hieco.net>
-Message-ID: <fceb72e4-0042-249b-8223-f912f2a50d80@open-hieco.net>
-Date: Fri, 13 Nov 2026 17:25:51 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+	by smtp.subspace.kernel.org (Postfix) with UTF8SMTPS id 7EA2E606A32E;
+	Fri, 13 Nov 2026 09:51:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OzPAZyKh
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 2C0301F000C4;
+	Fri, 13 Nov 2026 09:51:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794563483;
+	bh=qM35vwS1YLDmGN+uv5ChOSkJ1AQ+cagXNb3hozKL5uQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=OzPAZyKhgPMlAiei7wa9AeaBgu/62M/YNxUEvd9plcL9qt/WqBdIM0YUpRBnSCouP
+	 +h75WO6+MvcNemlz1oBDAox5E7JV8A/k750VTdIlM6ESJg0r+M+k1HEvUT2Y5jzkfE
+	 M6He/fV5RoJri/dWqNYCPU2w/xpOrq7NAqd0RaguU56WqU1EcGtPk1Io2AXYyTLFaF
+	 9w5pIHBF850UWvbeouekS97Fy8GJ0iHxoGM3he0GKCg9yiKXCjCGR6jlaeOAvsgYEI
+	 /mm4p0eMwbAEpkMzRYtA3iwrLRfzKMfGHncqsNKPxizmcPijnOLE1hejHpOFIVdaNh
+	 KGthWFnxSYDhw==
+Date: Fri, 13 Nov 2026 10:51:19 +0100
+From: Bartosz Golaszewski <brgl@kernel.org>
+To: Linghui Wu <linghui.wu@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Miaoqing Pan <miaoqing.pan@oss.qualcomm.com>, 
+	Hangtian Zhu <hangtian.zhu@oss.qualcomm.com>, Shuai Zhang <shuai.zhang@oss.qualcomm.com>, 
+	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 0/3] power: sequencing: qcom-wcn: support SW_CTRL wake
+ IRQ
+Message-ID: <i6ihipvdbcxz2xnfercbk3payexgqddx7b5fgoejah6awitltm@xhjtl6cs57ot>
+References: <20261019093911.3199891-1-linghui.wu@oss.qualcomm.com>
+ <20261112072009.3815276-1-linghui.wu@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -61,53 +64,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <20261106151947.3991524-14-vincent.guittot@linaro.org>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261112072009.3815276-1-linghui.wu@oss.qualcomm.com>
 
+On Thu, Nov 12, 2026 at 03:20:06PM +0800, Linghui Wu wrote:
+> Some WCN3990-family devices use the SW_CTRL GPIO to indicate that
+> resources need to remain available while the application processor is
+> suspended.
+> 
+> Teach the Qualcomm WCN power-sequencing driver to use the existing
+> SW_CTRL GPIO as a dedicated wake IRQ when the power sequencer is marked
+> as a wakeup source. The PM core keeps the IRQ disabled during normal
+> operation and arms it for system suspend.
+> 
+> The series documents wakeup-source for the WCN PMU binding and enables
+> it for the Shikra CQM, CQS and IQS EVKs.
+> 
+> The series has been validated on linux-next on Shikra hardware.
+>
 
+When addressing sashiko's comments in v5 - please send it as a new
+thread, not a reply to existing threads.
 
-On 2026/11/6 23:19, Vincent Guittot wrote:
->  static bool fair_check_pushable_task(struct rq *rq, struct task_struct *p, struct task_struct *next)
->  {
->  	if (!__check_pushable_fair_task(rq, p))
-> @@ -10120,6 +10137,12 @@ static bool fair_check_pushable_task(struct rq *rq, struct task_struct *p, struc
->  	if (next == p)
->  		return false;
->  
-> +	if (next && next->sched_class != p->sched_class)
-> +		return true;
-
-Would it be more appropriate to use sched_class_above(next->sched_class,
-&fair_sched_class) here? I think placing prev on rq->cfs.pushable_tasks is
-justified only​ when next belongs to a scheduling class strictly higher than fair.
-
-I also wonder whether doing this in the normal CFS hot paths -
-put_prev_task_fair(), set_next_task_fair() is really desirable. PATCH 09/20
-already replaces the unconditional raw_spin_rq_unlock() + task_rq_lock()
-sequence with a raw_spin_trylock(&next_task->pi_lock) that skips the push when
-the task is already locked, which I agree is an improvement.
-But could the push decision itself be moved into the load balancing path
-instead? That would keep the hot paths free of migration-related locking and
-select_task_rq_fair() calls. Or is the next-aware context (knowing which task is
-preempting) something the load balancer cannot reconstruct, making the current
-placement necessary?
-
-Is my understanding correct?
-
-https://lore.kernel.org/all/20261020083746.37068-2-likunyu@open-hieco.net/
-
-The SMT push work in this patch is intentionally quite simple; I think
-it could be generalized with only modest changes to perform push at
-larger scheduling-domain scopes, such as the LLC (last-level cache)
-domain.
-
-I realize the push direction is somewhat at odds with the current
-cache-aware scheduling work, which instead tries to make cross-LLC
-migration less attractive. Still, I'd be interested to hear whether you
-see any value in a push-based approach at the LLC level, or if there
-are related plans I should be aware of.
-
--- 
-thanks,
-kunyu
+Thanks,
+Bartosz
