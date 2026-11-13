@@ -1,105 +1,103 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.208.169
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.208.181
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794532041;
-	b=BWrcr53gPXgK2UB3x1nGiqj8XCwKkO1FI7PtK5pUDtK+pe/K/K9SJD8bzjpA3/AwBrUE
-	 mqoZ4VHeykjIKkMq/KCRgh0s1k8vJcD0+uNS1GZRSLoXdG2eYN62C6wZ3lIzVaAoBN6G4
-	 0HP4O+Fm5tulPeZfYpr1+qMq3cjSByPwU4/VgCqOGmWKnfRXHTuGpbBM1hTI4CZ2cj38r
-	 vuajIcjJOMWkf0Ld0pN0RRMlaUWXOMcnw/INs3/OBmlDJHnbZ1V3eNq2wQE+pdw7mMCpE
-	 dahTUpoNxElkocDeZTe0mDZ8sJz50mroGyFOHralrbO2fnUl4NrTBNBXUFc61oLFjbg==
+	t=1794532052;
+	b=HC2RApITdoYBSwuIahXiLlruRRKKk5AnTJIZWt0MdUU55esNAiluk8cdB1UJcAWM8f7K
+	 SdvlEet+shTZQjgUnWamf5Tp33epav+3J0ieoAVPwFYmEoCQqGcKbl9ZlY8EcWtUe/vgS
+	 0mQDKQCy9Q3jun8y6l+Hx2EH7a+TVRtg6AzUbGsQqnU9Bg9lS2MwGoSONJ5vn1z33WlHL
+	 z/dHBp6KqeAYBNQ9CpaaM/WsgduPhKdaELuzJoDO+gcETZBJmSxCba6OJhoVeX1xEfOrD
+	 oFpSr8h0cGeVWWCHgS3elxpy49+yvElQLKirrtV8jPvT2AroUFWDC/zyJziKlGMLCNg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794532041;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794532052;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=c/cWqKIWduZoLOjk/RHPTZ+tnDRCPdJt/8RzdamyTqU=;
-	b=5KDBkhcLxmvdcOUFsMpq5ees+vnoHYa+sdPzmurHeNHkk7peH9FwP8Y/8GVNppTZQ5ZD
-	 h3VHcdhCWgjhRRDKy11jl4kfHEHQ1HbAniF86tsAvNyiAix6IxYfIb6HoVKLZc6ZnTF06
-	 BbZ028I5HHkrMEW/SvA670sArxUDXHw2m4ziuTOwHly3/TJnCSjTjA5sF0XCiiD7KHplA
-	 Z0mDxV0oiudg0ruxv0crqHCF8n7Y7UEFgPH7zJciyKO84lKGfMENtlGLbUXQHVjJZ8caR
-	 a5jZhSZvsvmG1EOO4zI6d4vXPC3nR56bjce6Khd/Ve6VDmcDSKRSw7GAQuAqJMYe5IA==
+	bh=y5dvtWN48Of2Ff8r0NZmrMSivJ/dH4bQ2NUxOe+Y+iM=;
+	b=HlvVOp3xIKsVYhVnYp74BYl596Y8a64Pzwf1p6m6mEye4evoF5HXW4/c2fRIxcGsHLnn
+	 7C9JC0EjMFt03+jHi8ZwZ7C+5HIQ8D6PEN7fIh1dwVaYwNpvd2+VIm97gSLJcqJx74nPV
+	 xDddsmffQBpwQPtDmHSl2HMMPMZkIssJgrTLAm/XSFQUAZynmKlIIw+ZsZ/oG+HkN1dJ+
+	 9q9mqMrf8KM499gjr3O0Dkb+BLW1fagcL3TvUTozLErL+W5YbEDi6VnjOpK/AGNlFuXz3
+	 3RE+4Hf0Obq4++0Zb3B5+mnl7Dx7BTJpOtAAQVlYD1Fw7lO9L1IEoDTB9D7MiaFCZHQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Eq09Izgm;
-	arc=none smtp.remote-ip=209.85.208.169
-Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=alUUlNLL;
+	arc=none smtp.remote-ip=209.85.208.181
+Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com [209.85.208.181])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC315606A330
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 01:07:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DC315606A330
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22B12606A31C
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 01:07:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 22B12606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Eq09Izgm
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-3ab3b29a1d4so4918481fa.1
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 17:07:20 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=alUUlNLL
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-3ad5529ae64so4815531fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2026 17:07:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794532039; x=1795136839; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794532050; x=1795136850; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=c/cWqKIWduZoLOjk/RHPTZ+tnDRCPdJt/8RzdamyTqU=;
-        b=Eq09Izgmr6L0mJQZ0HGFPuN0Br7L2lg0TYPw5RX5lMCWkxrGZLtvtY/8JVMh+7FffG
-         2dLOX6yFXpe2n2Bhh5GSqYgsbdxgGb7z7Z17hHWQCgnAQW8NXry7apdnZyJI4lNWzP4f
-         LYbV1NLTJFGYgWD4LitRiCjz25d5SbJFx/roCW34TlLX2Z6JHm7P0w7gMm/ozo7EBqQd
-         fXzfsAdl/HCoQhZLgLZS03JQswxaEyqAInfAUV50YAX+ZZV+ZMtsY6tKCRUg/nCBdDu6
-         zCsulkh4onxu8Eq/wGYIfooBilcdqPvnPTWyqIHlxNisBWz2mkRL2BnxsYw7DvLLToi2
-         8Yxg==
+        bh=y5dvtWN48Of2Ff8r0NZmrMSivJ/dH4bQ2NUxOe+Y+iM=;
+        b=alUUlNLLM4r23MzLGD6KSTwEjevaMWDBsZLRG3xpHOzByGGDfvG4Xk6K14kt9Sec/H
+         I3rPYaJMhd67QjqEPCGq7qLBm30ePI2bgEBDuMDSRaYDDqQzrsb60JL77yR8lkxcvWc8
+         2DC53lioLkxmqVK15Sf+Goxgqs4M2zOAan1FxU7PUGsdmwsonR/oF72DgKtpx1zC58qd
+         RhU5XegWfbQRLn/hGCAc1XHwayw8DaWXC1YgY9LKA4pqa0dATyK9KpD8LqMM/ap6TlpV
+         FCMUMeiBHVD46maIEjqVm7wWtwZeaOUf3IlKVYMNril7KkdaOaThhJeAK5EkzG83q3Av
+         ZDQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794532039; x=1795136839;
+        d=1e100.net; s=20260707; t=1794532050; x=1795136850;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=c/cWqKIWduZoLOjk/RHPTZ+tnDRCPdJt/8RzdamyTqU=;
-        b=1u38ji2XmwX4VxEeWOZ5w+HsCuGh2QOMvTwCtJkF4dP9O4VCbIe2vi9h/LBqG1wPqQ
-         WL+fSq7g+KNOfvGSJA7zKCi3WyeqE4kUYEjv67lmp4csl+no6L79Bp0dVCocdG2vOCXz
-         EbvevVnhiHkL6cJBHn/USYL/KdO+C0qYCLP0bN7P/nzqRb9PQtyHQmbk/akipkF3FXRh
-         Lp26bJcaOfOfdHqsCUg4mSBdCxKlb3PNGr8ktjPl5E6ylrPV/y0ebt62Jp5POdX0VaaS
-         dq7stGM851k2q3p87OFtswJh8JmMtwNpZJD7TIYy2zEA+rhmroIM8AThxVBiPYcUj2w0
-         ahMw==
-X-Forwarded-Encrypted: i=1; AL+hErFF7hHTzcMUBB/wXpOa2Zg8npDZgUvQr7hHvD2dC1FAgRgASM1IPOQXgwGeOSDjlNXwkqu2lu3+PA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9vS0D+PhzA7I5MGv6Wu8kAF37dmnEnYoHjNFz1RAlqpmRXYNTv
-	JMaLKIEZI5CgL01CPnCCfvK8GeOmUAISu5YBBHKB+eQb5TTtL//ZX7cT
-X-Gm-Gg: AYBFou3HcdzV7UM1vEBbgbzfBkKs23S1giVRwdP+6zut8g22OOcb8gY3vhz4LVpao+x
-	LLjW8ZYsHi5HmcgwRCNrLrZC+qdos9T+cXGu0RFh9GUdPkLPbQ2rj+zxSg1p0+2uVZCMYQ4K772
-	ZjHY6DbOyPYBmV08iLxaPSzYucJ98DdS0jnFJ61pNjRnT757be8k2juNTg5YtZbrZOaA9j33CyA
-	q/mU3yubEPr5jk12jL2cNuWhD94RmWg4pXxtq+rWHDk1+9FCrUb4c/7GdbxYeLKQfz9H1XHHZmB
-	0q93/aToWCZhbs4hWCp1k6oJg5DUKnekWk5LKLGhg+3aiBkJx5U35BotWwymzm5NkdnBrRRIM3C
-	TUyyh/IhEEQmiftfnGGOVhxiABIeu/n0exVnMOETDY4AU9BT9+ZKtCnsY82/Eur8hpRopkic5ur
-	rxbzqXKhNdqXHunFXO7seQezlcT6HFpvUApQVfqqFawwWrQJx4sh+qOuzNshFnZW1CAjfTeQCMk
-	9EO9XE3DlReBuxADQeh84aqECzlngabeh6kNiCSDC2+BqyzHKahIhuMohGHJRYAjO5lj/3SObfp
-	1TGbNpwJrvwfIn8d23L5A0cChWjoiR3ELK3Qj9TX5kRqm0T+m0UwLhbFVNFI55Gn0TxyyXgwWpn
-	QfJ7VhDlPPQ==
-X-Received: by 2002:a05:651c:a348:b0:3ac:dda0:efdc with SMTP id 38308e7fff4ca-3ae2b5074cbmr3651751fa.16.1794532039095;
-        Thu, 12 Nov 2026 17:07:19 -0800 (PST)
+        bh=y5dvtWN48Of2Ff8r0NZmrMSivJ/dH4bQ2NUxOe+Y+iM=;
+        b=jAzzyjYkq8ucUN2fqTWfOlWYZAfjGHksX0SMLFD9iju6oQTp0kdjGDfF7UPfH6iZWf
+         3SFEqKm0empDeRdGHFSJLPT5LRkxSM8Gmch8f+3hG6mpoiZF8lSwmpvTwxikrdtbZamx
+         ZZX371N9v0AVpoVmJv4ZLTUtXIai2lEvo7IqaxA32QDtclJcUjJ3sLlrbPPTxUF+YvRn
+         su+y32f4QQAUnTzoaQmjPi5BzQcog9758vIOBtuy/9WwDO/KqIuDZy5eI28DbiU2ZWEd
+         JbvWda1IwqPydDmA3epQQBp81+Mm/oxnzYi2FjICRvfrtBrT/iFEuABtvE367t/B8Zjh
+         LBww==
+X-Forwarded-Encrypted: i=1; AL+hErFpbcvfxGHfChqPnMUxnADzOqWW4EyMi9AEhxIZBWx9NLHvWWMO9O/672McshJeL0XU4oVDIDjWUA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+ypImuhyqrITCrgj775vrmtHXLLOnZWXj8y9ChmcIIcbT6+W8f
+	ug6cNaK+o26MJpYJh8IQb+hHKzL2BGFCciWsPMFBvxDvhfv5+VLc35At
+X-Gm-Gg: AYBFou2uwQkSa0ZYvd8/8ZmAKmhhgMNc2xr+Qk9fd/mfEqvENlHka4ZD1zLcKRgRoza
+	/rGfsAkFcEqKotASsFzYdCnVgsmA1Pv9W4V1Ca2fezKOoOnorUhzk9T5vIWb88f2peH/8ty6FZG
+	lLdWtGriE3YmnO6tKx10DTnycwCCc4mxPjl27m44ND+Lwx9fhA57m2IIA+go5B8y+mrMlXcI1A+
+	+XZlxmTwztmUx15q41tgrUqGvEJ3Qpip8fpbk0WzpTIUw0dA9vCeKU8tifOc/3lZEUhNDmMEmNE
+	K2exBQhtBWTXDpNMs6fja8OirxcgKxH2q1JB+oJzX/GQHfzbeHS2Hj6vSQTBqH5/N+hBNIlEHX3
+	/rC69KXuJfeeMhCaZDhuKLtVZC0pGBocpt683KfhqJ77rLxXfCQobVJxvZFc7y1syUWUF11TfzM
+	PGsjBNf/PC7HsNVLaCEqMQsJfnjxChiksgnP8FL6mIAi5iJ4M5Pc8hZenCsSljsA9dDJDk4uN5P
+	n/pNjnEr4CeXWv/o7Cn88F894o7c76tbLqpwDgmPhpiWeklhUQiUKqv/4kzH1o2Vh43xj+woEs6
+	xg8AmBwqGUMCTQhSMUId1n2Hcl/19TCjOArwfuKDrh2R7lbncFpmoZkKmV2hbgO1saVMtkgBDxP
+	6vuB+kp70D3SCIdN6g0pQcp9V3Axz9ZE=
+X-Received: by 2002:a2e:ac0b:0:b0:3a9:abd6:1acd with SMTP id 38308e7fff4ca-3ae2b4b5d4bmr3909171fa.6.1794532050397;
+        Thu, 12 Nov 2026 17:07:30 -0800 (PST)
 Received: from SafoStation ([31.40.65.49])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3ae2b7d183bsm3133941fa.31.2026.11.12.17.07.14
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3ae2b7d183bsm3133941fa.31.2026.11.12.17.07.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Nov 2026 17:07:16 -0800 (PST)
+        Thu, 12 Nov 2026 17:07:28 -0800 (PST)
 From: Safocl Stollmannovic <safocl88@gmail.com>
-To: Ard Biesheuvel <ardb@kernel.org>,
-	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
-	Thomas Gleixner <tglx@kernel.org>,
+To: Peter Zijlstra <peterz@infradead.org>,
 	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
+	Will Deacon <will@kernel.org>,
+	Boqun Feng <boqun@kernel.org>,
+	Waiman Long <longman@redhat.com>,
+	Petr Mladek <pmladek@suse.com>,
+	John Ogness <john.ogness@linutronix.de>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Pavel Machek <pavel@kernel.org>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>
+	Len Brown <lenb@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
-	linux-efi@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-um@lists.infradead.org
-Subject: [PATCH v2 07/10] x86: fix duplicate extern declarations
-Date: Fri, 13 Nov 2026 05:06:12 +0400
-Message-ID: <20261113010631.139191-8-safocl88@gmail.com>
+	printk@lists.linux.dev,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v2 10/10] kernel: fix duplicate extern declarations
+Date: Fri, 13 Nov 2026 05:06:15 +0400
+Message-ID: <20261113010631.139191-11-safocl88@gmail.com>
 X-Mailer: git-send-email 2.56.1
 In-Reply-To: <20261113010631.139191-1-safocl88@gmail.com>
 References: <20261113010631.139191-1-safocl88@gmail.com>
@@ -127,128 +125,90 @@ Link: https://bugzilla.kernel.org/show_bug.cgi?id=222257
 
 Signed-off-by: Safocl Stollmannovic <safocl88@gmail.com>
 ---
- arch/x86/include/asm/efi.h       | 2 +-
- arch/x86/include/asm/gsseg.h     | 2 +-
- arch/x86/include/asm/preempt.h   | 8 ++++----
- arch/x86/include/asm/processor.h | 2 +-
- arch/x86/include/asm/suspend.h   | 2 +-
- arch/x86/um/sys_call_table_32.c  | 4 ++--
- arch/x86/um/sys_call_table_64.c  | 4 ++--
- 7 files changed, 12 insertions(+), 12 deletions(-)
+ include/linux/lockdep.h      | 2 +-
+ include/linux/printk.h       | 6 +++---
+ include/linux/sched/task.h   | 2 +-
+ include/linux/start_kernel.h | 2 +-
+ include/linux/suspend.h      | 4 ++--
+ 5 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/include/asm/efi.h b/arch/x86/include/asm/efi.h
-index be58b7f5c..f5cb179b8 100644
---- a/arch/x86/include/asm/efi.h
-+++ b/arch/x86/include/asm/efi.h
-@@ -94,7 +94,7 @@ static inline void efi_fpu_end(void)
- #else /* !CONFIG_X86_32 */
- #define EFI_X86_KERNEL_ALLOC_LIMIT		EFI_ALLOC_LIMIT
+diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+index a6451ecbb..f436eab07 100644
+--- a/include/linux/lockdep.h
++++ b/include/linux/lockdep.h
+@@ -89,7 +89,7 @@ extern void lockdep_init(void);
+ extern void lockdep_reset(void);
+ extern void lockdep_reset_lock(struct lockdep_map *lock);
+ extern void lockdep_free_key_range(void *start, unsigned long size);
+-extern asmlinkage void lockdep_sys_exit(void);
++asmlinkage void lockdep_sys_exit(void);
+ extern void lockdep_set_selftest_task(struct task_struct *task);
  
--extern asmlinkage u64 __efi_call(void *fp, ...);
-+asmlinkage u64 __efi_call(void *fp, ...);
+ extern void lockdep_init_task(struct task_struct *task);
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index f594c1266..09a28181e 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -136,7 +136,7 @@ struct va_format {
+ })
  
- extern bool efi_disable_ibt_for_runtime;
+ #ifdef CONFIG_EARLY_PRINTK
+-extern asmlinkage __printf(1, 2)
++asmlinkage __printf(1, 2)
+ void early_printk(const char *fmt, ...);
+ #else
+ static inline __printf(1, 2) __cold
+@@ -200,8 +200,8 @@ void __init setup_log_buf(int early);
+ __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
+ void dump_stack_print_info(const char *log_lvl);
+ void show_regs_print_info(const char *log_lvl);
+-extern asmlinkage void dump_stack_lvl(const char *log_lvl) __cold;
+-extern asmlinkage void dump_stack(void) __cold;
++asmlinkage void dump_stack_lvl(const char *log_lvl) __cold;
++asmlinkage void dump_stack(void) __cold;
+ void printk_trigger_flush(void);
+ void console_try_replay_all(void);
+ void printk_legacy_allow_panic_sync(void);
+diff --git a/include/linux/sched/task.h b/include/linux/sched/task.h
+index 90ed5bc3c..5cdef6b0f 100644
+--- a/include/linux/sched/task.h
++++ b/include/linux/sched/task.h
+@@ -61,7 +61,7 @@ extern struct task_struct init_task;
  
-diff --git a/arch/x86/include/asm/gsseg.h b/arch/x86/include/asm/gsseg.h
-index ab6a595ce..81ef16081 100644
---- a/arch/x86/include/asm/gsseg.h
-+++ b/arch/x86/include/asm/gsseg.h
-@@ -12,7 +12,7 @@
+ extern int lockdep_tasklist_lock_is_held(void);
  
- #ifdef CONFIG_X86_64
+-extern asmlinkage void schedule_tail(struct task_struct *prev);
++asmlinkage void schedule_tail(struct task_struct *prev);
+ extern void init_idle(struct task_struct *idle, int cpu);
  
--extern asmlinkage void asm_load_gs_index(u16 selector);
-+asmlinkage void asm_load_gs_index(u16 selector);
+ extern int sched_fork(u64 clone_flags, struct task_struct *p);
+diff --git a/include/linux/start_kernel.h b/include/linux/start_kernel.h
+index 09f994ac8..5855467ca 100644
+--- a/include/linux/start_kernel.h
++++ b/include/linux/start_kernel.h
+@@ -8,6 +8,6 @@
+ /* Define the prototype for start_kernel here, rather than cluttering
+    up something else. */
  
- /* Replace with "lkgs %di" once binutils support LKGS instruction */
- #define LKGS_DI _ASM_BYTES(0xf2,0x0f,0x00,0xf7)
-diff --git a/arch/x86/include/asm/preempt.h b/arch/x86/include/asm/preempt.h
-index d16d9c2f7..135695ae3 100644
---- a/arch/x86/include/asm/preempt.h
-+++ b/arch/x86/include/asm/preempt.h
-@@ -134,11 +134,11 @@ static __always_inline bool should_resched(int preempt_offset)
+-extern asmlinkage void __init __noreturn start_kernel(void);
++asmlinkage void __init __noreturn start_kernel(void);
  
- #ifdef CONFIG_PREEMPTION
+ #endif /* _LINUX_START_KERNEL_H */
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index a38150277..b97af3420 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -385,8 +385,8 @@ extern int swsusp_page_is_forbidden(struct page *);
+ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+ extern unsigned long get_safe_page(gfp_t gfp_mask);
+-extern asmlinkage int swsusp_arch_suspend(void);
+-extern asmlinkage int swsusp_arch_resume(void);
++asmlinkage int swsusp_arch_suspend(void);
++asmlinkage int swsusp_arch_resume(void);
  
--extern asmlinkage void preempt_schedule(void);
--extern asmlinkage void preempt_schedule_thunk(void);
-+asmlinkage void preempt_schedule(void);
-+asmlinkage void preempt_schedule_thunk(void);
- 
--extern asmlinkage void preempt_schedule_notrace(void);
--extern asmlinkage void preempt_schedule_notrace_thunk(void);
-+asmlinkage void preempt_schedule_notrace(void);
-+asmlinkage void preempt_schedule_notrace_thunk(void);
- 
- #define __preempt_schedule() \
- 	asm volatile ("call preempt_schedule_thunk" : ASM_CALL_CONSTRAINT);
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 77488ff5e..68d7292af 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -455,7 +455,7 @@ static inline unsigned long cpu_kernelmode_gs_base(int cpu)
- #endif
- }
- 
--extern asmlinkage void entry_SYSCALL32_ignore(void);
-+asmlinkage void entry_SYSCALL32_ignore(void);
- 
- /* Save actual FS/GS selectors and bases to current->thread */
- void current_save_fsgs(void);
-diff --git a/arch/x86/include/asm/suspend.h b/arch/x86/include/asm/suspend.h
-index a892494ca..e29c071b9 100644
---- a/arch/x86/include/asm/suspend.h
-+++ b/arch/x86/include/asm/suspend.h
-@@ -11,4 +11,4 @@ extern unsigned long temp_pgt __visible;
- extern unsigned long relocated_restore_code __visible;
- extern int relocate_restore_code(void);
- /* Defined in hibernate_asm_32/64.S */
--extern asmlinkage __visible int restore_image(void);
-+asmlinkage __visible int restore_image(void);
-diff --git a/arch/x86/um/sys_call_table_32.c b/arch/x86/um/sys_call_table_32.c
-index 51655133e..f79c0138e 100644
---- a/arch/x86/um/sys_call_table_32.c
-+++ b/arch/x86/um/sys_call_table_32.c
-@@ -9,7 +9,7 @@
- #include <linux/cache.h>
- #include <asm/syscall.h>
- 
--extern asmlinkage long sys_ni_syscall(unsigned long, unsigned long,
-+asmlinkage long sys_ni_syscall(unsigned long, unsigned long,
- 				      unsigned long, unsigned long,
- 				      unsigned long, unsigned long);
- 
-@@ -28,7 +28,7 @@ extern asmlinkage long sys_ni_syscall(unsigned long, unsigned long,
- #define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, native)
- #define __SYSCALL_NORETURN __SYSCALL
- 
--#define __SYSCALL(nr, sym) extern asmlinkage long sym(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
-+#define __SYSCALL(nr, sym) asmlinkage long sym(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
- #include <asm/syscalls_32.h>
- #undef  __SYSCALL
- 
-diff --git a/arch/x86/um/sys_call_table_64.c b/arch/x86/um/sys_call_table_64.c
-index 943d414f2..555e65e66 100644
---- a/arch/x86/um/sys_call_table_64.c
-+++ b/arch/x86/um/sys_call_table_64.c
-@@ -9,7 +9,7 @@
- #include <linux/cache.h>
- #include <asm/syscall.h>
- 
--extern asmlinkage long sys_ni_syscall(unsigned long, unsigned long,
-+asmlinkage long sys_ni_syscall(unsigned long, unsigned long,
- 				      unsigned long, unsigned long,
- 				      unsigned long, unsigned long);
- 
-@@ -24,7 +24,7 @@ extern asmlinkage long sys_ni_syscall(unsigned long, unsigned long,
- 
- #define __SYSCALL_NORETURN __SYSCALL
- 
--#define __SYSCALL(nr, sym) extern asmlinkage long sym(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
-+#define __SYSCALL(nr, sym) asmlinkage long sym(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
- #include <asm/syscalls_64.h>
- #undef  __SYSCALL
- 
+ extern u32 swsusp_hardware_signature;
+ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
 -- 
 2.56.1
 
