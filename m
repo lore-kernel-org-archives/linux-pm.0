@@ -1,81 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=52.42.203.116
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794568253;
-	b=gfgxGtKWac5xdYbrpIrW09eSR4JlnVo9Pe1CngOE/weDuoHaHV+TJaxveUTfb3+rgWmE
-	 ba9gqvGwNNwLJ5qha7PktTbRl3M/0PyksodeS4I9bD3UAGIRz30GBPmbOiFFAppDksFKh
-	 VM9cc0BNqonU2oNloWHC+4Ggq4MY3RsIpbHLCZ6zACTqgb/Vp6glcqPrqaahUcduePUtT
-	 s8T7BQq7b5pA2RUqsGPIH7AaPYZsrvb7M4dBGDqpZurml6kqaF+ezquZIrC3kz9mSXB7g
-	 bLiA0ATEFGayO66JEE+NY+KHwbW+9tU0gQptl8DlSPXQ/7htvP6pz8QEWHVyvIbP86A==
+	t=1794568438;
+	b=FzxmM9mUSXY5qIC5GxWVUOWUfX61v2vCVZXQPiog0qWym//OPCQvLlpMvCJF7ofLqrTD
+	 TEFGiq4+1Me8K/BpOrA84pBf92z9UCx06Bwt3bhBIUpAGQ+vsGZdMACN3S5GwhZPJSJud
+	 FFgFJ3k5b+CnwMnxCl4EI1oyWBKZFYtoa2WSv+/qkwTYguV8xh5ySGZmSIFaq/JVjVUCx
+	 RUyKsgKf9G8z0lJUT69zmByifDMZJ2oafiqMtd8QlMEJyYeEIWqT+nzlWY+9Vte+8TGRO
+	 zZPylRZH2pOHe4z6l8FXQrCi9E8BwfwsnBIC/LASmHu08SjINUqSuXervd9vMHG2S9A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794568253;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:Received:Received:X-Farcaster-Flow-ID:Received:Received:
-	 From:To:CC:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding:Content-Type:X-Originating-IP:
-	 X-ClientProxiedBy;
-	bh=Vz8zzO+pbP/JF+uMRgI6d/03y9BDYJeIS3sGQ4sLnXE=;
-	b=FIcAdC2DLhkqfHAEgrqPMeQbcUfCQYHzzjZMJP1SpUDoupMw74hjTNkNjwiALl+Xbmb5
-	 x/knHIWt0L8TXqCDTXyEg+7DWxZxQlqbU1kzBllgH/bFHconasAmH3221IAHbKfPwvl3a
-	 awCamMFgDWi9KmusPrEBdwxm1Hov0IWrzbLBQYab2uPrQnl8k7R3tQYDyj9X+FTOKVl2u
-	 0srXfMXVmStK0hJ9eSBm4YBApFfF2zbOIq0zneArpLsB9aIe0afmcmbAOdmiofldTf+2i
-	 elXBYaqI+fpSf4Wve49qGC5zGb7ms7yfPfckMujBx+dpV0+wpRPdpI3EnkV2c8c9f9A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794568438;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=y3FPWWAh+XQ+2S0Pz3gDOIXu/qT9hKjIxiZNoW7QkJI=;
+	b=zwdYQZ06PU8raV+a/D+WJX4e3r79Yl7uglqbvH0YAP35pfTRYnveiLVQvWGlJn98CUNi
+	 4cI9xHOrYZRFxgc7FtLWpK1asdp18z6wtvyWSn5GnnwCvNg4WLhr8HEXpTzgppqRM2ZcW
+	 j8NR7c/kQs5wVSQSPGPnmUZRMaenr3tJzWg/KLqq9YjE5b7r+zG11SVTsf9Nk4BujRE8y
+	 kidiRZe1ZbCHUZO4hH3s34qkNqZ+L95d+uNNufAH9khYPc3BR5LPfAIKZWhpXnZ2WJ3I5
+	 QGYatj6aY6OCeuz0n81hlk1Fj1Ur3s5yzshOaXybXDB6xBW7i2zdt+jcLzIGUIOVAjQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amazon.com;
-	spf=pass smtp.mailfrom=amazon.com;
-	dkim=pass header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazoncorp2 header.b=hbZmYkwC;
-	arc=none smtp.remote-ip=52.42.203.116
-Received: from pdx-out-008.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-008.esa.us-west-2.outbound.mail-perimeter.amazon.com [52.42.203.116])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ejxNbzvJ;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 750DA606A31C;
-	Fri, 13 Nov 2026 11:10:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 750DA606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 686D1606A31C;
+	Fri, 13 Nov 2026 11:13:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazoncorp2 header.b=hbZmYkwC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
-  t=1794568253; x=1826104253;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=Vz8zzO+pbP/JF+uMRgI6d/03y9BDYJeIS3sGQ4sLnXE=;
-  b=hbZmYkwCE4LFJdcImXN5o3zE5gJB35q/MNPL5BSS2U+eJBhgb9fEB8Ds
-   tF2j13OaxvHQFR4TJ3hrctXH07jc9fRgerWj1RIXCGmY1TWarROwtWlnq
-   zg0Efv6uuxQqCBNUt+eM2FOdkudXHti9H43DCYD9e/1PUgEGvZZ5JebcK
-   rGOUD11dM2VHJTNvh95l6oF54AeWsyGqo9J2BGgF0/J4ZnoK19KmZX12X
-   /k5iA+8/YESn343SDossW4bMCbnaPBdEnxie6L/AKMlWvOg0Yf34jUr/w
-   S05f1maOtQehC2jz/1+ZrfddkZdYZgupi1daYP1tjcerR6/122/B3fQiz
-   g==;
-X-CSE-ConnectionGUID: sDC0FOpCR0qdwvrHPByt5g==
-X-CSE-MsgGUID: Vymrz5xWSuW0fzyncDCV5w==
-X-IronPort-AV: E=Sophos;i="6.27,211,1787011200"; 
-   d="scan'208";a="33912754"
-Received: from ip-10-5-9-48.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.9.48])
-  by internal-pdx-out-008.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 11:10:53 +0000
-Received: from EX19MTAUWC001.ant.amazon.com [205.251.233.53:21664]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.55.227:2525] with esmtp (Farcaster)
- id 0f377dd7-6e8e-4d00-9c9d-ace017f8e592; Fri, 13 Nov 2026 11:10:52 +0000 (UTC)
-X-Farcaster-Flow-ID: 0f377dd7-6e8e-4d00-9c9d-ace017f8e592
-Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWC001.ant.amazon.com (10.250.64.174) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.56;
- Fri, 13 Nov 2026 11:10:52 +0000
-Received: from dev-dsk-farbere-1a-46ecabed.eu-west-1.amazon.com
- (172.19.116.181) by EX19D001UWA001.ant.amazon.com (10.13.138.214) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.56; Fri, 13 Nov 2026
- 11:10:51 +0000
-From: Eliav Farber <farbere@amazon.com>
-To: Sebastian Reichel <sre@kernel.org>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Eliav Farber
-	<farbere@amazon.com>
-Subject: Re: [PATCH v6 7/7] power: supply: cros_pchg: use devm_blocking_notifier_chain_register()
-Date: Fri, 13 Nov 2026 11:10:47 +0000
-Message-ID: <20261113111047.36008-1-farbere@amazon.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261113104459.35839-3-farbere@amazon.com>
-References: <20261113104459.35839-3-farbere@amazon.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ejxNbzvJ
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 355701F000C4;
+	Fri, 13 Nov 2026 11:13:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794568438;
+	bh=y3FPWWAh+XQ+2S0Pz3gDOIXu/qT9hKjIxiZNoW7QkJI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ejxNbzvJykUJdmXXU7mV3nntqpauhii1G/iQkTNy0J9UAmWUQOBZOLhtC4/ewQd7+
+	 9P7oLMsqlavGCLNFMPSIh+q29NgUzXcnfHlTgJ7om/cFLGhx0pbIQJWkClKNAMTOCE
+	 emCBZVd23uwJEB9TvP26O3r3fyoSW5CCfx6ZL3/bkp5CW4uqPcKOknIqNGUyC9uQ2T
+	 e/06w9oFn+oGozFNwG7GIyIYo0VIhVfMgW/AL1SiBZHq+PWRVwh2hGjuPTMoPhhMUx
+	 pEvGl2zGEliBMD8v/YOef3fx5sjN33attpSBomDC6rsuNZ0gPvS4PHvNZHDO2fWwAv
+	 J30xQj6QBMEhg==
+Date: Fri, 13 Nov 2026 12:13:54 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Asdlerto Korry <korryasdlerto@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] power: supply: Add Silicon Mitus SM5714 fuel gauge
+ driver
+Message-ID: <20261113-fuzzy-awesome-shellfish-2d93c0@quoll>
+References: <20261111-sm5714-fuel-gauge-v1-0-b9d163fff6ff@gmail.com>
+ <20261111-sm5714-fuel-gauge-v1-2-b9d163fff6ff@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -85,22 +59,36 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: EX19D031UWA003.ant.amazon.com (10.13.139.47) To
- EX19D001UWA001.ant.amazon.com (10.13.138.214)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261111-sm5714-fuel-gauge-v1-2-b9d163fff6ff@gmail.com>
 
-This patch is not in the series thread. My mail server refused the second
-half of the series with a submission rate limit, and the resend went out
-unthreaded, so 5/7, 6/7 and 7/7 are rooted at 5/7 instead of under the cover
-letter.
+On Wed, Nov 11, 2026 at 05:35:00PM +0200, Asdlerto Korry wrote:
+> Add a driver for the fuel gauge of the Silicon Mitus SM5714. The gauge
+> keeps its results in an internal SRAM that is read through an address
+> and a data register. The driver only reads: it reports the state of
+> charge, the battery voltage (now, average and open-circuit), the current
+> (now and average) and the temperature. The conversions follow the vendor
+> driver.
+> 
+> The temperature reported by the gauge rises with the charge current, so
+> the battery temperature is read from the thermistor ADC channel when the
+> devicetree provides one.
+> 
+> The gauge interrupt is not used, power_supply_changed() is reported once
+> a minute.
+> 
+> Signed-off-by: Asdlerto Korry <korryasdlerto@gmail.com>
+> ---
+>  MAINTAINERS                              |   7 +
+>  drivers/power/supply/Kconfig             |  13 ++
+>  drivers/power/supply/Makefile            |   1 +
+>  drivers/power/supply/sm5714_fuel_gauge.c | 315 +++++++++++++++++++++++++++++++
+>  4 files changed, 336 insertions(+)
+>
 
-The cover letter and patches 1/7 to 4/7 are here:
+This was already sent.
 
-  0/7 https://lore.kernel.org/all/20261113104218.32566-1-farbere@amazon.com/
+Best regards,
+Krzysztof
 
-All seven patches were delivered, so I am not resending them. Sorry for the
-split thread.
-
---
-Thanks, Eliav
