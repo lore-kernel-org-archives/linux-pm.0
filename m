@@ -1,65 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794585816;
-	b=4ZZc/sNoTEfD8tuDUQ7f5L25HHLtPh4qCBRB3Iyfbz2SnlUUfyv1jWBHnE/KF28g3IhB
-	 gHPZTuK8lZnbOv960I3qrISX2cQRvzJpBxKsu+0EeNbnKkgDj6BcmWzVeZKp5M+F5GDze
-	 dlYzLzJGHbOkZEEPqyxR7Xwz/fX7fYl3yyDMudULkP1z6Vqspoba3XpO+uFUGSoVllMCL
-	 1nqOvS/3EJkPQOanaGdAZ3v4MdHxMMl4UlV4FyV2KcXlzA9TZHL4g4ouSinsFtFbUhfPs
-	 6jUNa99zwFGJ8czmDfK2DSOQcXQ7SrSAKOXjzHDiRKNlphglOS2icT2Z+Rn+jrKYNew==
+	t=1794585826;
+	b=qkzqiCYo+byTjeBDJaakZpnah+zAVVW9cDpL8OOrvmYP5aix/+5G/w3nIDt5Y9RH6kZ8
+	 ic2PhOQHJC0BzwXNrnU8aIv9XTbUGnjbLzb4c4/hKkLM31VngnPU1laUaQlZtE/Gp6PLY
+	 8eJmfEDKym9xPV0kDc8jg1xwrWAMuen6hMx8LHoW5uEOMQACz5mFytv/NL2hDXF3kTEih
+	 +O7EUDGXdflSmXg+NtV8cXrkE38Pg/CtV6Pua/Cnr+6rbh1JqUZ6FrR/P2Z6G4Bk0r+be
+	 DMAmTyUpgFrJ9HM5r1KoZt2/Q1Y3j73MtjnuBcynyoFv2hrchKXAFyUeRRwPBD17Pbw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794585816;
-	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
-	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-Mailer;
-	bh=RhI4nQ4XKSj9VLiETSpLtJTrfU+/DWOouSPKVL4WRBY=;
-	b=TF/vsZBqRrC6gs5nrhkXe9VRIIvCz8o49S5i8EMweJr544MeBt5BNHTm2otNSvh6/lRe
-	 r/fzQrT7GJkha13A9DJkzDugxrRsIDh6n9iEIP2Ksj/d/oGZCUH0orgk4k49KrsUaHzDv
-	 Zpxwh4kDTLAH8nudqQ1gUOT1yjE2qOrzHNyeHKTNPn5MiKxrFK/fYfHKZeMhCl8t7EZ+B
-	 eHRhVHRBd2AA4xaSXR2oTiWH8ji/qSkJGY89vEI6XzEeMuBj4gFthgxV/lHls5dW1psEX
-	 9TqjxtOahLVZvPutlzCs/RmPU9TujdtxuOj3FZoWGJ5Z5+DeH/tVFJDyVTP95uH0ZjQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794585826;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=oIe8tsNYDsRzQFg3J2rpKh8+KY+zb5Wykm4LdjiH/U8=;
+	b=L037sfTHNzRThOizT7GnIqPJ/Jgl4lT6IywfGMepcQT6+bzOZi4+AqRSQb7HBXWq7LQH
+	 hZGnzQQAR3VcZcZ27IRwCQjzwUE805531pOn9wtuNtp3TDTt6ObbcWRwIqpE+KG0k/se7
+	 HwWJBh5i6msnuIpLhlr8QOftHAILtX8jV2I7cFcBs2qUGnnyknVLjQTu8fXlGXf/D2Swf
+	 aTMeDsLjrWzibsJIFnTTwNPqnyl5IJM/cvJ7UighBX/E3SfrRy7i9wD4zqWx0lkuzFD2w
+	 4wkrlq8vsIW9/8TNHeDcAkUPytO9Y7t4JHvoit4wgqfCgZwWNsp5nvQpyUU0FOsIm3w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iDRqarTR;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8598C606BA98;
-	Fri, 13 Nov 2026 16:03:36 +0000 (UTC)
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rHAkUWbn;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 898F2606BAA6;
+	Fri, 13 Nov 2026 16:03:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 898F2606BAA6
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iDRqarTR
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CB711F000CA;
-	Fri, 13 Nov 2026 16:03:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794585816;
-	bh=RhI4nQ4XKSj9VLiETSpLtJTrfU+/DWOouSPKVL4WRBY=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=iDRqarTR8tS7X84ceTlEzYzy475kdu/SiDER8+osdboQ5UBiVytmybe/zFavofpsQ
-	 R6fpcf5/355+3FgOlLJouoK/HF+2VVp1Jv1jMSdjUIL8GzxXuGC731l9EyxCw4PaWN
-	 9TrCmhxV7PMd0i2OK52pNqVmMHa678Zw2uKra8Wz1C5w1RBG/ifb39bnybbPem/qw2
-	 2zL8ODaPvg+rq+vnf1VbO55lsJ5fCg0jxLzlhBn7mOzwlX3ONyKBfOCB6vpzNPHuOx
-	 wMMij6gVKX+aUrXlSS4B+DsyLT3mZnEB5mARNbgGLRkWLVxgzq5tgUPtPBvt5G5HXY
-	 NYu/sLFRXvdYQ==
-From: Lee Jones <lee@kernel.org>
-To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
- Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Eddie Huang <eddie.huang@mediatek.com>, 
- Alexandre Belloni <alexandre.belloni@bootlin.com>, 
- Ryan Brue <ryanbrue.dev@gmail.com>
-Cc: linux-pm@vger.kernel.org, mfd@lists.linux.dev, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
- linux-rtc@vger.kernel.org
-In-Reply-To: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-1-9758f38d7053@gmail.com>
-References: <20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-1-9758f38d7053@gmail.com>
-Subject: Re: (subset) [PATCH 1/2] dt-bindings: mfd: mediatek: mt6397:
- describe the RTC's 32 kHz output
-Message-Id: <179458581213.82278.2659730023660991839.b4-ty@b4>
-Date: Fri, 13 Nov 2026 16:03:32 +0000
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rHAkUWbn
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DB8991516;
+	Fri, 13 Nov 2026 08:03:42 -0800 (PST)
+Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9667A3F673;
+	Fri, 13 Nov 2026 08:03:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1794585825; bh=oIe8tsNYDsRzQFg3J2rpKh8+KY+zb5Wykm4LdjiH/U8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=rHAkUWbnsG87EaSsWRJnZUOiwdJFcWBWAMR/bFBo7N1n8fxIbeFiGIn4wQWmOGNzK
+	 bHV9z02MXIuwXuOXvZOGvlTKDTw51Mzcardv1ryWXIAwbST7id1sjLaVJTfsfS2LLX
+	 q1ACZXW9TtK8/xORwMhIWasFJlJxW2eTJqbOeGmQ=
+Date: Fri, 13 Nov 2026 16:03:37 +0000
+From: Cristian Marussi <cristian.marussi@arm.com>
+To: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>, arm-scmi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] powercap: arm_scmi: Fix potential stale zones after a
+ skipped leaf
+Message-ID: <avc02U7K7mXG0PDZ@pluto>
+References: <20261113-4e14e563a1-powercap-scmi@mail.sdu.edu.cn>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,25 +63,18 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.16-dev-ad80c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261113-4e14e563a1-powercap-scmi@mail.sdu.edu.cn>
 
-On Sun, 01 Nov 2026 23:33:46 -0600, Ryan Brue wrote:
-> The MT6397 RTC drives its 32 kHz clock out of the PMIC, where boards
-> use it as the sleep clock of a Wi-Fi/Bluetooth combo chip. The output
-> is off unless something turns it on.
-> 
-> Let the RTC node provide it as a clock.
-> 
-> 
-> [...]
+On Fri, Nov 13, 2026 at 10:09:35PM +0800, Guangshuo Li wrote:
+> scmi_zones_register() skips leaf zones that cannot be registered, but
+> returns the last leaf error when that leaf ends the traversal. Probe
+> then fails without unregistering the successfully registered zones,
+> whose private data is device-managed.
 
-Applied, thanks!
+LGTM.
+Reviewed-by: Cristian Marussi <cristian.marussi@arm.com>
 
-[1/2] dt-bindings: mfd: mediatek: mt6397: describe the RTC's 32 kHz output
-      commit: c91c3c19d56b9f1c223963eeda275a28cdeb71f9
-
---
-Lee Jones [李琼斯]
-
+Thanks,
+Cristian
