@@ -1,86 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.228.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794564597;
-	b=2PjdU6KXZFTK2sJM9uCyEWG1MhxkLxfsTzXMlb/7/PZqGBXBZ+qYKBx4wvQ1yq+q86V8
-	 qB0OsJBtc8IH0maJC2q1o5kLBmebM1e5GAfiCHh9ye3UZv+O1GMqa++E4NKUrPV0MJJz2
-	 KhW1fDLr8t0OeRrMzryGuNVl1eGMclySR7xL2uMQeQtJHfOLJ6iF5FknNdVq8XZ5zZRLz
-	 hFfsu7CzvRKDjp3fTX6MG8Rqt2WHj3LKSK70mIcSgN/XOh/WykNJlkY5tVEmnfBzjnzXu
-	 I5SG6fA+SL6DjCZVoXpgviv/7poMN78sARjSeK5UyG3eOObCJVhhoex27X98YhVFs2A==
+	t=1794565085;
+	b=3sOU5inRlNcQO2V8ubMMjn6kSUE4z7iTTth3IRx71th9E9gaPATWkXC+/ekKcFnGARey
+	 GuOWmPdOp/ffU9SBgH/wQqR3w24ygcg5zP+z9dvN6x3curSzrdSLawYxyWzMBGAUqLl/F
+	 GAp9ByROtfgPax+ZcTUYBGSWJmeHRW5216qx/7aweJZ8LE+OS1SKi5v1p76umeKszhhNY
+	 mdAtEHiGjj0oMCqc2Ns0mBOOND4UU+gZD6zI+Si+3vCTV3uk3KK+nxjgpA3YD84NK1vi6
+	 BmHlaynkbm9cgcqMh/DkReVC46JXkFjBCIGSKaIgY/vhHAJFywSUfogj+BnZbmKQmBg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794564597;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Mime-Version:Content-Transfer-Encoding:Content-Type:Date:Message-Id:
-	 Cc:Subject:From:To:X-Mailer:References:In-Reply-To;
-	bh=DI86z/0Iql/9v/K5OtJPg8rVycvTnslIkr8t7coMOfc=;
-	b=Y4PAEBkLY3rAwSfMMVtCq9H+Lo4WBJ6cOGDuKmN1uG2IwHLimx6c7bhAZThmFrMIxEG1
-	 4LlsjQ583iPC4NANisAF5TTQHug0YVp/SGRAwlGRg7sbc7rN7fp8IlW1tcgoImVKEakn1
-	 gMu8YPWgtRbzrO/vKCdn7MsiITwo+Ckn8BOXNucZ8bjYszvgvTZ5Y+cKKqy1fOnGMY2tZ
-	 rQuD/24mSoHpAiNBpKk86EaulbfAB0o1eN1iCw3bxS5h2ldviEAHULW26RDU4wxNSDjDz
-	 8lMfouA37xMTHUFuZghqHV/EQCSggPMWjxAw/uoZP+necgxHjDHUx63rgTie8FguyHg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794565085;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=oWpj+fMcU0ldZMemXXF2GwJUPPqvOroaTzblSr6zsuI=;
+	b=AqTbFAxTuGXzYz3uXbRpS8K7FOepz/681yqTVJfOtk2582oVBs6YJHtmjy4MKdmCREqB
+	 VUjpHc8VRFLYIBAJwy40Xhw4rHe+NWR/T9u2j1we8oXlHGpl7VAIOkBfdmqtGKMA8hET+
+	 jNzD8lWL3mF6WKMyl6i6/P74o1UZnVc38SVZFw4XEYWL7Zb60SCF0yi4/L0iOah5QlwDW
+	 jdg2MeZPxeRg3cCMi0Q+fPkwDxvlfVjz3W0K8vth9ZCWBzuSz2IwW4rwpQaPwHEe2HErh
+	 6bWDo39e2v81iCdj83QSplDkJSDdIWSj6iWa5eXml9UZaYTzcqf246IR+Rcucdorq2g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=fairphone.com;
-	spf=pass smtp.mailfrom=fairphone.com;
-	dkim=pass header.d=fairphone.com header.i=@fairphone.com header.a=rsa-sha256 header.s=fair header.b=p6TyeFko;
-	arc=none smtp.remote-ip=74.125.228.131
-Received: from mail-ej2-f3.google.com (mail-ej2-f3.google.com [74.125.228.131])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Qh7eaR3m;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C667606A33E
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 10:09:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7C667606A33E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 675C5606A33F
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 10:18:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.a=rsa-sha256 header.s=fair header.b=p6TyeFko
-Received: by mail-ej2-f3.google.com with SMTP id a640c23a62f3a-c50485c0cb8so44586666b.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 02:09:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1794564595; x=1795169395; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=DI86z/0Iql/9v/K5OtJPg8rVycvTnslIkr8t7coMOfc=;
-        b=p6TyeFkoVOUeZsZn+YShv7EPwTXNl4nm5v+8cd6w4mNijv/76ZHOonPgnttdyGWHSZ
-         uIdexMvZ9JRZBPffyXh2pUxZFR4jWSuGrFipiIfD+EG+eg5YTLuoEOXo9FEdqpooZBMC
-         rGdSQVMdhAxOa9pGZzVjc3efrhntuBZexoEB+v1b8dbGr+vzSeRSe7zFJnaKeTpnx2Nt
-         B590OHIZSOAFKWdHE3H1S5NCMDILzqfTkV77AkZBPtflgccLep9cwQb5FK6Zf+L4F30k
-         ry/j3H8g59MVDo+3QQxIWzqBneHeP5D97A/+Jo1ZnDLPRw3bPwE4QoZEeO2FeUb+zx5l
-         PJhQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794564595; x=1795169395;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=DI86z/0Iql/9v/K5OtJPg8rVycvTnslIkr8t7coMOfc=;
-        b=rl5ZYU1QAieCKvq6sHfLmHsjhx/9OimSk0O0PaIlfdlzs8lrKtPU95iMYEyFOBZsBc
-         jObC+A5b8SvMCF5GQuvXWCWcp7qaYQYF3+NaG28q5wH1ycUnj1oBtvMVESC/WRAfjVOc
-         Rc9GthqfQkFUD20UycH27A431OGRohwwbygHcf4fD2J91hs6WT90nLLBXksWAJdhPsx9
-         PFiJy7XgmAhoWfistoIU2pC6IPsBVLhfN+FExB/NR6R82PmLvt7S+QwRamuGrtIJvu4v
-         vsesEDtwF3SA1SEbMk4VKJgKKMiLMLMteSFXtLvptkWriALjdFw8VTUuJUDxuP2dmKHp
-         Xv0Q==
-X-Forwarded-Encrypted: i=1; AL+hErHag+yAsyQLIJ4ja4LUocVZkyL1xyQhCFTi3A8y5OuE3nxyxma3kCSW0U5ZyOdyBokMKsTL2ZTAUw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9RX+nbd72ex4ON3/6r+BSY5l5mUHXmpjZFIBcxLbSY+c7xgo2b
-	krLOPm4/pVoRBRRKbdupdPQNN+0yftzmyJ9qn5zfI7Ic6ILXOsNX2qXP3YGR9RBIELC8L2ghmw9
-	xL6pmIYptbw==
-X-Gm-Gg: AYBFou0OM6+l+4CxVOG+fKlqkSyvgBBDY59my40W0oZsXLK9r11HCZjOWjgObQlVNpb
-	tnAgejpO7WLMi05UH0MkblR0sw25NwFukUPA24avZFALWzhn+2z9d55jtxEP4za8Wk0Daf+MF0Z
-	G8IyUzYlkZwAmLNybRlPbSW3Htu/C9boG77jGpo6My8bhcLozuoRYnHVQN6abkLNGqkA6xVZQGP
-	nxJV94uA6EhOfrF87rFgbk7xN7OBs5qfwMgzmaYzv90aeab4NJfgYyNqtb/SUwY/Zo/ihMWlH36
-	XMB3juThtb3Q+bXx1cVWIeA4zmkxqoGXkXExDg3eir15pK/c9jMSGcnrEEhqNDWIwC9sWT1tCBU
-	3LlrTvNSbpYIexAZ+Tckv0NLu9IqVQ0b9L0ePt5+dhpM3MLCkc2ecSjPg7rJqlWWnkpouyafy+/
-	s8TntaAnfqrm70IuxPxuiK2IgfZ+pkbj0OTgZMDu7oeAbsXYSHdebqD1rafZGVosLCwvEzd/sgh
-	RbCrPk5+//Mn7Lt40a1Nv3QXF+oBwCX7tLW3kbuG/JF9gF4rWe19PLGy3eiT4YTJqaiVuwNn2lv
-	2gDXVoFABuYNRh/kdA7rRie9oxWC7ZFZMIa6UXm39BjItQq3vK/cSXG+uVAFitRAWnYbh8PjJw=
-	=
-X-Received: by 2002:a17:907:d40d:b0:c25:504a:1e25 with SMTP id a640c23a62f3a-c5096372189mr164295066b.13.1794564594691;
-        Fri, 13 Nov 2026 02:09:54 -0800 (PST)
-Received: from localhost (144-178-202-142.static.ef-service.nl. [144.178.202.142])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c5095a5b93csm75758766b.5.2026.11.13.02.09.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 13 Nov 2026 02:09:54 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Qh7eaR3m
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4CCA1F000C7
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 10:18:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794565084;
+	bh=oWpj+fMcU0ldZMemXXF2GwJUPPqvOroaTzblSr6zsuI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Qh7eaR3mKL/KtpLKgrkYS9K+6dQOEJpZBEUDnt//WDGrk5Id3GM50FoNbQ8fhBn5L
+	 92XO4UVO8tvxi3aqDMLTs2YhCxGcoQIIiFTCciZH9oE8KaHbDxtgR9Uh8FgbiE9wwo
+	 CeYQ+HJ3k+ILOSnvat9n1e7hUGFQncLPzCZu1ab2OKmhoLf/IbOyocO7mkbqxwrRlz
+	 V4IbnQxnbHQrxmZYh8oyn1b/ZYYQH2LxhVzku/WQb64ZCijhaKl7OleFmZzYIOGovG
+	 H6kHUMxFbvH75aIn0rxXcFYusN5NJanO2wZTupcSL1iO3Vk5pUeoA7G5XERe11wTxH
+	 m45l4nGo7wukg==
+Received: by mail-oo1-f47.google.com with SMTP id 006d021491bc7-6dde81a6820so979488eaf.2
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 02:18:04 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErF9OOdepWzV6fGqNPJtCMGFRadC34u467R2Um8bPA6yczWNa3Cw23TQ2c92dP8lCS47HNzzAlAkDQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+qO/oQL7vvF5LwHezcYwaw2xQWR3+sfBPr1vDUVqRN8LNY1nff
+	aiNM/rh2IrMWDCpav7d6evNLIOnTo3rdL7tXK7mGfy4O4VN30SpnrV/Wk8WGMVELlYNE06uGBge
+	blCySnRaVIPTA3hDbSzIPrdaiBP296gI=
+X-Received: by 2002:a05:6820:2228:b0:70a:1787:2696 with SMTP id
+ 006d021491bc7-71ab50522aamr1246436eaf.61.1794565084106; Fri, 13 Nov 2026
+ 02:18:04 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -89,85 +58,55 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
+MIME-Version: 1.0
+References: <20261022-add-board-ok3572-c-v1-0-0b0fd85a31ee@qq.com> <20261022-add-board-ok3572-c-v1-8-0b0fd85a31ee@qq.com>
+In-Reply-To: <20261022-add-board-ok3572-c-v1-8-0b0fd85a31ee@qq.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 13 Nov 2026 11:17:47 +0100
+X-Gmail-Original-Message-ID: <CAD++jLkJsYtjKOF7wpiUqSLoBuiOe+C5sMEQo7XZ1dW773+pJQ@mail.gmail.com>
+X-Gm-Features: AclHuK9FczXasoO8qxg9IxepytTJahNxlbbuShGYzvO1iLyvCzMkO5H7q2dWjZE
+Message-ID: <CAD++jLkJsYtjKOF7wpiUqSLoBuiOe+C5sMEQo7XZ1dW773+pJQ@mail.gmail.com>
+Subject: Re: [PATCH 08/27] pinctrl: rockchip: Add RK3572 support
+To: 1579567540@qq.com
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Heiko Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Elaine Zhang <zhangqing@rock-chips.com>, Lee Jones <lee@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Richard Cochran <richardcochran@gmail.com>, 
+	Ulf Hansson <ulfh@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Jisheng Zhang <jszhang@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, David Wu <david.wu@rock-chips.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Maxime Chevallier <maxime.chevallier@bootlin.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Vinod Koul <vkoul@kernel.org>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Thinh Nguyen <Thinh.Nguyen@synopsys.com>, Jaehoon Chung <jh80.chung@samsung.com>, 
+	Shawn Lin <shawn.lin@rock-chips.com>, linux-clk@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	mfd@lists.linux.dev, linux-gpio@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-phy@lists.infradead.org, 
+	linux-usb@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 13 Nov 2026 11:09:53 +0100
-Message-Id: <DMU0219YWEL8.35KQSMY192RH4@fairphone.com>
-Cc: "Marc Lainez" <marc.lainez@gmail.com>, "Luca Weiss"
- <luca.weiss@fairphone.com>, =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?=
- <barnabas.czeman@mainlining.org>, "Danila Tikhonov" <danila@jiaxyga.com>,
- "Sebastian Reichel" <sre@kernel.org>, "Rob Herring" <robh@kernel.org>,
- "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor Dooley"
- <conor+dt@kernel.org>, "Bjorn Andersson" <andersson@kernel.org>, "Konrad
- Dybcio" <konradybcio@kernel.org>, "Abel Vesa" <abelvesa@kernel.org>,
- <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <devicetree@vger.kernel.org>, <phone-devel@vger.kernel.org>,
- <linux-iio@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/5] iio: adc: qcom-spmi-adc5: Add
- ADC5_BAT_THERM_100K_PU
-From: "Luca Weiss" <luca.weiss@fairphone.com>
-To: "Val Packett" <val@packett.cool>, "Jonathan Cameron" <jic23@kernel.org>,
- "David Lechner" <dlechner@baylibre.com>, =?utf-8?q?Nuno_S=C3=A1?=
- <nuno.sa@analog.com>, "Andy Shevchenko" <andy@kernel.org>
-X-Mailer: aerc 0.22.0-0-gc2f86b7abde3-dirty
-References: <20261112170841.2189322-1-val@packett.cool>
- <20261112170841.2189322-4-val@packett.cool>
-In-Reply-To: <20261112170841.2189322-4-val@packett.cool>
 
-Hi Val,
+On Wed, Oct 21, 2026 at 6:12=E2=80=AFPM Cunhao Lu via B4 Relay
+<devnull+1579567540.qq.com@kernel.org> wrote:
 
-On Thu Nov 12, 2026 at 6:07 PM CET, Val Packett wrote:
-> Even though it existed in bindings for the longest time,
-> ADC5_BAT_THERM_100K_PU was never assigned in the driver. Do so.
+> From: Cunhao Lu <1579567540@qq.com>
 >
-> Signed-off-by: Val Packett <val@packett.cool>
-> ---
->  drivers/iio/adc/qcom-spmi-adc5.c | 2 ++
->  1 file changed, 2 insertions(+)
+> Support RK3572 pinmux, bias, drive-strength, and Schmitt controls.
+> Enable input buffers during mux changes for the RGMII receive clocks.
 >
-> diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi=
--adc5.c
-> index d57ba8526e0c..c27ff89429f5 100644
-> --- a/drivers/iio/adc/qcom-spmi-adc5.c
-> +++ b/drivers/iio/adc/qcom-spmi-adc5.c
-> @@ -542,6 +542,8 @@ static const struct adc5_channels adc5_chans_pmic[ADC=
-5_MAX_CHANNEL] =3D {
->  					SCALE_HW_CALIB_DEFAULT)
->  	[ADC5_XO_THERM_100K_PU]	=3D ADC5_CHAN_TEMP("xo_therm", 0,
->  					SCALE_HW_CALIB_XOTHERM)
-> +	[ADC5_BAT_THERM_100K_PU]	=3D ADC5_CHAN_TEMP("bat_therm", 0,
-> +					SCALE_HW_CALIB_THERM_100K_PULLUP)
+> Signed-off-by: Cunhao Lu <1579567540@qq.com>
 
-While this will work fine for some devices, unfortunately this won't
-work for quite some other devices that don't use a 30K, 100K or 400K
-NTC in the battery - or when the NTC beta (B) is differing to the
-hardcoded lookup table.
+This patch 8/27 applied to the pinctrl tree.
 
-For example on Fairphone 4 (pm7250b fwiw), the battery has a 10k=CE=A9 NTC,
-so using the ADC5_BAT_THERM_30K_PU with the hard-coded lookup tables
-would result in very wrong temperature values. Even ignoring the whole
-NTC beta topic.
-
-You can see my proposed patch series at
-https://lore.kernel.org/linux-arm-msm/20260220-bat-temp-adc-v2-0-fe34ed4ea8=
-51@fairphone.com/
-
-Unfortunately it's from February and I haven't spent more time on this
-topic since then, mostly because fuel gauge anyways was downstream, so
-pushing just this upstream wouldn't make much difference.
-
-Now it does, so I should get back to it... Let me know your thoughts!
-
-(Fairphone 3 with SDM632/PMI632 would actually be fine-ish as-is because
-the battery has a 100k=CE=A9 NTC and the beta probably is close enough to
-what's in adcmap_100k_104ef_104fb_1875_vref)
-
-Regards
-Luca
-
->  	[ADC5_BAT_ID_100K_PU]	=3D ADC5_CHAN_TEMP("bat_id", 0,
->  					SCALE_HW_CALIB_DEFAULT)
->  	[ADC5_AMUX_THM1_100K_PU] =3D ADC5_CHAN_TEMP("amux_thm1_100k_pu", 0,
-
-
+Yours,
+Linus Walleij
