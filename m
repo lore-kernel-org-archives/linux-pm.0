@@ -1,55 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.8
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794583581;
-	b=OMXnzassUa/H5iiBGtDqyOB28Tjj3Zj4OklWioS17ut9wgj69O6KjUB5DtLjYVuqUguV
-	 QlLhowVqMYFGvM5cL8vZkXg9Ef+CMXUlrCik0QESKnR8r0cWfY6vOaTxgHxvUSAXPdhqq
-	 A5TcONaBDGta+4npaT3cS0YqjymyxBwRHuIPgjfoyZAKoiSb5BZpr5fQyUtKMTJEYTnwA
-	 KKQ1vB+GU2WZ24bcf6+ro86JCnA3ocCSK0lMFORE4HA1rvGktd9zs+Ih61/UPZf7Fel40
-	 MfxIGGiQP6LlelRMKS0rUeIiWRtm7zGPh2ksUedQrfKAnep3qfQ930urZtwFnlNtNwQ==
+	t=1794584458;
+	b=4m8Lok2679k6BN7FIyrSjD+oE+7rze8vdyICXx8o2BcOMyNbZDeqE5V6qdwQfH6ZgRCv
+	 Y5hn7kQcx1pMGe+hyV30Upw81jvSZ90gsKR7DwXWkxSV74fzRiItt++SKs8ovVD33iXZJ
+	 NbLd1tEvzf4Rf3/3/91Ler6vWlMsqRZzB0QSojXYTnXKxpFC8xAPdBMVPP1wI/DG8Wr0m
+	 hXOnUwi1I51GDb/OVy0e8KpVEIP1kg+xY9C28M6YqwbC92YeDS1vqTUREBRvKIOv+83aM
+	 XFTs8b0xkZDtGiUt4GVuSV6j5nqYSIt5BrFXDx7ZuJqVcB3ftBWfd+oxNseUg/T6WDw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794583581;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=sOB5ovBIpBsovWpo0gXI1cKYhejjTCYu6APsHzA8QRI=;
-	b=PuB32J3eaW+5GQjmHLEz6L+08A61MoAAAsMayu/uPboV+F+a+N5j/AkBN5m0L5sRQldZ
-	 hN0mUH6qKnBzMXJ84hFO84srPboD06Tdsze+RktPnlkS0X8k6m2SPkdgJGBAXypaSp62P
-	 U3GBHEm6OF+MLKOxeP+oh3raR0hmUalUHA+1gJDQRBN8GqmRsErYdEa3Ngt6TkViajiqR
-	 uGrk8sJmMPU0FRlO6cHXGwxRJN1wkBO/gsLo7jefw0+xvie1k6Dd1e2ygWzwpuxMfwpDJ
-	 IvXLZWbtgNV+uGtuVDe+vKIyYH9zh88jcJi+KKck5P/k9iHNRD4w7hPfnysHD8Pxw5w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794584458;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=4GT8+Mmr8OYn6xUMx+uYQ3KeEz5BsFTJd3z2yKiJr1Y=;
+	b=pPssrBn+Mzoxum5K4khgGO3MKPsmFaSgcRXcLDkusUfoMu1i/6eo2azygzVqODHwhYtC
+	 +6MXdNUyWf1onzreWi3YaR+xbts4zdufA0yqbiiWWx3QoafJhJfJ/MZUKscW5jOqdCrd5
+	 OGUbGtei5NdgMwHBOx8EZkPgLSwKggTnex1hGCRul3e2b/I8+mGE+xfE6px3TjYcJt7FN
+	 hP22rVOawOryD97WguLTwoEF0U2Fd70W4rclzpACTjZWe9IdNAUpvhJaPw7x4ZNg9E9hb
+	 7lf+Iz37cJc5+Qu3bE+YpSUUlgNb3a4KwLZFOomG8Y2DmPKMVFQwJYsBQsVGQKZOaZQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dH7Ask3l;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AD3FUUY4;
+	arc=none smtp.remote-ip=192.198.163.8
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 845FB606A32D
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 15:26:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0DD0606A881;
+	Fri, 13 Nov 2026 15:40:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C0DD0606A881
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dH7Ask3l
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 296861F000CE
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 15:26:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794583581;
-	bh=sOB5ovBIpBsovWpo0gXI1cKYhejjTCYu6APsHzA8QRI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=dH7Ask3l+k/REe9aTPcsIK/vfuL0IbidOce3L6SdZspkFHpvmgVWcGNkVUf99Y1nc
-	 TXf2QOWrthiZ/ExXA/8ZgQTW9FiBQEnGTeZk1rbiqw2cwW9/2HVKCqjJQ86QA4TgZF
-	 0apcD84Yocbfl787uSe1h69qK/XYUkiWnyAE2fAc2SO7CgBoXQSvDkRoMrMR+IUIKC
-	 8NsYjxcbZzHARMPLI/zn+6UEBcClT73O7EF5lZCBytQpK6IxmQ57Ag6WZrzHextyyR
-	 f5S+oiIwnQ3qY5GPcz/VCO3FLncrDBDkiAPsZJtjyT5EsTTHByX2NdziJKCADLycFS
-	 ePXWAqCehRvsA==
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5c158c4c15fso1806346e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 07:26:21 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErFmaLPrah8/5u1gYSsQVURq2q2g2yvdgEjgG3wI8CQzaleUCG/8VPUjoHPRaIObeAoC57p6A2UTgw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9LGwWJfG5oJZ0zz18fifgs2t1RaNV+TPZoSflnpCVFmRJdZSWJ
-	7CXJ4vdbEm0lW1QLgH5BYLwes/JEnz9OzU7D4CayXXgsSFA9gLCYJQTJPs8U1oxzfzGH3n23o98
-	3jpBnksR0RWYuUYbUDvF7O5ixbCzl0xk=
-X-Received: by 2002:a05:6512:224e:b0:5c1:56e4:c705 with SMTP id
- 2adb3069b0e04-5c164df77e6mr2164171e87.3.1794583579509; Fri, 13 Nov 2026
- 07:26:19 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AD3FUUY4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794584458; x=1826120458;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=XW9+ctSAsRi1UZ6OAm7aUEQJe5hNybzu4A7OLgjs9Wk=;
+  b=AD3FUUY4ynSEK0N9SnpAahM+Ge8S7QEoGS6gCusRWlmdJFpO9p9YVm6/
+   SOzIvfs1NoSE/AZJxkOSR8By/Qqcgc+hCv1CiwLUxtghnXS0tveZLzKQn
+   u3imIwgfca+Y/vuIOac3RziSPG2LmKNee1KoDlTdvOiHBHNxR/dQwBFGF
+   6eoSl7nCTb+ceAJkImYSYqYlavkrMpAUP4pkokl720fGH4hiRgoZg/3DV
+   B21IDZtnFPyCx4iWtl+CmxZ9mXDPQG7jqlTUhD9YmjRrOLmfPVN3Hvywf
+   bbvp0VjUOF2rTLwmZDL8WAHAgQLUym4y0Ky2vLzaY9B99mc10HQZNM68A
+   w==;
+X-CSE-ConnectionGUID: AQwh4vz8RtKlCE1O9aezmQ==
+X-CSE-MsgGUID: djy0H95WRA2iGMl5qqL+3Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11965"; a="3278976"
+X-IronPort-AV: E=Sophos;i="6.27,211,1787036400"; 
+   d="scan'208";a="3278976"
+Received: from fmviesa013.fm.intel.com ([10.60.135.153])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 07:40:57 -0800
+X-CSE-ConnectionGUID: X7oXsXksRnOn5cEv9RlEUw==
+X-CSE-MsgGUID: hHon+IRjTZukSp35DTGh4w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,211,1787036400"; 
+   d="scan'208";a="10851533"
+Received: from vyassate-mobl1.gar.corp.intel.com (HELO soc-5CG42912VT.clients.intel.com) ([10.247.253.251])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 07:40:55 -0800
+From: Sankara Tankala <sankara.narayana@intel.com>
+To: rafael@kernel.org,
+	daniel.lezcano@kernel.org
+Cc: rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	srinivas.pandruvada@linux.intel.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Sankara Tankala <sankara.narayana@intel.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] thermal: int340x: processor_thermal: Fix Nova Lake-S PCI device ID
+Date: Fri, 13 Nov 2026 21:10:01 +0530
+Message-ID: <20261113154001.2081-1-sankara.narayana@intel.com>
+X-Mailer: git-send-email 2.53.0.windows.2
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,96 +83,77 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261028-hfi-kexec-v1-0-956234dcfb2b@sfcompute.com>
-In-Reply-To: <20261028-hfi-kexec-v1-0-956234dcfb2b@sfcompute.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 13 Nov 2026 16:26:06 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hf9odYCxz1r3Er5dh2tjXCtDwKuhdS1b3tP6MOMjQSeA@mail.gmail.com>
-X-Gm-Features: AclHuK-hO1ifI3teYW-w4X0MV3oVYkEj5OoFMZDemnGHJmRLvJNDv0_SAtlZtmE
-Message-ID: <CAJZ5v0hf9odYCxz1r3Er5dh2tjXCtDwKuhdS1b3tP6MOMjQSeA@mail.gmail.com>
-Subject: Re: [PATCH 0/2] thermal: intel: hfi: Stop hardware writing to freed
- memory after kexec
-To: jez@sfcompute.com, Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Len Brown <len.brown@intel.com>, 
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Andrew James <ajames@sfcompute.com>, 
-	John Ranzie <jranzie@sfcompute.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Wed, Oct 28, 2026 at 1:20=E2=80=AFAM Jez Ng via B4 Relay
-<devnull+jez.sfcompute.com@kernel.org> wrote:
->
-> HFI hardware writes updates to a table at a physical address the kernel
-> programs. Nothing disables HFI on shutdown, and since commit b33f3d2677b8
-> ("thermal: intel: hfi: Enable HFI only when required") a kernel that
-> starts without thermal netlink clients does not touch HFI at all. So
-> after a kexec, hardware keeps writing into the previous kernel's table,
-> which the new kernel treats as free memory.
->
-> We hit this on dual-socket Sapphire Rapids hosts (Xeon Platinum 8462Y+)
-> that boot a Debian 6.1 kernel and kexec into a 7.0 kernel. The new
-> kernel crashed in find_inode_fast() when the inode hash table landed on
-> one of the old table pages. Reading MSR 0x17d0 on the running 7.0
-> kernel showed both packages still pointing at the 6.1 kernel's tables,
-> and the corruption had the HFI table layout: a timestamp, a changed
-> flag, then one row per CPU.
->
-> Patch 1 disables HFI in a syscore shutdown callback, which covers
-> reboot, power off and kexec, and keeps it disabled afterwards: on kexec,
-> user space runs until machine_shutdown(), so a new thermal netlink
-> client could otherwise enable HFI again. Patch 2 makes a starting kernel
-> disable HFI if the previous kernel left it enabled. Patch 2 can only
-> narrow the window: hardware can still write between kernel start and
-> the moment the package's first CPU reaches the thermal online callback,
-> which was about 30 seconds into boot on these hosts.
->
-> This is the kexec counterpart of the hibernation corruption fixed by
-> commit 97566d09fd02 ("thermal: intel: hfi: Add syscore callbacks for
-> system-wide PM"), which disables HFI for suspend and hibernation but not
-> for shutdown.
->
-> Tested on one of the hosts above with both patches applied to this base,
-> alternating 100 kexecs (kexec_file_load + reboot(LINUX_REBOOT_CMD_KEXEC))
-> between the patched kernel and an unpatched 7.0 kernel. Before each
-> kexec, a thermal netlink subscriber enabled HFI on both packages. All
-> 100 passed:
->
->  - Patch 1: after each of the 50 kexecs out of the patched kernel, the
->    unpatched kernel read HW_FEEDBACK_CONFIG =3D 0 on both packages.
->
->  - Patch 2: after each of the 50 kexecs into the patched kernel, it
->    logged "HFI left enabled on package N, disabled" for both packages
->    and read HW_FEEDBACK_CONFIG =3D 0.
+Nova Lake-S uses the same processor thermal PCI device ID as Nova
+Lake-H, 0xD703. The 0xAD03 ID added for Nova Lake-S is the Arrow
+Lake-S ID (PCI_DEVICE_ID_INTEL_ARL_S_THERMAL).
 
-Ricardo, can you please have a look at this series and let me know
-what you think about it?
+The ARL-S entry comes first in the PCI ID table, so the NVL-S entry
+never matched. However, proc_thermal_rfim_add() matches on the device
+ID alone, so Arrow Lake-S, which has DLVR, wrongly gets the Nova Lake
+DLVR register map.
 
-> A test-only 5 second sleep after the shutdown callback, with a thermal
-> netlink client subscribing during it, showed that patch 1 keeps HFI
-> disabled. Without the hfi_shutdown_done check, the next kernel found HFI
-> enabled again.
->
-> Thanks to Andrew James and John Ranzie for reviewing.
->
-> The investigation and testing were done via Opus 5.5, as were the
-> drafting of the patches and changelogs. I reviewed all of it.
->
-> ---
-> Jez Ng (2):
->       thermal: intel: hfi: Disable HFI on shutdown and kexec
->       thermal: intel: hfi: Disable HFI left enabled by a previous kernel
->
->  drivers/thermal/intel/intel_hfi.c | 71 +++++++++++++++++++++++++++++++++=
-+-----
->  1 file changed, 63 insertions(+), 8 deletions(-)
-> ---
-> base-commit: 70f331d89564126fdcaaa37f25194fe391d8f3fa
-> change-id: 20261027-hfi-kexec-e7c4b7f584be
->
-> Best regards,
-> --
-> Jez Ng <jez@sfcompute.com>
->
->
+Replace the separate NVL_H and NVL_S IDs with a single NVL ID, 0xD703,
+and drop the 0xAD03 entries.
+
+Fixes: af1b80b94126 ("thermal: int340x: processor_thermal: Add Nova Lake processor thermal device")
+Fixes: dbd911a07f14 ("thermal: intel: int340x: Add DLVR support for Nova Lake")
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: Sankara Tankala <sankara.narayana@intel.com>
+---
+ .../intel/int340x_thermal/processor_thermal_device.h       | 3 +--
+ .../intel/int340x_thermal/processor_thermal_device_pci.c   | 7 +------
+ .../thermal/intel/int340x_thermal/processor_thermal_rfim.c | 3 +--
+ 3 files changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+index b79937a386ec..87d8ff9c7173 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+@@ -27,8 +27,7 @@
+ #define PCI_DEVICE_ID_INTEL_JSL_THERMAL	0x4E03
+ #define PCI_DEVICE_ID_INTEL_LNLM_THERMAL	0x641D
+ #define PCI_DEVICE_ID_INTEL_MTLP_THERMAL	0x7D03
+-#define PCI_DEVICE_ID_INTEL_NVL_H_THERMAL	0xD703
+-#define PCI_DEVICE_ID_INTEL_NVL_S_THERMAL	0xAD03
++#define PCI_DEVICE_ID_INTEL_NVL_THERMAL	0xD703
+ #define PCI_DEVICE_ID_INTEL_RPL_THERMAL	0xA71D
+ #define PCI_DEVICE_ID_INTEL_SKL_THERMAL	0x1903
+ #define PCI_DEVICE_ID_INTEL_TGL_THERMAL	0x9A03
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+index 7d6fee59ade2..f218ee247ab4 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+@@ -501,12 +501,7 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
+ 	  PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_HINT |
+ 	  PROC_THERMAL_FEATURE_POWER_FLOOR | PROC_THERMAL_FEATURE_PTC |
+ 	  PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
+-	{ PCI_DEVICE_DATA(INTEL, NVL_H_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+-	  PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
+-	  PROC_THERMAL_FEATURE_MSI_SUPPORT | PROC_THERMAL_FEATURE_WT_HINT |
+-	  PROC_THERMAL_FEATURE_POWER_FLOOR | PROC_THERMAL_FEATURE_PTC |
+-	  PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
+-	{ PCI_DEVICE_DATA(INTEL, NVL_S_THERMAL, PROC_THERMAL_FEATURE_RAPL |
++	{ PCI_DEVICE_DATA(INTEL, NVL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+ 	  PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
+ 	  PROC_THERMAL_FEATURE_MSI_SUPPORT | PROC_THERMAL_FEATURE_WT_HINT |
+ 	  PROC_THERMAL_FEATURE_POWER_FLOOR | PROC_THERMAL_FEATURE_PTC |
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+index 96279756177f..1832f13634d8 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+@@ -472,8 +472,7 @@ int proc_thermal_rfim_add(struct pci_dev *pdev, struct proc_thermal_device *proc
+ 			dlvr_mmio_regs_table = lnl_dlvr_mmio_regs;
+ 			dlvr_mapping = lnl_dlvr_mapping;
+ 			break;
+-		case PCI_DEVICE_ID_INTEL_NVL_H_THERMAL:
+-		case PCI_DEVICE_ID_INTEL_NVL_S_THERMAL:
++		case PCI_DEVICE_ID_INTEL_NVL_THERMAL:
+ 			dlvr_mmio_regs_table = nvl_dlvr_mmio_regs;
+ 			ddr_data_rate_reg = &nvl_ddr_data_rate_reg;
+ 			break;
+-- 
+2.43.0
+
