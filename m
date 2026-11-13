@@ -1,54 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794597048;
-	b=L+TLn7k1FVSSpBrRAWkW+P57On7q7EfZ4yaX+KebIZjn82AYSShHNaClS6EVwuckN8f2
-	 xFajx9TXKT++BTw0cdxSmUTWNyWzJ8p4wd4IbiKgIBObJiye6thCy6FQtTHE0RJTHmDaB
-	 qrNYyPorwEYxi4BkqrfNl23lqGOnV8VA07QEU29sJ9oWxiI0m/GXFczhhFbAR9Gsc3HPf
-	 oOsYtNcVNqnk33rpSTFCG49ybK2n3ctrAIoIIbyIOFNMiStouNJgrUb9D0D5UrPiYtJOx
-	 8rdKOr0c56lx44zMxW39d4jd2fv4gFYb4pWBusrddKnzWoAAihADTd8+svf0/iM3baQ==
+	t=1794597635;
+	b=zyDMqUtKMnB4UgrvV0+u+ASLijnMondN++B5gPInlT6zNb0TIRwpu9Wh9SM6uBUKMRzS
+	 RILhR4wZJz1NegyAsCez/liEEsUF3BO4y/Ar5o1SjKcpN1p0A8jJ3reWa09w0OSDO/XHS
+	 R7Onl5CnLv1KL4XMBSYly9sKoJDGmfgqXvr12MFL/n/JvvxzYQVeGmv9OPiE7brfEBXKI
+	 FErrb+101mTBmSCa4jaengf2OIId0CrYYpDjjh8THLQsgQbvDbD46ynylTmAEo4Yzyq0r
+	 bBg30wwjeTIqa9Bgdv68jvfbW4/IeAyAce4PHnS2VApsqXfWmzVrLHXAfB1pnkWSLqg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794597048;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=WAEOzMDkQXHeFaVJ78vzghFDASGs+HMG8qMN8m4Kh+4=;
-	b=0KJ67kOrWE41rA9KoDpo2rXA4GF2COzr0/jNItUcLQSu+qBgdPlvewjO2KhowtF/sJL2
-	 vnd0K8vjojGviD6wNbN3v2Nk+u+CX4Kx0JE/f9Z0tFdC6fkJtDC+EXv9AVKlYpIT2EFwc
-	 9Rcyw4eLyG4ykSQ0JqoDa65a2rfXc/l3iu8b5mnW0kFR1V6d5VwXfG9nillV2rmxCkWm9
-	 EdfMfv9TzoStEX7f7fa/QYvekH3GVT+JhECs/x4bNqqXlKMLMGxedM7RfXmjPWE5kBlQK
-	 1cT+TAMRlPCiBkOq6qSr/niCiJKpJ8ai4gGsIHB4XwEiHpuzjnzu9eSfOg5Hb18MMdA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794597635;
+	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 Content-Type;
+	bh=iZJjvOCw+Qz7RTPFaPuatB3TKmf+mxhm32nAlNzRBg4=;
+	b=P9r6UKsAReVEgXDhrbWJThsvs0aVcKGNI8yrNjCkYDh355aJS9FpYWDRI/lJFTFIb7C8
+	 UwpC75szsvoNYihgyMrfDqQzr5wvbMvgYV1uEeHwK9c2Yj3GxrcV3VK7Ug+Y5mU7h2b+i
+	 y5qIg8oCLDo7VSrwCYdqlRh4kO6ULuKyNXPC6HCCceex2GJ0MkcJnAXQzPwn2ei+0bbaF
+	 80GiCgBsZRm8D/g3TgKaLTI5nzo/TVy5QDCRMJjw/sZo5VlOgL+1m/rGuFJNB56UgxXQx
+	 WhSwcLRWd4qTdOcZh9biRjUDa/X4Z1MgIuhCqY58dZWGJ+7Ny9py//hinoKp1IMhB0w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cenp1BxD;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=sntech.de;
+	spf=pass smtp.mailfrom=sntech.de;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b="xaqU/oDJ";
+	arc=none smtp.remote-ip=185.11.138.130
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 019B9606A33D
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 19:10:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F09D3606A881;
+	Fri, 13 Nov 2026 19:20:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F09D3606A881
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cenp1BxD
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D46D81F000CA
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 19:10:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794597047;
-	bh=WAEOzMDkQXHeFaVJ78vzghFDASGs+HMG8qMN8m4Kh+4=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Cenp1BxDqSDwZTsEQ+jGLR+1OqBpZu6ZDupWEn3U3uR8YlKg8JMaRWuGQ4tMTC95d
-	 M22jJBPOZ1SZseNUVpQW/jxdXzJ1xbY9W2fvLLoC8TYPMOkMvpCJA/lDKD8JLRMbu6
-	 LZ2D3Dpig1mZPp8P2GmB9d4vNpeT6giO4+pqrEgK+cE4PZK4cWJ31A1veqbhhm15Es
-	 pij84dqsxnQDZxkdD9qI7OyHOPKDUjPVPrjGqhL2gEtXaL5RTxc6aS6GUYECURgETU
-	 zjAJKsnCR34T1kmSSdbOqxwqc1DxgWx50+b5qak8pq1gO3Gxe11saQKdcnCNpq1TLQ
-	 8FlONx5JLEA+A==
-Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-3ab4354db11so17552491fa.1
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 11:10:47 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErHU07Lxdh7XL2lAHBFOXQJ78rP5SBvGPaylWW2tQXjgOaVsbLb7JkB32Hx3EFUg16wtYYf9guGLtg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/26980yrKW2SLnF/1zgOWIUYt3JtNOU/06TYCwkoGpt59FJuBW
-	rYuiQ3CM2jD2cT2g/2BScZh3/6WE94S+WRaRamtS5SGgauLT69PJZyg8HSJtGPdmOfamCCHrALj
-	OZadgtl1RQtP5mw6+MoodAqni6NAkvfE=
-X-Received: by 2002:a2e:ab0c:0:b0:3ae:90:b8a6 with SMTP id 38308e7fff4ca-3ae2b524882mr11616641fa.26.1794597046238;
- Fri, 13 Nov 2026 11:10:46 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=xaqU/oDJ
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=iZJjvOCw+Qz7RTPFaPuatB3TKmf+mxhm32nAlNzRBg4=; b=xaqU/oDJTujHMusxbk+DNWU3G4
+	4p+uDpNECLpDeko4WUqLozh+GtW8IQ2X4+PtMGG4McdvDNPQfCqE2Fa/wgsjf3bnaRLcHTSBA4f57
+	5B7FElsTObCdFy2f2ZLQe4bs2q0uB53b1d2c/Fwe68nExV3jffhRabIGqLSNve8CEGGFl65oqFBMc
+	8IZR9s4T9EQVz+bvU1Pn7Z1n5J9rOZModPtsN9g6Ya0HBfrZwAUiN51F4N8b7jCxAOulSIxs1tYWG
+	SDBEnH4CTxn+WZPhCu++OrxoGDCnAqNnUl/L2JDJHI5gKR1UkhScCZYX0jZkZtEy13JNTOw3bhnX+
+	6vYNeZsQ==;
+From: Heiko Stuebner <heiko@sntech.de>
+To: Coia Prant <coiaprant@gmail.com>,
+ Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Ulf Hansson <ulfh@kernel.org>,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject:
+ Re: [PATCH] pmdomain: rockchip: mark PD_PIPE as active wakeup on RK3568
+Date: Fri, 13 Nov 2026 20:20:17 +0100
+Message-ID: <gZu9MXL8T6qhkNXh4okAaA@sntech.de>
+In-Reply-To:
+ <CAPx+jO-+uwxMN3-LZn4nH4HSXu6GCnvdrUb9ff79W5EeCU4SZA@mail.gmail.com>
+References:
+ <20260925041751.495818-1-coiaprant@gmail.com>
+ <CALj3r0jMLFbz+oa_z6kySDg-3aLaFWtFoKv9VB_qHhQZDpemfw@mail.gmail.com>
+ <CAPx+jO-+uwxMN3-LZn4nH4HSXu6GCnvdrUb9ff79W5EeCU4SZA@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,48 +68,76 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <202611111143.CWKE7ewK-lkp@intel.com> <32021bd4-e144-4674-a5ed-ef8b38950b7a@oss.qualcomm.com>
-In-Reply-To: <32021bd4-e144-4674-a5ed-ef8b38950b7a@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 13 Nov 2026 20:10:32 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0ga8+ULra1Fg2a9NOpV=b0uXb57S8=n2LsatLO72JA=PA@mail.gmail.com>
-X-Gm-Features: AclHuK_FISev9QdymkiDcQ8s-xIg_N8ybQmVcnLi7gT1LjucOJzp4oodMqBg0ns
-Message-ID: <CAJZ5v0ga8+ULra1Fg2a9NOpV=b0uXb57S8=n2LsatLO72JA=PA@mail.gmail.com>
-Subject: Re: [rafael-pm:bleeding-edge 9/22] drivers/platform/x86/hp/hp-wmi.c:1057:16:
- error: implicit declaration of function 'devm_battery_hook_register'; did you
- mean 'acpi_battery_hook_register'?
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: kernel test robot <lkp@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, oe-kbuild-all@lists.linux.dev, 
-	linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-On Wed, Nov 11, 2026 at 12:18=E2=80=AFPM Zhongqiu Han
-<zhongqiu.han@oss.qualcomm.com> wrote:
->
-> On 11/11/2026 6:46 PM, kernel test robot wrote:
-> > tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git bleeding-edge
-> > head:   51bafe2e7302403a43ba45415bf9a268a7fcaa05
-> > commit: fafe4f5166bc3d43e28967efb9ea82b1f456b798 [9/22] Merge branch 'a=
-cpi-battery' into bleeding-edge
-> > config: x86_64-randconfig-2003-20261111 (https://download.01.org/0day-c=
-i/archive/20261111/202611111143.CWKE7ewK-lkp@intel.com/config)
-> > compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-> > reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/arc=
-hive/20261111/202611111143.CWKE7ewK-lkp@intel.com/reproduce)
+Am Freitag, 13. November 2026, 18:48:00 Mitteleurop=C3=A4ische Normalzeit s=
+chrieb Ulf Hansson:
+> On Thu, Oct 22, 2026 at 5:04=E2=80=AFAM Coia Prant <coiaprant@gmail.com> =
+wrote:
 > >
-> > If you fix the issue in a separate patch/commit (i.e. not just a new ve=
-rsion of
-> > the same patch/commit), kindly add following tags
-> > | Reported-by: kernel test robot <lkp@intel.com>
-> > | Closes: https://lore.kernel.org/oe-kbuild-all/202611111143.CWKE7ewK-l=
-kp@intel.com/
+> > Coia Prant <coiaprant@gmail.com> =E4=BA=8E2026=E5=B9=B410=E6=9C=886=E6=
+=97=A5=E5=91=A8=E4=BA=8C 07:27=E5=86=99=E9=81=93=EF=BC=9A
+> > >
+> > > On September 25, 2026 12:17:51 PM GMT+08:00, Coia Prant <coiaprant@gm=
+ail.com> wrote:
+> > > >The PD_PIPE power domain on RK3568 hosts the XPCS, the PCIe
+> > > >controllers and the SATA controllers.  All of them can act as
+> > > >wakeup sources for the system:
+> > > >
+> > > >  - the XPCS for MAC WoL, through the SGMII link
+> > > >  - the PCIe controllers for PME#
+> > > >  - the SATA controllers for hotplug wake
+> > > >
+> > > >The domain is registered with active_wakeup =3D false, so genpd powe=
+rs
+> > > >it down during system suspend even when a consumer is on the wakeup
+> > > >path.  That kills the XPCS and the SerDes, which breaks MAC WoL on
+> > > >RK3568 SGMII boards, and it also powers down the PCIe and SATA
+> > > >controllers while their drivers still expect the link to be alive.
+> > > >
+> > > >Mark PD_PIPE as active_wakeup so that genpd honours the wakeup path
+> > > >of its consumers.  Consumers that call device_set_wakeup_path() keep
+> > > >the domain powered; consumers that do not mark themselves as wakeup
+> > > >sources are unaffected and the domain is still powered down when
+> > > >nothing needs it.
+> > > >
+> > > >Several other Rockchip SoCs already mark their PCIe and USB power
+> > > >domains as active wakeup, for example RK3588's pcie and usb domains
+> > > >and RK3576's usb domain.  PD_PIPE hosts the same kind of
+> > > >wakeup-capable controllers on RK3568, so this follows the same
+> > > >pattern.
+> > > >
+> > > >Signed-off-by: Coia Prant <coiaprant@gmail.com>
 > >
->
-> Addressed the same issue on
-> https://lore.kernel.org/all/cbd2aee7-95ae-4d30-8458-b7da2910867f@oss.qual=
-comm.com/
+> > Hi Ulf,
+> >
+> > Gentle ping on this patch. It was sent on Sep 25 and Patchwork shows it
+> > as "Handled Elsewhere", but I can't find it merged in linux-pm,
+> > linux-rockchip, linux-next or mainline, and I haven't received any
+> > review feedback.
+> >
+> > Since then, the XPCS driver and DTS that depend on PD_PIPE staying
+> > powered across suspend have been merged and sent upstream:
+> >
+> > - XPCS driver in net-next: https://git.kernel.org/netdev/net-next/c/5e9=
+1edfb0e45
+> >
+> > Could you let me know which tree this should go through, or whether it
+> > was already picked somewhere? If it needs to be routed differently, I'm
+> > happy to resend it.
+> >
+> > Thanks,
+> > Coia
+>=20
+> Apologize for the huge delay. I was waiting for an ack from some of
+> the rockchip maintainers.
+>=20
+> Anyway, this looks fine to me so, applied for next, thanks!
 
-Thanks, it should be fixed now.
+got lost in my inbox ... and for the record yep, looks correct
+
+
+Heiko
+
+
