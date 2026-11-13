@@ -1,55 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=45.254.49.198
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794578984;
-	b=da0KEBGOCOAiuqD+zslqFhpQZ3FKdumsh/Rk0tzonUq42x0Rtyr72cxeAhpABNdA72kA
-	 mnEt+qsYBjAch9vuQ9+m9P0RhuQR+9lCXIiMcJ4E2PwOk0L9QDVPByzm6zY4u42UFDvrO
-	 IHMS5jfJUN2vr1GuL9QNFJpKLszTnCvkKAzxCkvE/qAlkaLjB0TfrHJBpd3Dr4+FQ9PoQ
-	 EUUWSCt0XtRf9X96wteXU+Z/Wk1cr1kU6B2I0RQUE5GJ5anzKZqz1frfZBPNp2TodqJSz
-	 SAB9BdGmyzsgx3UYFG0RmixgZ7h4Mrs75envIs5/efTf22Z6/ndu9LaYUfNSUixyITQ==
+	t=1794578991;
+	b=BQn0fJUkU2RScP4BjT/zQnCwpK2L0e/XHEpKjdtaGOAHL5p19UerpkUJFl4ASTlon39H
+	 KkB3zyoLnVDp7UHqqgpWJZuO6k2byucqpcD/lp+2zpRv3KJD1lIDodGuDQwOo7T68oq/e
+	 AyPWKagd3czJzIP1WnNbCn7wo2W3IzuUhcejelZOFXgt7mcRtS9AN6v+ha6W64LdGQHAs
+	 gcO36NxWt9iRKbLVX9VOJtntzR8yUZ+UXvUCjR0lx+q6+2zwDz/CA4dphgmHfnTAARAsW
+	 sv8N2ue0mEk/g0e4XdzaxmMC0e6CFgsQJC1kpoD8QjGV07/fe8FkzDVKFiPSRjlkhuA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794578984;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=K/7V8VCjsHb9RdeR+9MCXXwOeyIzjc5Oa04EgPHLl9k=;
-	b=JXCHWABsy5ITBfB5yyjHP10tsCUOdedcDJ2BOVCHX5zW0qCDmvCnOct+4oLGl9gDp+Vh
-	 j/of5Mw+3fo/TvljJU9h/NsZGEI9T6TMD5ZPTQEMp1fwC7ya7zVP0wOfanhEDoU/iHVO6
-	 EeNF9IjIjHiTd51hektthtIrbAiHk3mLe3Bg61DTsi7Z0VGKqRVc9LYCPaPPFKXNKKmQ+
-	 FE+GVVduQhu2ZbZhvXc43U8sDtgcHoLLc4t4FECrlJNkxmuNLA8m+u/QdNRY8NHPzU4FP
-	 ZNy3uN2wKGu4Yq3lj+reRmDYNkB+8t/AA9Ebh3CsJzzUHpUgseVgFfUjO7e6QI/2ApQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794578991;
+	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-HM-Tid:
+	 X-HM-MType:X-HM-Spam-Status:DKIM-Signature;
+	bh=91M3ZRzTa6r+vtYF4xUq8fttGYwuNmT1C5OHT99A86Q=;
+	b=2csjLfEAA/wtB/uUP0NNxPABQfHShjH4NR1wUuMzUwWswhtCCLVGj812hGIRKRWTwb3w
+	 WRI5I6BpCn2GHwqo7UCmnhaZPLX6OS1rQxzuos7lK3pkArXuKu89F6Grc3+pPr15Srm/W
+	 S/tMdUjFblQCA5k9C+Y5is0J6xAUmUA7rHw1SV/c+KJ+DQ0EoW7ylh41w0yIUDVzDG/92
+	 I0CcK8XDPOucb4hiutCVfOA8dqyQ/fEO/UwmR5XNsDd3ttuDmnbvu5bYsmKBs0enrS76p
+	 CwkxTCQM9Zm+t8tcI8TcWF0IigCp5gStUQceZR/m6n5OpamvbHidvLFZ6ZVJbMomhrA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DbSqIud0;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=mail.sdu.edu.cn;
+	spf=pass smtp.mailfrom=mail.sdu.edu.cn;
+	dkim=pass header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=HG4M0Kco;
+	arc=none smtp.remote-ip=45.254.49.198
+Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDBC9606A32E
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 14:09:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84227606A323;
+	Fri, 13 Nov 2026 14:09:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 84227606A323
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mail.sdu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.sdu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DbSqIud0
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 561471F000C8
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 14:09:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794578984;
-	bh=K/7V8VCjsHb9RdeR+9MCXXwOeyIzjc5Oa04EgPHLl9k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=DbSqIud0cwb4WztQQK3YepIowWJWgqbi98doAuDpEu+DnH8lcYR7i7tKTNr5leKmG
-	 51+8dj5k3JbUQpPII/KtR3yTsBZQrTV5TAQ2iTADMzqj18y+h6XacndeTTbz8xmcEm
-	 qdMEniuLMtk3GVqhkbYlNfD2au9prhNh2ZfDUW6eaXYCdu/FRymLg+VzsFSlXt5pm+
-	 CtH8UVIq6vLFaSVgaBPrwT/bKygrMB+V8L6en+KG8dsVt1ZYWdgj77JMcJmOeS6spD
-	 KGfbIZDcbD1SdYY+vMEJ0W/CfGbGuLH6X8H4l6jjx1VfwxYVkCUU5erC/QRCXfE++U
-	 bHNVIXGRCYFeA==
-Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-c4697404c2bso174333866b.2
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 06:09:44 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErFmEcH4dOHrYVpHMWgCgjZG7Odu8ZJEVZz+XCI2ARTFpc1ylGcEI26px9kFVE4azsCCV7qGp8+QbA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/xLYpRfHHyFSPjdaJ/GPxH+xk1nj/fskWe3ymt9EQA9Dom5cJe
-	WdIKMiUCtwAe0L9xCTbpU0uI4eFZpwklNfvDSd3EARUFwKGC1PzGt741LxQIo/BBC7+UDpj8ECH
-	kjwQMQmQIbo7K5yR3LsXVdTTbsOOXNzM=
-X-Received: by 2002:a17:907:3f23:b0:c50:93b6:52fa with SMTP id
- a640c23a62f3a-c509614e782mr225471866b.2.1794578983245; Fri, 13 Nov 2026
- 06:09:43 -0800 (PST)
+	dkim=pass (1024-bit key, unprotected) header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=HG4M0Kco
+Received: from lgs.. (unknown [101.76.249.61])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 549b5a75f;
+	Fri, 13 Nov 2026 22:09:37 +0800 (GMT+08:00)
+From: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
+To: Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>
+Cc: arm-scmi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] powercap: arm_scmi: Fix potential stale zones after a skipped leaf
+Date: Fri, 13 Nov 2026 22:09:35 +0800
+Message-ID: <20261113-4e14e563a1-powercap-scmi@mail.sdu.edu.cn>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,206 +58,47 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <b47282f1514a9012ac51d0915afb83782c3c0050.1794417398.git.len.brown@intel.com>
- <CAFEp6-0yj-+7uYnj5PCvaP39ruQ=xduBbQgJc7MyakuPLJhmvw@mail.gmail.com>
- <CAJvTdKnnqZJrZ6bgaxsyy6QttGwgh5RL=De9ggV3KhMPDau_BQ@mail.gmail.com> <CAFEp6-2sLZkNQqDg7seE0ipZbuve_TZMjgNHV4ubW0Qs80Pyhg@mail.gmail.com>
-In-Reply-To: <CAFEp6-2sLZkNQqDg7seE0ipZbuve_TZMjgNHV4ubW0Qs80Pyhg@mail.gmail.com>
-From: Len Brown <lenb@kernel.org>
-Date: Fri, 13 Nov 2026 11:09:30 -0300
-X-Gmail-Original-Message-ID: <CAJvTdKmGp6t44CP-smrjbm3aoXeTWvyUUM1Uv1w8UxEo3OSPJw@mail.gmail.com>
-X-Gm-Features: AclHuK-RaTixMtTtZ7q46GYj4ej54XklcWHntBt63Yarwvzt-TopRwMi-CY67Bk
-Message-ID: <CAJvTdKmGp6t44CP-smrjbm3aoXeTWvyUUM1Uv1w8UxEo3OSPJw@mail.gmail.com>
-Subject: Re: [PATCH] bus: mhi: pci_generic: Fix erroneous system suspend abort
-To: Loic Poulain <loic.poulain@oss.qualcomm.com>
-Cc: rafael@kernel.org, Manivannan Sadhasivam <mani@kernel.org>, linux-pm@vger.kernel.org, 
-	mhi@lists.linux.dev, linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary="000000000000d19a49066028fad1"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa1d53e10eb03a1kunmfd39574c48410
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkZSUoYVhlNT0kZS05MSkpLSlYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlKS0pVTE1VSU9CVU1KWVdZFhoPEhUdFFlBWU9LSFVKS0lCQ0
+	NMVUpLS1VLWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=HG4M0KcoHMatbqoiBpR5vaR5b1PH1rT1sVRJEI7eCjcJqQFgIjdk1BkdbWdLItdQjr8b6kvfwtV/3DzoavR66zUWjZ1ACPpOoQHf0yDXQAWjnvg12Q4WBdrXJWR6eFRjmTm/AqHQvxaa1wlJZPVgGXUk0kj6wQ9wrP6bu8KGVqQ=; c=relaxed/relaxed; s=default; d=mail.sdu.edu.cn; v=1;
+	bh=91M3ZRzTa6r+vtYF4xUq8fttGYwuNmT1C5OHT99A86Q=;
+	h=date:mime-version:subject:message-id:from;
 
---000000000000d19a49066028fad1
-Content-Type: text/plain; charset="UTF-8"
+scmi_zones_register() skips leaf zones that cannot be registered, but
+returns the last leaf error when that leaf ends the traversal. Probe
+then fails without unregistering the successfully registered zones,
+whose private data is device-managed.
 
-> > This 1-line fix should be applied NOW, without waiting for internal
-> > mhi internal or development.
->
-> Fair enough, but would only ignoring error on -EBUSY would work for
-> you? as this is clearly something which is not relevant for system
-> wide suspend cases.
+Return success after completing the traversal. Keep the existing error
+return and full rollback for a failed non-leaf zone.
 
-Although I've seen only -EBUSY, I would turn that around...
-Are there ANY mhi suspend cases that merit aborting system wide suspend?
-If there are, then check for those and explicitly abort system suspension.
-(experience shows that these scenarios are quite rare, and it would
-be remarkable if there were such a condition here)
+This issue was found by our static analysis tool under development.
 
-> Also would it be possible to add a small inline comment saying we
-> purposely ignore this because of buggy mhi suspend handling.
+Fixes: 3e767d6850f8 ("powercap: arm_scmi: Remove recursion while parsing zones")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
+---
+ drivers/powercap/arm_scmi_powercap.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-I agree.  I'll add a comment to clarify.
+diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+index ab66e9a3b1e2..edc1e2823ec3 100644
+--- a/drivers/powercap/arm_scmi_powercap.c
++++ b/drivers/powercap/arm_scmi_powercap.c
+@@ -407,6 +407,7 @@ static int scmi_zones_register(struct device *dev,
+ 							       node);
+ 		}
+ 	}
++	ret = 0;
+ 
+ out:
+ 	kfree(zones_stack);
 
-> With your patch what happens on the system resume path? is the MHI
-> device recovered?
-
-This laptop is generally quite a good suspend-resume regression test bed.
-It does actually have a wireless modem, but AFAIK, the device itself
-is always unused.
-
-$ lspci -nnk | grep -B 2 -A 3 -i mhi
-08:00.0 Unassigned class [ff00]: Quectel Wireless Solutions Co., Ltd.
-Device [1eac:1007]
-Subsystem: Quectel Wireless Solutions Co., Ltd. Device [1eac:100c]
-Kernel driver in use: mhi-pci-generic
-Kernel modules: mhi_pci_generic
-
-I have over 28,000 suspend resume results on its local drive, dating
-back to Linux-7.2.
-The most recent 3,000 cycles included this one line patch and showed no issues.
-There were 9 suspend failures on a run of 2,500 suspend cycles run Nov
-8 - Nov 9.
-I've attached the mhi messages, as they'd wrap if I pasted them here.
-
-Twice we see this:
-mhi-pci-generic 0000:08:00.0: Unbalanced pm_runtime_enable!
-
-perhaps a hint?
-
-thanks,
--Len
-
-ps. apology for the previous top-post.
-
---000000000000d19a49066028fad1
-Content-Type: text/plain; charset="US-ASCII"; name="mhi.dmesg.txt"
-Content-Disposition: attachment; filename="mhi.dmesg.txt"
-Content-Transfer-Encoding: base64
-Content-ID: <f_mwf1y58o0>
-X-Attachment-Id: f_mwf1y58o0
-
-c3VzcGVuZC0yNjExMDgtMjM1NzA2L2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVz
-Zy50eHQ6WyAgODU4LjY1ODExM10gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogZmFpbGVk
-IHRvIHN1c3BlbmQgZGV2aWNlOiAtMTYKc3VzcGVuZC0yNjExMDgtMjM1NzA2L2xlbmItdGhpbmtw
-YWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WyAgODU4LjY1ODEzM10gbWhpLXBjaS1nZW5l
-cmljIDAwMDA6MDg6MDAuMDogUE06IHBjaV9wbV9zdXNwZW5kKCk6IG1oaV9wY2lfc3VzcGVuZCBb
-bWhpX3BjaV9nZW5lcmljXSByZXR1cm5zIC0xNgpzdXNwZW5kLTI2MTEwOC0yMzU3MDYvbGVuYi10
-aGlua3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbICA4NTguNjU4MTQ5XSBtaGktcGNp
-LWdlbmVyaWMgMDAwMDowODowMC4wOiBQTTogZHBtX3J1bl9jYWxsYmFjaygpOiBwY2lfcG1fc3Vz
-cGVuZCByZXR1cm5zIC0xNgpzdXNwZW5kLTI2MTEwOC0yMzU3MDYvbGVuYi10aGlua3BhZC10MTYt
-Z2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbICA4NTguNjU4MTU5XSBtaGktcGNpLWdlbmVyaWMgMDAw
-MDowODowMC4wOiBQTTogcGNpX3BtX3N1c3BlbmQgcmV0dXJuZWQgLTE2IGFmdGVyIDE1MTQ1IHVz
-ZWNzCnN1c3BlbmQtMjYxMTA4LTIzNTcwNi9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVf
-ZG1lc2cudHh0OlsgIDg1OC42NTgxNjJdIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBN
-OiBmYWlsZWQgdG8gc3VzcGVuZCBhc3luYzogZXJyb3IgLTE2CnN1c3BlbmQtMjYxMTA5LTAyMzMy
-My9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsxMDI0MC42MjE0MjZd
-IG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IGZhaWxlZCB0byBzdXNwZW5kIGRldmljZTog
-LTE2CnN1c3BlbmQtMjYxMTA5LTAyMzMyMy9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVf
-ZG1lc2cudHh0OlsxMDI0MC42MjE0ODRdIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBN
-OiBwY2lfcG1fc3VzcGVuZCgpOiBtaGlfcGNpX3N1c3BlbmQgW21oaV9wY2lfZ2VuZXJpY10gcmV0
-dXJucyAtMTYKc3VzcGVuZC0yNjExMDktMDIzMzIzL2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2Zy
-ZWV6ZV9kbWVzZy50eHQ6WzEwMjQwLjYyMTUwMV0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAu
-MDogUE06IGRwbV9ydW5fY2FsbGJhY2soKTogcGNpX3BtX3N1c3BlbmQgcmV0dXJucyAtMTYKc3Vz
-cGVuZC0yNjExMDktMDIzMzIzL2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50
-eHQ6WzEwMjQwLjYyMTUxMF0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogUE06IHBjaV9w
-bV9zdXNwZW5kIHJldHVybmVkIC0xNiBhZnRlciA4OCB1c2VjcwpzdXNwZW5kLTI2MTEwOS0wMjMz
-MjMvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbMTAyNDAuNjIxNTEz
-XSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBQTTogZmFpbGVkIHRvIHN1c3BlbmQgYXN5
-bmM6IGVycm9yIC0xNgpzdXNwZW5kLTI2MTEwOS0wMjQyMDYvbGVuYi10aGlua3BhZC10MTYtZ2Vu
-LTNfZnJlZXplX2RtZXNnLnR4dDpbMTA3NjMuNzczNjkwXSBtaGktcGNpLWdlbmVyaWMgMDAwMDow
-ODowMC4wOiBmYWlsZWQgdG8gc3VzcGVuZCBkZXZpY2U6IC0xNgpzdXNwZW5kLTI2MTEwOS0wMjQy
-MDYvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbMTA3NjMuNzczNzA1
-XSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBQTTogcGNpX3BtX3N1c3BlbmQoKTogbWhp
-X3BjaV9zdXNwZW5kIFttaGlfcGNpX2dlbmVyaWNdIHJldHVybnMgLTE2CnN1c3BlbmQtMjYxMTA5
-LTAyNDIwNi9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsxMDc2My43
-NzM3MTZdIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBkcG1fcnVuX2NhbGxiYWNr
-KCk6IHBjaV9wbV9zdXNwZW5kIHJldHVybnMgLTE2CnN1c3BlbmQtMjYxMTA5LTAyNDIwNi9sZW5i
-LXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsxMDc2My43NzM3MjJdIG1oaS1w
-Y2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBwY2lfcG1fc3VzcGVuZCByZXR1cm5lZCAtMTYg
-YWZ0ZXIgMzQgdXNlY3MKc3VzcGVuZC0yNjExMDktMDI0MjA2L2xlbmItdGhpbmtwYWQtdDE2LWdl
-bi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzEwNzYzLjc3MzcyNV0gbWhpLXBjaS1nZW5lcmljIDAwMDA6
-MDg6MDAuMDogUE06IGZhaWxlZCB0byBzdXNwZW5kIGFzeW5jOiBlcnJvciAtMTYKc3VzcGVuZC0y
-NjExMDktMDQ0NjU2L2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzE4
-MjU0LjUyOTYxNV0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogZmFpbGVkIHRvIHN1c3Bl
-bmQgZGV2aWNlOiAtMTYKc3VzcGVuZC0yNjExMDktMDQ0NjU2L2xlbmItdGhpbmtwYWQtdDE2LWdl
-bi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzE4MjU0LjUyOTYzMl0gbWhpLXBjaS1nZW5lcmljIDAwMDA6
-MDg6MDAuMDogUE06IHBjaV9wbV9zdXNwZW5kKCk6IG1oaV9wY2lfc3VzcGVuZCBbbWhpX3BjaV9n
-ZW5lcmljXSByZXR1cm5zIC0xNgpzdXNwZW5kLTI2MTEwOS0wNDQ2NTYvbGVuYi10aGlua3BhZC10
-MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbMTgyNTQuNTI5NjUxXSBtaGktcGNpLWdlbmVyaWMg
-MDAwMDowODowMC4wOiBQTTogZHBtX3J1bl9jYWxsYmFjaygpOiBwY2lfcG1fc3VzcGVuZCByZXR1
-cm5zIC0xNgpzdXNwZW5kLTI2MTEwOS0wNDQ2NTYvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJl
-ZXplX2RtZXNnLnR4dDpbMTgyNTQuNTI5NjYwXSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4w
-OiBQTTogcGNpX3BtX3N1c3BlbmQgcmV0dXJuZWQgLTE2IGFmdGVyIDQ4IHVzZWNzCnN1c3BlbmQt
-MjYxMTA5LTA0NDY1Ni9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0Olsx
-ODI1NC41Mjk2NjJdIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBmYWlsZWQgdG8g
-c3VzcGVuZCBhc3luYzogZXJyb3IgLTE2CnN1c3BlbmQtMjYxMTA5LTA0NDgyMS9sZW5iLXRoaW5r
-cGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsxODMzOS41Mjg4MTddIG1oaS1wY2ktZ2Vu
-ZXJpYyAwMDAwOjA4OjAwLjA6IGZhaWxlZCB0byBzdXNwZW5kIGRldmljZTogLTE2CnN1c3BlbmQt
-MjYxMTA5LTA0NDgyMS9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0Olsx
-ODMzOS41Mjg4MzFdIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBwY2lfcG1fc3Vz
-cGVuZCgpOiBtaGlfcGNpX3N1c3BlbmQgW21oaV9wY2lfZ2VuZXJpY10gcmV0dXJucyAtMTYKc3Vz
-cGVuZC0yNjExMDktMDQ0ODIxL2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50
-eHQ6WzE4MzM5LjUyODgzOV0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogUE06IGRwbV9y
-dW5fY2FsbGJhY2soKTogcGNpX3BtX3N1c3BlbmQgcmV0dXJucyAtMTYKc3VzcGVuZC0yNjExMDkt
-MDQ0ODIxL2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzE4MzM5LjUy
-ODg0NV0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogUE06IHBjaV9wbV9zdXNwZW5kIHJl
-dHVybmVkIC0xNiBhZnRlciAzMSB1c2VjcwpzdXNwZW5kLTI2MTEwOS0wNDQ4MjEvbGVuYi10aGlu
-a3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbMTgzMzkuNTI4ODQ3XSBtaGktcGNpLWdl
-bmVyaWMgMDAwMDowODowMC4wOiBQTTogZmFpbGVkIHRvIHN1c3BlbmQgYXN5bmM6IGVycm9yIC0x
-NgpzdXNwZW5kLTI2MTEwOS0wNTMyMjYvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXplX2Rt
-ZXNnLnR4dDpbMjA5ODQuNjAxMzEyXSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBmYWls
-ZWQgdG8gc3VzcGVuZCBkZXZpY2U6IC0xNgpzdXNwZW5kLTI2MTEwOS0wNTMyMjYvbGVuYi10aGlu
-a3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbMjA5ODQuNjAxMzQ2XSBtaGktcGNpLWdl
-bmVyaWMgMDAwMDowODowMC4wOiBQTTogcGNpX3BtX3N1c3BlbmQoKTogbWhpX3BjaV9zdXNwZW5k
-IFttaGlfcGNpX2dlbmVyaWNdIHJldHVybnMgLTE2CnN1c3BlbmQtMjYxMTA5LTA1MzIyNi9sZW5i
-LXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsyMDk4NC42MDEzNTRdIG1oaS1w
-Y2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBkcG1fcnVuX2NhbGxiYWNrKCk6IHBjaV9wbV9z
-dXNwZW5kIHJldHVybnMgLTE2CnN1c3BlbmQtMjYxMTA5LTA1MzIyNi9sZW5iLXRoaW5rcGFkLXQx
-Ni1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsyMDk4NC42MDEzNTldIG1oaS1wY2ktZ2VuZXJpYyAw
-MDAwOjA4OjAwLjA6IFBNOiBwY2lfcG1fc3VzcGVuZCByZXR1cm5lZCAtMTYgYWZ0ZXIgNTUgdXNl
-Y3MKc3VzcGVuZC0yNjExMDktMDUzMjI2L2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9k
-bWVzZy50eHQ6WzIwOTg0LjYwMTM2MV0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogUE06
-IGZhaWxlZCB0byBzdXNwZW5kIGFzeW5jOiBlcnJvciAtMTYKc3VzcGVuZC0yNjExMDktMDUzMjQw
-L2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzIwOTk3LjUzNDI3OF0g
-bWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogVW5iYWxhbmNlZCBwbV9ydW50aW1lX2VuYWJs
-ZSEKc3VzcGVuZC0yNjExMDktMDUzMjQwL2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9k
-bWVzZy50eHQ6WzIwOTk3LjU2MTIwM10gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogVW5i
-YWxhbmNlZCBwbV9ydW50aW1lX2VuYWJsZSEKc3VzcGVuZC0yNjExMDktMDUzNTE5L2xlbmItdGhp
-bmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzIxMTU3LjcxNTI0OF0gbWhpLXBjaS1n
-ZW5lcmljIDAwMDA6MDg6MDAuMDogZmFpbGVkIHRvIHN1c3BlbmQgZGV2aWNlOiAtMTYKc3VzcGVu
-ZC0yNjExMDktMDUzNTE5L2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6
-WzIxMTU3LjcxNTI2NF0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogUE06IHBjaV9wbV9z
-dXNwZW5kKCk6IG1oaV9wY2lfc3VzcGVuZCBbbWhpX3BjaV9nZW5lcmljXSByZXR1cm5zIC0xNgpz
-dXNwZW5kLTI2MTEwOS0wNTM1MTkvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNn
-LnR4dDpbMjExNTcuNzE1Mjc3XSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBQTTogZHBt
-X3J1bl9jYWxsYmFjaygpOiBwY2lfcG1fc3VzcGVuZCByZXR1cm5zIC0xNgpzdXNwZW5kLTI2MTEw
-OS0wNTM1MTkvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbMjExNTcu
-NzE1Mjg3XSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBQTTogcGNpX3BtX3N1c3BlbmQg
-cmV0dXJuZWQgLTE2IGFmdGVyIDQxIHVzZWNzCnN1c3BlbmQtMjYxMTA5LTA1MzUxOS9sZW5iLXRo
-aW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsyMTE1Ny43MTUyOTFdIG1oaS1wY2kt
-Z2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBmYWlsZWQgdG8gc3VzcGVuZCBhc3luYzogZXJyb3Ig
-LTE2CnN1c3BlbmQtMjYxMTA5LTA1NDExNC9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVf
-ZG1lc2cudHh0OlsyMTUxMi4zNDgyODldIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IGZh
-aWxlZCB0byBzdXNwZW5kIGRldmljZTogLTE2CnN1c3BlbmQtMjYxMTA5LTA1NDExNC9sZW5iLXRo
-aW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cudHh0OlsyMTUxMi4zNDgzMzVdIG1oaS1wY2kt
-Z2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBwY2lfcG1fc3VzcGVuZCgpOiBtaGlfcGNpX3N1c3Bl
-bmQgW21oaV9wY2lfZ2VuZXJpY10gcmV0dXJucyAtMTYKc3VzcGVuZC0yNjExMDktMDU0MTE0L2xl
-bmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzIxNTEyLjM0ODM1NV0gbWhp
-LXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogUE06IGRwbV9ydW5fY2FsbGJhY2soKTogcGNpX3Bt
-X3N1c3BlbmQgcmV0dXJucyAtMTYKc3VzcGVuZC0yNjExMDktMDU0MTE0L2xlbmItdGhpbmtwYWQt
-dDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzIxNTEyLjM0ODM2NV0gbWhpLXBjaS1nZW5lcmlj
-IDAwMDA6MDg6MDAuMDogUE06IHBjaV9wbV9zdXNwZW5kIHJldHVybmVkIC0xNiBhZnRlciA3NyB1
-c2VjcwpzdXNwZW5kLTI2MTEwOS0wNTQxMTQvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXpl
-X2RtZXNnLnR4dDpbMjE1MTIuMzQ4MzY4XSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBQ
-TTogZmFpbGVkIHRvIHN1c3BlbmQgYXN5bmM6IGVycm9yIC0xNgpzdXNwZW5kLTI2MTEwOS0wOTE0
-MjkvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXplX2RtZXNnLnR4dDpbMzQzMDguMDg1Nzgz
-XSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBmYWlsZWQgdG8gc3VzcGVuZCBkZXZpY2U6
-IC0xNgpzdXNwZW5kLTI2MTEwOS0wOTE0MjkvbGVuYi10aGlua3BhZC10MTYtZ2VuLTNfZnJlZXpl
-X2RtZXNnLnR4dDpbMzQzMDguMDg1NzkzXSBtaGktcGNpLWdlbmVyaWMgMDAwMDowODowMC4wOiBQ
-TTogcGNpX3BtX3N1c3BlbmQoKTogbWhpX3BjaV9zdXNwZW5kIFttaGlfcGNpX2dlbmVyaWNdIHJl
-dHVybnMgLTE2CnN1c3BlbmQtMjYxMTA5LTA5MTQyOS9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19m
-cmVlemVfZG1lc2cudHh0OlszNDMwOC4wODU4MDFdIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAw
-LjA6IFBNOiBkcG1fcnVuX2NhbGxiYWNrKCk6IHBjaV9wbV9zdXNwZW5kIHJldHVybnMgLTE2CnN1
-c3BlbmQtMjYxMTA5LTA5MTQyOS9sZW5iLXRoaW5rcGFkLXQxNi1nZW4tM19mcmVlemVfZG1lc2cu
-dHh0OlszNDMwOC4wODU4MDddIG1oaS1wY2ktZ2VuZXJpYyAwMDAwOjA4OjAwLjA6IFBNOiBwY2lf
-cG1fc3VzcGVuZCByZXR1cm5lZCAtMTYgYWZ0ZXIgMjUgdXNlY3MKc3VzcGVuZC0yNjExMDktMDkx
-NDI5L2xlbmItdGhpbmtwYWQtdDE2LWdlbi0zX2ZyZWV6ZV9kbWVzZy50eHQ6WzM0MzA4LjA4NTgw
-OV0gbWhpLXBjaS1nZW5lcmljIDAwMDA6MDg6MDAuMDogUE06IGZhaWxlZCB0byBzdXNwZW5kIGFz
-eW5jOiBlcnJvciAtMTYK
---000000000000d19a49066028fad1--
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
