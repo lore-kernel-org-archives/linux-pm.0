@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794581025;
-	b=nKMIgAH+0R0vHzYRYKoEJU6i1+kzcec0YL4t+vMJf7djvaHotVKkL9x18C6jczsiyLYz
-	 tAvEfkFe/FEKbW62bAg9r9GdYTcy1FtAeOIGV2wv5ZW33DjG4StqpqEezw9NpbahlgDKX
-	 k5jnE3ZWBCYiaWM96i60IfieCeWyIQgJoj9wvPdQ7VfYDQMbS+LF0MfOq3hDyTmNtjnm9
-	 3lgLMbBp3T0O6BNaa04/7UnHS7NwM09+aKGT35yebDjMnS5fIoAaFCGY/xJ2bVsQK7ve7
-	 hLum8A52+U9fvaO9xSj2EqQ3EAOmc3re8l4bsHjMR1aLGKw1rHk40kUuPNUgzxeIH8A==
+	t=1794581714;
+	b=O5GDp//1FMZv7FynNhusUfHb17uf3JXvk4wPybKbl1AO5E5CjXE3YEHHAQvvizdmpA1m
+	 wWnFVgfLBsn6m3higRo1QHPi4QF4eTLQHH8WOEm9dLSkZ5XcRJ0BFnL7FfO3KbcC2Mj5j
+	 XIFe17Gn8ynC1F/JdfZV0O3IDdVTRMsmpNdBvjeDW6Ep3GmAUCUi87atzhYv93wbkTBzD
+	 Nvimt23cod0T/eak3X1J5PPpg5FfjaSQoR2t/ly+ZJ85jhcOSeMWs2Ogv3f14hfn03iPt
+	 Td5Kdo2NT5TxC2jmXpJqWvccX4suX1zFijhtQmFdGTwZrH7l69bi90RxQSHNA652PFg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794581025;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794581714;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=aIJ1R3I3zY6nNLuEgbZL5CCKuVIRDzNDPBPjyXpoCSI=;
-	b=V5wEtIsts5qEFf338pe4IZ+PSGi6eAS2J2GNh5se2vAG+X6vbeebUmmXJ9AOxerG4V2E
-	 lhsMo5VhUj2FIFHEX88GcqaRen897w8qcsIAUqvxxHY1xgpBZGYgJdYjXZhpWU2FlC4yr
-	 oWNSKhh+wvYayHKKNC2kGzk1FH59Cfbep7A0Nh1HJdVBGkVv5Q1OYjx0zAmwQ6dHvIp7J
-	 jPjZSm/l9SyzIUlil8eU6F3Ff366UUyg4G3IJRnTB3Oy+YCuVTGaHy0E2ydEHeow7PWFz
-	 Hqq4Qr5ZMgN6au4qfQzFnyC3qWMqXUiA154O/2E3pqsreXLBZ0Ne1ies8oHDSQei/Xw==
+	bh=8nxha2BknqjImD1m3gCjlKPZ0GD4hnrRTt8W76a9ZRs=;
+	b=sXr1QYPbdGl7bySQhsI2fl/XD3t3CTtjMH/V+kEDvmdObV+0gHnHbY68IPGK/jHhOM7R
+	 LD3QlZHgg4uMLcxcp3pxoS3+tSixoXbloawKNvsmDpA22BX9y+DBL/shHrQF/Tn1Nh5Va
+	 Pb8hWUznDKjp8x7SKjmcNrN+e8PC+9907/i5oSbWSULD4zwwL8o9Qh2y5jjgTAwNL9qfs
+	 DNmlFCh6hC9e6iEh/9kqWZ+yNhuEa07VGZUW/cJWHkoSg9TWZNypEmqp6IIC5YMe8MeYP
+	 9yMfFYNYCKUU0eNJdZjnSZFGu4Q0b0xmBS0JEvg0j5efoHR9yYCrocifkUPNGvDxv+Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=chBHvI6M;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f2gnOm9L;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45485606A334
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 14:43:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96348606A32E
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 14:55:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=chBHvI6M
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22EFF1F000CE
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 14:43:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f2gnOm9L
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 457ED1F000C5
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 14:55:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794581025;
-	bh=aIJ1R3I3zY6nNLuEgbZL5CCKuVIRDzNDPBPjyXpoCSI=;
+	s=k20260515; t=1794581714;
+	bh=8nxha2BknqjImD1m3gCjlKPZ0GD4hnrRTt8W76a9ZRs=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=chBHvI6McXSDpHb0EWEVc33PGomMAQ7sDtEdoNdx/Cu0Rbq/W/hRuM5cj8zLXytEY
-	 3qEHRKcnBJour5iQixW57eDGNTvp22S/nugBuaewf20w504Ll1F0Giffoqu/D0/zDP
-	 qUFjAZWP/otiqb5GLUAbqaVLV7/9MouBJgprqbWw5sfErJK69E0bISjPhbFRyEH8eS
-	 IhYe5soo/trQszfwsezegv1bJp6YQjeYbApIe3GAd97d5UNE2pIW0jQQWNZqgG2gha
-	 JLMUOV75nxrYW/iL3i2aqoUQC0b6CcmEtGBt6XJ1Mc6IICkt253ArfEeQ0upo9rQjW
-	 0FPOyWuMXd4jA==
-Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-5ee029fd76aso1624581e0c.1
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 06:43:45 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErH8Crs5NpGH6gm7btANz6pEDX9Sl2DbuGQZLjxQeXZgonLsi4ecpOBO8kC4kU6Dn/HHEt6iHSUp4Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9s9zq3tfziK1IySc3ZkYu9DiwyCIRaLZ4tIC3cyNPWawjga3/M
-	NOlFmI4Pfu51sMwiqVlad+d3YUxlH1ePvAD5fM/D5hm1lEbjJBkng7EWtIipCqjnAZpzegJnhqc
-	W7opYt95O+Vt+aI+YSiOouBAa1obR1iw=
-X-Received: by 2002:a05:6122:2490:b0:5c9:c60e:3a48 with SMTP id
- 71dfb90a1353d-5ee34ae1ca8mr943708e0c.20.1794581024275; Fri, 13 Nov 2026
- 06:43:44 -0800 (PST)
+	b=f2gnOm9Lr2v6ieEmflTcP/hrwQ3R/gmve616RQzut3y56AklNoa8Nepc5oieIWO0O
+	 All0nPILllMFQrmuChDy5DHUuFf6Nkal25WkGBgPF8G1w+G/EgZHf3nI8ofZNRMqN0
+	 uZ6Oh8wIG8zKXPpANpGwH3GE40RUBJzowIZ3jbMyo7JfJhKhjQfF1nKhylRrMqz5Wk
+	 lbq+lavh04Qln0boNyefsPtIEcKZ3P1ZRfzgCGRMLd7Er6MdJkXff96EssYIw1+9q9
+	 zkiGvZBE2t1dCjt95mX9NdqlmiHfhFbmkp8KVRoO1tqjFVCccFeWmXlSBa+l3Kmhph
+	 io3F65lfAhsyg==
+Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-3accd1ff4c3so14185801fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 06:55:14 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErEcHKMa45PIBzqOlsZg91opgiIXBNnma1aKXOVGlVyk4CCvgTFu0kRIDVO48y//mU5B9KePfedY3Q==@vger.kernel.org
+X-Gm-Message-State: APuU4Z82/dhx5d7VrThVkKi5gnVVrpq3rWTA8mE8tkviJemfxrqr/bwV
+	UVBr3zhhyCY9PaJyd3aZq7pt1Hjc1ew61gcNPHCdgbqGQl4IerUs/NRH65uoPMRX4lfZMN+u7U4
+	Ka33WbF0mQYdLifr3NKIMW5wSkgtZHOo=
+X-Received: by 2002:a2e:a814:0:b0:3ac:f011:4863 with SMTP id
+ 38308e7fff4ca-3ae2b51f00emr10078261fa.20.1794581712678; Fri, 13 Nov 2026
+ 06:55:12 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,135 +59,79 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <b9ff4d03-61f7-4e17-b048-3cecee70f3ca@oss.qualcomm.com>
-In-Reply-To: <b9ff4d03-61f7-4e17-b048-3cecee70f3ca@oss.qualcomm.com>
+References: <20261113130411.1433174-1-christian.loehle@arm.com> <30a6c6c2-95ad-4f98-a63e-25f311967ed8@kernel.org>
+In-Reply-To: <30a6c6c2-95ad-4f98-a63e-25f311967ed8@kernel.org>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 13 Nov 2026 15:43:30 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0g5TFTknAZwmhuLvJuaim7WwqBVDmuPHan6ChTmQgu-Pw@mail.gmail.com>
-X-Gm-Features: AclHuK8tWwNVIZk0uuz_ClJI2W7oD2KMYUmtoOxf6YQnxiXSC-VHM7u3YXnKAUc
-Message-ID: <CAJZ5v0g5TFTknAZwmhuLvJuaim7WwqBVDmuPHan6ChTmQgu-Pw@mail.gmail.com>
-Subject: Re: [GIT PULL] powercap: Add generic hierarchy support and convert DTPM
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Heiko St??bner" <heiko@sntech.de>, Shuah Khan <shuah@kernel.org>, 
-	Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>, Lukasz Luba <Lukasz.Luba@arm.com>, 
-	Linux PM mailing list <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
-	"open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, linux-kselftest@vger.kernel.org
+Date: Fri, 13 Nov 2026 15:55:00 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0hDkVA50qgMPn0H1NYUj7mK+VB9=w9Dr4GVV5ix8V0bSg@mail.gmail.com>
+X-Gm-Features: AclHuK8xHLw6WuiwLQ7pOVG6xG517KuCsdiV2zbyhBwshX3MDuG4Phwds6Ak4-s
+Message-ID: <CAJZ5v0hDkVA50qgMPn0H1NYUj7mK+VB9=w9Dr4GVV5ix8V0bSg@mail.gmail.com>
+Subject: Re: [PATCH] ACPI: CPPC: Reject EPP registers narrower than 8 bits
+To: Mario Limonciello <superm1@kernel.org>, Christian Loehle <christian.loehle@arm.com>
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, sumitg@nvidia.com, luoxueqin@kylinos.cn, 
+	zhanjie9@hisilicon.com, zhangpengjie2@huawei.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Daniel,
-
-On Tue, Nov 10, 2026 at 2:21=E2=80=AFPM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
+On Fri, Nov 13, 2026 at 2:52=E2=80=AFPM Mario Limonciello <superm1@kernel.o=
+rg> wrote:
 >
->
-> Hi Rafael,
->
-> as requested please consider the following changes since commit
-> 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4:
->
->    Linux 7.4-rc1 (2026-11-01 13:26:31 -0800)
->
-> are available in the Git repository at:
->
->    git://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
-> tags/powercap-hierarchy
->
-> for you to fetch changes up to 6ba41a1519ff1f91f96d90a6bf4f70131a8f7c73:
->
->    powercap: dtpm: Add RK3588 hierarchy (2026-11-09 17:33:40 +0100)
->
-> ----------------------------------------------------------------
-> Powercap controllers may expose trees of power zones, such as packages,
-> clusters and CPUs. This series adds generic helpers to duplicate a static
-> hierarchy description, create its zones through backend callbacks, and
-> destroy them in reverse order. Parents must precede their children in the
-> node array; the helpers validate that ordering rather than sorting nodes.
->
-> Drivers supporting multiple platforms can place each platform's hierarchy
-> description and node array in initdata. powercap_hierarchy_dup() creates =
-a
-> working copy of the selected hierarchy and rebases its parent pointers.
-> All original descriptions, including those for unused platforms, can then
-> be reclaimed automatically with init memory. Names and backend-private
-> data are not duplicated and must remain valid for the working hierarchy.
->
-> The controller supplies creation and destruction callbacks to connect the
-> generic hierarchy traversal to its backend. The creation callback receive=
-s
-> the control type, node name, private data and parent zone, registers the
-> zone with its operations and constraints, and returns it to the helper.
-> The destruction callback unregisters it during rollback or teardown.
->
-> The API supports both fatal creation errors, which roll back previously
-> created zones, and optional nodes: a NULL callback result skips a node an=
+> On 11/13/26 07:04, Christian Loehle wrote:
+> > The EPP interfaces use an 8-bit preference, but ACPI permits narrower
+> > fields. With a 4- or 6-bit SystemMemory field, writing 128 succeeds but
+> > stores zero, requesting maximum performance instead.
+> >
+> > Reject a present EPP register narrower than eight bits during _CPC prob=
+e.
+> > Use the existing error path to release previously acquired resources an=
 d
-> its descendants while allowing independent branches to be created.
+> > leave the CPU's CPPC descriptor unpublished. Keep absent EPP entries an=
+d
+> > registers at least eight bits wide on their existing paths.
+> >
+> > Fail the whole probe instead of disabling only EPP. This also makes
+> > amd-pstate's acpi_cpc_valid() check reject the platform before register=
+ing
+> > its MSR or shared-memory driver. No affected hardware is known or
+> > expected and the specification is expected to no longer permit these
+> > in the future.
+> >
+> > Fixes: 922607a2b462 ("cpufreq: CPPC: Add support for autonomous selecti=
+on")
+> > Link: https://github.com/tianocore/edk2/issues/10838
+> > Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 >
-> The helpers were motivated by the SPEL work and also let DTPM share the
-> same hierarchy infrastructure:
-> https://lore.kernel.org/lkml/20260702-qcom_spel_driver_upstream-v3-0-434d=
-50f0c5b0@oss.qualcomm.com/
->
-> A kselftest exercises static and duplicated hierarchies, skipped branches=
-,
-> reuse after partial destruction, and rejection of repeated creation. Its
-> userspace script checks the 16 exported zones and selected attribute
-> values, then removes the module with a sysfs attribute descriptor open.
->
-> DTPM is converted to the generic helpers while preserving best-effort
-> creation when individual backends are unavailable. The CPU backend finds
-> an online sibling when a hierarchy's representative CPU is offline.
-> Entirely offline policies remain unavailable during initialization.
->
-> The RK3399 description is reduced to one CPU entry per cpufreq policy.
-> The old backend already suppressed duplicate registration; the extra
-> entries were redundant descriptions, not additional registered zones.
-> Finally, a shared Rockchip virtual descriptor and an RK3588 CPU hierarchy
-> are added. RK3588's three frequency domains are represented by cpu@0,
-> cpu@400 and cpu@600 below a virtual package node; no GPU zone is added
-> for RK3588 in this series.
->
-> ----------------------------------------------------------------
-> Daniel Lezcano (6):
->        powercap: Add generic zone hierarchy creation helpers
->        selftests/powercap: Add powercap hierarchy creation API tests
->        powercap: dtpm: Remove duplicate RK3399 CPU hierarchy nodes
->        powercap: dtpm: Use generic powercap hierarchy helpers
->        powercap: dtpm: Rename Rockchip virtual node descriptor
->        powercap: dtpm: Add RK3588 hierarchy
->
->   drivers/powercap/dtpm.c                            | 180 ++++++------
->   drivers/powercap/dtpm_cpu.c                        |  62 +++-
->   drivers/powercap/dtpm_devfreq.c                    |  22 +-
->   drivers/powercap/powercap_sys.c                    | 204 +++++++++++++
->   drivers/soc/rockchip/dtpm.c                        | 129 +++++++--
->   include/linux/dtpm.h                               |   6 +-
->   include/linux/powercap.h                           | 205 ++++++++++++++
->   tools/testing/selftests/Makefile                   |   1 +
->   tools/testing/selftests/powercap/Kbuild            |   5 +
->   tools/testing/selftests/powercap/Makefile          |  46 +++
->   tools/testing/selftests/powercap/config            |   3 +
->   .../selftests/powercap/powercap_hierarchy.c        | 314
-> +++++++++++++++++++++
->   .../selftests/powercap/powercap_hierarchy.sh       | 128 +++++++++
->   13 files changed, 1153 insertions(+), 152 deletions(-)
->   create mode 100644 tools/testing/selftests/powercap/Kbuild
->   create mode 100644 tools/testing/selftests/powercap/Makefile
->   create mode 100644 tools/testing/selftests/powercap/config
->   create mode 100644 tools/testing/selftests/powercap/powercap_hierarchy.=
-c
->   create mode 100755 tools/testing/selftests/powercap/powercap_hierarchy.=
-sh
+> Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
 
-Pulled, but it had a small merge conflict with a previous cleanup.
-Please see my resolution:
+Applied as 7.4-rc material, thanks!
 
-https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/=
-?h=3Dbleeding-edge&id=3D95a9e882f5cb3ec891d1c021df3983358dd9b9e4
-
-and let me know in case something is missing.
-
-Thanks!
+> > ---
+> >   drivers/acpi/cppc_acpi.c | 9 +++++++++
+> >   1 file changed, 9 insertions(+)
+> >
+> > diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> > index 11a9f9eb6b4a..4c3d5778e428 100644
+> > --- a/drivers/acpi/cppc_acpi.c
+> > +++ b/drivers/acpi/cppc_acpi.c
+> > @@ -2094,6 +2094,15 @@ int acpi_cppc_processor_probe(struct acpi_proces=
+sor *pr)
+> >                       cpc_apply_platform_quirks(gas_t, i - 2,
+> >                                                 platform_quirks);
+> >
+> > +                     /* EPP interfaces require the full 0-255 preferen=
+ce range. */
+> > +                     if (i - 2 =3D=3D ENERGY_PERF && gas_t->bit_width =
+< 8 &&
+> > +                         !IS_NULL_REG(gas_t)) {
+> > +                             pr_debug("CPU%d: EPP register width %u is=
+ not supported\n",
+> > +                                      pr->id, gas_t->bit_width);
+> > +                             ret =3D -EOPNOTSUPP;
+> > +                             goto out_free;
+> > +                     }
+> > +
+> >                       /*
+> >                        * The PCC Subspace index is encoded inside
+> >                        * the CPC table entries. The same PCC index
+>
