@@ -1,44 +1,45 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794583185;
-	b=WUyPUNhJQx7u2tJ0gCsiPjFpHlUFb4Vj0dbYHDSqvGBh1Wk1lsKbXGBWR1Ui0h7ZM6iE
-	 a1LxFNYZM1XXEqNm0WnqZRo5EktxeqYSUxR5k+cKVHqUxyT5Cx9WfuMsuFmBlzAcP3+lV
-	 flrzG5G4RC2ln4k7U8wjz1inKbGmYxv6mhQq4mXZ1wivFTcbsRZ5WMSZ3XLXQQFe9x0iM
-	 k5zGg0+riRgGz9CrQJVCW34omkKCIg1MuOWbCk4SDgHCr/xQ1vzS0z0KEjx5GSqkm3FAW
-	 ir5vweUN5J7puZ+LQ6TOulurwvv/0nzGkyj95RLu/1U3pXYHDjfdKwBhBkNWALx0jow==
+	t=1794583189;
+	b=3kCwxxq7gp5QF8SgF91ljgogyACbjzerU54Eds0AjjUiJAeDfxyuOiIujzTDwmkglG7X
+	 ybAjdE0eO3kDCEJPTQ9YXPg2pFgbY8E2RobADC/wr2R3owrL3YmsMfPoQzjWCvvdoVW30
+	 pIJ4JsjLse8ygkXSQaVPQBphX6xvQlxBfDbXyF6fVjQWyvzn6q8IqfbR1wetGfX4brhgZ
+	 Ajz/YovbcCnWN2sj2H921I/mMIZ9WhbR5ItuaakimIGC7FCmBwL2xUUMkIXg96nNsIhcA
+	 UL3D2o3tpplFJtzUlbDzRqoDVd11OnTHSu/9GYMXydiww6EZ74d/BlQmMDpbyXLvDKg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794583185;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794583189;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=kCbxg8z39y+qkIydVuGWiPMvNUIcUhkqrl5vBT7cprg=;
-	b=yrj658SN6QKmg480Z8P1ADT5OLtpwtrCU6TllEa8LQB8nxUI8lBSe+PcXjyPh1Jsgd28
-	 IIQS5v9eLJ1iNTVvI9AYjTMDo4hGKPTfDO6Lqjaqy/305LIN3ygcRHwkb1Ww1XeciVU5g
-	 Qs25qu/iDmHP7kgwEPf8trmnU2UQxHkRbeYd07INsCYsCbWb0jSaPKzSx12vxC+I5uVg3
-	 yvX7ra5hZZEgW5l7qpHimN8QvpInY2WU9kQ8oojqIAB8qCjF0bXtRcuewTOM0ppPMbJpb
-	 DBfN1FVw8/SamtCjvIrTSnAgP6GrvVKUxag+byW8yr9/6CUHlye4tAA90l1Tu/kF/7Q==
+	 In-Reply-To:References:MIME-Version:Reply-To:Organization:
+	 Content-Transfer-Encoding;
+	bh=8IHD7IGFw8pYBNaJMIkJqX35GDvx4WMIMR/xQpCnM5o=;
+	b=Jyugh0jZpk/jAW7/K3JUP6/sdmRJze1YHuKTQsjHxFXYqP0jf5TmOcZfRBozOp/N5Was
+	 0l4GhAYiQZytqBMvUJf6nB6cGvgEV6ijKn96OwByZqTrmuDRKT8MCshr47Mk7E5jJH/Tb
+	 1S5hIA0LqFKlTOZDYd1Sy644OR4oZOu8zuP3NERzIlow1cUmP0uReixgpVRbwGeGmXFBZ
+	 gBwpdxHPRZZyHjbIqot5RTCkez5JuH5Ymia4UsTaailTNr05XXnum/Q/WvtE4RLmi48jG
+	 Ri9/Mcf1ff9dlzcaxZgdwyK/Gp3ILbsJ05/rKF5+jeDQzQ/PYzNnp9dtb4GRVoz14Kw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="a/kDiTXV";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eSyi67TY;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45544606A327;
-	Fri, 13 Nov 2026 15:19:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD3B8606A88C;
+	Fri, 13 Nov 2026 15:19:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a/kDiTXV
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE4BF1F000C4;
-	Fri, 13 Nov 2026 15:19:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eSyi67TY
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84E491F000C5;
+	Fri, 13 Nov 2026 15:19:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794583184;
-	bh=kCbxg8z39y+qkIydVuGWiPMvNUIcUhkqrl5vBT7cprg=;
-	h=From:To:Cc:Subject:Date;
-	b=a/kDiTXV0HhjTRgOv3A2r5ZIwNGULZdyKhWV2AZBQMN4qb3BDxn1NCwvZ3jFGss6L
-	 gUoPFuC9x/ePM5cPig0zqAA/yZoUsHDlrDieHe74zHiMjZMIRafhe9SsD5NHzcCDvf
-	 OjNHH4jue00Un7LeGpV8Ta9bqvArTEVR32ZC2eZspqNrd7st1u1LX5si0tjKkb92fo
-	 /x7axVKff1UkcQHAbcts5q0HWvkx8FcO9vbFXUVCNfA9Cbpf7kSs7YM1CJpO+VebKT
-	 UPUhFqWUogIDgshiATe+VxJfR/hAaQFhO0dv6q853xMWJ8GXkPFmAvztareKC2m385
-	 FZbNRP7xaLSjQ==
+	s=k20260515; t=1794583189;
+	bh=8IHD7IGFw8pYBNaJMIkJqX35GDvx4WMIMR/xQpCnM5o=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To;
+	b=eSyi67TYSSXO0lOg6lWLUqrSZm7UotZvHugPv69tyVP73XkIY4riiClo5MYN09oUI
+	 KuxnPFBTe1y7spEd4/Xf23NtvVCrdL7fcmTtSPPPgH9zYQIfvqe7SZloM5prIjd7W3
+	 nEQR9Y4yfMQ+1K1Sx0WdgjadOztSZz/KCSnWpEGkqelQv19ENuWsR8c5E7DpQk5xkR
+	 YGzQgL1i6jOGJKF6KDx3lfAuc/zwHPnW+1ixoZqszDdFmF2I50hDTfHBr5RA7/+HSt
+	 0Pgau9hRw2LMgBSyE9XEr7rwakc3mYlPFO8r4U1jlJmf6ayO+sMHtyW5dWJJ072xnn
+	 gmCM+f3HtTRGw==
 From: Len Brown <lenb@kernel.org>
 To: rafael@kernel.org,
 	Manivannan Sadhasivam <mani@kernel.org>,
@@ -46,10 +47,12 @@ To: rafael@kernel.org,
 Cc: linux-pm@vger.kernel.org,
 	mhi@lists.linux.dev,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] bus: mhi: Address MHI system suspend abort
-Date: Fri, 13 Nov 2026 12:17:58 -0300
-Message-ID: <20261113151940.2922539-1-lenb@kernel.org>
+Subject: [RFC 2/2] bus: mhi: host: Add diagnostic print for -EBUSY in mhi_pm_suspend()
+Date: Fri, 13 Nov 2026 12:18:00 -0300
+Message-ID: <b490fbf692dcd8883b05a1475a7197104f596f0d.1794582108.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
+In-Reply-To: <7ce7895da501c3204416b69b0049ff488904f6a5.1794582108.git.len.brown@intel.com>
+References: <7ce7895da501c3204416b69b0049ff488904f6a5.1794582108.git.len.brown@intel.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,15 +62,49 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Reply-To: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-For Upstream:
+From: Len Brown <len.brown@intel.com>
 
-[PATCH 1/2] bus: mhi: pci_generic: Prevent MHI from aborting system suspend
+mhi_pm_suspend() sometimes returns -EBUSY, but doesn't tell us why.
 
-For Debug of underlying MHI issue:
+Print dev_wake and pending_pkts when it does.
 
-[RFC 2/2] bus: mhi: host: Add diagnostic print for -EBUSY in mhi_pm_suspend()
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/bus/mhi/host/pm.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-thanks,
--Len
+diff --git a/drivers/bus/mhi/host/pm.c b/drivers/bus/mhi/host/pm.c
+index ced83fbb1a51..2eb7344b3b39 100644
+--- a/drivers/bus/mhi/host/pm.c
++++ b/drivers/bus/mhi/host/pm.c
+@@ -871,8 +871,12 @@ int mhi_pm_suspend(struct mhi_controller *mhi_cntrl)
+ 
+ 	/* Return busy if there are any pending resources */
+ 	if (atomic_read(&mhi_cntrl->dev_wake) ||
+-	    atomic_read(&mhi_cntrl->pending_pkts))
++	    atomic_read(&mhi_cntrl->pending_pkts)) {
++		dev_err(dev, "DEBUG: suspend busy (early): dev_wake: %d pending_pkts: %d\n",
++			atomic_read(&mhi_cntrl->dev_wake),
++			atomic_read(&mhi_cntrl->pending_pkts));
+ 		return -EBUSY;
++	}
+ 
+ 	/* Take MHI out of M2 state */
+ 	read_lock_bh(&mhi_cntrl->pm_lock);
+@@ -900,6 +904,9 @@ int mhi_pm_suspend(struct mhi_controller *mhi_cntrl)
+ 	if (atomic_read(&mhi_cntrl->dev_wake) ||
+ 	    atomic_read(&mhi_cntrl->pending_pkts)) {
+ 		write_unlock_irq(&mhi_cntrl->pm_lock);
++		dev_err(dev, "DEBUG: suspend busy (recheck): dev_wake: %d pending_pkts: %d\n",
++			atomic_read(&mhi_cntrl->dev_wake),
++			atomic_read(&mhi_cntrl->pending_pkts));
+ 		return -EBUSY;
+ 	}
+ 
+-- 
+2.45.2
+
