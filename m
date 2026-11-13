@@ -1,62 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.27.42.4
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794558938;
-	b=d8/2E/jpAWgv/0nYVNdybdkR7jhAaeuWgQ3wCGRNVkln1HxU7TGJxHUl6OQfyW+Uvjiq
-	 7dAzX29L7bzGTJvX1eishAAZbPO70/CfDgihkS8yeq9b9NYwxmmnXpztpnkyFEmakWx+U
-	 7zYi8Rm4f9pJjg1nkboTG/PHbaml5M7SFROQT1PosHufCOjyBVN/ukDMkqC3cJh0e/1dT
-	 +KkAPWcxc1t1R3zzugTf9M82lBiDoWrLwYkfBHEPA06qNxxni/DDJ417R4HzqTzido1XK
-	 nIm6i3W6TFJT7FF1ZeL6Fgs2NzKPaQRlG2JsqtssFMFOcBVUQ2T87XCmhKWrRg6c3tg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794558938;
-	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:In-Reply-To:
-	 References:Date:Message-ID:Content-Type:Content-Transfer-Encoding:
-	 MIME-Version;
-	bh=h1CW13lpZYVm0wmdDSJrVvfHw1mdjy5FAwj4xQLmKNs=;
-	b=DpsxGI3OkdX5Ma6ql5tNAlhFRLBAZRv/59T5n4z9i+xX0XsLE8iEncv/aXrGSUppLpfj
-	 w5X2obvdDgviBuDCFFuhjrDYn45mcXQo+L7F4JIj5gbQYvXr8XJi/nkwF4DhbyxESKJZT
-	 jBmONHHXYp+Nsb1jtVfEgXyZJ9pSlsE9GPD4R8S36B26d0bEZPzRR4YbfH2KQMGxW/5e/
-	 eMVTPbwkaOVrI9qe7/jGM0IsFHwWFLg9mfImXTjmi/yjDQpOuS6pUgH3vQWq3Z8I+kHfI
-	 aDzWPF2EeqJIhP7TXE3ggFQ7mUTBuYTkaZRRBCLCGb5LSc7Vdq/n7d/jKpM5CEpZQ9w==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=free.fr;
-	spf=pass smtp.mailfrom=free.fr;
-	dkim=pass header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=aH3LPVz6;
-	arc=none smtp.remote-ip=212.27.42.4
-Received: from smtp4-g21.free.fr (smtp4-g21.free.fr [212.27.42.4])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794559326;
+	b=PUEKrwxRf2ZnkuKUgPqczAd+0WVIB9CskltU+RiM/M27vdQPxAzZCP0tpfIiJDZkbR+u
+	 7z/sifjqx++703nzKOWuG8R8O0UNjyJst5frnxNA+IO8rMtuKUnd2BTksPJJrlrkRYzQt
+	 9XeWjAeY1/q+EOLfk1gHCBpb6QVXp/Fax5yAyrpVB26kmvBzClWGIC4fnYsGhMsN7Zax9
+	 FePGRuaiJ5QVpo6gpIAjCtNIWAM54oWCoGSt8LaSmiunEREoMo81seHr5Bh/nEBUYqwhP
+	 HapSf62xjQrkrOeN5aGGP49n3r58yzx+TnkiTAtARQVyYI1izfGaMW//Syi6nrhI/dg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794559326;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=rae9V4FPwbslU8FMOU+hcXCS6mYLPzOc1lkOL01C3s0=;
+	b=NeNAmqAhdIeqAHJizzsb50+Hy2H8QpJbtG8op2JzaJg5FcNRyr44IBXlxsh1NBv/uEUS
+	 Ju0Rkzen9JNxhnTyml3EWL+tSkrg5SVkBxn8IN2RZcvavgAGJBwQRnMjwcSTE1+6CcJaY
+	 dDbO4RutfHckLPO7B1UWz3HlCuNIEN30vfHzPRLzIFCtVTDbdQykwIiCy9O3EPr9NoSW3
+	 YofQ1Jq9tr1ZHagsUAs9guIf1SAgnJfy1EK775GKG2OwT21RriNZFuiOIsnRlBKS2jjrs
+	 pHXLn3fjvrboKZxJUUi8+E5e17b6rTGiIIa2SU3Xa5I4D/3qd05HsQ2Vsd9JujbfX+w==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FYKuBPvK;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5634606A323;
+	Fri, 13 Nov 2026 08:42:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FYKuBPvK
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1794559326;
+	b=sFx21Kac/fW2y4wBcvemMuR8ScV/H62nUgFIYCgOIfXZ1VFajEMDlu6bMPU41UNHD2kt
+	 VzJ5KjUJM2qpH8BpE/kD/fBmxiVQi4DIiToDv5wVaV8+jmCbsr5gSjVP3WD1tV3Egadhd
+	 /bYa/XbtPFwJ992bksQDAan0BCqV0FJRWoV6aRYVstDoV6iLXFtfAhnAnIjp7+kPVYVH8
+	 X4VNRskyJiXEokCq7yyBzn93qHjGvgK4JI4o0jak9HXttZmLLnzRQwEGV+/r+le79HtWs
+	 xsmZQyaEUKEvJwGBnVPk0D2pt7c3mIoTXQ+/Ie5gWspn8CiLs74ejNs76cSiJ37j3+A==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794559326;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=rae9V4FPwbslU8FMOU+hcXCS6mYLPzOc1lkOL01C3s0=;
+	b=oi7xpdaZkj0s1QmDGahsqWFQUjbGQRHLCvXyD2lxU7/3ADYwpBjabw8EWvPW1WJcXzn+
+	 HHaWwd7G2AIxAufSzlWN6NSEmfIuEZgkQwfWQCk3kCESn1shx1xnPLsan1nJNj4M/Gtmj
+	 Av4nABytHSQr1v/h7cz2t5um2ezQrXL4WeDMIYHn2nzl0GSLtigDPoyziAiWjw+S/dvqa
+	 sE9QRCfAPoyjGBUX6NeUMqNy7+X+B1zb+2aGcuIKqfaOHvyl9Ah0HJi8WSzB9GrFE7WKi
+	 cYtOmFMDg9ECU4Vm3tC8CsbM70AV3GZTNa4tJKQ9AkDUuYn2QHNyR+/33jr1opoOw7A==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D598606A8B6;
-	Fri, 13 Nov 2026 08:35:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8D598606A8B6
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=free.fr
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=aH3LPVz6
-Received: from reply-fuse-freeze-v3.eml (unknown [195.154.25.110])
-	(Authenticated sender: test75@free.fr)
-	by smtp4-g21.free.fr (Postfix) with ESMTPSA id 7636519F744;
-	Fri, 13 Nov 2026 09:35:22 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
-	s=smtp-20201208; t=1794558930;
-	bh=xSHknQ9ZUP7jZdL/cJzlcRIMwVR4CszQSFP2C1kwJ74=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=aH3LPVz6thNZPJqM2Cr1TyDKxdY5idurjG9T1p+j/xi1F3mi8zasW8F/66Ykv0toH
-	 nfkZqSGVfv8OYqGwwTMh7Y63ZwffqbxqLwABBRnHUbnwQb7lJJyR7eSsIu1bTDNeEK
-	 +o41Wo1mjX6q+85SAMppAzs4Dhzpd+4qxvjQFINLZjGN/CbkqwZ00rbUDCgTTrEkpB
-	 BEFiG3M+2GVHLLSu4rfQ814FikOpXxC9FhK+YjS4EnMizv76MKN+ExeMQwytpAIh0E
-	 D2YdhJ8v4yfw98du5KkilGGx8LtcLOrxezgGqtL9W+Ax0pj4Pe1fToizTrxJHSpfBT
-	 Y6V8CcmpceHaw==
-From: test75@free.fr
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Sergey Senozhatsky <senozhatsky@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>, fuse-devel@lists.linux.dev, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2] fuse: permit freezing while waiting for request answer
-In-Reply-To: <CAJfpegtv6=40SEsbeVU3RpmjwZSY-FLvCg7mcxf6k7djFZrPHA@mail.gmail.com>
-References: <20260819023542.561653-1-senozhatsky@chromium.org> <20260820084933.GA4036497@noisy.programming.kicks-ass.net> <aobDGgivy43cz7xQ@google.com> <20260820091018.GA4120091@noisy.programming.kicks-ass.net> <aobGRjc7SE1rwIHu@google.com> <20260820093402.GB1837346@noisy.programming.kicks-ass.net> <aobKfyGHkdMcleoc@google.com> <20260820104111.GC1837346@noisy.programming.kicks-ass.net> <CAJfpegsSzOqs1zkhB9GZxsT5HT1zXDbHsZNEbA7P7mxe0w2dng@mail.gmail.com> <20260821083000.GF687043@noisy.programming.kicks-ass.net> <CAJfpegvRw0Emd=2hsEeg3AvYaLgRBUbMdo-=eUMa3FRFfnetgA@mail.gmail.com> <20260821145752.GG687043@noisy.programming.kicks-ass.net> <CAJfpegtv6=40SEsbeVU3RpmjwZSY-FLvCg7mcxf6k7djFZrPHA@mail.gmail.com>
-Date: Fri, 13 Nov 2026 09:33:50 +0100
-Message-ID: <179455883014.1731541.16877509095558539853@free.fr>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	by smtp.kernel.org (Postfix) with ESMTPS id 3363F1F000C5;
+	Fri, 13 Nov 2026 08:42:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794559326;
+	bh=rae9V4FPwbslU8FMOU+hcXCS6mYLPzOc1lkOL01C3s0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=FYKuBPvKHpRRRkNV7ndHM2kEo0oTSeZ8EfPSmA5ey5bD4+b+ob/VGbVLg70+IUu2V
+	 oR47LJ+EVa7HVeSkz9cWPSeYruJ5/lU8PS1TV9BHfGqN0t2E3G0AA+kareod03dEOy
+	 hxGa8CyejUGXVXsV4vbbMgj9OIqXctkXMH0GTnD+BMHSN5YeOqUzUtCs5VYvBlc2jl
+	 eEReiQRxIRlXmGLyPQTKrSb2yk9qgP6gxZp31uP3HNZcEH1EdyN4gx+BFzL1hal6nf
+	 bJlLXgvbc8ztr4gRK5L6Ik8X8QRl+vQqXWWSgrbfQiRKV/bXVZhCbCW/8i0S8t4Esw
+	 MuSMB1Z+k5Mzg==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id B572B476A4;
+	Fri, 13 Nov 2026 08:42:05 +0000 (UTC)
+From: Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
+Date: Fri, 13 Nov 2026 08:42:05 +0000
+Subject: [PATCH v3 1/3] pmdomain: rockchip: remove subdomain links before
+ the domains on error
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -66,62 +83,102 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261113-pmdomain-rockchip-v3-1-b7039ca30b87@gmail.com>
+References: <20261113-pmdomain-rockchip-v3-0-b7039ca30b87@gmail.com>
+In-Reply-To: <20261113-pmdomain-rockchip-v3-0-b7039ca30b87@gmail.com>
+To: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Shawn Lin <shawn.lin@rock-chips.com>, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ Kevin Hilman <khilman@linaro.org>, Caesar Wang <wxt@rock-chips.com>, 
+ Elaine Zhang <zhangqing@rock-chips.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ Yao Zi <me@ziyao.cc>, Igor Pecovnik <igor@armbian.com>, 
+ Arun Iyengar <aiyengar1990@gmail.com>, stable@vger.kernel.org
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794559325; l=2410;
+ i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
+ bh=5iFWkjIpYXw+8Ro3BXPVNak7cKPCkmaVzIP2b4nraWU=;
+ b=asyIT48IM4s8kSCIe3IC3jSAcinyiaFuKPPhEvft4iP7yvo+5vWaJ16gRUZRiY4AxCuoJnCps
+ bNZx1FzvK8EDGzJL3KfM5MvcahRaEGh0xKWwMRDuVy1iyOH2d2taU/A
+X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
+ pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
+X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
+ auth_id=1480
+X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
+Reply-To: aiyengar1990@gmail.com
+Content-Transfer-Encoding: 7bit
 
-Hi Miklos,
+From: Arun Iyengar <aiyengar1990@gmail.com>
 
-(Resending in-thread; my first attempt on Oct 23 lost its threading
-headers and missed fuse-devel. Sorry for the noise.)
+When probe fails after some domains were registered, the cleanup calls
+pm_genpd_remove() in domain id order. That fails with -EBUSY for every
+domain that is still a parent. Reversing the order does not help: on
+RK3588 RKVDEC0/1 have a parent with a lower and one with a higher id.
+devm then frees those domains while they are still on gpd_list.
 
-A field report on the contended case you raised, with one
-data point for the "optionally freezable VFS locks" idea.
+Remove the parent/child links first, depth first over the DT nodes.
 
-Setup: Ubuntu 26.04, 7.0.0-38-generic, Framework 13 (AMD, s2idle),
-systemd 259, rclone 1.60 FUSE mounts (Google Drive, SMB, SFTP).
+Fixes: 79d12b7a7f22 ("soc: rockchip: power-domain: use pm_genpd_remove in error cleanup")
+Cc: stable@vger.kernel.org
+Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
+---
+ drivers/pmdomain/rockchip/pm-domains.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-On lid close, a gvfs backend thread was in statx() on an rclone mount.
-The rclone server was not frozen. It was waiting on the network, and
-NetworkManager takes the Wi-Fi down as part of the sleep sequence, so
-the request never completed (the same hidden dependency as the
-sshfs/ssh example upthread). With the lid closed, logind retried every
-~100 s for 6 hours, about 210 failed cycles:
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index 86b5074b0469..df3f43d0c01b 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -955,12 +955,45 @@ static void rockchip_pm_remove_one_domain(struct rockchip_pm_domain *pd)
+ 	/* devm will free our memory */
+ }
+ 
++static struct generic_pm_domain *
++rockchip_pm_node_to_genpd(struct rockchip_pmu *pmu, struct device_node *node)
++{
++	u32 id;
++
++	if (of_property_read_u32(node, "reg", &id) ||
++	    id >= pmu->genpd_data.num_domains)
++		return NULL;
++
++	return pmu->genpd_data.domains[id];
++}
++
++/* Remove the links depth first, so each child has no subdomains left. */
++static void rockchip_pm_remove_subdomains(struct rockchip_pmu *pmu,
++					  struct device_node *parent)
++{
++	struct generic_pm_domain *parent_domain, *child_domain;
++
++	parent_domain = rockchip_pm_node_to_genpd(pmu, parent);
++
++	for_each_child_of_node_scoped(parent, np) {
++		rockchip_pm_remove_subdomains(pmu, np);
++
++		child_domain = rockchip_pm_node_to_genpd(pmu, np);
++		if (parent_domain && child_domain)
++			pm_genpd_remove_subdomain(parent_domain, child_domain);
++	}
++}
++
+ static void rockchip_pm_domain_cleanup(struct rockchip_pmu *pmu)
+ {
+ 	struct generic_pm_domain *genpd;
+ 	struct rockchip_pm_domain *pd;
+ 	int i;
+ 
++	/* pm_genpd_remove() refuses a domain that still has subdomains */
++	for_each_available_child_of_node_scoped(pmu->dev->of_node, np)
++		rockchip_pm_remove_subdomains(pmu, np);
++
+ 	for (i = 0; i < pmu->genpd_data.num_domains; i++) {
+ 		genpd = pmu->genpd_data.domains[i];
+ 		if (genpd) {
 
-  Freezing user space processes failed after 20.003 seconds (3 tasks refusing to freeze, wq_busy=0):
-  task:pool-906  state:D  pid:153003 tgid:6222 ppid:4922
-   request_wait_answer+0xd8/0x280
-   __fuse_simple_request+0x11f/0x370
-   fuse_lookup_name+0xd6/0x260
-   fuse_lookup+0x9d/0x1e0
-   __lookup_slow+0x86/0x150
-   lookup_slow+0x3c/0x60
-   link_path_walk+0x348/0x410
-   path_lookupat / filename_lookup / vfs_statx / do_statx
-  task:pool-907  state:D  pid:171158 tgid:6222 ppid:4922
-   request_wait_answer+0xd8/0x280
-   __fuse_simple_request+0x11f/0x370
-   fuse_dentry_revalidate+0x146/0x410
-   lookup_fast+0x15c/0x170
-   link_path_walk / ... / do_statx
-  task:pool-908  state:D  pid:197388 tgid:6222 ppid:4922
-   d_alloc_parallel+0x37b/0x460
-   __lookup_slow+0x5d/0x150
-   lookup_slow+0x3c/0x60
-   link_path_walk / ... / do_statx
+-- 
+2.55.0
 
-pool-906 and pool-907 would be covered by v2. pool-906 holds the
-parent's i_rwsem shared at freeze time, which is your contended case.
 
-pool-908 is the one I wanted to point out. It does not wait on
-i_rwsem: it waits in d_alloc_parallel() for the in-lookup dentry
-owned by pool-906, and as far as I can tell d_wait_lookup() sleeps
-TASK_UNINTERRUPTIBLE. So making i_rwsem and s_vfs_rename_mutex
-freezable for fuse would still leave this suspend failing; the
-in-lookup wait would need the same treatment.
-
-This pattern looks common on desktops: indexers and trash/thumbnail
-daemons stat the same directory from several threads. The same
-signature appears 1,000+ times in this machine's journal since April
-(gvfsd-trash, localsearch-extractor as clients). Full logs available
-on request, and I am happy to test patches on this machine.
-
-Thanks,
-Phil
