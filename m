@@ -1,135 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.14
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794590550;
-	b=E3yBqSqXBUhaUQGVQs0afZ7npayoEv8QzmUPDMSHtjGsk4F8E+g/f3PeYC/xuFPFeeMq
-	 nQCMEZMEw2v3acstFkwsUnyyZCtar8tTTyEhavFieNDvOgWV0BFaZK8F8hCg2MBPgxLir
-	 /8fiXCdn5lqHT6aChuqc4nLmU8bwqMEfLDbZUCjADZunt3mwusj50XLSlEa3++T8SJ+At
-	 abQ3J0mtBw7hFfV9WVV5AhLQ9BX5ep0GZZuPwBCJKkfbb5mdcylnLA0uoCmgl88jfdH8J
-	 Sjl/7ihxSJJ0nwkt9Y5n4oeBOYkO8v28+9IzaeMQtSBV9/5AmYiNZpeklDGB1igum9Q==
+	t=1794590894;
+	b=nte3jgg/uJE4nKG+bRtgsvXPPtB/FSsjrSu1bEpu0y0nh8MVxUQwEwTxA+rBq76kUD/r
+	 9qkCnpo2qetvj8JEJVGtt8zjdQen1Eh9VHP5c8QNmZYxa6IpkbPWfTbAdsNUnFm+ONAwd
+	 Jxczh3MqRcQ/hkuttkY/EtrfTTZDBpWhFZ6cuj9pug46ug68wxrIn3ccMZfu+27fkYeBy
+	 mCEYBYIKhUgnW7r1I3ktXgv82OXFEJVQM0kvaxWVR90/g+X2zz+zt5zYK1WPPWoUiTHF0
+	 6m++LTpByVLuw10kMAfkwKS/0rTKqZcYtUFwVzcAvsJ8a4A73oT6SqO/chiWJlfi+5g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794590550;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:User-Agent;
-	bh=fHukDD0UbvmUT77AtdgTmVuLRMj4asR7tQ0Y9WypVT0=;
-	b=wxWUaSfecALKNLIhUq+FEKBelob04LQ1WvMP7Zf0/IFQp5Jeb1okHrWN+g1+dscijpS7
-	 9344iDCwfmChAA90g/caQizfgmwdgl3FKEw5uLwSLFJOMZOSQRT2hbjEC848rzJ0I4eih
-	 xz3IsUq1sw1N7ARLHr6z3SyOZ6l5EII/1H0XXeZbQ+IovWAh6aTFKr5Kaj+eXBZXhaiCW
-	 mPGpK9gBfUr6nVPkvRlbQCEQ0xPO2BPsIE2Xe3syuOapfhSY/ljBNq+hs6TlmX0FVKwru
-	 zoBjfkijlIty/wAKSS20cAkCP9pfGoif3rX40FNv+kEqwdGEjopV4a9FTB69z1udocw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794590894;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Message-ID:Subject:
+	 From:To:Cc:Date:In-Reply-To:References:Content-Type:
+	 Content-Transfer-Encoding:User-Agent:MIME-Version;
+	bh=ziSO+YmPUxunJfjCoEZ5Rsa7KblfwfRchxzctNwTgbc=;
+	b=sePbRH7s7V/4Kj63rqTelE+0kZpDdEyo5RlEAcr74JIqkcLi3OavpnJsp2NVUDe4dypi
+	 LZ+9rrC4Rwg3R0WtbZEzfe5ib6uHKfMge9mx+ORhzIwFyYXbYPcFk9ozir+9Us6ARPwoX
+	 k7bFkDQFp8GIXgpaixPMK34e7K9JULCym4+R2z5gbznFG7lRFz0NydXjEIDFV4xz7dIBc
+	 qTv57KNLUJVTMUw3gTDAH/WscPWxH0LCn0IUyNxXPEwNl1ZnXsOe1HCuYseMw6i6dsXgW
+	 ODgUJ4o2QpVY5YrR8BO4ASXeZP4tj5VpNKXHsaB98mQXVdJgpbAYoqCIVpNFRgnYu3w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KRcjhF+R;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=OtW9r7JX;
-	arc=none smtp.remote-ip=170.10.129.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b="B/wsx2Kq";
+	arc=none smtp.remote-ip=198.175.65.14
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5687606BD08
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 17:22:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5687606BD08
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD85D606E216;
+	Fri, 13 Nov 2026 17:28:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BD85D606E216
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KRcjhF+R;
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=OtW9r7JX
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794590548;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fHukDD0UbvmUT77AtdgTmVuLRMj4asR7tQ0Y9WypVT0=;
-	b=KRcjhF+RtPnWX3GsI5skqntxmM0vHfqxVFBaRIAMHiglw7l5fvmshDNlkEcxnXX2sGhmEn
-	1LGqslG4j2Ha9ldDyoOCdacOqOjtCppDXtqyObg+okfSoVsFOSY7AdDkXIjX/8SH0Lzt2c
-	YwM2L7y8GWeHknfZbzILuN0XDElmMqs=
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
- [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-491-sGhtLq-uNJ-QE4bAmMo-5Q-1; Fri, 13 Nov 2026 12:22:27 -0500
-X-MC-Unique: sGhtLq-uNJ-QE4bAmMo-5Q-1
-X-Mimecast-MFC-AGG-ID: sGhtLq-uNJ-QE4bAmMo-5Q_1794590547
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-5358515b4easo22982401cf.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 09:22:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1794590547; x=1795195347; darn=vger.kernel.org;
-        h=user-agent:in-reply-to:content-disposition:content-type
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=fHukDD0UbvmUT77AtdgTmVuLRMj4asR7tQ0Y9WypVT0=;
-        b=OtW9r7JXbnyn7IcLoiUeJRRYwV30QCLlQsmVB600ewBp4Lvq5aeqQ2mrVwNpR08wb1
-         e35g2VxQ1d7UhLAJVUu8qY2dZ47ZUhilAh8bmL1Rn9b+S5iffMzKVk0O5offhoYBw65Q
-         5e9wVmEvCOL2PIPyVrDnKcXzUFNB2nFJ5j53Qh/Wu7R7vk/TC25TjVrRtJ1Vc6wts4Ic
-         oRYgYHSs5j0IM5jXk3rcfn5fYR12DPDDm6eEZJzIQZILfYYgGLJ21ZzN4GEYjs36kseZ
-         hCVclv4XM2DPwoheGQKqIkezr8r5g7bp0UM/zFi2zR1ElMe4AAVB3HLuDaLP9n3xcWqI
-         tCUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794590547; x=1795195347;
-        h=user-agent:in-reply-to:content-disposition:content-type
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=fHukDD0UbvmUT77AtdgTmVuLRMj4asR7tQ0Y9WypVT0=;
-        b=iXcL3kNeWJlJ0r4GWzEExSeSVoryWOcTaCie/laK2hPvyIGn8dZYoztRCnIxjvSDyD
-         kEBQ8P/Fi2NakPlB4ZWYbV1A1ELnuGm3F52HTcu9rozaN2SWAVg98rtkViGH42K1u4bN
-         sKHeoHssBga82jVUK5VvficLDQGnTEiKUVglUSU3rO8JYJWkGresHVNbhkpKW0l/65tU
-         5ln0GsUgs264eySGJZInbhx+eUSG8QKu+D0ElPKiZR5reuQ2hqD+O1a2QsMfngFq7UPL
-         ibA8lsKFEuGda0PZ8lD5naE4RCvxMPoeE5qNob8o0StbLWnYmmpsvJOXY5D3Cu55fPdF
-         Qniw==
-X-Forwarded-Encrypted: i=1; AL+hErHmJsxlGtwjfMxd/r518q1XVxGIG16+g/L9mT0si9WsqdQXJAv0vpZzQf11kqtzalSH+5HpzEcsBg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z83EHbiyA+nIbZfKtTzdy1dmI1VBxX6nVm5ltaZcjSCsgrse0ib
-	qQ/LUmpAKN++WwOQ8WLW0X07sTCNf/cLZoqaftQhyl491QFaW/lTGa/nThJN1a44IDutv65Y0wO
-	bTebrlO6iMl7OxgA6hLLm0RoEfjPtdWbjSCrEr5/ywasRopQ/Nfy48NGXYPcA
-X-Gm-Gg: AYBFou25COUTAqfImy2PpIyo+jraqV2O9DJ8W//BeqTKAOQzmKNEiO46PlWDaJE8Ez6
-	++u1eqFEuibLM2AsaJKJGDsNu5WEWSJ8uYsKuu1QlFhOw3RaDqjn/H79xahPzDo7HykZdRWNlV/
-	put0Bkdm6uI5XryyZ7paZzx0gtOHAFHyVMgWGaP4dpSY1H4qi5Mc/vmjuGQOIuYUWK2VatoKaQO
-	h7aa4tTLcCiWetupzgU81LXL40f78HKZxUd7jMMGOzZo6QwuLXEzg2fvDyvrM3rRd5pL9TfJP4v
-	GmYMndwGKNFTL3ArR3v07vcPH90vE49hxIfWFSB2glEiK5NDnkphnnkXCdxe4UFFMfBzdvNcsjx
-	IxqgQeKdpDSoAjTCfkrPercN2dCegDsJoPlLb7qfiNbkCcUx+RzBWmntNTzuH3+mEJTlqvjbRmZ
-	KaLXXsTz1D9OpjMM50wxn3u+zJ1yWjxaECSWvBMtiV
-X-Received: by 2002:a05:622a:550e:b0:535:70b4:3f7c with SMTP id d75a77b69052e-55ac937d6e5mr45976411cf.66.1794590546852;
-        Fri, 13 Nov 2026 09:22:26 -0800 (PST)
-X-Received: by 2002:a05:622a:550e:b0:535:70b4:3f7c with SMTP id d75a77b69052e-55ac937d6e5mr45975821cf.66.1794590546274;
-        Fri, 13 Nov 2026 09:22:26 -0800 (PST)
-Received: from redhat.com (c-73-183-53-213.hsd1.pa.comcast.net. [73.183.53.213])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-55ad14f1ecasm22347291cf.24.2026.11.13.09.22.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Nov 2026 09:22:24 -0800 (PST)
-Date: Fri, 13 Nov 2026 12:22:22 -0500
-From: Brian Masney <bmasney@redhat.com>
-To: Jerome Brunet <jbrunet@baylibre.com>
-Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Mike Tipton <mike.tipton@oss.qualcomm.com>,
-	Taniya Das <taniya.das@oss.qualcomm.com>, linux-clk@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: Re: [PATCH RFC 02/16] clk: Acquire resources for clock transitions
-Message-ID: <avdHTgDnTmQYy3CN@redhat.com>
-References: <20261014-topic-qc_clk_dvfs-v1-0-3041b788e9f7@oss.qualcomm.com>
- <20261014-topic-qc_clk_dvfs-v1-2-3041b788e9f7@oss.qualcomm.com>
- <179275170360.4070168.11650113664838519061.b4-review@b4>
- <f0ca2bd4-851e-473d-bf21-678cf964f854@oss.qualcomm.com>
- <825fbfbe-a9a0-43e2-bb54-f9e38ce779f4@oss.qualcomm.com>
- <179458337623.3308909.8679910347462508471.b4-reply@b4>
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=B/wsx2Kq
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794590893; x=1826126893;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=16waxDqNSYau/xhki9mDXaindSEi2mDzGfPV5tNqWpo=;
+  b=B/wsx2KqI6nvYAVt7h4RtIfMIh+Lstn+3i2MBcHAm7oi60sqL/hFzRiK
+   RGXHkwid+y+yahqSC/mCLwvpuqfgfJT0dHbAWjiNhSyeYagB7MyRkxjYF
+   WkJFxp/ZiSJDvYQLL73jfEbZyuUGUSMiOzg3zMjhQcDFRpgYZvf4NM0Ta
+   VJ+fliT8i+yFAX9qTURaJtX/lRw70/aTaoMUaWswbfDBVAyb1U8j4Tr00
+   vL9Ne9c1OJv/EsQdktaUU5rAd8NVhlQx/cSUvmEhbpFvCLBXKcTccFCHI
+   p5EoCShK7ALcYDUOwoLZx/fnMaZE7Rstfu6KDzySHv3sUdeLeSucaUpqv
+   Q==;
+X-CSE-ConnectionGUID: 5tvrC0lBTxuV9/pCaMp+2A==
+X-CSE-MsgGUID: cIr0SZBmQ/GZgY2hJ1QW9w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11965"; a="3293893"
+X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
+   d="scan'208";a="3293893"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 09:28:12 -0800
+X-CSE-ConnectionGUID: AVoqca5TQXCY+xN4GC9JEQ==
+X-CSE-MsgGUID: Y9yyWH/rRM+pifxsca/I+A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
+   d="scan'208";a="9138763"
+Received: from spandruv-desk2.jf.intel.com ([10.24.80.14])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2026 09:28:12 -0800
+Message-ID: <dc5506e2d145bf98ea55b861cac74d7805137470.camel@linux.intel.com>
+Subject: Re: [PATCH] thermal: int340x: processor_thermal: Fix Nova Lake-S
+ PCI device ID
+From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Sankara Tankala <sankara.narayana@intel.com>, rafael@kernel.org, 
+	daniel.lezcano@kernel.org
+Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Date: Fri, 13 Nov 2026 09:28:11 -0800
+In-Reply-To: <20261113154001.2081-1-sankara.narayana@intel.com>
+References: <20261113154001.2081-1-sankara.narayana@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.60.2 (3.60.2-2.fc44) 
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -139,77 +84,108 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <179458337623.3308909.8679910347462508471.b4-reply@b4>
-User-Agent: Mutt/2.4.3 (2026-10-09)
 
-On Fri, Nov 13, 2026 at 04:22:56PM +0100, Jerome Brunet wrote:
-> On 2026-11-09 15:06 +0100, Konrad Dybcio wrote:
-> > On 10/26/26 2:11 PM, Konrad Dybcio wrote:
-> > > On 10/23/26 12:35 PM, Jerome Brunet wrote:
-> > >>> Preparing a clock protects its current requirements, not the resources
-> > >>> needed while changing its rate or parent. A transition can temporarily
-> > >>> use both parents or access an unprepared clock, and a parent rate change
-> > >>> can cause other clocks to be programmed too. Raising resources one clock
-> > >>> at a time leaves those operations exposed to insufficient power.
-> > >>>
-> > >>> Failures make this worse: hardware may already have changed when the
-> > >>> operation returns an error. A matching cached rate is then not proof
-> > >>> that resource reconciliation finished. Retaining a temporary enable
-> > >>> reference without a corresponding prepare reference also breaks a
-> > >>> consumer's normal disable/unprepare sequence after a failed reparent.
-> > >>>
-> > >>> Make CCF acquire the affected tree's and parent paths' resources before
-> > >>> notifiers or programming, and reconcile them only when the walk stops.
-> > >>> Keep fault recovery independent of rate shortcuts and subsequent
-> > >>> consumer reference-count changes. Require explicit recovery of an
-> > >>> ancestor's uncertain parent selection rather than reporting success
-> > >>> from a descendant request.
-> > >>
-> > >> I don't think all this is necessary to address the problem described
-> > >> here and in the cover letter.
-> > >>
-> > >> IMO a new provider API is the wrong layer. The framework already has
-> > >> the hook a provider needs: the rate change notifiers. What the core
-> > >> should do instead is fix those notifiers, which do have a few issues.
-> > >> You are fixing one in patch 1. Another fix, about setting the parent,
-> > >> was sent recently:
-> > >>
-> > >> https://patchwork.kernel.org/project/linux-clk/patch/20261021-submit-clk-parent-abort-v1-v1-1-2936181822fc@gmail.com/
-> > >>
-> > >> You want to act on some changes before anything is programmed. PRE
-> > >> notifiers are the right tool for this. The user of this change in
-> > >> patch 7 could use them AFAICT: PRE sets a temporary vote, POST settles
-> > >> it, ABORT drops it.
-> > >>
-> > >> Also, what is acquired here follows the requested clock. When an
-> > >> ancestor switches parent, the chain of its new parent is not acquired,
-> > >> although it feeds the whole subtree after the switch.
-> > >>
-> > >> With notifiers, the parent fault state is not needed either. As it is,
-> > >> it blocks every request on or below the clock until the same switch is
-> > >> retried.
-> > >>
-> > >> Could you tell me what you need from this approach that cannot be done
-> > >> with (fixed) notifiers?
-> > > 
-> > > I'm a little worried about the ordering there, since some device
-> > > drivers may also be registering listeners in parallel, so we don't
-> > > get a clean split of what PRE means ("has power for sure " or "may
-> > > not have power")
-> > 
-> > Do you have any thoughts on this? I'd like to proceed with this
-> > series in one way or another.
-> 
-> As I have replied before, if there are things to fix in notifiers, we surely
-> can discuss it but, at the moment, I don't think the complexity of what you
-> are proposing here is justified.
-> 
-> Please allow some time for Brian to have a look.
+On Fri, 2026-11-13 at 21:10 +0530, Sankara Tankala wrote:
+> Nova Lake-S uses the same processor thermal PCI device ID as Nova
+> Lake-H, 0xD703. The 0xAD03 ID added for Nova Lake-S is the Arrow
+> Lake-S ID (PCI_DEVICE_ID_INTEL_ARL_S_THERMAL).
+>=20
+> The ARL-S entry comes first in the PCI ID table, so the NVL-S entry
+> never matched. However, proc_thermal_rfim_add() matches on the device
+> ID alone, so Arrow Lake-S, which has DLVR, wrongly gets the Nova Lake
+> DLVR register map.
+>=20
+> Replace the separate NVL_H and NVL_S IDs with a single NVL ID,
+> 0xD703,
+> and drop the 0xAD03 entries.
+>=20
+> Fixes: af1b80b94126 ("thermal: int340x: processor_thermal: Add Nova
+> Lake processor thermal device")
+> Fixes: dbd911a07f14 ("thermal: intel: int340x: Add DLVR support for
+> Nova Lake")
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Sankara Tankala <sankara.narayana@intel.com>
 
-I'm hoping to be able to look at this, plus some other requested changes
-to the clk core, next week.
+    Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Brian
 
+> ---
+> =C2=A0.../intel/int340x_thermal/processor_thermal_device.h=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 | 3 +--
+> =C2=A0.../intel/int340x_thermal/processor_thermal_device_pci.c=C2=A0=C2=
+=A0 | 7 +----
+> --
+> =C2=A0.../thermal/intel/int340x_thermal/processor_thermal_rfim.c | 3 +--
+> =C2=A03 files changed, 3 insertions(+), 10 deletions(-)
+>=20
+> diff --git
+> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> index b79937a386ec..87d8ff9c7173 100644
+> ---
+> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> +++
+> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> @@ -27,8 +27,7 @@
+> =C2=A0#define PCI_DEVICE_ID_INTEL_JSL_THERMAL	0x4E03
+> =C2=A0#define PCI_DEVICE_ID_INTEL_LNLM_THERMAL	0x641D
+> =C2=A0#define PCI_DEVICE_ID_INTEL_MTLP_THERMAL	0x7D03
+> -#define PCI_DEVICE_ID_INTEL_NVL_H_THERMAL	0xD703
+> -#define PCI_DEVICE_ID_INTEL_NVL_S_THERMAL	0xAD03
+> +#define PCI_DEVICE_ID_INTEL_NVL_THERMAL	0xD703
+> =C2=A0#define PCI_DEVICE_ID_INTEL_RPL_THERMAL	0xA71D
+> =C2=A0#define PCI_DEVICE_ID_INTEL_SKL_THERMAL	0x1903
+> =C2=A0#define PCI_DEVICE_ID_INTEL_TGL_THERMAL	0x9A03
+> diff --git
+> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> c
+> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> c
+> index 7d6fee59ade2..f218ee247ab4 100644
+> ---
+> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> c
+> +++
+> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> c
+> @@ -501,12 +501,7 @@ static const struct pci_device_id
+> proc_thermal_pci_ids[] =3D {
+> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_HINT |
+> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_POWER_FLOOR |
+> PROC_THERMAL_FEATURE_PTC |
+> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
+> -	{ PCI_DEVICE_DATA(INTEL, NVL_H_THERMAL,
+> PROC_THERMAL_FEATURE_RAPL |
+> -	=C2=A0 PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
+> -	=C2=A0 PROC_THERMAL_FEATURE_MSI_SUPPORT |
+> PROC_THERMAL_FEATURE_WT_HINT |
+> -	=C2=A0 PROC_THERMAL_FEATURE_POWER_FLOOR |
+> PROC_THERMAL_FEATURE_PTC |
+> -	=C2=A0 PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
+> -	{ PCI_DEVICE_DATA(INTEL, NVL_S_THERMAL,
+> PROC_THERMAL_FEATURE_RAPL |
+> +	{ PCI_DEVICE_DATA(INTEL, NVL_THERMAL,
+> PROC_THERMAL_FEATURE_RAPL |
+> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
+> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_MSI_SUPPORT |
+> PROC_THERMAL_FEATURE_WT_HINT |
+> =C2=A0	=C2=A0 PROC_THERMAL_FEATURE_POWER_FLOOR |
+> PROC_THERMAL_FEATURE_PTC |
+> diff --git
+> a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> index 96279756177f..1832f13634d8 100644
+> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> @@ -472,8 +472,7 @@ int proc_thermal_rfim_add(struct pci_dev *pdev,
+> struct proc_thermal_device *proc
+> =C2=A0			dlvr_mmio_regs_table =3D lnl_dlvr_mmio_regs;
+> =C2=A0			dlvr_mapping =3D lnl_dlvr_mapping;
+> =C2=A0			break;
+> -		case PCI_DEVICE_ID_INTEL_NVL_H_THERMAL:
+> -		case PCI_DEVICE_ID_INTEL_NVL_S_THERMAL:
+> +		case PCI_DEVICE_ID_INTEL_NVL_THERMAL:
+> =C2=A0			dlvr_mmio_regs_table =3D nvl_dlvr_mmio_regs;
+> =C2=A0			ddr_data_rate_reg =3D &nvl_ddr_data_rate_reg;
+> =C2=A0			break;
