@@ -1,49 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794573174;
-	b=OVb0kscP7UpkbZjV432ub7B1W0UJD0PX/+KNEGmH1+9YY6/AY59yY4L0r+3zAki9sIRl
-	 502Mt7kDX84Fc8ox/SdnBNLedGLNqIYBrGNoaNf/v4HrhDXC7Qti1PJmnPkFsZYZhuZAb
-	 /ovr1WJgwAhxnq9vQ59e6EBpplgwuZROh16S2BabkjJAOukzx6EKgj+qBI8LsbjMaVeos
-	 0ySZmimpJejusEk2fwFRvqDwVpYFsSqIbp876dJQjWfaKdEukxi69AD6iAvUy8NLxDUKK
-	 xQ9RewOGBkPFFCfVSb8AaUkIYua59Wo5gxthSHWe4tXRKoRbYqRBXwgacTaVUFd4Pqw==
+	t=1794573791;
+	b=mD+mYCJgxiEQYx5GzfutaC+hDh99PF2QpFsnuc7jGLwx/JhuCfR0wp7feIC1cdHeNywv
+	 2qxIwM754kIpeQAfvpDkPODwafdZv1GUQ/6vaK3gGj3sW14qqvrZoOplu9okZeIiM3kzD
+	 H626rSpjaunngNa6w1+1z1K9vVpdQTW7TIm9dnJHGQFk+ypLhT/0iYTR3uFfDbiI81l/m
+	 Us8N8frl0YCaanxV43U3X6B88QEzcqlmbn9RCU3Dvqi/hfe8NwHwQ1R6NFwRJj+3AzmfJ
+	 yLMxugyju7r/jTnlAJRqT0fA0WlHztH/hq533zDjlxVgd/BZPAZFYr0lkmLYWo2Ai8g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794573174;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=IPfz6e8ZL3U3+bbMdztQgLGLOpCZJgiptSlbYGZ5HwU=;
-	b=A5vA1slk5lS8DUJM+RA9Dld3FCuiomp5qqG9Bw0whUPeaJ+18iipKCaGzwBipSsRUPPr
-	 PiwEkQkPBFT5n68nxNdQhjclcrtozp3oi2iES/ceNnP8lwwrPidgBxdnsj3j2pVWbwhLI
-	 PeWML/KL6Jowcx7ivUN7Urr2/MxaApWMaiHxxJs1yEVXpxkuKXOdi1nIQxpjOSUDLrpea
-	 2ImfYwnqwOrWq6X8B38az4BrHDhmkNMnYUa6riJUxqfE2XBKh8EJmvtOLWNNRWbP7Qhax
-	 2LnhR1EGc19L9ERqtglH8wPwd9foR0J8iiy7Qj8Jgt+MG3xk7qUzDfs4T5B34DokFfQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794573791;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=eShdbW7sqvfZ7ijY79As2thpO2U2i6N5CJpBkNsicqs=;
+	b=FChniMgs7gZTvL9bVD/RsyH3nwtWFUIlld8XdFBq3c0/DlU+Ok/bNYHepPjFnoIQ82cx
+	 XSElr+mfa5Nl2Q1SLFl9YMC9ZCxJj35JuaWL4Ffjf9KFls2F+Vs3zaGDtWu/dYGA9hGJb
+	 BmMqNRAphbFkN4envZOZbAY7LcD7/UtESHyuNNOEQzyb3gpzW3g2LQtGM9fVKSGiUck00
+	 fY2Ew4b3xg8xV1tqWQn6zCp7O/BvT6xOwPZWuhNA2UC3zLgCSlududARnDJLZD8jP2Bio
+	 q0cIYoy/vK1wtAbTCKBrG5ZDc7IvK7/tlsUWNACx1xB5geH9+/BlLSxRQF9hidRh2PA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Teh74hzd;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B9EBA606A32A;
-	Fri, 13 Nov 2026 12:32:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B9EBA606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EDEqVvYu;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1450606A327
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 12:43:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Teh74hzd
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D73451476;
-	Fri, 13 Nov 2026 04:32:49 -0800 (PST)
-Received: from [10.0.130.226] (e127648.arm.com [10.0.130.226])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 10BA53F673;
-	Fri, 13 Nov 2026 04:32:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794573172; bh=n2dtVnYzpga7ZA3jSnUnX/X0+PRyKd+JeY1jxcHFSLQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Teh74hzdJisG6yfRIVLRq2J/lOBxiAn5RPRhH48o0f+yFxWytE3BNFFaa+BOVkrh1
-	 oAM25Fvt0fDNID2d3s/EFurO1duZOfw8ZjxjoeM9tY5xXwWpuUBGj17zPE/UVJ4E6H
-	 mfqKFpnLC44OC7XO85nVcRG45MPQfhUvv/BBS5C0=
-Message-ID: <5a7fe17b-2b65-4157-b6a7-d7c0a1ee3fb5@arm.com>
-Date: Fri, 13 Nov 2026 12:32:48 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EDEqVvYu
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 897B21F000C4
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 12:43:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794573791;
+	bh=eShdbW7sqvfZ7ijY79As2thpO2U2i6N5CJpBkNsicqs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=EDEqVvYuTKMLMu6f42/+Teh3wbTsvwjrn1MuaXI9yRoL9mfa5a5xgX5qRTK/A262K
+	 0OgCI0uGj9YRZ1MhRfg3JQkFBwwUfyEQH0U8W64vP10lite0zEnYem9z4VfMmLzhlH
+	 2mfQzmWSTYeXxQhypZeMbQyTw6MRGPfCBgxOjXmGJL1DALkVt48hQBSesq9mmGLao4
+	 OCnl3bbnS/M/thvZj4RdkN5RRAUhGhQxZRzfXwwQJm6CGQdZm93O9p0YvCaYcHLiWr
+	 szrX2MTQnUckkM16gr8/kz9ubzPhpD8+x+GQe/4fYMTjxkcUZhV/Zlchpj8ammcb08
+	 x4xPtLgqwOUhQ==
+Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-6b785ca42ebso1815567a12.2
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 04:43:11 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErHSuWURBNYoRF/+FeS9T+ik44Egs0XnQt/u6+5JbWAL8r8ORTXhRedWhDDDDIgxsr4NvhGgkHbLDg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9MKfgP3ntGjSrVDtMtbfykbC0kf16QeBxzwCfLU7HJshIg0AqL
+	exZJ4GL+6NUqtH6IqzHBn2w8N/pOhVAnmeiQLqzsVUJq9t5tHzVx3JYKngEkdoXDM8Mp5wOATZe
+	GLnoH5/9nBcM0F96SEHXbxt52bc6EGs0=
+X-Received: by 2002:aa7:d587:0:b0:6b5:fb30:5651 with SMTP id
+ 4fb4d7f45d1cf-6b7c0be070fmr1524244a12.26.1794573790409; Fri, 13 Nov 2026
+ 04:43:10 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,226 +59,114 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ACPI: CPPC: Scale EPP values to the register width
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Mario Limonciello <superm1@kernel.org>, viresh.kumar@linaro.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- zhanjie9@hisilicon.com, zhangpengjie2@huawei.com,
- Sumit Gupta <sumitg@nvidia.com>
-References: <20261112131316.827708-1-christian.loehle@arm.com>
- <592580a1-ba88-4e22-b586-4aa2425f9760@arm.com>
- <CAJZ5v0gXjngKSxX0Ku2wccWj9+oDQ7YqS6ziFZXDzMgm5GjVzg@mail.gmail.com>
- <f8d23034-0d28-4726-829e-51cf687e5589@arm.com>
- <37efae02-1f49-45ff-9e51-5a6a921ed1d5@kernel.org>
- <4d9261e9-fc66-4197-b3ba-edcc98ffaaf7@arm.com>
- <2b72fea4-b2ba-4ae5-91e8-d5830f024b2f@arm.com>
- <CAJZ5v0g0b2iG21ExDhDjjaJN1Hwgmd53Ph690teqoRVexP1bTQ@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0g0b2iG21ExDhDjjaJN1Hwgmd53Ph690teqoRVexP1bTQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <b47282f1514a9012ac51d0915afb83782c3c0050.1794417398.git.len.brown@intel.com>
+ <CAFEp6-0yj-+7uYnj5PCvaP39ruQ=xduBbQgJc7MyakuPLJhmvw@mail.gmail.com>
+In-Reply-To: <CAFEp6-0yj-+7uYnj5PCvaP39ruQ=xduBbQgJc7MyakuPLJhmvw@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Date: Fri, 13 Nov 2026 09:42:57 -0300
+X-Gmail-Original-Message-ID: <CAJvTdKnnqZJrZ6bgaxsyy6QttGwgh5RL=De9ggV3KhMPDau_BQ@mail.gmail.com>
+X-Gm-Features: AclHuK-qV3odlCZg-rvJ7Er0tAbjRJL99Hmn9EJPElO7oP1o5xdv9czMmzm7XIs
+Message-ID: <CAJvTdKnnqZJrZ6bgaxsyy6QttGwgh5RL=De9ggV3KhMPDau_BQ@mail.gmail.com>
+Subject: Re: [PATCH] bus: mhi: pci_generic: Fix erroneous system suspend abort
+To: Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: rafael@kernel.org, Manivannan Sadhasivam <mani@kernel.org>, linux-pm@vger.kernel.org, 
+	mhi@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 11/13/26 12:28, Rafael J. Wysocki (Intel) wrote:
-> On Fri, Nov 13, 2026 at 1:22 PM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 11/12/26 17:19, Christian Loehle wrote:
->>> On 11/12/26 17:11, Mario Limonciello wrote:
->>>> On 11/12/26 08:05, Christian Loehle wrote:
->>>>> On 11/12/26 14:01, Rafael J. Wysocki (Intel) wrote:
->>>>>> On Thu, Nov 12, 2026 at 2:58 PM Christian Loehle
->>>>>> <christian.loehle@arm.com> wrote:
->>>>>>>
->>>>>>> On 11/12/26 13:13, Christian Loehle wrote:
->>>>>>>> The EPP sysfs interface uses 0-255, but ACPI permits 4-8 bit fields.
->>>>>>>> Writing 128 to a 4- or 6-bit SystemMemory field currently succeeds but
->>>>>>>> stores zero, selecting maximum performance.
->>>>>>>>
->>>>>>>> Scale writes to supported narrow EPP registers and normalize reads to
->>>>>>>> 0-255. Cover both EPP setters and cppc_get_perf() so saved firmware values
->>>>>>>> round-trip correctly.
->>>>>>>>
->>>>>>>> Fixes: 922607a2b462 ("cpufreq: CPPC: Add support for autonomous selection")
->>>>>>>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
->>>>>>>> ---
->>>>>>>>   .../ABI/testing/sysfs-devices-system-cpu      |  5 ++
->>>>>>>>   drivers/acpi/cppc_acpi.c                      | 46 +++++++++++++++++--
->>>>>>>>   2 files changed, 47 insertions(+), 4 deletions(-)
->>>>>>>>
->>>>>>>> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>>>>> index d219fc27a0c9..c63b5cfd993c 100644
->>>>>>>> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>>>>> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>>>>> @@ -322,6 +322,11 @@ Description:     Energy performance preference
->>>>>>>>                performance increase/decrease and the result of the hardware's
->>>>>>>>                energy efficiency and performance optimization policies.
->>>>>>>>
->>>>>>>> +             For supported EPP registers narrower than eight bits, values are
->>>>>>>> +             scaled and rounded to the nearest hardware preference.
->>>>>>>> +             Reads use the same 0-255 scale and may differ from the requested
->>>>>>>> +             value due to the reduced precision.
->>>>>>>> +
->>>>>>>>                Writing to this file only has meaning when Autonomous Selection is
->>>>>>>>                enabled.
->>>>>>>>
->>>>>>>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->>>>>>>> index 11a9f9eb6b4a..10b52163eb56 100644
->>>>>>>> --- a/drivers/acpi/cppc_acpi.c
->>>>>>>> +++ b/drivers/acpi/cppc_acpi.c
->>>>>>>> @@ -38,6 +38,7 @@
->>>>>>>>   #include <linux/iopoll.h>
->>>>>>>>   #include <linux/ktime.h>
->>>>>>>>   #include <linux/list.h>
->>>>>>>> +#include <linux/math64.h>
->>>>>>>>   #include <linux/mutex.h>
->>>>>>>>   #include <linux/rbtree.h>
->>>>>>>>   #include <linux/rwsem.h>
->>>>>>>> @@ -2841,6 +2842,25 @@ int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
->>>>>>>>   }
->>>>>>>>   EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
->>>>>>>>
->>>>>>>> +/* Keep the EPP interface on an 8-bit scale, including firmware readback. */
->>>>>>>> +static u64 cppc_scale_epp(const struct cpc_register_resource *reg,
->>>>>>>> +                       u64 epp, bool to_reg)
->>>>>>>> +{
->>>>>>>> +     unsigned int width = reg->cpc_entry.reg.bit_width;
->>>>>>>> +     u32 max;
->>>>>>>> +
->>>>>>>> +     if (reg->type != ACPI_TYPE_BUFFER || width < 4 || width >= 8)
->>>>>>>> +             return epp;
->>>>>>>> +
->>>>>>>> +     max = BIT(width) - 1;
->>>>>>>> +     if (to_reg)
->>>>>>>> +             return DIV_ROUND_CLOSEST_ULL(epp * max,
->>>>>>>> +                                          CPPC_EPP_ENERGY_EFFICIENCY_PREF);
->>>>>>>> +
->>>>>>>> +     return DIV_ROUND_CLOSEST_ULL(epp * CPPC_EPP_ENERGY_EFFICIENCY_PREF,
->>>>>>>> +                                  max);
->>>>>>>> +}
->>>>>>>> +
->>>>>>>>   /**
->>>>>>>>    * cppc_get_epp_perf - Get the epp register value.
->>>>>>>>    * @cpunum: CPU from which to get epp preference value.
->>>>>>>> @@ -2850,7 +2870,15 @@ EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
->>>>>>>>    */
->>>>>>>>   int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
->>>>>>>>   {
->>>>>>>> -     return cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
->>>>>>>> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
->>>>>>>> +     int ret;
->>>>>>>> +
->>>>>>>> +     ret = cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
->>>>>>>> +     if (!ret)
->>>>>>>> +             *epp_perf = cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_PERF],
->>>>>>>> +                                        *epp_perf, false);
->>>>>>>> +
->>>>>>>> +     return ret;
->>>>>>>>   }
->>>>>>>>   EXPORT_SYMBOL_GPL(cppc_get_epp_perf);
->>>>>>>>
->>>>>>>> @@ -3150,6 +3178,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>>>>        bool auto_sel_non_pcc;
->>>>>>>>        bool epp_pcc;
->>>>>>>>        bool epp_non_pcc;
->>>>>>>> +     u64 epp;
->>>>>>>>        int ret;
->>>>>>>>
->>>>>>>>        if (!cpc_desc) {
->>>>>>>> @@ -3159,6 +3188,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>>>>
->>>>>>>>        auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
->>>>>>>>        epp_set_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
->>>>>>>> +     epp = cppc_scale_epp(epp_set_reg, perf_ctrls->energy_perf, true);
->>>>>>>>        if (!enable && auto_sel_reg->type == ACPI_TYPE_INTEGER &&
->>>>>>>>            auto_sel_reg->cpc_entry.int_value == 1)
->>>>>>>>                return -EOPNOTSUPP;
->>>>>>>> @@ -3177,7 +3207,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>>>>                        return ret;
->>>>>>>>        }
->>>>>>>>        if (epp_non_pcc) {
->>>>>>>> -             ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
->>>>>>>> +             ret = cpc_write(cpu, epp_set_reg, epp);
->>>>>>>>                if (ret)
->>>>>>>>                        return ret;
->>>>>>>>        }
->>>>>>>> @@ -3205,7 +3235,7 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
->>>>>>>>                }
->>>>>>>>
->>>>>>>>                if (epp_pcc) {
->>>>>>>> -                     ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
->>>>>>>> +                     ret = cpc_write(cpu, epp_set_reg, epp);
->>>>>>>>                        if (ret)
->>>>>>>>                                goto out_unlock;
->>>>>>>>                }
->>>>>>>> @@ -3235,9 +3265,17 @@ EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
->>>>>>>>    */
->>>>>>>>   int cppc_set_epp(int cpu, u64 epp_val)
->>>>>>>>   {
->>>>>>>> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
->>>>>>>> +
->>>>>>>>        if (epp_val > CPPC_EPP_ENERGY_EFFICIENCY_PREF)
->>>>>>>>                return -EINVAL;
->>>>>>>>
->>>>>>>> +     if (!cpc_desc)
->>>>>>>> +             return -ENODEV;
->>>>>>>> +
->>>>>>>> +     epp_val = cppc_scale_epp(&cpc_desc->cpc_regs[ENERGY_PERF],
->>>>>>>> +                              epp_val, true);
->>>>>>>> +
->>>>>>>>        return cppc_set_reg_val(cpu, ENERGY_PERF, epp_val);
->>>>>>>>   }
->>>>>>>>   EXPORT_SYMBOL_GPL(cppc_set_epp);
->>>>>>>> @@ -3496,7 +3534,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
->>>>>>>>                if (ret)
->>>>>>>>                        goto out_err;
->>>>>>>>        }
->>>>>>>> -     perf_ctrls->energy_perf = energy_perf;
->>>>>>>> +     perf_ctrls->energy_perf = cppc_scale_epp(energy_perf_reg, energy_perf, false);
->>>>>>>>
->>>>>>>>        if (CPC_SUPPORTED(auto_sel_reg)) {
->>>>>>>>                ret = cpc_read(cpu, auto_sel_reg, &auto_sel);
->>>>>>>
->>>>>>> +CC Sumit's actual email, sorry about that.
->>>>>>
->>>>>> So I'm assuming that this one is for Sumit to pick up and send again
->>>>>> along with a new version of
->>>>>>
->>>>>> https://lore.kernel.org/linux-acpi/20261112080442.4007723-1-sumitg@nvidia.com/
->>>>>>
->>>>>> Or please let me know if that is not the case.
->>>>>
->>>>> Yup, while it fixes an issue by itself technically, I don't think there
->>>>> are any affected platforms.
->>>>> I'm hoping that Sumit this (and the limit-write-at-init) patch as a series
->>>>> for all our convenience (and hopefully to get Sashiko to review them too).
->>>>> (I guess I should've mentioned that in the notes.)
->>>>>
->>>>> And sorry about ACPI/CPPC having such high traffic lately, I'm expecting once
->>>>> we've got the issues ironed out and the new features supported it'll be a
->>>>> lot more boring :)
->>>>
->>>> So the basic idea with this patch that the userspace interface is always 8 bit so higher level software will not need to know the lower level implementation detail at the expense of some granularity.
->>>>
->>>> Makes sense to me, but I'd like to know how realistic this hardware is going to be.  If it's purely hypothetical hardware; how about proposing to ASWG that this field must always be 8 bit?
->>>
->>> Good point, IMO it's hypothetical hardware that hopefully doesn't and won't exist.
->>> I'll try to raise this through that channel as well.
->>
->>
->> Quick update on this, after proposing it, Souvik came back and made me aware that
->> we've already proposed this:
->> https://github.com/tianocore/edk2/issues/10838
->>
->> I guess forget about $SUBJECT after all and I'll probe-fail <8bit and get the amd-pstate
->> handling correct.
-> 
-> So should I wait for an update of
-> 
-> https://lore.kernel.org/linux-acpi/20261112080442.4007723-1-sumitg@nvidia.com/
-> 
-> or is it applicable as-is?  In which case, care to give it a tag?
+Hello Loic,
 
-I guess the issue is arguably preexisting and the fix doesn't touch the same code,
-so feel free to apply,
+I agree that the device and the driver should be debugged, and perhaps
+re-implemented.
+
+Indeed, I'm happy to share the dmesg from 28,000 suspend/resume cycles
+on this machine
+over the last few months to support that effort, should somebody else
+undertake it.
+
+But today, this device is allowing its internal contagion to spread
+into Linux and interfere with
+system wide suspend due to an obvious 1-line programming error.
+
+This 1-line fix should be applied NOW, without waiting for internal
+mhi internal or development.
+
+thanks,
+-Len
+
+ps.  I filed this over a year ago:
+https://bugzilla.kernel.org/show_bug.cgi?id=3D220020
+
+On Thu, Nov 12, 2026 at 5:23=E2=80=AFAM Loic Poulain
+<loic.poulain@oss.qualcomm.com> wrote:
+>
+> Hi Len,
+>
+> On Wed, Nov 11, 2026 at 6:23=E2=80=AFPM Len Brown <lenb@kernel.org> wrote=
+:
+> >
+> > From: Len Brown <len.brown@intel.com>
+> >
+> > mhi sometimes aborts system suspend on the thinkpad T16 gen3:
+> >
+> > mhi-pci-generic 0000:08:00.0: failed to suspend device: -16
+> > mhi-pci-generic 0000:08:00.0: PM: pci_pm_suspend(): mhi_pci_suspend [mh=
+i_pci_generic] returns -16
+> > mhi-pci-generic 0000:08:00.0: PM: dpm_run_callback(): pci_pm_suspend re=
+turns -16
+> > mhi-pci-generic 0000:08:00.0: PM: pci_pm_suspend returned -16 after 151=
+45 usecs
+> > mhi-pci-generic 0000:08:00.0: PM: failed to suspend async: error -16
+> >
+> > When a driver returns -EBUSY for its runtime suspend method,
+> > that means "try again later".
+> >
+> > But when a driver returns anything but 0 from its system-suspend
+> > method, that means "abort system suspend".
+> >
+> > Always return 0 from mhi_pci_suspend().
+>
+> Two things:
+> - I think we should simply use pm_runtime_force_suspend() /
+> pm_runtime_force_resume() for the system sleep callbacks instead of
+> implementing separate suspend/resume handling.
+> - Rather than silently ignoring the error, I think it would be worth
+> looking at the mhi_pm_suspend() implementation to understand what can
+> be returned here and under which conditions the MHI device fails to
+> suspend.
+>
+> Regards,
+> Loic
+>
+> >
+> > Fixes: d3800c1dce24 ("bus: mhi: pci_generic: Add support for runtime PM=
+")
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > ---
+> >  drivers/bus/mhi/host/pci_generic.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/bus/mhi/host/pci_generic.c b/drivers/bus/mhi/host/=
+pci_generic.c
+> > index 7193a384cca4..b036fa6e06c4 100644
+> > --- a/drivers/bus/mhi/host/pci_generic.c
+> > +++ b/drivers/bus/mhi/host/pci_generic.c
+> > @@ -1727,7 +1727,8 @@ static int __maybe_unused mhi_pci_runtime_resume(=
+struct device *dev)
+> >  static int  __maybe_unused mhi_pci_suspend(struct device *dev)
+> >  {
+> >         pm_runtime_disable(dev);
+> > -       return mhi_pci_runtime_suspend(dev);
+> > +       mhi_pci_runtime_suspend(dev);
+> > +       return 0;
+> >  }
+> >
+> >  static int __maybe_unused mhi_pci_resume(struct device *dev)
+> > --
+> > 2.45.2
+> >
+
+
+
+--=20
+Len Brown, Intel Open Source Technology Center
