@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794584711;
-	b=XvrUMLbeY96tGlyyR8t3dbiBtJUdmetZDzwhWcCAvnaPDC3J+Z6SjN4zxNmjccJ0aE3Z
-	 lS1PIpnlhBTsNs9rGfy8kT2MY7k1w2mtYJf4FAFrQzOlDNgoXv5+o2bg8LrVSln4k7xUk
-	 gdim7sCdm5HfmxhwUqrnWY48MTRN/7Mei6r26UDa+70pMfhYwK4NUV7iI7ktr6CezQflv
-	 IqyJP6ZAszBTi5y1GakLVYiYPui0ObBnqhdolXkVEXrx6TeU0jFiV+1Dr+/DrLD2fQrb3
-	 gkcJFJcq7OWWscNXyZ7Dbt0qUv3bkd7ag9wZVPodvgpQ1v8vevkfEHbJfDrx+ntTpGQ==
+	t=1794585079;
+	b=k6dZMy+yd8HmLdwhfttrbe+EzWPNDbOwWuvpm4by4X0y4hIXZ1aPEqdQ3ufylrl27zvB
+	 sU3Vl3O+MfdRBydTlIu6rWSoJZz6/Y/zbE4NeMJUMUz4M/9iHuTuB1rTif1s/Uz2fTqpD
+	 VlQ0VL5HamaAtnbVLVr2iiK+0Hnb/hddnu276ysL1uZFYtDfyUx9EwbYAHAYKIrz0DAOr
+	 E3kfAKS/l+5N+2JyikMzfFvGl8MRpMOQCs7BJa6dpv0n1YaMJLhpU/YiRMEw7HuI9cPq4
+	 xCq/xqChNKUIiQ+WMNIlWbxY4stbRLqC5LsJ2ffM60Xqa8X4f436/WfHC+4ddWm91AQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794584711;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794585079;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=n/wuHTb6nfiDadh4l5rcFTk7hc/gsK1EGHfxTyZXNAw=;
-	b=11mrNF1oSFLn0obrpA6OqdTCYMnalX4ItIik6Tu03MTus05cK3sUUIJemDB+ylULMPs+
-	 zcbCltgH9559nT9qjg2mYhrPW2VzSwjPh6FYBizK/kzC6UwPu1QY33/gHdNOpa3eSLEkq
-	 4Nwe9B1iDGfoDspFUpHbGpQsIygCZUnoFik7snjaOTJiatXArcgCInrI+QOwTlofWWckN
-	 WF/Gr5XZjJoUo1noEzSrjEPIeREMKDyMGyQR3/i+j4dfZpFDwBYub+24VmzAsla7cv17l
-	 oBnwCnSZmB9PNaFJO0TRXBCGO3L1wYqn/0Ei1DhT78HPKQj+EKBmySu3x/aaUsyx2zA==
+	bh=p57p3uxeYdPu3dO2jsiMkVBwtyV0ivwwKUFjRQ3jCKE=;
+	b=1fAcpR/3r0QIYokZ+FwWFimo5rPcbz6tKuFomO2895M0z2XHkjLUzCFa2zRGsiL0k4DJ
+	 5HSoiLEAHN4+O8duCQ+Wet/Le4tgrZnWwUjWfqMWqJJvNKEruS4HI/8a8auwN6z7D7TNo
+	 C7f3K2VwF7IGVlo9ednT5SoYFwU2+57tfUbJbutciypjcVkjS5Yo+o/irNY2Fr2NFN37M
+	 5VFAH9BquhW2VHe6iREcNk4dDjIIR8vyceEkl9Pxl35NXBpwO1XMnkNt5QqHxeS8vdno9
+	 upECHkDVj+YNxxe1Vz+gUPOupADVn6pDToBVV0Tkg1vfztCGox6STrgv81q15SUaKdw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OQCk+eon;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FN0KJZ18;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1F1660A261B
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 15:45:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76B29606A338
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 15:51:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OQCk+eon
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 715571F000CB
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 15:45:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FN0KJZ18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F17931F000CB
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 15:51:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794584711;
-	bh=n/wuHTb6nfiDadh4l5rcFTk7hc/gsK1EGHfxTyZXNAw=;
+	s=k20260515; t=1794585079;
+	bh=p57p3uxeYdPu3dO2jsiMkVBwtyV0ivwwKUFjRQ3jCKE=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=OQCk+eoneq1ObkyPSD3pj/DjRJYbHvarbPA77fFjKNmXJIkbEEcRKg87D513n46ex
-	 jvm7V+qHxe0zOAfGnxDxYj8fBauUgT4vYVJKCDL83fswF4CGq+HyE6/MJ5OEKdNVdr
-	 pFQ/InBU2q7s0mfJYu8S1kSGIiFSR71mXi9cl3UN8GQw/Spt3JmKarrUk6w9Y40INN
-	 x7/aSBWx0EfQQYIo3THahbaow4c4KHIaPFKZiOS/E/a9XIjqDFXPdi4M2vIBEG6OrI
-	 FAFY9+3OYSjKoaTntbzVTNelSBLcdAZASIw8410nrI7EB8OTyxNWtCAi2iPnIuQeG8
-	 Hyfu6TvVIMuOg==
-Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-3ae25d9e2fdso16862631fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 07:45:11 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErGZJXxZlo34ogzDFC9Ir+RxXLNsxIXEyIn+k71Qe6H4W1kKyVNEGUf9keM9zJDwF0zG1OiE7qJXdg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z87Uf7MWRlEuLM3uz98zyDICsAws+yJvUaAXpngLB3vPh+tc+TK
-	e3E6GD0A0QHz9tbAlOMVfQtEzy/kzYwaoesN0dXqxsw22k1xySCRwygrAgZFebgbAaUJnHOYQX7
-	V+9H8PfFn09YUzYNsTNw/kMtUSHok+2Y=
-X-Received: by 2002:a05:6512:2520:b0:5ba:41f0:5a45 with SMTP id
- 2adb3069b0e04-5c17079a222mr1240864e87.21.1794584709797; Fri, 13 Nov 2026
- 07:45:09 -0800 (PST)
+	b=FN0KJZ18ufP4t34x3hktZCSe0aaNqse1xEqZgsLbeR/Frb6pvjQJH1OjkaSA0nL2e
+	 7p76I6IxZL1Qkjw6zn9ySR0RQ9Hog9yoK1JlPGR8Bd+FIdJkhvdslZWi8YwW2ue/Tt
+	 Kh5gtRnrLvsJKC4J1s9sBzYhyUTYpnaShRn4YIj+Lpl368qtwEOpaoCMyi61AhvgOf
+	 7aNchmRnUy/4DcEGJW3/pD0soMaH6fuwC5ZIfWiuoZlg6CMoCSYgM+W7JjuWuRye0d
+	 F36hfjXCIcLesN6/RITI2LR0nFsfPEbxKezOgyJYz7LJ+1f14XtOJVGCJkTrn5aW08
+	 y4k5N8NW7Djmg==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5be3d5927ceso1921982e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 07:51:18 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErF+CjZccTDe4KtighZeI9fTcsjppf/ITi+8h7TrJ1fjdbd5P4UwcyZ0Zvrg9vVvbvfEOAN0P4TB1w==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/kVu8Gs/41G6sVRa2wgN+55qj/GtHRDpii4DpT7mpfd0JpFKAe
+	Io1Tk1Yux8G9VsgufRtLQmRPOxQqPXT2im8qQy15e7Ncb2mSw0ffEHobMChZITg4VCPibqUnKGq
+	UsaZ91BfCMfHIsnJ19r7ohlWABion8Qo=
+X-Received: by 2002:a05:6512:684:b0:5c1:4bd3:ef75 with SMTP id
+ 2adb3069b0e04-5c1705fab7dmr1078301e87.1.1794585077394; Fri, 13 Nov 2026
+ 07:51:17 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,173 +59,85 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261001084115.2549761-1-trieu2.huynh@lge.com>
-In-Reply-To: <20261001084115.2549761-1-trieu2.huynh@lge.com>
+References: <20261002034200.920546-1-xiongxin@kylinos.cn>
+In-Reply-To: <20261002034200.920546-1-xiongxin@kylinos.cn>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 13 Nov 2026 16:44:57 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gjqOHzF2-hZeRwhb9AWK2iWxex3iK_R2+tSEnXEitBnA@mail.gmail.com>
-X-Gm-Features: AclHuK9hM78u-Ram9NQ3Jtz8EWsianym-xUcGoXELzxl848Mm5g6QgrpIsDJaso
-Message-ID: <CAJZ5v0gjqOHzF2-hZeRwhb9AWK2iWxex3iK_R2+tSEnXEitBnA@mail.gmail.com>
-Subject: Re: [PATCH v2] PM: hibernate: exclude unusable free pages from image preallocation
-To: Nhat-Trieu Huynh-Pham <trieu2.huynh@lge.com>
-Cc: rafael@kernel.org, pavel@kernel.org, lenb@kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 13 Nov 2026 16:51:05 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jhOR4yEoUEb=DqtRcXt3q1EZmP_bVV=e2dUJjFsWXzAw@mail.gmail.com>
+X-Gm-Features: AclHuK9gRwE4EUxI2tZOxwW3kLea2bFo-TxB7U1voYMoOeRcICcneypDQhX9T38
+Message-ID: <CAJZ5v0jhOR4yEoUEb=DqtRcXt3q1EZmP_bVV=e2dUJjFsWXzAw@mail.gmail.com>
+Subject: Re: [PATCH v3 0/4] PM: hibernate: flush icache for restored pages
+ from task context
+To: Xiong Xin <xiongxin@kylinos.cn>
+Cc: rafael@kernel.org, lenb@kernel.org, pavel@kernel.org, james.morse@arm.com, 
+	hch@lst.de, will.deacon@arm.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 1, 2026 at 10:41=E2=80=AFAM Nhat-Trieu Huynh-Pham
-<trieu2.huynh@lge.com> wrote:
+On Fri, Oct 2, 2026 at 5:42=E2=80=AFAM Xiong Xin <xiongxin@kylinos.cn> wrot=
+e:
 >
-> hibernate_preallocate_memory() derives the number of page frames to
-> preallocate for the image from the per-zone NR_FREE_PAGES counters.  Thos=
-e
-> counters count every free pageblock regardless of its migratetype,
-> including MIGRATE_HIGHATOMIC and MIGRATE_CMA pageblocks. Such pages are
-> free from the buddy allocator's point of view, but they cannot be used by
-> the order-0, non-movable, non-reserve GFP_KERNEL allocations with which t=
-he
-> image is preallocated (GFP_IMAGE =3D GFP_KERNEL|__GFP_NOWARN).
+> Hello,
 >
-> (*) Reported free vs usable free:
+> With `hibernate=3Dnocompress`, load_image() submits the read bios
+> asynchronously and hib_end_io() completes them from hardirq/softirq
+> context.  The flush_icache_range() call there, added by the
+> commit f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages
+> restored in-place"), ends with kick_all_cpus_sync() on ARM64 and so
+> triggers the WARN_ON_ONCE(!in_task()) in smp_call_function().
 >
-> The mm subsystem already accounts for this in
-> __zone_watermark_unusable_free() [1]. For order-0 GFP_KERNEL neither
-> ALLOC_RESERVES nor ALLOC_CMA is set, so the allocator subtracts the free
-> high-order atomic [2], and the free CMA pages from the free count before
-> checking the watermarks. The hibernation preallocation, however, computes
-> its target from the unadjusted NR_FREE_PAGES value, so it asks for about
-> half of the unusable pages more than the allocator can deliver.  On arm64
-> (no CONFIG_HIGHMEM) the highmem fallback in the failure path is a no-op,
-> hence even a small shortfall aborts hibernation, see [4] for example.
+> This series fixes it by keeping the flush in task context, and first
+> closes three pre-existing holes in the restore error paths that the
+> rework would otherwise trip over.
 >
-> (*) Why those pages are not usable by GFP_KERNEL:
+> Patch 1 resets clean_pages_on_read when load_image() finishes, so that
+> a failed nocompress resume can no longer leak the flag into a later
+> compressed resume, where it made hib_end_io() call flush_icache_range()
+> from interrupt context for the reused ring pages of
+> load_compressed_image().  The flag is also cleared as soon as the load
+> is known to have failed, so that the bios still in flight do not flush
+> from interrupt context during the final drain.
 >
-> (**) CMA is reserved for movable allocations, so GFP_KERNEL has no
-> ALLOC_CMA, and MIGRATE_CMA is not in the unmovable fallback list. Free CM=
-A
-> pages are therefore never handed to these allocations.
+> Patch 2 stops snapshot_write_next() from releasing all snapshot pages
+> in place when one of its internal allocations fails: the read bios do
+> not take page references, so freed pages could be handed out again
+> while the device is still writing the image data into them.  The image
+> is now released by the outer error paths, after swsusp_read() has
+> drained the batch.
 >
-> (**) The high-order atomic reserve is only handed out to atomic, order > =
-0,
-> __GFP_HIGH allocations (ALLOC_HIGHATOMIC), which GFP_KERNEL order-0 is no=
-t.
-> These pages can be unreserved under memory pressure [3], but only all but
-> one pageblock per zone and only after an allocation has already failed, s=
-o
-> counting them as available still overestimates what the preallocation can
-> obtain without failing first. Excluding them is conservative.
+> Patch 3 makes the error exits of load_compressed_image() wait for the
+> read bios that may still be in flight before the ring pages are freed,
+> like save_compressed_image() and load_image() already do.
 >
-> (*) Consequence of not excluding the unusable pages:
+> Patch 4 defers the flush on the nocompress path: hib_end_io() now only
+> records the restored page on a per-batch list, and load_image() flushes
+> the pages once hib_wait_io() has returned, preserving the asynchronous
+> batched I/O.
 >
-> With M =3D managed, S =3D saveable, F =3D free, U =3D highatomic + CMA an=
-d
-> R =3D reclaimable, count =3D S + F - totalreserve and alloc is about coun=
-t / 2,
-> while the allocator can actually provide about (F - U) + R pages. The
-> shortfall is therefore inflated by exactly U compared with the usable
-> memory.
+> Patches 1 to 3 are new in v3; the per-patch changelogs are in the ---
+> sections of each commit.  Many thanks to sashiko for the v2 review,
+> both findings are addressed.
 >
-> From [4], with U =3D 11430 unusable free pages (5120 highatomic + 6310 CM=
-A),
-> the preallocation target is inflated by about U / 2 =3D 5715 pages, while=
- the
-> allocator ends up 1247 pages short and hibernation is aborted even though
-> the system is able to create the image.
+> Xiong Xin (4):
+>   PM: hibernate: reset clean_pages_on_read after load_image()
+>   PM: hibernate: do not free the image in place while restore I/O is in
+>     flight
+>   PM: hibernate: drain pending reads in compressed image load errors
+>   PM: hibernate: flush icache for restored pages from task context
 >
-> (*) What changes after excluding the unusable pages:
+>  kernel/power/snapshot.c |  9 ++-----
+>  kernel/power/swap.c     | 55 +++++++++++++++++++++++++++++++++++------
+>  2 files changed, 50 insertions(+), 14 deletions(-)
 >
-> Subtract U from the per-zone free accounting used to compute count and
-> avail_normal. Then count' =3D count - U and, since max_size is roughly
-> count / 2, max_size' =3D max_size - U / 2 and alloc' =3D alloc - U / 2.
-> max_size' remains well above minimum_image_size() in practice, so the
-> resulting image is effectively unchanged while hibernation no longer abor=
-ts
-> unnecessarily.
->
-> Testing
-> =3D=3D=3D=3D=3D=3D=3D
-> (*) SA6155P running on AAOS with S2D feature
-> (*) backport locally on GKI 6.1
->
-> References
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> [1] commit f27ce0e14088 ("page_alloc: consider highatomic reserve in wate=
-rmark fast")
-> [2] commit c928807f6f6b ("mm/page_alloc: keep track of free highatomic")
-> [3] commit ac3f3b0a5551 ("mm: page_alloc: unreserve highatomic page block=
-s before oom")
-> [4] Example of an abort:
->     Mem-Info:
->      free:344621 free_pcp:931 free_cma:6310
->     DMA32 free:973864kB reserved_highatomic:8192KB free_cma:25240kB
->     Normal free:404620kB reserved_highatomic:12288KB free_cma:0kB
->     PM: hibernation: Image allocation is 1247 pages short
->
-> Signed-off-by: Nhat-Trieu Huynh-Pham <trieu2.huynh@lge.com>
-> ---
-> Changes since v1:
-> (*) Add a reference to commit c928807f6f6b, and correct the words and
-> quotes in the description as well.
-> (*) Switched from zone->nr_reserved_highatomic to
-> READ_ONCE(zone->nr_free_highatomic) to accurately fetch the active free
-> highatomic counter, reflecting c928807f6f6b (Reported by: Sashiko).
->
-> Link to v1:
-> (*) https://lore.kernel.org/lkml/20260921101446.1193565-1-trieu2.huynh@lg=
-e.com/
->
->  kernel/power/snapshot.c | 25 +++++++++++++++++++++++--
->  1 file changed, 23 insertions(+), 2 deletions(-)
->
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index b209712cb2c3..195db45ce80f 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -1867,11 +1867,32 @@ int hibernate_preallocate_memory(void)
->         highmem =3D save_highmem;
->         size =3D 0;
->         for_each_populated_zone(zone) {
-> +               unsigned long free, unusable;
-> +
->                 size +=3D snapshot_additional_pages(zone);
-> +
-> +               /*
-> +                * Pages reserved for high-order atomic allocations
-> +                * (MIGRATE_HIGHATOMIC) and free CMA pages cannot be used=
- by
-> +                * the order-0 non-movable GFP_KERNEL allocations that
-> +                * preallocate the image, so do not count them as availab=
-le.
-> +                * This mirrors __zone_watermark_unusable_free().
-> +                */
-> +               free =3D zone_page_state(zone, NR_FREE_PAGES);
-> +               unusable =3D READ_ONCE(zone->nr_free_highatomic);
-> +#ifdef CONFIG_CMA
-> +               unusable +=3D zone_page_state(zone, NR_FREE_CMA_PAGES);
-> +#endif
-> +               /*
-> +                * nr_reserved_highatomic counts whole reserved pageblock=
-s,
-> +                * so it can exceed the actual free pages.
-> +                */
-> +               unusable =3D min(unusable, free);
-> +
-
-Please address Sashiko's feedback regarding this change:
-
-https://sashiko.dev/#/patchset/20261001084115.2549761-1-trieu2.huynh%40lge.=
-com
-
->                 if (is_highmem(zone))
-> -                       highmem +=3D zone_page_state(zone, NR_FREE_PAGES)=
-;
-> +                       highmem +=3D free - unusable;
->                 else
-> -                       count +=3D zone_page_state(zone, NR_FREE_PAGES);
-> +                       count +=3D free - unusable;
->         }
->         avail_normal =3D count;
->         count +=3D highmem;
 > --
-> 2.43.0
->
+
+Sashiko is complaining about the last patch in this series:
+
+https://sashiko.dev/#/patchset/20261002034200.920546-1-xiongxin%40kylinos.c=
+n
+
+Please address the issue flagged by it or let me know if that is not a
+real problem.
+
+In either case, please send the series once again.
