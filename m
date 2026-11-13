@@ -1,66 +1,66 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=52.59.177.22
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794531724;
-	b=S5lImEt16Obz6oDXCUZ1rN9PdqvrBIwN0l55wDR7bat+ElUaTBLTjBTxqv+Rgp5AMoE1
-	 80caYEYVB5O21nwFU4tqFRk1nI7FD7gVoVBaUjvGuT1nn2KCxAJTcVu8SO4L1f7zABfOF
-	 b3kkTYQNvUMKpgcCA54+AtQbH0FwCWVqNziDWR/Crb/vP6dOx86VH5sUlwe2ce4uNN4TZ
-	 tmWOWeY4eyaYO50bTW+dYhYAPkWsgobXHMQLa3LEiylQYlsdGgn9wDVFir+K3d4tXIcPo
-	 gKSqLhRe5yKBE0rm6YkMSQ9gvxpl05O1LCdn/Ktr2BPM2W5Hwe5+SZhvwdtxSW9YdKw==
+	t=1794531768;
+	b=y16pTUm+k9mrZ8fI1YBr8BfQw0rjQbNizDe5S8SznR9IdStfK/Z0j0FxsfryfkhvbfOX
+	 hd8OTCb3KZGzsWl5Pleej9r8ilRQSBI2aaVDBFPwggNvk8FTiAZnunOdx1T15uMHksqfZ
+	 F6aycYf8WwpmKYbZgQIsirc1cvlwN/SSMKUILZ2kk1hdZ7SJW63hCNNOC842Mo90cXphu
+	 0SPIKR7bGoRfd0NzRB9uKvF/Lqv+I+CIlcnQtbaCKUVK0xHcyUbtkVxb7YLTXOLkzj0zM
+	 Lftmp8kzSLo8Fy1aDzHMB33iwcv0paUkOVN5f/DVZBmfuReWknQ4qaDuWY85r8OURqg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794531724;
-	h=DMARC-Filter:DKIM-Signature:X-QQ-mid:X-QQ-Originating-IP:Received:
-	 X-QQ-SSF:X-QQ-GoodBg:X-BIZMAIL-ID:EX-QQ-RecipientCnt:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:X-QQ-SENDSIZE:Feedback-ID:X-QQ-XMAILINFO:
-	 X-QQ-XMRINFO:X-QQ-RECHKSPAM;
-	bh=MbV0nYCvQjonoY9GqSdbwd6uyf8l/vnEpP6Gg+I3jek=;
-	b=F/GpotZlNnO9v98XnkQvjAklbdLLaCPVQ2+yfHdaL42wVihAUxPdTF6byZ34v+fSCJgc
-	 vrj+0WyeH4ewf73eTZhDHLVvjPxDcEnmW0Kb+tGzHWeFhyWR827bk7btduAn4woqDo1aG
-	 qjNDmTrVLkY7BL3AnG6VsZyVKXpBJzou3RVNT/didfYfoaf9QYGGXsY0CQrLVcIFnZBP0
-	 qgxJrHLmuZrWxYwnhK0GrXEuIbOZadPlubUjMFKPSL0nFxRA7+e+Ga4YKxVLT3AsFzrq1
-	 fA3CBVybrp42TsJBkWTVF4LctHPsx2I7F8BYX0Wee3qMfi4yhzE/hvkXDPvT4bFwmkg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794531768;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=XtdvEuKeodVtDzB/4eB7y3ob7xjJavFKFolqpUylUuw=;
+	b=NoCFMZANJWqMMMBZdWdld/uszKsYCkf7egGf5n8no73KVzUgk73TnZ5gBWZ0cZL+vdPk
+	 O2NpgglZTygl3FzY3DcdaFt4JVPTsFiVOJU21QCzr7Do8rDZpjju7rhm1D4asyUFpCKPG
+	 bOk94m0Nxe1JxFrUBV/UDF6kodsSnVA5yZO0lv4GCb2B/9qTvV6k2NEp4lawloeJ8i2Kw
+	 ljx0YdaDK5EfC1oDIvH7T7uAEQ1IywxFaWuzrnaMsdBwwWeEQwG1xVAi4/GCBjASnll95
+	 jLylEZRFmxJUkK7MXJfuWobcN99Pt6QTUEk6xfsdz22J4t9vRbPoB9jLC1A+wofaYRQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=uniontech.com;
-	spf=pass smtp.mailfrom=uniontech.com;
-	dkim=pass header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=gTrK0sm9;
-	arc=none smtp.remote-ip=52.59.177.22
-Received: from smtpbgeu1.qq.com (smtpbgeu1.qq.com [52.59.177.22])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GDzEvUBg;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE282606A321;
-	Fri, 13 Nov 2026 01:01:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BE282606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11677606A321;
+	Fri, 13 Nov 2026 01:02:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=gTrK0sm9
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1794531703;
-	bh=MbV0nYCvQjonoY9GqSdbwd6uyf8l/vnEpP6Gg+I3jek=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=gTrK0sm9FwPWze3VR6plnfneCjBCbbvPu6TqZbZWmQfRnJhJ0VGpyIXezwYek3PBi
-	 b6XPKQn7ri896s+z6igEA3j7tu/0Q+46mG9LyP7HNGHD5HVdwvj5UaHbcLjV2PPFNw
-	 N/WFAi+6AoR93PJoG1/E7Ox9/+37l1iFJL5avaOY=
-X-QQ-mid: zesmtpsz4t1794531699t37acbc69
-X-QQ-Originating-IP: IOQ6sw8ZhMxrz8Vfdt49he8dY5M/9y3F1itoJ/5IrEw=
-Received: from PEC004119 ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Fri, 13 Nov 2026 09:01:37 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 3981416717420647714
-EX-QQ-RecipientCnt: 6
-From: tuhaowen <tuhaowen@uniontech.com>
-To: rafael@kernel.org
-Cc: pavel@kernel.org,
-	lenb@kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	tuhaowen <tuhaowen@uniontech.com>
-Subject: [PATCH] PM: hibernate: Restore PM notifiers on snapshot open failure
-Date: Fri, 13 Nov 2026 09:01:34 +0800
-Message-ID: <10852BF0B4974597+20261113010134.1408010-1-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GDzEvUBg
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 571401F000C4;
+	Fri, 13 Nov 2026 01:02:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794531767;
+	bh=XtdvEuKeodVtDzB/4eB7y3ob7xjJavFKFolqpUylUuw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=GDzEvUBgEaXspkMbc8RJurxMEtNcNXNP3ZhLD8NspGvjCK170O6+6/OE906oznxfp
+	 /e1QXDWJWqiNoNDswojpBvF5ZneDETXry7uFiwQjkWBj/tqkQEMx6ePPqqtMQgZQnn
+	 8Bm4cBFQbNSHPwyu7DPqTKj3iAm9LMojB7uDkVah03unCyC7fADNS52ZrnBa8egoQD
+	 HpAoKP7YL3UYgg9d7PK2do2rcYXOgOTlvcXQjRsp5HorisJ8oCVumcnNHOz1dL2Hms
+	 JLU91DZv/ZA/q7higagnsST7WfFrv+SNpGZRqGTtVsmfaeQdgG8in+bzqtY2mZgmtl
+	 abBa6blFIeLVQ==
+Date: Fri, 13 Nov 2026 01:02:38 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Val Packett <val@packett.cool>
+Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
+ <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Marc Lainez
+ <marc.lainez@gmail.com>, Luca Weiss <luca.weiss@fairphone.com>,
+ =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>,
+ Danila Tikhonov <danila@jiaxyga.com>, Sebastian Reichel <sre@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, phone-devel@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] iio: adc: qcom-spmi-adc5: Add
+ ADC5_BAT_THERM_100K_PU
+Message-ID: <20261113010238.17b371c8@jic23-hlaptop>
+In-Reply-To: <20261112170841.2189322-4-val@packett.cool>
+References: <20261112170841.2189322-1-val@packett.cool>
+	<20261112170841.2189322-4-val@packett.cool>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -70,65 +70,37 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpsz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: MNbA5mkmBXEJt5quiIHHPKscnR5sId0xT3lkKlysIJeYYaS9ixObZIin
-	6WVP5m9zMLWgb1yexso5CKCLR1QzQ7XnOIYOEMNTF6hpHvYqNX25VbGfrPQlfLc5oAKYYc9
-	lMQrAyDsMQF2ZR/UhjcxFpNlz3RzaAIyCgXiySdCJH0/4WwcRcvZyigx1SbficUYiG289K7
-	/gAATsJy2bsjI8ZJPNrRLfirnWYQVa6Rjxg5BEmAMcMXhIQ/IU9I3vsGn2Z3N0cXEX806LJ
-	0AxeFfYvRdovEGI13bR6zbU9xvXfHcoz4MQTG2u4xqWs+Ltfei1Jx1A/3qcIvVCI8IAQB5m
-	YAp56f9oAVtSYZa+7Tn3Ll+ueycXHiEnpAXOlGvxZPSTvLI6YUiylfs9HfgwNfVqzk3uqF8
-	vX+/RN5LggVi0PQfPHESxA3wYAC/xz7qszjNC7wb21HYJAChADYwO0Pu7FXZ6Gr2GaRGy2+
-	397RQmwVhBqF8gH5S5NJZUtXkOK0pjMr8cbg2krTd3RwwuYPieqEGS5NpF43nvsM7Z/PmQ5
-	cXARKGDmX4Oimu6txZOOIZQ2RAJXfyQLrkymc9ubIC3TlGAnsO1Yi/09XO9LrpCj4s4zIkL
-	J5SCLi2oXYOa3fY/xQni88HNl7jHjA7nr0PgvxRFuI0cwDtZFUm4c1aOBH7Yk1Z2Mu9s2c+
-	fJlmvE1IImFOo8JT/hWUOZVNUbnMSzB8tfrSX/QFyFUJfA0lcg7275PWwMwPCasHsCqCKBR
-	tvjQKbq2Xheg9KIlL9sHtIoypcx9H6MbY1Lu72PqzhvtpY0WDdKyBoF2PBgO6jsgohfRIIz
-	R9TANNtA8l1n4jGgRm8jGhKCjyVWMq1QYmHaPZd2qSWLxeO76DBpeDQFRS0ihKZsr5lw/5d
-	73nC7+rzCQZTYfcfl3vlyZ5fmEf8zlYH3NUPg8J2KJn7dNjZQJVB7DchLKcriKG4D3xz9Yd
-	TyRnPlv8pGOxk4kw5UG0qcimAwA06BMPdXXh5HwUwQA5qmiyggZqQWlyCXICl+fqVOSglgQ
-	NdRe/kcwrVMYdmvans
-X-QQ-XMRINFO: OWPUhxQsoeAVwkVaQIEGSKwwgKCxK/fD5g==
-X-QQ-RECHKSPAM: 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Opening /dev/snapshot for writing calls the PM_RESTORE_PREPARE
-notifiers before allocating the basic memory bitmaps. If the allocation
-fails, snapshot_open() returns an error without sending PM_POST_RESTORE.
-The release callback is not called after a failed open, so it cannot undo
-the preparation either.
+On Thu, 12 Nov 2026 14:07:29 -0300
+Val Packett <val@packett.cool> wrote:
 
-In particular, the firmware loader enables firmware caching during
-PM_RESTORE_PREPARE and relies on PM_POST_RESTORE to reset the cache state
-and schedule the cached firmware for release. An allocation failure can
-therefore leave firmware caching enabled after the restore attempt has
-already failed.
+> Even though it existed in bindings for the longest time,
+> ADC5_BAT_THERM_100K_PU was never assigned in the driver. Do so.
+> 
+> Signed-off-by: Val Packett <val@packett.cool>
+> ---
+>  drivers/iio/adc/qcom-spmi-adc5.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
+> index d57ba8526e0c..c27ff89429f5 100644
+> --- a/drivers/iio/adc/qcom-spmi-adc5.c
+> +++ b/drivers/iio/adc/qcom-spmi-adc5.c
+> @@ -542,6 +542,8 @@ static const struct adc5_channels adc5_chans_pmic[ADC5_MAX_CHANNEL] = {
+>  					SCALE_HW_CALIB_DEFAULT)
+>  	[ADC5_XO_THERM_100K_PU]	= ADC5_CHAN_TEMP("xo_therm", 0,
+>  					SCALE_HW_CALIB_XOTHERM)
+> +	[ADC5_BAT_THERM_100K_PU]	= ADC5_CHAN_TEMP("bat_therm", 0,
+> +					SCALE_HW_CALIB_THERM_100K_PULLUP)
+Whilst alignment isn't exactly consistent, this should probably match
+the one two down that has same number of chars in the _PU] bit.
+So use a space rather than a tab.
 
-The robust notifier call only rolls back failures within the notifier
-chain. It does not cover a subsequent failure to allocate the bitmaps.
-Send PM_POST_RESTORE for that failure, after a successful prepare call,
-so that the notifiers can undo their preparation without being called
-twice when the prepare notification itself fails.
+Otherwise seems fine to me.
 
-Fixes: 70d932985757 ("notifier: Fix broken error handling pattern")
-Signed-off-by: tuhaowen <tuhaowen@uniontech.com>
----
- kernel/power/user.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 6e4f40e49319..e7e8016a4f1a 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -87,6 +87,8 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 		error = pm_notifier_call_chain_robust(PM_RESTORE_PREPARE, PM_POST_RESTORE);
- 		if (!error) {
- 			error = create_basic_memory_bitmaps();
-+			if (error)
-+				pm_notifier_call_chain(PM_POST_RESTORE);
- 			data->free_bitmaps = !error;
- 		}
- 	}
--- 
-2.50.1
+>  	[ADC5_BAT_ID_100K_PU]	= ADC5_CHAN_TEMP("bat_id", 0,
+>  					SCALE_HW_CALIB_DEFAULT)
+>  	[ADC5_AMUX_THM1_100K_PU] = ADC5_CHAN_TEMP("amux_thm1_100k_pu", 0,
 
