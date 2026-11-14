@@ -1,111 +1,111 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.139
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794625517;
-	b=BdwfPksWEIIZyxSfaslxNyT3G+c9P3X5dJWoEUCdDn2Itmu3jmDXm+QMVnr7NYSnrRjC
-	 onvlY2YsePUQsuowBVu1sVjBoCfhPtdfgrv0sQzMxnh4fTzpFEbu1vYFW6EzZKaMX5Mqu
-	 EVYp2bj7j/ri0Gbmn9LlqsbhRlnj/2W2+pdNxjYAdywIOWuPfEZsjT3sl9Yjn+nQNQCpQ
-	 WDBnf56GrZ/tfeoiAoVWzbQHYuChf9go3kzltiiCmyRFGvMJRh2zw739RocAAoWkNJacP
-	 pncFV8KEkCFpaDpgQQcRPYT0GNZ8rVjCqPl81H10ePDYJ4t6fOvkkmqWph7JgkzKuyA==
+	t=1794625523;
+	b=RfV879UtFBtGEy2/xqE6Dgwx9m5CRGbMD8BValTTJZB9vEyYeESS4rG7g7pL4UaDDDsC
+	 8T9Hb6pjLBQXCJienxUOa5g1W9/oyuBQr2GAlq2xejKfG/7bzz/qTjkhOYXCwOTFNwcpD
+	 HyEp84geD3/5Sw3SHMijP1mMimTi5VtCGbN3a2JraWXehHUfXetC/wqazHrzmhzX+zJwF
+	 DC2XwJDjhL3u4/6XrSuUbZ+q6nNRmqhQFejlk+NFOiWKCO00Ooo8M4ov6BDK/WqmXz0c2
+	 /WxCd9+4KOj1RlIj4la4qLSLjNRKAWLtqbscjsLtnkYxDqo7n0egcMJjHvd1OBpxSEA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794625517;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794625523;
 	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
 	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
 	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
 	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=zoi47BNj4CDTzs76LgHwDYHjReOPRozmuDUGgniQ9g0=;
-	b=tcEvY/MCrjvJ8i7S4e3tzA1Z32G6tu+SrzeYvZ4e05zvillXqWxSwEk2QM3UJaRAW6hU
-	 T8roX9bER4xiH8r9ihp8LgRQwSpPwnW81eJZlsr5WQlbztwLMT25B0UVz8O+N1vZOu9H8
-	 oHvGIgGmPhAzZnWtU7k1zDeRadanJtm/DctT24qhRFWRN618OXt6F4S9/DiIJRiTZB7um
-	 9z5xaQjGsTfX10hXMo7qbcaDHms/Tpgy446ipmMaS1H6rioGOXIJXunK6LAAnozFaju4W
-	 2hHIWr2AuEnVIrDiH/Ir2NAd3YN6lz5E5+/UmRtnoy4nDzmvDqUQ9JMDD4kfAYswZ9A==
+	bh=Tfj8xOhGv3aLFSnyPnoftSykJdx3O2+yOv2fTajXqZA=;
+	b=DyYCy1Gd4BbztZQ/ThbRKEDdKxDZKnNnKvIgW2WO+SOdg8Fq6+9H/8ptZ7pnf/udf67O
+	 Bgs1JddCnf3aRGbRNSv8qD2HQKcftQHuOXqm0GOnGc/eTvs0fXj3xzoE4NAjjMHm25VJc
+	 RU7bjKR+850KzLPE31fD0xH11SFgpRU6xWL5XlrCMiu1TYwIxy0vD9+aNsFod3enhq/gk
+	 eSIm5KHKssYAythtWRGubJETmg+8Y+aMOLDMH/Q46l20hDUk0yVcBdKvVuxhQaTA6I9uu
+	 Q6QZ6pmabCcWcTeocWPtAgLWf6QOcnEDKbjW+d1bJ6damiH4lKM64uGOT0ZDEUnElSg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gahingwoo.com;
 	spf=pass smtp.mailfrom=gahingwoo.com;
-	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=QsF5FTEC;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=f9VfikaR;
+	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=eoy9sL2d;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=oOvdVOD7;
 	arc=none smtp.remote-ip=103.168.172.139
 Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E09AA606A332
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 03:05:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E09AA606A332
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6914E606A334
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 03:05:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6914E606A334
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=QsF5FTEC;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=f9VfikaR
-Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
-	by mailflow.phl.internal (Postfix) with ESMTP id 1B4D71381A1A
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 22:05:16 -0500 (EST)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-03.internal (MEProxy); Fri, 13 Nov 2026 22:05:16 -0500
+	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=eoy9sL2d;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=oOvdVOD7
+Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
+	by mailflow.phl.internal (Postfix) with ESMTP id 905911381A17
+	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 22:05:22 -0500 (EST)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-05.internal (MEProxy); Fri, 13 Nov 2026 22:05:22 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm1; t=1794625516; x=
-	1794632716; bh=zoi47BNj4CDTzs76LgHwDYHjReOPRozmuDUGgniQ9g0=; b=Q
-	sF5FTECQ1x01VBxh50BocWFbP8ZOG2Sm2n7lVLLniIiikYbs6K9y15SGbI7gY6cg
-	cHPcJ0arD1njS3YHXC+6J9CpnjFejGgaaKXVJ5EhKBcEeA+mPA/ynaKeyWRXnSXQ
-	ZF7fePIOvoq2WSS+zilJMUBBQTKLbFqKRwpTniBHvL8IN9SHGYPAgLSnVLDEPrEI
-	nK5ASJQbZY+DnA/TemTnUy1Aob9zOVooy7k+LFW1IgdK0rOFvmj+gkPWWpIT9jrn
-	vE6IjyBUSUjBnqCX62DG8R1mCAtvEXsr5cCmNqUEcO11qjmyCBbZHyUv3Q5h8pJ3
-	xKb4qc1SKw3nS4WwoiQEA==
+	:reply-to:subject:subject:to:to; s=fm1; t=1794625522; x=
+	1794632722; bh=Tfj8xOhGv3aLFSnyPnoftSykJdx3O2+yOv2fTajXqZA=; b=e
+	oy9sL2dNLnO989HGOCiTzuBakV9f2tNPrhAZwZ2S/H7T1y3YoQN6Afbj4b/PD5Yk
+	78B4kziy3CrxneEjwXKzuJVNfG1dKtWcXtON1eiaqxIrIR4KNqSDtEIvFpNgvUa/
+	rozBmsCPhvXAAu1ooAL06CiB1GWb5MXTS2TG/WWmCWg6CQ9vT92Zrk/TDn/RowFo
+	66SVm8bXKCva3kCN744I/ajzfYwfuV62K/wNpSo+bG410BLlj4mDasTpEox6Klwo
+	hyrLjKqMgpZhvW4MrXbmHIOE4yzvMVyS5UKwh8biCk3Dtj+xu5SkHwJn26RYDkqg
+	WR1hpk4Pd1gjUGjaG2tNw==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1794625516; x=1794632716; bh=z
-	oi47BNj4CDTzs76LgHwDYHjReOPRozmuDUGgniQ9g0=; b=f9VfikaRznZFmGi+w
-	IJpG2x3f7pakBIv36BnWyPIspvkGyV+lP7U964pDEkesfpM9lNEre1hAYEB8QuL6
-	VLw2BWJQzVcqYonxtOYYl04duXQqSDzPehLLU5hgBdtOxp7GojpY8lFXC25/RhV6
-	eCw6cMq+4pe9c7ro2P49VLpggOErSWsFAKxc8SKs5+oRIIwlDwcRUbtZFUh4oKH3
-	Ve4b5zprMg+O7/s7KJGTvkRHDInc9+z5sqfSfum3y+x2GtCbEBIi048F7qccOJRO
-	VrSawKujb1HQABodFPvkTokabkUNkkiDkdvWrRRymtr2ieJtxVcBdnEwD0ifs/af
-	padXw==
+	:x-me-sender:x-sasl-enc; s=fm3; t=1794625522; x=1794632722; bh=T
+	fj8xOhGv3aLFSnyPnoftSykJdx3O2+yOv2fTajXqZA=; b=oOvdVOD7CwnkY9WwA
+	7rxT5XeRzIMClXy4KE/DqKeXDpgXoAM4ZLUwVMD+BfkXdBioHfEB5xgadNv5/F23
+	TEihit6+d7CtfBSfGuHHUsusulYNvSQRrsnauTdUSqz9vM7j3Vw0HFx858sJeTj6
+	i5kfn/a6VC8dYcMdImy441Qq3dc4p2DMocwR7pQu1lyRy+Qs2TPmZ6u2AHfOjMau
+	3Fn31p1skqZrqyCos7qoea+SS3ISr/MDgpyGxl3YlTER21KaJ0XScMsEINEqPLM+
+	TIE8OJqQryFsLHmoJeZys72ytbJlZkj81o728TOQSCmktoLUPfw3An7QDW3wvHbO
+	ICEqA==
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
 	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
 	action=sign d=gahingwoo.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794625516; d=gahingwoo.com;
+DKIM2-Signature: i=1; m=1; t=1794625522; d=gahingwoo.com;
 	mf=PGdhaGluZ0BnYWhpbmd3b28uY29tPg==;
 	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm1:rsa-sha256:jiI7tPOwfPd1RtFv38clBLQigNDLPXC5s9tup+tSTEJZvxU
-	NiB6CjG46xus8X6zWMWCiMXiXUKFGz3qClX6iNk9Z3uyQTUN8TbpNnskS1QVRGG+
-	3rRuOgew7X3pMGckd1XvNh1/skNaOa8UBcCbqIqU+Q2ubWf01GNGgxXgKXfBf9y7
-	E5qeSN/bY51DUdyHjWO42LFWPJwep0S2sQt8DgAtlAk3Uj7gYu52xNOrN8FZWSAQ
-	FAydZ8FXHkLizUn6h02zTGxo77nhlV+rhTicT8SftVGezhUSFr0kIb7zgx7tJ7CX
-	V44m7D0Ctbqt2YaYvZDYBDEig8CbpoCpinmWPDQ==;
+	s=fm1:rsa-sha256:dXC7LZFzdP6Qwy0TcNU9AYpXjUlsiwbRRJJws167UkwNMP+
+	WhfEPAeGqjHv1BwCdaXQgcGPtAnsLL8J7oLrY2fsYPrIBHcX/vB5X5I9c7b5pdpw
+	aG/J3RhdqghjjNoCITKEIk4DqmiF+eCdM5WSTMN18hjQlgP4GEhqeSJYRyWmLsRZ
+	MqsvT3p+5TT4YDUGZGFZTih+O3fCZaLYwuJfZ+fF2+sOpHXrmUnQMufMtHkf320u
+	zeXv5PDZh/EsRM4cn9OvRcRqpwfgij9dv4ZKI2OWpyZhIz+oDVF8Uy951QKQIEV/
+	1xNNh4pZu92nuNG2KyLy5kKVtn/F8Xw8/ograyg==;
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
 	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
 	action=mi-m=1; hc=11;
 	hn=cc,content-transfer-encoding,date,feedback-id,from,
 	in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:XdhYAM/s03vAtPWSbWf5YnaBebn9bgRwcd3QDBPnFg8=:agVeXiaJPEvf3gxUnQmsgYmh5dF9glDhX3caD0w0mrA=;
-X-ME-Sender: <xms:68_3aqZP6qVTOBmdg2aoDbsBbgJRt54-4tk0trHqTJrrXPomT6GjuQ>
-    <xme:68_3ai9tDj0m3MxBkQ7jac_CnVA121PkQXjXEkoZLA15mvqWkVMP1Isp_YllK4AvH
-    W6YD5e4chX7xAbYt43uVJR8wdAuD4RpEzKZAzokMbJjzZfvoDYmhEE1>
-X-ME-Received: <xmr:68_3aug-4nJvj3MYYrLNfA3FqN3ICCjorKFVCB1tZcFAxwQob_kX0AN_ncNckXdO2egm3aX6>
-X-ME-Proxy-Cause: dmFkZTGkXBi50uEcmbbO+S+EcOsbRyrnOFSQ0xa2xo0vIZjKk5f7l1BJ0t9vlEVqWkt81U
-    tATCdu8B83qvMObo2T6XXGsjH722ZvFwIslKjWXR2yUQDJ8gSbuqaHEUgsDGchpkQI81VU
-    lrnpwJr88vgtGyfb5CoKSz4kEhIlDHgIWmmSLieGEMWQPmHG5+jfdp6WY6rFcX/kcbFcot
-    bWo4sNOuqSpzFo9RtqG731/QwZzh2g0DyPe4cYSylJElLymkxs1m1HRgVz7ROnk2CBdpGJ
-    Tk/xvenaFpWNd0Y/CHAX68OguJs0t19cRpg1g8jwD9I6qU9vyNCiTjArZt7BO/Kj7l0kJY
-    5ai/jN8I950PVNn0hoCq5NIc9ar2LJrO00Unznx+8zfsnHnQepgGlkiLvVyuTe8VZsRyxb
-    cOjwAKlSc2IJx5lVpyKRk5TzSnJsudVYfIuuIK0TSjnOU5guPY3RcMiS/X/pm/MHmU938o
-    EoUe16jPkvkOBxz+z5WJyPQc0I+8kGAlbyzfcy8hT9OKIoBr7gDMo4P0k+bj6R+nKWTiOm
-    mCwdpsRje8n6HrHoCEnNR7qAt9BxGFHVZBgHTbrbx72x51cOAGRq2qaRYZo/QjeyowQ4FA
-    n8wYYK1/U76Zse4zITWn+NKxpH3Y2OLydR+0yN0+S9vTVXXI1UXAvfDmY43g
-X-ME-Proxy: <xmx:68_3ath2PzzsRuB3LBRCeXtJK9VHf37JGQnVzE7iOe2r8VoXskMuLw>
-    <xmx:68_3as7F5wD51xYhX-oXN3LQ96s0HEbHYPZ-UcZ9meTgZXWMaDvhhQ>
-    <xmx:68_3anSYtG3yqpr6BUKLAEKxZBIAPevf0jPYZWHFUomsSRjjmYF06Q>
-    <xmx:68_3aj9fzOkYYkuRt3ahImmBNtxQzLlGLEaobu89dls6Ijb-Lzrgvg>
-    <xmx:7M_3akR9mCtmNX56h9b4xO7OLLo4Qd_pF6uCLkJwbAkZBjDHCg-4sQaN>
+Message-Instance: m=1; h=sha256:6y5iaDAnBfXRiHNj58VVFezAuAMpgT6TSdokhg0cty8=:WEBOazfurM23ahZUC/wEzSpnZMIbPO0jswk81G9oTOc=;
+X-ME-Sender: <xms:8s_3amdoVRQbxwXN_Gd6nvVD9-8I9V3A973jhT71BgEyJG5-ddcLeg>
+    <xme:8s_3alxd0aiBarRgzIwmHxlL715zydnTNeH9LmJhkUz0xWwqap7h60SJm2g4qV9js
+    lU9agDUvArCx-GUK89mPyrL5-iHUDLMTRda5-3ksoB7R5rdGIUcQHI_>
+X-ME-Received: <xmr:8s_3ahHwJujI5wWyuICQY8mXighRJBzFvOJTbhyozCyY0Xqi_1kagtl-9bpjONxQfzfaiZpQ>
+X-ME-Proxy-Cause: dmFkZTGz9WnlZjVE2HKbL42hlhRiRjvh0qv13kuFDFn3+2l+J9l5ZGi0ACkeAsLfSd3Pvm
+    YnlMS6eJMEMf4L9dY8Hb9ude5fnVrJbsKsxhfaxf36lbesjLo+5+GoIQX4PcdWwScCLOQJ
+    g7fRWRTDzKadWbOl0JgzaeqbKfjBdnDAiS60usPLXDekIwUGuNacgS3BUb2Z6DoRzwPsim
+    aXV56gHbLmXbQ8zGVKzUj3foq+ONearsy4Enm9lW+YRz5j5Zg70Pr5jnwTPLaiZWa86bGT
+    V4eCQsfBmuolPiuUgKaNhZYhTw4UbN7IikU43gT975Fdei2j3eG8+tejGM6+krkKFdM1s6
+    WhSY9EIJP/hePWkGhuzp+ZcFrh0AxEQv1YcyeoSH+pe0ZU2IFnuBbTDYc1WlCSZ7b9LlP+
+    tyrj85U0arqfBhuTjuZtSLSXcpOc4LQFxRUs12z9ClrIfNtmu3FcNtFpFbQRS4nECeNnrC
+    V9DeOiKvDvx/7W4gMOzz/nnnSlxGuRYblsyKiokw+HqXNBe6SAMsMUck6ogJvfdxG6UsI7
+    y06X2y8oDDPZj5m/1O1KNVwM89xf4SQYurNWifvt6YYolbB2oKXECHN4aNK6y4essp5leM
+    Dz2EAkWNj/KLa0dmofrAOypwUSD4EgErsd8t/cqR/pri9UxZxPjXPgDFCv9A
+X-ME-Proxy: <xmx:8s_3ak27dcHAq0rMNrVcmrNQDh54d7BIVbOtx5ORaZsa_KGVRL1jiw>
+    <xmx:8s_3ap8JYAwCe6a_Xb69VTISvLGiYD_A7xzimnhgdn1NjdFVkISakw>
+    <xmx:8s_3anE-gx_p2tr9MBB5z69Nej1smBIEBq03SnUww52PWaGvqBLxuA>
+    <xmx:8s_3avhZJrNH2JikxaAUxpcz466Pj9TlfWsYO7MvML6SZSJaKqKhHA>
+    <xmx:8s_3aomDm1h4R2RdDTk3NZhHv1xdhRL10XsYwA6hf83YbB4dun2mQLsg>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 13 Nov 2026 22:05:11 -0500 (EST)
+ 13 Nov 2026 22:05:18 -0500 (EST)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: ulf.hansson@oss.qualcomm.com,
 	ulfh@kernel.org,
@@ -121,9 +121,9 @@ Cc: finley.xiao@rock-chips.com,
 	linux-rockchip@lists.infradead.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v17 1/3] pmdomain: rockchip: switch off the subdomains of a regulator domain at probe
-Date: Sat, 14 Nov 2026 16:04:59 +1300
-Message-ID: <733b921576828ca70a3f5048691400130f8a5dbc.1794615323.git.gahing@gahingwoo.com>
+Subject: [PATCH v17 2/3] pmdomain: rockchip: manage the RK3576 NPU domain supply
+Date: Sat, 14 Nov 2026 16:05:00 +1300
+Message-ID: <7a35b1c0ae3c4e130a156dbf477fa2df659ffc61.1794615323.git.gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1794615323.git.gahing@gahingwoo.com>
 References: <cover.1794615323.git.gahing@gahingwoo.com>
@@ -138,153 +138,37 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-A power domain that needs a regulator is switched off at probe, because
-the state of its regulator is unknown at that point. Its subdomains are
-added only after that, so a subdomain the bootloader left on stays
-powered and not idled behind a parent that is off. genpd reads it as off
-and never touches it again, and when the regulator core later disables
-the regulator as unused, the bus hangs on the NIUs of those subdomains.
+rockchip_pd_regulator_enable() only reads domain-supply for a domain
+marked need_regulator, and the RK3576 NPU power domain is not marked. A
+board that sets domain-supply on pd_npu therefore still has to keep
+vdd_npu_s0 always on.
 
-On the RK3576 this hangs boards that do not enable the NPU once PD_NPU
-manages its supply (next patch): U-Boot leaves NPUTOP, NPU0 and NPU1 on,
-and the SoC locks up when regulator_late_cleanup() disables vdd_npu_s0.
+Use DOMAIN_RK3576_R for PD_NPU, as for the GPU domain, so the NPU rail is
+switched on and off with the domain. This needs the previous patch, or
+boards that leave the NPU disabled hang when the unused rail is turned
+off.
 
-Mark a regulator domain and every domain below it as off when it is
-added, and once the subtree is complete, switch it off from the leaves
-up. If a subdomain fails to switch off, leave its parents on and warn.
+Tested on a Radxa ROCK 4D without regulator-always-on on vdd_npu_s0: the
+rail is off while the NPU is idle and on while it runs.
 
-Tested on a Radxa ROCK 4D with the NPU disabled in the DT. Without this
-patch, all 14 boots left NPUTOP, NPU0 and NPU1 on, and one of them hung.
-With it, all 10 boots switched them off, with no hang.
-
-Reported-by: Vladimir Bely <vlwwwwww@gmail.com>
-Closes: https://lore.kernel.org/all/20261113132323.159015-1-vlwwwwww@gmail.com/
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 ---
- drivers/pmdomain/rockchip/pm-domains.c | 60 +++++++++++++++++++++++---
- 1 file changed, 54 insertions(+), 6 deletions(-)
+ drivers/pmdomain/rockchip/pm-domains.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 3699918d17d0..5cc2094e87cc 100644
+index 5cc2094e87cc..cb5487ed1e55 100644
 --- a/drivers/pmdomain/rockchip/pm-domains.c
 +++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -101,6 +101,7 @@ struct rockchip_pm_domain {
- 	struct clk_bulk_data *clks;
- 	struct device_node *node;
- 	struct regulator *supply;
-+	bool off_at_probe;
+@@ -1360,7 +1360,7 @@ static const struct rockchip_domain_info rk3568_pm_domains[] = {
  };
  
- struct rockchip_pmu {
-@@ -798,7 +799,8 @@ static void rockchip_pd_detach_dev(struct generic_pm_domain *genpd,
- }
- 
- static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
--				      struct device_node *node)
-+				      struct device_node *node,
-+				      struct rockchip_pm_domain *parent)
- {
- 	const struct rockchip_domain_info *pd_info;
- 	struct rockchip_pm_domain *pd;
-@@ -910,9 +912,16 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	 * the regulator state is unknown at probe time. Also the regulator
- 	 * state cannot be checked, since that usually requires IP needing
- 	 * (a different) power domain.
-+	 *
-+	 * The domains below such a domain have to start off too, or genpd
-+	 * would see them off behind a parent that is off while the
-+	 * bootloader left them on, and never idle them before the regulator
-+	 * is cut. Only mark them here: the subdomains are not added yet, so
-+	 * rockchip_pm_power_off_subtree() switches the whole subtree off,
-+	 * children first, once it is complete.
- 	 */
--	if (pd->info->need_regulator)
--		rockchip_pd_power(pd, false);
-+	pd->off_at_probe = pd->info->need_regulator ||
-+			   (parent && parent->off_at_probe);
- 
- 	pd->genpd.power_off = rockchip_pd_power_off;
- 	pd->genpd.power_on = rockchip_pd_power_on;
-@@ -922,7 +931,7 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	if (pd_info->active_wakeup)
- 		pd->genpd.flags |= GENPD_FLAG_ACTIVE_WAKEUP;
- 	pm_genpd_init(&pd->genpd, NULL,
--		      !rockchip_pmu_domain_is_on(pd) ||
-+		      pd->off_at_probe || !rockchip_pmu_domain_is_on(pd) ||
- 		      (pd->info->mem_status_mask && !rockchip_pmu_domain_is_mem_on(pd)));
- 
- 	pmu->genpd_data.domains[id] = &pd->genpd;
-@@ -986,6 +995,41 @@ static void rockchip_configure_pd_cnt(struct rockchip_pmu *pmu,
- 	regmap_write(pmu->regmap, domain_reg_offset + 4, count);
- }
- 
-+/*
-+ * Switch off the domains marked off_at_probe below and including @np,
-+ * children before their parent. If a child fails to switch off, leave its
-+ * ancestors on.
-+ */
-+static int rockchip_pm_power_off_subtree(struct rockchip_pmu *pmu,
-+					 struct device_node *np)
-+{
-+	struct rockchip_pm_domain *pd;
-+	u32 idx;
-+	int ret;
-+
-+	for_each_child_of_node_scoped(np, child) {
-+		ret = rockchip_pm_power_off_subtree(pmu, child);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	if (of_property_read_u32(np, "reg", &idx) ||
-+	    idx >= pmu->genpd_data.num_domains ||
-+	    !pmu->genpd_data.domains[idx])
-+		return 0;
-+
-+	pd = to_rockchip_pd(pmu->genpd_data.domains[idx]);
-+	if (!pd->off_at_probe)
-+		return 0;
-+
-+	ret = rockchip_pd_power(pd, false);
-+	if (ret)
-+		dev_warn(pmu->dev, "failed to switch off %s at probe: %d\n",
-+			 pd->genpd.name, ret);
-+
-+	return ret;
-+}
-+
- static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 				     struct device_node *parent)
- {
-@@ -1004,7 +1048,8 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 		}
- 		parent_domain = pmu->genpd_data.domains[idx];
- 
--		error = rockchip_pm_add_one_domain(pmu, np);
-+		error = rockchip_pm_add_one_domain(pmu, np,
-+						   to_rockchip_pd(parent_domain));
- 		if (error) {
- 			dev_err(pmu->dev, "failed to handle node %pOFn: %d\n",
- 				np, error);
-@@ -1098,7 +1143,7 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 	guard(mutex)(&dmc_pmu_mutex);
- 
- 	for_each_available_child_of_node_scoped(np, node) {
--		error = rockchip_pm_add_one_domain(pmu, node);
-+		error = rockchip_pm_add_one_domain(pmu, node, NULL);
- 		if (error) {
- 			dev_err(dev, "failed to handle node %pOFn: %d\n",
- 				node, error);
-@@ -1111,6 +1156,9 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 				node, error);
- 			goto err_out;
- 		}
-+
-+		/* A domain left on is not fatal; carry on with the others. */
-+		rockchip_pm_power_off_subtree(pmu, node);
- 	}
- 
- 	if (error) {
+ static const struct rockchip_domain_info rk3576_pm_domains[] = {
+-	[RK3576_PD_NPU]		= DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       false),
++	[RK3576_PD_NPU]		= DOMAIN_RK3576_R("npu",  0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       false),
+ 	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  false),
+ 	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     false),
+ 	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  false),
 -- 
 2.43.0
 
