@@ -1,65 +1,92 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=141.14.17.11
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794615406;
-	b=2KNynAppmOsb4LHO0C12dSUEQ6zFQnd84i6eyHFPplSuS9mfs9LMNzTFTdXYWS28uMif
-	 jb+xWgHojFan/FrWpIwNSk3tQNI+iWoQ1HKBcj77AddoOe/xxExhjZALrdyvuHmzZWsbO
-	 0foGMBRwNwD5sEuywnQDlQMXffM7R7IsZst/FhzxUAKaN03xNr5gbLDtqOM21KK4Y8rva
-	 MPDIfMQjTHH8DpSL7e2jDCQzvY5wi+jCYq0ejSstuK8FNZhQwaLwaj5qW+6hZ2/VpQrDZ
-	 wUQZ8ZdaWP/ANDKBq7jZJCXshgLGaHaGgtwxpyISffw5ls5KzfJm60kGiYZjCh+Sc1A==
+	t=1794617970;
+	b=4dZQOVd+dp8U554ARiY8xrqgU53MW+tVOAmCLSaHnESxRQejmBRTAM90u77sJFRDWebo
+	 G2kVQyNkB4yDqPOUtTvigM7GHyOLHA8MGaeej6wFhb3cFtsQcIJIVXPeYmdvMIfQ8Wy8I
+	 EBxqorXGOgfmlN06sZn5aYxdFBcmlquenvAHw4ujUlkxPaqTKhZ7aTKUu2UrFlc+S3YeX
+	 w0WeuqxI9H+08NS6bUDQ6FscA4FZ8LkwIjs9iAH8AEeSZtGdIecn22pvy9WyzdWpoOeGz
+	 4hL84voXE4BP+LiwiUmMW+pCpSIoxqfIr4mlUA6nS/IziW38Pm/ZtA6UEbiIIhXrKgw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794615406;
-	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:DKIM-Signature;
-	bh=FTMw85ZyH6d6sONkFirjgiNZJIu5MVHgxe+h1oTZuUE=;
-	b=QC6y0QmKBIgRGr5w8J4mOa8/e+djRq7+DiPr7VhbqnMZ2JzrQXkNbqPKmHTADYNjgOio
-	 8Hx7SZ49eFJjM7LmRJgOnynNXggqt2eDAiGEicnEC3gGqAi7fX4xDN1ObgGK7xXBF9hZh
-	 0aEZ54lcizl8b9wT7fNt5VC1XW1316ThLGvdfdUWVm9gV7+SODkTAfKHMVpmJ7zFIMvKX
-	 s8ps7pIJjllChLTKEKPE0fc3HPYqBldq0ETM1iOFR9F1DK8trOr+jIgbVf5WFnptjQF1h
-	 f/A6JcUveTyLSdbGViCV1GQYqwZTxtoEqUjqBDjOkPuQjjNtRmrOcFscSArr4q2I4pQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794617970;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=QMsZLVog74iOpWaQpOPOS8T9N6kbs3KpXXjJz5qYWLA=;
+	b=etzG2fwmnIFbQoK8KVP3rS/ykmBBeC9NpoQ/4vjR+fWiNsBIOFLOMRGDl7ypBsTw6olC
+	 leoJZMu6iGujSTxTdT8iXhQcU0YmaYzIS/RsnVyTNt88C8MRnmE/UZWMN/kgqdZTiUhGf
+	 h9h7fbcg4P+/TmQj+ixo0PRTtfs/mMGPK47wOIAnjxz0/+5/JZeg+yEr5B+ElxzoMJ1f+
+	 7AdrYdgZSfS7zvExHOg3jLTKwCXXtyzwq1iKaBxR0t88YFmtYEqOws6TecEtTTYrK79kY
+	 HEkUM5pWHjPz4aTqurA0bxNFq8sCbfVsifBEuVNSO0cw1aPiW7KS0jWBDjov1w0Limg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=molgen.mpg.de;
-	spf=pass smtp.mailfrom=molgen.mpg.de;
-	dkim=pass header.d=molgen.mpg.de header.i=@molgen.mpg.de header.a=rsa-sha256 header.s=20260906 header.b=cF+0hF1F;
-	arc=none smtp.remote-ip=141.14.17.11
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=chromium.org;
+	spf=pass smtp.mailfrom=chromium.org;
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=W8nsx5AV;
+	arc=none smtp.remote-ip=74.125.82.50
+Received: from mail-dl1-f50.google.com (mail-dl1-f50.google.com [74.125.82.50])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A967606A886;
-	Sat, 14 Nov 2026 00:16:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9A967606A886
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=molgen.mpg.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=molgen.mpg.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F291606A336
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 00:59:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5F291606A336
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=molgen.mpg.de header.i=@molgen.mpg.de header.a=rsa-sha256 header.s=20260906 header.b=cF+0hF1F
-Received: from abreu.speedport.ip (p5b13abd5.dip0.t-ipconnect.de [91.19.171.213])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: pmenzel)
-	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 1BE2F4C2F3FFF2;
-	Sat, 14 Nov 2026 01:16:10 +0100 (CET)
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Johan Hovold <johan@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Mika Westerberg <westeri@kernel.org>,
-	linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-pci@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: [RFC PATCH] PM: sleep: Allow direct-complete for wakeup devices in suspend-to-idle
-Date: Sat, 14 Nov 2026 01:15:50 +0100
-Message-ID: <20261114001551.219620-1-pmenzel@molgen.mpg.de>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=W8nsx5AV
+Received: by mail-dl1-f50.google.com with SMTP id a92af1059eb24-15ea896ddc8so2198711c88.0
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 16:59:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1794617968; x=1795222768; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=QMsZLVog74iOpWaQpOPOS8T9N6kbs3KpXXjJz5qYWLA=;
+        b=W8nsx5AVQBffPoy+k16BhVjMEDDodl8fDpI8OkPIzbFye9cL6ccgCyI3Nx41dY28Hi
+         kK6cQbOcB/AGp8zSyFVENsFpbDkOWK/tC89mGKH+SNXgXoPuvmZPphX58rhOXgdU++H1
+         pGQRbCPlPjp/bh3su4U7G57oiVVBzrvGBd0T8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794617968; x=1795222768;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QMsZLVog74iOpWaQpOPOS8T9N6kbs3KpXXjJz5qYWLA=;
+        b=CyDGawN39OfchSKt51p4E/l9caBg4CWZ9YSXvkAiaihcTQNHIH6uWBWUkH7X2jl3zv
+         IObZKbVc5w56M4ObvvcCyXLmGLAa9+ys9C4AjkXdGkcHPNlGfPAj2XMgr7wbzcJBym7P
+         f2a06O3vXAGpr0rQBJV9JBeg5M/h6EchurBK2nHn18aSEd6wNLy+LQyQZQiet9mLWuOB
+         KEMd2ryH2PYL8QqTACoE8DGp7kXag2tJbDaWWzqTP0q8VE/eVEhLUcKAVMJP+bCcHe4/
+         /Q5CIgp9rKo39YQvteNreVsABW/N8iSapEUG/ajCq3kLwVfMUylpPqu9QGrzV42S6XKH
+         6g+Q==
+X-Gm-Message-State: APuU4Z+D5hIvr4gSi0jwZ4rY1XhQXI5bPQUD/waRzXvsnq5xVdO8CMR1
+	B0l9GQ6rX4uDXVbOVV65d7KeTF/XeSIkaM6TH5fDT7Db6gOcOeITk5PSEtFJDCvntA==
+X-Gm-Gg: AYBFou0cFX4zpvshg9cQOLSaHgMo2mi5EZH0lhEtUbWy1Dndin7gJCSRdS2SdCeJYDn
+	TTNe9yra5mjt9BRaMFeBK4RpR826JCRzI6FDoSwPutDgguJNzsII3DFWmZsXmHmf1P3X1PaNL9o
+	nAMKNR1l3Zo/p5PItegFbgBOhVTOg517cMAZlGSN4lGWlPF3A4Jh7B9Z7gaZKqb/lYvUvEKdvlu
+	Ey9+2x/1X8yOXNJqcgjYZzsSfXcRZRgVqgUI7Xo6q4IFJojw11GZQ1vKNzyWjqf7yJdcdGEeTVw
+	hMXwOaLOpRu2S4t1rojnMNHBNGg42eKMFwrZZLv5J0f6Y5hHn/B7P+xZmSMLrbIDA7RVRSmb4ZP
+	EzSZ9SL30dE0UwD8IqEzh5Vy+NIkKDbXprNP2kqftn4s3km3TgQT2z1JXXGrFOk9Fz072FAWJMp
+	Cuj5cJja2nCbzzyEl8/LI8GRwMPbU/6GtUOyTvBtFx5lkQdqiek/nVSPaieCncAgvcSGt7Fjrbx
+	/NosjwPRJUoxm9dc9YLwYPJWwSX7kSJb/lAHSrELRe5ZNilo1pLi4yDaQ3rpfb0njEJa68jioM8
+	RRiz8RHsCcFpF1Okx0TCdau7+bbEEHdL4/6zcqwcaEWWugThnygQWOQETyWWVfjuOyzo
+X-Received: by 2002:a05:7022:7f0f:b0:1b3:b3de:9231 with SMTP id a92af1059eb24-1b50309823dmr3952411c88.14.1794617968357;
+        Fri, 13 Nov 2026 16:59:28 -0800 (PST)
+Received: from localhost ([2a00:79e0:2e7c:8:c0e6:2ee8:7d51:ad79])
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1b505b5bf76sm7931235c88.10.2026.11.13.16.59.26
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 13 Nov 2026 16:59:26 -0800 (PST)
+Date: Fri, 13 Nov 2026 16:59:25 -0800
+From: Brian Norris <briannorris@chromium.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Subject: Re: [PATCH v1] PM: runtime: Update last_busy before calling
+ rpm_suspend() in rpm_idle()
+Message-ID: <aveybY5Z9OWQYkRS@google.com>
+References: <4789427.LvFx2qVVIh@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,154 +96,94 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=molgen.mpg.de; s=20260906; 
-	t=1794615371; 
-	h=from:from:subject:date:message-id:mime-version:content-type:content-transfer-encoding; 
-	bh=FTMw85ZyH6d6sONkFirjgiNZJIu5MVHgxe+h1oTZuUE=; 
-	b=cF+0hF1FC4n3Kk54VGEVf+60kDNRej96d+n/x397szJggD4dsjcOk0/MUbp/SJtSp0+K62skY6xE
-	iXsJX9kdwDDf0qiSDTycRec0aFVGplzKpvZ1wRGQHRpO1PTkgNyS/Nm3qAAOdAwWLYtyX7vS5CwPGK
-	A+3C1jxyPN4ffJGr4AmBFcCTBWT1ycdOz49hVi0O1s4zD6qGU/hR3Nbdegpe3+dB/sQFPNQBTMGtvR
-	6PkgEThg/FJJeaw7NXZbue4BllEmboGVYwwgh3Rq0ufsjNssRjBvP1jjx6WrJMdc/ryfkRLOgp5Aw1
-	yCDaEbyZfHXAFghVjyyKT8XeZ+mqYiGw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4789427.LvFx2qVVIh@rafael.j.wysocki>
 
-Since commit dc351d4c5f4f ("PM / core: Propagate dev->power.wakeup_path
-when no callbacks"), device_suspend() clears direct_complete for every
-device with wakeup enabled or in the wakeup path of a child.  That commit
-addressed a device without PM callbacks, where no ->prepare() callback has
-looked at the device, but the check applies to all devices.
+On Fri, Nov 13, 2026 at 02:27:23PM +0100, Rafael J. Wysocki wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> 
+> When rpm_idle() is about to call rpm_suspend(), there are no reasons
+> preventing the device from being suspended, but if the device uses an
+> autosuspend delay, it needs to be taken into account.
+> 
+> For this purpose, rpm_idle() adds RPM_AUTO to the flags passed to
+> rpm_suspend(), but doing that alone is insufficient because the point
+> in time from which the autosuspend delay is counted may be too early.
+> 
+> For example, if the device has children (or consumers) and the last
+> of them goes into runtime suspend, the parent may now become eligible
+> for suspending, but it may not be worthwhile for it to suspend until
+> a certain time later.
+> 
+> Quoting Alan Stern [1]:
+> 
+>  Let's say the last remaining active child goes into runtime suspend at
+>  time T.  Let's also say that the parent expects none of the children
+>  will need to resume until time T + D.  Is D sufficiently large to make
+>  it worthwhile for the parent to suspend and then resume?  If not, the
+>  parent should remain active.  If yes, the parent should autosuspend --
+>  and the length of time the parent should wait before autosuspending is
+>  on the order of the value of D (let's call it D*) that corresponds to
+>  this crossover point.  Thus the parent's autosuspend delay should be
+>  set to D*, or something close to it, in order to achieve both
+>  objectives.
+> 
+> Moreover, if the parent's autosuspend delay is set to D*, it should be
+> counted from time T at which the last child has suspended, but that does
+> not happen because the parent's last_busy timestamp is not updated at
+> time T.  That leads to undesirable parent suspends occurring between
+> child suspend and resume [2].
+> 
+> To address this issue, make rpm_idle() update the last_busy timestamp
+> of the device when it is about to call rpm_suspend() which most often
+> is right after the device's last child (or consumer) has gone into
+> runtime suspend.
 
-For PCI devices, ->prepare() already takes wakeup into account:
-pci_pm_prepare() only returns 1 if pci_dev_need_resume() is false, which
-compares device_may_wakeup() with the ACPI wakeup configuration the device
-got for runtime PM (acpi_pci_need_resume()) and computes the target state
-with pci_target_state(dev, device_may_wakeup(dev)), and it then adjusts
-PME with pci_dev_adjust_pme().  For a device with wakeup enabled, this
-decision is discarded right afterwards.  As PCI bridges that can do D3
-(pci_acpi_setup()), PCI USB host controllers (usb_hcd_pci_probe()) and
-Thunderbolt NHIs (nhi_probe()) enable wakeup by default, direct-complete is
-effectively limited to devices with wakeup disabled on x86 laptops.  On a
-Dell XPS 13 9310 (Tiger Lake) these runtime-suspended functions are
-affected:
+Is it worthwhile to note (or at least hint at) how many other things
+change along with this? e.g., how pm_runtime_allow() (and therefore
+auto > control/power), all non-autosuspend pm_runtime_put() variants,
+etc, also extend the autosuspend timer? I think we agreed these are
+acceptable effects, and likely even desireable, but I'd say these are
+fairly major changes.
 
-    0000:00:07.0 pcieport     D3cold  wakeup=enabled
-    0000:00:07.2 pcieport     D3cold  wakeup=enabled
-    0000:00:0d.0 xhci_hcd     D3cold  wakeup=enabled
-    0000:00:0d.2 thunderbolt  D3cold  wakeup=enabled
-    0000:00:0d.3 thunderbolt  D3cold  wakeup=enabled
-    0000:00:14.0 xhci_hcd     D3hot   wakeup=enabled
+In any case, the change looks good to me:
 
-There, every suspend-to-idle resume spends 231 ms of the noirq phase
-powering up the empty Thunderbolt root ports 00:07.0 and 00:07.2 and the
-NHIs 00:0d.2 and 00:0d.3 from D3cold (ACPI _ON of the TBT0/TBT1 power
-resources ~125 ms, root port _PS0 ~108 ms), only to runtime-suspend them
-again after the resume.  That is more than a third of the kernel resume
-(641 ms with the panel lit, 427 ms with it off, from the end of
-machine_suspend to "PM: suspend exit"):
+Reviewed-by: Brian Norris <briannorris@chromium.org>
 
-    230.77 ms  noirq bus  pcieport     0000:00:07.2
-    227.40 ms  noirq bus  pcieport     0000:00:07.0
-    142.53 ms  noirq bus  thunderbolt  0000:00:0d.3
-    137.27 ms  noirq bus  thunderbolt  0000:00:0d.2
+I meant to make time to test this out a bit more, but ran out; maybe
+next week.
 
-In suspend-to-idle no firmware is involved in the transition, and a device
-left in runtime suspend keeps the wakeup configuration it got for runtime
-PM.  So allow direct-complete for wakeup devices there, and propagate
-wakeup_path from a direct-completed device to its parent, as
-device_suspend() does for devices that go through the callbacks.
+Thanks,
+Brian
 
-Together with three more changes the Thunderbolt functions stay in D3cold,
-and the noirq phase takes 33 ms instead of 232 ms with the panel off, and
-34 ms instead of 231 ms with the panel lit (medians of 3-4 cycles).
-
-Fixes: dc351d4c5f4f ("PM / core: Propagate dev->power.wakeup_path when no callbacks")
-Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
----
-
-Notes:
-
-Other three changes:
-
-- PCI/portdrv: no DPM_FLAG_NO_DIRECT_COMPLETE for ports on a root bus, as
-  the reason for it in commit 52be9464aa7e ("PCI/portdrv: Resume upon exit
-  from system suspend if left runtime suspended"), a parent going through
-  D3cold, does not apply to them,
-- thunderbolt: nhi_complete() does not runtime-resume a direct-completed
-  NHI,
-- ACPI: power: __acpi_power_on() resumes only dependents whose _PR0
-  resources are all on.  Otherwise resuming the xHCI 00:0d.0 during system
-  suspend (xhci-pci does not set DPM_FLAG_SMART_SUSPEND) turns on the
-  shared D3C resource and runtime-resumes the root ports and NHIs, which
-  also need TBT0/TBT1.
-
-This is an RFC, because the runtime wakeup configuration of a device can
-differ from the one its driver sets up for system sleep.  For example,
-tb_switch_suspend() also arms wake on DisplayPort for runtime suspend, and
-if user space disables wakeup for a Thunderbolt router, a direct-completed
-NHI still wakes up the system when a device is connected.  Maybe
-subsystems should opt in with a flag instead.
-
-An alternative is to keep the check for devices relying on
-no_pm_callbacks, where nothing has looked at the wakeup settings, to drop
-it for devices whose ->prepare() returned a positive value, and to
-propagate wakeup_path from direct-completed devices in both cases.  That
-works for all sleep states, but does not help in the example above: the
-Thunderbolt domain and host router devices (domain0, 0-0) below the NHI
-have no PM callbacks, but wakeup enabled, so they still go through
-device_suspend() and clear direct_complete of the NHI with
-dpm_clear_superiors_direct_complete().
-
-Tested on the Dell XPS 13 9310 with Linux 7.4-rc1 and the three changes
-above (plus a fix that keeps the absent root ports TRP1/TRP3 from being
-powered up at boot, without which TBT0/TBT1 never turn off): 17
-suspend-to-idle cycles of 6-8 s with rtcwake and sleepgraph, no failures,
-111 s in hardware sleep in total (/sys/power/suspend_stats/total_hw_sleep).
-Hot-plugging during suspend was not tested.
-
-Tool use (Documentation/process/generated-content.rst): the analysis, the
-code change and this changelog were drafted by an LLM coding assistant
-(Claude Opus 5.5 via Claude Code), in a session asked to "instrument S0ix
-resume [on the Dell XPS 13 9310], and halve the time".  It traced the
-resume with sleepgraph, function_graph and kprobes/rpm tracepoints, built
-the test kernels and ran the measurements on the laptop.
-
- drivers/base/power/main.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 88a31e09e4f3f..f36c38d1585b0 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1999,8 +1999,14 @@ static void device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->power.syscore)
- 		goto Complete;
- 
--	/* Avoid direct_complete to let wakeup_path propagate. */
--	if (device_may_wakeup(dev) || device_wakeup_path(dev))
-+	/*
-+	 * Avoid direct_complete to let wakeup_path propagate.  In
-+	 * suspend-to-idle, though, no firmware is involved and a device left in
-+	 * runtime suspend keeps the wakeup configuration it got for runtime PM,
-+	 * so allow direct_complete there and propagate wakeup_path below.
-+	 */
-+	if ((device_may_wakeup(dev) || device_wakeup_path(dev)) &&
-+	    pm_suspend_target_state != PM_SUSPEND_TO_IDLE)
- 		dev->power.direct_complete = false;
- 
- 	if (dev->power.direct_complete) {
-@@ -2009,6 +2015,10 @@ static void device_suspend(struct device *dev, pm_message_t state, bool async)
- 			if (pm_runtime_status_suspended(dev)) {
- 				pm_dev_dbg(dev, state, "direct-complete ");
- 				dev->power.is_suspended = true;
-+				if (device_may_wakeup(dev))
-+					dev->power.wakeup_path = true;
-+
-+				dpm_propagate_wakeup_to_parent(dev);
- 				goto Complete;
- 			}
- 
-
-base-commit: 5fcaa701fd2d61b003dff89bbb9dd29ed6123740
--- 
-2.54.0
-
+> Updating the last_busy timestamp when rpm_idle() returns an error
+> without calling rpm_suspend() is not useful because the device is then
+> going to remain active for an unknown amount of time and its autosuspend
+> delay needs to take effect later.
+> 
+> Link: https://lore.kernel.org/linux-pm/fc43eb13-816b-4cd0-9711-848fdab605ef@rowland.harvard.edu/ [1]
+> Link: https://lore.kernel.org/linux-pm/CAJZ5v0hKpjMsGQm8Cpa89x5wkNxqkggDNbp+eQ0S-E52DETWjQ@mail.gmail.com/ [2]
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/power/runtime.c |    6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -560,7 +560,11 @@ static int rpm_idle(struct device *dev,
+>  
+>   out:
+>  	trace_rpm_return_int(dev, _THIS_IP_, retval);
+> -	return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
+> +	if (retval)
+> +		return retval;
+> +
+> +	pm_runtime_mark_last_busy(dev);
+> +	return rpm_suspend(dev, rpmflags | RPM_AUTO);
+>  }
+>  
+>  /**
+> 
+> 
+> 
