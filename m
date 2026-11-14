@@ -1,123 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794656025;
-	b=h5Yvd101L6tOpOSaiLDfFcEmZ2iwC0eEjoG1/ILmjHFTiV6PR5S7d0iDB1R9GJbMBlPz
-	 UOSmYG6KOgo4kmgbrpO4fHksYW/jsld/uYX4qfldiw3FVw3Ja9JgPQ/k6zr2eb9HqDP+p
-	 WlCIynL2TdXumyanw8sJIRM8hQ/IiRELpoLYq9dJShdkFTcwt8d9TmWx3nPfG+yAuZVt+
-	 kgvHHLMeHp8G/FoEZu/4LwZv3SzzUw96MdGiSi+BcYuAvzAGpR7MqoVeSginOyfyf66U5
-	 6iNtIwRhoE6zOgV354X/oLGRcp0vYx/pdr29o+GRe2pBC6ifg8vQ32QHDkv2wNHWO3A==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794656025;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:Content-Transfer-Encoding:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=oEfA8gRWLRRIMFKx9bwTG7AarFQoMaM1TYcn8ru1TlM=;
-	b=0WVonc5ING2CCq8ca8Xu+3MrQzVVG0hlb9JHGTwVGO5RBorqS0bWgx96WCZEb+Xr+vo0
-	 sTrrAwPNhWvZrc403ezdEgdbcCuTJdy1b1nWdMY14XuJhV4/NmhwSFaGpxk0teK2V/Je5
-	 APFuIczBQbnBbqfsQ2G7vOxrWi5yKL/5uz5YosusLlDhdSl/23/hwrLrvrTVPUZ+kWA4C
-	 Tnd55k7XqCnp1w7HQ+hKZGQIjVsfQMX9Nj6l0aoo4U1lOM7Hf9Faz7BfpPJejoFKFqKAq
-	 MSekOaAxQ9OCgQKd0Tx+KgQzLDriBRINhgOnJU2LnqivEx6fO9OLxM3dcIoGGc3uJlA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=dlGROvAc;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=EDOgslyD;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.72.192.78
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794656377;
+	b=Zgb2yAC+fICBT1LwIqcbj8r0aU4SX2jL9zRDqCfeNKGtV9MmOap2asWFIb5JefGtZjO+
+	 8X2LvleokRRkrSyywUVcOj8wft7zFapjkGrKNLaDDmlrS9e9BUNjzWsExZuccrJKXDBn8
+	 XzbgUlx7JGww//BQ2bGYr67DgCKuS9p8+VMlxftIF0bZYHz/PML+tK+e4eLdu22RLh3FF
+	 K0ypIN+kaI4DfUGXU60n1B7VOOHhRm098vCTuFJZq2A5kwsO/dtXm0EXQh+M1ULQ8ovzj
+	 vizfOpR1a2IPLkTZm7H1huLY2qb40UTpLEPLQxlDaITSC1k5d4VFN6KAA4I7k5Dy0YQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794656377;
+	h=DMARC-Filter:DKIM2-Signature:Message-Instance:DKIM-Signature:
+	 X-UI-Sender-Class:Received:Message-ID:Date:MIME-Version:User-Agent:To:
+	 Cc:References:Subject:Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:UI-OutboundReport;
+	bh=1rGoSOFouhQSZNi4fjMl797dAvkOec2L+glDBb0X6/0=;
+	b=aTSdt7yk6xJLlVrrAnqnmQXAFva6zhKNj2ixPF/8R6vtuBxEzqS0h2CuQMkUvYd8N1QT
+	 XQG2LvoFfZVVJD41QRAuC8sRbBtrreAVcMGXq5zIzYy/qxFt9C6605HoOjmIC+AtaKGvj
+	 RXC5wjJ3/vNhSwMqsBvvSi4JHL16TjxOec5owe3y2vC9ExqDjMCA3Oea16PxPbwADoaRE
+	 AUlxhH/DB3BOuw5bVtGacBKZGKpJ6wkx6xQHWviUv8NVjL1ETqk1C8s5BlDG0ARSJ7VWz
+	 y2G+COExmFiCJ4xg0ggTvU44t26tVAP1KkedDQVIxvxIMnAxC/gBU1euF7m0vWQaJvg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=web.de;
+	spf=pass smtp.mailfrom=web.de;
+	dkim=pass header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=ehWud5zv;
+	arc=none smtp.remote-ip=217.72.192.78
+Received: from mout.web.de (mout.web.de [217.72.192.78])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6876606A323
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 11:33:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E6876606A323
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C5DC606A33E
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 11:39:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5C5DC606A33E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=dlGROvAc;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=EDOgslyD
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AE9wBpY3649923
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 11:33:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	oEfA8gRWLRRIMFKx9bwTG7AarFQoMaM1TYcn8ru1TlM=; b=dlGROvAcsPVce7rB
-	7jYMcmpMP5EC7n6vqtae59gEYYfiazxVySMuuNPHGrMjSQq9gTt6ETbaSLGoxNaj
-	6jOcBI5CV6fOuutnW16tj8iSGO6rvmF64l+JacIBdSB00LPDbcXDY3Fg/fhTMAdJ
-	KFt8pyuCCXOGz+hFbtpXGhCU6906mvDJ5LyfoiERzRN42yKzt9e8B2kh1OyuLJYG
-	UJqi1zUYrQ82qGjwmWJ2G665UuHEGinAFyG4UwA6mRksm7UhpnktbZmjAugCgvM2
-	455gZ7uBXnFG1wi8/9bOybFZsbG4sKImEQVnC/+p95oGmHdgxmrNeN6N+5NsIlK8
-	+ql11w==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hxhhjrnw2-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 11:33:43 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-3ada6ccd402so1348432a91.2
-        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 03:33:43 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794656023; cv=none;
-        d=google.com; s=arc-20260327;
-        b=MtHvPexmX64KmZqU5lzCpBjt7z/435W/Y7SANF7T7ev3cFIAMnhC0jfvkEXpYoNBjV
-         d4PZl1FUW1TLiEJwvKWso6gafaYCxvAWMc5bKHHvWOo8xpFrJZYdTzGKG5KBZa4zoZcB
-         9ppgeihNQtueeDXRcr/sCFKb73Y7jZ6WSxq8o/xKHTZDjBgjnEQI3YQvmjp9N509Uq9m
-         0dOZFAWKfPft9iuhLVeRkpO3owp4QDcndiLmgIWu8tqmFCd3pUyi3fVcAyCywWrzQhZQ
-         U3MWpxZ+cLfK9GS/UtAkIfOiaqBU7soEKoADKsFsAMAusE06WXyTOFhYUYC2dOPQk//3
-         ENWw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=oEfA8gRWLRRIMFKx9bwTG7AarFQoMaM1TYcn8ru1TlM=;
-        fh=BXp/sYLhtG480VkgP/OResl2N7mNyMVs39LvLxnTFSM=;
-        b=klKuM2Ns9z73SrwgF9y3DTNtNLGG+o+HDmBZm3jwdL9CbuW9eYoXxmSEnCeNT57GMH
-         biuxETvIdRRuw7J4hnXFAhUN7wGIeW7jfZPCUI0o9ljdH5hpuUwPx/AyE08+uj6TGlA/
-         j2YutPBOqRbA2ba5iI8NY6kDn1S85D1BAocg0GlqqHgGzBqox5aAK23Gs+WGMWKT/1HF
-         V4s7DwH95Z7Tk0H5jtnQyrHGQJBLS5rX1BkeW+0rlc4418sdOs0ZYo2A6xlbX0RccGN+
-         UAIb6kxBmnW9ihYmiwIY2gOqW5cYbNz6Du07FBiLuCcHaDFT5JvC8mI9f9U3JIBysGYk
-         7k7g==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794656023; x=1795260823; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=oEfA8gRWLRRIMFKx9bwTG7AarFQoMaM1TYcn8ru1TlM=;
-        b=EDOgslyD+i3gVKiwSkulBThEPQ52FYMpFeGxjDLvkBu21131nQQaX72VmRs/Ld9AV/
-         7J0Yi800X5ZpEyJMcPxSQHCFbU7531CcpH+ZU7ZY2GPq7DBlwg7FIjTIMiP/C4l+tYtE
-         32C7Xk5+lGFuHOUFMXb0kQPLSG8Q6ehfJagOU5evBtrO8th+HtF6sCMliqPo6Q9jqfd7
-         uQDIAX2jRhwKZ+juaOzqrjtJ6D0xFplXRUD3REVWf/dUms1zDygLkcBLI2syw/uGjRx4
-         XS4L5R+iT9e5ZNiizoIx+Gv+5rhpjrbj7jUpXdnkMSUOlCWjbZfKOtWLPWlf+mRrLgbF
-         ew6g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794656023; x=1795260823;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=oEfA8gRWLRRIMFKx9bwTG7AarFQoMaM1TYcn8ru1TlM=;
-        b=duOm4WKk7LOBDY8FdpCO5MC015tNb/I6a2UmWUpZQRGNBl7AYBqgoJB1nVwziuTFWy
-         d02PiqQ+KiNTmL7qZSuVVuzRDSPnbTtCEm8jI1Cvi2O+E1tAvH460tqHWnUE3rzWOkwF
-         NmAaem0b293/GOTyYEho82OwhQ5CMYDnhJmKWaJ9MoojvaBWnutGoDfNHV3XLTEh8OWW
-         D42DMhuaUJqHMV2s8NHCqU2ZKk2BoloH5RMJfMewIsPiSgiYG3hrt4zDJZ33z2rhUAlT
-         xDG0XMjlL13s+/PPki7pznJwKI1N2f9y4d7HyRptR7QZH88SZ2UjC/HOxK9A4/cLckfZ
-         LSIA==
-X-Forwarded-Encrypted: i=1; AL+hErGsNpb+0ejEtlbHMkqn8GG4cukeWIEUWgR4VnM5nVoNl7XqGlj7oRYxcpyWIPAcjwQlvq/IB1/IoQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8TkkXk/8xMtcKKxv7l6CIjMwskYDe2uSvDyrcpaDeQMT8w+tQu
-	40KXuBJ6SzWVQT7fzOhcrHJYdpLZtf9eLhBUIS6n1GC758ng7PxBpGqKnrKvRy+GiL1BhVXEz+6
-	cYtJWlVB1BK7slH6Kt9PTQ74907oldV6mDphroHl1Ldm2iJ8UycK+kCVD9JxGezfwn6KtQ6U3N1
-	4HB/mZ2veXWAsgiyPvefF3hgS+f4VIhS4m9LEJ
-X-Gm-Gg: AYBFou2ZmfMnC1xK24/JMpnnTW5VKm1QjlnKdOoV8XcqGePU/Zf/R6wQxbueFF/PFTv
-	8+7gxrV9eXd5zt8ERMp1Q0j8pA/Vioqru49SXseAsttgIsFyitFVespxaSqI+Gj1RQ3npAf689l
-	FlAVyqJ4t9vYvPl8jW2jR0EvgncjJ/Zs9qF2JTti70IrWCTwWpogZc3d2xDw==
-X-Received: by 2002:a17:90b:5910:b0:3a0:516d:9f88 with SMTP id 98e67ed59e1d1-3b1b0a1fe6emr4265338a91.26.1794656023189;
-        Sat, 14 Nov 2026 03:33:43 -0800 (PST)
-X-Received: by 2002:a17:90b:5910:b0:3a0:516d:9f88 with SMTP id
- 98e67ed59e1d1-3b1b0a1fe6emr4265318a91.26.1794656022663; Sat, 14 Nov 2026
- 03:33:42 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=ehWud5zv
+DKIM2-Signature:  i=1; m=1; t=1794656373;
+ mf=PE1hcmt1cy5FbGZyaW5nQHdlYi5kZT4=;
+ rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
+ d=web.de;
+ s=s29768273:rsa-sha256:fOs4M4Xou0HAhya0sngNAnPfpU4r
+   3hJcOWRRSxQcRpeHWRNmpsHVsemc//FTNZJ18Y0ezWB0eLoYQWh+ds0bsVIhJCY8BCE/ZTVE5Y0
+   75jV4Q/sUcPYRIH+bj07b9gdMvRXOQDuOItOGiuaDIeOAmPToDPaAmSdFIllx+NOJ0YSJ1Dg9JJ
+   +gIKwsNPiajd32gCYTYd+JNPpFvWRgswmZ1ieMXkuEga+gqn3MVqhfQxjX9oC2ok/gqat1+ez9K
+   ymh1SlxBANZQ/TMIT20LG29ADxgWrNd2x7R8YPG26ge2mxinm3YVB5kgULd5atYwVQWfUAdNCzH
+   6T48w86ZrMoGjw==;
+Message-Instance:  m=1;
+ h=sha256:
+   zdHAUM5FRJIeSR5sWhjGOntbco54acETBERhA7AiYqU=:
+   cuyZn7ZahTNzUMhIuL3lGQQijBL76zQXFuKU4QQQtas=,
+  sha512:
+   uPh2vEx0rLQVsZKw4TP0aZffX8w0ZZAvf5AaFqNYd0AWI7AcCCh/7EForHh4NbDMScJKGUp1Mb3P5T0gzGmNFA==:
+   BaCxS+DpnDZwaIi48tdjHQarvZGVUFM3O8eSZO/HO/2ARD3dKEiY85IPrQLeWE49iTqBe1NMT/PuoMRd42YNAA==;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1794656356; x=1795261156; i=markus.elfring@web.de;
+	bh=1rGoSOFouhQSZNi4fjMl797dAvkOec2L+glDBb0X6/0=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
+	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=ehWud5zvAQe3MlIk/DI3vvMAs2HDu/Ruulpn9ngB1zB6Kflq6fub5HFbCxWdcvmm
+	 jKTHWuStBZ+GGHtHrRjzhcmAvDTcVkXoOwLFCktarWk3BnXV7idHUAXYSkqdK90pl
+	 Kd77JoDQBOUCAy1UF/yoc7SSVI2nxjq8N++iHzchN6NWHg6FewhXcP41S80oHUrFb
+	 uLzkXpItnoM+3sw694UFzZg0tiln3N0jwZucNPes4+oRHy/zdyukV33IlqVF4MwCk
+	 cNvzkVAVw2hKFaaiYzuKAL25qsDwG6saH7DTL8w728udHu+YcuNiK5PrVX8lBfZY1
+	 IhySl31rCjHWef0W2Q==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MhWor-1wpa231Ah9-00lMe5; Sat, 14
+ Nov 2026 12:39:16 +0100
+Message-ID: <0f715d51-1d85-4126-8cb4-7f60e5f84975@web.de>
+Date: Sat, 14 Nov 2026 12:39:01 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -127,195 +79,157 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261112-01-pm-device-link-v1-1-8932e0862378@kernel.org>
-In-Reply-To: <20261112-01-pm-device-link-v1-1-8932e0862378@kernel.org>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Sat, 14 Nov 2026 12:33:31 +0100
-X-Gm-Features: AclHuK_taegd5bAzuybJmQPC1z-fZC_MIChsvwsEmWXiwFzgCH5zCy6riPEsdLY
-Message-ID: <CAPx+jO-37Km71oSW+zOO7BBWLj86SNCn=U=EGmBXdC5SfX4nbA@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: core: connect consumer with supplier via device link
-To: Yixun Lan <dlan@kernel.org>
-Cc: Ulf Hansson <ulfh@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
-        Alexandre Ghiti <alex@ghiti.fr>,
-        Troy Mitchell <troy.mitchell@linux.spacemit.com>,
-        Icenowy Zheng <uwu@icenowy.me>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-        spacemit@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+To: Adrian Nguyen <thenguyen1024@gmail.com>, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski
+ <krzk+dt@kernel.org>, Rob Herring <robh@kernel.org>,
+ Sebastian Reichel <sre@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Casey Connolly <casey.connolly@linaro.org>
+References: <20261114112155.85068-3-thenguyen1024@gmail.com>
+Subject: Re: [PATCH v3 2/2] power: supply: Add Qualcomm SMB1351 charger driver
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <20261114112155.85068-3-thenguyen1024@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE0MDA0NSBTYWx0ZWRfX81kJMUyJs9TA
- mPhsFfIdoFrsITw8i7AuS3Wxug7Hkn820bbsW+oHeh30NpAkmme/3ZGdxJhymuMCAaz2FEbfa7X
- T23ouANNXg/q/M3Bd6gUuMw4D2GE/xhM25S5EintMmE96wOl7Ni1X+gkdl8LmulhblaaGP1+GPq
- 2U/IPfUxCz4kzRHIrJOHf5lGsru224q1ooj1HN9GcXmnM8slxeAUV3q6zHEFR5mNlhzbcIwTwEB
- smjIgBpeioEvOLKqNvpXB3hcqco5IMkcU4Xv3ZPquLihbLYIE3jayIxm0B2c3yGOBnruuhgnxz1
- nQjt26tg6rLuJj3e8cMnuBZ/4vr+z3O1Y9ioBMrzrDTtGour/kTb5tB426vbVndS4oGCr6/vUBI
- fwWt7Yhi9D3lTCwNOcqlfMdxCYYbZcx2z1fu8mNeYAHYyE6Rf+a/bmD3u3WuClsfzS8AZFjhcJx
- 0ezLJ0l9qMSWcERmmPQ==
-X-Proofpoint-ORIG-GUID: 1eQJwm0LUM1qzaw_kXTxiZWD0wP2jxqh
-X-Proofpoint-GUID: 1eQJwm0LUM1qzaw_kXTxiZWD0wP2jxqh
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE0MDA0NSBTYWx0ZWRfX/sY+ySQUiaXZ
- 6gT23kPD+fMtihydK5O6MdCDeMM7MgN66YK84Zh00gYBe3NnmF8V3U3PB8lwhSHlZfuLgqPEzG3
- ba80KkaCwz0dodXVID5orfFziLFpEJY=
-X-Authority-Analysis: v=2.4 cv=X9rHu2Te c=1 sm=1 tr=0 ts=6af84717 cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yOCtJkima9RkubShWh1s:22 a=bC-a23v3AAAA:8 a=VwQbUJbxAAAA:8
- a=7_BkkAeRn8r4wxPsRKMA:9 a=QEXdDO2ut3YA:10 a=uKXjsCUrEbL0IQVhDsJ9:22
- a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-14_03,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 impostorscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
- adultscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611140045
+X-Provags-ID: V03:K1:9zYkuzsMpY5pPIYTs1FsCfMZikB8p/w331GWnPvUAzbNOAtmUEL
+ 5yzXpsWyzydu4ibspe6AyAgq6rv7lG7ffv/TfS7jrXRkCz1SigLj34j1ITUoxzzcBb/sxB3
+ k0fdkbYxED9JalyG3887N1jVuo8/4cd07POaKp5ugyqux0PlAgstCLwSb1/NNBEHzBmEbx6
+ QNTiAIcfvfrHPmgzF/irA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:nA5A5sNZ6B8=;V31XhEegMAsSA+cFi9yrMbAIIPG
+ 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
+ YXecLxHk0GNcpmcAZqetGjFUAjnepX2z0I
 
-On Thu, Nov 12, 2026 at 8:45=E2=80=AFAM Yixun Lan <dlan@kernel.org> wrote:
->
-> Connect downstream Power Domain consumer with the supplier through
-> the device link API, So when the pmdomain driver is unloaded or unbinded,
-> the consumer can be automatically notified and purged gracefully.
->
-> Signed-off-by: Yixun Lan <dlan@kernel.org>
+=E2=80=A6
+> +++ b/drivers/power/supply/qcom_smb1351.c
+> @@ -0,0 +1,439 @@
+=E2=80=A6
+> +static void smb1351_external_power_changed(struct power_supply *psy)
+> +{
+=E2=80=A6
+> +	spin_lock(&chip->lock);
+> +	WRITE_ONCE(chip->retry_until,
+> +		   jiffies + msecs_to_jiffies(SMB1351_SETTLE_MS +
+> +					      SMB1351_RETRY_TIMEOUT_MS));
+> +	mod_delayed_work(system_freezable_wq, &chip->work,
+> +			 msecs_to_jiffies(SMB1351_SETTLE_MS));
+> +	spin_unlock(&chip->lock);
+> +}
+=E2=80=A6
 
-Can you check if the below commit that sits on my fixes branch solves
-this problem for you?
+Under which circumstances would you become interested to apply a statement
+like =E2=80=9Cguard(spinlock)(&chip->lock);=E2=80=9D?
+https://elixir.bootlin.com/linux/v7.3.1/source/include/linux/spinlock.h#L6=
+10-L612
 
-e279833a5362 pmdomain: core: Wait for device link removals before
-dropping genpd->dev
-
-Kind regards
-Uffe
-
-> ---
-> The power domain drivers under pmdomain subystem suffer fom
-> the problem that unable to notify the downstream consumer with
-> module unload or unlink event, left with stale sysfs interface.
->  Curently, the solution is a) use builtin_platform_driver() API
-> to disable the module unloading b) adding suppress_bind_attrs flag
-> to disable the unlink interface, which prevent it from being
-> triggered from user space.
->
-> Take spacemit K3 platform [1] for example, without this patch,
-> Removing spacemit_pm_domains module will trigger a failure to
-> remove power domain, access pm_genpd_summary will result an
-> kernel oops, See detail log below
->
-> domain                          status          children        performan=
-ce
->     /device                         runtime status                  manag=
-ed by
-> -------------------------------------------------------------------------=
------
-> lcd1                            on                              0
->     cac88000.dp                     unsupported                 0        =
-   SW
-> lcd0                            off-0                           0
-> audio                           on                              0
-> gpu                             on                              0
->     cac00000.gpu                    active                      0        =
-   SW
-> vpu                             off-0                           0
->
-> gpu  lcd1  pm_genpd_summary
->
-> (gpu and lcd1 isn't clean up)
->
-> [  181.353671] spacemit_pm_domains spacemit_ccu.k3-apmu-pmdomain.3: faile=
-d to remove domain gpu: -16 - state may be inconsistent
-> [  181.353889] PM: genpd_remove: unable to remove lcd1
-> [  181.353896] spacemit_pm_domains spacemit_ccu.k3-apmu-pmdomain.3: faile=
-d to remove domain lcd1: -16 - state may be inconsistent
->
-> [  206.228045] CPU: 5 UID: 0 PID: 2560 Comm: cat Not tainted 7.3.0-rc12 #=
-81 PREEMPTLAZY
-> [  206.238002] Hardware name: SpacemiT K3 Pico-ITX (DT)
-> [  206.243027] epc : summary_show+0xaa/0x308
-> [  206.247081]  ra : summary_show+0x264/0x308
-> [  206.251224] epc : ffffffff809f50fa ra : ffffffff809f52b4 sp : ffffffc6=
-01273a80
-> [  206.258542]  gp : ffffffff82333b98 tp : ffffffd601d5ec80 t0 : ffffffff=
-80026b38
-> [  206.265859]  t1 : ffffffd6092d3cb0 t2 : ffffffff81601810 s0 : ffffffc6=
-01273b10
-> [  206.273177]  s1 : ffffffd601b92470 a0 : ffffffd601b92588 a1 : 00000000=
-0000000a
-> [  206.280494]  a2 : ffffffd609ae8000 a3 : 0000000000000000 a4 : ffffffd6=
-01d5ec80
-> [  206.287811]  a5 : 0000000000000000 a6 : ffffffffffffe000 a7 : 00000000=
-00000000
-> [  206.295128]  s2 : ffffffd6092d3cb0 s3 : ffffffd601b92470 s4 : ffffffd6=
-01b94040
-> [  206.302447]  s5 : 0000000000000000 s6 : 0000000000000003 s7 : ffffffff=
-8221e3a8
-> [  206.309764]  s8 : 0000000000000001 s9 : ffffffff8172b8c8 s10: 00000000=
-00000004
-> [  206.317082]  s11: 0000000000000000 t3 : 000000000000017a t4 : 00000000=
-00000002
-> [  206.324399]  t5 : 0000000000000000 t6 : ffffffd609ae7178 ssp : 0000000=
-000000000
-> [  206.331804] status: 0000000200000120 badaddr: 0000000000000010 cause: =
-000000000000000d
-> [  206.339829] [<ffffffff809f50fa>] summary_show+0xaa/0x308
-> [  206.345206] [<ffffffff804b67f8>] seq_read_iter+0xe0/0x390
-> [  206.350671] [<ffffffff804b6b86>] seq_read+0xde/0x158
-> [  206.355697] [<ffffffff8063dee4>] full_proxy_read+0x54/0x88
-> [  206.361250] [<ffffffff8047a03e>] vfs_read+0xae/0x380
-> [  206.366275] [<ffffffff8047adc2>] ksys_read+0x6a/0xf0
-> [  206.371301] [<ffffffff8047ae68>] __riscv_sys_read+0x20/0x30
-> [  206.376944] [<ffffffff8101fa6a>] do_trap_ecall_u+0x19a/0x518
-> [  206.382674] [<ffffffff81033acc>] handle_exception+0x16c/0x178
-> [  206.388503] Code: 0a13 c00a 4c05 4b0d 3783 540a 3823 f804 3423 f804 (6=
-b9c) 8552
-> [  206.396050] ---[ end trace 0000000000000000 ]---
-> Segmentation fault         cat /sys/kernel/debug/pm_genpd/pm_genpd_summar=
-y
->
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> With this patch applied, either unload the module or trigger an
-> unbind operation, the downstream gpu, lcd1 will exit gracefully
->
-> or
->
-> domain                          status          children        performan=
-ce
->     /device                         runtime status                  manag=
-ed by
-> -------------------------------------------------------------------------=
------
->
-> Link: https://patch.msgid.link/20261108-04-k3-pm-support-v3-0-b9dc0857039=
-b@kernel.org [1]
-> ---
->  drivers/pmdomain/core.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-> index 964e44c2f78f..870fc8083bca 100644
-> --- a/drivers/pmdomain/core.c
-> +++ b/drivers/pmdomain/core.c
-> @@ -3543,6 +3543,8 @@ static int __genpd_dev_pm_attach(struct device *dev=
-, struct device *base_dev,
->                 return -EPROBE_DEFER;
->         }
->
-> +       device_link_add(dev, &pd->dev, DL_FLAG_AUTOREMOVE_CONSUMER);
-> +
->         return 1;
->
->  err:
->
-> ---
-> base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-> change-id: 20261112-01-pm-device-link-9fdd0fe59a49
->
-> Best regards,
-> --
-> Yixun Lan <dlan@kernel.org>
->
+Regards,
+Markus
