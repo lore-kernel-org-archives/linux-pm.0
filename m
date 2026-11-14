@@ -1,68 +1,65 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=141.14.17.11
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794615365;
-	b=KqbPMcTCVs+ZQl+7W3oARPgmo0i68geb6KMWis+ETDLajwmWxrAgVeRZ9ZyC6FBCMlEi
-	 PLAZCzo+owTbJyAQA2JKlaT256K6YNjzyKU0Xl9XQz43EWqYg3tE85k9ptXT7bbD9uS8e
-	 vmkBiWHgGy/EWmDiCU8NTpvuumhaLNwT2reEzLnjlrjCCEzmmFKNFsOlF09W7sjnqLmU1
-	 3K8B6QXJOoXoGg9xpFOFilJkGhlYkl2UQOZ5+UkUjlzAWju1FU4k8JFRdAFbed2yApwa2
-	 XQbw60Ta7BgLYxviSTKsd24HObF3rNCN607OlGRWMbvQWN+QeeKKPmTXnD+eZjO3H2A==
+	t=1794615406;
+	b=2KNynAppmOsb4LHO0C12dSUEQ6zFQnd84i6eyHFPplSuS9mfs9LMNzTFTdXYWS28uMif
+	 jb+xWgHojFan/FrWpIwNSk3tQNI+iWoQ1HKBcj77AddoOe/xxExhjZALrdyvuHmzZWsbO
+	 0foGMBRwNwD5sEuywnQDlQMXffM7R7IsZst/FhzxUAKaN03xNr5gbLDtqOM21KK4Y8rva
+	 MPDIfMQjTHH8DpSL7e2jDCQzvY5wi+jCYq0ejSstuK8FNZhQwaLwaj5qW+6hZ2/VpQrDZ
+	 wUQZ8ZdaWP/ANDKBq7jZJCXshgLGaHaGgtwxpyISffw5ls5KzfJm60kGiYZjCh+Sc1A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794615365;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=H/O+Mo0VVNCwn6G0Coe3gZ4s1DLGig40Bsnf3oJKl+Q=;
-	b=e610Wx4BXxjwYwaWcG85pIaNx4YKEtJ6iEp7jbc+VA422yGa78Ai8euXwhLJriphV36/
-	 ucQM+7dQ65Go7peMpdUiwXPCWhItN1US2OnrQ10uLfrroqccluFHJM/wPTmbplTY9DL2r
-	 Cb6fPkCe2G/gVxxQGYBRFUB7L0GXVe3CF7qPTde339z8NQguzcg7u11VsvsACUTIl1Z67
-	 bU1TTI5MaHTIvTtb/fMEDZl/ByKr1poSGsrpMAy6FhfO14eCXYhEl0G+IzSyJVLzfNB1b
-	 Nzu4uFZjSKlSYOBXHIlmBm2KBJ72e1gFc8XTF2lt70hNrJ4RTQQTK5Ru0gPH0Pq0RYw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794615406;
+	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:DKIM-Signature;
+	bh=FTMw85ZyH6d6sONkFirjgiNZJIu5MVHgxe+h1oTZuUE=;
+	b=QC6y0QmKBIgRGr5w8J4mOa8/e+djRq7+DiPr7VhbqnMZ2JzrQXkNbqPKmHTADYNjgOio
+	 8Hx7SZ49eFJjM7LmRJgOnynNXggqt2eDAiGEicnEC3gGqAi7fX4xDN1ObgGK7xXBF9hZh
+	 0aEZ54lcizl8b9wT7fNt5VC1XW1316ThLGvdfdUWVm9gV7+SODkTAfKHMVpmJ7zFIMvKX
+	 s8ps7pIJjllChLTKEKPE0fc3HPYqBldq0ETM1iOFR9F1DK8trOr+jIgbVf5WFnptjQF1h
+	 f/A6JcUveTyLSdbGViCV1GQYqwZTxtoEqUjqBDjOkPuQjjNtRmrOcFscSArr4q2I4pQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCDutom7;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=molgen.mpg.de;
+	spf=pass smtp.mailfrom=molgen.mpg.de;
+	dkim=pass header.d=molgen.mpg.de header.i=@molgen.mpg.de header.a=rsa-sha256 header.s=20260906 header.b=cF+0hF1F;
+	arc=none smtp.remote-ip=141.14.17.11
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACFFD606A32D;
-	Sat, 14 Nov 2026 00:16:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A967606A886;
+	Sat, 14 Nov 2026 00:16:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9A967606A886
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=molgen.mpg.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=molgen.mpg.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCDutom7
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FFD81F000C4;
-	Sat, 14 Nov 2026 00:15:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794615365;
-	bh=H/O+Mo0VVNCwn6G0Coe3gZ4s1DLGig40Bsnf3oJKl+Q=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=dCDutom77k2RDxhVXA+pNPIua+fqPi9LCaPbyP7f926WWu3xjdSU7LdPc3YHSx1Lv
-	 o8gTzM51nncEAIU+63cLubC7f85H7GDLrwRb0Ggsr2WImuG3ACFXWKWpxwFx4QgHGX
-	 baFSXtGFPOvsvJmyflUQ+sn0c/4aTVSogDuuAlJiiNwEg95fyZPCqUSzhoczLOIc5W
-	 sRuFsARvUMds8rkuutA2mw4MWOQrB85qDK73DF76CPO0L+I3mGh81GUW6weUQI9bO9
-	 8BIg8H7P8EHwTsSIvt9RocaHjHzU8rlsD9QKokyBkEq284j8RQKG4Dl0ZA7IT8jVnf
-	 oKG18v0SLnrrw==
-Date: Sat, 14 Nov 2026 00:15:52 +0000
-From: Jonathan Cameron <jic23@kernel.org>
-To: Luca Weiss <luca.weiss@fairphone.com>
-Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
- <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, "Rafael J.
- Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
- <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Laxman Dewangan
- <ldewangan@nvidia.com>, Bjorn Andersson <andersson@kernel.org>, Konrad
- Dybcio <konradybcio@kernel.org>, Hans de Goede <hansg@kernel.org>, Jens
- Reidel <adrian@mainlining.org>, Casey Connolly <casey.connolly@linaro.org>,
- Val Packett <val@packett.cool>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org
-Subject: Re: [PATCH v3 3/5] thermal/drivers/generic-adc: Allow probe without
- TZ registration
-Message-ID: <20261114001552.3ae8f05e@jic23-hlaptop>
-In-Reply-To: <20261113-bat-temp-adc-v3-3-743979a8fd90@fairphone.com>
-References: <20261113-bat-temp-adc-v3-0-743979a8fd90@fairphone.com>
-	<20261113-bat-temp-adc-v3-3-743979a8fd90@fairphone.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=molgen.mpg.de header.i=@molgen.mpg.de header.a=rsa-sha256 header.s=20260906 header.b=cF+0hF1F
+Received: from abreu.speedport.ip (p5b13abd5.dip0.t-ipconnect.de [91.19.171.213])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: pmenzel)
+	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 1BE2F4C2F3FFF2;
+	Sat, 14 Nov 2026 01:16:10 +0100 (CET)
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Johan Hovold <johan@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Mika Westerberg <westeri@kernel.org>,
+	linux-pm@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	linux-pci@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: [RFC PATCH] PM: sleep: Allow direct-complete for wakeup devices in suspend-to-idle
+Date: Sat, 14 Nov 2026 01:15:50 +0100
+Message-ID: <20261114001551.219620-1-pmenzel@molgen.mpg.de>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -72,82 +69,154 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=molgen.mpg.de; s=20260906; 
+	t=1794615371; 
+	h=from:from:subject:date:message-id:mime-version:content-type:content-transfer-encoding; 
+	bh=FTMw85ZyH6d6sONkFirjgiNZJIu5MVHgxe+h1oTZuUE=; 
+	b=cF+0hF1FC4n3Kk54VGEVf+60kDNRej96d+n/x397szJggD4dsjcOk0/MUbp/SJtSp0+K62skY6xE
+	iXsJX9kdwDDf0qiSDTycRec0aFVGplzKpvZ1wRGQHRpO1PTkgNyS/Nm3qAAOdAwWLYtyX7vS5CwPGK
+	A+3C1jxyPN4ffJGr4AmBFcCTBWT1ycdOz49hVi0O1s4zD6qGU/hR3Nbdegpe3+dB/sQFPNQBTMGtvR
+	6PkgEThg/FJJeaw7NXZbue4BllEmboGVYwwgh3Rq0ufsjNssRjBvP1jjx6WrJMdc/ryfkRLOgp5Aw1
+	yCDaEbyZfHXAFghVjyyKT8XeZ+mqYiGw==
 
-On Fri, 13 Nov 2026 16:56:44 +0100
-Luca Weiss <luca.weiss@fairphone.com> wrote:
+Since commit dc351d4c5f4f ("PM / core: Propagate dev->power.wakeup_path
+when no callbacks"), device_suspend() clears direct_complete for every
+device with wakeup enabled or in the wakeup path of a child.  That commit
+addressed a device without PM callbacks, where no ->prepare() callback has
+looked at the device, but the check applies to all devices.
 
-> If the devicetree node is not referenced in a zone under /thermal-zones,
-> devm_thermal_of_zone_register() will fail with -ENODEV.
-> 
-> Since the driver is now also registering as an IIO device[0], allow the
-> probe to continue without the thermal zone.
+For PCI devices, ->prepare() already takes wakeup into account:
+pci_pm_prepare() only returns 1 if pci_dev_need_resume() is false, which
+compares device_may_wakeup() with the ACPI wakeup configuration the device
+got for runtime PM (acpi_pci_need_resume()) and computes the target state
+with pci_target_state(dev, device_may_wakeup(dev)), and it then adjusts
+PME with pci_dev_adjust_pme().  For a device with wakeup enabled, this
+decision is discarded right afterwards.  As PCI bridges that can do D3
+(pci_acpi_setup()), PCI USB host controllers (usb_hcd_pci_probe()) and
+Thunderbolt NHIs (nhi_probe()) enable wakeup by default, direct-complete is
+effectively limited to devices with wakeup disabled on x86 laptops.  On a
+Dell XPS 13 9310 (Tiger Lake) these runtime-suspended functions are
+affected:
 
-Papering over problems, or expected path for some devices?  If it's
-expected path we probably don't want to print a message with the
-word failed in it.
+    0000:00:07.0 pcieport     D3cold  wakeup=enabled
+    0000:00:07.2 pcieport     D3cold  wakeup=enabled
+    0000:00:0d.0 xhci_hcd     D3cold  wakeup=enabled
+    0000:00:0d.2 thunderbolt  D3cold  wakeup=enabled
+    0000:00:0d.3 thunderbolt  D3cold  wakeup=enabled
+    0000:00:14.0 xhci_hcd     D3hot   wakeup=enabled
 
-> 
-> We also can't use gadc_thermal_get_temp() anymore because we haven't
-> necessarily initialized tz_dev.
-> 
-> Link: https://git.kernel.org/torvalds/c/3762f5851ac5 [0]
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> ---
->  drivers/thermal/thermal-generic-adc.c | 20 +++++++++++---------
->  1 file changed, 11 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-> index c6a7a65aa6a6..40a34e97a515 100644
-> --- a/drivers/thermal/thermal-generic-adc.c
-> +++ b/drivers/thermal/thermal-generic-adc.c
-> @@ -86,14 +86,16 @@ static int gadc_thermal_read_raw(struct iio_dev *indio_dev,
->  				 int *val, int *val2, long mask)
->  {
->  	struct gadc_thermal_info *gtinfo = iio_priv(indio_dev);
-> +	int iio_val;
->  	int ret;
->  
->  	switch (mask) {
->  	case IIO_CHAN_INFO_PROCESSED:
-> -		ret = gadc_thermal_get_temp(gtinfo->tz_dev, val);
-> -		if (ret)
-> +		ret = iio_read_channel_processed(gtinfo->channel, &iio_val);
-> +		if (ret < 0)
->  			return ret;
->  
-> +		*val = gadc_thermal_adc_to_temp(gtinfo, iio_val);
+There, every suspend-to-idle resume spends 231 ms of the noirq phase
+powering up the empty Thunderbolt root ports 00:07.0 and 00:07.2 and the
+NHIs 00:0d.2 and 00:0d.3 from D3cold (ACPI _ON of the TBT0/TBT1 power
+resources ~125 ms, root port _PS0 ~108 ms), only to runtime-suspend them
+again after the resume.  That is more than a third of the kernel resume
+(641 ms with the panel lit, 427 ms with it off, from the end of
+machine_suspend to "PM: suspend exit"):
 
-Maybe spin a helper that is used both in adc_thermal_get_get_temp()
-and here?  Whilst it won't save much code (may actually be a touch longer)
-it will put the two relevant steps in one place.
+    230.77 ms  noirq bus  pcieport     0000:00:07.2
+    227.40 ms  noirq bus  pcieport     0000:00:07.0
+    142.53 ms  noirq bus  thunderbolt  0000:00:0d.3
+    137.27 ms  noirq bus  thunderbolt  0000:00:0d.2
 
+In suspend-to-idle no firmware is involved in the transition, and a device
+left in runtime suspend keeps the wakeup configuration it got for runtime
+PM.  So allow direct-complete for wakeup devices there, and propagate
+wakeup_path from a direct-completed device to its parent, as
+device_suspend() does for devices that go through the callbacks.
 
->  		return IIO_VAL_INT;
->  
->  	default:
-> @@ -195,14 +197,14 @@ static int gadc_thermal_probe(struct platform_device *pdev)
->  						    &gadc_thermal_ops);
->  	if (IS_ERR(gti->tz_dev)) {
->  		ret = PTR_ERR(gti->tz_dev);
-> -		if (ret != -EPROBE_DEFER)
-> -			dev_err(dev,
-> -				"Thermal zone sensor register failed: %d\n",
-> -				ret);
-> -		return ret;
-> -	}
-> +		if (ret != -ENODEV)
-> +			return ret;
->  
-> -	devm_thermal_add_hwmon_sysfs(dev, gti->tz_dev);
-> +		dev_info(dev, "Thermal zone sensor register failed: %d\n",
-> +			 ret);
-> +	} else {
-> +		devm_thermal_add_hwmon_sysfs(dev, gti->tz_dev);
-> +	}
->  
->  	return gadc_iio_register(&pdev->dev, gti);
->  }
-> 
+Together with three more changes the Thunderbolt functions stay in D3cold,
+and the noirq phase takes 33 ms instead of 232 ms with the panel off, and
+34 ms instead of 231 ms with the panel lit (medians of 3-4 cycles).
+
+Fixes: dc351d4c5f4f ("PM / core: Propagate dev->power.wakeup_path when no callbacks")
+Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+
+Notes:
+
+Other three changes:
+
+- PCI/portdrv: no DPM_FLAG_NO_DIRECT_COMPLETE for ports on a root bus, as
+  the reason for it in commit 52be9464aa7e ("PCI/portdrv: Resume upon exit
+  from system suspend if left runtime suspended"), a parent going through
+  D3cold, does not apply to them,
+- thunderbolt: nhi_complete() does not runtime-resume a direct-completed
+  NHI,
+- ACPI: power: __acpi_power_on() resumes only dependents whose _PR0
+  resources are all on.  Otherwise resuming the xHCI 00:0d.0 during system
+  suspend (xhci-pci does not set DPM_FLAG_SMART_SUSPEND) turns on the
+  shared D3C resource and runtime-resumes the root ports and NHIs, which
+  also need TBT0/TBT1.
+
+This is an RFC, because the runtime wakeup configuration of a device can
+differ from the one its driver sets up for system sleep.  For example,
+tb_switch_suspend() also arms wake on DisplayPort for runtime suspend, and
+if user space disables wakeup for a Thunderbolt router, a direct-completed
+NHI still wakes up the system when a device is connected.  Maybe
+subsystems should opt in with a flag instead.
+
+An alternative is to keep the check for devices relying on
+no_pm_callbacks, where nothing has looked at the wakeup settings, to drop
+it for devices whose ->prepare() returned a positive value, and to
+propagate wakeup_path from direct-completed devices in both cases.  That
+works for all sleep states, but does not help in the example above: the
+Thunderbolt domain and host router devices (domain0, 0-0) below the NHI
+have no PM callbacks, but wakeup enabled, so they still go through
+device_suspend() and clear direct_complete of the NHI with
+dpm_clear_superiors_direct_complete().
+
+Tested on the Dell XPS 13 9310 with Linux 7.4-rc1 and the three changes
+above (plus a fix that keeps the absent root ports TRP1/TRP3 from being
+powered up at boot, without which TBT0/TBT1 never turn off): 17
+suspend-to-idle cycles of 6-8 s with rtcwake and sleepgraph, no failures,
+111 s in hardware sleep in total (/sys/power/suspend_stats/total_hw_sleep).
+Hot-plugging during suspend was not tested.
+
+Tool use (Documentation/process/generated-content.rst): the analysis, the
+code change and this changelog were drafted by an LLM coding assistant
+(Claude Opus 5.5 via Claude Code), in a session asked to "instrument S0ix
+resume [on the Dell XPS 13 9310], and halve the time".  It traced the
+resume with sleepgraph, function_graph and kprobes/rpm tracepoints, built
+the test kernels and ran the measurements on the laptop.
+
+ drivers/base/power/main.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 88a31e09e4f3f..f36c38d1585b0 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1999,8 +1999,14 @@ static void device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	if (dev->power.syscore)
+ 		goto Complete;
+ 
+-	/* Avoid direct_complete to let wakeup_path propagate. */
+-	if (device_may_wakeup(dev) || device_wakeup_path(dev))
++	/*
++	 * Avoid direct_complete to let wakeup_path propagate.  In
++	 * suspend-to-idle, though, no firmware is involved and a device left in
++	 * runtime suspend keeps the wakeup configuration it got for runtime PM,
++	 * so allow direct_complete there and propagate wakeup_path below.
++	 */
++	if ((device_may_wakeup(dev) || device_wakeup_path(dev)) &&
++	    pm_suspend_target_state != PM_SUSPEND_TO_IDLE)
+ 		dev->power.direct_complete = false;
+ 
+ 	if (dev->power.direct_complete) {
+@@ -2009,6 +2015,10 @@ static void device_suspend(struct device *dev, pm_message_t state, bool async)
+ 			if (pm_runtime_status_suspended(dev)) {
+ 				pm_dev_dbg(dev, state, "direct-complete ");
+ 				dev->power.is_suspended = true;
++				if (device_may_wakeup(dev))
++					dev->power.wakeup_path = true;
++
++				dpm_propagate_wakeup_to_parent(dev);
+ 				goto Complete;
+ 			}
+ 
+
+base-commit: 5fcaa701fd2d61b003dff89bbb9dd29ed6123740
+-- 
+2.54.0
 
