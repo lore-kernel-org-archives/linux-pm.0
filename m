@@ -1,79 +1,123 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794643610;
-	b=QvFGewRdGTmYX0PRxWqRF7RwAwcGJalfLrPdkxEMUGFijIKYUfNM0qE5GPH6d8gKLkH3
-	 da/C6ZQLJ6z++n+P1wHGgXGoQBjXL7XKj7k27+//hXhqAVHeJErkrp6dO5uKhkjnbHd3u
-	 DrMr0UMlcsBaArhDxBzlN+dGpOb28Rp+6cUeLFihpVMGSJdlWVMTnuVRTESx5ietgmuGk
-	 5BhOy+mj8+DkIjCwmrQlMU+0SVI0BHlwik5MVEo00UTWPuFH2tcJwdk7yGTLRLEQ15Xbi
-	 eQiqIV0sZJr2+oAM4W5B/gbtBIipsQEIiXm5bKp5o0UU5LpM8iDS7hlIfDJIjiypToQ==
+	t=1794644342;
+	b=JUy81aq7enPfTFatnZR9yH5wWtjT2QibOEPPvS3aTKRhwEGOek5OsfPBe8+Ku9NXxmnf
+	 h8wTYuFekIeui+0II2dSG3zwzwOzICbVFGo6ym2onorEnMema5kzy5mqmqpQ6P6aJ86Wz
+	 CWYN0ncsOpV28x5k7/swzBQgreiEuxG+SusvASQFudgEvXAqq+v9pXGMF4remLe06iYGL
+	 02uVwms7BgENT58i9GKXJr+8azOOLg6u/VjQxImze94Z/xaoghqXOHSmKMoAyB3wjvJWP
+	 MWz9cI4FV6r5QkdfCB55HSMBdPZZCt6tHbty4lKRyx8rDKf2J1mal/n2LE867/j1gOg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794643610;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=6I/Hy8TiGryxMFy0x6WdKMhWE53+wPdp4ZPwW1N6CFo=;
-	b=kT+uwkg7/uTT1U8BtTMV2GX8mRoX3copgO8ONwJ0mY1l4eCZFN++v27NA1T/EySSkvkE
-	 FeItNQHNgP4k1JnwZOr1NyrZu4F74F/RCgrGW9fQsC3Qjwbb1+EEocLp09KmbPmroOLQv
-	 GCNKvZWpN7zVgowfC2pibhBRnOAm+Y+BDJmj2Q8r3A6zoig7PTY76ltNz/H4ptBO+DBSP
-	 52FqRSWu3OLAH5FV/DE8PyE9g1MLomtrsy8soNwPsZ6IRNJQGK1wLRUEoKZhoi/Qk8Z9j
-	 S1sm+K79ho8gUhCBciTqVeWWyzeNyU8LRAuCJh5WuHNVe5Wruzj/ulVOMHFSGyRlkJA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794644342;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
+	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Cc:Content-Type:Content-Transfer-Encoding:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:X-Authority-Analysis:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
+	b=QpoRZI8HmNA60DZ6dytTlAoJFlcNdTuctNhy1Qxt+9cJyg44mzVYHE0ua+3fhUZ+xdg1
+	 7sYxKE75+k747WvCRktct/9RAIRFLgycuY/uqXFkYNrh9Oa23Byu3FwfIF5mCcexC2vHk
+	 uxNLkpgqZTcHsbavUhfQUMTp3ql/+LZ0aEu9VH2fwP1eO8s+Wa9z+R8j4Me5GB0J3FSOh
+	 GSheda6tFzxVfBFXwxw7C2evGcyPs8cbZ3LDPxfQN9zibC7aKTzFOx4MycsXY5DfCPB0C
+	 9PNl/HvO1PCs+b8ZgNZ6Y13U1WjSjmFpJTm+2EeAPxxETsl0TgZoQGvUChQF0qQvX0g==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hjAIg1n5;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB62C606A323;
-	Sat, 14 Nov 2026 08:06:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hjAIg1n5
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794643610;
-	b=AOSSnHnZSoIeC9Ei0KxVthU+BmzrRiPn03VDVjmtrmGuf1G2HZiIJzITGlnJJwZQDDwZ
-	 mczSbrc45tQ3oIeDQt4e5QhJuQJBSoEJhLhc1P9EydS+CF2gG+8Ni93+N/sX9dNLlvy16
-	 ZzWiqHjELmm2CnEmiwDWFd76X5lISKzKeIyGRRj8U3/i3tUYDbU/0YmiQzP7OUcyzOfsG
-	 mVJIvRzLTjSWia+9ksl9L+GheEjdaeJhcKcqfYcnb7aHU5HksXCJwuxvw8qER8XR4qCOO
-	 fw7/89yhwuaw12iO6ygvtFMmFtgAA2SX+4jOhGvi8cNHzQB1Fxqe0v/sD7Rkb48+fXg==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794643610;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=6I/Hy8TiGryxMFy0x6WdKMhWE53+wPdp4ZPwW1N6CFo=;
-	b=hlWGDN3UuZuo/aGliB0W4zRTkQX4/4imQmQdkPIKKIFi7z63O3Beet3ct5iXmHXex/Px
-	 iyO3zaLK3Mcij8CQVCMDySQJq2h0xHPtkdAk85HZhjEFzP6MYXA0b9IQhbzljEAtW2Tie
-	 vYt1k98hwbAX/bGPMMXZZ7ayXEyLdxzOaSthdWNUB8cfa1qD678Eix9zC/H6IkXlF2IoP
-	 l6/G2IZD8RF1Ebn/JQhrt+NqvvADXO+sfnR8I7nvYTYWU40mWgiYenfMETLZ1mOmSp4ZL
-	 08ZvEyTud1ufqZ/wgWF4TfEslQfD8yvf0oGkMASH23SDQskUc51KoCHvHOxuJ0S0qyw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=g2lsw4oS;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=H+c3tBba;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id B4C321F000C4;
-	Sat, 14 Nov 2026 08:06:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794643610;
-	bh=6I/Hy8TiGryxMFy0x6WdKMhWE53+wPdp4ZPwW1N6CFo=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=hjAIg1n5HrkBRR94tERnZuPCGH26Eba3a20b4nPPHBQ3Dek+lbcVNAdTDC8UKncmu
-	 WtWxaaKiuXnEcMqfuyxJH08pD2G4XKOuZ5CTY48VLl7Az9zpsz91mAlDAjVutmE85L
-	 2zT8BzRIp/sDJ+UZwiA6AkyfrTKn3DKvozzEuuRf5boSqtWcar9DTG7bN+npTnvAmh
-	 a/RLkmnFuny3J152K+l2+T9bobvTVhQ/ODgMBIglQaeztlFCwY8VPfZTLkZBL/u5+w
-	 4rm2kaaqX/uqFaUZtxaF2Cwu2f7N1XQhyxaKX6rBI0D/1JdACr4fjtZFRSE2TkuR6l
-	 wGqCzMI73Np1g==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 11AC649CF2;
-	Sat, 14 Nov 2026 08:06:49 +0000 (UTC)
-From: Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
-Date: Sat, 14 Nov 2026 08:06:49 +0000
-Subject: [PATCH v2] PM / devfreq: Do not change the frequency of a
- suspended device
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AF9D606A329
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 08:19:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3AF9D606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=g2lsw4oS;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=H+c3tBba
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AE60pCR3161636
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 08:19:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=; b=g2lsw4oS0C7kW4+U
+	opEiTfMF0LUYiQau3gh3GvXBGEhya76EPmzdl7rzJp0gn488egNSxOuQFZ5glSqH
+	iVDkJ4JP4V+sZKVC6Ip+y4dVBjFTPfl8iwMBn7XuQYnARE3Subi87vAo6RrFyHgp
+	/hgH+KTJFe8gxoWNmdLnD2WacWtj3a6qSMangdB3apVGNEMNojdYzz7piRjXIi0J
+	7txafB6pHCJrviHm8yq3DmB/V0EwZssYEvGd2WUR2m+XC5NihS8uSQY23N8U2GUv
+	GwskLP9+1tcdg/P3krNLXgTa+62rB/YVQbEmGxDxjePtM/GLS5uKn7Gc7GIi9Laa
+	C2PbYQ==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hxhhjragf-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 08:19:01 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2ea71803effso15733345ad.3
+        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 00:19:01 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794644341; cv=none;
+        d=google.com; s=arc-20260327;
+        b=olhhNbcjKOVYN5ur8GDOMbRo/94ycavaY7unkKdFH1JWuZA1aFwMG+ygMhqAk7wC07
+         rXzeNM27P5Js11ogTJSkESqYJU7XEfUb3xPjGFgO0/IvsSoaZPYIQlnmufoMd6/3ROq/
+         8ftGr0o3hfw4IPI8JhmYfqmsyjGm0KZPcDcdMUOH16qonyX3gGTzWT5fnAPUVdIJYFN0
+         3C+Vuo5Issfjf7dRg6DxWigobnN80F5vaD5YeMXqalSnVY8X9XEPniofB0BwzMpCPaZw
+         ozANGxCy6IvZyLYe/BEinNTF9nTgiveZFwSaNCbVjehwfJNwX53qLQrAYpwaBCpr7ALG
+         lRSA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
+        fh=rTEXhUT2pyTGgg72wHBYpi2xAj3VGcC86MAizxLKRKM=;
+        b=E/ffVxNcqIYhrAtNtVV5V5K/yandrsPsskO6MOqhB0/7BenH9o0GJfXToXBWBtiyGF
+         Vaw1L6QYG8Cc+Am1E/ZuxbBvLLfSLygWIN2MJ8uUZK5HR7LkrEMHfW5Yl92YrmGW4v5M
+         xmjJCDDDMvFk/fHgylPtUMN/IWtJOWV6wLYZOqFi1D9Lh8dEEP/GMVmk54fa5Si1D4g3
+         0MOaaZcmVRzMH9/jZdI9DLMua+K7DSaVrI5ZPz5Igih+R+q0T40MrEoWQqdtw+PLvSo4
+         rUFQ2va0Rvzu8jZE11GD9x2Kq9DG7WW2hoJGRo29bMoak7Rb0YdpEbrk6Yas6CgP3Jbd
+         7WeA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1794644341; x=1795249141; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
+        b=H+c3tBbatl9M9cNeV66aScll2PRSkUHoDrjVvqBqfxVteSePrVA8Sqep338CEkKkZW
+         4mUriisdv8jJ9vh9H03FVY1oGrt465yg8v8DEUeYqd3+O/zhcmuOXxRbG3kr5E283Ca7
+         pYwzDnsQAgzY1G01OSE96aaPqls2EzZa4O3ibGQxFSmQoI6xHY7s0omAGN3tpHkc0fSL
+         fqnDlxBxKezPL4bVV9pjxIOdGb+qrykQL/xzNcg7qR/cz1blNTnBgJKOSthBWJac/iGR
+         1okFTlCWZPyHgrusF8Tz+tZ4s7xbyoy7U1xF3VWbDW2TQsfZk9JNkBO3vYr7k+Kaxj2o
+         gg2w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794644341; x=1795249141;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
+        b=H6qvKuox9eqsxWGLgE4Ikn6GuJ02PeFLrn4nlnDuJIeBYsHrADkyvdASu+JA50sPTj
+         39ecDedVEjXi7voJFWpJ1MxWpAf7TiwX2j2500TibCXhj+QdDO2lqo+9AKTEC8PpSwp/
+         U6Z2reT0HmfTsxoJ9oI8g2raEsIszeesQPJxK+an72I+TbOzVhOTUPSvux/A4JzcuK8F
+         slJ6XqRipgvGOCymbVmwBL99fnBWptS16ePx27kLZ+wkqJN45V/WM/+jvEptJ8kb9ZA4
+         eI1wE+8qTpDe2G5Az08gcNtXVU6nc1Ed8z8kWglSnoQxa0k0l+qGGhL1vc2lSoHxOi3o
+         WXhw==
+X-Forwarded-Encrypted: i=1; AL+hErF4qf6gQsto8TGDrHI14+6gW8DZVQrxsDOZNKQG+a1GRnhgbjNC3l4kHEcSnf5HuIunU0TDxz6qpg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8Ljk5BpFpH0xWvzfH5qdn9GtxGljDWhPqWcdKXvgYQVOeNtlpT
+	jRZTel3AmLT8O1trk+TRnW9XoG/KCZehcMP2TgQMm0yw3+LJtArfCaeczssZzd2B/fuZ7zd6hrb
+	I3hjPZhGEtez6Z8HpN5U/cXbcS5kfgKwfLf/WqPjH3NLwMg4kF/kd6PV0bj+NazyQiw4daNHwue
+	T46V5WgESvNKuaCjbBotM7J3ye+ETvwVHke6vV
+X-Gm-Gg: AYBFou2XoOozAu6Qa07cE2riPrGbITLJsDFde7EK5FmlQ6A6uJ/qFIE8wZIfo/T4ENv
+	Q9CLy4bQErBNgMhQkirdnBQabp2qSCBpAi0AsnmmX3Dy9lNcOJa5FyNCP75ELFiW4g8qzz+zpRu
+	LmP4RRnwU3r/hybuudNNLoBLnX1nG9VjmNJxiobh/67kYninBWFAkq5VYSYA==
+X-Received: by 2002:a17:902:e790:b0:2ed:379:1592 with SMTP id d9443c01a7336-2ee0dccfa1bmr52675135ad.26.1794644340580;
+        Sat, 14 Nov 2026 00:19:00 -0800 (PST)
+X-Received: by 2002:a17:902:e790:b0:2ed:379:1592 with SMTP id
+ d9443c01a7336-2ee0dccfa1bmr52675005ad.26.1794644339943; Sat, 14 Nov 2026
+ 00:18:59 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,322 +127,88 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261114-devfreq-suspend-sync-v2-1-10f0c3e14245@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/32Py27DIBBFf8ViXSpeJuBV/6PKYsBDQlXbCdhWo
- 8j/XrCrdtfdXGnmnLlPkjFFzKRrniThGnOcxhLES0P8FcYL0tiXTAQTmnMuaI9rSHineck3HHu
- aH6OnJw8m+Ja3LQNSTm8JQ/zase/nI+fFfaCfK+tno1CW4puPtT9dsR8y9iur5wPSfUYlENDpY
- ILpVl5hDjJSPw1DnLvGWWvBKxTKMGdPICXXrbKCO3AcjBcOpRPBkvrYNeZ5So+9fmHVP/5vunL
- KKQStNJMYlMS3ywDx87XYyXnbtm+YzRYhUQEAAA==
-X-Change-ID: 20261112-devfreq-suspend-sync-7ca8fc51550a
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, 
- Kyungmin Park <kyungmin.park@samsung.com>, 
- Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Boris Brezillon <boris.brezillon@collabora.com>, 
- Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, 
- Jonas Karlman <jonas@kwiboo.se>, Arun Iyengar <aiyengar1990@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794643608; l=11733;
- i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
- bh=EI0y+BLKPjFBcDmDzlalQtLpyEYoapfaSTFvZTtOijc=;
- b=L9zhbsmchZoQhWkJundFa8kMK4Nzl3fxYpvXIh1errmPjcA2/itK/yJcSmIQfyz/T9Vva/5YH
- q7CFAmTs1Z9BC1dlpq1XzbsPZuNwGWONC7yhkIqMn2m3g4s7y/ggtXX
-X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
- pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
-X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
- auth_id=1480
-X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
-Reply-To: aiyengar1990@gmail.com
-Content-Transfer-Encoding: 7bit
+References: <20261027140751.2465743-1-b-padhi@ti.com>
+In-Reply-To: <20261027140751.2465743-1-b-padhi@ti.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Sat, 14 Nov 2026 09:18:49 +0100
+X-Gm-Features: AclHuK8IXFCYeB3AWBk0BgMTxu3LSqf5mRE3cR_dlEjTborPRMXNscrVzwDLsE8
+Message-ID: <CAPx+jO_GHZopd+D_v5X1j3GO4ANxsR8eMsV9h8HGC9qdJO6b6A@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/2] Allow platform drivers to skip PM domain power-on
+ at probe
+To: Beleswar Padhi <b-padhi@ti.com>
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org,
+        johan@kernel.org, pavel@kernel.org, lenb@kernel.org, ulfh@kernel.org,
+        sid9.karanam@gmail.com, afd@ti.com, nm@ti.com, vigneshr@ti.com,
+        u-kumar1@ti.com, driver-core@lists.linux.dev,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE0MDAzMiBTYWx0ZWRfX2BiGQQMJ7T5P
+ oquEjsXp1HH9djsGTIkgqsmVf5RMDnK1E7WFstPJ+kg+WPoLB13caKWkmno43JZxEknZfkH9wMD
+ sVKd8kHAK3dBNI8VwXxyqykN8urdHeIJeErP2BZJBDuaVgg3IT/A5K+ofJGXRY/3A6GPvEvxYCU
+ edreUjieSWxsvzTvvSOrP4HbFYk3EAilWHl/ANbFGZ7R8FVc8Vv1Z7MjGX4/OTQkLnF28rUoq3i
+ 50iarbBIP3UuiPbxsu+fd2PkOL93KQM4k4QFdbq5yTG0fOEYyRvVtq3Z6KNaVMIvgbL80OWNLk4
+ h1o1Wob+hgqWFXgncKJxvqmvpKzIR6RrN9k+6OUUJaYZf5pPC+ddyFMAsF8QUF+EG8MCYOV9NPL
+ VKXPZPfpaVRbohmPY8aV74vrPMfosKJB89Z+jFryyxzIqA0JowlAmOhWUsNByKZeF/terfXx5Vq
+ MFp3fAb/GW4eYM9xF6g==
+X-Proofpoint-ORIG-GUID: uJstr_nY0VdEo_gYU-l9kW149IQylzF-
+X-Proofpoint-GUID: uJstr_nY0VdEo_gYU-l9kW149IQylzF-
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE0MDAzMiBTYWx0ZWRfX0uCcwj8fJB8A
+ wrOEyDNd1z/Ke77UuVHN11B2wRfiWkCEnCqxwrlVHk5chco2b8ViQ1Cf5hJMs2DexRP/GZrsy7Z
+ huz0N0uIkAav3zSRZ/FIogCr3ODcFdQ=
+X-Authority-Analysis: v=2.4 cv=X9rHu2Te c=1 sm=1 tr=0 ts=6af81975 cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=yOCtJkima9RkubShWh1s:22 a=VwQbUJbxAAAA:8 a=sozttTNsAAAA:8
+ a=Ht0MZJmIM3MH2Up-epYA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-14_02,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 impostorscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
+ adultscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611140032
 
-From: Arun Iyengar <aiyengar1990@gmail.com>
+On Tue, Oct 27, 2026 at 3:08=E2=80=AFPM Beleswar Padhi <b-padhi@ti.com> wro=
+te:
+>
+> Some devices must be configured before their PM domain is powered on,
+> but on DT based platforms platform_probe() always powers it on first.
+> This series lets a platform driver opt out.
+>
+> The user will be the TI K3 DSP/M4 remoteproc drivers which need to put
+> those remote cores in reset before powering on the pmdomain. A patch has
+> been posted to add "power-domains" DT property to these devices[0] which
+> is the motivation of this series as well.
+>
+> [0]: https://lore.kernel.org/all/8cb23b44-027d-4d81-b342-7eaca0248f63@ti.=
+com/
+>
+> Please provide your comments.
+>
+> Thanks,
+> Beleswar
+>
+> Beleswar Padhi (2):
+>   PM: domains: Honour PD_FLAG_ATTACH_POWER_ON for genpd
+>   driver core: platform: Allow drivers to skip PM domain power-on at
+>     probe
+>
+>  drivers/base/platform.c         | 7 +++++--
+>  drivers/base/power/common.c     | 5 +++--
+>  drivers/pmdomain/core.c         | 5 +++--
+>  include/linux/platform_device.h | 8 ++++++++
+>  include/linux/pm_domain.h       | 4 ++--
+>  5 files changed, 21 insertions(+), 8 deletions(-)
+>
+> --
+> 2.34.1
+>
 
-Once a driver has called devfreq_suspend_device(), its device may be
-clock gated or powered down, but devfreq can still call ->target() for
-it: a PM QoS or sysfs min_freq/max_freq change, a devfreq cooling state
-change, the userspace governor's set_freq, an OPP notifier or a change
-of the passive governor's parent all end up in devfreq_update_target()
-whatever the device state. DEVFREQ_GOV_SUSPEND only stops the load
-monitoring of the governors that poll.
+This series looks good to me and solves the problem in a nice way.
 
-This is fatal where the clock is managed by firmware that has to access
-the device's power domain to change the rate. On RK3588 with the GPU
-core clock moved to SCMI_CLK_GPU (not in mainline yet), TF-A programs
-the GPU GRF to set the rate, and with the GPU power domain off that
-ends in an asynchronous SError.
+Please drop the RFC and make resubmission so I can pick it up.
 
-Drivers cannot filter these calls reliably in ->target(): the suspend
-count changes without devfreq->lock, and devfreq_suspend_device() and
-devfreq_resume_device() only take the lock around the suspend and resume
-frequency changes, so an update can run between a driver's check and its
-clocks going off, or be overwritten by the resume frequency. Returning 0
-from ->target() without changing the rate makes devfreq record a
-frequency the device does not run at, and returning an error loses the
-request.
-
-Change the suspend count under devfreq->lock. While it is positive,
-devfreq_update_target() neither evaluates the governor nor calls
-->target(), it only records that an update was asked for.
-devfreq_resume_device() restores the resume frequency, or the current one
-if an update is pending, within the current limits, then runs that update,
-so requests made while the device is suspended take effect on resume.
-Polling governors are left to their next poll, as the driver has just
-reset their load data.
-
-The passive governor's parent updates are not deferred: exynos-bus
-devices must follow their parent to its suspend frequency, also at
-shutdown (exynos_bus_shutdown()).
-
-If devfreq_suspend_device() fails, it resumes the device again, as some
-callers abort their suspend without resuming, and a later
-devfreq_resume_device() does nothing. A caller that ignores the error
-and powers the device down anyway does so with devfreq resumed. If the
-deferred update fails on resume, the error is logged and
-DEVFREQ_GOV_RESUME is still sent.
-
-Suggested-by: Boris Brezillon <boris.brezillon@collabora.com>
-Link: https://lore.kernel.org/r/20261110140232.061d6844@fedora1.home
-Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
----
-This comes from the review of a panthor patch [1] that kept devfreq from
-changing the RK3588 GPU clock rate while the GPU is suspended by
-filtering the calls in its ->target(). Boris Brezillon pointed out that
-a driver cannot do that without races, and that the devfreq core should
-not call ->target() between devfreq_suspend_device() and
-devfreq_resume_device(). This patch does that in
-devfreq_update_target(), which every governor and every core path (PM
-QoS, sysfs, OPP notifier) goes through, so no governor needs a change.
-
-It applies on top of "PM / devfreq: Resume at the frequency from before
-suspend" [2], which changes the same lines of devfreq_suspend_device().
-The panthor side, "drm/panthor: Suspend devfreq until the GPU is first
-resumed" [3], suspends devfreq from probe until the GPU is first
-resumed; without it updates are not deferred during that time.
-
-ufshcd already skips rate changes in its ->target() while its clock
-scaling is suspended; with this patch devfreq stops calling it in that
-state. No other driver was tested.
-
-Tested on an Orange Pi 5 (RK3588S) running a v7.3-based kernel with [2]
-and the panthor patch, GPU core clock on the firmware-managed
-SCMI_CLK_GPU with a 200 MHz opp-suspend (the configuration of Jonas
-Karlman's RFC, not in mainline): min_freq, max_freq, the userspace
-governor's set_freq and the cooling state written while the GPU was
-runtime suspended no longer end in an SError and take effect when it
-resumes; the userspace governor without a set_freq resumes within the
-new limits. After each of two s2idle cycles the GPU was still suspended
-at 200 MHz; a trace after the first showed no devfreq polling. A
-minimum frequency removed while suspended (a pending update) is left to
-simple_ondemand after resume: the first ten samples were all above
-1 GHz under load. 200 GPU jobs ran with no warnings.
-Not tested: the resume of a passive governor device (the board has
-none) and a suspend frequency that cannot be set.
-
-Developed with Claude (Anthropic), which wrote the code and the commit
-messages. I reviewed every change.
-
-[1] https://lore.kernel.org/r/20261110-panthor-suspend-clk-v1-1-53457050e51e@gmail.com
-[2] https://lore.kernel.org/r/20261110-devfreq-resume-freq-v1-1-90de450ccbd0@gmail.com
-[3] https://lore.kernel.org/r/20261112-panthor-suspend-clk-v2-1-62e1b168052d@gmail.com
----
-Changes in v2:
-- Keep only the suspend count, now a plain int changed under
-  devfreq->lock, instead of a separate suspended flag that could
-  disagree with it when suspend and resume race (Sashiko)
-- Resume at the resume frequency clamped to the current limits, then
-  run the deferred update: the userspace governor without set_freq
-  stayed at the suspend frequency (Sashiko)
-- Don't defer the passive governor's parent updates: exynos-bus
-  children must follow their parent to its suspend frequency, also at
-  shutdown (Sashiko)
-- Drop pending_freq: the deferred update runs like any update_devfreq()
-  call. If it fails, resume logs the error and still sends
-  DEVFREQ_GOV_RESUME (Sashiko)
-- Undo a failed devfreq_suspend_device(), as rk3399_dmc and lima abort
-  without resuming; an unbalanced devfreq_resume_device() is a no-op
-  (Sashiko)
-- Leave polling governors to their next poll after resume; the driver
-  has just reset their load data (Sashiko)
-- Link to v1: https://patch.msgid.link/20261112-devfreq-suspend-sync-v1-1-af64603ef43e@gmail.com
----
- drivers/devfreq/devfreq.c | 74 ++++++++++++++++++++++++++++++++++++-----------
- include/linux/devfreq.h   |  8 +++--
- 2 files changed, 63 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 2cc4492f53c8..64fc88cdf6a2 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -407,6 +407,16 @@ int devfreq_update_target(struct devfreq *devfreq, unsigned long freq)
- 	if (!devfreq->governor)
- 		return -EINVAL;
- 
-+	/*
-+	 * The device may be powered down while it is suspended. Leave it
-+	 * alone, devfreq_resume_device() does the update. A passive device
-+	 * (freq set) still follows its parent, as exynos-bus needs.
-+	 */
-+	if (devfreq->suspend_count > 0 && !freq) {
-+		devfreq->update_pending = true;
-+		return 0;
-+	}
-+
- 	/* Reevaluate the proper frequency */
- 	err = devfreq->governor->get_target_freq(devfreq, &freq);
- 	if (err)
-@@ -871,7 +881,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	if (IS_ERR(devfreq->opp_table))
- 		devfreq->opp_table = NULL;
- 
--	atomic_set(&devfreq->suspend_count, 0);
-+	devfreq->suspend_count = 0;
- 
- 	dev_set_name(&devfreq->dev, "%s", dev_name(dev));
- 	err = device_register(&devfreq->dev);
-@@ -1145,19 +1155,22 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
- int devfreq_suspend_device(struct devfreq *devfreq)
- {
- 	unsigned long resume_freq;
--	int ret;
-+	int ret, count;
- 
- 	if (!devfreq)
- 		return -EINVAL;
- 
--	if (atomic_inc_return(&devfreq->suspend_count) > 1)
-+	mutex_lock(&devfreq->lock);
-+	count = ++devfreq->suspend_count;
-+	mutex_unlock(&devfreq->lock);
-+	if (count > 1)
- 		return 0;
- 
- 	if (devfreq->governor) {
- 		ret = devfreq->governor->event_handler(devfreq,
- 					DEVFREQ_GOV_SUSPEND, NULL);
- 		if (ret)
--			return ret;
-+			goto err;
- 	}
- 
- 	if (devfreq->suspend_freq) {
-@@ -1173,10 +1186,15 @@ int devfreq_suspend_device(struct devfreq *devfreq)
- 		devfreq->resume_freq = resume_freq;
- 		mutex_unlock(&devfreq->lock);
- 		if (ret)
--			return ret;
-+			goto err;
- 	}
- 
- 	return 0;
-+
-+err:
-+	/* Callers may abort their suspend without resuming: undo it */
-+	devfreq_resume_device(devfreq);
-+	return ret;
- }
- EXPORT_SYMBOL(devfreq_suspend_device);
- 
-@@ -1190,30 +1208,52 @@ EXPORT_SYMBOL(devfreq_suspend_device);
-  */
- int devfreq_resume_device(struct devfreq *devfreq)
- {
--	int ret;
-+	unsigned long min_freq, max_freq, freq;
-+	int ret = 0, err;
-+	u32 flags;
- 
- 	if (!devfreq)
- 		return -EINVAL;
- 
--	if (atomic_dec_return(&devfreq->suspend_count) >= 1)
-+	mutex_lock(&devfreq->lock);
-+	/* Count 0: a failed devfreq_suspend_device() already resumed */
-+	if (!devfreq->suspend_count || --devfreq->suspend_count > 0) {
-+		mutex_unlock(&devfreq->lock);
- 		return 0;
-+	}
- 
--	if (devfreq->resume_freq) {
--		mutex_lock(&devfreq->lock);
--		ret = devfreq_set_target(devfreq, devfreq->resume_freq, 0);
--		mutex_unlock(&devfreq->lock);
--		if (ret)
--			return ret;
-+	freq = devfreq->resume_freq;
-+	if (!freq && devfreq->update_pending)
-+		freq = devfreq->previous_freq;
-+	if (freq) {
-+		/* Limits may have changed while suspended */
-+		devfreq_get_freq_range(devfreq, &min_freq, &max_freq);
-+		freq = clamp(freq, min_freq, max_freq);
-+		flags = freq == max_freq ? DEVFREQ_FLAG_LEAST_UPPER_BOUND : 0;
-+		ret = devfreq_set_target(devfreq, freq, flags);
-+	}
-+	/*
-+	 * Run the update deferred while suspended. Polling governors
-+	 * re-evaluate after DEVFREQ_GOV_RESUME, on fresh load data.
-+	 */
-+	if (!ret && devfreq->update_pending && devfreq->governor &&
-+	    !IS_SUPPORTED_ATTR(devfreq->governor->attrs, POLLING_INTERVAL)) {
-+		err = devfreq_update_target(devfreq, 0);
-+		if (err)
-+			dev_err(&devfreq->dev,
-+				"failed to update frequency on resume (%d)\n", err);
- 	}
-+	devfreq->update_pending = false;
-+	mutex_unlock(&devfreq->lock);
- 
- 	if (devfreq->governor) {
--		ret = devfreq->governor->event_handler(devfreq,
-+		err = devfreq->governor->event_handler(devfreq,
- 					DEVFREQ_GOV_RESUME, NULL);
--		if (ret)
--			return ret;
-+		if (!ret)
-+			ret = err;
- 	}
- 
--	return 0;
-+	return ret;
- }
- EXPORT_SYMBOL(devfreq_resume_device);
- 
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index dc1075dc3446..a1bd70449e1e 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -166,7 +166,10 @@ struct devfreq_stats {
-  * @stop_polling:	 devfreq polling status of a device.
-  * @suspend_freq:	 frequency of a device set during suspend phase.
-  * @resume_freq:	 frequency of a device set in resume phase.
-- * @suspend_count:	 suspend requests counter for a device.
-+ * @suspend_count:	 suspend requests counter for a device, protected by
-+ *		 @lock. While it is positive, frequency updates are deferred
-+ *		 until resume, except the passive governor's parent updates.
-+ * @update_pending:	 a frequency update was deferred while suspended.
-  * @stats:	Statistics of devfreq device behavior
-  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
-  * @cdev:	Cooling device pointer if the devfreq has cooling property
-@@ -209,7 +212,8 @@ struct devfreq {
- 
- 	unsigned long suspend_freq;
- 	unsigned long resume_freq;
--	atomic_t suspend_count;
-+	int suspend_count;
-+	bool update_pending;
- 
- 	/* information for device frequency transitions */
- 	struct devfreq_stats stats;
-
----
-base-commit: b999ac4e2480b97a331654921bab1a8c2be3b2f9
-change-id: 20261112-devfreq-suspend-sync-7ca8fc51550a
-prerequisite-change-id: 20261110-devfreq-resume-freq-e42eaeb6f8f8:v1
-prerequisite-patch-id: 36df3d7446ebdbd5093a58ba2aa8a83d2ecf9cf2
-
-Best regards,
---  
-Arun Iyengar <aiyengar1990@gmail.com>
-
-
+Kind regards
+Uffe
