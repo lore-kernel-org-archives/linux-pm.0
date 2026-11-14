@@ -1,96 +1,115 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.45
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.158
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794675437;
-	b=azuN92yb9m/42mKNecMkpgCENZtsMq5kGMnhXH28PSZFHpNygYDLQweF4NOFy8d0LsSs
-	 moa9MuMtvPenbqvR/yrRfer1o3vKVhm6iKDLRaUvgYSrT7YCyIwZ3QGKYCwxyE0ddwTEd
-	 amIkrIPHRrVROyGqtwp9T4pAvOnR0YOKLBOF9svMNec13iddhTCNn2Udn+eH85EWdAYCH
-	 t2Q1yf1svunWPDercOgnsO0jsYTGEQAWXdIPJVkMTePYm6eK/G3YdCKzQw0O8Gijjk2dF
-	 a54qgMpS/tLUV+9BFMqXmFVhDyzh2Wi6QeNVv0i19tS50pPA8fF6NIKgmsqfZ7nT44w==
+	t=1794679080;
+	b=acnyH5uUW1XimjyceFzXED+WlKocmC2D5gGxmj/VXaJVFT3DmB0EgZOYCrL9sWgh8dTU
+	 Ot5ksaUgqJw6Fl2nPPIrGNNwA+wBxf/irusoYdwidtvu0BFZK+WzxNXZHxrf+sJC7Gub5
+	 LXrXzNmmZGilh5NWTTzQ7K0TSWz/I5JzQxebnh5OLvulwbFvDFvvKUeA9hulfsz8QIPSG
+	 g67eAQILqehgydvlY3xXJG6K7WDn3RDGoHr6T77mqBkN5u6vN1g8yDbz0xzWilVNkQ7xs
+	 ZT69UbB+W0dzosvWTI8gZic4PRyIAlHvoDAd3zzdBxsqlzLXO1SeL9NvvY5ghYbuoVg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794675437;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=wr4kdk8C2zCB8/tTYG73CAJVXLDQ9d7LAKTuJISMvv0=;
-	b=lbgIra+ozqb1YoO/slvavLIndhuOYkASEOAHYHfG7bJjboA5mKnI57wVM+eWwIfuaXBV
-	 +EE0aXm69UhyMx+dFlmwwgv+8LLQShZjQsyY10u+AgWTTx5jCRkRRvEsRe+GDzlPkG0Gg
-	 iTnb3itQy89baW/d+xT7D1z0qxn1Y/EuN9l+2x/5blWULl2/rfU0cA+9XYYxNNfgnKLu0
-	 E6KKMBypQDQEvvIriLI8oUhVXQqk2P1m1WYkb0pyTLcKU9JiXOjJxSvVrUfmdYD7jQkId
-	 3sQ3qNzz6Ud7bDcHef0tD66YQw29NONvrWsSZyNIi1aA1eAwBlfdiz646i1y0YFtvkg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794679080;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
+	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
+	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
+	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
+	 References:Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=CI3BCrrM6S0a2tk2nkE8USBufOr5oglVDVMGzlb/u8Y=;
+	b=yQqcdXCo8OIjIzNOhguLCyTpJOHfC42QWReS+M6i3SYkNJW2vc1bBoIbQmF0Zej77dkp
+	 PInqss1VdEvzL1YEPsgawuU4g3jhS4UDRPI7l61wlIa03eM72f9sj/DO58YW9BANObQO7
+	 IdUyKBAv8yFTak+Ym78HGWkw1/YL01a0rHad0Is6teWAbjK+UbEuNvqpdtMQAJXb7rbjZ
+	 WSW0YTdJqWM+2S57sWG1AD4uWwhfAakf2ERWEmnhNsueYhpa8+rt5DIt8A/9zoVH6o4pi
+	 A7vZAkBjO7bfROJPHv59kAlzrVO0glBa3CvuFThvgTTnh45+pZjDJXXRuTTWoawFJ9A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=k4Ei6ecn;
-	arc=none smtp.remote-ip=209.85.167.45
-Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com [209.85.167.45])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=none header.from=jaseg.de;
+	spf=pass smtp.mailfrom=jaseg.de;
+	dkim=pass header.d=jaseg.de header.i=@jaseg.de header.a=rsa-sha256 header.s=fm3 header.b=vfgK+1SH;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=H7H2Yym+;
+	arc=none smtp.remote-ip=103.168.172.158
+Received: from fhigh-a7-smtp.messagingengine.com (fhigh-a7-smtp.messagingengine.com [103.168.172.158])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6F8F606A89E
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 16:57:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C6F8F606A89E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBFF9606A33D
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 17:57:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EBFF9606A33D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jaseg.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jaseg.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=k4Ei6ecn
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5c17a1775fcso1054770e87.3
-        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 08:57:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794675435; x=1795280235; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=wr4kdk8C2zCB8/tTYG73CAJVXLDQ9d7LAKTuJISMvv0=;
-        b=k4Ei6ecnHRY1e/0/w/PKq2+Ze9Gqhi+rtn0BBcjUFOYg/bPyzuVdefRH0j6dwoFUG5
-         TaH5kVxvrdC+S9ih5z2ZHBacCqygR0l5xxeqFcB0Fqrh2da9oFtMa7oM+zuN7PHdPWWq
-         V5aYzDU9vBVd2Ai7fjK2bivx91LbCRa9qJhHBFicUGUcwnEiLG3OeZWZT/qmGbJrzn9d
-         6PTVrjages/NJZ4ZM0ra3z98iy4yeO4kqsJX1r6LPkA/htBqh2bgGnH6VHU6VeoBudm6
-         d0hkTtyzQzv+VcEODbRSpoD5RhE9KLeENMzR450c9OebWnARW/JA61n4EjA8PfOea9S1
-         XrCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794675435; x=1795280235;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wr4kdk8C2zCB8/tTYG73CAJVXLDQ9d7LAKTuJISMvv0=;
-        b=CHUdn6Gsy9wFRLCG/eLfG+UGEP6nhvl94cJqxi5Xvpk6QJ3XSr+Dl9lbLeKRjdBjww
-         7RngrtqLOJeXbJwVNp6o+QvAQaW9ZyV0utZjdx5JQOXMt9VpaNDv4NpRF8IJ1nhar+7U
-         7pDHTQWvZlYT9o5O8wyBT3CQppBdfhXxBAnFbsn1hsn1XnsMUKsHOyIeBXelCJVOaLNM
-         job+1d95Ger38sbqREN0/Q0ntX79jthW6py3B44z/osB8PrICcEdAwWe+7kmr0NkkjRu
-         DBLMydI+xD4lT+WtSdstY5/U3SCOTqfETW62mIQ23Cncs3Qt4nUJTjjzjArNGHO3C/eF
-         yTgg==
-X-Forwarded-Encrypted: i=1; AL+hErFJzE4ZCwn4So/zb6xuDXHpYlZV44N/4ZUraIi7AI2bEM+bhN6bm5wifr57vSB4pvLno8UfEsvrYg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/bKFXo51Y71NDt0rj593qcg3Cw2OAlgzF+y8N6R6OEjxsMLrIl
-	L+s+kLz+cAgypwxOO24IsPOT5PF+aC/HQdxAuAV5Snpp0pSksrM5Gvrp
-X-Gm-Gg: AYBFou1DRiBvm2IYgdOVQ1pLuexJ+ZWeBOAGXIkbOS+fXI8u8DHGFwyMCuRY6p3ENZ/
-	bzINff+ljSaYZ04BbaHZDEEeS9GYeU9zRj7t5GMpF5tWpMlykukZN/i02/d1F3D6sCDnlwnFrrJ
-	mJ2/udDj7gnrrmWY4zFUoQfiiw/X33cEHt4NlnD2iDTaH3xXAtsqD42eYNQcltKNLLepPh2jgrN
-	Whx/dW4YOyo5pq6pWRbTrtbtgcgl801iGjpz5exUb4/aeF3PX1FJGqXz/6PlDoAKdWZXzHIu5lg
-	v8suYWq2XeYZ6HS3ajLVxO2tf82RZIIWdloXCAynoIL6sjiTl+ZqblmsWQH2yYRp/ndfP1vb9hv
-	QG6nbV5jTqqnLhtekVpVdOE+h7cRMiELWrPaFjSrMxif69lh5ilsqUQvdS79fTPROVK8U13ecW6
-	WGttMjxfOeAZxXKDSs5T00PT+y7YOQhRB7+AZ8PKLUycaMnt9Vs56NaRnfZb6H9r9VdcSv33ISs
-	JdFgc5cfmyE/4sgDfj1ce86iT8VA55RoZNUlQQWG5Sg2WrER2fF/SuEojpn0qrSQR5klangIkzk
-	lNLt/quSjsq230vLdkCrJ/p/9gm+GeqE0Aofwo22ES2PvRuGkyGs4zUqamRca4DkkczF6SZfqFs
-	d8vdEtJzK2Z3CDctnoDT7yCk09J39SOG8
-X-Received: by 2002:a05:6512:618a:b0:5c1:5278:f9b7 with SMTP id 2adb3069b0e04-5c170b1c7d2mr2300190e87.20.1794675434789;
-        Sat, 14 Nov 2026 08:57:14 -0800 (PST)
-Received: from SafoStation ([31.40.65.49])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5c1712dad26sm1792051e87.8.2026.11.14.08.57.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 08:57:14 -0800 (PST)
-From: Safocl Stollmannovic <safocl88@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v3 14/14] suspend: fix duplicate extern declarations
-Date: Sat, 14 Nov 2026 20:55:54 +0400
-Message-ID: <20261114165612.368785-15-safocl88@gmail.com>
-X-Mailer: git-send-email 2.56.1
-In-Reply-To: <20261114165612.368785-1-safocl88@gmail.com>
-References: <20261114165612.368785-1-safocl88@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=jaseg.de header.i=@jaseg.de header.a=rsa-sha256 header.s=fm3 header.b=vfgK+1SH;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=H7H2Yym+
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id ABE4F140003E
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 12:57:57 -0500 (EST)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-04.internal (MEProxy); Sat, 14 Nov 2026 12:57:57 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jaseg.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1794679077;
+	 x=1794765477; bh=CI3BCrrM6S0a2tk2nkE8USBufOr5oglVDVMGzlb/u8Y=; b=
+	vfgK+1SHr9oiV/4fkfj4w5rPn5LPF0RzZaCYEKTaRdFA+ASeCIWTT2xFGxKoj+8j
+	MR47G8foJ0qc8f5KfdAIeWf7wAAqdjDkrLFHfPW2ygSIp2kfj8D3U3z8mgGFpUOG
+	FvdDLYURXhAHTkGRZboY4gTLzffF3DlJTk9jNXJQe93+Ja+ayHOIOhEeXFZDmPfm
+	HZgRS/99rP22FKMdNpv5jCiK5kj7iNwC6ofJmK+it/kxojXlhaU+AWyWHSwGWol8
+	PBOyUUkK6WNyxBMQjIoHEOuCou+jUMutryNMCEr7KphI5mm7JYrCeS3hN3VFNEAV
+	SeRIZdfqYz9G5g2yvaHYQA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794679077; x=
+	1794765477; bh=CI3BCrrM6S0a2tk2nkE8USBufOr5oglVDVMGzlb/u8Y=; b=H
+	7H2Yym+xKk/bZedSTt+LxKY4x4H7agPWlt+FeKxnGBd8rIYNkHJKDMcvF3ZMCiHH
+	1jWor4fgrGyO5vqFtOQRAUKg3S+wa84bzr16wqbixTLqbZ5E74oAJc/imu+1JsEb
+	plpsJ0W2nOXmsPz9UV9zcSZ077cKSgIuPZZV6BcXWbRpRW+P8uRJH9Ie1jQ5XkvU
+	b/D6J+umSaK518NMBwj3daRV7sv5B+INBBLK2Z6LATkwFnPseTR4KUXUwMMyH640
+	gvumqO3ocbvEs9U7DdT/H5Lmv/UFDIgtAOLcaOe4+BGlexn1zEF67kZFHhbMTqlR
+	Aywvw+LB3eQgS2z/jxIWg==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=jaseg.de a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1794679077; d=jaseg.de;
+	mf=PGxpbnV4QGphc2VnLmRlPg==;
+	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
+	s=fm3:rsa-sha256:w6kY2dtn1Kju96a+eVF/xWlRelA/fuBkdNLl/WAoQfqW4M1
+	j+x/g4mxuxqwzKXHf1/U5uCG6Jos0bXtxcZH0nQxo9FdTRSSSDZEHfwcUZ76Fs5G
+	8zzt/lLLtepm8zNf+9tRcdKdynn+C2OPSocKL2D88sq/GoIVd47m9M1341kE4gGp
+	5cIIWMOflxwqMlPJW4tBSiX7SycOxaGxuzduP8YdA+ZDl2Gg73tC/AQtoEnUBbam
+	uQyOIWDC+S6dVtFAnlNzJozgaxrANDnbL3X3qXf7ZSgcbz4vUgivV9+gCb40lQ+Z
+	+cuJx4537lOzkBFPqLarKj/VSJdMNy6iivrrOGA==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=14;
+	hn=cc,content-language,content-transfer-encoding,content-type,
+	date,feedback-id,from,in-reply-to,message-id,mime-version,
+	references,subject,to,user-agent;
+Message-Instance: m=1; h=sha256:fY7X0z7LldTHt79gxHxiZCmzIZljlhzw73fCozI9lZ8=:nt/UwJpbWE72ZU0e93SnePpLVAMG8C5iQifbZ66MrbM=;
+X-ME-Sender: <xms:JaH4ak6YMCHRarwrthSeaLFa9bBUIbTJ-8DBLvgy1EfuZxt8Ylgb0g>
+    <xme:JaH4ahtYoJOflPYz5UW8TXXeGDmAG7PtmS2sb-96ZUGSUad9fryv28GtlWCmQFnvu
+    73QxFQz1vl2t15AVu7i7k5kSqwRRMA3ttNHSgB0Jq7rP3jQdvZ_uA>
+X-ME-Received: <xmr:JaH4au3-olXUsQpTUXRM4L2q9sRsP34ZTSwhi5FHT9iUGDrbZTVK0FNEOCT3sgX_5j8N24yHJ46In9Sj2ULe_GtU8BikwhmxyooH1Ns>
+X-ME-Proxy-Cause: dmFkZTEhm5E7Z6ZRBlBV9g4Ry/msUZzJ0LiKeTMEFVUrdxGjSFt2m64gXlT3aTVC6dPQTm
+    ZfSUA+D9IBMj2GWSt9GdG/VSDb9cxDNJjG3uSarSdzLqxo9hhySslKaEf5HIuKHgwP5wz9
+    Z9xboVdHmRusbbANNl8Dxx9TO5uv7nInEQ6u3rDubRcrReTC9VP9sQ19qx259xWy0kE6tG
+    UaAYUz8mH2LBvGQ5hyqMpcp4BSdYV1hJs1zwRgFFFWthGQKut5S6my2FAR0l0VubWlDYCq
+    88wxMwOrNat82x+QX4IeDz34FHRuQsC2DQDyteYdaPMpp/yNuikKlq0p8RZErYOB0ImrCv
+    fXg9Ly4QkZVbGdjiaEjkAhfXlLGh4jUuv6BZQu6KR/uEIc/uy5RpncCI71r7EC7YBJ99U6
+    ZSe3hrtkv8YiWdKfd9+zBlHourlhiZle4dMd7Qt6RN3FrWmCvio31l40vLKaAwsV4lSprs
+    JHFBW1CY+ZDwDiIGGAQCsW+SHeCXBpck3TkitzKCS8dXCGrIiS8bdbBHCmY3Y+yXTDcVIJ
+    lo+npnorKIuY3O8nzpjroIsN60ssIIJEfXGKcpJwEFe8/VTq3JeVjW9IKFgvEqKYUSGXNl
+    uV8Hxe6jME8GfR1BXyvKOIxktYNHVZLpsFWem31zwK9eQ07YSm6lyjW1Bjnw
+X-ME-Proxy: <xmx:JaH4aiq2maLzwQqOQHPE8Lz1IgLZ4oPbHP_NLfGfmBJc-6WrggbUkw>
+    <xmx:JaH4amLiXvaWUUNc1lrv0rEkBLt62kZsDeUs_YwigsG7eycjPLie9A>
+    <xmx:JaH4amRBIf_YBrcS_H40ZRm01RIaelC-wxTLQzCiD-VqLFGlB7kLXw>
+    <xmx:JaH4amO9sUtogLsb29weYAMkVW-Ar8j4WpcXo0OZfSkMIym2iSeZ3A>
+    <xmx:JaH4as3N9mg23iF1WTWgpPMNcHSLxWCtPL3sPsEU6swnyDMCYVB4h7cs>
+Feedback-ID: i60a14417:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sat,
+ 14 Nov 2026 12:57:55 -0500 (EST)
+Message-ID: <f6d30c90-05cd-48ad-a278-3277eaafd207@jaseg.de>
+Date: Sat, 14 Nov 2026 18:57:52 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -100,38 +119,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] pmdomain: core: Wait for device link removals before
+ dropping genpd->dev
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
+ Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ stable@vger.kernel.org, Saravana Kannan <saravanak@kernel.org>
+References: <ivkwuomer5vsajf2lq6otpgxwqljkwooh3p7e5ne23j37pv22t@iluamo6gxmq3>
+ <20260731131002.142671-1-linux@jaseg.de>
+ <CAPx+jO8DKyuNMEKCHyKzw5DS62U2Xu6mcL3BtitRwrYP0gad0A@mail.gmail.com>
+Content-Language: en-US
+From: =?UTF-8?Q?Jan_Sebastian_G=C3=B6tte?= <linux@jaseg.de>
+In-Reply-To: <CAPx+jO8DKyuNMEKCHyKzw5DS62U2Xu6mcL3BtitRwrYP0gad0A@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Compiling a kernel module with a C++ compiler results in a "duplicate
-extern specifier" error.
-This occurs because the code contains `extern asmlinkage`, and `asmlinkage`
-expands to `extern C` when processed by a C++ compiler.
-Since the code already contains sections that respond to a C++ compiler,
-I believe it is a perfectly valid approach to gradually move toward a state
-where kernel modules can be compiled by a C++ compiler without any issues.
-The `extern` specifier must be removed.
-
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=222257
-Signed-off-by: Safocl Stollmannovic <safocl88@gmail.com>
----
- include/linux/suspend.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index a38150277..b97af3420 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -385,8 +385,8 @@ extern int swsusp_page_is_forbidden(struct page *);
- extern void swsusp_set_page_free(struct page *);
- extern void swsusp_unset_page_free(struct page *);
- extern unsigned long get_safe_page(gfp_t gfp_mask);
--extern asmlinkage int swsusp_arch_suspend(void);
--extern asmlinkage int swsusp_arch_resume(void);
-+asmlinkage int swsusp_arch_suspend(void);
-+asmlinkage int swsusp_arch_resume(void);
- 
- extern u32 swsusp_hardware_signature;
- extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
--- 
-2.56.1
-
+On 11/13/26 18:47, Ulf Hansson wrote:
+> On Fri, Jul 31, 2026 at 3:10 PM Jan Sebastian Götte <linux@jaseg.de> wrote:
+ >> [...]>> Fixes: 18a3a510ecfd ("pmdomain: core: Add the genpd->dev to 
+the genpd provider bus")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Jan Sebastian Götte <linux@jaseg.de>
+> 
+> I decided to apply this patch as is, for fixes! Apologize for the delay!
+> 
+> Let's try to come back to this and see if there is a better long term
+> solution, along the lines of what Saravana suggested.
+Please feel free to CC me when you find the time to write a more long 
+term fix, I'm happy to test over here.
