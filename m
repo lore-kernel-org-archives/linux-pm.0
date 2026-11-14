@@ -1,35 +1,35 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=180.76.5.236
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794665266;
-	b=T1g3WpNFP6yxJHcEKHfHU2vnNLIQ0T3Zq6mTLohlmZ16vsarisj2MmokLW5ShyJROYEA
-	 BGU6Yjrb7B7Z8KJml39qSQni4NSJDoVvmdzRhOqAeiae8unT+YQWWLjRao4ScXuHFQjMe
-	 Wdd2ODbimVirDNtKe+te07VNE6JG3J0kFsH+Zfy8BcS23/RquloFweZprOt9hahS78yg/
-	 R8jytqk4T53DVBDCq1mUqgFI4XqXZ6nsDT4LjtGBKUfrVqXGVn2FqUdcGKVuc0MvS/SM6
-	 4FUZifcZ++IHtqxiaI5Um540qnD0qgye7jhwSW1jxpntM8/cTM7xYH+bQ8rQKhzmgoA==
+	b=kEW8lOjtAkwvLuJAIAJo6H9k9VpOcsOYxx5Vbbf/sx0q+d5gkQ4NO+UKtPPNbwnvNvJd
+	 BP/2s7uFay1FKG2cZ6pdX1VuXu1mRYKRXA1vxZFmjdOuGKDC1SyiF+loxJfE+SfxLmehw
+	 BkuagwHnQAlwvRAGsvdHZVA9xM8ExsFuwTQxyL6Tx46G5Jlb07TRgb/YcS01kGKOrR4yt
+	 t4eO7jnFcwvm3G4WGnx5D96s7BRxyz/uIjEDSCB7VkKMwEKa5Bt7iw6tbUjwRvup4vrqA
+	 CauTDzYLo6JI94h029XL6MDU5L/otlrhla+9IvkuUcXTdCo000X0ZkjrPQMG5ITy+IA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794665266;
 	h=DMARC-Filter:X-MD-Sfrom:X-MD-SrcIP:From:To:CC:Subject:Date:
 	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:Content-Type:
 	 X-Originating-IP:X-ClientProxiedBy:DKIM-Signature;
-	bh=C55eBjErjmkrF+e07ycv3yHO8XvAxs6AGnnYfh5Cldo=;
-	b=iyVr8jzEnAb+aCHQB1wIwhp+7WcbdoLsIBoLHTGE/BDZApTwcySSl5/m230Ffhy5Dqzn
-	 +yns19CA132KCfRP4FRKVtesAT5I0FfIXanzXcIqo3yDmfu8bhcmPnB2B7aMfxorUH5Fc
-	 rMGh1qBQvEC3vZdD26yqdpG3DiGrncEZ5ZDylyYGVrN71Zazg9yNN+7Sl1hWe+6fDsGrf
-	 uyiBd6RVjMk3EqV8F1oHILtAixD+unYTACdxOsEyWRA3qMag7TtYICdYb9e86hetv5JXP
-	 NdHgPHX8Ugw5H4u0z7jDpbG0mQsigA5WPPsM3VuhSjpULjam/oJDoCOB6m4rzoAkJtA==
+	bh=tP1acQlRWf6l7bmcZWZ2wj1d0QcgiPDNN8cVBdGDvOc=;
+	b=3umHLJJ/Sm1Qwd1e6rFFXRWFhySsy1fZj3Lb6+MsW9i6QABlxGJ/WIldYAEuVLPJANO0
+	 BbKn6RKNFvIMljnWPi0OxwA87Ii1jPBQyczTQasPCu9RL75h39S/tjwBFGx92yIuXk5zB
+	 RTP4ej4vwTNclvx+oqWshl1N2hfZC9Nv84QHyd+r6mkovrPPbKyZbGJL5p6t3drHqk8hU
+	 brazo1IyD8C+VV7mrd0cMg+PCzvEf6fVXGUXpEGMvrLxL743SIPyJdkowTxPMWt7SVrZ9
+	 0vgvDZ+oeQn1ZCOM6jQFosS+CV67kJkBccH+cEa8crnwJIfBGWh3M7dj1q6TnahzERQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=baidu.com;
 	spf=pass smtp.mailfrom=baidu.com;
-	dkim=pass header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=MVNFfPjR;
+	dkim=pass header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=mFdcQQ+M;
 	arc=none smtp.remote-ip=180.76.5.236
 Received: from outbound.baidu.com (outbound.baidu.com [180.76.5.236])
-	by smtp.subspace.kernel.org (Postfix) with SMTP id 184D8606A329;
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 18570606A32E;
 	Sat, 14 Nov 2026 14:07:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 184D8606A329
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 18570606A32E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=MVNFfPjR
+	dkim=pass (2048-bit key, unprotected) header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=mFdcQQ+M
 X-MD-Sfrom: lirongqing@baidu.com
 X-MD-SrcIP: 172.31.50.47
 From: lirongqing <lirongqing@baidu.com>
@@ -37,9 +37,9 @@ To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
 	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
 CC: <zhongqiu.han@oss.qualcomm.com>, Li RongQing <lirongqing@baidu.com>
-Subject: [PATCH v6 2/2] cpufreq: acpi-cpufreq: report filtered-out P-states in extract_msr()
-Date: Sat, 14 Nov 2026 22:07:24 +0800
-Message-ID: <20261114140724.2336-3-lirongqing@baidu.com>
+Subject: [PATCH v6 1/2] cpufreq: acpi-cpufreq: fix P-state index mismatch in get_cur_freq_on_cpu()
+Date: Sat, 14 Nov 2026 22:07:23 +0800
+Message-ID: <20261114140724.2336-2-lirongqing@baidu.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20261114140724.2336-1-lirongqing@baidu.com>
 References: <20261114140724.2336-1-lirongqing@baidu.com>
@@ -56,100 +56,86 @@ Content-Type: text/plain
 X-ClientProxiedBy: bjkjy-exc3.internal.baidu.com (172.31.50.47) To
  bjkjy-exc3.internal.baidu.com (172.31.50.47)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
-	s=selector1; t=1794665257;
-	bh=C55eBjErjmkrF+e07ycv3yHO8XvAxs6AGnnYfh5Cldo=;
+	s=selector1; t=1794665256;
+	bh=tP1acQlRWf6l7bmcZWZ2wj1d0QcgiPDNN8cVBdGDvOc=;
 	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
-	b=MVNFfPjRCeZSdex4SQYk3aQEsEsM9Ry0llqz9QAYMKkPGZp2pU3IechABlsJDphBW
-	 UJDorZa/SNyynNkwthH4lXjxIhZfgR8hX/6gAl63sbu+TLuhJLQMoZlNk92jsSN6N0
-	 jEvf7PNQL4icEhr35NZRIJWarsbY49zeATBlMwRH1AjhSWo3UVjC9QoEwOAadfnSCB
-	 QtbybWO/h9Q/DCk7C9shmh+KK8YYGGjgL36qDnK+Zo/+WwsmUpmmUCoJPSs7yq4AGi
-	 YkzHSlJGj5hiDb2rX2Lp6OFoHd/pL//2IEGlf51ZbO4Xz24MHKQw8OH7cGTc1DkSDQ
-	 ZPDD/wMYVvvZw==
+	b=mFdcQQ+MIVtmrvh4lsSeh4/mFcfqikDFmBjULU/RYVTrpfBMKNDd2dgmmzoRgtrDY
+	 yskRGeyWLJf3HbLryTyvPUPasS06tdr4XGj/Ord6Lxm/iFHGUdQYMVZs36+fRlFds9
+	 BCBsruoJ8BlZLoDE78nvt7QsRcD6yzWZiXBWGc7yNw4wcAtCGSrGq9WlSOcGtHA4v4
+	 efKSaL8k3uCCb04vuSCeC+RCQVjuSgif4ZpHgRiln1Ls5w8AG0OcJTrW/H4urRiSos
+	 VmBgSQJBWmJLqh4Bo3ZpFalAW4GhYIwqq6vqKXLuTmiDhPk+ujresueR9sjaXGhU1F
+	 9DBD0swHe86Ww==
 
 From: Li RongQing <lirongqing@baidu.com>
 
-extract_msr() maps the status value read from the hardware to a
-frequency by walking policy->freq_table.  freq_table[] is built by
-filtering out _PSS entries that are not lower in frequency than the
-previous one, so firmware may autonomously switch the CPU to a P-state
-that has no freq_table entry.  The status of such a P-state cannot be
-matched and extract_msr() falls back to freq_table[0].frequency.
+get_cur_freq_on_cpu() uses perf->state, which is an index into
+perf->states[], to index policy->freq_table[]. However, freq_table[]
+is built by filtering _PSS entries that are not lower in frequency
+than the previous one, so its index space no longer matches
+perf->states[]. The original P-state index for each remaining
+freq_table entry is stored in driver_data.
 
-get_cur_freq_on_cpu() is the ->get() callback for the
-ACPI_ADR_SPACE_FIXED_HARDWARE case.  When firmware has changed the
-P-state behind the OS's back, it sets data->resume so that the next
-->target() call rewrites the control register even if the requested
-P-state equals perf->state.  However, acpi_cpufreq_target() is reached
-only if the cpufreq core sees a difference between the requested
-frequency and policy->cur, because __cpufreq_driver_target() and
-__target_index() return early when target_freq == policy->cur.
-policy->cur is resynchronized from the ->get() value by
-cpufreq_verify_current_freq(), so the frequency returned by ->get()
-has to differ from policy->cur for data->resume to be acted upon in
-the ->target_index() path.
+Once an entry has been skipped, using perf->state as an index into
+freq_table[] can therefore select the frequency of a different
+P-state.
 
-If the OS is at the P-state corresponding to freq_table[0] and firmware
-switches the CPU to a filtered-out P-state, the fallback makes ->get()
-return the same frequency as policy->cur and cached_freq.  data->resume
-is left clear, policy->cur is not updated, and the CPU stays at the
-firmware-selected P-state while the cpufreq core believes it is at
-freq_table[0].
+The reported current frequency itself remains correct because it is
+obtained from extract_freq(). The mismatch only affects the cached
+frequency used by get_cur_freq_on_cpu() to detect a firmware frequency
+change behind our back.
 
-Look the status up in all of perf->states[] instead and return the
-frequency of the matching ACPI P-state.  For P-states retained in
-freq_table[] this returns the same value as before, because the
-frequency of each freq_table entry is perf->states[driver_data]
-.core_frequency converted to kHz.  For a filtered-out P-state whose
-frequency differs from policy->cur, get_cur_freq_on_cpu() now sets
-data->resume and the cpufreq core updates policy->cur through
-cpufreq_out_of_sync(), so the next request for the expected P-state
-reaches acpi_cpufreq_target() and rewrites the control register.
+If the wrong table entry contains a frequency different from the one
+the CPU is actually running at, the check falsely detects a frequency
+change and sets data->resume. The next ->target() call then performs a
+redundant control-register write even if the requested P-state is
+already the current P-state.
 
-The fallback to freq_table[0].frequency is kept for a status that
-matches no _PSS entry at all, since returning 0 from ->get() makes
-cpufreq_online() fail and triggers a warning in cpufreq_update_policy().
-A filtered-out P-state with the same frequency as policy->cur is still
-not detected through the ->target_index() path, but in that case the
-CPU runs at the frequency the cpufreq core expects.
+Conversely, if the wrong table entry happens to contain the frequency
+to which firmware has changed the CPU, the frequency change is missed
+and data->resume remains clear. A subsequent ->target() call for the
+P-state that the cpufreq core believes to be current can then
+short-circuit without rewriting the control register, leaving the CPU
+at the firmware-selected frequency until a different P-state is
+requested.
 
-extract_io() is not changed: for ACPI_ADR_SPACE_SYSTEM_IO no ->get()
-callback is registered and extract_io() is only used by check_freqs().
+Fix this by taking the cached frequency directly from
+perf->states[perf->state].core_frequency. perf->state and
+perf->states[] use the same P-state index space, and converting
+core_frequency to kHz yields the same value stored in the corresponding
+freq_table entry during initialization.
 
 Fixes: e56a727b023d ("[CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind our back.")
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/20260910111329.2220-1-lirongqing%40baidu.com
+Reported-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Suggested-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 Signed-off-by: Li RongQing <lirongqing@baidu.com>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 2d7d147..3dc7ee4 100644
+index f64fa37..2d7d147 100644
 --- a/drivers/cpufreq/acpi-cpufreq.c
 +++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -210,8 +210,8 @@ static unsigned extract_io(struct cpufreq_policy *policy, u32 value)
- static unsigned extract_msr(struct cpufreq_policy *policy, u32 msr)
+@@ -353,6 +353,7 @@ static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *dat
+ 
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
  {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
--	struct cpufreq_frequency_table *pos;
- 	struct acpi_processor_performance *perf;
-+	unsigned int i;
++	struct acpi_processor_performance *perf;
+ 	struct acpi_cpufreq_data *data;
+ 	struct cpufreq_policy *policy;
+ 	unsigned int freq;
+@@ -368,7 +369,9 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ 	if (unlikely(!data || !policy->freq_table))
+ 		return 0;
  
- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
- 		msr &= AMD_MSR_RANGE;
-@@ -222,9 +222,9 @@ static unsigned extract_msr(struct cpufreq_policy *policy, u32 msr)
- 
- 	perf = to_perf_data(data);
- 
--	cpufreq_for_each_entry(pos, policy->freq_table)
--		if (msr == perf->states[pos->driver_data].status)
--			return pos->frequency;
-+	for (i = 0; i < perf->state_count; i++)
-+		if (msr == perf->states[i].status)
-+			return perf->states[i].core_frequency * 1000;
- 	return policy->freq_table[0].frequency;
- }
- 
+-	cached_freq = policy->freq_table[to_perf_data(data)->state].frequency;
++	perf = to_perf_data(data);
++	cached_freq = perf->states[perf->state].core_frequency * 1000;
++
+ 	freq = extract_freq(policy, get_cur_val(cpumask_of(cpu), data));
+ 	if (freq != cached_freq) {
+ 		/*
 -- 
 2.9.4
 
