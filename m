@@ -1,123 +1,106 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794644342;
-	b=JUy81aq7enPfTFatnZR9yH5wWtjT2QibOEPPvS3aTKRhwEGOek5OsfPBe8+Ku9NXxmnf
-	 h8wTYuFekIeui+0II2dSG3zwzwOzICbVFGo6ym2onorEnMema5kzy5mqmqpQ6P6aJ86Wz
-	 CWYN0ncsOpV28x5k7/swzBQgreiEuxG+SusvASQFudgEvXAqq+v9pXGMF4remLe06iYGL
-	 02uVwms7BgENT58i9GKXJr+8azOOLg6u/VjQxImze94Z/xaoghqXOHSmKMoAyB3wjvJWP
-	 MWz9cI4FV6r5QkdfCB55HSMBdPZZCt6tHbty4lKRyx8rDKf2J1mal/n2LE867/j1gOg==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794644342;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:Content-Transfer-Encoding:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
-	b=QpoRZI8HmNA60DZ6dytTlAoJFlcNdTuctNhy1Qxt+9cJyg44mzVYHE0ua+3fhUZ+xdg1
-	 7sYxKE75+k747WvCRktct/9RAIRFLgycuY/uqXFkYNrh9Oa23Byu3FwfIF5mCcexC2vHk
-	 uxNLkpgqZTcHsbavUhfQUMTp3ql/+LZ0aEu9VH2fwP1eO8s+Wa9z+R8j4Me5GB0J3FSOh
-	 GSheda6tFzxVfBFXwxw7C2evGcyPs8cbZ3LDPxfQN9zibC7aKTzFOx4MycsXY5DfCPB0C
-	 9PNl/HvO1PCs+b8ZgNZ6Y13U1WjSjmFpJTm+2EeAPxxETsl0TgZoQGvUChQF0qQvX0g==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=g2lsw4oS;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=H+c3tBba;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.48
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794649516;
+	b=b58IWCefT1ZIuEq1M0e4X2rEylfFRyxHiQgW5GtrpbBnLaDdemPtBwFHVaHTQZAPOhnB
+	 7Y7dKW1qdtTH7hJc7NxShUE48L9C0hem+wkxsrQAhO7Ip/Y8DYjyg3H6IbAqgKGq2Zfyz
+	 bBiW9kvzqkPc0VSICpnCglOEWt0Da0bgaxIyErRe3NDol2XiCUMYRRUCA9LB0aVKaT1Sy
+	 zhc7rOLBhTk3wP4JmxkGTaUvgDMX3WuXuHTYih3C5j6PbL+Wv+8p+BT8Rrx6XPI0XfBFY
+	 BRC+u4ETlV0PhPWxzp26/SC4AC4o2QmOA70zLvLQayZgGc3Emx38gVD+rsv4YkZQVnA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794649516;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=37e47cL8nK91UujMUai9IjESXvG2R6mAt8cHf2aHgUc=;
+	b=4XpZ4KCvi+KAj2rhKTOWaqkgvSk/2wW9brig6/p1uc+V6pNG5uCblsyrM8DqBEsB9wzP
+	 4v9XsGD8QPmI2Wg9qontzlGkgFlP4bCKTV3XEcZ+EP0rhonXLxilMgdTcp+AtS5rju9zQ
+	 uNbEnEEvoAnOb17ukSzeTwsUuwJfPYsXL2x0ot6hDA4mFZLsa0kXCV1QlRVl4Gtkeo+W3
+	 p56ZAcGyYAqMpEy/62gd6Povauz1wW7PK3o1/VFgp14n+rdl70IhfVNYkNEil5sKj9k0c
+	 L8xCm31okwKForuULJsyjWOzs2uDA6pnPoU9Gnrf4lBvepfLN+1ZHSGTnn1DyYe5H1g==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=F3hU3zVy;
+	arc=none smtp.remote-ip=209.85.128.48
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AF9D606A329
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 08:19:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3AF9D606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3473606A32D
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 09:45:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B3473606A32D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=g2lsw4oS;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=H+c3tBba
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AE60pCR3161636
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 08:19:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=; b=g2lsw4oS0C7kW4+U
-	opEiTfMF0LUYiQau3gh3GvXBGEhya76EPmzdl7rzJp0gn488egNSxOuQFZ5glSqH
-	iVDkJ4JP4V+sZKVC6Ip+y4dVBjFTPfl8iwMBn7XuQYnARE3Subi87vAo6RrFyHgp
-	/hgH+KTJFe8gxoWNmdLnD2WacWtj3a6qSMangdB3apVGNEMNojdYzz7piRjXIi0J
-	7txafB6pHCJrviHm8yq3DmB/V0EwZssYEvGd2WUR2m+XC5NihS8uSQY23N8U2GUv
-	GwskLP9+1tcdg/P3krNLXgTa+62rB/YVQbEmGxDxjePtM/GLS5uKn7Gc7GIi9Laa
-	C2PbYQ==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hxhhjragf-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 08:19:01 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2ea71803effso15733345ad.3
-        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 00:19:01 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794644341; cv=none;
-        d=google.com; s=arc-20260327;
-        b=olhhNbcjKOVYN5ur8GDOMbRo/94ycavaY7unkKdFH1JWuZA1aFwMG+ygMhqAk7wC07
-         rXzeNM27P5Js11ogTJSkESqYJU7XEfUb3xPjGFgO0/IvsSoaZPYIQlnmufoMd6/3ROq/
-         8ftGr0o3hfw4IPI8JhmYfqmsyjGm0KZPcDcdMUOH16qonyX3gGTzWT5fnAPUVdIJYFN0
-         3C+Vuo5Issfjf7dRg6DxWigobnN80F5vaD5YeMXqalSnVY8X9XEPniofB0BwzMpCPaZw
-         ozANGxCy6IvZyLYe/BEinNTF9nTgiveZFwSaNCbVjehwfJNwX53qLQrAYpwaBCpr7ALG
-         lRSA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
-        fh=rTEXhUT2pyTGgg72wHBYpi2xAj3VGcC86MAizxLKRKM=;
-        b=E/ffVxNcqIYhrAtNtVV5V5K/yandrsPsskO6MOqhB0/7BenH9o0GJfXToXBWBtiyGF
-         Vaw1L6QYG8Cc+Am1E/ZuxbBvLLfSLygWIN2MJ8uUZK5HR7LkrEMHfW5Yl92YrmGW4v5M
-         xmjJCDDDMvFk/fHgylPtUMN/IWtJOWV6wLYZOqFi1D9Lh8dEEP/GMVmk54fa5Si1D4g3
-         0MOaaZcmVRzMH9/jZdI9DLMua+K7DSaVrI5ZPz5Igih+R+q0T40MrEoWQqdtw+PLvSo4
-         rUFQ2va0Rvzu8jZE11GD9x2Kq9DG7WW2hoJGRo29bMoak7Rb0YdpEbrk6Yas6CgP3Jbd
-         7WeA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=F3hU3zVy
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4a35ac4475dso10559515e9.2
+        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 01:45:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794644341; x=1795249141; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1794649514; x=1795254314; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
-        b=H+c3tBbatl9M9cNeV66aScll2PRSkUHoDrjVvqBqfxVteSePrVA8Sqep338CEkKkZW
-         4mUriisdv8jJ9vh9H03FVY1oGrt465yg8v8DEUeYqd3+O/zhcmuOXxRbG3kr5E283Ca7
-         pYwzDnsQAgzY1G01OSE96aaPqls2EzZa4O3ibGQxFSmQoI6xHY7s0omAGN3tpHkc0fSL
-         fqnDlxBxKezPL4bVV9pjxIOdGb+qrykQL/xzNcg7qR/cz1blNTnBgJKOSthBWJac/iGR
-         1okFTlCWZPyHgrusF8Tz+tZ4s7xbyoy7U1xF3VWbDW2TQsfZk9JNkBO3vYr7k+Kaxj2o
-         gg2w==
+        bh=37e47cL8nK91UujMUai9IjESXvG2R6mAt8cHf2aHgUc=;
+        b=F3hU3zVyNcC+H+CmJ06ak6bPg38SHaqt0RdYZWvpTeDkcZ3evsgeSbmX3tYdIDTENR
+         pNqCOrvqyIBnw49Cy9vBzNnMFGjKkVkGpvvtu+xrmmyi4/nKyJmiSDvpvGKzjOnN65zG
+         M+NK1JOLclCliuCDw/6j3dnkQ1GRdZiN0hk1dM5TBSg+bqxy+SHDDWBBwSliFcSig+v3
+         9yxpat0FUgG1ryVQ5Oi2Km3HpRRbaMiZTBgxASY0N2J22rmEJTSQ9WDoxZ5+5wW4iRug
+         n7Q29sjNPJqK5kbn+YSavgQvOqbrlnKyKTOGrG6KIdjWdFuuBKKRonsB14GFJo1zMix0
+         aH0g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794644341; x=1795249141;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20260707; t=1794649514; x=1795254314;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=fKzcjFxqGvvYnRdzMZQCZdZZhZxsTy33VYOqVFlaCgI=;
-        b=H6qvKuox9eqsxWGLgE4Ikn6GuJ02PeFLrn4nlnDuJIeBYsHrADkyvdASu+JA50sPTj
-         39ecDedVEjXi7voJFWpJ1MxWpAf7TiwX2j2500TibCXhj+QdDO2lqo+9AKTEC8PpSwp/
-         U6Z2reT0HmfTsxoJ9oI8g2raEsIszeesQPJxK+an72I+TbOzVhOTUPSvux/A4JzcuK8F
-         slJ6XqRipgvGOCymbVmwBL99fnBWptS16ePx27kLZ+wkqJN45V/WM/+jvEptJ8kb9ZA4
-         eI1wE+8qTpDe2G5Az08gcNtXVU6nc1Ed8z8kWglSnoQxa0k0l+qGGhL1vc2lSoHxOi3o
-         WXhw==
-X-Forwarded-Encrypted: i=1; AL+hErF4qf6gQsto8TGDrHI14+6gW8DZVQrxsDOZNKQG+a1GRnhgbjNC3l4kHEcSnf5HuIunU0TDxz6qpg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8Ljk5BpFpH0xWvzfH5qdn9GtxGljDWhPqWcdKXvgYQVOeNtlpT
-	jRZTel3AmLT8O1trk+TRnW9XoG/KCZehcMP2TgQMm0yw3+LJtArfCaeczssZzd2B/fuZ7zd6hrb
-	I3hjPZhGEtez6Z8HpN5U/cXbcS5kfgKwfLf/WqPjH3NLwMg4kF/kd6PV0bj+NazyQiw4daNHwue
-	T46V5WgESvNKuaCjbBotM7J3ye+ETvwVHke6vV
-X-Gm-Gg: AYBFou2XoOozAu6Qa07cE2riPrGbITLJsDFde7EK5FmlQ6A6uJ/qFIE8wZIfo/T4ENv
-	Q9CLy4bQErBNgMhQkirdnBQabp2qSCBpAi0AsnmmX3Dy9lNcOJa5FyNCP75ELFiW4g8qzz+zpRu
-	LmP4RRnwU3r/hybuudNNLoBLnX1nG9VjmNJxiobh/67kYninBWFAkq5VYSYA==
-X-Received: by 2002:a17:902:e790:b0:2ed:379:1592 with SMTP id d9443c01a7336-2ee0dccfa1bmr52675135ad.26.1794644340580;
-        Sat, 14 Nov 2026 00:19:00 -0800 (PST)
-X-Received: by 2002:a17:902:e790:b0:2ed:379:1592 with SMTP id
- d9443c01a7336-2ee0dccfa1bmr52675005ad.26.1794644339943; Sat, 14 Nov 2026
- 00:18:59 -0800 (PST)
+        bh=37e47cL8nK91UujMUai9IjESXvG2R6mAt8cHf2aHgUc=;
+        b=erp88Ctixf/No8jXKc9izDtNN1mmnpXSwPxDkwhpen5jyXnvvES/y6lJo18FX5+Ku5
+         uhRuC7E5kgKsR+bLyUgoFHyWcqKZ/krn+/ddRvoGN3atZwQcrC66GKXY0K67ZOmM4IaA
+         KuP3p03Xm2faK9EdkeknOpj9SbIjrIvvUNdm8RyCSvaYSXhHElhxguYUWs3xBLp97R/4
+         XNKPXZZBthQX39EBmePFz1FAdnTePN0R8IHYF0eTGk9Mj6V8bOVfKmTJymRVQvCBaAqZ
+         0NkzubOUMxxRcbVjbGBURIu9MHV9vrik/hPZZbvaVNFtOuLEIj0gYvYXNKN7CNU382zF
+         rJ/g==
+X-Forwarded-Encrypted: i=1; AL+hErFofyEnU4CIjr1jlXKe5YVVUBeHnoCWDJ9/MawQC32ry/q4pSFP9o+/YFTlWQkpeTL1pu1r6iL4eg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8CJamRtKxsSIFU+g/SV/6e64K0sTdYSaF/CsQqrMsnlKBbCB4F
+	XLKmUsEWP7/PQUBea8XFT+aeQc8kSg/LxTxynEiLAUaqSz7rmM/qEYgu
+X-Gm-Gg: AYBFou06qTsO0vF9ReAehwZP9peWDamHvleAnIbbTuFIFN9quEd2HhpHtTz+mGEQI25
+	B5dXHd49GleV+JOsgiWoBeKpdBBrHiND/T9/L+WHw6XG4Y4odECoyc2SHX/KxrKdJcBjJg5POjx
+	/Zflq/P5ZuW0+P0JKHKDEcUY3OvNrvX58caDg3LTfpdV3Yo2Ii0D08hmVZc1BxfGQjgejMm4c8x
+	7ehUQi8mhfEKnyYukNq4a4mjz1s17jJAmezEN/xRCuUEFvmZ374gUSGtZgcr3CmQUqu49AXlW0W
+	hS8X17SZVKfhE1elie0tvZ4hQ0FTRQyT8srzy4F7pUq1AZ02sHjXFk7fGLUe30jhvmTbzubVkmF
+	kAE2XhJ7wwcf8s5nz0zDeDG6ADqmqZy/1wCwr0JgaVXz+dWh7DVUg5ZU+B6DI6RNFB/LrrscbPx
+	VVY1A2pK6dNeuFSNOvhZUu+6IS9sDIbwA3Yae51ytQUYBkBTPV9m6vzps7cXlXK+V9fX7Gge2fu
+	1cgg866+5Ofy2P9Vne/0EPh5uUf4IxQH84w6/WlW+1JAgeIsS5P8ids3jqv2aASiCDU3Je1pTCE
+	RfXMt4IkRI86nMNQ1UJtHFUvonJcPe59/fms8VLnaoh3abN6yXAZm5opVIE+QHfUagek2R3hUlg
+	=
+X-Received: by 2002:a05:600c:4ecd:b0:4a1:e6a9:4086 with SMTP id 5b1f17b1804b1-4bb5599a73fmr120286225e9.0.1794649513834;
+        Sat, 14 Nov 2026 01:45:13 -0800 (PST)
+Received: from vlw-PC.. (static.18.103.245.188.clients.your-server.de. [188.245.103.18])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb5faf05f8sm45787065e9.10.2026.11.14.01.45.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 14 Nov 2026 01:45:12 -0800 (PST)
+From: Vladimir Bely <vlwwwwww@gmail.com>
+To: Jiaxing Hu <gahing@gahingwoo.com>
+Cc: ulf.hansson@oss.qualcomm.com,
+	ulfh@kernel.org,
+	heiko@sntech.de,
+	finley.xiao@rock-chips.com,
+	shawn.lin@rock-chips.com,
+	sebastian.reichel@collabora.com,
+	leonard@lausen.nl,
+	abel.vesa@oss.qualcomm.com,
+	tomeu@tomeuvizoso.net,
+	linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v17 1/3] pmdomain: rockchip: switch off the subdomains of a regulator domain at probe
+Date: Sat, 14 Nov 2026 12:45:00 +0300
+Message-ID: <20261114094505.401228-1-vlwwwwww@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <733b921576828ca70a3f5048691400130f8a5dbc.1794615323.git.gahing@gahingwoo.com>
+References: <cover.1794615323.git.gahing@gahingwoo.com> <733b921576828ca70a3f5048691400130f8a5dbc.1794615323.git.gahing@gahingwoo.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -127,88 +110,47 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261027140751.2465743-1-b-padhi@ti.com>
-In-Reply-To: <20261027140751.2465743-1-b-padhi@ti.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Sat, 14 Nov 2026 09:18:49 +0100
-X-Gm-Features: AclHuK8IXFCYeB3AWBk0BgMTxu3LSqf5mRE3cR_dlEjTborPRMXNscrVzwDLsE8
-Message-ID: <CAPx+jO_GHZopd+D_v5X1j3GO4ANxsR8eMsV9h8HGC9qdJO6b6A@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/2] Allow platform drivers to skip PM domain power-on
- at probe
-To: Beleswar Padhi <b-padhi@ti.com>
-Cc: gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org,
-        johan@kernel.org, pavel@kernel.org, lenb@kernel.org, ulfh@kernel.org,
-        sid9.karanam@gmail.com, afd@ti.com, nm@ti.com, vigneshr@ti.com,
-        u-kumar1@ti.com, driver-core@lists.linux.dev,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE0MDAzMiBTYWx0ZWRfX2BiGQQMJ7T5P
- oquEjsXp1HH9djsGTIkgqsmVf5RMDnK1E7WFstPJ+kg+WPoLB13caKWkmno43JZxEknZfkH9wMD
- sVKd8kHAK3dBNI8VwXxyqykN8urdHeIJeErP2BZJBDuaVgg3IT/A5K+ofJGXRY/3A6GPvEvxYCU
- edreUjieSWxsvzTvvSOrP4HbFYk3EAilWHl/ANbFGZ7R8FVc8Vv1Z7MjGX4/OTQkLnF28rUoq3i
- 50iarbBIP3UuiPbxsu+fd2PkOL93KQM4k4QFdbq5yTG0fOEYyRvVtq3Z6KNaVMIvgbL80OWNLk4
- h1o1Wob+hgqWFXgncKJxvqmvpKzIR6RrN9k+6OUUJaYZf5pPC+ddyFMAsF8QUF+EG8MCYOV9NPL
- VKXPZPfpaVRbohmPY8aV74vrPMfosKJB89Z+jFryyxzIqA0JowlAmOhWUsNByKZeF/terfXx5Vq
- MFp3fAb/GW4eYM9xF6g==
-X-Proofpoint-ORIG-GUID: uJstr_nY0VdEo_gYU-l9kW149IQylzF-
-X-Proofpoint-GUID: uJstr_nY0VdEo_gYU-l9kW149IQylzF-
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE0MDAzMiBTYWx0ZWRfX0uCcwj8fJB8A
- wrOEyDNd1z/Ke77UuVHN11B2wRfiWkCEnCqxwrlVHk5chco2b8ViQ1Cf5hJMs2DexRP/GZrsy7Z
- huz0N0uIkAav3zSRZ/FIogCr3ODcFdQ=
-X-Authority-Analysis: v=2.4 cv=X9rHu2Te c=1 sm=1 tr=0 ts=6af81975 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yOCtJkima9RkubShWh1s:22 a=VwQbUJbxAAAA:8 a=sozttTNsAAAA:8
- a=Ht0MZJmIM3MH2Up-epYA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-14_02,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 impostorscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
- adultscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611140032
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Oct 27, 2026 at 3:08=E2=80=AFPM Beleswar Padhi <b-padhi@ti.com> wro=
-te:
->
-> Some devices must be configured before their PM domain is powered on,
-> but on DT based platforms platform_probe() always powers it on first.
-> This series lets a platform driver opt out.
->
-> The user will be the TI K3 DSP/M4 remoteproc drivers which need to put
-> those remote cores in reset before powering on the pmdomain. A patch has
-> been posted to add "power-domains" DT property to these devices[0] which
-> is the motivation of this series as well.
->
-> [0]: https://lore.kernel.org/all/8cb23b44-027d-4d81-b342-7eaca0248f63@ti.=
-com/
->
-> Please provide your comments.
->
-> Thanks,
-> Beleswar
->
-> Beleswar Padhi (2):
->   PM: domains: Honour PD_FLAG_ATTACH_POWER_ON for genpd
->   driver core: platform: Allow drivers to skip PM domain power-on at
->     probe
->
->  drivers/base/platform.c         | 7 +++++--
->  drivers/base/power/common.c     | 5 +++--
->  drivers/pmdomain/core.c         | 5 +++--
->  include/linux/platform_device.h | 8 ++++++++
->  include/linux/pm_domain.h       | 4 ++--
->  5 files changed, 21 insertions(+), 8 deletions(-)
->
-> --
-> 2.34.1
->
+On Sat, Nov 14, 2026 at 04:04:59PM +1300, Jiaxing Hu wrote:
+> Mark a regulator domain and every domain below it as off when it is
+> added, and once the subtree is complete, switch it off from the leaves
+> up. If a subdomain fails to switch off, leave its parents on and warn.
 
-This series looks good to me and solves the problem in a nice way.
+I tested this patch on the board I reported the hang on, a FriendlyElec
+NanoPi R76S (RK3576), and it fixes it.
 
-Please drop the RFC and make resubmission so I can pick it up.
+What I ran: Armbian's 7.3.4 edge kernel (armbian/build main, which
+carries v14 of the RK3576 NPU series, so PD_NPU already needs a
+regulator there) plus this patch as armbian/build#11366 carries it.
+The code is the same as this 1/3 (I compared the diff). I did not
+test 2/3 and 3/3 of v17.
 
-Kind regards
-Uffe
+DT: the R76S DT with the NPU disabled, i.e. no domain-supply on pd_npu,
+which is the case that hung. No regulator_ignore_unused, no
+regulator-always-on. Serial console attached, warm reboots, PMU read
+from the regmap debugfs about 42 s after the kernel started, after
+regulator_late_cleanup() has turned vdd_npu_s0 off.
+
+Without the patch (Armbian 7.3.3, same DT): hung on 3 of 4 boots; on
+the boots that survived, NPUTOP, NPU0 and NPU1 were still powered and
+not idled while genpd listed them off.
+
+With the patch: 11 of 11 boots, no hang. "vdd_npu_s0: disabling" is
+in the log on every boot, and every boot reads
+
+               without     with this patch
+  0x110 req    0x000013e0  0x000013fe
+  0x214 pwr    0x0000003e  0x000001fe
+
+so the three subdomains are idled and off before the rail goes away.
+(Bit 9 of 0x214 is clear because the GPU is in use on this board.)
+
+With the NPU enabled on the same kernel, rocket probes both cores and
+an LLM runs on them, with identical output on two runs.
+
+Tested-by: Vladimir Bely <vlwwwwww@gmail.com>
+
+Thanks for the quick fix,
+Vladimir
