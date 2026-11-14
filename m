@@ -1,104 +1,48 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.179
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=180.76.5.236
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794660910;
-	b=YQ+FCvLAbK4SazyMoTPBbVjq2UeQQpeyOyowVcDo//gu3shw9hLreB9Pc4cUwixAqrkO
-	 BT+wIZAMMwlsEsEs+bhaYVLebdAW/k+gs34WohuOzpPDN1SJTY3+9ZyAUbngrMCvoSbiH
-	 HNDMvl269LMNBCBNampJdhNb4S1q83ZZKh8Sc0pftYnEiegGajdwNfZv41JiKcQynN2cg
-	 Tl5xj0Ak2cgqszXL376MwHOwULgGKK5wg5Mdql9ciB3bteQs7B7CK8osItVWNgQ471Knr
-	 WDVn4DUATC+iuaYaVUYBpTz+t42Jk84m7d3hvhSAllAZuXC1KKZmF/yYDo5KJDQVZSQ==
+	t=1794665266;
+	b=T1g3WpNFP6yxJHcEKHfHU2vnNLIQ0T3Zq6mTLohlmZ16vsarisj2MmokLW5ShyJROYEA
+	 BGU6Yjrb7B7Z8KJml39qSQni4NSJDoVvmdzRhOqAeiae8unT+YQWWLjRao4ScXuHFQjMe
+	 Wdd2ODbimVirDNtKe+te07VNE6JG3J0kFsH+Zfy8BcS23/RquloFweZprOt9hahS78yg/
+	 R8jytqk4T53DVBDCq1mUqgFI4XqXZ6nsDT4LjtGBKUfrVqXGVn2FqUdcGKVuc0MvS/SM6
+	 4FUZifcZ++IHtqxiaI5Um540qnD0qgye7jhwSW1jxpntM8/cTM7xYH+bQ8rQKhzmgoA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794660910;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=RIAjwWAB/1kSNYGnZwFAsdhypWK0Kwmt4wTEOFin5Vs=;
-	b=Pjwczvhfmhn6b/C98aQcPwysr+4ltSBDtRYvyqRL9Io+/i9BjNsqdRvP38HzrCNVTlkQ
-	 29HBlzBrT39GPIqh5CIjeiwixobEidqXqSUkT806t4M/z8Lfl/e1nA7hutZ6krWxMinif
-	 2hDcMVQiOCpwk0QBmy0sstlh6gA9dzHBhxVXXE+aszUVxD8hAsKSs/FEt60o7CkG/eC46
-	 IVNABjArQIbOpIoBBxq0P6hF/FOeREftb0iu8k2/wYmtggNvHwRejD+5UT5MC0LExyp7h
-	 bLOdkWX4p360//k2Oz7sKS+p1zSAoljhUGSIlcBopGv42OtBondi9BM/G/8USS/Kkbw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794665266;
+	h=DMARC-Filter:X-MD-Sfrom:X-MD-SrcIP:From:To:CC:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:Content-Type:
+	 X-Originating-IP:X-ClientProxiedBy:DKIM-Signature;
+	bh=C55eBjErjmkrF+e07ycv3yHO8XvAxs6AGnnYfh5Cldo=;
+	b=iyVr8jzEnAb+aCHQB1wIwhp+7WcbdoLsIBoLHTGE/BDZApTwcySSl5/m230Ffhy5Dqzn
+	 +yns19CA132KCfRP4FRKVtesAT5I0FfIXanzXcIqo3yDmfu8bhcmPnB2B7aMfxorUH5Fc
+	 rMGh1qBQvEC3vZdD26yqdpG3DiGrncEZ5ZDylyYGVrN71Zazg9yNN+7Sl1hWe+6fDsGrf
+	 uyiBd6RVjMk3EqV8F1oHILtAixD+unYTACdxOsEyWRA3qMag7TtYICdYb9e86hetv5JXP
+	 NdHgPHX8Ugw5H4u0z7jDpbG0mQsigA5WPPsM3VuhSjpULjam/oJDoCOB6m4rzoAkJtA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=furiosa.ai;
-	spf=none smtp.mailfrom=furiosa.ai;
-	dkim=pass header.d=furiosa.ai header.i=@furiosa.ai header.a=rsa-sha256 header.s=google header.b="PJ3Q6Ow/";
-	arc=none smtp.remote-ip=74.125.82.179
-Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72B58606A32D
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 12:55:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 72B58606A32D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=furiosa.ai
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=furiosa.ai
+	dmarc=pass header.from=baidu.com;
+	spf=pass smtp.mailfrom=baidu.com;
+	dkim=pass header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=MVNFfPjR;
+	arc=none smtp.remote-ip=180.76.5.236
+Received: from outbound.baidu.com (outbound.baidu.com [180.76.5.236])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 184D8606A329;
+	Sat, 14 Nov 2026 14:07:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 184D8606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=furiosa.ai header.i=@furiosa.ai header.a=rsa-sha256 header.s=google header.b=PJ3Q6Ow/
-Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-36f6295304dso1639024eec.1
-        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 04:55:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=furiosa.ai; s=google; t=1794660909; x=1795265709; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=RIAjwWAB/1kSNYGnZwFAsdhypWK0Kwmt4wTEOFin5Vs=;
-        b=PJ3Q6Ow/yGYfFa7Vm+cSR4ycIax/mRn1SybqO76yWhPktwr8NBG0e+5alDCSfdnWUR
-         rQlyYxmqLAZnSeJnfPLTknFFvvXuODjEWtE5LwD61dVRfEUhyhK09njJoCIed8hviEms
-         35g8877IO3ATyTgwYEavO9vOyg+fuZkp4KOdE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794660909; x=1795265709;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=RIAjwWAB/1kSNYGnZwFAsdhypWK0Kwmt4wTEOFin5Vs=;
-        b=gMXttbDjbakfEG2j3AwVA0ZdtofHOJBc0xc5QPYV7HQX1b126xeDX1Tpf7KPXpt0zU
-         2H0HsdQnwJ0z98KFtA93Xi5sEYbsbi5VIheFJS74unEOGnqXi+WApmr5qcteQ+CU/AuP
-         yP00c7b2jxp/6cos+q21mrll58iQX2kk8WaysbYOZIKlRKYyYs1a28FW7in7N+a2XkYo
-         EbyIJekG0qi670gCRPfGyiK5L/7DDuM1lDPRLbDgYWdAbs00GIyzt2cdZHXQzqrOV3Bo
-         5kI3/sLCliqsRwKAla2AE2wcYPLCjKb35MEPkQI8hK9AEggRil6Z3XK1PRxDYvOjc6rM
-         5fcQ==
-X-Forwarded-Encrypted: i=1; AL+hErFjFahMZF48BlS5iUzYpJ8zwxrVdDYtK8P89AgGBxFq8Dy132u0x7Sjvg4r2uQUQ9Gw5vVzOzTDfQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/sv21L3u6hPgGZy52gi7BDlIK72li+0oFJVzhuRRi4h7m4a0ij
-	zWKV8QMZyMQxg2+CNugiV0Ipe/OqH+aICCJVInuEPToXLBk7jSzq0poXcxm7HX+Ji/aK793Sky9
-	/2BqP81w=
-X-Gm-Gg: AYBFou0zB4E3fnweFpxApr5VqYEKxdxBH2MkVvulunpMNoI3H5j//Ba7W/lmOc/NgX7
-	biMh/TNrfBeinOiae5FwSEykF6r7EqkEl1PXHJ8tMZ0ti6znNbaF34KrkUpJjrB8VosS7ROc9mM
-	vd+PST5vMkOgEn2fsjKsOK/V3lxDZxaQF2CPK8sYPIp30cOmQfTi9UBmNmHFNYH2uHsfg5C5dqr
-	uV3G59hKXoiFpu/e+w33i2LnvsNwV3vdy9teaj42Ai20e8YUxRkul/ejOt18dcg3uWFl5o0LMwa
-	LPzZdoQ76xKeRqaIbiGqCAM8HXzmTyd++C6HEYlE2TZ00pL7qsOulMY4Vxn4RnSggtRbB3FYGS0
-	h+/Hynk87v3kn8pV0eh66QomHBwZ8cN0SQVDbVCTpiAXkUwdflGpk3LtcdoyULMViJJAof+6UVy
-	GK0PXVV7f0Dx/PeY/+13gYvPMSmxcKYRB9WyLQs4i9onuManqESf5dQ8BlH2K5fxVpcNN/Deooy
-	V+yR/mlkVoT5OiujFy+xsmUdNtuazc5oRS31ieAvg4yau3h5ieUJx7uj33d+Sc5mmbfCfrQt5lV
-	K8++LaU76YoWiLuAvkpZsOfkuzNxaBRtdmfUXsGeyLNrxX85rFtSh0e0zA0UISE4Rvmf/o3tX8x
-	KEqfKML6sWNJe
-X-Received: by 2002:a05:7301:1528:b0:369:1401:c5c2 with SMTP id 5a478bee46e88-37966d4077dmr4508914eec.26.1794660909271;
-        Sat, 14 Nov 2026 04:55:09 -0800 (PST)
-Received: from rock-5b-plus ([61.83.209.48])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3797f98b9b2sm15904809eec.6.2026.11.14.04.55.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 04:55:08 -0800 (PST)
-From: Sidong Yang <sidong.yang@furiosa.ai>
-To: Jiaxing Hu <gahing@gahingwoo.com>
-Cc: ulf.hansson@oss.qualcomm.com,
-	ulfh@kernel.org,
-	heiko@sntech.de,
-	finley.xiao@rock-chips.com,
-	shawn.lin@rock-chips.com,
-	sebastian.reichel@collabora.com,
-	vlwwwwww@gmail.com,
-	leonard@lausen.nl,
-	abel.vesa@oss.qualcomm.com,
-	tomeu@tomeuvizoso.net,
-	linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v17 1/3] pmdomain: rockchip: switch off the subdomains of a regulator domain at probe
-Date: Sat, 14 Nov 2026 21:54:53 +0900
-Message-ID: <20261114125459.10030-1-sidong.yang@furiosa.ai>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <733b921576828ca70a3f5048691400130f8a5dbc.1794615323.git.gahing@gahingwoo.com>
-References: <cover.1794615323.git.gahing@gahingwoo.com> <733b921576828ca70a3f5048691400130f8a5dbc.1794615323.git.gahing@gahingwoo.com>
+	dkim=pass (2048-bit key, unprotected) header.d=baidu.com header.i=@baidu.com header.a=rsa-sha256 header.s=selector1 header.b=MVNFfPjR
+X-MD-Sfrom: lirongqing@baidu.com
+X-MD-SrcIP: 172.31.50.47
+From: lirongqing <lirongqing@baidu.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+CC: <zhongqiu.han@oss.qualcomm.com>, Li RongQing <lirongqing@baidu.com>
+Subject: [PATCH v6 2/2] cpufreq: acpi-cpufreq: report filtered-out P-states in extract_msr()
+Date: Sat, 14 Nov 2026 22:07:24 +0800
+Message-ID: <20261114140724.2336-3-lirongqing@baidu.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20261114140724.2336-1-lirongqing@baidu.com>
+References: <20261114140724.2336-1-lirongqing@baidu.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -108,19 +52,104 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: bjkjy-exc3.internal.baidu.com (172.31.50.47) To
+ bjkjy-exc3.internal.baidu.com (172.31.50.47)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
+	s=selector1; t=1794665257;
+	bh=C55eBjErjmkrF+e07ycv3yHO8XvAxs6AGnnYfh5Cldo=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
+	b=MVNFfPjRCeZSdex4SQYk3aQEsEsM9Ry0llqz9QAYMKkPGZp2pU3IechABlsJDphBW
+	 UJDorZa/SNyynNkwthH4lXjxIhZfgR8hX/6gAl63sbu+TLuhJLQMoZlNk92jsSN6N0
+	 jEvf7PNQL4icEhr35NZRIJWarsbY49zeATBlMwRH1AjhSWo3UVjC9QoEwOAadfnSCB
+	 QtbybWO/h9Q/DCk7C9shmh+KK8YYGGjgL36qDnK+Zo/+WwsmUpmmUCoJPSs7yq4AGi
+	 YkzHSlJGj5hiDb2rX2Lp6OFoHd/pL//2IEGlf51ZbO4Xz24MHKQw8OH7cGTc1DkSDQ
+	 ZPDD/wMYVvvZw==
 
-On Sat, Nov 14, 2026 at 04:04:59PM +1300, Jiaxing Hu wrote:
-> Mark a regulator domain and every domain below it as off when it is
-> added, and once the subtree is complete, switch it off from the leaves
-> up. If a subdomain fails to switch off, leave its parents on and warn.
+From: Li RongQing <lirongqing@baidu.com>
 
-This also changes probe on RK3588, where npu, gpu and vcodec are
-regulator domains, so I booted it on a ROCK 5B+ (backported to 7.2).
-It boots as before: the NPU and GPU work, the video codecs probe, and
-there are no new warnings.
+extract_msr() maps the status value read from the hardware to a
+frequency by walking policy->freq_table.  freq_table[] is built by
+filtering out _PSS entries that are not lower in frequency than the
+previous one, so firmware may autonomously switch the CPU to a P-state
+that has no freq_table entry.  The status of such a P-state cannot be
+matched and extract_msr() falls back to freq_table[0].frequency.
 
-Tested-by: Sidong Yang <sidong.yang@furiosa.ai> # RK3588, ROCK 5B+
+get_cur_freq_on_cpu() is the ->get() callback for the
+ACPI_ADR_SPACE_FIXED_HARDWARE case.  When firmware has changed the
+P-state behind the OS's back, it sets data->resume so that the next
+->target() call rewrites the control register even if the requested
+P-state equals perf->state.  However, acpi_cpufreq_target() is reached
+only if the cpufreq core sees a difference between the requested
+frequency and policy->cur, because __cpufreq_driver_target() and
+__target_index() return early when target_freq == policy->cur.
+policy->cur is resynchronized from the ->get() value by
+cpufreq_verify_current_freq(), so the frequency returned by ->get()
+has to differ from policy->cur for data->resume to be acted upon in
+the ->target_index() path.
 
-Thanks,
-Sidong
+If the OS is at the P-state corresponding to freq_table[0] and firmware
+switches the CPU to a filtered-out P-state, the fallback makes ->get()
+return the same frequency as policy->cur and cached_freq.  data->resume
+is left clear, policy->cur is not updated, and the CPU stays at the
+firmware-selected P-state while the cpufreq core believes it is at
+freq_table[0].
+
+Look the status up in all of perf->states[] instead and return the
+frequency of the matching ACPI P-state.  For P-states retained in
+freq_table[] this returns the same value as before, because the
+frequency of each freq_table entry is perf->states[driver_data]
+.core_frequency converted to kHz.  For a filtered-out P-state whose
+frequency differs from policy->cur, get_cur_freq_on_cpu() now sets
+data->resume and the cpufreq core updates policy->cur through
+cpufreq_out_of_sync(), so the next request for the expected P-state
+reaches acpi_cpufreq_target() and rewrites the control register.
+
+The fallback to freq_table[0].frequency is kept for a status that
+matches no _PSS entry at all, since returning 0 from ->get() makes
+cpufreq_online() fail and triggers a warning in cpufreq_update_policy().
+A filtered-out P-state with the same frequency as policy->cur is still
+not detected through the ->target_index() path, but in that case the
+CPU runs at the frequency the cpufreq core expects.
+
+extract_io() is not changed: for ACPI_ADR_SPACE_SYSTEM_IO no ->get()
+callback is registered and extract_io() is only used by check_freqs().
+
+Fixes: e56a727b023d ("[CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind our back.")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://sashiko.dev/#/patchset/20260910111329.2220-1-lirongqing%40baidu.com
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 2d7d147..3dc7ee4 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -210,8 +210,8 @@ static unsigned extract_io(struct cpufreq_policy *policy, u32 value)
+ static unsigned extract_msr(struct cpufreq_policy *policy, u32 msr)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+-	struct cpufreq_frequency_table *pos;
+ 	struct acpi_processor_performance *perf;
++	unsigned int i;
+ 
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+ 		msr &= AMD_MSR_RANGE;
+@@ -222,9 +222,9 @@ static unsigned extract_msr(struct cpufreq_policy *policy, u32 msr)
+ 
+ 	perf = to_perf_data(data);
+ 
+-	cpufreq_for_each_entry(pos, policy->freq_table)
+-		if (msr == perf->states[pos->driver_data].status)
+-			return pos->frequency;
++	for (i = 0; i < perf->state_count; i++)
++		if (msr == perf->states[i].status)
++			return perf->states[i].core_frequency * 1000;
+ 	return policy->freq_table[0].frequency;
+ }
+ 
+-- 
+2.9.4
+
