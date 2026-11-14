@@ -1,153 +1,68 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.136
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794613761;
-	b=PPYjCAHGGQyPzNcR/+Q9wbuq37r6FS7QU020UTE9OOGt+kTN9Lkq0ALv/vRC2hus/c/W
-	 xfPkiCAzgUlgUqAZ2+FzmUHlthUDffQRFKP3qIaopvu/buUxGgEhQHgnITt8cA/Lr207I
-	 jG84zrtm7WEYTsOQUys099jynhskWuYBlKDntQVQCDVQOqmMbm2mOJAOCOsvhBrJ2fgOb
-	 t2wVYFgRu+vxOD2AtjvbJ6AqLUIrhcsy2UUKqfmvdtGeSOcgczrLtOH8azCYzYqfCh7rx
-	 Usl5YuL6VAtf+7raW98slT0XvvRqHkNNFfijKqUzfsChmarzsCCZSk/O1iyp1/3xluA==
+	t=1794615365;
+	b=KqbPMcTCVs+ZQl+7W3oARPgmo0i68geb6KMWis+ETDLajwmWxrAgVeRZ9ZyC6FBCMlEi
+	 PLAZCzo+owTbJyAQA2JKlaT256K6YNjzyKU0Xl9XQz43EWqYg3tE85k9ptXT7bbD9uS8e
+	 vmkBiWHgGy/EWmDiCU8NTpvuumhaLNwT2reEzLnjlrjCCEzmmFKNFsOlF09W7sjnqLmU1
+	 3K8B6QXJOoXoGg9xpFOFilJkGhlYkl2UQOZ5+UkUjlzAWju1FU4k8JFRdAFbed2yApwa2
+	 XQbw60Ta7BgLYxviSTKsd24HObF3rNCN607OlGRWMbvQWN+QeeKKPmTXnD+eZjO3H2A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794613761;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
-	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
-	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
-	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
-	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=/o9hLhdBPn8cdi1Wxj/gbuT8hiPvUs8r+uSoRMeCvTs=;
-	b=k/+L3fCM6DT2WV0E6WHZqd/ZKLBlRR1fWB09ui8gpgyoU24wxuSkhDeyLxUAB7BsgNch
-	 YQFN+subTNmy0I77cwua7UXQfntCKOL2LlYWUTTtCtRi8anK0VnT/A/BnU1L79u4WJs+1
-	 +5UNV8ru0ZYpBLGaDCpAFf0bZ3yVXtvokFRc2BTPoGH3JkFCVfS2PAaPFBM0QYlGmhI8y
-	 WrfMdh/hMDW5kn8ryUVfJd+DUi7TjGtyg1Pcxc7u1I3LVR0f28K1eQIT9LACt5BK45giC
-	 8bCIUZ7gG41nIcGq1tnFQlsnCVlsokTtBGdfZqyXRiTiUI7GAQ2U/DM+C8rAvD30xyA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794615365;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=H/O+Mo0VVNCwn6G0Coe3gZ4s1DLGig40Bsnf3oJKl+Q=;
+	b=e610Wx4BXxjwYwaWcG85pIaNx4YKEtJ6iEp7jbc+VA422yGa78Ai8euXwhLJriphV36/
+	 ucQM+7dQ65Go7peMpdUiwXPCWhItN1US2OnrQ10uLfrroqccluFHJM/wPTmbplTY9DL2r
+	 Cb6fPkCe2G/gVxxQGYBRFUB7L0GXVe3CF7qPTde339z8NQguzcg7u11VsvsACUTIl1Z67
+	 bU1TTI5MaHTIvTtb/fMEDZl/ByKr1poSGsrpMAy6FhfO14eCXYhEl0G+IzSyJVLzfNB1b
+	 Nzu4uFZjSKlSYOBXHIlmBm2KBJ72e1gFc8XTF2lt70hNrJ4RTQQTK5Ru0gPH0Pq0RYw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gahingwoo.com;
-	spf=pass smtp.mailfrom=gahingwoo.com;
-	dkim=pass header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b="UlYMm/Fs";
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Kbv6hEsY;
-	arc=none smtp.remote-ip=202.12.124.136
-Received: from flow-b1-smtp.messagingengine.com (flow-b1-smtp.messagingengine.com [202.12.124.136])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCDutom7;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0621B606A32E
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 23:49:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0621B606A32E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACFFD606A32D;
+	Sat, 14 Nov 2026 00:16:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gahingwoo.com header.i=@gahingwoo.com header.a=rsa-sha256 header.s=fm1 header.b=UlYMm/Fs;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Kbv6hEsY
-Received: from phl-compute-11.internal (phl-compute-11.internal [10.202.2.51])
-	by mailflow.stl.internal (Postfix) with ESMTP id 798291302B4A
-	for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2026 18:49:19 -0500 (EST)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-11.internal (MEProxy); Fri, 13 Nov 2026 18:49:19 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
-	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
-	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm1; t=1794613754; x=
-	1794620954; bh=/o9hLhdBPn8cdi1Wxj/gbuT8hiPvUs8r+uSoRMeCvTs=; b=U
-	lYMm/Fsoj+r8geFJv0LOqWv1MpvzDQTc1MqmCUAl2LOGZIHC+Fga3cCXVyeFtSdi
-	bYjE3RRDqE7efhzw+hiZSEilb81PpG7/2T9R3Zk37AGE4Hrls18xn/8YeiPNWu4U
-	9xPCHeGgFAo2VzfFgRTP9ceWNVQ2Oird/Uxb6lhpS1D3heWSqh2n8q2rRQW5Nxvf
-	xycvQaRXjpLgfTuDcpzOlJohY2tnltTfuACTl2+DYLbTLLZhlfNWwYKEky0LwqoU
-	meWzhpnk/bJtdWa5UahJFchqCoqMkVerMfrqjQkXXULGBwwIHEi9cT2ureGZT7nI
-	tNWu4xIgjs3qO7CKUGW2A==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1794613754; x=1794620954; bh=/
-	o9hLhdBPn8cdi1Wxj/gbuT8hiPvUs8r+uSoRMeCvTs=; b=Kbv6hEsYJB/5FYcc7
-	o+36gAzaudVzx1OVRXQcOZFWXZBDdr+FPlNt6B0CDEA9xnCwFir29Kl1Ux08ZsSR
-	OJyOUuSwPuRI/9+aHkK5MSMww3iWR1ZbiucID2mbzK8Krs0bujCxmr0jTUFHTMyU
-	O8pb35YSxRMbHERZ9H6tlwl3uE77gYJ2uaTRT6Pelqmj9bHXhuu32FXG8pKlr6KD
-	hmXUquJRZ0ON4uHFQSEMHVM/Xxr/XR9Shvh2Adj1TkVg1zJ+RhEwBW5vs6tnRClP
-	TqwEXmBCC16/t+Te8cAx49AP7Kykb7kjG57CtFSbvbVUCHCT9pyqDi0WEg9Kpa9O
-	xldsQ==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=gahingwoo.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794613754; d=gahingwoo.com;
-	mf=PGdhaGluZ0BnYWhpbmd3b28uY29tPg==;
-	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm1:rsa-sha256:gNHVfQNEoT/iQBE87Ymogu0lKNnvIdbKe6+Vc/RU5lTkBXd
-	W1faM7L5PlItolZNC0UepFLl4TP6r8j+Dd7S7+1B3Jf1GakJIFFgpvvVqMoH9IhS
-	8EwEmva1FOxJAaUP2sRMmnhaLM3DJa5v9inDXPy5TT5MGKK+0cPjnQqHopu8aWvV
-	/gQdpwwnKDfiF9CieLhkYrwjPajN3DaspdFlOAHzxSgT4NABUCzPIcp3HcYd29U3
-	Y3W3pmV+SoOKAr39ezg8iMxhscc5DoC5tUBxpj1oc7IR0mzP+4ikZsZlDNapzPnl
-	fVmgTtONsPsR+kLBSZSuH9X2J/na+bHYRpR6d8A==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=11;
-	hn=cc,content-transfer-encoding,date,feedback-id,from,
-	in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:rp3Is3ckG8hz2zrJbdiFe7omtKF0PxAQ8ym9SeM2Qzk=:/o9hLhdBPn8cdi1Wxj/gbuT8hiPvUs8r+uSoRMeCvTs=;
-X-ME-Sender: <xms:-KH3aueYucPAN-8SqiNgFZCNiCj6jx5DIKLhFukwwra09vGDSsTtkA>
-    <xme:-KH3aujswu_X8kk2LnjSP1Rq4X9Bgm0wL3l-5Wb4hdXJQ_VYYgQBt5AgmSzOa26rZ
-    -gJccF6ImqI16DTFxBjYnyd1Y38UvBpjWdPmoqxocMekqfNYlUDwso>
-X-ME-Received: <xmr:-KH3aljEQ776igM0Rpj4R0m8h3YUEEhmdoGNKafcAUp2sXlDAVMT4iGZ7QoFCQPtkDrYFpxX>
-X-ME-Proxy-Cause: dmFkZTFS60ybEwlxxb4K3SeK8mTCMIe/J7SGIQZYhTY37qjBx5CZtBVvuXRCD//zEzv8CQ
-    +kZsvg7kGYLuSkWXyPscs4Ic9CYpH9tvjtBM/I3P0n0odWrIB0N3f9wNlXf7iY84Vr0wuN
-    /OkvJ5GwImBrRKfcXCNhp41KWqX6wlztjkqyXvwGNiLchaun23so7vCnQJb45q4NPV2bar
-    JSd3SPHKZp5+r50cI5C2Cnupo9v8z4qiDDMnjpwrZNthjLhcTTntOPyEaEv5uflorcthJq
-    hHEEH5C78LNxi1tFpExUwGX5Qn5V6TTB4Q0mhCZEyd9xxCMFb62EO4KC/k2ENcFelMvrN2
-    batNi9or+TWUf/rgJ2hnMVW64QlO8XsLqhEiN8OnVQWrZgRCQvaBXHppTLxuixNARxd8fH
-    QtsTWKUrgWPWy2/x8+UTito3XyVIfiE+4zESbSse8qb3T8LtWM9SvrQ7lG9l3N9ZNL0sSl
-    TgQ+AuWkeUyWGG/L40JLFb5Ptb0qcmvRfo75jmDFd3/l5Hh7gtSCRyY5v+5+Pcw0fAiQiG
-    l6dVQsY6ZST7H6Piukjbld0gDmFHnzTldJ2I2s9WAt8RLfj+fI4o4Cz2BG7GTW/LZ4DNrV
-    mGb6D7byXBAWuQggjbgK5xuPQq98govt++BwmseJ7y/H/df5/jYs4MsJ0xHA
-X-ME-Proxy: <xmx:-KH3apRKXpXdx17IJ6LDSkjaUAobNZ0-oiERE7FhaBarxZs6vSVRwA>
-    <xmx:-KH3ahRO96YCYAifWNHsqwZxtzY84BbMH0F9X3v1M4WVbJsL6cQVLA>
-    <xmx:-KH3alBv0zVEUAKvADA03bTmhMmVEXZGTond7zy3ueTflcI2-ytWcg>
-    <xmx:-KH3alzxDNwuPQJYtUbeM31NmEU7iFJzQ5-WRY6qlRJUfZfivAN2Mg>
-    <xmx:-qH3as7O6p0S5CopMVSKIooPCpr92uJ29WmqYO-U8LVMRBp7Jfejl2_i>
-Feedback-ID: i7a5e4b5f:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 13 Nov 2026 18:49:02 -0500 (EST)
-From: Jiaxing Hu <gahing@gahingwoo.com>
-To: vlwwwwww@gmail.com,
-	ulf.hansson@oss.qualcomm.com,
-	heiko@sntech.de,
-	finley.xiao@rock-chips.com,
-	tomeu@tomeuvizoso.net,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joro@8bytes.org,
-	will@kernel.org,
-	robin.murphy@arm.com,
-	ulfh@kernel.org,
-	p.zabel@pengutronix.de,
-	ogabbay@kernel.org,
-	zhangqing@rock-chips.com
-Cc: shawn.lin@rock-chips.com,
-	royalnet026@gmail.com,
-	abel.vesa@oss.qualcomm.com,
-	sebastian.reichel@collabora.com,
-	sidong.yang@furiosa.ai,
-	u.kleine-koenig@baylibre.com,
-	chaoyi.chen@rock-chips.com,
-	diederik@cknow-tech.com,
-	alchark@flipper.net,
-	leonard@lausen.nl,
-	jeff.hugo@oss.qualcomm.com,
-	rfoss@kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	iommu@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: Re: [PATCH v16 09/16] pmdomain: rockchip: add optional per-domain power-on settle delay
-Date: Sat, 14 Nov 2026 12:48:59 +1300
-Message-ID: <20261113234859.658218-1-gahing@gahingwoo.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261113132323.159015-1-vlwwwwww@gmail.com>
-References: <20261108065917.135194-1-gahing@gahingwoo.com> <20261108065917.135194-10-gahing@gahingwoo.com> <20261113132323.159015-1-vlwwwwww@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCDutom7
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FFD81F000C4;
+	Sat, 14 Nov 2026 00:15:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794615365;
+	bh=H/O+Mo0VVNCwn6G0Coe3gZ4s1DLGig40Bsnf3oJKl+Q=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=dCDutom77k2RDxhVXA+pNPIua+fqPi9LCaPbyP7f926WWu3xjdSU7LdPc3YHSx1Lv
+	 o8gTzM51nncEAIU+63cLubC7f85H7GDLrwRb0Ggsr2WImuG3ACFXWKWpxwFx4QgHGX
+	 baFSXtGFPOvsvJmyflUQ+sn0c/4aTVSogDuuAlJiiNwEg95fyZPCqUSzhoczLOIc5W
+	 sRuFsARvUMds8rkuutA2mw4MWOQrB85qDK73DF76CPO0L+I3mGh81GUW6weUQI9bO9
+	 8BIg8H7P8EHwTsSIvt9RocaHjHzU8rlsD9QKokyBkEq284j8RQKG4Dl0ZA7IT8jVnf
+	 oKG18v0SLnrrw==
+Date: Sat, 14 Nov 2026 00:15:52 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Luca Weiss <luca.weiss@fairphone.com>
+Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
+ <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
+ <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+ <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Laxman Dewangan
+ <ldewangan@nvidia.com>, Bjorn Andersson <andersson@kernel.org>, Konrad
+ Dybcio <konradybcio@kernel.org>, Hans de Goede <hansg@kernel.org>, Jens
+ Reidel <adrian@mainlining.org>, Casey Connolly <casey.connolly@linaro.org>,
+ Val Packett <val@packett.cool>, Daniel Lezcano <daniel.lezcano@kernel.org>,
+ ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org
+Subject: Re: [PATCH v3 3/5] thermal/drivers/generic-adc: Allow probe without
+ TZ registration
+Message-ID: <20261114001552.3ae8f05e@jic23-hlaptop>
+In-Reply-To: <20261113-bat-temp-adc-v3-3-743979a8fd90@fairphone.com>
+References: <20261113-bat-temp-adc-v3-0-743979a8fd90@fairphone.com>
+	<20261113-bat-temp-adc-v3-3-743979a8fd90@fairphone.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -157,42 +72,82 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi Vladimir,
+On Fri, 13 Nov 2026 16:56:44 +0100
+Luca Weiss <luca.weiss@fairphone.com> wrote:
 
-Thanks for pointing this out. Your analysis is right, and I have
-reproduced it on a ROCK 4D.
+> If the devicetree node is not referenced in a zone under /thermal-zones,
+> devm_thermal_of_zone_register() will fail with -ENODEV.
+> 
+> Since the driver is now also registering as an IIO device[0], allow the
+> probe to continue without the thermal zone.
 
-The problem is that a power domain marked need_regulator is switched off
-as soon as add_one_domain() adds it, and its subdomains are added only
-after that.
+Papering over problems, or expected path for some devices?  If it's
+expected path we probably don't want to print a message with the
+word failed in it.
 
-NPUTOP, NPU0 and NPU1, which U-Boot left on, are neither idled nor really
-powered off, but genpd treats them as off. So when the regulator core
-disables vdd_npu_s0 because it has no users, the system hangs.
+> 
+> We also can't use gadc_thermal_get_temp() anymore because we haven't
+> necessarily initialized tz_dev.
+> 
+> Link: https://git.kernel.org/torvalds/c/3762f5851ac5 [0]
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> ---
+>  drivers/thermal/thermal-generic-adc.c | 20 +++++++++++---------
+>  1 file changed, 11 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
+> index c6a7a65aa6a6..40a34e97a515 100644
+> --- a/drivers/thermal/thermal-generic-adc.c
+> +++ b/drivers/thermal/thermal-generic-adc.c
+> @@ -86,14 +86,16 @@ static int gadc_thermal_read_raw(struct iio_dev *indio_dev,
+>  				 int *val, int *val2, long mask)
+>  {
+>  	struct gadc_thermal_info *gtinfo = iio_priv(indio_dev);
+> +	int iio_val;
+>  	int ret;
+>  
+>  	switch (mask) {
+>  	case IIO_CHAN_INFO_PROCESSED:
+> -		ret = gadc_thermal_get_temp(gtinfo->tz_dev, val);
+> -		if (ret)
+> +		ret = iio_read_channel_processed(gtinfo->channel, &iio_val);
+> +		if (ret < 0)
+>  			return ret;
+>  
+> +		*val = gadc_thermal_adc_to_temp(gtinfo, iio_val);
 
-I reproduced it on the ROCK 4D with a DT that has the NPU disabled. All
-14 boots showed the same wrong state (0x214 = 0x23e, 0x110 = 0x13e1),
-and 1 of them hung. The ROCK 4D hangs less often than your R76S, but the
-underlying state is the same.
+Maybe spin a helper that is used both in adc_thermal_get_get_temp()
+and here?  Whilst it won't save much code (may actually be a touch longer)
+it will put the two relevant steps in one place.
 
-The fix: when the power domains are added, a domain that needs a
-regulator and all of its subdomains are marked as off from the start.
-Once the whole subtree has been added, the domains are switched off in
-order, from the leaves up to the root.
 
-With the fix, all 10 boots showed the correct state (0x214 = 0x3fe) and
-none hung. I also tested it on the board with the NPU enabled, and all
-30 power-ups were fine.
+>  		return IIO_VAL_INT;
+>  
+>  	default:
+> @@ -195,14 +197,14 @@ static int gadc_thermal_probe(struct platform_device *pdev)
+>  						    &gadc_thermal_ops);
+>  	if (IS_ERR(gti->tz_dev)) {
+>  		ret = PTR_ERR(gti->tz_dev);
+> -		if (ret != -EPROBE_DEFER)
+> -			dev_err(dev,
+> -				"Thermal zone sensor register failed: %d\n",
+> -				ret);
+> -		return ret;
+> -	}
+> +		if (ret != -ENODEV)
+> +			return ret;
+>  
+> -	devm_thermal_add_hwmon_sysfs(dev, gti->tz_dev);
+> +		dev_info(dev, "Thermal zone sensor register failed: %d\n",
+> +			 ret);
+> +	} else {
+> +		devm_thermal_add_hwmon_sysfs(dev, gti->tz_dev);
+> +	}
+>  
+>  	return gadc_iio_register(&pdev->dev, gti);
+>  }
+> 
 
-If you have time, could you test the patch on the R76S as well? 10 boots
-are enough, without any workaround. That would show whether the fix
-works on your board.
-
-Patch:
-https://github.com/gahingwoo/build/blob/rk3576-pmdomain-probe-off/patch/kernel/archive/rockchip64-7.3/rk3576-pmdomain-power-off-npu-subtree-at-probe.patch
-
-Thanks again, this really helped find the root cause.
-
-Jiaxing
