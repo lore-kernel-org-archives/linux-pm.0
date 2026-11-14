@@ -1,82 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.169
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.178
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794655342;
-	b=IRBYDcMlACARcssrrwzWMbhY2YC29BtG9mqGbUyl2ARq8lXkaLkTUQkShPr3kxhxCSEn
-	 kHol0k98XE8k5EJNj5/W0p55LQlllh/fp4R6aOR7U9RZIJDwL3PgRoaVAvEQjvA25U3bH
-	 VN7XKqJdtjcL64Xjv8ppJgKtesr8+32GRNmdqlIEcb4Z1fIXokx56aFEEYysyA7Jb39Rj
-	 DsWPdvRo5snhAaD0EMxT7n7llfPwpu43fQoLFdu5xYOrnhRC5dPV1WccnRxoMeXo5T89x
-	 rZ/r/8DsOjEg6gdjdxSRKhcCKungsgc9tvwOJTVz+y4qkMI5DzoxDKK516/S+NNuGiA==
+	t=1794655351;
+	b=1eYDijZqMGqLIvpVmtsrgV4DP/TK/3sBq+a06F/QD/BRFbuYgX+chiEPDldzOqWaNHGK
+	 8YxURdwtORfPuHqNO02c8An6F4V8p2EKALIA9GfmnhthA+JiNnZCO6MF6xsPSgSSwQOIX
+	 OROUYmU9rynrsSRVKheRp9xI/qLl90LTB5tgZzjB/TF/7pz+OkgiUz4eYJNauRaG6846n
+	 pA/eqRYyWqwRRdUKeTHuMDskX0KKatr33+FzWQw3e+DIBfwfbs9YhEmlAxejJn2A+jRqj
+	 CNTO8U1fv73SUyONfJpcnclkcwP5z3qKdX0fJmPEgODG1ybexGplnhB/mmqC72bDgMQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794655342;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794655351;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=7ce9oQsSpPF80zF9oT7k6J12AxCufApsfMgTJKBfXIs=;
-	b=zt3YLOLFSxM/0q1TzOqbv4qGZXrpNSbVAHTHDRhw0m7kqK+dXK3H/Ii1G9gDakkINq1F
-	 EhB6l5osirFBZA5SrILxXL3brD4E/1/H9RNrcd+HyMIBpXC9x6Rj0aPfMIF8yfPY7gx9O
-	 5vWFROHhqwjkYazA5ibsafKW2o2iuAqajH9VQ+9ddEHiZbWFwtarOh5ajUIYDaqub7zph
-	 27DLRuCj0RWG1A34m0Z8k+D3wc0NOiwVLZy/fkdPXXseiuOfdOPx+sM9CxC4G0865VIb7
-	 qfD45Ms8c9ZS8yuZ9vlUe3Gt8TsJgMmbiQquf8Fk0t6HRGF2BhwHEk85avH8D8Ly0Jg==
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=OWko3j/Kf1oSDKamlqym8HQgeMZSQzYPi+gZAwDXJpw=;
+	b=PWDcf6gBcmr/usCBv1Jpgx0JSotzdBlhq3dEyLlmsy5DmBfScIc/rzJiRWDtawx3IV5V
+	 D63GoAKCMJJmTShMFDDJ0M0QpZl+1diUhr4ncBSK/QydgExrBaxUWmotHNXC4Yg+cEsfM
+	 A9YKpc/KdbIGTlpjncl9ZREgXE+oype7f41E+rSyF4bqK7uvtVJabrP8AQOgP08EehTGE
+	 ixdvdgtiQYPjRfo31tZWMD4MEvk+/hwrjHsJefrCCoH2NVYcA299osFpUanTWzWtiUmPf
+	 zyS6YS/JQXreV0zP9M2MCPzzZoB6lvUYeY+qkIyOD+Vrk/ea93KaSzmmGErHRBAgoiw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hHscUns5;
-	arc=none smtp.remote-ip=209.85.215.169
-Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rhTQIEg5;
+	arc=none smtp.remote-ip=209.85.210.178
+Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C3A6606A331
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 11:22:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2C3A6606A331
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E15E606A8A3
+	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 11:22:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5E15E606A8A3
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hHscUns5
-Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-cdde3597d8bso146328a12.1
-        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 03:22:21 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rhTQIEg5
+Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-8b600fae14dso995337b3a.2
+        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 03:22:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794655341; x=1795260141; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7ce9oQsSpPF80zF9oT7k6J12AxCufApsfMgTJKBfXIs=;
-        b=hHscUns54ZoPTWjJLDTcIIdAlRhRig51j67kstsOM41HSpAVjhH25UPBT4Xs8Lfl8v
-         zF7T9BPu9XcRPlrR4333fUvGcBpBWwiNVgi2/hQRAe7YutjASqT0+RTt9cKqjnE7DbkC
-         SeqCCXVBIFMUyBNRlOIL6aMgr4y1qTQi3Gzk70PK9CZGkl1a5L/hkA/0wzYwOQSDj+pf
-         OOSeQx0SsyqN6MD6GbZMt6S5tM5GJMTITof+crWu+9OUn5IKU6Mqp3RsUPQKnpGFn8TR
-         YPR1YEPH2CwSfxzkG14BizzhPQCeJuOCj6xqQneND4IBCWR9Thx8ONumgxDEaZsG0zQj
-         HZ1g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794655341; x=1795260141;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1794655351; x=1795260151; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=7ce9oQsSpPF80zF9oT7k6J12AxCufApsfMgTJKBfXIs=;
-        b=HOl7M4j6dfwqzmqKVp97afC0D3f0A+q77yYelZ7s/iyRfn8nU856kbxFqf1MG+JgqU
-         lPzRP8N6MvQ4lNJ3TbeH+ta3lelm00ZuiGsTjdf1dml0lBSFaf8S5+J2eKrgGUhI9p8E
-         kqVnqVCHKN6odesBj73dF4jWzHeln+Sn6BQ/m3oE//rVdeJkLsvjDdOd1mYZojooHTt4
-         y7/yoN5q2o+QowqPDXa2we8iMH5g9uUPjAFrPhZ2VfgULAEFpFpsgvQvTXjQ+BHl4MFw
-         0r8lQ2h14SGO+6rND/zv7ksFNEN1Kw0/jhgHc9nlKWWUWDAtV2WmTCIwLFoTGJ9kNnMD
-         8STw==
-X-Gm-Message-State: APuU4Z/uz4qh6Pacd9AtuZJyUjlTIZyAaLKPqajPBiNhYevaNppO/ja/
-	EVv62N1vUk0mZ1QXx0CHwyHc2L+kUN6V82iywDyMsG2W+jIOSl087cK5
-X-Gm-Gg: AYBFou0p4J2uq1KgsaHTL/I0upE+4HD2Bk7fbZHPds93IHFvwotIXkTnqJnXu5T+/Z9
-	KBKyreE97Y6irEB5YYk+LqHEpZk7HcO16g/7vb4udN6KlAwzCgTnFWGOXULeWelthIUq4Cxm3g+
-	+hLkHzuIOCj4NOBD2JjqzvLjqOUTQCIhvyBmoVH4h+p6rkm42pwJUs0jvNRjaMYWI9p5QdFXukX
-	Z5HX8i5zi76x+StiXvwmpepeEYv7UD41+mdp6zCKROqoXErzSYarOK2k5TguOph3sCEmuGZTgg7
-	u91vDLdDgfMfXOoZSQq3BdouVWpZ8Hqc1HTHX47Pi1T5E+XeHeOvp51TAd92TpqeQyG5EuhH+rX
-	OhGPN2acSKS5eRx2DweHNSd/8udtTi/U00GpW8rnEoVA0ipB6T7jEhaIVmhWj7XnCld0iq+GREG
-	HdtW2tLyZ9/HbkHQIwMyD1cBbNVW/IPT2EURSttd7g9YHxh4F+LRZOf9f/svlZ7eeZjjpgYUEl/
-	POrvTRMBGrHvJkP0gb1BKo92BjKg4VPtVvqaktA31s0TC2IY4ER1xFTM09fCm2H9x36AMja3f7B
-	z67fAR/vPkGFcLG8MZlUtXFVa+euVsAc0WRm6EDJM0xo1HeoKQojmSvsqfS9xLNdJelqBbYLwJq
-	N+XuIG9Bv1Qw7sJZZFO7kHTjJtNLS8Lp67j03IHG0yI2hJ8TLcpwzD38lvyno1UyqD/XHIiQcXp
-	FkDXnkIrH0pBpgzsc=
-X-Received: by 2002:a17:90a:c88f:b0:3b0:e388:d9c9 with SMTP id 98e67ed59e1d1-3b1b0b5d690mr3501691a91.12.1794655341320;
-        Sat, 14 Nov 2026 03:22:21 -0800 (PST)
+        bh=OWko3j/Kf1oSDKamlqym8HQgeMZSQzYPi+gZAwDXJpw=;
+        b=rhTQIEg5egbSjBostf3DjHrD3H88J5BislJO8/hZ36gvYc5wvuA+W8dPah/hhBzmJF
+         KpD75iRN7b5GZcD9v3tXpL7z+CFQu/U1uAIqiDkaVEflcPxe2H/yU3h0N4t/jDSpBn8f
+         wLS/VmPN+2Og/41i55+jXvVYsGWuCMPvjz8paLZ0EW2nSBcJrMO1zhzWgk+E8cI+mEzi
+         w3MuMawj9QCaiFUUWi9brnQrSlSXqMEqchNstttr8grSQTKc5VxXE3JVhzpDAybKT07M
+         dRoP0qznnet+ZiE/Sr2J/z+7qJXPkj8eJQTO41RoWp51GVQ4nd2cIraq2bMgQt7D6X2C
+         qoCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794655351; x=1795260151;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=OWko3j/Kf1oSDKamlqym8HQgeMZSQzYPi+gZAwDXJpw=;
+        b=S+748OexsiGjbBoyVlyNRxSndOFSuTZ8M7ruIWtchA2au3CTIOx1rkc9Ks/bK3QRUx
+         DLnsuM06s6DU8Hf4F8lXi4KTajttQuVYf1860zWc1j6bHutASu2LOpD2occHUaGHjUQT
+         ATN1NvqcZLgrpVNn1bkZVUm9N2GEdK//8IZBotsBCRnMaUHNhvt+qyU8ci69/1lr7m1i
+         oR8ocWYHXQlJZ214c5XADZft5RJUQkmFSjp/1ZEOD/bEtJV5EYnYS8oclCixcyXvLwjv
+         Tlke8SX17YUU7qxYej3I8SucTnI2azwSOXpWk5lUyFUhvIkugLiC2l6OQZ9h6IrADGQy
+         adNA==
+X-Gm-Message-State: APuU4Z8c4pziv7IHbMTrOW+AhdfsOiLX9hA0eH+kkq+0J/GEaBQugMvI
+	Nkx68Qvn7tlepMXF2vUbXRf7oTYMX8jdoPa72DFAO0ldynoPfbhWOqcf
+X-Gm-Gg: AYBFou2Fy4SQdtXdFA7dAK+QNcQmh1CObOBcp/pK4b7wciiVXpYcQzQFKVqcvdcDp40
+	v8tFYB0AMrc9/dJ1L2HEY4SjSpMQ9BTDRxm12f1KM2l0pAWrJtprN02FUC6t3+7eTPsUINppnYc
+	yOaJgjrNwykWuPZjl1/Y0duyXT85tB5/vwZO/0Ae7ahOpdKS3ZYfFDJT9I+xMOgYIJHni+OdHGX
+	08gZqMbdrE8iZWCMcFp7MBuZA2n9O4apSFBNR5S5528GGrjqj3f3oeNiXotT1xPFx2DBPgUKV3N
+	czjcZrU6njHD9hwy6E2NBRiabtXzqE/Kfoe2u5mBM+yJMJYkYoVhxksI1KKC5veuEpXAuZuxBxG
+	YsajcpvrlBvoRo6KddXfA7ghYUyl5XPLQ+Qz1m17pu4cjqnjre5sZcAOrQYAa4xuACyp4AmpC1D
+	g7eTwibi73ezg8Nmb0e0gI3qQfx8TBnkoKx/CI4sVcOjOANyHS4a9DFaAZs5e8gf97wAeYUQ2EO
+	db0r+fD96IAsDqU5qgd1UOhURs32wgulsjVxS+0UORE+2Ryh0CqGiHwk7Vvs4r7fQeJFWMFCGYH
+	jYmbQ1OCdQ3+Go8OAhoQwN0NqwxV9MFjoXe410Nql6+cN5FNgswNFdC4KDBDa9KxEfh7BUBF0U3
+	41BBxIMon7FCcQqVsz3UDrIRsfIQA+1lXU70ok9qztDoBNUOn3Oesg/rXKxpD090hP0Yn8w==
+X-Received: by 2002:a17:90b:4d0d:b0:3ad:d4aa:8559 with SMTP id 98e67ed59e1d1-3b1b09f37d9mr4724316a91.17.1794655350585;
+        Sat, 14 Nov 2026 03:22:30 -0800 (PST)
 Received: from localhost.localdomain ([118.68.25.198])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1b3b110c0sm3981142a91.3.2026.11.14.03.22.16
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1b3b110c0sm3981142a91.3.2026.11.14.03.22.26
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sat, 14 Nov 2026 03:22:19 -0800 (PST)
+        Sat, 14 Nov 2026 03:22:29 -0800 (PST)
 From: Adrian Nguyen <thenguyen1024@gmail.com>
 To: Sebastian Reichel <sre@kernel.org>,
 	Rob Herring <robh@kernel.org>,
@@ -88,10 +89,12 @@ Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Casey Connolly <casey.connolly@linaro.org>,
 	Adrian Nguyen <thenguyen1024@gmail.com>
-Subject: [PATCH v3 0/2] power: supply: Add Qualcomm SMB1351 charger driver
-Date: Sat, 14 Nov 2026 18:21:53 +0700
-Message-ID: <20261114112155.85068-1-thenguyen1024@gmail.com>
+Subject: [PATCH v3 2/2] power: supply: Add Qualcomm SMB1351 charger driver
+Date: Sat, 14 Nov 2026 18:21:55 +0700
+Message-ID: <20261114112155.85068-3-thenguyen1024@gmail.com>
 X-Mailer: git-send-email 2.56.1
+In-Reply-To: <20261114112155.85068-1-thenguyen1024@gmail.com>
+References: <20261114112155.85068-1-thenguyen1024@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,130 +106,568 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The Vsmart Active 1 (SDM660, PM660) has a Qualcomm SMB1351 parallel
-charger at 0x1d on blsp_i2c2, next to the PM660 charger. Its version
-register reads 0xb2, which the downstream driver identifies as an
-SMB1350. Without a driver it runs on its OTP defaults: charging is
-enabled through an active-low pin that the PM660 holds low, with a
-4.5 V float voltage on a 4.4 V battery. It is powered from VBUS alone,
-so it does not answer on I2C without VBUS and starts over from those
-defaults whenever VBUS comes back. As a result, whenever the PM660
-suspends its USB input, the SMB1351 charges the battery on its own.
-Since commit 98d68b74ebb9 ("power: supply: qcom_smbx: allow disabling
-charging"), qcom_smbx does that when user space writes 0 to the status
-property of the PM660 charger to stop charging.
+The Qualcomm SMB1351 is a switch-mode battery charger that some phones
+use in parallel with the charger in their PMIC.
 
-Patch 1 documents the chip with the battery it charges, its STAT output
-as an optional interrupt and, on a parallel charger, the PMIC charger
-that shares its USB input. The SMB1350 gets its own compatible with
-qcom,smb1351 as the fallback. Patch 2 adds a driver that keeps the
-SMB1351 from charging: each time the PMIC charger reports a change, it
-hands the charge enable control to I2C with charging disabled and sets
-the float voltage from the battery. A status or charge_type read that
-finds the chip reset, or not answering, makes it configure the chip
-again. Its power supply reports whether the chip has VBUS, the charging
-status, the charge type and the float voltage set in the chip. Parallel
-charging is left for later, since it also needs the PMIC charger to
-split the current and to drive the enable pin. Patch 2 also explains
-why this is a new driver rather than part of smb347-charger.
+On the Vsmart Active 1 (SDM660, PM660) it is powered from VBUS alone:
+without VBUS it does not answer on I2C, and whenever VBUS comes back it
+starts over from its OTP defaults. Those defaults enable charging
+through an active-low pin that the PM660 holds low, with a 4.5 V float
+voltage on a 4.4 V battery. So whenever the PM660 suspends its USB
+input, the SMB1351 charges the battery on its own. Since commit
+98d68b74ebb9 ("power: supply: qcom_smbx: allow disabling charging"),
+qcom_smbx does that when user space writes 0 to the status property of
+the PM660 charger to stop charging.
 
-Making qcom_smbx drive the enable pin high would also keep the chip
-off, but only because of the pin polarity in its OTP, which the
-downstream driver does not rely on: it programs the polarity over I2C.
-A driver that programs the enable control over I2C works whatever the
-PMIC does with the pin, gets the chip described in DT, and gives
-parallel charging something to build on.
+Add a driver that keeps the charger disabled. Each time the PMIC
+charger reports a change, the driver hands the charge enable control to
+I2C with charging disabled, which does not depend on how the PMIC drives
+the enable pin, and sets the float voltage from the monitored battery.
+Making qcom_smbx drive the pin high instead would keep the chip off
+only because of the pin polarity in its OTP, which the downstream
+driver does not rely on: it programs the polarity over I2C. The float
+voltage only matters if charging gets enabled anyway, for example
+through i2c-dev: charging then stops at the battery's maximum voltage
+instead of 4.5 V.
 
-Tested on the Vsmart Active 1 with a 7.2-based kernel from the
-sdm660-mainline tree [1] (its qcom-sdm660-7.2.y branch plus a few
-pending pull requests), with the same driver as this series,
-CONFIG_CHARGER_QCOM_SMB1351=m and a DT node [2] that also passes
-dtbs_check against this binding:
+While the chip does not answer, the driver retries for about two
+seconds and then treats VBUS as absent. A chip without VBUS NACKs its
+address, so only other I2C errors are logged. A power supply reports
+whether the chip answers, which with this wiring means that it has
+VBUS. It also reports the charging status, the charge type and the
+float voltage set in the chip.
 
-- With the PM660 USB input suspended (on that kernel through
-  charge_behaviour=force-discharge, which the sdm660-mainline tree adds
-  to qcom_smbx and which sets the same USBIN_SUSPEND bit as writing 0
-  to status), the battery discharges at 250 to 470 mA and the SMB1351
-  reports "Not charging". Without the driver it charged the battery at
-  about 390 mA in that state.
-- After an unplug, smb1351-charger goes offline 2.35 s after the PM660
-  charger reports the change (2.37 s in a second run), when the
-  driver's retries run out.
-- After a replug, the chip is back on its OTP defaults (0x03 = 0xf2,
-  0x06 = 0x6b) and is configured again (0x03 = 0xed, 0x06 = 0x0b)
-  within about 0.4 s of VBUS settling. This also works while the PM660
-  has its USB input suspended, because the PM660 charger still reports
-  plug events then. In that run nothing read the status, so the PM660
-  events alone were enough.
-- Writing the OTP enable setting (0x06 = 0x6b) behind the driver's back
-  makes the next status read return "Unknown", and the chip is
-  configured again within a second.
-- Probing without VBUS, unbind/bind, and unloading the module inside
-  the retry windows work without warnings.
+The chip can also lose VBUS and reset without the PMIC charger
+reporting a change. Until the PMIC suspends its input, a reset chip
+looks the same as a configured one in the status register: neither
+charges. So reading the status or the charge type also checks that the
+enable control is still set to I2C. If it is not, or if the chip does
+not answer, they read as unknown and the driver tries to configure the
+chip again.
 
-While the PM660 has its USB input suspended, smb1351-charger still
-reports online = 1, because VBUS is present, so user space such as
-UPower sees external power in that state.
+Charging in parallel also needs the PMIC charger to split the current
+and to drive the enable pin, so it is left for later.
 
-On sre/for-next (7071d4750856), the driver builds without warnings
-with ARCH=arm64 LLVM=1 W=1 (clang 23.1.5), sparse (C=2) and the
-coccinelle report scripts find nothing in it, dt_binding_check and
-dt-check-style --mode=strict pass for the new schema, and
-checkpatch.pl --strict only asks whether MAINTAINERS needs updating
-for the new files.
+The SMB1351 shares its float voltage and enable control registers
+(0x03 and 0x06) with the Summit SMB347, but not its command and status
+registers: configuration writes are allowed by bit 6 of 0x30, not by
+bit 7, which the downstream driver names a reload bit; charging is
+enabled in 0x32, not 0x30; and the status is at 0x3a, not 0x3d.
+smb347-charger also applies its charging configuration only once, in
+probe, and fails to probe when the chip does not answer, so it cannot
+handle a chip that answers only while it has VBUS and has to be
+configured again each time VBUS returns.
 
-The Vsmart Active 1 DT is only in the sdm660-mainline tree so far, and
-the SMB1351 node for it is in [2]. sdm630-sony-xperia-nile.dtsi also
-mentions an SMB1351 on blsp_i2c2, and msm8996pro-xiaomi-scorpio.dts
-names a STAT_SMB1351 line, so the binding may find more users.
+The version register of the chip on this board reads 0xb2, which the
+downstream driver identifies as an SMB1350. The two chips share the
+registers used here. The register definitions and the enable control
+come from that driver:
+https://github.com/LineageOS/android_kernel_xiaomi_sdm660/blob/49688d8750f2fca28271f936cfcfec5d97c0d7a4/drivers/power/supply/qcom/smb1351-charger.c
 
-How this series was made: with an LLM coding assistant over longer
-interactive sessions. I asked it to find out why the battery kept
-charging while the PM660 had its USB input suspended, and later to fix
-that in the kernel. It read the SMB1351 registers over i2c-dev and the
-PM660 registers through regmap debugfs on the phone, compared them with
-the stock DT and the downstream driver, and laid out the options. After
-I chose a separate I2C driver, it wrote the binding, the driver, the
-commit messages and this cover letter, and ran the build checks and the
-device test scripts above. It also ran sparse and the coccinelle report
-scripts on the driver; they found nothing. For v3 it wrote the locking
-fix below and re-ran the checks and the device tests. I did the cable
-tests on the phone and reviewed the result.
+The cause was found with an LLM coding assistant, which read the
+SMB1351 and PM660 registers on the phone and compared them with the
+stock devicetree and the downstream driver.
 
-[1] https://github.com/sdm660-mainline/linux
-[2] https://github.com/sdm660-mainline/linux/pull/241
+Signed-off-by: Adrian Nguyen <thenguyen1024@gmail.com>
+---
 
-Changes in v3:
-- Patch 2: set retry_until and queue the work under a spinlock, so
-  that a status read cannot replace the longer deadline set by
-  external_power_changed() with its shorter one (found by the Sashiko
-  review bot).
-- Drop the Assisted-by tags: since commit 1e035297ffda ("docs: remove
-  Assisted-by references") the tool use is described in this cover
-  letter instead.
-- Rebase onto sre/for-next (7071d4750856, on v7.4-rc1).
-- Link to v2: https://lore.kernel.org/r/20261021082841.79147-1-thenguyen1024@gmail.com
+Notes:
+    Changes in v3:
+    - Set retry_until and queue the work under a spinlock, in the status read
+      and in external_power_changed(). Without it, a status read could find
+      no work pending, get preempted while external_power_changed() set the
+      longer deadline and queued the work, and then replace that deadline
+      with its shorter one (found by the Sashiko review bot).
+    - Drop the Assisted-by tag, as in patch 1.
 
-Changes in v2:
-- Patch 1: drop monitored-battery from properties, power-supply.yaml
-  brings it (Krzysztof). Add Krzysztof's Reviewed-by.
-- Patch 2: unchanged.
-- Link to v1: https://lore.kernel.org/r/20261011072135.12757-1-thenguyen1024@gmail.com
-
-Adrian Nguyen (2):
-  dt-bindings: power: supply: Add Qualcomm SMB1351 charger
-  power: supply: Add Qualcomm SMB1351 charger driver
-
- .../bindings/power/supply/qcom,smb1351.yaml   |  69 +++
- drivers/power/supply/Kconfig                  |  14 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/qcom_smb1351.c           | 439 ++++++++++++++++++
- 4 files changed, 523 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/qcom,smb1351.yaml
+ drivers/power/supply/Kconfig        |  14 +
+ drivers/power/supply/Makefile       |   1 +
+ drivers/power/supply/qcom_smb1351.c | 439 ++++++++++++++++++++++++++++
+ 3 files changed, 454 insertions(+)
  create mode 100644 drivers/power/supply/qcom_smb1351.c
 
-
-base-commit: 7071d4750856abbc68dfe431acc58a1d45dd42e8
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index ee7dc5f2617a..d1dd39f47e38 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -1182,6 +1182,20 @@ config CHARGER_QCOM_SMB2
+ 	  adds support for the SMB2 switch mode battery charger found
+ 	  in PMI8998 and related PMICs.
+ 
++config CHARGER_QCOM_SMB1351
++	tristate "Qualcomm SMB1351 parallel charger driver"
++	depends on I2C
++	select REGMAP_I2C
++	help
++	  Say Y here to enable the driver for the Qualcomm SMB1351 charger
++	  and the register-compatible SMB1350, which some phones use in
++	  parallel with the charger in their PMIC. The driver keeps the
++	  charger from charging the battery on its own and reports whether
++	  it has input power.
++
++	  This driver can also be built as a module. If so, the module will
++	  be called qcom_smb1351.
++
+ config FUEL_GAUGE_MM8013
+ 	tristate "Mitsumi MM8013 fuel gauge driver"
+ 	depends on I2C
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index f3c0d1006c1a..07b5f0d02f2a 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -132,6 +132,7 @@ obj-$(CONFIG_CHARGER_SURFACE)	+= surface_charger.o
+ obj-$(CONFIG_BATTERY_CHARGER_SURFACE_RT) += surface-rt-ec.o
+ obj-$(CONFIG_BATTERY_UG3105)	+= ug3105_battery.o
+ obj-$(CONFIG_CHARGER_QCOM_SMB2)	+= qcom_smbx.o
++obj-$(CONFIG_CHARGER_QCOM_SMB1351)	+= qcom_smb1351.o
+ obj-$(CONFIG_FUEL_GAUGE_MM8013)	+= mm8013.o
+ obj-$(CONFIG_MACSMC_POWER)	+= macsmc-power.o
+ obj-$(CONFIG_CHARGER_MAX77759)	+= max77759_charger.o
+diff --git a/drivers/power/supply/qcom_smb1351.c b/drivers/power/supply/qcom_smb1351.c
+new file mode 100644
+index 000000000000..33289c767bdb
+--- /dev/null
++++ b/drivers/power/supply/qcom_smb1351.c
+@@ -0,0 +1,439 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Qualcomm SMB1351 charger driver
++ *
++ * The SMB1351 is a switch-mode battery charger that some phones use in
++ * parallel with the charger in their PMIC. On some of them, such as the
++ * Vsmart Active 1, it is powered from VBUS only: without VBUS it does not
++ * answer on I2C, and when VBUS returns it starts over from its OTP
++ * configuration. This driver supports only that wiring and treats a chip
++ * that answers as having VBUS. It keeps charging disabled, and reapplies
++ * its configuration whenever the PMIC charger reports a change or a status
++ * read finds the chip reset. Parallel charging, interrupts and OTG are not
++ * supported yet.
++ *
++ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2026 Adrian Nguyen <thenguyen1024@gmail.com>
++ */
++
++#include <linux/bitfield.h>
++#include <linux/bits.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/i2c.h>
++#include <linux/jiffies.h>
++#include <linux/module.h>
++#include <linux/power_supply.h>
++#include <linux/property.h>
++#include <linux/regmap.h>
++#include <linux/spinlock.h>
++#include <linux/workqueue.h>
++
++#define SMB1351_VFLOAT_REG		0x03
++#define SMB1351_VFLOAT_MASK		GENMASK(5, 0)
++
++#define SMB1351_CHG_PIN_EN_CTRL_REG	0x06
++#define SMB1351_EN_PIN_CTRL_MASK	GENMASK(6, 5)
++#define SMB1351_EN_BY_I2C_0_DISABLE	0x00
++
++#define SMB1351_VERSION_REG		0x2e
++#define SMB1351_VERSION_SMB1350		BIT(1)
++
++#define SMB1351_CMD_I2C_REG		0x30
++#define SMB1351_CMD_BQ_CFG_ACCESS	BIT(6)
++
++#define SMB1351_CMD_CHG_REG		0x32
++#define SMB1351_CMD_CHG_EN		BIT(1)
++
++#define SMB1351_STATUS_4_REG		0x3a
++#define SMB1351_STATUS_HOLD_OFF		BIT(3)
++#define SMB1351_STATUS_CHG_MASK		GENMASK(2, 1)
++#define SMB1351_STATUS_CHG_NONE		0
++#define SMB1351_STATUS_CHG_PRE		1
++#define SMB1351_STATUS_CHG_FAST		2
++#define SMB1351_STATUS_CHG_TAPER	3
++
++#define SMB1351_CHG_REVISION_REG	0x3f
++
++#define SMB1351_VFLOAT_MIN_UV		3500000
++#define SMB1351_VFLOAT_MAX_UV		4500000
++#define SMB1351_VFLOAT_STEP_UV		20000
++
++/* Let VBUS settle after the PMIC charger reports a change */
++#define SMB1351_SETTLE_MS		300
++/* Right after VBUS appears the chip may not answer yet */
++#define SMB1351_RETRY_MS		200
++#define SMB1351_RETRY_TIMEOUT_MS	2000
++
++struct smb1351 {
++	struct device *dev;
++	struct regmap *regmap;
++	struct power_supply *psy;
++	struct delayed_work work;
++	spinlock_t lock;		/* sets retry_until with queueing the work */
++	unsigned long retry_until;	/* jiffies, when to stop retrying */
++	unsigned int vfloat_code;	/* set before the work is enabled */
++	bool online;			/* only written by the work */
++	bool identified;		/* only used by the work */
++};
++
++static const enum power_supply_property smb1351_properties[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
++};
++
++static int smb1351_status(unsigned int stat)
++{
++	if (stat & SMB1351_STATUS_HOLD_OFF)
++		return POWER_SUPPLY_STATUS_NOT_CHARGING;
++
++	if (FIELD_GET(SMB1351_STATUS_CHG_MASK, stat) != SMB1351_STATUS_CHG_NONE)
++		return POWER_SUPPLY_STATUS_CHARGING;
++
++	return POWER_SUPPLY_STATUS_NOT_CHARGING;
++}
++
++static int smb1351_charge_type(unsigned int stat)
++{
++	switch (FIELD_GET(SMB1351_STATUS_CHG_MASK, stat)) {
++	case SMB1351_STATUS_CHG_PRE:
++		return POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
++	case SMB1351_STATUS_CHG_FAST:
++	case SMB1351_STATUS_CHG_TAPER:	/* constant voltage phase */
++		return POWER_SUPPLY_CHARGE_TYPE_FAST;
++	default:
++		return POWER_SUPPLY_CHARGE_TYPE_NONE;
++	}
++}
++
++/*
++ * Read the charger status, provided the chip is still configured. The driver
++ * only ever selects the I2C enable control, so any other setting means that
++ * the chip has been reset and is no longer kept from charging.
++ */
++static int smb1351_read_status(struct smb1351 *chip, unsigned int *stat)
++{
++	unsigned int en;
++	int ret;
++
++	ret = regmap_read(chip->regmap, SMB1351_CHG_PIN_EN_CTRL_REG, &en);
++	if (ret)
++		return ret;
++
++	if ((en & SMB1351_EN_PIN_CTRL_MASK) != SMB1351_EN_BY_I2C_0_DISABLE)
++		return -EIO;
++
++	return regmap_read(chip->regmap, SMB1351_STATUS_4_REG, stat);
++}
++
++static int smb1351_get_property(struct power_supply *psy,
++				enum power_supply_property psp,
++				union power_supply_propval *val)
++{
++	struct smb1351 *chip = power_supply_get_drvdata(psy);
++	bool online = READ_ONCE(chip->online);
++	unsigned int stat, vfloat;
++	int ret;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = online;
++		return 0;
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++		/* -ENODATA leaves the property out of a uevent */
++		if (!online)
++			return -ENODATA;
++		ret = regmap_read(chip->regmap, SMB1351_VFLOAT_REG, &vfloat);
++		if (ret)
++			return -ENODATA;
++		val->intval = SMB1351_VFLOAT_MIN_UV +
++			      FIELD_GET(SMB1351_VFLOAT_MASK, vfloat) *
++			      SMB1351_VFLOAT_STEP_UV;
++		return 0;
++	case POWER_SUPPLY_PROP_STATUS:
++		if (!online) {
++			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
++			return 0;
++		}
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		if (!online) {
++			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
++			return 0;
++		}
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/*
++	 * The chip can lose VBUS, and with it its configuration, without the
++	 * PMIC charger reporting a change. If it has been reset or does not
++	 * answer, run the work again, unless a run with its own deadline is
++	 * already pending. Report "Unknown" rather than an error, which would
++	 * drop the whole uevent.
++	 */
++	ret = smb1351_read_status(chip, &stat);
++	if (ret) {
++		spin_lock(&chip->lock);
++		if (!delayed_work_pending(&chip->work)) {
++			WRITE_ONCE(chip->retry_until, jiffies +
++				   msecs_to_jiffies(SMB1351_RETRY_TIMEOUT_MS));
++			queue_delayed_work(system_freezable_wq, &chip->work, 0);
++		}
++		spin_unlock(&chip->lock);
++	}
++
++	if (psp == POWER_SUPPLY_PROP_STATUS)
++		val->intval = ret ? POWER_SUPPLY_STATUS_UNKNOWN :
++				    smb1351_status(stat);
++	else
++		val->intval = ret ? POWER_SUPPLY_CHARGE_TYPE_UNKNOWN :
++				    smb1351_charge_type(stat);
++
++	return 0;
++}
++
++static int smb1351_configure(struct smb1351 *chip)
++{
++	struct regmap *map = chip->regmap;
++	unsigned int cmd, en, vfloat;
++	int ret;
++
++	/* The configuration registers can only be written with this bit set */
++	ret = regmap_set_bits(map, SMB1351_CMD_I2C_REG,
++			      SMB1351_CMD_BQ_CFG_ACCESS);
++	if (ret)
++		return ret;
++
++	/* Clear the command first, so that I2C control starts out disabled */
++	ret = regmap_clear_bits(map, SMB1351_CMD_CHG_REG, SMB1351_CMD_CHG_EN);
++	if (ret)
++		return ret;
++
++	ret = regmap_update_bits(map, SMB1351_CHG_PIN_EN_CTRL_REG,
++				 SMB1351_EN_PIN_CTRL_MASK,
++				 SMB1351_EN_BY_I2C_0_DISABLE);
++	if (ret)
++		return ret;
++
++	ret = regmap_update_bits(map, SMB1351_VFLOAT_REG, SMB1351_VFLOAT_MASK,
++				 FIELD_PREP(SMB1351_VFLOAT_MASK,
++					    chip->vfloat_code));
++	if (ret)
++		return ret;
++
++	ret = regmap_read(map, SMB1351_CMD_CHG_REG, &cmd);
++	if (ret)
++		return ret;
++	ret = regmap_read(map, SMB1351_CHG_PIN_EN_CTRL_REG, &en);
++	if (ret)
++		return ret;
++	ret = regmap_read(map, SMB1351_VFLOAT_REG, &vfloat);
++	if (ret)
++		return ret;
++
++	if ((cmd & SMB1351_CMD_CHG_EN) ||
++	    (en & SMB1351_EN_PIN_CTRL_MASK) != SMB1351_EN_BY_I2C_0_DISABLE ||
++	    FIELD_GET(SMB1351_VFLOAT_MASK, vfloat) != chip->vfloat_code)
++		return -EIO;
++
++	return 0;
++}
++
++static void smb1351_work(struct work_struct *work)
++{
++	struct smb1351 *chip = container_of(to_delayed_work(work),
++					    struct smb1351, work);
++	unsigned int version;
++	bool online;
++	int ret;
++
++	/* The chip only answers while it has VBUS */
++	ret = regmap_read(chip->regmap, SMB1351_VERSION_REG, &version);
++	online = !ret;
++
++	if (online && !chip->identified) {
++		bool smb1350 = version & SMB1351_VERSION_SMB1350;
++
++		dev_info(chip->dev, "found %s (version %#04x)\n",
++			 smb1350 ? "SMB1350" : "SMB1351", version);
++		chip->identified = true;
++	}
++
++	if (online)
++		ret = smb1351_configure(chip);
++
++	if (ret && time_before(jiffies, READ_ONCE(chip->retry_until))) {
++		queue_delayed_work(system_freezable_wq, &chip->work,
++				   msecs_to_jiffies(SMB1351_RETRY_MS));
++		return;
++	}
++
++	if (!online) {
++		/* Without VBUS the chip does not acknowledge its address */
++		if (ret != -ENXIO)
++			dev_warn_ratelimited(chip->dev,
++					     "failed to read version: %pe\n",
++					     ERR_PTR(ret));
++	} else if (ret) {
++		dev_err_ratelimited(chip->dev,
++				    "failed to disable charging: %pe\n",
++				    ERR_PTR(ret));
++	}
++
++	if (online != chip->online) {
++		dev_dbg(chip->dev, "VBUS %s\n", online ? "present" : "absent");
++		WRITE_ONCE(chip->online, online);
++		power_supply_changed(chip->psy);
++	}
++}
++
++static void smb1351_external_power_changed(struct power_supply *psy)
++{
++	struct smb1351 *chip = power_supply_get_drvdata(psy);
++
++	/*
++	 * Under the lock, so that a status read that finds no work pending
++	 * cannot then replace this deadline with its shorter one.
++	 */
++	spin_lock(&chip->lock);
++	WRITE_ONCE(chip->retry_until,
++		   jiffies + msecs_to_jiffies(SMB1351_SETTLE_MS +
++					      SMB1351_RETRY_TIMEOUT_MS));
++	mod_delayed_work(system_freezable_wq, &chip->work,
++			 msecs_to_jiffies(SMB1351_SETTLE_MS));
++	spin_unlock(&chip->lock);
++}
++
++static const struct power_supply_desc smb1351_psy_desc = {
++	.name = "smb1351-charger",
++	.type = POWER_SUPPLY_TYPE_USB,
++	.properties = smb1351_properties,
++	.num_properties = ARRAY_SIZE(smb1351_properties),
++	.get_property = smb1351_get_property,
++	.external_power_changed = smb1351_external_power_changed,
++};
++
++static const struct regmap_config smb1351_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++	/* 0x40-0x47 are interrupt status registers that clear on read */
++	.max_register = SMB1351_CHG_REVISION_REG,
++	/* The chip forgets its configuration whenever it loses VBUS */
++	.cache_type = REGCACHE_NONE,
++};
++
++static void smb1351_disable_work(void *data)
++{
++	struct smb1351 *chip = data;
++
++	disable_delayed_work_sync(&chip->work);
++}
++
++static int smb1351_probe(struct i2c_client *client)
++{
++	struct device *dev = &client->dev;
++	struct power_supply_config psy_cfg = {};
++	struct power_supply_battery_info *info;
++	struct smb1351 *chip;
++	int vfloat_uv;
++	int ret;
++
++	chip = devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
++
++	chip->dev = dev;
++	spin_lock_init(&chip->lock);
++
++	chip->regmap = devm_regmap_init_i2c(client, &smb1351_regmap_config);
++	if (IS_ERR(chip->regmap))
++		return dev_err_probe(dev, PTR_ERR(chip->regmap),
++				     "failed to initialize regmap\n");
++
++	/*
++	 * external_power_changed() can run as soon as the power supply is
++	 * registered, before devm_power_supply_register() returns. Keep the
++	 * work disabled until the rest of probe is done.
++	 */
++	INIT_DELAYED_WORK(&chip->work, smb1351_work);
++	disable_delayed_work(&chip->work);
++
++	psy_cfg.drv_data = chip;
++	psy_cfg.fwnode = dev_fwnode(dev);
++
++	chip->psy = devm_power_supply_register(dev, &smb1351_psy_desc,
++					       &psy_cfg);
++	if (IS_ERR(chip->psy))
++		return dev_err_probe(dev, PTR_ERR(chip->psy),
++				     "failed to register power supply\n");
++
++	/*
++	 * Added after the power supply, so this runs before the power supply
++	 * is unregistered. Unlike devm_delayed_work_autocancel(), disabling
++	 * the work also turns later requeues into no-ops.
++	 */
++	ret = devm_add_action_or_reset(dev, smb1351_disable_work, chip);
++	if (ret)
++		return ret;
++
++	ret = power_supply_get_battery_info(chip->psy, &info);
++	if (ret)
++		return dev_err_probe(dev, ret, "failed to get battery info\n");
++
++	if (power_supply_battery_info_has_prop(info,
++					       POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX))
++		vfloat_uv = info->constant_charge_voltage_max_uv;
++	else if (power_supply_battery_info_has_prop(info,
++						    POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN))
++		vfloat_uv = info->voltage_max_design_uv;
++	else
++		return dev_err_probe(dev, -EINVAL,
++				     "battery has no maximum voltage\n");
++
++	if (vfloat_uv < SMB1351_VFLOAT_MIN_UV ||
++	    vfloat_uv > SMB1351_VFLOAT_MAX_UV)
++		return dev_err_probe(dev, -EINVAL,
++				     "unsupported float voltage %d uV\n",
++				     vfloat_uv);
++
++	chip->vfloat_code = (vfloat_uv - SMB1351_VFLOAT_MIN_UV) /
++			    SMB1351_VFLOAT_STEP_UV;
++
++	/* Leave the chip to the work, it does not answer without VBUS */
++	WRITE_ONCE(chip->retry_until,
++		   jiffies + msecs_to_jiffies(SMB1351_RETRY_TIMEOUT_MS));
++	enable_delayed_work(&chip->work);
++	mod_delayed_work(system_freezable_wq, &chip->work, 0);
++
++	return 0;
++}
++
++static const struct of_device_id smb1351_of_match[] = {
++	{ .compatible = "qcom,smb1351" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, smb1351_of_match);
++
++static const struct i2c_device_id smb1351_i2c_id[] = {
++	{ .name = "smb1351" },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, smb1351_i2c_id);
++
++static struct i2c_driver smb1351_driver = {
++	.driver = {
++		.name = "qcom-smb1351",
++		.of_match_table = smb1351_of_match,
++	},
++	.probe = smb1351_probe,
++	.id_table = smb1351_i2c_id,
++};
++module_i2c_driver(smb1351_driver);
++
++MODULE_AUTHOR("Adrian Nguyen <thenguyen1024@gmail.com>");
++MODULE_DESCRIPTION("Qualcomm SMB1351 charger driver");
++MODULE_LICENSE("GPL");
 -- 
 2.43.0
 
