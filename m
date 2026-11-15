@@ -1,73 +1,107 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794706414;
-	b=cAxog/1F2cRtXnnwLIAqKS6kBDX6DwlBe8d/QV14qo2ztXI9DV+a7JXa2Hz59MoIHmL6
-	 5KURcBMbprVuSL4LTpiG8w+pk0+jXuh5RCCUFtbfEeEvbGbjSJLFWPNkgzqx0VW49iVmm
-	 qWyKTV17AsI1f3MLjcMDn6Li4FcS53nhvA84x2hmU/JmrXfSij+jjc6zl08qa8KQBiFDj
-	 4nLaXrKyV52F7+JZXhZ+G2z4l0PQuC9W1+0RHIr/5SjPfe21fDeBerO4KYkPVlTciP9tn
-	 eGyyCw2OL6ZMT5tt93ohQzwN/lEgu7AxJEd5b9jneCNdHQsEOHLvR/SJRkw0KxBnTBQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794706414;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:X-Zoho-Virus-Status:X-Zoho-AV-Stamp:
-	 X-ZohoMailClient;
-	bh=xg9g6C/5fZ2E7eZtJQ3y3FzrxJXQqr0QulKYhlA7ksE=;
-	b=g+Y1Fu1locy+WkoktNOYCM/M139nMAr6dIZyZ56LmPWdOwqY9ePwJGJgACPk+8Yg7r6M
-	 KtrDTpyPyZ6+O88pi76osDPE/DBten1my+FUmsXyfRDHcQzKQmkX8CHRtTasc8BzJYRoA
-	 fFSm9WTc52/3B2RJowSeD9+tQKdW6aaW6J66CiH2eAb6Zfqlzbq35kjuFRs38oD9NgWnn
-	 yQZ6AJWj21cHK6SOKMoEd1v1p44ZcjGOWgiJvZ0OALIyElz0Ax95sk5ERTZV4X2E8u8V6
-	 99metFjmihlO/Lurbag0DMIHthMzdxSB8psRBkjccWtUMglvOoaSlZbadOeWM+fE9tg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=collabora.com;
-	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=ilqVIflI;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
-Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.45
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794708626;
+	b=jgzr6amEr0rzpAYoCxocBYg1Z+jNjTon5Dl2uSq1cRLcYPcOnyFRyUalVAb436KYtV+f
+	 s5kBYYZCIwalPPVpo7TEQcxi9UEqu57OkIfRrYtuUcZ3BDW/5RWvBTA77cePfyyyFyplL
+	 mnUIf0yyfVWM/gfI9tD6sC5OsxBEx2zxG/lIu/u6wy370/BREuGpn/Ua9pECD+H37K5Ls
+	 by6fgZg856oe/+13tdHnUQnVZfxS6N24Efafbz9Ohq8szpKhR0Wa1oA6Htj5IP0LZXuNv
+	 /FXqPMDxitzRbC09GYkD+tdTgsx2po8q9PTzFX6mNV8m3voo9KdXJ2/AydWWWX8csFw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794708626;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=Dlr8BYW4D9uRE2kBdvPJxDIlvh4ufcRQvKzhTZs/K1Y=;
+	b=obhovgZ6r912la48gRQ49VQNEjUYXEqBe23RX74KwfqCh8OopNRSrBALp3Kqzpxj2/5c
+	 DIJsFYN7wukMkjIx2SlZJjG+IN0LiqiI1bAdL/NaikX5dmdOBXTTF80KLz459aZizGFL6
+	 AxilKka0mrprnjvzJQs0It6ph1vfpvJezccmDSU9bhn5JTi1ZyjLbb1FBiKtBEoR1P5Iy
+	 YyaiGpD+cbokTFf4jG3Md+Jc+KQ+A5Sm5uP6hgEgsJpVwDq4Y5Jq9QZbUeHebetKhyFgp
+	 iIqqOOQWhlpizIqzSZXBZNOXJGtbwIx0Gx4zVyD6fp7dca2I5c6g5AJZU4qW+y6Mybg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=txxkvDyO;
+	arc=none smtp.remote-ip=209.85.218.45
+Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91851606A32C;
-	Sun, 15 Nov 2026 01:33:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 91851606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11906606A32C
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 02:10:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 11906606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=ilqVIflI
-ARC-Seal: i=1; a=rsa-sha256; t=1794706389; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=nLJRCzEYNbLoxN3S1NuockbI2t6ExOS23/WUmS8imsFw1bdVB162TD/2mKLacUCgQm7Gr2a8QUMk/lBuc5iQ/0D2qoL5zrklHAzMFCxuhotseq+gsqT8gH74i+5tBiwFp7oJiRzuZynEOKp/5TVtsowCCQfzdCfad9cd2V58aDY=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1794706389; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=xg9g6C/5fZ2E7eZtJQ3y3FzrxJXQqr0QulKYhlA7ksE=; 
-	b=BZg97skBHgr8As2NVh6NVmc1Np/xV+lQUT6hna+UQynunVRpjihw0H6izlenFsq0urQxDxW3DSWHW5hI1fS/N/KxC5JJu4hSGbidcVs9LZCjeD9u+GG+NvvP7eo7IqMYwzGFLszXZ8Ub+LVBQ1jL3rjL4L8dv2YuQJrqraYJmk8=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=ilqVIflIqTQHTbEk4//3nZQG1ccH+/ue3B6IcZj6f0+SY9ewX40telS1hLr2G2DE0hLzkrM187SX5g3pePrywofm0nhJ21QwYvWpEoHLH7fZ0VypZtNPkeEzcJ7Rmjn4Yk8hujNb6+hRNkypuV2sGCSRZnWOWJfO8ZGkPMXHMug=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=xg9g6C/5fZ2E7eZtJQ3y3FzrxJXQqr0QulKYhlA7ksE=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1794706386483224.14966488591017;
-	Sat, 14 Nov 2026 17:33:06 -0800 (PST)
-Received: by venus (Postfix, from userid 1000)
-	id E94731801C7; Sun, 15 Nov 2026 02:32:59 +0100 (CET)
-Date: Sun, 15 Nov 2026 02:32:59 +0100
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: chanwoo@kernel.org
-Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, 
-	MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
-	linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	kernel@collabora.com
-Subject: Re: [PATCH v2 3/7] dt-bindings: devfreq: event: rockchip,dfi: add
- rk3576
-Message-ID: <avkHvso6ljhn693V@venus>
-References: <20260921-b4-rockchip-dfi-rk3576-support-v2-0-04f847016321@collabora.com>
- <20260921-b4-rockchip-dfi-rk3576-support-v2-3-04f847016321@collabora.com>
- <0f536451-9f7b-46f7-acca-e10e54dec37e@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=txxkvDyO
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c4d30639709so356332466b.0
+        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 18:10:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794708624; x=1795313424; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Dlr8BYW4D9uRE2kBdvPJxDIlvh4ufcRQvKzhTZs/K1Y=;
+        b=txxkvDyOusSB3/VwzuNOTJgzeLQw9KkCBACEspjdt3MsKzdy9hdSWY85SJ4YE5Wjna
+         /h4bpo/UXO06tEB2cLUjjB/MI8OtA0++yvXfTUcmj+K48YDI17uQGUGCzNcU/3h8daBa
+         6DNisaR0TU58PV6uwD8Yjn/qbhvdiexoVERZJi4nEyo1U/ahQEtYFyaI+A4+tnvZ4Xxr
+         SHHSG7rHXn5UkQrpK/SNmoPSjbcxN0C780tLp4XD/IOvxl0Hq28F8mOCDyLMsYqwoQQL
+         MpFCujzcEfpXMnx/VgnyCZn/FxOK792bWWuhLEOCsfRfUGsNBPuCgVyAVqn8ksxBSNl6
+         A54A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794708624; x=1795313424;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Dlr8BYW4D9uRE2kBdvPJxDIlvh4ufcRQvKzhTZs/K1Y=;
+        b=AgT52aVZLEG3KaEv0VpZ8zk/RU08IYVylRIX4y+2ZragTobDkC5Ky9ji5ZTOI1mn/g
+         Dj7TnbygYJ4X+8Aozfhv5P3m9CqIbqdtoOUpQ4dnmGFzejuFNxHOC4mESLkIbheCojon
+         s4ssgiwS6UwBgRAI8Cy1bqYR0uIOEnIti4ySax6uMO6iFXA3+3lIa11O/r65Xwftl1T5
+         ZL0r2ftFEF3EB34hDR/kfJ/avkRl2Uc1Ew5fBbiwCeJKHE88mfgEJYBM46S1zsBa1RR3
+         V0IYZLx5eB3j+Z3t+Cyt4fJ3FR/CQqyfD4UB7NNGIGJPjEXyXnP4MZlfu57uyjnjWrHM
+         Jd7g==
+X-Forwarded-Encrypted: i=1; AL+hErGZYnBhRMtdOenbwaH6jjtVnrHip8MLX6DPFxRaB1tInE+7TUtLazeJyaJ65GZ7T9VHKX+GrLYb4A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9DMa5neGgS4izknc47qk3ex62inubPSvgc/BtBBAlgJeY3IMh2
+	LSchxkIGc1fKZIOyV9vYgZEvdTSgjvSC1XTgvBk8BMPAXy7oN6vsva8=
+X-Gm-Gg: AYBFou2hVnh6a9vGU3H1r2JMHefHu7SK19AWfrn1Tpd2UAOQV4YsMy54B+ONvqbz9op
+	GJNACYsw3May5Dn5WqSz4bn9JkuNX1m4/LSefnp21+dIm4C1vap1/rCyp3eEHi5JUcrNPzVCwCD
+	Wdb5Ds4kIFY+iKt+lX2rWuVZOsZLKCcMkitZmnFz9rPnOqAfKdJg7iR3e9mnggtsO8Ql3a1Rflu
+	biZ1j4LLmmRvZXALO6dmz7Hjg8p3FVLYToxf6wtRW6Velktca2obJu8U3TK9LtGOGB2lfk+c91E
+	/9UXgc6vm7fFlO1nlxpb4g6hT0jkaLTqBjx8ChKpcAZntTQ+PN58l/NIVQfowNLKQFfdkH2Vn+B
+	cc7A32S1MfcijFy/PxaR3CWA4a9C8sXbr5HGwvEo7mDqQCAw+o6te0l8xup8sUfypGLpbzoEgIX
+	O8hYtvpUQtbeGic4vHHMfvBxueNP4diJAL3cj1jSRdQSVNgLCfRKoIbqP5r78Lcr1fhx353mhjg
+	3R+AYBdYEu616yqX+RWzw3PbTBb3/3bBZRM1EZtGEy+4H9Wpj+ES1wmXp7eP+XD/X6cCXf8DQfw
+	eOpNfP6sTWHYIQqzz6a7OYgvL32neI6+sqqfH1KEBvdGO5J7oHR3sYAGuAydSaa5UQkBU0YMmLf
+	l/xEcB6h9q/is7L6lVgiNTbJYtA==
+X-Received: by 2002:a17:906:f5a8:b0:c50:5e90:5ea7 with SMTP id a640c23a62f3a-c5096853f0cmr525580166b.49.1794708624326;
+        Sat, 14 Nov 2026 18:10:24 -0800 (PST)
+Received: from sohrab-omarchy.fritz.box (2a02-a44e-4ae7-1-c0e-6d5a-8ae2-915.fixed6.kpn.net. [2a02:a44e:4ae7:1:c0e:6d5a:8ae2:915])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7c6a5924bsm2665270a12.18.2026.11.14.18.10.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 14 Nov 2026 18:10:23 -0800 (PST)
+From: Majid Hajiheidari <majidhhdri@gmail.com>
+To: barnabas.czeman@mainlining.org
+Cc: andersson@kernel.org,
+	konradybcio@kernel.org,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	abelvesa@kernel.org,
+	mani@kernel.org,
+	admin@mswin.me,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] arm64: dts: qcom: sm6125: Add cpufreq-hw and CPU idle states
+Date: Sun, 15 Nov 2026 03:10:11 +0100
+Message-ID: <20261115021019.731462-1-majidhhdri@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261115003158.391171-1-majidhhdri@gmail.com>
+References: <20261115003158.391171-1-majidhhdri@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,126 +111,56 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="4opafguzx4x2ylyg"
-Content-Disposition: inline
-In-Reply-To: <0f536451-9f7b-46f7-acca-e10e54dec37e@gmail.com>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/294.637.76
-X-ZohoMailClient: External
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+Hi Barnabás,
 
---4opafguzx4x2ylyg
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2 3/7] dt-bindings: devfreq: event: rockchip,dfi: add
- rk3576
-MIME-Version: 1.0
+I should have put you on Cc of this series, sorry. After sending it I
+looked at your sm61x5 7.3-develop branch and saw that you have cpufreq
+for SM6125 there as well, done differently, so I would like to sort this
+out with you rather than have two versions on the list.
 
-Hi,
+The differences as far as I can see:
 
-On Sun, Nov 15, 2026 at 09:58:48AM +0900, Choi Chanwoo wrote:
-> On 9/22/2026 6:15 AM, Sebastian Reichel wrote:
-> > From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> >=20
-> > The RK3576 has DFI hardware for monitoring the DDR's bandwidth much
-> > like other rockchip SoCs do. Unlike the RK3588 however, it only has two
-> > memory channels, so only two per-channel pclks for DFI.
-> >=20
-> > Add a compatible for this SoC's variant, and add it to the conditionals
-> > at the bottom of the bindings file.
-> >=20
-> > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> > ---
-> >  .../bindings/devfreq/event/rockchip,dfi.yaml          | 19 +++++++++++=
-++++++++
-> >  1 file changed, 19 insertions(+)
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,d=
-fi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-> > index 3450e28b4020..dcf3bbde3e8d 100644
-> > --- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-> > +++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-> > @@ -14,6 +14,7 @@ properties:
-> >      enum:
-> >        - rockchip,rk3399-dfi
-> >        - rockchip,rk3568-dfi
-> > +      - rockchip,rk3576-dfi
-> >        - rockchip,rk3588-dfi
-> > =20
-> >    clocks:
-> > @@ -64,6 +65,24 @@ allOf:
-> >          - clocks
-> >          - clock-names
-> > =20
-> > +  - if:
-> > +      properties:
-> > +        compatible:
-> > +          contains:
-> > +            enum:
-> > +              - rockchip,rk3576-dfi
-> > +    then:
-> > +      properties:
-> > +        clocks:
-> > +          minItems: 2
-> > +          maxItems: 2
-> > +        clock-names:
-> > +          minItems: 2
-> > +          maxItems: 2
-> > +      required:
-> > +        - clocks
-> > +        - clock-names
-> > +
-> >    - if:
-> >        properties:
-> >          compatible:
-> >=20
->=20
-> When I applied it, there are some error.
-> Could you please resend it on latest commit?
+- Your branch gives qcom,sm6125-cpufreq-hw its own soc data in the
+  driver (lut_max_entries = 12) and makes the clocks optional, with
+  19.2 MHz and 300 MHz as defaults. This series uses the generic
+  qcom,cpufreq-hw fallback like SM6115 does, and takes "xo" from rpmcc
+  and "alternate" from GCC GPLL0_OUT_EARLY, so it needs no driver change.
 
-This patch should still apply cleanly, when you merge this one first:
+- I booted your branch (cdcfb1386, plus the laurel-sprout board part
+  for mpss and wifi) on my Mi A3 to compare. Both versions give exactly
+  the same tables:
 
-https://lore.kernel.org/linux-rockchip/20260921-rockchip-dfi-cleanup-v2-2-4=
-3ff34ac8599@collabora.com/
+    policy0: 300000 614400 864000 1017600 1305600 1420800 1612800 1804800
+    policy4: 300000 652800 902400 1056000 1401600 1536000 1804800 2016000
 
-Generally all DFI patches from the linked "PM / devfreq:
-rockchip-dfi: cleanups" series are backwarts and forward compatible.
-You can just pick them up (i.e. patches 2, 3, 4, 5, and 7).
+  With the generic data the LUT read stops at the first repeated row, so
+  the 40 row limit is never reached on this phone. Did you see it cause
+  a problem on another device, or is the 12 from the downstream
+  max-lut-entries? If some SM6125 board fills all 12 rows I see why the
+  limit matters, and I am happy to rework this series or to drop the
+  cpufreq part in favour of yours, whichever you and the maintainers
+  prefer.
 
-Afterwards from this series you can pick up 3, 5, 6, 7.
+Beyond cpufreq: on that boot your mpss and wifi nodes worked on
+laurel-sprout with only the board enablement added (firmware-name and
+the four WCN3990 supplies): the modem came up and wlan0 associated. Two
+things I noticed, in case they are useful:
 
-I can then ask Heiko to pick the clock and DT changes.
+- the modem crashed twice during startup ("fatal error without message"
+  at 103 s and 145 s), recovered both times and then stayed up;
+- ModemManager did not find a modem. On my own tree, which also has the
+  IPA node and a dynamically allocated rmtfs region, it registers and I
+  see no crashes. I have not tried to find out which difference matters.
 
-I probably should have structured this submission a bit differently,
-sorry for the mess.
+I have modem, WiFi, ADSP/CDSP, Bluetooth and IPA device tree running on
+this phone on next-20261113, but since you have modem and WiFi in
+progress I will not post those. I can test your patches on laurel-sprout
+and reply with Tested-by, and if it helps I can send the parts you do
+not have yet (for example Bluetooth, ADSP/CDSP or the laurel-sprout
+board enablement). Just tell me what would be useful.
 
-Thanks for your reviews.
-
-Greetings,
-
--- Sebastian
-
---4opafguzx4x2ylyg
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmr5C8gACgkQ2O7X88g7
-+po+tQ/8DXaiXv5bhz6X8EjEPpQ/FjCstJcZ2thsSB3EUjQHwKBpqrVQo9rS0eB3
-ctkdzB6OUpFRJGWTG1tAlhbkHhnwi9ZfnXmM2TDHd6EdNjNzd9uAtUeUt0BrWsiY
-rLBX1sTC45nh4eMaAT7IAFAHDZxa5jOAr2UnDqUKy9H/Hb1s382gpkSn7nXltkLS
-pfQ741MqDbiIx/AvU6tvJVF4Q/RSC6+Pr2/x8qURUZs5ZeEOxkXEZ9LYgt2oVYWk
-H27BfOgnwfxLiomWLOWAY4vOo2ujWyW9bSIMhxqvcQxdtimZ8EJmY4a8IHo0AL8J
-JbHyLadHU2DzT94WF2K47VVC15M4vwukyCy532OLHPAkfWoyBguNLd4dbu0oYDOn
-zakprRwAY3knNSta2f4m+NGJyce2haAd9Rb/NGpR6X4GymQ4JOg1Q24duwrsUUz5
-OmCJL80VCKNy22H9SnPhat/Q6Sd/88hfxFlDwsO86GKUutobkeZ1ymY5mu8Wld6L
-DiWYnKGy5WVlth7lOg59k5X6C7hJMNuNKVDBaXUIpGzvrUWcZLkai/3KHQJrhOKL
-AowPuTyo8CHqKYNJXuxvv5120Sxg6Wo6h0Snrd6HWArsMdrt+ICCPBmj334FiL79
-MAv3osTwm9leJMHRhWTfxGkvc6Rhy6E+8cW88URrOx3TyjE1Nfc=
-=OpSE
------END PGP SIGNATURE-----
-
---4opafguzx4x2ylyg--
+Thanks,
+Majid
