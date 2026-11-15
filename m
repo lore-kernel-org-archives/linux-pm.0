@@ -1,107 +1,62 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.45
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=168.119.26.116
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794708626;
-	b=jgzr6amEr0rzpAYoCxocBYg1Z+jNjTon5Dl2uSq1cRLcYPcOnyFRyUalVAb436KYtV+f
-	 s5kBYYZCIwalPPVpo7TEQcxi9UEqu57OkIfRrYtuUcZ3BDW/5RWvBTA77cePfyyyFyplL
-	 mnUIf0yyfVWM/gfI9tD6sC5OsxBEx2zxG/lIu/u6wy370/BREuGpn/Ua9pECD+H37K5Ls
-	 by6fgZg856oe/+13tdHnUQnVZfxS6N24Efafbz9Ohq8szpKhR0Wa1oA6Htj5IP0LZXuNv
-	 /FXqPMDxitzRbC09GYkD+tdTgsx2po8q9PTzFX6mNV8m3voo9KdXJ2/AydWWWX8csFw==
+	t=1794709476;
+	b=mC+FtPv1YpqHepx99BYR8DjMoINhYm1WkHjwe5VsVEHcJ8kHDP9CXPopMe+yvoF6udul
+	 tMv3rxII24dVlwehM+4P4MTyiKxwZXw4G024159SYxX+qAgiDvcNKR7QelWKLxBwcunbS
+	 VVDM6FDgjhBqzVLVtiiZYeiCdflRczONNb0391NhkesuNU8YIU//AvQLIFfdLjVWr5fSA
+	 pg7/XsSxlPAe9mIxfnU1rW9Vhyq0vvjTprjRKPEodLRnAPhJX3u6CzqNLyVPPIMlZEIbr
+	 MdlwwvRhe0QAkPQUpaNNIJVq35Wo3oNAHUR7/s3FexJcdhMmyqzWaS3BoOxlFmFjMxg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794708626;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=Dlr8BYW4D9uRE2kBdvPJxDIlvh4ufcRQvKzhTZs/K1Y=;
-	b=obhovgZ6r912la48gRQ49VQNEjUYXEqBe23RX74KwfqCh8OopNRSrBALp3Kqzpxj2/5c
-	 DIJsFYN7wukMkjIx2SlZJjG+IN0LiqiI1bAdL/NaikX5dmdOBXTTF80KLz459aZizGFL6
-	 AxilKka0mrprnjvzJQs0It6ph1vfpvJezccmDSU9bhn5JTi1ZyjLbb1FBiKtBEoR1P5Iy
-	 YyaiGpD+cbokTFf4jG3Md+Jc+KQ+A5Sm5uP6hgEgsJpVwDq4Y5Jq9QZbUeHebetKhyFgp
-	 iIqqOOQWhlpizIqzSZXBZNOXJGtbwIx0Gx4zVyD6fp7dca2I5c6g5AJZU4qW+y6Mybg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794709476;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
+	 MIME-Version:User-Agent:From:To:Cc:Subject:Content-Language:
+	 Content-Type:Content-Transfer-Encoding:X-Virus-Scanned;
+	bh=5j1hzcRTNrIlSYJN1dDCP5CrUU232t/NTZx44Lu8pCk=;
+	b=mc4THsdSt+XsoOOI/f4v/G3GF1p+/9caN5MiBEInezqKHCa5ll9jjTT4dS/jNUiq9/A4
+	 YuOSucNh92/t1ya6cwqZED1pp6xWb4pEwU0QLCMCHUmyABAxcf7ZYaNc5TGbHJM7jWh93
+	 +j/Q0T08ePRIxoolLzv3I522kC0F7ueU2LmB3mi8z94YUrzRn514wMHHxMBfgy+R+Fm0B
+	 USQNgftCUZVoAKrM4cAzvR8UFMfQqlC/HINGIRSPe8OrKn9t4cbexw9KYuTsejhQfTAQk
+	 WCJ5YKWA1ZK1wfyWCV29FRywcZ3PN6o17uCpEWRGeG0NCoXpjfkUsP/sIA8JdmR3qPw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=txxkvDyO;
-	arc=none smtp.remote-ip=209.85.218.45
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=pc-heini.de;
+	spf=pass smtp.mailfrom=pc-heini.de;
+	dkim=pass header.d=pc-heini.de header.i=@pc-heini.de header.a=rsa-sha256 header.s=default2410 header.b=G9nqd3gu;
+	arc=none smtp.remote-ip=168.119.26.116
+Received: from www636.your-server.de (www636.your-server.de [168.119.26.116])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11906606A32C
-	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 02:10:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 11906606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EABF2606A327;
+	Sun, 15 Nov 2026 02:24:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EABF2606A327
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=pc-heini.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pc-heini.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=txxkvDyO
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c4d30639709so356332466b.0
-        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 18:10:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794708624; x=1795313424; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Dlr8BYW4D9uRE2kBdvPJxDIlvh4ufcRQvKzhTZs/K1Y=;
-        b=txxkvDyOusSB3/VwzuNOTJgzeLQw9KkCBACEspjdt3MsKzdy9hdSWY85SJ4YE5Wjna
-         /h4bpo/UXO06tEB2cLUjjB/MI8OtA0++yvXfTUcmj+K48YDI17uQGUGCzNcU/3h8daBa
-         6DNisaR0TU58PV6uwD8Yjn/qbhvdiexoVERZJi4nEyo1U/ahQEtYFyaI+A4+tnvZ4Xxr
-         SHHSG7rHXn5UkQrpK/SNmoPSjbcxN0C780tLp4XD/IOvxl0Hq28F8mOCDyLMsYqwoQQL
-         MpFCujzcEfpXMnx/VgnyCZn/FxOK792bWWuhLEOCsfRfUGsNBPuCgVyAVqn8ksxBSNl6
-         A54A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794708624; x=1795313424;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Dlr8BYW4D9uRE2kBdvPJxDIlvh4ufcRQvKzhTZs/K1Y=;
-        b=AgT52aVZLEG3KaEv0VpZ8zk/RU08IYVylRIX4y+2ZragTobDkC5Ky9ji5ZTOI1mn/g
-         Dj7TnbygYJ4X+8Aozfhv5P3m9CqIbqdtoOUpQ4dnmGFzejuFNxHOC4mESLkIbheCojon
-         s4ssgiwS6UwBgRAI8Cy1bqYR0uIOEnIti4ySax6uMO6iFXA3+3lIa11O/r65Xwftl1T5
-         ZL0r2ftFEF3EB34hDR/kfJ/avkRl2Uc1Ew5fBbiwCeJKHE88mfgEJYBM46S1zsBa1RR3
-         V0IYZLx5eB3j+Z3t+Cyt4fJ3FR/CQqyfD4UB7NNGIGJPjEXyXnP4MZlfu57uyjnjWrHM
-         Jd7g==
-X-Forwarded-Encrypted: i=1; AL+hErGZYnBhRMtdOenbwaH6jjtVnrHip8MLX6DPFxRaB1tInE+7TUtLazeJyaJ65GZ7T9VHKX+GrLYb4A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9DMa5neGgS4izknc47qk3ex62inubPSvgc/BtBBAlgJeY3IMh2
-	LSchxkIGc1fKZIOyV9vYgZEvdTSgjvSC1XTgvBk8BMPAXy7oN6vsva8=
-X-Gm-Gg: AYBFou2hVnh6a9vGU3H1r2JMHefHu7SK19AWfrn1Tpd2UAOQV4YsMy54B+ONvqbz9op
-	GJNACYsw3May5Dn5WqSz4bn9JkuNX1m4/LSefnp21+dIm4C1vap1/rCyp3eEHi5JUcrNPzVCwCD
-	Wdb5Ds4kIFY+iKt+lX2rWuVZOsZLKCcMkitZmnFz9rPnOqAfKdJg7iR3e9mnggtsO8Ql3a1Rflu
-	biZ1j4LLmmRvZXALO6dmz7Hjg8p3FVLYToxf6wtRW6Velktca2obJu8U3TK9LtGOGB2lfk+c91E
-	/9UXgc6vm7fFlO1nlxpb4g6hT0jkaLTqBjx8ChKpcAZntTQ+PN58l/NIVQfowNLKQFfdkH2Vn+B
-	cc7A32S1MfcijFy/PxaR3CWA4a9C8sXbr5HGwvEo7mDqQCAw+o6te0l8xup8sUfypGLpbzoEgIX
-	O8hYtvpUQtbeGic4vHHMfvBxueNP4diJAL3cj1jSRdQSVNgLCfRKoIbqP5r78Lcr1fhx353mhjg
-	3R+AYBdYEu616yqX+RWzw3PbTBb3/3bBZRM1EZtGEy+4H9Wpj+ES1wmXp7eP+XD/X6cCXf8DQfw
-	eOpNfP6sTWHYIQqzz6a7OYgvL32neI6+sqqfH1KEBvdGO5J7oHR3sYAGuAydSaa5UQkBU0YMmLf
-	l/xEcB6h9q/is7L6lVgiNTbJYtA==
-X-Received: by 2002:a17:906:f5a8:b0:c50:5e90:5ea7 with SMTP id a640c23a62f3a-c5096853f0cmr525580166b.49.1794708624326;
-        Sat, 14 Nov 2026 18:10:24 -0800 (PST)
-Received: from sohrab-omarchy.fritz.box (2a02-a44e-4ae7-1-c0e-6d5a-8ae2-915.fixed6.kpn.net. [2a02:a44e:4ae7:1:c0e:6d5a:8ae2:915])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7c6a5924bsm2665270a12.18.2026.11.14.18.10.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 18:10:23 -0800 (PST)
-From: Majid Hajiheidari <majidhhdri@gmail.com>
-To: barnabas.czeman@mainlining.org
-Cc: andersson@kernel.org,
-	konradybcio@kernel.org,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	abelvesa@kernel.org,
-	mani@kernel.org,
-	admin@mswin.me,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] arm64: dts: qcom: sm6125: Add cpufreq-hw and CPU idle states
-Date: Sun, 15 Nov 2026 03:10:11 +0100
-Message-ID: <20261115021019.731462-1-majidhhdri@gmail.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261115003158.391171-1-majidhhdri@gmail.com>
-References: <20261115003158.391171-1-majidhhdri@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=pc-heini.de header.i=@pc-heini.de header.a=rsa-sha256 header.s=default2410 header.b=G9nqd3gu
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=pc-heini.de
+	; s=default2410; h=Content-Transfer-Encoding:Content-Type:Subject:Cc:To:From:
+	MIME-Version:Date:Message-ID:Sender:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	In-Reply-To:References; bh=5j1hzcRTNrIlSYJN1dDCP5CrUU232t/NTZx44Lu8pCk=; b=G9
+	nqd3guMtKEHOAXUgr+69Im+RGotgv5MEPhb26NZx8c76CfROuo8lwFNhqan+BFXH94R2BvztwTodj
+	wH/o+3SkOUsDDHBz+kDR6bGlexPVySCUN7r+FuljZRCDKcX7FGvE/ySk8aE5CUsVfBAm1tM+wfk65
+	7J6J5Hsrx74rAzB++QGxDR3NDZOFbJMs6bOZDoFp5M8ZvjYm9xo/B6Wi4bgnMX1a/Jp6igBie7x1p
+	2mWEyXLotGBs70MhRtr7sEW8l/MqihAraZV1RK+cJLlMjs9VsGCVRaCdaQZqrB/kk1sv4ICh4uAIW
+	EqSqNTrw0BIJ5xPC317Z3mEFlhKTgJkw==;
+Received: from sslproxy04.your-server.de ([78.46.152.42])
+	by www636.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96.2)
+	(envelope-from <m.hiller@pc-heini.de>)
+	id 1xSPus-000IYs-3C;
+	Sun, 15 Nov 2026 03:24:27 +0100
+Received: from localhost ([127.0.0.1])
+	by sslproxy04.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <m.hiller@pc-heini.de>)
+	id 1xSPus-000FTE-24;
+	Sun, 15 Nov 2026 03:24:26 +0100
+Message-ID: <598ee2b4-32aa-4ad3-99c7-db7f9a7e7736@pc-heini.de>
+Date: Sun, 15 Nov 2026 03:24:26 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,56 +66,147 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+From: Moritz Hiller <m.hiller@pc-heini.de>
+To: Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@kernel.dk>,
+ Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, linux-nvme@lists.infradead.org,
+ linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [bug report] nvme-pci: NVMe lost after S3 resume, CSTS reads all-ones
+ for a few 100 ms
+Content-Language: de-DE
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-Virus-Scanned: Clear (ClamAV 1.4.6/28183/Sat Nov 14 07:24:17 2026)
 
-Hi Barnabás,
+Hi,
 
-I should have put you on Cc of this series, sorry. After sending it I
-looked at your sm61x5 7.3-develop branch and saw that you have cpufreq
-for SM6125 there as well, done differently, so I would like to sort this
-out with you rather than have two versions on the list.
+on my desktop the root NVMe drive sporadically does not come back after
+S3 resume (roughly 5-10% of resumes in automated runs):
 
-The differences as far as I can see:
+  nvme nvme0: Disabling device after reset failure: -19
 
-- Your branch gives qcom,sm6125-cpufreq-hw its own soc data in the
-  driver (lut_max_entries = 12) and makes the clocks optional, with
-  19.2 MHz and 300 MHz as defaults. This series uses the generic
-  qcom,cpufreq-hw fallback like SM6115 does, and takes "xo" from rpmcc
-  and "alternate" from GCC GPLL0_OUT_EARLY, so it needs no driver change.
+The single readl(CSTS) in nvme_pci_enable() returns all-ones about
+200 ms after resume. The controller is not dead, it just needs a few
+hundred ms more. A small wait loop (diff below) fixes it here, tested
+on CachyOS kernels and on vanilla v7.4-rc2. I am not asking for the
+diff to be merged as is, I would like to know where this should be
+fixed properly.
 
-- I booted your branch (cdcfb1386, plus the laurel-sprout board part
-  for mpss and wifi) on my Mi A3 to compare. Both versions give exactly
-  the same tables:
+System:
+- ASUS ROG STRIX X570-F GAMING (BIOS 5044), Ryzen 7 5800X, S3 (deep)
+- Samsung 9100 PRO 2TB [144d:a810], FW 0B2QNXH7, at 0000:01:00.0,
+  directly behind root port 0000:00:01.1 [1022:1483]
 
-    policy0: 300000 614400 864000 1017600 1305600 1420800 1612800 1804800
-    policy4: 300000 652800 902400 1056000 1401600 1536000 1804800 2016000
+Observations:
+- pci_pm_resume_noirq takes ~0.3 ms for the SSD, config space answers.
+- At the failing CSTS read config space is intact, the link is up
+  (16 GT/s x4), the device is in D0, no AER errors:
 
-  With the generic data the LUT read stops at the first repeated row, so
-  the 40 row limit is never reached on this phone. Did you see it cause
-  a problem on another device, or is the 12 from the downstream
-  max-lut-entries? If some SM6125 board fills all 12 rows I see why the
-  limit matters, and I am happy to rework this series or to drop the
-  cpufreq part in favour of yours, whichever you and the maintainers
-  prefer.
+  vendor=144d cmd=0006 (saved 0002) bar0=fcf00004 (saved fcf00004)
+  pmcsr=0008 lnksta=1044 rp_lnksta=3044
 
-Beyond cpufreq: on that boot your mpss and wifi nodes worked on
-laurel-sprout with only the board enablement added (firmware-name and
-the four WCN3990 supplies): the modem came up and wlan0 associated. Two
-things I noticed, in case they are useful:
+- sysfs remove + rescan brings the drive back after ~3 s.
+- ASPM is off on this link, pcie_aspm=off and
+  nvme_core.default_ps_max_latency_us=0 make no difference.
+- Unpatched, 2 of 15 and 2 of 24 cycles failed in automated runs
+  (90 s sleep, RTC wake). With the wait, no cycle failed (30/30 on
+  CachyOS, 15/15 on v7.4-rc2); the controller answered after
+  200-400 ms whenever the wait triggered.
 
-- the modem crashed twice during startup ("fatal error without message"
-  at 103 s and 145 s), recovered both times and then stayed up;
-- ModemManager did not find a modem. On my own tree, which also has the
-  IPA node and a dynamically allocated rmtfs region, it registers and I
-  see no crashes. I have not tried to find out which difference matters.
+My reading: pci_power_up() finds PMCSR already in D0 and does not
+wait, and pci_bridge_wait_for_secondary_bus() only runs after D3cold
+and only checks config space. So nothing waits for MMIO to come back,
+and nvme_pci_enable() gives up on the first all-ones read.
 
-I have modem, WiFi, ADSP/CDSP, Bluetooth and IPA device tree running on
-this phone on next-20261113, but since you have modem and WiFi in
-progress I will not post those. I can test your patches on laurel-sprout
-and reply with Tested-by, and if it helps I can send the parts you do
-not have yet (for example Bluetooth, ADSP/CDSP or the laurel-sprout
-board enablement). Just tell me what would be useful.
+The diff polls CSTS every 100 ms for up to 10 s, only if
+NVME_CC_SHN_NORMAL is still set (the was_suspend test in
+nvme_reset_work()) and while pci_device_is_present(). Probe and
+runtime resets are unchanged. Known downsides:
+- The 10 s bound is arbitrary.
+- It also triggers on thaw/restore after hibernation (same bit set).
+- The wait sleeps with shutdown_lock held, as nvme_wait_ready() already
+  does in the same call chain.
+- A controller that answers config space but is really dead after
+  resume is declared dead 10 s later than today.
+- A wait that times out is not logged.
+
+Should this go into nvme-pci, the PCI core, or a quirk for this board
+or drive? I can provide lspci -vvv, full dmesg or test patches.
+
+The problem has existed on this machine for about a year, possibly
+also with the previous SSD in this slot. It was hard to pin down: when
+it happens the root filesystem is gone, so nothing gets written to
+disk. I only got the first log of a failure in August 2026 via
+netconsole, and every failure captured since then looks the same.
+
+Disclosure: I am not a kernel developer. Log analysis, code reading
+and the diff were done with an LLM assistant (Claude); I ran all tests
+on my hardware. I can send patch with Signed-off-by if useful.
 
 Thanks,
-Majid
+Moritz Hiller
+
+---8<--- proof of concept, against v7.3.4 ---8<---
+
+--- a/drivers/nvme/host/pci.c
++++ b/drivers/nvme/host/pci.c
+@@ -7,6 +7,7 @@
+ #include <linux/acpi.h>
+ #include <linux/async.h>
+ #include <linux/blkdev.h>
++#include <linux/delay.h>
+ #include <linux/blk-mq-dma.h>
+ #include <linux/blk-integrity.h>
+ #include <linux/dmi.h>
+@@ -3206,6 +3207,38 @@
+ 	return true;
+ }
+ 
++/*
++ * A controller that was shut down for suspend may have lost power while the
++ * PCI core still treats it as D3hot, so nothing waited for it to come back.
++ * Config space can already answer while MMIO still reads all-ones. Give such
++ * a controller some time instead of declaring it dead on the first read.
++ */
++#define NVME_RESUME_MMIO_TIMEOUT_MS	10000
++#define NVME_RESUME_MMIO_POLL_MS	100
++
++static bool nvme_pci_wait_mmio_after_suspend(struct nvme_dev *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev->dev);
++	unsigned int waited = 0;
++
++	/* Same test nvme_reset_work() uses to detect a resume. */
++	if (!(dev->ctrl.ctrl_config & NVME_CC_SHN_NORMAL))
++		return false;
++
++	while (waited < NVME_RESUME_MMIO_TIMEOUT_MS &&
++	       pci_device_is_present(pdev)) {
++		msleep(NVME_RESUME_MMIO_POLL_MS);
++		waited += NVME_RESUME_MMIO_POLL_MS;
++		if (readl(dev->bar + NVME_REG_CSTS) != -1) {
++			dev_warn(dev->ctrl.device,
++				 "CSTS read all-ones after resume, controller ready after %u ms\n",
++				 waited);
++			return true;
++		}
++	}
++	return false;
++}
++
+ static int nvme_pci_enable(struct nvme_dev *dev)
+ {
+ 	int result = -ENOMEM;
+@@ -3217,7 +3250,8 @@
+ 
+ 	pci_set_master(pdev);
+ 
+-	if (readl(dev->bar + NVME_REG_CSTS) == -1) {
++	if (readl(dev->bar + NVME_REG_CSTS) == -1 &&
++	    !nvme_pci_wait_mmio_after_suspend(dev)) {
+ 		dev_dbg(dev->ctrl.device, "reading CSTS register failed\n");
+ 		result = -ENODEV;
+ 		goto disable;
