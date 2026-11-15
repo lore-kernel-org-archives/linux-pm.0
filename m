@@ -1,107 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.208.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=91.218.175.126
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794703711;
-	b=LrSIkUtXQg1pf6OldnlZDgDtNrqu+T++Bi6Qxkab3ElgGU5Fw6evCaZVaqbpDcUFSXi8
-	 PerazCoxCtELf2PIK3+biqLmuT2Nof72jzUDpSg7QvRGrJPUcuBVQEK2JoGZbWe51T703
-	 bIco9Ut4ZuvO3iYtXhciZaiDVy9icGopaWsdkvAG/GzwS1tdqkvDcxFzbiaBYuJvccw46
-	 Ttsp4pGkvKsDXl84CCONsB71KsiFPua7PqR3BZbBjnOJG/VJjT4CaGZCzhCVddi3A54kb
-	 +7PSlfLh4nuZWZmnW0VfLwan4yDgQSKE3R4XG2an6Wn5ekLjZimVRk2sH6zNh4Halkw==
+	t=1794703799;
+	b=aEMqlc/i4aNRlCknbLLdv0sjBhVaWbCR98vBz4PD05pOiX7U2LYlpgY9fH6NIamUiuUy
+	 4rBxBaindo9hOdYdH4rMrrVlZGYg/3iqi9JTQc0mvklujY9hdOB+S3wzMwpK6V2hvBo92
+	 JUWQCHQwUJODSdrzu+5gk7k5zHbbi+aA1e/+XfZTuopDBglHChmSA3OR+c0Ow0UAP1Gnh
+	 LYfx7LxLJ+27z+kvxYLyDmB7WRQsFhn1iLYiD0bH6mew7tpsq5ZvHBcPlGnCrmvXTciLc
+	 toGcYDK5XN2znmHPmWH/nJ9v9IruYEQk4PhtJUjCWR4Vf7HPwdVLW1M95WzT+dkJWDA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794703711;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=GNCaXsk/Xt/PN42cfY6qixho/TvY1Q+vI598MxtapPE=;
-	b=n93u6BYwyMJzNVPeyGtd/E6xFIrsrtS3wsfNzi/f0fdxskbwyi+wybf8hHa5PHN9xres
-	 bGNbQIDosd9PI81EzBNLuyi84J3nfvtotBvMW0yOvQpuUkbZuy+yf7Y5rDjlDX+IpjkG8
-	 eE5D4iWpkSji3BqURbaPnwKgAr7+hv4GyGLTVRS2iBcGpW0ijZyW94Oq8BOXdJLlqDjvT
-	 l/m7KBrsibm5wNEbVBQHtI9F+4iExPc2ax+SjDK/wRiC9EIrJJ9WCvqL82mEEBbkYZrKI
-	 pvBV+SYhkbITkhIyGmdiNIWY3UVMC8hc+PohGygvr+AM/stymWjWKgbf22gd9UxIWgg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794703799;
+	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
+	 X-Mizu-Trace-ID:X-Migadu-Flow:Date:From:To:CC:Subject:In-Reply-To:
+	 Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=8HhBoJ0oLDIkG/m3q7iXHnaJgleISQvg2LeUm5lbyGk=;
+	b=GHGEwSHfVzeE65kh2SyYH4YkOxzKGfrVrm2M0G16HCImV0fcOocIb4Smo3XBstP3FI5l
+	 UY0g5umr3uAlVsKevEykSyjSYPZrS+eBjm/aK3dlIAC/4bOgGhNGwjwIIV8pQCNxhhYfc
+	 n/BG33DQhDO9h7IdtDpWz4JIT5zUjX9eUnxyv5Avaqcs6tGFGueNTM3X7V+sc2u/zSBd5
+	 GF+SSM1Km7D2aH+FwAky5LArLOmkcIGluAtUezSG8A8weUnWVyRwrJ1xi70fxWg9/fvA6
+	 gWj7ToYLnuYHvDSo9kXVkS7cFb3LZJ7dlNFpC4NaRB75yaam41jRczBlAMW534FZs1Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DMcqLdbV;
-	arc=none smtp.remote-ip=209.85.208.46
-Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+	dmarc=pass header.from=linux.dev;
+	spf=pass smtp.mailfrom=linux.dev;
+	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ZmF3OfR+;
+	arc=none smtp.remote-ip=91.218.175.126
+Received: from mta0.migadu.com (out-126.mta0.migadu.com [91.218.175.126])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C095606A329
-	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 00:48:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0C095606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EFAB606A323
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 00:49:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8EFAB606A323
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DMcqLdbV
-Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-6b75712fb57so2978343a12.2
-        for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2026 16:48:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794703709; x=1795308509; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=GNCaXsk/Xt/PN42cfY6qixho/TvY1Q+vI598MxtapPE=;
-        b=DMcqLdbVjGQlExaBwxojv82/j1Te2Q8Gs0X17+IG0qyDhCFq+1Nt0dCxNncZ0loGmW
-         ZfI5Ao6vE177C6wnSiZfUM7gpK6TuV+0KHsIWXhF/pUoR/PEaV8i6FwFa8Va6yqt/LHd
-         h4CEm6Y8C0QXmF+mbfPCvi3DAy7buSqHon2Fx7W1oNtPLWQF4dvDeGIiU8u6lhB8Pti+
-         pTIgV5tBB/eUMPJUVssMgjiqdsIAR0Wbd0u+0ec3qtj9TxZyDqlxy9VfCEv1GId/mNun
-         1Mml1QtgowP/lu9GKK8iFct9z8Y0WG9Rl7uCqfPiyT2DdUYnrbgZKrSzwm5A3UZj7A82
-         ZHag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794703709; x=1795308509;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=GNCaXsk/Xt/PN42cfY6qixho/TvY1Q+vI598MxtapPE=;
-        b=H1wkzENgs4FrxNM0H3FcY1hWouCEfJK/8GLOzOamIQOmk9ZBTIMLdglZAFZlhgRicT
-         7b8SeH54syMRtblQqKFtOVMTRNGVmk2czsC6qKUcVxQQMmzPqUu46yM1V1x12Aeau2hG
-         t5ngYUKKCp0S6qRVkRHPzxS3QsopGsVQTrZDn+sAyrBSy6gZaEuLStb/Jesr3Ud8Qjwr
-         0rh8K1ycoKfQ8Blrub+1/OI/+JafMMzO3+mLn22PHMilhy2Od17URqXWm6aG28jQF+xV
-         MWQOYABIJNCfvXkTRVMATypDrpcHDaIVniUuaZn5dlnaafMM+HGd42z3j9Lqv7UCQ9Pr
-         cXlQ==
-X-Forwarded-Encrypted: i=1; AL+hErF5Ub0x9O4LErpUYEISr6FpdquX1FFyKW6eVQ0M1x4yxXZsoPjDH59+igSU+6dQnYtuImn1ToiPjg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+NOfEoSVcEY36wkB/E1MG5squDdBNbUv7xEj4LJZbGVoYgEV/Y
-	IyPZDQS5xlQL6hj5BYnZX5D9RnA7Z2KwLtDYGOmc7PAmS7JVNAGSrMuU1JOX5F0=
-X-Gm-Gg: AYBFou2z0yjO9xsI6bJJewfDsAg0myOKl4ZQtSFI1RWb6rBuOmZWU7efxjGd4UqdXig
-	b8Cq5TTy1343Y4T0A59ei5GPR1b9Ri1I3kLKZK35jwjesFWaJL6f5atCQnAJji5YT7+EHfHvvfm
-	IfYUQ7INSJF22bLv2kkPo1q7438f5IQg6Nn3G6WgdfwUt/g9awx7iP9Ovq1VvDu/H2bD5mx4o1I
-	/ajJiDfrsMc/EhhytpOya2TZnp1vvRIHvhzxKHPUS1l6tMefxImmn+PaxUg6PUHVtZDTgNrKhOM
-	fiRZvag+4E/56px5+IVIaapL7QFZ4GuRConQ8OH3MJYYJjO6IRsqqBZ9l92ZKM5B5NpSKcuwhy6
-	w16vxPV7Rl0wkizyQyxPJ2cGjvd8197E2MKRtL1EUnIvtLuFXKOmdGCfB9hbWhqsYkmZoKT7s5R
-	XNEsMtKaosr32b3Qq2FXuvYUlleV+YKm6aNdJZubaIwyEiDOWMM6cty1fHGaC9Y5dGZnFqWDgo0
-	5FM60vy2Pzm+sULEzDPrIHgtiFWmhxsgpNA+Wls4L29VeDNRnHXZeBZNg2qtifKrTqxqz7sMjrq
-	s/J2l4Tf10zUI4nbKv1LcN0fETERSdMvFJ7Lw4MKz6ZygHbdwymnuZhGWbg5lcKdMqJYWYPh7oB
-	f5tLW6uAycl8XNLyCWXHFcyIq6eYfN1p8r7QU
-X-Received: by 2002:a05:6402:a513:10b0:6b5:6ba3:5860 with SMTP id 4fb4d7f45d1cf-6b7c0c12b08mr3317211a12.17.1794703709333;
-        Sat, 14 Nov 2026 16:48:29 -0800 (PST)
-Received: from sohrab-omarchy.taila18b31.ts.net (2a02-a44e-4ae7-1-c0e-6d5a-8ae2-915.fixed6.kpn.net. [2a02:a44e:4ae7:1:c0e:6d5a:8ae2:915])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7c23dde49sm2857574a12.23.2026.11.14.16.48.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 16:48:28 -0800 (PST)
-From: Majid Hajiheidari <majidhhdri@gmail.com>
-To: admin@mswin.me
-Cc: konradybcio@kernel.org,
-	andersson@kernel.org,
-	krzk+dt@kernel.org,
-	robh@kernel.org,
-	conor+dt@kernel.org,
-	amitk@kernel.org,
-	thara.gopinath@gmail.com,
-	rafael@kernel.org,
-	daniel.lezcano@kernel.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] arm64: dts: qcom: sm6125: add TSENS die temperature sensing
-Date: Sun, 15 Nov 2026 01:48:24 +0100
-Message-ID: <20261115004824.395133-1-majidhhdri@gmail.com>
-X-Mailer: git-send-email 2.56.1
-In-Reply-To: <a3f071d3-6082-47a1-bb00-9d8e72fa3cdd@mswin.me>
-References: <a3f071d3-6082-47a1-bb00-9d8e72fa3cdd@mswin.me>
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ZmF3OfR+
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=NSiCSGoCCyJBHjU2+fpDRU4Sn+QKieajStYeP4irVHU=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794703795; v=1; x=1795308595;
+ b=ZmF3OfR+T9xDVYyAft+FWe6oOImWbibsMqMV6h+4agbLfP/ZYcqkUWE60f5/I1pjL01Zatp6
+ rU2DP5nj4VLsddMm0imPHyUoV2tfEXS1bi4a9emY+zGTNScuQJKazJv+1EXKBXWiaDFRKNYR3Ge
+ 47A80tS80tUqsjkYFfCsP+ik=
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id a0b98ee2d4f930d1;
+	Sun, 15 Nov 2026 00:49:55 +0000
+X-Mizu-Trace-ID: a0b98ee2d4f930d1
+X-Migadu-Flow: FLOW_OUT
+Date: Sun, 15 Nov 2026 00:49:54 +0000
+From: Bradley Morgan <bradley.morgan@linux.dev>
+To: wusamuel@google.com
+CC: kernel-team@android.com, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, pavel@kernel.org, rafael@kernel.org
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH=5D_freezer=3A_Check_frozen=28=29?=
+ =?US-ASCII?Q?_before_freezing=28=29_in_freeze=5Ftask=28=29?=
+In-Reply-To: <20261115003113.1852160-2-wusamuel@google.com>
+Message-ID: <09C404BB-5914-4658-801E-4DADD3411CF2@linux.dev>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,30 +64,52 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
 Content-Transfer-Encoding: 8bit
 
-Hi Roman,
+On 15 November 2026 00:31:14 GMT, Samuel Wu <wusamuel@google.com> wrote:
+>During the freeze stage of suspend, there are multiple passes over the
+>same list of tasks. Each pass tries to freeze non-frozen tasks, meaning
+>that the number of frozen tasks increase monotonically, and that each
+>subsequent pass will mostly be iterating over frozen tasks. Therefore,
+>it is faster to *first* check that a task is frozen before other checks,
+>especially since the frozen check is computationally trivial.
+>
+>Check frozen(p) before !freezing(p) to short circuit the more expensive
+>freezing_slow_path() calls, while retaining identical return semantics.
+>
+>On a v7.3 Pixel 9 device, this consistently reduces freeze_processes
+>latency by ~10% (~4.5 ms).
 
-On 16.09.2026 10:16, Roman Linev wrote:
-> cpu4..cpu7 are the downstream cpu-1-{0..3} cluster
-> sensors: they get #cooling-cells and per-CPU passive cooling maps, which
-> stay inert until a cpufreq driver registers cooling devices.
+7.3 PIXEL 9??? WHAT HOW? THE BASE ON STOCK IS 6.12!!!! WOW! (Please do for
+pixel 7, I want flair :c)
 
-I have been running the same TSENS description on a Mi A3 (laurel-sprout),
-derived independently from the downstream trinket DT: same TM/SROT
-addresses, 16 sensors, SPI 275/190 and the same sensor map. It currently
-runs on next-20261113 and the zones read sane values.
+>
+>Signed-off-by: Samuel Wu <wusamuel@google.com>
+>---
+> kernel/freezer.c | 2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>diff --git a/kernel/freezer.c b/kernel/freezer.c
+>index a76bf957fb32..1adf09321389 100644
+>--- a/kernel/freezer.c
+>+++ b/kernel/freezer.c
+>@@ -166,7 +166,7 @@ bool freeze_task(struct task_struct *p)
+> 	unsigned long flags;
+> 
+> 	spin_lock_irqsave(&freezer_lock, flags);
+>-	if (!freezing(p) || frozen(p) || __freeze_task(p)) {
+>+	if (frozen(p) || !freezing(p) || __freeze_task(p)) {
+> 		spin_unlock_irqrestore(&freezer_lock, flags);
+> 		return false;
+> 	}
 
-I also have cpufreq-hw and CPU idle states for SM6125 working on that
-phone, which is the piece your cooling maps are waiting for. I just sent
-them as "[PATCH 0/3] arm64: dts: qcom: sm6125: Add cpufreq-hw and CPU idle
-states" (you are on Cc) and left #cooling-cells out so that it does not
-conflict with your patch 2/2.
+Good good.
 
-I could only find v2 as a reply inside the v1 thread, without reviews
-since. Did I miss a standalone posting? If not, it may be worth resending
-it as its own series so that it gets picked up. Either way I will test the
-latest version on my phone and reply with a Tested-by.
+Reviewed-by: Bradley Morgan <bradley.morgan@linux.dev>
 
-Thanks,
-Majid
+
+>
+
+--- Thanks!
