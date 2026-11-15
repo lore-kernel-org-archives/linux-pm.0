@@ -1,89 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.177
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.51
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794781679;
-	b=jjTKTIW5YsjCjxffQCpaArPUq6XV5bhjN4US5xqTM75qdoishnaERTgKj0JlRRRrHxY0
-	 2oqnHz7sbCeGEfrlN1Bf/gSB7M0I5iR2ToybrRVfWAg0Vq//Rd8RIA0mTkq5iw0gGrf4l
-	 RQSDjiUgLv5mnEY5/jllpR/ZSEmAKZArezyFwODWnavunnnRvOuANMnyKO84XpHW18xmh
-	 REs2Hn90sfWaNqb1HNCWazEqFrbnROVg0qhUveKFfldbu7V13QsN4vHmI+T/hGCifbTo+
-	 elSgfE2szSFu5gRo8mxFSY9POW3XkKylPvMOnRp23kU4tL0PUAkIROFStpzKyXTZV+A==
+	t=1794782197;
+	b=ShCPCVPOZyJNvHCEsvkBM0ouTNmr6S/1bemAdHQwZfV1uD9lQzfYsBZFRwE2iGkD7sFe
+	 cQqq17fnYdhDT55b60gu0jIdxyauJI3cAUTtoPW7ld2NxTPmXmKezlwFny+XD8PQvEOl2
+	 24x81d4OZ6GpzPDS6dbCLrWaBxCsl37QKE9Y8ey7vwLV1nr7hD6KkvDjB1rBG4qVSb07U
+	 5eOBvnm4o290nTr4pIojkPdYTwtB68Zg+ITU/Jf7nmv0F8b9IyYroffS7wcRdJCCjz6sJ
+	 By0UeFFkZiIV5p804hazxGok3lw2oG50nW89ODN30SChYZTxsuimjPjP+g3KQ8OgQow==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794781679;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794782197;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 Message-ID:Date:MIME-Version:User-Agent:Reply-To:Subject:
 	 Content-Language:To:Cc:References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=g+uoEVaY7o8GGV6KPfzfE+Dp0fwtZ6vxaUTvxsle11g=;
-	b=XWv9IdzqLTp2nLkNwJrcBXIBsmZXVyyTE7MfIWje8cqulGIw9zq120Slm/gB91Low6MC
-	 D2wnLUxHihLHN1+mnjpD6bDIIktWt6Tp44H+vMaeS9WegzNSO1gHrFdNqhdG5qo8+OEjt
-	 j/d9kdYPu7qEnvqGDo0pBzqvxihSTtzgLF9ls/VFggLAa1XWtkq0AoAssdea5RJy35cza
-	 J0/87rzKqt4xKgOm4R9FmL9a8couxeQSjqdb8sgBgo+YcoZm58QyT7XPS8ajVWF1JytY2
-	 u0qNAfUbRF15nmsowJnxO1v/0hru2AYH9G98w1NrhvT0/Erttew97R/qTuC2IT7h4jw==
+	bh=dCpJ51ujggena/DY0lnMQOWhNgzWqSe96IeE3HGzQzc=;
+	b=wcr6xcMszIcnBMCb8AMVJsSkRRdgRSbiqfYiG75WwrfB3nEDqqDzmng/sDWye35ZfA/t
+	 6EGjSrupLAqnLNHcJ7wtGo8y2M/aMPgoXV9vxuZh0tqPFIEYtGSUpmdWWau4g8pEpwCRe
+	 uMxemsGaaWggUwzyRTQfk/5iNVbhjGcItqI+sdo/WPhaX7ruk1GExl2HBlHWWvWlkkcMI
+	 XUNlDFJWus41VbFQocHIt/iYtQC0ymNxss8SxRv8CnPv5ZD1hbhCnxjmdjocdR3ByxOpD
+	 K+RfdAAvQ82Ve9va41GfbDabf0tXp3S2HdZYVDbufjsykVCLrr9F4+pk04iQpBdy/rw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=G6pC8cLp;
-	arc=none smtp.remote-ip=209.85.214.177
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pyx4IVzW;
+	arc=none smtp.remote-ip=209.85.216.51
+Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D659606A31F
-	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 22:27:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1D659606A31F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E617606A329
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 22:36:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7E617606A329
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=G6pC8cLp
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2ed1414df17so13964105ad.2
-        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 14:27:58 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pyx4IVzW
+Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-3b08cf16decso1487867a91.0
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 14:36:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794781678; x=1795386478; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794782196; x=1795386996; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:in-reply-to:from:references
          :cc:to:content-language:subject:reply-to:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=g+uoEVaY7o8GGV6KPfzfE+Dp0fwtZ6vxaUTvxsle11g=;
-        b=G6pC8cLpIK0jfEQ1EaG2k0/jn2AWzKMskaqIkfpUNLPN8lrhf3OGgIsRXCIvQixipB
-         w4UG3ZiSr3quYy05zl0XHjBuLVR9buBzguerqlI1uUThBxtiXdkF/BM/0gL0dLJJvk2C
-         SJqYqPRHISNy3stcLvZ7CUOae4oQakLs/gdz5E11pCgA3Y1sx/xV7/L8vf3wtYIsK3mh
-         aT5c40XmP2bI5aNC+WxIzuP5dH7ESL0iFLts+fgENeRcsQV5jaq4KAk5rtpDZPz4rTBb
-         gCUEFsFZq29yBKQcVlbvBguEVEAFS6GZ1O74Z65m2scVzoDgqMv5bym4pmahmEG3VjsL
-         XbTw==
+        bh=dCpJ51ujggena/DY0lnMQOWhNgzWqSe96IeE3HGzQzc=;
+        b=Pyx4IVzWejZkT3U4jTEdIEzskzRlP4cMAdBO6LKRF6jwnwSU+F4ujaWaKweVQfcE1O
+         LesAKPAT2dNnKNEZO8puZ9BzD7gSl73kGZEahAB0FggmglBBa1bAuXkMOeuoXVf61uOW
+         hJWpYVLbOlURrcpwsFad/+7pxGMbBKPAgB2udA/rD+s1ORtcBAOB9FeMHS8rPchk31R5
+         6BX0qGTbVGoTYAD/IcJ9H0nLElIaV2iZ/RKHBcc1Wy7MLYdHcUG++eUfSYhzVbIP8ES5
+         C+lwQtVdmr6Jii85/JqhLx7qvDjyhBT3YTNgsEdwUw9b4hAl18DdtHKTlpevd6WHTxNq
+         4miA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794781678; x=1795386478;
+        d=1e100.net; s=20260707; t=1794782196; x=1795386996;
         h=content-transfer-encoding:content-type:in-reply-to:from:references
          :cc:to:content-language:subject:reply-to:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=g+uoEVaY7o8GGV6KPfzfE+Dp0fwtZ6vxaUTvxsle11g=;
-        b=kgKpzWwRp0mA0Ozx3ynGplzVTsKSoEp45yvx5lv/pmN6YFaq4SIDf/qgQwuqUE8kHg
-         aFHykRAY1WBXrA5osPCZhP/Ypel9PO4exg1q9J+V/ScRG9icu+CtnVjE/Erdpexf9rnm
-         UpjiQuqzmZP81h9po9SwYeuxaULOll+b9fG44xAyXL8kiApHn5iGr5gFdkG8/xKnyzNd
-         mqvIQt++qvIpKK3EwNTNX776L3DqPX4kYV7ki5oA3O20iZdH5WMAvlaIU/dqQeUnw9Ry
-         lAcBzdL4GgrYprwgQsRxS3noF535hPnUNgMowMJj4TCnlHS6qqK/0ncf8d6cWEzI8YGs
-         kVrA==
-X-Forwarded-Encrypted: i=1; AL+hErEiYDjH/YYq8H0xDU4YWeqqosFZPZhMOl/6HX4hG2oi2SJ8RjeTEeWqBHUb7z0a42FGyvRoVLX3sA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8UAUEvU3D1S7Fx2Q5+X5VW70Iez2HE1pmK+AajtbnssOxcnrBX
-	tPz7Cr1h25ZmgO6J9w5gqlFQDtXnSn8w/Zwft4AV8JBV879qlqvgFzWy
-X-Gm-Gg: AYBFou22lKvH2FywQuxuoRqEdIEQR+vWGcwKRukwDYG8UDkSX4U9y/bitcQU8QL0A6l
-	GwCJ6cdfP5ei+znXOgQY6iqQkrAeOTBdzibzK5Gp5Q19pbpktaugNwEHeA15SMJildeUyVIc/cD
-	C5enX6UdKvSUDz2DAr5VxhOEhlV3DOE4EoauTgCZbdnnbopPhD5PkYu7rYDW8ej/suZzogjTmpD
-	fhIQ1oxeJjapfLHwN6A1LicyevtoAAXgmBNf95TxPhf0AIracqg775pr+bkvrqt+A7QVygLXhv8
-	Ss6wO+spnfQByX9ANqfXi0QAR/et0YZMQcc8kvSM2bt6E5J2M4E3WelLdKCTr+zeZCx77bBbpI2
-	6unrcxNVDpWjTDDTUwilrI6a1waSdvMbIB1iEHmdLtelJGW0FgMs1VDIZ/jostZmvy0WxLsbJ72
-	8d4pH/I5cXNVIf74WEEuZFxmfkekuYTz5575Yl9l7dDVLlbNc+kEXNV2iGdZvmxX7WNkXiPKLUQ
-	R6ZBbDEkDWGNnd/Wxu9rTiddggKxPOCc/SGTKrka0eBxNcASxG5HisqJINQJ8KK7+7JsQOZprjT
-	nKYFhxrwHwwg3SZufJJxn4UR7ipNdawnwTi3UPbW+hrFV4ieEJrbbjG319S9hoLyZ7fUwFgJqVv
-	ctbYxOlgRvxiL8A==
-X-Received: by 2002:a17:903:f88:b0:2ee:2557:4069 with SMTP id d9443c01a7336-2ee255742c7mr54507105ad.23.1794781678304;
-        Sun, 15 Nov 2026 14:27:58 -0800 (PST)
+        bh=dCpJ51ujggena/DY0lnMQOWhNgzWqSe96IeE3HGzQzc=;
+        b=2K4IeUgZUJcn+W8c1TC9FOH+qWhJAutDc04GWTXYx2I0PAhjDHrUpNIq3dx2Wd44qH
+         SgX5b1Emjz7X+ZG1ubQi3zkudHiUPq12A8EKfHsoryqMnj4WmHfj2CvYHY6n625OKzUG
+         IPOX7tLU0mVUTqn6tkZIA4WGI7JFkH7r1DeZ/WODJKD4wUwN648BuLWTTr4g7toqvmnU
+         cMl5sOYYAF9j/8PO0JoFP+nMaYKqj2sKrci9Yv8zV74JXT0+d2qDWUIyoOxfiQM8A0K0
+         d0J5g1w+ZVTGmAiEJuJwkjxUL9R50hOwvkc60NQdxNRVHQkj2Oe2BAS3jNP1XbmIXxTo
+         45hw==
+X-Forwarded-Encrypted: i=1; AL+hErGXgjIjrPPeORYpQ1PvTQBecgr0nXjuchUOzAGQQH0oHySZ3pgq4Yj3vF+AIaM9zBip3I9xn9qpvg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z91yk1puAmvlXc/KD2Y+PVPYX9LoctnRO/GUJc1m0sFwqoY+RMd
+	0sEyCPbBQ/z6yXyy0hXax4NzkbUe43S680ml4/bIOuSg0ZV+cegC+Jzp
+X-Gm-Gg: AYBFou05IrLshRvn5kHDGe8VPlf1iH3/Ao8aw3D1pio8nWimztIo8kl9WQxQ/6ZcS8o
+	ZL/AxCqQGtcXku3ufb0ejNrr+pqoMyOg+9SV2Rm8PmzZ51SrNrt3fMMzbnOB+833Kk6SxbAFs8+
+	Nrm/xGBQGpZvBLy7yE2BTLxl67XKqFH5ArfUCjS6i6oZIUuuaZ43q0Yb/rZ/WOx2XB1bZFoOmqb
+	g4biVnGj2iQIY6vvDrbV3vbioI/lWtKiZCJ4zCC48Q6oXcKKxj9nkvOD6irqHagYRsZTEqIkMmz
+	euGtuG9QHptpnhDbGKoVQNv8uu4VepkH+SboIHzi9RW8XpfzO2RlBYlkdETO58TS/NhFu2hFdrA
+	RAwIZwqXQbeE7vdSLSJF9pshVicyv6SnSIha4npV7vSgN+YAv1qJoij61/PyuxWEtn5xJohMoMC
+	ggbH9mdESQnbtiHhKgE/2dRkdmfBTBm3hH/XJ4tOg6wC2MNwCQHVpzazdBrbaB485cct0tWnXAm
+	FY5wFg+OMOBI3tkvTJcQOFqNa+oOtFmpM4LHbjYTuGocZiW/i2bYmk6XynJrG3Pj2hnCaWND+6Q
+	8YMUGhrAu/yQb2hcL8iM9s3HtrMym9S9XvDhmuf/FjbLibiE7AeHJHJns+boD2TpiJAk
+X-Received: by 2002:a17:90b:5150:b0:3b0:91ce:6726 with SMTP id 98e67ed59e1d1-3b1b0a42b97mr8059264a91.21.1794782195677;
+        Sun, 15 Nov 2026 14:36:35 -0800 (PST)
 Received: from [192.168.35.214] ([218.50.238.131])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ee0fa27c23sm28191145ad.71.2026.11.15.14.27.55
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b197d0f497sm18891520a91.8.2026.11.15.14.36.31
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 15 Nov 2026 14:27:57 -0800 (PST)
-Message-ID: <e1298d8c-7b10-4552-9c6a-9418e8e26329@gmail.com>
-Date: Mon, 16 Nov 2026 07:27:53 +0900
+        Sun, 15 Nov 2026 14:36:34 -0800 (PST)
+Message-ID: <4794724e-456e-4efc-b5e7-536c8afad0fd@gmail.com>
+Date: Mon, 16 Nov 2026 07:36:30 +0900
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -95,7 +94,7 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Reply-To: chanwoo@kernel.org
-Subject: Re: [PATCH v4 1/4] devfreq: Use mutex guard in governor_store()
+Subject: Re: [PATCH v4 3/4] devfreq: Factor out devfreq_set_governor()
 Content-Language: ko
 To: Jie Zhan <zhanjie9@hisilicon.com>, cw00.choi@samsung.com,
  myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
@@ -103,119 +102,202 @@ To: Jie Zhan <zhanjie9@hisilicon.com>, cw00.choi@samsung.com,
 Cc: linuxarm@huawei.com, tianyaxiong@kylinos.cn, zhenglifeng1@huawei.com,
  zhangpengjie2@huawei.com, lihuisong@huawei.com, prime.zeng@hisilicon.com
 References: <20260729102348.3857779-1-zhanjie9@hisilicon.com>
- <20260729102348.3857779-2-zhanjie9@hisilicon.com>
+ <20260729102348.3857779-4-zhanjie9@hisilicon.com>
 From: Chanwoo Choi <cwchoi00@gmail.com>
-In-Reply-To: <20260729102348.3857779-2-zhanjie9@hisilicon.com>
+In-Reply-To: <20260729102348.3857779-4-zhanjie9@hisilicon.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 7/29/2026 7:23 PM, Jie Zhan wrote:
-> Use mutex guard in governor_store() so as to simplify the locking logic.
+> governor_store() and devfreq_add_device() contain similar logic for setting
+> a governor when devfreq->governor is NULL.  Merge this into a common
+> function, devfreq_set_governor(), to reduce code duplication and unify the
+> entry of setting governors.
 > 
-> No functional impact intended.
+> This also prepares for further changes that get / put a module refcount of
+> the active governor and prevent the governor module from being unloaded
+> while it's in use.
 > 
-> Reviewed-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
 > Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
 > ---
->  drivers/devfreq/devfreq.c | 38 ++++++++++++++++----------------------
->  1 file changed, 16 insertions(+), 22 deletions(-)
+>  drivers/devfreq/devfreq.c | 128 ++++++++++++++++++++------------------
+>  1 file changed, 67 insertions(+), 61 deletions(-)
 > 
 > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index f08fc6966eae..7a70dd051644 100644
+> index 53c40d795a13..959f0b08ed36 100644
 > --- a/drivers/devfreq/devfreq.c
 > +++ b/drivers/devfreq/devfreq.c
-> @@ -1394,23 +1394,20 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  	if (ret != 1)
->  		return -EINVAL;
->  
-> -	mutex_lock(&devfreq_list_lock);
-> +	guard(mutex)(&devfreq_list_lock);
->  	governor = try_then_request_governor(str_governor);
-> -	if (IS_ERR(governor)) {
-> -		ret = PTR_ERR(governor);
-> -		goto out;
-> -	}
-> +	if (IS_ERR(governor))
-> +		return PTR_ERR(governor);
-> +
->  	if (!df->governor)
->  		goto start_new_governor;
->  
-> -	if (df->governor == governor) {
-> -		ret = 0;
-> -		goto out;
-> -	} else if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE)
-> -		|| IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE)) {
-> -		ret = -EINVAL;
-> -		goto out;
-> -	}
-> +	if (df->governor == governor)
-> +		return count;
-> +
-> +	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE) ||
-> +	    IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE))
-> +		return -EINVAL;
->  
->  	/*
->  	 * Stop the current governor and remove the specific sysfs files
-> @@ -1420,7 +1417,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  	if (ret) {
->  		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
->  			 __func__, df->governor->name, ret);
-> -		goto out;
-> +		return ret;
->  	}
->  
->  start_new_governor:
-> @@ -1438,7 +1435,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  		/* Restore previous governor */
->  		df->governor = prev_governor;
->  		if (!df->governor)
-> -			goto out;
-> +			return ret;
->  
->  		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->  		if (ret) {
-> @@ -1446,7 +1443,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  				"%s: reverting to Governor %s failed (%d)\n",
->  				__func__, prev_governor->name, ret);
->  			df->governor = NULL;
-> -			goto out;
-> +			return ret;
->  		}
->  	}
->  
-> @@ -1455,13 +1452,10 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  	 * the new governor, restore the sysfs files of previous governor.
->  	 */
->  	ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
-> +	if (ret)
-> +		return ret;
->  
-> -out:
-> -	mutex_unlock(&devfreq_list_lock);
-> -
-> -	if (!ret)
-> -		ret = count;
-> -	return ret;
-> +	return count;
+> @@ -318,6 +318,70 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
+>  	return governor;
 >  }
->  static DEVICE_ATTR_RW(governor);
+>  
+> +static int devfreq_set_governor(struct devfreq *df,
+> +				const struct devfreq_governor *new_gov)
+> +{
+> +	const struct devfreq_governor *old_gov;
+> +	struct device *dev;
+> +	int ret;
+> +
+> +	lockdep_assert_held(&devfreq_list_lock);
+> +
+> +	old_gov = df->governor;
+> +	dev = &df->dev;
+> +
+> +	if (old_gov) {
+> +		if (old_gov == new_gov)
+> +			return 0;
+> +
+> +		if (IS_SUPPORTED_FLAG(old_gov->flags, IMMUTABLE) ||
+> +		    IS_SUPPORTED_FLAG(new_gov->flags, IMMUTABLE))
+> +			return -EINVAL;
+> +
+> +		/* Stop the current governor */
+> +		ret = df->governor->event_handler(df, DEVFREQ_GOV_STOP, NULL);
+> +		if (ret) {
+> +			dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
+> +				 __func__, df->governor->name, ret);
+> +			return ret;
+> +		}
+> +	}
+> +
+> +	/* Start the new governor */
+> +	df->governor = new_gov;
+> +	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+> +	if (ret) {
+> +		dev_warn(dev, "%s: Governor %s not started(%d)\n",
+> +			 __func__, df->governor->name, ret);
+> +
+> +		/* Restore previous governor */
+> +		df->governor = old_gov;
+> +		if (!df->governor)
+> +			return ret;
+> +
+> +		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+> +		if (ret) {
+> +			dev_err(dev, "%s: restore Governor %s failed (%d)\n",
+> +				__func__, df->governor->name, ret);
+> +			df->governor = NULL;
+> +			return ret;
+> +		}
+> +
+> +		ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
+> +		if (ret)
+> +			dev_warn(dev, "sysfs update failed (%d)\n", ret);
+> +
+> +		/*
+> +		 * Old governor restored successfully, but the new governor
+> +		 * failed to start.  Return a distinct error so the caller is
+> +		 * not misled into thinking the switch succeeded.
+> +		 */
+> +		return -EAGAIN;
+> +	}
+> +
+> +	return sysfs_update_group(&df->dev.kobj, &gov_attr_group);
+> +}
+> +
+>  static int devfreq_notify_transition(struct devfreq *devfreq,
+>  		struct devfreq_freqs *freqs, unsigned int state)
+>  {
+> @@ -942,9 +1006,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  		goto err_init;
+>  	}
+>  
+> -	devfreq->governor = governor;
+> -	err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_START,
+> -						NULL);
+> +	err = devfreq_set_governor(devfreq, governor);
+>  	if (err) {
+>  		dev_err_probe(dev, err,
+>  			"%s: Unable to start governor for the device\n",
+> @@ -952,10 +1014,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  		goto err_init;
+>  	}
+>  
+> -	err = sysfs_update_group(&devfreq->dev.kobj, &gov_attr_group);
+> -	if (err)
+> -		goto err_init;
+> -
+>  	list_add(&devfreq->node, &devfreq_list);
+>  
+>  	mutex_unlock(&devfreq_list_lock);
+> @@ -1380,7 +1438,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  	struct devfreq *df = to_devfreq(dev);
+>  	int ret;
+>  	char str_governor[DEVFREQ_NAME_LEN + 1];
+> -	const struct devfreq_governor *governor, *prev_governor;
+> +	const struct devfreq_governor *governor;
+>  
+>  	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>  	if (ret != 1)
+> @@ -1391,59 +1449,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  	if (IS_ERR(governor))
+>  		return PTR_ERR(governor);
+>  
+> -	if (!df->governor)
+> -		goto start_new_governor;
+> -
+> -	if (df->governor == governor)
+> -		return count;
+> -
+> -	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE) ||
+> -	    IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE))
+> -		return -EINVAL;
+> -
+> -	/*
+> -	 * Stop the current governor and remove the specific sysfs files
+> -	 * which depend on current governor.
+> -	 */
+> -	ret = df->governor->event_handler(df, DEVFREQ_GOV_STOP, NULL);
+> -	if (ret) {
+> -		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
+> -			 __func__, df->governor->name, ret);
+> -		return ret;
+> -	}
+> -
+> -start_new_governor:
+> -	/*
+> -	 * Start the new governor and create the specific sysfs files
+> -	 * which depend on the new governor.
+> -	 */
+> -	prev_governor = df->governor;
+> -	df->governor = governor;
+> -	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+> -	if (ret) {
+> -		dev_warn(dev, "%s: Governor %s not started(%d)\n",
+> -			 __func__, df->governor->name, ret);
+> -
+> -		/* Restore previous governor */
+> -		df->governor = prev_governor;
+> -		if (!df->governor)
+> -			return ret;
+> -
+> -		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+> -		if (ret) {
+> -			dev_err(dev,
+> -				"%s: reverting to Governor %s failed (%d)\n",
+> -				__func__, prev_governor->name, ret);
+> -			df->governor = NULL;
+> -			return ret;
+> -		}
+> -	}
+> -
+> -	/*
+> -	 * Create the sysfs files for the new governor. But if failed to start
+> -	 * the new governor, restore the sysfs files of previous governor.
+> -	 */
+> -	ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
+> +	ret = devfreq_set_governor(df, governor);
+>  	if (ret)
+>  		return ret;
 >  
 
-Hi,
+Actually, I didn't want to merge it becaus there are fully test for all governor
+and various case to switch governor(stop/start/switch). It makes the problem.
+Also, there is an AI report indicating that this patch has a problem related to passive govenor.
 
-include/linux/cleanup.h includes the following comment
-"148  * Lastly, given that the benefit of cleanup helpers is removal of
-149  * "goto", and that the "goto" statement can jump between scopes, the
-150  * expectation is that usage of "goto" and cleanup helpers is never
-151  * mixed in the same function. I.e. for a given routine, convert all
-152  * resources that need a "goto" cleanup to scope-based cleanup, or
-153  * convert none of them.
-"
-
-A Patch should be atomic. This patch still uses both guard and goto.
-even if you removed goto on patch3.
+We must guarantee the safe operation without any side-effect.
+Don't update devfreq_add_device and better to make the separate function 'start_new_governor'
+and then do next update separately.
 
 -- 
 Best Regards,
