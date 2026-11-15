@@ -1,48 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794766234;
-	b=4EPWVr9PMTO/hgtXuwcLp7W3XgeMDbv6/RtMAJ5SZwDQCKGOH5XErVp6wIbALcL451+7
-	 qbD0MkDbI7IAaA8KzuZ1NB4gP9w6hpOdeh66HxOG3/tAOwBqkGaKAUeh+Vmo+nXfD0CXR
-	 LMwF7BJNQbuiAoPsd0LB1jwJmzAL1ZZ62XwR4C+mFd7BPZxmiTCz9k9dP+CUlePxk53We
-	 1TVh2IF00vPCxsbuvEs49ofBXAzXdDqNokbbPO7sSPaHJC1/wzwyHHsUHFNMhN2GdfEJS
-	 yJzZR7y5ZYy8cgKN534Cz6ZByjzqVf7KdwJwOE1TzaFAK+xYfc1DCxGG9GLRoKnZwOw==
+	t=1794767967;
+	b=399lpECokz9ymaLZolzr9Bc/9iiIMwOkoJTSMV1u3wcwQAHuG4sKlgn6dHYODC1zn7m0
+	 uG7MVPwNJe7IJnBb6KPPM8XGL5lbQRkMaOyFj9col1idfNwP8/myPYNSs4FmtkVqjMEra
+	 T7re5bR3hCB5yxFJOF1wwrSUuhLS0vmZ9LFNZa7kwZVW4iIXKDCGABEdKl8FRQJlhifb0
+	 P0jsFWoffKbeshmpcAghROIqI9XFeHmFuwTJg+afHVqohlxddGKiRQ8+XDzjsgkFV9CXx
+	 7VXuNxEGsPRxPxXVMWOnNKPdLuIlRs0WVevGk/jMu00vSefACyzlt7YbXmF3gggm6Mg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794766234;
-	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
-	 X-Mailer;
-	bh=oRUWJuYUdcnMydAoLlo9QJ+Mlot2+ydrhYYhuU+km0U=;
-	b=YVtT8HRIeN/s6Rn0k3J7/GmCKuuhHld2x94EEMAgnOkDMIeTqEpAfRcMa6O9djEMLsQS
-	 r8NrIRzuZG4h4vvVlAiwy/Xo4eaNeYNp7+EAwxeq1MdUoxjqjbR9gBkF3eAzEvBqxhtTM
-	 jhM1/wexZXY7Q2fF2xaIuukZXPttN3Nrst94sesotkHmhFR3X91MjWRfMc858wkonpi7/
-	 CFPEESpHpEA5hmP9Pt+73iw8wSsylXqTVmRDg9u+jsLb8LRlH681spat1TK4tfaRwBDPw
-	 ZD01KU/Mu9GiGsSUr1xpK2CVr7PDYIcl9wsjet/eniaN2uyHtVjpAaqP9Sr0Eb+u/IA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794767967;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=U0QYZMkI+aHL2rJZs8Panb3OQBENH9JOHq63W5JMa0A=;
+	b=pwq5/bj1j71TgDR+KMjSnQ+P7JPoJLy4/AH+3IF+ViA79xUjvpkVmIpXeyB/gVlmlZp9
+	 shlysrIIczR1x7Iixfk2o1Yl26CaUfhWw6QIbjYJLfu7vxhF1dLZHpIlW1X1v34NkMldj
+	 AYscXnj4Me71qcNMURa6AAO56XKQgQUikDHcmi49aTcUMTGBv764u+dY5oUERgeY0xxL8
+	 xBl6og4bwrMjSx9f4Q153No3umoTH1boGicG+7BtB0blnPA6z76azERRmNlEGqGUxcgSP
+	 Rx/aBUmbHe8GYva8pQN/IdLb5hspl9HLJ6XvFQTqZ1S4isD0IVlltcPY63rrEa4OS1g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nC9ucYjC;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Qv8J5o1P;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70540606A333;
-	Sun, 15 Nov 2026 18:10:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAA07606A323
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 18:39:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nC9ucYjC
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 533D91F000C9;
-	Sun, 15 Nov 2026 18:10:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Qv8J5o1P
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 494E21F000C4
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 18:39:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794766234;
-	bh=oRUWJuYUdcnMydAoLlo9QJ+Mlot2+ydrhYYhuU+km0U=;
-	h=From:Date:Subject:To:Cc;
-	b=nC9ucYjCQd7zHssPAL9i8kDCNiFXuxub4Ti5OWI02xXauE2VobgT8XpAB7PHvLfOU
-	 Klr43CgXwUcQpGMAn97rEHJa8t1ccj7ZuzN5BoiOrDV+D1mPsbw3XEP/WhNizigo+W
-	 OhAcHk1y1K8nqg5pvtAF7ZK5teCkZYjXwlNa3v0YHpCZ5IlqpUD1FzKHHJsrIfSvz1
-	 TR4WrJcLAwePZl8zIhDgXce2BV4i/C0OtX3oIZJTOmt43Ezjr8o8Kb8cB9gfrSzGyH
-	 cK8LvYK3mynNOzUkS78qhJ3US+IIS5YZX5fSHSFXn63ZGaCe7oymJ7U4lg5YotOzFk
-	 WPPt5lFGkg6IQ==
-From: Linus Walleij <linusw@kernel.org>
-Date: Sun, 15 Nov 2026 19:10:29 +0100
-Subject: [PATCH] drm/mcde: Use power domain for display power
+	s=k20260515; t=1794767967;
+	bh=U0QYZMkI+aHL2rJZs8Panb3OQBENH9JOHq63W5JMa0A=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Qv8J5o1PQ0O70GFi+RsF9YDWNG0YcQ289szn3ZPVRl2GWdRWNPoYDsXTezmRG7sN8
+	 k7d6nX1GpJSGv/KIXJrZ1er+OLQH7pU55OJkyuwNvOarF1oOyZmv+aSFJvkcg/op9g
+	 vQJgS5vPHmocAvPP4qxzVdd9r1aLDmo6a1fW75LLmINcKwXjRuJ0PiAj7jsMI4uYGM
+	 mqSl5dfG3gBRIJeIC8IBz87NlNmZLMyb+e41D8MpBnlwyz3TneTag6zjRgkblez7jX
+	 Dvr8NbTfpTW1kmHecSoaNsS7UdjafdpEkNaePUaq5toslF3zB62EEzCpUlXPultBJJ
+	 BOT/3kvXkdTEQ==
+Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5c14f7768acso2220605e87.3
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 10:39:27 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErF7ha+ICOYtYb29NTT3c9UeYBFxHUsFXzn27qxre0oMf0RQYiZmdpNuJE7l59LwmR6hZ3Y1zZDKzw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/P3AgSUuucmYhCNsMQTj0cNRZVsdacmP3sdHN6/CLEOTWOA4bM
+	PSIIKhzC0Z3PHTMnSIbm3ArkGo7wJ5MfxkFsXSePBSWVQU/vNrwqmX3Y72wDvzz/YdgA6ftapO9
+	zH25rmUlnaICpOaAeQbFYrCHMFKuFd24=
+X-Received: by 2002:a05:6512:228d:b0:5c1:79b4:4424 with SMTP id
+ 2adb3069b0e04-5c179b4459cmr2054409e87.53.1794767965565; Sun, 15 Nov 2026
+ 10:39:25 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,257 +59,126 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261115-ux500-drm-mcde-powerdomain-v1-1-afdc326cceb7@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3MUQrDIAwA0KuEfDegRUfnVcY+xKRbPtQS2VYov
- fug7wDvwCGmMjDBgSZfHdobJvATYHnn9hJSxgQ4u/nmvY/02aNzxFapFhba+k+Me83aaMkL3zm
- UmEPACXAzWXW/8sfzPP86AZVZbAAAAA==
-X-Change-ID: 20261115-ux500-drm-mcde-powerdomain-8a8d9d4c5a44
-To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
- Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org, 
- Linus Walleij <linusw@kernel.org>
-X-Mailer: b4 0.16.0
+References: <20261113154001.2081-1-sankara.narayana@intel.com> <dc5506e2d145bf98ea55b861cac74d7805137470.camel@linux.intel.com>
+In-Reply-To: <dc5506e2d145bf98ea55b861cac74d7805137470.camel@linux.intel.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Sun, 15 Nov 2026 19:39:10 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gnYpBs8B9Gok2Lm=00arAyN=+=HcG3HqsHKc1oDnDv0A@mail.gmail.com>
+X-Gm-Features: AclHuK-UZ2oD5yEqZKUPb9JSapjunu6M1-qXX4TN9O_342wenyQn0cJHAr-7Kpw
+Message-ID: <CAJZ5v0gnYpBs8B9Gok2Lm=00arAyN=+=HcG3HqsHKc1oDnDv0A@mail.gmail.com>
+Subject: Re: [PATCH] thermal: int340x: processor_thermal: Fix Nova Lake-S PCI
+ device ID
+To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	Sankara Tankala <sankara.narayana@intel.com>
+Cc: daniel.lezcano@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Replace explicit EPOD regulator handling with runtime PM, including the
-power cycle used to reset the display hardware. Treat only negative
-pm_runtime_put_sync_suspend() return values as errors.
+On Fri, Nov 13, 2026 at 6:28=E2=80=AFPM srinivas pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> On Fri, 2026-11-13 at 21:10 +0530, Sankara Tankala wrote:
+> > Nova Lake-S uses the same processor thermal PCI device ID as Nova
+> > Lake-H, 0xD703. The 0xAD03 ID added for Nova Lake-S is the Arrow
+> > Lake-S ID (PCI_DEVICE_ID_INTEL_ARL_S_THERMAL).
+> >
+> > The ARL-S entry comes first in the PCI ID table, so the NVL-S entry
+> > never matched. However, proc_thermal_rfim_add() matches on the device
+> > ID alone, so Arrow Lake-S, which has DLVR, wrongly gets the Nova Lake
+> > DLVR register map.
+> >
+> > Replace the separate NVL_H and NVL_S IDs with a single NVL ID,
+> > 0xD703,
+> > and drop the 0xAD03 entries.
+> >
+> > Fixes: af1b80b94126 ("thermal: int340x: processor_thermal: Add Nova
+> > Lake processor thermal device")
+> > Fixes: dbd911a07f14 ("thermal: intel: int340x: Add DLVR support for
+> > Nova Lake")
+> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Sankara Tankala <sankara.narayana@intel.com>
+>
+>     Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Keep the separate VANA regulator enabled while the driver is bound:
-the AB8500 CSI/DSI analog supply is not controlled by the MCDE power
-domain. Preserve its probe failure and removal cleanup.
+Applied as 7.4-rc material, thanks!
 
-Signed-off-by: Linus Walleij <linusw@kernel.org>
----
-The Ux500 genpd prerequisites have been merged into the powerdomain tree.
-Please take this conversion through DRM; the companion bindings and DTS
-changes will be submitted separately.
----
- drivers/gpu/drm/mcde/mcde_clk_div.c |  4 +--
- drivers/gpu/drm/mcde/mcde_display.c | 13 ++++-----
- drivers/gpu/drm/mcde/mcde_drm.h     |  1 -
- drivers/gpu/drm/mcde/mcde_drv.c     | 56 +++++++++++++++++--------------------
- drivers/gpu/drm/mcde/mcde_dsi.c     |  1 -
- 5 files changed, 33 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/gpu/drm/mcde/mcde_clk_div.c b/drivers/gpu/drm/mcde/mcde_clk_div.c
-index 8c5af2677357..1a22e6233946 100644
---- a/drivers/gpu/drm/mcde/mcde_clk_div.c
-+++ b/drivers/gpu/drm/mcde/mcde_clk_div.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/clk-provider.h>
- #include <linux/io.h>
--#include <linux/regulator/consumer.h>
-+#include <linux/pm_runtime.h>
- 
- #include "mcde_drm.h"
- #include "mcde_display_regs.h"
-@@ -95,7 +95,7 @@ static unsigned long mcde_clk_div_recalc_rate(struct clk_hw *hw,
- 	 * It will come up with 0 in the divider register bits, which
- 	 * means "divide by 2".
- 	 */
--	if (!regulator_is_enabled(mcde->epod))
-+	if (!pm_runtime_active(mcde->dev))
- 		return DIV_ROUND_UP_ULL(prate, 2);
- 
- 	cr = readl(mcde->regs + cdiv->cr);
-diff --git a/drivers/gpu/drm/mcde/mcde_display.c b/drivers/gpu/drm/mcde/mcde_display.c
-index 281f5b3274bd..57305fdbcdcc 100644
---- a/drivers/gpu/drm/mcde/mcde_display.c
-+++ b/drivers/gpu/drm/mcde/mcde_display.c
-@@ -7,7 +7,7 @@
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/dma-buf.h>
--#include <linux/regulator/consumer.h>
-+#include <linux/pm_runtime.h>
- #include <linux/media-bus-format.h>
- 
- #include <drm/drm_atomic_helper.h>
-@@ -1187,16 +1187,15 @@ static void mcde_crtc_helper_atomic_enable(struct drm_crtc *crtc,
- 	int ret;
- 
- 	/* This powers up the entire MCDE block and the DSI hardware */
--	ret = regulator_enable(mcde->epod);
-+	ret = pm_runtime_resume_and_get(mcde->dev);
- 	if (ret) {
--		dev_err(drm->dev, "can't re-enable EPOD regulator\n");
-+		dev_err(drm->dev, "can't enable MCDE power domain\n");
- 		return;
- 	}
- 
- 	dev_info(drm->dev, "enable MCDE, %d x %d format %p4cc\n",
- 		 mode->hdisplay, mode->vdisplay, &format);
- 
--
- 	/* Clear any pending interrupts */
- 	mcde_display_disable_irqs(mcde);
- 	writel(0, mcde->regs + MCDE_IMSCERR);
-@@ -1347,9 +1346,9 @@ static void mcde_crtc_helper_atomic_disable(struct drm_crtc *crtc,
- 		spin_unlock_irq(&crtc->dev->event_lock);
- 	}
- 
--	ret = regulator_disable(mcde->epod);
--	if (ret)
--		dev_err(drm->dev, "can't disable EPOD regulator\n");
-+	ret = pm_runtime_put_sync_suspend(mcde->dev);
-+	if (ret < 0)
-+		dev_err(drm->dev, "can't disable MCDE power domain\n");
- 	/* Make sure we are powered down (before we may power up again) */
- 	usleep_range(50000, 70000);
- 
-diff --git a/drivers/gpu/drm/mcde/mcde_drm.h b/drivers/gpu/drm/mcde/mcde_drm.h
-index edbb4580a7d8..296edf9ebef4 100644
---- a/drivers/gpu/drm/mcde/mcde_drm.h
-+++ b/drivers/gpu/drm/mcde/mcde_drm.h
-@@ -93,7 +93,6 @@ struct mcde {
- 	/* Locks the MCDE FIFO control register A and B */
- 	spinlock_t fifo_crx1_lock;
- 
--	struct regulator *epod;
- 	struct regulator *vana;
- };
- 
-diff --git a/drivers/gpu/drm/mcde/mcde_drv.c b/drivers/gpu/drm/mcde/mcde_drv.c
-index 759e279b645a..af26ac5a4455 100644
---- a/drivers/gpu/drm/mcde/mcde_drv.c
-+++ b/drivers/gpu/drm/mcde/mcde_drv.c
-@@ -61,6 +61,7 @@
- #include <linux/module.h>
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
- #include <linux/regulator/consumer.h>
- #include <linux/slab.h>
- #include <linux/delay.h>
-@@ -283,33 +284,26 @@ static int mcde_probe(struct platform_device *pdev)
- 	mcde->dev = dev;
- 	platform_set_drvdata(pdev, drm);
- 
--	/* First obtain and turn on the main power */
--	mcde->epod = devm_regulator_get(dev, "epod");
--	if (IS_ERR(mcde->epod)) {
--		ret = PTR_ERR(mcde->epod);
--		dev_err(dev, "can't get EPOD regulator\n");
--		return ret;
--	}
--	ret = regulator_enable(mcde->epod);
-+	pm_runtime_enable(dev);
-+	ret = pm_runtime_resume_and_get(dev);
- 	if (ret) {
--		dev_err(dev, "can't enable EPOD regulator\n");
-+		dev_err(dev, "can't enable MCDE power domain\n");
-+		pm_runtime_disable(dev);
- 		return ret;
- 	}
-+
-+	/* The CSI/DSI analog supply is separate from the MCDE power domain. */
- 	mcde->vana = devm_regulator_get(dev, "vana");
- 	if (IS_ERR(mcde->vana)) {
- 		ret = PTR_ERR(mcde->vana);
- 		dev_err(dev, "can't get VANA regulator\n");
--		goto regulator_epod_off;
-+		goto pm_runtime_put;
- 	}
- 	ret = regulator_enable(mcde->vana);
- 	if (ret) {
- 		dev_err(dev, "can't enable VANA regulator\n");
--		goto regulator_epod_off;
-+		goto pm_runtime_put;
- 	}
--	/*
--	 * The vendor code uses ESRAM (onchip RAM) and need to activate
--	 * the v-esram34 regulator, but we don't use that yet
--	 */
- 
- 	/* Clock the silicon so we can access the registers */
- 	mcde->mcde_clk = devm_clk_get(dev, "mcde");
-@@ -412,14 +406,15 @@ static int mcde_probe(struct platform_device *pdev)
- 
- 	/*
- 	 * Perform an invasive reset of the MCDE and all blocks by
--	 * cutting the power to the subsystem, then bring it back up
-+	 * powering down the subsystem, then bring it back up
- 	 * later when we enable the display as a result of
- 	 * component_master_add_with_match().
- 	 */
--	ret = regulator_disable(mcde->epod);
--	if (ret) {
--		dev_err(dev, "can't disable EPOD regulator\n");
--		return ret;
-+	ret = pm_runtime_put_sync_suspend(dev);
-+	if (ret < 0) {
-+		dev_err(dev, "can't disable MCDE power domain\n");
-+		pm_runtime_get_noresume(dev);
-+		goto clk_disable;
- 	}
- 	/* Wait 50 ms so we are sure we cut the power */
- 	usleep_range(50000, 70000);
-@@ -428,13 +423,7 @@ static int mcde_probe(struct platform_device *pdev)
- 					      match);
- 	if (ret) {
- 		dev_err(dev, "failed to add component master\n");
--		/*
--		 * The EPOD regulator is already disabled at this point so some
--		 * special errorpath code is needed
--		 */
--		clk_disable_unprepare(mcde->mcde_clk);
--		regulator_disable(mcde->vana);
--		return ret;
-+		goto clk_disable_pm_disabled;
- 	}
- 
- 	return 0;
-@@ -443,10 +432,15 @@ static int mcde_probe(struct platform_device *pdev)
- 	clk_disable_unprepare(mcde->mcde_clk);
- regulator_off:
- 	regulator_disable(mcde->vana);
--regulator_epod_off:
--	regulator_disable(mcde->epod);
-+pm_runtime_put:
-+	pm_runtime_put_sync_suspend(dev);
-+	goto pm_runtime_disable;
-+clk_disable_pm_disabled:
-+	clk_disable_unprepare(mcde->mcde_clk);
-+	regulator_disable(mcde->vana);
-+pm_runtime_disable:
-+	pm_runtime_disable(dev);
- 	return ret;
--
- }
- 
- static void mcde_remove(struct platform_device *pdev)
-@@ -457,7 +451,7 @@ static void mcde_remove(struct platform_device *pdev)
- 	component_master_del(&pdev->dev, &mcde_drm_comp_ops);
- 	clk_disable_unprepare(mcde->mcde_clk);
- 	regulator_disable(mcde->vana);
--	regulator_disable(mcde->epod);
-+	pm_runtime_disable(&pdev->dev);
- }
- 
- static void mcde_shutdown(struct platform_device *pdev)
-diff --git a/drivers/gpu/drm/mcde/mcde_dsi.c b/drivers/gpu/drm/mcde/mcde_dsi.c
-index daac8d67913d..86ae23894cda 100644
---- a/drivers/gpu/drm/mcde/mcde_dsi.c
-+++ b/drivers/gpu/drm/mcde/mcde_dsi.c
-@@ -8,7 +8,6 @@
- #include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
--#include <linux/regulator/consumer.h>
- #include <video/mipi_display.h>
- 
- #include <drm/drm_atomic_state_helper.h>
-
----
-base-commit: 9ae477db090b44816741fd9c49a3c459fc7d407b
-change-id: 20261115-ux500-drm-mcde-powerdomain-8a8d9d4c5a44
-
-Best regards,
---  
-Linus Walleij <linusw@kernel.org>
-
+> > ---
+> >  .../intel/int340x_thermal/processor_thermal_device.h       | 3 +--
+> >  .../intel/int340x_thermal/processor_thermal_device_pci.c   | 7 +----
+> > --
+> >  .../thermal/intel/int340x_thermal/processor_thermal_rfim.c | 3 +--
+> >  3 files changed, 3 insertions(+), 10 deletions(-)
+> >
+> > diff --git
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> > index b79937a386ec..87d8ff9c7173 100644
+> > ---
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> > +++
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
+> > @@ -27,8 +27,7 @@
+> >  #define PCI_DEVICE_ID_INTEL_JSL_THERMAL      0x4E03
+> >  #define PCI_DEVICE_ID_INTEL_LNLM_THERMAL     0x641D
+> >  #define PCI_DEVICE_ID_INTEL_MTLP_THERMAL     0x7D03
+> > -#define PCI_DEVICE_ID_INTEL_NVL_H_THERMAL    0xD703
+> > -#define PCI_DEVICE_ID_INTEL_NVL_S_THERMAL    0xAD03
+> > +#define PCI_DEVICE_ID_INTEL_NVL_THERMAL      0xD703
+> >  #define PCI_DEVICE_ID_INTEL_RPL_THERMAL      0xA71D
+> >  #define PCI_DEVICE_ID_INTEL_SKL_THERMAL      0x1903
+> >  #define PCI_DEVICE_ID_INTEL_TGL_THERMAL      0x9A03
+> > diff --git
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> > c
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> > c
+> > index 7d6fee59ade2..f218ee247ab4 100644
+> > ---
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> > c
+> > +++
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.
+> > c
+> > @@ -501,12 +501,7 @@ static const struct pci_device_id
+> > proc_thermal_pci_ids[] =3D {
+> >         PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_HINT |
+> >         PROC_THERMAL_FEATURE_POWER_FLOOR |
+> > PROC_THERMAL_FEATURE_PTC |
+> >         PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
+> > -     { PCI_DEVICE_DATA(INTEL, NVL_H_THERMAL,
+> > PROC_THERMAL_FEATURE_RAPL |
+> > -       PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
+> > -       PROC_THERMAL_FEATURE_MSI_SUPPORT |
+> > PROC_THERMAL_FEATURE_WT_HINT |
+> > -       PROC_THERMAL_FEATURE_POWER_FLOOR |
+> > PROC_THERMAL_FEATURE_PTC |
+> > -       PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
+> > -     { PCI_DEVICE_DATA(INTEL, NVL_S_THERMAL,
+> > PROC_THERMAL_FEATURE_RAPL |
+> > +     { PCI_DEVICE_DATA(INTEL, NVL_THERMAL,
+> > PROC_THERMAL_FEATURE_RAPL |
+> >         PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
+> >         PROC_THERMAL_FEATURE_MSI_SUPPORT |
+> > PROC_THERMAL_FEATURE_WT_HINT |
+> >         PROC_THERMAL_FEATURE_POWER_FLOOR |
+> > PROC_THERMAL_FEATURE_PTC |
+> > diff --git
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> > index 96279756177f..1832f13634d8 100644
+> > --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> > +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c
+> > @@ -472,8 +472,7 @@ int proc_thermal_rfim_add(struct pci_dev *pdev,
+> > struct proc_thermal_device *proc
+> >                       dlvr_mmio_regs_table =3D lnl_dlvr_mmio_regs;
+> >                       dlvr_mapping =3D lnl_dlvr_mapping;
+> >                       break;
+> > -             case PCI_DEVICE_ID_INTEL_NVL_H_THERMAL:
+> > -             case PCI_DEVICE_ID_INTEL_NVL_S_THERMAL:
+> > +             case PCI_DEVICE_ID_INTEL_NVL_THERMAL:
+> >                       dlvr_mmio_regs_table =3D nvl_dlvr_mmio_regs;
+> >                       ddr_data_rate_reg =3D &nvl_ddr_data_rate_reg;
+> >                       break;
