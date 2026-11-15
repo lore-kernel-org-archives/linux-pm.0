@@ -1,97 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.45
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.171
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794732789;
-	b=YwD1j3/zk7mXcn1b0JH1iEj9QRE0JhHha/SVrdlskTRFqlOWI0CtMN0wZfXyN9WlKKg3
-	 1ijpzWmySe0zNep7DN8N8tFawiXMuC3CTuHcnVIMUit1SzCQgslR6alzfsY+1c4/bWPAR
-	 Msb7O8yWp4aCUgbiDHt//NGFYNHWnh82A9frpv8C5Dl9X9vuKTQd1n3z9SMmfWpdoSJEO
-	 U5jql2cWbKtXUBAKLRD2PXP9GQIYLHRzBLXe72ew5ApHDt5qEfip1/DN75k4Orx+g2m+f
-	 NlQHJIdwtRyIyFArQvrnnnIY5nsx+ocr3bZcsRw/qsBZLAyqoXOuxDLq2fXmxTECzTQ==
+	t=1794737051;
+	b=uDRIQ7U6lfRXv0p2QMLbNq126+1zm+G8vKZHmLq0DbhAYROZ9TzohNrpcdRJ1rt/Fz8a
+	 J3j1c9fzmMtu8I1jGAaGNtluApWwgM12eQdU31vGgObNhi/pR6yHOFiH1FQthiwV1ydqQ
+	 k2AxYq1IAboW+UF/QwYp1SS/DhCfFSzCt9oaUzptp8I2f6ug8W7NLBEFlm93fPwc9FDob
+	 LDrHVIrQpdomvMrCxSJjSZXAVKEp7lAQt/CsdYXBUzyD0/Ry5xrmFu5lL6vqnSuIA3akx
+	 qT2PUR2Wp1Wn5AxtGIU812V+8XFmtNbqto108VrUtIcUveSS4sakTXGP67Vly38x+Ng==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794732789;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=wNHsMSnqXLNqxHaUvaHElX48eJyvQ5UchZoPNPKizhU=;
-	b=AFBKv/r0/5fChIhfwOlUl2J4mA2GZ0iKcLqfS0Afvr2qS/YioEzqrbD8zDbgueKcJfTm
-	 dlhLE1m6B46kYkwa2Hd70kTyGanI1jfEQxxiyVNDyVwhzabsLHjc3IPdc3xFRjNtb7ecY
-	 NN2e3xebFX2eM1vRpL+A7ApZmYdHVxrZojVYRUvehhMTtM5F7OGEfLRWfY5ELHfgPqIi5
-	 W0mzG32xML8gWgSViTt4Jt6R+njsgm2CcGf5rp4Kj9lGXBy0jlnRU6q/ApvYCpusqdKt1
-	 rat/MDncBoaxhbGiMP0JNQ31dElWjWZ86HoNisqMscrTZhKXAWVpighlKdbTJgXlaeg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794737051;
+	h=DMARC-Filter:Received:DKIM-Signature:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-MBO-RS-META:X-MBO-RS-ID;
+	bh=r24sJ6EQjPki8A/OQvZW0k99xSlAnUGvDH3ZgagLA2A=;
+	b=Yja+03623KIkaCOOqk811JHYR6G+/89NpwIQ+z0G9zdoMG03rPwOflLSpOkx7IskGzBu
+	 lV52J3DWVib7WMty3sLH+aTNyMHwk6dm3ohlGGU0hzQpvLdEWBOWNOkTnkRWH5WiNX/Ck
+	 TQ8bXeOhXUNJb0yC8+ZX6HOMThgJK0i7uAY514GTaPOLYs0kaXBF+rM0y6rnw610y6Y94
+	 HcUXgYSFBmlkONiHWgDxc3Fu63+vBTTBT5NrYUMXMJ1R+BJ+1J5yA1jXs9g/v1iSmLecU
+	 XSgac+IMYo0dd5n1bVbIwJ3+XskSJNSgNHJpV9cNJCvxLGCcox5l42alJFWtOGnlqhA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QuNZbqws;
-	arc=none smtp.remote-ip=209.85.221.45
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=mailbox.org;
+	spf=pass smtp.mailfrom=mailbox.org;
+	dkim=pass header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=cgAG6RG1;
+	arc=none smtp.remote-ip=80.241.56.171
+Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E099606A327
-	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 08:53:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5E099606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2109F606A31D;
+	Sun, 15 Nov 2026 10:04:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2109F606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QuNZbqws
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-49134c8509fso2512007f8f.1
-        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 00:53:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794732788; x=1795337588; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=wNHsMSnqXLNqxHaUvaHElX48eJyvQ5UchZoPNPKizhU=;
-        b=QuNZbqwsBNxNnipsn4hLIE9NyeFCT6idEXbwgrzgEnYTHXbw73p6jGLvh/aQmuBd2Y
-         XaOxgSrfRJwL4Xu3A7HbpjXc8fVo63nWtteDG48RgGTBE3oLu/8g55GsggyMUwox2XVF
-         9mEeCpnEzAcVwR7gg/oIgdD4UETZVqz54cDW6oS0OGpD/JuxBQ8HcNcWZHxtkXvBzQRD
-         /WsCHS7+dkzaTZa8PdFiosc41ct7scbG071Y8M7V/SxuNb4J/uxyoJl/432pHWd1antS
-         FgMHSc4ONoEpAzxUZG/emyrTgJRh12Xgfkc/FCYrpC8FWyuODcgdPYiIfSVlGesSoGoB
-         6w7Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794732788; x=1795337588;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wNHsMSnqXLNqxHaUvaHElX48eJyvQ5UchZoPNPKizhU=;
-        b=zd+DtSzKpyD6IlvRSkZBIK7Aq8QKrA3SY90UmnTSk2A0SuwOVEpx+XHqSF5Qww3ysc
-         eeqRCsImOk4pxQRf3nPu07tUgDVkcOAuzzrhBDBkGs3LPqnaWVFtNCkXguq3RQsfne+5
-         ln/JEYDYOwHbYIC6+5nykAksrj+kaoWGeNmVETHB/uhNdUA29YkcU8jblkHigeki+K1f
-         5QTqcfUi9YRr1Gd7zMTyLO+50z1lyGXTJYWcgs3ZbYKUhCWK8k5AbV418Ag5VEonREuh
-         4s2T64us/CpQ652wIwdWCJzudCz3/qVL+twqUOcQMxQnALp82jmidP8K1aipRzVNAQrK
-         o14w==
-X-Forwarded-Encrypted: i=1; AL+hErG1J3XEfF9xWu1lS9R2StPIEadyKuV5isHUOVupcnjDoK3fsYuAnqLHebT9/PDjx1c8GYkhneGenQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z94MXqDVNtlxow13xl3FAIchVpN/LV8Q3IEiBm99vUv2VAbj3kV
-	ywv7Faob/fnG6UhVoxdkebXAPY5XKP9P/vzEfNq5bcfrCf13th+Q6fcz
-X-Gm-Gg: AYBFou0NkL5mwdWvU2SdR0sydAXwyynPA27eQViM9Wx3sFhnFRt21pSxq3nTFMjq1PJ
-	hCc4dvEChb0QWbeOIH6US2ZxGhO3RapaUOHUedT2cE/PMXyva3fso9VazazTxGq0Dl6QOH5iWzT
-	CkDwT4JuF87QxNaxDxhME7aBQ2rwJsfO5saLB0Im1EUZsMNyvleD73qMSLrO32w9yTj15Apcg2E
-	x8jDZc7BQ0DswDdIhCU2hSIRqLyBOodS5zrGGzfWytGswM5xaYGi2eUqo9nWAdGf4JMlAnYBF0s
-	3K0jI25AHiN67xZsPmPy8sz5UAQbHf5Bp3my2O3Jz/2eCmKBgj0VD8V1SvpF30OnC+fW5mmLVaH
-	3REGI/Lnrra51eJvpGZMdPS85IuiC9dlqGaMj+5cLdPg//lJiVq5WGTSwyUdWOKwAGFrH+amPcr
-	DyWhmFYAIc4IlmvSA2IL+VTTyIWP2UAmfLfEulvhVYD6Ga9Q1VyArkftFcJ9UJykz7O648DREg4
-	0pUYnoVdHA5V1BRZHXn/jbYBVnkkF5LlbgcQjcaJwdZQFm5O26w2jBa+vHNuud04ZfOT6WxNNH0
-	IcaH9xCI3p/+Xn87JJPeG8X53c6B5h7d6w7F77iB6JV/tJsRBvU3EKao6yWuvfr8
-X-Received: by 2002:a5d:5f09:0:b0:48d:f730:bda8 with SMTP id ffacd0b85a97d-49c733510e7mr14372013f8f.50.1794732787542;
-        Sun, 15 Nov 2026 00:53:07 -0800 (PST)
-Received: from localhost.localdomain ([2001:8f8:1161:9f6:2001:1fcb:a25d:8f2e])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49c5fe370f8sm13886168f8f.27.2026.11.15.00.53.05
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sun, 15 Nov 2026 00:53:07 -0800 (PST)
-From: Ximing Zhang <xzhangjr@gmail.com>
-To: Hugo Sales <hugo@hsal.es>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Len Brown <lenb@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFT] cpufreq: intel_pstate: Refresh cpuinfo.max_freq when a CPU goes online
-Date: Sun, 15 Nov 2026 12:52:26 +0400
-Message-ID: <20261115085234.40661-1-xzhangjr@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261114-intel-pstate-online-max-freq-v1-1-1bbdae2b4986@hsal.es>
-References: <20261114-intel-pstate-online-max-freq-v1-1-1bbdae2b4986@hsal.es>
+	dkim=pass (2048-bit key, unprotected) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=cgAG6RG1
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [IPv6:2001:67c:2050:b231:465::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4jS65x2fDDzMlrh;
+	Sun, 15 Nov 2026 11:04:05 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1794737045;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=r24sJ6EQjPki8A/OQvZW0k99xSlAnUGvDH3ZgagLA2A=;
+	b=cgAG6RG1MmxnQ7qYufT8zP/pO1XX4mdRONttnbdUcbw3xc1pdWpd9MOlwDTVWN27Uf4hYB
+	7eOQg992B/xin7ty7z+KDYcAMzbFuT8bu795vJncLTOAuBCUu3tDfpG0fS/R3m05d4XkkT
+	jmfMFNTTGaNLb1yS4V0LD0AIuf6CCSz7FzikNrSndeGcTar+l1K4f4F8Bd52Xt8a9kgX0P
+	A5G4VObfNTVY03eP2NCLTflzOyMQ7p6zzwJY5vGfHJxJYYR8Vqy3McnHbqjTF0vHweqAjd
+	YxH8hnlCcyy/3MvS4Gpw/SF/ZYx26D5FXkBsPSJnQ31CFSJUc+46j0qf9I0ngQ==
+From: Lukas Beckmann <lbckmnn@mailbox.org>
+Date: Sun, 15 Nov 2026 11:03:32 +0100
+Subject: [PATCH v2] cpupower: fix use-after-free and stale limits in
+ frequency-set
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -101,25 +63,121 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261115-cpupower-freq-set-use-after-free-v2-1-6b91f1630165@mailbox.org>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WOyw6CMBREf4V07TV9EImu/A/Doi23UKMUewtiC
+ P8uj7h2eSaTOTMxwuiR2CWbWMTBkw/tAvKQMdvotkbw1cJMcnkSQnCwXd+FN0ZwEV9AmKAnBO3
+ SHiEojkoVTlfWOLbMdBGdHzfFrdyZenNHm9bdtdF4SiF+tg+DWHs/nfyvGwQIyJFzlZ9lYZS7P
+ rV/mDAeQ6xZOc/zF1Gna8nkAAAA
+X-Change-ID: 20261110-cpupower-freq-set-use-after-free-30e337fadcbf
+To: Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>, 
+ "John B. Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>, 
+ Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ stable@vger.kernel.org, Lukas Beckmann <lbckmnn@mailbox.org>
+X-Mailer: b4 0.15.2
+X-MBO-RS-META: 5f1aknyedm3kdg9ioidg6g197rmnyjpf
+X-MBO-RS-ID: 26c9935a3721068b976
 
-On Sat, Nov 14, 2026, Hugo Sales wrote:
-> I have no HWP machine, so the HWP capability path is untested
+do_new_policy() directly fills the unset fields of new_pol from the
+current CPU's policy. This is problematic because do_new_policy() is
+called with the same new_pol for multiple CPUs by do_one_cpu() in the
+slow path. This results in stale values in new_pol being applied
+(starting from the second CPU that should be changed), and even a
+use-after-free (for the governor string).
 
-The patch fixed the stale cpuinfo_max_freq on my Core i7-10510U with
-intel_pstate in active mode and HWP enabled.
+Fix this by building the target policy from new_pol and the current
+policy in do_new_policy() instead of filling the missing values into
+new_pol.
 
-The test changed no_turbo while CPU 7 was offline, then brought CPU 7
-back online. These are policy7/cpuinfo_max_freq readings in kHz:
+Fixes: 7fe2f6399a84 ("cpupowerutils - cpufrequtils extended with quite some features")
+Cc: stable@vger.kernel.org
+Signed-off-by: Lukas Beckmann <lbckmnn@mailbox.org>
+---
+Testing and minimal reproducer:
 
-  Turbo change   Unpatched   Patched
-  off to on        1800000   4900000
-  on to off        4900000   1800000
+Running the command
 
-Both patched readings matched CPU 7's reference with all CPUs online.
-CPU 0 stayed online and reported the expected maximum in both cases.
+    ./cpupower frequency-set --max 2500MHz --min 2500MHz
 
-Tested-by: Ximing Zhang <xzhangjr@gmail.com>
+with ASAN reports the use-after-free before, but not after the patch.
 
-Thanks,
-Ximing
+Run the following commands:
+
+    # set CPU 0 to a different maximum than CPU 1
+    echo 2000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    echo 3000000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+
+    # Change min and governor (but not max) of CPU 0 and 1
+    ./cpupower -c 0,1 frequency-set --min 1GHz -g performance
+
+    # See if max got changed
+    cat /sys/devices/system/cpu/cpu[0,1]/cpufreq/scaling_max_freq
+
+This shows that the stale maximum of CPU0 is used for CPU1 before the
+patch, but not after the patch.
+---
+Changes in v2:
+- use a shorter changelog and testing section
+- build temp_pol from new_pol and cur_pol instead of copying new_pol
+- Link to v1: https://patch.msgid.link/20261112-cpupower-freq-set-use-after-free-v1-1-4e0034927b3f@mailbox.org
+---
+ tools/power/cpupower/utils/cpufreq-set.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
+index 06cd4b280132..674e3aabd31d 100644
+--- a/tools/power/cpupower/utils/cpufreq-set.c
++++ b/tools/power/cpupower/utils/cpufreq-set.c
+@@ -141,9 +141,10 @@ static unsigned long string_to_frequency(const char *str)
+ 	}
+ }
+ 
+-static int do_new_policy(unsigned int cpu, struct cpufreq_policy *new_pol)
++static int do_new_policy(unsigned int cpu, const struct cpufreq_policy *new_pol)
+ {
+ 	struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
++	struct cpufreq_policy temp_pol;
+ 	int ret;
+ 
+ 	if (!cur_pol) {
+@@ -151,16 +152,22 @@ static int do_new_policy(unsigned int cpu, struct cpufreq_policy *new_pol)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (!new_pol->min)
+-		new_pol->min = cur_pol->min;
++	if (new_pol->min)
++		temp_pol.min = new_pol->min;
++	else
++		temp_pol.min = cur_pol->min;
+ 
+-	if (!new_pol->max)
+-		new_pol->max = cur_pol->max;
++	if (new_pol->max)
++		temp_pol.max = new_pol->max;
++	else
++		temp_pol.max = cur_pol->max;
+ 
+-	if (!new_pol->governor)
+-		new_pol->governor = cur_pol->governor;
++	if (new_pol->governor)
++		temp_pol.governor = new_pol->governor;
++	else
++		temp_pol.governor = cur_pol->governor;
+ 
+-	ret = cpufreq_set_policy(cpu, new_pol);
++	ret = cpufreq_set_policy(cpu, &temp_pol);
+ 
+ 	cpufreq_put_policy(cur_pol);
+ 
+
+---
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+change-id: 20261110-cpupower-freq-set-use-after-free-30e337fadcbf
+
+Best regards,
+--  
+Lukas Beckmann <lbckmnn@mailbox.org>
+
