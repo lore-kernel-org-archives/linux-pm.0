@@ -1,48 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.51
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794782299;
-	b=Q180Xyh8oQPF23NnTLj6xwk+7W7+W8F6wx2+X8ABVywpLw98oYUIBy0d9sjwJH3vI2fK
-	 gveC5AF/pmyelq9hCBxw7SHK2DZbgneL+UanbKZO9glqufZAiyedxPQ7hon1N47zfWqMs
-	 0K9Q9VkV7PEmRJPpma6vZVn3AYo7kUTBFarpxOV9WDil3QKpR2F/03jQRGnfBluWTGGTW
-	 5i0VRTfBnpB29FDZtyRdCtsAMvDTKl1B5kcOMa5V5qtAy2VZP8Ivjw9LFr7gDLaJsBC7k
-	 nUNwnMBPwtb9kAG7nD5xa+ZcpdtaRi16Z3kFpsRGnKwxO0nxfkt91mnTHyGCM4XetoA==
+	t=1794783060;
+	b=Z9cT02ZH6pXpZypgVq0J8Wk3pAOPyaFP4YCtUHqLrGtBzxhDLlIIVUMkuoFutvypJqxk
+	 IuNnOOza2t8JDI8XO5yTH5MFd9kbWMNVLzfD6TDDAQHN7Yzj2F/JiqsjIy+yMtvm8oOvi
+	 c21jojChZRhevIIu8pswhXd2ZLGRRiBtu9eIDPHZdMJzA+voB8RO0kCLJuxjmEHAGXWx4
+	 dIfzo5YxX4Au9AehDS8Hqx3662afmsiEzH92udRjC3M8YVncUc0E/ubbkn5mVQWUq+yUb
+	 0Yu87bbjbUUqH9sAVojNGjiIhteiwpfOPQ9/X+Lxjewz4VfVghBkNILvYqZS7otmYvA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794782299;
-	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
-	 X-Mailer;
-	bh=cIRRH0DaCFDYPcExE0sOQlYcNb7utp+2evRSM+ZndUA=;
-	b=fUBB7Xv33cEI4CLdG4Qq0x+Y1P8YevVYx7oHXdSMFt5UVzOOpm/jLpmvxkM24RTWvexa
-	 bFuYsVnSDV6yCYnxGomQ3tbHNaYPVfFG7xqFjfuoTCtLWUvXT3ryeoqlEAr0xTP3P07Ot
-	 aruSj2WTG1Yg589pyihRAHmBNoGIrU/eiXsV2Ahryt1mVGBoUJJbk4iQkrUkWTyeEBs1o
-	 ZTcjsVaAhiPjPiUe/9QuZAkN/cpySLHCwdz0yXdYEsZ6gajjDRQukU+MuIgAPX7C5lzvV
-	 rr55mdseXk7M6AcT0RpC/OEi6cIkfmcx2YNlMwSwhU6O1ZYQv/gOocR54inAseoRl7Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794783060;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Reply-To:Subject:
+	 Content-Language:To:Cc:References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=e2NL43u+2YfXFaE0ljD3Rd6MzpHrPYH8D7UaHAQ7IMM=;
+	b=rJ3GVO8g/0i9YEZO1426DvZFJYlIq39rorfcT4QVARililBX7OxBtlnX9tXHwLIiOudU
+	 94XET6P1916p5wkpg6GLozzf7M6adAtKEgGAsB8As2CDF1oq2+UwbnGfcf/ptaj8kfZnw
+	 bNTR2V20L4sd1JYoZh6lrWXJAJWNO1UnufasdcYl9LigQwCyFrvkx0Ps5pd/Tkc/+o3F2
+	 tU3CUvMrW0hFJIeo5VwgDPSYG/RqQnkF3+oSb0naarwQ1xr/g1tsjuyC3k7SpHShC939m
+	 TDBSqMXJ1FyWB5czwNAiJbs2IkmaDHbuF4dJxkWvdiSN3tAqW4wRYQMX0v5hOa31l7g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YRLNTMXg;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MUwwu4LC;
+	arc=none smtp.remote-ip=74.125.82.51
+Received: from mail-dl1-f51.google.com (mail-dl1-f51.google.com [74.125.82.51])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 155F8606A330;
-	Sun, 15 Nov 2026 22:38:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DF27606A31F
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 22:51:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4DF27606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YRLNTMXg
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FA241F000C4;
-	Sun, 15 Nov 2026 22:38:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794782298;
-	bh=cIRRH0DaCFDYPcExE0sOQlYcNb7utp+2evRSM+ZndUA=;
-	h=From:Date:Subject:To:Cc;
-	b=YRLNTMXgmt2oJMA4V7rIIJZi4gR4X4RMyudzb8/j7pAzcoEQN2tqristf/NKbLrUE
-	 65/OTt/Q79jxUe09lwAwMmlK0bzyaQX9d97+mDD0UVnm525SBYP3B1tNWobmCN6mcA
-	 zcmm6VZSqzbFW4QmrTO2BKUC0uBTMGVX4IvmwsbwGfDL1+1bi6wqjDZ4mii4LfioY8
-	 D2nCwt8FSTPwFNXFMDwu2JsNN/eYftwRNpc1FWYs1/QsNIdjSm9SQcsNdOF25x66vs
-	 N5jVPrCRwnws4W4QzWkUTEwoMgnlq7ysnqOcSCGRLOhXT53nyJQe2iZq3s5XuTPDgs
-	 YZ2ajevXrV74A==
-From: Linus Walleij <linusw@kernel.org>
-Date: Sun, 15 Nov 2026 23:38:14 +0100
-Subject: [PATCH] ASoC: ux500: Drop the VAPE regulator
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MUwwu4LC
+Received: by mail-dl1-f51.google.com with SMTP id a92af1059eb24-14394530ec6so3280030c88.1
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 14:51:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794783059; x=1795387859; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=e2NL43u+2YfXFaE0ljD3Rd6MzpHrPYH8D7UaHAQ7IMM=;
+        b=MUwwu4LCGCe9vTkprlk+Kb43zd708+kIujxKr4CzP6TE6Urv8RJI/YUAbaP9eAzbT5
+         cxiAnJfabJXnzm59+G6rOVsxKj6dx9wonjHuglyc/Ra7Dp5oYxqcCI0zBbnY0SGyQilT
+         qR9+8CVFEF2Y9TWcGZLIi65GOyVyM6KqrhGN2y4Td8PtunbrcwWXcaxNRssm4B3cS07/
+         71iR2dtSKRuD37bmrlu2K3ke9t8FkMk7lCfc9PGVOWu3nG32PC/t/tXThgHo0c6YFJJj
+         l0omDTctJqeWe5OAQy7tdFUjlQLkzW76snQ96pewA7pCB+m2WFXAfxj8emWW2atJ1l2A
+         axSw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794783059; x=1795387859;
+        h=content-transfer-encoding:content-type:in-reply-to:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=e2NL43u+2YfXFaE0ljD3Rd6MzpHrPYH8D7UaHAQ7IMM=;
+        b=V4uYYyRquiW5LRARfy8pgUgEX+i282ZYeB21N4p0Kc5WbqAunu+UW17TYF7kbEYWxz
+         mVn7+kQU5t53KBwyQWv/7IiXxYeVM8CU9x1EErfNcMVk5HB+XOVkLgSFn8xWHFqCZfJj
+         4XUBCmV0+oj45yIv6yFAz9u+DLumSaQdRsn8z+Molvz8eVqubAQNt/s1S0gnHbChUX9f
+         i4Kw2ChlK64smWYkwqmmwXH/RS0m9+uzE3WMRCe/VHAzYUbJIG1PV+9vDC0/SN0Fgbsq
+         JBDvdFogYekZLq9wUzvglKWQnJwilKQn2xK80/yEWaqDrh4gIAUmrIuqsyjW7OBFQk/r
+         yS/Q==
+X-Forwarded-Encrypted: i=1; AL+hErEyawBrS57ypmHUIRgSRV8w6DwoMmyrb4jMIgS8mD3pKLCPzLjOhaZ2/6CqlMmqSRlHgs9DQyOi1Q==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8w9E1q2CSf2y+F3r4M/FHX++MCvhqG87TTSCPIAnyCayRdOW/D
+	y0Tm2b/Po6z9J/cN16jPgErVdbjX8vylLS16A4MPwcXwJfqCRlm+3Ppw
+X-Gm-Gg: AYBFou2gkuRBbWtKLMZGecxYmkQ2BQD3AwsGq0Q/XjD/mqt9A64kmF9kxgghkJ3dKpE
+	0Qr8SbGJzSKmSVqWncjs01NaNbI+sG2g3BN+h7+JqPABXDuXpq7tSgUVJtRHlO8TF49/EuVemC7
+	oj6X9i9lcDPWo/K5WIsZQoYONxBkyZez8VDy6HQ/+A4wh4WJKQ7zxCDIs/Ou856u/QsiHaGV8t9
+	sN/VrkZbhQWbVChWZQhqbMTjfIFX/XsW+VonU4RNjn3JyOnhxDD53DJITAMRK4eJmze/U6B22bQ
+	4wZcNpcgJeCT29r63Kkm+39DSzxaO8daCOhePwWM3k4YhdC7BI1fy4bugiWa2kMJLNwMjuRzE6B
+	DEaa23sDp4j9DPFPqeQE/jVhUWzOgWsFDwz58nkRzjbLf1zXKcslVRUq8ru8GIqG4c/iRPXyNeA
+	JpEK0PSvGHajJdx9dY/FAwh4eGpOoiO9rTRfkSJvq72wibcHReW6RQECxkaHkufEvfQKbWTAtAn
+	04qSqdiLXnsqlTuBePPF+xCHRMXiPFT00D0/AKDTSHn4CmKejHTkG7nlxf8px8KLEIHBD7Lh+9I
+	sMED0qSEhaMdKjPTtJ5DJnvf7ifsQlirCPRoBSQACvThYO29kepqiLn16Tja7DFTBX2b
+X-Received: by 2002:a05:693c:894f:20b0:36d:5102:9974 with SMTP id 5a478bee46e88-379636607famr8547200eec.2.1794783059212;
+        Sun, 15 Nov 2026 14:50:59 -0800 (PST)
+Received: from [192.168.35.214] ([218.50.238.131])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-379569b8389sm46704105eec.25.2026.11.15.14.50.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 15 Nov 2026 14:50:58 -0800 (PST)
+Message-ID: <1e3c14c2-4ad8-479d-a896-952fdfeac708@gmail.com>
+Date: Mon, 16 Nov 2026 07:50:55 +0900
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -52,144 +92,219 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Reply-To: chanwoo@kernel.org
+Subject: Re: [PATCH v4 4/4] devfreq: Refcount governor modules while in use
+Content-Language: ko
+To: Jie Zhan <zhanjie9@hisilicon.com>, cw00.choi@samsung.com,
+ myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxarm@huawei.com, tianyaxiong@kylinos.cn, zhenglifeng1@huawei.com,
+ zhangpengjie2@huawei.com, lihuisong@huawei.com, prime.zeng@hisilicon.com
+References: <20260729102348.3857779-1-zhanjie9@hisilicon.com>
+ <20260729102348.3857779-5-zhanjie9@hisilicon.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+In-Reply-To: <20260729102348.3857779-5-zhanjie9@hisilicon.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261115-ux500-asoc-drop-vape-v1-1-46315e14642d@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3MQQqEMAwF0KuEvzbQKI7Qqwwugo0z2djSogji3
- QXfAd6FZtWtIdKFaoc3zxsiSUdY/rr9jD0hEvrQf0Rk5P0cQ2BteeFUc+FDi7GsmnQaNEyW0BF
- KtdXPt/3O9/0Afy+ThmYAAAA=
-X-Change-ID: 20261115-ux500-asoc-drop-vape-1fada73a07ed
-To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Cc: linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, Linus Walleij <linusw@kernel.org>
-X-Mailer: b4 0.16.0
 
-The MSP devices now describe their VAPE power domain in the device tree.
-The platform core attaches and powers on this domain before probing the
-driver. Runtime PM remains disabled, keeping the domain powered while
-the device is bound.
+On 7/29/2026 7:23 PM, Jie Zhan wrote:
+> A governor module can be inserted or removed dynamically when built as a
+> kernel module.  'devfreq->governor' would become NULL if the governor
+> module is removed when it's in use.
+> 
+> Add a refcount mechanism for governor modules to prevent the governor
+> module from being removed (except for force unload):
+> 1. Add an optional 'owner' member to struct devfreq_governor so the devfreq
+>    core can identify the module that holds the governor code.
+> 2. Get and put a refcount of the governor module when starting and stopping
+>    the governor.
+> 
+> The new 'owner' field is optional:
+> - Common governor modules (performance, powersave, simple_ondemand,
+>   userspace, passive) set 'owner' to THIS_MODULE.
+> - Governors that are bundled into a device driver module must leave 'owner'
+>   NULL.  The device's lifetime already pins that module, and setting
+>   'owner' would create a self-reference that blocks the driver from being
+>   unloaded.
+> 
+> As a result, a non-forced rmmod of an in-use stand-alone governor now
+> fails with -EBUSY, e.g.:
+> 
+>   $ cat governor
+>   performance
+>   $ rmmod governor_performance
+>   rmmod: ERROR: Module governor_performance is in use
+> 
+> Force unloads (rmmod -f, if configured) can't be blocked.
+> 
+> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+> ---
+>  drivers/devfreq/devfreq.c                 | 17 ++++++++++++++++-
+>  drivers/devfreq/governor_passive.c        |  1 +
+>  drivers/devfreq/governor_performance.c    |  1 +
+>  drivers/devfreq/governor_powersave.c      |  1 +
+>  drivers/devfreq/governor_simpleondemand.c |  1 +
+>  drivers/devfreq/governor_userspace.c      |  1 +
+>  include/linux/devfreq-governor.h          | 11 +++++++++++
+>  7 files changed, 32 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 959f0b08ed36..4a01dad21c16 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -345,24 +345,37 @@ static int devfreq_set_governor(struct devfreq *df,
+>  				 __func__, df->governor->name, ret);
+>  			return ret;
+>  		}
+> +		module_put(old_gov->owner);
+>  	}
+>  
+>  	/* Start the new governor */
+> +	if (!try_module_get(new_gov->owner)) {
+> +		df->governor = NULL;
+> +		return -EINVAL;
+> +	}
+> +
+>  	df->governor = new_gov;
+>  	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>  	if (ret) {
+>  		dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>  			 __func__, df->governor->name, ret);
+> +		module_put(new_gov->owner);
+>  
+>  		/* Restore previous governor */
+>  		df->governor = old_gov;
+>  		if (!df->governor)
+>  			return ret;
+>  
+> +		if (!try_module_get(old_gov->owner)) {
+> +			df->governor = NULL;
+> +			return -EINVAL;
+> +		}
+> +
+>  		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>  		if (ret) {
+>  			dev_err(dev, "%s: restore Governor %s failed (%d)\n",
+>  				__func__, df->governor->name, ret);
+> +			module_put(old_gov->owner);
+>  			df->governor = NULL;
+>  			return ret;
+>  		}
+> @@ -1051,9 +1064,11 @@ int devfreq_remove_device(struct devfreq *devfreq)
+>  
+>  	devfreq_cooling_unregister(devfreq->cdev);
+>  
+> -	if (devfreq->governor)
+> +	if (devfreq->governor) {
+>  		devfreq->governor->event_handler(devfreq,
+>  						 DEVFREQ_GOV_STOP, NULL);
+> +		module_put(devfreq->governor->owner);
+> +	}
+>  	device_unregister(&devfreq->dev);
+>  
+>  	return 0;
+> diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+> index d7feecd900f1..3e63dd200a04 100644
+> --- a/drivers/devfreq/governor_passive.c
+> +++ b/drivers/devfreq/governor_passive.c
+> @@ -449,6 +449,7 @@ static int devfreq_passive_event_handler(struct devfreq *devfreq,
+>  static struct devfreq_governor devfreq_passive = {
+>  	.name = DEVFREQ_GOV_PASSIVE,
+>  	.flags = DEVFREQ_GOV_FLAG_IMMUTABLE,
+> +	.owner = THIS_MODULE,
+>  	.get_target_freq = devfreq_passive_get_target_freq,
+>  	.event_handler = devfreq_passive_event_handler,
+>  };
+> diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
+> index fdb22bf512cf..0a08b067ea6b 100644
+> --- a/drivers/devfreq/governor_performance.c
+> +++ b/drivers/devfreq/governor_performance.c
+> @@ -37,6 +37,7 @@ static int devfreq_performance_handler(struct devfreq *devfreq,
+>  
+>  static struct devfreq_governor devfreq_performance = {
+>  	.name = DEVFREQ_GOV_PERFORMANCE,
+> +	.owner = THIS_MODULE,
+>  	.get_target_freq = devfreq_performance_func,
+>  	.event_handler = devfreq_performance_handler,
+>  };
+> diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
+> index ee2d6ec8a512..3ae296d55e3e 100644
+> --- a/drivers/devfreq/governor_powersave.c
+> +++ b/drivers/devfreq/governor_powersave.c
+> @@ -37,6 +37,7 @@ static int devfreq_powersave_handler(struct devfreq *devfreq,
+>  
+>  static struct devfreq_governor devfreq_powersave = {
+>  	.name = DEVFREQ_GOV_POWERSAVE,
+> +	.owner = THIS_MODULE,
+>  	.get_target_freq = devfreq_powersave_func,
+>  	.event_handler = devfreq_powersave_handler,
+>  };
+> diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+> index ac9c5e9e51a4..46287b279ded 100644
+> --- a/drivers/devfreq/governor_simpleondemand.c
+> +++ b/drivers/devfreq/governor_simpleondemand.c
+> @@ -119,6 +119,7 @@ static struct devfreq_governor devfreq_simple_ondemand = {
+>  	.name = DEVFREQ_GOV_SIMPLE_ONDEMAND,
+>  	.attrs = DEVFREQ_GOV_ATTR_POLLING_INTERVAL
+>  		| DEVFREQ_GOV_ATTR_TIMER,
+> +	.owner = THIS_MODULE,
+>  	.get_target_freq = devfreq_simple_ondemand_func,
+>  	.event_handler = devfreq_simple_ondemand_handler,
+>  };
+> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+> index 3906ebedbae8..b1acccc79f7f 100644
+> --- a/drivers/devfreq/governor_userspace.c
+> +++ b/drivers/devfreq/governor_userspace.c
+> @@ -135,6 +135,7 @@ static int devfreq_userspace_handler(struct devfreq *devfreq,
+>  
+>  static struct devfreq_governor devfreq_userspace = {
+>  	.name = DEVFREQ_GOV_USERSPACE,
+> +	.owner = THIS_MODULE,
+>  	.get_target_freq = devfreq_userspace_func,
+>  	.event_handler = devfreq_userspace_handler,
+>  };
+> diff --git a/include/linux/devfreq-governor.h b/include/linux/devfreq-governor.h
+> index dfdd0160a29f..ae1721e58401 100644
+> --- a/include/linux/devfreq-governor.h
+> +++ b/include/linux/devfreq-governor.h
+> @@ -12,6 +12,7 @@
+>  #define __LINUX_DEVFREQ_DEVFREQ_H__
+>  
+>  #include <linux/devfreq.h>
+> +struct module;
+>  
+>  #define DEVFREQ_NAME_LEN			16
+>  
+> @@ -53,6 +54,15 @@
+>   * @name:		Governor's name
+>   * @attrs:		Governor's sysfs attribute flags
+>   * @flags:		Governor's feature flags
+> + * @owner:		Optional, module that owns this governor.
+> + *			When set (typically to THIS_MODULE), the devfreq core
+> + *			takes a reference on @owner while this governor is in
+> + *			use so that the governor module cannot be removed,
+> + *			except by a forced unload. Governors that are bundled
+> + *			into a device driver module must leave @owner NULL: the
+> + *			device's lifetime already pins that module, and setting
+> + *			@owner would create a self-reference that prevents the
+> + *			driver from being unloaded.
+>   * @get_target_freq:	Returns desired operating frequency for the device.
+>   *			Basically, get_target_freq will run
+>   *			devfreq_dev_profile.get_dev_status() to get the
+> @@ -70,6 +80,7 @@ struct devfreq_governor {
+>  	const char name[DEVFREQ_NAME_LEN];
+>  	const u64 attrs;
+>  	const u64 flags;
+> +	struct module *owner;
+>  	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
+>  	int (*event_handler)(struct devfreq *devfreq,
+>  				unsigned int event, void *data);
 
-Remove the obsolete v-ape regulator lookup and stream enable/disable
-calls, together with the regulator handle and error cleanup. This avoids
-requesting a dummy regulator when the EPOD regulator nodes and supply
-properties are removed.
+I agree this suggestion. But this patch is based on patch1/2/3.
+After resolving the patch1,2,3, we better to review this patch.
 
-Keep the existing clock sequencing and VAPE OPP constraints unchanged.
-
-Signed-off-by: Linus Walleij <linusw@kernel.org>
----
-The Ux500 genpd prerequisites have been merged into the powerdomain tree.
-Please take this driver conversion through ASoC.
-
-The genpd, binding and DTS prerequisites are kept below the cover letter
-and excluded from this submission. These include the MSP power-domain
-assignments in "ARM: dts: ux500: Add power domains", which must be present
-before the driver stops managing the legacy VAPE regulator.
----
- sound/soc/ux500/ux500_msp_dai.c | 29 +----------------------------
- sound/soc/ux500/ux500_msp_dai.h |  1 -
- 2 files changed, 1 insertion(+), 29 deletions(-)
-
-diff --git a/sound/soc/ux500/ux500_msp_dai.c b/sound/soc/ux500/ux500_msp_dai.c
-index c135a77766ca..df3c9494698e 100644
---- a/sound/soc/ux500/ux500_msp_dai.c
-+++ b/sound/soc/ux500/ux500_msp_dai.c
-@@ -13,7 +13,6 @@
- #include <linux/platform_device.h>
- #include <linux/clk.h>
- #include <linux/of.h>
--#include <linux/regulator/consumer.h>
- #include <linux/reset.h>
- 
- #include <sound/soc.h>
-@@ -350,21 +349,13 @@ static int ux500_msp_dai_startup(struct snd_pcm_substream *substream,
- 	dev_dbg(dai->dev, "%s: MSP %d (%s): Enter.\n", __func__, dai->id,
- 		snd_pcm_stream_str(substream));
- 
--	/* Enable regulator */
--	ret = regulator_enable(drvdata->reg_vape);
--	if (ret != 0) {
--		dev_err(drvdata->msp->dev,
--			"%s: Failed to enable regulator!\n", __func__);
--		return ret;
--	}
--
- 	/* Prepare and enable clocks */
- 	dev_dbg(dai->dev, "%s: Enabling MSP-clocks.\n", __func__);
- 	ret = clk_prepare_enable(drvdata->pclk);
- 	if (ret) {
- 		dev_err(drvdata->msp->dev,
- 			"%s: Failed to prepare/enable pclk!\n", __func__);
--		goto err_pclk;
-+		return ret;
- 	}
- 
- 	ret = clk_prepare_enable(drvdata->clk);
-@@ -377,15 +368,12 @@ static int ux500_msp_dai_startup(struct snd_pcm_substream *substream,
- 	return ret;
- err_clk:
- 	clk_disable_unprepare(drvdata->pclk);
--err_pclk:
--	regulator_disable(drvdata->reg_vape);
- 	return ret;
- }
- 
- static void ux500_msp_dai_shutdown(struct snd_pcm_substream *substream,
- 				struct snd_soc_dai *dai)
- {
--	int ret;
- 	struct ux500_msp_i2s_drvdata *drvdata = dev_get_drvdata(dai->dev);
- 	bool is_playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
- 	unsigned int configured = is_playback ? PLAYBACK_CONFIGURED :
-@@ -408,13 +396,6 @@ static void ux500_msp_dai_shutdown(struct snd_pcm_substream *substream,
- 	/* Disable and unprepare clocks */
- 	clk_disable_unprepare(drvdata->clk);
- 	clk_disable_unprepare(drvdata->pclk);
--
--	/* Disable regulator */
--	ret = regulator_disable(drvdata->reg_vape);
--	if (ret < 0)
--		dev_err(dai->dev,
--			"%s: ERROR: Failed to disable regulator (%d)!\n",
--			__func__, ret);
- }
- 
- static int ux500_msp_dai_prepare(struct snd_pcm_substream *substream,
-@@ -701,14 +682,6 @@ static int ux500_msp_drv_probe(struct platform_device *pdev)
- 	drvdata->rx_mask = 0x01;
- 	drvdata->slot_width = 16;
- 
--	drvdata->reg_vape = devm_regulator_get(&pdev->dev, "v-ape");
--	if (IS_ERR(drvdata->reg_vape)) {
--		ret = PTR_ERR(drvdata->reg_vape);
--		dev_err(&pdev->dev,
--			"%s: ERROR: Failed to get Vape supply (%d)!\n",
--			__func__, ret);
--		return ret;
--	}
- 	drvdata->pclk = devm_clk_get(&pdev->dev, "apb_pclk");
- 	if (IS_ERR(drvdata->pclk)) {
- 		ret = PTR_ERR(drvdata->pclk);
-diff --git a/sound/soc/ux500/ux500_msp_dai.h b/sound/soc/ux500/ux500_msp_dai.h
-index aae582030d95..7ca7144f5652 100644
---- a/sound/soc/ux500/ux500_msp_dai.h
-+++ b/sound/soc/ux500/ux500_msp_dai.h
-@@ -34,7 +34,6 @@ enum ux500_msp_clock_id {
- 
- struct ux500_msp_i2s_drvdata {
- 	struct ux500_msp *msp;
--	struct regulator *reg_vape;
- 	unsigned int fmt;
- 	unsigned int configured;
- 	unsigned int tx_mask;
-
----
-base-commit: 7a98d525145a130fcd86f1519e2b9317a3bad27c
-change-id: 20261115-ux500-asoc-drop-vape-1fada73a07ed
-
-Best regards,
---  
-Linus Walleij <linusw@kernel.org>
-
+-- 
+Best Regards,
+Chanwoo Choi
+Principal Engineer, Samsung Electronics
