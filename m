@@ -1,61 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.46
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794742600;
-	b=VScjUrOl7RtJwNheO068McJhQ05ZOkhZkpkPIGkJ9Oy8NX4SlRqW/cQhksAVpav7O6+q
-	 Nss3l2CUnSlW8TPs+/NAesB0paMW7KK4YQQ+A/CdBWZdjFlZ9fFU85cUpBnoyVerCKmUz
-	 peGecwmwntOKoxFG0TJWmBfrj3E6T+IHO+CEaSdlgvjrcKj3q0CPjmxHcHSMv3pmOT3Wi
-	 qUVsp8VabTg6Anxd8b9gTQE7o6GDUjzaHLVZnviTOwT5Y3+2w9JtOhAaCP7hMtaiwgSq0
-	 bEnAYuD43fSqtMjDziZLTAYsdsnpsLy3TBGQ/yZQXq/26V9Ah9SY+9uogg0S58XRcIQ==
+	t=1794748827;
+	b=4xYGvt81RhkOor1lgt8NQEGBO3kCsIzIxQEUtkrmsbYc/EOiTkBJt520yhg70Fx86TVL
+	 BnB/mtbYWyGx426zG1EFfCNnSP5iWiVJJNLmvu6wOefIrfYp4PI9aPF+QVBGnKxCiC6rT
+	 BOmS6ADLMFuWDy14phKmjrUvYcgBnDd/0MusoouUScYokV6xQsssDGuWOr83B+Gfddxl6
+	 tS4fmVFka+ufmx480QvhAzhq8WM9UCnnKhytoYUswMxey63E2rYaQg5F5rqBt5mxamCrc
+	 2SFfgWDzIIJPbTbFJXgMC0XJxXRwHmh7s1XTp7WyvmdYmsxsyCHwySgc4KmU+m5y8Qg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794742600;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=0D5rV4LDcAhDtJrh0J4x1Fo3FNQEer06zKXspgdSqYw=;
-	b=OYiOgu23NPaVorbKjxxg2SH6dZbn5F+d0GpzDh1SDIvyUmchRvTvNcRkexd9HtTb2KGz
-	 LrOXDcrLeylNZIBc7pn7kooeHqEtSqPerWzwLvl7521SEbhnXQ/hE/oIJIxozxLCMJ5ig
-	 XRuhW0X+yR8u3/TTgJMDscT6SZUz/Ile1a/61SP5UMG52k67Chp8E8Hdun9C134yIfbIQ
-	 2csldbVE84O5Pbwwn61iDbFk9RgdPAaSoo4ygR8Xi616bQoS0u4tSQPcr4d24eybPP647
-	 YSeBPG1PfQgx2tvG+z/Vok5hTV5y097zcdSJo0cIkgF7pQA9rf04C4pu+vsfvf3NDHA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794748827;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Reply-To:Subject:
+	 Content-Language:To:Cc:References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=/rYsyjftvDCPeS9SbbyhKVYUDY9LVQRgCngM6FVnSFQ=;
+	b=XpZHKfXxk+1eKJ8PfYzndsgqcWm/c63FVrAiLHWeuEjzCEGMn8Z6hLBe1PFgI4qz9wlq
+	 IU+O2tEjn6f7x/XM7DUtKcd6th0hgkAbVukVzAHCtsy7nm+nX1A0LTaEPKw0kyklNb7hc
+	 jd87oqVadBRN0sihDOfT6n+iIZfmBviNq4DWRt+9AlR0RQBI+rJJLPmDsEsoG3vYv2u7c
+	 7w9im0ZwOwWLJlQutZP/dNiYaXZkYat6EbIyNErHAdelluhCwJd8VlPJEUIpbAqey6Zdu
+	 DIR6D7SD5sGxhYlnFZDJRNiWyFHbJsaTred3Kxbh9VEY2ZPrzTM3D5FZ6/5gJl578lg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=d9jzsKbl;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 51444606A31A;
-	Sun, 15 Nov 2026 11:36:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 51444606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=zYyWL4GB;
+	arc=none smtp.remote-ip=74.125.82.46
+Received: from mail-dl1-f46.google.com (mail-dl1-f46.google.com [74.125.82.46])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8C45606A31D
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 13:20:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C8C45606A31D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=d9jzsKbl
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 34C0C143D;
-	Sun, 15 Nov 2026 03:36:36 -0800 (PST)
-Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A7D3F3F632;
-	Sun, 15 Nov 2026 03:36:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794742599; bh=Z5w+PDWtG8RWg9D5f69nuwbyo8DbysjJ678dY4p5bKk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=d9jzsKbl1bSMU1kU+fHYKgnrLlU2hud+iS8+c+E1PgpKaNnEE4VcUXWFoWDxqWVa9
-	 CbjZeQaSGEvWpdRA6GMzq3ZlEfNJHs04hjNExfQ/7VFYV83rBy9JVwumEAh5hi0yce
-	 7wntHzLdhQd4OtVhY/9+qQf3tWpMUOGkVwSDM8Ks=
-Date: Sun, 15 Nov 2026 11:36:28 +0000
-From: Cristian Marussi <cristian.marussi@arm.com>
-To: Philip Radford <philip.radford@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	arm-scmi@vger.kernel.org, linux-pm@vger.kernel.org,
-	sudeep.holla@arm.com, james.quinlan@broadcom.com,
-	f.fainelli@gmail.com, vincent.guittot@linaro.org,
-	etienne.carriere@st.com, peng.fan@oss.nxp.com, michal.simek@amd.com,
-	quic_sibis@quicinc.com, dan.carpenter@linaro.org, d-gole@ti.com,
-	souvik.chakravarty@arm.com, cristian.marussi@arm.com
-Subject: Re: [PATCH v10 01/13] powercap: Add enable disable control-type
-Message-ID: <avmZPMOK8ynHMN0I@pluto>
-References: <20261103231007.537082-1-philip.radford@arm.com>
- <20261103231007.537082-2-philip.radford@arm.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=zYyWL4GB
+Received: by mail-dl1-f46.google.com with SMTP id a92af1059eb24-1b3beeaf6f9so2822077c88.0
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 05:20:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794748826; x=1795353626; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=/rYsyjftvDCPeS9SbbyhKVYUDY9LVQRgCngM6FVnSFQ=;
+        b=zYyWL4GBuf0DsAdvhYGsk1HKtQ4dzGXDITV2wnSBhAUnJTmKOesAjxxSywEZ2hHpzq
+         llR+jTI4Z1JZxjB9Zs0fQVKGcq7BQFZZHAXztEp/1F0X6UaDtEtWTPCGHc89IEy566yp
+         KA62XuLoFmxtWbwk/nye62TtvNTJZWospqclUElyMRJjlHq5ON5zlaLp3WAxDHFfiefR
+         xCc5jg/iosd6Uivwmng7ZT2W/KXXSPREMO6aEKpdQDmj6tLVYqjK0ys3pGi9AjM8db0U
+         5fifSAbg1/WkWX0MF0Ed+a6jZRero+oWYiNrPY0Jdu0dBlXkIjwPEWAEbIcliiwPxzni
+         Vp3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794748826; x=1795353626;
+        h=content-transfer-encoding:content-type:in-reply-to:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=/rYsyjftvDCPeS9SbbyhKVYUDY9LVQRgCngM6FVnSFQ=;
+        b=KyQ77RKK0MHTh4K+ZLL0Gh/1rNxxcA7WFdNft+MLfI9DjFJ3hW4gt1vxAdpDP0ctpn
+         fvMHv+D+yM+ItogiSgwsytQbeUgaLnt5wQU+wi85t4WT78XbT/7wEEN6zC9I3fMGJ6Mp
+         ERrouyjJsaOUJ6+wLGHt4ksLq7bYqDgMUhyk8/AujFfpJruN/mGJ8lE8U6/nAdHqZMlT
+         EisCeCqyfkLV9iQC+p7sN1asHUSjx534EO7unlUJfHCuxrSbakYyadVq2YRZNc44Xj+c
+         /j6HjHQuWzTUF6BI0dOdymE47IKIJE6qrfSG8XfeOzF/YMVs0eD2WtQziVlsDhHb0Tuf
+         RiDQ==
+X-Forwarded-Encrypted: i=1; AL+hErHoARfGtA0Pvbn29zsgV3dStTLEgXI92kJ4pI4WBYTz+3IoQeiLZ92/gUenziIOc3e87BBe0onCDw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/TL+nUKIDkBcJGX8DaaplH+Lc9bP9zbDQTwITr4TNCAs7ONwbh
+	JNI/k4q7kt2NdpXEqkco/h5+WbhGyJwdOnUMVAmqorWNpn90vE/GDm/7
+X-Gm-Gg: AYBFou2XdXyyn8AwLikPXahIP5R/6rBtD8mR2GvwBinin1BsnCfcFoKsoLIs/tp/H0I
+	lhjPzYoSDdep2Is2VMnhGih2TOXIdfMeSU2/8JsBcSmnpqtQGylH0ENZFNFSunIPOaRRitQWbSb
+	KBVNZHZvYhkihVgoBj6Ofso2OCr2KLpcKMmXNotrnNxX062ksWO5rCUphrh9de+suQ9VxxjoVzH
+	h/XxPsgeZ6fuRDeAF8fp3LjMhcdVaUSuSUxvEnSjpeWZXJMhXxATyMP+fq7hmLVRmVvKxTBFn8u
+	SHqy5nVKi8EynFcPx05Vx03DX7tRWfiIlLKK3sIGO7Ct9co3b0LiZinI8C32yNF6EdaB3JV3xGF
+	6gDrsypXifOQLW++/7LQrk7YTONT4jT3ieAWFiR4zlamw/AQ7kWfiVIgwe5Mm4Zj8CcGXp5ah+y
+	N/R3s5nsIvtQDU5IYKIZGn0E2VLk39zxGi3YrRNMbL6nS7Qu81bLlBiEzq6gewGjihKvtdmboco
+	xd6qvRkbbzYAQo9Cw8dDqHqE1ZfXA9uZLAgRFtC/fEpNcMAqP8WjW34xF4MSyoqG4lhS3CijMWH
+	+NXblPxPYlOsLc+LqL3pUTmMf/v3Fs1cp18BNvWULF44pKeXuCtIDZssl2a3+eRV0dPy
+X-Received: by 2002:a05:701a:c9c1:20b0:1ae:e7c4:9a15 with SMTP id a92af1059eb24-1b51828ef74mr4571335c88.3.1794748825692;
+        Sun, 15 Nov 2026 05:20:25 -0800 (PST)
+Received: from [192.168.35.213] ([218.50.238.131])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-379565d3e37sm28084123eec.24.2026.11.15.05.20.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 15 Nov 2026 05:20:25 -0800 (PST)
+Message-ID: <9f85f4a5-ee4a-4c0e-b902-abea050bb204@gmail.com>
+Date: Sun, 15 Nov 2026 22:20:20 +0900
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,233 +92,78 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261103231007.537082-2-philip.radford@arm.com>
+User-Agent: Mozilla Thunderbird
+Reply-To: chanwoo@kernel.org
+Subject: Re: [PATCH v2 0/8] PM / devfreq: rockchip-dfi: cleanups
+Content-Language: ko
+To: Sebastian Reichel <sebastian.reichel@collabora.com>,
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+ Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham
+ <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
+ linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kernel@collabora.com
+References: <20260921-rockchip-dfi-cleanup-v2-0-43ff34ac8599@collabora.com>
+From: Choi Chanwoo <cwchoi00@gmail.com>
+In-Reply-To: <20260921-rockchip-dfi-cleanup-v2-0-43ff34ac8599@collabora.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 03, 2026 at 11:09:55PM +0000, Philip Radford wrote:
-> Add functionality to disable or enable the Powercap control-type by writing
-> directly into sys/class/powercap/arm-scmi/enabled.
+On 9/22/2026 5:32 AM, Sebastian Reichel wrote:
+> This adds proper handling of the RK3588 clocks required for DDR memory
+> monitoring, which involves adding them to the clock driver and the DT
+> bindings first. The change is done in a backwards compatible way by
+> marking them as CLK_IGNORE_UNUSED and using optional clock get in the
+> DFI driver. The series also applies a few cleanups to the DFI driver
+> while at it. This is done in preparation for RK3576 support, which
+> will also come with some DFI specific clocks.
 > 
-
-Hi Philip,
-
-see a some general remarks down below.
-
-> Signed-off-by: Philip Radford <philip.radford@arm.com>
-> ---
-> V9->V10
-> - changed control-type enable writes to snapshot per-zone state instead of
->   aggregate
-> - cancel enable/disable writes if a root child zone is not configurable
-> - roll back changed zones on failure
-> - changed control-type enable reads to report enabled if any root child zone
->   is enabled
-> ---
->  drivers/powercap/arm_scmi_powercap.c | 175 ++++++++++++++++++++++++++-
->  1 file changed, 174 insertions(+), 1 deletion(-)
+> As everything is done backwards compatible, patches do not need to
+> be merged together. So Heiko can take the Rockchip specific patches
+> and Chanwoo Choi can take the DFI driver patches.
 > 
-> diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-> index ab66e9a3b1e2..ba398048bf21 100644
-> --- a/drivers/powercap/arm_scmi_powercap.c
-> +++ b/drivers/powercap/arm_scmi_powercap.c
-> @@ -33,13 +33,171 @@ struct scmi_powercap_zone {
->  
->  struct scmi_powercap_root {
->  	unsigned int num_zones;
-> +	bool enabled;
-> +	struct list_head node;
->  	struct scmi_powercap_zone *spzones;
->  	struct list_head *registered_zones;
->  	struct list_head scmi_zones;
->  };
->  
-> +static LIST_HEAD(scmi_powercap_roots);
-> +static DEFINE_MUTEX(scmi_powercap_roots_lock);
-> +
->  static struct powercap_control_type *scmi_top_pcntrl;
->  
-> +static bool scmi_powercap_is_control_type_child(const struct scmi_powercap_zone *spz)
-> +{
-> +	return spz->registered && !spz->invalid &&
-> +	       spz->info->parent_id == SCMI_POWERCAP_ROOT_ZONE_ID;
+> Changes in v2:
+> - Link to v1: https://patch.msgid.link/20260917-rockchip-dfi-cleanup-v1-0-4f00a97a69a6@collabora.com
+> - DT binding: Do not specify maxItems in the generic part as it has a list
+>   of items
+> - DT binding: Only set minItems/maxItems for specific SoCs
+> 
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> ---
+> Nicolas Frattaroli (8):
+>       dt-bindings: clock: rk3588: add PCLK_DDR_MON_CH clocks
+>       dt-bindings: devfreq: event: rockchip,dfi: add clocks to rk3588
+>       PM / devfreq: rockchip-dfi: move to per-variant const structs
+>       PM / devfreq: rockchip-dfi: add NO_INTERRUPT perf capability
+>       PM / devfreq: rockchip-dfi: use bulk clock APIs
+>       clk: rockchip: rk3588: add PCLK_DDR_MON_CH gate branches
+>       PM / devfreq: rockchip-dfi: make RK3588 use its clocks
+>       arm64: dts: rockchip: add dfi clocks on RK3588
+> 
+>  .../bindings/devfreq/event/rockchip,dfi.yaml       |  70 +++++++--
+>  arch/arm64/boot/dts/rockchip/rk3588-base.dtsi      |   4 +
+>  drivers/clk/rockchip/clk-rk3588.c                  |   8 ++
+>  drivers/devfreq/event/rockchip-dfi.c               | 160 ++++++++++++++-------
+>  include/dt-bindings/clock/rockchip,rk3588-cru.h    |   4 +
+>  5 files changed, 184 insertions(+), 62 deletions(-)
+> ---
+> base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
+> change-id: 20260917-rockchip-dfi-cleanup-feae6eefae9c
+> 
+> Best regards,
+> --  
+> Sebastian Reichel <sebastian.reichel@collabora.com>
 
-Not sure to remember clearly the logic here, but is it possible for a
-zone to be registered and invalid ?
-I made some recent changes/fixes but the invariant that registered
-implied !invalid seemed to apply before and after my fixes...
 
-> +}
-> +
-> +static int
-> +scmi_powercap_read_root_children_enable_state(struct scmi_powercap_root *pr, bool *mode)
-> +{
-> +	struct scmi_powercap_zone *spz;
-> +	bool enabled;
-> +	int i, ret;
-> +
-> +	*mode = false;
-> +
-> +	for (i = 0; i < pr->num_zones; i++) {
+When I tried to apply them, there is conflict on devfreq-next branch.
+I'd like you to resend this series on based on devfreq-next and [PATCH v2 0/7] PM / devfreq: rockchip-dfi: RK3576 support.
 
-	for (int i = 0 ...
-
-> +		spz = &pr->spzones[i];
-> +
-> +		if (!scmi_powercap_is_control_type_child(spz))
-> +			continue;
-> +
-> +		ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id, &enabled);
-> +		if (ret)
-> +			return ret;
-> +
-> +		if (enabled) {
-> +			*mode = true;
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +struct scmi_powercap_zone_state {
-> +	struct scmi_powercap_zone *spz;
-> +	bool prev_enabled;
-> +	bool changed;
-> +};
-> +
-> +static int
-> +scmi_powercap_control_type_set_enable(struct powercap_control_type *pct, bool mode)
-> +{
-> +	struct scmi_powercap_zone_state *states;
-> +	struct scmi_powercap_root *pr;
-> +	struct scmi_powercap_zone *spz;
-> +	int num_zones = 0, nr_states = 0;
-> +	int i, ret = 0;
-
-... while looking at some other previous Sashiko reported powercap issue
-I had a superficial look at this, and beside the logic that seems to be
-fine by itself, the code layout is deadly unreadable, thing which is
-pretty normal to happen when there is a mix of allocations mutexes and
-various error exit path....please refactor using cleanup handlers to
-manage all of this allocations and mutexes, it should allow you to drop
-all the gotos and keep a more linear logic across all of this fucntion..
-(and NOTE that when using cleanup.h you MUST drop all of the gotos in
-this function...all info inside cleanup.h too)
- 
-> +
-> +	mutex_lock(&scmi_powercap_roots_lock);
-> +	list_for_each_entry(pr, &scmi_powercap_roots, node) {
-> +		for (i = 0; i < pr->num_zones; i++) {
-> +			spz = &pr->spzones[i];
-> +
-> +			if (scmi_powercap_is_control_type_child(spz))
-> +				num_zones++;
-> +		}
-> +	}
-> +
-> +	states = kcalloc(num_zones, sizeof(*states), GFP_KERNEL);
-> +	if (!states) {
-> +		ret = -ENOMEM;
-> +		goto out_unlock;
-> +	}
-> +
-> +	list_for_each_entry(pr, &scmi_powercap_roots, node)	{
-> +		for (i = 0; i < pr->num_zones; i++) {
-> +			spz = &pr->spzones[i];
-> +
-> +			if (!scmi_powercap_is_control_type_child(spz))
-> +				continue;
-> +
-> +			if (!spz->info->powercap_cap_config) {
-> +				ret = -EOPNOTSUPP;
-> +				goto out_free;
-> +			}
-> +
-> +			states[nr_states].spz = spz;
-> +
-> +			ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id,
-> +				&states[nr_states].prev_enabled);
-
-also...I have not checked this myself, BUT do you use checkpatch --strict that I
-can see a few strange indents...
-
-> +
-> +			if (ret)
-> +				goto out_free;
-> +
-> +			nr_states++;
-> +		}
-> +	}
-> +
-> +	for (i = 0; i < nr_states; i++) {
-> +		spz = states[i].spz;
-> +
-> +		if (states[i].prev_enabled == mode)
-> +			continue;
-> +
-> +		ret = powercap_ops->cap_enable_set(spz->ph, spz->info->id, mode);
-> +		if (ret)
-> +			goto revert;
-> +
-> +		states[i].changed = true;
-> +	}
-> +
-> +	goto out_free;
-> +
-> +revert:
-> +	while (i--) {
-> +		spz = states[i].spz;
-> +
-> +		if (!states[i].changed)
-> +			continue;
-> +
-> +		powercap_ops->cap_enable_set(spz->ph, spz->info->id,
-> +			states[i].prev_enabled);
-
-ditto...checkpatch
-
-> +	}
-> +
-> +out_free:
-> +			kfree(states);
-> +
-ditto...checkpatch
-> +out_unlock:
-> +			mutex_unlock(&scmi_powercap_roots_lock);
-ditto...checkpatch
-> +
-> +			return ret;
-> +}
-> +
-> +static int
-> +scmi_powercap_control_type_get_enable(struct powercap_control_type *pct, bool *mode)
-> +{
-> +	struct scmi_powercap_root *pr;
-> +	int ret = 0;
-> +
-
-same here...even if it is a smaller function using cleanup guard helps
-streamlining the code...
-
-> +	*mode = false;
-> +
-> +	mutex_lock(&scmi_powercap_roots_lock);
-> +	list_for_each_entry(pr, &scmi_powercap_roots, node) {
-> +		ret = scmi_powercap_read_root_children_enable_state(pr, &pr->enabled);
-> +
-> +		if (ret)
-> +			break;
-> +		if (pr->enabled) {
-> +			*mode = true;
-> +			break;
-> +		}
-> +	}
-> +	mutex_unlock(&scmi_powercap_roots_lock);
-> +
-> +	return ret;
-> +}
-> +
-
-Thanks,
-Cristian
+-- 
+Best Regards,
+Chanwoo Choi
+Principal Engineer, Samsung Electronics
