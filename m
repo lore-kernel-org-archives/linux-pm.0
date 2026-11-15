@@ -1,96 +1,112 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.194.32
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794758098;
-	b=PCC0lKVue/BWF4cXmEuxeRFYM5R3Wwqn58mE5RfaIUNHupJICVGmorEr2LvrrRRN1X/8
-	 Tr/x5I+U5LZ5DzNGR8MW+97cZFFa6HKDwki6DsNcJXkjz2XNIMRV6QUghML4uA/dH7js+
-	 jpQmgyxwLWdJDUzNADefkaPCKDHSK86Boo9tx1n5wZ/4H4PdVo9WJNBqg3TQi03fmnYdy
-	 1Yqkz7Vz40hAeT5eZC/Z7u/tPip/Q1/X1JuBt6xVcZQe3JmESD2JmsE6swvgYN6atmZvH
-	 Vo5D/NXimdWCRMsfwhU+Lf+oAMYOQJTxBT1lNYtnRoLt+FrsO4O/6zTgRHdMFON6Xbg==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794758098;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
-	 User-Agent:Subject:Content-Language:To:References:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
-	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
-	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=ZvrzB4MUVs0yHM7iop93JVb/aqfcE8ryM9wLalC6plY=;
-	b=t0hNZEKL3mHXyqX52qsGzfO7EA89ZxroCLQcU8T+x0FG5ehW34TTsnwK3TyZBr/jcNCO
-	 KVV47LW0ypDr9AESrlkN44eJIXp7W0wHGA3eS/IAMarRVZKa76LWEh45DmIzUOzgCQsTQ
-	 jpm87TRF277EkK2EbBceL0bVkV/w22r5F8jHKm01vZRsYWLtQeMyUoRPFBGpMvFCHk9wN
-	 00bhwrF682C4v3zxWgR+bNPS8LwOTwONeTjpJtUfBV5eqzGKd0h046gN+0or4EZ2gL1jS
-	 4oNzLayQI3bjLcV1f0rx5NRFOY8GEu3L4VveqMZAlCkDwPhyhVVaC7mF+AvDzdF7fzQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amd.com;
-	spf=fail smtp.mailfrom=amd.com;
-	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b="a/nXGgz1";
-	arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.194.32
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011032.outbound.protection.outlook.com [40.93.194.32])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794758371;
+	b=5EZs6UOcOMzxF19xCOKbJSxgNsXrQCNG1jyhiI6x2yYCXxFx4vVRYSJy3vU5LdX0KzUt
+	 7jzd28Vw/7dRqRiCNtfaVMnTmZH3LZ1phycAHIKw7RyRQzTi0o1ZOBv5Bwzs3wujRYRFV
+	 yyM2frFbPRnHj0k1eT0JxQB5SXuJqRaaWsFDk/2cebnb9nrU4T7NBEd3NIp/0aMA9BWYI
+	 MTggUKrwrFLN15bBUJXSCsSxYwHQTyjOHazPofJacP4Om8RJz2zMeXxN0FHwmXhHhFtdY
+	 eQNwZQS+VwEn8aIdIbt0DVj4W40tMZBxTcL+pxxTIA96lcnIzWWfdZ+zQRyGHbNPGdg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794758371;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
+	 Date:MIME-Version:User-Agent:From:Subject:To:Cc:References:
+	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-Authority-Analysis:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=rU0kaOlqF9hCuvhvsgIDlYklK2QFRWqi/dYW1+IFo+I=;
+	b=y7yGzOltd+fO8Sj6ZsEs6pVXUpb2WGpP8cAGzpYsno2LUrfTVHeyOSe0WMAsPrgRRlU+
+	 kM1TkiF2t280G4J5EFYDIwnaZlrwU2JsCehHY9ZMScD0BQ7yIdCz3Mx3FV25XtmCL3ezE
+	 jK/CLprhWpe+FLY8mK6GQSsbx6syIf+VXhYGMuFED3glkHS0hZqchJ3rr+LLuLhTYdqKd
+	 CZ3XvWFfQrEiwie4IXOJ9w0RwDR76NTkrER4iS8X56uT5qlpW7U7+zKt9v3sFmCMekLeD
+	 JJJymUyqnJr7pRFMMdZ+ssgB/lrHUrtRPtdSXaVbebIbSZ7dFWRPz3sHcRZA1qq9KCg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ixfoMr+z;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="Y//5Sxd+";
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3869D606A31A;
-	Sun, 15 Nov 2026 15:54:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3869D606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8268606A329
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 15:59:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A8268606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=a/nXGgz1
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=jdL+2oIrxB8dc8LQee2M6qbyQ9lJ3ANXPQz4/JXFkNlKaQ24tDbhN86QzDln1Cox1YxoXEkEJURec22zMLtPmglvhTvK3QMs1Te8zxr5GFWUf/8ZT/RpD3EkhvUi3bHrIeNWCeSU1Fg+FUZNw+AWtV7Ua+zNR14ur8wky9hK1Vil0Uld7cm4xk3DjzUWegg48nY5uPrxjHyXmJa8oK3G5tli7xU43DJGEMc2Wrwf/qhhVVP/JWVhXGwH1wA39mjygvXmqBF9OiHqNkTOUjxUgy6ZhYgp4pIJZhVRa7RJokUPCd5sSNvhBh7YdycqHBhRyK7+oVSXfAoXHi2BzYFeHw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ZvrzB4MUVs0yHM7iop93JVb/aqfcE8ryM9wLalC6plY=;
- b=nNfNJVHskuDWGhwUMKkdd0jqgEJCJpvoCBX6eXBO9H6rNDX5TpTe5rYQ5Qnf/Ou7LCGvBl2zU0ydyZefHhQpNJmDB1EIeNudxaQQpNleFQEEt/264VXZGuXeOOu3OItK1aC/WsZaoPLlAT+bzxpZW5FI0ZxbSUg4ogq6Q6aWjk8G6KJc1tdRvT5SNB/FOJKpmfQ/ZXCdv+NGrsD3ADsgAR8mvm5U9LJuAHwygQycOWkGXM5MiJiVCrUJ5zKog8WW0lv64myvI7s2sLlTJ0jf7BJAEg7DX8RSaplR0U03Qjcn4AFsN1et4DsXkzU0y1gF/fn0J8Iem1wqsE1WbY3piw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ZvrzB4MUVs0yHM7iop93JVb/aqfcE8ryM9wLalC6plY=;
- b=a/nXGgz17WP1BccIB4TX6J7Ao7h8jzN1doN656og0jSJL5wrz+zNJDjBOlDsSL7Xj0SxCPPXwn1UGJ1Cy6AhQdi8nwNdQcL/BjKuxIMxA3MVHYybTlTyM1WcltBNfps9vcfjQejKKtGK5MtmNt7WKqXRncm0YJjywBZgXYZ7zzc=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH7PR12MB9174.namprd12.prod.outlook.com (2603:10b6:510:2ed::9)
- by MW4PR12MB6754.namprd12.prod.outlook.com (2603:10b6:303:1eb::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.10; Sun, 15 Nov
- 2026 15:54:52 +0000
-Received: from PH7PR12MB9174.namprd12.prod.outlook.com
- ([fe80::eaaa:b430:ba9:5dc]) by PH7PR12MB9174.namprd12.prod.outlook.com
- ([fe80::eaaa:b430:ba9:5dc%7]) with mapi id 15.21.0615.012; Sun, 15 Nov 2026
- 15:54:51 +0000
-Message-ID: <ea92861f-cdf6-4828-9292-b49ad6c21590@amd.com>
-Date: Sun, 15 Nov 2026 09:54:48 -0600
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] cpufreq: amd-pstate: Set asymmetric CPU capacity on
- hybrid platforms
-Content-Language: en-US
-To: Vishal Badole <Vishal.Badole@amd.com>, ray.huang@amd.com,
- rafael@kernel.org, viresh.kumar@linaro.org, perry.yuan@amd.com,
- kprateek.nayak@amd.com, hansg@kernel.org, ilpo.jarvinen@linux.intel.com,
- platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20261114150310.1377654-1-Vishal.Badole@amd.com>
- <20261114150310.1377654-2-Vishal.Badole@amd.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <20261114150310.1377654-2-Vishal.Badole@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SA1P222CA0110.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:806:3c5::22) To PH7PR12MB9174.namprd12.prod.outlook.com
- (2603:10b6:510:2ed::9)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ixfoMr+z;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Y//5Sxd+
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AFFBHsm2643422
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 15:59:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	rU0kaOlqF9hCuvhvsgIDlYklK2QFRWqi/dYW1+IFo+I=; b=ixfoMr+zQPJ5pPB4
+	N3Jra/9kLU4Tps7ooXjkJ16KY+CjnGJSpAb6BzhHiRwrfZdu0tIvNABYVeBzikph
+	OE1Nco6B9zP2r/yu4zTkFbH3iE1Mc8AqCPBKIFJCnYIV3wA6M6qgTDzYVrs3NW5F
+	fBVSL8F6IW8ImljVD5/xCZvixQdLcGvM+Dbo+lW38Mh5CyrvUzCmGAG6lxdgL/LO
+	UmiuW1kQqnkCrwq3G+juHFX6+SjLE2shmtFHGc6aWUd7mwbT6u5EPDzixK/fyP/2
+	1655qe+dpmL0LrohoCsU4n3IdZt4Ylg00PHln0cVxLXAOKXPAWONk0wcM0cvIwyS
+	44s74w==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hxhjqkcu6-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 15:59:29 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93f3969a2a7so431121985a.2
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 07:59:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1794758369; x=1795363169; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :references:cc:to:subject:from:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=rU0kaOlqF9hCuvhvsgIDlYklK2QFRWqi/dYW1+IFo+I=;
+        b=Y//5Sxd+AU9S5rMWaNS28SKRgN5qtLzGzuiO4ZYF8UT6qU+fVXcWAIuz+kaqfGCPZc
+         b3jt24nfFxHiAqYRZo+cxcIxH2qOYpOdOTj9lInruUwG+2ItNZwBkMYzdFhclOja9QCA
+         hccUIxD6Q2/Cp3LimHL/WgAhDX4ZHdb1JSnhMstqQ+oVtOOenw2DfcRzVAmg4d4/3Rtw
+         Rp1UotJrFehNQKAF2GOJFTrUUV1WM8vmK8dW8p03N0krgjo6clnDCCMwLJhr5XxzLBrA
+         7Y2qFW2HxUkQtTdExWcBQQz0ObdkH6u+x4pv0IAe5KGgKN1QCD2h9CeDsQeW1RV4eXBU
+         yZWw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794758369; x=1795363169;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :references:cc:to:subject:from:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=rU0kaOlqF9hCuvhvsgIDlYklK2QFRWqi/dYW1+IFo+I=;
+        b=u0UbbUVgw3icgRXT8TBeia1pqidEpwxyUrh60nRF6nZWIr90fC/QA1HacSeMlEPlYr
+         +iOTentVg5D2RpT5vedksuPMlWhDuzUabfAqI/fLj0dIdZwVW6Nlpe+nQrI3w+5a+F3w
+         FwWaJe+ECb8i9kOFWaYtFULa/5CN2z+bhAAZR3qg4IdiHnl2CRaMUc3kGbQL9/T+EEoA
+         7u8lThmM7/jSWblJwDlIJ7OabNfEhy1+Dg96VpFoANaP60z1557rNs60VChAR6VIAAH0
+         HFB9ROlU+HXbl9Tg/O0ovqYnAY0wePdsRdRjNG9jAwCa0G24zWNGxAYjbSLr5JKkexDD
+         +7dg==
+X-Forwarded-Encrypted: i=1; AL+hErGn6jEW3HrN8UHpqsdA1RdiJCut2c2vGKXLbEut38o7R/F0JTG1cwcHgwnQZCPeEwzyi7R1CGlIag==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/W4YJO5u12Qjv+Q7z5DorSg6W5jR3QbCupaisWr00n5EPk9QWB
+	4QTuslrVhb8mMCH+o0F9dxVIzH0Bc33/oVwbcZ1NZA/6+8I4toMbEVQORtJqx7v6poTjQAyQZmw
+	F6Fe7RtvYrMZqZ7F4mzXHv75Z8LEG1dMZ7zbrzrnkDHjUDjtpFk/5d3EZbjePow==
+X-Gm-Gg: AYBFou1Yvm5uEI+/nWF9K6MwMP/PyTrjMTUg1XZaGZyxmsbGNSy7Pp3OvTw/J3G6IsJ
+	d884tsMFHR+6YslwKxyYyI5KLD2xrYho+KWhBm4jnxckLRLlPvHmS4SjTsCZenkHpnHD3I0I0YV
+	I0N1vdLpn3AsvOoW74AUAQPLLvmFURPvrVeHrd9G3MZxgeS0iGDP8C7oouaTHlKnqMowOen4W1K
+	kCXIaVb3teEQq4wiHyAzOMEJqBnHzAOSN3hkC9nU0sfVcG5GDRiocrEqnsjxgD0LTu+wxeFIYqp
+	MUUjYrWSOFU4Qp2DU0c19JPeuY3OhZIP2yvPjW712y7wuk9mZJL7gZXl8/kOEDSjCidCktXVjLy
+	IbVlc0sKZuqS+wb56LZIks82BLWDKHUP+QAhwAVyoIdGUECeyPGv05kxzyTey2MSX+ekt1ceyh7
+	b/veAfR9uG1l2bWti+Y3/yPNiiFdsc6B8yG/XGx21XUGCEZkmTgWzKy+C5jYDKI9M3SIr/PGdhI
+	MlXkU9i0zmeEwdpEyp+tdFMt2H/e/243UUOCQlrP7R/
+X-Received: by 2002:a05:620a:bcb:b0:93e:c12c:4402 with SMTP id af79cd13be357-9494bcb40d5mr1383889285a.79.1794758368720;
+        Sun, 15 Nov 2026 07:59:28 -0800 (PST)
+X-Received: by 2002:a05:620a:bcb:b0:93e:c12c:4402 with SMTP id af79cd13be357-9494bcb40d5mr1383885485a.79.1794758368150;
+        Sun, 15 Nov 2026 07:59:28 -0800 (PST)
+Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7c23611bdsm3439393a12.8.2026.11.15.07.59.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 15 Nov 2026 07:59:26 -0800 (PST)
+Message-ID: <42350f50-d20b-4141-9ff5-bbfad5fec2a7@oss.qualcomm.com>
+Date: Sun, 15 Nov 2026 16:59:24 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -100,394 +116,107 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB9174:EE_|MW4PR12MB6754:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0eff4796-7221-467d-7dd1-08df4330c8aa
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|366016|921020|261026140227099003|11063799006|261026121527099003|4143699003|261009223027099003|261021123027099003|261009221227099003|261021121427099003|261022105027099003|261022075727099003|261102123227099003|56012099006|261028144727099003|10067099003|261102130727099003|18002099003|22082099003|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	Ab2WRO795BnGb1ZWUSKEI+zoe8meGCewdziLfi6KJQ36ND2mPOy6u0/ducllzd8DhjVZSqvJvTo2aYIKp+375mKjeLiQpEFTYABMnU7NcaVuazQ281ehtylIPqP3ZF4unKlr+jYFSijjXImLZ8NVFtUOI2AZIfM49yML9o7RTu1noXlR4q/srAQYHqVDAkvNoSPimZ2yySf6kAoFG8af64AHPiWmLiA3cgLt6oWCUHobP4hgX1CQ6bh6gOw47OqB9RZN6lo9VeI+JY+gWUynB8aCvY0SBpHiBqB53g8WrRLeaO1a21MtQi9uNwPCMLpbm4eOvA/bnfZEOAAvAJWhSUb7o70r+ki7epqnzfK6jUGU/LkXYfXpwfp/OYNCYcYErEdrsYWvv+5YjghGWC3Q+SsCVBv3JwiuRLIK4G8TSvYAp6PbvDHrBHt6F6FtWvCh7SeDH8rIThmALlWMw2Z+dvO9iKjS03GpMB+Od8ErzHnIgf5QYmfjARpzKC3Lgcxo8fJ3zLq0T9g8aVhZAmyZyHfTT4wElmNrG9UMMo+oiB2j8ejmXO1xw1lKdXeIM/BIPJjCH5/+m/TZ9pmV5gZwwCQ6a7mFQ+a9pGWaGSCTwzOmIUIcPSJBiMVGWc1en/IcXznMdXBHFpTkZ+fXIfCi3dGlB0MAOVkPzeTNY94959w49uHE7w+b8l3g0cM/KSPe6lTFcaDpmu/z1zVXaZvJgA==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB9174.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(921020)(261026140227099003)(11063799006)(261026121527099003)(4143699003)(261009223027099003)(261021123027099003)(261009221227099003)(261021121427099003)(261022105027099003)(261022075727099003)(261102123227099003)(56012099006)(261028144727099003)(10067099003)(261102130727099003)(18002099003)(22082099003)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?V3p2ZTErTzFZeE1zci9nYkF0cEVJOTZ6L0RwbW5oU3F3bVRIdXNlNm9xcHp1?=
- =?utf-8?B?RUJEcEtxanEzTnlsblh2YkpxUnE0bkVObWE3bXdYM0ptcnU2cTY4bmhRZmpz?=
- =?utf-8?B?UDhsTWJHQ1pUd1drRDBMRWJETTVsbEo0ck5iNWpYSVd4dVlmWi9ENEJjVktq?=
- =?utf-8?B?OGZxSTVMWE5MVzNRL25aQTVLOGhjVzFiWVBFdTQranRib3c1ajV5d1pMTXlM?=
- =?utf-8?B?YTNYNDZEajkvVCtrV1FmVEdPRlZveHRkNzdTbHIwMVNZVmRSZmZxdW05bEtO?=
- =?utf-8?B?aVkxS2RjV1haZnJaQ3hlRnJVV3h0NDgrdmZZSGJFYkZTVTducVFZbko5WG5y?=
- =?utf-8?B?VUY3MVNleW01MDBaNE9WaDNrKzNOU29wNGEvTE9qalo5a1IyU21PUE1VdjlG?=
- =?utf-8?B?SkhOWGQ3ejdWZXpVWXAvUXhoTTR1K0VzMEZwTTdTQy9lK3prYkFKOTI1eFdu?=
- =?utf-8?B?bHJIV1hFaUxJVVkzc1B6NldtZStMcnRrMzkzYndzSzg4NlZpNi9nK0kraUQ2?=
- =?utf-8?B?ZzBKYWZkeTVpeStEYzloYlFkZDFKSVZWYXdsdmlIeVNjNjYyai92OGgvZk5n?=
- =?utf-8?B?NEgxaWFxMkt1QnVxM1hoeXBlOWpWNm1XajdoQ3FXNTlwQTR6RHh3NzFPZ0Vn?=
- =?utf-8?B?TDZ2aHA5TlMzc3c5VjNQenpwYlBsRHhtUVZpcklXTFVxSVMvb1BGd2pwT01h?=
- =?utf-8?B?Q2pPdkloRjhveVBBWVBSSlpIRHF1UDNaWjI5Si80SUpHVmRtV0hlVkRjeTFR?=
- =?utf-8?B?OU9sWTNnTkVPUWIwWDlFcWJVbTFQcjcyTDNUcmJMcUY3M0VBemJxbnhFTkVX?=
- =?utf-8?B?YjJWanhORXRIcVd2dFpxZkY0a1M3c2UzM3FhcTNBR0ZuTXBBV2xpV29pOVZm?=
- =?utf-8?B?NXFURGY4SE9Yd3RzZW8xVzNhUHRsZ3hLZTAwRDZuWk5zMEsyeGg3ckZPdXl1?=
- =?utf-8?B?QzRKMDB2c3dGajNBZjRzMmQzNkFYUVJpMjFHMUlKa3VMTGJJK0ZJazM5Wmd0?=
- =?utf-8?B?UUxsWUs2eFptREo4TzFjdnNhNzlINkxpZlEyeWRkTnQxd0pmREttcjhSQkRT?=
- =?utf-8?B?cEM3VnY2ZTV5dGFCVVhQVGNIMUozQ3ZNSUk4SXBzYlkyREM5Nzl3OVphNjhE?=
- =?utf-8?B?MkxzYUx5L2pmMEhXVmlZb244VFNIbnJJTUNaQmUzR042UHptTlNwdnFDeTJJ?=
- =?utf-8?B?SEdFOFNMTERwWDJ2elBQaEVmUkVyTmhIanFwQWhTVy81eDVDZUgrMmRkM2tY?=
- =?utf-8?B?M0xsb1ByVDVLMXZEV0hNeS9HSUlhYkVSNG53Q0dwUTE2Szd1VW9TSXVtclo4?=
- =?utf-8?B?UFR2ZGRQbEg1bDFuQnN0UEpaMVdaWTRralBKSHg4NCtja29tbHRTQm5QaFpo?=
- =?utf-8?B?UHBwelMzT01zOEl1RzhQaGNSZ2FCd09sTTJpNlRBUkgxb0JUc0JCNi9xVmxs?=
- =?utf-8?B?WnBEK0tBYWZFSk4ySWR1OE96bU5XajFBNEVnWCtOQm1udWxERFF0Sittd2pO?=
- =?utf-8?B?Vzd0K2c2ODU2anQyTFhZRWFZK0YzTDdQdXB5NlI4c2RBU01leGw1cW1FQmRB?=
- =?utf-8?B?U2s0UWYrV1dXVE05d1RrWDlsbzNsWC9TWVpjV2NNc0gzL0U3MTFBSE9ST2Vz?=
- =?utf-8?B?bmpkRU9wdTdVMThJUTBsQTkrVDRFVW5HeFNhdklKN1dCbzBrYWFFYURFUm9V?=
- =?utf-8?B?MEhxbjB4S205MzU0VXZtU3pGeEphbXJ6VXFueDQrN0d5ejdmV3djMFR0R1E3?=
- =?utf-8?B?dE42S3ljM3dsMWFaa2lWMkx4ZjNQc0t1RHVPQ3JOL1JyeW5odGtLaEpkcDdG?=
- =?utf-8?B?ZXhRYkZoUDBPcTlZRmViU01aRXpjeERiVHBwQUlaWElLbGkvaFhtMk5Gd2tq?=
- =?utf-8?B?dGl5NWlUODhVZHZKQlQ2MVVVSlVBTHRob2NJUEZsdGhWUFQ5OUxaaWZKK1cr?=
- =?utf-8?B?c2s1b3M5YWtiWlZqTDI4NnE4ZUVXV3dyTVlRMGMxYXVFZ1I3ajdGMmRDbEF1?=
- =?utf-8?B?WTdXeHdvOFVKNmpGVDR3UWt5U1hrY3NBdUl2Rm9WQStObEY4djFtQ3JqQ1Ft?=
- =?utf-8?B?M0w3UjlYTXFGRDFsMzlVdnlsV0dqdTZadXdZUmM0bHU3amtTdmZLeXVJMkdx?=
- =?utf-8?B?WnJwbWRhUmcyMWFUZUNuMjMzL3dzZTl0dzJPNUZuNmJFVnFuZEU4TWlXbStJ?=
- =?utf-8?B?RERQbEtxTDVmeXJLSjk2NnpLeURFNVpyN1pjT0Vvd3E3R2FwT0lmK2RNcWlI?=
- =?utf-8?B?UjJZYmc3VnNVWTZRb3VBMExlcEhkWS9DZXhtMjUyOEdSczZkTkwxQm1qZnNz?=
- =?utf-8?B?dWVnTS95UXgwek83bmFpV1FmTGFTajMxSGhYalN0SkJ1V3h0K1IxZz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0eff4796-7221-467d-7dd1-08df4330c8aa
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB9174.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Nov 2026 15:54:51.6495
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 1D84jm98qYsRk48xbuTQXIleM994HB6i8FK+fOQRYC+XQuZnLOd4vqLUr+qmQfOcGaYGVGmsZ2swSzUT2KNTAg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR12MB6754
+User-Agent: Mozilla Thunderbird
+From: johannes.goede@oss.qualcomm.com
+Subject: Re: [PATCH] pmdomain: qcom: rpmhpd: don't clamp gfx and gmxc before
+ sync_state
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>, Oleg Keri
+ <okerixx@gmail.com>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Abel Vesa <abel.vesa@oss.qualcomm.com>,
+        Akhil P Oommen <akhilpo@oss.qualcomm.com>,
+        Rob Clark <rob.clark@oss.qualcomm.com>,
+        Thorsten Leemhuis <regressions@leemhuis.info>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, regressions@lists.linux.dev,
+        Konrad Dybcio <konradybcio@kernel.org>
+References: <20261021080517.2161-1-okerixx@gmail.com>
+ <CAPx+jO8N4yLD8pZ2vr9_3MD9==FFMdvQG+=1JjDoe2kG7DR1iA@mail.gmail.com>
+Content-Language: en-US, nl
+In-Reply-To: <CAPx+jO8N4yLD8pZ2vr9_3MD9==FFMdvQG+=1JjDoe2kG7DR1iA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=KelHIgYD c=1 sm=1 tr=0 ts=6af9d6e1 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=VwQbUJbxAAAA:8
+ a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=6R6alxyDzFe-mgSiMmgA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE1MDA2MyBTYWx0ZWRfX5UmTmvHIR8jZ
+ y2UtkbEeWLSWpfkITtIuKmYQWMWSIAKvbVYlr7C3g5S0RpgbT2dwM71zVWDJ7L/0GU1sKzR6Yje
+ wcEsNsA7Wjw9lT3DD9PBy79f7qJq8G0=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE1MDA2MyBTYWx0ZWRfX+I1VjSgEkWOZ
+ gMCAiSh32BkpPfGtIloo4+Kpxog/r5govhQj8V5O9a9fzTxd0t0Eiq/1VmYm7+LorYTrLriaFvS
+ ciOG6iJvN00oU9E16JQ9cazAbrN2VSig3ozI+lzUOHrBAmiHueeOg/BDmTLA12z8gKoXST9p+kG
+ xrmHzL4u/iPWqLuNIIyr5VWX5bKrbFOWXBgHifPb0vgcOIFVGZUVwk89HRo2pHt2Boay7BZ5wAi
+ aH3ND/oXgPJfdGisYCzvhUmSAsAdDyrAlR6G22/YLr+mpkXiA5bJbTdKS146ZIzweV9qiekQ6z2
+ GDkIvA7yAAMLbWFn3PWobwhqewDYWFKaPFgpnGREveMtHa1xha44bCc51zU7lZa9WnjmXF7x7Tr
+ 5EXXLhr4V0JRa3sVoX2eHUbNx1pPmO3y5MVMB88TkGWVjHEKKq3jNfIxhC8hJIj7heNev26l7+I
+ amNAr1Cac8PA2RTQEJw==
+X-Proofpoint-GUID: RjX87Gh2ZLpQj31P-h6xpcbr-XGbXArJ
+X-Proofpoint-ORIG-GUID: RjX87Gh2ZLpQj31P-h6xpcbr-XGbXArJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-15_05,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 bulkscore=0 suspectscore=0 lowpriorityscore=0 phishscore=0
+ clxscore=1015 spamscore=0 adultscore=0 priorityscore=1501 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611150063
 
+Hi Ulf,
 
-
-On 11/14/26 09:03, Vishal Badole wrote:
-> AMD heterogeneous processors combine multiple core types (e.g.
-> performance and efficiency cores) whose maximum sustained performance
-> and frequency differ. On such platforms the Linux scheduler relies on
-> per-CPU capacity values to place and balance tasks across cores.
+On 13-Nov-26 18:48, Ulf Hansson wrote:
+> On Wed, Oct 21, 2026 at 10:05 AM Oleg Keri <okerixx@gmail.com> wrote:
+>>
+>> Until rpmhpd's sync_state every vote is clamped to the highest corner,
+>> so that hardware the bootloader left running keeps the rail level it
+>> needs until its driver takes over.  Nothing the bootloader leaves behind
+>> runs on the GPU rails, but the clamp hits them anyway: the GPU clock
+>> controller's probe runtime-resumes and suspends its GFX and GMXC
+>> domains, and from then on both rails are pinned at their highest corner
+>> until sync_state.
+>>
+>> On Glymur gfx.lvl has 14 levels and the clamp holds the rail at the top
+>> one, 0x1d0, while the GMU's own performance table ends at level 11,
+>> 0x1c4.  With the GPU driver and firmware built in, the GMU boots long
+>> before sync_state, and its CLX DCVS calibration does not survive a gfx
+>> rail held that high: the firmware gives up with HFI_F2H_MSG_ERROR
+>> 0x007306c7 (ResMgrCalibrateDcvsLvl), the first HFI_H2F_MSG_GX_BW_PERF_VOTE
+>> times out and the first GPU init fails.  On the Lenovo Yoga Slim 7x
+>> Gen 11 this means the compositor cannot start at first login.  Pinning
+>> gfx at level 11 or 12 instead fails the same way, level 10 and below
+>> boot fine, and pinning gmxc alone has no effect.
+>>
+>> Leave gfx and gmxc out of the clamp: they have no bootloader-configured
+>> consumer to protect, and the GMU votes them through its own RSC.
+>>
+>> Fixes: 93b6c8d10fad ("drm/msm/a8xx: Enable CLX feature on Adreno X2-85")
+>> Link: https://lore.kernel.org/r/179248663855.32151.9955864156939592299@gmail.com
+>> Acked-by: Akhil P Oommen <akhilpo@oss.qualcomm.com>
+>> Signed-off-by: Oleg Keri <okerixx@gmail.com>
 > 
-> Today amd-pstate does not export any per-CPU capacity information. As a
-> result the scheduler sees every CPU as having identical capacity and
-> treats performance and efficiency cores as interchangeable. Tasks are
-> therefore placed and balanced without regard to core strength, which
-> hurts both throughput and energy efficiency on hybrid systems.
-> 
-> This happens because the scheduler defaults to a uniform
-> SCHED_CAPACITY_SCALE when no arch- or driver-supplied capacity exists,
-> and amd-pstate never feeds the asymmetry it knows (via CPPC highest
-> frequency or the effective highest performance register) into the arch
-> hybrid capacity scaling interface.
-> 
-> Enable capacity aware scheduling on AMD heterogeneous-core processors.
-> Use CPU 0 as the capacity reference, assuming it is a highest-performance
-> CPU on the supported platforms. Cache its maximum frequency in kHz and
-> effective highest performance once before driver registration, treating
-> these reference capabilities as fixed for the lifetime of the system.
-> During per-CPU initialization, compute each CPU's capacity relative to the
-> cached reference and publish it:
-> 
->   - When maximum-frequency data is available for both CPUs, scale by
-> 	 frequency via arch_set_cpu_capacity().
->   - Otherwise, fall back to performance-register based scaling using the
->     effective highest_perf values.
-> 
-> Record frequency availability before applying the per-CPU fallback. Keep
-> frequency and performance references separate instead of interpreting a
-> boost-ratio numerator in performance units as MHz. The fallback base
-> frequency still depends on each CPU's nominal frequency and performance,
-> so calculate that conversion per CPU. Disable CAS if reference setup fails
-> without preventing normal CPUFreq registration.
-> 
-> Capacity aware scheduling is enabled by default on supported hardware and
-> can be turned off with the "amd_cas=disable" boot parameter. Its effective
-> state is exposed through the "cas" sysfs attribute, and also exported via
-> amd_pstate_cas_active() so amd-hfi can stand down when capacity aware
-> scheduling owns the heterogeneous cores.
-> 
-> Signed-off-by: Vishal Badole <Vishal.Badole@amd.com>
-> ---
->   MAINTAINERS                  |   1 +
->   drivers/cpufreq/amd-pstate.c | 102 ++++++++++++++++++++++++++++++++++-
->   include/linux/amd-pstate.h   |  14 +++++
->   3 files changed, 115 insertions(+), 2 deletions(-)
->   create mode 100644 include/linux/amd-pstate.h
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 222b7fc2c3aa..26217272be95 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1324,6 +1324,7 @@ L:	linux-pm@vger.kernel.org
->   S:	Supported
->   F:	Documentation/admin-guide/pm/amd-pstate.rst
->   F:	drivers/cpufreq/amd-pstate*
-> +F:	include/linux/amd-pstate.h
->   F:	tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
->   
->   AMD PTDMA DRIVER
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 4bedfbfc18b6..59eb2c4c7867 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -29,6 +29,7 @@
->   #include <linux/smp.h>
->   #include <linux/sched.h>
->   #include <linux/cpufreq.h>
-> +#include <linux/sched/smt.h>
->   #include <linux/compiler.h>
->   #include <linux/dmi.h>
->   #include <linux/slab.h>
-> @@ -39,6 +40,8 @@
->   #include <linux/power_supply.h>
->   #include <linux/static_call.h>
->   #include <linux/topology.h>
-> +#include <linux/cpuset.h>
-> +#include <linux/amd-pstate.h>
->   
->   #include <acpi/processor.h>
->   #include <acpi/cppc_acpi.h>
-> @@ -86,6 +89,10 @@ static struct cpufreq_driver amd_pstate_driver;
->   static struct cpufreq_driver amd_pstate_epp_driver;
->   static int cppc_state = AMD_PSTATE_UNDEFINED;
->   static bool amd_pstate_prefcore = true;
-> +static bool amd_pstate_cas = true;
+> Applied for fixes and by adding a stable tag, thanks!
 
-As this strictly requires SMP support, what do you think about this 
-instead to pick the default.
+Nice, thank you.
 
-static bool amd_pstate_cas = IS_ENABLED(CONFIG_SMP);
+Talking about regression fixes, any chance you can take a look at
+this MMC fix, which as the cover letter explains also is sorta
+a regression fix (the root cause is not a regression but other
+7.4 changes make it easier to trigger):
 
-> +static bool amd_pstate_cas_initialized;
-> +static u32 amd_pstate_ref_freq_khz;
-> +static u32 amd_pstate_ref_highest_perf;
->   static struct quirk_entry *quirks;
->   
->   /*
-> @@ -957,8 +964,8 @@ static void amd_pstate_init_prefcore(struct amd_cpudata *cpudata)
->   		return;
->   
->   	/* should use amd-hfi instead */
-> -	if (cpu_feature_enabled(X86_FEATURE_AMD_WORKLOAD_CLASS) &&
-> -	    IS_ENABLED(CONFIG_AMD_HFI)) {
-> +	if ((cpu_feature_enabled(X86_FEATURE_AMD_WORKLOAD_CLASS) &&
-> +	     IS_ENABLED(CONFIG_AMD_HFI)) || amd_pstate_cas) {
->   		amd_pstate_prefcore = false;
->   		return;
->   	}
-> @@ -969,6 +976,64 @@ static void amd_pstate_init_prefcore(struct amd_cpudata *cpudata)
->   	sched_set_itmt_core_prio((int)READ_ONCE(cpudata->prefcore_ranking), cpudata->cpu);
->   }
->   
-> +bool amd_pstate_cas_active(void)
-> +{
-> +	return READ_ONCE(amd_pstate_cas_initialized);
-> +}
-> +EXPORT_SYMBOL_GPL(amd_pstate_cas_active);
-> +
-> +static bool __init amd_pstate_init_cas(void)
-> +{
-> +	int highest_perf, max_freq;
-> +
-> +	highest_perf = amd_get_effective_highest_perf(0);
-> +	if (highest_perf <= 0) {
-> +		pr_warn("Invalid reference highest performance (%d)\n", highest_perf);
-> +		return false;
-> +	}
-> +
-> +	max_freq = amd_get_max_frequency(0);
-> +	if (max_freq < 0 || (u32)max_freq > U32_MAX / 1000) {
-> +		pr_warn("Invalid reference maximum frequency (%d)\n", max_freq);
-> +		return false;
-> +	}
-> +
-> +	amd_pstate_ref_highest_perf = highest_perf;
-> +	amd_pstate_ref_freq_khz = max_freq * 1000U;
-> +
-> +	return arch_enable_hybrid_capacity_scale();
-> +}
-> +
-> +static void amd_pstate_set_cpu_capacity(struct amd_cpudata *cpudata,
-> +					bool highest_freq_available)
-> +{
-> +	unsigned long capacity, max_capacity, capacity_freq, base_freq;
-> +
-> +	if (!IS_ENABLED(CONFIG_SMP))
-> +		return;
+https://lore.kernel.org/linux-mmc/20261112124430.110629-1-johannes.goede@oss.qualcomm.com/
 
- From what I can tell; I don't think this is realistically something 
-that can get called since you already check to enable CAS based on this 
-same check (IS_ENABLED(CONFIG_SMP)).
+and if your happy with the fix can you queue this up for
+7/4-rc# merging?
 
-So please drop this check here.  More later about IS_ENABLED(CONFIG_SMP).
+Regards,
 
-> +
-> +	if (highest_freq_available && amd_pstate_ref_freq_khz) {
-> +		capacity = cpudata->max_freq;
-> +		max_capacity = amd_pstate_ref_freq_khz;
-> +		capacity_freq = capacity;
-> +		base_freq = max_capacity;
-> +	} else {
-> +		union perf_cached perf = READ_ONCE(cpudata->perf);
-> +
-> +		capacity = perf.highest_perf;
-> +		max_capacity = amd_pstate_ref_highest_perf;
-> +		capacity_freq = perf_to_freq(perf, cpudata->nominal_freq, perf.highest_perf);
-> +		base_freq = perf_to_freq(perf, cpudata->nominal_freq, max_capacity);
-> +	}
-> +
-> +	guard(mutex)(&sched_domains_mutex);
-> +	arch_set_cpu_capacity(cpudata->cpu, capacity, max_capacity,
-> +			      capacity_freq, base_freq);
-> +	topology_set_cpu_scale(cpudata->cpu, arch_scale_cpu_capacity(cpudata->cpu));
-> +	x86_topology_update = true;
-> +	WRITE_ONCE(amd_pstate_cas_initialized, true);
-> +}
-> +
->   static void amd_pstate_update_limits(struct cpufreq_policy *policy)
->   {
->   	struct amd_cpudata *cpudata;
-> @@ -1043,6 +1108,7 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
->   	u32 min_freq, max_freq, nominal_freq, lowest_nonlinear_freq;
->   	struct cppc_perf_caps cppc_perf;
->   	union perf_cached perf;
-> +	bool highest_freq_available;
->   	int ret;
->   
->   	ret = cppc_get_perf_caps(cpudata->cpu, &cppc_perf);
-> @@ -1069,6 +1135,7 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
->   
->   	/* try to look up from BIOS/quirk first, fall back to (nominal_freq * highest_perf)/nominal_perf */
->   	max_freq = amd_get_max_frequency(cpudata->cpu) * 1000;
-> +	highest_freq_available = !!max_freq;
->   	if (!max_freq)
->   		max_freq = perf_to_freq(perf, nominal_freq, perf.highest_perf);
->   	WRITE_ONCE(cpudata->max_freq, max_freq);
-> @@ -1100,6 +1167,9 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
->   			 bios_min_freq, cpudata->cpu);
->   	}
->   
-> +	if (amd_pstate_cas)
-> +		amd_pstate_set_cpu_capacity(cpudata, highest_freq_available);
-> +
->   	return 0;
->   }
->   
-> @@ -1923,12 +1993,20 @@ static ssize_t prefcore_show(struct device *dev,
->   	return sysfs_emit(buf, "%s\n", str_enabled_disabled(amd_pstate_prefcore));
->   }
->   
-> +static ssize_t cas_show(struct device *dev,
-> +			struct device_attribute *attr, char *buf)
-> +{
-> +	return sysfs_emit(buf, "%s\n", str_enabled_disabled(amd_pstate_cas_active()));
-> +}
-> +
->   static DEVICE_ATTR_RW(status);
->   static DEVICE_ATTR_RO(prefcore);
-> +static DEVICE_ATTR_RO(cas);
->   
->   static struct attribute *pstate_global_attributes[] = {
->   	&dev_attr_status.attr,
->   	&dev_attr_prefcore.attr,
-> +	&dev_attr_cas.attr,
->   	NULL
->   };
->   
-> @@ -2438,12 +2516,23 @@ static int __init amd_pstate_init(void)
->   			return ret;
->   	}
->   
-> +	amd_pstate_cas = amd_pstate_cas && IS_ENABLED(CONFIG_SMP) &&
-> +			cpu_feature_enabled(X86_FEATURE_AMD_HTR_CORES);
-> +
-> +	/* Enable CAS for processors with heterogeneous cores. */
-> +	if (amd_pstate_cas)
-> +		amd_pstate_cas = amd_pstate_init_cas();
-> +
+Hans
 
-This seem to be a pointless variable initialization, especially as it's 
-a global variable and this runs on non-hetero systems too.  Maybe 
-something like this:
 
-0) See my previous comment about where to use IS_ENABLED(CONFIG_SMP).
 
-1) Change amd_pstate_init_cas return type to void.
 
- > +static void __init amd_pstate_init_cas(void)
-
-2) Add checks into the function like this:
-
-static void __init amd_pstate_init_cas(void) {
-	if (!amd_pstate_cas)
-		return;
-	if (!cpu_feature_enabled(X86_FEATURE_AMD_HTR_CORES))
-		return;
-	.
-	.
-	.
-	amd_pstate_cas = arch_enable_hybrid_capacity_scale();
-	
-}
-
-3) Change the call in this function to just:
-amd_pstate_init_cas();
-
-That should help avoid some extra variable writes.
-
->   	ret = amd_pstate_register_driver(cppc_state);
->   	if (ret) {
->   		pr_err("failed to register with return %d\n", ret);
->   		return ret;
->   	}
->   
-> +	/* Per-CPU capacities are set during registration; rebuild domains once. */
-> +	if (amd_pstate_cas)
-> +		rebuild_sched_domains();
-> +
->   	dev_root = bus_get_dev_root(&cpu_subsys);
->   	if (dev_root) {
->   		ret = sysfs_create_group(&dev_root->kobj, &amd_pstate_global_attr_group);
-> @@ -2484,8 +2573,17 @@ static int __init amd_prefcore_param(char *str)
->   	return 0;
->   }
->   
-> +static int __init amd_cas_param(char *str)
-> +{
-> +	if (!strcmp(str, "disable"))
-> +		amd_pstate_cas = false;
-> +
-> +	return 0;
-> +}
-> +
->   early_param("amd_pstate", amd_pstate_param);
->   early_param("amd_prefcore", amd_prefcore_param);
-> +early_param("amd_cas", amd_cas_param);
->   
->   MODULE_AUTHOR("Huang Rui <ray.huang@amd.com>");
->   MODULE_DESCRIPTION("AMD Processor P-state Frequency Driver");
-> diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
-> new file mode 100644
-> index 000000000000..eb750abd20f7
-> --- /dev/null
-> +++ b/include/linux/amd-pstate.h
-> @@ -0,0 +1,14 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +/*
-> + * Public interface for the AMD P-state driver.
-> + */
-> +#ifndef __LINUX_AMD_PSTATE_H__
-> +#define __LINUX_AMD_PSTATE_H__
-> +
-> +#if IS_ENABLED(CONFIG_X86_AMD_PSTATE)
-> +bool amd_pstate_cas_active(void);
-> +#else
-> +static inline bool amd_pstate_cas_active(void) { return false; }
-> +#endif
-> +
-> +#endif /* __LINUX_AMD_PSTATE_H__ */
 
