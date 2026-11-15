@@ -1,88 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.44
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.177
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794778152;
-	b=ndnP95UukYdpTcj+X+DPDUXSPfwjzlCsZzii1Wt80szuifpEk7IySzb6itbtlwv7+lZ8
-	 n/FiOm0EQFAFDzrTdF1sTR7O4/PxmrcL+/EeVtDwKDB1yJxz2oZkI3lFG0SvE4X7xDqlX
-	 jJMQtYih94LSki2VYXGpfKUbB2WUHFzK6B7vTclubrCx4dQEte4wIQEzGHtwTlvULvDsO
-	 VEWI4A5tdbeBs2irq+ZsgwWq/2dBRZ+Jc1Nxd7cgLVygu7a8ElHM0FE2kJVKQMBCbUrcV
-	 d7VSE8757tLXKmSwWrmputO8adCpthIsP3C+yNFirQwh7U8QZngkj7Am77mG+j/I9mg==
+	t=1794781679;
+	b=jjTKTIW5YsjCjxffQCpaArPUq6XV5bhjN4US5xqTM75qdoishnaERTgKj0JlRRRrHxY0
+	 2oqnHz7sbCeGEfrlN1Bf/gSB7M0I5iR2ToybrRVfWAg0Vq//Rd8RIA0mTkq5iw0gGrf4l
+	 RQSDjiUgLv5mnEY5/jllpR/ZSEmAKZArezyFwODWnavunnnRvOuANMnyKO84XpHW18xmh
+	 REs2Hn90sfWaNqb1HNCWazEqFrbnROVg0qhUveKFfldbu7V13QsN4vHmI+T/hGCifbTo+
+	 elSgfE2szSFu5gRo8mxFSY9POW3XkKylPvMOnRp23kU4tL0PUAkIROFStpzKyXTZV+A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794778152;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794781679;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 Message-ID:Date:MIME-Version:User-Agent:Reply-To:Subject:
 	 Content-Language:To:Cc:References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=0KMb5NMrKDFmX8tPScWHInfJLWZ+dDIbMJtLLrwP3Jo=;
-	b=FCV2rUh+iIQ+vbpz7K1qNiPS89u428dih5XVzW6Tw0gx7MrkYt3q1kmtz1YoKHW27Fow
-	 6mKSSDqMMQhaXOqog9PX29uMwDU1jNeVJg1c3qJwZmR0nMMcWW85uYUhg1WrDjxzfdy3W
-	 WzbYwnT4DnRNMsWVA3pRxO4zveypNX6Ky8SRVNucRMRuygw/WEuxycOBBdowuHZzrqzcx
-	 9Je4Gke1vSmPMXBi35ZtJAOiaMAQbPWPw1R8sM04+VlqeCppE3py88NZ9RLPO6EEXs22Z
-	 wPnV6GT9RrwzWeGzWO/nVLkNey1RKushPLXcHGbQ17p9Zgd4Il8pYevrSl855vqkojQ==
+	bh=g+uoEVaY7o8GGV6KPfzfE+Dp0fwtZ6vxaUTvxsle11g=;
+	b=XWv9IdzqLTp2nLkNwJrcBXIBsmZXVyyTE7MfIWje8cqulGIw9zq120Slm/gB91Low6MC
+	 D2wnLUxHihLHN1+mnjpD6bDIIktWt6Tp44H+vMaeS9WegzNSO1gHrFdNqhdG5qo8+OEjt
+	 j/d9kdYPu7qEnvqGDo0pBzqvxihSTtzgLF9ls/VFggLAa1XWtkq0AoAssdea5RJy35cza
+	 J0/87rzKqt4xKgOm4R9FmL9a8couxeQSjqdb8sgBgo+YcoZm58QyT7XPS8ajVWF1JytY2
+	 u0qNAfUbRF15nmsowJnxO1v/0hru2AYH9G98w1NrhvT0/Erttew97R/qTuC2IT7h4jw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lIOlbVLW;
-	arc=none smtp.remote-ip=209.85.216.44
-Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=G6pC8cLp;
+	arc=none smtp.remote-ip=209.85.214.177
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95AD2606A336
-	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 21:29:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 95AD2606A336
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D659606A31F
+	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 22:27:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1D659606A31F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lIOlbVLW
-Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-3b09a83d12aso2898559a91.2
-        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 13:29:11 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=G6pC8cLp
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2ed1414df17so13964105ad.2
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 14:27:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794778151; x=1795382951; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794781678; x=1795386478; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:in-reply-to:from:references
          :cc:to:content-language:subject:reply-to:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=0KMb5NMrKDFmX8tPScWHInfJLWZ+dDIbMJtLLrwP3Jo=;
-        b=lIOlbVLW5uuuNr4X3b2qYsZRqyDUPplekMFVEq04kUcDGVTlYC5c/p2vlUSAnglBSj
-         S/spiNFJw5jKqRXh7e7Cv6UuneoxdAxVxFYOkm12eN63ZcU8qmktbPtW6q32MRj3lhp1
-         HdThnkNABJTVxmsgbt+oFQV1zFvK9bqk3H/EGY9hL0TqRfHvc1Pd0E9abpm2zwSBCSSe
-         UlAsj3aUC2qH5oc0S7+uFa1JrDnIbG/Zs20cij7aSmSuXMhCy+q3KrmDAyVFcuj2miEy
-         Srkc/QrodMGaX5Fe1sRTgh0pWdjgAFfygWuCxZDgB6014NE8XNiFCqw+ML+mAgAu/Ig7
-         AAcQ==
+        bh=g+uoEVaY7o8GGV6KPfzfE+Dp0fwtZ6vxaUTvxsle11g=;
+        b=G6pC8cLpIK0jfEQ1EaG2k0/jn2AWzKMskaqIkfpUNLPN8lrhf3OGgIsRXCIvQixipB
+         w4UG3ZiSr3quYy05zl0XHjBuLVR9buBzguerqlI1uUThBxtiXdkF/BM/0gL0dLJJvk2C
+         SJqYqPRHISNy3stcLvZ7CUOae4oQakLs/gdz5E11pCgA3Y1sx/xV7/L8vf3wtYIsK3mh
+         aT5c40XmP2bI5aNC+WxIzuP5dH7ESL0iFLts+fgENeRcsQV5jaq4KAk5rtpDZPz4rTBb
+         gCUEFsFZq29yBKQcVlbvBguEVEAFS6GZ1O74Z65m2scVzoDgqMv5bym4pmahmEG3VjsL
+         XbTw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794778151; x=1795382951;
+        d=1e100.net; s=20260707; t=1794781678; x=1795386478;
         h=content-transfer-encoding:content-type:in-reply-to:from:references
          :cc:to:content-language:subject:reply-to:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=0KMb5NMrKDFmX8tPScWHInfJLWZ+dDIbMJtLLrwP3Jo=;
-        b=YaR6Pm9trH96iwfpclX8W9Np7yKVwYhvU2f3a1niID/MhhmLD63vTQJuJu032yEYmM
-         GWviKlC2HZppnQvfNzDF165X7rrEkAeIfqfGJqH4Blz43HcP/YIWOh0WmqSdnJpEZM+U
-         piNuGYFDoskmEGflerat4oV4CX9yCbAg3fGIDxCFzMmmU6qVExQYC5qVCHOTragTKZYO
-         FuuZLXhK6PfEI6HTczN921FcFeJc8nHGaLnWckM0lk7hUNALnLgUYZtMXZL4a8ZIfUS+
-         2K9p7VECxsMIVq2LVsHkd/n4Np6otp4SrOndzKhk9TYbExor3iQSvrDm1WAUIWcfZHwK
-         gTHA==
-X-Forwarded-Encrypted: i=1; AL+hErG7+9p8S4DsnEL7VT1VhyPTsBV3GZjtZfG/63URqAAHK9drthKcSbvxUsQDxo2tijh5dGLmmeM5zg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/YV6HCkuLdSD+ldrFI48X3b1WYAJj8pthr/6GsSfmkA/w8wuE+
-	FoWdCy7nTTDNm/vfe7Aeuo/1TuHXLKo47DrOyZ9/GPsztGlTXDkXxb98
-X-Gm-Gg: AYBFou3jjy+kHggKaC1/Ld4gXmPo2/huR6qJnLZZAa7NsgTN/bvU6DpSjlKXDh6xPuB
-	/5+PXDNgigdPkwYGbdB2bsBFfJfUfbn50N4wqFksuBtAG4j9z4wKRgJA96yD6omFu67chEaGvRw
-	/C/ZBYhaqyGymeRVbeKT1HZ4X6NDu5yNHtFi+Og6EzYmcDyn/MkLT8qZn8JTXfHBl370EwJkPMs
-	BCWfPPNu+J3Um7di/7OcQZn/Uv48PL0ymgYtUzSwj0nbxwOobMPD4jutLTi/H77ePphhMgWqh2u
-	jo3UkQ67ioM73yIuQV1atH/kpuzKI2xUaFypRdJwbkrgqv8ALG9QMbR0aaFGUNkHzoDDKEDKJcb
-	c8N06Wu221FqIYa2OtU+hrEImLnuA/zd8nHdKMk48ymt/LVWhkv39E1uVk5x2tzO2KS4aSCKusR
-	GPEdHmiRT6LVgn+sZimoPCB9G1l9rcq055DxLWeJSIA0Tot9XGDg1Cr54e4o5NnfkXw2TuYqE+T
-	bbvJz+tukDt5HsXqRUHdCeeN7mHnIEafjvrOyOjoARnFcOl5XOkT3zF7aQFJ2HgSZvkKNbiIZW+
-	FwapTJSniqmmS7Wxm29J8H58b1tCb/BaAGIQChAx1+BQQ4hxWJyrYR+xeEOOIdnCfc+i
-X-Received: by 2002:a17:90b:2d85:b0:3a8:bd51:205b with SMTP id 98e67ed59e1d1-3b1b0ca53bdmr8704447a91.37.1794778150825;
-        Sun, 15 Nov 2026 13:29:10 -0800 (PST)
+        bh=g+uoEVaY7o8GGV6KPfzfE+Dp0fwtZ6vxaUTvxsle11g=;
+        b=kgKpzWwRp0mA0Ozx3ynGplzVTsKSoEp45yvx5lv/pmN6YFaq4SIDf/qgQwuqUE8kHg
+         aFHykRAY1WBXrA5osPCZhP/Ypel9PO4exg1q9J+V/ScRG9icu+CtnVjE/Erdpexf9rnm
+         UpjiQuqzmZP81h9po9SwYeuxaULOll+b9fG44xAyXL8kiApHn5iGr5gFdkG8/xKnyzNd
+         mqvIQt++qvIpKK3EwNTNX776L3DqPX4kYV7ki5oA3O20iZdH5WMAvlaIU/dqQeUnw9Ry
+         lAcBzdL4GgrYprwgQsRxS3noF535hPnUNgMowMJj4TCnlHS6qqK/0ncf8d6cWEzI8YGs
+         kVrA==
+X-Forwarded-Encrypted: i=1; AL+hErEiYDjH/YYq8H0xDU4YWeqqosFZPZhMOl/6HX4hG2oi2SJ8RjeTEeWqBHUb7z0a42FGyvRoVLX3sA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8UAUEvU3D1S7Fx2Q5+X5VW70Iez2HE1pmK+AajtbnssOxcnrBX
+	tPz7Cr1h25ZmgO6J9w5gqlFQDtXnSn8w/Zwft4AV8JBV879qlqvgFzWy
+X-Gm-Gg: AYBFou22lKvH2FywQuxuoRqEdIEQR+vWGcwKRukwDYG8UDkSX4U9y/bitcQU8QL0A6l
+	GwCJ6cdfP5ei+znXOgQY6iqQkrAeOTBdzibzK5Gp5Q19pbpktaugNwEHeA15SMJildeUyVIc/cD
+	C5enX6UdKvSUDz2DAr5VxhOEhlV3DOE4EoauTgCZbdnnbopPhD5PkYu7rYDW8ej/suZzogjTmpD
+	fhIQ1oxeJjapfLHwN6A1LicyevtoAAXgmBNf95TxPhf0AIracqg775pr+bkvrqt+A7QVygLXhv8
+	Ss6wO+spnfQByX9ANqfXi0QAR/et0YZMQcc8kvSM2bt6E5J2M4E3WelLdKCTr+zeZCx77bBbpI2
+	6unrcxNVDpWjTDDTUwilrI6a1waSdvMbIB1iEHmdLtelJGW0FgMs1VDIZ/jostZmvy0WxLsbJ72
+	8d4pH/I5cXNVIf74WEEuZFxmfkekuYTz5575Yl9l7dDVLlbNc+kEXNV2iGdZvmxX7WNkXiPKLUQ
+	R6ZBbDEkDWGNnd/Wxu9rTiddggKxPOCc/SGTKrka0eBxNcASxG5HisqJINQJ8KK7+7JsQOZprjT
+	nKYFhxrwHwwg3SZufJJxn4UR7ipNdawnwTi3UPbW+hrFV4ieEJrbbjG319S9hoLyZ7fUwFgJqVv
+	ctbYxOlgRvxiL8A==
+X-Received: by 2002:a17:903:f88:b0:2ee:2557:4069 with SMTP id d9443c01a7336-2ee255742c7mr54507105ad.23.1794781678304;
+        Sun, 15 Nov 2026 14:27:58 -0800 (PST)
 Received: from [192.168.35.214] ([218.50.238.131])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b197d0f6e0sm18846067a91.9.2026.11.15.13.29.08
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ee0fa27c23sm28191145ad.71.2026.11.15.14.27.55
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 15 Nov 2026 13:29:10 -0800 (PST)
-Message-ID: <d8ba1575-f5b3-4794-8b63-f139897074e0@gmail.com>
-Date: Mon, 16 Nov 2026 06:29:07 +0900
+        Sun, 15 Nov 2026 14:27:57 -0800 (PST)
+Message-ID: <e1298d8c-7b10-4552-9c6a-9418e8e26329@gmail.com>
+Date: Mon, 16 Nov 2026 07:27:53 +0900
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -94,70 +95,127 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Reply-To: chanwoo@kernel.org
-Subject: Re: [PATCH v2] PM / devfreq: userspace: Fix memory leak in
- userspace_init()
+Subject: Re: [PATCH v4 1/4] devfreq: Use mutex guard in governor_store()
 Content-Language: ko
-To: Malaya Kumar Rout <malayarout91@gmail.com>, zhanjie9@hisilicon.com,
- linux-pm@vger.kernel.org, myungjoo.ham@samsung.com,
- kyungmin.park@samsung.com, cw00.choi@samsung.com, kant@allwinnertech.com
-Cc: skhan@linuxfoundation.org, me@brighamcampbell.com,
- linux-kernel@vger.kernel.org
-References: <511c7f13-3344-44bf-a960-044fc2401789@hisilicon.com>
- <20260729133523.357383-1-malayarout91@gmail.com>
+To: Jie Zhan <zhanjie9@hisilicon.com>, cw00.choi@samsung.com,
+ myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxarm@huawei.com, tianyaxiong@kylinos.cn, zhenglifeng1@huawei.com,
+ zhangpengjie2@huawei.com, lihuisong@huawei.com, prime.zeng@hisilicon.com
+References: <20260729102348.3857779-1-zhanjie9@hisilicon.com>
+ <20260729102348.3857779-2-zhanjie9@hisilicon.com>
 From: Chanwoo Choi <cwchoi00@gmail.com>
-In-Reply-To: <20260729133523.357383-1-malayarout91@gmail.com>
+In-Reply-To: <20260729102348.3857779-2-zhanjie9@hisilicon.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 7/29/2026 10:35 PM, Malaya Kumar Rout wrote:
-> Fix a memory leak in the userspace_init() function where allocated
-> memory is not freed when sysfs_create_group() fails.
+On 7/29/2026 7:23 PM, Jie Zhan wrote:
+> Use mutex guard in governor_store() so as to simplify the locking logic.
 > 
-> When sysfs_create_group() fails, the function returns without freeing
-> the memory allocated for 'data', leading to a memory leak. This patch
-> adds proper error handling to free the allocated memory and reset
-> governor_data to NULL on failure.
+> No functional impact intended.
 > 
-> v2:
-> - Removed redundant 'out:' goto label and returned -ENOMEM directly
->   on allocation failure.
-> 
-> Fixes: 5fdded844892 ("PM/devfreq: governor: Add a private governor_data for governor")
-> Signed-off-by: Malaya Kumar Rout <malayarout91@gmail.com>
+> Reviewed-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
+> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
 > ---
->  drivers/devfreq/governor_userspace.c | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
+>  drivers/devfreq/devfreq.c | 38 ++++++++++++++++----------------------
+>  1 file changed, 16 insertions(+), 22 deletions(-)
 > 
-> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-> index 3906ebedbae8..8211aadb81f0 100644
-> --- a/drivers/devfreq/governor_userspace.c
-> +++ b/drivers/devfreq/governor_userspace.c
-> @@ -89,15 +89,18 @@ static int userspace_init(struct devfreq *devfreq)
->  	int err = 0;
->  	struct userspace_data *data = kzalloc_obj(struct userspace_data);
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index f08fc6966eae..7a70dd051644 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -1394,23 +1394,20 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  	if (ret != 1)
+>  		return -EINVAL;
 >  
-> -	if (!data) {
-> -		err = -ENOMEM;
+> -	mutex_lock(&devfreq_list_lock);
+> +	guard(mutex)(&devfreq_list_lock);
+>  	governor = try_then_request_governor(str_governor);
+> -	if (IS_ERR(governor)) {
+> -		ret = PTR_ERR(governor);
 > -		goto out;
 > -	}
-> +	if (!data)
-> +		return -ENOMEM;
+> +	if (IS_ERR(governor))
+> +		return PTR_ERR(governor);
 > +
->  	data->valid = false;
->  	devfreq->governor_data = data;
+>  	if (!df->governor)
+>  		goto start_new_governor;
 >  
->  	err = sysfs_create_group(&devfreq->dev.kobj, &dev_attr_group);
-> -out:
-> +	if (err) {
-> +		kfree(data);
-> +		devfreq->governor_data = NULL;
-> +	}
+> -	if (df->governor == governor) {
+> -		ret = 0;
+> -		goto out;
+> -	} else if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE)
+> -		|| IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE)) {
+> -		ret = -EINVAL;
+> -		goto out;
+> -	}
+> +	if (df->governor == governor)
+> +		return count;
 > +
->  	return err;
+> +	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE) ||
+> +	    IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE))
+> +		return -EINVAL;
+>  
+>  	/*
+>  	 * Stop the current governor and remove the specific sysfs files
+> @@ -1420,7 +1417,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  	if (ret) {
+>  		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
+>  			 __func__, df->governor->name, ret);
+> -		goto out;
+> +		return ret;
+>  	}
+>  
+>  start_new_governor:
+> @@ -1438,7 +1435,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  		/* Restore previous governor */
+>  		df->governor = prev_governor;
+>  		if (!df->governor)
+> -			goto out;
+> +			return ret;
+>  
+>  		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>  		if (ret) {
+> @@ -1446,7 +1443,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  				"%s: reverting to Governor %s failed (%d)\n",
+>  				__func__, prev_governor->name, ret);
+>  			df->governor = NULL;
+> -			goto out;
+> +			return ret;
+>  		}
+>  	}
+>  
+> @@ -1455,13 +1452,10 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  	 * the new governor, restore the sysfs files of previous governor.
+>  	 */
+>  	ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
+> +	if (ret)
+> +		return ret;
+>  
+> -out:
+> -	mutex_unlock(&devfreq_list_lock);
+> -
+> -	if (!ret)
+> -		ret = count;
+> -	return ret;
+> +	return count;
 >  }
+>  static DEVICE_ATTR_RW(governor);
 >  
 
-Applied it.
+Hi,
+
+include/linux/cleanup.h includes the following comment
+"148  * Lastly, given that the benefit of cleanup helpers is removal of
+149  * "goto", and that the "goto" statement can jump between scopes, the
+150  * expectation is that usage of "goto" and cleanup helpers is never
+151  * mixed in the same function. I.e. for a given routine, convert all
+152  * resources that need a "goto" cleanup to scope-based cleanup, or
+153  * convert none of them.
+"
+
+A Patch should be atomic. This patch still uses both guard and goto.
+even if you removed goto on patch3.
 
 -- 
 Best Regards,
