@@ -1,48 +1,50 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794824191;
-	b=yGwIUkSsxx/AQNCA3B7FRLDyvJNPD1AmNteVLiEveew838E1/dPAdBVT1NIUws9TEmwQ
-	 GSgb0CSTyB52535dlieVQDHE8zUzgy83qrpliuiRTpL2ZHs/+sUEPFGnP4J9GXbpQ+wMh
-	 rgblqvdC8ZHNtWzjejz4JvmrJXFcVy2q4tt+AxodcOBq/qFVpvxROn6vgLfhLYKT+cLa3
-	 KTnumpOYu+SAmmTjfMN4WdeyM/UkwG/KIL4EnPtMQFRjmwdMS+u35DQoYEMkPk4SCupFH
-	 q+dsATr6YxNQbB+E16D9fukNIGsRYviNDfYv+px5TQ5yVsDgNBGVL3KL5VDgzipQO7A==
+	t=1794824291;
+	b=INoqYpebH+VdXQaTH7ECSk/puxn5TkUF1CxqQ+Y4KUfQfw7Hg3dbfJxFrwvEq5X8fNtJ
+	 8KkZH2L1wl76tEPNxLNt6D+NFw8mzKu6BOQ/VhWwvKrksV0H2nxLBnVL4/57p0l0gWLPZ
+	 rjkiaUiysw7ypi0HyEiPk9qQbl73yPGoDvgVta5bFGqGIRt4Ha6xlJYESLvRmYfWN+LCj
+	 Q0xNYn6oApslvVJHhe7YLooQv9d09eGGWfovDMhUweMM2KICeaqChZ6nNgAVkpyxmDqKj
+	 s2FT1wFFZ86JcDrVpd66pLAc4B4b+9FQWuk7TbCi3QpzQKFsXdR/iNMwP5pjcfZzUAQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794824191;
-	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
-	 X-Mailer;
-	bh=xhOm1k28TVwjypTguaVYnEw+SHxoaZ9nytF6bokwZmQ=;
-	b=oiQ1x1AjhdWc7vuWR2RA5dneP/4tOtHpqvhd//SmBVFwIuMDVgYkDn9t6fYvdHZn+fEo
-	 awU+vvLYr1KjT8gthZINzPKp909MoUKcBqSnxnmPBXt0KgorELUrr5YWn2ideHig7IeUq
-	 l6r36JUHiXB+Kuh8PEz0kmRkBpijI8j9/7LbCna3c+YTFSEbNdL5MTPoE0fA9cJ7Sz00V
-	 /lzz6CMXshxJCLYBY3fAyXjddDDeF5nJBX4csCVmtCe7u7CrfRnhrnxm9bO30S411micY
-	 G5OZUTdesO7o2Ug4+Znizd2rMs1ySQU5R08+6rd6css16F0YyCrpN+Dn7PYekaohnGg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794824291;
+	h=Received:DKIM-Signature:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer;
+	bh=d8ZOa6Ph/zg8me6HR9Oexa2iZrXd/vZL36FKgzFT1zw=;
+	b=P1pVgGip13+gLKbOKvj7EC2OhY3YC0OW+6bp1u67GXDIH+cLwQD4dwhst8GHcTz2CETs
+	 NmsY7+WGcRiY13w8urhJiRJ2Z+rT26hdaK35a1KKU1+p8IDfdh2wLYQ5wMIp3SU/PXMWb
+	 kFr9UIOi6libjsWc6osN+DMDy7nFSr6vZlkTl5HJGmRlI7uepPKyNfU/E7gaxJiYn5IIz
+	 gDpOCSicFxXCpzuomnBolv3ij9o655u+gR7tGlHTUS4atQrzspgVqlG50htqDbOMk5WCj
+	 XjqO3fTM4ju0/boTQdLF8WlbUA42f5JejTmvqkSdTJVoViMEsITT38GLh11r1QJrbpQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Sp4Clq07;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a4NN1M6X;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04810606A323;
-	Mon, 16 Nov 2026 10:16:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05A1F606A32A;
+	Mon, 16 Nov 2026 10:18:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Sp4Clq07
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ABAF81F000C6;
-	Mon, 16 Nov 2026 10:16:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a4NN1M6X
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD24A1F000C4;
+	Mon, 16 Nov 2026 10:18:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794824190;
-	bh=xhOm1k28TVwjypTguaVYnEw+SHxoaZ9nytF6bokwZmQ=;
-	h=From:Date:Subject:To:Cc;
-	b=Sp4Clq07qqcT6dBdu6p/fAbn56W7lg/E/r2BFLf6WhsjFmbH8I4RZUoDvaBOAtBpj
-	 pOSevZxScwYl5maLReg10kmOQ/Zk3j4myV0xg5GZRTYVzEEb81QWQ/kN2xyofQOfbn
-	 j9QK/lp2LyMjppG3wqkrrr6P1Fq/bCpVcTUctdRN/H33tElF5GPtXXpLdfIVVSU61I
-	 OS55emC/3rClVpunTHG95dJ7Ls2Pb07CST+AWi7+hK4JtYbScyE/9f4/CLbdqhI54S
-	 wVnNIhYb+PASaIUOZ8zMzT6giBPqzrtEp9VcTIU7sRi28fwbKa5mbJ8jcY4dz3SPZw
-	 Pkg8NfCYxyKZw==
+	s=k20260515; t=1794824290;
+	bh=d8ZOa6Ph/zg8me6HR9Oexa2iZrXd/vZL36FKgzFT1zw=;
+	h=From:Subject:Date:To:Cc;
+	b=a4NN1M6Xry58G6kL3qkJJpj4e2sjuqXIJOAd1GXtXycZ5FbRCjxD8DTtBniF4s32D
+	 Ekro778HzYS6UqUMvVk7Q+wCAwDbpiO4soLPdHZ/cg4hdX8Gocfj2hFOXJo+geHSIq
+	 PmwPb7FE3BCKv/sjxGm7sjK5tSySluK+JauDtKlN8XC0eI/cR5ea4Yo8d8vWLi71c5
+	 HG2gzxZ2GGQ7KZwVXZUb3H9SQrKKpVi05P5M1m9O52ddkNeQlB1Gji1/xgBE7Jatk1
+	 s/PYqVL824zTfjUDizeibfzJCCqhcEmyQI8tKhnWVQkrb3JyC4NCzj7l3fq4TH3RiW
+	 y5vzGxMlHi6kw==
 From: Linus Walleij <linusw@kernel.org>
-Date: Mon, 16 Nov 2026 11:16:26 +0100
-Subject: [PATCH] dt-bindings: display: ste,mcde: Deprecate EPOD supply
+Subject: [PATCH 0/3] ARM: dts: ux500: Convert EPOD consumers to power
+ domains
+Date: Mon, 16 Nov 2026 11:18:06 +0100
+Message-Id: <20261116-ux500-powerdomain-dts-v1-0-e0f4459c3ab1@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -54,82 +56,35 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261116-ux500-mcde-powerdomain-binding-v1-1-4f0f7ee280a0@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3NUQqDMAwA0KuEfBtonfajVxn7aJvM5cNUWjYF8
- e4D3wXeiV2aSscIJzb5addqGMEPgOWTbBFSxgg4ujF47wN9j9k5WgsLbXWXxnVNapTVWG0hl9j
- nx1ymkAsOgFuTtx538Hxd1x8BHuFQcAAAAA==
-X-Change-ID: 20261116-ux500-mcde-powerdomain-binding-0ad1b35c46bc
-To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3MQQqDMBAF0KsMf+1AImolV5EuEjPVWTSRpLaCe
+ Heh7wDvRJWiUuHoRJGvVs0JjmxDmFefFmGNcITWtIO1duD96I3hLf+kxPz2mjh+Kvf+4bsuRBN
+ GQUPYirz0+L/T87puFC2/omcAAAA=
+X-Change-ID: 20261116-ux500-powerdomain-dts-5a7a44bd0b8e
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>
-Cc: dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>, 
  linux-pm@vger.kernel.org, Linus Walleij <linusw@kernel.org>
 X-Mailer: b4 0.16.0
 
-Make epod-supply optional and mark it deprecated.
+Rename the Ux500 power-controller node, assign the CPU and peripheral
+domains, and remove the legacy DB8500 EPOD regulator nodes and supplies.
 
-The MCDE should use its power domain instead.
+The companion genpd, binding and driver conversions are queued in
+other trees to distribute this task.
 
-Require either epod-supply or power-domains, allowing both for
-transitional device trees. Reject nodes describing neither.
-
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
-Deprecate the legacy EPOD supply and allow MCDE to use its power domain
-instead. Accept either property or both, rejecting nodes with neither.
+Linus Walleij (3):
+      ARM: dts: ux500: Rename power domains node
+      ARM: dts: ux500: Add power domains
+      ARM: dts: ux500: Remove DB8500 EPOD regulators
 
-This binding-only change can be applied independently. The companion
-MCDE driver and Ux500 DTS changes are submitted separately.
+ arch/arm/boot/dts/st/ste-dbx5x0.dtsi | 156 ++++++++++++-----------------------
+ 1 file changed, 53 insertions(+), 103 deletions(-)
 ---
- Documentation/devicetree/bindings/display/ste,mcde.yaml | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/display/ste,mcde.yaml b/Documentation/devicetree/bindings/display/ste,mcde.yaml
-index 05e7e4ebc882..e7978eca6f32 100644
---- a/Documentation/devicetree/bindings/display/ste,mcde.yaml
-+++ b/Documentation/devicetree/bindings/display/ste,mcde.yaml
-@@ -39,7 +39,8 @@ properties:
-     maxItems: 1
- 
-   epod-supply:
--    description: a phandle to the EPOD regulator
-+    description: a phandle to the legacy EPOD regulator
-+    deprecated: true
- 
-   vana-supply:
-     description: a phandle to the analog voltage regulator
-@@ -103,9 +104,14 @@ required:
-   - interrupts
-   - clocks
-   - clock-names
--  - epod-supply
-   - vana-supply
- 
-+anyOf:
-+  - required:
-+      - epod-supply
-+  - required:
-+      - power-domains
-+
- additionalProperties: false
- 
- examples:
-@@ -121,7 +127,6 @@ examples:
-       reg = <0xa0350000 0x1000>;
-       interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
-       power-domains = <&pm_domains DOMAIN_B2R2_MCDE>;
--      epod-supply = <&db8500_b2r2_mcde_reg>;
-       vana-supply = <&ab8500_ldo_ana_reg>;
-       clocks = <&prcmu_clk PRCMU_MCDECLK>,
-                <&prcmu_clk PRCMU_LCDCLK>,
-
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261116-ux500-mcde-powerdomain-binding-0ad1b35c46bc
+base-commit: 64e2ab0ca7ac63f876e5de06300b6f033baf5e35
+change-id: 20261116-ux500-powerdomain-dts-5a7a44bd0b8e
 
 Best regards,
 --  
