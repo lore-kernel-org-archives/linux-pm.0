@@ -1,99 +1,108 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.51
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794837459;
-	b=egXgTjUjvbHcNQ4U7s0dDg+uonCxPDdZF4h3Rl1uxNxCJbCgSvC5p3+HBRfJy4zPu5ff
-	 x9mx/MtlyyyJ5NesZ7sHCLvxWAZMdCp0fV5/FUEoWnvjru/ZsS2ldJLPCbta9PqNqFhWA
-	 1a4wLSFa4xeSgBDqMXxbeMEbndyhD7KdpLLzbvVWZLlBVySSSLquWcF6YvdbFDLCw35VI
-	 Umv6fsf4Seay6tNzzf/4ZJFc13ybvXKVwPDIPvMajSh7d/sTl6NJlLJz4kLeZT8eKjBPo
-	 FGQV582B8ywyQ3JWsZja6eD8Cmsg4nzosyzDCx0W4oGMt5xnV43CkttJCE3nlkfnF7g==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794837459;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=1UODTzCnkI/AIIgb2/kXpLhCU+2zXpd05+blvCLXolQ=;
-	b=urZ136uuBBDdkJsISd8iaVkJwykwq9wd5WNMuaOvgrPVE9TqHbphcI3iaKpAxorkbYAe
-	 y4vysJ6P6wZSdP71wdF1C794IUq9WSuTeCptxjQ06ITJdAV+8ih/Eax7t136hITwpsBE7
-	 mMDCNdaZbHUiq0xS9PtPVsVl0u4Kf4yeP4L5DhBTuLkVcvzV3T/aiszRX7RP9AB5NmlSy
-	 ESKQzk8MTW9WELTKMwr5Yd66ivdHgxt19YH+mBno3z1q9kK0B3dNYhbNoBkp6uUTQbPcx
-	 k5hvSTmcfQ8hNJ9nqqiWeKgdTplAqhxIk1PueAXi8wAwTPDvzHnBlWSHr2bMO1sClog==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dF63jNl2;
-	arc=none smtp.remote-ip=209.85.128.51
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.52
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794837658;
+	b=NqawMZn/puqqclwAgQ7oosRm66N+rEJNX/A9iv4W5sA+Xf6/He9vS1o2WXYbR2vAlLYL
+	 7uftjMEmLjEw/i2YJs2/OrpMfG/mceR7BVET05K5rOelHJu6G3ga/sdDwD34g70c3irfz
+	 8/g/nk70Y6/g155LDi+c1o2YFAcO0JZKaD04LE9g/F54ZQkfGZVCF+F78tLrCotbOFUc4
+	 q0q9p/bhSNEY0Iwg0boSt+xxv/O7GpNoXmg8S2nN5dR0jdRUSYxrsbQr7QUECw9i1WI8a
+	 tXRck2x1rSwM9SrfSPlv813GTUBKfBotdimFaGFUfuBGizwo2om2l/1WZ3nh/OBSX/Q==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794837658;
+	h=DMARC-Filter:X-RZG-CLASS-ID:DKIM-Signature:DKIM-Signature:X-RZG-AUTH:
+	 Received:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:Content-Transfer-Encoding:User-Agent:MIME-Version;
+	bh=Iz2UTzzevygEQJfoMo8z88opOxdoTMIWPGKJ1VJvcmM=;
+	b=KjIhAIGF5GS6xorst3adCVhtsRPQh4MeLh3KQqH0It4tkl2WsqFEGIUOO6NnlAg5q6+j
+	 //fvyNiRE/zy0B8QPo1FnVB32GfDSr33rHrXaPhcrL9jFbvXyjU+X8hKB4G3Z0/bCCAul
+	 ISed/N2ZWls5cf3YtNxGSuYNQb87V+5WJrfnDV2sxLwL/cj4sju70vqMyLOaH4n8+uxnl
+	 mcOlW0cpsO46lGrROCqfCTTrBLjWTMwym7et8MQvsbn+db61xq+2xcI3alFS2y8r/ia9J
+	 qYcqnQYSyyKnW4z4x+rw4bc1b44u4nrtmsRn2gIDyQu3PI9eRWwtlKZtiAJ5LBWTXJA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=iokpp.de;
+	spf=none smtp.mailfrom=iokpp.de;
+	dkim=pass header.d=iokpp.de header.i=@iokpp.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=GZ0EpYEv;
+	dkim=pass header.d=iokpp.de header.i=@iokpp.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ZsulkOhB;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.52
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.52])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3FAF606A329
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 13:57:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E3FAF606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43E0D606A33D;
+	Mon, 16 Nov 2026 14:00:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 43E0D606A33D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=iokpp.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dF63jNl2
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-4bb609d9bf4so4034395e9.3
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 05:57:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794837457; x=1795442257; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=1UODTzCnkI/AIIgb2/kXpLhCU+2zXpd05+blvCLXolQ=;
-        b=dF63jNl2utyC7Dk8MA6m6jSU8aaCH0pedIAX+QPwbLp4dDHT1DjyBU97VD6g8mxGKP
-         IaJPUcaMnCSYti428ZN8zSQusKjFqv6o4Bl9s/ACGcUlmje5qG8HDJVHZpEbauHqW4qf
-         uFJKjeHMT/CQAxnIOpR+RgNaoWNOGZTZqKHBOgK57OIrXqhwE6jQ57kLQNt1xYqZccAr
-         7gj1761iHJw2aNB/mwEqufUP564IrqLXNubed2IUigwmMFgSUu8sirIlY10MJ1tQgo5d
-         LWo7QOcFlSlsTuxu4yPHfo8ZqH/HEdZP4w/SpmORgFlaSHFIpmQsdXkdQ50wWBUnzsJ2
-         jU8g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794837457; x=1795442257;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=1UODTzCnkI/AIIgb2/kXpLhCU+2zXpd05+blvCLXolQ=;
-        b=NtnMQUvE2462EIdLh67i0+9KGVbdb5IxLoL7dKAsLqDHqNsysGb+NltZTIz3o7+Q00
-         WVf57RjoQLbSQyZQr9/KDf67fu0TRYa+P3JxMmC2iNefuNqcWHl6O8fdDlbRJwtu+0aJ
-         2XWu86tyTS5AGXAQ6HKvIaZCUDh9nbEDot6PXs16Gsv8aPj3XPSLx33BYv9xjYM1OA3/
-         vNg1xqUJWVFl37vvWA7bz4uRDrC8eGYbh6qbahpmjlBEIWLIZ8ejxxlUDK0MbcXuwROX
-         fo8sRToenDr6QPML8eeeX1eUmB/iYmUM++zNHcgVylZQcN2lMPbtqkAb04J0BVJEAFRx
-         veng==
-X-Forwarded-Encrypted: i=1; AL+hErFLOpQUkwxlqvfzL6+awjELuRPfQmAQw3tkoEG6FsgS4HLTC/FOZyT2xSBoIERrfuro/M5EhAcW+Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/B/POZHZRHyHMiU6M9YyDQUaD7xjZwGEfxi9ipLBdi/AYn64rZ
-	BV8Kktc8dBsSuJeCWfzFLZs6/Ja5dmP4WRN1GzzdQ6aEst7q91Xy1N1/
-X-Gm-Gg: AYBFou2B+Ak/A8LPLV3FSvO87QEoQunu1pveCi7ZFG63zWwhCimnXcw7CmQLx/9hcUF
-	CIpvy4EXs+Ii2PRzzl1vlvzYb4hGcPZv3SWCbac0/KgE3MoRjPSCtbvL/LylLD/jbepjADIihT/
-	cv9wAdg9HXABsuUnyOXDhmcxaIXVwbz5l3z/yTRs+wKUAKud1zZoB4xO+ue8pIdAPGCwyXTdw50
-	SRe0Yh4SithyLGl2QmYcb+Kx0oKOhBf9nBptEU9Gim17umBMQMnK3IJk2GPPOUAyqdPPQdtshpp
-	ZPq0Ml+rRG3tqbx7umgSYRzaJn0ak7veRmHRGNRGqPbbImklB7/MWpSvqeQd4WEENDQEXZNX7G4
-	vy4nVgoI4OiN56E4ah7g1KgyaNcfBC7tjieyKMKPHCm7xSEbWX+ubhmVJe7c9J13XsKqMEgTLm6
-	e2QNhJBA2srPn0RESMvlIe+YQ+rNoYAdurzJju8zsb9GUTxG3XXq/FY2tyUqGeA65Q8rtwdheqx
-	VnW1DEGDktMC1MNWXsu322iXeShSekiX+S4+y89kugtxXU016pLuQeK02y43Z6ZICSGIJ1NzzUp
-	bSNpPQcOOObH/4bY3b0jJVhkHEsxoUthlz2J2tfeH1aFL+Pv48/Is/s=
-X-Received: by 2002:a05:600c:3d96:b0:4ad:5ec2:d3b3 with SMTP id 5b1f17b1804b1-4bb55a35c14mr209953705e9.1.1794837457182;
-        Mon, 16 Nov 2026 05:57:37 -0800 (PST)
-Received: from scheduler.schedules ([85.100.69.90])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb675200e4sm126280195e9.0.2026.11.16.05.57.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Nov 2026 05:57:36 -0800 (PST)
-Date: Mon, 16 Nov 2026 16:57:31 +0300
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
-	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
-	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
-	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
-	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
-Subject: Re: [PATCH 01/20 v3] sched/eevdf: Decay positive lag of sleeping
- entities
-Message-ID: <avr4MsRsjGfGHKKk@scheduler.schedules>
-References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
- <20261106151947.3991524-2-vincent.guittot@linaro.org>
+	dkim=pass (2048-bit key, unprotected) header.d=iokpp.de header.i=@iokpp.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=GZ0EpYEv;
+	dkim=pass header.d=iokpp.de header.i=@iokpp.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ZsulkOhB
+ARC-Seal: i=1; a=rsa-sha256; t=1794837625; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=lgVHsmdocWSs7r/FyeFoikXvqW8JIkDYyGAsxbrCU6G/MkekNirYkChR2B6Ub+JS7Q
+    0hJ3ck5io6TO0Cc4OQ8Z+j6xQkjXEw/k3B2FyOlU8VjseWm8+BIsCq/YhgI+HDmZGUu4
+    mS6boDMrZN1FEJwxXpBzSvEsyPAHmpviUTps1e/0zJQ+7p7omM8q7wZFgatfq1yqZctW
+    SvotPd24Buo99EaU0cdBOa1KYxKQDOd3V/jNGY3i+CcDAXamR35fqLEQ4V8Jm7XhAYMq
+    gnqAlVu0PIvLUCX97I0M5QvidkY0x9py4kRo8fQaDBNqF2w/wf9Ik1vRgcPsrgAsXUqH
+    38BQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1794837625;
+    s=strato-dkim-0002; d=strato.com;
+    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=Iz2UTzzevygEQJfoMo8z88opOxdoTMIWPGKJ1VJvcmM=;
+    b=T7aYHukIISyS1/iJO1RKFuVDHqfFK79O90tIjy9qO7YU8l0Z2kGMFbSwB39G7K+MMi
+    t5IYDE5gg6afGnJa3YWlbZyvftHO7xgy1S2SPLO1tsRI8P4ngRuiFGK5Q/PRiwUWmxvb
+    WHx5pGR0glt88C0GRKEbN7y1SWPmU8rWDQZ6Yp2pTxwgvxbS/xntN6XTu3jwpvXPd+Ht
+    ypcMsi/0gyMAQWSMwd+9W9GtEESz0fwdtndHI+EUv5hS6P/AlccesK5+16vP9ei0fnZ0
+    XAt9T9+e6J12shTUKs8Gm/6u49KUx9dXo3GNxI7r7NkzBD2uCNugI8uRJU80Y6kFyGuP
+    fuDA==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1794837625;
+    s=strato-dkim-0002; d=iokpp.de;
+    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=Iz2UTzzevygEQJfoMo8z88opOxdoTMIWPGKJ1VJvcmM=;
+    b=GZ0EpYEvfUFQzSBlQBulXGqScWt8COibJDcCkq/pewr9sREUqaUGAFV5GHknkmm2N2
+    E0wIvf/ZUYDmIEbcrAz/ktWvq7i3eu1iWB5wH2BUhYqpkuvnCWirW8+5MIoUONifF9FO
+    /GPq+NYmRnFna6ShpK17R30NoorE3kOcmrZPTOnMBlP4PxncgLNhU1qb6VQ1ybJvPxqU
+    kiDioFzl9Pklwe+79m8160RD1em1Eh0zN4FSxSqluocFZW7pOhlw5iKK19zoac19VhEr
+    bWyF4SUftyFlU2wBZz+nJWwL9vWDC4qia/Be97SKoazHWIQwjhioHAbkJE9YzECdT0ZJ
+    xaiQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1794837625;
+    s=strato-dkim-0003; d=iokpp.de;
+    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=Iz2UTzzevygEQJfoMo8z88opOxdoTMIWPGKJ1VJvcmM=;
+    b=ZsulkOhBrDtnlAgZniLF8HAIcYMCsFNbF9IjSTC6Kf2offCZtw1rJSi4wrrlxtsL0j
+    gdRLJ9ZOs5WoHgRTMoBg==
+X-RZG-AUTH: ":LmkFe0i9dN8c2t4QQyGBB/NDXvjDB6pBSe9tgBDSDt0V0DBslXBtZUxPOub3IZuk"
+Received: from [10.176.237.78]
+    by smtp.strato.de (RZmta 55.6.3 AUTH)
+    with ESMTPSA id z831ad2AGE0Oyda
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Mon, 16 Nov 2026 15:00:24 +0100 (CET)
+Message-ID: <34fdf9f5a04e05d1713f57f63dcd2cd0b81ee959.camel@iokpp.de>
+Subject: Re: [PATCH v2 1/4] PM / devfreq: Fall back to previous_freq when
+ get_cur_freq() fails
+From: Bean Huo <beanhuo@iokpp.de>
+To: chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi
+ <cw00.choi@samsung.com>, "Martin K . Petersen" <mkp@kernel.org>, "James E .
+ J . Bottomley" <James.Bottomley@HansenPartnership.com>, Avri Altman
+ <avri.altman@sandisk.com>,  Bart Van Assche <bvanassche@acm.org>, Alim
+ Akhtar <alim.akhtar@samsung.com>, Stanley Jhu <stanleyjhu@google.com>, 
+ Bean Huo <beanhuo@micron.com>
+Date: Mon, 16 Nov 2026 15:00:23 +0100
+In-Reply-To: <a813b1ea-6971-4fde-b310-659a03963fba@gmail.com>
+References: <20260907192140.2701755-1-beanhuo@iokpp.de>
+	 <20260907192140.2701755-2-beanhuo@iokpp.de>
+	 <a813b1ea-6971-4fde-b310-659a03963fba@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
+User-Agent: Evolution 3.44.4-0ubuntu2.1 
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,163 +112,25 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261106151947.3991524-2-vincent.guittot@linaro.org>
 
+T24gU3VuLCAyMDI2LTExLTE1IGF0IDA5OjI1ICswOTAwLCBDaG9pIENoYW53b28gd3JvdGU6Cj4g
+PiAtwqDCoMKgwqDCoMKgwqBlbHNlCj4gPiArwqDCoMKgwqDCoMKgwqBpZiAoIWRldmZyZXEtPnBy
+b2ZpbGUtPmdldF9jdXJfZnJlcSB8fAo+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgIGRldmZyZXEt
+PnByb2ZpbGUtPmdldF9jdXJfZnJlcShkZXZmcmVxLT5kZXYucGFyZW50LCAmY3VyX2ZyZXEpKQo+
+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjdXJfZnJlcSA9IGRldmZyZXEtPnBy
+ZXZpb3VzX2ZyZXE7Cj4gPiDCoCAKPiA+IMKgwqDCoMKgwqDCoMKgwqBmcmVxcy5vbGQgPSBjdXJf
+ZnJlcTsKPiAKPiBJIGFncmVlIHRoaXMgcGF0Y2guCj4gQnV0LCBJIGRvbid0IHJlY29tbWVuZCB0
+byBleGVjdXRlIHRvIGZ1bmN0aW9uIG9uIGlmIHN0YXRlbWVudC4KPiBJbiBvcmRlciB0byBpbXBy
+b3ZlIHRoZSByZWFkYWJpbGl0eSwgY291bGQgeW91IHBsZWFzZSB1cGRhdGUgaXQgYXMgZm9sbG93
+aW5nOgo+IAo+IMKgwqDCoMKgwqDCoMKgIHVuc2lnbmVkIGxvbmcgY3VyX2ZyZXEgPSBkZXZmcmVx
+LT5wcmV2aW91c19mcmVxOwo+IMKgwqDCoMKgwqDCoMKgwqB1bnNpZ25lZCBsb25nIGZyZXE7Cj4g
+wqDCoMKgwqDCoMKgwqDCoC4uLgo+IMKgwqDCoMKgwqDCoMKgwqBpZiAoZGV2ZnJlcS0+cHJvZmls
+ZS0+Z2V0X2N1cl9mcmVxKSB7Cj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBlcnIg
+PSBkZXZmcmVxLT5wcm9maWxlLT5nZXRfY3VyX2ZyZXEoZGV2ZnJlcS0+ZGV2LnBhcmVudCwKPiAm
+ZnJlcSk7Cj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpZiAoIWVycikKPiDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjdXJfZnJlcSA9IGZy
+ZXE7Cj4gwqDCoMKgwqDCoMKgwqDCoH0KPiAKPiAtLQo+IEJlc3QgUmVnYXJkcywKPiBDaGFud29v
+IENob2kKPiBQcmluY2lwYWwgRW5naW5lZXIsIFNhbXN1bmcgRWxlY3Ryb25pY3MKCkNoYW53b28s
+IAoKdGhhbmtzLCB3aWxsIHVwZGF0ZSB0aGVzZSB0d28gcGF0Y2hlcyBvbmx5IHNpbmNlIFVGUyBw
+YXRjaGVzIGhhdmUgYmVlbiBtZXJnZWQuCgpLaW5kIHJlZ2FyZHMswqAKQmVhbiAKCg==
 
-Hi Vincent!
-
-On Fri, Nov 06, 2026 at 04:19:28PM +0100, Vincent Guittot wrote:
-> Similarly to delayed dequeue, which enables an entity to decay its negative
-> lag while sleeping, a task should not keep a positive lag forever.
-> 
-> The sleep duration and the weight are used to decay the positive lag at
-> wakeup.
-> 
-> Apply the decay when enqueueing on prev rq for which we hold the lock to
-> get rq_clock_task().
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  kernel/sched/fair.c | 124 ++++++++++++++++++++++++++++++++------------
->  1 file changed, 90 insertions(+), 34 deletions(-)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 0feec172fd37..5cd171f830d8 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -897,6 +897,91 @@ bool update_entity_lag(struct cfs_rq *cfs_rq, struct sched_entity *se)
->  	return avruntime - vlag != se->vruntime;
->  }
->  
-> +/*
-> + * Signed add and clamp on underflow.
-> + *
-> + * Explicitly do a load-store to ensure the intermediate value never hits
-> + * memory. This allows lockless observations without ever seeing the negative
-> + * values.
-> + */
-> +#define add_positive(_ptr, _val) do {                           \
-> +	typeof(_ptr) ptr = (_ptr);                              \
-> +	__signed_scalar_typeof(*ptr) val = (_val);              \
-> +	typeof(*ptr) res, var = READ_ONCE(*ptr);                \
-> +								\
-> +	res = var + val;                                        \
-> +								\
-> +	if (val < 0 && res > var)                               \
-> +		res = 0;                                        \
-> +								\
-> +	WRITE_ONCE(*ptr, res);                                  \
-> +} while (0)
-> +
-> +/*
-> + * Remove and clamp on negative, from a local variable.
-> + *
-> + * A variant of sub_positive(), which does not use explicit load-store
-> + * and is thus optimized for local variable updates.
-> + */
-> +#define lsub_positive(_ptr, _val) do {				\
-> +	typeof(_ptr) ptr = (_ptr);				\
-> +	*ptr -= min_t(typeof(*ptr), *ptr, _val);		\
-> +} while (0)
-> +
-> +static inline unsigned long cfs_rq_load_avg(struct cfs_rq *cfs_rq);
-> +static unsigned long task_h_load(struct task_struct *p);
-> +
-> +static __always_inline
-> +void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
-> +{
-> +	struct sched_entity *se = &p->se;
-> +	s64 delta_exec, vlag = se->vlag;
-> +	unsigned long cfs_load;
-> +	struct rq *rq;
-> +
-> +	WARN_ON_ONCE(se->on_rq);
-> +
-> +	/* Negative lag is managed by delayed dequeue path */
-> +	if (vlag <= 0)
-> +		return;
-> +
-> +	rq = rq_of(cfs_rq);
-> +
-> +	/* No fast access to prev rq task clock */
-> +	if (flags & ENQUEUE_MIGRATED)
-> +		return;
-> +
-> +	/* Compute sleep time */
-> +	delta_exec = rq_clock_task(rq) - se->exec_start;
-> +	if (unlikely(delta_exec <= 0))
-> +		return;
-> +
-> +	/* For anything above ~4 seconds, save computation and clear the lag */
-> +	if (unlikely(delta_exec >> 32)) {
-> +		se->vlag = 0;
-> +		return;
-> +	}
-> +
-> +	/*
-> +	 * Use cfs' load and p's weight to estimate what would have been the
-> +	 * share for p. task's load contribution to cfs' load is replaced by
-> +	 * its weight.
-> +	 */
-> +	cfs_load = cfs_rq_load_avg(cfs_rq);
-> +	lsub_positive(&cfs_load, task_h_load(p));
-> +	if (cfs_load) {
-> +		unsigned long weight = scale_load_down(se->h_load.weight);
-> +
-> +		delta_exec *= weight;
-> +		delta_exec = div64_long(delta_exec, cfs_load + weight);
-> +	}
-> +
-> +	vlag -= calc_delta_fair(delta_exec, se);
-> +
-> +	/* vlag can't become neg while sleeping */
-> +	se->vlag = max(0, vlag);
-> +}
-
-Look:
-
-Let's say we have 3 tasks named TA, TB and TC. They all have the same
-weight and the same slices. So TA gets picked, works for a while and then
-sleeps for less than the rest of its slice.
-
-So the part that I hate and love, math. For your diff, we do:
-
-(sleep_time * weight) / (3 * weight)
-
-3 * weight here is TA + TB + TC, it equals to 3 * weight since they all
-have the same weight.
-
-So if sleep_time equals 2, weight equals 1, and slice equals 3 this equals
-2/3. If the lag is 2, we do 2 - 2/3 resulting with 4/3.
-
-
-Later, place_entity() uses this formula to do V - ((Sum(weight) + weight) * lag) / Sum(weight)
-So ((2 + 1) * 4/3) / 2 equals to 2. But this is wrong, no?
-
-If we didn't decayed lag: ((2 + 1) * 2) / 2 equals 3.
-So we would do V - 3.
-
-Now our objective is to add the sleep_time of the task to -3.
-Because if the task didn't slept, in that time it would be working
-instead of sleeping.
-
-So, we should do V - 1. But we do V - 2.
-
-
-AFAICT, we can't already know for sure how much will a task run even
-when the sleep_time is smaller than the slice. Because of preemption
-:-(.
-
-The cleanest, the simplest and maybe the worst or the best solution I can think of
-is just setting lag to 0 on every wakeup with positive lag TBH.
-
-Or maybe, try to calculate when sleep_time is smaller than the slice,
-but just set the lag to 0 when sleep_time is bigger or equal to slice.
-
-What you think?
-
-Sreehc,
-
-Kayra
