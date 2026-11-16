@@ -1,57 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=83.223.95.204
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794828475;
-	b=GNiybRu/X4Kx3dQ4xTzkkq+nJ76Gp0Zfd1rwmTq/9UUvex2qKDIcaG8JaXr4tx+vW1JT
-	 xwns7o8cw+p+DWk7i1mM+zJ+yNwhxjBcUyWEqxxvg+YdGsgVQnrO5uCeMgcHdLujyCeSl
-	 /RaO5CeX6EYuPTLR4+FjwvFpvRpghy5E8Gx3LqWMPGJPaXMIR6mkE1JicKX5rT8LuGQnY
-	 mO4Ec7anUae5mFDBCm6BUv2SSnDr64UxAkkaTIPI0Hq0tqMiJE5FqkD+ygMVMEfyZeQMP
-	 91db/cwLCrR6fWInXSZb/HgwnhPWZMmYtOQhigbOi+cmPMfT+Oa1G/t0TN2MoSO/s9Q==
+	t=1794830340;
+	b=uOicX5quINkSS4meH4TWZPuoOpu4falK0yaha9InK71qoXtaOtyvmuji2F1uXVeOMbea
+	 ke5bUB9WcnMgGQBn8AWdm+/S7qBkIcsKiES4bKimDiJ1Jj4AhARJbLQ839gRZ7Mv30eTa
+	 X5kHMig47BY2O7b5C4OcT6xnzA7HASIbWU7jYT07T1OxCMRcBRQ4znS8NrguJaoCAKwZl
+	 GWP78KwvWN4ZoOAkl49Aqt3f0VNGeQc6KznPT8TV+RyhUsEkLcAzhvZfsrg1YjOxdDWOv
+	 IKIJ3R5DwBSQqmGCFCcKseUfVIL8AXXTIk8nqpWYvwuzkAJl5+1v/cmrhyXR7y5PkAg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794828475;
-	h=DMARC-Filter:Received:Received:Date:From:To:Cc:Subject:Message-ID:
+	a=rsa-sha256; c=relaxed/relaxed; t=1794830340;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=NGdYE1LKN3He4j6aMDwu7jO4z9gNv0vtaxXDRhl5y3A=;
-	b=3vUi/lR1YhJec63Q57FRrOPEuyzgAR2e1mDerH8wojVNQSwFOwLLYkpUD7OC5qRcs6kp
-	 JObM6nY3oOoxpxWi3uKX2/bEgHpFz2zJ0QPQSLGCOL80jEPbKNvbra+1ZNWtQS0Vxi6No
-	 4H5r0/SloLjZh/rsLQKb9oDO/B4ePZn9r/VYkj7wHshLBdtmJy719fJyzchGYHVGiw6B9
-	 0Fz2ad6ZD+eQo+tvYT6QOduAVpVTSHKWDIM7uE+iCC829PD60h+YznZ7b0bpVaIV4ngaG
-	 Dj/AfEnN06GGeMtdHvCoTrfR86HNlzpQRj0gkMBsOcFsHo6WfL3N4UaBSvPvX7WIg0Q==
+	bh=KXBcB6uNW5ouM37NwNEoi+ql5ySZLImh0lVzkayzOW8=;
+	b=4VgvJJZRQuo6+6wEsoiaOMWFF0Oh4WOoRcvP758nUp+6wliyg1yK9xqJ7O8oBklMHzSY
+	 HqWaUlY1OR+8zqx2K4pqkUrXbcAbCdz3voxZpBnyEH7QG7OMo97KflstkKW2iRw75HRik
+	 2rcJsKNpbaWZX14zKIR1KZzeWuU1qrUzaE/MptKUliKAXcE31vcGwzaePrr/gsvvnh3d4
+	 x6ZlbbMpqI4iG2s3Bm9jYeCaKgbE6iOjIxmwRdhxMgUZHPeWF7tK4dJs5gX6pr/Tgh/4L
+	 ICOcigLP5GuOeFW2Sy6pSTpnQhn6ifWJIbrAgUUqRj5Z9chwJunsBmE2uUgAzsZgmYQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=wunner.de;
-	spf=pass smtp.mailfrom=wunner.de;
-	arc=none smtp.remote-ip=83.223.95.204
-Received: from mailout1.hostsharing.net (mailout1.hostsharing.net [83.223.95.204])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BiSN7I8z;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14B65606A339;
-	Mon, 16 Nov 2026 11:27:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 14B65606A339
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wunner.de
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout1.hostsharing.net (Postfix) with ESMTPS id F0C442973;
-	Mon, 16 Nov 2026 12:27:52 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id DAB806031F0E; Mon, 16 Nov 2026 12:27:52 +0100 (CET)
-Date: Mon, 16 Nov 2026 12:27:52 +0100
-From: Lukas Wunner <lukas@wunner.de>
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H . Peter Anvin" <hpa@zytor.com>,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5] PCI/PME: Resume Catlow Lake Root Ports on PME with
- PME Status clear
-Message-ID: <avrouGIdiXIxE_5Y@wunner.de>
-References: <20261103193136.2410148-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80E95606A32F;
+	Mon, 16 Nov 2026 11:59:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BiSN7I8z
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 238B61F000C4;
+	Mon, 16 Nov 2026 11:58:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794830340;
+	bh=KXBcB6uNW5ouM37NwNEoi+ql5ySZLImh0lVzkayzOW8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=BiSN7I8zzul/TLEoVVXXETvMPwnfgHpJ3hMMm2vBW5DCJhPoowDg9uxZSCVz6P8/x
+	 Rjw2LXfBbTYvB2WOSlLGKL/hMpW+cxPfVg/D0IlgIGyMCpT5xtq1VbvI7rEzXf66y6
+	 xotCsLsU6WNAxhM8EqudlvxJ6C+H//scMQTnwBRfrHCWZr+NzXtSSea7e5RzPc+/LU
+	 pFcaJ9YT3RC8yKV/+1LmFzryG1CUzQ1NSuJjn/XoBbkLtrf9XXejx8usok+LVLJGE9
+	 tx9IyRQpKgz/B0QiU386uxOw82bn3ey9VDZx6/CSszGrBjz8TCbAbz3W/HQm7kP9bb
+	 6ifnMAojaFwWg==
+Date: Mon, 16 Nov 2026 12:58:55 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Maulik Shah <maulik.shah@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Abel Vesa <abelvesa@kernel.org>, Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH v2 1/3] dt-bindings: power: domain-idle-state: Add
+ system-state
+Message-ID: <20261116-icy-free-lionfish-c3eed8@quoll>
+References: <20261113-s2idle_state-v2-0-ad604182e7e7@oss.qualcomm.com>
+ <20261113-s2idle_state-v2-1-ad604182e7e7@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -61,28 +63,42 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261103193136.2410148-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <20261113-s2idle_state-v2-1-ad604182e7e7@oss.qualcomm.com>
 
-On Tue, Nov 03, 2026 at 11:31:36AM -0800, Kuppuswamy Sathyanarayanan wrote:
-> Intel Catlow Lake PCH Root Ports do not set PME Status in the Root
-> Status register when they generate a PME for their own hotplug event.
-> The PME interrupt itself is delivered.  PMEs from devices below the Root
-> Port are reported correctly.
+On Fri, Nov 13, 2026 at 10:25:25AM +0530, Maulik Shah wrote:
+> Some domain idle states require system-wide coordination and are not
+> applicable while the platform is up and running.
 
-Reading the commit message, I'm wondering whether PME_Status in the
-Root Port's Power Management Control/Status Register is set?
+You repeated the property description. Say something more. Why they are
+not applicable when platform is running? So if not running, when are
+they applicable? Why?
 
-If it is, an alternative approach to quirking a set of Device IDs
-would be to auto-detect affected Root Ports, basically by using
-the logic OR of PCI_EXP_RTSTA_PME and PCI_PM_CTRL_PME_STATUS.
+> 
+> Add a boolean system-state property to describe these states.
+> 
+> Acked-by: Kevin Hilman <khilman@baylibre.com>
+> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
+> ---
+>  .../devicetree/bindings/power/domain-idle-state.yaml       | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.yaml b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
+> index 4dd4f59bbbec..b19952f6225d 100644
+> --- a/Documentation/devicetree/bindings/power/domain-idle-state.yaml
+> +++ b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
+> @@ -45,6 +45,12 @@ patternProperties:
+>            state will yield power benefits, after overcoming the overhead while
+>            entering the idle state.
+>  
+> +      system-state:
+> +        description:
+> +          When present, this state requires system-wide coordination and is
+> +          not applicable while the platform is up and running.
 
-Sorry for not thinking about this earlier!
+So when is it applicable if not when up and running?
 
-Otherwise I like this patch and I like how you managed to keep it
-unintrusive.
+Best regards,
+Krzysztof
 
-Thanks,
-
-Lukas
