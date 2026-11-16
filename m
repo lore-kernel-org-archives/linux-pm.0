@@ -1,94 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.170
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794870730;
-	b=c2en6IwcvxnCcO3UNCClvRLrMJzu4aD7Iwtk1UMQe/7oX9UsaFQ4oq6liHZcCfNxi0n+
-	 sTP90LDk1Gu2Vd3qzbpcXMkFZ3KY8pzwaMUuHndwDlOzIbsoJ5BpFwvjZq/G/bPDHyb/2
-	 6yYSIHAm5axqZrcuRkiVdIeVCW8+zOWfWsU8vO8lIhEHFa4DPMpCdvginh000GX0XGLyi
-	 w4x0+aR54U4jg32TSUK53fY5N3r1BNwrD0TETJLyfNHgAR1F4AEUtSPqtuecGkQVbvAoh
-	 j5Z1gnt0yXXCkuQQbbQQ022e7trKPT7cDACBcH0k6u96MOJ6BRLPXUtR7VjV1EhSt2w==
+	t=1794871552;
+	b=fWzKehXEOurYiA8Iri9S1V1wrUWn+lLqkiGeJHRVFfpkGVX0GvB4ColFb+8x+cZMMmDn
+	 DiRWQMrvdVNR1wOO8BWa9XJU5oBJFWkEkL4uBpkyB7JAI/r+g+9KDRXziDZ308izkXm2J
+	 vB6wl62idj79wMfu36PmcQtJSJR3SJJkGbLb+j0waazzOmV2aZwNbTYSx99yEsjthlsgj
+	 vsMSVPlesvlNHNT14Ain4LmRpRfWnu9b4j/bSTbuAE2A2vblkKcxx8eq1PYqguO56OwKv
+	 ra5r9Nkl2av8FVQTyj1AtIvNTn3pIV7T56JBheLl2QW095vZJ7K9V2zBRWs2S/YKwcw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794870730;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794871552;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:Content-Transfer-Encoding:In-Reply-To;
-	bh=P6zFTL/LU2JpzSrp2Ia7UbUFXgPIzj2fzsJ8jro1fk8=;
-	b=4wKOKc1eV4mGcduAZwNLfWoo+2YB3ELJm/pGr4qxRG3qMMPVrVnvdWGAwKAzT7pyGiX7
-	 UeFE9eeG1nyxWud9kRUSEodTaoSiXqRYJ03XxcojtcaA+fqEMrYnOIi2UjtLfmsSLXRbB
-	 NMKccdtHsK4pu/7gOYM6naKGK3HNSEiXipljygK0+O1G7DuIIueZRHgVA8IUE+F3SdMmS
-	 U2lIW+5HUmRxuSeC58Ddqm7tkDFgu7XlTSjOd7SLLKotG+tU0VIC9CM132dQl5JP3Bg8P
-	 VHGVcKu3y1iIoc4w8GLQS8Q4n/DbsJEetJeO3/4KgeuCFA+lkXvDZUL12R40VgALnEg==
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Received:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=PN04PSX+g8QpPPJaQdcDFzVHTVuQYn9JYXSW2HDFXC4=;
+	b=slf84dvOfifnNWT6g6HPjJJRvhGqBObDnZpYfs+/ia9X1A+jfTWjoDYZB/aSTYa2h+kF
+	 xmOOnvB2hRQiVVczttYhKXPtim6iBTJwQbIZWRNY8Iw48XVaHy+erPqeyju8J1zr5W3bW
+	 /O+/xURyON5mvvwl8Jd6ORPd0o8vmLjJXz/pCgIoy6XnrbSEcpsWxAhKWjLbFOvGO2Tc+
+	 LSq9ORntEREYXi78WqOHD2HjIn0AM9gdFvmbHdal3GWCNdOgQAAEVTdR7gQ7Pkn2Lu5hZ
+	 MsO6s9q/G7TzI4XEVdLlxzohWlr0Cdmo3UBQU/y9VlVJt6IahbcGowhD30BZewTf9nw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=BspFyi6Z;
-	arc=none smtp.remote-ip=74.125.82.170
-Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dUezxy5R;
+	arc=none smtp.remote-ip=74.125.82.173
+Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D173606A31C
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 23:12:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8D173606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA174606A31C
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 23:25:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DA174606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=BspFyi6Z
-Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-36f8cdd30beso6595652eec.1
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 15:12:09 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dUezxy5R
+Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-36e795af1d4so257393eec.1
+        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 15:25:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1794870729; x=1795475529; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=P6zFTL/LU2JpzSrp2Ia7UbUFXgPIzj2fzsJ8jro1fk8=;
-        b=BspFyi6ZG4y4Q59eNwKP3RdxlN0hZJkzJM3aRFKM1pHT4fuPLFyQ/EioSbn7PwtfiH
-         YYmXVDs9U7YpTpQN/g+CtNfbHFdGGhwRl0erOhQ81LsZNebv8o1qqmvTO9gudW7Iro0X
-         XqQcfkgTz2R+UCxGcj2Kqyw1KlhuDJiL7YE8U=
+        d=gmail.com; s=20260707; t=1794871551; x=1795476351; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=PN04PSX+g8QpPPJaQdcDFzVHTVuQYn9JYXSW2HDFXC4=;
+        b=dUezxy5RwEkfWQV+1g2HSSMQSh42mSnd2b93TMl1JBombL/8VDFmQileeKIC88aX22
+         2+TBIDc/ZA7XkAXhgCVVw8C4ASuKnDIHkEFT7pqqHohpSwwkPrFjAkeqCV5WtmbIIn7w
+         kwKdypv4hczV+JloWQU/INyj+51yU+T8QqvO9iDBFuDDy+xZHZGnUAxGcam9Pz4rBRT6
+         san0O4ykw83Yr3HlpTR+ZKLi+NMo5YyGvCtITTA6cyxYtBrjV/YR62jplUbPQeQF+tBK
+         oYCXa0ibVw2AtM6ZIzWzqOkzzShx5mhfqAjZ0HKY8VCtM0fXPljf4OF+jyNll1PkwtzL
+         w7yw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794870729; x=1795475529;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=P6zFTL/LU2JpzSrp2Ia7UbUFXgPIzj2fzsJ8jro1fk8=;
-        b=YDVdnvBuI+yE7171TmeQmTNn5yxCXKg5M5HqdKI0DXLN0esE13wHEWNwjAtZK/kYnj
-         634GisKrfiKGEDMIRW+BSwd6z7arFBbK/HWe3uVlPq9NLLWGQPzaTQpNWslgucTuF8ty
-         Y/5MgexV3xpnYtqQxdPpaeXkoUbqBproP+2ni/kXXeZBEXCeEDUB5qmrdSl/I1NEV8a0
-         USUjQrq7Q3/rvMTRP/cHmE6oyjj7EMRybxc00D6Fe/4a6c0jvD8t/Q76SgiGHjDqiqV1
-         KtOfCx+zaT1CeSk2U3jpByR4ryrU5lPZv+pI+S+rVATMWVWo8CxckMcohxe9mWKKMkXH
-         qZgQ==
-X-Gm-Message-State: APuU4Z/1LSSFeWvcDnm+oDqI18gSZIMikrayDmJCSQ9BPUTJeS4Incer
-	AZC2YC5o+REd+Yp9mYt9WT8qe+ppXl4JKk/aLkejn9WpoYkQLs8sdRClyldKfYXH3g==
-X-Gm-Gg: AYBFou3p/5cGA/j7Bsb8pBke47eAqdRlr7cUnAfL7fD3uCp6bOaLODcNXkgaYRZAZ/b
-	XOr7e2J5u8ZuqkeHn3kMRsh0tznANW/8eZZxg7ZxEkGzD087SA55m5f2SlIOoqMQahKOQVOEtyF
-	lXTxZMeqqy4zyeCvRZ8ocFPLzxCQvcx7aACA6LQ8BwhMky42KtGFxUbhkYqf2GnnX4U+QAcEZ55
-	cp/a71+Dg+79S8PXVJ93OMv8t5DOvTdxM+rdKG0xIEgb+/fZ/JXaz25TFjvATd/+3+J904fC6We
-	pwtqF8dOaPSDAUexlPlKAi2gq0kcFpzMNx89cxo4ep4d9SmJQ0JDJNrgxTNWteOa8HtyuSoy184
-	hig9J9/lBhojRi9iqHQjZL1hx4TpIyO0rJRiKe2VRUHwHUr8kBN3xKnEnvzrsmh4Ws1E3b+kxw6
-	K60wCCiXXLqlDoecOXkMmhAkrSqrczbTazcW0Xfmiw2KVhywCmHGNHhDwHO6O96aA/zKcUrAmci
-	74y/p6saDGfm7RfEbLF/8cDcpFi77k8LRiJyDAs0fO/5Yv80Dd/ktp/7aAb2pn7Q182LAwQnsBX
-	/PrKxsvUl0dYrqKZVkIKV7puC1MBVPLRBlSwRRXmia5W4Lspn8Kn9CXs+Diha0aOnjE=
-X-Received: by 2002:a05:693c:41c7:20b0:371:ede8:3e9b with SMTP id 5a478bee46e88-379680cf32amr11739248eec.36.1794870728428;
-        Mon, 16 Nov 2026 15:12:08 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:264:3904:fc3a:a69a])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-379565d269asm40883461eec.23.2026.11.16.15.12.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Nov 2026 15:12:07 -0800 (PST)
-Date: Mon, 16 Nov 2026 15:12:05 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Subject: Re: [PATCH v1] PM: runtime: Update last_busy before calling
- rpm_suspend() in rpm_idle()
-Message-ID: <avuNxXw7YZ4ZeO-1@google.com>
-References: <4789427.LvFx2qVVIh@rafael.j.wysocki>
- <aveybY5Z9OWQYkRS@google.com>
- <CAJZ5v0h3Q3ySm0BmHG80QAQReV-6mbj2A0J5cSG1Pwc_ziGyDw@mail.gmail.com>
+        d=1e100.net; s=20260707; t=1794871551; x=1795476351;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=PN04PSX+g8QpPPJaQdcDFzVHTVuQYn9JYXSW2HDFXC4=;
+        b=MebmaOds4eqV4eCUFG/neyUmta9NZKjfECrj5cYh3SN9Us9bMET8E84q0uc7melYYG
+         IWt2g4vY97liXjrBf9XJ6X0e/Yjq8GCfAer6ifG0/h5PAqISBWMi7jvJULbl9kw4c7N/
+         6HRtxOSCqULNqe4pnbkgTr6rArWLBuy7S6gBBbqiZcJGej0R4BVnZzgVxTh2zJF4+tja
+         HZj23e9DZ5IXfQ2xBToaxI+aZvgNrh4ytbvSXPQVNnDBn7SrRlULCFPB5f4C53PbFEGi
+         I37YIKTXglJMo+AZ0aWsp2q3mP1a+h7J1QThGZvn5A4qlRIzPx1wRKWKQK2m2pMQ8IIS
+         O5/A==
+X-Forwarded-Encrypted: i=1; AL+hErGaBikpwvMl5v5xZCmkMyPEHtivS8PfQQvZUaX04fVr3TQu2ahWnSNjNp8MYYuBs9y8W0xHNKwzfg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+V/yDMR8FFIt3c2I4Kuv1OnWuW4tkIwwsTVq+xebvOCnzzb5Aj
+	QsJQP1Mjd5+3Hh76m861f+d4Ij4w0QWKwD5HfC91aDQHfjNKezdBSsBc
+X-Gm-Gg: AYBFou1JLBiX4npiKZaNVLGQSCMQkZ4dL7p7sIu88hKg4xdbsIU2VFlU45Kzuk3xvAz
+	6nOUa0BL7mdsr1GqXPhfI1HIwpWCaaCjpboVuC6R+bvQq4+m6gT3vWeNTV02TYk+w0jfZXJlS9z
+	wblz8HYjUJfo+MaQOufNm8FoeTYbyXQ5GwgFP5irdOWdWz2yr8/BRVPzl2Q7eIkRmkvbzXWcqvQ
+	YixhfllXSP4DcRXLl5gbp2hE4EjyLcOUUeBzAbTMMLmOPXkcUmK4eZTxXK999o+Jul3YACdb1oh
+	DMhzURkATvSvO9hWdxhQ4slztSz7qkqH5X/hZr7Igii6z1sBcOF76glzBRe+WDDGqh6/V2Veux3
+	jOrgQOjtCqAVewJ9KswKSJcdlBbuKKRkhxAWKTuuaUWzhK5Si93Vw7ScK2OGIx6RcqCaKmzU158
+	Xykk4HEnuW3hmdWLXfmqbbfhh1RgxoickbtkF1fVTF2JEOG6jz06xJoq0HTXjWkyVjeYZ5RNUVQ
+	Hf1MyLJvuF7i9EWvlQIcEQ22BEP7eObjkzPek30KhBVbUoZtc7gGCLL38F3wYYOyZgFLEYU2/Rs
+	Zz+CS/EcYU3Det+s886alQXg8OU=
+X-Received: by 2002:a05:7301:70d:b0:357:ee3a:267a with SMTP id 5a478bee46e88-3810bb5a7bemr909668eec.2.1794871550628;
+        Mon, 16 Nov 2026 15:25:50 -0800 (PST)
+Received: from archie.me ([210.87.74.117])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37955332a77sm33489188eec.4.2026.11.16.15.25.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Nov 2026 15:25:49 -0800 (PST)
+Received: by archie.me (Postfix, from userid 1000)
+	id BFE0F420B801; Tue, 17 Nov 2026 06:25:45 +0700 (WIB)
+Date: Tue, 17 Nov 2026 06:25:45 +0700
+From: Bagas Sanjaya <bagasdotme@gmail.com>
+To: Waqar Hameed <waqar.hameed@axis.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux Power Management <linux-pm@vger.kernel.org>,
+	Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: rt9467, rt9471: Escape the asterisk in
+ ABI documentation
+Message-ID: <avuQ9A7MJwgrx3y3@archie.me>
+References: <20261116034200.14045-1-bagasdotme@gmail.com>
+ <pndld6taqgi.a.out@axis.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -98,245 +101,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ujQ/f9H7VXVBL7vn"
+Content-Disposition: inline
+In-Reply-To: <pndld6taqgi.a.out@axis.com>
+
+--ujQ/f9H7VXVBL7vn
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0h3Q3ySm0BmHG80QAQReV-6mbj2A0J5cSG1Pwc_ziGyDw@mail.gmail.com>
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 15, 2026 at 06:35:04PM +0100, Rafael J. Wysocki (Intel) wrote:
-> On Sat, Nov 14, 2026 at 1:59 AM Brian Norris <briannorris@chromium.org> wrote:
-> > Is it worthwhile to note (or at least hint at) how many other things
-> > change along with this? e.g., how pm_runtime_allow() (and therefore
-> > auto > control/power), all non-autosuspend pm_runtime_put() variants,
-> > etc, also extend the autosuspend timer? I think we agreed these are
-> > acceptable effects, and likely even desireable, but I'd say these are
-> > fairly major changes.
-> 
-> Fair enough, I'll add the following to the changelog when applying the patch:
-> 
-> "This potentially changes observable behavior in all situations in
-> which pm_runtime_put(), pm_runtime_put_sync(), pm_runtime_idle(), or
-> pm_request() idle is used on a device with an autosuspend delay.  That
-
-nit: you split "pm_request_idle()" oddly
-
-> includes changing a device's "power/control" sysfs attribute value
-> from "on" to "auto" (if there are no other active runtime PM
-> references to the given device), accessing PCI configuration space
-> from user space etc.  Namely, in all of those cases, the runtime
-> suspend of the device following the runtime PM helper call (if it
-> causes a runtime suspend to occur) will be deferred by the full
-> autosuspend delay, which arguably is more consistent and predictable
-> than deferring the runtime suspend in question by a more-or-less
-> unknown (and basically random) time depending on when the most recent
-> update of the device's last_busy timestamp has occurred.
-> 
-> It will also cause the majority of the direct
-> pm_runtime_mark_last_busy() calls to become redundant, and they will
-> be taken care of later."
-
-Seems good, thanks! Who knows if anybody will actually read the
-changelogs, but at least it leaves a paper trail for future cleanups
-that will likely reference this change.
-
-> > In any case, the change looks good to me:
+On Mon, Nov 16, 2026 at 01:52:29PM +0100, Waqar Hameed wrote:
+> On Mon, Nov 16, 2026 at 10:42 +0700 Bagas Sanjaya <bagasdotme@gmail.com> =
+wrote:
+>=20
+> > Sphinx reports docutils warnings:
 > >
-> > Reviewed-by: Brian Norris <briannorris@chromium.org>
-> 
-> Thank you!
-> 
-> > I meant to make time to test this out a bit more, but ran out; maybe
-> > next week.
-> 
-> That will be much appreciated.
+> > Documentation/ABI/testing/sysfs-class-power-rt9467:1: WARNING: Inline e=
+mphasis start-string without end-string. [docutils]
+> > Documentation/ABI/testing/sysfs-class-power-rt9471:1: WARNING: Inline e=
+mphasis start-string without end-string. [docutils]
+> >
+> > Fix them by escaping the asterisk in
+> > /sys/class/power_supply/{rt9467,rt9471}/load_switch.
+> >
+> > Fixes: 3f21de6784a654 ("power: supply: rt9467: Use POWER_SUPPLY_PROP_LO=
+AD_SWITCH")
+> > Fixes: cb012fe405f0f4 ("power: supply: rt9471: Use POWER_SUPPLY_PROP_LO=
+AD_SWITCH")
+> > Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
+>=20
+> These have already been fixed :) [1]
+>=20
+> [1] https://lore.kernel.org/lkml/cover.1793225920.git.waqar.hameed@axis.c=
+om/
 
-OK, I made some time:
+OK, thanks! I'm just refreshing my patch submission skills.
 
-Tested-by: Brian Norris <briannorris@chromium.org>
+--=20
+An old man doll... just what I always wanted! - Clara
 
-It tests out well (passing) with:
+--ujQ/f9H7VXVBL7vn
+Content-Type: application/pgp-signature; name=signature.asc
 
-(a) the KUnit tests that try to imitate the stm32-adc parent/child
-    structure from commit c537d3457542 [1]
+-----BEGIN PGP SIGNATURE-----
 
-(b) my original KUnit test [2]. I've appended a slightly-updated v3, in
-    case you want to merge it
+iHUEABYKAB0WIQSSYQ6Cy7oyFNCHrUH2uYlJVVFOowUCavuQ9AAKCRD2uYlJVVFO
+owDXAQDvUVBLkHe5PSdcyObK04zf646ubgT6dr3eRI0dQjDMogD+L2HRgrWp5m0F
+gYXsYAilAPWl5iJ2pu5e5HtsXzXx4AA=
+=P3l5
+-----END PGP SIGNATURE-----
 
-(c) some targeted PCIe tests on Pixel phones. Specifically, I see that
-    the portdrv.c 100ms autosuspend delay is now consistently applied
-    after both lspci (this used to work OK, simply because rpm_resume()
-    would also update last_busy) and after endpoint suspend (this
-    previously did not apply the autosuspend delay, as the endpoint
-    tended to stay active for a long time)
-
-Thanks,
-Brian
-
-[1] https://lore.kernel.org/all/auzlLwlleGLPsLcw@google.com/
-    This test is inherently timing sensitive and therefore flaky. It
-    just serves as an example, not something to commit.
-
-[2] [PATCH v2 4/5] PM: runtime: Add tests for last_busy propagation
-    https://lore.kernel.org/all/20261103141442.v2.4.I8ab8b7f662fe1921c7084a47d554535597cc2702@changeid/
-
-
-
-From: Brian Norris <briannorris@chromium.org>
-Date: Thu, 1 Oct 2026 11:53:49 -0700
-Subject: [PATCH v3] PM: runtime: Add tests for dependency last_busy update
-
-This is a regression test for the problem fixed in "PM: runtime: Update
-last_busy before calling rpm_suspend() in rpm_idle()", ensuring that
-when a child or consumer suspends, the corresponding parent or supplier
-autosuspend timer expiration increases.
-
-Signed-off-by: Brian Norris <briannorris@chromium.org>
----
-
-Changes in v3:
- * Minor style changes
- * Target
-     "PM: runtime: Update last_busy before calling rpm_suspend() in
-      rpm_idle()"
-   instead of prior patch
-     "PM: runtime: Propagate last_busy from dependent to dependency"
-   (both solve the same problem)
-
-Changes in v2:
- * Use device_move() instead of manual re-parenting
- * fsleep() instead of msleep()
-
- drivers/base/power/runtime-test.c | 103 ++++++++++++++++++++++++++++++
- 1 file changed, 103 insertions(+)
-
-diff --git a/drivers/base/power/runtime-test.c b/drivers/base/power/runtime-test.c
-index 24865ce844fc..685a3504cd7b 100644
---- a/drivers/base/power/runtime-test.c
-+++ b/drivers/base/power/runtime-test.c
-@@ -4,6 +4,7 @@
-  */
- 
- #include <linux/cleanup.h>
-+#include <linux/delay.h>
- #include <linux/pm_runtime.h>
- #include <linux/workqueue.h>
- #include <kunit/device.h>
-@@ -285,6 +286,106 @@ static void pm_runtime_supplier_suspend_test(struct kunit *test)
- 	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(norpm_supplier));
- }
- 
-+static void pm_runtime_parent_last_used_test(struct kunit *test)
-+{
-+	struct device *parent, *dev;
-+	u64 expiry1, expiry2;
-+
-+	parent = kunit_device_register(test, DEVICE_NAME "_parent");
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, parent);
-+
-+	dev = kunit_device_register(test, DEVICE_NAME);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
-+
-+	KUNIT_ASSERT_EQ(test, 0, device_move(dev, parent, DPM_ORDER_NONE));
-+
-+	pm_runtime_set_active(parent);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_use_autosuspend(parent);
-+	pm_runtime_use_autosuspend(dev);
-+
-+	pm_runtime_set_autosuspend_delay(dev, 0);
-+	/* Effectively infinite delay (prevent finishing autosuspend during this test). */
-+	pm_runtime_set_autosuspend_delay(parent, 200000);
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_mark_last_busy(parent);
-+
-+	pm_runtime_get_noresume(dev);
-+
-+	pm_runtime_enable(parent);
-+	pm_runtime_enable(dev);
-+
-+	expiry1 = pm_runtime_autosuspend_expiration(parent);
-+	KUNIT_EXPECT_NE(test, 0, expiry1);
-+
-+	/* Make absolutely sure the clock advances. */
-+	fsleep(1000);
-+
-+	KUNIT_EXPECT_EQ(test, 0, pm_runtime_put_sync_autosuspend(dev));
-+
-+	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(dev));
-+
-+	/* Flush, in case any request was pending. */
-+	flush_workqueue(pm_wq);
-+	KUNIT_EXPECT_FALSE(test, pm_runtime_suspended(parent));
-+
-+	expiry2 = pm_runtime_autosuspend_expiration(parent);
-+	KUNIT_EXPECT_NE(test, 0, expiry2);
-+	/* The child's last_busy time should have bumped up the parent's expiration. */
-+	KUNIT_EXPECT_GT(test, expiry2, expiry1);
-+}
-+
-+static void pm_runtime_supplier_last_used_test(struct kunit *test)
-+{
-+	struct device *supplier, *dev;
-+	u64 expiry1, expiry2;
-+
-+	supplier = kunit_device_register(test, DEVICE_NAME "_supplier");
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, supplier);
-+
-+	dev = kunit_device_register(test, DEVICE_NAME);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
-+
-+	KUNIT_ASSERT_NOT_NULL(test, device_link_add(dev, supplier, DL_FLAG_PM_RUNTIME));
-+
-+	pm_runtime_set_active(supplier);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_use_autosuspend(supplier);
-+	pm_runtime_use_autosuspend(dev);
-+
-+	pm_runtime_set_autosuspend_delay(dev, 0);
-+	/* Effectively infinite delay (prevent finishing autosuspend during this test). */
-+	pm_runtime_set_autosuspend_delay(supplier, 200000);
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_mark_last_busy(supplier);
-+
-+	pm_runtime_get_noresume(dev);
-+
-+	pm_runtime_enable(supplier);
-+	pm_runtime_enable(dev);
-+
-+	expiry1 = pm_runtime_autosuspend_expiration(supplier);
-+	KUNIT_EXPECT_NE(test, 0, expiry1);
-+
-+	/* Make absolutely sure the clock advances. */
-+	fsleep(1000);
-+
-+	KUNIT_EXPECT_EQ(test, 0, pm_runtime_put_sync_autosuspend(dev));
-+
-+	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(dev));
-+
-+	/* Flush, in case any request was pending. */
-+	flush_workqueue(pm_wq);
-+	KUNIT_EXPECT_FALSE(test, pm_runtime_suspended(supplier));
-+
-+	expiry2 = pm_runtime_autosuspend_expiration(supplier);
-+	KUNIT_EXPECT_NE(test, 0, expiry2);
-+	/* The consumer's last_busy time should have bumped up the supplier's expiration. */
-+	KUNIT_EXPECT_GT(test, expiry2, expiry1);
-+}
-+
- static struct kunit_case pm_runtime_test_cases[] = {
- 	KUNIT_CASE(pm_runtime_depth_test),
- 	KUNIT_CASE(pm_runtime_already_suspended_test),
-@@ -293,6 +394,8 @@ static struct kunit_case pm_runtime_test_cases[] = {
- 	KUNIT_CASE(pm_runtime_error_test),
- 	KUNIT_CASE(pm_runtime_probe_active_test),
- 	KUNIT_CASE(pm_runtime_supplier_suspend_test),
-+	KUNIT_CASE(pm_runtime_parent_last_used_test),
-+	KUNIT_CASE(pm_runtime_supplier_last_used_test),
- 	{}
- };
- 
--- 
-2.56.1.703.gf848ed807c-goog
-
+--ujQ/f9H7VXVBL7vn--
