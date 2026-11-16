@@ -1,84 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.53
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.42
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794814806;
-	b=W4ANj5tZ20wx0CJ4jBJQhyl00hyRB2Drba7TqL/gYMV37j+imgLaLgYfrD6riEmP4Unk
-	 Ztlz8+M5y0lBpnivNI/77uqyl7HlCm+XFiLpWWpfMD0JO7E9JzovgrwQMxTfPfjIVtEO9
-	 jGG4MZGhku8EMjiffP5bXk7RmvQSeTYlCtcxbv9xoXEYgYAzsQczjQbRabZel5wwd8YBQ
-	 K9PBlLUxnrAp/pTSB8HejAD7tRhu/6k0XSW+RSR9NiuH0n5hio1hBQ7WnOsoxvZiplgJg
-	 c6hRnQeLRR9EoUlTeiIki/K5VsHDpfyVq7gx1CQ5cC9JWvrV1cu/PFztPE+T01D57SA==
+	t=1794814807;
+	b=sKufZ4BAksM6djtqm8ZkXAWrD6wZMtadpjmRBDVP8jxM1WWf6ruvUwNkOuhzf04ZYk9o
+	 7bssrd/wa1cgCKPuGrYNbGwoF5OxeH3ngJLNn3fNacVDD1bq8kaTW7gHeCq+Drd+cnKc4
+	 q5C7/hfbkw//Dv5lhRrFxMyxI6SDZjJMIo3bX43LfxVQbOlaAHiPTEe25ofuN8c5PhreJ
+	 UQVh659I5B1W9CsIKM9zMXQxz0bp3i3L4JKv0OXQpmUSKcRlKzFi44KKUzmm+b3MHCcPW
+	 b7TGU3PypW6+6a+kdAyUktqpoKfXgjCtFF/T8L0fEivtHcZ7hhG38EHL1dFDEkDvmeg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794814806;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794814807;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=7HwD/9cyl5yU69DIEKa52hPN8DCHL8GdVhIFYuxqFrc=;
-	b=n7MFg+hXaXMSI7N8DXC8gVwc3IpiSgYmxWQEiNACfqzf3yr3gZuMqFqPpmPeBJnjTZvr
-	 y4S57WuMVvmM31Ow+HiTJ4/h33Vt4pTojQvooEDGd5pi7hUpTNrmq5WYsna+8jqyMir9p
-	 ha+iLg/5a1cd+XQzR9vWaCYDtWV/0s2inkDLLu6AbGBTbqKj/ehbgZxWgsF2HPL/VANZv
-	 8D0j348Y5QkFKQNXQb+dVsyWs43UfFfLBOLwBsgV6ZFWcwPIdOjzqEkYR8FAUzSuFmGhN
-	 eWM5Dnj+or2TXLg7gPs7r8tfoaNihaBjKGIQXsa9zzUvPaxAnVvME4jmO2JjUulpYvg==
+	bh=jj+IS7H9YDNdNL8RPmf+32zqBN/ZdmMeOeOXwXdvnNc=;
+	b=u0nBYTcZXTiGfm95NSr70PKiCRe86FA6QmdyLtIb05fJYqsGxKz2KvNs+NcJzVAaO0CP
+	 G0Whlc9SoGoHu4Pve3V25Scdg2zwrfkAlSu1/aDAnBSofmKdhYrXOjpgJwOWUSRkeeNTP
+	 hsL0soKP1ljawRi2wk3PykMf4pnbYmD+QEfS0wD2F7aReO8wv4QmwQh5ExnDvqEk/UQDD
+	 Gb7u7MELaB2bR24vRPbiA2XWslyaYf6fca58oUk3UuoXXiifhZwL3gIEEvP6ty9ptT3xL
+	 pw/FeN/QMNgLrSUWtsBi5VaKjHS6UWLjqeEMIdNpLcQuPhHgI9FmBRQreBsMLk9xIkg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S6LdmkbQ;
-	arc=none smtp.remote-ip=209.85.221.53
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=uxlGkhht;
+	arc=none smtp.remote-ip=209.85.221.42
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E487860A3834
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 07:40:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E487860A3834
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36FBE60A5BD7
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 07:40:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 36FBE60A5BD7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S6LdmkbQ
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-490c3ae81d3so1567844f8f.2
-        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 23:40:05 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=uxlGkhht
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-49412eb1474so1438242f8f.3
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 23:40:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794814804; x=1795419604; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794814805; x=1795419605; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=7HwD/9cyl5yU69DIEKa52hPN8DCHL8GdVhIFYuxqFrc=;
-        b=S6LdmkbQVA541jEVdicLwZOEbw2MGB5A6Cr+05flbgQjzuZkxsmnZrhjTKDEa9Zs9L
-         r+eLO8DS/9pPo3yU4ZUGL+J1Uqm8LB4KRn3Hi00Upp3AKhs7ARcEQcrSlv6tnTYocw7d
-         6EtSnQSBTXMJmUOcuWSNz32eYMVEZcOTq+qs5Oek/WJoeas9kePEPria3pXpOzaWy1Z6
-         alfBNg22E/VfuCkUMvYNVnWKIsA939GGnQl75JbUBFwuog54IVABVFi7Kq0j8BxwR+2D
-         ZvuIjx9nv9Jp3G8FFGHLyYvumznDoN2tgYKty8ER9u8BO9QZ9C2wOV6o6uo88Ts0EUA4
-         6gzg==
+        bh=jj+IS7H9YDNdNL8RPmf+32zqBN/ZdmMeOeOXwXdvnNc=;
+        b=uxlGkhht5mv0MZbfIcJWS5enQNYPPrn0khTfJVopt1uwsrxiZ38cqq8jkyosmbjgYz
+         5F9SY3nvfwpt1mJZ+pG/oiXpK0xHYr4oiw+XvjyJRvIdKEXzPh1kL+mpBexKTB/MVvKD
+         MgpEeKXUkOk4JV+xbZydfsFn6Sne2D1nhbU3MHCWs93T9sWewbPrGNF85ocnV09ToBB0
+         Vg7hU3y/ugh8KYOTDeW4R9mSdVUIQrLaHSFx2WhDBxUKw/6LZyGTwCqB/G0UiEvIV+4H
+         24WWuKcndH72pLzKUJEdSFdGFfoXMOwptllW1kitzbu7ZC59HiCYwUoz3cZ5St149oou
+         b07Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794814804; x=1795419604;
+        d=1e100.net; s=20260707; t=1794814805; x=1795419605;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=7HwD/9cyl5yU69DIEKa52hPN8DCHL8GdVhIFYuxqFrc=;
-        b=bOHe8HEL9DS9DVhfqDMI3hJu3ykHVlnle/xyXR3xfI3DiyBlBtcD6fVJ0Teh3SV4Gk
-         4A6I1QE763XL2xSW5uR5EoeBlqso0FygEz6GFyUxnV+InZDSxj7I4SZ22Ne912YKvp6K
-         nSGridPUkA+zbzyYmy9WIK5/tZAhI9dlcnIXd7XGRgTbXj+oAJala8i3WkJeNCNI7vsb
-         xVnYHi0kQBck7dgRHqTnGJg1pPq6Y9LXbG9aILFOjrPrQLkGRSB4jHGMHgqfwwYI+PaL
-         4ufxmXtW+cbvoNnBtBSOllpLGNtWu6HOUpryeK5vsd/AcRtDLQEIkgvFVYVIjaXs03Yn
-         SXQw==
-X-Forwarded-Encrypted: i=1; AL+hErGVEzKFUDJq+ZcWFsxL34gD22BFBZkQ+GKZFj95WTYgiZkhVUmZvfivJh3Zt6Gcm0pMgGytAGvV3g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+bZgR1nmgYnLYYZhcFXs5heY27bsZEUTO5PIhACdEl6FhpfM1s
-	gxWMHt7jHkUGD8yC8M8/oHkaC7Zh87K1loxrt64eaj33gI1isAUD11S7
-X-Gm-Gg: AYBFou28YP/OfZ/daYymUZMk34FPRkmunYhhvC6oKQLmjuv+69aFhuu2oUJvX+kVvwE
-	opVUkhQN+t90sOKe6bMHCD+GVKv1UHTRH8FtdC8nF+/rmwa1uFDNnFAwcVzz+22+HsRKxqqo2l9
-	ID3idFEkEj0tVL3pbYhFQAUoamqZrrLg0ZPux4Xt0VuLW9gqR6NIk8baGFGptzfjJfTqJgMvOgD
-	UOPdp3obvgEoF4HAfEdjclS4/zgELxOgATB2Zp/LRKfLYaHeSe0cBD2JtI9eq5xZiysyYbpd3AS
-	eCURFhH/0RUo4+5gQaymiVNigwOJfzak2WwVpjmj+HuROd/OmPFmUgeEHgP/3OreGQ6qd8ESWAW
-	65AC3PoLshGZKBxzPM9LwhCxdifx0V1cSkXsSjHJoTwz1yNseLYYAOFjqyuRyE5d/EszxsmRnR9
-	PP9U2PKR3OZlKggFc+qSdx/bISrY7zhVRruWrMG59SmYS4XkjSRg4AhjCIKllAG5dZm3FhmDteU
-	l2HLrKs9710pN45QyRQU+dD2ltNhswc96sfUeDHAoC3iG1lYntBOzpfkZ+CryxJJC3Kl5FsIW81
-	ytS3zFuFeBxyxWel6TxFkmDelLdW2kI=
-X-Received: by 2002:a05:6000:46c4:b0:494:bf39:21a5 with SMTP id ffacd0b85a97d-49c70ed910dmr12914294f8f.10.1794814804277;
-        Sun, 15 Nov 2026 23:40:04 -0800 (PST)
+        bh=jj+IS7H9YDNdNL8RPmf+32zqBN/ZdmMeOeOXwXdvnNc=;
+        b=2Eb4sepZ+2Lp21VvZCPwNUYpTKX1VnnSz8dmsgJuSFJK4GW7xp3kOP5fnx+VcqCNw8
+         52htEh93AI2m3QMwGJvsRrKS/+btoFwLszgPPo/inWdyPYgJuPgQLTpMT++iygwgw2Yd
+         pySS0tkrL9+uRzBHHK2ewlqvUwfs3vSm79nkWNTnHx8lpVKuik0GQwBzxLq5IqX6muis
+         2b7Pv07wdYUYrAlZ2Zq1TNhUO7qkgALz4XvVt7JdIK0c9mosVmHfrMLswrdnn51tQ4aZ
+         kvnUhByW3F12NlCprpltNBYxdr1i8qUQNYDYyGjf+wNdK5o9/sPQbVDq1kKjKdKFpXYd
+         4Wqg==
+X-Forwarded-Encrypted: i=1; AL+hErFtqSQMYVMtDiNoBQM7n6vSlDypAzVhxTWEWrODDDJcIipF9GrmtM2/dCpskrKgNCGNCo7bhzJXJA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/p4mQ7yRVo+TKqzvk/o45IRFeRWEBLxE/h5X7d9F9iMvTNQVJY
+	H3e87ZBlSoXVzSLAhSxMt0obRc9aMjZqW+HfaziaIyQ3vOvXUzwGU6J6QShSM0PwLqwFJw==
+X-Gm-Gg: AYBFou1bb6mCfNm8UjQrsZdZBSwAxswSqeebUsz69gF1N4Foxdh9kzZm+NBz41A/hT4
+	cjU5ZiUCjUZvZnJBhRvxgIIyljzVGpPMzXeURLsLQGZRTf0PCnXw7ZaSnNqtTt9ZQLdvacbNrGv
+	E2f8CqwWTagIViOHDuZu2xZj2XDkrzSKevZ9Pzv3pEQty2PJzYFOcxjfyQIAvkrY86tSoJg2k0G
+	eTzJwscvzs/LWqEl9MYnyqb5uGEv2X/9MzLos/Toub+0U2MWDGqEYrr644yU93z7g5pSwTAUExu
+	vZwG2B4IRBB3dSECU+44zmz9ZI+gfXjzifkNktMBxxQg3JQtPUKGL8+vkoSvVu198OypBKcRwnE
+	L1U9W1kix7/PSOElJ2cyi4aY/RStlyZFBxokn4Zqy8H/iAN7E7TuX2AKR3RRtougINzdoRaRPRU
+	Trg1SM0mw9q5IT4bC1mmZPH1yhezE0csfiZWV8nkWIp2ydX52zyWjJzgr8iPGRqzblDpdzFAL9X
+	I/cxJaD/O7FP8Z1GWQaa2svrFv7LUjuCImwefkFAHV0+8NQgSdhmddKfD1ZMWc9M53FVxm5+rvQ
+	7FLaf8m7YzYGfeOPnKu/cVesC1dcjDg=
+X-Received: by 2002:a05:6000:40db:b0:48c:6fa4:fc89 with SMTP id ffacd0b85a97d-49c71e3e248mr22685484f8f.12.1794814805520;
+        Sun, 15 Nov 2026 23:40:05 -0800 (PST)
 Received: from dl360p ([130.61.107.245])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49c603f4d29sm20354115f8f.35.2026.11.15.23.40.03
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49c603f4d29sm20354115f8f.35.2026.11.15.23.40.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Nov 2026 23:40:03 -0800 (PST)
+        Sun, 15 Nov 2026 23:40:05 -0800 (PST)
 From: =?UTF-8?q?Adil=20H=C3=BCsrev=20Tepe?= <tadilhusrev@gmail.com>
 To: Sebastian Reichel <sre@kernel.org>,
 	Rob Herring <robh@kernel.org>,
@@ -90,9 +90,9 @@ Cc: Yassine Oudjana <y.oudjana@protonmail.com>,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	=?UTF-8?q?Adil=20H=C3=BCsrev=20Tepe?= <tadilhusrev@gmail.com>
-Subject: [PATCH v1 1/3] dt-bindings: power: supply: samsung,s2mu005-fuel-gauge: add S2MU106
-Date: Mon, 16 Nov 2026 10:39:58 +0300
-Message-ID: <20261116074000.355176-2-tadilhusrev@gmail.com>
+Subject: [PATCH v1 2/3] power: supply: s2mu005-battery: make the alert interrupt optional
+Date: Mon, 16 Nov 2026 10:39:59 +0300
+Message-ID: <20261116074000.355176-3-tadilhusrev@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261116074000.355176-1-tadilhusrev@gmail.com>
 References: <20261116074000.355176-1-tadilhusrev@gmail.com>
@@ -108,38 +108,39 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The fuel gauge in the Samsung S2MU106 PMIC shares the S2MU005 fuel
-gauge's register layout and scaling for the direct voltage, current and
-state-of-charge registers. Add a "samsung,s2mu106-fuel-gauge" compatible
-with the existing "samsung,s2mu005-fuel-gauge" as a fallback.
-
-This was verified on a Samsung Galaxy XCover5 (Exynos850): the s2mu005
-fuel-gauge driver, bound to the S2MU106 fuel gauge, reports voltage,
-state of charge and the sign of the charge current correctly.
+The driver unconditionally requests the fuel-gauge alert interrupt and
+fails to probe if the board does not wire it. Not all boards route the
+alert line (for example the Samsung Galaxy XCover5), so only request the
+interrupt when one is present; the gauge is otherwise polled on demand.
 
 Signed-off-by: Adil Hüsrev Tepe <tadilhusrev@gmail.com>
 ---
- .../bindings/power/supply/samsung,s2mu005-fuel-gauge.yaml  | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/power/supply/s2mu005-battery.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/samsung,s2mu005-fuel-gauge.yaml b/Documentation/devicetree/bindings/power/supply/samsung,s2mu005-fuel-gauge.yaml
-index 05e420316..7b9d56d38 100644
---- a/Documentation/devicetree/bindings/power/supply/samsung,s2mu005-fuel-gauge.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/samsung,s2mu005-fuel-gauge.yaml
-@@ -14,8 +14,11 @@ allOf:
+diff --git a/drivers/power/supply/s2mu005-battery.c b/drivers/power/supply/s2mu005-battery.c
+index a76154e5a..9798a62ff 100644
+--- a/drivers/power/supply/s2mu005-battery.c
++++ b/drivers/power/supply/s2mu005-battery.c
+@@ -273,11 +273,13 @@ static int s2mu005_fg_i2c_probe(struct i2c_client *client)
+ 		return dev_err_probe(dev, PTR_ERR(priv->psy),
+ 				     "failed to register power supply subsystem\n");
  
- properties:
-   compatible:
--    enum:
--      - samsung,s2mu005-fuel-gauge
-+    oneOf:
-+      - const: samsung,s2mu005-fuel-gauge
-+      - items:
-+          - const: samsung,s2mu106-fuel-gauge
-+          - const: samsung,s2mu005-fuel-gauge
+-	ret = devm_request_threaded_irq(priv->dev, client->irq, NULL,
+-					s2mu005_handle_irq, IRQF_ONESHOT,
+-					psy_desc->name, priv);
+-	if (ret)
+-		return dev_err_probe(dev, ret, "failed to request IRQ\n");
++	if (client->irq > 0) {
++		ret = devm_request_threaded_irq(priv->dev, client->irq, NULL,
++						s2mu005_handle_irq, IRQF_ONESHOT,
++						psy_desc->name, priv);
++		if (ret)
++			return dev_err_probe(dev, ret, "failed to request IRQ\n");
++	}
  
-   reg:
-     maxItems: 1
+ 	return 0;
+ }
 -- 
 2.53.0
 
