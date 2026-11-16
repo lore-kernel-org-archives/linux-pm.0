@@ -1,89 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.53
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794864243;
-	b=qMfrQmgFrGYRoHzQ0bIPFcA7kpBbTZjCEaQhUu6KhuqH8o1m+uqMyGqEkf8swiq15eVB
-	 EjTHl2+Gye6pnawDWrtjKl8W+cXAAV+nBELlUGoNHjNt49Inv4wYk0FD3XZW7FhLM9Iyf
-	 fQ1I2SdPEo+5oZWUKbZdeuxzNW1KF4lCgCz632/3d5+k9Qw/xX/yLxxYDWkZd2DyzG4uJ
-	 Swc8i3ER6x7r1btuaG3o1OWuBMb+e2gt/5hH+c9RWPzSdEQicgtI1Q1lfrdF3UA8wYFuL
-	 Q6CIoMsUeSP/inT50Ryz3P4sRQ7vhY6ECnOmWHg/1qpz3N8cpoyMJeyiF5wngtqesSg==
+	t=1794864297;
+	b=Pvnx2QfN9wLoBXyRfBrLFom/XZ/xyGDBsd9h6E+M1n86k/PQegvD3DtRHYOXialX3VD3
+	 javRB/YNM4XSfJ2+lRj96N+q1/jau2QslC0Ny+YP57ZTP6qbDISRVxHLLrfd++B2/7KYv
+	 C/VuGSjU4KvcKceL5eeCb3cuNCM2vdfjGlSZVcf6hnlPeDp5sVlBDSG396IFHbM+FRkdc
+	 XNzLZUxj12eWzpcYViZaDn+5LKqI6HNB0Ch/wtCQ17MJcLkyPsgCuGggPrnXIfM91B+84
+	 Qb+bTv8Dt97b7CWoAI1Aj7lcPX2Yoib6LhP990d7jBRxBg69JRHNnPX6e9IE+HBUwDw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794864243;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794864297;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Message-ID:Date:MIME-Version:User-Agent:From:Reply-To:Subject:To:Cc:
-	 References:Content-Language:Autocrypt:Organization:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=3NDCplZK7ik0X8Yf2ESiTaq7yDLCV4EImoCaTstoWM4=;
-	b=Ru9Pd9eQKOkW0TjTvl5ncygMbpFz9aXhmtD4FdTOOoTG9aeem9Mc9ZFaxJHED/Yy8ZeT
-	 EuZdlJVYkbPeOxiE64R1ge9az4kh6hUvE3bx1KmHOFkWexzzEtQv5I9WKRUeZGlr/25y/
-	 XAdAAkU87WJdoD/VcNbaO4wXTW7TRi9JCKjSRLTWePP5Xhx/aPT1zdDg6MNImGxQLBWnM
-	 5pAtSVXHOr5Zf3qbocidHHvO3ycGcigLZZY7OgGZqQq6hzo12wZVhmrW0K4ePKjF+27Hh
-	 o5R8rQOZS1OVL5APpHecqWIuff0SzGnySI8X8O+s7IlZXm2FsueBs8VOfFz+AdthG5Q==
+	 From:Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key;
+	bh=zekaG0muTTzzy3RY0PTKHkYNAiqpI6W9p9ARJCHSRoI=;
+	b=SlhAOsQLi/fRvbgsxR+ffRiehrFIqdvMox/Xg1j6OwIOzfBaneJXgefQxNqDWybOxdDb
+	 cfhiP+BMgw+nO8C4BHrqij/zhBmuylBPGGpqGKMGPruT3p2XOQNzW2gEbEX9b0GQ5zSdN
+	 ymWs8v3pIDrw4d5prOj/3MhTsEWJ7QbrUWhIgROz5xSKwaMOqHDra4/0soqdnUlrDxcer
+	 k10XlO2uGfXvCXTWzis0BZvZyxMDtebKSzPI1c6JRXGHR5PQvEeNLEd+4zQjDKwUy3RuF
+	 TILqUn5xLTvTMN3BZQTgi3gMh/SGmygADoI/oU1OvimpNgG6NILqiYA/ufDDMlMr2zA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=dFXwQd7t;
-	arc=none smtp.remote-ip=209.85.128.42
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IeCqbRnx;
+	arc=none smtp.remote-ip=209.85.128.53
+Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A80E2606A32A
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 21:24:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A80E2606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8890A606A329
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 21:24:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8890A606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=dFXwQd7t
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4bb5b8ef642so25150585e9.1
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 13:24:02 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IeCqbRnx
+Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-4bb6adaf0f1so14710785e9.0
+        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 13:24:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1794864241; x=1795469041; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:organization
-         :autocrypt:content-language:references:cc:to:subject:reply-to:from
-         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=3NDCplZK7ik0X8Yf2ESiTaq7yDLCV4EImoCaTstoWM4=;
-        b=dFXwQd7tTuURj2BECf1IhZuZKNJtzMvXRCZY1JBMIbvQzl61PWtjZLwQb6DtvGAVNP
-         r2Jh6UvlMoDYUGGIUTooz/fVGQU1cYBgbRn1fYjXnMLGkO+j/rUJsjv7b4hsLbxCTnsP
-         Tygqyc3qziyZWxwkLhEhgmIo4yfpbR6HfjAya2uDzxoxPStl1nTjwrVSxxUIc6F/1tI3
-         qNlQxH+mRIxYcY+jcvoXQQgbCAe9dI+Kr4lIWtFnHqJzpOW65mD6FoafA4eBrUMKAAg4
-         UqSsiCjhMlDD3ABhRvMIS1h+CQgCgFngqhpNR3NCCFRhTfqYVnV23jSG4KrjvPRAQw+T
-         WWOg==
+        d=gmail.com; s=20260707; t=1794864296; x=1795469096; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=zekaG0muTTzzy3RY0PTKHkYNAiqpI6W9p9ARJCHSRoI=;
+        b=IeCqbRnxF94DUqJYYO/cNbEJZUkAo8BEg4L2CCqEm6Ly8QG4wYND+m8ruBuu8kOCC3
+         IPlHZw3crOR0jTR7n4QV8y8/y9d0c+WalEktJnucuMj8hrz+7M+WSGsyhWXDUZ9jze6T
+         wOysZYrejwWqIoXApXpznQFNuk1ut2ZtBcWN0N4FLUi4iTCjINcj8JWcz97tZhgYjHak
+         re52LAY6dbrjxbSEwJ74Y8b/pPzk/w8lvO89ipHjlptTLfa9PfVCkCUnxLp3HIulQkqj
+         KJPL6WSyStVqYYjaz66BVXcODoWNX1EQpCUw3QK2RvRtY+J/+O7Fi+d3BZtTi6Hu7Fm8
+         VtIw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794864241; x=1795469041;
-        h=content-transfer-encoding:content-type:in-reply-to:organization
-         :autocrypt:content-language:references:cc:to:subject:reply-to:from
-         :user-agent:mime-version:date:message-id:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=3NDCplZK7ik0X8Yf2ESiTaq7yDLCV4EImoCaTstoWM4=;
-        b=n2bk1tdYZujPed9CNscYhpaVUoHHYUczgsJx+IXi2fiVMMyChnkq67hLIL7GrrYm3D
-         Zhf4TJ6OEOWAdr+uwyWip4C0ZQegm2WxQV7Qa/VpqMWxTqdH7rg3K8bgj3tGYhjDxxhy
-         QzuAN/t78UHdNq54rvRuPMyBjIPuIa67AavUuzB2FBsZMrzcDjR+ns8LEEcYi5BCAPlB
-         ycs0bsuHMv8g7F96e0B9BzdtJRRQ/Uj8OTlnAR580JSz7dxm+ES8lKeyzvJ459TyBnfw
-         jgitjAlKhGv/xCnD+haiwKMyG8B3efQyhTjHwarTVkFYtW6rVY1WtRr4G9vrklvNTwAy
-         dIiw==
-X-Forwarded-Encrypted: i=1; AL+hErE74EOv8o63V/kZhhotCBkEFV5sg4XdCcwHHLhmI+1cjgSUwMblSem56L/hJm6oHvVW89ExEWDj1A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8Uqb4WQLJDqHDjAi9PaKjiCIZ3PLqsTBHM0C0rUHJ9LkFPkKLE
-	2sYzQcHSv1ERe2ygCGKGSlZlNyzr08/X3m8PF9Whi9jMGjvvPL04L4iiQiMzpUpzoHk=
-X-Gm-Gg: AYBFou2KP+ZRw/YL9hL7XvH+BtzzHi7vL52diy1IbosKeLNgND0/d2ksnGLWzXhcu/k
-	nMpHPY/acY2tL3BD8BMY22oPoOijwfIOAV+o5KqfqO9FlhOrhprPlisiKxsvqEwP5ZzptMGqaY8
-	+3rqB1SU3qRml45/2BcYJzoOb7/bKXN9PfdTQ5rfO4kkpbPzJg6YUCUppyKc4jQZwknR/480e+Y
-	AXxV3PsOn04w+fpbFWBxgr55LslJFoYcPLACIzcTDEhFAByniWp4pDz/ecFh9i6FC6Q//97HVa0
-	Mr1FfW+0v4/SQPzsnonPwOQbRWrQJio500+mw7JkIbcjS8+c8ZmGTjdMD9G9dcEZNKxNl4JKFsZ
-	5hImSTDksO+gtMPSH3JeoR+m+lB7x7AENK3sbOKJ6iJZdm23t6HMNKaPmZCu8A8vIUbFgqZpqmc
-	zw6v/xTceelzxIShQeXNgyXaJh13yuzCeoC9C3skfOKNkabZSOJmjDDoED1Nlx81b3Uuf0FfbVm
-	X2O/xwKqDDC7aM7ooT5td4hNtUm47w4+lnT2lQ8tOYGN8sXm/GMXHRqfTWrh0L+4OZPJAimKdDj
-	e9imdEZXPQZ0KK1oRTUdjcD+VUMG19dzezwzzA4c09VvZ5eDCT/m4jfehFv+2gEMtBHrcxyykGw
-	L/XlFaDiX
-X-Received: by 2002:a05:600c:c84:b0:4a1:e57b:667c with SMTP id 5b1f17b1804b1-4bb55a68429mr264065535e9.26.1794864240857;
-        Mon, 16 Nov 2026 13:24:00 -0800 (PST)
-Received: from ?IPV6:2a01:e0a:106d:1080:7319:1134:8f94:f341? ([2a01:e0a:106d:1080:7319:1134:8f94:f341])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb571d7e87sm220605515e9.3.2026.11.16.13.24.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Nov 2026 13:24:00 -0800 (PST)
-Message-ID: <63a95c40-2371-439a-8974-4dd7a65d14c8@linaro.org>
-Date: Mon, 16 Nov 2026 22:23:59 +0100
+        d=1e100.net; s=20260707; t=1794864296; x=1795469096;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=zekaG0muTTzzy3RY0PTKHkYNAiqpI6W9p9ARJCHSRoI=;
+        b=Ir3HY0QnEhEi1P7Xsb/sN6jby+e25y5dpGOp1fVkrAamks07ohKvJ8rxVytvUzpgb0
+         8J4NI0iaaQIWuSUax98mRY9VX8bQAiJxpNcnEHwJzGkZMbVfOCJ+J35EIvHxD+2YgFJp
+         3fsjP+gBZNjyHh65rMhlM+rvz7S+1m2walGeaoGND/00nC5GnRtQezmPGgNTYfqDANIQ
+         VjXewauhXlrDmp8XPW0BzCzbCl1sIu3DaGJE4pkbwO/cbjhLsiSpAG20F9eY2V9iBz7/
+         uFvLYkHJFzsyclk6dIOoXm0DWb1QjHXWMQ8B78zYXGYTAlbMg7Ip04Gm4CWq7OnWmKbe
+         Z45w==
+X-Forwarded-Encrypted: i=1; AL+hErHw1PAJIX660IrFWBT1YFeBT0VSG2WNcowUyDxewF1aSWlnpfKo3JghcaCWWw3IH/aYrUpO7FVXdQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9gwdOFLE6JCP3fD0tQu/S6utbx5EJChaMRVewVE+U50T33HfLi
+	urtfY1hj3ahjPuAcqCweBT3ddhJcmML/DI0x8QtxoAhs/lkZaVo/1d2c
+X-Gm-Gg: AYBFou15pNqu0V/GqOq716XIV2jYkYv8SXqXYdVXrIARqPj3e4+cfId8lIdAoDUouLN
+	ola0bVft82l2xwTTX0zscf3oTh4hIvQcDdmWuINY6Z+ygNWbQ6PYTPJLo70j7XfJZ5oD5wbt1K/
+	T2MIFuMZXKGqH2vKpAC4WNGa7OV2VEexIrx7b5069sJ2Opty7aYTjGEydSxoCPY12wYZWb26Jg8
+	Hm6cYgqBuU8lYMtEfLZlwPt18jFsdrjSuLED5HwbuEHnAHBii3Y576qBJvbcBONPL91eQvwEyRg
+	XO9qh0JDu04VX2tVT6AmIrMk7sgPVYZGdeJSTRIxrJaP0cP8EWSryyxxtaa8LoUdwraZwXxyi6y
+	CkZtYwR4tthvPz0zNlTDBebiWoKVBugSAHwf/aG6NPVMMvLyulW91CmIB4o/CqK0Hc9jKTgWQn9
+	oZ/6N6FIwFDlWQLClX5qmaUyZltKePCDl3YA7RCtPiQGMxyk8+T8UAak6pLNuw/VIvztQiq8f4F
+	hHrd0x8GMCXFpfep5gjPmIekA4cOQCLsme+ww/wZI8rbq1TjC5lCXxzgD1tv36gXUOKw4vJEWDX
+	L43B9W1UVqNofe8x8lrkuC1kWrouKY2kbatjO53t
+X-Received: by 2002:a05:600c:1c0e:b0:4bb:6f45:2a79 with SMTP id 5b1f17b1804b1-4bb6f452d4fmr123535875e9.22.1794864296120;
+        Mon, 16 Nov 2026 13:24:56 -0800 (PST)
+Received: from [192.168.10.105] ([212.58.121.92])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb734b9f44sm61928305e9.1.2026.11.16.13.24.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Nov 2026 13:24:55 -0800 (PST)
+From: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+Subject: [PATCH v2 0/3] Add interconnect driver for Qualcomm Halliday
+ (SXR2250P)
+Date: Mon, 16 Nov 2026 21:24:49 +0000
+Message-Id: <20261116-halliday-icc-v2-0-6df8fc0e0620@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -93,108 +93,69 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Neil Armstrong <neil.armstrong@linaro.org>
-Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
-Subject: Re: [PATCH] interconnect: qcom: Don't read back BCMs without an RPMh
- address
-To: venkat.yadlapati@yahoo.com, Georgi Djakov <djakov@kernel.org>,
- Abel Vesa <abel.vesa@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20261116-icc-bcm-readback-v1-1-36b533d66a69@yahoo.com>
-Content-Language: en-US, fr
-Autocrypt: addr=neil.armstrong@linaro.org; keydata=
- xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
- GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
- BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
- qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
- 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
- AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
- OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
- Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
- YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
- GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
- UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
- GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
- yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
- QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
- SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
- 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
- Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
- oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
- M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
- 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
- KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
- 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
- QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
-Organization: Linaro
-In-Reply-To: <20261116-icc-bcm-readback-v1-1-36b533d66a69@yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAKJ0+2oC/1WNyw6CMBBFf4XM2hraUB6u/A/DopQpjAFKWmwkp
+ P8uYFy4PMm5527g0RF6uCUbOAzkyU47iEsCuldTh4zanUGkIuc8LVmvhoFatTLSmuVSySwTDZa
+ ygn0yOzT0PnOP+sv+1TxRL0fjMHryi3Xr+Rf44f3S1X86cJayFk2hTVHmppD3blQ0XLUdoY4xf
+ gAYm7z7ugAAAA==
+X-Change-ID: 20261108-halliday-icc-65a5442be859
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Sibi Sankar <sibi.sankar@oss.qualcomm.com>
+Cc: Konrad Dybcio <konradybcio@kernel.org>, linux-arm-msm@vger.kernel.org, 
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ Stanislav Aleksandrov <lightofmysoul@gmail.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794864293; l=1761;
+ i=lightofmysoul@gmail.com; s=20261108; h=from:subject:message-id;
+ bh=N1nEq2VfMFE4oihSgkAn+u1wXc3t/ieMcwO9xQMMdlw=;
+ b=tvgA8nzb0WtJsi3f0O4AfkPb6zoQycIfw9woR3cY50dSNNhHx1T5EJSoEqPwBX3jrOYkpQD4k
+ K46KghG77mgDLVD+bDqpDb7C6OZCl6wwPEo897wMT+7cxIR9ugHd8Z/
+X-Developer-Key: i=lightofmysoul@gmail.com; a=ed25519;
+ pk=jeRUlfmkhE53CJPoeIIXgu7rTE0ybDRH0HQrEwbydzg=
 
-On 11/15/26 21:19, Venkat Yadlapati via B4 Relay wrote:
-> From: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
-> 
-> qcom_icc_rpmh_probe() ignores the return value of qcom_icc_bcm_init()
-> and reads the initial vote of every BCM back with rpmh_read(). When the
-> command DB has no entry for a BCM, qcom_icc_bcm_init() fails before
-> setting the address, so the read goes to RPMh address 0. On Molokai
-> (SM8845), whose command DB lacks the QPC0 BCM of the Kaanapali gem_noc,
-> that read never completes and every later RPMh request times out, so the
-> regulators fail to probe and the boot stalls:
-> 
->    qnoc-kaanapali 31100000.interconnect: QPC0 could not find RPMh address
->    qcom-rpmh-regulator 18900000.rsc:regulators-2: failed to read ENABLE status ret = -110
->    Error sending AMC RPMH requests (-110)
-> 
-> Skip the read back for a BCM that failed to initialize, like before the
-> read back was added, when such a BCM was simply never voted.
-> 
-> Fixes: 11a44c6087c6 ("interconnect: qcom: implement get_bw with rpmh_read")
-> Assisted-by: LLM
-> Signed-off-by: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
-> ---
-> Found while bringing up the Motorola Signature (Qualcomm Molokai, SM8845)
-> on next-20261113: the boot stalled in the regulator probe and every RPMh
-> request timed out after the first one. The Molokai command DB has no QPC0
-> entry, so qcom_icc_bcm_init() fails for it, and the read back added in
-> commit 11a44c6087c6 then reads RPMh address 0, which never completes.
-> 
-> Tested on the Motorola Signature: no RPMh timeouts, the regulators and
-> the interconnect providers probe, and the rest of the boot is unchanged.
-> 
-> I used an LLM (Claude) to help write this patch and its commit message.
-> I reviewed it and tested the result on the device.
-> ---
->   drivers/interconnect/qcom/icc-rpmh.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
-> index 4a2a746a4e59..1fbf4c960e1e 100644
-> --- a/drivers/interconnect/qcom/icc-rpmh.c
-> +++ b/drivers/interconnect/qcom/icc-rpmh.c
-> @@ -332,7 +332,9 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
->   		return PTR_ERR(qp->voter);
->   
->   	for (i = 0; i < qp->num_bcms; i++) {
-> -		qcom_icc_bcm_init(qp->bcms[i], dev);
-> +		/* Don't read back a BCM without an RPMh address */
-> +		if (qcom_icc_bcm_init(qp->bcms[i], dev))
-> +			continue;
->   		qcom_icc_bcm_get_bw(qp->voter, qp->bcms[i]);
->   	}
->   
-> 
-> ---
-> base-commit: 3fd56a2833c22f62eb84297d0dbd47739632f1a0
-> change-id: 20261116-icc-bcm-readback-a339f8caeb09
-> 
-> Best regards,
-> --
-> Venkat Yadlapati <venkat.yadlapati@yahoo.com>
+Document and add the interconnect driver for the Qualcomm Halliday SoC,
+and document its EPSS L3 interconnect. The display BCM voter is left
+out for now.
 
-Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
+Halliday (SXR2250P / Snapdragon XR2+ Gen 2) is the SoC in the Samsung
+Galaxy XR headset. The DT changes follow in a separate series.
 
-Thanks,
-Neil
+This work was made together with Claude, ChatGPT and Gemini.
+Reviewed and tested on my Galaxy XR.
+
+Signed-off-by: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+---
+Changes in v2:
+- Add the OSM L3 binding from the DT series (14/17 there), so that the
+  interconnect patches are in one series (Krzysztof):
+  https://patch.msgid.link/20261109-halliday-dts-v1-14-289114ab8197@gmail.com
+- Define the nodes after the nodes they link to and drop the forward
+  declarations (Konrad)
+- Link to v1: https://patch.msgid.link/20261109-halliday-icc-v1-0-def7cf786f75@gmail.com
+
+---
+Stanislav Aleksandrov (3):
+      dt-bindings: interconnect: document the RPMh Network-On-Chip interconnect in Halliday SoC
+      dt-bindings: interconnect: OSM L3: Add Halliday EPSS L3 compatible
+      interconnect: qcom: Add Halliday interconnect provider driver
+
+ .../bindings/interconnect/qcom,halliday-rpmh.yaml  |  131 ++
+ .../bindings/interconnect/qcom,osm-l3.yaml         |    1 +
+ drivers/interconnect/qcom/Kconfig                  |   13 +
+ drivers/interconnect/qcom/Makefile                 |    2 +
+ drivers/interconnect/qcom/halliday.c               | 1781 ++++++++++++++++++++
+ .../dt-bindings/interconnect/qcom,halliday-rpmh.h  |  158 ++
+ 6 files changed, 2086 insertions(+)
+---
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+change-id: 20261108-halliday-icc-65a5442be859
+
+Best regards,
+--  
+Stanislav Aleksandrov <lightofmysoul@gmail.com>
+
