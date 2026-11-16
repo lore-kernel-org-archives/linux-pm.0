@@ -1,98 +1,111 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.180
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.154
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794810576;
-	b=qKlWdZmGCiySsPVO8KS94Y2xMV0xJMio0xmbbrJPZHM5T2uwTwP0UvavFOJyk8WHLFca
-	 ezmKFnqNTLrBCwEr2NxL1mYjalmohu0mxefnh8RezeaoitHe0GxINLx4zXS498WQpBUwq
-	 GULGh+UieMYoBEcVvYDusAk8/C02A6up6ikr1dqA4GS6PRAMIDVfHv4pTtMnjzFYQXaj7
-	 GjlF11OodgCoGmGO3K5KlgHROxB1q6yDksYso4cMgxLtAWkMJVfCnqJJYisZNXRkHbfDU
-	 JTQH8tIAizWw1efQ1Rz2UY97YrmMQHSfwcHl6Ro+e9Twc/sgzqGoBHgzBw4YDIr6HNg==
+	t=1794813563;
+	b=ImHXBB9S9UEVmw9LWrjP1voeUNZ0n9O9OxutyEMIpAyf8iKnv+J1qigG9l6mt0HML+dz
+	 D+D9L+xXFnBMbDRlsWWEcTkQv54ogEwvbJv3qxks8yWiCxghulPwwCLgUFslHlXDiudih
+	 3u9BguGNqvk5pQlAs4poYyx4I+SYLOKxETHtQ6znXj7fA1JdhjDBMRj3GrrR3h79gPjv1
+	 9l+IDfEWw2sYvAeH8Ue2zJxAqtJhh3L3iPinLL8qthg/J1zHdJLtHJUH0frNuspOuDHsO
+	 7wKp2MCIl/v/vkDtpLvXBKTLf3VIuOihIBuFUkKKbcWmtA+Y4nGWfSuz4ktJPifJb8Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794810576;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=W5ubNBjYB7gj80s79SF+MJ9soJGkJ6wOwgYIYNtKFtg=;
-	b=JPDMPHv8TzSYbm01jYPe+4dN0JWJMXQQqLagr4iA7laKiY9Ek+T5BvcSfZHjz+Bl1P2p
-	 uYYS+2AkDNoV+Fgk/HdeMd/mnAkCQBgRJ06w6KR0z9ANOBj6ltCoE9p+tiXehH8LjQ5Wt
-	 r9Qvzu4E93M046Oca060XCZts/alcAMjRV02TyNuZAFxHBZG0SxQVTWqaR22Ov5uGB6kT
-	 vsJBvsWgNBYSdv+3c3XVAyADsOB9aznCSgyQVUiKrQZXvQuZ5atOK68N5gzW3+UBhqoIr
-	 asKFfu0DeCwNrg5MSsv0zUtbmqkATG6PIP8bsh3ciR9ynCI6SV1rQjpJQmJuRL93O8A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794813563;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
+	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
+	 X-ME-Sender:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
+	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
+	 References:Subject:Content-Type:Content-Transfer-Encoding;
+	bh=Q0TFgv26jI4kGOfBKYI66cOd8gITLH4wiXMswdZiu18=;
+	b=CaLiNcixVdc60icwdr5TAwAfh0JVWIhOifHACSbh78fIRH3tRFIHYZ2nIQqo7bsVvkhz
+	 M1AZM/U75BB1NB8rdyO03a0JhfZsaIER7YjX4VVSNK3p9bqRmZK4ZmE0G0GKuULCs5yW3
+	 6XDJ41wtMZ1XdfhutLV4vObhozA3x5QAi5W71F6LFt2IJ9xp7Qn6RNmgltjSWGvIeFP3C
+	 TKolEgRpgm349qO7mPLTuyK2lZCksBQGrLi4DLXytBdI0MZqiOr6V98J9I3R20viXM+Lv
+	 hJp/RDlYdwlN7YzA5DsExeJu478tqYoDxWQibXJWIuJFjr3nrp0RdE3HuZV+PH5gDuw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="in/mlC3N";
-	arc=none smtp.remote-ip=209.85.210.180
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=arndb.de;
+	spf=pass smtp.mailfrom=arndb.de;
+	dkim=pass header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=hJx7+72D;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=XZGyKgtp;
+	arc=none smtp.remote-ip=202.12.124.154
+Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1A04606A31C
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 06:29:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D1A04606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87231606A323
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 07:19:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 87231606A323
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=in/mlC3N
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-8b4c8b51b58so2721859b3a.1
-        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 22:29:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794810575; x=1795415375; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=W5ubNBjYB7gj80s79SF+MJ9soJGkJ6wOwgYIYNtKFtg=;
-        b=in/mlC3NccXXcNXQfVbNv8b15JjccC4L1zO4lkVzKYVZJj7W/+0bKewQNEK6gZEhnV
-         si7O+WZnM4lPE76uV3sbBxpDAOwvJVGHCtcMZykFdaWhoLAxtAbRXtqyV918k/z7K3kA
-         O8ZqxMKQj1p5j3md4WKkcs+zBjwHEnOgKzS22bqlafc6tNRLxRFfnn2NHMecQkfD3z4q
-         zr3vEbe9GIQjDwzobXjA/tDYObuCUO08H7oAM6A/P86XmUGrPXwwPuLMmMvMS5owSA6z
-         QR1dhL7VyrjjUC5nNQAkaODzzCdhMXbtf5QoQMrc9EfaumbUJu1JlPUTcyqTmRaSnhYB
-         MtEg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794810575; x=1795415375;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=W5ubNBjYB7gj80s79SF+MJ9soJGkJ6wOwgYIYNtKFtg=;
-        b=LCHeFfpuTOGFfoyKapyTO4Wlh2uOZRP4KWEO7cg7+eGv9MYkY2Z1ZW0eyQgX1SbdLy
-         wA2D6zkPjI90b5TUGX4U8wgJM1PFD+LqGGZUeKLtwr1QuRbixkipwV97Zf7oBDhw5ZnS
-         IsxUPQFpcBy1x6Pj0pBxSgMh3Ely0mUhiGCNFyzwj0PqwxQfnHetEMQe8jtyDhI7sMbh
-         tjfUUCFjUWETKBQZKy47uV/PS/v2Koq2XfM+JZp75K0W7UwFuX28xUqdwAqinmirhq6u
-         w9Mq7cMj4Ke4ftjbYboN+2akPyNnERE4+PwUriKvXqdga5SyFnnfdHU6UcjuRQFhvyqT
-         4r/Q==
-X-Forwarded-Encrypted: i=1; AL+hErF2j86BUvmuJG20itqMuoXZx+RwllUjsO0cQbFnpsMewX6R+5639FTQP8jhNPYPGBi52l0IJwz1sA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z83FKhKb2znprHTpS6uxkgyoFC2skAtfC1QMk1+X20l9FgmFrM3
-	Q8JynyiG2ANPm7ORMqy5LMTQ3B9DGwMB7xm9Nxm2x15e2xJCq8RjXTNb
-X-Gm-Gg: AYBFou2RRJTDV9Baq6vI2GMYVRLEi5bqpkhlgQtfdX5RZ+QYAb69uc2hNXkIZZGfuSd
-	qr78blOenbZjciRQC48qNcSzgOIq6LdoHkRQmJB1pU3NzQnglx5pUQbnPl3UL3SFnlw62AldV5/
-	/XzH82eoNjAdQcxtXUrZRFCR4zQGN7117efu59zqtWxoiCaxAHYLf+rEACdZmjUGlzc1n1kciho
-	+ppBniG0oSUP1Aj8InXJvezO1lmB8bp/BXuqdTCkMN7hbL7xxKkMXZ5gnFGttnnOnwfDRHO0Y6W
-	Z38PJB3C8xDe1cX3INp6KHm3Aul8ipNkbk/Ai4nvhYN8MAPX+G4ifZplykrL3u43pn3Eprki4cr
-	Ir8eMZ754+SuHffRSZj2NyWkPJDLWNvNIj1KUF+CQsdlm2WqiejgEUrdicNf7tYcL8HYhV5+C18
-	AMufnvtfCwSRN+tO2XbpHwIi9rhyzGQY3gS6jrgP45l386/5c+dtYao8axxRUgTAfaH8fbMO4xC
-	4z9UqTLdYLu6uE9Zh9fT7PI9UCSxOplAtmSaOaKJqWKwsIfFHMJMu+WI1/CcfxaxzXuOpFq7Gzc
-	WG4F22bnWCwd+nQ7WFMa3rJZVWLHEZP04Mjd/6yGaCsoiO7lIPSPmIScCgmQmTU3KIMZ
-X-Received: by 2002:a05:6a00:4b52:b0:89e:df2e:cebb with SMTP id d2e1a72fcca58-8beb7d1ce3dmr10000964b3a.59.1794810575158;
-        Sun, 15 Nov 2026 22:29:35 -0800 (PST)
-Received: from linux.internal.banvien.com ([119.82.142.58])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8bed2346e73sm3387975b3a.40.2026.11.15.22.29.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Nov 2026 22:29:34 -0800 (PST)
-From: Nhat Tran <nhat.tranminhk2@gmail.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	linux-pm@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Nhat Tran <nhat.tranminhk2@gmail.com>
-Subject: [PATCH] thermal/drivers/rzg2l: Fix precision loss in temperature calculation
-Date: Mon, 16 Nov 2026 13:29:09 +0700
-Message-Id: <20261116062909.36618-1-nhat.tranminhk2@gmail.com>
-X-Mailer: git-send-email 2.25.1
+	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=hJx7+72D;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=XZGyKgtp
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id D2D777A0166
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 02:19:22 -0500 (EST)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Mon, 16 Nov 2026 02:19:23 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1794813557;
+	 x=1794899957; bh=Q0TFgv26jI4kGOfBKYI66cOd8gITLH4wiXMswdZiu18=; b=
+	hJx7+72D2Zf0H2JFyTbqPHWwB9Frwq6YlREIej4YNKsfapqR3Tc10Pq2QDT/+OLC
+	2uaqQvD/nLfQb0tmwoBHNvXDMGSAHzKRis075bn5b94T1G1/JTLUHqFGCQcNkNWb
+	kw7Js7YiFvOuygIzeWzYwHgcr9g9Pbpb0FBUgnzEmIBCyeixtAi/2/dS+BXcTzaO
+	ZsvXXFAVeLPVYw6oNKe5gNe6EqBqrM94rAwNnPt+ORyJrqtULEqZCa3wi9efbtBp
+	NFWbo3RxLCwMLczQAh34OENmhCgGOjdeH/I08JMz7HKyyqnZ3uI+gZo+Hb37r+qz
+	Rvvi90ZLk1jpNbhP2VNWuA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794813557; x=
+	1794899957; bh=Q0TFgv26jI4kGOfBKYI66cOd8gITLH4wiXMswdZiu18=; b=X
+	ZGyKgtpwPfhn9+A4AZcIo7i4C75y4GIqQPGSQtzNHNs0k+GH+DBdCwFRU06vnJsc
+	+08RafhxwU+l5m39nBHJ/V8nTDkt4iegcDEBAX8QS1ON+ukudNdlaLIrDNa/jTZN
+	4QWvS0TVXTUdcTsjtpk4sjOWA5XfDsDPANpMxKzyTLZXQUM6Pg92hlYuervGVoNg
+	eWuALRb3riq8FKHKL32fjye1TW9Hrchll4+xx+0Tgrj59Mzz6FSTfMUGFD8k/s2m
+	OcJ7b3YW9pK4laWUgQefp+zb9XEVEFjn0PzCpH5BI2VhWxzG30qxOgpMgADHEYi6
+	EX+ebWn51RnPOijWRAC+g==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=arndb.de a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1794813557; d=arndb.de;
+	mf=PGFybmRAYXJuZGIuZGU+;
+	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
+	s=fm2:rsa-sha256:JrKr37qmU7Mxaae9rYqE323gRsOE8EDVJIbS9LUSjBC6fRM
+	K/4JB2Dmd1T5xbT9ZDeSZlPJAdXRvpWYnSgksCP+S2yQ5bu+VB3r4y0skh5yCaaM
+	LKGxdV5sM0JbdFR9LVr1Vy0WPzauzDt4cxGGmiWIQMDqs7dvio7kelv/KKOMWyXy
+	AI3UFeY0sMgmihaMbvlFlD3gAayiJJ7X+TlMWEWAZJLahClSMdWt6Hb8gp81cfBL
+	krEASSfaHQdFYzAJZph2ivoQkxbhuJ0S+kGasxAWUeshjR9TAXmkhN2wDTytkb5e
+	saphb9yUlhetufUk1QR82MlIB7Ec1f2KH/CPhWA==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=12;
+	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
+	from,in-reply-to,message-id,mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:LM1Sb1tl1qynh80rn5D3cTs0lm/3agMt1ONentbmoa0=:Q0TFgv26jI4kGOfBKYI66cOd8gITLH4wiXMswdZiu18=;
+X-ME-Sender: <xms:ca76anB4AUw1DqI-WHDD8ksYHlu8PP2Ly63YtDi6aNsL4g_WMpsnTQ>
+    <xme:ca76aoW7o7FUUtwVrarqlAjdlVAUvQW00EpoAwIsCwCdK7JcpBwsWhcIQ2TTONHOO
+    pKgvBnxign5OmmnY-cE5eB4OIoE8A5N_WL2jBTJCM_9hXrKMnBPssw>
+X-ME-Proxy-Cause: dmFkZTF123o0lc1ZNONC6IHTRcYRdmv5B6bDrX1s571Mq6u7KreO6C3RvwaRcwjUgMnto7
+    C0bP7r0rrVpIOYSuaPpEud91ELs3Ye1XlrmhJ6U74AeVmo3/hSdnUprF1ab4qsKYNeDq+o
+    wu6Q5zGahlNpkbuyh2WMUkxbaGZ2r5UC5nOQAB82UprzUyo/TAF+o1H3MI9FUjy3hIYsmJ
+    6ihpOrK2uS3AjVzXT6KBHyzSMPpCQotKSEo5FmZ3wOpVTeZtWhcAmxRr52XZAKQzF0QGVv
+    kcWd3ti6HL2z4Rej96Om9z+PQEw74V97Od+rNW7uwbOPYGwOzDlGcDNaCdW9ACkbHBuic6
+    FbOUaRiR4n3529j3UFaQB4M5JUDn9VvwAuai1gL2DnkwqX8T6YhKvAdmL96nvS6oUE+LS/
+    bQggH9ePMCJddMsPYuQQ7cHQgde7VdVX8vegD1SNuRWP2NWf258wdb++v856dUkHK70QS+
+    aqHeiKHK3u0Hg7PIYQBePQnejqjByPwjkNReVqVt8eaIGN4D6xgSeJpKpjrpe9JP/0ka52
+    XTXOinJAGuzBYLM+gwhQJ2n7wGaGbsSoDVnD/CV6DBjX0rZ/d5HjiYQ1Le7Se8t+enk7WD
+    gKh4ooagE0M22L9bEcaIN+Ws8kiNpgyomcFBbwwrDdbnBzfObUWg3V/Qw22Q
+X-ME-Proxy: <xmx:c676ahyjZlVApz-K4fJ9vDRxXa2dM3Z92nwPSxbJc2Bq5jVzymLApw>
+    <xmx:c676aj17wmuvv9nKuAEfAyxgpFWLHzG4ZLlp7RdCU2jvIUHlFItnLw>
+    <xmx:c676au8b4aWGY7hE7U5Wg11YKsLCBj-yRg6Qs29sbtW8qngdd_l9eA>
+    <xmx:c676ajpU0u-oxkDPovkmYyAHj2eprwvOmGuYZs15L6BPc2VGT-W_9A>
+    <xmx:da76avR1A4_tbvlN4y4MgmTxZTF4WWKRvmW5GxwE98gEBnstDnE96w6z>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id B774C32A0099; Mon, 16 Nov 2026 02:19:13 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,66 +115,33 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-ThreadId: AIwPeY0WxeBs
+Date: Mon, 16 Nov 2026 08:18:53 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Linus Walleij" <linusw@kernel.org>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, "Philipp Zabel" <p.zabel@pengutronix.de>,
+ "Ulf Hansson" <ulfh@kernel.org>, "Frank Li" <Frank.Li@nxp.com>,
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Message-Id: <e16f2781-af6e-46df-82ea-c584a8d9777a@app.fastmail.com>
+In-Reply-To: <20261116-ux500-sram-runtime-pm-v1-1-c554831d6b12@kernel.org>
+References: <20261116-ux500-sram-runtime-pm-v1-1-c554831d6b12@kernel.org>
+Subject: Re: [PATCH] misc: sram: Enable runtime PM
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-According to the RZ/G2L hardware user's manual (Rev.1.50, section
-44.4.4 Procedure for Measuring the Temperature) the temperature is
-computed as
+On Mon, Nov 16, 2026, at 00:02, Linus Walleij wrote:
+> Enable runtime PM for generic SRAM devices after probe has initialized
+> the SRAM mappings and partitions.
+>
+> This lets SRAM devices with attached power domains be managed through
+> runtime PM references from their consumers.
+>
+> Keep sysfs-exported SRAM and SRAM requiring platform initialization
+> powered while the driver is bound. This preserves exported contents
+> and avoids unpowered sysfs accesses or an unsupported resume sequence.
+>
+> Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> Signed-off-by: Linus Walleij <linusw@kernel.org>
 
-  Tj = (DSENSOR - OTPTSUTRIM1) * (165 / (OTPTSUTRIM0 - OTPTSUTRIM1)) - 40
-
-The driver follows the same grouping with integer arithmetic, so the
-fractional part of 165000 / (calib0 - calib1) is truncated before it is
-multiplied by (dsensor - calib1). Above -40 °C this always makes the
-driver report a lower value than the real one, and the error grows
-linearly with the temperature, so trip points are crossed later than
-configured.
-
-On an RZ/G2L SMARC EVK with OTP calibration values calib0 = 2902 and
-calib1 = 586, the slope 71.24 is truncated to 71. The computed value is
-313 m°C too low at 52 °C and 351 m°C too low at 63 °C, e.g. 62382 m°C
-instead of 62733 m°C, which is reported as 62500 instead of 63000 after
-rounding. With the default calibration values (3148, 503) the
-calculated error is about 1 °C at 125 °C.
-
-Multiply before dividing, as rzg3s_thermal already does, and use signed
-arithmetic so that temperatures below -40 °C are still handled. The
-intermediate value is at most 4095 * 165000, which fits in a signed
-32-bit integer.
-
-Fixes: 673c68bd4839 ("thermal/drivers: Add TSU driver for RZ/G2L")
-Signed-off-by: Nhat Tran <nhat.tranminhk2@gmail.com>
----
- drivers/thermal/renesas/rzg2l_thermal.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/thermal/renesas/rzg2l_thermal.c b/drivers/thermal/renesas/rzg2l_thermal.c
-index 90e2ba378a4b..3295eef12001 100644
---- a/drivers/thermal/renesas/rzg2l_thermal.c
-+++ b/drivers/thermal/renesas/rzg2l_thermal.c
-@@ -75,8 +75,8 @@ static inline void rzg2l_thermal_write(struct rzg2l_thermal_priv *priv, u32 reg,
- static int rzg2l_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- {
- 	struct rzg2l_thermal_priv *priv = thermal_zone_device_priv(tz);
--	u32 result = 0, dsensor, ts_code_ave;
--	int val, i;
-+	u32 result = 0, ts_code_ave;
-+	int dsensor, val, i;
- 
- 	for (i = 0; i < TS_CODE_CAP_TIMES ; i++) {
- 		/*
-@@ -105,8 +105,8 @@ static int rzg2l_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- 	 * Tj = (dsensor − calib1) * 165/ (calib0 − calib1) − 40
- 	 * where calib0 and calib1 are the calibration values.
- 	 */
--	val = ((dsensor - priv->calib1) * (MCELSIUS(165) /
--		(priv->calib0 - priv->calib1))) - MCELSIUS(40);
-+	val = (dsensor - (int)priv->calib1) * MCELSIUS(165) /
-+	      (int)(priv->calib0 - priv->calib1) - MCELSIUS(40);
- 
- 	*temp = roundup(val, RZG2L_THERMAL_GRAN);
- 
--- 
-2.25.1
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
