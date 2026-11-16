@@ -1,54 +1,73 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794855109;
-	b=yu6cOl1IQqh++pR2myuj/1odjmML7+xt06uVRTJNJok2fOjKhGlSuXUXeoPaKJCrUiLK
-	 JxdmiopAz6I72sfcd8IMne7A0zaNlZ7D+PE4kb1jmDx/+Uwp7xanM6wO0okRM9lJatK6t
-	 gs3bqrRWT5pb8Z0/UdIfUXgr+eq8qj+WfZece+ZKVI65komt6glduYQDg6RD+k8vuWFNs
-	 j70Bc27z7efEoe5EftwKVvRFw+rzDhxcDhLoQHRaeZNYQ38Ztcn/J812D2P4PttSmLWzO
-	 RS2fwfz/tYbwVHxyWvYmsjvyoTmaXUgfBC4gMOricnIkXNY9jE9yHmSZncCgX/BUPyQ==
+	t=1794857541;
+	b=2RDv8Cpx6SwnsDC0nkGOWgvplHWBftO0olqbwOiezYPeplCfOZ4S8oA1f50/5fGY4KJf
+	 kQ0gIRl269ozEJhPr3An2wuUHgqOl6VKzHtBoU4iLLBIN18PNrjdjvhTdVJ1maW5VuxsJ
+	 mEHBcL8sQovZKIadpgMP36si8hXY2Ts7EX/NknfEuwlUwGWgRNtNETHYlXhYXhP8GhCFc
+	 E0OCNBXJrhW9RYrZN3EisbQOkHr2Eof9i/ZDCn2njXbmIlycGrQt26LcM2dDM3olpOhwJ
+	 ikuCr9paFtl5N9zLvMzCLcJd/3c0SpSdU9Ry4NL2YDIEAz49sGcx8yGEvAFxqzoUiLQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794855109;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=xMf0EawBmw76DM3vHihCHtrd9empoxXzcPgjEXDY21g=;
-	b=eURRCyui+9m5h4VEWnFvD2gVsB4TP00QY674J7/fJ7mXLDERinbrFh8iwZxcQ3zw8AOW
-	 8NlIlJSPkUBZGDpOKV+7k/fQoVUtGNSuWMVnoDvqLjoENSrDTiG2cEOM63u/DmB6WHy64
-	 1VclqE7DvDn1Hml34OcbwpJ6V8XIGsJBwiDEgsFPRP3d0i3ELWfggB4NC+2jsmiMHa8RT
-	 IiGaVI8PZfztKd0sNOKaJeoBI2/Msvv1HT++AOYGShX2xkEPhfm5v5tQRZ7lJPZVXBimd
-	 RvRH0GmWo1JwJ4wP5EKh3bB+9m7ywN+N6Gh/NtPu1Lpaq13OMjh8Butq+hsRze+4wGw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794857541;
+	h=Received:DKIM-Signature:Received:Received:X-ME-Sender:
+	 X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
+	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
+	 References:Subject:Content-Type:Content-Transfer-Encoding;
+	bh=ZEIMr6EF+k/i2QSfrEbyqXIr/Dpz+3YkZ2g23ZXT9A4=;
+	b=14CqBiTblSzg86hT8AEcsg8KDVCrt2kY6x4oVcYoukuEigX+ELYnevg2K4Q8OnMScPqZ
+	 C8kjlS7oH22dxLGqdcpO7w2vbW+3jJC11hi4kYLSqd17bHW8YD2TO2ExpyRJWh+B768RH
+	 cZSB+RDWdNvLqjkrTOg+nvku/JDcd/VuwxU6ladtd7C7kID5oVfaw7PzaW18257GpG5M+
+	 5OJRZTseN3eMEbk0OmEuqZ80yOEVz0Fg0nlxUnsGgZYDrJV0vwgUarXazzI0JpG4q++gG
+	 JB5ZmJdLphAHmYhNAgM6KtSxdyDYa9KXFMdTD1gkb8C6t9Twxq7+xZ1Qw2BE8OqDR8A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UJfybVnY;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O4nuskAk;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7D9F606A31C;
-	Mon, 16 Nov 2026 18:51:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6924606A31C;
+	Mon, 16 Nov 2026 19:32:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UJfybVnY
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C40411F000C4;
-	Mon, 16 Nov 2026 18:51:47 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O4nuskAk
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32B581F000C6;
+	Mon, 16 Nov 2026 19:32:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794855109;
-	bh=xMf0EawBmw76DM3vHihCHtrd9empoxXzcPgjEXDY21g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=UJfybVnYHKUzMRG+PJkxU6Fj7gexeWmiPkwwqtum/qybsRRlbuP2Wf8HLrNzXWb9a
-	 OoqoFkeajBumWDDcn1NSaq0w2G9AitqId6jO3jmPLq5MNcpK1/UqjaHIe+mB8VtywX
-	 +bjAJvVHy8hUHXE0bcT8uzsnDRaaSq9LD6lWcwmzJE1wLjfkfNmVdsXHcJ6RxGdd0u
-	 tbr5gkYtaBo65Skbo/ybm2v6P7qBLwS2WoEL+Ban4bK9QDp1E4ko75ey/mA2EkpuSw
-	 6HcI0zYRLyYzhGxmdVs/Lb2ahODjN3tNLUEUd3nRkE3dHwibsbDtkfQxvEyOxXz8W+
-	 3sXZmAcHzBkNA==
-Date: Mon, 16 Nov 2026 11:51:44 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Sasha Levin <sashal@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Xu Rao <raoxu@uniontech.com>,
-	linux-pm@vger.kernel.org, llvm@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power: supply: gpio-charger: mark
- gpio_charger_properties as __maybe_unused
-Message-ID: <20261116185144.GA1036192@ax162>
-References: <20261116124117.2922333-1-sashal@kernel.org>
+	s=k20260515; t=1794857541;
+	bh=ZEIMr6EF+k/i2QSfrEbyqXIr/Dpz+3YkZ2g23ZXT9A4=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject;
+	b=O4nuskAkLzdyNkorLNE6nrBNrhOdCp8yYSHgsGVbTiwSi/0fcQFeUdDjJ8nV7ZkDq
+	 3HNoqHatloVGJXBPLGS8mHAfsRa6S5opxuymF/CJwH4h06J5kz7EOC9ZAsyKwNwZmT
+	 26Q69Ytb2B+xhzkQ0+TXnG/hXUW1BWWhslkakhwBPOgILkVBfSe2X0WVoAEn2r2y3q
+	 xluUgKvZh+MacnD6q7jc4zQRcosHEHLl1u5HwlwhMdmKgCrQ0fWtCpGQl5lS5SQxIl
+	 zdHDOFMQQ8YBv6iWhJli5VvRCG7SGnk1HmpFkQNWVRgpH3ehXjiSByDZH2xqRdDQbq
+	 4xDQxA7LIPTNA==
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 6CB92F40090;
+	Mon, 16 Nov 2026 14:32:20 -0500 (EST)
+Received: from phl-imap-04 ([10.202.2.82])
+  by phl-compute-02.internal (MEProxy); Mon, 16 Nov 2026 14:32:20 -0500
+X-ME-Sender: <xms:RFr7aktLigboh5T4EUH2EElUd9DIlxZdqjNhmxh5QNQCMZAZ7-vtwg>
+    <xme:RFr7asREOlfIHidzh-t-ZZiWBcrGT9dDrffCN1bLlKNfo86FhvGFFz3M3YNEsWB-V
+    osuO7Bl-z92PAacBmWA3rgtDeDTTusERy29-5T-BsJ7J3kmwm4CooE>
+X-ME-Proxy-Cause: dmFkZTE29gHG6vvSuZ1IvrXOmMKQwwGMxNM1wHmkAxAp+qE+Ue0gnmPHCJmmDnrKsA4MJA
+    exZxloFjp+5c8vPYr122uCQxKvYZt+f3iIh1nvg3bEf1hBkApPsLov+rmkO9ZmyhSGRH+h
+    0pMhmVQdnIoQwLPNpyQJk1iYU93KNLGix9r40T1YRZ1Lt7n3NQfw1ZbGmV/1mleBNR9i+V
+    gTWo8RvYDQEU/ixfbhvKVLP64fin19j9cH6lFJqpIKXYzeFHFnGUo9N7Rax/82lBAIz9is
+    Na8q3ze25YdLNdqH24xsGKJCWxhxMZ9oHF6fMJGQO218o9OsutyAdiGK7vIwI7mY9FBdK7
+    yG2Erv4reZK/uKK75uR/9mK9eHNUpqTtgnHGLW5GtUYBncB047ASgxwPwzt1k8brrZuFgd
+    t5nLmiaLxWw8EupXLZrlG+L3zxDXls8dZirMxTmPqvkZ0ibLfrNNrLYj+2TN6U1TNGnd9T
+    jxIH+nWh0ZxCGoTMvRcF6yfgaEHh2Ic8YfMpqbqqAGmrPMIMt+20XAoxaQf+LV9VSgowzD
+    8W+1mLMzgTP4aiuZd0wsQyZH2K0MSwKDzU7CtlUvO11TULjVTfDbdEXRDlccJIis8A3GQM
+    1oJlqhYnE8G0Jl4tpZaUzw6IkUKqg1L4rAabHVoMWawQiakTTLmyMRaViUDA
+X-ME-Proxy: <xmx:RFr7auG8rBN8nUX0eSHCrsSK9Sulh85hvI2vCu1ZEGk8bCfAZa0_Gg>
+    <xmx:RFr7auSW1WP1LgpeSLwxpJk-xuLXgWIU5Q_0HGsIBUsjjf1UjlxSlg>
+    <xmx:RFr7akOKXG0jpccyt0yZgmKRH-4qbbV4eA5NKcc4dd4EaQKeqlL-mQ>
+    <xmx:RFr7armARqWOALNIKAeA-H0tbWdi1dBqGjLkzToCxWoG4tYCkJMF0Q>
+    <xmx:RFr7ambUyCXXV1zBDVqNagc1eeclCnib9x8NDaZR4wU1PHYpfELXXtX7>
+Feedback-ID: i20964851:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 5115DB6006E; Mon, 16 Nov 2026 14:32:20 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,52 +77,148 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261116124117.2922333-1-sashal@kernel.org>
+X-ThreadId: AB_Ze6YMkrK7
+Date: Mon, 16 Nov 2026 14:32:00 -0500
+From: "Anna Schumaker" <anna@kernel.org>
+To: "Andrew Pam" <andrew@sericyb.com.au>,
+ "Trond Myklebust" <trondmy@kernel.org>
+Cc: "Chuck Lever" <cel@kernel.org>, "Jeff Layton" <jlayton@kernel.org>,
+ NeilBrown <neil@brown.name>, "Olga Kornievskaia" <okorniev@redhat.com>,
+ "Dai Ngo" <Dai.Ngo@oracle.com>, "Tom Talpey" <tom@talpey.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, "Mike Snitzer" <snitzer@kernel.org>,
+ linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Message-Id: <0d9f6196-6737-4936-a8fd-97192d96ad3f@app.fastmail.com>
+In-Reply-To: <20261116131428.1024230-2-andrew@sericyb.com.au>
+References: <20261116131428.1024230-1-andrew@sericyb.com.au>
+ <20261116131428.1024230-2-andrew@sericyb.com.au>
+Subject: Re: [PATCH v2 1/3] SUNRPC: freeze rpciod and xprtiod across system sleep
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 16, 2026 at 07:41:17AM -0500, Sasha Levin wrote:
-> Commit fad4655224f60 ("power: supply: gpio-charger: Keep properties per
-> device") keeps gpio_charger_properties[] only to size the per-device array
-> with ARRAY_SIZE(). clang sees that the array itself is never emitted and
-> warns, which fails the build with CONFIG_WERROR:
-> 
->   drivers/power/supply/gpio-charger.c:26:35: error: variable 'gpio_charger_properties' is not needed and will not be emitted [-Werror,-Wunneeded-internal-declaration]
-> 
-> Mark the array __maybe_unused.
-> 
-> Fixes: fad4655224f60 ("power: supply: gpio-charger: Keep properties per device")
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
+Hi Andrew,
+
+On Mon, Nov 16, 2026, at 8:14 AM, Andrew Pam wrote:
+> After hibernation takes its snapshot, the kernel thaws devices to write
+> the image, and the NIC with them. Freezable kernel threads and
+> workqueues stay frozen until the image is restored, but rpciod and
+> xprtiod are not freezable, so RPCs continue to be transmitted, and
+> transports reconnected, until power-off. The server acts on them; the
+> restored image knows nothing of them.
+>
+> With NFSv4.1 this wedges the mount after resume. Captured between a
+> client that hibernated and its server (Linux 7.0 client, 6.12 server):
+>
+>   - 05:06:02 last exchange before the snapshot; client snd_nxt
+>     2711544997.
+>   - 05:06:15 hibernation entry.
+>   - 05:06:44 and 05:07:48, after the snapshot: a lease-renewal
+>     SEQUENCE on slot 0 (seqid 192219), the next (192220), and
+>     DELEGRETURNs on slots 1-5. The server executes all of them and
+>     acknowledges up to TCP sequence 2711546645.
+>   - 14 hours later, on resume: the client retransmits the slot 0
+>     SEQUENCE from TCP sequence 2711544997. The server discards it as a
+>     duplicate and acknowledges 2711546645, which the client ignores as
+>     acknowledging unsent data. Nothing more crosses the connection.
+>   - On reconnecting, slot 0 gets NFS4ERR_SEQ_MISORDERED (server at
+>     192220, client at 192219) every 15 seconds indefinitely; the state
+>     manager waits in nfs4_begin_drain_session() for that task, and
+>     every other RPC waits behind it.
+>
+> Other resumes produced the same rollback with different symptoms:
+> requests accepted by the server's TCP but never reaching nfsd, or a
+> partial overlap that left nfsd reading a session ID as a record marker
+> ("svc_tcp_read_marker nfsd RPC fragment too large"). Restarting the
+> server is the only recovery.
+>
+> Make both workqueues freezable, as the SMB client already does for all
+> of its workqueues (WQ_FREEZABLE | WQ_MEM_RECLAIM). Work queued while
+> frozen runs after thaw_processes(), in the restored kernel, which is
+> consistent with the server. Memory preallocation for the image happens
+> before freeze_kernel_threads(), so writeback through rpciod is still
+> available then, and pm_restrict_gfp_mask() keeps reclaim from issuing
+> I/O while the image is written.
+>
+> WQ_FREEZABLE is consulted only when freezing and thawing, not when work
+> is queued or run, so normal operation is unaffected. Entering system
+> sleep now waits for in-flight rpciod and xprtiod items to finish; these
+> are short state-machine steps with non-blocking sends and connects. If
+> one ever blocked for longer than freeze_timeout_msecs, suspend or
+> hibernation would fail, naming the busy workqueue, where today it
+> proceeds. The SMB client and XFS accept the same trade-off for their
+> reclaim workqueues.
+>
+> This does not stop the network stack from acknowledging data the
+> server sends after the snapshot, such as a callback or a reply to a
+> request still in flight when the snapshot was taken; that remains
+> a general hibernation and TCP problem.
+>
+> No Fixes: tag: rpciod has never been freezable, so no single commit
+> introduced this.
+
+Can you take a human editing-pass over this commit message, please? Try
+to really focus it on what this patch does and why it is important. The
+"No Fixes: tag:" part really sticks out to me as an unnecessary addition,
+and the testing stuff (below) should be in the cover letter and not the
+patch itself.
+
+>
+> Tested in QEMU/KVM: an NFSv4.2 client hibernating in test_resume mode
+> (the image is written, then restored at once) against a 7.4-rc2 nfsd
+> with a 10 second lease, with 1.2 GB of incompressible data in memory and
+> the swap device throttled so that writing the image takes 81 seconds.
+> Without this patch the server received 12 SEQUENCE renewals during the
+> image write, none of which the restored client knew of; after the
+> restore the client's mountstats show a SEQUENCE error, two extra
+> connections and 10 seconds of queueing before it recovered. With this
+> series the server received nothing from the snapshot until the restore,
+> and the client resumed without errors. The indefinite hang seen on real
+> hardware was not reproduced in the VM: it also needs a request holding
+> a session slot across the restore.
+>
+> Drafted with an AI coding assistant (Claude), which analysed the packet
+> capture, wrote the change and this description, and ran the test above.
+>
+> Signed-off-by: Andrew Pam <andrew@sericyb.com.au>
 > ---
-> fad4655224f60 is the tip of power-supply's for-next.
-
-Since the Fixes has 'Cc: stable', this one should too (unless this is
-just going to be squashed in).
-
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-
->  drivers/power/supply/gpio-charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  net/sunrpc/sched.c | 11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
+>
+> diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
+> index 016f16ca5779..41f25309b8fb 100644
+> --- a/net/sunrpc/sched.c
+> +++ b/net/sunrpc/sched.c
+> @@ -1276,13 +1276,18 @@ static int rpciod_start(void)
+>  	struct workqueue_struct *wq;
 > 
-> diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-> index c90c824382c62..647f5bde38c7c 100644
-> --- a/drivers/power/supply/gpio-charger.c
-> +++ b/drivers/power/supply/gpio-charger.c
-> @@ -23,7 +23,7 @@ struct gpio_mapping {
->  } __packed;
->  
->  /* This list ensures, that the array is big enough for all optional features. */
-> -static enum power_supply_property gpio_charger_properties[] = {
-> +static enum power_supply_property gpio_charger_properties[] __maybe_unused = {
->  	POWER_SUPPLY_PROP_ONLINE,
->  	POWER_SUPPLY_PROP_STATUS,
->  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
-> 
-> base-commit: fad4655224f60328cc9bcf4399eda8f6d7a587a6
+>  	/*
+> -	 * Create the rpciod thread and wait for it to start.
+> +	 * Both workqueues are freezable so that no RPC is transmitted, and
+> +	 * no connection is made, between taking a hibernation snapshot and
+> +	 * powering off. Anything sent then changes the server's state but is
+> +	 * missing from the image, and is forgotten when the image is restored.
+
+Let's leave the original comment alone, please.
+
+>  	 */
+> -	wq = alloc_workqueue("rpciod", WQ_MEM_RECLAIM | WQ_UNBOUND, 0);
+> +	wq = alloc_workqueue("rpciod",
+> +			     WQ_MEM_RECLAIM | WQ_UNBOUND | WQ_FREEZABLE, 0);
+
+Note that this change is going to conflict with Chuck's "NFS: Set WQ_SYSFS on nfsiod"
+patch that I'm expecting to go into v7.5:  https://lore.kernel.org/linux-nfs/20260915-performance-v3-3-ae26d460bfd3@kernel.org/
+
+Thanks,
+Anna
+
+>  	if (!wq)
+>  		goto out_failed;
+>  	rpciod_workqueue = wq;
+> -	wq = alloc_workqueue("xprtiod", WQ_UNBOUND | WQ_MEM_RECLAIM, 0);
+> +	wq = alloc_workqueue("xprtiod",
+> +			     WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_FREEZABLE, 0);
+>  	if (!wq)
+>  		goto free_rpciod;
+>  	xprtiod_workqueue = wq;
 > -- 
 > 2.53.0
-> 
-
--- 
-Cheers,
-Nathan
