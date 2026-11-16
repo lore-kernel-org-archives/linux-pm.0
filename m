@@ -1,48 +1,65 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=203.205.221.192
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794822602;
-	b=UTnliMa4N4KyRLdRGQRTqluMLIwcj+tFw0x3xVJ3G8NdLXX/VFolhcb3GhCzu/izV81v
-	 nI0OxlMqeFHqFRmpMJ8twWQ/bILVVmEM0O/+1y2wQ+5uzvVla6QdtIAvm1VQsOZg0xGwL
-	 uwfGh/BVSz6r0wUPxPvFU/svcadGWYYoIRdMMmT8TCBSLPAK1GFLGIwygyyhEZ7yPwsEi
-	 2km7iUhhKeRDx/Mx6MFWd+f1gJ6Ev8ZhIHVYHxmvnKfN3FKQw+9k2pknEFsVI4tYCHboD
-	 f3abO325Hip1G+29FXZQH774Xl3si94PgiTjAM1yQ1kxNqfBNPKCcNdZieRbMLdqZrA==
+	t=1794822628;
+	b=GlNQFOlE8kAglAEg63xxpEjZsJAgo8MG9+ODoKvllkrOHrlJ/wjMe+Ns+y74vOdUt2tY
+	 LDknJnzNVZaIcCN2n2EeDRIA5AcQPafg3N7osy9GKkRqBpeAgXZpQJp8872iSq16+q9Z5
+	 DjwB0pDQJC0WInuVts5szd5RPv4x/DdaUNAZKLiaxLHiAfhJgT0tQmpQQpX7ORDo8x53M
+	 nm/wyhPmlxVOsfhUWE/jXIkHec6hhiKVzZyxvIUtm76jXyC1aCJTJT+zSBbmoD3ex+rP+
+	 NtV2zxYmY1W3urcZ5Fbm5/hO6zf6/vVFshho65mYjpQHiJ53fj6YB9OaC0WCG6KbFlg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794822602;
-	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
-	 X-Mailer;
-	bh=nutLsIkA5U1mmOC4x0bj+AK0SbP4YnNIzYe51iNndR0=;
-	b=4lqACphn4XEftv+DURHQ9v37xS9MOzKgwNZCoH9iOwxED3Y4167w2YomxUza8tS8RfdH
-	 7YH4H5JRXpB0I/pETmNkF4vwpBxrWlGhMaPZHqpMMNgk+WXW2yScMkoUmu85qo6NNNbZL
-	 QRB6UTa7w3m3v6L7fL40THF2aV/o6yaU+QkguzODXUlfkR3Hi5/mxBZsDtB7sqIH6bHXU
-	 CAxwH9o1V0JWSzMKniQwy6DH5Ov6a+6RQO4DnGPwAKF0qcW+iTU7E75g8igz+/hjan8bl
-	 Oyu8GoZT5vSTP38VRReT2ZBg06AMTMufqXwayIon/A69PPFkYtILmbTYhMxBsI4tZJw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794822628;
+	h=DMARC-Filter:DKIM-Signature:X-QQ-XMRINFO:X-QQ-XMAILINFO:From:To:Cc:
+	 Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:Date:
+	 X-Priority:Message-ID:X-QQ-MIME:X-Mailer:X-QQ-Mailer:References:
+	 In-Reply-To:X-QQ-mid;
+	bh=BG9vJP4tPF33GEesGxkQcQ8KBC+vLwkbRWXpiUkIsag=;
+	b=B9RDKacwrkAXbtj+H1OkIPSPQ4IFQ+qBbYx/F/GQehN+RQUiP5/4PJnV/sMnhopQcc3C
+	 FCqxaqr6VTDGH7OAyCG/Ic4iKbhfZPou7WcKGDE+3q/XUNZmugEoL01Mz3gvLInBITxDL
+	 zlZJImWehE4h24JgTCH1j9rD0WTuuAoKfTF3C5KWQq2cSBp9eFWlSGr1s4sivQLhq3u0T
+	 lJJTS/Oj12Y4wN2LRIDH0+CfQ/Na8F63aEA041GtlRZqp1l/76behtsxEdZf+NMHUPSrc
+	 544dNMh/iVL7wpbpzs/dGYZLSS9PpiuQWWmFImbwWLlxgtSVE+NSO27b8LxE8/hMxXw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GuIeV7IM;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=qq.com;
+	spf=pass smtp.mailfrom=qq.com;
+	dkim=pass header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=uU1F9f6f;
+	arc=none smtp.remote-ip=203.205.221.192
+Received: from out203-205-221-192.mail.qq.com (out203-205-221-192.mail.qq.com [203.205.221.192])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C45CB606A31C;
-	Mon, 16 Nov 2026 09:50:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B088A606A331;
+	Mon, 16 Nov 2026 09:50:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B088A606A331
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GuIeV7IM
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1B0E1F000C4;
-	Mon, 16 Nov 2026 09:49:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794822602;
-	bh=nutLsIkA5U1mmOC4x0bj+AK0SbP4YnNIzYe51iNndR0=;
-	h=From:Date:Subject:To:Cc;
-	b=GuIeV7IM+HGlt1Rr9ogolyxWR3STxnvhFA73A9T4j7VW2STl5N+8+/paAqcj2Qq+h
-	 IxI+Fj5D+6hLsZ+ivrESmRf4pZtsyW5Tl2PaejKZTd6r36dexsv8F3YXbNB8ZlhHue
-	 42U9Cn/ga+lsihQTpfj60gRag19aYQh84ee6oRoESTK054VhpN84WN389556qA7I+B
-	 VU5THqIsKGwkKNgtbz+cEvzptZ4xQdF0zcy9Sif9kGRIVpr+gBSmtzI08pwwCdNZME
-	 6zfca1OQPpYgYvZQmdLQ1TowYGRQoSh5xz8VPhS3RpAVqxOCsXh6QdJbsvrHWtdBeX
-	 uXvCflislo5Pg==
-From: Linus Walleij <linusw@kernel.org>
-Date: Mon, 16 Nov 2026 10:49:58 +0100
-Subject: [PATCH] dt-bindings: watchdog: arm,twd-wdt: Allow power domains
+	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=uU1F9f6f
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1794822617; bh=BG9vJP4tPF33GEesGxkQcQ8KBC+vLwkbRWXpiUkIsag=;
+	h=From:To:Cc:Subject:Date:References:In-Reply-To;
+	b=uU1F9f6fgn50NRe1QH6NcXZLTLRzjM3FhCPH0gq0PUfijZzImgudFgQb0K1OKxp9/
+	 oGSlBG5Lf4aSN32U3Bl0dGHjQTbFMel5i+QWBzbtiCX/Ep87yBw/EaCU205K0wBkIW
+	 xqrg7OCfoEfJtCkN/XjA+lmv8T0HxYYfZwE0CQdo=
+X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
+X-QQ-XMAILINFO: ObW7A5NPm3QRMO90WM0usk29kMol3NnPdW4jMcsZIk9TY6yhskAj4Fwsllv7h5
+	 FdEyXo/oLqUejn5vFTMNz5ipMZNTjnWEth3088lDHKRJX9R6fPQiUhILx1bbGbL8xI+Cus45XAEuW
+	 4kskzm3c/uMykjHGhIqo/BYXwP1N731DD5ICqZQSbwXleVQIn+uUEDk+mw5oW6Ww7qHf6zDwUGAbx
+	 3s1Hh5fCw6nYA32qdJXy+lbuX6L716oLK+L6r/scInFG8XuqjcSDwzssEC8RWezZuOQROwTgcPdrz
+	 LboUNIh2RmS0z6J3E+59bDsBWckP6sCrCTxXO/bUAiXET+shI9CetLJ/+6VXglGPfMMdxgiwmhaNB
+	 EZzmTLw9GfmXb2x0du7oidjju4H9IyO9jnTeNsJd9orm94+xoNdprXvRU8lU9aY+X+AGPtLadzVtx
+	 LdvA94+EWbzcWK9vxh5HqjBCzJ1EUUl4VeXt2lRARSKQROrYFy3uk1aOhi9wDAfa5YNgxzgTY8O4Q
+	 eTSjPa5/pZ5ebyLRf6KkFzNF1vQnAQRchPLvn1zdAnbVqdrl6EAdeI1CZeOkjKwFS4ce8R0ou25tZ
+	 gvVT5OfTUQhqPfG6O7QoShgQK+++n/YFyqvfjge6tnuLH9f0ffOOYDNiV1IKcBjWS8L3hivAM372F
+	 mlPuUZzOh98nTRPErE/2siIPaR/Y6d/Ye2nzrw4HG+r/quZZO43qWS9yQwb42BcP/bu35Dwqy+s4+
+	 4GOlqlbE67pmr09g7BHt2gF5Aa8dqNKf8OOYqzkksiPI+sXuvo+Qk9wFxTY1wgnDDxdhrYdzoYmz+
+	 gyKbJa7CpB4THFTAONun+R/c9E/FlhkB7/FNguxVbPI0RrLUlThpABTGeh6Ogm888DxlqDBap5aps
+	 y5N/AN7q2oBYUQ1RL2AuGV6xCg561ddt8iSWR3qb4w6u1TPrRFHd3n4WyrwKhiG+2KYd+PmOF/shU
+	 tADDln39WtQn6NMCTnhYPMu59iJutv2Fqcp2TaC76byd5ek1vgGXLOPLVQOEQgD0Z0vLnuFI9ZxgU
+	 uaWB2CDaR2MeljI//A1gbU+0CJEHFFD5qKFXzffGPLQM8nNvE6VFQ5IytkIq2p0+Kb4GZWrc9SymJ
+	 0NjzUuF7j6lhTA==
+From: "=?utf-8?B?Q3VuaGFvIEx1?=" <1579567540@qq.com>
+To: "=?utf-8?B?VWxmIEhhbnNzb24=?=" <ulf.hansson@oss.qualcomm.com>
+Cc: "=?utf-8?B?Um9iIEhlcnJpbmc=?=" <robh@kernel.org>, "=?utf-8?B?S3J6eXN6dG9mIEtvemxvd3NraQ==?=" <krzk+dt@kernel.org>, "=?utf-8?B?Q29ub3IgRG9vbGV5?=" <conor+dt@kernel.org>, "=?utf-8?B?SGVpa28gU3R1ZWJuZXI=?=" <heiko@sntech.de>, "=?utf-8?B?RWxhaW5lIFpoYW5n?=" <zhangqing@rock-chips.com>, "=?utf-8?B?VWxmIEhhbnNzb24=?=" <ulfh@kernel.org>, "=?utf-8?B?ZGV2aWNldHJlZQ==?=" <devicetree@vger.kernel.org>, "=?utf-8?B?bGludXgtYXJtLWtlcm5lbA==?=" <linux-arm-kernel@lists.infradead.org>, "=?utf-8?B?bGludXgtcm9ja2NoaXA=?=" <linux-rockchip@lists.infradead.org>, "=?utf-8?B?bGludXgta2VybmVs?=" <linux-kernel@vger.kernel.org>, "=?utf-8?B?bGludXgtcG0=?=" <linux-pm@vger.kernel.org>, "=?utf-8?B?RmlubGV5IFhpYW8=?=" <finley.xiao@rock-chips.com>
+Subject: Re: [PATCH v4 0/2] pmdomain: rockchip: Add RK3572 power domains
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -51,56 +68,35 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261116-ux500-watchdog-twd-binding-v1-1-a26adc9cea5e@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3MUQqDMAwA0KuEfBtoCnOjVxn7qEms+amjdVMQ7
- z7YO8A7sVtz65jgxGZf775WTMADoCy5FiNXTIAxxJGZR/octxBoz5ssuhbadqXJq3otpDGwPCT
- eZc44AL6bzX788+frun4dhmHwbAAAAA==
-X-Change-ID: 20261116-ux500-watchdog-twd-binding-d201c8c27cfa
-To: Wim Van Sebroeck <wim@linux-watchdog.org>, 
- Guenter Roeck <linux@roeck-us.net>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-watchdog@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>, 
- linux-pm@vger.kernel.org, Linus Walleij <linusw@kernel.org>
-X-Mailer: b4 0.16.0
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
+Date: Mon, 16 Nov 2026 17:50:15 +0800
+X-Priority: 3
+Message-ID: <tencent_E7CC6902FE0862400DA2B35F4B93210D9606@qq.com>
+X-QQ-MIME: TCMime 1.0 by Tencent
+X-Mailer: QQMail 2.x
+X-QQ-Mailer: QQMail 2.x
+References: <20261104-add-board-ok3572-c-pmdomain-v4-0-15cf8b5a6e59@qq.com>
+	<CAPx+jO_88-xLLiPeE1QPjceCBpBuX0ZXsB=-vVVcGmx_6vnWCA@mail.gmail.com>
+In-Reply-To: <CAPx+jO_88-xLLiPeE1QPjceCBpBuX0ZXsB=-vVVcGmx_6vnWCA@mail.gmail.com>
+X-QQ-mid: xmsezb41-0t1794822615t6y0ziur8
 
-Allow TWD watchdog nodes to reference their power domain.
-
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
-Signed-off-by: Linus Walleij <linusw@kernel.org>
----
-Allow ARM TWD watchdog nodes to reference their power domain.
-
-This binding-only change can be applied independently. The companion
-Ux500 power-domain consumer DTS changes will be submitted separately.
----
- Documentation/devicetree/bindings/watchdog/arm,twd-wdt.yaml | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/watchdog/arm,twd-wdt.yaml b/Documentation/devicetree/bindings/watchdog/arm,twd-wdt.yaml
-index 9646ac72051e..5f6a9d6b9976 100644
---- a/Documentation/devicetree/bindings/watchdog/arm,twd-wdt.yaml
-+++ b/Documentation/devicetree/bindings/watchdog/arm,twd-wdt.yaml
-@@ -33,6 +33,9 @@ properties:
-   clocks:
-     maxItems: 1
- 
-+  power-domains:
-+    maxItems: 1
-+
- required:
-   - compatible
-   - reg
-
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261116-ux500-watchdog-twd-binding-d201c8c27cfa
-
-Best regards,
---  
-Linus Walleij <linusw@kernel.org>
+SGksCgo+IFRoZXJlwqBhcmXCoHF1aXRlwqBhwqBsb3TCoG9mwqBwYXRjaGVzwqBvbsKgdGhl
+wqByb2NrY2hpcMKgcG93ZXLCoGRvbWFpbsKgZHJpdmVyCj4gaW7CoHRoZcKgcGlwZS7CoE9u
+wqBtecKgZW5kLMKgScKgY2FuwqBvbmx5wqB0cnnCoHRvwqBhcHBsecKgcGllY2VzwqBiecKg
+cGllY2UswqBidXQKPiBpdMKgd291bGTCoGJlwqBuaWNlwqBpZsKgeW91wqBjb3VsZMKgc3Rh
+cnTCoHJldmlld2luZ8KgZWFjaMKgb3RoZXInc8KgcGF0Y2hlc8KgdG8KPiBoZWxwwqBjb29y
+ZGluYXRlwqB0aGlzwqBiaXQuCj4gCj4gQW55d2F5LMKgdGhpc8Kgc2VyaWVzwqBuZWVkc8Kg
+dG/CoGJlwqByZWJhc2VkwqBvbsKgdG9wwqBvZsKgdGhlwqBsYXRlc3TCoGNoYW5nZXMKPiB0
+aGF0wqBJwqBoYXZlwqBxdWV1ZWTCoGZvcsKgbmV4dC7CoEnCoHdpbGzCoGhhdmXCoGHCoGxv
+b2vCoHdoZW7CoHRoYXQnc8KgZG9uZS4KCkkgaGF2ZSByZWJhc2VkIHRoaXMgc2VyaWVzIGFu
+ZCBpdHMgcHJlcmVxdWlzaXRlIHBvd2VyLW9uIHJvbGxiYWNrCmZpeCBbMV0gb250byB5b3Vy
+IGxhdGVzdCBuZXh0IGJyYW5jaCAoNmY1YzhlYzkzMDJjKS4gQm90aCByZWJhc2VkCmNsZWFu
+bHksIHdpdGggbm8gY29uZmxpY3RzIG9yIGZ1bmN0aW9uYWwgY2hhbmdlcy4KClNob3VsZCBJ
+IHNlbmQgbmV3IHJldmlzaW9ucyBvZiBib3RoICh2NSBmb3IgdGhpcyBzZXJpZXMgYW5kIHYy
+IGZvcgp0aGUgcm9sbGJhY2sgZml4KT8KClsxXSBodHRwczovL3BhdGNoLm1zZ2lkLmxpbmsv
+MjAyNjExMDEtZml4LXJvY2tjaGlwLXBtZG9tYWluLXBvd2VyLW9uLXJvbGxiYWNrLXYxLTEt
+NTlhNDU3ODNlMzNlQHFxLmNvbQoKQmVzdCByZWdhcmRzLApDdW5oYW8gTHU=
 
