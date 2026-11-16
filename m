@@ -1,124 +1,124 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794849258;
-	b=wjj566fgwCKFhqG73aACKGsucusm4Lu6JzZod+9h74cMWDH0H8sk+GcmymFyBFvtc5o/
-	 720NdT3DDsa3PfnD4StDU3P/xz+XDcOo22hLTVD4Wjyp7kBLNAvhh/06GBOUSvzmWCLJB
-	 rqfAlhsAqjsB0Xu28v4xjPFoWPGvERYW8q06pgUv/GWe0WSP5aScsMdEyPtHSzLM8ymnJ
-	 MX2h2wMPLodYj3gHzeyQmXWC0hHBcNyt5kIlGiuU54ys5/vA3A36j6VqfNpaSwRlegQKS
-	 Fg3ZExuSqoIXiczQzq1iWKQcnTX7jGcLkChn4bROj7zo3HEQ4UjrTlG2Vp486UsWyXg==
+	t=1794854268;
+	b=qiBKcMnC7l9sLgfoAbGEzzU5VBLrbCybPVJa/GGoroUICKauQ9YbXCCXt02iX+9axbNb
+	 BUA6mxQbBIVY7FBkfRKN2B/+rr1072kWxfWlGvR9vabvO4hZru2b6r9TxL4yOr320nJJm
+	 DRIxsp01mrkrMVSI4peCtcSAbllXt9llKTogr9y/sdZB5RRoGjSzic0fDTzDU5A/7KDbV
+	 FaH+GJCL59tO2UIOvd9T/+B1sc1Lq1sf6E3ur5hZ17lARt0WTmAG5SwHv6AtdcOibymUC
+	 zZj8QINANJG59dYryzb3TcpB9a4MJy0gJ61CmvHOVph2nzM7TOsEp9ORJfU5XdJjlKg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794849258;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794854268;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
 	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
 	 Cc:Content-Type:Content-Transfer-Encoding:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
 	 X-Proofpoint-Spam-Details;
-	bh=UGIDXdp2RIrXTSdgnrAspAZ/nkS4v0bZBuA1gb5G5i8=;
-	b=nKp75NGWtpzS5CczH6qYpcBEFUPc9cjGw2pNma1PJsPAwwETL0Op7Q2Vt+9IRo13oOvd
-	 jgSyTUojhqqwKemcSfyhJ8YzwjTYY1yUK1x03uRjzxqWVfvNqna8mqmdLxss6lY3ceby3
-	 iPmxJ73w/swVbugZ4BDqc41PgwP3DnMugAPvFKRhyazh0cIphSaiQyljy9N6agzmwLiGC
-	 4PVIvoihNI7Hw/tedlBUH7UXP+PqSRq+6FGItjlw4PiTee/Y+fSOe5giCfRm9CeBUNZv/
-	 sw92xDoU/OaUJB3QUuM6x897zAmj17bdFPCZbITrrzL+qVU6bZlYrmbLM9nZVPkCeOA==
+	bh=Ly0wSpOqETq67pj9QgQqaNP7QubSpXxkzzUxAFz3ui8=;
+	b=QfG3Tfzl6ga2kU6pWFNLGjKPBqoWzeLUXx7hV+n3X680G9zfhGMW70NHz8dEtUKpjwf6
+	 QPUkpriEcJEGNsaR1v1/GnnkaABPrm/9800RHy3j7LFGBNXMJ2rEfSgurvK4mQdZkjaQQ
+	 0hjnMuCovPR47RRO+jBv+Yx62mMAv+sIigrWJNKSS2IUFu7BUWlM34wcslGBl1q5slVkF
+	 GVsZfDcXObrWItZbs4LQ24zjQnUqWjxAt1b7EUUkxO2/OVVQDonsH4oXhO95cvd06nd6P
+	 VOARjS7TR65tTqhP6Br5hQpIfe54YJ2OluZGaCtLbWr9br2siz9LLtHJaU4M2csonyQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=NywTcSMT;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Oavvq+Jw;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OqT3NYpP;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=FGHtMx61;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DA55606A335
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 17:14:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8DA55606A335
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AE95606A322
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 18:37:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3AE95606A322
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=NywTcSMT;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Oavvq+Jw
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AGGIGHi2126182
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 17:14:16 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OqT3NYpP;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=FGHtMx61
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AGGIeEX2055797
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 18:37:46 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	UGIDXdp2RIrXTSdgnrAspAZ/nkS4v0bZBuA1gb5G5i8=; b=NywTcSMTB0SjVUH8
-	zpjux3PRGT+tY70cwKUHkTdZU6FQce64TaRkPm55vIxr2cJyMo+bEdnrpOKiv31O
-	FFQIlEiLf9N9yJLplM7D8VMht3Te2bvxzvNzib6F+Fh3/GJE2YfxEfkSh43plUNn
-	0U1jZvUAj1k0ASPm4mybE5QcXm+kJol8yLMjkVb02U85KmpF24PWjWCvAtJF/98A
-	CoC5ifC7q+rvAkW3KWJF8yyVOUcN2Y/WhBKI04O0FA8R95QVy1aOW3+QGT7qfpqA
-	LoOOYzr+6iz7S4t2RDspWL/9FPDi3hgcY3SmQ40L6u9MAWeAL6SOBB8V45aF1VzH
-	4Zp33Q==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hyxx2hw5s-1
+	Ly0wSpOqETq67pj9QgQqaNP7QubSpXxkzzUxAFz3ui8=; b=OqT3NYpPMSWyNkoC
+	T0jU1MWCwoayrXSsHrUPBONXfgqAYtHpimmXXc8u1ZVZdF548egHztbTNmT85olL
+	2T/sThe5L7xH4V5dFkizBXkH0f32jZ1egUeaMGiHqXqS2zfgpiCopGrOmPm5Bz7r
+	tlIWpaai/x4fvD0utZIEYuJVungkk8BPlrSPvchKJrplzwjYFkeoGUieZRQIBI9Q
+	40KsMkT4PGroZwzOQZlbI58vK2HMhcQojkLzDr40iZ+GEP0h7oD6rmwAC2mfpGUq
+	rtTuPNtRLW6i9e+1QoEzwxHF+XadsCGLPTluN0ttmkZGKyM/Oh1ZJvOKzvbEztlg
+	l5hrWw==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hyyrqhyct-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 17:14:16 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-94970ad532bso278200985a.0
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 09:14:16 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794849256; cv=none;
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 18:37:46 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-944138ed63fso579415685a.3
+        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 10:37:46 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794854265; cv=none;
         d=google.com; s=arc-20260327;
-        b=KKrk9T4EiWIKiZeQRBl7aldmRUKHa4/tVBG+cpOx/9W0QYL5BbSDAQnmqOBYRtpwn/
-         3zWsFYH0xc4e1M5MxlSWKiLx9N/gyz0Kxjph1MZkuKLkwbUnXKYZnk0aYtxzDnoeBSlI
-         csecB+/eHpBE6MUTpSDUlNBZ5F1oSaL4trPZ32MsL5CN3Cr+btZDYVxWK0FKk652ek6l
-         +iReb/1hpIy8zPWURHuBTcgEOsbteuHL4UO8m8WfStpXUxl1ZqlBWA/KiZRG6/XUM+mX
-         Q3nNJKivl/BtVor0PYkw0+3Qh4mYfF1Q5Y4tmiYCWmSQpZuCbbdsmM+T6lJtYB4L7yqy
-         5PkA==
+        b=iouuoTo8uVlU/Cr/uwhugsXklvvL7JlNXSYIXrE5xjpZYMUGAyv0HnBebZWCP2350r
+         Dj8LD8u80yRFN9F5gul1mwTPKjWAjYrgus7VS7einaf6A66Kz9SA0ah5M+rsC7PKE1Vn
+         8Um2DzIPmFOInTdHdQjZQhuW5zgXWeAAznG2+Dt6ZA4/uehnF65BF339gQ/tooK2WtD+
+         6fsB5+MTddeorJXooaCpJXtGyTY9qy5iTvSh6boiSOIMjIvO1y0If+WSrC/S3fiyS9yA
+         oNxttEes4ppim8OfuSDKXzKySLK8BEbASRP3Ah4WTGIrB9LrQ16dBQQv5wU4F/DAqxTa
+         njkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=UGIDXdp2RIrXTSdgnrAspAZ/nkS4v0bZBuA1gb5G5i8=;
-        fh=7iUpt3rozyAAUs6MxijJkw4NHca4SKKDyDHNqIdqVq4=;
-        b=UcZ5MYxJyevV1X8WHN7Mp99olW2QF2HyrPbjOirWp6jkPzRzsa+NKyWFjmV2cubO9Y
-         RSDufotmClysmobRsoRLivs6e83ICjCafC8O3MWrNhIsstWZbtRLeYMvB0qIlA2BrzCK
-         XJjbAzOKxxW3THBEzJEWMgt9kXHX3U6kWJqvOBdOMhZMeuWc9jJEn+k+rvIFRPbHjuXz
-         lEWHhIDACzCGMy8NoYOuGnlvabnqfpv8xAKYoniXwb8EzsLIt/k6gGIRgXe5m6eIdbv/
-         dSQZlFohkczC0zq3+Dn9motQaXrihv4pFbwgVguhCkFkfqrgto6YdnM4oq+s9Q2xOkax
-         Cj9Q==;
+        bh=Ly0wSpOqETq67pj9QgQqaNP7QubSpXxkzzUxAFz3ui8=;
+        fh=z2EuP4nOMcIRdv3gDNWZaqTG1cA2hUjmF9FTALNeLzo=;
+        b=PXtucTr4gCrrUxw9V9USftf4tkkp+QtjOHTQzNT1gL0Fkh7lr7QEgz+UWSEZUsXac5
+         sZ54gIaBKP4+l179GcsRQCz2QkVM4b4gbTe8zAQ/nMemuQ32pDqkm/OjnboJEaBpJGBn
+         yqWd5dux8WITL/t/zp5ODNe5UxNBWHqswMqIwIgXHER+JaIJkB1NaN3WvwyrCflPIDSF
+         FFdqeRY8xl9lSaYL5tGa9EE6Xf/SrFA483f7sODL4f6L4rYLj4tIlmD/eDprjdPFI1Zg
+         a++tCl9G0uRjmdJtqva6Xi6Y0cnvO1T9iQrfhGu8otZXgsvNucgTyXW0s3lanWp4WwGO
+         z9+w==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794849256; x=1795454056; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1794854265; x=1795459065; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=UGIDXdp2RIrXTSdgnrAspAZ/nkS4v0bZBuA1gb5G5i8=;
-        b=Oavvq+JwNQrTn5YmGNpTNeeEL/plcUcvqJpF8HaP0iHoXVlerGo8RsTb33IrKAIXEa
-         UEbEmF6gVxDQsV0OCOX/zkrltHSnDA/k6NhQQqLfv/6Ae7kPJWuPUdYuJiX8SFb/z64w
-         oS/RslhJ//HsCF29Pn7yZejEuMX6UepSDdxXS9kUADNYfKKIMW+iXQKSDTN1IpZsJ2Ni
-         UkfUCxJeFnm5RZC6II3tEJKmWDl0zZgHtU6QpAPJfzsPX0XwjUT1K+lICHFXZ0umgsQt
-         byVlH5niBMIQMv2sX4dAZoK9OVqMnv1CXIZqO9CQKuvg4O+sXSxeJJZsf7q/tDQ0S+UJ
-         jxIA==
+        bh=Ly0wSpOqETq67pj9QgQqaNP7QubSpXxkzzUxAFz3ui8=;
+        b=FGHtMx615S6WKXiU0sxjpk3GpFHkE+SxjYQmKQRpwu0wiYtIPHAVWaTcmTWnNoS9nk
+         4AF+fCD5GubW4ayYURUBZGVXNAzjAOMlSK3odHhsjfUb4XyjsGKHlWHMRHMvYyLquGSg
+         P617WGvbukts6GcMuFR1ZRZM3fbSipeM8MKlPRy/mXFfxUhWqBZpt1oeqrZPwsG7o6+i
+         Tvp01JTRjjRtdJmvMp0O4w+3NAaBIL6uSGyvDCSo0p4/c3b8lFz9mUwXyZo6SJm/iTx8
+         zmMrInOQXr9toZhPav/kUAw+BlVe307j64uVR6RlqVnnGc/wYyF2C3iTGNiZRQB8jLg3
+         4LdQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794849256; x=1795454056;
+        d=1e100.net; s=20260707; t=1794854265; x=1795459065;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=UGIDXdp2RIrXTSdgnrAspAZ/nkS4v0bZBuA1gb5G5i8=;
-        b=pUKHXjo0EDgG3yeM1u2dqjF3KDRKcxA/OSMjqngFc9MpRVTaL687pO7b33kjhNc/9C
-         UDsjEwc0ZtKy+L0kJOyAyPBqlOaiJyrn1N8e7Fq3e2xSpnHy4382TGu4edL4xXGLZUGx
-         5OPNTtt42AsUovZeo2vHMfkqBSNQJP8xlyg/r5K22qPSUbkwlubzUpp1Enn0qZXevhbp
-         YBFLiq/WiYCup1g27GKS7/WXaXiwClKmErckjTNrRjK7s0YVkr7nZv3XVU4W5mIifkMM
-         WFp8GcJ+HpPV/i2brvZSqtuhkBkFGXN1k/37Ye1/QljRgi+cbF808xcDCmr1ds5G9MhJ
-         /GSA==
-X-Forwarded-Encrypted: i=1; AL+hErErlb6Dxfa5qtvnxGWX7PKZZzSpnNyF3sJvDw6WZvzKGtRNXDitzcY++GZVyqXhvWjIMjP0lofEWQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/+VjCBZm2wLmgaFE6OdcE4HBzZAqavLWKHxA3ecwW4sJTMOPlP
-	iD1L4ChOyqdOqbMIYv07TIvAHLj3IJhkzIoiEEonI0ojewNJXk8y9VAhUAz7/e/MwtQ1mMlGxCL
-	BUvFCHt+zlYpZWCOWXJ5CFRuy5fglMBMxzDuA6KzsZUseaJ1fZra3T8Lr8j6r+Tdov5NxA+Q997
-	ev4Uz7ZYgXtO0DTP2K6THPyQiskOUM51JxmUseUiETpXdnXnV8+A==
-X-Gm-Gg: AYBFou2ljtXYapjRBtAai/YqeORHv0MRt3CVys60VPk8FmssIinIRswlUdWqdNYOcLX
-	YFrLuRCiJC4gDy3Mqkil79m4qI+g/s0bx3avMKNIliOU9HGMo+2ZRuuITpg+S2cR3aVBqW9pF/4
-	cXBZ55W0zu+sekvIBRblVRZCE4MnN0tMluOV7HAaW0aaVcGstyTgdJsXIWeDLFsl62dJlXvDKES
-	dkVjHUHSatDQzkcCv7GkZ7ljsEFPLf8XFOV8r/hgZueRAsPiQPSE4LZcmJIf+p9ZKW7qVrgsS/j
-X-Received: by 2002:a05:620a:370e:b0:949:7502:6a8 with SMTP id af79cd13be357-94975020921mr757118085a.56.1794849255689;
-        Mon, 16 Nov 2026 09:14:15 -0800 (PST)
-X-Received: by 2002:a05:620a:370e:b0:949:7502:6a8 with SMTP id
- af79cd13be357-94975020921mr757111285a.56.1794849255104; Mon, 16 Nov 2026
- 09:14:15 -0800 (PST)
+        bh=Ly0wSpOqETq67pj9QgQqaNP7QubSpXxkzzUxAFz3ui8=;
+        b=1BCWpWSoMk3JFWnz/ulIddYFdJqNNiXwdwLrngCQaVIDcdxJ5PJOV6FWuAyjQRv9PO
+         3PrdAeZV4FK7V06VMRxBxKTRBrE3HktupyToGtQrAypF4QK2cWd0KZcQD1y1tyKBUSQ3
+         VEXGk4lug7R+xvbhqDBYDDD0MY1WspHbS4ac9IfHSUfE0IWxemylmeSbuH0kT7jifkhl
+         ouI2vnX/fVO5Lm8iGmTz7b4Q5H8OIbb3L0+hMBNdBJZmXc+XC1DlfhCIce68p4YNAncy
+         poIoM86OZtXEsRy4BUhCRUP9xVg5d06MOFLzTIDUwJsXvfLuJ6Rym6FvFx+66baFWoYr
+         hmYw==
+X-Forwarded-Encrypted: i=1; AL+hErFJxbTV+AznIlXgFUl1kBdyg472oQ/ngYyyH8EdTRb+ILxRLB0v87G/rjoJKtFbbIQHr2Eaa17VUQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8Lp9AfFlST6fzVJ+GAcOTwcER4HTqW2jdbNbnvfMolcmhPbkNU
+	U+/P61+ZHrPxoRrFknOCBQfz+Yyh1XcX0+zXNox0MK5WEyLCqsAie+cB6BhS25PzwCuLmbGRrCQ
+	frGSc/OWcCp9GJUwOu1T4ItxtcLcCFgtV1s3fEPiVZZchR+LJvdftkyIONf98XWAH4MyvbFk/1u
+	ums/5QehlX6SIpd6smtLR0tNuPD588ujhei/hM9nVDqjuUbmM=
+X-Gm-Gg: AYBFou16+GqjodViRFCmeLks7r00w+Mo2rQZ5kD9asN+XmRD93XkquFgKVzUYFNHj58
+	18Ma9BLN4lfxbB4DjD0djZlhFe11ialvC7b6NR3S8CsyLnCfu2BF+/31hxbIKrWTWoB7JLbxhrO
+	buH5N4PabVcFeqaI2D/WoJgZ6Qfe3WPGy6XlY9KWil9idgtXhA7zpokzmW/eMCEmy7haJvFN10a
+	KVF6Ap1wSCu3HUz2ft1KLGwiETbPMrWI0b5RzZ3/6WrX8rYjygD60oPrBklINTazrnDt/mQynlq
+X-Received: by 2002:a05:620a:6910:b0:949:6476:91df with SMTP id af79cd13be357-94964769908mr1306133985a.27.1794854265120;
+        Mon, 16 Nov 2026 10:37:45 -0800 (PST)
+X-Received: by 2002:a05:620a:6910:b0:949:6476:91df with SMTP id
+ af79cd13be357-94964769908mr1306128585a.27.1794854264515; Mon, 16 Nov 2026
+ 10:37:44 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -128,194 +128,225 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261005-monza-wireless-v7-0-5a6de7662dcb@oss.qualcomm.com>
-In-Reply-To: <20261005-monza-wireless-v7-0-5a6de7662dcb@oss.qualcomm.com>
+References: <20261102-pm-clk-resume-report-errors-v1-1-ba6e1dddd522@oss.qualcomm.com>
+In-Reply-To: <20261102-pm-clk-resume-report-errors-v1-1-ba6e1dddd522@oss.qualcomm.com>
 From: Loic Poulain <loic.poulain@oss.qualcomm.com>
-Date: Mon, 16 Nov 2026 18:14:04 +0100
-X-Gm-Features: AclHuK-gzqgD2ofKvkGd7o_qM6TFIZRuqcKLnoXo_1NUG577lrtNPElPOvNnw5A
-Message-ID: <CAFEp6-1ys9CibgvvaQL3dvA7y0GjJbhNgf0wD5YAAFz3AqFkaA@mail.gmail.com>
-Subject: Re: [PATCH v7 0/8] arm64: dts: monaco-arduino-monza: Add support for
- LGA WiFi/BT module
-To: Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-pci@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Rob Herring <robh@kernel.org>,
-        Marcel Holtmann <marcel@holtmann.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Wei Deng <wei.deng@oss.qualcomm.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Date: Mon, 16 Nov 2026 19:37:33 +0100
+X-Gm-Features: AclHuK-5A642jlfrsRiFikZwKptRymZe-s-kt3fOZysrAU132IAw9jKbio5jyXg
+Message-ID: <CAFEp6-3GKHmc4y_mTTVMO6iPdnpmxEmRokpki4uVGoBuXTj6Hg@mail.gmail.com>
+Subject: Re: [PATCH] PM: clk: Report clock enable failures from pm_clk_resume()
+To: Abel Vesa <abel.vesa@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+        Pavel Machek <pavel@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
+        linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+        linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=R7WWitRX c=1 sm=1 tr=0 ts=6afb39e8 cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+X-Authority-Analysis: v=2.4 cv=VcJir1p9 c=1 sm=1 tr=0 ts=6afb4d7a cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=gowsoOTTUOVcmtlkKump:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
- a=AQfUo8DtNGVBezQI14YA:9 a=QEXdDO2ut3YA:10 a=IoWCM6iH3mJn3m4BftBB:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE2MDA2OCBTYWx0ZWRfX7YdsVsKe3G4k
- JJB0PuQwBvDoxCUqGjOCLpu2PpqFxJPOn3l5NgyF8j+S34e2i6ebGT8moNGxs1GShPBSl4D2Smr
- jA5kixgzx8FDidk5T0m8FXPzPJRWsCc=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE2MDA2OCBTYWx0ZWRfX2HjdHm0g+OmA
- onCHR6uXQKfnzTJE7xnqtc76q1QPGDcVsybapzcN1jMI+Q6yoICkax/UPi9UEtn9DTqcngwP5FT
- hiCM5im13nFs9AZdXevFyQNuB1SpU2ySTpeoSnL2lva3mM3Xch8v94e4ZQmXSspCFxg9GJ8nYHm
- CMUQoN6MB8X0oUh3SriquZ+3jfk6ptCqMwwl8TGpcro9IjMpiL4CU60Uq40CsJKubJAe171gRuy
- iDBsAe0498GsYmODgqyyR3Jap1lXH2c9YBly8gHID9YutKsy2eubppjAwJOmH88B+MdSFQnHPEf
- g4g+INNTkk1wUMm6KdOOJlWikAR4dKce7/FGjIoVkzWMCW3nRRBF1o0Z0a+McJ/8fHzeCt1FEkH
- fb/kkUz7CJzaNBWyxZxDYwVEeRZIcH4Yi/UdOuc5M5CfPe2eyszWdIAyDvKBfK15KkxIzzgtBV7
- ryQTYDJ3Wyt0o2M1BEA==
-X-Proofpoint-GUID: Cr71Px24rj79FIcBuLyb6UK6OkvXGYZl
-X-Proofpoint-ORIG-GUID: Cr71Px24rj79FIcBuLyb6UK6OkvXGYZl
+ a=yOCtJkima9RkubShWh1s:22 a=EUspDBNiAAAA:8 a=-LQT69PtjwrO-PJxn2MA:9
+ a=QEXdDO2ut3YA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-ORIG-GUID: SXKd2aWj1u714GmmIQ3w9Uz8Q_2cCBJ2
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE2MDA3NCBTYWx0ZWRfX9bUb6jYXsCo+
+ 8nMmKRMlg7aiVDhyCXW1Cxs+eRTD+GiMjDuyPwEc8ryuZGotd9/3nOtJWk13CA+23SR0PgW5+Ft
+ ZUhI5gUqxjfMuhUcshKVBkAnDEyWA3wrwbP2HsLhSUizcJgPdACfIBiZ0r3nVcms9sTooXS2oCO
+ G5tdPKr619Eq5f1G2URCGtbwmo4uzASEsRkM55nhkj5sraoNWzSdFs5fcB8PzcSH9ph9g6IiO/b
+ tInf7bpLfhuW21tI0E/L5xgwx35GSaHiRsHhRjP/1UgZ03U9RNBlpsqdH6b9EoTy8EJ7MN9dgRG
+ upPOEYq32oRQh8lkT9WnwQXrJyWks2yBZklM0pId2hVjG+jy9RmWjn2is+ZpKBqthMuNCARlwyZ
+ gd+hoROOclh8SCtUsDKNosTXDVYy6TJ9ZBWLT0jzl5gcuyV2QLVVMiY/eiJowhHibCnL0loYBnJ
+ YFtQIJRswRXbmVb445A==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE2MDA3NCBTYWx0ZWRfXwoOT9IbKIKWK
+ xygEG/N2O7H1EarcmXeyTDwobpDXDN1U3qmSszVX71BDgdNLREHXktzUbzC71sk3OnC2qrLqshu
+ cqXD/g3UfYgZo0IewfZL6cSAPUg6Chc=
+X-Proofpoint-GUID: SXKd2aWj1u714GmmIQ3w9Uz8Q_2cCBJ2
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-16_05,2026-11-16_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 clxscore=1015 priorityscore=1501 phishscore=0 adultscore=0
- bulkscore=0 malwarescore=0 suspectscore=0 impostorscore=0 spamscore=0
+ spamscore=0 adultscore=0 clxscore=1015 suspectscore=0 lowpriorityscore=0
+ bulkscore=0 phishscore=0 malwarescore=0 priorityscore=1501 impostorscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611160068
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611160074
 
-Hi Luiz, Bartosz,
+On Mon, Nov 2, 2026 at 11:23=E2=80=AFAM Abel Vesa <abel.vesa@oss.qualcomm.c=
+om> wrote:
+>
+> pm_clk_resume() logs a clock that fails to start but always returns
+> success, so the runtime resume of a device using the PM clock helpers
+> succeeds without its clocks, and its driver goes on and accesses the
+> hardware.
+>
+> This happens to the devices in the Qualcomm LPASS, whose clocks are
+> provided by the ADSP: after the ADSP is gone, like right after a
+> hibernation image is restored, a sound card opened by user space
+> resumes the LPASS LPI pin controller without clocks, and the access to
+> its registers then brings the whole machine down:
+>
+>   qcom-prm gprsvc:service:2:2: CMD timeout for [100100f] opcode
+>   qcom-sm8550-lpass-lpi-pinctrl 6e80000.pinctrl: __pm_clk_enable: failed =
+to enable clk 00000000b90a5151, error -110
+>
+> Stop at the first clock that fails to start, stop the ones started
+> before it, and return the error, so that the resume fails and the
+> device stays suspended with its clocks off.
+>
+> The callers of pm_clk_resume() check what it returns, including genpd
+> and pm_clk_runtime_resume(), except the MMP2 audio clock controller,
+> which keeps ignoring it. A device with a clock that fails to start no
+> longer resumes though, even if it used to work without that clock.
+>
+> Signed-off-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 
-On Mon, Oct 5, 2026 at 2:21=E2=80=AFPM Loic Poulain
-<loic.poulain@oss.qualcomm.com> wrote:
->
-> This series describes support for the onboard WiFi/Bluetooth module
-> present on the Arduino VENTUNO Q (monaco) platform.
->
-> The board provides LGA pads for a wireless module. On the VENTUNO Q
-> these pads are populated with an NFA725B module featuring the
-> QCA2066 WiFi/BT combo chip. While implemented as an LGA footprint,
-> the design is functionally compatible with the M.2 Key E.
->
-> The NFA725B exposes WiFi over PCIe and Bluetooth over a UART.
-> Both interfaces are gated through the W_DISABLE1# and W_DISABLE2#
-> signals, as defined by the M.2 specification and handled here via
-> the pcie-m2 power sequencer.
->
-> This series models the hardware using the existing pwrseq framework
-> and connector bindings, allowing coordinated PCIe and UART bring-up.
->
-> Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
-
-Is there anything blocking this series from being picked up for
-Bluetooth? I've already rebased it, so I'd appreciate any feedback if
-anything still needs to be addressed.
-
-Thanks,
-Loic
-
+Reviewed-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
 
 > ---
-> Changes in v7:
-> - Rebased on linux-next (pwrseq changes dropped)
-> - Link to v6: https://lore.kernel.org/r/20260904-monza-wireless-v6-0-d8c5=
-042b3efd@oss.qualcomm.com
+> pm_clk_resume() always returns success, even when a clock fails to
+> start, so a device using the PM clock helpers resumes without its clocks
+> and its driver goes on accessing the hardware.
 >
-> Changes in v6:
-> - Rebase onto v7.3-rc1: drop the now-upstream "power: sequencing: pcie-m2=
-:
->   Add QCA2066 (QCNFA765) BT serdev ID" patch and adapt to the
->   pwrseq_power_on()/pwrseq_power_off() -> pwrseq_enable()/pwrseq_disable(=
-)
->   rename that landed in this merge window.
-> - hci_qca: fully drop struct qca_power and move its fields directly into
->   struct qca_serdev, removing the bt_power indirection (Dmitry).
-> - Pick up Reviewed-by/Acked-by tags from Mani, Bartosz and Dmitry on the
->   pwrseq_is_controllable() API, the pcie-m2/qcom-wcn controllability
->   reporting, the bt_en_available rework and the M.2 connector support
->   patches.
-> - Drop the pwrseq-m2-bt prerequisite series link, it is now merged upstre=
-am
->   and included in the v7.3-rc1 base.
-> - Link to v5: https://lore.kernel.org/r/20260720-monza-wireless-v5-0-69ec=
-6743543c@oss.qualcomm.com
+> I hit this on the Qualcomm Hamoa CRD while working on hibernation: the LP=
+ASS
+> devices get their clocks from the ADSP, and when the ADSP is gone, like
+> right after a hibernation image is restored, a sound card opened by user
+> space resumes the LPASS LPI pin controller without clocks and the whole
+> machine resets on the first register access. With this patch, the
+> resume fails, the open fails, and the machine stays up until the ADSP is
+> restarted.
 >
-> Changes in v5:
-> - hci_qca: comment why the M.2 'uart' pwrseq lifetime is bound to the ser=
-dev
->   consumer device instead of using devm_pwrseq_get() on the controller (B=
-artosz).
-> - hci_qca: note that dropping the always-on pwrseq handle is not a leak s=
-ince
->   the descriptor is still released by devres (Bartosz).
-> - Link to v4: https://lore.kernel.org/r/20260716-monza-wireless-v4-0-9b02=
-e6f549d7@oss.qualcomm.com
+> The LPASS macro drivers already check what pm_clk_resume() returns, but
+> never saw an error so far.
 >
-> Changes in v4:
-> - pwrseq: rename pwrseq_power_is_controllable() to pwrseq_is_controllable=
-() (Bartosz).
-> - pwrseq: move the is_controllable() callback from the unit to the target=
- (Bartosz).
-> - pwrseq: add might_sleep() and guard pwrseq_is_controllable() against
->   concurrent provider removal with rw_lock, matching pwrseq_power_on/off(=
-) (Bartosz).
-> - pwrseq: clarify the pwrseq_is_controllable() doc (Bartosz)
-> - hci_qca: lifetime follows the Bluetooth device rather than the UART con=
-troller (ChenYu).
-> - dt-bindings: also add the "qcom,pcie-m2-1620-lga-connector" compatible =
-(Mani).
-> - arm64: dts: monaco-arduino-monza: rename the 'pcie_bridge_ep' endpoint =
-to 'pcie_ep' (Mani).
-> - pwrseq: reword commmit message (Mani)
-> - Link to v3: https://lore.kernel.org/r/20260710-monza-wireless-v3-0-4625=
-3587af64@oss.qualcomm.com
->
-> Changes in v3:
-> - Embed bt_power in struct qca_serdev instead of allocating it (Dmitry).
-> - Add generic pwrseq_is_controllable() API + per-target .is_controllable(=
-)
->   callback; use it in hci_qca instead of peeking at the W_DISABLE2# prope=
-rty.
-> - Implement .is_controllable() in the pcie-m2 and qcom-wcn providers.
-> - Treat non-controllable BT power as always-on.
-> - Integrate the pending Bluetooth pwrseq patches from Mani.
-> - Link to v2: https://lore.kernel.org/r/20260702-monza-wireless-v2-0-7b56=
-e2a6a6d4@oss.qualcomm.com
->
-> Changes in v2:
-> - hci_qca: extract M.2 pwrseq into qca_serdev_get_m2_pwrseq() helper, cal=
-led
->   outside the SoC switch; drop duplicated of_graph logic and redundant
->   bt_power NULL checks (Dmitry/Mani)
-> - dts/bindings: use qcom,pcie-m2-1418-lga-connector (fallback
->   pcie-m2-e-connector) instead of the generic M.2 E-key compatible (Mani)
-> - Link to v1: https://lore.kernel.org/r/20260520-monza-wireless-v1-0-9f69=
-42310653@oss.qualcomm.com
->
+> Prepared with help from an LLM-based assistant.
 > ---
-> Loic Poulain (6):
->       Bluetooth: hci_qca: Set 'bt_en_available' based on pwrseq power con=
-trollability
->       Bluetooth: hci_qca: Embed bt_power in struct qca_serdev
->       Bluetooth: hci_qca: Support QCA2066 on M.2 connector via pwrseq
->       Bluetooth: hci_qca: Flatten struct qca_power into struct qca_serdev
->       dt-bindings: connector: pcie-m2-e: Add vendor LGA connector compati=
-ble
->       arm64: dts: qcom: monaco-arduino-monza: Add QCA2066 M.2 WiFi/BT sup=
-port
->
-> Manivannan Sadhasivam (2):
->       Bluetooth: hci_qca: Add M.2 Bluetooth device support using pwrseq
->       Bluetooth: hci_qca: Rename 'power_ctrl_enabled' to 'bt_en_available=
-'
->
->  .../bindings/connector/pcie-m2-e-connector.yaml    |   8 +-
->  arch/arm64/boot/dts/qcom/monaco-arduino-monza.dts  |  64 ++++++++-
->  drivers/bluetooth/hci_qca.c                        | 160 ++++++++++++---=
+>  drivers/base/power/clock_ops.c | 56 ++++++++++++++++++++++++++++++------=
 ------
->  3 files changed, 157 insertions(+), 75 deletions(-)
+>  1 file changed, 40 insertions(+), 16 deletions(-)
+>
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_op=
+s.c
+> index 3b8ba27802a8..a978eb3d5479 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -143,8 +143,10 @@ static void pm_clk_op_unlock(struct pm_subsys_data *=
+psd, unsigned long *flags)
+>   * __pm_clk_enable - Enable a clock, reporting any errors
+>   * @dev: The device for the given clock
+>   * @ce: PM clock entry corresponding to the clock.
+> + *
+> + * Return: 0 on success or the error from enabling the clock.
+>   */
+> -static inline void __pm_clk_enable(struct device *dev, struct pm_clock_e=
+ntry *ce)
+> +static inline int __pm_clk_enable(struct device *dev, struct pm_clock_en=
+try *ce)
+>  {
+>         int ret;
+>
+> @@ -156,13 +158,29 @@ static inline void __pm_clk_enable(struct device *d=
+ev, struct pm_clock_entry *ce
+>                 ret =3D clk_enable(ce->clk);
+>                 break;
+>         default:
+> -               return;
+> +               return 0;
+>         }
+>         if (!ret)
+>                 ce->status =3D PCE_STATUS_ENABLED;
+>         else
+>                 dev_err(dev, "%s: failed to enable clk %p, error %d\n",
+>                         __func__, ce->clk, ret);
+> +
+> +       return ret;
+> +}
+> +
+> +static inline void __pm_clk_disable(struct pm_clock_entry *ce)
+> +{
+> +       if (ce->status !=3D PCE_STATUS_ENABLED)
+> +               return;
+> +
+> +       if (ce->enabled_when_prepared) {
+> +               clk_disable_unprepare(ce->clk);
+> +               ce->status =3D PCE_STATUS_ACQUIRED;
+> +       } else {
+> +               clk_disable(ce->clk);
+> +               ce->status =3D PCE_STATUS_PREPARED;
+> +       }
+>  }
+>
+>  /**
+> @@ -483,17 +501,8 @@ int pm_clk_suspend(struct device *dev)
+>         if (ret)
+>                 return ret;
+>
+> -       list_for_each_entry_reverse(ce, &psd->clock_list, node) {
+> -               if (ce->status =3D=3D PCE_STATUS_ENABLED) {
+> -                       if (ce->enabled_when_prepared) {
+> -                               clk_disable_unprepare(ce->clk);
+> -                               ce->status =3D PCE_STATUS_ACQUIRED;
+> -                       } else {
+> -                               clk_disable(ce->clk);
+> -                               ce->status =3D PCE_STATUS_PREPARED;
+> -                       }
+> -               }
+> -       }
+> +       list_for_each_entry_reverse(ce, &psd->clock_list, node)
+> +               __pm_clk_disable(ce);
+>
+>         pm_clk_op_unlock(psd, &flags);
+>
+> @@ -504,6 +513,9 @@ EXPORT_SYMBOL_GPL(pm_clk_suspend);
+>  /**
+>   * pm_clk_resume - Enable clocks in a device's PM clock list.
+>   * @dev: Device to enable the clocks for.
+> + *
+> + * Return: 0 on success or a negative error code. If a clock fails to st=
+art,
+> + * the clocks started before it are stopped again.
+>   */
+>  int pm_clk_resume(struct device *dev)
+>  {
+> @@ -521,12 +533,24 @@ int pm_clk_resume(struct device *dev)
+>         if (ret)
+>                 return ret;
+>
+> -       list_for_each_entry(ce, &psd->clock_list, node)
+> -               __pm_clk_enable(dev, ce);
+> +       list_for_each_entry(ce, &psd->clock_list, node) {
+> +               ret =3D __pm_clk_enable(dev, ce);
+> +               if (ret)
+> +                       break;
+> +       }
+> +
+> +       /*
+> +        * A device whose clocks are not running cannot be accessed. Do n=
+ot
+> +        * pretend it resumed, and leave its clocks off as it stays suspe=
+nded.
+> +        */
+> +       if (ret) {
+> +               list_for_each_entry_continue_reverse(ce, &psd->clock_list=
+, node)
+> +                       __pm_clk_disable(ce);
+> +       }
+>
+>         pm_clk_op_unlock(psd, &flags);
+>
+> -       return 0;
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(pm_clk_resume);
+>
+>
 > ---
-> base-commit: f0406245cb9855e6318335a8a223551354291a46
-> change-id: 20260520-monza-wireless-e6ce7f013f38
+> base-commit: 7649ba73f9e7e1e04d0b46213e39c79ae09dd55c
+> change-id: 20261029-pm-clk-resume-report-errors-b5d538eb27de
 >
 > Best regards,
 > --
-> Loic Poulain <loic.poulain@oss.qualcomm.com>
+>
+> Abel
+>
 >
