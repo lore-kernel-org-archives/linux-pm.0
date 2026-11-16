@@ -1,87 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.46
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794800797;
-	b=Hb1AaGs09ber+es9gcxrUGSvAp53KLmfQIvSYFxdMgXy/RM6LEGCcReGpNsXn8hdv/rc
-	 WmHjyJe+2I4TtM87bSsVYEGsknLjcB3Gy/DjASI3rU6yCU/CD0P2hTZMuK18m87eU00wB
-	 fRpTa555g2KzReK/J4+4tGO8ZuOvJV8oUAJqkhSK5xYRIlro3uR13V4IbJD79axrPy2Ki
-	 KTro30QH3MrbJWtIHvWClAbWPtrDJi9cHKo8E1QF6CdR0jfcnwtA+qY03M4GEuwMCjQey
-	 bkABdRD2cEFk7Xxz4wGc9SKuRLyOSt/TDp2x6GAZUPjsQ4Lw1+GnaZ9E4Ta/WL6bpJw==
+	t=1794807238;
+	b=t8fJSOdKRZbFsYscHK4LYdmna/LtRFaCavliZcCixMGNOs8vqgwWoFb1hZunukXDxhdH
+	 P1+UUwCHmc7JcjvJXRFZRcqHuaX4pv+k5DhNBaNzZQKe+1QGU4SrJjKFfzvt8tuwVBOTU
+	 +zavP3nst/Xs9+8O8S0xq2jH7Apg6DsHPM4cUaLqkchhTtje1Nr9a+NMOHfIArVty1EV8
+	 umY6TPKYoIce1AUko7dZZsauNj0sNjIc2Firf0sjUgcz36F+rjb5Wwfw0JoWGHPcjwujR
+	 lUabwzsF+PwavCj13JAdcY5xg6wlxj1zWX8WYfRaQCLZopTiZZmqJ/e5W0ejhraO3iA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794800797;
-	h=DMARC-Filter:X-UUID:X-CTIC-Tags:X-CID-P-RULE:X-CID-O-INFO:X-CID-INFO:
-	 X-CID-META:X-CID-BVR:X-CID-BAS:X-CID-FACTOR:X-CID-RHF:X-UUID:X-User:
-	 Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:
-	 References:MIME-Version:Content-Transfer-Encoding;
-	bh=2A5t0ONI7IaIjMnCj2YskkeywEfhopiL1ZV70Pfvk8s=;
-	b=LfvuAT6gqjtGxsdYmleAHzqnmHewHKAOAMD4gwLaSxbZXpS1858mnmx7caqunzFaqwbU
-	 mpbJHAk27fRsOm9ME273Mx+ejh8rNYI7gOR4Dydkd51kp8hOC+i4VybR7Oz2qbc2RJgvp
-	 9AU821GgcroZlUn90oNObiDc+jwOH0JIQZMFFj8c0Sru3btnQLh9L7sleObzqPz2fmHQJ
-	 7Fk3PunRuUHVAhvT5hwYjyejzSCH0qL7Stg+fMBUXMoTrnQ768RbHFkLo/8TWUfhVOvml
-	 gsl9Bf9yjS17i+UTsUQrMkokxrXUN8F7CLJZom+Gj6q4MeN+Ev5EtmNSb0aikh8tV5g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794807238;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-B4-Tracking:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key;
+	bh=0w/f/nIRvQ41Y5kXOY9lL+2GFsd+GjYZ0Mpuv3lgWjs=;
+	b=li4G8AY+/CI19Id4wW68Dw0mfQKNO8Pn1LWrM/E1GawnvqvpIowkZtaG+qjwzTLlxCh6
+	 G3R4FJhum9k1f5saPiSgrh6YmJS9lY3rPHYiEk58mhX9hnXxZwXGzJDYGfsoIQXbwuOrq
+	 Z3G0cHxu5N2gJTt+xufmTBg1yLVFaIMz4ju9DVyTESBkPWHbgdE/1e8bAFai5mKTKM8AU
+	 13AyuPRV+bw0nz4OlHWZeFPnNIAT2tVapT0Vv7kAEYlR0P77nlT7umjtH9OtV0IrnKETe
+	 G+B5Ezzf7xFP0tAw7miahmypYayk0uCFQ5EciJbAVbiEWH9pjJTa31W2q6NlXxAe8NQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=kylinos.cn;
-	spf=pass smtp.mailfrom=kylinos.cn;
-	arc=none smtp.remote-ip=124.126.103.232
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vwJ1KqKL;
+	arc=none smtp.remote-ip=74.125.82.46
+Received: from mail-dl1-f46.google.com (mail-dl1-f46.google.com [74.125.82.46])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A5F0606A321;
-	Mon, 16 Nov 2026 03:46:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9A5F0606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 4e9ff4c8e17011f19a56ed5b684f684d-20261116
-X-CTIC-Tags:
-	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_8B
-	HR_CTT_MISS, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_NAME
-	HR_SJ_DIGIT_LEN, HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM
-	HR_SJ_PHRASE, HR_SJ_PHRASE_LEN, HR_SJ_WS, HR_TO_COUNT, HR_TO_DOMAIN_COUNT
-	HR_TO_NO_NAME, IP_UNTRUSTED, SRC_UNTRUSTED, IP_UNFAMILIAR, SRC_UNFAMILIAR
-	SA_UNTRUSTED, SA_LOWREP, SA_EXISTED, SN_EXISTED, SPF_NOPASS
-	DKIM_NOPASS, DMARC_NOPASS, UD_TRUSTED, CIE_BAD, CIE_GOOD_SPF
-	CIE_UNKNOWN, GTI_FG_BS, GTI_RG_INFO, GTI_C_BU, AMN_GOOD
-	ABX_MISS_RDNS
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:80263444-d9f5-4e4e-9782-35bd9705b93b,IP:10,
-	URL:25,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:35
-X-CID-INFO: VERSION:1.3.19,REQID:80263444-d9f5-4e4e-9782-35bd9705b93b,IP:10,UR
-	L:25,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:35
-X-CID-META: VersionHash:7db8b62,CLOUDID:646adadb829665bad7c155de3639e34f,BulkI
-	D:2611161146298DYOR7A1,BulkQuantity:1,SF:10|38|66|78|81|82|102|127|136|153
-	|850|865|898,TC:nil,Content:0|15|50|99,EDM:-3|-100,IP:-2,URL:11|94|82|1,Fi
-	le:nil,RT:nil,Bulk:40,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,D
-	KR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULN
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 4e9ff4c8e17011f19a56ed5b684f684d-20261116
-X-User: xiongxin@kylinos.cn
-Received: from localhost.localdomain [(175.2.56.187)] by mailgw.kylinos.cn
-	(envelope-from <xiongxin@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 430389582; Mon, 16 Nov 2026 11:46:29 +0800
-From: Xiong Xin <xiongxin@kylinos.cn>
-To: rafael@kernel.org,
-	lenb@kernel.org,
-	pavel@kernel.org,
-	james.morse@arm.com,
-	hch@lst.de
-Cc: will.deacon@arm.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Xiong Xin <xiongxin@kylinos.cn>,
-	Sashiko <sashiko-bot@kernel.org>,
-	Riwen Lu <luriwen@kylinos.cn>
-Subject: [PATCH v4 4/4] PM: hibernate: flush icache for restored pages from task context
-Date: Mon, 16 Nov 2026 11:46:19 +0800
-Message-Id: <20261116034619.36218-5-xiongxin@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20261116034619.36218-1-xiongxin@kylinos.cn>
-References: <20261116034619.36218-1-xiongxin@kylinos.cn>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59A63606A32C
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 05:33:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 59A63606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vwJ1KqKL
+Received: by mail-dl1-f46.google.com with SMTP id a92af1059eb24-1b3b4944a0eso1158499c88.0
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2026 21:33:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794807237; x=1795412037; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=0w/f/nIRvQ41Y5kXOY9lL+2GFsd+GjYZ0Mpuv3lgWjs=;
+        b=vwJ1KqKLo2XIV441DN9PpIWRfPJaoX9A0drWHA+3bQDRQxXKPa+zWdT5VPD/4m1uNP
+         lSY4desoNuPSzNMazMVv2cNxT8i4E66H4lR4BP2jm9fDcVNeXKQVgeYUlW6WDrYSSJPB
+         i6xJ7r6WEyj+X0kzTTW4S8Cc7LJUvl/O7lJrU+x3lfiGVNKPAo6gJyiB+2Y+W5Pg6q7h
+         KptRYlAyZUtxsO0C5ZebFVUVxjC+12K8W1pdeKgP/EyS30L97pZnDzQsjjB7f+FIjRLS
+         A5m2EUDsc0XpVWtBvT6n0CUTptwq0NXvMuIFb7Iq6MLb8Pk9imci6b1G7Li6IqYNITYi
+         K9fw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794807237; x=1795412037;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=0w/f/nIRvQ41Y5kXOY9lL+2GFsd+GjYZ0Mpuv3lgWjs=;
+        b=p2Y4XqTt6wV4scX4+h7pO4z864IqFIwLO0fu5z1zd7XddGNLsg1tSx9GJfsX6gYrKa
+         iDmdep7yA2rsVGrDMRwkmKTkndEqwEPlxJcUEFQ9QB9fb8fvy+2+sQ0vMIBeCRFxIO/m
+         +q8Ubtl7sBeQYfj7AFZTQntbN8FgpQzmbhV/em7ALlj/a2d7Giul6hLhXvf8wL6G2JrX
+         dSEjrwGCBFYuYpPki2vul065mkNrVPGxfu+JjdwBRaQ7fKUitdXHjaAcawTZUoBQEVTh
+         N5/t19vFL/iQbmy5ci0cI0V4Arc+EQhf6IMnJCPqruJaQGpTnOWn0KfopGMbOqa/6GQ3
+         +5Iw==
+X-Forwarded-Encrypted: i=1; AL+hErFnrhli9LEzYbsPtDiS4K594VwM/LiMD20sUXfsY8/6e5Lf+3ou+8cHtDg4st+ilY3xFbJeFnGBXQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9WDHP/iMhCw3ih78IRyIcTwySbtX+d53NnzU0rbEoYZBLYsHVO
+	DfigYv/smkQgUN3uchsyVsgR/B/4pnbvkZPN25XTDj3fkx5vcEcvv+TP
+X-Gm-Gg: AYBFou0EG59So3bqAb4U1yS2WBzdyT99gxRbIeclmDLDDJJ+fYptRHU4x7qTILWvuq6
+	EkLZtxwNcRrIMm9mmHtobbF/IxPsHfj+Fs9if9quCxdfPcrhPkDLl22fsEdkFBxtGmey+ksGCly
+	Od0Sy/hDtQugGNUu9mCyS3O4HHcxOzEgWMwmj0lxRdGN+w55mf62RtrMQOAYq3nzw6LmCAC+36h
+	dAymSHhkw+yagj2Ih3bxVV0yQuUT+jH1IeIVv7qT4Kb15eoD/vnJU2yarrlam6io7LIsByVOoVE
+	YyuAH6sQeNhqEg+td5zH+twtKQyqAtxBz4HkIlZbJT/+iM/r3wQ3bJnaXBgtQPCqUWUUly9baaz
+	8NjT+HK9CgCnqTVSJk2VsxukDOfRTM6Btw1L9N91e0xHKC7yJZmF1+OLQ3XADrXuoi4qvAvT2dq
+	vk2loIQr1c7UvEhOYTdtDjiLrhwSYjAS2DBJSI1+dxuvfokh6mEFfwtPsCQrTwFb7zo1n4kNZyc
+	TFM6BZQQPxdrB3quBlw+PScZRTsXpxVeeVIX4hGHySok3DJvPTv2mDSB8BVL7iJUiVB1LY+8F/D
+	wq5SQRweQKLpgTMtlzN9rDdBIbEbkFL72mis3dyV/NmI/EoaQlSg1gqICOzhu0oUDhhZpN952/Z
+	yEbG9
+X-Received: by 2002:a05:701b:2050:10b0:18d:5ef2:1644 with SMTP id a92af1059eb24-1b5031247b2mr9638120c88.30.1794807237116;
+        Sun, 15 Nov 2026 21:33:57 -0800 (PST)
+Received: from Sobhana.localdomain ([157.51.206.8])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b5031468b7sm33463380c88.5.2026.11.15.21.33.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 15 Nov 2026 21:33:56 -0800 (PST)
+From: Sreeshankar K <sreeshankar0910@gmail.com>
+Subject: [PATCH v15 0/8] Add initial support for Qualcomm SM7250 SoC
+Date: Mon, 16 Nov 2026 05:33:44 +0000
+Message-Id: <20261116-sm7250-v15-0-6acbb232fef8@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -91,161 +93,200 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIALiV+moC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDE11FJSSM
+ xLz0lN1M1OAAkpGBkZmhoaGZrrFueZGpga6BkYmScamBonmSWmGSkDFBUWpaZkVYJOiY2trAYg
+ gNg1ZAAAA
+To: Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Taniya Das <taniya.das@oss.qualcomm.com>, Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
+ Robert Marko <robimarko@gmail.com>, Guru Das Srinagesh <linux@gurudas.dev>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, 
+ Manivannan Sadhasivam <mani@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Sreeshankar K <sreeshankar0910@gmail.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794807228; l=8347;
+ i=sreeshankar0910@gmail.com; s=20261029; h=from:subject:message-id;
+ bh=7sFNnBSgl0y/IKnMm2OQoutXPcOL7acB8zm5ok13LaE=;
+ b=vz/YVSoqEGCVg/OHnT2rf5hNS0amPModqoJeSgyHHgLcsLkzSIr5QY607mugyMKPPruaTV6rg
+ XHknS7t+e/BCrw9RWwSxUarDlJCzEGfdp9JvI1mGC0U7vsUe9VxaJ1r
+X-Developer-Key: i=sreeshankar0910@gmail.com; a=ed25519;
+ pk=CGSHduvtn2hwLCNRXRc9s/fh6X8PH/zNdp08zC8hOuQ=
 
-With `hibernate=nocompress`, load_image() submits read bios asynchronously
-and hib_end_io() completes them from hardirq/softirq context.  The
-commit f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages
-restored in-place") calls flush_icache_range() there, which on ARM64 ends
-kick_all_cpus_sync() and so triggers
+This patchset introduces foundational upstream support for the Qualcomm SM7250
+SoC (internally codenamed Lito).
 
-    WARN_ON_ONCE(!in_task());
+SM7250 is an ARMv8.2-A platform manufactured on a 7nm process, featuring an
+octa-core Kryo 475 CPU configuration (1x Prime Cortex-A76, 1x Gold Cortex-A76,
+and 6x Silver Cortex-A55) and Adreno 620 GPU.
 
-in smp_call_function(), as in_task() is always false in interrupt context.
+This patchset is organized as follows:
+> Document relevant device tree bindings (SoC ID, Kryo 475 CPUs, SCM, PDC,
+RPMh clocks/power domains, GCC and cpufreq hardware).
+> Add driver support for SM7250 in socinfo, rpmh-clk, rpmhpd, and GCC.
+> Add the base SoC DTSI (sm7250.dtsi) defining the cpus, PSCI,
+interrupt controllers, clock providers, power domains, and reserved memory.
 
-Only the nocompress path is affected: load_compressed_image() flushes from
-the decompression kthread, in task context.
+>-----------------------------------------------------------------------------<
+Merged patches:
+dt-bindings: arm: qcom,ids: Add SoC ID for SM7250
+soc: qcom: socinfo: Add SM7250 SoC ID
+dt-bindings: clock: qcom,rpmhcc: Document RPMHCC compatible
+clk: qcom: rpmh: Add SM7250 rpmh clocks
+dt-bindings: power: qcom,rpmhpd: Document RPMh power domain for SM7250
+pmdomain: qcom: rpmhpd: Add RPMh power domains
+dt-bindings: arm: cpus: Document Kryo 475 CPUs
+dt-bindings: interrupt-controller: qcom,pdc: Document SM7250 PDC
 
-Defer the flush to task context.  hib_end_io() now only records the
-restored page on a per-batch list (page->lru is free to use, as safe
-in-place pages are on no LRU).  Once hib_wait_io() returns to load_image(),
-hib_flush_icache_pages() walks the list and flushes each page, preserving
-the asynchronous batched I/O throughput.
+Pending patches:
+dt-bindings: clock: Add SM7250 global clock controller
+clk: qcom: Add Global Clock Controller (GCC) driver for SM7250
+thermal/qcom/lmh: Switch to match data for SoC CPU-to-node mappings
+dt-bindings: thermal: lmh: Document SM7250 LMh
+thermal/qcom/lmh: Add support for Qualcomm SM7250
+dt-bindings: firmware: qcom,scm: Document SM7250 SCM
+dt-bindings: cpufreq: qcom-hw: Document SM7250 cpufreq hardware
+arm64: dts: qcom: Add SM7250 devicetree file
+>------------------------------------------------------------------------------<
 
-Fixes: f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored in-place")
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Link: https://sashiko.dev/#/patchset/20260926032416.467937-1-xiongxin%40kylinos.cn
-Acked-by: Riwen Lu <luriwen@kylinos.cn>
-Signed-off-by: Xiong Xin <xiongxin@kylinos.cn>
+Changelog [v15]:
+[PATCH v15 3/8] thermal/qcom/lmh: Switch to match data for SoC CPU-to-node mappings
+> Update the patch to fix apply conflicts with Linux 7.4-rc3
+
+Link [v14]: https://lore.kernel.org/linux-arm-msm/20261106-sm7250-v14-0-7d167e993f9c@gmail.com/t/#t
+Changelog [v14]:
+Fixed various issue found from Sashiko's review, Link: https://sashiko.dev/#/patchset/20261104-master-v13-0-355b65c6f764%40gmail.com
+
+Link [v13]: https://lore.kernel.org/linux-arm-msm/20261104-master-v13-0-355b65c6f764@gmail.com/t/#t
+Changelog [v13]:
+Fixed various issue found from Sashiko's review, Link: https://sashiko.dev/#/patchset/20261104-master-v12-0-57fbe9eef978%40gmail.com
+[PATCH v13 3/8] thermal/qcom/lmh: Switch to match data for SoC CPU-to-node mappings
+> Switch to match data mapping instead of hardcoded 4-4 cpu configuration.
+[PATCH v13 5/8] thermal/qcom/lmh: Add support for Qualcomm SM7250
+> Add 6-2 cpu configuration LMh support for SM7250 SoC.
+[PATCH v13 8/8] arm64: dts: qcom: Add SM7250 devicetree file
+> Place the nodes in acesending order.
+
+Link [v12]: https://lore.kernel.org/linux-arm-msm/20261104-master-v12-0-57fbe9eef978@gmail.com/T/#t
+Changelog [v12]:
+[PATCH v12 1/6] dt-bindings: clock: Add SM7250 global clock controller
+> Move dt-binding definition to qcom,gcc-sm8250.yaml. The device tree
+schema of SM7250 matches with SM8250 for clock-controller node.
+[PATCH v12 5/6] dt-bindings: thermal: lmh: Document SM7250 LMh
+> Add LMh compatible.
+[PATCH v12 6/6] arm64: dts: qcom: Add SM7250 devicetree file
+> Remove cluster wise sorting of cpus.
+> Add LMh node.
+
+Link [RESEND v11]: https://lore.kernel.org/linux-arm-msm/20261029-master-v11-0-2c29e382162c@gmail.com/T/#t
+Link [v11]: https://lore.kernel.org/linux-arm-msm/20261016042432.824-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v11]:
+[PATCH v11 2/5] clk: qcom: Add Global Clock Controller (GCC) driver
+> Drop hw_ctl clock branches
+> Populate default values for GDSCs
+
+Link [v10]: https://lore.kernel.org/linux-arm-msm/20261015051926.13752-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v10]:
+[PATCH v10 2/6] clk: qcom: Add Global Clock Controller (GCC) driver
+> Update .halt_check and .ops are per the review.
+
+Link [v9]: https://lore.kernel.org/linux-arm-msm/20260901092447.3028-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v9]:
+[PATCH v9 04/13]: clk: qcom: Add Global Clock Controller (GCC) driver for SM7250
+> Make all clk_init_data instances const across the driver.
+
+Link [v8]: https://lore.kernel.org/linux-arm-msm/20260901070717.20513-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v8]:
+Same as v7. Resending the full patchset as v8 due to a transmission interruption during v7.
+
+Link [v7]: https://lore.kernel.org/linux-arm-msm/20260901064357.20055-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v7]:
+[PATCH v7 04/13]: clk: qcom: Add Global Clock Controller (GCC) driver for SM7250
+> Fixed missing (struct device *dev) in gcc_sm7250_clk_regs_configure
+
+Link [v6]: https://lore.kernel.org/linux-arm-msm/20260824150156.1310-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v6]:
+[PATCH v6 04/13]: clk: qcom: Add Global Clock Controller (GCC) driver for SM7250
+> Make all clk_init_data instances const across the driver.
+
+Link [v5]: https://lore.kernel.org/linux-arm-msm/20260824130437.2771-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v5]:
+[PATCH v5 13/13]: arm64: dts: qcom: Add SM7250 devicetree file
+> Reformat multi-entry phandle lists (domain-idle-states) to '<&a>, <&b>'.
+> Reformat multi-entry tuples and string lists (qcom,pdc-ranges, qcom,tcs-config, reg-names)
+  to one item per line.
+> Enable QUPv3 wrapper globally by dropping 'status = "disabled"'.
+> Move compatible property to first.
+> Remove clock-frequency property for timer.
+
+Link [v4]: https://lore.kernel.org/linux-arm-msm/20260821154030.2514-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v4]:
+[PATCH v4 04/13] clk: qcom: Add Global Clock Controller (GCC) driver for SM7250
+> Update .fw_name with .index
+[PATCH v4 13/13] arm64: dts: qcom: Add SM7250 devicetree file
+> Added missing capacity-dmips-mhz and dynamic-power-coefficient for cpu@300
+> Added power-domains for cpus and apps_rsc
+
+Link [v3]: https://lore.kernel.org/linux-arm-msm/20260821081125.4522-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v3]:
+[PATCH v3 04/13] clk: qcom: Add Global Clock Controller (GCC) driver for SM7250
+> Updated the way of registering critical clocks.
+> Made some more clock critical.
+        GCC_VIDEO_XO_CLK
+        GCC_CAMERA_XO_CLK
+        GCC_DISP_XO_CLK
+        GCC_NPU_CFG_AHB_CLK
+        GCC_CPUSS_AHB_CLK
+        GCC_NPU_BWMON_CFG_AHB_CLK
+  These clocks are flagged as critical in gcc-lito.c
+
+Link [v2]: https://lore.kernel.org/linux-arm-msm/20260819152545.3934-1-sreeshankar0910@gmail.com/T/#t
+Changelog [v2]:
+[PATCH v2 12/13] dt-bindings: cpufreq: qcom-hw: Document SM7250 cpufreq hardware
+[PATCH v2 13/13] arm64: dts: qcom: Add SM7250 devicetree file
+> Added SM7250 cpufreq hardware
+
+Link [v1]: https://lore.kernel.org/linux-arm-msm/20260818080754.4362-1-sreeshankar0910@gmail.com/T/#t
+
+Signed-off-by: Sreeshankar K <sreeshankar0910@gmail.com>
 ---
+Sreeshankar K (8):
+      dt-bindings: clock: Add SM7250 global clock controller
+      clk: qcom: Add Global Clock Controller (GCC) driver for SM7250
+      thermal/qcom/lmh: Switch to match data for SoC CPU-to-node mappings
+      dt-bindings: thermal: lmh: Document SM7250 LMh
+      thermal/qcom/lmh: Add support for Qualcomm SM7250
+      dt-bindings: firmware: qcom,scm: Document SM7250 SCM
+      dt-bindings: cpufreq: qcom-hw: Document SM7250 cpufreq hardware
+      arm64: dts: qcom: Add SM7250 devicetree file
 
-Changes in v2:
-- Polish the commit message and drop the embedded call trace.
+ .../devicetree/bindings/clock/qcom,gcc-sm8250.yaml |   13 +-
+ .../bindings/cpufreq/cpufreq-qcom-hw.yaml          |    2 +
+ .../devicetree/bindings/firmware/qcom,scm.yaml     |    1 +
+ .../devicetree/bindings/thermal/qcom-lmh.yaml      |    1 +
+ arch/arm64/boot/dts/qcom/sm7250.dtsi               |  803 +++++++
+ drivers/clk/qcom/Kconfig                           |   10 +
+ drivers/clk/qcom/Makefile                          |    1 +
+ drivers/clk/qcom/gcc-sm7250.c                      | 2278 ++++++++++++++++++++
+ drivers/thermal/qcom/lmh.c                         |   74 +-
+ include/dt-bindings/clock/qcom,gcc-sm7250.h        |  163 ++
+ 10 files changed, 3327 insertions(+), 19 deletions(-)
+---
+base-commit: aebb7274476403040d582c61478df8f4a7bf9cd3
+change-id: 20261116-sm7250-024b350a7bf1
 
-Changes in v3, addressing review feedback from sashiko:
-- Take icache_lock with spin_lock_irqsave()/spin_unlock_irqrestore().
-- Drop the hib_wait_io() error check that became unreachable.
-- Move the clean_pages_on_read reset to 1/4, rebase on 2/4 and 3/4.
-
-Changes in v4, addressing review feedback from sashiko:
-- Add a cond_resched() to the flush loop: with the batched I/O the
-  final drain can walk a multi-gigabyte image in one go, and on ARM64
-  each flush_icache_range() broadcasts an IPI, which is long enough
-  to upset the softlockup watchdog and RCU.
- kernel/power/swap.c | 49 ++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 42 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 571aefaf09f4..01b67293a981 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -23,6 +23,7 @@
- #include <linux/swap.h>
- #include <linux/swapops.h>
- #include <linux/pm.h>
-+#include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
- #include <linux/cpumask.h>
-@@ -223,6 +224,8 @@ struct hib_bio_batch {
- 	wait_queue_head_t	wait;
- 	blk_status_t		error;
- 	struct blk_plug		plug;
-+	struct list_head	icache_pages;
-+	spinlock_t		icache_lock;
- };
- 
- static void hib_init_batch(struct hib_bio_batch *hb)
-@@ -230,6 +233,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
- 	atomic_set(&hb->count, 0);
- 	init_waitqueue_head(&hb->wait);
- 	hb->error = BLK_STS_OK;
-+	INIT_LIST_HEAD(&hb->icache_pages);
-+	spin_lock_init(&hb->icache_lock);
- 	blk_start_plug(&hb->plug);
- }
- 
-@@ -242,6 +247,7 @@ static void hib_end_io(struct bio *bio)
- {
- 	struct hib_bio_batch *hb = bio->bi_private;
- 	struct page *page = bio_first_page_all(bio);
-+	unsigned long flags;
- 
- 	if (bio->bi_status) {
- 		pr_alert("Read-error on swap-device (%u:%u:%Lu)\n",
-@@ -249,11 +255,19 @@ static void hib_end_io(struct bio *bio)
- 			 (unsigned long long)bio->bi_iter.bi_sector);
- 	}
- 
--	if (bio_data_dir(bio) == WRITE)
-+	if (bio_data_dir(bio) == WRITE) {
- 		put_page(page);
--	else if (clean_pages_on_read)
--		flush_icache_range((unsigned long)page_address(page),
--				   (unsigned long)page_address(page) + PAGE_SIZE);
-+	} else if (clean_pages_on_read) {
-+		/*
-+		 * Stash the page on the batch list, load_image()
-+		 * will flush it once hib_wait_io() has returned to task
-+		 * context. The page is neither on an LRU nor in the page
-+		 * cache, so its lru member is free to use as link node.
-+		 */
-+		spin_lock_irqsave(&hb->icache_lock, flags);
-+		list_add(&page->lru, &hb->icache_pages);
-+		spin_unlock_irqrestore(&hb->icache_lock, flags);
-+	}
- 
- 	if (bio->bi_status && !hb->error)
- 		hb->error = bio->bi_status;
-@@ -295,6 +309,24 @@ static int hib_wait_io(struct hib_bio_batch *hb)
- 	return blk_status_to_errno(hb->error);
- }
- 
-+/*
-+ * Flush the icache for pages restored since the last hib_wait_io().
-+ * Must be called from task context (after hib_wait_io() returned): all
-+ * bios of the batch have completed, so the icache_pages list is no longer
-+ * touched by hib_end_io() and can be walked without the lock.
-+ */
-+static void hib_flush_icache_pages(struct hib_bio_batch *hb)
-+{
-+	struct page *page, *tmp;
-+
-+	list_for_each_entry_safe(page, tmp, &hb->icache_pages, lru) {
-+		list_del_init(&page->lru);
-+		flush_icache_range((unsigned long)page_address(page),
-+				   (unsigned long)page_address(page) + PAGE_SIZE);
-+		cond_resched();
-+	}
-+}
-+
- /*
-  * Saving part
-  */
-@@ -1116,10 +1148,12 @@ static int load_image(struct swap_map_handle *handle,
- 		ret = swap_read_page(handle, data_of(*snapshot), &hb);
- 		if (ret)
- 			break;
--		if (snapshot->sync_read)
-+		if (snapshot->sync_read) {
- 			ret = hib_wait_io(&hb);
--		if (ret)
--			break;
-+			if (ret)
-+				break;
-+			hib_flush_icache_pages(&hb);
-+		}
- 		if (!(nr_pages % m))
- 			pr_info("Image loading progress: %3d%%\n",
- 				nr_pages / m * 10);
-@@ -1134,6 +1168,7 @@ static int load_image(struct swap_map_handle *handle,
- 	if (!ret)
- 		ret = err2;
- 	if (!ret) {
-+		hib_flush_icache_pages(&hb);
- 		pr_info("Image loading done\n");
- 		ret = snapshot_write_finalize(snapshot);
- 		if (!ret && !snapshot_image_loaded(snapshot))
+Best regards,
 -- 
-2.25.1
+Sreeshankar K <sreeshankar0910@gmail.com>
 
