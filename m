@@ -1,101 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.182
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794821246;
-	b=TAFte5ZsLws0KYSrhAXK/wl1NaRhOiceoPkvDiT1qXbOZziNTS+Tz21+Gygzlxd9Z1e1
-	 zbIosAyBV1Iwf6rdQZPKdF9oWAhljz2c5D9UXl0FzuoMx7VBPnbi3uNikLb0BLhY3D89P
-	 IwOIVcygdCe6AmJPD588WLICQI+KoFUSx3MYz5LYc7IqtjJlmRn2xCHc5SCLsScsQGZV+
-	 l13wXcb/sIXzQieDJxqHJ2MMSHxeCfqZxy39zyrjvmon1Ux7Lv8hra24xxbFZ3V9IUGLR
-	 o0/Ws5WUYzEKAEDYEiP2dbm79GlL0ZUz2oIIgoBZD2jJhrgGZJRgKhr5Mh3mSzQ8juQ==
+	t=1794821782;
+	b=CwNjd/jEb8T7s0ssDI7YPcGPQ208f+EvEPs65QfJyASI4cx1HBf8XpjwuGpfJXwTfkf7
+	 mwLA21yC7DuKEIRPdToKYtOZ0ctzrhTkZyxWYPXcXnCCrC7dvJlJRf1tayOEEMmMWxcNp
+	 sPxr+wh2jKcgTcQljOMXRWLFaex9E2Sb8cn+EHRDS4tYEtqp8cxjtfUi0YbTy9jb3Xmtd
+	 SjFeFth+o+OktiGlHfBl3guedgmc3USAbjn9jTM9D49spFpJuzQgK4kO+3UHXs3xArnHp
+	 9EwkMkV3g3XkDzkpZKddu63fLyjKx2Hf9JhqTJZuat08RdD8Wqnp3T7fvSZ5vDM1GUw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794821246;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=3RDL1fZo8aXNiQEk++kgWnQkoCZHciDwpPC04gZ5fIE=;
-	b=og/q2JFqUXOIuWvJswTpxI13jh7RylEEMLMLdXTsjCUeBvfzNl369AJVknA42ibGDbEg
-	 OR4gOCj1TVIzfjvnZHkE2zus2PQlOytfq6PYWXbuQ2qBrSSCHhZIwgL5KmqNXvioK6UG9
-	 IMjJQ5Yo/Y/dpGAQZ5EBasEPkzFGRMUB6rWDKLx9i1uAzH8igGiGG4Zbf0jkRnfNBgvO8
-	 ZCkoYkLEze15LUc8mO5i65mu9XPkQCNyQlDghxsSvQmTNcfI08/gZkBVlBKMeFWFFwD2O
-	 HtDe0j5LVJ9b/mFf/IjHgBQZeVcvI0sN1+m29C98fEIza6roumtWebenveWPsk7FhQw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794821782;
+	h=Received:DKIM-Signature:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key;
+	bh=ViEliqle6kflCGgFCg32cx4wLOgez678KjjsxFsox/Y=;
+	b=vWPVZuSFnPlKxRI8Qi4qGv6c9yH9KqM3RdxTqx9maFbg0OTX9kt0o1ehw9mZde4VYvA5
+	 9sPuHuiOHqJIRjqk7O+UHXTLEtevHi50h3u653lqQ2ci4n/8DXw+VSfhZVZkWre0CixiS
+	 PtJcv6h31iEGK0/YOqEObs+xfxRdN/JBKSN1B/qbCsGy6lGtUMKNF1KXFnFMdrqMbzIi1
+	 J+zreEtO/uqPOWdHgwTds/CBzl2urwvx61VRWmQ9/fv4MjB3o73oAO9OT1UZF4Bz0uOpI
+	 cWmEqCJbnbzaPOSuYOld8DQUUtZpXMqE3Qi1hLV4txFxIfRXS+xdWQtAKz4cfe21dZA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=q2dfIiJa;
-	arc=none smtp.remote-ip=209.85.215.182
-Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q7fR+OIR;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 772D3606A31C
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 09:27:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 772D3606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25A58606A31C;
+	Mon, 16 Nov 2026 09:36:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=q2dfIiJa
-Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-cdba1bbde0bso1057034a12.2
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 01:27:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794821246; x=1795426046; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=3RDL1fZo8aXNiQEk++kgWnQkoCZHciDwpPC04gZ5fIE=;
-        b=q2dfIiJavJvuJooQljuRg9haFaPJ1+O/ROT3r9C/a93bNbvscqMVmY/d4OuCtGI50l
-         Hce3rxIVETCP6IIBSJg67wxo0cQtrl6393XwBd/+NV0buV2/b4sn+3f8yx51KWoxJLdr
-         vDDcdwTym9GtVCkoEyEELud3XbzJeRjUokDooN3mU87STne+uPHyZUrdk9TyrqT8htoB
-         GwenKRNs4ymlbKqytmzwZNqE2FK1VC9iLrL5XuFLT5fUXIncpQnxtIEJ0AKQZWOlOfdk
-         nI1ZHwe/3gEfhL78NFfRRvN/Xul2Hsibxi1z3c7eqMx4mWlZe/ZHyAQwusT8w7gyOOqu
-         JTFg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794821246; x=1795426046;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=3RDL1fZo8aXNiQEk++kgWnQkoCZHciDwpPC04gZ5fIE=;
-        b=n1zMCRaOIjTy2etPN4d8QjoCZTx3rzOEhPJkyqXoVHtNtnZCUOA4rfc5U7EwjjKLAe
-         sYqyjRnlDCqdGQaBTL6k7+kY8eG9aUfpVaXGBhbc6IYC94QmMpwG9Z83dcR/HKxgaMFC
-         WS4qDrGWKhWsOpj1USMr9mbIOdpPOCrZtosaNbQ1bi+uDPYgacSmssL8V1fzqwFNmF8x
-         13laFVII9Re8tuCoYeZuGJk8ZmCs9wrLpX5r6/c0YeWjQmykrxuGrp/sHgquuQM8xAyV
-         oFojnLbIUEJqYn4RF3yiy0KkStERbtGrXP11OK5YecCX5ZTV+xf6iFYVSNEd1tD4uBqT
-         8c9Q==
-X-Forwarded-Encrypted: i=1; AL+hErELZ26iIZGfxXhIMWKoeLHABqbD4vfSrHFkcSQWpHdgHnamoaBEtdF9CzM/APr69fk9pVIGWJ9ENA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+ls3Fni5XJQMq1kfgU4g8fXc2YsRdlCdGxzGWGxMjtNGGC0ejb
-	MLiM/xB0qVW+LOwQejRbr6yXDpIrsMqlQlSuKT5mKUBcje98OwIRZIxi
-X-Gm-Gg: AZFdTZdm0INjrklQVNbf7P6go0VT5y9EW6Y+hqoREb7xhkTToirFZytrApMUYi7tX0T
-	vXxjxCqavHgdf3+8STPWHjuySBc5de0zTyEAxC7FXSWvSjRicIsCeulkIML4QV0VD5/VECsMWkh
-	Yq9jg6cNP1V9txvUex6Qs3bre+tYGNXaRxQerfT9sf70R16+FsYcfbiAdn9gCtadJIo5rwWvHkf
-	bTvr5f7R0TW6Nm1UaUO4x6OPPk4GFFifV6rqIV9iCx11GvelO5IQF31NI5XpGmX/pUU5fLj0rjP
-	sSnj6/XLYjBypyeUncp03nVkfFUb3OvFWj+oNTegmBvHz6IIlNgXiPT9w8yVUWr4a5kwzSsSoGc
-	4RhxjcPlN3/UNjCESmaC9JlMckQpBRuO5+/RURjGeO+JEvJdgArBdxSM1UrxObk156teD6zh2do
-	Qt3wXRStKy2KliioGPOFOshCOlHwG7/j6+HG95fOmYxrGCH8870hA3OM2AugxjT+r7iLkJCRm6k
-	b5U0IHEEZC9/P8IYEzb1JAmLoClu02kdb+hHsMYL5U3Sgf7HiPnthulEuOOe6lQEN5yIUSz7njS
-	yUXquhHqIULuRYUyKtHSB+GlOVrkjAD+g19FXCd1L81VFg==
-X-Received: by 2002:a17:90b:5910:b0:3b0:aaed:48d0 with SMTP id 98e67ed59e1d1-3b1b0b4d0d0mr8836956a91.37.1794821245843;
-        Mon, 16 Nov 2026 01:27:25 -0800 (PST)
-Received: from osman.mioffice.cn ([43.224.245.178])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1aeb18b73sm15680884a91.3.2026.11.16.01.27.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Nov 2026 01:27:25 -0800 (PST)
-From: Zhan Xusheng <zhanxusheng1024@gmail.com>
-To: rafael@kernel.org,
-	thnkslprpt@gmail.com
-Cc: viresh.kumar@linaro.org,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	juri.lelli@redhat.com,
-	vincent.guittot@linaro.org,
-	zhongqiu.han@oss.qualcomm.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	zhanxusheng@xiaomi.com
-Subject: Re: [PATCH v2] cpufreq: schedutil: Skip busy-CPU hold when NOHZ is inactive
-Date: Mon, 16 Nov 2026 17:27:20 +0800
-Message-ID: <20261116092720.2552651-1-zhanxusheng1024@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <CAJZ5v0g-oDagp2GrZyhLmT-BYJqcm-D4s1eTrXCxB-fj5BNixw@mail.gmail.com>
-References: <CAJZ5v0g-oDagp2GrZyhLmT-BYJqcm-D4s1eTrXCxB-fj5BNixw@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q7fR+OIR
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C9F11F000C4;
+	Mon, 16 Nov 2026 09:36:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794821781;
+	bh=ViEliqle6kflCGgFCg32cx4wLOgez678KjjsxFsox/Y=;
+	h=From:Subject:Date:To:Cc;
+	b=Q7fR+OIRMhdXdZ9zp/PcYceBlSXFHyNV8n1ju2GC4d9wfSVFk+tujnBRx9mvB/qvZ
+	 /9Dn+a6oVUrsV+XhluZAq5Uu+43TLJLUqZeF6o7fKZ6hzX4wOR846+S5UMaLceKDEp
+	 oKyJPmV3uXnlN7LZ7tj7Ayth7N5nHzlXCF8YmmlHGeaiHCzfLZzaxmd2bZ5DWWTgML
+	 hM2ttlNPfBBwArk0meBKMc22s3/4A19frV+vrZr4Z5U2PZQdx6DziAxONyA7oLUXMO
+	 fMnT9K3JDB+Ibay5qQca7PidwD8t6vrgWBlQrFRmDSkeQtxZWdIKzG1parZnKgHat7
+	 lmGWJD32oCQDA==
+From: Joshua Crofts <crofts@kernel.org>
+Subject: [PATCH v2 0/2] PM: runtime: add new runtime metrics and summary
+Date: Mon, 16 Nov 2026 10:36:08 +0100
+Message-Id: <20261116-pm-runtime-summary-v2-0-a3d8654baf8f@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,17 +53,96 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAIjO+moC/32NQQ6CMBBFr0Jm7RimJFpdeQ/DAugAE20hUyASw
+ t2tHMDle8l/f4PIKhzhnm2gvEiUISQwpwyavgodo7jEYHJzIaIcR486h0k8Y5y9r3RF65y5VVT
+ Yom4gDUflVj5H9Fkm7iVOg67Hx0I/+ze3EOZIhuvW2MLVV/t4sQZ+nwftoNz3/Qs8Wr/ytQAAA
+ A==
+X-Change-ID: 20261110-pm-runtime-summary-8dd29a1383bc
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+ Pavel Machek <pavel@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>, 
+ Samuel Wu <wusamuel@google.com>
+Cc: linux-pm@vger.kernel.org, driver-core@lists.linux.dev, 
+ linux-kernel@vger.kernel.org, Joshua Crofts <crofts@kernel.org>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794821782; l=3468;
+ i=crofts@kernel.org; s=20260422; h=from:subject:message-id;
+ bh=asIiqWvwTSWXMC3eVCm+se5bGbZK1Z7Ol8TWP0r6DhE=;
+ b=WiO2Z25V4sDZg1GDbvwnfsWpb0Gepi3Esq8S/+3qAXm8FLSa/+t/BIrnJIgfhsZeEvBNEKNO4
+ fqFHgIjQR/mCERJRWbbtHIT3wrP7PezJ6qc8GUklu4MoNDof80puh0w
+X-Developer-Key: i=crofts@kernel.org; a=ed25519;
+ pk=Xd+UVoRPiiI0K3LHQ2XIcXmO0jvVuFTv9eTx3lgBphI=
 
-Hi Rafael,
+Add a new set additional PM runtime metrics to improve power management
+debugging and reporting (these metrics may be useful to userspace utilities
+such as Powertop).
 
-On Fri, Nov 13, 2026 at 07:21:00PM +0100, Rafael J. Wysocki wrote:
-> I'd love to see some feedback on this from the people on the CC.
+MOTIVATION:
+The current implementation only measures the duration a device spends in
+suspended or active mode, which is very limiting. We can't find out how many
+times a device changed state or what its shortest suspend cycle was.
 
-idle_calls only advances in nohz mode; with nohz=off it stays at 0 on
-all CPUs, so the hold never releases.
+This overview would be useful for detecting power "thrashing" and tuning
+autosuspend delays. Currently, sysfs only shows the total time a device spent
+in active and suspended mode; from an energy standpoint, a continuous 50
+second suspension is different from a device cycling 1000 times for 50ms each
+(these transitions can be pretty power-hungry). This could help userspace
+utilities like PowerTOP to more effectively determine what is causing an
+increased power consumption.
 
-Reviewed-by: Zhan Xusheng <zhanxusheng@xiaomi.com>
+NEW FEATURES:
+This series introduces the following new metrics:
+- resume_count : number of successful transitions to active
+- suspend_count: number of successful transitions to suspended
+- last_suspended_time: duration of the most recent sleep cycle (ns)
+- min_suspended_time / max_suspended_time: shortest and longest sleep
+  cycle durations to help detect power thrashing (ns)
 
-Thanks,
-Zhan Xusheng
+By reading the debugfs file /sys/kernel/debug/pm_runtime_summary, you get
+the following table describing the power stats of each device with
+runtime PM enabled:
+
+Device                           Status        Resumes Suspends   Active(ms)  Suspend(ms)   Last(ms)    Min(ms)    Max(ms)
+--------------------------------------------------------------------------------------------------------------------------
+0000:00:02.0                     active              1        0        45688            0          0          0          0
+0000:00:1f.0                     active              1        0        45687            0          0          0          0
+0000:00:1f.2                     active              1        0        45686            0          0          0          0
+0000:00:1f.3                     suspended           1        1         1658        44028          0          0          0
+00:03:0                          active             15       14        19627        25899         42          5      14811
+00:03:0.0                        active             14       13        19626        25900         42          5      14811
+
+TESTING:
+Tested with an x86_64 defconfig kernel and QEMU.
+
+AI ASSISTANCE:
+Gemini was used to prepare this series.
+
+Signed-off-by: Joshua Crofts <crofts@kernel.org>
+---
+Changes in v2:
+- Drop sysfs patch as it would have a non-negligible impact on boot times and
+  the debugfs summary is enough (Samuel Wu)
+- Expand cover letter
+- Fix Sashiko findings - typo in commit message, race condition, duplicate
+  function call
+- Link to v1: https://lore.kernel.org/r/20261110-pm-runtime-summary-v1-0-12ebf283db78@kernel.org
+
+---
+Joshua Crofts (2):
+      PM: runtime: add additional suspend/resume metrics
+      PM: runtime: add debugfs entry for pm_runtime_summary
+
+ drivers/base/power/runtime.c | 162 +++++++++++++++++++++++++++++++++++++++++--
+ include/linux/pm.h           |  12 ++++
+ 2 files changed, 169 insertions(+), 5 deletions(-)
+---
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+change-id: 20261110-pm-runtime-summary-8dd29a1383bc
+
+Best regards,
+-- 
+Joshua Crofts <crofts@kernel.org>
+
