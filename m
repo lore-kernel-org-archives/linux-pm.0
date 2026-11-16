@@ -1,59 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794830340;
-	b=uOicX5quINkSS4meH4TWZPuoOpu4falK0yaha9InK71qoXtaOtyvmuji2F1uXVeOMbea
-	 ke5bUB9WcnMgGQBn8AWdm+/S7qBkIcsKiES4bKimDiJ1Jj4AhARJbLQ839gRZ7Mv30eTa
-	 X5kHMig47BY2O7b5C4OcT6xnzA7HASIbWU7jYT07T1OxCMRcBRQ4znS8NrguJaoCAKwZl
-	 GWP78KwvWN4ZoOAkl49Aqt3f0VNGeQc6KznPT8TV+RyhUsEkLcAzhvZfsrg1YjOxdDWOv
-	 IKIJ3R5DwBSQqmGCFCcKseUfVIL8AXXTIk8nqpWYvwuzkAJl5+1v/cmrhyXR7y5PkAg==
+	t=1794831303;
+	b=JAQDQ5rorvDGmieClOi3yeMWwFO+YNtTia7JyAgrv9Pl6atmxJYjgy7rw7Go8S3fCb1d
+	 Ti5DnriPDTCWyIigXWGcQTJdptkQq844/T2oWxXHBqXP0KIv8u+SBquNus+gri2o7zqnG
+	 4K1ID+ZcYtUaRjmp7BhICLxi5wK4yE361DF05hwknpD5I8VrEYPZS2DSYxOEyMNfvIfxK
+	 9jMX4vWXrNeOqQD4naDvG4bJ9UAP2YwVlC0gjGzFJ5cD0foAob4m6mVIFf4M5dhKjZL0b
+	 v+O1Mwo0DhTnQ4nvsILt/EWjYKV3s/eXyLD9afyxoJJHgf9XGVci5Sgd5jl2bBz/fng==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794830340;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=KXBcB6uNW5ouM37NwNEoi+ql5ySZLImh0lVzkayzOW8=;
-	b=4VgvJJZRQuo6+6wEsoiaOMWFF0Oh4WOoRcvP758nUp+6wliyg1yK9xqJ7O8oBklMHzSY
-	 HqWaUlY1OR+8zqx2K4pqkUrXbcAbCdz3voxZpBnyEH7QG7OMo97KflstkKW2iRw75HRik
-	 2rcJsKNpbaWZX14zKIR1KZzeWuU1qrUzaE/MptKUliKAXcE31vcGwzaePrr/gsvvnh3d4
-	 x6ZlbbMpqI4iG2s3Bm9jYeCaKgbE6iOjIxmwRdhxMgUZHPeWF7tK4dJs5gX6pr/Tgh/4L
-	 ICOcigLP5GuOeFW2Sy6pSTpnQhn6ifWJIbrAgUUqRj5Z9chwJunsBmE2uUgAzsZgmYQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794831303;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:From:Content-Language:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=p0OKzksFkMy4s+l/0Lf5EK/s0OAUHxiIj6XZiD2cZBw=;
+	b=T3bnTLqNxyWIgBKYaICvRn2l2k8YdtzFlx4jNOeUV8DRib/BzLBL7hNKkgGtzlalix3T
+	 Ep+nnyuBl25etbe5G5Oo9zXUBdPiVqQctOGnwB+Y7Xy5zoYct7ThaLFM/ro4qlh8pkPJj
+	 UfHnOR7k6NvMkfoDPLAVeNXpThbvIeXjnar9/V3hzDgA607qJJsps3Ub2l5xPCQNFHF4/
+	 63jZlq1yUqhv8KhNaA3xS5+NRlvNv0jPsg9foJhciR9FeewrbXkXJ1az2wRRNjB5Co+3n
+	 6jQzgNygP4Rx9f7MCw7QcHULVmMlA4IGi2lUTWUKjqE16DIAhbtErOuS8aDSNL96QoA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BiSN7I8z;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VcTD0VCT;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80E95606A32F;
-	Mon, 16 Nov 2026 11:59:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 751A4606A32C;
+	Mon, 16 Nov 2026 12:15:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BiSN7I8z
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 238B61F000C4;
-	Mon, 16 Nov 2026 11:58:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VcTD0VCT
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08A141F000C6;
+	Mon, 16 Nov 2026 12:14:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794830340;
-	bh=KXBcB6uNW5ouM37NwNEoi+ql5ySZLImh0lVzkayzOW8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=BiSN7I8zzul/TLEoVVXXETvMPwnfgHpJ3hMMm2vBW5DCJhPoowDg9uxZSCVz6P8/x
-	 Rjw2LXfBbTYvB2WOSlLGKL/hMpW+cxPfVg/D0IlgIGyMCpT5xtq1VbvI7rEzXf66y6
-	 xotCsLsU6WNAxhM8EqudlvxJ6C+H//scMQTnwBRfrHCWZr+NzXtSSea7e5RzPc+/LU
-	 pFcaJ9YT3RC8yKV/+1LmFzryG1CUzQ1NSuJjn/XoBbkLtrf9XXejx8usok+LVLJGE9
-	 tx9IyRQpKgz/B0QiU386uxOw82bn3ey9VDZx6/CSszGrBjz8TCbAbz3W/HQm7kP9bb
-	 6ifnMAojaFwWg==
-Date: Mon, 16 Nov 2026 12:58:55 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>
-Cc: Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Ulf Hansson <ulfh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Abel Vesa <abelvesa@kernel.org>, Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH v2 1/3] dt-bindings: power: domain-idle-state: Add
- system-state
-Message-ID: <20261116-icy-free-lionfish-c3eed8@quoll>
-References: <20261113-s2idle_state-v2-0-ad604182e7e7@oss.qualcomm.com>
- <20261113-s2idle_state-v2-1-ad604182e7e7@oss.qualcomm.com>
+	s=k20260515; t=1794831303;
+	bh=p0OKzksFkMy4s+l/0Lf5EK/s0OAUHxiIj6XZiD2cZBw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=VcTD0VCThQIzd4aIf36tVET88367f7K5m94QAhwtBRVCNL0ZOljOaSLs58Qw4/Uh0
+	 iQ4tstAoMQggG23lGLC6GiX+qZofYzFrSp+dfXrZ/DF/avw8/1tGa75nQ7EV26Np8T
+	 urSBmB4GQb4gDprK86/fjB5m/xjFfZQQXizaMCajNcdewOFrH4z/S/f4XnPDFCRCNk
+	 vPb3Q7Fdlgoi4JSSaszWl1bOIlV9GfMaC1JMo1cx/RZ4tWvmey96/d6deZjomV8Lnj
+	 c3kurvoSqPCM8d7X0AsfKaydu10Rf/HU0jBeQ/m8LaHQI7n43+tV0fB2+BfHiOmTEH
+	 mm2ZJAL5z3jvQ==
+Message-ID: <640b5d23-6007-4e6d-b374-52b079186751@kernel.org>
+Date: Mon, 16 Nov 2026 14:14:51 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -63,42 +51,50 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261113-s2idle_state-v2-1-ad604182e7e7@oss.qualcomm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/4] dt-bindings: clock: qcom: Add NSS clock controller
+ for IPQ5210 SoC
+To: Luo Jie <jie.luo@oss.qualcomm.com>, Bjorn Andersson
+ <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, netdev@vger.kernel.org, quic_kkumarcs@quicinc.com,
+ quic_linchen@quicinc.com, quic_leiwei@quicinc.com,
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+References: <20261116-qcom_ipq5210_nsscc-v3-0-1eaf92698379@oss.qualcomm.com>
+ <20261116-qcom_ipq5210_nsscc-v3-2-1eaf92698379@oss.qualcomm.com>
+From: Georgi Djakov <djakov@kernel.org>
+Content-Language: en-US
+In-Reply-To: <20261116-qcom_ipq5210_nsscc-v3-2-1eaf92698379@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 13, 2026 at 10:25:25AM +0530, Maulik Shah wrote:
-> Some domain idle states require system-wide coordination and are not
-> applicable while the platform is up and running.
-
-You repeated the property description. Say something more. Why they are
-not applicable when platform is running? So if not running, when are
-they applicable? Why?
-
+On 11/16/26 12:19 PM, Luo Jie wrote:
+> NSS clock controller provides the clocks and resets to the networking
+> blocks such as PPE (Packet Process Engine), UNIPHY (PCS) and EPHY on
+> IPQ5210 devices.
 > 
-> Add a boolean system-state property to describe these states.
+> Add support for the compatible string "qcom,ipq5210-nsscc" based on the
+> existing IPQ9574/IPQ5424 NSS clock controller Device Tree binding. IPQ5210
+> additionally exposes a pair of EPHY-RAW Rx/Tx clock sources used to derive
+> the clocks for its integrated 2.5G Ethernet PHY, so extend the clocks and
+> clock-names lists with "ephy_rx" and "ephy_tx".
 > 
-> Acked-by: Kevin Hilman <khilman@baylibre.com>
-> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
+> Also add master/slave ids for IPQ5210 networking interfaces, which are used
+> by the nsscc-ipq5210 driver for providing interconnect services using the
+> icc-clk framework.
+> 
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> Signed-off-by: Luo Jie <jie.luo@oss.qualcomm.com>
 > ---
->  .../devicetree/bindings/power/domain-idle-state.yaml       | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.yaml b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
-> index 4dd4f59bbbec..b19952f6225d 100644
-> --- a/Documentation/devicetree/bindings/power/domain-idle-state.yaml
-> +++ b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
-> @@ -45,6 +45,12 @@ patternProperties:
->            state will yield power benefits, after overcoming the overhead while
->            entering the idle state.
->  
-> +      system-state:
-> +        description:
-> +          When present, this state requires system-wide coordination and is
-> +          not applicable while the platform is up and running.
+>   .../bindings/clock/qcom,ipq9574-nsscc.yaml         |  47 ++++++++-
+>   include/dt-bindings/clock/qcom,ipq5210-nsscc.h     | 106 +++++++++++++++++++++
+>   include/dt-bindings/interconnect/qcom,ipq5210.h    |  18 ++++
 
-So when is it applicable if not when up and running?
-
-Best regards,
-Krzysztof
-
+Acked-by: Georgi Djakov <djakov@kernel.org>
