@@ -1,95 +1,68 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.17
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794844336;
-	b=hAlX8ZexkL701fd0zbJOElrEDoV2bl/nkay/G2UxggQb6bhj6BXtmXOjxToZEPxgF1ij
-	 B9RR3IGyKyME5cUM9Jsvtu/ZphenxSVjx9U1gskHqhIzEgi2bOGvVAe0+PzLt9vNjju9p
-	 WyIohJFe45LEXfLZi+LMX07mSYd2N8lyxboRDLYnMZsQER5HcGYDGuG/rQ1Ip740pR8jh
-	 VdUK7L041YnCgVZTcW22/0reLrJu3iCEJAizu3KNFGZpOH2YV1G7+FPpvMycUGO8VBlmZ
-	 dL/7tYd8RaQWVeZbY2jWxjlMKoehZYOFoNLybgC8dVptdy0uyWrHG5dj7q/ED5NZtUA==
+	t=1794845190;
+	b=NJOvO9j0vXPQciB+6piMqjI7dU/7mKq3vPDOzPNad0jFDvmRBzVNX176i9/JKFyoS4Xi
+	 kA25JqzQVeiYpXJ2WEjL4A+6O8slXD5I7ETRXG8nU7iGcsxPZf25ArafXmK4Iv9jYbWSa
+	 YUhrSbiG8IoBv7plZ/WKwtaKJljEuyohlSnAVjKapsWN84WjRNdG8ZkaE4fhmJNg7pk/X
+	 1kZEF7FkV80azf9f/VCz2FPCyaxq3wHN5od/WpU0cV9CW1tAXZUqYtwDEkKn2uGDgnSAu
+	 hZObw96i3Zh96+e1D0TCGm/rUFGuWRc/XcBHvLdrh6svkKpk4104ooD036Ih4McvuHw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794844336;
-	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To;
-	bh=tc6KfHj5fySnLDo/yssasn7KXGGvXcSn8JCgqMRWVxQ=;
-	b=M/iaVomGYpVSksW1KdJggGVP9jcu05FHF5h4deKEQ+fN0q3dOyqoGDCMYXE+3DuGU8MP
-	 lX5p3SGlYyqLFpFDdEm2DyZ+Ahju/dZbI1EYYKvBG7aHgrAwPMn8sJfUuSaYAePo6pvQx
-	 /uougziPd8hA2kWyih4ttV32snqF+KfM4jWYpXbLuTz/gcEgAkgfytiSfmnM6rHX4b81D
-	 ZtrhgJifiTcNU0Eepe0AqIh2QHZ9FpX9ACxqv4ToED270PROhCVaaBiBW41pgad5iwwL8
-	 vuydK0N+TXr4V4zuf5F6GWNeUQ7yvwvp1c9mRZxfG0GvsI3hla4prXIEazb2oGlFnew==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794845190;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=KkPjuzoL5FbYvRRmju0PcrJ03uAzI07vEAWraSUh5PU=;
+	b=a+fz7zqLErjVHHCYjyxW2RYR0Whv17J5da+eHgJUHln5pA0FENpOqzh8td0qCJbz9fM6
+	 cDAK49jTHvZrcTF3i6tAHrFqlxEGp1DoSVBvhOZfMTXwl6tzycI0Ke1oPmxEj99nj3u/W
+	 7LuBDTX40XTET2ZGe+EIxZpiTVZC0X2C/VWQqMLrp+LrjgLU2R7PWwswruKPGvUH5rRTX
+	 q8aMMwYZmduF4/Lu6QyelzV+R57I383BPn8BJF+sItrJ7MByxChdvjnEyQM4I/Zv89TCj
+	 5N3QBpWDQmA5K6i4og8LRwXFmMJ/KIOnPV8KqbR/ULQmFRlvHbZ2cl79tKdO+9yKIRg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ideasonboard.com;
-	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=NusKEKiY;
-	arc=none smtp.remote-ip=213.167.242.64
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SZtO8pJh;
+	arc=none smtp.remote-ip=192.198.163.17
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D21F606A331;
-	Mon, 16 Nov 2026 15:52:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4D21F606A331
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 620AA606A31C;
+	Mon, 16 Nov 2026 16:06:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 620AA606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=NusKEKiY
-Received: from killaraus.ideasonboard.com (2001-14ba-7086-3000--a06.rev.dnainternet.fi [IPv6:2001:14ba:7086:3000::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id ED0204BB;
-	Mon, 16 Nov 2026 16:49:45 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1794844186;
-	bh=dmodi+YIJbHNHccq3QM7tWgiNzPRHtMFkx//VJBaXh4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=NusKEKiY4bzAOfEoYrIhBXyGlIkZI3PnloPf2BxBVRwuEIJvmtu+vw7O/jc41VQuU
-	 J3Ty1U67T4ibE4hILXY3O/CpMrCBJQpictxpRHUyim+WJ3gBdqwhQf8GriCHlXRv3w
-	 cuUezGZlAQGClI/3BR6NS7TrNFoxwJ2vIQYfr6tw=
-Date: Mon, 16 Nov 2026 17:52:11 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: Frank Li <Frank.Li@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
-	linux-pm@vger.kernel.org, Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
-	Simona Vetter <simona@ffwll.ch>, David Airlie <airlied@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
-	Alessio Belle <alessio.belle@imgtec.com>,
-	Luigi Santivetti <luigi.santivetti@imgtec.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Robin Murphy <robin.murphy@arm.com>, Yong Wu <yong.wu@mediatek.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Dafna Hirschfeld <dafna@fastmail.com>,
-	Michael Tretter <m.tretter@pengutronix.de>,
-	Daniel Baluta <daniel.baluta@nxp.com>,
-	Will Deacon <will@kernel.org>,
-	Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-	dri-devel@lists.freedesktop.org, imagination@lists.freedesktop.org,
-	intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
-	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org, linux-media@vger.kernel.org,
-	linux-rockchip@lists.infradead.org, linux-sound@vger.kernel.org,
-	sound-open-firmware@alsa-project.org, imx@lists.linux.dev
-Subject: Re: [PATCH v2 2/2] PM: runtime: fix stub pm_runtime_get_if_in_use()
- for !CONFIG_PM
-Message-ID: <20261116155211.GB1763340@killaraus.ideasonboard.com>
-References: <20261116152513.2676573-1-Frank.Li@oss.nxp.com>
- <20261116152513.2676573-2-Frank.Li@oss.nxp.com>
- <20261116153139.GB1763944@killaraus.ideasonboard.com>
- <avskkbztzVF_SRo6@SMW015318>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SZtO8pJh
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794845190; x=1826381190;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=Db9OHh0nkyuxQ9oXRsKOwiEZL3Lx5s1Vi/G1JI8chj0=;
+  b=SZtO8pJhtG9SVGUy7fFHeT5z3t9ey3+KZIqDkaYmFGKKXMnOwppKxm+/
+   Bgp+JOoaQs0WsNTM6KJ4lXuSaaOdXUq2R9YgtBeJaOc7i5futAHpfiMIj
+   5wibw68+gYUqHLZIlaIKdkNf02rySPk9GYKYVefzKGoIDcKsiMes+AmHU
+   zPZMUgbuPP3uCeJIK1XF7qB5VauV4n+uq3+qZeZ0JO5kR8sLFAD3xUWeq
+   CmoxQbH4I8zwDw/zA5wmjOjqgxvI850pHpdeOk0HHSqY6TZhBuYLp4S+b
+   GNsMEZHQFz3bBHD7M8j7WA4/nJ9ugZqJQ9XmcrvOCKDwJt6DslNwM0L3G
+   Q==;
+X-CSE-ConnectionGUID: +i/a4lXJQHG4y8JXbQQtwA==
+X-CSE-MsgGUID: 160xJzJnQg+TrW1TBArIqQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11968"; a="3576266"
+X-IronPort-AV: E=Sophos;i="6.27,217,1787036400"; 
+   d="scan'208";a="3576266"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Nov 2026 08:06:29 -0800
+X-CSE-ConnectionGUID: AfzR70nDQR+OMGXOrPQ3nw==
+X-CSE-MsgGUID: ti3VtIj+SwiLbX/gL4bSPw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,217,1787036400"; 
+   d="scan'208";a="9751505"
+Received: from skuppusw-desk1.jf.intel.com (HELO [10.24.80.125]) ([10.24.80.125])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Nov 2026 08:06:28 -0800
+Message-ID: <9cb88cc0-f1f2-4c43-8a63-2698164da76b@linux.intel.com>
+Date: Mon, 16 Nov 2026 08:06:27 -0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -99,166 +72,58 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <avskkbztzVF_SRo6@SMW015318>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5] PCI/PME: Resume Catlow Lake Root Ports on PME with PME
+ Status clear
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H . Peter Anvin" <hpa@zytor.com>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20261103193136.2410148-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+ <avrouGIdiXIxE_5Y@wunner.de>
+Content-Language: en-US
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <avrouGIdiXIxE_5Y@wunner.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 16, 2026 at 09:43:13AM -0600, Frank Li wrote:
-> On Mon, Nov 16, 2026 at 05:31:39PM +0200, Laurent Pinchart wrote:
-> > On Mon, Nov 16, 2026 at 10:25:11AM -0500, Frank.Li@oss.nxp.com wrote:
-> > > From: Frank Li <Frank.Li@nxp.com>
-> > >
-> > > The stub for pm_runtime_get_if_in_use() under !CONFIG_PM currently
-> > > returns -EINVAL.  The real implementation returns:
-> > >   1  - device is active and its usage counter is non-zero (bumped)
-> > >   0  - device is not in use or not active (counter not bumped)
-> > >  -EINVAL - runtime PM disabled for this device
-> > >
-> > > When CONFIG_PM is not set every device is permanently "active" and
-> > > always considered "in use", so the stub must return 1, mirroring
-> > > __pm_runtime_resume() which already returns 1 in the same build.
-> > >
-> > > Returning -EINVAL breaks callers that test the return value with
-> > > comparisons other than "!= 0 / == 0":
-> > >
-> > > drivers/gpu/drm/i915/intel_runtime_pm.c:
-> > >   if (intel_runtime_pm_get_if_in_use(rpm))
-> > >   which wraps to: ret = pm_runtime_get_if_in_use(); return ret > 0;
-> > >   With -EINVAL the wrapper returns false, causing an incorrect error
-> > >   path in the GT fence revocation code.
-> > >
-> > > drivers/gpu/drm/xe/xe_pm.c:
-> > >   if (pm_runtime_get_if_in_use(xe->drm.dev) > 0)
-> > >   With -EINVAL the condition is false; xe_pm_runtime_get_if_in_use()
-> > >   returns false, so callers believe the device is not usable.
-> > >
-> > > drivers/gpu/drm/gma500/power.c:
-> > >   return pm_runtime_get_if_in_use(dev) == 1;
-> > >   -EINVAL != 1, so the helper always returns false when !CONFIG_PM.
-> > >
-> > > drivers/gpu/drm/imagination/pvr_power.c:
-> > >   if (pm_runtime_get_if_in_use(...) <= 0)
-> > >   -EINVAL <= 0 is true, so the driver always takes the "requeue" error
-> > >   path instead of proceeding with the active device.
-> > >
-> > > sound/soc/sof/debug.c:
-> > >   if (pm_runtime_get_if_in_use(sdev->dev) == 1)
-> > >   -EINVAL != 1, so d3_prevented is never set, corrupting exception
-> > >   debug accounting.
-> > >
-> > > drivers/iommu/mtk_iommu.c:
-> > >   if (pm_runtime_get_if_in_use(dom->plat_dev->dev) <= 0)
-> > >   -EINVAL <= 0 skips the TLB flush, leaving stale IOMMU mappings.
-> > >
-> > > drivers/iommu/rockchip-iommu.c:
-> > >   Three call sites use WARN_ON_ONCE(err < 0) or similar patterns.
-> > >   -EINVAL < 0 triggers a spurious WARNING on every call.
-> > >
-> > > drivers/media/i2c/isl7998x.c:
-> > >   if (pm_runtime_get_if_in_use(dev) <= 0)  (two call sites)
-> > >   -EINVAL <= 0 causes the driver to always skip register programming
-> > >   when !CONFIG_PM.
-> > >
-> > > drivers/media/platform/rockchip/rkisp1/rkisp1-debug.c:
-> > >   if (pm_runtime_get_if_in_use(dev) <= 0)  (two call sites)
-> > >   -EINVAL <= 0 prevents any debug statistics from being collected.
-> > >
-> > > Fixes: 9d58aa46291d ("drm/i915: Fix the GT fence revocation runtime PM logic")
-> > > Fixes: cbb6a7413b17 ("drm/xe: Introduce xe_pm_runtime_get_noresume for inner callers")
-> > > Fixes: 672c473576ca ("drm/gma500: Rewrite power management code")
-> > > Fixes: 727538a4bbff ("drm/imagination: Implement power management")
-> > > Fixes: b30289e7fa92 ("ASoC: SOF: Fix runtime pm usage counter balance after fw exception")
-> > > Fixes: c0b57581b73b ("iommu/mediatek: Add power-domain operation")
-> > > Fixes: 0f181d3cf7d9 ("iommu/rockchip: Add runtime PM support")
-> > > Fixes: 51ef2be546e2 ("media: i2c: isl7998x: Add driver for Intersil ISL7998x")
-> > > Fixes: cbb819c363c5 ("media: rkisp1: debug: Collect input status by sampling ISP_FLAGS_SHD")
-> >
-> > I don't think this one is right. The rkisp1 driver only runs on ARCH_MXC
-> > and ARCH_ROCKCHIP, which select CONFIG_PM. The same may be true for some
-> > of the other fixes tags.
+Hi,
+
+On 11/16/26 03:27, Lukas Wunner wrote:
+> On Tue, Nov 03, 2026 at 11:31:36AM -0800, Kuppuswamy Sathyanarayanan wrote:
+>> Intel Catlow Lake PCH Root Ports do not set PME Status in the Root
+>> Status register when they generate a PME for their own hotplug event.
+>> The PME interrupt itself is delivered.  PMEs from devices below the Root
+>> Port are reported correctly.
 > 
-> But code itself should be wrong even though these platform force enable
-> CONFIG_PM.
+> Reading the commit message, I'm wondering whether PME_Status in the
+> Root Port's Power Management Control/Status Register is set?
 
-How does it make the code wrong in the rkisp1 driver ? There's nothing
-to fix there, because there's no bug.
+No.  PME Status is set in neither Root Status nor PMCSR. 
 
-I'm not saying this patch is wrong (I'll let the runtime PM folks
-provide expert feedback), but I think some of the Fixes: tags are not
-correct.
+> 
+> If it is, an alternative approach to quirking a set of Device IDs
+> would be to auto-detect affected Root Ports, basically by using
+> the logic OR of PCI_EXP_RTSTA_PME and PCI_PM_CTRL_PME_STATUS.
+> 
+> Sorry for not thinking about this earlier!
+> 
+> Otherwise I like this patch and I like how you managed to keep it
+> unintrusive.
 
-> > > Signed-off-by: Frank Li <Frank.Li@nxp.com>
-> > > ---
-> > > Change in v2
-> > > - new patches.
-> > >
-> > > Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> > > Cc: linux-pm@vger.kernel.org
-> > > Cc: Jani Nikula <jani.nikula@linux.intel.com>
-> > > Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-> > > Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
-> > > Cc: Tvrtko Ursulin <tursulin@ursulin.net>
-> > > Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> > > Cc: Maxime Ripard <mripard@kernel.org>
-> > > Cc: "Thomas Hellstrom" <thomas.hellstrom@linux.intel.com>
-> > > Cc: Simona Vetter <simona@ffwll.ch>
-> > > Cc: David Airlie <airlied@gmail.com>
-> > > Cc: Matthew Brost <matthew.brost@intel.com>
-> > > Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> > > Cc: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
-> > > Cc: Alessio Belle <alessio.belle@imgtec.com>
-> > > Cc: Luigi Santivetti <luigi.santivetti@imgtec.com>
-> > > Cc: Liam Girdwood <lgirdwood@gmail.com>
-> > > Cc: Mark Brown <broonie@kernel.org>
-> > > Cc: Jaroslav Kysela <perex@perex.cz>
-> > > Cc: Takashi Iwai <tiwai@suse.com>
-> > > Cc: Bard Liao <yung-chuan.liao@linux.intel.com>
-> > > Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>
-> > > Cc: Peter Ujfalusi <peter.ujfalusi@linux.intel.com>
-> > > Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
-> > > Cc: Robin Murphy <robin.murphy@arm.com>
-> > > Cc: Yong Wu <yong.wu@mediatek.com>
-> > > Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> > > Cc: Matthias Brugger <matthias.bgg@gmail.com>
-> > > Cc: Heiko Stuebner <heiko@sntech.de>
-> > > Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> > > Cc: Dafna Hirschfeld <dafna@fastmail.com>
-> > > Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > > Cc: Michael Tretter <m.tretter@pengutronix.de>
-> > > Cc: Daniel Baluta <daniel.baluta@nxp.com>
-> > > Cc: Will Deacon <will@kernel.org>
-> > > Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>
-> > > Cc: dri-devel@lists.freedesktop.org
-> > > Cc: imagination@lists.freedesktop.org
-> > > Cc: intel-gfx@lists.freedesktop.org
-> > > Cc: intel-xe@lists.freedesktop.org
-> > > Cc: iommu@lists.linux.dev
-> > > Cc: linux-arm-kernel@lists.infradead.org
-> > > Cc: linux-mediatek@lists.infradead.org
-> > > Cc: linux-media@vger.kernel.org
-> > > Cc: linux-rockchip@lists.infradead.org
-> > > Cc: linux-sound@vger.kernel.org
-> > > Cc: sound-open-firmware@alsa-project.org
-> > > Cc: imx@lists.linux.dev
-> > > ---
-> > >  include/linux/pm_runtime.h | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-> > > index de9e7518ecef2..1d983fe55a16a 100644
-> > > --- a/include/linux/pm_runtime.h
-> > > +++ b/include/linux/pm_runtime.h
-> > > @@ -276,7 +276,7 @@ static inline int pm_schedule_suspend(struct device *dev, unsigned int delay)
-> > >  }
-> > >  static inline int pm_runtime_get_if_in_use(struct device *dev)
-> > >  {
-> > > -	return -EINVAL;
-> > > +	return 1;
-> > >  }
-> > >  static inline int pm_runtime_get_if_active(struct device *dev)
-> > >  {
+Thanks.  Can I add your Reviewed-by?
+
+
+> 
+> Thanks,
+> 
+> Lukas
 
 -- 
-Regards,
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
 
-Laurent Pinchart
