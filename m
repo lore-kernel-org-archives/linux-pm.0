@@ -1,89 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.231.198
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.231.200
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794854798;
-	b=1JoEiJcmCjQmy904UaaKJm0KcoE3J0T75AhoHChkdFHJe7S3rLXPvc0izy8ETg/18r9x
-	 F8NCw0/jBDDsRHueoQ3IJjo/GL5hW5Vykuyv4vOKKVWrouh86TQZ82bJFTX1WOX25Tk/s
-	 QdGhCPbvIAW6ZdRACO9O7AYx9U3vx+eSCpDyzmvewuVWe3WcC3YQDeKMW9nzUGOHm6nRG
-	 /S0vqjkalNjcOZpdsZyTN1kQUcuuOfITwXBzT+dKpCofBqt0hxbtX3xnUcrI6TTuevq6Q
-	 ToDhpak0o29UjTiAzQfU/aCRXYJxSt25fe8syuzvLgCKZXo0uei0TXHKkrEmACDKsmA==
+	t=1794854802;
+	b=A9DNzUbP71Xd1fWtt3wAQEbv0mCcBh6eYtTCTghXL436mHjP0hRHQP0ATtDrcrncXEf9
+	 qpztJsnh5Li/hSoMB1a9/gYwAZs38bWfu/UQoLsDfhhf8Kv+QzVV8LJL8j78dGWTTi+qk
+	 RkB7/MF67MSOw/oJgLxXT/QfPOSoGoBjoN+LcsvJY5p2PjU1FAJHjtdl47b7U9agS0EBa
+	 CDUSBt2mhkJwPJKQsLRQDNDWjeSyQ46ulOLp7tGO9n0LCzbnSJNV76aEn1tSQrbGYFYk3
+	 3hhXU+N3i/vcXtdLY5F4q5bY5I7OswMM8NUEIt97dc0xvQY6ZfnhpYxVk5aVefegaQQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794854798;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794854802;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Subject:Date:
-	 Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Date:Subject:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
+	 References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
 	 X-Developer-Key;
-	bh=P78VDpsJpTz+1/Uu6wAD6OIZCd9bSuoX6Podaf0tODg=;
-	b=gZZLpgLXhorCLO1Aqt75OB4qw80XJ/OK1yVv8xznKjPOYy6IKC1XNYZmmxLIgupTMptv
-	 N6ndwqOmnerz0qI4AzDdGFzWfe6kTFptTUBYTUDvIgMts3eKqjHUZl+aESkNi6ztsARSj
-	 wULehIZGhxgn+/TJY6neRFtTYrwyzeLXATFMsm9BIr+VMacRs2cARWgpWKXdXewfAWN32
-	 H6McerAr/FjcVlvpIqHbijBSC8MtBojZ4GyzWqsckEqTzITrrs+9dmm71W4f/6urnlDer
-	 HarOEchtwStBm+duOBjOHNGrwqUuLZLlUzVvyz960L5cTyaLANA0yfbHp29/Cb+8feg==
+	bh=tFzDEYw+EnooXYdZM/QgeJxwD9oyUj/5EK6tkUOx56g=;
+	b=DpjX9fdLR/NafG9YRFtAQyjn/kcezEwGWWdYA+CmfZ/H7X3GQW4ctOsYqosnnmwjoHz/
+	 uJ7qIWF2v1cN7+uyzeBISc0moq1UkvhUw0qavZ1FINhT+ja06aERB+xRPoxTk3uZc3Bkr
+	 v2MES2t1eCcPEspZ0jPr3zBlSdobLR/DImKJ4+IIjbbA/txvtKfxdEic7HIFTVu6h5prj
+	 j7Rlx17tb9VuPCxLYYU+j8oh0sDA5WbcX30wRUSCqGzfMnuBMYahOu0VQ8/0ZFaLR1saF
+	 nOS3fXcN4DOwPFE5xMjR1KxcIE/oDGpyKPhaOm9JTB5y62dLjDyE2MLT9er9EoVmYPg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mc0qHYFT;
-	arc=none smtp.remote-ip=74.125.231.198
-Received: from mail-oi2-f6.google.com (mail-oi2-f6.google.com [74.125.231.198])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LH2NaDId;
+	arc=none smtp.remote-ip=74.125.231.200
+Received: from mail-oi2-f8.google.com (mail-oi2-f8.google.com [74.125.231.200])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A47A606A322
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 18:46:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7A47A606A322
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C85E606A332
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 18:46:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6C85E606A332
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mc0qHYFT
-Received: by mail-oi2-f6.google.com with SMTP id 5614622812f47-545a4fb8d5dso1695435b6e.1
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 10:46:38 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LH2NaDId
+Received: by mail-oi2-f8.google.com with SMTP id 5614622812f47-51cddc2451aso1328852b6e.0
+        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 10:46:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794854797; x=1795459597; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=P78VDpsJpTz+1/Uu6wAD6OIZCd9bSuoX6Podaf0tODg=;
-        b=mc0qHYFT/6qwRjTi3Dtv+++yFZW2fqcMUAcIKPmQF2uTfb48OKPIH1SeI2qe5vtsXR
-         q5Le9wFFEJZAdvcimDV5B7gmwCUaOlsGHATwTfxRRirTW4XEjRlvL/UVFoMZg1lPfx+I
-         Xy3vSdrq/orlPickEvoGy144vofdRuguz1AJ0mEJXfBjOSCMQk9df6lBHQ/e0JUbpxUz
-         q6HFcq+0wmiKJighYZt5EC/3Suu8GosBiUb+GAvlCqhIOMPQWUqoD8MlTlyAzW+eTI1O
-         jhXfpB8+n6zRe6rEMlzy11XjSTDJfbj8oeaiiLK9LHFqtwfLyNhT6A1rp3I63IsJZ504
-         U2Lg==
+        d=gmail.com; s=20260707; t=1794854800; x=1795459600; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=tFzDEYw+EnooXYdZM/QgeJxwD9oyUj/5EK6tkUOx56g=;
+        b=LH2NaDIdv753SjJEeUr7ecK4bF/cc+zRWr1U26KYqgTiyD06NGMXCrAMQXdGBkEp9d
+         fcQZjAzFzFiaTeDl7IZ615eUklx4vwO2lOFxDx8S6r12V3b9HeY3MtplnQC4rNrbr6Zo
+         yARNzQB1HjTxhtRoRK68WqF2fIHw5/zuRnAWVSZm7PJLnzVj40TO8aWwLytLjmSag67D
+         VIPWP7Bp3wbPmYlNuEBUjiuj9eXTBe7FSNpiVfajXs6SwzFaxhLoo4zwahGwci3pYG2p
+         soVGU7w+mKiLJr7bQduw1oWIVaBp608WOhOq8LEJFb4vPn5q+OqqzuGkgfWYIMJzJyTv
+         bqwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794854797; x=1795459597;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=P78VDpsJpTz+1/Uu6wAD6OIZCd9bSuoX6Podaf0tODg=;
-        b=SWwZE0w9iGFerySJCShYg+e7NZEH73QkHqH5COZcs1tHOwmNmRndt5pOgiQj55SaNU
-         ITOSrf1ZL/ltjpusli7pBTgsSoEUAl6Q2j5+TWhXCCzcbFHvUfeuv5RRJy/idYzvy9FZ
-         N2Sw7nQuxH+341Cuzs3UL+Drem/qkIWpXNNXB1+txTKhYaX6wEMfdNzxvQH/xEYRhMrJ
-         ZyJJW0q5JcvTyb58V+n8tmnyoKsH6DIs1kHP41WGAan8HXews7DbxVZkMfJ2pbnQ7RGs
-         DhmqGUr3+cnkyX8ROyw+aQaE5V+2Oy5pf7/bnciAQFpzjICCCFgpHttCEy2iTOVX65j4
-         d+Zg==
-X-Gm-Message-State: APuU4Z/PEG9vLaCWXcS/1kxY2uUowklQDkKhEQt43JC/f7snJyOf7dG5
-	sRIgrn0g3On5lJvb/Y8Tw1hUetnpj+mOBJ+02JCbQhZ3oC8mIKWSloKr
-X-Gm-Gg: AYBFou3BihTseFtD0qtEJKObTdw4ISw9oX/jxCG6VGgATdPgK1oFaXlOGkKfUfEXOrc
-	CN6DSD5MMvm3bs7aUAKeZVT71EBngfa7zUvv+BxMFpgIrdrn1wiuMwiomXc3Kecb9yEg+qyPECR
-	uEHhEX/AJ+Dmy5yd+ulRFSpg0l6xo1+uq5ZdWeBI3ztmP/2z8GafUesPiFTSa5ruB53fwSFEFxc
-	YnNbyCjHPpxkn65N3ay6ZrdQjt1xXhkBb6rdGCLDs/fWJ9Dn0y+ha667iqAEnCZo1h9zYtOtO3o
-	sVPbuJRNN2LCdKX7f0uDHdCcuxom5zkMw5PbLbXw+kRxQB1xQHweG/UUp6R5+2u1c0u1mgfYbnW
-	OY036xlLW2E7nLf4z7eUVUpv+GoKFxIyZMU06P4oJb8Ao0fwqbnCzMF436IqKjAmExM5QaNYu6z
-	w0irYlfF5EiZnY2YjnH3Q6LNG4GZBIUl6lhZkvc+L0/LVbVdrWXwFeR2VqEKdt5fUNT5fbjkvyB
-	dBfxRWey/LK0UrNTfO8OJBoJUKvPXEEEohNB8/WqB5R8SctaL2mmqtRYeZQK4d17vrhUTgGZETw
-	Oaxe7T6lq34qcvyFKGqPc5KaKKVxKhhJcSIYEpqpflC95t9LT7BCp0H5VRcwk59fAfiWqflBlsx
-	/PFMREly9I0HeNupKUZQaC/jaFDawJtDqN95zoqEI
-X-Received: by 2002:a05:6808:3186:b0:53c:7298:3591 with SMTP id 5614622812f47-56e5fd4852bmr9836229b6e.1.1794854797281;
-        Mon, 16 Nov 2026 10:46:37 -0800 (PST)
+        d=1e100.net; s=20260707; t=1794854800; x=1795459600;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=tFzDEYw+EnooXYdZM/QgeJxwD9oyUj/5EK6tkUOx56g=;
+        b=DXJOL3Vio+fd1WHIR+iyGAa88M7aAeOXmQf7kDGJ4ePscvf5nK5y4KArnLTlquXzou
+         UbouOwhVLftNiPHeZhf9OOiFM2RGBUrDFzbfMvxWFu/aZe6FPHh4aCQkTiAI2NZvN58l
+         s6EVN61KAGnD+6I+Y9E6P+ZdXmW4EN7WIBDRGWWy2SksYQIfx3GZYQtvxwBcw2XE6+D0
+         v8AKkcCFgYpmtFwMT0jxeazexexUfR28j97G44UntLNMC+2nFoTcxkM0iZriHVVvc4Aw
+         Orh2ezw8kgjOzj1dBGKNHPljP8zIfgRx1xSpb1nHQCHLM8ZeDtLdk/4pc/oA01pC1SAQ
+         bFLw==
+X-Gm-Message-State: APuU4Z/qj0y3CXijduAsE/xCpwmdKV58g4p8QGKEm/b2AvYIOqZIPftV
+	ZsiCDwMA38QBaDmoPD4jQb1JILFHGEcixsc5hWKlCckltrUpKCbg22Zm
+X-Gm-Gg: AYBFou00DtkRH2Vjseca7lJjQd/WnB3vQzS/V0wywdIGTDyI5WyOiiCNzWjuKSYozmh
+	SK7IdS5b7QVBLMPVhcn7ryvGJ0LQgdfOVAi8pqWhjDr1pgHToireFtsQD9+wel/vkdcadvdpcaH
+	mdhmxkR9hvk2RXEQi7jXyX458Uj+IqmU3yiuwYkIoZIYbVCDU5Qs3A0u0y6fpXbNwL05m+QGPQm
+	WzYGBY/3jrzDdITEXEmwj1WNZpOf+Juwcj+6BWIYuDk4cHXkJVBEAdtTPzw7kSZA1Oj5Hsih9tK
+	KHF8/2WCDnH2Jff1rMwnekZI963AdZ9AYhky9xOdz9gwc47BI1KE2gAZIMehnIly5yr7D6rLPqu
+	qIoLlrkAMpySPWQ3rGhqSlmRSpsNhRnZpTqB/p0Ay3MPp1kUIR4xUEbrLpH4u55fBM3jit0KOg5
+	URvEFfA+FRuVt01461Ao9ANBH2q97GCVRS7u55y/MTT4MDrMd1Qwm1NZxkv7vwz4ti3NJCWg2/K
+	AHhP2i5jRYtlL7+uaSlyN9N+ynuXhJja+v1m3rwuYniVhXGujvPVrGLogvHb1sCbLjXtXjt01O1
+	Tyac8IewNe9CH2OKIcow3VEkvcZXTyyeydxT0ovNphbxk7Pd+61noQF3tIcc2PzA66FNUk4BHOZ
+	IrSFYiHSfoJdRWJW8AHE=
+X-Received: by 2002:a05:6808:4fd2:b0:4df:5cd0:89c1 with SMTP id 5614622812f47-56e63ba5727mr9976924b6e.23.1794854800435;
+        Mon, 16 Nov 2026 10:46:40 -0800 (PST)
 Received: from [10.10.18.223] (wsip-64-207-253-118.tu.ok.cox.net. [64.207.253.118])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4afe242b670sm7210735fac.17.2026.11.16.10.46.34
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4afe242b670sm7210735fac.17.2026.11.16.10.46.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Nov 2026 10:46:36 -0800 (PST)
+        Mon, 16 Nov 2026 10:46:39 -0800 (PST)
 From: Ryan Brue <ryanbrue.dev@gmail.com>
-Subject: [PATCH v3 0/2] rtc: mt6397: provide the RTC's 32 kHz output as a
- clock
-Date: Mon, 16 Nov 2026 12:46:32 -0600
-Message-Id: <20261116-rbrue-suez-upstreaming-mt6397-rtc-32k-v3-0-179145eb7e89@gmail.com>
+Date: Mon, 16 Nov 2026 12:46:33 -0600
+Subject: [PATCH v3 1/2] rtc: mt6397: rename the write trigger register
+ offset
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -95,11 +95,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/43Nyw6CMBBA0V9pZs2YTkcosPI/jItaCjbKIy0QH
- +HfDbhh6fYu7vlAdMG7CKX4QHCzj77voBScCLA30zUOfQWlACVVRlIdMVzD5DBO7o3TEMfgTOu
- 7Btsx40JjGC2yuqM0ZCmrM+acIREwBFf75+acL4mAm49jH14bO9NafwJJ+lOYCSUWOs1rzistU
- z41rfGPg+1bWIVZ7a/q36tCiVRYo1VOKevj/rosyxeEFL37MAEAAA==
-X-Change-ID: 20261024-rbrue-suez-upstreaming-mt6397-rtc-32k-0a1c16f63383
+Message-Id: <20261116-rbrue-suez-upstreaming-mt6397-rtc-32k-v3-1-179145eb7e89@gmail.com>
+References: <20261116-rbrue-suez-upstreaming-mt6397-rtc-32k-v3-0-179145eb7e89@gmail.com>
+In-Reply-To: <20261116-rbrue-suez-upstreaming-mt6397-rtc-32k-v3-0-179145eb7e89@gmail.com>
 To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
  Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -113,73 +111,69 @@ Cc: linux-pm@vger.kernel.org, mfd@lists.linux.dev,
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
  linux-rtc@vger.kernel.org, Ryan Brue <ryanbrue.dev@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794854794; l=2739;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794854794; l=1817;
  i=ryanbrue.dev@gmail.com; s=20260906; h=from:subject:message-id;
- bh=edI0U8BJ05vm1zYUWZKlM1TrWGXlJBUbcmpWbDIqGNc=;
- b=NLQ9/9ifb2vqQe0on9JdNLDbVdTMhveUDIstOj4nsP4FUeFFlZdrmwfVC4+mYhCjsUQssYltO
- y+PtxNWp0vnACO+TbUGWxj431pgV6oe5TK+FwOAtVekLyd9sDVCpExb
+ bh=df32cdCXYqRXb7AgGz4g+i9owLPH2NyaDIX+9W0kTJ8=;
+ b=YXj0OOXR/Ek7mAgVNZ2ePkshYGmwdQh66wpXgUVRUARhBWhlo4xL7c+hw4g+ulZz6PAARMwLB
+ rVWKea1gZoeASnjj2zRQPwTaWnyl9lPPgcWMM+sqyHTCH5hZTlMhQwv
 X-Developer-Key: i=ryanbrue.dev@gmail.com; a=ed25519;
  pk=KsUvVaP//v/2q+ZBuacc7cLbsyEYn+AD71Sn28oZWKo=
 
-The MT6397 RTC drives a 32 kHz clock out of the PMIC, which boards use as
-the sleep clock of a Wi-Fi/Bluetooth combo chip. RTC_CON.F32KOB gates it,
-and mainline never touches that bit, so the chip only works if the
-bootloader happened to turn the output on.
+struct mtk_rtc_data holds the offset of the register that commits RTC
+writes, in a member called wrtgr after the register's datasheet name.
+Call it write_trigger_reg, so that the next member, the control
+register's offset, can be named the same way.
 
-On the Amazon Fire HD 10 (2017), which can boot through U-Boot instead of
-the vendor's LK, nothing sets it in the former - LK sets the bit at every
-boot, and the MT6630 combo chip's Wi-Fi and Bluetooth never come up.
-Letting the RTC provide the output as a clock lets the chip's
-mmc-pwrseq-simple enable it. With the clock wired up both came up on that
-board in two boots out of two, and in none of three without it.
-
-The driver registers the clock only when the RTC node has #clock-cells,
-so no existing board changes. The MT6323 shares the MT6397's driver data
-and gets it too; every MediaTek PMIC RTC whose registers I could read has
-F32KOB at bit 5 of RTC_CON, but for the MT6323 that is inferred from the
-shared driver data rather than read from a datasheet.
-
-Lee has applied the binding to mfd [1], so v3 is the driver part only:
-patch 1 gives the existing write trigger member a name that says what it
-is, as Lee asked for the new one, and patch 2 adds the clock. Both are
-for rtc.
-
-The board's devicetree that uses the clock is not upstream yet and follows
-separately.
-
-This series was developed with the help of an LLM.
-
-[1] https://lore.kernel.org/all/179459615032.87488.12726056214378307165.b4-ty@b4/
+No functional change.
 
 Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
 ---
-Changes in v3:
-- rtc: name the new struct mtk_rtc_data member control_reg, rename wrtgr
-  to write_trigger_reg in a patch of its own, and the local con to
-  control (Lee)
-- dt-bindings: dropped, applied by Lee
-- rebased onto v7.4-rc2
-- Link to v2: https://lore.kernel.org/r/20261102-rbrue-suez-upstreaming-mt6397-rtc-32k-v2-0-19ca72815374@gmail.com
+ drivers/rtc/rtc-mt6397.c       | 7 ++++---
+ include/linux/mfd/mt6397/rtc.h | 2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-Changes in v2:
-- rtc: check for #clock-cells before reading the driver data, which is
-  NULL when the PMIC has no RTC node, as on mt8173-evb (Sashiko)
-- dt-bindings: add Krzysztof's Reviewed-by
-- Link to v1: https://lore.kernel.org/r/20261101-rbrue-suez-upstreaming-mt6397-rtc-32k-v1-0-9758f38d7053@gmail.com
+diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+index ab402f9f85c3..5afdb707a5b5 100644
+--- a/drivers/rtc/rtc-mt6397.c
++++ b/drivers/rtc/rtc-mt6397.c
+@@ -22,7 +22,8 @@ static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
+ 	int ret;
+ 	u32 data;
+ 
+-	ret = regmap_write(rtc->regmap, rtc->addr_base + rtc->data->wrtgr, 1);
++	ret = regmap_write(rtc->regmap,
++			   rtc->addr_base + rtc->data->write_trigger_reg, 1);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -411,11 +412,11 @@ static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_suspend,
+ 			mt6397_rtc_resume);
+ 
+ static const struct mtk_rtc_data mt6358_rtc_data = {
+-	.wrtgr = RTC_WRTGR_MT6358,
++	.write_trigger_reg = RTC_WRTGR_MT6358,
+ };
+ 
+ static const struct mtk_rtc_data mt6397_rtc_data = {
+-	.wrtgr = RTC_WRTGR_MT6397,
++	.write_trigger_reg = RTC_WRTGR_MT6397,
+ };
+ 
+ static const struct of_device_id mt6397_rtc_of_match[] = {
+diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rtc.h
+index f4da579ec638..44d2b2cb1ff7 100644
+--- a/include/linux/mfd/mt6397/rtc.h
++++ b/include/linux/mfd/mt6397/rtc.h
+@@ -71,7 +71,7 @@
+ #define MTK_RTC_POLL_TIMEOUT   (jiffies_to_usecs(HZ))
+ 
+ struct mtk_rtc_data {
+-	u32                     wrtgr;
++	u32                     write_trigger_reg;
+ };
+ 
+ struct mt6397_rtc {
 
----
-Ryan Brue (2):
-      rtc: mt6397: rename the write trigger register offset
-      rtc: mt6397: provide the 32 kHz output as a clock
-
- drivers/rtc/rtc-mt6397.c       | 95 ++++++++++++++++++++++++++++++++++++++++--
- include/linux/mfd/mt6397/rtc.h |  8 +++-
- 2 files changed, 99 insertions(+), 4 deletions(-)
----
-base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
-change-id: 20261024-rbrue-suez-upstreaming-mt6397-rtc-32k-0a1c16f63383
-
-Best regards,
 -- 
-Ryan Brue <ryanbrue.dev@gmail.com>
+2.56.0
 
