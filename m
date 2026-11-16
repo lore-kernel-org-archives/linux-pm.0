@@ -1,73 +1,124 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794857716;
-	b=q+waU+fFHIAV1XqymdLVeWGXPId0pAVOzx3NBBqr6EgwuzQf8Xg+BDJ2gjZnOaBUbuOa
-	 v5m5vGdjtEf/oLSs6Ts7b76vq5cC3868oWcmLiIm3JUMhiRQ9NzZMi8zZvj7FBT4TJfoC
-	 B4wT7BEMnCqyFMZ/ygXIGRyY9goOwTFxmPdoDguPr9SwYhzKQiuuZ5EERk7xfjmlgcoBm
-	 +7oxqD3v9d1ZqsiNNjd2oqUWH2kZg7AJadoyVfs721G+8EW/ZdtIK/C5qCEh/yxGY8j6R
-	 jeWbON5oK2jhkswx8uSdX54TwJL5eFNoNxfRB/x5P5B8pFwvbngzrZ9/kWvz0uclRhA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794857716;
-	h=Received:DKIM-Signature:Received:Received:X-ME-Sender:
-	 X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
-	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
-	 References:Subject:Content-Type:Content-Transfer-Encoding;
-	bh=ex8sQsHIpPx0Nkd4LC2Tkk5aOBl+I7Jg5Gyc5xqzvWs=;
-	b=ucDfbOaXYG5kjrgSyYF+MLj5ClMQa1L9JHk1toTCfc1F9PXO1GwEzuqOQDoke3kt0JAb
-	 /6h38WYsVpvsWLiC2841ua6+nIlddRQku2uWftFTtEn/J+usQBY7VtljblXUmp6FGmvx5
-	 Q+UnRY5ei7Mw9roDJ23qBlwd7EvLtWzWAFkawU0tREBHztsqrMjNueprEg4iGa2ABk8YV
-	 mZpPS6eeh4kiZT8GhwlIrVXpl5Xkx3WqKpq8wKW1l7Cg49uL8Yfd8iuCSRe+SUqDhBJxA
-	 P/FZDQh6RTcvgA+9vOgKiUfLMEWAgMUOIA6mB2XB4lfBFhC8BnuWQnLU+GjHINu/9/w==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TRJuwhmb;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794861195;
+	b=0VUomL1SEcrgZmNeUsT6HUYQmmJg7efKU6OnGOzbZYINifWO4uDvNNudQA5WY8e5RTrf
+	 L3D5K5KZyK3OwBsHntUZQ7jFLafRH6QLmEPb3M/V+8Wj6pUbH8ks1/RNKTgE2m4Nnxn55
+	 jlIqMKUXM59zjPcL1RJeajpaXFjpKd8kwDxUSZwd9QlEEV18Z4ey7amLBqbWMayROxjal
+	 oU3H3hctwbvefubwQNLcUGmkSoi+XOxaNIY79XpcyxUNB0oro8fWevxy4PdHVKKLb/rhe
+	 q7WbgpuO+TCZisXpmYRx3TeRYeT5tUPRHKluu+6fVzoclMF+NwSvN3BkwSwW7ya+R5g==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794861195;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
+	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Cc:Content-Type:Content-Transfer-Encoding:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=y+SUElrzxvUX/tlMt9vFq6/5XavJz4wfY7YhEZN5OZE=;
+	b=A4x0NkhVPAXRl7lnGSpbtuiu+uTao7aYwiZInoPhgBjBnm1rB661Il2eDqQVRYPi/lxL
+	 Ji27vWlZqxelmOUD6puEM74gWLjuqoWc6wwE5aaO97Qlsb/8f9BplNi3NBRv6sgWtpC+u
+	 50fCrN1IAwEOY+g7Mk6yFykswVcfOme+QL2elZKT0BvQGkI+d/eXCcZ0sG4mLrjPObwjp
+	 tKHtBW3jY7/NBigqgJ6KcT68F0KZvSy/5uorAcWyR0ruxlQO90xtgO1HXFIKDVJ6vJbdB
+	 b5jb0/Whu8OMz8ljGZuR7DYx0yIcM6Pn1rrA0hHznLxLrnct8VRpO4va0wMJWM562ag==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="SkSD/q+f";
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Ozdro5XA;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 340C2606A323
-	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 19:35:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04742606A322
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 20:33:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 04742606A322
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TRJuwhmb
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9C861F000C6;
-	Mon, 16 Nov 2026 19:35:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794857716;
-	bh=ex8sQsHIpPx0Nkd4LC2Tkk5aOBl+I7Jg5Gyc5xqzvWs=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject;
-	b=TRJuwhmbE2QVM975XTsOiQxVBpLb73RPDqfAHb2UNZ+rtGZoPsy/gOtYG4sjdu2/O
-	 9yJMlr6+KBttJpx32oAzkJnKRIpBhJyLxbnN9615uI3rTiMyU9Q4KR1bTS7jUVoJyL
-	 GqDAYOcglcyqx5m1EgFZRZT63MZAazHX0ETifAfr29S8/RNPk6Xppxc6b41O+d7xJM
-	 I9T0v+SCO4hAGy4R2S7dPCDUnPD8cYN61+GHpVUIpYWbmPOgvlXAMrexgp3XK32uRq
-	 30NuFWshSFAb3LL75GQl4fRn6CiYJivf3EJ+BKq8KMDsgYFki8xbPgm3qPd0nL5/l2
-	 umxJF4DVXWtNQ==
-Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
-	by mailfauth.phl.internal (Postfix) with ESMTP id F21DCF4008E;
-	Mon, 16 Nov 2026 14:35:14 -0500 (EST)
-Received: from phl-imap-04 ([10.202.2.82])
-  by phl-compute-02.internal (MEProxy); Mon, 16 Nov 2026 14:35:14 -0500
-X-ME-Sender: <xms:8lr7aqy2mio05VSyCMv9d5JzFlNbS5Z5HCwyJkxR3th3MGMJifRuyg>
-    <xme:8lr7ahEjHY5ZsaUt9-pDaEc3evfBzWl4tRgCsvzIgQ75fcRGAH2tc8gwt5RDbxGBu
-    XBF9_dK0TN7cY7FG6s96_FzsTA-GIZQW1KacC2bsNaPAt6qoUv7Q-Q>
-X-ME-Proxy-Cause: dmFkZTEDf1fF5fEjzXWosWKUidFpweRbW27lXH2eETu4hEuPB6N7vCEWuRexsuIK2XCxz6
-    1SJhRsOZ1wJzJ2XNS4wbK3MXOeiY+ZRjeQqtOZEU8I6FcVejjAACXS4aREsw+YLhui8r8w
-    75GysTZxGkHNZGJpo0hROO5mNVfHHVNm2H3JKd+MaWv0O7+znYjnPX6/D5p/YxniGAdIsD
-    P4L2mMThJcQm1hcEQb4dV/qARgqXDHDpbaQBjxkegRpWeV9k8Yd00aUmtQMp3SsFXMgqLD
-    Kkc+h/0j/216mCHf+RLvVDxHEoMI+kmiS7hNfVMIxjLamNIo6P9E9RkT8eb+xTFdZjE2C1
-    yWLVyuaWFClhd7btoVxPHuG/z1EuWrZnBK73SOPwUKRtv4De2gp7oatGCNgMgP3Key1skl
-    JNTwibMVjhNHut1owP6CDpbADG+dVALqfic5ZGTM7/vYIyl1t37ohmFVwNEi+2UDbKeSO3
-    qKg9rVhdra6qM3js+FSpYQcHoIcC8mgY4PsikFojyKrzAfnNOvZAeAPhARJDzjBILJlaAd
-    L/hrt+HUBqqNnAR+GlBXHGtB9S0YQMIVksbnqih0tUVzkCisAQ6e6bhZc/3wGR1oGYdyJi
-    hEe+oEN4fEd620Oe7CVEyLS5Wr3uoHMrIzK66FXQKlxKZir81QnmN/SywMJw
-X-ME-Proxy: <xmx:8lr7amuj-eeKiSi8PDxR64uhUmwW8-SUuJ67vxRGywCSyULcJvToyw>
-    <xmx:8lr7aq7aJ5q_eZpUxXF2jq7u5kH9P1v48QoScht4oPPpIp3GkevHdA>
-    <xmx:8lr7ai11A4ItBqtor-sHc3eigNSVTNxmjXX69khbYc3cXfsJQ5o2bA>
-    <xmx:8lr7aljF5bVi_RCIBQOZPaKB942nl3sGz9qQeWC_VY0f3wtJhM0foQ>
-    <xmx:8lr7aqqGJYCazqYZ-135JAkaCP1tqnUlPapmasY2uPW7DK-EbxLDB0Yb>
-Feedback-ID: i20964851:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id D88E9B6006E; Mon, 16 Nov 2026 14:35:14 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=SkSD/q+f;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Ozdro5XA
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AGJfJin3248636
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 20:33:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	y+SUElrzxvUX/tlMt9vFq6/5XavJz4wfY7YhEZN5OZE=; b=SkSD/q+fupfJ4Ppw
+	YRw6HQraaNMZjkAZ69W1OtzvlaXezRYxYZsCDMuPfUDIbsRytrO3YGWkenWQ03aM
+	fatWX2ccU5R4eimHEDCSv8hpj65njnQibChz2M7ANvLJlzsg9kYwVRzSnux7aNUB
+	mOpokAedWv3Wa8LGpSJQS2jsuulxjqvG9+pryw8BsUa4552n3H6b9NF9gZ6yfSDq
+	/6rmJdHMe2nkstOw1XBn0AdRPPBDhiwPGEFcs+JeHLo142u0901OazFwERSaih6p
+	iBwK5ixLc8x++NETpfUa3Tcdai2TKHssIZ5xYG657BomyQNT+sunB+0rZcAVJvo7
+	5UFX0A==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j00nfj83p-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 20:33:13 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93f33438950so307945685a.1
+        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 12:33:13 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794861193; cv=none;
+        d=google.com; s=arc-20260327;
+        b=sXDkvH7IE+wCRRdXlSMeQNRWWKCAiFqATzDTMvY6nDysJyF2Kk+dM4cMSrFuGvluUt
+         bBwCANQtl8J0Pf2TYIJLAAGpQst/9eoUhVrGMCXFRV4dT5+9r96nrjPcSEmVB8em2aTl
+         C3JJpN5nDkZbgMu7m6V+NcgnY1pV9dEmz3qccNXQA+PVyVbYnCwIpPKwHbKUe/I+xSl6
+         Xie2oppTO7mSMJkE+2RfYX3DckAIXDQJNzCKBApJJWDkVrizC5SIaKGTgdOUiRDaW3GX
+         JefUnSRJknwopoi45MVJ8svJq2U9YFL0J0V+lfkfLi19f9VhFjPwTUnoLA1Km1CJYy96
+         1I6Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=y+SUElrzxvUX/tlMt9vFq6/5XavJz4wfY7YhEZN5OZE=;
+        fh=lEF8iI1/brpUvTzoYIUays7GiYuHp32HnIrTKFjvnsU=;
+        b=P16NBMYZMXo2zQUonVbCDnG0bUA7JUaOs/4IFjLbNb4xqq5hyMnhk3IQL//9Gc4b12
+         5sYFI2UWhIJ/xJMidfcdytdEqqgeR+Lex+ndX/PoWPCIgXh4+CAonq2wCaylmO/zZBpv
+         qfvCYkZ/wWxG005+GWGlFll9qzT289h1ZME2ODOocfi+7JVyqMp7x0D/vyYWFB6B3Q5l
+         0VarGDCq7q9a9FAF0fePxoceAVMhrvAzcEOlXw1GxeNIFu+wuruAG+L+9HdtvdRh2Eef
+         whDq0HtO7dLUF6o7TdZ52YTRlt7zp/mGJZuIbdAfQX5j+pT5WK14HTUDvjalUv2bbCh/
+         4McQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1794861193; x=1795465993; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=y+SUElrzxvUX/tlMt9vFq6/5XavJz4wfY7YhEZN5OZE=;
+        b=Ozdro5XAR0xy+MdNdyCYVAIStBsCE6zBC+OaH2PMmtyoMhGRzmj1qLcpkor0xM3hbL
+         RicGMb/Ht62mhJ89pUquVvnR3HJER9l0XT1fPXCCiTfVzH+sFbh8D4mz7bJiEKjC1u3v
+         nlH1oBJOvuSZFX2ptfFtXPEYp/b2MaFM3KKeMhlSNUNKr06A6im5vF64ZKorM8rwU14R
+         3t/EqotDGwwQ6XSc447aE3HW4hBuQt+Vq2Ayy6rSViC7MmXmK1eLMvaoOZRM4Xi3Wbo4
+         WVvWsvisgCt521EoYlHMS1DH0Huzm4NHk74MY3yfJjxPJAvRrdpYrV9GfclX8kXhUpmc
+         vYWQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794861193; x=1795465993;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=y+SUElrzxvUX/tlMt9vFq6/5XavJz4wfY7YhEZN5OZE=;
+        b=EAgMr2p/XplThtD/5X+bGIF5vuXbzxvtvoeNE+UfjinO8e/6wLsymqhrhqNUZwWrpx
+         VtS3dFh5AmSJNiwOOP/+L2/gHUQWou7HzcZxCNGxiQyiHRloZu9Cvhr7F2FD1F7WoJKc
+         vFC/8BFTa05L7aptDUV4A6EKgRgOCoshuUjMqvq7j67cUgoVKN2Ry0TTmpx77jWK7NA0
+         msy3Z3ope4HH0JZ8pISKqPNf84HId/hWSHp1GMTH3EH2XQJJFEKWslC3ZV1zgnyYgzU+
+         /hGpDqJLM5VENwR4d4vMaSMGoGhZ+yY0pQ58z6B/g7HuxwQ/Le+/34PZzX2jveJqfzVW
+         GYvQ==
+X-Forwarded-Encrypted: i=1; AL+hErHoQ0iq7YbVV0G5yUSFffQDCPV3lstLNl8DDN9xAs3VRJU/HXjlUMIdkpMYQpbTHLx3XaDbshqU2g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+aLUGnegBLeYiwolQB95fRdbV0FvTWXfvLdmiY4+0ismEmXfdq
+	gT3M4HCjvg0cQW05CCfVAqLDH6AqSKeQywBHSQABMR/+j+1WLiVhApRQ2yGXEh4kNL2x0oMffxE
+	RQTGMMXlvo038QOe0lUSjKI7PWlMTX7DsElLKBqOtWNb28n6+eWgxARUX1WRCzaHwPD4qNFRwoK
+	j/P0QMz4lsej5XN2U41XFSsk3Z5FvWueF4xJAE
+X-Gm-Gg: AYBFou0xIMHZ3MUOzXyFXS/HLRjZEbShE7dcTUwAzsYmKB1aCRB9DCdaI4iCmXr1nKe
+	K1toZveH1Tu/YFaKh0DusuXNYjmHa0w0Co98AmUPTMS3mxzjgp/RBn2ybfikK52AoDf9gFU+V7d
+	rjCEvkgnN5VKBrjJ4CukrlmHN5WjE3JyVZrVRNjMiRmM8u7C7HDa3jjIm4pfkFA0QscsgUtcSNH
+	MQ5mXbnnyc6eiEW+XP4rPKLUw8/B8i5JpYkCoCdyedpfog/1Be0YLPpPxKso4flzaHMUdCcpc7q
+X-Received: by 2002:a05:620a:2a06:b0:93e:b0c3:388d with SMTP id af79cd13be357-9494b9432demr1970459085a.11.1794861193135;
+        Mon, 16 Nov 2026 12:33:13 -0800 (PST)
+X-Received: by 2002:a05:620a:2a06:b0:93e:b0c3:388d with SMTP id
+ af79cd13be357-9494b9432demr1970455785a.11.1794861192628; Mon, 16 Nov 2026
+ 12:33:12 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -77,261 +128,213 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AkKQlABzAp6g
-Date: Mon, 16 Nov 2026 14:34:54 -0500
-From: "Anna Schumaker" <anna@kernel.org>
-To: "Andrew Pam" <andrew@sericyb.com.au>,
- "Trond Myklebust" <trondmy@kernel.org>
-Cc: "Chuck Lever" <cel@kernel.org>, "Jeff Layton" <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, "Olga Kornievskaia" <okorniev@redhat.com>,
- "Dai Ngo" <Dai.Ngo@oracle.com>, "Tom Talpey" <tom@talpey.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, "Mike Snitzer" <snitzer@kernel.org>,
- linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Message-Id: <51a2b5d3-4322-42ed-a2ee-e17c125865fa@app.fastmail.com>
-In-Reply-To: <20261116131428.1024230-4-andrew@sericyb.com.au>
-References: <20261116131428.1024230-1-andrew@sericyb.com.au>
- <20261116131428.1024230-4-andrew@sericyb.com.au>
-Subject: Re: [PATCH v2 3/3] SUNRPC: reconnect client transports after resuming from
- hibernation
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+References: <20261109051007.371843-1-daniel@quora.org>
+In-Reply-To: <20261109051007.371843-1-daniel@quora.org>
+From: Loic Poulain <loic.poulain@oss.qualcomm.com>
+Date: Mon, 16 Nov 2026 21:33:01 +0100
+X-Gm-Features: AclHuK8LqAoYko6jfkEOWyP90pkG5Tye_Ye7sfmCxHmUMdYEwzinH0ptz0c_bbg
+Message-ID: <CAFEp6-1zzzaHUL45qr-M+JdjL9rh2Bq5Nb3-GrHhv6kHrk2m2w@mail.gmail.com>
+Subject: Re: [PATCH] PM: clk: Fix false-positive recursive PM clock mutex locking
+To: Daniel J Blueman <daniel@quora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Mark Brown <broonie@kernel.org>,
+        Ajay Kumar Nandam <ajay.nandam@oss.qualcomm.com>,
+        Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
+        linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Authority-Analysis: v=2.4 cv=BrEIUoX5 c=1 sm=1 tr=0 ts=6afb6889 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=_glEPmIy2e8OvE2BGh3C:22 a=t9ty7G3lAAAA:8 a=oDK9j7WA2MVx4Ty_S2oA:9
+ a=QEXdDO2ut3YA:10 a=IoWCM6iH3mJn3m4BftBB:22 a=CsAS6f0m0zARWR-uHzm3:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE2MDA4MSBTYWx0ZWRfX9Uj5y2AhCiEf
+ TSbW1tzdRR1MtDYtvXCpx04srXt760V0X0wM7fwZcYn1hx3728p1mDhI3DPFoWI8RsBCOrAQrv1
+ 3i0BWHGrvjPUJbPzAoJT6O4oJsd4EFM=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE2MDA4MSBTYWx0ZWRfXwEvLyFlxm1kO
+ xqEnNltDYNzPuFMnYBKKBvDKRHAMzYUmIDW/hPvFXwPGBiJnanLg312FiSx3b9FURH7lbZoSjf9
+ cUfC5V5f+OGfholHlE8GXizi8b2bWkDnA65eOgONhvGYef1Tqbe3jVW9GTVx0RbFr5lxo1QKK4z
+ nr8fRKRoliWs25NKjzptePl1W5NGCj6a1mwgeqeMcVkO6qvvBUFAOnsJcugdKk1cA5Z1x9t0Fb9
+ buNploJ7ZM4btEyAfA2bXDKBwyAAbgCic1IcK7/uYbFkjdjpbW9NTik9o9AoQtv2r2XRevy71vv
+ dQ3GxFxkrrNEUa+Ww9eF42znI/Dl86SoXT0bBYhzAr+VLJB82WzDkAJeChhTeQA2F1NnY9HLxg+
+ MRtHz2jjaS/aKU/LEXxZiDiUZm2Y80VyE1B1fxRaHPh1oj3g+CRRkX230uYSgE57ZodltWKtkCf
+ hS6nVtwhBY7W3wPuVEw==
+X-Proofpoint-ORIG-GUID: WKR2nHeUKN609Cv6YTXeHvc0I6CPHxci
+X-Proofpoint-GUID: WKR2nHeUKN609Cv6YTXeHvc0I6CPHxci
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-16_06,2026-11-16_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 impostorscore=0 spamscore=0 phishscore=0 priorityscore=1501
+ suspectscore=0 adultscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611160081
 
-Hi Andrew,
+On Mon, Nov 9, 2026 at 6:41=E2=80=AFAM Daniel J Blueman <daniel@quora.org> =
+wrote:
+>
+> pm_clk_suspend() and pm_clk_resume() hold psd->clock_mutex across
+> clk_prepare() and clk_unprepare() for sleeping clocks, with every instanc=
+e
+> sharing one lockdep class. If a PM clock is provided by a device that als=
+o
+> uses PM clocks, clk_prepare() resumes the provider, which takes its own
+> clock mutex, triggering a lockdep report.
+>
+> This shows up on the Qualcomm X1 with the LPASS WSA/RX/TX macros and the
+> varargs macro providing the "fsgen" clock:
+>
+>   WARNING: possible recursive locking detected
+>   ...
+>    pm_clk_resume
+>    va_macro_runtime_resume [snd_soc_lpass_va_macro]
+>    ...
+>    clk_prepare
+>    pm_clk_resume
+>    wsa_macro_runtime_resume [snd_soc_lpass_wsa_macro]
+>
+> Lock ordering is always consumer -> provider, so this is false-positive,
+> resulting in lockdep being turned off.
+>
+> Fix this by giving each pm_clk_create()/devm_pm_clk_create() call site it=
+s
+> own lock class.
+>
+> Scenario analysis and patch development was assisted by Claude Opus 5.5
+> under my instruction; detection and validation was performed on my Lenovo
+> Slim 7x with a X1E80100.
+>
+> Fixes: eb667d0fbdd3 ("ASoC: codecs: lpass-va-macro: Switch to PM clock fr=
+amework for runtime PM")
+> Signed-off-by: Daniel J Blueman <daniel@quora.org>
 
-On Mon, Nov 16, 2026, at 8:14 AM, Andrew Pam wrote:
-> With rpciod and xprtiod frozen across hibernation, no RPC is sent after
-> the snapshot. TCP can still acknowledge data the server sends then,
-> though: typically a reply that was in flight when the snapshot was
-> taken. The restored image has not seen that data, and the server, which
-> saw it acknowledged, will not send it again. The client then waits
-> indefinitely for replies that never arrive.
->
-> Captured in a QEMU test (below): on the one cycle of six that hung, the
-> client's TCP acknowledgement went backwards by 200 bytes after the
-> restore, and the requests outstanding (WRITE, COMMIT, GETATTR) stayed
-> queued on xprt_pending with no further progress.
->
-> After resuming, disconnect every client transport. Requests in flight
-> are retransmitted on the new connection, and the server answers any it
-> has already executed from its reply cache. Because nothing was sent
-> after the snapshot, NFSv4.1 session slot sequence ids still agree on
-> both sides.
->
-> The disconnect is done from a PM notifier at PM_POST_HIBERNATION, which
-> runs in the restored kernel once everything has thawed. It is also sent
-> when hibernation fails, where the reconnect is unnecessary but harmless.
-> xprt_put() may sleep, so references to the transports are taken under
-> the client list lock and RCU into an array, and released afterwards. The
-> array is sized by a counting pass first, so it is allocated with
-> GFP_KERNEL rather than under the locks, and the walk is repeated if
-> transports were added in between: one left out would stay stalled.
->
-> Tested in the QEMU setup described in the first patch of this series,
-> with 20 hibernations in test_resume mode back to back while NFS writes
-> (8 MB, fsync) and reads ran continuously. Without the series the client
-> hung on the first cycle; with only the first two patches, on the sixth.
-> With this patch all 20 cycles completed and I/O progressed on every
-> one. The capture shows the client's acknowledgement going backwards on
-> two of the old connections, and the client reconnecting and carrying on
-> both times. The single-hibernation test is unchanged apart from one
-> extra connection per resume: nothing reached the server during the
-> image write, and the client resumed without errors.
->
-> Drafted with an AI coding assistant (Claude), which also ran the tests.
->
-> Signed-off-by: Andrew Pam <andrew@sericyb.com.au>
+Assuming we agree that using separate lock classes is the right
+approach here, and that using nested locking is not practical in this
+case, then the overall solution looks reasonable to me. I only have a
+few suggestions below:
+
 > ---
->  net/sunrpc/clnt.c        | 112 +++++++++++++++++++++++++++++++++++++++
->  net/sunrpc/sunrpc.h      |   2 +
->  net/sunrpc/sunrpc_syms.c |   7 +++
->  3 files changed, 121 insertions(+)
+>  drivers/base/power/clock_ops.c | 23 ++++++++++++++++-------
+>  include/linux/pm_clock.h       | 19 +++++++++++++++++--
+>  2 files changed, 33 insertions(+), 9 deletions(-)
 >
-> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-> index 2f076b4bfd54..f9c31c49dc0b 100644
-> --- a/net/sunrpc/clnt.c
-> +++ b/net/sunrpc/clnt.c
-> @@ -32,6 +32,8 @@
->  #include <linux/in.h>
->  #include <linux/in6.h>
->  #include <linux/un.h>
-> +#include <linux/suspend.h>
-> +#include <net/net_namespace.h>
-> 
->  #include <linux/sunrpc/clnt.h>
->  #include <linux/sunrpc/addr.h>
-> @@ -881,6 +883,116 @@ int rpc_clnt_iterate_for_each_xprt(struct rpc_clnt *clnt,
->  }
->  EXPORT_SYMBOL_GPL(rpc_clnt_iterate_for_each_xprt);
-> 
-> +/*
-> + * After hibernation takes its snapshot, the kernel keeps running with the
-> + * network up while it writes the image. rpciod and xprtiod are frozen by
-> + * then, so no RPC is sent, but TCP still acknowledges anything the server
-> + * sends, such as a reply that was in flight when the snapshot was taken.
-> + * The restored image has not seen that data, and the server will not send
-> + * it again, so the connection cannot make progress.
-> + *
-> + * Once the system has resumed, disconnect every client transport. Requests
-> + * in flight are retransmitted on a new connection, and the server answers
-> + * any it has already executed from its reply cache. Because nothing was
-> + * sent after the snapshot, NFSv4.1 session slot sequence ids still agree.
-> + */
-> +/*
-> + * Take a reference to each client transport in every network namespace and
-> + * store it in @xprts, up to @max of them. Returns the number of transports
-> + * found, which exceeds @max if the array was too small. Called with
-> + * net_rwsem held for reading.
-> + */
-
-What's with the weird double comment here? I like the second one better.
-
-> +static unsigned int rpc_pm_get_xprts(struct rpc_xprt **xprts,
-> +				     unsigned int max)
-> +{
-> +	unsigned int n = 0;
-> +	struct net *net;
-> +
-> +	for_each_net(net) {
-> +		struct sunrpc_net *sn = net_generic(net, sunrpc_net_id);
-> +		struct rpc_clnt *clnt;
-> +
-> +		spin_lock(&sn->rpc_client_lock);
-> +		rcu_read_lock();
-> +		list_for_each_entry(clnt, &sn->all_clients, cl_clients) {
-> +			struct rpc_xprt_switch *xps;
-> +			struct rpc_xprt *xprt;
-> +
-> +			xps = rcu_dereference(clnt->cl_xpi.xpi_xpswitch);
-> +			if (!xps)
-> +				continue;
-> +			list_for_each_entry_rcu(xprt, &xps->xps_xprt_list,
-> +						xprt_switch) {
-> +				if (n < max) {
-> +					xprts[n] = xprt_get(xprt);
-> +					if (!xprts[n])
-> +						continue;
-> +				}
-> +				n++;
-> +			}
-> +		}
-> +		rcu_read_unlock();
-> +		spin_unlock(&sn->rpc_client_lock);
-> +	}
-> +	return n;
-> +}
-> +
-> +static int rpc_pm_notify(struct notifier_block *nb, unsigned long action,
-> +			 void *data)
-> +{
-> +	struct rpc_xprt **xprts = NULL;
-> +	unsigned int i, n, max = 0;
-> +
-> +	if (action != PM_POST_HIBERNATION)
-> +		return NOTIFY_DONE;
-> +
-> +	/*
-> +	 * The references are taken under spinlocks, but xprt_put() may sleep,
-> +	 * so collect them in an array and disconnect after the locks are
-> +	 * dropped. Count first so that the array can be allocated without
-> +	 * GFP_ATOMIC, and recount if transports were added in the meantime:
-> +	 * a transport left out would keep the stalled connection.
-> +	 */
-
-Is there a way to do this without the double loop? The rpc_xprt_switch has a
-"xps_nxprts" field that should hold the number of xprts in the switch. Using
-that might be more straightforward than looping twice and counting.
-
-Thanks,
-Anna
-
-> +	for (;;) {
-> +		down_read(&net_rwsem);
-> +		n = rpc_pm_get_xprts(xprts, max);
-> +		up_read(&net_rwsem);
-> +		if (n <= max)
-> +			break;
-> +
-> +		for (i = 0; i < max; i++)
-> +			xprt_put(xprts[i]);
-> +		kfree(xprts);
-> +		max = n + 8;
-> +		xprts = kmalloc_objs(*xprts, max);
-> +		if (!xprts) {
-> +			pr_warn("RPC: no memory to reset transports after resume\n");
-> +			return NOTIFY_DONE;
-> +		}
-> +	}
-> +
-> +	for (i = 0; i < n; i++) {
-> +		xprt_force_disconnect(xprts[i]);
-> +		xprt_put(xprts[i]);
-> +	}
-> +	kfree(xprts);
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static struct notifier_block rpc_pm_nb = {
-> +	.notifier_call = rpc_pm_notify,
-> +};
-> +
-> +int rpc_pm_notifier_register(void)
-> +{
-> +	return register_pm_notifier(&rpc_pm_nb);
-> +}
-> +
-> +void rpc_pm_notifier_unregister(void)
-> +{
-> +	unregister_pm_notifier(&rpc_pm_nb);
-> +}
-> +
->  /*
->   * Kill all tasks for the given client.
->   * XXX: kill their descendants as well?
-> diff --git a/net/sunrpc/sunrpc.h b/net/sunrpc/sunrpc.h
-> index 11b9e5cead8e..1833b167616c 100644
-> --- a/net/sunrpc/sunrpc.h
-> +++ b/net/sunrpc/sunrpc.h
-> @@ -43,6 +43,8 @@ struct rpc_task;
->  struct rpc_xprt;
->  int rpc_clients_notifier_register(void);
->  void rpc_clients_notifier_unregister(void);
-> +int rpc_pm_notifier_register(void);
-> +void rpc_pm_notifier_unregister(void);
->  void auth_domain_cleanup(void);
->  void svc_sock_update_bufs(struct svc_serv *serv);
->  enum svc_auth_status svc_authenticate(struct svc_rqst *rqstp);
-> diff --git a/net/sunrpc/sunrpc_syms.c b/net/sunrpc/sunrpc_syms.c
-> index 1a3884a0376a..d32786f51ae5 100644
-> --- a/net/sunrpc/sunrpc_syms.c
-> +++ b/net/sunrpc/sunrpc_syms.c
-> @@ -116,6 +116,10 @@ init_sunrpc(void)
->  	if (err)
->  		goto out6;
-> 
-> +	err = rpc_pm_notifier_register();
-> +	if (err)
-> +		goto out7;
-> +
->  	sunrpc_debugfs_init();
->  #if IS_ENABLED(CONFIG_SUNRPC_DEBUG)
->  	rpc_register_sysctl();
-> @@ -124,6 +128,8 @@ init_sunrpc(void)
->  	init_socket_xprt();	/* clnt sock transport */
->  	return 0;
-> 
-> +out7:
-> +	genl_unregister_family(&sunrpc_nl_family);
->  out6:
->  	rpc_sysfs_exit();
->  out5:
-> @@ -141,6 +147,7 @@ init_sunrpc(void)
->  static void __exit
->  cleanup_sunrpc(void)
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_op=
+s.c
+> index 3b8ba27802a8..94f2aa090ce1 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -398,17 +398,26 @@ void pm_clk_init(struct device *dev)
+>  EXPORT_SYMBOL_GPL(pm_clk_init);
+>
+>  /**
+> - * pm_clk_create - Create and initialize a device's list of PM clocks.
+> + * __pm_clk_create - Create and initialize a device's list of PM clocks.
+>   * @dev: Device to create and initialize the list of PM clocks for.
+> + * @key: Lockdep class key for the clock mutex.
+>   *
+>   * Allocate a struct pm_subsys_data object, initialize its lock and cloc=
+k_list
+>   * members and make the @dev's power.subsys_data field point to it.
+>   */
+> -int pm_clk_create(struct device *dev)
+> +int __pm_clk_create(struct device *dev, struct lock_class_key *key)
 >  {
-> +	rpc_pm_notifier_unregister();
->  	genl_unregister_family(&sunrpc_nl_family);
->  	rpc_sysfs_exit();
->  	rpc_cleanup_clids();
-> -- 
-> 2.53.0
+> -       return dev_pm_get_subsys_data(dev);
+> +       int ret;
+> +
+> +       ret =3D dev_pm_get_subsys_data(dev);
+> +       if (ret)
+> +               return ret;
+> +
+> +       lockdep_set_class_and_name(&dev_to_psd(dev)->clock_mutex, key,
+> +                                  "&psd->clock_mutex");
+
+You could simply use lockdep_set_class() and avoid introducing the
+somewhat unusual &psd->clock_mutex name. If a custom name is desired,
+something like "pm_clock_mutex" would be more descriptive.
+
+It would also be helpful to add an inline comment explaining why a
+per-call-site lock class is required here, and why the
+consumer->provider locking order is guaranteed, since the whole
+approach relies on that assumption to justify splitting the lock
+classes.
+
+
+> +       return 0;
+>  }
+> -EXPORT_SYMBOL_GPL(pm_clk_create);
+> +EXPORT_SYMBOL_GPL(__pm_clk_create);
+>
+>  /**
+>   * pm_clk_destroy - Destroy a device's list of power management clocks.
+> @@ -451,17 +460,17 @@ static void pm_clk_destroy_action(void *data)
+>         pm_clk_destroy(data);
+>  }
+>
+> -int devm_pm_clk_create(struct device *dev)
+> +int __devm_pm_clk_create(struct device *dev, struct lock_class_key *key)
+>  {
+>         int ret;
+>
+> -       ret =3D pm_clk_create(dev);
+> +       ret =3D __pm_clk_create(dev, key);
+>         if (ret)
+>                 return ret;
+>
+>         return devm_add_action_or_reset(dev, pm_clk_destroy_action, dev);
+>  }
+> -EXPORT_SYMBOL_GPL(devm_pm_clk_create);
+> +EXPORT_SYMBOL_GPL(__devm_pm_clk_create);
+>
+>  /**
+>   * pm_clk_suspend - Disable clocks in a device's PM clock list.
+> diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
+> index c3b46fa358d3..d54681547f58 100644
+> --- a/include/linux/pm_clock.h
+> +++ b/include/linux/pm_clock.h
+> @@ -37,7 +37,7 @@ static inline bool pm_clk_no_clocks(struct device *dev)
+>  }
+>
+>  extern void pm_clk_init(struct device *dev);
+> -extern int pm_clk_create(struct device *dev);
+> +extern int __pm_clk_create(struct device *dev, struct lock_class_key *ke=
+y);
+>  extern void pm_clk_destroy(struct device *dev);
+>  extern int pm_clk_add(struct device *dev, const char *con_id);
+>  extern int pm_clk_add_clk(struct device *dev, struct clk *clk);
+> @@ -45,7 +45,22 @@ extern int of_pm_clk_add_clks(struct device *dev);
+>  extern void pm_clk_remove_clk(struct device *dev, struct clk *clk);
+>  extern int pm_clk_suspend(struct device *dev);
+>  extern int pm_clk_resume(struct device *dev);
+> -extern int devm_pm_clk_create(struct device *dev);
+> +extern int __devm_pm_clk_create(struct device *dev, struct lock_class_ke=
+y *key);
+> +
+> +/* Per-call-site lockdep class, as clock mutexes of different devices ne=
+st */
+> +#define pm_clk_create(dev)                                             \
+> +({                                                                     \
+> +       static struct lock_class_key __key;                             \
+> +                                                                       \
+> +       __pm_clk_create(dev, &__key);                                   \
+> +})
+> +
+> +#define devm_pm_clk_create(dev)                                         =
+       \
+> +({                                                                     \
+> +       static struct lock_class_key __key;                             \
+> +                                                                       \
+> +       __devm_pm_clk_create(dev, &__key);                              \
+> +})
+>  #else
+>  static inline bool pm_clk_no_clocks(struct device *dev)
+>  {
+> --
+> 2.55.0
+>
+>
