@@ -1,35 +1,35 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=113.46.200.223
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=113.46.200.226
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794916498;
-	b=o2yqo31NwVYEzK37ntMwK31r9n6rT/xuteN78hl0Stwiu/qZKpp8YaQpz9pw1k3jr7TW
-	 9vouiYUcqiGxQlNJlN0I6SMf4F4r30LMYBGpVKkMoTvWLKQpoPtbm8v2qkgOlyCYi0RiN
-	 +y8i8n1IZgBB1S4FDn2sUmGnmpa7h/Akf5+MFN84y0DLjMjNv2tCO06AAbEIlfnXqHF2Q
-	 TOYKZgV0+D92JhhLbqHsItlYn9/7s1hoiO6aPBSyNMOCZjkOVDcWuE/tHOtdEYGBXA5GB
-	 6NIzTQFiPZMFt8TwbtS2TZ8B4YZYRK3hqAdV2QhMjFeZY4LI0bnwWRUPr4M+nopaAZQ==
+	t=1794918089;
+	b=EuKjcWvEo9PF/yWHtkH8czDYntviTTZsTZM6yg/e0wLKDox9TIItMuCpkvytHlL4yqaP
+	 NZ2uTP8cLZ8lecmbLoaHr3HMcQyMkaSzto2iAz32p9Fp3R0FpfsfXBeiJc/ZXZ0DZl/X7
+	 0LkklsMO+WBJnsZIk6C1JjsCEUaMdNc1E6ldgx6vRqp7I06R0TBDM9dWPyTwwEN9csBjz
+	 RpvrV5YxudLlm4CH2kY0fb3KG5aXzQKWueVkN4WlMPHjkQ7FokNBGiZhw8ux7+wowfxDK
+	 LggWy+nYyAF6jr84+7AV7rq4UAZNwJlMVZjfIx3iV/MJJbxjaz+ka4/psMVJJNzb0yg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794916498;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794918089;
 	h=DMARC-Filter:dkim-signature:Received:Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:References:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-Originating-IP:
+	 Date:MIME-Version:User-Agent:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Originating-IP:
 	 X-ClientProxiedBy;
 	bh=h8pgwT7/LO23i619Y0UAnqja3IksVLcqKsSokGT7RtI=;
-	b=4XBkbA15TgXyjutUwZBJUfRpHyMF3yygFDy8bFP7O6hFe15D72wx1zwBcTUaTQX0GPsK
-	 /HnfuRWjNTM8BIkn9lPjl/TS5u/GTJfCn2obyIcyEDzTtEHrubc8IxcGFt10A0JuE4xTG
-	 GeyhsP9r9nJu3ZDVkTKmC1a+uSNJEwhfvqsZCzGz/aaFmSgKcYb/aucoSj78rJ9WAWUXA
-	 bWeF1NrKCOwsGpGWtBxtJt7WkI76j/MugXJEbJx3AqUzvi9z1Z2GW7uDBSbi8YQDEXXPe
-	 t+Nfw8m9DsYTjvMpMTnYRqxp9+ABcCvPyHNBWhYMG65ifwEAV+9bdoO1wKgWyfqxoyg==
+	b=TiwRUwXhfGROLp41j1WCKvfX7oKQm1kX0AsNkfCwFf1oyJoCzN38SdryFW7t+xV961xE
+	 IhL0rKhcmzTI8EavKW0xRbyag9eBCWTfIZSuOyqivOpA2yuRsszcsldNirz2Tx2lpEp97
+	 4DGDrEjHsDcwWk6ZrP+U65OoUqSdGPfiUoG/bH1EKIUaxOZPs84PcqB06lPtGmP+YMPkL
+	 4HzNtrIUL0pDTVfaweu1Od4dxaxZss63l00CA9QkZ+9ODXH19MEkOsLwCXZNmWgY6qSw6
+	 FhW9iSx0yP1P3ewxzZnHuTEPxrFcIu3s8uIiydVcLvU68zCLPyK5xuw0YozeO1JeFQw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=huawei.com;
 	spf=pass smtp.mailfrom=huawei.com;
 	dkim=pass header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=w3AiHftS;
-	arc=none smtp.remote-ip=113.46.200.223
-Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
+	arc=none smtp.remote-ip=113.46.200.226
+Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 588F6606A323
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 11:54:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 588F6606A323
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4602C606A31C;
+	Tue, 17 Nov 2026 12:21:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4602C606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
@@ -41,18 +41,18 @@ dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	b=w3AiHftS3/udF+xmmZ1FLvfES3xWYex2cK4+fWFMZcl29zgDh7nEqTkI+0Fg0B7PEJUxtbg5B
 	XULBwWWQSGPncSPhprBeKXNRmnSrD8vxUJq64j374OIYCo8Vx+23pWWh9omL4ES5VtcLEjWTbAl
 	0EzY4eIOd6aw5zqtJxk9Etc=
-Received: from mail.maildlp.com (unknown [172.19.163.127])
-	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4jTNSS5VJMzmV6t
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 19:54:32 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4jTP393njBzKm5K;
+	Tue, 17 Nov 2026 20:21:09 +0800 (CST)
 Received: from kwepemr200004.china.huawei.com (unknown [7.202.195.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id A20FD40572
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 19:54:51 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 571B64057A;
+	Tue, 17 Nov 2026 20:21:23 +0800 (CST)
 Received: from [10.67.121.62] (10.67.121.62) by kwepemr200004.china.huawei.com
  (7.202.195.241) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Tue, 17 Nov
- 2026 19:54:51 +0800
-Message-ID: <0bf729a2-2f85-4747-ad2b-f92e3e1dee2b@huawei.com>
-Date: Tue, 17 Nov 2026 19:54:50 +0800
+ 2026 20:21:22 +0800
+Message-ID: <eb615885-2756-4750-9e8f-411308c77a42@huawei.com>
+Date: Tue, 17 Nov 2026 20:21:22 +0800
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,14 +64,20 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v3] cpufreq: CPPC: Enable boost by default
-To: <linux-pm@vger.kernel.org>
+To: Christian Loehle <christian.loehle@arm.com>, <rafael@kernel.org>,
+	<viresh.kumar@linaro.org>
+CC: <linuxarm@huawei.com>, <zhanjie9@hisilicon.com>,
+	<prime.zeng@hisilicon.com>, <wanghuiqiang@huawei.com>, <xuwei5@huawei.com>,
+	<zhenglifeng1@huawei.com>, <yubowen8@huawei.com>, <pierre.gondois@arm.com>,
+	<sumitg@nvidia.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <mojunjun4@huawei.com>
 References: <20261117105240.1113405-1-zhangpengjie2@huawei.com>
  <47ef2005-97ff-4841-8a87-5093323e1914@arm.com>
 From: Pengjie Zhang <zhangpengjie2@huawei.com>
 In-Reply-To: <47ef2005-97ff-4841-8a87-5093323e1914@arm.com>
 Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
  kwepemr200004.china.huawei.com (7.202.195.241)
 
 
