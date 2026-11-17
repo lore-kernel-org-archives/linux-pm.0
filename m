@@ -1,146 +1,105 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.171.82
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794911244;
-	b=Sq3dix/Slll1LiIk006taYKBTZgm1urrsxGrTH9uzO1qABTHR5YdmBk2LUiEyTtJyI8E
-	 7ZDhvr2u8Il+FbVKKV7YIY8NfdizcSBdmlavGuebgjweIXR8cNkaOWJ8NVyCjXVkio1xi
-	 ZzJBRHvdBG5NwKkWKbR4B5H4bsh6eQjjGYEXp71iAKk21AZmngcSjngjVT3HxGjluAP84
-	 z+CBn8qE75xoLlmXkYCPZbfZQZjTLJIeX9A/TE/IjB28+5Sp5YE402KMWc1RWCnjOnxyE
-	 5zuZZKslUldVQwW4XhHkC44U3IBre1TS1apXf3QqGvR91t66t2zf9F7ziz1/+MuMf6w==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794911244;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:From:To:CC:Subject:
-	 Thread-Topic:Thread-Index:Date:Message-ID:Accept-Language:
-	 Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:msip_labels:
-	 x-ms-publictraffictype:x-ms-traffictypediagnostic:
-	 x-ms-office365-filtering-correlation-id:x-ms-exchange-senderadcheck:
-	 x-ms-exchange-antispam-relay:x-microsoft-antispam:
-	 x-microsoft-antispam-message-info:x-forefront-antispam-report:
-	 x-ms-exchange-antispam-messagedata-chunkcount:
-	 x-ms-exchange-antispam-messagedata-0:
-	 x-ms-exchange-antispam-messagedata-1:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-AuthAs:X-MS-Exchange-CrossTenant-AuthSource:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-originalarrivaltime:
-	 X-MS-Exchange-CrossTenant-fromentityheader:
-	 X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
-	 X-MS-Exchange-CrossTenant-userprincipalname:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=4dNydoDOrzAHVcXhbabDKrCKS97Tt0zNp0k+Y14k8QM=;
-	b=c1GgzhOLTGF8KUdaxaLNXuWuAQQ6X1Cv6YXSvnJrw5zR+h9R8umX1tQRvVqcdpAjiOW5
-	 VywcDJLUx9UHrdrxd1kAx9vRE5qCTxL+ypYqAU7yT1g4tzo0FmAMM71jCOFhQ7x9QI6Bd
-	 XmxFDPYA+Ka/3IsHlwXLpjOlDE0WFQCqBn9kB95GK8OIf3Jh0WzlDmtj2h3zAAxPY8+34
-	 xXKCMeRtZmTbYQn+9fmPraf066YHwOZAx1F3eRtdnwb35BsFNlXiAEsHtJN/F3Rn/BXp4
-	 fzOrH2XHkuDOLjwF3Dqj+AJ7jUE/zBfV+dE04LU7YvzuVUabioWdfWMCQK/FX7M2new==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=schellhasconsulting.de;
-	spf=pass smtp.mailfrom=schellhasconsulting.de;
-	dkim=pass header.d=schellhasconsulting.de header.i=@schellhasconsulting.de header.a=rsa-sha256 header.s=selector1 header.b=UBQ1uXko;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.171.82
-Received: from FR6P281CU001.outbound.protection.outlook.com (mail-germanywestcentralazon11020082.outbound.protection.outlook.com [52.101.171.82])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.42
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794911673;
+	b=oNmIgk+wAiXSdCpiYCeXCLf+I0Wsl9A6Gtw6tVhqVtnhIvG9sZkhda72yWmocFW9VB7E
+	 Azfd63kvS+ciiORMXhXixwQq1H03HaUfBJ58jhKbj8UuBtw7jfxAUxlxofCS4pcKGnblp
+	 qpnSTNijABKbdoqWUr5EzRP9knzBHA/EVVgHUYYC9H7f7nkVe4ykUs/W99cmZ94CpT2kx
+	 UloV1pyOVwIku2+uF0r4jXggogig1OOlKLs58BCySseG7hwyDMYGgWVEiCZbl1XsPpsp4
+	 CrWTNKeJFhHDqAHsu4aABijmKXKlQbtJ1ARoPbAoXrUOyvqmTIfS80ehHDS8Xf4+eeA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794911673;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=BmiLk7Woyt+5HnggThSiC1LBGvT5JbyN4EymqDd4Y40=;
+	b=Ia4w33GvFD9PPUSOM5i2rgRfTywIlfdKPD9gJmpND0YB5FfLxfkkpm+P2M5QodSP8u3N
+	 zqfYuhSTdXLTBw0vOL4fAO/E3Rg9wp+1CLsrkzCzKmKaN0Gp+12EolbicZ6S+eqgJD5tQ
+	 QYq+r+FSiJB3Qy61pQMR/Q1g3E3vpnz0Kr38t1yy+zoIrMRPvQVd2dboiG07asMULmrHR
+	 VPM1xtTyRMX5BtwKbvlN5B+mIomHCBQAUv1qM/vw78GTSaDoy/19BeVuR650GzAOccKWE
+	 SxRspovB+kZ79F0NU+zdCMXm7UeSBXvODTWPav56ONP2w3D5afmQZ6epl7Xenli9PkA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=En1EFsdr;
+	arc=none smtp.remote-ip=74.125.82.42
+Received: from mail-dl1-f42.google.com (mail-dl1-f42.google.com [74.125.82.42])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47144606A337
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 10:27:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 47144606A337
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=schellhasconsulting.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=schellhasconsulting.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA72A606A32F
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 10:34:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DA72A606A32F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=schellhasconsulting.de header.i=@schellhasconsulting.de header.a=rsa-sha256 header.s=selector1 header.b=UBQ1uXko
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=kxMhsYkZHTKYH1JBjDBRn9t/FyJ+u5JSyyvXPIPyx22qWMEt5nk2zrDv+kXCH12Ax2PuJQIdZjuf+evNnwufHx0lt0j59FQj+MMqpLGXqOxHSuyiUJI5mY0pdHISqneP9Ws5oVzkV1rqgLN0tDEfllOc3hjBqvDJUF+1QV7jY7MoC1Cb40O8bIHfiz5itvZ9FqNMA0O+2VkErsmgrQJREpIyR7zR/Js0afvwPyVDq8ngatAbNSDAQr0v7h2BCLIF0K5EYdy07f2HBDU+SRGe61SmD6aUS1k9vDRL0sFZPMQnol0OJYH66lZN5y6P6WHoQVpATspGmpeOkl/YasrNCg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4dNydoDOrzAHVcXhbabDKrCKS97Tt0zNp0k+Y14k8QM=;
- b=SIjLIWEas3wkmc43C1S88oBJQ9QjhvM6Xb0EP984F6HPOKgxSexeYslwtnNPa574G23+J5n/QmAOjmof+d+fuI/ef1VpMpa79lN3pWeHNKvyyMDGjW+3F/llDgzxOSMbN/sGOUTgCpe+JujYYlExX/c3hSEvjWi4uj9yoQGO8bb994A2A0E8e4QYwWLyDGGPTfz2XHESk8vNVXBctdruwtmdJ6tVxwNtUPBKe0MOgEWpu08Ov6vNgPt78PpnZGCOLifEVgZ8QXppVwbyRrhu0U+ssE2wZAgTBSsNTZTkrlB4OVRxX4IFvqX5REkvIRgum6J/nmF9KhBjvHxmFnvDGQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=schellhasconsulting.de; dmarc=pass action=none
- header.from=schellhasconsulting.de; dkim=pass
- header.d=schellhasconsulting.de; arc=none
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=En1EFsdr
+Received: by mail-dl1-f42.google.com with SMTP id a92af1059eb24-18818daa3e7so415337c88.0
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 02:34:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=schellhasconsulting.de; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4dNydoDOrzAHVcXhbabDKrCKS97Tt0zNp0k+Y14k8QM=;
- b=UBQ1uXkoRU78RM5MNmFrB/TdrPkVByVTuZsZpiyG908aAh6GHjif/2OhQTGNJ16DlcL3gRobybL1Sbh7h2TDh5CSEGi/DGm7E9qRPPivfT2GK5RpynQPRFSvOU9U9PTj1KsAUKJbBAp6y4OPrgf57RJsXEk5HEHQoL/Egt80JY+uGH4jVGfVavPQS0TGkPRLEZChSY/21Okc85Y9hWujdqwsl+d99p2crMKRgcas/J8imKT6TgzddYqxyVlJw0LF9Ds+esteM6ClfmVaJ+1je2+5sTgi+JSZuRKzutHjU2UG2UOVYcOVein20He/mXDx8JyxK9JOIRJ02PesUOPFAQ==
-Received: from BEZSPRMB0002.DEUP281.PROD.OUTLOOK.COM (2603:10a6:b10:29::7) by
- BENP281MB6268.DEUP281.PROD.OUTLOOK.COM (2603:10a6:b10:10c::15) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.615.14; Tue, 17 Nov 2026 10:27:19 +0000
-Received: from BEZSPRMB0002.DEUP281.PROD.OUTLOOK.COM
- ([fe80::58a9:6dd5:d6a6:4264]) by BEZSPRMB0002.DEUP281.PROD.OUTLOOK.COM
- ([fe80::58a9:6dd5:d6a6:4264%7]) with mapi id 15.21.0615.013; Tue, 17 Nov 2026
- 10:27:19 +0000
-From: Lars Schellhas van Kisfeld
-	<lars.schellhas-van-kisfeld@schellhasconsulting.de>
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-CC: "Rafael J. Wysocki" <rafael@kernel.org>, Srinivas Pandruvada
-	<srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
-Subject: [RFC] intel_rapl: exposing PL3 / PsysPL3 (MSR 0x615) through
- powercap?
-Thread-Topic: [RFC] intel_rapl: exposing PL3 / PsysPL3 (MSR 0x615) through
- powercap?
-Thread-Index: AQHddn2/TzZJReQw8kKuDI7YP3MdDg==
-Date: Tue, 17 Nov 2026 10:27:18 +0000
-Message-ID:
- <BEZSPRMB000259539D5BE9BD203C5455E87B2@BEZSPRMB0002.DEUP281.PROD.OUTLOOK.COM>
-Accept-Language: de-DE, en-US
-Content-Language: de-DE
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=schellhasconsulting.de;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BEZSPRMB0002:EE_|BENP281MB6268:EE_
-x-ms-office365-filtering-correlation-id: 2a8181bc-6b83-4f2d-d350-08df44955bb1
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|23010399003|366016|10070799003|1800799024|376014|38070700021|7055299009|10067099003|56012099006|261026121527099003|261026140227099003|261028144727099003|261022075727099003|261021123027099003|261021121427099003|261022105027099003|261102123227099003|261009223027099003|18002099003|6133799003;
-x-microsoft-antispam-message-info:
- Etkecls0zRdkmD3NW1AWo6RQMxCnIXTFtj3HT8ue0L82hEDRFeGh6hlWPJsB5dauQd5b5h4sz59jyqr5SDv4Dgq54kBoZQzKxORZoIBW+puw/8FLHAZOv2+rDfRyYj6jbjD1nm0W9NzdNIrVpA4Hl2Q8RS6RWnN0P5atl5I7aw63NV6dwHSulvBTbYRW9sXqTTT31eEcVlM2XZQFlEPiVp7I+jcM1QEr3bHrwSFZ+2/F3aJj8Y9b60X4i6p/4/JtagwBh4EsTvEocIi5ie+jYl2BiS+9LQda73R6E+Yb3Oe1ktJoCm5pZZl0lz6EdnACVdmLddNerCfc03qOE9iIFoXOTP8njUv58KNNuZINmQ7EXL6UC47Eqng3onkXCKfEDsKGnJvbWx7+/ui0QrsNMEDe2XLxacK+TLQbgoy6JNJMe0vsioqkHCg51mNML2ra2PprERrITkZFh0FnIE1XiHKCmVaTBCs09odvpcsnRzEocnt9m6NEfbP/RE1FxnVOFd3TR2CnqYzNUizaF8TKBgaQDTo2VHPb+SF+uZh8g5np9eATOqEcofjXImUcbTG7H66QNwsQi3v23TtLpCFQxRVwxCwYSnubhX0jYaHvWyl6wEKJxZPYDS7F8Sn3o0sLCUoDiKMpiueo2PkBJGYj1SopWJ4EaNST/68MqBauS/y9RLCq0qbwhsgX9OmfTOYN/EOTdQ4RLeD4v4Z828hAAv1eOt44v6bSUgLnawk1R+LL+pRKk1WpaxKcxrLN63AL
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BEZSPRMB0002.DEUP281.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(10070799003)(1800799024)(376014)(38070700021)(7055299009)(10067099003)(56012099006)(261026121527099003)(261026140227099003)(261028144727099003)(261022075727099003)(261021123027099003)(261021121427099003)(261022105027099003)(261102123227099003)(261009223027099003)(18002099003)(6133799003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 2
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-1?Q?SjECPDzmqVcmXr/G5P2sn4l8VmJ9Q+uJ6bN/D4LKZCYEFcxY+IBSiXgAZj?=
- =?iso-8859-1?Q?RgfNnGbEqx2DqGU5e4YWtKox5GvEo8afm3dn0Vt24Hqz/mrT2HTLgLrPzd?=
- =?iso-8859-1?Q?coXZlaCoCRqBgGOh+ALSZSrXs61qDI10bhA3vHLHGuOJGx6kxtTnrmHaYv?=
- =?iso-8859-1?Q?f/3iv5WhrjuYssYmZEMe7N8IvU3zpI+sFnOOMV/l6Tf5hRaqULmHeqxlma?=
- =?iso-8859-1?Q?mhZRdKX7tFHBxuDyidLItzaA3UKYcUj3jRYt44cX9Y7DCFiy9ifqQHIZ4p?=
- =?iso-8859-1?Q?cNCt3tf1L2cLXKta/uQzgtthSV7+082JLpdkR2usXOhFc2ESvEZyUudXe4?=
- =?iso-8859-1?Q?zUM2EzNkbEtiakcY39lazHHevoELk9FucntNDuaiR+zXb9RXNjjsUllMkA?=
- =?iso-8859-1?Q?QM+ABdxxPcBfL8lspe0MyxX2fABMFBLyr4VnpbEWC6Ziq+PTuqJHoqeSo1?=
- =?iso-8859-1?Q?BnQKLwaa8FGo/uUog6HXNmDuS9OAEwtgF+nCN+HtUelxszQNKtJ/yZeAu6?=
- =?iso-8859-1?Q?HCJABksYaeTIyDaA1kfUQWGACMkPpw4+7qcH4BSKGvf5ptT28lxuW+CJYT?=
- =?iso-8859-1?Q?wK3agCWYAMhCaaZZYNtL+7n6zMR4YKV/z1/zDnLw+YHY7XwQgp0Ppk247l?=
- =?iso-8859-1?Q?sSnil1aSjjGBeDmgpPP3exGlk/y9dJYBd8QOnYbzn2R9MhAP8dPOuy8oZT?=
- =?iso-8859-1?Q?wbXpMMSn+YTHMM4wZCQWvcF2VR/BEpPNby1S/IF0IcJ3b2Rtoyci2cr5WT?=
- =?iso-8859-1?Q?SrO0HMuBAMT882auTep/Q5KfMYcOFyvOGOagNFE04yIvNwCGoHVFxuYqDJ?=
- =?iso-8859-1?Q?z/svzab5EZJk/FRwP1NnxsF3KiW0mbZn87dtuibh4c39HLzebXF9BjEEvZ?=
- =?iso-8859-1?Q?YPqC+q9w8b2MHsI7GIh45090zQAmNZXgm+Qb1XFkNJvCPx3Rma44JZekE3?=
- =?iso-8859-1?Q?WyEIH1Vs242sNfAKslVCwWF+wfUe2YkK8VY2Fm86S50SN6dsI+x72W4Ez/?=
- =?iso-8859-1?Q?TpRuJdERH+i6Yktm0XMNrBGG0RVefDK2RprpUiPhVsSkWZg6z8j4C27Jj/?=
- =?iso-8859-1?Q?FoXZ81eSpczuXAQiI0x06Xiw3eTMoImuFfVYGn0SpuKUqfRs9IW8nLf3FV?=
- =?iso-8859-1?Q?A+1avjcByRKFBbXd8ma3FCDzNU2HbnuZhrpvXQgYlvjDVLPovea/irW0Cl?=
- =?iso-8859-1?Q?7SfQDAmV2U1YCqaptrz2kRh6apOLcv9XQTft41mOCKx+d+qdyvvchqSbpA?=
- =?iso-8859-1?Q?QHAuayqI3XouvUpwlMNFwiwTK3J2UErRWioid1rcKqwFcnP7AyjgdGAXCu?=
- =?iso-8859-1?Q?SX+gNk8pNKbDMYXo87746jjOJjK8WXijV4vRfaGcEu4tto2MIXrXF3mQ9Z?=
- =?iso-8859-1?Q?874TqcjfTNBWSMWCeij01N53k4z5TxDwYSAclaR9Rwm44hQINyJ7pG7n8M?=
- =?iso-8859-1?Q?RW4OlRPLaCFabtHrJZlGFRAcywJOIAPbmly3imGdeQ6BtAjKX0sdtQYjDz?=
- =?iso-8859-1?Q?3ylUzOhv7ROZtyBgnXGhXDsQkLuK5n3zQcG9iR/VenmKA9kv3j70Gejo3M?=
- =?iso-8859-1?Q?xTbIoc1tpsV/5s7gsDMVHKFW50mW5aJ8KQ5+2lQaHw5CLlHNPcW5v8CQQB?=
- =?iso-8859-1?Q?GLp8b3gtJYnkO3OeYaL/LU8aOZLr9Sv1IhuWjhUipiSp+73fs39FxXxRx9?=
- =?iso-8859-1?Q?BwaNosHgFjN4j/6GRIUZg4M3Aa26t5G0Zb+x/RtBm7Zg++LKUBx0tGKUY4?=
- =?iso-8859-1?Q?t33AjMKARsQLJHSxGqTz8uyxGHJzw4x/SZ3nEg53aI5z0ugmff3qhUvnev?=
- =?iso-8859-1?Q?dSI4VVV+yIc7IppDZa2sIxkFmYV+t67fikHSO+XhIB2lgvULmJAMHVcfC2?=
- =?iso-8859-1?Q?RI?=
-x-ms-exchange-antispam-messagedata-1:
- V/5VaD/KOCMlyS/8HHWeWwNanFMP5nJpCR2YjUUD3aKUWxyWmySfyFXQdtUKmhZKRSTE6PQchxmTwg==
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+        d=linaro.org; s=google; t=1794911670; x=1795516470; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=BmiLk7Woyt+5HnggThSiC1LBGvT5JbyN4EymqDd4Y40=;
+        b=En1EFsdrdIkH9eyOkefMREOOPdHM/WJ+nB7do8MFPGS2RFE46buqsjhkuWVzuC8m3+
+         3gF/6S2D7s5EKUEATZ4QiaqaxVW8vxGRVrNqRlv0ezJXermBAeEXcKla4/EuExo3AGhx
+         744hX1dAhanRL4MRxPITaiF1pZc7rjSKVLZmLgqQPaxwG9QHuvi2XbBzY2z/Oz+c8clw
+         w9aV/YcX9cHZDqQ7JoiLvJYMcZUoztZLy/qKIKtof7mobdWmjRX/Xb605HQRdDqW74k6
+         TMi/qHyRczbrpjgMZe7BkgoUBqZIoFt20gqXXVyuC5UnYYSFfLMRBcKyYryrj3FhAjnf
+         j83Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794911670; x=1795516470;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=BmiLk7Woyt+5HnggThSiC1LBGvT5JbyN4EymqDd4Y40=;
+        b=soVhXHUh02xZKx6Fj8dUvjaEDsqsBOOKOSCgQc/5RVLaeK149LUMdXCatwVWVlXyvT
+         jkekzT3N031bNchoEdGSkqdnyOjgBTL0A0rnUhTgZlW6WkrlpRtCpvT6mfGWuVqQG5c2
+         HgfBtQZ35/xHqHweVUxhIiAa0/yVC1+GR1GaiB4wvNmg+p0hk69BZC/4ogPKkuXLmmQo
+         QY7scmDzJyt1uk7r+V6SHBziq/994QTOESjsBlktpJhvAUdBWta55Ia+48C0cIxnCOfj
+         W9BjfEj/vWKHTJ5SKEcoEiuwixSvawqGNURnyIn0x7MdbRdjtpgUQiK9+ajY5RS9cRLG
+         l36Q==
+X-Forwarded-Encrypted: i=1; AL+hErG+MRdNSoDxyr40gVNgyvHYLktUwiyOZBDzzk1Q7O79Fa8FBL2CCC+D2NMFswntPihHson8Or2ksA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+x1pI75nV8r4UlipJVj/wFGEJ9nx+eBggKN+YCDgxmOh3Kn5Wq
+	wcmVec44Yo+uLFlyLrZKf6ExeV+OterI/9dl2+2R12AYc4AcbaZwHjW9T7w7yr8nzO0=
+X-Gm-Gg: AYBFou1fXuTPp5CQ00ZEIdQXEBP/8lZ3FsDtF9+AuIC58lcrdem2oIPm0PV09A8eDDZ
+	FrwEpaEPNmtoAOl8X7gUimSaaRKdp9R1heiaTVH7jueLrc4yqoT3gZ3xKUu9LERjgKom5gZPzre
+	xdf3RKq54W6snHYKNI7MpXjpbTlSOstxo1SYJSsQ5YA61dYkcuru0XtdNmMHtYKpqCXTBIE+qgd
+	OpTcqfmznYUk1QZNHKJ7KDqpwApZ9ZENXsPi4kxemVVg66TDFOak0PWzXJUbdNOYsfpCxKVht3h
+	C0gohIFPA7oYVgSJZmtPJkUyoKEPjd+pHYcD/XcyPl77fIXNlLZv9dx14pKq/2pPKY1CJruaahW
+	+jUmTElySV9hNPHZ47PbPw/Srh2bjdhrgevh9nDLctQmBCDR/pUb66BbgEPJpTZdj8aWPoShozJ
+	XT2u7xAtmfpZRxFMCjD0oPgNF984ShchO8ga7W8QDx99ENOjzEIJB+iLjfG5x6Sm6M2+Q4rOcLy
+	+q1+J99ZH7vO+phla8mYLTfvgCzhb99vLEtCxZAScDC9vPVpP289EV6KJjBd8xNkpQ5nQkm8FEc
+	6oJgTpuy8mRmHTF6f3NRV1XHblKK4g==
+X-Received: by 2002:a05:7022:b052:10b0:1b1:f02b:2317 with SMTP id a92af1059eb24-1b53a4758b9mr1979699c88.22.1794911669662;
+        Tue, 17 Nov 2026 02:34:29 -0800 (PST)
+Received: from localhost ([122.172.83.36])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b5031b2519sm36212362c88.13.2026.11.17.02.34.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 17 Nov 2026 02:34:28 -0800 (PST)
+Date: Tue, 17 Nov 2026 16:04:26 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Ananthu C V <ananthu.cv@oss.qualcomm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Oleg Keri <okerixx@gmail.com>
+Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to
+ non-boost freq on boost disable
+Message-ID: <avwtsmp7Mqacbbtl@vireshk-B250M-D3H>
+References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
+ <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
+ <auhMD2-5FD4BqImG@vireshk-B250M-D3H>
+ <avRiWsxCEAuBouBZ@hu-anancv-blr.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -150,54 +109,61 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: schellhasconsulting.de
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BEZSPRMB0002.DEUP281.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2a8181bc-6b83-4f2d-d350-08df44955bb1
-X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Nov 2026 10:27:18.8740
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: f2749c6d-a11c-4d42-b10b-9f24df02f86b
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: TWAg1SA4OOBBxwjLMzhtv+CM/nJLXYxhioburfuBDEaqqf2mbX4vsXO550uXU4FJwujYPY80RWRy79l8hkD4lr68hA51ufGptbgOLOti0tCd9eXVg7ndMzsHCxxXfTdrcEN5D4uiAtwnKvDPAWeApwxHt3vVc/n72bdKD81iKik=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BENP281MB6268
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <avRiWsxCEAuBouBZ@hu-anancv-blr.qualcomm.com>
 
-Hi,=0A=
-before writing a patch I'd like to ask whether this would be welcome.=0A=
-=0A=
-Background: I'm working on a user-space daemon that applies the Windows=0A=
-power configuration of Microsoft Surface devices on Linux [1]. On Windows,=
-=0A=
-Intel DTT writes MSR 0x615 dynamically as a platform peak limit. On a=0A=
-Surface Book 3 (Ice Lake) the firmware sets it to 65 W (enabled); Windows=
-=0A=
-raises it to 100 W on AC. powercap has no constraint for it, so the daemon=
-=0A=
-writes 0x615 through /dev/cpu//msr, which needs CAP_SYS_RAWIO, fails under=
-=0A=
-lockdown and triggers the "unrecognized MSR" warning.=0A=
-=0A=
-What I measured: on the SB3, 0x615 binds on platform (psys) power, not on=
-=0A=
-package power. With 20 W in bits 14:0 and the enable bit as found, psys=0A=
-power under all-core load drops from ~35 W to ~18 W. Restoring the original=
-=0A=
-value works. A tester saw the same write, bind and restore on an Alder Lake=
-=0A=
-Surface Pro 9. coreboot also treats 0x615 as PsysPL3, next to 0x65C.=0A=
-=0A=
-Questions:=0A=
-1. Is 0x615 PsysPL3 (platform domain) on all client parts that have it, and=
-=0A=
-    is its layout documented publicly (time window, duty cycle in bits=0A=
-    30:24, lock bit 31)? I couldn't find 615H in the public SDM.=0A=
-2. Would you accept a third constraint on the psys domain for it, opt-in=0A=
-    per CPU model like msr_pl4_support? Duty cycle would stay untouched.=0A=
-3. Any preference for the constraint name? "peak_power" is taken by PL4.=0A=
-=0A=
-If this sounds reasonable, I'd send a patch for the models I can verify,=0A=
-and only those.=0A=
-Thanks,=0A=
-Lars=0A=
-=0A=
-[1] https://github.com/larsschellhas/linux-surface-power=
+On 11-11-26, 18:10, Ananthu C V wrote:
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+> index ea994647abc8..5b364d8da4f9 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -49,15 +49,16 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
+>                         max_freq = freq;
+>         }
+> 
+> -       policy->cpuinfo.min_freq = min_freq;
+> +       policy->min = policy->cpuinfo.min_freq = min_freq;
+> +       policy->max = max_freq;
+>         /*
+>          * If the driver has set its own cpuinfo.max_freq above max_freq, leave
+>          * it as is.
+>          */
+>         if (policy->cpuinfo.max_freq < max_freq)
+> -               policy->cpuinfo.max_freq = max_freq;
+> +               policy->max = policy->cpuinfo.max_freq = max_freq;
+> 
+> -       if (min_freq == ~0)
+> +       if (policy->min == ~0)
+>                 return -EINVAL;
+>         else
+>                 return 0;
+> 
+> I am pretty sure we can maintain the policy->min status quo and only touch the
+> policy->max updation; which from a passing glance simply seems inconsequential.
+> Potential side effects, if any, aside, this would at least fix the issue at
+> hand, which is the frequency getting stuck on a higher value without being able
+> to come down. What do you think about this?
+
+So a change like this also fixes the issue ?
+
+@@ -49,15 +49,16 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
+                        max_freq = freq;
+        }
+
+        policy->cpuinfo.min_freq = min_freq;
++       policy->max = max_freq;
+        /*
+         * If the driver has set its own cpuinfo.max_freq above max_freq, leave
+         * it as is.
+         */
+        if (policy->cpuinfo.max_freq < max_freq)
+-               policy->cpuinfo.max_freq = max_freq;
++               policy->max = policy->cpuinfo.max_freq = max_freq;
+
+Also, can you please explain the issue again in detail. I am not very
+sure how you are reaching to this issue over current mainline (without
+the first patch).
+
+-- 
+viresh
