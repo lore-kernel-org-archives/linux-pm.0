@@ -1,93 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794927219;
-	b=us3hoQGnfHtDS18qvHQc2G7S+rJdEFtsiTRkRVZNFt2Z93nfRZmEJGPVcbXNwy26srWd
-	 t6Ut0pZ2vJR8b5rUUhXainRzriw7TQz8ZwlESsXHRZGSEh2x8Dn2x4LTlUufC1jLj++6I
-	 Hd3qpySJrgTPSRst9avheNVz6TiDAIVi4i74WlXVhpb/zF4XcLdKdFcw/+cUtpuoRsJB5
-	 3uktN+9956a6Ou0sXSiWArbZsAPp+S9hMTjNyftXqfUE2kAAff/yXJ2iy3X70tjhHyeYx
-	 vseqBIKzGMe4m/pYIjxTc1A63NLZ6158IW5dDRsZ+N9mwloGBJiP+eWnz0N/Vptqmrw==
+	t=1794927237;
+	b=YieTRs8cj4leffbbCh/19Ifk9g9ewdsQ2Fbn57pmb7rj4TU0G+FP9ERv6QyU2vYFHmMI
+	 W4gEqUb3r/eaz+04JNZuUU9FwUyHchFlGkHs9rEwUfkIkj4l3dIChRkLxEdc7vhhhPscV
+	 LAAUkvhl0CTKKgqacl8yPFtCSP2DaEFz4QI/5/yyrfhxBpCEf41Veafs/oqKqNb6cII46
+	 yS/Xkt7/YQNbgb9INboUm/YvpdHlKufzuXa13kTKo2S50SkyW1MB2CPwWsV91RsOMqjDe
+	 AuClBssdbEBOdRFb04G9gxw6cVZ3zscBzpQwQhLW0PG+0ygGU65bn8RIzXl0KJwuCjQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794927219;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794927237;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=Ji5dmOGNAnAODAW0ROWats0oqO4n06TBqSd0YPOj2Tc=;
-	b=dy0GRmjb46ThrktX0ALOcBzLOcCh4jkpLJfTt6rti60KkL8Dr9T4ZByG0dS4krzMjJ/U
-	 Fa2JNMT6n3mK0bX2jVy0KXGyaYCz12dQFIqHLW1pCPBykoK0AyCcNdIk6bvnBe7GCxOk7
-	 fC5Dubc3i+33UxqweYYYs5Md/3E+KzPoETPQ52PFTgYJesRCM6middDipKQRErT4CuGdX
-	 B/JL1mkJ0sGHZMiKf48oWfFW81QqgNNwiYd74BT+55VGGuzTSkyMb/5fUHosPPBCNNMVj
-	 qHiudOKq+S8HC04SKs7mj1s0PqP0c10TQO1bFPNK2pfTjKr5bICkVBe6/JD5dS66DJQ==
+	bh=IcxkjBHup5sZEhtgWmpJfXaRSSMGBc6DzJDbIf6ZHew=;
+	b=OiLU4YNqTesfrNqEN+yi6b0pAo8I0xRjsi6AwF1lCLkrRZcHuFOPhGQsxIJez0c0Z/Pm
+	 x0XjG22CHJnGKistn8kGmBvsDusz7KY1aJQsOa/tnmh3rd/f+261E4W+JS1Eb+cGYIcp/
+	 hpCDdcSs+Q/SUZ2gFOOkmg+GlIvhOXnTeDe0WBfdMNnzu0drXEvqFsMrTwZKfdrP2tBMy
+	 eyfwBNEVbZ/FLA8CfRw9mORJP3MXLeP6xNmjYJwb2+F6x4Je5GtZPpwv7Gs5yrNSJllG+
+	 WFMikhAkHsQOuGfa3ixbKbNBKgr0nwb++JvGnpiCfpfN+NiBS1v9a+KuX54GQdAQJxg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UOaOdSNE;
-	arc=none smtp.remote-ip=209.85.214.174
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="dBr/0Bb+";
+	arc=none smtp.remote-ip=209.85.216.50
+Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C823B606A336
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 14:53:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C823B606A336
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B79F4606A332
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 14:53:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B79F4606A332
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UOaOdSNE
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2e95bd1c14cso52609315ad.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 06:53:38 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dBr/0Bb+
+Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-3b3a42a4bcdso883725a91.0
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 06:53:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794927218; x=1795532018; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794927236; x=1795532036; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Ji5dmOGNAnAODAW0ROWats0oqO4n06TBqSd0YPOj2Tc=;
-        b=UOaOdSNEDPzwKswibDqadUr7H5tNKhoihyUcBZqvCA0eThpzAd3uAkozvLkxyi4hNL
-         tkQSkRolpThhjcCAckgYfBRcE3FBrANXv6XXUIBGlpmPuNmoSBsrBcceYXw8h41Q6shv
-         yBJ3sRQx3maVFHiLv/5yQ9AcMF71+6poyQ3IkbEqy51W10R21yBR7PNcw5EYbMbdmXMk
-         dJEx08mhRduNBpcK7wR/o+kXpxztpJOOMfiXriLFEAmWQb4VQ7fyuYp40XhCI1Qyo77p
-         96ybB1rSrTddEkAXJ+7fz4q2O05s/QgKSQ80GfldeGFxXIB5SYT1akubImj+Mt8mP+6N
-         cv+A==
+        bh=IcxkjBHup5sZEhtgWmpJfXaRSSMGBc6DzJDbIf6ZHew=;
+        b=dBr/0Bb+hdm5ZUT3xp4UZz2XLLt/WRlAAT5R1y2ZnVq7W4/jwNXoayAVMZ2SCj4iBW
+         b4V2Q5LCCw10lHqDFL+hd25tjoM79SokWeW48mSt5kk5Dh8FJPjESuaVXOzc0EX38LM9
+         jo7/7Hh0lxoYOGIr7nfHu8RY9/sDG6CxojsYr+cn8r+qpW94GETsCOPURwPllE6TanA8
+         ii4dTsS5fL/q0NKMr3OYIt2CulS316B+6cY5mX/cEz6PjotIBYhiNrW1uNhVhe8Iqgdu
+         /dAsn6EOZY72xwHJD2dffY1fon+W7qRRscBsi0wa/XwyZ9u/K/PucgBsD04GwtrwDVMC
+         Yvag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794927218; x=1795532018;
+        d=1e100.net; s=20260707; t=1794927236; x=1795532036;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Ji5dmOGNAnAODAW0ROWats0oqO4n06TBqSd0YPOj2Tc=;
-        b=J/IBT7xFV0MqTQHHhTLjELpybc54VOXHccbhUqoYWI/+EDw71xApCle3FfLe/CMiC5
-         rRv63QWMOjHySQUAPmJ61UxtlWdtE3/YfgcUiSxTmdZdIwC6Kv6zPhIMZC1pAEeGX67t
-         TbjK3j40E/QX48uxzVgp408UzRaqNZl+yyR8flBlm72TAq2bVXj6kPTR6wlVuvKjfhCi
-         7TmtNh9EJ7A3hU6dE+l2pwQ+79/8rybfbexpR0R9Clw4v2MfOLKmSzEW3IgnXQDNKzTw
-         E8PSnU5CZppw6Wc4KU/as1lTL28X8DwGfEB2LO93h57Y0LUvPbRHBbM1tuX10KT8N5F2
-         Rs4w==
-X-Forwarded-Encrypted: i=1; AL+hErEkt475nr1Af60U6Op9kaRH6aVedjVvWYyfIC8FFEXyi2Rt0N19tLPpPYM6slW7pJ6t6iljv5KhAw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9Tq0mgFkHca/rIEck/C6CfLX1XB4gCJGBbEEXdHbCVv8tbRCcg
-	sbPA63Knb4OQTHsOxEZT2uKZIMfpr8PLRzbIXIfztC22WLyPEzgNrzXHyv5f66jG3Jo=
-X-Gm-Gg: AZFdTZcgB/jmjwWkigQkdh8Kb2Ws6Pp7AAPhsXJz+ynx+nGZo3NbgkSAwBBa6FPh0w3
-	6BXYwcW96RsEZwLd7MOn7vZZKbs0DwaiPbjXcVHr8TpILgwmmsOW0XXj4o6k+k3UlhOTvIS+pHy
-	SkU+cNZMzXoNETCa0urO8oXEP2G7yGhohDr0jt4sAc//qJi+UEvJfabG4O2qc5byZHNi1VT6kQ9
-	CUN7knCTXalX0EqbNuUHMUjWr0Egp270PoIUQF/SgJK0/EEgiWkGJwVQ+izgMD9AAJJ0OyKVZVD
-	G1+6N9CfMrT6cy+UAsGaHWIcTX589wYxegwSDDwDZuKf3emnS5UoAkmI4vYt0eV8E0n6oNt+38u
-	iiIp3URtmqpSyIstRahkkCKHCf4VFtVeEubRANye+LVz8ODGBMbCneIXi1KEMTuQQMmE0LFTORu
-	xRtFrtaqDB0J+odJ+SuuOTq8fb86UaiTAGbUOe1+v1OMAbS8QOSnUPV2LbDBdG1Yu7ZexOGz/pD
-	Z1QLTNb/dgemd09eexHEr3er1mrPAbk83EdzTZhR/FRXO+rIo9HZnYNBvXi5qlIiptbNs9T4VGU
-	j9VuxOrdCtym2p95YwB4tUC8nLJcQEliqIlHmv9KU8O57t8cYhuW2sk0fW6QdpOXJ5lPuLLd+bL
-	MFqCGGlTRzzP6DnkRVGYt9x7QxDktWZpsJbQwTQlR
-X-Received: by 2002:a17:903:1b46:b0:2e9:660a:7944 with SMTP id d9443c01a7336-2ee0df11a51mr140279215ad.58.1794927217892;
-        Tue, 17 Nov 2026 06:53:37 -0800 (PST)
+        bh=IcxkjBHup5sZEhtgWmpJfXaRSSMGBc6DzJDbIf6ZHew=;
+        b=B3QP1Kxp/iceLIj37MNe0QPXogbNQ+sqm6DrBJtppDqLY2bQTXFfJZUngtyDuoXhS3
+         Aqcdg14W3kUgS/PAJVIGMpt6dqkwQVdpU3USBX4TOkXo43WOttWaIQZcX+hA9ifIaoKU
+         AMvXPh3FDQrB7M7MHk0R9tJ1k+RkoSFRfZGcsbIUAktQMfB7xAl9zO7sr4QjUzt43BF0
+         A1yqT/pcf3gKmesQyQq4bSIraNC6Hiqd8k1kywt26u+4vk2/8rbJYHdS8uEio8tEF0BR
+         aLPjY7sAlZLNDVoCk7+CBXqNeVqD/evux3VMW+KxaJFK4APb3TTtfVlEQPfqkErcIIE0
+         qrYA==
+X-Forwarded-Encrypted: i=1; AL+hErHDu9Li84LCAo5i8aji3TQB8JltXi15caGRlkXwLaMDZxX8YIJ/ohhhvXOYA4rKSwTasNPvtY15xg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8I1otDVYj+4OehL1fBeAgLxqUG7gotylbOW2cv5btXKz0KMS1Q
+	8b6vDBoHyPZe0njaESWh8DfCnRJSQLeMR4BwsDDs1SrdbJgb7votaoph
+X-Gm-Gg: AZFdTZeOScH0gDEuFlA/Dx1kX1dgT//Qi0IHb72Gb5mZkYVnlk2aoEaOL72YdZSq5+s
+	Erga9R8f5CqAY1mg4mv55tyrv+E4N7R2TmU7BjzQxxTljHKzTbQhfIl5wRvrQVKWiJaSD9GYrrn
+	WlGD00ouVxLYbcWfDC6kNJH6PTggkk+2rLnDNckGkSgS31YBNWQ9xA+gILd4W0ArTjSmtsznwql
+	NRAuLv8JTVla65CEJ54dyjMgcnJpX41EAz+DbZgfYCbn5WgrsIDVzfH7AvADrM0nsN42meKGE5Z
+	tjHftcDlFZHtdIuMNA/CvhIkUcuccj5jQzBFgZ6ZJoHp/6wItRCVOxdmP7R4E0gg2pCfpQJ8DBx
+	7aaziraPsq7PfgF3LU21V7myk1ooVtNl3N9mOT1IgXH1/k8eK8YCmiI+zHT6UXu/TsTnCAFNuAo
+	v0osZlaqkSxaqzTrqHmyQLYzvO3hcZzzSDoABlmLmAgJ4i29UyCr7Y7kQ/5sUk/bkDpLtjLQAiP
+	1DCXyUAS00/1mWAM/9ywpw9NVj0v+2/aHSAEaqlJpkyAzMARMl+b9oAWhiGegH/3FaomCprlzma
+	RRQ5fYP6AxIk/Tb8So7H32+nl3sEJgqjojj74QKlfnKr4sABXiEMvDOVV2HysvJFWzalwoYwUpg
+	hRS29MsHDoT7EtZyzcbVfpLB+qi2m3QTNAgsmSp6Q
+X-Received: by 2002:a17:90b:4c0f:b0:3b0:a757:e372 with SMTP id 98e67ed59e1d1-3b1b0b63d19mr13435372a91.47.1794927235946;
+        Tue, 17 Nov 2026 06:53:55 -0800 (PST)
 Received: from lwq-System-Product-Name.. ([2602:feda:30:cafe:ec49:29ac:0:f6])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2efd7a88a55sm17545035ad.65.2026.11.17.06.53.34
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1b24938bdsm11910657a91.1.2026.11.17.06.53.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 06:53:37 -0800 (PST)
+        Tue, 17 Nov 2026 06:53:55 -0800 (PST)
 From: Yaohan Li <shunsheng1218@gmail.com>
-To: rafael@kernel.org,
+To: niklas.soderlund@ragnatech.se,
+	rafael@kernel.org,
 	daniel.lezcano@kernel.org
 Cc: rui.zhang@intel.com,
 	lukasz.luba@arm.com,
+	geert+renesas@glider.be,
+	magnus.damm@gmail.com,
+	linux-renesas-soc@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: db8500: register the zone before requesting the interrupts
-Date: Tue, 17 Nov 2026 22:53:31 +0800
-Message-Id: <20261117145331.1092458-1-shunsheng1218@gmail.com>
+Subject: [PATCH] thermal: rcar_gen3: quiesce the interrupt source before releasing it
+Date: Tue, 17 Nov 2026 22:53:48 +0800
+Message-Id: <20261117145348.1092528-1-shunsheng1218@gmail.com>
 X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -100,26 +104,25 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Both threaded handlers call thermal_zone_device_update(th->tz, ...), but
-the thermal zone is registered last, after both
-devm_request_threaded_irq() calls.
+rcar_gen3_thermal_remove() only drops the runtime PM reference.  The two
+threaded interrupts are left to devres, which releases them after the
+TSC objects and the thermal zones have already been freed, and the
+device keeps raising interrupts because nothing clears REG_GEN3_IRQEN.
 
-That leaves two windows.  During probe an interrupt can be served while
-th->tz is still NULL or holds an error pointer.  On removal devres runs
-in reverse order, so the zone is unregistered and freed before the two
-IRQs are released, and a handler that the hardirq has already woken can
-then operate on a freed thermal_zone_device.
+rcar_gen3_thermal_irq() walks priv->tscs[i], reads REG_GEN3_IRQSTR
+through tsc->base and calls thermal_zone_device_update(tsc->zone), so a
+handler that the hardirq has already woken can run after those objects
+are gone.
 
-Register the zone first and request the interrupts afterwards, so devres
-releases the IRQs before the zone.
+Disable the interrupt source for every TSC first, then release the
+interrupt handlers, and only then drop the runtime PM reference.
+REG_GEN3_IRQEN is only ever written by rcar_gen3_thermal_init(); a
+concurrent set_trips() writes REG_GEN3_IRQMSK alone, so it cannot undo
+the disable.
 
-Stopping the PRCMU measurement from .remove() would not be enough on its
-own: db8500_thermal_update_config(), which both handlers call, stops the
-sensing and starts it again, so a handler still running when .remove()
-returns restarts it.  Register the stop as a devres action placed between
-the zone and the interrupts instead.  It then runs after both handlers
-have been released and before the zone goes away, and it also covers a
-probe failure past that point.
+Remember the interrupt numbers that were successfully requested, so that
+the partial-probe path, which also ends in .remove(), only releases what
+was actually registered.
 
 Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
 ---
@@ -129,75 +132,69 @@ AI assistance: the analysis, the change and its review notes were
 prepared with Claude (Anthropic) as a coding assistant.  The author
 reviewed the reasoning and takes responsibility for the content.
 
-This revision registers the thermal zone before the interrupts and puts
-the PRCMU stop into a devres action placed between them, so devres
-releases both handlers first, then stops the measurement, then
-unregisters the zone.  A stop issued from .remove() alone would be
-undone by a handler still running db8500_thermal_update_config(), which
-stops the sensing and starts it again.
+This revision also clears REG_GEN3_IRQEN for every TSC before the
+handlers are released.  rcar_gen3_thermal_init() is the only writer of
+IRQEN; set_trips() writes IRQMSK only, so a concurrent trip update
+cannot re-enable the interrupt source.
 
-Testing: compiled for ARCH=arm with u8500_defconfig (gcc 11.4,
-arm-linux-gnueabi).  No Ux500 hardware was available, so neither the
-normal removal nor the second-IRQ-failure path was exercised.
+Testing: compile tested only (arm64, gcc 11.4).  No R-Car hardware was
+available.  The partial-probe path that also ends in .remove() was not
+exercised.
 ---
- drivers/thermal/db8500_thermal.c | 30 ++++++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 8 deletions(-)
+ drivers/thermal/renesas/rcar_gen3_thermal.c | 25 +++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-index 48981247763f..b8f75838cc4d 100644
---- a/drivers/thermal/db8500_thermal.c
-+++ b/drivers/thermal/db8500_thermal.c
-@@ -148,6 +148,11 @@ static irqreturn_t prcmu_high_irq_handler(int irq, void *irq_data)
- 	return IRQ_HANDLED;
- }
+diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
+index 9c64cbc2ee67..35bb49915a75 100644
+--- a/drivers/thermal/renesas/rcar_gen3_thermal.c
++++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
+@@ -110,6 +110,8 @@ struct rcar_gen3_thermal_priv {
+ 	int ptat[3];
+ 	int tj_t;
+ 	const struct rcar_thermal_info *info;
++	int irqs[2];
++	unsigned int num_irqs;
+ };
  
-+static void db8500_thermal_stop_action(void *data)
-+{
-+	db8500_prcmu_stop_temp_sense();
-+}
-+
- static int db8500_thermal_probe(struct platform_device *pdev)
+ static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc,
+@@ -468,7 +470,28 @@ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
+ 
+ static void rcar_gen3_thermal_remove(struct platform_device *pdev)
  {
- 	struct db8500_thermal_zone *th = NULL;
-@@ -160,6 +165,23 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 
- 	th->dev = dev;
- 
-+	/* register of thermal sensor and get info from DT */
-+	th->tz = devm_thermal_of_zone_register(dev, 0, th, &thdev_ops);
-+	if (IS_ERR(th->tz)) {
-+		dev_err(dev, "register thermal zone sensor failed\n");
-+		return PTR_ERR(th->tz);
-+	}
-+	dev_info(dev, "thermal zone sensor registered\n");
++	struct rcar_gen3_thermal_priv *priv = platform_get_drvdata(pdev);
+ 	struct device *dev = &pdev->dev;
++	unsigned int i;
 +
 +	/*
-+	 * Registered after the zone and before the interrupts, so devres runs
-+	 * it after both handlers have been released: a handler cannot restart
-+	 * the measurement behind our back.
++	 * Disable the interrupt source while the device is still runtime
++	 * resumed.  REG_GEN3_IRQEN is only ever written by
++	 * rcar_gen3_thermal_init(); a concurrent set_trips() writes
++	 * REG_GEN3_IRQMSK alone, so it cannot re-enable the source here.
 +	 */
-+	ret = devm_add_action_or_reset(dev, db8500_thermal_stop_action, th);
-+	if (ret)
-+		return ret;
++	for (i = 0; i < priv->num_tscs; i++) {
++		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQEN, 0);
++		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK, 0);
++	}
 +
- 	low_irq = platform_get_irq_byname(pdev, "IRQ_HOTMON_LOW");
- 	if (low_irq < 0)
- 		return low_irq;
-@@ -180,14 +202,6 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
++	/*
++	 * Release the interrupts before the TSCs and zones are freed:
++	 * free_irq() waits for an executing threaded handler, and the handler
++	 * dereferences both priv->tscs[i] and priv->tscs[i]->zone.
++	 */
++	for (i = 0; i < priv->num_irqs; i++)
++		devm_free_irq(dev, priv->irqs[i], priv);
  
--	/* register of thermal sensor and get info from DT */
--	th->tz = devm_thermal_of_zone_register(dev, 0, th, &thdev_ops);
--	if (IS_ERR(th->tz)) {
--		dev_err(dev, "register thermal zone sensor failed\n");
--		return PTR_ERR(th->tz);
--	}
--	dev_info(dev, "thermal zone sensor registered\n");
--
- 	/* Start measuring at the lowest point */
- 	db8500_thermal_update_config(th, 0, PRCMU_DEFAULT_LOW_TEMP,
- 				     db8500_thermal_points[0]);
+ 	pm_runtime_put(dev);
+ 	pm_runtime_disable(dev);
+@@ -504,6 +527,8 @@ static int rcar_gen3_thermal_request_irqs(struct rcar_gen3_thermal_priv *priv,
+ 						IRQF_ONESHOT, irqname, priv);
+ 		if (ret)
+ 			return ret;
++
++		priv->irqs[priv->num_irqs++] = irq;
+ 	}
+ 
+ 	return 0;
 -- 
 2.34.1
 
