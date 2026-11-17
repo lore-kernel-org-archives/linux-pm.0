@@ -1,76 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.171
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794933544;
-	b=GyhbfxjbxIfmjTs0He6wHsyIMPsCfFvkXSt2iWPUCh1N4c87MwLfEjH788DCJkypaNbd
-	 Zxczz+S2f0o0ChWo/tvj78QItaYw2wtjnlyPkfO2pDTxXI1i8XWYplm1KqNgSoTx2+U37
-	 ogLDeHkQkcm6tRoPT+tk4T1iFu4SR4U1mwfRKb2PY84MI8QXSThYhjbYbU+AzJBkU1B+s
-	 5iMg4PPuh6jiG9i+XVIzTX/vivPpsflgFa2yYsjQSAYgSbtznagtHdC+C39AGPytzmJGn
-	 YQPnhKl8cW52PO/WtFj6q85k8EE1x8zbWq5UU3KLLPjcW6fMXMI6/AVIcMiILyZ/2bA==
+	t=1794933698;
+	b=c1jWzfBHZ6d1LOmaNLgAzAmk2NafJNbJ4nSk0NUH7nh1m+3FwRfr6sEluFCvQ4ahGQqt
+	 eLSquRQ3KC4yKym6Yau2gpLKEMhWXqZ4kE8SH3t+C0KjuhAln0wk5Zc/h2AoZ/lPmZBOD
+	 8YAXHh+0eGyNScVU7uyab6VI897I/wafHY9LlCoXJx3+vUzANqxggdtpsOTmz4xmweMaj
+	 unTiGTinc5NjaVFnC0Ig88IWgCwekJ8OVKA3kL7/uO4+aYdJISHNPEmSLv+ktfhnj1d82
+	 2N5H3qw078sgxMe9YkxilMnDxCESXd4okpS43uSPRRxPwXraVNbp0xHaBII9GSbjS8w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794933544;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=Z/XV0mK39zFS7JOXvDWInmC0g759RMa7DDlWP4M3P5A=;
-	b=UMXoVjTlfO8SRDMiefmyAXu9ydwUSOoEBPUtFpLHfmAm2MPMIeHwF8FN2S907/5le9IT
-	 AIIWqkxBjv6aHvX7+FsR2SHfeElT5AunnHGrmxs0IrwB8ul34o0NDzYFurBTjKEpVAx4r
-	 WH8MWjROuZA75lJkGLi6SFNGlpGccKWMWirilTk9bFSYqGXynrMiSjQH9ikWJeOFPZ3Ji
-	 VAJwxFJjrZVxWlYWqmQ62lxfaIIojTsKPqykCeqiWZL9NPgIIUfdD4Y9KH+0XBvAhlPlN
-	 H8ZkpxhyQV+oJ4VqPCXBVXopmsqJ4R3FEuaJS3UyBc8+Ve6NYQmroIktI1mzZYO8vwg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794933698;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:From:
+	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=lsQeeO/m5gZy4yZbSiIu6qEx1RtdKB6BMqBAZ7ZnPnk=;
+	b=T8WjKRl3jrEjektAf/TXxsg6bOrRXVgYVTO0TRlZz4aLvjS3Qjmcm0e1i2pKERub85G/
+	 mPZioyXeHA/oMCR0wvxZX6P4o0qnydIXqOxkfdBMdbSSSp1c6wqm9ylxYwUetAgB+fFVM
+	 2a1dgJvAPFRitH5AyXEEQpYE8RqWovb4BbGMs7533rAwLE33tUcZIy60PlP9uc835RNTk
+	 gKOgzYMqkEggByVgq17k4IxjoxqsG7mfqqfYxRtSXKf7lsJaG0rFRQyrLhoY3fFa+M2ti
+	 k3jSOuFl8IBPFB+fuMezKkp7F9RYO4N/Do/fDrGzBEdX6dFuIQkK6i6Jiv3xUxM9yoA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.221.171
-Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com [209.85.221.171])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F493606A33B
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 16:39:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3F493606A33B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f171.google.com with SMTP id 71dfb90a1353d-5ece6c1d1cbso1520519e0c.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 08:39:04 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794933543; x=1795538343;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=Z/XV0mK39zFS7JOXvDWInmC0g759RMa7DDlWP4M3P5A=;
-        b=eO4S7SfeYLzuhvAZFKmM9YC87jS8N6qFrDOPgbzRHCbHUW0Te76fdkRTQbj8D53ewG
-         a2FJPtPoXLI8nHd2cFdWpsW6s2t0kuv77QYc1+UuvqiNGfMUsLn3+9K0Gtuf3ntFoQJD
-         wME2fqjSmJEI9pdePEEfZMDRQS3MIysQ2Y4Bl7vzJ9i/pNCbhohIEL3sZuPu8k0M8oLY
-         JX1rRVD66JcRkuGxd5aPSxpy+NEiRT0Q1g1pylDBjH2dJwo+GEIfGWu2u9hGbKuyKBM5
-         2SSOQwtmXQG4rBFo+TPVo7aBL9MYjsiKJfYyOqtxciszQCqm6yz5UZq/y/dxUQ6kZqvr
-         tEzg==
-X-Forwarded-Encrypted: i=1; AL+hErH4n10iqhdW5gBC2kRtc4HA8RMNAVyZ6o/zDDnXbd5VNCga9re40Gr2BC0gyqsnIBDs7lModr7hkg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9vgpZksAn2N5GdnoJDZekefZ0OjycFGBaLVsNiMgxfAwCcFSvz
-	sMZ9ShGlnMNID3DAWtbk7L2BkckdpKc0TSNMKmYQ5OIRGdQ9rBIMs1YKL52IyxZz
-X-Gm-Gg: AYBFou0TYlee3oUt0rEDLZ+80GVPElDI/4XgBB6dBzeueJH4g4Z2h6Tnqhu0u/C0YfX
-	14JZZR9GHsOg0Oj8oGjjiZqVhTJkYHFdMOc9n1sQ+/BbpmCCqv4j4wo3LGWFABIvcRYjDOp9TaY
-	1LF0u507aWrezmpR/l1UbK4TbXmMJP59h9X6dwX+CuPHkXd6xCxIcWAe2f7etTKZ/WXTLL0xX2N
-	179DyORPUDXVPUpXj2YqKtB0SOK4ZkNkJy02JnjjGssU2UAAKCMtwOw9rH91393OGJ4wloJ/DPI
-	7icd/6VdTmXzidDAS6K7ihtRogO3wh46pL2gWHikjKaWrt7TXopBKIEGU5+e29z+HEvaySn6axr
-	zJsmFIr+0odeM3R4yDfEQj9dpYmaqOLPoumlj6o3Fci+nd4fVlDWzXIsBJ5NFAEF48XEYFu+7cz
-	LxrfmylulIVi/oK38onSXri6IZXlPVVoQruXKCzBsRcDLpoKnMkDq+DSfgY/QzqxjxeqBqwU0Up
-	6NLbKG7KKs5tTYIKBqGDsrOFxVaGz5bhhVwHE++UvNDHZ2X4mB61FQNN1gtatVt1nXPqI7DiFnR
-	27grEDVDbuXK8SI/NLkc6rg0+NW/L52M5r2GEcaHTfvg1/iY9SvQ++Xi1HzewG7auOk=
-X-Received: by 2002:a05:6122:1da1:b0:5df:682a:5d14 with SMTP id 71dfb90a1353d-5ee6468f6acmr81920e0c.4.1794933543133;
-        Tue, 17 Nov 2026 08:39:03 -0800 (PST)
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5ee34eb123csm8421254e0c.16.2026.11.17.08.39.00
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 17 Nov 2026 08:39:01 -0800 (PST)
-Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-7d2dbe5c4b0so1376428137.0
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 08:39:00 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErFHVJ5UzeQ1h3JisGWZb1dCct1c6XMuohLIoTZ9krAh30O7aMGSn26N7hK0AxlvW52clgUslBRsRg==@vger.kernel.org
-X-Received: by 2002:a05:6102:50a4:b0:7cc:1ace:fd06 with SMTP id
- ada2fe7eead31-7d64d7a9d5amr4459124137.20.1794933540494; Tue, 17 Nov 2026
- 08:39:00 -0800 (PST)
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ju3Fz5N1;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 92807606A31C;
+	Tue, 17 Nov 2026 16:41:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 92807606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ju3Fz5N1
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 892CA1A00;
+	Tue, 17 Nov 2026 08:41:32 -0800 (PST)
+Received: from [10.0.130.226] (e127648.arm.com [10.0.130.226])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E2BD83F632;
+	Tue, 17 Nov 2026 08:41:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1794933695; bh=YherG2Yg3jzmZQQdxvL6nZhdMSxHYpFgy9Mh2n0l1NY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ju3Fz5N1+mjPIrM823RIW38NwU7qV62Zh7p5q0HmPPxOmoVbNDq2EBNDJIon6D8LW
+	 7ej62e0QvbW//vEkBPVKpj0wyAny213ewftc5z69ySbyD7fOaSlSfjpgRvPijjsOqC
+	 aiuW9kY0mT/6tvHPJciGOVdDA9lI9y+e9RhqtzQ8=
+Message-ID: <56a7a762-7667-4186-973c-ca0fcb399ecc@arm.com>
+Date: Tue, 17 Nov 2026 16:41:32 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,86 +53,72 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261024223501.1420953-1-daniel.lezcano@oss.qualcomm.com>
- <20261024223501.1420953-2-daniel.lezcano@oss.qualcomm.com>
- <CAMuHMdXJOpcC3a6wMXF_m=uNjuqSO1Z3kyM7Az1uP_2GBurOvA@mail.gmail.com> <0de1444a-a0ba-4e16-a480-74a39c865ab6@oss.qualcomm.com>
-In-Reply-To: <0de1444a-a0ba-4e16-a480-74a39c865ab6@oss.qualcomm.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Nov 2026 17:38:49 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWfH+_4ijxko=LS_P6b1Y76WWDc8m4xL6qW1H+qKRQ98A@mail.gmail.com>
-X-Gm-Features: Aa3M54oLa7UUmy4CFc0JRC-Lz0IWxEH7iP1kR67WyO7NUNvhNNuybpNvCvDbePk
-Message-ID: <CAMuHMdWfH+_4ijxko=LS_P6b1Y76WWDc8m4xL6qW1H+qKRQ98A@mail.gmail.com>
-Subject: Re: [PATCH v3 1/4] platform profile: Extract the core from ACPI
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: rafael@kernel.org, Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, Hans de Goede <hansg@kernel.org>, 
-	=?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Maximilian Luz <luzmaximilian@gmail.com>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, 
-	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Armin Wolf <W_Armin@gmx.de>, 
-	Jai Luthra <jai.luthra@ideasonboard.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jack Wu <jackbb_wu@compal.com>, 
-	"Mario Limonciello (AMD)" <superm1@kernel.org>, linux-acpi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] thermal: samsung: acpm-tmu: Fix spurious CPU throttling
+To: Tudor Ambarus <tudor.ambarus@linaro.org>, bzolnier@gmail.com
+Cc: krzk@kernel.org, rafael@kernel.org, daniel.lezcano@kernel.org,
+ lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+ Juan Yescas <jyescas@google.com>
+References: <20261117083442.830549-1-christian.loehle@arm.com>
+ <3ea5d94b-6913-4534-816a-3935c689225b@linaro.org>
+From: Christian Loehle <christian.loehle@arm.com>
+Content-Language: en-US
+In-Reply-To: <3ea5d94b-6913-4534-816a-3935c689225b@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi Daniel,
+On 11/17/26 15:37, Tudor Ambarus wrote:
+> Hi, Christian,
+> 
+> Thanks for the patch!
+> 
+> On 11/17/26 10:34 AM, Christian Loehle wrote:
+>> acpm_tmu_set_trips() supplies two thresholds, but the ACPM command
+>> writes all eight slots, zero-filling the rest. On GS101, slot 7
+>> controls autonomous CPU throttling even when its interrupt is masked.
+>> Programming it to 0 C limits all three CPU clusters to about 200 MHz
+>> on Pixel 6, while cpufreq continues to report the requested
+>> frequencies.
+> 
+> Could you share how you discovered this? I don't have access to the
+> ACPM firmware sources, and the downstream driver doesn't state it
+> either.
 
-On Tue, 17 Nov 2026 at 17:03, Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
-> On 11/17/26 12:48, Geert Uytterhoeven wrote:
-> > On Sun, 25 Oct 2026 at 00:56, Daniel Lezcano
-> > <daniel.lezcano@oss.qualcomm.com> wrote:
-> >> Platform profile providers already use device-based callbacks and do not
-> >> need ACPI types. The core is nevertheless confined to the ACPI build and
-> >> refuses to initialize when ACPI is disabled.
-> >>
-> >> Move the implementation to drivers/platform/profile and introduce the
-> >> firmware-independent PLATFORM_PROFILE symbol. Update all provider
-> >> selectors. Keep provider-specific ACPI dependencies and the
-> >> platform_profile module name.
-> >>
-> >> Isolate access to the legacy ACPI kobject in an optional compatibility
-> >> object linked into the same module. Retain the legacy ABI on active ACPI
-> >> systems, and initialize the class even when ACPI is absent or disabled.
-> >>
-> >> Use subsys_initcall_sync so the class is ready before built-in thermal
-> >> and CPUFreq providers, but after ACPI has initialized its compatibility
-> >> kobject.
-> >>
-> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> >
-> > Thanks for your patch, which is now commit 699041135f75b13a
-> > ("platform profile: Extract the core from ACPI") in pm/linux-next/
-> >
-> >> --- a/drivers/platform/Kconfig
-> >> +++ b/drivers/platform/Kconfig
-> >> @@ -1,4 +1,20 @@
-> >>   # SPDX-License-Identifier: GPL-2.0-only
-> >> +config PLATFORM_PROFILE
-> >> +       tristate "Platform profile support"
-> >
-> > I guess this can be invisible (perhaps "... if COMPILE_TEST"?), as
-> > you have updated all provider selectors?
-> >
-> > If not, I guess this needs a "depend on X86 || COMPILE_TEST", so people
-> > configuring kernels for different architectures do not see this option?
->
-> The goal of this series is to make the platform profile firmware
-> agnostic so it is available for all architectures
+Neither do I, I discovered this randomly through running regression tests
+on Energy-Aware Scheduling on the Pixel6 and acpm-tmu (7.4-rc1) causes a
+massive energy regression (+~1000%) for the same workloads.
+The reason is this DVFS throttling.
 
-Sure... Are there any users of it on these architectures?
+> 
+> How did you measure the actual CPU frequency, given that cpufreq
+> keeps reporting the requested one?
 
-Gr{oetje,eeting}s,
+PMU counters CPU_CYCLES
 
-                        Geert
+> 
+> Do you know whether slots 2-6 have any side effects as well?
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I hadn't discovered any.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> 
+> Also note that Daniel has already queued a set of acpm-tmu fixes in
+> thermal/linux-next, so this patch will need to be reworked on top of
+> them.
+
+will rebase then!
+
+> 
+>>
+>> Program slot 7 from the zone's critical trip before enabling the
+>> sensor and preserve it when updating the low/high interrupt window.
+>> Cache the three temperatures so a writable critical trip can update
+>> the hardware without changing that window.
+> 
+> I think this can be handled with a smaller change: look up the
+> critical trip in .set_trips() itself. The zone lock is held there, so
+> for_each_thermal_trip() can be used. That avoids caching
+> low/high/critical, the .set_trip_temp() callback and the probe changes.
+
+Ah yep you're right, will fix and resend.
+Thanks!
