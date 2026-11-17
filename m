@@ -1,62 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.42
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794929790;
-	b=j6upX6f9k3Ilq8cAHbnMbKJeh5x5lAfuMWUSIgU+Jl2zy24QArhxiclJ+0XAyXiXpTUE
-	 EYTpRr35sW4uIPOKMRitNZGcneMyYLCB2p0wEtvftwpDceZ6keB9HkW1iP3/0IZc4PiGK
-	 9EdZLsc7I3sUKKhz6S5LQe4BlLCkQbAPDt7nNM30BCZMUEUcvlbs26n4rXm5ht9mloeSs
-	 Z5nD3/5KhL/lqH3tOnXLSaNUNwOYuDxhB+Q66B5657q0U8o11pjygYQ9L+UNh5JL78JBy
-	 4vXWnpYjiowRFV1Wvpwxmer0iXtQVbvXwRzDAqucZU27d35rgoCQu4Smhcde72F9Qzg==
+	t=1794929834;
+	b=jhfYdDBsF4YmJbYCpUanuh+FvEtXnk+s/+y+jfvggmWEiA+M/OTWY2S7p5a+TqHmssBv
+	 7NkzYygymx2zSWh8WEExHGEZsPuljFwvriY1ixAl55iYK7uHp5eImt5ovn8Tj3nrJHoTH
+	 kmOEcFJZjzfOaOy24XDVpteWrKZDa5JcydnNlUUruhHH6VcRS99lwXCV++vuyN4D9CYSf
+	 EOyTXb4H0bozCPkLMs16H1Qfy5Stbhsc+SG8aiZlhs8dv9YXkENDUvtfnf5FkEZlEVNXL
+	 BUCDYwMZM16urX0HGILJ73cB6H4eUMPNzUEmR0prTmta+vIzyWy5N3eOxdIvk+/H5eA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794929790;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:From:Date:Subject:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
-	 References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
-	 X-Developer-Key;
-	bh=6rHGSibkXeAMyitQUs7cECkd/i6Eq3lk/TPt+b4NONY=;
-	b=HEJxYmaBL+1Zo0bUzgleAhsnd4LnN/7iP+oNqxveJctJrF6IamuqNxXEWAfxZFUOyQB8
-	 fmZGQFKnE91y3MnrhrDTTPJvS122UbQ62h+Xk61Y0AokzAxoMO3jG+/OAQqNOiUW7MxTn
-	 698ZLOK3GiYF6S/8xMhSOcHN+gJDcBccHSyvBzyh9ae80h4NheefOfjnXjRJwA1PT1MLp
-	 0YpscSkWyG+b6JmqD5p63j0ijc2uIbvoNR3ImC/IjV8RNXrw5li+NxvzwlaJsograsEFt
-	 AdG/I5K0hVQvcvi0Vq2/A1L8u4CiMs4whjVeXH16y2brtgvWop8iSKa/nKLnPNPQ6pA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794929834;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=LKdLJQzk+hjbpuBIp8LKIvBrdSbWJhDuwBNnuQ3+E9Y=;
+	b=yJSNFZFOilKVlDeQYW0pHWGcgIr4Pwj6amIxA1Iq1RfHD2P89qzxLu8ivp8ewVb7mDUF
+	 r07wrNUR6LgJrc1rbJa6vxUY5fg4Sq3DOmpnZ3jM1eTGgWqcoe+tFEnOYHbfPTsBfDTC2
+	 x341/nf+XGjB15sbNQgjrgT3ivgOGUNnrtK4D5xXv5oK8/G0q4AED9h2pgHQZYG3Zt1yk
+	 SA7K3n4Esi22LZ0belL+xHU7RmYaRS2dtCjOlQfJzQkgNfB1gJAG7CRf3F9KpXoKpn8Z7
+	 /gsh8IWuxHtaJExlD8NAzoroWxr0FLYkhf3qiVlMa5yhcE1OBbQBG0xI26qlyikJrFQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=collabora.com;
-	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=F3nMwAZP;
-	arc=none smtp.remote-ip=148.251.105.195
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b="Cl3+cJ/R";
+	arc=none smtp.remote-ip=209.85.218.42
+Received: from mail-ej1-f42.google.com (mail-ej1-f42.google.com [209.85.218.42])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67462606A8B5;
-	Tue, 17 Nov 2026 15:36:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 67462606A8B5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA742606A31C
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 15:37:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AA742606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=F3nMwAZP
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1794929785;
-	bh=nhVJg4bYWvwW6u/6JHKMqODZiY5sA4DQ06OrpfY+Gto=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=F3nMwAZPSudLoXVI/BQZBRRwradAkX1+R3CNLXkJ2nnUSkULXp2JICoFyNvxt/Ppz
-	 FL/8Xx7an6N9dfYqB2PRuurokYzlUKCoNmukXt9ByJI35QstVdEh2pus8VTtXaFd2L
-	 9p2AV3M0n6Nq/caezyUSwOBGGD8aUfqPC5jo5LI6yPof3QNTeXA/xvdpdSexp2hozS
-	 6Ob+EJ0NO4Ell0EwFyG+2LwyhYbEKFWG/yduVcMVg0zKZFQpLxuY1WHjb8aS7Y+fUH
-	 CbghAKRQ0QBB92JPfJahYckjTGyF59HQtf1NdjDyDsHctOnptf9Vq9Vtn4mtd/2/Rk
-	 KIEQrGLAMKPuQ==
-Received: from jupiter.universe (unknown [100.64.1.62])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
-	(No client certificate requested)
-	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 44CF417E361B;
-	Tue, 17 Nov 2026 16:36:25 +0100 (CET)
-Received: by jupiter.universe (Postfix, from userid 1000)
-	id A75B7480041; Tue, 17 Nov 2026 16:36:24 +0100 (CET)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Date: Tue, 17 Nov 2026 16:35:44 +0100
-Subject: [PATCH v3 8/9] PM / devfreq: rockchip-dfi: prepare support for v4
- DDRMON
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Cl3+cJ/R
+Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-c50933bdf4bso246120266b.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 07:37:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1794929832; x=1795534632; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=LKdLJQzk+hjbpuBIp8LKIvBrdSbWJhDuwBNnuQ3+E9Y=;
+        b=Cl3+cJ/RdMLwMsHTsFXKq3E92HfrGSiunfW9rpYSxRvClZF0G/Umr9IzPAULUNCy/P
+         +xNS6v7g1ViZQ6BwbJgfN/cqwz6fr7Nrrox4B/wEr94+/VoFCmFBuC0EwBNHU1GmDBJz
+         MXeiPUk2PvMwrxaGNhclltfsKmhl+u55Ew35Pp3RfaeYesKgGmqZICzb5YkQPCdnaQlo
+         GSv5o8x6IElafkcKY7tfj2BvG61ba8brJaaatvP1Q866auavXqRxt1CTfwhDTAd+v0Gc
+         +nUTIsxAfZsBcBWm1x1httoFkvGdEomHcqcPOzWdlmI/KeaP7qn4yRwCv23Fgdu64YRz
+         9wFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794929832; x=1795534632;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=LKdLJQzk+hjbpuBIp8LKIvBrdSbWJhDuwBNnuQ3+E9Y=;
+        b=y2vWA0Qy5XwWVpguexdtpOnVaf3ZS80FRT8YniXfIHDAdW7bB/RCPmns28s63PXrr7
+         VyDoMxMiFq70vkgthAz7xG9O8YrUrpagoxSGoE/14KHJRQ9m50wRZrRYhGiw+BtyOVVm
+         GSESscYEF4NT03D3ElnHscKyJ0d9kQwE/I3ZZb7aLmuZOq6OFGCaqB9+Q/i9D6rklRPl
+         w8gjuOlhowtbNyeIZpgJ+avlTY76xNwO6CILmgMqpN5tdjzBsA98JPzXLrk6PZ8fo9y7
+         hq3ahZP25e50rK5QNhgO5B6VfPtLu2Pcol5Xl5ubtBmDEE+gAPmPw3haMGeNHGvQJ4iS
+         RhQg==
+X-Forwarded-Encrypted: i=1; AL+hErEomiVs/um2AHewCAqAKykk+XnzPNSvm94qNXuutRPWTz0P9DAQ03gxODQh0wnM8/SzCkFumkUcmg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z977wBhgmtnkrvVdguX+gEufQtqG8m3qbFOVYXDfFQ4N8mIhcKu
+	daZqhfyZbXf7QMr3REZuRPtF0xbieIZIlBUZq5Et7WWiwfETPpD6lgK41udMs6e90o0=
+X-Gm-Gg: AYBFou0mx+E1OwxImTR/K5jEQDCrrZZ2bgSdTTrhn4w5u1sR93n36bjQbXi5ZMCn7EN
+	kHfAaiZ8JogxBPJRWAueKgMWtgaKldlvtKau6CTZWEZu00I4rANWH67JK46MdBGnVYfO9/QMD3T
+	WXSNk54j4nTbVvB0suQttGnfhkQ2ZawzNczHEeJildbR37MEoRAeE0XwbRcR/bn8ahCO1fvX7q0
+	+Qfr3FFLyEoF1ElBUjvh276s74AngyZuCmaa2lgZl5X2CUCpokNNzPQ41I/VLbB+FUCdXwf0uRb
+	Q5IKTL6/hCdz1LX8DR2zd39yXKbpr/2UlGKi/JgP6lTEkAL8l1CO3Wzo/VRmxAQnKUlRCbFtZiT
+	sl/yj2m5uDEHXJjbYVjpjbsfCDGPJihTUp0YdkHaMJYV2TxP7bhFYd1eazTm6OZKGeHNMm6h/6i
+	BvvzFRsEvhlYsHqP9FrDHLQXaaRx/HoIbqvjMoCQuHWj8k3GTAAMm8Nm8s6BO+c4Dyy8rcaNHS8
+	eLkKfivuNRiC2WzWwUI+VHO6vG8P2oBl45FUpD0RgZCYxXl1EogvosDSmxJSz7sU9iT0wy1wQnK
+	E7aNYe3iJf8OA21bIakbU/V2KpdRzzc2u8jSxqp3/Rae7xWlm5WiukSuGfGf
+X-Received: by 2002:a17:907:18c3:b0:c2a:ac35:95fb with SMTP id a640c23a62f3a-c50f3781084mr288834466b.24.1794929831875;
+        Tue, 17 Nov 2026 07:37:11 -0800 (PST)
+Received: from [192.168.0.252] ([82.76.204.26])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4a32155283bsm6407600f8f.37.2026.11.17.07.37.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 17 Nov 2026 07:37:11 -0800 (PST)
+Message-ID: <3ea5d94b-6913-4534-816a-3935c689225b@linaro.org>
+Date: Tue, 17 Nov 2026 17:37:09 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -66,187 +92,56 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] thermal: samsung: acpm-tmu: Fix spurious CPU throttling
+To: Christian Loehle <christian.loehle@arm.com>, bzolnier@gmail.com
+Cc: krzk@kernel.org, rafael@kernel.org, daniel.lezcano@kernel.org,
+ lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+ Juan Yescas <jyescas@google.com>
+References: <20261117083442.830549-1-christian.loehle@arm.com>
+Content-Language: en-US
+From: Tudor Ambarus <tudor.ambarus@linaro.org>
+In-Reply-To: <20261117083442.830549-1-christian.loehle@arm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261117-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v3-8-32ff1546b0e4@collabora.com>
-References: <20261117-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v3-0-32ff1546b0e4@collabora.com>
-In-Reply-To: <20261117-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v3-0-32ff1546b0e4@collabora.com>
-To: Chanwoo Choi <cw00.choi@samsung.com>, 
- MyungJoo Ham <myungjoo.ham@samsung.com>, 
- Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
- Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
- linux-kernel@vger.kernel.org, kernel@collabora.com, 
- Sebastian Reichel <sebastian.reichel@collabora.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5042;
- i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=nhVJg4bYWvwW6u/6JHKMqODZiY5sA4DQ06OrpfY+Gto=;
- b=owJ4nAFtApL9kA0DAAoB2O7X88g7+poByyZiAGr8dHjd4Sq7Eo+u4UPG6oVGBK7mB18kL+G9P
- KJ8ZxsfbUGc+IkCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJq/HR4AAoJENju1/PI
- O/qaG9UQAI3/5ifYpiKuGyB8hPw4ECPOhBt4xp62bF/sJ0cPQCTZZCFiK6xCjdwCqsRMDXQ54kd
- 48oX9CsJqMWEuwbjBZ7G1VEB0UoodI3yQcXcC8fQLCzygL2EFkvSgLcqvdQNwpDj9Ly2u9uZnf0
- n3gzJHSU8a/0Adm3is7qcz9/VuS6qjoktZ5bkcZ0/dJck3oCtLw4mlIbev+B29BybNKSKvf6l4t
- 0ld7iMQy0fbkP0351by5WtVYQMy2AQRybx3cB/dSDxUaR76QDfbxqOVI0jsftSu9mVIhtWUapXT
- FdV0XylrtDo6dEuGuaYTIiGlI0IzAz1YZHvP+CvRov3ArNyof0xLdOCbEAL2tOegzRHpDLJXdpG
- e0m9JHfaActRpMe24jlzLuCSpQaoJUKncVLa/CmqIUFH2ijl+op5J9rOHN0R01b/enN5jkXYMjZ
- JfYe3GIH0Ym4XV4J0Wu6u5PwQ7N/Q7B7oB24IoRN7MZZcRmGJjm9/g3FxAXYYaCAHqANx05r3pK
- 9d+IRLxhVODf2Cg/TLapF2EfPtJvO786jDP/9e8ZhHyyTHaZEbUhWI7byEi8f9uPT9VD5HYElKV
- 9+RVR2uomgLG7zeewThlXdUyC0svPUhGxTGpuucWOaklEbieezy2fn6YcfzI1XS/5OlznpmUcIk
- rYIFTGbDgbZqkC65m1PstRg==
-X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
- fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
-Add support for the new control register layout found for DDRMON
-controllers having version 0x40. This prepares the driver for
-adding RK3576 support.
+Hi, Christian,
 
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/devfreq/event/rockchip-dfi.c | 84 ++++++++++++++++++++++++++----------
- 1 file changed, 61 insertions(+), 23 deletions(-)
+Thanks for the patch!
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 33a379618eb5..ed28dc6446f1 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -42,6 +42,19 @@
- #define DDRMON_CTRL_TIMER_CNT_EN	BIT(0)
- #define DDRMON_CTRL_LP5_BANK_MODE_MASK	GENMASK(8, 7)
- 
-+#define DDRMON_CTRL0	0x04
-+#define DDRMON_CTRL0_EXT_TRIGGER_EN		BIT(6)
-+#define DDRMON_CTRL0_DDR4			BIT(5)
-+#define DDRMON_CTRL0_LPDDR4			BIT(4)
-+#define DDRMON_CTRL0_HARDWARE_EN		BIT(3)
-+#define DDRMON_CTRL0_LPDDR23			BIT(2)
-+#define DDRMON_CTRL0_SOFTWARE_EN		BIT(1)
-+#define DDRMON_CTRL0_TIMER_CNT_EN		BIT(0)
-+#define DDRMON_CTRL0_HOT_RANK			GENMASK(8, 7)
-+
-+#define DDRMON_CTRL1	0x08
-+#define DDRMON_CTRL1_LPDDR5			BIT(0)
-+#define DDRMON_CTRL1_LP5_BANK_MODE_MASK		GENMASK(2, 1)
- 
- #define PERF_EVENT_CYCLES		0x0
- #define PERF_EVENT_READ_BYTES		0x1
-@@ -143,8 +156,6 @@ struct rockchip_dfi_variant {
- 
- static int rockchip_dfi_ddrtype_to_ctrl(struct rockchip_dfi *dfi, u32 *ctrl)
- {
--	u32 ddrmon_ver;
--
- 	switch (dfi->ddr_type) {
- 	case ROCKCHIP_DDRTYPE_LPDDR2:
- 	case ROCKCHIP_DDRTYPE_LPDDR3:
-@@ -159,26 +170,43 @@ static int rockchip_dfi_ddrtype_to_ctrl(struct rockchip_dfi *dfi, u32 *ctrl)
- 			FIELD_PREP_WM16(DDRMON_CTRL_LPDDR5, 0);
- 		break;
- 	case ROCKCHIP_DDRTYPE_LPDDR5:
--		ddrmon_ver = readl_relaxed(dfi->regs);
--		if (ddrmon_ver < 0x40) {
--			*ctrl = FIELD_PREP_WM16(DDRMON_CTRL_LPDDR23, 0) |
--				FIELD_PREP_WM16(DDRMON_CTRL_LPDDR4, 0) |
--				FIELD_PREP_WM16(DDRMON_CTRL_LPDDR5, 1) |
--				FIELD_PREP_WM16(DDRMON_CTRL_LP5_BANK_MODE_MASK,
--						dfi->lp5_bank_mode);
--			break;
--		}
--
--		/*
--		 * As it is unknown whether the unpleasant special case
--		 * behaviour used by the vendor kernel is needed for any
--		 * shipping hardware, ask users to report if they have
--		 * some of that hardware.
--		 */
--		dev_err(&dfi->edev->dev,
--			"unsupported DDRMON version 0x%04X, please let linux-rockchip know!\n",
--			ddrmon_ver);
-+		*ctrl = FIELD_PREP_WM16(DDRMON_CTRL_LPDDR23, 0) |
-+			FIELD_PREP_WM16(DDRMON_CTRL_LPDDR4, 0) |
-+			FIELD_PREP_WM16(DDRMON_CTRL_LPDDR5, 1) |
-+			FIELD_PREP_WM16(DDRMON_CTRL_LP5_BANK_MODE_MASK,
-+					dfi->lp5_bank_mode);
-+		break;
-+	default:
-+		dev_err(&dfi->edev->dev, "unsupported memory type 0x%X\n",
-+			dfi->ddr_type);
- 		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+static int rockchip_dfi_v4_ddrtype_to_ctrl(struct rockchip_dfi *dfi, u32 *ctrl0, u32 *ctrl1)
-+{
-+	switch (dfi->ddr_type) {
-+	case ROCKCHIP_DDRTYPE_LPDDR2:
-+	case ROCKCHIP_DDRTYPE_LPDDR3:
-+		*ctrl0 = FIELD_PREP_WM16(DDRMON_CTRL0_LPDDR23, 1) |
-+			 FIELD_PREP_WM16(DDRMON_CTRL0_LPDDR4, 0);
-+		*ctrl1 = FIELD_PREP_WM16(DDRMON_CTRL1_LPDDR5, 0);
-+		break;
-+	case ROCKCHIP_DDRTYPE_LPDDR4:
-+	case ROCKCHIP_DDRTYPE_LPDDR4X:
-+		*ctrl0 = FIELD_PREP_WM16(DDRMON_CTRL0_LPDDR23, 0) |
-+			 FIELD_PREP_WM16(DDRMON_CTRL0_LPDDR4, 1);
-+		*ctrl1 = FIELD_PREP_WM16(DDRMON_CTRL1_LPDDR5, 0);
-+		break;
-+	case ROCKCHIP_DDRTYPE_LPDDR5:
-+		*ctrl0 = FIELD_PREP_WM16(DDRMON_CTRL0_LPDDR23, 0) |
-+			 FIELD_PREP_WM16(DDRMON_CTRL0_LPDDR4, 0);
-+		*ctrl1 = FIELD_PREP_WM16(DDRMON_CTRL1_LPDDR5, 1) |
-+			 FIELD_PREP_WM16(DDRMON_CTRL_LP5_BANK_MODE_MASK,
-+					dfi->lp5_bank_mode);
-+		break;
- 	default:
- 		dev_err(&dfi->edev->dev, "unsupported memory type 0x%X\n",
- 			dfi->ddr_type);
-@@ -188,11 +216,12 @@ static int rockchip_dfi_ddrtype_to_ctrl(struct rockchip_dfi *dfi, u32 *ctrl)
- 	return 0;
- }
- 
-+
- static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
- {
- 	void __iomem *dfi_regs = dfi->regs;
-+	u32 ctrl, ctrl1, ddrmon_ver;
- 	int i, ret = 0;
--	u32 ctrl;
- 
- 	mutex_lock(&dfi->mutex);
- 
-@@ -207,7 +236,12 @@ static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
- 		goto out;
- 	}
- 
--	ret = rockchip_dfi_ddrtype_to_ctrl(dfi, &ctrl);
-+	ddrmon_ver = readl_relaxed(dfi->regs);
-+	if (ddrmon_ver < 0x40)
-+		ret = rockchip_dfi_ddrtype_to_ctrl(dfi, &ctrl);
-+	else
-+		ret = rockchip_dfi_v4_ddrtype_to_ctrl(dfi, &ctrl, &ctrl1);
-+
- 	if (ret) {
- 		clk_bulk_disable_unprepare(dfi->variant->num_clks, dfi->clocks);
- 		goto out;
-@@ -227,6 +261,10 @@ static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
- 		writel_relaxed(ctrl, dfi_regs + i * dfi->variant->stride +
- 			       DDRMON_CTRL);
- 
-+		if (ddrmon_ver >= 0x40)
-+			writel_relaxed(ctrl1, dfi_regs + i * dfi->variant->stride +
-+				       DDRMON_CTRL1);
-+
- 		/* enable count, use software mode */
- 		writel_relaxed(FIELD_PREP_WM16(DDRMON_CTRL_SOFTWARE_EN, 1),
- 			       dfi_regs + i * dfi->variant->stride + DDRMON_CTRL);
+On 11/17/26 10:34 AM, Christian Loehle wrote:
+> acpm_tmu_set_trips() supplies two thresholds, but the ACPM command
+> writes all eight slots, zero-filling the rest. On GS101, slot 7
+> controls autonomous CPU throttling even when its interrupt is masked.
+> Programming it to 0 C limits all three CPU clusters to about 200 MHz
+> on Pixel 6, while cpufreq continues to report the requested
+> frequencies.
 
--- 
-2.53.0
+Could you share how you discovered this? I don't have access to the
+ACPM firmware sources, and the downstream driver doesn't state it
+either.
 
+How did you measure the actual CPU frequency, given that cpufreq
+keeps reporting the requested one?
+
+Do you know whether slots 2-6 have any side effects as well?
+
+Also note that Daniel has already queued a set of acpm-tmu fixes in
+thermal/linux-next, so this patch will need to be reworked on top of
+them.
+
+> 
+> Program slot 7 from the zone's critical trip before enabling the
+> sensor and preserve it when updating the low/high interrupt window.
+> Cache the three temperatures so a writable critical trip can update
+> the hardware without changing that window.
+
+I think this can be handled with a smaller change: look up the
+critical trip in .set_trips() itself. The zone lock is held there, so
+for_each_thermal_trip() can be used. That avoids caching
+low/high/critical, the .set_trip_temp() callback and the probe changes.
+
+
+Cheers,
+ta
