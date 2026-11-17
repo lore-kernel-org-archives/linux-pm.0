@@ -1,90 +1,61 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.208.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794903871;
-	b=hDNXW78ViTNyEYRT70PXl7eHovTS2ba/Xo7hupnII68Q2Rls7+kCcLs4sUBiXB+ZZVej
-	 vUynILP0cAlH9BkLtVgEIw0iDD/HQSHzk9iY7iqDUS/hPk1HFsgvth7ox5aUcxv3UFiPb
-	 UEsTKBPBppLi2GOJxivdIj0BcrKYaBlpadXgKM2Pe1O3g/ESIvy834sc9ZOkz8TsB7hMb
-	 uKRBCb84Hw68i58EYLM3URVRWDXONcw7GSptMPsQVFncMYFBAaSIn7kDja/oQRlBb2v0x
-	 v3xECaKssQSWhXRgpk0ioY4oAsfRk7Zy7pAWsLV/IAfVobDVVyQQGA0j5C7RG7ivudA==
+	t=1794904520;
+	b=UqLUleYN0Xwuwq97agFwpmFBOd9Uil6fn47ZTh4HvPML/7CjLARvHBfp0McgauuYnaX0
+	 m9zzJJiji3fCaX8tHjisyFJzxISAWNsnbwGeJtgnEUNYwSXpPNd4lX0yRkXAJNEf36wJe
+	 FTIJSyEzzur/jXY+ndrqfm2F9gPMzeE0FVRYmzT+aV7IO35FERE6RLOcP2vawZLqSjiUT
+	 c1qqRo9UmTLQLaGKmAsDR7GX7JYyIGzVnE6LINHWBCHrQVg65HmEsE3Sdex8cAiPJdVeH
+	 zGrJ9e4TuVYAmSi+KQaUK+b136ZuJy4EmBlrk5WHrjIQhcHJwFP0lUeFqm5hLpSME4A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794903871;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key;
-	bh=FIAdVkEWa+YKpNqjyEpkUHZm+KoAzH84s76F1+g9tmo=;
-	b=ntwhDlnlL+m9PNASr98qexeUq0bHFacZE8ywBZlT/hvsmrtEZ3n+nPLLGnlcYVxdTN4t
-	 z35eZM95Os4aEJ/KuDwbJctHTnBaL/c/xVJGVCbc14DYAFxhGEEmGn57B4H5tdZ0mrXDR
-	 GR54e1E6I3/axcZ+pw5K1Ncx356ndfh3imJq1thHCTLKxAcZaQRGQZ2gb0R55MeDjPd/w
-	 scIXlw9XHbMVDzNkf319t4ho+rBah2pbbS3FcMM3/jOsUJeboXPCbpVmoSTjxC+eEohgA
-	 TkgCeyUDR/AA1rG4EysclZFjsLKEpUquoT9VfdXcfUdwA2VDiGx0YNV3mPfk2slHNuQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794904520;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
+	 Date:Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=agk/A3LWw5a2lEDhtnhF8EnN5eBx0hVoD8HiwFb2c/c=;
+	b=HWjwFtxboXPBSYF6Rt2Tk8EiYwV/INAewqXh1SyuXk+r7IEi7pwUPIDjDAY5eZOm32fm
+	 0F+NVEjh6BrvafeNejJOiH4EQlPAJs7Pzf9uaQxyrTdpRyoivyy7yDd6DPVWjjw2myYA3
+	 JjZiq4QhZt5+2ZcBJx4eyKb+bWlhzJxQ8PbPSm7ZtG8a1+2XQgfwDpLskkKrOWawCfUyU
+	 yX4f5iJqyT5n0thggM5/1Y2x6ECXPFn5RI6K1EaPQQUW/Wku7xzxMXJ+8AJZ0x/vTJzWu
+	 3Py7nae9j3UiaSZYhRU84aWqky/hpI6mK2MxZsLvyxLuf1Cj2EIJP+j6O9GfLUueamg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=fairphone.com;
-	spf=pass smtp.mailfrom=fairphone.com;
-	dkim=pass header.d=fairphone.com header.i=@fairphone.com header.a=rsa-sha256 header.s=fair header.b="m5rd/aHW";
-	arc=none smtp.remote-ip=209.85.208.42
-Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6142E606A89A
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 08:24:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6142E606A89A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=TWY4x2Uj;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CE5DA606A898;
+	Tue, 17 Nov 2026 08:35:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CE5DA606A898
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.a=rsa-sha256 header.s=fair header.b=m5rd/aHW
-Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-6b571979178so6724548a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 00:24:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1794903870; x=1795508670; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=FIAdVkEWa+YKpNqjyEpkUHZm+KoAzH84s76F1+g9tmo=;
-        b=m5rd/aHW4x8+LC4Hoff/y+voqA2dzKC/QkkgsLWsQFHr+HtEIpj0YzM8GS/0DT4I4/
-         gwV4XFvMdtCFyCncu1foTtxnDag3pLIodRg9GKg4EOvngWrgE7sZf/xsl6V+6Ap5bEyj
-         IfqsLVRwRZ3PRMZAO15NX/asAngzwzq9p1KuCe5/mpybyPr7EGhUvziZOlA73MmTyKbC
-         C0w+7/iASWvgEdcoZAcQ+u0CcLjvDSlVePv0LRLBtM4mwr3FChD8MUkxDKZFSxIvNkyy
-         vVEs8Kiu6GDR0RjpRDwnNpojC2/T6aoCDk0SEKATRH5nXRiR+Xqd4hY0eQczVQSmDFra
-         uDPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794903870; x=1795508670;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=FIAdVkEWa+YKpNqjyEpkUHZm+KoAzH84s76F1+g9tmo=;
-        b=oTBl7UKvj1zF6Ap4bSNGrdxfWKSMV3hRanyVnGOgyNjXCipvViqcFdXi2fne6jRQWM
-         FeRy+sfvkKWfx7WrxBJUSW130BOBwJBGSDb2NxJubBOPXGtucPs9VxilnC5iOgI30SrO
-         bQWhp7vVE96Wj4moriCjN7JcrxMEIDigZIS6o/YGnvmIGNmCpueTlBoUYM7sKei1jiR/
-         8H7a4sMBV9rjOsHQlWyp+Y4IozCSPn1TTgyGHfjpaeWfRVpeT75LhPQNWt2sL0fD2Xaw
-         ch0Z7x2iqA0zjfJHAj0p8wC6JvnvrrT91P/BV5OjsjYIf6iDXCcFsZehfnNdiITVYwGu
-         Qkhw==
-X-Forwarded-Encrypted: i=1; AL+hErHmXW27PfBov7iKXxB7nOZn90fmV/7Xa+ukSwDj65AKXpohqeGaoO3PJhHxkl7+tPMK4PcN76uS4g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/DZzMbYJWh3vs+kXrgttcs5JcfNpfoqCLH62FaFm7v4nTybYgu
-	7UvSJGOWAPMbFw+tilfAxtc9s4P9uXRBVv1PPgCmExvcbBQg4Kgvzo38aJ9uE9Rmrxk=
-X-Gm-Gg: AYBFou0VQpGNTXDJQrlicNaSQhfZ0U7PnHuJpljgDoprEMMo/2zUPJU2xx7+E7olu3g
-	SH0AvA25NoSgEwqbkce6JslevnmlgiNDak3VKDbYKZmTKDsg2mWv4ccgTZ3PhAyxC5pybL4xrJG
-	XWh9MbTPC5fAH5M1wLvw1EfnICOh1/eA40CM5EyXVHjjA/GyNY/+egzFSED1YH2MT4ROeC+ZGbw
-	61t1GUSqaJigTCvbNSWDy48RecYLCcUUyPSPXewfbFe2f6eogtkL8cMCxb+zNTUXg4Iq0WGwlFd
-	YeQ0tGVSYVDV1o4KuskFRbOjNwyX3qeiq0jW7BVpVqNqNegNBVwZwyuSsrB0aLgKq6g8u6mM3aI
-	JcXU2OeTpYMwwi4TqgroCAD9CWSw2BpVSn/0gcqPp3xqVAWSknRiV/cFPA6Pi0yY9G6Miu0z5du
-	3cBlFuOxC+ISDj2995qcl163SI4eWYUpW1IAp+uQuy6ifikER7zxiZxVlBIOm0Dv07SjOOCKSX3
-	H/SxKgE0+D1dbLSY03+k+8P7GaxT2xNH+VIn08uyCwTogQ1AKj+bMeYFigBjOP/WZeKcxN9jHgc
-	FUQORIljIEwNXDvSinKll04aaCeND3QbQU+rDcj5Ofk9WcokhxPEpzTEcLOkKmrHSzny5KBQWRp
-	K+141ndY42POCIWzl75ejik+C+T+cuAZX0u79pu4sKQsgextB
-X-Received: by 2002:a05:6402:4349:b0:6b7:cad6:a020 with SMTP id 4fb4d7f45d1cf-6b7cad6a0cdmr8624241a12.8.1794903869734;
-        Tue, 17 Nov 2026 00:24:29 -0800 (PST)
-Received: from [192.168.101.179] (2001-1c04-0504-7401-4b2e-1820-6d24-b264.cable.dynamic.v6.ziggo.nl. [2001:1c04:504:7401:4b2e:1820:6d24:b264])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7c23611casm5616953a12.9.2026.11.17.00.24.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 00:24:29 -0800 (PST)
-From: Luca Weiss <luca.weiss@fairphone.com>
-Date: Tue, 17 Nov 2026 09:23:15 +0100
-Subject: [PATCH v4 5/5] arm64: dts: qcom: sm7225-fairphone-fp4: Add battery
- temperature node
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=TWY4x2Uj
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E64191476;
+	Tue, 17 Nov 2026 00:35:14 -0800 (PST)
+Received: from e127648.cambridge.arm.com (e127648.arm.com [10.0.130.226])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 2B6593F673;
+	Tue, 17 Nov 2026 00:35:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1794904517; bh=JugGxAZr1qpyxmpUOLtk7kz41B+FkAk/NDLgG3gX4GY=;
+	h=From:To:Cc:Subject:Date:From;
+	b=TWY4x2Ujr70vxmXCSeeYqW263KE53eJqHCQr8Bi7oedmwg1fDNAB7JeCs2XOIGrFH
+	 6JOV+LOTtntyqbcNENoOyV05gskpKksGW414A0eTLg6SIR022ndmhHjTPC1EJe3O6k
+	 Cp9UqLu9pLmmw/MgqpOeGdYUcdgUaHAUN82VyDsI=
+From: Christian Loehle <christian.loehle@arm.com>
+To: tudor.ambarus@linaro.org,
+	bzolnier@gmail.com
+Cc: krzk@kernel.org,
+	rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	lukasz.luba@arm.com,
+	linux-kernel@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH] thermal: samsung: acpm-tmu: Fix spurious CPU throttling
+Date: Tue, 17 Nov 2026 08:34:42 +0000
+Message-Id: <20261117083442.830549-1-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -94,146 +65,173 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261117-bat-temp-adc-v4-5-14d5d309ebfa@fairphone.com>
-References: <20261117-bat-temp-adc-v4-0-14d5d309ebfa@fairphone.com>
-In-Reply-To: <20261117-bat-temp-adc-v4-0-14d5d309ebfa@fairphone.com>
-To: Jonathan Cameron <jic23@kernel.org>, 
- David Lechner <dlechner@baylibre.com>, 
- =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, 
- Andy Shevchenko <andy@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Laxman Dewangan <ldewangan@nvidia.com>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Hans de Goede <hansg@kernel.org>, 
- Jens Reidel <adrian@mainlining.org>, 
- Casey Connolly <casey.connolly@linaro.org>, Val Packett <val@packett.cool>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794903862; l=2686;
- i=luca.weiss@fairphone.com; s=20250611; h=from:subject:message-id;
- bh=UM7jmORMPxSdPO1xNc3zcibihjU+NS+ZaaeZNpYbWE8=;
- b=bSCoKLweeKiJ1WF6rrWxDJ5PvVPJnM1jcFj2jNkvwbajxykkdKa/8c/FNqE+qSnRKKtFDBFZe
- 6H+h7QU7eoJBq1AUVzYpXMfKx8YKghowLXcfI8OqIxgz9zMVaz1nDYE
-X-Developer-Key: i=luca.weiss@fairphone.com; a=ed25519;
- pk=O1aw+AAust5lEmgrNJ1Bs7PTY0fEsJm+mdkjExA69q8=
 
-Add a generic-adc-thermal node to convert the voltage (in millivolt)
-read by the battery temperature ADC into degree Celsius (in
-millicelsius) using the provided lookup table.
+acpm_tmu_set_trips() supplies two thresholds, but the ACPM command
+writes all eight slots, zero-filling the rest. On GS101, slot 7
+controls autonomous CPU throttling even when its interrupt is masked.
+Programming it to 0 C limits all three CPU clusters to about 200 MHz
+on Pixel 6, while cpufreq continues to report the requested
+frequencies.
 
-This will later be used as input for the fuel gauge node (QGauge on the
-PM7250B).
+Program slot 7 from the zone's critical trip before enabling the
+sensor and preserve it when updating the low/high interrupt window.
+Cache the three temperatures so a writable critical trip can update
+the hardware without changing that window.
+Reject critical temperatures that cannot be represented by the
+firmware's unsigned degree-Celsius byte.
 
-The lookup table is generated using a Python script:
-https://codeberg.org/lucaweiss/batt-ntc-calc
-
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+Fixes: 50a2c5d4062a ("thermal/drivers/samsung: Add Exynos ACPM TMU driver GS101")
+Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts | 83 +++++++++++++++++++++++
- 1 file changed, 83 insertions(+)
+ drivers/thermal/samsung/acpm-tmu.c | 62 ++++++++++++++++++++++++++----
+ 1 file changed, 55 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts b/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts
-index 37aa272019cc..0b8c6f353f96 100644
---- a/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts
-+++ b/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts
-@@ -96,6 +96,89 @@ memory@efe01000 {
- 		};
- 	};
+diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acpm-tmu.c
+index b86dfa3c3ddb..1d8076f91fe7 100644
+--- a/drivers/thermal/samsung/acpm-tmu.c
++++ b/drivers/thermal/samsung/acpm-tmu.c
+@@ -37,6 +37,8 @@
+ 				  EXYNOS_TMU_SENSOR(2))
  
-+	bat_therm_sensor: thermal-sensor-bat-therm {
-+		compatible = "generic-adc-thermal";
-+		#thermal-sensor-cells = <0>;
-+		#io-channel-cells = <0>;
-+		io-channels = <&pm7250b_adc ADC5_BAT_THERM_30K_PU>;
-+		io-channel-names = "sensor-channel";
-+		/*
-+		 * Voltage to temperature table for 10kΩ (B=3435K) NTC with a
-+		 * 1.875V reference and 30kΩ pull-up.
-+		 */
-+		temperature-lookup-table = <
-+			(-40000) 1673
-+			(-38000) 1649
-+			(-36000) 1623
-+			(-34000) 1596
-+			(-32000) 1566
-+			(-30000) 1535
-+			(-28000) 1502
-+			(-26000) 1467
-+			(-24000) 1430
-+			(-22000) 1392
-+			(-20000) 1352
-+			(-18000) 1311
-+			(-16000) 1269
-+			(-14000) 1226
-+			(-12000) 1182
-+			(-10000) 1138
-+			 (-8000) 1093
-+			 (-6000) 1049
-+			 (-4000) 1004
-+			 (-2000) 960
-+			       0 917
-+			    2000 874
-+			    4000 832
-+			    6000 791
-+			    8000 752
-+			   10000 713
-+			   12000 676
-+			   14000 640
-+			   16000 606
-+			   18000 573
-+			   20000 541
-+			   22000 511
-+			   24000 483
-+			   26000 455
-+			   28000 430
-+			   30000 405
-+			   32000 382
-+			   34000 360
-+			   36000 340
-+			   38000 320
-+			   40000 302
-+			   42000 285
-+			   44000 269
-+			   46000 253
-+			   48000 239
-+			   50000 225
-+			   52000 213
-+			   54000 201
-+			   56000 190
-+			   58000 179
-+			   60000 169
-+			   62000 160
-+			   64000 152
-+			   66000 143
-+			   68000 136
-+			   70000 128
-+			   72000 122
-+			   74000 115
-+			   76000 109
-+			   78000 104
-+			   80000 98
-+			   82000 93
-+			   84000 89
-+			   86000 84
-+			   88000 80
-+			   90000 76
-+			   92000 73
-+			   94000 69
-+			   96000 66
-+			   98000 63>;
-+	};
+ #define GS101_REG_INTPEND(i)		((i) * 0x50 + 0xf8)
++#define GS101_TMU_THRESHOLD_COUNT	8
++#define GS101_TMU_CRITICAL_THRESHOLD	7
+ 
+ enum {
+ 	P0_INTPEND,
+@@ -68,6 +70,9 @@ struct acpm_tmu_sensor {
+ 	struct thermal_zone_device *tzd;
+ 	struct acpm_tmu_priv *priv;
+ 	struct mutex lock; /* protects sensor state */
++	int low;
++	int high;
++	int critical;
+ 	bool enabled;
+ };
+ 
+@@ -250,7 +255,7 @@ static int acpm_tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+ }
+ 
+ static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+-				      u8 thresholds[2], u8 inten)
++				      u8 thresholds[GS101_TMU_THRESHOLD_COUNT], u8 inten)
+ {
+ 	struct acpm_tmu_priv *priv = sensor->priv;
+ 	struct acpm_handle *handle = priv->handle;
+@@ -260,7 +265,7 @@ static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+ 	bool was_enabled;
+ 	int ret, restore_ret;
+ 
+-	guard(mutex)(&sensor->lock);
++	lockdep_assert_held(&sensor->lock);
+ 
+ 	was_enabled = sensor->enabled;
+ 
+@@ -271,7 +276,7 @@ static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+ 	}
+ 
+ 	ret = ops->set_threshold(handle, mbox_chan_id, acpm_sensor_id,
+-				 thresholds, 2);
++				 thresholds, GS101_TMU_THRESHOLD_COUNT);
+ 	if (!ret) {
+ 		ret = ops->set_interrupt_enable(handle, mbox_chan_id,
+ 						acpm_sensor_id, inten);
+@@ -289,15 +294,21 @@ static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+ 	return ret;
+ }
+ 
+-static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
++static int acpm_tmu_set_thresholds(struct acpm_tmu_sensor *sensor,
++				   int low, int high, int critical)
+ {
+-	struct acpm_tmu_sensor *sensor = thermal_zone_device_priv(tz);
+ 	struct acpm_tmu_priv *priv = sensor->priv;
+ 	struct device *dev = priv->dev;
+-	u8 thresholds[2] = {};
++	u8 thresholds[GS101_TMU_THRESHOLD_COUNT] = {};
+ 	u8 inten = 0;
+ 	int ret;
+ 
++	if (critical < 0 || critical > 255 * MILLIDEGREE_PER_DEGREE)
++		return -EINVAL;
 +
- 	msm_therm_sensor: thermal-sensor-msm {
- 		compatible = "generic-adc-thermal";
- 		#thermal-sensor-cells = <0>;
-
++	/* Slot 7 throttles CPU clocks independently of the interrupt mask. */
++	thresholds[GS101_TMU_CRITICAL_THRESHOLD] = critical / MILLIDEGREE_PER_DEGREE;
++
+ 	/* If a valid lower bound exists, set the threshold and enable its interrupt */
+ 	if (low > -INT_MAX) {
+ 		thresholds[0] = clamp_val(low / MILLIDEGREE_PER_DEGREE, 0, 255);
+@@ -315,15 +326,43 @@ static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
+ 		return ret;
+ 
+ 	ret = acpm_tmu_update_thresholds(sensor, thresholds, inten);
++	if (!ret) {
++		sensor->low = low;
++		sensor->high = high;
++		sensor->critical = critical;
++	}
+ 
+ 	pm_runtime_put_autosuspend(dev);
+ 
+ 	return ret;
+ }
+ 
++static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
++{
++	struct acpm_tmu_sensor *sensor = thermal_zone_device_priv(tz);
++
++	guard(mutex)(&sensor->lock);
++
++	return acpm_tmu_set_thresholds(sensor, low, high, sensor->critical);
++}
++
++static int acpm_tmu_set_trip_temp(struct thermal_zone_device *tz,
++				  const struct thermal_trip *trip, int temp)
++{
++	struct acpm_tmu_sensor *sensor = thermal_zone_device_priv(tz);
++
++	if (trip->type != THERMAL_TRIP_CRITICAL)
++		return 0;
++
++	guard(mutex)(&sensor->lock);
++
++	return acpm_tmu_set_thresholds(sensor, sensor->low, sensor->high, temp);
++}
++
+ static const struct thermal_zone_device_ops acpm_tmu_sensor_ops = {
+ 	.get_temp = acpm_tmu_get_temp,
+ 	.set_trips = acpm_tmu_set_trips,
++	.set_trip_temp = acpm_tmu_set_trip_temp,
+ };
+ 
+ static int acpm_tmu_has_pending_irq(struct acpm_tmu_sensor *sensor,
+@@ -469,6 +508,7 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ 
+ 	for (i = 0; i < priv->num_sensors; i++) {
+ 		struct acpm_tmu_sensor *sensor = &priv->sensors[i];
++		int critical;
+ 
+ 		mutex_init(&sensor->lock);
+ 		sensor->group = &data->sensor_groups[i];
+@@ -488,8 +528,16 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ 			goto err_rollback;
+ 		}
+ 
++		ret = thermal_zone_get_crit_temp(sensor->tzd, &critical);
++		if (ret) {
++			ret = dev_err_probe(dev, ret, "Sensor %d has no critical trip\n", i);
++			goto err_rollback;
++		}
++
+ 		mutex_lock(&sensor->lock);
+-		ret = acpm_tmu_op_tz_control(sensor, true);
++		ret = acpm_tmu_set_thresholds(sensor, -INT_MAX, INT_MAX, critical);
++		if (!ret)
++			ret = acpm_tmu_op_tz_control(sensor, true);
+ 		mutex_unlock(&sensor->lock);
+ 		if (ret) {
+ 			ret = dev_err_probe(dev, ret, "Failed to enable sensor %d\n", i);
 -- 
-2.56.1
+2.34.1
 
