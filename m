@@ -1,98 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.52
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794894081;
-	b=r5L3ZEWEBNb/Hksn+dzcGCMLntcxwZRELFyxZyNnk71wuIPqkH+zU4CS2HXsOaPUVO/q
-	 c0h7rIuVEY2vhvzu7fFaWmMJzdgyofhLxOoYnw99utmgs/vFVboooRX6dIvSJ9HsRNbWL
-	 cCiEi38TCPi7NxzxxIu6/LA7L6D0XXldB44G78YAeAZf5X1OTTM0JNsNzjMqJCK22ZfPS
-	 9Ovj9aw5w1m+2gzPv3YaLrvmc6lyLD4qyW1OVLdgHsKIij3mUSq0kEBn4FvRS4rTyVeip
-	 6uRhvcwX7zw83+rID0sJxTaFr3P60ToUc/fmzzTAyxQhttKrILHk0FgZZ3xG+k8oUeQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794894081;
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.178
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794895390;
+	b=BWsXlbAZS1MkPqksJ0teoc7C4/SigxUik71eMdN/uh+Dx6N/ZFRhUnxIPzLcvi8gJ3Db
+	 OIuH3BiKGeJcEi5379VOcdfOpYMgLEP16vZgJxNLq7IQhJFsKtyG6iu86aPMEatkrvmTt
+	 ohNqGaRwvdmjUGRzuJ93z8wj/sGFME+ZbeK/N8HQzZS23T5y5wmbgmLx/5lLJDxyYu2/W
+	 k+HIsZaNqLPSU5IMapgUeZuf+qQFI0TNMHy/LqTECV+cGZ9fcFxxi61rNtbUwLmoOf7Cy
+	 yY7/M4/GSEzMZMufkUFc6ONnyO4nMmdjQSfIJ2MVO3Aw3Hzs3zBwqC/xOsnlLl/hIkg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794895390;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=kgXAga4SQ2gGcYIcOPrgNzb4Xfca195d5V/zBY0TA5E=;
-	b=B2a5AU7oVQEtHAl4KbDqO/1Yhs3dWC1v2hXj7M7B0SxbCfXUUdFHHcr/i34kGJWlvDB/
-	 9CMKCo+H7AEgcJQbWxdwm2Uzx7L1gEYd+zODz5oZn2/Wbf4nSicSeCPmVIlA9FPJRfmKC
-	 GGPA+1zwg301tiH6ky29SU4jZMbeQpZ1uTqWlO4o0SrRPptJJ2zhpN2URmJ1bcwFAC3C7
-	 cfEPQWantRlAtlvKjriWW1x5V150eDA+rEbksYxEuBf75IIJPLHcpgbweq9pvZ+oO1veG
-	 u4n0HE2xpAhy1nW81DbmoqlMzMx529SnG4uSVRQ3auTVhzK6D7CXhscvQKzoiBFXOCg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PQr3PgP+;
-	arc=none smtp.remote-ip=74.125.82.52
-Received: from mail-dl1-f52.google.com (mail-dl1-f52.google.com [74.125.82.52])
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=rtMskDO3xi7yMmOKnTt+SllqsYFoqqAzPkEoXmAxvXU=;
+	b=f3aACBxbQJPjIiVjWuUgIiO1AkhKGEUoD8kg42baUJjHk9FupXH6OTi3uguLF0z6He3Q
+	 PbkE1c31DLYNFzhoerP8RgLGe02hx1Ta80b8O/g9JgZ9JUI+Nj8ey7Q9Jk0U5wlbmCYJ5
+	 9Z2YmOz2Az1hY6weJVMVAa8IzNRJXCJV4FeMq13kM4y4NV/67i2wS84/yWnec8jYuMmyX
+	 xcIU7SseGkZD2Xm82eLkISem9jJmxPAQeslHMBwOuhkWiLi9uH0nLt4cRF31dQoTP2OtX
+	 QbjQTbODwjm6e2RjdtL7qZ1AUxLFri/0bRbBzLVbgrIN+hBaYGJrAXc+MLCY9PdY7mg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oxu+q6fg;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.178
+Received: from mail-dy1-f178.google.com (mail-dy1-f178.google.com [74.125.82.178])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6136606A329
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 05:41:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6136606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A036A606A335
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 06:03:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A036A606A335
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PQr3PgP+
-Received: by mail-dl1-f52.google.com with SMTP id a92af1059eb24-1b244fb7fffso5149428c88.1
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 21:41:20 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oxu+q6fg
+Received: by mail-dy1-f178.google.com with SMTP id 5a478bee46e88-37198ed3727so670024eec.0
+        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 22:03:09 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794895389; cv=none;
+        d=google.com; s=arc-20260327;
+        b=OClTKmy8xAV2gxFiutZOJcNVXjCLr19EbVkHXgkO06hAo9RngpIVaGxpd15e4Z1V+r
+         hKbsR1V/a+P6a3ib/7c8o3ps1yrzLV+sdjLdh7r/PMH1cwA2IBx8mD/ae2Qsw3Vy4/a/
+         qxmLf0Y74N0VGGXx3riKob1e/ZQZXzKTiWG6tzAkhzSDIREX1m662QUJYMNUhyWHNV5Z
+         iHmfGT9w8NFcWiXLx95bLtnt2I1SrwEToVlvpgYMb3HXam+C3ahY7mrKcLLQh/0ONifN
+         HULwrSwCIi3M/xgny0cxK1ASiMJYRKBJe8oWrSksA5x4vGNIEitXfp8MeR27WjkI5fvj
+         c8yA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=rtMskDO3xi7yMmOKnTt+SllqsYFoqqAzPkEoXmAxvXU=;
+        fh=vuv/rEXzaU/+mD9c0Fyjgi9rtCnB8yT1AJHY+rSOoCY=;
+        b=jpV7m+h8/WCm0FYMrsV9IUtsIm0ljSRweDPEc0294gIonTCACI722888NvAqh70kex
+         93DbCO3KX/Gk/ga0OnoYge8RdoNtzwn/JOMkNNYirkfsNDATrmk95nPy/c/jykd+xp/+
+         ZtQUhmPpPnq3mXAQ1Ls3L0gvhTTQ+0VB3fLp3yb/bkWCCycKbL7gNIyLKE1FHaDdrV2Y
+         CW6e81FfOB9XWiwBNXeO6T48PvEkzBL3e5rIGhvbTDcLFASczgx8+cxJ/OidCzUWhIMB
+         2gt70w+eHnm5S5tlNGGCXPuOw83EQcIB9koYqQXI0PHcG9Vc6Za5lDuaCxu25O5uGQg9
+         Iu0Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1794894080; x=1795498880; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1794895389; x=1795500189; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=kgXAga4SQ2gGcYIcOPrgNzb4Xfca195d5V/zBY0TA5E=;
-        b=PQr3PgP+hc6DT0aQU/F4mOKsRUSEulybv2c1ObP3i+DkihztlWEctX0OrUgl6usesp
-         LjVss/ez54+GKqptmSO447ZTgQARt4/Hqnxbxe4wKrARIDHxATiTAuXAUYnd5srby+N9
-         vIOlcV7Nd504l6AaiMlFfzLDi9l5+R6A7aeaaPeYS/SdAVWDOIhSPf47Riiy2R6M+m75
-         Ukgmqhi7cJ0OgnvcKLaHEGrytFD+SRwSV0uvePUfCnI6UPFqzp3h2OWF+CpLD3vPaxqN
-         L2GFjD1uwlGTm474BmzBxVLJXBEP3UcTQIALBo1pSXC6QfWbbogt02vvQ0hKRpb2TPsp
-         1BtQ==
+        bh=rtMskDO3xi7yMmOKnTt+SllqsYFoqqAzPkEoXmAxvXU=;
+        b=oxu+q6fgYWKxtHBHw8FvEpHrsqniQ8qJPoMRxryaL1MyrshMDryi758XSD277qDFDE
+         6kQJ62qwIpdHfvwgQr8spoC/AFhwSMpfV9+iai3aUx0ROe87N+mIP3itcLpT80NDIawR
+         jOjqE9ASRmOMDoROtB6AtMQBEIMtUDZIF0lpBpu1/MewronKUFiRIT3diqzTzylgYFC9
+         pSHDQiLA9c/GONdGiNyXINVd26D3Bf2nK3FWnLoFMIjF+MR7LT8lMGuXmknfD8WCi9fR
+         CygUu8XtbTumvS3Bvez5qc4mmqosPXuR8SsKIcokDd/8fXeaslqx7tFkFeBvjhRh4cvA
+         AX5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794894080; x=1795498880;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20260707; t=1794895389; x=1795500189;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=kgXAga4SQ2gGcYIcOPrgNzb4Xfca195d5V/zBY0TA5E=;
-        b=f0pdogPHDAAsS/n7TTH0vaQQrWsL16EHSclNXP99pjT8mHY9fKCvGnjO7/OIEDBAzU
-         XXuxVfpXuw4SlGYRZBh6orY34MMYdPPiMJTGRglXq64hUoXCdOb5zHiIFUV/0tzS46Hy
-         Iv6sTtRvq/oSZHmlCESycXR4L3wskgBkToo3EkxfFZ3AGaOsq8LoiUSCEiUjj6Jz6UUX
-         zk8m7pZYid8po7GaI5E0m4pO7D+2N3Utqq6l8va7yzyhj+1pO7MIYS4/GFpePo3dmpMn
-         fdxaqePQyPpsYCf8ZYOy7eW1IqPADBjx4DEyJVBfD8w3i8T/vNlSbcKNo7MnurrsnpUj
-         B7pQ==
-X-Forwarded-Encrypted: i=1; AL+hErG6/EoQiY1qvFkj+hKm7PCGWVSbZLvUIhjlDwS9TXLwL0wYqSVMT2BobsiJjtIixqExeMddiU7B1g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/9jdKYCi7tendLzQ4DNvNxtSJOS+5BtJbG75bLrbSVZaDfVkT6
-	6RdBVWkR5CNaUyU+gSxMpbahj9INTZFVSRxpq1mPUfrXv8J6BApYQIsiMSLF+eACdCs=
-X-Gm-Gg: AYBFou3kKTPXQbgU8y/xONU/+oLfMiwnzdcxW5cHey7ozhG8RZjCoFyAovNFEd/rhX7
-	W1L/y335yiNElCeA6Rt/WOvlYYx3e6KKxibiI8oode7nV7MXR1soWgNxJeXshPYpCdAa4uytGln
-	MXdRcslYYyr/4cCYvae/zrJ/tgKkG/TTC6nCfPxk1NiSt/5Er0d0kRUrz3dZ9f6T3yVYoY+xpGN
-	DU6I1jss80P/rv8Ujm8g2ZwGekpZZeoqACGEnF2FjDbzy3mOegLs3jysZ+tX9e2orAMyWjb/s/T
-	bZ3rsEaLHnxXPhjW8EPWtlwQB+xCe9BfgBosbOf786WrCn4bh8KLf73HCmtLbRwbPf8SSkG7mPK
-	VTlj3Oxg7mYc+loz08/J0oKZtZxachndLq08lE+jtcozOyBv9r5XsFiwwYHSIHZk5bDL5ftdJft
-	xL8NrhmEHMqnXv7dDKQoxgAdRxc437ijD2OSzkcW9nUUEz/RoY05AZi62A6J23mpifD/qr0X/8c
-	FzexWyaqwqtC8kBDqyNjIRX8lSxe/jkFUcWxfwZHzq2lInQJiPkhMbNl4Zz9tXLokgpJ5seyl2u
-	RWHGmWiTxuVxZATKjy5uj18O3qd0ng==
-X-Received: by 2002:a05:7022:290:b0:185:4ad4:3d15 with SMTP id a92af1059eb24-1b503068235mr10688010c88.1.1794894079483;
-        Mon, 16 Nov 2026 21:41:19 -0800 (PST)
-Received: from localhost ([122.172.83.36])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b524049e0asm17957878c88.4.2026.11.16.21.41.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Nov 2026 21:41:18 -0800 (PST)
-Date: Tue, 17 Nov 2026 11:11:15 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Stanislav Aleksandrov <lightofmysoul@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 0/2] Add cpufreq support for Qualcomm Halliday
- (SXR2250P)
-Message-ID: <avvo-0Gj9u4ZdCyh@vireshk-B250M-D3H>
-References: <20261116-halliday-cpufreq-v2-0-e518cc055457@gmail.com>
+        bh=rtMskDO3xi7yMmOKnTt+SllqsYFoqqAzPkEoXmAxvXU=;
+        b=dJY85QCLNXgvCqki4sZ0kdd/MNGm2umuxDV+ZN24nE1T04YD0xV9NocP7u+MbZxKbU
+         MrZ8eadsvq2kCXLuaGD3Kjn4t7JW3STM1KPR0d6ifjnNMelQ88wMxn99h3jon/53YKwb
+         K6zE5+JC0XRvhQrYdK1wCTWF+a3T0ID5C2Z6GHW9TIrjJ+VbmxFEglRr47N6uCbBhP1V
+         St0UN0D2hG4qX1oM9L8r1g8D6xwGtJN58/lCjeE1lgDOH9UP5/xLv7rj7tpIzNXviWKi
+         CWtEuqEwsck/wLgg0n6/Nr7jRfhvi8McWIU8kzGUMPdgdu0Ld4o0wSR6HGbHI72TP5tV
+         8Ojg==
+X-Forwarded-Encrypted: i=1; AL+hErEKrQDvkiXX3Vvc0xwJWUgyTSdl4iPz3YxSGjbgFkPZcIA29N1tgnbTyVGHErV67pfzft7jGEmJcw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9ecZIHF41talM46xBjK7MvexTe6zqn6i8tX1fKVe4t6Z9e2g3l
+	5otAxBULmIlDIgZHDaXM/YtnJU9CbNlt8yg5/sMiJq3n/1gaMkMvP6pUuYhJGVP3RTpj7zNtkrP
+	srzXGCWQ8VBrIdGbQUbNw+xSItHosaPo=
+X-Gm-Gg: AYBFou2jDlc4D9GQ8cIzjZcAGAa6nGx6nqRZlOKHC6q8kQgL4ANHKqumdGMlQeHzw8B
+	C0tRIujZJlufKlHLuTWzReKBbbz1vlVloe99Iy9N9wFyQc48mmZw9P6zY5Fu/QVM7xTDXelNwFX
+	HBxEsiy+0Puja9zTnptzwL6I93aj+FM6sWw7KiMKDNRUhLl5app3bZez0fOILZWSXwmKUFNgH6t
+	IIV3XmxqJWOd+wtOXs53npntBenL2sPjqncgdvNtDiBU4gHEY9p3qbK9iqlQQ5O4Ly6eqLo8uCG
+	V61xq9oGzxIihPIJk9UF+fo7ReTY3si5B4mKXKSo240nX6l9IQhAi4IRFU21Joj5c/OBy03SURl
+	nwX+OaMEXGfbHozyus2/AmJ6e1hPzxSn3fwaK0G8=
+X-Received: by 2002:a05:701b:4586:20b0:1ab:cbd0:1c96 with SMTP id
+ a92af1059eb24-1b53a429876mr1337313c88.4.1794895388323; Mon, 16 Nov 2026
+ 22:03:08 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,40 +104,82 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261116-halliday-cpufreq-v2-0-e518cc055457@gmail.com>
+References: <20261022-psci-fix-v3-0-9ce2133c5659@gmail.com>
+ <20261022-psci-fix-v3-2-9ce2133c5659@gmail.com> <CAPx+jO-qPAuOGnGfCyGnSYym8PBOaqUJptZh8duYJKZN4HARaw@mail.gmail.com>
+In-Reply-To: <CAPx+jO-qPAuOGnGfCyGnSYym8PBOaqUJptZh8duYJKZN4HARaw@mail.gmail.com>
+From: Reza Kurniawan <imkyufie@gmail.com>
+Date: Tue, 17 Nov 2026 13:02:52 +0700
+X-Gm-Features: AclHuK9yy_ki_wzibjw_yQRrzFByvuyKJxJWKjlXJNrv02S4I5fFrI_oRWpsa90
+Message-ID: <CAAq9HC6kCspxX8DyDXp2RuhFSXmU=1p0s6xdOmjhGZ9gZgmj=Q@mail.gmail.com>
+Subject: Re: [PATCH v3 2/4] cpuidle: psci: Allow skipping the suspend mode switch
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Abel Vesa <abelvesa@kernel.org>, Val Packett <val@packett.cool>, 
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, Alejandro Tafalla <atafalla@dnyon.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 16-11-26, 21:25, Stanislav Aleksandrov wrote:
-> Document the CPUFREQ hardware (EPSS) of the Qualcomm Halliday SoC and
-> keep cpufreq-dt from probing on it.
-> 
-> This is part of the bring-up of the Qualcomm Halliday SoC (SXR2250P)
-> in the Samsung Galaxy XR. The DT changes follow in a separate series.
-> 
-> This work was made together with Claude, ChatGPT and Gemini.
-> Reviewed and tested on my Galaxy XR, where cpufreq runs through
-> qcom-cpufreq-hw.
-> 
-> Signed-off-by: Stanislav Aleksandrov <lightofmysoul@gmail.com>
-> ---
-> Changes in v2:
-> - Add the qcom-hw binding from the DT series (12/17 there), so that
->   the cpufreq patches are in one series:
->   https://patch.msgid.link/20261109-halliday-dts-v1-12-289114ab8197@gmail.com
-> - Use the "cpufreq: dt-platdev:" subject prefix (Zhongqiu)
-> - Link to v1: https://patch.msgid.link/20261109-halliday-cpufreq-v1-1-d87a397396fd@gmail.com
-> 
-> ---
-> Stanislav Aleksandrov (2):
->       dt-bindings: cpufreq: qcom-hw: Document Halliday CPUFREQ hardware
->       cpufreq: dt-platdev: Add Halliday to blocklist
-> 
->  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml | 2 ++
->  drivers/cpufreq/cpufreq-dt-platdev.c                           | 1 +
->  2 files changed, 3 insertions(+)
+On Fri, Nov 13, 2026 at 8:14=E2=80=AFPM Ulf Hansson
+<ulf.hansson@oss.qualcomm.com> wrote:
+>
+> On Thu, Oct 22, 2026 at 11:41=E2=80=AFAM Reza Kurniawan <imkyufie@gmail.c=
+om> wrote:
+> >
+> > From: Alejandro Tafalla <atafalla@dnyon.com>
+> >
+> > On some SoCs (e.g. Qualcomm MSM8917 and MSM8937), PSCI reports that OSI
+> > mode is supported but rejects any PSCI_SET_SUSPEND_MODE call with
+> > NOT_SUPPORTED. psci_set_osi_mode() then fails with -EOPNOTSUPP and the
+> > probe is aborted:
+> >
+> >   psci-cpuidle-domain psci: probe with driver psci-cpuidle-domain faile=
+d
+> >   with error -95
+> >
+> > Add support for the "skip-suspend-mode-switch" property. When present,
+> > do not call psci_set_osi_mode() and continue with the topology that was
+> > already built.
+> >
+> > Signed-off-by: Alejandro Tafalla <atafalla@dnyon.com>
+> > [Reza Kurniawan: split out the patch, added log message for skip case, =
+renamed
+> >  the property, added property check at PSCI initialization]
+> > Co-developed-by: Reza Kurniawan <imkyufie@gmail.com>
+> > Signed-off-by: Reza Kurniawan <imkyufie@gmail.com>
+> > ---
+> >  drivers/cpuidle/cpuidle-psci-domain.c | 16 ++++++++++------
+> >  drivers/firmware/psci/psci.c          |  6 ++++--
+> >  2 files changed, 14 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cp=
+uidle-psci-domain.c
+> > index 5722365b94..cc9f14769b 100644
+> > --- a/drivers/cpuidle/cpuidle-psci-domain.c
+> > +++ b/drivers/cpuidle/cpuidle-psci-domain.c
+> > @@ -159,13 +159,17 @@ static int psci_cpuidle_domain_probe(struct platf=
+orm_device *pdev)
+> >         if (ret)
+> >                 goto remove_pd;
+> >
+> > -       /* let's try to enable OSI. */
+> > -       ret =3D psci_set_osi_mode(use_osi);
+> > -       if (ret)
+> > -               goto remove_pd;
+> > +       if (of_property_read_bool(np, "skip-suspend-mode-switch")) {
+>
+> Rather than reading this property here and in the psci fw driver, I
+> suggest we just do this in the fw driver.
+>
+> In other words, let's make psci_set_osi_mode() to succeed when
+> "skip-suspend-mode-switch" is set.
 
-Applied. Thanks.
+Right, that makes a lot more sense. Thank you.
 
--- 
-viresh
+Best regards,
+Reza
