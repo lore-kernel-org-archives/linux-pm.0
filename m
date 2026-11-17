@@ -1,112 +1,98 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.45
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794891908;
-	b=omfSAEVo7CplbrmQxeiTvfaQLeU+D+wfvBOxQbcK34gYd9jYuvJAvqmTLQKnKQb4dSX/
-	 VoMHfmTpcFDOKwrxOZg3N/tR4zcwE8EFkhivXSbJnMYGPGq7sY6XIjEQltpdGdPssZ5fB
-	 HIJikMuefaGEofIyWLdoYrYSfAs4clA8Gu5myqXVdWO7YFa5x0Rid1Lfewp302LOTS2Ju
-	 ciDDIZ8CNDMkngjxnZvkfSGAsrXxTmX6/Raxyi72eVDhKAoe+b9IyDu2KsNZy6/wtfn3P
-	 k6JVox67keLM8x9Ml2f1Ra3+wuK8NQO3KosEdJdEBCPPeN1BwMYeOzRxM5MP0g8WTwQ==
+	t=1794892311;
+	b=T3gd0JTwW5zqgaIxyqe/5RnnBOexhXC3mNEHVDMefwfoiVU2B/2OAyz+lYwkqXhNi99M
+	 CnINKHw16zD6+OzGypC11u2QiNukR/XbAmtaaImlPIpzzsKiTApE8xpbLUdKB0cpzEU2C
+	 v2OwazNixMjhRsnN1/1q2rlDYsYVYf3bxKTzkApmkE99PIJD+sn0IdgyoaVYxkt49XJk1
+	 htwFyz9sdUGBqf/p5ALEZfJ2glr9iCX0/c4Se9IqUeFGZs5Yf06UUozMv5fG80pFkQVX+
+	 qcx/OoBorrWnXjMFHCGPaxc/WY3GvMeBoGDHK8pxh5SgztDo1MX1u4z6hQM3iHp5GSw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794891908;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
-	 X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=D3O8HSwk3gV+MgeK/2x8V/O+dnoKtfrQX17a7bHwQ8A=;
-	b=ikPkXNixcKI4AnlJbC5kAnszGv5cfZ66VlgfnrF6IuZf3Mx0xBGy7BdxoPZoEz2DUWaC
-	 /3FyG9IZjFBHgQ4CxVYlEv6b9twLCqBiTedGPH+V4TCTLQ4ap0W9tL8lDYMZQl8wQhp1s
-	 Lq6kNWg1Da/aNzLKDCC3I8xpirenRhO/2+Xwhni3AMR0OtDy91ZZP8MB/0xmye/MfxrJH
-	 Kqleo03Tkyn1yXyMspa45UxHE5AwVLkN6PT6Z4+r7IsSPTR4BBO2DiumBTxGzHKVL496W
-	 W8Tlbeu7YHnENqrlqW90t6uFaLAkZ5gdjP88m3Cq1PL1nX12pKWyJ1yEDM49ygAdXOw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794892311;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=cFIGFgrqmh7vJ8p05TfgpCv8oubT+IqY4VjNLXb1IxQ=;
+	b=GQ/+2TaUK5JnxniXJPxy4qbAQs0gTC9zsoylOzYSZeY7H5aYatRuFe9P1HqBYDtkTshr
+	 5eHLU/qgE8xP2JuJXNYJkC/cqIppfV4GqQ0O1e5GbHSX0CvTSCKplpRwGLrJEzEmu3njS
+	 mIquUkSzYnBdwGW+WHWo/EkmLQtEGJ+QKmUnzJAKL1Ms7iRDYNsmvIj5nMisndunoZNOL
+	 KhXfKabkU8GGv/p6J7++Rfl4YUFncdj+wCgmIY6HnvRG2gp0P9lpdp8SZKgpjpo6u9sSQ
+	 U+QnqnCwRf3F1RbLYLbhcErSuYtCdEcUORRyCgXwuKtjGaisne0yKqYRLwQRiwP7WnA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=UyR2Xvr5;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=RHkZQaS2;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=KUkwjxqY;
+	arc=none smtp.remote-ip=74.125.82.45
+Received: from mail-dl1-f45.google.com (mail-dl1-f45.google.com [74.125.82.45])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84759606A332
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 05:05:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 84759606A332
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C94D4606A32A
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 05:11:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C94D4606A32A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=UyR2Xvr5;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=RHkZQaS2
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AH2aNvR2935297
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 05:05:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	D3O8HSwk3gV+MgeK/2x8V/O+dnoKtfrQX17a7bHwQ8A=; b=UyR2Xvr5mgnBNFXX
-	m5z2sk5nqcqjIuG2LbsieBw2xqL10aw688SmCyRstdkHPG1FJZOoKTLWGUZ8iYbV
-	AadKpNBqRLG9aJxV715SCdaoPrnYPIm46bwK0akZUQzaycSCspUy5d74C46jmFfZ
-	i1KKjkepaYeVferOskHGdIligD/U69dbi5WcQXtrMlMDVJKwwA2AdvDUF0Lr8sQ+
-	qJjQR8FoUBZ+l4LG6Xp6lyQUtBn4UoRzU8uhkweKSUBUeQ16pFmNVfRDu/VHyGBf
-	RMo43qg1oL8450LO5UkropBDG3sZoHLBrjjJgC5mPb1RjndC4BB4b4tM/BK+aH5q
-	B62j3g==
-Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j09m09dcg-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 05:05:00 +0000 (GMT)
-Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-33713e5e6daso3945985eec.0
-        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 21:05:00 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=KUkwjxqY
+Received: by mail-dl1-f45.google.com with SMTP id a92af1059eb24-1a2af4c8d00so8824739c88.0
+        for <linux-pm@vger.kernel.org>; Mon, 16 Nov 2026 21:11:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794891900; x=1795496700; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=D3O8HSwk3gV+MgeK/2x8V/O+dnoKtfrQX17a7bHwQ8A=;
-        b=RHkZQaS2MZtvr9lY7Z8D8+OkVnghhoESST2B/YndphFb2ect3aUlXAa5fP33mU2q7u
-         PE7TNn1kTsZghXhKHEhBL5nerfFkcEjIiOyYZY8ZuKL2j4GGoOFgnqB/rQ+TWe/q6Mxj
-         q2JVcQ2YNM0bD7XkP+gfrNVmLUGB9C+prurACA59vOdP1dHRgq/yKVYCfcsoyOTgNQdT
-         DxiGNN0RGFQowlqDA55JdwONfRXc6cZXYmnTJk/dohdTgEYmjFq+gJuA06M+ETNbb4es
-         /Y0NnGm11O1EULBqhQzVl38t8ujxUXg9RDnoCT+0MUgYpuCR+/L0Bmy+ZSRGJ26Pz3ve
-         F7YQ==
+        d=linaro.org; s=google; t=1794892310; x=1795497110; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=cFIGFgrqmh7vJ8p05TfgpCv8oubT+IqY4VjNLXb1IxQ=;
+        b=KUkwjxqY2sX91TEyDbP1VuzvxqZymLLpQ+APbi/GqefwJjM/dcMbwXeu6DoGvVCCKO
+         rZ252LO3XGO1Ih5y0zh54MGbH9ApJIXFv6JPpO5TycX8ykPqIRy7cLnAOa7ZeF5nvqzL
+         Vlof9WZBSz9XtVoxSnA0W13OMOQ2M30DKveLTBIytt97q+PQqAQCcuroQVKT+9AiI8is
+         qfKjdips5pOpfuJGVXPxZ0eEfYSO87ZWe1nAdNSHE3RMyvcL5ZNZkFPPNH0NdIfLlNRT
+         ZZ4etEKl6xRaYYdM9Z9ZdzxS0kDRCRxYOsxV0MWBTsTzLPIHRjf7+xjXQlUhoVGNvXqk
+         u07Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794891900; x=1795496700;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=D3O8HSwk3gV+MgeK/2x8V/O+dnoKtfrQX17a7bHwQ8A=;
-        b=HZqCjlAltYVecN3BO01uVk/PFGm5a8cNxwtuvGAM1DZqKLSEqfiClDusC2o4Jh7GcR
-         1bF/1K/re/V2Obm+5b6yjZLvIHlP7+mqdwRNMFhYiomROpCLIG0Bs+ekS+2gdNEZ5jpG
-         jFhBiskSQ8a4GHQNAhq/YzaAjlpFOhbwyUXgBA09ctpioW1VdgQ74FFqXoLAzmAwAUXS
-         RKLjOtC5NLPm48KB03PHb8lU2grL3egwT3PzsgI0WNz828yI23wKmOXzvZI7rESjfmXs
-         NQgAKFpGzNtQTNjWYZphFovDucJSHe5tFA3MEs/yNljsjsCraWV/JmqqA/ajDu1iJXHE
-         /Iuw==
-X-Forwarded-Encrypted: i=1; AL+hErGErQK/hEaHvOpZCUOlxWZQCxTxmMYWuda3bey5jRAj/bYafMi7ViCouHTN0zp8eLP5VTRyWV/o1g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/dgaxSBcQJONkevhYXM/ANhPlnfw2yVfFpJYQSzo8zSuMWShon
-	Wib36UFnJXWWUk9OGa5ccnGSVxtQU9hV7lmzRU2W0SVwQt56Tbb2UMB+ZcvgTVrLKOxUSxknKM4
-	DUzWLCYkOKY47wJG9vz/JDgfpjkhkXQ17nJiGI1suoYmgkzKQCjwNEBpIRh+AEw==
-X-Gm-Gg: AZFdTZfSu1RwPOSdoUaRhyh9huI/94IQClIReWFVDW1YVfqNmrC/XR5yVmNPkbEVN8U
-	WwCqjHoPEsvt6kHotLUjZ6rxvkN28XEO3BQmy3HwqBuExZU+jjzSvR3e6H6T/crK5wvYpgKqCU2
-	TtOJ7EoPKHsTqd/96D/n5XsS5hvINydzk9RgX0+bHtwxiWfr5t4d1n0KuDeZ4vBqJHnlQ14A1W1
-	jR4bL3XrKY3ZZpH8tKqS4a2bZ9HR/XbIbl4P3kNavh4Tg0edMA9xdhxL4jAzUv8s1O6rC6HJZfv
-	0Tb49AVQlMQFb7pVgUMPB+4YSMq83MiHb87+oLi6T5TEzr1B8O7pPyXI88oN074QdjagsaF4Vm2
-	xf5njqhxw6JjKHWtdTo9FIfgrOui3Xc+Ef8Jovql0ulHSER7H7MetXyu6fwr1U+ohBl7yxD4t02
-	k/pc4=
-X-Received: by 2002:a05:7300:de01:b0:36c:a154:db1d with SMTP id 5a478bee46e88-37963373955mr11307807eec.4.1794891899982;
-        Mon, 16 Nov 2026 21:04:59 -0800 (PST)
-X-Received: by 2002:a05:7300:de01:b0:36c:a154:db1d with SMTP id 5a478bee46e88-37963373955mr11307779eec.4.1794891899424;
-        Mon, 16 Nov 2026 21:04:59 -0800 (PST)
-Received: from [10.217.198.242] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-381a55555dbsm1297729eec.10.2026.11.16.21.04.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Nov 2026 21:04:59 -0800 (PST)
-Message-ID: <d3060950-04ea-4f9b-b160-0e068946e623@oss.qualcomm.com>
-Date: Tue, 17 Nov 2026 10:34:52 +0530
+        d=1e100.net; s=20260707; t=1794892310; x=1795497110;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=cFIGFgrqmh7vJ8p05TfgpCv8oubT+IqY4VjNLXb1IxQ=;
+        b=hTbBsmsNPkUEgcLRr+kBaMZuYJ4QgPiQaaG058J/m1JUIQpthW8sHH+skZdSs/IpJs
+         EImPcjei7BQFe17JvzcNpQNMlLbl6SHXlUo80NI8IcOvveI1ehfx0tXP+xX5iIqGqFmv
+         rRc319l5QrRfdEwW0SSpgSK7JEjvRGYd7uCjvIOF/aCby40AfJUbsntPRq9LGoUQ2PaF
+         DyvJZJB+Vfkl27iwtehcnxvcnSy6FPcqTu74WkhuMmcDpsHUTQDZiZK/mdOhLPYPk3Ln
+         +QOvPvNe5xhisIRym8OqPABNPMj+Deo9AxuY6+Hv9+FYQCgnNMEAMqOn5/6kfZxyOvMj
+         Ul6w==
+X-Forwarded-Encrypted: i=1; AL+hErG+5sNjg6xNCo7DUEAHuzHQdWlPDiN48lHybKR6GnGn2I1BR/BZ7d6eAKs5fezSmAoUAkBBbtmfWg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8tEFF24C7UJSSBp8fp1w3hIvHe/+xK18lpLjvmL0xSSIuqDUEk
+	9ScfuW/JFbYobxVxmvIgbWx7wjdezUlI9TFJqXL2YhR4ha8oAb1Fx795I6FO2SF9Qkw=
+X-Gm-Gg: AYBFou1996EQx1KkSCqLc3CLhypHibbtX+ot1R/VR34qa1yS5Cj6tXcIR1hkmIANu3y
+	T8uqsvLlu9SXBvkY9li+AruhiejEsvviXe5hpet4BkJaPxK1V6C/gp/4TFAX1W4Qb232wmjKkNm
+	gEvEy9HHSvFRsOJ+3j10He5UF1YQIS32/tVLpoiUNzWlYPniA0nvCaeiO8cQfPZWCJapSwuZXkn
+	74DWBPCt+qbYFPbKnTxtLa3Lx8uWrX02b82043ETSXOGjmW3twPUOd+YNWgqXa/r8eA3V88hBQ4
+	zyDF5Wpu6bDkhpPsMwVSDptfCgOD5I5ilx4Vq2nwFBmbnZgpQUfMP1i9LWzSFQ9U6Py8EnSp/iw
+	p60C2ajyRyM3uoc2smd1la0l/sQYrw1sUpENnc8El3PhHV+VCT1br9C38YuYiN21/3xMI1KkEvl
+	f9IfLo2cMFCMyRVG1dbe9w7VgwG/0hdtkFCTJpytasyfnxPGvE3zSfItMMguyaS1nSq48sM5TN/
+	FpAQIN2qGffpvFDVOJzrBTPXXXDYLPpo7FGaM7HmG9+GQpbkwaKVHxF66PyhoMaFxi6dqrkCOTr
+	v0oQqiYMUjPT1/9EJWBy9hiO7nSB2A==
+X-Received: by 2002:a05:701a:cc87:20b0:1b5:3878:aa29 with SMTP id a92af1059eb24-1b53878b8c1mr2057482c88.38.1794892309617;
+        Mon, 16 Nov 2026 21:11:49 -0800 (PST)
+Received: from localhost ([122.172.83.36])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b5031918c7sm53754284c88.9.2026.11.16.21.11.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Nov 2026 21:11:48 -0800 (PST)
+Date: Tue, 17 Nov 2026 10:41:45 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: rajanyadav0307@gmail.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Yangtao Li <tiny.windzz@gmail.com>, Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Andre Przywara <andre.przywara@arm.com>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev
+Subject: Re: [PATCH] cpufreq: sun50i: Handle boards with the
+ allwinner,sun50i-a133 compatible
+Message-ID: <avviEW1-h495D0B5@vireshk-B250M-D3H>
+References: <20261104-a133-fix-v1-1-d0b5ad3d4c5d@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,102 +102,74 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] dt-bindings: power: domain-idle-state: Add
- system-state
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Abel Vesa <abelvesa@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Kevin Hilman <khilman@baylibre.com>
-References: <20261113-s2idle_state-v2-0-ad604182e7e7@oss.qualcomm.com>
- <20261113-s2idle_state-v2-1-ad604182e7e7@oss.qualcomm.com>
- <20261116-icy-free-lionfish-c3eed8@quoll>
-Content-Language: en-US
-From: Maulik Shah <maulik.shah@oss.qualcomm.com>
-In-Reply-To: <20261116-icy-free-lionfish-c3eed8@quoll>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE3MDAxOSBTYWx0ZWRfXz+GFbcpbnxEv
- KYkZZMOXsLcF4nCjj0JAOD7p9uLZnh5bC4vUnhxgHZKbovYqLwdl+XIslD7Z1jl+70EIc6Ew1Xf
- hI2BCZG/BYo2UQxUF/hv9qAOWZP0NI8=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE3MDAxOSBTYWx0ZWRfX6AktRPaSyVuV
- dSkOFYgFsDcXSNQ9DGbCPeOqcsh6MPIQw0OJWOypiWWMn2tkX5CRgF8kJjQRFRfC0eo7Sgmo6v0
- eaIdldzmanZa11U+ipXc5wVaRv34ey6ATx5qNnco5LNCqV5340ClVaMHjx8Yo1sG2lkhX2IR9I3
- UsCSf6A6Ni45NWBH+Pn174JAOFztOYeYqwVx5dAXGH05m2DEeKQ65iwAvrr2dmAmtq7uu9mVCUY
- t9ubpkCi6kX6EF/k69mIF/ncWjDMMwqNUrwP+fc9pIYNdoIOEZh5lKJQYFeyNk8+Ij+VDdP/Sik
- FEHNurSsdIMw7xWyA7GguraVE2jBmlU8dQ74BEd+ScRGZALkZAIrHWqG5AIm4ybwe01R1+qhJrt
- 2swjiq3bkzIIauY3foqYPvO9YZyCyHQ9FGUBmLz7wEvTq06M/21j+tQruMtR1qzRQPUwjIn4yRJ
- IHG/Su3tEMOtgQzzJgw==
-X-Proofpoint-GUID: rHBsEHqRlvBWF8RQRe0cQ0Z3GXl9Cj6S
-X-Proofpoint-ORIG-GUID: rHBsEHqRlvBWF8RQRe0cQ0Z3GXl9Cj6S
-X-Authority-Analysis: v=2.4 cv=F7rC5ahN c=1 sm=1 tr=0 ts=6afbe07c cx=c_pps
- a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=IpJZQVW2AAAA:8 a=EUspDBNiAAAA:8 a=CCHPWfvzcojU1fbeCg8A:9 a=QEXdDO2ut3YA:10
- a=bBxd6f-gb0O0v-kibOvt:22 a=IawgGOuG5U0WyFbmm1f5:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-17_01,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 adultscore=0 priorityscore=1501 clxscore=1015
- suspectscore=0 bulkscore=0 malwarescore=0 spamscore=0 phishscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611170019
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261104-a133-fix-v1-1-d0b5ad3d4c5d@gmail.com>
 
+On 04-11-26, 22:07, Rajan Yadav via B4 Relay wrote:
+> From: Rajan Yadav <rajanyadav0307@gmail.com>
+> 
+> The Teclast P80 uses "allwinner,sun50i-a133" as its only SoC
+> compatible, as documented in the arm/sunxi.yaml binding. Neither the
+> sun50i cpufreq driver nor the cpufreq-dt-platdev blocklist lists it.
+> cpufreq-dt then probes on its own, finds only opp-microvolt-speedN
+> properties and fails:
+> 
+>   cpu cpu0: opp_parse_microvolt: opp-microvolt missing although OPP managing regulators
+>   cpu cpu0: _of_add_opp_table_v2: Failed to add OPP, -22
+>   cpu cpu0: OPP table can't be empty
+> 
+> so the board runs without CPU frequency scaling.
+> 
+> Add the compatible to both lists.
+> 
+> Tested on a KickPi K5C (A133) with its root compatible changed to
+> "allwinner,sun50i-a133" only: on v7.4-rc1 cpufreq fails as above, with
+> this change the sun50i driver probes and the A100 speed1 OPPs are used.
+> v6.18 fails the same way, also with "kickpi,k5c" listed first.
+> 
+> Claude Code (Anthropic) drafted this change and its message from my test
+> logs; I reviewed and tested it.
+> 
+> Fixes: 60b064eb82e6 ("arm64: dts: allwinner: A133: add basic support for Teclast P80 tablet")
+> Signed-off-by: Rajan Yadav <rajanyadav0307@gmail.com>
+> ---
+> This fixes the Teclast P80 support added in v7.4-rc1, so I think it can
+> go in as a fix for 7.4. I do not have a Teclast P80; I reproduced the
+> failure on a KickPi K5C as described above. A series with A133 speed
+> grade support, which Andre asked for, follows separately.
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c   | 1 +
+>  drivers/cpufreq/sun50i-cpufreq-nvmem.c | 1 +
+>  2 files changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index bce4c87573a..6bdeba47749 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -110,6 +110,7 @@ static const struct of_device_id blocklist[] __initconst = {
+>  	{ .compatible = "airoha,en7581", },
+>  
+>  	{ .compatible = "allwinner,sun50i-a100" },
+> +	{ .compatible = "allwinner,sun50i-a133", },
+>  	{ .compatible = "allwinner,sun50i-h6", },
+>  	{ .compatible = "allwinner,sun50i-h616", },
+>  	{ .compatible = "allwinner,sun50i-h618", },
+> diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> index 9261d148a16..5d4ff192e99 100644
+> --- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> +++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+> @@ -324,6 +324,7 @@ static struct platform_driver sun50i_cpufreq_driver = {
+>  static const struct of_device_id sun50i_cpufreq_match_list[] = {
+>  	{ .compatible = "allwinner,sun50i-h6" },
+>  	{ .compatible = "allwinner,sun50i-a100" },
+> +	{ .compatible = "allwinner,sun50i-a133" },
+>  	{ .compatible = "allwinner,sun50i-h616" },
+>  	{ .compatible = "allwinner,sun50i-h618" },
+>  	{ .compatible = "allwinner,sun50i-h700" },
+> 
 
+Applied. Thanks.
 
-On 16-11-2026 17:28, Krzysztof Kozlowski wrote:
-> On Fri, Nov 13, 2026 at 10:25:25AM +0530, Maulik Shah wrote:
->> Some domain idle states require system-wide coordination and are not
->> applicable while the platform is up and running.
-> You repeated the property description. Say something more. Why they are
-> not applicable when platform is running? So if not running, when are
-> they applicable? Why?
-
-On certain platforms CPU subsystem deepest idle state requires co-ordination with SAIL subsystem
-such that both must be powered down in coordinated sequence. During wakeup SAIL subsystem must
-be powered up before CPU can resume. The wakeup can take a second or more.
-
-Selecting this state during opportunistic CPU idle can therefore cause substantial wakeup delays and
-repeatedly interrupt SAIL operation whenever the CPUs become idle.
-
-Add system-state property to describe the state is reserved for system wide suspend.
-
-I will update same in v3.
-
->
->> Add a boolean system-state property to describe these states.
->>
->> Acked-by: Kevin Hilman <khilman@baylibre.com>
->> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
->> ---
->>  .../devicetree/bindings/power/domain-idle-state.yaml       | 14 ++++++++++++++
->>  1 file changed, 14 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.yaml b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
->> index 4dd4f59bbbec..b19952f6225d 100644
->> --- a/Documentation/devicetree/bindings/power/domain-idle-state.yaml
->> +++ b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
->> @@ -45,6 +45,12 @@ patternProperties:
->>            state will yield power benefits, after overcoming the overhead while
->>            entering the idle state.
->>  
->> +      system-state:
->> +        description:
->> +          When present, this state requires system-wide coordination and is
->> +          not applicable while the platform is up and running.
-> So when is it applicable if not when up and running?
-
-I will update in v3.
-
-Thanks,
-Maulik
+-- 
+viresh
