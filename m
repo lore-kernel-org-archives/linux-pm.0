@@ -1,13 +1,13 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.200.38
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.46.55
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794909128;
-	b=d9uUDhvJEFXXax+5RPsNvfHWcZzKNGtqjsQ3o+pNpzU8calvYOJ9gzaXR+2sMNdWEdI+
-	 qXZl4zBwnCFg+HsycL+PjsHA+7pnQE0pTv0tnipM5uFgUUCVG6QAxNUQ3BvAQ6CHnWa4g
-	 FFoUdJNm5/1Med4gAJxxLVxMLhPDu4CpT58/8g0LVdxWzGHpih7OZRB7f6+I2rVCltuam
-	 8nETMxQ5O+RvAXmUengMoUKtpDRlcffAriZh9f/gMLddeUavk6ZAj3xKnqtnZIzRr5JBb
-	 c44L0CXKJE4VWKXoDlJHyJYby0HoCJMqnJO2j74TMy5dxIDsDl6nctdPZH9JkX6c7cw==
+	t=1794909251;
+	b=cPKhgLVljiOU3gtkar47UdX2UNEMq7hlJp5f4Bdh92O3p66iVxFozm5kEOujTkmPeQ3l
+	 KXZjIsyit84h7INjqgOx5hQtPuol1CVkrZ2rmbdXg2LhxJpsIYsuZN2/xu9fe+3KPs0jh
+	 Gzi1J5h7xdaCAfmU1zqgSHW5Z3vI1MdQhfaAAz8lISA8x4P424p5pNEDBA3Gl9pmKw3od
+	 ZrlB+4RiJYiMbQ2ZQ5qtGZGEL1L2hOcFol/PalIHlCbE5/s9gnEW12PKfF6f2VBFoVxLy
+	 SKCIlAPliWMTdRtaxXb6yaAtwquMURJH9t1ikQFqX2IgLBkedvtj25x3TKLMML8Jo6g==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794909128;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794909251;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
 	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
@@ -24,58 +24,59 @@ ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
 	 X-MS-Exchange-CrossTenant-UserPrincipalName:
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=1sBSmmCoLSGkQXjTG3B3v1LIX/FN9klYzV3UzhCeZVk=;
-	b=AChUyOuPbnC4SZ6yMQhzMm3//okYPAOi3hDDHPEf1VA5xgWYIVr6y6h48NGUS5vUQ3i0
-	 hggM3aQDFUQ1U0UzPC4fcM7AATgZZ49jHeO0cnv4SC4nha3gdnWQMLn/m+NtkEfQujVZy
-	 cnLdaOWv3dnNFprptP3mb12KExiCAfCng2eUjvH6h3mKBulkyRAFxRNNxSAYfbAH2JGph
-	 1HjZ2vcd0IziycxtWVJ6w/GQRB9YWbaDAkc1QCUiq2tuk2Yv2mBiW2C5xnbXpK5Ff5TDc
-	 pNNPQ6BjX4/u6vsdYlGtraz+bwWWKSdeYx1Yn4Tkx2BAjpnIv4x+cm0ooVCN5DGemNQ==
+	bh=mYM5Sg+NYFAqJmyUyoJVrtE2SIeQ3yKJ4yO6kvBsCe4=;
+	b=lRdJ6gYcWD8OePSRB8XPTxuDG6uMNEKxxRLnZnhTWzdVdTGztKmSeg7pqfDhH7JUpwzi
+	 SZl4ZSnHa9tArT5y6r6Vj3twmeX9CLKvI/RzDJmMX77j54WjqDIZm7ggskD3s0xMgJZqV
+	 EhdkpP+uuZP0naYA0h0WrMQBOeAg8J9xUQhR6Qqy69glZvYn9E7JrxUHm3hj5TRLurior
+	 lpwo3Bxws2bFZVueTK1aNig3Mo2Tft/8NKVYPEGGYmlm4dul8BpbMeCmEDdKb9RRAwmLq
+	 ainl3dsu8Fl7Wm6RvyJkNLiwkubVHLwzav26V03KJvizdzAovg//3c1BVPdwuL3XQVw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=nvidia.com;
 	spf=fail smtp.mailfrom=nvidia.com;
-	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=F01MeOJr;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.200.38
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazon11012038.outbound.protection.outlook.com [40.107.200.38])
+	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b="VwUl/DhU";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.46.55
+Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azon11010055.outbound.protection.outlook.com [52.101.46.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74FFF606A323;
-	Tue, 17 Nov 2026 09:52:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 74FFF606A323
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E208F606A31C;
+	Tue, 17 Nov 2026 09:54:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E208F606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=F01MeOJr
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=VwUl/DhU
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=utYpoSLMSmU12/g/4i2YgSw44ym99qs2t+/9+aLQtiWbgf8WxeHz/iW6EqtiVB5H0bMPZsOS/2ImFEfA7M9UJg9S7KHi5Z/sd2fQTSpgskldr7VTeq/egE6qQDMsykzj7lgvdERcg4zT6I4mWte/ENu0xpH2xh4MrpcU/B6qyAIpMkt1ZhBtfC79Wz37w4mkmdYXGFX/kIBxAyCZA6sJiOKN3sS76klS44TTcBnbs1jUAGEWXTpxJ1g1qixYKEz/8HUfU3KkRkyt3/icdprNo6zhplTC/Qtp/ZO+L/K3qJtVACJkmj/DSMXrX8ZbSoDj6nq2hYeze5bVLB1C3wR1og==
+ b=LeSO3Gk01jUNtegK4WoqO6VY0OBYkbW7UerXybBCuiYXEkqzchSia0kyIB67jnUhEi6du7qTk3mgrtV1JrDSLhA/6hKkZHJdTvLRGIH+hpW4sXHOerXLSpsXldC7tyG0GVsnnnPAgSgYfrWy1GbEhMl6qUzo1EDrt377ukDVkFLwJUU1YcH4mI9LJfw34GDJgsNVpUKphJZ8NIfHCrKNmm+hSa1T4kSc1AHljM4+7zf43akj1A1RYdLJ0x/PaOrV/QMu7nXdZXDZ6wh2PZd4KZLazR29kVlRaQ/s6/nIplG+Lw3XJfsOC+PmRPI0hEYr91FSeYTysItFKyMqs8wPbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1sBSmmCoLSGkQXjTG3B3v1LIX/FN9klYzV3UzhCeZVk=;
- b=Bhg5+kLZ4MjnebrHVgLGKxALdW3SwhAy/BVHtVEvrOTgRJJ9oAAjA+DiM1dB441pikkEeKW0M18QvKjyyhU4+wJuxiwA9melu6IRUl4izfev1YWs/pX4yEOXFvOzW9KSCCafoU043zFUvAeBs3P87MPqCiLVdndqqXqY6SK5E16wJp4pR+DdpEKCBmI726TzCriYKcLxmHCqrpBxHKeFk17W+nsTo5AWLL3a4EtgqyE9UVVLwvTjqgGClWM+y1oSntb8XFdHP0FuZmSfRPoF8XApd2SQ+vemw3WrFTGOjOrRVXrXl+3h8z/tGYl86sMDadcgvfHMa8AR73FD//mxtg==
+ bh=mYM5Sg+NYFAqJmyUyoJVrtE2SIeQ3yKJ4yO6kvBsCe4=;
+ b=WfA+b5SSqH7i+l5KHC5rJU+q38CT85xrp9GZ1ponDDuhrNxLdWrFfISO/GyppZFEC4BvNBedEp2uPZ1/ayPrWc4uElh8IB2sgEVXwI3Lv+gL9EZjLstFZRlexIVZrumVZ8wbbdY+mpfZsUgD4dN2TPxAOIgmj5hxArHeflIUWC6ERSqjdssT6vs3GUMvsLGdBP1Q5morhB2GWzGMMr+EdJm4eiVIbSmEw35r+ICpgs60lXE9cFTxV5zn7U76G4ow5zCL0KjMsCE5Cv0BAeh2mn0qseazbFnYpu4awQ0YrRIjrZPX/0s6KJr8XvbQskM+tny3RQxyI2jPUG0upzgj0w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1sBSmmCoLSGkQXjTG3B3v1LIX/FN9klYzV3UzhCeZVk=;
- b=F01MeOJrGTZCOKXk73ag9OmSQJ5f3ialNVj8n8+fD4kkTo5DD2cMvG6XRQqN8pl7Wu+Kv6u+/njDCIqOuxQE1kJsrVD7si/dKtraZnxSB9Vn92EmC7aI9vuV9wDass09vmpSrL5wVSa8WL08WHcHKr9nTYPhyK9yZqOb4juWui2exDxvxRBoI8DDjzbUjX1GvHHMn1WWDgDmIptGlLyDW+cgnE/MklxiAI+vj43M1wvbttHusa0Ju8pTXBj2X2OtA+HMOd7d2jiZLYY9sr5dX4aZEpJNplSJ7NETwHYgmldJtKb/3l3yKlZBVvwz0Hz9xwFFDkawfuu25nDWHYTBuQ==
+ bh=mYM5Sg+NYFAqJmyUyoJVrtE2SIeQ3yKJ4yO6kvBsCe4=;
+ b=VwUl/DhUFdfGdDJk8mKCYy+kjQE6Naoks3E5d2hLFMfxezbsFt3sm6bKaBSlLQWZkfn16lbxYFR85+MSyOSIsGj/9xtcdGmtEfS0pr1EvhH+K0UucV2h6r6i977ATlbIg62kNnOH+AXe3axK2bCHVv7Q3aKmw2kCoW7sXkONvgl1UASAKo9jtNvEE0lH9iTxwfuahxsDFyrM6tAC7cGGoaVuDzaNoPISxIjUNj/Akr4p4eE9eZWIuDfihluycxGn9tAJLjIyvUlhQHan69Nyb75wg3p7DK8t16p6KOxHono1uT71EWhAn6MuPqurBUg56k2Kkv/g/73iGm54rUjfWw==
 Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from SA1PR12MB5637.namprd12.prod.outlook.com (2603:10b6:806:228::13)
  by LV3PR12MB9188.namprd12.prod.outlook.com (2603:10b6:408:19b::15) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.13; Tue, 17 Nov
- 2026 09:52:01 +0000
+ 2026 09:54:07 +0000
 Received: from SA1PR12MB5637.namprd12.prod.outlook.com
  ([fe80::29a8:4659:6935:73f7]) by SA1PR12MB5637.namprd12.prod.outlook.com
  ([fe80::29a8:4659:6935:73f7%3]) with mapi id 15.21.0615.013; Tue, 17 Nov 2026
- 09:52:01 +0000
-Message-ID: <c2f8ef2e-cf8b-4b8e-8b13-819d4c2b68ed@nvidia.com>
-Date: Tue, 17 Nov 2026 15:21:51 +0530
+ 09:54:07 +0000
+Message-ID: <7c763c61-3516-4485-af19-f8a1af0a25dc@nvidia.com>
+Date: Tue, 17 Nov 2026 15:23:57 +0530
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/9] cpufreq: tegra194: add Tegra264 support
+Subject: Re: [PATCH 1/9] cpufreq: tegra194: move MPIDR read to CPU hotplug
+ callback
 To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, rafael@kernel.org,
  viresh.kumar@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
  conor+dt@kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
@@ -83,14 +84,15 @@ To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, rafael@kernel.org,
  linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 Cc: bbasu@nvidia.com
 References: <20261104181521.3003578-1-sumitg@nvidia.com>
- <904f7ac1-d488-4700-8839-ae981b04a71b@oss.qualcomm.com>
+ <20261104181521.3003578-2-sumitg@nvidia.com>
+ <b3125fa1-6a7a-4f87-a7fa-64c42f6b98e2@oss.qualcomm.com>
 Content-Language: en-US
 From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <904f7ac1-d488-4700-8839-ae981b04a71b@oss.qualcomm.com>
+In-Reply-To: <b3125fa1-6a7a-4f87-a7fa-64c42f6b98e2@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: PN4P287CA0118.INDP287.PROD.OUTLOOK.COM
- (2603:1096:c01:2b0::7) To SA1PR12MB5637.namprd12.prod.outlook.com
+X-ClientProxiedBy: PN3PR01CA0091.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:9b::20) To SA1PR12MB5637.namprd12.prod.outlook.com
  (2603:10b6:806:228::13)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -103,166 +105,224 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: SA1PR12MB5637:EE_|LV3PR12MB9188:EE_
-X-MS-Office365-Filtering-Correlation-Id: a3aa9d42-283a-43c6-7eae-08df44906d75
+X-MS-Office365-Filtering-Correlation-Id: 1274599d-df1f-40c6-da3d-08df4490b830
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|921020|261102123227099003|10067099003|11063799006|4143699003|56012099006|261021123027099003|261021121427099003|261026140227099003|261026121527099003|261022105027099003|261022075727099003|261028144727099003|261009221227099003|261009223027099003|22082099003|18002099003;
+	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|921020|261102123227099003|10067099003|11063799006|4143699003|56012099006|261021123027099003|261021121427099003|261026140227099003|261026121527099003|261022105027099003|261022075727099003|261028144727099003|261009223027099003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	rYqRxWy99zRRamxj8wv3+yz19sU7KUG8EBvFSTeVZwN9hqsNj4a1+Ybfjqz7s91+C+dAu7NqTSJXP5cFubAx2UvQeabaW71WCXswIyW4wWFcc5ZdoPWPDsIa9eopk3lnAea5vlK3YBlk9naPKgkf51WGyqfMjJt27fZYXwv4+yheH3rfY3jysbwSiQucilrGY/G6ehFyU7ORi7wcvrMq6tx1U6U3bTNuCXGO6M/YjKXgDc9wRdohhbWbL3LAmS2pOyzyQzgWqh3JHJrFlPeFfAucGk9mh4M6RUEBxLQjdJw3PdJt0+A5Jj1X0omUHm232dtnmjQRyRwP8ojRqsRhhcQ7L/+TXQpvYV57PIxHKg6FG9hu1VLnCC+eXBXEfqaRhxN7O01dNUKNA1l9upXnnZlmwdYlso60bxSJjiuptSkT9GmNkxatilX2fJUshASjVC6Oe2UouP7j03xP3lRdoj2rb2VNBW3msfd7q1ntQzTBqBZ49t3U+YHcpbd6i5uQ78FSAsreWDXyhgD6KlhKrD8OvMhXD+HhdhrFCc80lWVt7XQOA2+sVXXt8hD7i7vfPAQJNyUa+P8X4wfrwcCuEnziQoKn6WRR9IP4Z4+ew4vtoFNBlKHqJYwIehjC144EEvausYFfXOVHsBxfrCLBcYZPDmPOBVCzso5pLU8eRJh2OUADi40U1v0XcFQp2cOuhUdpla7yA57VlcQTm9iurA==
+	T5hu/y3GTnkWy828zcnTujBG8oxBKbHdxhSrI7YPRhIycRv7xdMJ5Um/K3H7oOYcDtWmgX19YzJygBaemOlEz5f1CVD0AgznePOCNa/7FqeAkErha6xhQQKZ5YBDJQs04WhZtngI4TF/ZpLOoKY4e3f9ny0rlctM7GgQxSuA0ijuasU2aLgGizn5mTG69ycZ+FuoNk597+gfOSUtITeI+gAAYwTdXvAJK2QhFkXCKqAyGQrXStrnGKBh7YiTr2f4yTkj2z4+ewTkNOjWhX9r1h7ihc4imk9sheh8UeApgZakJoUrBKJcjjMqrDr7IWXGJut+zt2GXY7HeKoMVUhrZfyLiQUpyrmFv/DXpK8qx2OXe32gJWSNg9Vlu6xnwaWIhZurM2Q4hdEb7JojUTagxscEhxaC67AhQYDJsXgzNkb7bhCY4LZX8Pl77lcEUhHJAo7y2mi8t/lyFBoDXMTH0WDZiRSaVUXSmPoyxqXgA07APsrkwg72xF+dzW9qUg49f3I8HjUKQFo0h7KsAO1QT6uc8SpTW7SD+a6Re8gzguVtKm8AmzJGW0tkkmWklIn0a1tKt1J3CIbf8fFXfWVAJTIhG0CAZxFf2paBDiY9+KLLWGhHkaIFy5oLhJHK4cWX+SnKiovVX+ztYhMADIEA4NzMoX7dsjl102XH1ePzThWOzPx3vVawhQOW6Sl2xeRuz4Fv1MMwKQ1eyme2iRdx3Q==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB5637.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(921020)(261102123227099003)(10067099003)(11063799006)(4143699003)(56012099006)(261021123027099003)(261021121427099003)(261026140227099003)(261026121527099003)(261022105027099003)(261022075727099003)(261028144727099003)(261009221227099003)(261009223027099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB5637.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(921020)(261102123227099003)(10067099003)(11063799006)(4143699003)(56012099006)(261021123027099003)(261021121427099003)(261026140227099003)(261026121527099003)(261022105027099003)(261022075727099003)(261028144727099003)(261009223027099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?TVdrbUROcitraGdWR29HQ3diUjFQa01ield6eE5xS1ExY21OK3hJYUQ0U0Zv?=
- =?utf-8?B?ZG1JTExSKzVLcFVNemhtcXU2TldSWHFKdzRsNFZ1SHJLSFBrdEhaNHFhY3pJ?=
- =?utf-8?B?eGFDOXFhUDBSMFVHREg2YnMvNjY5enlnVE1Gd3A3TVoxM1FKSmFRVTRmZ0Yr?=
- =?utf-8?B?djI1ckdwaWNzWE04bWJyekJoNmY5OThOcXFnWjBCV0NzME4rSWpBU0lrSGFK?=
- =?utf-8?B?TDRwdGxSZEh5K3h6T2NSbjZxeXI5bFJHMXdSOUpzWCtSRE5xZklPZEZCNDU4?=
- =?utf-8?B?RFczYXUza0h4QWpVZkh6Wko3c0E1NUUweWhyd1BVMDVWYUNlODcvelJlSU1C?=
- =?utf-8?B?MHlZSlhTRmZNSDkyNHNLWDRIbUpmWXYxOG9nNy9CK2x5VVZNQzJkZGZGaXhD?=
- =?utf-8?B?azB2REpGQlBVbVh2NDNZK1BpL2pFcHZ2clQwMysvSzBQUFJkTTdoN0F5NFgv?=
- =?utf-8?B?T0xSMzZZWEVrcWlDZVJIeUMxQ1lVd1Bjd1k1QS9uRC9zaG43VmZkN1Q4VkIz?=
- =?utf-8?B?VHVSTHBpN3dJcDZzQXJBbGRKdVUyTkRiNVRzOVZmQnJSQ21UWkRkU21KQjdL?=
- =?utf-8?B?YU9nRW5SMmhSbWR4Ykc4VWcxYytuVDBkNGw3TTh2RW15U0lrVjZucGFWeTJE?=
- =?utf-8?B?alVyWC9vU0VMck56THlLNmF2alRzQksvOEEvU3FtY3pENXVUK3RZUm9RVExT?=
- =?utf-8?B?UGptcno2RnllcmZlcmkwTWRoeGFEWVhXZFgvVkNJUno4cFpCd2RqSE9UN29S?=
- =?utf-8?B?K1FlU0Flb3crZHFNMW02RHBCblZ3RVBLVjRDRjVkbTlEN2NvSVRJRkVGU1Rp?=
- =?utf-8?B?eDB2d3pRTTJvT3R0MmUyL2JBSm5na2hyS2swOTFOZDVZbEhPaFpkRG80V3pB?=
- =?utf-8?B?R1hoMG91cTVGKzBQNlhFdXJSS0RRdHI5VDB3NVpWU095SnR5OVVLSS9MWlRq?=
- =?utf-8?B?WVd4OFlZdDRpdGRoTXg0cUxmYmIvRGJKNXpWM2EwNjR3MlpCbSsyb1hDOHll?=
- =?utf-8?B?eGwrNXBQZEpqR3FOTEVJU1p4NHFNQ2hUUkt4UDY5ajk3RkJUNU05dHh3WHZi?=
- =?utf-8?B?ZVlHUzJ5LzNwc1FNWWhGd2NoOTVwdXhWS3Nhdy9iT3AwNEJWUTJVaEFSUXRa?=
- =?utf-8?B?NUhmR1A1SWFrRHM1L0MyLzNMejZjdVB1dmZpNER5NCt0MEs3SlJuQnRldHYx?=
- =?utf-8?B?YzVaL2hKL1JETm9ia3VwYjB4U2h5L0VEMzQwZld5OFRwem8xRGZQcGwrN3hR?=
- =?utf-8?B?ekxFWmVxZXZTbk1GYUpPbENYRGQzQ2hOVzM5Qmpab1FXMUs1QkhMbXhQdXo2?=
- =?utf-8?B?RUIyL3dPS2x0MEtCUThNbnBhbnlKdVV5NE53dDB1T0d3MFRacU1hTUU0Rm15?=
- =?utf-8?B?Zy9KSG9obWRmMVpEMW4zT09nTkQ4Zk9Va3N1aWdYamNZaFlhalhacWkrT2Nn?=
- =?utf-8?B?YVVub2dZWjlqaVRKS1FEMm1iTlpTWUc4blJKaTRCaTh4bkE0QXhKQXkxVWlW?=
- =?utf-8?B?N2pIV1VjSzNubUJ2dHRQaVhQaDBUa0RCcDFmbEs1WktENEQ5NzVuNHh4TzlX?=
- =?utf-8?B?R2YwV3FPN25OcFhKUG52bUFKUjQ1bDI3Z0Q3NkJvWjRBczFHeS85QklUM2RG?=
- =?utf-8?B?aVVSaWd2M3BoMFJPeFJMVDhwOGJIWnYwNTJqSzdFZVlBWjdTZ1FTdHV4SHdM?=
- =?utf-8?B?Uk1NamJKUzdLNkZ4YnFiQ0xpM3RpbXppYjB0aS83VGF2STY0RTYrRWUwMFM1?=
- =?utf-8?B?SDNuYWx2L003OUN2NFhZbHA4RmhNZGdaa0V4OXlDbXFrbFB5ZjRET2cyeVZq?=
- =?utf-8?B?Rjg4RHBLbTByNzlmMEJRQVpCb1Q5Rlo4d2MxT0JoTmJKbmdiOW93SkxWNHIv?=
- =?utf-8?B?ZTZyRTd4ZCtZRXFraE55UTVoeHZ2SWRpbWh3bGo5RXN3MThkVUpNUjhuTGVE?=
- =?utf-8?B?QjZtYjdOMUkrdWxhbGhOcDI2enJoaFZZK3B4d21DSnZXSDc3RWIwb0dFTElp?=
- =?utf-8?B?QStuZlRpTERra0pFc3hFRFZNZUg3c2praDdZV3ZtREhGbnU1ckVNNlpKSWp1?=
- =?utf-8?B?SXg5SUhlS3NScnRnYVRTK3d6MlAvbHZwYkYvRGVmWW5JQVdvNW9QZWZNbjlB?=
- =?utf-8?B?UzgrWlplbUNPL2tKZTcxcVlMUjNqR1dmWGNsa3FYcCsycUh1b2kvMTY1Z2hh?=
- =?utf-8?B?MWp6a01YcU9LRzVkaHhDaUozdTd5MVYzYThJZVpXWndZcjVOWEJNUmdwSkdN?=
- =?utf-8?B?UlVoZ2JZdVhIVmZZM3dMdEpOcDRhY0lFdmdtZGp3NVVjZ1RRdmJTVWZYQVZV?=
- =?utf-8?B?K1ZCc2dWem43QXNIN2lvdXlJR1puZjdCZWNOM1Q3NS8zZ3dWNklGUT09?=
+	=?utf-8?B?bUVZejdsNGoyb0FVbTNiZkQwcncxSlhIQ212QzloMnYvV2VySHIzbWRkTzFC?=
+ =?utf-8?B?N1liMGtPcjdNcmx2SzdpTGFkcVRXenFmUk0wcHh4aExUNXpYdjF3Kzk1d3Vx?=
+ =?utf-8?B?UHFKZkN0Z2dVYTZoMTZkT0NMY0ZkUDZJMFc4KzJtNHhrZkVHWGRBc3YrMzU3?=
+ =?utf-8?B?cUJyajFzZVFCUmQ4a09ma293SUpEZitJTVc2WVUvTjJRN1hlLzJMSlJDbGRM?=
+ =?utf-8?B?bjVhNHBvVTBjalljWWw3QWplUWd1VGp4QWpaV2J1dVVRbEQ5eTZwdHJYeXV4?=
+ =?utf-8?B?c1dlN2FjY05aUW90elZtbTZBNjY3SWFEVGg1K1h4c2VrWFNONTcybDhDampk?=
+ =?utf-8?B?R1JzNUNwSXorSXFsS05vRmFDbmlheG5XL3cwUlJGVkxaYkpLYTRzTmk5a29G?=
+ =?utf-8?B?Y1Bobk8wc1lRRHRqMUF6SjhtT0RRZS9CZnRHREM0azVjeHV5clFmbGhIYW5s?=
+ =?utf-8?B?ZXBJSlFGSEs2b3p0UXc5OUxzMTlFOU9wUkNiVlJGSGxqNjJ0K1JZdWRQMDBD?=
+ =?utf-8?B?WG9vL3pHMXhncmhyRnE1QXZ5a1NDQit6OTYraVlZUUJoQzFMU1U2ME9iR0ZO?=
+ =?utf-8?B?SDJham5HdnBORGp4T2YySlFkOUJKRVgrRFI1ZUZZcTBTMFBjR1U3TFd6K1Ew?=
+ =?utf-8?B?VDMzRVdYSGdjUHZXZXpvQ1JMNEZ2OThXWFRYNStDRnpZYU0wMXgzSzNuWDJM?=
+ =?utf-8?B?VDBvTmRyUENmQVRpM3Q5V0w3YXhNK1Q4UjhFd2psTDhtMnRiVERtTGZmYzFr?=
+ =?utf-8?B?QVFDWG1EenhjL3lweFdaakJrY2hnVC8vY1phR29CWEgvK1dsRTYweVNDYnNT?=
+ =?utf-8?B?YVdZUVYxZEZNNWZCV1I0MGNQMWd5b3pNMWp1TzNwdDY3ZzdocWQ5b3RvazBV?=
+ =?utf-8?B?VW16c2Y5TS9zYkd1N29RbG8xKzlZZnhiQUVxSDQ2T1JvT2xZaVFweWM3NnlV?=
+ =?utf-8?B?ZnpoczVud0JLRGdzYzIvTlNsQWZqMU8wVExaUVdNZlAyb1FycjlZY3Q1WU9V?=
+ =?utf-8?B?OW81Wm1ZZldIbFcxWFlZd0xZWHRFNUF2R3hhOThwZWZXWDFKMnZIWmlHRDht?=
+ =?utf-8?B?dldLcDVZL2pkV1NOSkkxR25KdVlmaFM1bkhPNHRkWElKc2tOK0R2S2Z5azlY?=
+ =?utf-8?B?akRaMEsvdms0UWw3L3hndzYvTnFqd3ZIaHZaSXpKWmN1ck5OdzVWVkNrMWlX?=
+ =?utf-8?B?b0ZzRFRQelZTUUdSbXIydFZEdlJWcy9ubG1EUC9IME1FWVV2ODhmS0ZkRkNl?=
+ =?utf-8?B?ZklEaC9zeWREUmM4RWM3aTFKd1NYdWxsUnZZVWVJQjBpK1BHNnNxRU1qeWt4?=
+ =?utf-8?B?bTJVUnM2em5BSW9xbDQyOFV5YzU5ekc2NnY0TEtJbzI3aS9aY1pkcEk2dnd4?=
+ =?utf-8?B?dG5mK0pyUUFiTjRjcURjTlg4M2c0cDlCTzQ3a0cyWlF0MW5TL0lIT00wK0h6?=
+ =?utf-8?B?WnQxRUhZRG1WME43dWE0aEIrekVTWEoyRzY5V1VoQ1JhdXdsT1pzbE1OQTFM?=
+ =?utf-8?B?YkdUTWgwWXhPdlpJN0RjSjVzVDJqanR2cXhoZXlVTkszdmpCallMK3BIK3Bk?=
+ =?utf-8?B?c3JxcEg4bXBZN3R3dnhDeU5aYWdJdE1pVEN5RkNaS3MzV0ZwWkREazZGaTR5?=
+ =?utf-8?B?d3MxNHhvMGRRa09pWnlCZ2VSc29XN3g1NmRFRzJMSlZVMUp2NlZXM0JrYTRS?=
+ =?utf-8?B?Ym1PL3JaMlYwZ01XUnVxTG9VdkR4MC82T1hkZ2JtOFBsWThVRnhWc3FNRGdD?=
+ =?utf-8?B?dWMwS3VkU2tGQWVVV0NqSVBKTXFvZ2hUZlVwaHR0MkhpelZ0VmJhMlZmRzNQ?=
+ =?utf-8?B?RFlnZTRBMFVobFM4a3NLUzhOUGhBWUM0ck50SXNiVVIyTlFVeXc1Vi9TQm5D?=
+ =?utf-8?B?YkdkOEtlcldPT0U0bU91MG9xRnJ5NnNheEVhVFpLYVcydVBXWGxoNmV4QzFl?=
+ =?utf-8?B?aHhqWkttTXZXcllUd0p2ZVcxOXp3SkhadnFiam1COVhlcnZKY2FlRUNBbS9m?=
+ =?utf-8?B?ZDJ3cUJ2OW1kczJSYkNBTmxrNFV1UFpNYlVKOG82ZGVmQjdRVW1zWkpTWFpj?=
+ =?utf-8?B?V2RlZmMzZllhcUlDTzBUUHZ0VjA2T1ZXYmJqRFdQVWJqZmx4dm4xNWlHYlQr?=
+ =?utf-8?B?Vmk4Vy9vc3hMMm4yaEppQnU1SEZZMlhSUFRMd1paZ3VTUmwwNlVVMkV1VDU4?=
+ =?utf-8?B?WXRDeWhwbFpVQk0zQUV3OHEyU045dFY0aTQwNGI0ZGtnSWMvaFlzK2ttTHlp?=
+ =?utf-8?B?a3p1ZzY0KzVFazBFU1JuMThnQU5ZNkFyYjhUKzJHOHBMZHYrU3JrODY2NHhj?=
+ =?utf-8?Q?3Q2sAWV5Hxm3B5hfQO?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a3aa9d42-283a-43c6-7eae-08df44906d75
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1274599d-df1f-40c6-da3d-08df4490b830
 X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB5637.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 09:52:01.6426
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 09:54:06.9249
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Coy/NLj6bd1Lr/X889EHvWIWWHqTO4WlfMB2eX+FW0cmR4S0FpCcmydbXmqlvZJAaHy3xyM1MrDS0tgQtRswRw==
+X-MS-Exchange-CrossTenant-UserPrincipalName: TYc4HJcQ5W3QRrYTKDW2tAtzZSkJXYYTrlA9fvGNnO4gfIh3hp7ZdvHJQ4kESiPIRDNDvc88qSZjKrFpOdDuPQ==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9188
 
-Hi Zhongqiu,
-
-Thank you for the review.
 
 
-On 13/11/26 11:56, Zhongqiu Han wrote:
+On 13/11/26 11:57, Zhongqiu Han wrote:
 > External email: Use caution opening links or attachments
 > 
 > 
-> Hi Sumit,
-> 
 > On 11/5/2026 2:15 AM, Sumit Gupta wrote:
->> This series adds cpufreq support for Tegra264, which joins the SoCs
->> already supported by the tegra194-cpufreq driver.
+>> At probe the driver reads the MPIDR of every possible CPU with
+>> smp_call_function_single(). For a CPU that is offline at boot, the call
+>> fails and the error is ignored, so the CPU's core and cluster IDs come
+>> from an uninitialised variable.
 >>
->> Tegra264 keeps the existing model, where BPMP provides the NDIV limits.
->> The driver derives the current frequency from the core clock and
->> reference counters.
+>> Read MPIDR from a CPU-hotplug online callback instead, which runs on the
+>> target CPU and caches its core and cluster IDs and MMIO scratch address.
+>> This covers CPUs online at probe and CPUs onlined later.
 >>
->> The main differences are:
->>   - Frequency read: through system registers, as on Tegra194, but from
->>     the 64-bit architected AMU counters. The reference counter ticks at
->>     the system counter rate (CNTFRQ).
+>> The check that the SoC data covers all CPUs moves to probe, against
+>> nr_cpu_ids. A CPU whose MPIDR does not fit the SoC data gets no scratch
+>> address, and its NDIV access is skipped.
 >>
->>   - Frequency request: through MMIO, as on Tegra234. The driver writes
->>     NDIV to a core_freq_req register in the CCPLEX register space. Each
->>     register controls a cluster-clock unit shared by two single-CPU
->>     clusters, so both CPUs form one cpufreq policy.
+>> Fixes: 6b121b4cf7e1 ("cpufreq: tegra194: save CPU data to avoid 
+>> repeated SMP calls")
+>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>> ---
+>>   drivers/cpufreq/tegra194-cpufreq.c | 114 ++++++++++++++++++++---------
+>>   1 file changed, 79 insertions(+), 35 deletions(-)
 >>
->> The patches fall into four groups:
->>   - Fix (patch 1): read each CPU's MPIDR from a CPU-hotplug callback
->>     instead of at probe. A CPU that is offline at probe then also gets
->>     valid cluster and core IDs.
+>> diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/ 
+>> tegra194-cpufreq.c
+>> index 1eb96e9f3310..be81ffd23edd 100644
+>> --- a/drivers/cpufreq/tegra194-cpufreq.c
+>> +++ b/drivers/cpufreq/tegra194-cpufreq.c
+>> @@ -5,6 +5,7 @@
 >>
->>   - Preparation (patches 2 to 5): cleanups, mostly of the counter code,
->>     to make room for a 64-bit counter and for an MMIO mapping without
->>     ACTMON counters.
+>>   #include <linux/cpu.h>
+>>   #include <linux/cpufreq.h>
+>> +#include <linux/cpuhotplug.h>
+>>   #include <linux/dma-mapping.h>
+>>   #include <linux/module.h>
+>>   #include <linux/of.h>
+>> @@ -13,7 +14,7 @@
+>>   #include <linux/slab.h>
+>>   #include <linux/units.h>
 >>
->>   - Improvement (patches 6 and 7): group CPUs by the generic
->>     "performance-domains" property, which cluster-based grouping cannot
->>     express on Tegra264. Device trees without it keep the existing
->>     grouping.
+>> -#include <asm/smp_plat.h>
+>> +#include <asm/cputype.h>
 >>
->>   - Tegra264 support (patches 8 and 9): the driver support, followed by
->>     the device tree changes it relies on.
+>>   #include <soc/tegra/bpmp.h>
+>>   #include <soc/tegra/bpmp-abi.h>
+>> @@ -77,6 +78,8 @@ struct tegra194_cpufreq_data {
+>>       const struct tegra_cpufreq_soc *soc;
+>>       bool icc_dram_bw_scaling;
+>>       struct tegra_cpu_data *cpu_data;
+>> +     enum cpuhp_state cpuhp_state;
+>> +     struct hlist_node cpuhp_node;
+>>   };
 >>
->> Patch 9 depends on "arm64: tegra: Fix address translation on Tegra264"
->> from Thierry's series [1]. Without it, the ccplex@30000000 node does not
->> translate to the CCPLEX registers.
+>>   static struct workqueue_struct *read_counters_wq;
+>> @@ -113,7 +116,7 @@ static void tegra234_get_cpu_cluster_id(u32 cpu, 
+>> u32 *cpuid, u32 *clusterid)
+>>   {
+>>       u64 mpidr;
 >>
+>> -     smp_call_function_single(cpu, tegra_get_cpu_mpidr, &mpidr, true);
+>> +     tegra_get_cpu_mpidr(&mpidr);
+>>
+>>       if (cpuid)
+>>               *cpuid = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+>> @@ -121,11 +124,44 @@ static void tegra234_get_cpu_cluster_id(u32 cpu, 
+>> u32 *cpuid, u32 *clusterid)
+>>               *clusterid = MPIDR_AFFINITY_LEVEL(mpidr, 2);
+>>   }
+>>
+>> +static int tegra_cpufreq_cpu_online(unsigned int cpu, struct 
+>> hlist_node *node)
+>> +{
+>> +     struct tegra194_cpufreq_data *data;
+>> +     u32 cpuid, clusterid;
+>> +
+>> +     data = hlist_entry(node, struct tegra194_cpufreq_data, cpuhp_node);
+>> +
+>> +     data->soc->ops->get_cpu_cluster_id(cpu, &cpuid, &clusterid);
+>> +
+>> +     data->cpu_data[cpu].cpuid = cpuid;
+>> +     data->cpu_data[cpu].clusterid = clusterid;
+>> +
+>> +     /* Derive per-core register address only when ccplex MMIO is 
+>> mapped. */
+>> +     if (data->regs) {
+>> +             if (clusterid >= data->soc->num_clusters ||
+>> +                 cpuid >= data->soc->maxcpus_per_cluster) {
+>> +                     pr_warn_once("cpufreq: cpu%u: bad MPIDR (cluster 
+>> %u, core %u)\n",
+>> +                                  cpu, clusterid, cpuid);
+>> +             } else {
+>> +                     u32 index = clusterid * data->soc- 
+>> >maxcpus_per_cluster + cpuid;
+>> +
+>> +                     data->cpu_data[cpu].freq_core_reg =
+>> +                             SCRATCH_FREQ_CORE_REG(data, index);
+>> +             }
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>>   static int tegra234_get_cpu_ndiv(u32 cpu, u32 cpuid, u32 clusterid, 
+>> u64 *ndiv)
+>>   {
+>>       struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
+>> +     void __iomem *reg = data->cpu_data[cpu].freq_core_reg;
+>> +
+>> +     if (!reg)
+>> +             return -EINVAL;
+>>
+>> -     *ndiv = readl(data->cpu_data[cpu].freq_core_reg) & NDIV_MASK;
+>> +     *ndiv = readl(reg) & NDIV_MASK;
+>>
+>>       return 0;
+>>   }
+>> @@ -135,8 +171,12 @@ static void tegra234_set_cpu_ndiv(struct 
+>> cpufreq_policy *policy, u64 ndiv)
+>>       struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
+>>       u32 cpu;
+>>
+>> -     for_each_cpu(cpu, policy->cpus)
+>> -             writel(ndiv, data->cpu_data[cpu].freq_core_reg);
+>> +     for_each_cpu(cpu, policy->cpus) {
+>> +             void __iomem *reg = data->cpu_data[cpu].freq_core_reg;
+>> +
+>> +             if (reg)
+>> +                     writel(ndiv, reg);
+>> +     }
+>>   }
+>>
+>>   /*
+>> @@ -208,7 +248,7 @@ static void tegra194_get_cpu_cluster_id(u32 cpu, 
+>> u32 *cpuid, u32 *clusterid)
+>>   {
+>>       u64 mpidr;
+>>
+>> -     smp_call_function_single(cpu, tegra_get_cpu_mpidr, &mpidr, true);
+>> +     tegra_get_cpu_mpidr(&mpidr);
 > 
-> I have some inline comments. Please take a look.
+> .get_cpu_cluster_id() now reads the local MPIDR, so the cpu argument is
+> ignored. Could it be dropped?
 > 
-> Sashiko also has some feedback that may be worth checking:
-> 
-> https://sashiko.dev/#/patchset/20261104181521.3003578-1-sumitg%40nvidia.com
-> 
-
-I will address the findings on patches 1 and 7 in v2, with checks in
-tegra194_get_speed(). The issue in patch 9 comes from applying it
-without its dependency.
-
-> 
-> P1 and P8 don't apply on v7.4-rc2 / linux-next due to 4dd10fbbeb9c
-> (devm_kmalloc_obj conversion). Could you rebase?
-> 
-
-Will do in v2.
-
-Thanks,
-Sumit
-
-> 
->>
->> Sumit Gupta (9):
->>    cpufreq: tegra194: move MPIDR read to CPU hotplug callback
->>    cpufreq: tegra194: remove duplicate counter sampling loops
->>    cpufreq: tegra194: add tegra_counter_delta helper
->>    cpufreq: tegra194: add per-SoC counter mask
->>    cpufreq: tegra194: split MMIO mapping from ACTMON offset
->>    dt-bindings: arm: nvidia: Document the Tegra264 CCPLEX cluster
->>    cpufreq: tegra194: derive frequency domain from device tree
->>    cpufreq: tegra194: Add support for Tegra264
->>    arm64: tegra: Add CCPLEX cluster node for Tegra264
->>
->>   .../tegra/nvidia,tegra-ccplex-cluster.yaml    |  27 +-
->>   arch/arm64/boot/dts/nvidia/tegra264.dtsi      |  21 +
->>   drivers/cpufreq/Kconfig.arm                   |   4 +-
->>   drivers/cpufreq/tegra194-cpufreq.c            | 422 +++++++++++++-----
->>   4 files changed, 357 insertions(+), 117 deletions(-)
->>
->> [1] https://lore.kernel.org/linux-tegra/20261030141101.845044-1- 
->> thierry.reding@kernel.org/
->>
 > 
 > 
 > -- 
 > Thx and BRs,
 > Zhongqiu Han
-> 
+
+Yes, will drop it in v2.
+
+Thanks,
+Sumit
+
 
