@@ -1,114 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.62
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794930716;
-	b=J0xdr+pWS5XUkbvTlRK2pL3kj//XCygJGcoNHGjW7kFdqIktXrltBamKabw3K3iUUHLP
-	 AFGkfvRJ8eDmrpy4ETQINuK4GqXB2XIMdj2wMS7e0pyUdFf++luwmuYgmx1qmQq4bS5cd
-	 HRDqD4QCFBrXV0QX+sLg0SfQPU2bu9du+20huXBr8TaA0rdyyHaI+ejLDGrpTe0fIpHq+
-	 EUtK7MJrx5tirnhJ/Ejhhj/EIZhJoe5C/7qFVTDthoGe+VfrtiUl/EL8siAVuf6xVfnmR
-	 btAd7V/jTxy4Z/Df1M0ElwKw/J1lOEXcXPk9hkQr/Qz3pphKBX6z/uNQP+/L5srM5ug==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794930716;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:
-	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
-	 Received:Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:
-	 In-Reply-To:References:MIME-Version:X-NVConfidentiality:
-	 Content-Transfer-Encoding:Content-Type:X-NV-OnPremToCloud:
-	 X-EOPAttributedMessage:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=DsWwyPG1QEuF9oe+jUl9x2XNEiVgvtmUUWP8R9ivLD0=;
-	b=KH7JuRmcr+E7UX45Pk9o3pFgxaYDbW8bG9ZgvLuZvIn55StGKAtYb/K5WEqAJoZCJvl1
-	 fSlX5O5iIQ7CcEuShmoPYhrh5vL21fKIKJzbfMfFjPJILRcax6cgL5pn5EQksmyrX3JTf
-	 OA9yE56fFiWBvDHMnfYDEeEP6YnoRLG4OuuwvMKLD5LSsomS/W+5hzVho7q2UzdHlCHAd
-	 lxFEIKpOlY9m3BebxhKc1NYZ2I2ClqCh8sVF+kMujEC4msDrTuzpGF35LtpghySEYSll0
-	 PxYtCOat7g5oFDE6VPj87bNKGdyuyg9fP8Tq0Hr9JgoS+p+1jP9vlxf9Zq6BuOydRrw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=nvidia.com;
-	spf=fail smtp.mailfrom=nvidia.com;
-	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=aOX74UEP;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.62
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010062.outbound.protection.outlook.com [52.101.193.62])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.13
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794930803;
+	b=XpY6M+nBYXnJ+aVpbaxWes/0kkJCFAzcTjmFIhxYWMjeKaTPKPNF8VtFitcD6svT34SN
+	 dYKdwAUEebyzVxH4AnC1x5ZfEzX4G6WAVgLxyL+N0lKZDwzO3Cdmumtdig7o4BmvzAFk0
+	 6/hBN4aA7usVPYgGSpwoRviCPc5ZaYkI/jtPXXCcezy0VbqKpbffYupEiMbL70jvD7M6Y
+	 7gUjDrb8rMkxPxW9t0WzRfiBdonxwU2EocQfHndrVplIJjwfHWp5Np08GsknmWoirAzbx
+	 RPuaXvpMWTcjWxVTmzLFMaBa60396TzHEvOouo3tcd3S8tmC97o/yrc/Vq6xbfnMDiA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794930803;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Message-ID:Subject:
+	 From:To:Cc:Date:In-Reply-To:References:Content-Type:
+	 Content-Transfer-Encoding:User-Agent:MIME-Version;
+	bh=YoGfLQzYye6iX4AGyxZoDCy4EyUcynD1nqduXP0L6nc=;
+	b=5bAwUkFJ/2kZI7V/GMtFTPlhk/BmeRHOdk+V0k9sIXGbaCe/oAeapo0L+l56TPi3B2zW
+	 s8MRhBixtjQ7S2hkFZIg9a5i7ezaTTc82bCMBbBg+wn1eN0VjP0VDFWccBNGDtaseNHa6
+	 /RZYhLTVkEXHrsQe/753mZ2Gxoh7JjnHO9QF06ABO06m0yhRYhFnTjJ5FZplYYUFOYMjP
+	 SEv8ju8JDmI/l/l4R+kU8xnEr5TN8+BjcfuD8g7qCHxhuFZszOdDmoq3WnGnrrcb0B7qw
+	 H8FmZIbsiPRTTrwsymD7v+xk9BhIK23gDOul+oj9uiPIxL7Eo7Pxjj7ZgIUUl+V1pXA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b="YbDSVPw/";
+	arc=none smtp.remote-ip=192.198.163.13
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56467606A330;
-	Tue, 17 Nov 2026 15:51:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 56467606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 007E2606A335;
+	Tue, 17 Nov 2026 15:53:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 007E2606A335
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=aOX74UEP
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=TztJbb99vnHT75T0xWJWT21KsHpI6atEr3oQCe0vRFzitZiU2VxLvq6q0FYC/vlSG2s3kOO1xKUpAsn25bgjww9AJKTZjSIQoVfppjyX+vnK5694wOdAiJO6po9Ex+vDyofVphRtveRbUwztsU0Ld/h4jNBzINsWiP66HydjbbV/IA7ycxTXGXtMGmgF0dbZFxrRYjJtRetcFkOuHOrXws7XbL0wT9AFUCuoC5lS3+3EK+F/9mMRRNAw6hwLszJ6eVEsLIBvSmPk3xkBKxzufsDdx3vUSW9JtMzK+7gGrjvw3HElvOAjEgjHhPZMynVFrTAPi0H+DbA5G3Fiirx5Dw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DsWwyPG1QEuF9oe+jUl9x2XNEiVgvtmUUWP8R9ivLD0=;
- b=ac/U9+ejQXhHLjzxetz/+eIRmjVO8nwmtdEvTPRnEOek/oEoCLoLfNhTu3JJkr5mCYBOe7hq4x9XVooW6toQYynOxrBmaWxwezeQUOCxR1ZALmrCMf1gYWWMPqTBi5f4K/2xxFlYv46hMavIBGUgYOXp3VOZjR3pB5ztgL8zxd4+Br2cYrtFdiWkuyJtuUfFOzujrJ40hCWxZrPui9ELcIZCfsIWJE/dmyetOB/MH4Q6J57tQiIZAAvoxcfvDDkVYMmRlQPKU96oCFhl/6K792Rno7mH6pigIFItSzbacc1DkE+A0Miuy4kSEl9qmnPrTN2+7Mp2CamEgRNxgEjFBw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DsWwyPG1QEuF9oe+jUl9x2XNEiVgvtmUUWP8R9ivLD0=;
- b=aOX74UEPAgIf4OW+5YwL6qY5/in1OD0/EnryIp8O3Ru4zHuA19FYnpdciCnNYwI1tv+pm7/AVC6lzm6dj/3uzEqotDxhv69ktBLI+BdpADi1I5etgmsk4i4j4HWW9aKdYc89SEXRJsbitTYtPHwTg4wtxFWt5b2wwF53rEoH+eVM9/TU7ULCUXdEyDdi2ZLM2jM7ehtNiEL6wnhOpHBxHmabYz9JbK6jgmyqtKswlLA9pkZ78Befqh+oRIIpBZCy8PzJV6vpN3VMg58l5YT0Zt7JnD206zRGQLPlG6Ot2a2LtnRpw4T/M5OK3ikF/8aSKMpF+7Kq5JSAg1Stupi/LQ==
-Received: from MN0PR03CA0027.namprd03.prod.outlook.com (2603:10b6:208:52f::33)
- by SA1PR12MB8987.namprd12.prod.outlook.com (2603:10b6:806:386::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.13; Tue, 17 Nov
- 2026 15:51:42 +0000
-Received: from BN6PEPF00000071.namprd03.prod.outlook.com
- (2603:10b6:208:52f:cafe::3d) by MN0PR03CA0027.outlook.office365.com
- (2603:10b6:208:52f::33) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.14 via Frontend Transport; Tue,
- 17 Nov 2026 15:51:42 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 216.228.117.160) smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.160) by
- BN6PEPF00000071.mail.protection.outlook.com (10.167.248.198) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.615.4 via Frontend Transport; Tue, 17 Nov 2026 15:51:42 +0000
-Received: from rnnvmail205.nvidia.com (10.129.68.10) by mail.nvidia.com
- (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.57; Tue, 17 Nov
- 2026 07:51:13 -0800
-Received: from rnnvmail205.nvidia.com (10.129.68.10) by rnnvmail205.nvidia.com
- (10.129.68.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Tue, 17 Nov
- 2026 07:51:13 -0800
-Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
- (10.129.68.10) with Microsoft SMTP Server id 15.2.2562.56 via Frontend
- Transport; Tue, 17 Nov 2026 07:51:09 -0800
-From: Sumit Gupta <sumitg@nvidia.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <robh@kernel.org>,
-	<krzk+dt@kernel.org>, <zhongqiu.han@oss.qualcomm.com>, <conor+dt@kernel.org>,
-	<treding@nvidia.com>, <jonathanh@nvidia.com>, <linux-pm@vger.kernel.org>,
-	<linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<devicetree@vger.kernel.org>
-CC: <bbasu@nvidia.com>, <sumitg@nvidia.com>
-Subject: [PATCH v2 9/9] arm64: tegra: Add CCPLEX cluster node for Tegra264
-Date: Tue, 17 Nov 2026 21:19:54 +0530
-Message-ID: <20261117154954.625126-10-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20261117154954.625126-1-sumitg@nvidia.com>
-References: <20261117154954.625126-1-sumitg@nvidia.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YbDSVPw/
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794930804; x=1826466804;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=YL8RJPhb8wIm8l/PgV/HcNdusxj7ZcxDNK3eX4ESV2g=;
+  b=YbDSVPw/rQ3dbIJWqbmUWfawK9+ZjUu6IX7hXWQi/Y2Z2ju90y7A2jpP
+   HjJhasnCImiOqQru5I/vycL5+pkhcrBxIFV6BdX7jDBJQcjZjViLjgYYU
+   Gm5kKg37XGZdUVvmb+KTCcAGs91OxL58H5Z3h/JHBFfyUivEYshsemTli
+   iqN7ohltLmDUKNmC37EZ/vANImOFnvuZGQ+rGbqDxuWMMMXooMZygV7hS
+   q/3hndXa4o7vexWkQM7wVM0ZyPJxDJ8fGgojFCvnomHv+QOJBxHcqJgmo
+   JDOwyAjU6nto9KASo0KRveLkELCZVSgtt40v9J3JHjQwWpacyG8M5/hSp
+   Q==;
+X-CSE-ConnectionGUID: 6e0lpRYWQJKkZxnpwafyCg==
+X-CSE-MsgGUID: y+fkXmUYQBi2/UxpqBlRSw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11969"; a="3696803"
+X-IronPort-AV: E=Sophos;i="6.27,218,1787036400"; 
+   d="scan'208";a="3696803"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Nov 2026 07:53:23 -0800
+X-CSE-ConnectionGUID: 8fPZtEuzR9KHf1veCipCiA==
+X-CSE-MsgGUID: zzPu/I4SQF6KT8Zrzsqd1Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,218,1787036400"; 
+   d="scan'208";a="9945580"
+Received: from aborzesz-mobl3.igk.intel.com ([10.237.140.67])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Nov 2026 07:53:19 -0800
+Message-ID: <a8a4b99f7f9c600035019f52a30681d4a7a9ca0b.camel@linux.intel.com>
+Subject: Re: [PATCH v1] ACPI: PM: Avoid initializing power management for
+ absent devices
+From: Alan Borzeszkowski <alan.borzeszkowski@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI
+	 <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI
+ <linux-pci@vger.kernel.org>,  Mika Westerberg <westeri@kernel.org>
+Date: Tue, 17 Nov 2026 16:53:16 +0100
+In-Reply-To: <6047463.DvuYhMxLoT@rafael.j.wysocki>
+References: <6047463.DvuYhMxLoT@rafael.j.wysocki>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-9 
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -118,180 +84,98 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN6PEPF00000071:EE_|SA1PR12MB8987:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8c8555b5-b165-42b1-1208-08df44c2ace7
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|23010399003|376014|36860700016|82310400026|1800799024|261028144727099003|261102123227099003|260925022911599003|260925021311599003|260925021911599003|261026140227099003|261021121427099003|56012099006|261022105027099003|261009223027099003|11063799006|261026121527099003|921020|10067099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	MwNdeRgYw2GM/aOqVUBoqUKG8ZmVDLNR84KryL+0TKxUv3n2ion+d2TNeflo/29aleMDmVyIkWzX4YbNX76uIlar53Xt0+meadeqp1WssfMYszpNPnX1LPMCFmezon9SpCVa1iazcXw0tmSHebsGj1cRiE136fEasl8hxGl3UKqDECeWiCQP0DNA0l5DxNWAf99gEiNSbbbkM1B8KLXj6T5cexfbYFrOXY1gv+0ivIEUtPqLNaqqMTiqlZ6HfPKD7n/G4nmkyoM/2888rutmllFzoMfqVoQuT7Ua+nN0n8pZoFYSg80OZFml6n/LRcyUlRRrqaqOGimvUuB2lt9/NCX8h0e0Mt9WzuHKaXSmWaYy2AVose5morniwxkyq1XGqUIEElrv9e5YkuQN1aemAiVQb9RSorZzMPlSHd3s2AGVzw8eWNs21Azrxd9mp5qGFNKw/cMyrA29HKQKXinn711dMQ/qAAHA1ZYXkTAOYRR9zNTWYCzz7Emh4DVs2KP2zKmOw4KvgGjGhR50KR5+VoPTyWZjUMjwu87yMbfKxgUC7JXNXcIrbzpG4wJZUX9TblxKOoukNrrv5leZ5Y5fxIWBckiBL9HIzQH3l5p0qzZBTQXLcBaL0R+6HFJ3dS+Wzg/ktEVx9FDrRQBDbla6OGFFHRGgKLOsEHGdH4DfCcxhnEqVbTBAc8p1vHcHTbxea+HKtFJR2B/6D+UuIKkDMzrraRgzM4vkfyOJ/FxKWOuewahKJeL8bW3VLKg2PHDI
-X-Forefront-Antispam-Report:
-	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(7416014)(23010399003)(376014)(36860700016)(82310400026)(1800799024)(261028144727099003)(261102123227099003)(260925022911599003)(260925021311599003)(260925021911599003)(261026140227099003)(261021121427099003)(56012099006)(261022105027099003)(261009223027099003)(11063799006)(261026121527099003)(921020)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	bL9tvUyTllkcG3B/lq5QchpHYZ93cnvg3NQoOVrf1rMIj/ItMUvc9+Hk5Rb8Hz9BFPIcyYwlxASh/5H7NLuMM4ccSEvW8KkA9FHm8Vv3Z8qnTKnMc6jLd/PR9gZ0PlY/OC2eQMfayKJvBl/nMifbAruwYox6nekBJo3HzgAt6CgQJND4tGDTKIysKWcLqjRkgEBxzzkUMMpY4NZOvNIOTts5HTKzz1sTHTOEl6pJIByaqX+IrWiOHuiTFw1YF+pwnj0ulBqOeLCu11X0rGEvYSnbu8u4Qoc1AshnywD7tyqADDThC+oCHvAvfSQisXhVeDxfCqU1xOzG6Zo8ir9Lt6tHKEkuugboaBuPn9Syj+TnwGJU6S7w2vkN9QrgqJWsGthU6WHELrbU9oUXsr9sqQul8n7tJun5c8J4NCYSZIzngvR3vW8zuDAkWc6sW8az
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 15:51:42.3384
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8c8555b5-b165-42b1-1208-08df44c2ace7
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN6PEPF00000071.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8987
 
-Add the CCPLEX cluster node under bus@8100000000. The cpufreq driver
-uses it to request CPU frequencies.
+On Tue, 2026-11-17 at 16:32 +0100, Rafael J. Wysocki wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+>=20
+> Commit 2f4ddf2bd1ba ("ACPI: scan: Stop calling acpi_bus_init_power()
+> early") removed a device presence check from acpi_bus_init_power()
+> which
+> in some cases causes power management to be initialized for an ACPI
+> device object and never used going forward.=C2=A0 That in turn may preven=
+t
+> power management from working as expected for other devices.
+>=20
+> Namely, if a given ACPI device object is not enabled according to its
+> _STA, find_child_checks() will return an error for it which will
+> prevent
+> it from being used as an ACPI companion for a PCI device.=C2=A0 Thus if
+> acpi_device_init_power() initializes power management for it and its
+> initial power state turns out to be different from D3cold, it may
+> stay
+> in that power state forever.=C2=A0 If it has power resources and they are
+> "on" during the initialization, they may be reference-counted and
+> never
+> turned off.=C2=A0 If they are shared with other devices, they will preven=
+t
+> power from going down after attempting to put the other devices into
+> low-power states.
+>=20
+> To prevent that from happening, restore the device presence check in
+> acpi_bus_init_power(), but also adjust find_child_checks() to return
+> an error for absent devices (instead of doing that for disabled
+> devices)
+> in accordance with acpi_bus_init_power() and the existing check in
+> acpi_bus_attach().
+>=20
+> Fixes: 2f4ddf2bd1ba ("ACPI: scan: Stop calling acpi_bus_init_power()
+> early")
+> Reported-by: Alan Borzeszkowski <alan.borzeszkowski@linux.intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 
-Add the generic "performance-domains" property to each CPU, referencing
-this node. The driver uses the domain index to group CPUs that share a
-clock and to select their core_freq_req register. Each cluster has one
-CPU and two clusters share a clock, so each domain holds two CPUs.
+Tested-by: Alan Borzeszkowski <alan.borzeszkowski@linux.intel.com>
 
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
----
- arch/arm64/boot/dts/nvidia/tegra264.dtsi | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/nvidia/tegra264.dtsi b/arch/arm64/boot/dts/nvidia/tegra264.dtsi
-index 5ab34cd09a3d..10ea51802e8c 100644
---- a/arch/arm64/boot/dts/nvidia/tegra264.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra264.dtsi
-@@ -3964,6 +3964,13 @@ i2c12: i2c@c6d0000 {
- 			status = "disabled";
- 		};
- 
-+		ccplex: ccplex@30000000 {
-+			compatible = "nvidia,tegra264-ccplex-cluster";
-+			reg = <0x00 0x30000000 0x0 0x00cf0000>;
-+			#performance-domain-cells = <1>;
-+			nvidia,bpmp = <&bpmp>;
-+		};
-+
- 		gic: interrupt-controller@46000000 {
- 			compatible = "arm,gic-v3";
- 			reg = <0x00 0x46000000 0x0 0x010000>, /* GICD */
-@@ -4384,6 +4391,7 @@ cpu0: cpu@0 {
- 			reg = <0x00000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 0>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4400,6 +4408,7 @@ cpu1: cpu@10000 {
- 			reg = <0x10000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 0>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4416,6 +4425,7 @@ cpu2: cpu@20000 {
- 			reg = <0x20000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 1>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4432,6 +4442,7 @@ cpu3: cpu@30000 {
- 			reg = <0x30000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 1>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4448,6 +4459,7 @@ cpu4: cpu@40000 {
- 			reg = <0x40000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 2>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4464,6 +4476,7 @@ cpu5: cpu@50000 {
- 			reg = <0x50000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 2>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4480,6 +4493,7 @@ cpu6: cpu@60000 {
- 			reg = <0x60000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 3>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4496,6 +4510,7 @@ cpu7: cpu@70000 {
- 			reg = <0x70000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 3>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4512,6 +4527,7 @@ cpu8: cpu@80000 {
- 			reg = <0x80000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 4>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4528,6 +4544,7 @@ cpu9: cpu@90000 {
- 			reg = <0x90000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 4>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4544,6 +4561,7 @@ cpu10: cpu@a0000 {
- 			reg = <0xa0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 5>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4560,6 +4578,7 @@ cpu11: cpu@b0000 {
- 			reg = <0xb0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 5>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4576,6 +4595,7 @@ cpu12: cpu@c0000 {
- 			reg = <0xc0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 6>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4592,6 +4612,7 @@ cpu13: cpu@d0000 {
- 			reg = <0xd0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 6>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
--- 
-2.34.1
-
+> =C2=A0drivers/acpi/device_pm.c |=C2=A0=C2=A0=C2=A0 3 +++
+> =C2=A0drivers/acpi/glue.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=
+=A0 8 ++------
+> =C2=A02 files changed, 5 insertions(+), 6 deletions(-)
+>=20
+> --- a/drivers/acpi/device_pm.c
+> +++ b/drivers/acpi/device_pm.c
+> @@ -360,6 +360,9 @@ int acpi_bus_init_power(struct acpi_devi
+> =C2=A0	if (device->power.state !=3D ACPI_STATE_UNKNOWN)
+> =C2=A0		return 0;
+> =C2=A0
+> +	if (!acpi_device_is_present(device))
+> +		return -ENXIO;
+> +
+> =C2=A0	/*
+> =C2=A0	 * The ACPI device power state can be only initialized
+> once.=C2=A0 If this
+> =C2=A0	 * fails, ACPI power management will not be used for the
+> device going
+> --- a/drivers/acpi/glue.c
+> +++ b/drivers/acpi/glue.c
+> @@ -109,14 +109,10 @@ static bool acpi_dev_has_children(struct
+> =C2=A0
+> =C2=A0static int find_child_checks(struct acpi_device *adev, bool
+> check_children)
+> =C2=A0{
+> -	unsigned long long sta;
+> -	acpi_status status;
+> -
+> =C2=A0	if (check_children && !acpi_dev_has_children(adev))
+> =C2=A0		return -ENODEV;
+> =C2=A0
+> -	status =3D acpi_evaluate_integer(adev->handle, "_STA", NULL,
+> &sta);
+> -	if (status =3D=3D AE_NOT_FOUND) {
+> +	if (!acpi_has_method(adev->handle, METHOD_NAME__STA)) {
+> =C2=A0		/*
+> =C2=A0		 * Special case: backlight device objects without
+> _STA are
+> =C2=A0		 * preferred to other objects with the same _ADR
+> value, because
+> @@ -128,7 +124,7 @@ static int find_child_checks(struct acpi
+> =C2=A0		return FIND_CHILD_MIN_SCORE;
+> =C2=A0	}
+> =C2=A0
+> -	if (ACPI_FAILURE(status) || !(sta &
+> ACPI_STA_DEVICE_ENABLED))
+> +	if (!acpi_device_is_present(adev))
+> =C2=A0		return -ENODEV;
+> =C2=A0
+> =C2=A0	/*
+>=20
+>=20
