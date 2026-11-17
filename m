@@ -1,99 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.46.55
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.85.68
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794909251;
-	b=cPKhgLVljiOU3gtkar47UdX2UNEMq7hlJp5f4Bdh92O3p66iVxFozm5kEOujTkmPeQ3l
-	 KXZjIsyit84h7INjqgOx5hQtPuol1CVkrZ2rmbdXg2LhxJpsIYsuZN2/xu9fe+3KPs0jh
-	 Gzi1J5h7xdaCAfmU1zqgSHW5Z3vI1MdQhfaAAz8lISA8x4P424p5pNEDBA3Gl9pmKw3od
-	 ZrlB+4RiJYiMbQ2ZQ5qtGZGEL1L2hOcFol/PalIHlCbE5/s9gnEW12PKfF6f2VBFoVxLy
-	 SKCIlAPliWMTdRtaxXb6yaAtwquMURJH9t1ikQFqX2IgLBkedvtj25x3TKLMML8Jo6g==
+	t=1794909842;
+	b=cOjo6Qg9vAnkn7CHskQ8/rGuJZphReE47f7ytgJSP0lBFKIJLFfO16fkzU7S0LxpFCng
+	 ejXrPyZqGOrSllj2kOVP1MJheipHUhtQcKxI2nnZZilRSj6ZTtp8+cyJIPX9y0FYskmn6
+	 4L1OzPnti0xcS5B/QcEKpGKZD3Tpjv0ff9SVVleQm+BOmQpyFfoSme2y0C6/Q4cCWoNgl
+	 jy0s2OZGQzcG5QiYFzSTQ6chMQsVVlBoVz9myt+AJQiQY3G7layZQvBHrFM3/rM8RCt09
+	 P2I4aXgO2mIKnYwxcKcUc4LILf9H4VEp+MHg0zKgEtg+RYI6c9yndJhsagHCWq0LJVg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794909251;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	a=rsa-sha256; c=relaxed/relaxed; t=1794909842;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:CC:
+	 References:Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-EOPAttributedMessage:
 	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
 	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
 	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
 	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
 	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
 	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
 	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
 	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=mYM5Sg+NYFAqJmyUyoJVrtE2SIeQ3yKJ4yO6kvBsCe4=;
-	b=lRdJ6gYcWD8OePSRB8XPTxuDG6uMNEKxxRLnZnhTWzdVdTGztKmSeg7pqfDhH7JUpwzi
-	 SZl4ZSnHa9tArT5y6r6Vj3twmeX9CLKvI/RzDJmMX77j54WjqDIZm7ggskD3s0xMgJZqV
-	 EhdkpP+uuZP0naYA0h0WrMQBOeAg8J9xUQhR6Qqy69glZvYn9E7JrxUHm3hj5TRLurior
-	 lpwo3Bxws2bFZVueTK1aNig3Mo2Tft/8NKVYPEGGYmlm4dul8BpbMeCmEDdKb9RRAwmLq
-	 ainl3dsu8Fl7Wm6RvyJkNLiwkubVHLwzav26V03KJvizdzAovg//3c1BVPdwuL3XQVw==
+	bh=++ahJLqdEH7XFNJD3D77OE35qkxrlUlaOHId4ZFMOJI=;
+	b=ixN+eGZpyN5DdHyU0BIJQZ0io9E1fGlkZpxkW4admBJPgGDdHVHbdc6mTl6KG9baPUhR
+	 uB9p7wbYkEStAXrchKe5t7H226bF8QBj3J0KMqZKhhCatOYcrBWriI03bliENaqwPMjcc
+	 SQ91QwfqW38vWL5WTdkw9PZg3ladjMoqvhVzoyLQ2ndO7qsCf+7jK/UWARW8ew78fZzTR
+	 dYPywRX11NkCL9Bp5fWGXquDfni2wGGF42bnW6ztdf8PgsdJwPG5onOBwS5ATyOk3ILJB
+	 aBBN+ePFj2shcpuMuvpbqoNM9dxZDfPQbJK5pPTHyPA+5Lk3A0Lel+YCfDab6idOWpQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=nvidia.com;
-	spf=fail smtp.mailfrom=nvidia.com;
-	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b="VwUl/DhU";
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.46.55
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azon11010055.outbound.protection.outlook.com [52.101.46.55])
+	dmarc=pass header.from=amd.com;
+	spf=fail smtp.mailfrom=amd.com;
+	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=YXp4S7VN;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.85.68
+Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010068.outbound.protection.outlook.com [52.101.85.68])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E208F606A31C;
-	Tue, 17 Nov 2026 09:54:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E208F606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42D7C606A31C
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 10:04:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 42D7C606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=VwUl/DhU
+	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=YXp4S7VN
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=LeSO3Gk01jUNtegK4WoqO6VY0OBYkbW7UerXybBCuiYXEkqzchSia0kyIB67jnUhEi6du7qTk3mgrtV1JrDSLhA/6hKkZHJdTvLRGIH+hpW4sXHOerXLSpsXldC7tyG0GVsnnnPAgSgYfrWy1GbEhMl6qUzo1EDrt377ukDVkFLwJUU1YcH4mI9LJfw34GDJgsNVpUKphJZ8NIfHCrKNmm+hSa1T4kSc1AHljM4+7zf43akj1A1RYdLJ0x/PaOrV/QMu7nXdZXDZ6wh2PZd4KZLazR29kVlRaQ/s6/nIplG+Lw3XJfsOC+PmRPI0hEYr91FSeYTysItFKyMqs8wPbA==
+ b=aakdTV8WdpE9CD3txRrb1XZE0HFNs/NJ8bhUWNnKA6LHmQvcrDga4eIlgmKusGwFbIBTFhfR32vFI1zU4LAt950XpYHhCf95QqoeH/9NXXDvEA+et4oTYOn73I/eI+ZfwuVp1kVJZQ6EEr1MykCHHOYCz3FlnOiCvC8kXfbQn9gsHZXvfZZSD+RnWsrG6sbECdDgjVNiTJ0kMnDaoJ0HTLmSFNPK+SXqtOrV0Id5f14HhiUFtDGRyWc92zoPn5GtHeBSK4uLLjZoDts/KrYm6/NkRLnxZipgs8MZ3NAUEnXWEyYiX021i0sQmhRX4zbkx+973WZuiedRMYXbgRGofA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=mYM5Sg+NYFAqJmyUyoJVrtE2SIeQ3yKJ4yO6kvBsCe4=;
- b=WfA+b5SSqH7i+l5KHC5rJU+q38CT85xrp9GZ1ponDDuhrNxLdWrFfISO/GyppZFEC4BvNBedEp2uPZ1/ayPrWc4uElh8IB2sgEVXwI3Lv+gL9EZjLstFZRlexIVZrumVZ8wbbdY+mpfZsUgD4dN2TPxAOIgmj5hxArHeflIUWC6ERSqjdssT6vs3GUMvsLGdBP1Q5morhB2GWzGMMr+EdJm4eiVIbSmEw35r+ICpgs60lXE9cFTxV5zn7U76G4ow5zCL0KjMsCE5Cv0BAeh2mn0qseazbFnYpu4awQ0YrRIjrZPX/0s6KJr8XvbQskM+tny3RQxyI2jPUG0upzgj0w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
+ bh=++ahJLqdEH7XFNJD3D77OE35qkxrlUlaOHId4ZFMOJI=;
+ b=qQ8UFPXEoeq0rLi31oYlumF5DFHfC/s1u6qFT4awi01O/gL9dITnVgiyu0RIIdBlRZqFP/qWUVdMbmZAeseOdVeBuVTLII05zvfUp3cSFvZhr8rMGGiDocq7ZOohWG6woI79uhe/2Uy+SGxRVWMvZMdMBIZCC8b7O2lfvm3OckHFJVnc/VH/6mUD35pI0bEGMwMgUz2jcTNUqnz0kqv1XUqwg7PBeNqZ+gA9L/O+fZLW4KHJxN02FntLFwC5C1LJ3cYL+On8YZ/vkOGoTtLVJe2NGdQi+kHDZVu/7fN9ZaZ3ArEFJVQCnKi19ehPOvCRS32YFtw3Qvl2XpCba6ZoIA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=mYM5Sg+NYFAqJmyUyoJVrtE2SIeQ3yKJ4yO6kvBsCe4=;
- b=VwUl/DhUFdfGdDJk8mKCYy+kjQE6Naoks3E5d2hLFMfxezbsFt3sm6bKaBSlLQWZkfn16lbxYFR85+MSyOSIsGj/9xtcdGmtEfS0pr1EvhH+K0UucV2h6r6i977ATlbIg62kNnOH+AXe3axK2bCHVv7Q3aKmw2kCoW7sXkONvgl1UASAKo9jtNvEE0lH9iTxwfuahxsDFyrM6tAC7cGGoaVuDzaNoPISxIjUNj/Akr4p4eE9eZWIuDfihluycxGn9tAJLjIyvUlhQHan69Nyb75wg3p7DK8t16p6KOxHono1uT71EWhAn6MuPqurBUg56k2Kkv/g/73iGm54rUjfWw==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from SA1PR12MB5637.namprd12.prod.outlook.com (2603:10b6:806:228::13)
- by LV3PR12MB9188.namprd12.prod.outlook.com (2603:10b6:408:19b::15) with
+ bh=++ahJLqdEH7XFNJD3D77OE35qkxrlUlaOHId4ZFMOJI=;
+ b=YXp4S7VNCf/RkGrNyMbWzV1TBiReZaJyVnxe55RM2mD8hUX/2VFuQ2rCkYCieUPGf8asoLqmwWkMdnDsdg/P4AFBbHtW0Wj1g6BXXp2X6mXmTqTX+QM1EFcFDTAzy026w+8JKgprYuCLtP/oF+9EdArjfAApfn1jl6XDuQV3Fz4=
+Received: from PH8PR21CA0010.namprd21.prod.outlook.com (2603:10b6:510:2ce::10)
+ by BY5PR12MB4147.namprd12.prod.outlook.com (2603:10b6:a03:205::10) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.13; Tue, 17 Nov
- 2026 09:54:07 +0000
-Received: from SA1PR12MB5637.namprd12.prod.outlook.com
- ([fe80::29a8:4659:6935:73f7]) by SA1PR12MB5637.namprd12.prod.outlook.com
- ([fe80::29a8:4659:6935:73f7%3]) with mapi id 15.21.0615.013; Tue, 17 Nov 2026
- 09:54:07 +0000
-Message-ID: <7c763c61-3516-4485-af19-f8a1af0a25dc@nvidia.com>
-Date: Tue, 17 Nov 2026 15:23:57 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/9] cpufreq: tegra194: move MPIDR read to CPU hotplug
- callback
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
-Cc: bbasu@nvidia.com
-References: <20261104181521.3003578-1-sumitg@nvidia.com>
- <20261104181521.3003578-2-sumitg@nvidia.com>
- <b3125fa1-6a7a-4f87-a7fa-64c42f6b98e2@oss.qualcomm.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <b3125fa1-6a7a-4f87-a7fa-64c42f6b98e2@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: PN3PR01CA0091.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:c01:9b::20) To SA1PR12MB5637.namprd12.prod.outlook.com
- (2603:10b6:806:228::13)
+ 2026 10:03:58 +0000
+Received: from CY8PEPF0000005D.namprd21.prod.outlook.com
+ (2603:10b6:510:2ce:cafe::4c) by PH8PR21CA0010.outlook.office365.com
+ (2603:10b6:510:2ce::10) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.639.2 via Frontend Transport; Tue, 17
+ Nov 2026 10:03:58 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ CY8PEPF0000005D.mail.protection.outlook.com (10.167.247.27) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.662.0 via Frontend Transport; Tue, 17 Nov 2026 10:03:57 +0000
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.57; Tue, 17 Nov
+ 2026 04:03:57 -0600
+Received: from [10.136.43.35] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.57 via Frontend
+ Transport; Tue, 17 Nov 2026 04:03:56 -0600
+Message-ID: <0e754ab7-6a47-4611-a35b-6fd9e88bda50@amd.com>
+Date: Tue, 17 Nov 2026 15:33:55 +0530
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,226 +101,187 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/6] cpufreq/amd-pstate-ut: Restore EPP state at end of
+ amd_pstate_ut_epp()
+To: Mario Limonciello <mario.limonciello@amd.com>
+CC: <linux-pm@vger.kernel.org>, Sashiko <sashiko-bot@kernel.org>
+References: <20261116-superm1-linux-fabc6bcb-984e-4ba7-bb57-02cc3af08fa7-v1-0-682aefd4fed6@amd.com>
+ <20261116-superm1-linux-fabc6bcb-984e-4ba7-bb57-02cc3af08fa7-v1-5-682aefd4fed6@amd.com>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <20261116-superm1-linux-fabc6bcb-984e-4ba7-bb57-02cc3af08fa7-v1-5-682aefd4fed6@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA1PR12MB5637:EE_|LV3PR12MB9188:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1274599d-df1f-40c6-da3d-08df4490b830
+X-MS-TrafficTypeDiagnostic: CY8PEPF0000005D:EE_|BY5PR12MB4147:EE_
+X-MS-Office365-Filtering-Correlation-Id: f28bc447-c911-4ab0-2340-08df449218b2
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|921020|261102123227099003|10067099003|11063799006|4143699003|56012099006|261021123027099003|261021121427099003|261026140227099003|261026121527099003|261022105027099003|261022075727099003|261028144727099003|261009223027099003|22082099003|18002099003;
+	BCL:0;ARA:13230040|23010399003|376014|36860700016|1800799024|82310400026|10067099003|4143699003|11063799006|56012099006|261026121527099003|261026140227099003|261028144727099003|261022105027099003|261009223027099003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	T5hu/y3GTnkWy828zcnTujBG8oxBKbHdxhSrI7YPRhIycRv7xdMJ5Um/K3H7oOYcDtWmgX19YzJygBaemOlEz5f1CVD0AgznePOCNa/7FqeAkErha6xhQQKZ5YBDJQs04WhZtngI4TF/ZpLOoKY4e3f9ny0rlctM7GgQxSuA0ijuasU2aLgGizn5mTG69ycZ+FuoNk597+gfOSUtITeI+gAAYwTdXvAJK2QhFkXCKqAyGQrXStrnGKBh7YiTr2f4yTkj2z4+ewTkNOjWhX9r1h7ihc4imk9sheh8UeApgZakJoUrBKJcjjMqrDr7IWXGJut+zt2GXY7HeKoMVUhrZfyLiQUpyrmFv/DXpK8qx2OXe32gJWSNg9Vlu6xnwaWIhZurM2Q4hdEb7JojUTagxscEhxaC67AhQYDJsXgzNkb7bhCY4LZX8Pl77lcEUhHJAo7y2mi8t/lyFBoDXMTH0WDZiRSaVUXSmPoyxqXgA07APsrkwg72xF+dzW9qUg49f3I8HjUKQFo0h7KsAO1QT6uc8SpTW7SD+a6Re8gzguVtKm8AmzJGW0tkkmWklIn0a1tKt1J3CIbf8fFXfWVAJTIhG0CAZxFf2paBDiY9+KLLWGhHkaIFy5oLhJHK4cWX+SnKiovVX+ztYhMADIEA4NzMoX7dsjl102XH1ePzThWOzPx3vVawhQOW6Sl2xeRuz4Fv1MMwKQ1eyme2iRdx3Q==
+	0Fw6ByjZgumY7zE6yV01icyzwdS/jtz+UtpygIrgqIcQEGvFh8fBM+GmqzAYBB6rRPVNquPVXfBxsgT+DRjwU1lDxKrNF1yEm4hQyo2xoGBcwGfMxbpVOIqCVLcGs7JkzXdxVkGl18vKLaH/Nao/Pf18Ea12sxIIRvFA7tFfuwJcDy2iKrttaTJPzwRivQpwUU+9/QX7IYTKPLKd6HC1L+8RzB1LBmhz6i46m+pVp6PhgF5rUpGv5UldxSwxLEL6yoclpax725YSIuGKhiUpXhvMl8X8bzz1vMJzuG19bIELkDrF0lGBMBwJSGqb96dMWxrJFKwFZIzb3A3FL6qEUTiO8aevOFS4WdxaWhYImwDwvDJpVez1d1rmQ6w2tZogTxW8aO3rByTBe0+D61Ade9ygqDCkeIyoLfZn7HQGe8OMwcRYve9xCrsfLOOJXJD8j9P37gUzapMF6bQFMJTvE+IOXS3L3yV+9IaRXRTRfE1lWT0fnyKAl5ZjUeQiCBk8nA4oUwwKr8vEO/b17r3RCFwP5Z+3hB8RkFKBhmslcZP+SMfdg/VplflboFsTzq6OpGM5ld1cWBpGIXpjX0AKYZua9huGI3eDTdeLA+m/MXQUyCALsScXlrzDnVojj185eyYXRTrtWSTvvWChWKPRfJDLNLUsfK9om5IYbv61Qgm2RxPkJ13iXyH1+ua5FVvptD7CfRESGe0nWLopixT3aw==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB5637.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(921020)(261102123227099003)(10067099003)(11063799006)(4143699003)(56012099006)(261021123027099003)(261021121427099003)(261026140227099003)(261026121527099003)(261022105027099003)(261022075727099003)(261028144727099003)(261009223027099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(376014)(36860700016)(1800799024)(82310400026)(10067099003)(4143699003)(11063799006)(56012099006)(261026121527099003)(261026140227099003)(261028144727099003)(261022105027099003)(261009223027099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?bUVZejdsNGoyb0FVbTNiZkQwcncxSlhIQ212QzloMnYvV2VySHIzbWRkTzFC?=
- =?utf-8?B?N1liMGtPcjdNcmx2SzdpTGFkcVRXenFmUk0wcHh4aExUNXpYdjF3Kzk1d3Vx?=
- =?utf-8?B?UHFKZkN0Z2dVYTZoMTZkT0NMY0ZkUDZJMFc4KzJtNHhrZkVHWGRBc3YrMzU3?=
- =?utf-8?B?cUJyajFzZVFCUmQ4a09ma293SUpEZitJTVc2WVUvTjJRN1hlLzJMSlJDbGRM?=
- =?utf-8?B?bjVhNHBvVTBjalljWWw3QWplUWd1VGp4QWpaV2J1dVVRbEQ5eTZwdHJYeXV4?=
- =?utf-8?B?c1dlN2FjY05aUW90elZtbTZBNjY3SWFEVGg1K1h4c2VrWFNONTcybDhDampk?=
- =?utf-8?B?R1JzNUNwSXorSXFsS05vRmFDbmlheG5XL3cwUlJGVkxaYkpLYTRzTmk5a29G?=
- =?utf-8?B?Y1Bobk8wc1lRRHRqMUF6SjhtT0RRZS9CZnRHREM0azVjeHV5clFmbGhIYW5s?=
- =?utf-8?B?ZXBJSlFGSEs2b3p0UXc5OUxzMTlFOU9wUkNiVlJGSGxqNjJ0K1JZdWRQMDBD?=
- =?utf-8?B?WG9vL3pHMXhncmhyRnE1QXZ5a1NDQit6OTYraVlZUUJoQzFMU1U2ME9iR0ZO?=
- =?utf-8?B?SDJham5HdnBORGp4T2YySlFkOUJKRVgrRFI1ZUZZcTBTMFBjR1U3TFd6K1Ew?=
- =?utf-8?B?VDMzRVdYSGdjUHZXZXpvQ1JMNEZ2OThXWFRYNStDRnpZYU0wMXgzSzNuWDJM?=
- =?utf-8?B?VDBvTmRyUENmQVRpM3Q5V0w3YXhNK1Q4UjhFd2psTDhtMnRiVERtTGZmYzFr?=
- =?utf-8?B?QVFDWG1EenhjL3lweFdaakJrY2hnVC8vY1phR29CWEgvK1dsRTYweVNDYnNT?=
- =?utf-8?B?YVdZUVYxZEZNNWZCV1I0MGNQMWd5b3pNMWp1TzNwdDY3ZzdocWQ5b3RvazBV?=
- =?utf-8?B?VW16c2Y5TS9zYkd1N29RbG8xKzlZZnhiQUVxSDQ2T1JvT2xZaVFweWM3NnlV?=
- =?utf-8?B?ZnpoczVud0JLRGdzYzIvTlNsQWZqMU8wVExaUVdNZlAyb1FycjlZY3Q1WU9V?=
- =?utf-8?B?OW81Wm1ZZldIbFcxWFlZd0xZWHRFNUF2R3hhOThwZWZXWDFKMnZIWmlHRDht?=
- =?utf-8?B?dldLcDVZL2pkV1NOSkkxR25KdVlmaFM1bkhPNHRkWElKc2tOK0R2S2Z5azlY?=
- =?utf-8?B?akRaMEsvdms0UWw3L3hndzYvTnFqd3ZIaHZaSXpKWmN1ck5OdzVWVkNrMWlX?=
- =?utf-8?B?b0ZzRFRQelZTUUdSbXIydFZEdlJWcy9ubG1EUC9IME1FWVV2ODhmS0ZkRkNl?=
- =?utf-8?B?ZklEaC9zeWREUmM4RWM3aTFKd1NYdWxsUnZZVWVJQjBpK1BHNnNxRU1qeWt4?=
- =?utf-8?B?bTJVUnM2em5BSW9xbDQyOFV5YzU5ekc2NnY0TEtJbzI3aS9aY1pkcEk2dnd4?=
- =?utf-8?B?dG5mK0pyUUFiTjRjcURjTlg4M2c0cDlCTzQ3a0cyWlF0MW5TL0lIT00wK0h6?=
- =?utf-8?B?WnQxRUhZRG1WME43dWE0aEIrekVTWEoyRzY5V1VoQ1JhdXdsT1pzbE1OQTFM?=
- =?utf-8?B?YkdUTWgwWXhPdlpJN0RjSjVzVDJqanR2cXhoZXlVTkszdmpCallMK3BIK3Bk?=
- =?utf-8?B?c3JxcEg4bXBZN3R3dnhDeU5aYWdJdE1pVEN5RkNaS3MzV0ZwWkREazZGaTR5?=
- =?utf-8?B?d3MxNHhvMGRRa09pWnlCZ2VSc29XN3g1NmRFRzJMSlZVMUp2NlZXM0JrYTRS?=
- =?utf-8?B?Ym1PL3JaMlYwZ01XUnVxTG9VdkR4MC82T1hkZ2JtOFBsWThVRnhWc3FNRGdD?=
- =?utf-8?B?dWMwS3VkU2tGQWVVV0NqSVBKTXFvZ2hUZlVwaHR0MkhpelZ0VmJhMlZmRzNQ?=
- =?utf-8?B?RFlnZTRBMFVobFM4a3NLUzhOUGhBWUM0ck50SXNiVVIyTlFVeXc1Vi9TQm5D?=
- =?utf-8?B?YkdkOEtlcldPT0U0bU91MG9xRnJ5NnNheEVhVFpLYVcydVBXWGxoNmV4QzFl?=
- =?utf-8?B?aHhqWkttTXZXcllUd0p2ZVcxOXp3SkhadnFiam1COVhlcnZKY2FlRUNBbS9m?=
- =?utf-8?B?ZDJ3cUJ2OW1kczJSYkNBTmxrNFV1UFpNYlVKOG82ZGVmQjdRVW1zWkpTWFpj?=
- =?utf-8?B?V2RlZmMzZllhcUlDTzBUUHZ0VjA2T1ZXYmJqRFdQVWJqZmx4dm4xNWlHYlQr?=
- =?utf-8?B?Vmk4Vy9vc3hMMm4yaEppQnU1SEZZMlhSUFRMd1paZ3VTUmwwNlVVMkV1VDU4?=
- =?utf-8?B?WXRDeWhwbFpVQk0zQUV3OHEyU045dFY0aTQwNGI0ZGtnSWMvaFlzK2ttTHlp?=
- =?utf-8?B?a3p1ZzY0KzVFazBFU1JuMThnQU5ZNkFyYjhUKzJHOHBMZHYrU3JrODY2NHhj?=
- =?utf-8?Q?3Q2sAWV5Hxm3B5hfQO?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1274599d-df1f-40c6-da3d-08df4490b830
-X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB5637.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 09:54:06.9249
+	M06IJK880nwY1PjZspgHirMLTVhsO8EObBzsDwtAF5EW1euzD7VxaXxGz8sFdm3kZw+0rkUW4+gMN9C63sgy4QQE3ndZodPQYy0Ga9OyxiLGzjR3G4z7UDbYaY7xVbRAWFArRveAqaK3rsJT2ZJHSM4F4bzZk4GMeXDGMJMwRKNtNoqLyi+4PyFwvt3Tp9LizIM9txFPFJ32Xa2YpUMPDAbYPGc0tMiXMgYBWKIiSMQGoyYCbeWq63ydcMcrKga02bq/QM3bgxsHQhnBOBycKtkN1j8GB0a2cIwdkSiFfda0sJx5bwTk1rbRZ1yVcwDyEdPtCd4Wa0dmZxCuzARJcyifC0DCV7jxPuZgrumUh2rIy5hciNcAX0U8Smp/oUu+lwn/XYjMBqerrO49D8K6jr571ukR99lkebd+EZPBKJvPpIUyRr9k1kGuGdu2xOHe
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 10:03:57.9727
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: TYc4HJcQ5W3QRrYTKDW2tAtzZSkJXYYTrlA9fvGNnO4gfIh3hp7ZdvHJQ4kESiPIRDNDvc88qSZjKrFpOdDuPQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9188
+X-MS-Exchange-CrossTenant-Network-Message-Id: f28bc447-c911-4ab0-2340-08df449218b2
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CY8PEPF0000005D.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4147
 
+Hello Mario,
 
+On 11/17/2026 9:07 AM, Mario Limonciello wrote:
+> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+> index 506d7bb2e6609..a861216534b55 100644
+> --- a/drivers/cpufreq/amd-pstate-ut.c
+> +++ b/drivers/cpufreq/amd-pstate-ut.c
+> @@ -315,6 +315,8 @@ static int amd_pstate_ut_epp(u32 index)
+>  	struct cpufreq_policy *policy = NULL;
+>  	unsigned long orig_dynamic_epp = 0;
+>  	enum amd_pstate_mode orig_mode;
+> +	bool orig_raw_epp = false;
+> +	u8 orig_epp = 0;
+>  	struct amd_cpudata *cpudata;
+>  	unsigned long orig_policy;
+>  	int ret, cpu = 0;
+> @@ -329,6 +331,8 @@ static int amd_pstate_ut_epp(u32 index)
+>  	if (policy->driver_data) {
+>  		cpudata = policy->driver_data;
+>  		orig_dynamic_epp = cpudata->dynamic_epp;
+> +		orig_raw_epp = cpudata->raw_epp;
+> +		orig_epp = FIELD_GET(AMD_CPPC_EPP_PERF_MASK, cpudata->cppc_req_cached);
+>  	}
+>  
+>  	/* Drop reference before potential driver change. */
+> @@ -425,16 +429,27 @@ static int amd_pstate_ut_epp(u32 index)
+>  	if (policy) {
+>  		cpudata->policy = orig_policy;
+>  		/*
+> -		 * If the driver had enabled dynamic_epp to begin with,
+> -		 * restore it here before dropping policy reference.
+> +		 * Restore the original EPP state before dropping the policy
+> +		 * reference. If dynamic_epp was enabled to begin with, enable it
+> +		 * again. Otherwise the test may have left dynamic_epp enabled
+> +		 * (leaking the platform profile device) or changed the static
+> +		 * EPP, so write back the original value, which also tears down
+> +		 * dynamic_epp.
+>  		 */
+> -		if (orig_dynamic_epp) {
+> -			const char * const dynamic_string = energy_perf_strings[epp_modes[0]];
+> +		if (orig_mode == AMD_PSTATE_ACTIVE) {
+> +			char restore[8];
+>  			int ret2;
+>  
+> -			ret2 = store_energy_performance_preference(policy,
+> -								  dynamic_string,
+> -								  strlen(dynamic_string));
+> +			if (orig_dynamic_epp)
+> +				strscpy(restore, energy_perf_strings[epp_modes[0]],
+> +					sizeof(restore));
+> +			else
+> +				snprintf(restore, sizeof(restore), "%u", orig_epp);
 
-On 13/11/26 11:57, Zhongqiu Han wrote:
-> External email: Use caution opening links or attachments
-> 
-> 
-> On 11/5/2026 2:15 AM, Sumit Gupta wrote:
->> At probe the driver reads the MPIDR of every possible CPU with
->> smp_call_function_single(). For a CPU that is offline at boot, the call
->> fails and the error is ignored, so the CPU's core and cluster IDs come
->> from an uninitialised variable.
->>
->> Read MPIDR from a CPU-hotplug online callback instead, which runs on the
->> target CPU and caches its core and cluster IDs and MMIO scratch address.
->> This covers CPUs online at probe and CPUs onlined later.
->>
->> The check that the SoC data covers all CPUs moves to probe, against
->> nr_cpu_ids. A CPU whose MPIDR does not fit the SoC data gets no scratch
->> address, and its NDIV access is skipped.
->>
->> Fixes: 6b121b4cf7e1 ("cpufreq: tegra194: save CPU data to avoid 
->> repeated SMP calls")
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> ---
->>   drivers/cpufreq/tegra194-cpufreq.c | 114 ++++++++++++++++++++---------
->>   1 file changed, 79 insertions(+), 35 deletions(-)
->>
->> diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/ 
->> tegra194-cpufreq.c
->> index 1eb96e9f3310..be81ffd23edd 100644
->> --- a/drivers/cpufreq/tegra194-cpufreq.c
->> +++ b/drivers/cpufreq/tegra194-cpufreq.c
->> @@ -5,6 +5,7 @@
->>
->>   #include <linux/cpu.h>
->>   #include <linux/cpufreq.h>
->> +#include <linux/cpuhotplug.h>
->>   #include <linux/dma-mapping.h>
->>   #include <linux/module.h>
->>   #include <linux/of.h>
->> @@ -13,7 +14,7 @@
->>   #include <linux/slab.h>
->>   #include <linux/units.h>
->>
->> -#include <asm/smp_plat.h>
->> +#include <asm/cputype.h>
->>
->>   #include <soc/tegra/bpmp.h>
->>   #include <soc/tegra/bpmp-abi.h>
->> @@ -77,6 +78,8 @@ struct tegra194_cpufreq_data {
->>       const struct tegra_cpufreq_soc *soc;
->>       bool icc_dram_bw_scaling;
->>       struct tegra_cpu_data *cpu_data;
->> +     enum cpuhp_state cpuhp_state;
->> +     struct hlist_node cpuhp_node;
->>   };
->>
->>   static struct workqueue_struct *read_counters_wq;
->> @@ -113,7 +116,7 @@ static void tegra234_get_cpu_cluster_id(u32 cpu, 
->> u32 *cpuid, u32 *clusterid)
->>   {
->>       u64 mpidr;
->>
->> -     smp_call_function_single(cpu, tegra_get_cpu_mpidr, &mpidr, true);
->> +     tegra_get_cpu_mpidr(&mpidr);
->>
->>       if (cpuid)
->>               *cpuid = MPIDR_AFFINITY_LEVEL(mpidr, 1);
->> @@ -121,11 +124,44 @@ static void tegra234_get_cpu_cluster_id(u32 cpu, 
->> u32 *cpuid, u32 *clusterid)
->>               *clusterid = MPIDR_AFFINITY_LEVEL(mpidr, 2);
->>   }
->>
->> +static int tegra_cpufreq_cpu_online(unsigned int cpu, struct 
->> hlist_node *node)
->> +{
->> +     struct tegra194_cpufreq_data *data;
->> +     u32 cpuid, clusterid;
->> +
->> +     data = hlist_entry(node, struct tegra194_cpufreq_data, cpuhp_node);
->> +
->> +     data->soc->ops->get_cpu_cluster_id(cpu, &cpuid, &clusterid);
->> +
->> +     data->cpu_data[cpu].cpuid = cpuid;
->> +     data->cpu_data[cpu].clusterid = clusterid;
->> +
->> +     /* Derive per-core register address only when ccplex MMIO is 
->> mapped. */
->> +     if (data->regs) {
->> +             if (clusterid >= data->soc->num_clusters ||
->> +                 cpuid >= data->soc->maxcpus_per_cluster) {
->> +                     pr_warn_once("cpufreq: cpu%u: bad MPIDR (cluster 
->> %u, core %u)\n",
->> +                                  cpu, clusterid, cpuid);
->> +             } else {
->> +                     u32 index = clusterid * data->soc- 
->> >maxcpus_per_cluster + cpuid;
->> +
->> +                     data->cpu_data[cpu].freq_core_reg =
->> +                             SCRATCH_FREQ_CORE_REG(data, index);
->> +             }
->> +     }
->> +
->> +     return 0;
->> +}
->> +
->>   static int tegra234_get_cpu_ndiv(u32 cpu, u32 cpuid, u32 clusterid, 
->> u64 *ndiv)
->>   {
->>       struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
->> +     void __iomem *reg = data->cpu_data[cpu].freq_core_reg;
->> +
->> +     if (!reg)
->> +             return -EINVAL;
->>
->> -     *ndiv = readl(data->cpu_data[cpu].freq_core_reg) & NDIV_MASK;
->> +     *ndiv = readl(reg) & NDIV_MASK;
->>
->>       return 0;
->>   }
->> @@ -135,8 +171,12 @@ static void tegra234_set_cpu_ndiv(struct 
->> cpufreq_policy *policy, u64 ndiv)
->>       struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
->>       u32 cpu;
->>
->> -     for_each_cpu(cpu, policy->cpus)
->> -             writel(ndiv, data->cpu_data[cpu].freq_core_reg);
->> +     for_each_cpu(cpu, policy->cpus) {
->> +             void __iomem *reg = data->cpu_data[cpu].freq_core_reg;
->> +
->> +             if (reg)
->> +                     writel(ndiv, reg);
->> +     }
->>   }
->>
->>   /*
->> @@ -208,7 +248,7 @@ static void tegra194_get_cpu_cluster_id(u32 cpu, 
->> u32 *cpuid, u32 *clusterid)
->>   {
->>       u64 mpidr;
->>
->> -     smp_call_function_single(cpu, tegra_get_cpu_mpidr, &mpidr, true);
->> +     tegra_get_cpu_mpidr(&mpidr);
-> 
-> .get_cpu_cluster_id() now reads the local MPIDR, so the cpu argument is
-> ignored. Could it be dropped?
-> 
-> 
-> 
-> -- 
-> Thx and BRs,
-> Zhongqiu Han
+it. If we restore the original epp via a u8, this will always put the
+driver into the raw EPP state - if user started with performance,
+they'll start seeing the raw value if they cat the file after ut run.
 
-Yes, will drop it in v2.
+How about, restoring the actual string like so:
 
-Thanks,
-Sumit
-
+diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+index 506d7bb2e660..bc696f452749 100644
+--- a/drivers/cpufreq/amd-pstate-ut.c
++++ b/drivers/cpufreq/amd-pstate-ut.c
+@@ -311,13 +311,13 @@ static int amd_pstate_ut_epp(u32 index)
+ 		EPP_INDEX_BALANCE_PERFORMANCE,
+ 		EPP_INDEX_PERFORMANCE,
+ 	};
++	char *orig_epp __free(cleanup_page) = NULL;
+ 	char *buf __free(cleanup_page) = NULL;
+ 	struct cpufreq_policy *policy = NULL;
+-	unsigned long orig_dynamic_epp = 0;
+ 	enum amd_pstate_mode orig_mode;
+ 	struct amd_cpudata *cpudata;
+ 	unsigned long orig_policy;
+-	int ret, cpu = 0;
++	int ret = 0, cpu = 0;
+ 	u16 epp;
+ 	int i;
+ 
+@@ -325,14 +325,36 @@ static int amd_pstate_ut_epp(u32 index)
+ 	if (!policy)
+ 		return -ENODEV;
+ 
++	/* Prevent any changes. */
++	down_read(&policy->rwsem);
++
+ 	orig_mode = amd_pstate_get_status();
+ 	if (policy->driver_data) {
+ 		cpudata = policy->driver_data;
+-		orig_dynamic_epp = cpudata->dynamic_epp;
+-	}
+ 
++		if (orig_mode == AMD_PSTATE_ACTIVE) {
++			orig_epp = (char *)__get_free_page(GFP_KERNEL);
++			if (!orig_epp) {
++				ret = -ENOMEM;
++				goto early_fail;
++			}
++
++			ret = show_energy_performance_preference(policy, orig_epp);
++			if (ret < 0)
++				goto early_fail;
++
++			if (cpudata->dynamic_epp)
++				strreplace(orig_epp, '(', '\0');
++		}
++	}
++early_fail:
+ 	/* Drop reference before potential driver change. */
++	up_read(&policy->rwsem);
+ 	cpufreq_cpu_put(policy);
++
++	if (ret < 0)
++		return ret;
++
+ 	policy = NULL;
+ 
+ 	buf = (char *)__get_free_page(GFP_KERNEL);
+@@ -424,17 +446,11 @@ static int amd_pstate_ut_epp(u32 index)
+ out:
+ 	if (policy) {
+ 		cpudata->policy = orig_policy;
+-		/*
+-		 * If the driver had enabled dynamic_epp to begin with,
+-		 * restore it here before dropping policy reference.
+-		 */
+-		if (orig_dynamic_epp) {
+-			const char * const dynamic_string = energy_perf_strings[epp_modes[0]];
+-			int ret2;
+-
+-			ret2 = store_energy_performance_preference(policy,
+-								  dynamic_string,
+-								  strlen(dynamic_string));
++		/* Restore the original EPP */
++		if (orig_epp) {
++			int ret2 = store_energy_performance_preference(policy,
++								       orig_epp,
++								       strlen(orig_epp));
+ 			if (!ret && (ret2 < 0))
+ 				ret = ret2;
+ 		}
+-- 
+Thanks and Regards,
+Prateek
 
