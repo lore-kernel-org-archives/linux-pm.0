@@ -1,105 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794911673;
-	b=oNmIgk+wAiXSdCpiYCeXCLf+I0Wsl9A6Gtw6tVhqVtnhIvG9sZkhda72yWmocFW9VB7E
-	 Azfd63kvS+ciiORMXhXixwQq1H03HaUfBJ58jhKbj8UuBtw7jfxAUxlxofCS4pcKGnblp
-	 qpnSTNijABKbdoqWUr5EzRP9knzBHA/EVVgHUYYC9H7f7nkVe4ykUs/W99cmZ94CpT2kx
-	 UloV1pyOVwIku2+uF0r4jXggogig1OOlKLs58BCySseG7hwyDMYGgWVEiCZbl1XsPpsp4
-	 CrWTNKeJFhHDqAHsu4aABijmKXKlQbtJ1ARoPbAoXrUOyvqmTIfS80ehHDS8Xf4+eeA==
+	t=1794912122;
+	b=J58+6wtOWJqhuNpPZuDCX7m9qqjQLt/ZkumjPcdC/XfLTUXnNmyRM+lrVjs5SPhEu90z
+	 kWFEU2gEMApYUbr5weVnzFUUxUBhQIepjLrQGSAUEnZlp62EpwNg0KFmVNSNb4WS80zpj
+	 HRUehqUXBK1pXwti+es/B1brF/zQOxuB4zdWe+r0yIDvXEOXjknV4z3MUHhVc0kFMvqAP
+	 i+3yLYMvGE/ouKI4uvctFW3qaaqoOeEPzEYuaGAi9J2a7fiJ2i1sYEcnRDpXxEMWpBmeJ
+	 3Nw9iJRiwz9cVvsZvo/IzKLuskW8G0O6Q63E3wWpgVUarUoMViEe9J7JDGg5AXodl4A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794911673;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794912122;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=BmiLk7Woyt+5HnggThSiC1LBGvT5JbyN4EymqDd4Y40=;
-	b=Ia4w33GvFD9PPUSOM5i2rgRfTywIlfdKPD9gJmpND0YB5FfLxfkkpm+P2M5QodSP8u3N
-	 zqfYuhSTdXLTBw0vOL4fAO/E3Rg9wp+1CLsrkzCzKmKaN0Gp+12EolbicZ6S+eqgJD5tQ
-	 QYq+r+FSiJB3Qy61pQMR/Q1g3E3vpnz0Kr38t1yy+zoIrMRPvQVd2dboiG07asMULmrHR
-	 VPM1xtTyRMX5BtwKbvlN5B+mIomHCBQAUv1qM/vw78GTSaDoy/19BeVuR650GzAOccKWE
-	 SxRspovB+kZ79F0NU+zdCMXm7UeSBXvODTWPav56ONP2w3D5afmQZ6epl7Xenli9PkA==
+	 Message-ID:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Content-Type:Content-Transfer-Encoding:MIME-Version;
+	bh=PS1VfaJQo8AXeb/IwzWbByg/SH2tTkW/13Vhf/xaBJI=;
+	b=No+fhwEtcfpM8VmxL03K1Tt7LgI2vdAoOSC5WAnLYHbvDGLscwUdhq9OiznhmrckOYEr
+	 /LYAEGp/OO1XPtfwoIDw4EZHfG5k7/5aT+ANcWDQpI1VLX4pVt/PHEfQ2KnWln+TeXDX/
+	 tCBrqLyI4uYAvI/UcYq0gXTUP19dPEz4INjV0rmgAUz4wVAQi40wlbqE193zZ831uV44P
+	 QcqPtY3Nra9DbGg+SSTqMPYCL6gK13n98giS4JpIGruuL2HAbRtCY8kSj5rZ+dloh57eS
+	 x3kQxxGYlMGPt3MYc9k8mcPJgRd1YsIMTqA5N0Gktq04HM2XUbYsJKeHh4mKRSj3jlQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=En1EFsdr;
-	arc=none smtp.remote-ip=74.125.82.42
-Received: from mail-dl1-f42.google.com (mail-dl1-f42.google.com [74.125.82.42])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=u4QkVIy4;
+	arc=none smtp.remote-ip=209.85.128.48
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA72A606A32F
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 10:34:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DA72A606A32F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17A39606A331
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 10:42:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 17A39606A331
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=En1EFsdr
-Received: by mail-dl1-f42.google.com with SMTP id a92af1059eb24-18818daa3e7so415337c88.0
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 02:34:30 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=u4QkVIy4
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4bb6886d30aso20118085e9.3
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 02:42:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1794911670; x=1795516470; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1794912120; x=1795516920; darn=vger.kernel.org;
+        h=mime-version:content-transfer-encoding:content-type:references
+         :in-reply-to:subject:cc:to:from:date:message-id:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=BmiLk7Woyt+5HnggThSiC1LBGvT5JbyN4EymqDd4Y40=;
-        b=En1EFsdrdIkH9eyOkefMREOOPdHM/WJ+nB7do8MFPGS2RFE46buqsjhkuWVzuC8m3+
-         3gF/6S2D7s5EKUEATZ4QiaqaxVW8vxGRVrNqRlv0ezJXermBAeEXcKla4/EuExo3AGhx
-         744hX1dAhanRL4MRxPITaiF1pZc7rjSKVLZmLgqQPaxwG9QHuvi2XbBzY2z/Oz+c8clw
-         w9aV/YcX9cHZDqQ7JoiLvJYMcZUoztZLy/qKIKtof7mobdWmjRX/Xb605HQRdDqW74k6
-         TMi/qHyRczbrpjgMZe7BkgoUBqZIoFt20gqXXVyuC5UnYYSFfLMRBcKyYryrj3FhAjnf
-         j83Q==
+        bh=PS1VfaJQo8AXeb/IwzWbByg/SH2tTkW/13Vhf/xaBJI=;
+        b=u4QkVIy49fTaoNwvWvnjGQQRpk+tfWR6LLp+CW+T4swmBdd25jXMn3tdWpXy5yiFUu
+         vTuksHTy2xKLcetJrE5+cHPrQ7SxLWJnqPGTMN9w/ehtQfjowZWh/o0MvhKzh4Y/iS7O
+         6xYBLvzjnMShr5zzhLCdjsDSrscSIQQCSH02l/PcaqAJEQXPgl756vs05i3C9DwYCY5W
+         vczinvhPLm0CpccEU/4tRsoE1aQPqsbPf4TNZnjbs3G/vgRwXjcBxn0XjaCSs0vVERNJ
+         Gjc6kx/xzNqQLGXCep/9XGA84H7NXodhlQVV8d+mvDUdClsdwdAHAKjCq1WFYMkSzDsv
+         vHWg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794911670; x=1795516470;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20260707; t=1794912120; x=1795516920;
+        h=mime-version:content-transfer-encoding:content-type:references
+         :in-reply-to:subject:cc:to:from:date:message-id:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=BmiLk7Woyt+5HnggThSiC1LBGvT5JbyN4EymqDd4Y40=;
-        b=soVhXHUh02xZKx6Fj8dUvjaEDsqsBOOKOSCgQc/5RVLaeK149LUMdXCatwVWVlXyvT
-         jkekzT3N031bNchoEdGSkqdnyOjgBTL0A0rnUhTgZlW6WkrlpRtCpvT6mfGWuVqQG5c2
-         HgfBtQZ35/xHqHweVUxhIiAa0/yVC1+GR1GaiB4wvNmg+p0hk69BZC/4ogPKkuXLmmQo
-         QY7scmDzJyt1uk7r+V6SHBziq/994QTOESjsBlktpJhvAUdBWta55Ia+48C0cIxnCOfj
-         W9BjfEj/vWKHTJ5SKEcoEiuwixSvawqGNURnyIn0x7MdbRdjtpgUQiK9+ajY5RS9cRLG
-         l36Q==
-X-Forwarded-Encrypted: i=1; AL+hErG+MRdNSoDxyr40gVNgyvHYLktUwiyOZBDzzk1Q7O79Fa8FBL2CCC+D2NMFswntPihHson8Or2ksA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+x1pI75nV8r4UlipJVj/wFGEJ9nx+eBggKN+YCDgxmOh3Kn5Wq
-	wcmVec44Yo+uLFlyLrZKf6ExeV+OterI/9dl2+2R12AYc4AcbaZwHjW9T7w7yr8nzO0=
-X-Gm-Gg: AYBFou1fXuTPp5CQ00ZEIdQXEBP/8lZ3FsDtF9+AuIC58lcrdem2oIPm0PV09A8eDDZ
-	FrwEpaEPNmtoAOl8X7gUimSaaRKdp9R1heiaTVH7jueLrc4yqoT3gZ3xKUu9LERjgKom5gZPzre
-	xdf3RKq54W6snHYKNI7MpXjpbTlSOstxo1SYJSsQ5YA61dYkcuru0XtdNmMHtYKpqCXTBIE+qgd
-	OpTcqfmznYUk1QZNHKJ7KDqpwApZ9ZENXsPi4kxemVVg66TDFOak0PWzXJUbdNOYsfpCxKVht3h
-	C0gohIFPA7oYVgSJZmtPJkUyoKEPjd+pHYcD/XcyPl77fIXNlLZv9dx14pKq/2pPKY1CJruaahW
-	+jUmTElySV9hNPHZ47PbPw/Srh2bjdhrgevh9nDLctQmBCDR/pUb66BbgEPJpTZdj8aWPoShozJ
-	XT2u7xAtmfpZRxFMCjD0oPgNF984ShchO8ga7W8QDx99ENOjzEIJB+iLjfG5x6Sm6M2+Q4rOcLy
-	+q1+J99ZH7vO+phla8mYLTfvgCzhb99vLEtCxZAScDC9vPVpP289EV6KJjBd8xNkpQ5nQkm8FEc
-	6oJgTpuy8mRmHTF6f3NRV1XHblKK4g==
-X-Received: by 2002:a05:7022:b052:10b0:1b1:f02b:2317 with SMTP id a92af1059eb24-1b53a4758b9mr1979699c88.22.1794911669662;
-        Tue, 17 Nov 2026 02:34:29 -0800 (PST)
-Received: from localhost ([122.172.83.36])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b5031b2519sm36212362c88.13.2026.11.17.02.34.28
+        bh=PS1VfaJQo8AXeb/IwzWbByg/SH2tTkW/13Vhf/xaBJI=;
+        b=UoXyfKuuddcth8OW+ONAMUbT8xYlb8NjKavX3c2oud2K/ABM5V7rKJQJxLtjfHFG77
+         rEuDw4kHPoRUFuvPV8LmcyJJTA95X7d0IVHx5J9jG4RR3ri+J8FP00U1SGnNOOsC3S/A
+         adF0+7vKkolrF/ooJz3H2xp7WfpYwYuI+xPOFuCygB0YEyNoD7DAq8CFQ7nCxrulI233
+         R2RScMZ5ohSKTlzSw04u4iNgmXK4r8tZeQhJ8LSywCHFqdBmRwKgWZ4JuWd8Xtji5c4J
+         g+Q2ZBDraawsNEVMHhR6+h0kt81wsumP2Dx/5fUVJP3h9BC8QXimaLkOoWhpFO32lz8O
+         jhTg==
+X-Forwarded-Encrypted: i=1; AL+hErGMJDgP23ER2V/XRbyqG6EhvUV8TS6DsE2S+CSSb/cZviefSTSe1GUdK4et5yTmMNIgCT1Ok3M24A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/7V7enWX9/rbQzN1tUxfrtPsPhR1X9NkuDL6a79nPOlH5qyPR1
+	6zvJVBfQUli1xNhB8CombI8Lzwn56L7neCALDjJoZYskVlNxqICnn63k
+X-Gm-Gg: AYBFou0N0bP3LuHKedoWd9J9aRKwRX0yTIjTYLbv6MoeTNYn1ph30X/LwZjbwaE9Bre
+	eSwaVQXuThl+JVZ8T4gJS7P5yPO5OYRwtJGtNEZf/jDryI0QxOkX3pIc2JeL9aQsoIBsYobKMoX
+	4afOsEOz90birkG5g2mf2TDa23PXeX4oXMHkCNaJwb7EJZuLRinrqjd00rj4nxh3E1IEweNBf5u
+	8+mrbrWdiQkQ8Wln+98z74dASgbBFotauLZfu6FV75SMFnB4vy7cKbDMLsMHjOBZDWOvvp70HK2
+	6udkkuruhTEw9YtB1WcJfb7ApmEvzW0q9BkWQBzsqgiTFzTkxWNBT2P9p8QcgXL5y/MoqVEjHZO
+	qMFLNhXY3bOM8ROi8+LN7l7pub0BDibw/xZ59SpPZu/eToV46FBZU5J5CDdCxgDrf5/gnZLFzYx
+	fzEuQO4YioF/FfnVQMQ+waYaSvrjCNyeqmgbfb2JrJNMxrnnYlDSALlLzGCIqczX4d+P+y7Bjlr
+	WaqCRevgJ51prw9Bj9RcFXoa05pnRsqNHvD7lDbH/0k
+X-Received: by 2002:a05:600c:8b11:b0:4a3:59c9:a756 with SMTP id 5b1f17b1804b1-4bb55a6a53emr281079335e9.6.1794912120251;
+        Tue, 17 Nov 2026 02:42:00 -0800 (PST)
+Received: from [127.0.1.1] ([130.61.107.245])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb783862d6sm52348035e9.2.2026.11.17.02.41.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 02:34:28 -0800 (PST)
-Date: Tue, 17 Nov 2026 16:04:26 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	Oleg Keri <okerixx@gmail.com>
-Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to
- non-boost freq on boost disable
-Message-ID: <avwtsmp7Mqacbbtl@vireshk-B250M-D3H>
-References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
- <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
- <auhMD2-5FD4BqImG@vireshk-B250M-D3H>
- <avRiWsxCEAuBouBZ@hu-anancv-blr.qualcomm.com>
+        Tue, 17 Nov 2026 02:41:59 -0800 (PST)
+Message-ID: <6afc2f77.2bb6edcb.1518d5.5d4f@mx.google.com>
+Date: Tue, 17 Nov 2026 02:41:59 -0800 (PST)
+From: Adil =?utf-8?q?H=C3=BCsrev?= Tepe <tadilhusrev@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Kaustabh Chakraborty <kauschluss@disroot.org>
+Cc: Yassine Oudjana <y.oudjana@protonmail.com>, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 0/3] power: supply: s2mu005-battery: add S2MU106
+ (Samsung Galaxy XCover5)
+In-Reply-To: <20261116074000.355176-1-tadilhusrev@gmail.com>
+References: <20261116074000.355176-1-tadilhusrev@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -109,61 +101,33 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <avRiWsxCEAuBouBZ@hu-anancv-blr.qualcomm.com>
 
-On 11-11-26, 18:10, Ananthu C V wrote:
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index ea994647abc8..5b364d8da4f9 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -49,15 +49,16 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
->                         max_freq = freq;
->         }
-> 
-> -       policy->cpuinfo.min_freq = min_freq;
-> +       policy->min = policy->cpuinfo.min_freq = min_freq;
-> +       policy->max = max_freq;
->         /*
->          * If the driver has set its own cpuinfo.max_freq above max_freq, leave
->          * it as is.
->          */
->         if (policy->cpuinfo.max_freq < max_freq)
-> -               policy->cpuinfo.max_freq = max_freq;
-> +               policy->max = policy->cpuinfo.max_freq = max_freq;
-> 
-> -       if (min_freq == ~0)
-> +       if (policy->min == ~0)
->                 return -EINVAL;
->         else
->                 return 0;
-> 
-> I am pretty sure we can maintain the policy->min status quo and only touch the
-> policy->max updation; which from a passing glance simply seems inconsequential.
-> Potential side effects, if any, aside, this would at least fix the issue at
-> hand, which is the frequency getting stuck on a higher value without being able
-> to come down. What do you think about this?
+I'd like to withdraw this series rather than send a v2.
 
-So a change like this also fixes the issue ?
+A review bot (Sashiko AI) flagged that patch 1's fallback compatible
+(samsung,s2mu106-fuel-gauge falling back to samsung,s2mu005-fuel-gauge)
+is unsound: a board using that fallback binds to the S2MU005 driver as-is,
+which still reads the MONOUT average-monitoring registers for
+VOLTAGE_AVG/CURRENT_AVG and uses current_avg to help decide
+POWER_SUPPLY_STATUS. The S2MU106 doesn't have that path, so those reads
+return garbage, and garbage current_avg can flip the reported charging
+status. Patch 3's has_monout flag avoids calling into that path from the
+S2MU106 variant I added, but the binding still allows a device to bind
+through the plain samsung,s2mu005-fuel-gauge compatible with no
+has_monout gate at all, which is the actual hole.
 
-@@ -49,15 +49,16 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
-                        max_freq = freq;
-        }
+On reflection, extending s2mu005-battery.c was the wrong shape for this
+chip regardless of that specific bug. The S2MU106 fuel gauge is a
+separate, standalone I2C device on the Galaxy XCover5 (own address,
+0x3b), not a drop-in register-compatible S2MU005 variant sharing a
+device tree node -- it only happens to reuse the same STATUS/RVBAT/
+RCURCC/RSOC register layout and scaling. A dedicated driver avoids the
+fallback-compatible construction entirely, since there's nothing to
+fall back to.
 
-        policy->cpuinfo.min_freq = min_freq;
-+       policy->max = max_freq;
-        /*
-         * If the driver has set its own cpuinfo.max_freq above max_freq, leave
-         * it as is.
-         */
-        if (policy->cpuinfo.max_freq < max_freq)
--               policy->cpuinfo.max_freq = max_freq;
-+               policy->max = policy->cpuinfo.max_freq = max_freq;
+I'll send that as a new series instead: a samsung,s2mu106-fuelgauge
+binding and a standalone drivers/power/supply/s2mu106-fuelgauge.c,
+with no changes to s2mu005-battery.c or its binding. Sorry for the
+noise -- I should have settled on this shape before sending v1.
 
-Also, can you please explain the issue again in detail. I am not very
-sure how you are reaching to this issue over current mainline (without
-the first patch).
-
--- 
-viresh
+Adil
