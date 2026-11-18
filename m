@@ -1,71 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.69
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795008601;
-	b=RpfTWRVHGc8ucaLG5dKIG5E3hvohyVIV+n5XR3bnGyUeZ22RyiXP4KAD23sAlBP6SQ7/
-	 2Jima9s7PGzCDJq5LkU4xJ8s2FegH0GnpumRNYdpGZBHxu8lAJUA/j4pch1Ywyz3n2qw6
-	 1ZBydK+I0XxjWgFRpixRxm2lFJVMW7YBax6R1pPIDxItshCVrw8JS0845E/NLER4dZC8g
-	 bz7JfpFv1Ta/e3LcmmVSTq2o3cL4TYaN7BCsByi2JP1dHfVtjcR145y+85VcCMg+1Y4U1
-	 /lxsBunWUBvhgK24XVSI/nFtgE3YpcJP0bku9EHpREtcvHvI4LV4qdiwJvgLXmb5LYA==
+	t=1795009668;
+	b=YTf4Ndl4Y5CnMH3Goz9xksdc+CPOC9q9cnH3C+vlYkK8J2vlNpBbeVgCgu/PhxmLeDbl
+	 irYjrb6hiy65/gBh2LzwA8WdpV8HhHQwvNO0JR+OvCNPMgYOjdSC21K0WjDitdc/BsNtU
+	 k6sLls+xLez35uIlXURcMxsvTKAiZRcDG/3Ily9z0M7O4Oj6GF6SEZ0PsHMfcU2sG+j7I
+	 1BfJ6Na2I3W7X979AHVZdFDRuo9ZixpyBbJ9eZ6XRqrB7FbLseAK+OTSCHn8QdLFtB3Qa
+	 2fRUO58XrzcCoumM2zXDH2CxDC7Zzu0CFIUrzc8yCFOisK9fKafb25rzju7L6+v/NJg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795008601;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Type:
-	 X-Developer-Signature:X-Developer-Key:Content-Transfer-Encoding;
-	bh=DoOBTy4Tk4KM1tk2NwfW3r2DE81cjIG/a8hAQ7rYZRU=;
-	b=kVhl/nEXWTqp+takqGe9wPN0HTKXGFqN2jrzkHpTrBz2x+sNkO+S/wuVUZ5h5aFN7WiT
-	 pg60kbKQfy999MZDihGYTgk1H3CFrzMMyemV7HMFE6GISCELMC9jgahmz+JMUoiV1WqMY
-	 AfgXSzFTqTfDza1W6alDnhv3ESVbDc2+1AjGcb+XpTaaJs8Jf69wW8XZbeQxhWye8e3CB
-	 n7AJ3bGGha9Hu6wFvuG+JISSDrza/Q06DMfpiq/VSoS8Iu5zAQY+eS4laUU+3JgjhTQ7I
-	 RyHNu0VslalCgoXhvXMKujRPFJ0AUgi0/ulGrD5CIomt9YIOmHofDQ3ZSTYdQsG+0BA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795009668;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
+	 Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=GdCVP+3hsbqBtwLfEed4MNYxez46hHZZfSVgWwld1kE=;
+	b=MBgHlgkDaoZJMFbw6VSLOXwFZigEWk9bpfa1wddu02nFpOMQVwvtbAuLsq/rBsons/ip
+	 SKTpsiAT8vCdJItUM+I+9jQZSbUA2AwmrswZthtBEtSkxyHFvrswGg0ms1hRuXpz2hLMS
+	 ZBwLEXhLqVLTGaRCk1J7k2Ulxl9VLvoF5nFZEBMykpu2uhocOdaU/J2RBw19MeJFSY+pR
+	 p6MnrP2hCvUteGc5aqFPnZL6kF/f8Z9nQqynlxEPSMvbRlUYKl7t4752PJo/3ag/5Q/Pk
+	 ZsTTidFIGQ28aEZzDpFqmrOWnHp225ysVHnERD1HukBhQtwvK2EhqXULRFqcU9DXc4w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=epv2KiF2;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=google.com;
+	spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=DAy9W+My;
+	arc=none smtp.remote-ip=209.85.221.69
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com [209.85.221.69])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1C03606A320;
-	Wed, 18 Nov 2026 13:30:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 436B3606A325
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 13:47:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 436B3606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=epv2KiF2
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F45E1F000C4;
-	Wed, 18 Nov 2026 13:29:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795008600;
-	bh=DoOBTy4Tk4KM1tk2NwfW3r2DE81cjIG/a8hAQ7rYZRU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=epv2KiF2Rq5l53Ltl8HexVQ5cyr3TPjxn18/fKXQfq4N1tK6JOwxWOVBQtzdHI2IM
-	 V6WBYmhX63bYjVcLwyQ6druZZ4WzlkRV7G/BRPDvM8xQLtRV7FYG0S0fIsVZhnZCNI
-	 UOPUbGhtU1x3a3d+WOBOIDjLluVYV6VecfLMUGwKojwtTvEyuXzGCOQFJjktoqdhkG
-	 5vDL37pvBhp+wnymdzHQHbBYWemqiBohmPc8XSasJy6UFR8bKWsyEbFJ7/AMCsPyUs
-	 sqmxksd+SKAWPXgDr9JnWl0u9d5azGFNCzNG6TXPHOFu6/pjvrHjhHtyS7xwIRHIOI
-	 PQuuBNXdOdTcA==
-From: Christian Brauner <brauner@kernel.org>
-To: Tejun Heo <tj@kernel.org>,
-	Krystian Kaniewski <krystianmkaniewski@gmail.com>
-Cc: Christian Brauner <brauner@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ian Kent <raven@themaw.net>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Johan Hovold <johan@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Jens Axboe <axboe@kernel.dk>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Jan Kara <jack@suse.cz>,
-	driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	autofs@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
-Subject: Re: [PATCH v4 0/2] kernfs, sysfs: refuse splice on /sys/power/resume
-Date: Wed, 18 Nov 2026 14:27:20 +0100
-Message-ID: <20261118-verknallen-ungnade-kurven-9f83ec75cb88@brauner>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261116133903.400202-1-krystianmkaniewski@gmail.com>
-References: <20261116133903.400202-1-krystianmkaniewski@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=DAy9W+My
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-49090fde23aso688709f8f.2
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 05:47:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1795009667; x=1795614467; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:from:subject
+         :message-id:references:mime-version:in-reply-to:date:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=GdCVP+3hsbqBtwLfEed4MNYxez46hHZZfSVgWwld1kE=;
+        b=DAy9W+MyLFOASqeDRMgU3N3wKGWRUF2lqjNfoYn5YqYxH89hN0R+MYyUTkfDyErHV5
+         /VziCW3cpm+rGUwRE+OXFKdSdLDd/Qt/biwFO1m1oEgc+kxkDX+1LToArvbC1B6L3dk5
+         SORGGouRJtO8f5kmzGptUaYuTVg89+eN4JoEg0DoUz/TRfvASsawDuGYgzS+VRSLXKCJ
+         E45NTS1/rG98Wv6QwT7qFplx26MY+3yW7z3I5hT2/HxbopUJyrdF5Y8yjsv5DPPggjLa
+         OAhj8wCuLpBdvCphYE9WeLbuI+poRimRB6+u38RPBEUcevYIPzb55kYZARdeenzsgS6I
+         a+qA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795009667; x=1795614467;
+        h=content-transfer-encoding:content-type:cc:to:from:subject
+         :message-id:references:mime-version:in-reply-to:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=GdCVP+3hsbqBtwLfEed4MNYxez46hHZZfSVgWwld1kE=;
+        b=sraaH5e7Ch/v6zvWDk/WnMNn+Uv+STGZPxaruko0B/Kd3JHO9eBmBqrg9WO8+KHpqe
+         iHN0h2q3fIStMLZTLbusI3GXGlJQYcTOVTpMIpwjPl097HOtTBNQC6pnw9W9QEUIIGbi
+         c1zBePwXY+vnkP7BLa/boJ3ovDMd4nQah6cM92z1pvgkmflEaybawHWkrgbkE0e/j85p
+         MW5/BhbrqwNvk/OPtE8/794DNNTp/psTQNlvaoVhafATCneS4ioUyoZo6SkVWh3kOydq
+         aCpqH2D2yVdk6TX2fXveNbmQY29p2zEqOAxI+paR5Bql+bt0Uap3yIkgVXiW5jfRO1Xy
+         40dQ==
+X-Forwarded-Encrypted: i=1; AL+hErENVykugyJYsfVW402xsM0NrttYLQVVIag5KX1K5vY7aEiKAmc16SvzDW5DdJ74e6EbHmmbslapTA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z96wrkqSLrjHAw7XBwhyyzOcUBlm94ypmKECTtuJWTGNYNu5KYB
+	P3Iezxl58+aLHyzPFF7OIk8dmOwnEQz7JHkLitc1g6azqcKrCKTpjbkvoclLy+QvMHKlynsbQrd
+	qpcwPK7xu2+eidiuOiQ==
+X-Received: from wrtc5.prod.google.com ([2002:a5d:4cc5:0:b0:4a7:85c3:7bf9])
+ (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
+ 2002:adf:e009:0:20b0:490:1881:80ec with SMTP id ffacd0b85a97d-4a63a895742mr4177613f8f.36.1795009666290;
+ Wed, 18 Nov 2026 05:47:46 -0800 (PST)
+Date: Wed, 18 Nov 2026 13:47:44 +0000
+In-Reply-To: <20261013-clk-type-state-v6-1-a5e9977b3509@collabora.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,40 +79,44 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1410; i=brauner@kernel.org; h=from:subject:message-id; bh=7YVp2rjs4Iw1cumttAP8imErlAFVjA2olxiCGh9aAJk=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWT9XWHhk30rSdaKNarpQf2xb0e0V3W6fTHnPj5xrvANN s9+dsljHaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABNJ7GP4n/Cs6GLPLZecfK2F rf2uKxxbyzZz1uy7cXFS9L/kY3ZaPxkZFmhNCrWNE37bejFJ/4Zg1yWJXxkc/zeZpciumjO5x3c FFwA=
-X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+References: <20261013-clk-type-state-v6-0-a5e9977b3509@collabora.com> <20261013-clk-type-state-v6-1-a5e9977b3509@collabora.com>
+X-Mailer: git-send-email 2.56.1.703.gf848ed807c-goog
+Message-ID: <20261118134745.657917-1-aliceryhl@google.com>
+Subject: Re: [PATCH v6 1/7] rust: clk: use 'kernel vertical style' for imports
+From: Alice Ryhl <aliceryhl@google.com>
+To: Daniel Almeida <daniel.almeida@collabora.com>
+Cc: Alice Ryhl <aliceryhl@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Michal Wilczynski <m.wilczynski@samsung.com>, Drew Fustini <fustini@kernel.org>, 
+	Guo Ren <guoren@kernel.org>, Fu Wei <wefu@redhat.com>, 
+	"=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=" <ukleinek@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
+	Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	"=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?=" <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
+	Andreas Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>, 
+	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-riscv@lists.infradead.org, linux-pwm@vger.kernel.org, 
+	linux-clk@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+	Boris Brezillon <boris.brezillon@collabora.com>, 
+	"=?UTF-8?q?Onur=20=C3=96zkan?=" <work@onurozkan.dev>, Maurice Hieronymus <mhi@mailbox.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 16 Nov 2026 14:39:01 +0100, Krystian Kaniewski wrote:
-> This series refuses splice on /sys/power/resume and gives writable
-> opens of that file separate lockdep classes, as Tejun suggested in the
-> v1 discussion.
-> 
-> The reported cycle is assembled from two operations. Splice into an
-> ordinary writable kernfs file records pipe->mutex before of->mutex. A
-> normal write to /sys/power/resume records of->mutex before the autofs
-> pipe locks when resume_store() resolves a relative path.
-> 
-> [...]
+On Tue, Oct 13, 2026 at 02:07:40PM -0300, Daniel Almeida wrote:
+> Convert all imports to use the new import style. This will make it easier
+> to land new changes in the future. Drop the `Result` import, which the
+> prelude already provides.
+>
+> No change of functionality implied.
+>
+> Link: https://docs.kernel.org/rust/coding-guidelines.html#imports
+> Reviewed-by: Alexandre Courbot <acourbot@nvidia.com>
+> Reviewed-by: Onur =C3=96zkan <work@onurozkan.dev>
+> Signed-off-by: Daniel Almeida <daniel.almeida@collabora.com>
 
-Applied to the vfs-7.5.kernfs branch of the vfs/vfs.git tree.
-Patches in the vfs-7.5.kernfs branch should appear in linux-next soon.
+Reviewed-by: Alice Ryhl <aliceryhl@google.com>
 
-Please report any outstanding bugs that were missed during review in a
-new review to the original patch series allowing us to drop it.
-
-It's encouraged to provide Acked-bys and Reviewed-bys even though the
-patch has now been applied. If possible patch trailers will be updated.
-
-Note that commit hashes shown below are subject to change due to rebase,
-trailer updates or similar. If in doubt, please check the listed branch.
-
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git
-branch: vfs-7.5.kernfs
-
-[1/2] kernfs, sysfs: add SYSFS_NO_SPLICE to refuse splice
-      https://git.kernel.org/vfs/vfs/c/0df09178ae40
-[2/2] PM: hibernate: refuse splice on /sys/power/resume
-      https://git.kernel.org/vfs/vfs/c/af5f879f9d4e
+Alice
