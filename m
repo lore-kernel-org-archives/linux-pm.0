@@ -1,100 +1,107 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.53
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.194.67
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794988020;
-	b=1YiceTLk2p+ajxhpAPddN76H1RDnOiwaLeyBQ6GJQYZnfCGcAngja3ZVvaW6bmVgZvhn
-	 4JPAuDm1GDhZgOlb+Uj/2BM7sxllzS4OJX/ndD99M8qkxYO0qA7EkTa/Lo5SuWAJaMjaW
-	 XYDE0VhzRR8sMMm8QMbLyAb5yF2CqZ8BCKnU0fc2hmJiE+6b366tF0/EsvtrvNAO2LuiS
-	 R4P/ptiYlSNXvzPtvg0XeCbeNkgj6vqEjeRKfzEK571GReVAy44Rf8slKQSSz/z3X/xAs
-	 aO09H+nH290aZoTXZ5UXTo9QogPRUFKwTJHx8wiGnuldflHwMBdaeu27p/3LUWutYIQ==
+	t=1794988447;
+	b=ZpYTp4+elHiXI0YPszGyL9+2TsEXhCx8t/7s2BpIex2ctNXQn9uVGpXeE0kbakhvWR4c
+	 57MaOQsQx7CyqQQgzNDvX6bH4QzO2N1DSGTOkJdbnc2rZK9z5WdvMGRiTLEyWihXai0zJ
+	 76roC5NBJ+VkUM9ZRxixokUpGSQvEPVEEX/0xCAtvSQmfJI33uMk7zxtB6wXzreQtyyCW
+	 AGPCRMWYDrdsR682FAqeFIB9XS/NIfdK+hZupMxjd44muyQ2gds848t4JRxH41bID/ZDS
+	 g5U5nmz+ZtpzseqNXrx5WHmpPMirATy+if92XRWAJmeuGY0Hl0E4/yPPDydH66OvHOQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794988020;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
-	b=5Iwyt0ES7XC2P3sXfI1PMckNH9qwqPzb1JfDG9XIy4kJQF4b/zV19GeYPbc5se/6fXdB
-	 NtAgYh7fTle1jScUJ6u+0sBTbdF+v5/QzWFeGNwFdSXMaOJvazarRQLEJuRyEyY4mppht
-	 tdhWQeNwLTdhFSl/Qrfr2naA6+4VaYX2wG5g+R7pduiCdQY1QYy/mC9ctQgMGCwc9P71u
-	 wM5y9VopFGTc4sVdm9iAtz5iBfwB29cRH636ymjkr+uS0qWHxj+aZdsSRAYpJgQ3Z6YxU
-	 xantWyYkkMpRLABw1DTZugjRTku8KlY9icHGufBGNIqovuqikPlU8zrQprCftznLvLg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794988447;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:Content-Type:Content-Disposition:
+	 In-Reply-To:X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=Bz0I6CT+DYTzmMDg9zFl71rJDbnSeOrM3Ki4H2rXybE=;
+	b=lJzXxGal+l2wVwwDU5AX9LaDd54QZqH5cRGvHJdYfJu/gqTNTsomwFvDoD3ApZPE5gHO
+	 z2a2J1j8BVq3r4hKC6BSyljBSE32p3GFRbDofvxgkGyX31aS7St5UkQaRZyHHEAHrIzd9
+	 g8jNI6uJxnt2ZleQtFb+jU+KWredAoDBbA5XxVq6Zfc9bUUW4VgqlycK9JAtoLwnbJ3ie
+	 iF+UKqHsqKS7fH+9sd7sb3KVwn1KfMlkrSXo7SfaMWgjjLPpOKMl9Xnm5kZyRUjDU5w2D
+	 ikN2kk9z47mTuXFDs+DX7130E2dJ1IMkSb1tFACm8NEVO1mW7GYb3HzR4cCT+RBCfAA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=flipper.net;
-	spf=pass smtp.mailfrom=flipper.net;
-	dkim=pass header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=KwxIBuS9;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.53
-Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=nvidia.com;
+	spf=fail smtp.mailfrom=nvidia.com;
+	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=BpH9clYr;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.194.67
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011067.outbound.protection.outlook.com [40.93.194.67])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A134606A32F
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 07:46:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3A134606A32F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6834F606A325;
+	Wed, 18 Nov 2026 07:54:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6834F606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=KwxIBuS9
-Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c50cc8e0f84so85169466b.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 23:46:58 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794988017; cv=none;
-        d=google.com; s=arc-20260327;
-        b=O/aEIw+tyQhqEAFy2LEFhEVzIBqKmhUIHW4di2QuNIF5sBgCKtYL3uEP3WKh0DXb7X
-         g21lFRZlsRwVrWysX+5VmRVJTZ/fXaUuftZJdQ1mwIYXkbgtCa1Nwf8b2ctN2jk2tjeX
-         heSyd0KgY0pdT57l77b992BlutuXqBDVE6N36uKCD9q+SDWZQwSoemD8+Es7Bgq2Uh9c
-         SMPDbtDt3U1onU1ucTRnOAvpnWYo69OFn710TZmSgZQC+zy0Z5gS58yLa0rBA3IPLK/b
-         3ZDYSncPvywMwsnU2VKwgGQsuaFAm+dCeHt35Z2Pvb+B8Hy00k+XW11IlMqTMSFcetB4
-         ULjg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
-        fh=NsQVrDiE26gh1hGWZNGrxmtWl/Kny/TICpQZsCS24/4=;
-        b=lthcu5TPC9SHUxXhWAJrkMIPiWbwUZ5PhlkdwRNxjjqS2oCPUFXekBk7WpPDdMw1c+
-         uDvaGcuKQtujh3EheUVFd+dvCercFSZ9mwwELpWefPMZbh2xNCnRS0xBJKTf3NVtPViC
-         vTB88UDjdes9hPhe/DTA7lzebzpkyhXb3n8fm+UjgpHBs1oMzosTPcF88/VZa+ZGEN3/
-         hwA4+laUM3z92AZDJhs6VB02GyrAvM8NFt+xO/L5PTYUMb6MYiX6jAKht8BkieHv4zvN
-         u7/SpJ6oUZXJPm8HtZbTxXIqfgSSc9jTU/rphb3MAgHjcntoBb5Gtmt9sleu/oQBIh5N
-         +Zlw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1794988017; x=1795592817; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
-        b=KwxIBuS92KiVES7EPspJTIkt+Vyfny/uZgiUrllnoPC8h5ws2iqgOx6IGqU3bdxpJF
-         dTh+jwl6pe/Mg2vFUsOi2NsXr//POfNQZwoZGHxLw8YE2AypIZN05YQ++EvnjV5+l1NT
-         +NATB2riwpwfALaIqHaZQcMqilv4NY7h7Kd93KIg1VEqkvhv9rwn/bFvmZomybfh0gk0
-         dxSxiw2IovXsuFbv+f5Qhxzv2Q5O4vL3W/pYQc9KJe02/JYqpLW7h7bxxzji6Z2SsDLR
-         Ul+uqGPAIPJHrYy7FkTC4ddPTvtIgQQ6nMTZCUHj0DGq1S9fjp9CUECwLscDn+TXP/oJ
-         8b1Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794988017; x=1795592817;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
-        b=f3594cj9sYNK1HTu8Z2hZF7M2uc4YfHAxq6nW0JhFbLypVD1afgTXo30FGkipCKkgV
-         SDgJMaMpccK/5QIjawsHZpC62zX9aMhDK2T91B9nNks9yoVkd7Y9lCfut8aNjKZo2tiz
-         GCe9fosp0a0xeUmNowa/0mxo/A5Z0Z5Y7LHLv0roJABnxyb7M359OzStRvv7aU/R8ula
-         i2393hGfBuvMhtNH1488LPkdw0Oh+p+zmidnOib4hXAxP6vlfV+ggkvCO7DgFJA/6P1p
-         3h1QD38/NYWM/4gJ9UpE48ULaPcHCLfGw6lx5RPjSGbq1xt2YdvR/G1cHSotwlKbB2hn
-         8ndg==
-X-Forwarded-Encrypted: i=1; AL+hErGdecRLrCF8fNcv8wmWCWaQBCcMNTXZIze03camEt6Jj+94l1uvbhWbVzPNLac2FcvFz+6xjZYgDg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z84ogOiLQgVBF1WDiS73Ak4CTc0YNVSEiv6SqiMeTzhtAR3srss
-	twp1mRMjB79xTQCJGrk+T/YfOUxatbPqDqrGydVDYKe2MOdS5QYBIoQEIa4bpRbpVWTlkbsA9w2
-	2TBLrNX7S4ZTQiFsx3guHNBv9wKYDOHYTsni/fdBjvw==
-X-Gm-Gg: AYBFou2/YzIJp8UXE1MMiTpNNtu25NcKYhmLIkkXXBpjEs9vRyQ4kw6KbIrajsdHJCu
-	iEpXMSWpdwSBCCQj19BcM9h52dwDe8aFzOHw6lQnMmqhXiLno+yfr0WdkfWOETUcJb6FbFfV7vu
-	6dZBBbEBRUGfLe5vDPJu/LR/PUBk2sJcAlK9dEeTGXEdWVwYF1f3n53/Pux9ZE5WeuaGnS5Oktl
-	BecZxVovSN+i29FknKGGnKQWMJZCZr0VyjwyGEQa8VejLgwG28M6Wplbf9HZvktmxyN/66GsshX
-	zC8q9fw+N9EfdzvJVQbSadumfNPMg0aRI3eonP6mB6tGiLtoxVEfFipfneKa2zyGjr/yBSpxdRe
-	MxY+vDm7FROwaIwgfP8AodLK57tujd6C/AYiypqm/tkIuepXANCwzQPHgpVM8/lgFZpa/Rw==
-X-Received: by 2002:a17:907:9446:b0:c4d:456c:4a29 with SMTP id
- a640c23a62f3a-c510e16a720mr128985866b.14.1794988017524; Tue, 17 Nov 2026
- 23:46:57 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=BpH9clYr
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Q9MzpVI1lUReK/5fEPe1Uv/EKO/+8xUO4q6wSeRJUKod4q/5UjUOidslkeet9102pkF6h1QVnctAJztUpVp7ULhMAgUv8RDWFGQxi/lcvP8GTh1lA4Vdl4FHfsZO07AbuHHXioUard5v6A3sdFDVLwj43XijLZP4kGO/cLVo22lnzHzzEI/ANyPK6WtpfwotVHNZnVRH2QLdtQYhQ0Z3MUGDJkIWrPYrUgW/XZRYVHeGDtBTe0SLHWBe/mhzQBi2UdBZxaCutuHBJGeirCpTflMx6ZBtJSFoSVONzjIX/pPW5/G7qY2rg7AnM9hT+BDTqgiOdhNNIZUiRwO3QOjH5g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Bz0I6CT+DYTzmMDg9zFl71rJDbnSeOrM3Ki4H2rXybE=;
+ b=Au0WZTPZsc7nPb1AjT/0esAV6h4grgTK9iTMv77X5bEcpgH6L9+iTcJGoo2lfMrZ8lejQCW0RkaGTkvmXpZKgZebnFFSr6VK34VzuYmv449r4q8E4CIQeoDzOYGBfuyHW+hB+5Eb7z5SO4SScM2BasNiF6HBXHCKYE6twJhW4ZNLgw6nq3RW1cMiu8HXv0Rc+8gB7ymF6YhVQCEgQg/UvOfDkEBmh69S11hGrrVv3+XUs98341pIVOAdJ2TF8V+0qKxKv4tIHbptLPSCNS/E23yJWeqzPAtSRvOSLyBCU1oQbDYRvpRQv6GUA++6enUA68dz5SZGUYGEiSUuHMFGlg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Bz0I6CT+DYTzmMDg9zFl71rJDbnSeOrM3Ki4H2rXybE=;
+ b=BpH9clYraFNPXY6oCG/ZcfUhjS4D3C54SPfIdbctsO0jPps8wK0hvENfwK2/EVqIHGZXQZ4d333msPjYSSiN/BAdKuj0a5rBSsV7lLEiyouP9Ar4n0O4s5Rjwl8HCU+4UaYDvlVNoCPotsD98BPQMiBjUz5RQa8lPSsT6eXHtSdBEAtLbEyA79cfrkz45K+ZwPlo3IINw4ihdVhGopADIymJz9u16YdQ5rWhe+OpubFCX59MFHU3phnmS478TqhT0vhFwwhFhyCUQghwZ6Y1go1JERIOJPtZzP80k67rcxzyqMj8ujPQ/ubOM6mVVUUqcQKwP0E2CFnAY+pE8rtQMw==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
+ by MN0PR12MB6001.namprd12.prod.outlook.com (2603:10b6:208:37d::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
+ 2026 07:54:00 +0000
+Received: from BL0PR12MB2370.namprd12.prod.outlook.com
+ ([fe80::86cf:c3ec:2cf5:74c8]) by BL0PR12MB2370.namprd12.prod.outlook.com
+ ([fe80::86cf:c3ec:2cf5:74c8%5]) with mapi id 15.21.0615.009; Wed, 18 Nov 2026
+ 07:54:00 +0000
+Date: Wed, 18 Nov 2026 15:53:54 +0800
+From: Richard Cheng <icheng@nvidia.com>
+To: "Gregory Price (Meta)" <gourry@gourry.net>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, kernel-team@meta.com, 
+	linux-doc@vger.kernel.org, driver-core@lists.linux.dev, linux-serial@vger.kernel.org, 
+	linux-pm@vger.kernel.org, damon@lists.linux.dev, linux-cxl@vger.kernel.org, 
+	akpm@linux-foundation.org, david@kernel.org, liam@infradead.org, vbabka@kernel.org, 
+	rppt@kernel.org, surenb@google.com, mhocko@suse.com, corbet@lwn.net, 
+	skhan@linuxfoundation.org, rdunlap@infradead.org, gregkh@linuxfoundation.org, 
+	rafael@kernel.org, dakr@kernel.org, johan@kernel.org, jirislaby@kernel.org, 
+	kasong@tencent.com, qi.zheng@linux.dev, shakeel.butt@linux.dev, baohua@kernel.org, 
+	axelrasmussen@google.com, yuanchu@google.com, weixugc@google.com, baoquan.he@linux.dev, 
+	baolin.wang@linux.alibaba.com, yury.norov@gmail.com, linux@rasmusvillemoes.dk, pavel@kernel.org, 
+	lenb@kernel.org, hannes@cmpxchg.org, brendan.jackman@linux.dev, ziy@nvidia.com, 
+	sj@kernel.org, muchun.song@linux.dev, osalvador@suse.de, nico.pache@linux.dev, 
+	ryan.roberts@arm.com, dev.jain@arm.com, lance.yang@linux.dev, usama.arif@linux.dev, 
+	kas@kernel.org, xu.xin@linux.dev, chengming.zhou@linux.dev, 
+	joshua.hahnjy@gmail.com, rakie.kim@sk.com, ying.huang@linux.alibaba.com, 
+	matthew.brost@intel.com, byungchul@sk.com, apopple@nvidia.com, rientjes@google.com
+Subject: Re: [PATCH 02/22] mm: publish and clear node memory states via
+ helpers
+Message-ID: <av1ZBTpLpJC6DJqA@MWDK4CY14F>
+References: <20261114070959.3490008-1-gourry@gourry.net>
+ <20261114070959.3490008-3-gourry@gourry.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261114070959.3490008-3-gourry@gourry.net>
+X-ClientProxiedBy: SI1PR02CA0048.apcprd02.prod.outlook.com
+ (2603:1096:4:1f5::11) To BL0PR12MB2370.namprd12.prod.outlook.com
+ (2603:10b6:207:47::27)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,215 +111,204 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261021-pcie6_fix-v1-0-ad37134c35a3@oss.qualcomm.com>
- <20261021-pcie6_fix-v1-1-ad37134c35a3@oss.qualcomm.com> <CAKTNdwG5XA_chr2ZM9qTnr2RaDMzOjdb85bRdCr4aJCr1EGy7Q@mail.gmail.com>
- <398a1d12-c28b-418c-bbcc-170d781223d6@oss.qualcomm.com> <CAKTNdwEzbYAqM5ABxU+tfh4juU=wgYp=QXyjvdA1haanU0e8tQ@mail.gmail.com>
- <861b48b3-32e2-459a-a6e1-75d93f10e1c9@oss.qualcomm.com>
-In-Reply-To: <861b48b3-32e2-459a-a6e1-75d93f10e1c9@oss.qualcomm.com>
-From: Alexey Charkov <alchark@flipper.net>
-Date: Wed, 18 Nov 2026 11:46:46 +0400
-X-Gm-Features: AclHuK-mzUUyPR_nvHlWIkQreDiwLH9wtGyUE6yWiokuHebhGdjJ_j61S1Ijpdw
-Message-ID: <CAKTNdwEOiPzvziW5VsNrHcFXEr1E7YjbabMfC3fsG6q+5-TnzA@mail.gmail.com>
-Subject: Re: [PATCH 1/3] dt-bindings: connector: Add PCIe M.2 Mechanical Key B connector
-To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Cc: Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, linux-pci@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL0PR12MB2370:EE_|MN0PR12MB6001:EE_
+X-MS-Office365-Filtering-Correlation-Id: 58f4c84a-3eb3-408a-5b28-08df45491b15
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|366016|1800799024|7416014|376014|18002099003|22082099003|261009223027099003|4143699003|11063799006|56012099006|261026140227099003|261028144727099003|261102123227099003|261102130727099003|261026121527099003|261021123027099003|261021121427099003|261022105027099003|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	lt0OmyFX7aR4rBVqunNKivPTc9OTqiupFmFy2aOpjJx9PsEysqje2M1YoroCSIpniDYuwgI3zE2bqS3OcjVMzyTKHaGsgUplKRaaC9d0vprfClSlTGb4qJO3cJLBwBOa4w+kIYrqnhTBKMplvRazbrnVoExG7JxW5rYL6whX6j3V6Xrbywhph2WAI+2VqnCtIh36S1A5RrkmH72QrPpZtE6RdahSGPIrQvfk52T8diMQt1QQfP7CY9s0iv2AgDcvh8Oj2ss3vefsNxhQMJj+kqCjEZ4Ar6rIziIUWy++NNNmuMShRQwCMObmqdoioNVGHzEHLlAoh18Gsh3ocpbhtxCfhg6fO/C4gtJREYtjPOPH4adolMldHteF0HSlWaK0eX5FTcIvUbgkTND/OUviy/TEtD28/acHABKPYsdUwyhPlr6nsZnTpZg7NII2JpnUUWCJEgL9ioivWJp+3BWafNRoggXFcV1C63mYid5CgfbN0OEisnENRW6QFAM8Ta/J6S1tk8yF5ejFXOHr06fCMDDtSVgSKGIBrBKIrwLzdVAKlzgCPJT3cDaXXTHfPqsVeNN4C5r4mhmZXfLthSLewexn3qezylYz0QoC6Oo4lqdspKv6JSTUCluhE1b2VasgVkpcDvglwJdBcV4HNIBGq+DJx+Wt/vwp24mXWGQ0v3U=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2370.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(1800799024)(7416014)(376014)(18002099003)(22082099003)(261009223027099003)(4143699003)(11063799006)(56012099006)(261026140227099003)(261028144727099003)(261102123227099003)(261102130727099003)(261026121527099003)(261021123027099003)(261021121427099003)(261022105027099003)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?MlJg5jCnkA9axlfdz5I1BjoPQcj1EUgFkKOEf3iwGjXIbH5kliFlzeDNvkYq?=
+ =?us-ascii?Q?xP0//vqkOaBE+U2plNvjSKrO4QTI6YWmZkQTPDOEVSEJzMcurKMvQLRzG3Ov?=
+ =?us-ascii?Q?N/6SnyqJKkUkBEbtm9JhifLzuNRnLnpFdqLBnkX9YnYwNRb2vTNA/h1gut0u?=
+ =?us-ascii?Q?pZ6nrMdye7U2qaRe6FjJSm7IEjEK1pcxO+z01P1xLAzjRn0BR+WtS418+6cO?=
+ =?us-ascii?Q?Nn8fMMTbiuimkTvow9ZYyNdIXQB1AaXbovQ53CN0ev2vvfpbpo1I4HUJKLsN?=
+ =?us-ascii?Q?OUwhADhWC0/E6honjlaHFwSkxqnUHyPCDRj9SSXgXMeJElHfdkeAwiaEXiuC?=
+ =?us-ascii?Q?CUWSNLc7grRPqeH1LmyEyC2iHjKp1jvMG7sifUhQHFGIA7dX7jhpYJbEwIRg?=
+ =?us-ascii?Q?v4Ope3muirFwpF+qxRGm0pj0DElyvX4rdpw6HTyxupHNrXkM2Jta0uee+ydN?=
+ =?us-ascii?Q?40VzldloW3D6JOy/QRoBgvsukBByzsxEk5MGGhe1FMkafMooHzTiSIidus2r?=
+ =?us-ascii?Q?pUZ+gs5dEAgJAepB5qQsdIcNyzsMqvgntFY017EnDYug0V/1UE+qPjojQt26?=
+ =?us-ascii?Q?+Uh8uHjVuDRqg+AiTLbUrB28EEODCf5R21cwJhfsMUfyOvp/aY4gQ/UiZZZO?=
+ =?us-ascii?Q?S+HgesH2f/NcgEb4Cdl3LcDt3vZbxmuP3Ns629PnTk62E3+3NVJGCaoT87Nc?=
+ =?us-ascii?Q?raL/mKgy8k9fwf1eQ6m2OnhRHUyx2Zwagb/O0T4H4DDNpBEuEjIFc/mjS2uQ?=
+ =?us-ascii?Q?jo+O0eF+/lVr8/eXNiIe+EfB63Mbw+mTMLE78XeFKHvNK4kB4/9VC2wjzwH3?=
+ =?us-ascii?Q?UuzfaIok/wa3/S+Sf5qi7b4/B/4fDOCsg9LZ73+KjQBWMOZcRfpNvhjEiiub?=
+ =?us-ascii?Q?SFypMgg7WZS4d5h8391mYID6/8RCPskxXJVdc+WnBYJkiP6WrZUWJu8ilfC+?=
+ =?us-ascii?Q?v/OhZWaz+0aKl1zVwOd6JEoFd3O+3GCysVu9OGvzRSa17tnXBtLo8nAlKngQ?=
+ =?us-ascii?Q?nBfVvXvz38MmdbzHqi2CgSFvTDdPp85c0LeEcCtjI96H+8ZIzsFCE/ltP1CY?=
+ =?us-ascii?Q?X5//S6NoU1g+dh754yu9UZN6XIKJaC7aHqY+5hkLHWZ5JSHeI6jvNJD8kALh?=
+ =?us-ascii?Q?3fZYCZU7ogcm2T+0TamPf21BU/QVsobV6H/57IU1y0Gr8YUlH2MuxZ59rJXt?=
+ =?us-ascii?Q?ryiUKqCv1gJOwh2BbU0HLIr0iszh5RLxXcEaD0YnCR7m+gyHBBesabMP2fWZ?=
+ =?us-ascii?Q?aP4dMq/88PVz64l9JyGGsKWjQA9R+OsAI0Quu9QUhRl40TnOdjQJZewiK/Fl?=
+ =?us-ascii?Q?sMhj47ClqW2idL/jRJREnt7II6zl5eaN4vNPM/IIM8Ks9xpB6X4JJxqnNvCV?=
+ =?us-ascii?Q?EMtY4yTzw1by36M3v9QTuAc7Z6vp7biw5Vg8OWdcslNqrPxLnbRjiHy482cK?=
+ =?us-ascii?Q?o2INXPYvRF7qHk0d/j4jMrFGwdecczeXFYEkHj+rBMILhmlkCcgQAwxz51q4?=
+ =?us-ascii?Q?KM9fYcI4r9PYlvYn+ni8Ue8W4RgcXVn9dtmV52bpeqYv++8oHS0OIAaiXIc+?=
+ =?us-ascii?Q?E9bZng82zkG7a1748c1qHXwEIUO71lSSWMeub5cPfKCHa6LXs/ZDOL2rGnVC?=
+ =?us-ascii?Q?2CCa8NK+H6wM3d5leyOcU2d2sBgzItOho4WIc9xdKYJVKPCKr9dvHxkK/Ird?=
+ =?us-ascii?Q?cC+jtMlglfQHl2LlZWlbuPf65eNZDrV7GmMX0mnqik64PUld?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 58f4c84a-3eb3-408a-5b28-08df45491b15
+X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2370.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 07:54:00.3567
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ocebmwWXrMmSKYPKnWEeRMFUUEweR/yVCOM2AHXa9Gs10IrbY5n4SS0Z7UbGqrQMvxze7Q5CAlBSXJDAcwUz0g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB6001
 
-Hi Krishna,
+On Sat, Nov 14, 2026 at 02:09:39AM +0800, Gregory Price (Meta) wrote:
+> N_MEMORY, N_NORMAL_MEMORY and N_HIGH_MEMORY are set separately in
+> free_area_init(), check_for_memory() and online_pages(), and cleared
+> in offline_pages().
+> 
+> Centralize those updates in node_set/clear_memory_state().
+> 
+> Behavior is unchanged.
+> 
+> Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
+> ---
+>  mm/internal.h       |  3 +++
+>  mm/memory_hotplug.c | 11 ++++-------
+>  mm/mm_init.c        | 14 ++++++--------
+>  mm/page_alloc.c     | 15 +++++++++++++++
+>  4 files changed, 28 insertions(+), 15 deletions(-)
+> 
+> diff --git a/mm/internal.h b/mm/internal.h
+> index cd3675c044e0a..608a83c34c224 100644
+> --- a/mm/internal.h
+> +++ b/mm/internal.h
+> @@ -62,6 +62,9 @@ void lru_add_drain_cpu_zone(struct zone *zone);
+>  void folio_deactivate(struct folio *folio);
+>  void folio_mark_lazyfree(struct folio *folio);
+>  
+> +void node_set_memory_state(int nid, bool high, bool normal);
+> +void node_clear_memory_state(int nid);
+> +
+>  /* mm/vmscan.c */
+>  unsigned long zone_reclaimable_pages(struct zone *zone);
+>  unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index f04a248d8adaf..490f400498f14 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -1184,14 +1184,11 @@ int online_pages(unsigned long pfn, unsigned long nr_pages,
+>  	online_pages_range(pfn, nr_pages);
+>  	adjust_present_page_count(pfn_to_page(pfn), group, nr_pages);
+>  
+> -	if (node_arg.nid >= 0)
+> -		node_set_state(nid, N_MEMORY);
+>  	/*
+> -	 * Check whether we are adding normal memory to the node for the first
+> -	 * time.
+> +	 * Publish this node's memory states, including any newly-normal zone.
+> +	 * Hotplug never adds highmem.
+>  	 */
+> -	if (!node_state(nid, N_NORMAL_MEMORY) && zone_idx(zone) <= ZONE_NORMAL)
+> -		node_set_state(nid, N_NORMAL_MEMORY);
+> +	node_set_memory_state(nid, false, zone_idx(zone) <= ZONE_NORMAL);
+> 
 
-On Sat, Nov 14, 2026 at 5:45=E2=80=AFAM Krishna Chaitanya Chundru
-<krishna.chundru@oss.qualcomm.com> wrote:
-> On 10/22/2026 2:56 PM, Alexey Charkov wrote:
-> > On Thu, Oct 22, 2026 at 8:27=E2=80=AFAM Krishna Chaitanya Chundru
-> > <krishna.chundru@oss.qualcomm.com> wrote:
-> >>
-> >>
-> >> On 10/21/2026 9:14 PM, Alexey Charkov wrote:
-> >>> Hi Krishna,
-> >> Hi Alexey,
-> >>
-> >> Thanks for the thorough review, this is helpful.
-> >>> On Wed, Oct 21, 2026 at 5:51=E2=80=AFPM Krishna Chaitanya Chundru
-> >>> <krishna.chundru@oss.qualcomm.com> wrote:
-> >>>> Add the devicetree binding for PCIe M.2 Mechanical Key B connector
-> >>>> defined in the PCI Express M.2 Specification, r4.2, sec 3.2.19.1. Th=
-is
-> >>>> connector is used to attach WWAN Adapters to the host machine over
-> >>>> interfaces such as PCIe, USB3.1 Gen1, SSIC, or USB 2.0, selected by =
-the
-> >>>> Adapter's configuration pins.
-> >>>>
-> >>>> The connector provides a primary power supply of 3.3V/VBAT, along wi=
-th
-> >>>> optional GPIO signals for WWAN-specific power/radio control:
-> >>>> FULL_CARD_POWER_OFF#, RESET#, W_DISABLE1#/2#, WAKE_OQN_WWAN#, and DP=
-R.
-> >>>>
-> >>>> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualco=
-mm.com>
-> >>>> ---
-> >>>>  .../bindings/connector/pcie-m2-b-connector.yaml    | 146 ++++++++++=
-+++++++++++
-> >>>>  MAINTAINERS                                        |   1 +
-> >>>>  2 files changed, 147 insertions(+)
-> >>>>
-> >>>> diff --git a/Documentation/devicetree/bindings/connector/pcie-m2-b-c=
-onnector.yaml b/Documentation/devicetree/bindings/connector/pcie-m2-b-conne=
-ctor.yaml
-> >>>> new file mode 100644
-> >>>> index 000000000000..a7f4bcbc5119
-> >>>> --- /dev/null
-> >>>> +++ b/Documentation/devicetree/bindings/connector/pcie-m2-b-connecto=
-r.yaml
-> >>>> @@ -0,0 +1,146 @@
-> >>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> >>>> +%YAML 1.2
-> >>>> +---
-> >>>> +$id: http://devicetree.org/schemas/connector/pcie-m2-b-connector.ya=
-ml#
-> >>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> >>>> +
-> >>>> +title: PCIe M.2 Mechanical Key B Connector
-> >>>> +
-> >>>> +maintainers:
-> >>>> +  - Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-> >>>> +
-> >>>> +description:
-> >>>> +  A PCIe M.2 B connector node represents a physical PCIe M.2 Mechan=
-ical Key B
-> >>>> +  connector. Mechanical Key B connectors are used to connect WWAN d=
-evices to
-> >>>> +  the host machine over interfaces like PCIe, USB3.1 Gen1, SSIC, or=
- USB 2.0,
-> >>>> +  selected by the Adapter's configuration pins.
-> >>>> +
-> >>>> +properties:
-> >>>> +  compatible:
-> >>>> +    const: pcie-m2-b-connector
-> >>>> +
-> >>>> +  vpcie3v3-supply:
-> >>>> +    description: A phandle to the regulator for the 3.3v/VBAT suppl=
-y.
-> >>>> +
-> >>>> +  full-card-power-off-gpios:
-> >>>> +    description: GPIO output to FULL_CARD_POWER_OFF# signal. This s=
-ignal is
-> >>>> +      used by the host system to turn off the entire Adapter. Refer=
-, PCI
-> >>>> +      Express M.2 Specification r4.0, sec 3.2.13.1 for more details=
-.
-> >>>> +    maxItems: 1
-> >>>> +
-> >>>> +  reset-gpios:
-> >>>> +    description: GPIO output to RESET# signal. This signal is used =
-by the
-> >>>> +      host system to place the WWAN Adapter into a power-on reset c=
-ondition.
-> >>>> +      Refer, PCI Express M.2 Specification r4.0, sec 3.2.13.2 for m=
-ore
-> >>>> +      details.
-> >>>> +    maxItems: 1
-> >>>> +
-> >>>> +  w-disable1-gpios:
-> >>>> +    description: GPIO output to W_DISABLE1# signal. This signal is =
-used by
-> >>>> +      the host system to disable the WWAN radio on the Adapter. Ref=
-er, PCI
-> >>>> +      Express M.2 Specification r4.0, sec 3.1.12.3 for more details=
-.
-> >>>> +    maxItems: 1
-> >>>> +
-> >>>> +  w-disable2-gpios:
-> >>>> +    description: GPIO output to W_DISABLE2# signal (default functio=
-n of
-> >>>> +      GPIO_10). This signal is used by the host system to disable a=
- second
-> >>>> +      radio on the Adapter. Refer, PCI Express M.2 Specification r4=
-.0,
-> >>>> +      sec 3.1.12.3 for more details.
-> >>>> +    maxItems: 1
-> >>>> +
-> >>>> +  wowwan-gpios:
-> >>>> +    description: GPIO input to WAKE_ON_WWAN# (WoWWAN#) signal. The =
-Adapter
-> >>>> +      asserts this signal to wake up the host system. Refer, PCI Ex=
-press M.2
-> >>>> +      Specification r4.0, sec 3.2.13.3.6 for more details.
-> >>>> +    maxItems: 1
-> >>>> +
-> >>>> +  dpr-gpios:
-> >>>> +    description: GPIO output to the Dynamic Power Reduction (DPR) s=
-ignal.
-> >>>> +      This signal is provided by a host system proximity sensor to =
-the
-> >>>> +      Adapter to trigger a reduction in the radio transmit output p=
-ower to
-> >>>> +      meet regulatory SAR requirements. Refer, PCI Express M.2 Spec=
-ification
-> >>>> +      r4.0, sec 3.2.13.4 for more details.
-> >>>> +    maxItems: 1
-> >>> This seems to be missing the four CONFIG_* pins, which are quite
-> >>> crucial in these connectors, as they define which interfaces the
-> >>> module asks the host to provide on the respective pins. Without those
-> >>> module type detection is impossible.
-> >> Agreed, thanks for catching this. I will add a config-gpios property  =
-(4 GPIO
-> >> inputs, one per CONFIG_0..3 pin) to v2. It's optional, not required - =
-a board
-> >> that always has a known, fixed card type in a given socket (e.g. QCOM
-> >> glymur-crd's WWAN-only slot) can just describe that fixed wiring via t=
-he ports
-> >> property and skip CONFIG decode entirely; config-gpios is only needed =
-when the
-> >> host wants to detect the card type/host-interface at runtime. Kept it =
-as plain
-> >> sensed GPIOs with no decode semantics imposed by the schema - the prop=
-erty
-> >> description documents the full Table 3-18 state table inline (all 16 s=
-tates)
-> >> so the binding is self-contained, but turning the sensed 4-bit pattern=
- into
-> >> "this is a WWAN-PCIe Adapter in port config 0" is left to driver code,
-> >> consistent with how the rest of the connector's sensed straps (e.g.
-> >> viocfg-gpios on the E-connector) are already handled.
-> > Agreed that the logic of turning the 4-bit pattern into
-> > enabling/disabling interfaces sounds like a driver realm, although we
-> > probably need to consider if the connector should accept pinctrl-0
-> > through pinctrl-15 to hint the host about which pin muxes should
-> > follow from each of the 16 4-bit CONFIG_* pin states. This mapping is
-> > hard to recover outside the connector's context.
->  I'd put the pinctrl states on the connector, one per CONFIG_0..3 value (=
-Table
-> 3-18), selected after the driver reads config-gpios. The CONFIG-to-mux ma=
-pping
-> can't be recovered from the interface providers, as you said. Providers w=
-ould
-> keep only their own default pinctrl. What I'm unsure about is how much is
-> SoC-muxed in practice. The high-speed pairs are often fixed by PHY or lan=
-e
-> routing, so the states may mostly matter for GPIO_0..11. Do you know of a=
- case
-> where they cover more than that?
+Um, so I am not sure how much cache pressure this will add, I assume it's small ?
 
-Thanks, that makes sense.
-
-Regarding the high-speed pairs, the Rockchip based boards that I know
-about route one PCIe lane muxed with SATA to the connector, with the
-SoC combo-PHY managing the interface muxing (including the polarity
-swap for the SATA-B pair). I don't know how people deal with the
-second PCIe lane vs. USB SS muxing though, or if such devices have
-been made available at all. Either way, it sounds like those could be
-modeled as one port per muxed pin group - i.e., port@0 for SATA+PCIe
-lane 0 (as two endpoints), port@1 for PCIe lane 1+USB SS+SSIC (as
-three endpoints), etc. A PHY driver for a dual-lane PCIe interface
-would then have to figure out whether its OF graph has one or two
-links and configure the PHY and the controller accordingly.
+Just want to point out that the old code only wrote these bits for a node's first
+memory. THis now does up to 3 set_bit() calls on node_states[] for every onlined block.
+The result is the same, but node_states[] is __read_mostly. A test-before-set in the helper
+would keep the old behavior, or if you would like to keep it, please address in commit message.
 
 Best regards,
-Alexey
+Richard Cheng.
+
+
+>  	if (need_zonelists_rebuild)
+>  		build_all_zonelists(NULL);
+> @@ -2146,7 +2143,7 @@ int offline_pages(unsigned long start_pfn, unsigned long nr_pages,
+>  	 * list. Otherwise this node would still appear in the fallback lists.
+>  	 */
+>  	if (node_arg.nid >= 0)
+> -		node_clear_state(node, N_MEMORY);
+> +		node_clear_memory_state(node);
+>  	if (!populated_zone(zone)) {
+>  		zone_pcp_reset(zone);
+>  		build_all_zonelists(NULL);
+> diff --git a/mm/mm_init.c b/mm/mm_init.c
+> index a9d848c92678b..b4c4dba93652d 100644
+> --- a/mm/mm_init.c
+> +++ b/mm/mm_init.c
+> @@ -1763,21 +1763,21 @@ static void __init free_area_init_node(int nid)
+>  	lru_gen_init_pgdat(pgdat);
+>  }
+>  
+> -/* Any regular or high memory on that node? */
+> +/* Publish the memory states of a node that has present pages. */
+>  static void __init check_for_memory(pg_data_t *pgdat)
+>  {
+>  	enum zone_type zone_type;
+> +	bool high = false, normal = false;
+>  
+>  	for (zone_type = 0; zone_type <= ZONE_MOVABLE - 1; zone_type++) {
+>  		struct zone *zone = &pgdat->node_zones[zone_type];
+>  		if (populated_zone(zone)) {
+> -			if (IS_ENABLED(CONFIG_HIGHMEM))
+> -				node_set_state(pgdat->node_id, N_HIGH_MEMORY);
+> -			if (zone_type <= ZONE_NORMAL)
+> -				node_set_state(pgdat->node_id, N_NORMAL_MEMORY);
+> +			high = IS_ENABLED(CONFIG_HIGHMEM);
+> +			normal = zone_type <= ZONE_NORMAL;
+>  			break;
+>  		}
+>  	}
+> +	node_set_memory_state(pgdat->node_id, high, normal);
+>  }
+>  
+>  #if MAX_NUMNODES > 1
+> @@ -1924,10 +1924,8 @@ static void __init free_area_init(void)
+>  		 *memory-less node. The pgdat will get fully initialized by
+>  		 *hotadd_init_pgdat() when memory is hotplugged into this node.
+>  		 */
+> -		if (pgdat->node_present_pages) {
+> -			node_set_state(nid, N_MEMORY);
+> +		if (pgdat->node_present_pages)
+>  			check_for_memory(pgdat);
+> -		}
+>  	}
+>  
+>  	calc_nr_kernel_pages();
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 8532af052d74b..834d199ff8429 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -208,6 +208,21 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
+>  };
+>  EXPORT_SYMBOL(node_states);
+>  
+> +void __meminit node_set_memory_state(int nid, bool high, bool normal)
+> +{
+> +	node_set_state(nid, N_MEMORY);
+> +	if (high)
+> +		node_set_state(nid, N_HIGH_MEMORY);
+> +	if (normal)
+> +		node_set_state(nid, N_NORMAL_MEMORY);
+> +}
+> +
+> +void __meminit node_clear_memory_state(int nid)
+> +{
+> +	node_clear_state(nid, N_NORMAL_MEMORY);
+> +	node_clear_state(nid, N_MEMORY);
+> +}
+> +
+>  gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
+>  
+>  #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+> -- 
+> 2.53.1-Meta
+> 
+> 
