@@ -1,79 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1795043837;
-	b=lhDR+t9o0ac7ZHixgtJUoxTfaI4znADH9qk0ufoNQ7FWmQ3zO168tp1mFlTuPIye7ACc
-	 krIDtyzOMA/u9I+1vH4ZUsOvLV5vBLzdDsf9viGs6E1wGPQh2r95aMrKQ2IJS7F+gMkWu
-	 ExHAQsXE826r8Yio4cinXK4jdygiyFwdgpUBPfYKsakqjOt06WhA7Aeur2i74HlEPBjAW
-	 Eiek1ey9RMqL7+NMdHdbXsH5cklr4hcbUX0zNaqDCMGnKKSSmytjElaJuyPbN6f/0MgX8
-	 uttmBytzz+MIcJaWRBhwhkIxFdUzq6lvXrzzmcDJOkxYYvkdj8EnEvf2B1FRiSGphEQ==
+	b=KciLb7Fe2mwhyPXZLmYmfg1qeueWQhdb+SaNw6qlTPiUkdwa/YohB7U9s5j3LxAIVMMS
+	 0HtXg97PaSozT1UP4pvWTwbvAUzVYYZ4KiviZIuaao4r/sw3c7U9VoYZuswiSMSKEhhyr
+	 2xET0FunszERg1wpWAZSnbxoDaoXUgc+wOAy1BYZnO9qVtZO+PZmpTQZBfqFDByqnVWuS
+	 sgxnHAczWqtkfDqH/e/TJnCOLmrSivA6/dol7nKNywFcGXmSMBuO6JPUvBWriBkOwXAUF
+	 CfTblzrsO6yKnIUx8cbvzaWk2r5WDuIUJtDFIWV2mHOui+03x00HrML2MSYcDxfO/qQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1795043837;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=9CeY2H+xs1/uP6Al65hZcJhz1eI/t+6B7af7ReXxmio=;
-	b=SAR3rW6ytCDBHajljeMcNtq6dMzL5kAoxQMroKi9p1D6+S+xr3+UXasELgjVsetY2zpL
-	 bJfo1GsF5zMZfTUwQ1/lB/7lf85/ejXsmhn+Yh14JfWlbj9fcnbI5kmNlTHojxqwNAe4/
-	 ygAlhMtrTL9UoeG7SXCeFzlVEjrTImHbXcFHNoQUypzGuEGi46drTuRtAF9NAhGJPH4YB
-	 dgF+EUWBh8xEau5DqeAbdDuyyrHUZ7QaAICMz6jYQZBYUJN05e6q/OB7+0Ys1LkXsSIvo
-	 cTypv3ByLUv2Ya0lhBIrXSUttNiMwYZF+SjmGaPu3j59Rn9AGUzVYLhn4kN31pI53Ig==
+	bh=5dQ4JQj6AUa0iFblGEmenrbjQYznIq7haN0cV2XTtU0=;
+	b=zx8F9dO6YwLBSKcM5PzVlOP0UXyfjKZJQOzBW/6Cz6GZezBDfJawHmLQk8gW9qEjWHld
+	 w4h73IUvJnVnyPGoK+3VV/nDBX5Hii5OBMm6adt4KwIcG8uBuGQaFdzT9CJPBYuJUcoip
+	 LmHQjFm6gcwNB0AQtkKIysORm8y6HgGvSf1Hlyay3DaxubDO5nyBOusIz0EtS4XOE0eu7
+	 D3VPv1bx5aLDKPP2pkLVLmGvw8J3VPBjySxpunQ22d9qOD8PsjkTBO3XNFGs0WCKklRuN
+	 RZ9yOBiOgdtHwKvjKf/WVNzmJ2JbOiyHGEKrj45KjT2j/iXTe5u7PmkI5rv6jrtK37g==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eB9KIEms;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L1TS4pNj;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6510260A2607;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B29DF60A2614;
 	Wed, 18 Nov 2026 23:17:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eB9KIEms
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L1TS4pNj
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
 	t=1795043837;
-	b=KZAhjkJNrkRajDLFanC/3Sq5h41vlCENifPQSg1qfjLs1aJpQHZlz8qZRy81nhGBo4u4
-	 HLpQgCGKXZoWDo+xCS/HXBOnei1Hs3aI1DkfygNxLMYw2typDtvp4f69byQk7oZRZc1Vg
-	 33YiUgdhRCaZzQs+jnhWHjnJTyQMdWw2imssNdulNmf9Nszco4dEZWYDhhkCwpBawf+Hn
-	 g5e0FaAIusNhemI1ueDLQhLfqeKmX7Xt1x5QcbqHvXbkgy43SqAaZSe2Oo6Z6sM18GX7F
-	 AcqB8/uows7IrMMCydchPo2vbtQh6TdUJXrV+HaTV+vN+34NMhxTAJp86vE/h0efkLA==
+	b=OS5bZbstqsAzZgYMyvbhpSfAlrfBBu2q5djxtebwVrwYTlt13MLo+MOvnWAr/rzJ65RC
+	 tZYU9m0S3q7Xlp0AFFck4bem/c+B7qGh4hyioD9C7wTjAcpgaZfBpRYgg3+kTtiYAdmqk
+	 ppBvWDIC8oDK3pxS4goEqLalz5LV5lg4YMjj7BVFvXNpoTnzm2Fk8bXCBgDet5HksibdY
+	 dGOhZ6Owh/dM4V2K8ldIzxOBUBeMefPzkqmjgsoBN/xcjbjNL8BPJ0v/nBvvjUkImzJqx
+	 8Gy1ahq2EJk572D89qp0LQZ3qO0zvGNWpZXoMyDTtAzOoaklL5fMlU6nFiNkrzTT7+w==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
 	c=relaxed/relaxed; t=1795043837;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=9CeY2H+xs1/uP6Al65hZcJhz1eI/t+6B7af7ReXxmio=;
-	b=TGzPfIIXrz0YImeJOgsUCoBZOp5yAoCNIJhORSUgcc+e9X4LShRd1ZXu3Z50hISkUmSJ
-	 4EtTclvr17YLox9PERroRw1wC0iaYcGh/0fzQS81wS7S/oPiOM0PjpSbLnbNtlq/wXKKv
-	 NFKmbTKJ3VoqSgv38b2QTYxaCCpv+VJsn+/U7n9FWebXkv6Iq97vFHDMj5lnwSpQUUYd/
-	 oQYCm9tml9VNTAhP75YzvgTshxzMkDnY64VeSy4Ee+fvhYV4/4OpJUQuk2stMw7+3OXel
-	 GWkbTPA7DzxC2PpffCnyQiY9BfrWpYy9QgAYA9aYjkZXS1Ke9bDFlf4GhQynaosypbw==
+	bh=5dQ4JQj6AUa0iFblGEmenrbjQYznIq7haN0cV2XTtU0=;
+	b=0XTY8mRyjBsX9ZrSFROBQmUAx4Nc4NSJDUzTng0t9I6gSJ36Z5ZF2qMKLO9+TLDqOJ3k
+	 VkOk64PDQCVQruQcSCW3WIx/B/I7EjK5xZ5rQD2+o+vRMxFjoNbbQcARBCOoiaK8DGFwh
+	 qqmFSqxPyan44y8eDVE9KwYBFA0zzN3frW+u8J0KLhBo4ueuaZakgJY1/wz6V502fY3VR
+	 NnmmGXTeIgFWVH9FcZCKu7o3vqQsGBjUINBu5tj+53LNH67e/QkKF7SMBN2KQ/Nj3zKNA
+	 uAVSGg4jiEdRHToaCc02gyKy5UEh2KQHry9i9lX3MEhVItJsP0RKbTZiuefjdfe2QWQ==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id B7DB11F000C9;
+	by smtp.kernel.org (Postfix) with ESMTPS id CF1281F000C6;
 	Wed, 18 Nov 2026 23:17:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1795043837;
-	bh=9CeY2H+xs1/uP6Al65hZcJhz1eI/t+6B7af7ReXxmio=;
+	bh=5dQ4JQj6AUa0iFblGEmenrbjQYznIq7haN0cV2XTtU0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=eB9KIEmslW5ZrbP1xXQKV1Dw+n3fpU429nb9V5lc9TPrYBhv9xtNg/MhPCqybbF+k
-	 t5Mvci3IaHZ9cMoKdABQfiORhpafgQijRKCdN2eeU8IEH8wR/s+qRwp7zDy7hUYCgX
-	 L/HBZfRFaEFrzUSb64JEBsPPILG2U0pQ4UGIve/Of3jCwbzgsIOqctLW1Ud8Ql9z3U
-	 kfjHvLXX/P3NZmZ7ArNi0iZZgcLRSd2G/Ayxph3QpMF59NHAsO9y0CCH90D01teK8J
-	 b5O6T10EzcFi8Epxup7c5JZF1G3IDAJCCB/ZSnO9XhKTPqlTCORFtrU1YALxc356UG
-	 zfdnBDHsKdvYw==
+	b=L1TS4pNjinTHQUPNzblK7H6rftDiSIGBZHMRJk9MnP+1Whjuhb1hNXEKv/dH9IwHm
+	 +QIhfG+7ujPJ0z33rU+AURixQD7chABxZyLUgGpkegK37ZUAWWE4Tl3ORhRvCLfd0W
+	 b5K4AZH+2tPJENb6KWFymE2tByLWeItAsHRfKSLDK1iIZ22bnLdHSL9MjQ2SO/43w0
+	 UGq5Bu48mB7na5XX1ILdhn6H3Clgrbe+h4HCBvdCGKXTK/ibdeoAACJ09cpHMIA3Zr
+	 xdZ/c83dKuYy2JxYDoL09whTWQ3TPxgHVe7i1xK24sDJR1fHH0NfWYyUwJrJGaBLqW
+	 j3DwuOZvXH8Vw==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 489AD4B01B;
+	by lkml.kernel.org (Postfix) with ESMTP id 60B314B01F;
 	Wed, 18 Nov 2026 23:17:15 +0000 (UTC)
 From: =?utf-8?q?Alexandru_Andrie=C8=99_via_B4_Relay?= <devnull+alex.andries.aa.gmail.com@kernel.org>
-Date: Thu, 19 Nov 2026 00:16:51 +0100
-Subject: [PATCH 2/3] power: supply: qcom_battmgr: complete ack on callback
- payload errors
+Date: Thu, 19 Nov 2026 00:16:52 +0100
+Subject: [PATCH 3/3] power: supply: qcom_battmgr: fix negative temperature
+ values
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261119-upstream-qcom-battmgr-fixes-v1-v1-2-ca83700c08c1@gmail.com>
+Message-Id: <20261119-upstream-qcom-battmgr-fixes-v1-v1-3-ca83700c08c1@gmail.com>
 References: <20261119-upstream-qcom-battmgr-fixes-v1-v1-0-ca83700c08c1@gmail.com>
 In-Reply-To: <20261119-upstream-qcom-battmgr-fixes-v1-v1-0-ca83700c08c1@gmail.com>
 To: Sebastian Reichel <sre@kernel.org>, 
@@ -97,11 +97,11 @@ Cc: Bjorn Andersson <andersson@kernel.org>,
  Sebastian Reichel <sebastian.reichel@collabora.com>, stable@vger.kernel.org, 
  =?utf-8?q?Alexandru_Andrie=C8=99?= <alex.andries.aa@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795043834; l=4014;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795043834; l=2126;
  i=alex.andries.aa@gmail.com; s=20261118; h=from:subject:message-id;
- bh=4a5S/RCiOR+4vQvgLxF6hT1Z621jRwseAFd13o3O2w0=;
- b=CkKPXNOplgo1JQ1Ks5iRvi3VDP4HJqvXCRCoVwGYk/kboEMLmTEPGZKDftPrE4glT65Y/l1pb
- UZd0A/aH3UVCuFfCyqn20nYFE+QowQ2EtzPvLLbSBJnrkb7Gugg10zQ
+ bh=rbeD9/hqy2iLa1zbMjhzXGTU00ckT0RtHpgBQ16AH5I=;
+ b=JsoY8sFr/LIOpNR9zSCmVSlbAT0y8+na0ABBLTwEaUCcTDISlTl8LFCGx31mJICe5nVIy0Qtu
+ UutV5/Wakh1DN2wEzee4AH33SDAS4fJv78X+dVsfRO+4EeM1fQs9uu1
 X-Developer-Key: i=alex.andries.aa@gmail.com; a=ed25519;
  pk=kNAqgavfB7uUd1mA8o8TszhGxzyqBwY71PGO/oK4v84=
 X-Endpoint-Received: by B4 Relay for alex.andries.aa@gmail.com/20261118
@@ -112,115 +112,57 @@ Content-Transfer-Encoding: 8bit
 
 From: Alexandru Andrieș <alex.andries.aa@gmail.com>
 
-On unexpected payload lengths, qcom_battmgr_sc8280xp_callback() and
-qcom_battmgr_sm8350_callback() return early without completing
-&battmgr->ack, stalling qcom_battmgr_request() for 1s until
-wait_for_completion_timeout() expires with -ETIMEDOUT instead of
-returning -ENODATA. Aside from the 1s delay, -ETIMEDOUT causes
-power_supply_uevent() to abort the entire uevent on firmware with
-mismatched property payloads (such as shifted BATT_MODEL_NAME IDs on
-Xiaomi SM8350), whereas -ENODATA lets add_prop_uevent() skip only the
-affected property.
+Firmware reports battery temperature in signed hundredths of a degree
+Celsius, scaled to tenths of a degree for POWER_SUPPLY_PROP_TEMP.
+Passing it as unsigned int to DIV_ROUND_CLOSEST(..., 10) in both
+qcom_battmgr_sc8280xp_convert_temp() and qcom_battmgr_sm8350_callback()
+turns sub-zero values (e.g. -5.00 C, 0xfffffe0c) into 429496680 instead
+of -50.
 
-Set battmgr->error = -ENODATA on short payloads as well and jump to
-out_complete on all payload length errors.
+Change status.temperature and qcom_battmgr_sc8280xp_convert_temp() to
+int, and cast the SM8350 BATT_TEMP payload to s32 before dividing.
 
-Tested the SM8350 path on a Xiaomi MIX 4; the SC8280XP path was
-build-tested only.
+Tested at 35.0 C on a Xiaomi MIX 4 (SM8350); the SC8280XP path and
+sub-zero temperatures were not hardware-tested.
 
 Fixes: 29e8142b5623 ("power: supply: Introduce Qualcomm PMIC GLINK power supply")
 Cc: stable@vger.kernel.org
 Signed-off-by: Alexandru Andrieș <alex.andries.aa@gmail.com>
 ---
- drivers/power/supply/qcom_battmgr.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/power/supply/qcom_battmgr.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index c07e2db8f242..83e67d22c432 100644
+index 83e67d22c432..98b658ff6beb 100644
 --- a/drivers/power/supply/qcom_battmgr.c
 +++ b/drivers/power/supply/qcom_battmgr.c
-@@ -1285,7 +1285,8 @@ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
- 	if (payload_len < sizeof(__le32)) {
- 		dev_warn(battmgr->dev, "invalid payload length for %#x: %zd\n",
- 			 opcode, len);
--		return;
-+		battmgr->error = -ENODATA;
-+		goto out_complete;
- 	}
+@@ -278,7 +278,7 @@ struct qcom_battmgr_status {
+ 	int power_now;
+ 	unsigned int voltage_now;
+ 	unsigned int voltage_ocv;
+-	unsigned int temperature;
++	int temperature;
+ 	unsigned int resistance;
+ 	unsigned int soh_percent;
  
- 	switch (opcode) {
-@@ -1300,7 +1301,7 @@ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
- 				 "invalid payload length for battery information request: %zd\n",
- 				 payload_len);
- 			battmgr->error = -ENODATA;
--			return;
-+			goto out_complete;
- 		}
- 
- 		battmgr->unit = le32_to_cpu(resp->info.power_unit);
-@@ -1325,7 +1326,7 @@ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
- 				 "invalid payload length for battery status request: %zd\n",
- 				 payload_len);
- 			battmgr->error = -ENODATA;
--			return;
-+			goto out_complete;
- 		}
- 
- 		battmgr->status.capacity = le32_to_cpu(resp->status.capacity) * 1000;
-@@ -1388,6 +1389,7 @@ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
- 		break;
- 	}
- 
-+out_complete:
- 	complete(&battmgr->ack);
+@@ -1250,7 +1250,7 @@ static unsigned int qcom_battmgr_sc8280xp_parse_technology(const char *chemistry
+ 	return POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
  }
  
-@@ -1403,7 +1405,8 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 	if (payload_len < sizeof(__le32)) {
- 		dev_warn(battmgr->dev, "invalid payload length for %#x: %zd\n",
- 			 opcode, len);
--		return;
-+		battmgr->error = -ENODATA;
-+		goto out_complete;
- 	}
- 
- 	switch (opcode) {
-@@ -1415,7 +1418,7 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 					 "invalid payload length for BATT_MODEL_NAME request: %zd\n",
- 					 payload_len);
- 				battmgr->error = -ENODATA;
--				return;
-+				goto out_complete;
- 			}
- 		} else {
- 			if (payload_len != sizeof(resp->intval)) {
-@@ -1423,7 +1426,7 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 					 "invalid payload length for %#x request: %zd\n",
- 					 property, payload_len);
- 				battmgr->error = -ENODATA;
--				return;
-+				goto out_complete;
- 			}
- 
- 			battmgr->error = le32_to_cpu(resp->intval.result);
-@@ -1514,7 +1517,7 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 				 "invalid payload length for %#x request: %zd\n",
- 				 property, payload_len);
- 			battmgr->error = -ENODATA;
--			return;
-+			goto out_complete;
- 		}
- 
- 		battmgr->error = le32_to_cpu(resp->intval.result);
-@@ -1555,7 +1558,7 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 				 "invalid payload length for %#x request: %zd\n",
- 				 property, payload_len);
- 			battmgr->error = -ENODATA;
--			return;
-+			goto out_complete;
- 		}
- 
- 		battmgr->error = le32_to_cpu(resp->intval.result);
+-static unsigned int qcom_battmgr_sc8280xp_convert_temp(unsigned int temperature)
++static int qcom_battmgr_sc8280xp_convert_temp(int temperature)
+ {
+ 	return DIV_ROUND_CLOSEST(temperature, 10);
+ }
+@@ -1467,7 +1467,7 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
+ 			break;
+ 		case BATT_TEMP:
+ 			val = le32_to_cpu(resp->intval.value);
+-			battmgr->status.temperature = DIV_ROUND_CLOSEST(val, 10);
++			battmgr->status.temperature = DIV_ROUND_CLOSEST((s32)val, 10);
+ 			break;
+ 		case BATT_TECHNOLOGY:
+ 			battmgr->info.technology = le32_to_cpu(resp->intval.value);
 
 -- 
 2.56.1
