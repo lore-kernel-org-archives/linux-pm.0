@@ -1,80 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1794999147;
-	b=BT3dcX3oThMJIh9Y2Sdjv243T+9vkxIfNrmcAhBeXwrhVi7giUWveA5u181im227cQhR
-	 nLek8zYzY6HnGeLTQPkKQ4pczR5ZFJwbXLL3DT/c/3VtDWRpRwVDkQgKfV5KZVn5YbXVy
-	 Uz3XqDRDj3zxI41WYA/bpCaUInLVtyrNj7eHX5dULeWH/3SwU1ur5U+T+8AiMu1gDGuIY
-	 OMmpYGem2tBApoUfWjRqFohwMvdXIRwI4F9/VKhZwY4tVMWmpuYgMwiyBlw0XreXUAEzE
-	 SHoYsDrbRf7jcwGR5XBN7yE2j1+DT8goBFZy8dELnpWFmdCQRbRvFz5rAoAWdlQNKBw==
+	b=zGiUmCfLalJBBJD86gDBo3SlRJAbhO2HBJnN5eIUxNUeFc78V6CQTjUiVsPeOZ3O5pAi
+	 HW5bFVEQ84qiKlwchxF8PaDkuTYm+l7XQhbohTSryPXoTdh80abBt/pxU7iwLabzNCicl
+	 OlPnMO9V1lTa1NPcF5uIzYgzCRSJGxk5S/7JKz9Mt4ojzAB4RcayicdR6Knz8dret0w27
+	 1SX592JKt5wxMymo4NT+/qNHYYDmLCQCHiF3GZRqxn09DpnVygU9j+b2SUXjgcUDS6Tm2
+	 De3fhOWy2pHEVCTpVy/yTlq8iqs37gSKVUcloz1AvckLVtxDGALX0ncn7PMY+JdpSmw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794999147;
-	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=nLfImRgOXbMw8QQDd1Rl92aKSTsWDssRhn8JRyM3jk4=;
-	b=f2FyAsuMIi8UAipv9tHUS03A/zffWGl4O+KcofpNK9V2caNGLGtwdrvKXYF1JbuSMMoy
-	 ZmL2zyQo8dED5b35Pzx0t3rdEv/DIBydTBbfdgdtU7Oh8lDGbyoV7EetXteegaR3Gdhg4
-	 WaeS7JtHXvu+DXZBFPb3eXAAuEmUNDsGJjT8x55cVaPnX5V75YFfHjORFRy/l+vh+VxHe
-	 lHl53Lxn1IqJfZVe5Cu1BF/oAwEqzNv/Do6vtLx73agkK13Igq1b5eABo0Fqx1BetFhDe
-	 oX51Yb+HIwK1q78y25kBH1i5a/dnqLBO5NKKx4gxv60euFMSjCDEGFrGXJb87LtCSlA==
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=E3osvfmeF/jQrh3Wedc0Un28ejx+8cAJcxtwjUsQUnc=;
+	b=bZS9RZ4b6iUcMO6nlDQ7frDrX9L8vdR2mHJOpg622CPECOSZWgDtkWsOOd74aMRSwIPb
+	 RG+H/C0SN5VP4INz5iPBtc2+Qic2w48N6NsCI+wEDtQGdg0t+Z+7S1akb9SEQZERQKRgt
+	 gB16bV6c1X5X9Iz0QdHtKlviLGKad1RiOxf+UIbaucC5wCdZ8qQsMXydqTcugDD1cvcdj
+	 gUX9TEpzs9tLD4jduAleE1BhsHpsqkm/o8T43xT5Ph35J5MWyYhQXMj2ELvvNcV09gJRz
+	 q4gQ9uk4mIO3BD69nn0K3NHlRDKqaVTNZdwEOYOgHpDf5t8TGPoGsICLZ2v+198uhPw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WjDe6D44;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="KGNY2nH/";
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56830606A333;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 803E6606A33A;
 	Wed, 18 Nov 2026 10:52:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WjDe6D44
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KGNY2nH/
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794999146;
-	b=QjkGBlXYQYaMSWX3XZN49jiwBYttrzX2CFCosRKpKNFrVg9wg0STkYCZh3nGLKNHNeoi
-	 5A3oTGm61jMkUjxs5pK0AaopjXXr/1r/GTwodE1SDJWUT+jMlW8JN3A+ZBvEq+GRMdxOP
-	 Pg0/+uDcnWbTmB3lKh5dZjgnQFORiSmtsLvvkL6MSmEecb8VLi9YfZ1eeQYbfb2gw92Nt
-	 8jQfl/7fEsJx6wKQv1sFJAuSCY8YV1gTCuynRaUMjquHbF7fCRIkBWnX9evfZoxH2cC1N
-	 tqqp/uo9CMRsPVUzt32lSNZfb8YktvPPPUBWQBswPMBrn0wz6bLhyy4PuQHbrdFXisA==
+	t=1794999147;
+	b=KyeEJLZug1bVLrzp9ukOsnDz4NJ3WBQmD9LaDUdlvfUcxErdnInchGVpeDSKK+sm5TtN
+	 iq1gUzXazwGLBazJxDGZhjcolnYlqHjAfc3GEqIk3beFCSJr/xMPFEBYulxNXcuEGWG+E
+	 5IPiTCUeY16sCII/K/12BKmSkYTVS9Xn+3GoNcmcWkOMrB+7C9JR9X8V4uRhbwwcX+U0v
+	 lyzfkfd0lzqvLeSAwPPwmRK5NefQbfr48xipra/g3MRl9Wj9EYW4z/cOrCPYjyY6N2tcT
+	 f0P5W5mdB/iD0dbiPluUERtjWlBL/pJf7tdXqy1r/uyx06jDre5KWvM8oJ5xEpXPgjQ==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794999146;
-	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=nLfImRgOXbMw8QQDd1Rl92aKSTsWDssRhn8JRyM3jk4=;
-	b=UHs7N2/zvpIGEdHXPlP84O/LCsvaBwxVbmkbMaXO0T+m6cM0VPORDZM7l8UMnVnmyqRa
-	 WFA8u6VMG9TvMDcWSo52pd+CJhtT2Y3Y5IFkOS0hOxt/qqrwfWLbgzkAkmc+Vyddu5Ecb
-	 icjuENZwmy4nziQhybSQTUYpAE52Tr2fbNqY7xcBQd72yu88o3pu6rAhHbbm5Uk9c3YqK
-	 D5Md0Lk1CJxqq7UX3egltTKna9Sr1qgdkyiw8tND01cOaUgqjeSyLilreptyPhnSvrBpr
-	 Icv6GdzskVspPBf2R6IXYXnCAyTr/MdhMf68mwwpPe/zvMQHebZAhrd4sTDsiMSvnYA==
+	c=relaxed/relaxed; t=1794999147;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=E3osvfmeF/jQrh3Wedc0Un28ejx+8cAJcxtwjUsQUnc=;
+	b=Sipv9VaGTkINXx0fAzF/iyO9Dh2wtOybLo7pJ7PLqmoCEBBGwjM9krvaUMChoBIngtqw
+	 6tdelS/C0l2+fycgMHvCdGKxcB8/HiMz7hvWgrgqAreM9U8r3svqiCWlnA0fxHEY61eL3
+	 5DY/RUhlLyG7+IOnhzDsYEyY0pAh5xhgFPTQ6rvrTA2LRQI0BGy2561dKeB2uSZS0T8YF
+	 iXZfZC9+zvjpyK1TszaR7UphvKVpwmG0xDkSndb5ANcJ8xKCGv+3qv2jSGc6I6qo6QS6B
+	 J0E6yarlUd/J3TMP7g6OWl+Ca4ppoJfWvcwyLv25OKJtKa8B7+c4tBDsgBHlW+VE+Tw==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id E32C51F000C4;
+	by smtp.kernel.org (Postfix) with ESMTPS id EBFF61F000C6;
 	Wed, 18 Nov 2026 10:52:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794999146;
-	bh=nLfImRgOXbMw8QQDd1Rl92aKSTsWDssRhn8JRyM3jk4=;
-	h=From:Subject:Date:To:Cc:Reply-To;
-	b=WjDe6D441ma9hSQKZTBJ0hbirZTBxHMvzAM7aiSMViOYbLFj/oFLqGBpzh8ZVNWOm
-	 AdUtpRNb0PmiosPS/JCfdodaN+JSx8MQHAdQYRGemQQbhE5NIKr+ihUmsamZ5goO+s
-	 8LnKB0mDL+s3RqZx9Xg6ih+y6tZ5F1ir9KLt1Tm2R/jjTjm5EI6Z9e1utzCuKi2O45
-	 03oz3L7tAHJMvDNenK9TraVonQU82X0mMzSv1l2zM/u3R6ZGZ4hEANrt/XF0KG35ZM
-	 ziQMk52EbdRPK/jzzG4qx6wYCCo3DP7Q4k8OzQrx3afYX50aYZOJBat8Z2eLdkB7jx
-	 AX84EGi2Bs7ZQ==
+	s=k20260515; t=1794999147;
+	bh=E3osvfmeF/jQrh3Wedc0Un28ejx+8cAJcxtwjUsQUnc=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=KGNY2nH/wdEXd9FAhwn/Cf88a0tEcwXRE9VSnO2cqeHhgAUZ6Zy1k2JFi+ZR66mbk
+	 wK85vOHBY2K8czhTBOq9qNgiVXyOk51B28jX2dbka4YTo9ZvqhUFRNZJp3/ih4geoH
+	 VIA1wnzmrX2JyZfccwJ6wLgaDWOpF7rFARri3IpyBvFSruqAD20MjxkCmwzRLv1Pti
+	 4J5iJNEMl5YYajHx3oHrIrMaZ4xjiENV8wmuFHQsIEifKOMq+RdrGrCdZ0a1JWtCGR
+	 xf3CzRIauydj6wJuENzos1GKB8r3j+gYFodoxPZqaguN4R6jE+QUQAbLMGOKgeq0+q
+	 UZ3fkCCqYaecQ==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 449104AD10;
+	by lkml.kernel.org (Postfix) with ESMTP id 78CCE4AD14;
 	Wed, 18 Nov 2026 10:52:25 +0000 (UTC)
 From: Rajan Yadav via B4 Relay <devnull+rajanyadav0307.gmail.com@kernel.org>
-Subject: [PATCH v2 0/6] sunxi: A133: Add CPU speed grade detection and OPP
- table
-Date: Wed, 18 Nov 2026 04:52:23 -0600
-Message-Id: <20261118-a133-series-v2-0-8bcec9c9aadf@gmail.com>
+Date: Wed, 18 Nov 2026 04:52:25 -0600
+Subject: [PATCH v2 2/6] cpufreq: sun50i: Move nvmem cell reading into a
+ helper
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -85,13 +84,9 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAGiD/WoC/22P3UrEMBSEX6Xk2khO/hqLLPseshcnyeluxG416
- RZl6bubtoIIXg7MfDNzZ4VyosK65s4yzamk8VqFfGhYuOD1TDzFqpkU0gIIzRGU4nuI994GEUl
- pGwKrifdMffrcaC+nXZebf6UwrYgfR6aPW62ZdhsbqBTcarrm+W9LZfEZOPAovMGoog4mHs8Dp
- rfHMA6HFeixEK9iSFPXWCsdtdVmvTTBRXA9KG1IoRRRgpNPiNSSZuu4SyrTmL+25zNsW/49WRc
- IbpyENnil0LW/C9hpWZZvX7XsRkMBAAA=
-X-Change-ID: 20261104-a133-series-fb6c0de346cc
+Message-Id: <20261118-a133-series-v2-2-8bcec9c9aadf@gmail.com>
+References: <20261118-a133-series-v2-0-8bcec9c9aadf@gmail.com>
+In-Reply-To: <20261118-a133-series-v2-0-8bcec9c9aadf@gmail.com>
 To: Yangtao Li <tiny.windzz@gmail.com>, Viresh Kumar <vireshk@kernel.org>, 
  Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -105,177 +100,132 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, 
  linux-kernel@vger.kernel.org, Alexander Sverdlin <alex@sverdlin.org>, 
  Cody Eksal <masterr3c0rd@epochal.quest>, 
- Paul Kocialkowski <paulk@sys-base.io>, 
- Rajan Yadav <rajanyadav0307@gmail.com>, kernel test robot <lkp@intel.com>
+ Paul Kocialkowski <paulk@sys-base.io>, kernel test robot <lkp@intel.com>, 
+ Rajan Yadav <rajanyadav0307@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794999144; l=8641;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794999144; l=3315;
  i=rajanyadav0307@gmail.com; s=20261103; h=from:subject:message-id;
- bh=dK4U66K6ZJZQC9rPPJDKQ1oE5tN9CbP2exTQlSVCysk=;
- b=9bMHrQAtT9hESLMAPxi6AihS98ZZeXB+LSOelOMHYz5IhggvlY7KWTtQipW1UXV+jr2i3/sAl
- BGZoVJEeaFkDYX0Rhq6T7CzhgXNdJsJ8KswDHydIHhSEmmqpfsCIptD
+ bh=vQMAtGZJDRtx69UU5Evyhp22Ohka9g8vqRSa6Av0uww=;
+ b=/iR630XagWCGKfxs4w50SDK7/FVOhyuA5FzDZPxddcU6aWe/8piODyfVMs7rA3b/D4urOCi82
+ 64oUMcsnWoBAn6Jv6brrnV5NomY/KceOQyiYDxirESf4l6e+iIJd57/
 X-Developer-Key: i=rajanyadav0307@gmail.com; a=ed25519;
  pk=4ZPeiP5qrv2b44q/Obxi2koUS70Q6npbttJnpUoTlgg=
 X-Endpoint-Received: by B4 Relay for rajanyadav0307@gmail.com/20261103 with
  auth_id=1391
 X-Original-From: Rajan Yadav <rajanyadav0307@gmail.com>
 Reply-To: rajanyadav0307@gmail.com
+Content-Transfer-Encoding: 7bit
 
-Andre asked [1], in his review of my A100 thermal trips patch [2], to
-look at the A133 speed bin selection and OPPs. Mainline treats the A133
-as an A100: it reads only the CPU bin field and picks one of three A100
-voltage tables. The vendor BSP for this family (sun50iw10, KickPi A133
-Linux SDK, linux-4.9) picks one of 11 grades from the chip marking ID,
-the CPU bin, the ICPU current, a field it calls PCPU, a bin extension
-bit and the die revision.
+From: Rajan Yadav <rajanyadav0307@gmail.com>
 
-The A100 rule in mainline turns out to be the BSP rule for one group of
-parts: revision A-E parts with a normal marking ID get a0-a2 from the
-same bin rule and with the same voltages as the A100 table, apart from
-a small ICPU/PCPU range that the BSP forces to a0. It is wrong for
-revision F and later parts (a3-a6) and for the "high speed" marking IDs
-(b0-b3).
+The A133 speed grade needs several efuse cells, but the cell reading
+is open coded in sun50i_cpufreq_get_efuse() for a single cell. Move it
+into sun50i_cpufreq_read_cell(), which takes the cell name, so the next
+patch can read the A133 cells by name.
 
-My KickPi K5C (A133, PCB V1.3) is such a high speed part of revision F:
-the BSP rules select b2, up to 1512 MHz at 1.10 V. Mainline selects
-A100 speed1, so the chip runs 40 mV below the vendor voltage at
-408-816 MHz and 40 mV above it at 1200 and 1320 MHz, and tops out at
-1464 MHz at 1.18 V. Alexander tested v1 on a b3 part (marking 0x1400,
-bin 4, revision 6): the vendor kernel and this series both top out at
-1512 MHz, mainline without it at 1464 MHz.
+No functional change: the existing users read the first cell, as
+before, with the same length check, byte order and error message. The
+raw bytes are now held in a __le32, the type le32_to_cpu() expects,
+which also removes the sparse warning "cast to restricted __le32" that
+the kernel test robot reported.
 
-Patch 1 adds the binding, patch 2 prepares the driver without
-functional change, patch 3 adds the grade selection, patch 4 adds the
-efuse cells (no effect on its own), patch 5 adds the A133 OPP table and
-patch 6 switches the three A133 boards in mainline to it.
+Claude Code (Anthropic) drafted this refactor and its message; I
+reviewed and tested it.
 
-Dependencies and merge path:
-- "cpufreq: sun50i: Handle boards with the allwinner,sun50i-a133
-  compatible" [3] is applied (Viresh, cpufreq/arm/linux-next,
-  ba359703fc45). The Teclast P80 needs it for cpufreq at all; the
-  other boards do not.
-- Patches 1-3 are meant for the cpufreq tree, as the A100 binding and
-  driver changes went last time; patches 4-6 are for the sunxi tree.
-- The A133 table keeps the A100 compatible as a fallback, with the
-  speed bin as its first cell. So patches 5-6 do not break anything if
-  they land before patch 3: a kernel without patch 3 gets today's A100
-  selection and voltages (with 1008 instead of 1080 MHz).
-- The thermal trips patch [2] should land first. All my thermal runs
-  had it, and without it patch 6 raises the top OPP of the high speed
-  grades with no passive trip.
-
-The die revision comes from SMCCC SOC_ID, as for the H616 and as Andre
-asked. On the A133 only TF-A master provides it so far (sun50i_a133
-platform, commit a584e8632a7a, not in a release yet). Without it the
-driver keeps the A100 selection, adds the BSP's a0 rule for normal
-parts (which never lowers a voltage), warns and carries on.
-
-Measurements on the K5C (no heatsink, room temperature not controlled,
-4 cores at full load, the 90 C passive trip from [2] in every run):
-
-  OPPs         kernel   top OPP          steady  1 h at full load
-  A100 speed1  6.18     1464 MHz 1.18 V  85.6 C  near 90 C from ~20 min,
-                                                 throttled at ~33 min
-  A133 b2      6.18     1512 MHz 1.10 V  78.2 C  1512 MHz, max 83.7 C
-  this series  7.4-rc1  1512 MHz 1.10 V  -       1512 MHz, max 79.4 C
-
-"steady" is the temperature after 10 minutes in a separate run. The b2
-row on 6.18 used a test DTB with the b2 voltages. Over the hour, b2 did
-3.7% more work (md5 loops) than A100 speed1. At the same 1200 MHz, the
-b2 voltage (0.98 V instead of 1.02 V) ran about 2 C cooler. These are
-single runs on one board, so take them as indications only.
-
-Still open from v1:
-- The factory table has, besides 1608 MHz for b0/b1, a 1416 MHz OPP for
-  a0-a2 (a0 1.18 V, a1 1.18 V, a2 1.13 V). It is not in this version;
-  I can add it if you want the table to match the factory one.
-- A133P: the TrimUI Smart Pro (an "A133 Plus") stock kernel selects a
-  grade named "c0", which neither vendor table I have contains. I found
-  no published table or selection rule for it, so the A133P is not
-  covered; it can be added when such data appears.
-
-As agreed with Chen-Yu on the thermal trips thread [2], the
-dynamic-power-coefficient for the power allocator will follow as a
-separate patch on top of these OPPs.
-
-AI assistance: I used Claude Code (Anthropic, Claude Opus 5.5)
-throughout. It read the vendor BSP sources, the datasheets and my board
-logs, drafted the code, the DT table and the commit messages, and wrote
-the test scripts. I asked it to extract the vendor's selection rules,
-to propose a design that fits the existing binding, to review the
-series, and to write tests that compare the code with the BSP rules.
-No vendor code was copied; only the rules and numbers were taken. I
-reviewed every patch, ran all tests myself, and take responsibility
-for the series.
-
-Testing:
-- host: the grade function, built from the driver source, matches the
-  BSP rules for 120,960 combinations of boundary and typical field
-  values, reaches all 11 grades and gives the A100 selection with the
-  BSP's a0 rule when the revision is unknown; a second harness,
-  written separately (also with Claude Code) from the BSP sources,
-  checked 161,280,000 combinations with no difference
-- host: a script compared every voltage and the frequency set of every
-  grade with both vendor tables: no difference to the BSP table other
-  than the added 1608 MHz OPP, and none to the factory table other
-  than its 1416 MHz OPP for a0-a2
-- each patch on its own: checkpatch --strict (one expected warning:
-  the new OPP dtsi is covered by the existing MAINTAINERS entry), W=1
-  build, sparse (patch 2 removes the one existing warning in the
-  driver), dt_binding_check, and dtbs_check W=1 on the A100 perf1 and
-  the three A133 boards; the binding rejects malformed test tables
-- K5C: grade, OPPs and measured regulator voltages, a 1 h soak, the
-  revision forced to unknown, the A100 table on the patched kernel, the
-  new DTB on a kernel without patch 3 (fallback), the a133-only root
-  compatible, and a missing efuse cell
-- K5C, v2: with a test-only change forcing b0 and b1, the CPU PLL locked
-  at 1608 MHz and the PMIC was set to 1.18 V (b0) and 1.13 V (b1); in
-  two 20-minute full load runs at b0 the 90 C trip was reached after
-  10-13 minutes and the temperature then stayed between 83.5 and 90.4 C
-
-[1] https://lore.kernel.org/all/85dc4135-4684-4e17-95e4-833cf8753b64@arm.com/
-[2] https://lore.kernel.org/all/20261103-a100-thermal-trips-v1-1-73bce7ff0767@gmail.com/
-[3] https://lore.kernel.org/all/20261104-a133-fix-v1-1-d0b5ad3d4c5d@gmail.com/
-
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202603021703.aBD0w99y-lkp@intel.com/
+Reviewed-by: Alexander Sverdlin <alex@sverdlin.org>
+Tested-by: Alexander Sverdlin <alex@sverdlin.org>
+Signed-off-by: Rajan Yadav <rajanyadav0307@gmail.com>
 ---
-Changes in v2:
-- Patch 5: add 1608 MHz for b0 and b1, from the factory firmware table
-  of the KickPi K5C, as Andre asked (keep 1.6 GHz for the parts that
-  support it). Alexander's Reviewed-by/Tested-by of v1 are not carried
-  over for this patch because of that change.
-- Patch 6: the commit message mentions 1608 MHz for b0/b1; the change
-  itself is the same as in v1.
-- Patches 1-4 and 6: add Alexander's Reviewed-by/Tested-by tags.
-- Cover letter: the dependency [3] is applied; the v1 questions are
-  answered (keep 1608 MHz; leave the A100 table and the 1008 MHz
-  message as they are; use SOC_ID and fail gracefully, as v1 does);
-  the 1416 MHz and A133P points are listed above.
-- Link to v1: https://patch.msgid.link/20261104-a133-series-v1-0-58217cb33a87@gmail.com
+ drivers/cpufreq/sun50i-cpufreq-nvmem.c | 55 ++++++++++++++++++++--------------
+ 1 file changed, 33 insertions(+), 22 deletions(-)
 
----
-Rajan Yadav (6):
-      dt-bindings: opp: h6: Add A133 operating points
-      cpufreq: sun50i: Move nvmem cell reading into a helper
-      cpufreq: sun50i: Add A133 speed grade detection
-      arm64: dts: allwinner: a100: Add A133 speed grade efuse cells
-      arm64: dts: allwinner: a133: Add CPU OPP table
-      arm64: dts: allwinner: a133: Use the A133 CPU OPP table
+diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+index 9261d148a16..34c0897c22c 100644
+--- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
++++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+@@ -31,6 +31,34 @@ struct sunxi_cpufreq_data {
+ 	u32 (*efuse_xlate)(u32 speedbin);
+ };
+ 
++static int sun50i_cpufreq_read_cell(struct device *cpu_dev,
++				    struct device_node *np, const char *id,
++				    u32 *value)
++{
++	struct nvmem_cell *cell;
++	void *buf;
++	size_t len;
++	__le32 tmp = 0;
++
++	cell = of_nvmem_cell_get(np, id);
++	if (IS_ERR(cell))
++		return dev_err_probe(cpu_dev, PTR_ERR(cell),
++				     "Could not get nvmem cell\n");
++
++	buf = nvmem_cell_read(cell, &len);
++	nvmem_cell_put(cell);
++	if (IS_ERR(buf))
++		return PTR_ERR(buf);
++
++	if (len <= 4)
++		memcpy(&tmp, buf, len);
++	*value = le32_to_cpu(tmp);
++
++	kfree(buf);
++
++	return 0;
++}
++
+ static u32 sun50i_h6_efuse_xlate(u32 speedbin)
+ {
+ 	u32 efuse_value;
+@@ -191,12 +219,9 @@ static bool dt_has_supported_hw(void)
+ static int sun50i_cpufreq_get_efuse(void)
+ {
+ 	const struct sunxi_cpufreq_data *opp_data;
+-	struct nvmem_cell *speedbin_nvmem;
+ 	const struct of_device_id *match;
+ 	struct device *cpu_dev;
+-	void *speedbin_ptr;
+-	u32 speedbin = 0;
+-	size_t len;
++	u32 speedbin;
+ 	int ret;
+ 
+ 	cpu_dev = get_cpu_device(0);
+@@ -214,25 +239,11 @@ static int sun50i_cpufreq_get_efuse(void)
+ 
+ 	opp_data = match->data;
+ 
+-	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
+-	if (IS_ERR(speedbin_nvmem))
+-		return dev_err_probe(cpu_dev, PTR_ERR(speedbin_nvmem),
+-				     "Could not get nvmem cell\n");
+-
+-	speedbin_ptr = nvmem_cell_read(speedbin_nvmem, &len);
+-	nvmem_cell_put(speedbin_nvmem);
+-	if (IS_ERR(speedbin_ptr))
+-		return PTR_ERR(speedbin_ptr);
+-
+-	if (len <= 4)
+-		memcpy(&speedbin, speedbin_ptr, len);
+-	speedbin = le32_to_cpu(speedbin);
+-
+-	ret = opp_data->efuse_xlate(speedbin);
+-
+-	kfree(speedbin_ptr);
++	ret = sun50i_cpufreq_read_cell(cpu_dev, np, NULL, &speedbin);
++	if (ret)
++		return ret;
+ 
+-	return ret;
++	return opp_data->efuse_xlate(speedbin);
+ };
+ 
+ static int sun50i_cpufreq_nvmem_probe(struct platform_device *pdev)
 
- .../opp/allwinner,sun50i-h6-operating-points.yaml  |  94 ++++++++-
- arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi     |  12 ++
- .../boot/dts/allwinner/sun50i-a133-cpu-opp.dtsi    | 182 ++++++++++++++++++
- .../allwinner/sun50i-a133-helperboard-core.dtsi    |   2 +-
- .../dts/allwinner/sun50i-a133-liontron-h-a133l.dts |   2 +-
- .../boot/dts/allwinner/sun50i-a133-teclast-p80.dts |   2 +-
- drivers/cpufreq/sun50i-cpufreq-nvmem.c             | 213 +++++++++++++++++++--
- 7 files changed, 475 insertions(+), 32 deletions(-)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261104-a133-series-fb6c0de346cc
-prerequisite-message-id: <20261104-a133-fix-v1-1-d0b5ad3d4c5d@gmail.com>
-prerequisite-patch-id: 24b8eeb24a7f228410c3453027ff79fc785eb38d
-
-Best regards,
---  
-Rajan Yadav <rajanyadav0307@gmail.com>
+-- 
+2.34.1
 
 
