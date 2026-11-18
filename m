@@ -1,85 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.219.53
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795017377;
-	b=xzEp+PEOKlDbqxnGa0GQnXxJ4buuVECeVCGRtS1XKi/FXoRGn3dcbeNrcwYlGHx0djgV
-	 qdI8SJXctvDAhWpvaJwDGtMqXIvoDOFwN2xQNbqsGTDb4a3AkFr3B8cYsiEEL15As3MNc
-	 2ykwfNok60LrHG9YWTDdhKrikTJDDfXLBQ2qRVwymKJE2856J+gchmqCu62VRYdR3+8es
-	 3AZKfVoxiCT6dvZ+squmdRR33JFQa7ASRVHCmq9BKHWo8cw/TjXEdz1MHGYExFDNl4Vkr
-	 6yGHspn4ztVnbSBhVZZJ/Jf8PDWYo/dl7iXvmngeZxFXh5dZ717Ji57jN13mHKSgnlg==
+	t=1795017487;
+	b=5VYBVC8bv68AJcyXYXvP8aIM3PCk5E2RcXjQvQrZlZVL6hKcZvq+WDUWbkGbFlGUStmY
+	 o1F43mYoJ416u6rA+cGEZPwF+WAOAx49+Y8zbAuoUneHN4z0nbCtxMUen/z5mF6uFoAI9
+	 HqZEELYFgT5Sczm6k3QkfRDpcViTHvFnYZfwVybuEXc+COPSq1TfCcPzSPD85igqmjl4A
+	 KHfEG+g30xwQoNEVqA/5wTzliNuLF7i/GZPoCJYEViAQ7f5dQQ43DPOE8zZf6sHe/0ILr
+	 8OjQIyHPlfKCytMquEKIDp/l0/K3BAN+TtjJ+rfYlFX5UbvHNzqYdgGZ3a8L+8Q6GAQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795017377;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:Subject:From:To:
-	 Cc:In-Reply-To:References:Date:Message-Id:X-Mailer;
-	bh=3bQBfuPo4+GA4H58G8tofWZlnWMcm4hxNRzjXZBoZg0=;
-	b=INmaajSyFNQVSl3OtAsxmcReKXNbF4ql4oYlOzDmsTRuMIYkMqz6i5ZZH9Xpjjlh3i3F
-	 klBSjevHvQdhf3BQr+M0ENCEQtyoEGuOm4qO62ejr7CzkZCtmrA9N3giNU2akVjjw1EFs
-	 s8Qd7qlU0gK3XdzHUtDiOY0Piqb2DVJhbZhkVc3rzVMvSYQCvoWvuaMRSCwMgyunX8RuK
-	 rC2tSc+pq9B0NX4guigURgoeMm4PvMXMUvp5LdEdFLeQImPlUjKqJc3j7lf1ZW0eDqJBM
-	 M5hA8pQCMPOyIOOwKo9QGuK1/P56azQt+3LGnQiTQD3NKu5PUFkZtSaFy2etluiujuQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795017487;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=me4+qTl82YgNzGoxWyEsprjq4fF403Or/YIKNaUUYpQ=;
+	b=O6oH5wbzXt+xhskUIo5zLG2igU25t65ORNwUHrVJhD4yG5CFK5HkDeekO8Q/FCr8eylc
+	 asXrkSbEHqyDRWkxLcvzjIOPtEDDkZqSO1CQrDINQFUpKwKNC6RNmQNZLSaILqh51Usia
+	 9uKshDwH3LdVyDw9fn9LQqG8LQIE29+Sk6zTMzwlha8zhEgSC9f6o/Ph96V2k7XlMN7St
+	 /R2NYot8hl8wLrmSGhCvJWWts2V6QPugFMmAg1PQKW/0fTF3DAprdDbpB9iKDzPi2cIh3
+	 SfssvauRK58kMTCq49ghRz7l36sZC/1noHjYmTjiO3K2HQ7/6XNBvgo05j+KEcDfQVw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=gourry.net;
-	spf=pass smtp.mailfrom=gourry.net;
-	dkim=pass header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=gFIxxdDt;
-	arc=none smtp.remote-ip=209.85.219.53
-Received: from mail-qv1-f53.google.com (mail-qv1-f53.google.com [209.85.219.53])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nR4xwkhR;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8BCE606A31C
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 15:56:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C8BCE606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gourry.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2433606A320
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 15:58:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=gFIxxdDt
-Received: by mail-qv1-f53.google.com with SMTP id 6a1803df08f44-91ebf4cd218so4361906d6.3
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 07:56:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gourry.net; s=google; t=1795017376; x=1795622176; darn=vger.kernel.org;
-        h=message-id:date:references:in-reply-to:cc:to:from:subject
-         :content-transfer-encoding:content-type:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=3bQBfuPo4+GA4H58G8tofWZlnWMcm4hxNRzjXZBoZg0=;
-        b=gFIxxdDtcqDrBFkqgwEzkN+bVHfcVbrm/mKFYHBw/aX+aK3i6yXT3iOHNNcy/dVpjR
-         beX1ypC799ntnSOEXoyuWI9KAiYigmUzM2ktWAUGq14UH6bdfs19Po3EeuhNmuPBICwQ
-         4fygV7vNlH+8kA4gHVrwCXXCMRXtK3og0Bhew+zJDF8jtO9O5fvmBFacfYtyQB0ZICfH
-         uto7MDRpcWiyf9+vJZQn3ZyabRKAjiAEnbjmVD+LqH03jEVrnsuMJqNm4PPeRi2PD0kM
-         0m9hgfLivrz1Z3dH1OiBWSOIUeexNiv0u7ws6tg5Gw4PB2Xal1+xCiI4FGHOyO/4c+dY
-         QURw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795017376; x=1795622176;
-        h=message-id:date:references:in-reply-to:cc:to:from:subject
-         :content-transfer-encoding:content-type:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3bQBfuPo4+GA4H58G8tofWZlnWMcm4hxNRzjXZBoZg0=;
-        b=yU4zjiYujvwN8henRRNfoi0zZFKjeDWo/eWNyzWZhx2W/nY3Ki8U9E9mn4b25FIRCS
-         uB/RPF3Vn9t64nBekzc4WO7qwGXFuQL2YPy3JkgN3OM+wj+hBvRsxuUwm1cfCHsmVYsz
-         bdTF7pH8qWFfsThFQegGaqV62CoLuPk7JR8IQWmfBbk/T2vteAJFgVHhpEUSj5Jn7++Y
-         stwBTiW8oiUwByVwMHouLdzcyqQK9wxZjquWdwPuR3T+91LSJRF7IRMfYebIIcab9aB/
-         +KQe7CCz5fKTDM4NrRJmXX3IZhiS+F+0Nd7NuxHnwiqSIvCnWyV1+Ey0Pe4jMyh+iLRR
-         MDWg==
-X-Forwarded-Encrypted: i=1; AL+hErGonl2wVzOrIRc8ndGcSiL/8mK4VM1t2HePTPe+UZzueibrvTyIx0TZcuCW4ZyVl+wDQd72elIoxQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/Ft8DDkysWdzos1nCHqrq3/qnS8hfQFfB5t5Gb4AKPvttTeL3E
-	RDbARXDB5dAl/17+An8Y9+gDQFbwMywT2ZzlDyr7tUODDOBpREBy82qzmccoWd9mE6Q=
-X-Gm-Gg: AZFdTZfg1pG0g7YXPdxhQPtpNIFzWv7e03WGfZ1GYvcnJnYaE/Cr7kCCREoKe6NayKv
-	Ccemilr3X/7v+6sw/20qedGt+SkLyOLrIqGJUtc0xHhro5utKfuftd5xb2aOrYivSCe2upF9HTK
-	CnczhpHuo81EtA8gHC6KzmM6czN58wrAK3URdqYj/7w7Mlzv9r3J2uriUcI9t7APqD6+F6u8tWD
-	2qILnpKvrqv/lrWFfHNv30nGn+EsHQ0tdFYRSCWg9sbDItrJcaCVFZv42qUHjr1Er4qOG5oups2
-	xgBF1hrNpIoHxPoQ/fsK2Xa04LGdct8f9vWpdFRwgZON65L8ww0xbsd2P4+nHkZI+2/1dXmQHAd
-	dIQynYMxT3IL/V6zPrrpfdGZYaY97zu4Xfy/UmhiFopF+hbFgXdFRECBYZECe4ZzEGLOGkeLo1X
-	kSUeIDI9Beqk19UoI1dXCNn0j9uMmbYIzs42x3P4iluTGAotCrNFfL6ilh5iisukjdsFyJhBQDh
-	kDJxhcgc2Id3NyRevvo3YfJ6nU/0guRXs25PQP361lk6cDPt8kgskcZICB6ntXCzw2cdIKAXLoK
-	lDtbOx7822mv76A550lXGQJNyDf+h2qgCQGmSQESaUWBZ4y7oCSdzW20KPF8/FB8pSYY28VNtnk
-	FFG6cAaOYx8G2/sIJgWnAfV0VneTA
-X-Received: by 2002:a05:6214:8013:b0:921:1890:b77f with SMTP id 6a1803df08f44-9211890b87emr29798426d6.47.1795017375668;
-        Wed, 18 Nov 2026 07:56:15 -0800 (PST)
-Received: from [192.168.50.231] (pool-71-191-145-202.washdc.fios.verizon.net. [71.191.145.202])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-92114d28215sm24719106d6.16.2026.11.18.07.56.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 07:56:15 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nR4xwkhR
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D06461F000CA
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 15:58:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795017486;
+	bh=me4+qTl82YgNzGoxWyEsprjq4fF403Or/YIKNaUUYpQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=nR4xwkhRI/v0pirr69rC2d3WKCnJTP4lIle5SWKjzRn/6ZsJkm24z38aBNEOeFFkj
+	 2Vx4NoUbgVLujCUM9Es41pAVcgg30YsN7lJPElJem+fAiOZEfFbpNC8hu4zk3ZPI8L
+	 wyHNo6dHrT8Mw2BsSTkCo5PTEa1Z66q53DszEQfKHStlEEzC0M+3b8r4HVO30BdQ99
+	 TwYkgEjgE8ZzHAZlE7ba6Bx4XfVI4z69YGwmLHjqgP2AiE5yIWOq+GsRBAzaUtmezU
+	 Rcybc1skq2dGcuDD/uG5h+4m2kJRWqyitpA+8GyKvCdD/Rf9J6npBHpqSB7h2blnz3
+	 6TJ9ol3BFwetw==
+Received: by mail-vs1-f54.google.com with SMTP id ada2fe7eead31-7777fa8f1ccso417642137.3
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 07:58:06 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErERlYXD3JUPT4Jx5J0zY9hUoExaqqSJVLEWrF+o0d6ynLejNRexmhvUI7ZfQXUEsagbZKyvKVYlCQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+PGHWR7cxcLgkTO5XTEijmXbfKyCEkFwCtWy/sz9gPu5CqVWxY
+	XHtQcERjRMf/NAWbUAZfziVYezbJpWcIfZfoa2uWEixsBrYUfmZF/P5iuKQmMsZ+S0Odd49Az6w
+	HfUpLuYEZJNX1uDLpNpjX4fk13zVwvBw=
+X-Received: by 2002:a05:6102:1612:b0:7cb:288a:b66d with SMTP id
+ ada2fe7eead31-7d6ba40e058mr1004520137.20.1795017485944; Wed, 18 Nov 2026
+ 07:58:05 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -89,61 +59,73 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH 05/22] mm/mempolicy: keep interleave and tmpfs mount
- policies on common memory
-From: "Gregory Price (Meta)" <gourry@gourry.net>
-To: Richard Cheng <icheng@nvidia.com>
-Cc: "Gregory Price (Meta)" <gourry@gourry.net>, linux-mm@kvack.org, 
- linux-kernel@vger.kernel.org, kernel-team@meta.com, 
- linux-doc@vger.kernel.org, driver-core@lists.linux.dev, 
- linux-serial@vger.kernel.org, linux-pm@vger.kernel.org, 
- damon@lists.linux.dev, linux-cxl@vger.kernel.org, akpm@linux-foundation.org, 
- david@kernel.org, liam@infradead.org, vbabka@kernel.org, rppt@kernel.org, 
- surenb@google.com, mhocko@suse.com, corbet@lwn.net, 
- skhan@linuxfoundation.org, rdunlap@infradead.org, 
- gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org, 
- johan@kernel.org, jirislaby@kernel.org, kasong@tencent.com, 
- qi.zheng@linux.dev, shakeel.butt@linux.dev, baohua@kernel.org, 
- axelrasmussen@google.com, yuanchu@google.com, weixugc@google.com, 
- baoquan.he@linux.dev, baolin.wang@linux.alibaba.com, yury.norov@gmail.com, 
- linux@rasmusvillemoes.dk, pavel@kernel.org, lenb@kernel.org, 
- hannes@cmpxchg.org, brendan.jackman@linux.dev, ziy@nvidia.com, 
- sj@kernel.org, muchun.song@linux.dev, osalvador@suse.de, 
- nico.pache@linux.dev, ryan.roberts@arm.com, dev.jain@arm.com, 
- lance.yang@linux.dev, usama.arif@linux.dev, kas@kernel.org, 
- xu.xin@linux.dev, chengming.zhou@linux.dev, joshua.hahnjy@gmail.com, 
- rakie.kim@sk.com, ying.huang@linux.alibaba.com, matthew.brost@intel.com, 
- byungchul@sk.com, apopple@nvidia.com, rientjes@google.com
-In-Reply-To: <av3EGWuHX2JDdlrx@MWDK4CY14F>
-References: <20261114070959.3490008-1-gourry@gourry.net>
- <20261114070959.3490008-6-gourry@gourry.net> <av3EGWuHX2JDdlrx@MWDK4CY14F>
-Date: Wed, 18 Nov 2026 10:56:13 -0500
-Message-Id: <179501737390.1206716.11014097946405277594.b4-reply@b4>
-X-Mailer: b4 0.17-dev
+References: <cover.1794992905.git.daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <cover.1794992905.git.daniel.lezcano@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 18 Nov 2026 16:57:48 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0ghznYScteMQzFkcJsMfOTDPRE+JWBoeJg7NurfcfC57A@mail.gmail.com>
+X-Gm-Features: AclHuK-WQPlonzR9YQhr-Qu9V32wHoz2Spuu5LyQI3pgmeJNe67xVbxgzHuFNm8
+Message-ID: <CAJZ5v0ghznYScteMQzFkcJsMfOTDPRE+JWBoeJg7NurfcfC57A@mail.gmail.com>
+Subject: Re: [PATCH v2 0/2] powercap: idle_inject: Create threads on demand
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>, 
+	Peter Ziljstra <peterz@infradead.org>, Bradley Morgan <brads@mainlining.org>, 
+	Heiko Stuebner <heiko@sntech.de>, 
+	"moderated list:ARM/Rockchip SoC support" <linux-arm-kernel@lists.infradead.org>, 
+	"open list:ARM/Rockchip SoC support" <linux-rockchip@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 2026-11-18 23:30 +0800, Richard Cheng wrote:
-> On Sat, Nov 14, 2026 at 02:09:42AM +0800, Gregory Price (Meta) wrote:
-> > -	for_each_online_node(nid) {
-> > -		if (!node_state(nid, N_MEMORY))
-> > -			continue;
-> > -
-> > +	for_each_node_state(nid, N_MEMORY_COMMON) {
-> 
-> Maybe I overlooked or somehow, but when do we have the assumption
-> that common memory is definitely onlined ?
-> 
+On Wed, Nov 18, 2026 at 11:34=E2=80=AFAM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+> Idle injection currently registers per-CPU kernel threads during early
+> initialization, including on CPUs for which no idle injection device
+> will be registered.
+>
+> This series makes thread creation follow the lifetime and CPU mask of
+> each idle injection device.
+>
+> The first patch adds an optional CPU mask to smpboot thread descriptors.
+> The mask restricts thread creation, CPU hotplug handling and teardown,
+> while preserving the existing behavior for descriptors without a mask.
+> Registrations sharing task storage are checked for overlapping CPU
+> masks under smpboot_threads_lock before any threads are created.
+>
+> The second patch uses this support to register idle injection threads
+> when a device registers and destroy them when it unregisters. CPU
+> ownership claims, registration rollback and thread teardown are
+> serialized to prevent overlapping registrations from sharing threads.
+>
+> The series was tested on Rockchip RK3588. The updated smpboot code and
+> idle injection code also build with W=3D1. Concurrent registration and
+> CPU hotplug runtime testing remains outstanding.
+>
+> Changes in v2:
+> - Reject overlapping smpboot registrations sharing per-CPU task storage
+>   with WARN_ON_ONCE() and -EBUSY, as suggested by Thomas Gleixner.
+> - Default a NULL CPU mask to cpu_possible_mask at registration and
+>   remove redundant NULL-mask checks from the lifecycle helpers.
+> - Use scoped guards for the smpboot registration locks.
+> - Document the overlap restriction and registration return values, and
+>   update the core commit explanation.
+> - Add Bradley Morgan's Reviewed-by tag to the idle injection patch.
+>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Rafael J. Wysocki <rafael@kernel.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Bradley Morgan <brads@mainlining.org>
+>
+> Daniel Lezcano (2):
+>   smpboot: Allow restricting per-CPU threads to a CPU mask
+>   powercap: idle_inject: Create per-CPU threads on registration
+>
+>  drivers/powercap/idle_inject.c | 69 +++++++++++++++++++++-------------
+>  include/linux/smpboot.h        |  6 +++
+>  kernel/smpboot.c               | 45 +++++++++++++++++-----
+>  3 files changed, 83 insertions(+), 37 deletions(-)
 
-For this particular case it's not particularly relevant.
+If I'm supposed to pick up this series, please resend it and CC both
+patches and the cover letter to linux-pm.
 
-This code only runs at init time, so it's either got memory or it
-doesn't.  If the memory is present but offline, it still wants weights.
-
-There isn't really a bug here, but the existing code could also just
-check N_MEMORY and end up with the same result.  If the memory is
-hotplugged later, it still gets weights accordingly.
-
--- 
-~Gregory
-
+Thanks!
