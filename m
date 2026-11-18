@@ -1,82 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794991155;
-	b=ibkhvCLEASHQ7uMiNSl3b5ULtZ57/naKrInS5WcPOmmnIEq8Vks8wAY6WV88llDkLV8h
-	 zkQzh8p45zBNdfeD8CvRe3u8Cd8aYKBnLhq/gnvpOISpBU85TmEaqn7Dc+X7R3xgjWecc
-	 daWY8Z4amtyViaOWLIJ37pJggkxfdY6xvLdlx/+hfbe6hA4weqVcg54BA7boAeND/Q0c3
-	 nY3eMs8HSOs0qXzcxc86EcNEMrIJK8MrUqyp1JpWZChVRlIx6o0JamPZoMW4uydpW0FyU
-	 XKrB1g1QgcOE2G/Ik6W8ESEF/KhMxuMPPIRflarvAn0kT6l6Z0TCFm1o+1HFVQMi5tQ==
+	t=1794992248;
+	b=qP76k8zUs2M3a8R1D3dbjjk0J/WKlr9M/BM8pHsGOHkAPSxGe6qXqdoiUjR2M1mv9H0V
+	 dkpxXLbT0chpAN5Q0ytSJC6ntZ5O/3a45pH3h+TbPULst3D/2SzhaDkaFDU4zdZ7Cndpr
+	 l3F0l5adb7npjEy1iZ/g7i2K6hxz/M2/cbmvEX3+WN+RZ3w3Iccma+kCYy38ioNj9mB+a
+	 RXDHpOXc3zUhfSGyBGqnF7R2arwODDFbPJ3i38mKFlB+yw5KjQO264lIycOmk8ocw/Km6
+	 eCZytqERYqcvJiPxuL7hZMKCc/RNBHT/o3CXOMnuhzVhusQRw1pY2ZIhsglBAao7ROw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794991155;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:
-	 Organization:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=93JD4oOl8RigguqAzYS0DanPg4ZmNzSu7c7ItgKEQWw=;
-	b=fkggn4cE/qtqsAW7cS7Q7N/dGkkIG44O2Wv/wxeSShLPcQx5GjbjYiGAafuaSu6Hulii
-	 DMaL3PhRULLAipWx+89UlTVu4yzkP73A4zCJ8XmS/G3hn0T3HS8jDxV66bXJCA76WbtaQ
-	 /gsqPddg2Ao6FNSQbPfTo0SVTjn41eOtVs8sx64fb9fe11b9qLyWsV8KHQ4y7uHjVtVll
-	 V7QSLtZAZ95cxjs5L+LGFc2UhO6VpEb+dN5hAIIXpBZmxA8Pf3kIJKDdgoBiS2WTJZmPr
-	 YBuwXNTbsx8Zpw6x+qa8IcikwpaJGMc/aWhwLK8o8QV2Q39BlzpFLyOGtk00yPUoK3g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794992248;
+	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-CM-SenderInfo:X-Coremail-Antispam;
+	bh=4vspbOJQP+sdLjL2yVd0umkyoFVaU+EqhynkFK0tfE4=;
+	b=g5xjZk2elUpKxVUKu2D4apsHr0TOCE3/lhGWM7F+MAV2Z1DaB4y4qUHuD25xKVrUqRqv
+	 93Bk6QXMDgyenAQCijmO7rAjDJGpley4wBEfF7t+Mky05IsM8/CpWqv3leZKoSEqyllaV
+	 uy7Lo4g3UHfcqRn2WPJPq+iYXVgJyeRsm9i4JEty3Q6vRGfqAnj/LHAmTZlDry4oytrG6
+	 stAT7hP+OlDSHc7+QyPC43Bk/NaLJdQx9m3udMrv1FBBEFsWRh7ZtH0rGfjeKVAgfcuDD
+	 7T2GYTBS07KmG49T+AYSUtPoU3a0dlbBpXAte3IEsG2etdyLR5bQgZf9CGGXR1ewYFg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.intel.com;
-	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IeUyPOXA;
-	arc=none smtp.remote-ip=192.198.163.18
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E455606A31C;
-	Wed, 18 Nov 2026 08:39:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2E455606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IeUyPOXA
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794991156; x=1826527156;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=GVuehxEYhnaikefPNV5ljoAX+GlBmLt5R6g/hv9W6+o=;
-  b=IeUyPOXAR6u0FTTYruGF0h1qMgH6lzTO3iwr5ortIjMUL6T1sRhAsD5+
-   jnIZMZ9o8pN3VRH/Rq47W/MW7IwwcOOOlqYKubxkjFxzHFnsJhYCADVhz
-   evtPXtCM0ZbY/6v3JPqb5eKStjao2H0ws76NRNNwB856FeaeA3plALzzI
-   BiX0ZAuefdkrkvWsrPjkp33Njx0DFEoxK7vhD9Ql6/E+aYMBD6w63iww3
-   grlBo/O2kotzu8/jZGxFzhyOrmK6Nb0SJI73YalXB7onwn0stndGjuIDZ
-   f87T1lLSFxCQyWN7b0upeuKeh+Ekuf9HakZTDz9hh/g7x1ZdUt4EJi+Hv
-   A==;
-X-CSE-ConnectionGUID: wI3PixhmR1W6YDqfRxoYmw==
-X-CSE-MsgGUID: 9XRF66UYRHG7VJsUEXoCmg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11969"; a="3815944"
-X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
-   d="scan'208";a="3815944"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 00:39:13 -0800
-X-CSE-ConnectionGUID: SqGI4Z6rRNalVSS/yeo4pg==
-X-CSE-MsgGUID: ISFbWIJcTEKqKk3Lni9sZw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
-   d="scan'208";a="10094903"
-Received: from ettammin-mobl3.ger.corp.intel.com (HELO kekkonen.fi.intel.com) ([10.245.244.183])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 00:39:11 -0800
-Received: from kekkonen.localdomain (localhost [IPv6:::1])
-	by kekkonen.fi.intel.com (Postfix) with SMTP id 5A7A4121B6F;
-	Wed, 18 Nov 2026 10:39:08 +0200 (EET)
-Date: Wed, 18 Nov 2026 10:39:08 +0200
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Brian Norris <briannorris@chromium.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Subject: Re: [PATCH v1] PM: runtime: Update last_busy before calling
- rpm_suspend() in rpm_idle()
-Message-ID: <av1kLCLk9dIzKxQD@kekkonen.localdomain>
-References: <4789427.LvFx2qVVIh@rafael.j.wysocki>
+	dmarc=none header.from=phytium.com.cn;
+	spf=pass smtp.mailfrom=phytium.com.cn;
+	arc=none smtp.remote-ip=162.243.164.118
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6C959606A31C;
+	Wed, 18 Nov 2026 08:57:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6C959606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=phytium.com.cn
+Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
+	by hzbj-icmmx-7 (Coremail) with UTF8SMTP id AQAAfwBHT9NuaP1qRFFoBg--.2247S2;
+	Wed, 18 Nov 2026 16:57:18 +0800 (CST)
+Received: from phytium.com.cn (unknown [218.76.62.144])
+	by mail (Coremail) with SMTP id AQAAf8DwSHVtaP1qEDv8AA--.37704S3;
+	Wed, 18 Nov 2026 16:57:17 +0800 (CST)
+From: Li Mingzhe <limingzhe1839@phytium.com.cn>
+To: myungjoo.ham@samsung.com,
+	kyungmin.park@samsung.com,
+	cw00.choi@samsung.com
+Cc: linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Li Mingzhe <limingzhe1839@phytium.com.cn>
+Subject: [PATCH 0/1] PM / devfreq: add SCMI performance protocol bridge
+Date: Wed, 18 Nov 2026 16:57:14 +0800
+Message-ID: <20261118085715.27400-1-limingzhe1839@phytium.com.cn>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -86,18 +53,62 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4789427.LvFx2qVVIh@rafael.j.wysocki>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:AQAAf8DwSHVtaP1qEDv8AA--.37704S3
+X-CM-SenderInfo: polpx05j2kviaytzq15k1wx33pof0zgofq/1tbiAQAODWrwzdwA4wAGss
+Authentication-Results: hzbj-icmmx-7; spf=neutral smtp.mail=limingzhe1
+	839@phytium.com.cn;
+X-Coremail-Antispam: 1Uk129KBjvJXoW7AFyUGF1DXFy3Wr48tFy8uFg_yoW8CryrpF
+	Wqya4fZay5GrZ3tw1ayw48XryrAFs7uFW5KayxW3srAry5ZryUt3ZFyrW5GF9FkrZ7AFy2
+	vr48Jw1xGr18JrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+	DUYxn0WfASr-VFAU7a7-sFnT9fnUUIcSsGvfJ3UbIYCTnIWIevJa73UjIFyTuYvj4RJUUU
+	UUUUU
 
-On Fri, Nov 13, 2026 at 02:27:23PM +0100, Rafael J. Wysocki wrote:
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> 
-> When rpm_idle() is about to call rpm_suspend(), there are no reasons
-> preventing the device from being suspended, but if the device uses an
-> autosuspend delay, it needs to be taken into account.
+Hi,
 
-Reviewed-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+This patch adds a bridge module that owns the SCMI performance-protocol
+scmi_device binding on behalf of devfreq drivers, mirroring the design
+of drivers/cpufreq/scmi-cpufreq.c.
+
+Motivation
+==========
+
+A SoC may have several devfreq consumers (NOC/DMU interconnects, GPU,
+...) whose performance domains are managed by the SCMI performance
+protocol. Each consumer needs:
+
+  - the perf-domain id parsed from its DT "clocks" phandle
+  - the domain OPP table imported from PERFORMANCE_DESCRIBE_LEVELS
+  - PERFORMANCE_LEVEL_GET/SET wrappers for freq transitions
+
+Binding the perf-protocol scmi_device in every driver would race and
+multiply the dummy-clock-provider workarounds needed by the OPP core.
+Instead, this single built-in bridge binds the scmi_device, registers
+the clock provider on the protocol node, and exposes a small public
+API in include/linux/scmi-devfreq.h:
+
+  scmi_devfreq_ready()         bound check for early probe deferral
+  scmi_devfreq_domain_id()     DT clocks phandle -> perf domain id
+  scmi_devfreq_opps_add()      import PERFORMANCE_DESCRIBE_LEVELS
+  scmi_devfreq_freq_get/set()  PERFORMANCE_LEVEL_GET/SET wrappers
+
+All functions return -EPROBE_DEFER until the bridge is bound, so
+consumers are retried automatically during probe.
+
+Tested on we platform with the NOC/DMU devfreq drivers, verifying
+that the OPP table is imported and freq_set transitions are applied.
+
+Li Mingzhe (1):
+  PM / devfreq: add SCMI performance protocol bridge
+
+ drivers/devfreq/Kconfig        |   9 ++
+ drivers/devfreq/Makefile       |   1 +
+ drivers/devfreq/scmi_devfreq.c | 205 +++++++++++++++++++++++++++++++++
+ include/linux/scmi-devfreq.h   |  30 +++++
+ 4 files changed, 245 insertions(+)
+ create mode 100644 drivers/devfreq/scmi_devfreq.c
+ create mode 100644 include/linux/scmi-devfreq.h
 
 -- 
-Sakari Ailus
+2.43.0
+
