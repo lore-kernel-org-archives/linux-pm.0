@@ -1,69 +1,45 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.180.11
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795035851;
-	b=W9XrZDr1XtJrSraGwaUqFd92waR0+JSzOesyWT6KQHRd0cWUmaKIr9zDxBVTeBUHbp9S
-	 6s01Xer4JGMhTobHIOrAHCQcyIUERcWnRd9IFkNAr+3G4TehSMXaM9XiHSVErecYp15IB
-	 nh3GHUpCp4iDeTVxOBv7n8UF15vWDWPpf4L+RfevJiNhHKKr3qRAyFT0hOFP4A2psd+UB
-	 nw9ODolVTuyFf7je4pOD/TaIbdyFLo+Ycg8tIO541BiCKZUHCey+PaNZviV/bxUYxv7kZ
-	 UxR5fPcCMZ0bSejl219hsd/1tWHBtCWX1MMyFtVLem+OS8S6bihIiFRdTDCrv/kKVhw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795035851;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:X-Zoho-Virus-Status:X-Zoho-AV-Stamp:
-	 X-ZohoMailClient;
-	bh=dLelpa7Ur+2lYbuxtI4MMSCNnQruI8JNBFJnmaiXdUg=;
-	b=eLFVncgv0mMiyvYC4fVgRdYpF7PntQcSN7YYK5ePFo3zV0hASkxZGzmujskr8siZ8EEW
-	 8rEvPfyS5znJrUGI5tHDSwzYgJrY+O8JJyimJMBG9E9R1z+5vl971nuftFwA6PtAJknoR
-	 gr/Vk8cyFF2NxItP23vYcu5bqtEaP8ig9sFVcKLLdcblTeJaC/6FLsgvld9tSXR3bUq2/
-	 eeY8GERdr+Jb1cCpQCyC3nT5GWFtsocpgQNxSY/YO4cw6zGTdk5vgMevYeNt8NhNENqXL
-	 XDzR7XE6cgkvwxSeKqEM+oFqLBNnrJSu4I4vLl58oi4bHTyl+bxsnUrXFb4NlYST/Gg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=collabora.com;
-	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=A+sUyO8s;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.180.11
-Received: from sender6-op-o11.zoho.com (sender6-op-o11.zoho.com [165.173.180.11])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795036291;
+	b=PPrJFp4PmzzVqlzajQ7JrP2q6Z5gK/tsrJWYJxIdVpgWpgBGeL6i9Qcw+Dd6bWOLMUPG
+	 q0ELpA4yx+jy+MCFN/dWkcqs6joWjaS9vwyq3Vr5t7RHmcJqfR7F8pf1nQ8D0VKE85JEE
+	 mNyICAKMCgUrrGqQ/+Ue3eW6NGx19tforoQdnJUr8JR6mc7R6MAGqN3lEGMG6QZdZnZ4V
+	 aNV7PcT/x8OniEhVETwYN/Xec1EkXyCyGx5vE1llc+ks/aPZwNOV30uzwL8ihhsTBmow+
+	 9GzQVtVUsQOfEpE6I5Y4q+z8IfYHYD0gYd8cofrz+5A2z1Qa297iHg0seO28SLyTzUw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795036291;
+	h=Received:DKIM-Signature:Mime-Version:Content-Transfer-Encoding:
+	 Content-Type:Date:Message-Id:Cc:To:From:Subject:References:
+	 In-Reply-To;
+	bh=fYW7C7ZSeq/hMphn21Jk8+ekBniTzrghgjy5BvzP2bc=;
+	b=oicOzF982iduLj8rp6ItNpy+uzf6Cf0C31wGonA4chp+Xc8yYoh2OcQ7tWLdCZ1taD9Y
+	 woW2dnxvKRXGXBLvvjrXYP23H4mKwQEVwRPzPG9iUlhpLBhq/9hJk58BRABpSpNJ610mp
+	 dHjXIWAEo3GbyGPgWla3bxhz5lOuhd0x/paQGdvN13DOrbfI8XvDsupJYLRpdoSmCdG3/
+	 n9FTiVUvJF1V9F9TcIxGcXdou+KfPzokhehxjGAWg12RLGbkDnhxEH8jnai/xDQwGFFOm
+	 UYd2CYvpxrN/TnFR1L+lSTuz4O3uzqBDo5FtTbbE4hlvRmFEGMV+yo+iV524PdL9rQA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kuXqBQo9;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E4FC606BE17;
-	Wed, 18 Nov 2026 21:04:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4E4FC606BE17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D42D606A336;
+	Wed, 18 Nov 2026 21:11:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=A+sUyO8s
-ARC-Seal: i=1; a=rsa-sha256; t=1795035823; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=hc4ewlGfHygjkjHma7t2hBesu+p+lTd6AfgxnMiGRSkxewr3hqXdbJbTYGWO+bQBoH4sXv2//LOMhZgdJECVIOGu3RROZRpMsHlQKoGGjy6HO7KVqSTygO4xkbwYNCp7k7dFy1f2Gpq1uYXHpTjXxVYtQJXXyM149p5EpJxALFU=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1795035823; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=dLelpa7Ur+2lYbuxtI4MMSCNnQruI8JNBFJnmaiXdUg=; 
-	b=AsdypB3cqX+AvLVGi7GI8UXF4ult2Lg8+UMeV6vKaqQKrIIQJvah3CJo1GbCaWlwnMYmrh6hdvu/wsppfa/Chjx9ppGb1S2tqwZ/nj5kYzuQHlrpQeprcauY4D+dFhoprO7E1MI29tBT5AS8df3tKCkqmmvLSxtz5AvXmbYBFDA=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=A+sUyO8sq4pk5d0jrPE4wRvNsK5aAQYae7sfxIbHiCHuwjof0HgqNWOF0TRFxM8gv5OUi/1rWp6SLVhNrZqqxX7SyOtSws+jJcU9xkuISTaq301jh7G1HiQNjw6wBT5/CjpZ0DdcFPPyf+keFkPeLyfKzZYsRflkYgOAMwDsX0M=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=dLelpa7Ur+2lYbuxtI4MMSCNnQruI8JNBFJnmaiXdUg=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1795035820106725.7828212239302;
-	Wed, 18 Nov 2026 13:03:40 -0800 (PST)
-Received: by venus (Postfix, from userid 1000)
-	id 5734618044A; Wed, 18 Nov 2026 22:03:35 +0100 (CET)
-Date: Wed, 18 Nov 2026 22:03:35 +0100
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Chanwoo Choi <cw00.choi@samsung.com>, 
-	MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
-	Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@collabora.com
-Subject: Re: [PATCH v3 0/9] PM / devfreq: rockchip-dfi: cleanups and RK3576
- support
-Message-ID: <av4SU8KEtldHnJeR@venus>
-References: <20261117-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v3-0-32ff1546b0e4@collabora.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kuXqBQo9
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4625B1F000C4;
+	Wed, 18 Nov 2026 21:11:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795036290;
+	bh=fYW7C7ZSeq/hMphn21Jk8+ekBniTzrghgjy5BvzP2bc=;
+	h=Date:Cc:To:From:Subject:References:In-Reply-To;
+	b=kuXqBQo9E+h9GfS4TOHEmqgk/yUMmLyRthOV87kyoVvVOAzwMpnvqD7A1XkucwxwG
+	 +Vl7bpZlxX0JE1vzCQVuNBvbZMaKuIBAvlXTPAUK/GTa7v0LsXaOQ5W64VpbC1VuJl
+	 uqJ8OInlapAXmctcRxyW0008D6Xzwyp9lCFH5W/hdRpNqLETcSMRWepnBuLx7zwxxU
+	 Sylw1ch5ITJRoQmWb3zw4zYMMrzwKyJn/UZhs2/85dIxkfhwlxjTdBpT9dCJJryN21
+	 FmmGw4YgDxUh6xSvFjYiQgrHT7xeYbJw48awVnPj+qHidKGuRNABBugA/RDx9fw+YY
+	 xy76njp+TsmiA==
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -72,65 +48,90 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="3ekhknmpesexcibk"
-Content-Disposition: inline
-In-Reply-To: <20261117-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v3-0-32ff1546b0e4@collabora.com>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/295.17.74
-X-ZohoMailClient: External
-
-
---3ekhknmpesexcibk
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
+Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v3 0/9] PM / devfreq: rockchip-dfi: cleanups and RK3576
- support
-MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 18 Nov 2026 22:11:20 +0100
+Message-Id: <DMYN979QJFNV.LM3T6O68OHW6@kernel.org>
+Cc: "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Kees Cook"
+ <kees@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Rafael J . Wysocki"
+ <rafael@kernel.org>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy" <chleroy@kernel.org>, "Nayna Jain"
+ <nayna@linux.ibm.com>, "Srish Srinivasan" <ssrish@linux.ibm.com>, "Mimi
+ Zohar" <zohar@linux.ibm.com>, "Yoshinori Sato"
+ <ysato@users.sourceforge.jp>, "Rich Felker" <dalias@libc.org>, "John Paul
+ Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>, "Juergen Gross"
+ <jgross@suse.com>, "Stefano Stabellini" <sstabellini@kernel.org>,
+ "Oleksandr Tyshchenko" <oleksandr_tyshchenko@epam.com>, "Nathan Chancellor"
+ <nathan@kernel.org>, "Nick Desaulniers" <ndesaulniers@google.com>, "Viresh
+ Kumar" <viresh.kumar@linaro.org>, "Zhongqiu Han"
+ <zhongqiu.han@oss.qualcomm.com>, "Alexander Aring" <aahringo@redhat.com>,
+ "Felix Kuehling" <felix.kuehling@amd.com>, =?utf-8?q?Christian_K=C3=B6nig?=
+ <christian.koenig@amd.com>, "Zhihao Cheng" <chengzhihao1@huawei.com>,
+ "Sumanth Korikkar" <sumanthk@linux.ibm.com>, "Bill Wendling"
+ <morbo@google.com>, "Justin Stitt" <justinstitt@google.com>,
+ <driver-core@lists.linux.dev>, <llvm@lists.linux.dev>,
+ <linux-hardening@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+ <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-sh@vger.kernel.org>, <linux-s390@vger.kernel.org>,
+ <gfs2@lists.linux.dev>, <xen-devel@lists.xenproject.org>,
+ <linux-mtd@lists.infradead.org>, <amd-gfx@lists.freedesktop.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
+To: "Ian Rogers" <irogers@google.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH v3 9/9] kobject: Require explicit initialization of
+ struct kobj_type::release
+References: <20261108223913.3624571-1-irogers@google.com>
+ <20261108223913.3624571-10-irogers@google.com>
+In-Reply-To: <20261108223913.3624571-10-irogers@google.com>
 
-Hi,
+On Sun Nov 8, 2026 at 11:39 PM CET, Ian Rogers wrote:
+>  static const struct kobj_type cpuregs_kobj_type =3D {
+> +	/*
+> +	 * Pre-existing: info->kobj is embedded in per-CPU cpu_data;
+> +	 * cpuid_cpu_offline() only calls kobject_del().
+> +	 */
 
-On Tue, Nov 17, 2026 at 04:35:36PM +0100, Sebastian Reichel wrote:
-> This is a combination of the DFI driver patches from the following two
-> series to ease applying to devfreq tree. It is based on devfreq-next
-> and there are no other dependencies.
->=20
->  * https://lore.kernel.org/linux-rockchip/20260921-rockchip-dfi-cleanup-v=
-2-0-43ff34ac8599@collabora.com/
->  * https://lore.kernel.org/linux-rockchip/20260921-b4-rockchip-dfi-rk3576=
--support-v2-0-04f847016321@collabora.com/
->=20
-> Changes since PATCHv2:
->  * split out DFI driver patches from both series and merge them into a
->    new one; clock controller and DT patches will be send separately.
+All of these comments carry a =E2=80=9CPre-existing:=E2=80=9D prefix, but t=
+hat doesn=E2=80=99t
+distinguish cases with broken lifetime management from those where the stor=
+age
+remains valid despite the API misuse.
 
-Sorry, I accidently took the v1 patches for this. I will send
-corrected v4 tomorrow.
+For example:
 
-Greetings,
+> diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c b/drivers/gpu/drm/am=
+d/amdgpu/amdgpu_xcp.c
+> index ab14079d1c42..0847134a1391 100644
+> --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c
+> +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c
+> @@ -797,6 +797,11 @@ static const struct sysfs_ops xcp_cfg_res_sysfs_ops =
+=3D {
+>  };
+> =20
+>  static const struct kobj_type xcp_cfg_res_sysfs_ktype =3D {
+> +	/*
+> +	 * Pre-existing: xcp_res is embedded in struct amdgpu_xcp_cfg
+> +	 * rather than freed individually by kobject_put().
+> +	 */
+> +	.release =3D NULL,
 
--- Sebastian
+Being embedded in another structure doesn't explain what guarantees that th=
+e
+enclosing allocation outlives the kobject=E2=80=99s final cleanup.
 
---3ekhknmpesexcibk
-Content-Type: application/pgp-signature; name="signature.asc"
+Could you please drop the =E2=80=9CPre-existing:=E2=80=9D prefix and make t=
+hat distinction
+explicit? For broken cases, describe the lifetime problem and mark it as ne=
+eding
+a follow-up fix. For cases where the lifetime is safe, explain what guarant=
+ees
+that safety, while acknowledging that omitting release() still violates the
+documented API contract.
 
------BEGIN PGP SIGNATURE-----
+Also, do you plan to follow up on those cases?
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmr+EqYACgkQ2O7X88g7
-+ppGAQ/9Gt2sZalCruHyi9gTFVOa94sbuNWqb0I7PxB66i4FTrom2gql22oOX8j8
-a/w/Sn7iEzdUqpOxECjrCZ8D1XwNEI1x1KMqLqQhZsHLNcicrBE+LX4ss0wItIJ8
-GxoSlqlycc2UL7NObovUeY+WgXG5kX+WAGpy4sHLKllRR3bnby/MH9vTIstRTS9/
-IpMad1rH8EgEcnSga47gpjxDwJXnxkHTnQW2U4J4QpOxcJ5vCTK8tMVPC21rS91+
-eUM0i/LF1JmE/GseIARua1DQEuxv2NWHDDIZhe15ykV+UIcVwlNt8l7BoFUBk2tq
-1CitNEs/OzmBK/LdcBsB2evwo1J7Bj8rwrfqXYfLThArwH6pCKO61jEDRfocGujL
-Jrr9e7dQYxcIWm8z/V9L6E40y+G3ZawVmjGy84npYFU2bm9g7Ww7A25H7+2EWAxa
-9eomyY25G3BejRCuWuYk6ZY7k54tgHc3mwAdg8QjKst43RAIOX/9xrIcme1UYz/s
-/3Zx9bFmmeTF5Uv5tBEsA9s7gOVG5yROj3hxqqbooEHu+cGmuIiaHP+00Ud+V+V0
-w2pMKFe7gXTdMG9u2am86+kuiOsN2RwtHUBqrbf2qeCBFgtjzunKOs33Zp7XtWXB
-bcR/7557fhD/MPlGQpFsmLCTCcq9fvsKQb7ECs6tNauASMYxwXA=
-=5zr2
------END PGP SIGNATURE-----
-
---3ekhknmpesexcibk--
+Thanks,
+Danilo
