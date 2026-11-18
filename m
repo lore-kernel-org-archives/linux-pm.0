@@ -1,85 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=84.42.129.46
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795021668;
-	b=uYL0JzNcSkbi2E981jGSuxObHqwM5otrai4pd7qcoJDNHXCrrI5DavzThyTo7n4tdZ6v
-	 rqVdZfBg87vVthLZXsY/H0SQ/TbcaCHcyMWSAYeT+hIC9XUO2xotM9MDU7fGpK/n0AToy
-	 umM8MzVrpxe4aiwXBa/6Q5HE4zHxsw3ONYaSU+tAXrJQNXJgD3fTPnIH9XkzZmwtFaDik
-	 JQ8c040ulOWNAfd+/mMgEoiZ5BKH+6olku+xboa76yWB3fDC9BZVcDbqS6gADe9u7A5RJ
-	 qBYW7KGPCU8Mm4YHgGpFKDLGpvQ46fZ2qeIVA19zfwxqWu97j0wQDfLh7d05st6OlPA==
+	t=1795022488;
+	b=mOpz0SKWRhHe+LIkglE5PMhA0sjRugmbp579Wn0oLSn5Nsd6Bvrr++spOJCrwUMfWJSK
+	 O4xaE/wJTnndSw2ZqK0aXZfKjFQ7wfBctaKxM12pL5YpXZ2PHer853E3YOunj6JvlJall
+	 2ot1aWhDO8b8bcd73szmVqQIQ9Xb0rBSQ5PGKXXPv99ByPtX3yyqVR7yCd9A+X264TL++
+	 MldVh4kfhA8kI/01uiVnm5FzpC9hN+h7JClNiIIR86LSpGgU2HkVLgCGQ2M/JiLfSKbhw
+	 eGpGcvpnbSabpz0EGpFX+YOC+qAxexTxqQMFmsaXEh4aAMndL0EGnQ6h80XHkABKPNw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795021668;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=1082igN8AgArxQJ6WvmrNI+Gc7WS+2/LYjRpQ2Ge3Gs=;
-	b=VvfeB1Edzq03VmidMcMgHRHKWBkChuLAmY98mxkeJQthDnxOECbqZzLWiGDlv+8g5+Cp
-	 sFyrS8t+ImPtCV8DeDW6sWwUajFCWw0SVPNxO5INhF+XnUsAalmbdDOO9q9vz1geuNUxO
-	 X6GnmoGovcWKDkjDx+WbZWDeKX1BrHvF4dDF1cUPGAaWlvg9URVBd9F7qlHgBCzjkr9ji
-	 1sS2mtF3VABJFxwxn8vmkMgJjCaJgnvKNq6w36YjVzlV4Pe46G1NbpODw30cAQydQMhRi
-	 cDnAGHS4dEKh04ddM6hGCh62Rfa/LOeNVxD61pbZ73VpbOaUAYU4JQy0C82+03iow0w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795022488;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=lWq+h9eeWuqpYIRpLSpbfHl49BeBPQNL7S4WHdN0ecI=;
+	b=KNlHABTw9akmTa03cit5U1b6ZxpGv6pI2pHmLv3c3e73AtyXk8igM8xn/3y7ZBX30zRk
+	 QghaU5NvhBn56wRT2nWF4y94OlPYpOobtCrzdWG83+G0Wew+nGDQ09Lm4OXDGPpCEzIeL
+	 NV+h0rW6dBfUYNwnxyCR/K418m4yF5U4pPNkWk9s42rQgjvqbmLEzAX1RVW1t7DTvfYYz
+	 2rrvBP0wPvDrW8Pj/ZNaof8Lbk1rAgr+Rdq+40AsQApHwccsEWNJSd1RE88aZzJMMU9vG
+	 fsnw0I2qFpQ/gGyFB6x+4L/q5a4JbpMSpAuW5cB9yQqYdn8ZywB+BOFxFaPfMc23z6Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QCgNfw9F;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=ixit.cz;
+	spf=pass smtp.mailfrom=ixit.cz;
+	dkim=pass header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim header.b="v8cfi9/d";
+	arc=none smtp.remote-ip=84.42.129.46
+Received: from ixit.cz (ixit.cz [84.42.129.46])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C607D606A32A;
-	Wed, 18 Nov 2026 17:07:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B096E606A33D;
+	Wed, 18 Nov 2026 17:21:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B096E606A33D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QCgNfw9F
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 514611F000C4;
-	Wed, 18 Nov 2026 17:07:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795021668;
-	bh=1082igN8AgArxQJ6WvmrNI+Gc7WS+2/LYjRpQ2Ge3Gs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=QCgNfw9FgQK+sm5NRvdWobhMGhtjBzuObXQHEjX1yuhdiiBLYB0bTRTLmyx6fA8kJ
-	 UHbkZjfg2xM6NV6Fx09wyv0Qw9cmOGqEbDfQynp0Xfyg3RI+neNW9r+ioVkyG+/A+5
-	 8x6SbqumZKvLr+liTbgiCqHzllt++Dxv+YHm/HbjShj3gyfRl1pzdQOwAhqNzBovvm
-	 f+PrOSIvLjHTBV0MzhK/eYbE6mY1kut9NlJ6uuMrjLdRizvupv1TeZDHBuSK+Q7zUo
-	 Mibg2IC3WkhnVR7XiiG827juW4oPIHLCViYkj3mA0/csL0NMxbZRVcbTO19V3GeyAy
-	 4FIPM3WQfqiWw==
-Date: Wed, 18 Nov 2026 17:07:39 +0000
-From: Conor Dooley <conor@kernel.org>
-To: =?iso-8859-1?Q?Beno=EEt?= Monin <benoit.monin@bootlin.com>
-Cc: Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jun Chang <jun.chang@metanoia-comm.com>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Sebastian Reichel <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>,
-	Samuel Holland <samuel.holland@sifive.com>,
-	Ben Zong-You Xie <ben717@andestech.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
-	CL Wang <cl634@andestech.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Minas Harutyunyan <hminas@synopsys.com>,
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-	Randolph Sheng-Kai =?utf-8?B?TGluKOael+iBluWHsSk=?= <randolph@andestech.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	Paul Walmsley <paul.walmsley@sifive.com>, linux-mmc@vger.kernel.org,
-	linux-spi@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-watchdog@vger.kernel.org
-Subject: Re: [PATCH 00/25] riscv: add support for the Metanoia MT2824 SoC and
- MT5824 EVB
-Message-ID: <20261118-unlovely-danger-3cab5aa87742@spud>
-References: <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
- <_koitdIgQPmk89LDhlUlJQ@bootlin.com>
- <20261117-calamity-quiver-96d0d568b338@spud>
- <tSRWYJl8QRO6qpOrYOmeTA@bootlin.com>
+	dkim=pass (1024-bit key, unprotected) header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim header.b=v8cfi9/d
+Received: from [IPV6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e] (unknown [IPv6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ixit.cz (Postfix) with ESMTPSA id 527CB53406BA;
+	Wed, 18 Nov 2026 18:21:19 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
+	t=1795022479;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=lWq+h9eeWuqpYIRpLSpbfHl49BeBPQNL7S4WHdN0ecI=;
+	b=v8cfi9/dImiLlSmbZQLnLiUS4IOoxTDyg78fDefnS7eTBB8bAWLog6eeEQfh3QU4R55hLW
+	UhG1csp2GWvmKrg/tJSVHBHaS9jbVKe00tEbMYeIVkvt1xbXmjUjNsR6iiFYPmpGvv3F3U
+	4n9PR3sUzPOhR3NCyFFCfr13XnEhy+c=
+Message-ID: <fabeba76-a32e-4a50-a625-0d16bd69bc59@ixit.cz>
+Date: Wed, 18 Nov 2026 18:21:18 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -89,72 +60,99 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="qHjQ/oQFDRYJL6Ds"
-Content-Disposition: inline
-In-Reply-To: <tSRWYJl8QRO6qpOrYOmeTA@bootlin.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 03/11] dt-bindings: regulator: qcom,usb-vbus-regulator:
+ Add pmi8998 and pm660
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Alexey Minnekhanov <alexeymin@minlexx.ru>, Robin Snyders
+ <robin@snyders.xyz>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Wesley Cheng <quic_wcheng@quicinc.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Casey Connolly <casey.connolly@linaro.org>,
+ Sebastian Reichel <sre@kernel.org>
+Cc: Richard Acayan <mailingradian@gmail.com>, linux-arm-msm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ linux-pm@vger.kernel.org, phone-devel@vger.kernel.org
+References: <20261031-pmi8998-vbus-v1-0-4d805e5a0f27@ixit.cz>
+ <20261031-pmi8998-vbus-v1-3-4d805e5a0f27@ixit.cz>
+ <8433ec2e-0f0e-4816-b3a5-6cdd7a6d1040@oss.qualcomm.com>
+Content-Language: en-US, cs-CZ
+From: David Heidelberg <david@ixit.cz>
+Autocrypt: addr=david@ixit.cz; keydata=
+ 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
+In-Reply-To: <8433ec2e-0f0e-4816-b3a5-6cdd7a6d1040@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
---qHjQ/oQFDRYJL6Ds
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 02/11/2026 10:58, Konrad Dybcio wrote:
+> On 10/31/26 4:05 PM, David Heidelberg via B4 Relay wrote:
+>> From: David Heidelberg <david@ixit.cz>
+>>
+>> The VBUS register block on the PMI8998 and PM660 PMIC shares the design
+>> with the PM8150B one. Define corresponding compatible string, having the
+>> qcom,pm8150b-vbus-reg as a fallback.
+>>
+>> Signed-off-by: David Heidelberg <david@ixit.cz>
+>> ---
+> 
+> This is absolutely not true. They both have a similar CMD_OTG
+> register at +0x40 which makes the driver seem like it's working
 
-On Wed, Nov 18, 2026 at 05:08:33PM +0100, Beno=EEt Monin wrote:
-> On Tuesday, 17 November 2026 at 18:30:58 CET, Conor Dooley wrote:
-> > On Tue, Nov 17, 2026 at 11:41:52AM +0100, Beno=EEt Monin wrote:
-> > > On Friday, 6 November 2026 at 12:15:09 CET, Mark Brown wrote:
-> > > > On Fri, Nov 06, 2026 at 10:29:57AM +0100, Beno=EEt Monin wrote:
-> > > >=20
-> > > > > The series is organised as:
-> > > >=20
-> > > > > - patches 1-14 add the device tree bindings, the Metanoia vendor =
-prefix,
-> > > > >   the RISC-V board schema and the SoC block compatibles
-> > > > > - patch 15 adds ARCH_METANOIA and selects the AX45MP errata
-> > > > > - patches 16-23 add the reset, SPI, watchdog, MMC, PHY and USB ch=
-anges
-> > > > >   needed to build and probe on this SoC
-> > > > > - patch 24 adds the MT2824 SoC and MT5824 EVB device trees
-> > > > > - patch 25 adds the MAINTAINERS entry
-> > > >=20
-> > > > This sort of thing tends to work better if you submit the patches f=
-or
-> > > > subsystems as separate serieses, it avoids enormous CC lists and ke=
-eps
-> > > > the individual serieses a managable size.
-> > > >=20
-> > > I agree, and I am reworking the series that way. Version 1 was intend=
-ed
-> > > as an overview of the complete SoC support, but it ended up being too
-> > > big for a single series.
-> > >=20
-> > > So version 2 of this current series will be only the platform basics
-> > > (2 patches):
-> > >=20
-> > >   - dt-bindings: vendor-prefixes: add Metanoia Communications
-> >=20
-> > >   - riscv: add ARCH_METANOIA Kconfig entry
-> >=20
-> > Realistically, this does not need to be a prereq either, because you'll
-> > have "depends on ARCH_METANIOA || COMPILE_TEST".
-> >=20
-> True but checkkconfigsymbols.py will then complain about a referenced but
-> undefined Kconfig symbol in the following series.
+While as it's now just sets the value to default, later with type-c it works as 
+expected - at least the on/off part, we need for now as a base.
 
-Do people actually care about this transiently failing in subsystem trees?
-For that matter, do people care that the vendor prefix might fail in a
-subsystem tree as long as it arrives in Linus' tree from another PR in
-the same window?
+> for you, but otherwise the register layout diverges a lot.
 
---qHjQ/oQFDRYJL6Ds
-Content-Type: application/pgp-signature; name=signature.asc
+Ok, I separated the pmi8998 struct within the driver and fixed the commit wording.
+Sending v2.
 
------BEGIN PGP SIGNATURE-----
+David
 
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCav3bWwAKCRB4tDGHoIJi
-0mflAP4mPyCBWxjRHa5hM3Th8QKGT/GcS2FW3txaiRkFbQ3zDQEAqGN5oVKdjCh+
-kLDcm68sMAeSJ5Q0sGQa7uNSaVeIrAk=
-=4VYb
------END PGP SIGNATURE-----
+> 
+> Konrad
 
---qHjQ/oQFDRYJL6Ds--
