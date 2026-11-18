@@ -1,55 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.37.111.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795017487;
-	b=5VYBVC8bv68AJcyXYXvP8aIM3PCk5E2RcXjQvQrZlZVL6hKcZvq+WDUWbkGbFlGUStmY
-	 o1F43mYoJ416u6rA+cGEZPwF+WAOAx49+Y8zbAuoUneHN4z0nbCtxMUen/z5mF6uFoAI9
-	 HqZEELYFgT5Sczm6k3QkfRDpcViTHvFnYZfwVybuEXc+COPSq1TfCcPzSPD85igqmjl4A
-	 KHfEG+g30xwQoNEVqA/5wTzliNuLF7i/GZPoCJYEViAQ7f5dQQ43DPOE8zZf6sHe/0ILr
-	 8OjQIyHPlfKCytMquEKIDp/l0/K3BAN+TtjJ+rfYlFX5UbvHNzqYdgGZ3a8L+8Q6GAQ==
+	t=1795018018;
+	b=oP65D8ichfLL2Y4KS46U81FamOgtE+slWGV4JuZxEwf1Hqx0QwlEwoFcHc6RIJFiOh+q
+	 rBcEHoQURRSqtoDq02j5FLCBKAs/XhLmk6u/gocxTToUwWnYBV0dIS6GL5SsaT+mVyJE5
+	 IsuAB70RJMFPpMl0FXkTyOtpUhcqXE/lZnm3WT9CUdxbiXOhPex3NWuNgUye5GRhob6PE
+	 dTQle0hJky3NGU8d/098x/rrKVyZrUxN3sqg4pP3A7/VKWBAgae9MLiXijz/MUvPQ3wCu
+	 TP0bmHkZj5SMijOyfrlDPPUsiMjcJKiP28hj6bxaKOspV3WG3xJXnedAoUV/FlKf3PA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795017487;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=me4+qTl82YgNzGoxWyEsprjq4fF403Or/YIKNaUUYpQ=;
-	b=O6oH5wbzXt+xhskUIo5zLG2igU25t65ORNwUHrVJhD4yG5CFK5HkDeekO8Q/FCr8eylc
-	 asXrkSbEHqyDRWkxLcvzjIOPtEDDkZqSO1CQrDINQFUpKwKNC6RNmQNZLSaILqh51Usia
-	 9uKshDwH3LdVyDw9fn9LQqG8LQIE29+Sk6zTMzwlha8zhEgSC9f6o/Ph96V2k7XlMN7St
-	 /R2NYot8hl8wLrmSGhCvJWWts2V6QPugFMmAg1PQKW/0fTF3DAprdDbpB9iKDzPi2cIh3
-	 SfssvauRK58kMTCq49ghRz7l36sZC/1noHjYmTjiO3K2HQ7/6XNBvgo05j+KEcDfQVw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795018018;
+	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Subject:From:To:Cc:
+	 Date:In-Reply-To:References:Autocrypt:Content-Type:
+	 Content-Transfer-Encoding:User-Agent:MIME-Version;
+	bh=33mAv7H3VUy7v6ipmNAN/H+V7FHfCLPW/SJICyXtSnY=;
+	b=X1bbk+9scPB2a6lgv9Luf+/li/9XABDZkcfWFMJ1gPF78ORvCcpRMQpkVZSukQw+VCD+
+	 dpNqjRv0GRRQE5DxMZD0byBGNxl5QPPqsxdV4OVej7I8niAhvGnROrlrIGOSrcWf7RsEX
+	 vo76K9AQkMMCD93+LcaK07xU6/nL1IJMSMWInQB67QOf1xcpizKgHNQYOgyiaM5wSfdXz
+	 pk8tWQTC9DTVMV38szndWoC4KAqW5BtDoASGAKqpuSrgpVqpvfiecIfkmr+I3CmqQQi9f
+	 o56gN58Dl2LzaQAkwmtcFUCzaveOOLZkuuibDd7K74tM0Vi46mIJdDOi5FMbW+qY6dw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nR4xwkhR;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=HansenPartnership.com;
+	spf=pass smtp.mailfrom=HansenPartnership.com;
+	dkim=pass header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=xVWQBudA;
+	arc=none smtp.remote-ip=198.37.111.173
+Received: from lamorak.hansenpartnership.com (lamorak.hansenpartnership.com [198.37.111.173])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2433606A320
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 15:58:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1721606A320;
+	Wed, 18 Nov 2026 16:06:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C1721606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=HansenPartnership.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nR4xwkhR
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D06461F000CA
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 15:58:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795017486;
-	bh=me4+qTl82YgNzGoxWyEsprjq4fF403Or/YIKNaUUYpQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=nR4xwkhRI/v0pirr69rC2d3WKCnJTP4lIle5SWKjzRn/6ZsJkm24z38aBNEOeFFkj
-	 2Vx4NoUbgVLujCUM9Es41pAVcgg30YsN7lJPElJem+fAiOZEfFbpNC8hu4zk3ZPI8L
-	 wyHNo6dHrT8Mw2BsSTkCo5PTEa1Z66q53DszEQfKHStlEEzC0M+3b8r4HVO30BdQ99
-	 TwYkgEjgE8ZzHAZlE7ba6Bx4XfVI4z69YGwmLHjqgP2AiE5yIWOq+GsRBAzaUtmezU
-	 Rcybc1skq2dGcuDD/uG5h+4m2kJRWqyitpA+8GyKvCdD/Rf9J6npBHpqSB7h2blnz3
-	 6TJ9ol3BFwetw==
-Received: by mail-vs1-f54.google.com with SMTP id ada2fe7eead31-7777fa8f1ccso417642137.3
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 07:58:06 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErERlYXD3JUPT4Jx5J0zY9hUoExaqqSJVLEWrF+o0d6ynLejNRexmhvUI7ZfQXUEsagbZKyvKVYlCQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+PGHWR7cxcLgkTO5XTEijmXbfKyCEkFwCtWy/sz9gPu5CqVWxY
-	XHtQcERjRMf/NAWbUAZfziVYezbJpWcIfZfoa2uWEixsBrYUfmZF/P5iuKQmMsZ+S0Odd49Az6w
-	HfUpLuYEZJNX1uDLpNpjX4fk13zVwvBw=
-X-Received: by 2002:a05:6102:1612:b0:7cb:288a:b66d with SMTP id
- ada2fe7eead31-7d6ba40e058mr1004520137.20.1795017485944; Wed, 18 Nov 2026
- 07:58:05 -0800 (PST)
+	dkim=pass (1024-bit key, unprotected) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=xVWQBudA
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=hansenpartnership.com; s=20151216; t=1795018016;
+	bh=qtu24fskTUDWBcD5rdt0E6zdsjXsbEIJB+o1SqYVNdo=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+	b=xVWQBudAMK6ta07v93pS0G46xtO8VdwAmK8NLQcv88PPnROHOGSMrotILnij48FyF
+	 EkmRaYy5Wbms8VGsAIyNrAZxQ7My0g2Eykib931DoX85/cstDNMWVInA0W3Ira7dRQ
+	 TPvchbByvDH5RW9MzT0lZb9+9ObSY+at1nO6abwM=
+Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4300:d341::8309])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519MLKEM768 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id 161F81C081C;
+	Wed, 18 Nov 2026 11:06:56 -0500 (EST)
+Message-ID: <ba43d150febc8a85247d6c54f57db0835cb8f5de.camel@HansenPartnership.com>
+Subject: Re: [PATCH 01/17] tpm: Define a kernel-owned TPM NV index that
+ can't be modified by userland
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jarkko Sakkinen <jarkko@kernel.org>, Matthew Garrett
+ <mjg59@srcf.ucam.org>
+Cc: Matthew Garrett <matthewg@nvidia.com>, keyrings@vger.kernel.org, 
+	linux-integrity@vger.kernel.org, rafael@kernel.org,
+ linux-pm@vger.kernel.org, 	linux-efi@vger.kernel.org
+Date: Wed, 18 Nov 2026 11:06:55 -0500
+In-Reply-To: <avnMl7fD156F1fx4@kernel.org>
+References: <20261008132532.1155166-1-matthewg@nvidia.com>
+			 <20261008132532.1155166-2-matthewg@nvidia.com>
+			 <435907614242e82ecde1767a967a3110fca6fb37.camel@HansenPartnership.com>
+			 <asqthz69ohnMVCye@srcf.ucam.org>
+			 <059384e86fd256618498b9a7214b6421d38fdf1f.camel@HansenPartnership.com>
+			 <astjpI65VOyU8xvI@srcf.ucam.org>
+			 <f002fc613bf0bdcf895e5be02dfd2524b7608787.camel@HansenPartnership.com>
+			 <asty4acE2B94t5q6@srcf.ucam.org> <avnMl7fD156F1fx4@kernel.org>
+Autocrypt: addr=James.Bottomley@HansenPartnership.com;
+ keydata=mQENBE58FlABCADPM714lRLxGmba4JFjkocqpj1/6/Cx+IXezcS22azZetzCXDpm2MfNE
+ lecY3qkFjfnoffQiw5rrOO0/oRSATOh8+2fmJ6el7naRbDuh+i8lVESfdlkoqX57H5R8h/UTIp6gn
+ 1mpNlxjQv6QSZbl551zQ1nmkSVRbA5TbEp4br5GZeJ58esmYDCBwxuFTsSsdzbOBNthLcudWpJZHU
+ RfMc0ew24By1nldL9F37AktNcCipKpC2U0NtGlJjYPNSVXrCd1izxKmO7te7BLP+7B4DNj1VRnaf8
+ X9+VIApCi/l4Kdx+ZR3aLTqSuNsIMmXUJ3T8JRl+ag7kby/KBp+0OpotABEBAAG0N0phbWVzIEJvd
+ HRvbWxleSA8SmFtZXMuQm90dG9tbGV5QEhhbnNlblBhcnRuZXJzaGlwLmNvbT6JAVgEEwEIAEICGw
+ MGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAhkBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAml2ZBI
+ FCS3GUMIACgkQgUrkfCFIVNZKjQf/deRzlXZClKxTC/Ee2yEPqqS7mm/INUA49KdQQ5oIhSxkUBy0
+ 9J4qjMIo5F8ZFkFTqikBqeL35LKu7O7rn8WETfX8Bxvos3HUsl3jHo34DES4MUFIpoQPgtiLRGwLb
+ K0cVCAArR2u2qj4ABmTRrs1I1kvdjEw6gatOuXtEe/j5O2fvfzTq9GBr0Q3n2IAsFXi4hLlx6VPE8
+ tyWUZ8BWJKtih3JAeUiXFvASL3McV0rV9RnU0VbjEQEhSE7PMYhWpnDC9AyBb0lXJllQRvC3NSkUB
+ 8KVQgNNxRPss0WE/nBoZ4dFA42jTyzTz8lNylxZoAWV7WJb3QxVg4oCodRVrxxrQhSmFtZXMgQm90
+ dG9tbGV5IDxqZWpiQGtlcm5lbC5vcmc+iQFVBBMBCAA/AhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeA
+ QIXgBYhBNVgbnPItGJxvq2a34FK5HwhSFTWBQJgS5mYBQkbNYS9AAoJEIFK5HwhSFTWBpwIAL5Bk3
+ 5FB34U6iHmDzzgdCbxLTs43T/YQyJpcGIvopBvnI/fDY8oSG6Df64/O6B+1R+A8TDp6ZG5ysUWnCC
+ 6GuIaEHemBYkitMPglR6+sGCMQY7O0mlsPvdssvKK1KI9Bno4VU6ogaF2qVzefSqg1Djmf/DcsxWP
+ rI/jdJ8FB5AYR2rjIdDFc+zRdAJuavo1/anyY2wgpFh/3R8IOYAEfWV9nGgYkf9+tA4EIn1sxE0I3
+ L5oW2N3mbyRrkzuBwO8ztMCwqEPk7moWzhokcZqMXiAIahaZdkashJC+s2X2RZSGCy+g+pvY5NN4B
+ BVG5XwLgVBqbHMTcxE0fbmPqz+q6O0LEphbWVzIEJvdHRvbWxleSA8amVqYkBoYW5zZW5wYXJ0bmV
+ yc2hpcC5jb20+iQFXBBMBCABBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAmODZ5ACGwMFCRs1hL0F
+ CwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQgUrkfCFIVNZu0Af/TzvL2/NdgAcw9uN3x60H8
+ jc4QUq14VpxcFEFEMpcj1morkX/G93V+56HBBaXZj+yK8PhxIA/SIz+sU7C/0YvKuvzakP8ZX/7WJ
+ e32SOUtjfr/VTaqjIBzNj6OxLvZpmNbBw7s6DwhhNpHOWqJ/1ml+PtDRDV71IB58yVqQjp1xlNKVl
+ ZppcJ5908EJzsFnRIVjiQiDSKoppqB2BCibBbrWcln7CiWMyOC/cco6SIn6twH+f7+aivJ3xGcOE2
+ a9gBKF5rNi9TBoX9oyPmshv/TDmnohsVrH7AYXlGYfZTk15SWEiROh1QX8/uD9wl/gcIv5EDUpT/F
+ L2jzOsA5663bw==
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,73 +104,48 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1794992905.git.daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <cover.1794992905.git.daniel.lezcano@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 18 Nov 2026 16:57:48 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0ghznYScteMQzFkcJsMfOTDPRE+JWBoeJg7NurfcfC57A@mail.gmail.com>
-X-Gm-Features: AclHuK-WQPlonzR9YQhr-Qu9V32wHoz2Spuu5LyQI3pgmeJNe67xVbxgzHuFNm8
-Message-ID: <CAJZ5v0ghznYScteMQzFkcJsMfOTDPRE+JWBoeJg7NurfcfC57A@mail.gmail.com>
-Subject: Re: [PATCH v2 0/2] powercap: idle_inject: Create threads on demand
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>, 
-	Peter Ziljstra <peterz@infradead.org>, Bradley Morgan <brads@mainlining.org>, 
-	Heiko Stuebner <heiko@sntech.de>, 
-	"moderated list:ARM/Rockchip SoC support" <linux-arm-kernel@lists.infradead.org>, 
-	"open list:ARM/Rockchip SoC support" <linux-rockchip@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 18, 2026 at 11:34=E2=80=AFAM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
-> Idle injection currently registers per-CPU kernel threads during early
-> initialization, including on CPUs for which no idle injection device
-> will be registered.
->
-> This series makes thread creation follow the lifetime and CPU mask of
-> each idle injection device.
->
-> The first patch adds an optional CPU mask to smpboot thread descriptors.
-> The mask restricts thread creation, CPU hotplug handling and teardown,
-> while preserving the existing behavior for descriptors without a mask.
-> Registrations sharing task storage are checked for overlapping CPU
-> masks under smpboot_threads_lock before any threads are created.
->
-> The second patch uses this support to register idle injection threads
-> when a device registers and destroy them when it unregisters. CPU
-> ownership claims, registration rollback and thread teardown are
-> serialized to prevent overlapping registrations from sharing threads.
->
-> The series was tested on Rockchip RK3588. The updated smpboot code and
-> idle injection code also build with W=3D1. Concurrent registration and
-> CPU hotplug runtime testing remains outstanding.
->
-> Changes in v2:
-> - Reject overlapping smpboot registrations sharing per-CPU task storage
->   with WARN_ON_ONCE() and -EBUSY, as suggested by Thomas Gleixner.
-> - Default a NULL CPU mask to cpu_possible_mask at registration and
->   remove redundant NULL-mask checks from the lifecycle helpers.
-> - Use scoped guards for the smpboot registration locks.
-> - Document the overlap restriction and registration return values, and
->   update the core commit explanation.
-> - Add Bradley Morgan's Reviewed-by tag to the idle injection patch.
->
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Rafael J. Wysocki <rafael@kernel.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Bradley Morgan <brads@mainlining.org>
->
-> Daniel Lezcano (2):
->   smpboot: Allow restricting per-CPU threads to a CPU mask
->   powercap: idle_inject: Create per-CPU threads on registration
->
->  drivers/powercap/idle_inject.c | 69 +++++++++++++++++++++-------------
->  include/linux/smpboot.h        |  6 +++
->  kernel/smpboot.c               | 45 +++++++++++++++++-----
->  3 files changed, 83 insertions(+), 37 deletions(-)
+[Matthew seems preoccupied, so let me try]
+On Sun, 2026-11-15 at 17:15 +0200, Jarkko Sakkinen wrote:
+> On Sun, Oct 11, 2026 at 04:28:33AM -0700, Matthew Garrett wrote:
+> > On Sun, Oct 11, 2026 at 12:27:58PM +0200, James Bottomley wrote:
+> > > On Sun, 2026-10-11 at 03:23 -0700, Matthew Garrett wrote:
+> > > > Hmm. Well, that's irritating. Which year's XPS is this?
+> > >=20
+> > > It's an XPS-13 9380 Core i7 ... circa 2019 I think.
+> >=20
+> > Yes, that's definitely later than I hoped. Bother. I think this
+> > patchset is probably still worthwhile because it does unblock us on
+> > at least some machines, and the implementation is intended to be
+> > opaque (other than the change in PCR 5 measurements, but we should
+> > still get log replay) and can be replaced with something else if we
+> > want. The other approach that springs to mind is tying this to
+> > having distros switch to a new kernel signing key before enabling
+> > this and so having PCR 7 be associated with the feature, but that
+> > sounds like an incredibly tedious thing to get right in a reliable
+> > way.
+>=20
+> What prevents blocking PCR 5 access from /dev/tpm*? If firmware
+> already, does it, this can only add defense-in-depth.
 
-If I'm supposed to pick up this series, please resend it and CC both
-patches and the cover letter to linux-pm.
+Nothing does, but what's the concern? A random user writing to PCR5 to
+disrupt the validity of the next suspend image? This is already an
+existing problem for binding secrets release to any secure boot PCRs.
+However, if we start blocking access to secure boot PCRs, there's a
+high likelihood of unforeseen consequences (like interfering with
+unlock once secrets that do capping writes to PCRs to prevent
+subsequent releases).
 
-Thanks!
+The better mechanisms to address this are probably:
+
+   1. Detect that PCR5 has been disrupted (get the kernel to store the
+      on-boot value and check they match) and if so refuse signed
+      suspend to disk with a message (this is easy).
+   2. Capture the additional writes to PCR5 and store them as part of
+      the attestation so the resuming system can prove the current boot
+      value of PCR5 matches the attested one when the additional
+      extends are replayed (this is a bit more complex).
+
+Regards,
+
+James
