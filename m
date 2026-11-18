@@ -1,79 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795043837;
-	b=KciLb7Fe2mwhyPXZLmYmfg1qeueWQhdb+SaNw6qlTPiUkdwa/YohB7U9s5j3LxAIVMMS
-	 0HtXg97PaSozT1UP4pvWTwbvAUzVYYZ4KiviZIuaao4r/sw3c7U9VoYZuswiSMSKEhhyr
-	 2xET0FunszERg1wpWAZSnbxoDaoXUgc+wOAy1BYZnO9qVtZO+PZmpTQZBfqFDByqnVWuS
-	 sgxnHAczWqtkfDqH/e/TJnCOLmrSivA6/dol7nKNywFcGXmSMBuO6JPUvBWriBkOwXAUF
-	 CfTblzrsO6yKnIUx8cbvzaWk2r5WDuIUJtDFIWV2mHOui+03x00HrML2MSYcDxfO/qQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795043837;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=5dQ4JQj6AUa0iFblGEmenrbjQYznIq7haN0cV2XTtU0=;
-	b=zx8F9dO6YwLBSKcM5PzVlOP0UXyfjKZJQOzBW/6Cz6GZezBDfJawHmLQk8gW9qEjWHld
-	 w4h73IUvJnVnyPGoK+3VV/nDBX5Hii5OBMm6adt4KwIcG8uBuGQaFdzT9CJPBYuJUcoip
-	 LmHQjFm6gcwNB0AQtkKIysORm8y6HgGvSf1Hlyay3DaxubDO5nyBOusIz0EtS4XOE0eu7
-	 D3VPv1bx5aLDKPP2pkLVLmGvw8J3VPBjySxpunQ22d9qOD8PsjkTBO3XNFGs0WCKklRuN
-	 RZ9yOBiOgdtHwKvjKf/WVNzmJ2JbOiyHGEKrj45KjT2j/iXTe5u7PmkI5rv6jrtK37g==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L1TS4pNj;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795045974;
+	b=caYNrT71q0d9fUoM2q+c0g0rDMagymdJjoHbLCQ5++uoyHYqWNWyDJwoazs1YQxZ4WFy
+	 C2bEJ82jUDNmibeK/I53rwMz1WdSX19Q9IZqLV2/bBet2s5LpMHX4GF8vPgIxd9la+Lva
+	 skitRibVU7RpDd+6vFEh+DwelloOer4HOo7bv68vSheAGxkcDly92RLRTbuQGyxCa7I00
+	 hGjYZlOWVuBGqD5Sv6Gm7MXfLr3cOaBH3I+B9PYF01k+/VN/qvQRE2wHZQf2c0KSCeByV
+	 /2+WD1DQID3Bo91M0gDpi11dpmbQSifgPSpoovZx6V/7Wmh5lBxB7i9w/jOSh5Tu/Zg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795045974;
+	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
+	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key;
+	bh=Gk+ft86EjK6nrzTfG2Zrmq8o0cCmcb2geBqF2W1l5Ug=;
+	b=d2xmnRNQjOE8ZIeisBQeGaF0YwzEkPKXZQ4JrBEVcufR0ZuFXB7J1SqoTBtMB3fNJH+Q
+	 oPyK1QhS0o5hUy5caXGF7APIXXJ3MLaA2CMAfZdtAUcY4OXG/HhVxBw3kV2y8/+JbDJxA
+	 uTuOTReEEFdbaf2hhMj5SmWIToSmyrw9DnQU/6nH8SFJVJ5FO5ndrXmKzutPqjaoNR6MC
+	 7OkqQhP30Qq6eMqHpNlg8y1SCsSmWku9WqfBs9M2QWiq+ogAqxXF63jA++TsY17UG4YZ8
+	 7YrulUGqB0Dns+uMdPMsmMpq9tj5ceJcT4mRhqdCoaQIvuecWWhrBN2a8btFcVtqJQA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dA5pLlXn;
+	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B29DF60A2614;
-	Wed, 18 Nov 2026 23:17:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06D86606A320;
+	Wed, 18 Nov 2026 23:52:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L1TS4pNj
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795043837;
-	b=OS5bZbstqsAzZgYMyvbhpSfAlrfBBu2q5djxtebwVrwYTlt13MLo+MOvnWAr/rzJ65RC
-	 tZYU9m0S3q7Xlp0AFFck4bem/c+B7qGh4hyioD9C7wTjAcpgaZfBpRYgg3+kTtiYAdmqk
-	 ppBvWDIC8oDK3pxS4goEqLalz5LV5lg4YMjj7BVFvXNpoTnzm2Fk8bXCBgDet5HksibdY
-	 dGOhZ6Owh/dM4V2K8ldIzxOBUBeMefPzkqmjgsoBN/xcjbjNL8BPJ0v/nBvvjUkImzJqx
-	 8Gy1ahq2EJk572D89qp0LQZ3qO0zvGNWpZXoMyDTtAzOoaklL5fMlU6nFiNkrzTT7+w==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795043837;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=5dQ4JQj6AUa0iFblGEmenrbjQYznIq7haN0cV2XTtU0=;
-	b=0XTY8mRyjBsX9ZrSFROBQmUAx4Nc4NSJDUzTng0t9I6gSJ36Z5ZF2qMKLO9+TLDqOJ3k
-	 VkOk64PDQCVQruQcSCW3WIx/B/I7EjK5xZ5rQD2+o+vRMxFjoNbbQcARBCOoiaK8DGFwh
-	 qqmFSqxPyan44y8eDVE9KwYBFA0zzN3frW+u8J0KLhBo4ueuaZakgJY1/wz6V502fY3VR
-	 NnmmGXTeIgFWVH9FcZCKu7o3vqQsGBjUINBu5tj+53LNH67e/QkKF7SMBN2KQ/Nj3zKNA
-	 uAVSGg4jiEdRHToaCc02gyKy5UEh2KQHry9i9lX3MEhVItJsP0RKbTZiuefjdfe2QWQ==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id CF1281F000C6;
-	Wed, 18 Nov 2026 23:17:15 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dA5pLlXn
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD0251F000C5;
+	Wed, 18 Nov 2026 23:52:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795043837;
-	bh=5dQ4JQj6AUa0iFblGEmenrbjQYznIq7haN0cV2XTtU0=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=L1TS4pNjinTHQUPNzblK7H6rftDiSIGBZHMRJk9MnP+1Whjuhb1hNXEKv/dH9IwHm
-	 +QIhfG+7ujPJ0z33rU+AURixQD7chABxZyLUgGpkegK37ZUAWWE4Tl3ORhRvCLfd0W
-	 b5K4AZH+2tPJENb6KWFymE2tByLWeItAsHRfKSLDK1iIZ22bnLdHSL9MjQ2SO/43w0
-	 UGq5Bu48mB7na5XX1ILdhn6H3Clgrbe+h4HCBvdCGKXTK/ibdeoAACJ09cpHMIA3Zr
-	 xdZ/c83dKuYy2JxYDoL09whTWQ3TPxgHVe7i1xK24sDJR1fHH0NfWYyUwJrJGaBLqW
-	 j3DwuOZvXH8Vw==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 60B314B01F;
-	Wed, 18 Nov 2026 23:17:15 +0000 (UTC)
-From: =?utf-8?q?Alexandru_Andrie=C8=99_via_B4_Relay?= <devnull+alex.andries.aa.gmail.com@kernel.org>
-Date: Thu, 19 Nov 2026 00:16:52 +0100
-Subject: [PATCH 3/3] power: supply: qcom_battmgr: fix negative temperature
- values
+	s=k20260515; t=1795045973;
+	bh=Gk+ft86EjK6nrzTfG2Zrmq8o0cCmcb2geBqF2W1l5Ug=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=dA5pLlXnQp5LbOI4HWLxN22BrktQ9BxyoBoHiVToDB7qIkJWOZMKtn7EcQW52kq5D
+	 RAcB4Mx1M5y4rxMg6d/BfuipEiCEcb5meONntTzXt+rojxF++xQUg+cm5xG/FQssMV
+	 DQJUGaJxE/UCCPD578iqWGmcVqWgKYRCm3TZUaaUmsI1qAv7DjHNJdvP4MaqRrXC3M
+	 V0NByjow012lgS2Vn3UHEYF3D0Mf+dszuK/JqV1wD7kXBGs2LA9onpcnSVMpjuUWr1
+	 FPfdd4IdoiMc6bzx/XN/gX7f8s0Rh4SIz8H7QF87iCKzQJil0WWWEBYyq8kpCpLuEr
+	 1I7xoDSfP+34Q==
+From: Brian Masney <masneyb@kernel.org>
+To: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+ Linus Walleij <linusw@kernel.org>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20261116-ux500-u8500-clocks-bindings-v1-1-0beed440c3f1@kernel.org>
+References: <20261116-ux500-u8500-clocks-bindings-v1-1-0beed440c3f1@kernel.org>
+Subject: Re: [PATCH] dt-bindings: clock: stericsson,u8500-clks: Allow power
+ domains
+Message-Id: <179504596334.179745.15793782707727588380.b4-ty@b4>
+Date: Wed, 18 Nov 2026 18:52:43 -0500
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,87 +64,28 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261119-upstream-qcom-battmgr-fixes-v1-v1-3-ca83700c08c1@gmail.com>
-References: <20261119-upstream-qcom-battmgr-fixes-v1-v1-0-ca83700c08c1@gmail.com>
-In-Reply-To: <20261119-upstream-qcom-battmgr-fixes-v1-v1-0-ca83700c08c1@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- Sebastian Reichel <sebastian.reichel@collabora.com>, stable@vger.kernel.org, 
- =?utf-8?q?Alexandru_Andrie=C8=99?= <alex.andries.aa@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795043834; l=2126;
- i=alex.andries.aa@gmail.com; s=20261118; h=from:subject:message-id;
- bh=rbeD9/hqy2iLa1zbMjhzXGTU00ckT0RtHpgBQ16AH5I=;
- b=JsoY8sFr/LIOpNR9zSCmVSlbAT0y8+na0ABBLTwEaUCcTDISlTl8LFCGx31mJICe5nVIy0Qtu
- UutV5/Wakh1DN2wEzee4AH33SDAS4fJv78X+dVsfRO+4EeM1fQs9uu1
-X-Developer-Key: i=alex.andries.aa@gmail.com; a=ed25519;
- pk=kNAqgavfB7uUd1mA8o8TszhGxzyqBwY71PGO/oK4v84=
-X-Endpoint-Received: by B4 Relay for alex.andries.aa@gmail.com/20261118
- with auth_id=1564
-X-Original-From: =?utf-8?q?Alexandru_Andrie=C8=99?= <alex.andries.aa@gmail.com>
-Reply-To: alex.andries.aa@gmail.com
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev-8145e
+X-Developer-Signature: v=1; a=openpgp-sha256; l=328; i=masneyb@kernel.org;
+ s=20250903; h=from:subject:message-id;
+ bh=RU93UEPha1BUNhT1V2A6dAMJiRlMdb5BCirrS2xyBeY=;
+ b=owGbwMvMwCW2/dJd9di6A+2Mp9WSGLL+WfneWLRLrli+Ydnt2LQFP70ktQPEHi/wvLUj90DZx
+ i/VV7SmdZSyMIhxMciKKbIsyTUqiEhdZXvvjiYLzBxWJpAhDFycAjCR2a2MDPdcWU+uVnjs7X3u
+ XqrJataZt3jyFD8nLOJPSpW9uOV85E1GhlP2bTph8sr5QdZ3zif5Z/HUqbI2H+B2VxFjKte4ezC
+ CBQA=
+X-Developer-Key: i=masneyb@kernel.org; a=openpgp;
+ fpr=A46D32705865AA3DDEDC2904B7D2DD275D7EC087
 
-From: Alexandru Andrieș <alex.andries.aa@gmail.com>
 
-Firmware reports battery temperature in signed hundredths of a degree
-Celsius, scaled to tenths of a degree for POWER_SUPPLY_PROP_TEMP.
-Passing it as unsigned int to DIV_ROUND_CLOSEST(..., 10) in both
-qcom_battmgr_sc8280xp_convert_temp() and qcom_battmgr_sm8350_callback()
-turns sub-zero values (e.g. -5.00 C, 0xfffffe0c) into 429496680 instead
-of -50.
+On Mon, 16 Nov 2026 10:49:19 +0100, Linus Walleij wrote:
+> dt-bindings: clock: stericsson,u8500-clks: Allow power domains
 
-Change status.temperature and qcom_battmgr_sc8280xp_convert_temp() to
-int, and cast the SM8350 BATT_TEMP payload to s32 before dividing.
+Applied, thanks!
 
-Tested at 35.0 C on a Xiaomi MIX 4 (SM8350); the SC8280XP path and
-sub-zero temperatures were not hardware-tested.
+[1/1] dt-bindings: clock: stericsson,u8500-clks: Allow power domains
+      https://git.kernel.org/clk/linux/c/80aa3c17a394
 
-Fixes: 29e8142b5623 ("power: supply: Introduce Qualcomm PMIC GLINK power supply")
-Cc: stable@vger.kernel.org
-Signed-off-by: Alexandru Andrieș <alex.andries.aa@gmail.com>
----
- drivers/power/supply/qcom_battmgr.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index 83e67d22c432..98b658ff6beb 100644
---- a/drivers/power/supply/qcom_battmgr.c
-+++ b/drivers/power/supply/qcom_battmgr.c
-@@ -278,7 +278,7 @@ struct qcom_battmgr_status {
- 	int power_now;
- 	unsigned int voltage_now;
- 	unsigned int voltage_ocv;
--	unsigned int temperature;
-+	int temperature;
- 	unsigned int resistance;
- 	unsigned int soh_percent;
- 
-@@ -1250,7 +1250,7 @@ static unsigned int qcom_battmgr_sc8280xp_parse_technology(const char *chemistry
- 	return POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
- }
- 
--static unsigned int qcom_battmgr_sc8280xp_convert_temp(unsigned int temperature)
-+static int qcom_battmgr_sc8280xp_convert_temp(int temperature)
- {
- 	return DIV_ROUND_CLOSEST(temperature, 10);
- }
-@@ -1467,7 +1467,7 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 			break;
- 		case BATT_TEMP:
- 			val = le32_to_cpu(resp->intval.value);
--			battmgr->status.temperature = DIV_ROUND_CLOSEST(val, 10);
-+			battmgr->status.temperature = DIV_ROUND_CLOSEST((s32)val, 10);
- 			break;
- 		case BATT_TECHNOLOGY:
- 			battmgr->info.technology = le32_to_cpu(resp->intval.value);
-
+Best regards,
 -- 
-2.56.1
-
+Brian Masney <masneyb@kernel.org>
 
