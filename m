@@ -1,106 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.195.64
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.53
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794987146;
-	b=W/RfQFG53oNPEIT59psdu/pKluRXCF50W3VCSXZg54ohgKifHYB/8ryRxjmGb4GerzYq
-	 ABdQ3QRCI0YNGdWrIRmnoEXl8TjZzbM3DHFT+nGLzOVk++EpGIc3RPmMep7/kU9swJ4Yv
-	 nMzZRMOmuYA/ngKIGufvtCc9gA43qqKTEPPJupJ5lMfkdLuYBH93kfFyggf+QqFx453sc
-	 OgQyRNu5UU7V7tbu+mstbg/8mKLaqBHVnzLvyphFzp7yrBt+dozMi6ANfizmBvTyoq0/a
-	 NdDFMqzluscXlPx6G/WITVUn4rlrPSEGnqF1mD7ShVpN2R/gW4Eol5s8r/F78rdxedQ==
+	t=1794988020;
+	b=1YiceTLk2p+ajxhpAPddN76H1RDnOiwaLeyBQ6GJQYZnfCGcAngja3ZVvaW6bmVgZvhn
+	 4JPAuDm1GDhZgOlb+Uj/2BM7sxllzS4OJX/ndD99M8qkxYO0qA7EkTa/Lo5SuWAJaMjaW
+	 XYDE0VhzRR8sMMm8QMbLyAb5yF2CqZ8BCKnU0fc2hmJiE+6b366tF0/EsvtrvNAO2LuiS
+	 R4P/ptiYlSNXvzPtvg0XeCbeNkgj6vqEjeRKfzEK571GReVAy44Rf8slKQSSz/z3X/xAs
+	 aO09H+nH290aZoTXZ5UXTo9QogPRUFKwTJHx8wiGnuldflHwMBdaeu27p/3LUWutYIQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794987146;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:Content-Type:Content-Disposition:
-	 In-Reply-To:X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=3LcPghvT4MlsKigSrisYfhCeWXY5hpBEtnXJWO3z5a4=;
-	b=25kmxDkcjwvUceSPuEtg8fiov+CUnOmujlYvvDJL/H7ps6J0KY1tDNjcLKIbsAEOVlb2
-	 O3eJMyoY3kpX3GHaSg5ahv2q29Oflu7mvV+kBy0/6ErMh+Je2SBJs5Sl9j7mxTYExZ3K9
-	 SIyJTvzJ1ZFU2fDgz+IMORD4t4JBG3q8vawf/a6lZs9uGS8mI4WaEcrk1vsu/ZNmWXNqD
-	 sQgCWKXso+vP7hQXmjolf+YphTmOUPwX5slI9DfPXAA1bC+0JKxQ/v8EWrpQWRHIVeDSz
-	 LPFuHVOCGheBJvGLnaYNp4moBQTEqdR5jEIkABA5M2TrISDJep6dht4K7YOzxoNEZ2A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794988020;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
+	b=5Iwyt0ES7XC2P3sXfI1PMckNH9qwqPzb1JfDG9XIy4kJQF4b/zV19GeYPbc5se/6fXdB
+	 NtAgYh7fTle1jScUJ6u+0sBTbdF+v5/QzWFeGNwFdSXMaOJvazarRQLEJuRyEyY4mppht
+	 tdhWQeNwLTdhFSl/Qrfr2naA6+4VaYX2wG5g+R7pduiCdQY1QYy/mC9ctQgMGCwc9P71u
+	 wM5y9VopFGTc4sVdm9iAtz5iBfwB29cRH636ymjkr+uS0qWHxj+aZdsSRAYpJgQ3Z6YxU
+	 xantWyYkkMpRLABw1DTZugjRTku8KlY9icHGufBGNIqovuqikPlU8zrQprCftznLvLg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=nvidia.com;
-	spf=fail smtp.mailfrom=nvidia.com;
-	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=EMCproY3;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.195.64
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazon11012064.outbound.protection.outlook.com [40.93.195.64])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=flipper.net;
+	spf=pass smtp.mailfrom=flipper.net;
+	dkim=pass header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=KwxIBuS9;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.53
+Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EB59606A31C;
-	Wed, 18 Nov 2026 07:32:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8EB59606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A134606A32F
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 07:46:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3A134606A32F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=EMCproY3
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=CRlZcoaLNUNmdLBg7q3fErwzx/M9Vc26E6PgswXMjeYxzmiYrB0v7rj7foJfk6Cq7k3w7Ms+k74MS2jX+Co4oi3AJnw4cOi0/Kxt1XdNQlQXLhQgEyXU0fX8EQuOgV0ZhZYQGOEOLFU08n5mTEE+50m/gqlusnuBmAMnE9pOOtXs1MY8qbP+i32jpVZvl8L55BziI6sBhUD19AA6BqOeg9So0z32BFC5vb4bihEQlY9qdao7omh24PVjwA+HTGODnpi+99jKxnPbVHiVvyV2iGauI62WdD5VyjHVkSI0HmhrxjwL+QkgR0LgtyAB1YC9SjpiSK9L7RFMZX8Pmj4k6A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=3LcPghvT4MlsKigSrisYfhCeWXY5hpBEtnXJWO3z5a4=;
- b=u9H50C+mO6Kel5IX3vaEEdGh5jrzI6vKOfghphg/gr864gckoaR06xhXQieUoxfWVzGqZPO/5MTuNbCVMZ1/uIT+X217MzQ6F3bHPk1n8qynU5NHkjS6eB6df7tH3n3xRaHNU1lI3ZnYzY0DTHMUhEVFHAoOhN90t/KrcebQJa3uC8cLrF2cj4jjw5J5xJ4MqzFXzMa7UO3zvix6jFpF3EfK3Y6fv0kFwhQzysHeZFAxwSYDux3W6+aR3WAXQPBOgG7Uc00LNXM8pmPxoaqZKdm666r/0cgkSTFahLhf1JTV/9hsjXoRQhzWATZiMCEXP7x2waus9oEeecXDTNJ7uw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=3LcPghvT4MlsKigSrisYfhCeWXY5hpBEtnXJWO3z5a4=;
- b=EMCproY3imkOlFX32G8SkpaamXpqCgBWS56nsZou/m5iKpmysno0LDxS6snbvgDBNNM6F5+cHP9XylG4F/zgO25wzruw2gXdgyP0zFYyoKiMKduGiYCpkbqeFpGlkBGeACuwsmmKJtHt60TX2Tzl62cDrlWaZx+3LWBhCy+y340Aak49wK56re+cqkcjvjIGrsA8hmiYGcwpS7tKI65gL6R1LOsnl0syeOCtfLNfczgJJlUhp8VqZGWwvZh1piriyCu1pRQB9ihrRIQwICLzifERTEQBDnz92DAr56Vu+t4aXQWDICXbz6qjG0Dt+gmOggXrd/viuBL1+BDDX1gguw==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
- by SA5PPF6407DD448.namprd12.prod.outlook.com (2603:10b6:80f:fc04::8ce) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
- 2026 07:32:17 +0000
-Received: from BL0PR12MB2370.namprd12.prod.outlook.com
- ([fe80::86cf:c3ec:2cf5:74c8]) by BL0PR12MB2370.namprd12.prod.outlook.com
- ([fe80::86cf:c3ec:2cf5:74c8%5]) with mapi id 15.21.0615.009; Wed, 18 Nov 2026
- 07:32:16 +0000
-Date: Wed, 18 Nov 2026 15:32:10 +0800
-From: Richard Cheng <icheng@nvidia.com>
-To: "Gregory Price (Meta)" <gourry@gourry.net>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, kernel-team@meta.com, 
-	linux-doc@vger.kernel.org, driver-core@lists.linux.dev, linux-serial@vger.kernel.org, 
-	linux-pm@vger.kernel.org, damon@lists.linux.dev, linux-cxl@vger.kernel.org, 
-	akpm@linux-foundation.org, david@kernel.org, liam@infradead.org, vbabka@kernel.org, 
-	rppt@kernel.org, surenb@google.com, mhocko@suse.com, corbet@lwn.net, 
-	skhan@linuxfoundation.org, rdunlap@infradead.org, gregkh@linuxfoundation.org, 
-	rafael@kernel.org, dakr@kernel.org, johan@kernel.org, jirislaby@kernel.org, 
-	kasong@tencent.com, qi.zheng@linux.dev, shakeel.butt@linux.dev, baohua@kernel.org, 
-	axelrasmussen@google.com, yuanchu@google.com, weixugc@google.com, baoquan.he@linux.dev, 
-	baolin.wang@linux.alibaba.com, yury.norov@gmail.com, linux@rasmusvillemoes.dk, pavel@kernel.org, 
-	lenb@kernel.org, hannes@cmpxchg.org, brendan.jackman@linux.dev, ziy@nvidia.com, 
-	sj@kernel.org, muchun.song@linux.dev, osalvador@suse.de, nico.pache@linux.dev, 
-	ryan.roberts@arm.com, dev.jain@arm.com, lance.yang@linux.dev, usama.arif@linux.dev, 
-	kas@kernel.org, xu.xin@linux.dev, chengming.zhou@linux.dev, 
-	joshua.hahnjy@gmail.com, rakie.kim@sk.com, ying.huang@linux.alibaba.com, 
-	matthew.brost@intel.com, byungchul@sk.com, apopple@nvidia.com, rientjes@google.com
-Subject: Re: [PATCH 13/22] mm/hugetlb: restrict pool growth to common memory
-Message-ID: <av1PyBvUVJcy_Psd@MWDK4CY14F>
-References: <20261114070959.3490008-1-gourry@gourry.net>
- <20261114070959.3490008-14-gourry@gourry.net>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261114070959.3490008-14-gourry@gourry.net>
-X-ClientProxiedBy: SI2PR01CA0044.apcprd01.prod.exchangelabs.com
- (2603:1096:4:193::8) To BL0PR12MB2370.namprd12.prod.outlook.com
- (2603:10b6:207:47::27)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=KwxIBuS9
+Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c50cc8e0f84so85169466b.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 23:46:58 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794988017; cv=none;
+        d=google.com; s=arc-20260327;
+        b=O/aEIw+tyQhqEAFy2LEFhEVzIBqKmhUIHW4di2QuNIF5sBgCKtYL3uEP3WKh0DXb7X
+         g21lFRZlsRwVrWysX+5VmRVJTZ/fXaUuftZJdQ1mwIYXkbgtCa1Nwf8b2ctN2jk2tjeX
+         heSyd0KgY0pdT57l77b992BlutuXqBDVE6N36uKCD9q+SDWZQwSoemD8+Es7Bgq2Uh9c
+         SMPDbtDt3U1onU1ucTRnOAvpnWYo69OFn710TZmSgZQC+zy0Z5gS58yLa0rBA3IPLK/b
+         3ZDYSncPvywMwsnU2VKwgGQsuaFAm+dCeHt35Z2Pvb+B8Hy00k+XW11IlMqTMSFcetB4
+         ULjg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
+        fh=NsQVrDiE26gh1hGWZNGrxmtWl/Kny/TICpQZsCS24/4=;
+        b=lthcu5TPC9SHUxXhWAJrkMIPiWbwUZ5PhlkdwRNxjjqS2oCPUFXekBk7WpPDdMw1c+
+         uDvaGcuKQtujh3EheUVFd+dvCercFSZ9mwwELpWefPMZbh2xNCnRS0xBJKTf3NVtPViC
+         vTB88UDjdes9hPhe/DTA7lzebzpkyhXb3n8fm+UjgpHBs1oMzosTPcF88/VZa+ZGEN3/
+         hwA4+laUM3z92AZDJhs6VB02GyrAvM8NFt+xO/L5PTYUMb6MYiX6jAKht8BkieHv4zvN
+         u7/SpJ6oUZXJPm8HtZbTxXIqfgSSc9jTU/rphb3MAgHjcntoBb5Gtmt9sleu/oQBIh5N
+         +Zlw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1794988017; x=1795592817; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
+        b=KwxIBuS92KiVES7EPspJTIkt+Vyfny/uZgiUrllnoPC8h5ws2iqgOx6IGqU3bdxpJF
+         dTh+jwl6pe/Mg2vFUsOi2NsXr//POfNQZwoZGHxLw8YE2AypIZN05YQ++EvnjV5+l1NT
+         +NATB2riwpwfALaIqHaZQcMqilv4NY7h7Kd93KIg1VEqkvhv9rwn/bFvmZomybfh0gk0
+         dxSxiw2IovXsuFbv+f5Qhxzv2Q5O4vL3W/pYQc9KJe02/JYqpLW7h7bxxzji6Z2SsDLR
+         Ul+uqGPAIPJHrYy7FkTC4ddPTvtIgQQ6nMTZCUHj0DGq1S9fjp9CUECwLscDn+TXP/oJ
+         8b1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794988017; x=1795592817;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Pnx/XKeGh94aieoFZrCY2NwwXx3i4N4YVNZK0i3sHOs=;
+        b=f3594cj9sYNK1HTu8Z2hZF7M2uc4YfHAxq6nW0JhFbLypVD1afgTXo30FGkipCKkgV
+         SDgJMaMpccK/5QIjawsHZpC62zX9aMhDK2T91B9nNks9yoVkd7Y9lCfut8aNjKZo2tiz
+         GCe9fosp0a0xeUmNowa/0mxo/A5Z0Z5Y7LHLv0roJABnxyb7M359OzStRvv7aU/R8ula
+         i2393hGfBuvMhtNH1488LPkdw0Oh+p+zmidnOib4hXAxP6vlfV+ggkvCO7DgFJA/6P1p
+         3h1QD38/NYWM/4gJ9UpE48ULaPcHCLfGw6lx5RPjSGbq1xt2YdvR/G1cHSotwlKbB2hn
+         8ndg==
+X-Forwarded-Encrypted: i=1; AL+hErGdecRLrCF8fNcv8wmWCWaQBCcMNTXZIze03camEt6Jj+94l1uvbhWbVzPNLac2FcvFz+6xjZYgDg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z84ogOiLQgVBF1WDiS73Ak4CTc0YNVSEiv6SqiMeTzhtAR3srss
+	twp1mRMjB79xTQCJGrk+T/YfOUxatbPqDqrGydVDYKe2MOdS5QYBIoQEIa4bpRbpVWTlkbsA9w2
+	2TBLrNX7S4ZTQiFsx3guHNBv9wKYDOHYTsni/fdBjvw==
+X-Gm-Gg: AYBFou2/YzIJp8UXE1MMiTpNNtu25NcKYhmLIkkXXBpjEs9vRyQ4kw6KbIrajsdHJCu
+	iEpXMSWpdwSBCCQj19BcM9h52dwDe8aFzOHw6lQnMmqhXiLno+yfr0WdkfWOETUcJb6FbFfV7vu
+	6dZBBbEBRUGfLe5vDPJu/LR/PUBk2sJcAlK9dEeTGXEdWVwYF1f3n53/Pux9ZE5WeuaGnS5Oktl
+	BecZxVovSN+i29FknKGGnKQWMJZCZr0VyjwyGEQa8VejLgwG28M6Wplbf9HZvktmxyN/66GsshX
+	zC8q9fw+N9EfdzvJVQbSadumfNPMg0aRI3eonP6mB6tGiLtoxVEfFipfneKa2zyGjr/yBSpxdRe
+	MxY+vDm7FROwaIwgfP8AodLK57tujd6C/AYiypqm/tkIuepXANCwzQPHgpVM8/lgFZpa/Rw==
+X-Received: by 2002:a17:907:9446:b0:c4d:456c:4a29 with SMTP id
+ a640c23a62f3a-c510e16a720mr128985866b.14.1794988017524; Tue, 17 Nov 2026
+ 23:46:57 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -110,216 +104,215 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL0PR12MB2370:EE_|SA5PPF6407DD448:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2a7c70fd-d85c-4c61-2031-08df454611f2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|23010399003|366016|261026121527099003|261022105027099003|11063799006|4143699003|56012099006|261021123027099003|10067099003|261009223027099003|261021121427099003|261102123227099003|261026140227099003|261028144727099003|18002099003|22082099003|6133799003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	KuxMocrdiR4cSCCljhzUZz37PKhbYoREWO0kCZ+FyD4JOayPWOp+wSONX4W0Q+3+BgaPgLh2xTDGGtj2lt5D4VJCakwFdyycPiLduYN+RZbyWC7chala/x+7LlVVcsrNOMyY/6jR4SOjHTQrE8Q6uV029kGHJNB6b0hZYxsf7Y5P5gsVDNPy8bzQQmk0QodLOGgMtv1KXPV7on27IFNbHhBc0Bx2JcKE4ShA+MSu03rh3bZVYnTLg44OoZkSWPjTrzTRRWPq4lH2TxDzbORXD2TSOsfJ3Md3oDGsJm3K5E/yIiSoUzjvMJkz7YTZt90YMbUIsw8pAiwqKJu332EbTkVoE+FXcFKAQLJOZcWBRWCB/WatKyizXGSijyDhiWvp7Mn2NuiveOVth84ZLh8rDd30hCqsyl091tPIxJoPFZ5Hu0Qe9NXdrMBhi5HRVXjDGoAarSH8QByTihMgXapJOwC8PKh5OmM68t7ZTpgINPv2BVeoqQeT+9RyhNlA7xcqNwCNGw9+nLv6lHs2GBQJVe62hKfASAEosPHLSNPXS049rHrnjeUsdVGRoCZVsXDWzP8gj2l4FWNKLaTFQOevw3B+X4hfDi1fs72a7viIPAhvvYPolNUaRwpmsTUsIk+PEI2D+AlUTKCKcS4qMxSbkN0qUxmOPsgBZDNNdSE78Yc=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2370.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(23010399003)(366016)(261026121527099003)(261022105027099003)(11063799006)(4143699003)(56012099006)(261021123027099003)(10067099003)(261009223027099003)(261021121427099003)(261102123227099003)(261026140227099003)(261028144727099003)(18002099003)(22082099003)(6133799003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?gTr2q+cJZG+ehgUPLBb1axE2BtSw8Rfuxv2xnIAWIlM7EsTEZ+YYghFGfsTk?=
- =?us-ascii?Q?I749o1yI6albDvGA9jRaORPLSME/AVYYn3ySuNFgjZeRLOkoZ5mBzt95+wA+?=
- =?us-ascii?Q?GAE127OjyXoewNtODJqygptCJtcsz/jBeEmMAmdJpj31OobzuOj926Q2xtng?=
- =?us-ascii?Q?pDrAB0ijr45EGGLBa0etSFXPcyaq4ymiaR8r3FCGXgmqW9nMkdM4kVXBYkYJ?=
- =?us-ascii?Q?ySJR33QWsaiVOJYfJNxXDJQVbZqXvfzC2Z6l305i6CiMoSBUQ9m+e6CJyfez?=
- =?us-ascii?Q?0BQlD3t49L52ssOeHO4DSWNm5RM6xqBLp2adimH+IezHMEI7lYfFSgz16SY7?=
- =?us-ascii?Q?+hNR7hJiDXlrHIkRpdXLoQuDWL3gxuEYvuIzrscU+c/ZV/QGgl0GjjYXbcWl?=
- =?us-ascii?Q?e0OOCaHkhr2dHWaE+B8bPS2j0hXUlqbWfdxs+a+EbEyomC9GMRTe6Et+GMyM?=
- =?us-ascii?Q?wUwWB+74s7waJhcq/b2W4J5wFvUOlfF8fm8QOclkn7pCsnnSxOgjAXaNw3W3?=
- =?us-ascii?Q?7w8DIa0KhTnUXQMHjTkCQvqxm0D33fLnQhq4YzAUNFnpFw80gfxXx+V9L4Sm?=
- =?us-ascii?Q?vwQ9m1PwfKd79hIoa+mm3PVmJ97i1eWs22IQLtTiRojJj6/IynDIRaWPpVaM?=
- =?us-ascii?Q?QShOgP8q/Ymdb1xZ+Rv7a9LYcHbaNRXeXAAkn4YrTFbRBPjd/pPzsyeY4HrK?=
- =?us-ascii?Q?Y8Aj1s9/M+3UZxYHdxd46vZq1sxj9oXtD5PLTcZh+JqMaLKp/m6fLvhsJM6N?=
- =?us-ascii?Q?TBTvLyE+rzCsvMl+YHn3FfKEBaY7EtcVOLjV25GTP0cCJFesKd2ik+O0ud0z?=
- =?us-ascii?Q?Ow7trTtTAan0Q9fynn5QYbT0yiGekxjXzjfsx2uovZs9cuCUblUWtodav2Vw?=
- =?us-ascii?Q?RWxuoYgnZDpHC26P9R7tJSIPx9+tPuwoYQLOo5PQZFubYEbobZMbXuqG5M6Y?=
- =?us-ascii?Q?T8MssjmAoRcS+xbRewnXgbwmP3gCtilzDleCGOeqwYLpXXI88BHSKRpfgnxX?=
- =?us-ascii?Q?oyMGloUy1qh9YgcKeppf/aD1ETiiR4KvddgMIxpjeRB+YA2cj+x5t4CKlobS?=
- =?us-ascii?Q?Xpc1mrVEU6s5z1JU/Sxh4PNWGF+x2rtsgYjkDztl1gaEXNCE+zk1IcCBEp24?=
- =?us-ascii?Q?UDaVeaMN8UtyRd6mpqbbjERRfIDc2EkuaBNlX45tFKzSLb2fUgSc29X/k/V1?=
- =?us-ascii?Q?x2GBkgubY27EmfE7ObigKJhZPGFQSlTHoJgiGX56Y6YY/DBlWDWptFxRFNo2?=
- =?us-ascii?Q?yEr06BNB815qHfxuIUyAu0m8AH/IdvmMULzeXTHUIfgpSUycboUFfTXAqojY?=
- =?us-ascii?Q?84WBd+7SxUEHTMtSFOPVn/teRDSZICWwcPcXgdEawggNfzrR6uaRwKI41UWg?=
- =?us-ascii?Q?wUHDoyAdK2C49rrrlPYpExqoe16pQKpvN6HGXkW2fAbkEHnI7lfUc0tQeMe0?=
- =?us-ascii?Q?bc7onrr1tEjRrgU4vdANaroOUCw9k66wYmJ/nIOn0BZTepbR8KJI/KFGam3I?=
- =?us-ascii?Q?Euqsk7petQhv6cwgZM6YPA884R4BqoHBkVtuOFliUHWxcEEJRUtMd2wNg/gg?=
- =?us-ascii?Q?vLzFcSHZmGvoiXEUsG36kHd0g1taQuFV0Wf963d4UIQByzFBSlHUOZtaoLCd?=
- =?us-ascii?Q?zVDVYHxM4/RxBBPAOP5QRQSuChXrL/6dtppK5LNwC2TnQ9pAlYyU5CtU5KHE?=
- =?us-ascii?Q?Ry0AlQn+miLCGk+T//22CXF4QmW9zjJSouhTf23Qb4u20udg?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2a7c70fd-d85c-4c61-2031-08df454611f2
-X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2370.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 07:32:16.5203
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QfL5HJnpkoa9GxEImLInmfxafEKnWD7MnigAjS0faMRzQDMFbZsOcW+ui6rP8Iez72Kew/mC6bX9lamPxIwQPQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA5PPF6407DD448
+References: <20261021-pcie6_fix-v1-0-ad37134c35a3@oss.qualcomm.com>
+ <20261021-pcie6_fix-v1-1-ad37134c35a3@oss.qualcomm.com> <CAKTNdwG5XA_chr2ZM9qTnr2RaDMzOjdb85bRdCr4aJCr1EGy7Q@mail.gmail.com>
+ <398a1d12-c28b-418c-bbcc-170d781223d6@oss.qualcomm.com> <CAKTNdwEzbYAqM5ABxU+tfh4juU=wgYp=QXyjvdA1haanU0e8tQ@mail.gmail.com>
+ <861b48b3-32e2-459a-a6e1-75d93f10e1c9@oss.qualcomm.com>
+In-Reply-To: <861b48b3-32e2-459a-a6e1-75d93f10e1c9@oss.qualcomm.com>
+From: Alexey Charkov <alchark@flipper.net>
+Date: Wed, 18 Nov 2026 11:46:46 +0400
+X-Gm-Features: AclHuK-mzUUyPR_nvHlWIkQreDiwLH9wtGyUE6yWiokuHebhGdjJ_j61S1Ijpdw
+Message-ID: <CAKTNdwEOiPzvziW5VsNrHcFXEr1E7YjbabMfC3fsG6q+5-TnzA@mail.gmail.com>
+Subject: Re: [PATCH 1/3] dt-bindings: connector: Add PCIe M.2 Mechanical Key B connector
+To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Cc: Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, linux-pci@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, Nov 14, 2026 at 02:09:50AM +0800, Gregory Price (Meta) wrote:
-> Fresh HugeTLB pool folios come from ordinary allocations, which only
-> N_MEMORY_COMMON nodes serve.
-> 
-> Restrict HugeTLB allocations and pool-growth to N_MEMORY_COMMON nodes.
-> 
-> Keep the original allowed mask for pool shrinking and demotion so
-> existing pool folios can still be found on any online-memory node.
-> 
-> The result of this change is that hugepage allocations will fail on
-> nodes without N_MEMORY_COMMON.  This restriction can be loosened later
-> when/if it grows a user.
-> 
-> All memory is common at this point, so behavior is unchanged.
-> 
-> Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
-> ---
->  mm/hugetlb.c | 44 ++++++++++++++++++++------------------------
->  1 file changed, 20 insertions(+), 24 deletions(-)
-> 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index cb2de24affdc4..cc1468f68901b 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -3452,13 +3452,13 @@ static void __init hugetlb_hstate_alloc_pages_onenode(struct hstate *h, int nid)
->  			gfp_t gfp_mask = htlb_alloc_mask(h) | __GFP_THISNODE;
->  
->  			folio = only_alloc_fresh_hugetlb_folio(h, gfp_mask, nid,
-> -					&node_states[N_MEMORY], NULL);
-> +					&node_states[N_MEMORY_COMMON], NULL);
->  			if (!folio && !list_empty(&folio_list) &&
->  			    hugetlb_vmemmap_optimizable(h)) {
->  				prep_and_add_allocated_folios(h, &folio_list);
->  				INIT_LIST_HEAD(&folio_list);
->  				folio = only_alloc_fresh_hugetlb_folio(h, gfp_mask, nid,
-> -						&node_states[N_MEMORY], NULL);
-> +						&node_states[N_MEMORY_COMMON], NULL);
->  			}
->  			if (!folio)
->  				break;
-> @@ -3528,7 +3528,7 @@ static void __init hugetlb_pages_alloc_boot_node(unsigned long start, unsigned l
->  			prep_and_add_allocated_folios(h, &folio_list);
->  			INIT_LIST_HEAD(&folio_list);
->  		}
-> -		folio = alloc_pool_huge_folio(h, &node_states[N_MEMORY],
-> +		folio = alloc_pool_huge_folio(h, &node_states[N_MEMORY_COMMON],
->  						&node_alloc_noretry, &next_node);
->  		if (!folio)
->  			break;
-> @@ -3672,13 +3672,12 @@ static void __init hugetlb_init_hstates(void)
->  
->  	for_each_hstate(h) {
->  		/*
-> -		 * Always reset to first_memory_node here, even if
-> -		 * next_nid_to_alloc was set before - we can't
-> -		 * reference hugetlb_bootmem_nodes after init, and
-> -		 * first_memory_node is right for all further allocations.
-> +		 * Always reset the allocation cursor here, even if it was set
-> +		 * before: hugetlb_bootmem_nodes cannot be referenced after init,
-> +		 * and further pool allocations use common memory.
->  		 */
-> -		h->next_nid_to_alloc = first_memory_node;
-> -		h->next_nid_to_free = first_memory_node;
-> +		h->next_nid_to_alloc = first_node_state(N_MEMORY_COMMON);
-> +		h->next_nid_to_free = first_node_state(N_MEMORY_COMMON);
->  
->  		/* oversize hugepages were init'ed in early boot */
->  		if (!hstate_is_gigantic(h))
-> @@ -3802,23 +3801,21 @@ static int set_max_huge_pages(struct hstate *h, unsigned long count, int nid,
->  	unsigned long allocated;
->  	struct folio *folio;
->  	LIST_HEAD(page_list);
-> -	NODEMASK_ALLOC(nodemask_t, node_alloc_noretry, GFP_KERNEL);
-> +	NODEMASK_ALLOC(struct nodemask_scratch, scratch, GFP_KERNEL);
->  
-> -	/*
-> -	 * Bit mask controlling how hard we retry per-node allocations.
-> -	 * If we can not allocate the bit mask, do not attempt to allocate
-> -	 * the requested huge pages.
-> -	 */
-> -	if (node_alloc_noretry)
-> -		nodes_clear(*node_alloc_noretry);
-> -	else
-> +	/* Scratch masks for allocation eligibility and per-node retries. */
-> +	if (!scratch)
->  		return -ENOMEM;
-> +	nodes_clear(scratch->mask2);
->  
->  	/*
->  	 * resize_lock mutex prevents concurrent adjustments to number of
->  	 * pages in hstate via the proc/sysfs interfaces.
->  	 */
->  	mutex_lock(&h->resize_lock);
-> +
-> +	/* Fresh pool pages come from the ordinary allocation domain. */
-> +	nodes_and(scratch->mask1, *nodes_allowed, node_states[N_MEMORY_COMMON]);
+Hi Krishna,
 
-For a global request the caller passes &node_states[N_MEMORY], so before this patch
-the grow loop read the live mask on every alloc_pool_huge_folio().
-Now the mask is sampled once, before the loop.
+On Sat, Nov 14, 2026 at 5:45=E2=80=AFAM Krishna Chaitanya Chundru
+<krishna.chundru@oss.qualcomm.com> wrote:
+> On 10/22/2026 2:56 PM, Alexey Charkov wrote:
+> > On Thu, Oct 22, 2026 at 8:27=E2=80=AFAM Krishna Chaitanya Chundru
+> > <krishna.chundru@oss.qualcomm.com> wrote:
+> >>
+> >>
+> >> On 10/21/2026 9:14 PM, Alexey Charkov wrote:
+> >>> Hi Krishna,
+> >> Hi Alexey,
+> >>
+> >> Thanks for the thorough review, this is helpful.
+> >>> On Wed, Oct 21, 2026 at 5:51=E2=80=AFPM Krishna Chaitanya Chundru
+> >>> <krishna.chundru@oss.qualcomm.com> wrote:
+> >>>> Add the devicetree binding for PCIe M.2 Mechanical Key B connector
+> >>>> defined in the PCI Express M.2 Specification, r4.2, sec 3.2.19.1. Th=
+is
+> >>>> connector is used to attach WWAN Adapters to the host machine over
+> >>>> interfaces such as PCIe, USB3.1 Gen1, SSIC, or USB 2.0, selected by =
+the
+> >>>> Adapter's configuration pins.
+> >>>>
+> >>>> The connector provides a primary power supply of 3.3V/VBAT, along wi=
+th
+> >>>> optional GPIO signals for WWAN-specific power/radio control:
+> >>>> FULL_CARD_POWER_OFF#, RESET#, W_DISABLE1#/2#, WAKE_OQN_WWAN#, and DP=
+R.
+> >>>>
+> >>>> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualco=
+mm.com>
+> >>>> ---
+> >>>>  .../bindings/connector/pcie-m2-b-connector.yaml    | 146 ++++++++++=
++++++++++++
+> >>>>  MAINTAINERS                                        |   1 +
+> >>>>  2 files changed, 147 insertions(+)
+> >>>>
+> >>>> diff --git a/Documentation/devicetree/bindings/connector/pcie-m2-b-c=
+onnector.yaml b/Documentation/devicetree/bindings/connector/pcie-m2-b-conne=
+ctor.yaml
+> >>>> new file mode 100644
+> >>>> index 000000000000..a7f4bcbc5119
+> >>>> --- /dev/null
+> >>>> +++ b/Documentation/devicetree/bindings/connector/pcie-m2-b-connecto=
+r.yaml
+> >>>> @@ -0,0 +1,146 @@
+> >>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> >>>> +%YAML 1.2
+> >>>> +---
+> >>>> +$id: http://devicetree.org/schemas/connector/pcie-m2-b-connector.ya=
+ml#
+> >>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> >>>> +
+> >>>> +title: PCIe M.2 Mechanical Key B Connector
+> >>>> +
+> >>>> +maintainers:
+> >>>> +  - Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+> >>>> +
+> >>>> +description:
+> >>>> +  A PCIe M.2 B connector node represents a physical PCIe M.2 Mechan=
+ical Key B
+> >>>> +  connector. Mechanical Key B connectors are used to connect WWAN d=
+evices to
+> >>>> +  the host machine over interfaces like PCIe, USB3.1 Gen1, SSIC, or=
+ USB 2.0,
+> >>>> +  selected by the Adapter's configuration pins.
+> >>>> +
+> >>>> +properties:
+> >>>> +  compatible:
+> >>>> +    const: pcie-m2-b-connector
+> >>>> +
+> >>>> +  vpcie3v3-supply:
+> >>>> +    description: A phandle to the regulator for the 3.3v/VBAT suppl=
+y.
+> >>>> +
+> >>>> +  full-card-power-off-gpios:
+> >>>> +    description: GPIO output to FULL_CARD_POWER_OFF# signal. This s=
+ignal is
+> >>>> +      used by the host system to turn off the entire Adapter. Refer=
+, PCI
+> >>>> +      Express M.2 Specification r4.0, sec 3.2.13.1 for more details=
+.
+> >>>> +    maxItems: 1
+> >>>> +
+> >>>> +  reset-gpios:
+> >>>> +    description: GPIO output to RESET# signal. This signal is used =
+by the
+> >>>> +      host system to place the WWAN Adapter into a power-on reset c=
+ondition.
+> >>>> +      Refer, PCI Express M.2 Specification r4.0, sec 3.2.13.2 for m=
+ore
+> >>>> +      details.
+> >>>> +    maxItems: 1
+> >>>> +
+> >>>> +  w-disable1-gpios:
+> >>>> +    description: GPIO output to W_DISABLE1# signal. This signal is =
+used by
+> >>>> +      the host system to disable the WWAN radio on the Adapter. Ref=
+er, PCI
+> >>>> +      Express M.2 Specification r4.0, sec 3.1.12.3 for more details=
+.
+> >>>> +    maxItems: 1
+> >>>> +
+> >>>> +  w-disable2-gpios:
+> >>>> +    description: GPIO output to W_DISABLE2# signal (default functio=
+n of
+> >>>> +      GPIO_10). This signal is used by the host system to disable a=
+ second
+> >>>> +      radio on the Adapter. Refer, PCI Express M.2 Specification r4=
+.0,
+> >>>> +      sec 3.1.12.3 for more details.
+> >>>> +    maxItems: 1
+> >>>> +
+> >>>> +  wowwan-gpios:
+> >>>> +    description: GPIO input to WAKE_ON_WWAN# (WoWWAN#) signal. The =
+Adapter
+> >>>> +      asserts this signal to wake up the host system. Refer, PCI Ex=
+press M.2
+> >>>> +      Specification r4.0, sec 3.2.13.3.6 for more details.
+> >>>> +    maxItems: 1
+> >>>> +
+> >>>> +  dpr-gpios:
+> >>>> +    description: GPIO output to the Dynamic Power Reduction (DPR) s=
+ignal.
+> >>>> +      This signal is provided by a host system proximity sensor to =
+the
+> >>>> +      Adapter to trigger a reduction in the radio transmit output p=
+ower to
+> >>>> +      meet regulatory SAR requirements. Refer, PCI Express M.2 Spec=
+ification
+> >>>> +      r4.0, sec 3.2.13.4 for more details.
+> >>>> +    maxItems: 1
+> >>> This seems to be missing the four CONFIG_* pins, which are quite
+> >>> crucial in these connectors, as they define which interfaces the
+> >>> module asks the host to provide on the respective pins. Without those
+> >>> module type detection is impossible.
+> >> Agreed, thanks for catching this. I will add a config-gpios property  =
+(4 GPIO
+> >> inputs, one per CONFIG_0..3 pin) to v2. It's optional, not required - =
+a board
+> >> that always has a known, fixed card type in a given socket (e.g. QCOM
+> >> glymur-crd's WWAN-only slot) can just describe that fixed wiring via t=
+he ports
+> >> property and skip CONFIG decode entirely; config-gpios is only needed =
+when the
+> >> host wants to detect the card type/host-interface at runtime. Kept it =
+as plain
+> >> sensed GPIOs with no decode semantics imposed by the schema - the prop=
+erty
+> >> description documents the full Table 3-18 state table inline (all 16 s=
+tates)
+> >> so the binding is self-contained, but turning the sensed 4-bit pattern=
+ into
+> >> "this is a WWAN-PCIe Adapter in port config 0" is left to driver code,
+> >> consistent with how the rest of the connector's sensed straps (e.g.
+> >> viocfg-gpios on the E-connector) are already handled.
+> > Agreed that the logic of turning the 4-bit pattern into
+> > enabling/disabling interfaces sounds like a driver realm, although we
+> > probably need to consider if the connector should accept pinctrl-0
+> > through pinctrl-15 to hint the host about which pin muxes should
+> > follow from each of the 16 4-bit CONFIG_* pin states. This mapping is
+> > hard to recover outside the connector's context.
+>  I'd put the pinctrl states on the connector, one per CONFIG_0..3 value (=
+Table
+> 3-18), selected after the driver reads config-gpios. The CONFIG-to-mux ma=
+pping
+> can't be recovered from the interface providers, as you said. Providers w=
+ould
+> keep only their own default pinctrl. What I'm unsure about is how much is
+> SoC-muxed in practice. The high-speed pairs are often fixed by PHY or lan=
+e
+> routing, so the states may mostly matter for GPIO_0..11. Do you know of a=
+ case
+> where they cover more than that?
 
-The loop drops hugetlb_lock and can run for a long time. If a node gets its first
-memoroy in that window, the old code would start using it. The new code won't, until
-the next write to nr_hugepages.
+Thanks, that makes sense.
 
-So the pool can end up uneven, or smaller than requested if the other nodes are full.
-
-I think the nodes_and() should be placed inside the loop to keep the old behavior ?
+Regarding the high-speed pairs, the Rockchip based boards that I know
+about route one PCIe lane muxed with SATA to the connector, with the
+SoC combo-PHY managing the interface muxing (including the polarity
+swap for the SATA-B pair). I don't know how people deal with the
+second PCIe lane vs. USB SS muxing though, or if such devices have
+been made available at all. Either way, it sounds like those could be
+modeled as one port per muxed pin group - i.e., port@0 for SATA+PCIe
+lane 0 (as two endpoints), port@1 for PCIe lane 1+USB SS+SSIC (as
+three endpoints), etc. A PHY driver for a dual-lane PCIe interface
+would then have to figure out whether its OF graph has one or two
+links and configure the PHY and the controller accordingly.
 
 Best regards,
-Richard Cheng.
-
-
->  	flush_free_hpage_work(h);
->  	spin_lock_irq(&hugetlb_lock);
->  
-> @@ -3855,7 +3852,7 @@ static int set_max_huge_pages(struct hstate *h, unsigned long count, int nid,
->  		if (count > persistent_huge_pages(h)) {
->  			spin_unlock_irq(&hugetlb_lock);
->  			mutex_unlock(&h->resize_lock);
-> -			NODEMASK_FREE(node_alloc_noretry);
-> +			NODEMASK_FREE(scratch);
->  			return -EINVAL;
->  		}
->  		/* Fall through to decrease pool */
-> @@ -3873,7 +3870,7 @@ static int set_max_huge_pages(struct hstate *h, unsigned long count, int nid,
->  	 * within all the constraints specified by the sysctls.
->  	 */
->  	while (h->surplus_huge_pages && count > persistent_huge_pages(h)) {
-> -		if (!adjust_pool_surplus(h, nodes_allowed, -1))
-> +		if (!adjust_pool_surplus(h, &scratch->mask1, -1))
->  			break;
->  	}
->  
-> @@ -3889,9 +3886,8 @@ static int set_max_huge_pages(struct hstate *h, unsigned long count, int nid,
->  		/* yield cpu to avoid soft lockup */
->  		cond_resched();
->  
-> -		folio = alloc_pool_huge_folio(h, nodes_allowed,
-> -						node_alloc_noretry,
-> -						&h->next_nid_to_alloc);
-> +		folio = alloc_pool_huge_folio(h, &scratch->mask1, &scratch->mask2,
-> +					      &h->next_nid_to_alloc);
->  		if (!folio) {
->  			prep_and_add_allocated_folios(h, &page_list);
->  			spin_lock_irq(&hugetlb_lock);
-> @@ -3978,7 +3974,7 @@ static int set_max_huge_pages(struct hstate *h, unsigned long count, int nid,
->  	spin_unlock_irq(&hugetlb_lock);
->  	mutex_unlock(&h->resize_lock);
->  
-> -	NODEMASK_FREE(node_alloc_noretry);
-> +	NODEMASK_FREE(scratch);
->  
->  	return 0;
->  }
-> -- 
-> 2.53.1-Meta
-> 
-> 
+Alexey
