@@ -1,61 +1,45 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=140.211.166.241
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795039367;
-	b=GfPBcyxDbMrc8ibbyhkL3CKF1wdOWer6aGlFwoMIV7nKIjIzNzHFDjM/Rn9hyjUmUxSU
-	 nSVTe18E988KD2bmDPs3pYM+JdpBnM5nx+f8dPZB40QVuB8XPtSOTTsYRA+OB0vzazD+g
-	 lEVVftzp1ZxaSQ2WPLhnWziOpqnY6lBLhjgHONctf/TFaQzlXfjHZXNfHDmZcvwEvXmdy
-	 YCD+YYmjbcBLt+hTcO4TfbOeOS3mX4ACHVOews9GNyDClfy0coCI5g1lsoOjuvM9GDLZo
-	 bt3QoltLwR7NurXbuuOAi5EkJ+xYWcpAhOoNaNMhwRkLVdKkq32tiVjU/F1MsBwUADA==
+	t=1795041770;
+	b=w0mZw0m5Q0rX3zIkGzb1xLbOL1+Z0cHjuwlMt5t1DBgyLpyiVozPbo3JvdZJTOy9k3M3
+	 YoAZTqDkY0isrQ8hoVoNutODe+eye6fq7loNIRFMPaSKLf9sp86wggW+wc1vPVSaSB9LK
+	 sdYCI9CH00ZSvHWr2Dl4ihHVHsfQrbj0F+27BVdMzXF22uK5YEjtwtLlNxtEBONu5wUzj
+	 /Lm0bmQGqLB7s+mO0vCvr0/GVbMQs7RfI+dBvVTCC4sVvTNBXg+/0Ao/cUbCcv+ngvaKB
+	 gIAhAc0ecA28D0Fr9I9WTdM34Uz7ULTYdN41vl/VgFTqrqaQkzGJSpgYLhvImKMKmBg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795039367;
-	h=DMARC-Filter:DKIM-Signature:Received:Subject:From:To:
-	 Mail-followup-to:Forward-to:Reply-to:Message-Id:Date;
-	bh=kr0PipGp7yXca/w7m2D5TH1UM2D+DidDSv9RdMc83RA=;
-	b=mEI/+aWES0ImX041jrhsjSEJBqs/59f7p9l7v8ehDzO1DmhmByzd3MtyT9c+PYhaKh1E
-	 CoFxjeuBMYb42b7Kfrk69D/6fzo37I5OxTnkA1i8SQ9C+WhhfrRJ9FRYb9hCFQSD4EY/d
-	 jHwxa7nACEvytLpIULUkvWg/cSJoIds/j1kemkOARG9VzfeeL+dlGPG2207MAYMAAFPJA
-	 igh1xWx9ohJTvDX4Ua5UoTqO6hRYZ/Cc99rdDk2JRIw9FIwp3oxwwRc+gstxsf8z5pYnh
-	 LWHh+eWjGyoqnUlZxauRm3vS77x8SfOzpKIiKIH23NWaD84uds+OB9Z/auVcwvQ2L/A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795041770;
+	h=Received:DKIM-Signature:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Subject:From:To:Cc:In-Reply-To:References:
+	 Date:Message-Id:X-Mailer:X-Developer-Signature:X-Developer-Key;
+	bh=HHNRpndje2thNv/HbDv+4nYSQ9Z+lNEwA+f/03fVLQI=;
+	b=qYZbFYjK+bn8gjiwjwckEu77Uvz21/Bx2e8wtro0eWmZWV3OS0CpToBVS/JJJ89zijDW
+	 t6p2O0dPp26eNBgdQVXzqzWCGDkTeH/hZtr3dEywaNzl3iY8BM1XRda7EbsjtMwC1f2pk
+	 9GhRaqSK4uEbP3/2J8hMvpZf8pt5fjSgAKwESPYmR2JcuMWJ2TbKMUrKIVx9d3OWLa44s
+	 r6n/zmP3AeRieFt1jFoLq8dFs8DXGTiujL2boWuW0oMP/uWTyczQq4id0uVnkCDWUaDEU
+	 ++dwotPwYGncP7GISZJeG6BhvwbX8Gl5aGt23wG97YuzdYrc/hDDHiZBTPqbWUaz1Gw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linuxtv.org;
-	spf=pass smtp.mailfrom=linuxtv.org;
-	dkim=pass header.d=linuxtv.org header.i=@linuxtv.org header.a=rsa-sha256 header.s=s1 header.b="peoX/Rzv";
-	arc=none smtp.remote-ip=140.211.166.241
-Received: from linuxtv.org (140-211-166-241-openstack.osuosl.org [140.211.166.241])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mLkKfLHF;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF177606A336
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 22:02:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EF177606A336
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxtv.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxtv.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 966D9606A31C;
+	Wed, 18 Nov 2026 22:42:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linuxtv.org header.i=@linuxtv.org header.a=rsa-sha256 header.s=s1 header.b=peoX/Rzv
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=linuxtv.org
-	; s=s1; h=Date:Message-Id:Reply-to:To:From:Subject:Sender:Cc:MIME-Version:
-	Content-Type:Content-Transfer-Encoding:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=kr0PipGp7yXca/w7m2D5TH1UM2D+DidDSv9RdMc83RA=; b=peoX/RzvMLH7OhiGhEL6Fi/iRh
-	G+4o9CmhFiouZieHXfOEo5cUtdnCIX6fMmM8yRQViuFYNKzmVu48oZ+5NOC6nnWocogGAKktAdqYg
-	EBbiNDTUxvEnd7ZraF4Kdl/tu9DFl64VzxOLwP6YZeBNypne1HKFtK6INW5XJbnNGn3Bd2hcqG1Ah
-	zw33xjUagWtO8YcQpTysqsJDDfiFPcNSNf6A0bJDWpadzkVmrcr/Y++k6hGIy/x0DgGHnE01IXhSD
-	YqBQAy792weZ9Tt4GQ6C9X47wRcoul+ussLdHGcY5MNpG+4ugzf+gkcaXQPWOO39SWFCuToFDoNV/
-	ZBw7jIfQ==;
-Received: from mchehab by linuxtv.org with local (Exim 4.96)
-	(envelope-from <mchehab@linuxtv.org>)
-	id 1xTnce-0008TD-2q;
-	Wed, 18 Nov 2026 21:55:20 +0000
-Subject: [media.git/next] media: ipu6: Keep psys out of direct-complete on system suspend
-From: media-ci@linuxtv.org
-To: Chris Simpson <chris@nilk.net>, linux-pm@vger.kernel.org, linuxtv-commits@linuxtv.org, Rafael J. Wysocki <rafael@kernel.org>
-Mail-followup-to: linux-media@vger.kernel.org
-Forward-to: linux-media@vger.kernel.org
-Reply-to: linux-media@vger.kernel.org
-Message-Id: <E1xTnce-0008TD-2q@linuxtv.org>
-Date: Wed, 18 Nov 2026 21:55:20 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mLkKfLHF
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 629A21F000C4;
+	Wed, 18 Nov 2026 22:42:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795041770;
+	bh=HHNRpndje2thNv/HbDv+4nYSQ9Z+lNEwA+f/03fVLQI=;
+	h=Subject:From:To:Cc:In-Reply-To:References:Date;
+	b=mLkKfLHFjgX7RvlKDdMp5RkmY7stdgmShBSnCMXR46ZiTWv9HAMdUgi6kt+Vn4ytt
+	 myNQ2hjx+4EVw6d064Upkt9KreOijWxKfjnYOeQ8qJQmMykEwqoAK0OJITv35y/HzY
+	 yF3i0SOIiSW78K8NumxG69h80av9mU7Al0U2ywZfYNS/Ga9w2amRdXTks4JiKjzOLZ
+	 z0x73At0G0p2qyO0064LxvsNYoI/oTyuMra5xAidgZa8/vkkj3zzFCsrzkNQaOVLB6
+	 xT7WAscNPDlz5OOR+ESKhLBCvXhEIz7glFJKvU9xZDEjuWlP1dcnW1gRaW7b9tbfPl
+	 xfO5kF4gLTX/w==
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,75 +48,56 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v5 5/6] clk: bcm: Add BCMBCA PMB clocks
+From: Brian Masney <masneyb@kernel.org>
+To: Linus Walleij <linusw@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ William Zhang <william.zhang@broadcom.com>, 
+ Anand Gore <anand.gore@broadcom.com>, 
+ Kursad Oney <kursad.oney@broadcom.com>, 
+ Florian Fainelli <florian.fainelli@broadcom.com>, 
+ =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, 
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, 
+ Guenter Roeck <linux@roeck-us.net>, Philipp Zabel <p.zabel@pengutronix.de>, 
+ Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, 
+ Ulf Hansson <ulfh@kernel.org>, 
+ Benjamin Larsson <benjamin.larsson@genexis.eu>, mfd@lists.linux.dev, 
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-clk@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Brian Masney <masneyb@kernel.org>
+In-Reply-To: <20261117-xg6846b-bcmbca-xrdp-reset-v5-5-f584e8b8e696@kernel.org>
+References: <20261117-xg6846b-bcmbca-xrdp-reset-v5-0-f584e8b8e696@kernel.org>
+ <20261117-xg6846b-bcmbca-xrdp-reset-v5-5-f584e8b8e696@kernel.org>
+Date: Wed, 18 Nov 2026 17:42:38 -0500
+Message-Id: <179504175827.128823.2420881202230183993.b4-review@b4>
+X-Mailer: b4 0.17-dev-8145e
+X-Developer-Signature: v=1; a=openpgp-sha256; l=446; i=masneyb@kernel.org;
+ s=20250903; h=from:subject:message-id;
+ bh=zNBYbYvLU/V+AXPtDXc5SdnQ/xtUGadAKe/E7COsQU8=;
+ b=owGbwMvMwCW2/dJd9di6A+2Mp9WSGLL+aT48ldnfk6K24b30Louc8JDPW82Ml5bNYQh0s12eJ
+ f+wzXFNRykLgxgXg6yYIsuSXKOCiNRVtvfuaLLAzGFlAhnCwMUpABM5e4Lhf506U5rZOb78XDOb
+ CSLP3wRydSSvSPbNc4n35z/I41IlxMiw3mHnTdt7zXMWvVQudlwf98h0y5qVhz+JN9Ud3ziDTWM
+ iOwA=
+X-Developer-Key: i=masneyb@kernel.org; a=openpgp;
+ fpr=A46D32705865AA3DDEDC2904B7D2DD275D7EC087
 
-On Sat Oct 17 16:13:38 2026 -0600, Chris Simpson wrote:
-> Since commit a1fa010b3c9f ("driver core: auxiliary bus: Drop
-> auxiliary_dev_pm_ops"), the auxiliary bus has no dev_pm_ops. The psys
-> auxiliary device has no driver in mainline, and its PM domain,
-> ipu6_bus_pm_domain, has only runtime PM callbacks. So
-> device_pm_check_callbacks() now sets power.no_pm_callbacks for psys,
-> and device_prepare() puts it in direct-complete.
+> Add a BCM6846 clock provider for the Power Management Bus (PMB) MFD
+> cell. Expose six outputs from each of the RDP and BIU PLLs, the Runner
+> clock divided from RDP PLL channel 1, the crystal output, PVTMON and
+> block-zone clock gates.
 > 
-> A runtime-suspended psys in direct-complete gets its runtime PM
-> disabled in device_suspend(). Runtime PM is enabled again only in
-> psys's own device_resume(), which in practice runs after the PCI
-> device's. Before, it came back in device_resume_early(). ipu6_resume(),
-> the system resume callback of the PCI device, runtime-resumes psys
-> before the firmware authentication. That now fails with -EACCES on
-> every resume:
+> PVTMON and zone clocks provide gate control only.
 > 
->   auxiliary intel_ipu6.psys.40: Failed to get runtime PM
-> 
-> and ipu6_resume() returns early, skipping ipu6_buttress_authenticate().
-> In secure mode the firmware is then not re-authenticated after resume,
-> which matters whenever the IPU has lost power. On s2idle on a Surface
-> Pro 9 the cameras still work, and the error is logged on every resume.
-> 
-> Add suspend and resume callbacks to ipu6_bus_pm_domain that forward to
-> the driver. That is what the PM core does without them, so isys is
-> unaffected, but psys has PM callbacks again and is not left in
-> direct-complete. This restores the behaviour from before the auxiliary
-> bus change.
-> 
-> The fix is kept local rather than in the auxiliary bus or the PM core:
-> it is this driver that runtime-resumes a driverless child from its
-> parent's ->resume().
-> 
-> Fixes: a1fa010b3c9f ("driver core: auxiliary bus: Drop auxiliary_dev_pm_ops")
-> Cc: stable@vger.kernel.org # v7.1+
-> Cc: Rafael J. Wysocki <rafael@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Chris Simpson <chris@nilk.net>
-> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+> Signed-off-by: Linus Walleij <linusw@kernel.org>
 
-Patch committed.
+Acked-by: Brian Masney <masneyb@kernel.org>
 
-Thanks,
-Sakari Ailus
-
- drivers/media/pci/intel/ipu6/ipu6-bus.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
----
-
-diff --git a/drivers/media/pci/intel/ipu6/ipu6-bus.c b/drivers/media/pci/intel/ipu6/ipu6-bus.c
-index 173616381f62..1b06e581edbd 100644
---- a/drivers/media/pci/intel/ipu6/ipu6-bus.c
-+++ b/drivers/media/pci/intel/ipu6/ipu6-bus.c
-@@ -63,8 +63,16 @@ out_err:
- 	return -EBUSY;
- }
- 
-+/*
-+ * The driverless psys device needs system sleep callbacks, or it is put in
-+ * direct-complete and its runtime PM is normally still disabled when
-+ * ipu6_resume() tries to runtime-resume it. These only forward to the driver,
-+ * as the PM core would do without them.
-+ */
- static struct dev_pm_domain ipu6_bus_pm_domain = {
- 	.ops = {
-+		.suspend = pm_generic_suspend,
-+		.resume = pm_generic_resume,
- 		.runtime_suspend = bus_pm_runtime_suspend,
- 		.runtime_resume = bus_pm_runtime_resume,
- 	},
+-- 
+Brian Masney <masneyb@kernel.org>
