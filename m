@@ -1,13 +1,13 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.201.46
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.31
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794972485;
-	b=UwQAZ00mKh22TvUqWQrdISgVndOm3pu3x4VC5MGO0Qzibpf9aSBWpOzR8/jTred+ABi5
-	 D+TMMtMigUH4rDVI6XsR/FKr8eTYLDHMOCwGh48btbXs8A7ejYKNhGLLHs4vhY6o1l8MQ
-	 /d/qgAam5qH2FPGFMFkfDTJWf2QlYK2k7rMUNu6f36zFh9sI7V51NbUsFvYvAA4Symfgd
-	 AZHKqsRikgVmqMNGawWIkCXCBRhnz00EHC8xRQ60vV1eApuCaVbKCL7GjhM/kJDmMuxcj
-	 QZvALCXZRP4hHgC72Cc3GJAlefYi5Bw9MllhJaHRUmJ+6k66Pks3hS2i0T36rIDVtlg==
+	t=1794972487;
+	b=ikpWMU6F2OUYbXjlQY+OoaTtOLN+GfEotyz8rCieDP++YlL/MUG0yX+0bTn7ZgulBOXv
+	 ZdG7RyKrPuXehO3c1SET/Efw3EY6YXJju4L4nboaDAFHxSWwqE1DPGYy2UjXNPK1ava4L
+	 6cfPqQMj2FgnUSvxXZe2sg4E54ENgGJLylGLH+uSiAyRl9KJ8IGFGpdX0jQ3O7PeoWuaY
+	 u7lcjr3QB6QYcWi34FdOgHeub0+d0tNk6voIFqvv6pYRb33cXPe4B0ePzCeYNcHs5yFpZ
+	 HRGeJ+aY42c9bAfakr8pk3YdgJnTvsB9OkfQY323Bjipoo6SL+/NDNGDyXv9DbkdbYQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794972485;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794972487;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:
 	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
 	 From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
@@ -26,53 +26,53 @@ ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
 	 X-MS-Exchange-CrossTenant-FromEntityHeader:
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=AvP7rKSXrRSyE4p0cI/cccoQVGFbod20yKz44jjOprk=;
-	b=UGqJrQIDUctGC+gNAzXWQa2/30e0L5bf1K4bDBOUg6Os3fpC2OfFpqJOYYXnUpGXcMb/
-	 8ExWF3tGG9igeXzg/iJHbJ22NMkZ8RqAiJEaU0KkzP3wNfr6EwOU/falhhhCQZlIDXD07
-	 4BLfVFOjDhBBBDvwfH9deVgwBJIgEYaevtHawgxIYXkq/ylTXcz/QRINhR5LGbWgScDQC
-	 mahvB0fHBTLeI2FOWy09vS4139VycyDfsxPp9hhlgL5EEay+uksuuxl9dFW2M6HgU0U/v
-	 /qb84VynVRlO6SZ0JwUdDtIvJcQxGYDWfySL58CNzydclVmJ9e6rkCyKuG8RjbrifkQ==
+	bh=/4zdBLMhX3sfKsiFWNNXboL7GsIYO7sm/YHiIFrasX4=;
+	b=FQQBdTbj+ih1Fm1QI103q+CmiPgobwQGYqB9uC3hlY7BZr/Ci2I3FajReEg6pseox9NI
+	 BGbZt/F92kKh6OQLu1ugJvmaMMk472nkSWItHMzxHkoGWQpaDIKVD2092CNT3yGnIoWyZ
+	 bhj/2209m0cYmkk8BoPL3jaIeeMtFL3wT3k3wLSX5pT5hDtPxUXhx68QmJmCzkvY2grIK
+	 nQOOQfgrAJ/Wr4XAbsoHTfSfgtTCRXnxQ2Ocvg9Nxiim/xz+GhJ8MtiaXxTjevrlgFsVJ
+	 u1RSyWv0pS/Iojm+7HCjHCxT+ubEZAdWVOb3mqee8+FBK2/dd9YxJOqGvIcDJpxQnAg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=amd.com;
 	spf=fail smtp.mailfrom=amd.com;
-	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=ANw+PegI;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=40.107.201.46
-Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013046.outbound.protection.outlook.com [40.107.201.46])
+	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=oe01gths;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.31
+Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010031.outbound.protection.outlook.com [52.101.193.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4444606A888
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 03:28:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E4444606A888
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C07F9606A32A
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 03:28:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C07F9606A32A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=ANw+PegI
+	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=oe01gths
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=hWL1kIrX4S3uBkRDzl11jNQkuf4rwhutQ4XSWiDaEyRGv8wDLhvh7+L9wDM77sJgARdR4YtVMUML7mrUyNlgOuLh9tZzrmy/1Q76T0R0TKikohDemolmKXJtoP1W2UH92dJpmBpkwE4VnR45uTC70m0kYHZkLplrngcD7Dl2lwzEVs9lSG7LuvJmkTmlXs4gsdB0FsVq8HW5TdwI+YyzicIcfYj+VfTueExrZ9mHiUWzZ54IYVnKEOI+vugKSp/SMdwnz9VpWKNS5C1lCnJ6j9tmUxpbdAjSgPVSvN+/MVPPCzfBLlIOGmdhuCWo4/K9wAs3z39fG5n++EHBRT1JsQ==
+ b=ZjvuV91kthkh8tRGJus7gXWfRbM/sELfcw3sKOjORTZkZSKH9xLgH+LM82hY9Y0FeFP9KIAiXHdo+hqFB9cgGeCq/45VDBrhPddc0+adhwwrN5Xyo4QkUyKjVdxiIaQwbZHhSLEGwfQgZG+jPuNlHWVyQz2Hjwu6PvkfZW2ZlVPVhIAs9JuDAqjwnjZa0zNLol2dX++4d1cLpRX/AmwBftvPFu63fI1nQU8aRKySAaqrrH8uvoTbVyP2dFX/O6LicGk7e11fDy9y4bopwwAWYH8tnVfGJJdOCLPXAfB5EiAY9MyS792kAqta6W9o+2fPjpdhBdS1jtNWPBXJ3fkvPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=AvP7rKSXrRSyE4p0cI/cccoQVGFbod20yKz44jjOprk=;
- b=rQ6JxVUbT153cxQoZT9R0aCFnzgDqfHAP3BMgadX5+Zr8zJcCTvsn+DVD/4DZRQtOWRKKrEul7f3ro3+Ii2UZCSpXrB871Ph4dM3SXzcVc+jKKRbI4GOAEOqhj4pTsZKRYRTSZ50e08mzuih+B5QBsGZPdgTSTxKIO6xf4gqsSmrhrYhuQ0GqrbevS8tlPHt3yeI4/bwJUiDhYser3upZIpd9myTdQQvurCeAwcW66WPEAWceCggcXYxsmx6GXSoETdijhdpxBjo8kiUt1/qtyF1e9iGcqmsxXR1Ia5TvKeo66MRx9lq843Wqa18/SB3HnI7Ps5k9YOVXFf/XkRd5Q==
+ bh=/4zdBLMhX3sfKsiFWNNXboL7GsIYO7sm/YHiIFrasX4=;
+ b=YoU1+ONFiFHkGcnj8dslJbXXT56fgL3QCmlrkGELJY9W2+NJhsu7ZoL49x5PaL4tLVhYI+blhQk0OPEDwZ6xkakJVC4uiF6o6f6k6rs0VD20nFsLL6o154w7NPZ5Rg5qxa6eUSMdX2UsqO5peniLYId4tk72S0+Hod7D7bhZW+cTjdgj742HpRyPHWORUwLR0bKDOGcNCCA0DWem+C9iqwHGdgIhTP936AXS6+ZZKIg1gLCboG7ufEcetgV2x8o6wMaGV86XBl5LA8ZkNkyqPbybTRXzEgPqyweDUjBbgKnMq/BdDZikgteMznWiU45Kkc/BSb9vPXv3RLKDIo5MfA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AvP7rKSXrRSyE4p0cI/cccoQVGFbod20yKz44jjOprk=;
- b=ANw+PegIpnh/p4DISe+jbYFuvsJh8n93unfVKTf2aftfbDWnSJkTdWrqpC6yXvAnjJzjzA5o8gOeAMmZBKM7BHIWUZXOK3Wk2TX9ogl+F6t0WfmZSmhG3ZNbRyiUpPdoZV17Ue3wFH6179ceyV98+wBoIV1uSiKmbSvQkJjS6O4=
-Received: from CH5PR02CA0023.namprd02.prod.outlook.com (2603:10b6:610:1ed::24)
- by IA0PR12MB7555.namprd12.prod.outlook.com (2603:10b6:208:43d::5) with
+ bh=/4zdBLMhX3sfKsiFWNNXboL7GsIYO7sm/YHiIFrasX4=;
+ b=oe01gths4t9n+yNCqIakRCbfaeFNB8QAigeEz20zsKlsGHEUh6bPRn4yDZYU0ne/+fzWPabEqJbsH7uXUqRiy91Thu8FLitZIoNCmqDz1+vLR3aJ6lEeYVRe/2OoD1qumusOXy4XTtWYqqrUIcMCxgiw45uAwcxr9LsLatIKN7o=
+Received: from CH5PR02CA0001.namprd02.prod.outlook.com (2603:10b6:610:1ed::17)
+ by MN0PR12MB5737.namprd12.prod.outlook.com (2603:10b6:208:370::15) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.13; Wed, 18 Nov
- 2026 03:28:00 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
+ 2026 03:27:59 +0000
 Received: from LV8PEPF0000005F.namprd02.prod.outlook.com
- (2603:10b6:610:1ed:cafe::a8) by CH5PR02CA0023.outlook.office365.com
- (2603:10b6:610:1ed::24) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.14 via Frontend Transport; Wed,
- 18 Nov 2026 03:28:00 +0000
+ (2603:10b6:610:1ed:cafe::3b) by CH5PR02CA0001.outlook.office365.com
+ (2603:10b6:610:1ed::17) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.9 via Frontend Transport; Wed, 18
+ Nov 2026 03:27:59 +0000
 X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
  is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -82,15 +82,15 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from satlexmb07.amd.com (165.204.84.17) by
  LV8PEPF0000005F.mail.protection.outlook.com (10.167.245.137) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.615.4 via Frontend Transport; Wed, 18 Nov 2026 03:28:00 +0000
+ 15.21.615.4 via Frontend Transport; Wed, 18 Nov 2026 03:27:59 +0000
 Received: from [127.0.1.1] (10.180.168.240) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.57; Tue, 17 Nov
- 2026 21:27:58 -0600
+ 2026 21:27:57 -0600
 From: Mario Limonciello <mario.limonciello@amd.com>
-Date: Tue, 17 Nov 2026 21:27:52 -0600
-Subject: [PATCH v2 6/7] cpufreq/amd-pstate: Snapshot policy limits in
- amd_pstate_update_min_max_limit()
+Date: Tue, 17 Nov 2026 21:27:51 -0600
+Subject: [PATCH v2 5/7] cpufreq/amd-pstate-ut: Restore EPP state at end of
+ amd_pstate_ut_epp()
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,7 +102,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20261117-superm1-linux-fabc6bcb-984e-4ba7-bb57-02cc3af08fa7-v2-6-2a0048f563c7@amd.com>
+Message-ID: <20261117-superm1-linux-fabc6bcb-984e-4ba7-bb57-02cc3af08fa7-v2-5-2a0048f563c7@amd.com>
 References: <20261117-superm1-linux-fabc6bcb-984e-4ba7-bb57-02cc3af08fa7-v2-0-2a0048f563c7@amd.com>
 In-Reply-To: <20261117-superm1-linux-fabc6bcb-984e-4ba7-bb57-02cc3af08fa7-v2-0-2a0048f563c7@amd.com>
 To: K Prateek Nayak <kprateek.nayak@amd.com>
@@ -113,94 +113,140 @@ X-ClientProxiedBy: satlexmb08.amd.com (10.181.42.217) To satlexmb07.amd.com
  (10.181.42.216)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PEPF0000005F:EE_|IA0PR12MB7555:EE_
-X-MS-Office365-Filtering-Correlation-Id: 16280803-45cd-4f18-dcfa-08df4523f258
+X-MS-TrafficTypeDiagnostic: LV8PEPF0000005F:EE_|MN0PR12MB5737:EE_
+X-MS-Office365-Filtering-Correlation-Id: a00b301f-b230-42d0-baa0-08df4523f213
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|82310400026|36860700016|376014|1800799024|22082099003|18002099003|13003099007|11063799006|56012099006|261022075727099003|10067099003|261021121427099003|261009221227099003|261021123027099003|261009223027099003|261102123227099003;
+	BCL:0;ARA:13230040|82310400026|23010399003|1800799024|36860700016|376014|22082099003|18002099003|261009221227099003|261009223027099003|56012099006|261026140227099003|11063799006|5023799004|261102123227099003|261028144727099003|261026121527099003|261021123027099003|261021121427099003|261022105027099003|10067099003;
 X-Microsoft-Antispam-Message-Info:
-	HcNjeCTnp4psRyGHdnqApLW0NqGCwgxi2Il+unKXjfTbKbBC7CD2rpL8zkVRYKfMUE5J8InDt5xHhURbaH/pJ9vzfqTZXi5gQof8omy8C+KVt/zQQ3jbqzxqFtgKT0cvnhC+p7TjQHunKHZlO5BPx4ifBYQNDaZd/PXRsadrPGGlGrHDfpsXCGtc0N669MdNkN4anzDhI+Yubkmem6yafcF3CO4ziO18WdtJ/Iur/DlbupNbiJNDjLkJVOEk9oTyZuKPY5sh4VrkMD2KIamdOo9Fdey4U6KlI4rpfEMn+Ered91/xAFxD/kGX1APTYVydKtNP7EbvutT7VQzMHjlmud3Hoer+uLo9T9dzdAjjeFypQhkRbgiGLBvIaukDTXdcXavZGWRLa2GfTf76C7aGbsGiXBB7oZds9vFGbnfqxo20ZAzwyXxRt3zC/EeJ5hy+bSaDQr+Pp9Gxz576JrK4DnVZnwOwI9WK2046Qhvckj4n7UGcu1U/S5bzAIDgXPRtPPz8d6YBNy1/M+WgmcEOj4Ti7UE9N15NPVWLvjsWSwtMTN0MHBJn2giq7jxVMUPqbxvvKRCiOkfZEkrV4z/t394U7AeO4rwJ9JVuA43TTNEtJR/dVtZPx+aQF1rdNkoD3USNO6qxYrd94GcrUI+dQ==
+	z4733ZzG/DJZftuGdcObcHt4xF6mPW8CioWLo5tlOdHcL2XnZopCXJr/YXQEh4eSk4ASXVmqsCTOxEKdrTI54b8es+MCWYh+8/SVzdAlcc3QjOJllJcLD/mk3WuoFBaY3Hrr8draONZITd6utrN5wkVri455Vj3IwnT5CN51WpodFxi+D8Db4uc7hj8e2eBMJEenDRQCNGutuCg5kGACtnjCwdynPJJ4pdtz8L7vtg/D7wn/77vgCWpfMIBjFxZP15j8InE9CXcVNdQ7rhdU8OUW6biF1A8ux/48r55Qa21XeCZmVmmhxYp2/VTQKxXy5Pp/CRRLcZZx6yWcoNVrWZk9gIUJuU+BjYOsQpf/0nLti1uVVJ2HSrvfmrGBHK2trH+15xpcZGJ8aFRXt9PveQ1X3ufry3uyTzOftmmctHZu1ae5Gb4tGv+jC13guMd1m6cpWEka3g7MhHkxKuY+4K0ova58/m+20fl4OgIlGbX2CVBjGsDyGtryUlX2OaMM8wXV8s4y7iZKSIUpCY9YoJ6srDThRuKsWpWeMOT11eH8o8wRjsnoR5gaBEKRNetTUfDzBOh4AaAswVPqnsJmySaRus+9WZ5YJThMPU8OfN6O/DQ1s6XYWK79B9XE/J9XoomzI8G8krYRbvHEdU1f+g==
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(82310400026)(36860700016)(376014)(1800799024)(22082099003)(18002099003)(13003099007)(11063799006)(56012099006)(261022075727099003)(10067099003)(261021121427099003)(261009221227099003)(261021123027099003)(261009223027099003)(261102123227099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(23010399003)(1800799024)(36860700016)(376014)(22082099003)(18002099003)(261009221227099003)(261009223027099003)(56012099006)(261026140227099003)(11063799006)(5023799004)(261102123227099003)(261028144727099003)(261026121527099003)(261021123027099003)(261021121427099003)(261022105027099003)(10067099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	kWhfu61EnDDYmmT8bAjwScmyGT3oo8xjJPLqmKdQo0nzKg4dK3X0aAaWURuteiSgSEbcP9lbHJnfeEse0MaC7BN5/sJNdxX+FhxJpPCZd/jjRE3N1puJoa2LwatB+UGHBqqRa4k/du5JnlEmK5FLr6+06GV+lfEeIhvKiJ26NdM2gHVfriesIrnm88DeWHJIbTKVfC5E7SmjS++buFOSzQn9TmMHbCIuzhWz0xMUxC2q42CsfMwat/PDr3sCbC5L8wzbMfKTL0T+bphixOKo0FoFv12TH/Ompt7EP7dE2KablriUUJFqwijOyWfsDVhwGkIiOKTfAduNBtzjoFonu14FBSu72VtHaSKH4e+hADwsjbBH/GiCc07q/P7t429JOB9A7kTZP0dipd2q06hmn6s7DP35Kusmf2vfodCxfV86LSuekphEAeatdGQ7Ir1y
+	PzLMO/ZCGV3T8QAccS0FSLax+qWbWBC4Of1hFaj8BA1AzRGeIGqloNYf3WmK4tWolcP81U1QljORXUQf56S0Q+oTCsPqN7lk/LYUQrbsnbi4FeAOUBPRr/EpkYz2i10Rmubgh4EHRhkZCAve9TwFLfgWC5VP1ABJ1Tp8bQGkScj980phJGhpbgrQ6j2OwAzw9GB64ye2cE/jA44sy3WbGUIYTaAvTurEUaoTS1CGcJ81RLKYP5mBfq3a+AvGPsoPsCVpDU71RsmkwftPOzWjVrSTug8aOCk1DSws6XKw+ovTmvym38jawHQhcMaLymgOjGWdHpArhbs7RFY0Io9fgy0n4Tqc+Wdyi54ZrTdL3yDqBtCt04K6svI1REAjeXqni0oS/Ks0IANIHTXiSQ8F76yykkDaL9enyhemOrMr9hn08B8zuGP51NEu20CdNeO6
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 03:28:00.1561
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 03:27:59.7029
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 16280803-45cd-4f18-dcfa-08df4523f258
+X-MS-Exchange-CrossTenant-Network-Message-Id: a00b301f-b230-42d0-baa0-08df4523f213
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	LV8PEPF0000005F.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7555
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB5737
 
-amd_pstate_update_min_max_limit() reads policy->max and policy->min
-several times. It can run from the scheduler fast path without
-policy->rwsem held, so cpufreq_set_policy() can update the limits midway
-through the function.
+amd_pstate_ut_epp() records whether dynamic EPP was originally enabled,
+but nothing about the original static EPP, and only restores state when
+dynamic EPP was originally on.
 
-The perf limits can then be computed from the old policy->max while
-cpudata->max_limit_freq caches the new one. The cached value then matches
-the policy, so later limit updates are skipped even though the perf
-values programmed are stale, decoupling the hardware state from the user
-policy.
+If the system started with dynamic EPP disabled, the test's "dynamic"
+write allocates a platform profile device and enables dynamic EPP. The
+exit path then skips restoration entirely, leaking the platform profile
+device and leaving the CPU in whichever mode was written last (dynamic
+on early failure, or the last tested static preference).
 
-Read policy->min and policy->max once into locals with READ_ONCE() and
-use them for all computations and cached values, including the
-min_limit_freq cap.
+Capture the original EPP preference string via
+show_energy_performance_preference() while holding the policy rwsem for
+read, so it can't change underneath. If dynamic EPP was enabled, trim the
+"(profile:...)" suffix so that "dynamic" is written back. On exit, when
+the driver was originally in active mode, write the saved string back
+with store_energy_performance_preference(). This restores dynamic EPP,
+or a static value (tearing down any dynamic EPP state) and raw_epp.
 
-Fixes: 009d1c29a451 ("cpufreq/amd-pstate: Move perf values into a union")
+Fixes: d61c1ad39026 ("cpufreq/amd-pstate-ut: Add unit test for "dynamic" EPP mode")
 Reported-by: Sashiko <sashiko-bot@kernel.org>
-Link: https://sashiko.dev/#/bug/linux-f43c6bc5-cbcc-4959-af2b-f4e5afa1e3a3
+Link: https://sashiko.dev/#/bug/linux-e7023df1-8e55-46ee-a161-01320e6a4082
+Suggested-by: K Prateek Nayak <kprateek.nayak@amd.com>
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- drivers/cpufreq/amd-pstate.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ drivers/cpufreq/amd-pstate-ut.c | 46 +++++++++++++++++++++++++++--------------
+ 1 file changed, 31 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 574dfffc18f05..0acb545a5f4fa 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -738,12 +738,18 @@ static void amd_pstate_update_min_max_limit(struct cpufreq_policy *policy)
- {
- 	struct amd_cpudata *cpudata = policy->driver_data;
- 	union perf_cached perf = READ_ONCE(cpudata->perf);
-+	/*
-+	 * This can run without policy->rwsem held; snapshot the limits so
-+	 * the programmed perf values and the cached frequencies agree.
-+	 */
-+	unsigned int policy_max = READ_ONCE(policy->max);
-+	unsigned int policy_min = READ_ONCE(policy->min);
+diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+index 506d7bb2e6609..bc696f452749d 100644
+--- a/drivers/cpufreq/amd-pstate-ut.c
++++ b/drivers/cpufreq/amd-pstate-ut.c
+@@ -311,13 +311,13 @@ static int amd_pstate_ut_epp(u32 index)
+ 		EPP_INDEX_BALANCE_PERFORMANCE,
+ 		EPP_INDEX_PERFORMANCE,
+ 	};
++	char *orig_epp __free(cleanup_page) = NULL;
+ 	char *buf __free(cleanup_page) = NULL;
+ 	struct cpufreq_policy *policy = NULL;
+-	unsigned long orig_dynamic_epp = 0;
+ 	enum amd_pstate_mode orig_mode;
+ 	struct amd_cpudata *cpudata;
+ 	unsigned long orig_policy;
+-	int ret, cpu = 0;
++	int ret = 0, cpu = 0;
+ 	u16 epp;
+ 	int i;
  
--	if (policy->max >= READ_ONCE(cpudata->max_freq))
-+	if (policy_max >= READ_ONCE(cpudata->max_freq))
- 		perf.max_limit_perf = perf.highest_perf;
- 	else
--		perf.max_limit_perf = freq_to_perf(perf, cpudata->nominal_freq, policy->max);
--	WRITE_ONCE(cpudata->max_limit_freq, policy->max);
-+		perf.max_limit_perf = freq_to_perf(perf, cpudata->nominal_freq, policy_max);
-+	WRITE_ONCE(cpudata->max_limit_freq, policy_max);
+@@ -325,14 +325,36 @@ static int amd_pstate_ut_epp(u32 index)
+ 	if (!policy)
+ 		return -ENODEV;
  
- 	if (cpudata->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		u8 min_limit_perf = perf.bios_min_perf ?: perf.nominal_perf;
-@@ -770,10 +776,10 @@ static void amd_pstate_update_min_max_limit(struct cpufreq_policy *policy)
- 		min_limit_freq = perf_to_freq(perf, cpudata->nominal_freq, min_limit_perf);
- 		perf.min_limit_perf = min_limit_perf;
++	/* Prevent any changes. */
++	down_read(&policy->rwsem);
++
+ 	orig_mode = amd_pstate_get_status();
+ 	if (policy->driver_data) {
+ 		cpudata = policy->driver_data;
+-		orig_dynamic_epp = cpudata->dynamic_epp;
+-	}
  
--		WRITE_ONCE(cpudata->min_limit_freq, min(min_limit_freq, cpudata->max_limit_freq));
-+		WRITE_ONCE(cpudata->min_limit_freq, min(min_limit_freq, policy_max));
- 	} else {
--		perf.min_limit_perf = freq_to_perf(perf, cpudata->nominal_freq, policy->min);
--		WRITE_ONCE(cpudata->min_limit_freq, policy->min);
-+		perf.min_limit_perf = freq_to_perf(perf, cpudata->nominal_freq, policy_min);
-+		WRITE_ONCE(cpudata->min_limit_freq, policy_min);
- 	}
++		if (orig_mode == AMD_PSTATE_ACTIVE) {
++			orig_epp = (char *)__get_free_page(GFP_KERNEL);
++			if (!orig_epp) {
++				ret = -ENOMEM;
++				goto early_fail;
++			}
++
++			ret = show_energy_performance_preference(policy, orig_epp);
++			if (ret < 0)
++				goto early_fail;
++
++			if (cpudata->dynamic_epp)
++				strreplace(orig_epp, '(', '\0');
++		}
++	}
++early_fail:
+ 	/* Drop reference before potential driver change. */
++	up_read(&policy->rwsem);
+ 	cpufreq_cpu_put(policy);
++
++	if (ret < 0)
++		return ret;
++
+ 	policy = NULL;
  
- 	WRITE_ONCE(cpudata->perf, perf);
+ 	buf = (char *)__get_free_page(GFP_KERNEL);
+@@ -424,17 +446,11 @@ static int amd_pstate_ut_epp(u32 index)
+ out:
+ 	if (policy) {
+ 		cpudata->policy = orig_policy;
+-		/*
+-		 * If the driver had enabled dynamic_epp to begin with,
+-		 * restore it here before dropping policy reference.
+-		 */
+-		if (orig_dynamic_epp) {
+-			const char * const dynamic_string = energy_perf_strings[epp_modes[0]];
+-			int ret2;
+-
+-			ret2 = store_energy_performance_preference(policy,
+-								  dynamic_string,
+-								  strlen(dynamic_string));
++		/* Restore the original EPP */
++		if (orig_epp) {
++			int ret2 = store_energy_performance_preference(policy,
++								       orig_epp,
++								       strlen(orig_epp));
+ 			if (!ret && (ret2 < 0))
+ 				ret = ret2;
+ 		}
 
 -- 
 2.43.0
