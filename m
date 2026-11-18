@@ -1,101 +1,92 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.49
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.84.56
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795018067;
-	b=Z7/0Lb2Ki2dIr+q9wX0KQn+wxy409WhTAsHUCpzvK+OLPHPTkBELkX1COWyFVzmwyYvP
-	 Jjgvf5rtIdTln84z93fZg1mMxtJ4fTvDon25tRNodBGy6v2yl9WCOkAauWWlOI9jtG5wy
-	 UuZiKoi2LWAZBoDudTAjQ6jQym3+XhWRCGiW/EQytsGyR4lDOh9VDSAPx0z3CpKWF55/Y
-	 38bGWRpf6FoyHtnFnygDG4MVdamafBrbAAwDa4foJ4XdddnXUysU/55s/IxqipcFv5GuP
-	 qsigRNpUyNWhw9/8A8ljyNn2RlZl52/S6vd/S3TE6OcS8jErMig9+aVbtWGuQZe0H5w==
+	t=1795018135;
+	b=GNNhSr5yrd1sGFRRvTLroH2RrfU/CHDUw/g61k6RShStDrW1Ww5ad3M2wAaRGs02438Z
+	 K0/VUvjpaG8NIY86PaYoTjZ9RxKYWq3RnSoNrfZePDYB2W4fS18zmh0UMi2A01HbbvdCX
+	 AZSYGv2m5+Vk5sYj9r5+euVfi1tPc45DAAgWpM+3J+DDxQV2X7tw3k2o8ICZY5WYLziyS
+	 DDUdISHtT3jg/ANg/m7gZqA1FVuWgmexXYJ0z/4QaN/5udNkhWIv71QFMKH0NsWciHHtO
+	 IEylyMZKRyaDp7VpyWKAEkpzQ692G/LQProES1SFnJJ+NZ93WTqlvLglcUsU6+PnMCg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795018067;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-Mailer;
-	bh=miZOpsXXWqTDg4brI3XNa3nMkTf1a4j0jITu5ECiOM0=;
-	b=sZqJKLaxxJb1ZpLwUtcjpOIoOCF3A4zR0FE7tun9LahTuHO1Aju5gHYcmohq7IxZ41Q/
-	 Ki4eWdn8G7i7MbG5abUM8M/czuhKiJAkHLAKoxUbzumTFaSdBr8GhiqyVqbr4NrLSMki5
-	 qLs8iaokNPvt2N/rHYALL+uhQzmHaN0pxf4wVbUURqiXRZbP0OajlQtwQ1PUtt40GLb3K
-	 UOybzlZZlxg7BV3H3W5422Cj17jUvQJoAdgPBTu/R/RdowRR2X4LWUKTYcWUoOSPMKMva
-	 2j86OEAZQJH6w0XBspzkE5e+27H7hMMaynxMPo211RIgyV7R1BZd/mS1dRY0th/C2Dw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795018135;
+	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:To:Cc:
+	 Subject:Date:Message-ID:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type:X-Last-TLS-Session-Version;
+	bh=NyruYRmBJ333KKsYOsJfBubBYnjFdFekZpcsS68Afoo=;
+	b=kjHaUg5ZmhefzwqeIF+u0ekH1qiQCO21ypTZwPFaiCq+mS17Eai6IWFXh3mOG44j3Rxa
+	 p16EFnzBmNUQH2xqmvxpo+sAjENR2+bbcx7+MvYTwUxHNjFBhcp61BuMvxVZe+osWvAiQ
+	 rJZX+muU3MPWiRH80cpy4QIMswzB+QyA2JkNKsfLJGARXF0OcTFzYtmuHOY7YO7Qd3AxY
+	 U44tx0zmby9mL0HEPV7glPikHNa/O7A6ziFAWmM9NCtcOAbg7su0aCKn5mEX6SqTJs0+p
+	 uxFqy6bVIMKcGYZhXBST6ZUPwVPlG+/X0pRoK1UDVLHzMJJhpiz3bAhywdaCtWky+uA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=kernel.dk;
-	spf=pass smtp.mailfrom=kernel.dk;
-	dkim=pass header.d=kernel-dk.20260707.gappssmtp.com header.i=@kernel-dk.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=rfERdRut;
-	arc=none smtp.remote-ip=209.85.160.49
-Received: from mail-oa1-f49.google.com (mail-oa1-f49.google.com [209.85.160.49])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=bootlin.com;
+	spf=pass smtp.mailfrom=bootlin.com;
+	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=X6cEgtil;
+	arc=none smtp.remote-ip=185.246.84.56
+Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA97A60A3818
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 16:07:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EA97A60A3818
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kernel.dk
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E066606A32F;
+	Wed, 18 Nov 2026 16:08:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2E066606A32F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel-dk.20260707.gappssmtp.com header.i=@kernel-dk.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=rfERdRut
-Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-4b563403c7eso353917fac.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 08:07:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20260707.gappssmtp.com; s=20260707; t=1795018066; x=1795622866; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:date:message-id
-         :subject:references:in-reply-to:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=miZOpsXXWqTDg4brI3XNa3nMkTf1a4j0jITu5ECiOM0=;
-        b=rfERdRutCiY1Lz5trk/rT3JitdkQbyeRpy92SAEBTr0SmwHHW7GjbVlsL6xi4GLvlA
-         eIy6I8HWFFPJEAko7lPdUqZJ0ASfQs39uGsb2kxFW41b1JV5vmuNw7JyeQ7RyefPZ0K/
-         9xQMAXHoHzpNH4wuyizF2fSFPUA4p28V42dt2F4Kqw0BLpetMDyzdYPIEpOPJPmRoJPR
-         CA0R4B7acExX6CwARQsZdifC0Die7wBlG1RRQSCl2BNtFRelYwu0NbJSKXPCQplp7vXG
-         14ey5H5NU8zd6o0RiLfoiNrrbcb/neM2Pssr4bC/1VTI7DlntKS58QKULJCOW7HRil/c
-         C9OQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795018066; x=1795622866;
-        h=content-transfer-encoding:content-type:mime-version:date:message-id
-         :subject:references:in-reply-to:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=miZOpsXXWqTDg4brI3XNa3nMkTf1a4j0jITu5ECiOM0=;
-        b=RYQmuynWFra2TdnxxT02yMmIcRQOImEVKWCJ0groXH96eWbpmxfdyi0bDamsZCD/Fx
-         /5QsGg0ENnZbACAfIjOoAuiD/1fXublOiS8pgIioBufM3XWv6HNPKLpckMQKC/dKSxYA
-         4aBGC5wFMcIu1CV+aQHY1bzz4Y75YszKbg2XUXr+R72fZmSGPTp0ITlArlfY2Xan4S7T
-         ywOPyldPotRGe+GPYkDFR6LZkYFRAZZMe/yROeNd9usV64Lb51jIYMgzYi+WGQyCB6Rj
-         6td9D5rT4ISaZbMcNhcQMRkJvMBy/6s10Fd+5xaWSWedcCS/ZXy05qjlO/iKSytgzmD/
-         iPfw==
-X-Forwarded-Encrypted: i=1; AL+hErE0HruEEz/8/0eRRHfRuPpV67Gti26OpLGaTnRA1cOM8Fn5aVWTi8tfBUdC0bhycPBWhNQf/ZFcjA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9tqVKCFjTZDOUByScq3exQ74V42jeE5tboBbkkcmA26nBq4zQI
-	a8kmP6mFJjPNf/JrPf9AlKL/S7h2pM4feQt5HQt/2hSIZiSyGjnumU9pAbf9mZFjqnHWLiAmAMR
-	E9SS/DtM=
-X-Gm-Gg: AYBFou2VfqjY+1Y31yQnE/ty+xm5Ei8ltC/O7Q3lntkyU0AHqv/VHzojQvyh/EFv7K2
-	cFxgiMHA44idZHFETDIvshsNyvozqF/1RdhMWNmDDFkkB1CNgFRpamLro07TlytEPc0SMhy/oEs
-	p8gb5mj3TZ/xHdHb8XRTmaNmx6R+pBEjxbLuscYS11TXOxbAxTOCi0O/I4+PyJ35uHbYmDRPa4U
-	6Ia2ph2ZuIOMvGQvkD+Twczsk2D+5wrkvhUfQH7bJYt3+VFs42D52imiizYjDmrEJ8xWVDaVrmZ
-	1nav9WJ5EjGApM0CNN0fkfQhjKNCSwOekZgk+PhWFWcyNa8NAw1xMLiEITC27t+VOYkYbOsBDCS
-	ZWpY7404WlQdWLZ9KG3Oc5Ld0nn8OHILt5VRvwy8QHzyXuE32/BBWUqX+vFjF/RRJt2Vw6sgQKs
-	ViLV2D4C5ehMRVLA4d5MsfI3BUaycjen9EqEGgPKo9uesdxdTKWPYGUtKJhgq5MJSM4A4CmMFSI
-	JSEVOGpWx+pUHoYamg7/cNIQpdgB+73/k3bjvfezYYmGabjSPckEkg6O8aXlw874HagKVXfV+Sy
-	2wYvsyN2uhlRAyzvC0A5TAHPyaqWNQP6Gz2lti6Wa08raVynRWRrg94joI4WcuzMvn4yigliWDW
-	tXHeOBcmcpnYkEPWFbgOQ4o3xmpwIp7dTnt7LUIx8ps3B3DXMOBjbu7z24tobGmWCSsRm6NZo
-X-Received: by 2002:a05:6870:8920:b0:49d:c8ab:967b with SMTP id 586e51a60fabf-4b7620acf02mr2521246fac.47.1795018065606;
-        Wed, 18 Nov 2026 08:07:45 -0800 (PST)
-Received: from [192.168.11.112] ([96.43.243.130])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4b743721fe9sm2624231fac.6.2026.11.18.08.07.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 08:07:44 -0800 (PST)
-From: Jens Axboe <axboe@kernel.dk>
-To: Stanley Jhu <stanleyjhu@google.com>
-Cc: Bart Van Assche <bvanassche@acm.org>, 
- Brian Norris <briannorris@chromium.org>, 
- "Rafael J . Wysocki" <rafael@kernel.org>, 
- Praveen Talari <praveen.talari@oss.qualcomm.com>, 
- Alan Stern <stern@rowland.harvard.edu>, linux-block@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-In-Reply-To: <20261104112744.1630864-1-stanleyjhu@google.com>
-References: <20261104112744.1630864-1-stanleyjhu@google.com>
-Subject: Re: [PATCH v2] block: Keep RPM_ACTIVE in blk_pre_runtime_resume()
- when already active
-Message-Id: <179501806424.17649.9429091372346585775.b4-ty@b4>
-Date: Wed, 18 Nov 2026 09:07:44 -0700
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=X6cEgtil
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-02.galae.net (Postfix) with ESMTPS id 6702A1A16D4;
+	Wed, 18 Nov 2026 16:08:53 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 299BD5FE9B;
+	Wed, 18 Nov 2026 16:08:53 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id BD37011BC244F;
+	Wed, 18 Nov 2026 17:08:34 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1795018130; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=NyruYRmBJ333KKsYOsJfBubBYnjFdFekZpcsS68Afoo=;
+	b=X6cEgtil8ijijO0rJLXA2fM6mfOKCqDSKEpQnIZl8O7QDvCmAFq44iTLtGiRg59T6tim+9
+	BkfAmw+/K2LmZlkCdVN2sYKaDDdw/b0/mTAmoK6EDNyam9WvPm2KyqSsK6FFH80ZrBBRbl
+	fOuG3P4fgquqDyFTbuhX5QPxzAzzTotAL3yURPLSCZ75iuwuF5fR7obk1dgbOVKjz5XyHU
+	usLAW0L1/qdVNqF382CZu2aco6xcOyG4qofdf/C4tljy9+Ib67sXLpy0J5bWTKyaLMICZ9
+	hf3TVLYsrb2HPg/gXOz12/t9aAj1TndcLvng+XJYM9BoHm2TlIq0tO3MLsgbzA==
+From: =?UTF-8?B?QmVub8OudA==?= Monin <benoit.monin@bootlin.com>
+To: Conor Dooley <conor@kernel.org>
+Cc: Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Jun Chang <jun.chang@metanoia-comm.com>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Sebastian Reichel <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Manivannan Sadhasivam <mani@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>,
+ Samuel Holland <samuel.holland@sifive.com>,
+ Ben Zong-You Xie <ben717@andestech.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+ Jisheng Zhang <jszhang@kernel.org>, CL Wang <cl634@andestech.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Wim Van Sebroeck <wim@linux-watchdog.org>,
+ Guenter Roeck <linux@roeck-us.net>, Adrian Hunter <adrian.hunter@intel.com>,
+ Minas Harutyunyan <hminas@synopsys.com>,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+ Randolph Sheng-Kai =?UTF-8?B?TGluKOael+iBluWHsSk=?= <randolph@andestech.com>,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-phy@lists.infradead.org, Paul Walmsley <paul.walmsley@sifive.com>,
+ linux-mmc@vger.kernel.org, linux-spi@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org
+Subject:
+ Re: [PATCH 00/25] riscv: add support for the Metanoia MT2824 SoC and MT5824
+ EVB
+Date: Wed, 18 Nov 2026 17:08:33 +0100
+Message-ID: <tSRWYJl8QRO6qpOrYOmeTA@bootlin.com>
+In-Reply-To: <20261117-calamity-quiver-96d0d568b338@spud>
+References:
+ <20261106-mt2824-v1-0-86087eaf5af4@bootlin.com>
+ <_koitdIgQPmk89LDhlUlJQ@bootlin.com>
+ <20261117-calamity-quiver-96d0d568b338@spud>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,48 +96,75 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15.2
+X-Last-TLS-Session-Version: TLSv1.3
 
+On Tuesday, 17 November 2026 at 18:30:58 CET, Conor Dooley wrote:
+> On Tue, Nov 17, 2026 at 11:41:52AM +0100, Beno=C3=AEt Monin wrote:
+> > On Friday, 6 November 2026 at 12:15:09 CET, Mark Brown wrote:
+> > > On Fri, Nov 06, 2026 at 10:29:57AM +0100, Beno=C3=AEt Monin wrote:
+> > >=20
+> > > > The series is organised as:
+> > >=20
+> > > > - patches 1-14 add the device tree bindings, the Metanoia vendor pr=
+efix,
+> > > >   the RISC-V board schema and the SoC block compatibles
+> > > > - patch 15 adds ARCH_METANOIA and selects the AX45MP errata
+> > > > - patches 16-23 add the reset, SPI, watchdog, MMC, PHY and USB chan=
+ges
+> > > >   needed to build and probe on this SoC
+> > > > - patch 24 adds the MT2824 SoC and MT5824 EVB device trees
+> > > > - patch 25 adds the MAINTAINERS entry
+> > >=20
+> > > This sort of thing tends to work better if you submit the patches for
+> > > subsystems as separate serieses, it avoids enormous CC lists and keeps
+> > > the individual serieses a managable size.
+> > >=20
+> > I agree, and I am reworking the series that way. Version 1 was intended
+> > as an overview of the complete SoC support, but it ended up being too
+> > big for a single series.
+> >=20
+> > So version 2 of this current series will be only the platform basics
+> > (2 patches):
+> >=20
+> >   - dt-bindings: vendor-prefixes: add Metanoia Communications
+>=20
+> >   - riscv: add ARCH_METANOIA Kconfig entry
+>=20
+> Realistically, this does not need to be a prereq either, because you'll
+> have "depends on ARCH_METANIOA || COMPILE_TEST".
+>=20
+True but checkkconfigsymbols.py will then complain about a referenced but
+undefined Kconfig symbol in the following series.
 
-On Wed, 04 Nov 2026 19:27:44 +0800, Stanley Jhu wrote:
-> Since commit eef1d74bf88f ("PM: runtime: Only set runtime_error on
-> suspend callback failures"), a failed runtime resume leaves
-> dev->power.runtime_error at 0 with runtime_status set to RPM_SUSPENDED,
-> so later runtime resume requests run sdev_runtime_resume() again:
-> 
-> 1. A runtime suspend increments q->pm_only from 0 to 1 and sets
->    q->rpm_status to RPM_SUSPENDED.
-> 2. The first runtime resume fails in the driver callback, and
->    blk_post_runtime_resume() sets q->rpm_status to RPM_ACTIVE and calls
->    blk_clear_pm_only(), decrementing q->pm_only from 1 to 0 so recovery
->    commands can enter the queue (intended since
->    commit 6e1fcab00a23 ("scsi: block: pm: Always set request queue
->    runtime active in blk_post_runtime_resume()")).
-> 3. A retried runtime resume calls blk_pre_runtime_resume(), which
->    overwrites q->rpm_status from RPM_ACTIVE to RPM_RESUMING, so
->    blk_post_runtime_resume() sees old_status != RPM_ACTIVE and calls
->    blk_clear_pm_only() a second time without a matching
->    blk_set_pm_only().
-> 4. q->pm_only underflows from 0 to -1 (triggering WARN_ON_ONCE in
->    blk_clear_pm_only()), blocking non-PM requests in blk_queue_enter()
->    and __bio_queue_enter() while the device is RPM_ACTIVE, and the next
->    runtime suspend increments q->pm_only from -1 to 0, letting non-PM
->    requests dispatch while RPM_SUSPENDED. This hits the UFS device
->    well-known LUN by default and SCSI disks with
->    manage_runtime_start_stop enabled (ATA and FireWire sbp2 defaults).
-> 
-> [...]
-
-Applied, thanks!
-
-[1/1] block: Keep RPM_ACTIVE in blk_pre_runtime_resume() when already active
-      commit: 657d7c48b84f2ef0bf885b47cf2318823bc72970
-
-Best regards,
--- 
-Jens Axboe
-
+> >=20
+> > It will act as a prerequisite for the following new series, one per
+> > subsystem:
+> >=20
+> >   - reset: binding + reset-simple support (the separate reboot binding
+> >     is dropped; the RST block is described as a single node)
+> >   - SPI: optional DMA/IRQ binding, MT2824 compatible, atcspi200 IRQ
+> >     support + Kconfig
+> >   - watchdog: compatible + Kconfig
+> >   - MMC: compatible + MT2824 support (split between SD, eMMC and
+> >     auto-detection) + tuning/HS400
+> >   - PHY: USB2 PHY binding + driver/Kconfig
+> >   - USB DWC2: binding + params
+> >=20
+> > Finally, once the subsystem bindings are accepted and the drivers
+> > are queued, I'll post the SoC DTS in its own series: board schema +
+> > cache/PLIC/PLICSW/PLMT compatibles + the MT2824/MT5824 DTS and the
+> > MAINTAINERS entry
+> >=20
+> > Thanks everyone for the reviews, I will integrate the feedback in the
+> > next iterations of each series.
+> >=20
+> > Best regards,
+> > Beno=C3=AEt
+> >=20
+> >=20
+> >=20
+>=20
 
 
