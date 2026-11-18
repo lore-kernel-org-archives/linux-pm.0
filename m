@@ -1,78 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1794999148;
-	b=tJsaRVpjAaO+OaQ1gsc9RxMflOHizoeh2RyB7UPxMSsFNk9/rvAf5ES8kPVsJevMq0Fs
-	 fsQKz5g7t1yItsJyXWlGWx+F/N/ODNwPg0lZgIDp9c8kLfBKFl3XCUkGM5tDVZCioy1h9
-	 666AFyUHqQbZ4tify2BvxZ6gFJjfX1bgtR2ADwEu9hbwexJO/uksF75QbYSdBG2eYKbzz
-	 0NT8NyQlYAheNOnzy0mCNua3hQOQd00cmyoljmUuTP9bWl+cocJNPh2HWnrdM5bmFyTz6
-	 xlorEzcStNoSJnOFFpr16azMg7fG1zVsSpDUwa4131wlPRMuGSxrsHO5tI5ZkSBDPgw==
+	b=337KuU6qDM3HLvXDHqdpcLlR8HbPEk2P6/L1gcm3rtaIMw8JygKky6mvLswx0nBAJg0W
+	 n64cnwqIcveQ9EIztH89i1xTNZwlki/4tzEgRMHwj9aDmGCe9lw9kd8wMIFzM6kTuQyEH
+	 RxE2cPOPfaYnHX/4VFaXTWZbcnX71wkswvS4zJ4wf1RNQ/nMA6RInreg/uMAyB4WVoKuh
+	 CkrQjXSqobBEw3M8n/3gMCTmN9rIl/wr1efntQKobdBTTpm9E1i/IJi1PRQuB973Sxpxq
+	 fwuFAujGNoY4TxUxA0nBH2wZW8wmmKlD3dwNQkjc5QfZ0t5j2YCCepBfSmV6JlPeLpA==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794999148;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=QlGcfLij8av6qp98RVpWyQQewfFODrr+GkYipOKWbyE=;
-	b=ZEm7Od+/WBsQLmazAKf1Kzsvv4TOw3FU9+U0HaAXDBByLjHOarmHAkW5moZ/tMXeETWg
-	 RQ1cv4Y/1tXHCaCDBrBExPGWc/Bnyid7s4V+nIKwfQZ+BPdH1Xwl0Rxk4t8vD8V/xFhwc
-	 WrkY2EY+mEHwHW9HMvcB2IJgVPw2FM/Vkf6eq/pcKNPrJ1XyuZOyXbxMI0NI6stXKL9Se
-	 o/Nf/OMfMEdXg+6RD0roR1AChZbES5UlBC8bpvSDINlMmELSSb5mJoMX8L5qSfsnPPi+4
-	 bHgf9SqbUIDb/1hNvjLyLGSk8Hm8lGSMWZvne/BUnV+Oyl/ZVma65iZwqEnhQif4Cyw==
+	bh=xrAEk6/4WGNXDqt6SdPWcxivaPvWRQHVDKqiBuuVVeE=;
+	b=dm1xJIBSwIO9J72g7PVB2SEx5eKYen5+IMa1i0Iy4Q4boavD7habYv+KxyZVVF+flKvA
+	 aENpeMqs0X6jBsw33w/sHd6FfgttdEq0GOvXYml5oT+pMK5iPQxztxfEY2dK4HhHc59Q1
+	 2vL1jkHKQtA8C7E+SfA1kQqCbn9uGwr4a7VURIBsDjXZjAN6Ov689wF/11RZJ7lcQZBy9
+	 g4dOYTT/rCf89vHoxcFIyGkcC+eyEuzfrpIqFVko2xctI3EOz/4mHhqJmzjCu6GVl3ENn
+	 mp04xlILt0DYAYT3QcYZlXNNZ+ymI6YqVmPyyh53vPUweFX/R1G40Hia3vrw9lCJ0jg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vxe1pz0A;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FLmSuKsn;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04BCE60A260B;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20E3660A260D;
 	Wed, 18 Nov 2026 10:52:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vxe1pz0A
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FLmSuKsn
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794999147;
-	b=necjqn/kcZnnEpnF/o0RUHwablR0PIw9rVE49jCaOxichLNAKcyhGrslGb4VI+fpTXgG
-	 HQQclSYGyiLey1kqHm1Wb+Am5fybxa3pOT38DMm58MAw1IUhHYAzeNQodOtYsnvZdSIJi
-	 BYtmOZXSaisIy4EgS8LHzxNUxDJLAOWQQ+w96ZuBwUTc/lozT6bwE47XLQ7KLi82Pffs/
-	 CUa9pSe9NUPbD8jUKYF08UIrBdrfoMHbys9wB5qoooBRLHFEq1Na6llBxVUpv+GW0FX1z
-	 1BYuVMh3juy3MFj2RBxnZ1u2NRv6TTYjidHVUEGG+AVuYsMQmNS2dgkNLm2dI+N/bZQ==
+	t=1794999148;
+	b=mg8UbZCYxgwekOA0F1e5ThM4Etrp+N/FjM4oMu5xIbuQkTUSgu50fpZH0iPIXvEpph+X
+	 hDRXDn9ybpwKAziPKoHxstjQyhkYBfNpSDdU8+SDY/HcYViw4oIkEGG8iStDFNpGoi1tj
+	 3uQLHCxJRCfdDGZicCU4Wisn1xV6monq5jBZFzf6nL1TbvZpZbOwn+QO8NrOoRmD/pMD9
+	 uOxdLmsFxXzyH+pUVQ+9A0k9Ze0fUsI0RxvlduvcgGFW+aQ72HYWAJ/L5hNu3aGySyWER
+	 Eq8YPbBv6QEqQm0BRGvROISrMccMc9+EAE+8rNG9YfkQKnojpI3hc2rUXd/1QbS98zg==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794999147;
+	c=relaxed/relaxed; t=1794999148;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=QlGcfLij8av6qp98RVpWyQQewfFODrr+GkYipOKWbyE=;
-	b=xe/vK6JoDuj533MGkdt9DLJu8aYUjCMwzY3WwPStgaixz8iLLPyWK5lucNcwzlRfymVl
-	 kn0H7FCqK9NSpo0RqkKC5CuyjclNTrBxF7hjrK4HIHJMuZjKqRRHInr0Dx8vjdhy6czl5
-	 9wIWfoE/JZeuD6dnwcv3uiquclsj0jA0K5cql+eWTg+JfT4C0Tdl/FdzC599MS0wAFcOH
-	 u5HvQimAwFKqRag1jOzguvPcFJhPij4cHkfPZdBYhedtybhFfovMipNXYOBC6r1md9fAJ
-	 BrcMAwQx16SUc3AsWsKRncfWmH2Gz6dDjnXTSuNpuo6uqfOyWOXP/hsGFIpvJKhPBMw==
+	bh=xrAEk6/4WGNXDqt6SdPWcxivaPvWRQHVDKqiBuuVVeE=;
+	b=rW8aq4KbrhhZDyd3vQmXjVbsbZ+o7LDKu/3qcHNY342OuQSZa0HczBZPRSGSrFlsroTS
+	 aLTEOw85Xl/p6zL/b3jHYdg7RP8XdU1GR57WsSEKApHxSScpTypkMgTcrqW1VyNl/1JYd
+	 /ZFaSz5rlYnRtYNSujtcI0JC4QEGfUQWDtXDkAhiEsSQx4etxK6AnN3b9R5sWXjF5F1SC
+	 /KQcKzb3Xtaao55kDkmbFXb61ajamNteNFxCGqJvWepRITwYk9SsWzDXjpsaQi7iMRcGu
+	 GpVvI4+j0mAZZm0/cdqw3tpufRGgCztPmYK/kqeowCquEodHfi8g9MpfCSFNpisnhuQ==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 0E77A1F000C7;
+	by smtp.kernel.org (Postfix) with ESMTPS id 2736E1F000C8;
 	Wed, 18 Nov 2026 10:52:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1794999147;
-	bh=QlGcfLij8av6qp98RVpWyQQewfFODrr+GkYipOKWbyE=;
+	bh=xrAEk6/4WGNXDqt6SdPWcxivaPvWRQHVDKqiBuuVVeE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=Vxe1pz0A5n7uiLflHzSUepJFn7J1YYiXCOgRZAQt0TzEQQ1scrHSdz91vPJhZSopm
-	 BPBhsK8kD+fpt5EWXtpE44d9nG9TzhmVb6hfaH7SfYrOh6eTBBIAUz9K+ueH0U+l3e
-	 /WeG6qdy2Ch2pt14V2xOHWDtDqv5s0wrFBCR9A/l5Bnn8zPVRcxwdD+eDhYC+Lk7Jr
-	 lhQMocB/kN2zOey0oCBDLLOi3VVRYo5OHdTuK3ZghdwGAUlAv80cBkjo+uyBU1hB9b
-	 mRkc1rBalWBF9cjVA9h1o2EVgQ1AZvQrccfSLRL7HwfR9i1yhNkxls57JIe8aGVoDY
-	 QYVwoqA1ZY0UQ==
+	b=FLmSuKsn0a8nrabKv3rbcj8Q7aPeYDxgKLK4EBmfDubuBX3Ym6U5yevh55ttN4/49
+	 WO4rLPEprjk7HPS1Dga5CaaIk8Ag7E0SQHyB4e2XSy/GBRtuyVI6jKHhORQbsMvhJ4
+	 QSuXzEksAZ8rGlwlgZjCyoYZzuU9u3XEo9T5P+ArPukkedHfw1uEbW4pfpvq1J/Duj
+	 qsawcGSbje4wxV2a47M9u66T3fvs+kumYQ1u0JmGUdgClnD8qavsdJORXWHvn3Wdlj
+	 /6X3+Cmv5aJrFl0hCvRwhmkfJICZgBT3yUyAfZSckZ6KXhmemk5uy9ZZ5MF3Sil/Xa
+	 4h96mY/HElIhw==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 901834AD18;
+	by lkml.kernel.org (Postfix) with ESMTP id A75664AD1C;
 	Wed, 18 Nov 2026 10:52:25 +0000 (UTC)
 From: Rajan Yadav via B4 Relay <devnull+rajanyadav0307.gmail.com@kernel.org>
-Date: Wed, 18 Nov 2026 04:52:26 -0600
-Subject: [PATCH v2 3/6] cpufreq: sun50i: Add A133 speed grade detection
+Date: Wed, 18 Nov 2026 04:52:27 -0600
+Subject: [PATCH v2 4/6] arm64: dts: allwinner: a100: Add A133 speed grade
+ efuse cells
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261118-a133-series-v2-3-8bcec9c9aadf@gmail.com>
+Message-Id: <20261118-a133-series-v2-4-8bcec9c9aadf@gmail.com>
 References: <20261118-a133-series-v2-0-8bcec9c9aadf@gmail.com>
 In-Reply-To: <20261118-a133-series-v2-0-8bcec9c9aadf@gmail.com>
 To: Yangtao Li <tiny.windzz@gmail.com>, Viresh Kumar <vireshk@kernel.org>, 
@@ -102,11 +103,11 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  Paul Kocialkowski <paulk@sys-base.io>, 
  Rajan Yadav <rajanyadav0307@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794999144; l=10249;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794999144; l=1665;
  i=rajanyadav0307@gmail.com; s=20261103; h=from:subject:message-id;
- bh=6Dawq9ZI2QbNXLM3j+DGg6oB3gIXo6g8Z6P1BQubvD0=;
- b=mgQyEEDCU7go+fJVJSj/x5WI5X9C9iIUqV0SqsXRIcIZbbO9zqQ4v8mBs8P+W8whAI7ukoffL
- kPGYD4rOlCxCFv6OmLLWlAmSpTF+MKdoEioPyq1zPq6sLDuOnr6zaRO
+ bh=QDA+B3vGjPJfqlQByEbIUmG8/8wRVGARGoza4DrglDc=;
+ b=hKLNDqmnQeDuJKQ7lx/vsNw7nGNI8PDmyb6Eo9Oy/s3ocVt9hvtNz/XziotlRlyPxC7g9ztRC
+ F8W7C4Be9nyCsMkCNgx/hxLqbVshw8HalMmPmMOMJ7gBbd1MQThH8UG
 X-Developer-Key: i=rajanyadav0307@gmail.com; a=ed25519;
  pk=4ZPeiP5qrv2b44q/Obxi2koUS70Q6npbttJnpUoTlgg=
 X-Endpoint-Received: by B4 Relay for rajanyadav0307@gmail.com/20261103 with
@@ -117,288 +118,55 @@ Content-Transfer-Encoding: 7bit
 
 From: Rajan Yadav <rajanyadav0307@gmail.com>
 
-The A133 is handled as an A100 today: only the CPU bin field at SID
-offset 0x1c is read, which gives one of three A100 voltage tables.
-The vendor BSP for this family (sun50iw10) selects one of 11 grades
-from the chip marking ID, the CPU bin, the ICPU current, the PCPU
-field, a bin extension bit and the die revision:
+The A133 speed grade selection also needs the chip marking ID (SID
+offset 0x00), the word at 0x20, whose low 12 bits the vendor BSP calls
+PCPU, and the word at 0x28 with the bin extension bit. Add nvmem cells
+for them at the offsets the BSP uses. The H616 reads the same kind of
+marking ID at offset 0x00 as its speed grade.
 
-- "high speed" marking IDs use the b0-b3 grades, which have 1416 and
-  1512 MHz instead of 1464 MHz
-- the other parts use a0-a6
-- die revisions 0, 3 and 4 ("A-E") use different grades from all other
-  revisions ("F and later")
-- revision A-E normal parts with ICPU and PCPU within fixed ranges use
-  a0
+The cells are used by the A133 OPP table added later in this series;
+the A100 OPP table keeps using only the existing 0x1c cell.
 
-On a KickPi K5C (A133, marking 0x1400, bin 0b010, revision 6), the BSP
-selects b2: 408-1512 MHz with 1.10 V at 1512 MHz. Mainline selects the
-A100 speed1 table instead. So the chip runs 40 mV below the vendor
-voltage at 408-816 MHz and 40 mV above it at 1200 and 1320 MHz, and its
-top OPP is 1464 MHz at 1.18 V instead of 1512 MHz at 1.10 V. Grades
-with 1416 and 1512 MHz cannot be described at all.
+Claude Code (Anthropic) drafted this change and its message from the
+vendor BSP device tree; I reviewed it and checked it with dtbs_check.
 
-Add the vendor selection for the new A133 OPP compatible. a5 and a6
-share their voltages, so the 11 grades map to speed0-9:
-
-  index:  0  1  2  3  4  5      6  7  8  9
-  vendor: a0 a1 a2 a3 a4 a5/a6  b0 b1 b2 b3
-
-The die revision comes from SMCCC SOC_ID, as for the H616. On the A133
-this needs TF-A with the sun50i_a133 platform, added in commit
-a584e8632a7a ("feat(allwinner): add support for allwinner A133 SoC")
-and not yet in a release; it reads the same SYSCON register as the
-BSP. Neither the A-E nor the F grades always have the lower voltage
-(for the same bin, A-E is mostly lower or equal up to 816 MHz and higher
-or equal from 1008 MHz). So without SOC_ID the driver keeps the A100
-selection, as before, adds the BSP's a0 rule for normal parts, which
-never lowers a voltage, and warns. Revision F parts then still run
-20-40 mV below the vendor voltage at 408 and 600 MHz, some of them also
-at 816 MHz.
-
-The error message for a missing named cell now names the cell.
-
-Testing:
-- the function, built on the host from the driver source with stubbed
-  cells and revision, matches a transcription of the BSP rules for
-  120,960 combinations of boundary and typical field values, and gives
-  the A100 selection with the BSP's a0 rule when the revision is
-  unknown
-- on the K5C it selects b2; the vdd-cpu regulator reads 0.94 V at
-  408 MHz, 0.96 V at 1008 MHz, 1.06 V at 1416 MHz and 1.10 V at
-  1512 MHz, as in the BSP table
-- one hour of full load held 1512 MHz without throttling (max 79 C,
-  with the 90 C trip from the A100 thermal trips patch)
-- with the revision forced to unknown it warns and selects speed1
-- the same kernel with the A100 OPP table gives the same OPPs as
-  before
-- a missing cell fails the probe with an error naming the cell, and
-  the system keeps running without cpufreq
-
-Claude Code (Anthropic) drafted this patch and its message from the
-selection rules in the vendor BSP cpufreq driver (no code copied) and
-from my test results; I reviewed and tested it.
-
-Suggested-by: Andre Przywara <andre.przywara@arm.com>
 Reviewed-by: Alexander Sverdlin <alex@sverdlin.org>
 Tested-by: Alexander Sverdlin <alex@sverdlin.org>
 Signed-off-by: Rajan Yadav <rajanyadav0307@gmail.com>
 ---
- drivers/cpufreq/sun50i-cpufreq-nvmem.c | 162 ++++++++++++++++++++++++++++++++-
- 1 file changed, 161 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-index 34c0897c22c..6bccea2887b 100644
---- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-@@ -27,8 +27,10 @@
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
+index ba6020989ce..d1164f3b549 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
+@@ -176,6 +176,10 @@ efuse@3006000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
  
- static struct platform_device *cpufreq_dt_pdev, *sun50i_cpufreq_pdev;
++			chip_marking: chip-marking@0 {
++				reg = <0x0 0x2>;
++			};
++
+ 			ths_calibration: calib@14 {
+ 				reg = <0x14 8>;
+ 			};
+@@ -183,6 +187,14 @@ ths_calibration: calib@14 {
+ 			cpu_speed_grade: cpu-speed-grade@1c {
+ 				reg = <0x1c 0x2>;
+ 			};
++
++			cpu_pcpu: cpu-pcpu@20 {
++				reg = <0x20 0x2>;
++			};
++
++			cpu_bin_ext: cpu-bin-ext@28 {
++				reg = <0x28 0x4>;
++			};
+ 		};
  
-+/* Exactly one of the two callbacks is set */
- struct sunxi_cpufreq_data {
- 	u32 (*efuse_xlate)(u32 speedbin);
-+	int (*get_speed)(struct device *cpu_dev, struct device_node *np);
- };
- 
- static int sun50i_cpufreq_read_cell(struct device *cpu_dev,
-@@ -41,9 +43,14 @@ static int sun50i_cpufreq_read_cell(struct device *cpu_dev,
- 	__le32 tmp = 0;
- 
- 	cell = of_nvmem_cell_get(np, id);
--	if (IS_ERR(cell))
-+	if (IS_ERR(cell)) {
-+		if (id)
-+			return dev_err_probe(cpu_dev, PTR_ERR(cell),
-+					     "Could not get nvmem cell %s\n",
-+					     id);
- 		return dev_err_probe(cpu_dev, PTR_ERR(cell),
- 				     "Could not get nvmem cell\n");
-+	}
- 
- 	buf = nvmem_cell_read(cell, &len);
- 	nvmem_cell_put(cell);
-@@ -152,6 +159,149 @@ static u32 sun50i_h616_efuse_xlate(u32 speedbin)
- 	return value;
- }
- 
-+/*
-+ * A133 speed grades, as selected by the vendor BSP (sun50iw10): a0-a6 for
-+ * normal parts and b0-b3 for "high speed" parts. a5 and a6 have the same
-+ * OPPs and voltages and share an index. The index is the N of
-+ * opp-microvolt-speedN and the bit in opp-supported-hw. a0-a2 have the
-+ * same voltages as the A100 speed0-speed2.
-+ */
-+enum sun50i_a133_grade {
-+	SUN50I_A133_GRADE_A0,
-+	SUN50I_A133_GRADE_A1,
-+	SUN50I_A133_GRADE_A2,
-+	SUN50I_A133_GRADE_A3,
-+	SUN50I_A133_GRADE_A4,
-+	SUN50I_A133_GRADE_A5,		/* also a6 */
-+	SUN50I_A133_GRADE_B0,
-+	SUN50I_A133_GRADE_B1,
-+	SUN50I_A133_GRADE_B2,
-+	SUN50I_A133_GRADE_B3,
-+};
-+
-+#define SUN50I_A133_MARKING_MASK	0xffff
-+#define SUN50I_A133_BIN_SHIFT		12
-+#define SUN50I_A133_BIN_MASK		0xf
-+#define SUN50I_A133_ICPU_MASK		0xfff
-+#define SUN50I_A133_PCPU_MASK		0xfff
-+#define SUN50I_A133_BIN_EXT		BIT(31)
-+#define SUN50I_A133_REV_MASK		0x7
-+
-+/*
-+ * The BSP runs revision A-E normal parts at a0 when both the ICPU current
-+ * (in 0.1 mA) and the PCPU field are in these ranges (upper bounds
-+ * exclusive).
-+ */
-+#define SUN50I_A133_ICPU_A0_MIN		84
-+#define SUN50I_A133_ICPU_A0_MAX		160
-+#define SUN50I_A133_PCPU_A0_MIN		2900
-+#define SUN50I_A133_PCPU_A0_MAX		3100
-+
-+static bool sun50i_a133_force_a0(u32 icpu, u32 pcpu)
-+{
-+	return icpu >= SUN50I_A133_ICPU_A0_MIN &&
-+	       icpu < SUN50I_A133_ICPU_A0_MAX &&
-+	       pcpu >= SUN50I_A133_PCPU_A0_MIN &&
-+	       pcpu < SUN50I_A133_PCPU_A0_MAX;
-+}
-+
-+/* Marking IDs that the BSP treats as "high speed" parts */
-+static bool sun50i_a133_is_high_speed(u32 marking)
-+{
-+	switch (marking) {
-+	case 0x0200:
-+	case 0x0600:
-+	case 0x0620:
-+	case 0x0640:
-+	case 0x0800:
-+	case 0x1000:
-+	case 0x1400:
-+	case 0x2000:
-+	case 0x4000:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static int sun50i_a133_get_speed(struct device *cpu_dev,
-+				 struct device_node *np)
-+{
-+	u32 marking, bin_cell, pcpu, bin_ext, bin, icpu;
-+	enum sun50i_a133_grade grade;
-+	int ver_bits, ver;
-+	bool before_f;
-+	int ret;
-+
-+	ret = sun50i_cpufreq_read_cell(cpu_dev, np, "marking", &marking);
-+	if (ret)
-+		return ret;
-+	ret = sun50i_cpufreq_read_cell(cpu_dev, np, "bin", &bin_cell);
-+	if (ret)
-+		return ret;
-+	ret = sun50i_cpufreq_read_cell(cpu_dev, np, "pcpu", &pcpu);
-+	if (ret)
-+		return ret;
-+	ret = sun50i_cpufreq_read_cell(cpu_dev, np, "bin-ext", &bin_ext);
-+	if (ret)
-+		return ret;
-+
-+	marking &= SUN50I_A133_MARKING_MASK;
-+	bin = (bin_cell >> SUN50I_A133_BIN_SHIFT) & SUN50I_A133_BIN_MASK;
-+	icpu = bin_cell & SUN50I_A133_ICPU_MASK;
-+	pcpu &= SUN50I_A133_PCPU_MASK;
-+
-+	/*
-+	 * Neither the revision A-E nor the revision F grades always have the
-+	 * lower voltage, so there is no safe guess without the revision.
-+	 * Keep the A100 selection then (a0-a2), which these SoCs used so far,
-+	 * plus the BSP's a0 rule for normal parts, which never lowers a
-+	 * voltage. Revision F parts then still run 20-40 mV below the vendor
-+	 * voltage at 408 and 600 MHz, some of them also at 816 MHz, and "high
-+	 * speed" parts get 1464 MHz instead of 1416 and 1512 MHz.
-+	 */
-+	ver_bits = get_soc_id_revision();
-+	if (ver_bits < 0) {
-+		dev_warn(cpu_dev,
-+			 "SMCCC SOC_ID not available, using speed grades a0-a2\n");
-+		if (!sun50i_a133_is_high_speed(marking) &&
-+		    sun50i_a133_force_a0(icpu, pcpu))
-+			return SUN50I_A133_GRADE_A0;
-+		return sun50i_a100_efuse_xlate(bin_cell);
-+	}
-+
-+	/*
-+	 * The BSP treats revisions 0, 3 and 4 as "A-E" and all others as
-+	 * "F and later".
-+	 */
-+	ver = ver_bits & SUN50I_A133_REV_MASK;
-+	before_f = ver == 0 || ver == 3 || ver == 4;
-+
-+	if (sun50i_a133_is_high_speed(marking)) {
-+		if (bin == 0b100)
-+			grade = before_f ? SUN50I_A133_GRADE_B1 :
-+					   SUN50I_A133_GRADE_B3;
-+		else
-+			grade = before_f ? SUN50I_A133_GRADE_B0 :
-+					   SUN50I_A133_GRADE_B2;
-+	} else if (!before_f && (bin_ext & SUN50I_A133_BIN_EXT)) {
-+		grade = SUN50I_A133_GRADE_A5;		/* a6 */
-+	} else if (before_f && sun50i_a133_force_a0(icpu, pcpu)) {
-+		grade = SUN50I_A133_GRADE_A0;
-+	} else if (bin == 0b100) {
-+		grade = before_f ? SUN50I_A133_GRADE_A2 : SUN50I_A133_GRADE_A5;
-+	} else if (bin == 0b010) {
-+		grade = before_f ? SUN50I_A133_GRADE_A1 : SUN50I_A133_GRADE_A4;
-+	} else {
-+		grade = before_f ? SUN50I_A133_GRADE_A0 : SUN50I_A133_GRADE_A3;
-+	}
-+
-+	dev_dbg(cpu_dev, "marking 0x%04x, bin %u, revision %d: speed grade %d\n",
-+		marking, bin, ver, grade);
-+
-+	return grade;
-+}
-+
- static struct sunxi_cpufreq_data sun50i_h6_cpufreq_data = {
- 	.efuse_xlate = sun50i_h6_efuse_xlate,
- };
-@@ -160,6 +310,10 @@ static struct sunxi_cpufreq_data sun50i_a100_cpufreq_data = {
- 	.efuse_xlate = sun50i_a100_efuse_xlate,
- };
- 
-+static struct sunxi_cpufreq_data sun50i_a133_cpufreq_data = {
-+	.get_speed = sun50i_a133_get_speed,
-+};
-+
- static struct sunxi_cpufreq_data sun50i_h616_cpufreq_data = {
- 	.efuse_xlate = sun50i_h616_efuse_xlate,
- };
-@@ -171,6 +325,9 @@ static const struct of_device_id cpu_opp_match_list[] = {
- 	{ .compatible = "allwinner,sun50i-a100-operating-points",
- 	  .data = &sun50i_a100_cpufreq_data,
- 	},
-+	{ .compatible = "allwinner,sun50i-a133-operating-points",
-+	  .data = &sun50i_a133_cpufreq_data,
-+	},
- 	{ .compatible = "allwinner,sun50i-h616-operating-points",
- 	  .data = &sun50i_h616_cpufreq_data,
- 	},
-@@ -239,6 +396,9 @@ static int sun50i_cpufreq_get_efuse(void)
- 
- 	opp_data = match->data;
- 
-+	if (opp_data->get_speed)
-+		return opp_data->get_speed(cpu_dev, np);
-+
- 	ret = sun50i_cpufreq_read_cell(cpu_dev, np, NULL, &speedbin);
- 	if (ret)
- 		return ret;
+ 		watchdog@30090a0 {
 
 -- 
 2.34.1
