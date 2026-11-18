@@ -1,112 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794983128;
-	b=VLUv5kpCLJAqgoKyn4EoHE586FLTlBOCEvzNkC3NkoNOQaUTsj3oL5YhB5r+2NRCAdQI
-	 0o/35ghvLdlXqWDbc78QQy2V4v8uQAzCvLRfDXZ4OpW4fX0kt/YPZyjG+mxkAjzRlOcOS
-	 MFEEZhHygHPthdx0PUvuNsC0jyd/qZkCuMlDRN4qffzzKWeO9b5E+4WcIfv2MdkhzKp2M
-	 NdFmPRqIY8DKV2OtAF9Hr8Y2p6WOjr2SSA1GDuzvd6Jqc4XY2T9Ky7OnVsgE4ENrWxLFU
-	 Syt2bDcize8EnrFs5vc7ODqnddnU9KN6Kd9hI/aJrMyYp0Zd4rruQzNxk48+tYpshMA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794983128;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=vHktRanl2tt0UlSkckJQ6mb0uteRAyXN7CZHm6pyMuY=;
-	b=Mv9j9u1mUYSkGYzw096C8V6duq4ay5sPFR4JNs3SE+RX2zqC/EQey7dwbdvr/AY24yEy
-	 5UHQULZb55dxBDOFvGwJkIVi76R1BkCemC6cfLDuGI6wRQkJRnRceibkkPjCHLDH0PKqy
-	 Ee/cKBqu69D6WY3NsOFn19+YIKfgPYszxo2zjmykKgtmAJ1Cw2NFs0eb3vgA8HH4TpIH/
-	 BIQ3nhkRdFre9bUcocGNVYyTtkw1iq+QsG6QowKTWRyvYJcnXHDx50b3H8IXOY+618m4Z
-	 vVKMAJhqUqOAUh/DdYNZuLgphj+vtb2Amh01AOrzTdOpmppaLG/HuFTjhIIXEprdAqQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AQTOwXO7;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=LMpNOTIJ;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.51
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794984877;
+	b=TC4ddS4GEDj0stqKSuRI58pZv+MB1z2VTyO8U06QklFyOdKq5DA/1QCbm266Wz7IN0Y2
+	 7eDVRN3yEUDW369zQ/6vdOCMipcqWAHgB2QiCYLtH5w7X22nRnt8w+cz2Ve0M3tFZLzkB
+	 klfqlAzg8kpL/OuGgZhygVBhsqNahlzrGRCn9yGNSpOBkqvdo160GyyD+AeBhHn1YfTKd
+	 8CAOGKwpT4Porta46TUg7PBSh02q902YNHoyvrg5xtmESUOTdV1YdB7WijyX3HJbPVNHu
+	 FN2MZlZmPCMhlgVvVmxElCYflUHbLAs35FuYhmmIbAyw0b4fWIQMxnKJS+gaLfdVOBA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794984877;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Content-Type;
+	bh=0v55DjIlhgGgzFGL2Aj+I5ed/9R8VGys7w/8Zak98m0=;
+	b=KKfxrW2WFiRWB6Ueyq3inV5QyVDFndJSeWu0oamiDtDuNv9IYvTbJtejG0SGcOeJqFq8
+	 MXCHqu+14bv4xlKEUSXb+lobxif+2n5zeXhsFls8AcPMjFlgEmCwYABDl5729lTi12ry3
+	 lCljWaGLWoNhZIVP9laZLRmoPf5+Yc5TO8AMRDqZnevxzRapnjOoBTfFEVWTY0R5ov0ax
+	 6F677kz5oP+cYy1Gyky1yhJPFz6fT5oiwaq9QbfaBh0SGg6vxAmq4pmDNmYMVScd5JAfY
+	 kfyrd/jY6Ybuy6U34mQWYg+INkDdjOflANkBtVwQJoA0BPcj1a1E7YJHJPuqhoYkoBQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=X70F+gsx;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.51
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72093606A31C
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 06:25:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 72093606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BE2F606A325
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 06:54:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4BE2F606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AQTOwXO7;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=LMpNOTIJ
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AI2V1th2106297
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 06:25:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	vHktRanl2tt0UlSkckJQ6mb0uteRAyXN7CZHm6pyMuY=; b=AQTOwXO7FiQkVjmD
-	5axA+ItGGGgIE4xstftS8mxDgz/nA64w2UWB3ElFZwoFM0QdQgtjodwMBGP6UJvO
-	4d41JnqG7o1DsQOOX+LdW8sOzbiYnT0bwtNi/UocGxiL4Z/ZdQKkjrV6KVErVmgC
-	UCWkl0FTecYv7ng+9YVVUMM0d8dy8yIYmWwbfCf1B9QXZeAG0HfOvfzO3HIL48Aq
-	oDmYpsMQSGhtiQchuoyxHCEbDeDvHSYbqKqdkEe/l2nGdeEbJtzwA95Lzpp5VMln
-	GFosUPSzA2weirAV2hVK5q/vVU91f0Mt4gG7v9w4xXfylALiD1p1gcgbZl0Vtk0w
-	VF4Hrw==
-Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j0yv8sh06-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 06:25:26 +0000 (GMT)
-Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cddc4bde4adso417603a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 22:25:25 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=X70F+gsx
+Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-6b88bc47e23so673547a12.2
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2026 22:54:36 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794984875; cv=none;
+        d=google.com; s=arc-20260327;
+        b=gALYaI7NPKEjyRNNX2RnIeJxa2jqF67cnuzy58Mw1/DzpaZdly6huFQqkjB/pW5Ir8
+         KivF3PHFNqe3S4XipitB8VTc+PXWLqnRRiQkhD2rUYwwWSgsnlt8XHYv3f4Xt1+qycVM
+         zPNmKxULDu3/GUs52BhxHxQcfHWbaY5ljMOJpgqZUx347DTd+aN6FRX8+aAG7/GxiZNb
+         jp92s0PiiFg3nC9nO7wXwCQegUYVi2aUE5ylCQ42evDOLftJm+XoN2ALxWsxIdA0z5DV
+         SjHS/oT7E5d/epXA5YRvVzRM7LV7peG7CutQchvAUxrW2IC5bfFMNh5CXFWfrF6EhAKm
+         n1gg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=0v55DjIlhgGgzFGL2Aj+I5ed/9R8VGys7w/8Zak98m0=;
+        fh=7JkCEvW8cgNuPotM8jhoAH8u+dIW5vIrgv1s9DxcYjw=;
+        b=hvaH4L0oxRMgt3X5a0T/0jfYhrOifaN+s6V8IXJZaWciLFSr+JRkdW6b0vLIbpKqUf
+         fNTcbJFZ4EkOJQtRqU6sdtZYeaGI+5ku8X+ZG37/PqQua1bVdX6fR1izn6e+aLGy1Ohd
+         9mHNSkkWt3XHaa5F6tQJOAZJC3DV8dRQNs8As3+973FKwvMJqW7h117yoTX8XxP0TUsW
+         UPQFW6LvRTa3UYOMTbWbOJhInCnBEmEU+EzKRtVkLJFdHlRbtmJt/DA7XPQSTWHXb3L/
+         FHvcyiw84H0BVqc+lyTetHnoS+t3U285fx3kuKAf6ai62dV+cJlrgkTK67JrCGzS5j9C
+         D3pg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1794983125; x=1795587925; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20260707; t=1794984875; x=1795589675; darn=vger.kernel.org;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=vHktRanl2tt0UlSkckJQ6mb0uteRAyXN7CZHm6pyMuY=;
-        b=LMpNOTIJgeTocO/gTNrWM/6r5/1SM/RkoepX4xDrhAO2NJs/JIuhx63Nl2dAJWvyHS
-         oNjcQISi+GewZ6hooku/012DXHEd5A2xHIARgAwB60d6ILQLPgpGu9xNauLW/NwTovL3
-         wU0Y3Rc6d5exwG7rZSO5W3lrk3E7RSQ8NSfy+IvfitZ36LVb1r0d5ds1fLzn9DxAf96U
-         SIb02ftY9bo/pxJdZYYNjxDaiZl3jucu+735VaQSTnEP4CAUfY4KEeeDyIglvZsZOqXu
-         EFcrOO60gL7CviHfc5gshEwCW93THvO/d3B4FVrnvBDtGjczNuuIHRZDp+SeLspQNRS/
-         VETA==
+        bh=0v55DjIlhgGgzFGL2Aj+I5ed/9R8VGys7w/8Zak98m0=;
+        b=X70F+gsxS6/RJth6H/Phnbs0QWcvpbFseI7hV0EltfxN2qWJksYKW9pZJJVQ9u8/38
+         vGd+fEf50/58DC5Uwy2l+raoZZOEjS9ZH6/LZMZ+9c1mRLF2wq0Xp5JNx4UCa3mSq8EN
+         gPbnqd7IlXoblejv4l/X2tUUY9vOfFUFNswwCcBMYw1/uT3Bn0awEKZJhkIJaWyDYss7
+         2WokLBRwkYBnLYEW1QzbRr92uj8ATSu5fvpaz2CLP22l2Xru8l55OoP4Kr/yLRcMf2N8
+         69v34dQqMmSozxdiptuMey2RdNsP7HJool00F2Ql5WHhkAB5RKsrqc229CgrWYZEDUYd
+         w9NQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794983125; x=1795587925;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20260707; t=1794984875; x=1795589675;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=vHktRanl2tt0UlSkckJQ6mb0uteRAyXN7CZHm6pyMuY=;
-        b=LZGHFX5QCWDzCAnyaf9yj6UjHra1Tpc+b4kU/lJFGd8JrTNR8RJOEC6Cvh1MylccEu
-         97N6Rs5qtUDpH5UQk8OIF3yopwna/I590tfZrabftn/WMTIyPBF56riGquSVG8UwlXgS
-         LUNnpSGle0DvJak2Cr4WK5/XDIAeid8v86yc2CdSAddhL3p/8pyX7botiWSB9/Zc514+
-         3nFh9SOjihyJlU4dJsYl0l/ES1QYJAp4gStcHcL/ewOiB0NGqKk1GTWkbSWpzlOll/Aq
-         TgI/uXbPJLIO+49pgPQsLh+rfLSfb/S468S8Rdq3Ld7ArOh5wLtcfa1haxUH67ZZ8GIt
-         ErUw==
-X-Forwarded-Encrypted: i=1; AL+hErF9gVSaaAX8DW0EajJFOlETlG9Dn1vF1TVVvssP2estdg6q12SEqFf9T9zYHZlXsxDmR8OBtr1KMw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/nrTcndgyRb7mKgUBuo5CVNfAGe+gQYHsFkVoydmGdBHT9Na2j
-	RW8m4A34hLtsOgemF8ikekKBjXhsTBsu4uxMEi6VWPutycFrIn9oM5EwjYr2Z4S/36v4jlPqV8F
-	xrbAcS9c3uufqtc/0iKc+6Q3qPQg3SHcxxBhXRkp+AiL3OClqqNCNoq5RAJZkww==
-X-Gm-Gg: AZFdTZegYmRQzVs6Eq92ZnvGOus671NsMiCK3wLC+Jw7ImKSZ1811vK5VtgOzRdUcly
-	x5FsGqr8BCkkQhGAT+SFMperfKzrihUyv2ZA0gm6Wyu9Q09BibWC+54ul5OLuoE+woB4Kw6JUno
-	Ie+WP+E4lwEA129uI7Px778PDXXhRv3oDI/NO4k5kMLlSyESQkny1pT8aIJ3Knk7gBhk+1h2hWp
-	0yFakqbH6A++eMk5su9PyKsXddq5be+YCP60z5X6Aa7vbvtbM0xbqYZneneU5VE3EyfWIjIAC1R
-	I7DHnGur6bdKczKj/Tu308Ht+36rCBocYGwICei4hp6yAK90MsMN3WEJhf3HB4ntFZnksQiMpr+
-	uZxf2VnqvdKv9wq+dEQQVLqFCkr/S+c0p2KL3o2VXvGzqI7MoGPV5Kv/vdwKhZrOBAzTrMJcXNr
-	Ox7g==
-X-Received: by 2002:a17:903:90f:b0:2db:3b35:1ac6 with SMTP id d9443c01a7336-2eff7100c5amr16624365ad.5.1794983125074;
-        Tue, 17 Nov 2026 22:25:25 -0800 (PST)
-X-Received: by 2002:a17:903:90f:b0:2db:3b35:1ac6 with SMTP id d9443c01a7336-2eff7100c5amr16624175ad.5.1794983124581;
-        Tue, 17 Nov 2026 22:25:24 -0800 (PST)
-Received: from [10.218.7.34] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2eff61841aasm7605435ad.34.2026.11.17.22.25.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 17 Nov 2026 22:25:24 -0800 (PST)
-Message-ID: <e2967948-59d9-4937-8c21-39bc8b48b195@oss.qualcomm.com>
-Date: Wed, 18 Nov 2026 11:55:19 +0530
+        bh=0v55DjIlhgGgzFGL2Aj+I5ed/9R8VGys7w/8Zak98m0=;
+        b=bfK4IIcgiubdymLcm+aJoQnCRpndjkXCxwCJ1e8l5F2GwfFGPpRmHu1f0FvoUx/hZa
+         jr6BccAAv/J+lHqTeG6rd+VLYPcaB53786K0U0ZK+4H/3QlJisQo1/cINzVuHc58GhnO
+         9uiLvtUgABNdGJe8htmSxZghwqmzaOoBbeEpVaaSfbO5DHBDS8fvfPx1c0RjSoUtx1DJ
+         KA1kMzWySdVXjWvyD/RMAc8nQGkeG63YlBOELo+1rDy+RDoL3TG4EhCJlzQlN+YUmSts
+         sl00gMvJ7Cp0AMpeb/k80N0GlSvu1G80QxX+6X4P1bocTWYs+qM63PPWpFmYTFwby2Xu
+         ia9w==
+X-Forwarded-Encrypted: i=1; AL+hErE6dWBATp2ge+J0oJGpV9RO+cM8J16NX/ACVA/KnbAAd6/KjXuF5zgjvmmUJex9ScGl+jnYsDFXFA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9ukMDayyRcyuZLnFUOT54LYOyQqzlV1sX2XnuiNgbk5/2HZSwI
+	anK/LidOMgB3imxhpD48AX7SR+aBECauD9SUKqlSz4zE6SGn1Vb+VQMxFhTz7zy7YcQNKYKjhp0
+	yVZgRnpCRZK7RQNG33igi1v4Qab2YZQw=
+X-Gm-Gg: AYBFou0uLMF0FnipyuH8XENnOSsvBFud/6l7VYbware03KeBPXpRhaMnbVTQIpxIHmt
+	6G7g5DqSSg36hM440CCVg+zp2v/RNk78/8/aFQlSTDXtIjZoman163d5IwmLAFk2RTP3+do9Jan
+	SV/2tgsbjnYca/n/uPyfMNhhDfdzRw2DzaV4VgKunssbZFthsDoVr4dF9ApG3i8iqHVXigv6/L2
+	qNCyt+9RzCshpVrx3lkdWLChp776SWIhVGGo/M/4FanQF6uCsdOWE8UC/Rblm8gccD+BOindAm4
+	3FyhyQVSDjG6lnPkINuZ5zdd4ZhSk2zcmjZCLu4SC5ZwKPz56QE+QDJtzULlsBUQ3wIeVlculUk
+	4CdPBtqa1zwasmd4kHEE+9t6XPROf4bAr1iQyVw5EGhBjnNyWcJXjwpHm
+X-Received: by 2002:a05:6402:501c:b0:6b7:d1a4:fe1b with SMTP id
+ 4fb4d7f45d1cf-6b88810c5f5mr1112459a12.43.1794984874478; Tue, 17 Nov 2026
+ 22:54:34 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,125 +103,303 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] thermal: qcom-spmi-adc-tm5-gen3: move hardirq actions
- into threaded handler
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kamal.wadhwa@oss.qualcomm.com,
-        Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-References: <20261113-adctm5_gen3_hardirq_removal-v2-1-a0c9c4800941@oss.qualcomm.com>
- <avcpU3P1jw8NESMu@ashevche-desk.local>
-Content-Language: en-US
-From: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-In-Reply-To: <avcpU3P1jw8NESMu@ashevche-desk.local>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: -ur3It4XSHAkWRCmqCmupQIGmwt5RJq0
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDAyNSBTYWx0ZWRfXzw/uE3mKZAN+
- 3d61IyAP7vj3VdMV3/J8TiwUAMBblEFmCLTqP3kh7PqpWskuMdn7350574sDLPUBebew3GrIgzV
- ZYjR+11nQMzRipmgDnA1cTz2kCBpMMU=
-X-Proofpoint-GUID: -ur3It4XSHAkWRCmqCmupQIGmwt5RJq0
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDAyNSBTYWx0ZWRfXzyse8Z6QgLvt
- NdHv5Oa+VagBW752nvx+yDpliA/aTfI67/5YG/HB5N4LgPn+G6oI7KoO5GHmZTFphGMoACBl4pF
- 45NBnPcmlp83HTSZf/FC1W00MqfIlwSSxjhfxuw6G9oO/ZWC/bCKuG9D6B19E8XgiltiJ2N1RA3
- cwePIkShbMyVAu5MV7QkGLrFmkpqSBMzsVM0JxvuXT6ZLMX5x20llkPJD0n+zk1BhK4nzGMW04L
- 1ZBDEKrVQ5bHvGyH9+SSIf/nWp19BHMyGyCM9S/Cse779CMpeA3Hg04npvaN3yTrd+zjFnqoHPA
- 8NN92BMr4DWhz/WWNQ/7yIPm11o5XjH2wvIO1j2MpNbs3nO2wiFL6nre+lujTDCldbq4Yu5kKk/
- P8klcMYks3cWpUnNrQU+EtR+yxL8yt09YfUBlrZFk8+i2oWNhvIUpgzHz98p1AZpapoienw4g8l
- aMGRc4eaUPskvLTLu0g==
-X-Authority-Analysis: v=2.4 cv=NNVAaE6g c=1 sm=1 tr=0 ts=6afd44d6 cx=c_pps
- a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=niP4JTYLpQ8y5GhiJJEA:9 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
- a=x9snwWr2DeNwDh03kgHS:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-18_01,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 malwarescore=0 phishscore=0 adultscore=0
- suspectscore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180025
+References: <20261110061429.2036-1-linux.amoon@gmail.com> <20261110061429.2036-2-linux.amoon@gmail.com>
+ <avpN-gFOvTBAMY6G@venus> <CANAwSgT_k35_waHL-+iU93f=k3fjFAPXhk=exRz-XHMm2MqREA@mail.gmail.com>
+ <avvnRkK9agPSdzac@aurel32.net> <CANAwSgSXP1bZVVrX71jfgi1iR9AY4TpM0pk07ke+oeLvcX1fEQ@mail.gmail.com>
+ <avzUjsZzhky4krEV@aurel32.net>
+In-Reply-To: <avzUjsZzhky4krEV@aurel32.net>
+From: Anand Moon <linux.amoon@gmail.com>
+Date: Wed, 18 Nov 2026 12:24:21 +0530
+X-Gm-Features: AclHuK9HKxBMC369hvmbX2XcXZTYgL0-Osg6H7GZAWz1CrH05BbQd5v0LX84zZk
+Message-ID: <CANAwSgRm9dbAtr4J4Gry_kR6xWQTQ+T+EaJ0vGDMpKGUPZxojw@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] power: reset: spacemit-p1: Use atomic I2C
+ transfers for power-off and restart
+To: Anand Moon <linux.amoon@gmail.com>, 
+	Sebastian Reichel <sebastian.reichel@collabora.com>, 
+	Troy Mitchell <troy.mitchell@linux.spacemit.com>, Andi Shyti <andi.shyti@kernel.org>, 
+	Yixun Lan <dlan@kernel.org>, 
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>, 
+	"open list:RISC-V SPACEMIT SoC Support" <linux-riscv@lists.infradead.org>, 
+	"open list:RISC-V SPACEMIT SoC Support" <spacemit@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Andy,
+Hi Aurelien,
 
-On 11/13/2026 8:44 PM, Andy Shevchenko wrote:
-> On Fri, Nov 13, 2026 at 05:23:03PM +0530, Jishnu Prakash wrote:
->> adc_tm5_probe() registers the ADC_TM interrupt with both a primary
->> handler and thread function (adctm5_gen3_isr/adctm5_gen3_isr_thread)
->> with IRQF_ONESHOT. The primary handler calls adc5_gen3_read(), which
->> takes the SPMI regmap's lock (a regular, non-raw spinlock) from hardirq
->> context. With CONFIG_PROVE_LOCKING enabled, this leads to a warning
->> about an attempt to take a lock in an invalid wait context:
->>
->>   swapper/0/0 is trying to lock:
->>   ffff000b67201018
->>   (qcom_spmi_pmic:259:(&spmi_regmap_config)->lock){....}-{3:3}, at:
->>   regmap_lock_spinlock+0x20/0x40
->>   other info that might help us debug this:
->>   context-{2:2}
->>
->>   Call trace:
->>   regmap_lock_spinlock+0x20/0x40
->>   regmap_raw_read+0x88/0x328
->>   regmap_bulk_read+0x10c/0x340
->>   adc5_gen3_read+0x38/0x50 [qcom_spmi_adc5_gen3]
->>   adctm5_gen3_isr+0x90/0x130 [qcom_spmi_adc_tm5_gen3]
->>
->> There is no requirement for any of the work done in the primary handler
->> to run in hardirq context. Drop the primary handler and move all the
->> actions in it to the threaded handler, which removes the invalid wait
->> context warning.
->>
->> Note that both handlers used a local variable to hold the index of the
->> SDAM whose IRQ was triggered ('sdam_num' in the primary handler and
->> 'sdam_index' in the thread function). These are the same value under
->> different names and 'sdam_index' is kept now, since that is the name
->> used for it at other places in the file.
-> 
-> But this is not the point. The point should be semantics of the variable
-> and not frequency of use.
-> 
+Thanks for testing. Your feedback helped me a lot.
 
-OK, I see, the right reason for keeping the name 'sdam_index' instead of
-'sdam_num' is that the variable represents an index instead of a count
-and not simply that 'sdam_index' is the name used for it elsewhere.
+On Wed, 18 Nov 2026 at 03:56, Aurelien Jarno <aurelien@aurel32.net> wrote:
+>
+> Hi Anand,
+>
+> On 2026-11-17 18:04, Anand Moon wrote:
+> > Hi Aurelien,
+> >
+> > On Tue, 17 Nov 2026 at 11:04, Aurelien Jarno <aurelien@aurel32.net> wrote:
+> > >
+> > > Hi Anand,
+> > >
+> > > On 2026-11-16 13:06, Anand Moon wrote:
+> > > > Hi All,
+> > > >
+> > > > On Mon, 16 Nov 2026 at 11:33, Sebastian Reichel
+> > > > <sebastian.reichel@collabora.com> wrote:
+> > > > >
+> > > > > Hi,
+> > > > >
+> > > > > On Tue, Nov 10, 2026 at 11:44:27AM +0530, Anand Moon wrote:
+> > > > > > The SpacemiT P1 power-off and restart handlers use regmap_set_bits()
+> > > > > > to access the PMIC. However, these handlers run in an atomic notifier
+> > > > > > context (specifically within an rcu_read_lock() critical section), while
+> > > > > > the I2C-backed regmap uses a sleepable mutex.
+> > > > > >
+> > > > > > This triggers a "WARNING: suspicious RCU usage" warning due to an illegal
+> > > > > > context switch in the RCU read-side critical section during shutdown on the
+> > > > > > Banana Pi BPI-F3:
+> > > > > >
+> > > > > > [  563.803475] WARNING: suspicious RCU usage
+> > > > > > [  563.807813] 7.3.1-ARCH-RISC-V #1 Not tainted
+> > > > > > [  563.816614] ./include/linux/rcupdate.h:387 Illegal context switch in RCU read-side critical section!
+> > > > > > ...
+> > > > > > [  563.841445] locks held by shutdown/1: 2, last CPU#0:
+> > > > > > [  563.846694]  #0: ffffffff8404fb20 (system_transition_mutex){+.+.}-{4:4}, at: __do_sys_reboot+0x230/0x29e
+> > > > > > [  563.856806]  #1: ffffffff84167860 (rcu_read_lock){....}-{1:3}, at: atomic_notifier_call_chain+0x4a/0x1c2
+> > > > > >
+> > > > > > Replace the regmap operations with atomic I2C transfers to avoid sleeping
+> > > > > > in an atomic context. Preserve unrelated register bits through
+> > > > > > read-modify-write operations and check for atomic I2C support before
+> > > > > > registering the handlers.
+> > > > > >
+> > > > > > Obtain the I2C client from the parent device and verify that the adapter
+> > > > > > supports atomic transfers before registering the handlers.
+> > > > > >
+> > > > > > Tested on the Banana Pi BPI-F3 (SpacemiT K1).
+> > > > > >
+> > > > > > Assisted-by: LLM
+> > > > > > Cc: Troy Mitchell <troy.mitchell@linux.spacemit.com>
+> > > > > > Cc: Aurelien Jarno <aurelien@aurel32.net>
+> > > > > > Fixes: 28124cc0fb8c ("driver: reset: spacemit-p1: add driver for poweroff/reboot")
+> > > > > > Signed-off-by: Anand Moon <linux.amoon@gmail.com>
+> > > > > > ---
+> > > > >
+> > > > > regmap runs i2c_transfer itself and thus also uses the atomic I2C
+> > > > > transfers. The problem here is regmap itself. But instead of moving
+> > > > > away from regmap, the atomic use case should be supported properly
+> > > > > in regmap.
+> > > > >
+> > > >
+> > > > On  RISC-V platform, poweroff and reboot are already handled by OpenSBI
+> > > > through the SBI System Reset (SRST) extension. Linux delegates these
+> > > > operations to firmware using SBI_SRST_RESET_TYPE_SHUTDOWN for poweroff
+> > > > and SBI_SRST_RESET_TYPE_COLD_REBOOT or SBI_SRST_RESET_TYPE_WARM_REBOOT
+> > > > for reboot, depending on the supported reset type.
+> > > >
+> > > > Therefore, there is no need for an additional Linux PMIC poweroff/reboot handler
+> > > > on this platform, as it duplicates functionality already provided by firmware.
+> > > >
+> > > > While supporting atomic operations in regmap may be useful more generally,
+> > > > it is not necessary to address this platform's shutdown and reboot requirements.
+> > > >
+> > > > I tested this on the SpacemiT K1 Banana Pi BPI-F3 after removing this PMIC
+> > > > poweroff/reboot driver.
+> > > >
+> > > > OpenSBI commit which handles this extension
+> > > >
+> > > > d9637d00bf47 ("lib: utils/reset: add SpacemiT P1 PMIC support")
+> > > > b10e18ec854a ("lib: utils/i2c: add minimal SpacemiT I2C driver")
+> > > >
+> > > > Similarly, on the StarFive VisionFive 2, poweroff is handled by
+> > > > OpenSBI through the
+> > > > AXP15060 PMIC, so there is no need to register an additional poweroff
+> > > > handler using
+> > > > devm_register_power_off_handler().
+> > > >
+> > > > OpenSBI commit which handles this extension
+> > > >
+> > > > 568ea49490d9 ("platform: starfive: add PMIC power ops in JH7110
+> > > > visionfive2 board")
+> > > >
+> > > > -----8<----------8<----------8<------
+> > > > diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> > > > index 50df66de24e06..069259f7d7c15 100644
+> > > > --- a/drivers/mfd/axp20x.c
+> > > > +++ b/drivers/mfd/axp20x.c
+> > > > @@ -1458,8 +1458,14 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
+> > > >                 return ret;
+> > > >         }
+> > > >
+> > > > -       if (axp20x->variant != AXP288_ID)
+> > > > -               devm_register_power_off_handler(axp20x->dev,
+> > > > axp20x_power_off, axp20x);
+> > > > +       /*
+> > > > +        * The VisionFive 2 handles AXP15060 poweroff through OpenSBI.
+> > > > +        * Avoid accessing the I2C PMIC from the atomic poweroff path.
+> > > > +        */
+> > > > +       if (axp20x->variant != AXP288_ID && !(axp20x->variant == AXP15060_ID &&
+> > > > +                               of_machine_is_compatible("starfive,jh7110")))
+> > > > +               devm_register_power_off_handler(axp20x->dev,
+> > > > +                               axp20x_power_off, axp20x);
+> > > >
+> > > >         dev_info(axp20x->dev, "AXP20X driver loaded\n");
+> > > >
+> > > > Please let me know if this works on your board?
+> > >
+> > > Yes, that works, but I don't think this is the correct solution to
+> > > disable here. Also this won't scale for future boards which might use a
+> > > different existing PMIC driver with poweroff support and that will also
+> > > need to be patched.
+> > >
+> > No changes needed over here, reboot and power-off priority will
+> > work fine.
+> > > As pointed out by Troy in an earlier mail, the real problem is the
+> > > priority at which the handler is registers, 192 for the reset and -256
+> > > for the poweroff one. I wonder if the SBI SRST extension should also
+> > > register the poweroff one at 192. It seems it's about replacing the call
+> > > to register_platform_power_off() by register_sys_off_handler(), which
+> > > supports using a priority value. And maybe SYS_OFF_PRIO_FIRMWARE = 224
+> > > should be used there instead of 192.
+> > >
+> > Thanks for your input; with the changes below.
+> > It works fine on Spacemit k1 and Starfive Vision 2 for reboot and power-off.
+> >
+> >  arch/riscv/kernel/sbi.c | 51 +++++++++++++++++++++++++++++++----------
+> >  1 file changed, 39 insertions(+), 12 deletions(-)
+>
+> Thanks for this patch. It sounds good overall, and it's always good to
+> switch to the newest API.
+>
+> I have been able to test it successfully on VisionFive 2 and Banana-Pi
+> F3. Please find a few comments below.
+>
+> > diff --git a/arch/riscv/kernel/sbi.c b/arch/riscv/kernel/sbi.c
+> > index af1ccea222f1..32a3d2df9032 100644
+> > --- a/arch/riscv/kernel/sbi.c
+> > +++ b/arch/riscv/kernel/sbi.c
+> > @@ -512,23 +512,55 @@ static void sbi_srst_reset(unsigned long type,
+> > unsigned long reason)
+> >                 __func__, type, reason);
+> >  }
+> >
+> > -static int sbi_srst_reboot(struct notifier_block *this,
+> > -                          unsigned long mode, void *cmd)
+> > +static int sbi_srst_reboot(struct sys_off_data *data)
+> >  {
+> > -       sbi_srst_reset((mode == REBOOT_WARM || mode == REBOOT_SOFT) ?
+> > +       sbi_srst_reset((reboot_mode == REBOOT_WARM ||
+> > +                       reboot_mode == REBOOT_SOFT) ?
+> >                        SBI_SRST_RESET_TYPE_WARM_REBOOT :
+> >                        SBI_SRST_RESET_TYPE_COLD_REBOOT,
+> >                        SBI_SRST_RESET_REASON_NONE);
+> > +
+> >         return NOTIFY_DONE;
+> >  }
+> >
+> > -static struct notifier_block sbi_srst_reboot_nb;
+> > -
+> > -static void sbi_srst_power_off(void)
+> > +static int sbi_srst_power_off(struct sys_off_data *data)
+> >  {
+> >         sbi_srst_reset(SBI_SRST_RESET_TYPE_SHUTDOWN,
+> >                        SBI_SRST_RESET_REASON_NONE);
+> > +
+> > +       return NOTIFY_DONE;
+> > +}
+> > +
+> > +static bool srst_power_off;
+> > +static bool sbi_srst_available;
+>
+> Not sure we want global variables for this, as they are not used anymore
+> once the initialisation is done.
+Correct, srst_power_off indicates whether SBI SRST poweroff is available,
 
-I'll update the commit message to mention this, but do correct me
-if I understood your comment wrongly.
+The sbi_srst_available boolean flag indicates whether sbi_init () detected
+the SBI System Reset (SRST) extension during early initialization.
+It allows the deferred initcall to register the sys-off handlers only when SRST
+is supported, avoiding a second extension probe.
 
-> ...
-> 
->> -static irqreturn_t adctm5_gen3_isr(int irq, void *dev_id)
->> +static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
->>  {
->>  	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
->> -	int ret, sdam_num;
->> +	int sdam_index, ret;
->>  	u8 tm_status[2];
->>  	u8 status, val;
-> 
-> I probably missed to point that at the same time we can split semantically
-> different variables.
-> 
-> 	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
-> 	u8 tm_status[2];
-> 	u8 status, val;
-> 	int sdam_index;
-> 	int ret;
+Ok I will remove them.
+> > +
+> > +static int __init sbi_srst_sys_off_init(void)
+> > +{
+> > +       struct sys_off_handler *handler;
+> > +
+> > +       if (!sbi_srst_available)
+> > +               return 0;
+> > +
+> > +       handler = register_sys_off_handler(SYS_OFF_MODE_RESTART,
+> > +                                          SYS_OFF_PRIO_HIGH,
+>
+> I think you should use SYS_OFF_PRIO_FIRMWARE for both entry. It
+> corresponds to the reboot provider.
+Ok I will modify this.
+>
+> > +                                          sbi_srst_reboot, NULL);
+> > +       if (IS_ERR(handler))
+> > +               pr_warn("Failed to register SBI SRST restart handler: %ld\n",
+> > +                       PTR_ERR(handler));
+> > +
+> > +       handler = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
+> > +                                          SYS_OFF_PRIO_FIRMWARE,
+> > +                                          sbi_srst_power_off, NULL);
+> > +       if (IS_ERR(handler)) {
+> > +               pr_warn("Failed to register SBI SRST poweroff handler: %ld\n",
+> > +                       PTR_ERR(handler));
+> > +       } else {
+> > +               srst_power_off = true;
+> > +       }
+> > +
+> > +       return 0;
+> >  }
+> > +device_initcall(sbi_srst_sys_off_init);
+>
+> Any reason to use a device_initcall as opposed to just calling the
+> fuunction from the sbi_init function below? If so, please provide the
+> reason in the commit message when submitting the final patch.
+>
+Initially, I called  register_sys_off_handler() directly from
+sbi_init(), replacing
+the existing register_restart_handler() and register_platform_power_off() calls.
+However, the kernel failed to boot with this change.
 
-OK, I can make this change too in the next patch version.
+The sbi_init() function runs during early RISC-V initialization,
+before the kernel
+memory allocator is fully initialized. Since register_sys_off_handler()
+requires dynamic memory allocation, calling it at this stage is unsafe.
 
-Thanks,
-Jishnu
+Moving the registration to a device_initcall() defers it until the
+required initialization
+has completed. I will document this in the next revision's commit message.
+> >  /**
+> >   * sbi_probe_extension() - Check if an SBI extension ID is supported or not.
+> > @@ -643,7 +675,6 @@ int sbi_debug_console_read(char *bytes, unsigned
+> > int num_bytes)
+> >
+> >  void __init sbi_init(void)
+> >  {
+> > -       bool srst_power_off = false;
+> >         int ret;
+> >
+> >         ret = sbi_get_spec_version();
+> > @@ -677,11 +708,7 @@ void __init sbi_init(void)
+> >                 if (sbi_spec_version >= sbi_mk_version(0, 3) &&
+> >                     sbi_probe_extension(SBI_EXT_SRST)) {
+> >                         pr_info("SBI SRST extension detected\n");
+> > -                       register_platform_power_off(sbi_srst_power_off);
+> > -                       srst_power_off = true;
+> > -                       sbi_srst_reboot_nb.notifier_call = sbi_srst_reboot;
+> > -                       sbi_srst_reboot_nb.priority = 192;
+> > -                       register_restart_handler(&sbi_srst_reboot_nb);
+> > +                       sbi_srst_available = true;
+> >                 }
+> >                 if (sbi_spec_version >= sbi_mk_version(2, 0) &&
+> >                     sbi_probe_extension(SBI_EXT_DBCN) > 0) {
+>
+> Regards
+> Aurelien
+>
+> --
+> Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+> aurelien@aurel32.net                     http://aurel32.net
 
-
-> 
-
+Thanks
+-Anand
