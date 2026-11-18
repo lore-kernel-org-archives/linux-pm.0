@@ -1,127 +1,103 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.53
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795004959;
-	b=nZcN1FS+R2xmVfu4GBfhSStgZR/S64ikdnW+AFHIhDlGRm8cQc+JtvDvj23S/bifXOWL
-	 8txQfnGe1Fr2MZroq3xbuaszYTnXC9JuSHQNIBKKzK40Gor8dvevTT3GVZBQxBPeXcXnE
-	 b+fTb/z8cZv5h3Emm41DUdOaPUH8B1/unTIHXq8Y5BDBa0WQn+RyHONBWQ5v0DoZv4dX9
-	 WnsLFECeJQjaj6NFs8saID7Hr6ygIDDdzgPxRFMnWxrAI1mhYXFhB9M+OfggLYfhIGAcd
-	 WFCU/rzfduK5nisEx8a3z41sWjYfa4mz/uu4pr5m0R/RUqXO8vH5vmMzPmwJFau+9NQ==
+	t=1795005152;
+	b=uyYByOQx/+yPGbSH3NiFuoPkTdzV041ZRaw8jdQcg611NfaVZ1ClyqZ3CMh6S/KvrvIA
+	 oFCwOtIKNABR+5qAXMZZT3G0cAXE8aNdaX6dxmVy+QHFByz4bZN2wPEpltS4Alj8LAquu
+	 8baWwoPJ/tbBffKcwO+Lmh/hbr1q/7MK2SLE/gpDpT8lWhDCOZjMsf7E73trsopHVJyaL
+	 IDIwpsTgdnHa0RukYRfkVW4T1kNu1NvR3eXstUj80+1kZ/jqK7k+rncXouJlrQctZcoP7
+	 Ax+dffuJ6mxrt7A279je4JqQ1PFWLi4H3xKH022mr5w+/LXPvk6kqXPr7i72XP+I98Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795004959;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Date:From:
-	 To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:X-Authority-Analysis:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=r1aEh9iw/n3stMcXke9+RzCCoMnaI0siNAVC+UxOzus=;
-	b=yLbBLqHIM84AhTo9iU+s18zZs+hty4FQpzJIqISEMO2+a3xM/CpSuJHc9YgSdgwHEkG5
-	 CcWtbpAEXGCqRlUQm3kdBO7zGzjarodK8yRJI6vZ6NfHXu3WRjX8JWEPUxeX27swdBU9r
-	 S6sFNVA6lJErZc2Y4+3t2ADkPAWwHBXpTW8lx0HiYhRIuuWjlpPQVpvcDwsc2m5JfjAg6
-	 hz1eiEqRP1QWUwvWpSbQFrBvql0vZb4znqiVPH9tXXjvIs6XWbK/S3QPWEbq8Ka9MHt4/
-	 ribsFQr8b2BD0YYvsIBMzLESAiUYpWQsRDpUpZuoMURznPjjz6+DR41zm11mLQEzatg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795005152;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=MegKunIxbKJmWXfHvvLlyDz6eGlSNoNkyHutakVtL/4=;
+	b=4riDMj120MMEidYLyGX3dX6qnRFoGj8g1BBUmbH0pWAsu381p+WyjYtult8on4WkbbyI
+	 mfrTAVfX6H2ju+Dq7KPbznRhgTRXwjh9rRpSbpR1ZMBVmwbf3p2/2gK+0eIU5cA96apGJ
+	 cT/HpZix2gWx8DW1cBRgl7X+76mI7MSHvtMG50ijD7NFS8RhFt8Wr6dDs0pPJu0O9uGXH
+	 w2Q0glwktCG5gLrSzvVxEKc2KPcO7K+0Cszp3VRapV/A6IQjvgjhntWGg37Jv/VHVY7sW
+	 GRfb5yNKhC6/y8elo6mDscp840s7iZXArSlDR4BXbt8/wJurOQTKc/hItdtEmmeMJHw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=CQm0MQ5V;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=hnAtXpBj;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tyfbf2Us;
+	arc=none smtp.remote-ip=209.85.221.53
+Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1884606A325
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 12:29:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A1884606A325
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51543606A320
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 12:32:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 51543606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=CQm0MQ5V;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=hnAtXpBj
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AICLT841178488
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 12:29:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=r1aEh9iw/n3stMcXke9+RzCC
-	oMnaI0siNAVC+UxOzus=; b=CQm0MQ5VZHhrIvKijDhSQge1uHiB8pqJN7Ja80Pj
-	6EPizmuw1wK89eTY9NepxLXkWTZeyO0sLnpExq3VYsiWYn7HLnbrh9Uai7SMHV0S
-	cfiSARmryPqJMnuaMhiqUwt7U1bAcy/4mrY4lz2EGEfwqVGK0hhSQPu3PrCL0Qvf
-	2f+ntDSrXhW/nQCoYhe2bi1oqQALiZXLQPYYRvb/Jv/+H860E1kEKbUj3YAy11wR
-	XpzszwHLz9Z5Kn46VdJKNFTi2ehgHrKYQ/XaEIAeq3cw7TxsApPz+qarZo/R6c2z
-	7wq5orjQpK5i09Z1d9I2ZdbuR4g2+qg788qj2INu0vp5OA==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j0yvcjyk4-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 12:29:17 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2efdc35736bso13569695ad.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 04:29:16 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tyfbf2Us
+Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-48ff6bd58b8so106058f8f.2
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 04:32:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795004956; x=1795609756; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1795005150; x=1795609950; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=r1aEh9iw/n3stMcXke9+RzCCoMnaI0siNAVC+UxOzus=;
-        b=hnAtXpBji0SolI6LWpL2lFk9arC2oThfzm08JMgwf3us0mtuS1Wffvp4MIuDaGkBY4
-         S6bxhb2+YSqjwy0WRGmz0dfDCyrXwa1HugHDJ6Kn6FkfTRQRJHxpm/iDWdDpmFaxSm0X
-         lB/weEnx16nQJENz8mqblK1IqB5B8TGyHFJn4l+hF+gQzeiIuwANgsqUIfQGv3XqG8Lv
-         vzGUFKH6iebmEg1z6iDzBogZVTabyCFUf4+XhHcgM39/dS6MX7oogUwu8I7zZH3fxPUb
-         4ps8w9HYrxHT9ZFDaiNtlVMrnb/M10uKlNEf5boeN4o867lY5E1alggwyE3wYzoo1D7d
-         0+jA==
+        bh=MegKunIxbKJmWXfHvvLlyDz6eGlSNoNkyHutakVtL/4=;
+        b=tyfbf2UsPBVYYD26GeNTW+Qgmm0LMvV7VG/ikGF5XJoStTiPOglV/6gXZjSr/oWyJv
+         2vByeShRxa04SwSUmUyB70qEaHEczqGgZPt6BDVPNq2V9MLNzoakciG3XnaHY1anl2EK
+         7Pa/ECRBuBaoI5KxULPfvFt6Cm8cMVbO2/AWxWwW5RlGm2LtaECQtGUx3q36S+Anp96W
+         w7n24TllVuuVHCDcQUic1nxFl+vcm8A3e1DzpmsKngxhJbirihpjIVtsfYQKn8kTmJnU
+         GN0j/o9h8DEqlK4VCKNJgk+9ZOZx6bhHtdgf+9lG2RWJtgy3WV4DG2KRZSv+BTkln/aj
+         dcug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795004956; x=1795609756;
+        d=1e100.net; s=20260707; t=1795005150; x=1795609950;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=r1aEh9iw/n3stMcXke9+RzCCoMnaI0siNAVC+UxOzus=;
-        b=z2H1DTm6rRu3pxLtkYlgSeaPGkbU0JD5LdYtKd05RFIaCi61ITTCXwV765EXvf1JAY
-         bYWvvFOwPSwaKLQQBfoTJmZlrEm2AhTHRxuJMQo9p9Pk6JLe2e6wld81WsW09mu5zwkh
-         J5bUfI0HsDHFAZamGemUvVJfLZxPf+vkq4FA6+T40BUR9zCoSYFGHrC2Pdv+9fOl/ZOR
-         edrMOgz+RTsxbYXHjaoD9Vv1PbsC0eygsdWljT9XplhIbJWx4Erk8rHFrAUkbJX3Zj9Z
-         25eUtXM278Cb0M2Gp13wbx6mZq255sP9E0kygFy/j7dU1FwYqt0CB0cuk0zUxxSyNdwP
-         n2ZA==
-X-Forwarded-Encrypted: i=1; AL+hErFLlcPisyjkDWJRUYLi6SIsvh4A8tuWzgw5iBLk23ZhAVPM3NISOq2M/Ak/YTWfaSE4UWr5SDTjpQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/Nbvh3DHdDFUxwKeJ7bG7ylcB69fttH3DDdjbM30zbzux5WGHQ
-	LiJ6Qf+1WUD8Yue9Xof90GksYkD7PnuiCwMlk7Lw246y225DBLkrmiymJ4WN3YUZhP6jfVGo0lN
-	E528n2AI8y1V+fp9cUCUEBXwBEhgBcGpvJej+wDIQh0yozK1VfFzk3t9Q7M1f7A==
-X-Gm-Gg: AZFdTZd1vIiBzQWU74whJ8uQq85IJwayPE7Y/wtV4Cz7tmiK48mSPsZDtqL5EgdFqNS
-	9za0P8E91yIuHtZmfe6Jt43FcTO4SyudVsYc3SDdaDRBTrvYtgLjKFWPvqFl0y1vlrD0QCXQMF3
-	U5ytRF6Ke8wWvFy+EsvkDegN2qJLa8thDWvx/Vu5pujnNV//YholySItEUCUt7OLk9V0NA7EQu+
-	1HGmAjkc92lXURo3yuG5Y/2cX4nh7cQEWPjUOxYok5CQNN2rFyhOjDf3KtgIfzb9mORFSogXpSc
-	v6rQm29z4mKS0YZu3Qgob59iOWB8P0CaD+9VHvllz3BcYrK6LyE68DcSA3WOaXM4f946yZ1XUCC
-	haLfgaguNccu/RlhdW4FMDncsMACp2DzvR2K4TOtk56m5N+9OPwn9SzttYihNRo8d8W/So2aSMt
-	YswF8W2nGnOURZYSodocn8gCqgbqIG0nwpVfTpD8dUEEsWKgCv7j1Fnli98jHqgS5h
-X-Received: by 2002:a17:903:4547:b0:2ef:da24:e76d with SMTP id d9443c01a7336-2eff752e549mr23380205ad.35.1795004955908;
-        Wed, 18 Nov 2026 04:29:15 -0800 (PST)
-X-Received: by 2002:a17:903:4547:b0:2ef:da24:e76d with SMTP id d9443c01a7336-2eff752e549mr23379855ad.35.1795004955369;
-        Wed, 18 Nov 2026 04:29:15 -0800 (PST)
-Received: from hu-anancv-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2eff5ed0d2esm13113715ad.10.2026.11.18.04.29.11
+        bh=MegKunIxbKJmWXfHvvLlyDz6eGlSNoNkyHutakVtL/4=;
+        b=d2gw+67bcbOW0pgxMa05bstGS3bxDqAdUidcylQVO/yYdCIWP+zV2nFi3v5lvDcqph
+         +H1DHJ6YP5j3YKH1T5lFX0qFBMGOn67bs69/k3R8zc5xtfF8UlWptDAu1a2eN3U9l1UU
+         dxnjxdBvqqSWZNzvLIp6iTxKxvFAnc8Zb3e1NvCgjB1gIHge/axanN/RsNaprIM+sZGd
+         xRgC1LIFzydjQrrwt8RxxHidAHLAfD4iQ3ZWPJitJf9DKpTwVXjtaAE3YIqWpaywR6e1
+         wYhl4HwhQv1192fF0EAyre3Qw2Bw6EAe+OF5J4VfFWWemfX/Dv1DcWg6HjcZ8r6sa2NI
+         Zpkw==
+X-Forwarded-Encrypted: i=1; AL+hErGzMBV5NFa8nVHcoW3Bqu7ekayCsXlTEFnUeDFvpeSRQfFKiXGxw7NmImVUNtZPhchqSlcyH5VnHg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+W/lPTFUgpzaBphw8BEdDdatVoM2B7r1l54x50cEnPujr3eO39
+	R4AnCh09zMqDAH2GiiVdwF9a01rjjLkiHK1Vc0fhd//RuJokauXViGXM
+X-Gm-Gg: AZFdTZdkk+5m/WEnQpE/W9Wf10cAL7ZzW5IJqvo8OArPdZTPY1+af8E67UCH1aH9wIM
+	xQdEhBdfuET4EE2antMg21MYf5N+/wGYnvtoD2uOZwmtLpMeknPzY3IsGy69SlYjO1q1GTeD8rG
+	XoNaSOq2NJuBrTzcN6t+fn7dJqviT4pR42S1Ir9SXHxXUOBWcVK4xL2Bax7jwXnLlJ2sENV+dfr
+	Hrj/IfPuU3axDvy+u3lwwk6xsYRWyy2aAs866XxOLbhrqfxiI5NFKk1jogiCPhp8bnd1FWVS916
+	InxQAMp+9ShEnVC8qmcFEUsL3R+kk/3iyaGNKTe4TdCjZbkgo0wanWWHX7CEkdFDNcq0HHFRPLS
+	rUvz/K1SQal7mY6LhEg7LPzYKD+LETX/58Iig8bL7BCJ65z5gFTOe2NNWSY1IdAtjRphFo2Wm5b
+	YxDA1EWHjn2JOuZQkt797GDSJl7ksCqGThLhjSenpodkxGMaAgd4SKQHDVCzvoyTh244lpbD5yP
+	honyVSnS/DyWwyAA5UhpytSw1Q5e58JP9FyBNVCaXf7iCkpAKbWNb6ohyTO5m1j4gzonKcr/Kgl
+	UhYZkEwtbDyTqBFezapo5yI02a8eMBRQ+1HaDJMHiDsTMy4yIxNHOSs=
+X-Received: by 2002:a5d:5f54:0:b0:4a6:bc53:246a with SMTP id ffacd0b85a97d-4a6bc626b7dmr4052393f8f.5.1795005149445;
+        Wed, 18 Nov 2026 04:32:29 -0800 (PST)
+Received: from scheduler.schedules ([85.100.69.90])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4a656c11f4bsm4645746f8f.51.2026.11.18.04.32.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 04:29:14 -0800 (PST)
-Date: Wed, 18 Nov 2026 17:59:09 +0530
-From: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>, Jie Zhan <zhanjie9@hisilicon.com>,
-        Pierre Gondois <pierre.gondois@arm.com>, linux-kernel@vger.kernel.org,
-        driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Oleg Keri <okerixx@gmail.com>
-Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to
- non-boost freq on boost disable
-Message-ID: <av2aFWw3kh11U68A@hu-anancv-blr.qualcomm.com>
-References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
- <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
- <auhMD2-5FD4BqImG@vireshk-B250M-D3H>
- <avRiWsxCEAuBouBZ@hu-anancv-blr.qualcomm.com>
- <avwtsmp7Mqacbbtl@vireshk-B250M-D3H>
+        Wed, 18 Nov 2026 04:32:28 -0800 (PST)
+Date: Wed, 18 Nov 2026 15:32:25 +0300
+From: Kayra Cizmeci <kayracizmeci@gmail.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
+	vschneid@redhat.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
+	lukasz.luba@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, tj@kernel.org, 
+	void@manifault.com, arighi@nvidia.com, changwoo@igalia.com, 
+	sched-ext@lists.linux.dev, qyousef@layalina.io, christian.loehle@arm.com, 
+	pierre.gondois@arm.com, sshegde@linux.ibm.com, tim.c.chen@linux.intel.com
+Subject: Re: [PATCH 01/20 v3] sched/eevdf: Decay positive lag of sleeping
+ entities
+Message-ID: <av2KuYNx1A-rCz0R@scheduler.schedules>
+References: <20261106151947.3991524-1-vincent.guittot@linaro.org>
+ <20261106151947.3991524-2-vincent.guittot@linaro.org>
+ <avr4MsRsjGfGHKKk@scheduler.schedules>
+ <CAKfTPtBZ=Dc_X48EQ0yXMym0JrS=pWvbviyVyFri0tv5VdR3Eg@mail.gmail.com>
+ <av1uqTFI46wRb0ok@scheduler.schedules>
+ <CAKfTPtC7AmoSE4iev5qf0MMYDBHPpLMduYhz5XMDsMGiMNpy0A@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -131,154 +107,281 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <avwtsmp7Mqacbbtl@vireshk-B250M-D3H>
-X-Authority-Analysis: v=2.4 cv=R5OWitRX c=1 sm=1 tr=0 ts=6afd9a1d cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=53p13Wp-lvFfL8JyHH4A:9 a=CjuIK1q_8ugA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-GUID: Kg5jGPgf24uzBT_iyjCLTOAyJ5kQOJZd
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA0OSBTYWx0ZWRfX2O09r3Xbkpp2
- zDlrmMsyl8x+qyo++9xTQaUJSxt0LMWqYXwHojNZrM1lgc3D6QEEZQHgj1QLuZE1vwyyvEJwUyt
- ++Lf6NNTS9kyl1xBhhzRIsCO1kjxQkA=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA0OSBTYWx0ZWRfX8bRvZgnIdicT
- KhvbUhXeqbFt29CCfJuOqt9g4zh5tzIabGNIAswJYbWfLkR0XTP9HQdYf8VGVD+Hu2cJycRa192
- FQh9KGtHDvUBItf8ASzixhRg2XqdJaEDKk3/8xiZy3tqqzkgTaLfe5JfzgUHGpL7uJ+ZiITHfvu
- l4JI/7NMtJBiEVkRnBsVJJn0sDqSVBJgx1v7eQY8cy/QiE64VPRV/SfvU5IamXe++k//URpcZxW
- L8Qau3p7roMSaFRltGzDruAYfaKlxEqhIk+8GW+tH47YUgqCM+7Vv+dPjAPHgsYSA3HA9R8xKNA
- CkqPrWRAVmrGJQbvU6Z5/tHQgVY4eLfh1GqTboB7M51XI0aiBWCqCPpKBH5PaUCkyL74e3KubPz
- wkRIWYMKQgsmYAKQQdnJH5Hgve+0BW1rT4oSDrlEyDOqJb8fKVzgznggYF3aLh1DXOb1abgb+oU
- 5HWpGJEaDnUkp4mFWHA==
-X-Proofpoint-ORIG-GUID: Kg5jGPgf24uzBT_iyjCLTOAyJ5kQOJZd
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-18_03,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0
- malwarescore=0 priorityscore=1501 bulkscore=0 adultscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180049
+In-Reply-To: <CAKfTPtC7AmoSE4iev5qf0MMYDBHPpLMduYhz5XMDsMGiMNpy0A@mail.gmail.com>
 
-On Tue, Nov 17, 2026 at 04:04:26PM +0530, Viresh Kumar wrote:
-> On 11-11-26, 18:10, Ananthu C V wrote: 
-> > I am pretty sure we can maintain the policy->min status quo and only touch the
-> > policy->max updation; which from a passing glance simply seems inconsequential.
-> > Potential side effects, if any, aside, this would at least fix the issue at
-> > hand, which is the frequency getting stuck on a higher value without being able
-> > to come down. What do you think about this?
+On Wed, Nov 18, 2026 at 12:21:10PM +0100, Vincent Guittot wrote:
+> On Wed, 18 Nov 2026 at 11:58, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+> >
+> > On Wed, Nov 18, 2026 at 10:20:14AM +0100, Vincent Guittot wrote:
+> > > On Mon, 16 Nov 2026 at 14:57, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+> > > >
+> > > >
+> > > > Hi Vincent!
+> > > >
+> > > > On Fri, Nov 06, 2026 at 04:19:28PM +0100, Vincent Guittot wrote:
+> > > > > Similarly to delayed dequeue, which enables an entity to decay its negative
+> > > > > lag while sleeping, a task should not keep a positive lag forever.
+> > > > >
+> > > > > The sleep duration and the weight are used to decay the positive lag at
+> > > > > wakeup.
+> > > > >
+> > > > > Apply the decay when enqueueing on prev rq for which we hold the lock to
+> > > > > get rq_clock_task().
+> > > > >
+> > > > > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > > > > ---
+> > > > >  kernel/sched/fair.c | 124 ++++++++++++++++++++++++++++++++------------
+> > > > >  1 file changed, 90 insertions(+), 34 deletions(-)
+> > > > >
+> > > > > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > > > > index 0feec172fd37..5cd171f830d8 100644
+> > > > > --- a/kernel/sched/fair.c
+> > > > > +++ b/kernel/sched/fair.c
+> > > > > @@ -897,6 +897,91 @@ bool update_entity_lag(struct cfs_rq *cfs_rq, struct sched_entity *se)
+> > > > >       return avruntime - vlag != se->vruntime;
+> > > > >  }
+> > > > >
+> > > > > +/*
+> > > > > + * Signed add and clamp on underflow.
+> > > > > + *
+> > > > > + * Explicitly do a load-store to ensure the intermediate value never hits
+> > > > > + * memory. This allows lockless observations without ever seeing the negative
+> > > > > + * values.
+> > > > > + */
+> > > > > +#define add_positive(_ptr, _val) do {                           \
+> > > > > +     typeof(_ptr) ptr = (_ptr);                              \
+> > > > > +     __signed_scalar_typeof(*ptr) val = (_val);              \
+> > > > > +     typeof(*ptr) res, var = READ_ONCE(*ptr);                \
+> > > > > +                                                             \
+> > > > > +     res = var + val;                                        \
+> > > > > +                                                             \
+> > > > > +     if (val < 0 && res > var)                               \
+> > > > > +             res = 0;                                        \
+> > > > > +                                                             \
+> > > > > +     WRITE_ONCE(*ptr, res);                                  \
+> > > > > +} while (0)
+> > > > > +
+> > > > > +/*
+> > > > > + * Remove and clamp on negative, from a local variable.
+> > > > > + *
+> > > > > + * A variant of sub_positive(), which does not use explicit load-store
+> > > > > + * and is thus optimized for local variable updates.
+> > > > > + */
+> > > > > +#define lsub_positive(_ptr, _val) do {                               \
+> > > > > +     typeof(_ptr) ptr = (_ptr);                              \
+> > > > > +     *ptr -= min_t(typeof(*ptr), *ptr, _val);                \
+> > > > > +} while (0)
+> > > > > +
+> > > > > +static inline unsigned long cfs_rq_load_avg(struct cfs_rq *cfs_rq);
+> > > > > +static unsigned long task_h_load(struct task_struct *p);
+> > > > > +
+> > > > > +static __always_inline
+> > > > > +void decay_entity_lag(struct cfs_rq *cfs_rq, struct task_struct *p, int flags)
+> > > > > +{
+> > > > > +     struct sched_entity *se = &p->se;
+> > > > > +     s64 delta_exec, vlag = se->vlag;
+> > > > > +     unsigned long cfs_load;
+> > > > > +     struct rq *rq;
+> > > > > +
+> > > > > +     WARN_ON_ONCE(se->on_rq);
+> > > > > +
+> > > > > +     /* Negative lag is managed by delayed dequeue path */
+> > > > > +     if (vlag <= 0)
+> > > > > +             return;
+> > > > > +
+> > > > > +     rq = rq_of(cfs_rq);
+> > > > > +
+> > > > > +     /* No fast access to prev rq task clock */
+> > > > > +     if (flags & ENQUEUE_MIGRATED)
+> > > > > +             return;
+> > > > > +
+> > > > > +     /* Compute sleep time */
+> > > > > +     delta_exec = rq_clock_task(rq) - se->exec_start;
+> > > > > +     if (unlikely(delta_exec <= 0))
+> > > > > +             return;
+> > > > > +
+> > > > > +     /* For anything above ~4 seconds, save computation and clear the lag */
+> > > > > +     if (unlikely(delta_exec >> 32)) {
+> > > > > +             se->vlag = 0;
+> > > > > +             return;
+> > > > > +     }
+> > > > > +
+> > > > > +     /*
+> > > > > +      * Use cfs' load and p's weight to estimate what would have been the
+> > > > > +      * share for p. task's load contribution to cfs' load is replaced by
+> > > > > +      * its weight.
+> > > > > +      */
+> > > > > +     cfs_load = cfs_rq_load_avg(cfs_rq);
+> > > > > +     lsub_positive(&cfs_load, task_h_load(p));
+> > > > > +     if (cfs_load) {
+> > > > > +             unsigned long weight = scale_load_down(se->h_load.weight);
+> > > > > +
+> > > > > +             delta_exec *= weight;
+> > > > > +             delta_exec = div64_long(delta_exec, cfs_load + weight);
+> > > > > +     }
+> > > > > +
+> > > > > +     vlag -= calc_delta_fair(delta_exec, se);
+> > > > > +
+> > > > > +     /* vlag can't become neg while sleeping */
+> > > > > +     se->vlag = max(0, vlag);
+> > > > > +}
+> > > >
+> > > > Look:
+> > > >
+> > > > Let's say we have 3 tasks named TA, TB and TC. They all have the same
+> > > > weight and the same slices. So TA gets picked, works for a while and then
+> > > > sleeps for less than the rest of its slice.
+> > > >
+> > > > So the part that I hate and love, math. For your diff, we do:
+> > > >
+> > > > (sleep_time * weight) / (3 * weight)
+> > > >
+> > > > 3 * weight here is TA + TB + TC, it equals to 3 * weight since they all
+> > > > have the same weight.
+> > > >
+> > > > So if sleep_time equals 2, weight equals 1, and slice equals 3 this equals
+> > > > 2/3. If the lag is 2, we do 2 - 2/3 resulting with 4/3.
+> > >
+> > > yes, we assume that TA would have run 1/3 of its sleep time
+> >
+> > But if sleep_time + working_time < slice for TA is true, there is no
+> > guarantee that it will run 1/3 of its sleep_time.
 > 
-> So a change like this also fixes the issue ?
+> Even if sleep_time + working_time > slice.
 > 
-> @@ -49,15 +49,16 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
->                         max_freq = freq;
->         }
+> >
+> > >
+> > > >
+> > > >
+> > > > Later, place_entity() uses this formula to do V - ((Sum(weight) + weight) * lag) / Sum(weight)
+> > > > So ((2 + 1) * 4/3) / 2 equals to 2. But this is wrong, no?
+> > >
+> > > why is this wrong ?
+> > >
+> > > Assuming TB and TC have the same vruntime before placing TA, the
+> > > average vruntime is avg == V(TB) == V(TC).
+> > > place_entity will do V(TA) = avg - 2
+> > > After placing TA, avg' = (V(TA) + V(TB) + V(TC)) / 3
+> > > avg' = (3*avg - 2) / 3 = avg - 2/3
+> > > TA's lag is : (avg - 2/3)  - (avg - 2) = 4/3 which is what we assumed above
+> > > TB's lag equals TC's lag : (avg - 2/3)  - avg = -2/3
+> > >
+> > > >
+> > > > If we didn't decayed lag: ((2 + 1) * 2) / 2 equals 3.
+> > > > So we would do V - 3.
+> > >
+> > > Which would end up once placed to
+> > > avg' = (3*avg - 3) / 3 = avg - 1
+> > > TA's lag is : (avg - 1)  - (avg - 3) = 2
+> > > TB's lag equals TC's lag : (avg - 1)  - avg = -1
+> > >
+> > > >
+> > > > Now our objective is to add the sleep_time of the task to -3.
+> > > > Because if the task didn't slept, in that time it would be working
+> > > > instead of sleeping.
+> > > >
+> > > > So, we should do V - 1. But we do V - 2.
+> > >
+> > > Why ?
+> > > You assume that the whole sleeping time would have been spent by TA
+> > > running on the CPU but we don't really know. We can assume that a task
+> > > with positive lag should run first, but this also depends on other
+> > > tasks enqueued.
+> >
+> > If TA didn't got preempted, and its sleeping_time + working_time is
+> > smaller than its slice, the whole sleeping time would have been spent by
 > 
->         policy->cpuinfo.min_freq = min_freq;
-> +       policy->max = max_freq;
->         /*
->          * If the driver has set its own cpuinfo.max_freq above max_freq, leave
->          * it as is.
->          */
->         if (policy->cpuinfo.max_freq < max_freq)
-> -               policy->cpuinfo.max_freq = max_freq;
-> +               policy->max = policy->cpuinfo.max_freq = max_freq;
+> You can't assume this to be always true, and we don't know how long it
+> was running. A positive lag of 2 as in your example doesn't mean that
 
-This does fix the issue of policy->max not being able to drop down back
-to non-boost values after boost disable, but I found another caveat.
+Can't we do deadline - vruntime? That would give us slice - work_time.
+We already know the sleep_time.
 
-The commit 8c83947c5dbb added the following change a few months ago;
+> TA runs 1 ms in its slice and would have run 2 ms more if not sleeping
+> 
+> > TA. Even if it did get preempted, there is no guarantee that it would
+> > work 1/3 of its sleeping time.
+> >
+> > > My first version assumed the whole sleep time would have been used to
+> > > run which is optimistic. Peter suggested using the ratio of weight and
+> > > cfs loads instead which accounts more fairly for the running time.
+> > >
+> >
+> > IMO, for a task like TA assuming it will work in its sleeping time
+> > is better than assuming it will work as 1/3 of its sleeping time.
+> > Or atleast less-bad, no? :-).
+> 
+> That depends on the PoV you take. The reality is that TA could have
+> run from 0 up to its full sleeping time (even if the sleeping time is
+> longer than a slice). Assuming it will run for the entire sleeping
+> time is one extreme, while assuming it won't run at all is the other
+> extreme. The reality is probably in between. The longer the sleeping
+> time, the closer the expected run time would be close to 1/3.
+> 
 
- static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
- {
-+       unsigned int min_freq, max_freq;
-        int ret;
+Yeah :-(.
 
-+       /* Use policy->min/max set by the driver as QoS requests. */
-+       min_freq = max(FREQ_QOS_MIN_DEFAULT_VALUE, policy->min);
-+       if (policy->max)
-+               max_freq = min(FREQ_QOS_MAX_DEFAULT_VALUE, policy->max);
-+       else
-+               max_freq = FREQ_QOS_MAX_DEFAULT_VALUE;
+1. If we assume that TA will get preempted, we can't know how much it would
+have run if it hadn't slept. And in that case 1/3 could be right or wrong.
+We can't know.
 
-this max_freq is then subsequently used to update max_freq_req constraint
-for the policy. This means, assigning a value to policy max in freq table
-directly will cause the same to be kept as the max_freq_req, which if
-boost is not enabled will be stuck at a non-boost value. The boost will
-still work, as policy max is set directly, but the value will be above
-the allowed qos max;
+2. If we assume that TA won't get preempted, we can know that it will run
+in its whole sleep time.
 
-# echo 1 > ../boost 
-cpufreq: cpufreq: policy12 boost=1 policy->max=4723200 qos_max=4454400
-cpufreq: cpufreq: policy6 boost=1 policy->max=4723200 qos_max=4454400
 
-This also means if at any later point any limit refresh happens, the
-value will be brought back to that qos max, which is a non-boost value,
-even when boost is enabled;
+In any case, we are doing a assumption in both of these.
+TBH, I don't think there is a big difference.
 
-(e.g. here with a refresh_frequency_limits(policy); call after the boost)
+I would still argue that assuming the 2nd one is better.
+Although, if there is not a big difference I can't see
+any reason to add a case for it.
 
-# echo 1 > ../boost 
-cpufreq: cpufreq: policy12 boost=1 policy->max=4454400 qos_max=4454400
-cpufreq: cpufreq: policy6 boost=1 policy->max=4454400 qos_max=4454400
+I'm gonna play around with the whole series. Testing and other stuff.
+Maybe I'll find something unexpected. While testing, I'll try to test
+the difference between 1st and 2nd too. I don't think there will be a
+big difference, but I'll still test it :-).
 
-tldr; is that it will fix the issue of the freq not dropping down from
-boost, but it will introduce a new potential problem of boost state
-potentially dropping back to non-boost freq while still in boost.
+> >
+> > > >
+> > > >
+> > > > AFAICT, we can't already know for sure how much will a task run even
+> > > > when the sleep_time is smaller than the slice. Because of preemption
+> > > > :-(.
+> > > >
+> > > > The cleanest, the simplest and maybe the worst or the best solution I can think of
+> > > > is just setting lag to 0 on every wakeup with positive lag TBH.
+> > >
+> > > Keeping eternal positive lag for a long sleeping task is unfair but on
+> > > the other end, clearing all positive lag for a micro sleeping or
+> > > because of waiting on a shared lock is also unfair
+> > >
+> > > >
+> > > > Or maybe, try to calculate when sleep_time is smaller than the slice,
+> > > > but just set the lag to 0 when sleep_time is bigger or equal to slice.
+> > >
+> > > There is a difference between sleep time and lag. Even with a sleep
+> > > time longer than the slice, the task can still have positive lag after
+> > > sleeping (this is also true for runtime). All this depends on how many
+> > > other tasks are running simultaneously and their weight
+> > >
+> >
+> > > >
+> > > > What you think?
+> > > >
+> > > > Sreehc,
+> > > >
+> > > > Kayra
+> >
+> > Ah, you didn't understand my joke, sad. :-(.
+> >
+> > Sknaht,
+> >
+> > Kayra
 
-So this alone can't be a fix at the very least. At the bare minimum it
-will need update to how max_freq_req is calculated/updated, etc. If
-nobody assigns values to policy->max before cpufreq_policy_init_qos
-is called, max_freq_req can simply use FREQ_QOS_MAX_DEFAULT_VALUE,
-which is S32_MAX, as its value, and not cause this problem, so the
-solution proposed in the current series will not run into this.
+hint: try to read it backwards :-(.
 
-> Also, can you please explain the issue again in detail. I am not very
-> sure how you are reaching to this issue over current mainline (without
-> the first patch).
+Sreehc and Sknaht alot!
 
-There are two issues the series is trying to address;
-1. freq can go upto boost values, but they cannot be actually used
-2. once a policy is using a boost value, that value cannot go back to a
-   non boost value.
-
-So with or without patch 1, which addresses the first issue, the freq
-can still go to boost values, which can trigger the second issue. The
-logs relevant to the second issue, reusing from the cover letter, is;
-
-\# cd /sys/devices/system/cpu/cpufreq/
-\# ls
-boost  policy0  policy12  policy6
-\# cat boost
-0
-\# cat policy6/scaling_max_freq
-4454400
-\# echo 1 > boost
-\# cat policy6/scaling_max_freq
-4723200
-\# echo 0 > boost
-\# cat policy6/scaling_max_freq
-472320
-
-The reason why this is happening is;
-
-from freq_table.c:
-
-if (policy->cpuinfo.max_freq < max_freq)
-    policy->cpuinfo.max_freq = max_freq;
-
-and from cpufreq.c:
-
-freq_qos_update_request(&policy->boost_freq_req, policy->cpuinfo.max_freq);
-
-so cpuinfo.max_freq is only updated upwards, and that value is used to update
-boost_freq_req, which is a FREQ_QOS_MAX request. On boost enable and disable
-the cpuinfo.max_freq value stuck at the top will be used to update the qos
-max, and the value never comes down.
-
-> -- 
-> viresh
-
-Best,
-Ananthu
+Kayra
