@@ -1,55 +1,68 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795033174;
-	b=IaPvRbt+34Cr0OXLpbz+nGAT0bz9QsDwB+H6UGxlSBiy68albLaoK8iPxnUdUe7BIfOe
-	 MfMiIzz7OEZ0uCBylL0kl3amS1tft4yl1qDEzCjmvEoShN+m8FwM/AHSjJ7Y+l/EiamJ9
-	 UeDD7mGHcZMFuwpftnLNHL9leQ5uIIWmP/5NjXc9FKWBLwWdUrWk9Kul8VUSLpmRZA3gw
-	 XvLiZsJxQaqz4DGw/Dqs7QQvE81r2giDeaDd1nwOnIWyFS6YZ4Kl/le1E6PAmdhDYwtKP
-	 AOZnX7t0Q5grAndO7YI4ay5lXQ6724AEB8KRt3V9o0MZYl1bY8Qlh0LVNWihY/dwO1w==
+	t=1795035059;
+	b=wUs0f6TanTTctTZLG9jaAiob6QkJfOh4umzuvumZc5hU9mTdpMfYJw7EQPEAxGAhASyo
+	 hUWpGSIulByy6I13HIF+xABrtYcruby2jTsYlZS9/bpNEACjQ+yfQlWRhu4fTnOYHpySi
+	 gSiZm06xbS4WPmnJV46RdQTT/nGnRLBE9IVHbF8fjSYcw645vj/9fuffrSoW9OK+4Awq9
+	 RishGLuuIW0Zhtvnbp87apggvmnWjEYh9X/pmy7ENJ7cxl1F+ZSVILTzGwiV5rub+uCA0
+	 H0XBoVWLLcIyUlKwN9kbJXwRddT7TZVDFuLTA5TKJEdcV9CyBOHKgLLzhbYxdt+Agbw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795033174;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=VIqubSxa6chp+PQfAvvw0Nq36rRNM/+XIF5m2rPT+yM=;
-	b=KZx9IuVGnAdlq3rlRF7Fz1CGC2Ha9pGr6bugK6KU0JQirr6J58LORDXWI08J4nnnmfo6
-	 KPgWSpOagLrfzq4W107KwQRsqsLl2iFNlQs0YK+Utd7h3BEOR4Ai7T3E+HYo28IrA6mBD
-	 5Rsgrc8ElAV41cx2uHTus8Pri0rX5pzA36PXAk6dWApqYTibxeDw1js1oQaujmfcmLBD3
-	 Tt3SlMhZtLarkcTUgxpOoRQfYsSVHK7z+0gXNDftOuPPt2uAINwn00yPlwvINKzh63huw
-	 SNCJkh2xLJhU5wyPyqb8/jek+oRVvKca6Sbb82hpB65jjfyYsRUuHol2/0jBOs4c5/g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795035059;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=0aMgbQQmw1MPLXYBpDbUKS5IgiG3zEQxMu5gz/miA1Y=;
+	b=Pr9VeHX8XlGwvPQFaPrtFjETimeGTIMz16EneEn0IbvxW3upSApEz1/+UloMlAt7y/gk
+	 tVKU4HgTB5PfM0WYlB8lNfHe9Ygs+Np2Z2oBOaV+hzW3Ghb1doh4Yzq+aDy29WG1+Mv1h
+	 yq7E0r/2htzy3qjGxJoIb7iiLuWsW+yEgbtqXqdri5x4wZAfw7ytqguQzEKXu3AABYNj6
+	 7eK8c4nkzNJRR5rEUMuagHBHX2z9l4slr4FS2yHrlyyx5G47sqYvQ5ZyHFFVUnOyRu9eu
+	 BM/LImaqCaSFRm6X++zQrt3iH9iyGWHArwkrNZzNLt+B3ifidJeM/9MrJvtR+jPkj5Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O1XCocHm;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D9H2bQLM;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0899E60A2604
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 20:19:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C2F0606A320;
+	Wed, 18 Nov 2026 20:50:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O1XCocHm
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2BED1F000CA
-	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 20:19:33 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D9H2bQLM
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 212241F000C4;
+	Wed, 18 Nov 2026 20:50:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795033173;
-	bh=VIqubSxa6chp+PQfAvvw0Nq36rRNM/+XIF5m2rPT+yM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=O1XCocHmC1uEbbj94W+sS5HN2aQj/aTWDgTaCJnorv60lbj1qrFLyAyz435tV64SD
-	 hjiTpKQP1aBE5Xqtu5DiEyl6PUEt+xKRZPmPy8EcRVZ/gD+TO2QbbYVuo+tY5i/rc7
-	 s7yKP/GovMGVe42SGHjiOot1t609AFaWZPHF4bm/5spD5boP/9q0vZOCG5uHrXy7z5
-	 FNbVyGMdlFzI39I1E6Wu1jFhLAOzqUm8/3ZPdWX2oD48S9sxkvJ+IWf6g9VQODhygK
-	 SYXFlpG6zoGOx49CIleiayWZZt/gXd6lgejMByp6jAVfvl9TaG8rjf7EAA8Yav0ee4
-	 ohzqEJK5/qgmw==
-Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5c1479be604so1151854e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 12:19:33 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErGlDK2inetf09mNkbgcF4mitQoJZUs0oM1ZZGa2hgLUIwdTe5i+/n8j8sN8qzvTc9aFMZ/pwVuggA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+UPDyIvTwqrDzoBX5LCCa9gNXyKfjeo4l50rEixcdvBf8Hl6FZ
-	9CJ5CZtamSfbMUvigSdOocZnaei8z6q7Q1LpPl8FRhfI0vJhcJ1fYI5IbSe+kaL1BUfE6outzAU
-	LWoqKI5KTtRg468o3Ms3ziH/8EsCsXug=
-X-Received: by 2002:a05:6512:3e19:b0:5bf:a592:1d6b with SMTP id
- 2adb3069b0e04-5c1aa2b7054mr1382701e87.62.1795033172582; Wed, 18 Nov 2026
- 12:19:32 -0800 (PST)
+	s=k20260515; t=1795035059;
+	bh=0aMgbQQmw1MPLXYBpDbUKS5IgiG3zEQxMu5gz/miA1Y=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=D9H2bQLMpNjY6yIUL4eRNe9xtgDcK4QHGxXWLYzlvB1bmUo8C+4C6H57Z6jg9sUA4
+	 KI2MfNZWHMF0hbxVFAJ4MbtoVerLZ8UCGf2jV4yN0WNM83SnHWTl5kcf6+9BmecA9C
+	 IR0ruJ0M3TZlseY9cOHVO+iRxj4W52ZhRlcTe1jTuvyyFF4rkiRGxbwbj80laq823k
+	 sOcXFUIbefvYS3SiHJo54xS8UrUoQKer4+6ur1h7Ye26LX07X6NmyiPvizyO0GovtJ
+	 ElEuzkCk84eFx59EadSVPsP+OrgTdyY+X8s8oUb5aHLo4Pf+umJYh0Ni2alCtb4A1m
+	 PeHU9oYDdRbqg==
+Date: Wed, 18 Nov 2026 14:50:56 -0600
+From: Rob Herring <robh@kernel.org>
+To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-doc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+Subject: Re: [PATCH v3 1/6] dt-bindings: thermal: thermal-zones: add
+ hardware-binning trip properties
+Message-ID: <20261118205056.GA839455-robh@kernel.org>
+References: <20261113-thermal_bin-v3-0-878df6eef8bc@oss.qualcomm.com>
+ <20261113-thermal_bin-v3-1-878df6eef8bc@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,42 +72,53 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261115-ux500-dma40-powerdomain-v1-1-da8b6e1a0376@kernel.org> <av4CJkri6LQO9FxG@SMW015318>
-In-Reply-To: <av4CJkri6LQO9FxG@SMW015318>
-From: Linus Walleij <linusw@kernel.org>
-Date: Wed, 18 Nov 2026 21:19:20 +0100
-X-Gmail-Original-Message-ID: <CAD++jL=ZFJFTV6zY=SA+aHMQyjw4MQ8zFgWmUUBEoH6vKDLTsA@mail.gmail.com>
-X-Gm-Features: Aa3M54pwwb9o1bjEenCJbSQCJmUNEtUd6VLIE0RDxP1yOLbxmTezi19Q1Oe1J4s
-Message-ID: <CAD++jL=ZFJFTV6zY=SA+aHMQyjw4MQ8zFgWmUUBEoH6vKDLTsA@mail.gmail.com>
-Subject: Re: [PATCH] dmaengine: ste_dma40: Use power domain for LCLA SRAM
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
-	linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261113-thermal_bin-v3-1-878df6eef8bc@oss.qualcomm.com>
 
-On Wed, Nov 18, 2026 at 8:53=E2=80=AFPM Frank Li <Frank.li@oss.nxp.com> wro=
-te:
+On Fri, Nov 13, 2026 at 02:13:44PM +0530, Gaurav Kohli wrote:
+> From: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+> 
+> Differences in SoC packaging can be used to provide multiple SoC SKUs at
+> different thermal and performance characteristics. The underlying SoC
+> remains the same except for how much heat the packaging can dissipate,
+> thereby influencing the critical trip point at which an SoC SKU needs to
+> be throttled. This SKU-specific data is typically burned into fuses
+> during manufacturing and can be read back at runtime.
+> 
+> Add two optional trip-point properties to describe this:
+> 
+>   - 'temperature-bin': an array of per-bin trip temperatures, used
+>     instead of 'temperature' when the trip depends on the hardware
+>     revision encoded in fuses.
+> 
+>   - 'thermal-hw-bin': one or more bitmask groups describing the hardware
+>     revisions for which a trip point is valid, modeled on the
+>     'opp-supported-hw' property of the OPP framework.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
+> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+> ---
+>  .../devicetree/bindings/thermal/thermal-zones.yaml | 60 +++++++++++++++++++++-
+>  1 file changed, 59 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> index 999ad40a20d5..cb9a8c96d053 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> @@ -152,6 +152,58 @@ patternProperties:
+>                  situation where the trip gets constantly triggered soon after
+>                  cooling action is removed.
+>  
+> +            temperature-bin:
 
-> On Sun, Nov 15, 2026 at 10:26:27PM +0100, Linus Walleij wrote:
+Use the standard unit suffix. 
 
-> > Replace the LCLA ESRAM regulator with runtime PM of the SRAM device
-> > owning the ESRAM34 power domain.
-(...)
-> > -     /* If lcla has to be located in ESRAM we don't need to allocate *=
-/
-> > -     if (base->plat_data->use_esram_lcla) {
->
-> Does it break old dts's back compatiblity?
+> +              $ref: /schemas/types.yaml#/definitions/int32-array
+> +              items:
+> +                minimum: -273000
+> +                maximum: 200000
 
-It would if they were using LCLA SRAM but there are no
-DTS:es that actually define the LCLA SRAM, so we are fine,
-all existing deployments put the linked lists in common RAM.
-It was an oversight or "fix later", "technical debt" that was
-introduced 15 years ago.
+minItems: 2
+maxItems: 32 ?
 
-After this is fixed properly with power domains I want to turn it on.
-
-Yours,
-Linus Walleij
