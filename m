@@ -1,79 +1,71 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795022746;
-	b=E7ZiDDBXN8qzGzdE51x8ncBQaoh/8EVRQhz8WaQf/x5ESnRbT53TxbNC7XPcYhyiM3C2
-	 IaLMBuxcaj9UBQ8Hy242X4REDmEoEjPUY0OTbj/olDxV+sZ2lvu0GXDlz5/todytq35vw
-	 VtXzGliHFsatz5YGJrFMRrFxbofmccoySruNYQNYrRsKZvnjiSPbe9WZrrgB1vfxZE7Uq
-	 S7aAjiC4ZU9wY4eeJvR6qAkyYcVWgV+GP1+LCHk9A6e4XyvrymTYJSeGmz2zs8PKbUOpr
-	 iJpkXnRtPpcJCFAAC5yraF5fbtIz/D0dEJtAWInnzoOusTpB/KG4mGpvwKwHNbt9S5w==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795022746;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=rboQuHxOmmu88XioB4K1KS/EAzIsj/yoeukyg9V2m3Y=;
-	b=aoF3HRbspQxVnShrFN1Zuzd3ONua2G07Yzq4AOES/o961pCvn4xGM16u3tlaqtZ1+RiP
-	 azT+hfBDfiWQrKrJADjrXGzjNWBlYVxpyV8nPmBfb3UBbucx3j7Xo5QHjXX+s8PBy9ysx
-	 QRGjCi5GE9mrfbeUqq4MUMnlD7sq0T1oma9y8g0LBhM4iDjCpF5iLF0iUJVw/Wr4FWrpo
-	 Uyudh9LzxJs+PQoWliyN+fbu9KrpWIESKQIuZ0ImCOWVLQA8K+OKCBUCVwxl5c+n7lZlE
-	 /8KTjuXLTkuOLyoUUYvoMs2aKe8uD70XMVtjBrzwcXT0U47BqW6jeOoyWU9Ym2d0QXw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iO3RnXWu;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FAFE60A2602;
-	Wed, 18 Nov 2026 17:25:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795026427;
+	b=bQPxbSprSxgq/RUTpsIBmbVuXoCaJHtT9Sn5Hg3gi/XBy7tleycoZ6agDsMqo/ThxGpL
+	 3Odcp0a+l+h/N3zoFK1sLeUclrjTUqX37lc6Lzk461hVDFiTfgVEni5AIxDE7/Yo8/DHv
+	 kvNBAtmiJkDX0FD0RbRLScuWlTRqmMr+mfeo7klnVVzH6tN+tE/rNFXN14i9Gu304sfNx
+	 aRZ02PEwe7x3veNgA355tHA/gZBBF8j17+7Eh2j7AF5ZuWoQSNnUYSjiRwOWr5qQcyBNv
+	 F2dwi/7D+Oy1hQNRuBj8Ry7/AoQCoVF1JMNLM+ceR6efeV87ALs+DQa9X+sVOmrCeIA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795026427;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=Z/lgf/GnvODHH2kSfd1ioOa/KiKtGaKkOea+zkHk+YI=;
+	b=loqeR4te4YFwecRqd8jAfsVIEchUiBCNFWJMGzEjDBr39CgT27ZA4t4TRZqm91ZXrFez
+	 roPKeJFMbOtG8PF2bkWmrVy/W5gDPJt9ILdJaEBX7TLGBzjXY9elBlmOjFWu+oF8/Uz66
+	 QpTwCggC2WSFkU8CTCSUP4WoHvO7Cg+YW5ZhSA+GkJAeeV/00oCbSBGlNf2bITKjm01KV
+	 v0QD7GBJPweFma+B/ivaD9dBdyoAzShrpkVA8mYN1bDyyPwqyV7TpY9Khg9oWbrZ1JZxS
+	 3wSCajnEdF9azPicHCogvZPxHMz192SFVMouskkX+HH5uTy0seumGAVVbTLVSbgsvLQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=OdFPmX7Z;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id AA844606A331;
+	Wed, 18 Nov 2026 18:27:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AA844606A331
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iO3RnXWu
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795022746;
-	b=N+Km3deuiTmxD1yUfBFifXa3u3SUabpgu8fSpTeKI/LZyioF1Ah+3W3LoC3JpVy60op7
-	 E08eYLJi9KnwEoduvF/Z3sst4oy9/6RQAl481IblRPuWYv+W25XUCShzpQM8t9AB1w/9B
-	 7MNPXQbEH+SnZm5NT3P4FL+pohjI9LLUr+ZWXSxp5AAvriSA1NbgGXmO6/wyg5AuHawuS
-	 5KFFESgNaFoqxW7lTP040JnMIik3IkLTSGng3eYsqsfRDU8tSrLr4v/Lwli/ZuSDnB7fL
-	 W4VNk/8CeH3pxUFJxGo/wN5PsVAI4HwWFkuD721xCFJN6Pw2PvVVw0ndibkPhOvZG6Q==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795022746;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=rboQuHxOmmu88XioB4K1KS/EAzIsj/yoeukyg9V2m3Y=;
-	b=UvjlMeOV6/w8Ge+5E0WTPkojuFvYHVGODxshBfslYqW9Gk2zO24cXlxFLqKuLR4eGLsI
-	 6gab45dJB5yTOg8qxC2ezD/jJhHUqYzXmA5/nSi1Dblc5iYA9AmWbJQvrhq5knA7lWeie
-	 4fhYZBQp1XwOytwQz//5Qzf3YMxxqFUvOE223hYsQs1+JmMADRuiWLU+9uF8+fOOVy4t9
-	 4UcvHn7QzsFESY7eucXVbQi3kpia2ODr9j5RVeSOTs5SEJVKA3HgFxS+pVCfa0A7DuD+8
-	 tH6e/7PYi9tHB1bNQqOCJzSdAzLIHkKWOL31lQPaFgQ1ubwPiFW4blNydMCikYmwAhw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 64A601F000C4;
-	Wed, 18 Nov 2026 17:25:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795022745;
-	bh=rboQuHxOmmu88XioB4K1KS/EAzIsj/yoeukyg9V2m3Y=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=iO3RnXWuNwcRO0+YfaFjZiooCexjcZ6+UMHmwuLGe24LB56pW3Iztr6Hf/4Nssm/x
-	 8vCmuPmim/X6SNXrMmS/LYnaxbtxlxorjwk46EFpeFxf8tif3cZASGWLOJhPH49AKe
-	 4ex95uESkq3h1qQox8z2i2AGO06DB6vCepwtqilwo07/1UNcKAyKWIS0dV8iI31uOd
-	 0bfoOumba7VZedCGgm9/PP357DNRgo8d83ro/Co4S9SgyLajYUi2SFP2IMMtrxsshW
-	 lbWUryFHqqZtZ9mdRlqv1OTNnSmhGBwnqd8X+2HdP2cxkLYWx1jJfy8Z0CGm9U3t3N
-	 oCH0bkg61eO6w==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id D38AD4AEC9;
-	Wed, 18 Nov 2026 17:25:44 +0000 (UTC)
-From: David Heidelberg via B4 Relay <devnull+david.ixit.cz@kernel.org>
-Date: Wed, 18 Nov 2026 18:25:34 +0100
-Subject: [PATCH v2 01/12] regulator: qcom_usb_vbus: Fix the
- MODULE_LICENSE() string
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=OdFPmX7Z
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E52071477;
+	Wed, 18 Nov 2026 10:27:02 -0800 (PST)
+Received: from gaia.lan (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2BBFA3F673;
+	Wed, 18 Nov 2026 10:27:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1795026425; bh=KD00H1LZROLiORUw7YDn6v/wgRaKM9BnTfzpbzUCeVo=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=OdFPmX7Z+SLEjJNH0jSOiiUGQ/J+Aol+4r8E/VTNF6DOQRuVpf4adrDYexah8mmF+
+	 4jDcYK8Wk7NsokRYoqRZ5Qw1H/1WTK2rN/deYIZVtBYReCe+v+Dclr7yWoC3bHHqXq
+	 xX5Rd+MsP0iG6Nw7Zw5AUKcb6i8eo2z7FBvm9dDE=
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Will Deacon <will@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Pasha Tatashin <pasha.tatashin@soleen.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Ben Cressey <ben@cressey.dev>
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Kees Cook <kees@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	kexec@lists.infradead.org,
+	llvm@lists.linux.dev,
+	Nathan Chancellor <nathan@kernel.org>,
+	Zhaoyang Huang <zhaoyang.huang@unisoc.com>,
+	Jeson Gao <jeson.gao@unisoc.com>,
+	stable@vger.kernel.org
+Subject: Re: (subset) [PATCH v2 0/2] arm64: use typed entries into copied code for kCFI
+Date: Wed, 18 Nov 2026 18:26:38 +0000
+Message-ID: <179502639864.2187887.8685436920018120058.b4-ty@b4>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20261111-arm64-kexec-nocfi-v2-0-ddf0c4aa326f@cressey.dev>
+References: <20261111-arm64-kexec-nocfi-v2-0-ddf0c4aa326f@cressey.dev>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,78 +76,20 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261118-pmi8998-vbus-v2-1-3c77a72b280a@ixit.cz>
-References: <20261118-pmi8998-vbus-v2-0-3c77a72b280a@ixit.cz>
-In-Reply-To: <20261118-pmi8998-vbus-v2-0-3c77a72b280a@ixit.cz>
-To: Alexey Minnekhanov <alexeymin@minlexx.ru>, 
- Robin Snyders <robin@snyders.xyz>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Wesley Cheng <quic_wcheng@quicinc.com>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
- Casey Connolly <casey.connolly@linaro.org>, 
- Sebastian Reichel <sre@kernel.org>
-Cc: Richard Acayan <mailingradian@gmail.com>, linux-arm-msm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
- Sebastian Reichel <sebastian.reichel@collabora.com>, 
- linux-pm@vger.kernel.org, phone-devel@vger.kernel.org, 
- David Heidelberg <david@ixit.cz>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1232; i=david@ixit.cz;
- h=from:subject:message-id;
- bh=6MCm0tUZg6K77qclXj7MxDYC5mznSlasM+gfjuaMpWY=;
- b=owEBbQKS/ZANAwAIAWACP8TTSSByAcsmYgBq/d+WCvmEc49O+Y7h/zvw8H8UpZW+GqBBvKKzK
- lbCjsxOyYCJAjMEAAEIAB0WIQTXegnP7twrvVOnBHRgAj/E00kgcgUCav3flgAKCRBgAj/E00kg
- crfpD/9hYzqBBAGwbfwHsX3WZ2LNhqt+/S6RTU/pqZmHLxXub/7XKXdB4B3BxavgdSqQchMplIc
- mIBZ9/pOGqb64x957Hb6uOAuiBNzNFg3Hs8wwS40ardiAsvSxXpDwOowr6wGylJv6S3sAcoDm5/
- WhZxhd8nqdnqwI3y6ZG0deEOnggo4JbjAbVv3bwCz/5OXzsCin8uuo+UFZb/M8hNWaBpBycBvaS
- 2pcYwd5r8/ViKiEljpXP/12ARctl2prH2vs2kUfhjKwj+Y/2eFDaJctvl/CgzkwtAFatP/aW93g
- 1UMYvd+2H7FzrQqLObHg0Mf2iT92h3ASePHjbg4bJyQ7PWvJWRm9wYk19xvvziFvOmVcPaDucym
- evyibJ9eDrHo3cdF0cdOoCYCkA5hEmgKfTH4rLZQZAqd/H2W5FqWEq7HV63bRG4IhYBev8VCDQ4
- xjXuZUDt7dqqESbofr6mySdSbJVD3cSPQVR1pjxLyyXvT12cpND3cjeK5G64HcsB058VMlAHotN
- cpmy55WLTC2uV7tqx+WJK0QHaQajM+1ZWB8FJeiQS2RV8VgOthvJdTjtERbXQwWFHxWwUZnoyZe
- f3sxcWPvFs1q2oGxeIKyIw9RA+7UI+Ip0xDQekP3Fmcc+QXk+CxvXkPH3bGW0gw7CnDdc6uG18W
- 8OLxT6zqmi1x5AA==
-X-Developer-Key: i=david@ixit.cz; a=openpgp;
- fpr=D77A09CFEEDC2BBD53A7047460023FC4D3492072
-X-Endpoint-Received: by B4 Relay for david@ixit.cz/default with auth_id=355
-X-Original-From: David Heidelberg <david@ixit.cz>
-Reply-To: david@ixit.cz
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-From: David Heidelberg <david@ixit.cz>
+On Wed, 11 Nov 2026 15:26:03 -0800, Ben Cressey wrote:
+> An arm64 kernel built with CONFIG_CFI=y oopses after "Bye!" on every
+> kexec that relocates the image. v1 [1] marked machine_kexec() __nocfi.
+> This version types the copied relocation code instead, as Kees Cook
+> suggested [2], and does the same for hibernate, as Mark Rutland asked
+> [3], so that swsusp_arch_resume() loses its __nocfi. Only kexec faults
+> today, and its fix does not depend on the hibernate patch. x86 follows
+> as a separate patch.
+> 
+> [...]
 
-Replace the bogus "GPL v2" with "GPL" as MODULE_LICNSE() string. The
-value does not declare the module's exact license, but only lets the
-module loader test whether the module is Free Software or not.
+Applied to arm64 (for-next/fixes), thanks! The second patch is for 7.5.
 
-See commit bf7fbeeae6db ("module: Cure the MODULE_LICENSE "GPL" vs.
-"GPL v2" bogosity") in the details of the issue. The fix is to use
-"GPL" for all modules under any variant of the GPL.
-
-Signed-off-by: David Heidelberg <david@ixit.cz>
----
- drivers/regulator/qcom_usb_vbus-regulator.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/regulator/qcom_usb_vbus-regulator.c b/drivers/regulator/qcom_usb_vbus-regulator.c
-index d909a6f2b7f14..88f5a6ba79e6e 100644
---- a/drivers/regulator/qcom_usb_vbus-regulator.c
-+++ b/drivers/regulator/qcom_usb_vbus-regulator.c
-@@ -176,9 +176,9 @@ static struct platform_driver qcom_usb_vbus_regulator_driver = {
- 		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
- 		.of_match_table = qcom_usb_vbus_regulator_match,
- 	},
- 	.probe		= qcom_usb_vbus_regulator_probe,
- };
- module_platform_driver(qcom_usb_vbus_regulator_driver);
- 
- MODULE_DESCRIPTION("Qualcomm USB vbus regulator driver");
--MODULE_LICENSE("GPL v2");
-+MODULE_LICENSE("GPL");
-
--- 
-2.55.0
-
-
+[1/2] arm64: kexec: use a typed entry to fix kCFI oops
+      https://git.kernel.org/arm64/c/b059e957d07b
