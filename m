@@ -1,100 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.37.111.173
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.49
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795018018;
-	b=oP65D8ichfLL2Y4KS46U81FamOgtE+slWGV4JuZxEwf1Hqx0QwlEwoFcHc6RIJFiOh+q
-	 rBcEHoQURRSqtoDq02j5FLCBKAs/XhLmk6u/gocxTToUwWnYBV0dIS6GL5SsaT+mVyJE5
-	 IsuAB70RJMFPpMl0FXkTyOtpUhcqXE/lZnm3WT9CUdxbiXOhPex3NWuNgUye5GRhob6PE
-	 dTQle0hJky3NGU8d/098x/rrKVyZrUxN3sqg4pP3A7/VKWBAgae9MLiXijz/MUvPQ3wCu
-	 TP0bmHkZj5SMijOyfrlDPPUsiMjcJKiP28hj6bxaKOspV3WG3xJXnedAoUV/FlKf3PA==
+	t=1795018067;
+	b=Z7/0Lb2Ki2dIr+q9wX0KQn+wxy409WhTAsHUCpzvK+OLPHPTkBELkX1COWyFVzmwyYvP
+	 Jjgvf5rtIdTln84z93fZg1mMxtJ4fTvDon25tRNodBGy6v2yl9WCOkAauWWlOI9jtG5wy
+	 UuZiKoi2LWAZBoDudTAjQ6jQym3+XhWRCGiW/EQytsGyR4lDOh9VDSAPx0z3CpKWF55/Y
+	 38bGWRpf6FoyHtnFnygDG4MVdamafBrbAAwDa4foJ4XdddnXUysU/55s/IxqipcFv5GuP
+	 qsigRNpUyNWhw9/8A8ljyNn2RlZl52/S6vd/S3TE6OcS8jErMig9+aVbtWGuQZe0H5w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795018018;
-	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:Subject:From:To:Cc:
-	 Date:In-Reply-To:References:Autocrypt:Content-Type:
-	 Content-Transfer-Encoding:User-Agent:MIME-Version;
-	bh=33mAv7H3VUy7v6ipmNAN/H+V7FHfCLPW/SJICyXtSnY=;
-	b=X1bbk+9scPB2a6lgv9Luf+/li/9XABDZkcfWFMJ1gPF78ORvCcpRMQpkVZSukQw+VCD+
-	 dpNqjRv0GRRQE5DxMZD0byBGNxl5QPPqsxdV4OVej7I8niAhvGnROrlrIGOSrcWf7RsEX
-	 vo76K9AQkMMCD93+LcaK07xU6/nL1IJMSMWInQB67QOf1xcpizKgHNQYOgyiaM5wSfdXz
-	 pk8tWQTC9DTVMV38szndWoC4KAqW5BtDoASGAKqpuSrgpVqpvfiecIfkmr+I3CmqQQi9f
-	 o56gN58Dl2LzaQAkwmtcFUCzaveOOLZkuuibDd7K74tM0Vi46mIJdDOi5FMbW+qY6dw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795018067;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-Mailer;
+	bh=miZOpsXXWqTDg4brI3XNa3nMkTf1a4j0jITu5ECiOM0=;
+	b=sZqJKLaxxJb1ZpLwUtcjpOIoOCF3A4zR0FE7tun9LahTuHO1Aju5gHYcmohq7IxZ41Q/
+	 Ki4eWdn8G7i7MbG5abUM8M/czuhKiJAkHLAKoxUbzumTFaSdBr8GhiqyVqbr4NrLSMki5
+	 qLs8iaokNPvt2N/rHYALL+uhQzmHaN0pxf4wVbUURqiXRZbP0OajlQtwQ1PUtt40GLb3K
+	 UOybzlZZlxg7BV3H3W5422Cj17jUvQJoAdgPBTu/R/RdowRR2X4LWUKTYcWUoOSPMKMva
+	 2j86OEAZQJH6w0XBspzkE5e+27H7hMMaynxMPo211RIgyV7R1BZd/mS1dRY0th/C2Dw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=HansenPartnership.com;
-	spf=pass smtp.mailfrom=HansenPartnership.com;
-	dkim=pass header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=xVWQBudA;
-	arc=none smtp.remote-ip=198.37.111.173
-Received: from lamorak.hansenpartnership.com (lamorak.hansenpartnership.com [198.37.111.173])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=none header.from=kernel.dk;
+	spf=pass smtp.mailfrom=kernel.dk;
+	dkim=pass header.d=kernel-dk.20260707.gappssmtp.com header.i=@kernel-dk.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=rfERdRut;
+	arc=none smtp.remote-ip=209.85.160.49
+Received: from mail-oa1-f49.google.com (mail-oa1-f49.google.com [209.85.160.49])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1721606A320;
-	Wed, 18 Nov 2026 16:06:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C1721606A320
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=HansenPartnership.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA97A60A3818
+	for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 16:07:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EA97A60A3818
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kernel.dk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=xVWQBudA
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1795018016;
-	bh=qtu24fskTUDWBcD5rdt0E6zdsjXsbEIJB+o1SqYVNdo=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=xVWQBudAMK6ta07v93pS0G46xtO8VdwAmK8NLQcv88PPnROHOGSMrotILnij48FyF
-	 EkmRaYy5Wbms8VGsAIyNrAZxQ7My0g2Eykib931DoX85/cstDNMWVInA0W3Ira7dRQ
-	 TPvchbByvDH5RW9MzT0lZb9+9ObSY+at1nO6abwM=
-Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4300:d341::8309])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id 161F81C081C;
-	Wed, 18 Nov 2026 11:06:56 -0500 (EST)
-Message-ID: <ba43d150febc8a85247d6c54f57db0835cb8f5de.camel@HansenPartnership.com>
-Subject: Re: [PATCH 01/17] tpm: Define a kernel-owned TPM NV index that
- can't be modified by userland
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jarkko Sakkinen <jarkko@kernel.org>, Matthew Garrett
- <mjg59@srcf.ucam.org>
-Cc: Matthew Garrett <matthewg@nvidia.com>, keyrings@vger.kernel.org, 
-	linux-integrity@vger.kernel.org, rafael@kernel.org,
- linux-pm@vger.kernel.org, 	linux-efi@vger.kernel.org
-Date: Wed, 18 Nov 2026 11:06:55 -0500
-In-Reply-To: <avnMl7fD156F1fx4@kernel.org>
-References: <20261008132532.1155166-1-matthewg@nvidia.com>
-			 <20261008132532.1155166-2-matthewg@nvidia.com>
-			 <435907614242e82ecde1767a967a3110fca6fb37.camel@HansenPartnership.com>
-			 <asqthz69ohnMVCye@srcf.ucam.org>
-			 <059384e86fd256618498b9a7214b6421d38fdf1f.camel@HansenPartnership.com>
-			 <astjpI65VOyU8xvI@srcf.ucam.org>
-			 <f002fc613bf0bdcf895e5be02dfd2524b7608787.camel@HansenPartnership.com>
-			 <asty4acE2B94t5q6@srcf.ucam.org> <avnMl7fD156F1fx4@kernel.org>
-Autocrypt: addr=James.Bottomley@HansenPartnership.com;
- keydata=mQENBE58FlABCADPM714lRLxGmba4JFjkocqpj1/6/Cx+IXezcS22azZetzCXDpm2MfNE
- lecY3qkFjfnoffQiw5rrOO0/oRSATOh8+2fmJ6el7naRbDuh+i8lVESfdlkoqX57H5R8h/UTIp6gn
- 1mpNlxjQv6QSZbl551zQ1nmkSVRbA5TbEp4br5GZeJ58esmYDCBwxuFTsSsdzbOBNthLcudWpJZHU
- RfMc0ew24By1nldL9F37AktNcCipKpC2U0NtGlJjYPNSVXrCd1izxKmO7te7BLP+7B4DNj1VRnaf8
- X9+VIApCi/l4Kdx+ZR3aLTqSuNsIMmXUJ3T8JRl+ag7kby/KBp+0OpotABEBAAG0N0phbWVzIEJvd
- HRvbWxleSA8SmFtZXMuQm90dG9tbGV5QEhhbnNlblBhcnRuZXJzaGlwLmNvbT6JAVgEEwEIAEICGw
- MGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAhkBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAml2ZBI
- FCS3GUMIACgkQgUrkfCFIVNZKjQf/deRzlXZClKxTC/Ee2yEPqqS7mm/INUA49KdQQ5oIhSxkUBy0
- 9J4qjMIo5F8ZFkFTqikBqeL35LKu7O7rn8WETfX8Bxvos3HUsl3jHo34DES4MUFIpoQPgtiLRGwLb
- K0cVCAArR2u2qj4ABmTRrs1I1kvdjEw6gatOuXtEe/j5O2fvfzTq9GBr0Q3n2IAsFXi4hLlx6VPE8
- tyWUZ8BWJKtih3JAeUiXFvASL3McV0rV9RnU0VbjEQEhSE7PMYhWpnDC9AyBb0lXJllQRvC3NSkUB
- 8KVQgNNxRPss0WE/nBoZ4dFA42jTyzTz8lNylxZoAWV7WJb3QxVg4oCodRVrxxrQhSmFtZXMgQm90
- dG9tbGV5IDxqZWpiQGtlcm5lbC5vcmc+iQFVBBMBCAA/AhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeA
- QIXgBYhBNVgbnPItGJxvq2a34FK5HwhSFTWBQJgS5mYBQkbNYS9AAoJEIFK5HwhSFTWBpwIAL5Bk3
- 5FB34U6iHmDzzgdCbxLTs43T/YQyJpcGIvopBvnI/fDY8oSG6Df64/O6B+1R+A8TDp6ZG5ysUWnCC
- 6GuIaEHemBYkitMPglR6+sGCMQY7O0mlsPvdssvKK1KI9Bno4VU6ogaF2qVzefSqg1Djmf/DcsxWP
- rI/jdJ8FB5AYR2rjIdDFc+zRdAJuavo1/anyY2wgpFh/3R8IOYAEfWV9nGgYkf9+tA4EIn1sxE0I3
- L5oW2N3mbyRrkzuBwO8ztMCwqEPk7moWzhokcZqMXiAIahaZdkashJC+s2X2RZSGCy+g+pvY5NN4B
- BVG5XwLgVBqbHMTcxE0fbmPqz+q6O0LEphbWVzIEJvdHRvbWxleSA8amVqYkBoYW5zZW5wYXJ0bmV
- yc2hpcC5jb20+iQFXBBMBCABBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAmODZ5ACGwMFCRs1hL0F
- CwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQgUrkfCFIVNZu0Af/TzvL2/NdgAcw9uN3x60H8
- jc4QUq14VpxcFEFEMpcj1morkX/G93V+56HBBaXZj+yK8PhxIA/SIz+sU7C/0YvKuvzakP8ZX/7WJ
- e32SOUtjfr/VTaqjIBzNj6OxLvZpmNbBw7s6DwhhNpHOWqJ/1ml+PtDRDV71IB58yVqQjp1xlNKVl
- ZppcJ5908EJzsFnRIVjiQiDSKoppqB2BCibBbrWcln7CiWMyOC/cco6SIn6twH+f7+aivJ3xGcOE2
- a9gBKF5rNi9TBoX9oyPmshv/TDmnohsVrH7AYXlGYfZTk15SWEiROh1QX8/uD9wl/gcIv5EDUpT/F
- L2jzOsA5663bw==
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 
+	dkim=pass (2048-bit key) header.d=kernel-dk.20260707.gappssmtp.com header.i=@kernel-dk.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=rfERdRut
+Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-4b563403c7eso353917fac.1
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 08:07:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernel-dk.20260707.gappssmtp.com; s=20260707; t=1795018066; x=1795622866; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:date:message-id
+         :subject:references:in-reply-to:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=miZOpsXXWqTDg4brI3XNa3nMkTf1a4j0jITu5ECiOM0=;
+        b=rfERdRutCiY1Lz5trk/rT3JitdkQbyeRpy92SAEBTr0SmwHHW7GjbVlsL6xi4GLvlA
+         eIy6I8HWFFPJEAko7lPdUqZJ0ASfQs39uGsb2kxFW41b1JV5vmuNw7JyeQ7RyefPZ0K/
+         9xQMAXHoHzpNH4wuyizF2fSFPUA4p28V42dt2F4Kqw0BLpetMDyzdYPIEpOPJPmRoJPR
+         CA0R4B7acExX6CwARQsZdifC0Die7wBlG1RRQSCl2BNtFRelYwu0NbJSKXPCQplp7vXG
+         14ey5H5NU8zd6o0RiLfoiNrrbcb/neM2Pssr4bC/1VTI7DlntKS58QKULJCOW7HRil/c
+         C9OQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795018066; x=1795622866;
+        h=content-transfer-encoding:content-type:mime-version:date:message-id
+         :subject:references:in-reply-to:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=miZOpsXXWqTDg4brI3XNa3nMkTf1a4j0jITu5ECiOM0=;
+        b=RYQmuynWFra2TdnxxT02yMmIcRQOImEVKWCJ0groXH96eWbpmxfdyi0bDamsZCD/Fx
+         /5QsGg0ENnZbACAfIjOoAuiD/1fXublOiS8pgIioBufM3XWv6HNPKLpckMQKC/dKSxYA
+         4aBGC5wFMcIu1CV+aQHY1bzz4Y75YszKbg2XUXr+R72fZmSGPTp0ITlArlfY2Xan4S7T
+         ywOPyldPotRGe+GPYkDFR6LZkYFRAZZMe/yROeNd9usV64Lb51jIYMgzYi+WGQyCB6Rj
+         6td9D5rT4ISaZbMcNhcQMRkJvMBy/6s10Fd+5xaWSWedcCS/ZXy05qjlO/iKSytgzmD/
+         iPfw==
+X-Forwarded-Encrypted: i=1; AL+hErE0HruEEz/8/0eRRHfRuPpV67Gti26OpLGaTnRA1cOM8Fn5aVWTi8tfBUdC0bhycPBWhNQf/ZFcjA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9tqVKCFjTZDOUByScq3exQ74V42jeE5tboBbkkcmA26nBq4zQI
+	a8kmP6mFJjPNf/JrPf9AlKL/S7h2pM4feQt5HQt/2hSIZiSyGjnumU9pAbf9mZFjqnHWLiAmAMR
+	E9SS/DtM=
+X-Gm-Gg: AYBFou2VfqjY+1Y31yQnE/ty+xm5Ei8ltC/O7Q3lntkyU0AHqv/VHzojQvyh/EFv7K2
+	cFxgiMHA44idZHFETDIvshsNyvozqF/1RdhMWNmDDFkkB1CNgFRpamLro07TlytEPc0SMhy/oEs
+	p8gb5mj3TZ/xHdHb8XRTmaNmx6R+pBEjxbLuscYS11TXOxbAxTOCi0O/I4+PyJ35uHbYmDRPa4U
+	6Ia2ph2ZuIOMvGQvkD+Twczsk2D+5wrkvhUfQH7bJYt3+VFs42D52imiizYjDmrEJ8xWVDaVrmZ
+	1nav9WJ5EjGApM0CNN0fkfQhjKNCSwOekZgk+PhWFWcyNa8NAw1xMLiEITC27t+VOYkYbOsBDCS
+	ZWpY7404WlQdWLZ9KG3Oc5Ld0nn8OHILt5VRvwy8QHzyXuE32/BBWUqX+vFjF/RRJt2Vw6sgQKs
+	ViLV2D4C5ehMRVLA4d5MsfI3BUaycjen9EqEGgPKo9uesdxdTKWPYGUtKJhgq5MJSM4A4CmMFSI
+	JSEVOGpWx+pUHoYamg7/cNIQpdgB+73/k3bjvfezYYmGabjSPckEkg6O8aXlw874HagKVXfV+Sy
+	2wYvsyN2uhlRAyzvC0A5TAHPyaqWNQP6Gz2lti6Wa08raVynRWRrg94joI4WcuzMvn4yigliWDW
+	tXHeOBcmcpnYkEPWFbgOQ4o3xmpwIp7dTnt7LUIx8ps3B3DXMOBjbu7z24tobGmWCSsRm6NZo
+X-Received: by 2002:a05:6870:8920:b0:49d:c8ab:967b with SMTP id 586e51a60fabf-4b7620acf02mr2521246fac.47.1795018065606;
+        Wed, 18 Nov 2026 08:07:45 -0800 (PST)
+Received: from [192.168.11.112] ([96.43.243.130])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4b743721fe9sm2624231fac.6.2026.11.18.08.07.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 Nov 2026 08:07:44 -0800 (PST)
+From: Jens Axboe <axboe@kernel.dk>
+To: Stanley Jhu <stanleyjhu@google.com>
+Cc: Bart Van Assche <bvanassche@acm.org>, 
+ Brian Norris <briannorris@chromium.org>, 
+ "Rafael J . Wysocki" <rafael@kernel.org>, 
+ Praveen Talari <praveen.talari@oss.qualcomm.com>, 
+ Alan Stern <stern@rowland.harvard.edu>, linux-block@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+In-Reply-To: <20261104112744.1630864-1-stanleyjhu@google.com>
+References: <20261104112744.1630864-1-stanleyjhu@google.com>
+Subject: Re: [PATCH v2] block: Keep RPM_ACTIVE in blk_pre_runtime_resume()
+ when already active
+Message-Id: <179501806424.17649.9429091372346585775.b4-ty@b4>
+Date: Wed, 18 Nov 2026 09:07:44 -0700
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,48 +105,48 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15.2
 
-[Matthew seems preoccupied, so let me try]
-On Sun, 2026-11-15 at 17:15 +0200, Jarkko Sakkinen wrote:
-> On Sun, Oct 11, 2026 at 04:28:33AM -0700, Matthew Garrett wrote:
-> > On Sun, Oct 11, 2026 at 12:27:58PM +0200, James Bottomley wrote:
-> > > On Sun, 2026-10-11 at 03:23 -0700, Matthew Garrett wrote:
-> > > > Hmm. Well, that's irritating. Which year's XPS is this?
-> > >=20
-> > > It's an XPS-13 9380 Core i7 ... circa 2019 I think.
-> >=20
-> > Yes, that's definitely later than I hoped. Bother. I think this
-> > patchset is probably still worthwhile because it does unblock us on
-> > at least some machines, and the implementation is intended to be
-> > opaque (other than the change in PCR 5 measurements, but we should
-> > still get log replay) and can be replaced with something else if we
-> > want. The other approach that springs to mind is tying this to
-> > having distros switch to a new kernel signing key before enabling
-> > this and so having PCR 7 be associated with the feature, but that
-> > sounds like an incredibly tedious thing to get right in a reliable
-> > way.
->=20
-> What prevents blocking PCR 5 access from /dev/tpm*? If firmware
-> already, does it, this can only add defense-in-depth.
 
-Nothing does, but what's the concern? A random user writing to PCR5 to
-disrupt the validity of the next suspend image? This is already an
-existing problem for binding secrets release to any secure boot PCRs.
-However, if we start blocking access to secure boot PCRs, there's a
-high likelihood of unforeseen consequences (like interfering with
-unlock once secrets that do capping writes to PCRs to prevent
-subsequent releases).
+On Wed, 04 Nov 2026 19:27:44 +0800, Stanley Jhu wrote:
+> Since commit eef1d74bf88f ("PM: runtime: Only set runtime_error on
+> suspend callback failures"), a failed runtime resume leaves
+> dev->power.runtime_error at 0 with runtime_status set to RPM_SUSPENDED,
+> so later runtime resume requests run sdev_runtime_resume() again:
+> 
+> 1. A runtime suspend increments q->pm_only from 0 to 1 and sets
+>    q->rpm_status to RPM_SUSPENDED.
+> 2. The first runtime resume fails in the driver callback, and
+>    blk_post_runtime_resume() sets q->rpm_status to RPM_ACTIVE and calls
+>    blk_clear_pm_only(), decrementing q->pm_only from 1 to 0 so recovery
+>    commands can enter the queue (intended since
+>    commit 6e1fcab00a23 ("scsi: block: pm: Always set request queue
+>    runtime active in blk_post_runtime_resume()")).
+> 3. A retried runtime resume calls blk_pre_runtime_resume(), which
+>    overwrites q->rpm_status from RPM_ACTIVE to RPM_RESUMING, so
+>    blk_post_runtime_resume() sees old_status != RPM_ACTIVE and calls
+>    blk_clear_pm_only() a second time without a matching
+>    blk_set_pm_only().
+> 4. q->pm_only underflows from 0 to -1 (triggering WARN_ON_ONCE in
+>    blk_clear_pm_only()), blocking non-PM requests in blk_queue_enter()
+>    and __bio_queue_enter() while the device is RPM_ACTIVE, and the next
+>    runtime suspend increments q->pm_only from -1 to 0, letting non-PM
+>    requests dispatch while RPM_SUSPENDED. This hits the UFS device
+>    well-known LUN by default and SCSI disks with
+>    manage_runtime_start_stop enabled (ATA and FireWire sbp2 defaults).
+> 
+> [...]
 
-The better mechanisms to address this are probably:
+Applied, thanks!
 
-   1. Detect that PCR5 has been disrupted (get the kernel to store the
-      on-boot value and check they match) and if so refuse signed
-      suspend to disk with a message (this is easy).
-   2. Capture the additional writes to PCR5 and store them as part of
-      the attestation so the resuming system can prove the current boot
-      value of PCR5 matches the attested one when the additional
-      extends are replayed (this is a bit more complex).
+[1/1] block: Keep RPM_ACTIVE in blk_pre_runtime_resume() when already active
+      commit: 657d7c48b84f2ef0bf885b47cf2318823bc72970
 
-Regards,
+Best regards,
+-- 
+Jens Axboe
 
-James
+
+
