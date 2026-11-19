@@ -1,79 +1,80 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1795122983;
-	b=ipxpblsFuL179lJhilVgIVxZgEGphHoBwFn9W8YW2op0eNWf8NvQSXIKBOfSDFCrDEDl
-	 quP6/9Rd583osEB3E9DbHRbpb7JwLAZ4IjXIPdZ4xz/WYL9uyGa+ek79zDP5MVWPgyHXg
-	 BX+B58W2FUsxFPawE5KitMnFSzCr4ux5KSy4gFTdauZPOYaTC45PVwgvgiK3oqgrJL8vq
-	 GL6q3PB5JfBAv0wszRqalc72r9ZZE6G5MMgoN0X3uof5bSl70yOnc9MmpTpb1NRcdStOy
-	 6Rf69piT6cjCgKSXUzaOUc3Uk/PuprD880IwzZYVmYeD+zp/9IBU1EDzPyxSmcDUMZw==
+	b=w1NEZbqJkpMj/UAY+6nBlTaG5PJbOb9XNxf8v29jKyrlbsIC1rj95M4/AW58NUQ4/i3h
+	 CVKTuizdOqkiID3ymWMp0Zvrm0H7Q/ktrpheMbtIkAs9+yDIN5B23yn9aji9+ORyeCGbT
+	 jNI2uL5LX5c0xCnfggwgdQmIJut1SRylQs1ten9wW4WjRLWW2dSoWgHvXRjZ3dVSkGJ3i
+	 KM0FFeUNKxW4AHzUaK6m9Hlus2EQParUx50mB/1RccEeHamqqx9PLRIEObPHSM+UBY1l6
+	 wm9BSR0Ylfm6JbDyTycZaz4quTS4n4Ct+5jz4xbVW4dfGfcyS162C2YQKyPzG2NuRLw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1795122983;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=aupp4QHokLjdwW4ntsE/x/zafUYMMUQHTI33xAd/+K8=;
-	b=prO8EI9kEOCCBXgTI8F+3HDxTj89huV7A1QtK9uqXtqnApDVFUVl5FOJqSzYkxfxsO37
-	 W67I0lpPPMybFbiO2EVEwWCHH7TYmutFQadvy9AxBTyAwujWGqvG8nv/fOOJRGTPH1bXo
-	 aMpUblzRuWin0PnHJYV1Zow2uh4soHtkv4QJMI0r1jiMSnuj8ZL0ao/R+EYqYQYSb5I+k
-	 LWOaKNX03rK8sJaHmcV41AzuyWR/GC7yHvDOjSB4E+eqgtJhyca5BCshQ6tfnyRHcD4Nl
-	 8pFEl2lWh7xKXZ7UAMEIQtyjnSoImobp1zRHZcO8XxHdBwbDJpxfSD4QhnJpE0U/OyQ==
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=uk2iSiMbWIf9eudFj6mDV24oWgo0g9mcvTS55UWKw6Q=;
+	b=WgazdFSWC02HaT+V9BPJ1cBE4GOuIY3Sv0+HF4KmvElRFbnD6SyXBE+d0oHt728yDLO5
+	 l/4BX7cduXZHtJW/eCdLisj6jl/MDJUzJritEcnLEZB8mX/6ME+Jq7bko/g7BQYzl/YMO
+	 i+AWH6bfXOuQdKJ/HQqLxQ49U+Jw1G07uq4MALUZKLw6UgrlEFwLTab86+/3Ozp8ktXdv
+	 5Ic6CKd6SICWW0yTASKctlw3oidND+CiPeSBzVeSKY0L4qn8rx6u7O1MDMkFEx0RycQiL
+	 1HOY+fDclIgksfAYfjdCBiBAdLYsgAIT8DKWMCRb406r+7MvLGcsatPtxQQq31S56XQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d4b3s0j+;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oKd1Sg7U;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9569560A2602;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9567960A2601;
 	Thu, 19 Nov 2026 21:16:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d4b3s0j+
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oKd1Sg7U
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
 	t=1795122983;
-	b=ah8YiNJe7uxW//wOrP1Ks7ZLgDHnKi8NYEVdGQBJlEJ121EO9Q9EiaUtsBpbZ7BmQRoP
-	 hu16ipDwOqJDzGPdao2oQm6bvLNFBBRBzgUBkxQXfsztL3s41BjhnwAHQQ7JsNwsU99jx
-	 O782DB/G0CU0dNUQ19Dv2okNkHi6BcLGq0DPphfL76LBr1n0RLIVPIL8FZtnS8kqMygnf
-	 sb3JUlMw2kog1w4pZGN3FZ5isLls1ppF8V9kPVF1im40Jl55+hxyH9TZy9JzZfDD4IP0Q
-	 q1VULtytauu+aYZ1PUUyTND8kFRXTjmm46D5XqZnW+jcGdn6O6bAvQ1f10LOLwZPc7A==
+	b=CIFL92rN/XwXTPZenqrPkUCHoGcK1MraWV4gJBd70K3tFh+HiPHY9wseHQKYwFxb7rm6
+	 z23COeUHAGuB8MLAMXHYqd2lH/f5kjSpP1U7Ys7paaJXxb84FCD7T0dzMN2pWskFnpZPv
+	 WI210p6MxlP4Zg2AnL3abOkOtBvNSpKr2a2FjKXC/QMnjcRMf8mSc7FAQKssyfOeT0QTC
+	 jatdwzC1P/7Bg+rRWhnTvwM40zoUYxg5V+ZT8qZfZmrkQBtbM76kEeRQ3bQHy6EEZ+uUW
+	 LfCVfUeShg0qAySQcCQidBnJCVk0ByyMQlJ9a7X+eO+lZEbWmgi1dTGbPVoLmPQbx2w==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
 	c=relaxed/relaxed; t=1795122983;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=aupp4QHokLjdwW4ntsE/x/zafUYMMUQHTI33xAd/+K8=;
-	b=X3Rv1Jalu9SkUrhWbVIBRJYiaG+HvJ97YJ+giinJdKZUOkl22c5CB8r4tUq2eX2HZfcn
-	 TS3Qxj+qsgU+PAfXuRYrUerLYiVImjj2DFIY99+OgJxl+CfkRmIFB+obe7bCJMIEAdxBU
-	 ja7oJLjtMYdpMY0CTsKCf37y3EURkgddiE3aNgblhCl6r4Kmg4OP2QxaeVmZx349RbIb8
-	 rNyiBE76cyZgGT3mkDs9nBygz9LiKJYDcvUlDOBIjnVFI73wVarKCDG53eO7xqSzjy3M9
-	 wWS3zYfx1vuV8qQgpXcTE4wvpbi+Ym0j4A2Au6L0E32F4iRkFuJnFYC5NzvkP5EraNQ==
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=uk2iSiMbWIf9eudFj6mDV24oWgo0g9mcvTS55UWKw6Q=;
+	b=A8nRvCHegzWkwAK81nWBFZb4WDgHZXKBYDL2PzvyDta+JGmV4DN9v3HWhMFUGDkP2xCV
+	 n6wuMMxNHbO76mBN/h+DGoP0zVgP+YBnLZONbDAz0o/N8f+VOp18GSaQNyo4JVpYLzm1A
+	 x0uwLlcLW3RIhrWl5w9yEy6dbUjaasvKTtysp30AuDZx8xOPNHRAsDCv0hm6LaWfOqxUu
+	 9FZ0UIT0+BpFImWPOobCjcBZZmA4p9bpPXp6eb7cEEj4snHJBoDLeOzi+Tv7t6PxS4T1j
+	 0Tb8Z1CI9DzINRc+G3//dbBEpCnq57ygHzFhTIlRcjRS9AtWTrRUCnxfNQ/z5EMfejQ==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 9F9901F000C0;
+	by smtp.kernel.org (Postfix) with ESMTPS id 9FBA41F000C4;
 	Thu, 19 Nov 2026 21:16:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1795122983;
-	bh=aupp4QHokLjdwW4ntsE/x/zafUYMMUQHTI33xAd/+K8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=d4b3s0j+C2u3vFPuMvQWlJaUvRGgxqSitEr2YEsF41Ty4a2M3Kdfn3dWBXdHJpwCQ
-	 w/WNqOn6gnx39RXlX3cQaUL4FLTimpv1/1tMB3SZDumrMsyycRKpcSTBhxfmy3w0sF
-	 mKAY0hoBS+yw4XRoF+rPK7S/yr5Q7P4MJ5XiSCZMWHep5nHXVHj+dp+gEJbTINixGZ
-	 zBzural9FdPPnKc6PdtKqFliVJg+c/pKMh0usD+UNGmGeARgvITioFCqZLPgTPjULT
-	 Pz6TFFiMu5x6rnSnX7CIUOF2VXj1x0Oc9TaMdHKXNaI2n9WYygwouyBbJmFkgmgp2C
-	 TltEAocNh1sKQ==
+	bh=uk2iSiMbWIf9eudFj6mDV24oWgo0g9mcvTS55UWKw6Q=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=oKd1Sg7U8dz5jMQlvc+NyuQcbSJTrcxfEf9desfWqZ8OnkRzNw/3p1+PuNZeqSJGD
+	 /tIx9IO5q2EZ6GRYBcyx1D3Ij1I8aCWTVP+EO086zsrJChVrZM3MlKkJI8wiPC9buJ
+	 fvWANeYgohVV1BUsuQs8ttIDezAKgmAEEdvHkkDcUkTa5uRnSo+cq0EIbJrZ181xXx
+	 2S4HSp0sYU5evVTiwed1KGCby0vAVbT/5/+nCc2RCmXu8Ez53IVuYqqe8j6wDu8dfF
+	 bv81VlFw0Ke4wJnIr7BjdtWgWlBhAPuRzLK0AVfOpeYG0XvMW3M/9FdvTPX1P4O0mH
+	 8z6gXoWbamldA==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 1FDB54B429;
-	Thu, 19 Nov 2026 21:16:22 +0000 (UTC)
+	by lkml.kernel.org (Postfix) with ESMTP id 009D44955F;
+	Thu, 19 Nov 2026 21:16:21 +0000 (UTC)
 From: Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
-Date: Thu, 19 Nov 2026 21:16:22 +0000
-Subject: [PATCH v3 1/2] PM / devfreq: Resume at the frequency from before
- suspend
+Subject: [PATCH v3 0/2] PM / devfreq: Do not change the frequency of a
+ suspended device
+Date: Thu, 19 Nov 2026 21:16:21 +0000
+Message-Id: <20261119-devfreq-suspend-sync-v3-0-ef19fbf94d83@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,9 +85,12 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261119-devfreq-suspend-sync-v3-1-ef19fbf94d83@gmail.com>
-References: <20261119-devfreq-suspend-sync-v3-0-ef19fbf94d83@gmail.com>
-In-Reply-To: <20261119-devfreq-suspend-sync-v3-0-ef19fbf94d83@gmail.com>
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4XOTQ6CMBAF4KuQrq3p9AeNK+9hXNQyhRoFbKGRE
+ O5uQRPZGJdv8uabGUlA7zCQQzYSj9EF19QpiE1GTKXrEqkrUiac8RwAOC0wWo8PGvrQYl3QMNS
+ G7ozeW6NAKaZJWm09Wvdc2NP5nUN/uaLpZuvTSEqf7nXfWuVC1/hheSbCPP1zNwIFqm0ucybQS
+ oHH8q7dbWuaO5nByNeI/IHwhACzzAgEyaVaI9M0vQD5X3nYJAEAAA==
+X-Change-ID: 20261112-devfreq-suspend-sync-7ca8fc51550a
 To: MyungJoo Ham <myungjoo.ham@samsung.com>, 
  Kyungmin Park <kyungmin.park@samsung.com>, 
  Chanwoo Choi <cw00.choi@samsung.com>
@@ -96,62 +100,91 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  Jonas Karlman <jonas@kwiboo.se>, Dong Aisheng <aisheng.dong@nxp.com>, 
  Arun Iyengar <aiyengar1990@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795122981; l=1549;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795122981; l=3640;
  i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
- bh=oC9Ygc0eVTfT2xaSEZ90RmzA2OhUbylQMx8o+6M4NjQ=;
- b=a+90IYhYKf1h6Ux+adzDZV+Qjhih4NuCO71zC0xrnOw4fpcJqRNftizSH87J0a4n+enuZBakz
- v0mlh7bMa9CCoNK1l5KuzDvAbuk1TKWCPcL4SD3lNRgupiYCXb2xnfI
+ bh=zRcwh0X/csqSTO8PFOHLtSayo1tqobLNJE+EuERfHnA=;
+ b=YXff/cIq2Din9p4fBQzh0CpqPVb7vE5xGDQdUvXRBxcZ3UauImYZPboIUexA6YYOxvnY3MEmI
+ 9vJv6PKqb2iAWkKjWTebIAoPDr7I60UIUiKMPffb/Op9d8fno7CLAvO
 X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
  pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
 X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
  auth_id=1480
 X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
 Reply-To: aiyengar1990@gmail.com
-Content-Transfer-Encoding: 7bit
 
-From: Arun Iyengar <aiyengar1990@gmail.com>
+From the review of a panthor patch [1]: Boris Brezillon pointed out that
+the devfreq core, not the driver, should stop calling ->target() between
+devfreq_suspend_device() and devfreq_resume_device().
 
-Since commit 62453f1ba5d5 ("PM / devfreq: Use more accurate returned
-new_freq as resume_freq"), devfreq_set_target() records the frequency it
-sets as resume_freq, so the suspend transition in
-devfreq_suspend_device() overwrites it with the suspend frequency. The
-device then resumes at its suspend frequency and stays there until the
-governor's next update; with runtime PM (e.g. lima on RK3528) that is
-after every idle period.
+1/2 is v2 of [2], which 2/2 builds on. The panthor side is [3].
 
-Keep the frequency from before the suspend transition as resume_freq.
+Tested on an Orange Pi 5 (RK3588S), v7.3-based kernel with [3],
+GPU clock on SCMI_CLK_GPU with a 200 MHz opp-suspend (Jonas Karlman's
+RFC, not in mainline).
+min_freq, max_freq, the userspace governor's set_freq and the cooling
+state written while the GPU was runtime suspended take effect on resume,
+with no SError; min_freq also after s2idle and deep suspend. 200 runtime
+suspend/resume cycles with changing limits. A KUnit test (not posted)
+covers the passive governor, the single transition on resume, failing
+suspend and resume, and a resume without a suspend.
 
-Fixes: 62453f1ba5d5 ("PM / devfreq: Use more accurate returned new_freq as resume_freq")
-Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
+Developed with Claude (Anthropic), which wrote the code and the commit
+messages. I reviewed every change.
+
+[1] https://lore.kernel.org/r/20261110-panthor-suspend-clk-v1-1-53457050e51e@gmail.com
+[2] https://lore.kernel.org/r/20261110-devfreq-resume-freq-v1-1-90de450ccbd0@gmail.com
+[3] https://lore.kernel.org/r/20261112-panthor-suspend-clk-v2-1-62e1b168052d@gmail.com
+
 ---
- drivers/devfreq/devfreq.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Changes in v3:
+- Run the pending update instead of restoring first, so resume makes
+  one transition; the userspace governor without set_freq keeps the
+  frequency from before suspend (Sashiko)
+- Keep the passive governor out of the pending update, which evaluated
+  it with freq 0 (Sashiko)
+- Leave devfreq suspended when suspend or resume fails, instead of the
+  v2 undo: callers may power the device down regardless. A caller that
+  ignores a failed resume recovers on its next suspend and resume (Sashiko)
+- Add [2] as 1/2: commit message corrected (lima on RK3528 is the
+  mainline case, not panthor), comment shortened
+- Rebase on devfreq-next
+- Link to v2: https://patch.msgid.link/20261114-devfreq-suspend-sync-v2-1-10f0c3e14245@gmail.com
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index f25304bca37f..795a01d012ec 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -1144,6 +1144,7 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
-  */
- int devfreq_suspend_device(struct devfreq *devfreq)
- {
-+	unsigned long resume_freq;
- 	int ret;
- 
- 	if (!devfreq)
-@@ -1161,7 +1162,10 @@ int devfreq_suspend_device(struct devfreq *devfreq)
- 
- 	if (devfreq->suspend_freq) {
- 		mutex_lock(&devfreq->lock);
-+		/* devfreq_set_target() overwrites resume_freq; keep the pre-suspend one */
-+		resume_freq = devfreq->previous_freq;
- 		ret = devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
-+		devfreq->resume_freq = resume_freq;
- 		mutex_unlock(&devfreq->lock);
- 		if (ret)
- 			return ret;
+Changes in v2:
+- Keep only the suspend count, now a plain int changed under
+  devfreq->lock, instead of a separate suspended flag that could
+  disagree with it when suspend and resume race (Sashiko)
+- Resume at the resume frequency clamped to the current limits, then
+  run the deferred update: the userspace governor without set_freq
+  stayed at the suspend frequency (Sashiko)
+- Don't defer the passive governor's parent updates: exynos-bus
+  children must follow their parent to its suspend frequency, also at
+  shutdown (Sashiko)
+- Drop pending_freq: the deferred update runs like any update_devfreq()
+  call. If it fails, resume logs the error and still sends
+  DEVFREQ_GOV_RESUME (Sashiko)
+- Undo a failed devfreq_suspend_device(), as rk3399_dmc and lima abort
+  without resuming; an unbalanced devfreq_resume_device() is a no-op
+  (Sashiko)
+- Leave polling governors to their next poll after resume; the driver
+  has just reset their load data (Sashiko)
+- Link to v1: https://patch.msgid.link/20261112-devfreq-suspend-sync-v1-1-af64603ef43e@gmail.com
 
--- 
-2.55.0
+---
+Arun Iyengar (2):
+      PM / devfreq: Resume at the frequency from before suspend
+      PM / devfreq: Do not change the frequency of a suspended device
+
+ drivers/devfreq/devfreq.c            | 86 +++++++++++++++++++++++++++++-------
+ drivers/devfreq/governor_userspace.c |  3 +-
+ include/linux/devfreq.h              | 10 ++++-
+ 3 files changed, 79 insertions(+), 20 deletions(-)
+---
+base-commit: f9316c13d6f621af4f6f4a6089d3c989ffe899e6
+change-id: 20261112-devfreq-suspend-sync-7ca8fc51550a
+
+Best regards,
+--  
+Arun Iyengar <aiyengar1990@gmail.com>
 
 
