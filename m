@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795094590;
-	b=S8M9RVwe13Lc6ogJNJ8fzfftOEs90LKKY2vlZfNd5ZtNaNOikyUStpbbOgJ4xlk24VMe
-	 Cc8REbm9Y120aNvvyOeG0gGwKZ6seD77pW2dFOpW6pBEdDjAmLt1o4/BJh4qse6iSbci1
-	 Zvu3QS/3i0Nanew09kW/ualEpn/RGL+Aer4SJXaEdkVkdJp1sVWQcr1K3RhJL8qHT8fU+
-	 z34sC7oXuc73u09NxJZ9qaBLyroRuD4Q6qrV5rk5O3Ld7AE6281Z0dU4hNvpVGEtNDGr0
-	 DXbKe3S9hJv5mfYPgYDKfx7TXf2kVVaqebAo/ZUp6uFYMZh/gU8CXHyZfQPrudTjY9A==
+	t=1795094594;
+	b=1vIUFUGPx9+oUE6KHgnQL8Gy+UYME5dCGB1nTD42Gqf1g7WprhfJLuzW9MC0SM8D8I7u
+	 9XwVxBfobHepbs9ma4o3kKBOWbnmZVbdopAqRVyZnvZi1LLb7DuCdWSGTHo39vyPqYEAn
+	 pkjtOxB//I7HaCUMFBFn9JBWD4dnQbPHpVsx9Vfzk9dK/1tnXPBX4BseyNsbgDqAZGdIi
+	 pEjRF8DKpxZv5NIBSchnyY9xH42AhZYQCGAxf8kDWX4FjgBGRbRLPq/1YT9LBYfJdaWAv
+	 51wFudM//ZmLigc/3r2e5zMS8FvvzEGDRwCwF/5N2+Lpc2e7xi8JDb/kJkhMLKEhOzA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795094590;
-	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=+3mziW4OTR0bVGWOCf4uOQHEgv/QROyf9E3+q1WrjGw=;
-	b=qAFaOUBlEpw1hCJ6iZfSaH89By/z5uNqlZCsoFe+KbJN33i2t/CsKqO9kbgszjvd26MW
-	 TmJ9A3TYH9vbzDkPAhw81WwIzzlyb7gn9WXl02GeZljBgI9xBd49v2ATYodg/kTQwrDfX
-	 7GtnUDZjn9RamhSm3iS9Ie7W0iLeIrjtdpuEa2WjtDKeSBS56ykfprYEp8Gterjsbp+Dz
-	 iNh/n16Eyg9vbLS9/e3rKRazdY/tSXiTBmH+2TXTz82Sw4xv8kNLRFUsXtY79/5F8PvoE
-	 wZaDdPr+rsiR2Czpy91+XyFdBB21OcrRtQihaP5oTeRlhrUiyv54eojcjr0kKHugPPg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795094594;
+	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
+	 References:MIME-Version:Content-Transfer-Encoding;
+	bh=zUgHiUxeai+462CgOJrAlgAIwv2ffSv36114dONT0IU=;
+	b=Acm3Ih0qVROH0qbM0aKYyko3Rn3YxxkmCAN4HPw7gq3KJUEH5R8YL1RsMacXvzwZO8ny
+	 oN7HR0RwlPhMDQPdBU2WhgyofusCi7U9D7PJKWEEfY8AJCkjn59LQfhS+mqFtuDiQMp+L
+	 E7sBlyXdxHVExQfigYA/Ye2jctRA8h9oqFewYx6naj6oFHHJVYPWM4GwJS40yaeopfnBB
+	 1PuKgzvlYmEAFojwSiW3hD8mYk18DWibsxRktX+j5MEWdDWrPWt4i0z5ixPvUT22Wp+pM
+	 2Ajy5H6esPVUJ65ytuWC5EmR7a7h3AMUFqvbukFs57YCKrTH/TUiCnBboGkHVHg53pg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84AE3606A320;
-	Thu, 19 Nov 2026 13:23:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E41A1F000C5;
-	Thu, 19 Nov 2026 13:23:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE2B9606A336;
+	Thu, 19 Nov 2026 13:23:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DA141F000C4;
+	Thu, 19 Nov 2026 13:23:12 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Nishanth Menon <nm@ti.com>,
 	Santosh Shilimkar <ssantosh@kernel.org>,
@@ -38,10 +38,12 @@ Cc: linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/3] pmdomain: ti/core: Miscellaneous cleanups
-Date: Thu, 19 Nov 2026 14:22:56 +0100
-Message-ID: <cover.1795094118.git.geert+renesas@glider.be>
+Subject: [PATCH 2/3] pmdomain: ti: omap_prm: Remove dummy generic_pm_domain_data handling
+Date: Thu, 19 Nov 2026 14:22:58 +0100
+Message-ID: <05b6aee460879268c85c17035718f8c8787a2342.1795094118.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1795094118.git.geert+renesas@glider.be>
+References: <cover.1795094118.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,34 +55,53 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-	Hi all,
+The TI OMAP2+ PRM driver clears generic_pm_domain_data.data in its
+generic_pm_domain.attach_dev() and generic_pm_domain.detach() callbacks,
+but never sets it to a non-NULL value.  Presumably this was part of
+unfinished handling copied from the TI SCI Generic Power Domain Driver.
 
-This patch series contains two cleanups for the TI OMAP2+ PRM driver,
-and removes a now-unused generic_pm_domain_data member.
+Remove the unused code.
 
-This has been tested on BeagleBone Black.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/pmdomain/ti/omap_prm.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-Thanks for your comments!
-
-Geert Uytterhoeven (3):
-  pmdomain: ti: omap_prm: Use pm_clk_no_clocks()
-  pmdomain: ti: omap_prm: Remove dummy generic_pm_domain_data handling
-  pmdomain: core: Remove unused generic_pm_domain_data.data
-
- drivers/pmdomain/ti/omap_prm.c | 15 +--------------
- include/linux/pm_domain.h      |  1 -
- 2 files changed, 1 insertion(+), 15 deletions(-)
-
+diff --git a/drivers/pmdomain/ti/omap_prm.c b/drivers/pmdomain/ti/omap_prm.c
+index 9515420da890cb31..eb4ce7cf9c176936 100644
+--- a/drivers/pmdomain/ti/omap_prm.c
++++ b/drivers/pmdomain/ti/omap_prm.c
+@@ -635,7 +635,6 @@ static int omap_prm_domain_attach_clock(struct device *dev,
+ static int omap_prm_domain_attach_dev(struct generic_pm_domain *domain,
+ 				      struct device *dev)
+ {
+-	struct generic_pm_domain_data *genpd_data;
+ 	struct of_phandle_args pd_args;
+ 	struct omap_prm_domain *prmd;
+ 	struct device_node *np;
+@@ -654,9 +653,6 @@ static int omap_prm_domain_attach_dev(struct generic_pm_domain *domain,
+ 			 prmd->pd.name, pd_args.args_count);
+ 	of_node_put(pd_args.np);
+ 
+-	genpd_data = dev_gpd_data(dev);
+-	genpd_data->data = NULL;
+-
+ 	ret = omap_prm_domain_attach_clock(dev, prmd);
+ 	if (ret)
+ 		return ret;
+@@ -667,12 +663,8 @@ static int omap_prm_domain_attach_dev(struct generic_pm_domain *domain,
+ static void omap_prm_domain_detach_dev(struct generic_pm_domain *domain,
+ 				       struct device *dev)
+ {
+-	struct generic_pm_domain_data *genpd_data;
+-
+ 	if (!pm_clk_no_clocks(dev))
+ 		pm_clk_destroy(dev);
+-	genpd_data = dev_gpd_data(dev);
+-	genpd_data->data = NULL;
+ }
+ 
+ static int omap_prm_domain_init(struct device *dev, struct omap_prm *prm)
 -- 
 2.43.0
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
