@@ -1,100 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.160.172
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.44
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795067160;
-	b=M5yeLv8qjhp6OSYIGaDQy+MsXAI+UWBq9S9eMKo73YM+uysyL2kIBzIPO059xLkJQe+D
-	 czaPaWqZ9mJuD74dVVfU1H3E14VRsEk+btezH7ByzzXACx6PBCBhpvlSmiMA9N8QPG4UK
-	 r7pJ4a5CIf2XQjNS48I0KJVtOAZdj37r1vwSKr+n/q2eL+iUU5EdwIAbfoax9+qqj+5LW
-	 aq9+tsZRn8OaumGdVfHQZUhoszCt0tHQX8f513ciZv/1MrB65iIAseMdbU82thywlB2M2
-	 a1vHCeMmq6cINU51RmoHoJU2fj/PP9zheIVaFlnS5H2yWC8SyyXTos7ZFxEaSHI8ZiA==
+	t=1795068700;
+	b=45axo0JIUr7JUgX0AX1D4LXg4qmWRhUtwJwkJFi6ZseNxyD0sUzc6OEPChPVvyCbPM7b
+	 nXsTYqzaxZmj4n/HD3KQdM3Yds3D37MNow+4pkDlS1KEg6QxHMc9aR5HgBPCwFXhwO85R
+	 QP7oQALEg4vsJSoriBQpi3FWQXVoo5uR5+Yy+TANpEpJ9P9mewNaQxtxuycCXogEB8Rhp
+	 mUd4iWN+OOcV6mblVtG9QW8adxiD6nmnEwgQ1Kbk/CnttcQ+dd4HVr+ubqTZ9O/Hb3rOO
+	 O5I285fUHOp8FyzaF03SGlgmzjG86lNr5NEJ/dLTdKGd2lB9AEMAhc0rK3s/xDahqUA==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795067160;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795068700;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
 	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=cIkoHsOVRZS7gIowPl6xkao6tH+bfcK9X/Z+HF8PGU0=;
-	b=o0UKICnPncbEeTMKcuAHrSknwd4sw9YBMwgq/SdwOmOXRojgEkJlotBuzVg10EyvCGQN
-	 f7fi0Njsb/nj9DF8yLYL9Zn/qssbPydjU/hp4gIuxRGFX1SHD/k6K23l//Ck9lPgrP5kn
-	 lkYaM2kaJ45iZqqVQ9o0OyssORZ7hDMT/1V1axPW4cYViLOJK7qpJjy7PPO2VeRO/fBDx
-	 fU3dFL2OCe5B0CxROLKZ+D7Xs6ffHRG3+XMH7LZQdMtt3WD8DPhhPEIaKXXIVnBlW+Gn9
-	 1X/WSwhndY90wceN6QXv78PXUH39oiqLgR8N8GOjxktMBDwK9QRVFax2vBiZMeqPUNw==
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=+i7fLpQgbGWXsa4bKAmBMh9yPr9gG6NW6Mco48SKmuE=;
+	b=oZeVWJr7K0/VXb17fnpajnNPMXvMB/3go6dXAI4BBvu07vuhUHOmmLQMyH8jTTL5Vgnf
+	 14jx4gTbRkrtsskk2mnFdrWFgJga8+jSKYnQSNYqOI2Xn2hj3TzkxyEeH50pnEoh1j39t
+	 LZ8E5huMFt8NXtUzWD32mWrd/vwJD34wZntYp+zZteh/C+0ofqwQq+EhEsWATjXRRyTBn
+	 xO0XmmWZMctJlTEc+U+t07SlXoTgv9ORT0gUVMPLIymOpZjR0ZxNblZCEQw7CqfUc1FV2
+	 MZy6MccT/36bM0Rw4tXC6nfzfRTK6G8QHpF97ebbQLYG2so8h7FI4roFzVBwI1/eT4Q==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=google.com;
-	spf=pass smtp.mailfrom=google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=G9sTcZLh;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.160.172
-Received: from mail-qt1-f172.google.com (mail-qt1-f172.google.com [209.85.160.172])
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=U4mnEIRn;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.44
+Received: from mail-yx1-f44.google.com (mail-yx1-f44.google.com [74.125.224.44])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1695E606A334
-	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 05:45:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1695E606A334
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6377B606A320
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 06:11:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6377B606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=G9sTcZLh
-Received: by mail-qt1-f172.google.com with SMTP id d75a77b69052e-55be673e029so117251cf.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 21:45:58 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795067158; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=U4mnEIRn
+Received: by mail-yx1-f44.google.com with SMTP id 956f58d0204a3-67c58f18765so1324058d50.1
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 22:11:40 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795068699; cv=none;
         d=google.com; s=arc-20260327;
-        b=q6ZFSqTh1YvgwnREICn4YHDFQAYOx4/3i2HUP+9oSaIUndFDcnbCTwW5PsryY6FQWw
-         lmaWV2FcmhM+HmHrYneeqdCt2yXRVfHc7+b5AGYlzukXg8xVFsjTUtITnCBPSRQdf0nj
-         ZWNG8SYFtVZa3hy+WJ2yFdZFQu3GPZS9DgnABEVMP1whFBX+Wpz+BVS0d0GN5nDU7SIS
-         AT00yqlRsJ137Zd0kjkoRTvY6zUtvpKhD7ImGsNhk0mdGxTTHa3qcQDf4T9o5PC8lAfa
-         gxnYnciX2uF/MoSlnHk0Uud22/FnV4hh9rEdpTRzGOSLCHveyiWIPNe20gH3fu+whJma
-         odSw==
+        b=Bn9ZmlTB3ejtagnMJ+DWENPdzP4Tmt85ixnGDohnVvJXt/6IXd73wemuIsG/0Ohs0p
+         nZbOn+j3UxGhYl5pTXZ5lIXc5lmziYL6xPxJdCPIpYQhbwZ4wEOEmJB3FVFpRP59ioyF
+         mJ/W9rrIiF+It6dSC6tv38nkncMIbyGkCo2dZz9AtbVW6hE0sxaRh/a3X/cG490XSgOo
+         lZAMY23PXP3KXOZvGBX15n1h8wnNyZOvHLel2tkljUUQqSWgnllRsk+eQz/Jfg1DAFzn
+         +/87uayTVMaxGiFdINxUEKlOojj763JMtpEMkMsyGaApVNsVkSItn63vUyW7sbtsV13A
+         t2dA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=cIkoHsOVRZS7gIowPl6xkao6tH+bfcK9X/Z+HF8PGU0=;
-        fh=s05cERuR6xi16Vm6BDl6Z1zbzBD6lC5knH9z9YDZI2w=;
-        b=JNd6ZirXv0PqB20m2Hbu6U3OXCVwVj936FMqeBfwblLLdYJ37s/WChyGh5ueQA66hR
-         Br0pnIeOaqv7nmQh6/4iVYHlJrew6OK18k7oWn15dkq9RdK3me/v1ksFeUa8pb4GAQSH
-         9/ODoqb7IIT3EkgCyOqEwqFaiE9FdYYcBRUZEl4l1I+yeCEf6E0BOe9Oa/CUETkDisSW
-         mtEAWWJbhU00H92wgqOHpOBea7O4qLl2W3lZTIKSSYFrLp1Pv0hVLHBLybn0uTka3lva
-         YlUbwNPIO7oW0j+XS0DSgGqSe9zc1YpCk9agNcicSn7VegtvltmKAYjtApHy05otz0lS
-         hSoA==;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=+i7fLpQgbGWXsa4bKAmBMh9yPr9gG6NW6Mco48SKmuE=;
+        fh=g+QKp0kMDm3L/MwQgOT0bt6hcEfXpRcDClOJrBKfZlQ=;
+        b=G0S5641b+aznnnV8F7493NKqvDH/znjTP3+pu6bnm/KLencnf7cjPaZY/Ic4kuqtu5
+         sGfKXM0mlixfogj7RFxBpY8q25iDM6LarDgIVv2DfMWOLkiQsRFMKRzkjL+NviACtOL6
+         nag2E1Yd6sIOHMT0rk58wRV7olth8RK4G4nHvAcZ1cFntIDLVlFsas1YhQpQg6Wsw3il
+         93pOhqb87yJXkZBN/Lf1eWSqMYqzgsplOLTPalI9ziulTLHIruIBhEzDYBBvO227v41D
+         5wRBxmK24//BQx6SJQlr5mHvvJ1jktTG04g9iFqt82erIjwsybN0ZtqekoRrCzzC6uUj
+         hvzg==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1795067158; x=1795671958; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=cIkoHsOVRZS7gIowPl6xkao6tH+bfcK9X/Z+HF8PGU0=;
-        b=G9sTcZLhDZovHsgCx5Yv7CDMxJM8G5FDawL5JBd36y8NAy88YZsvFaSPGxL2OJDQWl
-         D8l1zhaslplXpC+LH5CUyVM6fiya54hKkm3044CoRWwH6cYkMSxwEs9IE4R9vJJik3G9
-         PaGymfho5RIhVhS+d5TUg18WON8Y60WBZxMM5gYyXKhy/KCwkwn+iT9No3gldijeO5tx
-         xp5Gg8oePFUL/bdSJWKKtm4OA3cKKfEuUGn9FzCr/u57K1nN+6BjTy/XuUfYpf49AuBU
-         GF3mrNTIV4ZWpGu4KegbuhUlLkOSriAaKH7KHmdnomUVdJlrrfe8QiZH1hsMd7fqVOCf
-         HQmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795067158; x=1795671958;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=linaro.org; s=google; t=1795068699; x=1795673499; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=cIkoHsOVRZS7gIowPl6xkao6tH+bfcK9X/Z+HF8PGU0=;
-        b=eHZrg8maLEHsdfes935ant8UadVdL88EZRnj7YTVLLazPupcFg2EJ0NmLxzwkBfWtt
-         IxuqBJwE+0VsfZYBjf0KoCAn2lryAGn8HoQQwFuZ5JBEsGVYYdl1m7GFnxUNsvuZyyqU
-         fmtcHCRpC2n2jPsFkSV1Ldz5NAvvHKbmPLRzk2c84oaBH1eadH6gHvVSBW5OtbLVlTEr
-         L1NfCtRGxM4UZLZaxF7j3zlCfx/xGM38ATvfIbmRunoXzqANm34Acq5JImfJt3eG7iSK
-         IX8zY1lD0+R4g5Z5ae+7xyCxCbtwotE2vWDLEXyd+ZAaMBzdPQQDBAdKK9Nmvt1T/IMm
-         yaOg==
-X-Forwarded-Encrypted: i=1; AL+hErGjw5WONIDdoOrE9uuUTLUt8S3FV1QVdvywCY+wdxJdbDcyQP4NaRPl6RJK/waW8m1J3BFOfW+8zw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9F8jEw/eeTeG9O2NhQJUkpPRImhgR4RM4x85nxKO0wxdEeQQRz
-	HFpJhNaq3aSFMA2jjDNb+iiKUSAhJg7I3rWrI50LG0n7WlUXf9LS2+1dda7QOA2a3YwXElHbbxP
-	z0IM203wZBXhluvmzkFcpu/DpaUQ4wAhZF/IjhY0X
-X-Gm-Gg: AYBFou31TsWE90DdqFCkOqNCnTbWy8kOznrrJQTrVDPV2ATk0AdZOV0SNC7BpBlL+fc
-	ECyc42WN36cVdZFQFbJm+zp7HsZNhSusenmO3V8AjSidvkx7Z2b3VRuGv2niQWkw9pQbhNcWbmL
-	Pj4w6cuZAfvWBnr03uV+jYHO3AN3ctL2zHRZ58x9c37xCwRIb5sMCuK6JQdRMBeuAXf9MfOCKt3
-	MtPBlAdoUeg0S0uhm2W7ofscLE2dfol/79a/jP2y6TmM9BQau6NZ5IAT8HQm94SLMSM1JCI3Hzr
-	wEwYVn3elNlLP5VLOQnTsMfjxh5lzZv9CrU+rDQez9zBPaa7NQ0gmTKRtm3GSvQtM18etE3eu1h
-	R77VLG3qYuH5M9c6gJbfd2sqDqiXddv52cbEt
-X-Received: by 2002:a05:622a:4808:b0:536:934f:7da2 with SMTP id
- d75a77b69052e-55d6c7995f9mr6557911cf.2.1795067157461; Wed, 18 Nov 2026
- 21:45:57 -0800 (PST)
+        bh=+i7fLpQgbGWXsa4bKAmBMh9yPr9gG6NW6Mco48SKmuE=;
+        b=U4mnEIRnOIJzuc0QmHuxU9tV3N4an/q6D1UgnsUgZemoxg1Q88SL1yGGAlc/jmxEMq
+         7kFSMRpo4TnTvtl6trNPHFRR4ABXgRNScK+szwWRTISaA4ejH08dW+QLHc1umkXoEBGr
+         uJs9+lwqVd9qAXrYVi92Pf9eiaHyX/40a6Odb0LtGWI6MqEu8q3Qy9PZkIO9nf8pOiYi
+         CQcI84dqINbjZk7l1aN0pMYFSZQSBL69onhtNlz5LSOhG7D1NfVhISitmaw4SqlP+MMp
+         fGqTQ9HuHZv5SCdk7+DSLFuok7GFgjD0TErBfWJMZe2odqBSiCJR23eUNB/6wAMBmRNJ
+         mdoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795068699; x=1795673499;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=+i7fLpQgbGWXsa4bKAmBMh9yPr9gG6NW6Mco48SKmuE=;
+        b=xw7wNQ3tUDOotSri2N5/H9JN3Uw097N/SNMZ6R/6w/FVqdOfWdHZ+u+Sg/T5jZY6JB
+         xQerdN5nogJUPF+SqONDXT1tSUrg2fmE2s1vOQzfFERrlBHCdBZ3PQ5hHQh8VDxHT+H0
+         8w5MbKvO0FGWIqQsa+Toid5ZdIrCtJSgr6G5cQViYBhIWt6jK1k8utmIOmKDfH+pIag4
+         aMqaY7UsjwPj22HxVuh7HhISe+J4IfU6Lqwt87sqE0DIsnPDqbLWJOZ8DcdZcoKGkt6K
+         xm2aPPqDR8aqXmwf/wz91OKfPd+b6f6CSl97cd1HluhPBJYxMDNv4LvMHNpD13I56aGO
+         PXbA==
+X-Forwarded-Encrypted: i=1; AL+hErHHekOvttpL35YHX8wnNcc1WYpQy9XyrBCgAAjfRJIAxJ2zTz75u6hb6PPNxDQcEnEoNpBG5bRDcg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/AvuusnisBShyd7tM7LZ1hr7oUSVntVXnJWswzWbGoPFXoSVe6
+	xLo/lhNDBrDQF1VxEFDM/6KtdQQkSPbLVjowpeaHg+p17oc1bbKNDwXJRz0meSZPYWjgcVMyCVB
+	mZO1K0IFlw8MQIq47ioaT78Nw4p0/sZs1kYt9MBmYow==
+X-Gm-Gg: AZFdTZe7WkgfB9PFuHBlg06axRpzjSDlm+nUxUNO3PHyG12F+GqbafNhjS1kzgjLE4k
+	Pf9qp3LUWTPAenIpM/6yldZ+8oDs7eKfFmT1HSohJG4lROZeVUFsyM2cBCPRJmaGGtcWOtZvo6y
+	4JwngKXP7iPt6BQJ8V98Onmok3PFdhqY1SoYmQqUCDvOj2I6DdC7N8fgPEPXvgZD6jCbEZbpsiV
+	y7D/n3RjFeh0UELj4GJHaLayl5PMb6WjdxGHG6a9ZCh5yIcdwZHm+Zfgb5zK8KOOosErenNgIuu
+	b7puc/rN/9x92JRuuGLWJlWl/M8ZqaPnTpT7qUwjbgunIRw9nifivGJ1tVFobYlJc1OeJuSGluN
+	HPwTuOw3sudai6Ry/YlHiAQRowvoDvm+xH56pNMsK7JpN6ME1ADFxLdDD2Ga8FNfXIbPL3S3c21
+	yTXyySXDUkhvFoEjd79ugFGOlzOZDHjlj3MrRQoKIJY0frPBFsmT31M1tsviJTke9DzpJUDp/kN
+	1r7CjMhr8xNvPv+R2QIgaqjM/xup/G1vXiiRgAQC3lRhZ8dL15bo4Y1foq06evqwf9J1nf1dJpw
+	hqGjQd4gLIGi6X6yWy2Ng/HphJsicOYcx4XPuN3wjq21V84J+osIrt4Xf2f5BZN5ioRkV28sh2e
+	ZIBxzjkG+fCUs7hUT7EfFR0tgjI9xHWiU3PUIh5pPu7Nug9rXIc2FE7sJyHhf3o2ys5ttAKo//H
+	LxOLExoOEjB67u8/4i5TojYolHdzSWnxY34zi77qWSlqose8AlrUeweZWat0Iv+JSy09yn
+X-Received: by 2002:a05:690e:158e:20b0:672:9f72:7c0b with SMTP id
+ 956f58d0204a3-67dd404ae39mr1379048d50.109.1795068699305; Wed, 18 Nov 2026
+ 22:11:39 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -104,109 +108,130 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261108223913.3624571-1-irogers@google.com> <20261108223913.3624571-10-irogers@google.com>
- <DMYN979QJFNV.LM3T6O68OHW6@kernel.org>
-In-Reply-To: <DMYN979QJFNV.LM3T6O68OHW6@kernel.org>
-From: Ian Rogers <irogers@google.com>
-Date: Wed, 18 Nov 2026 21:45:45 -0800
-X-Gm-Features: Aa3M54p8GzPfKDPQ_HJcPbdLHGq3vwK7n9VGnVvnVB1ODjbFHeHwrlgOfVCaaEo
-Message-ID: <CAP-5=fXrMyfLFXq6CiqwWMSbtYVRNESxuDo-ddqNwDmq5Nm4SA@mail.gmail.com>
-Subject: Re: [PATCH v3 9/9] kobject: Require explicit initialization of struct kobj_type::release
-To: Danilo Krummrich <dakr@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kees Cook <kees@kernel.org>, 
-	Miguel Ojeda <ojeda@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>, 
-	Srish Srinivasan <ssrish@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Juergen Gross <jgross@suse.com>, 
-	Stefano Stabellini <sstabellini@kernel.org>, 
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Nathan Chancellor <nathan@kernel.org>, 
-	Nick Desaulniers <ndesaulniers@google.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Alexander Aring <aahringo@redhat.com>, 
-	Felix Kuehling <felix.kuehling@amd.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
-	Zhihao Cheng <chengzhihao1@huawei.com>, Sumanth Korikkar <sumanthk@linux.ibm.com>, 
-	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, driver-core@lists.linux.dev, 
-	llvm@lists.linux.dev, linux-hardening@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
-	linux-s390@vger.kernel.org, gfs2@lists.linux.dev, 
-	xen-devel@lists.xenproject.org, linux-mtd@lists.infradead.org, 
-	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
+References: <cover.1788259938.git.jasmeet.bhatia.us@gmail.com>
+ <a9e23066-aa75-44be-ac3b-9a15f4cf6047@app.fastmail.com> <DL6NCV1KQ9F9.6K6XZQCS4AF3@gmail.com>
+ <c3ca811b-a6eb-4f4d-bbb2-4feef02e3db2@app.fastmail.com> <CAC_iWjL9jDsRaU7kEemYfwk292Nxa49cK0Rq=81pC=FWNRDhvg@mail.gmail.com>
+ <b66f68b5220ddcadddb41340d3ea3388@gmail.com>
+In-Reply-To: <b66f68b5220ddcadddb41340d3ea3388@gmail.com>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Thu, 19 Nov 2026 08:11:03 +0200
+X-Gm-Features: AclHuK89rr8JCP4LjUM9lxwdzxvtIWH4RA9tyZloAfhEcmTE7ZH1lrQpq4myxc8
+Message-ID: <CAC_iWjJ1L5MYWy2vHG3AHYcfqx7urJmaTYP7vuyvZm8GSnWCDw@mail.gmail.com>
+Subject: Re: [PATCH v1 0/2] efi/tpm: Preserve event log without changing x86 E820
+To: jasmeet.bhatia.us@gmail.com
+Cc: ardb@kernel.org, rafael@kernel.org, pavel@ucw.cz, 
+	linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, x86@kernel.org, 
 	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 18, 2026 at 1:11=E2=80=AFPM Danilo Krummrich <dakr@kernel.org> =
-wrote:
+Hi Jasmeet,
+
+On Wed, 18 Nov 2026 at 04:57, <jasmeet.bhatia.us@gmail.com> wrote:
 >
-> On Sun Nov 8, 2026 at 11:39 PM CET, Ian Rogers wrote:
-> >  static const struct kobj_type cpuregs_kobj_type =3D {
-> > +     /*
-> > +      * Pre-existing: info->kobj is embedded in per-CPU cpu_data;
-> > +      * cpuid_cpu_offline() only calls kobject_del().
-> > +      */
+> Hi Ard and Ilias,
 >
-> All of these comments carry a =E2=80=9CPre-existing:=E2=80=9D prefix, but=
- that doesn=E2=80=99t
-> distinguish cases with broken lifetime management from those where the st=
-orage
-> remains valid despite the API misuse.
+> I wanted to follow up on this discussion after a couple of months.
+> My bad at being slow, at keep this discussion moving.
 >
-> For example:
+> Has there been any more considerations with the preferred approach,
+> regarding the EFI TPM event log reference and kexec?
 >
-> > diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c b/drivers/gpu/drm/=
-amd/amdgpu/amdgpu_xcp.c
-> > index ab14079d1c42..0847134a1391 100644
-> > --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c
-> > +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_xcp.c
-> > @@ -797,6 +797,11 @@ static const struct sysfs_ops xcp_cfg_res_sysfs_op=
-s =3D {
-> >  };
+> This issue is still relevant to Framework 16 owners and the temporary
+> fix has been confirmed to work for other users despite not being a
+> proper fix to this issue.
+>
+> I'm always happy to prepare and test any patches once we decide what
+> direction we want to move forward towards!
+
+Ard suggested we discard the EventLog on kexecs and I agree that in
+its current state it doesn't offer much to security. Is there any
+specific reason you want it to survive?
+
+>
+> I appreciate you time and patience!
+>
+> Thanks
+>
+> Jazz
+>
+> On Mon Sep 7, 2026 at 8:57 AM -07:00, Ilias Apalodimas wrote:
+> > Hi Ard,
 > >
-> >  static const struct kobj_type xcp_cfg_res_sysfs_ktype =3D {
-> > +     /*
-> > +      * Pre-existing: xcp_res is embedded in struct amdgpu_xcp_cfg
-> > +      * rather than freed individually by kobject_put().
-> > +      */
-> > +     .release =3D NULL,
->
-> Being embedded in another structure doesn't explain what guarantees that =
-the
-> enclosing allocation outlives the kobject=E2=80=99s final cleanup.
->
-> Could you please drop the =E2=80=9CPre-existing:=E2=80=9D prefix and make=
- that distinction
-> explicit? For broken cases, describe the lifetime problem and mark it as =
-needing
-> a follow-up fix. For cases where the lifetime is safe, explain what guara=
-ntees
-> that safety, while acknowledging that omitting release() still violates t=
-he
-> documented API contract.
->
-> Also, do you plan to follow up on those cases?
-
-Makes complete sense, thanks Danilo!
-
-Auditing all 17 files in patch 9 with that distinction in mind:
-- Only 3 built-in sites (arm64 cpuinfo, ACPI hotplug profiles, and
-s390 sclp_mem) have backing storage that genuinely remains valid for
-the lifetime of the kernel.
-- The other 14 files either free/zero an enclosing dynamic or devm
-allocation without waiting for final kobject cleanup, or are tristate
-modules that unregister static kobjects/ksets on module_exit and can
-unmap module memory before delayed cleanup finishes.
-
-I've dropped the "Pre-existing:" prefix, documented the specific
-guarantee or FIXME lifetime hazard at each site in v4, and yes, I plan
-to send follow-up fixes to the respective subsystems once __must_init
-is in place.
-
-Thanks,
-Ian
-
-> Thanks,
-> Danilo
+> > On Fri, 4 Sept 2026 at 19:39, Ard Biesheuvel <ardb@kernel.org> wrote:
+> > >
+> > >
+> > >
+> > > On Fri, 4 Sep 2026, at 17:45, Jasmeet (Jazz) Bhatia wrote:
+> > > > On Thu Sep 3, 2026 at 7:18 AM PDT, Ard Biesheuvel wrote:
+> > > >> Hi Jazz,
+> > > >>
+> > > >> On Tue, 1 Sep 2026, at 13:34, Jasmeet (Jazz) Bhatia wrote:
+> > > >>> The EFI stub currently allocates the TPM event log as
+> > > >>> EFI_ACPI_RECLAIM_MEMORY. On x86, this becomes an ACPI data entry
+> > > >>> in the E820 map.
+> > > >>>
+> > > >>> On a Framework Laptop 16 (AMD Ryzen AI 300 Series), the EFI allocator
+> > > >>> can place this allocation at different physical addresses across boots.
+> > > >>> Since x86 hibernation validates architecture-specific data from
+> > > >>> the firmware E820 map, this causes an otherwise valid hibernation image
+> > > >>> to be rejected on resume with the following error:
+> > > >>>
+> > > >>>   Hibernate inconsistent memory map detected!
+> > > >>>   PM: hibernation: Image mismatch: architecture specific data
+> > > >>>
+> > > >>> Allocating the event log as EFI_LOADER_DATA avoids changing the E820
+> > > >>> map, but doing that alone would regress the kexec corruption issue fixed
+> > > >>> by commit 77d48d39e991 ("efistub/tpm: Use ACPI reclaim memory for event
+> > > >>> log to avoid corruption").
+> > > >>>
+> > > >>
+> > > >> As I replied in the other thread, I am not convinced preserving the TPM
+> > > >> event log across a kexec makes sense to begin with. This is the firmware's
+> > > >> view of the state of the TPM PCRs when it handed over the system to the
+> > > >> first OS.
+> >
+> > It doesn't make sense imho. The only thing you prove is that you
+> > kexeced from a 'previous good OS', but without knowledge of what that
+> > OS did before kexecing.
+> >
+> > > >>
+> > > >> If the first OS boots, loads a kexec kernel and then boots it without
+> > > >> measuring any of that into the TPM, the TPM event log will match the
+> > > >> TPM state, but this is meaningless because of the missing measurements,
+> > > >> and the attestation chain is broken.
+> > > >>
+> > > >> If the first OS does perform TPM measurements, it would need to record
+> > > >> them into a log and pass that on to the kexec'ed in some implementation
+> > > >> specific way - it cannot use the existing TPM event log for that.
+> >
+> > Hrmm, that might be problematic. The EventLog needs to illustrate the
+> > state of the TPM PCRs. IOW replaying the EventLog in memory should
+> > match the current TPM PCRs. But that also means we'll have to teach
+> > kexec how to properly extend the PCRs and update the EventLog.
+> >
+> > > >>
+> > > >> TL;DR perhaps we should just discard the TPM event log reference from
+> > > >> the EFI config tables after consuming it. Or add a special case to the
+> > > >> kexec code to disregard it.
+> >
+> > I can't decide what's best here. IIRC we don't expose the final event
+> > log config table in systab right? So we won't break any user-space app
+> > that depends on it.  We just copy it in
+> > /sys/kernel/security/tpm0/binary_bios_measurements. In that case
+> > getting rid of it would work.
+> >
+> > Cheers
+> > /Ilias
+> >
+> > > > Ok, honestly that makes a lot of sense I see what you are saying and I
+> > > > tend to agree. I'm treating the copied event log at something that
+> > > > survives kexec in this patch because of the corruption fix so I'll look
+> > > > at dropping that LINUX_EFI_TPM_EVENT_LOG_GUID reference and rewrite this
+> > > > patch. Hopefully, that will avoid that x86 E820 instability as well.
+> > > >
+> > > > Appreciate the guidance!
+> > >
+> > > Please don't send any patches yet - I'd like to get some input from other
+> > > folks as well.
+> > >
 >
