@@ -1,79 +1,145 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=192.198.163.8
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795073046;
-	b=jEiQpXSo7KkE4sDs5OfIWJ7KwuEk1UVVatbomUQQ6sjzBWMW9dp6ezeTyYo5g6XIRf1g
-	 JGRgnyV/IrEVklrMSwNIVbE0AK1Jkuor+S/cVaRfxGmyRh6i93+BC7h5hLBvl2OzAxRFc
-	 FCwHhtsGDe+Kubk2kD2c3wDUylpoPIcltjwABGxBlV6DXcYsV+kYnbdgrZroX2mINuXSb
-	 dL5M/8I7tU6EriEJRyvtzkatu71KMbYJqjjko02wyAqDlzACAilreFJlixbdicRUmDuip
-	 DdzwhvAME5pjpLeA45MmdJ2RbBatPopKtJooqgHLdbRr7aKZqI+naSoyiK+Id+LTmCg==
+	t=1795073094;
+	b=NSK34FE5XBoPPgbU9Mjesmhl5S1frhh9EoB8BVW0Kux24ggB3EPeVzlD7wxvTnbi1FcM
+	 B32i+f5fgc6sjX5/pNNkyShf8UniejBVdw/5WRVYkog8E6s5nOwUIml9yw3bWmGLBOOOF
+	 ZJSueB8/lN5W6CtQj5o9WV6/f/1+vhS6RFe4vXfU57GtqmyKNC+J/9+HzeF+A/Qr6p7Kc
+	 rlabN2T6zPPFVDgT0yrzk/LZeDT6DmEOuqRJOVOZ5AbdDA93srtgaBFWjDkjAF5+djmIF
+	 F8pQlHjpBsZ94v1t4a4cOD16qw3+5QIJTNU74XrtC9dEgPPn1wPkJkzHvTblaTNLUdQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795073046;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=x1ACKHHMPN/MxpnyiVeqOIRhaDuDdqRs0Tn7ih/NOqo=;
-	b=K2cy5zri8oZCFUSUQF1dK6DKTM/SO7oWealv0hBgSnEtSSKQ3N6czlZGquucaigS9jlE
-	 OILTw8sEtUfgT8S9MjtCpeQlfszqBB7BPdvGl275GLunXa1c/ur/z3bmdQWgZ0QLITUQ2
-	 EoKq2XCfaEZ9Y5dMNzwwmjKQ4+w0SnWQRNUXIKYLdmTXA6ckE0mx8uNTLoFzf6OTOew8H
-	 Ft4yL6eokuYlPWgd6rF7nlXDPmuSLNHmO4HUnox8P8iah0JBekK9IAMr4vpz9hSD9ShGl
-	 JrxDmHkGSPFjsJYLcD2/YxIrIMktj+ENIBECoXQDUOaHmcg2P0Eucq9+aA3PTnwFVUw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795073094;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
+	 Received:DKIM-Signature:Received:Received:Message-ID:Date:User-Agent:
+	 Subject:To:CC:References:Content-Language:From:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
+	bh=ReQfNMU8dNscI+TS/Te+jOmr1Bv2PspVRt9/fYVupkY=;
+	b=LVJJN+6EdFw1GehT3yUenko7+B7BtOCR9g28URUz9bqqLCK/H59HR8oHJGrKJ/bhhf4d
+	 Q4aTcMkHA/KKFTN5BmiV/ClNb6uZe1c9/kmicjpxTHvalCd/XtYAzek/myC4cYXhat/JB
+	 az582h4UK4RevvyOdyfNuR1qGvBEe1wJ9kSGWavOPpagaRrrAxZczyZy5/S9UOTyWdBrI
+	 SlC3ZbpC80ZbhxXuQilTimmpn1shNRPkUD07UZJSWTIG7Z7xPbUBtou4wXMvg9Q2+2KmE
+	 EnHp0ywe3nQyd/UdeMlqhW78cB5Rmd9cV82pbDywb6/+6h7zACtYvUXP5DZHuNsGnDA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lB6CsQcI;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BXqrBloI;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=Otf9URC2;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=192.198.163.8
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3819D60A2601;
-	Thu, 19 Nov 2026 07:24:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27601606A325
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 07:24:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 27601606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lB6CsQcI
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795073046;
-	b=VTOIChInEISB2DqfcrTZI4tvrM90Km6JAHAAIrywnQsBSA5OtWDTao6cVCOXaoyryEjp
-	 94XulswHnkcHYVrdZwFGLhjtklY7RZRjehC9CFjRDXBDQqa/efgg8MHD/pNtjOn0Dvw9K
-	 XYMk8jfuKWgzTuxYPIZg9FmsOG/Q04RydMlZG5uvC8ofB/pf8/kcnj9iBGwoTaZbTj66H
-	 v9ndJMxFh3rLIvIFTKDTZpfN1JKEhWixb3sEA/cO16VZiuv5bcEAoeGlAsK4pzmVTAQlO
-	 F3qmEOhpMdFBX1Az3cV/nK5Q4J+Q1UTYS4u/5+gXWLivu1TuGFI8MY1PuJol1Wyw+gA==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795073046;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=x1ACKHHMPN/MxpnyiVeqOIRhaDuDdqRs0Tn7ih/NOqo=;
-	b=a7L1xZlXy9CZlAaiyyjlPz+EBKARX93xi8KwoemlH4Yg/DT7XVajIZSf8LeyTyO1mkQ4
-	 bmVdTOS69fBY09u4a1JfwKwcbcyoHB+Zneu9SFoldGkgp7aWCFgqWzQ7ux2rygsXf0MbB
-	 udrhjji3yhHIv2HVfw6z7zoKXzKcLkZVO/IQwtADqqJwBP+5xn5yCj5spvFgiQCttTwpb
-	 6VsAVIz7nA++RPlqCCD7SeQIbWh3B/uon/zDZ/sIjZGkd6w66U5HYvLmKnEzv9mue00Xy
-	 W2g2sWhKR2UIFgDf22a5P56+r/uxUn5+j3mTB5av0bOq5y+XT/9QVLkEzRn76gAzCLg==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 529F31F000C6;
-	Thu, 19 Nov 2026 07:24:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795073046;
-	bh=x1ACKHHMPN/MxpnyiVeqOIRhaDuDdqRs0Tn7ih/NOqo=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=lB6CsQcIZGoeWDE8yiIG7MLSUaiOA3zg+uQ05MXwR/pi5QEfU5VnEqMYKkzQClCxJ
-	 U8Um+z76HNwQSt2gQjtBFYfG1rVrB8W/2ztuuYIn8mhsIsuR8U8VzCQUmudGb8vj17
-	 2ogg7ZaVBbPh0l/a9zzPAUGZm9kDI+5JgDzDnLCokHgKpEhuHxQZYVsuZ/lzqFUKcw
-	 jk+QJZefObMYTCbco2AIN6hEcDGLGNgC19tBDdfc7SxLA9g3vaItDNIvXJxhCSUWEC
-	 859uA1EJNt8FBFDkkMYuw6okxNrpS+7zAgoF2FjMpEFR8m9VHD+wLQ6ByzSRkCtn3A
-	 9GF/R+EUjMl1Q==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id DC8834B166;
-	Thu, 19 Nov 2026 07:24:03 +0000 (UTC)
-From: Igor Velkov via B4 Relay <devnull+iav.iav.lv@kernel.org>
-Date: Thu, 19 Nov 2026 07:23:58 +0000
-Subject: [PATCH net v7 2/5] net: phy: fix three paths that unbalance a
- postponed PHY interrupt line
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BXqrBloI;
+	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=Otf9URC2
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795073094; x=1826609094;
+  h=message-id:date:subject:to:cc:references:from:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=sK3Evec7DuigVh/rpgHB2crE23XdCW8Mh+3z95zrUiw=;
+  b=BXqrBloIyIBWIAQQoqmLc34l1tvFBir1JwG5iUFeu82hsHFQIi1YL+z+
+   sTnFmBGNBzsUH356MxqxQATe7DahpTDWokjppL34fZ+YzVyNAlrUGrriC
+   nWXrg13aLvWNNI8xfT91WDAmWo5i3WQvMSKqp3P6Y7Rz9KjRJzvRNQdE3
+   18eNcF13V1ck+UfQXvPsjE8qCkN2wHkCpI8wHepO8sjp3qKLbNV+iYwjK
+   8x9+xqWjzk3pixkRPm6ijj5Nz2HKC7onhi0o/V/MxVoANsjf4pGep3OYs
+   jPKIHWCtqAp3DgDJQDTj09ZNueDunw/8PwSw/CboQ5fqSSzxF8t9V9RIG
+   w==;
+X-CSE-ConnectionGUID: KfUD+XgFSMaS9zWaQn4H+A==
+X-CSE-MsgGUID: k+7kHNd5TiyOyFtIia5l/g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3811623"
+X-IronPort-AV: E=Sophos;i="6.27,220,1787036400"; 
+   d="scan'208";a="3811623"
+Received: from fmviesa011.fm.intel.com ([10.60.135.151])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 23:24:51 -0800
+X-CSE-ConnectionGUID: K7yr4cQ5RTutklxyObuJIw==
+X-CSE-MsgGUID: WTdfRGq/TBWk+Yv0Vyu4SQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,220,1787036400"; 
+   d="scan'208";a="12181073"
+Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
+  by fmviesa011.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 23:24:49 -0800
+Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Wed, 18 Nov 2026 23:24:48 -0800
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56 via Frontend Transport; Wed, 18 Nov 2026 23:24:48 -0800
+Received: from CH5PR02CU005.outbound.protection.outlook.com (40.107.200.22) by
+ edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Wed, 18 Nov 2026 23:24:48 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ZuUncsCcO3W1MnZRdJxzvSWpKkvkEDfdxDg3d04MKJTVhpIzBCyxIeY5roJ+Ap5F5vIJEPNgYUVsrKjSpQArjt3NZzAG+y6o55OuxkMOygbL0InBZ/+s9bbqDy9Tyib+PXsium8E3ckfltugnxE6BSGDPqxGR4YzjUbZrj+YYGz2cGXepKZgSk8tUR1frY2Y0Rc/+XqI/rw5pHV/o3xf4YZrwzImJNhbvySQmKM/ySORFEN0goXmXDfwdklFuWo8gAgvrFx4ezMk2Fd+tX8e6ztuWQ77koHW6V/XVPal5TpbgArmA1LpVs0ioRTLK0rlNyV4+MvShq5+IzqBQ1gflw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ReQfNMU8dNscI+TS/Te+jOmr1Bv2PspVRt9/fYVupkY=;
+ b=idTCMPon6sul4ohqbm3cAiiOwitGl79IEs8lqtk9jmbZfQChdbgYKBNl1b3hzFGJ50TDRII3q3i7AUrSQkA8xClFpg+TkKKz8iOtzLPiFFtbHhkGrNH2K1m9PQM6slcDFDOQvuGh99H/mYnBeG5alnKU0nVyxcNKiZwg5MjyqUu7vDHdAvNklN0XNDXpDqOZEvfvi0AjswWcqHguALOsQu5eXuzx0a/T+c0Mo0Ox4ChkKluTCIIUG0wkLVLIUaeRKLplpF61p1XmdBgMVNy0OUUXdNa+012jy6ymhkyBNnlslDYHzTLJLeS3wJQTBFcwJzBvHCROW/JC5KDYdPoP5A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ReQfNMU8dNscI+TS/Te+jOmr1Bv2PspVRt9/fYVupkY=;
+ b=Otf9URC2rkqOu3+UkIJHZ4JvyL1AR4GJfDPgGQqNto7Mj8b6w/yoxT6VMu4SAljQ2AhTC3iSwj7+niw7LfRTNcPe/4LmMQ/JpJ2AJQ13OJD4XO6AsSR8VMnIPCjlDFS67y85InRy5dxHH4rqyoHDUUFF2xEueM7EXrC2KqOUPX8=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from LY0PR11MB357627.namprd11.prod.outlook.com
+ (2603:10b6:404:21a::11) by SJ0PR11MB4928.namprd11.prod.outlook.com
+ (2603:10b6:a03:2d2::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Thu, 19 Nov
+ 2026 07:24:40 +0000
+Received: from LY0PR11MB357627.namprd11.prod.outlook.com
+ ([fe80::71fd:d139:945b:a71c]) by LY0PR11MB357627.namprd11.prod.outlook.com
+ ([fe80::71fd:d139:945b:a71c%5]) with mapi id 15.21.0615.013; Thu, 19 Nov 2026
+ 07:24:40 +0000
+Message-ID: <3986c861-dd2f-407f-924f-06287c8b7538@intel.com>
+Date: Thu, 19 Nov 2026 12:54:31 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [REGRESSION: [PATCH v2 1/3] cpufreq: Improve suspend-resume
+ synchronization
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+CC: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, Christian Loehle <christian.loehle@arm.com>, "Doug
+ Smythies" <dsmythies@telus.net>, Zak <zakbrightonknight@gmail.com>, "Srinivas
+ Pandruvada" <srinivas.pandruvada@linux.intel.com>, Mario Limonciello
+	<superm1@kernel.org>, "intel-gfx@lists.freedesktop.org"
+	<intel-gfx@lists.freedesktop.org>, "intel-xe@lists.freedesktop.org"
+	<intel-xe@lists.freedesktop.org>, <ravitejax.veesam@intel.com>
+References: <6065833.DvuYhMxLoT@rafael.j.wysocki>
+ <4796894.LvFx2qVVIh@rafael.j.wysocki>
+ <efcb1647-46fd-442a-bbda-283560d9df53@intel.com>
+ <CAJZ5v0htcKjiWbDW-Oxn1qXAYX8myfyWFxkaxnMTaS0hYC4CCQ@mail.gmail.com>
+Content-Language: en-GB
+From: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>
+In-Reply-To: <CAJZ5v0htcKjiWbDW-Oxn1qXAYX8myfyWFxkaxnMTaS0hYC4CCQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MA0PR01CA0086.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:ae::11) To LY0PR11MB357627.namprd11.prod.outlook.com
+ (2603:10b6:404:21a::11)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,309 +149,450 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261119-b4-phylib-mac-pm-irq-v3-v7-2-d8b8f43b5a62@iav.lv>
-References: <20261119-b4-phylib-mac-pm-irq-v3-v7-0-d8b8f43b5a62@iav.lv>
-In-Reply-To: <20261119-b4-phylib-mac-pm-irq-v3-v7-0-d8b8f43b5a62@iav.lv>
-To: Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>, 
- Russell King <linux@armlinux.org.uk>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: Thomas Gleixner <tglx@kernel.org>, linux-pm@vger.kernel.org, 
- Maxime Chevallier <maxime.chevallier@bootlin.com>, 
- Lukas Wunner <lukas@wunner.de>, 
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, 
- Wei Fang <wei.fang@nxp.com>, 
- =?utf-8?q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
- Paul Barker <paul@pbarker.dev>, 
- Florian Fainelli <florian.fainelli@broadcom.com>, 
- Doug Berger <opendmb@gmail.com>, 
- Thangaraj Samynathan <Thangaraj.S@microchip.com>, 
- Shenwei Wang <shenwei.wang@nxp.com>, 
- Haoning Cheng <Haoning.CHENG@cn.bosch.com>, netdev@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Igor Velkov <iav@iav.lv>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=11073; i=iav@iav.lv;
- h=from:subject:message-id;
- bh=EsHDoEB66FHkW84aTWkBeIiLJXL0zJjbdiKcRfMHj+4=;
- b=owGbwMvMwCVmNH1q96v4SmbG02pJDFn/lgjYccQFT/y7+TPj7lMnb3xNPfKMU4bPjvff8tkrX
- +xdETblYkcpC4MYF4OsmCLLhEMatzKWXP3r72H+AGYOKxPIEAYuTgGYyO0kRoaTK2J3yQlM2bn2
- /Znk7f8PVf3ZwMPA/L3eofFnQ5jym6sdjAzvPvedCtyxfuHTODfmgz7tK264RljVTfLRWr3xzvM
- 9jP9YAQ==
-X-Developer-Key: i=iav@iav.lv; a=openpgp;
- fpr=90C228DA68A4D5FD4F4837E03297958BEA5F7903
-X-Endpoint-Received: by B4 Relay for iav@iav.lv/default with auth_id=1060
-X-Original-From: Igor Velkov <iav@iav.lv>
-Reply-To: iav@iav.lv
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LY0PR11MB357627:EE_|SJ0PR11MB4928:EE_
+X-MS-Office365-Filtering-Correlation-Id: 28bc3b9e-c0fb-4cd9-d513-08df460e2cca
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|7416014|1800799024|376014|23010399003|22082099003|18002099003|261009223027099003|261009221227099003|261022075727099003|261022105027099003|261021121427099003|261021123027099003|261026140227099003|261026121527099003|261102123227099003|261028144727099003|11063799006|56012099006|10067099003|4143699003|261102130727099003;
+X-Microsoft-Antispam-Message-Info: wMp/+tDsUBFaYCnLiDWERdDzMNZw4b1OBo7zZiqphxQtSTw4J5PLs49ZqUjO6fdXRU5sV1WYbiTSXBDeHtgm7q0H46FC8XgY59Y/KiZvE56x7d2z9AcgpkmERsPwZpalyga3GDr177jMoW7Swt2fTVUHEIzLVxgYZT4oSmHhPstZxRZtsNkx51jOy3987ygew9hmQestNXOoHz5xir19z4dE+KXW9mXRWfUYXbeVBRwkewqcwvilyvftZUjUPYOKPbbHyX+in4LdWOCv30btwtL6liUW2ijsuM46CXM4YMW51fE59qbtoufKv2JXjAeTloV0MY0ShsMGAxGP5jYFv/eeUM5T2ps0pbebF//FFu1O/jtikYEYHBA9jca6/6hAJ5CdAxDnspuZ/1ovPS5ElY+sW+PZXlnsp/cVBizDsaM/2fqescVFUhZ5f7vBz7DoBUGo4tEpQNFMzwL/N80+ikLEjlZZSsjprGikLb7ZMCK5N9Ca+TxGaLSf8I8bjqXBvlUmzpNFRNnvbLeUYtxYMwSJEMqbLL3ED9aUIdzeYnD4WiQoy9evA5R80Icm1ZZRA9xxTgCDIIJ8tcrmhQFNwEb7xheoWeFl8ck1ooZgDggBwH6ey+xg7WQoYiLUSTRf
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LY0PR11MB357627.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(1800799024)(376014)(23010399003)(22082099003)(18002099003)(261009223027099003)(261009221227099003)(261022075727099003)(261022105027099003)(261021121427099003)(261021123027099003)(261026140227099003)(261026121527099003)(261102123227099003)(261028144727099003)(11063799006)(56012099006)(10067099003)(4143699003)(261102130727099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?Vmk1SVBuNldZcTdmNWNRTjE5MExncC8ybWRMTzVYMjJOclZtV3JIQzJxZGhh?=
+ =?utf-8?B?SzFGZHJIbi9WWTFvdHFHR1hVb1pvU0hUeDNqTFZaNTQ3dC9Md0o1Sno4Y29E?=
+ =?utf-8?B?SUIycEEzcEpnWTJ5dm1XWFIxVFNMTTdXaERmOTNTb25VcWJremNHS1pYWmNJ?=
+ =?utf-8?B?aGh2bWExb1RoSFlBVzR1cHNNY0t1cUF1eWxtc3NtVDhkQmY2OHdyRUpyYi92?=
+ =?utf-8?B?ait4QWtwaFVmRHlEb1pBTUJMK3pJWllwaDNFbVJaS05YMG9SdHhHSnh5SkNY?=
+ =?utf-8?B?SVp0NDZUTG92a29ZNDk4bmhaTTZwUkkvSEl2Zm5TK1BtMjZjRUNORjdRUHVu?=
+ =?utf-8?B?VDFVenFCSkFmczI2MytXUUhGRitMMU8wZ1E0RDFGUEJWdFY3ellOcGQ1cHBy?=
+ =?utf-8?B?b0h0MVNCcTBRVUdWQk5BUHkyaVJIbG9hVUt5dEl4OU41RzJRVzRVZjlDSjlm?=
+ =?utf-8?B?ZFJwM3l4K1lsRE9MenEzV3RwREh6b0FkQmMyVHF4OHd5eEE0NGtyMVhQei90?=
+ =?utf-8?B?T1g5WmlDWXUyanYzWHRKSGFNT1Jkb1pDZEUzcTk3TEZYdVVyZTJhNFA4UE02?=
+ =?utf-8?B?bS9zMHFDc2dPY0xyc3RTODk3TExMYkQ4WVVIV08yMFZtZXdwL0xIMGEvSHVF?=
+ =?utf-8?B?akNvRGJvRldIYWFHd0ZlWGVqbnBEVG9CY1grdTdiNjNTQUVSa0hmUlhzVHBI?=
+ =?utf-8?B?TXlEZmNibU9XTTRJTjBXUThJS090bHRmWi9mcTJyckp5WW1xRm5BQ1RFeEJU?=
+ =?utf-8?B?Qm5UYlRjbnZJMHRvdVFGR1Y3akNGWHcvbWdDK0ZnOVZRS3o5NjBqVXJUTkRJ?=
+ =?utf-8?B?Wms1OE1kamsyTDB1YXp0Y3NOT1RVQWpkb2xwSzJlQ2oxZlBucE1BU05SUjJU?=
+ =?utf-8?B?YzBNbDhUOVhKdjJnVEkyK3lDa25hV011L3VvdHpQUXg0MDhPUERPK1FZTkNr?=
+ =?utf-8?B?S3lTMzEyT2hORUZDNmFVRDJMNmpxTlpnVnVnVDhEeS8valR1eFFZd3U2Zmxw?=
+ =?utf-8?B?MjM0TjRJYXVLRjUwRHlBQ2YwQ21uVzNTQU5UeHRiL1dFYmszUUk5VUU0WjJ2?=
+ =?utf-8?B?TDhKSnN6SUxaaTNBVUZFSzN5UXV0OWJ3OUl4eVFobXc4c2xvYkZjelFwQUxC?=
+ =?utf-8?B?Y1FLMXJ3QjI2bVVQWGlmVXYyQy9XYzZwdENwaUhWK3VTUjhoZFZaM05yU2ll?=
+ =?utf-8?B?b2RvVWN1QXBvdkx1Z2xMZ2hRcGdEUDBEdHZ3THBNZ1NPNnczT1ZZQzNmakVv?=
+ =?utf-8?B?ejM1VzlPZEtKbVVvam1WU3NQV0FaeTVSSDNWdDBBOXhzcHZhU2RPQ0M2SUJ1?=
+ =?utf-8?B?UVNHWTFWOEY2cEpsS1VyeVdPaEpyOU0xUCtNb0V0SDFmZ2hhREpaTHNvOFYz?=
+ =?utf-8?B?MSs3c1BOKzRYcmZOdDU1SmJpTVJoTFMzVnV6UnVJajdQSlM2aWtsZnExOWdS?=
+ =?utf-8?B?WXBZOG5uaXJqTDJHS2x1ZXk2QXNMck0wV0ZTS282ejdlb3VsSlczTlp3ME9i?=
+ =?utf-8?B?RHVsMnlBcDBpR2oyZWJPMGlwYVFQMm1qZk1RWGg3YUY1YXBxaDBrczcraGhK?=
+ =?utf-8?B?NEJsQmV5THZBUHRFRG0yWWZRallGcDBYLzlhWm1wdWtoQll0ajEzQ2pyVGNS?=
+ =?utf-8?B?VzIwTGdVY3FvbHRmV3FuSld1cTRFSTVDUW9DaFNTUSthSHdncDlhK2ZqeWIx?=
+ =?utf-8?B?dTVGN0h5UXcxN3ZJN0cvZmxOOUJXaDBENVNua21PZCsyZWRkbFFyVGNCd1Vn?=
+ =?utf-8?B?K2YyUjlxMlRjcGM2RVhQeTBZQlpoZGg1WXJaTEZaUnNGVFlqL2pZc0o1WkNy?=
+ =?utf-8?B?ZHNPcUU3RzRBOVhBZkVqcWgxbnhaaVJMVjFRWGJHRjRCeW5iS0JFOEdVb0hi?=
+ =?utf-8?B?SnRtdW1RczFmOUxBZDI5S1cwbmdXYlhPRXNFVnBJOFhpbHp4K2VyNkJKNnFi?=
+ =?utf-8?B?SlhsNnk2Y1ordElISGxQSzFPeFdDdEgyaVRucFpTUUNPWWV1NmdTa3h4TWNR?=
+ =?utf-8?B?M1dSYzlqbVVwOWg5cUtidUJIakJNKzJLWmpCT01NQ0VtU2RiTGhEMWp4eGtQ?=
+ =?utf-8?B?aE0wd045NXVCcFZMM2hWa2VJTkZiNGFhNjJxa08vdkFtTGlsNEF4ZDFnZXhj?=
+ =?utf-8?B?ZzJ4dGZINDlsTWpXRU9uRWErc1VvaGkvdDJ1bEdVc1l5YUJNQmtZc21xM0gx?=
+ =?utf-8?B?V3FMMFFEOFFMeEtkaTZYMlRPWXBDUEt1cnBuSXh1RmZyY1lTUC9FZ0NCMHdj?=
+ =?utf-8?B?UjZZK1U2V25wS0xUTlI2dGpra0J6aDJHSmdMU3FCMXhTMjROVi9NdGt6Y1BW?=
+ =?utf-8?B?OWpWd1FUT3dpUkJETU13cnhDYTNTRWNpVEFWVksyUmtROUw2ZTZjNUR4cy96?=
+ =?utf-8?Q?HxkiHrHhl4nHWxv4NiF/TiPZA9G09VFiLA4ag?=
+X-Exchange-RoutingPolicyChecked: vv+zDQihQAzAHL85d2VPQdgY+pws7KyC3odmc+lU7YuG5+d8aRAjPheQf+nB3lhfadriLOMkDLmRIf/fl9pGUUXNZQCVntHLgYUPPTBjBVsMmNAY19NzkR/mqEO57YIW8H7VfOHd5n8db6Vsip8L6hkI+AyQQr3DJaqq2Xiv8GEDyG9GhevnaXtX7eX2D3LQosGPzi8RwnskwQoZsyTCN3csd4diplGHnxKluRdBpBu8XybTDVcZnSAGnaEdjrU5e7r8Se6yGl2cWNHfnPlZ4Tj4tl6DTy+YkU0AKpVTY7VeTVOQ1wg55H3l/TsaCDMDhnmc3uoP3Hk1jDI1J1xrdQ==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 28bc3b9e-c0fb-4cd9-d513-08df460e2cca
+X-MS-Exchange-CrossTenant-AuthSource: LY0PR11MB357627.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2026 07:24:40.7902
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: kjdFDb05cWeqFFqxtmYmJ3wi9vkpMAV5hsxE/ed03CYsH6Wx0mDf6iwMzUYJ0ak1ToUKRzod51fsGG194DlELQ8hi5swE0CODdaf3aIPNOg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB4928
+X-OriginatorOrg: intel.com
 
-From: Igor Velkov <iav@iav.lv>
 
-phy_interrupt() postpones interrupts during a system sleep transition:
-it sets irq_rerun and disables the line, and mdio_bus_phy_resume()
-re-enables the line once and reruns the handler. Three paths leave the
-line unbalanced:
 
-- On an edge-triggered line the IRQ core does not mask a ONESHOT
-  interrupt, so an edge that arrives before disable_irq_nosync() runs
-  the thread again. That second run disables the line again, and the
-  line stays disabled after resume.
-- phy_free_interrupt() can run between the postponed interrupt and
-  mdio_bus_phy_resume() and leaves irq_rerun set. Once the line has no
-  users, free_irq() shuts it down and a new request starts it at depth
-  0, so the enable_irq() in mdio_bus_phy_resume() is unbalanced. On a
-  shared line this can happen once the other users free it too, as with
-  the two PHYs of dra72-evm-revc behind cpsw.
-- If phy_request_interrupt() then leaves the PHY polling,
-  mdio_bus_phy_resume() returns before enable_irq(), and the other
-  users of a shared line stay disabled.
+On 11/18/2026 8:32 PM, Rafael J. Wysocki (Intel) wrote:
+> On Wed, Nov 18, 2026 at 2:05 PM Borah, Chaitanya Kumar
+> <chaitanya.kumar.borah@intel.com> wrote:
+>>
+>>
+>> Hello Rafael,
+>>
+>> On 11/4/2026 1:15 AM, Rafael J. Wysocki wrote:
+>>> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+>>>
+>>> The suspend-resume synchronization in the cpufreq core is not perfect
+>>> because the global cpufreq_suspended variable is set at the end of
+>>> cpufreq_suspend() after stopping governors for all of the active
+>>> policies, so the governor .limits() callback may run via
+>>> cpufreq_governor_limits() after stopping the governor and before
+>>> setting cpufreq_suspended which is questionable.  Likewise, the
+>>> governor .limits() callback may run between clearing cpufreq_suspended
+>>> in cpufreq_resume() and starting the governor.
+>>>
+>>> Address this by adding a per-policy "suspended" flag that is always
+>>> read under the policy rwsem and is updated under it when the governor
+>>> is stopped in cpufreq_suspend() and when the governor is restarted in
+>>> cpufreq_resume().
+>>>
+>>> Also make cpufreq_resume() use the cpus_read_lock guard to reflect
+>>> what is done in cpufreq_suspend() and call cpufreq_exit_governor() for
+>>> policies that were suspended during a system suspend transition and
+>>> are inactive during the subsequent system resume (to avoid leaking an
+>>> inactive policy with a stopped governor that has not exited yet).
+>>>
+>>
+>> This seems to be causing regression in our CI [1] (affecting dg1 and
+>> dg2). We could not revert the patch cleanly but resetting to its parent
+>> heals the issue.
+>>
+>> <4> [510.751891] ======================================================
+>> <4> [510.751907] WARNING: possible circular locking dependency detected
+>> <4> [510.751925] 7.4.0-rc3-CI_DRM_19546-gfb078d17b966+ #1 Tainted: G S
+>> U       L
+>> <4> [510.751946] ------------------------------------------------------
+>> <4> [510.751962] rtcwake/4256 is trying to acquire lock:
+>> <4> [510.751977] ffffffff83ce0f40
+>> (intel_pstate_driver_lock){+.+.}-{3:3}, at: set_power_ctl_ee_state+0x1a/0x90
+>> <4> [510.752022]
+>> but task is already holding lock:
+>> <4> [510.752038] ffffffff83886890 (cpu_hotplug_lock){++++}-{0:0}, at:
+>> cpufreq_resume+0x23/0x250
+>> <4> [510.752074]
+>> which lock already depends on the new lock.
+>> <4> [510.752094]
+>> the existing dependency chain (in reverse order) is:
+>> <4> [510.752112]
+>> -> #1 (cpu_hotplug_lock){++++}-{0:0}:
+>> <4> [510.752137]        cpus_read_lock+0x3c/0x100
+>> <4> [510.752157]        cpufreq_register_driver+0xca/0x380
+>> <4> [510.752175]        intel_pstate_register_driver+0x9e/0x1d0
+>> <4> [510.752192]        intel_pstate_init+0x3e3/0xb30
+>> <4> [510.752211]        do_one_initcall+0x59/0x3d0
+>> <4> [510.752229]        kernel_init_freeable+0x3dc/0x6b0
+>> <4> [510.752249]        kernel_init+0x20/0x210
+>> <4> [510.752264]        ret_from_fork+0x3bf/0x470
+>> <4> [510.752282]        ret_from_fork_asm+0x1a/0x30
+>> <4> [510.752299]
+>> -> #0 (intel_pstate_driver_lock){+.+.}-{3:3}:
+>> <4> [510.752325]        __lock_acquire+0x1700/0x29c0
+>> <4> [510.752341]        lock_acquire+0xd9/0x2f0
+>> <4> [510.752355]        __mutex_lock+0xae/0x1030
+>> <4> [510.752372]        mutex_lock_nested+0x1b/0x30
+>> <4> [510.752390]        set_power_ctl_ee_state+0x1a/0x90
+>> <4> [510.752409]        intel_pstate_resume+0x109/0x110
+>> <4> [510.752428]        cpufreq_resume+0x153/0x250
+>> <4> [510.752445]        dpm_resume+0x1f1/0x390
+>> <4> [510.752459]        dpm_resume_end+0x11/0x30
+>> <4> [510.752474]        suspend_devices_and_enter+0x372/0xcb0
+>> <4> [510.752491]        pm_suspend+0x372/0x840
+>> <4> [510.752506]        state_store+0x6e/0xe0
+>> <4> [510.752523]        kobj_attr_store+0x12/0x40
+>> <4> [510.752541]        sysfs_kf_write+0x4d/0x80
+>> <4> [510.752559]        kernfs_fop_write_iter+0x193/0x240
+>> <4> [510.752576]        vfs_write+0x285/0x530
+>> <4> [510.752591]        ksys_write+0x6f/0xf0
+>> <4> [510.752606]        __x64_sys_write+0x19/0x30
+>> <4> [510.752622]        x64_sys_call+0x1285/0x27e0
+>> <4> [510.752637]        do_syscall_64+0xec/0x680
+>> <4> [510.752654]        entry_SYSCALL_64_after_hwframe+0x76/0x7e
+>>
+>> Could you please check why the patch causes this regression and provide
+>> a fix if necessary?
+> 
+> That's because set_power_ctl_ee_state() acquires
+> intel_pstate_driver_lock which is held around cpu_hotplug_lock during
+> driver mode changes, so adding cpu_hotplug_lock around
+> intel_pstate_resume(), which calls set_power_ctl_ee_state(), causes
+> lockdep to complain.  Note that the deadlock is not real, but
+> set_power_ctl_ee_state() need not use that particular lock either
+> AFAICS.
+> 
+> The attached patch should address this.
 
-MAC drivers that close the interface in their suspend callback, such as
-cpsw, and ravb with Wake-on-LAN off, reach phy_free_interrupt() through
-phy_disconnect(), and so does dev_close() in a kernel-internal reset of
-the MAC such as stmmac_reset_subtask(), whose workqueue does not freeze.
-These drivers set mac_managed_pm, which a later patch brings under
-postponing.
+This works. Thank you for the patch.
+I hope you would be floating it soon.
 
-Let only the run that sets irq_rerun disable the line, and record the
-line it disabled. Clear irq_rerun where the line starts again at depth
-0: in phy_free_interrupt() when free_irq() leaves the line without
-users, and in phy_request_interrupt() when the line has no users. Otherwise
-mdio_bus_phy_resume() enables the recorded line, also for a PHY that
-fell back to polling, and reruns the handler only if the PHY still uses
-that line. Enabling the line in phy_free_interrupt() instead would
-unmask a source that phy_disable_interrupts() failed to clear, and
-inside the noirq phase it would unbalance a wakeup line that
-suspend_device_irqs() enabled (IRQCHIP_ENABLE_WAKEUP_ON_SUSPEND).
+==
+Chaitanya
 
-Add irq_pm_lock, so that requesting and freeing the interrupt do not
-change irq_rerun between the check and the enable_irq() of the rerun
-after resume, and move the postponing and the rerun into helpers.
-phy_interrupt() never takes the lock, so synchronize_irq() and
-free_irq() can wait for the handler under it. irq_rerun and
-irq_rerun_line are plain fields: one thread runs the handler, and the
-other paths access them only under the lock, after free_irq() or
-synchronize_irq(), or before this PHY has requested the line. Mark the
-irq_suspended accesses with READ_ONCE() and WRITE_ONCE(): the handler
-reads it while the PM callbacks write it.
-
-Two cases on a shared line stay unbalanced: after all users have freed
-the line, another user requests it first, so it has users when this PHY
-requests it; or another user requests it between free_irq() and the
-irq_has_action() check in phy_free_interrupt(). irq_rerun then stays,
-and the enable after resume is unbalanced.
-
-This does not keep close and open off the MDIO bus: on close,
-phy_disconnect() calls phy_stop(), phy_free_interrupt() with its
-phy_disable_interrupts() and, in phy_detach(), phy_suspend(); on open,
-phy_attach_direct() calls phy_init_hw() and phy_request_interrupt()
-calls phy_enable_interrupts(). A MAC driver that powers its MDIO bus
-down during sleep must not close or open the interface until the bus is
-back.
-
-Fixes: 1758bde2e4aa ("net: phy: Don't trigger state machine while in suspend")
-Signed-off-by: Igor Velkov <iav@iav.lv>
----
-Haoning Cheng's Tested-by on v5 is not carried: phy_free_interrupt()
-no longer enables a shared line.
----
- drivers/net/phy/phy.c        | 24 ++++++++++++++++---
- drivers/net/phy/phy_device.c | 57 ++++++++++++++++++++++++++++----------------
- include/linux/phy.h          | 11 +++++++--
- 3 files changed, 66 insertions(+), 26 deletions(-)
-
-diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
-index 9af303d60bd6..92ee4651bdbc 100644
---- a/drivers/net/phy/phy.c
-+++ b/drivers/net/phy/phy.c
-@@ -1416,7 +1416,7 @@ static irqreturn_t phy_interrupt(int irq, void *phy_dat)
- 	/* Wakeup interrupts may occur during a system sleep transition.
- 	 * Postpone handling until the PHY has resumed.
- 	 */
--	if (IS_ENABLED(CONFIG_PM_SLEEP) && phydev->irq_suspended) {
-+	if (IS_ENABLED(CONFIG_PM_SLEEP) && READ_ONCE(phydev->irq_suspended)) {
- 		struct net_device *netdev = phydev->attached_dev;
- 
- 		if (netdev) {
-@@ -1430,8 +1430,12 @@ static irqreturn_t phy_interrupt(int irq, void *phy_dat)
- 				pm_wakeup_dev_event(parent, 0, true);
- 		}
- 
--		phydev->irq_rerun = true;
--		disable_irq_nosync(irq);
-+		/* Disable the line only once: an edge can rerun the thread. */
-+		if (!phydev->irq_rerun) {
-+			phydev->irq_rerun_line = irq;
-+			phydev->irq_rerun = true;
-+			disable_irq_nosync(irq);
-+		}
- 		return IRQ_HANDLED;
- 	}
- 
-@@ -1480,6 +1484,12 @@ void phy_request_interrupt(struct phy_device *phydev)
- {
- 	int err;
- 
-+	/* A line without users restarts at depth 0, so our disable is gone */
-+	mutex_lock(&phydev->irq_pm_lock);
-+	if (phydev->irq_rerun && !irq_has_action(phydev->irq_rerun_line))
-+		phydev->irq_rerun = false;
-+	mutex_unlock(&phydev->irq_pm_lock);
-+
- 	err = request_threaded_irq(phydev->irq, NULL, phy_interrupt,
- 				   IRQF_ONESHOT | IRQF_SHARED,
- 				   phydev_name(phydev), phydev);
-@@ -1507,7 +1517,15 @@ EXPORT_SYMBOL(phy_request_interrupt);
- void phy_free_interrupt(struct phy_device *phydev)
- {
- 	phy_disable_interrupts(phydev);
-+
-+	mutex_lock(&phydev->irq_pm_lock);
- 	free_irq(phydev->irq, phydev);
-+	/* free_irq() shuts down a line left without users and the next request
-+	 * resets its depth; mdio_bus_phy_resume_irq() enables a shared line.
-+	 */
-+	if (!irq_has_action(phydev->irq))
-+		phydev->irq_rerun = false;
-+	mutex_unlock(&phydev->irq_pm_lock);
- }
- EXPORT_SYMBOL(phy_free_interrupt);
- 
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 1791d578f4dd..f2e2370b4be7 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -332,6 +332,39 @@ static bool mdio_bus_phy_may_suspend(struct phy_device *phydev)
- 	return !phydev->suspended;
- }
- 
-+/* Wakeup interrupts may occur during the system sleep transition when
-+ * the PHY is inaccessible. Set flag to postpone handling until the PHY
-+ * has resumed. Wait for concurrent interrupt handler to complete.
-+ */
-+static __maybe_unused void mdio_bus_phy_suspend_irq(struct phy_device *phydev)
-+{
-+	if (!phy_interrupt_is_valid(phydev))
-+		return;
-+
-+	WRITE_ONCE(phydev->irq_suspended, true);
-+	synchronize_irq(phydev->irq);
-+}
-+
-+/* Rerun interrupts which were postponed by phy_interrupt()
-+ * because they occurred during the system sleep transition.
-+ */
-+static __maybe_unused void mdio_bus_phy_resume_irq(struct phy_device *phydev)
-+{
-+	WRITE_ONCE(phydev->irq_suspended, false);
-+
-+	mutex_lock(&phydev->irq_pm_lock);
-+	if (phy_interrupt_is_valid(phydev))
-+		synchronize_irq(phydev->irq);
-+	/* The PHY may have fallen back to polling since it disabled the line */
-+	if (phydev->irq_rerun) {
-+		phydev->irq_rerun = false;
-+		enable_irq(phydev->irq_rerun_line);
-+		if (phydev->irq == phydev->irq_rerun_line)
-+			irq_wake_thread(phydev->irq, phydev);
-+	}
-+	mutex_unlock(&phydev->irq_pm_lock);
-+}
-+
- static __maybe_unused int mdio_bus_phy_suspend(struct device *dev)
- {
- 	struct phy_device *phydev = to_phy_device(dev);
-@@ -339,14 +372,7 @@ static __maybe_unused int mdio_bus_phy_suspend(struct device *dev)
- 	if (phydev->mac_managed_pm)
- 		return 0;
- 
--	/* Wakeup interrupts may occur during the system sleep transition when
--	 * the PHY is inaccessible. Set flag to postpone handling until the PHY
--	 * has resumed. Wait for concurrent interrupt handler to complete.
--	 */
--	if (phy_interrupt_is_valid(phydev)) {
--		phydev->irq_suspended = true;
--		synchronize_irq(phydev->irq);
--	}
-+	mdio_bus_phy_suspend_irq(phydev);
- 
- 	/* We must stop the state machine manually, otherwise it stops out of
- 	 * control, possibly with the phydev->lock held. Upon resume, netdev
-@@ -393,19 +419,7 @@ static __maybe_unused int mdio_bus_phy_resume(struct device *dev)
- 	if (ret < 0)
- 		return ret;
- no_resume:
--	if (phy_interrupt_is_valid(phydev)) {
--		phydev->irq_suspended = false;
--		synchronize_irq(phydev->irq);
--
--		/* Rerun interrupts which were postponed by phy_interrupt()
--		 * because they occurred during the system sleep transition.
--		 */
--		if (phydev->irq_rerun) {
--			phydev->irq_rerun = false;
--			enable_irq(phydev->irq);
--			irq_wake_thread(phydev->irq, phydev);
--		}
--	}
-+	mdio_bus_phy_resume_irq(phydev);
- 
- 	if (phy_uses_state_machine(phydev))
- 		phy_start_machine(phydev);
-@@ -711,6 +725,7 @@ struct phy_device *phy_device_create(struct mii_bus *bus, int addr, u32 phy_id,
- 	dev->max_n_ports = 1;
- 
- 	mutex_init(&dev->lock);
-+	mutex_init(&dev->irq_pm_lock);
- 	INIT_DELAYED_WORK(&dev->state_queue, phy_state_machine);
- 
- 	/* Request the appropriate module unconditionally; don't
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 59c75296d535..f370690d62a7 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -651,8 +651,8 @@ struct phy_oatc14_sqi_capability {
-  * @interrupts: Flag interrupts have been enabled
-  * @irq_suspended: Flag indicating PHY is suspended and therefore interrupt
-  *                 handling shall be postponed until PHY has resumed
-- * @irq_rerun: Flag indicating interrupts occurred while PHY was suspended,
-- *             requiring a rerun of the interrupt handler after resume
-+ * @irq_rerun: Set by the postponed interrupt that disabled the line
-+ * @irq_rerun_line: The line the postponed interrupt disabled
-  * @default_timestamp: Flag indicating whether we are using the phy
-  *		       timestamp as the default one
-  * @interface: enum phy_interface_t value
-@@ -675,6 +675,8 @@ struct phy_oatc14_sqi_capability {
-  * @n_ports: Number of ports currently attached to the PHY
-  * @max_n_ports: Max number of ports this PHY can expose
-  * @lock:  Mutex for serialization access to PHY
-+ * @irq_pm_lock: Serializes requesting and freeing the interrupt against the
-+ *               PM callbacks; phy_interrupt() never takes it
-  * @state_queue: Work queue for state machine
-  * @link_down_events: Number of times link was lost
-  * @shared: Pointer to private data shared by phys in one package
-@@ -731,6 +733,7 @@ struct phy_device {
- 	 */
- 	bool irq_suspended;
- 	bool irq_rerun;
-+	int irq_rerun_line;
- 
- 	unsigned default_timestamp:1;
- 
-@@ -808,6 +811,10 @@ struct phy_device {
- 	struct delayed_work state_queue;
- 
- 	struct mutex lock;
-+	/* Serializes requesting and freeing the interrupt against the PM
-+	 * callbacks
-+	 */
-+	struct mutex irq_pm_lock;
- 
- 	/* This may be modified under the rtnl lock */
- 	bool sfp_bus_attached;
-
--- 
-2.43.0
-
+> 
+>> [1]
+>> https://intel-gfx-ci.01.org/tree/drm-tip/CI_DRM_19546/shard-dg1-14/igt@i915_suspend@basic-s2idle-without-i915.html
+>>
+>> --Bisect Logs--
+>> git bisect start
+>> # status: waiting for both good and bad commits
+>> # bad: [cfe67bbcfc37474cbb4482d750d4fba34bbc5a24] drm-tip:
+>> 2026y-11m-17d-05h-12m-00s UTC integration manifest
+>> git bisect bad cfe67bbcfc37474cbb4482d750d4fba34bbc5a24
+>> # status: waiting for good commit(s), bad commit known
+>> # good: [39e407b553ec15d4a233b651531ad431ed7542be] drm/sun4i: dw-hdmi:
+>> Deinit PHY in bind error path
+>> git bisect good 39e407b553ec15d4a233b651531ad431ed7542be
+>> # bad: [715f145f6204363a50853eb15719dc860db0bc01] drm/i915/dsb: Realign
+>> GOSUB only for QW slots 6 and 7
+>> git bisect bad 715f145f6204363a50853eb15719dc860db0bc01
+>> # bad: [7e1392a42ea288d70a266f6553fe06f57f8647ea] Merge tag
+>> 'net-7.4-rc3' of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
+>> git bisect bad 7e1392a42ea288d70a266f6553fe06f57f8647ea
+>> # good: [0359338fd8cf1a2dc001d0cd69c331c17decee88] af_unix: Inherit
+>> SO_INQ in unix_stream_connect()
+>> git bisect good 0359338fd8cf1a2dc001d0cd69c331c17decee88
+>> # good: [79eb6679ef6a0d5ea68da53a8321fb1dc72299b9] Merge tag
+>> 'loongarch-fixes-7.4-1' of
+>> git://git.kernel.org/pub/scm/linux/kernel/git/chenhuacai/linux-loongson
+>> git bisect good 79eb6679ef6a0d5ea68da53a8321fb1dc72299b9
+>> # bad: [baa6744dc939a927e2c94e5f20aff01ac538aef1] Merge tag
+>> 'acpi-7.4-rc3' of
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+>> git bisect bad baa6744dc939a927e2c94e5f20aff01ac538aef1
+>> # good: [2cca8a6f6ae690755862f5b633125119dcf6bd0c] Merge patch series
+>> "ns: fixes identifier fixes"
+>> git bisect good 2cca8a6f6ae690755862f5b633125119dcf6bd0c
+>> # bad: [df42809bd599109660bd3f95e2e22330c80993df] Merge branches
+>> 'pm-cpufreq' and 'pm-runtime'
+>> git bisect bad df42809bd599109660bd3f95e2e22330c80993df
+>> # bad: [6bc092a0fc4d331a4adbbb664078af149c580834] cpufreq: acpi-cpufreq:
+>> fix P-state index mismatch in extract_io()
+>> git bisect bad 6bc092a0fc4d331a4adbbb664078af149c580834
+>> # bad: [02e77af824d5be3a94fdd885835a352f90d24c5c] cpufreq: intel_pstate:
+>> Clear last written P-state value on suspend
+>> git bisect bad 02e77af824d5be3a94fdd885835a352f90d24c5c
+>> # bad: [eee2a44e4e2b41c0699919a550d41cc38daa4f42] cpufreq: Improve
+>> suspend-resume synchronization
+>> git bisect bad eee2a44e4e2b41c0699919a550d41cc38daa4f42
+>> # good: [e6f50e602e373583423654ec000cad8b8d08f7bc] cpufreq: Hold the
+>> policy write lock when changing boost state
+>> git bisect good e6f50e602e373583423654ec000cad8b8d08f7bc
+>> # first bad commit: [eee2a44e4e2b41c0699919a550d41cc38daa4f42] cpufreq:
+>> Improve suspend-resume synchronization
+>>
+>>> Fixes: 8e30444e1530 ("cpufreq: fix cpufreq suspend/resume for intel_pstate")
+>>> Fixes: b1b12babe3b7 ("cpufreq: update 'cpufreq_suspended' after stopping governors")
+>>> Cc: All applicable <stable@vger.kernel.org>
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>
+>>> v1 -> v2:
+>>>      * Retain all of the cpufreq_suspended checks to avoid carrying out
+>>>        governor operations after suspending cpufreq during system
+>>>        shutdown and during hibernation resume on systems with SMT (Sashiko)
+>>>
+>>>      * Rearrange cpufreq_resume() to walk all cpufreq policies and call
+>>>        cpufreq_resume_policy() for all of them
+>>>
+>>>      * Call cpufreq_exit_governor() in cpufreq_resume_policy() for
+>>>        policies that were suspended during a system suspend transition and
+>>>        are inactive during the subsequent system resume (Sashiko)
+>>>
+>>>      * Update cpufreq_suspended under cpus_read_lock in cpufreq_resume()
+>>>        for more symmetry with cpufreq_suspend()
+>>>
+>>>      * Update changelog
+>>>
+>>> ---
+>>>    drivers/cpufreq/cpufreq.c |   86 +++++++++++++++++++++++++++++++++-------------
+>>>    include/linux/cpufreq.h   |    3 +
+>>>    2 files changed, 66 insertions(+), 23 deletions(-)
+>>>
+>>> --- a/drivers/cpufreq/cpufreq.c
+>>> +++ b/drivers/cpufreq/cpufreq.c
+>>> @@ -35,6 +35,9 @@
+>>>    static LIST_HEAD(cpufreq_policy_list);
+>>>
+>>>    /* Macros to iterate over CPU policies */
+>>> +#define for_each_policy(__policy)    \
+>>> +     list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
+>>> +
+>>>    #define for_each_suitable_policy(__policy, __active)                         \
+>>>        list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
+>>>                if ((__active) == !policy_is_inactive(__policy))
+>>> @@ -1956,6 +1959,14 @@ int cpufreq_generic_suspend(struct cpufr
+>>>    }
+>>>    EXPORT_SYMBOL(cpufreq_generic_suspend);
+>>>
+>>> +static void cpufreq_suspend_policy(struct cpufreq_policy *policy)
+>>> +{
+>>> +     guard(cpufreq_policy_write)(policy);
+>>> +
+>>> +     cpufreq_stop_governor(policy);
+>>> +     policy->suspended = true;
+>>> +}
+>>> +
+>>>    /**
+>>>     * cpufreq_suspend() - Suspend CPUFreq governors.
+>>>     *
+>>> @@ -1978,11 +1989,8 @@ void cpufreq_suspend(void)
+>>>        pr_debug("%s: Suspending Governors\n", __func__);
+>>>
+>>>        for_each_active_policy(policy) {
+>>> -             if (has_target()) {
+>>> -                     scoped_guard(cpufreq_policy_write, policy) {
+>>> -                             cpufreq_stop_governor(policy);
+>>> -                     }
+>>> -             }
+>>> +             if (has_target())
+>>> +                     cpufreq_suspend_policy(policy);
+>>>
+>>>                if (cpufreq_driver->suspend && cpufreq_driver->suspend(policy))
+>>>                        pr_err("%s: Failed to suspend driver: %s\n", __func__,
+>>> @@ -1994,6 +2002,32 @@ suspend:
+>>>        cpus_read_unlock();
+>>>    }
+>>>
+>>> +static void cpufreq_resume_policy(struct cpufreq_policy *policy, bool start)
+>>> +{
+>>> +     guard(cpufreq_policy_write)(policy);
+>>> +
+>>> +     if (!policy->suspended)
+>>> +             return;
+>>> +
+>>> +     policy->suspended = false;
+>>> +
+>>> +     if (policy_is_inactive(policy)) {
+>>> +             /*
+>>> +              * The policy was active when it was suspended, so its governor
+>>> +              * is still there.  Let the governor go.
+>>> +              */
+>>> +             cpufreq_exit_governor(policy);
+>>> +             return;
+>>> +     }
+>>> +
+>>> +     if (!start)
+>>> +             return;
+>>> +
+>>> +     if (cpufreq_start_governor(policy))
+>>> +             pr_err("%s: Failed to start governor for CPU%u's policy\n",
+>>> +                    __func__, policy->cpu);
+>>> +}
+>>> +
+>>>    /**
+>>>     * cpufreq_resume() - Resume CPUFreq governors.
+>>>     *
+>>> @@ -2003,11 +2037,12 @@ suspend:
+>>>    void cpufreq_resume(void)
+>>>    {
+>>>        struct cpufreq_policy *policy;
+>>> -     int ret;
+>>>
+>>>        if (!cpufreq_driver)
+>>>                return;
+>>>
+>>> +     guard(cpus_read_lock)();
+>>> +
+>>>        if (unlikely(!cpufreq_suspended))
+>>>                return;
+>>>
+>>> @@ -2018,19 +2053,18 @@ void cpufreq_resume(void)
+>>>
+>>>        pr_debug("%s: Resuming Governors\n", __func__);
+>>>
+>>> -     for_each_active_policy(policy) {
+>>> -             if (cpufreq_driver->resume && cpufreq_driver->resume(policy)) {
+>>> -                     pr_err("%s: Failed to resume driver: %s\n", __func__,
+>>> -                             cpufreq_driver->name);
+>>> -             } else if (has_target()) {
+>>> -                     scoped_guard(cpufreq_policy_write, policy) {
+>>> -                             ret = cpufreq_start_governor(policy);
+>>> -                     }
+>>> +     for_each_policy(policy) {
+>>> +             int ret = 0;
+>>>
+>>> +             if (cpufreq_driver->resume && !policy_is_inactive(policy)) {
+>>> +                     ret = cpufreq_driver->resume(policy);
+>>>                        if (ret)
+>>> -                             pr_err("%s: Failed to start governor for CPU%u's policy\n",
+>>> -                                    __func__, policy->cpu);
+>>> +                             pr_err("%s: Failed to resume driver: %s\n", __func__,
+>>> +                                    cpufreq_driver->name);
+>>>                }
+>>> +
+>>> +             if (has_target())
+>>> +                     cpufreq_resume_policy(policy, ret == 0);
+>>>        }
+>>>    }
+>>>
+>>> @@ -2412,12 +2446,17 @@ __weak struct cpufreq_governor *cpufreq_
+>>>        return NULL;
+>>>    }
+>>>
+>>> +static bool cpufreq_is_suspended(struct cpufreq_policy *policy)
+>>> +{
+>>> +     return cpufreq_suspended || policy->suspended;
+>>> +}
+>>> +
+>>>    static int cpufreq_init_governor(struct cpufreq_policy *policy)
+>>>    {
+>>>        int ret;
+>>>
+>>> -     /* Don't start any governor operations if we are entering suspend */
+>>> -     if (cpufreq_suspended)
+>>> +     /* Don't start any governor operations for suspended policies. */
+>>> +     if (cpufreq_is_suspended(policy))
+>>>                return 0;
+>>>        /*
+>>>         * Governor might not be initiated here if ACPI _PPC changed
+>>> @@ -2460,7 +2499,7 @@ static int cpufreq_init_governor(struct
+>>>
+>>>    static void cpufreq_exit_governor(struct cpufreq_policy *policy)
+>>>    {
+>>> -     if (cpufreq_suspended || !policy->governor)
+>>> +     if (cpufreq_is_suspended(policy) || !policy->governor)
+>>>                return;
+>>>
+>>>        pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
+>>> @@ -2475,7 +2514,7 @@ int cpufreq_start_governor(struct cpufre
+>>>    {
+>>>        int ret;
+>>>
+>>> -     if (cpufreq_suspended)
+>>> +     if (cpufreq_is_suspended(policy))
+>>>                return 0;
+>>>
+>>>        if (!policy->governor)
+>>> @@ -2499,7 +2538,7 @@ int cpufreq_start_governor(struct cpufre
+>>>
+>>>    void cpufreq_stop_governor(struct cpufreq_policy *policy)
+>>>    {
+>>> -     if (cpufreq_suspended || !policy->governor)
+>>> +     if (cpufreq_is_suspended(policy) || !policy->governor)
+>>>                return;
+>>>
+>>>        pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
+>>> @@ -2510,7 +2549,7 @@ void cpufreq_stop_governor(struct cpufre
+>>>
+>>>    static void cpufreq_governor_limits(struct cpufreq_policy *policy)
+>>>    {
+>>> -     if (cpufreq_suspended || !policy->governor)
+>>> +     if (cpufreq_is_suspended(policy) || !policy->governor)
+>>>                return;
+>>>
+>>>        pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
+>>> @@ -2747,7 +2786,8 @@ static void cpufreq_policy_refresh(struc
+>>>         * -> ask driver for current freq and notify governors about a change
+>>>         */
+>>>        if (cpufreq_driver->get && has_target() &&
+>>> -         (cpufreq_suspended || WARN_ON(!cpufreq_verify_current_freq(policy, false))))
+>>> +         (cpufreq_is_suspended(policy) ||
+>>> +          WARN_ON(!cpufreq_verify_current_freq(policy, false))))
+>>>                return;
+>>>
+>>>        refresh_frequency_limits(policy);
+>>> --- a/include/linux/cpufreq.h
+>>> +++ b/include/linux/cpufreq.h
+>>> @@ -149,6 +149,9 @@ struct cpufreq_policy {
+>>>        /* Pending policy->min/max update for the driver */
+>>>        bool                    update_limits;
+>>>
+>>> +     /* The policy has been suspended. */
+>>> +     bool                    suspended;
+>>> +
+>>>         /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
+>>>        unsigned int cached_target_freq;
+>>>        unsigned int cached_resolved_idx;
+>>
+>>
 
