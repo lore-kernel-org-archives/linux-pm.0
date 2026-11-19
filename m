@@ -1,53 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795118010;
-	b=DA5OkFJCZRIFlbZm6L/LWXhl6nv/gONt22+yM8ZIvf21ok65EUly5JIut+aNAa/Q8dZ4
-	 HByyC5+K0r3NDS9bZT5/suNUBXgVcm9ftRWRVej0OvzfQgc+Y4jl+nqispWpFu1C/wCGI
-	 ovy0HstTfjm90hYRg1qp72jGVsl5B5+NtD40VjecihEVwfiBOCnjpdi6BP6We8LYm42h3
-	 vzt1qXxeI9Rn8vkTrfpkgiDwC67KZYbHzrSxC3NbocA5PH+PqpJjCtLLcrPevtXrUykzK
-	 3ONr3TcG09vZbzlsmt0yi4Sf7Fy0gHgfkbavpsagS/qypO/BMz7LXDp6PJv+S72kQcw==
+	t=1795118197;
+	b=CaL+WCpP4Le4cMrF+IIm/yTLUz8GMtQRGOYgv+MdTmQGsiFYC6WNIltyhnGIPp/fBvIG
+	 CPHs0gyZJHor5GQ77lqt/+BTn/Gwc+NcSKrfgNrFLsH/aG6IKQIrnnce49/CUyb6u/SFs
+	 VCtikW7bRnhiaYwfD5x5ntc4KSPxO3Nhn57/4MlEnBfNfXfQncequ5XtrxxnmBmT5IL1F
+	 u1Ea5aTxsEYF72ZiE6XF74t7OvXjQhG52byh4yfiukJvmO8jM176+bdB1mj5XK2y5wj6G
+	 CW68FQww1zJLwSDhkYnhK5OZZ5+lPWC4NFDR/bdLsgz6n6LoS9GmaQal//3JCceJX4w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795118010;
-	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
-	 MIME-Version:From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=pQDnLm0FK9Jvhj7aq4owvaesn+IKHrmfTxnaUHYSxz0=;
-	b=ZSZTFs+0Dq0mDN/ZQWAsZdvxcLV10Rhzv11gJ7qjosSdOfdllQwwk/dzU5gRXCpQZz/R
-	 dCUgDXQydQvSw6fBIZXgUJLdxSYDH/y7ihK5Fer5/N2lEESfslJ5bTjxs6+4rA6sgXaQe
-	 j+Ua80+MojAfHyxRkfM74aJpFFr+U5P9FgHZyFE3Y9VdeZ7OGvPSwe3K/YZcPmqYnqRSz
-	 fp/jfIf0S0Grrk0y6aBpE44lRHs4mmqsjlPNFx5UBqE/CiAv1KsT61bQSdRkjYk/6u8sZ
-	 2Ge0N72XAD9nb0ZNY9IxoqirLNjwdy5vuEhlLbkjCqij7CL9P3B9Oyo/Fl6rf2UvN/A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795118197;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 Organization:MIME-Version:Content-Transfer-Encoding:Content-Type;
+	bh=zYEgrbruO7Uva7MBp+qA7G0y0dvY+OKo/D4TeQKsz4o=;
+	b=28LPSq74Xi6GiKp7cad3HnbjO7JBPY+C3Rri4Z8s+uDLMoSN8FvrYRSr6uoSOrlSB9OA
+	 SHTwxQ1s8DD2Z/C9HOtVtuFXd9rvANgMKADbibbD4bU++Ebf3OLTQ++tyW5d+0fzJYMpR
+	 MlQb4n2WXjesaiafF8CJK4lAeJDfCxKlPUvgkZqo/iw1tXlirLM+36kfI4QIxEy9hdabx
+	 FJKwXDHCpp6EAon+EMkBNwpbQIqnS/heVtKvnpjwbA4XylFAOeHar178p7VeQytkY3SGz
+	 6GgptwGczIAgh0vxJHTW/9V6omjDwTqEDgboJ8TjuHNNEiTUPLXPfXnx/WE8IG+r+qA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lPna7ikH;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jKVbvsdi;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 426AC606A32C
-	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 19:53:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CA07606A320;
+	Thu, 19 Nov 2026 19:56:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lPna7ikH
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBF251F000C5
-	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 19:53:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jKVbvsdi
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E6FE1F000C4;
+	Thu, 19 Nov 2026 19:56:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795118009;
-	bh=pQDnLm0FK9Jvhj7aq4owvaesn+IKHrmfTxnaUHYSxz0=;
-	h=From:Date:Subject:To:Cc;
-	b=lPna7ikHz8R9uH/ITlieIGBW8nsK/6/2s4pl3WUEWq8FE0ZQZ2C3+vimc3xUCd4SU
-	 fR7FDoPMN8BFb+lBt2R+eKiFBzULfiJ2nWuKTqu/esuOnH0WgC/8DaJwoKv6exVQzS
-	 PBcaEv6qPq3PYGnJvW4FHSOliYZoCYAk4cyrAMwBwkNyhV9LvkSX+yMXs/jjSlSb4g
-	 HQFJ1HAgeYmXsHB0KkshBG7Mcp5GPTtg8QNJt0CndkcY3Q+IWrMBXqa/iqrR5f/WnR
-	 EQCco/y1nDSGKYL0R5d4+MsI8JB51MD8B70q+Y91pAh+s2MXgTNY6ysB9p7h0DZ6Xo
-	 t327Uoqmy5DQg==
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5be416e603cso21244e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 11:53:29 -0800 (PST)
-X-Gm-Message-State: APuU4Z9GtjmX00OfSDdyjG69v4ZgYj/1uCevrdgf4yH033e6xsX4hk70
-	2hMtdV4fR8QITdY+yVHorSl5iGMD7AIxajOQDfvKKpdMFHmPP/3FyquuSA4JYQWhuaXgpwvIl3s
-	mdEolJqYfqqbNMmgXVnAMlYUYUpZSG5o=
-X-Received: by 2002:a05:6512:3d29:b0:5c1:47d6:8258 with SMTP id
- 2adb3069b0e04-5c1bc80120bmr201929e87.41.1795118008368; Thu, 19 Nov 2026
- 11:53:28 -0800 (PST)
+	s=k20260515; t=1795118197;
+	bh=zYEgrbruO7Uva7MBp+qA7G0y0dvY+OKo/D4TeQKsz4o=;
+	h=From:To:Cc:Subject:Date;
+	b=jKVbvsdi0POhljXjmBt1jvfC5D+GWRT8sm3KmDcV5i34NE1bE9mIWsTV6uEK7sTDZ
+	 UokOPso16tjOpBsazkgXT1MUYsvWBFCRFvOXMK+D3sagf2jaFElUEvUtpDfrF8UFW2
+	 9fqc2DGxDw7iZifNDnct1pCl8yCot9saV/Vg+18Lklgv9aY93m56xNe/4xCktJC7ol
+	 V5rndPagqtdhaRmQsPoxdAHZ5olvYgWduFP6gJPQ2zyPa/Uu3n/xYnTGumgLGpjQwJ
+	 N2IvNanthaLzrDNS/j5jN8MlTMTTGMAy2b+wcZeuLFm4E1/aTNKbAtbQxSIdLn+4sX
+	 njojPwWU73Y3A==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject:
+ [PATCH v1] cpufreq: intel_pstate: Use dedicated lock in
+ set_power_ctl_ee_state()
+Date: Thu, 19 Nov 2026 20:56:34 +0100
+Message-ID: <2862244.mvXUDI8C0e@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -57,49 +59,89 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 19 Nov 2026 20:53:16 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0iug8To5GYw_S_1=t+LAO6+tqYG0To7f1RtuONLiv9ehQ@mail.gmail.com>
-X-Gm-Features: AclHuK9yuJhXQvYWr9sAG943Uq1MBovF9U6BwVzMr-CX2J2FeddBtM4pWlZJSH0
-Message-ID: <CAJZ5v0iug8To5GYw_S_1=t+LAO6+tqYG0To7f1RtuONLiv9ehQ@mail.gmail.com>
-Subject: [GIT PULL] Thermal control fix for 7.4-rc4
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-Hi Linus,
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Please pull from the tag
+Commit eee2a44e4e2b ("cpufreq: Improve suspend-resume synchronization")
+caused lockdep to complain about a possible circular locking dependency
+because intel_pstate_resume() is now called under cpus_read_lock, and it
+calls set_power_ctl_ee_state() that acquires intel_pstate_driver_lock
+which can be held around CPU hotplug locking.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- thermal-7.4-rc4
+Fortunately, this cannot lead to a real deadlock because
+intel_pstate_resume() does not run in parallel with the other holders
+of intel_pstate_driver_lock, but in fact set_power_ctl_ee_state() need
+not use that particular lock either.  Moreover, the original purpose of
+that lock is different, so using it in set_power_ctl_ee_state() is
+questionable.
 
-with top-most commit 22139b5a46353184f43d120b569b01447843d363
+Accordingly, introduce a dedicated mutex for protecting MSR_IA32_POWER_CTL
+updates and power_ctl_ee_state accesses and make set_power_ctl_ee_state()
+use it instead of intel_pstate_driver_lock.  Also take it directly in
+intel_pstate_resume() around the EE state restore.
 
- thermal: int340x: processor_thermal: Fix Nova Lake-S PCI device ID
+Fixes: eee2a44e4e2b ("cpufreq: Improve suspend-resume synchronization")
+Reported-by: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>
+Closes: https://lore.kernel.org/linux-pm/efcb1647-46fd-442a-bbda-283560d9df53@intel.com/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-on top of commit 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1351,13 +1351,14 @@ static void intel_pstate_hwp_offline(str
+ /* Enable bit for Dynamic Efficiency Control (DEC) */
+ #define POWER_CTL_DEC_ENABLE	27
+ 
++static DEFINE_MUTEX(power_ctl_update_lock);
+ static int power_ctl_ee_state;
+ 
+-static void set_power_ctl_ee_state(bool input)
++static void __set_power_ctl_ee_state(bool input)
+ {
+ 	u64 power_ctl;
+ 
+-	guard(mutex)(&intel_pstate_driver_lock);
++	lockdep_assert_held(&power_ctl_update_lock);
+ 
+ 	rdmsrq(MSR_IA32_POWER_CTL, power_ctl);
+ 	if (input) {
+@@ -1370,6 +1371,13 @@ static void set_power_ctl_ee_state(bool
+ 	wrmsrq(MSR_IA32_POWER_CTL, power_ctl);
+ }
+ 
++static void set_power_ctl_ee_state(bool input)
++{
++	guard(mutex)(&power_ctl_update_lock);
++
++	__set_power_ctl_ee_state(input);
++}
++
+ static void intel_pstate_hwp_enable(struct cpudata *cpudata);
+ 
+ static void intel_pstate_hwp_reenable(struct cpudata *cpu)
+@@ -1398,11 +1406,13 @@ static int intel_pstate_resume(struct cp
+ 
+ 	pr_debug("CPU %d resuming\n", cpu->cpu);
+ 
+-	/* Only restore if the system default is changed */
+-	if (power_ctl_ee_state == POWER_CTL_EE_ENABLE)
+-		set_power_ctl_ee_state(true);
+-	else if (power_ctl_ee_state == POWER_CTL_EE_DISABLE)
+-		set_power_ctl_ee_state(false);
++	scoped_guard(mutex, &power_ctl_update_lock) {
++		/* Only restore if the system default has changed */
++		if (power_ctl_ee_state == POWER_CTL_EE_ENABLE)
++			__set_power_ctl_ee_state(true);
++		else if (power_ctl_ee_state == POWER_CTL_EE_DISABLE)
++			__set_power_ctl_ee_state(false);
++	}
+ 
+ 	if (cpu->suspended && hwp_active) {
+ 		mutex_lock(&intel_pstate_limits_lock);
 
- Linux 7.4-rc2
-
-to receive a thermal control fix for 7.4-rc4.
-
-This fixes the Nova Lake-S PCI device ID in the int340x thermal
-driver (Sankara Tankala).
-
-Thanks!
 
 
----------------
-
-Sankara Tankala (1):
-      thermal: int340x: processor_thermal: Fix Nova Lake-S PCI device ID
-
----------------
-
- drivers/thermal/intel/int340x_thermal/processor_thermal_device.h   | 3 +--
- .../thermal/intel/int340x_thermal/processor_thermal_device_pci.c   | 7 +------
- drivers/thermal/intel/int340x_thermal/processor_thermal_rfim.c     | 3 +--
- 3 files changed, 3 insertions(+), 10 deletions(-)
