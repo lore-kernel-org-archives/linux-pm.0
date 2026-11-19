@@ -1,64 +1,56 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795127215;
-	b=hZ8+uFQ8LWXVl+ljIDpO/uj+mR3Qyl/cP1Der2/28+t8CozSwbmAP/tbBIWwoidAJeyw
-	 tvAq19McElhNWtAXLimAlKUPpcc8/G/LhI3z5haITp0OcohztHDhOgP6cn1YwAEfWvjRB
-	 EM1zmcGVXmy3n38jxk7kWNliB5UKIqy4UbkiqFRo+76J5gugcNzRpJ1flfgSGj6gPw0tq
-	 /xKcj3wKL82lJzeIF9dfsW3dyxYT/aSwLoCzcS0ORA/+CPN6xgPlCN4/s4Cx8MPvfcsLL
-	 OP64PUPaq+yUvPIBfz95ct5OqgFpCYqDtnmSkV9Du2kKd773Nt3Sgy++V9jsWoOSQ7w==
+	t=1795129090;
+	b=z/Bdll3IOEtGvQEpa+Cau9CYyCABnZ8eIiT8TAPte+9bekkBgiSdasJ4FeIa7UWDG5B4
+	 3YeydcBvSnaQ7lDV4iL5fyWCQGh7KSPnskYzFkbbdEAMf1eN1A7PQ8kLjMYOKeqKv/iRa
+	 QMa/sjCdSIf5+9r4jC4lUTn0BEihbLykb6dpTaAO9L3BiCY4HDid3HJLL0H3tE4BUsHlK
+	 I/c080FjoRXnlaW3e9xtOm/n5QGbQpH19JsvPcwL3MLkL5dRfCYf7A/X3FRHnEJZWPR4P
+	 aXvbBzqPNP6q0j9vlqfdwrrzr45rsWOFxiq2rNJ/N7UmvwV4CKVKHBbB2x0OAr0L6Ug==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795127215;
-	h=Received:DKIM-Signature:Received:Subject:From:In-Reply-To:References:
-	 X-PR-Tracked-List-Id:X-PR-Tracked-Message-Id:X-PR-Tracked-Remote:
-	 X-PR-Tracked-Commit-Id:X-PR-Merge-Tree:X-PR-Merge-Refname:
-	 X-PR-Merge-Commit-Id:Message-Id:Date:To:Cc;
-	bh=a1z9qEU81LL2p42Z8/sX2sjizU8FoJhNrWW0/5knn3I=;
-	b=QbOlCGaoxrCVSf6ByMVlLiqy90iAEUTwYHACiGeWklUb7BzUN1W4uYZFBFp/rsJB9OIp
-	 CGbGpMXd9XUv1veOkunHFkZhAZlW4VqXMxhGAHTKDhzsS3UO2NvisPfUAvego9HgY3Scl
-	 Kfx+oNF6rOwl/hWC/UHPF0T1cqfG/WV5lAuyBGzW0Mk2JH8I7t6JizcD43hDU2iLg7wmE
-	 9RuIW/f4PxQ6ewHSjbd7dvV5gdFnbFNp4Nu4bfY4lZbx7phWax6ntHRhPhEX+RLNOEMAj
-	 9wAk0/eVCGGSvHWMA7MVPdNxWr2LcTj76CDxyFIixM38mUOtX+yoQJCRgFwu7xR4IQw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795129090;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=oSeZFGzry6vPvKn8kGIQrFQWjWayT6ttinb11x02GGI=;
+	b=gwxMHb6XNk6a25B/fTmnvbr6TpGqJ4mNJUMlmcV6GCFOiEZi2dcGSKBlyZcmlEUXN9eS
+	 z52ijb5E2egcu2qSsDQ61z4u1i9KJbalDX1qtovEENH8uPDprz6TGYtymMLdrS5d2byZI
+	 12RNcEKR7EPd8EvjPtpHPBTdAE12ze6HPKLXWAKjcvNmsODM5KFdmMDhgtphFEn8vexFg
+	 CiieYdZ/0fYpldJWFwVwCapL27/kpD1WDP7XEcHbefP4DyW2EoZdFHyjG8KjHH25vKwFy
+	 lt8HmpxzeYIO7NtU3WpQvJ+x9VWJ6gPCXNwpwXZwChwTMLKIo1yJ01EttBk/dSjeDiw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EzZwee9A;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GNyEuC4Z;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B648B606A32A;
-	Thu, 19 Nov 2026 22:26:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A10160A5BD5;
+	Thu, 19 Nov 2026 22:58:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EzZwee9A
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 436211F000CF;
-	Thu, 19 Nov 2026 22:26:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GNyEuC4Z
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A9E91F01803;
+	Thu, 19 Nov 2026 22:58:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795127215;
-	bh=a1z9qEU81LL2p42Z8/sX2sjizU8FoJhNrWW0/5knn3I=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=EzZwee9AG01uphW9sN29wCRiDc2Od66uKyyx9vqo1YsS+WKoSLV45Zyt6EjybHA/S
-	 noVH43MyEdU7WE7bj1hbe+ZuCvmFkNINzL7bRsBVI2lw6l8Ai7TLaTk+Zbnd25fwhC
-	 0H9iZIlPOkdl9yr3M7/kunc3+4R9l1evMIGVVDmYHIzhNS1SHbjeFewhpFj+tr3f4z
-	 k/MXjoretSqBVepPCDOi32BCQpNOFjk6g/bOAZ5BwUP2cw2YF76yofqIGGXM3tYs6m
-	 dXReAXnvba8eWkwjXismFC7+CaEfQC4Vzdg/dCwLHSEsBUTyUi7onIO5QCcfVLdGOS
-	 OiARAkAxhAEAA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3A3633808209;
-	Thu, 19 Nov 2026 22:26:55 +0000 (UTC)
-Subject: Re: [GIT PULL] Thermal control fix for 7.4-rc4
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0iug8To5GYw_S_1=t+LAO6+tqYG0To7f1RtuONLiv9ehQ@mail.gmail.com>
-References: <CAJZ5v0iug8To5GYw_S_1=t+LAO6+tqYG0To7f1RtuONLiv9ehQ@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0iug8To5GYw_S_1=t+LAO6+tqYG0To7f1RtuONLiv9ehQ@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.4-rc4
-X-PR-Tracked-Commit-Id: 22139b5a46353184f43d120b569b01447843d363
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: d3e1fcc93027bec7c470bc4dfae4716e621f5cde
-Message-Id: <179512721366.3897686.3426832996533123195.pr-tracker-bot@kernel.org>
-Date: Thu, 19 Nov 2026 22:26:53 +0000
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, Daniel Lezcano <daniel.lezcano@kernel.org>
+	s=k20260515; t=1795129090;
+	bh=oSeZFGzry6vPvKn8kGIQrFQWjWayT6ttinb11x02GGI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=GNyEuC4Z9gOIi+B3qf9wPgacH/47VRYjVcLtCkwMfz7MP+Q3+ujmbI/9pqJt9jJy6
+	 L+34uwaQN6RBaUDCkEZmk30kY/OAQir7D0vbR3A/5LevCwN/3qABVvRYDVZsQPR7cY
+	 8tULn+VstK6vBIK3k8Xfpcj9I2ADvvFqdBJn7efrRzEbAH72Cs2OaTW3eYt2qvR/Es
+	 oxc/9Rj268Fd/E3uJimZBbGQdJLGJd7HyT8dBICrbA+dYHXiGbAlGhSph/ijO4Sgpm
+	 dwe0vnRnj1vL+9Yjg7HKPPAV59mkrJjsrZeWnQGo4No+IGlbWM+sn8i1JDB7rUTs/X
+	 6Sl+XWEDYsq1w==
+Date: Thu, 19 Nov 2026 16:58:08 -0600
+From: Rob Herring <robh@kernel.org>
+To: Alexey Charkov <alchark@flipper.net>
+Cc: Sebastian Reichel <sre@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] dt-bindings: power: supply: battery: Add a charging
+ temperature range
+Message-ID: <20261119225808.GA1121782-robh@kernel.org>
+References: <20261109-battery-charge-temp-range-v1-0-a967abd8b80c@flipper.net>
+ <20261109-battery-charge-temp-range-v1-1-a967abd8b80c@flipper.net>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,16 +59,55 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261109-battery-charge-temp-range-v1-1-a967abd8b80c@flipper.net>
 
-The pull request you sent on Thu, 19 Nov 2026 20:53:16 +0100:
+On Mon, Nov 09, 2026 at 01:41:48PM +0400, Alexey Charkov wrote:
+> Describe batteries rated for separate charging and discharging
+> temperature ranges, such as 0-45C for charging and -20-60C for
+> discharging, often with a reduced charge current near the ends of the
+> charging range: operating-range-celsius holds a single range, and
+> existing users read it both as the limit for any use of the battery and
+> as the limit for charging.
+> 
+> Add charge-temp-range-celsius for the charging range, falling back to
+> operating-range-celsius when absent, and state that
+> operating-range-celsius covers discharging. Add the charge current and
+> voltage to use between alert-celsius and the charging range limits, to
+> describe a reduced charge rate near those limits and none beyond them.
+> 
+> A missing half of an alert charge current and voltage pair falls back to
+> the matching constant-charge-* setting. alert-celsius is expected to fully
+> fall inside charge-temp-range-celsius, but when it does not,
+> charge-temp-range-celsius takes precedence to ensure no charge occurs
+> outside the allowed range.
+> 
+> Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> ---
+>  .../devicetree/bindings/power/supply/battery.yaml  | 45 +++++++++++++++++++++-
+>  1 file changed, 43 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/battery.yaml b/Documentation/devicetree/bindings/power/supply/battery.yaml
+> index 9575ee1491bb..d2f2ed9a01fe 100644
+> --- a/Documentation/devicetree/bindings/power/supply/battery.yaml
+> +++ b/Documentation/devicetree/bindings/power/supply/battery.yaml
+> @@ -111,11 +111,21 @@ properties:
+>        for each of the battery capacity lookup table.
+>  
+>    operating-range-celsius:
+> -    description: operating temperature range of a battery
+> +    description: operating temperature range of a battery, in which it can be
+> +      discharged. Charging may be further restricted by
+> +      charge-temp-range-celsius.
+>      items:
+>        - description: minimum temperature at which battery can operate
+>        - description: maximum temperature at which battery can operate
+>  
+> +  charge-temp-range-celsius:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.4-rc4
+'temp' is kind of redundant with 'celsius' and a departure from all the 
+other temperature properties here.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/d3e1fcc93027bec7c470bc4dfae4716e621f5cde
-
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Rob
