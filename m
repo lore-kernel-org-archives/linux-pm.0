@@ -1,62 +1,62 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795093413;
-	b=syV9lLrIJnyOQHjYSbwx21w4kvp2HJgnAN1/YNuLLktavSUgEkRgEol5uPyBaet+SRyZ
-	 CEeWe3rApEYq6KCI6etcHghIXEzZGZxGfx19EVs/EWrMGXUdXdnfj1br07MNvYeZ2E9pU
-	 J0gVWUF1sW92Z8kVbwyrHfyuy6zJUP03rFqEd/PzTzHHoy1JozqufZqVa5q5lV2/4TOt0
-	 Fsws5GMzrUwjSYEyAFApIieDcdUZdWoNUO6Pf2SHohIQ5bmGeQJ9WDXBWjRT+mu6g1aJB
-	 oDU+O2sQBsISVSSEEwZMp+n9B2v8kFJ/DmfsO3+GeB2XzZuoo+aq7mLJU9WO3vZy3ww==
+	t=1795093410;
+	b=cMQGNrMMhDNBbUf2VkrZl8pBgvWeFJxWWtXQcqReiGqAR9x+oPoPkJhqT1+AzNLWahiR
+	 m+I4lZuPuRgs/P0QsoRLQhZRGT8hMIDVwzZqVcKs+W7US9La7ra6ZkSGZsL+ni4VSOn8X
+	 sKxqHu+ySauADH4QDogaUKREQ9YCy29sTTQOXoVGz2xep0id7GYff3L6wgo7UGXibVoaD
+	 wzk2WwUe8OvI56Q02Tny4obGw6V6Q7w7JXrcSwj+3VloZKlIwad1HFSkl3fi9UGlwP5Dn
+	 kd2QdBv4KXf2TqKxyZ1eZS28zywU7W1LtTlYoLYZbCnj6gsKV4S7dGfKXJFVicEvhYA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795093413;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795093410;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:From:Date:Subject:
 	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
 	 References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
 	 X-Developer-Key;
-	bh=pHnfCYbAY9dDEFdmhn0ti9SAoUXpGF0+jzOG0qYSuSk=;
-	b=lzOinjB6Ga8qTD3iHtUO/2V1L2M1vXi2Q8/sE5QZbe0ExK3wgvUXAlYozuRUsn+W7e1r
-	 XprJlq5w94jzIvCcegTjxl6f/YTpbmOxZQuP6eo+aTZXkh78FEWpwzwOtJRGwSyovJ3G+
-	 QIzLADd+45nY1XGTrV0UvfYZx9aavTWyRJf12fEXmOELVCx5b6kxvcuaxnbSRcIdfku/A
-	 V2T39rGsIt+UZXKJVqTmJRXOcUzWRBvXioaUqYKZrxO02v4EpPLbM46c9lw8vCY7pOhil
-	 4M86ZVp8Psqo6dTMN3/iwkb9iEM4a7clK7UfKXPqr9EHzkabmxntLQsidp3WKtvuCNQ==
+	bh=Z/OSGHvHVnn2Ph/Qe+hZsNnhnmtZwlUM7JMP60OxvfQ=;
+	b=qi8z6u6aR/9YmUVuZa5qdfRtQ7eSYjp0W6FrCeOK/hlivUM2mzOidODxjL4eZ5OuxavW
+	 b+0Oq9ag2x+prtq4lPC4N5LrkclwWSu0TVkmFdLCfbt3xSUaqj8M7XoHbvl+wyEexjxPP
+	 yLiX5SpcjbhnnTkGpfuJQy9F6KJ5K4jFF5ICTO7B06ccgDLVRnVqyOSWAlnpP8Ze8Picb
+	 uKVmO2EKN/sLhVYMrOw/bwx0ZExfg+l6iUMFOPu48OqaUxKtEMskTcetiaMvs0SViB85w
+	 EBUWeRg6wfoSrydeeuqoqm03Q68y/MLmK8VN61rQdZMGleMx+9EoZsrX5XGemDqPVHA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=YMgpdWKG;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=m7WXrInM;
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4949860A2634;
-	Thu, 19 Nov 2026 13:03:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4949860A2634
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43ABE606A326;
+	Thu, 19 Nov 2026 13:03:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 43ABE606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=YMgpdWKG
+	dkim=pass (2048-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=m7WXrInM
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1795093403;
-	bh=hViKsULNkl/NAzLcY8aLnqAuSTrivV20/HpL/E9c/Fc=;
+	bh=r/7DOVU3zbP/DiBvAk5lk/ApUFqwoCwJJqDxg9WSfaM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=YMgpdWKG9wCV9enlgjQSllKliq4ogWZgaB1R8BmxjGpqpqJowp6jtgCoYCEAs6ion
-	 K7rBFI61mMSeJmn9dmGgFBWZ9/RPyldoemR+dP1o7Vh0HaN+OAH9uI8IFJJ6RLgB49
-	 eiRfw/yytZHDFQGyiVzMIBXLXfAaFOKGEWOyh+311yn++ZWmsbtvpGyGeaAdldSB87
-	 QqTUY6sDjZVscD9T4tzn4aLpBZ76PutT8giqNifBU7W2ag6eYn1vThoUIlsKYNTVOy
-	 8m/dmqTlFpuARu/nH6vXqBrKT/aXsORdyNHwQbT5CgDTq9SnmzgWpFJo81CT33FGNs
-	 dJu6zzFJnV7qw==
+	b=m7WXrInM9CokMzVQlOEoy7QlC4SI7aRVqm5756P9gienxG9OA2pGNCFAs1MKwkG+J
+	 b3Peawd3yS5KjBnj5vQ5a9pSQDKNS2eQ9c1wBHFjhgoS489yJF5CG3XMC2hzyg75DU
+	 Oc2Mu8gCFt/JsBea13K0FPDtSmmKLGw9yWOZyWjt35xo6StZECT7KCGdIIwnc7NAiM
+	 58kEUVEOsGXUT0FxBs+Sb4RU/hjWC/LZIAtXK2IU/BJI7GCPw67O66VofGcIJpHoOw
+	 rb0HkhRkAu534ppMTC44CcI3TjJk+PP4P6kuPEb+swJjdMnJvHHX1l2IcfkJpMzEI1
+	 sTmL2tVOvmwhw==
 Received: from jupiter.universe (unknown [100.64.1.62])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 335FE17E0E04;
-	Thu, 19 Nov 2026 14:03:23 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id D797317E0DE8;
+	Thu, 19 Nov 2026 14:03:22 +0100 (CET)
 Received: by jupiter.universe (Postfix, from userid 1000)
-	id 96925480038; Thu, 19 Nov 2026 14:03:22 +0100 (CET)
+	id 92F6A480031; Thu, 19 Nov 2026 14:03:22 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Date: Thu, 19 Nov 2026 14:01:55 +0100
-Subject: [PATCH v4 05/11] PM / devfreq: rockchip-dfi: move to per-variant
- const structs
+Date: Thu, 19 Nov 2026 14:01:53 +0100
+Subject: [PATCH v4 03/11] PM / devfreq: rockchip-dfi: drop incorrect shift
+ of LP5 bank mode
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -68,7 +68,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261119-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v4-5-517a68c008fe@collabora.com>
+Message-Id: <20261119-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v4-3-517a68c008fe@collabora.com>
 References: <20261119-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v4-0-517a68c008fe@collabora.com>
 In-Reply-To: <20261119-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v4-0-517a68c008fe@collabora.com>
 To: Chanwoo Choi <cw00.choi@samsung.com>, 
@@ -81,294 +81,58 @@ Cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
  linux-kernel@vger.kernel.org, kernel@collabora.com, 
- Sebastian Reichel <sebastian.reichel@collabora.com>
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ Sashiko <sashiko-bot@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9589;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1522;
  i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=+xT3ZC3H0Njs88hwu2uoXsBUDKWfkYuVmlaLiVblPEA=;
- b=owJ4nAFtApL9kA0DAAoB2O7X88g7+poByyZiAGr+85rZIEHUcwPGSazeMKzEor8xpZdVyQLEW
- gy0qiTL44NLyIkCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJq/vOaAAoJENju1/PI
- O/qaAzcP/1KkAA0idyCRX/1+A75TxadWaA/4iNNJAPq6C3d29vDHXYkbm8qn9dIvGRnBbE931WA
- jp1fvyQCFCAfS7z6BomFUb5fttCDqayFvanAdtfiGVn5oINog3Y94SVNBT7SK5gEEMfcEOnjPkU
- i2pfh1et30NVW41yTyHoimJBsu/0z/rE/YbTNZTqeZiWXULU7dWe3ppqbKiy03e5z50h8RajvQV
- qQlrD9EDIjlicWk31N8tXsvIj5e1bW5oY19lb3PjhnMgrO04710f/YDMidRUtvyK9JAtBdtjZ0p
- omrhe/HcJmu87e3rte8jf4NCuq7DuspGYewi+R9dB60v3Qan9XOOKE5ZROKDi8QNj+b9Hb32jHw
- wIFFCs3Z8fd83xiAjlQFCFASuGxNlXL8r7i867rG28iNH36jy4iYRgrhCrRQloGsFIzKxrl5TCB
- k2Oj2bQzlgkELTj6JZr83UdZLIQs00zwFFzshJxZcQej10K4tf1IlQUQN9CzpACpxKZtTSExTii
- g4JcOraGN12DoxpBqwGjR5YV9yCjaUjjHTQf/hW89ZO+9d95RcFzXuqeecZ0tZ44FgmcKISEEQI
- /TS6KBUlMQivO/L6PSO2+T53ipiEoovro/+FKjmWW/vfKWONfMGtTI0QatO4YuAANkJuF0ufCTK
- sZFlp4Jz+k4gszAxDUdkqGw==
+ bh=r/7DOVU3zbP/DiBvAk5lk/ApUFqwoCwJJqDxg9WSfaM=;
+ b=owJ4nAFtApL9kA0DAAoB2O7X88g7+poByyZiAGr+85rzgztPrhe15mOzQThqgubzxnmjjDiXZ
+ Re4lABkofhTmYkCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJq/vOaAAoJENju1/PI
+ O/qaxUcP/AnyYv/h/Ex+H+Nh4DTzdozserjwNba7o4OWerriSN68xuqqyLGrcRoM8jUZYlN63ey
+ QiXp/QTPSsUyBCzsmjyEnyIVlGljGY+8BsezHg6rTBTh3SZ1XG+dJiTzmFELf6gvRDudr2acOEU
+ zfWLRMidmbGZAE36uhiCIrkwow0VglA4GTnmHs4NcoPSNzsOtSfxmpgzGH4gQaksbzNHuXRuCHu
+ EDqrXfOHZkWit0P8Y6IEtxP6IdfjyfRjjm4RvQDdYAfOrsFgXb43r0rX7D8DUF9qgvRmIDdxoap
+ 90Oy5iHbRZKQCiQBQGhiC5BhhRF001SUf0HlqpcVUPkH70JW3f4OnMUkpiDpD+aTok2Yx0fqZBk
+ o3UtucIsnbBIUMsBZC7qoIyrKqNM/jps+6Aj6r1U/Ep4rgS+oL5CgZ2bFv0u5UHzPuo7SsacnkD
+ 4vW7gxgfDi+p94PxsciUBb10YZaWPs6kY8KL+nMB0COLzHCggm++6j/jS1XOge4zaDEJCSoapYS
+ /PCAIiKv9A6b2Kz3OJmqSLXY6VpAP+ZXCMocr0ywm+PD1TMEfw/JqhiSKgRDGr788PEQjeRe+/N
+ rYqPEUQHKE+0MwTYi92Uv/8laxoxM6NFlh5+4qiBy/Ncxg8CVOpbtc2MMLg493JhA5kIZWokc+D
+ 6mumnCqh66/SbB1gExoguLA==
 X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
  fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
-From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+When the driver got converted to the FIELD_PREP_WM16 macro, it was
+missed that the lp5_bank_mode variable is already shifted in
+rk3588_dfi_init() resulting in FIELD_PREP_WM16() effectively doing a
+double shift and thus writing 0.
 
-The rockchip-dfi driver supports several variants of the DDR monitoring
-hardware. The differences in these variants are handled with one init
-function for each variant.
+As most Rockchip boards use LPDDR4 (incl. all of mine) and DFI is more
+or less exclusively used for debugging with upstream kernel so far, this
+hasn't been noticed until now.
 
-However, some of the members that these init functions set are actually
-constants, specific to that variant, with no runtime involvement from
-reading registers or anything.
-
-Refactor the code to move those values (and the soc_init function
-pointer) into a new struct. Declare some const instances of this variant
-struct, and use it wherever needed.
-
-Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://lore.kernel.org/all/sashiko-outbox-219117@kernel.org/
+Cc: stable@vger.kernel.org
+Fixes: 7e85ac9da1ac ("PM / devfreq: rockchip-dfi: switch to FIELD_PREP_WM16 macro")
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 94 +++++++++++++++++++++---------------
- 1 file changed, 54 insertions(+), 40 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index d195755448e1..0cdeb59e6d1b 100644
+index e0b942028e50..22f82cb6e33f 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -103,7 +103,6 @@ struct rockchip_dfi {
- 	struct mutex mutex;
- 	u32 ddr_type;
- 	unsigned int channel_mask;
--	unsigned int max_channels;
- 	enum cpuhp_state cpuhp_state;
- 	struct hlist_node node;
- 	struct pmu pmu;
-@@ -112,11 +111,17 @@ struct rockchip_dfi {
- 	int active_events;
- 	int burst_len;
- 	int buswidth[DMC_MAX_CHANNELS];
--	int ddrmon_stride;
--	bool ddrmon_ctrl_single;
- 	u32 lp5_bank_mode;
- 	bool lp5_ckr;	/* true if in 4:1 command-to-data clock ratio mode */
- 	unsigned int count_multiplier;	/* number of data clocks per count */
-+	const struct rockchip_dfi_variant *variant;
-+};
-+
-+struct rockchip_dfi_variant {
-+	int (*init)(struct rockchip_dfi *dfi);
-+	int stride;
-+	bool ctrl_single;
-+	unsigned int max_channels;
- };
- 
- static int rockchip_dfi_ddrtype_to_ctrl(struct rockchip_dfi *dfi, u32 *ctrl)
-@@ -190,7 +195,7 @@ static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
- 		goto out;
- 	}
- 
--	for (i = 0; i < dfi->max_channels; i++) {
-+	for (i = 0; i < dfi->variant->max_channels; i++) {
- 
- 		if (!(dfi->channel_mask & BIT(i)))
- 			continue;
-@@ -199,16 +204,16 @@ static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
- 		writel_relaxed(FIELD_PREP_WM16(DDRMON_CTRL_TIMER_CNT_EN, 0) |
- 			       FIELD_PREP_WM16(DDRMON_CTRL_SOFTWARE_EN, 0) |
- 			       FIELD_PREP_WM16(DDRMON_CTRL_HARDWARE_EN, 0),
--			       dfi_regs + i * dfi->ddrmon_stride + DDRMON_CTRL);
-+			       dfi_regs + i * dfi->variant->stride + DDRMON_CTRL);
- 
--		writel_relaxed(ctrl, dfi_regs + i * dfi->ddrmon_stride +
-+		writel_relaxed(ctrl, dfi_regs + i * dfi->variant->stride +
- 			       DDRMON_CTRL);
- 
- 		/* enable count, use software mode */
- 		writel_relaxed(FIELD_PREP_WM16(DDRMON_CTRL_SOFTWARE_EN, 1),
--			       dfi_regs + i * dfi->ddrmon_stride + DDRMON_CTRL);
-+			       dfi_regs + i * dfi->variant->stride + DDRMON_CTRL);
- 
--		if (dfi->ddrmon_ctrl_single)
-+		if (dfi->variant->ctrl_single)
- 			break;
- 	}
- out:
-@@ -231,14 +236,14 @@ static void rockchip_dfi_disable(struct rockchip_dfi *dfi)
- 	if (dfi->usecount > 0)
- 		goto out;
- 
--	for (i = 0; i < dfi->max_channels; i++) {
-+	for (i = 0; i < dfi->variant->max_channels; i++) {
- 		if (!(dfi->channel_mask & BIT(i)))
- 			continue;
- 
- 		writel_relaxed(FIELD_PREP_WM16(DDRMON_CTRL_SOFTWARE_EN, 0),
--			       dfi_regs + i * dfi->ddrmon_stride + DDRMON_CTRL);
-+			       dfi_regs + i * dfi->variant->stride + DDRMON_CTRL);
- 
--		if (dfi->ddrmon_ctrl_single)
-+		if (dfi->variant->ctrl_single)
- 			break;
- 	}
- 
-@@ -252,17 +257,17 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
- 	u32 i;
- 	void __iomem *dfi_regs = dfi->regs;
- 
--	for (i = 0; i < dfi->max_channels; i++) {
-+	for (i = 0; i < dfi->variant->max_channels; i++) {
- 		if (!(dfi->channel_mask & BIT(i)))
- 			continue;
- 		res->c[i].read_access = readl_relaxed(dfi_regs +
--				DDRMON_CH0_RD_NUM + i * dfi->ddrmon_stride);
-+				DDRMON_CH0_RD_NUM + i * dfi->variant->stride);
- 		res->c[i].write_access = readl_relaxed(dfi_regs +
--				DDRMON_CH0_WR_NUM + i * dfi->ddrmon_stride);
-+				DDRMON_CH0_WR_NUM + i * dfi->variant->stride);
- 		res->c[i].access = readl_relaxed(dfi_regs +
--				DDRMON_CH0_DFI_ACCESS_NUM + i * dfi->ddrmon_stride);
-+				DDRMON_CH0_DFI_ACCESS_NUM + i * dfi->variant->stride);
- 		res->c[i].clock_cycles = readl_relaxed(dfi_regs +
--				DDRMON_CH0_COUNT_NUM + i * dfi->ddrmon_stride);
-+				DDRMON_CH0_COUNT_NUM + i * dfi->variant->stride);
- 	}
- }
- 
-@@ -299,7 +304,7 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 	rockchip_dfi_read_counters(dfi, &count);
- 
- 	/* We can only report one channel, so find the busiest one */
--	for (i = 0; i < dfi->max_channels; i++) {
-+	for (i = 0; i < dfi->variant->max_channels; i++) {
- 		u32 a, c;
- 
- 		if (!(dfi->channel_mask & BIT(i)))
-@@ -338,7 +343,7 @@ static void rockchip_ddr_perf_counters_add(struct rockchip_dfi *dfi,
- 	const struct dmc_count *last = &dfi->last_perf_count;
- 	int i;
- 
--	for (i = 0; i < dfi->max_channels; i++) {
-+	for (i = 0; i < dfi->variant->max_channels; i++) {
- 		res->c[i].read_access = dfi->total_count.c[i].read_access +
- 			(u32)(now->c[i].read_access - last->c[i].read_access);
- 		res->c[i].write_access = dfi->total_count.c[i].write_access +
-@@ -479,11 +484,11 @@ static u64 rockchip_ddr_perf_event_get_count(struct perf_event *event)
- 		count = total.c[0].clock_cycles * dfi->count_multiplier;
- 		break;
- 	case PERF_EVENT_READ_BYTES:
--		for (i = 0; i < dfi->max_channels; i++)
-+		for (i = 0; i < dfi->variant->max_channels; i++)
- 			count += total.c[i].read_access * blen * dfi->buswidth[i];
- 		break;
- 	case PERF_EVENT_WRITE_BYTES:
--		for (i = 0; i < dfi->max_channels; i++)
-+		for (i = 0; i < dfi->variant->max_channels; i++)
- 			count += total.c[i].write_access * blen * dfi->buswidth[i];
- 		break;
- 	case PERF_EVENT_READ_BYTES0:
-@@ -511,7 +516,7 @@ static u64 rockchip_ddr_perf_event_get_count(struct perf_event *event)
- 		count = total.c[3].write_access * blen * dfi->buswidth[3];
- 		break;
- 	case PERF_EVENT_BYTES:
--		for (i = 0; i < dfi->max_channels; i++)
-+		for (i = 0; i < dfi->variant->max_channels; i++)
- 			count += total.c[i].access * blen * dfi->buswidth[i];
- 		break;
- 	}
-@@ -728,14 +733,10 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
- 	dfi->ddr_type = FIELD_GET(RK3399_PMUGRF_OS_REG2_DDRTYPE, val);
- 
- 	dfi->channel_mask = GENMASK(1, 0);
--	dfi->max_channels = 2;
- 
- 	dfi->buswidth[0] = FIELD_GET(RK3399_PMUGRF_OS_REG2_BW_CH0, val) == 0 ? 4 : 2;
- 	dfi->buswidth[1] = FIELD_GET(RK3399_PMUGRF_OS_REG2_BW_CH1, val) == 0 ? 4 : 2;
- 
--	dfi->ddrmon_stride = 0x14;
--	dfi->ddrmon_ctrl_single = true;
--
- 	return 0;
- };
- 
-@@ -758,13 +759,9 @@ static int rk3568_dfi_init(struct rockchip_dfi *dfi)
- 		dfi->ddr_type |= FIELD_GET(RK3568_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3, reg3) << 3;
- 
- 	dfi->channel_mask = BIT(0);
--	dfi->max_channels = 1;
- 
- 	dfi->buswidth[0] = FIELD_GET(RK3568_PMUGRF_OS_REG2_BW_CH0, reg2) == 0 ? 4 : 2;
- 
--	dfi->ddrmon_stride = 0x0; /* not relevant, we only have a single channel on this SoC */
--	dfi->ddrmon_ctrl_single = true;
--
- 	return 0;
- };
- 
-@@ -793,9 +790,7 @@ static int rk3588_dfi_init(struct rockchip_dfi *dfi)
- 	dfi->buswidth[3] = FIELD_GET(RK3588_PMUGRF_OS_REG2_BW_CH1, reg4) == 0 ? 4 : 2;
- 	dfi->channel_mask = FIELD_GET(RK3588_PMUGRF_OS_REG2_CH_INFO, reg2) |
- 			    FIELD_GET(RK3588_PMUGRF_OS_REG2_CH_INFO, reg4) << 2;
--	dfi->max_channels = 4;
- 
--	dfi->ddrmon_stride = 0x4000;
- 	dfi->count_multiplier = 2;
+@@ -800,7 +800,7 @@ static int rk3588_dfi_init(struct rockchip_dfi *dfi)
  
  	if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR5) {
-@@ -809,10 +804,30 @@ static int rk3588_dfi_init(struct rockchip_dfi *dfi)
- 	return 0;
- };
- 
-+static const struct rockchip_dfi_variant rk3399_variant = {
-+	.init = rk3399_dfi_init,
-+	.stride = 0x14,
-+	.ctrl_single = true,
-+	.max_channels = 2,
-+};
-+
-+static const struct rockchip_dfi_variant rk3568_variant = {
-+	.init = rk3568_dfi_init,
-+	.stride = 0x0,
-+	.ctrl_single = true,
-+	.max_channels = 1,
-+};
-+
-+static const struct rockchip_dfi_variant rk3588_variant = {
-+	.init = rk3588_dfi_init,
-+	.stride = 0x4000,
-+	.max_channels = 4,
-+};
-+
- static const struct of_device_id rockchip_dfi_id_match[] = {
--	{ .compatible = "rockchip,rk3399-dfi", .data = rk3399_dfi_init },
--	{ .compatible = "rockchip,rk3568-dfi", .data = rk3568_dfi_init },
--	{ .compatible = "rockchip,rk3588-dfi", .data = rk3588_dfi_init },
-+	{ .compatible = "rockchip,rk3399-dfi", .data = &rk3399_variant },
-+	{ .compatible = "rockchip,rk3568-dfi", .data = &rk3568_variant },
-+	{ .compatible = "rockchip,rk3588-dfi", .data = &rk3588_variant },
- 	{ },
- };
- 
-@@ -824,17 +839,16 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 	struct rockchip_dfi *dfi;
- 	struct devfreq_event_desc *desc;
- 	struct device_node *np = pdev->dev.of_node, *node;
--	int (*soc_init)(struct rockchip_dfi *dfi);
- 	int ret;
- 
--	soc_init = of_device_get_match_data(&pdev->dev);
--	if (!soc_init)
--		return -EINVAL;
--
- 	dfi = devm_kzalloc_obj(dev, *dfi);
- 	if (!dfi)
- 		return -ENOMEM;
- 
-+	dfi->variant = of_device_get_match_data(dev);
-+	if (!dfi->variant)
-+		return -EINVAL;
-+
- 	dfi->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(dfi->regs))
- 		return PTR_ERR(dfi->regs);
-@@ -856,7 +870,7 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 	desc->driver_data = dfi;
- 	desc->name = np->name;
- 
--	ret = soc_init(dfi);
-+	ret = dfi->variant->init(dfi);
- 	if (ret)
- 		return ret;
- 
+ 		regmap_read(regmap_pmu, RK3588_PMUGRF_OS_REG6, &reg6);
+-		dfi->lp5_bank_mode = FIELD_GET(RK3588_PMUGRF_OS_REG6_LP5_BANK_MODE, reg6) << 7;
++		dfi->lp5_bank_mode = FIELD_GET(RK3588_PMUGRF_OS_REG6_LP5_BANK_MODE, reg6);
+ 		dfi->lp5_ckr = FIELD_GET(RK3588_PMUGRF_OS_REG6_LP5_CKR, reg6);
+ 		if (dfi->lp5_ckr)
+ 			dfi->count_multiplier *= 2;
 
 -- 
 2.53.0
