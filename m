@@ -1,102 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.171
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795055354;
-	b=JlHHGZgdDwnah+Hz7Af6/TLOp+id2oEBKUS/KLYtC7cW+KnUveCuhi2uUEN7Sh9FwK15
-	 jmrvSlKRkusz8rtqWtKVHg2WuNgt7cXgAhcpPdEMaBDhCxc4Zvb2rIIjIW32WaqiTy9Sq
-	 sp+8MYZ2v0rGpkQt8Pgu4bbwK/DpxlOMsclX0OQ3pG2kxWwtOQld7S+crl6ySRxUjBy4T
-	 cq6F1PJroUJ0weopa4q5jNuYksLX93MUout6f8pPfe6bqlui//6NRwNsikLer/ANTVA4L
-	 0jYYjv8yAXTkWY5HztAPRfP6UXKQj6yMjgujc4EhJP1WpzZrz4A8Wqo0IcxTAcMj0Sg==
+	t=1795055360;
+	b=OaqWmBhwL0CMz471GBJsmeL+i/Sabi8mMYb9/Tue0bqmomaDhFjFizO+Fy5DsAR7uT2W
+	 PmVi1XuZZ2pBdKV1I8/KeX+h7EV4Scv6IF1/VG6njkwRhMv5y/sehp40ThtT1o0bIPZt9
+	 LrO7jslemwgt5oEl4Ptie+VEt9g8c7q7/B+SGgzMiaB2/POYrYyxrIL18ecuWlJbtjlc9
+	 aL/rvd9JcNdFSq5F5QrD6uJYmbHQqOHornT0Dm1yxpFjc2YyKBV7zQYmViYT0O/5cM+Qt
+	 BK+7R0Ok2xo+NEwoGSIFbLBR2ceC7Gj6xgcKs/srXqDqYlHv87ToBuswCYVtwYOxEvA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795055354;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795055360;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=Jf4u6WrHRBEz+rPw92oXhHCCYEyYYwuCte9W9COqiwg=;
-	b=w45IM7Ou07vxCYTSbdk6HOu/NG7/h8QBd7kIW34crKprpx3EqbKLGTtlU00VTEYGE4Ug
-	 EoiLLki/7hHWGsQsUJ1NuUWnJLaYFAwgkd4Y4x1QlfGLxDUdUrWoRQJZsAm++cNSFGZng
-	 RN3aqJX4KwFTf9fZ06VbQyuw5v52Vu5fu4qqz9pGdZ4hkrGVczhpdN6lvVmlNAXdXg2QV
-	 rBFQcr4j6l5nBGJLM3utkxYiLsTjfMTqGi6hQ6X1kSnHkrECE30rRWQTFmgo23XBGw24M
-	 d0u6DG9Rk/qE+6xN34sPMTJ2tmNNL8dnRFu+1O1fcoKFWbJ/uEYmWd8u7Hp4/VqAI+Q==
+	bh=kbYJLFT1DlhR6lcyzknCYcaYqjsgEktI+N+QrE2ZDK4=;
+	b=HpExb28Wyd3tbB29Hj2xW9Y1koBDxYRv52BTClXH2vyLQdafNsgFu+e4PGKsN0ssUOLd
+	 kVwlK1axTCwpALD0Zen0GWw+DhTXmrenSz0vLqqLAWNmpJtSleR0A6tzyS4uoyuxCZiI4
+	 cKsrciqsNjxCLxJ0a0dmmQKFWZTUCqbncciMfxsBT2uIIbnwqelZ0mJJ6EIAAsiEDqLyc
+	 A9/DFH8wTCvuoQ+eYv2TK3KVcZCDHk03gijWTl7WYRC7MrbaNowP7L+a/XUAp4Gr9NH2P
+	 YsVMjwEIyqZ+dtR/dYsreoE7idTqFFRxh0xE9Fg4ruqRuQ6rTiaQOboY6P4d1591e2g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IDvcu9l4;
-	arc=none smtp.remote-ip=74.125.82.54
-Received: from mail-dl1-f54.google.com (mail-dl1-f54.google.com [74.125.82.54])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=q1N0ltpF;
+	arc=none smtp.remote-ip=74.125.82.171
+Received: from mail-dy1-f171.google.com (mail-dy1-f171.google.com [74.125.82.171])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 533BA60A2604
-	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 02:29:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 533BA60A2604
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D098F60A2601
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 02:29:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D098F60A2601
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IDvcu9l4
-Received: by mail-dl1-f54.google.com with SMTP id a92af1059eb24-1a3c08d6928so2442251c88.0
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 18:29:12 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=q1N0ltpF
+Received: by mail-dy1-f171.google.com with SMTP id 5a478bee46e88-3282db206d3so4641242eec.0
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 18:29:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795055351; x=1795660151; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1795055359; x=1795660159; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Jf4u6WrHRBEz+rPw92oXhHCCYEyYYwuCte9W9COqiwg=;
-        b=IDvcu9l4Ql+lH7/tSPgv9W9HfcOc/IlSoDXSzqw2Ogvz67xObeBNwdANsGavByYeqR
-         KLInUZZRA8fvMR5BH+qjegeycnrJnF2idXQf80J85vtVzSf5bv2kUVT0DUS82R6a0W1X
-         mIIrlHVvcAOW0086g2Eg2jWaIyh1AY7je2ufJb19IJEkwnGHJ4WoAAZBAqxqO+Q09otm
-         FAkm8yJCLPD0sbiGlKOfWcH4JeNqTM3/kP/BdSeg1kAurOcHfPvbfg8vid66HxuGrTUP
-         CHFLXd6SuScxyvZTeO17Pu/hf3SVvU+6dOs2cuXvZ9EaBdfIgYPoVlRUYSwEtlhWnOoC
-         pwow==
+        bh=kbYJLFT1DlhR6lcyzknCYcaYqjsgEktI+N+QrE2ZDK4=;
+        b=q1N0ltpFawRKWSwxcD4XgqVnXfcdX1n1qI/6sPyS/+A07kz+ysPeyw0EDcvqD0dU5m
+         mbPwSrAyJrZeCKe+Gj+PiXji7SwlIIzfxzX76+sbaqoJJ/6IT5aNLMJeLdXPTp91yT6z
+         c5e+uCNcOKeliriYmzlRL+ywX3mbS939FTbFRTIMKaBzjwsrWeklXebw+Jy0twpeUB34
+         lXAYNtP4IEb1inLcnfHZy2PpbKTRlxMO8di9URk/Hsf1PdHuIaKlm+e65J2yjzpC5iO+
+         XnaC/pOI+NdZ4QZAkD7uKA7wWN+9c5BN4JjLaHvw6826Yy4RttEoDFYyxoh83V9JhpMf
+         D0Bg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795055351; x=1795660151;
+        d=1e100.net; s=20260707; t=1795055359; x=1795660159;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Jf4u6WrHRBEz+rPw92oXhHCCYEyYYwuCte9W9COqiwg=;
-        b=kUOzQAuU4GzW9btOJUL9oEqecgpW3kMitpd8HQgdv8QUQ8GsqrnAeO6XEU65Pz97qL
-         xp7m3jD9zcIZZVHj2GvCr1bto6YwdpvNmmawS/Bmcdx866iVF0ZzgfOMY641ix/1fjgn
-         XmjocHL0zIldSJX8lSlBI5vuO/SLoVKXZ+fUn9iqebxsqjYe82wCnhfrdiG0ncanNZRg
-         tv22QT/0M4c46pc6epGFgJSD3YnZAqvQcytP8lRn7MTqCLFYRdEbbLy+gBFKr7yrJGgm
-         J6pqxTUzrKIo4A0KgEf35BikUSP3VT8e8oggaRtuTfxMKZZNeuRQ8oPReUCL1eqRxWpD
-         TvyA==
-X-Forwarded-Encrypted: i=1; AL+hErFpURnqdrEpINI8pS5Y4FwXfe/1oP2wse6yiDHqEFUvIu1MhC6K5hwuNPtGxF28sStfmJzOxjaTvg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9OmAeeVgjmrrUicoJWR46s9gXMsd/WsLBv3OOSEqYdhpq2U2TD
-	0/B5NHMktmCusLv/Wah270cqa4rG4o+UFjDr6EE5OR+P8i/SoMryMCg7
-X-Gm-Gg: AYBFou0aypVYzPnwbjHyKexnVrghjnN3lJmK3tqLxL40NHO5MvPUqVoaAii3N83sN4f
-	Hq49pKkFhYewCIJwDWe1T1+8MiROGuN0vCsza7KyAbVk2qtirLI3AoUE2hAF4/d2qP8NJVEVTNQ
-	h0HHRbUBF7BXYxP5u2KCoyOxgf9aDPzTnvJ3l4IPmJbF//OcxPWxZ/OQ6tSeiX9uRmK49bGiujX
-	mIiRmmQDfH6MCkcEPjwOzRCS5s6BkPmAdmWVoujt3ptCWaPGIs1Kexs4CUN79WHa9bZYOhg7boU
-	cQwBJpYlXDtgdwgNy/3JxS9cvCIn1O7X0Vlj4E1NFU9EiD+saQiteGm3lNsaxOc7u7CyRqutQ9Z
-	aXjN95NhJNLc16thbQJm7mnTtmb/i5cQuogMddsbZ08bGVg6NfN9L8PLEqOe6J/iuJG3Op+0xyT
-	w8qMrbQLEh24Q0Gek9p51nQQq/+qIy/etygbUtCuYK5iDzPxZ2n+bhLmYC5fmpDkx2vxQMmfbJq
-	2dCeXWOM6INT8VX3B4z4ycW+ftiFc8Q60mV1ZZ9Hly3iq2ilQ4KUy/RqEDuEbFYNIBZMJUj6KFz
-	+5xNdBT5RU/4ycXzdmBkFmlJRWl3Z5QXOs7JkrRLyVkv+l2vQDVjBuNYPzdw5I5X3OAA6bvEcEI
-	Hp/D8fLfJ38m95LpBnaGXLZZgWvtRUcoLcSYaZus0
-X-Received: by 2002:a05:7022:1708:b0:1b2:4b42:1870 with SMTP id a92af1059eb24-1b543cff066mr3748180c88.31.1795055351102;
-        Wed, 18 Nov 2026 18:29:11 -0800 (PST)
+        bh=kbYJLFT1DlhR6lcyzknCYcaYqjsgEktI+N+QrE2ZDK4=;
+        b=u3bYKTQxT/Nh9Z5cv5KcAFHjiQLyXYzldiT8iARm//CnAF/GFZYNijNRrmpilpu67G
+         hX5P9URKh089fzyFBhp1Y5UV0OAq1PkzimcZA3ucfSPcTbFDbqLuS58QJgTeKi5TGsGx
+         yCSZPIwGNfY9YJmIxKs48Zm/xFwVrRMnYNr2wSpxwdeFeF+aH8iKpeuqZ1JtAgDeOdB/
+         5VK3trZlaK+6fkuTUYLJcvGVlbhErQYZwvd6qTmP5grdCWj3W55d87D45gjrDn3pjL9f
+         Cmr9cEaRh/KCbNdnD0otbiyomZ7qp8noIdWAMz8J6fI4qLM9tiSEtNeB5rwCxjmE9e1w
+         VrRA==
+X-Forwarded-Encrypted: i=1; AL+hErFDUQs96Yy865TC3hXYXeKQS0RJNNMXDx8OB47dpEmgAFsmszbxtUrpSjL4mWQOO2o/R0kXP3T5jA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8ftc0sjAiggzHAGpJpAERXIC2++6MYhgZ3+eTPd6xUsCJkQMN2
+	fmYGMQ4cSQDp3uql7j0Yua8qhN+NkkvVeMnrsWu+Zmdk8AyrmbyZTIvDMbbat2a01l4=
+X-Gm-Gg: AZFdTZcXbHDcD/HxESoCzRG6s0AZCR9NcJNKJeaBhohD8dgv7/VTjaw44lyIKBhGWu3
+	OthioO4dY4ARSYEii6wlIaIe5MK4xv/Z1gp9SgKeb662Dx3PgHXaigV8JZuoLP6gpRBX+s3NmLA
+	A89CM9bQAdHrooFpr5P8VYQ17OmFVPOtghJoRMcvUFtiKsPxartqDkrkML9sgbHftfUmEH6+sKC
+	ET/8p64ZpZNC5kgzJvGFz8G6qcmca3qPGgc+k7TV6HS0ZBgTS5cxkJBFN8aoMPU7Ww6Gu4XhwPg
+	rF7XmuMmF380C6EhSCIrHpl3GkUtPZuD2RZHgQiWgU2PyrhI3Fd4AAteTbUZgtBRKE1/CiW/mpb
+	rS8Arw5Wr0TLNsrDVgO6vQUIddCId/KkZ1CoWqJaJVisoclmL/sn1gik12nBDQc3qJ7eB2HHHNP
+	lR6L3yDGY/6aJuNAsPr6Wg5TFcqFekM021jkNvTXfLd7s/mdw4cdH6BGufqJJIz8XwvpGCA97P1
+	C1lSQKqSrFQUWOwznY5Ln+Jw+8nsyF85vrbFw3osrs7GIiPDxpADov8HUXkqSrPfsjvzz4f7wL5
+	gDudooHD7Ql78rpux6OX4h6MBH5ReloOQjAq3TQ7YNtFfX1q5Bso6rqbvl/hg0pCcIcuP5p0xaR
+	33m1zLMe/xPbNwdLfN+mbV8LfePexBZHXvUm9dRWF
+X-Received: by 2002:a05:7300:bc03:b0:369:fc93:eda5 with SMTP id 5a478bee46e88-38281427c34mr5661563eec.39.1795055358638;
+        Wed, 18 Nov 2026 18:29:18 -0800 (PST)
 Received: from lwq-System-Product-Name.. ([2602:feda:30:cafe:ec49:38a8:0:f6])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b549e398e4sm5790186c88.15.2026.11.18.18.29.06
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-382a72eb2f3sm13958331eec.18.2026.11.18.18.29.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 18:29:10 -0800 (PST)
+        Wed, 18 Nov 2026 18:29:18 -0800 (PST)
 From: Yaohan Li <shunsheng1218@gmail.com>
-To: niklas.soderlund@ragnatech.se,
+To: miquel.raynal@bootlin.com,
 	rafael@kernel.org,
 	daniel.lezcano@kernel.org
 Cc: rui.zhang@intel.com,
 	lukasz.luba@arm.com,
-	geert+renesas@glider.be,
-	magnus.damm@gmail.com,
-	linux-renesas-soc@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	edubezval@gmail.com
-Subject: [PATCH v2] thermal/drivers/rcar_thermal: disable the work before masking the interrupt
-Date: Thu, 19 Nov 2026 10:29:03 +0800
-Message-Id: <20261119022903.1493494-1-shunsheng1218@gmail.com>
+Subject: [PATCH v2] thermal/drivers/armada: request the overheat IRQ before enabling the source
+Date: Thu, 19 Nov 2026 10:29:11 +0800
+Message-Id: <20261119022911.1493538-1-shunsheng1218@gmail.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20261118072321.1259639-1-shunsheng1218@gmail.com>
-References: <20261118072321.1259639-1-shunsheng1218@gmail.com>
+In-Reply-To: <20261118072339.1259719-1-shunsheng1218@gmail.com>
+References: <20261118072339.1259719-1-shunsheng1218@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -108,133 +105,191 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-rcar_thermal_remove() masks the interrupt sources and then cancels the
-delayed work of each sensor.  rcar_thermal_irq() drops common->lock before
-it walks the sensors and queues priv->work for those whose status changed,
-so a handler that read the status before the mask was written can still
-queue the work after cancel_delayed_work_sync() has returned.  The work
-then runs after ->remove() has finished and devres has freed common, priv
-and the thermal zone.
+armada_thermal_probe() requests the overheat interrupt before it registers
+the thermal zones.  Devres releases resources in the reverse order, so the
+zones are unregistered first and the interrupt is freed afterwards: a
+handler that is still running, or that fires in the window between the
+two, passes a zone that has already been destroyed to
+thermal_zone_device_update().
 
-Waiting for the handler alone is not enough either: rcar_thermal_work()
-re-enables its interrupt source once it has updated the temperature, so a
-work that is still running when the removal starts undoes the mask that
-->remove() has just written.
+Request the interrupt after the zone loop instead.  The handler is then
+freed before the zones it updates, and the interrupt is only requested
+when a critical trip point was found, which is the only case in which the
+driver has an overheat source to enable.
 
-Disable the work before the source is masked.  That makes the
-queue_delayed_work() calls in rcar_thermal_irq() no-ops and guarantees
-that the re-enable in rcar_thermal_work() has already happened, so the
-mask that follows cannot be undone.
+The interrupt stays optional: a device without one, or with an invalid
+IRQ number, keeps working without overheat detection instead of failing
+to probe.
 
-The interrupt line is shared, so waiting for the handler once does not keep
-it from running again later; unregister it in ->remove() instead of only
-calling synchronize_irq().  devm_free_irq() waits for a handler that is
-running right now as well, and the slot is marked unused so that the probe
-failure path, which also ends here, cannot release it twice.
+The source has to be enabled after the handler is registered, so
+armada_configure_overheat_int() only programs the thresholds now and
+armada_thermal_probe() enables the source once the request has succeeded.
+A failed request then cannot leave an interrupt enabled that nobody
+handles.  The source is masked at probe time as well, in case the firmware
+left it on.
 
-Every sensor that the removal walks has been through INIT_DELAYED_WORK()
-before it is linked into common->head, so no uninitialised work is touched.
-The interrupt numbers are recorded in an array whose unused slots stay
-negative, instead of being counted separately.
+The handler polls its sensor once per second until the temperature is back
+below the hysteresis, and devres waits for it in free_irq().  ->remove()
+masks the source and sets a shutdown flag so that the poll gives up
+instead of keeping the removal blocked until the sensor cools down.
 
-Fixes: 697ee786f15d ("thermal: rcar_thermal: Prevent doing work after unbind")
+Fixes: 879d7362d1d0 ("thermal: armada: add overheat interrupt support")
 Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
 
 ---
 Prepared against v7.4-rc1-1969-g666539eecdf4.
 
-Compile tested only: arm64, aarch64-linux-gnu-gcc 11.4, CONFIG_RCAR_THERMAL=y.
-No hardware was available, so the removal path was not exercised and no race
-injection was run.
+Compile tested only: arm64, aarch64-linux-gnu-gcc 11.4,
+CONFIG_ARMADA_THERMAL=y and CONFIG_ARCH_MVEBU=y.  No hardware was available,
+so the removal path was not exercised and no race injection was run.
 
 AI assistance: prepared with Claude (Anthropic) as a coding assistant; the
 author reviewed the reasoning and takes responsibility for the content.
 
 Changes in v2:
- - Drop the shutdown flag and the separate IRQ count.  Niklas asked for less
-   state, so the removal now disables the delayed work before the source is
-   masked and unregisters the shared IRQ instead of waiting for it once.
- - Keep the interrupt numbers in an array whose unused slots stay negative.
+ - Request the interrupt after the thermal zones are registered instead of
+   freeing it from ->remove(); Miquel asked for the smaller shape, so the
+   helper and the stored IRQ number are gone.
+ - Enable the source only after the handler is registered, so a failed
+   request cannot leave an interrupt enabled that nobody handles.
+ - Mask the source at probe time, but only on the variants that describe the
+   overheat interrupt as a DFX cause.
 ---
- drivers/thermal/renesas/rcar_thermal.c | 37 ++++++++++++++++++++++++--
- 1 file changed, 35 insertions(+), 2 deletions(-)
+ drivers/thermal/armada_thermal.c | 69 ++++++++++++++++++++++++--------
+ 1 file changed, 52 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/thermal/renesas/rcar_thermal.c b/drivers/thermal/renesas/rcar_thermal.c
-index af6d09a75bb6..3310ed4a8bda 100644
---- a/drivers/thermal/renesas/rcar_thermal.c
-+++ b/drivers/thermal/renesas/rcar_thermal.c
-@@ -39,11 +39,15 @@
- /* THSSR */
- #define CTEMP	0x3f
- 
-+/* .nirqs of every supported chip is at most this */
-+#define RCAR_THERMAL_MAX_IRQ	2
-+
- struct rcar_thermal_common {
- 	void __iomem *base;
- 	struct device *dev;
- 	struct list_head head;
- 	spinlock_t lock;
-+	int irqs[RCAR_THERMAL_MAX_IRQ];
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 83672f95b011..23f820415e56 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -68,6 +68,7 @@ struct armada_thermal_priv {
+ 	struct thermal_zone_device *overheat_sensor;
+ 	int interrupt_source;
+ 	int current_channel;
++	bool shutdown;
+ 	long current_threshold;
+ 	long current_hysteresis;
  };
+@@ -297,12 +298,19 @@ static void armada_enable_overheat_interrupt(struct armada_thermal_priv *priv)
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ }
  
- struct rcar_thermal_chip {
-@@ -376,10 +380,34 @@ static void rcar_thermal_remove(struct platform_device *pdev)
- 	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
- 	struct device *dev = &pdev->dev;
- 	struct rcar_thermal_priv *priv;
-+	int i;
+-static void __maybe_unused
+-armada_disable_overheat_interrupt(struct armada_thermal_priv *priv)
++static void armada_disable_overheat_interrupt(struct armada_thermal_priv *priv)
+ {
+ 	struct armada_thermal_data *data = priv->data;
+ 	u32 reg;
  
--	rcar_thermal_for_each_priv(priv, common) {
 +	/*
-+	 * Stop the work from being queued again and wait for a running one to
-+	 * finish before the interrupt source is masked: rcar_thermal_work()
-+	 * re-enables its source when it is done, so it has to be gone before
-+	 * the source is disabled for good.
++	 * Only the variants that describe the overheat interrupt as a DFX
++	 * cause have this source; leave the control register alone on the
++	 * others.
 +	 */
-+	rcar_thermal_for_each_priv(priv, common)
-+		disable_delayed_work_sync(&priv->work);
++	if (!data->dfx_overheat_irq)
++		return;
 +
-+	rcar_thermal_for_each_priv(priv, common)
- 		rcar_thermal_irq_disable(priv);
--		cancel_delayed_work_sync(&priv->work);
-+
+ 	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
+ 	FIELD_MODIFY(CONTROL1_TSEN_INT_EN, &reg, 0);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+@@ -538,7 +546,7 @@ static irqreturn_t armada_overheat_isr_thread(int irq, void *blob)
+ 		mutex_unlock(&priv->update_lock);
+ 		if (ret)
+ 			goto enable_irq;
+-	} while (temperature >= low_threshold);
++	} while (temperature >= low_threshold && !READ_ONCE(priv->shutdown));
+ 
+ 	regmap_read(priv->syscon, priv->data->dfx_irq_cause_off, &dummy);
+ 
+@@ -802,7 +810,6 @@ static int armada_configure_overheat_int(struct armada_thermal_priv *priv,
+ 	armada_set_overheat_thresholds(priv, temperature, 0);
+ 	priv->overheat_sensor = tz;
+ 	priv->interrupt_source = sensor_id;
+-	armada_enable_overheat_interrupt(priv);
+ 
+ 	return 0;
+ }
+@@ -891,20 +898,16 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 	drvdata->data.priv = priv;
+ 	platform_set_drvdata(pdev, drvdata);
+ 
 +	/*
-+	 * The handler is shared, so waiting for it once is not enough: another
-+	 * user of the line can invoke it again after that, when the zones and
-+	 * the sensors it walks are already gone.  Unregister it here; that
-+	 * waits for a handler that is running right now as well.
++	 * The firmware may have left the overheat source enabled.  Keep it
++	 * masked until a handler is in place.
 +	 */
-+	for (i = 0; i < RCAR_THERMAL_MAX_IRQ; i++) {
-+		if (common->irqs[i] < 0)
-+			continue;
-+		devm_free_irq(dev, common->irqs[i], common);
-+		common->irqs[i] = -ENOENT;
++	armada_disable_overheat_interrupt(priv);
++
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq == -EPROBE_DEFER)
+ 		return irq;
+ 
+-	/* The overheat interrupt feature is not mandatory */
+-	if (irq > 0) {
+-		ret = devm_request_threaded_irq(&pdev->dev, irq,
+-						armada_overheat_isr,
+-						armada_overheat_isr_thread,
+-						0, NULL, priv);
+-		if (ret)
+-			return ret;
+-	}
+-
+ 	/*
+ 	 * There is one channel for the IC and one per CPU (if any), each
+ 	 * channel has one sensor.
+@@ -937,9 +940,29 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 			armada_configure_overheat_int(priv, tz, sensor->id);
+ 	}
+ 
+-	/* Just complain if no overheat interrupt was set up */
+-	if (!priv->overheat_sensor)
++	/*
++	 * The overheat interrupt is optional: a device without one keeps
++	 * working, and an invalid IRQ number must not be requested.
++	 */
++	if (irq <= 0 || !priv->overheat_sensor) {
+ 		dev_warn(&pdev->dev, "Overheat interrupt not available\n");
++		return 0;
 +	}
 +
-+	rcar_thermal_for_each_priv(priv, common) {
- 		if (priv->chip->use_of_thermal)
- 			thermal_remove_hwmon_sysfs(priv->zone);
- 		else
-@@ -413,6 +441,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 	spin_lock_init(&common->lock);
- 	common->dev = dev;
- 
-+	for (i = 0; i < RCAR_THERMAL_MAX_IRQ; i++)
-+		common->irqs[i] = -ENOENT;
++	/*
++	 * Request the interrupt only now that the thermal zones are
++	 * registered: devres releases what was registered last first, so the
++	 * handler is freed before the zones it updates.  The source stays
++	 * masked until the handler is in place, so the device cannot raise an
++	 * interrupt that nobody handles.
++	 */
++	ret = devm_request_threaded_irq(&pdev->dev, irq, armada_overheat_isr,
++					armada_overheat_isr_thread, 0, NULL,
++					priv);
++	if (ret)
++		return ret;
 +
- 	pm_runtime_enable(dev);
- 	pm_runtime_get_sync(dev);
++	armada_enable_overheat_interrupt(priv);
  
-@@ -449,6 +480,8 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 		if (ret)
- 			goto error_unregister;
+ 	return 0;
+ }
+@@ -948,8 +971,20 @@ static void armada_thermal_exit(struct platform_device *pdev)
+ {
+ 	struct armada_drvdata *drvdata = platform_get_drvdata(pdev);
  
-+		common->irqs[i] = irq;
+-	if (drvdata->type == LEGACY)
++	if (drvdata->type == LEGACY) {
+ 		thermal_zone_device_unregister(drvdata->data.tz);
++		return;
++	}
 +
- 		/* update ENR bits */
- 		if (chip->irq_per_ch)
- 			enr_bits |= 1 << i;
++	/*
++	 * devres frees the interrupt before the thermal zones, so the thread
++	 * is waited for in free_irq().  Mask the source so that no new
++	 * interrupt is raised for a handler that is about to go away, and let
++	 * the poll loop give up instead of keeping ->remove() blocked until
++	 * the sensor cools down.
++	 */
++	WRITE_ONCE(drvdata->data.priv->shutdown, true);
++	armada_disable_overheat_interrupt(drvdata->data.priv);
+ }
+ 
+ static struct platform_driver armada_thermal_driver = {
 -- 
 2.34.1
 
