@@ -1,70 +1,111 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.171.202.116
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795086689;
-	b=VHB3/IDloHccOlXTlxXlNYD0MVHFsfi3nqgXlzyaDsct5pHLHk4yBQ0pJKP5JEXbdJh8
-	 mqaWYCAHhwuAziPB6kLxQre51twtShr9CM7a9/ljsP4Rj/bujvpFrr8y8zXG45YXSTTcR
-	 x4KieWN+vaKR0dF3yhc5Ipt58vVIApPdgmB45bPVirtmKvQpexiBplJob5f0yyMDIi45Y
-	 5Xja81kbsQXzcRhJcFHuMH2nWxNB83mXdfNo7h9I9WRULY74/+Ci50T7fE4oq/ZaDbDXf
-	 CyzfKznA5k+oDow7rz9xeA2VnoYSVN1DaxKqsGsXOYvLpCWwflWlVY/IpuffKBPIYnQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795086689;
-	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:To:Cc:
-	 Subject:In-Reply-To:References:User-Agent:Date:Message-ID:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-Last-TLS-Session-Version;
-	bh=YmbEHFug4FIwW3HPr1ci4rIIr7KsGTyH+5Y2MmZBdp4=;
-	b=uvQjzvmUfulB3zW314TNbyg2Qpr6NAyUa6a1q5reLOERno0LhmAAINCar6FRO3TOgC5W
-	 R7SVauMfugCCNRE2Q3WzPIxtCn/lEv3H1ZK15fH7IaV9dp/yMoOoavlx4sZanFIXjfAix
-	 bWtXTwXqXyFKnio7jWCVfiwxeja/JGE9rli9HIkF0wJ85WigrB+4Pg4Dq2wppajnZx+dh
-	 uUTiScqEuVAvwvzezsXV599qgA/TIts+J8LsoaZs/VSahm7JW4s2aVxwgZFChm1KAj9vY
-	 HJtXWtlGcHUo+pIz++DMUqPuwuww2bW5R6hL9GG35HkEEJXMzqlrBeWQDxGBX5RWWBw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=bootlin.com;
-	spf=pass smtp.mailfrom=bootlin.com;
-	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=RQ6fXOKF;
-	arc=none smtp.remote-ip=185.171.202.116
-Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.196.13
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795086774;
+	b=udDw5iI33gfxZ8HVP57CTU4G3in6hRVY0xjf6vuWhS+BphKysNur0lHg0kfvHgU6bxAm
+	 K7wsWZblOj3gBzHbsMEWEZoUKLUPuW8xSi1taEcYKaobRZKI5wwECLFopc+k4DJ0I4Mu9
+	 zRJwKk01TTA6ntTjzSW74yJzaIqWbtfzVDQtLij/BzJQ7hIRtDtQCbPcyNIpDNzJRELCa
+	 qAK2aAoo4yqoXQNwQv7OErAXHrTKjasSmF3tQwiLyJbfYwzbi+OBayiYMQd7GkwugfoNT
+	 dHuiLv5XKE/l1v8PaU58xLXUiQS+/aZJ33dPb87Eon2CWGh3qLny8zm7Ff0lFMgnR/w==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795086774;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:X-NVConfidentiality:Content-Transfer-Encoding:
+	 Content-Type:X-NV-OnPremToCloud:X-EOPAttributedMessage:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=IT8eYdMOoDdmYQGDflBtbgLSwLUT9Vzt/ue5D2tZIog=;
+	b=ObxO1QSV/3lx2Ki9SamFqkKgsKwFjEadZAHCj/t3Ab1rQGot/2MXr7AbM+hkLyEUdVh0
+	 koH8njFctJEmRlW78IcIXNzQgxcY24FGAYKX0U0Rutnc3AZUdbbvm+F/a6Tq9bpcXNcym
+	 DM8DWaUrrlOxMwMQTgBHCcsTD37DiqLvZ5pYAf8HIiN5+qnEvX1FKQuP/HrPhZbiUOHyy
+	 bereGInpR1d0/ip2Ymt4XnPjx+lJV/D+5CCC4Qz4cP4HV9KyZNdhS69mZYU3o2uaoD85O
+	 ba5myV3Pk/RYFDEUEnis86mEBGCwyc+64gZz6yupQbuIzvOhFeu5bb+BPgzDAScxyGg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=nvidia.com;
+	spf=fail smtp.mailfrom=nvidia.com;
+	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=kPbLRZGz;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.196.13
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013013.outbound.protection.outlook.com [40.93.196.13])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABBA6606A325
-	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 11:11:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org ABBA6606A325
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F8F2606A326;
+	Thu, 19 Nov 2026 11:12:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4F8F2606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=RQ6fXOKF
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-04.galae.net (Postfix) with ESMTPS id 0E0B5C4CBF1;
-	Thu, 19 Nov 2026 11:11:32 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id CBD1560237;
-	Thu, 19 Nov 2026 11:11:26 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 2B0F911BC1049;
-	Thu, 19 Nov 2026 12:11:23 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1795086686; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=YmbEHFug4FIwW3HPr1ci4rIIr7KsGTyH+5Y2MmZBdp4=;
-	b=RQ6fXOKFEuWz4Hww+VtCt3D3s/VCU4OjzpyHSDGbl+hAlasQwhe8k0W8rk5G/x1lfw3f24
-	FAsdHBJtMWXPtv2Os6WLmI2M7wgP8pmbftC4OA+cT30gjg3kUICucXgBGrbQRVjhovnCUP
-	eXlUqnNmg0dy1m0OShCUNpj2PxGPqNGXfkqwJc9C2eo5hYGVJEBy3uHVDzZgdOd4DVniIw
-	Et3L74O30DmevpNNUDp5k1qfzwLNbtIMfDf8/vFm457xfqRdUW0YSwV4TW1AYPAZmDgaj0
-	BNlvEZpUEL2i4gNrlBUe9omwjigS0IztX9ALSejCMESqPq+iFJbTAB7yJIlrDA==
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-To: Yaohan Li <shunsheng1218@gmail.com>
-Cc: rafael@kernel.org,  daniel.lezcano@kernel.org,  rui.zhang@intel.com,
-  lukasz.luba@arm.com,  linux-pm@vger.kernel.org,
-  linux-kernel@vger.kernel.org,  edubezval@gmail.com
-Subject: Re: [PATCH v2] thermal/drivers/armada: request the overheat IRQ
- before enabling the source
-In-Reply-To: <20261119022911.1493538-1-shunsheng1218@gmail.com> (Yaohan Li's
-	message of "Thu, 19 Nov 2026 10:29:11 +0800")
-References: <20261118072339.1259719-1-shunsheng1218@gmail.com>
-	<20261119022911.1493538-1-shunsheng1218@gmail.com>
-User-Agent: mu4e 1.12.12; emacs 30.2
-Date: Thu, 19 Nov 2026 12:11:23 +0100
-Message-ID: <87o6bldqjo.fsf@bootlin.com>
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=kPbLRZGz
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=qBVBKASaHTfegT5siRjMai4freGBRZgEND4BdpfsRc4qRpryLS4S/TGnrfxYKcmiKSBJ4iFHmMjY85VdUw+u4DJQSWKC5+1crsNIJyngJ0QYFaccm9rDC7LBGORoHHxo455UY7SeVAZSZm9gLm31ZKOStBgR/bdhwENipeD6hdLqR0lUzGGQ/1MTXZBIHH8dHd5iXyHK2tkWk6OXsada3z29EG39rPuS/waRU6HV5sVM11/3WO9iGOF8ACb2LKKv7gJwvKHMT4JKAt/57YHMTj3qzjNYvzQFEBWJ3MkhS8Fh2WmAFXxgQ+/54TxCaS2Mq09f86W4Lp4IT26X58Aasw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IT8eYdMOoDdmYQGDflBtbgLSwLUT9Vzt/ue5D2tZIog=;
+ b=NZP+BzxTDGWAedZIMS/7H6LVZuKatuBdqi4GF3Hf/fnkSqKCePrIT+wKQFE/dRfVPhuSMCgpVLdL73MKcPa+enWz51SctT/0pWj9iYRrSApUjiE/Jlr2o62XGglp9GE8lES1STm3ekr2V8z70Mb3LLW5vs17KKCzMv9/YGXX4cbQsaYnFAf9zKhl8eb5tJI3IQAuSb7rtr/7662aF7cUFQR3QoH+88tJH2+k0zXjQL/OjmocKgg/Er6CzLalpxfrArlM0Qep2Sd6Co1nKE9sO+g8zmKSwAP84eAg4XjZfziES4fYoTB2XYBv6zaQ33h/V2yW3pOG4EtyND8J7FNeZg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IT8eYdMOoDdmYQGDflBtbgLSwLUT9Vzt/ue5D2tZIog=;
+ b=kPbLRZGzvg3lRLlDKF/K/HQQ8O6ENbf7Uq7vjmvT4VNJGsAUKLYaWq1jCgwXzcB6QqPGVAfU9C6uz9Sp9GHMdqf8RXz75ndPVA+gLqlMIEqst2O6rZu3grEUjO0t2DMju4JU+lcci7ybFdB8p5asiXdzMnLEBstpiui3UZFBjLccf8LExuKz7rDz7VJKVo26sUgR+sCMzAaRXC0MBCaOx8pKdqxso7XtWTJs4nO3x3B/pGtNcPhWzfIYQe/5EONyjvDCViOpmQhW6SByH4hvKWsRqZJdEMimpHWwsbkX7gIy92fjcW3zvkcD3waBxLF8md6ErcNl+AqBsaewZALfCg==
+Received: from CH2PR08CA0023.namprd08.prod.outlook.com (2603:10b6:610:5a::33)
+ by DS0PR12MB999312.namprd12.prod.outlook.com (2603:10b6:8:42c::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.10; Thu, 19 Nov
+ 2026 11:12:46 +0000
+Received: from BN1PEPF0001854B.namprd05.prod.outlook.com
+ (2603:10b6:610:5a:cafe::1b) by CH2PR08CA0023.outlook.office365.com
+ (2603:10b6:610:5a::33) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.592.13 via Frontend Transport; Thu,
+ 19 Nov 2026 11:12:46 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 216.228.117.160) smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.160) by
+ BN1PEPF0001854B.mail.protection.outlook.com (10.167.248.10) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.639.5 via Frontend Transport; Thu, 19 Nov 2026 11:12:46 +0000
+Received: from rnnvmail205.nvidia.com (10.129.68.10) by mail.nvidia.com
+ (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.57; Thu, 19 Nov
+ 2026 03:12:27 -0800
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail205.nvidia.com
+ (10.129.68.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Thu, 19 Nov
+ 2026 03:12:24 -0800
+Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server id 15.2.2562.57 via Frontend
+ Transport; Thu, 19 Nov 2026 03:12:20 -0800
+From: Sumit Gupta <sumitg@nvidia.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <robh@kernel.org>,
+	<krzk+dt@kernel.org>, <zhongqiu.han@oss.qualcomm.com>, <conor+dt@kernel.org>,
+	<treding@nvidia.com>, <jonathanh@nvidia.com>, <linux-pm@vger.kernel.org>,
+	<linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<devicetree@vger.kernel.org>
+CC: <bbasu@nvidia.com>, <sumitg@nvidia.com>
+Subject: [PATCH v3 0/9] cpufreq: tegra194: add Tegra264 support
+Date: Thu, 19 Nov 2026 16:42:08 +0530
+Message-ID: <20261119111217.902071-1-sumitg@nvidia.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,226 +115,102 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Last-TLS-Session-Version: TLSv1.3
+X-NVConfidentiality: public
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: ExternallySecured
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN1PEPF0001854B:EE_|DS0PR12MB999312:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9e3a4a7e-3697-40fc-3930-08df462e0a46
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|82310400026|36860700016|7416014|376014|1800799024|18002099003|13003099007|921020|11063799006|10067099003|56012099006|261022075727099003|261022105027099003|261026140227099003|261026121527099003|261028144727099003|261021123027099003|261021121427099003|261009223027099003|261102123227099003;
+X-Microsoft-Antispam-Message-Info:
+	dYXmu0B082BXbEHf75dn3ESSERi6NDlSJxy+hqnyP64+44rl6ygYU5j20nUIuzTgA9Dak2SO+ZIrri0A4K/Fr0+Tbk24Uod2W5WL275YKWJYi3jssuJHqWso3MOuDcexw9earWqMhOn3VdmI/fvnVPP7VzC0GupO5//jGMW1ZwJfjOrlLjoMF9NG2ZcRpOH/qbpnH/vkToeAA1V2aEiQQrVkP45pcopZyaWnbptVFcsfRqqXcpBpxPjp9C3kHDKVyVGvcTc8LOkLg0gN64XQm1BKsggSyWaaBD3RfELLK6jOxHYGrBdPNzDhq5iPyEj0Pic9DAsVPtpTwXOgjIjE6t4biWSwBuhvH93X7Oq1Ph6Xjg/3hw5FB9j85aQSOs/Se6o7NgHCDkHgGbOm6NMfP9KdevymZIPznGbbuvEL6fJO4jZEBoQHRzkc8hIrMMxs/WgmXsDYFrcB+orNa4FjZ5Cp9w21hKakVvJAKeVd7N9FLnlyT/la5rct3lKDZ5oLh21nS+l2DTKI3yTzIiaJhDLYvTZxobSm4FoC2WWEF7Gju06BxoAIHm96G3fBpNK9hT4I90FYQ4GFm5AQcHGFkOOSJ0LM7Uo1l7F6yPcVAke7DSy26gh9DYkiz8fdBMBmIVfIYicD8gf1vNivte9Ph9jABlTWNML1ztVOSRy6r7HyCaCXpRjeCWghy4Url1wZfL0yU+Dv7u8qbu5KbtDicS2Arc18cc1FRIXUEQ0F68xENWpqEE8ahpI6DMo+W06I
+X-Forefront-Antispam-Report:
+	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(23010399003)(82310400026)(36860700016)(7416014)(376014)(1800799024)(18002099003)(13003099007)(921020)(11063799006)(10067099003)(56012099006)(261022075727099003)(261022105027099003)(261026140227099003)(261026121527099003)(261028144727099003)(261021123027099003)(261021121427099003)(261009223027099003)(261102123227099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	qARilR3/V9/1umbhqxNRxY6x5HmLREOmAPc8QHSzoDNF/qJyQUZ6eUsJbMJ4ty7jRnd7MgDLYTeRQVMdFEtv+bXkcFxictLajY4IuwFeDZ1JN+SMSAUCqcy8Or2ljXYsUGBwms/4QteYEqI/Kv8O2DZDEwDs2UpPgGHYrOX60EswW7MfaJUticibyP35qxq+tsrppwDEgkdcFVC7CCzBWTIS1n00/hWVbPjKDiXk3igVPj/MCQvB2KiBLT/oMd9oh8RpowD+1+BKGPviZF49ojgvte2ixNeoYE9VW6J4fgv5OGy+6CO9wkPgNV72hqUCG7MKzAHWfrmJGP1uyYFYM2UKfVEIr2JiB8odZJh69+8/cOJwACBIBB8fYAaPnAPcej47cEwnY7455ODfMZ/dQGWI9bglNwl8Lm4vg2PnPzGoj3NSNubI/o588ekDO/r+
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2026 11:12:46.2993
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9e3a4a7e-3697-40fc-3930-08df462e0a46
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN1PEPF0001854B.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB999312
 
-On 19/11/2026 at 10:29:11 +08, Yaohan Li <shunsheng1218@gmail.com> wrote:
+This series adds cpufreq support for Tegra264, which joins the SoCs
+already supported by the tegra194-cpufreq driver.
 
-> armada_thermal_probe() requests the overheat interrupt before it registers
-> the thermal zones.  Devres releases resources in the reverse order, so the
-> zones are unregistered first and the interrupt is freed afterwards: a
-> handler that is still running, or that fires in the window between the
-> two, passes a zone that has already been destroyed to
-> thermal_zone_device_update().
->
-> Request the interrupt after the zone loop instead.  The handler is then
-> freed before the zones it updates, and the interrupt is only requested
-> when a critical trip point was found, which is the only case in which the
-> driver has an overheat source to enable.
->
-> The interrupt stays optional: a device without one, or with an invalid
-> IRQ number, keeps working without overheat detection instead of failing
-> to probe.
->
-> The source has to be enabled after the handler is registered, so
-> armada_configure_overheat_int() only programs the thresholds now and
-> armada_thermal_probe() enables the source once the request has succeeded.
-> A failed request then cannot leave an interrupt enabled that nobody
-> handles.  The source is masked at probe time as well, in case the firmware
-> left it on.
->
-> The handler polls its sensor once per second until the temperature is back
-> below the hysteresis, and devres waits for it in free_irq().  ->remove()
-> masks the source and sets a shutdown flag so that the poll gives up
-> instead of keeping the removal blocked until the sensor cools down.
->
-> Fixes: 879d7362d1d0 ("thermal: armada: add overheat interrupt support")
-> Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
->
-> ---
-> Prepared against v7.4-rc1-1969-g666539eecdf4.
->
-> Compile tested only: arm64, aarch64-linux-gnu-gcc 11.4,
-> CONFIG_ARMADA_THERMAL=3Dy and CONFIG_ARCH_MVEBU=3Dy.  No hardware was ava=
-ilable,
-> so the removal path was not exercised and no race injection was run.
->
-> AI assistance: prepared with Claude (Anthropic) as a coding assistant; the
-> author reviewed the reasoning and takes responsibility for the content.
->
-> Changes in v2:
->  - Request the interrupt after the thermal zones are registered instead of
->    freeing it from ->remove(); Miquel asked for the smaller shape, so the
->    helper and the stored IRQ number are gone.
->  - Enable the source only after the handler is registered, so a failed
->    request cannot leave an interrupt enabled that nobody handles.
->  - Mask the source at probe time, but only on the variants that describe =
-the
->    overheat interrupt as a DFX cause.
-> ---
->  drivers/thermal/armada_thermal.c | 69 ++++++++++++++++++++++++--------
->  1 file changed, 52 insertions(+), 17 deletions(-)
->
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_th=
-ermal.c
-> index 83672f95b011..23f820415e56 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -68,6 +68,7 @@ struct armada_thermal_priv {
->  	struct thermal_zone_device *overheat_sensor;
->  	int interrupt_source;
->  	int current_channel;
-> +	bool shutdown;
->  	long current_threshold;
->  	long current_hysteresis;
->  };
-> @@ -297,12 +298,19 @@ static void armada_enable_overheat_interrupt(struct=
- armada_thermal_priv *priv)
->  	regmap_write(priv->syscon, data->syscon_control1_off, reg);
->  }
->=20=20
-> -static void __maybe_unused
-> -armada_disable_overheat_interrupt(struct armada_thermal_priv *priv)
-> +static void armada_disable_overheat_interrupt(struct armada_thermal_priv=
- *priv)
->  {
->  	struct armada_thermal_data *data =3D priv->data;
->  	u32 reg;
->=20=20
-> +	/*
-> +	 * Only the variants that describe the overheat interrupt as a DFX
-> +	 * cause have this source; leave the control register alone on the
-> +	 * others.
-> +	 */
-> +	if (!data->dfx_overheat_irq)
-> +		return;
-> +
+Tegra264 keeps the existing model, where BPMP provides the NDIV limits.
+The driver derives the current frequency from the core clock and
+reference counters.
 
-That's over defensive. This case is unreachable.
+The main differences are:
+ - Frequency read: through system registers, as on Tegra194, but from
+   the 64-bit architected AMU counters. The reference counter ticks at
+   the system counter rate (CNTFRQ).
 
->  	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
->  	FIELD_MODIFY(CONTROL1_TSEN_INT_EN, &reg, 0);
->  	regmap_write(priv->syscon, data->syscon_control1_off, reg);
-> @@ -538,7 +546,7 @@ static irqreturn_t armada_overheat_isr_thread(int irq=
-, void *blob)
->  		mutex_unlock(&priv->update_lock);
->  		if (ret)
->  			goto enable_irq;
-> -	} while (temperature >=3D low_threshold);
-> +	} while (temperature >=3D low_threshold && !READ_ONCE(priv->shutdown));
->=20=20
->  	regmap_read(priv->syscon, priv->data->dfx_irq_cause_off, &dummy);
->=20=20
-> @@ -802,7 +810,6 @@ static int armada_configure_overheat_int(struct armad=
-a_thermal_priv *priv,
->  	armada_set_overheat_thresholds(priv, temperature, 0);
->  	priv->overheat_sensor =3D tz;
->  	priv->interrupt_source =3D sensor_id;
-> -	armada_enable_overheat_interrupt(priv);
->=20=20
->  	return 0;
->  }
-> @@ -891,20 +898,16 @@ static int armada_thermal_probe(struct platform_dev=
-ice *pdev)
->  	drvdata->data.priv =3D priv;
->  	platform_set_drvdata(pdev, drvdata);
->=20=20
-> +	/*
-> +	 * The firmware may have left the overheat source enabled.  Keep it
-> +	 * masked until a handler is in place.
-> +	 */
-> +	armada_disable_overheat_interrupt(priv);
-> +
->  	irq =3D platform_get_irq(pdev, 0);
->  	if (irq =3D=3D -EPROBE_DEFER)
->  		return irq;
->=20=20
-> -	/* The overheat interrupt feature is not mandatory */
-> -	if (irq > 0) {
-> -		ret =3D devm_request_threaded_irq(&pdev->dev, irq,
-> -						armada_overheat_isr,
-> -						armada_overheat_isr_thread,
-> -						0, NULL, priv);
-> -		if (ret)
-> -			return ret;
-> -	}
-> -
->  	/*
->  	 * There is one channel for the IC and one per CPU (if any), each
->  	 * channel has one sensor.
-> @@ -937,9 +940,29 @@ static int armada_thermal_probe(struct platform_devi=
-ce *pdev)
->  			armada_configure_overheat_int(priv, tz, sensor->id);
->  	}
->=20=20
-> -	/* Just complain if no overheat interrupt was set up */
-> -	if (!priv->overheat_sensor)
-> +	/*
-> +	 * The overheat interrupt is optional: a device without one keeps
-> +	 * working, and an invalid IRQ number must not be requested.
+ - Frequency request: through MMIO, as on Tegra234. The driver writes
+   NDIV to a core_freq_req register in the CCPLEX register space. Each
+   register controls a clock shared by two single-CPU clusters, so both
+   CPUs form one cpufreq policy.
 
-Here you change a bit the behaviour of the driver. ENXIO is a valid
-error indeed, but any other negative value may fail the probe. I don't
-mind to keep it that way (not failing in case of wrong IRQ), but a line
-in the commit log about it is necessary.
+The patches fall into four groups:
+ - Fix (patch 1): read each CPU's MPIDR from a CPU hotplug callback
+   instead of at probe. A CPU that is offline at probe then also gets
+   valid cluster and core IDs.
 
-> +	 */
-> +	if (irq <=3D 0 || !priv->overheat_sensor) {
->  		dev_warn(&pdev->dev, "Overheat interrupt not available\n");
-> +		return 0;
-> +	}
+ - Preparation (patches 2 to 5): cleanups, mostly of the counter code,
+   to make room for a 64-bit counter and for an MMIO mapping without
+   ACTMON counters.
 
-I personally don't like early returns when everything is fine. I would
-prefer that you just keep the whole irq handling inside an if clause.
+ - Improvement (patches 6 and 7): group CPUs by the generic
+   "performance-domains" property, which cluster-based grouping cannot
+   express on Tegra264. Device trees without it keep the existing
+   grouping.
 
-> +
-> +	/*
-> +	 * Request the interrupt only now that the thermal zones are
-> +	 * registered: devres releases what was registered last first, so the
-> +	 * handler is freed before the zones it updates.  The source stays
-> +	 * masked until the handler is in place, so the device cannot raise an
-> +	 * interrupt that nobody handles.
-> +	 */
+ - Tegra264 support (patches 8 and 9): the driver support, followed by
+   the device tree changes it relies on.
 
-This comment is not needed, please drop.
+v2[2] -> v3:
+ - Patch 8: read the AMU counters with interrupts disabled (Zhongqiu).
+ - Add Reviewed-by from Zhongqiu to patches 1-7 and 9.
 
-> +	ret =3D devm_request_threaded_irq(&pdev->dev, irq, armada_overheat_isr,
-> +					armada_overheat_isr_thread, 0, NULL,
-> +					priv);
-> +	if (ret)
-> +		return ret;
-> +
-> +	armada_enable_overheat_interrupt(priv);
->=20=20
->  	return 0;
->  }
-> @@ -948,8 +971,20 @@ static void armada_thermal_exit(struct platform_devi=
-ce *pdev)
->  {
->  	struct armada_drvdata *drvdata =3D platform_get_drvdata(pdev);
->=20=20
-> -	if (drvdata->type =3D=3D LEGACY)
-> +	if (drvdata->type =3D=3D LEGACY) {
->  		thermal_zone_device_unregister(drvdata->data.tz);
-> +		return;
-> +	}
-> +
-> +	/*
-> +	 * devres frees the interrupt before the thermal zones, so the thread
-> +	 * is waited for in free_irq().  Mask the source so that no new
-> +	 * interrupt is raised for a handler that is about to go away, and let
-> +	 * the poll loop give up instead of keeping ->remove() blocked until
-> +	 * the sensor cools down.
-> +	 */
+v1[1] -> v2:
+ - Patch 1: drop the cpu argument of get_cpu_cluster_id() (Zhongqiu).
+            Check for a bad MPIDR in tegra194_get_speed() (Sashiko).
+ - Patch 7: check the BPMP table in tegra194_get_speed() (Sashiko).
+ - Patch 8: fail probe if AMU is not available (Zhongqiu).
 
-This paragraph is also not needed in my opinion.
+Sumit Gupta (9):
+  cpufreq: tegra194: move MPIDR read to CPU hotplug callback
+  cpufreq: tegra194: remove duplicate counter sampling loops
+  cpufreq: tegra194: add tegra_counter_delta helper
+  cpufreq: tegra194: add per-SoC counter mask
+  cpufreq: tegra194: split MMIO mapping from ACTMON offset
+  dt-bindings: arm: nvidia: Document the Tegra264 CCPLEX cluster
+  cpufreq: tegra194: derive frequency domain from device tree
+  cpufreq: tegra194: Add support for Tegra264
+  arm64: tegra: Add CCPLEX cluster node for Tegra264
 
-> +	WRITE_ONCE(drvdata->data.priv->shutdown, true);
-> +	armada_disable_overheat_interrupt(drvdata->data.priv);
->  }
->=20=20
->  static struct platform_driver armada_thermal_driver =3D {
+ .../tegra/nvidia,tegra-ccplex-cluster.yaml    |  27 +-
+ arch/arm64/boot/dts/nvidia/tegra264.dtsi      |  21 +
+ drivers/cpufreq/Kconfig.arm                   |   4 +-
+ drivers/cpufreq/tegra194-cpufreq.c            | 456 +++++++++++++-----
+ 4 files changed, 387 insertions(+), 121 deletions(-)
 
-Thanks,
-Miqu=C3=A8l
+[1] v1: https://lore.kernel.org/lkml/20261104181521.3003578-1-sumitg@nvidia.com/
+[2] v2: https://lore.kernel.org/lkml/20261117154954.625126-1-sumitg@nvidia.com/
+
+base-commit: e8017d29067fd1310a65c3494ce1a1b492adbac6
+-- 
+2.34.1
+
