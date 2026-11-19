@@ -1,101 +1,111 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.175
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795099902;
-	b=V9ZIrMrQAkZgkH0omXuoAMhH863s7hwB/j+Cl5fZCfesyu0UOmHojWZ//cw53tDAmgCT
-	 Yys7gBxSRmfhmRQKxoyEytCtCC7yR6Nac3i/0z0b9RLzzYaVTyubWdj3lw8zA72ltKAFD
-	 RgnCASyBqWO5CmuD+WBt8LY79hyJjAXOr4+zVe6KPtPcrShQJkrLFhg1e0FRvs2Cn4r1L
-	 8AKJKJE5+1zS6ODCEtG97KzIwj3d1ovJTt78sBOxIdeYYO17NDc+nQULGN2BraHajyliL
-	 l+XrBL1rOYPd9O52mJkz8Y8cs3eYnVX3q0UIKzOwxOnwt0+x6NXH7uU20CqZCNfY1sQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795099902;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=rVz62QW1HjQ4+uCtzasNNB/vluTYkgnjHw0Yp9wwc8Q=;
-	b=ROxnEiZK2F+8kPaE/A1mt30fvbVlrKmPobOLvPE/UoQOPv6wxXQxemcFAeG7iE7Nv/DK
-	 TGnkRWp4jSwAq1d6hICIsP/gDLuLUcjII8Ct/odD09yJ9cO4OBo7XYC/v4gLIkr/Q/L71
-	 K+9U3k6hyQu+86A95O2WSWFY6nsZZAUFEQIzd8U8UwFR3clx269gtl0bFlBgndIv70X8y
-	 IQ0hroEUQ91Tqjq12tygk3ZiQIoLWlsKbJ9XAyetkAWkvf595UOENsVvjuGscOd7Aq8my
-	 nGVxIV+AwF0BK9Z+mSHM0mUJijh4bspWowopOefHP3jFp7z9yXberOg3KS10qnmbFlA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dWwy3UQV;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.175
-Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795101294;
+	b=mQY1TzWIrkaHADYRYW0oG3PexpOKCzMhsbF0VnYhBJXNbMeZTxvxVp1HlP3E52cU02iU
+	 OcS2J2G0PmokB7zVP3pyw+Lxgulj5o98RrWxkS5PKoQaZF9Nd3BLc65+8VLGDvlCWd7z5
+	 A5iqZf8J1vD2y/B2rSe+2zUHRioxNeaDhuW95zvTFB/3W82inLv5klLc/vnzxa0Us+P0J
+	 3RhcELG2RNK4M9XdOmN9w0Fj0GE5eRUZ+Rd4RGwoHEianmzq9otJyOV+bZYXJzrSUzBBb
+	 1hXRUMj2abYXAt4ObMgoS5Zzk72WabeM1lEj7kW3dJv9y43c378IyCuTQMfeznjkL9w==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795101294;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
+	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-Spam-Info:X-Authority-Analysis:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=mQ68OX60OS8KA87kxHrWa8kzzALUApqKQHVqe4uRyAc=;
+	b=H2eUArM3kUpFX3VRDg3KabQyd75L3/Xbzkq+4h7VpRU5RAemcdPZ4YD06fmzB7BCx1dc
+	 NSW/VYJg0wP+zg0SUm1f+XKd6W/SmYHpPh5+f8hRO7f3VgsilJY+PaI5H+oegxofOXBT2
+	 EHLbOWZV+m704PQoo+U2fhdpSPGzN+fvPmU4c1KlD9SOmS0vWkZ+HGQd0Oo7BkvRLxN1f
+	 9IhTzZE5PwcpWw4Vv5McUXA3EwopUFvkCOX/l+wAlUPFNTTr84YN2N7ZI6mswOUZiPZ6y
+	 Hw9VWlkmmSwx+m2zxdo8hZMiQh8gK8/oHqIzQkCI8yTh30ZCe6w5GbWyYL+E2bnpzzQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=oUJFN7lq;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=hb6hz51l;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81A31606A333
-	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 14:51:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 81A31606A333
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21A9C606A324
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 15:14:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 21A9C606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dWwy3UQV
-Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-36f8cdd30beso3441468eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 06:51:42 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795099902; cv=none;
-        d=google.com; s=arc-20260327;
-        b=WbgZXodnW3Cr7oTku3nG3l4k1hok6q3NNcEsbgQEY+/b0ecdd39+UnO1lZw6U3nbAe
-         7VhcsgJlmDD8BXD/131tITwV0oCEUroWlBBRDdGK+GUC11QaDPyU0K6E0ZSvrO3F/iUs
-         IeoxJ4/6WND+XHwp1ZnD0i+3pWzFj5GwzR2Y1jdIyOymf5l72iNwqyisInKg+nmH9KIK
-         +8sXbSVyehA55ihHwdA1XAz2crwQ3yOHP4vU9MZFWbFiRpXAKa7rzxJHwUWajFK5v2Xr
-         ltREBJ/78tKMFoT+W3UZYPZ5J1/qEsRxHv2ijW9JEDOJhs7MNBtZdUInZGT/CZlmRrI5
-         hLZg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=rVz62QW1HjQ4+uCtzasNNB/vluTYkgnjHw0Yp9wwc8Q=;
-        fh=zRrS9AagyTBUwLqhIa//3j1vouovHjwt0jiP3w9/wO0=;
-        b=cCX6zaaQgatFXZPlutDT7LHsZe2JSrQ9TRRSW3M4Iv3nNxfj58i1JTtTlbFYyZnbdo
-         b/REygSvDtLkYDMy7qUtO9zbFHhCV5XWPSdspdTeFwO8PYsoqyDLJtWWtbhpVghpL/Q9
-         Ly4LiR8mIr/cFOk/Ub8grdv36v+njNFylsBWEPumpe6/l+Ro+UwIRBRq19ZkEZ74AVmr
-         d9tGxXgsM/PNjXZ88dKy6F1eNno9502gKw0POK9ijqn3N0+cMmXkzUFkeWTUyQqSBJqP
-         TwP4XjyFhVsiSfaYgVfGS3VtrUa+fz9L3Qy5Afs9oNv/8B7R2ecpikWFAIzchNLQT5Cr
-         KyBw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=oUJFN7lq;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=hb6hz51l
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJF66xm2093675
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 15:14:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	mQ68OX60OS8KA87kxHrWa8kzzALUApqKQHVqe4uRyAc=; b=oUJFN7lq0AkGd8Ck
+	cINmMt3IGamOO87crw0/ZSEMUMLaKeB06cDH+0HipsUipHVx2Vx3IvmNa+5TdaMh
+	nuDxXKr4oiDYVk+pnBDbmq1OT1yYt9neG739vpgGgwyUZqx1GkczQ453xW0Gl7v+
+	CK3zT6bK03wgf8y7YXCwR7smJH7yFLOkW56uB9JwbENVgYlL7YqLzeFMnJ9pp/q1
+	SRvkmMaFh86bW2aOYrHv2dIfXV/dt1ThmCn7FvlnrAieE7uMPkgwlSk/zasbUibC
+	Hk0kOmJN4gdUOhXBkphi9IvIemiL2kN73WXOvlpEGClgBhCvb1msuWvDl0Ry8kc1
+	yLqn1g==
+Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j1yghh20y-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 15:14:52 +0000 (GMT)
+Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-8bb1a7b0e52so1672108b3a.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 07:14:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795099902; x=1795704702; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=rVz62QW1HjQ4+uCtzasNNB/vluTYkgnjHw0Yp9wwc8Q=;
-        b=dWwy3UQVVYQLiKDxkA3dgZkZebW32MqoCRtNCPSE9MpO7t7SCUIadQkRZJTN5a8w+V
-         3+jB8/+GgdxSwPRLbMBhkMYZd+rZkYs/iaE4Vz9TPjtcDog5e+Pg1NWQZ9MRwGFq0e5w
-         LzUZo90zMzoehE3eCLRA1ydOP5xUVZi3O9Y3OY+QKVU2moQ85xP9bsKJk27hvttgM9dT
-         fwQe4YuYdrDTdwhpNG1TWYVeXvWAcgtl/oYi1d9P+TUGslnhSuGhgpfPhtggZ4SvwyLs
-         osmrQ9/r+uYHVq6YAjvvC0hCJnG0WTpZnwR1CMffZO2NWqJPT7p9zd4sHKLVr+PL9l/g
-         jfYw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795099902; x=1795704702;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1795101292; x=1795706092; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=rVz62QW1HjQ4+uCtzasNNB/vluTYkgnjHw0Yp9wwc8Q=;
-        b=RJ4UzXjebHKnYhw7KbGyfkXG21yVHVdFJB/pby5+YKdyKrQ7E4pGJA64plSdHSgNez
-         7jAdSxbrryrMv4CwtFnlApZvPUryi/hdDffuxzHLf3QIJw7ygx++qkIEkxqkJWNmdcox
-         s2OYPS3ATTFITEGF3Jp6XPGNLxcGqMxM00TwEPwHcYMb/6aZfg0SfPA4fLruLnZ4DWw4
-         GiEwg4NOUms56hFmGbKWTSF/RGWuXsFrVRg/uck9s7eMDZemEYoRk1JrfCtBfHO4eBsz
-         6RbBMvxKbzuIifj/6d9zU++x4v/90s4QU0kIysRXHhNPzIqZli7DD+xEFywp3L/jMniu
-         NJmg==
-X-Forwarded-Encrypted: i=1; AL+hErEpMtmgIx0u9vNmKwjRDkeBkU1JU4/415ygUuP22KyuZLOdZfQ46JQ2PF/RFP6+JJB0uDR8C2FI7w==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8vb3FAJVxWOONMV1HfirCmZcoQ4JROFOdX4cP9tLZfAUP/DTQH
-	aGd+f9leOG3SRqHtuqXhU7V66Ev52QfDTDAQsSSVt7jop0M+US6knnrjAg/qYCcUevfudIdgoxa
-	joH/r9LmhS9gpwufujM8ZCn5lrLYusvY=
-X-Gm-Gg: AZFdTZfh6xQOYqN5lTAvDQzRLIv1rK0YDpWLCgqGM7Cw3o+029qLItuCo3bPiA+lTwM
-	hhm5mlLIqA1bidktQL0aErF1AeGK13DcwPkhreG+cZuydSdX+cq1HGWIJwrD7s0+jhgWFgQ1RjW
-	euvxk1gPGfcUcLRa3xhwnGsmIzBnVpqYHH5r1PKwmxIYlG7mWSt/lVn7gUmfIhpBLSTAtME7cqs
-	hgOrzhdymTdDtIBs05J/9fDcpZ3Pz8V0jzc4cFZijAPPe0ptPXZaC/wd6iwgyA64P7reeK24Qpr
-	ZsJVdN7O5T2Zxt3IEQ3Wo68y7NzG7f3Ku8ntL8Yx2PxVOGChcL2QtoaC/fnEXmZ6XF5k903W9DN
-	FMgY6Q4saWK3MCjmdL1g1xCIOUlCD5yCkAAbI5gshBmwPmzzfj28jMcFJkgqxoN7vZyhWSPff0N
-	UP5xIMZhvGt9QLBAIi7pEt1bzl3/EGxg==
-X-Received: by 2002:a05:693c:8803:20b0:384:b001:4350 with SMTP id
- 5a478bee46e88-384b00145cdmr1285277eec.24.1795099901356; Thu, 19 Nov 2026
- 06:51:41 -0800 (PST)
+        bh=mQ68OX60OS8KA87kxHrWa8kzzALUApqKQHVqe4uRyAc=;
+        b=hb6hz51lBICW+Tqr0wYv1wwhMhHeSmicBi9PYxGdA4ndHjY3PZwF8p2zl7Frhg0x0g
+         nTIpqzyMrns7+HF4Q2b4YMrLe8RjMaCocwYfea/oHodspHaWlnDYE12kcHyUAi1IJqUq
+         MUV8DJwLjdmwxWuT2shk7GMh7u/Zkest58u1WkHVdjfuMLmtlod4eT75aiaiWFowWEEb
+         1MBaOxtBBSmlObKzWwpZsKs8DET5+NMb8+6w+4cweRbq220vxjKB3R4ZuhEOSfqm23VZ
+         i0QTHwkNNi5SkzvMxK1nLkRTeQYmsHti3vA9g2Im2bYoyXUYDQTjezXsKiPcUyxBECRB
+         dNCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795101292; x=1795706092;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mQ68OX60OS8KA87kxHrWa8kzzALUApqKQHVqe4uRyAc=;
+        b=RkOKRy2K4WBEu0NMUDZfiWLrv7YUoFUdYPWo1zILNTp8ECwHR+TT784j3nB2RheZbb
+         jd3WIs7rv+fYzLHQkouSh1QcCqsLUaoM24snLZomHgyWDMK53lINycFm7rMT04X9YHWf
+         GQrwzZemeYRtkG+YrF3SB/a9uw2NJE9D0ojkQHjRFV69vHXlA0j84Z+7/5btomOrwpNQ
+         OmpBHkEF9gwHJix7UPzjNGnFVWTzBM0UdIb+W99ihs8uFcJL/wxsldEz9aAHzEyeypRB
+         HnzRGVbwUbg5dWdLipxuJnALBIg4r8aw9bYPWNKMIYhjzffJS0+m36W0Xu7Y3O5S9MKs
+         2IZA==
+X-Forwarded-Encrypted: i=1; AL+hErHa3ekDedYEiSIuNIA6tQYsQJ8SQljo/YGoAkLxy3eyjXVbn5ifbKOPnoqQ+crP/Wlr4c/9/E9K9w==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+mfpUFFfCs4s4kDp9K6bQmaBKtDzf4ccI9enOnLpPAqJ4SXl+a
+	+uVSM7eUsbJSWBZgDu34aA/sUkP+9L1xPXXOOXnCEZ7N4/tPtEuTHF8oJmuOM85mRwguk4fFJPm
+	262w0JA5JlyYmSheKPAqQVdnDPK9s00cVZNUBbG9d19x9tej4fuyuLGFX9FYD0g==
+X-Gm-Gg: AYBFou0yp9Ky/9lIwNCxI4KyRfVRyupsNCPZ1SMdJ/lRAztjlKY1T4/tEBnf1cbPcqC
+	pSBVXId0Lh3NbcEPFAoPsNZ9ibHrp6Fr7kELa++wcsiLr0FYtXhG5meJeGRgkiUtyseGpX0nCdE
+	+mRg5WYHtSP7dbUKSwMwy/ThHRvbOgM2iYIgLdHFXT3uAHN8y0S7WYSK+qq/9vqNscVNL3MxnHa
+	toNJfjz2qj19fgoQgAHT3TPfsXbZQ54ZknassRHOBZ8xHOQ9ukcNcghGJzZl1fwEdssPo/+D5ID
+	MJcZ8GwJr3JfWlnHy2jmTX6K7B7g0DVcezo1t1vHZvpT8GEo2cKhp3NcWWyZQSDBuAzCXcHXNWR
+	fe8P+ushKjosMJv8YlSdJS2aqv70YSIUy5iBgdyfBa1DDPk2yiJ2y9smga9v7I7CtJad8Xa0=
+X-Received: by 2002:a05:6a00:450c:b0:8a8:5b84:4c04 with SMTP id d2e1a72fcca58-8c5d4faec5bmr5605893b3a.38.1795101291454;
+        Thu, 19 Nov 2026 07:14:51 -0800 (PST)
+X-Received: by 2002:a05:6a00:450c:b0:8a8:5b84:4c04 with SMTP id d2e1a72fcca58-8c5d4faec5bmr5605854b3a.38.1795101290823;
+        Thu, 19 Nov 2026 07:14:50 -0800 (PST)
+Received: from [192.168.1.8] ([171.76.86.179])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c87285c05fsm55144b3a.17.2026.11.19.07.14.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 19 Nov 2026 07:14:50 -0800 (PST)
+Message-ID: <2c6e86e7-734b-47ab-8699-aa07b5a35e63@oss.qualcomm.com>
+Date: Thu, 19 Nov 2026 20:44:45 +0530
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,69 +115,170 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1795095742.git.geert+renesas@glider.be>
-In-Reply-To: <cover.1795095742.git.geert+renesas@glider.be>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Thu, 19 Nov 2026 16:51:30 +0200
-X-Gm-Features: Aa3M54oSpPPjIjBXKWbeu_LdZEGptwUS0dUMO0QTPqvZvvRh2xuuU1prMieCCXc
-Message-ID: <CAPVz0n1+qXrO5P+rOBKOSOE86+WcmjNF0taWDZoWqerKrjVgJQ@mail.gmail.com>
-Subject: Re: [PATCH 0/4] Improve MFD_ASUS_TRANSFORMER_EC dependencies
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
-	Ion Agorria <ion@agorria.com>, Lee Jones <lee@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, mfd@lists.linux.dev, 
-	linux-input@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-tegra@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 06/12] thermal: core: Calculate aggregated thermal zone
+ temperatures
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, rafael@kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Ulf Hansson <ulf.hansson@oss.qualcomm.com>, linux-pm@vger.kernel.org,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+References: <20261119094706.3439040-1-daniel.lezcano@oss.qualcomm.com>
+ <20261119094706.3439040-7-daniel.lezcano@oss.qualcomm.com>
+Content-Language: en-US
+From: Anvesh Jain P <anvesh.p@oss.qualcomm.com>
+In-Reply-To: <20261119094706.3439040-7-daniel.lezcano@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE5MDA2MCBTYWx0ZWRfX+JWpuK5uRIuK
+ QcXFHXzy8jE6PKcQufM/oBFY3agts2ayaPJQaIejOcY0cR4IERTuSIGtqimTw6d4A4lT8tlZc/9
+ 9DFKJcqOIlAkjVBsQhVVJ4Xrp9JYrmlx4C/2AhRmgPulA/HNlQmw2nMfMZ3vx6QoZQWHP/dR+V2
+ qVJ9URGuIelrOJlcN9hYCrFgyn/ay67ft0+uOZ8dlTxZeNyu/kcMmgkCvOEmXZNlUTs7h0xqXHS
+ CDpsI7g7lCf7sCvWUeEbjhQhbSDjWufCUacioJOvdNKCyXZwmBYSB2yhUe2HH64umq36OZjnCGR
+ L0mxMiyGtHMnRXv+leoRL5iaGXjDDn3s0+edpuaQOdLA2OReGOL/Zy3bk8mLf/GPMg19UAXxWWW
+ MxSAcxn5erIdY058n1ubht2yE3GCYyVb4buE3FrSDI3NGdWEbQ4SfKdNtsgI9EbqT0Rtj0u+bdF
+ XqUuYtlh8vKfC+SP5cw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE5MDA2MCBTYWx0ZWRfX182yZMYvnn2d
+ edH8aBKQEZE5zczUxwBDGVwTNfukHd/TCXcCZIqrj15Slo+Rc8pe/tKafTfLz2QMhr17EPs6mgj
+ ZKZfAUrjrHgb2ceBtEBhSrjNDF2YZOU=
+X-Authority-Analysis: v=2.4 cv=Vvi2kO2n c=1 sm=1 tr=0 ts=6aff126c cx=c_pps
+ a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=87ZocSFwOvG5wiH9gxK4QQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=EUspDBNiAAAA:8 a=iNLAzDncfHITCqKQpZ0A:9 a=QEXdDO2ut3YA:10
+ a=2VI0MkxyNR6bbpdq8BZq:22
+X-Proofpoint-GUID: jZFlE8UWz7pE2zNyTS4CGIvBQXjAXMXW
+X-Proofpoint-ORIG-GUID: jZFlE8UWz7pE2zNyTS4CGIvBQXjAXMXW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-19_04,2026-11-19_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 clxscore=1011 malwarescore=0 phishscore=0 spamscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 lowpriorityscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611190060
 
-=D1=87=D1=82, 19 =D0=BB=D0=B8=D1=81=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 15:5=
-2 Geert Uytterhoeven <geert+renesas@glider.be> =D0=BF=D0=B8=D1=88=D0=B5:
->
->         Hi all,
->
-> This patch series improves dependencies for the MFD_ASUS_TRANSFORMER_EC
-> MFD driver and its various subdrivers:
->   - The first patch adds a missing dependency for the MFD driver,
->   - The other patches enable compile-testing for the input, serio, and
->     battery subdrivers.
->
-> Note that compile-testing cannot be enabled for the LED and charger
-> subdrivers, as they have a hard dependency on the MFD driver.
->
-> Thanks for your comments!
->
-> Geert Uytterhoeven (4):
->   mfd: MFD_ASUS_TRANSFORMER_EC should depend on ARCH_TEGRA
 
-Though this EC is designed for Tegra based devices, it does not have
-any Tegra specific parts. It can be used by any other SoC.
 
->   input: keyboard: Enable compile-testing for
->     KEYBOARD_ASUS_TRANSFORMER_EC
->   input: serio: Enable compile-testing for SERIO_ASUS_TRANSFORMER_EC
->   power: supply: Enable compile-testing for BATTERY_ASUS_TRANSFORMER_EC
->
->  drivers/input/keyboard/Kconfig | 2 +-
->  drivers/input/serio/Kconfig    | 2 +-
->  drivers/mfd/Kconfig            | 1 +
->  drivers/power/supply/Kconfig   | 2 +-
->  4 files changed, 4 insertions(+), 3 deletions(-)
->
-> --
-> 2.43.0
->
-> Gr{oetje,eeting}s,
->
->                                                 Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
->
-> In personal conversations with technical people, I call myself a hacker. =
-But
-> when I'm talking to journalists I just say "programmer" or something like=
- that.
->                                                             -- Linus Torv=
-alds
+On 11/19/2026 3:16 PM, Daniel Lezcano wrote:
+> Replace the aggregate temperature placeholder with a signed fixed-point
+> affine calculation. Accumulate source temperatures multiplied by their
+> coefficients using checked 64-bit arithmetic, divide once by the scale
+> of 1000, and add the existing offset from thermal_zone_params. Reject
+> arithmetic overflow and results outside the int range without modifying
+> the output on failure.
+> 
+> Read each source under its zone lock and preserve temperature emulation
+> and error handling. Use nonblocking lock acquisition to return -EAGAIN
+> rather than wait for another zone lock while holding the aggregate lock.
+> Reject exiting sources and invalid temperature readings.
+> 
+> Keep initialization-time checks in the aggregation validator. Require
+> validated, initialized entries and stable source references
+> throughout each read. Aggregations of aggregated zones are not supported
+> yet; source lifetime and detachment synchronization will be integrated
+> in subsequent changes.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+> ---
+>  drivers/thermal/thermal_aggregation.c | 67 ++++++++++++++++++++++++++-
+>  1 file changed, 66 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/thermal_aggregation.c b/drivers/thermal/thermal_aggregation.c
+> index fa6cfb8669b3..05668e53fed8 100644
+> --- a/drivers/thermal/thermal_aggregation.c
+> +++ b/drivers/thermal/thermal_aggregation.c
+> @@ -1,6 +1,8 @@
+>  // SPDX-License-Identifier: GPL-2.0
+>  
+>  #include <linux/errno.h>
+> +#include <linux/math64.h>
+> +#include <linux/overflow.h>
+>  #include <linux/units.h>
+>  
+>  #include "thermal_core.h"
+> @@ -155,7 +157,70 @@ thermal_zone_aggregate_validate(struct thermal_zone_aggregate *aggregate,
+>  	return 0;
+>  }
+>  
+> +/**
+> + * thermal_zone_get_temp_aggregate() - read an aggregated zone temperature
+> + * @tz: aggregate zone with a previously validated aggregation description
+> + * @temp: output temperature in millicelsius, unchanged on failure
+> + *
+> + * The caller must hold @tz->lock and keep the aggregation description and each
+> + * source zone alive and stable throughout the call. Source references must be
+> + * acquired under appropriate lifetime protection before publishing the entries;
+> + * the aggregate lock alone does not protect source lifetime or detachment.
+> + * The description must have passed thermal_zone_aggregate_validate() before
+> + * publication. Aggregations of aggregated zones are not supported yet, and
+> + * sources must remain non-aggregated. The destination cannot be a source.
+> + *
+> + * Source readings are acquired sequentially, not as a simultaneous snapshot.
+> + * Each source callback runs under its zone lock, including the usual emulation
+> + * handling. Source callbacks must not re-enter a held thermal zone lock.
+> + *
+> + * Return: 0 on success, a source read error, -EAGAIN for a busy source, -ENODEV
+> + * for an exiting source, -ENODATA for an invalid source temperature, or -ERANGE
+> + * for arithmetic overflow or a result outside the int range.
+> + */
+>  int thermal_zone_get_temp_aggregate(struct thermal_zone_device *tz, int *temp)
+>  {
+> -	return -EOPNOTSUPP;
+> +	struct thermal_zone_aggregate *aggregate = tz->tzp->aggregate;
+> +	s64 sum = 0, product;
+> +	unsigned int i;
+> +	int source_temp, ret;
+> +
+> +	lockdep_assert_held(&tz->lock);
+> +
+> +	for (i = 0; i < aggregate->num_entries; i++) {
+> +		const struct thermal_zone_aggregate_entry *entry = &aggregate->entries[i];
+> +		struct thermal_zone_device *source = entry->tz;
+> +
+> +		/*
+> +		 * The aggregate lock is already held. Do not wait for another
+> +		 * zone lock: return -EAGAIN so the normal update path can retry.
+> +		 */
+> +		if (!mutex_trylock(&source->lock))
+> +			return -EAGAIN;
+> +
+> +		if (source->state & TZ_STATE_FLAG_EXIT)
+> +			ret = -ENODEV;
+> +		else
+> +			ret = __thermal_zone_get_temp(source, &source_temp);
+> +
+> +		mutex_unlock(&source->lock);
+> +		if (ret)
+> +			return ret;
+> +		if (source_temp <= THERMAL_TEMP_INVALID)
+> +			return -ENODATA;
+> +
+> +		/* Cast before multiplying and retain fractional terms until summation. */
+> +		if (check_mul_overflow((s64)entry->coefficient, (s64)source_temp, &product) ||
+> +		    check_add_overflow(sum, product, &sum))
+> +			return -ERANGE;
+> +	}
+> +
+> +	/* Divide once, truncating toward zero, then apply the unscaled offset. */
+> +	sum = div_s64(sum, PERMILLE);
+> +	if (check_add_overflow(sum, (s64)tz->tzp->offset, &sum) ||
+> +	    sum < INT_MIN || sum > INT_MAX)
+> +		return -ERANGE;
+> +
+> +	*temp = sum;
+> +	return 0;
+>  }
+
+Tested the aggregation series on Glymur CRD with a few local DT
+additions for the aggregate zone.
+
+Tested-by: Anvesh Jain P <anvesh.p@oss.qualcomm.com>
+
+-- 
+Best Regards,
+Anvesh
+
