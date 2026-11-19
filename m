@@ -1,55 +1,52 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=194.36.144.171
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795119559;
-	b=Qb7hg04tHes7oZuD5l0mhFwHwvTjeRTKfotNobpiOwn1pIlelw4muYXMwmOaEV/jzzQW
-	 Mm4bivAW+yV8roD7O31MGMW3jXyeNPGIHcjOpjm3QAPGlsJet27AVjDYxEaZ42X6idgLA
-	 lH27s/MssF/G1wuunbiJtR/9XbGb0qoENlCMCWvoTEIzjAre5j8dPNyrBiO0YBxd4F8r2
-	 9Kfssgf4liUMlx1jGXGvD7O3dbpLgYWiT9Q1ioIU+AtM7DJbDrzjrTZjEG6UT0oBBKfWI
-	 +Gyi5TRQ40Eqh19b2u5gKMEtmNVhd82HjcUw5BPZfsgjdLaf/4HsSSg5idEjodi3Udw==
+	t=1795122795;
+	b=JhezESKLFOjIsCvlpek2DI3LINCjioFORHumtzdumC2DHzXtmwpzO0Q7geMZ4/SA4k5a
+	 M+KNY6AzdO8h8DPsZU9F9RJ9Diad8OfIACJbiefQY7yu+WK6N1yBtuh0V4du7BRc4Pjvg
+	 DP5JFrU6BlTzFCMIItcc1J0TxU+6WYthqiVEK4oBtwsiXG4zE6dvwgp55v8b/qXnw6XBo
+	 jfi2Yd5KrZRssQ8zXQF/R1r6D0rwq4fWRt1bRWwvmRSFH1CO9upehYNQBK4alNqOiQ3bR
+	 7jkIRfr801M3IlnCHXOYllNSvC/2sUVxrdsZrw7BLMIwX2brJCdcMzGce6/S5nbSQjw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795119559;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 Organization:MIME-Version:Content-Transfer-Encoding:Content-Type;
-	bh=LAeGseoVNJClCP/Xf2eakpkXRTLTx+M9br/V/h2PGAo=;
-	b=Sya2IqXUJ3sq/BL2ENFx3yeJeB3yM4dMBJ7wScAfbaD4ThEtUSxPNEVQ3mhyDnjY1pEM
-	 GAEabVK4U0Q7qW2xVEvL+hUef1MB5FgOr2ciTCuRT5Dp/6QqueAMfApUB4Sakw4I9SPU5
-	 QjkwR/VcHnSniT7BzQgKB7NkhExPbfc23eDM5lqaluU4ASlzgTn+waaA/hF+CdcRVJi3S
-	 Gv7cCCh86Yo8yczvx46i/LX4VcjG+3/d4oNL3tn63gsoCthRhGPc0v3qUZRWSBU3qDyJo
-	 mPkGRb4XlKW0TRtOcOxBuAk4uc//Ihq4D6XsTsz3XEKwpidS+HBZSczXCB1Was1oa3Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795122795;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:From:Content-Language:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-Last-TLS-Session-Version;
+	bh=9bLp41yWGVBeXMVIJhS7gmZEvxTVo+RBBhrfdyjbS2A=;
+	b=Q1iiZDA9QCVPmetqVtLxY4qH7eJXikOYzhFNVCXC0/PQTseFskL97awPBwcObpC6JTlF
+	 Vk9hynW9mGnZCt5KFPQ9lvxdR7b3bI5GpfHuEWeIwjl81TSU0zQWTGgRIF6CkNWWVRV7R
+	 ZTmDbiZ2BUhmUpgEQm6QcrU1FdHkt4/1RHZ2+FtoMRV7sCghj7T5Rr0rB9r69sS/6ZS84
+	 2z8OiaLK6GUFbb45CnE8ciqw99HFdsFp6vvb5Yc2CYWqWf2N2DXagsPMaHJdpRs9mz9Uy
+	 Mp31ZNJb6Doj6trxqLdFABYAQZGD02kTYU3bxtuFLYHTIJwaSg7SBsy1RysJd+t4aFA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K302fx8A;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=yoxcu.de;
+	spf=pass smtp.mailfrom=yoxcu.de;
+	dkim=pass header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=jvd3YT99;
+	arc=none smtp.remote-ip=194.36.144.171
+Received: from morty.yoxcu.de (morty.yoxcu.de [194.36.144.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA139606C6A2;
-	Thu, 19 Nov 2026 20:19:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 897AD606A33A;
+	Thu, 19 Nov 2026 21:13:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 897AD606A33A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=yoxcu.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yoxcu.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K302fx8A
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 612921F000C0;
-	Thu, 19 Nov 2026 20:19:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795119559;
-	bh=LAeGseoVNJClCP/Xf2eakpkXRTLTx+M9br/V/h2PGAo=;
-	h=From:To:Cc:Subject:Date;
-	b=K302fx8AjzYtM9XU2gJ6G+C4PPPwYCjOQk1ZQneLZoDLtaCssksQ1BR0/98VDrtDo
-	 M1IO2tzj142uP8hjp0Lxxmpo2T9klVc4Z2xSfYLre043ZHkViF65mlSdoMqiRv9FD2
-	 IIecn6LxQ9Qq8/h+sGqlGvnNjyFUEMyXJF6oqPwMPWFb2jyLXBCe+rTdrdyxTC3/3k
-	 1xzKc1a4j+vja9c9zsY5CF1Fdj44hR682Oj9NLBUPZFB5pJzmzSAxs22eT2cWQnjNQ
-	 qpJRoUm6DnwhWSwhDnvnG/32ry2rO0a3w7AVtRfBOw3/vqGoeRB0R6H+mMj8Z4fSkD
-	 qzvhMSKxgDO0Q==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Brian Norris <briannorris@chromium.org>,
- Alan Stern <stern@rowland.harvard.edu>,
- Sakari Ailus <sakari.ailus@linux.intel.com>,
- Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
- Linux Driver Core Development <driver-core@lists.linux.dev>
-Subject: [PATCH v1 0/4] PM: runtime: Close some gaps related to autosuspend
-Date: Thu, 19 Nov 2026 21:13:03 +0100
-Message-ID: <1978814.tdWV9SEqCh@rafael.j.wysocki>
-Organization: Linux Kernel Development - Intel
+	dkim=pass (2048-bit key, unprotected) header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=jvd3YT99
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 206D21D870CC;
+	Thu, 19 Nov 2026 22:13:04 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yoxcu.de; s=dkim;
+	t=1795122786; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:content-language:in-reply-to:references:autocrypt;
+	bh=9bLp41yWGVBeXMVIJhS7gmZEvxTVo+RBBhrfdyjbS2A=;
+	b=jvd3YT99x+GBXqdLpajuMPhgyTTimkPwdHIZ7aNIqimUgkcEUkwXn+KK724DXVPAQQkr61
+	bqt5uQWX3iIN8uIDGaQhBw40uPdjCgEc7LJ0y1bhLK9ELG2y9mzuFnL+wUKCT8Sg/ylfhn
+	2+1DPXyGQJR6qinS96124oN3qcJSiWDzBzreTTrRVYLFalv8bYgzLwmIGZ1XqrGWsC572R
+	WqxjNh0hhVviLWpwX8+2rWYid8AISZG/pByw3kuE/i4n/72Q165BS72iErb0FIOX/HiuHc
+	F/HYVuAPJr3Jl0QhvtDyCxfOL4aKjGyUaen2xdAue++uDSDZc4IfjEIQah5eyg==
+Message-ID: <bb3baa94-f608-4fa7-aafe-9cb6619d186d@yoxcu.de>
+Date: Thu, 19 Nov 2026 22:12:59 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,42 +56,137 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC 0/2] interconnect: qcom: sdm845: Drop the bootloader
+ vote on ALC
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Georgi Djakov <djakov@kernel.org>, Mike Tipton <mike.tipton@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, linux-arm-msm@vger.kernel.org,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261013202611.3070778-1-mick@yoxcu.de>
+ <d58c1d15-49c3-4740-b24c-17b850b3ddf3@oss.qualcomm.com>
+ <2f78c7a6-5955-4d21-8f61-b3199b493840@yoxcu.de>
+ <36d49272-f164-4bce-8203-622038d35e8c@oss.qualcomm.com>
+From: Michael Auer <mick@yoxcu.de>
+Content-Language: en-US
+Autocrypt: addr=mick@yoxcu.de; keydata=
+ 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
+ ShbHn51QMVl4y3nkTQ==
+In-Reply-To: <36d49272-f164-4bce-8203-622038d35e8c@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Last-TLS-Session-Version: TLSv1.3
 
-Hi All,
+Thanks Konrad, that is much simpler than my version. I'll test it on
+the OnePlus 6 and send it as v2, without the binding change and the
+dummy node.
 
-This is a follow-up series for
-
-https://web.git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=26236a3e8803f7e1ace104020d7f006edb220116
-
-which is in linux-next.
-
-First of all, I was mistaken when I wrote this in the changelog of the above:
-
- Updating the last_busy timestamp when rpm_idle() returns an error
- without calling rpm_suspend() is not useful because the device is then
- going to remain active for an unknown amount of time and its autosuspend
- delay needs to take effect later.
-
-There actually is a reason for doing this which is that an autosuspend timer
-(left behind by an intermediate runtime resume) may be running when rpm_idle()
-runs and that autosuspend timer needs to be prevented from using a soon-to-be-stale
-last_busy timestamp value.  There is one more issue related to that in
-__pm_runtime_idle() and both are addressed by patch [1/4].
-
-Patch [2/4] simply removes spaces preceding labels as a matter of cleanup.
-
-Patch [3/4] removes one more difference in the handling of devices that are
-resumed by rpm_resume() and those that are already active when they are passed
-to that function.
-
-Patch [4/4] drops the direct pm_runtime_mark_last_busy() calls from rpm_resume()
-that are not needed any more after the previous changes.
-
-For details, please see the patch changelogs.
-
-Thanks!
-
-
-
+On 11/13/26 10:23, Konrad Dybcio wrote:
+> On 10/23/26 10:02 PM, Michael Auer wrote:
+>> On 10/19/26 2:22 PM, Konrad Dybcio wrote:
+>>> ALC essentially translates into "prevent DDR from sleeping to reduce
+>>> latency", I don't know what a good framework for that func would be,
+>>> but interconnect (even though it has the plumbing for BCMs) doesn't
+>>> seem like it.
+>> Thanks, that explains why the vote is so expensive in suspend.
+>>
+>> I don't really want to add a consumer API for that.
+>> I only want to get rid of the vote the bootloader leaves behind.
+> For a start, let's do something like:
+>
+> diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
+> index 0880a287b0c0..f9d51f3d586d 100644
+> --- a/drivers/interconnect/qcom/bcm-voter.c
+> +++ b/drivers/interconnect/qcom/bcm-voter.c
+> @@ -390,6 +390,46 @@ int qcom_icc_bcm_voter_commit(struct bcm_voter *voter)
+>   }
+>   EXPORT_SYMBOL_GPL(qcom_icc_bcm_voter_commit);
+>   
+> +/*
+> + * ALC is not modeled by any icc node, but the bootloader may leave it voted,
+> + * which prevents the SoC from reaching CX collapse and AOSS shutdown.
+> + */
+> +static void bcm_voter_clear_alc(struct bcm_voter *voter)
+> +{
+> +       struct tcs_cmd cmd;
+> +       u32 addr;
+> +       int ret;
+> +
+> +       addr = cmd_db_read_addr("ALC");
+> +       if (!addr)
+> +               return;
+> +
+> +       tcs_cmd_gen(&cmd, 12, 0, addr, true,
+> +                   voter->tcs_wait & BIT(QCOM_ICC_BUCKET_AMC));
+> +
+> +       ret = rpmh_write(voter->dev, RPMH_ACTIVE_ONLY_STATE, &cmd, 1);
+> +       if (ret) {
+> +               dev_err(voter->dev, "Error sending ALC AMC RPMH request (%d)\n", ret);
+> +               return;
+> +       }
+> +
+> +       tcs_cmd_gen(&cmd, 0, 0, addr, true,
+> +                   voter->tcs_wait & BIT(QCOM_ICC_BUCKET_WAKE));
+> +
+> +       ret = rpmh_write(voter->dev, RPMH_WAKE_ONLY_STATE, &cmd, 1);
+> +       if (ret) {
+> +               dev_err(voter->dev, "Error sending ALC WAKE RPMH request (%d)\n", ret);
+> +               return;
+> +       }
+> +
+> +       tcs_cmd_gen(&cmd, 0, 0, addr, true,
+> +                   voter->tcs_wait & BIT(QCOM_ICC_BUCKET_SLEEP));
+> +
+> +       ret = rpmh_write(voter->dev, RPMH_SLEEP_STATE, &cmd, 1);
+> +       if (ret)
+> +               dev_err(voter->dev, "Error sending ALC SLEEP RPMH request (%d)\n", ret);
+> +}
+> +
+>   static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
+>   {
+>          struct device_node *np = pdev->dev.of_node;
+> @@ -409,6 +449,8 @@ static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
+>          INIT_LIST_HEAD(&voter->commit_list);
+>          INIT_LIST_HEAD(&voter->ws_list);
+>   
+> +       bcm_voter_clear_alc(voter);
+> +
+>          mutex_lock(&bcm_voter_lock);
+>          list_add_tail(&voter->voter_node, &bcm_voters);
+>          mutex_unlock(&bcm_voter_lock);
+>
+> Konrad
