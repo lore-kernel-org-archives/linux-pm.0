@@ -1,31 +1,31 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795096339;
-	b=og8pGNlU/nZamEFdgBe4t2vTBdaDwQIH5qstofwpJlGQnRWkNE3fMeKXWw9JGDgPAdqt
-	 6BOX5zLzSBGTfAtbpKtxq80GlhGYrMK1H6z7rQ9sqvwhuHJ+cD0FBmb24blNvijEhd9Oy
-	 TDqr4MTRuTnnLqMOJreRDOHlsOtwn/5wOaW23XlUbxC3u4xNBteVox9JTU7AP5NBVI/q9
-	 XEisCXnMxT4S6yqrSOuB/qAXDqwZ4K+Ohw5pd+E0KM6wMRAf4AWyRtG2GvqxzJ6a79zec
-	 mSMrrQTRVAlQAqUIC4l8TwDN1RPUI+IltMVli2n8wpXfwBhkQL8fyDsk7jb134sMC7A==
+	t=1795096344;
+	b=fMu3d/pnzSNpgVtvB2kETHQU5Ek/yNTdSCidOJeMX/H8eidaCnHrFL96PiGV5lHjwis9
+	 jjvR0dnaYatrLhgv9elqq8IrlETRURpnkrj5jQNVUAGewMYVigyjPhx4FCp4bb884sOnf
+	 dN/ULpXtCGAWgXfnz+dtLBmwCg6IIekFzzFLWCXpn9iD0ThdmJRJfh1rPa81K6bG6GnoU
+	 6IHveOHY+CeTznLZWSpUWwoe3VyhBCRM2FPAQfepp2Q1rqlQ+qmU3X0g9p/hZWAzHxzIt
+	 NA+i/MKs82w+cKghBZRTV6lGcNt0qe2iECdinRyHtuWt/utacAkLJgnF7jGKImxNCYg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795096339;
-	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=AMAYEv8YrNXF1Htx6L31nCeOdPyJr9slwQNX9p/dNI0=;
-	b=1B8Jo+NeH2nXWWqW5Qx7Y11cS1FT59Y+J4PaZ+C2pcQ8u/5OXQD3orGwrwrJ6JbLmclx
-	 3jAHgQLXAcjwcPi8M6B9CydBMQ2cJpDTSsIDnLBEfF8CjQxcqE4yGwIu6XQf+6HIZgeG2
-	 2Le4EM4KJkgQaJZ+72dWCXvI58VivIhIQQxEZsu61rPXMhsF/OJ80xnpH/LvTgrrfc3Zc
-	 DnvJZ8ZoEBkJy2/tQDg3cpzJqbSB6pOUSJ0aWVudyIO04RjPEaPQAtnyM+6YaNbb3d2lV
-	 gENmQRbLgeEwa/qLVhhwyl/5/rBZNW/Rz92eH8rF10ff3leuk1M1ZiAtss3LAfJ4WKw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795096344;
+	h=Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
+	 References:MIME-Version:Content-Transfer-Encoding;
+	bh=SY150LehtwY+8E3DsboI1K8P1YxqiMEO52EgHejX3Ak=;
+	b=c8P8yzQWiIv0dYD0vcAWo4Xmd9SuVx9WyaXxZv80tFzh0THpiQZL0Pi0gGZzAW/rykn5
+	 sFbZfWCA8f2ZRIuXFIk5HZD1uWH9WGEzRQYlRRN6ONixVXJS0HXV1ZzMvuDJFVxKpKBM/
+	 n0WXuzN8UDYXTBAn1jNZoSKzK10J7hb+qNALE1LAEaO44yecb3/MA7sBv5Jx2BwPiFtAN
+	 Yu2o+sGmoGnhFyySloSc9pcZMSHRZjm2j5girJVSgdvfUZZCigFhlPa8Yx0BPkBoC3bJg
+	 KHXGE14EuY2vmr5nUZbat4qugdiQmJkPAmX/rZ8PmwZc7pjx4UfPM4cNee4L2PLjxQg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AA11606A320;
-	Thu, 19 Nov 2026 13:52:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CB311F000C4;
-	Thu, 19 Nov 2026 13:52:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C811606A325;
+	Thu, 19 Nov 2026 13:52:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3C0C1F000C5;
+	Thu, 19 Nov 2026 13:52:21 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
 	Svyatoslav Ryhel <clamor95@gmail.com>,
@@ -38,10 +38,12 @@ Cc: mfd@lists.linux.dev,
 	linux-pm@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/4] Improve MFD_ASUS_TRANSFORMER_EC dependencies
-Date: Thu, 19 Nov 2026 14:52:08 +0100
-Message-ID: <cover.1795095742.git.geert+renesas@glider.be>
+Subject: [PATCH 2/4] input: keyboard: Enable compile-testing for KEYBOARD_ASUS_TRANSFORMER_EC
+Date: Thu, 19 Nov 2026 14:52:10 +0100
+Message-ID: <27990d37c1b7854d9d5f0d0a0f45193af4b9ec51.1795095742.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1795095742.git.geert+renesas@glider.be>
+References: <cover.1795095742.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,42 +55,27 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-	Hi all,
+The Asus Transformer's Mobile Dock multimedia keys driver builds fine
+when MFD_ASUS_TRANSFORMER_EC is not enabled.
 
-This patch series improves dependencies for the MFD_ASUS_TRANSFORMER_EC
-MFD driver and its various subdrivers:
-  - The first patch adds a missing dependency for the MFD driver,
-  - The other patches enable compile-testing for the input, serio, and
-    battery subdrivers.
-
-Note that compile-testing cannot be enabled for the LED and charger
-subdrivers, as they have a hard dependency on the MFD driver.
-
-Thanks for your comments!
-
-Geert Uytterhoeven (4):
-  mfd: MFD_ASUS_TRANSFORMER_EC should depend on ARCH_TEGRA
-  input: keyboard: Enable compile-testing for
-    KEYBOARD_ASUS_TRANSFORMER_EC
-  input: serio: Enable compile-testing for SERIO_ASUS_TRANSFORMER_EC
-  power: supply: Enable compile-testing for BATTERY_ASUS_TRANSFORMER_EC
-
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
  drivers/input/keyboard/Kconfig | 2 +-
- drivers/input/serio/Kconfig    | 2 +-
- drivers/mfd/Kconfig            | 1 +
- drivers/power/supply/Kconfig   | 2 +-
- 4 files changed, 4 insertions(+), 3 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
+index 728bc068667e7ee9..2709cff6d00bc93e 100644
+--- a/drivers/input/keyboard/Kconfig
++++ b/drivers/input/keyboard/Kconfig
+@@ -91,7 +91,7 @@ config KEYBOARD_APPLESPI
+ 
+ config KEYBOARD_ASUS_TRANSFORMER_EC
+ 	tristate "Asus Transformer's Mobile Dock multimedia keys"
+-	depends on MFD_ASUS_TRANSFORMER_EC
++	depends on MFD_ASUS_TRANSFORMER_EC || COMPILE_TEST
+ 	help
+ 	  Say Y here if you want to use multimedia keys present on Asus
+ 	  Transformer's Mobile Dock.
 -- 
 2.43.0
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
