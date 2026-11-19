@@ -1,66 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=117.135.210.5
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.9
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795066133;
-	b=flb6sxc29JVA2eQHW6E/XzEFFoAwHgncBqyrxtp3iNo4AeinSm7nArTzqBlW7qZIJWAt
-	 vVom7oVXYHjgbDC7X1k1RT8ol7qULM6vM5RsKAFZN6RJLku1DXWw+DQKb4Ss99iItUcC5
-	 OTN36OOsJeUEUeYiV2RT0qU+UoUowi7UvL9TDtVNeD1QcCVFxnKaKMCWwZH/TGw8YgmSZ
-	 V67lhOUahJ/vu2W+YN5+zFl1vhCRC6CkelW5ISPLXtQTyWXngqy3uVXV3eX3sYROxzQVj
-	 laZ1GqEiCO564Tb4grNlV7ywFX+7eSc1luS0YpeN11kNNbfjfSSVKW1RvCTwWyyCKzQ==
+	t=1795066448;
+	b=UoXEQQ8yKK3vFv9ZiOqoYC4DQ0Ja5EddoFbHJGcnj7El0jJcycHyGoTO3ZBQn6fK9A21
+	 5ZWgbL0ofK/uymKx/WmYzA8XyL4QLgGhP0IZ6xHZ/LeT7ibKZBgL80AHVAW2w/HPva7Q9
+	 T9Flon+1fZM/Tk/5oLa8ZNlK6PDMC8K5w+KeFgSHmmIYzd3xH4bj+7ejMCNJAjPGkvNDY
+	 z5dzgcZWggJ8/SGpEpi6Ghb/k6STR+irkq+uvnp8UorRn+ucTlFSgkxGldEas8pcSkPRK
+	 TmYUf6GCmfSw8kx8PbWjsCtoN7NSfGG8eXQSoV+49ghLZR0l2SCLBJgJoDAYYR8RSrw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795066133;
-	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-CM-TRANSID:X-Coremail-Antispam:
-	 X-Originating-IP:X-CM-SenderInfo;
-	bh=CRoVCX5qUvRVZQYCG7l49zxIQXQRCkCrH+z2zQB6lGk=;
-	b=Ug+Fi2syT1YJbju9Rriosr5FSzddLzGzhVOiJX2o64zjea0LCTmJW74E3bEwoUidOrZG
-	 MHXon/EM5V8lwXly+gZIiPGpdx+UOU47L0skaOMp72UFuGIGMirfmmIo4KOydJDzROzjm
-	 HyjbK9/FR278f3uPPDOTBo7OCWMq5qGIoJ25vNXVRqWrMm9VXhhEkFVb3f1g/KY92AqkF
-	 TNiMWWXt+9aFqWtUdjLj/ARDd1TXQGIRFMuwxSzOpSDCVV3tLd1H8SCJTKSyz1rcoGFU5
-	 gQzHXTfh5BUrc4OgYeqDViBskK/YUGAdtFwUr7rxS1qyiCsUlZGs64GWyP4pTTzLlvw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795066448;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:User-Agent;
+	bh=duhbiXksGFrPIHyXVWTK8sp/MGLnQlxtL+yPNY6djtQ=;
+	b=VUpCDBXE2JK6pkz9QVrTJiDEVSqIzK81f3EdizRh7vbRc9PE2p3fOWgazsAM3+DoEc4W
+	 Nu3frjldZcz+mGgoPSZOFUq54elLkLJ+bGJt9tgavGfudoMelmEY/LBoZUoC1vxcg+q+2
+	 xr07K1FFWLWQg8tJ+KhXukbsxYUstjxEeZRy7tSnJAikqogmKM4v7rOjyGalH81R7OgIq
+	 cBXYctgvBzFfaYjn6gcobG6yaMODYhPBxMlNRJMn+rC0hTfk56eHkXT4Tjb0ukBnQUbsv
+	 cYJnbb/u3zG/er+hnvIhagJBQlTpB9I8sR00R0B0QqXqRHdwflfpCNumpYtqhz/3Ubw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=163.com;
-	spf=pass smtp.mailfrom=163.com;
-	dkim=pass header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=klkfEfXt;
-	arc=none smtp.remote-ip=117.135.210.5
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=C1gmdFMj;
+	arc=none smtp.remote-ip=198.175.65.9
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98314606A330;
-	Thu, 19 Nov 2026 05:28:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 98314606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DC3C606A320;
+	Thu, 19 Nov 2026 05:34:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4DC3C606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=klkfEfXt
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=CR
-	oVCX5qUvRVZQYCG7l49zxIQXQRCkCrH+z2zQB6lGk=; b=klkfEfXtWnpsJ4mzqN
-	03kCdLrzIRy2uwkyqCewS0H6eEnrCWrNTU/hDhwAAOSgVXBicQZFk195272cVtQU
-	5SASYTBX+eR/Eql+pJtxxRe7dp0dMiPkD8oiZCnBHtyamIsvAusMwveimZnMZyBB
-	Vzo5GCeY0LmVD8iRFbIOFRmtE=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wDX3+zviP5qaWbXIA--.59393S3;
-	Thu, 19 Nov 2026 13:28:17 +0800 (CST)
-From: Haoxiang Li <haoxiang_li2024@163.com>
-To: viresh.kumar@linaro.org,
-	rafael@kernel.org
-Cc: zhongqiu.han@oss.qualcomm.com,
-	hector.yuan@mediatek.com,
-	matthias.bgg@gmail.com,
-	angelogioacchino.delregno@collabora.com,
-	linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Haoxiang Li <haoxiang_li2024@163.com>
-Subject: [PATCH v2 1/2] cpufreq: mediatek-hw: Release resources when hardware enable fails
-Date: Thu, 19 Nov 2026 13:28:10 +0800
-Message-Id: <20261119052811.2877720-2-haoxiang_li2024@163.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20261119052811.2877720-1-haoxiang_li2024@163.com>
-References: <20261119052811.2877720-1-haoxiang_li2024@163.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=C1gmdFMj
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795066448; x=1826602448;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=rUwySB+EKtGnAKmhHNKadJinh4vPXLfcbG1RLYUvgas=;
+  b=C1gmdFMjJ8iDhd0UN1Yek1pQRL05u6VVnncPJcn+BrQP75kuX6qQEXW0
+   aEozaPNdWPxM4qWaXecU5EqMYmxJpS/7xu8oNB9j2V7v3NP06YxMvQ6gl
+   SaQVsrUoi4s8l7scFG/FtiXJEnMWsL7/6rwCpUsnDLtHXOZ185fQb1nwb
+   q6f24/7fAVj43xYe+W6lAtA9JCJAxy4IowWg7ZUwV5fpyaKkEO6hKURLz
+   LictgF4CYs8/+Uzn/y0/Yv/UdcUrGF8FD18vZhV5rR805609OmZAj33vI
+   rPGABhkSU4adDEAB5gIBrbFWLUTtev+jgCyK23TgW+YlE2wLqrEuqbPnZ
+   w==;
+X-CSE-ConnectionGUID: OesxkPDQTha8TzLudQoNiA==
+X-CSE-MsgGUID: MIRJU2gKTGWJ3+1QpYuORA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3748711"
+X-IronPort-AV: E=Sophos;i="6.27,220,1787036400"; 
+   d="scan'208";a="3748711"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 21:34:06 -0800
+X-CSE-ConnectionGUID: /bT2lp0RRG+nBQ+epg7gfg==
+X-CSE-MsgGUID: tIxJRLOhSGiENTrt8je08w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,220,1787036400"; 
+   d="scan'208";a="10332335"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 21:34:05 -0800
+Date: Wed, 18 Nov 2026 21:42:04 -0800
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: jez@sfcompute.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Len Brown <len.brown@intel.com>,
+	Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org, Andrew James <ajames@sfcompute.com>,
+	John Ranzie <jranzie@sfcompute.com>
+Subject: Re: [PATCH 2/2] thermal: intel: hfi: Disable HFI left enabled by a
+ previous kernel
+Message-ID: <20261119054204.GA7495@ranerica-svr.sc.intel.com>
+References: <20261028-hfi-kexec-v1-0-956234dcfb2b@sfcompute.com>
+ <20261028-hfi-kexec-v1-2-956234dcfb2b@sfcompute.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -70,76 +87,94 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wDX3+zviP5qaWbXIA--.59393S3
-X-Coremail-Antispam: 1Uf129KBjvJXoW7KFyxtryxJF1fJF4DWFyUWrg_yoW8Kw1xpF
-	W3ZrWYyr45XF4qqw1xCF4DuasayFs2y345W343A34Sv3ZxAFy5W3WUuFyUAFZakrykGF12
-	yr4rtayxuF4kArUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pMhFIUUUUUU=
-X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbC7hG4J2r+iPFyGAAA3n
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261028-hfi-kexec-v1-2-956234dcfb2b@sfcompute.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 
-If the CPUFreq hardware fails to become enabled, mtk_cpufreq_hw_cpu_init()
-directly returns -ENODEV without releasing allocated resources.
+On Wed, Oct 28, 2026 at 12:14:46AM +0000, Jez Ng via B4 Relay wrote:
+> From: Jez Ng <jez@sfcompute.com>
 
-Reuse mtk_cpufreq_hw_cpu_exit() on this error path to clear the hardware
-enable request, unmap the registers and release the memory region.
+[ ... ]
 
-Fixes: d776790a5536 ("cpufreq: mediatek-hw: Fix double devm_remap in hotplug case")
-Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
----
- drivers/cpufreq/mediatek-cpufreq-hw.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+> 
+> When the first CPU of a package comes online, check
+> MSR_IA32_HW_FEEDBACK_CONFIG and disable HFI if it is already enabled. If
+> a client subscribes later, HFI is re-enabled with this kernel's table as
+> before.
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq-hw.c b/drivers/cpufreq/mediatek-cpufreq-hw.c
-index 2c57371ad502..65f15fe935db 100644
---- a/drivers/cpufreq/mediatek-cpufreq-hw.c
-+++ b/drivers/cpufreq/mediatek-cpufreq-hw.c
-@@ -289,6 +289,18 @@ static int mtk_cpu_resources_init(struct platform_device *pdev,
- 	return ret;
- }
- 
-+static void mtk_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	struct mtk_cpufreq_domain *data = policy->driver_data;
-+	struct resource *res = data->res;
-+	void __iomem *base = data->base;
-+
-+	/* HW should be in paused state now */
-+	writel_relaxed(0x0, data->reg_bases[REG_FREQ_ENABLE]);
-+	iounmap(base);
-+	release_mem_region(res->start, resource_size(res));
-+}
-+
- static int mtk_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct platform_device *pdev = cpufreq_get_driver_data();
-@@ -321,6 +333,7 @@ static int mtk_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 		if (!(sig & CPUFREQ_HW_STATUS)) {
- 			pr_info("cpufreq hardware of CPU%d is not enabled\n",
- 				policy->cpu);
-+			mtk_cpufreq_hw_cpu_exit(policy);
- 			return -ENODEV;
- 		}
- 
-@@ -330,18 +343,6 @@ static int mtk_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static void mtk_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
--{
--	struct mtk_cpufreq_domain *data = policy->driver_data;
--	struct resource *res = data->res;
--	void __iomem *base = data->base;
--
--	/* HW should be in paused state now */
--	writel_relaxed(0x0, data->reg_bases[REG_FREQ_ENABLE]);
--	iounmap(base);
--	release_mem_region(res->start, resource_size(res));
--}
--
- static void mtk_cpufreq_register_em(struct cpufreq_policy *policy)
- {
- 	struct em_data_callback em_cb = EM_DATA_CB(mtk_cpufreq_get_cpu_power);
--- 
-2.25.1
+This is not true on all processors. Some ignore later writes to
+MSR_IA32_HW_FEEDBACK_PTR and, when HFI is enabled again, keep writing to
+the table programmed by the first kernel after reset. Perhaps this
+sentence can be qualified?
 
+Also, would you be willing to check whether your Sapphire Rapids systems
+honor later writes to MSR_IA32_HW_FEEDBACK_PTR?
+
+[ ... ]
+
+  
+> +	/*
+> +	 * A previous kernel may have left HFI enabled across kexec. Hardware
+> +	 * would keep writing to that kernel's table, in memory this kernel now
+> +	 * owns.
+> +	 */
+> +	if (hfi_disable_if_enabled())
+> +		pr_info("HFI left enabled on package %u, disabled\n", pkg_id);
+> +
+
+By the time this message is printed, memory corruption may already have
+happened. Perhaps this should be a pr_warn() that mentions the potential
+corruption explicitly?
+
+As you acknowledge in the changelog, this code runs rather late during
+boot. HFI could be disabled much earlier, from intel_init_thermal(),
+which runs at CPU identify time: from start_kernel() for the boot CPU
+and from smp_init() for the APs. This also works when the next kernel
+has CONFIG_INTEL_HFI_THERMAL=n.
+
+Maybe something like this in therm_throt.c or intel_hfi.h, called first
+thing in intel_init_thermal():
+
+static void intel_hfi_disable_stale(struct cpuinfo_x86 *c)
+{
+	u64 msr_val;
+
+	if (!cpu_has(c, X86_FEATURE_HFI))
+		return;
+
+	if (IS_ENABLED(CONFIG_INTEL_HFI_THERMAL) && system_state >= SYSTEM_RUNNING)
+		return;
+
+	rdmsrq(MSR_IA32_HW_FEEDBACK_CONFIG, msr_val);
+	if (!(msr_val & HW_FEEDBACK_CONFIG_HFI_ENABLE_BIT))
+		return;
+
+	wrmsrq(MSR_IA32_HW_FEEDBACK_CONFIG,
+	       msr_val & ~HW_FEEDBACK_CONFIG_HFI_ENABLE_BIT);
+	pr_warn("CPU%d: HFI was enabled by a previous kernel; disabled it. Memory may be corrupted.\n",
+		smp_processor_id());
+}
+
+intel_init_thermal() also runs when a CPU comes online after boot and
+on resume. Such a CPU must not disable an HFI instance that the driver
+enabled for the other CPUs of its package. intel_hfi_disable_stale()
+therefore checks system_state. Before SYSTEM_RUNNING, no client can have
+asked for HFI. SYSTEM_BOOTING would not work: the APs come up during
+smp_init() with SYSTEM_SCHEDULING.
+
+I tried this on a Panther Lake-H system (one package, 16 CPUs). I
+disabled the shutdown path of patch 1 and subscribed a thermal netlink
+client to leave HFI enabled across kexec. The boot CPU disabled HFI
+before smp_init() and acpi_init(). With your patch 2 alone, HFI remained
+enabled 2.9 seconds longer. You should see a larger difference on your
+systems, since 21 of their 30 seconds were spent in acpi_init().
+
+A package with no CPU online at boot, for instance with maxcpus= or
+nr_cpus=, keeps writing to the previous kernel's table until one of its
+CPUs comes online, if ever. The check you added in intel_hfi_online() is
+still needed to catch such a package when it comes online. With the
+earlier check, that is the only case in which your check can find HFI
+enabled. Only the syscore shutdown callback, in the previous kernel,
+protects the time before that. Could the comment above your check and
+the changelog say so?
