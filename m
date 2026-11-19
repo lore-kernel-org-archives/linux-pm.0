@@ -1,96 +1,106 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.69.25
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795057064;
-	b=ggQGHoB8PaBzyaVPhQjxp0JzUElWcNu4mZRlP9z4Sd7IeOH05dAHWja4Z7hYPozn2XCr
-	 /jgjDhGXJ7HZ9xjNwb4OFjMcf0PwKWgitcaZ0YeF+hueySGUCJI8tBtI3GoZ0IzoLyhxn
-	 zWgvpbXzURjswRsm3z5LTgchMcFy2GqjnTOhrGt9zc21OT90X8zUpfJRpCzLWUGR8NUQE
-	 QBcIfo/PFGpePAtts8hBaAK/Md83Eg9lCQi4EV6vcXTpLjq0rdfRyy1fCPpxwjiLeSQv/
-	 8fLkmav9tkrfzQsmWZYJ4MXUXdoQCH4aen87Ig5c/JVXpMe64etkMcnM9QFAcxNo8MQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795057064;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:Content-Type:Content-Disposition:
-	 Content-Transfer-Encoding:In-Reply-To:X-ClientProxiedBy:MIME-Version:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
-	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
-	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=VTw/13oYuLOJUeL3tzDZYQixvUsZprFaay6RceG7kmM=;
-	b=jhBZ7V8/0L2zLqRa+p+Sj+3aRSTr83kEugXVG/WgH0ABvSX5wBYtzNGlq4ScaLeJTnl4
-	 UCNVwX8SX77OLXFSlXhOHd1NwGd7GhUrw2CAWsqwWFe+TnnqGLszfvzcpP1lrTOl3KvjN
-	 hl9UvVA7TeheiYK+FZ8jszYwja69gJRlaKhdNT/uM+MADTXcRh37Xly53bnPr/vCI/4Nw
-	 7tMa5VKYHXeAg+tWdbWaYfC+M1l2Tx0Nfc/SNMV2IE61IOGhNpAZnD2DEpupz/B7AwkoW
-	 JDgKbQyEUFsVld6qTOQJtDCRTRaw0v+Do1qGK/Bsyem4l7/qiPqNBZdVE97SRhbLOeQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.nxp.com;
-	spf=pass smtp.mailfrom=oss.nxp.com;
-	dkim=pass header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=b7n4f33V;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.69.25
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010025.outbound.protection.outlook.com [52.101.69.25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.181
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795063762;
+	b=vBqCld7WfFjCDdSwwvPGS+QGY/7ZNdqzt3zNx03A5Ebi+2Umn+t7hKyIcOaA6eJh1tda
+	 GftPlImWJ3RtqppGtBR5odLNt/v/ECZhOb68qBAX/YtglLLC9hmiTu0mFqdfHT631jBsL
+	 fC1ZGoAz3fsOtE0nlonihnb9s9AcmGCNAZrue7gr+p2l50w2iYfTzcQ0LxU/uruqyD9gm
+	 f9+2wy+I4ZNKf3yUEiWKKZKoZNGdCcN0lhPUWFEl26J6YgUUW5U75APEjLEPlcy0jiQJU
+	 oxJUQOpf20bjwm+J8Sz4qM/8Bw8R8C/UmIMO3dcoS7JyRLHyty3v6sxFGwezcLzxFwQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795063762;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=Wm21ueq0I/1G2UOkIkQFO3tHFpTVrQyEUMIC6/qAqE0=;
+	b=nC3u6AIK11R2y0WJwzLaoKTFLRQRHSHT0UMHyuf1koBOoAOVXaa6TX3iNDhJhfMIJsjI
+	 b+Wi/W2/9vszS98b4GxUDHZbKzS6aCvbCIeIzZWy9cP9fawEXPE6pGNSWaxfYIvfk4T6S
+	 Cx9wQZIrRoMViy6ZKquaHtewhSajNfMfi3x3qAjZsKr6yMpTL0M+MswI8v0FYFA8D4IrM
+	 T1Po2UKOSYk6lo+VVGQAe9kYeHapb+vUWQLijwQWc3hRY7ZzHZgeP+iS4KWD8dydFdTBi
+	 2LYtaRT0t8B6sZNUUUdnMKrYdsFFeQOcIzPiAbNxYVFTOA/JW9puGUMRq/eurrH4QEA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=K3i3fUcx;
+	arc=none smtp.remote-ip=74.125.82.181
+Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03FE660A2604;
-	Thu, 19 Nov 2026 02:57:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 03FE660A2604
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D22C606A326
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 04:49:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9D22C606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=b7n4f33V
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=e+PeOuckT4U5qYtLFxpCpy+UuFmQSfY3Oiiy7rSaT428dzS0hhZLchhZ5kUdU9FJYpTBwDosgzejjQs6J9W5R6JIdfgvPXTBulCyMAzCU3RZ6Yq739QNy/HtSJypn35rA4OO+WNfykJZBUgzKJktRHnh84KKMacMzkyA4ETNfsYuUh1OmTo1g5AgJXtqQewSO14VUN8IMSNxH7rZgfq2UNFS9BUK+nVjCSIHWAR+Jpwd+TOIioL1XnD25cY5XguMaHaXK9x8/v9bbK6Ax9jXyXqarlepcZ9HQYdOxdXM3jMYWIvniPsvz4MWCaygSIPja/go6Y6enjxxEm4olWY3hw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VTw/13oYuLOJUeL3tzDZYQixvUsZprFaay6RceG7kmM=;
- b=szlP4cV6thxiCD4ATqcw0IbMTa6r4CZP/Zh64OrrJsPcgvpqb2Wbj66hPNuJ5Wy0/bFqCEP1YoKc3Qxlgd20TnCtkkJJ/zzB5wSWtkZPp28Jc/Diej3ZGCFS7b1+j15juKthK0YE0mo++GIo4rDMeBKy9bEaH1oDaQb928uZ63ZYEXRrRGR4ytEF7zZinHSvSE1ClTZcCNnbNbsBZbkzZM10bubzf+wa5YLhcr2efAtgPq4fbBHlsqw79EwZLiXvFHwgOlqEEDKMa39ee5QbCi4DKNftyI+K+vhPYDRVpkFqsdCpshSy4D/h9BdXQH8HdkxtMqs4+m1Qzo1bR35Ytg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VTw/13oYuLOJUeL3tzDZYQixvUsZprFaay6RceG7kmM=;
- b=b7n4f33VaN9uLLTj+ATJhHmcDP8s/4ALDqF1vnQUHFRqGU5DlzXaZXyEl0SPMjdfAf1+e2u9uNsXCgXKuVX3Lqby5N99EeXSwM8p85ppSeebxl3x1sbvQv3177AuyFa/zQU4xmdlqvPvoFvoT6HUGMCJb9+JOtakRHhN5bmRgYhpeuz2l7ALSAIw446o4g4V8l3EnfA9F1dBCqZCf8aMDyrWdaCuKFowBXQgDBSh9GE7zm5yH/6XsizVWXHGRh4Ru4kGTFVGMSYXe57XqmyGrHq1T9qJquC1drZfIeKlu638tE/Hear7J4vlzUlsstZ56aQSvEBOUC/1N5pHfmuEMg==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from MI3PR04MB12438.eurprd04.prod.outlook.com (2603:10a6:290:76::14)
- by DU2PR04MB8967.eurprd04.prod.outlook.com (2603:10a6:10:2e2::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Thu, 19 Nov
- 2026 02:57:41 +0000
-Received: from MI3PR04MB12438.eurprd04.prod.outlook.com
- ([fe80::c715:c32:8bb1:b70b]) by MI3PR04MB12438.eurprd04.prod.outlook.com
- ([fe80::c715:c32:8bb1:b70b%4]) with mapi id 15.21.0639.010; Thu, 19 Nov 2026
- 02:57:41 +0000
-Date: Wed, 18 Nov 2026 20:57:32 -0600
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Linus Walleij <linusw@kernel.org>
-Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
-	linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH] dmaengine: ste_dma40: Use power domain for LCLA SRAM
-Message-ID: <av5kXd5Kp0e24FER@SMW015318>
-References: <20261115-ux500-dma40-powerdomain-v1-1-da8b6e1a0376@kernel.org>
- <av4CJkri6LQO9FxG@SMW015318>
- <CAD++jL=ZFJFTV6zY=SA+aHMQyjw4MQ8zFgWmUUBEoH6vKDLTsA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAD++jL=ZFJFTV6zY=SA+aHMQyjw4MQ8zFgWmUUBEoH6vKDLTsA@mail.gmail.com>
-X-ClientProxiedBy: PH7P221CA0054.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:510:33c::34) To MI3PR04MB12438.eurprd04.prod.outlook.com
- (2603:10a6:290:76::14)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=K3i3fUcx
+Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-382f4710a17so2401143eec.0
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2026 20:49:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1795063761; x=1795668561; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Wm21ueq0I/1G2UOkIkQFO3tHFpTVrQyEUMIC6/qAqE0=;
+        b=K3i3fUcxHf1/Pj9XgZKuGfkJ0jESpo4qE6AcK6k1zp7Ayou9cPKoTzxcrzl4Z6DkEX
+         9HqBbINWlHurD/Fe2H+AJGDVNJdqcczOypZg+7d5FTUSnA4VnHxRV5wdN7Hw5nrkCmdA
+         fcZNoGm+hs97H9vgFEBD1kOEWgUD47Gtr8L2IBLLK4+zS838mjV5PiSi39jJJl8uzKNV
+         YC0YMO7TTf0bIn68Zw/uE3N+YQGmoZAo8kvjnLf3PcNaXz4tXemOM6+DJUoAXvbbzzkL
+         5L1sowWXUdWSi8M+h3+VpYWyST6dOU2THQxdRdOHMMVlg0E0lArwKkxcLz2uRBI73ueT
+         aunA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795063761; x=1795668561;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Wm21ueq0I/1G2UOkIkQFO3tHFpTVrQyEUMIC6/qAqE0=;
+        b=YL/Ge898jh+5vzEuowpvktFmKAqNcup/GCHKqbMbjI4DVEG7RnRB+sWBOZKIDZ7rkk
+         g643ZiKAL+swVhRaRnZLOv7kOz86R1fLE5yMZipBluULiO09Ysn8SzTBXYJbBUwAmNeW
+         gH5zcTxTbnbATBOhd6WAJtl/SRPDjcIGxILWseWTXT/hvrbsOANtfRk2jRBZYdZhfqsn
+         AUVGjD97sDsKfScP5913R+4t5f8celBZXgcrQ+e2GqSgWajfh0OI0Aa1xdSbqwapZAq9
+         9SJ201WyVdiHPIl2iCVfVtVr5OPoObq4WlbR0Mp5CxjTijgD5nV5JlsL1YnpUZaysYH2
+         z0lA==
+X-Forwarded-Encrypted: i=1; AL+hErE1BIbqvFM30wmBQZljsIxNq/iGo73wDG3N6fAuXMwri6/gY9SUsNVAf8Tjo6Ug0H9K+x7wWznsIg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8vSSO1GLDctAb62mHDdGzS/rLx//41boHy2AgaHjHmkfn45faH
+	0M63llFUlYFqWnJ+M6n0fugy7qEPzzS/4Nv0qVR/voB74Af+Jx8MHG1rn/6m84yCC2k=
+X-Gm-Gg: AZFdTZcTM9JB2nNZ9gpNZujvx93vI5cxNg30sUhGrVfP0a4aDnAQ/6Py60S7P69td8g
+	FrynD7102QFMSeByMNOUXJCWhdb83Uz8aD4HUv+zLaXsY3e1UOTy2Lcpgcc8HEPCyWXOdmED8d/
+	i4tL5Cop52EW7gR7nW63IMltRFtGduA+VsvfCFAs2UkXeRbxnFhi2eH8E9FCb8gWJKWM78yVKYo
+	rATj4k10RC0M6qhl8Ps6eVD7WYN3XwPgT40DkFb8+CeroEnrdYYsDskY2fx8NLs5Z86Q5z/+rWy
+	z0S0IJbXArs7R2+eRRDtO2HXhGmIE9NN4yrsqrAoADu/PY0OaSNpsZR3ni8kYbNvwtgs4soSjJ4
+	iO65qvLOnSqEi93E/RyZ/ToPSEIIreHv07NdzqSr8tREcU/pO7jnSaG3jhrby/CxZfyrnsobspp
+	7x65sC/QfuWdeagO2CWuBBHSlUWp6howGTtxW0M8jnj96hZUpvMMSpjyePF4khwCazjuKpuox8w
+	/ipVVw07tERUP3bIQzC51jgVa82dJRbb4wFRQE0QZd6L5rczx0CpZFpJbkmRwwBi/nlnE6zzHbP
+	mRhQdQ2JzxXIqrgHg8NpNQzkHRY+3g==
+X-Received: by 2002:a05:693c:409a:b0:36a:1bac:6bf4 with SMTP id 5a478bee46e88-38280c2fdd6mr4896083eec.18.1795063760196;
+        Wed, 18 Nov 2026 20:49:20 -0800 (PST)
+Received: from localhost ([122.172.83.36])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-382a45260a8sm22522996eec.3.2026.11.18.20.49.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 Nov 2026 20:49:19 -0800 (PST)
+Date: Thu, 19 Nov 2026 10:19:16 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Pierre Gondois <pierre.gondois@arm.com>,
+	Ananthu C V <ananthu.cv@oss.qualcomm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>, linux-kernel@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Oleg Keri <okerixx@gmail.com>
+Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to
+ non-boost freq on boost disable
+Message-ID: <av5_zDI4bg28H_6e@vireshk-B250M-D3H>
+References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
+ <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
+ <auhMD2-5FD4BqImG@vireshk-B250M-D3H>
+ <avRiWsxCEAuBouBZ@hu-anancv-blr.qualcomm.com>
+ <avwtsmp7Mqacbbtl@vireshk-B250M-D3H>
+ <av2aFWw3kh11U68A@hu-anancv-blr.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -100,96 +110,104 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MI3PR04MB12438:EE_|DU2PR04MB8967:EE_
-X-MS-Office365-Filtering-Correlation-Id: c4051709-c773-4609-2650-08df45e8e059
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|23010399003|19092799006|366016|376014|10067099003|261028144727099003|261026140227099003|261022075727099003|261026121527099003|261022105027099003|261021135927099003|56012099006|11063799006|4143699003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	y/iUblPex/4gDcfpjwDRiogSOWAHkNrNcZUPuA9P8hdtKUIM2Qcf17RpwzkXR6gD2u4LDOSobkysy9BpVeS0yk5/KT2s7ONv+8HDyM2yj4bCVFdFMLBfe3rp5r6egA1i0NTXryeiPWFAP2+NuiLrz790uLeQd8K5LU5CHzrrODvAOLI5wQpE0Fca/zNaH98bBlYrskhVKcFCECVkl51rW2exrANqEaXv3Pe0R5fDpTxhKkpX3CDFqFdPMUyeCjRDdgs3+E0H5jZ1wZxEjxTXma0xbO/4PDlrK4tZDn5kzTEzWQfn5Zbqp2EDk91LwLKMQBby5Oonmbb3ADkzaQJAbO7sEVcgW6DF+GtZ4tuHSX7xB1dhdnJEpypzwJEDXCQexOu8Wcti4to1LSjwOWvxeizz/pQUjYgkgbrQYHw7EQdI4B8Dz8k21MfR72js8O12hWj1N7Ega10Y3jQQAj/Ecx73erbXTB1NtYgC63kMV7QA0Bj4RfcCGuwTPAHzqggzaaJnT1mt0DnRK2T7+bu+PW/viLzwaq4ySIF2vA5lR5UW0/4hfpN1MLWNxcgXHT7bGJXC7AFCJoUHggoyQXkablL8dmKewmvfvrf4Pza1QC4G3Qw4g9YGkeENIBIICUAdyUh2S/ihXSZj6o+mU/O2AKQHxsR+f5wgXMdK4vFhmYg=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MI3PR04MB12438.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(19092799006)(366016)(376014)(10067099003)(261028144727099003)(261026140227099003)(261022075727099003)(261026121527099003)(261022105027099003)(261021135927099003)(56012099006)(11063799006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?emZFNlpIWWhQeGNyRGlqR2EyakdNeThUcGIwN2l2Y1FnT2lBQk44SGoraG9p?=
- =?utf-8?B?NiswQkt2SzUyaXNleEU4TGx4aXBNSTBabkVpNDlCc3BVVTZHS1pySFp4cTQ0?=
- =?utf-8?B?OWJCdXh0SHRlSWFzV0tlbUpRYmd4cS9kenhJMWpjTWlMUUJLNDZxcVhqUUxo?=
- =?utf-8?B?M1diTUlJTDBVK0NDUmF6SU5HOE94RENvbVJwWjdIbGZXMjZnU0h3MjhTcmxF?=
- =?utf-8?B?cHUzRUUrVkRnUDYrNzJVSURvTjd1d2xncU1Hb1FqWlVWa1NocmZWYmNSdks5?=
- =?utf-8?B?SFhudHdZeFdMMlpmRU5JODV1NHI2dURaYnczOE1uMEE1WXV3cVowOTRlVG1L?=
- =?utf-8?B?ZkRGU1paemZ3TkxVdmNvTWZMTmYvOGU0aCtCQnhyMllzZ3gvZ2E5TGlmaFhU?=
- =?utf-8?B?RnZWTnJVSS8yNFI0MDhYM2ViNlBRZ2tqZ2E5enhaUTdxK1F3U254MDZEOWpI?=
- =?utf-8?B?bEI4bm0zNkVYb2JmWjhSb1d3c3U3WmJiUnVMaHpOWW03d3F5Ui9aQ2dGcjRL?=
- =?utf-8?B?cmlvdmxIdldCWkxYR1BWWDlqOElPTC8yektBWnJOaUhHa2xuZEliYU1NNmV1?=
- =?utf-8?B?bmtDZkZZNjB6VncvRlVXUVQxY21CWWo2SGtGbVFHa05sVWNMYXZlMGxkUUJB?=
- =?utf-8?B?ajNmQTJKd3FIenJBL016d1JSN0NiNkJrZEtPT2prRnVGRTZSeHV1VHdpOXhX?=
- =?utf-8?B?bVMvZ3o4V0Y4S0VQaVFmZFNzREIwZnJ2dDVtbndvNUdyQmtnQ05mSjlnbmNu?=
- =?utf-8?B?WXkwcGZ4M1Z4U1RXV3pVZTJiMEhEamJhRDA4V1lDeUFqWUdEWVJFNFVMZXRJ?=
- =?utf-8?B?aXhXdUZBbWE5WG5vQnFZeUNieTlaUytIVXZHOFEraTZSek0yRm5UcEVCU1ZL?=
- =?utf-8?B?Q1FaWWo1MC9EWnRhdTg3TGpqRTBqYUhMV2Vic2lCamZPS3ZpNWdranYzNmpr?=
- =?utf-8?B?dUhEWXU1ajdOMEdsUktGWlpLNDliUGhaUTlGdHh1OGE1aUFhS0xCU3dYdXN4?=
- =?utf-8?B?YytMcWxOUk82a2wwdUZtNFQvaHpLd1pyNVBEaVBrVlB3d0FRSmxxNmt4TVIv?=
- =?utf-8?B?bFoyV1owbWROQm5ZanIzVEtMY2c4WG5Da1NkMmlubmZSdGNCbUdhRWlmUkpu?=
- =?utf-8?B?b2dwSWtTMjM4UVNIL2xkc0RCaUtPQm9wUUhnV3hEYmJ4WlVPUndLYlhWODZF?=
- =?utf-8?B?enloNEFMYVZuVGFBOFNWWFQrVWV2N2R2ODFOQ2U1K2hUckl0eDlIOXJ2V3RR?=
- =?utf-8?B?aVIwUkZQZ1VUUlpWS3V1QmdZN1YzQmUyTFNjbndPWlRkZzRIclhVSjB6OEZG?=
- =?utf-8?B?UlNkSk1sYkpGNTI3SkVNRFliRDZXdWR6M0ZkTkJhbndWNFB2dGlwemlCUFNj?=
- =?utf-8?B?TDZMc0kyLzdwemhWUlo2eWQwY0dsVE1TSVl6c3NSdnNEYUVqbEdlWU9PM3Fa?=
- =?utf-8?B?c1RNaE1Gam0ydEMrNGxMd1hMNGxIbkhDTEpRZkIwY0gwRFhNNWhkNWhMSG5h?=
- =?utf-8?B?cHNnL0RBMFVZV28veDdQT3N4NXNlYjM3Zmp6Y0ZMUktONFVrdmQ1VkN6Umk0?=
- =?utf-8?B?WG1jaFp3Tm51SGdZVVROZHNVYUd1ZWV3L3ZHYTJtNStCUm1RNFBleDF1UnFK?=
- =?utf-8?B?bnpMdGU3NjR1RXVmSHdwMjVmRzh0OFlodUhnMVZLUy9BNm41K1ZKeVc3U09X?=
- =?utf-8?B?Q1FkNGNuT05VdE1CR3dYZFN5QnVaY2xmMVhFdXE4anhYMFRmTEgraVRnT2Ny?=
- =?utf-8?B?T2I5clZHYXMyNmdWOTdyeFlpcXhwRENCVENqUmpFZG01NFdBbTEwNFFzUWtx?=
- =?utf-8?B?N1NDdlZpMzJpcmdhMlZTMGpJSVdBdWplTlZQYXY5Y25YR2pTRTE0RHhUa0d3?=
- =?utf-8?B?ckV4eDRtSVRNbXYzcks5bTVqRk9BUnZzSmdLQXNxaXlaczRxSXNwaXQrTSth?=
- =?utf-8?B?WkFFTEVnenF2akkrRUc0RVJ6RUpPRDRWbHhiWFZlTHhGeWxLeU9jSWVTeGZr?=
- =?utf-8?B?dndESHMwVGJoZkJTMHZtWGJsazVpM3RvQjFhWWpRNUJMQ2E2aWY1SGczd2Nq?=
- =?utf-8?B?VXVKMVcwVWRsb3plWU5WSk1xTW11ZVJRTzJvTGRXaUE1L3l2VjFCYlB0VlNl?=
- =?utf-8?B?TVB5bTJBMXhTa1pIZGx4dk9McGNUMEIrLzlnOHBQS2JSVGhaZUcvdFJFcDBV?=
- =?utf-8?B?bSsrYUYzSFB1ZDAvOE5IUmJBUjJ0dlVtcHdTZUxFcjYwenRYQ0xXWkdhdHND?=
- =?utf-8?B?M29Wcjd1aEl3UlRDdldtalR4RHh5cExHMWVTSnZJMWtiMzZXaVIrTGxEK1N2?=
- =?utf-8?B?OHdjU3dYRkhVYzBxWmMraVVXU1h4MGR0SHhqd0h2MkdTNkh3YzZQM0FYUDNw?=
- =?utf-8?Q?rybSgr9k1ZtLbL/d1s+VHE5f8wdqK73lvPnha?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c4051709-c773-4609-2650-08df45e8e059
-X-MS-Exchange-CrossTenant-AuthSource: MI3PR04MB12438.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2026 02:57:41.0809
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: PMdzasrkAs8Ps2rdsj7uR8gdZMu33oGsdQFuKJT2Gtm7VWhReTfv9Rhhr1/SLvcb1Ke7hcvu3uWwX4GCkINPQESv7lAqPYxyU7PuJnCT2csciIWH3n0M3uCTJvYzdtk5
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR04MB8967
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <av2aFWw3kh11U68A@hu-anancv-blr.qualcomm.com>
 
-On Wed, Nov 18, 2026 at 09:19:20PM +0100, Linus Walleij wrote:
-> On Wed, Nov 18, 2026 at 8:53 PM Frank Li <Frank.li@oss.nxp.com> wrote:
->
-> > On Sun, Nov 15, 2026 at 10:26:27PM +0100, Linus Walleij wrote:
->
-> > > Replace the LCLA ESRAM regulator with runtime PM of the SRAM device
-> > > owning the ESRAM34 power domain.
-> (...)
-> > > -     /* If lcla has to be located in ESRAM we don't need to allocate */
-> > > -     if (base->plat_data->use_esram_lcla) {
-> >
-> > Does it break old dts's back compatiblity?
->
-> It would if they were using LCLA SRAM but there are no
-> DTS:es that actually define the LCLA SRAM, so we are fine,
+On 18-11-26, 17:59, Ananthu C V wrote:
+> This does fix the issue of policy->max not being able to drop down back
+> to non-boost values after boost disable, but I found another caveat.
+> 
+> The commit 8c83947c5dbb added the following change a few months ago;
+> 
+>  static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
+>  {
+> +       unsigned int min_freq, max_freq;
+>         int ret;
+> 
+> +       /* Use policy->min/max set by the driver as QoS requests. */
+> +       min_freq = max(FREQ_QOS_MIN_DEFAULT_VALUE, policy->min);
+> +       if (policy->max)
+> +               max_freq = min(FREQ_QOS_MAX_DEFAULT_VALUE, policy->max);
+> +       else
+> +               max_freq = FREQ_QOS_MAX_DEFAULT_VALUE;
+> 
+> this max_freq is then subsequently used to update max_freq_req constraint
+> for the policy. This means, assigning a value to policy max in freq table
+> directly will cause the same to be kept as the max_freq_req, which if
+> boost is not enabled will be stuck at a non-boost value. The boost will
+> still work, as policy max is set directly, but the value will be above
+> the allowed qos max;
+> 
+> # echo 1 > ../boost 
+> cpufreq: cpufreq: policy12 boost=1 policy->max=4723200 qos_max=4454400
+> cpufreq: cpufreq: policy6 boost=1 policy->max=4723200 qos_max=4454400
+> 
+> This also means if at any later point any limit refresh happens, the
+> value will be brought back to that qos max, which is a non-boost value,
+> even when boost is enabled;
+> 
+> (e.g. here with a refresh_frequency_limits(policy); call after the boost)
+> 
+> # echo 1 > ../boost 
+> cpufreq: cpufreq: policy12 boost=1 policy->max=4454400 qos_max=4454400
+> cpufreq: cpufreq: policy6 boost=1 policy->max=4454400 qos_max=4454400
+> 
+> tldr; is that it will fix the issue of the freq not dropping down from
+> boost, but it will introduce a new potential problem of boost state
+> potentially dropping back to non-boost freq while still in boost.
+> 
+> So this alone can't be a fix at the very least. At the bare minimum it
+> will need update to how max_freq_req is calculated/updated, etc. If
+> nobody assigns values to policy->max before cpufreq_policy_init_qos
+> is called, max_freq_req can simply use FREQ_QOS_MAX_DEFAULT_VALUE,
+> which is S32_MAX, as its value, and not cause this problem, so the
+> solution proposed in the current series will not run into this.
+> 
+> > Also, can you please explain the issue again in detail. I am not very
+> > sure how you are reaching to this issue over current mainline (without
+> > the first patch).
+> 
+> There are two issues the series is trying to address;
+> 1. freq can go upto boost values, but they cannot be actually used
+> 2. once a policy is using a boost value, that value cannot go back to a
+>    non boost value.
+> 
+> So with or without patch 1, which addresses the first issue, the freq
+> can still go to boost values, which can trigger the second issue. The
+> logs relevant to the second issue, reusing from the cover letter, is;
+> 
+> \# cd /sys/devices/system/cpu/cpufreq/
+> \# ls
+> boost  policy0  policy12  policy6
+> \# cat boost
+> 0
+> \# cat policy6/scaling_max_freq
+> 4454400
+> \# echo 1 > boost
+> \# cat policy6/scaling_max_freq
+> 4723200
+> \# echo 0 > boost
+> \# cat policy6/scaling_max_freq
+> 472320
+> 
+> The reason why this is happening is;
+> 
+> from freq_table.c:
+> 
+> if (policy->cpuinfo.max_freq < max_freq)
+>     policy->cpuinfo.max_freq = max_freq;
+> 
+> and from cpufreq.c:
+> 
+> freq_qos_update_request(&policy->boost_freq_req, policy->cpuinfo.max_freq);
+> 
+> so cpuinfo.max_freq is only updated upwards, and that value is used to update
+> boost_freq_req, which is a FREQ_QOS_MAX request. On boost enable and disable
+> the cpuinfo.max_freq value stuck at the top will be used to update the qos
+> max, and the value never comes down.
 
-Please add such information at commit message.
+Pierre, any inputs ?
 
-Frank
-
-> all existing deployments put the linked lists in common RAM.
-> It was an oversight or "fix later", "technical debt" that was
-> introduced 15 years ago.
->
-> After this is fixed properly with power domains I want to turn it on.
->
-> Yours,
-> Linus Walleij
+-- 
+viresh
