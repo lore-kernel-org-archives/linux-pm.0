@@ -1,114 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.31
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.174
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795086842;
-	b=TpdplB+1paAo0rHTihGhBa6sWCpXSEDMHvvfsIhNhZ84HfZb2qPjs9WicclekLIZZxEp
-	 Okkgpd/iuIFbhZv2/Ky74GdOrVsyuKzlKastWy/7D+qH3tOenAATmASL+QzzlAIoK7g8J
-	 DE5mPhoiMeK1neIh9XvbIjsA9AvxSrPqlknBWyOP+1QacBss6gjWnL3KqhddWXhTd4BS9
-	 vAAUqgxBw0V2rve3y4J9wO33btpnCwhU352de6Eqxkp8wPxm3tTPvQFaEYIqe9H9HB5rk
-	 QHaaLCOF5KH+24Ob2CVNTsrJX2WaV3qAwS1Wua/97KlFQBu4M2M0IWP0GfwgBGrEOpA==
+	t=1795086861;
+	b=PKl1aRGYylrTmcTrQ5V50rbeu4RXzoLRonhEtBD12my7eXzK6IAY11zDqWnqaHjx8KBu
+	 Bqto8qnb9Dhijfk4GBnUSmrOauohxd8lNuON/iVoIcIgAJDv35ij7McBlprFvZW3UPqY3
+	 N1VQtC0/RBBUGUnFMi3fC7AfgwNZUACcE6In0fSyu+UQK/AI67qQ21E8Gh4RVOlwM/lRn
+	 +6uzTwZHylRlTWlzcIPVhketfjcEWQG5nZgz95FnmsuGKymqFHgRSUMUt8xI+xOyM7H5R
+	 uPpa5h+BMe2EShJ6T/jTYQ3MsOxk/TbXe/lFbmrN7tgPbZT4ciu3lqbrCf5g6IWQw0A==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795086842;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:
-	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
-	 Received:Received:From:To:CC:Subject:Date:Message-ID:X-Mailer:
-	 In-Reply-To:References:MIME-Version:X-NVConfidentiality:
-	 Content-Transfer-Encoding:Content-Type:X-NV-OnPremToCloud:
-	 X-EOPAttributedMessage:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=DRdIvJbyWhdNJJoWfRNlRI4zPXshnh+oFezW2Q10VRE=;
-	b=pWi4u4UkXe27H1XRMWkEubTvOo33JCQK/tUTh/4M6REYB1HDmrKLj0QMhw5J/iEagwy3
-	 aHvqh0ZkEUsn4qKTC6ZG3jK+f31MfSmwe/vaW4F16mdWfU1CM7qxKqPYn38G+JSsxNStA
-	 1bOjxbe+m7pi0Wa308kP0OC/1BbMDipsKNiFR8DaSKiZTOMQdBf2m02uoAdXo6x4X9jrw
-	 J6zwZtC9huTNCQJ+JGdrv2t4qL0LIhH2Ql8598+wBF/ANVsDB6PSnMF5v0rLry3Tc9rY/
-	 CYsdjvCulUU1dtVM5QdF4oaEPfnCwI42dAhM+pd8HsFOlUUk9AUIfZ429r1WNFu3Ckw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795086861;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:From:Date:
+	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type;
+	bh=gdl4ZwMsFppyGc+IZDtPmhYKKcOVSIQ1Mm6hg1JYybg=;
+	b=tODuvgivSiiFlpuNGzGeMD0z0NNSo2KetQQco7OuEpnQBdISAvOKeTM4aIICCQVSgXUT
+	 Kqzg5GGrrFKuLILCdCsnOgjoNl8L8fDP4+k+oXuizMjYM70u4lo/1Qk3XnXzrld6MC7aH
+	 J5lR5IyGyZj1LBNo4UdxScWLfeLqLoqpitGmxfWPFlTDsiG1wWo39WjVwCCz5ueGdMz+F
+	 jgrGmTnqZGrgmaefLmcBCjjjKFtNLFTCi7sEoDUgG1bcPQzGDGlZ7BOqyKBCxiHL2X9xp
+	 QWUiDJD4epa1B4VFSEpfbVEDnJeFWjYc7/5Hz/ybCH5Ggw7F8rwngP5CleGcyA5Ji0A==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=nvidia.com;
-	spf=fail smtp.mailfrom=nvidia.com;
-	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Vyc41hED;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.31
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010031.outbound.protection.outlook.com [52.101.193.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=fail header.from=fc.jpn.org;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.174
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7B87606A325;
-	Thu, 19 Nov 2026 11:14:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C7B87606A325
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Vyc41hED
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=V/JHBSKnJ0sCg4ixDkGj8AoWsp6JsQxZBppEa91J+r5ubj/RDf8qNB8nk6cESBaIjal2uf83+F5LN4RO1nlRLqxXkTHxs0d5eRdbso76AkTz/qQFWW81tNrDGwBBNp/d738X2kad7N2IAEkBXqdlCLS3Cap+Gw7XRIH3GRngKve0zKNnu64SeC2ImtNBsfwjv57KzXbaEMdzJHBlCw+KhqNL/nQQvav55+M6zvDLT7yzdVcNZfqqa1sj0F6d3vhW1f8nZ1Vs56dEMskmAr4QyDHwl4v+xngRCRzCIbekPJFMyeATAJU4NYx4SObQmARbeyu1376sd9R+MIJPxY3pVg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DRdIvJbyWhdNJJoWfRNlRI4zPXshnh+oFezW2Q10VRE=;
- b=InD+McNSc/s4zEUPxIWop5KqQu2j1YjaJkpscKqEIVtJj51zU56lh+ujMV1Q4rnV17y7FaJjpA0bcsT82O8gwLUAS42S9fG7jlps8neKkOJvKXM8/6fMln8g+MQKVWVqjyRAXy5uAoqbxBTQOOLD923RajQzwhest8TB+DaxAxYCKx5H3K6BVdjJ8KiTG8dj1NEy+ISC8kohgDzd7iaQAtG9efEOl9omqbaLJQZiXWAIBFgf9GjAmkMKTvbI4V5pnS1ti+PkGJZW5vTkYGyrpf7YLG7g5wTK1FJVDFPcYcSn/aKxxRIYWrfDt4myoJTbKAEVb9fRT8Psy1DaDjTdlA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.161) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DRdIvJbyWhdNJJoWfRNlRI4zPXshnh+oFezW2Q10VRE=;
- b=Vyc41hEDhVvt5c9Z0LUpszwKNSNMimKsvlu7kXP+B6W4E0ppmPVd5ctu0sCd4rZEdDABpgbo0/l7OBBoufj49pIgEVoUR2/cGVbmFPy7d+Q76OESpxiHlO1ek7ehXl+n79dP2NZRRCnEn0aVrCTUX5pvWmTvHegrWI77X+UdACu0MbSuqxlv9W+kZWWY0V88xGOId5Y90zaRTbvBtlxYQc2/BCTYY+sl8uBl9cGu+XRJY/7H/pAAa5cQTL6XvyMPZBjgSx1XvMv6rlJPvE2YPhDkpln+L6l4T0hbSpD8FfD3gugS3c5t0XhVFW9OlXMujRFP6xkqpIFuA+1zQVPEtw==
-Received: from CH0PR03CA0318.namprd03.prod.outlook.com (2603:10b6:610:118::26)
- by IA4PR12MB176353.namprd12.prod.outlook.com (2603:10b6:207:10c::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.10; Thu, 19 Nov
- 2026 11:13:58 +0000
-Received: from DS4PEPF000001C1.namprd21.prod.outlook.com
- (2603:10b6:610:118:cafe::6b) by CH0PR03CA0318.outlook.office365.com
- (2603:10b6:610:118::26) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.10 via Frontend Transport; Thu,
- 19 Nov 2026 11:13:58 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 216.228.117.161) smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.161) by
- DS4PEPF000001C1.mail.protection.outlook.com (10.167.23.167) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.662.0 via Frontend Transport; Thu, 19 Nov 2026 11:13:58 +0000
-Received: from rnnvmail205.nvidia.com (10.129.68.10) by mail.nvidia.com
- (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.57; Thu, 19 Nov
- 2026 03:13:41 -0800
-Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail205.nvidia.com
- (10.129.68.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Thu, 19 Nov
- 2026 03:13:41 -0800
-Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
- (10.129.68.9) with Microsoft SMTP Server id 15.2.2562.57 via Frontend
- Transport; Thu, 19 Nov 2026 03:13:36 -0800
-From: Sumit Gupta <sumitg@nvidia.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <robh@kernel.org>,
-	<krzk+dt@kernel.org>, <zhongqiu.han@oss.qualcomm.com>, <conor+dt@kernel.org>,
-	<treding@nvidia.com>, <jonathanh@nvidia.com>, <linux-pm@vger.kernel.org>,
-	<linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<devicetree@vger.kernel.org>
-CC: <bbasu@nvidia.com>, <sumitg@nvidia.com>
-Subject: [PATCH v3 9/9] arm64: tegra: Add CCPLEX cluster node for Tegra264
-Date: Thu, 19 Nov 2026 16:42:17 +0530
-Message-ID: <20261119111217.902071-10-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20261119111217.902071-1-sumitg@nvidia.com>
-References: <20261119111217.902071-1-sumitg@nvidia.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF210606A324
+	for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 11:14:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BF210606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=fc.jpn.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-8b4cc793704so16577107b3.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 03:14:20 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795086860; cv=none;
+        d=google.com; s=arc-20260327;
+        b=PEMFVZjj+4F+GQscn08RhNo4pOgbQcX1kaqCPaVo85+PdOjCXHvqOVqAJ/HIqL9RcT
+         QrO2j7GF90/V7HFIOhsnqPq6JCh/VO6aQh8VWSIW4ZtQyAra1MdRUuip3Nl1GFpb0WCm
+         UXvgNUkNLpyGQwqrFIJaWXJMEqyr3NbiAVkxHBS2oLSAIqNKrw5iXrVSqOaNbKKK7Tn8
+         mE34/q1I/PMtzO6vD7vphBtNJu4iyb7cLaPUvTzwHPmkH/3CMpUvG7HpUbJzu8xFYeX5
+         VysJrKyUXFa29nDKz17QEVG3+Hor4+cTIxYEviMkbwcXR75WAktRwvr4eO899ySZABiK
+         PqSQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:mime-version;
+        bh=gdl4ZwMsFppyGc+IZDtPmhYKKcOVSIQ1Mm6hg1JYybg=;
+        fh=KZccbOARQzhIHD1nDW8mM7pbxVwjLoRfUkr98XtWiwg=;
+        b=sQgrBkkWHhGltogkV7u7zpugC5IZiqQhdIfyHRbX0ZJMwgx7lG0kGkVs0FoUKAmWLj
+         TwDPPpM5BvUfoSENrutoApCdkprn5ga6sddv3gt+Quo/nDeQtWCg9qdPHrWovV8rCeop
+         j6Hn9jT1w9/kbZZLRFeWQRb3V3hd7eqiTJ+XuwqvJTOUZTBLQbh7mrnGM3IbA5OOZort
+         kGFXJ9qZt3S9qCUKEsyMqjuNFOayVyAv6yfNP33EXhxdQy4JWdY9F6GC4Zdwn/YxMR8e
+         52SIrzxJDa3YCSWQlCFvqyq1Rh43CeoYODMhgzvZ4AZVVPr0vdi2HKgiRQJeG5PZpeUn
+         NOZA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795086860; x=1795691660;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=gdl4ZwMsFppyGc+IZDtPmhYKKcOVSIQ1Mm6hg1JYybg=;
+        b=d1vHbtjXCR1aoW96fMiC70sbEVhdiX2gvn9kaOBwSeqrD558iBDx4PShNbphkJIGlm
+         TOqZK6Kh3O+ITow45DdoJxiYVTL4ocshqOyk7VyDtXlWZXtguouN+YXYJ7H6egBLGxIQ
+         RiKC4rUt66+uGB6zEdTfP6ptOolurlW1tegdjk7MuYn3hQJ2lgd4ZCmD9n9jkB/aBS7d
+         MSjfq2CGB7MKkLQQY+2xb8GUTIn24Jwf/jlonRDH4A/UuZVtxWxLebiiPIQQNnckS/H6
+         I/gxAwOBpkhfK1NF+EYCKtEZJJ61WuAOYBDjq2HqpOeqz/ctS5XS8yuEL48btMvMCz5u
+         rtFQ==
+X-Forwarded-Encrypted: i=1; AL+hErHnJQgLpXXwbxnayFm+7kbF5lh2jy1miV8OskzvE2RCwUgsxdZLdVSQ1fvT8BrTnDVBpSuC54fI8g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9OjS8Hn+o0VwV30pOVVQJ8hbSzRqq7A+GkzcE/vNREwgttDhZD
+	PoIPu60I0UOVpuGxnsvp19UM5vyZ1cmygcpWo8YLpI7/B7Ew/3LGEAFma96jGtpUH4n2ugMWxoX
+	+rGTlPsSpXrCCnicu5ipme8rz3Pw8rdY=
+X-Gm-Gg: AZFdTZdcQ3BE674q3hxYGiHWb5QQYLqkbJWQ8YsU1gmVXmCcZwCejun0Ih3sIdLoQ+h
+	ncCjoTSeUn+nycddmAXtH53dCpPwEvwGlqygvg9hKutsgLkW0OL60ZEEgIhW1foVylrIVmxcWFr
+	HLWLynBt2FLQXJaZnyPydtMVPgpEybuRYnPVe1Fts78eS0cdPw1wCQROoU61eYP6Ee4V6HG+4ML
+	10/WELxtiCiSnCpsuqhXuxSjlkMtxaSrkiNmvwgTxINWqFPFvsCCxxwHQPFPfGd3WTqnW98zciD
+	xbSc6FafUg57J9rjS1C5Lwod2wehuNp2yGmD8NAG/iXQf4hqRTy9C5n/Rc2Pk0tmKv5S3zevue6
+	ABns8+GbR+rmihMa+NB4pf6TELZJKghakb+LRfh1N0VQenxJipZMaaXjFExF58oFRJJlBMs8PRf
+	C/5Fo28QroA40egiqbYPiuSkl0L/QyC+s65VW/G6A=
+X-Received: by 2002:a05:690c:44a:b0:8b3:2e4f:6c06 with SMTP id
+ 00721157ae682-8b4fed6f8c2mr19300117b3.47.1795086859463; Thu, 19 Nov 2026
+ 03:14:19 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -118,181 +87,205 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS4PEPF000001C1:EE_|IA4PR12MB176353:EE_
-X-MS-Office365-Filtering-Correlation-Id: bde9d5f4-5951-406b-d9fe-08df462e3503
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|36860700016|1800799024|82310400026|23010399003|921020|10067099003|56012099006|260925022911599003|260925021911599003|11063799006|260925021311599003|261021121427099003|261009223027099003|261102123227099003|261022105027099003|261026140227099003|261028144727099003|261026121527099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	m7LOM8uKu+7lgSnof26AmuzWk8Oj9wHM/x+myGO75HdZ+fFweF6NyjeSXQduLxyPtPp9VcxVoacDBZUtyDDIIhr9VvcTDD1gyZrPtzMX0O5fb+KgRb512T8P3mJjXIYDVwT1Cz8Dbh1OnYw1RfrnrD16BnXhwhicUjDv5eqziHuu3ZZrUSCDe7nHQ6H7eMmebv4s3+VfgFtyoRXgIEeq4obv36OuCiKEuzBz+7ExcHnwvrgSC/AiG27458ab87QQf3Bb/RQ1ZVoRIZxrE05EbVoZovmHPOtxB04uyj8F62Zme9UdIdMcS02C1Ic8GxoQPTaq/q8k+ri/pv7/v710ASl8uBeUUM318Cbx56VMFLFGJ2pXecI98Ums2OMWOYK+SbuYlqiOdvQm+L3+Y739vKXNrhy7zmn85LozxdBA8rNNuv+9zlLCptDnPX1d0waVukyT8QaQrSfarJWUnUb7wQp1/+NRS250BJN9CrvC8pZtMACbIP6Gb0HcwjNs/v8x17WVnTO9jd/j6giIETmShE8AMzfhZ2jc5vV8FiQSkCsBfpg8StpI+di3ke3gqyVeGrb75isbAtjEhhvGY4hHYiHSi+r+Oe5TOCu+Uhuqv4Af/tUIvoXDRixURljybleoKPRNTYI/SYAu637Lj6k4hYeXtEDrxp1+PkIbmjT0EBwnm5PpwtruukBbvZLJzpqz+Ih2kalduIqnZPhV1rFXJ5s+qAOPTRG51+qgDoM0zOyTnCf0aPdPKw+DltQ5QKZw
-X-Forefront-Antispam-Report:
-	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(7416014)(376014)(36860700016)(1800799024)(82310400026)(23010399003)(921020)(10067099003)(56012099006)(260925022911599003)(260925021911599003)(11063799006)(260925021311599003)(261021121427099003)(261009223027099003)(261102123227099003)(261022105027099003)(261026140227099003)(261028144727099003)(261026121527099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	gYvp6QTvTAuGVo0JTuscqvayTE2DjgYJIAZdECo3XX7G8GjtnesyrpKq7xbeonQqZa7P3Jd43BR0EXj9B40BNqnfjv/LpBCGH2dlqvYPzC3tbxEyXnS1jKNcj+eTETCKLAYrTsgyTJ03eHWiFT5C9h3Ka1TyYyloOXEs3WJ8yhmq4fYiM4Ydg55zx6vKvNqRlhIYTKyQFPPYy+p+aNR9p8RNAByE3Q/ZCagRQ5sHMGytCeyJccJVJLGf8qntuKHbDzC/q1+GVMzfbXb5Zms7mrJ1D/SxUnfHYaqQseKgW9V+KwCdftlFP7vdLi4wJ99Jiv6i0oo56w2Frra4Iq3LjcWSJaAtosm3cG8y7NjX3zgZBwO1a6aYcz/KbHHqZBRSLnOk4MNLxYIgojbXaKUE9tfO7ke6P9rZrWlAkWWpiAwIRZaVq7sDu9fCSdQ718u7
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2026 11:13:58.0466
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: bde9d5f4-5951-406b-d9fe-08df462e3503
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DS4PEPF000001C1.namprd21.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA4PR12MB176353
+From: Kazunori Ando <ando@fc.jpn.org>
+Date: Thu, 19 Nov 2026 20:14:07 +0900
+X-Gm-Features: Aa3M54qH87R4r-pJ1ObKkvFZ7ORk-7hIS0GY3zxihV_ERs9C13QvuiQcSH1M0Jc
+Message-ID: <CAKPbQspktkzF-GH9728aG0mAiQGG9NQxbO15ruvcyaQGTm2y=w@mail.gmail.com>
+Subject: [BUG] x86/hibernate: Intermittent resume failure due to a 4 KiB
+ EFI/E820 memory map change on MacBookAir5,1
+To: rafael@kernel.org
+Cc: pavel@kernel.org, linux-pm@vger.kernel.org, x86@kernel.org, 
+	linux-efi@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Add the CCPLEX cluster node under bus@8100000000. The cpufreq driver
-uses it to request CPU frequencies.
+Hello,
 
-Add the generic "performance-domains" property to each CPU, referencing
-this node. The driver uses the domain index to group CPUs that share a
-clock and to select their core_freq_req register. Each cluster has one
-CPU and two clusters share a clock, so each domain holds two CPUs.
+I have been investigating intermittent hibernation resume failures on an
+Apple MacBook Air (11-inch, Mid 2012, model identifier MacBookAir5,1)
+running Void Linux.
 
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
----
- arch/arm64/boot/dts/nvidia/tegra264.dtsi | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+The system occasionally performs a normal boot instead of resuming from
+hibernation because the EFI/E820 memory map changes the classification
+of a single 4 KiB physical memory page between usable RAM and ACPI
+Reclaim Memory.
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra264.dtsi b/arch/arm64/boot/dts/nvidia/tegra264.dtsi
-index b7f6b649baab..9c5d8d4e1d10 100644
---- a/arch/arm64/boot/dts/nvidia/tegra264.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra264.dtsi
-@@ -3964,6 +3964,13 @@ i2c12: i2c@c6d0000 {
- 			status = "disabled";
- 		};
- 
-+		ccplex: ccplex@30000000 {
-+			compatible = "nvidia,tegra264-ccplex-cluster";
-+			reg = <0x00 0x30000000 0x0 0x00cf0000>;
-+			#performance-domain-cells = <1>;
-+			nvidia,bpmp = <&bpmp>;
-+		};
-+
- 		gic: interrupt-controller@46000000 {
- 			compatible = "arm,gic-v3";
- 			reg = <0x00 0x46000000 0x0 0x010000>, /* GICD */
-@@ -4382,6 +4389,7 @@ cpu0: cpu@0 {
- 			reg = <0x00000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 0>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4398,6 +4406,7 @@ cpu1: cpu@10000 {
- 			reg = <0x10000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 0>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4414,6 +4423,7 @@ cpu2: cpu@20000 {
- 			reg = <0x20000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 1>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4430,6 +4440,7 @@ cpu3: cpu@30000 {
- 			reg = <0x30000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 1>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4446,6 +4457,7 @@ cpu4: cpu@40000 {
- 			reg = <0x40000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 2>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4462,6 +4474,7 @@ cpu5: cpu@50000 {
- 			reg = <0x50000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 2>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4478,6 +4491,7 @@ cpu6: cpu@60000 {
- 			reg = <0x60000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 3>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4494,6 +4508,7 @@ cpu7: cpu@70000 {
- 			reg = <0x70000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 3>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4510,6 +4525,7 @@ cpu8: cpu@80000 {
- 			reg = <0x80000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 4>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4526,6 +4542,7 @@ cpu9: cpu@90000 {
- 			reg = <0x90000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 4>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4542,6 +4559,7 @@ cpu10: cpu@a0000 {
- 			reg = <0xa0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 5>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4558,6 +4576,7 @@ cpu11: cpu@b0000 {
- 			reg = <0xb0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 5>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4574,6 +4593,7 @@ cpu12: cpu@c0000 {
- 			reg = <0xc0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 6>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
-@@ -4590,6 +4610,7 @@ cpu13: cpu@d0000 {
- 			reg = <0xd0000>;
- 
- 			enable-method = "psci";
-+			performance-domains = <&ccplex 6>;
- 
- 			i-cache-size = <65536>;
- 			i-cache-line-size = <64>;
--- 
-2.34.1
+I have reproduced the issue without GRUB and without the proprietary
+Broadcom wl driver, with a kernel taint value of 0.
 
+1. System information
+
+- Hardware: Apple MacBook Air (11-inch, Mid 2012)
+- DMI product name: MacBookAir5,1
+- Firmware: Apple EFI 429.0.0.0.0 (2022-03-18)
+- Architecture: x86_64, 64-bit UEFI
+- RAM: 8 GiB
+- Distribution: Void Linux (musl)
+- Affected kernel versions: 6.18.62 and 6.18.63
+- Tested kernel: 6.18.63_2 (Void Linux package revision)
+- Swap: 16 GiB swap file
+- Hibernation mode: shutdown
+- Boot methods: GRUB and direct Linux EFI stub boot
+
+The tested 6.18.63 kernel includes a small diagnostic patch that prints
+the saved and current E820 CRC32 values. The patch does not modify the
+integrity check or the resume behavior.
+
+2. Steps to reproduce
+
+1. Boot the system with hibernation configured.
+2. Collect the EFI and E820 memory maps with efi=debug enabled.
+3. Hibernate the system using shutdown mode.
+4. Power on the machine.
+5. Repeat until the system performs a normal boot instead of resuming.
+
+The issue is intermittent. Multiple consecutive successful resumes are
+possible.
+
+3. Observed error
+
+A failed resume produces the following kernel messages:
+
+    Hibernate E820: saved CRC32=1eebf10d, current CRC32=f70aedce
+    Hibernate inconsistent memory map detected!
+    PM: hibernation: Image mismatch: architecture specific data
+    PM: hibernation: resume failed (-1)
+
+The failure occurs during the E820 checksum comparison in
+arch_hibernation_header_restore() in arch/x86/power/hibernate.c.
+
+4. E820 memory map comparison
+
+I identified two recurring E820 memory map layouts.
+
+Layout A:
+
+    0x8ad53000-0x8ad64fff usable
+    0x8ad65000-0x8ad8efff ACPI data
+
+Layout B:
+
+    0x8ad53000-0x8ad63fff usable
+    0x8ad64000-0x8ad8efff ACPI data
+
+The only difference between these two E820 layouts is the classification
+of the following 4 KiB page:
+
+    0x8ad64000-0x8ad64fff
+
+I independently reconstructed the E820 tables from the boot logs and
+calculated the following CRC32 values:
+
+    Layout A: f70aedce
+    Layout B: 1eebf10d
+
+These values match the checksums printed by the diagnostic patch.
+
+5. EFI memory map comparison
+
+With efi=debug enabled, I confirmed that the corresponding change is
+already present in the EFI memory map.
+
+Layout A:
+
+    0x8ad53000-0x8ad64fff Conventional
+    0x8ad65000-0x8ad8efff ACPI Reclaim
+
+Layout B:
+
+    0x8ad53000-0x8ad63fff Conventional
+    0x8ad64000-0x8ad8efff ACPI Reclaim
+
+Thus, the difference is present in the EFI memory map available to the
+kernel and is not merely an artifact of the E820 conversion.
+
+The physical addresses of the ACPI tables reported in the boot logs,
+including RSDP, XSDT, FACP, DSDT, FACS, DMAR and SSDTs, remained
+unchanged.
+
+No ACPI table reported in the boot logs occupies the affected 4 KiB
+page. However, I cannot establish whether that page contains other
+firmware data.
+
+6. Reproduction without GRUB
+
+To investigate whether GRUB contributes to the memory map variation, I
+configured the same kernel and initramfs to boot directly through the
+Linux EFI stub.
+
+All initial warm and cold boot tests through the EFI stub produced
+layout A.
+
+However, the first hibernation resume attempt through the EFI stub
+failed with the following checksum transition:
+
+    Hibernate E820: saved CRC32=f70aedce, current CRC32=1eebf10d
+    Hibernate inconsistent memory map detected!
+
+The EFI memory map changed the affected page from Conventional Memory to
+ACPI Reclaim Memory.
+
+The kernel command lines before and after the failed resume were
+identical and contained the EFI stub-specific initrd path.
+
+This establishes that GRUB is not necessary to reproduce the issue.
+
+7. Reproduction without the proprietary Broadcom wl driver
+
+I repeated the hibernation tests using direct EFI stub boot with the
+following additional kernel parameter:
+
+    module_blacklist=wl
+
+I verified that the wl module was not loaded and that
+/proc/sys/kernel/tainted was 0.
+
+The same hibernation resume failure was reproduced, and both directions
+of the E820 checksum transition were observed:
+
+    f70aedce -> 1eebf10d
+    1eebf10d -> f70aedce
+
+Therefore, the problem is reproducible without GRUB, without the
+proprietary Broadcom wl driver, and with an untainted kernel.
+
+8. Related discussion
+
+I found the following related patch proposal:
+
+[PATCH v2 0/4] PM: hibernate: Add relaxed_memmap option for x86 E820
+integrity check
+
+https://lists.openwall.net/linux-kernel/2026/06/23/1726
+
+However, the proposed RAM-only checksum comparison would not appear to
+address this particular case, because the usable RAM boundary itself
+changes by 4 KiB.
+
+I understand that ignoring the E820 checksum mismatch could be unsafe,
+particularly when a page classified as usable RAM during image creation
+is classified as ACPI Reclaim Memory during resume.
+
+9. Questions
+
+- Is there a recommended way to investigate why the firmware memory map
+  changes the classification of this particular page?
+- Would additional EFI or ACPI diagnostics be useful?
+- Could a platform-specific workaround safely handle this type of
+  memory map variation, for example by consistently reserving the
+  affected page before it can be used as normal RAM?
+
+I have not yet tested the latest unmodified mainline kernel, and I have
+not established whether this is a regression.
+
+Representative before/after logs, EFI and E820 memory maps, kernel
+configuration, hardware information, module and taint information,
+and the diagnostic patch are available at:
+
+https://github.com/andokazunori/macbook-air-hibernate-debug
+
+I would appreciate any suggestions for further investigation.
+
+Thank you for your time.
+
+Best regards,
+Kazunori Ando
