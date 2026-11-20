@@ -1,97 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.45
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.222.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795160660;
-	b=IG770U2Udtw75tFsi8oEzqK/41yVhODTsGvZ0yR+XiNMq2urYzpSosMonVfKESk7g5Nc
-	 b1SJ9ZItwJCBvmiTQ/BO066Yy+Oa1LRJ/l+F6+yN75FW4mCjkQYuR83WmDLR719rPv0fi
-	 DOql2S0DBLo6DIHIRADsjyBwHPDo+9nCrsBF1F1kxNqKBSblQq8+Lz1ww/G/9IuLpLAIR
-	 42CMew7lz01T9Ixsrh6TFwNK9B9KHY2Nk9jJD4caxmr6jxn3peRmbRO2+lYl0DPIk24vu
-	 8BhukTjsuoEoN6eCIUxOLUkMyRJo5XRaFM8zxjJL556RvtSeNXNO5c7E9/GDbOQOETA==
+	t=1795160993;
+	b=a9By+Q6AksobOJxmDoIHGRvqmZkkHwXiq8eKU9VDUvB6wzLkBmmReoDJ0DI2Ck4PN9Lm
+	 xMfVrGA4zpzEn1BPB9NBgxBD4ZIrpFb3BIsFQbYJa5kBWwDxcYhvAqI59n5IKu2yoD/vi
+	 IP+8X92iwTwG7XrSO46HFVcJWdH8U6Qls/WVdW4CqeWGIgMTxbVLwFMzSdTUjckrmA+yb
+	 73npAcjZmgUj9tNdWnlV8tzBRFnZZJ/CKxURfMp/B6m3yboXsqhXtCYnJtDB2Gf5NRl06
+	 F88qV5o+ZILO0ZGNDDM+bbPFfaewKb2CKQSKxk/qQqylTgUSyXs5HWfEX8yHSwMhRvw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795160660;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=YhIr5RkufI76Hp177M5SL/nPXC4WeO/bah0MoOu9yac=;
-	b=RrK6/fb3M7ENFLox8ZHmifL2dDTFAPMkYn3N3rmCQJFzn3DXP9YEYQqnZKog86H+KkZY
-	 BjMQKp8Y8v92YPXGDkb7AY1a975eZLGgb0/q7aY78knTwRH6Lb1ax7gp0QJ5sKsoXpTBh
-	 k2R7EwRPuRukn/u6KjpEDbkq1W/lB46essWjvnu21JKGVi/0HP1hC3hn5Yde6r6Q4sPv+
-	 HxkkTafoVzmN3yRu/nVCrBpdkkehJFsWIPckHPk8e/NI30rlII7YOgfei7jIVjgpPJoZ/
-	 EpcmO0W9QdCh0eF8Iftsf8LMa1nn+QD5Np12xTDmeGfm8vsB2TSViBdjkzhKeevjd9Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795160993;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
+	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type;
+	bh=Vu6IMQbhyMpXX+yWtY4enAtEpk8kj3N3fFV230nsSvs=;
+	b=bF07/LIEa7t3cPmQdSrUcjcgvmKreYczwqPf6FtRkbOaXECWMbGxWRVRHueAp/rXjpww
+	 VpISV25WM2uzmw6MOqzG3oecc5PY/he9NR0XHmeyuCvzlWWwxhSi+QuR1G8kNTXllXAqQ
+	 I89+LsKjWQ0ZTAXlTclyxwWFPgJe4Zb5yrHVWFgTQTi2xiBfAmtitstwRIiimyLK1wEIo
+	 gCz75qUFeXQaHlYNGMb7ZvkdczVuP9WCsbPxVI51bUuPUTkMOFFNjNIfeUpR8d5x4Bb9R
+	 tZfgzMswEak8x4jmlZXHSa1MGfKGvPXR1ooelsXDTJGdRKSLBk5o1r5Sm4/25YyJM5g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=MVdH0dbZ;
-	arc=none smtp.remote-ip=74.125.82.45
-Received: from mail-dl1-f45.google.com (mail-dl1-f45.google.com [74.125.82.45])
+	dmarc=fail header.from=linux-m68k.org;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=none smtp.remote-ip=209.85.222.172
+Received: from mail-qk1-f172.google.com (mail-qk1-f172.google.com [209.85.222.172])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4382606A33B
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 07:44:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D4382606A33B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=MVdH0dbZ
-Received: by mail-dl1-f45.google.com with SMTP id a92af1059eb24-1ae58d17cd9so617493c88.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 23:44:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1795160659; x=1795765459; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=YhIr5RkufI76Hp177M5SL/nPXC4WeO/bah0MoOu9yac=;
-        b=MVdH0dbZECMyRVts4clMgTTtsiSNkQYMFVjvvp2uQ0gO+y1c1szeDBPX/F8uygQrj2
-         SbfdAavURbpFr4fbi+sgpKV6Tddic53/AVIVaKgT8cps3fcivdrokWALa1iMft0nh9GS
-         zybLQByYLe3b/CeAFZsS3ekpM+tsWIDsSuXTz0AcHjctFr1lue+uApIkOIU/GqeNqyXg
-         cfYoslTPciTg5C51zrlXYz+BpV2r9fJPjsQOQ0Av/l6rCUmF1q0SqtRXDkV4d16oFXof
-         WGYfZ2nyv126pilNMGwRY66ySZPAo6Dfw/gMG2s5Jfdgiwkeo+j3ZGp70xpYpx4KNoK5
-         sP4g==
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDC58606A325
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 07:49:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DDC58606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-qk1-f172.google.com with SMTP id af79cd13be357-94965745d92so65040085a.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 23:49:52 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795160659; x=1795765459;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=YhIr5RkufI76Hp177M5SL/nPXC4WeO/bah0MoOu9yac=;
-        b=NT/tZsncYKWEDYHjV/DHo3UveVhRct5Cxd1XD9Y0MK0nddQPCApQKiBajS2Pu/mdUa
-         gC+HGeIqgw4wD507Jqk+wLrZtR1UEMQyQKD830xeuWhTi9JlTR/G5MZ0E/BQKF3+RfCW
-         /v8ediWaNMU9ZknxwMB4cgL226E+1qTOxssDJNkE1D0VrBGCh7bab/AjZEhzBqmuJxkN
-         Nol9EGzKsGy8gUChmbTJEUMTY7gLqxemTgZNXaOEK/nlMcYWU1oLeMK2g062YhBzwmEW
-         oIEGJqEp887yxX4pNWy52Y3z6UrwE/AAeYnQp6Rqfd9aFYjSS5CWsn15U/6VTuVL8WPA
-         po7w==
-X-Forwarded-Encrypted: i=1; AL+hErEGVKkVjKMkaFdjpF20b5zXkksne00OVQjH8cbLqIuoAk56/DxnEcOBcm7P7boJ1MU9qSb92aSjag==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8w6l6cfUWwAwQi7Hu7+KAm8HesS6R/P6Ib7C7L8iAwHrikK5Rf
-	b4MidlLX8a7uyMIjyOBWvzkVHCs2PjP30G9PN3bJYjuxPLQ71cDJLrzP/HRAKdI5yPc=
-X-Gm-Gg: AYBFou2jzDarg1tclgrhAtqpLwThZiIIRUBqdYXHNCN3eFUAEycVv9YpxW65HJg9f5j
-	VYd41h5u/3CRl4Xdy0Y3N6+uvtmXbru8JdAg3P4xR8AWJP3T/ilZCTCU8OURILhCXmi9Q4JJjsN
-	iZnZ1cE2BqfeESgDZPUIUKOVNp4qEZH0FiaXrm0dGyb4P7OV/P+r51+Rf7TYoFQyQ3KZVdtF6xS
-	P74tfyCMULsl2NTfmW8nvUn3HBpJJoy0xPFr89CKKMrPZuv4/lNqpBWnVFhvzCRM2hdzHeyMtNd
-	qzIu5R2Y8qwEIqd3btt+GX/YjJ5rwQ2ulXuftc/XH+QsYfoAyvUq3nDUJoyd1FOmmOwTQBrIXcB
-	pHH9wDoxFceQfbeQ+5suY8EuSwfXISk0cXFt22QeMnl6P+VnPJRgZrlUI8LTdKTEGcVqUWFwvGL
-	/yo2Kw6JCgNOqxbgexmoziTvw/jrdmPguM5c3N60NI0uNkEpEJiIoJs6Lj0e9dZJ772NRZSL6Zj
-	Q0w72P6NdBGdfHsfQ6CBfZNH/AABWBRoqEXRmKLWgJVn6d1Noym6dazebsVQlQmTnVJW82eZa7X
-	ZV1FCRex9IhbEIJSo3ISy4R/635nxw==
-X-Received: by 2002:a05:7022:f50f:b0:1ac:1022:b60c with SMTP id a92af1059eb24-1b5567b2091mr1764911c88.1.1795160658571;
-        Thu, 19 Nov 2026 23:44:18 -0800 (PST)
-Received: from localhost ([122.172.83.36])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b556831d45sm6769427c88.11.2026.11.19.23.44.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 23:44:17 -0800 (PST)
-Date: Fri, 20 Nov 2026 13:14:15 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Sumit Gupta <sumitg@nvidia.com>
-Cc: rafael@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
-	zhongqiu.han@oss.qualcomm.com, conor+dt@kernel.org,
-	treding@nvidia.com, jonathanh@nvidia.com, linux-pm@vger.kernel.org,
-	linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org, bbasu@nvidia.com
-Subject: Re: [PATCH v3 0/9] cpufreq: tegra194: add Tegra264 support
-Message-ID: <av_6T3bqEygaKK3q@vireshk-B250M-D3H>
-References: <20261119111217.902071-1-sumitg@nvidia.com>
- <av_R-8aMX7lL83ln@vireshk-B250M-D3H>
- <61d207b2-3155-4613-bc9e-588c68f276fd@nvidia.com>
+        d=1e100.net; s=20260707; t=1795160992; x=1795765792;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=Vu6IMQbhyMpXX+yWtY4enAtEpk8kj3N3fFV230nsSvs=;
+        b=23gEaE2ZVFGBw6l0T9ZJU9O0y3SApPMWyLRWlEsnnV++89REcvzaKdKOSEqXOzi7Wu
+         n1kG37SipGV/VpUIaDp47S7afkx4xNCHL/UGUCtso4uJzmj92Qx3KO0LdYLIjuGP/4/e
+         yaHFpaMjAj1kD9FX6ZuI4OFWFKOQHGPaKglLLdeGkhCFOUHRbrxsuwjfdpVD3YFduYi5
+         wlnZ0meLn8XV11aACgR3bN4Cojo7Ru9wJoswjNQ3dzaL/CB26jZfPrTu3ixaBgiJtpQ2
+         rNKDKln9pJlKsF9ncAcwXLfEC/RhC2ypujQ5Sd1p3xx1zI/7oCeWDfwZzYFqQkhd4tWK
+         1WTQ==
+X-Forwarded-Encrypted: i=1; AL+hErFFIwISyvDQJ00oiBkJJ1ADgSNTZEqc14K41xI9hamGtOCnTQHObDRiH1tNKaFVV11bIjUfXT9+6Q==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8boTilKm8RWBRkroWLWX9xq06Q1VeO6hu0VPfMhvoDrw3z2P85
+	sFgKb1ye+70dpjwz46Rv9EKgvoX/oBMDO000ZisKAPSUU/hTCnmjYEhmYUNI2YnL
+X-Gm-Gg: AYBFou2JwajPIMTQJ8faYX1p83q+N+TUGncrviiiOEo5UN1+h+9vr0P6rJfY8ODcwxk
+	E/yDeuf3guTOyqKmkx02ZoKkMOMNMoCJrLFQWDCEzdY8exsZ+JXgymqL2sYPA4wa7EMxdacPsvp
+	4cOMeg+rYQIIs9VDJKBGIG0hEQNrLLPzMnO9ZBzlTC+CVXNIfSm7PZBy11WL+mF3Ntj30ir08Df
+	JoAs417vfLJzZp002n/pdjwB9GlrFugwfszL1B4pvuvrDwEOXClCK/I8vtGFn7Z/2djm+84GqDt
+	v8FDJCjaRdxqzlAkYK5erQ9r9gzCO6gIjrNZmvQfgLBpH6luWvTaAaBeNYgc19sGwljeNccKUTC
+	PVx+DOxTLRsFWoN4nbh2VcTtIkeyXMpMjX/ELvmonngolClsSVSPLN74PnEMWfY3h59t9WuhfLP
+	q0j3slj8Rz9s8WER4neUQevE8t+4w5R+Ie/eZpXqSw1imwcs9euAjtDX5rU1i1OXIZoN4Bwx2vR
+	jqf45FELXkFVUYP0Y6vo017drhJ7wkg7HeUscit4LttOfEJ394jTfEpq5TK451wpigWqkX6jaVp
+	fTmkjkhmw+pOqxYFUs6H6oAAe/uUTyJ5AqdZqd2ZTzuKRa/VD369ZHmJt3+jutwhatw=
+X-Received: by 2002:a05:620a:600e:b0:949:569a:a3ed with SMTP id af79cd13be357-949ba7e422amr345265485a.1.1795160991883;
+        Thu, 19 Nov 2026 23:49:51 -0800 (PST)
+Received: from mail-qv1-f42.google.com (mail-qv1-f42.google.com. [209.85.219.42])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-949bb41a341sm137798185a.37.2026.11.19.23.49.51
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 19 Nov 2026 23:49:51 -0800 (PST)
+Received: by mail-qv1-f42.google.com with SMTP id 6a1803df08f44-92104b67a9aso7190766d6.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 23:49:51 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErGsvA3vzuvPBsy6PuCiyza0e6DzFV0TDfij+/R3HR/H/l69pj/rNqrKvH4OOQIE6pLisY/19DV+vQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:441e:b0:7cb:bda3:27ab with SMTP id
+ ada2fe7eead31-7d7393925f5mr941037137.13.1795160681386; Thu, 19 Nov 2026
+ 23:44:41 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -101,21 +80,61 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <61d207b2-3155-4613-bc9e-588c68f276fd@nvidia.com>
+References: <cover.1795094688.git.geert+renesas@glider.be> <a896e5bdb29c7c6de39df9b28b11d55614f2ec2d.1795094688.git.geert+renesas@glider.be>
+ <179513882271.284394.17357508909448455391.b4-review@b4>
+In-Reply-To: <179513882271.284394.17357508909448455391.b4-review@b4>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 20 Nov 2026 08:44:29 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWJ8zK+kzcznM7FJ3JCo1xWzjRZ5MQz9jhSUcYQfO5rBA@mail.gmail.com>
+X-Gm-Features: Aa3M54p6yw1Lhc431P_jQfP5g0YMf_od8mct8UUR6SclOJC7dcSgYi-awR9w8qQ
+Message-ID: <CAMuHMdWJ8zK+kzcznM7FJ3JCo1xWzjRZ5MQz9jhSUcYQfO5rBA@mail.gmail.com>
+Subject: Re: [PATCH 1/6] clk: Remove unused clk.dev
+To: Brian Masney <masneyb@kernel.org>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Andreas Kemnade <andreas@kemnade.info>, 
+	Kevin Hilman <khilman@baylibre.com>, Roger Quadros <rogerq@kernel.org>, 
+	Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Paul Walmsley <paul@pwsan.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Sandy Huang <hjc@rock-chips.com>, 
+	=?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Andy Yan <andyshrk@163.com>, 
+	Ulf Hansson <ulfh@kernel.org>, linux-clk@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+	linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 20-11-26, 13:06, Sumit Gupta wrote:
-> v3 was on linux-next, which has commit 4dd10fbbeb9c ("treewide: Convert
-> devm_kmalloc() family to the devm_kmalloc_obj() family") from v7.4-rc2.
-> 
-> Your branch seems to be on v7.4-rc1, so v4 on it would conflict with
-> that commit in mainline. Should I send v4 on your branch, or would you
-> prefer to move it to v7.4-rc2 or later first?
+Hi Brian,
 
-I moved to rc2.
+On Fri, 20 Nov 2026 at 02:40, Brian Masney <masneyb@kernel.org> wrote:
+> > This basically reverts commit efa850487a6b6742 ("clk: Inform the core
+> > about consumer devices").
+> >
+> > This commit added a struct device pointer member to struct clk and a
+> > parameter to clk_hw_create_clk(), but the new member was never used
+> > beyond setting.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Applied. Thanks.
+> > --- a/drivers/clk/clk.h
+> > +++ b/drivers/clk/clk.h
+> > @@ -5,8 +5,6 @@
+> >   */
+> >
+> >  struct clk_hw;
+> > -struct device;
+> > -struct of_phandle_args;
+>
+> Did you mean to remove of_phandle_args?
+
+Yes, it was added by efa850487a6b6742, too (although it was
+used in that header file before). Currently it's not used.
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-viresh
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
