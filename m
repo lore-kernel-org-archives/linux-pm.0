@@ -1,65 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.62.57.87
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.51
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795182851;
-	b=kcVSoiTN3i8TXbqWhWf3DPfLYMYlMzOEYRtQ3EHm4B0QVynwW4N3rYrRkg/dtrF8wkEA
-	 kaVqUQJRVBq3Y6gYfaqfbav5I5qCr3cQ7ii2yyykUo9EqvYnnbzNrXd1HVNFDRwFCTBZg
-	 Ha8/ivI1IrBIH1c+4+60Zj697XwkFWa0j2i9TOgD7GjIxl0CXy0lgJKyiTGnn9GGxTo9i
-	 LJ8SZr/0WDZYxMHy2clceHHyENq27UyTTOtjU2BkC06W8h0G7zLGe0NsNNxrcqVPP0iPj
-	 Nr28WcTtke4TRmK4S2aMICqkNt32NPwX3Tp5J3wxR5lT0taQGx66wzZsv4Fy0bI+kNA==
+	t=1795185195;
+	b=5s0AL6gIbjNmgAiNOrPKrtTgbUXZM3FqRHX/TYdp4xZEA3kpNCSjKG9v+Egv7NMC4bIN
+	 eiGuLd7Jxmn2U/490kDEdT5wARQ7j/fVNqo0W8GDLpDHzkvsupP/nrgux59QPQFsSBjUJ
+	 4LAyJB1ErtuEQqSTE8XHnWeFLf8w4QhWkQVcS+MrqjSIdnxqC91YrLEWJ1JTz+4VA6VPX
+	 uLzpKLHtJS84HwHpUFY1fO/2QGufSJaKImCNiopyIz4mY3owApIRnvsXPq3hogZJotD5g
+	 8XJ3fekYWZhJgsEW35NZ+OD5+NUlaVZftFapk17E+QNSHZDzavpG/z/EffbkBe2wBXg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795182851;
-	h=DMARC-Filter:DKIM-Signature:X-QQ-XMRINFO:X-QQ-XMAILINFO:From:To:Cc:
-	 Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:Date:
-	 X-Priority:Message-ID:X-QQ-MIME:X-Mailer:X-QQ-Mailer:References:
-	 In-Reply-To:X-QQ-mid;
-	bh=JvKgGTjq2BPEe61GwX/IAd5voKriY1si3N+Q1SQuS+8=;
-	b=RfU/YzHMsEyfsw7xiiLKqgk7YuXYsTKXTYEiPWA46laJusgqEG8regiyh9X4QdbR2xZH
-	 BoQkUC7ktMaUG78+0Tw+9bxcYgYBlZg7rAt+6WL7pwy2EAPu63sRMmZ+ExWx8OmtfU0lO
-	 xiGga3SV8I1rdH1AIaebdsWGOt1UR3YFezCA1l2d9YC0GlCgVb6aEnl0ggvSlhepD5Omo
-	 jfbVu43gmP7cFlZpPYgfGg/3hNW060d0GAOn63cp8UeD/6ATje5D9xTgnlLHNvMahNTMs
-	 CWaGjfIxfp1OKIo2EhsMNhRe6JhG+S7ejFoMV/5tPf20kkMU8jBtf8ODIvg6qbOz6cg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795185195;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:Autocrypt:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=92f6NRETdzojaigU8EyzxjI/4N0lXsB5qD5xAdIQvbI=;
+	b=U3bFL6hfhT8YOarYlfJF2XpqNwzxQDyiVAbittxeMN7T0xBdYphz7GcCBHX0Kp9xifIe
+	 1msB1R8dmEyzjAh0aAg1Dmuu9XjE/m/+OZ/sLH4GAErVfrC7553SMlb6LWrHwE/obvSHh
+	 9Zh4WalztBLMmCR6yqA69hIwXCSbYrJyyJo2P+NKzO3+SNAyCbpEl64HBwBJWNX6aXZAo
+	 TkyxWgUh8d+bkNniodx7913rttD21y7crcu5escgCAtfeqOQMvuhFSuS9pkv8TdfkA8NM
+	 V2j2BB2hrC7IoFj4U0TH3eak3IZF0czZBmZC2Rwy/+TVhx0XBD/18kPjrjL+P52NT9w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=qq.com;
-	spf=pass smtp.mailfrom=qq.com;
-	dkim=pass header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=avxULmTp;
-	arc=none smtp.remote-ip=162.62.57.87
-Received: from out162-62-57-87.mail.qq.com (out162-62-57-87.mail.qq.com [162.62.57.87])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=baylibre.com;
+	spf=pass smtp.mailfrom=baylibre.com;
+	dkim=pass header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b="fVLeH/NA";
+	arc=none smtp.remote-ip=209.85.221.51
+Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ABA8606A332
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 13:54:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0ABA8606A332
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53A7F606A325
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 14:33:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 53A7F606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=avxULmTp
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1795182840; bh=JvKgGTjq2BPEe61GwX/IAd5voKriY1si3N+Q1SQuS+8=;
-	h=From:To:Cc:Subject:Date:References:In-Reply-To;
-	b=avxULmTpzYlINMYMerBM8KO0ptt/FuqSFGc8Nvesy/uIg+2oRARAUR8EfBYiazqx1
-	 2BeuOfaIqGXlYGL05H++5xKwa2BFu+nPfyPYOAAPGxmNyLFedVjxjG2D9RROMbDXF1
-	 4IUU8S2vwn88T4XCjw8TJ45yZu+FyvdkhaRWhqfU=
-X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
-X-QQ-XMAILINFO: OTkXlZHit/HDYSOMMYUSEEaFDIssz1W9vtk4QajQI2ZSIDw6z3e3/fziSn1gxD
-	 NRzOwWA0EKV5Xs+u57yAudQ/ZR+h/8ZQ2O1AUpRdZGuBGoLSIniCUhxiNX60gGQBeU/s7BVNMeoDK
-	 6sQTLDQAQvtnsKWBuEa8O2bR9X6uLK3NdiBgHKpcgVyp/dqCOE9FZsnvH+Nh7TABBd4s+RjqnLpzo
-	 kX0WwTvW0pry+FPxjPfTFI5bDKsWLCNfU9b7rQs0QEMCX+yjXJF3pXLY5INZt1PRaeiYIm980EC+i
-	 ksbMOELwGQyLAsjY1g5aniNmIS+geQlR2jwJniCicFcpInkrFLuerPKM/r7Uc98T/fvCoTUrxSbHe
-	 8W67anNj909GuWCLJnvyzj9VKlcT/fMW4SgyQ8g1AjRjVve1raT93B6AoJRaskEg6NfIYLFNflEcT
-	 iZrnjeqQKB4VWhI+jVbUjca1TGGFOod6sMcR5YNTJTH9u693e5BXglWXTSkr+MsYa8zB+pv9V1jpD
-	 MjDcJhgl5yVjqOWyWxYtDdh7WHUJkVdiIlAgw0ZQtr+Cj8u/CiW1d16CsnX2zzj5GLAaduahoxfyM
-	 TCEkmm432ee+WSri6RKBSVM/ktHFXJCli1M/Hk4E6cqeWfk0BqBsxH8VRQ/ihT1ahdqfyvzYLJZEp
-	 t4q4/A6Tj8UGgn909/LVRfKN2IikVmwqK8AJfyFcBMoHvxT3TM/Z4dcuj/AaFZHSDd6L9BRYNMB5m
-	 F6HKoDrSPC+sX/x48Nu3RsE5fI/fZN/QHNO9LSEB4uLbomRE99gOdW/9ewDWlEPYEb5r16UQ2oOuM
-	 +FJvdsW+5wvlJ9rFoEhFMIQ8PjOK2p6G2Lf1G2jsd8EnrSlYbnzyTKkfkiU0QIzVZAblvQQLUGwoJ
-	 rfycw2PefoJtR3rtCuqN7jF7II9g0Xb5Xbp9LjMhSY7FY2cbWxZJzTqoD5p6QGQ2lrXTRIy433COB
-	 HF0W0RuPpgEDtZXbMBRLnVBbS/AMYrm0k5Gz4MUiuX19nwNerN+cqUrNj/gU4WqwYcbNpRx7XBtiQ
-	 9obkPQmlblrCQuSR8D8yRDCao9KM8Hq4xYqZQFtwvq3/NJG9iEXLhe13raQMjUOpe5jpnPM45cZ1A
-	 8alZDdwOwNZLX9K2Udy1Vu9Vfn88od9O75+eVdokKCqFJTvDITj3pAe+
-From: "=?utf-8?B?Q3VuaGFvIEx1?=" <1579567540@qq.com>
-To: "=?utf-8?B?SGVpa28gU3TDvGJuZXI=?=" <heiko@sntech.de>, "=?utf-8?B?Um9iIEhlcnJpbmc=?=" <robh@kernel.org>, "=?utf-8?B?S3J6eXN6dG9mIEtvemxvd3NraQ==?=" <krzk+dt@kernel.org>, "=?utf-8?B?Q29ub3IgRG9vbGV5?=" <conor+dt@kernel.org>, "=?utf-8?B?RWxhaW5lIFpoYW5n?=" <zhangqing@rock-chips.com>, "=?utf-8?B?VWxmIEhhbnNzb24=?=" <ulfh@kernel.org>
-Cc: "=?utf-8?B?ZGV2aWNldHJlZQ==?=" <devicetree@vger.kernel.org>, "=?utf-8?B?bGludXgtYXJtLWtlcm5lbA==?=" <linux-arm-kernel@lists.infradead.org>, "=?utf-8?B?bGludXgtcm9ja2NoaXA=?=" <linux-rockchip@lists.infradead.org>, "=?utf-8?B?bGludXgta2VybmVs?=" <linux-kernel@vger.kernel.org>, "=?utf-8?B?bGludXgtcG0=?=" <linux-pm@vger.kernel.org>, "=?utf-8?B?U2ViYXN0aWFuIFJlaWNoZWw=?=" <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH v5 2/2] pmdomain: rockchip: Add RK3572 power domains
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=fVLeH/NA
+Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-48e47347279so544966f8f.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 06:33:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre.com; s=google; t=1795185193; x=1795789993; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=92f6NRETdzojaigU8EyzxjI/4N0lXsB5qD5xAdIQvbI=;
+        b=fVLeH/NA1t57W3/bCEZIZWhbOFBjWy0sHlhrpoG4Izfr9IGJew9nG3j42Rw6alippY
+         BT0vIYEC5b2uFta9Ajxyvq4HLZxEk6248gD6bsXwocEB04kMqZ4iVDN+XhjDx7wYj2f6
+         uRvILwXA3WGpDt+jghB/balcWGgm/XhfllCE5NU7WQYSOgIR2D7ZhZUwKnFGGT6d0eig
+         b/JzF7ykNyFPqess44kwGAbKuEIt95T+yu/epovAsfSDyGaR6R7UBvrFEfadI+1dBacK
+         vz3mktPikbpyKm7zBsyaRloECJHvgHavA5eOStrOxSwbRpMvHMV7WonZA+z5qaQHN/Vp
+         Ae2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795185193; x=1795789993;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=92f6NRETdzojaigU8EyzxjI/4N0lXsB5qD5xAdIQvbI=;
+        b=OgbBREOcWN1PkUhqRfNpURFDgpQHYzDv/E/S0iO9JkoIWEBDNdY+E6FfWdGXpL0woL
+         3kJbfSM81wSzLnb7TDgzID01ewytFGcUpEqp12/GkYmcktHZQvDszvcPgqqCXguRYKLN
+         csyjaYUYh2R99Op0mb4vNgQ9QQk98C2uGzA3edx2NN5FlqUFm6KNVN8EdV0DSEiHDF8M
+         iMpvFHdpErFLXdv1/FXfymy+td2IZRGwC+nViECb+9niTcpyjJ9MUAeY1nILKx9S7MmD
+         aw29nleb91JrY+Go2klvXaxOPjIPpfzX73Hvb+Q1zHsYFwN/3YfpTmhc33Y1djh6oAOQ
+         r4UQ==
+X-Forwarded-Encrypted: i=1; AL+hErFG5NsZBXoTfOxPzu0VbMXza05xvB3J2O7FL4RefFbPa7TbTCSR+/9GmD0iCE3HamFVRnOBvnrA2A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/UzJr8zmITMwTsLzSKu0G6gXI1ylZsQEMqBs4+U7TBoOkuZLhw
+	KG6umiIGHKoaiLBDKKIA+Jc+xqJuG3dRSRM5pWqfExrpj9iXlZqiL1USDf0c9/q00Wk=
+X-Gm-Gg: AZFdTZeKqi1rL/Pk+pVsnbhRzEPgXmHOmKirFMwRJhDMTVRSI41g0vCYdyCq/BBbvR2
+	1hEQlkzO0V/IK3kckN3ahiQ30UhuJifZZHjS7yBySYkQLZIdP20gKvSDCpmyNRuOdn92sXmVNej
+	QxzJV3b+W+CLbzRtLJeyJwu8c6QVrSpiw9Hv2l81Vw/bXMrIsR0wiEze9d8Qaf1cl3JudajIl4L
+	9Ut52DHwf7Gye2u5yPzUH9lJ3wKpG03Q85uoUbigtg3ID+uNRbHFlBiqvS8e7B+6HMIqoQJBTS6
+	rUM+D5TIE8APr1mlKna7LWDsHjoKV10mCMNkFAtFkszxaJMnsYskeOxEJD4rvRHShuzmKaIK9sE
+	RFyLyWQvkMhveF4/yc/WnY3J0jcbYpD2cWkBda9kI2hgMMGNdxYUIdc7Kij5IndIW8NmLzc6F9p
+	m6kayxjtHjipifQinUg2SGyR2AIQbZ4fFwFmnUuhzqv1TEhpTpb6qbC/WyAPJvCoIyPnps6Cibh
+	+2XQzrBGzOjvlHBWlVNGPXC0XYwM8CvSxwzZSp2EYSnMafORLGJhJKF+H1NV6+mdGZ8gilFbA7S
+	eIZoYD3qTfAedeHf9N5l83cC+PaG9ziXuz6dg8p4jmRdfWrQr0Gp0HSb6A==
+X-Received: by 2002:a05:6000:400b:b0:4a8:dbbd:69ab with SMTP id ffacd0b85a97d-4abb4f58c75mr6786554f8f.27.1795185192603;
+        Fri, 20 Nov 2026 06:33:12 -0800 (PST)
+Received: from [192.168.1.62] (140.30.66.37.rev.sfr.net. [37.66.30.140])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab6b110d56sm5978154f8f.40.2026.11.20.06.33.11
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 20 Nov 2026 06:33:12 -0800 (PST)
+Message-ID: <d94ad9ca-afdd-4301-a69c-0bbad5b334fa@baylibre.com>
+Date: Fri, 20 Nov 2026 15:33:11 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -68,72 +91,101 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: base64
-Date: Fri, 20 Nov 2026 21:53:58 +0800
-X-Priority: 3
-Message-ID: <tencent_DFB6F95537CDD14CC97C26B08CE407F4210A@qq.com>
-X-QQ-MIME: TCMime 1.0 by Tencent
-X-Mailer: QQMail 2.x
-X-QQ-Mailer: QQMail 2.x
-References: <20261118-add-board-ok3572-c-pmdomain-v5-0-f1af919dd434@qq.com>
- <20261118-add-board-ok3572-c-pmdomain-v5-2-f1af919dd434@qq.com>
-	<z4ZFdDPMSaWK2zh19ZM7pA@sntech.de>
-In-Reply-To: <z4ZFdDPMSaWK2zh19ZM7pA@sntech.de>
-X-QQ-mid: xmsezb41-0t1795182838tuf7c54wx
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 00/15] R-Car X5H Ironhide CPG/MDLC SCMI remapping
+ support
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+ Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Marek Vasut <marek.vasut+renesas@mailbox.org>,
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ Paul Elder <paul.elder+renesas@ideasonboard.com>,
+ Sudeep Holla <sudeep.holla@kernel.org>,
+ Cristian Marussi <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org
+References: <cover.1795029012.git.geert+renesas@glider.be>
+ <1e9c5ac3-d82b-4af9-9946-0302cadf7404@baylibre.com>
+ <20261119234759.GB2324725@killaraus.ideasonboard.com>
+ <19c3745a-6308-46ff-bb37-3acc88fe22e2@baylibre.com>
+ <awAqqg6F2Z1t55x2@ninjato>
+Content-Language: en-US, fr
+From: =?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>
+Autocrypt: addr=clegoffic@baylibre.com; keydata=
+ xjMEafx9bxYJKwYBBAHaRw8BAQdAtc85GIwDXLz0rh9thWXC80Lji0otVDVncXT4qaS4j1fN
+ K0Nsw6ltZW50IExlIEdvZmZpYyA8Y2xlZ29mZmljQGJheWxpYnJlLmNvbT7ClgQTFgoAPhYh
+ BJjMiHuM4ZUwFqUPr36EW4KtCh6TBQJp/H1vAhsDBQkJZgGABQsJCAcCBhUKCQgLAgQWAgMB
+ Ah4BAheAAAoJEH6EW4KtCh6Tt+sA/jVC35rY1npFlOy7YnncTdrID8Qf855JA78IzXgvzpGp
+ AP9FkuuT80m66PP3DvgYX9kVnG17mSDKO0+v2W18v6ZgCM44BGn8fW8SCisGAQQBl1UBBQEB
+ B0DMwF4u//aQyzsFlO8rPJ/cqsAuPH80IeIA3HOEo5mlVgMBCAfCfgQYFgoAJhYhBJjMiHuM
+ 4ZUwFqUPr36EW4KtCh6TBQJp/H1vAhsMBQkJZgGAAAoJEH6EW4KtCh6TdSgBAMDS0MiWCivt
+ LjzZc9bs+P/xdXywUjDKq3lpQGJ6vZ0GAP9vI6DnN7vwVK6jt6/+0aBGkog5Ura9+WwRFEdM
+ vLfPDQ==
+In-Reply-To: <awAqqg6F2Z1t55x2@ninjato>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-SGkgSGVpa28sCgo+IEkgZ3Vlc3MgdGhlIGZpcnN0IHF1ZXN0aW9uIGlzLCB3aHkgZG8geW91
-IG5lZWQgdGhhdD8KPiBUaGUgVFJNcyBvZiBib3RoIFJLMzU3MiBhbmQgUkszNTg4IGhhdmUg
-dGhlIHZvbHRhZ2UtZG9tYWluIHBvd2VyLWNvbnRyb2wKPiByZWdpc3RlcnMsIGJ1dCB3aHkg
-ZG8geW91IG5lZWQgdG8gY29udHJvbCB0aGVtIG5vdz8KPgo+IFNpZGUtcXVlc3Rpb24sIGhv
-dyBhcmUgdm9sdGFnZS1kb21haW5zIGhhbmRsZWQgb24gdGhlIG90aGVyIFNvQ3MuCj4gVGhl
-IFJLMzU4OCBhbHNvIGhhcyB0aGUgUE1VX1ZPTF9HQVRFX0NPTnggcmVnaXN0ZXJzLCBzbyBJ
-IGd1ZXNzCj4gdGhleSBjb3VsZCBhbHNvIGJlIHR1cm5lZCBvZmY/CgpJbiBoaXMgdjMgcmV2
-aWV3IFsxXSwgRmlubGV5IFhpYW8sIGFuIGVuZ2luZWVyIGF0IFJvY2tjaGlwLCBhc2tlZCBt
-ZQp0byBpbmNsdWRlIFJvY2tjaGlwJ3Mgdm9sdGFnZS1kb21haW4gaGFuZHNoYWtlIHdoZW4g
-YWRkaW5nIFJLMzU3MiBOUFUKc3VwcG9ydC4gU3BlY2lmaWNhbGx5LCBoZSBhc2tlZCBtZSB0
-byBjYWxsIHJvY2tjaGlwX3BtdV92ZF9vbigpIHRvCnJlcXVlc3QgVkRfTlBVIGJlZm9yZSBh
-c2tpbmcgdGhlIFBNVSB0byBwb3dlciB1cCBQRF9OUFUuCgpTbyBmYXIgSSd2ZSBvbmx5IHRl
-c3RlZCBiYXNpYyBOUFUgcG93ZXIgbWFuYWdlbWVudCBvbiBSSzM1NzIuIEkgaGF2ZW4ndApy
-dW4gYSBjb21wdXRlIHdvcmtsb2FkLCBzbyBJIGNhbid0IHNheSB3aGljaCBOUFUgZnVuY3Rp
-b25zLCBpZiBhbnksCndvdWxkIGJlIGFmZmVjdGVkIGJ5IG9taXR0aW5nIHRoZSBWRCByZXF1
-ZXN0LgoKSSBjb21wYXJlZCB0aGUgdXBzdHJlYW0gYW5kIFJvY2tjaGlwIGRyaXZlcnMgZm9y
-IFJLMzU4OC4gQm90aCBzd2l0Y2gKdGhlIHRvcC1sZXZlbCBOUFUgZG9tYWluIHVzaW5nIGJp
-dCAxIG9mIFBNVV9QV1JfR0FURV9TRlRDT04wIFsyXS4KTmVpdGhlciB3cml0ZXMgUE1VX1ZP
-TF9HQVRFX0NPTjAgZHVyaW5nIG5vcm1hbCBOUFUgZG9tYWluIHRyYW5zaXRpb25zLgoKU2hv
-dWxkIEkga2VlcCB0aGUgVkRfTlBVIHJlcXVlc3QgYmVmb3JlIHBvd2VyaW5nIHVwIFBEX05Q
-VSBvbiBSSzM1NzIKaW4gdjY/Cgo+IEJ1dCBpbiBnZW5lcmFsLCBpZiB5b3UgbmVlZCB0byBl
-bmFibGUgdGhlIHZvbHRhZ2UtZG9tYWluIHRvIGVuYWJsZSB0aGUKPiBwb3dlci1kb21haW4g
-aW5zaWRlIGl0LCB0aGlzIHJlYWxseSBzb3VuZHMgbW9yZSBsaWtlIGEgcG93ZXItZG9tYWlu
-IG9mCj4gYSBkaWZmZXJlbnQgdHlwZSAtIGJlY2F1c2UgdGhlIHdpZ2dsaW5nIGluc2lkZSB0
-aGUgcG93ZXItZG9tYWluCj4gaGFuZGxpbmcgYmVsb3cgbG9va3Mgc3RyYW5nZSwgYW5kIHdl
-IGFscmVhZHkgYXJlIGhhbmRsaW5nIGRvbWFpbgo+IHRyZWVzLgoKSSBjaGVja2VkIFJvY2tj
-aGlwJ3Mga2VybmVsIGFuZCB0aGUgUkszNTcyIGRvY3VtZW50YXRpb24sIGJ1dCBJIGNvdWxk
-bid0CmZpbmQgYSBzZXBhcmF0ZSBzdGF0dXMgYml0IGZvciBWRF9OUFUuIElmIEkgbW9kZWwg
-aXQgYXMgYSBwYXJlbnQKZG9tYWluLCB3b3VsZCBpdCBtYWtlIHNlbnNlIHRvIHRyYWNrIGl0
-cyBzdGF0ZSBpbiBzb2Z0d2FyZT8KCj4+IC0JaW50IGNsa191bmdhdGVfd19tYXNrID0gcGRf
-aW5mby0+Y2xrX3VuZ2F0ZV9tYXNrIDw8IDE2Owo+PiArCXUzMiBjbGtfdW5nYXRlX3dfbWFz
-ayA9ICh1MzIpcGRfaW5mby0+Y2xrX3VuZ2F0ZV9tYXNrIDw8IDE2Owo+Cj4gd2h5IGRvZXMg
-aXQgbmVlZCB0byBiZSB1MzIgbm93Pwo+IFllcywgdGhlIG1hc2sgc2hvdWxkIHByb2JhYmx5
-IGJlIHUzMiwgYnV0IHdoeSBub3QgY2hhbmdlIHNpbXBseSBjaGFuZ2UKPiB0aGUgZ2xvYmFs
-IHR5cGUgdGhlbj8KCkknbGwgbWFrZSBjbGtfdW5nYXRlX21hc2sgaXRzZWxmIHUzMiBpbiB2
-NiBhbmQgZHJvcCB0aGUgY2FzdC4KCj4gYm90aCB0aGUgY2xrX3VuZ2F0ZV9vZmZzZXQgKyBz
-dGF0dXNfb2Zmc2V0IGFkZGl0aW9uIHNob3VsZCBwcm9iYWJseSBiZQo+IHNlcGFyYXRlIHBh
-dGNoZXMsIGFzIHRoZXkgc2hvdWxkIGdldCBhIGRlc2NyaXB0aXZlIGNvbW1pdCBtZXNzYWdl
-IG9uCj4gd2h5IHRoZXkgYXJlIG5lZWRlZC4KPgo+PiArCWlmIChwbXUtPmluZm8tPmNoYWlu
-X3N0YXR1c19pbnZlcnRlZCkKPj4gKwkJcmV0dXJuICEodmFsICYgcGQtPmluZm8tPm1lbV9z
-dGF0dXNfbWFzayk7Cj4KPiBhZ2FpbiwgaW50cm9kdWNpbmcgdGhpcyBuZXcgcGFyYW1ldGVy
-IHNob3VsZCBnZXQgaXRzIG93biBjb21taXQgYW5kCj4gZGVzY3JpcHRpdmUgbWVzc2FnZSBv
-biB3aGF0IHRoaXMgZG9lcy4KCkknbGwgc3BsaXQgdGhlc2UuCgo+PiArCXJldHVybiByZWdt
-YXBfcmVhZF9wb2xsX3RpbWVvdXQocG11LT5ncmYsIHBtdS0+aW5mby0+Zndfc3RhdHVzX29m
-ZnNldCwKPj4gKwkJCQkgICAgICAgdmFsLCAodmFsICYgbWFzaykgPT0gbWFzaywgMCwgMTAw
-MDApOwo+PiArfQo+Cj4gdGhpcyBkZWZpbml0bHkgYWxzbyBuZWVkcyB3YXkgbW9yZSBleHBs
-YW5hdGlvbgoKVW5kZXJzdG9vZC4KClsxXSBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwv
-MThmY2ZlN2EtZTI1YS00NTE2LTgxMGYtZDc4N2I3Nzk5MTRkQHJvY2stY2hpcHMuY29tLwpb
-Ml0gUkszNTg4IFRSTSwgUGFydCAxLCB2MS4xLCBjaGFwdGVyIDcsIGVzcGVjaWFsbHkgc2Vj
-dGlvbiA3LjUuNToKICAgIGh0dHBzOi8vZGwubmFtdHNvLmNvbS9wcm9kdWN0cy9hMTAvYTEw
-LTM1ODgvZGF0YXNoZWV0cy9yb2NrY2hpcC1yazM1ODgtdHJtLXYxLjEtcGFydDEucGRmCgpC
-ZXN0IHJlZ2FyZHMsCkN1bmhhbyBMdQoKcHctYm90OiBjcgo=
+Hi Wolfram,
 
+Thank you for the rewording, it is clear
+
+On 11/20/26 12:10 PM, Wolfram Sang wrote:
+> In the past, we wanted to support all kinds of firmware. Sadly, each new
+> firmware introduced different IDs here and there. So, we came up with
+> some stable IDs ourselves and mapped them to the IDs per firmware. This
+> is a n:1-mapping of firmware IDs to our stable IDs.
+
+Sure, that is part of firmware development.
+I know several SDK versions exist, and supporting several of them is work for a vendor tree.
+As Geert's cover says, "While upstream Linux must only support sufficiently mature firmware versions, vendor trees (e.g. renesas-lts) may still want to support development firmware versions".
+Each SDK version can then have its own DT there.
+
+> The support for <n> firmware versions got serious opposition from
+> upstream. We concluded that supporting only the latest firmware will
+> make most controversial discussion points vanish. So, we now have a
+> 1:1-mapping of (the latest) firmware IDs to our stable IDs.
+
+Agreed, supporting several numbering upstream for the same chip only brings confusion.
+But then, why can't that one mapping be one DT?
+
+> I guess this is what Geert means with IDs becoming "stable". <n>
+> firmware versions might return <n> IDs, but supporting only one firmware
+> we get the same "stable" ID from it.
+> 
+> Sadly, of course, with the next firmware update, we still might get a
+> different ID all the time. So, not stable in that regard and we still
+> need the mapping :(
+
+When the firmware can be updated, I think an id change should be fixed there first.
+That is what I would do in the open-source SCMI server firmware I am writing for this chip.
+
+> Yes, this means the driver is then tied to a specific firmware version
+> because it only has this mapping. Not nice for a user. But we didn't see
+> another way moving things forward for now.
+I think the DT is that other way.
+With the SCMI ids in DT, only the DT is tied to a firmware version, not the drivers.
+If a release that changes ids is already out, it needs a new DT, or a quirk for that one release when the DT cannot be updated.
+
+The hardware stays described
+The CPG and MDLC belong to the SCMI server, so the DT should mark them status = "reserved", and the consumers use the SCMI clock, power domain and reset providers.
+
+The Devicetree Specification v0.4 define "reserved" for this case (section 2.3.4, Table 2.4):
+"Typically this is used for devices that are controlled by another software component, such as platform firmware."
+
+Zephyr also uses SCMI on this chip, and it already keeps the SCMI ids in its X5H DT
+Juno and STM32MP15 handle their firmware differences the same way, with separate -scmi DT variants that simply include the board DT and an SCMI .dtsi.
+If the number of variants grows, tools such as Lopper, which I mentioned before, can help manage them.
+
+Best regards,
+Clément
