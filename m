@@ -1,58 +1,66 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.161
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=111.22.67.135
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795152525;
-	b=TyIpnzwW4BJiMX4Z1O7Nxxy4y0bDUu2nHakAZqRBpDywmQo9qfjyZz4uOvS/OyviVzds
-	 Pn5mxZA6HWP7guGL/Q5hluJco+ddnGAaSxaXm2MtEgy/3m7JPuAdOFBAzznbBGJsrWwj/
-	 On/VaDdklRFWqjKvdWIjiC3Vh2Xk8NJCp3URrN1vwBYiRGgfIeVso0QGR41XSrCyA4E21
-	 xypVg94Q/MndYhbT9AAoLPWsQoQgY5AoWuos74zoivZA6MN0jVNtp6Vy0KY/uGKZhFzDg
-	 u7yVt7kX/DEJizD5zF3Wz9lOOWNE3NOkZ2UQB7J66YXxV4EJJXlLsl4CYL1GVvj8Drg==
+	t=1795155696;
+	b=I4+7mbqx0Rpxrb0rRdiInmyjfAVeJiFjgZdvcfM4cJN9jtQAn+rSJOP1SQ04SNpO8v3T
+	 MMCZ8ybQKXz7WD9MEvYDQdSdYDhRCWHVah5cTQ+bFZhdCMzOhnDZ4TmVfK7n1MGd1JXNs
+	 34ww7AP1EbIb2uf4ShNUOwqx3nEChP7r6Ri1QGxjR/WJ96Q9ewH6IH0fxEEc6fQoZKMy6
+	 eUuCJ1gywVfJ2DcdfJmPqo8Ftc6ismcyoAILBfAYvKJ44U21vzy+qDu9zGomNsafgV7hf
+	 NCvx9Nxh+wDX/t8NRIkNuQLEpWdh/AITR8BZMt5KQ+YaNA2wB8aA22mYS5sU5xdMMKA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795152525;
-	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-MBO-RS-ID:X-MBO-RS-META;
-	bh=J2OGnbZI2RyuSc7mFDxV7TFFnaltYUWFL9MIdYgF4mU=;
-	b=XxhkGQME9r7/zGkOUPpMih5t8h/MNosuXxLkfAezD9kFgNqPS/lKy3S31jxbgLiyQEWo
-	 Bx0JCyDpLe2d8VlQDezo0GhPHBxopXWodBHi7jm3RjXWTiC1Dy9/zDX8VyW2/r2X+nofU
-	 AYfHDRFoQ29Ey7WWbamuPfdZx61nC3W4MUPucy9lZ0UmzCjevF4jpAji3ghKIVsacyN/S
-	 y2RTq+JZplG/KKTw/8CUqr/oktNMwr2G6D6tzrcWk7c0RiY3umNPxV40ZnYtjZddyydGN
-	 34/A6v9P1Nw0mmrvIVbrcZYVRM/NxJrA+ESMqOmj2iArJEsviAfRwcobaqZ1wP6jxkw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795155696;
+	h=DMARC-Filter:DKIM-Signature:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:
+	 X-RM-TRANSID:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:X-RM-TRANSID:From:
+	 To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=tHuOMFVo4duUJwstJMTY4jW3s9XGVNxkQLtg8Ih8ULY=;
+	b=wsl2vZSpCH9hu4qzvIOjk0NoAhULsDzp8fU/e3nSuFnXDYoA7Q+D83rHUruSN1aXm8i2
+	 OhZMiG9IXHLZXcudL3j73or6vgYbIxB2KiJQAz72VqxNVeJCcCeAEx9khKnBoD7Ed2Ihs
+	 XXW5/1erY1c1SzMG4Z3khPWAB7PN5ALsHuPeAzHJOCqj9tXNNR275EA2adLk3KEI4gHmD
+	 9of+W2aqxPf0W/VQuKFuHjUgpSBU9vmNFix+KY+r3/L+TYG26f21QgNSJ8F2XXohdUt/B
+	 Wb2Ltp4DWZsS6bbP1QzaLkwfPMt9HEX1vicu5OmrHbe1KZA3rHYRqwy/jdinXuXkbFw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mailbox.org;
-	spf=pass smtp.mailfrom=mailbox.org;
-	dkim=pass header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=fSP1q1Gq;
-	arc=none smtp.remote-ip=80.241.56.161
-Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C88AC606A330;
-	Fri, 20 Nov 2026 05:28:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C88AC606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	dmarc=pass header.from=cmss.chinamobile.com;
+	spf=pass smtp.mailfrom=cmss.chinamobile.com;
+	dkim=pass header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=fNbigdSr;
+	arc=none smtp.remote-ip=111.22.67.135
+Received: from cmccmta2.chinamobile.com (cmccmta2.chinamobile.com [111.22.67.135])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 11D1A606A33C
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 06:21:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 11D1A606A33C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cmss.chinamobile.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=fSP1q1Gq
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4jW3lh5G1SzKnpn;
-	Fri, 20 Nov 2026 06:28:32 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1795152512;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=J2OGnbZI2RyuSc7mFDxV7TFFnaltYUWFL9MIdYgF4mU=;
-	b=fSP1q1GqB4YSd3yYZpZD7CoBk3OXGzxXXVYV5tFve6hGE1nuB4TZFnGKVErFNRvpVqNXR4
-	WClS2aKJwimDXHWHKm0uW85Z339XgdeKzNQe26FiIW6N/jIUiL/BojSFiGZnEiScXnFzSW
-	9UTA4caaPFqYl0qoppEQo3Oxhc+u5yrq1kDB1zxL4zkgocgjptjGh9OqkJx/C4CkbgD+WU
-	aytnZl48P5hB9tI2k3TgwAoSyPNeKLOoeDU6xfrTGa9RGTgCRh2wAVW4mMWt44cWRQzcEM
-	KWj/V6KANVEneIwSy4PNhFNGf0Q+FGPz43WnILOS0Et6nBPrKO/Lz73ZT2YCYQ==
-Message-ID: <702afd88-3383-4f6f-9a54-78cd95a80c30@mailbox.org>
-Date: Fri, 20 Nov 2026 04:36:14 +0100
+	dkim=pass (1024-bit key) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=fNbigdSr
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=cmss.chinamobile.com; s=default; l=0;
+	h=from:subject:message-id:to:cc:mime-version;
+	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	b=fNbigdSrQ+9yMsNORNyxBnzaYHb0qYEb5Vw3FCy+RuiTvKSCVk2BdsfGytxpsjTJh4b10LAB3kpni
+	 60kDqeWhohPX0Rf1qs5V0Xux/DRqaDDAmYZn51AxvP6LUfINb+g6717rFedp18P6OnlJynIuN2kTXc
+	 QyRZyYT8RdQqLc+k=
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
+	by rmmx-syy-dmz-app07-12007 (RichMail) with SMTP id 2ee76affe6ebafe-25b41;
+	Fri, 20 Nov 2026 14:21:31 +0800 (CST)
+X-RM-TRANSID:2ee76affe6ebafe-25b41
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from devin-VMware-Virtual-Platform.localdomain (unknown[10.55.1.71])
+	by rmsmtp-syy-appsvr08-12008 (RichMail) with SMTP id 2ee86affe6ea2f3-80e18;
+	Fri, 20 Nov 2026 14:21:31 +0800 (CST)
+X-RM-TRANSID:2ee86affe6ea2f3-80e18
+From: Zhu Jun <zhujun2@cmss.chinamobile.com>
+To: trenn@suse.com
+Cc: shuah@kernel.org,
+	jwyatt@redhat.com,
+	jkacur@redhat.com,
+	linux-pm@vger.kernel.org,
+	Zhu Jun <zhujun2@cmss.chinamobile.com>
+Subject: [PATCH] cpupower: Initialize CPU lists before reading topology
+Date: Fri, 20 Nov 2026 14:21:30 +0800
+Message-ID: <20261120062130.98475-1-zhujun2@cmss.chinamobile.com>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -62,50 +70,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 12/15] pmdomain: renesas: r8a78000: Replace sentinel by
- explicit ID map size
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
- Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>,
- Philipp Zabel <p.zabel@pengutronix.de>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Marek Vasut <marek.vasut+renesas@mailbox.org>,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
- Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
- Paul Elder <paul.elder+renesas@ideasonboard.com>,
- =?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>,
- Sudeep Holla <sudeep.holla@kernel.org>,
- Cristian Marussi <cristian.marussi@arm.com>
-Cc: arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-References: <cover.1795029012.git.geert+renesas@glider.be>
- <ee60a54c457af21277a13e8e1db36ce83209b3f5.1795029012.git.geert+renesas@glider.be>
-Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <ee60a54c457af21277a13e8e1db36ce83209b3f5.1795029012.git.geert+renesas@glider.be>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: 0eb81db9691d4bba056
-X-MBO-RS-META: jtxh91mtydrj9pcr6axxbzggtj71f7wm
+Content-Transfer-Encoding: 8bit
 
-On 11/18/26 8:45 PM, Geert Uytterhoeven wrote:
-> The use of a sentinel in the module ID mapping array will become
-> cumbersome when the need arises to find out the actual number of
-> elements in the array.  Rework the mapping data structure to fix this,
-> also improving naming.  Let mod_id_map_find() return an index, to be
-> used for indexing additional mapping target arrays later.
-> Add a MOD_ID_MAP() initialization macro for brevity.
-> 
-> While at it, drop the check for "!map" in mod_id_map_find(), as that
-> pointer can never be NULL.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+get_cpu_topology() allocates core_info without initializing its CPU list
+strings. If reading physical_package_id or core_id fails, the loop skips
+the CPU list read, but the later sort still passes that entry's string
+to strcmp(). A failed core_cpus_list read leaves the same problem.
+
+Initialize each list to the existing "-1" sentinel before reading the
+topology attributes, so these failure paths always leave a terminated
+string for the sort and subsequent comparisons.
+
+Fixes: f89cb9cba7a2 ("cpupower: Implement CPU physical core querying")
+Signed-off-by: Zhu Jun <zhujun2@cmss.chinamobile.com>
+---
+ tools/power/cpupower/lib/cpupower.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
+index d7f7ec6f151c..010c279a7481 100644
+--- a/tools/power/cpupower/lib/cpupower.c
++++ b/tools/power/cpupower/lib/cpupower.c
+@@ -178,6 +178,7 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
+ 	for (cpu = 0; cpu < cpus; cpu++) {
+ 		cpu_top->core_info[cpu].cpu = cpu;
+ 		cpu_top->core_info[cpu].is_online = cpupower_is_cpu_online(cpu);
++		strcpy(cpu_top->core_info[cpu].core_cpu_list, "-1");
+ 		if(sysfs_topology_read_file(
+ 			cpu,
+ 			"physical_package_id",
+
+
