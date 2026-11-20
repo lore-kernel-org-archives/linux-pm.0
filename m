@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795192565;
-	b=c4QtSxGh8UZJCdUToTSf76ceGycDWLhp27FLggwpXPoOLeFDiqNJNR1YcNET0jerT7vz
-	 YrPSFvBWU7HzlFiyB9unV54PE3T6CuOuRJJnBpXmCC4BCEG/AUzu5byCZacEcgoDJJTIE
-	 4DlIvMzVcIY2p4qGZNILU+GeX3LjfLj/OUSC6765xbs4Kn+Kom/0WK7YVpa7va9KvEf2D
-	 GCykzJ1AOWeFaQIm68axStqodbxW3tAkJFTpi8mzzJr+GIZJq+W4sHYrqgAknp85KWnCg
-	 +1Ie+erdbNIAfkT5yL56D2Dqb+HsvrcEgaTjaY56PPDdiyeFUMERdn5RrCw26XQuP3A==
+	t=1795192898;
+	b=JN9IUvZ0e83wi8ZZjZcQDoZ1NVpMyUHa+u+KlTeIfJ947+52EgyrTZ5YZigDD8Dp08Bd
+	 aEbGHlvSvr1PvToRggzEauu/Sd92T96CiM1bNFnfYQfl0f0vLbusna5XIKVR3m6cltymo
+	 kRQUAtKR1+AjjseHrVL+KU7iDCIsx5kaFaIIfmlByPESJChQtBwuKIf08W9SI6AdfhWsJ
+	 kRGk2iPuV1AAkiLXo8Q64Nes0zrklnsCjCu+kgzjzyPYZMJx/h1Cp1hl1W76cQGBb3TgN
+	 b5H4RfC6VpYfX3/CYWMTpxUaG3M9kZmai34n6Y1aExxqFxlaDoq9V5kwLSQgcda3HNQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795192565;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795192898;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=NROB+otJAPb3sKEG9kAf2FYeN/cSw15FXGSDwsRGGiA=;
-	b=TyXWQe3HaXJ3bMN/jxwAJ5HofC/1X19mCb4hMyUXOzW2592dPsSg/K6hFwUXQ7Jgqlhh
-	 ftla7+v55u9IN46nGl2ypjaKnDtE464qV0oqrK0iWCWLr0BpAuN4Kx6jxqo64VuBw+4BA
-	 32R8a+8BTiX6JeEYpMP59NnWWkfJTmHuIAT699hGNiKcResE+6gZjwNNrn9rvRUm9Hp02
-	 4Rj4rrOWIgH2X9dI/aiVRiNkctk8ulZ3zYM6JxZbTiZNJubWlTlxncFbY1Eat/P97oJcj
-	 0NLOZTX9TXRt6aZ43fY1XXIIZAU9qWn+JJUEgHLqF4FVC3PdPbNmDQ2xUoqjExqIvdQ==
+	bh=BU1zg1ONXDx5a3mVAu66HlEYVOudpYSiqol3xpcTdZo=;
+	b=5bobmomGeDl9/ukO8Z3X0PUJD8lOnQPCEJsSD5pYjFfneQg8bjR4uZsYx98s1tPKQRic
+	 8vBpIFwbmjmLyJPkx9GIT5xeNQJlSRWbJsRnsC7fXjENWY6LfxQvP3pQbKtraDLb7bDRc
+	 eKOucMU9EdKOy+7U+sDlX10Zs7bNGO1Ha8yG8TXoUsP6iJooDbE7MOKwhkl2ytfhca6J7
+	 KJjqZ7in2ZEW19CfoU6kN/V2el6C1n6GsSrlb4cBVow5EUzPDTULs+upE5XnBdc8ZVC2s
+	 8mlL67lSNBImj759dO9kv3rTIt+lt7mtQwVvv9nzsngmqBcDA3yrpXy1+xI6Oj24edw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="Jvj697/T";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BP5Nsj5d;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00E70606A336
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:36:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A893606A61F
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:41:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Jvj697/T
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A027B1F000D1
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:36:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BP5Nsj5d
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EB361F000CF
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:41:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795192564;
-	bh=NROB+otJAPb3sKEG9kAf2FYeN/cSw15FXGSDwsRGGiA=;
+	s=k20260515; t=1795192897;
+	bh=BU1zg1ONXDx5a3mVAu66HlEYVOudpYSiqol3xpcTdZo=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Jvj697/TG8z5Aw8X8V0KDy/+ofCZg9kXbJWveRZUTJsDr+yFJiZu4gKjZVpzSeo01
-	 6yRa30P6jiDowpL2aKsWhTEAEQUHpzNawYaiSysE/Jk+8icOH0/Hm1MYXb2TAL/6Cv
-	 JQ/6fwbfIcs+xNqPW9hdfBAGTZt2d3M5fJ3t/WVnGsrVK4+UjkU90hCaxXTfOPe8oB
-	 4Trnc13yYyparqlWH1e7++5qMLO0LDuP4rjTYhDboijr1/eJOvIXcQdIfRv7SoiGVs
-	 cBELFF2LI1Tvp3wFVDrDq0tgT6dtXOe8wU7x47dJzt1ApBmihEzQ20UKYFCQQet0CK
-	 nJ9StSGTTAPMQ==
-Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-3ace304021eso9965401fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 08:36:04 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErFRxy8tkRi1AhP/xjmVooKN+t5WwU/25CZLoFPsoalmncZMdwCEXYFJxQ8y20wZu9to82iwH0eKfQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9LgyRSXbu7F09LYpEjRIR+zyh+iUKn2ltBNcCyWK0erQQjhU4g
-	2MgJ1pUfymkRTm5ZboRkKrJI4Wwx7VijdBHDW1GdPEqbq74Qfdy3sd9AurjiYiTM27a3YAuJUGi
-	ZmJhUWwksmify+V2dejWH1VNJ09Yfe0c=
-X-Received: by 2002:a05:6512:3da5:b0:5ba:3fbc:272d with SMTP id
- 2adb3069b0e04-5c1bc7d651fmr1088634e87.33.1795192562967; Fri, 20 Nov 2026
- 08:36:02 -0800 (PST)
+	b=BP5Nsj5dX3BqLnE4PU69kVoaY8OF68r7yYPApHgpijX/Qqp9Bgn/wIIgP7/LCFb21
+	 iUWj0dhcvTJovCDH5IliZFigZoH5KbbYClBtiuGBAD95qCxJ8cJeLuoFCfGW2ouiak
+	 biIKdiSXxRWo0kpXbJPaoZvtPGAuCPZAqf4igf7QPhoT98N1iqw0xVCtxZ1DFFNqDC
+	 ZtOJZN0b7WmjgOKn2HcRDxMN4gD9/1dqMk1t5agyEvScLfPRUpOPYTGFRdB5VrbFwh
+	 NSYXyznGPtxCTUZz/GYI5EVzKg4GJwNpi0X8h/ReOG1nfX9ZeicGc6sygXFW98gxNh
+	 JS4oK16Z2wYEw==
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-3ae0a5c1715so21795831fa.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 08:41:37 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErFWgsUK50NXQuP0pz7ns0pxxsHHE2GNV6kaTjYhdK+3nXiUIBEn9Fb0ghhm8k01/uKPdVnpOjVDdA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9uVVHdpc8pcNJVsb4dLiTB/60/NgopFBrg/sID+11fu5j5TtTW
+	lhIL5w/ILhHhtm58VMYj9hddrTzYk1auHehALo2O+AxUVBtK5fMuk091RAhaJXW1kX8X8BAHizz
+	OP2AvZ7qxQF9F5Sv8ZQ7absSK8gDTnzw=
+X-Received: by 2002:a05:651c:19ab:b0:3a9:7c85:a16d with SMTP id
+ 38308e7fff4ca-3ae7b7b78b3mr14455201fa.5.1795192895959; Fri, 20 Nov 2026
+ 08:41:35 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,235 +59,71 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261109-dpti-custom-cpu-v1-0-ead8e2d2067e@linux.intel.com>
-In-Reply-To: <20261109-dpti-custom-cpu-v1-0-ead8e2d2067e@linux.intel.com>
+References: <10852BF0B4974597+20261113010134.1408010-1-tuhaowen@uniontech.com>
+In-Reply-To: <10852BF0B4974597+20261113010134.1408010-1-tuhaowen@uniontech.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 20 Nov 2026 17:35:50 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jn0RBxEHF4GxtAZUF3SxA+bAxJqtHui=aqbN1Fdjoj0w@mail.gmail.com>
-X-Gm-Features: Aa3M54q3UnfQHJFVJ2OgisTESicOBjjN48VEnnoRLIfX6LwfqK5tB8SVptueTeM
-Message-ID: <CAJZ5v0jn0RBxEHF4GxtAZUF3SxA+bAxJqtHui=aqbN1Fdjoj0w@mail.gmail.com>
-Subject: Re: [PATCH 00/13] thermal: intel: dpti: Direct the package thermal
- interrupt to a chosen CPU
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org, 
-	linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	ricardo.neri@intel.com
+Date: Fri, 20 Nov 2026 17:41:24 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0j79Z35=G0j53UYxzY9T_vgpzhrMAWdejTfUZ=tYXLM8g@mail.gmail.com>
+X-Gm-Features: Aa3M54oMdW9NFAWI5Xwg3P8Dl0rSValX0ljF28RxR6wfeHuOJynyI1LyNJbsllY
+Message-ID: <CAJZ5v0j79Z35=G0j53UYxzY9T_vgpzhrMAWdejTfUZ=tYXLM8g@mail.gmail.com>
+Subject: Re: [PATCH] PM: hibernate: Restore PM notifiers on snapshot open failure
+To: tuhaowen <tuhaowen@uniontech.com>
+Cc: rafael@kernel.org, pavel@kernel.org, lenb@kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 10, 2026 at 4:36=E2=80=AFAM Ricardo Neri
-<ricardo.neri-calderon@linux.intel.com> wrote:
+On Fri, Nov 13, 2026 at 2:01=E2=80=AFAM tuhaowen <tuhaowen@uniontech.com> w=
+rote:
 >
-> The directed package-level thermal interrupt (DPTI) lets a single CPU per
-> package receive the package thermal interrupt instead of broadcasting it =
-to
-> every CPU in the package. Today that CPU is chosen with no regard for the
-> user's intent: the first CPU of a package to come online claims the
-> interrupt, and on offline it is redirected to another CPU of the package.
-> As a result, the interrupt can land on a CPU the user would rather keep
-> undisturbed, such as a nohz_full CPU, whose tickless isolation it breaks.
+> Opening /dev/snapshot for writing calls the PM_RESTORE_PREPARE
+> notifiers before allocating the basic memory bitmaps. If the allocation
+> fails, snapshot_open() returns an error without sending PM_POST_RESTORE.
+> The release callback is not called after a failed open, so it cannot undo
+> the preparation either.
 >
-> This series gives the user explicit control over the interrupt owner
-> through sysfs. It also updates automatic selection of the owner CPU to
-> avoid CPUs isolated at boot through the nohz_full and isolcpus=3Dnohz
-> command-line options.
+> In particular, the firmware loader enables firmware caching during
+> PM_RESTORE_PREPARE and relies on PM_POST_RESTORE to reset the cache state
+> and schedule the cached firmware for release. An allocation failure can
+> therefore leave firmware caching enabled after the restore attempt has
+> already failed.
 >
-> CPUs isolated through isolcpus=3Ddomain or a cpuset isolated partition ar=
-e
-> left for a follow-up series, if there is interest.
+> The robust notifier call only rolls back failures within the notifier
+> chain. It does not cover a subsequent failure to allocate the bitmaps.
+> Send PM_POST_RESTORE for that failure, after a successful prepare call,
+> so that the notifiers can undo their preparation without being called
+> twice when the prepare notification itself fails.
 >
-> The sysfs interface
-> -------------------
->
-> On a system with DPTI, every online CPU gets a boolean attribute in its
-> existing thermal_throttle group:
->
->   /sys/devices/system/cpu/cpuX/thermal_throttle/package_interrupt_owner
->
-> Reading it answers a question about cpuX alone: 1 if cpuX is the CPU
-> currently programmed to receive its package's thermal interrupt, 0
-> otherwise. The owner is a per-package property, so at most one CPU of a
-> package reads 1, and all of them read 0 while the interrupt is not direct=
-ed
-> to any CPU.
->
-> Writing 1 migrates the interrupt to cpuX and pins it there, overriding
-> automatic selection. The request is honored even if cpuX is
-> nohz_full-isolated, in which case a warning is logged. The write fails if
-> the hardware does not acknowledge the new owner.
->
-> Writing 0 releases a pin on cpuX and returns the package to automatic
-> selection. If cpuX is nohz_full-isolated, the interrupt moves to a CPU of
-> the package that is not, when one is online. Otherwise it stays on cpuX.
-> Writing 0 to a CPU that is not pinned has no effect.
->
->   # Direct this package's thermal interrupt to CPU 3 and keep it there
->   echo 1 > \
->       /sys/devices/system/cpu/cpu3/thermal_throttle/package_interrupt_own=
-er
->
->   # Let automatic selection govern that package again
->   echo 0 > \
->       /sys/devices/system/cpu/cpu3/thermal_throttle/package_interrupt_own=
-er
->
->   # List the CPUs that own their package's interrupt
->   grep -l '^1$' \
->       /sys/devices/system/cpu/cpu*/thermal_throttle/package_interrupt_own=
-er
->
-> Known limitations
-> -----------------
->
-> To keep the interface and the implementation simple, the interface accept=
-s
-> these limitations:
->
->  - The file reports owner state, not pin state. Writing 0 to a CPU that i=
-s
->    not isolated unpins without migrating: cpuX keeps the interrupt and
->    keeps reading 1 until the placement changes, for example when cpuX goe=
-s
->    offline.
->
->  - There is no request to move the interrupt away from cpuX. Pin another
->    CPU of the package instead.
->
->  - A write to one CPU changes what another CPU's file reads: pinning cpuY
->    makes the previous owner, cpuX, read 0 without cpuX's file being
->    written.
->
->  - Finding which CPU owns a given package's interrupt takes one read per
->    CPU of the package instead of a single read.
->
->  - The pinned preference is not observable. While a pinned CPU is offline=
-,
->    the remaining CPUs of the package report the automatically chosen
->    fallback. The pin is silently restored when the pinned CPU comes back
->    online.
->
->  - The same file appears under every CPU of a package, because per-packag=
-e
->    state is exposed through the per-CPU device. This reuses the existing
->    per-CPU device infrastructure and mirrors package_throttle_count, whic=
-h
->    is also per-package state shown per-CPU.
->
-> Organization
-> ------------
->
-> The series is organized as follows:
->
->  * Fix (patch 1): an existing race between kernel_kexec() and CPU hotplug
->    can program a new owner after the syscore shutdown has cleared the DPT=
-I
->    in all packages and leave it enabled in the next kernel. Independent o=
-f
->    the rest of the series.
->
->  * Preparation (patches 2-4): prefix the log messages of therm_throt.c
->    with pr_fmt(), move the sysfs device helpers next to their callers, an=
-d
->    give the DPTI code a consistent dpti_ naming scheme.
->
->  * Groundwork (patches 5-9): owner changes become more likely once the
->    selection and sysfs patches land. Limit the full teardown to boot, so
->    that a later failure affects only its package; group per-package state
->    in struct dpti_pkg; and factor the programming sequence into helpers
->    that run it on the target CPU, from any CPU and entry point.
->
->  * Rank-based owner selection (patch 10): instead of special-casing pinne=
-d
->    and isolated CPUs, rank every CPU and move the interrupt only on a
->    strict rank improvement.
->
->  * Serialization (patch 11): introduce dpti_mutex ahead of the sysfs
->    writer, which runs concurrently with the CPU hotplug callbacks.
->
->  * Avoid nohz_full-isolated CPUs (patch 12): rank housekeeping CPUs above
->    isolated ones, and migrate as soon as a housekeeping CPU comes online.
->
->  * The sysfs interface (patch 13): let the user pin the owner.
->
-> Summary of testing
-> ------------------
->
-> Tested on a 1-socket system with DPTI and on a 2-socket system without it=
-,
-> where test-only patches emulate DPTI.
->
-> - CPU hotplug:
->   - Sweeps that offline and then online each CPU in turn, checking the
->     owner in MSR_IA32_THERM_INTERRUPT (and in sysfs from patch 13) after
->     every step: about 750 transitions across the kernels of every patch o=
-n
->     the 1-socket system, and about 950 on the 2-socket system, where
->     package owners go offline and the interrupt migrates.
->   - lockdep stress runs of up to 10,000 offline/online cycles against
->     sysfs writes, with no deadlocks.
->   - Injected handover failures always ended with either the old owner
->     kept or the package broadcasting.
-> - Isolation (nohz_full):
->   - The owner stayed on housekeeping CPUs and fell back to an isolated CP=
-U,
->     with a warning, only when it had to. Ownership migrated back to a
->     housekeeping CPU as soon as one came online.
->   - 0 of 36 package interrupts reached an isolated CPU with DPTI, against
->     26 of 26 without it.
-> - Hibernation (S4):
->   - One cycle on every patch kernel, with the owner restored each time,
->     and a pin restored where one was set.
->   - All four combinations of image and boot kernel, with and without DPTI=
-,
->     left no stale state.
-> - kexec:
->   - The sysfs race went from 22 of 22 failing to 20 of 20 clean with the
->     fix in patches 1 and 11. The CPU hotplug race went from 4 of 4 failin=
-g
->     to 0 of 5 with patch 1.
->   - A kexec into a kernel without DPTI always found the hardware clean.
-> - Configurations:
->   - Every patch builds cleanly in an x86_64_defconfig-based configuration=
-,
->     with each of NO_HZ_FULL, SYSFS, SMP, CPU_ISOLATION, PM_SLEEP, lockdep
->     and X86_THERMAL_VECTOR turned off one at a time, and in a 32-bit
->     build. On hardware, I ran the test systems' distribution configuratio=
-n
->     with debug options, plus three variants: NO_HZ_FULL=3Dn, KASAN with
->     kmemleak, and a no-debug performance build.
->
-> Thanks and BR,
-> Ricardo
->
-> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> ---
-> Ricardo Neri (13):
->       thermal: intel: Keep directed package interrupts off after syscore =
-shutdown
->       thermal: intel: Prefix log messages via pr_fmt()
->       thermal: intel: Move the sysfs device helpers next to their callers
->       thermal: intel: dpti: Adopt the dpti_ prefix and the owner terminol=
-ogy
->       thermal: intel: dpti: Tear down DPTI only during boot
->       thermal: intel: dpti: Introduce struct dpti_pkg for per-package sta=
-te
->       thermal: intel: dpti: Configure the local CPU by value
->       thermal: intel: dpti: Factor the programming sequence out into a he=
-lper
->       thermal: intel: dpti: Program the directed interrupt on the target =
-CPU
->       thermal: intel: dpti: Add rank-based owner selection
->       thermal: intel: dpti: Serialize updates to the directed interrupt s=
-tate
->       thermal: intel: dpti: Avoid nohz_full CPUs when possible
->       thermal: intel: dpti: Add sysfs control of interrupt owner
->
->  Documentation/ABI/testing/sysfs-devices-system-cpu |  40 ++
->  drivers/thermal/intel/therm_throt.c                | 739 +++++++++++++++=
-+-----
->  2 files changed, 606 insertions(+), 173 deletions(-)
-> ---
+> Fixes: 70d932985757 ("notifier: Fix broken error handling pattern")
+> Signed-off-by: tuhaowen <tuhaowen@uniontech.com>
 
-Whole series applied as 7.5 material, thanks!
+Can you please put your full name into the From: header and the
+Signed-off-by: tag?
+
+Failing to do so causes Sashiko to complain unnecessarily:
+
+https://sashiko.dev/#/patchset/10852BF0B4974597%2B20261113010134.1408010-1-=
+tuhaowen%40uniontech.com
+
+> ---
+>  kernel/power/user.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/kernel/power/user.c b/kernel/power/user.c
+> index 6e4f40e49319..e7e8016a4f1a 100644
+> --- a/kernel/power/user.c
+> +++ b/kernel/power/user.c
+> @@ -87,6 +87,8 @@ static int snapshot_open(struct inode *inode, struct fi=
+le *filp)
+>                 error =3D pm_notifier_call_chain_robust(PM_RESTORE_PREPAR=
+E, PM_POST_RESTORE);
+>                 if (!error) {
+>                         error =3D create_basic_memory_bitmaps();
+> +                       if (error)
+> +                               pm_notifier_call_chain(PM_POST_RESTORE);
+>                         data->free_bitmaps =3D !error;
+>                 }
+>         }
+> --
+> 2.50.1
+>
