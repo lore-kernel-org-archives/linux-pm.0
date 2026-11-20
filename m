@@ -1,76 +1,69 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.246.85.4
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795161443;
-	b=b9Bhl70wPCxxZigoxdW5ysFFfTb9yFjWUo/+cKqIbbJYdvHfC8WAWLWraafDYWdE14CY
-	 tTBLXsW/AZFTd1eXrhTi4b7JZ6nbuewU9NjqSnrKQixuG3UzAfaCraYBIMqPgcQ8kJ9Dk
-	 tTa8x8rJMyBZiP2Smki4zWSAam1SuUwQF0bTeXcWOKTRKeO84oC2aeiAcF4+vKo8rbZCD
-	 h3K8kO7G+mNbzU8awRUeEOvbH8feD8IAgwdXCHr70u1I7zYh4NnZETas+jLy9T6qXcayq
-	 9emLL8rqwbO6q1KOsrMmu7FyVuyPKnQU/tHefqAvDyL4TD4F5qxzVN192krl81X1TDQ==
+	t=1795163272;
+	b=XGFFSHUDE/RmEgA3hNaYfGvpZjyxi+olVguoAvJCO08UjSkndrGKWBRoVCKc0R8Smm+Z
+	 vD7o0JOHt+gPqsyq91DTNAo9oJh2zK2G2qnUUY/6q/lP45OH5HzqhIrnwOGEiPJpxYKRJ
+	 meqCYASoMbAjOJlok5x5hzJNetmPPg13GrLaezTwTgup8chLuDHXafM4hCFfOjhX11HV6
+	 Sqzf2Z1hJGIbIlS+PRkIz2JgY3ibjiJTNU+hb14dOvM4Nm1+XnFiDwnkGSvLswFxsz2wC
+	 jIIZmA8Xx5orZ2UJIqDXf+1/fn9KRQszQ8G0C9Dcu5tUMWZQJydiCHY4bXLPABiJ99w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795161443;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type;
-	bh=xKnU/TldM314xEN7UqLDGvv/eDTZSOGz68aX0N6/qi4=;
-	b=OdKyxVnzsagmHgqj+Yrj+rVtrpkE0PbsRaFeU9Ya1VpdEegfvXhzVboKbamuTAevWiHr
-	 U/62tKhMlbVfK3lF8qqWFGIEiVXgZu4l8sOwmzZAao7KmzUIAl1h2O3d9q0Gtp3Z13Kum
-	 vVHsPyjV8fItagFnLSc9mGpeCx56Ut4EE955AUluCG4dB6bk0AW8wSovzElKsj12IvN5r
-	 TUg3kUZtpC6s3zF1E1QNpjXE6w5x76AU8It1kcy5VIfwT+C3HHDYapJjRaPAoMAYtW6b4
-	 kYg8qhbY2m4gZimh0LJ3plQ81f9uUILb77zmrATQ03SFpXQHpERZv2JF1V00xDLhgAg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795163272;
+	h=DMARC-Filter:Received:Received:Received:DKIM-Signature:From:To:Cc:
+	 Subject:In-Reply-To:References:User-Agent:Date:Message-ID:
+	 MIME-Version:Content-Type:X-Last-TLS-Session-Version;
+	bh=9EVz50obAhjsYPeTDicab+zb3sNmelcAO2oj1dxcUDE=;
+	b=oyOTxynJ/U/36ZjNrk/R5fluLmkGS81qOjzTWPYBB/W7H3Fs4h0FXLokPc/S9JRbh5z8
+	 m59Gr3rpo7RlZHpT8ZAJVSp7fHljkUGXPw5bIiDGvG1e52nIZIp91w9mNW7LRZs6DA2iC
+	 7W/e42nr9YIXyehPwLCtck7pOsa/Ajvqk2IM2YTHD4ViAa/fbvnxHznSeoMGS2fZbh7Si
+	 TC71cwMwwm7grTKhyH/VXK2tPM2BW/bryJiCJNA5RJBoSAc2f2lH8lkfVNhf/qc/j+CDx
+	 HA344OVNh5B6Cva0vMsAIRd1twdbZFqeOaJUWZblTj/LLVsBHjFqlu6s3G4OGyFhDrg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.160.46
-Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=bootlin.com;
+	spf=pass smtp.mailfrom=bootlin.com;
+	dkim=pass header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=cTEyU2TD;
+	arc=none smtp.remote-ip=185.246.85.4
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51130606A32A
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 07:57:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 51130606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-4a85c656c58so502804fac.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 23:57:23 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795161442; x=1795766242;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=xKnU/TldM314xEN7UqLDGvv/eDTZSOGz68aX0N6/qi4=;
-        b=0L+R2lMxfUwfLemYk5tXXD7D4EU/hzgSIO4ILWa4XacgyWz7BnCbW8pixqIHYAoP0g
-         ILQaLGNNE4QZCMhV3uBS6m+PEQgUkNfTf/jJ2jz/ecn17Ger3OLq6VL27gn0A7AQHs9Z
-         lGIXcUdy2LjWzOhqop0d2NRptMI3DJ4nOBpvhubS1KPfY6VI6vjahCD/f3r4tYoUYoZp
-         0HDfaDq1WOT3JOWxsO2wwxkZHiQ+uBqJ/6g3k7TyoF7FIB56oK6cDE+C5ls6+PRBUjgO
-         c8Thqri82zSOMOYidEvxewdAmqQPqSg01DiaJ+8NAeci3bVUCbFrfqnhc386DET4Cjgj
-         8F+g==
-X-Forwarded-Encrypted: i=1; AL+hErEQEeSuIZ7Pt1qoITTK7dHVV3rsxi0Wo92ZJxsqGxiTtAQgev5w2+ec8QtYH/ZjrqjiuWmRu315aA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/e7EUtsmqIMeLLY8tbJHD7Z9uGTT+bWsfbmMh5rC1GFd2CNAcN
-	EcpsCRp469WjPGDMGnPqDm64msmtsf4PVhVYuZhCIqmvqDSzhNj0Sb7e0JRy4U7D
-X-Gm-Gg: AYBFou1ZB+I8KhC2JzxY0rImt6a3jicCMv0quE3/O8yGPO1s9FKkcpoZrov5HJaY9dG
-	GIGQzBgtAzqXKBt6JC8rNkcXSdQp6afyK/KFHR30p67GFB71psLfSAJaK+fQMlsmOguuHILAH/d
-	kB0InPPyJgQC9KppeJt2yrtGikdiZMXq0Q7UZBfcNUU6iwEkBebjwFcQ9d9mCEpyt9STzw+XMbd
-	T5FCpEB54FiGhm8q7/p64mrs44u55trZ51ba6Z6lcuo1kQv7s2lovKKK8+Fv9oW64Xm49/IkQfK
-	sg2vnwZqXeF8CPnVteejgMpv/jFBmGqPwFj8efOkKsfLUN+2b/j6jIuGEyj7vZRBvqwk6Lha6PQ
-	3LTXzrNlrxLPp/9OZ4EUpFhYT3OS1Uai90gvA9RnsdyeheUCvJz7Zi8X/t2QnhehmZg5K2Y+vmq
-	hckYkXXOII6G8qq0GRQL7yloitTYna2CLfIzd+hcT1f6EvWC9khY2Sm+L8wOuHr8/h8ClPCWrDy
-	TrleeTqfiNhWvwsPKU8flaVrF3Is8vqqcF3EBOfeJFiw+Z0X+uYkcZ9T+2lYxjLplJdqrMQB9AE
-	u/vsCtq+BOXN5W88bTLsASix1/nXzVGJm41xLJVgQGwM0MhyErPI71ITCeH60uAhuVk0wt8=
-X-Received: by 2002:a05:6808:13d5:b0:572:dc48:b773 with SMTP id 5614622812f47-57a06b1d9bamr3140378b6e.1.1795161442198;
-        Thu, 19 Nov 2026 23:57:22 -0800 (PST)
-Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com. [209.85.167.178])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-57a3575f5bfsm1613708b6e.14.2026.11.19.23.57.21
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 19 Nov 2026 23:57:21 -0800 (PST)
-Received: by mail-oi1-f178.google.com with SMTP id 5614622812f47-563a0462094so388865b6e.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 23:57:21 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErEYmuLlumdmdCmi934kXMKQNxBSgpDptyqZmdnqxmAJ50cJ9wuOsLHLnUqZZs3Hrbh/DyCrhgTWGg==@vger.kernel.org
-X-Received: by 2002:a05:6102:6c4:b0:7b3:8f0a:f76c with SMTP id
- ada2fe7eead31-7d7393caab1mr683612137.13.1795160956421; Thu, 19 Nov 2026
- 23:49:16 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C197606A320;
+	Fri, 20 Nov 2026 08:27:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9C197606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=cTEyU2TD
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 1C4694E41684;
+	Fri, 20 Nov 2026 08:27:50 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id CCB226017D;
+	Fri, 20 Nov 2026 08:27:49 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 5828B11BC0FCE;
+	Fri, 20 Nov 2026 09:27:47 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1795163269; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 in-reply-to:references; bh=9EVz50obAhjsYPeTDicab+zb3sNmelcAO2oj1dxcUDE=;
+	b=cTEyU2TDlVbsaA3wIhmbgcZhWApax+ThYFh5jkqWEeHG9F1D3JSnc0D+GrthqfMIqdG9Y4
+	86OtrjBvHcNFWWwRfB0IakXx0nTFC+4n80CKVEX3+sdcLl29G0srYBG3in+x9EotN9KMep
+	A1HRt4f5XLRpvwlmHr3U8ACPBlcEdZN7pto3OprQ2Bbxs8BKJnW1qPW0hSYVQE5zYDES2n
+	LDpDIaYGd8Iv2H00xLD8jnntKYc5x8IpVAhjmKS1BTSkHRbf2eB86l+KqQCHEspgP2F3a3
+	yPTEkiQAEiS5LOBFWa17pHevhEhzsgF+3ccbiBZp4cIvRNQy43pMxhpe3rcrLA==
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+To: Yaohan Li <shunsheng1218@gmail.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,  Daniel Lezcano
+ <daniel.lezcano@kernel.org>,  Zhang Rui <rui.zhang@intel.com>,  Lukasz
+ Luba <lukasz.luba@arm.com>,  Eduardo Valentin <edubezval@gmail.com>,
+  linux-pm@vger.kernel.org,  linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] thermal/drivers/armada: request the overheat IRQ
+ before enabling the source
+In-Reply-To: <20261120042728.420697-1-shunsheng1218@gmail.com> (Yaohan Li's
+	message of "Fri, 20 Nov 2026 12:27:28 +0800")
+References: <87o6bldqjo.fsf@bootlin.com>
+	<20261120042728.420697-1-shunsheng1218@gmail.com>
+User-Agent: mu4e 1.12.12; emacs 30.2
+Date: Fri, 20 Nov 2026 09:27:46 +0100
+Message-ID: <87o6bjc3gd.fsf@bootlin.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,91 +73,44 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1795094688.git.geert+renesas@glider.be> <683b5b189409e5ee04100044fb615b01cb877f3d.1795094688.git.geert+renesas@glider.be>
- <20261119225017.15a7b5cc@kemnade.info>
-In-Reply-To: <20261119225017.15a7b5cc@kemnade.info>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 20 Nov 2026 08:49:05 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVbgGV_6yjOip4xT3YhBgaOveHzSRbw9e_cHen9NRZqmw@mail.gmail.com>
-X-Gm-Features: Aa3M54rfGlA3UrmhLbFF7B0m1MfxoFvw1pyboKcP24dUngkkG_fWLkpDdrOnbn8
-Message-ID: <CAMuHMdVbgGV_6yjOip4xT3YhBgaOveHzSRbw9e_cHen9NRZqmw@mail.gmail.com>
-Subject: Re: [PATCH 5/6] [RFT] ARM: OMAP2+: Convert to dev_clk_get_from_provider()
-To: Andreas Kemnade <andreas@kemnade.info>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Kevin Hilman <khilman@baylibre.com>, 
-	Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>, 
-	Russell King <linux@armlinux.org.uk>, Paul Walmsley <paul@pwsan.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Sandy Huang <hjc@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
-	Andy Yan <andyshrk@163.com>, Ulf Hansson <ulfh@kernel.org>, linux-clk@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-rockchip@lists.infradead.org, 
-	linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-Last-TLS-Session-Version: TLSv1.3
 
-Hi Andreas,
+On 20/11/2026 at 12:27:28 +08, Yaohan Li <shunsheng1218@gmail.com> wrote:
 
-On Thu, 19 Nov 2026 at 22:50, Andreas Kemnade <andreas@kemnade.info> wrote:
-> On Thu, 19 Nov 2026 14:40:38 +0100
-> Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> armada_thermal_probe() requests the overheat interrupt before it registers
+> the thermal zones.  Devres releases resources in the reverse order, so the
+> zones are unregistered first and the interrupt is freed afterwards: a
+> handler that is still running, or that fires in the window between the
+> two, passes a zone that has already been destroyed to
+> thermal_zone_device_update().
 >
-> > OMAP2+ clock handling uses of_clk_get_from_provider() to obtain clocks
-> > used for power management, so the latter show up as "deviceless" in the
-> > consumer column of the clk_summary file in debugfs.
-> >
-> > Fix this by using dev_clk_get_from_provider() instead, letting us pass
-> > the consumer device, too.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > ---
-> > Compile-tested only.
-> >
-> > The first change is probably OK.  The second change may fail if anything
-> > in the oh->od->pdev->dev chain is not available yet at this point.
+> Request the interrupt after the zone loop instead.  The handler is then
+> freed before the zones it updates, and the interrupt is only requested
+> when a critical trip point was found, which is the only case in which the
+> driver has an overheat source to enable.
 >
-> Test on OMAP3:
+> The interrupt stays optional, as before: apart from -EPROBE_DEFER, an
+> unavailable or invalid IRQ number does not fail the probe, it only leaves
+> the device without overheat interrupt handling.
+>
+> The source has to be enabled after the handler is registered, so
+> armada_configure_overheat_int() only programs the thresholds now and
+> armada_thermal_probe() enables the source once the request has succeeded.
+> A failed request then cannot leave an interrupt enabled that nobody
+> handles.
+>
+> The zones are now registered while the source is still masked, so the
+> driver masks it at probe time on the variants that describe the overheat
+> interrupt as a DFX cause: a firmware that left it enabled would otherwise
+> raise an interrupt that nobody handles until the request below.  The mask
+> is released when the request succeeds.
+>
+> ->remove() masks the source and sets a shutdown flag so that the poll loop
+> gives up instead of keeping the removal blocked until the sensor cools
+> down.
+>
+> Fixes: 879d7362d1d0 ("thermal: armada: add overheat interrupt support")
+> Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
 
-Thanks for testing!
-
-> --- clk-old     2026-11-19 22:44:59.810807920 +0100
-> +++ clk-new     2026-11-19 22:26:52.862531880 +0100
-> @@ -1,17 +1,17 @@
->                                   enable  prepare  protect                                duty  hardware                            connection
->     clock                          count    count    count        rate   accuracy phase  cycle    enable   consumer                         id
->  ---------------------------------------------------------------------------------------------------------------------------------------------
-> - oscillator                          0       0        0        26000000    0          0     50000      Y   deviceless                      of_clk_get_from_provider
-> + oscillator                          0       0        0        26000000    0          0     50000      Y   deviceless                      dev_clk_get_from_provider
->                                                                                                             deviceless                      no_connection_id
-> - secure_32k_fck                      0       1        0        32768       0          0     50000      Y   deviceless                      of_clk_get_from_provider
-> + secure_32k_fck                      0       1        0        32768       0          0     50000      Y   deviceless                      dev_clk_get_from_provider
->                                                                                                             deviceless                      no_connection_id
-> -    wdt1_fck                         0       0        0        32768       0          0     50000      Y      deviceless                      of_clk_get_from_provider
-> +    wdt1_fck                         0       0        0        32768       0          0     50000      Y      deviceless                      dev_clk_get_from_provider
->                                                                                                                deviceless                      no_connection_id
->      gpt12_fck                        0       1        0        32768       0          0     50000      Y      48304000.timer                  fck
->                                                                                                                48304000.target-module          fck
-> -                                                                                                              deviceless                      of_clk_get_from_provider
-> +                                                                                                              deviceless                      dev_clk_get_from_provider
->                                                                                                                deviceless                      no_connection_id
-> - dummy_ck                            0       0        0        0           0          0     50000      Y   deviceless                      of_clk_get_from_provider
-> + dummy_ck                            0       0        0        0           0          0     50000      Y   deviceless                      dev_clk_get_from_provider
->                                                                                                             deviceless                      no_connection_id
->   mcbsp_clks                          0       5        0        0           0          0     50000      Y   deviceless                      mcbsp_clks
->                                                                                                             deviceless                      mcbsp_clks
-
-Hmm, so the passed device is always NULL, and thus there is no point
-in making the change.
-Do you know if these come from the first or second change in my patch
-(I guess the second)?
-
-Thanks again!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
