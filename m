@@ -1,78 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795198223;
-	b=EseRMzF8eg3Mqj+/X/rWp1TTFq3OyQRrtjcd3P1+IZJtM5vMutsgQ342RNNy9Wme0EC4
-	 uIhOddw1ptUFvCRsDYdE0ijh8+2SYtf1CH/cSlFdBbS+snTWhbvcEo0xcc3pWNRXQUy5D
-	 T574jukT3OY5GEJ7XKmtM8XEcrdc5AItKm1/YPAm/Fm11+qlth+OW3f0quW6vZJaKqQ/D
-	 uZLD+Pm4fn/rFzr4YTWnOy6Q9CGdrRWUQH5QJEV0z+Ieh1MepvZOTJPX4FLy7Keh23FFL
-	 bqvPJzyARTca4cLpuLawkCkknLqljfMsMKnJoCaci1fAHTf9HDRcNsVuEMS/Svz41Zg==
+	t=1795198232;
+	b=uJeqj+zxwb4kMG4o+TuJOVNKd58OtOcuyWRRudXhRwGga6+W5q91qAUKQ8I0L/lBkC7d
+	 tz6CmxVA/P7X451RmKV9x+UkJ4zzRy3HdTEhdJMWGifzMcRor5jMQEa8TSYOwpzgktsyz
+	 JR2QQ6atgRt40JQCEKtFrtKOu7gi/yFZ+tCGj7+pfFucozmKC55zq2JwXCs9GsOWcYeSr
+	 OcTJxszXhYS6Tlcfbe4Cz99S8wx66oYbbh2G5ydGtmLRw1HHwphnMUzSWM7T3IGWR3ZwA
+	 mY2RWy+dALMzY6uPmvmYjo657krttr/0M1rvYLNu8D2P8c5W2iESu09PvL7XXzJI0Yw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795198223;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795198232;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=rPWblFMOlUoCwhrsGsfTvXS//TfIn5L5I+BHDpUhjpg=;
-	b=OlFCysqdmEwXC/iaUbQGsC1vj/5zRsMFfX6JIk6JkE4o21jZIrdVy5c3YiVtgC0YmAVI
-	 nQuvtwlrbZb3qO8jnzk+wTHYSGLYVAi9+JpZurOLVPPhj8fviKkMG+OwA+zNDa9qPt2zs
-	 Ox6lv0pN03IQQDmhV7IdHhyi2+uEt4HJWmUUeqQnHw/NjDqDuWQJSahqtOUAu00BnT1kd
-	 A0zwABOFx4Xf2JlN6Xy/+J9yvqasxinX66D6wY9t5AFh6Y1PVtCCl2EMN5fns8QzAz1sa
-	 4TDjGgTLwNyBxqeVUYMs28RBrke0hmGdcpy5IndLFsBRr1qCDGoICdgaWHozeTp9mkA==
+	bh=DdtYjjt4icTMCNkBVK8ZqJ6Cita/durqIaktzLd3ASQ=;
+	b=027DnVB9jXZKnAioRJwBJ9U0zy9rLczyuKb+hIGz47kbm91c4m56l/z+0vDx+a5yVf9t
+	 RaQRtZGzmUOyHwHdBX2iGwuF7gE72hUX9KnPQsR+0IEDXP4p/UMfryg5ofWBSvkRrZra6
+	 P17NqrJaVXB397DL6DtCPtchBVUME0mgzmRXxJrMBVqd77A9JIcRriqERbojxPKtO/SHI
+	 dH0n+DHrVT2gIo8d1G/lyYUyNFb+qL7ItxGSjyO8k/N4mRMAUovxW8OcHaODkqwUpHCXE
+	 1bsusdJtS8JPBos71h9jrWVtYEwmf9TdMRnu4JRZdzOGXutwloraqQT++sJRPnK3JFQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LQdjjNII;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fVa07GAX;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69676606E846;
-	Fri, 20 Nov 2026 18:10:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAE5960A6F7A;
+	Fri, 20 Nov 2026 18:10:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LQdjjNII
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fVa07GAX
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795198223;
-	b=hhK5UbecIBKWVk6VyE2wD8ykcbE8T7omMolL33NZdMGoG5Mt3YztX6IgdQRGQ//Tczg7
-	 xTV9JxFsPttcjNoj9gc7ylr2GN6q8rx/FruMRkNdjtBdDnA6+22Vns2oq4+sk7tRYq0A0
-	 9KvviMWXW5xp6Sp0rVp1WEGD3kygdBTvo82z7UrNSZgEEA2z77F26sE6dp/pmjSr2/Ef6
-	 d+uPMpIoTvK5C1JeQbs+osS2xwgyGdCMbwgyXm7sw+K+00ZEDm1FCAHrIbHGjpQ2hf75k
-	 JssE3LDpRGp8x7KBm4TIcxR+72HnAvSXFc1WAFfp4n5PgOF7uwX29U5AdeaO1HcYtIQ==
+	t=1795198231;
+	b=Alxg5aHQ463Ab7E73YMGr06nNxftuD9R2pHpJUhNH67h/hNSaIg65hyfqH0LgZjv9y5t
+	 x0z9Jena1gwNOF1TVYx3j1X2J9IyVd+xvEjj3bw5JiRqWOmxcvoBl2pb5L1W4vxfwNCP+
+	 P21G6ChB7nbQdSTIRynx0Hdji/XEFRhd71+6MGvZkSW1rtAL9crku7a35sup/12X+LV47
+	 I9uouImPS4YwXvlRqsyq54/wATQTcarjUojPWPceMY3HX+wkghYuryf5yJfLRIR+MmNF4
+	 Job4ooKB+COmsqVfbbvN4h0YGHwOMTObZ33CG5MnyIxV6YMZGqg1lsOzgyEWQ4N/sAQ==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795198223;
+	c=relaxed/relaxed; t=1795198231;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=rPWblFMOlUoCwhrsGsfTvXS//TfIn5L5I+BHDpUhjpg=;
-	b=zhq89V4A82qXnioVtdJtAw0jVDGcugZEraNkwDEWu+2TLBWgbN5NiYfooG3KiO1Gr/3L
-	 C/iw4bKvEDow2sBGqjdVfjLkRAek/jvmF9QQv731LLOPLXs2En39yfl/o5guzzpZiVkv6
-	 dwle2FyfmGuwBfZv877SRsjvUiCAvX6Te9AlBG/fQDGoeGZSRhzmjJEYzxF/p+/DVCk9w
-	 71caijYq/bPhfOElK0RG7OXbizj5wkaHufmzDSJXyRZhgjjiWgudMc4kjc3uXafkLvf84
-	 NVn1jESwY1HpMFxT39OCqbIx5lXi9z1MnqP7QBEXoJj5WGOtXg6VfguZ287qsyHJE2A==
+	bh=DdtYjjt4icTMCNkBVK8ZqJ6Cita/durqIaktzLd3ASQ=;
+	b=YW379Ly2JAL/gcWovZ5hPFwZ5Bs1cuBHZc5ffkX2n4eMmjxVtBKEfasQ/U4uYUHjuptk
+	 SWODoKukUnCP92AX6JLsoOlQBn7qwFhN+0m4fAl/yUgNLu8SgzzHGB+SKuJlZu8ZmIX14
+	 YQxUaczroxI3Jvwq9pR2BAFvM02PmuHCsEBq7EWnX33rH3RLV2KHsbcHzwx11TAPO0hP3
+	 P6NPI+RmQgRheGYkNKNn1UApTmvde93RDGNb3VRFoImQoxyOzL0VO4iMlgT5P0HxGchZ5
+	 6eaw8QIqyoteogRW+pwguBZ83uYZauuKZWeBmASuXoJ4RWZdG+pCgk74+2u4A00m5Hw==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 653D41F01579;
-	Fri, 20 Nov 2026 18:10:02 +0000 (UTC)
+	by smtp.kernel.org (Postfix) with ESMTPS id 41FAF1F0089F;
+	Fri, 20 Nov 2026 18:10:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795198223;
-	bh=rPWblFMOlUoCwhrsGsfTvXS//TfIn5L5I+BHDpUhjpg=;
+	s=k20260515; t=1795198231;
+	bh=DdtYjjt4icTMCNkBVK8ZqJ6Cita/durqIaktzLd3ASQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=LQdjjNIIQ+cqSWVjzAoh82aGsUJ6wJT1gMZzwQrTJBmzAOeZALwo2ANkRLEkkxU8D
-	 6L+xsJUpYym1+7aTBnRXnHznOaBp9qxH4zYVrRpE0y5OcXt+bag79shPytFQK8x58y
-	 4g8u2sdY0Qpx3QwPJtYWINXEbyH6HtyUUEBPjspzqBFn+de/wMvy7g4OtvpwpHg+vW
-	 8RXrmqNdca+9+6Y1zyHMhwho9ErrdNN+zu6O+TIdt54RdnPASH9BpgzadJ1XiaSEXt
-	 nX0rpjN7rSsms/ubHva29oadw4fOSLTdUdd2Dfqzbf7y6yD4A9vjc5wkDb4qTnfOMs
-	 tQQJ3sX/jAVJQ==
+	b=fVa07GAXI/2Rt3bNMQKTQCk0iW4W7wjQiC7O9dTHK6g1Av2PUmuloNiSYk8HhWnaZ
+	 g9S/rVVGs2UV+r92CspEFiOKu7nxhlprY/EtBndpTDXEC41s2afGNh6lqrwqEQpCFE
+	 nw239g0Zj4tp43qJtkSx721usQM7qW2yruVe09fZvKQVfw1VFfhsgsBYziGq9U6HHh
+	 mHYeBFSDmKD/4Gi2pK0EJjSoWdrZhjR0gnP4MNADt3EU8mvMJbfcz+mqUEBmTaE7n/
+	 oQxqw13TbMDT+VNNvRyoefAuSQEEkXVzs79d1neEdpanwIg+wyGF22T6xu7EDF6TzQ
+	 l7mGz8CPyGxyA==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 659764B911;
-	Fri, 20 Nov 2026 18:09:19 +0000 (UTC)
+	by lkml.kernel.org (Postfix) with ESMTP id 9B3534B939;
+	Fri, 20 Nov 2026 18:09:20 +0000 (UTC)
 From: Gregory Price via B4 Relay <devnull+gourry.gourry.net@kernel.org>
-Date: Fri, 20 Nov 2026 13:09:11 -0500
-Subject: [PATCH 20/60] mm/ksm: restrict merging to common memory
+Date: Fri, 20 Nov 2026 13:09:21 -0500
+Subject: [PATCH 30/60] mm/memory_hotplug: keep private memory out of the
+ auto-movable ratio
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261120-private_nodes_v6-v1-20-74f5f9a115c2@gourry.net>
+Message-Id: <20261120-private_nodes_v6-v1-30-74f5f9a115c2@gourry.net>
 References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 In-Reply-To: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 To: Yury Norov <yury.norov@gmail.com>, 
@@ -140,11 +141,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  cgroups@vger.kernel.org, nvdimm@lists.linux.dev, 
  linux-kselftest@vger.kernel.org, "Gregory Price (Meta)" <gourry@gourry.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198152; l=1590;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198153; l=1663;
  i=gourry@gourry.net; s=20261120; h=from:subject:message-id;
- bh=1HskuxEf+1Zhw3YBFVrlQVKDFRcqnw9jX4hWONKblFA=;
- b=KX1ctcadjm/RHab3rq+KPJ8U93Fk/aZfsz1s26MHn6QysyfvDO0bjL2QQSMq3Q+U4X6ZzNMXd
- mEI5+NqYbr6CfPqa/Ro1yHh+HAbQ9NETS1e/yCFhGps0epW+mqx8JOq
+ bh=HgTV8d94LjdwsJMGwb3+Vry/TTvf1tnHS+uF7N7JLj4=;
+ b=1P55MY17I+a8cu0KecQdsP4lOTbFUbQWC6JVR7uUJH6xpwOzawPJ9vMaF4+CKy+NuwVaaINT8
+ wCDorNsASZVCR3jg5Bhndx5xpS/opyzqs664oVh52KWLV73mn24pwg2
 X-Developer-Key: i=gourry@gourry.net; a=ed25519;
  pk=BZWDlx4htkR5KcvGjGtSDfx1tM0E5dlyBR43FEhjWVc=
 X-Endpoint-Received: by B4 Relay for gourry@gourry.net/20261120 with
@@ -155,51 +156,48 @@ Content-Transfer-Encoding: 7bit
 
 From: "Gregory Price (Meta)" <gourry@gourry.net>
 
-KSM is an opportunistic MM service and should leave memory outside
-the ordinary memory pool alone - as it already does for ZONE_DEVICE
-folios where its scan picks up candidate pages.
+The auto-movable online policy keeps ZONE_MOVABLE within
+auto_movable_ratio of the early kernel memory, since kernel memory
+holds the metadata movable memory needs. It counts all populated zones.
 
-Use folio_is_common_memory() at those same sites, which still rejects
-ZONE_DEVICE folios.
+Private memory in ZONE_NORMAL is counted as kernel memory, but no
+kernel allocation can use it. The policy can then online more
+ZONE_MOVABLE than kernel memory can support.
+
+Leave zones and dynamic memory groups on private nodes out of the
+statistics the ratio is computed from, as ZONE_DEVICE memory already is.
 
 Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
 ---
- mm/ksm.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ mm/memory_hotplug.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 623a2cdb3924..25b2c2f94486 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -831,7 +831,7 @@ static struct page *get_mergeable_page(struct ksm_rmap_item *rmap_item)
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index b4d94021d46e..d7ce60c6815f 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -782,6 +782,10 @@ struct auto_movable_stats {
+ static void auto_movable_stats_account_zone(struct auto_movable_stats *stats,
+ 					    struct zone *zone)
+ {
++	/* Private memory is outside the movable:kernel balance. */
++	if (node_state(zone_to_nid(zone), N_MEMORY_PRIVATE))
++		return;
++
+ 	if (zone_idx(zone) == ZONE_MOVABLE) {
+ 		stats->movable_pages += zone->present_pages;
+ 	} else {
+@@ -808,6 +812,10 @@ static int auto_movable_stats_account_group(struct memory_group *group,
+ 	struct auto_movable_group_stats *stats = arg;
+ 	long pages;
  
- 	folio = folio_walk_start(&fw, vma, addr, 0);
- 	if (folio) {
--		if (!folio_is_zone_device(folio) &&
-+		if (folio_is_common_memory(folio) &&
- 		    folio_test_anon(folio)) {
- 			folio_get(folio);
- 			page = fw.page;
-@@ -2571,7 +2571,8 @@ static int ksm_next_page_pmd_entry(pmd_t *pmdp, unsigned long addr, unsigned lon
- 				goto not_found_unlock;
- 			folio = page_folio(page);
- 
--			if (folio_is_zone_device(folio) || !folio_test_anon(folio))
-+			if (!folio_is_common_memory(folio) ||
-+			    !folio_test_anon(folio))
- 				goto not_found_unlock;
- 
- 			page += ((addr & (PMD_SIZE - 1)) >> PAGE_SHIFT);
-@@ -2595,7 +2596,8 @@ static int ksm_next_page_pmd_entry(pmd_t *pmdp, unsigned long addr, unsigned lon
- 			continue;
- 		folio = page_folio(page);
- 
--		if (folio_is_zone_device(folio) || !folio_test_anon(folio))
-+		if (!folio_is_common_memory(folio) ||
-+		    !folio_test_anon(folio))
- 			continue;
- 		goto found_unlock;
- 	}
++	/* private memory is outside the movable:kernel balance. */
++	if (node_state(group->nid, N_MEMORY_PRIVATE))
++		return 0;
++
+ 	/*
+ 	 * We don't support modifying the config while the auto-movable online
+ 	 * policy is already enabled. Just avoid the division by zero below.
 
 -- 
 2.56.1
