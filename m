@@ -1,78 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795198207;
-	b=VQdwJhnyQgkIadm7urVb9ZdOlruHl4u2WhbhKRSJvacp7fAXTpb0a6epEUADZYCFBKU/
-	 uR328VjuOhF68gd4Db2jJllEl6b6L7bsS3I0ZYTcmpdtPm18iJvu/nEmd18v2rjjoDWRO
-	 z2tv6zqhLGKAT00dmd9Va247p7Z9vjXDHq4JZkWKydbtoRmJdA7ktkeJZ5i+INpU00+m6
-	 lDrNtp6EsXLVH7g+mWUeQB60XzEZMlvC0i8JWoFIXn7O5WMUfBwo74QUyOj65rA30F8xj
-	 r5dY1gM40YNS6nW7hiXU8mGQtJDyArHyUOsm8Tih/15DQNQZMOyjxdODPBmHGMhZYqw==
+	t=1795198203;
+	b=nSa1lHEZvltOSt//X/YiEA8MUv8p3O2aZl15FRIfumlO1rNah87JjYH6EJB5Nj7YukZw
+	 r+xhxU8FxSSfjqyXEw5P/aD3cE/7d8yUTHKzYk5i/cB2Tn1wG7FBjlAr6rLVVgaAADMKD
+	 Qyp6W3d0MM8xh6NGR1mZ+urJauHGEXpe0eY4wsPk70JEHFsbQhd+oPgwnq9hwWLq24va1
+	 66xKNSgyUnBhi1mFYmhupVsLSw0u5yWRk9SW+awLeT0OmrLVDN5dkM1zTk/lHCfHhe6aI
+	 FCYrmAAdRn5r6dxQeR/kgJxeqDzzlsvhkCd3//9r3C3klrY0Ct9Jwn8qkB5obJXBDuQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795198207;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795198203;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=viHCEx84Kk76c0umGmj4eFC340kJyEsd5v6cdjPlHcY=;
-	b=12IKWxQ/n6fvdqVuBJgPb1ynzDLkQ8QlhyF9n/IzWEB1AccH+5qAd7yw9mfZrRWTk8D9
-	 C358vafi39/BQEpGHcWG/2Ol0j5XP0nBtPXqnrvzlxhClazg+FscVpx4HCBaEblsDYuSa
-	 Y96yWGFhNIvS/T5X9YvCiH23qISnCNxUCdeBio6LeO1yyPcxHNY1PzvUQg8dy9dJ2Aizu
-	 Pl+fm7J8Vzpgvcqi3sxeqzP3Y2gR7dmaTjuzRgV6i6gOGWtMl/xus3e1zIwWrDATMjpkg
-	 MEfrQ6ZTcZQl8UzRRAELR88w1iQUefrhyNECjyh5chXqfJq+PJiV0pc4E9HDohfn/ug==
+	bh=gr73u4IkiOa9BCictU2VtS3g9h9o19ZGrPCxtMBrlkU=;
+	b=1M8Ouc2ydTwVgpI3Hg1CD+z3FZBvIthvpTgU1LyklXxtY5JKtxWG3R0F4vdG3jjs33iK
+	 lz6uLUOzTpyAWJ6+YhLAkHUVjCS3C5RFUNEgy8iw6qYvntzs5t524zrl2ZfIuUJL+5rdS
+	 1KQjZyBe5T6TAX3HwPF1TwJMzyd7aSEUs6Um23KJkSdRN2rPEw3QHUdwGHj7AKn+mjDkF
+	 YkURr3+MaX093dVwENL8+PaHeL2sXQi48tUyB5Oxdxb7uK9Z5QjCrCuLhNIvSiobeWIhk
+	 bbOuk0eOP9usnQY4ATWNEl5xLcgC298XBkJkbq/862OlOGRV33+sA+jVI1PGhiQ1O1w==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G8pOxSv0;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V9t4NOrO;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F84960A262A;
-	Fri, 20 Nov 2026 18:10:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A945860A3821;
+	Fri, 20 Nov 2026 18:10:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G8pOxSv0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V9t4NOrO
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795198207;
-	b=dEsY6jC+hM/yYhcgSxWfaSHcyTERa/FiOUo5NjTE1dcdGNsbjz4RLOf/7I0rSs0vQD9J
-	 jRpez96k2+1JAEtLGd0ZKeLa22Ri8INMthc29njdUUDi1P+bLO+XUepVEdga+5Kqzu8Ae
-	 jx68pFcnO/sWLAhrKzy5YL9QOsFUj9tep4ADAkIK/FX6/5sLqn7sD8VAVk2nMKVXlTyVB
-	 ZwKjWxw5W9ls/OnEmELL7QquU3Z8aZ5VsBRlvNUq1xmhzjrr57oH0FVJjOsOOezqtx6fk
-	 Jowb4lfbN41bsGxcvzeyfguYY+OMDAfZLlukP5zw69D0HwhnxY8wWT0GUcSDxvYertw==
+	t=1795198203;
+	b=pcy6TrsYtbxPT00FFvMrWxXBm1BvXD+RrBzPHwHerYQDTPFtwJdJA5XJahkQbNBc7WEM
+	 Xk4NtW0MD97lz3yaShzWH0hsHZJO1bXAi6bIPkAYFlE0muF+FzoMmjTumU089+1I8/4cN
+	 AsBxLJPh3iq4HfPCa+aBy23vRBvIAhPTKZ/EymnD5J31jkL3hG1krzuvsZZQI4TZpFKTM
+	 BXJ/YnzVx0bO7hQDknSc4mzgD4gOjP5ySipbZzLAVUv61qBGWiUXDtRiw8rkIADu7RVaQ
+	 mEUwG8wQ7ju1Fiqeb/8ni7qI4ZBaFa53CfEkyew7/oHGUTL+2GiBQf9T2lAyCroM0pA==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795198207;
+	c=relaxed/relaxed; t=1795198203;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=viHCEx84Kk76c0umGmj4eFC340kJyEsd5v6cdjPlHcY=;
-	b=dD3Cfvsm1PcEmjbMeEV+475LC8AzEurevQq0iy5YzSkNXTJvedB5HkS9s/NHg6UC6ttB
-	 m9m9nG/iBrveqtMNRrr6qhVQezwpF7vLjJqcsejiLZb7Os1d2XzE7Ul8yZ0OC2qBfRrOl
-	 jxee/cojqoRMqg87Y0rTH4IZmWGOg85V/Nrv8ya36UtzmX6BMLGipVBFoTKiYie4cfYIY
-	 TDzeQBXrQr1diuVFVGUfYO6ZOQP5QPa+UKF8vTKNrtvLHixsEDRo/Dr6m9TkH6/4d6tGE
-	 KNE9oTLFbdvVLbZN2+dNGP0U7odbp8FsNydGJqbcymoKo53N7TM1IUOOiDwzvWh3k7A==
+	bh=gr73u4IkiOa9BCictU2VtS3g9h9o19ZGrPCxtMBrlkU=;
+	b=WeZWO+IwlNudUoUdh0s8YJ1GUqI/4tDzw28u5/J47P4X2QCV9Kmkk33gEWEomstNd8mh
+	 uuBdTc0Q1WNObr9UE6wuBXRqvl9bKovJDeNznB+Ic4Fda/Ek7hgK/j//R4Dm+oJS1WSmJ
+	 1UKpysKz0bU+UmHPEBBb6rY1+qqF2w17hBtG7jUNFc+pZyd04ZGv2tP7AH+82umL8EMt2
+	 3ZgyNnBQrkS5OgvlGV4FoBCmjfcGKGekMRaqnXsFYD2q+ez+SlwRdNGc83IJjNgsPTvyY
+	 GySuD+lK7F4qUcAzygYX1oJMBDX/czQz5ak/mzYLWr9thA9B+TIWBPbX00rA1ph3DFg==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id DA7D01F02EF0;
-	Fri, 20 Nov 2026 18:09:50 +0000 (UTC)
+	by smtp.kernel.org (Postfix) with ESMTPS id 33BA51F000C6;
+	Fri, 20 Nov 2026 18:09:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795198207;
-	bh=viHCEx84Kk76c0umGmj4eFC340kJyEsd5v6cdjPlHcY=;
+	s=k20260515; t=1795198202;
+	bh=gr73u4IkiOa9BCictU2VtS3g9h9o19ZGrPCxtMBrlkU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=G8pOxSv0UzN0zM95wd2/bRpmO8fn4Y8tjGI0SyQRuTauglGzsDlDDM6xXJHQmCZzb
-	 DBc9lliqAa4aPF/f8HpXMMR/3ebBIsTDPZiRGmQvFLK0ErbcjlC7G1Nx781fjJGRS/
-	 Cu/3qi7FWxtSY1C1BjratlBN3T5z2/bEf+Jgf1obMqEZIpEp2a1t10Yw3wabn5Om+k
-	 a/0YKqviddA0s58cm+5lQfr6DFcpfRQwlkFLG4jJ2tEDh9iHj2jKNZfVAzLqXuu1Ez
-	 5LcaIaM585tbGoUoSXuzCGlbhJFLZGS0jvJEb27LWgftfEvZcbBqtCpw//Wm2CCjL4
-	 7UYTXKsQeSAxQ==
+	b=V9t4NOrOpwKjlJTSqfVNs2ckW7HzMjb+nEVmUZZ0v3HqmXVn89EzNv+FjnJYR5YuV
+	 zw6H5C4aBVGOHHOqJGAn/47aPFcQDb4Pa/ak15Cp1iHMt3KQR4ZEdmfcT6ECFWQQM8
+	 eQLAAHScIUH2Z8ICdKMb2wf8mECAjDzACzUDhDtefxHi2yXlXZ9ImxnFF+5KR1vS1L
+	 WcP2At4FYuKxScI4u15+PpVeFK/h8ayZTeVYSlkTvYYP5OY805Mi7gm0HKFfpy/V27
+	 fPtrbFu/UIGXO5OM+Ji5+fr0PsV9r+3CJMEVLpn4g4Wohi7q4PP2+I3lnePq2OPgUn
+	 1mK1l/3GDIGrg==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 08EB64B905;
-	Fri, 20 Nov 2026 18:09:19 +0000 (UTC)
+	by lkml.kernel.org (Postfix) with ESMTP id 175F44B8E5;
+	Fri, 20 Nov 2026 18:09:18 +0000 (UTC)
 From: Gregory Price via B4 Relay <devnull+gourry.gourry.net@kernel.org>
-Date: Fri, 20 Nov 2026 13:09:08 -0500
-Subject: [PATCH 17/60] PM: hibernate: size the image from common memory
+Date: Fri, 20 Nov 2026 13:09:00 -0500
+Subject: [PATCH 09/60] mm/damon: reject migration destinations outside
+ common memory
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261120-private_nodes_v6-v1-17-74f5f9a115c2@gourry.net>
+Message-Id: <20261120-private_nodes_v6-v1-9-74f5f9a115c2@gourry.net>
 References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 In-Reply-To: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 To: Yury Norov <yury.norov@gmail.com>, 
@@ -140,11 +141,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  cgroups@vger.kernel.org, nvdimm@lists.linux.dev, 
  linux-kselftest@vger.kernel.org, "Gregory Price (Meta)" <gourry@gourry.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198152; l=2366;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198152; l=912;
  i=gourry@gourry.net; s=20261120; h=from:subject:message-id;
- bh=A3l/6pPMz9YPRB99YIwhmspv/HD0g4ri54lK4DwOHLU=;
- b=mI+JjYrIOIQon3oEqa2KKxHS1h91tm2h8L4t/n3aWLMMUysU1+sJoKRNNeogaWqhf2eGMWvyF
- WkAqiNUeQllD2ej1Rpnh67Y1ngxyx7Mj3iNBos7ryRyQn7xec/6u1L2
+ bh=PHs1dwZV5jWDY/oD9jV+dBublSOMfq9XyD2sA1X67ls=;
+ b=EHjtqMd7/8EaTbdZ+vJ1PCa8apdnUFyPwhm5wisIAr5smnjEwxj+N6vWTCoyNXJw98hRk2en0
+ +blI33RHe8NCH5zVJHV0l2+J4bHQKjBy4yR6u86Gh0NgqVYPfJ4g5b/
 X-Developer-Key: i=gourry@gourry.net; a=ed25519;
  pk=BZWDlx4htkR5KcvGjGtSDfx1tM0E5dlyBR43FEhjWVc=
 X-Endpoint-Received: by B4 Relay for gourry@gourry.net/20261120 with
@@ -155,72 +156,30 @@ Content-Transfer-Encoding: 7bit
 
 From: "Gregory Price (Meta)" <gourry@gourry.net>
 
-hibernate_preallocate_memory(), enough_free_mem() and
-count_free_highmem_pages() count the free pages of every populated zone
-as room for the hibernation image, but the pages used to store the image
-can only come from common memory.
+DAMOS migration actions move folios to a node the user picks. As with
+move_pages(2), the destination should be general purpose memory.
 
-Count free pages only in zones on N_MEMORY_COMMON nodes.
-
-The image metadata estimate is a separate sum.  The bitmaps track the
-page frames, and every zone's frames are tracked (regardless of node),
-so that sum still needs to be calculated for all populated zones.
+Reject a destination outside N_MEMORY_COMMON, exactly the same as a
+node without memory is rejected today.
 
 Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
 ---
- kernel/power/snapshot.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ mm/damon/ops-common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index d5dba0e50b2e..912804bee361 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1291,16 +1291,19 @@ static void mark_free_pages(struct zone *zone)
- /**
-  * count_free_highmem_pages - Compute the total number of free highmem pages.
-  *
-- * The returned number is system-wide.
-+ * Only common memory counts, since image pages come from common memory.
-  */
- static unsigned int count_free_highmem_pages(void)
- {
- 	struct zone *zone;
- 	unsigned int cnt = 0;
+diff --git a/mm/damon/ops-common.c b/mm/damon/ops-common.c
+index 2216a0023154..15cabc79613b 100644
+--- a/mm/damon/ops-common.c
++++ b/mm/damon/ops-common.c
+@@ -498,7 +498,7 @@ unsigned long damon_migrate_pages(struct list_head *folio_list, int target_nid)
+ 		return nr_migrated;
  
--	for_each_populated_zone(zone)
-+	for_each_populated_zone(zone) {
-+		if (!node_state(zone_to_nid(zone), N_MEMORY_COMMON))
-+			continue;
- 		if (is_highmem(zone))
- 			cnt += zone_page_state(zone, NR_FREE_PAGES);
-+	}
- 
- 	return cnt;
- }
-@@ -1868,6 +1871,9 @@ int hibernate_preallocate_memory(void)
- 	size = 0;
- 	for_each_populated_zone(zone) {
- 		size += snapshot_additional_pages(zone);
-+		/* Image pages come from ordinary allocations. */
-+		if (!node_state(zone_to_nid(zone), N_MEMORY_COMMON))
-+			continue;
- 		if (is_highmem(zone))
- 			highmem += zone_page_state(zone, NR_FREE_PAGES);
- 		else
-@@ -2011,9 +2017,12 @@ static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
- 	struct zone *zone;
- 	unsigned int free = alloc_normal;
- 
--	for_each_populated_zone(zone)
-+	for_each_populated_zone(zone) {
-+		if (!node_state(zone_to_nid(zone), N_MEMORY_COMMON))
-+			continue;
- 		if (!is_highmem(zone))
- 			free += zone_page_state(zone, NR_FREE_PAGES);
-+	}
- 
- 	nr_pages += count_pages_for_highmem(nr_highmem);
- 	pr_debug("Normal pages needed: %u + %u, available pages: %u\n",
+ 	if (target_nid < 0 || target_nid >= MAX_NUMNODES ||
+-			!node_state(target_nid, N_MEMORY)) {
++			!node_state(target_nid, N_MEMORY_COMMON)) {
+ 		damon_putback_folio_list(folio_list);
+ 		return nr_migrated;
+ 	}
 
 -- 
 2.56.1
