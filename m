@@ -1,79 +1,85 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795198630;
-	b=XBuDNsXpaf7Y7g8WC7NRtVjMTcWPojR/TuK41lUhTokICkiyBI0xGB+RJ+vsqRxRfgoy
-	 G90OxD6QcS51iX8V0yP3ErHXDf9Gi8JAbkhutfSudRQnHAVIoWPrzts6mBxd1eS02AMht
-	 COfXSL0P/YRr5aIiYunw6Nbcm+5Iz7o+wfjxacOFKsKzDeveCxjDsgTHkcLYwpagTag1/
-	 mvaCU7A7lgJo3oyx/xaExIAhKxZOPVtqEDG6VJYQCGtR9AE27RB9W8kkt9aRMld/5sTxP
-	 kCFA2FBMXMtLkV91qv1VkzUS+UVdrtjYZc6AKdjcdytZUT9K2R5yuHFuTdntnsRKopg==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795198630;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=5kSP1RnWMSJEJYYJkds0+nXtVqYjbTw1JaXsnE/LlyU=;
-	b=e8UNI0bfUekOTR9nPymTz/CHwLnnkfUufnpyJ150ewjKi5g6wGu1uXbO9o6+CgTDpez8
-	 e5BrE1Ri83ZE/5Za5YwePHWSD3vFo9ZKLl6Y/FUV0fSQZnU2jgNrpC6WL5svEIhZaUrPr
-	 msgB8e7r0e3c4dzzdVcimf1l0D7pdacGvld3aDiUWh0doS8er7yDOgcMxSevtRN81A+/1
-	 kmfxROEhTGu60MzO4TQt43iPObewGyzwk+hOWkN7iMdJ1kW9ua1dPrOkqsck+s0rV7xp5
-	 nSXgAaLkoaUCPBOYgQzjQtK3eW72l5D3DGQqk30RviaygLAIvbmqYRS9JJCmundIjgQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EyyTEdJm;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B90FB607636F;
-	Fri, 20 Nov 2026 18:17:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EyyTEdJm
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795198629;
-	b=jnH1hsFxeFlfqekuMhaNDVUjCJoNJd/JbWDESTs1zpY7t4Kx533zKI7+n1nlHucLJUK2
-	 od2YzqmE+gzsyQANtIfGVkY40c4Cg1pCfvpvkZp2r7WCaeSVjtGnIo/Xr5JDDEr80cS8P
-	 NrATBSpE8kWiNPVLJj6k7EtsyzLipxXx2GLZjP6tDXjHSLUC0465fRH5P7Nduwb0rcp06
-	 3zE5dSKuUpaMDi1CWXPNL0+2dNNwh1ioGV+L2XLQyM+IiwCHcgGn9ba/c5Pz1ettXPKjB
-	 NERx5xt9Y4fgDJwJUfwNHx+QwdyRV0to/fJqYt4mDfPpL07alevT23XcubO/XGYBeUA==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795198629;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=5kSP1RnWMSJEJYYJkds0+nXtVqYjbTw1JaXsnE/LlyU=;
-	b=BFVufdj1URe2+jz1U35pYtL6TbuIOPI6Dd3EpW6CmcF0NrauAw7KR2o3LkiKidwfD0k4
-	 udbaqM763VzaOZ7QaZjwBuFez8rjmdfjwwtAsI2PhCO+ty8h0Q4JeI6+zCBz/vyHEp2We
-	 flw1Y9N5eU93lpCW965dcfZ2kObwS384lHOehjGz0pM44N96ttXOubcA68MuVxO4Dhuso
-	 F5lBby2Y/SBybkAGZ6IHaiwRrEUtNBJ4Oq1/EgmmVhDFe+p4QERRXpImGlR8kN0/UA4H1
-	 612ldnQQjftNUtRejEFdGjtS/aH9qgvddX46lC3KL6/jERpSuGhpG2f700hvrgaCVVg==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.181
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795201147;
+	b=iacD/hyaJ7nYXEvktT0BdpiGkap1k49JR1HVYXuJ18GgZUQGgKTlNWP47CIcwKk/pIOd
+	 f9aMLDjtUSy6mARCTe/nODwDq/DZtp2VLYKAgwbzq8+r/91d0wmJNhAkt7cJPaPmjCJru
+	 amTTvwOxeUd2iO6izeWUvzHWMqThjUqRPwvaNOItebOTHkbQ2CANjE/zdFAxHlXLj9jwG
+	 +cankLvPz1BQ9KHqRpkwai6e9wQ6cqQMCVB/TFfv2jpa4FK3h0W9WDNofjup7O/j0uXzr
+	 OOcpgrv+uc0+y1s0ri/HBehtrQ+8w1IcPBUhyFybeHyX2H0si+uusIA4+RtHSWyTppA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795201147;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:Subject:From:To:
+	 Cc:In-Reply-To:References:Date:Message-Id:X-Mailer;
+	bh=QpjWV7nVPK4jNL88HvKbtHJ/44FkOvQPFo/KHrxl1Aw=;
+	b=DakOzAaHzsOOzAvkZ7rL1SySwT09v+i/dHasB5SVtlRgIqMF54wVlDFfrdxLDu2skqVN
+	 JZnb5q49uslefiW2kX9TjECKxyz6WQk8BEfWa1gzwvIFzk05uR7JdRYwNxKN0CemKFb0Q
+	 uGVX9kUqPronAGkpihU82EbBHjq1WBT6ImPsM04TnIF5H9yxcdDcW+2qxyzJdHiYzy5fi
+	 /6N32yIqeAeWVTTIAGN52Ru5xWjGxJOT2VZ4aFDFv6ySZmQ6uqYg3cz1gmSR7bNsFORlA
+	 7sC8FWm3IiJBEJbpUIyqWg0kULbYjKPrH+1y4OFZ/VbcBhAmZWjVT6R1D1km6etDhAQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=none header.from=gourry.net;
+	spf=pass smtp.mailfrom=gourry.net;
+	dkim=pass header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=jP9mDgSk;
+	arc=none smtp.remote-ip=209.85.160.181
+Received: from mail-qt1-f181.google.com (mail-qt1-f181.google.com [209.85.160.181])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id D06C11F000CF;
-	Fri, 20 Nov 2026 18:16:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795198629;
-	bh=5kSP1RnWMSJEJYYJkds0+nXtVqYjbTw1JaXsnE/LlyU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=EyyTEdJmznZRKDEzO6kuQk05Gp+WT5kgJ8ZIKYpsDWBQ5vzKYnznL/rGmRwVOuR29
-	 VbuiPEJLWvsQw29BNdxq90ZjqpCZp7RnMq3jNesdKgU07xiwT/ZZaUtzLsyYrpNT2O
-	 pwUYW68yzhVW2lxoQWOsGWBp63REQOqU5gwxsuOcr52i85x0Uk98QXY/KYs9XRe4aI
-	 0MvDz41raBmsGxVdJNLvtn7TFaNR0pvOXszINxs1Y/ThaJx1o1oBXRcAZ7iMLfsmN4
-	 vk8H79q/aEkRMfOuvN0XKYhEQdHfyA1du9pQ9KkiQ7nQ34DJRuzGdWuk8x3QDorezV
-	 UfMtJagYAbHAg==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 7DD274B965;
-	Fri, 20 Nov 2026 18:16:33 +0000 (UTC)
-From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Fri, 20 Nov 2026 19:15:49 +0100
-Subject: [PATCH v2 10/11] arm64: dts: amlogic: Add HDMI TX PHY node for
- GXBB
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B843960A2605
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 18:59:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B843960A2605
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gourry.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=jP9mDgSk
+Received: by mail-qt1-f181.google.com with SMTP id d75a77b69052e-5364d86f7f0so13264341cf.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 10:59:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gourry.net; s=google; t=1795201146; x=1795805946; darn=vger.kernel.org;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=QpjWV7nVPK4jNL88HvKbtHJ/44FkOvQPFo/KHrxl1Aw=;
+        b=jP9mDgSkXq83tjLxbrSbvJK4VhOzYkMGnT1Jm7gDQe/tOWOQWw88VffPoBHzpHtdXZ
+         AtKDL72AvMbm6K8+SFolZTdZsq5YCre7TYo+p4r5NsYo5qfix5Rkg5grOkKDHVKVNOAS
+         7oCG+E2fpkpUAmmLwq+0Xp2+UXqhc1fXlcHYaL5btJezkYRzJilsdIXdINfLoFlm9DO8
+         6CbBfgZVvOJVM+JRwdAK0Dvz71rzy7UBvr/rr8US3Cw4d/p7KopxcO/pFRWbieVCQcWx
+         SzmzqLmCMHfM5PgM23TucdXta6FY4M5TN5xDVyML6rCM56A5+RYnYnryKZHICDqx3uzd
+         4qmA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795201146; x=1795805946;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QpjWV7nVPK4jNL88HvKbtHJ/44FkOvQPFo/KHrxl1Aw=;
+        b=fyOjkcbbPU/SVctpy9ScVIPnooPpoB5UoAhfTuNZv7PugM5TZopQlfKY1kAeoRLnak
+         W1FMPiQLdhjd3YlR6T2QbquO9UvCZEd3UOKu3o4OaeZcsEn82Xs6SK2GI+dkFAZUUF0i
+         M1wIjEwipuQhTJDKmtODVWg6r4wbmhTAU06Wlz5qb5FUS5yFzgDpuvFhgpyoqfJl4/8i
+         74qnelWwazE7Q2zxc0AyAjvngvklxJ83DVWVBzbh7RkTtlq2A5llBrIZ0sHZSX2oAire
+         dgs94m64uoeM5j9fRG8RKm0Y3HVhoGgUZwwo3umJkq/U7ED0POZy3lpZFVy5IIx7kqWz
+         Y8ew==
+X-Forwarded-Encrypted: i=1; AL+hErF0qJDcAxxsoMQ7xRChYjQEbkf7xTB9rYjpIlpuqLv3SCAXiW9uvI27/fHvIifk1JbevXhVSlSzGA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/3i8CNHz9Fz+/ASVIB/sWCekPAyZ4y4NogwMdaSZLmuW5Fy677
+	p9yKF07fst6kAPNcPCeI5yNqYbA0N6pScLo03hTTG44iPnEy4Oxqbf/Y0TKJKxSvSZs=
+X-Gm-Gg: AYBFou3+hVXRSeuFhI6lLb8iHmft3znckD6HRmx2tLLngRPoz7qpyN4cRLMaeMh/Xa4
+	WHxw7QlPXmUQQIz+E4K5n0dUAt4SuR3x0vLwtEc/owow0nd8frmtwudkTYoDuMfzUQ7pR1WGy/G
+	NKEWDRjmLjfsdlTDWs1ILNN943XYsWHKpS6XhpK5PdpiAi6IRU84V2GNuSl2OvOIRc8cDiNyNaM
+	lVapEQlkw98VNHP7SX9wQWp2Im+IL9KMBTBPrB8KPDscmAR+4/wv5zDDA9iPxOQ/XCyZrgreJ+u
+	m0xjbj1L5AxvUYF5IU3ZGWB1UfnYvtLqgjcwtbfsWEMVEYLjgvttyn13edMg8+6kOs0R5Y2W5Av
+	9BpuKiKb8sFBdkRRfi9tCUzMNkneQ006qNAg82md5O9vu+SFfDE1tE2t4/WQ86wGYRByJjz9eLg
+	3QXZC87xeQcUqy2JewI1/J5PE7wkBxP4SImGIw19SwsbwVaKpdJwA5e+3JGe/mNtilY+vzBzSnN
+	2W1S4/fFPSA+Z12isJP3iz/9iUhALMoN7t4H4NYZ2RT6aCVIWyOxhaez1239ca+hHo+GsdRH41Y
+	YHjaNaH0yKn1mS50S1jLvtGJoBmlk5Swaj9EZIoZvYLGuqYX+qT7InakDKg7ISqcHGWVztUsIeF
+	vF6PeH6s=
+X-Received: by 2002:a05:622a:1a89:b0:55d:2c9a:3776 with SMTP id d75a77b69052e-55d76a811c8mr74428711cf.65.1795201145651;
+        Fri, 20 Nov 2026 10:59:05 -0800 (PST)
+Received: from [192.168.50.231] (pool-71-191-145-202.washdc.fios.verizon.net. [71.191.145.202])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-55d7884d01csm30305771cf.21.2026.11.20.10.59.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Nov 2026 10:59:05 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,76 +90,98 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261120-meson-drm-create-hdmitx-phy-v2-10-93d622d9bb07@aliel.fr>
-References: <20261120-meson-drm-create-hdmitx-phy-v2-0-93d622d9bb07@aliel.fr>
-In-Reply-To: <20261120-meson-drm-create-hdmitx-phy-v2-0-93d622d9bb07@aliel.fr>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>, 
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
- Vinod Koul <vkoul@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Ulf Hansson <ulfh@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org, 
- linux-phy@lists.infradead.org, dri-devel@lists.freedesktop.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>, linux-pm@vger.kernel.org
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1081;
- i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=JfeJFGsdjuVYuSpN9bsRq2rmNT9JvKzwp64cluLxjAw=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQzZDX4Woco+LYSxb7f8wu3TB6TEB/Jk6X/g3nZJKY3jyy
- Mrafm5HKQuDGBeDrJgiS/9cyxPvLh8983WPegrMHFYmkCEMXJwCMJE33xj+Wfm7/X4WU/loNtt9
- kQc/dpoVMvRqRK9V23HGxG6X6mqlMIb/vtH261QrkuTv9pec+vB2ycal6+fVv51i+dV7jsivmT+
- E+QA=
-X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
- fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
-X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
- auth_id=744
-X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-Reply-To: linux-kernel-dev@aliel.fr
 Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 00/60] Private NUMA nodes
+From: "Gregory Price (Meta)" <gourry@gourry.net>
+To: "Gregory Price (Meta)" <gourry@gourry.net>
+Cc: Yury Norov <yury.norov@gmail.com>, 
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+ David Hildenbrand <david@kernel.org>, 
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+ Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, 
+ Andrew Morton <akpm@linux-foundation.org>, 
+ Oscar Salvador <osalvador@suse.de>, Johannes Weiner <hannes@cmpxchg.org>, 
+ Suren Baghdasaryan <surenb@google.com>, 
+ Brendan Jackman <brendan.jackman@linux.dev>, Zi Yan <ziy@nvidia.com>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Randy Dunlap <rdunlap@infradead.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Johan Hovold <johan@kernel.org>, Joshua Hahn <joshua.hahnjy@gmail.com>, 
+ Rakie Kim <rakie.kim@sk.com>, Ying Huang <ying.huang@linux.alibaba.com>, 
+ Matthew Brost <matthew.brost@intel.com>, Byungchul Park <byungchul@sk.com>, 
+ Alistair Popple <apopple@nvidia.com>, SJ Park <sj@kernel.org>, 
+ Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
+ Juri Lelli <juri.lelli@redhat.com>, 
+ Vincent Guittot <vincent.guittot@linaro.org>, 
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, 
+ Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, 
+ Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, 
+ K Prateek Nayak <kprateek.nayak@amd.com>, Kees Cook <kees@kernel.org>, 
+ Kairui Song <kasong@tencent.com>, Barry Song <baohua@kernel.org>, 
+ Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Michal Hocko <mhocko@kernel.org>, David Rientjes <rientjes@google.com>, 
+ Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
+ Dev Jain <dev.jain@arm.com>, Lance Yang <lance.yang@linux.dev>, 
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
+ Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>, 
+ Lorenzo Stoakes <ljs@kernel.org>, Pedro Falcato <pfalcato@suse.de>, 
+ Jann Horn <jannh@google.com>, Chris Li <chrisl@kernel.org>, 
+ Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
+ Youngjun Park <youngjun.park@lge.com>, 
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
+ Waiman Long <longman@redhat.com>, Ridong Chen <ridong.chen@linux.dev>, 
+ Tejun Heo <tj@kernel.org>, 
+ =?utf-8?q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>, 
+ Dan Williams <djbw@kernel.org>, Vishal Verma <vishal.l.verma@intel.com>, 
+ Dave Jiang <dave.jiang@intel.com>, 
+ Alison Schofield <alison.schofield@intel.com>, 
+ Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org, 
+ linux-mm@kvack.org, linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org, 
+ driver-core@lists.linux.dev, damon@lists.linux.dev, 
+ linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+ cgroups@vger.kernel.org, nvdimm@lists.linux.dev, 
+ linux-kselftest@vger.kernel.org
+In-Reply-To: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
+References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
+Date: Fri, 20 Nov 2026 13:59:03 -0500
+Message-Id: <179520114342.412063.6068641130948664600.b4-reply@b4>
+X-Mailer: b4 0.17-dev
 
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+On 2026-11-20 13:08 -0500, Gregory Price (Meta) wrote:
+> This is v6 of the Private NUMA node series. The series falls into four
+> parts, each building on the one before:
+> 
+>    1-18  mm: introduce N_MEMORY_COMMON
+>   19-26  restrict folio-walking MM services to common memory
+>   27-44  N_MEMORY_PRIVATE, kept out of cpusets, mempolicy, accounting
+>          and the page allocator's ordinary paths
+>   45-61  private node features, memory hotplug of private memory,
+>          dax/kmem private mode, selftests and documentation
+> 
+> Patches 1-26 change no behavior on any system and can be reviewed and
+> merged on their own. Without private nodes, every path in patches 27-61
+> behaves as before.
+> 
+> The full stack is also available at:
+> https://github.com/gourryinverse/linux/tree/scratch/gourry/managed_nodes/private_nodes_v6
+>
 
-Describe the HDMI TX PHY as a child of the HHI system controller, with
-the amlogic,meson-gxbb-hdmi-tx-phy compatible and reference
-it from the HDMI TX node through "phys".
+Apologies - my b4 prep dropped a commit from the stack because I made
+the mistake of filtering on author (myself) and it stripped out this
+commit:
 
-Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
----
- arch/arm64/boot/dts/amlogic/meson-gxbb.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+https://lore.kernel.org/linux-mm/20260923211041.3127588-4-gourry@gourry.net/
 
-diff --git a/arch/arm64/boot/dts/amlogic/meson-gxbb.dtsi b/arch/arm64/boot/dts/amlogic/meson-gxbb.dtsi
-index 5c2fe9dc4f80..09ad9790ebc2 100644
---- a/arch/arm64/boot/dts/amlogic/meson-gxbb.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/meson-gxbb.dtsi
-@@ -316,6 +316,7 @@ &hdmi_tx {
- 		 <&clkc CLKID_GCLK_VENCI_INT0>;
- 	clock-names = "isfr", "iahb", "venci";
- 	power-domains = <&pwrc PWRC_GXBB_VPU_ID>;
-+	phys = <&hdmi_tx_phy>;
- 
- 	assigned-clocks = <&clkc CLKID_HDMI_SEL>,
- 			  <&clkc CLKID_HDMI>;
-@@ -330,6 +331,11 @@ clkc: clock-controller {
- 		clocks = <&xtal>;
- 		clock-names = "xtal";
- 	};
-+
-+	hdmi_tx_phy: hdmi-phy {
-+		compatible = "amlogic,meson-gxbb-hdmi-tx-phy";
-+		#phy-cells = <0>;
-+	};
- };
- 
- &hwrng {
+The commit is one the branch listed above, and should be otherwise
+indepedent of the series (can be pulled in ahead of everything else).
+
+Sorry for the noise / compilation error, won't happen again.
 
 -- 
-2.56.1
-
+~Gregory
 
