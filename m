@@ -1,54 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795189952;
-	b=qhccdx5WPyPo9GfvCczUFX3rGhPOJoUj1kEbzdiBJcQITdoSIciN9DDVW6ZawvTU4S96
-	 60SSFnSVvFtuAnWqegMHeWKw7Nfrl3yH9uN92H0Ixw6pfFKRJ7vX+myj8gIrC1rDygPKI
-	 6R1J5bSTbH5/CPPG7MYZoFcwgEl17HJOr+T3bGepOjablw0aBkEvNVPO4panoZRIC6Pp4
-	 iC7S6rKxX7ODAEZqOxuNMHsNieP5If/uP/28qoRFwX5R7/4THBPGV9TWGb98OHH5KVgEZ
-	 x6quIG5YpqZvE/RY0w1C9MoBUb5i+qKreG+6SCu4I0Ie8sv+zRim5Iti0tQGMnX0e3w==
+	t=1795190309;
+	b=w6ReFuXCnwzw1h4kRUGujdgLvGlZ2lHX4QP68hYfQeniqn67tLjhrzF/JXhEW/lD9FGu
+	 n8z3mOIhSiqjMl3/IBjXFe78J1RCBoXM2md59eTdkPAwH6jGejH+u7h2mEH+fZZHppZ+n
+	 2C+NLjrHGg9uDqz6Aa6gb3+eNqjmjb8s0lYv7kYJUTFbVgZ6lB1ru5Aoo6w5EP9TZ0Bhd
+	 TDsDCrANH+vNXdXf0PBhPDg7IxWtRzTneezOtqw9JuTNgNeqZj5WaL1NVZGp5Diwe7kL+
+	 eqfecKNKdQ2Duj99FA1DQeyZazWusB0sIdK2n0Vsua6tUXlZBV6sw7sa0P/y7OB9OcQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795189952;
-	h=DMARC-Filter:Received:X-Virus-Scanned:Received:DKIM-Signature:
-	 Mime-Version:Content-Transfer-Encoding:Content-Type:Date:Message-Id:
-	 To:Cc:Subject:From:References:In-Reply-To;
-	bh=TSTpvO4spealzt2/kLbsRgFYe1Ou7JNCyzrkbKYJ+ko=;
-	b=k/ZQDhUTbeYdl74hzNc4osXnRcVWW2CMqQvgUYg6+hGFw5jB3v/PKnjgt+fvG1Q4fFtg
-	 U7L9PJvCm35SXumdDT6cKbBhSWE+TvwkZAJGzvEc7j31azhfM8HR8psOrIw4xhrb6cvE3
-	 sOQeX0YG6yNnZFa8cbWBMK21o4EyIiNawpYGX5AvFIBob/t9wZIh/i/BR+Pq7ttil/lFR
-	 ANAcXk/TafuYy1pFggEv9fUKl8PbhMz4RI5017wvnEF7NFv31NMTc4FNG+JFtOdYcI2Il
-	 UTOHYneTVxPeWkEiETVvavJCvDTOlcvPM8W6Rp8VqLil7lSJBoNwNrBHTrxdU6SVMeg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795190309;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=UGn2Xr8Ly1HQXZSbSFJcSWI6kH+PUQItBE9t+lSvk3A=;
+	b=161Uk/G5vyfFW9lv9+1nLq1m4Rzf46jFuVkHsvyuC/tFNYSlEcuVZtu+jwB+vqm9Bbnk
+	 zo7zWLu6sbzMPMMT0vDgnfTIN9htUwivu5GMzxSBGx+0m4x6+c5Oh2oCz+thFYveu1xB6
+	 VdMdhmBYaGZjrRK7jmxcUfbzCLcXFzL512KoAv08NYAR1SJXEsra0UJfqPtgRi7e3CaYi
+	 tnTa4GdZARK78ErK5vUXTqC4Gfw1Y8Hd5hktaw8RYuGAOZIdSUdxR1zrt4xSMH4bSS3DB
+	 eZzZ5Kon4ud2gS1iSrkRyLkLSAYbuYUwA0QEt8JC4uEgftkGKoLqi44WUGdhofFY86w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=disroot.org;
-	spf=pass smtp.mailfrom=disroot.org;
-	dkim=pass header.d=disroot.org header.i=@disroot.org header.a=rsa-sha256 header.s=mail header.b=bpxc4Jy+;
-	arc=none smtp.remote-ip=178.21.23.139
-Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cZKs2toD;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB839606A320;
-	Fri, 20 Nov 2026 15:52:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CB839606A320
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1289606A325
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 15:58:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=disroot.org header.i=@disroot.org header.a=rsa-sha256 header.s=mail header.b=bpxc4Jy+
-Received: from mail01.layka.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 4A46182EB0;
-	Fri, 20 Nov 2026 16:52:29 +0100 (CET)
-X-Virus-Scanned: SPAM Filter at disroot.org
-Received: from layka.disroot.org ([127.0.0.1])
- by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XuwwcV_3q_fl; Fri, 20 Nov 2026 16:52:28 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1795189948; bh=TSTpvO4spealzt2/kLbsRgFYe1Ou7JNCyzrkbKYJ+ko=;
-	h=Date:To:Cc:Subject:From:References:In-Reply-To;
-	b=bpxc4Jy+Yxc9ToeDYOlN3VQqx/zQ2klgGzdIc5NvXgUlmkbsDBFjxDSJeKujN7cEp
-	 gp+6A1lp/afJxcNX5qtfVgkmyNVBPComHpRMdtfvccNmo1Bm0lsUseKJPEaBncXrKx
-	 ECXip/iuYsqd+iSq9X+en7JDkUat4a/YZmpUdZrsF4zLS47K7JvzqRZNQGMQVaD9LP
-	 RWN9iicNBMnwELFkUvXORedbkAN2V8B53AJWaY0d2H2hnheyKD07vyHI3tngwOHDu+
-	 Mw35VADNjXwlOm5gqlc39SadUWCaBOm9oCPFMXyT9VDRnVHfbOzFvcWyhPw5Gh7QsQ
-	 qLbJog/AIB4/w==
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cZKs2toD
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 097681F00A36
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 15:58:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795190309;
+	bh=UGn2Xr8Ly1HQXZSbSFJcSWI6kH+PUQItBE9t+lSvk3A=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=cZKs2toD1/1OUcG/OPNE6FqHCbeQFMPDMQmFS1L6pO/rOhbBkwxVxEWLtzv2Ot3sY
+	 4l42Weji6q2kFfJuYdn7D8O0JgnQw+nIDTWx9+Rae/MGyOmfnwNs9j4QUDR6L/MU0M
+	 2V4mA3jT2TACiTybE33y/oZ7170T3ofWrPd/LgIUwiY8nfdKGgUkqr1P/vsYa986f9
+	 KTbR1uV9O6TmhMQL8ExkhBKyU7TduaQTVJvQcnLXDqAsTNQ6k7kuz+gMd3LolCkE7/
+	 gYz2iuucDHb7Ljj0+uIoOF7zq35/2Gih+8MPgU7cU6Kcauf+2dS+q0f/Yt3UjPkchR
+	 4pbyEXzIQNk9A==
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-3ab3b29a298so8350731fa.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 07:58:28 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErFyz6+AlAlh97ECl6WmjJg8BlNNbaH3Up8A6FDM7iRZHrtg+/M+U2ImHEmouYi37Fra1HXppHuXOw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9Q65nstOWGH1IpOlSUBW2dzZ3YxF9zzh0hlv3LM6tvW2qQ5V7e
+	tXYxe6XZEmrFbCcJU5REHUE61qvZNIckQ3CfyuCzYabUu7i5gWsFpF0w/nfHR5LjCc62Y2TNn7+
+	a0lmwGv1uguMOQhh0ddL+Hsv2iTqDChk=
+X-Received: by 2002:a05:651c:418c:b0:3a9:7f37:9bbc with SMTP id
+ 38308e7fff4ca-3ae7f9f3fcfmr9765561fa.11.1795190307450; Fri, 20 Nov 2026
+ 07:58:27 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -57,62 +58,74 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
+MIME-Version: 1.0
+References: <20261103124336.174919-1-daiyanlong@kylinos.cn> <20261103124336.174919-2-daiyanlong@kylinos.cn>
+In-Reply-To: <20261103124336.174919-2-daiyanlong@kylinos.cn>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 20 Nov 2026 16:58:13 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iV4Le4PXLrCC13rzqFM_2=NRyZTwgu1wBZC58Q5G7ANA@mail.gmail.com>
+X-Gm-Features: Aa3M54qjT76rAPYzpTB3L78PLC6FJZuEgSB2yRHdvTEKaUyPsh29mykNrakzloY
+Message-ID: <CAJZ5v0iV4Le4PXLrCC13rzqFM_2=NRyZTwgu1wBZC58Q5G7ANA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] tools/thermal/thermometer: Fix missing NULL check
+ after realloc()
+To: YanLong Dai <daiyanlong@kylinos.cn>
+Cc: rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com, 
+	lukasz.luba@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 20 Nov 2026 21:22:14 +0530
-Message-Id: <DN05PYTW4NV6.SOA0NRNOJBAR@disroot.org>
-To: =?utf-8?q?Adil_H=C3=BCsrev_Tepe?= <tadilhusrev@gmail.com>, "Sebastian
- Reichel" <sre@kernel.org>, "Rob Herring" <robh@kernel.org>, "Krzysztof
- Kozlowski" <krzk+dt@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>,
- "Kaustabh Chakraborty" <kauschluss@disroot.org>
-Cc: "Yassine Oudjana" <y.oudjana@protonmail.com>,
- <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v1 0/3] power: supply: s2mu005-battery: add S2MU106
- (Samsung Galaxy XCover5)
-From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
-References: <20261116074000.355176-1-tadilhusrev@gmail.com>
- <6afc2f77.2bb6edcb.1518d5.5d4f@mx.google.com>
-In-Reply-To: <6afc2f77.2bb6edcb.1518d5.5d4f@mx.google.com>
 
-On 2026-11-17 02:41 -08:00, Adil H=C3=BCsrev Tepe wrote:
-> I'd like to withdraw this series rather than send a v2.
+On Tue, Nov 3, 2026 at 1:43=E2=80=AFPM YanLong Dai <daiyanlong@kylinos.cn> =
+wrote:
 >
-> A review bot (Sashiko AI) flagged that patch 1's fallback compatible
-> (samsung,s2mu106-fuel-gauge falling back to samsung,s2mu005-fuel-gauge)
-> is unsound: a board using that fallback binds to the S2MU005 driver as-is=
-,
-> which still reads the MONOUT average-monitoring registers for
-> VOLTAGE_AVG/CURRENT_AVG and uses current_avg to help decide
-> POWER_SUPPLY_STATUS. The S2MU106 doesn't have that path, so those reads
-> return garbage, and garbage current_avg can flip the reported charging
-> status. Patch 3's has_monout flag avoids calling into that path from the
-> S2MU106 variant I added, but the binding still allows a device to bind
-> through the plain samsung,s2mu005-fuel-gauge compatible with no
-> has_monout gate at all, which is the actual hole.
+> In configuration_init(), the return value of realloc() is assigned
+> directly to config->tz_regex without checking for NULL. If realloc()
+> fails, the original pointer is lost (memory leak) and subsequent
+> dereference causes a NULL pointer crash.
 >
-> On reflection, extending s2mu005-battery.c was the wrong shape for this
-> chip regardless of that specific bug. The S2MU106 fuel gauge is a
-> separate, standalone I2C device on the Galaxy XCover5 (own address,
-> 0x3b), not a drop-in register-compatible S2MU005 variant sharing a
-> device tree node -- it only happens to reuse the same STATUS/RVBAT/
-> RCURCC/RSOC register layout and scaling. A dedicated driver avoids the
-> fallback-compatible construction entirely, since there's nothing to
-> fall back to.
+> Fix by using a temporary variable to receive the realloc() result and
+> checking for NULL before assigning to config->tz_regex.
 >
-> I'll send that as a new series instead: a samsung,s2mu106-fuelgauge
-> binding and a standalone drivers/power/supply/s2mu106-fuelgauge.c,
-> with no changes to s2mu005-battery.c or its binding. Sorry for the
-> noise -- I should have settled on this shape before sending v1.
+> Fixes: 110acbc6a451 ("tools/thermal: Add a temperature capture tool")
+> Signed-off-by: YanLong Dai <daiyanlong@kylinos.cn>
+> ---
+>  tools/thermal/thermometer/thermometer.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+>
+> diff --git a/tools/thermal/thermometer/thermometer.c b/tools/thermal/ther=
+mometer/thermometer.c
+> index b4f26d49e4c7..cc84540f467a 100644
+> --- a/tools/thermal/thermometer/thermometer.c
+> +++ b/tools/thermal/thermometer/thermometer.c
+> @@ -142,6 +142,7 @@ static int configuration_init(const char *path, struc=
+t configuration *config)
+>         INFO("Found %d thermal zone(s) regular expression\n", length);
+>
+>         for (i =3D 0; i < length; i++) {
+> +               struct tz_regex *tmp;
+>
+>                 config_setting_t *node;
+>                 const char *name;
+> @@ -163,8 +164,13 @@ static int configuration_init(const char *path, stru=
+ct configuration *config)
+>                         return -1;
+>                 }
+>
+> -               config->tz_regex =3D realloc(config->tz_regex, sizeof(*co=
+nfig->tz_regex) *
+> -                                       (config->nr_tz_regex + 1));
+> +               tmp =3D realloc(config->tz_regex, sizeof(*config->tz_rege=
+x) *
+> +                             (config->nr_tz_regex + 1));
+> +               if (!tmp) {
+> +                       ERROR("Failed to allocate memory for thermal zone=
+ regex\n");
+> +                       return -1;
+> +               }
+> +               config->tz_regex =3D tmp;
+>
+>                 if (regcomp(&config->tz_regex[config->nr_tz_regex].regex,=
+ name,
+>                             REG_NOSUB | REG_EXTENDED)) {
+> --
 
-Actually, this one was just fine. I didn't look at the patches
-meticulously but it seems like it does belong here. The correct approach
-would be to adjust the driver correctly so that it accepts both.
-
-The compatible patch is, in fact incorrect. The driver clearly uses two
-separate compatibles for the two devices, so there should not be any
-fallback.
-
-> Adil
-
+Applied as 7.5 material along with the [2/2], thanks!
