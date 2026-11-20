@@ -1,101 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.42
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795185940;
-	b=24iR20n5uBMh2kcusqLmUVGV28aivqoMapl+/Q0lrySwjUGWQHs2Y/6uyCRQp1P91x5V
-	 8u3DhMhBx2fbGL7HX4PkR3jJu1HQ2xkaLzDo0Xg9ZeP16WIi0mfzVij83vXxnDNaNCC3N
-	 vp5pizUm3ndA8QUB9q2vQ+mtNxS88q4adEV3gjT11hT1YXME8he2pBIsfsxxBb1z4EAgh
-	 422BenD3bTCIBZ8QyCXo6JYhFB/I186UBuw8U7uM0XHUsKa8kbluTLnaSJLsV2F9AIEMm
-	 oO1Sgy2BRMUyRXewIMdwYIchcAFJcAauEpf47/V0UJCV9ZAwnjbb/9lUap9maC1TQQg==
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.remote-ip=74.125.82.175
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=fail;
+	t=1795187701;
+	b=houMsNMf5IXCImcdDQfVQekFGCzrgwG9w5k5QUf9XglSosg0GgRWAh8sZve2bi1nm9It
+	 gknli0kNPBfm9nAmW9S+WkfqyKW0d85wFnBvEom3r+zfK2COR/2rdHWXzfbXRGnbf+h/V
+	 129X1uD3nx7vmb6PvD657YrzqNx3xEF/ol0Zjdtb3w0b18C5RKPXUIslbrFTyP3qF5CWi
+	 HkQh4ifw/GsFs96FT1Hi2fpfF9mxEc175O6kgGWCBMt7qF2xsgZwZC/TphAi1Tzrx9nen
+	 2C1ADILqE3nITZZTYex6IhZmrUZQa+IYxXg5liH78KH28pbjLjXdVx9mL2HYRpmDHjg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795185940;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795187701;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
 	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
 	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=ywjMM2WSUvMwVklBf0BM9q3a3U6GByEzCtPnH/AryCs=;
-	b=P91a6a9KVZ/INyKne6sqMy5bN+89HDejngNrXicWx3lwJO0lTdTBWrBvSuogD3PfgqX5
-	 pdc1QfPp7IlLfHAalmCqjH/ATlgueXT6uFmz2/RsZiBEMYWr9zTqgnDJLE4fVbCFGZZCI
-	 H35H9wqm+0L9cogBlIvDiWZsfOBNDlp+uYHvW018PzoVVY3RU226+m54uq3woXe2MIV+W
-	 20ahKhydAESVEsqnIHCrkxJuGrFsiE+yGGp9zGzZtLB60/T/gwNk6kYD7OgOcQa/m6lr4
-	 VGPufll4SD+iZCfgIfBw0dbDa760K4x0vn9AxdTpNWaR5SrDxhKFzGfpriqzvQ6lj8Q==
+	bh=BTVg64Op0q6C9ndfjZSeyDDbPDPodfwIL2/3SvvfmEM=;
+	b=XCIxRwLX1bZisOmrv2SNlXtgvzifJQs5ESTSW6E6tYhWBjlgzUDKdC3mBymPovx/xqtw
+	 C/tRiL927jAiae6YVY3dKwgMf3aLTc9kc93JGcKOcY2B/GXX0dXNXfbXCiGp7XecGmu7H
+	 pruDsOcDcPGrCkl0fH5+GpkWfabCLilgoj/Dp5t7alphGeNIgTnYRlzNb8mpRXcELL6/p
+	 Xy0eZ+SQPP/sWlcNcU8VGP6siTlQF+vVEG6XgZW32S91iQersNljWteRtYanQ52h6O2Wd
+	 VjsjF2f2I27SaGCzLjX0eBp3unfcOfq9uYic9r4AUw78YuCVpnYx01naQN4DRmViUWw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=flipper.net;
-	spf=pass smtp.mailfrom=flipper.net;
-	dkim=pass header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=fbtnhUAn;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.218.42
-Received: from mail-ej1-f42.google.com (mail-ej1-f42.google.com [209.85.218.42])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WuTp10tM;
+	arc=fail smtp.remote-ip=74.125.82.175
+Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C577606A325
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 14:45:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3C577606A325
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA1F3606A32A
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 15:15:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BA1F3606A32A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=flipper.net header.i=@flipper.net header.a=rsa-sha256 header.s=google header.b=fbtnhUAn
-Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-c5133831027so147685066b.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 06:45:39 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795185938; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WuTp10tM
+Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-372bdb942dbso1362857eec.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 07:15:00 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795187700; cv=none;
         d=google.com; s=arc-20260327;
-        b=rnRSpBYzBs9bU5nNOAVkBAjgmeDtIFM5sGpLRnh2ixSZh4tubvSIuyqIGjD130h9/h
-         ePAsQ+dVAuHlKs4TyFszWdak2vBLj4eEtrpjVfU+IMxWQvJGvgQlC4iHpPi/9lwCukl1
-         0ctqr/KGD8dN37XXbLTJhXcFBM8fTTYt9lZCnru0j3YQCZdsomIq/t9AwwqDvbRVV4Ih
-         Pk76Pz0y1B8i4CsucY7CrY0XQZ7KXtA4oVqtcqqVyX7cSkrw5QVx50nPo5Hv1h5EqGDT
-         q8CIKwLvbrjJgoaIZKfURdXnrpwQMN/6ABJsBIj1oeWRTSBjMmVK7FkAEbhim4YRlTTc
-         xLRQ==
+        b=Y3z2ijNI+YdSO/dGOhzJusVyyjHeS5mgbxMuVo6hFDorbdkVwMizWjvm5clDkoWl5P
+         h3ySiFjcouG6gIGEhFQP3tVmgyCelTPYxdv3gV3RR9XI2aDfpV1f0N3UOxbVWe4K4GZv
+         uFMqDsTSQldTikVcNC7EGKHSY1KK+vn20u4hX6px+Xxje+GnpmlwyVJmCXdf/Rbt4Ymt
+         b+nAekMmdYw9V5qDWz7wiCEAU9GZ8V/oxIyA/sfNmXgdkorF8LdmtD1az/47UsEuvEUt
+         PumiLQbMGL0wtOG7+7iJCDsSb760JIwUEFaea3ES7MeWy7MynCrXeGn/rUOSYl/RpX6w
+         KolA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=ywjMM2WSUvMwVklBf0BM9q3a3U6GByEzCtPnH/AryCs=;
-        fh=mvhDzXKL/I1xES34n1KxdYzS2NSCfBU1UuZpddadAnI=;
-        b=bJ1k0EG5Y+3u+q1uj0S+6zXf63RjGDupPtFXH19Ie6bejJZOqM9pFqhEsZgOtBX0BI
-         wF6xIxgzV+lJlmd534MYpDhXjlf+0grWOOvE5CfNYXXGLDptcsSo4Pzk64GYiGcUMV1r
-         4phnDFJhgXy1ZU5YvkIqPVopoqNGMVsFtT45QTzgj88L91t5Ra/0E0IJ1cvCz1iwEo9I
-         aQOeJlxNuy2mi5E+cEEOaSIltAttpd3bjAr+SQ35oUw64H7p+NVOtC4uJtdNQDRg/Dew
-         RCNFPad2p1JtMDqhTHMGzZfisIYyQgbQPeBzuW7yszwvUzoVySo7RC668NALkKIH/KKn
-         Dl5w==;
+        bh=BTVg64Op0q6C9ndfjZSeyDDbPDPodfwIL2/3SvvfmEM=;
+        fh=60ZV5pYh2PCXx/FxQJYxqpK0rywlTubQVvAGg0K0SYA=;
+        b=piuVv75zVo0jgbumawWgt919ThbGA+ZAKUb7bw0GcucKyfjyCSSvjVPhEjjV5dHpcF
+         A2nV1Z+wISLh05IQk2xlgWYDDdbwax9+Yu8MvMpx3rebK0fAKZj1+pi9b6IVf2tn4V6b
+         KFFddrEEwDqxJFQ4y2n+tk51gN7SiqupQFDxU19BbQVGxSoyFnva1jhxAg1Pb06N8vKW
+         xO9ZSnmvv1mY6gjARV5zUg0RRr33xLC+W0S8P1GhVZer30mdXPI3Mb9UlQ7p3mKmgpw7
+         MCDDfJd7YcmMLx/D27gz2P9/TIAHZEPOV5Vv8ZsMHKpd6sZ5lkPqDCFvXOYXH9RW8hJu
+         7Szg==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1795185938; x=1795790738; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1795187700; x=1795792500; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ywjMM2WSUvMwVklBf0BM9q3a3U6GByEzCtPnH/AryCs=;
-        b=fbtnhUAn2Q7RF7sEM4muGNFO7OUAkj4H6OFozkzGoVlzaGZXM89P9TENj18A1YOlpm
-         CSZieuRNqUzyjUuLWf9ZjalElDfbAETPcYKBrlaVXcnvSXQ3s4ypJy0XreQ3INSIzLNK
-         N4MHIZhc541vfZfHFtU/LF/b4PaAdPICSGesslw0npo5nqRgwDOCrirh/5+/znv+iZhD
-         d3LBN15+xtBCE4MJjx/xYtpC9HHHjzOlNlmcRcLJa5lYnZoyQljYJSPYwceEA5JI9nHF
-         Hc0rKNNgCxgPr8O6Zc5x+/yy2TRYs0+0Axd+og/Ws6EBzubQQlkstOchd9GYJ5d8rpXH
-         URvg==
+        bh=BTVg64Op0q6C9ndfjZSeyDDbPDPodfwIL2/3SvvfmEM=;
+        b=WuTp10tMLt6quTLDUoIPlzwBypkOMQJNj+vf4TTfECZ/GqWqCsgs3AYI8wpAJ4SZx4
+         MUuOzaDkO5uh5MZbFAOlrs8i8pZPQ6DS5JytlD7LMXxu+MjlhfSaM1gl+n6M3xhybkAz
+         I6DVJtTZlrfQFu4Xj33bsQAhE3hVTCEvGP2suhCDp6l/8JKo8WXlhqEJCBun9SGSSXvC
+         r0DI1bP62/E6NgoLI+h1+Hc3gmBR55Of/S0qPGWtxsE7gMYMn30DJ1Z4qnVOEeN4u9FM
+         h2RpwA3/3BbD66QkA+HQkuuO0twdCZOWGVATOmbIEmdhKik1BikdQ6l8YXriWEXupjBK
+         SKmQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795185938; x=1795790738;
+        d=1e100.net; s=20260707; t=1795187700; x=1795792500;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=ywjMM2WSUvMwVklBf0BM9q3a3U6GByEzCtPnH/AryCs=;
-        b=FfyBUjh1qx3xs2Zq1cEkjhTIaMs+r2+e2nfZl7D6EwZeWqhRNNyx2gSpnA5QO06cyI
-         LA9EqNIxLoDZjac6lJNrqlLUtT1+GtCCno1BBe0SFfe6qA2wEa80v+47JmJzXFKbtBi7
-         nqEivObPXoEceoyT53kBsugzF+XmLEsaxSOvTAYGvpAZ8m4eHgznKszB0LQblI8JOd+P
-         UR6mubPe2bBJ6TJ0hP5r3BIPvfnooskufo2VacVdA2Z0sROkII6YVabS3ODpex8tQpxN
-         ecAdDXvgfNwzlG4FVbn1mQHNcMALrPU2t/8Cn5Uc3SpiltzWoi54CcPSkmcv40GHNtBm
-         gjFg==
-X-Forwarded-Encrypted: i=1; AL+hErEwqMLNAfx0QnhynmeWwRkp1qYRCvE+iACLR1iIyZRPGgmsDPY2cF2IVJK0IX1WtTxeA872CjmvEw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/03qRk1BQpXZPK3+zG9OuKtR18kW4qhT0vThoNZ8bYRuAiskXa
-	c+gEt/MB2KBeTXH/BCQSc2X0NTdG/9mJxXn54DjJNh/oQk06zULciyT16WtMbrW1KqglYY9uD01
-	uibX8O/Hd9qDCqgLPT8kAAsztz95F1yhZU3Wcr7ougA==
-X-Gm-Gg: AZFdTZfLmtqUQxwBipjQ+zNhMk/139yDJfiPd9pK1HV8JrJwtWr0xLDPliVRfWmUHEx
-	UE2b0A3fO0h+8esi5KXdQ4K9RuwYuI2oeWmYhBILueNTAqxuhR7Wiu5zGa5tedE7KriK4xF71cB
-	QM9zi8vOGcd865p7S8Y90sCMDh/zILyPiq1C1JX7PpXnbBvAFYH9Fo0qy2TQJh4dHRHi+We1aJp
-	LNs2mwM4WEawWSiNVHunUGSI2YwmiooZFgyDH5c9KYjcFWXsmq9TuILnhpXtl3SmD6SN4ITeIEl
-	C92cZQvdCxr73IU6/b62ooASeN5UTs/9iFMxs+0iYHXEq2W1/vbN/t7Ri62OOvs6QUaLYSFnvUh
-	IiHI1JFRmyG4rTKlntr304DPaZGSNmFPznhpcXkpYGNg2+GEgpEG7ylolVZDFfQmCh5kQGavDCd
-	MlkmIGtZ4bs6fvd9ob
-X-Received: by 2002:a17:906:4fc4:b0:c51:24a3:208 with SMTP id
- a640c23a62f3a-c513a5da66bmr340053366b.9.1795185938297; Fri, 20 Nov 2026
- 06:45:38 -0800 (PST)
+        bh=BTVg64Op0q6C9ndfjZSeyDDbPDPodfwIL2/3SvvfmEM=;
+        b=Wea95VNFI/nH1XiuiOFeTGoeVWbmpW24t6Fx2nbAAGuUYuI/aK4vBeGaVdwyXF3wUp
+         cM95sJOSueLckMWH/Xtok8RaS3jpvZMzuLMu5JZCikcgTA9eCMobNa2SyYhaPXpz77Ne
+         wbT/SVhgfe7AiIPN2VIgVvtHsBGOw/57lr9YMOZvPkHYprTFKjQ4ZbFY7fSqXvNt/GV1
+         iimLYfcWe+k7baMChCBUuxp929c18oFQUQrq+wxV9QmdnBUbzzW9X9YrlFd/vIQwJigW
+         ug9Arz8JFYjzK2zE/BNVAX5zEqVsyrYnWfVh96AgNQlUh8pv734KpIO2yDln0ofC8i8B
+         4epg==
+X-Forwarded-Encrypted: i=1; AL+hErGT5jnHrYaFr7YH9xXRdIs8drGqo5dQnB9kAb24+jFyV2MMrIgmbw1GpYh0EDbYZ0cTMwUFGKl66A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z88teiT7NJTk2+dIdpquZJhylClJuXrpU6g4UIx0evHMND2iB3Y
+	S6aaA4ml4scg8rV2GwShNts4bvyIHUcya4RL64V+75UhDxQWp3Tag8FN8Sh1zjdv+1Odfz7Sv4h
+	shckiRNnbtlACh8EWXzuSv6BDGIYLVOyLIPRu
+X-Gm-Gg: AZFdTZcRYz/9ukIcAb0a5PQEC8mBgzs3TyPhnTnbdM+1SIx984JIzXo9Ux2nfpTSejA
+	GTtZen/D7p2MmShBWL2NXbbq2SpCJt/CNTBE/WYhBDGNOp0MUk8EnJBCWcTYvUAwKO1g5hYqBly
+	+c++Oat4BKShWo4exNhiONzAqjpPt5XV6oBr2TpUfBwBdm18qX/m7GlJOfK6eTNgQMMcHU1ASCD
+	xIRTZqv8urKneOB5WzbIGjLhl3LGP90vGb0njYFyC7FrnE4TsnDR46LE9sTIRr0VNzaoUvcxdju
+	CKjSaScOd0r9WpVIxq+hZj7dcM51rJQ8WIbw5OsartmIP6No4aieleCtvsXxo4EL838sgnxndBp
+	L1un/JUWffOddrbpqyI2e071J2i6mICmqOa94F4hpBVcP7uTj/5a68q4uLHBDc7ypVCRLyA/6/e
+	aqWRhULkL6xFDljf0RH8I1y7KPayDynYtYvgEJgucxVKGSe/6DQro=
+X-Received: by 2002:a05:693c:4091:b0:384:483f:2ea0 with SMTP id
+ 5a478bee46e88-3856f65af07mr3934775eec.17.1795187699638; Fri, 20 Nov 2026
+ 07:14:59 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,77 +105,83 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261109-battery-charge-temp-range-v1-0-a967abd8b80c@flipper.net>
- <20261109-battery-charge-temp-range-v1-1-a967abd8b80c@flipper.net> <20261119225808.GA1121782-robh@kernel.org>
-In-Reply-To: <20261119225808.GA1121782-robh@kernel.org>
-From: Alexey Charkov <alchark@flipper.net>
-Date: Fri, 20 Nov 2026 18:45:26 +0400
-X-Gm-Features: AclHuK-7Jyc8TBiMh3SZmeiKuU6wfTaME9iZFCNa2ski4ByTPxfFe688HXmvWSE
-Message-ID: <CAKTNdwFc5yam2HjkR4ShsMHJbTs7SesyvNoYQWwaeL5mAN9XMw@mail.gmail.com>
-Subject: Re: [PATCH 1/3] dt-bindings: power: supply: battery: Add a charging
- temperature range
-To: Rob Herring <robh@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+References: <cover.1795095742.git.geert+renesas@glider.be> <CAPVz0n1+qXrO5P+rOBKOSOE86+WcmjNF0taWDZoWqerKrjVgJQ@mail.gmail.com>
+ <CAMuHMdWPvKop0KAg_nff29ZeAELKprfmDtp8hDU2KPvJH5VVMQ@mail.gmail.com>
+In-Reply-To: <CAMuHMdWPvKop0KAg_nff29ZeAELKprfmDtp8hDU2KPvJH5VVMQ@mail.gmail.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Fri, 20 Nov 2026 17:14:48 +0200
+X-Gm-Features: Aa3M54q53xAAi2-NE6j4-zP1TXb277cEgD_-5pZDZArGHR0nuFBgm3EHI75NcY8
+Message-ID: <CAPVz0n3zsUixggHgKNzWsxtxDZ20GecHGa7qQf2RmzkoJ792KA@mail.gmail.com>
+Subject: Re: [PATCH 0/4] Improve MFD_ASUS_TRANSFORMER_EC dependencies
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	Ion Agorria <ion@agorria.com>, Lee Jones <lee@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, mfd@lists.linux.dev, 
+	linux-input@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-tegra@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 20, 2026 at 2:58=E2=80=AFAM Rob Herring <robh@kernel.org> wrote=
+=D0=BF=D1=82, 20 =D0=BB=D0=B8=D1=81=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 10:4=
+5 Geert Uytterhoeven <geert@linux-m68k.org> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> Hi Svyastoslav,
+>
+> On Thu, 19 Nov 2026 at 15:51, Svyatoslav Ryhel <clamor95@gmail.com> wrote=
 :
+> > =D1=87=D1=82, 19 =D0=BB=D0=B8=D1=81=D1=82. 2026=E2=80=AF=D1=80. =D0=BE =
+15:52 Geert Uytterhoeven <geert+renesas@glider.be> =D0=BF=D0=B8=D1=88=D0=B5=
+:
+> > > This patch series improves dependencies for the MFD_ASUS_TRANSFORMER_=
+EC
+> > > MFD driver and its various subdrivers:
+> > >   - The first patch adds a missing dependency for the MFD driver,
+> > >   - The other patches enable compile-testing for the input, serio, an=
+d
+> > >     battery subdrivers.
+> > >
+> > > Note that compile-testing cannot be enabled for the LED and charger
+> > > subdrivers, as they have a hard dependency on the MFD driver.
+> > >
+> > > Thanks for your comments!
+> > >
+> > > Geert Uytterhoeven (4):
+> > >   mfd: MFD_ASUS_TRANSFORMER_EC should depend on ARCH_TEGRA
+> >
+> > Though this EC is designed for Tegra based devices, it does not have
+> > any Tegra specific parts. It can be used by any other SoC.
 >
-> On Mon, Nov 09, 2026 at 01:41:48PM +0400, Alexey Charkov wrote:
-> > Describe batteries rated for separate charging and discharging
-> > temperature ranges, such as 0-45C for charging and -20-60C for
-> > discharging, often with a reduced charge current near the ends of the
-> > charging range: operating-range-celsius holds a single range, and
-> > existing users read it both as the limit for any use of the battery and
-> > as the limit for charging.
-> >
-> > Add charge-temp-range-celsius for the charging range, falling back to
-> > operating-range-celsius when absent, and state that
-> > operating-range-celsius covers discharging. Add the charge current and
-> > voltage to use between alert-celsius and the charging range limits, to
-> > describe a reduced charge rate near those limits and none beyond them.
-> >
-> > A missing half of an alert charge current and voltage pair falls back t=
-o
-> > the matching constant-charge-* setting. alert-celsius is expected to fu=
-lly
-> > fall inside charge-temp-range-celsius, but when it does not,
-> > charge-temp-range-celsius takes precedence to ensure no charge occurs
-> > outside the allowed range.
-> >
-> > Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> > ---
-> >  .../devicetree/bindings/power/supply/battery.yaml  | 45 ++++++++++++++=
-+++++++-
-> >  1 file changed, 43 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/power/supply/battery.yam=
-l b/Documentation/devicetree/bindings/power/supply/battery.yaml
-> > index 9575ee1491bb..d2f2ed9a01fe 100644
-> > --- a/Documentation/devicetree/bindings/power/supply/battery.yaml
-> > +++ b/Documentation/devicetree/bindings/power/supply/battery.yaml
-> > @@ -111,11 +111,21 @@ properties:
-> >        for each of the battery capacity lookup table.
-> >
-> >    operating-range-celsius:
-> > -    description: operating temperature range of a battery
-> > +    description: operating temperature range of a battery, in which it=
- can be
-> > +      discharged. Charging may be further restricted by
-> > +      charge-temp-range-celsius.
-> >      items:
-> >        - description: minimum temperature at which battery can operate
-> >        - description: maximum temperature at which battery can operate
-> >
-> > +  charge-temp-range-celsius:
+> Sure, the dependency can be extended once the hardware appears in
+> devices with other SoCs.  The question to ask is: does it make sense to
+> ask about this driver when configuring a kernel for e.g PA-RISC or S390?
 >
-> 'temp' is kind of redundant with 'celsius' and a departure from all the
-> other temperature properties here.
 
-Ack, will adjust in v2.
+Restricting this device to Tegra, even though it is not part of the
+Tegra SoC or Tegra-specific, seems plain wrong. If you want to
+restrict it by architecture, restrict it to arm/arm64 instead. Your
+logic is strange.
 
-Best regards,
-Alexey
+> > >   input: keyboard: Enable compile-testing for
+> > >     KEYBOARD_ASUS_TRANSFORMER_EC
+> > >   input: serio: Enable compile-testing for SERIO_ASUS_TRANSFORMER_EC
+> > >   power: supply: Enable compile-testing for BATTERY_ASUS_TRANSFORMER_=
+EC
+>
+> As pointed out by Sashiko, I forgot to take into account the transitive
+> dependency on I2C, so there will be a v2.
+>
+> Thanks!
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+>
+> In personal conversations with technical people, I call myself a hacker. =
+But
+> when I'm talking to journalists I just say "programmer" or something like=
+ that.
+>                                 -- Linus Torvalds
