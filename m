@@ -1,146 +1,65 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.67.36.66
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.62.57.87
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795182076;
-	b=xsTxi4OwEycAen7Qja9AqcWOwAhqkZTWfkfuQ+77/X0zvWp1YsKv+l9TPp3vgbxYz35V
-	 gyGF5vphx9ZVo3zK6gB1Z5uqZoU0PEw2RTesmHBTnAuyuNC3TsWhY6uLQGpxId/UqJJcg
-	 5bWj/nKcKR5m1kJ8rC4rUNR/1Q31TdkhoOTU1ELgyuIdIeYV2qXWxh25QERl067xETEHn
-	 35T4YNljifCTxtWgK9QyfzhC9ZDWaBa+jWzQtHkz6LRXqFf/RlH7MB5y3ojAJW9FdqKS7
-	 cZQY/IQMH608U6UnpFlPwQxL71RMXdq4XTrLiwUJOqj33L+sXbg88plLNKDS0AprDFw==
+	t=1795182851;
+	b=kcVSoiTN3i8TXbqWhWf3DPfLYMYlMzOEYRtQ3EHm4B0QVynwW4N3rYrRkg/dtrF8wkEA
+	 kaVqUQJRVBq3Y6gYfaqfbav5I5qCr3cQ7ii2yyykUo9EqvYnnbzNrXd1HVNFDRwFCTBZg
+	 Ha8/ivI1IrBIH1c+4+60Zj697XwkFWa0j2i9TOgD7GjIxl0CXy0lgJKyiTGnn9GGxTo9i
+	 LJ8SZr/0WDZYxMHy2clceHHyENq27UyTTOtjU2BkC06W8h0G7zLGe0NsNNxrcqVPP0iPj
+	 Nr28WcTtke4TRmK4S2aMICqkNt32NPwX3Tp5J3wxR5lT0taQGx66wzZsv4Fy0bI+kNA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795182076;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Message-ID:Subject:
-	 From:To:Cc:Date:In-Reply-To:References:Autocrypt:Content-Type:
-	 MIME-Version:OpenPGP;
-	bh=YW4oRhO1MuXRHyeWQ9Lx5ixnye7cuXD9in5rMS24y2A=;
-	b=hh5ln8iGPAX/31qIajVED4JhK0Wm+NLddfRTBlMcUBAC/vsFWEUBz1cNqGKQm5inRbdZ
-	 RT/HlU77zSHeOTRbtrBxOxlLmB+rGCZi/xqEz8CDQL84ntZpHB1rse/RSEMsj+clv71fD
-	 hZv993Ohblc+PDZ23KTf92xiSGN3a5uXM2xhEquXJteSWdAvS/Km6GIbM+8MndlRjNBIR
-	 14ClEYOhBQ3EdGJ9s3o+6M3lZe9ALilzwOdIH4f+ie3CGwutXpTbPlLGAL0+n/rLqrCOr
-	 aywP7Er9Lbnky4TNNHC9y1f5ujFTZFcNlz+cwVOSXuu+U8SwWfTdNhyYVHqYfYxFG7Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795182851;
+	h=DMARC-Filter:DKIM-Signature:X-QQ-XMRINFO:X-QQ-XMAILINFO:From:To:Cc:
+	 Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:Date:
+	 X-Priority:Message-ID:X-QQ-MIME:X-Mailer:X-QQ-Mailer:References:
+	 In-Reply-To:X-QQ-mid;
+	bh=JvKgGTjq2BPEe61GwX/IAd5voKriY1si3N+Q1SQuS+8=;
+	b=RfU/YzHMsEyfsw7xiiLKqgk7YuXYsTKXTYEiPWA46laJusgqEG8regiyh9X4QdbR2xZH
+	 BoQkUC7ktMaUG78+0Tw+9bxcYgYBlZg7rAt+6WL7pwy2EAPu63sRMmZ+ExWx8OmtfU0lO
+	 xiGga3SV8I1rdH1AIaebdsWGOt1UR3YFezCA1l2d9YC0GlCgVb6aEnl0ggvSlhepD5Omo
+	 jfbVu43gmP7cFlZpPYgfGg/3hNW060d0GAOn63cp8UeD/6ATje5D9xTgnlLHNvMahNTMs
+	 CWaGjfIxfp1OKIo2EhsMNhRe6JhG+S7ejFoMV/5tPf20kkMU8jBtf8ODIvg6qbOz6cg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=posteo.de;
-	spf=pass smtp.mailfrom=posteo.de;
-	dkim=pass header.d=posteo.de header.i=@posteo.de header.a=rsa-sha256 header.s=1984.8680eb header.b=hWh+t93A;
-	arc=none smtp.remote-ip=185.67.36.66
-Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=qq.com;
+	spf=pass smtp.mailfrom=qq.com;
+	dkim=pass header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=avxULmTp;
+	arc=none smtp.remote-ip=162.62.57.87
+Received: from out162-62-57-87.mail.qq.com (out162-62-57-87.mail.qq.com [162.62.57.87])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5205606A32C
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 13:41:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A5205606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ABA8606A332
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 13:54:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0ABA8606A332
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.a=rsa-sha256 header.s=1984.8680eb header.b=hWh+t93A
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout02.posteo.de (Postfix) with ESMTPS id 5416E240101
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 14:41:07 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de;
-	s=1984.8680eb; t=1795182067;
-	bh=YW4oRhO1MuXRHyeWQ9Lx5ixnye7cuXD9in5rMS24y2A=;
-	h=Message-ID:Subject:From:To:Cc:Date:Autocrypt:Content-Type:
-	 MIME-Version:OpenPGP:From;
-	b=hWh+t93AQ89D3y7Q9jrCyuBHB12xO/fjpp2KbQYXJeT2L3X6wH/D4DMbcDgYcqtgT
-	 pePRFyBthjOtirmgOI5czcXW1Xr1VnxH6GfasweXjJm4J9Mm4Hw+mn7yRccYA1M89r
-	 ckxYsVMo6pN37AZxMbKEL4i2LBGKnzK6/RJiaHheArZW644ZeQGqGoyhhM2h3T4JFH
-	 Dk2Hxfv0uSl3GCmBxQb7acaV1ilGCR5zeH72IlA7Ii3mLlwUcevf0AERKWuKOWgNhS
-	 bpETuEoWTvJyWgDofyUyxOmTRbCQ1514fODehAyVg1kPoYini/8kpChbhDu6bw685P
-	 5EShivwIQiQoA==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4jWGgr36MZz6tyT;
-	Fri, 20 Nov 2026 14:40:56 +0100 (CET)
-Message-ID: <e4c77581b1c09f8e0c8be570283f653a2a7e2147.camel@posteo.de>
-Subject: Re: [PATCH v22 4/5] rust: rename `AlwaysRefCounted` to `RefCounted`
-From: Markus Probst <markus.probst@posteo.de>
-To: Andreas Hindborg <a.hindborg@kernel.org>, Danilo Krummrich
- <dakr@kernel.org>,  Lorenzo Stoakes	 <ljs@kernel.org>, Vlastimil Babka
- <vbabka@kernel.org>, "Liam R. Howlett"	 <liam@infradead.org>, Uladzislau
- Rezki <urezki@gmail.com>, Miguel Ojeda	 <ojeda@kernel.org>, Boqun Feng
- <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,  =?ISO-8859-1?Q?Bj=F6rn?=
- Roy Baron	 <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>,
- Alice Ryhl	 <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
- Daniel Almeida	 <daniel.almeida@collabora.com>, Tamir Duberstein
- <tamird@kernel.org>,  Alexandre Courbot <acourbot@nvidia.com>, Onur
- =?ISO-8859-1?Q?=D6zkan?= <work@onurozkan.dev>, Lyude Paul	
- <lyude@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Christian Brauner	 <brauner@kernel.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Dave Ertman	 <david.m.ertman@intel.com>, Leon
- Romanovsky <leon@kernel.org>, Paul Moore	 <paul@paul-moore.com>, Serge
- Hallyn <sergeh@kernel.org>, David Airlie	 <airlied@gmail.com>, Simona
- Vetter <simona@ffwll.ch>, Alexander Viro	 <viro@zeniv.linux.org.uk>, Jan
- Kara <jack@suse.cz>, Igor Korotin	 <igor.korotin@linux.dev>, Viresh Kumar
- <vireshk@kernel.org>, Nishanth Menon	 <nm@ti.com>, Stephen Boyd
- <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,  Krzysztof
- =?UTF-8?Q?Wilczy=C5=84ski?=	 <kwilczynski@kernel.org>, Pavel Tikhomirov
- <ptikhomirov@virtuozzo.com>,  Michal Wilczynski <m.wilczynski@samsung.com>,
- Ira Weiny <iweiny@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
- Thomas =?ISO-8859-1?Q?Hellstr=F6m?=	 <thomas.hellstrom@linux.intel.com>,
- Johan Hovold <johan@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>,
- Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,  Dave Jiang
- <dave.jiang@intel.com>, Jason Gunthorpe <jgg@ziepe.ca>, Saeed Mahameed
- <saeedm@nvidia.com>,  Zhi Wang <zhiw@nvidia.com>, Jonathan Cameron
- <jic23@kernel.org>
-Cc: Philipp Stanner <phasta@kernel.org>, rust-for-linux@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- driver-core@lists.linux.dev, 	linux-block@vger.kernel.org,
- linux-security-module@vger.kernel.org, 	dri-devel@lists.freedesktop.org,
- linux-fsdevel@vger.kernel.org, 	linux-pm@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-pwm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, linux-media@vger.kernel.org, 
-	linaro-mm-sig@lists.linaro.org, linux-serial@vger.kernel.org, Oliver
- Mangold	 <oliver.mangold@pm.me>, Viresh Kumar <viresh.kumar@linaro.org>,
- Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?=	 <ukleinek@kernel.org>
-Date: Fri, 20 Nov 2026 13:41:05 +0000
-In-Reply-To: <20261116-unique-ref-v22-4-12029383206d@kernel.org>
-References: <20261116-unique-ref-v22-0-12029383206d@kernel.org>
-	 <20261116-unique-ref-v22-4-12029383206d@kernel.org>
-Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
- keydata=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
- jfGillcaQOqFZ3WwVqyzG1BUfTow==
-Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-1bC6az0UrhT7nf2a398O"
+	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=avxULmTp
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1795182840; bh=JvKgGTjq2BPEe61GwX/IAd5voKriY1si3N+Q1SQuS+8=;
+	h=From:To:Cc:Subject:Date:References:In-Reply-To;
+	b=avxULmTpzYlINMYMerBM8KO0ptt/FuqSFGc8Nvesy/uIg+2oRARAUR8EfBYiazqx1
+	 2BeuOfaIqGXlYGL05H++5xKwa2BFu+nPfyPYOAAPGxmNyLFedVjxjG2D9RROMbDXF1
+	 4IUU8S2vwn88T4XCjw8TJ45yZu+FyvdkhaRWhqfU=
+X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
+X-QQ-XMAILINFO: OTkXlZHit/HDYSOMMYUSEEaFDIssz1W9vtk4QajQI2ZSIDw6z3e3/fziSn1gxD
+	 NRzOwWA0EKV5Xs+u57yAudQ/ZR+h/8ZQ2O1AUpRdZGuBGoLSIniCUhxiNX60gGQBeU/s7BVNMeoDK
+	 6sQTLDQAQvtnsKWBuEa8O2bR9X6uLK3NdiBgHKpcgVyp/dqCOE9FZsnvH+Nh7TABBd4s+RjqnLpzo
+	 kX0WwTvW0pry+FPxjPfTFI5bDKsWLCNfU9b7rQs0QEMCX+yjXJF3pXLY5INZt1PRaeiYIm980EC+i
+	 ksbMOELwGQyLAsjY1g5aniNmIS+geQlR2jwJniCicFcpInkrFLuerPKM/r7Uc98T/fvCoTUrxSbHe
+	 8W67anNj909GuWCLJnvyzj9VKlcT/fMW4SgyQ8g1AjRjVve1raT93B6AoJRaskEg6NfIYLFNflEcT
+	 iZrnjeqQKB4VWhI+jVbUjca1TGGFOod6sMcR5YNTJTH9u693e5BXglWXTSkr+MsYa8zB+pv9V1jpD
+	 MjDcJhgl5yVjqOWyWxYtDdh7WHUJkVdiIlAgw0ZQtr+Cj8u/CiW1d16CsnX2zzj5GLAaduahoxfyM
+	 TCEkmm432ee+WSri6RKBSVM/ktHFXJCli1M/Hk4E6cqeWfk0BqBsxH8VRQ/ihT1ahdqfyvzYLJZEp
+	 t4q4/A6Tj8UGgn909/LVRfKN2IikVmwqK8AJfyFcBMoHvxT3TM/Z4dcuj/AaFZHSDd6L9BRYNMB5m
+	 F6HKoDrSPC+sX/x48Nu3RsE5fI/fZN/QHNO9LSEB4uLbomRE99gOdW/9ewDWlEPYEb5r16UQ2oOuM
+	 +FJvdsW+5wvlJ9rFoEhFMIQ8PjOK2p6G2Lf1G2jsd8EnrSlYbnzyTKkfkiU0QIzVZAblvQQLUGwoJ
+	 rfycw2PefoJtR3rtCuqN7jF7II9g0Xb5Xbp9LjMhSY7FY2cbWxZJzTqoD5p6QGQ2lrXTRIy433COB
+	 HF0W0RuPpgEDtZXbMBRLnVBbS/AMYrm0k5Gz4MUiuX19nwNerN+cqUrNj/gU4WqwYcbNpRx7XBtiQ
+	 9obkPQmlblrCQuSR8D8yRDCao9KM8Hq4xYqZQFtwvq3/NJG9iEXLhe13raQMjUOpe5jpnPM45cZ1A
+	 8alZDdwOwNZLX9K2Udy1Vu9Vfn88od9O75+eVdokKCqFJTvDITj3pAe+
+From: "=?utf-8?B?Q3VuaGFvIEx1?=" <1579567540@qq.com>
+To: "=?utf-8?B?SGVpa28gU3TDvGJuZXI=?=" <heiko@sntech.de>, "=?utf-8?B?Um9iIEhlcnJpbmc=?=" <robh@kernel.org>, "=?utf-8?B?S3J6eXN6dG9mIEtvemxvd3NraQ==?=" <krzk+dt@kernel.org>, "=?utf-8?B?Q29ub3IgRG9vbGV5?=" <conor+dt@kernel.org>, "=?utf-8?B?RWxhaW5lIFpoYW5n?=" <zhangqing@rock-chips.com>, "=?utf-8?B?VWxmIEhhbnNzb24=?=" <ulfh@kernel.org>
+Cc: "=?utf-8?B?ZGV2aWNldHJlZQ==?=" <devicetree@vger.kernel.org>, "=?utf-8?B?bGludXgtYXJtLWtlcm5lbA==?=" <linux-arm-kernel@lists.infradead.org>, "=?utf-8?B?bGludXgtcm9ja2NoaXA=?=" <linux-rockchip@lists.infradead.org>, "=?utf-8?B?bGludXgta2VybmVs?=" <linux-kernel@vger.kernel.org>, "=?utf-8?B?bGludXgtcG0=?=" <linux-pm@vger.kernel.org>, "=?utf-8?B?U2ViYXN0aWFuIFJlaWNoZWw=?=" <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v5 2/2] pmdomain: rockchip: Add RK3572 power domains
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -149,76 +68,72 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
+Date: Fri, 20 Nov 2026 21:53:58 +0800
+X-Priority: 3
+Message-ID: <tencent_DFB6F95537CDD14CC97C26B08CE407F4210A@qq.com>
+X-QQ-MIME: TCMime 1.0 by Tencent
+X-Mailer: QQMail 2.x
+X-QQ-Mailer: QQMail 2.x
+References: <20261118-add-board-ok3572-c-pmdomain-v5-0-f1af919dd434@qq.com>
+ <20261118-add-board-ok3572-c-pmdomain-v5-2-f1af919dd434@qq.com>
+	<z4ZFdDPMSaWK2zh19ZM7pA@sntech.de>
+In-Reply-To: <z4ZFdDPMSaWK2zh19ZM7pA@sntech.de>
+X-QQ-mid: xmsezb41-0t1795182838tuf7c54wx
 
+SGkgSGVpa28sCgo+IEkgZ3Vlc3MgdGhlIGZpcnN0IHF1ZXN0aW9uIGlzLCB3aHkgZG8geW91
+IG5lZWQgdGhhdD8KPiBUaGUgVFJNcyBvZiBib3RoIFJLMzU3MiBhbmQgUkszNTg4IGhhdmUg
+dGhlIHZvbHRhZ2UtZG9tYWluIHBvd2VyLWNvbnRyb2wKPiByZWdpc3RlcnMsIGJ1dCB3aHkg
+ZG8geW91IG5lZWQgdG8gY29udHJvbCB0aGVtIG5vdz8KPgo+IFNpZGUtcXVlc3Rpb24sIGhv
+dyBhcmUgdm9sdGFnZS1kb21haW5zIGhhbmRsZWQgb24gdGhlIG90aGVyIFNvQ3MuCj4gVGhl
+IFJLMzU4OCBhbHNvIGhhcyB0aGUgUE1VX1ZPTF9HQVRFX0NPTnggcmVnaXN0ZXJzLCBzbyBJ
+IGd1ZXNzCj4gdGhleSBjb3VsZCBhbHNvIGJlIHR1cm5lZCBvZmY/CgpJbiBoaXMgdjMgcmV2
+aWV3IFsxXSwgRmlubGV5IFhpYW8sIGFuIGVuZ2luZWVyIGF0IFJvY2tjaGlwLCBhc2tlZCBt
+ZQp0byBpbmNsdWRlIFJvY2tjaGlwJ3Mgdm9sdGFnZS1kb21haW4gaGFuZHNoYWtlIHdoZW4g
+YWRkaW5nIFJLMzU3MiBOUFUKc3VwcG9ydC4gU3BlY2lmaWNhbGx5LCBoZSBhc2tlZCBtZSB0
+byBjYWxsIHJvY2tjaGlwX3BtdV92ZF9vbigpIHRvCnJlcXVlc3QgVkRfTlBVIGJlZm9yZSBh
+c2tpbmcgdGhlIFBNVSB0byBwb3dlciB1cCBQRF9OUFUuCgpTbyBmYXIgSSd2ZSBvbmx5IHRl
+c3RlZCBiYXNpYyBOUFUgcG93ZXIgbWFuYWdlbWVudCBvbiBSSzM1NzIuIEkgaGF2ZW4ndApy
+dW4gYSBjb21wdXRlIHdvcmtsb2FkLCBzbyBJIGNhbid0IHNheSB3aGljaCBOUFUgZnVuY3Rp
+b25zLCBpZiBhbnksCndvdWxkIGJlIGFmZmVjdGVkIGJ5IG9taXR0aW5nIHRoZSBWRCByZXF1
+ZXN0LgoKSSBjb21wYXJlZCB0aGUgdXBzdHJlYW0gYW5kIFJvY2tjaGlwIGRyaXZlcnMgZm9y
+IFJLMzU4OC4gQm90aCBzd2l0Y2gKdGhlIHRvcC1sZXZlbCBOUFUgZG9tYWluIHVzaW5nIGJp
+dCAxIG9mIFBNVV9QV1JfR0FURV9TRlRDT04wIFsyXS4KTmVpdGhlciB3cml0ZXMgUE1VX1ZP
+TF9HQVRFX0NPTjAgZHVyaW5nIG5vcm1hbCBOUFUgZG9tYWluIHRyYW5zaXRpb25zLgoKU2hv
+dWxkIEkga2VlcCB0aGUgVkRfTlBVIHJlcXVlc3QgYmVmb3JlIHBvd2VyaW5nIHVwIFBEX05Q
+VSBvbiBSSzM1NzIKaW4gdjY/Cgo+IEJ1dCBpbiBnZW5lcmFsLCBpZiB5b3UgbmVlZCB0byBl
+bmFibGUgdGhlIHZvbHRhZ2UtZG9tYWluIHRvIGVuYWJsZSB0aGUKPiBwb3dlci1kb21haW4g
+aW5zaWRlIGl0LCB0aGlzIHJlYWxseSBzb3VuZHMgbW9yZSBsaWtlIGEgcG93ZXItZG9tYWlu
+IG9mCj4gYSBkaWZmZXJlbnQgdHlwZSAtIGJlY2F1c2UgdGhlIHdpZ2dsaW5nIGluc2lkZSB0
+aGUgcG93ZXItZG9tYWluCj4gaGFuZGxpbmcgYmVsb3cgbG9va3Mgc3RyYW5nZSwgYW5kIHdl
+IGFscmVhZHkgYXJlIGhhbmRsaW5nIGRvbWFpbgo+IHRyZWVzLgoKSSBjaGVja2VkIFJvY2tj
+aGlwJ3Mga2VybmVsIGFuZCB0aGUgUkszNTcyIGRvY3VtZW50YXRpb24sIGJ1dCBJIGNvdWxk
+bid0CmZpbmQgYSBzZXBhcmF0ZSBzdGF0dXMgYml0IGZvciBWRF9OUFUuIElmIEkgbW9kZWwg
+aXQgYXMgYSBwYXJlbnQKZG9tYWluLCB3b3VsZCBpdCBtYWtlIHNlbnNlIHRvIHRyYWNrIGl0
+cyBzdGF0ZSBpbiBzb2Z0d2FyZT8KCj4+IC0JaW50IGNsa191bmdhdGVfd19tYXNrID0gcGRf
+aW5mby0+Y2xrX3VuZ2F0ZV9tYXNrIDw8IDE2Owo+PiArCXUzMiBjbGtfdW5nYXRlX3dfbWFz
+ayA9ICh1MzIpcGRfaW5mby0+Y2xrX3VuZ2F0ZV9tYXNrIDw8IDE2Owo+Cj4gd2h5IGRvZXMg
+aXQgbmVlZCB0byBiZSB1MzIgbm93Pwo+IFllcywgdGhlIG1hc2sgc2hvdWxkIHByb2JhYmx5
+IGJlIHUzMiwgYnV0IHdoeSBub3QgY2hhbmdlIHNpbXBseSBjaGFuZ2UKPiB0aGUgZ2xvYmFs
+IHR5cGUgdGhlbj8KCkknbGwgbWFrZSBjbGtfdW5nYXRlX21hc2sgaXRzZWxmIHUzMiBpbiB2
+NiBhbmQgZHJvcCB0aGUgY2FzdC4KCj4gYm90aCB0aGUgY2xrX3VuZ2F0ZV9vZmZzZXQgKyBz
+dGF0dXNfb2Zmc2V0IGFkZGl0aW9uIHNob3VsZCBwcm9iYWJseSBiZQo+IHNlcGFyYXRlIHBh
+dGNoZXMsIGFzIHRoZXkgc2hvdWxkIGdldCBhIGRlc2NyaXB0aXZlIGNvbW1pdCBtZXNzYWdl
+IG9uCj4gd2h5IHRoZXkgYXJlIG5lZWRlZC4KPgo+PiArCWlmIChwbXUtPmluZm8tPmNoYWlu
+X3N0YXR1c19pbnZlcnRlZCkKPj4gKwkJcmV0dXJuICEodmFsICYgcGQtPmluZm8tPm1lbV9z
+dGF0dXNfbWFzayk7Cj4KPiBhZ2FpbiwgaW50cm9kdWNpbmcgdGhpcyBuZXcgcGFyYW1ldGVy
+IHNob3VsZCBnZXQgaXRzIG93biBjb21taXQgYW5kCj4gZGVzY3JpcHRpdmUgbWVzc2FnZSBv
+biB3aGF0IHRoaXMgZG9lcy4KCkknbGwgc3BsaXQgdGhlc2UuCgo+PiArCXJldHVybiByZWdt
+YXBfcmVhZF9wb2xsX3RpbWVvdXQocG11LT5ncmYsIHBtdS0+aW5mby0+Zndfc3RhdHVzX29m
+ZnNldCwKPj4gKwkJCQkgICAgICAgdmFsLCAodmFsICYgbWFzaykgPT0gbWFzaywgMCwgMTAw
+MDApOwo+PiArfQo+Cj4gdGhpcyBkZWZpbml0bHkgYWxzbyBuZWVkcyB3YXkgbW9yZSBleHBs
+YW5hdGlvbgoKVW5kZXJzdG9vZC4KClsxXSBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwv
+MThmY2ZlN2EtZTI1YS00NTE2LTgxMGYtZDc4N2I3Nzk5MTRkQHJvY2stY2hpcHMuY29tLwpb
+Ml0gUkszNTg4IFRSTSwgUGFydCAxLCB2MS4xLCBjaGFwdGVyIDcsIGVzcGVjaWFsbHkgc2Vj
+dGlvbiA3LjUuNToKICAgIGh0dHBzOi8vZGwubmFtdHNvLmNvbS9wcm9kdWN0cy9hMTAvYTEw
+LTM1ODgvZGF0YXNoZWV0cy9yb2NrY2hpcC1yazM1ODgtdHJtLXYxLjEtcGFydDEucGRmCgpC
+ZXN0IHJlZ2FyZHMsCkN1bmhhbyBMdQoKcHctYm90OiBjcgo=
 
---=-1bC6az0UrhT7nf2a398O
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2026-11-16 at 15:21 +0100, Andreas Hindborg wrote:
-> From: Oliver Mangold <oliver.mangold@pm.me>
->=20
-> There are types where it may both be reference counted in some cases and
-> owned in others. For such types, obtaining an `ARef<T>` from a `&T` may b=
-e
-> unsound, as it allows creation of an `ARef<T>` from a `&Owned<T>`.
->=20
-> Therefore, we split `AlwaysRefCounted` into `RefCounted` (which `ARef<T>`
-> would require) and a marker trait to indicate that the `&T` -> `ARef<T>`
-> conversion is sound for the type. A type that implements `Ownable` may
-> only implement the marker trait if it allows an `ARef<T>` to exist
-> together with an `Owned<T>`.
->=20
-> - Rename `AlwaysRefCounted` to `RefCounted`.
-> - Add a new unsafe trait `AlwaysRefCounted`.
-> - Implement the new trait `AlwaysRefCounted` for the newly renamed
->   `RefCounted` implementations. This leaves functionality of existing
->   implementers of `AlwaysRefCounted` intact.
->=20
-> Suggested-by: Alice Ryhl <aliceryhl@google.com>
-> Signed-off-by: Oliver Mangold <oliver.mangold@pm.me>
-> [ Andreas: Updated commit message, rebased on v7.4-rc2, converted new
->   implementers, relaxed the `ForeignOwnable` bound for `ARef<T>`, updated
->   safety comments. ]
-> Acked-by: Igor Korotin <igor.korotin.linux@gmail.com>
-> Acked-by: Danilo Krummrich <dakr@kernel.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Co-developed-by: Andreas Hindborg <a.hindborg@kernel.org>
-> Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
-> Acked-by: Uwe Kleine-K=C3=B6nig <ukleinek@kernel.org> # for pwm.rs
-
-I haven't unterstood yet what use case this has, so I am trusting the
-other ACKs here. Maybe a precise example would help?
-
-For serdev:
-
-Acked-by: Markus Probst <markus.probst@posteo.de>
-
-Thanks
-- Markus Probst
-
---=-1bC6az0UrhT7nf2a398O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQJPBAABCAA5FiEEgnQYxPSsWOdyMMRzNHYf+OetQ9IFAmsATecbFIAAAAAABAAO
-bWFudTIsMi41KzEuMTIsMiwyAAoJEDR2H/jnrUPSANQP/R1hB8C5F3mypETYwCgo
-/31OX6ODiCHu568feU0OwqqnH1gKua6thOPxdUzO4oz9uHEvJOy9k0pAUuqhIoUR
-cwWGFajvqbq0iEcbMMls3ezTo63QhALeYKpaK+p4wCU6HqazGDnsTiqXqIBnSMFF
-/zhMCLHxApAYueLhRzmTe9z4DIEhOaUdcOowPIV35HlxhghSQZ/uaZclBwv6h+xn
-PDpQAKnR2JxW4CcyT1Fm62hItTX+Djvef/Q6aac3xdMq1JSPlsbNUlThWsY+EjbX
-eBTAO766WENw3Hw3SxnX/pcUQwUVsRa3bxxgBxSfwZtm6nSfhxmBzAHsiR7aA4wq
-hrI46P32JW6WcL+jToQJC/QjQienV9rV/QTWrfp83Z59ce3lL43XtMlofu0EoK6W
-IWoX/O4IoSM3YDlzHsSYGQR7KG+VGDXyJAb6HhVyNdMTiegz8UxWwYqGviS9mTON
-a3YA8htdMngXmkwT5CQKhsNbS0sLqGb3nDrqmLV2hSDpjGkdUe86bahObcVCXonf
-7Gdl1/15c46K0QRbEf7q5kgreejRoLqFdi2eyw406ruUxE7Bd71t9faF5zWzaJRK
-ewr2s+IremZr522ABFhIX0SFkqu1sPzXqNLKXQa5fz5XxTh6jQziddGf3Q2z71dB
-79I2PETkcl5NqkNBz+UkmsCH
-=iSw7
------END PGP SIGNATURE-----
-
---=-1bC6az0UrhT7nf2a398O--
