@@ -1,112 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795191529;
-	b=VmUpST+sp328ffIVHyAiV6WuTHurDinORbuk9OBGkuZu0kmPosa2HJBRwYAoKcTUm+T2
-	 +v7JvRUCKbAf1SFxpgtsu+tjb+0UMaR4nvqnAiHJf5mSGEfKs5kJLJtmI6QjF4eGPdXOd
-	 tuImkyM2qcvhxefZyNpVg7uBuOq8QLCKEwwSPgBXwa8haiVEm5IcloaL3tqNuTlDbFtFc
-	 ie9qhXjvXBktWkC1KbDa7J/q8Mtc40mninvOECVO1XRfbSfuScD5yKriQejrYEexxlTAy
-	 zOEp/+k7J6+yQIeOF3Dgd7X58uecGd+CmJPSTkEMgaJj8oym/04ADBt105wFPgIHLpA==
+	t=1795192565;
+	b=c4QtSxGh8UZJCdUToTSf76ceGycDWLhp27FLggwpXPoOLeFDiqNJNR1YcNET0jerT7vz
+	 YrPSFvBWU7HzlFiyB9unV54PE3T6CuOuRJJnBpXmCC4BCEG/AUzu5byCZacEcgoDJJTIE
+	 4DlIvMzVcIY2p4qGZNILU+GeX3LjfLj/OUSC6765xbs4Kn+Kom/0WK7YVpa7va9KvEf2D
+	 GCykzJ1AOWeFaQIm68axStqodbxW3tAkJFTpi8mzzJr+GIZJq+W4sHYrqgAknp85KWnCg
+	 +1Ie+erdbNIAfkT5yL56D2Dqb+HsvrcEgaTjaY56PPDdiyeFUMERdn5RrCw26XQuP3A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795191529;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=t4Dld1icNXmUDCSLkNCdijjtSGyDKFWKh8cFgLUwyhw=;
-	b=L2bZU6tVT65aNRQ9px65sLSrhRo4jg+pHM2bZdbIJEw0t5CGqA3wwsBJ4diJnbEHfWYy
-	 6Sb0TBbTkvOkHpqOGicAUtG9PiFDphMlMtG7E7Nh521n8D3xeyz0BV2kl3SMcE/ak0x5D
-	 GoYPlfigrl76WAJQQIsFmeywmFzoKyiMVlij7BcCA7TERp3ZtVFnlnokfpmkYkPqh9IY8
-	 wAvq9Sw2JYn8Sg8RFtYQ9Zv8C2743WzpdmGKYPUyXN6jwyfS7W4Hr72a7PmCvd0on+yr3
-	 p6ODjY1mwqZkGTzaEpL3cMENx65Vtab3gC6gfBaxgkRdR+lDhTjBoNSWDUd72CcQjtA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795192565;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=NROB+otJAPb3sKEG9kAf2FYeN/cSw15FXGSDwsRGGiA=;
+	b=TyXWQe3HaXJ3bMN/jxwAJ5HofC/1X19mCb4hMyUXOzW2592dPsSg/K6hFwUXQ7Jgqlhh
+	 ftla7+v55u9IN46nGl2ypjaKnDtE464qV0oqrK0iWCWLr0BpAuN4Kx6jxqo64VuBw+4BA
+	 32R8a+8BTiX6JeEYpMP59NnWWkfJTmHuIAT699hGNiKcResE+6gZjwNNrn9rvRUm9Hp02
+	 4Rj4rrOWIgH2X9dI/aiVRiNkctk8ulZ3zYM6JxZbTiZNJubWlTlxncFbY1Eat/P97oJcj
+	 0NLOZTX9TXRt6aZ43fY1XXIIZAU9qWn+JJUEgHLqF4FVC3PdPbNmDQ2xUoqjExqIvdQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ZlbugbdA;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TQFppb5l;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="Jvj697/T";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36651606A330
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:18:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 36651606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00E70606A336
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:36:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ZlbugbdA;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TQFppb5l
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AKEfIrf2040014
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:18:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	t4Dld1icNXmUDCSLkNCdijjtSGyDKFWKh8cFgLUwyhw=; b=ZlbugbdADM5bEepW
-	juQrJ1QpPboC/UD0P9/ahdjjJvL8khpdCZF1N1R8Sn3WWEHC4D7IwOGOFyd88zwm
-	cEF0r8rAssLKZBh1Y7qLrrIS21I3kWA/0nq3rzw4jjAcnwNMO9Rzjry+Y2xjlTQu
-	V6IDN6D6rMjNuYlIz3uyPmifo6egm7y681+/pg1c1PVxBeIhbyA1WJW1McOJ9b4c
-	Xbcn3nC8VN9FrsBfbdV5K2346HqyP/QLZ9LTSxUqglhCsrlI9obQvmBUiyrgSxBP
-	4tC14qkzd/sBXXFXXCDL8uiiIU67Q255lcjfWPUkLRDJHjzN5lUgyarhCSX3hvGy
-	dce/hA==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j2fjttqua-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:18:47 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-3b40e7f4fa2so1994352a91.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 08:18:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795191527; x=1795796327; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=t4Dld1icNXmUDCSLkNCdijjtSGyDKFWKh8cFgLUwyhw=;
-        b=TQFppb5lcKMUm6lpo7PUc97eM5dnLxmBdCp+hQh1nrn51oINQ1oI5vgTKX1+ktxZXl
-         wBIkX9qsVqTLAXxQ8K7EUSm9qO1qJNsoXCVWS1Hi69OPOMV6L40ZR46yTJG8q4MVKDpY
-         2xWzen6ZdKXQVEP1zThAQNO5xxFNhjBaogtghBgOHxT4gcQOgYB4+vrq+cPCdUWeHv4M
-         LnkyFu8TlDCqrFs/v1Nh/vtadLJjASx/i2x2otg8Lf7kdVmeEpEghuuJX7usGgiNyyyV
-         kIFBT4BkBcv9wCVYyaW+e9AVrV1kNR5IF0OfEv4psUin8vMsrrgt6o+D+MUnokul4qgI
-         kocQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795191527; x=1795796327;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=t4Dld1icNXmUDCSLkNCdijjtSGyDKFWKh8cFgLUwyhw=;
-        b=U0JGg+ORh0V/XvEZ33LvhkeAZ4BR9wi0ndwcpVpJpmXtqT1zUrVnlPlget36zVwzgm
-         G6+CvehonWfUT2ZtyWqUdQEKpm2Xc2KROWo8M2+ZXzgiQvBNADuK/o1oDU8NL0maxUgW
-         DP+6DEdVledi5pu6xV0tm2iIfbtlw2abYWKh9e5BptX3QmaQxGBNcHSY6NBiUwVhDNXM
-         1iuS+SPAr+vrx57U/w/8F9WE0uf5dJ84K6Lw1q7uk7ubLEmfGmXIxouVpn3zg2Grd+MB
-         wquCDuFd3Xihr2VnkHgyWjy+ent4o3x80o3vaknToqazjsmysOww8ycf2y+pXtq6HGVu
-         u5LA==
-X-Forwarded-Encrypted: i=1; AL+hErF5lBaMzG4P/oWGvbm7LS2mJ/XncgRMx8uu2lG1o4zVccQuFGcpPUgirZ3rBsFByxOI+GdhE3L1HA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8c/B8dSX+arSP17uBb3XjJc2YnlPNFMZguuvspPFWmRUMkDkjF
-	Cn7J38wNRSiL7qlmwauMmobag3Cb23ozKNsoL/pSiRR7+B6eFR9mepJfmPWurZGNsJXZleiqOi+
-	E7cJKkFMxRDzW9BIxPVCkTQqDmKxTsfLtbZC9DUoFTjNZkddBGE1QKsU2qmJILg==
-X-Gm-Gg: AZFdTZeUyqi1WL3HBdN0rPm6uDGiNghsgmG5bHstFyUnWErq69N43UGAOBxhfs2WhJV
-	Y0MGNA4ds+THM4tFR6NJS2qdFhjyzQJNIsQEFFgT428XylsOB4D3YSSb6QvvhsBcsttLgeSsfli
-	TjyLxUB07x/5L7HZz/et2jHQ3N3TYhf/OyRhY0ugM/yy6FOkSoX7JBJ8UScUwju9uQwoQ1XrISx
-	akMez+KWOBDuvohXA+/j/qRdHqA/8O4/+o2zJdWQLweSRi6ZADN8i0kXnTW7zYZIKLsPEWPo99s
-	jAxI30P55fB1c4juJxNh6kA1xJcboBrVklngJzzbQXVMXIZ60DuJbBPKfHNb8mZ6G0hxOaSrvkW
-	Goff9He2F6hxLuGWxM5s+sRy04XHAenNooPWCMcsc8XmRGenZjJeqoenpTVhvAGs9n1hQrUoaCq
-	rpA2sdFifL
-X-Received: by 2002:a17:90b:384d:b0:3ae:a4fe:7ad4 with SMTP id 98e67ed59e1d1-3b41c8528b4mr3720514a91.2.1795191526813;
-        Fri, 20 Nov 2026 08:18:46 -0800 (PST)
-X-Received: by 2002:a17:90b:384d:b0:3ae:a4fe:7ad4 with SMTP id 98e67ed59e1d1-3b41c8528b4mr3720458a91.2.1795191526149;
-        Fri, 20 Nov 2026 08:18:46 -0800 (PST)
-Received: from [192.168.29.31] ([49.43.232.35])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b41ff2561asm1701473a91.1.2026.11.20.08.18.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 20 Nov 2026 08:18:45 -0800 (PST)
-Message-ID: <72fcd590-cdb7-4223-942d-329ecbd950e0@oss.qualcomm.com>
-Date: Fri, 20 Nov 2026 21:48:28 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Jvj697/T
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A027B1F000D1
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:36:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795192564;
+	bh=NROB+otJAPb3sKEG9kAf2FYeN/cSw15FXGSDwsRGGiA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Jvj697/TG8z5Aw8X8V0KDy/+ofCZg9kXbJWveRZUTJsDr+yFJiZu4gKjZVpzSeo01
+	 6yRa30P6jiDowpL2aKsWhTEAEQUHpzNawYaiSysE/Jk+8icOH0/Hm1MYXb2TAL/6Cv
+	 JQ/6fwbfIcs+xNqPW9hdfBAGTZt2d3M5fJ3t/WVnGsrVK4+UjkU90hCaxXTfOPe8oB
+	 4Trnc13yYyparqlWH1e7++5qMLO0LDuP4rjTYhDboijr1/eJOvIXcQdIfRv7SoiGVs
+	 cBELFF2LI1Tvp3wFVDrDq0tgT6dtXOe8wU7x47dJzt1ApBmihEzQ20UKYFCQQet0CK
+	 nJ9StSGTTAPMQ==
+Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-3ace304021eso9965401fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 08:36:04 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErFRxy8tkRi1AhP/xjmVooKN+t5WwU/25CZLoFPsoalmncZMdwCEXYFJxQ8y20wZu9to82iwH0eKfQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9LgyRSXbu7F09LYpEjRIR+zyh+iUKn2ltBNcCyWK0erQQjhU4g
+	2MgJ1pUfymkRTm5ZboRkKrJI4Wwx7VijdBHDW1GdPEqbq74Qfdy3sd9AurjiYiTM27a3YAuJUGi
+	ZmJhUWwksmify+V2dejWH1VNJ09Yfe0c=
+X-Received: by 2002:a05:6512:3da5:b0:5ba:3fbc:272d with SMTP id
+ 2adb3069b0e04-5c1bc7d651fmr1088634e87.33.1795192562967; Fri, 20 Nov 2026
+ 08:36:02 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,144 +59,235 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v27 00/10] Implement PSCI reboot mode driver for PSCI
- resets
-To: Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>
-Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Bjorn Andersson <andersson@kernel.org>, Rob Herring <robh@kernel.org>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        John Stultz
- <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        Pavan Kondeti
- <pavan.kondeti@oss.qualcomm.com>,
-        Abel Vesa <abelvesa@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla
- <sudeep.holla@kernel.org>, Andy Yan <andyshrk@163.com>,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, Srinivas Kandagatla <srini@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        Song Xue <quic_songxue@quicinc.com>
-References: <20261029-arm-psci-system_reset2-vendor-reboots-v27-0-fa4b3ff1359b@oss.qualcomm.com>
- <CAPx+jO-WLCnVecquKbVaCcErbhuFt6OHFUmzbgNHjixx0r-wMw@mail.gmail.com>
- <avo8wrWBjsk0RU6s@venus>
-Content-Language: en-US
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-In-Reply-To: <avo8wrWBjsk0RU6s@venus>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: kV69pFt92n5zUrfpctsfe6Z4LtmkGvKX
-X-Proofpoint-GUID: kV69pFt92n5zUrfpctsfe6Z4LtmkGvKX
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDA2NCBTYWx0ZWRfXy5SUHilRby5X
- 2iPLPXCY0hk2bOgB9DnWM1SPhbYcQL497yZn71dYWnmYewnykov8ZPW+LV21b7ajGPGb04MpDVz
- 0V6IStZHZ5tVkGKeh9LhAF6Updn6AVGsWkHPiaHCZpU1yML0E0FZf8I9iEiTMRxgPs5unKip2v3
- NNUk7Yku7BCDLtcxa23NncU8bT2B5DmJrhv8AjWoGto/rKQufOYiiOge1t76sSRNr6b5v4V29Zb
- qinzHReopnDRsTScYmbm6r6jmIqH4iV5cZTSFwLCUn7vJhBYATv8Tip5HSefbx+aRD1lLGFv9Kq
- W+GHi9cNWsoZyjtdVwXUVY6Nw0Nv8KoVifEjZjvbizbHwXLvJbbOeyFaWhCTNBJsZEEU0jLfEhN
- uhAITS5H5wKAodhgsR8tB5ssbRRnALJLQmFiZzrYP2cbY//nmaxjVuP26xobiYYpj3s7/fr24ri
- qdVM18Q7tZ6iEWztw9Q==
-X-Authority-Analysis: v=2.4 cv=XcccX455 c=1 sm=1 tr=0 ts=6b0072e7 cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=rVPHjc/N4E3dzGhKvu3xTA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8
- a=wsFT6AapSP24iMOhd5AA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=iS9zxrgQBfv6-_F4QbHw:22 a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDA2NCBTYWx0ZWRfX0bQIDW1gQ1X4
- POQUa+1VcLsbrHMzN+B8XkuvW07AZpCOIIy+PEjljJnhXPj66ZRRPG/Hph/ZOlST1fjn83uXj8p
- ufwpstfi7bPkDWey1k9p38ejo7jGidk=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-20_05,2026-11-19_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 malwarescore=0 adultscore=0 spamscore=0
- suspectscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611200064
+References: <20261109-dpti-custom-cpu-v1-0-ead8e2d2067e@linux.intel.com>
+In-Reply-To: <20261109-dpti-custom-cpu-v1-0-ead8e2d2067e@linux.intel.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 20 Nov 2026 17:35:50 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jn0RBxEHF4GxtAZUF3SxA+bAxJqtHui=aqbN1Fdjoj0w@mail.gmail.com>
+X-Gm-Features: Aa3M54q3UnfQHJFVJ2OgisTESicOBjjN48VEnnoRLIfX6LwfqK5tB8SVptueTeM
+Message-ID: <CAJZ5v0jn0RBxEHF4GxtAZUF3SxA+bAxJqtHui=aqbN1Fdjoj0w@mail.gmail.com>
+Subject: Re: [PATCH 00/13] thermal: intel: dpti: Direct the package thermal
+ interrupt to a chosen CPU
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org, 
+	linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	ricardo.neri@intel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Nov 10, 2026 at 4:36=E2=80=AFAM Ricardo Neri
+<ricardo.neri-calderon@linux.intel.com> wrote:
+>
+> The directed package-level thermal interrupt (DPTI) lets a single CPU per
+> package receive the package thermal interrupt instead of broadcasting it =
+to
+> every CPU in the package. Today that CPU is chosen with no regard for the
+> user's intent: the first CPU of a package to come online claims the
+> interrupt, and on offline it is redirected to another CPU of the package.
+> As a result, the interrupt can land on a CPU the user would rather keep
+> undisturbed, such as a nohz_full CPU, whose tickless isolation it breaks.
+>
+> This series gives the user explicit control over the interrupt owner
+> through sysfs. It also updates automatic selection of the owner CPU to
+> avoid CPUs isolated at boot through the nohz_full and isolcpus=3Dnohz
+> command-line options.
+>
+> CPUs isolated through isolcpus=3Ddomain or a cpuset isolated partition ar=
+e
+> left for a follow-up series, if there is interest.
+>
+> The sysfs interface
+> -------------------
+>
+> On a system with DPTI, every online CPU gets a boolean attribute in its
+> existing thermal_throttle group:
+>
+>   /sys/devices/system/cpu/cpuX/thermal_throttle/package_interrupt_owner
+>
+> Reading it answers a question about cpuX alone: 1 if cpuX is the CPU
+> currently programmed to receive its package's thermal interrupt, 0
+> otherwise. The owner is a per-package property, so at most one CPU of a
+> package reads 1, and all of them read 0 while the interrupt is not direct=
+ed
+> to any CPU.
+>
+> Writing 1 migrates the interrupt to cpuX and pins it there, overriding
+> automatic selection. The request is honored even if cpuX is
+> nohz_full-isolated, in which case a warning is logged. The write fails if
+> the hardware does not acknowledge the new owner.
+>
+> Writing 0 releases a pin on cpuX and returns the package to automatic
+> selection. If cpuX is nohz_full-isolated, the interrupt moves to a CPU of
+> the package that is not, when one is online. Otherwise it stays on cpuX.
+> Writing 0 to a CPU that is not pinned has no effect.
+>
+>   # Direct this package's thermal interrupt to CPU 3 and keep it there
+>   echo 1 > \
+>       /sys/devices/system/cpu/cpu3/thermal_throttle/package_interrupt_own=
+er
+>
+>   # Let automatic selection govern that package again
+>   echo 0 > \
+>       /sys/devices/system/cpu/cpu3/thermal_throttle/package_interrupt_own=
+er
+>
+>   # List the CPUs that own their package's interrupt
+>   grep -l '^1$' \
+>       /sys/devices/system/cpu/cpu*/thermal_throttle/package_interrupt_own=
+er
+>
+> Known limitations
+> -----------------
+>
+> To keep the interface and the implementation simple, the interface accept=
+s
+> these limitations:
+>
+>  - The file reports owner state, not pin state. Writing 0 to a CPU that i=
+s
+>    not isolated unpins without migrating: cpuX keeps the interrupt and
+>    keeps reading 1 until the placement changes, for example when cpuX goe=
+s
+>    offline.
+>
+>  - There is no request to move the interrupt away from cpuX. Pin another
+>    CPU of the package instead.
+>
+>  - A write to one CPU changes what another CPU's file reads: pinning cpuY
+>    makes the previous owner, cpuX, read 0 without cpuX's file being
+>    written.
+>
+>  - Finding which CPU owns a given package's interrupt takes one read per
+>    CPU of the package instead of a single read.
+>
+>  - The pinned preference is not observable. While a pinned CPU is offline=
+,
+>    the remaining CPUs of the package report the automatically chosen
+>    fallback. The pin is silently restored when the pinned CPU comes back
+>    online.
+>
+>  - The same file appears under every CPU of a package, because per-packag=
+e
+>    state is exposed through the per-CPU device. This reuses the existing
+>    per-CPU device infrastructure and mirrors package_throttle_count, whic=
+h
+>    is also per-package state shown per-CPU.
+>
+> Organization
+> ------------
+>
+> The series is organized as follows:
+>
+>  * Fix (patch 1): an existing race between kernel_kexec() and CPU hotplug
+>    can program a new owner after the syscore shutdown has cleared the DPT=
+I
+>    in all packages and leave it enabled in the next kernel. Independent o=
+f
+>    the rest of the series.
+>
+>  * Preparation (patches 2-4): prefix the log messages of therm_throt.c
+>    with pr_fmt(), move the sysfs device helpers next to their callers, an=
+d
+>    give the DPTI code a consistent dpti_ naming scheme.
+>
+>  * Groundwork (patches 5-9): owner changes become more likely once the
+>    selection and sysfs patches land. Limit the full teardown to boot, so
+>    that a later failure affects only its package; group per-package state
+>    in struct dpti_pkg; and factor the programming sequence into helpers
+>    that run it on the target CPU, from any CPU and entry point.
+>
+>  * Rank-based owner selection (patch 10): instead of special-casing pinne=
+d
+>    and isolated CPUs, rank every CPU and move the interrupt only on a
+>    strict rank improvement.
+>
+>  * Serialization (patch 11): introduce dpti_mutex ahead of the sysfs
+>    writer, which runs concurrently with the CPU hotplug callbacks.
+>
+>  * Avoid nohz_full-isolated CPUs (patch 12): rank housekeeping CPUs above
+>    isolated ones, and migrate as soon as a housekeeping CPU comes online.
+>
+>  * The sysfs interface (patch 13): let the user pin the owner.
+>
+> Summary of testing
+> ------------------
+>
+> Tested on a 1-socket system with DPTI and on a 2-socket system without it=
+,
+> where test-only patches emulate DPTI.
+>
+> - CPU hotplug:
+>   - Sweeps that offline and then online each CPU in turn, checking the
+>     owner in MSR_IA32_THERM_INTERRUPT (and in sysfs from patch 13) after
+>     every step: about 750 transitions across the kernels of every patch o=
+n
+>     the 1-socket system, and about 950 on the 2-socket system, where
+>     package owners go offline and the interrupt migrates.
+>   - lockdep stress runs of up to 10,000 offline/online cycles against
+>     sysfs writes, with no deadlocks.
+>   - Injected handover failures always ended with either the old owner
+>     kept or the package broadcasting.
+> - Isolation (nohz_full):
+>   - The owner stayed on housekeeping CPUs and fell back to an isolated CP=
+U,
+>     with a warning, only when it had to. Ownership migrated back to a
+>     housekeeping CPU as soon as one came online.
+>   - 0 of 36 package interrupts reached an isolated CPU with DPTI, against
+>     26 of 26 without it.
+> - Hibernation (S4):
+>   - One cycle on every patch kernel, with the owner restored each time,
+>     and a pin restored where one was set.
+>   - All four combinations of image and boot kernel, with and without DPTI=
+,
+>     left no stale state.
+> - kexec:
+>   - The sysfs race went from 22 of 22 failing to 20 of 20 clean with the
+>     fix in patches 1 and 11. The CPU hotplug race went from 4 of 4 failin=
+g
+>     to 0 of 5 with patch 1.
+>   - A kexec into a kernel without DPTI always found the hardware clean.
+> - Configurations:
+>   - Every patch builds cleanly in an x86_64_defconfig-based configuration=
+,
+>     with each of NO_HZ_FULL, SYSFS, SMP, CPU_ISOLATION, PM_SLEEP, lockdep
+>     and X86_THERMAL_VECTOR turned off one at a time, and in a 32-bit
+>     build. On hardware, I ran the test systems' distribution configuratio=
+n
+>     with debug options, plus three variants: NO_HZ_FULL=3Dn, KASAN with
+>     kmemleak, and a no-debug performance build.
+>
+> Thanks and BR,
+> Ricardo
+>
+> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> ---
+> Ricardo Neri (13):
+>       thermal: intel: Keep directed package interrupts off after syscore =
+shutdown
+>       thermal: intel: Prefix log messages via pr_fmt()
+>       thermal: intel: Move the sysfs device helpers next to their callers
+>       thermal: intel: dpti: Adopt the dpti_ prefix and the owner terminol=
+ogy
+>       thermal: intel: dpti: Tear down DPTI only during boot
+>       thermal: intel: dpti: Introduce struct dpti_pkg for per-package sta=
+te
+>       thermal: intel: dpti: Configure the local CPU by value
+>       thermal: intel: dpti: Factor the programming sequence out into a he=
+lper
+>       thermal: intel: dpti: Program the directed interrupt on the target =
+CPU
+>       thermal: intel: dpti: Add rank-based owner selection
+>       thermal: intel: dpti: Serialize updates to the directed interrupt s=
+tate
+>       thermal: intel: dpti: Avoid nohz_full CPUs when possible
+>       thermal: intel: dpti: Add sysfs control of interrupt owner
+>
+>  Documentation/ABI/testing/sysfs-devices-system-cpu |  40 ++
+>  drivers/thermal/intel/therm_throt.c                | 739 +++++++++++++++=
++-----
+>  2 files changed, 606 insertions(+), 173 deletions(-)
+> ---
 
-
-On 11/16/2026 4:44 AM, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Mon, Nov 09, 2026 at 04:47:29PM +0100, Ulf Hansson wrote:
->> On Thu, Oct 29, 2026 at 10:01 AM Shivendra Pratap
->> <shivendra.pratap@oss.qualcomm.com> wrote:
->>>
->>> Userspace should be able to initiate device reboots using the various
->>> PSCI SYSTEM_RESET and SYSTEM_RESET2 types defined by PSCI spec. This
->>> patch series introduces psci-reboot-mode driver that will induce
->>> command-based resets to psci driver for executing the device reset.
->>>
->>> The PSCI system reset calls takes two arguments: reset_type and cookie.
->>> It defines predefined reset types, such as warm and cold reset, and
->>> vendor-specific reset types which are SoC vendor specific. To support
->>> these requirements, the reboot-mode framework is enhanced in two key
->>> ways:
->>> 1. Support upto three 32 bit magic values as arguments. This enables to
->>> support for a 32 bit reset_type and a 64 bit cookie).
->>> 2. Predefined modes: Add support for predefined reboot modes in the
->>> framework.
->>>
->>> With these enhancements, the patch series enables:
->>>   - Arch Warm reset and system reset cold as predefined reboot modes.
->>>   - Vendor-specific resets, configurable via the SoC-specific device tree.
->>>
->>> Together, these changes allow userspace to trigger all above PSCI resets
->>> from userspace.
->>>
->>> Note on introducing psci aux devices:
->>> Based on feedback from Bart, Lee and Ufee, PSCI child functionality now
->>> uses aux devices instead of an MFD driver, with psci-cpuidle-domain and
->>> psci-reboot-mode probed through a common PSCI aux device enumerator.
->>> Reference discussions on this:
->>> https://lore.kernel.org/all/CAPx+jO9Hi2R_UnCEhsXLwf74c3RTb+RodaJ6SOVXbQX_eHt++A@mail.gmail.com/
->>>
->>> ---
->>> The patch is tested on rb3Gen2, lemans-ride, lemans-evk, monaco-ride,
->>> qcs615-ride.
->>>
->>> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
->>>
->>> Changes in v27:
->>> - Removed unnecessary headers from psci-reboot-mode - By Bart
->>> - Rebased onto current linux-next.
->>> - Link to v26: https://patch.msgid.link/20260928-arm-psci-system_reset2-vendor-reboots-v26-0-b24e2348e8e1@oss.qualcomm.com
->>
->> Overall this looks reasonable to me, but I will take a closer look in
->> the next few days.
->>
->> When it comes to the merging strategy, it seems like the best way
->> would be to funnel this via my pmdomain tree. But I need an ack from
->> the relevant maintainers to make sure there are no issues with that.
-> 
-> Works for me.
-> 
-
-Hi Lorenzo,
-
-Can you please review?
-
-thanks,
-Shivendra
+Whole series applied as 7.5 material, thanks!
