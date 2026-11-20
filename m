@@ -1,81 +1,81 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.175
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795208377;
-	b=xmxTIDiFZnLIdHzhmqQAY0hn3p1WUoPOP2uvAtqLFREFlT2aMWFU3em0PJFPsIQSSV4+
-	 1w0LantSV4Nsr6QBJV3Nl9IlBSJLrBEtU8fxu1RTkYJXqQqHIX9qX5xmhX7qwrmwrk8XT
-	 97y4FAao8fudFA0Asa/aIgWVA6BJt+VVgFiGYhX4/PXdJLQ/PMd9gx80W7dnPVIO0otLy
-	 CSPOSqUMcpg5XIbO2ugFOf+2B+zTb4jD5+GwNS2pnplJkfB+lnFld7GG8bR72myr0Zykg
-	 lDoCxO8oTRMfFewMNvIxNXDkFIHK4n6Fjb88vmkxhPJey/kvD1weYj8UpqIH284Mn4w==
+	t=1795208656;
+	b=Y93hpiqGrKfg5VpzJSIOUhDiAxg2yr4i/xq78WZ/LNZT0D9UfdpsS4iXzigcycKf8U6y
+	 g8eLg46Tmq4eTcSjOCBYXd6nOn3eQdaBdW4CzePxB7OldhIykzDyGuQVbh8cwJDESozlO
+	 4oOHT2gwfCrkEJvcrI6hI1ugmR1kQwK21gk1QwioqXZZ6dmAnQ+sxam09irqwT3Ccudxp
+	 EdCjBlBsr5b6UYRKpSJI1EPKNfwAP+AK9sS/rzfF5DqDiU9ctujVNkn6fmcwwM0YLZsiq
+	 1k41YtmYvfvaqXvB1OyMOyELueJ6Gxde3fI7MXH0eRvu9X4X37X/l36vF8qMDMRc3Rw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795208377;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795208656;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To;
-	bh=xqx2feA+7Jx9teaQWOZ3qzuVX2GPDumqnHf9czn6DrU=;
-	b=2Z36Mf1ax9x7eYRgVNAdUROfxxp4knTXY2SSV1jVI0JzJuEQT7ik3AS07Cxz+H47KxRp
-	 3rY3XUrrX/i0WqFPMrerstymNpEhxFCKa6HPc3hhq6jN8USIz593N6SXChX1AUgcTZ7am
-	 pi61potAE5/jJYmV3JMiPINu3b4U5C9411ytspFdjnj48VuZRYsOYKfzz7LxnW2WfEi7x
-	 ORQsAOB39/IVqTczF5nR6Fd4H8dfwsrSh6xa8WcyREUmVHpyTnQGcARETIxr8JiVxRPyB
-	 zcFBqz0ieQIa6sm5fng6LzS+Ia11gzK+d4lgJTEwz7IjVN0mrjRMN034oO1Z7IMwAJQ==
+	bh=/ru90xVBZjCMBPo2fB3f1IAfOuYApIQHIQMbSW86U10=;
+	b=ECxpMnwpAgRYBAviX2MlgEIEvTdWwKPu6E8tiSGXZyukm2bjIE/DiRUuk7T+ZJnhv8vb
+	 C/Cf78ZTq9GKBEJRDxkvU3jMGkfwTzHRV5KgpXwgZDF5nbpi0ydLGu/D8D+JRRRzFl8lc
+	 cGRvBa+ZUyTe998keeADEQuyZVFNAkIlOIO3ms1pfrNdzM/29nYT6HEBjI5R/x2uSAsfl
+	 BMXpjEdtUgf71/atD0JcxYfb5t1d38MjBxkFjZjLrb7M2Ie2e4DEC6++R88G/a9BkqNEi
+	 /QvkCxgyctlPtt6wQuvG5vk7nucISMqECTANT65CJCS2F1lw38WjOMlrYTpW00mhemQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=I7ZfJKXR;
-	arc=none smtp.remote-ip=74.125.82.175
-Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=kvVYYa+w;
+	arc=none smtp.remote-ip=74.125.82.173
+Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3318606A6AE
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 20:59:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E3318606A6AE
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3C10606A6A8
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 21:04:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D3C10606A6A8
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=I7ZfJKXR
-Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-38644aedba1so1245101eec.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 12:59:36 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=kvVYYa+w
+Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-385c497bf94so2365381eec.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 13:04:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1795208376; x=1795813176; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1795208650; x=1795813450; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=xqx2feA+7Jx9teaQWOZ3qzuVX2GPDumqnHf9czn6DrU=;
-        b=I7ZfJKXRmNVlJ9f45wfQuPqbHGcxys5Sad7qlE5QFwz27TBK8rKAwZbR/3Y/u0cKMM
-         8oRM/7tu/DHuGWqaRCNuOZxncMv+ihveLkiliuWztSqosDkqa2A2qIxuODbYXebtexis
-         DjrGqMaGNnxT6F9WBmh6hDLNauqSP1Xowf2LQ=
+        bh=/ru90xVBZjCMBPo2fB3f1IAfOuYApIQHIQMbSW86U10=;
+        b=kvVYYa+wGiRqLorEksb3vNg0gwo00Pw/Fj3Sksx0nbA3HOarN+jSyJFKiLd2rByFn+
+         FzD//flDqApuZsRKkd6wRjS7cKmG1kOxZ4BnkaWyMTydvdN9qbtfVUS99PWKavYx8KrB
+         Gd8fuhh/xUXPfuFo/8Uj/qEoxUduZlyVblup4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795208376; x=1795813176;
+        d=1e100.net; s=20260707; t=1795208650; x=1795813450;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=xqx2feA+7Jx9teaQWOZ3qzuVX2GPDumqnHf9czn6DrU=;
-        b=wuMx3QAqgKPnMpYMaB3eXSdtFUyrhMAg6e9Mr1Ms+t7xll3ziw0gUQ3YMk2Z5w6/rG
-         9VDjw7VRYFckKq6RGepHmVAPJD7D1YO8Ub30M8UU9iq85HF8vd8vr/rNGCYqsdXGk8Xx
-         vvFaJAU+Ax64xo/DXImL7QCdFTyh2zOkuQ8isHfiD37KMdaz/I3QtT7+YT7jW9XAsJmg
-         lNmdq/nwp/wyfzwoNADSox2+rorv+i4iLEzlLGPYNBw+jewM9VnlzFZBz1B5zz4oeuon
-         FEge9yGN0nVme7+fHO2gjIU71+Zbh/tgvNAnDWFhqOD488uBua86o50N48WarxjOlt++
-         HlPQ==
-X-Gm-Message-State: APuU4Z/MfAlpDXIi4uNKDYOwYL1NAYs816vfbsCk3OUZ6zYV8WCIU+jA
-	cFFrlgebY6/fG1SMyA4PUWQtLiQJrx5mxAww+Fj/d9sFyN7iWp+OW6pIficFcxTUFA==
-X-Gm-Gg: AYBFou1OwVV1iMldiFISJ3aTed034R9kwCFWseavVi40r0exDrhnd2OAGsu8LsVRf3b
-	J+YN7MUaDlEWnr36o5aXmDOaDmWFmAfEH/WP0I0vNN0TnDBOxl7OXtvOu7Yk6mpxQAXrc7aSIzV
-	zWD08T+VCSpIQW7d2DwcD6CrnWgjSS6WBKwU3MW4aZRCPDMSBUBpJOkAOn3PpaDh7Zxas75wXBn
-	iTvItzkS+8bJDifKmJr/GMLY3IXyJryTc4ffHoG51x5WTlzwhi95Okj7gzQ40GzxsNij/jP/YTC
-	jT9ZIW2K3SZioXa+kxN0AGLu5cUUxy5CbSHPNQauu8iM/H8pT9zfNBY/UY7r+3IUVuac0x+IV3g
-	btI6nz6xo5KgdqRPzcCkFV4Q0eZNLrXlFEOvJMOu1fWSfgyEyyTeVyJDZgRzlXw8TgOsxy4WbG8
-	ZoKoOVzIyxKZqVtq5V6FZoBA/Edn6cZDlbOpLlkCw8O8KbzWdiF/psOccLGSxR8TuqkFZU5oy3J
-	hRxwiBSgDhfFHWPdg6Y02BMFZglUpuLpNYiYON8PNXef8Og+X6gXcZGi3cGtga9H1U4LF35ewfO
-	gXALt8uL/cYBub23uznmHMLb6uh8epPBP3h/iXdfLJapG/sIWEnSVQYsDuAnFMyC0rSD
-X-Received: by 2002:a05:693c:829b:10b0:376:feb:2df3 with SMTP id 5a478bee46e88-3856f85236cmr4832996eec.20.1795208375921;
-        Fri, 20 Nov 2026 12:59:35 -0800 (PST)
+        bh=/ru90xVBZjCMBPo2fB3f1IAfOuYApIQHIQMbSW86U10=;
+        b=WAS0mFhqyzy6X0Vyg/ciP0j6wqfvHf5UUurzsV3SMnTNEU6jOy+pbrG30TP/FDYc/w
+         BwEf6pP/4YApKuIxJEuxpeS43mXhekkuO9PQtcOcZMTshyzELOfSk2MkDyUlJXAU9qEp
+         7v6im0pK/h/2bcKBjsQruipqFNP9xSfdmqsUVpAvPsdJYvyXY2Lznk2qg25LYsLo5eqH
+         uo6hG1Ts/RLyVchkrRLC4QDpIpGK+/oxWPEigdX2hC8GVWH7cEZhYV6lazM09VG9+2sZ
+         MBsQH+l+4r0a2HU0wF2YgpLGluf/YjpBytC0ybgi71qtlRDX0+Dv2Uuw19do1nmgMgeo
+         BpWQ==
+X-Gm-Message-State: APuU4Z/DE782MEWCJNecQkifXzpdWkIksmIwwHbldkzvuiYWkGR1YaaU
+	ggOa1240nyDWyjEfN4WHC0MI1ID1XLbAfEfB/i2I43o0YydUV4wI7bWP7ZJpE/43Aw==
+X-Gm-Gg: AZFdTZdL+h98+gqidEmOfXCu6nbEe621WgFER3bY3MB1dG0Gy311JZEyk+dDKViWag8
+	Swa0YXvi+YTSx5f2JCuyVv0QbnUy94Yq1NyHTKzX+virG/z7v+b1jw3TXXQBanmGoNRg/zPOLnq
+	YW/dxpz0Ko/w6ZbOrEqTlYuaEYYMevKCkiX33Rg8pgLTljhboAzLSsnXZUHQMi3ASarMe3S1ZqE
+	P8IGaRS5Lc8bVrwDWObicycPFbrAv//+PQ4Mes+PM3B8CUVahLf1EcaUMV5krr9eUO52anyyG9x
+	fcGYvq/ok9Iynfk+TqWxaLCKgyI0Hgbkn2ejM7KIydloQBEIy24wsWS1VTDBc5OxOOiH4V04I6G
+	esBzPRTBSYEc1LStW23zwex0bH0bV1z3Tq9JGqGUV5K9Im+Q44GRv70hFDOw1Nfd2H9hLGrmfHB
+	DegiDaFH7nvxtyxSqPKaW4XpHM9LEA44cFzPP8QwgF/IqCR/56EVlbPVhS5355tMz1MIgXwE4jQ
+	TNcCXXjRcztpKhzdjed4UmCw52dSxz2lXboY2qmwqnOeKLeAz/UxnjNN3if9AYXQvofwudMJuns
+	YJ9JQttKuDOFTrSjnXN7ccbY82Yb4T0/s165KBwzay9olkK1UgnmNWoLmXlRW6Jh9k5Q
+X-Received: by 2002:a05:7300:f283:b0:386:9854:9123 with SMTP id 5a478bee46e88-3869854950emr974034eec.14.1795208649910;
+        Fri, 20 Nov 2026 13:04:09 -0800 (PST)
 Received: from localhost ([2a00:79e0:2e7c:8:ec05:65c0:ffe0:d597])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-385677c349csm11386565eec.22.2026.11.20.12.59.34
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3856456e6c6sm9889709eec.2.2026.11.20.13.04.08
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 20 Nov 2026 12:59:35 -0800 (PST)
-Date: Fri, 20 Nov 2026 12:59:33 -0800
+        Fri, 20 Nov 2026 13:04:09 -0800 (PST)
+Date: Fri, 20 Nov 2026 13:04:07 -0800
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>,
@@ -83,11 +83,11 @@ Cc: Linux PM <linux-pm@vger.kernel.org>,
 	Sakari Ailus <sakari.ailus@linux.intel.com>,
 	Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
 	Linux Driver Core Development <driver-core@lists.linux.dev>
-Subject: Re: [PATCH v1 1/4] PM: runtime: Update last_busy in all rpm_idle()
- paths
-Message-ID: <awC0tcqgq2KvCyxO@google.com>
+Subject: Re: [PATCH v1 3/4] PM: runtime: Let devices suspend after an
+ attempted resume
+Message-ID: <awC1xx1Wi2BYo5rb@google.com>
 References: <1978814.tdWV9SEqCh@rafael.j.wysocki>
- <3076901.e9J7NaK4W3@rafael.j.wysocki>
+ <10954171.nUPlyArG6x@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -99,121 +99,94 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3076901.e9J7NaK4W3@rafael.j.wysocki>
+In-Reply-To: <10954171.nUPlyArG6x@rafael.j.wysocki>
 
-On Thu, Nov 19, 2026 at 09:16:30PM +0100, Rafael J. Wysocki wrote:
+On Thu, Nov 19, 2026 at 09:17:51PM +0100, Rafael J. Wysocki wrote:
 > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 > 
-> The changelog of commit 26236a3e8803 ("PM: runtime: Update last_busy
-> before calling rpm_suspend() in rpm_idle()") stated that rpm_idle() only
-> needed to update last_busy when it was about to call rpm_suspend(), but
-> that is incorrect.  There are still cases in which a device may be
-> autosuspended earlier than expected.
+> On a successful runtime resume of a device, rpm_idle() is called by
+> rpm_resume(), but only if the runtime PM status of the device was not
+> RPM_ACTIVE when rpm_resume() was called, which is inconsistent.  For
+> instance, if the given device uses autosuspend, an autosuspend timer
+> will most likely be started for it after it has been actually resumed
+> by rpm_resume(), which will not happen if it is already active when it
+> is passed to that function.  This may lead to observable differences in
+> behavior going forward.
 > 
-> The first one is when pm_runtime_put() is called while a leftover
-> autosuspend timer is running.  Then, dropping the device's runtime PM
-> usage counter to 0 allows rpm_suspend() triggered by the timer to
-> suspend the device immediately before __pm_runtime_idle() is able to
-> grab the spinlock.  Prevent it from occurring by adding a last_busy
-> update before the rpm_drop_usage_count() call in __pm_runtime_idle().
-
-Do consumer->supplier and child->parent refcount drops have the same
-problem? e.g., in pm_runtime_release_supplier() and rpm_suspend() /
-parent->power.child_count decrement?
-
-> Another one is when rpm_idle() returns without calling rpm_suspend(),
-> for example because the callback has returned a transient error, while
-> an autosuspend timer is running.  The timer may then suspend the device
-> without respecting the autosuspend delay.  Moreover, the timer may fire
-> while the callback is running and it will not see the new last_busy
-> value in that case.  To address these cases, move the existing
-> pm_runtime_mark_last_busy() call in rpm_idle() before the first return
-> value check.
-
-I suppose we don't care about: "what if .runtime_idle() is slow?" --
-that makes a small delta in the expiration time.
-
-> In both places mentioned above add comments explaining the rationale for
-> updating last_busy.
+> Address it by rearranging rpm_resume() to call rpm_idle() also if the
+> device has been active to start with.
 > 
-> Fixes: 26236a3e8803 ("PM: runtime: Update last_busy before calling rpm_suspend() in rpm_idle()")
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
-> 
-> Commit 26236a3e8803 is present in linux-next.
-
-Semi-unrelated cleanup: pm_runtime_put_sync() some stale kerneldoc now,
-saying "this does not update the last access time".
-
-> ---
->  drivers/base/power/runtime.c | 16 +++++++++++++++-
->  1 file changed, 15 insertions(+), 1 deletion(-)
+>  drivers/base/power/runtime.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
 > 
 > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 0b15c718c1bb..02e7b4953c38 100644
+> index 5a0b4600c244..1a3b32e299d8 100644
 > --- a/drivers/base/power/runtime.c
 > +++ b/drivers/base/power/runtime.c
-> @@ -518,6 +518,14 @@ static int rpm_idle(struct device *dev, int rpmflags)
->  	else if (dev->power.idle_notification)
->  		retval = -EINPROGRESS;
+> @@ -794,7 +794,8 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>   * suspending (deferred_resume) or wait for it to finish.  If the RPM_ASYNC
+>   * flag is set then queue a resume request; otherwise run the
+>   * ->runtime_resume() callback directly.  Queue an idle notification for the
+> - * device if the resume succeeded.
+> + * device if the resume succeeded or the device's runtime PM status was
+> + * RPM_ACTIVE to start with.
+>   *
+>   * This function must be called under dev->power.lock with interrupts disabled.
+>   */
+> @@ -840,7 +841,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
+>  		 */
+>  		pm_runtime_mark_last_busy(dev);
+>  		retval = 1;
+> -		goto out;
+> +		goto success;
+>  	}
 >  
-> +	/*
-> +	 * Update last_busy to defer autosuspend by the full autosuspend delay.
-> +	 * Since an autosuspend timer may be running and the new last_busy value
-> +	 * needs to be seen by it, update last_busy before returning an error or
-> +	 * dropping the spinlock and allowing the timer function to grab it.
-> +	 */
-> +	pm_runtime_mark_last_busy(dev);
+>  	if (dev->power.runtime_status == RPM_RESUMING ||
+> @@ -971,8 +972,11 @@ static int rpm_resume(struct device *dev, int rpmflags)
+>  	}
+>  	wake_up_all(&dev->power.wait_queue);
+>  
+> -	if (retval >= 0)
+> -		rpm_idle(dev, RPM_ASYNC);
+> +	if (retval < 0)
+> +		goto out;
 > +
->  	if (retval)
->  		goto out;
->  
-> @@ -563,7 +571,6 @@ static int rpm_idle(struct device *dev, int rpmflags)
->  	if (retval)
->  		return retval;
->  
-> -	pm_runtime_mark_last_busy(dev);
->  	return rpm_suspend(dev, rpmflags | RPM_AUTO);
->  }
->  
-> @@ -1132,6 +1139,13 @@ int __pm_runtime_idle(struct device *dev, int rpmflags)
->  	int retval;
->  
->  	if (rpmflags & RPM_GET_PUT) {
-> +		/*
-> +		 * Once the usage counter drops to 0, a leftover autosuspend
-> +		 * timer may fire before the spinlock below is acquired.  Update
-> +		 * last_busy first so it does not find the expiration time in
-> +		 * the past and suspend the device immediately.
-> +		 */
-> +		pm_runtime_mark_last_busy(dev);
->  		retval = rpm_drop_usage_count(dev);
+> +success:
+> +	rpm_idle(dev, RPM_ASYNC);
 
-This is somewhat of a pre-existing issue (e.g., in
-pm_runtime_put_autosuspend()), but weakly ordered architectures don't
-really enforce the dependencies you want.
+It's super common for rpm_resume() to be called with a non-zero
+usage_count (e.g., all pm_runtime_get*(), pm_runtime_forbid()). Do we
+really want them all to turn into rpm_idle() (and predictably fail)? For
+one, it adds a lot more trace_event noise.
 
-rpm_drop_usage_count() uses an atomic decrement, which has a full
-barrier. But this is supposed to influence the rpm_suspend() behavior of
-rpm_check_suspend_allowed() (atomic_read) + READ_ONCE(last_busy), which
-includes only a conditional dependency and no barrier.
+Maybe we could check RPM_GET_PUT before doing this? Or check
+usage_count? I wouldn't want to go too far on re-implementing all the
+rpm_idle() pre-conditions though...
 
-https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0124r6.html
+Also: I'm not quite sure what's *really* expected here, but drivers like
+drivers/net/ethernet/intel/e1000e/netdev.c (no autosuspend; they use
+.runtime_idle() to re-implement autosuspend, more or less) might see a
+change in behavior. For example, see its watchdog, which does:
 
-  "Control dependencies can order prior loads against later dependent
-  stores, however, they do not order prior loads against later dependent
-  loads. (Use memory_order_consume or memory_order_acquire if you
-  require this behavior.)"
+	/* Cancel scheduled suspend requests. */
+	pm_runtime_resume(netdev->dev.parent);
 
-So, rpm_check_suspend_allowed() should probably use
-atomic_read_acquire(&dev->power.usage_count).
+For cases where the device stayed RPM_ACTIVE but usage_count == 0 (very
+common, I think), this does indeed cancel any pending suspend timers,
+but then it immediately queues another idle request. (That idle request
+will end up failing anyway, so no functional issue. It just means the
+comments are a little confusing.)
 
-(This is probably an extremely narrow, practically impossible issue.)
+Do we really want that? Or maybe these drivers are just outliers, and
+should be rewritten anyway.
 
 Brian
 
->  		if (retval < 0) {
->  			return retval;
+>  
+>  out:
+>  	if (parent && !dev->power.irq_safe) {
 > -- 
 > 2.51.0
 > 
