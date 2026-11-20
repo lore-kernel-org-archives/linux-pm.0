@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795195712;
-	b=hbKa/PHLvgsLd/08LrwYQ2bu4O7fbG3vx0EujKBvLbRV9bU3rb/YP3JLB2iA/5EawfGe
-	 mEIkb8tlgQX6dMPkBs15zTr4KwHPcd5Lr40lNpq5sWQmxruecEKZPH2XSJGGrGhWqJQJx
-	 sVoPJRF1VdKsBQmBrcCHT2SXMjBZ6/xmzlbmBMRLZsDMwHXodqqMw7MUOBhBOC/SSk7W/
-	 FSjPgHudA4dsazPgVxGGWIz2KZuaBfUT+qI8xlME1kJsrOXOtPkvYm8deItBu9JRksjuD
-	 nYoa51YYmL6L3ODcnUS1s6JV31aqDCxKB0E3ZB0FjsTBmehF16J4YIXu5koTgdOTbRw==
+	t=1795195861;
+	b=Ohqgc0PhWPSD/Zut8u+2ZafhCGUa0qgTGNv50bhtnFm/fMXk0c6Csf34Za+cdNTC5iLQ
+	 l32p61ARiQ3ByWFWlqY4EtoobFwnYyz8jfVJyYUodfrlUc2Z88Cn3N+H1YAaxz2Un4CHn
+	 dS7vc0oq0VI/cYvjA424fKgRLQAfctqE0Vxjcbo1/Xagk4z+QLx+opA+ooFcpacbswmve
+	 aaadeXhtJ0C3+4u9AbnMQ+b98dQtCzQWNCJ/OVXRTbrwyEiAwXvizKIUriEo/X1Nuwk+P
+	 zrQvqkpf9xsXgA5fsokOylwKflo+ZDnM9cC949I/xQjF6UEwDc+MWw3drGL7Y8VT0tQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795195712;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795195861;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=TTjwlzw6aVAR3tSaYaZGcthnRSIUmYP2w0NYxrZBGTo=;
-	b=dSwxoBJVVVcSFwyPgiBEodOC3iwI1Q6CT7so01rGhM4DKl0gHKzvoFUlogmU3psNQY7p
-	 Kxkm6vbI+3o9wq+jO5/noi19Z4QMFP1qI+x3/peCdZzw0yeHZIu6l6mw/Tr4lh4X5/uPH
-	 J25IB6aXeNcic/TWw2Ah/W27kATvDWJBGHjJUMsexX6QxtcIDWyPw4PrMLGgJ/YbRIRdQ
-	 OLjqONO9gGRIf6hC98HLhUNQJnKX1HgjoV353CYoa8hTWOPj/rJUPNOWC7kkvEhYow+Mt
-	 Wnh1NLJxHlWSCWBMFBdnDIAWDic4iakkEU0+XeH4hpISf/nyhCd8IonIW0flrfabPAg==
+	bh=ktVUBt0SgA21/go1jQ1Ztwg+0qzh3ORMwImoqmt31D0=;
+	b=cPWsc5avrdbw40Dz2egvsxTfAJ/fFSbLZSy0tdTtgwcheTWp2kc0oqAGNlm9jYUzejME
+	 iJmOJ+m0NNiJ1s2vqD5xutds/nPK80DrGW3h1ZmbKISJQWhPasHnjrq/U95r7FowBWPvT
+	 HupYnJvsORyx9QdRAAH7xZHLv8H79f5vcdjOdsO357ZuRQbGYXd9SDzEn/dCv9VDMoO8R
+	 LKAUK2ZHhMDlVB8tbq9M1ojoh4fGFG1lLeXfgQ0tpvvszaJ9wBMShpryxHaNAqejkIBLi
+	 //iNTI+rfQEjJTp7qJtLPTCMWLd54qZmSPfHW3bfp2yZm+Oeg9EDSkfD69CQxbje78Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HxGU6Lv+;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I9IU407c;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8ADF0606A320
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:28:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1E1C60A2636
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:31:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HxGU6Lv+
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F116A1F000EF
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:28:31 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I9IU407c
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D1651F00AE3
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:31:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795195712;
-	bh=TTjwlzw6aVAR3tSaYaZGcthnRSIUmYP2w0NYxrZBGTo=;
+	s=k20260515; t=1795195860;
+	bh=ktVUBt0SgA21/go1jQ1Ztwg+0qzh3ORMwImoqmt31D0=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=HxGU6Lv+8I6myr7Ottn18Byrzv/XjL1FNZGiMZfQxJpc40hiKtXroviW16ZdRhD04
-	 b9iRN69Pw2WPoN3HIVfTlhCtsTBaSGvmL6aI5Jje+SDOMmIUnshHMFYlU5T9PoxpPe
-	 pb0yzVlJcgQ6LJBzsFvrqkRmkzuXbda/7jNTmYQdXOcWJYwDsIouiWOHaolUMLZmzU
-	 Cmb8h7c6+EH1J8EJovWJ7Ld3NkazEpRQ+0FGBlgwwu3WA7ulBUSuqEqlmiQWSNa4pj
-	 KBqVPCeD2NwMxtTMr0qGJHj1cS77I8r3aR0DZfgO6V+uHmGxyIN1Y+ogAVFUKngOPH
-	 epkXrV92a0Buw==
-Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-3ae854fd0f5so6570311fa.3
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 09:28:31 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErG2gVkObj9EoxBP1u9A2Oj4qS/Hzgx7seQtZXn8DegqvTirNsn3YfrFO43XSweRgb8fP7NI1gVieQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/0Sou0Lnn6RuYyLHo5vmAxNycVBPKgcC/tpZLG0DiWy81sEdKc
-	pCSy5epTooyMRAC1COwKGs1jRdJDDbad3BSV/YqOQ5yqD4d6dJpf608BLmkSVCZZWFNprZjE6XW
-	OExo+oS97+O+ZLzZUM7PL+dC2ieqorjE=
-X-Received: by 2002:a05:651c:2214:b0:3ab:41c8:fc15 with SMTP id
- 38308e7fff4ca-3ae7f9d964fmr11430651fa.12.1795195710365; Fri, 20 Nov 2026
- 09:28:30 -0800 (PST)
+	b=I9IU407cBOhW9pGnof4ZzFjoqWHpzPMbyDeH3k3NkDQvGqbgwwaaXUwVjsBBy+XUi
+	 s6EDB7O6dLABmrJgftkV92ZovP9vtdNbyug1KG/MUL/Sors+4j9oEqYf/9Z300gwj8
+	 7smwXRDj3VfrxUzci3M11XQuUGFmDHfI0JT+1uPejapFKK5dMjzex5QyYRf1tPdB4k
+	 NeJ1yG/b7G9A1sU8BplWNPLFih4Jsguq9n7ZixwIAH44jQo0d46qp5P/etB1wQDJID
+	 95+pKlOyLZVH4RwYTIqL7cIm9gphhYmTsc3kfYR22kTePe0UcA8/LfnLq1U+R+Qmt6
+	 PVi7aeqUjTpyg==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5c1479a959aso877000e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 09:31:00 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErEPhlxCSM/fry9tXEMMtSQUmeD+VORbPkor2F6DckLuTiSZqrkC1x26R3G2ez6RYXk/fXSVvGD/OA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z97zWPd7whWHczEK/Kt6CYDdjYmZqjlfoxaXA10TTYs4CnMjVxo
+	6aqusQthFKvRXRfvAGYuR+NIH3s5QwnYGJ6djrmkC5U95dfFzl3O9HHbZKH5BJ6McK/IEPqsNSi
+	0aetWdaGWqwJqrCvTBE5K8VuGj3NBbL0=
+X-Received: by 2002:a05:6512:3d14:b0:5bf:d54c:c189 with SMTP id
+ 2adb3069b0e04-5c1bc660a0dmr1344617e87.5.1795195858912; Fri, 20 Nov 2026
+ 09:30:58 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,50 +59,63 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261115172951.35889-2-thnkslprpt@gmail.com>
-In-Reply-To: <20261115172951.35889-2-thnkslprpt@gmail.com>
+References: <20261115003113.1852160-2-wusamuel@google.com> <09C404BB-5914-4658-801E-4DADD3411CF2@linux.dev>
+In-Reply-To: <09C404BB-5914-4658-801E-4DADD3411CF2@linux.dev>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 20 Nov 2026 18:28:17 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0j_a2WoMF7vcMnz-2sS_Be5Bi1XxHaK0-vHJKTq164Gcw@mail.gmail.com>
-X-Gm-Features: Aa3M54obVrie8t2J9JHycOwamMXwlteXnovTfy6PHZAtEtSti6k0PE0MQyM1MrQ
-Message-ID: <CAJZ5v0j_a2WoMF7vcMnz-2sS_Be5Bi1XxHaK0-vHJKTq164Gcw@mail.gmail.com>
-Subject: Re: [PATCH] PM: hibernate: Fix partial snapshot reads
-To: Avi Weiss <thnkslprpt@gmail.com>
-Cc: rafael@kernel.org, pavel@kernel.org, lenb@kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 20 Nov 2026 18:30:46 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0h-EFQi48VLv4zqgPWR7Gp79WAV4WXrA=vKpnoMQs+AWg@mail.gmail.com>
+X-Gm-Features: Aa3M54o1T8MqVs-2VBz8UCNLyu51S6hF_xM7U086eBEKIimWtJ2SwhIJqetgYFM
+Message-ID: <CAJZ5v0h-EFQi48VLv4zqgPWR7Gp79WAV4WXrA=vKpnoMQs+AWg@mail.gmail.com>
+Subject: Re: [PATCH] freezer: Check frozen() before freezing() in freeze_task()
+To: Bradley Morgan <bradley.morgan@linux.dev>, wusamuel@google.com
+Cc: kernel-team@android.com, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, pavel@kernel.org, rafael@kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 15, 2026 at 6:30=E2=80=AFPM Avi Weiss <thnkslprpt@gmail.com> wr=
-ote:
+On Sun, Nov 15, 2026 at 1:50=E2=80=AFAM Bradley Morgan <bradley.morgan@linu=
+x.dev> wrote:
 >
-> After a partial read, snapshot_read() passes the remaining page
-> length to simple_read_from_buffer(). The helper interprets this
-> length as the total buffer size and subtracts the offset again,
-> causing premature EOF while image data remains unread.
+> On 15 November 2026 00:31:14 GMT, Samuel Wu <wusamuel@google.com> wrote:
+> >During the freeze stage of suspend, there are multiple passes over the
+> >same list of tasks. Each pass tries to freeze non-frozen tasks, meaning
+> >that the number of frozen tasks increase monotonically, and that each
+> >subsequent pass will mostly be iterating over frozen tasks. Therefore,
+> >it is faster to *first* check that a task is frozen before other checks,
+> >especially since the frozen check is computationally trivial.
+> >
+> >Check frozen(p) before !freezing(p) to short circuit the more expensive
+> >freezing_slow_path() calls, while retaining identical return semantics.
+> >
+> >On a v7.3 Pixel 9 device, this consistently reduces freeze_processes
+> >latency by ~10% (~4.5 ms).
 >
-> Pass PAGE_SIZE so the helper accounts for the offset only once.
+> 7.3 PIXEL 9??? WHAT HOW? THE BASE ON STOCK IS 6.12!!!! WOW! (Please do fo=
+r
+> pixel 7, I want flair :c)
 >
-> Fixes: d3c1b24c50e8 ("PM / Hibernate: Snapshot cleanup")
-> Signed-off-by: Avi Weiss <thnkslprpt@gmail.com>
-> ---
->  kernel/power/user.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> >Signed-off-by: Samuel Wu <wusamuel@google.com>
+> >---
+> > kernel/freezer.c | 2 +-
+> > 1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> >diff --git a/kernel/freezer.c b/kernel/freezer.c
+> >index a76bf957fb32..1adf09321389 100644
+> >--- a/kernel/freezer.c
+> >+++ b/kernel/freezer.c
+> >@@ -166,7 +166,7 @@ bool freeze_task(struct task_struct *p)
+> >       unsigned long flags;
+> >
+> >       spin_lock_irqsave(&freezer_lock, flags);
+> >-      if (!freezing(p) || frozen(p) || __freeze_task(p)) {
+> >+      if (frozen(p) || !freezing(p) || __freeze_task(p)) {
+> >               spin_unlock_irqrestore(&freezer_lock, flags);
+> >               return false;
+> >       }
 >
-> diff --git a/kernel/power/user.c b/kernel/power/user.c
-> index 6e4f40e49319..d5e2b8d0b55b 100644
-> --- a/kernel/power/user.c
-> +++ b/kernel/power/user.c
-> @@ -154,7 +154,7 @@ static ssize_t snapshot_read(struct file *filp, char =
-__user *buf,
->                 if (res <=3D 0)
->                         goto Unlock;
->         } else {
-> -               res =3D PAGE_SIZE - pg_offp;
-> +               res =3D PAGE_SIZE;
->         }
+> Good good.
 >
->         res =3D simple_read_from_buffer(buf, count, &pg_offp,
->
+> Reviewed-by: Bradley Morgan <bradley.morgan@linux.dev>
 
 Applied as 7.5 material, thanks!
