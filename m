@@ -1,79 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795198239;
-	b=PdkjHbV/UA0NVPuv7Xk9BCG++Qz+XK7/arrFmzhJExLSVTrVlU4/Drak8/8SSu8FKsQ+
-	 wSallv2WdoDsmJQ8dmSH0EMm+lKLQ3oIsw1obgGgBFFDXNC8V6rABkjdgeb1KgUN0/gGP
-	 L2GfE2MArLOr77mL/lwZmxM/HeLqo1xJj24dmlSo92dTyjmzPOgT3ZkmoMJFA9VCCxfyK
-	 xXcuuqYFMZHrWLTFHEWLbTqhl/eOdsuJhRjon0OiFDo5m3UuTZZbo+HvQOAgOuW7lBG3o
-	 He8OMV3fuv/wSx/u21UINKKmA4Q+1TFAWj6ZO2+3WbUrqteP4Ks9h6T0vrmHkx5C7RA==
+	t=1795198246;
+	b=pH4+gDtcYvB3AQLhy1cRKd5BN4R792p20EGX23EyhWwwLZylmXOsSfx45rbodbFHYguV
+	 iX6oyL8OsxFeWinRWYnPW9yWxJbor7njlvXROc6HJzavlACYzkMMx1HJr9y1t7/D5qlcc
+	 0pkrwIjluXjTWKEzaJFZ0u67xWCUKICjj8COTSU1rrgz8+naRlIg2O65kRxeJjCZ8Dlmh
+	 rlJP1fnB0Ecx8EdCe72Idiqb0KEIEtNaHYliyjK4Vd9dDV35y0hImbwsrKFWxyGFmUnfy
+	 1VNTY3vlBIAyD7eok4Zmx75bQA5Q/45hEiUOQqnp8LzOlDLRZHvznV2q5aeTQ0TTeTg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795198239;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795198246;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=r0JQqq0QcNOC5zLbyFWvr2UyNsYB0EDGYPVXscJvS70=;
-	b=1PxZVqnYcBgQsSI79c8KBaOBAQXhXWeHHIqCNNXv0G0rqXFSrvmCxkCnN8OlwlH0z+ow
-	 eNTLqQY2RD4TUxUxZnxQek+c5L5rmvIoMckgcSytTHEyzMvrMuPj49RKBoBYt9aeg68qp
-	 kR1ohXnNXhSE2Yknxhggm1IfqMUzArnChhUIBGkHjTdQG4EFKB4Q9PZrlk//cvUDfTE/S
-	 t9WcLg3cn3sJUvgQnKDRuiSpV50D9S31aH9lPwn69+Bw+hWGC4YRfXhDyfuUVwUsG1aOk
-	 E0Edz8Aq/4PDWVDkxi29KPqrQJaif7z/Ch9g3CqeZR8FL8BoykQKSln174b3pEmRoOw==
+	bh=hiSbpQWW/gUTlgsWMM+m+hivzUTcJ7Oj0fNSfIqp+1A=;
+	b=wiyP9L7xsEO5/1MPWSoGZN9IJ64vOZ2eqXK0ajWFARDGR8BW2j1b4q7R/yv0tKOkdEjI
+	 SwcDXHRhzcVNv6c/xvA9pJyF8QiWNVO99TRrlrTbL5slF+tAYbZ/m1Ft2WygvqfbAHbpm
+	 w3JBmfZn5tbq7LSTZPBHjo2Jr6hioryv5pg1KMLF6bohCFjL3b3Vox06p+sxzS0XTV6W1
+	 CSXaVdaRM/Nt7yQXO+tz8GWRHV94aTQ/eqqaQXMiLZdMws/0t43LrUB8I2J7TqmssBwkF
+	 Hpu6Y/3AvFMu2Tsm7QwlY0iZPG62vGXFuKn2TQK03Oj4nx8iTmcsNy6GHLDsqMVtDbQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eFOCvjqq;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lzeXBNrG;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0EBB60A6F5F;
-	Fri, 20 Nov 2026 18:10:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7CE4606D4BB;
+	Fri, 20 Nov 2026 18:10:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eFOCvjqq
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lzeXBNrG
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795198238;
-	b=ADhTnukhE5KJiv3+DDwBkM4lnd/qAKegPct5ZemJlDzAIJi9DI0c8TUvjdpci2BqInn2
-	 50xJur9pbh+9ee+gvQxdQB+s4jA2VI/tKuCIOULBoGHRTb37cr/Dc935qq3HTWfsgqkdm
-	 vQ0+6zKtAXlEdwzItv2K0cys355bML0i53CpOF79knGZLXVkl0By3OnJlm5tWPguyXhe1
-	 78I3N4+YVkKsEhPNuJhw20E6WY7kCABAOoJi7OGaC9hE8EHrB5Pt9NOtLxiG3/xYsh2a9
-	 b/haZ9GD+TPDKy78ZZE6HDxPWh04Tov7PvnDQW9vyCD0obEXSgtbu1A92sFmt/nn+yg==
+	t=1795198246;
+	b=JLCK/1Ws0DNb2BtIjvl/rjL4ZdV7YRR2AaVy6Rjz/nTB74cYF9gUY4xXwWOdZLu31ODS
+	 ucBY6jYwFHPOcOqE2QLr79Kz3xh3F7CsvSS/PKKJLLI0elotFgHPAhtN7wFBu/GXJY7uk
+	 0JqjeyR3ImW52+NjjnHK8nuXpfNR7pJsxkBUF+j9AZmhYVJhkT1LJSfhV5uDysc6z0hE9
+	 xOBKkNZobSQHaa2ODDHZZm9JM/wyqzvzDiYjhuF+vfETxN3Ei3MYMESlaxOPyloglB50j
+	 Bp/gr0Lj9ivrcqhOI3tvogL5PJOaABPzUXInTysURal+SZoZjdXEegT9Z3zFyoJCv4w==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795198238;
+	c=relaxed/relaxed; t=1795198246;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=r0JQqq0QcNOC5zLbyFWvr2UyNsYB0EDGYPVXscJvS70=;
-	b=ajL5Bp7v0Z6hpKInprU+FYfAe6IZmRgEHCPklc4AC/zihNZvIZo6LhN7jjhPjWmZaVLp
-	 epqyWsbivnWg9OfX0IKOkdeTYLm20tPxITpupsXL07+RKvsB/R4B/Q/kDjZsszRGBQh7s
-	 CgVlrSAIlbq2afKtVqDT3vwhtnGnpPt8hQ22ig9jX/M+9c/O0Ukk1IUsWsp8hLVLpY/oM
-	 ToxjaqXZ4AZAvFnHfp2qCdfHIKJT5qvO+/q23GimeHrUcIF1BPUDGPHaZbpannoeXhXMq
-	 l5UVbBUlmOteSPgfCHIoP21I10iSGXA1cB4fHnhaJMYz8bernEV2zu8Qx+2Zv1w27ig==
+	bh=hiSbpQWW/gUTlgsWMM+m+hivzUTcJ7Oj0fNSfIqp+1A=;
+	b=0soQzFTtJZ9LH6SbQS0ITK3KwtmAcUG4j5NFIU3AOBMKbtoOhag7X44tHUGt1/a3Pohk
+	 tc7l2gzNtfg65chs+CfhPjIYfJWdeHs/RloFv65dh3F1vTddmE6Sa7stwwsGgjotYtfrO
+	 33D33LzZsyRxkrGzj/ceWB6zk4Tk5VD9kq8tZeW8xrWuCOh/vBWYiA18Q3bfIGbOaoc45
+	 XUsUrHNoNhlHbFlVQbR9nr6zUdpDUWchREmu5CzGg009wYKJaJPD/39OcHW19kw60v+zY
+	 HQ9bubmKGlHJUD485POjORlqQLjgT1uvnDi1xyhsP2k/ReKqqlawEvsr45D0BxSXsYQ==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id E0D301F01579;
-	Fri, 20 Nov 2026 18:10:27 +0000 (UTC)
+	by smtp.kernel.org (Postfix) with ESMTPS id C1B011F000EE;
+	Fri, 20 Nov 2026 18:10:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795198238;
-	bh=r0JQqq0QcNOC5zLbyFWvr2UyNsYB0EDGYPVXscJvS70=;
+	s=k20260515; t=1795198246;
+	bh=hiSbpQWW/gUTlgsWMM+m+hivzUTcJ7Oj0fNSfIqp+1A=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=eFOCvjqq/hzbQsZGhGUOLRXvfxme1t+QAX90jvrxmoGJzEJhGuylVwLaQOoqwulOI
-	 IrkqiZtlFOQAYPXIqFYubYaEtq3lCFfbfGAnwINVSxPk84UjEMQH5j+dwk91TJZ9uy
-	 EZJzyyf55n3n1OTcxo39TpwkPN3BmISvj6Y10azqiU/cMqWu6iKLQGh/eFTLzL4JOc
-	 792FjImkJ/WzhbKbCn/0BxX4iA0QDxe0wRmaPZe0n4kuxvVG/Vm4nps8r8B+qoqZOj
-	 niHy5IM6m3S+p7ZAq2tJp9me1H8DpvU6WP1FrndQEN/WcGi0X2REGEs+lYDjopk4N6
-	 n8s9ByJH51LqQ==
+	b=lzeXBNrGCFqAkK/xazqF7QRS23kUzGWnxZlT951Rp0PEbxISdvk1XmykWIudz8qc/
+	 Tr8S2uKWKKbdhBX/slG2p0spfzICWOvlSDKE6pjrVMMAnlOxT2u/ha5cMChWer78AF
+	 f7ndfQSEwxzyvlc+JVcn39ZAnwurcKQOOFxZySFidua1SGNoTRkTPN/4GcXO/q6W9v
+	 qz5SNk5ZnVUK3gColHP1ML0kS7GzF1UU5UC/q45sgqhOBQ7TdLXc7r6kitQUfSbf4G
+	 Qz9m6iYnEV+917NjAWcfdUszpbQBZO5GbRWMr+vKqmot9jElI6HvCtRZrcsP6Lkg3S
+	 1m8pl6LIYIAMw==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 5B9844B951;
+	by lkml.kernel.org (Postfix) with ESMTP id 02F0C4B945;
 	Fri, 20 Nov 2026 18:09:21 +0000 (UTC)
 From: Gregory Price via B4 Relay <devnull+gourry.gourry.net@kernel.org>
-Date: Fri, 20 Nov 2026 13:09:27 -0500
-Subject: [PATCH 36/60] mm: refuse explicit reclaim and compaction of
- private nodes
+Date: Fri, 20 Nov 2026 13:09:24 -0500
+Subject: [PATCH 33/60] cgroup/cpuset: ignore private nodes when matching
+ OOM victims
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261120-private_nodes_v6-v1-36-74f5f9a115c2@gourry.net>
+Message-Id: <20261120-private_nodes_v6-v1-33-74f5f9a115c2@gourry.net>
 References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 In-Reply-To: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 To: Yury Norov <yury.norov@gmail.com>, 
@@ -141,11 +141,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  cgroups@vger.kernel.org, nvdimm@lists.linux.dev, 
  linux-kselftest@vger.kernel.org, "Gregory Price (Meta)" <gourry@gourry.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198153; l=1212;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198153; l=1825;
  i=gourry@gourry.net; s=20261120; h=from:subject:message-id;
- bh=eVaoyJoyzU9zyOtulCuIbI+hG2+czzxVMTo5PX+qnoE=;
- b=67qX9eYJBrvlvPcdtzToXyRPuTdmsGPvAub9aazmEHJk4ZHCWWJWu7Tqa8XRPOPW+PAeiRoBS
- +WMnYQ09bUHA4ZgWD9y4UJK3j2zi7pY+0jx9YkmAbm61ZjkvAHWzQu6
+ bh=tfQy6A54qGIg5N0QwMR0J5wQcHlPo4StvKwwDY0AXzQ=;
+ b=TOQv91CCE4kl6kuILhP9vhwwGPNmP5h8d1k9lUI5PYoPQsNY3N5JtGHROUurmkLEfZ7JXBtci
+ YRpEP+Zs0diDRgCXyfgSRDIhjJbJuiQm1kaI1p1h+gZS7NfXp8/pkI9
 X-Developer-Key: i=gourry@gourry.net; a=ed25519;
  pk=BZWDlx4htkR5KcvGjGtSDfx1tM0E5dlyBR43FEhjWVc=
 X-Endpoint-Received: by B4 Relay for gourry@gourry.net/20261120 with
@@ -156,46 +156,52 @@ Content-Transfer-Encoding: 7bit
 
 From: "Gregory Price (Meta)" <gourry@gourry.net>
 
-kswapd and kcompactd do not run on private nodes, but nodeN/reclaim and
-nodeN/compact name a node directly. Reject them for a private node with
--EOPNOTSUPP.
+The OOM killer only considers a task an eligible victim if its
+mems_allowed intersects the allocating task's mems_allowed. The
+assumption is that a shared node means shared ordinary memory.
 
-Memoryless nodes keep accepting the requests.
+Private nodes break that assumption. If two cpusets partition common
+memory but both allow a private node, an OOM in one could kill tasks in
+the other and free nothing the allocating task can use.
+
+Initially, private memory allocations will never invoke the OOM killer,
+so only common memory pressure reaches this check.
+
+Leave private nodes out of the intersection.
 
 Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
 ---
- mm/compaction.c | 3 +++
- mm/vmscan.c     | 3 +++
- 2 files changed, 6 insertions(+)
+ kernel/cgroup/cpuset.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/mm/compaction.c b/mm/compaction.c
-index 879f372a891e..283d4d4e78c3 100644
---- a/mm/compaction.c
-+++ b/mm/compaction.c
-@@ -3038,6 +3038,9 @@ static ssize_t compact_store(struct device *dev,
- 	int nid = dev->id;
+diff --git a/kernel/cgroup/cpuset.c b/kernel/cgroup/cpuset.c
+index 8401b69ee3da..e20f9ccb8ab7 100644
+--- a/kernel/cgroup/cpuset.c
++++ b/kernel/cgroup/cpuset.c
+@@ -4628,15 +4628,19 @@ int cpuset_mem_spread_node(void)
+  * @tsk2: pointer to task_struct of some other task.
+  *
+  * Description: Return true if @tsk1's mems_allowed intersects the
+- * mems_allowed of @tsk2.  Used by the OOM killer to determine if
+- * one of the task's memory usage might impact the memory available
+- * to the other.
++ * mems_allowed of @tsk2 outside private memory nodes.  Used by the OOM
++ * killer to determine if one of the task's memory usage might impact the
++ * memory available to the other.
+  **/
  
- 	if (nid >= 0 && nid < nr_node_ids && node_online(nid)) {
-+		if (node_state(nid, N_MEMORY_PRIVATE))
-+			return -EOPNOTSUPP;
-+
- 		/* Flush pending updates to the LRU lists */
- 		lru_add_drain_all();
- 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 5b53e0391d80..3e934135e805 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -8268,6 +8268,9 @@ static ssize_t reclaim_store(struct device *dev,
+ int cpuset_mems_allowed_intersects(const struct task_struct *tsk1,
+ 				   const struct task_struct *tsk2)
  {
- 	int ret, nid = dev->id;
- 
-+	if (node_state(nid, N_MEMORY_PRIVATE))
-+		return -EOPNOTSUPP;
+-	return nodes_intersects(tsk1->mems_allowed, tsk2->mems_allowed);
++	nodemask_t shared;
 +
- 	ret = user_proactive_reclaim((char *)buf, NULL, NODE_DATA(nid));
- 	return ret ? ret : count;
++	nodes_and(shared, tsk1->mems_allowed, tsk2->mems_allowed);
++	nodes_andnot(shared, shared, node_states[N_MEMORY_PRIVATE]);
++	return !nodes_empty(shared);
  }
+ 
+ /**
 
 -- 
 2.56.1
