@@ -1,55 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.222.182
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795190850;
-	b=4NvzQfOaKcu03RX/jQOZzvwckZjoBFPvV5MvIjDj6zIg0sLWXJSXUUozJ09YnQDDcGVG
-	 3Et2UZ0pLDcqhZDH+VRZEWJmzHCW2SHdTmp71LKGwOMWaihYFqAKnFT4fCmOST35E88ZH
-	 Yx01OXsj7zuHkXt5qwbn1g+Wq2KRUi2XsaasfyWLnF4vI0uzQkFMdFJNapUjdMcu+xb8p
-	 WbJ97tOeWO+B25VsO7Zi11p7lNE0jh98Er/GREEbZI74oSnXgAmW+p7ezlvMuG54h2t2i
-	 eJ5iToRWu5Q91CWcGE4/Rwx7wKgRhnkaFm+uexcYWTdwtmSwDU2Xg8FZIBXT3aBI8Ug==
+	t=1795191104;
+	b=sw3j1LZBhR5GNK7s2F8s+EOr/zofADL7W3QhqHY9Nkv3FZnU54BwJTZyFgJdZWUs+jxU
+	 +yMt9NlBspLBwgB+JJUVMEok7Zvn1n2kvNZv/4/p16ZxtiZPYeNclStPGLAaou+G2n0nI
+	 oLUeOFpm60o3WBevShuHuC3pDdc2mHLxg3ZLnzS0Mvsm+lXwNqze9V1nbsNFC+t65CkeC
+	 7f0ighIG5kDKFunI90Uh+hydNQLbRvx1acRrbBqycQBSXFu381etytpDQ4T+8pqNl4PWu
+	 LuMZAX62cgtcSOypcIi8yfId48u7DfTTSHKsqbw0biXCs2uisSlCa7ywyGOdX6cjk0A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795190850;
-	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=DSoDSKmnZ/wdtbN8f5BTziBY7icX60tf6nSq2u0pRPE=;
-	b=n8JUpyw0iXu9P9+NuC6v8nP98ikuIzHYteTzCFhewsNHDv9lE9nN940bWkuHnzuK+TYI
-	 p6ZX2C/GJutBwo6wNqRggVIQ9WxlmI1qZMjidJcQqJjL17u9EzmHR5gITRmQSpsd1kT6N
-	 bbDM8G65UZbplsul8/4CmVZVoscd8WwV5S6OQKhh3PXaQxZUAUSvyNb3m+hsAJWQ7PSbj
-	 o7eGSqIZ/SJCUk46wnaRTK8h+uUIOrdYp0EUz4XG8ErQbMp0b0+cg9TjWKcJntkr3n4+T
-	 NRfxbk3s9uyc6ydyvf5FU0A93FIlwr8dyunmOinv+s0LSmrAwspcVMwbVBtgKjkJyrQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795191104;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:Content-Transfer-Encoding:In-Reply-To;
+	bh=ACIXcHO1wQS5t52irVr/vPmSpLKY1T/AIbYzAIeE1Fg=;
+	b=NMtVvvgQqaoSoLJKniKZuDhA1ZuH+nc17VoGNnTdi8C1RdVDqcXVaeHT9joFPUUwCStS
+	 Vjj+QBbXB8pThLdm+BoY9OARA3CA3QAzVosJSM+BBv6KmDLrAXdkZSc3GhGWWjFCjNCIT
+	 9LK6V5ayvmDFeLR9OkIy4q4LaHGs9vAXAb5Q8TsRlOIxhc1gy4baLyn9/au0iYw+Cs7UT
+	 Eyt/f/JBVkE4Rp41T2NzuCPrzJo8eM+7+Q9I6v47RcFvWWWAI+3xLgZm5Rg3/P5EQH5Ph
+	 hhdkwuqDbXgHK4+a8YPvpndJcMzgwEpaaCVbvw3hUeTVgCSZDvyCZwNGv/b6nGxxtxg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fr81NLi9;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=rowland.harvard.edu;
+	spf=fail smtp.mailfrom=g.harvard.edu;
+	dkim=pass header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.a=rsa-sha256 header.s=google header.b=g87FjcNz;
+	arc=none smtp.remote-ip=209.85.222.182
+Received: from mail-qk1-f182.google.com (mail-qk1-f182.google.com [209.85.222.182])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81EF6606A330
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:07:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A28F2606A325
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:11:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A28F2606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=g.harvard.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fr81NLi9
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E85931F000CF
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 16:07:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795190849;
-	bh=DSoDSKmnZ/wdtbN8f5BTziBY7icX60tf6nSq2u0pRPE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=fr81NLi9FDlyczgq5U68RdsbqjkxmsZtz7qjAMEs4E4tjJmpdvChnalfjX/a/DUUe
-	 qN63eyDldW+m+QIRIqMNGHwed6KQQoEuEM9hh5B3UEEFyt3G/mGLlLFagBJ03TJjlp
-	 9Quj8Z+dh/nSVMmRAhMF6FcvCXYvkBO1ZzywCdYzwrm2KOqKPNp/4CjR1urOJCcZbe
-	 PimK9BRm7v6u7qK/PwIPrte9CwAgUtCVttKIKKkrNkp4+xMSUPt7vlTE3qYRUBB/w2
-	 yGj/Qv60LkI3BeD+700iPaCVezhFZWNm9nvAfBEJ8rH9PthwffGEEEA9l954E0MS8E
-	 /5vHJLQ8wiIRA==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5c0a520df2eso984877e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 08:07:29 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErEEFEyZPRiKQUoJ60Zv6FTfNHItLG1R52SKCpn57SDViQ05dzIoInV495LgRlZStXA97Z+wsD6Edg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8Xzr030pKfa/qOlWdSat7DVAH8D3bpT0bUw0LPFvXFaJQmQtYs
-	lrXbMgDF5iCb/lDTww2/vPrAo9LrzR/7hBS4PoMCZ+iVzXOisiibEFdgHEFV2WQj4ucjafQ4wya
-	8tvQR8xBTZsINaRAvSnhKpLO+PN0+Rvg=
-X-Received: by 2002:a05:6512:6602:b0:5bf:bd7e:197a with SMTP id
- 2adb3069b0e04-5c1bc8488c3mr1018881e87.16.1795190848325; Fri, 20 Nov 2026
- 08:07:28 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.a=rsa-sha256 header.s=google header.b=g87FjcNz
+Received: by mail-qk1-f182.google.com with SMTP id af79cd13be357-94999a08973so108629585a.0
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 08:11:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rowland.harvard.edu; s=google; t=1795191102; x=1795795902; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ACIXcHO1wQS5t52irVr/vPmSpLKY1T/AIbYzAIeE1Fg=;
+        b=g87FjcNzENChsqegY0F4YAZKnElVMnlWdV8x0KcmrJW8N4F++cXGtAtYp74tvMP4NJ
+         uRcZCG4pp5SPY0DiQKy5BbFboKi2837mQvqZ3FeCRlo9Eq7ntvhtAXvSYprUAPYhGNNt
+         TEQ2WagjXxXlDQ47NJfhXg0XCxvcLz6gj50bq299qJHm/82O7upGtdbk9rsXSXQ+pMd1
+         LYUiILJCzE4dtGEq7AgvjtuCQ8qklbaT1Gy0PAzTAqwDUoPKzXD10pNa4RTSYKzh3fGk
+         8cg7d8Qwr47CE3qYrqpIowAkjYQIhUpR1uImByDxO7HtXBR0QzVso2Wrc842LZe4OSCE
+         OZTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795191102; x=1795795902;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=ACIXcHO1wQS5t52irVr/vPmSpLKY1T/AIbYzAIeE1Fg=;
+        b=WYdzQwiidkIhaYsrcftRhjszleJhZPRAv9O83znrtqmtBXEV3g/CEE6/fATMc23bqW
+         JFplYjTE9vqaHZDcJGJDcbmtXLUpR9GnCZ+YaJFiqVMRwrW1ty+rR5zHWwvxiS6hUVZ9
+         pKf1I9ImlXAnDu+2nckEQWG5CHw51eWhZK0WS3oV1XspSwzIrRUC96lOvyoGgFmwKKX7
+         B4RU+mfCmE7Yw3xy7DMV5SADtWo/s/Lvsyayw71lIHIkPJsMYoylMZ3fL0LdUbC57rAH
+         hna9vXYQ6j1aZTpgfU+INct7M/UhwthMosflnQ10tTOnbQ20kDAdQKoH8IzBCvCspp13
+         wYfQ==
+X-Gm-Message-State: APuU4Z+scLvhyBaMQoUdtO4jey/IJ+k/uEgp74U3W/bWZnyaYtfkvaeH
+	NsUjnyLAYUqqftj6IvqBNA/M4/uGja0x99aiBp3ZZfSMGte7GgHULnq7fI+WAb5zlg==
+X-Gm-Gg: AYBFou0bb8rZQVzP6cyKPW5h4FVQWytteZCb9iHOtJPvUOES5pW1Y5Y9FM3sjYkDCEa
+	1z9IQyEYKImuUt7iO4CP5YLiOlGoWJFnTERg7teKM+bESeQt/W8uMDI5MFdZQRS8IS4NTeXqqEn
+	9qHFsRfGvNsjEvUTiQmyXgjeA5FVTbUh4dXcM7zVU1dzJsR4Q+Fy5Vv/dUt3/mt50QlcmCMVF7r
+	cB1fCaH6wpeM0IMtXJpbOnWadrDNsv0NgZPxIBJn89oGAjesLbjaiUy1GFt0aOB4ji4Fk6AXu9M
+	/GUwXNNvFc2KmZUh3WyZtDgl3dv8F2Zr6Fe4kGbWUG173UsAnEUTji6qBPLYM+izqdJGzhJr0wJ
+	1AwWYkmLWMpkgxMgDwzCo59cj5lBpSUzkCAr3DNCp6DmccywOSgFY/7APGqE5J9tNWjPy2W1oh0
+	MaRePJ/xcvNxlZRHzf9XYrnclYOcvNglbjDrCIIAVKCPX5uX6NFf5CpJjMsICvSIOTjAeSydQOD
+	ai1e8BrjWdIsfICBJKc4VNpbt5mNKrmlIgw2Lkz8lzB8RSlspvg8RfFa/4cFgWEJBxy6Ve6c+wK
+	7JhfN7ik4u4wxzaL3cMIcJ5x9eD7cQ==
+X-Received: by 2002:a05:620a:46a3:b0:949:7069:3fab with SMTP id af79cd13be357-949bab3e9aemr621786085a.83.1795191102506;
+        Fri, 20 Nov 2026 08:11:42 -0800 (PST)
+Received: from rowland.harvard.edu ([2601:19b:d00:161a::d398])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-949bb427388sm213666785a.42.2026.11.20.08.11.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Nov 2026 08:11:41 -0800 (PST)
+Date: Fri, 20 Nov 2026 11:11:39 -0500
+From: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>,
+	Brian Norris <briannorris@chromium.org>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
+	Linux Driver Core Development <driver-core@lists.linux.dev>
+Subject: Re: [PATCH v1 2/4] PM: runtime: Drop space characters preceding
+ labels
+Message-ID: <2edb9ce7-8ea7-44ff-b5fa-38e9880510fc@rowland.harvard.edu>
+References: <1978814.tdWV9SEqCh@rafael.j.wysocki>
+ <3453847.44csPzL39Z@rafael.j.wysocki>
+ <c1a2c90f-c667-4bf2-bbc0-2cb3f840ad97@rowland.harvard.edu>
+ <CAJZ5v0jX8iR5x2eS1uAf_P12Ke_OBq6kx2FRCiVuSRRRDgMzLQ@mail.gmail.com>
+ <CAJZ5v0j39Wzb3F+ACHC+KM49oruUuekN3fDzJFcfHTtnDXqk+g@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,73 +103,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261108145028.2483131-2-thnkslprpt@gmail.com> <CAKfTPtD5vLv_wqfGxVB7kEFDQmB6BQDTvJRGLkHXNZ3d0GHuOg@mail.gmail.com>
-In-Reply-To: <CAKfTPtD5vLv_wqfGxVB7kEFDQmB6BQDTvJRGLkHXNZ3d0GHuOg@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 20 Nov 2026 17:07:13 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hn=vO_3Z07p0vf6j+XmF2RQJ19pGwsTwbCkkmQ8gaNow@mail.gmail.com>
-X-Gm-Features: Aa3M54rxB6zdVFiahCV7PF3SFDbV3bRDLKf3AI81jweJmWVXHkK_2DFII5eyNEA
-Message-ID: <CAJZ5v0hn=vO_3Z07p0vf6j+XmF2RQJ19pGwsTwbCkkmQ8gaNow@mail.gmail.com>
-Subject: Re: [PATCH v2] cpufreq: schedutil: Skip busy-CPU hold when NOHZ is inactive
-To: Vincent Guittot <vincent.guittot@linaro.org>, Avi Weiss <thnkslprpt@gmail.com>, 
-	Christian Loehle <christian.loehle@arm.com>, Zhan Xusheng <zhanxusheng@xiaomi.com>, 
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org, 
-	juri.lelli@redhat.com, zhanxusheng1024@gmail.com, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJZ5v0j39Wzb3F+ACHC+KM49oruUuekN3fDzJFcfHTtnDXqk+g@mail.gmail.com>
 
-On Mon, Nov 16, 2026 at 11:52=E2=80=AFAM Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
->
-> On Sun, 8 Nov 2026 at 15:50, Avi Weiss <thnkslprpt@gmail.com> wrote:
+On Fri, Nov 20, 2026 at 01:30:14PM +0100, Rafael J. Wysocki (Intel) wrote:
+> On Fri, Nov 20, 2026 at 1:11 PM Rafael J. Wysocki (Intel)
+> <rafael@kernel.org> wrote:
 > >
-> > sugov_hold_freq() uses the NOHZ idle-call counter to determine whether
-> > a CPU has been idle recently. When NOHZ is disabled or fails to
-> > activate, the counter does not advance, causing schedutil to treat
-> > the CPU as continuously busy and potentially prevent frequency
-> > reductions.
+> > On Fri, Nov 20, 2026 at 3:47 AM Alan Stern <stern@rowland.harvard.edu> wrote:
+> > >
+> > > On Thu, Nov 19, 2026 at 09:17:08PM +0100, Rafael J. Wysocki wrote:
+> > > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> > > >
+> > > > Drop space characters preceding labels from the core runtime PM code.
+> > > >
+> > > > No functional impact.
+> > > >
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > ---
+> > >
+> > > There actually is a valid reason for keeping the spaces before
+> > > statement labels, although you may not agree with it.  Namely, the space
+> > > prevents "diff -p" from thinking that the label is the start of a new
+> > > function definition.  That's why I put a single space before statement
+> > > labels in the code I write.
 > >
-> > Skip the busy-CPU hold when tick_nohz_is_active() is false. This
-> > also handles systems where NOHZ was enabled but never activated.
+> > But this is not done elsewhere in the kernel and there is already some
+> > inconsistency in that respect in runtime.c.
 > >
-> > Fixes: b7eaf1aab9f8 ("cpufreq: schedutil: Avoid reducing frequency of b=
-usy CPUs prematurely")
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Avi Weiss <thnkslprpt@gmail.com>
->
-> Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > Since the next patch is adding a new label, I thought it would be
+> > better to make it all consistent first and I chose to follow the
+> > common kernel coding style.
+> 
+> I can drop the $subject patch though if this is an issue and make the
+> next one put a space in front of the new label.
 
-Applied as 7.5 material, thanks!
+Oh, it's not a problem.  I just wanted to point out that putting a space 
+before statement labels is not a completely senseless thing to do.  
+After you've read a few diff listings with statement labels where the 
+function names should be, so you have to match the diff against the 
+original source to know where a particular hunk belongs, you understand 
+why.
 
-> > ---
-> > v2:
-> > - use tick_nohz_is_active() instead of tick_nohz_enabled to also
-> >   handle NOHZ enabled but never activated, as suggested by Zhan Xusheng
-> >
-> >  kernel/sched/cpufreq_schedutil.c | 3 +++
-> >  1 file changed, 3 insertions(+)
-> >
-> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sc=
-hedutil.c
-> > index 14405a614991..50249cc1a594 100644
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -397,6 +397,9 @@ static bool sugov_hold_freq(struct sugov_cpu *sg_cp=
-u)
-> >         if (uclamp_rq_is_capped(cpu_rq(sg_cpu->cpu)))
-> >                 return false;
-> >
-> > +       if (!tick_nohz_is_active())
-> > +               return false;
-> > +
-> >         /*
-> >          * Maintain the frequency if the CPU has not been idle recently=
-, as
-> >          * reduction is likely to be premature.
-> >
-> > base-commit: fa4ad798f6f681031775266044ba1b0cf3c670bd
-> > --
-> > 2.43.0
-> >
+This is your subsystem; you can solve formatting issues however you 
+like.
+
+Alan Stern
