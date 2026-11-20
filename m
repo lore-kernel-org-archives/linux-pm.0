@@ -1,112 +1,132 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.146
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795157281;
-	b=kPA9DqZwhvwg+AQpvd52cQmr16nR4M1BZPpMDdfv8a0dxVgzAIw5uYZ6sC/erreEQBL0
-	 njeBbN+YzVp7/pi6R+xpzp5HbRSUbMx/fXXH09r3UDQrBfUFzHsz+M+U09TrU80+HYqBq
-	 sdg+J9Jq69B3lJ8owGnFafBU0tHXynRIfGHKhT8Fc+eKh02z7lyTpIrkIzRZKaQlpr1x7
-	 8FKr7sFEzQYPfbRtYAcpeBe0eJxL0Cro4l2cOAQytZCAfBDWLW5y/0q6K5UDgB42Mhkwd
-	 ihZrBgTjMinCGovWRtM213MCjFav3uYaYiARlkodBogIEQFXtbVQm2PAKDX5/s/izGg==
+	t=1795159828;
+	b=JH7ps6r7ghUc5jEGdRybg4hknDYVWzglGLzkQOLIkCoa15i63Nn94HVLX1wDWhjZh+WP
+	 JlHuOBDfvAIt3kqXOb50+RG0IUbtHj89ZU4qtEH8OG0noR7GN9HArkABi/54uflaJckZs
+	 EKXQkc8ogg5e41ShEJBy3GQV5DPwEoCZtAzK0EYSROYnNmXcRazXOzgDJA9TPTgdd3cXQ
+	 upnDLq2YOw9siG6H7rWBRi+fuQq8p1Wha7anUQKtZLESd3RQInmSMeAP75vb2CBpLdB2o
+	 74r78iJZLeiW9RD1GFtH4FcDBrgr1cZ2jra8tuHGZSdZ10Az+++9W+pL/g+pmt7ltmg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795157281;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:
-	 X-Authority-Analysis:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=y5IdSOiR1ak5akmhkE6pI8RojC6EEhOJLCG9nz5PurU=;
-	b=aFEKrj+9gMRcqHijsqZHC/VODCUpam5xeeBQz7QS1CGDhhf6TiZ7+Ga1k/Eb/FX6BEmY
-	 RddWACFdNyPlk1cDUpAC9SIrWYHrtLkutO71udOB5I2lRlCS9i11KxyhqR8AgqkC+Qc+i
-	 aHtZGatL/V46EUhpDacE6X33C2yzTI1V1PG3fX/ln90FXUuwryEbebbIDcCS58xWj0gnk
-	 eXFa7TdD5QTy5VfdBzcxEboC2+TNOSjc1X2S8xj0mgbNNjSOAWl42DgLsR/APi0lk0eSM
-	 wahyHYMx5DVWGa4egFFoojmD6GLZQ4dlQYQ762FLsEUqLxip/GX3MkUstRr/gb95Tqg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795159828;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
+	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
+	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
+	 Received:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
+	 In-Reply-To;
+	bh=2u/H1uWmtn0rYKOIJUAGYGAWzwBNm3ZSYXTR4+3kkrE=;
+	b=eqAq+QWiqQnB0m4Rta60PMiIS7gfYZcC4gTcZqg+oo4HzMLemxYNsC60qTO5c18/GOzC
+	 DIE21F74zq71d3sSPmf28T5wG8SdhuEG551RaoP3JYTjYqwzlk1fBokWWMONE5SRbACZ/
+	 W+NB6HWmObs+gpJlbQ1Fr76v/OUKrKjiKg89b61rdtlR8MmbZ74k6JjQm5sAzxTKLe0fJ
+	 LcV5cEd/LGKlNJkxLXhGlaBAQZ4K/l9IwhLV4MllKzcTjd64X3AI+IkN4FN1XLfxfZj+n
+	 LdAL8UakmM+cSoHL/VVH8j+ZclQpQI3GAl5izmcJ+yUkUmO5l7ftJY/gq4l2RnGGRRw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=hkI4QR6u;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="UoL7P99/";
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dmarc=pass header.from=ragnatech.se;
+	spf=pass smtp.mailfrom=ragnatech.se;
+	dkim=pass header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=Oot7nq6k;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=e7hrtIih;
+	arc=none smtp.remote-ip=202.12.124.146
+Received: from fout-b3-smtp.messagingengine.com (fout-b3-smtp.messagingengine.com [202.12.124.146])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 494DF606A339
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 06:48:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 494DF606A339
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CC54606A32A
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 07:30:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2CC54606A32A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=hkI4QR6u;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=UoL7P99/
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AK3VEVt2143499
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 06:48:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	y5IdSOiR1ak5akmhkE6pI8RojC6EEhOJLCG9nz5PurU=; b=hkI4QR6ucta5eWG1
-	nyjdT1vUjsi3zvTTbwhohx6zH3N8uS7jrj1zPoY9ZP+PiTbUTqkHLSZ4KEMtSal/
-	R4fcnQ8nz4z3aaQirfBCv9WObKJw3847lOJVxS8bm5p6Bj5jrQluFvmyVDxNvahF
-	wRP3KVEhK6a9+xbLOdhyrXIXeJVhCd6fGhz75pkHLhwMiPtGxabtmCC3mACSej+n
-	EwtePSZAQXWkWTKCXRhdTvT2iNMnnA7EjaLdUn1hXqcsYmDj18kjvFAQnlV/nw+v
-	2Gfjcm1vvOX1uPdcpGe7Kwf1ILb3uM5eroHPBXjmtkFSJ63R8NFHJsrOH85dPJHT
-	RfBX7w==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j27au2a7q-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 06:47:59 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2ed05b3eaecso5637475ad.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 22:47:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795157278; x=1795762078; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=y5IdSOiR1ak5akmhkE6pI8RojC6EEhOJLCG9nz5PurU=;
-        b=UoL7P99/nP8ae97HuQdP+qRNbqfxhH+rHwpJxRIn07lLNpUim+kbrE9SCySebAuZue
-         7gWiDCCrvbIYpwITMTn3K0XPBkbcjrACh+9iJsQztZMK+sVE/hDiXJpkY5p3KDUqJXrD
-         eGLKjRkQbYa/ZWStHRYc6CW0mKgE/HuhXxLc7ZOLdgiHivc4RbiVlRjOKO3VyPzRp4gR
-         7tjtK0354Ek6QaDsVqhUKTxcwZsBKaOc21DLfn/KeqAQN+6Pws+bTI8sMbrIrQuldDEk
-         Y2KnmD2BgR9kUXemi5T7dHdHFxp/yRzdZ2Y39CDSVu020BWHFhYePzTLWX8IBhGxbfsh
-         Z0XA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795157278; x=1795762078;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=y5IdSOiR1ak5akmhkE6pI8RojC6EEhOJLCG9nz5PurU=;
-        b=hD+GNKcW9tuKw1VRZJlxsbNnlcrKtIwUlTLgWbawRps1vSR3ldslY7sb5KTJeI3K23
-         pi7HO7Q9HV9Y0JDfZYrp3cweS0XNpA/KjzxPjT4+IGZ93em5i3zespoXpEoYWzfS3Rzd
-         k+mxPJcm2AtlOg0/FpCpr64EyyNSX+k9DQc5gEDNPUmFSU3TDFswkKpoJrl8VzITCJMw
-         ruZ9bOE/OuWub6qe2sF5V3KhMKlYVshoGFtJ1XfBviWa4uKHOyc9gWT+jaYQ78DCon3D
-         u2oBXX7Educ+TN92EUbguiVD4aB1VHtVo7hN90Tbf0+Pn5deeeIkidP5L17NzKQCww8g
-         l6IA==
-X-Forwarded-Encrypted: i=1; AL+hErHX3icVypwAS79A53QX0rlNRcALbbOO5gQh3GC3swYFg/SgNRQsJbxH4DQcg+N/bT53mqKeOy00Ng==@vger.kernel.org
-X-Gm-Message-State: APuU4Z89FuhtkNMc9cSLf4+r8ubLebbIbM2ZlNj+thKrm0Aag9lRvSZ6
-	tHU5fIJMEWDsIYo05sa2LWDcrxSPlEP591VbrlJ058t0I6ZC5F33RTxyaLqtHVf1EqgsHpnLEDf
-	koIKCqz68IJbclzFI3TtaBl3STAAnjRGHjrZWAFNLQ3S7axLpdZsechlztSN2BQ==
-X-Gm-Gg: AZFdTZcm6u5IRUXjVZmyBjd4y+6XO85rXEw31TFG88pNbOxiW7ga+E9eROUqPu66j5G
-	mIDhLqO3wRvheb2aBuxR+EI7rr1N0vARhVz3IcIsVD/vrl99c/KnHxAXytfu50w4dXct5CPLnmw
-	+OjJnW20BDsjiHxkAgbmgEHVFYQRngxymsK0r/S1xuJMpaOqXPn3xu+SwnwzhpuOAer49OoaG1N
-	4kr7rrtbkuUa9DsQgcIg+kwP4tj0j+D7+0IdcjVOixsYlbGK5tVRZbwZE0eHuafbCGRz0I709dC
-	u4EHNIrAtdGFMUZzuPt8bm83ht52nFQCzgHXBfK6hpp7uLj2Lpxspz/3BI4NwapoP94SxG5JKe0
-	W19xKySBNvYjIuZmaScLRoevq0QLIgPXfYelWm1r5RkaqABFGijnD78UFmbHxVP3UfRHtG7Z2Dj
-	Y+aR5H
-X-Received: by 2002:a17:902:fc4b:b0:2e9:4b65:369f with SMTP id d9443c01a7336-2f03f1ba464mr20069615ad.34.1795157277837;
-        Thu, 19 Nov 2026 22:47:57 -0800 (PST)
-X-Received: by 2002:a17:902:fc4b:b0:2e9:4b65:369f with SMTP id d9443c01a7336-2f03f1ba464mr20069505ad.34.1795157277401;
-        Thu, 19 Nov 2026 22:47:57 -0800 (PST)
-Received: from [10.217.199.117] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f03f120769sm9781855ad.57.2026.11.19.22.47.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 19 Nov 2026 22:47:57 -0800 (PST)
-Message-ID: <eb44a4e1-fa9e-466d-9e97-f87f365ce44f@oss.qualcomm.com>
-Date: Fri, 20 Nov 2026 12:17:49 +0530
+	dkim=pass (2048-bit key, unprotected) header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=Oot7nq6k;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=e7hrtIih
+Received: from phl-compute-11.internal (phl-compute-11.internal [10.202.2.51])
+	by mailfout.stl.internal (Postfix) with ESMTP id 466B31D002E8
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 02:30:26 -0500 (EST)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-11.internal (MEProxy); Fri, 20 Nov 2026 02:30:26 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1795159824;
+	 x=1795246224; bh=2u/H1uWmtn0rYKOIJUAGYGAWzwBNm3ZSYXTR4+3kkrE=; b=
+	Oot7nq6kbb108l/xDtc3uPTP2rR+ufBaLLqwm8DjcaXcWyXRZtrOJRRp8598EOhF
+	OxOsta+GgGNMQ3J8S2pXFBe9x0MWX0lvQb+Hch6NeyWuz8ZhjmfOeqCMx9VlaiM3
+	hRdIGJUfSVN2dnUGg9iT1Is5PgWTofkLwPmpXWqARDMbe/+NZBxxqBdjArwnWFIn
+	GGBZqTORVjecTLbDJKPT2N6Xqrz3lZ020WaWtMOIp+mHZHC9oPwgoAWzlEl6WXcY
+	8Bylq/iwV9ticNvgxb5N2c3yknxvUFOtB+2fLpgO/VWaM1cgltrQ/XVwDEBO4n41
+	hEVdo4/3/4YT+Nnmc7a0MA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795159824; x=
+	1795246224; bh=2u/H1uWmtn0rYKOIJUAGYGAWzwBNm3ZSYXTR4+3kkrE=; b=e
+	7hrtIihZsZf6omEco1hqLczBXyxlFHy/Bv4B3gPYtCNqU607iMucm0asDAAJEo8q
+	JM0JAs7bN/CB7Mvj//YHlSYTzMZK++6bFCYPnYBbBalaK3MBUs2RThLdrqyTCxHn
+	Uw6jV0kw51hCc8khmZ8WGN3/JWOnoH98e/iUmlsoChbjIticOaAqA5GA6pQ80iA/
+	YiJud6EXQ5XOAPFdut0ZbuSPn7JlBXdhTMTFImYvBb/3VbpAw1Z3J2WL7SrgEfxJ
+	fe1y5FeMaQ1ZvJIlq6AueZysykRtXp+u5HVaGKbC4ot61VPwXs8Z1jOyNhqiwQsT
+	4Ln2eK0e/DwBF07b02q/Q==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=ragnatech.se a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1795159824; d=ragnatech.se;
+	mf=PG5pa2xhcy5zb2Rlcmx1bmRAcmFnbmF0ZWNoLnNlPg==;
+	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
+	s=fm2:rsa-sha256:SZ/jvgtOvuZKK5A83Fq75xdtB8o2H8F+JKID429VvjSAS2f
+	LfeWXg90J5eM47BZkT6a56cokoZxGP7JyXC94k4HdRJaGkbWi1Fz84Y9CztKCQOA
+	TdQXVOmxOw2jHF9xCY3anHxmF8IDwtKoRtIFycjte7cY32kr4ebQUZm4zqHkB2I9
+	qB9WnnJDVwrw436nTkGMoQuHIU6m6OM7fuIUw244gCrWLR/bQJ0eQ2bQ7OyIGmKm
+	6kcIIA0ebLSXuiIWDNrK7cNow2o3naGE6o9IgyhSecPMB0CDy3JD/n0icM1fFWhb
+	6K2dqSph4AhiI3JNtkI3UxrBsVay75X9024TZBg==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=13;
+	hn=cc,content-disposition,content-transfer-encoding,
+	content-type,date,feedback-id,from,in-reply-to,message-id,
+	mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:kI0YwS3/X+5PBSZzioGh2A9tMSzpYmWZsK51BETerMA=:t8FIxVM7jmpGvFdp9emUSUMHqyhKFLOFwo8iWLMBas8=;
+X-ME-Sender: <xms:EPf_alxbcHZAldYyWjeG9R0mFIVf40XaCX9na8OXpwLqaOrfhbxkoA>
+    <xme:EPf_arQFvjmml8vXRvkgxAhHbH-e-O6fQXEtWCUZr6_DfjkpzBeVovVvHuYuPB8qa
+    wlAwa41vdDCY2fP0loHRvHvgjOVVi_urOCj1Rkb7xAor8HReBSCWtzf>
+X-ME-Received: <xmr:EPf_aqKOuDwjZ2T0ErOnK_OfEjAV7QKOOuB9QAkq6RlOVRLjFy-qC3tL6qPFOvYoUPESpGaSqw5N_0BL-wucMeHpCQmqAEo>
+X-ME-Proxy-Cause: dmFkZTGpQeMcMjibnWEdWpH3i7C2pzUc5HaMxERBi20DEvx4nbplCdMTC+QpQmK82oUCae
+    MpF+uSwsYPkN/TbypIs+6qnl/ezxBIjCLXSLE7O55VPKHD2mJGPtBAHNMWWyw9PJImooEj
+    Mb18sz7c1RzD/A7dmOgsug+2vf30aE5jF3HLNkigPiKw8XKQoxOQdxMYtxADQDQR6Ov+kj
+    iyQJx4Hmea4mQ/5NMYXr9u1D/O4V8OMDv5ygiM4Hv/XjbqJl8asvPLbDyMc/A+vpALPbGy
+    RO9ujuitKNYafYKUAYBkuKDvW5KR84zMC+ZFYy+qhtcWz1TUudLpBoOjyS7fYvIfootjVA
+    MzUhmGuMPxogH23cBHRXQw9SzwrZQLfeiPgBSLhXrGUahhefDVfX5qkfzTgIw7QSbrRP8W
+    NO43VM1ZssPJoGOZiNuhqMnvPJhmXcSHhX7zlFBlIcueatX7jLcfqMpeM2KfjFP1CvxESL
+    f19IISYEwK+8Kx2ktPyeX9qv1fkBn9Aynj1vmTx5EjJulwA3x+VpwT9nbM4EFRKDu76Vm0
+    ++0tc0LKLHUASXk+oi6d0f4modMXPibsVPkHkYvlfExUj8AAccpPuqCz1iOjI8mM/xEkea
+    hTaK0Bc5Dc1RjIXh9r0JpsddE9U5KuylmjROrHQMne2WuKSldiy+jQc7A6zA
+X-ME-Proxy: <xmx:EPf_aqVXhGZFS20g7woKAeCfxHOKDz1PsMmcJDTDkbwTCPdK83QoWg>
+    <xmx:EPf_amRRrviECtbPSrwX3bBF3l34YcFlbdTbSyjZVs4R4vxnFDF4VA>
+    <xmx:EPf_aqAFAaJJ0g90Fpbx6z1o-DD4SyhYIIvXlOHPfBbvya46S8roVA>
+    <xmx:EPf_atJoS8z3tY9hmOgV9jO5CCPyxLXqZFs9mbE6xzg3PfPQMr_Nug>
+    <xmx:EPf_aqid_iRMKn4QOjSE6kgqP98dhHvj07-tp5-sf5iF9Res1aqnsL4o>
+Feedback-ID: i80c9496c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
+ 20 Nov 2026 02:30:23 -0500 (EST)
+Date: Fri, 20 Nov 2026 08:30:21 +0100
+From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+To: Yaohan Li <shunsheng1218@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Eduardo Valentin <edubezval@gmail.com>,
+	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] thermal/drivers/rcar_thermal: disable the work before
+ masking the interrupt
+Message-ID: <20261120073021.GA3126029@ragnatech.se>
+References: <20261118072321.1259639-1-shunsheng1218@gmail.com>
+ <20261119022903.1493494-1-shunsheng1218@gmail.com>
+ <20261119062203.GC2300348@ragnatech.se>
+ <179508711555.3615492.10674834361832600268@gmail.com>
+ <20261119162517.GD2300348@ragnatech.se>
+ <179514885544.420816.9397060314487706966@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,118 +136,98 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/6] dt-bindings: thermal: thermal-zones: add
- hardware-binning trip properties
-To: Rob Herring <robh@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Randy Dunlap
- <rdunlap@infradead.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Abel Vesa <abelvesa@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Amit Kucheria <amit.kucheria@oss.qualcomm.com>
-References: <20261113-thermal_bin-v3-0-878df6eef8bc@oss.qualcomm.com>
- <20261113-thermal_bin-v3-1-878df6eef8bc@oss.qualcomm.com>
- <20261118205056.GA839455-robh@kernel.org>
-Content-Language: en-US
-From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-In-Reply-To: <20261118205056.GA839455-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDAyNiBTYWx0ZWRfX9diGAyTFe0yJ
- 3sfhwnI351U18+mmm89HqqBzyHtIvoSw3z/MhoFc5XXigesTUgiY1dV0MMuw2a8YOBMKkoo6OUL
- HjBEtB5adfKYQQae0Mp1D4D83W0+Kcn3JkanOJfpo4sfyo8YUsYyn6KuUAKeLeIlTg6H4rg+BA7
- WArjvSEn/rauCH+U7SaUFzrZi+Z2LGNEvcTKfv5iI+89OZLdyWmrzpB6QhsiVW83ROOcaMTMx9W
- bDuJhCgMfiwJpKoCLVlfEDchS9BytEH+708nw1PM0f/VpmfF7eZ5y6EFzDh9z9twjZIokpqKxdB
- So5vZH32CkcvXENsutrCkEg/72H9Z51DSa8t1rhOk/dR63Zz1D7Ijgz8nbzDzc4sY0LyjEHDbvX
- C2HMzoWH1pbgCOKYDAViABcKfGRT2pnV2Jg+bs5DxruZLH6N9RQwy4/8Js1IMX6r48YEJXv0qRM
- Voh/MifLwao/QB5QkDA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDAyNiBTYWx0ZWRfX0F35PAoK9Mg1
- Pvj8JKiOZ1hRZziZM33sADui4C2gcMCzi6VGy5eUkzrF8bh9iG9IPuZSFG0so0TwOvVU94s5vza
- 2jN6a0BBXgiVgXXazsaakQ8vhEvReNM=
-X-Proofpoint-ORIG-GUID: TRiq9IdFwsXonYhu493o9DxLfrZV5e01
-X-Proofpoint-GUID: TRiq9IdFwsXonYhu493o9DxLfrZV5e01
-X-Authority-Analysis: v=2.4 cv=KuHYSmWN c=1 sm=1 tr=0 ts=6affed20 cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=EUspDBNiAAAA:8 a=fXwKFA8GOUhRkyI-wlYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=324X-CrmTo6CU4MGRt3R:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-20_02,2026-11-19_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 lowpriorityscore=0 impostorscore=0
- priorityscore=1501 bulkscore=0 adultscore=0 spamscore=0 suspectscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611200026
+In-Reply-To: <179514885544.420816.9397060314487706966@gmail.com>
 
+Hi Yaohan,
 
+Thanks for sharing your test.
 
-On 11/19/2026 2:20 AM, Rob Herring wrote:
-> On Fri, Nov 13, 2026 at 02:13:44PM +0530, Gaurav Kohli wrote:
->> From: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
->>
->> Differences in SoC packaging can be used to provide multiple SoC SKUs at
->> different thermal and performance characteristics. The underlying SoC
->> remains the same except for how much heat the packaging can dissipate,
->> thereby influencing the critical trip point at which an SoC SKU needs to
->> be throttled. This SKU-specific data is typically burned into fuses
->> during manufacturing and can be read back at runtime.
->>
->> Add two optional trip-point properties to describe this:
->>
->>    - 'temperature-bin': an array of per-bin trip temperatures, used
->>      instead of 'temperature' when the trip depends on the hardware
->>      revision encoded in fuses.
->>
->>    - 'thermal-hw-bin': one or more bitmask groups describing the hardware
->>      revisions for which a trip point is valid, modeled on the
->>      'opp-supported-hw' property of the OPP framework.
->>
->> Signed-off-by: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
->> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
->> ---
->>   .../devicetree/bindings/thermal/thermal-zones.yaml | 60 +++++++++++++++++++++-
->>   1 file changed, 59 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
->> index 999ad40a20d5..cb9a8c96d053 100644
->> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
->> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
->> @@ -152,6 +152,58 @@ patternProperties:
->>                   situation where the trip gets constantly triggered soon after
->>                   cooling action is removed.
->>   
->> +            temperature-bin:
+On 2026-11-20 12:27:35 +0800, Yaohan Li wrote:
+> Hi Niklas,
 > 
-> Use the standard unit suffix.
+> yes, of course.  It is one module, self-contained, and it needs no device
+> tree or hardware setup - it builds against the tree you give it and runs on
+> the board you load it on.
+> 
+> The module exercises the three primitives the removal ordering depends on:
+> 
+>  - a work queued after cancel_delayed_work_sync() still runs, while the same
+>    queue attempt after disable_delayed_work_sync() is rejected and the work
+>    never runs;
+>  - a work that is already running re-enables the source behind a mask that
+>    was written before the cancellation, and cannot do that when the work is
+>    disabled first;
+>  - on a line shared with another handler, synchronize_irq() does not stop our
+>    handler from being invoked again (and from queueing the work), while
+>    devm_free_irq() does, without disturbing the other user.
+> 
+> To run it:
+> 
+>     make KDIR=/path/to/linux
+>     insmod irq_semantics.ko
+>     dmesg | tail -n 25
+> 
+> It needs CONFIG_MODULES and CONFIG_IRQ_SIM (the latter is a hidden symbol,
+> selected by CONFIG_GPIOLIB plus CONFIG_GPIO_SIM; GPIO_MOCKUP works too but is
+> deprecated).  The last two lines of the log should be
+> 
+>     summary: 17 passed, 0 failed
+>     RESULT: PASS
+> 
+> That result is 17 assertions about the workqueue and interrupt primitives,
+> not about an R-Car unbind: a green run says the kernel behaves the way the
+> patch assumes, it does not say that rcar_thermal_remove() was exercised on
+> your board.
 
-Sorry, my previous reply was sent only to linux-arm-msm by mistake. 
-Resending to the full list.
+I agree your test-case is kewl and interesting but as you point out, it 
+test something else then the code this patch touches. But I learnt some 
+more about ktest reading it which was nice!
+> 
+> The tarball is attached; the README in it has the same instructions and a
+> reference log.  If the list strips the attachment, tell me and I will send it
+> to you directly.
+> 
+> What the module does not do is run rcar_thermal's own ->remove().  That needs
+> a real platform device, MMIO and a thermal zone, and the driver's removal
+> would end up buried under the scaffolding.  So it pins down the primitives,
+> not what the interrupt status registers do on your board.
+> 
+> For that, what I would suggest on your side is to unbind and rebind the
+> platform device in a loop while the zone is being read, on a KASAN kernel,
+> and check that no work runs after rcar_thermal_remove() returned and that the
+> source is not enabled again afterwards.  To get real interrupts during the
+> unbind the overheat source has to fire at least once; on this driver that
+> happens when the temperature crosses the trip point it has programmed.
 
-Thanks Rob for the review.
+Yes, I was wondering if you had something ready made for this test.  
+Having something push the trip interrupt often enough so that 
+bind/unbinding the driver from the device would provoke the condition 
+within reasonable amount of loops.
 
-Would temperature-bin-millicelsius work for the unit-suffixed name?
-I’ll also add minItems: 2 and maxItems: 32 in the next revision.
+I will see if I can make something up.
 
 > 
->> +              $ref: /schemas/types.yaml#/definitions/int32-array
->> +              items:
->> +                minimum: -273000
->> +                maximum: 200000
-> 
-> minItems: 2
-> maxItems: 32 ?
+> If you can tell me which SoC and board you have, and whether the thermal node
+> in its DT has an interrupt and a critical trip point, I can work out what the
+> smallest meaningful run is.  I am also happy to reshape the module if you
+> want it to reproduce something else.
 
+I have access to a few boards. For this patch I intend to test on M2 
+(r8a7791-koelsch.dts) which have trip points. IIRC when adding interrupt 
+support i had a critical trip at a low temperature and then used cpuburn 
+to trigger it. Maybe a non-critical trip point around the running temp 
+and enough iterations can trigger it.
+
+
+> 
+> Thanks,
+> Yaohan
+
+
+
+-- 
+Kind Regards,
+Niklas Söderlund
