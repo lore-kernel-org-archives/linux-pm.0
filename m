@@ -1,82 +1,83 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.42
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795210103;
-	b=kCw+avjRww8Dziv+JPrshgbrZawK72i7P55Vu7MPH0LdYNOHI3xKc5f+OsuF8K8RYYDc
-	 WIfYurzpraOa8TY+HUB9BOB0KKMGS3EhTzwPAgfdEVBW8cTZiuJeDSXBLLzKyvDeVgs7V
-	 pxW4uNlqV7k0sxaZPN4jvP8aAS0S4wQUlMbiN6JJByt4LXrHNkRQqgnkxGMwW8x2aiwDk
-	 aU/YhVctRxmnJ1X1BZ8KSbKCg0LKlrh8CVzpsvVricRrTraMgLlgpk49i/wbbcP4ZyMNi
-	 APDMh82+Zez99xfna9oJc93xzl6Js7dbS+VHnkOoSCvrcKaB4L8upC+wntRmr4fxCag==
+	t=1795210104;
+	b=y4XXzW6JyCNox7nlJ96bTbrfiq/rNaHZJ0DgyJuDw6YIl6M4STUuj5wknxJr54OuwMss
+	 azgSTLG1HpGULr7/8tuArQwi3ytMJBa5h6oEAhnyZlOsSuM6+w4N2TTYb5TYWv2rOxQOz
+	 jMLTTQmODRoxGlh6MztF4n1JsNPqMs+xb69g7XEQTB1xYh/pTF5Ot1ZLsXb/LHZypQWF8
+	 Jys4CfJi0fIE36jT18oFKzJw+0feahkc7YOvcKb+x7tryguPaaV5TeaoE0nIa482+pIJP
+	 VxHbY2+ObpykZegCV3cGEca5BPHBupwQxXQuDlgtyjIiGStlY1S1CO7kqld6yxJ7MVA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795210103;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795210104;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=taf0KVPRoF+3JboQGvuM90twCXz2SjYe05359+kTlN0=;
-	b=Hx3T0p3H3ZgXnHAe9urzSChrdO47FkI6fD0TMT4SLK4GvqtPhtdlzvVlwEYnKxGHS3dm
-	 9L2GCrK3FweLCXcbYtGh2aioScHanaduueCUtI9QqoZ8pCxBvxPlcmq0qFy/kVJ6sMiSo
-	 lJbEHgUVrAh6b8aMOv+FOV7JGMWe3Wtqs1i+KCaRXfN7qnyspw5SPGJq+E4qVbcgOUWxJ
-	 6Ih3h1s9wKn7lIkAZl2Dx70qWCz2emspBkoCJwJj2W8nvvZIhSP+IIyYPJKh7RH90DM1F
-	 NJazyOPEg1+DgrlK2gViZAT7kX9vqXT6wCMqKkkWHzA4bwhqEQ3a/io/YlLXztzbXYg==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=LXePsUP69J9BLo04WPbdbC0T2RsRqLHGKdkvwdCquvE=;
+	b=Mkq2d7qC5eXhYcW2+46X4LrFNttlTLJpff0bsqMGWMK0UOHS0yO+QOgXH+VJuLbF+yuw
+	 yLKkbZB4TKTw8rOEY9Dvvqg3i+T1KFvzXdLOffPSov5J2gVO2vE1UC1p0MuRbbCFYsgtD
+	 ZFbX5NJqg89AA2tVENfrjY6NPmjg8M6jWlqwrTX4zGF+1nrCW8NuA20mI8uN4CiMRtEFl
+	 dcvVXCBtPVyueFDx1NK10wZCpTeNHuc8TrQW9vT/LySw/VIv99B4stACVAtozGntl85R8
+	 IwvJ0c9CJhOQI3TgRNHAocgyLwX3srFf6ELnqjn8p8fhPsjglDm3DTgNANr5M8dn4kA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=FtUSzxaj;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="SCnC5M/q";
 	arc=none smtp.remote-ip=209.85.160.42
 Received: from mail-oa1-f42.google.com (mail-oa1-f42.google.com [209.85.160.42])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A6B1606A6A2
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 21:28:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3A6B1606A6A2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1C0A606A692
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 21:28:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A1C0A606A692
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=FtUSzxaj
-Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-4ad587ba293so909146fac.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 13:28:22 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=SCnC5M/q
+Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-46556b9e02cso1005635fac.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 13:28:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795210101; x=1795814901; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=taf0KVPRoF+3JboQGvuM90twCXz2SjYe05359+kTlN0=;
-        b=FtUSzxaj+TW/kizwQ44WcHMK7fkrtbh0TBjEM6Y8hwUmZ6hXvEcdUCkpMuuXDvcCyq
-         901SKBaL+Wpgkt3RCD5m8t7BindXheyRFBliuiIzuPFw08GphYwdsHbnJGsiYFRrMYjY
-         zdfhChHJPWCyG1X6Ck/PnRnMk+AhlS3elu0s1OWVWQFMpulStuS/IoK6h7KvF77SXFio
-         WIldfRkJwcp7xwWS+OCzCPV5Errlwco/6D80BEgc8vUEXS/wT9L+MNToNZXf0SpMDXRh
-         km2Mrdt7vlCjZ3fYdvteCdzmVJUYI8Q8URDjXnZsC08f6w6Cqg7+a8+F3R2/1jOJegTs
-         e1mQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795210101; x=1795814901;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1795210102; x=1795814902; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=taf0KVPRoF+3JboQGvuM90twCXz2SjYe05359+kTlN0=;
-        b=TUc7MoBd0Qj8AO5VqCaQtXOBZPagMrQj77lvakqAPtAkJWIk5Ca+NXWKk8w1PddrlR
-         oDPFNO7rVxYrCX6H7yFR4vDSqkndDtnRxQvjcdr215BoIDe3d9daDqGxPoTDBYEqbiSm
-         roAzFwehCdQeHKxhc4UaLbtxkgj0n7CznJf0iApWLw8haL+gFRD0MjVViYiaEfODEPbI
-         K18H6dBIOmM8066MyMCkB/zPHGL2e07kc1u46cxsO9MtMq5zkv8VfyLRdFv2tKwYUZ5B
-         7HJhZTE8CBt6GDGgWo3CYEj8DXHkE02Ao9X7jeMPPFGKx2Kk2nc9p1lNv8Om7fituFtL
-         ijdQ==
-X-Forwarded-Encrypted: i=1; AL+hErFfNl3U7/XII4fGGJEy7RPlFmHrfrVrU1whKNqZqxfzRsTmkawFuz9IUSbErCDulIELZxrnjVK8Vg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/g1+qpjmXsg4dvjc0dHHa96WklPmUJfF5Lk26p0yeyF/7ySj3B
-	SpmaatPvXmzRw+Mnm7cYdNdBu/rQn33JYRwWN6HHNwnzXRNL5vIlQ7Qj
-X-Gm-Gg: AZFdTZdlHYEI6FYHWan37ntsBLsfDAk1dCdhuZN0Sd1hWDMBQ9iZ/O0w98gTJNOLfAI
-	z/0BmbVV7w1fjwJxUpY/q3MY6/cX2lCmSW/fjAT9xQU3mKvVkTLAbMTSZVUuKDrWDgiAXWctVcM
-	x4bc10Ux0398hVwL0v1J1FIjA3m6femo8CWNXh/rwD7qPP3RsgPHzx9cLbJwbSK8lxMYyklyq6x
-	f6yykKdqaVrJXuPxsDy9b7pnxSYBgbF9cypD//fqq2YyLJBbQz0Ry6w/kwAc+L+S6+tz3gAfMWe
-	Q8lQa7f2BTVXhfq1j+UfjRkl7dQY88Jz/JVzhPfpHRkXlqdEIZ1suszeSiKzrad8Q0gtFFjMBt0
-	Ezhotpeo7EiNy/8bCy7beet7BJELkq5FmepjcRV4tMj5gRds3mV31iNLw2qBp4TQR8Au1W5beGv
-	blsEsaIf3rCvSOi1IlynrRh03IXSVeCrrShLCedCFPIPwVIM6BCj9yQjOCu/gEbjGcjVbQdUZYI
-	KqCGD0QrpL3avthDYsRY36Az8ghNDer0Auc7gACzi3wIxxtQTEpdc9HrcKGQYl59We6Zcsbe6QR
-	RTxqa57XQffY5Tp/hgLdehRbrlFwZw==
-X-Received: by 2002:a05:6871:eb09:b0:47b:df9f:6c0 with SMTP id 586e51a60fabf-4bc7d6650bcmr4022958fac.4.1795210100955;
-        Fri, 20 Nov 2026 13:28:20 -0800 (PST)
+        bh=LXePsUP69J9BLo04WPbdbC0T2RsRqLHGKdkvwdCquvE=;
+        b=SCnC5M/qXfGSwGlKHnAFp/USEX4r2rxKw9pO9HZA0e4JG6ASuVP/47BZ4tZNXgydL+
+         fs5LHuWg7QaHHoHr29o7uypV7g5KIpLpDLoPo2wNyQsIo/KYNj2l1SKvcJU7CJs016Dy
+         n7VvAsaCTCiLGUP/FSrE4aogb25Mc4mP9ucgt6ZGi9kve9611vOZ2UCf9oWvO1ofbL3B
+         nCyUSa/dCrKPm6aJtna2kU0WuWiSVJw2LFnmSv6z4jZzo/dOYadt1wMFxjdAQb4N9WLH
+         l9j51wP7ahoANpuslO8qaTeKpF6in4E27hpsBLt4bx91Xp5piFCKl84QecIj/0FwSlP2
+         r2WQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795210102; x=1795814902;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=LXePsUP69J9BLo04WPbdbC0T2RsRqLHGKdkvwdCquvE=;
+        b=reJR/L33ebAjk9xiw+OywIqeouR/Yxv5qSw9oi044QYI+EapUqnCIO5pMuS+/mxok+
+         1iVxAJ/OMg5Omo1D6RV+pVSYzbr9rIZZZ01Z8eLpkzUP54kplgq9IveUaOz3htEZMdfr
+         EOlrZ7JWX91VpYhKERVvXRMhMxhDzXrNOm1mv70LxEb07ldIGg8mxP4BuqBPAgYDeDuu
+         A8fMQRqa/cyFc1YCzQJ/RO6GT5rmvy2gjo0gSOUllUc9tfRCMNkU14cMIHZrl44CvrXi
+         vPNHfJWP3iSvkpa0UYF7GclvdHX8UKSkwC4vQfdDX+bD8WcfpfyqfkbF0ymZAkIzrAW1
+         GlcQ==
+X-Forwarded-Encrypted: i=1; AL+hErGiEeIuAIILFTTT9oxgogzNeKHmU+EHu7otdB+P7tMjSZGu2pO3skGH88abrzsABQaRXgg9WA1jnQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/IQAdhLEhQ0NyN8GFndZZg8Iz3fWHyQ9NKiIigSHNM5a6ebLeE
+	WSGqExEW5tzuDRRijtFEOIvxUOOtbFioRB6n+hBvy3iLKEDcX3kQnppm
+X-Gm-Gg: AZFdTZflqn3TNtTkGw5jHDLxo6zkObcCMUhBTZJ5wEhm/N/FNU+9ByqUD300/SfEks7
+	TmCCF17I8wNYyl1MxS33g6dGGiYLRywIvvKUaqGwG56Q0eRGO2Gd5NVThTjJGWe2BviNJqZQnsu
+	unF/0MAg3m1UiZafCWUCEt7ntBKIqYrua7Flm/aaQ7CTD4/vz0wU+Ub3MV5T4idStmR4U7pz/JI
+	cISzYhccmpZrnuwCSQ5ItBOkHUKy3zu5gXR21VslAlgYSI94zmkSkRb0TOjlzRQE6cspSG2aJCf
+	vzMVgG1K5qiI9xZXlWTQJH4XiSJksyNvuDwkvmAP56sFusGB7F2Lo62d+cK3iE55D+pzIdCqHzt
+	aVJS5MSctEalmMrxy12YFneMu6if2WRHxjoSNFDuGDG+JAwt+Mr8shnbRCL3UMRdJb/yVz+nfgW
+	PaKKWqEJfaSGlZ63vdVH5RODhfZ6y+wK5y3Kj5D3gNWGtfoNOvwPsYB/X8bJkC3n0AW44e9PM/m
+	GwN/hGtBf/B9xiDIO86k/lmE0k9941paCHrMVW3qJH4ydrMDdcf0bi2r/4ELS9jv9YyCnjE4flX
+	ARK1cm7ZmFKp87KZDTjl3YFJ1fIBMQ==
+X-Received: by 2002:a05:6870:9d90:b0:4a8:15a:b062 with SMTP id 586e51a60fabf-4bc84f170d6mr2947268fac.25.1795210102525;
+        Fri, 20 Nov 2026 13:28:22 -0800 (PST)
 Received: from neuromancer ([75.28.21.198])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4bc5b07d766sm3774126fac.2.2026.11.20.13.28.19
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4bc5b07d766sm3774126fac.2.2026.11.20.13.28.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Nov 2026 13:28:19 -0800 (PST)
+        Fri, 20 Nov 2026 13:28:21 -0800 (PST)
 From: Chris Morgan <macroalpha82@gmail.com>
 To: linux-rockchip@lists.infradead.org
 Cc: devicetree@vger.kernel.org,
@@ -90,10 +91,12 @@ Cc: devicetree@vger.kernel.org,
 	t.schramm@manjaro.org,
 	xsf@rock-chips.com,
 	Chris Morgan <macromorgan@hotmail.com>
-Subject: [PATCH V2 0/3] Add Cellwise CW2217
-Date: Fri, 20 Nov 2026 15:28:12 -0600
-Message-ID: <20261120212815.35663-1-macroalpha82@gmail.com>
+Subject: [PATCH V2 1/3] dt-bindings: power: cw2015: add cw2215, cw2217, and cw2218
+Date: Fri, 20 Nov 2026 15:28:13 -0600
+Message-ID: <20261120212815.35663-2-macroalpha82@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261120212815.35663-1-macroalpha82@gmail.com>
+References: <20261120212815.35663-1-macroalpha82@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -107,36 +110,96 @@ Content-Transfer-Encoding: 8bit
 
 From: Chris Morgan <macromorgan@hotmail.com>
 
-Add the Cellwise CW2217 battery gauge driver. This driver is based on
-the sources used for Rockchip's Board Support package [1] but has
-been updated to use the regmap API and devm helpers.
-[1] https://github.com/rockchip-linux/kernel/blob/develop-6.12/drivers/power/supply/cw221x_battery.c
+Add bindings for the Cellwise cw2215/cw2217/cw2218 i2C interface
+battery gauge. It is similar in function to the existing cw2015 but
+with a different register layout. Each of the cw2215, cw2217 and cw2218
+only really differ in the minor specs and the hardware ID they display
+when queried. shunt-resistor-micro-ohms is a property in use for
+multiple devices so not appending a vendor prefix to it.
 
-Changes Since V1:
- - Added a default value for the shunt resistor in the binding
-   documentation, and updated the commit description to note that the
-   min and max for the battery profile is now per-compatible string.
- - Fixed bugs pointed out by Sashiko bot, and corrected units for
-   temp and shunt resistor values.
- - Corrected include pointed out by kernel test robot.
- - Noted in the commit message the patch is based on original work by
-   Xu Shengfei at Rockchip. I did not list him as co-developed or
-   signed-off since I did not have his permission (yet) to do so,
-   but I have his authorship included in the file itself.
+Move the minItems and maxItems for the battery profile to a conditional
+based on the compatible string, as the new monitors require 80 bytes of
+firmware instead of 64 bytes.
 
-Chris Morgan (3):
-  dt-bindings: power: cw2015: add cw2215, cw2217, and cw2218
-  power: supply: cw2217: Add support for Cellwise cw2217
-  arm64: dts: rockchip: Add Battery Gauge to Anbernic Vita-Pro
+Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+---
+ .../bindings/power/supply/cw2015_battery.yaml | 41 ++++++++++++++++---
+ 1 file changed, 35 insertions(+), 6 deletions(-)
 
- .../bindings/power/supply/cw2015_battery.yaml |  41 +-
- .../rockchip/rk3576-anbernic-rg-vita-pro.dts  |  21 +-
- drivers/power/supply/Kconfig                  |  11 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/cw2217_battery.c         | 826 ++++++++++++++++++
- 5 files changed, 893 insertions(+), 7 deletions(-)
- create mode 100644 drivers/power/supply/cw2217_battery.c
-
+diff --git a/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
+index f7bde324153d..dce7c51e4e62 100644
+--- a/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
++++ b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
+@@ -14,12 +14,13 @@ description: |
+   phandle in monitored-battery. If specified the driver uses the
+   charge-full-design-microamp-hours property of the battery.
+ 
+-allOf:
+-  - $ref: power-supply.yaml#
+-
+ properties:
+   compatible:
+-    const: cellwise,cw2015
++    enum:
++      - cellwise,cw2015
++      - cellwise,cw2215
++      - cellwise,cw2217
++      - cellwise,cw2218
+ 
+   reg:
+     maxItems: 1
+@@ -31,8 +32,6 @@ properties:
+       it is to mail two batteries to a test facility of CellWise and receive
+       back a test report with the binary blob.
+     $ref: /schemas/types.yaml#/definitions/uint8-array
+-    minItems: 64
+-    maxItems: 64
+ 
+   cellwise,monitor-interval-ms:
+     description:
+@@ -43,12 +42,42 @@ properties:
+     minItems: 1
+     maxItems: 8 # Should be enough
+ 
++  shunt-resistor-micro-ohms:
++    description:
++      The value, in micro-ohms, of the shunt resistor used for sampling
++      the battery current.
++    minimum: 1000
++    maximum: 50000
++    default: 1500
++
+   monitored-battery: true
+ 
+ required:
+   - compatible
+   - reg
+ 
++allOf:
++  - $ref: power-supply.yaml#
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - cellwise,cw2015
++    then:
++      properties:
++        shunt-resistor-micro-ohms: false
++
++        cellwise,battery-profile:
++          minItems: 64
++          maxItems: 64
++
++    else:
++      properties:
++        cellwise,battery-profile:
++          minItems: 80
++          maxItems: 80
++
+ additionalProperties: false
+ 
+ examples:
 -- 
 2.53.0
 
