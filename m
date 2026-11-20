@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795194571;
-	b=i4TfoHtZjN1wQFzoR05J3uWeRROU0GVgQX0sES60ZFcgAzhDLL8vhG2y/ZbGmocrCpHG
-	 o0jLTEs/BB0fNREYHQfkiRUeOK7dD5UgTmCDdqiL7rZmToOTCNs5xn4kW+jjtOOwaKfOp
-	 TeQpiAWPRF7eD6FFox1/7/+XhwlNujwqMPq4jLpRjUIetROkhPtmKzpfHcKzaUcuyc4tM
-	 OMKBpSIoOI0zhaS1Fv5VGB9BK29zKrGzA8SA/DT0VBpz6x8nElNesYXIGXLz9QT0F6lWs
-	 lCCwCpd7gGKy5HoowN2ScWs/F7GYUIzT92rwHJYwJkMakLd+V+rZ5rqECII9+ORzo4Q==
+	t=1795195213;
+	b=nj8fXVR65ah6xUOS3mVr85F3cohG7NiteJR7hCESO+4vVutjo9gaab+2KyOIJzKIy7ao
+	 UksVVzRKrLKcJxzFupW1O01ikgqCm6599sYw79jWE7+O4rqIdGXf9UPeVsrTJBVAKR9MZ
+	 G9FMFXuwTfaVLUCjYTgXCUKEYLt9O8L3PsDrsSwLJA07wZdJxXYErL8YmJ+zD3DztJF74
+	 uy2w+vQclXowWFtIb0zPDO8uuj5Se0XVbz0qTlKTiKUmKdP7kbVtcddvNQJLhjZ7RaY35
+	 s6U9nd/oG6hnA8iiF0UhJwL00njl6dqgmdqsRpmApiMdpzFksHwg9/TM9d+/rVjysuA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795194571;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795195213;
 	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
 	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=5juQiS4NV5WDA9Mql8KGEciA+P/kt6ePCjBKpgAiReU=;
-	b=RC6WaYLu2zHnn0Fy1arny4iboVyTit+4DDT9VdpzlTXD+lkyM95C7p80JByw5SfwJH0j
-	 tcyf+McstGusmg2Q4LjleSc2Z8mYd0GSY19yvMe+cBtL+p0qFzIsMiib40482b5XCedOO
-	 2aLWR2wkKd4+dEkbnNcbXVZ/rd/unCnIcQANM6awMG1apwJZgx7h//hGXVN+oYkIqztt1
-	 r78af3AajSeiSg9aaeF93SMyqdsiZr7RfOICAKsgqUJH4Cs0GVG7WfIf8bAtQTSh8xZdB
-	 Cq78qXgaqgrB8jC5zrCHQRrLfrc4urQzUEsGwOA6vMZMSJQsKrf0hzHa20Clu48TbQw==
+	bh=Y4Bc+0yC5Sbi8yUIWH+dJ6WtjRKsFLPVm8zb7sCcrd4=;
+	b=e8UB5iWYr/DQdUlzZ7P4spRHWPveW2Yj0CGg2K63YSJTwNYC94fKsexQvHIrGjmM9Mtd
+	 OqMezs8S97qkY/iKzbi2MVjssDgkPNKsT1DVnB7nj9tdDXFFSZVTva6Ye/YXt3fpozQ45
+	 m19EwTH4bj0xyP/L6ZOM8FnxLRShODeqKQJxa0QbyJE8Rpi7bjYwmwhJVcF0GRibSq3op
+	 6DFgkWSb+IBDbGYphSm+rlfTxi1h+FsGPR8v56Kdt6Q7IFTc0+ML6tm45czrCzoKszYs+
+	 1XyOXsUfLJepaOSxtKX0VEI+YBZsNXPRJB4W1fsiqjzKCeRms6T9luwGNQLC44Bg57A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aghKennR;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XJMfIqQw;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A0F1606A32C
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:09:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FCF660A2611
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:20:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aghKennR
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC2F91F000D2
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:09:30 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XJMfIqQw
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 041581F000D4
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 17:20:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795194570;
-	bh=5juQiS4NV5WDA9Mql8KGEciA+P/kt6ePCjBKpgAiReU=;
+	s=k20260515; t=1795195213;
+	bh=Y4Bc+0yC5Sbi8yUIWH+dJ6WtjRKsFLPVm8zb7sCcrd4=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=aghKennRr03xKxOZoOVVsaoxmHiuOy0Arzqjh3H4+XaTwDwLCqX5lvfDqb64plhp7
-	 fXC3HOhWZSNVnSjey0BZGwbkggKW9VUBdNvFQoZce47WYlvYwXrDsZ/hbuj/7+Ru6F
-	 eW/LVZAJcVEPLuQhWIBRruZPXBY7NxhZ39BQCeH/A8g4oLNsZ4TrtirSVTTmc9ZCCC
-	 OIRmAZOrUmF8gGos7dRV8FXHw8GStK8LMakqItoXqqETUZMbvf6VxTxitY1kkUfSA8
-	 iuUSFdy5KsLFRBEwdl08sOm7zchndL/PVYSnBbMhD0TjDHui/JuP90Xwsjcsb9YOUv
-	 Za234rg6qzPNg==
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-3ae85add4ceso5853971fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 09:09:30 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErEHVTvMYFwCWGzSNhsWzZARKg0nByzmMDGpg3BHZyc7/3gz/LZGe0Z4H7UM746qdU0QT966fjOxRw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9CJfSQnrywEeLwQvbFkrY1zw84ZGVViW6dmdZe9BxSjwmkjC7e
-	24r1GBAG+aTEAUCG2Noo4Yb+TwaDQMtwe1K3zv4umn7x6BGAlSHKesU94pvoVbkY7GC4gxCmnDO
-	Bq2err/cwcaWjIOH1LoTiMryJgU1SMoU=
-X-Received: by 2002:a05:6512:3093:b0:5c1:595f:b370 with SMTP id
- 2adb3069b0e04-5c1bc6d253fmr1174527e87.3.1795194569103; Fri, 20 Nov 2026
- 09:09:29 -0800 (PST)
+	b=XJMfIqQwEJhIT9Cq6IKKt7/UsgoOyz/TWG6zgL3lm67TWn9DZjj8gqWAFmXAk+yGl
+	 Rpx9dWSU2yPyLXK3Y3kkq/UhW8R1yrXHaH/UQwVpAeRDt5hoeN8lN9Wghbxzh6Rpza
+	 /QabQYIhoNLsJMbL+K04aVkEzAn/LpHXe1DMNhM42fDSrAoIU1dMMiv5wkPbbAEWC+
+	 Bxm4i3tufokA03pk6FqKcpLW8ztDyaIqdGjNvjInzseDlwqLmq4gXGAtYmynHJ0wRB
+	 0TmZ3jwnR+Cxk7P6kXsbMzKgmx3W8AB3bgie9dvdRYyiUz6CwdHIPkPLUdGJA5WkYM
+	 IYCa7b2n603Xw==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5be416e603cso835476e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 09:20:12 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErFrFWlhFnYgAxFKVSai5FBM+ecX1VGF+lD+gWnqHdVgFPIACCLtgZ+0O8WLNHfc1TuTaQAGXQ/yIw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/2yiA+3a+ZILkrfJ94ePxw1fgsaihMVeLePwonDwVNyGjPS21m
+	GRCEyK+PZtvQtBOpAcTzgiHwND5re32FUzrkGbe/15bEvfKEa3SXtI0TohdZmlqIZMniI2aBmGo
+	rz28W/37kxvm/zRwRPuenKOyJ6eafqxA=
+X-Received: by 2002:a05:6512:104f:b0:5bf:f5a3:9a1d with SMTP id
+ 2adb3069b0e04-5c1bc67e7ddmr1191762e87.7.1795195211476; Fri, 20 Nov 2026
+ 09:20:11 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,45 +59,48 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261114-intel-pstate-online-max-freq-v1-1-1bbdae2b4986@hsal.es> <20261115085234.40661-1-xzhangjr@gmail.com>
-In-Reply-To: <20261115085234.40661-1-xzhangjr@gmail.com>
+References: <20261116121723.342798-2-blum@kernel.org>
+In-Reply-To: <20261116121723.342798-2-blum@kernel.org>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 20 Nov 2026 18:09:17 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0j_XsA_vv5XyjvtbkNXBJNhwDkYoJSfE78KsA50BaUq+Q@mail.gmail.com>
-X-Gm-Features: Aa3M54r8cdEJAdD0Zd7M4FbDyba-DKAmCj_dmkYEh4fRehGNENiucSzO3VGQDYs
-Message-ID: <CAJZ5v0j_XsA_vv5XyjvtbkNXBJNhwDkYoJSfE78KsA50BaUq+Q@mail.gmail.com>
-Subject: Re: [PATCH RFT] cpufreq: intel_pstate: Refresh cpuinfo.max_freq when
- a CPU goes online
-To: Ximing Zhang <xzhangjr@gmail.com>, Hugo Sales <hugo@hsal.es>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 20 Nov 2026 18:19:58 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gMAcGTg7RAF00S7mzrkYXa116OYEbbn8RE1-F_CnO-zA@mail.gmail.com>
+X-Gm-Features: Aa3M54qYyVMRg2sTMOWnU96DamHzfYjmEqlDjIxhHjg-kgHRQQhzEV84PJo3tiM
+Message-ID: <CAJZ5v0gMAcGTg7RAF00S7mzrkYXa116OYEbbn8RE1-F_CnO-zA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: intel: Use clamp() in pkg_temp_thermal_device_add()
+To: Thorsten Blum <blum@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Juergen Gross <jgross@suse.com>, Ingo Molnar <mingo@kernel.org>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "Ahmed S. Darwish" <darwi@linutronix.de>, 
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 15, 2026 at 9:53=E2=80=AFAM Ximing Zhang <xzhangjr@gmail.com> w=
-rote:
+On Mon, Nov 16, 2026 at 1:17=E2=80=AFPM Thorsten Blum <blum@kernel.org> wro=
+te:
 >
-> On Sat, Nov 14, 2026, Hugo Sales wrote:
-> > I have no HWP machine, so the HWP capability path is untested
+> Use the simpler clamp() macro since the values are compatible.
 >
-> The patch fixed the stale cpuinfo_max_freq on my Core i7-10510U with
-> intel_pstate in active mode and HWP enabled.
+> Signed-off-by: Thorsten Blum <blum@kernel.org>
+> ---
+>  drivers/thermal/intel/x86_pkg_temp_thermal.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> The test changed no_turbo while CPU 7 was offline, then brought CPU 7
-> back online. These are policy7/cpuinfo_max_freq readings in kHz:
+> diff --git a/drivers/thermal/intel/x86_pkg_temp_thermal.c b/drivers/therm=
+al/intel/x86_pkg_temp_thermal.c
+> index 43fd5bdf1d8d..2b6265b80fe1 100644
+> --- a/drivers/thermal/intel/x86_pkg_temp_thermal.c
+> +++ b/drivers/thermal/intel/x86_pkg_temp_thermal.c
+> @@ -327,7 +327,7 @@ static int pkg_temp_thermal_device_add(unsigned int c=
+pu)
+>         if (!thres_count)
+>                 return -ENODEV;
 >
->   Turbo change   Unpatched   Patched
->   off to on        1800000   4900000
->   on to off        4900000   1800000
+> -       thres_count =3D clamp_val(thres_count, 0, MAX_NUMBER_OF_TRIPS);
+> +       thres_count =3D clamp(thres_count, 0, MAX_NUMBER_OF_TRIPS);
 >
-> Both patched readings matched CPU 7's reference with all CPUs online.
-> CPU 0 stayed online and reported the expected maximum in both cases.
->
-> Tested-by: Ximing Zhang <xzhangjr@gmail.com>
+>         tj_max =3D intel_tcc_get_tjmax(cpu);
+>         if (tj_max < 0)
 
-Applied as 7.4-rc material, but I renamed
-intel_pstate_update_cpuinfo_max_freq_locked() to
-__intel_pstate_update_cpuinfo_max_freq().
-
-Thanks!
+Applied as 7.5 material, thanks!
