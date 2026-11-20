@@ -1,63 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=194.36.144.171
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795177328;
-	b=1B//6LLBh24hW1Y48fGRlBZPyMsTPdeOkPIler9f1fB6QAKul1oufL2wP0k1fINouyLT
-	 QMA0YchcNBg78BZtqrf4/e+KRPX/i4o5tq1SvFJxlIGOtxhwFESsOg8MI9csDiKxV6odn
-	 re8BZLxMxO0kuaV3RIDyKMa2r7p0T7uwnluf7j7MnKR/L6xtZ8jGu8su9k48z3Hu8KzWm
-	 rP8/q6XDjRSQ6t1Iq4DKNBAajAFKlAcmLcrGmHtVqlk9trkT3BZP0nPQQ0tdSmT6m5IrJ
-	 fTDL6UCIShx7LAC8RVeFuw691jwfPVC/VRSTlyjrSIYiB1+pE2z70p/P1uierMSlMrQ==
+	t=1795177829;
+	b=TokyBPNmq8/+5bAChUiHnXRufNLiB45Pr1X5LKNePzXMb50KP8f0u3fnZuLXn28lqJNK
+	 8o578MAkcMHFHLn3tiCWPEISyOV9UM+9OnveqeAv+Hnj7zYtz9HeTMr+xo5iIsA6bn2SN
+	 60jS8fzekoo0IQnmR+pQimk0AkWgnW6GDnI0eih3RpK8nQlwcA/hYvSViByq+ZwWOWFzx
+	 11AlYMftzX0r7uYGW7T9djqlpyuPMttYNw1te3ceB989X5XX39jMwKpZyYgaR88KmCEVh
+	 AnXG8gRzKYz2IKDJHaEu5TvAqcKYHcNGsJmJXOUh+WGuYkdQQD5s1x7SzcdeuRLnskQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795177328;
-	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-Last-TLS-Session-Version;
-	bh=mJMykgsXy/IvLDQUJldjSJK+kP6sz76ONtXtW27Eff4=;
-	b=lmCsYVKcdRoJ0tXhMZ8H0E6f9S5f/eD6vXvdZWLI0AtCD2QxBu9Tk0exc1jCMBq/IGmt
-	 C4LYc/BBb7UTMX4d/xYXvUcmkX5PxrUdUzv54iPZGD4n1CHVWP5Fu1c7RMUszRT8zlx9z
-	 gxfPk0W3Q1qRdCwrEbCYC62+mxWvDehyiq3DN3S3NeZOfudCvHYSI74hEy1u38zVNs2ur
-	 WMLRaN9rGbFIAhBAsOwQEh7u0byIbS/NuUQSUVihYq6USnf81kpDWQsqX4HWuS0CwpWTY
-	 rzS2lsX9CmQmBDnEFwjD2KU1whPVLwy9GAa7TeBV68ReRuu7+I0WhFG9iDQ7DYvfTrA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795177829;
+	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:
+	 X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:Subject:To:Cc:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=D2CzzDn3ucdlRM6Q6yIuZcgRMk1ELXmAjK6dNGrcYuQ=;
+	b=34WKkOXqdkJtnBjDwm1pu90X8Dby7Op5jIM8eOOn2My0GkkrmkITj4RvywvEU6Np/MGt
+	 Q4B9UjXtL+jBWCI0DlsNYIPNkPpi1dMRhX36siSnxJVkjSfwEC1+MQT9v47GBmgP31nBP
+	 nIBv9nwIlX4ymG2O2Ne6oMP0h55q9uLsqsBrRWql7j2tTHgQ0mdMqY08WLDdHnXxGFZLk
+	 sHKrWuiKl7NHRnLCwkVyBUrluMG+C7l9HJOAdQBmc1xZllGOsTunOwj94p6khXFO7cXkH
+	 hrReRcr/eKeAqAxVrU+WJcaK/CFBNZWlMHZ7eMP3HqVfbCuv6+g5yJCq4ogELg7L/bw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=yoxcu.de;
-	spf=pass smtp.mailfrom=yoxcu.de;
-	dkim=pass header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=moETzJB9;
-	arc=none smtp.remote-ip=194.36.144.171
-Received: from morty.yoxcu.de (morty.yoxcu.de [194.36.144.171])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MvQVJNcu;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 110C0606A336;
-	Fri, 20 Nov 2026 12:22:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 110C0606A336
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=yoxcu.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yoxcu.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66B73606A320
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 12:30:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=moETzJB9
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 9C2991D86DDA;
-	Fri, 20 Nov 2026 13:22:03 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yoxcu.de; s=dkim;
-	t=1795177325; h=from:subject:date:message-id:to:cc:mime-version:
-	 content-transfer-encoding; bh=mJMykgsXy/IvLDQUJldjSJK+kP6sz76ONtXtW27Eff4=;
-	b=moETzJB9ktAP1PI/EU9z925wihL+ZmBXgnxdMcoGco3Tpa7Z/4wTWfztsUs9BRhGZLikpM
-	hEySyN5LZ8VglEgJueeqw961IsoZpdJjXtaULGx0bktl4RpY0upAr/idRaR+mpjx42/h4B
-	qtFcc6+nA2SgrEy1NG2tGQ/+P7h4+z+xrizpgvd0EUcy+DJzp75hVDkJR+9UdBV+Aj1nS9
-	PDXhA+ZOrIK8xESS0XPLoCRShBqPRHiqu0LZHgne4A3zvXDrBNFTc2KCZBKg5+6fAc+RB9
-	xZsVriuZN/qe6xOIdk/33tgsbp9QDLKvaOOozUF328hqMszI3Zc+TCt9V1Ge5A==
-From: Michael Auer <mick@yoxcu.de>
-To: Georgi Djakov <djakov@kernel.org>
-Cc: Konrad Dybcio <konradybcio@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Mike Tipton <mike.tipton@oss.qualcomm.com>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Michael Auer <mick@yoxcu.de>
-Subject: [PATCH v2] interconnect: qcom: bcm-voter: Clear the ALC vote left by the bootloader
-Date: Fri, 20 Nov 2026 13:21:52 +0100
-Message-ID: <20261120122152.198114-1-mick@yoxcu.de>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MvQVJNcu
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02FCD1F000C6
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 12:30:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795177829;
+	bh=D2CzzDn3ucdlRM6Q6yIuZcgRMk1ELXmAjK6dNGrcYuQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=MvQVJNcumbWOrzjxKNGYXhwx0IqI/ui9/A/NI/x3THyuGDyzcmPzvrixTz7bWgulw
+	 aaF0+EjEYU5umKWlh+0LvkgzchQUgpU4i0HevtPCFfWPriLD1RQ2+/BCO1X7CVxCNq
+	 BjnVN3VBwrU9yVnp8Uis358h2ouctx1bUCVyrmDFcvcXDaEHUm9usF9s6w+rIL+T/U
+	 BTYc5xIBE5/WYQGxJZUytT0pllApwmu1CHJ41ZgXyTLD7SlCa+KYwtJc2y4inZMk7t
+	 9XPgJgwpJEcrhUf77N5SY0LSZeMacD8eZrxf76l06HmussQ2vTnOMjIpechrpCT3Tf
+	 30uHB2oUpZMag==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5c15956ce07so1825863e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 04:30:28 -0800 (PST)
+X-Gm-Message-State: APuU4Z+aKwyDp7EYi8uL7o2cbbNqFkeDcQSaHQSv5AQfNg26RCrHW7Gb
+	2qACUTXGKI42nR6b+t+tu0teSJDI6agorFYGGeY9vADwWaz/9SqCG+KA7Qy6Gdk7AruoNjf9Ie5
+	Svb/P+18BILBuSReflM1NP9qxjejq1BA=
+X-Received: by 2002:a05:6512:2513:b0:5c0:307e:e114 with SMTP id
+ 2adb3069b0e04-5c1bc8ea5c4mr772357e87.25.1795177827417; Fri, 20 Nov 2026
+ 04:30:27 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,105 +58,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+References: <1978814.tdWV9SEqCh@rafael.j.wysocki> <3453847.44csPzL39Z@rafael.j.wysocki>
+ <c1a2c90f-c667-4bf2-bbc0-2cb3f840ad97@rowland.harvard.edu> <CAJZ5v0jX8iR5x2eS1uAf_P12Ke_OBq6kx2FRCiVuSRRRDgMzLQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jX8iR5x2eS1uAf_P12Ke_OBq6kx2FRCiVuSRRRDgMzLQ@mail.gmail.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 20 Nov 2026 13:30:14 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0j39Wzb3F+ACHC+KM49oruUuekN3fDzJFcfHTtnDXqk+g@mail.gmail.com>
+X-Gm-Features: Aa3M54pXfBGYjeRmljNbzHspqgJ4KhYbwJXOHAc8EDlXH5N6zPLSJn9-2so6iuk
+Message-ID: <CAJZ5v0j39Wzb3F+ACHC+KM49oruUuekN3fDzJFcfHTtnDXqk+g@mail.gmail.com>
+Subject: Re: [PATCH v1 2/4] PM: runtime: Drop space characters preceding labels
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, Ulf Hansson <ulf.hansson@oss.qualcomm.com>, 
+	Linux Driver Core Development <driver-core@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The bootloader can leave a vote on the ALC BCM. No icc node maps to
-ALC, so Linux never touches it and the vote stays. On SDM845 this
-keeps DDR out of its sleep state, and the SoC never reaches CX
-collapse or AOSS sleep in suspend.
+On Fri, Nov 20, 2026 at 1:11=E2=80=AFPM Rafael J. Wysocki (Intel)
+<rafael@kernel.org> wrote:
+>
+> On Fri, Nov 20, 2026 at 3:47=E2=80=AFAM Alan Stern <stern@rowland.harvard=
+.edu> wrote:
+> >
+> > On Thu, Nov 19, 2026 at 09:17:08PM +0100, Rafael J. Wysocki wrote:
+> > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> > >
+> > > Drop space characters preceding labels from the core runtime PM code.
+> > >
+> > > No functional impact.
+> > >
+> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > ---
+> >
+> > There actually is a valid reason for keeping the spaces before
+> > statement labels, although you may not agree with it.  Namely, the spac=
+e
+> > prevents "diff -p" from thinking that the label is the start of a new
+> > function definition.  That's why I put a single space before statement
+> > labels in the code I write.
+>
+> But this is not done elsewhere in the kernel and there is already some
+> inconsistency in that respect in runtime.c.
+>
+> Since the next patch is adding a new label, I thought it would be
+> better to make it all consistent first and I chose to follow the
+> common kernel coding style.
 
-Clear the vote when the voter probes: (12, 0) in the active-only set,
-as the downstream kernel does, and (0, 0) in the wake and sleep sets.
-
-Tested on a OnePlus 6 (SDM845). Before, cxsd and aosd in qcom_stats
-stayed at 0. With this change, CX collapse was reached in 139
-suspends over one night, for about 7.6 of 8.9 hours, and the average
-current over the night was about 27 mA. The active-only vote stays
-(12, 0) after suspend and resume, and the awake idle current with the
-display off did not change.
-
-Suggested-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Assisted-by: LLM
-Signed-off-by: Michael Auer <mick@yoxcu.de>
----
-Changes in v2:
-- Drop the dt-bindings change and the dummy ALC node. Clear the vote in
-  bcm-voter at probe instead, with the code Konrad suggested.
-- Link to v1: https://lore.kernel.org/r/20261013202611.3070778-1-mick@yoxcu.de
-
-This runs for every voter on every SoC that has an ALC entry in
-cmd-db. SDM845 only has the apps voter. Should it be limited to the
-apps voter?
-
-Ard, the code is different from v1, so I did not keep your Tested-by.
-A retest on the C630 would be great.
-
- drivers/interconnect/qcom/bcm-voter.c | 42 +++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
-
-diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
-index 0880a287b0c0..f9d51f3d586d 100644
---- a/drivers/interconnect/qcom/bcm-voter.c
-+++ b/drivers/interconnect/qcom/bcm-voter.c
-@@ -390,6 +390,46 @@ int qcom_icc_bcm_voter_commit(struct bcm_voter *voter)
- }
- EXPORT_SYMBOL_GPL(qcom_icc_bcm_voter_commit);
- 
-+/*
-+ * ALC is not modeled by any icc node, but the bootloader may leave it voted,
-+ * which prevents the SoC from reaching CX collapse and AOSS shutdown.
-+ */
-+static void bcm_voter_clear_alc(struct bcm_voter *voter)
-+{
-+	struct tcs_cmd cmd;
-+	u32 addr;
-+	int ret;
-+
-+	addr = cmd_db_read_addr("ALC");
-+	if (!addr)
-+		return;
-+
-+	tcs_cmd_gen(&cmd, 12, 0, addr, true,
-+		    voter->tcs_wait & BIT(QCOM_ICC_BUCKET_AMC));
-+
-+	ret = rpmh_write(voter->dev, RPMH_ACTIVE_ONLY_STATE, &cmd, 1);
-+	if (ret) {
-+		dev_err(voter->dev, "Error sending ALC AMC RPMH request (%d)\n", ret);
-+		return;
-+	}
-+
-+	tcs_cmd_gen(&cmd, 0, 0, addr, true,
-+		    voter->tcs_wait & BIT(QCOM_ICC_BUCKET_WAKE));
-+
-+	ret = rpmh_write(voter->dev, RPMH_WAKE_ONLY_STATE, &cmd, 1);
-+	if (ret) {
-+		dev_err(voter->dev, "Error sending ALC WAKE RPMH request (%d)\n", ret);
-+		return;
-+	}
-+
-+	tcs_cmd_gen(&cmd, 0, 0, addr, true,
-+		    voter->tcs_wait & BIT(QCOM_ICC_BUCKET_SLEEP));
-+
-+	ret = rpmh_write(voter->dev, RPMH_SLEEP_STATE, &cmd, 1);
-+	if (ret)
-+		dev_err(voter->dev, "Error sending ALC SLEEP RPMH request (%d)\n", ret);
-+}
-+
- static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
-@@ -409,6 +449,8 @@ static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
- 	INIT_LIST_HEAD(&voter->commit_list);
- 	INIT_LIST_HEAD(&voter->ws_list);
- 
-+	bcm_voter_clear_alc(voter);
-+
- 	mutex_lock(&bcm_voter_lock);
- 	list_add_tail(&voter->voter_node, &bcm_voters);
- 	mutex_unlock(&bcm_voter_lock);
-
-base-commit: 3fd56a2833c22f62eb84297d0dbd47739632f1a0
--- 
-2.43.0
-
+I can drop the $subject patch though if this is an issue and make the
+next one put a space in front of the new label.
