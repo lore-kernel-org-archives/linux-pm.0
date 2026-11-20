@@ -1,58 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.152
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795152509;
-	b=yHKRcHWeCRlN2x34/M6E2gwTjYyIqRCs1EkOayiQLhpAmOemtsXklq4l75fMYZvzXXau
-	 g09u7WRKQRuTmy/GkgxsOu5rj8tWJkeNWIyuh+nlJSX6mmTYxbVRvuHUTo+NI+Tob4fXb
-	 ZBwl3uDmicOG+4GPLwdqCkGQwKE+xzKPCwEik2VAPEbXHOfWLzEAdD44UcOIxj4QuNRwe
-	 hX4zs/jonNVVJjf8pOIBfTQ4ttOG1uNkeVc1HiNkDp3Bevhzh8j7BDRq3rocm5vZZJER/
-	 NJN0e4a2vfmCoDemR0F/413IZ11bn37Az9wS/P7Wv0ZrieFweEWm89rSvFbE5Pa5iqA==
+	t=1795152508;
+	b=wAhQ8tyoQbySJLhal511VOk+qIW2owdeZG21kxfqm8fXbeRELCODDP0feNtTkb4wV/y+
+	 yC9IFyFQDEI/h87oWVGyzdeJeJDA7HDGnEBlH5IGC4Gqi6F4m5bn4Ht7WIj/d1mMEGspg
+	 ar79SRjOWuArbfdQHqA2V6JJkbL2SFIBK/BJVyTTUGyOtmHjdbHMwlmghPFR9lZUjeL7D
+	 aGok19alch/kcGRg3bSUBIIPeOXVLUSpb0hlxGSI7Uq7YtshIp8aySs0zGvdaaSQ9U9QI
+	 ZmLl62fyZ8J9WOjrcRRlZo7OvqVMCMmvXm3cjpNmSBzil976amMIZRglJ8If/2fiQRQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795152509;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795152508;
 	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
 	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding:X-MBO-RS-ID:X-MBO-RS-META;
-	bh=Hh8ZsRy7aultI846HqBBVUUDKElnSvBqrBJ+TAncoeM=;
-	b=iCis2+CMB0zMnZaeyFHhLgRcBTOrhGNDXLaWC8LQkv8USZMh6+UPIGkMLH4xaL1kaoNn
-	 hhEr5u+krJWEzGuigZFh7/tN5dcosXy1CUV4R9/cly1a66KPuUWk5IOZjq2Y/nJciL8bq
-	 UX0wj6h+NFYZL9Z2TrkwJszBakTTmTVlSsfVcQErmtLEjXW9/qkWRdATlSuuuKzQRSQm1
-	 k7COwRK20veJjq4BR7aNVtVhVdcKLY1rvNkunLyNMyFUVfigzAyLjn/T7cGMXygYmPIQ4
-	 FYVSlJUH9iAmtBaBJjVNBPqo0qN2SF/pM0gUK/ugm3FsfNF72qVa4DYonsmy1jOjsFA==
+	bh=QiRKkDBvuknePqASdttvShwCcaJPDVp0cuJzJKewu58=;
+	b=T70bgd/64UtfeSWrgY7w5bX8MWyimtfPJPAMhlgr6wsoLIn7uam1TPIO1dRkxA/7vKpo
+	 A7BwYyH/bOEmsrZIVXcAl2JWbJCQtXYKPbs6Sbon4DH5/pbVxWiMwXhPmDkB9nQYfvpaI
+	 rsvcUqjwIcTETQ+xqz6pfs3IfypLV0+GPNVrPuCdAtpvZ/N0IQmwbaoTP9GkLR6+8lrEe
+	 4VPXAvRGNreKkH2hVV1GL2OL9RNeXZm9pzEAMD5rXBeZonEd2y3V7Zk3FLGv8zkfacJ7R
+	 3S5KGIrG6/x3/gyZ12LOgRUm/wlfZ1KyvhsvJMAODZolav914y9aOSr2p5uWyPku85Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=mailbox.org;
 	spf=pass smtp.mailfrom=mailbox.org;
-	dkim=pass header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b="S//Nbgre";
-	arc=none smtp.remote-ip=80.241.56.152
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
+	dkim=pass header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=M1BWvhDx;
+	arc=none smtp.remote-ip=80.241.56.172
+Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org [80.241.56.172])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C60F160A2605;
-	Fri, 20 Nov 2026 05:28:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C60F160A2605
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8303606A326;
+	Fri, 20 Nov 2026 05:28:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A8303606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=S//Nbgre
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=M1BWvhDx
 Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4jW3lW5rczzKr66;
-	Fri, 20 Nov 2026 06:28:23 +0100 (CET)
+	by mout-p-202.mailbox.org (Postfix) with ESMTPS id 4jW3lT0T85zMlw7;
+	Fri, 20 Nov 2026 06:28:21 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1795152503;
+	t=1795152501;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Hh8ZsRy7aultI846HqBBVUUDKElnSvBqrBJ+TAncoeM=;
-	b=S//Nbgrek1uyJWrTIgdRvCsvQcafie+GUiWG8cWq0rojWnBa3EDNk0XIoGzFoMccVlX5QQ
-	Pkdv8Tt+ns7aXp1ZT0LoH0jpX8syV09b09wxarJuZrQQVWZfrv0f9IapfEKppQ1Bfus4z2
-	vZW1btP994ZYm/XLqtcxbhgZIFrFGubt9cRmUjoRewg/xOHOep0XfvVl0DIawEwMlVsETW
-	LsjcsKFtwh9h3ET42AudatgGom3FVFAzC9WdOJhU8JParwSJksIS7KBC7/j327vbFzp4/b
-	mJ/nQy4djczNMqK9EdEET3mKVTCeqObyhHTfDXyODol2t0Cn6M+iNHPD7RhWjA==
-Message-ID: <49708c93-6a47-46e8-aecd-2f3062ebeefe@mailbox.org>
-Date: Fri, 20 Nov 2026 04:04:07 +0100
+	bh=QiRKkDBvuknePqASdttvShwCcaJPDVp0cuJzJKewu58=;
+	b=M1BWvhDxOIWzM6JJYzNapCITSinXxXVsB7lQ+r3am82uefmqgGe/Txe447mz8kY2lMU39m
+	A8opXjH65Wl/ngQubi6HkNa0+b3hpoHn3TNzh4K9X9+UksBDGrb8ubsQESmupsUIYolFyS
+	lc+1pdo2H7PyD4XXXdfhHzImN/AjVqqlWoANYe5a5oOuRafbj/3CN8HXURgmgYWe5CbeuE
+	3m8rHnJGRb4AwKagCmpypPyAz3PGq3PZhcs21quSO5+3axsQw2eEIZRyIOK57STwhi7ZbM
+	g97M9GFw/xWhbiSqy0FeqzrvvkdT6ypp9VYW5ot6KIp6piD/xqxL8L7NmfCf/w==
+Message-ID: <5eef011d-6854-449b-b966-492845b076da@mailbox.org>
+Date: Fri, 20 Nov 2026 04:02:31 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -63,7 +63,8 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 03/15] clk: renesas: r8a78000: Shrink IDs to 16 bits
+Subject: Re: [PATCH v5 02/15] clk: renesas: r8a78000: Replace sentinel by
+ explicit ID map size
 To: Geert Uytterhoeven <geert+renesas@glider.be>,
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
@@ -84,20 +85,49 @@ To: Geert Uytterhoeven <geert+renesas@glider.be>,
  Cristian Marussi <cristian.marussi@arm.com>
 Cc: arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+ linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 References: <cover.1795029012.git.geert+renesas@glider.be>
- <066c0c074865c2a8684f541c3513b8851f3b09a9.1795029012.git.geert+renesas@glider.be>
+ <bf9d3d694fc06f29819b6883610c0e86c2d0066e.1795029012.git.geert+renesas@glider.be>
 Content-Language: en-US
 From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <066c0c074865c2a8684f541c3513b8851f3b09a9.1795029012.git.geert+renesas@glider.be>
+In-Reply-To: <bf9d3d694fc06f29819b6883610c0e86c2d0066e.1795029012.git.geert+renesas@glider.be>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: 2dcd620831a64272c32
-X-MBO-RS-META: usna9c4sctagpaokyi69t3odxukkp1r8
+X-MBO-RS-ID: e39709493eb8c2445c5
+X-MBO-RS-META: 3a5to1sqiyban871qj7neoimkfzs6ycg
 
 On 11/18/26 8:44 PM, Geert Uytterhoeven wrote:
-> Reduce table size by shrinking DT and fixed-rate clock IDs from 32 to 16
-> bits, which is still plenty.
+> The use of a sentinel in the clock ID mapping array will become
+> cumbersome when the need arises to find out the actual number of
+> elements in the array.  Rework the mapping data structure to fix this,
+> also improving naming.  Add a CLK_ID_MAP() initialization macro for
+> brevity.
 > 
+> While at it, drop the check for "!map" in clk_id_map_find(), as that
+> pointer can never be NULL.
+> 
+> Suggested-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
 Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+
+[...]
+
+> -struct clk_map {
+> -	int dt_id;		/* DT binding clock ID or -1 sentinel */
+> +struct clk_id_map_entry {
+> +	u32 dt_id;		/* DT binding clock ID */
+>   	u32 fw_id;		/* FIXED_CLK() ID */
+>   };
+>   
+> +struct clk_id_map {
+> +	const struct clk_id_map_entry *entries;
+> +	unsigned int size;
+> +};
+> +
+> +#define CLK_ID_MAP(_entries) &(struct clk_id_map) {	\
+> +	.entries = _entries,				\
+> +	.size = ARRAY_SIZE(_entries),			\
+> +}
+I am surprised there is no generic ARRAY_AND_SIZE() macro for this already.
