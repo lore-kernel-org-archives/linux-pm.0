@@ -1,79 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795198245;
-	b=Jb3ocF9gSynO2qYHQ8lOFm7US5wu4/3Zc3/IWrvBLY7pNKiyfKnTazk7eVJL709ORATw
-	 NCgEOzSYHIRcpv+cUKz7zVF/tQrw5X1JOGXUJ3+xZEdOqgkfwqgjIMVSgzvlu6ej4XfRB
-	 L++KBJ9dFZ2+algY14sVYL17ZCxnjCGzsQiqIyAwPcsW0oncI0kexmGmjOpVQut5vOOQa
-	 vqqKjlGg1GUlubYRQYTcMi0nGpIqDXdHinfmOPTLvrhpaWHKA+TbMx9MhVp3BvWOzvIqH
-	 fzsLWri+5D1UN+1cI8GmIjd9tEnqnuZv0P8u+M5WnmOqY79rTNTPbC9MpLPOX6Yik6Q==
+	t=1795198241;
+	b=Po0UnCL6Yjy21rfkJlyeVh9bio+DRzu0RuKbC0UTwkFaxdXU0lXT+SDyzN13vxQ/i4v6
+	 ciakQlq+xPyt6mEifMjyS1ncVGaQikXGCE3yYT/27XIOP21WzFVgZy9qyNwkcm7KU+HAT
+	 JXExUOH9oJr24Wh98ssAtKj7EUE33EIXOJABb+hQzT7Q8iNvjFl+mUmrneW/USCur5qxe
+	 TyifBbuw+uESuX7f9+20bb1q6Qf2iRSsz6cXbm1PgVgk+zCj9ECe5YD+r37pO1x1OV9pn
+	 /2Y9P7fH/8FRfkmSMaD9dyTs5BoM4vksbXB0WBqYcOj3NOUT5oZz4lH0DXVJpYhjcCQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795198245;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795198241;
 	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=6Ag3N9FpJk876fPWs4rnvyKIM3F00ANMUIQWknOquWM=;
-	b=HkJtAxhwvFgnMEU+kEhHrykSnIg4PWFyqRkyFvAajCQvbDWJom/itmtCFFF8hxSulpIt
-	 UgHD1hWd3Uv9793p/M1e2TIll3fPwZlLBoXh7Wchiwc1ypOw7iXzGi1AFKmtlokUSdoG2
-	 MgKzOtJ6koM+OXlDx/S8rZYeW3yE9/ziGzfSDlHmYxARe5lRrpmTIz/nGZtQtFEEdC1k2
-	 dHyKrMLcZTpqzJ0ddygewtX2waxJCEAiVnoIis0WHXVEXXcESAfMyoi7vdrAEEMkNsZ2y
-	 avTwiSR+w5NgFRQW5K+huqSur2ZFcyGK4PMfF7Nf7+1hiZAETrxrhTr3/3Uw5pZiVHQ==
+	bh=3FUmtjIsJ3ZmK7E+kLLMrGlNYlg2V4C2I56CXtFzz5U=;
+	b=ZN3yhXcI+tArEVjGQ0iAY3meRG8g1VenP5bKiA9uqAOJwBaeaU8U7x/qstewZAdqvW1Q
+	 cVT/G0h6MbO9vmxg844Am1A8hW6M+vuaWbgC+/57tiqNTHJCOFX+Bt/spkMqRaX9Pm3oI
+	 /jiMXo8nS8jlW+o51mpF8IhbzZjdX8akcBX2gKi/vPIQ1PXO5OgVT8Sgin5+HMJ89Jlkx
+	 qqVMZv56L9dimAK74yDiCQGvc7cIIk4komNK86dGOtzwj0oCtKULz3Ut1BnFLnSQnUIg3
+	 uKutvjAISWlXwR6DhOivjGsGAbLEX/YMTTyApCtQv86Ljik+AQzsxAR9hB4uSj3Nc2w==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="ES+4c+8/";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gxx+6zL6;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 621E7606D48D;
-	Fri, 20 Nov 2026 18:10:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F5B2606CD33;
+	Fri, 20 Nov 2026 18:10:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ES+4c+8/
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gxx+6zL6
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795198244;
-	b=u3WZ95Wqeu5RIXSxsPaH7fCOL2EpF0Ubf3XewvP+qlb1hnhOpPpRspKnT6RO928aT4TS
-	 KgV4Its3aTLvmb1+Ooefr3Ju9LIchcNHxjcQvRxNh7iJpvw1Q0YVX2TER77W59c9CRGQU
-	 NObpB5ruC36JNZlA9fcReVpJISh0wXqdfI30jxO/xV5WRAR/e98lhMiCTi2aHXHfg6Zoo
-	 YQxuTgFUxJVbKKe0CwAXCgLNDhbqCuFe+FGt49HrJVS+GIhtalvtiaIymlRxpmhcumkfn
-	 DvkCNKW/OHEYyfuF8fdqDMhyFyDVxtf2XYGjdIndjbVOOliOEIttWscAV7sTEgqWNDg==
+	t=1795198240;
+	b=G4tca0A8FQ2szsjtojlN4RHsNuniMtEVznQsRKGnnnjHl/Ldjin40v0cYQwcTJmopGDI
+	 PRKKSVRDAdZ3HRyjW1wOx1XfNXs4PudHsZMuXtIlp46ewznlJuDugYU1aV45v6ZJEEcJL
+	 pMxJasrFAajW7OLzConhB4zxoP8uJkhy0DG49wm8I6Qgozghpo4RQtAne7K/1BwIZ9nKR
+	 J35vW5yAqRoi2mGHjicvEA+mBpjTdDygfQ8hg3t3IB02KybmxisCSaDOTgY6WTx4tMJY7
+	 sBDiX8S58Pku5/ZS1HpgTV4Hm5WYPEAi1LCKGKOdTFHAxMXyYctFr9R7/kz+w9M8JoQ==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795198244;
+	c=relaxed/relaxed; t=1795198240;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=6Ag3N9FpJk876fPWs4rnvyKIM3F00ANMUIQWknOquWM=;
-	b=xt8ovL5LQ6225RSifh3iIKMCt1lhQCwyCL7vfSpYsv+EG+aXb/lkzpqehS2yoeAKZuKJ
-	 otwQwko/SLH/QXbkqCzzZdVJ1MJzmyZjEzeNdWiuVtI8vwsYgU2LUrf30aBb05MEtcIpQ
-	 +Av9JXKHRi4+ujS0qbcwKy0ozB9kWkxES0/mmg+yoAX7U0eCRInLfQYqIXKsSGrrE/wAu
-	 Uawhrc04bOMDpwzbQThztJVk7ppZSPfsyDA/gxfuz8Ufzj00olDeIaQxokVTQy/sRD1/I
-	 oY3X5VM64N6WqrsSDUZCSv6pdKBPxTatKvOART5tg19++QiKwpEzb+SPeuB5EEuLE7g==
+	bh=3FUmtjIsJ3ZmK7E+kLLMrGlNYlg2V4C2I56CXtFzz5U=;
+	b=KfHXC9uHW5vX4JODjk+nPnI57o+fPcSdr5Vf7waez+Xr9jH6s4BWKX9WKzuKRhS9wfaQ
+	 mQmjSJ8AGYDxA3HFk9ztXROeK4dMl6eqbDseaz93xtr5oaLrC1APQSC8OfBE2IYJjL++T
+	 5XNbDDe5+4C27g4+WujJTpORusE4ESilO5V3K7IwF4evNSu9u7pBV60Ss0veiMm8qiMhd
+	 29CPTRaygFaoZm4azf38GgR05YSG9YUmPJ3sZYFkNqI7+UzHG0W0mZHV/gkOkUTG1Ymc3
+	 4+kKhryWh3017a64nYJ1Roonxn3D5sYS1r0IFMhnqZBpW7i42ac+cgTOEQWF48P41Xg==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 6B4391F000ED;
-	Fri, 20 Nov 2026 18:10:22 +0000 (UTC)
+	by smtp.kernel.org (Postfix) with ESMTPS id D6E191F01829;
+	Fri, 20 Nov 2026 18:10:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795198244;
-	bh=6Ag3N9FpJk876fPWs4rnvyKIM3F00ANMUIQWknOquWM=;
+	s=k20260515; t=1795198240;
+	bh=3FUmtjIsJ3ZmK7E+kLLMrGlNYlg2V4C2I56CXtFzz5U=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=ES+4c+8/NdOzj+5GGwnxS1Gu8RK6aylMDv1Rgw30Rd+B1NP4mBI2obNIOk3IySboZ
-	 yOA0OtaNKSMm9dukST38coIJFZA4f18Dnv/Vdu8T8hkaqO48/aUD4JU42q6xC+KypS
-	 KOZPr6ykslIX/lyF3DQMy3b5Mbi2HNKtUyTaWqw9buqp3Y5eGWLKFX4Zn1rWrAUtVT
-	 Wxjf4Uv8a7izAY3dNypQQsdC1JyrZASdaS5Tax0CpTJfONP6eq0hDE9B/kBcZ2kH4e
-	 PvHL4ETcmsm4eT2IW6XlP58dtyogKpEhubPa773YpdDebLGs+1+3atzrTlDi/oFdPh
-	 wCjKJdVgSK6mA==
+	b=Gxx+6zL6QAze5iH2iZgTwlEtC7RlM45Mi0b3EnueATpnLqp0XIvHKHQOMeW9lRNSY
+	 M8S0OqET9yDrkw9vxtcLnwFIwZpbn62W/e4Tph669XxHKM4s98YkmVOVH0EsLSUv/w
+	 P3tUnXG98i8l8fAm3EPnABiLeqfFt2RolBMw6/fR8qtngnpF0LmVbj8ETkmYY6zKcK
+	 AbYrg9XVGxY0XKzRrbUYFo22Tx8OfWqCSUNvONTo/ooKEfDI/qYB5IV4yQ/rGUqy39
+	 7DetPXTsrpa80pNum4OxW78Kyk+JSrzKM8dLSNAkjmboCBZuXKxjvbXD129z1SMpz7
+	 rupLYVANtiE7A==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id B7DB14B93D;
-	Fri, 20 Nov 2026 18:09:20 +0000 (UTC)
+	by lkml.kernel.org (Postfix) with ESMTP id 791224B955;
+	Fri, 20 Nov 2026 18:09:21 +0000 (UTC)
 From: Gregory Price via B4 Relay <devnull+gourry.gourry.net@kernel.org>
-Date: Fri, 20 Nov 2026 13:09:22 -0500
-Subject: [PATCH 31/60] cgroup/cpuset: inherit common memory when a nodemask
- is private only
+Date: Fri, 20 Nov 2026 13:09:28 -0500
+Subject: [PATCH 37/60] mm/page_alloc: keep private memory out of reclaim
+ reserves
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,7 +84,7 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261120-private_nodes_v6-v1-31-74f5f9a115c2@gourry.net>
+Message-Id: <20261120-private_nodes_v6-v1-37-74f5f9a115c2@gourry.net>
 References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 In-Reply-To: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
 To: Yury Norov <yury.norov@gmail.com>, 
@@ -141,11 +141,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  cgroups@vger.kernel.org, nvdimm@lists.linux.dev, 
  linux-kselftest@vger.kernel.org, "Gregory Price (Meta)" <gourry@gourry.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198153; l=8729;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795198153; l=2669;
  i=gourry@gourry.net; s=20261120; h=from:subject:message-id;
- bh=lhAjAk7Sm6BaAakto+KbG1/rEMIjEBUTFNJJhHnsEgg=;
- b=0w6zXkqUQAxwMZHNpdjCJwh22P2ZJENxucUISEDMrEBkWvfPDRkY99+RSVag9NWwOq11MJQRH
- IcyhSRPQT3UDQwfXY7yDZh+nJ2+FXeoiiQ9r1UMnmnYyaJVB/NX9klN
+ bh=NqkTU0G15QptyPCK0Ojs5H9K0W+kcHSZdbygJtTYqZc=;
+ b=U+TYg4SE0rKVwmvMy4PubxHF4IY7Amo8OOW2W53v3w1Myl2X+1UCWjZFn9mv5qjoPrZIpJw9A
+ 33bh8SQUd1oCsIAGWHNALhdB5JCENBTwjecSgE4RLHDlwbK3KW4BS/N
 X-Developer-Key: i=gourry@gourry.net; a=ed25519;
  pk=BZWDlx4htkR5KcvGjGtSDfx1tM0E5dlyBR43FEhjWVc=
 X-Endpoint-Received: by B4 Relay for gourry@gourry.net/20261120 with
@@ -156,215 +156,80 @@ Content-Transfer-Encoding: 7bit
 
 From: "Gregory Price (Meta)" <gourry@gourry.net>
 
-cpuset.mems governs every N_MEMORY node, but ordinary allocations
-can use only N_MEMORY_COMMON memory.
+Private memory cannot serve general system allocations, so it should not
+contribute to reserves.
 
-An effective mask without N_MEMORY_COMMON nodes creates an unsatisfiable
-condition for ordinary system allocations, such as page tables. This
-can cause an unsatisfiable OOM or an infinite fault retry loop.
+Exclude private capacity from the lowmem denominator and the global
+reserve total, so the pages_min budget and the system reserve stay on
+common memory. A private node still records its own reserve, which
+its per-node dirty limit subtracts.
 
-Treat a cpuset.mems mask without a common memory node as a condition
-to inherit the parent's common memory nodes.
-
-The inheritance behavior differs subtly between v1 and v2:
-
-operation                             v1              v2
- write {}, no tasks                 remain empty    inherit all
- write {}, populated                -ENOSPC         inherit all
- write {private}                    -ENOSPC         inherit common
- write {outside parent}             -EACCES         inherit common
- write {common, private}             normal intersection in both modes
- task attach w/ {private}           -ENOSPC         use effective mask
- {common, private}, unplug common   clear & move    keep & add common
-
-In the v2 {private} case, the cpuset inherits only the parent's common
-nodes and gains no access to unrelated private nodes. A request naming
-no node the parent allows does the same. Systems without private nodes
-are entirely unchanged by this commit.
-
-An actual empty request still inherits the parent's full effective mask.
-
-Example: (C=common, P=private)
-  parent.cpuset.mems = {C0, C1, P2, P3}
-  child.cpuset.mems  = {C0, P2}
-
-  /* User sets private-only mask */
-  echo {P2} > child.cpuset.mems
-  child.cpuset.mems  = P2
-  child.cpuset.effective_mems = {C0, C1, P2}
-
-      or
-
-  /* Hot-unplug removes C0 */
-  hotunplug {C0}
-  child.cpuset.mems  = {C0, P2}
-  child.cpuset.effective_mems = {C1, P2}
-
-      or
-
-  /* User clears the nodemask entirely */
-  echo {} > child.cpuset.mems
-  child.cpuset.effective_mems => {C0, C1, P2, P3}
-
-Private nodes are thus non-inheritable unless the nodemask is empty.
-
-Rejecting a private-only nodemask in v2 would be confusing (-EINVAL
-on a valid node) and inconsistent with hotplug, which can still leave
-a cpuset with only private memory. Resolve every case the same way:
-effective_mems inherits only the common nodes.
-
-For v1, a write rejects a mask without common memory with -ENOSPC,
-even with no tasks attached: v1 has no effective mask to add common
-nodes to, so tasks attached later would have no common memory. Memory
-hotplug that leaves a mask with only private memory moves its tasks to
-an ancestor.
-
-Automatic memory migration uses only common-memory destinations.
-
-A task's mems_allowed comes from guarantee_online_mems(), which walks
-up the hierarchy while a cpuset has no memory. Walk up while it has no
-common memory instead, so a task never gets a private-only mask in the
-window between memory going offline and the hotplug update of the
-effective masks.
+Zero private zones' watermarks. No kswapd runs for a private node to
+restore them, and the pages below the minimum would be unreachable.
+With no high watermark, a migratetype fallback never boosts them
+either.
 
 Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
 ---
- kernel/cgroup/cpuset.c | 58 +++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 46 insertions(+), 12 deletions(-)
+ mm/page_alloc.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/cgroup/cpuset.c b/kernel/cgroup/cpuset.c
-index db32d330cfbc..6802ca13c46b 100644
---- a/kernel/cgroup/cpuset.c
-+++ b/kernel/cgroup/cpuset.c
-@@ -534,22 +534,24 @@ static void guarantee_active_cpus(struct task_struct *tsk,
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 0a5176a6e9db..de1a13a91ef4 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -6610,6 +6610,8 @@ static void calculate_totalreserve_pages(void)
+ 	enum zone_type i, j;
  
- /*
-  * Return in *pmask the portion of a cpusets's mems_allowed that
-- * are online, with memory.  If none are online with memory, walk
-- * up the cpuset hierarchy until we find one that does have some
-- * online mems.  The top cpuset always has some mems online. With v2,
-+ * are online, with memory.  If none of them is common memory, walk
-+ * up the cpuset hierarchy until we find one that does have some.
-+ * The top cpuset always has some common memory online. With v2,
-  * effective_mems should always contain online memory nodes except
-  * during the transition period where a memory node hotunplug operation
-  * is in progress.
-  *
-- * One way or another, we guarantee to return some non-empty subset
-- * of node_states[N_MEMORY].
-+ * One way or another, we guarantee to return some subset of
-+ * node_states[N_MEMORY] that includes common memory.
-  *
-  * Call with callback_lock or cpuset_mutex held.
-  */
- static void guarantee_online_mems(struct cpuset *cs, nodemask_t *pmask)
- {
--	while (!nodes_and(*pmask, cs->effective_mems, node_states[N_MEMORY]))
-+	while (!nodes_intersects(cs->effective_mems,
-+				 node_states[N_MEMORY_COMMON]))
- 		cs = parent_cs(cs);
-+	nodes_and(*pmask, cs->effective_mems, node_states[N_MEMORY]);
- }
+ 	for_each_online_pgdat(pgdat) {
++		/* Only common memory holds the system reserve. */
++		bool common = node_state(pgdat->node_id, N_MEMORY_COMMON);
  
- /**
-@@ -1684,22 +1686,40 @@ static void compute_effective_cpumask(struct cpumask *new_cpus,
- 		cpumask_copy(new_cpus, parent->effective_cpus);
- }
+ 		pgdat->totalreserve_pages = 0;
  
-+/* @mems names private memory nodes but no common memory node. */
-+static bool mems_private_only(const nodemask_t *mems)
-+{
-+	return nodes_intersects(*mems, node_states[N_MEMORY_PRIVATE]) &&
-+	       !nodes_intersects(*mems, node_states[N_MEMORY_COMMON]);
-+}
-+
- /**
-  * compute_effective_nodemask - Compute the effective nodemask of the cpuset
-  * @new_mems: the temp variable for the new effective_mems mask
-  * @cs: the cpuset the need to recompute the new effective_mems mask
-  * @parent: the parent cpuset
-  *
-- * For v2, the parent's effective_mems is inherited if nodemask is empty.
-+ * A nodemask whose memory is all private cannot serve an ordinary allocation.
-+ * In v2, a non-empty request retains the requested nodes granted by the parent
-+ * and inherits the parent's nodes other than private ones.
-+ * In v1, cpuset_hotplug_update_tasks() empties such a mask, so the tasks move
-+ * to an ancestor.
-  */
- static void compute_effective_nodemask(nodemask_t *new_mems,
- 				       struct cpuset *cs, struct cpuset *parent)
- {
--	bool has_mems;
-+	nodemask_t inherited;
+@@ -6640,7 +6642,8 @@ static void calculate_totalreserve_pages(void)
  
--	has_mems = nodes_and(*new_mems, cs->mems_allowed, parent->effective_mems);
--	if (!has_mems && is_in_v2_mode())
-+	nodes_and(*new_mems, cs->mems_allowed, parent->effective_mems);
-+	if (!is_in_v2_mode())
-+		return;
-+	if (nodes_empty(cs->mems_allowed)) {
- 		nodes_copy(*new_mems, parent->effective_mems);
-+	} else if (nodes_empty(*new_mems) || mems_private_only(new_mems)) {
-+		nodes_andnot(inherited, parent->effective_mems,
-+			     node_states[N_MEMORY_PRIVATE]);
-+		nodes_or(*new_mems, *new_mems, inherited);
-+	}
- }
+ 			pgdat->totalreserve_pages += max;
  
- /*
-@@ -2667,6 +2687,8 @@ static void cpuset_migrate_mm_workfn(struct work_struct *work)
- 	struct cpuset_migrate_mm_work *mwork =
- 		container_of(work, struct cpuset_migrate_mm_work, work);
+-			reserve_pages += max;
++			if (common)
++				reserve_pages += max;
+ 		}
+ 	}
+ 	totalreserve_pages = reserve_pages;
+@@ -6705,9 +6708,13 @@ static void __setup_per_zone_wmarks(void)
+ 	struct zone *zone;
+ 	unsigned long flags;
  
-+	/* Private nodes are never migration destinations. */
-+	nodes_andnot(mwork->to, mwork->to, node_states[N_MEMORY_PRIVATE]);
- 	/* on a wq worker, no need to worry about %current's mems_allowed */
- 	do_migrate_pages(mwork->mm, &mwork->from, &mwork->to, MPOL_MF_MOVE_ALL);
- 	mmput(mwork->mm);
-@@ -2900,6 +2922,14 @@ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
- 			  top_cpuset.mems_allowed))
- 		return -EINVAL;
- 
+-	/* Calculate total number of !ZONE_HIGHMEM and !ZONE_MOVABLE pages */
 +	/*
-+	 * In v1, if a mask has no common memory nodes, it's treated as empty
-+	 * because there is no effective-mems inherited fallback. As a result,
-+	 * we treat this state the same as-if there was no memory at all.
++	 * Calculate total number of !ZONE_HIGHMEM and !ZONE_MOVABLE pages.
++	 * Distribute the global pages_min budget only over common memory.
 +	 */
-+	if (!is_in_v2_mode() && mems_private_only(&trialcs->mems_allowed))
-+		return -ENOSPC;
-+
- 	/* No change? nothing to do */
- 	if (nodes_equal(cs->mems_allowed, trialcs->mems_allowed))
- 		return 0;
-@@ -3090,7 +3120,7 @@ static int update_prstate(struct cpuset *cs, int new_prs)
+ 	for_each_zone(zone) {
+-		if (!is_highmem(zone) && zone_idx(zone) != ZONE_MOVABLE)
++		if (!is_highmem(zone) && zone_idx(zone) != ZONE_MOVABLE &&
++		    !node_state(zone_to_nid(zone), N_MEMORY_PRIVATE))
+ 			lowmem_pages += zone_managed_pages(zone);
+ 	}
  
- /*
-  * Check to see if a cpuset can accept a new task
-- * For v1, cpus_allowed and mems_allowed can't be empty.
-+ * For v1, cpus_allowed can't be empty and mems_allowed must have common memory.
-  * For v2, effective_cpus can't be empty.
-  * Note that in v1, effective_cpus = cpus_allowed.
-  *
-@@ -3103,7 +3133,8 @@ static int cpuset_can_attach_check(struct cpuset *cs, struct cpuset *oldcs,
- 	bool cpus_updated, mems_updated;
+@@ -6715,6 +6722,16 @@ static void __setup_per_zone_wmarks(void)
+ 		u64 tmp;
  
- 	if (cpumask_empty(cs->effective_cpus) ||
--	   (!is_in_v2_mode() && nodes_empty(cs->mems_allowed)))
-+	   (!is_in_v2_mode() && (nodes_empty(cs->mems_allowed) ||
-+				 mems_private_only(&cs->mems_allowed))))
- 		return -ENOSPC;
- 
- 	if (!oldcs)
-@@ -3988,6 +4019,9 @@ static void cpuset_hotplug_update_tasks(struct cpuset *cs, struct tmpmasks *tmp)
- 	parent = parent_cs(cs);
- 	compute_effective_cpumask(&new_cpus, cs, parent);
- 	compute_effective_nodemask(&new_mems, cs, parent);
-+	/* A legacy cpuset left with only private memory moves its tasks. */
-+	if (!is_in_v2_mode() && mems_private_only(&new_mems))
-+		nodes_clear(new_mems);
- 
- 	if (!tmp || !cs->partition_root_state)
- 		goto update_tasks;
+ 		spin_lock_irqsave(&zone->lock, flags);
++		/* No kswapd runs for a private node to restore watermarks. */
++		if (node_state(zone_to_nid(zone), N_MEMORY_PRIVATE)) {
++			zone->_watermark[WMARK_MIN] = 0;
++			zone->_watermark[WMARK_LOW] = 0;
++			zone->_watermark[WMARK_HIGH] = 0;
++			zone->_watermark[WMARK_PROMO] = 0;
++			zone->watermark_boost = 0;
++			spin_unlock_irqrestore(&zone->lock, flags);
++			continue;
++		}
+ 		tmp = (u64)pages_min * zone_managed_pages(zone);
+ 		tmp = div64_ul(tmp, lowmem_pages);
+ 		if (is_highmem(zone) || zone_idx(zone) == ZONE_MOVABLE) {
 
 -- 
 2.56.1
