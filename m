@@ -1,111 +1,52 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=194.36.144.171
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795210334;
-	b=w0fiQN0Ls6x2wsNA+ka8V8zfqRvlxzIXDSu4kfWpfj6SeC7uFNm77vdyW85xHjdBBzVi
-	 m5fV4t++T9+9kbMyJzjPUtEdenv0gt64W95gzyanL96qGQot94U541NSod8rOHNh7OAlX
-	 XEaqzz9Zy1kevu+Fs/krxbQDmozTpd07j77BkMCs9RsLOpnrkK/9IF+TAkyWV8i8uFby9
-	 gpazv6XLrDXV20OODYvv2EvGmGqzzhnlB3sDA+FUUiMDWLTKCvFpmBDYjhSdLgtIJtJQV
-	 Eov0AfIfH3F4XDQL8ZYCdNIUL9VXT2/FZZi6/Hn3TE0Ura7i3GKz5/aq6IPcOFq8NKA==
+	t=1795210881;
+	b=sqneUbcnT/G4ftgqZIFktegkUVouIdr4SJpC6j3XSPyluMEWvDshkqYsm74I26RGighU
+	 hN3/y9pFLzM9e29Hul1c+ucnQl/Sy6DA+CJSixPYCnDx6mUGIacm8j+aLBK5tk9pp2AEx
+	 pJnPhwtsUeCdnA0YWc41T1q1O6AA8/OgptPJAAMrAwEQavd+n/cx9AIDFJXEsgHn8uXNy
+	 gVqGJYv+NS7zLASQn+zoCWGQ0ocNRropfmh0kxR64WYIsQl2pA0mlmnr6usg90lkZ7dKL
+	 c1hTKoY7wrsOS3pL9SKIRdms/L8bEj71W4q9pIXZELRK/xAkbMATRUOWd4ZsaPe2LPA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795210334;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
-	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=xzpm2z6L7dZsSu404qNFqb/ioQVfKeeGQLxFc5PxE8w=;
-	b=f8WF01tikRrvdnMQG8fXEczBCdZCV+qjJaR8MpCVQxIGg3nTmDLMsk62GSz2dLDEYbk3
-	 RTyDIYsGINjGarfCix8b6SLOQY2AQ+fOqLRqiQrzBXXK/XECij2sC0237+YtJ/wNqFiSv
-	 sOgbp+smAqA6/3kMcM/5nzvrAdtZ0fudSpD9U2xWKy+alU8rDgeE5lTxJQQ+hh2PFZGJm
-	 AXTP19UlxKHoVdOvy59807hNSPkBblcD/dQn2ij3+Ck/STyQkSXFC/HrwKkaP2EdUzNzL
-	 UN2gqMMsuWpluxZLiHWp3cU42W+sbM/Psx2UR2j4sPpCg5hxHNa5rnP3fpgnwbQSIlg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795210881;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:From:Content-Language:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-Last-TLS-Session-Version;
+	bh=yO0+P2z7OqcwcmXkYZCD4xrp2SZnKWNRDw7SRN86hlU=;
+	b=urK+rRIVvJkYvbIHWeNJZdn8wRBsYsjzyrzyBD5mk+YiYOooX6N98+yALWCC3mKZcgxV
+	 zv5RT5T2p4CJaUynllbz0JDaW/hFMOrYhaioyLLlRE1NwI0+FSyS756z1zz7wvmoqpp3y
+	 m3BTypaLtTFsuuoARkHuGOfi8yhVOtJWP0wWPpLCkMtZhZfwD7JJJ4LDpGANmyH3Yjl2k
+	 OSOMpkrMLOH6p1x6/936ATbu2n1JUoNzg1zzmMfsU7BeAIMdyKemzSkoeGm+p9O8NdnVN
+	 WwMIo2RbEULReGfgMn6qNBCaFqoAVUeYlLA3mta7hZ1y1HTCms2Ggn3v2I39kBAgMzg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=SVn7P587;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=kbijSiWy;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	dmarc=pass header.from=yoxcu.de;
+	spf=pass smtp.mailfrom=yoxcu.de;
+	dkim=pass header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=vCms8MKd;
+	arc=none smtp.remote-ip=194.36.144.171
+Received: from morty.yoxcu.de (morty.yoxcu.de [194.36.144.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6618F606A689
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 21:32:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6618F606A689
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9180606A6AA;
+	Fri, 20 Nov 2026 21:41:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A9180606A6AA
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=yoxcu.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yoxcu.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=SVn7P587;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=kbijSiWy
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AKEfJGo2040089
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 21:32:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=xzpm2z6L7dZsSu404qNFqb
-	/ioQVfKeeGQLxFc5PxE8w=; b=SVn7P587cXNyrZnr8vc4iCEc5E4xV3dpdg8/TR
-	zE9RSWriMMuvIYPrbzNs/gx1Fbv1APBvWAffzSUzFnn1MGjqpSOZFdEgTMVka8LF
-	W7ldFEiEIU1EBQr+0+lETbtBEYIgcyK0ZSSS6PT5DBWZ1UjlXXKK9p2T14YEHhh/
-	WHT1MbWJQ/+AQosV7c+Qculve2jzPJb28+Kzy3MmJmvdiuVDGPhhTW7jloQEB5zl
-	IFPO6CKVjKYE/tWSaNWiMBeCLCicVC4SLE5OwjLyciTbk2uE8FK2lqIZY6LQc7DK
-	uQ4RcXzzA9Em7zZvLUmzfXuvhKl1zdJB13JPAI2StLC0378g==
-Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j2fjtuy2b-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 21:32:12 +0000 (GMT)
-Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-33713e5e6daso2316874eec.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 13:32:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795210331; x=1795815131; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=xzpm2z6L7dZsSu404qNFqb/ioQVfKeeGQLxFc5PxE8w=;
-        b=kbijSiWydFo6RmyY4+7ubXVlZ/LQv/n8qkSfrOmzM/QSZe5ch67A5t0j+2SIc1JRak
-         9XBUHnh2qjsWxH0gjd/B/xsNWrAReonzLnhHx2KSvrMVa/1UkNeE9wIH4ooEVBKxncNJ
-         UJzm9+XQiVtk5tSjLK91lTqZE+1xz+hnkfZaoxzCqSp7TV/7e4cxZG4QGzo31trLq+B+
-         sa0aqcqC+vqBDO75pNaI/2XhHGUrnp0faP0VekhRYCysmflrMml/K8FqFfLDQF7Pe6wn
-         IQ8yR4iUdvEu7jAfMDXrFyAuKAw1WQyzzM7HCb+oZRt+tw5CBdLWRrWKQIm9LdMSw4bf
-         NWdQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795210331; x=1795815131;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=xzpm2z6L7dZsSu404qNFqb/ioQVfKeeGQLxFc5PxE8w=;
-        b=fph2cnw670es1nEo/V7wE6uV1a+C9fpW05JON+f9VN+QKb5ugmUtelYVocoP5sic9T
-         HWd+fSyQG6l57E8gyiNh/tBrY1AiODpgVZXKXNdw+M+cOS4hmmrylKozBaH7fnyyDNZT
-         Ts4gwsChrxZyNufTprhE4aBe9m3/3PcjGAgdDYM8JCkXjfeEkXbnC5cTv1Bqb8G89Oyp
-         Nw1H6VByMuyxZaEDXSijpweSlSrxA3L8ArqKipdPTBJWTOESDXxpjvFY/qQYjn735cRB
-         Hw00CUEI1lZHrRotKcQ8pJ1nVEjDVg7jQ6afm9U6u7l0lwJtelP67o9AjvI4I53PzBUH
-         dOxg==
-X-Forwarded-Encrypted: i=1; AL+hErHlXMuH6qyEXpfNRgsKCr/XEqtc1OzRVcTCWGhYAMEIV+mHnzQnzTYEl8PwIFrZZfqiqds3ElZX2Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9Kx2/pd9ymjtUpiYTCRnbGu1ur5Q/rN865g8SySsL6OGvurTt+
-	ask0e+ktmL7tntmxXVKMxbc0GPNu957dmjeXLqcmi1YCsLMMjtnsCewdcr+bFyxw4VcIKJFINqY
-	QHqqGIW53M4AVe9rZNUuaNDOlQ6w5l81wQSXeh/q0HYRzcsYbSkMKftmdhS9Agw==
-X-Gm-Gg: AZFdTZds3BE2ZCamGpXaLwSyv+bODFqOZka9wm+woRsmAiFmY6JeTNfUKKt2mWTjaMa
-	dpLw8wakySB1zbRHZy5BKwyDD99jPoQK0A2SJNygZWL4IFNnCzti5Prv0OJs16ax+LFYtqVhkb8
-	LDzGoKalK5GBPutx2hH7hvngc7S1cs4T2VT7Nxx5W376VQbPukkZOcCRvOunisW83XRNB74KGF4
-	Z+13COcyWW2lFmm3bjjTICfGN7Zax12cd84GtCz2eEa0HC6kLG4bda5+dZ1w/rMIkl7lQ+UirdB
-	SiZUqeyUo5/XeO1P6XjdBS1TRn1Ob/cP9tfPrwOlJA93+hbyL1AgJ5qdEGadzLHj0dTBRvSzQa5
-	sTDRjttnpHQoaapQgR5oq6tmEURlKcepwOG0xRMynpGYwFpjX4CIrG0v1b3q0dCfoEgUMPFNCNr
-	YHKlU=
-X-Received: by 2002:a05:693c:8390:10b0:36e:d060:8bad with SMTP id 5a478bee46e88-3856c6b3245mr4756794eec.5.1795210330857;
-        Fri, 20 Nov 2026 13:32:10 -0800 (PST)
-X-Received: by 2002:a05:693c:8390:10b0:36e:d060:8bad with SMTP id 5a478bee46e88-3856c6b3245mr4756752eec.5.1795210330151;
-        Fri, 20 Nov 2026 13:32:10 -0800 (PST)
-Received: from hu-kamalw-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38567da4f85sm11835823eec.27.2026.11.20.13.32.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Nov 2026 13:32:09 -0800 (PST)
-From: Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>
-Date: Sat, 21 Nov 2026 03:02:03 +0530
-Subject: [PATCH] power: supply: qcom_battmgr: stop faking battery presence
- on Glymur & X1E80100
+	dkim=pass (2048-bit key, unprotected) header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=vCms8MKd
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 70F051D87186;
+	Fri, 20 Nov 2026 22:41:07 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yoxcu.de; s=dkim;
+	t=1795210869; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:content-language:in-reply-to:references:autocrypt;
+	bh=yO0+P2z7OqcwcmXkYZCD4xrp2SZnKWNRDw7SRN86hlU=;
+	b=vCms8MKdqvQCVuZdDXwpX5ZnDH4545rdbaVTEzd9KZJOKtHXwwgKUT8RlnFBUj6zsOEY8G
+	BV6POQ/ycgJ6VA8UWWkU0rVBoBEiB5PLgAgAuhZcouvo+M/kVxLS+Q8zHP8ycmH8vl9Mhe
+	IT5qBSwebpWqx8ddEvR3tEcL+6vC2aq3IOQSq1Hg4xiBnFMb39m0VARPOldGHkEmwIrjFc
+	e6Wx/+RIkqdv57MIpDiD4EWeS9GLDXXV2kvlSZm/nm+96MdEGEv5AkerWmnMpaXTyT/rk6
+	ByIzutds/VLTZ/2D+CFL1PoKaqVetObqp5mceEE4wzxDhEpqFykTLH2+O64+IA==
+Message-ID: <6e30e65c-3fa7-409c-90da-2740f7bf0a24@yoxcu.de>
+Date: Fri, 20 Nov 2026 22:41:02 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -115,119 +56,177 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] interconnect: qcom: bcm-voter: Clear the ALC vote left
+ by the bootloader
+To: Georgi Djakov <djakov@kernel.org>
+Cc: Konrad Dybcio <konradybcio@kernel.org>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Mike Tipton <mike.tipton@oss.qualcomm.com>, Ard Biesheuvel
+ <ardb@kernel.org>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261120122152.198114-1-mick@yoxcu.de>
+From: Michael Auer <mick@yoxcu.de>
+Content-Language: en-US
+Autocrypt: addr=mick@yoxcu.de; keydata=
+ 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
+ ShbHn51QMVl4y3nkTQ==
+In-Reply-To: <20261120122152.198114-1-mick@yoxcu.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261121-batt-pres-fix-v1-1-2e8b2cc98a1e@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAFK8AGsC/yWMywqFMAwFf0WyNtAWH+CviAtro8aFSlMvF8R/N
- +pyzmHmBKHIJNBkJ0T6sfC2Ktg8g2Hu14mQgzI44yprnUXfp4R7JMGR/1iUJvhgaleRAXX00Pn
- ttd3HcviFhvRE4Lpu1axZtXEAAAA=
-X-Change-ID: 20261121-batt-pres-fix-450dbd0726e0
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        Rakesh Kota <rakesh.kota@oss.qualcomm.com>,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795210327; l=2490;
- i=kamal.wadhwa@oss.qualcomm.com; s=20260406; h=from:subject:message-id;
- bh=ylNZO6rrYLLTGFaV+qJMzyVRtyvwQw/83v2XgUo/esY=;
- b=ktEQXFZQhwCwXOSm4LKFsep+aywjydLx/TZ636AwCB86flNgPKr2jNwfL3rwyfBYwkOPZ3v8q
- II8HMDZL1UcCzlG4rtTdbpbAXwjcb0m6LVE87d4Gqn9+zyFOHWHs5pu
-X-Developer-Key: i=kamal.wadhwa@oss.qualcomm.com; a=ed25519;
- pk=ylH1NxUZkBpYsmww89g6zVxpS0q8qthtzcORkYxn/Ag=
-X-Proofpoint-ORIG-GUID: mvno1CR8cBlZF-LiXoW8MHmWfSKX99hI
-X-Proofpoint-GUID: mvno1CR8cBlZF-LiXoW8MHmWfSKX99hI
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDA4NSBTYWx0ZWRfX+OYTrQPSq0W+
- Su3X4DQxIWra6ZIOLafPUj1QyLI6MZlU+G6ylv6GbBFHUOS0PXEnKZHsTgf82gz2DnT2f5nVTJT
- Ep4/yDxl3qL+j1C05Hi1vJfoc4YT79Rr7tG84mls3lBG5NkWbTKKH9DOAOLj+iqcbuknhK323q7
- 5CvQXdBiJP8E7EkxHe9gMjtgJq3cmZ8wkcxUxUCosfWqYjdYrlpu04akMNimZ7u+Fbl7ENuFJU/
- KmgjYe88YByEiuBbdez8Gk89hUr17lPzdL9E+hr+JydnSfJAymyZFsE+2xHj/afjR9u1EwylmmP
- aS/daInMmDgY8nMJJN1CibrSKPnXlwj1mZjyybHv5pcSj8Jh4xM/rnaQ6w7MhZD6dKUVHMqGzGD
- X1yEobOV2o7dQe1YZPRmHJEMeNI7OLEevzjRPT3hjZ/mIoZfzMgQlDe7N0nbES2PgssTgIPF4RQ
- 1T9yz4KBgDgStbpE6NA==
-X-Authority-Analysis: v=2.4 cv=XcccX455 c=1 sm=1 tr=0 ts=6b00bc5c cx=c_pps
- a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=EUspDBNiAAAA:8 a=infQlCuWzlnsuc6jWUEA:9 a=QEXdDO2ut3YA:10
- a=bBxd6f-gb0O0v-kibOvt:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDA4NSBTYWx0ZWRfX9TZifRJKCEvR
- C2++/fMfCN1rOq7e6GyMMwSQ09hbJ/zpPmf1PcybcXboc+4BipehLs0olW4Bns2NwNObesWOOUx
- Aq/TybCjqa2vX3Aut6kyF5sVpYA9EQE=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-20_05,2026-11-19_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 malwarescore=0 adultscore=0 spamscore=0
- suspectscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611200085
+X-Last-TLS-Session-Version: TLSv1.3
 
-From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+Hi,
 
-The qcom_battmgr driver unconditionally reports the battery as present for
-Glymur and X1E80100 variants, even if the battery is actually removed.
+A sashiko review of this patch found that the wake and sleep writes
+never reach the hardware. rpmh only caches them, the (0, 0) wake write
+replaces the (12, 0) wake value from the active-only write, and
+rpmh_flush() skips entries with equal sleep and wake values.
 
-Fix this by fetching the BATT_PRESENT property via the
-BATTMGR_BAT_PROPERTY_GET opcode from battery firmware. While continue
-assuming the battery is present for SC8280XP platforms.
+That matches the OnePlus 6: the rpmh cache has ALC at sleep 0 and
+wake 0, and the APPS DRV vote read back after a night with 139
+suspends is still 0x20030000, so (12, 0). What I tested is the
+active-only (12, 0) vote alone, held through suspend, and with it the
+SoC reaches CX collapse.
 
-Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-Signed-off-by: Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>
----
- drivers/power/supply/qcom_battmgr.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+Konrad, did you mean ALC to drop to (0, 0) in sleep? Then the wake
+write has to go, so that rpmh_flush() programs both sets. I can test
+that. If the active vote is enough, I would drop the wake and sleep
+writes in v3, so the code does what was tested.
 
-diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index 69473ea753f6..a5262a7e8836 100644
---- a/drivers/power/supply/qcom_battmgr.c
-+++ b/drivers/power/supply/qcom_battmgr.c
-@@ -557,6 +557,7 @@ static int qcom_battmgr_bat_sc8280xp_update(struct qcom_battmgr *battmgr,
- 					    enum power_supply_property psp)
- {
- 	int ret;
-+	unsigned int prop;
- 
- 	mutex_lock(&battmgr->lock);
- 
-@@ -587,6 +588,12 @@ static int qcom_battmgr_bat_sc8280xp_update(struct qcom_battmgr *battmgr,
- 		}
- 	}
- 
-+	if (battmgr->variant == QCOM_BATTMGR_X1E80100 &&
-+	    psp == POWER_SUPPLY_PROP_PRESENT) {
-+		prop = sm8350_bat_prop_map[POWER_SUPPLY_PROP_PRESENT];
-+		ret = qcom_battmgr_request_property(battmgr, BATTMGR_BAT_PROPERTY_GET, prop, 0);
-+	}
-+
- out_unlock:
- 	mutex_unlock(&battmgr->lock);
- 	return ret;
-@@ -1422,7 +1429,8 @@ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
- 
- 		battmgr->unit = le32_to_cpu(resp->info.power_unit);
- 
--		battmgr->info.present = true;
-+		if (battmgr->variant != QCOM_BATTMGR_X1E80100)
-+			battmgr->info.present = true;
- 		battmgr->info.design_capacity = le32_to_cpu(resp->info.design_capacity) * 1000;
- 		battmgr->info.last_full_capacity = le32_to_cpu(resp->info.last_full_capacity) * 1000;
- 		battmgr->info.voltage_max_design = le32_to_cpu(resp->info.design_voltage) * 1000;
-@@ -1500,6 +1508,9 @@ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
- 	case BATTMGR_CHG_CTRL_LIMIT_EN:
- 		battmgr->error = 0;
- 		break;
-+	case BATTMGR_BAT_PROPERTY_GET:
-+		battmgr->info.present = le32_to_cpu(resp->intval.value);
-+		break;
- 	default:
- 		dev_warn(battmgr->dev, "unknown message %#x\n", opcode);
- 		break;
+The review also found that bcm_voter can be unbound while the voter
+stays on the bcm_voters list. That is older than this patch... I can
+send a separate patch that sets suppress_bind_attrs.
 
----
-base-commit: adcad7f4e6332cff3d6d7165f41584899f598534
-change-id: 20261121-batt-pres-fix-450dbd0726e0
+Best,
+Michael
 
-Best regards,
---  
-Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>
-
+On 11/20/26 13:21, Michael Auer wrote:
+> The bootloader can leave a vote on the ALC BCM. No icc node maps to
+> ALC, so Linux never touches it and the vote stays. On SDM845 this
+> keeps DDR out of its sleep state, and the SoC never reaches CX
+> collapse or AOSS sleep in suspend.
+>
+> Clear the vote when the voter probes: (12, 0) in the active-only set,
+> as the downstream kernel does, and (0, 0) in the wake and sleep sets.
+>
+> Tested on a OnePlus 6 (SDM845). Before, cxsd and aosd in qcom_stats
+> stayed at 0. With this change, CX collapse was reached in 139
+> suspends over one night, for about 7.6 of 8.9 hours, and the average
+> current over the night was about 27 mA. The active-only vote stays
+> (12, 0) after suspend and resume, and the awake idle current with the
+> display off did not change.
+>
+> Suggested-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> Assisted-by: LLM
+> Signed-off-by: Michael Auer <mick@yoxcu.de>
+> ---
+> Changes in v2:
+> - Drop the dt-bindings change and the dummy ALC node. Clear the vote in
+>    bcm-voter at probe instead, with the code Konrad suggested.
+> - Link to v1: https://lore.kernel.org/r/20261013202611.3070778-1-mick@yoxcu.de
+>
+> This runs for every voter on every SoC that has an ALC entry in
+> cmd-db. SDM845 only has the apps voter. Should it be limited to the
+> apps voter?
+>
+> Ard, the code is different from v1, so I did not keep your Tested-by.
+> A retest on the C630 would be great.
+>
+>   drivers/interconnect/qcom/bcm-voter.c | 42 +++++++++++++++++++++++++++
+>   1 file changed, 42 insertions(+)
+>
+> diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
+> index 0880a287b0c0..f9d51f3d586d 100644
+> --- a/drivers/interconnect/qcom/bcm-voter.c
+> +++ b/drivers/interconnect/qcom/bcm-voter.c
+> @@ -390,6 +390,46 @@ int qcom_icc_bcm_voter_commit(struct bcm_voter *voter)
+>   }
+>   EXPORT_SYMBOL_GPL(qcom_icc_bcm_voter_commit);
+>   
+> +/*
+> + * ALC is not modeled by any icc node, but the bootloader may leave it voted,
+> + * which prevents the SoC from reaching CX collapse and AOSS shutdown.
+> + */
+> +static void bcm_voter_clear_alc(struct bcm_voter *voter)
+> +{
+> +	struct tcs_cmd cmd;
+> +	u32 addr;
+> +	int ret;
+> +
+> +	addr = cmd_db_read_addr("ALC");
+> +	if (!addr)
+> +		return;
+> +
+> +	tcs_cmd_gen(&cmd, 12, 0, addr, true,
+> +		    voter->tcs_wait & BIT(QCOM_ICC_BUCKET_AMC));
+> +
+> +	ret = rpmh_write(voter->dev, RPMH_ACTIVE_ONLY_STATE, &cmd, 1);
+> +	if (ret) {
+> +		dev_err(voter->dev, "Error sending ALC AMC RPMH request (%d)\n", ret);
+> +		return;
+> +	}
+> +
+> +	tcs_cmd_gen(&cmd, 0, 0, addr, true,
+> +		    voter->tcs_wait & BIT(QCOM_ICC_BUCKET_WAKE));
+> +
+> +	ret = rpmh_write(voter->dev, RPMH_WAKE_ONLY_STATE, &cmd, 1);
+> +	if (ret) {
+> +		dev_err(voter->dev, "Error sending ALC WAKE RPMH request (%d)\n", ret);
+> +		return;
+> +	}
+> +
+> +	tcs_cmd_gen(&cmd, 0, 0, addr, true,
+> +		    voter->tcs_wait & BIT(QCOM_ICC_BUCKET_SLEEP));
+> +
+> +	ret = rpmh_write(voter->dev, RPMH_SLEEP_STATE, &cmd, 1);
+> +	if (ret)
+> +		dev_err(voter->dev, "Error sending ALC SLEEP RPMH request (%d)\n", ret);
+> +}
+> +
+>   static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
+>   {
+>   	struct device_node *np = pdev->dev.of_node;
+> @@ -409,6 +449,8 @@ static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
+>   	INIT_LIST_HEAD(&voter->commit_list);
+>   	INIT_LIST_HEAD(&voter->ws_list);
+>   
+> +	bcm_voter_clear_alc(voter);
+> +
+>   	mutex_lock(&bcm_voter_lock);
+>   	list_add_tail(&voter->voter_node, &bcm_voters);
+>   	mutex_unlock(&bcm_voter_lock);
+>
+> base-commit: 3fd56a2833c22f62eb84297d0dbd47739632f1a0
