@@ -1,45 +1,97 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.181
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795138852;
-	b=vYtstct3WP8Azf6T9LgyobeYCFB9I3Uico3RTZVwuCKaVPuaexlGSOckXDt5feJXgIxe
-	 gfvF9wUy1prS9HhgLYsYBRL7dhOg1x7G/l1Kf0KyFBKk4ugwT20tZ+Nwj+KQ3/29CNZTd
-	 6BXo7UBs2YUwHRz3tmap+qU+FAUhHCz1C5SGF/FvErhzzsAHgeo6Y0UY5KAayy37PNhAm
-	 1nILFWctn8FZXRYFOCFGnnXiSL5fUPt2+1+EAyuih/J8agTjIXcyJfTzPDxi1bp75S+dq
-	 Kz2TVrmAYNdKCFKJkM3CBRKguP5P84jWv0D84xh8ot0I6HVKQimu/Yd+DlBJ+Q8vPCQ==
+	t=1795142866;
+	b=d6LRKykx6rcY47lfvwfA2YY1fC4S1oyxtRR+eMb5WqefT/kmVF/ZnfN7+1fOvQy3KSNO
+	 /nrgoC8rc/MoLZ1yHv7C/csaCxoZG0D0kojq90VqP7bpQJUW2knEk9FyfwwiQnbi1Ddvl
+	 cRp8ojhtrG0LmudPn+XvkbeS5S2pm8LF0Xk8nDXbsBYDrdk8k+N+T8UVvmw0vTvGEJYcg
+	 gLR8V9R9yR2jvZFYeg2TDdz+5gijX0DDCcXX/HjVBWT7YsCrBY3ntuO8GNEd1LNqcBq+i
+	 nAaguXRUap9pVk7mLFwanNO28JWQl3masfxGKkC2oHtGfBaIdjThLiHQXLFqTl0KKXg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795138852;
-	h=Received:DKIM-Signature:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Subject:From:To:Cc:In-Reply-To:References:
-	 Date:Message-Id:X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=vcKPQHmf9gWTDq0nbpcIRDBqyotp3mpevFZSMkbKrMc=;
-	b=IXqMpBuAOw0/l99yD8OUe8Hdu1YOfvhCLAWtGHbAzonCSzpt1uvHh+KnLmGeFrfPugtb
-	 Nsx1i/3xRAq43ld3hCkpz/IZq55klXKuq3PwaYnczsMxAJ+S96QV58Ly3GkFLLh09qcoX
-	 1lFe1q4zPLFGqn/gMV4dt7NP99WirpxkKcB1oMxZKztQgXMJiKVAKQlv9rIBWG22xZtYT
-	 ++MAnSSp72mGbjVkUiJ7niww9qQ7nQojoTiPTBxeBZAH0KxYXi9wfmetUbhegYms+UtNr
-	 c9U8d1MNMPh3skkGy5d2Pat+1W1xxVxQ5slbfyWmYIT0u9APi5SywIs0fuBhSq7TZCQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795142866;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=eVrCKlzH4lLszUutPiQuTSZmQWPqwrLEs6IIi6j3BbY=;
+	b=Q0hFlVQ/llGsKVO+Vr6Ac62YYbAedKbKbxfp7elHMVf2YDN4YmK+rdIc5xn5fWbOXK6R
+	 DRg1w9vNgvAIjdKjygbdo3y4fMTtTW6w1vQb8t8magZdhlqHE7slTxTo7osdHGxqWuKvZ
+	 y5s0VNm0ZG9EN/pOyMolNVW47iDRJ/tfxbK4ULOV2IqSL+l0fAMq+w6vBS0qNyiOd3157
+	 JG/rkEwoeCryGTG4Shi7/qJ9m1fKb6ee0Q5ylt/Mwm8vkGyZHRLnconkrCoaRhFbimauh
+	 t97V0Cc/secT5Ur4EmT++q3Nz2wPMfu/Z8swKqb20vlTTWukXqTFzD2awvd4Kk9A+Gg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OXjgZ5nu;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=rowland.harvard.edu;
+	spf=fail smtp.mailfrom=g.harvard.edu;
+	dkim=pass header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.a=rsa-sha256 header.s=google header.b="WjFjI2/R";
+	arc=none smtp.remote-ip=209.85.160.181
+Received: from mail-qt1-f181.google.com (mail-qt1-f181.google.com [209.85.160.181])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DE79606A320;
-	Fri, 20 Nov 2026 01:40:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C50EB606A320
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 02:47:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C50EB606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=g.harvard.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OXjgZ5nu
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 739831F000D2;
-	Fri, 20 Nov 2026 01:40:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795138852;
-	bh=vcKPQHmf9gWTDq0nbpcIRDBqyotp3mpevFZSMkbKrMc=;
-	h=Subject:From:To:Cc:In-Reply-To:References:Date;
-	b=OXjgZ5nuBCosE1FlnEJeoifb7O714az6f2IdsuWkNJ89tkZTpKfNTf4OhnTdcW4bK
-	 5cUNPpLYp9ANhTfaKetlX2fEmRAInxL6aB/OnhqXraqqJakMuZsr/j/s9YH6ib5mVg
-	 UZnzcRM6v9yQiO2+kJv4ddJYpDu4kRHTBK0vXugWiLdvCcrkRhxohYpJ3LH0gA1TFg
-	 zdxcVxVq1kfrmX2NxboDhSwpvHnaj8CsxJwT0DKAdAqbuIdA6e5o44xQt+/stDFon1
-	 2a9qVnjIXeBIINOvm9NNi3XRmDcG0T1rdHK2IFfRjn1r0M67yC7CM99EGL2gR85rjJ
-	 eOLlW3zKvsJog==
+	dkim=pass (2048-bit key, unprotected) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.a=rsa-sha256 header.s=google header.b=WjFjI2/R
+Received: by mail-qt1-f181.google.com with SMTP id d75a77b69052e-55d03bfd477so4840581cf.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2026 18:47:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rowland.harvard.edu; s=google; t=1795142865; x=1795747665; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=eVrCKlzH4lLszUutPiQuTSZmQWPqwrLEs6IIi6j3BbY=;
+        b=WjFjI2/RqNsnIlR52LEfePwwBh3Y8NCZxXlr8w2hRAHQAdP/y7zfyGtH8tK+aDobqq
+         e4WD38l7oK2Aoe1mGokBjniWSUvmsaQ2Oz74U56BIfQri13l8CT1Wkhjo0nUEHmoYcmp
+         +snvU16JjAZ7mA7t97EzDt/0FLa1eJ3MKhVfWB513YtEPG3DwDGlx1HTosbpAyy9adB3
+         sGXj55z8lB1N6Vct2ogBdpB8gHtv9JaAJtVhZKxL/wMrH/N9xlmOtBsHl1yrzjSVWXdz
+         4FQcOLI5YbtqgxIDD/jZwMezIsFEbI2Z3K/Rp5cU3MGL0ERCcVEI+MjRx8P5f2UwhQfB
+         ZvNg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795142865; x=1795747665;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=eVrCKlzH4lLszUutPiQuTSZmQWPqwrLEs6IIi6j3BbY=;
+        b=kmpwrsXMv5AP9mq0PLk+Cq9SK2SONniQep8G+L1Y/a8iN7yDYAS2NcJkhDHNGCX84L
+         rVBjjfJ2SiM98TxNmFanGuZfvsqJ4k4STaJH41Aps2PIdmhxcN9BFPanqRRqo4Un/PjK
+         +YIYtjDreuZ7TXjx5LqXbMf8vC7Vjx46RCIHQIwMyt/GZcsp3SwNRLJlw9PDpz7Qen3v
+         eUGw1OcojA5qrBPcRv0Pr86lYZ7ONWWYbZGbs50z8sQTnBlQE0Xtli5kOg8zkNy120Vh
+         /A/qJJ/Z10khYzzp38Ziy6HJbhOF1xCtUi3Hk8WBseThCxE4lExRHL13LG/U9ItJwXZi
+         a16Q==
+X-Gm-Message-State: APuU4Z89HKQUCzUromMGSUPK0uRV/srnLQ/E2qbWir6h4kEkjQbqpkNo
+	YHgi8p2lqI3nxg+zThRmiu2jknxLTxRA8l1c7toQrbc/Y8W2pBuP09wVDzLIvWgg4i8mFsg168I
+	3UNrFUQ==
+X-Gm-Gg: AYBFou2GXy81D7uHvWZgeSIIzaG5DIz48ptafagis+mAqg6e3q7b+y3RBUdMYhWSwXz
+	OqJ1okeqbQdIz3vlZqOQDIcatnZUOVL4fUMWOxWaFkWgPlud4frOCOZd0ZzDo61RAeTzHymTT9+
+	ydFHSmdI4jSzJT3GUYtV4ogKvKs3IyH6dErdTCqK2CcnSAzDgBTvxMXw+HpzzUjPdMBrPaECyrR
+	qX+SaIHabHphMw7mHxD0IQSXUTPACGdzJH+nQXDZLE8cc4vjPPSM1fN6ygDQXQvRqQY6k5z4KYB
+	TzVCNqKo8NAodZNQi1k/vbDzD9XuL4Od04tdjTf2N1LVbr9v1+GSA9YFGvp56JTNY+RVCCTgS7b
+	IPZGR2PmupjqET7+M+ZUoI68HY3OoKEk4VmI4wimAHHtR3r0kcsh2wxz0+s3fsYj55Q0XglbVq6
+	PJ90H81rULslHA3TgVb+YSo4BgZ7efgtLRqQ7lBunkCtjtC/0GoTOU3Szcw9EvOZBcuy1LlK+SP
+	ujognH6XDfzEfL1vrSEIEi1Ga5Y/fZrhj0fsB+NBATp04Ai9IsWSR4mLphxEPpN9NNsUSR1JC9G
+	cHATZ43uDD84c2+ZZSt+qT1ZJABmgh6j0Iv6/iPee60BcQEIu0U=
+X-Received: by 2002:ac8:5f0b:0:b0:54b:5cc6:6036 with SMTP id d75a77b69052e-55d76afed61mr34895051cf.58.1795142864676;
+        Thu, 19 Nov 2026 18:47:44 -0800 (PST)
+Received: from rowland.harvard.edu ([2601:19b:d00:161a::d398])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-55d7887bec2sm11008161cf.22.2026.11.19.18.47.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 19 Nov 2026 18:47:43 -0800 (PST)
+Date: Thu, 19 Nov 2026 21:47:41 -0500
+From: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>,
+	Brian Norris <briannorris@chromium.org>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
+	Linux Driver Core Development <driver-core@lists.linux.dev>
+Subject: Re: [PATCH v1 2/4] PM: runtime: Drop space characters preceding
+ labels
+Message-ID: <c1a2c90f-c667-4bf2-bbc0-2cb3f840ad97@rowland.harvard.edu>
+References: <1978814.tdWV9SEqCh@rafael.j.wysocki>
+ <3453847.44csPzL39Z@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -49,50 +101,24 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH 5/6] [RFT] ARM: OMAP2+: Convert to
- dev_clk_get_from_provider()
-From: Brian Masney <masneyb@kernel.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, 
- Andreas Kemnade <andreas@kemnade.info>, Kevin Hilman <khilman@baylibre.com>, 
- Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>, 
- Russell King <linux@armlinux.org.uk>, Paul Walmsley <paul@pwsan.com>, 
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
- Jerome Brunet <jbrunet+clk@baylibre.com>, Sandy Huang <hjc@rock-chips.com>, 
- =?utf-8?q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
- Andy Yan <andyshrk@163.com>, Ulf Hansson <ulfh@kernel.org>, 
- linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
- linux-rockchip@lists.infradead.org, linux-omap@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, 
- linux-pm@vger.kernel.org, Brian Masney <masneyb@kernel.org>
-In-Reply-To: <683b5b189409e5ee04100044fb615b01cb877f3d.1795094688.git.geert+renesas@glider.be>
-References: <cover.1795094688.git.geert+renesas@glider.be>
- <683b5b189409e5ee04100044fb615b01cb877f3d.1795094688.git.geert+renesas@glider.be>
-Date: Thu, 19 Nov 2026 20:40:22 -0500
-Message-Id: <179513882273.284394.16014881415515819933.b4-review@b4>
-X-Mailer: b4 0.17-dev-8145e
-X-Developer-Signature: v=1; a=openpgp-sha256; l=470; i=masneyb@kernel.org;
- s=20250903; h=from:subject:message-id;
- bh=agOkKy6rfsDuf/v2Uk7yRPZKM78mXjUOoAKPNIJkhCE=;
- b=owGbwMvMwCW2/dJd9di6A+2Mp9WSGLL+LxUJkxVluuylry9x6uWzQ++lGcU2O7r9UJ+fk//G+
- xG3nu3njlIWBjEuBlkxRZYluUYFEamrbO/d0WSBmcPKBDKEgYtTACay4ALD/9wj5notbPd46naL
- HP950JH7Tr5VWltQya0zRnEPk6JuX2X4n8GcvNHHbdnP3JqL0dpbBKcEGzS1Ldzk+TjuheKLV7s
- YGQE=
-X-Developer-Key: i=masneyb@kernel.org; a=openpgp;
- fpr=A46D32705865AA3DDEDC2904B7D2DD275D7EC087
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3453847.44csPzL39Z@rafael.j.wysocki>
 
-> OMAP2+ clock handling uses of_clk_get_from_provider() to obtain clocks
-> used for power management, so the latter show up as "deviceless" in the
-> consumer column of the clk_summary file in debugfs.
+On Thu, Nov 19, 2026 at 09:17:08PM +0100, Rafael J. Wysocki wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 > 
-> Fix this by using dev_clk_get_from_provider() instead, letting us pass
-> the consumer device, too.
+> Drop space characters preceding labels from the core runtime PM code.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> No functional impact.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 
-Reviewed-by: Brian Masney <masneyb@kernel.org>
+There actually is a valid reason for keeping the spaces before 
+statement labels, although you may not agree with it.  Namely, the space 
+prevents "diff -p" from thinking that the label is the start of a new 
+function definition.  That's why I put a single space before statement 
+labels in the code I write.
 
--- 
-Brian Masney <masneyb@kernel.org>
+Alan Stern
