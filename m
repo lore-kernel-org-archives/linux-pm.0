@@ -1,70 +1,77 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=178.238.236.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.217.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795164256;
-	b=xtExOIzJ09Bu+kFHkX1O9iub8ImHhjG9YtpuUauXMEBOzTRnmIXCO891fzIKyVBvDpYN
-	 jxYin5csklRhdiOEQIYSi6NHwiOwH3Lk5WenvtoQjg3RTdLYKsu97bsMnXlcs3x7rAsQ2
-	 ph+2/gXP8PvHRd0CsYbKSmO3/cASXz1VA4L1ofFz8od4XZ2ruWROUgBR/Ra4QwtLwaQWl
-	 i2xfrdeLOE9UTtJfZnoTrZpRNNfRK59KMqS7VBOsQ+WmFuTV94b+0J7DSjEOxzlg2bfgG
-	 y1Rsy1B+wKrSi3JlIfPocbsl+dZCgM/tpy/pQbLkA8liPojWCmIUXaPqlUnRa42aQKg==
+	t=1795164329;
+	b=0JHQP0TgYihGzPRqRJGi2E0vW+CReqaxDnbV1i3fHpqnhX9P8/vv9yx6a78FRLUAKyW+
+	 lJzPABeOmLdTt6vk/gUekT7WvsTjqJ61oYnn7UGYS+E/9JrMEJKTtiL2hokhinBPCjSZ/
+	 35c34cVdE6HQYEmR44TV/OTvHe8zGx6UCK0zC0ZAxgNgbgy9FxxS8kCYINMQt+uSqDm8D
+	 xxq2CJ8PolvIEblSRYBDxnNqc1y0yJYbWvzLuXI3or3HS7kjoqLOMB1qPoFcKyfAXdQw5
+	 aai5L3D4bPZDp0SYYK+PTNssjL9ZyI2PA5kJATX4CXWNXjoKp4yZVUtlvnobIwOrDsA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795164256;
-	h=DMARC-Filter:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=UxmBx3Rz1ImbRcmIwlXmykyvtl7+nbEutG+sEKlD5uk=;
-	b=xA41s32XX6t+bD7h7g1RiAwb6vDKIhoQ3waZUaT6Rx527yIEpM9wybiHNsT7+acvMukk
-	 CZRPNrtw/Rgllh6UtDn3ByCNvR9K5K4zNLgprQde4Saj8q8GP2gyHBDZxH9D49meoIjRq
-	 ToinVW2TSY832A63rlU4dHB9uFjkZMCHAhuhVE1Ml5VdVs67UvjpqhiW+HDMSfct2vacF
-	 A3dTlReSlVjZueo/0oiqJrW86Cupo8zsl0TMqZob+c/rJLp5C4roPBMDYWVoJ65rvXeKA
-	 z7hg1PUbccqT2lCgU9N4JchkSZFYOSAl1jAITlcB8u63xoXNtqyDLUjRRCS+zvTxP5A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795164329;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
+	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=kKe/4cMcpovlVlLqvT7qtlmn5xNAbW7n/dTNm3KFNs8=;
+	b=bACBRE74bcdD54pZEsS1Fq5S+6IiQGK4eAZRFDH7E6BSabO1mHihM35E/eYsWU7My34G
+	 YXpC1uaEUpdYZ/IHGr/9fG5zQoOQakX/0bhuPHIYlnUTH5tVpdyawkF5/3v3KQ7/rTV+k
+	 VjTw1UyhfovrpjaMd0mk7vCIt7hgnYkifejhdLanDPgMSB5tLvEgooTX1HPAg9xfNF4RM
+	 TqjXV0n/lp6ab7I6WrDOhOOlZyhkpJVpnNDSX7oDpiR1Cn9SoWZ4dteePEOdYhlqxc0Yh
+	 mKojk8EuAbN2n/sFD+wqsK+1onYHNZUf4D514XlVHO9z0OTvjNcIsix9zzCLLzZaKGw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=kemnade.info;
-	spf=pass smtp.mailfrom=kemnade.info;
-	dkim=pass header.d=kemnade.info header.i=@kemnade.info header.a=rsa-sha256 header.s=20220719 header.b=hzChnzqG;
-	arc=none smtp.remote-ip=178.238.236.174
-Received: from mail.andi.de1.cc (mail.andi.de1.cc [178.238.236.174])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=fail header.from=linux-m68k.org;
+	spf=pass smtp.mailfrom=gmail.com;
+	arc=none smtp.remote-ip=209.85.217.54
+Received: from mail-vs1-f54.google.com (mail-vs1-f54.google.com [209.85.217.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F088B606B4BC;
-	Fri, 20 Nov 2026 08:44:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F088B606B4BC
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kemnade.info
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kemnade.info header.i=@kemnade.info header.a=rsa-sha256 header.s=20220719 header.b=hzChnzqG
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=kemnade.info; s=20220719; h=References:In-Reply-To:Subject:Cc:To:From:
-	Reply-To:Content-ID:Content-Description;
-	bh=UxmBx3Rz1ImbRcmIwlXmykyvtl7+nbEutG+sEKlD5uk=; t=1795164255; x=1796373855; 
-	b=hzChnzqGiBJfiBIhFcTJ71Ukwl765xrG6ZNEm8C7fKbQi9SCCbkd88UiVEIS+cenBBUlN8Qj/hv
-	SOuG1gCRo3+OnlA1DLr3eGuWwbOhDNX2gVkeC+AGbdCclwKTb4gvGKiPpBZuDtDRd1phUI6ICKNmu
-	BDwOPw4NN320aRQVviPmPWHexf127XZWV+x567E4tdEHQ6pILO+FT7C2nyvstHhsTOJ9QJgeeAP7j
-	6k0ipIinvOeLrp+MiWhEcLerwKs0As61JaUijehggX8+WsgXW1NufAtoKVAYeP5otjkIONz02TwO2
-	wg87PCUyUKJLjs+Ll8TFNdVU2JolZFmPIlEg==;
-Date: Fri, 20 Nov 2026 09:43:20 +0100
-From: Andreas Kemnade <andreas@kemnade.info>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, ettore.chimenti@linaro.org
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Kevin Hilman
- <khilman@baylibre.com>, Roger Quadros <rogerq@kernel.org>, Tony Lindgren
- <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Paul Walmsley
- <paul@pwsan.com>, Stephen Boyd <sboyd@kernel.org>, Brian Masney
- <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, Sandy
- Huang <hjc@rock-chips.com>, Heiko =?UTF-8?B?U3TDvGJuZXI=?=
- <heiko@sntech.de>, Andy Yan <andyshrk@163.com>, Ulf Hansson
- <ulfh@kernel.org>, linux-clk@vger.kernel.org,
- linux-renesas-soc@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 5/6] [RFT] ARM: OMAP2+: Convert to
- dev_clk_get_from_provider()
-Message-ID: <20261120094320.442d064b@kemnade.info>
-In-Reply-To: <CAMuHMdVbgGV_6yjOip4xT3YhBgaOveHzSRbw9e_cHen9NRZqmw@mail.gmail.com>
-References: <cover.1795094688.git.geert+renesas@glider.be>
-	<683b5b189409e5ee04100044fb615b01cb877f3d.1795094688.git.geert+renesas@glider.be>
-	<20261119225017.15a7b5cc@kemnade.info>
-	<CAMuHMdVbgGV_6yjOip4xT3YhBgaOveHzSRbw9e_cHen9NRZqmw@mail.gmail.com>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; aarch64-unknown-linux-gnu)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C750606B4A0
+	for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 08:45:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5C750606B4A0
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f54.google.com with SMTP id ada2fe7eead31-7a6e560f580so435572137.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 00:45:29 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795164328; x=1795769128;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=kKe/4cMcpovlVlLqvT7qtlmn5xNAbW7n/dTNm3KFNs8=;
+        b=BMtjMEC58WjPlP0Xqj2kQB4PWlkGX1XAiZSbwx/QTLXx/j78Vrf+SVQjTsZCLlonIu
+         mkgS2p/FRULjoNhYWVa9Brk/dBZSFwVM0X3B1O25rsbpoFbEWW0wLDdwiGWHdQgikZg8
+         IcxVhQSoTZ5pZkVjjXsBZXqoiqYu84Q6G+vdEPfmGd2VYmHlsKfuKBiGSEceRIZSR10N
+         qpkqsvPHdY+KunAeI4MRNC0JON1YrccUqozeGaLoPBhKAt34xi3AiluRyX7bR/Rl07wd
+         pR27lKWMAWnM7YEJe2wC1e2Z4QZON9G/yugvt9SB+VxjZPmuKVVXyDVZ5dD2/zp+W5hB
+         psDg==
+X-Forwarded-Encrypted: i=1; AL+hErHed5pgyOwciEzWHIi7p/MVR8eZk/Rhy40kVqB/IauRmvqaZ3GKOH1w0iW+ndfcruB8iUxOxAX5sw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+5E8Jf48yytXzIQDmAYvxMraVUA5KdYVFtfmGUG60AOvk4ywU/
+	FENZfSTmKVDvT+Qk5CiNtilh5Gpt6L2B/chRno1KFE9F7VBmUwLEJchYDbOA8zfb
+X-Gm-Gg: AZFdTZePeAJfGSx0Kenc7hez2aYxmbSAfHWP5+NIaYiW8jgB86AgpCX5j2R1NJR2Cle
+	QHRvSIHD7Xe5AIz3qQ53lXYNefvuBuQ/sdXgXs/yUf/+n8jVi5lXk6BpW0JKbCXOa/poBl2SiTL
+	F+nmh9EUl5fiYtbu2CaJ0YwBUa4nFhBCb5MMpvOwMyqLH3Cz4SKTSuqHtoSj01HOuUcBJbZCZSE
+	W94EbipS0kSndJKHp18DP96GyNMjqzWan+NYmBy/aZt/e/Yhnn0u6HeMVVouBjwEEs+CDukyZzi
+	hIkKaKIrsUq6SzcNzHnS2YNlQwTKNozQ41ZFbcwxWKQDL8ZFxg4C8dF2JQG8oaOMLAjrdJ6WX3g
+	nVmhV46g2jnmQ8XBS1CH0j/lB2t5Du45I8n5EaUEXlHGfYwkR6c4pPlgL+RbITMqzgF4bGqF9nJ
+	v+6z2OwA8NXC/iuDkvk9Qdqxf6eIkGvPMGiBTAJlDGZW/1gMJ/G6jHsN+KrNA/aD/UNvZP1dTfp
+	bIRrcFp6FLCRQBjhIatAhcd3rQphj4yk31z4ZP0IQliEtL4CiF271EUFUcIYNqQFYesenvU7wcQ
+	V4KG0mvbRI2s3VdVK2gIeO9sSz2PlosqibcAOhgOLJ10KmVYNfVySqchu+5RPoV+7WA=
+X-Received: by 2002:a05:6102:5108:b0:7a6:85d6:84c3 with SMTP id ada2fe7eead31-7d72b362396mr937610137.3.1795164328218;
+        Fri, 20 Nov 2026 00:45:28 -0800 (PST)
+Received: from mail-ua1-f48.google.com (mail-ua1-f48.google.com. [209.85.222.48])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-99e6df8a29csm2347762241.5.2026.11.20.00.45.27
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 20 Nov 2026 00:45:28 -0800 (PST)
+Received: by mail-ua1-f48.google.com with SMTP id a1e0cc1a2514c-9950a7530d9so373303241.2
+        for <linux-pm@vger.kernel.org>; Fri, 20 Nov 2026 00:45:27 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErEQ+3PRtc2GF42k+M7OPiNs5c3Qd141Pl3jYbBS/bhETM/sUG6WCXxuRmHYgYngX2/ukKW4u9NAAg==@vger.kernel.org
+X-Received: by 2002:a05:6102:6a83:b0:7cc:2c52:47aa with SMTP id
+ ada2fe7eead31-7d71e35b5demr961144137.0.1795164327788; Fri, 20 Nov 2026
+ 00:45:27 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -74,113 +81,69 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <cover.1795095742.git.geert+renesas@glider.be> <CAPVz0n1+qXrO5P+rOBKOSOE86+WcmjNF0taWDZoWqerKrjVgJQ@mail.gmail.com>
+In-Reply-To: <CAPVz0n1+qXrO5P+rOBKOSOE86+WcmjNF0taWDZoWqerKrjVgJQ@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 20 Nov 2026 09:45:16 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWPvKop0KAg_nff29ZeAELKprfmDtp8hDU2KPvJH5VVMQ@mail.gmail.com>
+X-Gm-Features: Aa3M54rOiSTOIwRhd7pOhxBlMhXD66QjrOqwvbGtlwpHt8JjwbFg6d-mZpwSDxY
+Message-ID: <CAMuHMdWPvKop0KAg_nff29ZeAELKprfmDtp8hDU2KPvJH5VVMQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] Improve MFD_ASUS_TRANSFORMER_EC dependencies
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	Ion Agorria <ion@agorria.com>, Lee Jones <lee@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, mfd@lists.linux.dev, 
+	linux-input@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-tegra@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 20 Nov 2026 08:49:05 +0100
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Hi Svyastoslav,
 
-> Hi Andreas,
->=20
-> On Thu, 19 Nov 2026 at 22:50, Andreas Kemnade <andreas@kemnade.info> wrot=
-e:
-> > On Thu, 19 Nov 2026 14:40:38 +0100
-> > Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> > =20
-> > > OMAP2+ clock handling uses of_clk_get_from_provider() to obtain clocks
-> > > used for power management, so the latter show up as "deviceless" in t=
-he
-> > > consumer column of the clk_summary file in debugfs.
-> > >
-> > > Fix this by using dev_clk_get_from_provider() instead, letting us pass
-> > > the consumer device, too.
-> > >
-> > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > > ---
-> > > Compile-tested only.
-> > >
-> > > The first change is probably OK.  The second change may fail if anyth=
-ing
-> > > in the oh->od->pdev->dev chain is not available yet at this point. =20
+On Thu, 19 Nov 2026 at 15:51, Svyatoslav Ryhel <clamor95@gmail.com> wrote:
+> =D1=87=D1=82, 19 =D0=BB=D0=B8=D1=81=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 15=
+:52 Geert Uytterhoeven <geert+renesas@glider.be> =D0=BF=D0=B8=D1=88=D0=B5:
+> > This patch series improves dependencies for the MFD_ASUS_TRANSFORMER_EC
+> > MFD driver and its various subdrivers:
+> >   - The first patch adds a missing dependency for the MFD driver,
+> >   - The other patches enable compile-testing for the input, serio, and
+> >     battery subdrivers.
 > >
-> > Test on OMAP3: =20
->=20
-> Thanks for testing!
->=20
-> > --- clk-old     2026-11-19 22:44:59.810807920 +0100
-> > +++ clk-new     2026-11-19 22:26:52.862531880 +0100
-> > @@ -1,17 +1,17 @@
-> >                                   enable  prepare  protect             =
-                   duty  hardware                            connection
-> >     clock                          count    count    count        rate =
-  accuracy phase  cycle    enable   consumer                         id
-> >  ----------------------------------------------------------------------=
------------------------------------------------------------------------
-> > - oscillator                          0       0        0        2600000=
-0    0          0     50000      Y   deviceless                      of_clk=
-_get_from_provider
-> > + oscillator                          0       0        0        2600000=
-0    0          0     50000      Y   deviceless                      dev_cl=
-k_get_from_provider
-> >                                                                        =
-                                     deviceless                      no_con=
-nection_id
-> > - secure_32k_fck                      0       1        0        32768  =
-     0          0     50000      Y   deviceless                      of_clk=
-_get_from_provider
-> > + secure_32k_fck                      0       1        0        32768  =
-     0          0     50000      Y   deviceless                      dev_cl=
-k_get_from_provider
-> >                                                                        =
-                                     deviceless                      no_con=
-nection_id
-> > -    wdt1_fck                         0       0        0        32768  =
-     0          0     50000      Y      deviceless                      of_=
-clk_get_from_provider
-> > +    wdt1_fck                         0       0        0        32768  =
-     0          0     50000      Y      deviceless                      dev=
-_clk_get_from_provider
-> >                                                                        =
-                                        deviceless                      no_=
-connection_id
-> >      gpt12_fck                        0       1        0        32768  =
-     0          0     50000      Y      48304000.timer                  fck
-> >                                                                        =
-                                        48304000.target-module          fck
-> > -                                                                      =
-                                        deviceless                      of_=
-clk_get_from_provider
-> > +                                                                      =
-                                        deviceless                      dev=
-_clk_get_from_provider
-> >                                                                        =
-                                        deviceless                      no_=
-connection_id
-> > - dummy_ck                            0       0        0        0      =
-     0          0     50000      Y   deviceless                      of_clk=
-_get_from_provider
-> > + dummy_ck                            0       0        0        0      =
-     0          0     50000      Y   deviceless                      dev_cl=
-k_get_from_provider
-> >                                                                        =
-                                     deviceless                      no_con=
-nection_id
-> >   mcbsp_clks                          0       5        0        0      =
-     0          0     50000      Y   deviceless                      mcbsp_=
-clks
-> >                                                                        =
-                                     deviceless                      mcbsp_=
-clks =20
->=20
-> Hmm, so the passed device is always NULL, and thus there is no point
-> in making the change.
-> Do you know if these come from the first or second change in my patch
-> (I guess the second)?
->=20
-=46rom the first change, The second piece is nowadys only used by the dm81*
-devices.
+> > Note that compile-testing cannot be enabled for the LED and charger
+> > subdrivers, as they have a hard dependency on the MFD driver.
+> >
+> > Thanks for your comments!
+> >
+> > Geert Uytterhoeven (4):
+> >   mfd: MFD_ASUS_TRANSFORMER_EC should depend on ARCH_TEGRA
+>
+> Though this EC is designed for Tegra based devices, it does not have
+> any Tegra specific parts. It can be used by any other SoC.
 
-I would prefer to have this tested on dm81* too.
+Sure, the dependency can be extended once the hardware appears in
+devices with other SoCs.  The question to ask is: does it make sense to
+ask about this driver when configuring a kernel for e.g PA-RISC or S390?
 
-Regards,
-Andreas
+> >   input: keyboard: Enable compile-testing for
+> >     KEYBOARD_ASUS_TRANSFORMER_EC
+> >   input: serio: Enable compile-testing for SERIO_ASUS_TRANSFORMER_EC
+> >   power: supply: Enable compile-testing for BATTERY_ASUS_TRANSFORMER_EC
+
+As pointed out by Sashiko, I forgot to take into account the transitive
+dependency on I2C, so there will be a v2.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
