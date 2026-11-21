@@ -1,54 +1,95 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.169
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795260175;
-	b=bFkEwa3tEdzTjdUHL/XVazHQqD5BoqAQtZdSDBry7Tsl90EmJBSzYWH/41mhOoaTXXTL
-	 YGOuYND+9phNTZzvidhIWaBZz5SVDyizUVl/Lolxci9PsRmEvWNB3Stthmk9uN97+/OKe
-	 3GNkQil2nkLhvEh8zzEVhjmefba86k0DyUiPqbVK1yUAV1dmQFH8oKgAOaFHoLL918+4l
-	 ObT6FH6dKxDgiG4qq/kwFt5ORWCh4V3dVoYByrvPx/lHM4POGAZKlb32ZSXtRCsfvj+Kn
-	 Gty+dfnVp+EYHwtKTjPvHrhb493y/pL2NHLwp+59NhpP/tlOd+BrtXtIexJUG8lR61A==
+	t=1795260972;
+	b=1G1mAhA5L/34SrH+gmel5BNT/VzkTPhuhIbTiZHOPPRXtFnbv+zKlbGSDDect088No57
+	 2YWRL6qS2jY6JbuxHJSg5UZ4XJv3l9zXsDim0tYluG4rCCW739WzCH2ZAkmj4PPtNHi1v
+	 lj5Rz1uaaD9TRV9k8yW3gULp7DN2QrwaBmeeNRUsssE8xOITtS/XHmwzTJ8tgvHCOFSA5
+	 Sr1BGT+urNsQvMWhJ7wNAlbZqzKr8ZJShSqvkoxAe4X5YyKbPftXYPqG6eKQZZzsjaWrO
+	 v/52j+5OqnHycy03GcKFW/w3Kup/qSYAGtj0GLaUFO3Meu+DTAw4mOtJX3AWi3JO+WA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795260175;
-	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:
-	 X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=VXTpoBrzLdbldT1C9z4d9cxILmU7XPHQacy7zIo4aZk=;
-	b=4XXbvMa47F1kV8IqwXlJ/bJ6hTo2XCwvVL2zThCVNn1ITxr1WrOLiHUoZybb+HuOSkj0
-	 dfAnc02C8l3bQ07N+Z2PVL7MjbEt5WTjbtR/5ejD9VuR5UYD5EktPKUzIeZ+mn2laEd65
-	 F7ZQe7NxzIz80INZdgVPa/rANULQ7UiCDzuiZf0PkZB88d7y2sWMk9rjXA7b/T7MJaGpl
-	 JO5YCGVIoJmKEG/Hi3uSrVIsAAzX10SF5WhMv/lwgmXi88ltOZD9FXHOm/sP8LIPuifbC
-	 4YSdNXaVsx0sgQPOjPFtwGKPHLClUQPuMYreXuyP7d2dFLHuApPswepylI2n0Sr8c7A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795260972;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:User-Agent;
+	bh=LKBzOKHK/YHBaF8etDq4KAgni0fdo2bMsyHuAXRHKOk=;
+	b=mozynIKXMR/88A3YoRq2rVPI2xWzJC02Aq7ppnPAP0jqf8YZJUQC4nx9qg8K6VorUv8g
+	 zCX2S3tlh3Wb0WQGnUjAN2DjFtHw9aK3BGN1SPhECkwgZ0xKPU6V/kdwLzZW0t/jK1IX+
+	 hRXxt+BRHYXgDEkklS+xKDPsX6IJf8mb0+8jcK7ncoD0qLOn4HSNdPzH2YNx6cpo3hO+I
+	 tqPYmePlgrQjpDlxg4iyRiRejgq7So2xhJ3+eIYtcYcrji67ueajDrIs056y7DMi4vBxI
+	 VqDkNvnQJgyzG6JzVPjEN716p+ZeI8TE4/8qfTPFFX6MTfXJW+ogqgfaK0u1Zm6jbHA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=THBjpZGn;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=GWv3LZRE;
+	arc=none smtp.remote-ip=74.125.82.169
+Received: from mail-dy1-f169.google.com (mail-dy1-f169.google.com [74.125.82.169])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1088C606A320
-	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 11:22:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F304A606A325
+	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 11:36:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F304A606A325
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=THBjpZGn
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE09C1F000C4
-	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 11:22:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795260174;
-	bh=VXTpoBrzLdbldT1C9z4d9cxILmU7XPHQacy7zIo4aZk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=THBjpZGnrzGlrorPL2z3p4H0eTwfgZj58SpLP5wDktC6sPSA+GiBGSFKs0xaz47Ih
-	 RLNljI5tHA20yX2OMlhYsfMErwY0BvUg71j3FGrls7Qoj6vWUQaPOs21yVO3JtA58V
-	 cSsBzgng/1I3R/6EnpFhhw//m3T+Rk79JQo/AxE2nom3tMPnTA1iLGinhYRjgqNDr/
-	 c0h7PS78C89O+Os2/zTZhjiZLdAF+Uf/6LBVmFRYfW0eml5pxtAX1KJaDkiEUuO0zO
-	 p2j7ZiTwERmSbogycosrqsbHM4/+6NI+1G8YjzELsgWeydVRvHOS3tpEs+01ifsZWU
-	 ZBq673joYYk7g==
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5c10dc41270so1835677e87.2
-        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 03:22:54 -0800 (PST)
-X-Gm-Message-State: APuU4Z+0IWdu4SwvnsSxD3Rbkf9l56vH7K0/7mKQM4FRzaozz28GRXrx
-	1uqIG7rL7xXAWa3lIUA9OFpACKIjMJPxVEzENgaVBSeYFp3Dt3jb3H4vlYd5zVoHadp3SGBO4Va
-	OtMwuPkOr0FVpANqUMeSV12zSOqtH5iA=
-X-Received: by 2002:ac2:4e0a:0:b0:5c1:4aa4:557 with SMTP id
- 2adb3069b0e04-5c1bc7cc547mr1727666e87.31.1795260173235; Sat, 21 Nov 2026
- 03:22:53 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=GWv3LZRE
+Received: by mail-dy1-f169.google.com with SMTP id 5a478bee46e88-38644aedba1so2040328eec.0
+        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 03:36:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795260971; x=1795865771; darn=vger.kernel.org;
+        h=user-agent:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=LKBzOKHK/YHBaF8etDq4KAgni0fdo2bMsyHuAXRHKOk=;
+        b=GWv3LZREavFLjqR8gwxbTur2esUqQGjpWycnNAs/dTuQVKiBzv8ndJGuZyJOebKrIZ
+         u9I9R/4ZlaHfv4SQZgAGh+2wZYBS6db4MlP6ZKlMzWEssZz0Am/hmSfMk2zUruqQju1u
+         lj4K9HRXBZP3C1wLQ9ZiLfiQGjjTLymDs7gv80Cv1njpL0ncfaMk3UslYsHNuHkTbzxd
+         t3kelo8xFVL03g38Mzj+7ua0Uv5FYX6XG3otdBUvFZpcmzzBLqvxAVbmSFOo/pBP8ror
+         3I8LQrFVEiGsFtRiptAm7sZFwwSRegECiwSGibwHgB8YC0yhgG/Ky8q2K/fSVTaHyHHr
+         5zLw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795260971; x=1795865771;
+        h=user-agent:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=LKBzOKHK/YHBaF8etDq4KAgni0fdo2bMsyHuAXRHKOk=;
+        b=i0ccbJWEl+nMefdIh6Dk6nR4ZUBxCV4Ly69joAGtfiFhlATXlXCkfiUcqO4HXkCM7M
+         fdhgufG+32JWYP3/Br7/lEMuVrKNuH1sx8dhh0vJ5H54utA0DFWAor9SS7sewmVTJYx9
+         WsVAft74O3xY5qZwRlUJVWqz61+b1WjVvTDlAHoc1UjvledImGqpk5EfYBB7qFt2aWr/
+         b+6c4OB9CB+hHkPbwf/JAlCeCVhbwqpQ3U3P7fcbwaMlBiLsBIX6hqUuhcGXEWzaGl3g
+         NV0iE6IUQrq1kRlDJMyMrC/SCBJqWl6yLCXAPVbwHKZFBvLobcfb+i7VCqJxLJ4rd5RG
+         kxEQ==
+X-Forwarded-Encrypted: i=1; AL+hErHEeW/mALe5/Uf9eBawD1i2qxLS6WABgswbIxK+2zHsG7CLTKFxqABPlAh1qBdhtEpt9i5gUSae0A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/aPB/d3YWIreSsrYX6s950wbRmv01EYynv1R/mQ1hOUvh9VkxM
+	EqaVFMyyB9p0gi2aZedAakbXYCRmoyvN+D5mLh0vzn++6MAuaGHZ/DkL
+X-Gm-Gg: AZFdTZd9wEty2llueL9m3oB/M4LTQiPg1yuT1mZnFRD4UCdm8VL5uCeIx5Fp2A34pw/
+	4UsCSBfa/wF25zYRBX5qVLaB+k1pffwUp30hEHtKv+khA5zSWoEs1Gq3KoDz8P+YTbpvFIGag3J
+	ApHguKxF32tuizjSBS+rDl6gKKES8m9qcmjlARs5mzBMNoFrM/AObsqRBJg1olFwLavpUlPqcel
+	FfO73KsnVxvJtPvVBggqqBAnYH2YMx+Z4IR2pAEINMorJ8VKJxqIKxbN7thfJ82fAOdHXMUpLMp
+	Ru/81RTAke1YMxHw9I/+kXGkq8KfmmZ5SGICK2YMJcbkuBEJBI212YhdFqyZ56AWbNno0rMH7d7
+	NngqSLdLGu29N5yjFRW8wLMvcvou/be9P0hbZ/okpz2CtkcUqjDcQbAFv1AJt85fcLdt+imj4Kk
+	UDux7USimRAI3OshPGaCBV2s4ccwaAqBMVg20j08WO/Nt00ln1Ayghj8qryNBBIMEx1pNppTfZd
+	OhLuzayQyBAjhy1Bwf3lVapSSTPK00JsaovVxX6xlCY+P+slq198T8K2J8QeZUBXMGEWIazNF/c
+	a6bvQYWhItRIp6hxtpJmvVZcMh3CQaEwpu6wkJ+ufulmbUrQvrOiPmZMnR1yzqB8VEmjIgfLb2X
+	6HO0xUBv0pIXxiYjN
+X-Received: by 2002:a05:693c:8951:20b0:384:ce59:5e19 with SMTP id 5a478bee46e88-3856f257bd6mr5663214eec.6.1795260971016;
+        Sat, 21 Nov 2026 03:36:11 -0800 (PST)
+Received: from asus-ux3405ca ([140.213.140.56])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38567daaf70sm18512805eec.28.2026.11.21.03.36.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 21 Nov 2026 03:36:10 -0800 (PST)
+Date: Sat, 21 Nov 2026 18:36:05 +0700
+From: Muhammad Huda Nugroho <mhudan21@gmail.com>
+To: Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+ linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal/drivers/tsens: Drop __init from functions
+ reachable from probe
+Message-ID: <20261121113605.jDNtw%mhudan21@gmail.com>
+User-Agent: mail v14.9.25
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -57,210 +98,165 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-References: <1978814.tdWV9SEqCh@rafael.j.wysocki> <3076901.e9J7NaK4W3@rafael.j.wysocki>
- <awC0tcqgq2KvCyxO@google.com> <CAJZ5v0jjxWzL-NLkm5B2ayGfXYdQcE4Shq8B9TGz1ghHBybSAg@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jjxWzL-NLkm5B2ayGfXYdQcE4Shq8B9TGz1ghHBybSAg@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Sat, 21 Nov 2026 12:22:41 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hgxJFXQnFRvLS=s85oSVSbu9tNDs_OoiGce4NMRNP04w@mail.gmail.com>
-X-Gm-Features: Aa3M54qEv_i_jhYbOZBjVLlzGoQDwdUl-S2MVW-Q8HeS_qeyzNd5xupMePO473M
-Message-ID: <CAJZ5v0hgxJFXQnFRvLS=s85oSVSbu9tNDs_OoiGce4NMRNP04w@mail.gmail.com>
-Subject: Re: [PATCH v1 1/4] PM: runtime: Update last_busy in all rpm_idle() paths
-To: Brian Norris <briannorris@chromium.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, Ulf Hansson <ulf.hansson@oss.qualcomm.com>, 
-	Linux Driver Core Development <driver-core@lists.linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 20, 2026 at 10:29=E2=80=AFPM Rafael J. Wysocki (Intel)
-<rafael@kernel.org> wrote:
->
-> On Fri, Nov 20, 2026 at 9:59=E2=80=AFPM Brian Norris <briannorris@chromiu=
-m.org> wrote:
-> >
-> > On Thu, Nov 19, 2026 at 09:16:30PM +0100, Rafael J. Wysocki wrote:
-> > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > >
-> > > The changelog of commit 26236a3e8803 ("PM: runtime: Update last_busy
-> > > before calling rpm_suspend() in rpm_idle()") stated that rpm_idle() o=
-nly
-> > > needed to update last_busy when it was about to call rpm_suspend(), b=
-ut
-> > > that is incorrect.  There are still cases in which a device may be
-> > > autosuspended earlier than expected.
-> > >
-> > > The first one is when pm_runtime_put() is called while a leftover
-> > > autosuspend timer is running.  Then, dropping the device's runtime PM
-> > > usage counter to 0 allows rpm_suspend() triggered by the timer to
-> > > suspend the device immediately before __pm_runtime_idle() is able to
-> > > grab the spinlock.  Prevent it from occurring by adding a last_busy
-> > > update before the rpm_drop_usage_count() call in __pm_runtime_idle().
-> >
-> > Do consumer->supplier and child->parent refcount drops have the same
-> > problem? e.g., in pm_runtime_release_supplier() and rpm_suspend() /
-> > parent->power.child_count decrement?
->
-> I need to think about it.
->
-> I don't think it affects the $subject patch anyway though.
+tsens_probe() calls priv->ops->init(priv), and every .init member in
+this driver points at a function marked __init: init_common() in
+tsens.c, init_8952(), init_8956() and init_tsens_v1_no_rpm() in
+tsens-v1.c, init_tsens_v2_no_rpm() in tsens-v2.c, and init_8226(),
+init_8909(), init_8939() and init_9607() in tsens-v0_1.c.
 
-So generally speaking, yes, they do.
+Nothing guarantees that probe runs before the init sections are freed.
+A deferred probe, or a platform where the tsens node is probed late,
+calls into freed text and oopses.
 
-In the suppliers case, that can be addressed by doing something like
+Two independent reproductions on unrelated hardware:
 
-pm_runtime_mark_last_busy(supplier);
-smp_mb__before_atomic();
-pm_runtime_put_noidle(supplier);
+ - On an IPQ5018 board the machine oopses roughly 9.4 s into boot
+   inside init_tsens_v1_no_rpm(), reliably. The only way to reach
+   userspace was to disable the tsens node in DT, which leaves the SoC
+   with no thermal sensing at all.
 
-in every step of the loop in pm_runtime_release_supplier().
+ - Reported separately against a Galaxy A5 SD, where the driver is
+   built modular and resumes a deferred probe after its module init
+   section has been freed.
 
-In the parent case, a similar thing would need to be done in rpm_suspend():
+Different triggers, one root cause: callbacks living in an init section
+that is released while the ops table still points at them.
 
-parent =3D dev->parent;
-pm_runtime_mark_last_busy(parent);
-smp_mb__before_atomic();
-atomic_add_unless(&parent->power.child_count, -1, 0);
+Drop the annotation from all nine. Fixing only the entry points is not
+enough while the init_common() they call is still annotated. The
+declaration of init_common() in tsens.h never carried __init, so it
+needs no change.
 
-with the addition of a read-side memory barrier (see below).
+The brace placement on init_8939() and init_8956() is corrected as
+well, since those lines are being touched anyway and checkpatch wants
+the brace on its own line.
 
-> > > Another one is when rpm_idle() returns without calling rpm_suspend(),
-> > > for example because the callback has returned a transient error, whil=
-e
-> > > an autosuspend timer is running.  The timer may then suspend the devi=
-ce
-> > > without respecting the autosuspend delay.  Moreover, the timer may fi=
-re
-> > > while the callback is running and it will not see the new last_busy
-> > > value in that case.  To address these cases, move the existing
-> > > pm_runtime_mark_last_busy() call in rpm_idle() before the first retur=
-n
-> > > value check.
-> >
-> > I suppose we don't care about: "what if .runtime_idle() is slow?" --
-> > that makes a small delta in the expiration time.
->
-> No, I don't.
->
-> It is actually absent in the vast majority of cases.  And if it is
-> present and it is slow, it may as well call
-> pm_runtime_mark_last_busy() itself.
->
-> > > In both places mentioned above add comments explaining the rationale =
-for
-> > > updating last_busy.
-> > >
-> > > Fixes: 26236a3e8803 ("PM: runtime: Update last_busy before calling rp=
-m_suspend() in rpm_idle()")
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > >
-> > > Commit 26236a3e8803 is present in linux-next.
-> >
-> > Semi-unrelated cleanup: pm_runtime_put_sync() some stale kerneldoc now,
-> > saying "this does not update the last access time".
->
-> Ah, good point.
->
-> > > ---
-> > >  drivers/base/power/runtime.c | 16 +++++++++++++++-
-> > >  1 file changed, 15 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtim=
-e.c
-> > > index 0b15c718c1bb..02e7b4953c38 100644
-> > > --- a/drivers/base/power/runtime.c
-> > > +++ b/drivers/base/power/runtime.c
-> > > @@ -518,6 +518,14 @@ static int rpm_idle(struct device *dev, int rpmf=
-lags)
-> > >       else if (dev->power.idle_notification)
-> > >               retval =3D -EINPROGRESS;
-> > >
-> > > +     /*
-> > > +      * Update last_busy to defer autosuspend by the full autosuspen=
-d delay.
-> > > +      * Since an autosuspend timer may be running and the new last_b=
-usy value
-> > > +      * needs to be seen by it, update last_busy before returning an=
- error or
-> > > +      * dropping the spinlock and allowing the timer function to gra=
-b it.
-> > > +      */
-> > > +     pm_runtime_mark_last_busy(dev);
-> > > +
-> > >       if (retval)
-> > >               goto out;
-> > >
-> > > @@ -563,7 +571,6 @@ static int rpm_idle(struct device *dev, int rpmfl=
-ags)
-> > >       if (retval)
-> > >               return retval;
-> > >
-> > > -     pm_runtime_mark_last_busy(dev);
-> > >       return rpm_suspend(dev, rpmflags | RPM_AUTO);
-> > >  }
-> > >
-> > > @@ -1132,6 +1139,13 @@ int __pm_runtime_idle(struct device *dev, int =
-rpmflags)
-> > >       int retval;
-> > >
-> > >       if (rpmflags & RPM_GET_PUT) {
-> > > +             /*
-> > > +              * Once the usage counter drops to 0, a leftover autosu=
-spend
-> > > +              * timer may fire before the spinlock below is acquired=
-.  Update
-> > > +              * last_busy first so it does not find the expiration t=
-ime in
-> > > +              * the past and suspend the device immediately.
-> > > +              */
-> > > +             pm_runtime_mark_last_busy(dev);
-> > >               retval =3D rpm_drop_usage_count(dev);
-> >
-> > This is somewhat of a pre-existing issue (e.g., in
-> > pm_runtime_put_autosuspend()), but weakly ordered architectures don't
-> > really enforce the dependencies you want.
-> >
-> > rpm_drop_usage_count() uses an atomic decrement, which has a full
-> > barrier.
->
-> Right, that's why the last_busy update is carried out before
-> rpm_drop_usage_count().
->
-> > But this is supposed to influence the rpm_suspend() behavior of
-> > rpm_check_suspend_allowed() (atomic_read) + READ_ONCE(last_busy), which
-> > includes only a conditional dependency and no barrier.
-> >
-> > https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0124r6.html
-> >
-> >   "Control dependencies can order prior loads against later dependent
-> >   stores, however, they do not order prior loads against later dependen=
-t
-> >   loads. (Use memory_order_consume or memory_order_acquire if you
-> >   require this behavior.)"
-> >
-> > So, rpm_check_suspend_allowed() should probably use
-> > atomic_read_acquire(&dev->power.usage_count).
-> >
-> > (This is probably an extremely narrow, practically impossible issue.)
->
-> Yes, this sounds nearly impossible in practice, given the number of
-> branches between the usage counter read in rpm_check_suspend_allowed()
-> and the last_busy check in pm_runtime_autosuspend_expiration().
+Signed-off-by: Muhammad Huda Nugroho <mhudan21@gmail.com>
+---
+Notes for reviewers, not for the commit message:
 
-It is not entirely impossible though AFAICS.
+Resent: the first attempt was rejected by linux-pm for containing an HTML
+part, so the list never saw it. Apologies to the few of you who got that
+copy directly - this is the same patch, nothing has changed.
 
-However, it is only really a concern if
-pm_runtime_autosuspend_expiration() actually runs and if it actually
-computes expires, so I'd rather add a read memory barrier to that
-function:
+Against mainline master as of 2026-11-21. Not tested on the Galaxy A5 SD;
+the IPQ5018 reproduction is mine, and it was on a 6.18 kernel, where eight
+of these nine carry the annotation. init_8952() is newer than that tree and
+is included here because it has the same problem, not because I hit it.
 
-smp_rmb();
-expires  =3D READ_ONCE(dev->power.last_busy);
+The second reproduction is samcday's, found and fixed independently with
+the same mechanism:
 
-That would get the ordering between the last_busy access above and the
-initial usage counter and child counter checks always right.
+  https://github.com/samcday/linux/pull/13
 
-Well, I guess I need to redo the patch series to take all of the above
-into account.
+I have not added a Reported-by: or Co-developed-by: for it, because I have
+neither their address nor their agreement to be listed. If they would like
+a trailer, say so and I will add it in v2 - the prior work is theirs as
+much as mine and I would rather credit it properly than silently.
+
+Neither version appears to have been sent to the list before this.
+
+No Fixes: tag: the annotations predate the ops indirection in several of
+these files and I could not identify a single commit that introduces the
+bug rather than inherits it. Happy to add one if you can point at it.
+
+ drivers/thermal/qcom/tsens.c      |  2 +-
+ drivers/thermal/qcom/tsens-v0_1.c |  9 +++++----
+ drivers/thermal/qcom/tsens-v1.c   |  7 ++++---
+ drivers/thermal/qcom/tsens-v2.c   |  2 +-
+ 4 files changed, 11 insertions(+), 9 deletions(-)
+
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -929,7 +929,7 @@
+ 	.reg_stride	= 4,
+ };
+ 
+-int __init init_common(struct tsens_priv *priv)
++int init_common(struct tsens_priv *priv)
+ {
+ 	void __iomem *tm_base, *srot_base;
+ 	struct device *dev = priv->dev;
+--- a/drivers/thermal/qcom/tsens-v0_1.c
++++ b/drivers/thermal/qcom/tsens-v0_1.c
+@@ -207,7 +207,7 @@
+ 	return 0;
+ }
+ 
+-static int __init init_8226(struct tsens_priv *priv)
++static int init_8226(struct tsens_priv *priv)
+ {
+ 	priv->sensor[0].slope = 2901;
+ 	priv->sensor[1].slope = 2846;
+@@ -219,7 +219,7 @@
+ 	return init_common(priv);
+ }
+ 
+-static int __init init_8909(struct tsens_priv *priv)
++static int init_8909(struct tsens_priv *priv)
+ {
+ 	int i;
+ 
+@@ -240,7 +240,8 @@
+ 	return init_common(priv);
+ }
+ 
+-static int __init init_8939(struct tsens_priv *priv) {
++static int init_8939(struct tsens_priv *priv)
++{
+ 	priv->sensor[0].slope = 2911;
+ 	priv->sensor[1].slope = 2789;
+ 	priv->sensor[2].slope = 2906;
+@@ -255,7 +256,7 @@
+ 	return init_common(priv);
+ }
+ 
+-static int __init init_9607(struct tsens_priv *priv)
++static int init_9607(struct tsens_priv *priv)
+ {
+ 	int i;
+ 
+--- a/drivers/thermal/qcom/tsens-v1.c
++++ b/drivers/thermal/qcom/tsens-v1.c
+@@ -145,7 +145,7 @@
+ 	[TRDY] = REG_FIELD(TM_TRDY_OFF, 0, 0),
+ };
+ 
+-static int __init init_8952(struct tsens_priv *priv)
++static int init_8952(struct tsens_priv *priv)
+ {
+ 	priv->sensor[0].p1_calib_offset = 2;
+ 	priv->sensor[0].p2_calib_offset = -1;
+@@ -173,7 +173,8 @@
+ 	return init_common(priv);
+ }
+ 
+-static int __init init_8956(struct tsens_priv *priv) {
++static int init_8956(struct tsens_priv *priv)
++{
+ 	priv->sensor[0].slope = 3313;
+ 	priv->sensor[1].slope = 3275;
+ 	priv->sensor[2].slope = 3320;
+@@ -189,7 +190,7 @@
+ 	return init_common(priv);
+ }
+ 
+-static int __init init_tsens_v1_no_rpm(struct tsens_priv *priv)
++static int init_tsens_v1_no_rpm(struct tsens_priv *priv)
+ {
+ 	int i, ret;
+ 	u32 mask = 0;
+--- a/drivers/thermal/qcom/tsens-v2.c
++++ b/drivers/thermal/qcom/tsens-v2.c
+@@ -220,7 +220,7 @@
+ 	return 0;
+ }
+ 
+-static int __init init_tsens_v2_no_rpm(struct tsens_priv *priv)
++static int init_tsens_v2_no_rpm(struct tsens_priv *priv)
+ {
+ 	struct device *dev = priv->dev;
+ 	int i, ret;
+-- 
+2.51.0
