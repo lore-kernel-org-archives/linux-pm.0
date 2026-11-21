@@ -1,88 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=203.205.221.173
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795242824;
-	b=FDFPqIoSf4gS60tZA4gr5EW8LejobywfUHOQfhW49r5BUUtxnQqlL2Z3S91mSacuXPWr
-	 jOewznBrAPCwu3rPj26f++avqDpwQv1hyD3xFIqffAzEp0c+oxMdK4QI3xYuhwwowVZhp
-	 hY49uSQCn2bp0Ko6NZeHQyHOnYPFKh6BlFp+r6IBpEvYAS24zjCK3TB8SbROT4UcXHY0O
-	 6FMgdi+Oobwwqg3kCtqMI0GZErLJu3jqOulZoVqOIaTYblq/HkOOahJlV+JPmVUIfw2qC
-	 XWMq2oBdLfQw3yhFVfUlo5DIIogmpvlljuzJB85XRr5MAggRp6Ux8Ci4tRvYCpTpY/g==
+	t=1795251177;
+	b=orLkComu71oPAPlp64gKB8Ww9riS1T5BTUYIdTCbYUM9X0YNlFWB9iWOKCIlPEKiNzYY
+	 gTGaewZq26EcLcVSLTqgZY8w6T7sXAk/tziQ1SUJMFRIZoG8VElCLBwJ22lyU3I5/L1kz
+	 1uiaamLIcvPOFWZ0cMWi5HJGs1lU7FTiDwF0oMQGjPt8IbvxU0mZLXtF7yTThaVb0U8++
+	 wQ2LecAklO1rR1D12lbLGrM5LXFhagzbnkwzgaH/yPQAgBXs6MisGS+HUgmcuYOhuZiP4
+	 Gx3lEu4X0Gd7bs9mKqU6qxi1tez6dkg9HpJh4cuqCRP7p+d3wS+A/vCO2g5+Z4kzfng==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795242824;
-	h=DMARC-Filter:DKIM-Signature:Received:X-QQ-mid:Message-ID:
-	 X-QQ-XMAILINFO:X-QQ-XMRINFO:From:To:Cc:Subject:Date:X-OQ-MSGID:
-	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=vrWn0Ixp2M1jrHpRUCkv+bLIfyIujqapxXCKCxU/7AE=;
-	b=CQVz+Smdn1H36IQZ9LKL2zGaODrsmeyrlCPjkHroACpjf3KCDH1BWcQ5H6k183HCwnqa
-	 +JZ3Zzvpgc7994eegG66XliZ5sX+PbjwHFqmejVl+mWEYOklahCa80b0us11upwWs+qp9
-	 TjveUobRKuw4h2xKaTn5MsW4/7vqoSqV/33uCjxBrtftl3P5IF1MyKltqlj+92B0wGnEk
-	 ygayAgbK8Huq2+Mk/Y4lipt5H+lIbI5LDupyZDkqTiZfpihLos2/1p6gzxH5yuxf+Sfov
-	 axQgNgKUFgxhDclZfSEG2u8bSgves5BkuLsRKOx8iUbUyLaAhxYaPZRd3y97wN+Y9LQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795251177;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=qFuObFh6gdVzuaDUs7dmE1TkHEa1cVklXsowoihWQAo=;
+	b=seGoqrVdmHxeuNkN5Hdkm4rxdIXDYU1ulGwE0X/8BWT6HhGnkuLhyq8zBNaARUFdWKYE
+	 Xikggu9v4HGEOdyFAhpDMs6F9TV6YUK9NuhJdUIBYspqc3UTV1ZGakKrUwL2akL1vRaVQ
+	 6N/Oi6P9YygI7jZaYapJ6BdXZtphC7qcHayrtE2QJOvQ8Vk9kcIPcH8sv4z3RjNfqGf6J
+	 7Omho/gJXxqCAwFgxjMXBKGMWoJkizVOX5jZ3gajaOs3lPf1cK1tS5AB4/DSJLWrGk+ft
+	 rMOs9pghv0xR/fQz8WCtuYCt6znLcID5W7HF+qtut0HneX7tfLkvPi8FuVc0FtsKtxw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=qq.com;
-	spf=pass smtp.mailfrom=qq.com;
-	dkim=pass header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=WQSqMnwi;
-	arc=none smtp.remote-ip=203.205.221.173
-Received: from out203-205-221-173.mail.qq.com (out203-205-221-173.mail.qq.com [203.205.221.173])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a28mZSN8;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1A5E606A335
-	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 06:33:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E1A5E606A335
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A615606A320;
+	Sat, 21 Nov 2026 08:52:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=WQSqMnwi
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1795242820; bh=vrWn0Ixp2M1jrHpRUCkv+bLIfyIujqapxXCKCxU/7AE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=WQSqMnwiam/ueGtzWs3rSyy5JGCtzGCbTL2peHaLgFNwoG1+rmCbS04luCp+xT7U8
-	 Y+LpbEB6eWBPqSPXfq0pFBHWHat0wyNJtyrMXb8Z8tIPjME9OcqNUjkL0CxBCVAuJp
-	 UaB+gbItilDWzYirrXi+70JpQU9N/WZheMO3RHCc=
-Received: from jerry-PC.lan ([2408:8249:5f:7101:71a:8713:56b4:5043])
-	by newxmesmtplogicsvrsza53-0.qq.com (NewEsmtp) with SMTP
-	id 86136C4F; Sat, 21 Nov 2026 14:33:33 +0800
-X-QQ-mid: xmsmtpt1795242815t7b4l3f5q
-Message-ID: <tencent_362D76566799132999F95C09AC34775D0D0A@qq.com>
-X-QQ-XMAILINFO: Mb8jOXBTO9mFtvXd4x42BWdNJrJAhWsAQ4eNSsIFjy94jB3IpWBPVnsOUyULK3
-	 Y9l6y3PnpRvdHjyuKGo5oQNzTvOGxC0zdJ1kxLM8DrxohF+DndfSO0PG/phjqkkzakieirK/+pmH
-	 Cr+gi9qNtGxkxHMEcSDlUvMx8w8TE0ryP6Y4wlZyrmqin1Lg5b7dCrToDzS3gUxfoT11GFxlveTQ
-	 fQzya8V3pKdolnFI1f+1SFdMF4101oEvjs5FhkeYu149PyhUKhQRpJr4LA2bVBIUNDoJ1r+aP0EY
-	 m+bkZS3g3tXqpmzwmh+PeQ927jv38fKchWzIEVB0tAM5+4gVB/kUbgTchdtt5x+NFSkIvq/t67BM
-	 cbSnSfZIQ6us+PZGkGsoUL6BH8jFXpq9Axrmc9LiGyr7PMmwg82O4LAQlHEczTL+cRZngAhWmanS
-	 2yqp3TO5nZ7V/UFTe7yOSgtypkGWX6R+NDlEUKRfl8rPhKAe3xJIHA75F6DIlhx/Fcct/PEEF1RB
-	 9MErmFeYi9SEQ/vEVkVtRl9Hs8kLsIBfvG9Asv6WtAu/KBA1yv/zNCzYs8jdfcmsH/5F/LHgzo5V
-	 /PTxl9IFmORTonfG+cOcwN+RLXcC/POHTQV5c2mtiZ2LhQXoPn4tueV3Unv55glPkpgte1X1wNl/
-	 SlOx3+afQcy8e7BtSld5gVlWK0WSMgTgaXq0FWs+FzkIzjkbDzDuvh37WYAL/0bt0+LYFKSYo6Gb
-	 EM89vpGfkkCrqTI1hUUi/h3eFwNJY80j+fyzGxpcEsVCapUmTrMyMeX4JrdBHWBP0NrpHbDLKBD+
-	 udShGJ8S4SBfWr+JL3OnQ0WVKeO4q+ScnPMp8LlJO3nhl1IvuXO14ItC0Aq9KkqT+HO7p8i6Kg/D
-	 pvyKfkbsGzcoeNgix3gid9DffsMfR/wSNo5/Bv04bCNqFF5dk0qguIZUma+AB4rd/aV5r4OdapjA
-	 1+UhqcMGu5G6yMEpwqgCnPi2Y1bQfg/h7oojbhbe4b/tfVIyHyZVRsxC2CSGZYBfA5KeOFVCFd1b
-	 NiEPKEHkCZfUmbAKZCcmmaUpLim7Frl9v52xhNacYLQLUZiiADEI8hlu1+Xcf3BCLNNF2azWywFI
-	 ShUVyul4mKG1UbMeWW1gcEVcckRTvJD1yaLr2a3k1E27e4PJIUFJl1ZosVcMG6TvPifleYAZyCFx
-	 UgL8q5G4TsRzFVE76Uzey+ZSvf
-X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
-From: ZhuXiangyu <1194781887@qq.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Heiko Stuebner <heiko@sntech.de>
-Cc: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	ZhuXiangyu <1194781887@qq.com>
-Subject: [PATCH 2/2] dt-bindings: thermal: rockchip: add RK3506 TSADC
-Date: Sat, 21 Nov 2026 14:33:30 +0800
-X-OQ-MSGID: <20261121063330.1094548-2-1194781887@qq.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261121063330.1094548-1-1194781887@qq.com>
-References: <20261121063330.1094548-1-1194781887@qq.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a28mZSN8
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B71021F000C6;
+	Sat, 21 Nov 2026 08:52:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795251176;
+	bh=qFuObFh6gdVzuaDUs7dmE1TkHEa1cVklXsowoihWQAo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=a28mZSN8DlRICUIFkZ4vpHW/3qZiBho2ZWkM1TD3qFDfLB61t4hApdcyKF4Hcnr0U
+	 EeWt76AnxvuzjC/F4+dZQUUtK+Ebd/lqyBc0pK0BxTLVqaQ8+BBHYitBB6PmQP9KZd
+	 NjDzStUWSQIvuRRMBVnSH7Kg5VkE5S7WsVW+hQfwTwnhQ6PQopslAFxE8uMU6+mhX8
+	 Eqrh+pBhkppeTa+ik+j2AAHhDTKfZcVSm6wxFG8ybvBiVcCm6CXvOQ9CGwrM6SUN+T
+	 V86OHfQWsoHt5y4gnXpg5zRxBQUxx0ci8n5e1+1UvBRGPDxGqc2gTA/UEuHAOWPlmj
+	 ZLsfAEE37yBaw==
+Date: Sat, 21 Nov 2026 09:52:52 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Ishu Brar <patches@brar.si>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, Konrad Dybcio <konradybcio@kernel.org>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 1/2] dt-bindings: interconnect: qcom: Add SM7250 RPMh
+ NoC
+Message-ID: <20261121-naughty-dynamic-jaybird-cdfecc@quoll>
+References: <20261118-icc-sm7250-v6-0-a06ec15c6e29@brar.si>
+ <20261118-icc-sm7250-v6-1-a06ec15c6e29@brar.si>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -92,78 +60,23 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261118-icc-sm7250-v6-1-a06ec15c6e29@brar.si>
 
-Document the RK3506 TSADC, which uses the TSADCV13 register layout
-and requires the TSEN clock in addition to the controller and APB
-clocks. Like the other newer Rockchip TSADCs it needs the GRF to
-enable the sensor analog front-end.
+On Wed, Nov 18, 2026 at 02:50:16PM +0530, Ishu Brar wrote:
+> Document the Network-On-Chip interconnect providers of the Qualcomm
+> SM7250 SoC (Snapdragon 765/765G/768G), which are controlled through RPMh
+> Bus Clock Managers, and add the header with the node and slave IDs.
+> 
+> Signed-off-by: Ishu Brar <patches@brar.si>
+> ---
+>  .../bindings/interconnect/qcom,sm7250-rpmh.yaml    | 176 +++++++++++++++++++++
+>  .../dt-bindings/interconnect/qcom,sm7250-rpmh.h    | 148 +++++++++++++++++
+>  2 files changed, 324 insertions(+)
 
-Signed-off-by: ZhuXiangyu <1194781887@qq.com>
----
- .../bindings/thermal/rockchip-thermal.yaml    | 23 ++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-index 9fa5c4c4..f7fa4b60 100644
---- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-@@ -20,6 +20,7 @@ properties:
-       - rockchip,rk3328-tsadc
-       - rockchip,rk3368-tsadc
-       - rockchip,rk3399-tsadc
-+      - rockchip,rk3506-tsadc
-       - rockchip,rk3568-tsadc
-       - rockchip,rk3576-tsadc
-       - rockchip,rk3588-tsadc
-@@ -33,12 +34,14 @@ properties:
- 
-   clocks:
-     minItems: 2
--    maxItems: 2
-+    maxItems: 3
- 
-   clock-names:
-+    minItems: 2
-     items:
-       - const: tsadc
-       - const: apb_pclk
-+      - const: tsen
- 
-   nvmem-cells:
-     items:
-@@ -127,6 +130,7 @@ allOf:
-               - rockchip,px30-tsadc
-               - rockchip,rk3366-tsadc
-               - rockchip,rk3399-tsadc
-+              - rockchip,rk3506-tsadc
-               - rockchip,rk3568-tsadc
-     then:
-       required:
-@@ -155,6 +159,23 @@ allOf:
-     then:
-       patternProperties:
-         "@[0-9a-f]+$": false
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: rockchip,rk3506-tsadc
-+    then:
-+      properties:
-+        clocks:
-+          minItems: 3
-+        clock-names:
-+          minItems: 3
-+    else:
-+      properties:
-+        clocks:
-+          maxItems: 2
-+        clock-names:
-+          maxItems: 2
- 
- unevaluatedProperties: false
- 
--- 
-2.47.3
+Best regards,
+Krzysztof
 
