@@ -1,96 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795253832;
-	b=SPnc1e4PwvxdyvfJPjW7i8tpu7TEyBA/nu03Qjvc2+oWNAZu8ORYftoNCBm1C1UBaNpi
-	 lGjNh1mO5ah76x+KfbE+IUp6KfHG97uzc/WVGJRpWqoPLSsk4RX5DdJdVPzgaSeeslXtg
-	 WnE1qJVkwRBCmkkk/O9WVaL9VXNUCbai+X9ob8VP3vJ6Tv4OegX3sgXOJA2NpVHWEDqRp
-	 LMXJf/NJOYyjGQbAea72Cq5wOekABsBzjnrfrTYcPTE3hHvr9Mjd7nSqZ5VpdPjpYnecG
-	 joKFbg5NG48fxiPlafLnthVH3YasRm9FXeY8CRgi1NUyXcwn6UErHAs09tt1lk0ZfmA==
+	t=1795260175;
+	b=bFkEwa3tEdzTjdUHL/XVazHQqD5BoqAQtZdSDBry7Tsl90EmJBSzYWH/41mhOoaTXXTL
+	 YGOuYND+9phNTZzvidhIWaBZz5SVDyizUVl/Lolxci9PsRmEvWNB3Stthmk9uN97+/OKe
+	 3GNkQil2nkLhvEh8zzEVhjmefba86k0DyUiPqbVK1yUAV1dmQFH8oKgAOaFHoLL918+4l
+	 ObT6FH6dKxDgiG4qq/kwFt5ORWCh4V3dVoYByrvPx/lHM4POGAZKlb32ZSXtRCsfvj+Kn
+	 Gty+dfnVp+EYHwtKTjPvHrhb493y/pL2NHLwp+59NhpP/tlOd+BrtXtIexJUG8lR61A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795253832;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=ZuSymGZ4BXaXBXcW5O68ed8bMUtsN8ja2SYO3J1EHJc=;
-	b=uBsG4EdGgCajwQs0VRxfLFUpRdhxhHucEFImwAGRQYErzS+9SwzLYC1SQuSnlzvWnfAp
-	 lxTBUBbrCfhoBhiVHWy7NV1Q0Ob6/0ocGSgCGeDS1aS95klDVhQg6ldQD8M58VlqGNWr5
-	 S+6wo9wBWrwJ3khU+Lcr8iGbB3mJP5Vu8sIJEn90iHY8JwrlublCSFMrSihpDVW8WRLfO
-	 05ASbe9VlxwsZVkrpzadUFYgYgX6Vzh3JojN8dILaapYbV9jHkWxK25vlZWuJ8HbofDaP
-	 aRBJdFTEgwUp+l9O4Or1hcdGvUF7LFNqPWwNA33Z96a9LZ3Bg0jYtIJW1GxSaPQNLIg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795260175;
+	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:
+	 X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:Subject:To:Cc:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=VXTpoBrzLdbldT1C9z4d9cxILmU7XPHQacy7zIo4aZk=;
+	b=4XXbvMa47F1kV8IqwXlJ/bJ6hTo2XCwvVL2zThCVNn1ITxr1WrOLiHUoZybb+HuOSkj0
+	 dfAnc02C8l3bQ07N+Z2PVL7MjbEt5WTjbtR/5ejD9VuR5UYD5EktPKUzIeZ+mn2laEd65
+	 F7ZQe7NxzIz80INZdgVPa/rANULQ7UiCDzuiZf0PkZB88d7y2sWMk9rjXA7b/T7MJaGpl
+	 JO5YCGVIoJmKEG/Hi3uSrVIsAAzX10SF5WhMv/lwgmXi88ltOZD9FXHOm/sP8LIPuifbC
+	 4YSdNXaVsx0sgQPOjPFtwGKPHLClUQPuMYreXuyP7d2dFLHuApPswepylI2n0Sr8c7A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=wUf5VfrK;
-	arc=none smtp.remote-ip=209.85.128.52
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=THBjpZGn;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 516AF606A32A
-	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 09:37:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 516AF606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1088C606A320
+	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 11:22:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=wUf5VfrK
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4bb64c99d2fso17441705e9.3
-        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 01:37:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795253830; x=1795858630; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=ZuSymGZ4BXaXBXcW5O68ed8bMUtsN8ja2SYO3J1EHJc=;
-        b=wUf5VfrKUaALiMDFWECJZVwwO8uOhGSA8wHRTh31ht5ubpXd4KSGvNl7BhKcF0eFsW
-         h7m69WfERS3XHnuKLe+oUOhZZ6xrInEWOi4vOd+x5uxMNdhlz744hlPZrMJ3BNelduuW
-         /PuTMloYC+HUXFarUxZV7OKsxI9P88SGbwgK9fA4GJz1sbZxJADci3RPHa5k6u8TkYiB
-         YEV1ip8vglYzBy01t7Noo/VZ+4r4xMisItO+B5J/kFNSOMGdj2etXBq24D4mV1gxdPk8
-         v7fdgT+AZlPDBGhAbv+FER6Xu4eEZHfTQKQrzfwemCEx9fhz+7wRWEOnda0Dkt0l5eqW
-         tI+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795253830; x=1795858630;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ZuSymGZ4BXaXBXcW5O68ed8bMUtsN8ja2SYO3J1EHJc=;
-        b=ZaVGB6bkaVy1Dhe1LAaTzRgJOq0PEKz32Tlqzwsh65w364OS/jQ0TA4wySRoCqG/Bv
-         fGYLUpjsCUE0GZMRU913by8kerXZ5jMyKcDsMjP6nsL7VIx+9NMziHECr6abU48xlKsa
-         qum0hvE8Qivur6Wikb65mgCVPmxNJVxHNfZzZmvitgiBjDBipO1O3wcMlnkoBGXwVMge
-         cRN8cFS/VK93ZKXdTE6LjAi3rtjfCYx1l3XKi4Pvo6h3KSPN2lH952DZYh0SO6yrkIt7
-         LmO5AQnfs1Bfk7f7Oi5YCbk8CZ7Jw5couGdylqSzixfyv0fhHQmAcLspalSr8+gEinhT
-         oNYA==
-X-Forwarded-Encrypted: i=1; AL+hErEJz38Q7clL7n5xlvhF/+aWMkE29ZYLmPWCBmObbHEj3UKyM98SIwWQlyWRaPvGiO9FhXyhL93fbQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z98xVNn9ITeGj4jDV7O+SMhX7ho1lIkhhzjWFMjpzwB2sgoKFjz
-	51EqQEr00erNTSqFEbX/2GzK5boqizquq9EHeTsm7r8CXBxL8h8vVcGf
-X-Gm-Gg: AZFdTZf2SqRwF3VVP9ljE/I7F5QuxDEQR7uD6yA0eB4xOQf9xem3Ym7Vt+Y0iaFiVF/
-	Lh70rceY/mFMQZdIwdjc+Ofr/t0d1eviXuyjjLYIA3cSJAihkYNcarNiaIlmGhpXYkbe/jdQf22
-	AR0w5JOQ3U/uJr6OdQbNzErMUR1xQ+Tr/eNoThEVJa34fHmqofcWMW+EXl6MPyBoNLJ+aXFQkHu
-	6F4Qa7kMJ8o2S+kp/4aVRLXUAGvUT6E1n7W9mGRoCqo4f/0S2Sg4M/fHBhDsUDUqCYlsqh5V29Z
-	5M4j/BbxD911YuOnkKoK8ATiRNTrkikGJH+f98O6LVa2CAWVtOp0IjnvZGlKjqwqigoU6bjzNAT
-	tPXLLCcB0tiLVRsH1GQOVLR7Y5nMcqaernJaSzkUmENuf44tFPdVkfDsXzdt27vnhze8yY4RP68
-	xhIoSZZs7Ty9LaRm7iIlWwatNQhfrX2ChgzywUIFIV/5kuv2qh/K/MrgzS98a32sbmCDYwFnlbe
-	XrQjqoceo8K/v2wJ89OsHcuzB53RclAktUzpWR+uILRwZGCLPn2xp7UcJNYvvgmeIl5Mb9fTq6z
-	xP9tkiTShVlRK2ZuQgXLoE9ITac7biZbkWT4/Rs8fAX/o0X6vPc6CX9MfxvVzsXsGpJcNJ0nMoT
-	g4zhBL/3f+W/5LMVF40t8J1Q8rbo=
-X-Received: by 2002:a05:600c:1d29:b0:4a9:2a92:231f with SMTP id 5b1f17b1804b1-4bb88804d4dmr137546885e9.7.1795253830173;
-        Sat, 21 Nov 2026 01:37:10 -0800 (PST)
-Received: from archlinux.fritz.box ([178.197.200.136])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb8526cbd0sm238322245e9.0.2026.11.21.01.37.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 21 Nov 2026 01:37:09 -0800 (PST)
-From: Tobias Predel <tobias.predel@gmail.com>
-To: linux-acpi@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [BUG] HP Dragonfly G4: AML deadlock (ECMX vs. Serialized GBAP) between EC _Q08/_Q18 and int3400_notify() -> ODVP
-Date: Sat, 21 Nov 2026 10:37:08 +0100
-Message-ID: <20261121093708.5097-1-tobias.predel@gmail.com>
-X-Mailer: git-send-email 2.56.1
-In-Reply-To: <20261120191423.10876-1-tobias.predel@gmail.com>
-References: <20261120191423.10876-1-tobias.predel@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=THBjpZGn
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE09C1F000C4
+	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 11:22:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795260174;
+	bh=VXTpoBrzLdbldT1C9z4d9cxILmU7XPHQacy7zIo4aZk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=THBjpZGnrzGlrorPL2z3p4H0eTwfgZj58SpLP5wDktC6sPSA+GiBGSFKs0xaz47Ih
+	 RLNljI5tHA20yX2OMlhYsfMErwY0BvUg71j3FGrls7Qoj6vWUQaPOs21yVO3JtA58V
+	 cSsBzgng/1I3R/6EnpFhhw//m3T+Rk79JQo/AxE2nom3tMPnTA1iLGinhYRjgqNDr/
+	 c0h7PS78C89O+Os2/zTZhjiZLdAF+Uf/6LBVmFRYfW0eml5pxtAX1KJaDkiEUuO0zO
+	 p2j7ZiTwERmSbogycosrqsbHM4/+6NI+1G8YjzELsgWeydVRvHOS3tpEs+01ifsZWU
+	 ZBq673joYYk7g==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5c10dc41270so1835677e87.2
+        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 03:22:54 -0800 (PST)
+X-Gm-Message-State: APuU4Z+0IWdu4SwvnsSxD3Rbkf9l56vH7K0/7mKQM4FRzaozz28GRXrx
+	1uqIG7rL7xXAWa3lIUA9OFpACKIjMJPxVEzENgaVBSeYFp3Dt3jb3H4vlYd5zVoHadp3SGBO4Va
+	OtMwuPkOr0FVpANqUMeSV12zSOqtH5iA=
+X-Received: by 2002:ac2:4e0a:0:b0:5c1:4aa4:557 with SMTP id
+ 2adb3069b0e04-5c1bc7cc547mr1727666e87.31.1795260173235; Sat, 21 Nov 2026
+ 03:22:53 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -100,81 +58,209 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1978814.tdWV9SEqCh@rafael.j.wysocki> <3076901.e9J7NaK4W3@rafael.j.wysocki>
+ <awC0tcqgq2KvCyxO@google.com> <CAJZ5v0jjxWzL-NLkm5B2ayGfXYdQcE4Shq8B9TGz1ghHBybSAg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jjxWzL-NLkm5B2ayGfXYdQcE4Shq8B9TGz1ghHBybSAg@mail.gmail.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Sat, 21 Nov 2026 12:22:41 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0hgxJFXQnFRvLS=s85oSVSbu9tNDs_OoiGce4NMRNP04w@mail.gmail.com>
+X-Gm-Features: Aa3M54qEv_i_jhYbOZBjVLlzGoQDwdUl-S2MVW-Q8HeS_qeyzNd5xupMePO473M
+Message-ID: <CAJZ5v0hgxJFXQnFRvLS=s85oSVSbu9tNDs_OoiGce4NMRNP04w@mail.gmail.com>
+Subject: Re: [PATCH v1 1/4] PM: runtime: Update last_busy in all rpm_idle() paths
+To: Brian Norris <briannorris@chromium.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, Ulf Hansson <ulf.hansson@oss.qualcomm.com>, 
+	Linux Driver Core Development <driver-core@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Fri, Nov 20, 2026 at 10:29=E2=80=AFPM Rafael J. Wysocki (Intel)
+<rafael@kernel.org> wrote:
+>
+> On Fri, Nov 20, 2026 at 9:59=E2=80=AFPM Brian Norris <briannorris@chromiu=
+m.org> wrote:
+> >
+> > On Thu, Nov 19, 2026 at 09:16:30PM +0100, Rafael J. Wysocki wrote:
+> > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> > >
+> > > The changelog of commit 26236a3e8803 ("PM: runtime: Update last_busy
+> > > before calling rpm_suspend() in rpm_idle()") stated that rpm_idle() o=
+nly
+> > > needed to update last_busy when it was about to call rpm_suspend(), b=
+ut
+> > > that is incorrect.  There are still cases in which a device may be
+> > > autosuspended earlier than expected.
+> > >
+> > > The first one is when pm_runtime_put() is called while a leftover
+> > > autosuspend timer is running.  Then, dropping the device's runtime PM
+> > > usage counter to 0 allows rpm_suspend() triggered by the timer to
+> > > suspend the device immediately before __pm_runtime_idle() is able to
+> > > grab the spinlock.  Prevent it from occurring by adding a last_busy
+> > > update before the rpm_drop_usage_count() call in __pm_runtime_idle().
+> >
+> > Do consumer->supplier and child->parent refcount drops have the same
+> > problem? e.g., in pm_runtime_release_supplier() and rpm_suspend() /
+> > parent->power.child_count decrement?
+>
+> I need to think about it.
+>
+> I don't think it affects the $subject patch anyway though.
 
-A short follow-up: it happened again today (2026-11-21), now on
-7.3.5-arch1-1, same BIOS 01.13.01, and despite booting with
-acpi.ec_max_queries=1 (/sys/module/acpi/parameters/ec_max_queries reads 1).
+So generally speaking, yes, they do.
 
-This time no int3400/ODVP worker was involved. It was the EC-only variant
-I suspected in my first mail: two kec_query workers deadlocked against each
-other, about 67 minutes after boot.
+In the suppliers case, that can be addressed by doing something like
 
-  - kworker/10:1 waits in acpi_ds_begin_method_execution(), i.e. on the
-    sync mutex of a Serialized method. This matches _Q09 holding ECMX
-    and calling GBAP.
-  - kworker/9:1 waits in an explicit Acquire. This matches _Q08/_Q18
-    inside GBAP waiting for ECMX.
+pm_runtime_mark_last_busy(supplier);
+smp_mb__before_atomic();
+pm_runtime_put_noidle(supplier);
 
-hung_task reports each one as waiting on what the other holds (excerpt
-below). Behind them: six more kec_query workers, thermald
-(int340x_thermal_get_zone_temp), and upowerd (acpi_battery_get_state). Every
-read of .../power_supply/BAT0/uevent hung in acpi_battery_get_property().
-A kworker in i915_flip was also stuck in D state, but I rebooted before
-anything else happened.
+in every step of the loop in pm_runtime_release_supplier().
 
-Why ec_max_queries=1 did not help, as far as I can tell: the stuck workers
-are per-CPU kworkers (kworker/10:1, kworker/9:1, kworker/3:0, ...), so
-kec_query looks like a bound workqueue. There, max_active limits
-concurrency per CPU, not globally. On this 12-thread CPU that still
-allows several _Qxx methods to run at the same time. I haven't checked
-this against the source, so please correct me if I'm misreading it.
+In the parent case, a similar thing would need to be done in rpm_suspend():
 
-If that is right:
-1. Is ec_max_queries=1 meant to fully serialize EC queries? If so, would
-   you take a patch that makes kec_query unbound (or ordered when
-   ec_max_queries == 1)? I can write and test it.
-2. Until the firmware is fixed, is there another way to fully serialize
-   _Qxx evaluation on this machine?
+parent =3D dev->parent;
+pm_runtime_mark_last_busy(parent);
+smp_mb__before_atomic();
+atomic_add_unless(&parent->power.child_count, -1, 0);
 
-Excerpt (unreliable frames and scheduler frames removed):
+with the addition of a read-side memory barrier (see below).
 
-  INFO: task kworker/10:1:94 blocked for more than 122 seconds.
-        Tainted: G           OE       7.3.5-arch1-1 #1
-  task:kworker/10:1    state:D stack:0     pid:94    tgid:94    ppid:2      task_flags:0x4208060 flags:0x00080000
-  Workqueue: kec_query acpi_ec_event_processor
-   acpi_os_wait_semaphore+0x76/0x1d0
-   acpi_ex_system_wait_mutex+0xb6/0x110
-   acpi_ds_begin_method_execution+0xb3/0x420
-   acpi_ds_call_control_method+0xae/0x490
-   acpi_ps_parse_aml+0x3f2/0x610
-   acpi_ps_execute_method+0x185/0x430
-   acpi_ns_evaluate+0x196/0x5d0
-   acpi_evaluate_object+0x1f4/0x470
-   acpi_ec_event_processor+0xe5/0x130
-  INFO: task kworker/10:1:94 blocked on a semaphore likely last held by task kworker/9:1:14859
-  INFO: task kworker/9:1:14859 blocked for more than 122 seconds.
-        Tainted: G           OE       7.3.5-arch1-1 #1
-  task:kworker/9:1     state:D stack:0     pid:14859 tgid:14859 ppid:2      task_flags:0x4208060 flags:0x00080000
-  Workqueue: kec_query acpi_ec_event_processor
-   acpi_os_wait_semaphore+0x76/0x1d0
-   acpi_ex_system_wait_mutex+0xb6/0x110
-   acpi_ex_acquire_mutex_object+0x61/0x150
-   acpi_ex_acquire_mutex+0x8a/0x2a0
-   acpi_ex_opcode_2A_0T_1R+0x163/0x1e0
-   acpi_ds_exec_end_op+0x204/0x890
-   acpi_ps_parse_loop+0x13d/0xb80
-   acpi_ps_parse_aml+0x419/0x610
-   acpi_ps_execute_method+0x185/0x430
-   acpi_ns_evaluate+0x196/0x5d0
-   acpi_evaluate_object+0x1f4/0x470
-   acpi_ec_event_processor+0xe5/0x130
-  INFO: task kworker/9:1:14859 blocked on a semaphore likely last held by task kworker/10:1:94
+> > > Another one is when rpm_idle() returns without calling rpm_suspend(),
+> > > for example because the callback has returned a transient error, whil=
+e
+> > > an autosuspend timer is running.  The timer may then suspend the devi=
+ce
+> > > without respecting the autosuspend delay.  Moreover, the timer may fi=
+re
+> > > while the callback is running and it will not see the new last_busy
+> > > value in that case.  To address these cases, move the existing
+> > > pm_runtime_mark_last_busy() call in rpm_idle() before the first retur=
+n
+> > > value check.
+> >
+> > I suppose we don't care about: "what if .runtime_idle() is slow?" --
+> > that makes a small delta in the expiration time.
+>
+> No, I don't.
+>
+> It is actually absent in the vast majority of cases.  And if it is
+> present and it is slow, it may as well call
+> pm_runtime_mark_last_busy() itself.
+>
+> > > In both places mentioned above add comments explaining the rationale =
+for
+> > > updating last_busy.
+> > >
+> > > Fixes: 26236a3e8803 ("PM: runtime: Update last_busy before calling rp=
+m_suspend() in rpm_idle()")
+> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > ---
+> > >
+> > > Commit 26236a3e8803 is present in linux-next.
+> >
+> > Semi-unrelated cleanup: pm_runtime_put_sync() some stale kerneldoc now,
+> > saying "this does not update the last access time".
+>
+> Ah, good point.
+>
+> > > ---
+> > >  drivers/base/power/runtime.c | 16 +++++++++++++++-
+> > >  1 file changed, 15 insertions(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtim=
+e.c
+> > > index 0b15c718c1bb..02e7b4953c38 100644
+> > > --- a/drivers/base/power/runtime.c
+> > > +++ b/drivers/base/power/runtime.c
+> > > @@ -518,6 +518,14 @@ static int rpm_idle(struct device *dev, int rpmf=
+lags)
+> > >       else if (dev->power.idle_notification)
+> > >               retval =3D -EINPROGRESS;
+> > >
+> > > +     /*
+> > > +      * Update last_busy to defer autosuspend by the full autosuspen=
+d delay.
+> > > +      * Since an autosuspend timer may be running and the new last_b=
+usy value
+> > > +      * needs to be seen by it, update last_busy before returning an=
+ error or
+> > > +      * dropping the spinlock and allowing the timer function to gra=
+b it.
+> > > +      */
+> > > +     pm_runtime_mark_last_busy(dev);
+> > > +
+> > >       if (retval)
+> > >               goto out;
+> > >
+> > > @@ -563,7 +571,6 @@ static int rpm_idle(struct device *dev, int rpmfl=
+ags)
+> > >       if (retval)
+> > >               return retval;
+> > >
+> > > -     pm_runtime_mark_last_busy(dev);
+> > >       return rpm_suspend(dev, rpmflags | RPM_AUTO);
+> > >  }
+> > >
+> > > @@ -1132,6 +1139,13 @@ int __pm_runtime_idle(struct device *dev, int =
+rpmflags)
+> > >       int retval;
+> > >
+> > >       if (rpmflags & RPM_GET_PUT) {
+> > > +             /*
+> > > +              * Once the usage counter drops to 0, a leftover autosu=
+spend
+> > > +              * timer may fire before the spinlock below is acquired=
+.  Update
+> > > +              * last_busy first so it does not find the expiration t=
+ime in
+> > > +              * the past and suspend the device immediately.
+> > > +              */
+> > > +             pm_runtime_mark_last_busy(dev);
+> > >               retval =3D rpm_drop_usage_count(dev);
+> >
+> > This is somewhat of a pre-existing issue (e.g., in
+> > pm_runtime_put_autosuspend()), but weakly ordered architectures don't
+> > really enforce the dependencies you want.
+> >
+> > rpm_drop_usage_count() uses an atomic decrement, which has a full
+> > barrier.
+>
+> Right, that's why the last_busy update is carried out before
+> rpm_drop_usage_count().
+>
+> > But this is supposed to influence the rpm_suspend() behavior of
+> > rpm_check_suspend_allowed() (atomic_read) + READ_ONCE(last_busy), which
+> > includes only a conditional dependency and no barrier.
+> >
+> > https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0124r6.html
+> >
+> >   "Control dependencies can order prior loads against later dependent
+> >   stores, however, they do not order prior loads against later dependen=
+t
+> >   loads. (Use memory_order_consume or memory_order_acquire if you
+> >   require this behavior.)"
+> >
+> > So, rpm_check_suspend_allowed() should probably use
+> > atomic_read_acquire(&dev->power.usage_count).
+> >
+> > (This is probably an extremely narrow, practically impossible issue.)
+>
+> Yes, this sounds nearly impossible in practice, given the number of
+> branches between the usage counter read in rpm_check_suspend_allowed()
+> and the last_busy check in pm_runtime_autosuspend_expiration().
 
-The full hung_task output (10 tasks) and the acpidump are available on
-request.
+It is not entirely impossible though AFAICS.
 
-Thanks,
-Tobias Predel
+However, it is only really a concern if
+pm_runtime_autosuspend_expiration() actually runs and if it actually
+computes expires, so I'd rather add a read memory barrier to that
+function:
+
+smp_rmb();
+expires  =3D READ_ONCE(dev->power.last_busy);
+
+That would get the ordering between the last_busy access above and the
+initial usage counter and child counter checks always right.
+
+Well, I guess I need to redo the patch series to take all of the above
+into account.
