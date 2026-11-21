@@ -1,106 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.54
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795266387;
-	b=aKJvYZlIK9lnx/Jvnibx6sOWXSJ3X+vIiRpWfDAAuqvMEpQKMxcEnY3Jf+NcsweHE+r+
-	 T6QRcx8PF1z6J2kxHkQq8k67N4hRd9tZF5syBCCqaoHSa3o6ODgdTsihSVDOmhCuWt7uM
-	 kOM2A5FQUyZZG+TejaxZkPo7Al/fTuUqlrydhgmhkuHk1t9akUrpaYO8aZ9T0xFQUUl28
-	 Z6bDtxRudZ+rNoqMnl5t3qropAaoEwa7zWfggc6evZNp4G7qm8AaWVQPecIFJuQ7Hpf2O
-	 QwQtNUyPbZa5PyYCyGRAY0OU8j008CQ49PV1X2eq6NDlZLi8H5FJeUd2K33huHd6nBg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795266387;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=U33Eqi0MwkCHOyFx02ypgQ50QlY/YFdApS7Aq1x3HP4=;
-	b=FcGjydR5rcJ8556WN5HSZRfNyn6aaPNoGKGFhvD0NF3+F2OL6QuKOMTOFbeqqo2Qmm5Q
-	 +wtmaR3Dp86qpHFI+oBjPCIxBspnAqOz6NT/71Z1HlmH3oYQD3hdgNsyh4OazTZywFoJs
-	 fzi9s/tmh+CywwLtPHEFszhFBZVTX6C5IoC19xt4qEDtmudCKpjcte6raZAuw7FdVMjby
-	 jUvO3VDsn8ow73L8oQIMAEWPszrde4ExImzkAylrsfKrhce9URWTUxfeoAKUef/q4/mLu
-	 1c/bIjpcPWjGaKrnuURdIKkZCpOZTaCboG6HevjZEPwdPTmbo3epSrz5H/neChkdfPg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amarulasolutions.com;
-	spf=pass smtp.mailfrom=amarulasolutions.com;
-	dkim=pass header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=STdFBazw;
-	arc=none smtp.remote-ip=209.85.221.54
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795288900;
+	b=QsxSCcUNdaUU767bkV2WHqFi9pSwchzBJpO65ApMQlJZZa9gVXRcjSjB4YA0tSwipFKS
+	 43pKofP7tMV+Ueb+QBKG7QJoA0bq14b4ts0JC1aQO3xcX3feEHW+QHF17ulOXqs9SWwDC
+	 P7N2aEfMNHfthhdQJD1u2qjmhlMHgvAuwCgZ7Ov+np6kt9ebpbUkklUivUNC/FfxH79BP
+	 bt2lBG0SaPM+L6ifA+/IS25WG3yI2OOZtJecNCS6o/cn1yQb2LGVaeo3SfJrSWplnzJDF
+	 ODi+qAJROZ0hDtZlWNvuD1IYcvlvpRjBWkeyG6k/MDQXAnobE05z14tEOEJhXMH0e/g==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795288900;
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=BIbpRhgSn2a8MSsTeCgw/VImRa+MIs8IWsZ2zzjBrfU=;
+	b=4Ep1IUb41joZkaSq49DY99akhDrrG8Eu0jl7OflQiILTR35JOpviL3wGMr5egNAjblwM
+	 bozS+ddeYhv6ivRKIEjL3awT3Z6OauwtrceoSrIvU6hl5UKb6ELLNfToRJME3JQy6LGK5
+	 kfxCH2p2sXKdvIgZ+dN9EKcKQ2YPxLQaxqXu+KD9Y2TVMAww6rtOTW9LHcBJ85pUvNcaU
+	 w8Arnoq2ldA1uQ8w6+I9Un6l+DsCRntIBmM1o/sAbImWnviejwdiBSptAwuw4g2ysII+n
+	 9LlZkdgIQA+F3qrOon2svXuUSFgHjxYr8tc7RNgJKIXSmyqH0mP3aen2/zjvCfIxLOA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KnJl0BpE;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D4BC606A32C;
+	Sat, 21 Nov 2026 19:21:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KnJl0BpE
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1795288900;
+	b=ks48hx5MbhScKcr+ivDBQhQB1RmFrroTTKjWMOQlQfnE2mlItQtsf/ScDwsejQw5dNOJ
+	 QcB9lGhEMwwn7lO7MYMEY9InUqPIYJF4k8Hcr37Dw1VD+W1FzldoSW8OLrlNcfMvorUbV
+	 PUp98q427+ImOxewA5vEk4C0iTzsHKZm6ufk4FbjxnKQPLwXXRrm1wwzZgEHN70Gcc0Ei
+	 HY0aMm7FKZtPQ/iqsYhEmtkZpywIlrtNzbd3fkaek2eAa9JacFIDIsez+7Q6LjSMgtIPD
+	 eG3ZnG6whY9Nuyjg4pygE+nvfJwHbL+VI9dqmt4c+WwIlEL1XsOKxhbDpnuLS5jxXWg==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1795288900;
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=BIbpRhgSn2a8MSsTeCgw/VImRa+MIs8IWsZ2zzjBrfU=;
+	b=xr2WJ7Bx76QC+mo4/b4IDbl/kDZgeXP8ysBHOl68dhy1OM9XHNJzidrQrgpxFUVAAK7h
+	 cN3F5KE6UcAmLjc/Cqaak1oSn/5/Td+22xbRFH74FHpJ+EZ1YDr71jAMxhHRPR9hEy0dD
+	 monKPfhIfqnhXHIN10ZO/6BSx4rkHFJ3KW5EYPQcgibNk/5/MZ1tIXGgMAn9YRuXNNp1d
+	 LwH9lr7xcfWIBmgiRC2vDW3kZTj9ofyjtkEzcaIMl3Nrp3UiyKJOeVv66kbx9MNFJ9IMv
+	 iqMfFsrQl4nUQdbvBOtzSpqOF7b5PFRmTujwMfQIdUozS+timPgMk4TfDdlYyvKRdOA==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C02C606A330
-	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 13:06:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6C02C606A330
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=amarulasolutions.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amarulasolutions.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=STdFBazw
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-492fcbfaa88so1112635f8f.3
-        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 05:06:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amarulasolutions.com; s=google; t=1795266386; x=1795871186; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=U33Eqi0MwkCHOyFx02ypgQ50QlY/YFdApS7Aq1x3HP4=;
-        b=STdFBazwuQvSl0Gs0J2L/D5sVoVSxkW3HzmxbHdIriLcAauTcU8ZyZ+hei8YOEh/zB
-         C0rep5vFh6FRQ78WXcvN1cmwfAtReRsB6Nu7F0kWbRRoYdVcjwY80mrOD+KxziHy/4NC
-         q0Uyfc6dPgZ3JkuPJ6Qh6WyDyQhPc3FvEjkGk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795266386; x=1795871186;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=U33Eqi0MwkCHOyFx02ypgQ50QlY/YFdApS7Aq1x3HP4=;
-        b=gnarmj9WjDcwq4K0OiFK5ZqD0+6tIdE9smv7r2H7VjqFFh6JuPrzkuvhPX09Mraue2
-         +GSDQhTbNy1JxRcLkGIukyFglrG09IJ/o6eVUCZYteHOm/y3wD3aG/DEuFx0WqKPAkVG
-         w4TnIH/71eDUnggOg6GG02Al4ocOsOLKOGBWllyhHr1+lWisc4GZJI/0IXB8U6gPuhBH
-         HH7qMO2c8lld4VQyDzC4K/mmlOInp+jZrQFr3EwiLhg5fiuPv8bfmVASVOkwhruyuU/E
-         Ip4xRJYXpJybflKCL55+Ka/4I+S9RFPdelQoKtXyxwys0AiFfKmoagGYXxARL3EH3pJp
-         bjag==
-X-Forwarded-Encrypted: i=1; AL+hErEhWfmBg10aZlHlIVMZ+er2SasUu946tZV5Q5utuNQFbwW1CsIU73/UyiB88zbngEFlQR9irpEHHA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+Kvw+w0lBnoCH3TvqKcTgaa9Wfos5mlVPluuJDGgMhcesESR6y
-	pTRrWbIyhC2Y6FqqA3Zs3THgSWM1NiqEeAO7GdcgSdoRt+HbJ6Lx969WBc3z/3SoW/I=
-X-Gm-Gg: AZFdTZfUIdYv6LSy62vG9LlaAHMHZY9OkRbqd4jOdZ1wXt9WYFnB7YI/Qr92HWXgTDL
-	iSwPs0kp0d8ROCWTDbeN9BvY5fMZ4UkB9ZjeFVs6IGt53jDaNIc022LHG7FMg5ZwnGEfJZ6uCDD
-	5gVQLWR/4c2e9fJKKREQ8grX+Kh7sZw+JVr/flkBMjsOJNQflzHm/9ICGNuYafevSRjzD0UpM4c
-	49P9+KXaSkt9UV4Mup7LPQTu8GrveSV4g5jxtdx2ufiHzpAErCchI7MBXT0YduUMI+whwZElVeA
-	3ac0sJYsK9RnyVKOwcx+y+aWGMwK/EYof7TO5IBMPkH/dgdpubgGwfvhecSNu2lgyz31y2nVdVp
-	RV6/VWX9cyo1b8nDic72/+z00Ef3BqeVblIfNWZ7MJEmuDgqr5MxerDcALgZRs9acrva2hJ/4OQ
-	1qtUHia/RS4CFEDJHaFxq5JNnoJnb2QOjLNH98k+Qwl4QtQdZG+4XR3T4q1PktpZWZkNCXB/PJS
-	Rw8FgCsJcRQcayCdDdx9/vFAI6XEPOYujKedYaXj1zLVXBTLy00i0ewK7vQpHfKXSsC2TZ5iiTP
-	pOUvjiDWh4A910Qx9tNOTF92+5G/7hsySnuR4z5SbBBQr8eHffZkmgKRGH4PSkJQ32j2vtTm765
-	tr6z3Zn31BZp+/o615a3HLc6ipEXLjagwQJQl5LW4KPIsNo3DpFxM0zTsAtfdhv64zlX2M5fGhO
-	zn7QcvS+tkVjB6zZHsIB9zQAk0dzg=
-X-Received: by 2002:a05:600c:848a:b0:4a1:fbd2:f689 with SMTP id 5b1f17b1804b1-4bb8880993amr134343985e9.7.1795266385739;
-        Sat, 21 Nov 2026 05:06:25 -0800 (PST)
-Received: from dario-ThinkPad-P14s-Gen-5.homenet.telecomitalia.it (host-79-14-29-58.business.telecomitalia.it. [79.14.29.58])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb906d6a13sm47196545e9.3.2026.11.21.05.06.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 21 Nov 2026 05:06:25 -0800 (PST)
-From: Dario Binacchi <dario.binacchi@amarulasolutions.com>
-To: Ulf Hansson <ulfh@kernel.org>
-Cc: Peng Fan <peng.fan@nxp.com>,
-	linux-amarula@amarulasolutions.com,
-	Lucas Stach <l.stach@pengutronix.de>,
-	michael@amarulasolutions.com,
-	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Kees Cook <kees+treewide@kernel.org>,
-	Ming Qian <ming.qian@oss.nxp.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Xu Yang <xu.yang_2@nxp.com>,
-	bui duc phuc <phucduc.bui@gmail.com>,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 3/3] pmdomain: imx8m-blk-ctrl: Hold boot-on domain clocks until sync_state
-Date: Sat, 21 Nov 2026 14:06:10 +0100
-Message-ID: <20261121130614.2482656-4-dario.binacchi@amarulasolutions.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261121130614.2482656-1-dario.binacchi@amarulasolutions.com>
-References: <20261121130614.2482656-1-dario.binacchi@amarulasolutions.com>
+	by smtp.kernel.org (Postfix) with ESMTPS id 1AA991F000C4;
+	Sat, 21 Nov 2026 19:21:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795288899;
+	bh=BIbpRhgSn2a8MSsTeCgw/VImRa+MIs8IWsZ2zzjBrfU=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=KnJl0BpEZyJ1AwBZn9AM8y3Y5C7D2551lMQMeAVNKjXaNVYXbF37uBNKXsBbxQvoj
+	 APSZ8W8kZjqZbnO0yA/FV/xyFovp2sEwHJpDS8H4jQAHEKc4NM5A9iZPClz56XgJyY
+	 Faxj2uvPxue+xPJO44wZbeiIMSnRXDY7C0IfJ3rrjZkEVPoqpziCAxHFgHvEmJ0Mcn
+	 DsRZrqD+0c+Tdid95434L93sYWg2Xd2Ph4POuZLd9He9SRcK+3VueScZVcNIECKrnf
+	 Y7X5Dazd2cEzBiSmkv13ZHRt2hjkMyO1y/bn4AA4vi8ducYhXgXfCaeJLxXysOKFQm
+	 BIcaGYbqV5/Ew==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 6C4C44BD66;
+	Sat, 21 Nov 2026 19:21:38 +0000 (UTC)
+From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
+Subject: [PATCH v3 00/11] phy/drm: amlogic: Extract Meson HDMI TX PHY into
+ a dedicated driver
+Date: Sat, 21 Nov 2026 20:21:02 +0100
+Message-Id: <20261121-meson-drm-create-hdmitx-phy-v3-0-f8f471788076@aliel.fr>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -110,103 +84,164 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAB/vAWsC/33NSw7CIBSF4a00jL0G6EscuQ/jgMKtYPoKYNOm6
+ d4tNSYdOTzJyfcvxKOz6Mk1WYjD0Xrbd9tITwlRRnZPBKu3TTjlBWMshxZ934F2LSiHMiAY3do
+ wwWBmyKTKqCzyTFNBNmFwWNtp1++P7/bv6oUqRDI+jPWhd/OeH1n8/Url39LIgIJAKpVIWXph6
+ iYbi825diSGRn6gOP1P8UiluuBci6qi5YFa1/UDmfVNOyIBAAA=
+X-Change-ID: 20261115-meson-drm-create-hdmitx-phy-4ac40a654d09
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ Vinod Koul <vkoul@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Ulf Hansson <ulfh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linux-phy@lists.infradead.org, dri-devel@lists.freedesktop.org, 
+ Ronald Claveau <linux-kernel-dev@aliel.fr>, linux-pm@vger.kernel.org
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5894;
+ i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
+ bh=vTJkeGax5z5LctDahtuxP5Od5f4eDgeDQ5B1KbVYiOg=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQzbjeyXDl8/+7XzfZr9tbenH3Nn+/Nkn841PLXY7UX9u8
+ ePA2mSzjlIWBjEuBlkxRZb+uZYn3l0+eubrHvUUmDmsTCBDGLg4BWAirdMZ/tdEl75fI5y6oFac
+ 51Ls54m95r/r9K//FJpRusde4RHb2yZGhtfeRq3FDXc2K98NnGTVVJD/1v/3rCzuRXcyLOrKvvy
+ awAUA
+X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
+ fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
+X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
+ auth_id=744
+X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Reply-To: linux-kernel-dev@aliel.fr
 
-The clocks of a domain left on by the bootloader have no user until
-its consumers probe, so they are gated when the unused clocks are
-disabled. On the i.MX8MN, with the LCDIF driver built as a module,
-this stops the pixel clock of the U-Boot splash screen long before
-the DRM driver probes.
+This series moves the Amlogic Meson HDMI TX PHY handling (covering GXBB,
+GXL, GXM, and G12A SoCs) out of the meson_dw_hdmi DRM driver and into a
+dedicated generic PHY driver.
 
-Keep the clocks of these domains enabled until sync_state, i.e. until
-all the consumers of the blk-ctrl have probed.
+Until now, meson_dw_hdmi directly manipulated the HHI system controller
+registers (HHI_HDMI_PHY_CNTL0..5) to configure analog parameters, toggle
+resets, and manage power states, as well as manually ungating HDMI
+clocks and power domains already described in the DT.
 
-Signed-off-by: Dario Binacchi <dario.binacchi@amarulasolutions.com>
+By extracting this logic into a standalone PHY driver under
+drivers/phy/amlogic/:
+- Hardware representation in the DT is cleaner, modeling the HDMI TX PHY
+  as a child node of the HHI syscon referenced via standard "phys"
+  properties.
+- The DRM bridge driver relies on the standard generic PHY API
+  (phy_init, phy_configure, phy_power_on/off, phy_exit) rather than
+  touching syscon registers directly.
+- Legacy DTs lacking the "phys" property remain supported via a
+  temporary fallback helper (meson_hdmi_phy_create_legacy) to preserve
+  backward compatibility to be removed on next phase of component
+  removal.
+
+Overview of the series:
+- Patches 1-3: Fix compatible matching in meson-gx-hhi-sysctrl bindings,
+  add the new amlogic,meson-hdmi-tx-phy DT schema, and allow the
+  "hdmi-phy" child node under the HHI syscon.
+- Patch 4: Add the new Meson HDMI TX PHY driver implementing the HDMI
+  PHY configuration ops, along with the temporary legacy creation
+  helper.
+- Patch 5: Document the optional "phys" and properties in the
+  amlogic,meson-dw-hdmi binding.
+- Patch 6: Make meson-ee-pwrc power up the domain memories when the
+  domain is already on at probe time, as this is a prerequisite for
+  dropping the explicit write from meson_dw_hdmi
+- Patches 7-8: Clean up manual HHI clock/power-domain writes in
+  meson_dw_hdmi (relying on runtime PM instead) and convert the driver
+  to use the generic PHY framework.
+- Patches 9-11: Add the "hdmi-phy" child node and wire up the "phys"
+  phandle for G12, GXBB, and GXL Device Trees.
+
+Tested on:
+- Khadas VIM1 (GXL)
+- dtbs_check and dt_binding_check run cleanly with no new warnings.
+
+Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+---
+Changes in v3:
+- Patch 6: reuse meson_ee_pwrc_mem_power_up() in meson_ee_pwrc_on()
+  function.
+- Patch 8: revert the code to v1 and add a device link to solve
+  suspend/resume order in dpm_list.
+- Link to v2: https://patch.msgid.link/20261120-meson-drm-create-hdmitx-phy-v2-0-93d622d9bb07@aliel.fr
+
+Changes in v2:
+- Patches 5,9-11: Remove unecessary "phy-names" for uniq phy.
+                  Thanks to Neil's feedback.
+- Add Patch 6: Power up the memories when the domain is already on.
+               From Sashiko's feedback.
+- Patch 4: Add a 600MHz max_rate and a 25Mhz min_rate check and
+           exclude PHY_HDMI_MODE_FRL for phy_validate. Thx Sashiko.
+- Patch 8: Move phy_init in dw_hdmi_phy_init and phy_exit
+           in dw_hdmi_phy_disable. From Sashiko review.
+- Link to v1: https://patch.msgid.link/20261117-meson-drm-create-hdmitx-phy-v1-0-9e0ac931381c@aliel.fr
+
+To: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Neil Armstrong <neil.armstrong@linaro.org>
+To: Kevin Hilman <khilman@baylibre.com>
+To: Jerome Brunet <jbrunet@baylibre.com>
+To: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+To: Vinod Koul <vkoul@kernel.org>
+To: Manivannan Sadhasivam <mani@kernel.org>
+To: Ronald Claveau <linux-kernel-dev@aliel.fr>
+To: David Airlie <airlied@gmail.com>
+To: Simona Vetter <simona@ffwll.ch>
+To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+To: Maxime Ripard <mripard@kernel.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: devicetree@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-amlogic@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-phy@lists.infradead.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-pm@vger.kernel.org
 
 ---
+Ronald Claveau (11):
+      dt-bindings: soc: amlogic: meson-gx-hhi-sysctrl: Fix compatible matching in conditionals
+      dt-bindings: phy: amlogic: Add Meson HDMI TX PHY binding
+      dt-bindings: soc: amlogic: meson-gx-hhi-sysctrl: Add hdmi-phy child node
+      phy: amlogic: Add Meson HDMI TX PHY driver
+      dt-bindings: display: amlogic,meson-dw-hdmi: Add phys
+      pmdomain: amlogic: meson-ee-pwrc: power up memories for boot-enabled domains
+      drm/meson: dw-hdmi: Drop manual HHI clock and memory PD setup
+      drm/meson: dw-hdmi: Use the generic PHY framework for the HDMI TX PHY
+      arm64: dts: amlogic: Add HDMI TX PHY node for G12
+      arm64: dts: amlogic: Add HDMI TX PHY node for GXBB
+      arm64: dts: amlogic: Add HDMI TX PHY node for GXL
 
- drivers/pmdomain/imx/imx8m-blk-ctrl.c | 32 +++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ .../bindings/display/amlogic,meson-dw-hdmi.yaml    |   4 +
+ .../bindings/phy/amlogic,meson-hdmi-tx-phy.yaml    |  33 +++
+ .../soc/amlogic/amlogic,meson-gx-hhi-sysctrl.yaml  |  43 ++-
+ arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi  |   6 +
+ arch/arm64/boot/dts/amlogic/meson-gxbb.dtsi        |   6 +
+ arch/arm64/boot/dts/amlogic/meson-gxl.dtsi         |   6 +
+ drivers/gpu/drm/meson/Kconfig                      |   2 +
+ drivers/gpu/drm/meson/meson_dw_hdmi.c              | 222 +++++++-------
+ drivers/phy/amlogic/Kconfig                        |  11 +
+ drivers/phy/amlogic/Makefile                       |   1 +
+ drivers/phy/amlogic/phy-meson-hdmi-tx.c            | 319 +++++++++++++++++++++
+ drivers/pmdomain/amlogic/meson-ee-pwrc.c           |  19 +-
+ include/linux/phy/phy-meson-hdmi-tx.h              |  19 ++
+ 13 files changed, 547 insertions(+), 144 deletions(-)
+---
+base-commit: 6d582d78fad9d828e575ca0cdcff8ea47a77220b
+change-id: 20261115-meson-drm-create-hdmitx-phy-4ac40a654d09
 
-diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-index 35087da43dd7..95b010505ded 100644
---- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-+++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-@@ -84,6 +84,7 @@ struct imx8m_blk_ctrl_domain {
- 	struct imx8m_blk_ctrl *bc;
- 	int num_paths;
- 	bool boot_on;	/* Left on by the bootloader */
-+	bool boot_clks_held;	/* Until sync_state */
- };
- 
- struct imx8m_blk_ctrl_data {
-@@ -245,16 +246,33 @@ static int imx8m_blk_ctrl_get_boot_on(struct imx8m_blk_ctrl_domain *domain)
- 	if (icc_bulk_set_bw(domain->num_paths, domain->paths))
- 		dev_err(bc->dev, "failed to set icc bw\n");
- 
-+	/* Nobody else holds the clocks until the consumers probe */
-+	if (clk_bulk_prepare_enable(domain->data->num_clks, domain->clks))
-+		dev_warn(bc->dev, "failed to enable clocks of \"%s\"\n",
-+			 domain->data->name);
-+	else
-+		domain->boot_clks_held = true;
-+
- 	domain->boot_on = true;
- 
- 	return 0;
- }
- 
-+static void imx8m_blk_ctrl_put_boot_clks(struct imx8m_blk_ctrl_domain *domain)
-+{
-+	if (!domain->boot_clks_held)
-+		return;
-+
-+	clk_bulk_disable_unprepare(domain->data->num_clks, domain->clks);
-+	domain->boot_clks_held = false;
-+}
-+
- static void imx8m_blk_ctrl_put_boot_on(struct imx8m_blk_ctrl_domain *domain)
- {
- 	if (!domain->boot_on)
- 		return;
- 
-+	imx8m_blk_ctrl_put_boot_clks(domain);
- 	pm_runtime_put(domain->power_dev);
- 	pm_runtime_put(domain->bc->bus_power_dev);
- 	domain->boot_on = false;
-@@ -452,6 +470,7 @@ static void imx8m_blk_ctrl_remove(struct platform_device *pdev)
- 	for (i = 0; i < bc->onecell_data.num_domains; i++) {
- 		struct imx8m_blk_ctrl_domain *domain = &bc->domains[i];
- 
-+		imx8m_blk_ctrl_put_boot_clks(domain);
- 		pm_genpd_remove(&domain->genpd);
- 		dev_pm_domain_detach(domain->power_dev, true);
- 	}
-@@ -1032,11 +1051,24 @@ static const struct of_device_id imx8m_blk_ctrl_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, imx8m_blk_ctrl_of_match);
- 
-+static void imx8m_blk_ctrl_sync_state(struct device *dev)
-+{
-+	struct imx8m_blk_ctrl *bc = dev_get_drvdata(dev);
-+	int i;
-+
-+	/* This replaces the genpd provider sync_state */
-+	of_genpd_sync_state(dev->of_node);
-+
-+	for (i = 0; i < bc->onecell_data.num_domains; i++)
-+		imx8m_blk_ctrl_put_boot_clks(&bc->domains[i]);
-+}
-+
- static struct platform_driver imx8m_blk_ctrl_driver = {
- 	.probe = imx8m_blk_ctrl_probe,
- 	.remove = imx8m_blk_ctrl_remove,
- 	.driver = {
- 		.name = "imx8m-blk-ctrl",
-+		.sync_state = imx8m_blk_ctrl_sync_state,
- 		.pm = &imx8m_blk_ctrl_pm_ops,
- 		.of_match_table = imx8m_blk_ctrl_of_match,
- 		.suppress_bind_attrs = true,
--- 
-2.43.0
+Best regards,
+--  
+Ronald Claveau <linux-kernel-dev@aliel.fr>
+
 
