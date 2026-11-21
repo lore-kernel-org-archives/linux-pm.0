@@ -1,80 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1795253433;
-	b=VTVsyTDId7vqavWAhECElI8UKyuF2x6G6PiXOjvIH/PIJvQVePGHrzD44Ak45YMRhmy1
-	 DxUyeqafP+HbVpliq2OoiyS2w79gS5QV07FShERe33lEoX0GNNU8R28w97PjqTA0JC5cK
-	 iEidVvIhp3nEcTiywHFu59rn6U+Viw41Wro1OE65mWY/rfCeeGZqOaGpqFzHELkH+dzTH
-	 1XOxZDx3OU8/2Oo9G+3kDP2oe1dCMOipGMxn7JeCl1aBl8JaReTNCT1+Ov1G97IFsNHxy
-	 /sXP+0lf4oYfTzexrC32jH1Y2wEuQlbHzReAXfM4uu7wm2G64nM2FnwYy65SDsQnIfw==
+	b=GFuMew5bkiLvtmgP7AW/0Jwr0wRFM3bkT5ZF/OKvb4N1Zj5OLZF32wh5Y0wYuLo+fIF6
+	 bdM6yo0CbRqSSL1izoD27Dv8GWMiUuPpAF3+xaJQrgvQWYL37UieHjwh5r5i5ru7JIqoD
+	 Rq5qSnqDmRctS+HpjmY03R99+M9Zqmy+CUqozDquzmfW2GQkcxT7shNTSOj0qiVtK1Slf
+	 /Qqex5uuaP8ubqxuTSP3TChiBlaUOSHEYzM/9vWIFgZ905Cf1841dJXy5/v8Ycf8psUbk
+	 oetuwONg0mnLeuKZAHAJG75Db5G8sfz3DbnAX7DRgPJnq/2PxzvVYHyIJhBAydJhEWg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1795253433;
-	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=TW/E7LE2pmT/bh+fmRBzszm+XfXtsja1W+598BrYRGI=;
-	b=3JEvf4OjJXCmA27kbEZqfg0TPv5dKZYv/umAV8I7IDKxhnF6pABmX9CkespUikDOv3hj
-	 PoX8W0D/plA5ZTQKJ8aKOCKXEg5WahYtrN/+fwZoebdgG0z73zPPZx1JeQnTO3GiXjy6h
-	 ph/u6oQEyLW6Qg7HzyA+YemykAgK/E1wckPFln06J2MHYWYCs4WN28e7yfKKIbdY0E8Nx
-	 2nDN8JGZO68zrhvpwXq4NS4v/HJgieIZx83j92uS99MT8qGUD8dJV7T7pmbYJjgdPgkdA
-	 6saYKvy0iXBPZnnAbfkemT/NxBc0z9o+mSWhqtwSX+y3oUI1SLS4Zswu9saJekBJ2+Q==
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=S21tOaxZXwyf+Z8QRObzRQ+fwPxKxILzCjkqm4FZOpY=;
+	b=HbAbH4bT9AArEnWmyPYHqusEW5H2+EvFIbbiF4RKn6FwgzTu8wNObvwiv9bfhVoclm9e
+	 erQPNcxuKeb4jsABd5QCVB6Jmjaa+LSdN6c1pYPh2aDworYib3RHmaTy7Z4eLrtHcD3G5
+	 UiyrDsOWLx/NefwaIeEjxhA7JV+NctqKIrsNUceXGBJ6+UOCDUjntGpx1lc0YnpnzJC40
+	 mRtqg9er1zpOzNLytdD5++nFkzEKcWIXzyWPzgSyOQyYdBtVYOZHaFRFE/rWpbFZ7k1Tz
+	 RR+jK2pu+6PQOsXi0NYz9FAEhr4+s8NorCF67H+DMI3J3mFjl/vcXBb0wiJXkcxehKg==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IbuijY8B;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n2gLYaRd;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B1EF606A336;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9777F606A332;
 	Sat, 21 Nov 2026 09:30:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IbuijY8B
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n2gLYaRd
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795253432;
-	b=FQhFQPZqTAcCj67mDtS1mgeg71vV0vGufWiEQ/AycZiKY3Ljjp0dTV2vz0FAEEXbEGzU
-	 4d+TAILKV3GbLc0lXe4fs3PlpCEx/4FUUO1A4qyeuGtNfgHDs3dqPp5gEWAlf6u8HUEgO
-	 p/rPr1AEhgtDyAbzhRxjvxKfBDo74BFr2yaTx7lu8nNsPMsLA3W0C8pAbyH+kwPDyrtQ/
-	 MnrgwGQH6L5eyzlv9QkTdv5ivgIfLnf2VhIT6LPUxAU1RKEDy9q8nN+cny6I5RbRrqLVP
-	 p3qaN1DOfMGrBeBcIpyVPkDx1zMsrohBlyLhicICz+o0lBnaaEvBe1qdnolBsQu03xA==
+	t=1795253433;
+	b=UFfRrDZGihmRvKFH0GIi8Ap5Czc+Ucw1h6OSV9ByBqqKgf/gt9/hBWfzQVBZUp/rOY2G
+	 GP3ppy1unL0HoxrG0CiT5pmUXBuzNjFZCp/dFqvLNAdwLk4p5xnpIx6BxHMXWpxNQCnMK
+	 f9bgubBOoD8NLOhuCUqznoykGETruThuq9V4cBVADgSbfWkYomAkV+IVOpzTBEWsqndel
+	 XKAj2LONXt+3oz1EXB/2z1WAmBJ9fG6SWNcsDWy/8s1dzx3MCNH1vzBPhebo03JT4aJHL
+	 p8FHcYZDCr9c0izkk96jcZdV8jxyYivJwoqG8yi4ckTpFeAK0Oc7xpA2yBZ5t3Tdddg==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795253432;
-	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=TW/E7LE2pmT/bh+fmRBzszm+XfXtsja1W+598BrYRGI=;
-	b=Zb02VzJJtxRPsm/vNz3sznEzuL3cRjMXzmCiZbjngnJe8GEwWASB4aXI0CVxbwx69ROQ
-	 An1lFqGhVl+ItGgwDnhQhsseRtAFrxe3rwySlaQuDvA7S6psegzQ6GCkFp4pdUWLF/uSG
-	 nGIBKqqWDEr16oXXiCTp0pgN8fVJFEobLp4FAFHsJyat7RULW4MNjpXnWiQfOYzo6NRII
-	 WQAcph5i8L5JEdo6Jtrv4Oc3qtmEPMe7/w/KS71K0VqvRH5o8qL4cOIYQ/E13Qn06WyS2
-	 82p8hG0n23VnzUscDMlh5+kzpzJKLjP6FINJQygu4qzLilNgOmpTVa6sVzk4l24dkCQ==
+	c=relaxed/relaxed; t=1795253433;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=S21tOaxZXwyf+Z8QRObzRQ+fwPxKxILzCjkqm4FZOpY=;
+	b=h9JWIHcm7TAP9vMRYriS5CwJfOygxdvGzWj3qNO+kXEwWrHCv6KyXAh4Bn187iyID2H/
+	 T47bR+pEQtdQuZIeYzx5hKwSSYM37QclFpUtpjl1dS8xtgXNpDHGdTCYELnupItin3XhD
+	 hZzGCmHLk5JNnqVe3xVCaUMZRsGRxiOOYFsSI+3zhjXz5pCNb0kNrU1iPNnHunY95vxpO
+	 hSc67myEPnnpCMNnkP7PdWK3OJKqgPdoD0qUn2Ytaei3msBBGM3dkMXqVeXNykuKid4Gl
+	 AmGDo9JJFrsUiFvmecNWjoJRRkpG+qMZakX2J+BE7wea05Jifda662g1S0TD9gNSHyQ==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 5E2701F000CA;
+	by smtp.kernel.org (Postfix) with ESMTPS id 8234D1F000C6;
 	Sat, 21 Nov 2026 09:30:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795253432;
-	bh=TW/E7LE2pmT/bh+fmRBzszm+XfXtsja1W+598BrYRGI=;
-	h=From:Subject:Date:To:Cc:Reply-To;
-	b=IbuijY8BkpajvYyuSjG0Q1EZZ2BrlJCUyu6x3nIjcGKyPBY7sP6NhJ/xDzQnCbsvq
-	 q1TVGZKeeRr3vvZXNXbPtbcQEykO9hLQ5ybIVf1PjbnyXIZ8YFmjUIA5ZGW/nZLpc5
-	 xnBH1Tz7Z0lRQFRKJ9le5dBFbk9yBT86xfcCtmScOy7W0MfyUQhYf9nE5e9NkDkqTd
-	 aRLzZ131tL4yMlDeZNNM4r5t6JCdekaelxM9OaPepfM2op6+I9fb3SyxVnTYXx5qw0
-	 oz35fylXg3pZ5kFbzmnE7AMqWLG2ULh1ex++yd3HYsXW1wEc1HN7h/6Q1BCXufrWDX
-	 QiaHFk1P+QWRg==
+	s=k20260515; t=1795253433;
+	bh=S21tOaxZXwyf+Z8QRObzRQ+fwPxKxILzCjkqm4FZOpY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=n2gLYaRdzWlRIkMbbVLyX3E1aXPxvPRRRoJ0vk2ok3cbbKPw064HwGFOFWvurk+3z
+	 u25amCnE1/FoYu9HC2Qsu3+i21ZV5eQEQ0bEALkiMcR/4nSArkKoaCPxkUfDeTEQqQ
+	 ce5pE53I0oGJkeD8dWnnaEa6fEh7/fEaXMSQzJ8Ma+u9L8xYPSlnWjR2/2eYwAWFTZ
+	 9O39NXAmp2GxRUdNiNhT/1aWPI/Vn0nRiDrKfmDMfiWjdo0/KMleu/ih6jd3J+1u/b
+	 4xeRFo3gvplMJl3BYJhuh7HAl5aYPw6lViKKj0xFiYMTnWCO9UMjEvoMVaH1fpf4eJ
+	 nj9O/ZU6oEV7w==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id B20E54BBB4;
-	Sat, 21 Nov 2026 09:30:30 +0000 (UTC)
+	by lkml.kernel.org (Postfix) with ESMTP id 0FE064BBBC;
+	Sat, 21 Nov 2026 09:30:31 +0000 (UTC)
 From: Patrick Fischer via B4 Relay <devnull+admin.tsv-stahl-riesa.de@kernel.org>
-Subject: [PATCH 0/3] power: supply: smb347: Set the USB input current limit
+Date: Sat, 21 Nov 2026 10:30:22 +0100
+Subject: [PATCH 3/3] power: supply: smb347: Set the USB input current limit
  from APSD
-Date: Sat, 21 Nov 2026 10:30:19 +0100
-Message-Id: <20261121-upstream-smb347-apsd-v1-0-ca46b92bfd44@tsv-stahl-riesa.de>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -85,11 +84,9 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMyw6CMBBG4Vchs3aSthC8vIpx0dK/OiZg0wFDQ
- nh3qy6/xTkbKYpA6dJsVPAWlddUYQ8NDQ8/3cESq8kZ11vrDC9Z5wI/so6h7Y7ss0Y+n0KHiBR
- Mn6imuSDJ+tteb3/rEp4Y5u+L9v0D5pBk/ngAAAA=
-X-Change-ID: 20261120-upstream-smb347-apsd-98b4edefb06f
+Message-Id: <20261121-upstream-smb347-apsd-v1-3-ca46b92bfd44@tsv-stahl-riesa.de>
+References: <20261121-upstream-smb347-apsd-v1-0-ca46b92bfd44@tsv-stahl-riesa.de>
+In-Reply-To: <20261121-upstream-smb347-apsd-v1-0-ca46b92bfd44@tsv-stahl-riesa.de>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, David Heidelberg <david@ixit.cz>, 
@@ -101,110 +98,474 @@ Cc: Svyatoslav Ryhel <clamor95@gmail.com>,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Patrick Fischer <admin@tsv-stahl-riesa.de>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795253429; l=4716;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795253429; l=15427;
  i=admin@tsv-stahl-riesa.de; s=20261020; h=from:subject:message-id;
- bh=zJJFsIHeF0nNs/Qr8JrDVzgaMQ38hgsj9MNYB8mXUXs=;
- b=x3mGOu2jLHpQOXQE7f1Sb90bPcB6cAQwU76+6BZiAA5DNRn7U6d/ggy57jCC2syOEA8Ge+T8D
- T2lQL9CvwxfAQSl3mIWKLx80el+iy95iBWRDJRNiawl5qW+W1jLX77f
+ bh=RELoFozcAv6c9VU1zOArm6B+aQ4krKLrECThTH0LyRU=;
+ b=9AI6Xg4PIzgnmdnJY9A9zzqC0u65gWHGfOP0Wbq8Q19MFt09MfXQzOM+fMzfm3obGhlX3yKyn
+ Ws4wUXR6rmDDtTp5Ggz05nCt5hunQzbpOFTVHKcY+dbFKIZICYRGBj4
 X-Developer-Key: i=admin@tsv-stahl-riesa.de; a=ed25519;
  pk=D+v6EloYcEY9PIUHFyTM5sqcGIU/fIXzLUdkR8vjAtk=
 X-Endpoint-Received: by B4 Relay for admin@tsv-stahl-riesa.de/20261020 with
  auth_id=1251
 X-Original-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
 Reply-To: admin@tsv-stahl-riesa.de
+Content-Transfer-Encoding: 7bit
 
-The SMB347 driver programs the USB input current limit once at probe
-from "summit,usb-current-limit-microamp". Boards either leave it at the
-chip's NVM default, which is 900 mA on the Nexus 7 (2012), or set it to
-1800 mA (exynos4412-p4note, omap4-samsung-espresso10). The first makes
-the original 2 A charger no faster than a PC port, the second loads PC
-ports with 1.8 A.
+From: Patrick Fischer <admin@tsv-stahl-riesa.de>
 
-The charger detects the port type itself (APSD). This series reads the
-result after the input became valid, sets the limit for the port type
-(SDP 500 mA, CDP 1.5 A, DCP the DT value or 1.5 A) and reports it as
-POWER_SUPPLY_PROP_USB_TYPE. Patch 1 updates the binding text, patch 2
-makes the registers readable, patch 3 does the detection.
+The driver programs the USB input current limit only once at probe,
+from "summit,usb-current-limit-microamp". Without that property the
+limit stays at the value from the chip's non-volatile memory. On the
+Nexus 7 (2012) this is 900 mA, so the original 2 A charger charges the
+battery no faster than a PC port: about 540 mA into the battery with
+the display on, against about 505 mA at a laptop port. With the limit
+set to 1800 mA in the device tree, the charger gives about 790 mA, but
+then the same 1800 mA also applies to PC ports. Once, directly after
+boot at a laptop port, input current limiting (AICL) then ended at
+the lowest step (STAT_E 0xc0) and the battery got about 120 mA.
 
-Measured on a Nexus 7 (2012, E1565), median current into the battery
-(bq27541) over 5-30 minutes, battery charge in brackets:
+The charger detects the port type itself (automatic power source
+detection, APSD) and reports it in STAT_D. The Android kernel for the
+Nexus 7 uses it: 900 mA for a standard downstream port, 1800 mA for a
+charging downstream port, a dedicated charger or an unknown charger.
+It turns AICL off while it changes the limit and on again afterwards.
 
-                       before (NVM 900 mA)  this series
-  laptop port (CDP)    505 mA (84-89 %)     640 mA (85-90 %)    1.5 A
-  2 A charger (DCP)    561 mA (84-86 %)     968 mA (74-78 %)    1.5 A
-                                            972 mA (79-82 %)    1.8 A *
-  same, display off    596 mA (31-33 %)    1161 mA (37-39 %)    1.5 A
-                                           1147 mA (45-47 %)    1.8 A *
+Use the APSD result to set the limit and report it as
+POWER_SUPPLY_PROP_USB_TYPE:
 
-  * with summit,usb-current-limit-microamp = <1800000> added to the
-    grouper DT for the test; it gives no gain over 1.5 A, so this
-    series does not touch the grouper DT.
+  SDP, other, unknown  500 mA (USB 2.0)
+  CDP                  1500 mA (BC 1.2)
+  DCP                  "summit,usb-current-limit-microamp", or 1500 mA
 
-The display was on unless noted.
+All values are capped by "summit,usb-current-limit-microamp" if it is
+set. A delayed work reads STAT_D 500 ms after the USB input became valid
+and polls for up to 2 s until APSD is done. The same delay applies at
+probe: directly after probe the charger NAKs the write to
+CFG_VARIOUS_FUNCTION, 500 ms later it accepts it. If APSD does not
+finish, the limit for an unknown port is used. When the input goes away,
+the work sets that limit as well, so that a new connection never starts
+with the higher limit of the previous charger. The work runs after every
+USB input interrupt, even if the input state looks unchanged: on the
+Nexus 7, a quick move from a laptop port to the charger gave two
+interrupts, but the driver saw the input as connected both times and
+kept the limit for the laptop port. Nothing changes while the charger
+supplies VBUS in host mode.
 
-The laptop port turned out to be a CDP. A PC port detected as SDP was
-not available for testing. With 1800 mA in the device tree and without
-this series, AICL ended once at the lowest step directly after boot at
-the laptop port (the battery got 120 mA); with the series it did not
-happen in seven boots and several reconnections. Directly after probe the
-charger NAKs the write to CFG_VARIOUS_FUNCTION; patch 3 therefore does
-the first detection 500 ms after probe, as after a new connection.
-A quick move from the laptop port to the charger once left the driver
-with the CDP limit (two interrupts, input state unchanged in the
-driver), so patch 3 detects the port type after every USB input
-interrupt; quick moves in both directions work with that.
+The detection relies on the interrupt for input changes, so it is only
+used if the interrupt is available. The STAT_D and AICL bit layout is
+only known for the SMB347, so SMB345 and SMB358 are left as they are.
+APSD is turned on at probe, as in the Android driver.
 
-There is no public datasheet with the register map that I could find.
-The STAT_D, AICL and APSD bits are taken from the Android 3.1 kernel for
-the Nexus 7 [1], which uses them the same way (900 mA for SDP, 1800 mA
-for the other types). That is why only the SMB347 uses APSD, and
-SMB345/SMB358 stay as they are.
+On the Nexus 7 (2012) the original charger is detected as DCP and now
+gives about 1160 mA into the battery at 37-39 % charge with the display
+off, against 600 mA before (31-33 %), and about 970 mA at 74-82 % with
+the display on, against 560 mA before (84-86 %). 1800 mA in the device
+tree gave no further gain. A laptop port detected as CDP gives about
+640 mA instead of 505 mA.
 
-Questions:
+This changes the behaviour of boards that set the property to a value
+above 500 mA, today exynos4412-p4note and omap4-samsung-espresso10
+with 1800 mA: they keep 1800 mA with a dedicated charger, but draw
+500 mA from a PC port.
 
-- Is 500 mA for an SDP acceptable? It is the USB 2.0 value, but less
-  than the NVM default of 900 mA on the Nexus 7 and than the 1800 mA
-  p4note and espresso10 use today at a PC port.
-- APSD result "other" (non-BC 1.2 chargers) gets 500 mA here; the
-  Android driver uses the charger limit. Is someone able to check the
-  meaning of the remaining STAT_D values on SMB345/SMB358?
+The STAT_D, AICL and APSD bits and the 20 ms delay before turning AICL
+back on come from drivers/power/smb347-charger.c in the
+android-tegra3-grouper-3.1-lollipop-release branch of
+https://android.googlesource.com/kernel/tegra.
 
-Bruce Robertson posted an RFC for a Rust SMB347 driver [2], which does
-not handle interrupts or USB OTG yet. This series is for the existing C
-driver; I am happy to test the Rust driver on the Nexus 7 as well.
-
-Tested with v7.4-rc3 on a Nexus 7 (2012, E1565) at a laptop port (CDP)
-and the original 2 A charger (DCP), including unplugging, replugging and
-quick moves between them.
-An SDP, chargers reported as "other" and USB host mode (OTG) were not
-tested. The series is build tested on top of power-supply for-next.
-
-Tool use (see Documentation/process/generated-content.rst): the patches,
-their changelogs and this cover letter were prepared with an LLM coding
-assistant (Claude Code). It compared the Android and mainline drivers,
-wrote the code and drafted the texts from my measurements and
-instructions. I reviewed the changes and ran all tests on the device.
-
-[1] drivers/power/smb347-charger.c, branch
-    android-tegra3-grouper-3.1-lollipop-release of
-    https://android.googlesource.com/kernel/tegra
-[2] https://lore.kernel.org/all/20260708214738.25008-1-brucer42@gmail.com/
-
+Signed-off-by: Patrick Fischer <admin@tsv-stahl-riesa.de>
 ---
-Patrick Fischer (3):
-      dt-bindings: power: supply: summit,smb347: Clarify the USB current limit
-      power: supply: smb347: Make the APSD and AICL registers readable
-      power: supply: smb347: Set the USB input current limit from APSD
+ drivers/power/supply/smb347-charger.c | 252 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 250 insertions(+), 2 deletions(-)
 
- .../power/supply/summit,smb347-charger.yaml        |   5 +-
- drivers/power/supply/smb347-charger.c              | 258 ++++++++++++++++++++-
- 2 files changed, 260 insertions(+), 3 deletions(-)
----
-base-commit: abbe0a96bdbadae9e29489a1528fa436c55aca25
-change-id: 20261120-upstream-smb347-apsd-98b4edefb06f
+diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
+index 03d58b378a25..330c05cfddc3 100644
+--- a/drivers/power/supply/smb347-charger.c
++++ b/drivers/power/supply/smb347-charger.c
+@@ -8,7 +8,9 @@
+  *          Mika Westerberg <mika.westerberg@linux.intel.com>
+  */
+ 
++#include <linux/bitfield.h>
+ #include <linux/delay.h>
++#include <linux/devm-helpers.h>
+ #include <linux/err.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+@@ -19,6 +21,7 @@
+ #include <linux/property.h>
+ #include <linux/regmap.h>
+ #include <linux/regulator/driver.h>
++#include <linux/workqueue.h>
+ 
+ #include <dt-bindings/power/summit,smb347-charger.h>
+ 
+@@ -44,11 +47,13 @@
+ #define CFG_CURRENT_LIMIT_DC_SHIFT		4
+ #define CFG_CURRENT_LIMIT_USB_MASK		0x0f
+ #define CFG_VARIOUS_FUNCTION			0x02
++#define CFG_VARIOUS_FUNCTION_AICL		BIT(4)
+ #define CFG_FLOAT_VOLTAGE			0x03
+ #define CFG_FLOAT_VOLTAGE_FLOAT_MASK		0x3f
+ #define CFG_FLOAT_VOLTAGE_THRESHOLD_MASK	0xc0
+ #define CFG_FLOAT_VOLTAGE_THRESHOLD_SHIFT	6
+ #define CFG_CHARGE_CONTROL			0x04
++#define CFG_CHARGE_CONTROL_APSD			BIT(2)
+ #define CFG_STAT				0x05
+ #define CFG_STAT_DISABLED			BIT(5)
+ #define CFG_STAT_ACTIVE_HIGH			BIT(7)
+@@ -131,10 +136,29 @@
+ #define STAT_C_CHG_TERM				BIT(5)
+ #define STAT_C_CHARGER_ERROR			BIT(6)
+ #define STAT_D					0x3e
++#define STAT_D_APSD_RESULT_MASK			GENMASK(2, 0)
++#define STAT_D_APSD_RESULT_CDP			1
++#define STAT_D_APSD_RESULT_DCP			2
++#define STAT_D_APSD_RESULT_OTHER		3
++#define STAT_D_APSD_RESULT_SDP			4
++#define STAT_D_APSD_DONE			BIT(3)
+ #define STAT_E					0x3f
+ 
+ #define SMB347_MAX_REGISTER			0x3f
+ 
++/*
++ * USB input current limits (in uA) for the port types reported by APSD.
++ * A dedicated charger gets "summit,usb-current-limit-microamp" if given.
++ */
++#define SMB347_SDP_CURRENT_LIMIT		500000U		/* USB 2.0 */
++#define SMB347_CDP_CURRENT_LIMIT		1500000U	/* BC 1.2 */
++#define SMB347_DCP_CURRENT_LIMIT		1500000U	/* BC 1.2 */
++
++/* APSD takes a few hundred milliseconds after the input became valid. */
++#define SMB347_APSD_DELAY_MS			500
++#define SMB347_APSD_POLL_US			(100 * USEC_PER_MSEC)
++#define SMB347_APSD_TIMEOUT_US			(2 * USEC_PER_SEC)
++
+ /**
+  * struct smb347_charger - smb347 charger instance
+  * @dev: pointer to device
+@@ -142,11 +166,14 @@
+  * @mains: power_supply instance for AC/DC power
+  * @usb: power_supply instance for USB power
+  * @usb_rdev: USB VBUS regulator device
++ * @apsd_work: sets the USB input current limit from the detected port type
+  * @id: SMB charger ID
+  * @mains_online: is AC/DC input connected
+  * @usb_online: is USB input connected
+  * @irq_unsupported: is interrupt unsupported by SMB hardware
+  * @usb_vbus_enabled: is USB VBUS powered by SMB charger
++ * @use_apsd: USB input current limit follows the APSD result
++ * @usb_type: USB port type detected by APSD (%POWER_SUPPLY_USB_TYPE_*)
+  * @max_charge_current: maximum current (in uA) the battery can be charged
+  * @max_charge_voltage: maximum voltage (in uV) the battery can be charged
+  * @pre_charge_current: current (in uA) to use in pre-charging phase
+@@ -202,11 +229,14 @@ struct smb347_charger {
+ 	struct power_supply	*mains;
+ 	struct power_supply	*usb;
+ 	struct regulator_dev	*usb_rdev;
++	struct delayed_work	apsd_work;
+ 	unsigned int		id;
+ 	bool			mains_online;
+ 	bool			usb_online;
+ 	bool			irq_unsupported;
+ 	bool			usb_vbus_enabled;
++	bool			use_apsd;
++	int			usb_type;
+ 
+ 	unsigned int		max_charge_current;
+ 	unsigned int		max_charge_voltage;
+@@ -280,6 +310,14 @@ static const unsigned int ccc_tbl[NUM_CHIP_TYPES][4] = {
+ 	[SMB358] = {  200000,  450000,  600000,  900000 },
+ };
+ 
++/*
++ * Chips with automatic power source detection (APSD) results in STAT_D and
++ * the AICL enable bit in CFG_VARIOUS_FUNCTION as described above.
++ */
++static const bool apsd_tbl[NUM_CHIP_TYPES] = {
++	[SMB347] = true,
++};
++
+ /* Convert register value to current using lookup table */
+ static int hw_to_current(const unsigned int *tbl, size_t size, unsigned int val)
+ {
+@@ -497,6 +535,59 @@ static int smb347_set_current_limits(struct smb347_charger *smb)
+ 	return 0;
+ }
+ 
++/*
++ * Sets the USB input current limit. Like the vendor driver, turn AICL off
++ * while the limit changes, so that the charger detects the input current
++ * again with the new limit once AICL is turned back on.
++ *
++ * Must be called with the configuration registers writable.
++ */
++static int smb347_set_usb_current_limit(struct smb347_charger *smb,
++					unsigned int limit)
++{
++	unsigned int id = smb->id;
++	unsigned int val;
++	bool aicl;
++	int hw, ret, ret2;
++
++	hw = current_to_hw(icl_tbl[id], ARRAY_SIZE(icl_tbl[id]), limit);
++	if (hw < 0)
++		return hw;
++
++	ret = regmap_read(smb->regmap, CFG_CURRENT_LIMIT, &val);
++	if (ret < 0)
++		return ret;
++
++	if ((val & CFG_CURRENT_LIMIT_USB_MASK) == hw)
++		return 0;
++
++	ret = regmap_read(smb->regmap, CFG_VARIOUS_FUNCTION, &val);
++	if (ret < 0)
++		return ret;
++
++	aicl = val & CFG_VARIOUS_FUNCTION_AICL;
++	if (aicl) {
++		ret = regmap_clear_bits(smb->regmap, CFG_VARIOUS_FUNCTION,
++					CFG_VARIOUS_FUNCTION_AICL);
++		if (ret < 0)
++			return ret;
++	}
++
++	ret = regmap_update_bits(smb->regmap, CFG_CURRENT_LIMIT,
++				 CFG_CURRENT_LIMIT_USB_MASK, hw);
++
++	if (aicl) {
++		/* The vendor driver waits 20 ms before turning AICL back on. */
++		msleep(20);
++		ret2 = regmap_set_bits(smb->regmap, CFG_VARIOUS_FUNCTION,
++				       CFG_VARIOUS_FUNCTION_AICL);
++		if (!ret)
++			ret = ret2;
++	}
++
++	return ret;
++}
++
+ static int smb347_set_voltage_limits(struct smb347_charger *smb)
+ {
+ 	int ret;
+@@ -794,6 +885,125 @@ static int smb347_hw_init(struct smb347_charger *smb)
+ 	return ret;
+ }
+ 
++static int smb347_apsd_usb_type(unsigned int stat_d)
++{
++	switch (FIELD_GET(STAT_D_APSD_RESULT_MASK, stat_d)) {
++	case STAT_D_APSD_RESULT_CDP:
++		return POWER_SUPPLY_USB_TYPE_CDP;
++	case STAT_D_APSD_RESULT_DCP:
++		return POWER_SUPPLY_USB_TYPE_DCP;
++	case STAT_D_APSD_RESULT_SDP:
++		return POWER_SUPPLY_USB_TYPE_SDP;
++	default:
++		/* Includes STAT_D_APSD_RESULT_OTHER (non-BC 1.2 chargers). */
++		return POWER_SUPPLY_USB_TYPE_UNKNOWN;
++	}
++}
++
++static unsigned int smb347_usb_type_current_limit(struct smb347_charger *smb,
++						  int usb_type)
++{
++	unsigned int dcp = smb->usb_hc_current_limit ?: SMB347_DCP_CURRENT_LIMIT;
++
++	switch (usb_type) {
++	case POWER_SUPPLY_USB_TYPE_DCP:
++		return dcp;
++	case POWER_SUPPLY_USB_TYPE_CDP:
++		return min(dcp, SMB347_CDP_CURRENT_LIMIT);
++	default:
++		return min(dcp, SMB347_SDP_CURRENT_LIMIT);
++	}
++}
++
++static void smb347_apsd_work(struct work_struct *work)
++{
++	struct smb347_charger *smb = container_of(to_delayed_work(work),
++						  struct smb347_charger,
++						  apsd_work);
++	int usb_type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
++	unsigned int limit, val;
++	int ret;
++
++	/* VBUS comes from the charger itself in USB host mode. */
++	if (smb->usb_vbus_enabled)
++		return;
++
++	/*
++	 * Without input, set the limit for an unknown port, so that the next
++	 * connection starts with it until APSD has detected the port type.
++	 */
++	if (smb->usb_online) {
++		ret = regmap_read_poll_timeout(smb->regmap, STAT_D, val,
++					       val & STAT_D_APSD_DONE,
++					       SMB347_APSD_POLL_US,
++					       SMB347_APSD_TIMEOUT_US);
++		if (!ret)
++			usb_type = smb347_apsd_usb_type(val);
++		else if (ret == -ETIMEDOUT)
++			dev_dbg(smb->dev, "APSD did not complete\n");
++		else
++			dev_err(smb->dev, "failed to read APSD result: %d\n", ret);
++	}
++
++	limit = smb347_usb_type_current_limit(smb, usb_type);
++
++	ret = smb347_set_writable(smb, true, true);
++	if (ret < 0)
++		goto out;
++
++	ret = smb347_set_usb_current_limit(smb, limit);
++	smb347_set_writable(smb, false, true);
++out:
++	if (ret < 0)
++		dev_err(smb->dev, "failed to set USB input current limit: %d\n",
++			ret);
++
++	WRITE_ONCE(smb->usb_type, usb_type);
++	power_supply_changed(smb->usb);
++}
++
++static void smb347_apsd_schedule(struct smb347_charger *smb)
++{
++	unsigned long delay = 0;
++
++	if (!smb->use_apsd)
++		return;
++
++	if (smb->usb_online)
++		delay = msecs_to_jiffies(SMB347_APSD_DELAY_MS);
++
++	mod_delayed_work(system_dfl_wq, &smb->apsd_work, delay);
++}
++
++static int smb347_apsd_init(struct smb347_charger *smb)
++{
++	int ret;
++
++	smb->use_apsd = apsd_tbl[smb->id] && smb->use_usb &&
++			!smb->irq_unsupported;
++	if (!smb->use_apsd)
++		return 0;
++
++	ret = smb347_set_writable(smb, true, true);
++	if (ret < 0)
++		return ret;
++
++	/* The vendor driver turns APSD on at probe as well. */
++	ret = regmap_set_bits(smb->regmap, CFG_CHARGE_CONTROL,
++			      CFG_CHARGE_CONTROL_APSD);
++	smb347_set_writable(smb, false, true);
++	if (ret < 0)
++		return ret;
++
++	/*
++	 * Directly after probe the charger NAKs the write to
++	 * CFG_VARIOUS_FUNCTION. Wait as after a new connection.
++	 */
++	smb347_apsd_schedule(smb);
++
++	return 0;
++}
++
+ static irqreturn_t smb347_interrupt(int irq, void *data)
+ {
+ 	struct smb347_charger *smb = data;
+@@ -885,6 +1095,14 @@ static irqreturn_t smb347_interrupt(int irq, void *data)
+ 			if (smb->use_usb)
+ 				power_supply_changed(smb->usb);
+ 		}
++
++		/*
++		 * The USB input may have been disconnected and connected again
++		 * since the last interrupt, so detect the port type again even
++		 * if the input state looks unchanged.
++		 */
++		if (irqstat_e & IRQSTAT_E_USBIN_UV_IRQ)
++			smb347_apsd_schedule(smb);
+ 		handled = true;
+ 	}
+ 
+@@ -1157,6 +1375,10 @@ static int smb347_get_property_locked(struct power_supply *psy,
+ 		val->intval = ret;
+ 		break;
+ 
++	case POWER_SUPPLY_PROP_USB_TYPE:
++		val->intval = READ_ONCE(smb->usb_type);
++		break;
++
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -1191,6 +1413,15 @@ static enum power_supply_property smb347_properties[] = {
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+ };
+ 
++static enum power_supply_property smb347_usb_properties[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
++	POWER_SUPPLY_PROP_USB_TYPE,
++};
++
+ static bool smb347_volatile_reg(struct device *dev, unsigned int reg)
+ {
+ 	switch (reg) {
+@@ -1516,9 +1747,13 @@ static const struct power_supply_desc smb347_mains_desc = {
+ static const struct power_supply_desc smb347_usb_desc = {
+ 	.name		= "smb347-usb",
+ 	.type		= POWER_SUPPLY_TYPE_USB,
++	.usb_types	= BIT(POWER_SUPPLY_USB_TYPE_SDP) |
++			  BIT(POWER_SUPPLY_USB_TYPE_CDP) |
++			  BIT(POWER_SUPPLY_USB_TYPE_DCP) |
++			  BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN),
+ 	.get_property	= smb347_get_property,
+-	.properties	= smb347_properties,
+-	.num_properties	= ARRAY_SIZE(smb347_properties),
++	.properties	= smb347_usb_properties,
++	.num_properties	= ARRAY_SIZE(smb347_usb_properties),
+ };
+ 
+ static const struct regulator_desc smb347_usb_vbus_regulator_desc = {
+@@ -1548,6 +1783,7 @@ static int smb347_probe(struct i2c_client *client)
+ 		return -ENOMEM;
+ 	smb->dev = &client->dev;
+ 	smb->id = id->driver_data;
++	smb->usb_type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
+ 	i2c_set_clientdata(client, smb);
+ 
+ 	smb347_dt_parse_dev_info(smb);
+@@ -1582,10 +1818,22 @@ static int smb347_probe(struct i2c_client *client)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	/* Before the IRQ, so that it is cancelled after the IRQ is freed. */
++	ret = devm_delayed_work_autocancel(dev, &smb->apsd_work,
++					   smb347_apsd_work);
++	if (ret)
++		return ret;
++
+ 	ret = smb347_irq_init(smb, client);
+ 	if (ret)
+ 		return ret;
+ 
++	ret = smb347_apsd_init(smb);
++	if (ret < 0) {
++		smb347_irq_disable(smb);
++		return dev_err_probe(dev, ret, "failed to enable APSD\n");
++	}
++
+ 	usb_rdev_cfg.dev = dev;
+ 	usb_rdev_cfg.driver_data = smb;
+ 	usb_rdev_cfg.regmap = smb->regmap;
 
-Best regards,
---  
-Patrick Fischer <admin@tsv-stahl-riesa.de>
+-- 
+2.56.1
 
 
