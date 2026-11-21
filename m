@@ -1,46 +1,46 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795295338;
-	b=nnhHUadNRxlsox+jwho7wHZjPLGgWdEo+v9sUVpXnh2x6IULe8fCc0+rujpTSD3567Ax
-	 Zeguz9i4CTpgX+x1ymMfV2wbK0VbnLjneMAT/THfROC2RmmfFJaHXAWsLi8KDf/vkLhrj
-	 W51hSfb6HQ3I2n3FZES2OJhiZnDrGH64Z15ht8MEChx5v77tFo9vzgpcWn6Q5WaECFcDf
-	 fSHo/ZO+lTDLcEbYFXg70rdXjTBHYN9lLL0BYKYZrpeWX5XtTvrF2y9qHOksv+G6HmlOV
-	 ECoaxlXdEcHZy310PCNbt6U3HH/XzqQjg11wGfyX3Y/T0TYgb/8m1mvMLFZyxDA8HUQ==
+	t=1795295457;
+	b=yKUp0AoTJJNbJ6pVeMzuutIDLA26fk2CmccRXGrZrs0QWdsJNryjR25LCNgbFbW4+qU7
+	 x4PMKEQvKBogRgARJin8ubtaLlW6effAeb2/Y8iQ8cqiupOM6iMe5/JKrAq3uMQg7yjU1
+	 2WlOg3dENjuB9P0NC7xK15hANkI/gvS5diUbe/HgEYwVsy7Y7w079BRpFcPk0A5ufnH92
+	 eDQyJRU4EW5fTi3ZQ+ICgDa95I3s13vU1k9jwCqmhD06nYB6TkkQ5UALbum50F/THn6AJ
+	 BAhDDu/SX6JB6maHZ7pAaxfnA16XRh3R8XoBJjE5fr1nlICrcuk+g03X2OpZZilN8Aw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795295338;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795295457;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=J8c2sc9pHyGkMH12X1dKW2Db+m7WpKDYGFFOvD1bnfM=;
-	b=gw+c2BY8Juxu46iHmDJ6csxF9XEEaYQbLur9ZD/ddbeH1vRUcLXTnje50Yp8vIO+rTb3
-	 0mqRCdBrW30HhOFwF2Mr46a3eojGkw9lg7AjvkqtBk/2CnJcTuuGXaefLRhhVq1ng9Yjx
-	 uYbfbd4F+a7h2apWwLD31uS1ZFW0bTfxI7URphqZoIczERIri21+ESv0EnJQyt+k3aWvD
-	 DsgirQXTstDxuxRgFxauAeeqtfAKVHTFb3vb4b1+HRjYNrbcnAD3AgUHFyG6S26vXpGIG
-	 ULZOUWBB09Nq0Me+jpPyMgytF/BiZE6soIOubozw87lND+bzIdp9FsthdcSq4YQVUdw==
+	bh=KKfogKoccKbSmi27EKzQDLWPjgZehkgSMNv3TPjFRRY=;
+	b=b5txVtrF3r5K5Caw7gV7GskvLLA0g0Nd80YRfpNRmEgDmL5dgreH3bDoGgWgxseRJbZe
+	 3Re8AGT2iEYWAsVS+6zefH9EHwW9w3tFKYw78gmAHgWhSxSSH0FtDxTXGQoF4JrlV48zx
+	 8tzcM0Rd37r0MyxZmEpGmJ0PLL1IzudwbnpveqR8dccPfVxYuBtfYPZpesJF/CDujk5pv
+	 f9G1kq/v4iwxDKR775ZdDIcQOTlNW7Doh9yV8dQJNwDRR+sUQpR0z7tSDNy9qF0oKRZTI
+	 QDqxTDoI6XngP7mEmpE+szWRNBcypXTjPLyvaAYL0Uun2DrYeB7wtWmYFU/JbOxmPIw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A1c50uxe;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JkiRsLtF;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A9B2606A320;
-	Sat, 21 Nov 2026 21:08:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64D7D606A682;
+	Sat, 21 Nov 2026 21:10:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A1c50uxe
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 187481F000C0;
-	Sat, 21 Nov 2026 21:08:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JkiRsLtF
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 396811F000C6;
+	Sat, 21 Nov 2026 21:10:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795295338;
-	bh=J8c2sc9pHyGkMH12X1dKW2Db+m7WpKDYGFFOvD1bnfM=;
+	s=k20260515; t=1795295457;
+	bh=KKfogKoccKbSmi27EKzQDLWPjgZehkgSMNv3TPjFRRY=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=A1c50uxe9q2n/EXWdWf11CJGRgpdzw6KkLEYdFyJvl8P9Bl/rnZQSPLVGlmYH1h2O
-	 /IeHdNcptRndL0+A7ne7l9L17nS8eqBkCENUICZJk4QwVS8WPEb0T0o2wCNvERuA92
-	 dmFyZQq1QKdjIuWR9HEDBfwTR+TNcIPGH66qIp87I6DQ1a/DGx+qpCQgwO10/RaAte
-	 zX6El0vnu4fRBp92kwVqwlAHfDQ4EAE7Pj7Q/Fgj6TyugpbdQtCKNzut4QNN9JZQu1
-	 HpTZupP59iPwR7lJqcCs+fykHI+So8uFfdJWXGV+2uU1k2NoCNxGDT0JHCFLwvIVHp
-	 wNzcYaF4N97rA==
-Date: Sat, 21 Nov 2026 21:08:52 +0000
+	b=JkiRsLtFytEz7iVkJbtMjbjlgxiLgL5CcmuvZROW19g8kEgEMs2tk9p9bZUyyF3ci
+	 GnYEMG5TzsMegpOBq6v5mp398z76CEXWL+hRfxJ2nTBP1MJebP/Bw1y7/NIBbvbJyA
+	 R6kyVVePabmrMtaACvVpKZBBAUsguvzr2VCvUhp/teKmaobt6+1Yz9GR8ubRb7FOfP
+	 5/dCTvHjlMnDmRyFLI5X1rQovUIYs+J60DzRGPhz27TX4xy3iMML3uN2/A8u0aUwUj
+	 ki6diO5Rn5VVsdF9V+vEFIYq9ub2HYCT2oNOmzfKb65zU9LsE0jarjYFcZy75vpF/W
+	 30hv41QDtT7SQ==
+Date: Sat, 21 Nov 2026 21:10:51 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
 Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
@@ -56,12 +56,12 @@ Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
  <anjelique.melendez@oss.qualcomm.com>, Manaf Meethalavalappu Pallikunhi
  <manaf.pallikunhi@oss.qualcomm.com>, Priyansh Jain
  <priyansh.jain@oss.qualcomm.com>
-Subject: Re: [PATCH v2 5/7] iio: adc: qcom-spmi-adc5-gen3: Remove Gen3
- virtual channel macros
-Message-ID: <20261121210852.67e2d4ed@jic23-hlaptop>
-In-Reply-To: <20261120-pmic5_gen4_adc-v2-5-94d0e1fd6847@oss.qualcomm.com>
+Subject: Re: [PATCH v2 6/7] dt-bindings: iio: adc: Add support for QCOM
+ PMIC5 Gen4 ADC
+Message-ID: <20261121211051.7b9b337c@jic23-hlaptop>
+In-Reply-To: <20261120-pmic5_gen4_adc-v2-6-94d0e1fd6847@oss.qualcomm.com>
 References: <20261120-pmic5_gen4_adc-v2-0-94d0e1fd6847@oss.qualcomm.com>
-	<20261120-pmic5_gen4_adc-v2-5-94d0e1fd6847@oss.qualcomm.com>
+	<20261120-pmic5_gen4_adc-v2-6-94d0e1fd6847@oss.qualcomm.com>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,51 +75,93 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Fri, 20 Nov 2026 14:49:45 +0530
+On Fri, 20 Nov 2026 14:49:46 +0530
 Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
 
-> Now that the Gen3 virtual channel macros have been replaced with Gen4
-> macros in both main IIO ADC driver and auxiliary ADC_TM driver, remove
-> the Gen3 macros as they are no longer used.
+> At present, support is present for Gen4 ADC channels under a master PMIC
+> with Gen3 ADC. Add a compatible string "qcom,spmi-adc5-gen4" to support a
+> master PMIC with Gen4 ADC. ADC channels under such a device can be
+> considered to be of type Gen4 ADC by default.
+> 
+> To support any exceptions (Gen3 ADC channels under a Gen4 master), add the
+> "qcom,adc5-gen3" ADC channel property, analogous to "qcom,adc5-gen4", to
+> indicate that a channel is of type Gen3 ADC.
+> 
+> Add constraints to ensure that "qcom,adc5-gen4" and "qcom,adc5-gen3"
+> channel properties are only valid if the top-level compatible string is
+> of the opposite type. A channel without either of these properties can be
+> assumed to be of the same type indicated by the master PMIC's compatible
+> string.
 > 
 > Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Ah. Ok.  I missed this was coming.
-
-Perhaps modifying these to align in earlier patches is to much
-pain given you are going to delete them.
-
-Ignore those comments.
-
-Thanks,
-
-Jonathan
+Just a note to carry through feedback from the earlier patch.
 
 > ---
->  include/linux/iio/adc/qcom-adc5-gen3-common.h | 5 -----
->  1 file changed, 5 deletions(-)
+>  .../bindings/iio/adc/qcom,spmi-adc5-gen3.yaml      | 39 +++++++++++++++++++++-
+>  1 file changed, 38 insertions(+), 1 deletion(-)
 > 
-> diff --git a/include/linux/iio/adc/qcom-adc5-gen3-common.h b/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> index fa7e08d67f26..105b0766a01f 100644
-> --- a/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> +++ b/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> @@ -40,7 +40,6 @@
->  #define ADC5_GEN3_CONV_ERR_CLR_REQ		BIT(0)
+> diff --git a/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml b/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> index 065b82c41e86..e79ddc2acca0 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> @@ -21,9 +21,14 @@ description: |
+>    All boards using a particular (SOC + master PMIC) combination will have the
+>    same number of ADC SDAMs supported on that PMIC.
 >  
->  #define ADC5_GEN3_SID				0x4f
-> -#define ADC5_GEN3_SID_MASK			GENMASK(3, 0)
->  #define ADC5_GEN4_SID_MASK			GENMASK(4, 0)
->  #define ADC5_GEN4_BUS_INDEX_MASK		GENMASK(6, 5)
+> +  PMIC5 Gen4 ADC is similar to Gen3 ADC, with some differences such as
+> +  improved ratiometric conversion resolution.
+> +
+>  properties:
+>    compatible:
+> -    const: qcom,spmi-adc5-gen3
+> +    enum:
+> +      - qcom,spmi-adc5-gen3
+> +      - qcom,spmi-adc5-gen4
 >  
-> @@ -78,10 +77,6 @@
->  #define ADC5_GEN3_CONV_REQ			0xe5
->  #define ADC5_GEN3_CONV_REQ_REQ			BIT(0)
+>    reg:
+>      items:
+> @@ -91,6 +96,38 @@ patternProperties:
+>            need to be marked as Gen4 to ensure their conversions are handled correctly.
+>          type: boolean
 >  
-> -#define ADC5_GEN3_VIRTUAL_SID_MASK		GENMASK(15, 8)
-> -#define ADC5_GEN3_CHANNEL_MASK			GENMASK(7, 0)
-> -#define ADC5_GEN3_V_CHAN(x)		\
-> -	(FIELD_PREP(ADC5_GEN3_VIRTUAL_SID_MASK, (x).sid) | (x).channel)
->  #define ADC5_GEN4_V_CHAN_BUS_INDEX_MASK		GENMASK(14, 13)
->  #define ADC5_GEN4_V_CHAN_SID_MASK		GENMASK(12, 8)
->  #define ADC5_GEN4_V_CHAN_CHANNEL_MASK		GENMASK(7, 0)
+> +      qcom,adc5-gen3:
+> +        description:
+> +          Indicates channel is of type ADC5 Gen3. This may be needed in cases where the
+
+Similar long line and language comments to the earlier dt patch.
+Make sure to update this one as well if you agree with that feedback.
+
+> +          master PMIC has an ADC peripheral of type Gen4, but some of the other PMICs
+> +          under it have ADC peripherals of type Gen3.
+> +        type: boolean
+> +
+> +allOf:
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: qcom,spmi-adc5-gen4
+> +
+> +    then:
+> +      patternProperties:
+> +        "^channel@[0-9a-f]+$":
+> +          properties:
+> +            qcom,adc5-gen4: false
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: qcom,spmi-adc5-gen3
+> +
+> +    then:
+> +      patternProperties:
+> +        "^channel@[0-9a-f]+$":
+> +          properties:
+> +            qcom,adc5-gen3: false
+> +
+>  required:
+>    - compatible
+>    - reg
 > 
 
