@@ -1,46 +1,46 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795295274;
-	b=b/wXOGYuBPBJCuz2IB8RvVs3h2nD7kerRk2bxbpfnv0LjJCJemhwiqN77Nrbp0dMni4P
-	 Exgph8yCAqljYpoDzDBkrmCgqtEqfcxIr32Svoakmcp89W+1IR11yecvkE2e6/x88K/Es
-	 zZ6uVhsmqg+MfWPPIDj0uOIEbN/xlREPlU/zaGARkKJcuRluiZhu68rFP/lG6Y3J+ljVJ
-	 UbrNWDCouwqf7YRfsw77hLCzQuCLwLdnayWosQbWP6SUaVo17djNEuS1oxlDZI0oOkbCF
-	 Syh7Fi4Dhvr29zVezcEr19phChRPebY10XxSleOtXMTF6wxtIB6aGHDydxe1EXLh3gA==
+	t=1795295338;
+	b=nnhHUadNRxlsox+jwho7wHZjPLGgWdEo+v9sUVpXnh2x6IULe8fCc0+rujpTSD3567Ax
+	 Zeguz9i4CTpgX+x1ymMfV2wbK0VbnLjneMAT/THfROC2RmmfFJaHXAWsLi8KDf/vkLhrj
+	 W51hSfb6HQ3I2n3FZES2OJhiZnDrGH64Z15ht8MEChx5v77tFo9vzgpcWn6Q5WaECFcDf
+	 fSHo/ZO+lTDLcEbYFXg70rdXjTBHYN9lLL0BYKYZrpeWX5XtTvrF2y9qHOksv+G6HmlOV
+	 ECoaxlXdEcHZy310PCNbt6U3HH/XzqQjg11wGfyX3Y/T0TYgb/8m1mvMLFZyxDA8HUQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795295274;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795295338;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=Y9efMSfiICdKBHxaD4Qe7FBs3NUO/APCxh6CXXXWIkw=;
-	b=1msm8e7lVoq2WgYFqLSGC7W0h0+JZJsgU7uyMJYSuekp4LFUgEoNyPfk3Rw2MwXJN5bj
-	 87R74AcNDTbtBjEK0z6uO478wZN+WpNkBhRsMALiylnf17rdSGhY7BzIxmz6ss44w/aOF
-	 t62I9YXvn1R7ULR/BnPoOiRhlLsncNVbQe7UB9NMbCgEvegazViv8cin9p8bxRydDsVXb
-	 mHTVC//82zXyKPALDuXjn48aXAU0iNhpwvecM8PdRC/36fjuEmYhfBfRZRKSdX1wfhKMf
-	 bKSbu66c4+bM57OTjboXCViCvB70LDIEZCdcN8tPJNdx+3d7J/V9lvsIZUocU1Sq4og==
+	bh=J8c2sc9pHyGkMH12X1dKW2Db+m7WpKDYGFFOvD1bnfM=;
+	b=gw+c2BY8Juxu46iHmDJ6csxF9XEEaYQbLur9ZD/ddbeH1vRUcLXTnje50Yp8vIO+rTb3
+	 0mqRCdBrW30HhOFwF2Mr46a3eojGkw9lg7AjvkqtBk/2CnJcTuuGXaefLRhhVq1ng9Yjx
+	 uYbfbd4F+a7h2apWwLD31uS1ZFW0bTfxI7URphqZoIczERIri21+ESv0EnJQyt+k3aWvD
+	 DsgirQXTstDxuxRgFxauAeeqtfAKVHTFb3vb4b1+HRjYNrbcnAD3AgUHFyG6S26vXpGIG
+	 ULZOUWBB09Nq0Me+jpPyMgytF/BiZE6soIOubozw87lND+bzIdp9FsthdcSq4YQVUdw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLUVJz6i;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A1c50uxe;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97B6F606A32A;
-	Sat, 21 Nov 2026 21:07:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A9B2606A320;
+	Sat, 21 Nov 2026 21:08:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLUVJz6i
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF96A1F000C0;
-	Sat, 21 Nov 2026 21:07:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A1c50uxe
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 187481F000C0;
+	Sat, 21 Nov 2026 21:08:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795295274;
-	bh=Y9efMSfiICdKBHxaD4Qe7FBs3NUO/APCxh6CXXXWIkw=;
+	s=k20260515; t=1795295338;
+	bh=J8c2sc9pHyGkMH12X1dKW2Db+m7WpKDYGFFOvD1bnfM=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=DLUVJz6i1r2LUrOhXlLPx7bIyGBLHxgFewMYoIeRzNXeY3nYKCSRrX+8CO23Lpnqy
-	 WDKgOmjNX5myxIc/e4b+V+iiqcZzHtwYXe467YFnEek0qW6jeUCZ2obJ+7is6Z+xsS
-	 EZEVLFfNlYDPbk4edyzPfeZoNCwEqY+3GkNGKCnjNiueURchxzGzzUkWstNgdEjDim
-	 S8UX9A7AWRMTdBcTz+E8soP4mLPC57nRWP4zrLSIpflSUQK28Sn9RE9knn7+Jg0pSO
-	 To5eE0WBZbYR1qVkhTPZtrhEjvg9BFDMLoC5hYgsgwlG0dEZ9KiGvfoqSvrmaM4T4f
-	 qQshgmO+61QjA==
-Date: Sat, 21 Nov 2026 21:07:47 +0000
+	b=A1c50uxe9q2n/EXWdWf11CJGRgpdzw6KkLEYdFyJvl8P9Bl/rnZQSPLVGlmYH1h2O
+	 /IeHdNcptRndL0+A7ne7l9L17nS8eqBkCENUICZJk4QwVS8WPEb0T0o2wCNvERuA92
+	 dmFyZQq1QKdjIuWR9HEDBfwTR+TNcIPGH66qIp87I6DQ1a/DGx+qpCQgwO10/RaAte
+	 zX6El0vnu4fRBp92kwVqwlAHfDQ4EAE7Pj7Q/Fgj6TyugpbdQtCKNzut4QNN9JZQu1
+	 HpTZupP59iPwR7lJqcCs+fykHI+So8uFfdJWXGV+2uU1k2NoCNxGDT0JHCFLwvIVHp
+	 wNzcYaF4N97rA==
+Date: Sat, 21 Nov 2026 21:08:52 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
 Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
@@ -56,12 +56,12 @@ Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
  <anjelique.melendez@oss.qualcomm.com>, Manaf Meethalavalappu Pallikunhi
  <manaf.pallikunhi@oss.qualcomm.com>, Priyansh Jain
  <priyansh.jain@oss.qualcomm.com>
-Subject: Re: [PATCH v2 4/7] thermal: qcom: qcom-spmi-adc-tm5-gen3: Add
- support for QCOM PMIC5 Gen4 ADC
-Message-ID: <20261121210747.0ab59a9f@jic23-hlaptop>
-In-Reply-To: <20261120-pmic5_gen4_adc-v2-4-94d0e1fd6847@oss.qualcomm.com>
+Subject: Re: [PATCH v2 5/7] iio: adc: qcom-spmi-adc5-gen3: Remove Gen3
+ virtual channel macros
+Message-ID: <20261121210852.67e2d4ed@jic23-hlaptop>
+In-Reply-To: <20261120-pmic5_gen4_adc-v2-5-94d0e1fd6847@oss.qualcomm.com>
 References: <20261120-pmic5_gen4_adc-v2-0-94d0e1fd6847@oss.qualcomm.com>
-	<20261120-pmic5_gen4_adc-v2-4-94d0e1fd6847@oss.qualcomm.com>
+	<20261120-pmic5_gen4_adc-v2-5-94d0e1fd6847@oss.qualcomm.com>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,154 +75,51 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Fri, 20 Nov 2026 14:49:44 +0530
+On Fri, 20 Nov 2026 14:49:45 +0530
 Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
 
-> PMIC5 Gen4 ADC is similar to PMIC5 Gen3 ADC, with several changes made
-> for improved performance, mostly at the hardware level.
+> Now that the Gen3 virtual channel macros have been replaced with Gen4
+> macros in both main IIO ADC driver and auxiliary ADC_TM driver, remove
+> the Gen3 macros as they are no longer used.
 > 
-> One significant software change is that ratiometric conversion resolution
-> has been increased from 14 bits to 16 bits. Add a reverse scaling function
-> for Gen4 ADC thermistor channels.
-> 
-> In the latest PMIC arbiter version (v8), there can be up to 4 buses
-> under the PMIC arbiter and 32 PMICs under each bus. In order to
-> support communication between ADC on the master PMIC and ADCs on any
-> of the other PMICs, a field of width 2 bits is added for bus index
-> and the bits for SID are extended from 4 to 5 bits, in the SID
-> register. Add support for this.
-> 
-> Co-developed-by: Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>
-> Signed-off-by: Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>
 > Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Ah. Ok.  I missed this was coming.
+
+Perhaps modifying these to align in earlier patches is to much
+pain given you are going to delete them.
+
+Ignore those comments.
+
+Thanks,
+
+Jonathan
+
 > ---
->  drivers/iio/adc/qcom-vadc-common.c            | 11 +++++++++++
->  drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c | 19 ++++++++++++++-----
->  include/linux/iio/adc/qcom-vadc-common.h      |  2 ++
->  3 files changed, 27 insertions(+), 5 deletions(-)
+>  include/linux/iio/adc/qcom-adc5-gen3-common.h | 5 -----
+>  1 file changed, 5 deletions(-)
 > 
-> diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
-> index 5c4052f6f24f..779c2a66a858 100644
-> --- a/drivers/iio/adc/qcom-vadc-common.c
-> +++ b/drivers/iio/adc/qcom-vadc-common.c
-> @@ -718,6 +718,17 @@ u16 qcom_adc_tm5_gen2_temp_res_scale(int temp)
->  }
->  EXPORT_SYMBOL(qcom_adc_tm5_gen2_temp_res_scale);
+> diff --git a/include/linux/iio/adc/qcom-adc5-gen3-common.h b/include/linux/iio/adc/qcom-adc5-gen3-common.h
+> index fa7e08d67f26..105b0766a01f 100644
+> --- a/include/linux/iio/adc/qcom-adc5-gen3-common.h
+> +++ b/include/linux/iio/adc/qcom-adc5-gen3-common.h
+> @@ -40,7 +40,6 @@
+>  #define ADC5_GEN3_CONV_ERR_CLR_REQ		BIT(0)
 >  
-> +u16 qcom_adc_tm5_gen4_temp_res_scale(int temp)
-> +{
-> +	s64 resistance;
-> +
-> +	resistance = qcom_vadc_map_temp_voltage(adcmap7_100k,
-> +						ARRAY_SIZE(adcmap7_100k), temp);
-> +
-> +	return div64_s64(resistance * RATIO_MAX_ADC5_GEN4, resistance + R_PU_100K);
-
-If you were keeping this (See below) I'd have a helper that does the maths
-called by both the gen2 and gen4 versions. I think it just has that multiplier
-different.
-
-> +}
-> +EXPORT_SYMBOL(qcom_adc_tm5_gen4_temp_res_scale);
-> +
->  int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
->  		    unsigned int prescale_ratio,
->  		    const struct adc5_data *data,
-> diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> index 910b241fa94d..aeaf13f4fc66 100644
-> --- a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> +++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> @@ -207,15 +207,23 @@ static int adc_tm5_gen3_disable_channel(struct adc_tm5_gen3_channel_props *prop)
->  			       ADC5_GEN3_CONV_REQ, &val, sizeof(val));
->  }
+>  #define ADC5_GEN3_SID				0x4f
+> -#define ADC5_GEN3_SID_MASK			GENMASK(3, 0)
+>  #define ADC5_GEN4_SID_MASK			GENMASK(4, 0)
+>  #define ADC5_GEN4_BUS_INDEX_MASK		GENMASK(6, 5)
 >  
-> +typedef u16 (*temp_res_scale)(int temp);
-> +
->  static int adc_tm5_gen3_configure(struct adc_tm5_gen3_channel_props *prop,
->  				  int low_temp, int high_temp)
->  {
->  	struct adc_tm5_gen3_chip *adc_tm5 = prop->chip;
->  	u8 buf[ADC_TM5_GEN3_CONFIG_REGS];
-> +	temp_res_scale tm_scal_fn;
->  	u8 conv_req;
->  	u16 adc_code;
->  	int ret;
+> @@ -78,10 +77,6 @@
+>  #define ADC5_GEN3_CONV_REQ			0xe5
+>  #define ADC5_GEN3_CONV_REQ_REQ			BIT(0)
 >  
-> +	if (prop->common_props.generation == ADC5_GEN4)
-> +		tm_scal_fn = qcom_adc_tm5_gen4_temp_res_scale;
-> +	else
-> +		tm_scal_fn = qcom_adc_tm5_gen2_temp_res_scale;
-
-A little messy patch ordering wise, but I think those should
-be function pointers in common_props.data and set in the adc
-driver (where it currently sets generation).
-
-That will put all the information in one place rather
-than a mix of data and stuff patched in the code in various
-other places.
-
-For anyone not reading review of previous patch, I want that
-generation value to go away.
-
-However, the two callbacks differ (I think) in only one value.
-Just put that value in the data instead of having two callbacks
-and add a parameter to the function to pass it in.
-
-> +
->  	ret = adc5_gen3_poll_wait_hs(adc_tm5->dev_data, prop->sdam_index);
->  	if (ret < 0)
->  		return ret;
-> @@ -225,8 +233,9 @@ static int adc_tm5_gen3_configure(struct adc_tm5_gen3_channel_props *prop,
->  	if (ret < 0)
->  		return ret;
->  
-> -	/* Write SID */
-> -	buf[0] = FIELD_PREP(ADC5_GEN3_SID_MASK, prop->common_props.sid);
-> +	/* Write SID and bus_id*/
-> +	buf[0] = FIELD_PREP(ADC5_GEN4_BUS_INDEX_MASK, prop->common_props.bus_index) |
-> +		 FIELD_PREP(ADC5_GEN4_SID_MASK, prop->common_props.sid);
->  
->  	/* Select TM channel and indicate there is an actual conversion request */
->  	buf[1] = ADC5_GEN3_CHAN_CONV_REQ | prop->tm_chan_index;
-> @@ -252,7 +261,7 @@ static int adc_tm5_gen3_configure(struct adc_tm5_gen3_channel_props *prop,
->  	/* High temperature corresponds to low voltage threshold */
->  	prop->low_thr_en = (high_temp != INT_MAX);
->  	if (prop->low_thr_en) {
-> -		adc_code = qcom_adc_tm5_gen2_temp_res_scale(high_temp);
-> +		adc_code = tm_scal_fn(high_temp);
->  		put_unaligned_le16(adc_code, &buf[8]);
->  		buf[7] |= ADC5_GEN3_LOW_THR_INT_EN;
->  	}
-> @@ -260,7 +269,7 @@ static int adc_tm5_gen3_configure(struct adc_tm5_gen3_channel_props *prop,
->  	/* Low temperature corresponds to high voltage threshold */
->  	prop->high_thr_en = (low_temp != -INT_MAX);
->  	if (prop->high_thr_en) {
-> -		adc_code = qcom_adc_tm5_gen2_temp_res_scale(low_temp);
-> +		adc_code = tm_scal_fn(low_temp);
->  		put_unaligned_le16(adc_code, &buf[10]);
->  		buf[7] |= ADC5_GEN3_HIGH_THR_INT_EN;
->  	}
-> @@ -306,7 +315,7 @@ static int adc_tm5_register_tzd(struct adc_tm5_gen3_chip *adc_tm5)
->  	int ret;
->  
->  	for (int i = 0; i < adc_tm5->nchannels; i++) {
-> -		channel = ADC5_GEN3_V_CHAN(adc_tm5->chan_props[i].common_props);
-> +		channel = ADC5_GEN4_V_CHAN(adc_tm5->chan_props[i].common_props);
->  		tzd = devm_thermal_of_zone_register(adc_tm5->dev, channel,
->  						    &adc_tm5->chan_props[i],
->  						    &adc_tm_ops);
-> diff --git a/include/linux/iio/adc/qcom-vadc-common.h b/include/linux/iio/adc/qcom-vadc-common.h
-> index 4be682083843..55efad27ed73 100644
-> --- a/include/linux/iio/adc/qcom-vadc-common.h
-> +++ b/include/linux/iio/adc/qcom-vadc-common.h
-> @@ -159,6 +159,8 @@ u16 qcom_adc_tm5_temp_volt_scale(unsigned int prescale_ratio,
->  
->  u16 qcom_adc_tm5_gen2_temp_res_scale(int temp);
->  
-> +u16 qcom_adc_tm5_gen4_temp_res_scale(int temp);
-> +
->  int qcom_adc5_prescaling_from_dt(u32 num, u32 den);
->  
->  int qcom_adc5_hw_settle_time_from_dt(u32 value, const unsigned int *hw_settle);
+> -#define ADC5_GEN3_VIRTUAL_SID_MASK		GENMASK(15, 8)
+> -#define ADC5_GEN3_CHANNEL_MASK			GENMASK(7, 0)
+> -#define ADC5_GEN3_V_CHAN(x)		\
+> -	(FIELD_PREP(ADC5_GEN3_VIRTUAL_SID_MASK, (x).sid) | (x).channel)
+>  #define ADC5_GEN4_V_CHAN_BUS_INDEX_MASK		GENMASK(14, 13)
+>  #define ADC5_GEN4_V_CHAN_SID_MASK		GENMASK(12, 8)
+>  #define ADC5_GEN4_V_CHAN_CHANNEL_MASK		GENMASK(7, 0)
 > 
 
