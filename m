@@ -1,79 +1,96 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795253432;
-	b=orP0iZ0U4TVaatAJ+xd8vxFRgJIzDQu32fs9wI3gBoaTSUDq3ZIAQlP+2pCvixkchSDm
-	 5TbXITTVARuWaoawgjc1ZCGgLoJ+vGgTZ92x5RYPkJPrklYOI0I0r2fmtwAdOIkukTM5E
-	 0zgxLUi5BD6nj2hPnlML8y2eMK0bq5m6SbnrskOhZVvyOZDeJhF57z9mP7AB+GMubmJfN
-	 X0Usa8ncKUoUPSh3Sez9FEIs+ff0BKksOt8NW4kP+7NdFkjDZiOE1vtq4RH7EguCljDAU
-	 1nLfVNLzqaT2SeLkVnDCI8Sn4dxOpn2FFYEq21ntkPqgZsEcw5MbZIfNVsICGKODwhA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795253432;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=eAdfr/5c5ewYZBQasBs4poTZOB6DlWGZPneaq9mXxd4=;
-	b=YKXq6azNeZKC0iJ/7autZefo2MnjRd/eui2Uibg9tAwbAWSVgGYMl+Ow2cp2BSr3Qsyz
-	 DZpNqwdrpQUVZoqyzSA1wPicy5eGedqVcImPTu5Nc+jcohOWF5Hm5AAOxZlyFuf2JmHVk
-	 eUgYuR1pnUvAOlkpA6Xt1ZwhhVy12Da3HN9qALzzyNEXIKCy+4dMaz5YFASuW5/VPW6O8
-	 1ocEvGJLvSYpFHutm+Q1ddJWaxbJKC7ycEpOBcXXvvHFH5f52x5UK16MQ+W9pBg92fWWi
-	 WBtdHMBaPZWo72PWu1NrAxIksOm3qV1zm/+FB/SJ1P4Sscn4kraXtu5TbfL0BKzvzWg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MfUzDZyH;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E57B606A320;
-	Sat, 21 Nov 2026 09:30:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MfUzDZyH
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795253432;
-	b=WtWqbaKgjZ2QpL2vpueVZVlh6/udKdf8bcUZsPEGHI+jziPKoMwFE/P+g9slS5yBMtNA
-	 XWPdufvjJu4QOhQoYj9XA8ZZwsNm0iaCK/qnzWpQPv4Ar56VFGJN2c4zPlXkQiQeU8DDd
-	 2sUOYBEgo3IN0syD49eTc3xEBEslVLXDCEuhOV3NrB7uHZ1fq9Ohczg6UYWZnWVXDvxmt
-	 gdrfXV4n02hKbwPweDEf1H+9nbFBJVC4YSM9EdWjlnSyGrMqDgMn02Mxaqw5P1EMArNJi
-	 YnhWrtD8MfZ52kdBSjahLE1ZPoFOdtb2elIQBpEnJvAr5csg2aouAafCosauhRTEjSw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795253432;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=eAdfr/5c5ewYZBQasBs4poTZOB6DlWGZPneaq9mXxd4=;
-	b=dsKDWBJyQ39vSsfZgPLYS/lx7fTbY8//0DWEYwYuO3KiFvfpawXTUrE1mDcqtd25rq/7
-	 3rAwnIm7p+4PSTfkabiHS2VkAJXK4a8q0lfVUWDNrw4XPkt3s/kemoFKevfiw+EZFMJGJ
-	 kW9IP6nqBoI7TFH9cJbsqCPPtaBlOSLnT8ajkkXKlRTC3wVqBTuXLnOwXR1C1mwqPMW+R
-	 /Z9ojnYqQpbRiocUvI2VO4oGL/0zz5NpDC5ChPQ5RSr3M84UZxHgMljk+ZBmMRO/2KCyR
-	 Of1rVyaW/MhdyCdr0fQBzQOfqqYNY6U1mQPtHsWWt5O5GN+8q+dnqJ35MG7xOii/Byg==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.52
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795253832;
+	b=SPnc1e4PwvxdyvfJPjW7i8tpu7TEyBA/nu03Qjvc2+oWNAZu8ORYftoNCBm1C1UBaNpi
+	 lGjNh1mO5ah76x+KfbE+IUp6KfHG97uzc/WVGJRpWqoPLSsk4RX5DdJdVPzgaSeeslXtg
+	 WnE1qJVkwRBCmkkk/O9WVaL9VXNUCbai+X9ob8VP3vJ6Tv4OegX3sgXOJA2NpVHWEDqRp
+	 LMXJf/NJOYyjGQbAea72Cq5wOekABsBzjnrfrTYcPTE3hHvr9Mjd7nSqZ5VpdPjpYnecG
+	 joKFbg5NG48fxiPlafLnthVH3YasRm9FXeY8CRgi1NUyXcwn6UErHAs09tt1lk0ZfmA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795253832;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=ZuSymGZ4BXaXBXcW5O68ed8bMUtsN8ja2SYO3J1EHJc=;
+	b=uBsG4EdGgCajwQs0VRxfLFUpRdhxhHucEFImwAGRQYErzS+9SwzLYC1SQuSnlzvWnfAp
+	 lxTBUBbrCfhoBhiVHWy7NV1Q0Ob6/0ocGSgCGeDS1aS95klDVhQg6ldQD8M58VlqGNWr5
+	 S+6wo9wBWrwJ3khU+Lcr8iGbB3mJP5Vu8sIJEn90iHY8JwrlublCSFMrSihpDVW8WRLfO
+	 05ASbe9VlxwsZVkrpzadUFYgYgX6Vzh3JojN8dILaapYbV9jHkWxK25vlZWuJ8HbofDaP
+	 aRBJdFTEgwUp+l9O4Or1hcdGvUF7LFNqPWwNA33Z96a9LZ3Bg0jYtIJW1GxSaPQNLIg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=wUf5VfrK;
+	arc=none smtp.remote-ip=209.85.128.52
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 5E2501F000C0;
-	Sat, 21 Nov 2026 09:30:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795253432;
-	bh=eAdfr/5c5ewYZBQasBs4poTZOB6DlWGZPneaq9mXxd4=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=MfUzDZyH9vaIOLzKC9byvWYrJykPpgUM6mM6V9pnykRErgeDzip1dGT/NkJ+EbzSe
-	 qBoM1akaoz4SHlzVoJbwVJ1BO7J/osnJV2TSUBHU4X4MQTpXpncEkbzm4T8DBMgC6u
-	 i0F7rl520oT99YLq7VwZZMt5w/c7j5KfE+aKrSlzxz2uOVibIXVlDw/Dl4/5KfmBVO
-	 Nny8uII2NS5YJMA48lk33rABnMMfc5HFM06rHkIKv+smTVqoG0X62PjtYJuGopG0Ni
-	 SHm7FhUBCdb1TSoCsN95h79Tk81YtI9iEPzq9rkUM8Z50M60p8a2q6fqIPeA0Noj9H
-	 JC6vwIoGlqTSQ==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id D18F14BBA7;
-	Sat, 21 Nov 2026 09:30:30 +0000 (UTC)
-From: Patrick Fischer via B4 Relay <devnull+admin.tsv-stahl-riesa.de@kernel.org>
-Date: Sat, 21 Nov 2026 10:30:20 +0100
-Subject: [PATCH 1/3] dt-bindings: power: supply: summit,smb347: Clarify the
- USB current limit
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 516AF606A32A
+	for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 09:37:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 516AF606A32A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=wUf5VfrK
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4bb64c99d2fso17441705e9.3
+        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 01:37:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795253830; x=1795858630; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ZuSymGZ4BXaXBXcW5O68ed8bMUtsN8ja2SYO3J1EHJc=;
+        b=wUf5VfrKUaALiMDFWECJZVwwO8uOhGSA8wHRTh31ht5ubpXd4KSGvNl7BhKcF0eFsW
+         h7m69WfERS3XHnuKLe+oUOhZZ6xrInEWOi4vOd+x5uxMNdhlz744hlPZrMJ3BNelduuW
+         /PuTMloYC+HUXFarUxZV7OKsxI9P88SGbwgK9fA4GJz1sbZxJADci3RPHa5k6u8TkYiB
+         YEV1ip8vglYzBy01t7Noo/VZ+4r4xMisItO+B5J/kFNSOMGdj2etXBq24D4mV1gxdPk8
+         v7fdgT+AZlPDBGhAbv+FER6Xu4eEZHfTQKQrzfwemCEx9fhz+7wRWEOnda0Dkt0l5eqW
+         tI+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795253830; x=1795858630;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ZuSymGZ4BXaXBXcW5O68ed8bMUtsN8ja2SYO3J1EHJc=;
+        b=ZaVGB6bkaVy1Dhe1LAaTzRgJOq0PEKz32Tlqzwsh65w364OS/jQ0TA4wySRoCqG/Bv
+         fGYLUpjsCUE0GZMRU913by8kerXZ5jMyKcDsMjP6nsL7VIx+9NMziHECr6abU48xlKsa
+         qum0hvE8Qivur6Wikb65mgCVPmxNJVxHNfZzZmvitgiBjDBipO1O3wcMlnkoBGXwVMge
+         cRN8cFS/VK93ZKXdTE6LjAi3rtjfCYx1l3XKi4Pvo6h3KSPN2lH952DZYh0SO6yrkIt7
+         LmO5AQnfs1Bfk7f7Oi5YCbk8CZ7Jw5couGdylqSzixfyv0fhHQmAcLspalSr8+gEinhT
+         oNYA==
+X-Forwarded-Encrypted: i=1; AL+hErEJz38Q7clL7n5xlvhF/+aWMkE29ZYLmPWCBmObbHEj3UKyM98SIwWQlyWRaPvGiO9FhXyhL93fbQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z98xVNn9ITeGj4jDV7O+SMhX7ho1lIkhhzjWFMjpzwB2sgoKFjz
+	51EqQEr00erNTSqFEbX/2GzK5boqizquq9EHeTsm7r8CXBxL8h8vVcGf
+X-Gm-Gg: AZFdTZf2SqRwF3VVP9ljE/I7F5QuxDEQR7uD6yA0eB4xOQf9xem3Ym7Vt+Y0iaFiVF/
+	Lh70rceY/mFMQZdIwdjc+Ofr/t0d1eviXuyjjLYIA3cSJAihkYNcarNiaIlmGhpXYkbe/jdQf22
+	AR0w5JOQ3U/uJr6OdQbNzErMUR1xQ+Tr/eNoThEVJa34fHmqofcWMW+EXl6MPyBoNLJ+aXFQkHu
+	6F4Qa7kMJ8o2S+kp/4aVRLXUAGvUT6E1n7W9mGRoCqo4f/0S2Sg4M/fHBhDsUDUqCYlsqh5V29Z
+	5M4j/BbxD911YuOnkKoK8ATiRNTrkikGJH+f98O6LVa2CAWVtOp0IjnvZGlKjqwqigoU6bjzNAT
+	tPXLLCcB0tiLVRsH1GQOVLR7Y5nMcqaernJaSzkUmENuf44tFPdVkfDsXzdt27vnhze8yY4RP68
+	xhIoSZZs7Ty9LaRm7iIlWwatNQhfrX2ChgzywUIFIV/5kuv2qh/K/MrgzS98a32sbmCDYwFnlbe
+	XrQjqoceo8K/v2wJ89OsHcuzB53RclAktUzpWR+uILRwZGCLPn2xp7UcJNYvvgmeIl5Mb9fTq6z
+	xP9tkiTShVlRK2ZuQgXLoE9ITac7biZbkWT4/Rs8fAX/o0X6vPc6CX9MfxvVzsXsGpJcNJ0nMoT
+	g4zhBL/3f+W/5LMVF40t8J1Q8rbo=
+X-Received: by 2002:a05:600c:1d29:b0:4a9:2a92:231f with SMTP id 5b1f17b1804b1-4bb88804d4dmr137546885e9.7.1795253830173;
+        Sat, 21 Nov 2026 01:37:10 -0800 (PST)
+Received: from archlinux.fritz.box ([178.197.200.136])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb8526cbd0sm238322245e9.0.2026.11.21.01.37.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 21 Nov 2026 01:37:09 -0800 (PST)
+From: Tobias Predel <tobias.predel@gmail.com>
+To: linux-acpi@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [BUG] HP Dragonfly G4: AML deadlock (ECMX vs. Serialized GBAP) between EC _Q08/_Q18 and int3400_notify() -> ODVP
+Date: Sat, 21 Nov 2026 10:37:08 +0100
+Message-ID: <20261121093708.5097-1-tobias.predel@gmail.com>
+X-Mailer: git-send-email 2.56.1
+In-Reply-To: <20261120191423.10876-1-tobias.predel@gmail.com>
+References: <20261120191423.10876-1-tobias.predel@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,68 +100,81 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261121-upstream-smb347-apsd-v1-1-ca46b92bfd44@tsv-stahl-riesa.de>
-References: <20261121-upstream-smb347-apsd-v1-0-ca46b92bfd44@tsv-stahl-riesa.de>
-In-Reply-To: <20261121-upstream-smb347-apsd-v1-0-ca46b92bfd44@tsv-stahl-riesa.de>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, David Heidelberg <david@ixit.cz>, 
- Dmitry Osipenko <digetx@gmail.com>
-Cc: Svyatoslav Ryhel <clamor95@gmail.com>, 
- Bruce Robertson <brucer42@gmail.com>, 
- =?utf-8?q?Martin_J=C3=BCcker?= <martin.juecker@gmail.com>, 
- Mithil Bavishi <bavishimithil@gmail.com>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Patrick Fischer <admin@tsv-stahl-riesa.de>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795253429; l=1563;
- i=admin@tsv-stahl-riesa.de; s=20261020; h=from:subject:message-id;
- bh=ifkvy1uzmYxpX0CrPq5nsb8+MrGYX8Ejrb1HsNv+EbI=;
- b=739a63rcbeB+QL7ELhbH759wYAFiDfto32DVJ4diSfd1pILRe4DM7Xk1AaB+7wm4sypmPeQld
- lsHfSn4memdBtAxZtBE5TGaunVGUjklhi950tb0U1zFKWewr5u+L7K+
-X-Developer-Key: i=admin@tsv-stahl-riesa.de; a=ed25519;
- pk=D+v6EloYcEY9PIUHFyTM5sqcGIU/fIXzLUdkR8vjAtk=
-X-Endpoint-Received: by B4 Relay for admin@tsv-stahl-riesa.de/20261020 with
- auth_id=1251
-X-Original-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
-Reply-To: admin@tsv-stahl-riesa.de
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
+Hi,
 
-The SMB347 detects whether its USB input is connected to a standard
-downstream port, a charging downstream port or a dedicated charger.
-The input current limit then depends on the port type: a PC port must
-not be loaded with the current a dedicated charger can deliver.
+A short follow-up: it happened again today (2026-11-21), now on
+7.3.5-arch1-1, same BIOS 01.13.01, and despite booting with
+acpi.ec_max_queries=1 (/sys/module/acpi/parameters/ec_max_queries reads 1).
 
-Describe "summit,usb-current-limit-microamp" as the limit with a
-dedicated charger, which is what boards set it to today (1.8 A on
-exynos4412-p4note and omap4-samsung-espresso10).
+This time no int3400/ODVP worker was involved. It was the EC-only variant
+I suspected in my first mail: two kec_query workers deadlocked against each
+other, about 67 minutes after boot.
 
-Signed-off-by: Patrick Fischer <admin@tsv-stahl-riesa.de>
----
- .../devicetree/bindings/power/supply/summit,smb347-charger.yaml      | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+  - kworker/10:1 waits in acpi_ds_begin_method_execution(), i.e. on the
+    sync mutex of a Serialized method. This matches _Q09 holding ECMX
+    and calling GBAP.
+  - kworker/9:1 waits in an explicit Acquire. This matches _Q08/_Q18
+    inside GBAP waiting for ECMX.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-index 65ed92bb05f3..67e6d4055af0 100644
---- a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-@@ -54,7 +54,10 @@ properties:
-     description: Maximum input current from AC/DC input (in uA)
- 
-   summit,usb-current-limit-microamp:
--    description: Maximum input current from USB input (in uA)
-+    description:
-+      Maximum input current from USB input (in uA). This is the limit with a
-+      dedicated charger. A port detected as standard or charging downstream
-+      port may be limited further.
- 
-   summit,charge-current-compensation-microamp:
-     description: Charge current compensation (in uA)
+hung_task reports each one as waiting on what the other holds (excerpt
+below). Behind them: six more kec_query workers, thermald
+(int340x_thermal_get_zone_temp), and upowerd (acpi_battery_get_state). Every
+read of .../power_supply/BAT0/uevent hung in acpi_battery_get_property().
+A kworker in i915_flip was also stuck in D state, but I rebooted before
+anything else happened.
 
--- 
-2.56.1
+Why ec_max_queries=1 did not help, as far as I can tell: the stuck workers
+are per-CPU kworkers (kworker/10:1, kworker/9:1, kworker/3:0, ...), so
+kec_query looks like a bound workqueue. There, max_active limits
+concurrency per CPU, not globally. On this 12-thread CPU that still
+allows several _Qxx methods to run at the same time. I haven't checked
+this against the source, so please correct me if I'm misreading it.
 
+If that is right:
+1. Is ec_max_queries=1 meant to fully serialize EC queries? If so, would
+   you take a patch that makes kec_query unbound (or ordered when
+   ec_max_queries == 1)? I can write and test it.
+2. Until the firmware is fixed, is there another way to fully serialize
+   _Qxx evaluation on this machine?
 
+Excerpt (unreliable frames and scheduler frames removed):
+
+  INFO: task kworker/10:1:94 blocked for more than 122 seconds.
+        Tainted: G           OE       7.3.5-arch1-1 #1
+  task:kworker/10:1    state:D stack:0     pid:94    tgid:94    ppid:2      task_flags:0x4208060 flags:0x00080000
+  Workqueue: kec_query acpi_ec_event_processor
+   acpi_os_wait_semaphore+0x76/0x1d0
+   acpi_ex_system_wait_mutex+0xb6/0x110
+   acpi_ds_begin_method_execution+0xb3/0x420
+   acpi_ds_call_control_method+0xae/0x490
+   acpi_ps_parse_aml+0x3f2/0x610
+   acpi_ps_execute_method+0x185/0x430
+   acpi_ns_evaluate+0x196/0x5d0
+   acpi_evaluate_object+0x1f4/0x470
+   acpi_ec_event_processor+0xe5/0x130
+  INFO: task kworker/10:1:94 blocked on a semaphore likely last held by task kworker/9:1:14859
+  INFO: task kworker/9:1:14859 blocked for more than 122 seconds.
+        Tainted: G           OE       7.3.5-arch1-1 #1
+  task:kworker/9:1     state:D stack:0     pid:14859 tgid:14859 ppid:2      task_flags:0x4208060 flags:0x00080000
+  Workqueue: kec_query acpi_ec_event_processor
+   acpi_os_wait_semaphore+0x76/0x1d0
+   acpi_ex_system_wait_mutex+0xb6/0x110
+   acpi_ex_acquire_mutex_object+0x61/0x150
+   acpi_ex_acquire_mutex+0x8a/0x2a0
+   acpi_ex_opcode_2A_0T_1R+0x163/0x1e0
+   acpi_ds_exec_end_op+0x204/0x890
+   acpi_ps_parse_loop+0x13d/0xb80
+   acpi_ps_parse_aml+0x419/0x610
+   acpi_ps_execute_method+0x185/0x430
+   acpi_ns_evaluate+0x196/0x5d0
+   acpi_evaluate_object+0x1f4/0x470
+   acpi_ec_event_processor+0xe5/0x130
+  INFO: task kworker/9:1:14859 blocked on a semaphore likely last held by task kworker/10:1:94
+
+The full hung_task output (10 tasks) and the acpidump are available on
+request.
+
+Thanks,
+Tobias Predel
