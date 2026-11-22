@@ -1,54 +1,78 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795348453;
-	b=1qQ9Bmq7VDNZ6MclSmxA0DYX5PTdCuAIpJuYu3feSP7+fgn/LpfnfLYFkkIdOHclVOvI
-	 ZTIpuKsq80cEMw190XlkHlbyWZx/x2mpAc9Xj/r4IPaClGmuGYa0JweoEBVMMgtUGIa5T
-	 DJElpFahnCHTliTB8zTbSr+zW3WJ+KM1cg9+AL1vx7ct1t5vKj71XMLZoxruIHVIlvsqa
-	 ktpaLSh8e4FTTztBwyvOA7fPTwBW7MFFu6j4kPL2QZ8tQGOqy49X+nGwWnzXyRIEN/hwJ
-	 JLSzz7nAsVRp1lK/q0gjibb5/FF56Ucf/dmdMMdkmc/A91V14HhtduOKDDrirQFaUMQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795348453;
-	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:
-	 X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=hpTtgvPqHJQYaMjHZ0OTVw/eXj9Y8bSYmtvouHtYSb0=;
-	b=ebOX0/D483SomvQHcBjYti/vDvysnDQsgmqfzepgV03xE5ZvD5KB5tGjbclzOiqND72C
-	 phg7y0q2F9O0MoepXw6OOCg/FMHZTBgjyjxfCbfHFMDVMUSZN7rhQxm3Ck6qTzgoYQV5Z
-	 RFqTVEq6teVOebbeDnKjU+atZkknHhUHHYjYO4/NZMuUvpPN3oEF8NPclyNHovPBt5A3O
-	 6EvyJ4JlC6sTQrNwAWML+dkRD94PgFh7s2VOdMsziYVZgN1atz05seR9VKazTLKUnJzdn
-	 9Ps1Sj8un/QJUgcEnmpnkpTgxzUgtMm2f6DxgAEtg0y39jjoSUzP1DwyN7inneCbl3w==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Lsa8pRfV;
-	arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795348533;
+	b=FKZjCBXDgl0XSmRUB431GMNRw3gVJBdayA1i3HQtzcPDHed12KEWbbt3m0NT8lVrIaXD
+	 sbvvfTFBHMsJjWY0EtVMoQjiAaPFiLTg5snMpWj1/LeegvWaN8lBz+eqktj2v/96WHoyJ
+	 XhhbD6jLPynE9rDCH1Z9y0GIhz9BHUX++IU611XrM7Ywo8pDGcmhrVNUI1crwpq9Fy2/b
+	 RErQ5WyiNAUVhuk4z/vh07dRDYEZ1CbsM+5p33n0chk3cHOnrD9vpfklxbvFGnBDvVhsr
+	 kfSbvBmWR7z6DTwhKuc4KFvkI+Lobk7J3p3QRRrYYqANhFnpVM4/U3N+yrCsNvGCijg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795348533;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
+	 In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=XsPczLgMwqRcGehK0Y36BZv739K0cQRsYfBty9hj0p0=;
+	b=Tl1Ii4Ll91+ZX45wFCUiB1ymuk03Gz1KGQ3zjur9vj3oQFChpH7ZSMNGygd+WBZkDLH4
+	 mxqic/E1ZYanKrLdNLfAO5QLiGw3qDzCBVG437h77zmdEgX3060HLmRIKVBTIICV4Xr39
+	 rgJ+vf6RqayvoiOBkIzkOPXPgCdSK3wtE7fpnUWMKHzXJjtfZ7oFPu+BbH65A443MbWJ1
+	 waG4hOJZHB4I48oOlZdvVudBKTHuGeNkdOYqzboXXpyD+SUSuVjlS+tlMp7tZzAN1TTkA
+	 4c9ZMMoEERAJqXezkxIWlgGoKFd4i71s/tP0FEmz97L6UsSf59cs6CcWu7MKIFllDmQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jtml9c5E;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ABA0606A32A
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 11:54:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3C62606A338;
+	Sun, 22 Nov 2026 11:55:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Lsa8pRfV
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E17441F000D1
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 11:54:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jtml9c5E
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1795348533;
+	b=I6QIRkZUPdPyTq3CvVfbcFXogDSwlZusGqmFDXJoDkDlns9bJjgJ/AT5L6GfTqixV2Kb
+	 ADGwuuY5Sf5GoRislouDijvai1+bK0ETS6K9x4jTYjjBAWPyVPA2gVd+ZmuSFfy0VCT4C
+	 2KLHz0I7uIUWrLrFMSPF3ElbcngkCLX9arXQIi+jDRta5D/pbkrD2ePv0mVM9BGjdjIE/
+	 SQGZe3OEwE8+fPxmWA4xRt6AIjhZLDtrC/r1FQrd4UIMjxFFQqnAZDGtu/+jhYxMON1vE
+	 mZu5aE6Yk5/Gb+7xV8PTXUSb0xNMpfd5igLi/SSjcuICsIOaKR2+Br1zVZmIv5PigVA==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1795348533;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=XsPczLgMwqRcGehK0Y36BZv739K0cQRsYfBty9hj0p0=;
+	b=FfU2I3C1xF4MyuBXHaAdfUnM24vydTjlIjrZdwr/zZhfJIQLjE8CHQdF48qE8o047RCb
+	 rhE0EKDD6qLWsh4ykg2iyj9JXSNUe7g1BgCmBcjOFkVXI6FVMoelTTPeAtcJQVuVaSTAE
+	 ON4stS7jJjR9SgL8WUKdeWf2g22ggkm7v+bnWFy+RouwTB6t0vljsFZfiHR+wIHB4UnTV
+	 Mc3VaNBAKrG6gKRU0nRA+wzVtgAvUdNEvu1CPheiTc8auOXau3+tuUU95O3BAx1uyENeY
+	 YhKZf67NZGw+ADxsGEIOoGurlInxEYq1e6qoEwWUg0NE2Us/ciqBaMtrMZ7BCyUxMCg==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.kernel.org (Postfix) with ESMTPS id 52C161F000D8;
+	Sun, 22 Nov 2026 11:55:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795348452;
-	bh=hpTtgvPqHJQYaMjHZ0OTVw/eXj9Y8bSYmtvouHtYSb0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Lsa8pRfVZpXw3yacZGP3uy7VcqFEcrB4EcyHxAbUhXpt91mOFzH0iHIfPGGDDdoLD
-	 j7aPyMbpsRChTtlCE2HYd6GUpL/jn7tuBQ+PJhhoZb99jMTVfOBLexEGokdS114GQW
-	 bRD6Xd5GBmaPD4Q58Hz14GRkGTrklivD8MkUM8oJtfsbiKx+SkimWAcqoWLN1Tv8JG
-	 j0VBaFOPornRXawlIRr0Vx7Oy7dWDwaPr4HsreNDPW0WOx5d2T3V+J9/48VJEHdDB6
-	 Jm4xzUpR3O6mHS3pTXhxjdndqaw6Eeps+JRMZaHkY2CKF6AbNbi8r9e4B3XDxDdJbs
-	 t3L3oC/xBbsvQ==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5c14f3dab66so1937671e87.0
-        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 03:54:12 -0800 (PST)
-X-Gm-Message-State: APuU4Z9PqYEGqVfBLMQ9PqgL+LcLyEZSgO5UW0hJDVLEGKoyQbh+0+85
-	1LkpmQle20OJEpNuO8oirYxM3PyHrSL35SzLIHNZDDvRYSN9b11qqQZ+viRWmY/fW97OkgFkufn
-	W1jm35Tp6d8Sby0Gc+jTOvmRFaZ7dkmk=
-X-Received: by 2002:a05:6512:2c9b:b0:5c1:ace3:12c1 with SMTP id
- 2adb3069b0e04-5c1bc575979mr2268962e87.0.1795348451262; Sun, 22 Nov 2026
- 03:54:11 -0800 (PST)
+	s=k20260515; t=1795348533;
+	bh=XsPczLgMwqRcGehK0Y36BZv739K0cQRsYfBty9hj0p0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=jtml9c5ECFeQ+BGhVAkIvLpEWS6e8lklEYwrT5PTndBPMMOj1eyGSp6xAhDQzHviU
+	 umoGE/ME6HaHuqpfv200XsRjY9qzmVOuPJYILLBTIMN9nA2CpwlxqEpeJpQCDKgKgv
+	 0DL/TL7Q2xLfxumgQabfmQTbnZh4xr+Cs8fTECGTVVkuaWjqB/q4KU8mNWorhn5GG2
+	 zsorp153Mc1r7IcMHsYPZpxdeh2BEb3oH9PCJt72ksbUuenCnPfJg64oARXOrYIukQ
+	 ZdXQtXo1+Xzx5UTQK/IJMDhU4YoEJla6YSl7NwO8NJsL/gNDumUZob1uay0d05j938
+	 72X1RSVW45o+A==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id D00A34C01F;
+	Sun, 22 Nov 2026 11:55:27 +0000 (UTC)
+From: Suyuan Wang via B4 Relay <devnull+shyckless.gmail.com@kernel.org>
+Date: Sun, 22 Nov 2026 11:55:27 +0000
+Subject: [PATCH 2/3] cpufreq: kirkwood: Put clocks on error and in remove
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,229 +82,113 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <1978814.tdWV9SEqCh@rafael.j.wysocki> <3076901.e9J7NaK4W3@rafael.j.wysocki>
- <awC0tcqgq2KvCyxO@google.com> <CAJZ5v0jjxWzL-NLkm5B2ayGfXYdQcE4Shq8B9TGz1ghHBybSAg@mail.gmail.com>
- <CAJZ5v0hgxJFXQnFRvLS=s85oSVSbu9tNDs_OoiGce4NMRNP04w@mail.gmail.com>
-In-Reply-To: <CAJZ5v0hgxJFXQnFRvLS=s85oSVSbu9tNDs_OoiGce4NMRNP04w@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Sun, 22 Nov 2026 12:53:57 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0iiWr89UWy6jCxY5pEsrgzWTU6_SBJOS_xCPyOwvD9d-A@mail.gmail.com>
-X-Gm-Features: Aa3M54ouPbTjS5Ok69KjngyZmq31JmV4Rg_fdHEoKgGkFKye78-_4hbdcDMi9xM
-Message-ID: <CAJZ5v0iiWr89UWy6jCxY5pEsrgzWTU6_SBJOS_xCPyOwvD9d-A@mail.gmail.com>
-Subject: Re: [PATCH v1 1/4] PM: runtime: Update last_busy in all rpm_idle() paths
-To: Brian Norris <briannorris@chromium.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, Ulf Hansson <ulf.hansson@oss.qualcomm.com>, 
-	Linux Driver Core Development <driver-core@lists.linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261122-cpufreq-leaks-v1-2-96fc17ff7339@gmail.com>
+References: <20261122-cpufreq-leaks-v1-0-96fc17ff7339@gmail.com>
+In-Reply-To: <20261122-cpufreq-leaks-v1-0-96fc17ff7339@gmail.com>
+To: rafael@kernel.org, viresh.kumar@linaro.org, krzk@kernel.org, 
+ peter.griffin@linaro.org
+Cc: linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-pm@vger.kernel.org, alim.akhtar@samsung.com, 
+ linux-kernel@vger.kernel.org
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795348526; l=2983;
+ i=shyckless@gmail.com; s=default; h=from:subject:message-id;
+ bh=skKpKTVz2FV0rjzQ/HU+MrfER9ugcIz07303IiHkuCA=;
+ b=0efWSpMpBy+Kwg3RseZTMMzQXoPPCXFeJhXVmatgvsOBKi5JFwCEgzHwH8uKjbTB/HwfBHtQK
+ C3De9J/sEVcA4JgERWuHneJbyfb1bPAC2aE2NUFMg2x9KdOHD6yrodU
+X-Developer-Key: i=shyckless@gmail.com; a=ed25519;
+ pk=pMtccVGiWES3bV+7YBFuBclkvq2n2HBHQ5azaBrK2lY=
+X-Endpoint-Received: by B4 Relay for shyckless@gmail.com/default with
+ auth_id=1498
+X-Original-From: Suyuan Wang <shyckless@gmail.com>
+Reply-To: shyckless@gmail.com
 
-On Sat, Nov 21, 2026 at 12:22=E2=80=AFPM Rafael J. Wysocki (Intel)
-<rafael@kernel.org> wrote:
->
-> On Fri, Nov 20, 2026 at 10:29=E2=80=AFPM Rafael J. Wysocki (Intel)
-> <rafael@kernel.org> wrote:
-> >
-> > On Fri, Nov 20, 2026 at 9:59=E2=80=AFPM Brian Norris <briannorris@chrom=
-ium.org> wrote:
-> > >
-> > > On Thu, Nov 19, 2026 at 09:16:30PM +0100, Rafael J. Wysocki wrote:
-> > > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > > >
-> > > > The changelog of commit 26236a3e8803 ("PM: runtime: Update last_bus=
-y
-> > > > before calling rpm_suspend() in rpm_idle()") stated that rpm_idle()=
- only
-> > > > needed to update last_busy when it was about to call rpm_suspend(),=
- but
-> > > > that is incorrect.  There are still cases in which a device may be
-> > > > autosuspended earlier than expected.
-> > > >
-> > > > The first one is when pm_runtime_put() is called while a leftover
-> > > > autosuspend timer is running.  Then, dropping the device's runtime =
-PM
-> > > > usage counter to 0 allows rpm_suspend() triggered by the timer to
-> > > > suspend the device immediately before __pm_runtime_idle() is able t=
-o
-> > > > grab the spinlock.  Prevent it from occurring by adding a last_busy
-> > > > update before the rpm_drop_usage_count() call in __pm_runtime_idle(=
-).
-> > >
-> > > Do consumer->supplier and child->parent refcount drops have the same
-> > > problem? e.g., in pm_runtime_release_supplier() and rpm_suspend() /
-> > > parent->power.child_count decrement?
-> >
-> > I need to think about it.
-> >
-> > I don't think it affects the $subject patch anyway though.
->
-> So generally speaking, yes, they do.
->
-> In the suppliers case, that can be addressed by doing something like
->
-> pm_runtime_mark_last_busy(supplier);
-> smp_mb__before_atomic();
-> pm_runtime_put_noidle(supplier);
->
-> in every step of the loop in pm_runtime_release_supplier().
+From: Suyuan Wang <stevewong@hust.edu.cn>
 
-That would be overkill because refcount_dec_not_one() provides release
-semantics, as per the documented behavior of
-atomic_try_cmpxchg_release(), so long as the refcount is actually
-decremented by it which is expected to happen in
-pm_runtime_release_supplier() at least once.  So adding a
-pm_runtime_mark_last_busy() call before the loop in
-pm_runtime_release_supplier() should be sufficient.
+kirkwood_cpufreq_probe() gets three clocks with of_clk_get_by_name():
+cpu_clk, ddrclk and powersave. None of them is ever released with
+clk_put(). The error paths only disable and unprepare the clocks, and
+kirkwood_cpufreq_remove() does the same. So the clock references leak
+when probe fails (for example on -EPROBE_DEFER) and on every unbind.
 
-> In the parent case, a similar thing would need to be done in rpm_suspend(=
-):
->
-> parent =3D dev->parent;
-> pm_runtime_mark_last_busy(parent);
-> smp_mb__before_atomic();
-> atomic_add_unless(&parent->power.child_count, -1, 0);
->
-> with the addition of a read-side memory barrier (see below).
->
-> > > > Another one is when rpm_idle() returns without calling rpm_suspend(=
-),
-> > > > for example because the callback has returned a transient error, wh=
-ile
-> > > > an autosuspend timer is running.  The timer may then suspend the de=
-vice
-> > > > without respecting the autosuspend delay.  Moreover, the timer may =
-fire
-> > > > while the callback is running and it will not see the new last_busy
-> > > > value in that case.  To address these cases, move the existing
-> > > > pm_runtime_mark_last_busy() call in rpm_idle() before the first ret=
-urn
-> > > > value check.
-> > >
-> > > I suppose we don't care about: "what if .runtime_idle() is slow?" --
-> > > that makes a small delta in the expiration time.
-> >
-> > No, I don't.
-> >
-> > It is actually absent in the vast majority of cases.  And if it is
-> > present and it is slow, it may as well call
-> > pm_runtime_mark_last_busy() itself.
-> >
-> > > > In both places mentioned above add comments explaining the rational=
-e for
-> > > > updating last_busy.
-> > > >
-> > > > Fixes: 26236a3e8803 ("PM: runtime: Update last_busy before calling =
-rpm_suspend() in rpm_idle()")
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > ---
-> > > >
-> > > > Commit 26236a3e8803 is present in linux-next.
-> > >
-> > > Semi-unrelated cleanup: pm_runtime_put_sync() some stale kerneldoc no=
-w,
-> > > saying "this does not update the last access time".
-> >
-> > Ah, good point.
-> >
-> > > > ---
-> > > >  drivers/base/power/runtime.c | 16 +++++++++++++++-
-> > > >  1 file changed, 15 insertions(+), 1 deletion(-)
-> > > >
-> > > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runt=
-ime.c
-> > > > index 0b15c718c1bb..02e7b4953c38 100644
-> > > > --- a/drivers/base/power/runtime.c
-> > > > +++ b/drivers/base/power/runtime.c
-> > > > @@ -518,6 +518,14 @@ static int rpm_idle(struct device *dev, int rp=
-mflags)
-> > > >       else if (dev->power.idle_notification)
-> > > >               retval =3D -EINPROGRESS;
-> > > >
-> > > > +     /*
-> > > > +      * Update last_busy to defer autosuspend by the full autosusp=
-end delay.
-> > > > +      * Since an autosuspend timer may be running and the new last=
-_busy value
-> > > > +      * needs to be seen by it, update last_busy before returning =
-an error or
-> > > > +      * dropping the spinlock and allowing the timer function to g=
-rab it.
-> > > > +      */
-> > > > +     pm_runtime_mark_last_busy(dev);
-> > > > +
-> > > >       if (retval)
-> > > >               goto out;
-> > > >
-> > > > @@ -563,7 +571,6 @@ static int rpm_idle(struct device *dev, int rpm=
-flags)
-> > > >       if (retval)
-> > > >               return retval;
-> > > >
-> > > > -     pm_runtime_mark_last_busy(dev);
-> > > >       return rpm_suspend(dev, rpmflags | RPM_AUTO);
-> > > >  }
-> > > >
-> > > > @@ -1132,6 +1139,13 @@ int __pm_runtime_idle(struct device *dev, in=
-t rpmflags)
-> > > >       int retval;
-> > > >
-> > > >       if (rpmflags & RPM_GET_PUT) {
-> > > > +             /*
-> > > > +              * Once the usage counter drops to 0, a leftover auto=
-suspend
-> > > > +              * timer may fire before the spinlock below is acquir=
-ed.  Update
-> > > > +              * last_busy first so it does not find the expiration=
- time in
-> > > > +              * the past and suspend the device immediately.
-> > > > +              */
-> > > > +             pm_runtime_mark_last_busy(dev);
-> > > >               retval =3D rpm_drop_usage_count(dev);
-> > >
-> > > This is somewhat of a pre-existing issue (e.g., in
-> > > pm_runtime_put_autosuspend()), but weakly ordered architectures don't
-> > > really enforce the dependencies you want.
-> > >
-> > > rpm_drop_usage_count() uses an atomic decrement, which has a full
-> > > barrier.
-> >
-> > Right, that's why the last_busy update is carried out before
-> > rpm_drop_usage_count().
-> >
-> > > But this is supposed to influence the rpm_suspend() behavior of
-> > > rpm_check_suspend_allowed() (atomic_read) + READ_ONCE(last_busy), whi=
-ch
-> > > includes only a conditional dependency and no barrier.
-> > >
-> > > https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0124r6.html
-> > >
-> > >   "Control dependencies can order prior loads against later dependent
-> > >   stores, however, they do not order prior loads against later depend=
-ent
-> > >   loads. (Use memory_order_consume or memory_order_acquire if you
-> > >   require this behavior.)"
-> > >
-> > > So, rpm_check_suspend_allowed() should probably use
-> > > atomic_read_acquire(&dev->power.usage_count).
-> > >
-> > > (This is probably an extremely narrow, practically impossible issue.)
-> >
-> > Yes, this sounds nearly impossible in practice, given the number of
-> > branches between the usage counter read in rpm_check_suspend_allowed()
-> > and the last_busy check in pm_runtime_autosuspend_expiration().
->
-> It is not entirely impossible though AFAICS.
->
-> However, it is only really a concern if
-> pm_runtime_autosuspend_expiration() actually runs and if it actually
-> computes expires, so I'd rather add a read memory barrier to that
-> function:
->
-> smp_rmb();
-> expires  =3D READ_ONCE(dev->power.last_busy);
->
-> That would get the ordering between the last_busy access above and the
-> initial usage counter and child counter checks always right.
->
-> Well, I guess I need to redo the patch series to take all of the above
-> into account.
+Add the missing clk_put() calls to the error paths and to remove. The
+"Unable to prepare" paths now jump to new labels that only put the clock
+that failed to enable.
+
+Found with a static analysis tool and checked by hand.
+
+Fixes: 2a4bd9f0db24 ("cpufreq: kirkwood: Add a cpufreq driver for Marvell Kirkwood SoCs")
+Co-developed-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
+Signed-off-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
+Signed-off-by: Suyuan Wang <stevewong@hust.edu.cn>
+---
+ drivers/cpufreq/kirkwood-cpufreq.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+index 24b285cbeb8d..e85658081c07 100644
+--- a/drivers/cpufreq/kirkwood-cpufreq.c
++++ b/drivers/cpufreq/kirkwood-cpufreq.c
+@@ -125,7 +125,7 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+ 	err = clk_prepare_enable(priv.cpu_clk);
+ 	if (err) {
+ 		dev_err(priv.dev, "Unable to prepare cpuclk\n");
+-		goto out_node;
++		goto out_put_cpu;
+ 	}
+ 
+ 	kirkwood_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
+@@ -140,7 +140,7 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+ 	err = clk_prepare_enable(priv.ddr_clk);
+ 	if (err) {
+ 		dev_err(priv.dev, "Unable to prepare ddrclk\n");
+-		goto out_cpu;
++		goto out_put_ddr;
+ 	}
+ 	kirkwood_freq_table[1].frequency = clk_get_rate(priv.ddr_clk) / 1000;
+ 
+@@ -153,7 +153,7 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+ 	err = clk_prepare_enable(priv.powersave_clk);
+ 	if (err) {
+ 		dev_err(priv.dev, "Unable to prepare powersave clk\n");
+-		goto out_ddr;
++		goto out_put_powersave;
+ 	}
+ 
+ 	err = cpufreq_register_driver(&kirkwood_cpufreq_driver);
+@@ -167,10 +167,16 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+ 
+ out_powersave:
+ 	clk_disable_unprepare(priv.powersave_clk);
++out_put_powersave:
++	clk_put(priv.powersave_clk);
+ out_ddr:
+ 	clk_disable_unprepare(priv.ddr_clk);
++out_put_ddr:
++	clk_put(priv.ddr_clk);
+ out_cpu:
+ 	clk_disable_unprepare(priv.cpu_clk);
++out_put_cpu:
++	clk_put(priv.cpu_clk);
+ out_node:
+ 	of_node_put(np);
+ 
+@@ -182,8 +188,11 @@ static void kirkwood_cpufreq_remove(struct platform_device *pdev)
+ 	cpufreq_unregister_driver(&kirkwood_cpufreq_driver);
+ 
+ 	clk_disable_unprepare(priv.powersave_clk);
++	clk_put(priv.powersave_clk);
+ 	clk_disable_unprepare(priv.ddr_clk);
++	clk_put(priv.ddr_clk);
+ 	clk_disable_unprepare(priv.cpu_clk);
++	clk_put(priv.cpu_clk);
+ }
+ 
+ static struct platform_driver kirkwood_cpufreq_platform_driver = {
+
+-- 
+2.34.1
+
+
