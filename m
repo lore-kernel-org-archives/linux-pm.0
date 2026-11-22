@@ -1,101 +1,109 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.170
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795332829;
-	b=k1i7LJiSjqSplv4zAWG/8hJaz3+YnzJHdFOTmo0xL5LSAnf2wqYHZIk0q0nUSwLzy28n
-	 7FThbgbbgSKUbF8jS+FRq7BOCi7LNWW9sikiUxImdUxmNmv6y4L2CM+u22vlbrFteJDb0
-	 7mFMF2dPfefq4BBMBbduR9MnpztLl4LFVUpdZEW5IxQGwbNpf9385QvjkmixmdIGHE6CB
-	 yvAgo6SvsFRqMZkY0ln5yMTm64I8bx8cZJJ9kQQFHyscRg3P2KB2nsGdsP0NG3ULlia0l
-	 VV8sGLUzjxbkMy1cY0Ib0vKnzhffrxUujTexkEr112AwDeh1/tW3c9JLqGyThzdXlwA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795332829;
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.48
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795335081;
+	b=idookkF/QZoQzy7VshMwmSRcM57j6QqwXoQCVE7s+MFjCE0X9MFK67R3HERAtMB9E4SH
+	 r7s1fu+UrnTrQva39a7Z55K84t2D+zaKMKcikFowW2frgT0qwpwUuumAv/zt/9TLi+Bkr
+	 pvUj379eu1SUnclU/mp1vOIBt9dInEnfUzKm4OZBICGdGZfMnjqBWNyXNfiKOQdgp8vwL
+	 r6SyH76xOGvJ31JMGPuJ+iWX8fSQVsGq3CQRSP2j0I9lwt0mKMHfv9x5m2HkvU1SHd5Um
+	 h1cC7jqN0L2YTeFhAvVGqtdHPHFZEZL2Z8+fZgLKASkjIgB933X4e4/o6iRKNWOJKKg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795335081;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=4Jc9Q03F2saooXo6TTb3sNlYecivQhO/Q+XUXZ3Oiak=;
-	b=mkSZs1BjtWAOM3VlS4P/ec1MvliHloxRJzWh+Rr77jAhs89/1xPkT+uTA5ldH3R/N1Rv
-	 2io7PD416Tl7eQ7B8HqUx+jNFmpnsOD0AaVwyKYqgO9Dh+93YnyAw5MDG3wC37DK7AJtb
-	 b0Y9FhVfEL+moiYOtO26SeFJJPJTrDIXBB7+VLnBioYqcN1JD4un7fzeL+PbzYgONfCa2
-	 tqzfRvYqRbLRPSrlAwME0T2aOyCiwP/wJaLIeRozCcY6WFQkN7DztnTKo4Wngd4BSjasi
-	 mQs+zSbkSYEo7d/u5hwpr1PNbm9w1PMFuywBlLiTK9ydWLDF4+KMLm4I28e9t5EpEqw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=7LQKFHuvOFPNMCnvLDkMXQ86A6lGIMolZPD7spZrCmg=;
+	b=soR3JtgQ0ErPv0Ou+MLBl6QbCGVcVn5uOHstOJRLpL6p8K0YPqt7llmZ51V/s+XS2CBP
+	 mmjwE8exc3Pnwj8XPA+4SwevdLUNe8LCBNPbuHm3syjjBDAYTpiT38Np6k5DfitPSPMKV
+	 bMwF/D849WuBWH7UNiSxeR3RkgAsCs38kVhBIuTxTPom+ysO1YknALVHjzRnUMK0RaT8t
+	 JlfPnLiu7OSRQ207YStudhxyYpS0aGPYy5IjLJayWrZ+NuRd6X506JYmsUslqXUeIV22T
+	 TU4BVvTXgPEdLH8U7bUu+brpAjHyQo4ULUIMMw7bJBgRb7MRFGHhjc7Y4lUqLTF5iUA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=iHharhHN;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.170
-Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="oZwX/836";
+	arc=none smtp.remote-ip=209.85.218.48
+Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10077606A32A
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 07:33:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 10077606A32A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04D52606A32A
+	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 08:11:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 04D52606A32A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=iHharhHN
-Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-38699cf08dfso1656993eec.1
-        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 23:33:48 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795332828; cv=none;
-        d=google.com; s=arc-20260327;
-        b=oANQlUfWrs+diGtlqo4L7wn0wGmXXRU/d7jT2cEO7aaPnWT0vQ893sxW5H/GRtWqA+
-         PD0TZQH2Eh/TQp60M9YkZISPj28V8hZdEsLWDGbS91nD4Za4GlEnJN+M2KhsGqyJy3qe
-         j+s/u8ls1ZlxEYufN9Cy49eQq1Hv1TP28hH/mXeU0eEUnipgOpoEKUtSG8pWqovjxoFp
-         kJDSso/hZcffXPVWA0B0b/EhtLKwoHC0mT7eHmy4NWh9Or2muXAWEDx7gNC+HMDNoX8p
-         88bZTRvrAE32ZLzigbCKR6+Op79RWS3TqxdRWC40saudYUOwQcIvoL6kAyAnlyWGoxQK
-         Nmig==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=4Jc9Q03F2saooXo6TTb3sNlYecivQhO/Q+XUXZ3Oiak=;
-        fh=+ZukHH5Ug84ik4W2+knMxu7emeKrDt2Qp8svyEzzRns=;
-        b=ILSslDnRYEACoIQLtWTlq7or1c06SAsxKL2JgXUZeqmLIJNur+PuqlUQJy28cyYp2C
-         BwRZlpW002OkCRYNG3se80LP7b/M9Qk7F1jy8/nzyLpcQLu3Egv4D7PyJRvFLuGIbtlE
-         T7UNxwZ0P2DK8VbcVPLplSYgZ5uxMFPENV75QUzjZKFjgzllBZW4Oj2Z0q/JVZtBPBis
-         ls+5aOZKD58kEMJgvxFBasrbmGTlCyiDYvlZs1zOexPOiKeKMQsZS10pAkGnwGIsDkXz
-         i/DwMYhNBZmNDt+/n9opk6vDDjPI7N3/3wIzuyFuOE0hVVp60egdDO0cT/ul37E8L9UN
-         OTDw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oZwX/836
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-c513a854320so390972066b.0
+        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 00:11:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795332828; x=1795937628; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1795335079; x=1795939879; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=4Jc9Q03F2saooXo6TTb3sNlYecivQhO/Q+XUXZ3Oiak=;
-        b=iHharhHNAvWWmMNmSJORl9CiACUuHi3i0ws3GR9vxP9SD6imQbfrumKrQ+D+3/h4VH
-         DUQz2t9UyojNEslSFUoVY0B+eVTMj5udjH/m3y7IW9TI7lh4CDy8qVX2GkJ6WJ5xrNZ2
-         uiSYPjl3+zim7UYVdOOK+MxRuB9mWbWEKcTr2Aa5m4eIFeQ1Ij51S3nFtx2RzuPey4z4
-         vFrTxVw3E5xL1mbSQxKca2N0FjBwLxtAIsB5K/65SkSc/BFJEELAkUPMlFodi6c8/UKY
-         xZjRmXPYOcTChmt3Lp9r4b/KMaSJDe9/30QlmCGKnRQWJwZAM0vmtvtrBa/jXQF0Hk0f
-         O/gQ==
+        bh=7LQKFHuvOFPNMCnvLDkMXQ86A6lGIMolZPD7spZrCmg=;
+        b=oZwX/836jpKkwmXyKQm2gtxEgzcHo1dgYkrA7jXR4jQMF1yPkum9RA6/9zUBSIAHF2
+         qjaqvs5IcEc2p6grA9XhGOZgy6dHftV8EtcD/Ai8huCe1qJ/sacbhgBedTw0l/jvxOJu
+         FB8r8Yzj64R96CvD+pKxfp8l1+luLjUp8SIw/WVIekUhOZLY+SjJxR6XSWue/+4Qdlcd
+         gDNxqp8qTmuPWeyqD8+bkms9gaqO8/94Tzl8/t0XU7s8fZtLhtty7SIYCRBllnRzQWBv
+         KpfoopyukdLmMj4rs8+ZAHCCvjyPXpsHh4AfRXQdeBpHU7sBRq6P/vzU44mCr8B4ye5v
+         wMlg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795332828; x=1795937628;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20260707; t=1795335079; x=1795939879;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=4Jc9Q03F2saooXo6TTb3sNlYecivQhO/Q+XUXZ3Oiak=;
-        b=bU3FS3AxW9sgBL6UHVrX/mGGLT6eqB4OYlzBKnRqRSyeLIDedq5T6fjG+xlSNWMpTV
-         0bfiaE8Y8mOOa8UBXBNLe0eyz2tsEx5gQV+HP/SS/jq2h5+KtvFpCJxqMcOBXwe4MQex
-         llXvI8Dz9Aom73NX2QiUfHyrMNzjdABg6blRFyQrUDaK/Jw93arvQjeIm/Qk8zaC6z4W
-         fSgfetsyTyP0QkLS0qYHeJf9M1GfwK+GMNSN9cv6b1zP2ul8o/r+q723C+nOFeVHLgY/
-         JkYa1mORYrIVoWxkMWyWnZQNSSQFI46dUiwYBOk7bWIwswnseJiLEgVX3/EnrCQWCWBo
-         4oqQ==
-X-Forwarded-Encrypted: i=1; AL+hErHpfCAduzls+Oicn6EtBGzyXEPfHvvKPUWqUqKKw6Cv4X4HN/86vL+9RlKwfqyc5rLSCq+JOlyQ+g==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+gxiYbW9cs3pksJYuKLnMoI1wEM8+cOi4dDGWK7cPkfkhXVLvN
-	+CP0B7Gu7JE1ObhSphxMXnbZyz8j9B0bLtakOUljOZ42ZwEBdFGPYVPdVLbtSYIDnZiDPb6G40E
-	Ytx/yzAoVKXlEe9RtgYxF/aKeX0ttlok=
-X-Gm-Gg: AZFdTZeruYMVyVX023Q3oWPdfEc/4SNLCKCeaa8zH/dNsZPkpZnZ+E/DPgYiugitQA2
-	9BjsDwUI55dvkZ4tgVm+NEV1xkD5PBrLFYpTHyAM2hepwhZS5viXQpHq9UMStKhqb6zveARccmC
-	Udy0+PnVKt7fstln3J6DRIIwBWKAyRsj01WBr0aWE/PhHJhOyGDDN/SPDXeqCGEjK8TXQ2uBm5/
-	endEzxkvSojIdrJZzXTmYmo6crFtgTobe8FNaRQgblVhlekvsnk07L28lU1A1ZDxxW3tv0aOcRT
-	h0ZOygSouvH2/fUooLZoJNhi8oEftmFZOoMPo+3LOhRjy0eksXH+FKJoGR4ZssXfINL3eLP8xj4
-	L6h4F46NPPr3Z+aN/WolX/qvVNk2enjaX64DnhlzkCKrLdilkqV02BfY1SZ6jEcLl/veoHjHlgD
-	XsIz2KcIkucuo2fEN9pLXhvGbe6R79Ag==
-X-Received: by 2002:a05:7301:d813:b0:386:8bd2:da35 with SMTP id
- 5a478bee46e88-3868bd2dbe9mr5806237eec.5.1795332828030; Sat, 21 Nov 2026
- 23:33:48 -0800 (PST)
+        bh=7LQKFHuvOFPNMCnvLDkMXQ86A6lGIMolZPD7spZrCmg=;
+        b=KJYHn7vuWSaz2+EYDjRHLWm/VBVxIZq1ub6DBodif9YOR090X2nbzdSG2lR/kTCSos
+         D4jYRZZrMOLN3ydzpFlE6x9Ekbyl/ArMoCH5HcR5z2aWXSfnLgQUsTO6BBtovTtBesNx
+         ijDqaD7Jsh+WHtY7wxbVF7GvhZLGOO5/VBgVbGXKBZ+svnWTgqXCaYaMMCfD8aMZLQsi
+         2Bo6QBKp3V25GqqrGDyBwc5XhpL7795EoiOza3OuNvSzINH86bfkrX9YrSz006OSYAMc
+         xhPJmjkaeS1mSzqth4y29INHqNs5qbPDEPkxYOdw/99AvqQGvG2NMj2x3VMgkYGOGgv+
+         xGGw==
+X-Forwarded-Encrypted: i=1; AL+hErFs9YTHak3M2I4mMDQVGhUNuTcJ9H4rpSDUt8LivRn0x6VdJGJhKg5rzr+RPqzGqJNiNWlLU1AQpg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9nUSMa1x3UF9xtJdcjv0edzPs/MVjg/O7SFLsvMwNXrQByH7bo
+	HSLjGWHOxnX7O6bM7WhsHXrvtnrZuo6z8h/ARaUrP3C1qBduO7bSp7IQ
+X-Gm-Gg: AZFdTZfw+UAFycKpM99EyeH6SKtgZ5AE2MxTvrYTbOVX1srzF2D1aZ1Ae1gdXxkJfm/
+	MbO3QfrjTBGkoEDmRgSoSOetiXUD6Z2hvixsLDQpWU1cO/+NduR/bB5Tu1YEhFUKKNstmxtwcTF
+	afNWQEQudYwvO+2STR/AcDbyEKrDPPdFL6PeLh/+vCUL6kCbYKX/JslKHFk5tq5J280enOII1Uv
+	UBEWcLWo9zUh3atc4uoJvsIlKhIWxvaoZgx8UcuhlTp5c1/4KlqUhYe9abpFnjntFtg0NF2aVD6
+	zAQw/w1pEep5m8zHjz0t8EXZ1X3ZjIW+C7Wauyk16LADThhij21WEGqtl6wSDTMrSN/vWtjXgx1
+	e+Y/mjjxkMHE7II6o2clV2VMHJHEw0XFlrppNQHaaO2d8ikdKryvQy7S0l3ES5yMYfQc0H8eUPf
+	ePTWXju4u2WxZopJNv33Hr9YOVTwHUeL75I7yg06NfmvpdGmUqk9pXYL2Iwz5v4XsiCcryoufKw
+	2uoxfIYyj6+tetUpFZdM1S18i90F7F1W5IHBXOqBCDOYm9d8ckAKMXuxPR8vvQp93RVEFuILtWK
+	fYXYauwB4RF2lYHqNX2SJ4eGTg==
+X-Received: by 2002:a17:906:4fc7:b0:c40:9839:c892 with SMTP id a640c23a62f3a-c513a88a001mr676115566b.19.1795335079208;
+        Sun, 22 Nov 2026 00:11:19 -0800 (PST)
+Received: from dl360p ([195.155.168.55])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c513ae679e3sm286835966b.22.2026.11.22.00.11.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Nov 2026 00:11:17 -0800 (PST)
+From: =?UTF-8?q?Adil=20H=C3=BCsrev=20Tepe?= <tadilhusrev@gmail.com>
+To: Alexey Klimov <alexey.klimov@linaro.org>
+Cc: Tudor Ambarus <tudor.ambarus@linaro.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Mateusz Majewski <m.majewski2@samsung.com>,
+	Thomas Turner <tturner@lineageos.org>,
+	Peter Griffin <peter.griffin@linaro.org>,
+	linux-pm@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/3] thermal: samsung: acpm-tmu: Add Exynos850 support
+Date: Sun, 22 Nov 2026 11:11:14 +0300
+Message-ID: <20261122081114.2979414-1-tadilhusrev@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261118-acpm-tmu-e850-support-v2-0-19848c0d97e5@linaro.org>
+References: <20261118-acpm-tmu-e850-support-v2-0-19848c0d97e5@linaro.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -105,41 +113,85 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260930072450.61836-1-clamor95@gmail.com> <20260930072450.61836-2-clamor95@gmail.com>
- <179305276926.4032096.5720095014424223708.robh@kernel.org>
-In-Reply-To: <179305276926.4032096.5720095014424223708.robh@kernel.org>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Sun, 22 Nov 2026 09:33:36 +0200
-X-Gm-Features: Aa3M54qiQFO3akCNwqI_UUbQKp2SRj0lVcvXQw852BKZ9oO4Dql8w1L3qsKBEpI
-Message-ID: <CAPVz0n3-63X8fQbohNERGJMdytfpqRGSOPOMoNRpWxgmMaMrUw@mail.gmail.com>
-Subject: Re: [PATCH v1 1/1] dt-bindings: power: supply: maxim,max8903:
- Document MAX8922L and RT9524
-To: Sebastian Reichel <sre@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	"Rob Herring (Arm)" <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-=D0=B2=D1=82, 27 =D0=B6=D0=BE=D0=B2=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 00:1=
-2 Rob Herring (Arm) <robh@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
->
-> On Wed, 30 Sep 2026 10:24:50 +0300, Svyatoslav Ryhel wrote:
-> > Document MAX8922L and RT9524, which use a similar charging control patt=
-ern
-> > to the MAX8903. The MAX8903 is set as a fallback for both chips. No dri=
-ver
-> > changes are required.
-> >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > ---
-> >  .../bindings/power/supply/maxim,max8903.yaml           | 10 +++++++++-
-> >  1 file changed, 9 insertions(+), 1 deletion(-)
-> >
->
-> Acked-by: Rob Herring (Arm) <robh@kernel.org>
->
+Hi Alexey,
 
-Hello Sebastian! May you please pick this change, it is schema
-adjustment only and Rob Acked it. Thank you.
+On Wed, Nov 18, 2026 at 01:51:44PM +0000, Alexey Klimov wrote:
+> Tested with:
+>
+> tmu_top: thermal-sensor@100a0000 {
+> 	compatible = "samsung,exynos850-tmu-top";
+> 	reg = <0x10070000 0x800>;
+
+Nit: the unit address doesn't match reg, it should be
+thermal-sensor@10070000.
+
+I ran v2 on a retail Samsung Galaxy XCover5 (SM-G525F, Exynos850, stock
+Samsung bootloader and ACPM firmware), as a data point next to the
+E850-96. Base: v7.4-rc3 plus out-of-tree board support, Tudor's acpm-tmu
+fixes as queued in thermal/linux-next, then this series. Christian's
+threshold-7 fix doesn't apply on top of those fixes yet, so it isn't
+included; it only touches the GS101 path anyway. DT node as above, with
+the unit address fixed, and three interrupt-only zones (polling-delay = 0,
+an active trip at 50C with 2C hysteresis, critical at 110C).
+
+What works:
+
+- The TMU is accessible from the AP on this production device, so the
+  direct MMIO approach isn't blocked by the secure world there. The
+  bootloader leaves the block configured: two-point calibration
+  (CALIB_SEL=1; 25C/85C codes 288/346, 288/346, 287/346, 287/345 for
+  probes 0-3), CONTROL=0x9503, CONTROL1=0x00030000, AVG_CONTROL=0x00010016,
+  COUNTER_VALUE0/1=0x28a, TRIM0=0. exynos850_tmu_init() computes the same
+  values.
+
+- ACPM read_temp for groups 0/1/2 tracks the raw CURRENT_TEMP codes of
+  probes 1/2/3 within 1-2C.
+
+- Threshold interrupts work. The GPU zone got a rising update at 50C and
+  a falling one at 45C. After the CPU zones crossed 50C, their registers
+  were re-armed correctly (rise ~110C, fall ~47C, INTEN = RISE1|FALL1).
+  An 8-core load up to 83C caused no spurious updates.
+
+Two issues:
+
+1) THERM_TRIP_EN is cleared in exynos850_tmu_init() and never set again.
+   CONTROL went from 0x9503 to 0x8503 after probe. The bootloader leaves
+   level 7 programmed at code 0x177 (about 115C) with the hardware trip
+   enabled, so after probe the hardware thermal trip is off. Samsung's
+   downstream driver for this SoC (exynos3830 in exynos_tmu_v2.c) sets
+   TRIP_EN together with CORE_EN when it enables the core. Should the
+   driver keep it, or set it again in tz_control()?
+
+2) Runtime PM gates the TMU pclk (gout_busif_tmu_pclk) 100ms after each
+   access, but the ACPM firmware on E850 reads the TMU through that clock
+   too. An ACPM TMU read_temp sent while the pclk is gated hangs the SoC
+   until it resets, with nothing in the log. I hit this through an
+   out-of-tree ACPM consumer that calls read_temp without going through
+   acpm-tmu's runtime PM, so this series on its own does not trigger it:
+   acpm_tmu_get_temp() resumes the device before the IPC. It reproduced
+   both times with the clock gated, and the same read always works with
+   the device held active (power/control = on).
+
+   It does mean the clock is shared with the firmware, and gating it is
+   only safe if ACPM never touches the TMU on its own while the AP has it
+   gated. I can't rule that out from here: the bootloader leaves RISE7
+   enabled on probe 0. The downstream driver never gates this clock.
+   Would it be safer to keep it enabled while the device is bound on E850?
+
+Minor:
+
+- NUM_PROBE is set from priv->num_sensors (3 thermal zones). That happens
+  to match what the bootloader programs (3, covering probes 0-3; probe 3
+  keeps updating), but they are different quantities. Downstream reads
+  NUM_PROBE back from CONTROL1 instead.
+
+- About sashiko's temp_error2 point: all four probes on this unit have
+  non-zero 85C trims, so that fallback isn't exercised here.
+
+I'm happy to retest the next version on this phone.
+
+Thanks,
+Adil
