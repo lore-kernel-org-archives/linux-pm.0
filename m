@@ -1,45 +1,65 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795384942;
-	b=pBEACgA36xFSDDxXG+1RQfD522q8s3R/vqcG1WpafCscgR4wsKojkM91+EearyjAlLpN
-	 udKJMpbydgO+5NkAPmhk+pQEYepZvWd0NMdFuRBAdiHmttCwxYF1JO0NRNgQBng4BznUC
-	 SO+oFFLm98opsX+QMraPG7YcuZOfK3Vle/+Pduacu1gzoSGz5hIp3h/vyPhyD3iGcGv3o
-	 RbLOeAZinykQ+Dlf/BcHUICvuC52CXFlaOoO2xI6Ev3ElIaRmZ6waBGRnZM4SQGmHWHDe
-	 DMOuO5kvASvd5ZHFy+Z1hpP34IJFyOD7xOfv/vP2gO4/syNVJdYwnVas5cXsRK78C0g==
+	t=1795384986;
+	b=tzLPMQUaCn1y2bZzA5KPqnWRarNYZgP55qeSFlUAf3zbtFyK6ArLbn5QuEIwlnSw960l
+	 tCpVtAG0h9M81kPK5bAFyJs9y3q8PCot8cEyfwiiVhOpeydzJ8MRgQqu0vbPZVz4u3lQI
+	 8+9tXmgkcOoO5MfRP2c0v3tqS5tZaZm1UVOraf+YAxNzW3ToEKXwD0skIklk3NmVHur4Q
+	 eo/8o7ZsK6lD1Ora+hxpmnPgg+NfvH7C+owkkr3wkpIr9AAXqtbLT9Oq/dSHJaRUSwljx
+	 i+fbIj4PU0WZ41znCDrdmlJ3WHUKMA0wvpM8fvwE1r1ypL9uAGZg1d/HO5r4wAN+qLg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795384942;
-	h=Received:DKIM-Signature:Mime-Version:Content-Transfer-Encoding:
-	 Content-Type:Date:Message-Id:Subject:Cc:To:From:References:
-	 In-Reply-To;
-	bh=sTtlSSaGTpDBtcMHiOircAIvmiTH+Ctop/XsFzGC1x4=;
-	b=YrgCw7fc82efjOJR6aqKPcSwalSW3k8vQUHIYDJVI37d9CBiToehWm/1ktwwymQWL6Au
-	 svoB7yp+0z1su71Hd0PFrG5Nz0ensrulMD/zKBsuvTb4eZkW4szYQKpqve8SdVqOhaNC9
-	 rpXHgTRZ0G5Hg9lObkmlBU8Tx36zXCsAu90qa2oSdJ1RpKVfZn2VTpdKMJellxju98pBd
-	 lQ7x4g3dBPSLJkeB4pX7VQTWEnhJIBU8fqJl3690tWQtBED2+6yS5r5cH/ivr2aZa7umF
-	 oaG5QKUfA4/qFx5fhDpAyRJVmhYyRytxOTiVWaI8Cmn0IGGlcCD4X9b3p1tq8Kfh2TA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795384986;
+	h=Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
+	 In-Reply-To:References:X-sashiko-severity:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version;
+	bh=VG+Q57/4+q0IcXBdN4djtbssvG0TBzutYRMG5A6OpS8=;
+	b=SKYu3ufNN7nnzc/MXZuMV087uTcGVI8Gml/FTu8cuZKs+CvC3VIfXlxO2DJXklAf8PsE
+	 uIkO5v0JIC3s5PPvf3deoIYzi5ITj5uHTQFj0hYRJoM1H3ob8TMzcAnKTwLy6dmV7BP3H
+	 La/peCfnUeze+crtB0kdkvEohxG5nIewnm9Qh7+eNrcE+Ht9pVc/w9xa2Fw8pUqNbBxq7
+	 BskeQJxroiWvEV+4zam9qyTpBiulNKRpyv2fHhyxmgJVgKFqDOhfekocFO5/A4VrSQ+1S
+	 tdzWRPEs1j6MTX4PXseGt8w7q+5qqrz6OT60ad7N3tkgofzjGRhJy4kqvMsC4oUk7aw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k2Hc6xFR;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mDO2vohK;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92C7D606A31A;
-	Sun, 22 Nov 2026 22:02:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C60DD606A31E;
+	Sun, 22 Nov 2026 22:03:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k2Hc6xFR
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26DB11F000C6;
-	Sun, 22 Nov 2026 22:02:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mDO2vohK
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE5781F000C4;
+	Sun, 22 Nov 2026 22:03:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795384942;
-	bh=sTtlSSaGTpDBtcMHiOircAIvmiTH+Ctop/XsFzGC1x4=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To;
-	b=k2Hc6xFRtkicPKFvuKT7zGdEMFSb//oYzAC6yGi4WET4vMctzGLV95ptNtrt42XPr
-	 WQXnncoUOn8vCWB5V+5BOCSO1YRgvEGvWFlC6kSpFwx64JgBjdDeDjN8t0GAWjAHIl
-	 OTUhOZXnH51x9+wu6dE5+5xRqac3uNPyE7pzVVKvZEWUvPhn37jeV+RfXXnvGy2n+o
-	 5fpjybhz8GWsaKNEldr/b1vfp4LchA2oilYAZk48pyxh0hZg4h3t2J1QwAu6uVH9h7
-	 a22sYJ2GBWGWAOsKWbURM4twq7Z2FvgS7RP2m5XNLf/srWoFugU+HT+1vi7WOYs8uY
-	 PaUfPtPCWI/6w==
+	s=k20260515; t=1795384986;
+	bh=VG+Q57/4+q0IcXBdN4djtbssvG0TBzutYRMG5A6OpS8=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=mDO2vohKsSAMBeEhek/GwWQFBuSkTXzqbUQSX0KZUUWfh0WAsfMgOnjGjRxwwyyxW
+	 4oJXw3mQCnzdVnVygsFsafDAFzlosWrUT3NZvJTaO0tFv10o0wz6y4wKjTznddFOoW
+	 Vbtf8h/FVpGYhrg5j5i0UVNM1GwKy5vPzHTa2ufOvncCgwY9EM3Tj1wPnTToLRfTpg
+	 yEYzt7D78vV9sdoWa8ozreggqgkflGS0mviMFKPYm4fxpp0SmC5BNSKqU1qfbZDDBL
+	 I94D1VbDOznow8bxg6FC7f0sRbPQIM4W6k0I1aw+fEumPlHvYgC7Q0sp2x3vLNuMEV
+	 UkbeGHDTdLGCw==
+Subject: Re: [PATCH net v7 2/5] net: phy: fix three paths that unbalance a
+ postponed PHY interrupt line
+From: netdev-bot+sashiko@kernel.org
+To: iav@iav.lv
+Cc: andrew@lunn.ch, hkallweit1@gmail.com, linux@armlinux.org.uk,
+ davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ tglx@kernel.org, linux-pm@vger.kernel.org, maxime.chevallier@bootlin.com,
+ lukas@wunner.de, rafael.j.wysocki@intel.com, wei.fang@nxp.com,
+ niklas.soderlund@ragnatech.se, paul@pbarker.dev,
+ florian.fainelli@broadcom.com, opendmb@gmail.com, Thangaraj.S@microchip.com,
+ shenwei.wang@nxp.com, Haoning.CHENG@cn.bosch.com, netdev@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+Date: Sun, 22 Nov 2026 22:03:04 +0000
+Message-ID: <179538498448.3135.18241540181099733767@kernel.org>
+In-Reply-To: <20261119-b4-phylib-mac-pm-irq-v3-v7-2-d8b8f43b5a62@iav.lv>
+References: <20261119-b4-phylib-mac-pm-irq-v3-v7-2-d8b8f43b5a62@iav.lv>
+X-sashiko-severity: Medium
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -48,104 +68,223 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 22 Nov 2026 23:02:06 +0100
-Message-Id: <DN22U90WCTGB.1REAOP1PQUMIQ@kernel.org>
-Subject: Re: [PATCH v4 0/9] Add __must_init and require explicit
- kobj_type::release
-Cc: "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Kees Cook"
- <kees@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Rafael J . Wysocki"
- <rafael@kernel.org>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Srish
- Srinivasan" <ssrish@linux.ibm.com>, "Michael Ellerman"
- <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>, "Christophe
- Leroy" <chleroy@kernel.org>, "Nayna Jain" <nayna@linux.ibm.com>, "Mimi
- Zohar" <zohar@linux.ibm.com>, "Yoshinori Sato"
- <ysato@users.sourceforge.jp>, "Rich Felker" <dalias@libc.org>, "John Paul
- Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>, "Juergen Gross"
- <jgross@suse.com>, "Stefano Stabellini" <sstabellini@kernel.org>,
- "Oleksandr Tyshchenko" <oleksandr_tyshchenko@epam.com>, "Nathan Chancellor"
- <nathan@kernel.org>, "Nick Desaulniers" <ndesaulniers@google.com>, "Viresh
- Kumar" <viresh.kumar@linaro.org>, "Zhongqiu Han"
- <zhongqiu.han@oss.qualcomm.com>, "Alexander Aring" <aahringo@redhat.com>,
- "Felix Kuehling" <felix.kuehling@amd.com>, =?utf-8?q?Christian_K=C3=B6nig?=
- <christian.koenig@amd.com>, "Zhihao Cheng" <chengzhihao1@huawei.com>,
- "Sumanth Korikkar" <sumanthk@linux.ibm.com>, "Bill Wendling"
- <morbo@google.com>, "Justin Stitt" <justinstitt@google.com>,
- <driver-core@lists.linux.dev>, <llvm@lists.linux.dev>,
- <linux-hardening@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
- <linux-doc@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
- <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-sh@vger.kernel.org>, <linux-s390@vger.kernel.org>,
- <gfs2@lists.linux.dev>, <xen-devel@lists.xenproject.org>,
- <linux-mtd@lists.infradead.org>, <amd-gfx@lists.freedesktop.org>,
- <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
- <agordeev@linux.ibm.com>, <airlied@gmail.com>, <alexander.deucher@amd.com>,
- <catalin.marinas@arm.com>, <chao@kernel.org>, <deller@gmx.de>,
- <dennis.dalessandro@cornelisnetworks.com>, <dmaengine@vger.kernel.org>,
- <gor@linux.ibm.com>, <hca@linux.ibm.com>, <jaegeuk@kernel.org>,
- <James.Bottomley@HansenPartnership.com>, <jgg@ziepe.ca>,
- <jlbec@evilplan.org>, <johan@kernel.org>, <joseph.qi@linux.alibaba.com>,
- <leon@kernel.org>, <lihuisong@huawei.com>, <linusw@kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-erofs@lists.ozlabs.org>,
- <linux-f2fs-devel@lists.sourceforge.net>, <linux-fbdev@vger.kernel.org>,
- <linux-omap@vger.kernel.org>, <linux-parisc@vger.kernel.org>,
- <linux-rdma@vger.kernel.org>, <mark@fasheh.com>, <neescoba@cisco.com>,
- <ocfs2-devel@lists.linux.dev>, <satishkh@cisco.com>, <simona@ffwll.ch>,
- <sre@kernel.org>, <vkoul@kernel.org>, <will@kernel.org>, <xiang@kernel.org>
-To: "Ian Rogers" <irogers@google.com>
-From: "Danilo Krummrich" <dakr@kernel.org>
-References: <20261119192520.1983406-1-irogers@google.com>
- <20261122215639.1178566-1-dakr@kernel.org>
-In-Reply-To: <20261122215639.1178566-1-dakr@kernel.org>
+MIME-Version: 1.0
 
-(Cc: more people previously Cc'd on v2)
+Thank you for your contribution! Sashiko AI review found 3 potential
+issue(s) to consider.
 
-On Sun Nov 22, 2026 at 10:56 PM CET, Danilo Krummrich wrote:
-> On Thu, 19 Nov 2026 11:25:11 -0800, Ian Rogers wrote:
->> [PATCH v4 0/9] Add __must_init and require explicit kobj_type::release
->
-> Applied, thanks!
->
->   Branch: driver-core-testing
->   Tree:   git://git.kernel.org/pub/scm/linux/kernel/git/driver-core/drive=
-r-core.git
->
-> [1/9] Compiler Attributes: Add __must_init macro
->       commit: b8a53320a885
-> [2/9] powerpc/secvar: Add missing kobject release callback to secvar_ktyp=
-e
->       commit: 4d5d4dd2a2e2
-> [3/9] sh: sq: Add missing kobject release callback to ktype_percpu_entry
->       commit: d19384f2f3c7
-> [4/9] cpufreq: governor: Initialize kobj_type release callback statically
->       commit: 009365942c15
-> [5/9] dlm: Wait for kobject release before freeing dlm_ls
->       commit: 48ae948f4285
-> [6/9] xen/sys-hypervisor: Add release callback to hyp_sysfs_kobj_type
->       commit: ecaf88d385c1
-> [7/9] ubifs: sysfs: Use kset_create_and_add() for ubifs_kset
->       commit: 25d952902dee
-> [8/9] drm/amdkfd: Free queue in procfs_queue_type kobject release callbac=
-k
->       commit: 6d4ff4a020cf
-> [9/9] kobject: Require explicit initialization of struct kobj_type::relea=
-se
->       commit: 45eeed1f8094
->
-> The patches will appear in the next linux-next integration (typically wit=
-hin 24
-> hours on weekdays).
->
-> The patches are in the driver-core-testing branch and will be promoted to
-> driver-core-next after validation.
+Critical: 0 · High: 0 · Medium: 2 · Low: 1
 
-I've now picked this up; I will keep this series in driver-core-testing for=
- a
-few more days before moving it to driver-core-next. Please let me know if t=
-here
-are any concerns with the series, particularly the comments in patch 9.
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-Thanks,
-Danilo
+- [Medium] mdio_bus_phy_resume() (drivers/net/phy/phy_device.c) can still
+  leave a postponed PHY interrupt line disabled for good.
+- [Medium] Whether irq_rerun is still valid depends on whether the shared
+  line was shut down and started again since this PHY disabled it.
+- [Low] The new kernel-doc for irq_pm_lock (include/linux/phy.h:678) and
+  the in-struct comment (include/linux/phy.h:814) say it 'Serializes…
+
+--
+
+net: phy: fix three paths that unbalance a postponed PHY interrupt line
+
+With this patch, phy_interrupt() disables a postponed PHY interrupt line
+only once and records which line it disabled. phy_request_interrupt() and
+phy_free_interrupt() now clear irq_rerun when the line has no users. The
+postpone and rerun logic moves into mdio_bus_phy_suspend_irq() and
+mdio_bus_phy_resume_irq(), and a new per-PHY irq_pm_lock mutex guards it.
+
+> diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+> index 9af303d60bd6b..92ee4651bdbc6 100644
+> --- a/drivers/net/phy/phy.c
+> +++ b/drivers/net/phy/phy.c
+
+[ ... ]
+
+> @@ -1480,6 +1484,12 @@ void phy_request_interrupt(struct phy_device *phydev)
+>  {
+>  	int err;
+>  
+> +	/* A line without users restarts at depth 0, so our disable is gone */
+> +	mutex_lock(&phydev->irq_pm_lock);
+> +	if (phydev->irq_rerun && !irq_has_action(phydev->irq_rerun_line))
+> +		phydev->irq_rerun = false;
+> +	mutex_unlock(&phydev->irq_pm_lock);
+> +
+>  	err = request_threaded_irq(phydev->irq, NULL, phy_interrupt,
+>  				   IRQF_ONESHOT | IRQF_SHARED,
+>  				   phydev_name(phydev), phydev);
+
+[Severity: Medium]
+Can irq_rerun go stale on a shared line in ways the commit message does
+not list?
+
+irq_pm_lock belongs to one phydev. It does not order this check against
+free_irq() or request_threaded_irq() from the other users of the line,
+and a second PHY on the line has its own irq_pm_lock.
+
+First window: PHY A postpones on line L, so irq_rerun is set and the
+depth is at least 1. A then frees L while user B still holds it, so A
+keeps irq_rerun. Later:
+
+PHY A                                  user B
+phy_request_interrupt()
+  irq_has_action(L) == true
+  mutex_unlock(&irq_pm_lock)
+                                       free_irq(L)  /* last action */
+                                         irq_shutdown()  /* depth++ */
+  request_threaded_irq(L)
+    __setup_irq()
+      irq_startup()  /* depth = 0 */
+
+A's disable is gone, but A's irq_rerun is still true.
+
+Second window: A frees L while B is present, so A keeps irq_rerun. Then
+B's phy_free_interrupt() empties the line, but it clears only B's own
+flag:
+
+	if (!irq_has_action(phydev->irq))
+		phydev->irq_rerun = false;
+
+If B requests the line again first, or A does not request it again
+before resume, nothing clears A's flag.
+
+In both cases, mdio_bus_phy_resume_irq() for A calls
+enable_irq(irq_rerun_line) based on the stale flag.
+
+If the depth is 0, this triggers the "Unbalanced enable for IRQ"
+warning.
+
+If B was postponed in the meantime, A's enable cancels B's disable and
+unmasks L while B is still postponed. B's thread sees its irq_rerun is
+already set and does not disable the line again. On a level-triggered
+line the IRQF_ONESHOT thread then keeps rerunning until B resumes, and
+B's own enable_irq() then triggers the same warning.
+
+If nobody has requested L again, the enable starts a line that has no
+action.
+
+The commit message names two cases that stay unbalanced. It also says
+irq_rerun is cleared:
+
+    in phy_free_interrupt() when free_irq() leaves the line without
+    users
+
+Does that hold for the dra72-evm-revc two-PHY setup if the other PHY is
+the one whose free empties the line?
+
+[ ... ]
+
+> diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+> index 1791d578f4dde..f2e2370b4be7c 100644
+> --- a/drivers/net/phy/phy_device.c
+> +++ b/drivers/net/phy/phy_device.c
+
+[ ... ]
+
+> @@ -393,19 +419,7 @@ static __maybe_unused int mdio_bus_phy_resume(struct device *dev)
+>  	if (ret < 0)
+>  		return ret;
+>  no_resume:
+> -	if (phy_interrupt_is_valid(phydev)) {
+> -		phydev->irq_suspended = false;
+> -		synchronize_irq(phydev->irq);
+> -
+> -		/* Rerun interrupts which were postponed by phy_interrupt()
+> -		 * because they occurred during the system sleep transition.
+> -		 */
+> -		if (phydev->irq_rerun) {
+> -			phydev->irq_rerun = false;
+> -			enable_irq(phydev->irq);
+> -			irq_wake_thread(phydev->irq, phydev);
+> -		}
+> -	}
+> +	mdio_bus_phy_resume_irq(phydev);
+
+[Severity: Medium]
+What happens to a postponed line if phy_init_hw() or phy_resume() fails
+just above this label?
+
+drivers/net/phy/phy_device.c:mdio_bus_phy_resume() {
+	...
+	ret = phy_init_hw(phydev);
+	if (ret < 0)
+		return ret;
+
+	ret = phy_resume(phydev);
+	if (ret < 0)
+		return ret;
+no_resume:
+	mdio_bus_phy_resume_irq(phydev);
+	...
+}
+
+Both early returns skip mdio_bus_phy_resume_irq(), so irq_suspended
+stays true. If a postponed interrupt already called disable_irq_nosync(),
+the line stays disabled. If not, the next phy_interrupt() takes the
+postpone branch and disables it.
+
+Nothing calls enable_irq(irq_rerun_line) until a later sleep cycle
+resumes successfully. Until then, this PHY loses its interrupts, and so
+does every other user of a shared line, such as the second PHY on
+dra72-evm-revc.
+
+The early returns themselves are not new. The result, though, matches
+the third bullet of the commit message, reached through a different
+return:
+
+    mdio_bus_phy_resume() returns before enable_irq(), and the other
+    users of a shared line stay disabled.
+
+The new comment in phy_free_interrupt() ("mdio_bus_phy_resume_irq()
+enables a shared line") also assumes the helper always runs.
+
+A later patch in the series, "net: phy: stop postponing PHY interrupts
+when phy_suspend() fails", fixes the suspend-side version by calling
+mdio_bus_phy_resume_irq() on that error path. The resume-side error
+returns are still unchanged at the end of the series.
+
+Should these error paths also call mdio_bus_phy_resume_irq()?
+
+[ ... ]
+
+> diff --git a/include/linux/phy.h b/include/linux/phy.h
+> index 59c75296d5355..f370690d62a73 100644
+> --- a/include/linux/phy.h
+> +++ b/include/linux/phy.h
+
+[ ... ]
+
+> @@ -675,6 +675,8 @@ struct phy_oatc14_sqi_capability {
+>   * @n_ports: Number of ports currently attached to the PHY
+>   * @max_n_ports: Max number of ports this PHY can expose
+>   * @lock:  Mutex for serialization access to PHY
+> + * @irq_pm_lock: Serializes requesting and freeing the interrupt against the
+> + *               PM callbacks; phy_interrupt() never takes it
+
+[Severity: Low]
+Is this description accurate for phy_request_interrupt()?
+
+The mutex is held only around the irq_rerun and irq_has_action() check.
+request_threaded_irq(), phy_enable_interrupts() and the two
+"phydev->irq = PHY_POLL" fallbacks all run after mutex_unlock().
+
+mdio_bus_phy_resume_irq() reads phydev->irq under the lock, both for
+phy_interrupt_is_valid() and for the irq_rerun_line comparison. Those
+reads are not serialized against the request.
+
+The commit message states the narrower guarantee: request and free do
+not change irq_rerun between the check and the enable_irq() after
+resume.
+
+Could this kernel-doc, and the matching comment above the irq_pm_lock
+field in struct phy_device, describe that narrower guarantee instead?
+
+[ ... ]
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261119-b4-phylib-mac-pm-irq-v3-v7-0-d8b8f43b5a62%40iav.lv
