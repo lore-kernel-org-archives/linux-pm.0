@@ -1,106 +1,157 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.51
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795362931;
-	b=cWbpfk/yXtH8CA1acoPEWPF8Oh+9V18Aw+kZWzqKurfK2WQTlhX8AqjiiOxfjkL2U/tL
-	 gAEO7rcBiov8w+OGKoQvSISh2LMILYiUXaWj62JoS2QsEp9dLX0bLNWSccrloSi8t5zMI
-	 USKg6R5ODUb0qb5Q9IbVE1petn8enFUVrETUOiDYr7qx3EAysJ+EiqPpK02Na40kG6qrN
-	 /kWPU8rvqFKZ703FnW+4hadaqR9IO6KIGOKV7RI+9zZDkH7s/JZH8O2lnih9tq/6tfl46
-	 vZcvQooKC+x7Ux8er/wWU+clFbdoTxb2Gw+GEwFtwADmEfE39V5VUbw2WBaZpn1o+sw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795362931;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=YXPf/W4XcAqD9x9Cn0OV3MiVFNQRYObRCyBfE5aJVqU=;
-	b=V8VHFmKLaNL9YnUeSmZ+jB+wJIO+j5f0LftHSv9xOwe08x7mmOQMg+I1Nul15WC1HOEu
-	 frXWM3nGeOqFrofYrx95G0d9JHnY7lZt7K3skhEkF8tSl9//73Pdn9j2JYAIZpG+Liova
-	 zO7SCOkZrd+wWq/3oDfnR4gZ7cLLz0jwDQOMh00K23AqLQDj642DG8GAHAwRk+U02/+xV
-	 8vuFMYkSGzgFUdiR3ChknBx1gn0Ark7DI6rdxvZYjmDzj2B0bvn9ohAMMbxkThB7Xwiap
-	 dtWGVslxKgayZNiVKp0iJWXC4ml4LjvYzQioRGgB2FnDzc6PkfXbc2VR57GGZ11IItQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amarulasolutions.com;
-	spf=pass smtp.mailfrom=amarulasolutions.com;
-	dkim=pass header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=MdnJhKfU;
-	arc=none smtp.remote-ip=209.85.221.51
-Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.201.66
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795365717;
+	b=LkUo4ucul2EDBPlk1+25FDf0HxvjWf0sVunMR3s9clu0nVOZ/o57UQkE7wSlcK9V5jMQ
+	 PtHcakZHIwEjRRRVTDhxc8ePjD6A4ktK38kSLWZJI7RE10BE6vQnJDwDNiKeWzc4l+YF/
+	 ryNwXWw76jYca3RjE5smh9WikiB39yNqMUKqAi9I2wmeilZkvbK/Hsd/LdFtI6dtT+U3R
+	 p0IVfvhXj/7wjRENy6epQhuPvCSINuFHD8tSYNJiQsh5bRjtBAD6Mdm6Pu3rFYSxMY8az
+	 FNp/J5HTTwV16KJE0/nR835OLaIe8xeB6USQtJJkRNrIw99s0Wt8qSesqNayNYUB4fg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795365717;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:Content-Type:Content-Disposition:
+	 In-Reply-To:X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=7S6XFhmxf3Gf7Pqrib1ONF+kvGoPjbXrdtwDoFVe2jE=;
+	b=2ZTlYbkFE1oDn6cQR4Ed6WW9IpdvW7zF5C0H4d3h2nOsl+zqqOh8xsyCJhV8H4NoU9zY
+	 cjQR5JwiIgMaTlAmI9TTJYkfCbSGfECq+d2IoQ+lqhJA5m2P6QUgkQlrCulDoREtUEIm0
+	 hHdr62kw5vcfN+QP26ofo6QB+46orDAuXk/74lzOJ36VpyFNPsQPVVc4IkpITREUlwMfa
+	 b22Fpp2YWRlzUAslQxaroBVZHyP6ts5M0FLeuyZ3J2nD0p3/TxwOU3K9/bqSsBZyOisIl
+	 vjj0Cn/pIiHgGdrCybeIqNBn2uy+MhI5CXZMzJ1eLqUFcQ2wuQryJQxcCuRGR33CbbA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=nvidia.com;
+	spf=fail smtp.mailfrom=nvidia.com;
+	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=tQ6crE2t;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.201.66
+Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010066.outbound.protection.outlook.com [52.101.201.66])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A2FE606A332
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 15:55:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3A2FE606A332
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=amarulasolutions.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amarulasolutions.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9BF7606A32C;
+	Sun, 22 Nov 2026 16:41:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A9BF7606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=MdnJhKfU
-Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-490d59c3edaso1639099f8f.1
-        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 07:55:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amarulasolutions.com; s=google; t=1795362929; x=1795967729; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=YXPf/W4XcAqD9x9Cn0OV3MiVFNQRYObRCyBfE5aJVqU=;
-        b=MdnJhKfUKd7yLmu/RApNQIpBuc0MaP8qvoPewk3MBfWXx9jWlPNtsX09LISghmll0S
-         eCTtkCNo9hQ0IihMqd6vLi8xlYRB2jJMrkQ7Mzzv6+ptTsacWzwv0xCtE8jTEk00EU1Z
-         XGi09iUabr5TFojSO2janM1cM5p7qpNGLLIMI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795362929; x=1795967729;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=YXPf/W4XcAqD9x9Cn0OV3MiVFNQRYObRCyBfE5aJVqU=;
-        b=tThHwlobIl+/DF0RN6E0WapUuu541nWsf/SHsBSrHMsCuQ2fNQlGPVL6KP56ntNab4
-         dWlt+ceKeQkQ0kG9/wjP0qXHJTHXmj9xYUkyNxStXDLZ+lNSEIdj1SiMwqRYoH5CuazJ
-         RT8DcYEUGKo7z5l1u2gCDE6JIzAf6gjzL9JrqfZEt6r8lTbh6dgiXCHTNmmXHYOM/a1e
-         va9a70Hexv2SzjCVbe0n7H3Ej+vydg3dpJtutdOmZ38XVyugxrNIq2Vlt6AZBsy2ut1J
-         GVvP6ze19mQdaQJAnLCPae/dv/7sMh0zJrbcEbP3FQ5YTJpSNbZ4SwfnZOFfJCxGKG0K
-         Tx4g==
-X-Forwarded-Encrypted: i=1; AL+hErGCa3PRzKo04caJoTBpVDO9I07KGcKiFOOQ9JqoQgusZD4t1ZZH1dPaSISQvV17KMjAh01lwt4ckw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9PFTjJ/jSKFJw1yVy/ZLlVRQX7oTA82U8Swb8HTH4yz4TSvRO1
-	WsMfv/5RCboI+TAEmHelNfMnSdPwAo6QaGZcjgZ57k5f91KVV3H7GfIvx5JSgfAb2Sc=
-X-Gm-Gg: AZFdTZcd/nwu+iu8t1cuZqB09DxsASRbUXCYzj4WScfttdP3OX6i/xYuQFRnNXqHYMS
-	r6enb9NUcfFEQLJ/erdlAHyH1Iary083uvv2/Dv1anDqjZZITgdtbECmutckAMXlP9TTAmUMTLY
-	lJBgIL9VtSYUk8zYt19565axz588XNqhZKgjsdIEsQcsMF8BefVKx3u+TVu22/8j14mp/MnGFpt
-	Aircd3zxsGgZMoyxPLxCYFHq/Bfds++FyicasN5b9YsEx8v8dFLv7gqP/fQ3n+IvI5GEBX6h9N1
-	1GR2olWBMV44+Z9j6goJNStkXZj1buAnit1RX9KoH0q32+Am7NWZpKOCsp64xYJ8nmZH8KLx0Pj
-	oqhjH9NLmN9YhxVnPQQKzy10RKYN4I1kGW9tv/tBos7XoWKv+nMHVKjfp4jaskN/EqsunUX6Ael
-	xTcnS0az4iOV+/EKRg2mRZtNGd86TNbL9DldQ+DOMe5xtHFpM46Nx6WgQUXrmPN3GElh1yn2jbR
-	Ur2nE9Y8t8tKFTCXpJ1tdHBvzUF2KjeoLwhv7ZukxNMHOxQTYBTHvsxG5I6qAgYVEBQYPvWLiKQ
-	xxobfmlCTbANFkfIwTOLXjef0ZFyy3ln+JYYMFf8Tq6spYeTy+uaOtWv7Nf96rbnOg87KvWcxi3
-	ItigM95dvzMeOJfcHgohaYfMeW/RGmYQ2iKXYkmAXVdFPb14IXAlVkI6IXi3MKORJEHMK7aeOHS
-	toDa6ad0WzLmfN3Psu92Natq1MMw==
-X-Received: by 2002:a05:6000:4012:b0:4a8:f1a5:efb3 with SMTP id ffacd0b85a97d-4aa550796b2mr23844832f8f.11.1795362929563;
-        Sun, 22 Nov 2026 07:55:29 -0800 (PST)
-Received: from dario-ThinkPad-P14s-Gen-5.homenet.telecomitalia.it (host-79-14-29-58.business.telecomitalia.it. [79.14.29.58])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab6c340df4sm20046526f8f.55.2026.11.22.07.55.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Nov 2026 07:55:28 -0800 (PST)
-From: Dario Binacchi <dario.binacchi@amarulasolutions.com>
-To: Ulf Hansson <ulfh@kernel.org>
-Cc: michael@amarulasolutions.com,
-	linux-amarula@amarulasolutions.com,
-	Peng Fan <peng.fan@nxp.com>,
-	Lucas Stach <l.stach@pengutronix.de>,
-	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Kees Cook <kees+treewide@kernel.org>,
-	Ming Qian <ming.qian@oss.nxp.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Xu Yang <xu.yang_2@nxp.com>,
-	bui duc phuc <phucduc.bui@gmail.com>,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v3 4/4] pmdomain: imx8m-blk-ctrl: Hold boot-on domain clocks until sync_state
-Date: Sun, 22 Nov 2026 16:55:11 +0100
-Message-ID: <20261122155514.10289-5-dario.binacchi@amarulasolutions.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261122155514.10289-1-dario.binacchi@amarulasolutions.com>
-References: <20261122155514.10289-1-dario.binacchi@amarulasolutions.com>
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=tQ6crE2t
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=d9GoXIBXies6S/At6fBVZB7JR5pr9EUsGR0Q1heX7j9bkK4UpyPhxkoAG8dWtxQ6vCF7BZ1fIpRnmrxMXtHI9x5gZGFJYE76HzF0P7ZGNeLSaGay3UrIC/igzwJz4TwR+xI74mFj4zNtX8/ShXdA1rtzJ6OjRlWbdrUM3eueuQialfIKKKB6a9EfyxVCalZXjkFWVGbaAvHPDSDQ4lrhOyT1BLwCtmC/Mhcj8XwEf+thMrTCn2mBo/uHXHrhdl8FTNv053vjDNoUWzTkGpK/faoOBtEL2rIFG8tGI2qm+qTnPOSPufk1BCh7usRlYixoAU7aLoIjHxxMTtBkOVJpFw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7S6XFhmxf3Gf7Pqrib1ONF+kvGoPjbXrdtwDoFVe2jE=;
+ b=uegs3pP080k3FK1F2m8PHWxmlHp8tXnxyBWFsGBskV7P8FOEwoRBb9R/K3GbC50DFSzGWEaXVqjvVZJTf92V8x0NLfKaYJWyctuKGlBF/+Qh0oPWdmqBiJF0N6lK/IxGTUX5tLwFBRentTHooRDA+9CcPL5/pXrGjAKQP3F2PMPeY7/i3Z86gTJ4b5hGJ7Zi+JLZFW4jCYNCloFupOHDTjHyLvTMcVgGJ/kpQsU3kekUEF3YVdFONDIrj+SJJLdOiAuKuVrDN759fMCOQSfZjLkzyQQUupUft+QhlLgtFtm/Ik8T+sdib0fDNt4ystzt3SP6ywHDzHqgOz5N16PSYw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7S6XFhmxf3Gf7Pqrib1ONF+kvGoPjbXrdtwDoFVe2jE=;
+ b=tQ6crE2te0DyMSqxYXEv21lDACZgsNGsQblZo4/e2xXCYE/A7Uc4ErH6Txe7/yU5JOpHAEwAcaaHODlEECFBFVRsEIn4HeB/ARCvoJTYbT1ARkgwipRDHSu9CcDLgc+wNFrgb5LsyhjRoP0lA8FdxuxHvY7DXW3U3vXvYRgQuvQrxJEyBl3NXI9s3IzIXdf6UMiUjhrCU5BMCfS1PuM520Ccyolmhx2nCIYdEGuW1GT/TojV14/vcgskUaXmTn669nczGgjGhO8PVQeMKHv9PzdyQOO/08Qfbg5IrMjowxIIcnOArZ208pwwSa2VlQpBoOobaHSFKZHJoUQqMaRcJw==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com (2603:10b6:408:20c::21)
+ by SJ5PPF6D27E3EA3.namprd12.prod.outlook.com (2603:10b6:a0f:fc02::998) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.8; Sun, 22 Nov
+ 2026 16:41:50 +0000
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286]) by LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286%4]) with mapi id 15.21.0639.012; Sun, 22 Nov 2026
+ 16:41:50 +0000
+Date: Sun, 22 Nov 2026 11:41:48 -0500
+From: Yury Norov <ynorov@nvidia.com>
+To: gourry@gourry.net
+Cc: Yury Norov <yury.norov@gmail.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	David Hildenbrand <david@kernel.org>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Brendan Jackman <brendan.jackman@linux.dev>,
+	Zi Yan <ziy@nvidia.com>, Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
+	Ying Huang <ying.huang@linux.alibaba.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Byungchul Park <byungchul@sk.com>,
+	Alistair Popple <apopple@nvidia.com>, SJ Park <sj@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Kees Cook <kees@kernel.org>, Kairui Song <kasong@tencent.com>,
+	Barry Song <baohua@kernel.org>, Qi Zheng <qi.zheng@linux.dev>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	Axel Rasmussen <axelrasmussen@google.com>,
+	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Michal Hocko <mhocko@kernel.org>,
+	David Rientjes <rientjes@google.com>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	Nico Pache <nico.pache@linux.dev>,
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+	Lance Yang <lance.yang@linux.dev>,
+	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+	Xu Xin <xu.xin@linux.dev>,
+	Chengming Zhou <chengming.zhou@linux.dev>,
+	Lorenzo Stoakes <ljs@kernel.org>, Pedro Falcato <pfalcato@suse.de>,
+	Jann Horn <jannh@google.com>, Chris Li <chrisl@kernel.org>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Youngjun Park <youngjun.park@lge.com>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	Jan Kara <jack@suse.cz>, Waiman Long <longman@redhat.com>,
+	Ridong Chen <ridong.chen@linux.dev>, Tejun Heo <tj@kernel.org>,
+	Michal =?iso-8859-1?Q?Koutn=FD?= <mkoutny@suse.com>,
+	Dan Williams <djbw@kernel.org>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Alison Schofield <alison.schofield@intel.com>,
+	Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-cxl@vger.kernel.org,
+	linux-doc@vger.kernel.org, driver-core@lists.linux.dev,
+	damon@lists.linux.dev, linux-pm@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, cgroups@vger.kernel.org,
+	nvdimm@lists.linux.dev, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH 18/60] mm/khugepaged: base the recommended
+ min_free_kbytes on common memory
+Message-ID: <awMbTMt2M876rTy9@yury>
+References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
+ <20261120-private_nodes_v6-v1-18-74f5f9a115c2@gourry.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261120-private_nodes_v6-v1-18-74f5f9a115c2@gourry.net>
+X-ClientProxiedBy: BN9PR03CA0494.namprd03.prod.outlook.com
+ (2603:10b6:408:130::19) To LV3PR12MB9356.namprd12.prod.outlook.com
+ (2603:10b6:408:20c::21)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -110,98 +161,106 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR12MB9356:EE_|SJ5PPF6D27E3EA3:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1eb0b944-f344-4a25-a445-08df48b781b9
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|376014|23010399003|1800799024|7416014|10070799003|4143699003|5023799004|11063799006|56012099006|18002099003|22082099003|6133799003|10067099003|261026121527099003|261102123227099003|261009223027099003|261021121427099003;
+X-Microsoft-Antispam-Message-Info:
+	A1awvGV9yGDIDArKdZ9wKvRvYaJEVbu0gnwz/yKNk9hsJ72uRJY1T4eyjVdriOZB1Oc7Dav56P93wuuQsgXgyHvWxo/dTnPVwhGAA4737sjCYg2wIDuHqm3hI9C6Vhoqdwcu0fz6tul8/3JB3Qtu8MgB8jmnxTxLAaEBaZklsIvV8I1aDDGSQPrQmMbIsXX/t1oAovGi3rq0Q94l8rgb66iC4BsDvP8vSZLaoqU6jgJyMw+Hd9Ml/5eFdAQbPbW2nh4YcA4yp69C+nAU1rVNEvpPXUIR3plPG8CJTt9ujC2IJamBeug1lgmCinLBb2JNToo6+0cTZfS0DAD2EVwoM9X77KjoQ9iK4BWEcq0k4qFFhJH8CruW8/ymk327fiW/j/ol4FOjAirA7uS0mcQnNx4BIXLEqJVYfvL40DMZKoN1i7FnqW5nSO3QUp9KHRCj5H8bpqn76DvJQ69BdFQYdiQ7Vsw5gVZ2SPdnkZVZ+H4aUTMCZ7LvTX7YCSmPFVdx6C0OG8SG0Zo65hRMJo7OXTJe46FGRB3TOn9E0kjDzm2KBmTXs+i7/CXUCHWwJ9nIe7GbRVlSCg6OfgqKEmqBwbVpi1n6sr3frOMrsYHXKxznocEji+yz0M7UH8pR+Ds7KZcryvAOsQ5NqadHV/bfgOr7v8W2HS5dcwpV4SW04GE=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(23010399003)(1800799024)(7416014)(10070799003)(4143699003)(5023799004)(11063799006)(56012099006)(18002099003)(22082099003)(6133799003)(10067099003)(261026121527099003)(261102123227099003)(261009223027099003)(261021121427099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?1Pvdnyt9BNcdrGLJx3vNVWlvAIKS4RXJyW8M90TbBz7yjAbmxcumcVpjJ2KT?=
+ =?us-ascii?Q?FuexK9NAz5ylj4z9oIOItlW3UD6+LhcO977m7qPw9ZY4uepX6fD5FbrY33Lg?=
+ =?us-ascii?Q?nXQWuGwcc6rkn7ORgMKPrV8iEBf9cX5QU3lLcW4vE0BcgVi95mpqVoRa6uvP?=
+ =?us-ascii?Q?tkkWqpURD5oJ9+FajE32TB1d5NwJx7GSdZ1UlHqcaL/bOQmaU/G4+J2qzXyg?=
+ =?us-ascii?Q?2DYK9r7WJ1ciWnaYOsHFGcMq6IhHtx+iG0nN8YnePVY95FfaVPymU1rNXdd2?=
+ =?us-ascii?Q?o0JQamS2OVbHFRtqU9I2naTMb+N06bjLZEKyiys8Oho2Yg67qbm3XQaoakj+?=
+ =?us-ascii?Q?MqNZbnZ7OPVjmOttUc88MKq/VSkPS7N56q1KJAbuh8vKQ9X3dvK0Y4f3D/6G?=
+ =?us-ascii?Q?H5xuuFl4OTosQilusd0jwyprypPqwl7qv8YA4rDJpxW45+CkoNsbPi5TwCef?=
+ =?us-ascii?Q?DH0byes/sLKYOHVmKBALWhzSCra5MqVoDIIpD91k9ok0x4keh3ISQ9foM849?=
+ =?us-ascii?Q?0gzUZ5Pm258KfUx3ZY/OtPsWNM18ln4pSu6IMX7NoaDr/zUk8zDQ3mcTCBTh?=
+ =?us-ascii?Q?wfi9ie9+3mjBKevU0TZna+KVgWlA6uu2BoiBgqkNS5CRrwmDwjfiZtKFmS8C?=
+ =?us-ascii?Q?LJhpNRN1OyD43HjrisAbtSissXqmRAoyhdPNHEuRAHNYO2nhcYwuc6rSMPm8?=
+ =?us-ascii?Q?VHEIjkJBsLO9mcytdsXXy6sH8R332Y19SlGaUWpszysMSdWVOuIv9YmqYHZc?=
+ =?us-ascii?Q?D6XFkLdgABGUz1g2ZC6t8BMoBA0xLEdg4B5hh9cx4Y7TAD7p1Mso7/B6KFRb?=
+ =?us-ascii?Q?O/AUQOs6JxPvwgF3sT0+B1Z5phJEKFyGFXRKK1RQAEC69yqs3bVZF9jcfEmO?=
+ =?us-ascii?Q?DCmwLapENaNON72VDM+oetzhF1NP6aS5GF1hmSdC+RGLLM6p5bA0+rStQI7z?=
+ =?us-ascii?Q?suJXz22UAX2CZN7Z3qGBJN4P2ZGZrjRSbUvCNtQE6crJFqpqedXcm2CQ7DJR?=
+ =?us-ascii?Q?p+Ohg0owUc4Vxps17znT1IFquy/UrUOm1eMFPMJsrPnBlaWUKODQ4LoVKLEK?=
+ =?us-ascii?Q?zoOU2oprtgB0s58ViR1IOCK+op+27yGhiafEbf8bxy3bCCeHijTflPhb0Ie5?=
+ =?us-ascii?Q?hTvFu0MWhYK4GX/xGZMT0DpabVEeDh7Uv5xRt+/T7qb5VXuEq+unhyTp5AmB?=
+ =?us-ascii?Q?CmJfWnQC3olJicH3qwG5zyLQmhFMdgNbDXI4nUa+bysV/zNvFn2u0odLvDIP?=
+ =?us-ascii?Q?TNjMjAM/2P1JTwyugaW3lhTCGzOc3j4f0tKNT4GlsOqtWlnbKfyGlHalkZH0?=
+ =?us-ascii?Q?hbrfa8xRZLfp4QjDFE+Nx7s7N833BQ16q6rv3Js+rYeO4HCiLin74o6A/ley?=
+ =?us-ascii?Q?IjxzUCa6dp6Q+Ha+EpO+CKDHRMd4n/Xob6rcyiAqAAmbBPukjfeNZZVPL83s?=
+ =?us-ascii?Q?efi0W2QbTO0eIppm3MMrWEIT2wD/1EVw9NGRBr7DPlRqE3PS6KBr5IOwtZj1?=
+ =?us-ascii?Q?ZyPtjXXQ5erNyxMcN8J0i14iT5JURg5eNvxPsX5Dsvf5L9Cm4Ttp8JVM3YV3?=
+ =?us-ascii?Q?BNoT+t+FP0hjMU7pnLU+50arPp9iVluG7bxgpLjE7SJHg32fqpr646VC9FK3?=
+ =?us-ascii?Q?xIZ+g+RwtnLGLwGlIsMuNbo+evwAWd/rAxzDudfBaHcXTxYM5G6V1Afg3Gnk?=
+ =?us-ascii?Q?AHPTy3vCllUgDn45FegdZCMSo3F/PjJ0LX1azaP8svqkMl8qur0Q7Cs1t9fY?=
+ =?us-ascii?Q?zWdCGDZWqsl8hCwLyvV0e47PJHYYcA92sV2DhSaimx7g/wuyP3EE?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1eb0b944-f344-4a25-a445-08df48b781b9
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR12MB9356.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Nov 2026 16:41:50.4667
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rGOqd6egrsyzOzwmwtfY4Qhu8Iemr3aJvBVprzbiGWO6kAUQ3zIW2eCH6ARwPmuLHpfzZgcc8cFGpR/9TlUZRw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ5PPF6D27E3EA3
 
-The clocks of a domain left on by the bootloader have no user until
-its consumers probe, so they are gated when the unused clocks are
-disabled. On the i.MX8MN, with the LCDIF driver built as a module,
-this stops the pixel clock of the U-Boot splash screen long before
-the DRM driver probes.
+On Fri, Nov 20, 2026 at 01:09:09PM -0500, Gregory Price via B4 Relay wrote:
+> From: "Gregory Price (Meta)" <gourry@gourry.net>
+> 
+> set_recommended_min_free_kbytes() reserves two pageblocks per populated
+> zone to help THP allocations avoid fragmentation. The reserve serves
+> ordinary allocations, which use only common memory, so count only the
+> zones on N_MEMORY_COMMON nodes.
+> 
+> Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
+> ---
+>  mm/khugepaged.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+> index 2dc4245814df..a930d99f89da 100644
+> --- a/mm/khugepaged.c
+> +++ b/mm/khugepaged.c
+> @@ -3151,6 +3151,9 @@ void set_recommended_min_free_kbytes(void)
+>  	}
+>  
+>  	for_each_populated_zone(zone) {
+> +		if (!node_state(zone_to_nid(zone), N_MEMORY_COMMON))
+> +			continue;
 
-Keep the clocks of these domains enabled until sync_state, i.e. until
-all the consumers of the blk-ctrl have probed.
+This is the 2nd time you add this check. Maybe fold it into the
+for_each()? Assuming, you keep N_MEMORY meaning unchanged, that would
+look like:
 
-Signed-off-by: Dario Binacchi <dario.binacchi@amarulasolutions.com>
-
----
-
-(no changes since v2)
-
-Changes in v2:
-- Rebase on the changes of the previous patch
-
- drivers/pmdomain/imx/imx8m-blk-ctrl.c | 32 +++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
-
-diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-index 99d75bfb69e9..e360cb038969 100644
---- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-+++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-@@ -84,6 +84,7 @@ struct imx8m_blk_ctrl_domain {
- 	struct imx8m_blk_ctrl *bc;
- 	int num_paths;
- 	bool boot_on;	/* Left on by the bootloader */
-+	bool boot_clks_held;	/* Until sync_state */
- };
+ #define for_each_populated_zone_state(zone, state)            \
+         for (zone = (first_online_pgdat())->node_zones;       \
+              zone;                                            \
+              zone = next_zone(zone))                          \
+                 if (!populated_zone(zone) ||                  \
+                     !node_state(zone_to_nid(zone), state))    \
+                         ; /* do nothing */                    \
+                 else 
  
- struct imx8m_blk_ctrl_data {
-@@ -246,13 +247,31 @@ static int imx8m_blk_ctrl_get_boot_on(struct imx8m_blk_ctrl_domain *domain)
- 	if (icc_bulk_set_bw(domain->num_paths, domain->paths))
- 		dev_err(bc->dev, "failed to set icc bw\n");
- 
-+	/* Nobody else holds the clocks until the consumers probe */
-+	if (clk_bulk_prepare_enable(domain->data->num_clks, domain->clks))
-+		dev_warn(bc->dev, "failed to enable clocks of \"%s\"\n",
-+			 domain->data->name);
-+	else
-+		domain->boot_clks_held = true;
-+
- 	domain->boot_on = true;
- 
- 	return 0;
- }
- 
-+static void imx8m_blk_ctrl_put_boot_clks(struct imx8m_blk_ctrl_domain *domain)
-+{
-+	if (!domain->boot_clks_held)
-+		return;
-+
-+	clk_bulk_disable_unprepare(domain->data->num_clks, domain->clks);
-+	domain->boot_clks_held = false;
-+}
-+
- static void imx8m_blk_ctrl_put_boot_on(struct imx8m_blk_ctrl_domain *domain)
- {
-+	imx8m_blk_ctrl_put_boot_clks(domain);
-+
- 	if (!domain->boot_on)
- 		return;
- 
-@@ -1059,11 +1078,24 @@ static const struct of_device_id imx8m_blk_ctrl_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, imx8m_blk_ctrl_of_match);
- 
-+static void imx8m_blk_ctrl_sync_state(struct device *dev)
-+{
-+	struct imx8m_blk_ctrl *bc = dev_get_drvdata(dev);
-+	int i;
-+
-+	/* This replaces the genpd provider sync_state */
-+	of_genpd_sync_state(dev->of_node);
-+
-+	for (i = 0; i < bc->onecell_data.num_domains; i++)
-+		imx8m_blk_ctrl_put_boot_clks(&bc->domains[i]);
-+}
-+
- static struct platform_driver imx8m_blk_ctrl_driver = {
- 	.probe = imx8m_blk_ctrl_probe,
- 	.remove = imx8m_blk_ctrl_remove,
- 	.driver = {
- 		.name = "imx8m-blk-ctrl",
-+		.sync_state = imx8m_blk_ctrl_sync_state,
- 		.pm = &imx8m_blk_ctrl_pm_ops,
- 		.of_match_table = imx8m_blk_ctrl_of_match,
- 		.suppress_bind_attrs = true,
--- 
-2.43.0
+ #define for_each_populated_n_memory_zone(zone)                \
+            for_each_populated_zone_state(zone, N_MEMORY)
 
+
+>  		/*
+>  		 * We don't need to worry about fragmentation of
+>  		 * ZONE_MOVABLE since it only has movable pages.
+> 
+> -- 
+> 2.56.1
+> 
