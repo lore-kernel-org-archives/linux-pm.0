@@ -1,79 +1,112 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795324420;
-	b=iTVRCk1F9FiboGR2BLMpL+fcYWgfolK81yXMYxAfGkXMB83xTG2DtzHAma+m+7Bdl0FR
-	 Gjb1Ob8L9CP0he2cSmVPuLdu6zYBS7KjcoJSa5dLCaFOPMmVf+wT2md3f40yaA2jg/FhC
-	 T3J7QiWlpZM7qfNeGVoVrJjUSWfbc7Dre+wK8bZSvtoXcnsJPRgWg54mc2FCrQc471Fsh
-	 h364jNlab3dQjWJOMdkSkk6Tn9IYz64vMHoW525hCpDoPFegd3G9NsM8GIizfcUBDzCv0
-	 dgNF/7zmeeeUqVM7UOPoHdsaBQQIwiB7FcmdppNEHfR1biR1TQHtNFsOUWK5cw7SeyQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795324420;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=DiFLCNWuAguYC7GlMjmHWyzByIH688Zqc4FSeopoDIE=;
-	b=qtVUpet7ThTB4zqSDKJvWT+9DiSvjdnqT1TmmG3aVCa7vkZFBaN4xD4dcbjMfjPr+Ray
-	 yD8i2HNzvgwRpArt7XA9oAfGzfbmMhHF3Z0/+MRFTw6BwmhqVMNho2cdj4sgU0UwJl2fg
-	 ldt0i5m2+7ixJzZ2KeMc9pJVcgMdVOAKJ107t0d95T1Tv8whwaq1uqWY3o1rEeROutKJB
-	 RNoRtIPRyc9s1RWrkEFAI/RbPVpYadSGHFnE7bLzpFC+rSQx856+HrWd3JNPksK8RM6sA
-	 bZD4VyREp7savV3wDIDDcp4d5cFHCKJVCPLqPrnxohLei8eVt9PqYLTlBxuRflvMQRw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TiZaCiqf;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5BC5606A337;
-	Sun, 22 Nov 2026 05:13:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TiZaCiqf
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795324420;
-	b=mkxb6P+u7UJMFw0sp2R8LeNKN3kdabUcQEIh8fhiIfGt8SYYCunudGqxRNwESyYeb5kN
-	 ilHkrxAwKTA10x5Zldj3HaJLRdFuq/vEvTz0CPxacE7ZWviHIHnfubPrVQI37Rv32TtRQ
-	 mxM+yMfaytYtyE2zU2B7rpAshJ6JTW3utkDz5aYZ5ZDJA90cWcwRSXlb6YNvT4m2T5eg5
-	 Leo74f3TeqYvvuioYL8UdEV0TKqtC2Sdel5pfa+iAM9lcEif6CHx2rv00bUGNni3XPtdA
-	 tu6Avxft7roxZj1I5yEA2fYiJDOEVzTrO4LMeW5RH/6zyZd4iEWp8kz/YJJf+ct5oIA==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795324420;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=DiFLCNWuAguYC7GlMjmHWyzByIH688Zqc4FSeopoDIE=;
-	b=WfK/0cZY1tqrSBWjvU6D4qMkbPGCuD3MLUqpzicENjOKIvFmG5PxNTYpjebMZqGUe8f7
-	 GRaHyaKjG106hDLmdE5tH9yE5Yn5D60vlI2iArMowUBlePU3pBQz7jZPHkuvTjZF4Bh0o
-	 VHltFTU1iczUHhLC7+rw1Ec0vWVU/exsp37T/TextNe3GPPbwoFmuCgnGfJXiTkRaGmqi
-	 UTxIc0d4C85ZuO9DxAL/jSO/zMMgd8SdHq+aQk8X1TAOKVCSJ4nmawVZ3i6o+zQwjnmS/
-	 uVYWwqXJYXbJqj6uefiw2AGTYHs972MPcZ939ILguGXt6Ee6sps3TBwV/l/RRf9ItgQ==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795329964;
+	b=P1SwT82dcxuceyvJGGd5r5Tb/5N4yomapRdQq/sQyAmTKji2Qhly2iftQckVImzR2MQn
+	 k3IdciSxTyEMWA7O8fVWCdSE94SKL9FN0o06uudYfmencXdBQfj0cVm8qDlbVuoxHf4tj
+	 U/o6rr9MMrqfnXH51ruvQjavN8QrHSJcM9CWBogLl049faXMiSYq4J3ko4pcnQnyAGPuP
+	 iVoQkeDXkbpO0meh43YseKEUDW1oLEh/C9Z0KbdBuJBb0KLS7PdNNlfOcR/KVv7Q0lZ73
+	 3vC9Us71nAYOImJ/QeIw6eV0v4xQ6blRRkzJmcv0IU2wIL55XJOzaVwqjs3n77vkKSg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795329964;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:
+	 Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Details-Enc:
+	 X-Authority-Analysis:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=tuiQQpowNDqgIViUd3V9zwNZ82lxLYXnJLlZHlSUB8g=;
+	b=Cgp6GmtnhNMRFjFh8pqVGPuS+ogkGNSsQWR2LCcbjI3WUHyKN1xp5ajzAkkFoUF5TaZF
+	 J4PC4690oduOtGHOy8qKX+Ck7X2P6gQDA/JR5u5X8Oa5bAEtoydZyUt7/WYnUw3h+u0P+
+	 c9Cqra6YpiJKqXbny2R1CzhB9fAqc8KyW+56wkt5aa2kAS1AW/Smx9ghq2amRUHGQUNye
+	 nTnll5idMmjepYeCIvOShOgrWJkqiwWPD5Jbhj539DGggaBEvWM/YbG8JJr19Mzhmipor
+	 kgX2atrOWbj5fYUbLi/FusWVOolPdLc8vAVtspwFrKSiS9/4KRIVhz2nLra1/RMf2JA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AV0WbZ7v;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=iVMZWAu3;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 070671F000C6;
-	Sun, 22 Nov 2026 05:13:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795324420;
-	bh=DiFLCNWuAguYC7GlMjmHWyzByIH688Zqc4FSeopoDIE=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=TiZaCiqf+5SO4JL05f20TU+pBaCDWk0EKy1X9V9+22n+LKzcOhv0ySgzaBl7EicrU
-	 VTkAz71dZkG/ocZ6WXcmMbIoO0KIqRvuXbIHRO2tFvXC9GyDRH2Jlgm2eKpFmnYnN5
-	 xDUvG61PaJUC60LTunkHO+sqjbXMspnZePo6jMzYEwtcYYi5nTliX5VUslpT0fPF9l
-	 z387Q6/hYpalphcwFa52x/BJ4STmNWIAE5vDCJ2Tjol81PCEnT5pGlLzs/v6MCkQDo
-	 dcqJwozIwgbXbGY9wtirkxLvEEs8P+d42xUHpXBREONzk8X8cvw6xCgSWFjpJGMvFs
-	 KNHtsGxxcrLaw==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 8C64E4BF2E;
-	Sun, 22 Nov 2026 05:13:39 +0000 (UTC)
-From: EMCP333 via B4 Relay <devnull+emcp.enser.io@kernel.org>
-Date: Sun, 22 Nov 2026 05:13:31 +0000
-Subject: [PATCH] power: supply: qcom_smbx: Make the float voltage
- adjustable
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5FBF606A334
+	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 06:46:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B5FBF606A334
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AV0WbZ7v;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=iVMZWAu3
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AM3kDEZ2445538
+	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 06:46:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=tuiQQpowNDqgIViUd3V9zw
+	NZ82lxLYXnJLlZHlSUB8g=; b=AV0WbZ7vT2NcAG5tkq4+5Wq87eEDHO/50r6Dmv
+	tskHEeXHI49aFcGrDi7gBYrBQNmx2gtvJtDzfz9RSCq+vIkZGfBpoe34ipds3vSq
+	xnxnRAKCwrw/YXiMjIR2MDJiz8aYFMNWGvmzbD+tfzxt+c0yWzoHGkV3ziD+MrXr
+	lficYUvYtHjM9q+wQozxwth0lAa5CGkkY5LrmZOS7VTrrq4DXnXTlyB8CdOB8xHX
+	Ookk7wJu5TFrrYx7kluPWtLIKmWxqmx3zD8XMsLJmjVMm5RmfrSGSyRATQCDWHxQ
+	wExjQJcJx30Wa1wHAOy7b077t1zsA2Mq1s1/Uy0Lt8rQ3/NA==
+Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j33cu2v3a-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 06:46:02 +0000 (GMT)
+Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-384c78aa0dbso3291237eec.0
+        for <linux-pm@vger.kernel.org>; Sat, 21 Nov 2026 22:46:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795329961; x=1795934761; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=tuiQQpowNDqgIViUd3V9zwNZ82lxLYXnJLlZHlSUB8g=;
+        b=iVMZWAu3/MXg8/uzA1lhXlf0Fxwcu54+TU7BUKXF+oFqNUk72uHm8g5oW5IFw14wVg
+         98eZyUgX24Fm4YQi0o2T/0tMJIXx5x84Hbo6tNHV65L1S9XxoVNnJY11l6YOloYG8D1U
+         DeJ/Ws6DwQoG3g3XJYrK75/GCIkdVccw4IBYI0b/8f69BgLSB4Mlgqu4UEQHfgDm5CVd
+         m84c4wmPwTgkkpeRSUtr/2e4DzRqbvrt0EGAoRJahgG348dHQ5EZBzTvlGwElOlYDv7u
+         quaaws1VRcfKfAibcsEjc7ZXnhn3XiWqp+yHH24PMmDpT2/CAuLG54yPZbPm2cbcpL8U
+         YYJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795329961; x=1795934761;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=tuiQQpowNDqgIViUd3V9zwNZ82lxLYXnJLlZHlSUB8g=;
+        b=wEB7OZ1n858LnAf8maw+O+Ssz4KK1V3fEfSXlupdlBcPEaDoJz3KZjfxRDV7R1lOMp
+         xzqt8wuU+qFw5FqWuLrs/dIDcPyrdxAtvr2xGJtTIKyDousQgEK8u36QSBuW+U9kaskf
+         3CV0mQ5xksvGEoPGR5FjEuyTlRJPZgcMTwe8KKJbVklZKfhBV194M0oGE0HSoX+CJppr
+         PsM2VG+F8YW7zLY0Crl2VCzMPw5JRmusJnP9MlzRvZQCoaFMIJXRQPqliNeachkSe/PE
+         scrWp1AvrVYVBxq7AYpNhiz6H98suqzSUvoQbLdnRTcTaZxWKL9EBzc1SissfGPl7UFR
+         rBZA==
+X-Forwarded-Encrypted: i=1; AL+hErHJqXI7dd4yhAjM4+JX/Q8Q+5YPnPF4LiHCw6Qjf15nAjLY7kFZ3JzxEWxEcoLK2NAmNPN92VUsvA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8WoS/3hF8ZEdREFV74Qum7GS528REei3EwKfnClmn61f4gpQcs
+	sWMJgal+5JdvRxduVyEJf+SkcwJvRx8wabfRnqn1BJ31k8BeKx51BiMpByxHA63b5DhFz+EsU0A
+	1l+jubbD+q17xhkVHwsIeOGawkt9WO5roGHAKaZudzP9qgdPAj9jUnuRPBTPDIQ==
+X-Gm-Gg: AZFdTZdsnaDLCCeC5+HIX3vCxUx+BjulrqZYhazYb7bqYFAPG4hFnQJ+L1NU7JxueJr
+	pJo/OfmOBNAEpWhthgnH3jOfvh44o6LNJr1B6UKWcD4bbjvXyUq72xTKKrBEYLosqUI4ZgWbDkr
+	sOoEoZ0DaqV5LB74BOIyDXAzduGE68eKOGz2PveCwcjUrhBikHsVrl7xVjgR0UxWOUNRftWbqKx
+	7bVBVM65Dkj0AyWTNDmJwPdk/aN2ubRKiaIBkUZljwP4gr6WZeaV0Pfod/gA2yKIoQZ4j15wgma
+	zms0ZT+R4Akcbae3b8XgCHPso3mnNgZz5vRg9P7pG0L1Nj7+jpcDhLxSWyXcrfL66nBOhri98zl
+	MYRbp4FIKfPLlOGLEPienz9qeFXBhgvoVOxp9wl7eo4YVRqMq38USr6y31+rKDNjTSGLfu8jQ4G
+	dXLe0vJUFP
+X-Received: by 2002:a05:693c:638d:20b0:375:c862:31c with SMTP id 5a478bee46e88-38571816d35mr8055960eec.40.1795329961175;
+        Sat, 21 Nov 2026 22:46:01 -0800 (PST)
+X-Received: by 2002:a05:693c:638d:20b0:375:c862:31c with SMTP id 5a478bee46e88-38571816d35mr8055938eec.40.1795329960649;
+        Sat, 21 Nov 2026 22:46:00 -0800 (PST)
+Received: from hu-krichai-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38566cd40c5sm27598615eec.10.2026.11.21.22.45.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 21 Nov 2026 22:46:00 -0800 (PST)
+From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Subject: [PATCH v2 0/4] power: sequencing: pcie-m2: Add PCIe M.2 Key B
+ connector support
+Date: Sun, 22 Nov 2026 12:15:50 +0530
+Message-Id: <20261122-pcie6_fix-v2-0-2e0fe615d90b@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -84,182 +117,117 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261122-b4-smbx-ccv-v1-1-0ecc4217b58c@enser.io>
-X-B4-Tracking: v=1; b=H4sIAPp5AmsC/yXMwQ7CIBAE0F9p9uyqECLWX2k8wLJYTETDKmnS9
- N8FPb7JzKwgXBILXIYVCtck6Zkb1G4Aml2+MabQDPqoT0ppjd6gPPyCRBWjtTZEcw5+HKEtXoV
- jWn5v0/Vv+fg707tf9IZ3wuiLyzT3qPNQ7d5gIQ3b9gVBNQZRjwAAAA==
-X-Change-ID: 20261122-b4-smbx-ccv-f777df48db99
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Casey Connolly <casey.connolly@linaro.org>, 
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
- Robin Snyders <robin@snyders.xyz>, linux-pm@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- EMCP333 <emcp@enser.io>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795324411; l=5793;
- i=emcp@enser.io; s=ultron; h=from:subject:message-id;
- bh=c81KUHplwWRmxuVs0d0MhXnbVsifOIAU8afoDoBp8fU=;
- b=Ll0mm0xiLTjcmUVG66bC1fcaaIlZ0tYWOeV2SJwrJnvIrAnPltOkPU4a5tL/lJPGGBByyewf8
- GEsQUpAyUvcDD8RViA1zHeMCRlafQHvHKGePNniq3S7YnIr+RdESGeB
-X-Developer-Key: i=emcp@enser.io; a=ed25519;
- pk=5sG48Lul+Vn7OzXu3VZrCWk5uvEFPYMXYnAV0TZR/tY=
-X-Endpoint-Received: by B4 Relay for emcp@enser.io/ultron with auth_id=1598
-X-Original-From: EMCP333 <emcp@enser.io>
-Reply-To: emcp@enser.io
 Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAJ6PAmsC/22NQQ6CMBBFr2JmbQltsRBX3sMQU8ogY4RiB4iGc
+ HcLbt1M8n5e3izAGAgZzocFAs7E5PsI6ngA19r+joLqyKBSZWSqpBgcobk19BauMabJqqLSRQ7
+ RHwLGeW9dyx/zVD3QjVtgM1ri0YfP/myWm/evO0uRClvrXOrM6ZPVF8+cvCb7dL7rknigXNf1C
+ 2zrkBS7AAAA
+X-Change-ID: 20261021-pcie6_fix-cf66f4b8b387
+To: Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: Abel Vesa <abelvesa@kernel.org>, alchark@flipper.net,
+        linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795329955; l=3040;
+ i=krishna.chundru@oss.qualcomm.com; s=20230907; h=from:subject:message-id;
+ bh=nBLbfXrnUeOg/k3lrOwzMPzMyjCM8oeFudQrYc52rUI=;
+ b=w0703ZbG7o+IyOKcodaTDYKM0mrFG87bvx0OmCPwNrsb0f1gNsudmjaQoF/ORAk8AdndNGWdj
+ gYfEUfxCaXeDzxpAlxR0a/rHWuYGe3GTmExBpLrYgFg27qpjnbhIHeQ
+X-Developer-Key: i=krishna.chundru@oss.qualcomm.com; a=ed25519;
+ pk=10CL2pdAKFyzyOHbfSWHCD0X0my7CXxj8gJScmn1FAg=
+X-Proofpoint-GUID: DCuI90MLaGhMZsFb0oBYruUGpoR8-QsL
+X-Proofpoint-ORIG-GUID: DCuI90MLaGhMZsFb0oBYruUGpoR8-QsL
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIyMDAyNiBTYWx0ZWRfX4kHpO410AjxH
+ ++JLhyS0wI9HLOO/kMzRHYNqgUaTZK4ds4T84UQDse6gnR2D0cm9kgQ6pLoe4NrDZeAZIz9PgMH
+ SW090YWlFH88n2Cnf13enPqLJ/OoM1Y26Am7W5aw0owZZqlMclIkcKSj3a7npLuc27iMoWlj9Ku
+ a19HMMXCFcSnxUnEa016nAJ9SJ4tKQsFEMaFLN6Uw+QY7jJJGEyXEkZgyDAT1hLoZiAPnevQEqo
+ 05O08z6OllhjA/Yq2CpPSZc/2pfNuHkWwDnDmYJLQf3GDuSLssEuWpRjer0h6edvUIWefwJsfgJ
+ vFCl6xSyiFY5HJCdiwQ7xN5a2lzW3K/VbHCsDKitOqEdoQnii6O/T+tJCBPrO3AS0w8O37lYpMA
+ mZoU4wSfid0TEsHIZDUWepw582s26IuDC+adD9+s7Ne0uMA2uZReeKYOPsIFwnq5qdE1AsWRhqO
+ 2lH4z4GrH4PTIL3/YXQ==
+X-Authority-Analysis: v=2.4 cv=MM71C8Zl c=1 sm=1 tr=0 ts=6b028faa cx=c_pps
+ a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=VwQbUJbxAAAA:8 a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=zkpMToBQJcapbifWyZsA:9
+ a=QEXdDO2ut3YA:10 a=6Ab_bkdmUrQuMsNx7PHu:22 a=FO4_E8m0qiDe52t0p3_H:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIyMDAyNiBTYWx0ZWRfX/R2GM7ISVtOD
+ Wn7DvusUjzOls7sBlx26qE3y//yCxo1sq0uy7isNKIjAK75B0E22X/tpQDX2mhg3Ljp4w/atXGb
+ gCWn9T3iTbegKreDQhcu61ZKte4cOSk=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-22_01,2026-11-19_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 clxscore=1015 priorityscore=1501 phishscore=0 spamscore=0
+ bulkscore=0 impostorscore=0 suspectscore=0 malwarescore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611220026
 
-From: EMCP333 <emcp@enser.io>
+Add support for PCIe M.2 Mechanical Key B connectors, commonly used for
+WWAN adapters.
 
-Charging a lithium battery to a lower voltage is the usual way to make
-it last longer, and on PMI8998 and PM660 the float voltage is the
-register that sets that voltage. The driver programs it once at probe
-from the battery data, and userspace cannot change it.
+The series introduces a DT binding for the M.2 Key B connector and
+extends the PCIe M.2 power sequencing driver to handle the 3.3V/VBAT
+supply and the FULL_CARD_POWER_OFF#, RESET#, and W_DISABLE1# signals.
 
-Expose it as POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE, writable, and
-the value probe left as CONSTANT_CHARGE_VOLTAGE_MAX. A write is clamped
-to the range between the lowest setting and that maximum, then rounded
-down to a 7.5 mV step, so userspace can charge the battery less than
-the battery data allows but never more. Without battery data, the
-maximum is whatever the boot firmware set.
+Finally, describe the WWAN M.2 Key B connector on the Glymur CRD and the
+Nord RRD. On Glymur the WWAN supply moves from the PCIe6 Root Port node to
+the connector, so that the slot power is controlled through the pwrseq-pcie-m2
+driver and the PCI pwrctrl framework, like the other M.2 connectors.
 
-Tested on a OnePlus 6T (PMI8998) on a 6.18-based kernel, with this
-patch and a backport of commit 2a26d260e72a ("power: supply: qcom_smbx:
-fix float voltage selector"). constant_charge_voltage_max reads
-4395000, and writes read back as below, with the selector read through
-regmap debugfs:
+The series is based on the qcom tree [1], arm64-for-7.5, which has the Nord
+PCIe root port DT nodes that the Nord RRD patch needs. That patch also
+depends on the Nord PCIe controller support from the PCI tree, which is in
+linux-next.
 
-  4100000 -> 4095000 (selector 81)
-  4500000 -> 4395000 (selector 121, the maximum)
-  3000000 -> 3487500 (selector 0, the lowest setting)
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux.git/log/?h=arm64-for-7.5
 
-The code and this changelog were prepared with the help of an AI coding
-assistant. The submitter has reviewed both and takes responsibility for
-them.
-
-Signed-off-by: EMCP333 <emcp@enser.io>
+Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
 ---
-Also ran on v7.4-rc3 on the same phone, as this exact commit, with the
-charge daemon stopped: writing 4100000, 4500000 and 3000000 reads back
-4095000, 4395000 and 3487500 (float voltage selectors 0x51, 0x79 and
-0x00).
----
- drivers/power/supply/qcom_smbx.c | 47 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
-
-diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
-index 8a2f635a6c..2d30c18671 100644
---- a/drivers/power/supply/qcom_smbx.c
-+++ b/drivers/power/supply/qcom_smbx.c
-@@ -381,6 +381,7 @@ struct smb_init_register {
-  * @base:		Base address for smb registers
-  * @regmap:		Register map
-  * @batt_info:		Battery data from DT
-+ * @float_voltage_max_uv: Highest float voltage userspace may set, in uV
-  * @initial_charge_enable: Charging enable state before hardware setup
-  * @status_change_work: Worker to handle plug/unplug events
-  * @cable_irq:		USB plugin IRQ
-@@ -395,6 +396,7 @@ struct smb_chip {
- 	unsigned int base;
- 	struct regmap *regmap;
- 	struct power_supply_battery_info *batt_info;
-+	int float_voltage_max_uv;
- 	u8 initial_charge_enable;
- 
- 	struct delayed_work status_change_work;
-@@ -417,6 +419,8 @@ static enum power_supply_property smb_properties[] = {
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_USB_TYPE,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
- };
- 
- static int smb_get_prop_usb_online(struct smb_chip *chip, int *val)
-@@ -653,6 +657,32 @@ static int smb_get_prop_health(struct smb_chip *chip, int *val)
- 	return 0;
- }
- 
-+static int smb_get_float_voltage(struct smb_chip *chip, int *val)
-+{
-+	unsigned int sel;
-+	int rc;
-+
-+	rc = regmap_read(chip->regmap, chip->base + FLOAT_VOLTAGE_CFG, &sel);
-+	if (rc < 0)
-+		return rc;
-+
-+	*val = SMB2_FLOAT_VOLTAGE_MIN_UV +
-+	       (sel & FLOAT_VOLTAGE_SETTING_MASK) * SMB2_FLOAT_VOLTAGE_STEP_UV;
-+
-+	return 0;
-+}
-+
-+static int smb_set_float_voltage(struct smb_chip *chip, int val)
-+{
-+	unsigned int sel;
-+
-+	val = clamp(val, SMB2_FLOAT_VOLTAGE_MIN_UV, chip->float_voltage_max_uv);
-+	sel = (val - SMB2_FLOAT_VOLTAGE_MIN_UV) / SMB2_FLOAT_VOLTAGE_STEP_UV;
-+
-+	return regmap_update_bits(chip->regmap, chip->base + FLOAT_VOLTAGE_CFG,
-+				  FLOAT_VOLTAGE_SETTING_MASK, sel);
-+}
-+
- static int smb_get_property(struct power_supply *psy,
- 			     enum power_supply_property psp,
- 			     union power_supply_propval *val)
-@@ -682,6 +712,11 @@ static int smb_get_property(struct power_supply *psy,
- 		return smb_get_prop_health(chip, &val->intval);
- 	case POWER_SUPPLY_PROP_USB_TYPE:
- 		return smb_apsd_get_charger_type(chip, &val->intval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
-+		return smb_get_float_voltage(chip, &val->intval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		val->intval = chip->float_voltage_max_uv;
-+		return 0;
- 	default:
- 		dev_err(chip->dev, "invalid property: %d\n", psp);
- 		return -EINVAL;
-@@ -700,6 +735,8 @@ static int smb_set_property(struct power_supply *psy,
- 					  USBIN_SUSPEND_BIT, !val->intval);
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
- 		return smb_set_current_limit(chip, val->intval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
-+		return smb_set_float_voltage(chip, val->intval);
- 	default:
- 		dev_err(chip->dev, "No setter for property: %d\n", psp);
- 		return -EINVAL;
-@@ -712,6 +749,7 @@ static int smb_property_is_writable(struct power_supply *psy,
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
- 		return 1;
- 	default:
- 		return 0;
-@@ -1064,6 +1102,15 @@ static int smb_probe(struct platform_device *pdev)
- 		return dev_err_probe(chip->dev, rc, "Couldn't set vbat max\n");
- 
- skip_float_voltage:
-+	/*
-+	 * Userspace may lower the float voltage to charge the battery less,
-+	 * but not raise it above what is set now: the battery's voltage or,
-+	 * without battery data, the boot firmware's setting.
-+	 */
-+	rc = smb_get_float_voltage(chip, &chip->float_voltage_max_uv);
-+	if (rc < 0)
-+		return dev_err_probe(chip->dev, rc, "Couldn't read vbat max\n");
-+
- 	rc = smb_init_irq(chip, &irq, "bat-ov", smb_handle_batt_overvoltage);
- 	if (rc < 0)
- 		return rc;
+Changes in v2:
+- Binding: describe SATA/PCIe SSD Adapters too, since the Key B slot accepts
+  them (Alexey)
+- Binding: add optional config-gpios for CONFIG_0..3 with the Table 3-18
+  decode, and config-state to fix the configuration on boards that do not
+  sense it; defaults to WWAN PCIe (Alexey)
+- Binding: replace w-disable2-gpios and wowwan-gpios with gpio0-gpios to
+  gpio11-gpios, as GPIO_0..11 change function with the Port Configuration;
+  the functions are listed in the binding, with the IPC pins and CONFIG
+  state 14 marked as vendor defined (Rob, Alexey)
+- Binding: add optional alert-gpios for the SSD SMBus ALERT# (Rob), and
+  i2c-parent, devslp-gpios and pln-gpios for the other SSD signals (Alexey)
+- Binding: replace one port per interface with one port per muxed pin group,
+  with endpoints selecting the interface: PCIe lane 0/SATA, USB3.1/SSIC/
+  PCIe lane 1, and USB 2.0 (Rob, Alexey)
+- DT: add the Nord RRD WWAN connector (new patch)
+- Rebased onto the qcom tree, arm64-for-7.5
+- Link to v1: https://patch.msgid.link/20261021-pcie6_fix-v1-0-ad37134c35a3@oss.qualcomm.com
 
 ---
-base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
-change-id: 20261122-b4-smbx-ccv-f777df48db99
+Krishna Chaitanya Chundru (4):
+      dt-bindings: connector: Add PCIe M.2 Mechanical Key B connector
+      power: sequencing: pcie-m2: Add support for PCIe M.2 Key B connectors
+      arm64: dts: qcom: glymur-crd: Describe the PCIe M.2 Key B connector
+      arm64: dts: qcom: nord-rrd: Describe the PCIe M.2 Key B connector
+
+ .../bindings/connector/pcie-m2-b-connector.yaml    | 332 +++++++++++++++++++++
+ MAINTAINERS                                        |   1 +
+ arch/arm64/boot/dts/qcom/glymur-crd.dtsi           |  29 +-
+ arch/arm64/boot/dts/qcom/nord-rrd.dts              |  40 +++
+ drivers/power/sequencing/pwrseq-pcie-m2.c          |  70 +++++
+ 5 files changed, 470 insertions(+), 2 deletions(-)
+---
+base-commit: dde0308a2f8867806a444df1fdd7e685b1c56d5b
+change-id: 20261021-pcie6_fix-cf66f4b8b387
 
 Best regards,
 --  
-EMCP333 <emcp@enser.io>
-
+Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
 
