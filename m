@@ -1,65 +1,70 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=185.11.138.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795384990;
-	b=c3OLZ2TcxgkIJUzriTV92ZqCRCW5qdnMD8CFq+FLHhB0w3+4V1vbaXr6GRmCZ9VSbN3g
-	 nzvJ2OZD2qYZTrlCQMTAQJ7ld2/1+S3LbJCM3mH9JkwURmN9mcXFoRAT6/51QT2fHDqvJ
-	 6dvqbmyDUkfTeaCSGB0S1u0RR6k/M+1k9UaE9vnPK4UVqhDmvKKLqc0EiFaXjQKcqXdMg
-	 ReO7Hor+ErX21HBSkGx7GlTbR8NUwFx2gIzLst73BrYPCNpXdVALeHBZSjXCpP4ZbhnbB
-	 1sgr5eFMh4KmNKuSO3CsoMScqb3Uo3aVT8NWr8Rx2qFUuISN64UuyKKzJ//GRsero5w==
+	t=1795387863;
+	b=hrxw/v5Vih6VB0UlOKX6kqViPXmP0w4BbXwNMqYmDO7tPlfJXOrrQM8AFlJY1irHTg8H
+	 L0t0a2wZJVrkFZ8c3BlLmbLWDIOA8HunAs5obEjkeEsW1d1oQK2rHn2k8mrZQb5RKxR2U
+	 tHNW5D+quCr7wGX/0yvhoAdZcZUKV3deRKdMndZiW00wqNWLrfcUyVMXgwmWl/FInanu5
+	 bUVv7iBHN9zm0K7Qk1V/ppLjw6oNx98sDiHr2myizU312v/s6KODRBO4fWiYLNJH2Ymzq
+	 mpHHbdCKnLvDr4P3J9JcLDk7JNamzdqLF/x1/Alz2eqHUtX5tLYXahYE/WtcmUw9sbw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795384990;
-	h=Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
-	 In-Reply-To:References:X-sashiko-severity:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version;
-	bh=JXcFHflK0e4wRmdk/kevbkxf3N1Rrm6teC1Baw2ZrKs=;
-	b=oo5n2AHOR6k4KBf4hVVtSfKZ7IcZsKcT5SB7cLgolMva6iNpNfJcq6HEcKxqJxRFWcPe
-	 L8GJTj45LcarSDJtIvaVoLRVMeubW0Vqr0ebYEHXnGr/HQ3scXcY5StgYWtEraL6lif3l
-	 v2GMfUoXp8QQ7uwwSChuArrB+nZ1YKfF/mZaMZ0B0p2XzthbEBlkWIKoLpMPsFKGbAQ7D
-	 MwD7o3j5UhBxLsfUz1VyNAmX4voiSCFk5k8kn/My5kIvFR7rLPceh0GhL+kVrSxEh+HQK
-	 7IRN56ef+70pVAsgxYoU9iX8qit4ZhGDHfRo1tZMK4MQLBVlvf+GUXpCGxuZnrofg5A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795387863;
+	h=DMARC-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=fL7U3381lRKl0leRXdHMgrHniLI1nUrxbkYQxcEjLqc=;
+	b=itDPda2TK+HKhhMmfdlqGtejSF7hKiCm1DjEQ32S+VKYWgYKOEhNTppct7W1gK+YZryW
+	 SldD2FgNXQWQye/5pUqff2RTo72PfdbIZpJ2KeHaLZvN9ithhs6632HgYoxl91O2Ku54P
+	 1MctNe5nCbNS10DTAucwwfR33lcTM3RMRdOp+KhA18VfmF/YuSe33vpl6IWSpjFK0CYmS
+	 8OqngFaiD18Oj0egbnHf4XsneQzklj+O4k7DxKRsUO0Ec00Fnj63Kdffx1Ngic316cXcB
+	 8zMzCD1esY97y9e1lIv45Q2VZ7FSstN4A7fwaxaSwhLGbXuzJhXspZxEBiSMSrievzA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Xvp1bFJP;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=sntech.de;
+	spf=pass smtp.mailfrom=sntech.de;
+	dkim=pass header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=ax3EThsO;
+	arc=none smtp.remote-ip=185.11.138.130
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72A66606A680;
-	Sun, 22 Nov 2026 22:03:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0468606A688;
+	Sun, 22 Nov 2026 22:51:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C0468606A688
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Xvp1bFJP
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 135B61F000D0;
-	Sun, 22 Nov 2026 22:03:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795384990;
-	bh=JXcFHflK0e4wRmdk/kevbkxf3N1Rrm6teC1Baw2ZrKs=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=Xvp1bFJPOAJko1gTYkkHi2xliN+e/SJiZolJ42UqB3t+AJeXOGSOQ5M3gp0cCrTVu
-	 WlElUWX8cjccqnKCXUFtDIAOk0UnEjRmvnKjHkuN//tBxB46wH7JtSt4NcYSZdLwHK
-	 pabOJlkT5LsHkk8Sz0RrnF48e4UvYvDwd6sfU1Xqxg/ZnQrCm82u32LY4lXfIdKuU4
-	 cghezifPWoqfei365GGZxdBoUHa6PoIz9SZSDhoQBd5invBxbyGW6oJlUo16aHhzLc
-	 FMIHGF7nKSqNWoMk3DX2e9lrABETD7T1IU3em0tiIs6EzvqHvG/YL7C/l4E+FAg2tZ
-	 pZBTp7cixDXjg==
-Subject: Re: [PATCH net v7 5/5] net: phy: postpone PHY interrupts during sleep
- with MAC-managed PM
-From: netdev-bot+sashiko@kernel.org
-To: iav@iav.lv
-Cc: andrew@lunn.ch, hkallweit1@gmail.com, linux@armlinux.org.uk,
- davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com,
- tglx@kernel.org, linux-pm@vger.kernel.org, maxime.chevallier@bootlin.com,
- lukas@wunner.de, rafael.j.wysocki@intel.com, wei.fang@nxp.com,
- niklas.soderlund@ragnatech.se, paul@pbarker.dev,
- florian.fainelli@broadcom.com, opendmb@gmail.com, Thangaraj.S@microchip.com,
- shenwei.wang@nxp.com, Haoning.CHENG@cn.bosch.com, netdev@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-kernel@vger.kernel.org
-Date: Sun, 22 Nov 2026 22:03:08 +0000
-Message-ID: <179538498865.3135.16577116981763828111@kernel.org>
-In-Reply-To: <20261119-b4-phylib-mac-pm-irq-v3-v7-5-d8b8f43b5a62@iav.lv>
-References: <20261119-b4-phylib-mac-pm-irq-v3-v7-5-d8b8f43b5a62@iav.lv>
-X-sashiko-severity: Medium
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=ax3EThsO
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Transfer-Encoding:Content-Type:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=fL7U3381lRKl0leRXdHMgrHniLI1nUrxbkYQxcEjLqc=; b=ax3EThsOorRJywhBtMvHtFKJ38
+	IswFG3psBt0fWq4p2CSsOGvDySCx+Z21iAS68wk6V+HfzXVUO3bRDkhzvClaRHsog4XLmyqjZXHfQ
+	+in6YffJYuWjoEAUwwBnGyodjmtEVVD5EB05DlAp/H5qaEwSM6x+qAjoTMVfW5q3zQzER0lace1CH
+	aEgBBXX06ABme8yHcX+/4UnFNMrddTAKO8TZSCKlKP1yqphzvmN8sEw8BJByvEonmc0fLqSoMA0G8
+	9I+nLlbYNwiwh/i4ApYcd/CmbNI1bI9/b2kXznfEEUWLq3T2OEnQRdJIMpRabzRFbKwm+bX7xNm91
+	hvT4NUmg==;
+From: Heiko Stuebner <heiko@sntech.de>
+To: ulfh@kernel.org,
+	Leonard Lausen <leonard@lausen.nl>
+Cc: Heiko Stuebner <heiko@sntech.de>,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	detlev.casanova@collabora.com,
+	finley.xiao@rock-chips.com,
+	zhangqing@rock-chips.com,
+	inindev@gmail.com,
+	linux-pm@vger.kernel.org,
+	gahing@gahingwoo.com
+Subject: Re: (subset) [PATCH 0/2] Fix Panfrost boot hang on NanoPi M5
+Date: Sun, 22 Nov 2026 23:50:26 +0100
+Message-ID: <179538782480.3150822.6529696700670964484.b4-ty@b4>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261019092417.391522-1-leonard@lausen.nl>
+References: <20261019092417.391522-1-leonard@lausen.nl>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -69,223 +74,26 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue(s) to consider.
 
-Critical: 0 · High: 0 · Medium: 1 (1) · Low: 0
+On Mon, 19 Oct 2026 09:24:14 +0000, Leonard Lausen wrote:
+> On the NanoPi M5, boot hangs during Panfrost initialization. Before this
+> fix, booting required blacklisting Panfrost on the kernel command line.
+> Loading Panfrost after boot reports a GPU power-domain acknowledgment
+> timeout.
+> 
+> Enable regulator management for the RK3576 GPU power domain and connect
+> its supply to the NanoPi M5 GPU rail.
+> 
+> [...]
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
+Applied, thanks!
 
-- [Medium] Two phylib changes interact badly.
+[2/2] arm64: dts: rockchip: Fix GPU domain supply on NanoPi M5
+      commit: ac5f8e47fcb2e7a5e5829968a406d2fbff63db8b
 
-Pre-existing issues:
-- [Medium] This problem wasn't introduced by this patch, but
-  mdio_bus_phy_resume() (drivers/net/phy/phy_device.c:439-445) returns…
-
---
-
-net: phy: postpone PHY interrupts during sleep with MAC-managed PM
-
-With this commit, mdio_bus_phy_suspend() also sets irq_suspended for PHYs
-with MAC-managed PM, so their interrupts are postponed across system
-sleep, and phy_interrupt() no longer reports a wakeup for them. It also
-adds noirq callbacks. The suspend one re-enables a line that a postponed
-interrupt disabled if the line is armed for wakeup. The resume one
-disables it again before resume_device_irqs().
-
-> diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
-> index 6cc94b525e093..45891570a56ee 100644
-> --- a/drivers/net/phy/phy.c
-> +++ b/drivers/net/phy/phy.c
-> @@ -1419,7 +1419,10 @@ static irqreturn_t phy_interrupt(int irq, void *phy_dat)
->  	if (IS_ENABLED(CONFIG_PM_SLEEP) && READ_ONCE(phydev->irq_suspended)) {
->  		struct net_device *netdev = phydev->attached_dev;
->  
-> -		if (netdev) {
-> +		/* With MAC-managed PM, a postponed interrupt cannot tell
-> +		 * Wake-on-LAN from a link change the MAC causes.
-> +		 */
-> +		if (netdev && !phydev->mac_managed_pm) {
->  			struct device *parent = netdev->dev.parent;
->  
->  			if (netdev->ethtool->wol_enabled)
-
-[ ... ]
-
-> diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-> index 8bc394ff7d2d2..c700b34e40a2c 100644
-> --- a/drivers/net/phy/phy_device.c
-> +++ b/drivers/net/phy/phy_device.c
-
-[ ... ]
-
-> @@ -377,11 +378,14 @@ static __maybe_unused int mdio_bus_phy_suspend(struct device *dev)
->  	struct phy_device *phydev = to_phy_device(dev);
->  	int ret;
->  
-> +	/* An interrupt can fire while the MAC has the MDIO bus powered
-> +	 * down, whether or not the MAC manages PHY PM.
-> +	 */
-> +	mdio_bus_phy_suspend_irq(phydev);
-> +
->  	if (phydev->mac_managed_pm)
->  		return 0;
->  
-> -	mdio_bus_phy_suspend_irq(phydev);
-> -
->  	/* We must stop the state machine manually, otherwise it stops out of
->  	 * control, possibly with the phydev->lock held. Upon resume, netdev
->  	 * may call phy routines that try to grab the same lock, and that may
-> @@ -414,8 +418,10 @@ static __maybe_unused int mdio_bus_phy_resume(struct device *dev)
->  	struct phy_device *phydev = to_phy_device(dev);
->  	int ret;
->  
-> -	if (phydev->mac_managed_pm)
-> +	if (phydev->mac_managed_pm) {
-> +		mdio_bus_phy_resume_irq(phydev);
->  		return 0;
-> +	}
->  
->  	if (!phydev->suspended_by_mdio_bus)
->  		goto no_resume;
-
-[Severity: Medium]
-This is a pre-existing issue, not one introduced by this patch. Further
-down in mdio_bus_phy_resume(), the error returns skip
-mdio_bus_phy_resume_irq():
-
-drivers/net/phy/phy_device.c:mdio_bus_phy_resume() {
-    ...
-	ret = phy_init_hw(phydev);
-	if (ret < 0)
-		return ret;
-
-	ret = phy_resume(phydev);
-	if (ret < 0)
-		return ret;
-no_resume:
-	mdio_bus_phy_resume_irq(phydev);
-    ...
-}
-
-On a PHY without MAC-managed PM, what happens if phy_init_hw() or
-phy_resume() fails? irq_suspended would stay true, so every later PHY
-interrupt is postponed. If a postponed interrupt had set irq_rerun, its
-disable_irq_nosync() would never be undone, which leaves the PHY line
-disabled after resume, along with any other users of a shared line. The
-state machine is not restarted either.
-
-This lasts until a later suspend/resume cycle completes cleanly. The new
-noirq enable/disable pair runs before mdio_bus_phy_resume(), so it stays
-balanced and does not make this worse. Should these error paths still go
-through mdio_bus_phy_resume_irq()?
-
-> @@ -446,8 +452,46 @@ static __maybe_unused int mdio_bus_phy_resume(struct device *dev)
->  	return 0;
->  }
->  
-> -static SIMPLE_DEV_PM_OPS(mdio_bus_phy_pm_ops, mdio_bus_phy_suspend,
-> -			 mdio_bus_phy_resume);
-> +static __maybe_unused int mdio_bus_phy_suspend_noirq(struct device *dev)
-> +{
-> +	struct phy_device *phydev = to_phy_device(dev);
-> +	struct irq_data *d;
-> +
-> +	mutex_lock(&phydev->irq_pm_lock);
-> +	/* We enable the line a postponed interrupt disabled if the irq core
-> +	 * armed it for wakeup, so that it wakes the system.
-> +	 */
-> +	if (phydev->irq_rerun) {
-> +		d = irq_get_irq_data(phydev->irq_rerun_line);
-> +		if (d && irqd_irq_disabled(d) && irqd_is_wakeup_armed(d)) {
-> +			enable_irq(phydev->irq_rerun_line);
-> +			phydev->irq_wake_enabled = true;
-> +		}
-> +	}
-
-[Severity: Medium]
-Can this enable_irq() unmask a line whose PHY interrupt source was never
-acked?
-
-The postponed branch of phy_interrupt() does no MDIO access. The PHY's
-latched status (BCM54xx ISR, RTL8211F INSR) stays set, and the PHY keeps
-INT asserted. With the new !phydev->mac_managed_pm check, no wakeup is
-reported either.
-
-Before this patch, MAC-managed PHYs were not postponed. Their
-handle_interrupt() ran and acked the status.
-
-On a level-triggered line, would enable_irq() here go straight to
-irq_pm_check_wakeup() -> pm_system_irq_wakeup() and abort the suspend?
-
-With stmmac this could happen on every attempt. stmmac sets
-wol_phy_speed_ctrl, and phylink_suspend() renegotiates the link after
-phylink_stop(). The PHY is a child of the MAC's MDIO bus, so it is
-already postponing by then:
-
-drivers/net/phy/phylink.c:phylink_suspend() {
-    ...
-	} else {
-		phylink_stop(pl);
-	}
-
-	if (phylink_phy_pm_speed_ctrl(pl))
-		phylink_speed_down(pl, false);
-}
-
-rtl8211f_suspend() masks link interrupts and reads INSR before this
-point, but bcm54xx_suspend() does not when WoL is enabled:
-
-drivers/net/phy/broadcom.c:bcm54xx_suspend() {
-    ...
-	ret = bcm_phy_read_exp(phydev, BCM54XX_WOL_INT_STATUS);
-	if (ret < 0)
-		return ret;
-
-	if (phydev->wol_enabled)
-		return bcm54xx_set_wakeup_irq(phydev, true);
-    ...
-}
-
-Meanwhile bcm_phy_set_wol() wake-arms the shared link/WoL line:
-
-	if (phy_interrupt_is_valid(phydev))
-		enable_irq_wake(phydev->irq);
-
-On bcmgenet, bcmasp and bcmsysport, which set mac_managed_pm and use
-these PHYs, a remote link change inside this window would now abort the
-suspend once. Previously the interrupt was simply acked. The commit
-message says PHY drivers have to restrict the interrupt to Wake-on-LAN in
-their suspend callback. Should the drivers that don't do this be updated
-in the series?
-
-On an edge-triggered line, the commit message says:
-
-    An edge the postponed interrupt consumed does not repeat, so
-    on an edge-triggered line a magic packet that arrives during the
-    transition does not abort it; the next one wakes the system.
-
-Does this hold for PHYs that keep INT asserted until the status register
-is read, such as RTL8211F INTB/INSR? The postponed interrupt never reads
-the status. After enable_irq() there would be no new edge and nothing
-pending to resend, and no wakeup was reported for a MAC-managed PHY. Could
-Wake-on-LAN then stay lost for the whole sleep?
-
-These callbacks are also installed as freeze_noirq/thaw_noirq through
-SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(), so hibernation image creation looks
-exposed to the same aborts.
-
-> +	mutex_unlock(&phydev->irq_pm_lock);
-> +
-> +	return 0;
-> +}
-
-[ ... ]
-
+Best regards,
 -- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261119-b4-phylib-mac-pm-irq-v3-v7-0-d8b8f43b5a62%40iav.lv
+Heiko Stuebner <heiko@sntech.de>
