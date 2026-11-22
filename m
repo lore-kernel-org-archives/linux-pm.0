@@ -1,79 +1,80 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795348531;
-	b=pjqBv7zxEEDYePnxLSswXbHtrgBJWFDHAeKF74r3nU4Uf7VpBYqtjlEV/CrHGzv2HY3v
-	 pkO+Ig5NoP2Cn5ptRnjmkippZc23jT/UzBPI2ZnUxeF4n5yM1YuIbZMXsObrKKWTN4Ck9
-	 41wk8J1jTsO1+W7YTj1xHbUYjhw1rnLUCCG8aPwHbQUDWtMgQ1g9Wehlck4AvlopWz4/B
-	 9alz+W1w960IQ3s/ZXqSIGfwy7Zz90Weii1frAxNiOgS5vVljR0mRG+MJqXXuS6bAyIhl
-	 7f81QWF8RR9lA9qS8FjUEZVSm5F0StBJdc5cqGmE0lk8lVXmqBJ0S9IuaPyc9/secxw==
+	t=1795348536;
+	b=W1m91+gpda7WCToQtUFSw/p2cOZt0OOdbSR9W7hmdciPe2RIcm62zfkuVqYgxJy8/zcm
+	 Fxevk1fM4eOG9XvFJ3xqJ/NHRtjTjq8Kk/Zj+T6SvLdZd4EK/vTtvftNuexoAnTlaUheC
+	 3O/ATthw4A+Sb1UYjGf7kMz3imsjkbMqqyOwk0Cq0azdqJStXeCJayndjmf38k8bRSfTF
+	 75+FojXELtSk4GVYqkscNHaLMbuiJeRp0Xhz+mnYInt7kG9AMjTp10TfYWV9PT/xVuag9
+	 p5WHYYs1w7AZxv6ibw6fLqoIonzhzQ/2jyypyZG3T51B7o4bzCdosuEzxIghBFabmhw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795348531;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
-	 In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	a=rsa-sha256; c=relaxed/relaxed; t=1795348536;
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
 	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=6d9aHwIPLyyycA4lbAZS74hsEAV4FeAw1PtBr9/VNow=;
-	b=FHXFC3jqr0rU+0zXFmPeavy+3mXAdbaGG11VMBTExrNfDZJzmugnso4svazBcwU6Ddhh
-	 SlMBThYxZMeqPTT0VWBpHAGvu4NwaZXMx9tYQ6vMikTDmeCLRvU5w9ONIGchFfndGy1NX
-	 IEJ9dpPthQ2whDo/VI9Wg/E4W9ftZMyejplOTrf0731Y3mDTFUi1lKjE6YJk8fyW7tghA
-	 EfLOQdgM5IB3Gh5m/Ksvk13b19PjsKkPlOTvFIGZ7nNn5ZQysl590JPryz+KH2UL7svQU
-	 T8IZF4C5HYBqaYZgN8UA/0sI0M4dPo52gH4mrcqiVVcuAmiyl+NDlYsck89sCUAdoMg==
+	bh=sfPsKfP+u3D1vjIbzuH85I1yOXI1ADrVod+fm0L2OAw=;
+	b=gjh9/gmqFhuZTUSx1K6Wo/rAlYDbcI0Hb/0CBFZZdp+/c80SX/LDK0V0JXHvzGctIKDx
+	 67O7ngTvLKMbt8xO1Dn8mDfWyvn8Dx6aPzW8mp7Te6KceCh9pFv+VUgJ44D3b3o+yfAQ8
+	 3y001Xo5XcvXrWOZ8b6BnntJkv8D7yLSClvxflic/KVZ0z304c0svCCgHoWAUQfO6M0qm
+	 JUJ7n5QKDQAOGrhpAiZLKgDz7IHe1KubDFbq5d2Cy9TuCh7mHJlNDGj9orJrvW67dET0I
+	 7/C0qNVfzEmoVwI7Z7hPYWR6bNsx1VqVB2egNCSSN3d6EbH3gUKkFTRLfYGPo20PL5w==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eND055bf;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LI6ecUN5;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66A03606A32A;
-	Sun, 22 Nov 2026 11:55:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 919A2606A33E;
+	Sun, 22 Nov 2026 11:55:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eND055bf
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LI6ecUN5
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795348530;
-	b=jV3UHc+hGMOAp3NKZGJMFT46alOmjFCKd6+yuSx97/OEfwzZK3AbcGwcjjfn/iQHiTCP
-	 5lf37vPItB2dd08uCt2qHPqIX98FGmUasJGJuDj5BME/LRlnQaANkuOOxq6QfZHNXUP+W
-	 6KjjdP+eR/CgPvPiEijcxEIPVBvktue8n83Jts9EG2PRpGCGMQgIX7d3KheVNvGZhSzS3
-	 0kvkYsW1cONVJFj+tMjFd8qXTGMz16R+XWNRncNUE/0FT6wPMfm4gZZkkHIgt3Kf6maNL
-	 lZIeg23HfgmlhdcgIFoxFl7nkuE+eTAUcFdpQzLsXFISAG5a+FERKUQOxvLUm+sQ/cw==
+	t=1795348535;
+	b=GeIHg1rwEIVD77k1s9gKIAlMChvnL4mKUHXwxXloFUYZc/kJDvLKZpJT+WQNGmVJZnC1
+	 8Zle3mQz+I1u/PP2BLJ+zvLUIPjk12XOH5quNR6dhP2R+3CwBD1r7NXdftto42237AIYH
+	 wZYtnUyzJEetbZ+/B0AvghCEdkVcKlI0vAuR69B+tjl9F8285FECo6Qb7wU+ZmUxlp7z1
+	 3ecW4y5hAqKuSOexcL7aYdwzdTfEBG4fnnMpAfDqkCdh9+mHb7kcbbvJgAxtXu/BJ6gEj
+	 Wa7o9Q/jhxsQsjY/6VKiDO5h/5qPta0FyL0RgUWBkzAhJ4USKKOfcvHPOCwNtvbLzlg==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795348530;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
-	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	c=relaxed/relaxed; t=1795348535;
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To;
-	bh=6d9aHwIPLyyycA4lbAZS74hsEAV4FeAw1PtBr9/VNow=;
-	b=jSgOaKuNrFyDiowvroVP6vYG2+w89b3RrjKxBLTtyuBgwsRMydiWIJMo/HsEuoSJT0Mn
-	 UFH6M6hEWpAWoflkl7brh6Zezvu59XYr4Drv2HHpPKvLwM/8g/eMJ4HcpKgph4Ji3HCkr
-	 +4H6ZOol7DPyw79Azxh3gqt1k8A2vJq/1suBpRNZcHB+xGFip1sc8+lvNqOc+q756R54m
-	 IGhie3JWPlLjjj2qJkhOPD1KFqUGqX3gGvLARExLF1aRD2w9OOivRVYMqntRBcFGgBdJW
-	 //NoK8/uCDzhfKLlO2faiwxPcwfK+M80Da0hCc5UJkFjEK4AJRZj4EiHvQBAfhe+s9w==
+	bh=sfPsKfP+u3D1vjIbzuH85I1yOXI1ADrVod+fm0L2OAw=;
+	b=QKaCl5E3rITjMsUEf+Vv5IS1RHZAY1MLaycAZ5ifsRz+GpmN0zYFKkbW9lN66Dvx81wW
+	 ejFc/f0FQaRcKx8FIv1e9UWu9JsM2WVe7oAT4z579DsT1uob9Ye6BifiSaOhmO6HVh1PI
+	 z6U2bUZQCtLKqxoIq9fBvktJn3txjdnL/KZoDWrtJEl/hYMr+HvAniq6og+gvlaZyIfbB
+	 YSgXor6TGzH4JN1d3yZYY6xe2UfXW5VH7MUehqorKf4z/M7UMgt6oNPB47BMH5fp/9i7b
+	 irnwGvMJXYL172T7EGKeoK6eV38Oalgokr239unzWz5fHybbVDofzMARNXM/Om5exeQ==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 43E1F1F000D2;
+	by smtp.kernel.org (Postfix) with ESMTPS id 442991F000D3;
 	Sun, 22 Nov 2026 11:55:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795348530;
-	bh=6d9aHwIPLyyycA4lbAZS74hsEAV4FeAw1PtBr9/VNow=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=eND055bfM3uYlV4GWrArdVv2uqAg5bhHSNVnPe3EyET5aEMKfWY6zRSSFT1T6tstJ
-	 PdNpNG74Z18bVP+1HQaeeI1btTt2xQeUiMEn5kLZIfODSjzuqJguRO/JwH122Ok23d
-	 qEloUHMcUjbCTSb4jo7Tisy93W/qDAW/9eDPgbYb7vh8IU5KQYOQvENOl0rzlIeODe
-	 m7nVr/D/CMgCjfOvNk6u3k8Q0Qdo5TEn2BJCjndULjOq+vnHlCi3TU2wsor/R0F594
-	 9VS7DPudcfjdiT4MSNTry/x4DF65tFZ52HTf2VlfLmOckv+a2nwnF5vP2PD9xQ89ZS
-	 dCN7yM7nUd4IA==
+	s=k20260515; t=1795348535;
+	bh=sfPsKfP+u3D1vjIbzuH85I1yOXI1ADrVod+fm0L2OAw=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=LI6ecUN5zm+YWMZc+UrPJR6RjeimvQQA6f2lQzWFDhIMvsG4RYH3c82YH3TDHSXq4
+	 4JJOAl8kb/E382xN9dKGICM3bBnDfae35FPMEsX1iw2rDrKv2gSTms3SBbmZFK1lEX
+	 C2XKDP4Kyys4Khnt3xwAmbqCSa73Bk3swhznyXygTI8o3Zugk6fvkB89Oh/zIxmQH6
+	 X71zIH5BGuMCiAPtWdBImWyrzbSwW0ZvwmjmPnpTejYesQ1/YqEhRCojHjyrwfKyoD
+	 qfCuxzVNn8ltue/i+qNHBG2uH6M/fksbSlqG1WNX2etr1MMHIIZ7te600KCX9DFcPa
+	 RwerWhDx6gKtQ==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id B50D74C013;
+	by lkml.kernel.org (Postfix) with ESMTP id 945C44C01B;
 	Sun, 22 Nov 2026 11:55:27 +0000 (UTC)
 From: Suyuan Wang via B4 Relay <devnull+shyckless.gmail.com@kernel.org>
-Date: Sun, 22 Nov 2026 11:55:26 +0000
-Subject: [PATCH 1/3] cpufreq: highbank: Put cpu clock if clk notifier
- registration fails
+Subject: [PATCH 0/3] cpufreq: Fix leaks on probe error paths in three
+ drivers
+Date: Sun, 22 Nov 2026 11:55:25 +0000
+Message-Id: <20261122-cpufreq-leaks-v1-0-96fc17ff7339@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -85,20 +86,21 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261122-cpufreq-leaks-v1-1-96fc17ff7339@gmail.com>
-References: <20261122-cpufreq-leaks-v1-0-96fc17ff7339@gmail.com>
-In-Reply-To: <20261122-cpufreq-leaks-v1-0-96fc17ff7339@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAC3YAmsC/yXMQQ6CMBBG4auQWdukHQILr2JYlPJXRghCRwwJ4
+ e4WXH6L93ZSJIHSvdgp4Ssq7ynD3QoKvZ+eMNJlE1uunWM2YV5jwmJG+EGN7VBFy62tfEm5mRO
+ ibNfv0fyta/tC+JwTOo4fI8lzFXEAAAA=
+X-Change-ID: 20261122-cpufreq-leaks-0de5f02b05a3
 To: rafael@kernel.org, viresh.kumar@linaro.org, krzk@kernel.org, 
  peter.griffin@linaro.org
 Cc: linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-pm@vger.kernel.org, alim.akhtar@samsung.com, 
  linux-kernel@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795348526; l=1132;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795348526; l=860;
  i=shyckless@gmail.com; s=default; h=from:subject:message-id;
- bh=3C9gDTowDdRDGMzNw1WS33LAVCdBMhUpJeT844xhx+Y=;
- b=0X9LBAEBk+Vp2Pf+pdsJFaRO6JRm6H0HvH6fJfTnuI2MlOfdyXeBZXhtU4qFfxba9VjBZ+tV8
- 8LJG6ZBzf1lD8UR/mWAk6UTOgiD7U1TXrc4QfspH2i6yZawQLh8ub1v
+ bh=oIQfnl7M3LakYVj9eUuZPGGQrd8JJ9WvL2rZCs+mAW4=;
+ b=Dw3HZ/Htimtqz09/4oos98ULzG9c99ofSXnu/hME1AhOvccUerU9jFEpxi3CIn2JVWTA75bqT
+ +EypHFn1RYfDIPBzP27XmefoIKFhYx2jgt98BPARvGWAB54nuCsZXfq
 X-Developer-Key: i=shyckless@gmail.com; a=ed25519;
  pk=pMtccVGiWES3bV+7YBFuBclkvq2n2HBHQ5azaBrK2lY=
 X-Endpoint-Received: by B4 Relay for shyckless@gmail.com/default with
@@ -106,39 +108,23 @@ X-Endpoint-Received: by B4 Relay for shyckless@gmail.com/default with
 X-Original-From: Suyuan Wang <shyckless@gmail.com>
 Reply-To: shyckless@gmail.com
 
-From: Suyuan Wang <stevewong@hust.edu.cn>
+Three small fixes for resources that are not released when a cpufreq
+driver fails to probe: the cpu clock in highbank, the three clocks in
+kirkwood (also on unbind), and the regulators and register mappings in
+s5pv210, and its reboot notifier, when cpufreq_register_driver() fails.
 
-hb_cpufreq_driver_init() gets the cpu0 clock with clk_get() and then
-registers a clk notifier on it. If clk_notifier_register() fails, the
-function jumps to out_put_node and returns the error, but the clock
-reference is never dropped.
+Found with a static analysis tool and checked by hand. Compile tested
+on arm (W=1, multi_v5 for kirkwood); I don't have the hardware.
 
-Call clk_put() on that error path.
-
-Found with a static analysis tool and checked by hand.
-
-Fixes: 6754f556103b ("cpufreq / highbank: add support for highbank cpufreq")
-Co-developed-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
-Signed-off-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
-Signed-off-by: Suyuan Wang <stevewong@hust.edu.cn>
 ---
- drivers/cpufreq/highbank-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+Suyuan Wang (3):
+      cpufreq: highbank: Put cpu clock if clk notifier registration fails
+      cpufreq: kirkwood: Put clocks on error and in remove
+      cpufreq: s5pv210: Fix resource leaks on probe error paths
 
-diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
-index a45864701143..ccdaff4384d2 100644
---- a/drivers/cpufreq/highbank-cpufreq.c
-+++ b/drivers/cpufreq/highbank-cpufreq.c
-@@ -89,6 +89,7 @@ static int __init hb_cpufreq_driver_init(void)
- 	ret = clk_notifier_register(cpu_clk, &hb_cpufreq_clk_nb);
- 	if (ret) {
- 		pr_err("failed to register clk notifier: %d\n", ret);
-+		clk_put(cpu_clk);
- 		goto out_put_node;
- 	}
- 
-
--- 
-2.34.1
+ drivers/cpufreq/highbank-cpufreq.c |  1 +
+ drivers/cpufreq/kirkwood-cpufreq.c | 15 ++++++++++++---
+ drivers/cpufreq/s5pv210-cpufreq.c  | 12 +++++++++---
+ 3 files changed, 22 insertions(+), 6 deletions(-)
 
 
