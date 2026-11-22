@@ -1,85 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.222.171
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795374696;
-	b=eBNUMLc9eqvmmAbbT1aGaSu2ITXlv12FofJixRcdb9Dp9ySSU+B8mEZa2FJ3MlrMVLlI
-	 hfV+3zj0AkGhkmqtje5wCaaif6b5b0kSaCet6JoR93Lsdd1s1UubOUZmXvsgeZMUgjsp8
-	 wA5V4Sr3gvrRXBP1aGH6HhaMJ1UjLwGbgTO4IFK1COHOu8OFVEzwUmZ6Yvn6mdS9/VSeA
-	 p9YudbfffSQFPbhRfwwZPIT5iVRWj9IvliED0DwpwFLAvLpngyI7DB+CsDDGWyXFam6AU
-	 GIfmrzDa/BOkgUGd76wFpN5gQRWvuLWAIfZtGJnO7HiKJCVYXoQNEd7DXfgd8ogEZmw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795374696;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:Subject:From:To:
-	 Cc:In-Reply-To:References:Date:Message-Id:X-Mailer;
-	bh=oGsMa7wmHQHTRJX2QekmD3Y6Ja6uGmq6iEm7evLlQd4=;
-	b=SjMD/RrMYSQU5z21H5Z7R00l1jFao+zZNhrBudnKV1jJLD7aCRLJn2bXcbF7SIqlMdNY
-	 zYZ4LlmFgDpra5zdTm9YScAhqffgiYzWgKvDTxvPv6+GCAcWZa/XCiWq6BkgjG20jsS4O
-	 SG7MDKeUkwsHfj8yUlvZqt6Lrk3b8LSl7SWEk/KFYW2HCn+tdfgvgRNxQQX/XqpHS/9Pd
-	 O+By4yur4bEqiulDUYqsKYzSXrYPtf6FXnNzjx/KuXWsOSerTHAAILC3r4FYzEdm3crII
-	 x1qg4aEmDwFo146yv2jzmI7dqg7OOBZY8Y328JJw74OtNAIAc768gLMOpVQawtnR/4Q==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=gourry.net;
-	spf=pass smtp.mailfrom=gourry.net;
-	dkim=pass header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=TPI3MTe1;
-	arc=none smtp.remote-ip=209.85.222.171
-Received: from mail-qk1-f171.google.com (mail-qk1-f171.google.com [209.85.222.171])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795375207;
+	b=hbaemG3XPH4vhi0S+48PcjGcgyP7pVb8mgaPi660o+d1ROUQ18+oBgAabZXba1thSGA+
+	 h/NAjLkJcC0hbNDeVq9Uz5xrsppX+BqqqFRG1jEgtrqmUd78gySzYzIfz2D3SGzY3jt2R
+	 DqhmgzRUaWjoGrEYTqBrWN8j+rUoapT50R92zzI+f1Xuvrr2L4FrZ6EtVR/RuDbbqoIur
+	 SqazzfqiZ0cYU8hbPaCYXe12U43WeMcnVORHVpjpfmzJNBoRo7FpKyU2XD2vseIdqap/j
+	 f/iejkVFnIqAhqHmFvhgMz+0tpMXmQMse+FXqPNxosIfFa4sH/IB9qfRXYVPuL/Gl9Q==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795375207;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=2TafYp3QH2t2vVMZyE9e/qn6OjzCUeGCeg2thvKX9Ks=;
+	b=l+9g4QOCxJ8Sp8W5+0ellbajq8v3cLZ0TWzsmULmD020mluvR9SwxyeY5HfwOXNEfOFF
+	 x6dik2m4ah1aenbGBBKzDvAwtBcUvkE8SBz7K5Lb2BOJv7f0QRtY63N+oZJPjPbJFRef8
+	 xeQEjLVGrtzizAxXUV+KNiNkp/bmE+pV+FvwU/Rd9AM2/YFvMxBTdyIO3x28FyN1+OZMk
+	 HrwPxzH+0w5krsCbIjyflQnH2oFOtdZw+5o2vs1KxmK/hI8TFmzRjiy8SFLMOL3hTRFUr
+	 qCLBXz4kIYQogrflZPPgV7RKYUuDB4K1OMxfJrHPV6xGPQEC8ymxkLMJk2fG8Ik2C6Q==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ehoLgTmA;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D52C606A31A;
+	Sun, 22 Nov 2026 19:20:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ehoLgTmA
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1795375207;
+	b=VnqvGzeVB4/puNLBK1WC3oZOFm0fnQXs02PW3it2cYdWqquDbk5TA3b4aHigYXEsDRyS
+	 T3Cs1asfivldky135RB0sVO1huUyhdNzwFD8LgzsZAn7Y3SO/otb4QjJBeLQnWyW91XFl
+	 qtkoLDQrLa/AGxWCHNGrRFbJuGTAiD0ZIQP8eGa8+ujwafMeguUFzbsMBOKm5jgVSJg9N
+	 oEaX5O2ofNudJvEl+lHXum+F22/daA1JGR1fFq/T8VUbd238+xnFOEyRgBDyM29KoQzva
+	 58lX8S/XO0SH31Lr9No9oekVCuWpGHZFrsOuBHwofHOCvnhzkHHjrCLXOFR3aPqUOaw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1795375207;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=2TafYp3QH2t2vVMZyE9e/qn6OjzCUeGCeg2thvKX9Ks=;
+	b=i4hTzh8icnSKg2rx9CcnH8CAlC1BuFMluGxx+oErvnJ4Ismqzb9vYHy7phImYljTPcS9
+	 27cxuz5kJ0LZPdJpES8SErSDzoay0nspoHR+na7+X4j3FUDR20K/Z+AgypIk4wM/qvehw
+	 IGE9ORfQM5Tm/ZyC73nQ8kSz+OATkff0ejSjyVQPEX6AaQBtezb7oijr8rC4KtDNvUrzs
+	 u8cKKkr0GQySiDkt+LyhuAkeMfjmWD7g7cPSd1LPmFmQvioTOL9oBmeSuF++cMgJNbKOq
+	 p1yZesh3W8CPk0TeG2Cfs+h+Q8cPtafnRg43cnoj8tEyWmPkkavpRP6STEaRQNsv85w==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C31BE606A335
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 19:11:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C31BE606A335
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gourry.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=TPI3MTe1
-Received: by mail-qk1-f171.google.com with SMTP id af79cd13be357-94960131b30so266787285a.0
-        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 11:11:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gourry.net; s=google; t=1795374695; x=1795979495; darn=vger.kernel.org;
-        h=message-id:date:references:in-reply-to:cc:to:from:subject
-         :content-transfer-encoding:content-type:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=oGsMa7wmHQHTRJX2QekmD3Y6Ja6uGmq6iEm7evLlQd4=;
-        b=TPI3MTe1RlG4SmZzzoCpRdy2QVmmqnbO/w6aR5KNMokJV/Ej+uAFQG7yAYqk56hfkq
-         LZC9wKLhxk3NMVRMaR1VvWVuCxA6GsIEcwsr6le7u6bdoCGonrAZjK3eTkxOT3nRTyMs
-         kLr2KYSGk0Kdl3U1jn7zVe/GjwSTB8XynoaJu+1hSecxlfaiVnqBhg9qfE6UcOdBFpU7
-         K6+K542N8Cf/GVSasbtS0zq1zF4T0u1FTMwtPGg2hgdtwvyFLiHHyHTH+dkRxgJO3IEQ
-         VpIReU6i3uKk4uALa/TFB/P/g7vgcldffZQ51PdHza/mx09Vr+vtrjEp2lxRt4rjm1dE
-         cSLw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795374695; x=1795979495;
-        h=message-id:date:references:in-reply-to:cc:to:from:subject
-         :content-transfer-encoding:content-type:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=oGsMa7wmHQHTRJX2QekmD3Y6Ja6uGmq6iEm7evLlQd4=;
-        b=NSnV2Tcfcm4Bakv9Ucz57b0WaoA7vWxEVCD/CKx0mFtZ5rWzzBIsVSo6CoESKwTaqJ
-         FJ0jvuFJUB56IiGR+zQfJN9DsZ0toODxsT6cYEGRsvEwRaKcjptj7BTVTBJqE6PT6yjL
-         9NFBIe4zODGz+JdN1SksKc6LQ0beBQ7K6DUGx10HJrysmoGELzNh3tpMLu99CRlbXRqJ
-         wD5FOUEUO+9f79pqgcdZsZZW6ShKV7fOzr1OW6x7aFbc0L79sjBpuuVNG4AdqqNneGzV
-         dJEALZ+Y3oJMKqPKwyLK3oTooyLo16s2iLtARgGUaFiJLlb0qCJBe8lZ9i+Iucs18bB9
-         JjQQ==
-X-Forwarded-Encrypted: i=1; AL+hErGgoYc64jv4r7D1+0FsRe2touJwzKBXC+fQcKdmcSnbESf+OItyiFhSSVAvsBIoloNLeWpfeiPfCw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z95yTLznfZCoW95yUYeRr0++WdzNxBRF7aEBIVvSJk17HqM82uU
-	AX9I/G/pKrV+AGLwesGTATTHm12aHtPlMUqyjxpSmDETgjlEYoc+MJOjFnBVDdGct/8=
-X-Gm-Gg: AZFdTZc98SN4OfRikaCBl/UkRPciy/nG3TqIC2cIeVnUTTIdMnrknX6oIgg6Kw8WXm2
-	OaV9oZqYSP5Fgvl8vVrp5EDRkjmTyavV1BaPkC5fPo9J+PlyEho+A2jsQ95O1Hj9IkjI18u1Qfy
-	0mxvHLEUofjFwPwRWH4bO2P2OaqBG5EW0NXqt37svqi0+6TjXet2Ml08vbwOs3DXXhq0PuUjkFc
-	Ko54XWAntu2fJ6p/IwCPh7CfSbzgy/RPClwD9XaNFTBXU+zyuKtRmtZOYEQxXqwO6zoTdL9NQQG
-	lrXYKy1d6emEpk42lUsV4vnpBKlo+izXwakgjN3GCUYWFZtrd0bYAZcqNrxIO0wulilig8s4dwI
-	xH5Q+sfFQSXD6do7Ai7rjZz7eZRBozcsGdffR/Wr5qrF//EGSAbvlcEC9vUWu+48mZCTO9AfiPv
-	p88yvDLntHoqV5MWevw2c11hDxEbjx+R9sHxlsXY/ChS33NVr7fYwf3LJCD0XSfbESCACoKbBC0
-	sYZCYIEHor6Ixb69I7qh+5OBrMYQEbb827ybNueYKzf6hEDrkHVgcvb/q/TrgquU/85Gfwv2DaM
-	OwidWRyZphkDpr4TlbeCAE5lKhv5uYYLKUoPb5a7wb1Z5HT7zlMAygQY0mS/TBFYVGaHm6PIbkR
-	TegDnesI=
-X-Received: by 2002:a05:620a:4727:b0:949:326f:bd2b with SMTP id af79cd13be357-949ba9aa37amr1639379885a.43.1795374694656;
-        Sun, 22 Nov 2026 11:11:34 -0800 (PST)
-Received: from [192.168.50.231] (pool-71-191-145-202.washdc.fios.verizon.net. [71.191.145.202])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-949bb38c903sm651828485a.19.2026.11.22.11.11.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Nov 2026 11:11:34 -0800 (PST)
+	by smtp.kernel.org (Postfix) with ESMTPS id D856C1F000D0;
+	Sun, 22 Nov 2026 19:20:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795375207;
+	bh=2TafYp3QH2t2vVMZyE9e/qn6OjzCUeGCeg2thvKX9Ks=;
+	h=From:Date:Subject:To:Cc:Reply-To;
+	b=ehoLgTmAAgLAZgjYQu0+T1+9/WOzbEMUgztXPYAYMGez+FNg1nbie19ZW52vzWCMG
+	 gqDKMvpnX9xT6NSuBohcTUfYA3tlTUvPjJZpijMgCz8SGfUctj78HwSoEdpd1nzrfe
+	 J1tQcyGymlhK0HSK7/1+dxRsHJfUhrBfpim99OCJTPPAM3lU6ip0cErT54gVscCHas
+	 QDL1n3tWB5C5URHP/l+/8G8qrOsRaeKZab29SBo1jxjJhXhsp8RxhIQizH2VOxsPWM
+	 Zuo95PQZqJ5qVoIBwLZIkLF5oEJg83R5l1ClnoOIyZg/IOroBBO7I52DuCgmBaV+7J
+	 RnJINQNaRmbmA==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 3C80B4C1C1;
+	Sun, 22 Nov 2026 19:20:03 +0000 (UTC)
+From: Venkat Yadlapati via B4 Relay <devnull+venkat.yadlapati.yahoo.com@kernel.org>
+Date: Mon, 23 Nov 2026 00:50:03 +0530
+Subject: [PATCH v2] interconnect: qcom: Don't read back BCMs without an
+ RPMh address
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -90,87 +84,96 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261123-icc-bcm-readback-v2-1-b470ed2bb7f4@yahoo.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/32NQQ6CMBBFr0Jm7RhKYyOuvIdhMR0GGQ3UtEgkh
+ LsLuHf5kvffnyFJVElwyWaIMmrS0K9QHDLglvq7oNYrQ5EXzhjjUJnRc4dRqPbETyRry+bMJD4
+ vYZ29ojT62ZO36sfp7R/Cw9bZjFbTEOK0f45m8/7kR4MGrfMna2vnyJXXidoQjhw6qJZl+QLht
+ Z8swgAAAA==
+X-Change-ID: 20261116-icc-bcm-readback-a339f8caeb09
+To: Georgi Djakov <djakov@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Abel Vesa <abel.vesa@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org, 
+ Venkat Yadlapati <venkat.yadlapati@yahoo.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795375202; l=2810;
+ i=venkat.yadlapati@yahoo.com; s=20261023; h=from:subject:message-id;
+ bh=+1XaK5OK8j/KqvYoTiFyF9kYItUTNV/Y3VVPDk052A4=;
+ b=n0m9CWqAcfG/LxNDiu+/+IqZPLT28lKYhcwsmXO2JDyFy5obl3FLAoT5Fjg+ildCVVHuEDDOh
+ LcofgTwovyJARTpLU6boX2FS9vmvuCApH4CYdazVSaIe0w651N9iJnu
+X-Developer-Key: i=venkat.yadlapati@yahoo.com; a=ed25519;
+ pk=e8KStCtEMvUP1Se/riB/KVnDAQFEVR2Dw2PcuA8/eME=
+X-Endpoint-Received: by B4 Relay for venkat.yadlapati@yahoo.com/20261023
+ with auth_id=1303
+X-Original-From: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
+Reply-To: venkat.yadlapati@yahoo.com
 Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH 00/60] Private NUMA nodes
-From: "Gregory Price (Meta)" <gourry@gourry.net>
-To: Yury Norov <ynorov@nvidia.com>
-Cc: gourry@gourry.net, Yury Norov <yury.norov@gmail.com>, 
- Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
- David Hildenbrand <david@kernel.org>, 
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
- Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- Oscar Salvador <osalvador@suse.de>, Johannes Weiner <hannes@cmpxchg.org>, 
- Suren Baghdasaryan <surenb@google.com>, 
- Brendan Jackman <brendan.jackman@linux.dev>, Zi Yan <ziy@nvidia.com>, 
- Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
- Randy Dunlap <rdunlap@infradead.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
- Johan Hovold <johan@kernel.org>, Joshua Hahn <joshua.hahnjy@gmail.com>, 
- Rakie Kim <rakie.kim@sk.com>, Ying Huang <ying.huang@linux.alibaba.com>, 
- Matthew Brost <matthew.brost@intel.com>, Byungchul Park <byungchul@sk.com>, 
- Alistair Popple <apopple@nvidia.com>, SJ Park <sj@kernel.org>, 
- Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
- Juri Lelli <juri.lelli@redhat.com>, 
- Vincent Guittot <vincent.guittot@linaro.org>, 
- Dietmar Eggemann <dietmar.eggemann@arm.com>, 
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, 
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, 
- K Prateek Nayak <kprateek.nayak@amd.com>, Kees Cook <kees@kernel.org>, 
- Kairui Song <kasong@tencent.com>, Barry Song <baohua@kernel.org>, 
- Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
- Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Michal Hocko <mhocko@kernel.org>, David Rientjes <rientjes@google.com>, 
- Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
- Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
- Dev Jain <dev.jain@arm.com>, Lance Yang <lance.yang@linux.dev>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>, 
- Lorenzo Stoakes <ljs@kernel.org>, Pedro Falcato <pfalcato@suse.de>, 
- Jann Horn <jannh@google.com>, Chris Li <chrisl@kernel.org>, 
- Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
- Youngjun Park <youngjun.park@lge.com>, 
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
- Waiman Long <longman@redhat.com>, Ridong Chen <ridong.chen@linux.dev>, 
- Tejun Heo <tj@kernel.org>, 
- =?utf-8?q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>, 
- Dan Williams <djbw@kernel.org>, Vishal Verma <vishal.l.verma@intel.com>, 
- Dave Jiang <dave.jiang@intel.com>, 
- Alison Schofield <alison.schofield@intel.com>, 
- Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org, 
- linux-mm@kvack.org, linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org, 
- driver-core@lists.linux.dev, damon@lists.linux.dev, 
- linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
- cgroups@vger.kernel.org, nvdimm@lists.linux.dev, 
- linux-kselftest@vger.kernel.org
-In-Reply-To: <awMdeK8O-5mffg2m@yury>
-References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
- <awMdeK8O-5mffg2m@yury>
-Date: Sun, 22 Nov 2026 14:11:31 -0500
-Message-Id: <179537469194.412063.13456998694958645706.b4-reply@b4>
-X-Mailer: b4 0.17-dev
 
-On 2026-11-22 11:51 -0500, Yury Norov wrote:
-> On Fri, Nov 20, 2026 at 01:08:51PM -0500, Gregory Price via B4 Relay wrote:
-> > This is v6 of the Private NUMA node series. The series falls into four
-> > parts, each building on the one before:
-> > 
-> >    1-18  mm: introduce N_MEMORY_COMMON
-> 
-> I walked through this part, mostly. It looks like you can substantially
-> decrease the patch count if you keep N_MEMORY meaning unchanged, and
-> add another type, like N_MEMORY_NOALLOC.
-> 
+From: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
 
-I don't see how this would reduce the patch count substatially, you
-still need to convert existing N_MEMORY users and need to differentiate
-between general purpose memory nodes and private memory nodes.
+qcom_icc_rpmh_probe() ignores the return value of qcom_icc_bcm_init()
+and reads the initial vote of every BCM back with rpmh_read(). When the
+command DB has no entry for a BCM, qcom_icc_bcm_init() fails before
+setting the address, so the read goes to RPMh address 0. On Molokai
+(SM8845), whose command DB lacks the QPC0 BCM of the Kaanapali gem_noc,
+that read never completes and every later RPMh request times out, so the
+regulators fail to probe and the boot stalls:
 
-And N_MEMORY_NOALLOC is not a good name.
+  qnoc-kaanapali 31100000.interconnect: QPC0 could not find RPMh address
+  qcom-rpmh-regulator 18900000.rsc:regulators-2: failed to read ENABLE status ret = -110
+  Error sending AMC RPMH requests (-110)
 
--- 
-~Gregory
+Skip the read back for a BCM that failed to initialize, like before the
+read back was added, when such a BCM was simply never voted.
+
+Fixes: 11a44c6087c6 ("interconnect: qcom: implement get_bw with rpmh_read")
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
+Signed-off-by: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
+---
+Found while bringing up the Motorola Signature (Qualcomm Molokai, SM8845)
+on next-20261113: the boot stalled in the regulator probe and every RPMh
+request timed out after the first one. The Molokai command DB has no QPC0
+entry, so qcom_icc_bcm_init() fails for it, and the read back added in
+commit 11a44c6087c6 then reads RPMh address 0, which never completes.
+
+Tested on the Motorola Signature: no RPMh timeouts, the regulators and
+the interconnect providers probe, and the rest of the boot is unchanged.
+
+I used an LLM (Claude) to help write this patch and its commit message.
+I reviewed it and tested the result on the device.
+---
+Changes in v2:
+- Drop the Assisted-by trailers and the LLM notes from the commit
+  messages, the LLM use is stated in this cover letter.
+- Pick up the Reviewed-by of Neil.
+- Link to v1: https://patch.msgid.link/20261116-icc-bcm-readback-v1-1-36b533d66a69@yahoo.com
+---
+ drivers/interconnect/qcom/icc-rpmh.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index 4a2a746a4e59..1fbf4c960e1e 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -332,7 +332,9 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 		return PTR_ERR(qp->voter);
+ 
+ 	for (i = 0; i < qp->num_bcms; i++) {
+-		qcom_icc_bcm_init(qp->bcms[i], dev);
++		/* Don't read back a BCM without an RPMh address */
++		if (qcom_icc_bcm_init(qp->bcms[i], dev))
++			continue;
+ 		qcom_icc_bcm_get_bw(qp->voter, qp->bcms[i]);
+ 	}
+ 
+
+---
+base-commit: 3fd56a2833c22f62eb84297d0dbd47739632f1a0
+change-id: 20261116-icc-bcm-readback-a339f8caeb09
+
+Best regards,
+--  
+Venkat Yadlapati <venkat.yadlapati@yahoo.com>
+
 
