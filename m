@@ -1,79 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795375229;
-	b=3Il9z5HgKji6Vv1yjHkOfULRDNQNP3MCLTZ8B50xFDWBVePmYIT8JWzA1Qx5PALjoEfq
-	 8LQckbACrzPHIocKw32a5E/dJmf1ieihQEqMSnIWuoKHl4jD97UITM8ASIq/7s8i4wS4Z
-	 VimC4Wc2ASLOTkkHN4iYNXJ7v4nIVDHoFxHoyWVpksQbUXNsQ6MJIf5048ACnTAo78Y7T
-	 PgRNYu4SjAYzfdsHAryicrSAkPAJVqnE0VYd9TbrVYgNfbDY9ZB9dZVdWlC+32LQIUeyc
-	 4cBMgP/uLV0d4B2e63ZxkiN87WneLWuHr5eZPsn71cX0NiX0ImUm17NOX4nFrD9evEA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795375229;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=kj+VAGoL2xvIZkBxW6WgEhnADQuyPv28PwMBUs/3KdM=;
-	b=iX9VnC0J2SI35SkZIUA1VB1gRAWsKhtvRwpn88xxDwO4GVo4/3RKmJCXuYpypEUFu1o2
-	 oRRHUTot+z4qZIEwqT6hFSzA6OItND27Ax3ebI5jWRa2Ngu2um/F6I1U1FzKraVRDSj9H
-	 8ZEzCgv/kcBSbMFz6Je2EbxzuLtU1QD2pVWho5r0PMGx4oGsOg/8wL1hmGaaQcmg93JYh
-	 GmxyQujyHc47qc/4haaiZoIrixgr5XguWvW2CcoGMkjIA7XidIPVTiL9PY0Bmw3cLbFnW
-	 vF2AcpjnPQc7iwhLrO0mGo6VXX0ySd0W+LW7NpFCA3TDkSoJISXOvHS218lHCcfyepw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hebLZs2G;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 278C5606A333;
-	Sun, 22 Nov 2026 19:20:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hebLZs2G
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795375228;
-	b=tLLV4XmCMqEvmQacudwSFq7tiPSPWlrDECVOzJDZoqNjwt5oPZmztCrLyEXHSH/+7R6c
-	 W/gAtdDoPTcYT6xhca2FilQNxG3B1a3UQkPfrvrWtH1ZwSb33r4NSj3UjpFVo6K+cO2YZ
-	 DU5mqBnaNvROfKe4+AbcvZt2McsDt6uu/a8p2W3GRcPJ0qNFH9GmYEy63c/tmA4qFSCDh
-	 qCfHW0YpjA40rhswyi98n/gFQgOShuYv8SJGVpafJTTjQMQVqzojfXx7AFfL0nSxdF85P
-	 pzjqIKT9beymHBdZds/JokS8KCLuEy+XnQes2MAjKXvyGs088KBTpRgdtT5kOypnQrQ==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795375228;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=kj+VAGoL2xvIZkBxW6WgEhnADQuyPv28PwMBUs/3KdM=;
-	b=hziJdL751XCUXv6MlFE8orMN9ZoCQ6epVx6NHk8q+sJV930fsaAn8/IRq53J5aXICugT
-	 Wv3aWmQNVHEgQOYjcovAIbpX2qiLYPfpQ/up2OfTibvIj1pdcPWKjfYlTs46BHlXwIaPC
-	 RVx40drqodHoNYLZxPvsAZcOFjqGWY9D/KnP5vI0MINwfcff23FizxOgbuBTaI4YX7muI
-	 IzfsYqDVcYlYfaF9eNEMIbnkYVAbQKiTOKLueemkfn5nlb9tIwBd1D+f6UqA4NzL2eDdj
-	 P0xwqsULfr1IUnL8TpXQ4CGvi7p09lDVpppT1e3hu7DnvSMPYPw5cJzwjhmAY8o845A==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=194.36.144.171
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795378629;
+	b=J86cwPhlJRCtpdSfD+nsqnghl9J8Ioz/CvJ3Bspnhy9nETWwMNf+M8x/chT9wgUX2lF3
+	 Uk6XqqzsNJ7NKz/Lx8iEoeAB0Gl3obExsfIq9JbOmPGKXXrG1A9Z6E4BKVR5FiWvnDjL0
+	 3FmN7KYBbkK33zWmRoqsZFLweCi2ML7kisIjSw71Q54E9+I6v//lpEnyszXIhkXWO8GQo
+	 ZR5qEZB0DWbCJ3/6QcKjhzgxdndP5B9vjb1kPWbe3yUGS8epDI5aAwWTwbMvXKEZ3lDK7
+	 Qd3x4duUKDR/kWLfzQ5Kzo/9Vhdm0wbyLOohk3q+cg1mkTNgjwADUb/MVWcrKOiEHiA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795378629;
+	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-Last-TLS-Session-Version;
+	bh=MO97S+4fBQqNiCPsH+O1ZpkFaaKKwzktkQsIGEO0hr4=;
+	b=IbkOBqYZb90oUKnL95TjCii1pgc++9cFkHlcCSPNYnft4FdWQGxUlz9ScuohEU6zbhxw
+	 +CU+auOG8Qvqc4ebeTi65QDsV6ikIchCNEHEUH1ZLXPuLzkO1TxK1xGjNaQ4ltTs//5vh
+	 7s6c20XQm0ge1CPs4dQjuNtKSEhIVJd6ltCnMVKO3oGJdhSiFTMFn93AFaB6rIZTW3ktS
+	 SxMLyteJReMAXC06ZIFn4ucJHkNno4Pu7aBAuDd0VIkQtYCtBuTGGWxM5lN47b1L1oEVw
+	 98jVcexVSYNXgXBk4bb2E3RGnFB2FTCz0ItTsL+Cz+IoQy/lmLxax+EidnqxAB2R4fA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=yoxcu.de;
+	spf=pass smtp.mailfrom=yoxcu.de;
+	dkim=pass header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=fmsuWwfi;
+	arc=none smtp.remote-ip=194.36.144.171
+Received: from morty.yoxcu.de (morty.yoxcu.de [194.36.144.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id E41921F000D0;
-	Sun, 22 Nov 2026 19:20:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795375228;
-	bh=kj+VAGoL2xvIZkBxW6WgEhnADQuyPv28PwMBUs/3KdM=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=hebLZs2GapuH90LUlqhGGJSzJQBF4w/lGY46G3uDTdzY0S/naLLb0Rc98he2EjdU9
-	 10RNNSGljWWiFzaNT6OZSc/dvA2oFk7r1XkHG8mr7IhvDjOxdxWR3y39egwbJBgXlP
-	 pCYhDWyc2DTd6spvDHwlW80DBYiS/4OTnRc8i2+RvTi31SZhwrG9814OJr8qJfqKya
-	 ZnVH7HndfMRo5DecAbUBYgk8mJnJb3NCcZlcVdAmaUGtKetZNTUhQWQikg3rtZbeTv
-	 1DoruB2z2p78Fqn6ox3s7Gg6Y2jNIE8gyB0YFqKnohpzR8SjOEKqWNaPxrxOMSImMg
-	 q0ICOCznwvx6A==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 74FA14C1DD;
-	Sun, 22 Nov 2026 19:20:15 +0000 (UTC)
-From: Venkat Yadlapati via B4 Relay <devnull+venkat.yadlapati.yahoo.com@kernel.org>
-Date: Mon, 23 Nov 2026 00:50:16 +0530
-Subject: [PATCH v2 2/2] power: supply: qcom_battmgr: Don't limit the input
- current of chargers
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A13BC606A31A;
+	Sun, 22 Nov 2026 20:17:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A13BC606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=yoxcu.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yoxcu.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=yoxcu.de header.i=@yoxcu.de header.a=rsa-sha256 header.s=dkim header.b=fmsuWwfi
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 9C5291D86D6C;
+	Sun, 22 Nov 2026 21:17:00 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yoxcu.de; s=dkim;
+	t=1795378621; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=MO97S+4fBQqNiCPsH+O1ZpkFaaKKwzktkQsIGEO0hr4=;
+	b=fmsuWwfi/TRi7/1jG+i1LzgBalhAUMPIGrswpE0nlXWUhl+BWv8ngscAN+I+xwtUdDitQX
+	ezLV9SyeOBtKRXeTDs25PtvuEfQLnGaxTcfAWO+BGWp1DunM3RgWaEDl9fYvMrTJnmMtQH
+	Tg3hUTrq1E+2P2GyQ6q8PJLthdyhoZh86D2y2HnJ091IWJ/0jDi1+9oGDky96QJXFOdSfa
+	YpNc7G2r4d5FKrA95a/FIEn1Lfv4p3AJqP6A5AuFRHeU8VB9QPSrwyVyJY8Q9fn0+ZbkQT
+	Riucox8Gd2FhYjK5/GYq6OjD21otohvE+AHiIxKARfOrqoWbjO858/dheUqanw==
+From: Michael Auer <mick@yoxcu.de>
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] power: supply: bq27xxx: retry a failed register read once
+Date: Sun, 22 Nov 2026 21:16:46 +0100
+Message-ID: <20261122201650.1155371-1-mick@yoxcu.de>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261122120341.runjq4rjjgvob5y6@pali>
+References: <20261121204137.848173-1-mick@yoxcu.de> <20261121204137.848173-3-mick@yoxcu.de> <20261122120341.runjq4rjjgvob5y6@pali>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,71 +64,33 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261123-vantage-battmgr-v2-2-03a419078d0a@yahoo.com>
-References: <20261123-vantage-battmgr-v2-0-03a419078d0a@yahoo.com>
-In-Reply-To: <20261123-vantage-battmgr-v2-0-03a419078d0a@yahoo.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Joonhoe Kim <26rote@gmail.com>, 
- phone-devel@vger.kernel.org, Venkat Yadlapati <venkat.yadlapati@yahoo.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795375214; l=1411;
- i=venkat.yadlapati@yahoo.com; s=20261023; h=from:subject:message-id;
- bh=D6CkSLFvs+RdQcscVKpLSyfkBgPa5oeQD51e9q+TG1A=;
- b=HyjNF2dtjBqfc9Ee4iDAPpNooLR6+P9ZUCD6obL1CYuN8Y6xPxkZwKW6MrNvVfT+8Rghzj7Ha
- Vm51iVQ488OCJ5g8bYuDAqpDq5E5+Wpn2sjhfiW3HVOcsXS1wn40Hmw
-X-Developer-Key: i=venkat.yadlapati@yahoo.com; a=ed25519;
- pk=e8KStCtEMvUP1Se/riB/KVnDAQFEVR2Dw2PcuA8/eME=
-X-Endpoint-Received: by B4 Relay for venkat.yadlapati@yahoo.com/20261023
- with auth_id=1303
-X-Original-From: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
-Reply-To: venkat.yadlapati@yahoo.com
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
 
-From: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
+Hi Pali,
 
-The input current limit of the USB power supply is meant for the current
-a USB host grants, e.g. after enumeration. Like the downstream driver,
-only apply it to SDP, CDP and USB PD ports, so that a dedicated charger
-is never throttled to what a USB controller reports.
+On Sun, Nov 22, 2026 at 01:03:41PM +0100, Pali Rohár wrote:
+> So... should not be there rather a resume hook in the driver which waits
+> until the battery is ready (instead of adding retires on many places in
+> the driver)?
 
-Signed-off-by: Venkat Yadlapati <venkat.yadlapati@yahoo.com>
----
- drivers/power/supply/qcom_battmgr.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+Thanks for looking at it.
 
-diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index fde9704d0acd..db117cb64a17 100644
---- a/drivers/power/supply/qcom_battmgr.c
-+++ b/drivers/power/supply/qcom_battmgr.c
-@@ -1152,6 +1152,24 @@ static int qcom_battmgr_usb_set_icl(struct qcom_battmgr *battmgr, u32 icl)
- {
- 	int ret;
- 
-+	ret = qcom_battmgr_usb_sm8350_update(battmgr, POWER_SUPPLY_PROP_USB_TYPE);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * The limit is meant for the current a USB host grants, e.g. after
-+	 * enumeration, like the downstream driver don't let it throttle
-+	 * dedicated chargers.
-+	 */
-+	switch (battmgr->usb.usb_type) {
-+	case POWER_SUPPLY_USB_TYPE_SDP:
-+	case POWER_SUPPLY_USB_TYPE_CDP:
-+	case POWER_SUPPLY_USB_TYPE_PD:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
- 	mutex_lock(&battmgr->lock);
- 	ret = qcom_battmgr_request_property(battmgr, BATTMGR_USB_PROPERTY_SET,
- 					    USB_INPUT_CURR_LIMIT, icl);
+The read that fails is the first one after resume: the flags read of
+the update that bq27xxx_battery_resume() queues without a delay. The
+OnePlus vendor driver waits 1 s after resume before it reads the
+gauge, so a delay there would probably avoid it too.
 
--- 
-2.56.1
+What I do not know is how long the gauge needs. It failed in about 1
+of 350 resumes, and the NAK is the only sign, so I could not measure
+it. A fixed delay would be a guess, the retry does not depend on one.
+The retry is in one place, bq27xxx_read(), which all register reads go
+through.
 
+For v2 I can either delay the update queued at resume (for example by
+1 s) instead of the retry, or do both. Which do you prefer? I will
+also log on the phone when the retry fires, which should show how long
+the gauge is not ready after resume.
 
+Michael
