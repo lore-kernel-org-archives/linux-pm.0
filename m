@@ -1,82 +1,82 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.49
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.50
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795380709;
-	b=QYaBOz/43MidPuvmu73fOhxBBBySDwFRnn8zYTqUzpFEReDtNxMIXtmPW3WalD7AmtVe
-	 vGpnZI0W/aTlM3fANxhs5EXJvaVhNgHBvnxv1v68hnC3s51eNmW7e79w3c75Y86SDjs7K
-	 ZfaYfZSdutKl7OGdg429kDTIMcNY60pxErnuJluZcpfVuot3f9Nxe5VbTOyKZpLf89cXZ
-	 X5Lh0c2rmoATdyv5tT1g2yni2zeoHwo+TOALxtD9HAcX83baWCE5H7F7GZR78aV4zJUK5
-	 SWP+i9relTLTccEUtFLcb5f1A3KzSqyNM9ppEGVmby5ZlJiVTrV/JRpbpfDYFVaRRQg==
+	t=1795380710;
+	b=gQJhRv/fno/2k077WAQOuIpvvxAipr2ANuZQmNoztei2/0MqvlQvOR0PhfJc0KbZPORc
+	 ZqCvpUNbRBrrMccQOisczggzUiXMaydvMqaA8+DcqJDQTr0OvwnsB4guuaqAQHmvBw0DP
+	 BV2SjvDlSb2x0nNRK9/i7aq8VmIP6U0tuOYQhdnS3/rJPYW9uR/1MSR9UNjv0gtuYjU1m
+	 /7v4Ctf9kMIhhyXHaMT/AIpsbyfLYlKKjlNenxvN2uf+aD9zR/dwmySI75fEtSSN8/vJ9
+	 C5EGyRNoDgMikYS7rWab335riO/1/X2LwSgA02HkAo2Fxc/scYIl9g2CkDLoJxKIa7A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795380709;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795380710;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=6PicXai3zi/Jeul0tDyGLavGDqHdliZb/sSdP134yZc=;
-	b=CGDw0F+rWIOT5SMFZIt1oXxgUa8VB9YFuwHJtIKugfEAU5KuKsXx+EKE1f4YaRIfah0X
-	 U493jqGS8+BLRGcpBCd8v1eFNAq8JTEvfyEhnBjVeR4/CkTfU277kYm7ij7NuZ4b+DcJx
-	 yTDK6YtmihWoK7R/zfTMtfavZcAuzkKT1a1ZdhhgkjINQIPxAczHNMyvzzfc2tzjy26g7
-	 8SkT66N7hWxTrmANDiVNTU5HIL89+ohuBSX1Na5+ZdUOeA53yBfQjzDt0MmW5dAAIu2bT
-	 y7TIwHgZGNlP4rRP4V1xvSTFcOEgb1wlaHbqBGKboe/F/0k0mOQxpbVlhadfLoR1rEw==
+	bh=EZ2863pKGWwBwjrMKzumFwAyyrjNnDcDdwgqcYg/Bpc=;
+	b=RJ+SgMP0F7ANRoYp1o/srOL0kKitm5Eh2utFc2vgh6/d36vTYumfvf3cAFYr4Fqp9zfx
+	 03GXYXrobeUYpVGPSYvxp1q9/dyCIr/Kx6ssS/HXuRQu5AOhJ8vRxkUifjgFfyIzJT0Ns
+	 jSEfhV5wVEUktYG3F8i/9cIcPMk79iPFXrD+IHF0gOIQDkAFywH4kko7r/IgzS4STCmFT
+	 YeI9bGsZ2vnZPuJLxpE9d8Cxzj2BlPe1LAFNoLE9Hx7QoanLx2jWZqYDXMML+VopMjiuZ
+	 lfnuGMQFtDkwapWnRNjzFQn3OJrvtrZkpwv5jryqP3TYNwUcq4kbMN9SnfRoLVUY7Iw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=amarulasolutions.com;
 	spf=pass smtp.mailfrom=amarulasolutions.com;
-	dkim=pass header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=r6PFwLwa;
-	arc=none smtp.remote-ip=209.85.128.49
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+	dkim=pass header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=QGoA0ew5;
+	arc=none smtp.remote-ip=209.85.128.50
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88026606A688
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 20:51:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 88026606A688
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F5AD606A68D
+	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 20:51:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7F5AD606A68D
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=amarulasolutions.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amarulasolutions.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=r6PFwLwa
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4ac95761c85so19408835e9.2
-        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 12:51:48 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.a=rsa-sha256 header.s=google header.b=QGoA0ew5
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4bb70074ab2so25979655e9.0
+        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 12:51:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amarulasolutions.com; s=google; t=1795380707; x=1795985507; darn=vger.kernel.org;
+        d=amarulasolutions.com; s=google; t=1795380705; x=1795985505; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=6PicXai3zi/Jeul0tDyGLavGDqHdliZb/sSdP134yZc=;
-        b=r6PFwLwa8CU2UZKnHe3ngruf4IFFaQjgQouALkhBN6ZOSQcIl/kpC0MyQp3CBE/xdE
-         m9sXX/CqM5Gc4U62ebNnzU51fJuW+eLBPEO9RHGyV676LOLaJ5rfzTvL4wULG7IMcbFq
-         nS9tMgs0J+B0rW9DyF6B1cEZ2RxB2Y+URBLDQ=
+        bh=EZ2863pKGWwBwjrMKzumFwAyyrjNnDcDdwgqcYg/Bpc=;
+        b=QGoA0ew5Wwo2vF99SeEnYxRiH3BDU2sCU9RfVjpUAhKSGwCEWkp5w5znIcRCM87Jka
+         r4+rOhucsKeBvqBRxAJx6FYfY1FkSZUcTMTcZWsFPn5Opg2ANSOhlbUw71ZV/QC/HdY0
+         jKIEZMVRJVhdeywUOqhE+ldeyOpwuEG2j7Y9k=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795380707; x=1795985507;
+        d=1e100.net; s=20260707; t=1795380705; x=1795985505;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=6PicXai3zi/Jeul0tDyGLavGDqHdliZb/sSdP134yZc=;
-        b=bvVlQOouYVFqYJg4v2W/Nx1kJU+IMjp9G3ANdOtfsNlzdcP11dMHmWVAcQJXXHmP6m
-         CMBvJMP2TUp27NmD1BqL5iYosSrwnBk0zM5Nfrc2AhR4erh4zWB0Y4es4fzVhtP652oD
-         siT4NMIaxWvuDemICdx0v+pMAaiw9GZbB8dQa/i5NHwerBtxRafvXLbPMjpKElCfq1B4
-         vsowN8xYEDKmwF7vYRexWE7rYSjjXZQ0olyQktTDxxAph+P37gEzQl2k7aDb+teY0KsT
-         8y+myVgP8uBrypjkSDr6/Wq/H2qlMrlzEw8bKFtEgKXAB1+3mbf1/g7CVq5iDACDzs15
-         B3hQ==
-X-Forwarded-Encrypted: i=1; AL+hErG8nLYryM1acouEwdwbogUyq/l5Y0V7RnLTn9dtBjUZY2IcyV/fgkmJLLR+ITrGKAiTvPjZz84SlQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9b1pFw8MgZvFn7FWpo6meSgifSqqnLpk5pGMcWhBMAgjYKgh7n
-	gZ0+CFG4AQaszXK8NwwljHsMNoLjAwxu8PXUd0NKNCAjVsGK6YzOOHSPsE0W+d7aw+Q=
-X-Gm-Gg: AZFdTZcW5Pzu+VAIFbaMNYNBsPpj2/Ts9LEUbSC32ekUQ7O+CKLxKEuD9NTmlMc3vaf
-	6MnFGNecv/QoXaR16ZteVUVGlcyjJVBV+47L7S+5dLzPZzRD9D3PaL4iZ1eVL/5Lc2KECCUFL/S
-	6uVp/J8SJcSSI8smGuSUWxf3Pc1N4ybm84zswkY1s/xW6gny1THadUd828NoAi5ViEyTTvnTz4Y
-	aN8YMoOGyVnccpKphxWqeGlSEC6koNqFnCgZNjiZJ02UeipcyQ19Z5WJdbdd0jY8f8JUJzLbHnb
-	v2XznlXiGqP1eJutWHXdrr3Hj7c1GqmYn+i0sqjh6N0LVM2f3Al32NrCHU/zg9iXyl6uHgiq0Ph
-	uFUiccCRaws9fGEwnSpcQO0b4+8mAPHI1v9JulXhG5LwoF8ZP7jWGZ3XVcA9WFDQ3jGPeziWN5/
-	wL7Nmya5xjnj/6ZtvqDTOjIooySAzUFXckmKLhKOMFdAfJptOt0jXuJInVwjV8gHQr9UAbO9Aca
-	9q9eoWb4IEE39S1cmRlTy2lTjBXuvEr2yebtG6KGOfwUUnqui7UBsVyN8AHnvaXGVICAOXzR6ts
-	1UocNbDDcewge8L0xZrFqczEkxwA+NCmLonYhahuuo9c7oL1LH73dNfFOjTGFRN+4l2+rN16qQ6
-	GfRShitJ+SFesehQC94W8f1zsEBpx/b8j2cWBPq+GLPOP9nQkvL1SzzwH3zWvycJfMpQS9BmHU4
-	fh6OR3f15cYC9w/3QYN5JEBlBkFQ==
-X-Received: by 2002:a05:600c:8b11:b0:4a1:dda8:eb73 with SMTP id 5b1f17b1804b1-4bb8881c630mr212608835e9.27.1795380706996;
-        Sun, 22 Nov 2026 12:51:46 -0800 (PST)
+        bh=EZ2863pKGWwBwjrMKzumFwAyyrjNnDcDdwgqcYg/Bpc=;
+        b=nLvLBUknZ8sRs01J49b/w96u7kxRJnJt/JJpIQJZUQQLTdhQcMhw9RnJhUAM7y3ILp
+         lnjb3o6uuGKbcNIT7F7fbVjhNM6+LsE25MgaQ51ph8VrST8NQXWsybu8GMYtuXeBNzTs
+         kolwUK9kPzliWOXtn/0I67gD4XLzBIl5V5XIH9qShIIJh4TTQdfyd+/sXeapk9EipiKf
+         iih96gyVjZTJ/lZgAcuOvYOpSLbp66w3MFD/jo30q2yBhqo1YUQhgSxKfb0oa6DGp197
+         hNHNvMqCiUxLOwOVolAvxB1ylxkXEqIvw+iHNUt7OY8jBAgiMA3GdaWlOkuFbHyWLwOx
+         X/+Q==
+X-Forwarded-Encrypted: i=1; AL+hErHahw84Dc9LIgHCe0yRnWmRVv0T3hpQspd2rypT/x8BAmNwvamR9POdswTvt/cyrIRLjWTcW7PBmQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9+4My0m6K6tFwY69J9RcoW+FQp0YleJYkgq+oyZrpzu4FKrswl
+	nqMzyezDkSrLKhbM52eDb14assNe0gEZjVU/ByE2daGCxUVFPtRro7xJ1ry/bG33LEo=
+X-Gm-Gg: AZFdTZfJCfSqXhQLTMMD/36nvSsADz0RsMkTuznwbVcvBMiKTbFf+dVb/bsYdrvSBA3
+	rg6BCBcf51/8zKvAiLd6FMP3DTM0NF/kZxfSYk1SzCgysvLFiDMhtC58XKROUme1Qp9V2yt2+Kz
+	1GD+Uhx5RNpB/dKHnK9V33f3TNPPgS2Z6ZH0Otq3zNR1nFiUqPamq1ZxnW0d7Y3Rfs1i7iAR80d
+	VjyoDRkg5EBUfVZxIHBovMNmhv6TSkIycGeKBRPV3RoZJQ/ir1ZXaMw1J+uXoRQUSassdNJ+Ahl
+	EQAvHn50phu4S/l4e6R5wVcyuJ6iEWiO6TCxACTsbPF+z1ppao91vijdfzf090ypV6gttkPxbhG
+	MK3JPywcB5zJL0ijy79RR2DkvPTUwubQodd1oodZtxQeTLBZ9p+ctK3kE2Ol4C231hK4vQfmS+F
+	5oFAjdxMsdQFSwbKIRmJ9EdR7r88T9PEDe0IWLDD/18yklo24aJha8dzy/br25Jk3IS2HyhJzHV
+	QC/RU29hT3psT9vL1e5xipIqMJUjKpYj/afpgDSJXIWMN8nrQsfFCDejIzLk+C8thEt3hH3Pi+a
+	7Z+ZUM1icHbnPDI85scxlrjOr2lt+o/Shu5k8XsLzxIjFGVufL7TaXnV2cJS3w7LTVgbnmfQz2d
+	uA9c/W6Y0c7iL3X46mFjgoBhLEAnf8wIROyoeCsg7DX9a7epvkQKBb/jK7/8qxyWncRKac0Y11A
+	QuUfVrWNPg2q8VOdMLwOxMdCMLkQ==
+X-Received: by 2002:a05:600c:800e:b0:4bb:7757:fe58 with SMTP id 5b1f17b1804b1-4bb8881b9d7mr201262775e9.19.1795380704844;
+        Sun, 22 Nov 2026 12:51:44 -0800 (PST)
 Received: from dario-ThinkPad-P14s-Gen-5.homenet.telecomitalia.it (host-79-14-29-58.business.telecomitalia.it. [79.14.29.58])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb884b7515sm397355305e9.13.2026.11.22.12.51.45
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb884b7515sm397355305e9.13.2026.11.22.12.51.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Nov 2026 12:51:46 -0800 (PST)
+        Sun, 22 Nov 2026 12:51:44 -0800 (PST)
 From: Dario Binacchi <dario.binacchi@amarulasolutions.com>
 To: Ulf Hansson <ulfh@kernel.org>
 Cc: Lucas Stach <l.stach@pengutronix.de>,
@@ -86,18 +86,17 @@ Cc: Lucas Stach <l.stach@pengutronix.de>,
 	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
 	Fabio Estevam <festevam@gmail.com>,
 	Frank Li <Frank.Li@nxp.com>,
-	Kees Cook <kees+treewide@kernel.org>,
-	Ming Qian <ming.qian@oss.nxp.com>,
+	Jacky Bai <ping.bai@nxp.com>,
 	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
 	Sascha Hauer <s.hauer@pengutronix.de>,
-	Xu Yang <xu.yang_2@nxp.com>,
 	bui duc phuc <phucduc.bui@gmail.com>,
 	imx@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v4 3/4] pmdomain: imx8m-blk-ctrl: Keep the domains left on by the bootloader
-Date: Sun, 22 Nov 2026 21:51:12 +0100
-Message-ID: <20261122205136.138173-4-dario.binacchi@amarulasolutions.com>
+Subject: [PATCH v4 2/4] pmdomain: imx: gpcv2: Keep the domains left on by the bootloader
+Date: Sun, 22 Nov 2026 21:51:11 +0100
+Message-ID: <20261122205136.138173-3-dario.binacchi@amarulasolutions.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261122205136.138173-1-dario.binacchi@amarulasolutions.com>
 References: <20261122205136.138173-1-dario.binacchi@amarulasolutions.com>
@@ -112,16 +111,15 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The blk-ctrl domains are all registered as off, so a domain left on by
-the bootloader is powered up again by its first consumer. On the
-i.MX8MN this resets the display pipeline set up by U-Boot to show a
-splash screen.
+The PGC domains are all registered as off, so a domain left on by the
+bootloader, e.g. DISPMIX to show a splash screen, is powered up again
+by its first consumer. On the i.MX8MN this turns the display off and
+hangs the system.
 
-Read the state of the domains from the blk-ctrl registers and register
-as on the ones left on by the bootloader.
-
-Enable this only for the i.MX8MN DISP blk-ctrl, as on other blk-ctrls
-(e.g. the i.MX8MP VPUMIX) the registers do not reset to 0.
+The GPC does not report the power state of a domain, but the ADB400
+bridge acknowledges the power-up handshake only while the domain is
+powered. Use it to register as on the domains left on by the
+bootloader.
 
 Co-developed-by: Michael Trimarchi <michael@amarulasolutions.com>
 Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
@@ -129,246 +127,153 @@ Signed-off-by: Dario Binacchi <dario.binacchi@amarulasolutions.com>
 
 ---
 
-Changes in v4:
-- Register the power notifier before powering up the bus domain
+(no changes since v3)
 
 Changes in v3:
-- Keep the bus domain on while the state of the domains is read
-- Remove the domains before releasing their boot-on references
+- Drop the runtime PM reference synchronously in the probe error path
 
 Changes in v2:
-- Take the references once the probe can no longer be deferred
-- Clear the boot-on state when the domain is powered off
-- Release the references when the driver is removed
+- Release the resources of the domains left on when the driver is
+  removed
 
- drivers/pmdomain/imx/imx8m-blk-ctrl.c | 128 +++++++++++++++++++++++---
- 1 file changed, 117 insertions(+), 11 deletions(-)
+ drivers/pmdomain/imx/gpcv2.c | 77 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 75 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-index 7d6735728d8c..04383d7e40cb 100644
---- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-+++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-@@ -83,10 +83,13 @@ struct imx8m_blk_ctrl_domain {
- 	struct device *power_dev;
- 	struct imx8m_blk_ctrl *bc;
- 	int num_paths;
+diff --git a/drivers/pmdomain/imx/gpcv2.c b/drivers/pmdomain/imx/gpcv2.c
+index 6a54ee734514..f8f2d38c1b2a 100644
+--- a/drivers/pmdomain/imx/gpcv2.c
++++ b/drivers/pmdomain/imx/gpcv2.c
+@@ -292,6 +292,7 @@ struct imx_pgc_domain {
+ 
+ 	const int voltage;
+ 	const bool keep_clocks;
 +	bool boot_on;	/* Left on by the bootloader */
+ 	struct device *dev;
+ 
+ 	unsigned int pgc_sw_pup_reg;
+@@ -488,6 +489,8 @@ static int imx_pgc_power_down(struct generic_pm_domain *genpd)
+ 
+ 	pm_runtime_put_sync_suspend(domain->dev);
+ 
++	domain->boot_on = false;
++
+ 	return 0;
+ 
+ out_clk_disable:
+@@ -1315,9 +1318,27 @@ static const struct imx_pgc_domain_data imx8mn_pgc_domain_data = {
+ 	.pgc_regs = &imx7_pgc_regs,
  };
  
- struct imx8m_blk_ctrl_data {
- 	int max_reg;
-+	/* SFT_RSTN and CLK_EN reset to 0, so a domain left on can be detected */
-+	bool boot_state_readable;
- 	notifier_fn_t power_notifier_fn;
- 	const struct imx8m_blk_ctrl_domain_data *domains;
- 	int num_domains;
-@@ -187,18 +190,87 @@ static int imx8m_blk_ctrl_power_off(struct generic_pm_domain *genpd)
- 	/* allow bus domain to suspend */
- 	pm_runtime_put(bc->bus_power_dev);
- 
-+	domain->boot_on = false;
-+
- 	return 0;
- }
- 
- static struct lock_class_key blk_ctrl_genpd_lock_class;
- 
 +/*
-+ * A domain left on by the bootloader has its resets deasserted and its
-+ * clocks enabled. The registers can only be read if the bus domain is
-+ * on, so a domain is considered off whenever the bus domain is off.
++ * The GPC does not report the power state of a domain, but the ADB400
++ * acknowledges the power-up handshake only while the domain is powered.
 + */
-+static bool imx8m_blk_ctrl_is_off(struct imx8m_blk_ctrl *bc,
-+				  const struct imx8m_blk_ctrl_data *bc_data,
-+				  const struct imx8m_blk_ctrl_domain_data *data)
++static bool imx_pgc_domain_is_on(struct imx_pgc_domain *domain)
 +{
-+	u32 rst, clk, mipi = 0;
++	u32 val;
 +
-+	if (!bc_data->boot_state_readable)
-+		return true;
++	if (!domain->bits.hskack)
++		return false;
 +
-+	if (regmap_read(bc->regmap, BLK_SFT_RSTN, &rst) ||
-+	    regmap_read(bc->regmap, BLK_CLK_EN, &clk))
-+		return true;
++	if (regmap_read(domain->regmap, domain->regs->hsk, &val))
++		return false;
 +
-+	if (data->mipi_phy_rst_mask &&
-+	    regmap_read(bc->regmap, BLK_MIPI_RESET_DIV, &mipi))
-+		return true;
-+
-+	return (rst & data->rst_mask) != data->rst_mask ||
-+	       (clk & data->clk_mask) != data->clk_mask ||
-+	       (mipi & data->mipi_phy_rst_mask) != data->mipi_phy_rst_mask;
++	return (val & domain->bits.hskack) == domain->bits.hskack;
 +}
 +
-+/* Take the references of imx8m_blk_ctrl_power_on() for a domain left on */
-+static int imx8m_blk_ctrl_get_boot_on(struct imx8m_blk_ctrl_domain *domain)
-+{
-+	struct imx8m_blk_ctrl *bc = domain->bc;
-+	int ret;
-+
-+	ret = pm_runtime_resume_and_get(bc->bus_power_dev);
-+	if (ret < 0) {
-+		dev_err(bc->dev, "failed to power up bus domain\n");
-+		return ret;
-+	}
-+
-+	ret = pm_runtime_resume_and_get(domain->power_dev);
-+	if (ret < 0) {
-+		dev_err(bc->dev, "failed to power up peripheral domain\n");
-+		pm_runtime_put(bc->bus_power_dev);
-+		return ret;
-+	}
-+
-+	if (icc_bulk_set_bw(domain->num_paths, domain->paths))
-+		dev_err(bc->dev, "failed to set icc bw\n");
-+
-+	domain->boot_on = true;
-+
-+	return 0;
-+}
-+
-+static void imx8m_blk_ctrl_put_boot_on(struct imx8m_blk_ctrl_domain *domain)
-+{
-+	if (!domain->boot_on)
-+		return;
-+
-+	/* Sync, to power down the bus domain before its notifier is removed */
-+	pm_runtime_put_sync(domain->power_dev);
-+	pm_runtime_put_sync(domain->bc->bus_power_dev);
-+	domain->boot_on = false;
-+}
-+
- static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
+ static int imx_pgc_domain_probe(struct platform_device *pdev)
  {
- 	const struct imx8m_blk_ctrl_data *bc_data;
- 	struct device *dev = &pdev->dev;
- 	struct imx8m_blk_ctrl *bc;
- 	void __iomem *base;
-+	unsigned long boot_on = 0, bit;
- 	int i, ret;
+ 	struct imx_pgc_domain *domain = pdev->dev.platform_data;
 +	bool init_off;
+ 	int ret;
  
- 	struct regmap_config regmap_config = {
- 		.reg_bits	= 32,
-@@ -250,6 +322,23 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
- 					     "failed to attach power domain \"bus\"\n");
- 	}
+ 	domain->dev = &pdev->dev;
+@@ -1348,12 +1369,44 @@ static int imx_pgc_domain_probe(struct platform_device *pdev)
+ 		regmap_update_bits(domain->regmap, domain->regs->map,
+ 				   domain->bits.map, domain->bits.map);
  
-+	bc->power_nb.notifier_call = bc_data->power_notifier_fn;
-+	ret = dev_pm_genpd_add_notifier(bc->bus_power_dev, &bc->power_nb);
-+	if (ret) {
-+		dev_err_probe(dev, ret, "failed to add power notifier\n");
-+		goto cleanup_bus;
-+	}
-+
-+	if (bc_data->boot_state_readable) {
-+		/* Keep the bus domain on while the state is read */
-+		ret = pm_runtime_resume_and_get(bc->bus_power_dev);
-+		if (ret < 0) {
-+			dev_err_probe(dev, ret,
-+				      "failed to power up bus domain\n");
-+			goto cleanup_notifier;
-+		}
-+	}
-+
- 	for (i = 0; i < bc_data->num_domains; i++) {
- 		const struct imx8m_blk_ctrl_domain_data *data = &bc_data->domains[i];
- 		struct imx8m_blk_ctrl_domain *domain = &bc->domains[i];
-@@ -303,7 +392,8 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
- 		domain->genpd.power_off = imx8m_blk_ctrl_power_off;
- 		domain->bc = bc;
- 
--		ret = pm_genpd_init(&domain->genpd, NULL, true);
-+		init_off = imx8m_blk_ctrl_is_off(bc, bc_data, data);
-+		ret = pm_genpd_init(&domain->genpd, NULL, init_off);
- 		if (ret) {
- 			dev_err_probe(dev, ret,
- 				      "failed to init power domain \"%s\"\n",
-@@ -312,6 +402,9 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
- 			goto cleanup_pds;
- 		}
- 
-+		if (!init_off)
-+			boot_on |= BIT(i);
-+
- 		/*
- 		 * We use runtime PM to trigger power on/off of the upstream GPC
- 		 * domain, as a strict hierarchical parent/child power domain
-@@ -328,37 +421,48 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
- 		bc->onecell_data.domains[i] = &domain->genpd;
- 	}
- 
-+	/*
-+	 * The probe can no longer be deferred. Releasing these references
-+	 * would power down the domains left on by the bootloader.
-+	 */
-+	for_each_set_bit(bit, &boot_on, bc_data->num_domains) {
-+		ret = imx8m_blk_ctrl_get_boot_on(&bc->domains[bit]);
-+		if (ret)
-+			goto cleanup_pds;
-+	}
-+
- 	ret = of_genpd_add_provider_onecell(dev->of_node, &bc->onecell_data);
+-	ret = pm_genpd_init(&domain->genpd, NULL, true);
++	init_off = !imx_pgc_domain_is_on(domain);
++	ret = pm_genpd_init(&domain->genpd, NULL, init_off);
  	if (ret) {
- 		dev_err_probe(dev, ret, "failed to add power domain provider\n");
- 		goto cleanup_pds;
+ 		dev_err_probe(domain->dev, ret, "Failed to init power domain\n");
+ 		goto out_domain_unmap;
  	}
  
--	bc->power_nb.notifier_call = bc_data->power_notifier_fn;
--	ret = dev_pm_genpd_add_notifier(bc->bus_power_dev, &bc->power_nb);
--	if (ret) {
--		dev_err_probe(dev, ret, "failed to add power notifier\n");
--		goto cleanup_provider;
--	}
--
- 	dev_set_drvdata(dev, bc);
- 
- 	ret = devm_of_platform_populate(dev);
- 	if (ret)
--		goto cleanup_notifier;
-+		goto cleanup_provider;
++	/* Balance the first imx_pgc_power_down() */
++	if (!init_off) {
++		ret = pm_runtime_resume_and_get(domain->dev);
++		if (ret < 0) {
++			dev_err_probe(domain->dev, ret,
++				      "Failed to resume domain\n");
++			goto out_genpd_remove;
++		}
 +
-+	if (bc_data->boot_state_readable)
-+		pm_runtime_put(bc->bus_power_dev);
++		if (!IS_ERR(domain->regulator)) {
++			ret = regulator_enable(domain->regulator);
++			if (ret) {
++				dev_err_probe(domain->dev, ret,
++					      "Failed to enable domain's regulator\n");
++				goto out_put_pm;
++			}
++		}
++
++		if (domain->keep_clocks) {
++			ret = clk_bulk_prepare_enable(domain->num_clks,
++						      domain->clks);
++			if (ret) {
++				dev_err_probe(domain->dev, ret,
++					      "Failed to enable domain's clocks\n");
++				goto out_regulator_disable;
++			}
++		}
++
++		domain->boot_on = true;
++	}
++
+ 	if (IS_ENABLED(CONFIG_LOCKDEP) &&
+ 	    of_property_present(domain->dev->of_node, "power-domains"))
+ 		lockdep_set_subclass(&domain->genpd.mlock, 1);
+@@ -1362,11 +1415,20 @@ static int imx_pgc_domain_probe(struct platform_device *pdev)
+ 					   &domain->genpd);
+ 	if (ret) {
+ 		dev_err_probe(domain->dev, ret, "Failed to add genpd provider\n");
+-		goto out_genpd_remove;
++		goto out_clk_disable;
+ 	}
  
  	return 0;
  
--cleanup_notifier:
--	dev_pm_genpd_remove_notifier(bc->bus_power_dev);
- cleanup_provider:
- 	of_genpd_del_provider(dev->of_node);
- cleanup_pds:
- 	for (i--; i >= 0; i--) {
- 		pm_genpd_remove(&bc->domains[i].genpd);
-+		imx8m_blk_ctrl_put_boot_on(&bc->domains[i]);
- 		dev_pm_domain_detach(bc->domains[i].power_dev, true);
- 	}
++out_clk_disable:
++	if (!init_off && domain->keep_clocks)
++		clk_bulk_disable_unprepare(domain->num_clks, domain->clks);
++out_regulator_disable:
++	if (!init_off && !IS_ERR(domain->regulator))
++		regulator_disable(domain->regulator);
++out_put_pm:
++	if (!init_off)
++		pm_runtime_put_sync(domain->dev);
+ out_genpd_remove:
+ 	pm_genpd_remove(&domain->genpd);
+ out_domain_unmap:
+@@ -1385,6 +1447,17 @@ static void imx_pgc_domain_remove(struct platform_device *pdev)
+ 	of_genpd_del_provider(domain->dev->of_node);
+ 	pm_genpd_remove(&domain->genpd);
  
-+	if (bc_data->boot_state_readable)
-+		pm_runtime_put_sync(bc->bus_power_dev);
++	if (domain->boot_on) {
++		if (domain->keep_clocks)
++			clk_bulk_disable_unprepare(domain->num_clks,
++						   domain->clks);
 +
-+cleanup_notifier:
-+	dev_pm_genpd_remove_notifier(bc->bus_power_dev);
-+cleanup_bus:
- 	dev_pm_domain_detach(bc->bus_power_dev, true);
- 
- 	return ret;
-@@ -375,6 +479,7 @@ static void imx8m_blk_ctrl_remove(struct platform_device *pdev)
- 		struct imx8m_blk_ctrl_domain *domain = &bc->domains[i];
- 
- 		pm_genpd_remove(&domain->genpd);
-+		imx8m_blk_ctrl_put_boot_on(domain);
- 		dev_pm_domain_detach(domain->power_dev, true);
- 	}
- 
-@@ -709,6 +814,7 @@ static const struct imx8m_blk_ctrl_domain_data imx8mn_disp_blk_ctl_domain_data[]
- 
- static const struct imx8m_blk_ctrl_data imx8mn_disp_blk_ctl_dev_data = {
- 	.max_reg = 0x84,
-+	.boot_state_readable = true,
- 	.power_notifier_fn = imx8mn_disp_power_notifier,
- 	.domains = imx8mn_disp_blk_ctl_domain_data,
- 	.num_domains = ARRAY_SIZE(imx8mn_disp_blk_ctl_domain_data),
++		if (!IS_ERR(domain->regulator))
++			regulator_disable(domain->regulator);
++
++		pm_runtime_put_sync(domain->dev);
++	}
++
+ 	if (domain->bits.map)
+ 		regmap_update_bits(domain->regmap, domain->regs->map,
+ 				   domain->bits.map, 0);
 -- 
 2.43.0
 
