@@ -1,125 +1,156 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.154
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795358899;
-	b=QvlTJnN56yVXEwpKbZ+8/YTEfM0Wrmhhx10aDipUHUUnGtOki//bxYWg1nL+Xu3Ivrfg
-	 3ISsvvcdLfOYgJl8NoHAHY+0C8a3MGrHr4HN4EFzjCrMj6hSRL4G19JGRbAcDOxLyHRxa
-	 LEjXohs3FAvShyCfZ5qzAnyKNWR/v4kdkTCewzDCJ2l3vpHZjH/za9in8WBMT8PDtdPdS
-	 MWU+dljqNVZj7HbvkJGvLkF1CWA5wQDhG8fDiDEi4sjwYmidaUaTlkQ7SHnzJPgc1QITc
-	 MD9U1/0V9zYBoJMm2iRfhkWVxDxboPD0WaePgOTyUSQPaqW+NtQYRTEYFc1erV022lw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795358899;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
-	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
-	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
-	 Received:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
-	 In-Reply-To;
-	bh=elhC4BD4VJVXrJtY4vBFvagVyoS1Tt0PnGzh1I+gXQw=;
-	b=HvLLgfna1gD18ixqX+9di6GXdeOtP2lr9qL0L0DyLu3yrylQFIXQNQ/ikCBNJBiIN2wX
-	 j2y3IJBlVvdVBrAke6nrpisMDUXl6nKyYxB3a3MhJPoMPilihxsuH8g8vLzOgNwIKGtK1
-	 YZnwh0hTB+9CGeaR09SM8CZ7ilamH4Wqt8EeDQopNJe/EEBJAmc2zkhZMtJeElegIA9NB
-	 8eF4DA1Ex+CuEvagmVBDF/YI3+9jM+8TYD0uB1x58+/tQcNxpCcrlK6n1QWREZFwgNimp
-	 /ZQCZolmdyE/VJFKeH74j7HN0olufc4i6c5Smw07NIvfWYYCQDEW2yrMN3FldaXCD0A==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ragnatech.se;
-	spf=pass smtp.mailfrom=ragnatech.se;
-	dkim=pass header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=HqfMUQft;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=cxCU9JlE;
-	arc=none smtp.remote-ip=202.12.124.154
-Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.48.11
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795361541;
+	b=y6RzJUFhrsV9/0f752v5tyckupzuu8OltnWpmDVSwGsn87+P7uuHEeQdQ05Dn+UWqtrq
+	 PGvmZg4xq/MMWgVGbAYsyjdq8cEtFw2dBavOsA3MORhjz7Im589FaFRccnPdJ3ixwnXGd
+	 wTyTymqjBxQQNztZGiNKg3qoPDNxo0eXYY/nTDK4GKQmV4H/dvK9fvQ277WlqFkuUQzns
+	 YWGCj24Mw8PutQ58+TosKaKLnfQIp83Gj+pfTPEp6HKA7CmuaL3XprOA2QT36xBJtrzT0
+	 jbBweC0YILqt5vY9ctk//G7C+VmHSlLj8pykiBd8FI1KqgL1zARkJwXIXrudi+A3hHQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795361541;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:Content-Type:Content-Disposition:
+	 In-Reply-To:X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=WhMslJCGDuB5xV6P/V/CS6QxivMchvG1o2S2D3SeU7Y=;
+	b=g5rTTZD/UMz/eBGAgwTs+qSLcv9lhLGejKj9tjczgku48ZPM21AB5+RV2yLSy5Ykil5Q
+	 VR95AtgVYsOS9RNtC8i9KCgA5raXoaDe2wY9Bpdb8Ouh1J7RyKAI5gNopcVJJRTjD451Y
+	 2LefiCzHQgWnUABl/SfvCilkw2SBYtDRJcKCO+jeiE0o0Ej3kiX3apNA2I8d8QQoLS/Gu
+	 wEl/E1g/U0cyDVt8MazT39a1hNcDu/UQlApa4QPghttQf3d/WaxRjFG2IK/9bnKVTlBaj
+	 75/G5zkzYIXDkNILHaoAPcM22G+6aRZpqPdL+Icqhu+GOjPBUuUFxbZ7O2JnHlIpfEQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=nvidia.com;
+	spf=fail smtp.mailfrom=nvidia.com;
+	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=cr8yLoOX;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.48.11
+Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012011.outbound.protection.outlook.com [52.101.48.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79E1D606A320
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 14:48:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 79E1D606A320
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE8B8606A32C;
+	Sun, 22 Nov 2026 15:32:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CE8B8606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=HqfMUQft;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=cxCU9JlE
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 022657A04EB
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 09:48:17 -0500 (EST)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Sun, 22 Nov 2026 09:48:18 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
-	cc:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1795358896;
-	 x=1795445296; bh=elhC4BD4VJVXrJtY4vBFvagVyoS1Tt0PnGzh1I+gXQw=; b=
-	HqfMUQftQNO3V7Br4Hc9d0QGlCyszIK2XrdSPzdu50jzypwaJcw833zj9nBBa6/N
-	1X5Hb//sTYoHtd2avUNf6g7KhS+sUOONrRV3nKu0tOpwv3vkdLWJwrdqhua0r/yr
-	keKWIvhCjEslhPIu257/hLQQh7p4czbaTM3CSecGaLIhvKItFSDXcjwxJN/Th8hT
-	+xnJsLcDB2YBQhjcRhWFXj1qOzrXRbfYARBMWJCaRLYGy+yF/iUPcEcPOnbmtHw9
-	gsLfAVtM9PrBkcPf6A6Wvb4NC6js6qaMZ2rLQhATe83tSEeh67MTzQ6X1Y7EYEMk
-	ukpvjHoJ1+O1sBQ7k5pEUg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795358896; x=
-	1795445296; bh=elhC4BD4VJVXrJtY4vBFvagVyoS1Tt0PnGzh1I+gXQw=; b=c
-	xCU9JlEeemBWFgwN+Wo1uyv+EKPA0a60X1d108RZy/D0QDZGV2goFcKUgTOO4fw0
-	fL4fzshJTLN/U8Yf2nn0+yZ7+J9lPqVNYnD8NFOaySW/QO/Re6FFxkG34wjnHGRn
-	ASWSKVIT1Fhu7R6a+yBWSLiG8GZ8ER7zGaAop36Fo/mcaY75RFi8ywKXEuD1amxs
-	htaDhc96oKtLWHYsshSxei3SHCozaS41c9bqlQu0dzpNuGsiDBzQW7QuZViksUgM
-	ylc6JDzCBknQGh8Q4+AioeVBL28BL5YyR+e7ZCHLF4NZvz+/0pXk24vVPsId3ba6
-	jzbCGIlZEijHAbWtNtEEA==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=ragnatech.se a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1795358896; d=ragnatech.se;
-	mf=PG5pa2xhcy5zb2Rlcmx1bmRAcmFnbmF0ZWNoLnNlPg==;
-	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm2:rsa-sha256:wps6fZH2/NGsuGoae+Fbbs9pS0BeuiicjrELgIoM161VjOo
-	ei2hKolqbHWtIRrBfpbGiQtGiH88Ppf8m4Y/ljH7tpihhmwLu2FsqqTwXa49CU86
-	oJhwitkFLVCiY6GNwjbrvh1+TtxSzvQUuomYkZM9QAy6CooIp1otTFgJsiDqWbYq
-	PpPNM5Vpjhr1InZUi4nwZs16yOKDBpbRfYWOGvMEXOa8cu2B2y66HvD2s+Jmhe/9
-	HBPd2F2CohSankwXK/0D/TtWWKDw0nbWYYpcsMhJzjsQySgRuo3V4xbcNgp4KAIz
-	Ud7IWVRjWLC8WhliKhQjHknYZA7eWFSWiZxBu5w==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=13;
-	hn=cc,content-disposition,content-transfer-encoding,
-	content-type,date,feedback-id,from,in-reply-to,message-id,
-	mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:njO+b+bNHzN3aVkdZMXlSVy8yFjO3TnlJmTubb1SwA8=:6MvAiBFSHzwlHJFqIne6aa2kM+8PWa+RIYI+IVX6ot0=;
-X-ME-Sender: <xms:sAADa79ruGR_UV60VoggsqJo8-KFyPGtKocmoKAqQitEkEfRg5dOoQ>
-    <xme:sAADa9vxaWK--OAjjsnzPkMyl8B26iXXkkdoJHmAQi0pAwhgOP-3VPnH3Iz57FRzZ
-    -ZB71cmCf-PEreM9uAHTw1hXqLKu5h77_SnWCzqkiTftrcLLWWz1fU>
-X-ME-Received: <xmr:sAADaz0lC4qbSjraRT417gB6yT5vXL5Svs4Gayn0oSXrUaOvDiRM_dYMeXk0Mn76Mo2hJG_0Sfs2aUlTA9-6CuzS5NY5z0E>
-X-ME-Proxy-Cause: dmFkZTEd8/RsCIwclJRL1GctxBABK7tF36FDt142j2jKX10XhBtkUztzsr6BWd3tsDhWdR
-    VUwE6EhLhtf1ZR4lyCdopIhBDmX9y+ylq049atSeUqjZiNRjgt8HuLQCbyw9p86SoAxmJA
-    Z8YfjqLd/9sR8KPntt8mj9LLuNgNhG8zMZ7sbGrxyri40TZoXzYkGx3tJJydzqGfofUagj
-    QP58uA+N33dui5OTnfzZiJkPGyzapKnTV69BfPWHAebXUfRWuZG4yEkLQBI2lIDTQ4w2kY
-    1uCDx5tU5ep4R9WyUZYWzbPP8+vQQMTHBPWUpmCMfyYC3nJJwxaOM4GP3oKYqGY4PuYsWC
-    6LlVTzOOopbkJVvO6gKLUkPO0vWqNvALRqnrFlhAHiNSuSQp48DX5UZZiHRWEQ3x/Z6B2D
-    5DbmVF9+xlocFC6DvMAltqMAiCHAZFNnaHxBpudhbqRMVi33x1VJiQ7gKGrOfBF7LB+9TX
-    7NWbojEPi4ZUYqmcuXQ4ydeoStq/S8bz6yZGBz30HyH2bK4CGG6kvYgnarRTIlmtuyoYz6
-    kGBZ1WnVtSHY4pAroKhd3kMC6081NPBm+dIuv5Xb1Lunt9q/DkqxXZZMZ4dsTVPTuuWSiM
-    lFAIoGi8wTp74rfTuRUyAlvDwDxXf5Q1rngZjrpCNipFGgn0+Z6PnDm5gQNQ
-X-ME-Proxy: <xmx:sAADa6S54cZMGJOxO-dDb3tEI30b-zCvzDDmMxcGhRpRb2duOj-p8A>
-    <xmx:sAADa_ckkF_ZHxF7u7GSi7GTQw1KvC4PtSnf_J-EQlV_jQkGwUqGVw>
-    <xmx:sAADazctwtlpeeGZF3AUmPwiMxx0hEsIoQmeRSVHuXf5TpbFDlnGzA>
-    <xmx:sAADax3uToR5UDNFIThNH9ScTbk-QQfWBoukr-A52VIT7kCdxClm-Q>
-    <xmx:sAADa29Yk76egb2s8xhaBKHeJiXUYfeobuxdn4O3V28uCue04y7uto5p>
-Feedback-ID: i80c9496c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 22 Nov 2026 09:48:15 -0500 (EST)
-Date: Sun, 22 Nov 2026 15:48:13 +0100
-From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-To: Yaohan Li <shunsheng1218@gmail.com>
-Cc: rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com,
-	lukasz.luba@arm.com, geert+renesas@glider.be, magnus.damm@gmail.com,
-	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] thermal: rcar_gen3: release the IRQ handlers before
- the zones are freed
-Message-ID: <20261122144813.GB3898744@ragnatech.se>
-References: <20261117145348.1092528-1-shunsheng1218@gmail.com>
- <20261119022926.1493582-1-shunsheng1218@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=cr8yLoOX
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=EHDbKitQys4tuIJDtOY5hUPO4Aj3x5WFLIkuQAlApmE2Q4b3YqB9ZH0lsXrMWpNWZv4NiqHhOCcsrGr1WeDorLAYdBe1EzhEuzo2hwf3RVevCgsz1wlZEVWlQABbgcVrtJ8r1wQqeHnlPLJd2OdiWxyCZjL9Go+lUtuOSoVTC0G5YC0SI4AJiCrgdjAPFdMQHWKwcwbNF9OnQ5yHFjl2oO8pdHHQMvJl7Ia5UdOGppFcn48kN6aHfWbXqupCUbc1C7Fv8api71Og+633PRFwVKA1tguNsATBHjC3/Jq9NMFwtyQX7ElH6E9N1POgmukkKV0hqNphXQmGmk0auArSCA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=WhMslJCGDuB5xV6P/V/CS6QxivMchvG1o2S2D3SeU7Y=;
+ b=G5n5JBi3HZk5TpGj4hj4HR3PdWpu1EqeSUnhBqlDdM8kTUi8QzX+4jKpS5z3HihfW7cgxr9rTFIcU/mtuF7qo8JX4b5ixE3Y796dIzL/qDhx3kXMeZHAltsyrGLj4c/1zvnrE2YhlSjtq9bDac67FJJi1D0XOakMJdgW87uYiH2xI3NAvHVuTZpZnMABCBW/QcUyisX6Tko9D2YkmOt3rOk2oWeLUiSpJZY/LWNCCGy+XABBr6SAiD8/gz+eVZgL496UwaGRxc9KVynJchUZ6Tu/tZMIR5hYe5X6v4Hh9MZzuWijV4SRMj8oNUq5A/Dt+/niX22GJOel+IJ81JH/OA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=WhMslJCGDuB5xV6P/V/CS6QxivMchvG1o2S2D3SeU7Y=;
+ b=cr8yLoOXqwaA1c+Xblj201hZ1aXiuuG6UWySgT+ibVPblnFFwvfbrVnxM7sGd3KkhRmA2335SaSiM8fZqoNrGRi2RbSq/mgJHcohbQinfFYLUSw6O2nnFuWCqXKi8ZTDrSJLjpTIwmTLeeXEt3xlYsnRA9PfhT2aQyHh2pjEInlpjG1OQhcURJAY26uUDk94yMcwxH9cHtKmDxRRVRXiurMMIfz34Ge7WZvlu4M9eBLogajqQTY9a1QHUrmdfgVKr3OLxPARno8sqbFL3EjM7/qRiuhvjoB8FqpCZKWwBzJIqxACXORlL9mu+pndzSpz3bgdplgOAMfYw18VkOyLxw==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com (2603:10b6:408:20c::21)
+ by CH3PR12MB9284.namprd12.prod.outlook.com (2603:10b6:610:1c7::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.14; Sun, 22 Nov
+ 2026 15:32:07 +0000
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286]) by LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286%4]) with mapi id 15.21.0639.012; Sun, 22 Nov 2026
+ 15:32:07 +0000
+Date: Sun, 22 Nov 2026 10:32:05 -0500
+From: Yury Norov <ynorov@nvidia.com>
+To: gourry@gourry.net
+Cc: Yury Norov <yury.norov@gmail.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	David Hildenbrand <david@kernel.org>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Brendan Jackman <brendan.jackman@linux.dev>,
+	Zi Yan <ziy@nvidia.com>, Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
+	Ying Huang <ying.huang@linux.alibaba.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Byungchul Park <byungchul@sk.com>,
+	Alistair Popple <apopple@nvidia.com>, SJ Park <sj@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Kees Cook <kees@kernel.org>, Kairui Song <kasong@tencent.com>,
+	Barry Song <baohua@kernel.org>, Qi Zheng <qi.zheng@linux.dev>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	Axel Rasmussen <axelrasmussen@google.com>,
+	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Michal Hocko <mhocko@kernel.org>,
+	David Rientjes <rientjes@google.com>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	Nico Pache <nico.pache@linux.dev>,
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+	Lance Yang <lance.yang@linux.dev>,
+	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+	Xu Xin <xu.xin@linux.dev>,
+	Chengming Zhou <chengming.zhou@linux.dev>,
+	Lorenzo Stoakes <ljs@kernel.org>, Pedro Falcato <pfalcato@suse.de>,
+	Jann Horn <jannh@google.com>, Chris Li <chrisl@kernel.org>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Youngjun Park <youngjun.park@lge.com>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	Jan Kara <jack@suse.cz>, Waiman Long <longman@redhat.com>,
+	Ridong Chen <ridong.chen@linux.dev>, Tejun Heo <tj@kernel.org>,
+	Michal =?iso-8859-1?Q?Koutn=FD?= <mkoutny@suse.com>,
+	Dan Williams <djbw@kernel.org>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Alison Schofield <alison.schofield@intel.com>,
+	Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-cxl@vger.kernel.org,
+	linux-doc@vger.kernel.org, driver-core@lists.linux.dev,
+	damon@lists.linux.dev, linux-pm@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, cgroups@vger.kernel.org,
+	nvdimm@lists.linux.dev, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH 01/60] nodemask: add node-state iterators
+Message-ID: <awMK9V6TbU9Xtzn9@yury>
+References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
+ <20261120-private_nodes_v6-v1-1-74f5f9a115c2@gourry.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261120-private_nodes_v6-v1-1-74f5f9a115c2@gourry.net>
+X-ClientProxiedBy: BN9PR03CA0336.namprd03.prod.outlook.com
+ (2603:10b6:408:f6::11) To LV3PR12MB9356.namprd12.prod.outlook.com
+ (2603:10b6:408:20c::21)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -129,151 +160,133 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261119022926.1493582-1-shunsheng1218@gmail.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR12MB9356:EE_|CH3PR12MB9284:EE_
+X-MS-Office365-Filtering-Correlation-Id: c6485a54-1825-442f-628f-08df48adc424
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|366016|10070799003|1800799024|7416014|376014|10067099003|56012099006|11063799006|4143699003|261021121427099003|261102123227099003|261009223027099003|18002099003|22082099003|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	LadQk4uEsSebAaX36T2UMlD0k4aavvFJnGPyxq+sADDdoHz7h1S6cTm+9lwN2JuY+RhbZsAgBtH6HMrwaEs/1qoNwhCMXCD2HnT3piotu6CJhWi/zGa/x2kT3WvqgBYvrCRtXMV5byjJlFSa1Jfz2Z8Es8KqjJ/gP6DZ2VArDv3yVj5pPa+ZBvrppiFRCswwB+ZHiGKW9YWzBKGuNP+swVrsTET4lfSO/bT6JGwcEJAk4oAymrrQuP4kHwUsgRG0ONuqW69rZz34qgY2VzJiBrdY0IloGE1UIWWnNTM49Lemtc0UUlQ1LWF+KQtBZLWotV+9HucWijaFAQeLEouCDhaBiHWDCbkPaIYs1ijCLrdLfbpQWCHOIeZDVBboKpLNdpwAH5yTbh9XuDiHQjnOa52O8UH8hVIkGKvO4rmzHkJ4zuxhAeJV5BVjZs1dnRrbf+Zr2yALfauusWyHdhBvzh8mpkvQhguRY1p1v7/SaRa0p2DHBXmd805eyd7d+XI/367SUORKBEhSqopdRKVQQ+s3kmJ5FGjbepuputL8d/8bDEKKf4r1mwN+speML64l5Uja4AhFfhfUX2fQ9bcmlGAVrQbpl3yTTwZajpRZ59PJG/gbGGmT9vfmPokHenri9636b4Tgb3WBRlCk3okioAUGEdJsQCDwDgsbtAGC2bA=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(10070799003)(1800799024)(7416014)(376014)(10067099003)(56012099006)(11063799006)(4143699003)(261021121427099003)(261102123227099003)(261009223027099003)(18002099003)(22082099003)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?0878Rh0OU0ASRuFo6sTdoF3SxBqX7ikevLQHYzhknEeGzOQ2B2i3oyhkWmcB?=
+ =?us-ascii?Q?vdC0RV17nq5Ut/rsXr2QZcjCnVcWfnPDwx4CE/S/3ITrkFrSxtRIVb57b5TE?=
+ =?us-ascii?Q?12ScIl2aqKaC61hbvkut8h1CScZIOXaKEOSAPZQlVJeBESw1+J54nNhRYJpj?=
+ =?us-ascii?Q?q+N7YQPfjLLtxxFDpFRzb7RZaMPPwn+ImCVVh3yYk0zz1skuph4r4OrNDGtl?=
+ =?us-ascii?Q?qkoqiahw6e2odkS6anbXxrt2Om8f/9pUD9dTILttqGt9LbpROxJ2/A+rs8qB?=
+ =?us-ascii?Q?skcevIIA70HVfuwop8HFzHVfAmhOJh4uX008ShwOtG0uBJHCj0LkE1B75U4A?=
+ =?us-ascii?Q?ebER04WVfRArUCB8JwqdTJcNJXiX9d1MAOsYaEIbQts0iZodjls9ft6wDHFH?=
+ =?us-ascii?Q?r6P+wOoklKSj/vKZOZpZu8J9O6dY9tbmeo5yYfLC2K4WRf53iCXXF23bfd+9?=
+ =?us-ascii?Q?tIFtYp/soKOKQydkgswzkr+ZfFk5L8KWagu2ysOvEfxlM3ztcxZDMt9wPV/a?=
+ =?us-ascii?Q?kD1BPzvOZDDVr8SZPmJ3hEMWqLo5Hwe/zE+iBtxu2MWiZs7YFKFntevkZ/A9?=
+ =?us-ascii?Q?p7RCcL9+gTx8Y3GetF7l+gaEZUFd3mgEyTRwUdkMKMy1AXmt7471f8TFYrAE?=
+ =?us-ascii?Q?ppqEIDUMRaQinZdGh1ahBy2iFSvmNh5qX064NaVJo2nh3I66QQmSzAVKzYHC?=
+ =?us-ascii?Q?h1h2//nE+Ngekq3CW/h9KEsqk+iIvzl5cLCZ42JTQsbpDBnI72HIChThNP8q?=
+ =?us-ascii?Q?7rczyuAAqbWQo/bNvfd3slvoGpWdsjtQBfjyXmHha7ZSsdmPnqhO70FlNKLo?=
+ =?us-ascii?Q?DxPExNWZL3O7MPko9uFk2GpM8EsiD/kdfJtC1ofMNInyivne/bbGTSmeeiif?=
+ =?us-ascii?Q?6Gg7r5MtxZ8tjLyV0WuNqgoEHbohtKw+hpHTortmoZmsTVnhcjvbg7Lm9HL/?=
+ =?us-ascii?Q?dFVu0Pdgj+HSAbUj6Y9zY1DBu0lAdO16r94YDlXyd4TiPnHhK3QOMiMNJZuO?=
+ =?us-ascii?Q?icAU7Udp7fOt7HjE2sFh1hVsMbLTRoANkXvwWs6QKFecXZO7DSJ3eT490eHY?=
+ =?us-ascii?Q?QDnjQ5uCNL+Ao8ZIXN1qwATdl6d4j6vswBAHClf5u5W1wcyA2dCm7+/mXrDe?=
+ =?us-ascii?Q?8l4RUOVPDgu3N28TZqS83YQ27xcjHf2Yb+ijh2PMGCtZpD+WX6XdNwP/1Dve?=
+ =?us-ascii?Q?JgXMO5RnzA8CcoCenR6pxc06iEAxz71/MjWF3b0oXzaMKWDblsxxvi0qL6wk?=
+ =?us-ascii?Q?suYN7jZCmtP8qRBLGWqXe53Ug4Cib3eRbS/Ta4K5zjwgSbKzRZM6axMETgM2?=
+ =?us-ascii?Q?cPDKiMuak1fpXPue32bB10pQn7QbxG8x4LKK3mUC011F2mau0n0MMV2OehIN?=
+ =?us-ascii?Q?pal+m9ZylTSgCp9ICXUOUiMgAjacNp1DuAL5iwETjyo7fiCsC/qbCN9T/wpV?=
+ =?us-ascii?Q?g1qHrtgXxOuaHmAXoVHC4sSB7hGeNfd0gDvODHF17K0jBEWnNdqzAEO/5ZWO?=
+ =?us-ascii?Q?PguKAGxJWxeP2VTmK69UWOvI7hIWQQSbh6PAjuWtGlMY/JQy/91+7SGAHJnf?=
+ =?us-ascii?Q?vjvkTx0LQVwjsvvg2B5FKpNt+c9DmlMgWm79kZ/gKUY3O+/EdnWTD1Pgp4Gq?=
+ =?us-ascii?Q?pjLJ4vb+cGoeqVvNk+Eg72QSgLlZSW0TCWAeyVkAxZnoExgRM3QCTiOyGXdo?=
+ =?us-ascii?Q?jYlbLkU89rqfHTdlofrWERfbLIhveKByfPLzZ3P/Og8PCd8Y5LTrHWML7ZH1?=
+ =?us-ascii?Q?F2/DTg4BcCxL1MBVmHECkDpT6XYb12pDshSJ+5onFzgnC8b4MOgR?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c6485a54-1825-442f-628f-08df48adc424
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR12MB9356.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Nov 2026 15:32:07.0533
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rew2IPNPi3eMjUW2rOx/D54VR1hE34BYSZEp/L4/4gyRLjUNdp187rMrRSfQ73nncADw0FzzNhR/N3gz2QevhA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB9284
 
-Hi Yaohan,
-
-Thanks for your work.
-
-On 2026-11-19 10:29:26 +0800, Yaohan Li wrote:
-> The interrupt handlers are requested before the thermal zones are
-> registered, so devres releases the zones first.  When ->remove() returns,
-> the zones are gone while the handlers are still installed until devres
-> gets to them, and a handler that runs in that window walks priv->tscs[]
-> and updates a zone that no longer exists.  The source keeps asserting
-> because nothing clears REG_GEN3_IRQEN before the hardware goes away.
+On Fri, Nov 20, 2026 at 01:08:52PM -0500, Gregory Price via B4 Relay wrote:
+> From: "Gregory Price (Meta)" <gourry@gourry.net>
 > 
-> synchronize_irq() alone does not close that window.  It waits for a
-> handler that is running at that moment, but the zones are freed before
-> the handlers are, so an interrupt that is raised just after the wait, or
-> that is still pending in the interrupt controller, runs a handler
-> against freed memory.  Removing the handler is what actually closes it,
-> so ->remove() masks the source and calls devm_free_irq() for every
-> interrupt that was requested, while the device is still runtime
-> resumed.
+> Add first_node_state() and next_node_state(), so callers can walk any
+> node state the way first_memory_node and next_memory_node walk N_MEMORY.
 > 
-> The interrupt numbers live in an array whose unused slots stay negative,
-> so the partial probe path - which also ends in ->remove() - releases
-> exactly what was requested without a second counter to keep in sync.
+> Add for_each_node_mask_state(), which iterates a nodemask intersected
+> with a node state using the bitmap intersection helpers, without a
+> temporary nodemask.
 > 
-> Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
-> 
+> Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
 > ---
-> Compile tested only: arm64 defconfig, aarch64-linux-gnu-gcc 11.4.  The
-> board was not available, so the removal path was not exercised and no
-> race injection was run.
+>  include/linux/nodemask.h | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
 > 
-> Changes in v2:
->  - Mask the source and release the handlers in ->remove() instead of
->    relying on devres plus synchronize_irq(), and explain in the message
->    why a single synchronize_irq() cannot close the window.
->  - Keep the interrupt numbers in an array whose unused slots stay
->    negative instead of a separate count.
->  - Use a loop-local index and a named maximum instead of literals.
-> ---
->  drivers/thermal/renesas/rcar_gen3_thermal.c | 33 ++++++++++++++++++++-
->  1 file changed, 32 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
-> index 9c64cbc2ee67..2a6890d2a5da 100644
-> --- a/drivers/thermal/renesas/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
-> @@ -103,6 +103,8 @@ struct rcar_gen3_thermal_tsc {
->  	int thcode[3];
->  };
+> diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+> index 607373bd83ee..90bdcffa42ea 100644
+> --- a/include/linux/nodemask.h
+> +++ b/include/linux/nodemask.h
+> @@ -411,6 +411,11 @@ enum node_states {
 >  
-> +#define RCAR_GEN3_THERMAL_MAX_IRQ	2
+>  extern nodemask_t node_states[NR_NODE_STATES];
+>  
+> +/* Iterate the nodes in a mask that also belong to the specified state. */
+> +#define for_each_node_mask_state(node, mask, state)			\
 
-I like this!
+for_each_node_state_and? We've got for_each_node(), and we've got
+for_each_node_state(), so let's figure out consistent naming.
 
+Did you check the codebase for exsisting candidates for this helper?
+
+> +	for_each_and_bit(node, nodes_addr(mask),			\
+> +			 nodes_addr(node_states[state]), MAX_NUMNODES)
 > +
->  struct rcar_gen3_thermal_priv {
->  	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
->  	struct thermal_zone_device_ops ops;
-> @@ -110,6 +112,7 @@ struct rcar_gen3_thermal_priv {
->  	int ptat[3];
->  	int tj_t;
->  	const struct rcar_thermal_info *info;
-> +	int irqs[RCAR_GEN3_THERMAL_MAX_IRQ];
->  };
->  
->  static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc,
-> @@ -468,8 +471,31 @@ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
->  
->  static void rcar_gen3_thermal_remove(struct platform_device *pdev)
+
+Please use nr_node_ids instead of MAX_NUMNODES.
+
+>  #if MAX_NUMNODES > 1
+>  static __always_inline int node_state(int node, enum node_states state)
 >  {
-> +	struct rcar_gen3_thermal_priv *priv = platform_get_drvdata(pdev);
->  	struct device *dev = &pdev->dev;
+> @@ -435,6 +440,12 @@ static __always_inline int num_node_state(enum node_states state)
+>  #define for_each_node_state(__node, __state) \
+>  	for_each_node_mask((__node), node_states[__state])
 >  
-> +	/*
-> +	 * Disable the interrupt source while the device is still runtime
-> +	 * resumed.  REG_GEN3_IRQEN is only ever written by
-> +	 * rcar_gen3_thermal_init(); a concurrent set_trips() writes
-> +	 * REG_GEN3_IRQMSK alone, so it cannot re-enable the source here.
-> +	 */
+> +#define first_node_state(state)	first_node(node_states[state])
+> +static __always_inline unsigned int next_node_state(int nid, enum node_states state)
+> +{
+> +	return next_node(nid, node_states[state]);
+> +}
 
-Is this not a tad verbose? How about just
+At least the following {first,next}_{online,memory}_node must be
+switched to the new helpers. Can you check through the rest of the
+kernel to make sure all candidates of the proposed helpers are
+converted?
 
-        /* Disable interrupts. */
-
-> +	for (unsigned int i = 0; i < priv->num_tscs; i++) {
-> +		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQEN, 0);
-> +		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK, 0);
-> +	}
+>  #define first_online_node	first_node(node_states[N_ONLINE])
+>  #define first_memory_node	first_node(node_states[N_MEMORY])
+>  static __always_inline unsigned int next_online_node(int nid)
+> @@ -481,6 +492,12 @@ static __always_inline int num_node_state(enum node_states state)
+>  #define for_each_node_state(node, __state) \
+>  	for ( (node) = 0; (node) == 0; (node) = 1)
+>  
+> +#define first_node_state(state)	0
+> +static __always_inline unsigned int next_node_state(int nid, enum node_states state)
+> +{
+> +	return MAX_NUMNODES;
+> +}
 > +
-> +	/*
-> +	 * Release the handlers here instead of leaving that to devres.  They
-> +	 * were requested before the thermal zones, so devres would free the
-> +	 * zones first, and a handler that runs in between would use a zone
-> +	 * that is already gone.  free_irq() also waits for the threaded
-> +	 * handler that may be running right now.
-> +	 */
-> +	for (unsigned int i = 0; i < ARRAY_SIZE(priv->irqs); i++)
-> +		if (priv->irqs[i] >= 0)
-> +			devm_free_irq(dev, priv->irqs[i], priv);
-> +
-
-I don't understand why this explicitly is needed, can't we let devres 
-sort this out?
-
->  	pm_runtime_put(dev);
->  	pm_runtime_disable(dev);
->  }
-> @@ -489,7 +515,7 @@ static int rcar_gen3_thermal_request_irqs(struct rcar_gen3_thermal_priv *priv,
->  	char *irqname;
->  	int ret, irq;
->  
-> -	for (i = 0; i < 2; i++) {
-> +	for (i = 0; i < RCAR_GEN3_THERMAL_MAX_IRQ; i++) {
->  		irq = platform_get_irq_optional(pdev, i);
->  		if (irq < 0)
->  			return irq;
-> @@ -504,6 +530,8 @@ static int rcar_gen3_thermal_request_irqs(struct rcar_gen3_thermal_priv *priv,
->  						IRQF_ONESHOT, irqname, priv);
->  		if (ret)
->  			return ret;
-> +
-> +		priv->irqs[i] = irq;
->  	}
->  
->  	return 0;
-> @@ -525,6 +553,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  	priv->ops = rcar_gen3_tz_of_ops;
->  
->  	priv->info = of_device_get_match_data(dev);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(priv->irqs); i++)
-> +		priv->irqs[i] = -ENOENT;
->  	platform_set_drvdata(pdev, priv);
->  
->  	if (rcar_gen3_thermal_request_irqs(priv, pdev))
-> -- 
-> 2.34.1
+>  #define first_online_node	0
+>  #define first_memory_node	0
+>  #define next_online_node(nid)	(MAX_NUMNODES)
 > 
-
--- 
-Kind Regards,
-Niklas Söderlund
+> -- 
+> 2.56.1
+> 
