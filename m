@@ -1,50 +1,48 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795379556;
-	b=QVwQk5QUEqG5NDW3HJyNN6TBayWafZnfEH7XuDS/uoeECNyasMj1UgZHi/nATuAR6AtV
-	 D4Pl2qS3xxfrHx0Drj3LBGdl2lY7dy+3HOQwHy0sbIrUSrRCl1p2C8JEsmfQM3X3z5ttM
-	 N30/vXDSIWtPoMLHEWtP0X9khFZqM+es2MWsGE9DuL7mlNlTBzHJh+CZb0K0+jP0mYzu8
-	 cboEyWPPMrUoKl/Gxly1qHLxZ3kPYY68Y4HgHOJmBuRHnpmws+uhwXT4oz34b6xp7rSVg
-	 byycSd4Y88OLmWTVxRf9D46A2ssWXkNn3fxcCLLQ0BKHjr/j3e7SdcDYqRs6tBteJ0Q==
+	t=1795379562;
+	b=jY8TDdc9VjUSDdj8XawEKsqsgBVS0KtWE0KRc9XOGNXn1r4AD5DBizlBBPMJRRUkao2i
+	 l+O99YMR0SSltejH79In65gi0C9mk47FgRQgoudUuQV/QygGuJPBid3AS9h+YU9WWHoKz
+	 EJ2oVkjBoOwl6qU4loCZa0WP4IqizC2+b2UiOQJtYKGLJHG1rsCEO+pJ/WWWiS7cWccH1
+	 Rt+rChUNV9Q2B4biAAzp5fNxAirg0r7dh6sSwsftuhJHbVbyqr5K0cHNZItb7MVPNzl5/
+	 ErlnC4g8O5HND+F/QGf3DgWKhNOYh+0vEF7w0t6YF/qZ7nDT6PCLsdYjpIrpYJhCHew==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795379556;
-	h=Received:DKIM-Signature:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer;
-	bh=JLUqu7wsw4NIDcCECHq2NNfCObnGScQ1CH8/V+F0MYs=;
-	b=DM8Ti9M0mZyn6njDO5KthPcA0K8GOWl2JiH6VNBrO3PhAxhh/H1he3KHfTRGbo4NZBk6
-	 4uZq9et3WIF4Hi74d84xD6DKBwML7zCxCK78xu0wdZlYN9XHwNCQ5LhV+1Im24JxCOFPF
-	 OGafxhD0jNMya4JzODC6aehcXIVLTtfgkvKvpbkE3wUJJwi/O05E8d7gp6MYZl/6sJTPH
-	 ZX8HflUwVbVHWI6NfmdkLP/huIr+gyNMWX5eP9k8qh5+HbsTjA3tJvT1xMS7cZwKr8AbJ
-	 bK/It9nG2hiJ4952FaDpPEvYm/fq3HdCbXe1eMnGMKH4YFa5ijC1k0fzJdIAUl3fAxA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795379562;
+	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	 X-Mailer;
+	bh=aUlIIUD3CMp1gC2lqI8MFgJhDDcQHFEoowBonzaCRkw=;
+	b=oK53MzKe2Z2STKx19XHd5f70WNDZc3NaXC7y4Eq4h93KsewS+UJkffrgXhLyE1brf6ZW
+	 XOStM6F3iY9v7m0Dc8CMkOxytqX1luXhPKa4xpJ+13fYLcEk9dbrN0rnCedvjr0Dnyp+h
+	 5EG4M6/fKropDiofAlaR1VXremXYv8iDuZ7bgHzBxki7h5afsoi21gsHRwTsaZ+bDxaJ4
+	 hQ5nocHPRvESVH1MH3CWmrtYs+EUNs8azOVqVajegn2HRX9riQuf1nhUTJT7DshDDZbOl
+	 PkN34m9kkKmXTh8z8GKpHzaA9U0YY4jXYp8GihujfkTFvXqb1o55t2GpMQT8NcWKo8Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TLeoR9Up;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MOnlClBX;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14860606A31A;
-	Sun, 22 Nov 2026 20:32:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB297606A31A;
+	Sun, 22 Nov 2026 20:32:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TLeoR9Up
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76D531F000CA;
-	Sun, 22 Nov 2026 20:32:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MOnlClBX
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E5FF1F000D2;
+	Sun, 22 Nov 2026 20:32:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795379555;
-	bh=JLUqu7wsw4NIDcCECHq2NNfCObnGScQ1CH8/V+F0MYs=;
-	h=From:Subject:Date:To:Cc;
-	b=TLeoR9UpcFzuYXZL/oQ2X2YGQYd/Ag8fkBIdvGYspnnsvamTg7k4/ojLaHLtxnk59
-	 sLtrOUJj/SV0REIWK+buKjO1tO84ZczFpqxtwDWYtoFOgfuICiSXkeiy3FPlDi6Tx/
-	 MrpQBV5P8peB8GTVmw1ys5Q/cX0B4czg9BB5f5tWSQoqbKJcIxUeTQmjzpYPaKazuu
-	 nsiz8c+NLpPncO9ztI1P7hJL8SRAwxdl4fV2HjYlabK4yq+5NNUdT154DS6UabrdYG
-	 wycovutWdKOpLmqzSfuwLl3bPao/znpdnvtwmptXhA5zqAv+pnehP7EjDGpRnBhkkJ
-	 vLD/sos+0bAnA==
+	s=k20260515; t=1795379562;
+	bh=aUlIIUD3CMp1gC2lqI8MFgJhDDcQHFEoowBonzaCRkw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=MOnlClBXRFEuPohOOPLFn7gTGn4U357ZUnQivCE7ELjHM9Gn05evmZWtcobSMOsCJ
+	 7fkc0yIbg+h/R947f7trXoRdRcc1C+zV2K4eH8Z817kH6E0SaWuuvGu8EaQA9EYppA
+	 t7DJcCzHOPDbjBPeBG4JnrEzN1IF7Hcx1dpvf+t2aAqjYzNY5pHSs5CJKmCrBUzLu/
+	 uSo7vkncYoIxBQ0Dj4TtZ96/NoadMoOTq+4JxppBn/72Ry4urn60li4bH53+KT5cE0
+	 a9lrkxdpXIhAwdv3bx8vwyJcGEhseOhoZ9cxEF1Nc0kr7ZyD0vobjAgrR1k9ftiOC4
+	 Ransi29rMrC5Q==
 From: Linus Walleij <linusw@kernel.org>
-Subject: [PATCH v6 0/6] BCMBCA PMB power, clock, reset and hardware
- monitoring support
-Date: Sun, 22 Nov 2026 21:32:25 +0100
-Message-Id: <20261122-xg6846b-bcmbca-xrdp-reset-v6-0-bf2104a25095@kernel.org>
+Date: Sun, 22 Nov 2026 21:32:26 +0100
+Subject: [PATCH v6 1/6] dt-bindings: mfd: Describe the BCM6846 PMC complex
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -56,12 +54,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/33OzWqEMBSG4VsJZz2n5MT86ar3UbpIzNEJbXWIg
- 1gG7704UGoR3H6L53sfMHHJPEEjHlB4zlMeB2iEvQhor2HoGXOCRoCSypKkCpfeem0jxvYrtgG
- Xkm5YeOI7JnYUvWyVCRouAm6Fu7w87bf3i4Brnu5j+X5ezbStv6o+UWdCiSl0JpFzTFS9fnAZ+
- PNlLD1s7Kz+KJJ0RimUqI3puGZOhvlAVXvKnlHVVmVD4ugodG19oPSOotMqjRLJycoEwz4kdaD
- MnnJnlEGJnfGaffRsa/uPWtf1BzTQAU3vAQAA
-X-Change-ID: 20261013-xg6846b-bcmbca-xrdp-reset-de71b80c25a4
+Message-Id: <20261122-xg6846b-bcmbca-xrdp-reset-v6-1-bf2104a25095@kernel.org>
+References: <20261122-xg6846b-bcmbca-xrdp-reset-v6-0-bf2104a25095@kernel.org>
+In-Reply-To: <20261122-xg6846b-bcmbca-xrdp-reset-v6-0-bf2104a25095@kernel.org>
 To: Linus Walleij <linusw@kernel.org>, Lee Jones <lee@kernel.org>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
@@ -79,160 +74,374 @@ To: Linus Walleij <linusw@kernel.org>, Lee Jones <lee@kernel.org>,
  Benjamin Larsson <benjamin.larsson@genexis.eu>
 Cc: mfd@lists.linux.dev, devicetree@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
- linux-hwmon@vger.kernel.org, linux-pm@vger.kernel.org, 
- Brian Masney <masneyb@kernel.org>
+ linux-hwmon@vger.kernel.org, linux-pm@vger.kernel.org
 X-Mailer: b4 0.16.0
 
-This is another of these big upfront design binding and driver hoards
-that is the consequence of adding new SoC support.
+Describe the BCM6846 Power Management Controller complex and its Power
+Management Bus, including the power-domain, clock, reset and PVTMON
+providers. Define the clock, reset and power-domain IDs used by consumers.
 
-My stake is to be able to boot and test a full featured Cortex-A7
-system and the BCM6846 XG6846B is one such system on my desk.
+Keep the complete hierarchy in one schema so each child is validated
+once through the PMC binding. Include the combined XRDP, Runner and WAN
+power domain and the zero-cell PVTMON thermal sensor.
 
-It's been cooking for a while in various prototype forms.
-
-IMPLEMENTATION:
-
-The PMC contains various stuff so this needs to be a simple MFD node
-so more things can be added into it later.
-
-Inside the PMC is the PMB, the power management bus. This bridges
-to several individual peripherals which are very clearly distinct
-devices on that bus.
-
-Handle the PMB with an MFD driver with power domain, clock, reset and hwmon
-providers.
-
-Expose the standard BPCM peripheral, memory, USB and PCIe domains and
-a combined XRDP domain covering XRDP, the three Runners and WAN. Keep
-the peripheral and memory domains always on. The power domain provider
-now owns zone transitions, leaving the reset provider to pulse resets.
-The CPU and PLL blocks use different register layouts and are excluded.
-This new power domain integration has not been tested on hardware.
-
-The BCM6846 XRDP reset sequence enabled full-MTU traffic on all four LAN
-ports and copper WAN and has been tested on that series. The zone
-power-up sequence also passed direct CFE flash boot in the Linux 6.18
-OpenWrt port; this folded v7.3-rc1 revision still needs hardware testing.
-
-MERGE STRATEGY:
-
-Through an MFD immutable branch once everyone ACKs the subdrivers,
-it will take time I guess. Queue the bindings and drivers in MFD.
-
-Updates to peripheral schemas and device trees to accommodate the power
-domains will be submitted separately.
-
-The patches were authored with the assistance of an LLM.
-
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
-Changes in v6:
-- MFD: simplify keyhole recovery and document the retry interval.
-- MFD: use scoped locking and hold the semaphore across bit updates.
-- MFD: use MFD_CELL_OF(), a static regmap config and devm_mutex_init().
-- MFD: tidy probe and expand the Kconfig help, I hope it's better now.
-  Ironically this was mostly cause by me telling the LLM to get out
-  of my way, perhaps I should trust it more :/
-- Link to v5: https://patch.msgid.link/20261117-xg6846b-bcmbca-xrdp-reset-v5-0-f584e8b8e696@kernel.org
-
-Changes in v5:
-- Clock: rename ch01 to ch_ctrl, use firmware parent lookup and drop the
-  unused clk.h include.
-- Merge the PMC, PMB, power, clock, reset and PVTMON bindings into one
-  MFD schema and one patch to avoid repeated validation.
-- Dropped Rob's ACK since it only applies to part of the first patch now.
-- Link to v4: https://patch.msgid.link/20261111-xg6846b-bcmbca-xrdp-reset-v4-0-17035a5e8ad2@kernel.org
-
-Changes in v4:
-- Reset: simplify sequence dispatch, rely on core translation defaults and
-  clarify power-domain ordering before reset pulses.
-- MFD transport: disable unsafe regmap debugfs access and keep register
-  reads, writes and bit updates serialized in the callbacks.
-- Introduce the PMB binding, child bindings and IDs before the PMC binding
-  so binding checks work at every commit.
-- Expand PMB as Power Management Bus throughout.
-- Sort the PMC and PMB example children by name and drop unused labels.
-- Link to v3: https://patch.msgid.link/20261106-xg6846b-bcmbca-xrdp-reset-v3-0-d6adeb71afc9@kernel.org
-
-Changes in v3:
-- Add a PMB power domain subdriver and binding with a combined XRDP domain.
-- Move XRDP, Runner and WAN power sequencing out of the reset driver.
-- Register the power domain MFD child.
-- MFD transport: simplify cell registration, drop unused state and
-  property.h, and add the bcmbca-pmb subject prefix.
-- Power domains: default to MFD_BCMBCA_PMB.
-- MFD transport and reset: use mutex guards; reset: use
-  str_assert_deassert().
-- Clock: use the reference clock as parent, limit CLK_GET_RATE_NOCACHE to
-  PLL outputs, drop CLK_IGNORE_UNUSED and simplify Runner registration.
-- Clock and reset: suppress manual bind/unbind.
-- MFD transport, clock, reset and hwmon: drop redundant mod_devicetable.h;
-  clock: drop slab.h.
-- Power domain, clock, reset and hwmon drivers and PMC/PMB bindings: drop
-  vendor-source references from comments.
-- Link to v2: https://patch.msgid.link/20261101-xg6846b-bcmbca-xrdp-reset-v2-0-455fe9eed5ee@kernel.org
-
-Changes in v2:
-- Use a shared PMB regmap in all child drivers, keeping keyhole semaphore
-  handling and timeout recovery inside the MFD provider.
-- Drop PCIe reset IDs and sequences pending proper power and lane
-  configuration handling.
-- Power up the XRDP, Runner and WAN zones before the XRDP reset pulse,
-  preserving the sequence tested with direct CFE flash boot in OpenWrt.
-- Describe clock, reset and PVTMON PMB child nodes with separate
-  compatibles.
-- Move the PMB transport and accessor header under MFD and register
-  clock, reset and PVTMON MFD cells matched to their child DT nodes.
-  Select reset variants through OF match data.
-- Add PMB clock support and PVTMON clock and reset bindings.
-- Add PVTMON hwmon support for temperature and all seven voltage inputs,
-  retaining the zero-cell thermal sensor through the hwmon bridge.
-- Drop the unnecessary literal block marker from the PMC description.
-- Use the BCM6846-specific "brcm,bcm6846-pmc" compatible.
-- Expand PMC as "Power Management Controller" throughout.
-- Move the LLM assistance disclosure from trailers to the cover letter.
-- Drop the RFC prefix.
-- Link to v1: https://patch.msgid.link/20261014-xg6846b-bcmbca-xrdp-reset-v1-0-daf5d177e113@kernel.org
-
----
-Linus Walleij (6):
-      dt-bindings: mfd: Describe the BCM6846 PMC complex
-      mfd: bcmbca-pmb: Add a shared BCMBCA PMC3 PMB transport
-      pmdomain: bcm: Add BCMBCA PMB power domains
-      reset: Add BCMBCA block resets through the PMB
-      clk: bcm: Add BCMBCA PMB clocks
-      hwmon: Add Broadcom PMB PVTMON monitoring
-
- .../devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml  | 238 +++++++++++++
- Documentation/hwmon/bcm_pmb_pvtmon.rst             |  53 +++
- Documentation/hwmon/index.rst                      |   1 +
- MAINTAINERS                                        |  15 +
- drivers/clk/bcm/Kconfig                            |  11 +
- drivers/clk/bcm/Makefile                           |   1 +
- drivers/clk/bcm/clk-bcmbca-pmb.c                   | 382 +++++++++++++++++++++
- drivers/hwmon/Kconfig                              |  18 +
- drivers/hwmon/Makefile                             |   1 +
- drivers/hwmon/bcm_pmb_pvtmon.c                     | 231 +++++++++++++
- drivers/mfd/Kconfig                                |  12 +
- drivers/mfd/Makefile                               |   1 +
- drivers/mfd/bcmbca_pmc3_pmb.c                      | 291 ++++++++++++++++
- drivers/pmdomain/bcm/Kconfig                       |  10 +
- drivers/pmdomain/bcm/Makefile                      |   1 +
- drivers/pmdomain/bcm/bcmbca-pmb.c                  | 279 +++++++++++++++
- drivers/reset/Kconfig                              |  13 +
- drivers/reset/Makefile                             |   1 +
- drivers/reset/reset-bcmbca-pmb.c                   | 227 ++++++++++++
- include/dt-bindings/clock/brcm,bcm6846-pmb.h       |  42 +++
- include/dt-bindings/power/brcm,bcm6846-pmb.h       |  12 +
+ .../devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml  | 238 +++++++++++++++++++++
+ MAINTAINERS                                        |   8 +
+ include/dt-bindings/clock/brcm,bcm6846-pmb.h       |  42 ++++
+ include/dt-bindings/power/brcm,bcm6846-pmb.h       |  12 ++
  include/dt-bindings/reset/brcm,bcm6846-pmb.h       |  11 +
- include/linux/mfd/bcmbca-pmb.h                     |  11 +
- 23 files changed, 1862 insertions(+)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261013-xg6846b-bcmbca-xrdp-reset-de71b80c25a4
+ 5 files changed, 311 insertions(+)
 
-Best regards,
---  
-Linus Walleij <linusw@kernel.org>
+diff --git a/Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml b/Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml
+new file mode 100644
+index 000000000000..eb01797f8262
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml
+@@ -0,0 +1,238 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/brcm,bcm6846-pmc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Broadcom BCM6846 Power Management Controller
++
++maintainers:
++  - Linus Walleij <linusw@kernel.org>
++
++description:
++  The third generation Power Management Controller (PMC3) contains several
++  register banks. This binding describes the Power Management Bus (PMB)
++  interface within Procmon. The PMB child owns its register bank. The parent
++  provides address translation and does not own a register bank.
++
++properties:
++  compatible:
++    items:
++      - const: brcm,bcm6846-pmc
++      - const: simple-mfd
++
++  ranges:
++    maxItems: 1
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 1
++
++patternProperties:
++  '^bus@[0-9a-f]+$':
++    type: object
++    description:
++      The Power Management Bus (PMB) connects the third generation Power
++      Management Controller (PMC3) to the control registers of miscellaneous
++      independent hardware blocks.
++
++      The controller provides configuration, arbitration and four keyhole
++      interfaces for indirect register access.
++
++      Child nodes describe independent hardware blocks accessed over the PMB.
++      These provide global resources and even resources for each other.
++
++    properties:
++      compatible:
++        const: brcm,bcm6846-pmb
++
++      reg:
++        maxItems: 1
++        description: PMB configuration, keyhole and address mapping registers
++
++      power-controller:
++        type: object
++        description: |
++          The power controller is a child of the Power Management Bus (PMB)
++          controller and accesses BPCM power zones through the parent regmap.
++          A domain includes all power zones of a block. The XRDP domain groups
++          XRDP, its three Runner cores and WAN, matching the vendor power sequence.
++
++          Domain IDs are defined in dt-bindings/power/brcm,bcm6846-pmb.h:
++            BCM6846_PD_PERIPH: peripheral block (bus 0, device 0, four zones)
++            BCM6846_PD_MEMC: memory controller (bus 1, device 8, one zone)
++            BCM6846_PD_USB20: USB 2.0 (bus 1, device 10, four zones)
++            BCM6846_PD_XRDP: XRDP (bus 1, device 12, three zones), Runner cores
++              (bus 1, devices 14, 15 and 16, one zone each) and WAN
++              (bus 1, device 11, three zones)
++            BCM6846_PD_PCIE0: PCIe 0 (bus 0, device 18, one zone)
++            BCM6846_PD_PCIE1: PCIe 1 (bus 0, device 19, one zone)
++
++          Peripheral and memory domains remain powered because they provide
++          resources required for system operation. CPU and PLL blocks use different
++          register layouts and are outside the scope of this provider.
++
++        properties:
++          compatible:
++            const: brcm,bcm6846-pmb-power
++
++          '#power-domain-cells':
++            const: 1
++            description: Power domain ID from dt-bindings/power/brcm,bcm6846-pmb.h
++
++        required:
++          - compatible
++          - '#power-domain-cells'
++
++        additionalProperties: false
++
++      clock-controller:
++        type: object
++        description:
++          The Power Management Bus (PMB) provides access to the RDP and BIU PLL
++          outputs, the Runner clock, the crystal output, the PVTMON acquisition
++          clock and the clock gates in block power-control zones. Clock indices
++          are defined in dt-bindings/clock/brcm,bcm6846-pmb.h.
++          The PLLs and crystal output use a 50 MHz reference clock.
++          Zone clocks require their associated blocks to be powered.
++
++        properties:
++          compatible:
++            const: brcm,bcm6846-pmb-clock
++
++          clocks:
++            maxItems: 1
++
++          clock-names:
++            const: ref
++
++          '#clock-cells':
++            const: 1
++
++        required:
++          - compatible
++          - clocks
++          - clock-names
++          - '#clock-cells'
++
++        additionalProperties: false
++
++      reset-controller:
++        type: object
++        description:
++          The reset controller is a child of the Power Management Bus (PMB)
++          controller and uses its indirect register interface.
++
++          Each reset specifier identifies a logical reset group, which may span
++          several blocks that must be reset together.
++
++        properties:
++          compatible:
++            const: brcm,bcm6846-pmb-reset
++
++          '#reset-cells':
++            const: 1
++            description: Reset group ID from dt-bindings/reset/brcm,bcm6846-pmb.h
++
++        required:
++          - compatible
++          - '#reset-cells'
++
++        additionalProperties: false
++
++      hwmon:
++        type: object
++        description:
++          The process, voltage and temperature monitor (PVTMON) is a child of
++          the Power Management Bus (PMB) controller and uses its indirect
++          register interface. It measures die temperature and seven voltages,
++          including a diagnostic test input.
++
++        allOf:
++          - $ref: /schemas/thermal/thermal-sensor.yaml#
++
++        properties:
++          compatible:
++            const: brcm,bcm6846-pmb-pvtmon
++
++          clocks:
++            maxItems: 1
++            description: PVTMON acquisition clock
++
++          resets:
++            maxItems: 1
++            description: PVTMON analog-acquisition reset
++
++          '#thermal-sensor-cells':
++            const: 0
++
++        required:
++          - compatible
++          - clocks
++          - resets
++          - '#thermal-sensor-cells'
++
++        unevaluatedProperties: false
++
++    required:
++      - compatible
++      - reg
++      - power-controller
++      - clock-controller
++      - reset-controller
++      - hwmon
++
++    additionalProperties: false
++
++required:
++  - compatible
++  - ranges
++  - '#address-cells'
++  - '#size-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/brcm,bcm6846-pmb.h>
++    #include <dt-bindings/reset/brcm,bcm6846-pmb.h>
++
++    system-controller@ffb00000 {
++        /* Broadcom BCM6846 Power Management Controller complex */
++        compatible = "brcm,bcm6846-pmc", "simple-mfd";
++        ranges = <0x0 0xffb00000 0x21000>;
++        #address-cells = <1>;
++        #size-cells = <1>;
++
++        /* Power Management Bus */
++        bus@20100 {
++            compatible = "brcm,bcm6846-pmb";
++            reg = <0x20100 0x200>;
++
++            pmb_clk: clock-controller {
++                compatible = "brcm,bcm6846-pmb-clock";
++                clocks = <&osc50m>;
++                clock-names = "ref";
++                #clock-cells = <1>;
++            };
++
++            hwmon {
++                compatible = "brcm,bcm6846-pmb-pvtmon";
++                clocks = <&pmb_clk BCM6846_CLK_PVTMON>;
++                resets = <&pmb_reset BCM6846_RESET_PVTMON>;
++                #thermal-sensor-cells = <0>;
++            };
++
++            power-controller {
++                compatible = "brcm,bcm6846-pmb-power";
++                #power-domain-cells = <1>;
++            };
++
++            pmb_reset: reset-controller {
++                compatible = "brcm,bcm6846-pmb-reset";
++                #reset-cells = <1>;
++            };
++        };
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 93abbb315065..67642e2a4ab3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5444,6 +5444,14 @@ N:	bcm[9]?6856
+ N:	bcm[9]?6858
+ N:	bcm[9]?6878
+ 
++BROADCOM BCMBCA PMC3 PMB DRIVER
++M:	Linus Walleij <linusw@kernel.org>
++S:	Maintained
++F:	Documentation/devicetree/bindings/mfd/brcm,bcm6846-pmc.yaml
++F:	include/dt-bindings/clock/brcm,bcm6846-pmb.h
++F:	include/dt-bindings/power/brcm,bcm6846-pmb.h
++F:	include/dt-bindings/reset/brcm,bcm6846-pmb.h
++
+ BROADCOM BDC DRIVER
+ M:	Justin Chen <justin.chen@broadcom.com>
+ M:	Al Cooper <alcooperx@gmail.com>
+diff --git a/include/dt-bindings/clock/brcm,bcm6846-pmb.h b/include/dt-bindings/clock/brcm,bcm6846-pmb.h
+new file mode 100644
+index 000000000000..548a18ed7959
+--- /dev/null
++++ b/include/dt-bindings/clock/brcm,bcm6846-pmb.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++#ifndef _DT_BINDINGS_CLOCK_BRCM_BCM6846_PMB_H
++#define _DT_BINDINGS_CLOCK_BRCM_BCM6846_PMB_H
++
++#define BCM6846_CLK_RDPPLL_CH0	0
++#define BCM6846_CLK_RDPPLL_CH1	1
++#define BCM6846_CLK_RDPPLL_CH2	2
++#define BCM6846_CLK_RDPPLL_CH3	3
++#define BCM6846_CLK_RDPPLL_CH4	4
++#define BCM6846_CLK_RDPPLL_CH5	5
++#define BCM6846_CLK_BIUPLL_CH0	6
++#define BCM6846_CLK_BIUPLL_CH1	7
++#define BCM6846_CLK_BIUPLL_CH2	8
++#define BCM6846_CLK_BIUPLL_CH3	9
++#define BCM6846_CLK_BIUPLL_CH4	10
++#define BCM6846_CLK_BIUPLL_CH5	11
++#define BCM6846_CLK_RUNNER	12
++#define BCM6846_CLK_XTAL_OUT	13
++#define BCM6846_CLK_PVTMON	14
++#define BCM6846_CLK_PERIPH_ZONE0	15
++#define BCM6846_CLK_PERIPH_ZONE1	16
++#define BCM6846_CLK_PERIPH_ZONE2	17
++#define BCM6846_CLK_PERIPH_ZONE3	18
++#define BCM6846_CLK_MEMC		19
++#define BCM6846_CLK_USB_ZONE0	20
++#define BCM6846_CLK_USB_ZONE1	21
++#define BCM6846_CLK_USB_ZONE2	22
++#define BCM6846_CLK_USB_ZONE3	23
++#define BCM6846_CLK_WAN_ZONE0	24
++#define BCM6846_CLK_WAN_ZONE1	25
++#define BCM6846_CLK_WAN_ZONE2	26
++#define BCM6846_CLK_XRDP_ZONE0	27
++#define BCM6846_CLK_XRDP_ZONE1	28
++#define BCM6846_CLK_XRDP_ZONE2	29
++#define BCM6846_CLK_RUNNER0	30
++#define BCM6846_CLK_RUNNER1	31
++#define BCM6846_CLK_RUNNER2	32
++#define BCM6846_CLK_PCIE0		33
++#define BCM6846_CLK_PCIE1		34
++#define BCM6846_CLK_BIU		35
++
++#endif
+diff --git a/include/dt-bindings/power/brcm,bcm6846-pmb.h b/include/dt-bindings/power/brcm,bcm6846-pmb.h
+new file mode 100644
+index 000000000000..abdd01c94bc5
+--- /dev/null
++++ b/include/dt-bindings/power/brcm,bcm6846-pmb.h
+@@ -0,0 +1,12 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++#ifndef _DT_BINDINGS_POWER_BCM6846_PMB_H
++#define _DT_BINDINGS_POWER_BCM6846_PMB_H
++
++#define BCM6846_PD_PERIPH	0
++#define BCM6846_PD_MEMC		1
++#define BCM6846_PD_USB20		2
++#define BCM6846_PD_XRDP		3
++#define BCM6846_PD_PCIE0		4
++#define BCM6846_PD_PCIE1		5
++
++#endif
+diff --git a/include/dt-bindings/reset/brcm,bcm6846-pmb.h b/include/dt-bindings/reset/brcm,bcm6846-pmb.h
+new file mode 100644
+index 000000000000..ce68adb10108
+--- /dev/null
++++ b/include/dt-bindings/reset/brcm,bcm6846-pmb.h
+@@ -0,0 +1,11 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++#ifndef _DT_BINDINGS_RESET_BRCM_BCM6846_PMB_H
++#define _DT_BINDINGS_RESET_BRCM_BCM6846_PMB_H
++
++/* XRDP packet engine and its three Runner cores. */
++#define BCM6846_RESET_XRDP	0
++
++/* Process, voltage and temperature monitor analog acquisition reset. */
++#define BCM6846_RESET_PVTMON	1
++
++#endif
+
+-- 
+2.56.1
 
