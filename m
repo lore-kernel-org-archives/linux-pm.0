@@ -1,57 +1,36 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795366635;
-	b=lW2IdU96eF4/aCmfMGA2QC0NiE+9NinNQi5B5olJoh4d5zt9r9hIpO2Q7lfLvXZ4igN/
-	 t3MWFpu0xG7P7iHrPB9jm2Jejy1GBnvw6PUtLxSrz41qdRcFdKGRgcohzCNw8BA5iT3sL
-	 5RGsGMGcyUmfrIfgOA+WJ9lA3YThrVNHcyaJgcnExCNgq7sbrZLEHpIHNDKN+nls6edrv
-	 Odsg93EjWEoSNHUW0RAZJv453KhiPw3bwkexZ3IohbDViHJdji5XIcynGxcFcteL8zTLL
-	 QSMZn3u7wdQ8skAGQVHOgKP9EvC4h/fkLqj38IS126u3KOg94fcvOvcrHrN7wmd5TcA==
+	t=1795369589;
+	b=mTHOBWTAtqgAsgt8+kWpf6kSjznq60NH+TDYRK/9qpr2XeqbZWfqV97IAlZx1977jl6m
+	 8tQewTw5bFvNleMcJ3jvKHmQnam/WofHB+v8QO7OKpUzFMdzyd0Sq54tt5OO98fg9BWpg
+	 PzOuzxgCRfwG+os7cFshaMRMqTyXd205PmsvgZ1RpGWXe3vEAfOs7eTzUmp+ewBjH+Thr
+	 JQXqSdDo50cBKr0VIVlmFno9+ahtcfcztYW8uEJsePHk/BdHpIIUCxH2cvw0ZO98A+TeT
+	 6zoDq9LDfd/tfjki6w1T3EbyRW5mKdwUnZKPXKsTgbbK5bO1iGsB5LNTR0L9DvNk2yw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795366635;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=2Yw74l8uzk8/LW206uKJMYpkivuj4oIRzbpObpcHoLo=;
-	b=Xule2b57fI8TfTHNBSwSPVW+LsWzDPAzGL9upFImyWDfjZ4aum98whyurhFiaCI+mim/
-	 HI7V/QVP5zsPJx/lQEDPo2zhA3ZHCe1Gz+yc/smBJR5IICzjf+iVtP0meAOxT7TDDlKsj
-	 i1pVi8iYSOvYrizdQf4xMGcuXvNGRuQC0c91VKIcGpkuJq/jzHSrOn+2sLil7NU1Gd0t0
-	 UD/vPNqkXdUWXy+dukvUEOneOSw81cb9jM1kNrksJ3prYssHj3VmTT/Ozow2bXCszeONG
-	 wxggNftum7HMMht4NlULG8bCHMsrh0420obWeYL2szrMQUWpWJ8T/TR//JLP6mDB38A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795369589;
+	h=Received:From:Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key;
+	bh=y3ycCPGGbIo/EnpPrpSFCKuZkVql5TAl1Yl4QBkTIU4=;
+	b=wTazR3ruFdsbfjXYHlzH/iObu5c6sF1YqgVMch4ViPrQLI3Js9iXay+7n6VNuDj4Eta0
+	 VaFfUUA8vf79i7zXblUB1Uk6FCNR6o9kHB5odPhKWLScyJWv2nqkoSK0R0w3o0G3zYelO
+	 RtKLSiREO4L24rq7NORF7svOkO9Pu//uc/Qn8iFdA01v1D8B5lJNLLngxNjCXLfgOTrSR
+	 6LZv43D58PXcHkaAzbJTYGaZ3dX6jxqtbfW9wb4ImG/khrXe2QXhCCSOz7Lo6SRlxoaFt
+	 54rDk3TemO9u4a10MpHvfiZtGs502nC0oqFhQUvmjdgWmFNTCoF1I8Xv8w0OrhVhDCg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aF2YUJbp;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BDFF606A320;
-	Sun, 22 Nov 2026 16:57:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aF2YUJbp
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBCD01F000C6;
-	Sun, 22 Nov 2026 16:57:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795366634;
-	bh=2Yw74l8uzk8/LW206uKJMYpkivuj4oIRzbpObpcHoLo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=aF2YUJbppibS6GSpXrZYFlzyZc3k5urN25NEqoD2FPN02oVamYM9O2DyDzBDVEuCb
-	 IU0Qrx0C3cc3Ib+FCM9IIy9r6xRQikOkl1899Qz9ZlJpBdrndioo3xSxrf7COe+2I4
-	 qHQ0goT/cCIq8/vgiCjsBuO2Nq6++ivH7HqPj/ldNajFCCJ9+FE2HCLupVE1CPX+Sb
-	 CWSUy04oaPSJnGPo4P3uC106jSMP9MWCT1JVEf+LXrXS5oi7MgwrifBgR9Dzh610Zk
-	 yRVkuZ5OVcg9IjZb/yTgEG771NV6jOyEimMeFwTXDLtvqugVr3mVZxjHP0rdAKpVu8
-	 gzxkgzMI7kYxg==
-Date: Sun, 22 Nov 2026 17:57:11 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Sumit Gupta <sumitg@nvidia.com>
-Cc: rafael@kernel.org, viresh.kumar@linaro.org, robh@kernel.org, 
-	krzk+dt@kernel.org, zhongqiu.han@oss.qualcomm.com, conor+dt@kernel.org, 
-	treding@nvidia.com, jonathanh@nvidia.com, linux-pm@vger.kernel.org, 
-	linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
-	bbasu@nvidia.com
-Subject: Re: [PATCH v3 6/9] dt-bindings: arm: nvidia: Document the Tegra264
- CCPLEX cluster
-Message-ID: <20261122-caribou-of-pleasurable-competence-e8fe0d@quoll>
-References: <20261119111217.902071-1-sumitg@nvidia.com>
- <20261119111217.902071-7-sumitg@nvidia.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 540A3606A320;
+	Sun, 22 Nov 2026 17:46:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44D221F000C4;
+	Sun, 22 Nov 2026 17:46:28 +0000 (UTC)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH 0/2] soc: qcom: socinfo: Drop DT bindings with IDs
+Date: Sun, 22 Nov 2026 18:46:19 +0100
+Message-Id: <20261122-qcom-socinfo-id-dt-bindings-v1-0-eeee0ffa25da@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -61,26 +40,68 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261119111217.902071-7-sumitg@nvidia.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQqDMBBA0avIrB0wwYp4ldKFSSZ2Ck7ajC2Ce
+ HdTXT4+/A2UMpPCUG2Q6cfKSQpMXYF/jjIRcigG29jOGGvx49OMmjxLTKVhWNCxBJZJkbpIvbm
+ 5tu0bKId3psjreb8/LuvXvcgv/yXs+wG2wE6JfwAAAA==
+X-Change-ID: 20261122-qcom-socinfo-id-dt-bindings-e6fe815b4480
+To: Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
+ Brian Masney <bmasney+clk@redhat.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Ilia Lin <ilia.lin@kernel.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-clk@vger.kernel.org, 
+ linux-pm@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1053;
+ i=krzysztof.kozlowski@oss.qualcomm.com; h=from:subject:message-id;
+ bh=WxhspYoNAR70bc12bimxTQE3QbsRIZkWd7XFqAcidbU=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBrAypugRRfyp240hp/kgiOqb8atSODnPIKYPmAo
+ UF1DgCegAWJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCawMqbgAKCRDBN2bmhouD
+ 1483D/9NFT8AtZlMxrWFvkG1ZcbantBMgjT27rPFR1dzhxniSSqx7WX66P7Oia2RzeLUqKCza+C
+ rYmiibo/pVhc+B8oKUwpb3I8bVuDmqkqxYZsyeyp/FJb1P0vQH0hFUhpDaiZNq88iTXXnikcOMS
+ TsxTbkg9FmbLxrTPJCUFw55HReYwAUmNNq05WiehpukzN8BGSeO5CJPBfJ8hHNLj6ZV8l0R6z9b
+ eRIwb6SKDUfdhKYoLHBWhYEeDhBCae1YoK9C0otLnQdGNAOO4cBuM+jWJrfLUgbYdlTH/q2Y+0h
+ qQV0aRMdqRv5Ph2PhtP6KkAMjPkTtMkzUNv/wieZjimXQZtZh+GZ/ojq9H7/P96BTBRNBqwZchx
+ 3L1F30n2PglOftE6Xw8IoXH9449nWssjqjxwczPT/wuzoMqq7OX1XulhSjiHguKSgdQeKZL5mwr
+ HwNscOei87BJQYnZjpVw4Jy2Dq+/KN2YC2Lbpk9Cx7ra1ngfYgJXojBhaW77RXrMtga7it77fA5
+ wpib+iO5LprKnUPMacU6Uo8e0OebjQa7vTDq7GegAJnck1N+dXrtf/vsZuwDrnFq2Yd3rA4MxxH
+ u1sXgb5R0+FLruMpyuvehsjuo1bFuNJOC1moWreD5otfqUow9vTl8ZdBbW7nlobejvLhDJS61cX
+ wL13iNQZsW6uXww==
+X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp;
+ fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 
-On Thu, Nov 19, 2026 at 04:42:14PM +0530, Sumit Gupta wrote:
->  examples:
->    - |
->      ccplex@e000000 {
-> @@ -49,3 +66,11 @@ examples:
->        reg = <0x0e000000 0x5ffff>;
->        nvidia,bpmp = <&bpmp>;
->      };
-> +
-> +  - |
-> +    ccplex@30000000 {
-> +      compatible = "nvidia,tegra264-ccplex-cluster";
-> +      reg = <0x30000000 0xcf0000>;
+It turns out that people add SoC IDs as Devicetree bindings, thus ABI,
+and then want to change them, for example because whatever
+renaming/marketing happened.  Well, that makes little sense - either
+this is ABI and cannot be changed, or is not an ABI and can be changed.
 
-Drop example, no need for difference in one new property.
+https://lore.kernel.org/all/9eda2209-d64a-4a1c-915d-4415ac47df45@kernel.org/
 
 Best regards,
 Krzysztof
+
+---
+Krzysztof Kozlowski (2):
+      soc: qcom: socinfo: Copy new SoC IDs from bindings
+      dt-bindings: qcom: qcom,ids: Remove unneeded ID constants
+
+ drivers/clk/qcom/apss-ipq6018.c      |  2 +-
+ drivers/cpufreq/qcom-cpufreq-nvmem.c |  1 +
+ include/dt-bindings/arm/qcom,ids.h   | 93 +----------------------------------
+ include/linux/soc/qcom/socinfo.h     | 94 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 97 insertions(+), 93 deletions(-)
+---
+base-commit: 74ceacafec02465d922ad68dce9498c8f50e5f5d
+change-id: 20261122-qcom-socinfo-id-dt-bindings-e6fe815b4480
+
+Best regards,
+--  
+Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
