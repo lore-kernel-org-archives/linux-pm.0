@@ -1,13 +1,13 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795417550;
-	b=k0cgkKaar2xKipE4JpkSvvs5o8+W3L7lDJbDz+IuwDDGZGGMT7OhxqijrZ/ITFerOvHI
-	 5xM1r/teqCZpcg6SzMnf/TT1z5qxzyZ06/7V2rPsEJuMD3Bd799UTs2cJuRIrKixANXm1
-	 sS6P4qGlLyejUkhExVCbkfDNupp1SFRr8zd/ueyrr3Sn29aGH8llJsjyD1hxOzTqiXUJk
-	 6k9a6u6XP/jDHUkdnl9b+7YWf2BsvU/kYp+Lf6IRpbuyObsAcnlSEo4aWQQ+VL+hgooPo
-	 ClfRlSbAQJ3oSJ3u/hhlRSdIRHXbvlA8dXFsHmVIN7nDrK3Agr80H4FG3/ZfGDWyIjA==
+	t=1795417546;
+	b=13mrMWPptocKWfgmnyIk5kJlo3t896E0T6qCZ1DdleYQP0Xl4YzOvo/oyfLkiI7M9ZN0
+	 Upolj9JCxSJHnxx35IErQpa+ISHfWhuw5VTJ+RKNahv6er6wNgako66vyNTIloYXGBB+U
+	 dSixS+BPdfgrDZhvPF+cTawGvRa85DUfCwQaIjxy803XPaX5EHVC90h9VsCtq3YI+C8vT
+	 E0uqxLPIdD8ikRE5hncx4Op+RWNVOz6IA4G6w4zAssyeTWc+dhVVtPAj1VNRaHCGkK2Kc
+	 ffTbwrNC3A6yydAyP1fIZdACpF7HVozDFuebvtf/B9MvRb/pt7IUSKxIqCaz8V6LvFA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795417550;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795417546;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:Received:From:
 	 Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
@@ -15,55 +15,55 @@ ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	 X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:
 	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
 	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=73qkdb0vuDKVHImBYvoSDVsRWYaA4I4cYyEBvcpvby8=;
-	b=1tCsd59+ozJEAXSQ6INzENUe831ahdb/+bgHdDwrd7tD3W8wLet8qX42ru9QBQIHjqz/
-	 Qqas8eq3ZZu4gs8ALEZ/8dVl2dmgKq3zk5w+wDYdcvo+qhWIfyGH1wk+qQkD0pqTWqNkl
-	 IXn09t5EWnsGinXOU0LPGFuVdiMnfGo+Ot/Yy85N8fP0ptvuqO933ix+o5pQowsf/yrC9
-	 5UN/ztV+wjNufYSBCktIW4Tfq2b35q1uoX2vxQNIluZKhUIg1EQYCxQmfZWEMUXD4fFQ2
-	 NJrumv6cCfXYTF2Uz0/PIWupbyGdkRHL7DpAaXxS5oaUGLxPmfOedlfERMd5rsrG33w==
+	bh=mNZ6bZZf33/ujakZ94r0duEndktkggT7gLlZ0Hy4Jlk=;
+	b=EGbHcB6f91bzFMkZld0TTf1VqH2VhIfimSv304YhhTJpVYg6vodlzXZeanmfZwyT56sr
+	 04XlHlhGi20SZTmp5/1VCxhv3m8bubdPfYHnluFJQft4ftqELCqVn8QhHBzsVU1qeSuvg
+	 laCkwSi2j6Txv8/l9dPVM/Mp91MqG51fKKG9T/qQRqE+BJuYpW0ppJioQbVvDvLQO7PWY
+	 D9CihxnwPL7OL3suIcfGSmzvUe6h/fQFZKTqFFCZFz/ks7C2upv38E7K5y1DnB9wH7/nK
+	 +nQEHT34WbOK8QOTWwuUbJFNn90Xl4mgh4/JpWEilMbEoMaVT1+sxlqezQvrr8ZFEBg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=bKR+HsUd;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ScdK6bnG;
 	arc=none smtp.remote-ip=205.220.180.131
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CEF3606A681;
-	Mon, 23 Nov 2026 07:05:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5CEF3606A681
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BFAC606A31F;
+	Mon, 23 Nov 2026 07:05:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0BFAC606A31F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=bKR+HsUd
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ScdK6bnG
 Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN69FTR1011324;
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN699sq1011258;
 	Mon, 23 Nov 2026 07:05:10 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	73qkdb0vuDKVHImBYvoSDVsRWYaA4I4cYyEBvcpvby8=; b=bKR+HsUdpKaDDy4F
-	m0UN4zPKKtoukMONWmxGWxwaDMtDlJ8xcGXPUxxbtp3WqGzomWlO4+PzkCUFLG6O
-	KMSHirNNQAJzOEvfOpcsPX7Va6mI5WTtgkAnb3aJUuGhZr7yLJ6ohpjEMUOrhJIm
-	GcOWqtXQWeOjQSFRaY92Jl2D3/WME5XHIepXcffALewb1PXTxc0mtIPfwWKyQapB
-	x6JX9hIjjVV0vrjEOMhXwzrqG9OIh68aOybo/iTCzVOoPE7DMiK32Q7EeC6A8ngB
-	pngdUhMyOWNvKRqwlizl7J1xthpP+bQEJic0j/9muVD2edU0+nDAtwwc2X4f2oUN
-	ZfJZoA==
+	mNZ6bZZf33/ujakZ94r0duEndktkggT7gLlZ0Hy4Jlk=; b=ScdK6bnGQLdYSEVq
+	Gf6PBQdTmaoey5pyQAaTNaNK2/NXR2IOSoEpD/RomSOFUnME3XO8oMGlKRrGPqzg
+	Edn1SG5hfy6ZJ9dT4I7bXQeBiS2Ce316NioqW9d0D95XNwY2gbNykvg+Tz/7CdA2
+	wJ+vjpRZsIf+qSY+yTw0ODRgjRKymWk2tgDUVrR2se9K0SQjPnxAnsrZyZ6DP2lm
+	pONlZnjL5OXo8qdS+j/jrHklZB96cNNTDJNCt+Qt7avqki69I833drmLtdlX06oQ
+	I2CWqv2FlKLoJeKz+wPS6io1N/lJGnwuM55fxLPKwLExGv4dXQ3nEjgRK93lR0ra
+	48ixag==
 Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4fyh063s-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4fyh063t-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Mon, 23 Nov 2026 07:05:09 +0000 (GMT)
 Received: from pps.filterd (apblrppmta01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN7562Q4185185;
+	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN756wG4185227;
 	Mon, 23 Nov 2026 07:05:06 GMT
 Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 6AN753Q64185090;
-	Mon, 23 Nov 2026 07:05:05 +0000 (GMT)
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 6AN753Q74185090;
+	Mon, 23 Nov 2026 07:05:06 +0000 (GMT)
 From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-Date: Mon, 23 Nov 2026 12:34:56 +0530
-Subject: [PATCH v5 4/5] power: reset: pscrr: add kernel watchdog reason
- tracking
+Date: Mon, 23 Nov 2026 12:34:57 +0530
+Subject: [PATCH v5 5/5] power: reset: pscrr: record reason for
+ userspace-initiated reboots
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -75,7 +75,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261123-pscrr-reboot-reason-v5-4-fbf3c7c92772@oss.qualcomm.com>
+Message-Id: <20261123-pscrr-reboot-reason-v5-5-fbf3c7c92772@oss.qualcomm.com>
 References: <20261123-pscrr-reboot-reason-v5-0-fbf3c7c92772@oss.qualcomm.com>
 In-Reply-To: <20261123-pscrr-reboot-reason-v5-0-fbf3c7c92772@oss.qualcomm.com>
 To: Sebastian Reichel <sre@kernel.org>,
@@ -108,20 +108,20 @@ X-Authority-Analysis: v=2.4 cv=NM1AaE6g c=1 sm=1 tr=0 ts=6b03e5a5 cx=c_pps
  a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
  a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
- a=uGZmaWCuiYb8ISEHsTcA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAyNyBTYWx0ZWRfX+WXh96U4J1MH
- /KIOE8RQkLxvHEH3jTVxBgadegXGeQGcnQl8D8w0kEWfn+FU15bCmm4ahc/Lvd8kfWkedQo68D+
- icd3G5WYhyw9ERpy01QKQrLwoV6Olmo=
-X-Proofpoint-ORIG-GUID: tBDg-V36j994N0lxJe0Re5NekDyEILZU
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAyNyBTYWx0ZWRfX0wsxh8LFO4Dd
- 23eCO2M0FfQKOyBHvoRLXNTAtTrMHrT06QDomTicfxMAyt9bBYjORFLBnE4DZgP8yzHJue7PPyu
- Ih7z7D1kWME2A+riWyaB3uLzFO5MAjylRJ+MwuLwVWC9tc4anXjJhvk2EC+dbOwvNhybaOnt0nb
- s2f5Hi1ct6jXXIJL94/wsEcoSFhmU8Mqsu0ZwpW+7dN6t+vww9ETPtmkUb/bpnmK/V+2TOqq/ZC
- khdB4TWQAPJnyjfN3ygnkegmwl6eAraOeCW33Ylu3abAb35OmISb7ojY9NTmAdwOvTBIUES2GMY
- 6ri4Dv+ZzuSCKS1wyrfMUznFYFqMblQoyaFpToaNQUl7cHOCY8p+DA5IwEibP/1KgGkSfvEwLvA
- gYwfaTBnCmYdz2GQysqr+dBo7ZBsAtMEa4BbQMnAcLojOZHiM6YaRIEIvkBMkBbsESOR40Bziky
- X5z+ZQCe/1ypRcVob7Q==
-X-Proofpoint-GUID: tBDg-V36j994N0lxJe0Re5NekDyEILZU
+ a=y7n2HT4GL4nd4BABNBAA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAyNyBTYWx0ZWRfX7tW8e+53jAST
+ XtIfZQIrvTZGpZ/pt3gB0WaVgyvYhStXjOwTE2bd0SVcqwrLI+qSlMdrNaFPNFbnJB0EUiU8QNI
+ R2zmEumCqRzXvsjVRbGxSkjUn457560=
+X-Proofpoint-ORIG-GUID: g5LRt1hhqwD-5yxuCJsTt3Dbn-oqLm17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAyNyBTYWx0ZWRfXyglrIFxbW5Po
+ fQYoKArx8jxZbGj6JFV9ZvGBA+sv2KCy14ZNxjE/qwJLPNU8HQjvDi5ostTCPHgVeL8Q0wjlsrU
+ mp55stIPfZgu10QKqLV4PJAwFg/57l1PASAMRuFkWmlY4eqoO0sCsGEwAwxs07PC98JcoeZpl1Q
+ bDFoSMwIAdDwZ8/VJd/46yc+Vj069O0HcSWJNehavm680dmflpkJrdVtra4MN0Ir00yOjoOwhkp
+ 64bVaD8XUG4Raah1GAjsuJHJPQ+adZ7Oa0EP/1uv2zGc/zOgKjPrtv1Zm6HJ6gdsNsUaJ4Lv4uE
+ ycbxjGecbtVQRKFpqKeCB4Phzxr/MDV3t7Fg2sqoSF50D3fKaBwWcTTWoE0vCTys0lPraf8gi9f
+ yMCDAHTb9oPQXcZlAsTU3l7exRY8s23e9Nly13rZLarYihQi8G0rI5mRzVhnEtAoPXKx61pFYYq
+ R5ysZLOxiDnRc2jAGeQ==
+X-Proofpoint-GUID: g5LRt1hhqwD-5yxuCJsTt3Dbn-oqLm17
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-23_01,2026-11-22_01,2025-10-01_01
@@ -131,110 +131,167 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230027
 
-Kernel watchdog events are not recorded with dedicated reset
-reason codes.
+Userspace can request different reboot targets, such as
+bootloader, recovery, OTA update, EDL and factory reset.
 
-Add PSCR_KERNEL_WATCHDOG_HARDLOCKUP and PSCR_KERNEL_WATCHDOG_SOFTLOCKUP
-as dedicated reason codes to record hard and soft lockup events
-detected by the kernel watchdog on subsequent boots.
+Add dedicated reset reason codes for these reboot targets to
+preserve the requested reboot mode across system resets.
 
 Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 ---
- include/linux/power/power_on_reason.h |  2 ++
- include/linux/reboot.h                | 10 ++++++++++
- kernel/reboot.c                       |  2 ++
- kernel/watchdog.c                     |  9 +++++++--
- 4 files changed, 21 insertions(+), 2 deletions(-)
+ drivers/power/reset/pscrr/pscrr.c     |  9 ++++----
+ include/linux/power/power_on_reason.h |  5 +++++
+ include/linux/reboot.h                | 21 ++++++++++++++++++
+ kernel/reboot.c                       | 40 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 71 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/power/reset/pscrr/pscrr.c b/drivers/power/reset/pscrr/pscrr.c
+index 9e6dd3e17382..8e345d07269e 100644
+--- a/drivers/power/reset/pscrr/pscrr.c
++++ b/drivers/power/reset/pscrr/pscrr.c
+@@ -498,18 +498,19 @@ static void pscrr_record_current(void)
+ }
+ 
+ static int pscrr_reboot_notifier(struct notifier_block *nb,
+-				 unsigned long action, void *unused)
++				 unsigned long action, void *cmd)
+ {
+ 	guard(mutex)(&pscrr_lock);
+ 
+ 	/*
+ 	 * A reboot, halt or power-off that reaches here with no more specific
+-	 * reason is software-initiated by definition. Record it as such rather
+-	 * than leaving it unattributed; a real cause set earlier (thermal,
++	 * reason is attributed from the userspace reboot(2) command string
++	 * (e.g. "bootloader", "recovery", "ota-update") when present, or recorded as
++	 * software-initiated otherwise. A real cause set earlier (thermal,
+ 	 * under-voltage, ...) is already latched and left untouched.
+ 	 */
+ 	if (get_psc_reason() == PSCR_UNKNOWN)
+-		set_psc_reason(PSCR_SOFTWARE);
++		set_psc_reason(psc_reason_from_reboot_cmd(cmd));
+ 
+ 	pscrr_record_current();
+ 
 diff --git a/include/linux/power/power_on_reason.h b/include/linux/power/power_on_reason.h
-index 8e3889fa43ef..9bcce23c81e9 100644
+index 9bcce23c81e9..9bd903594f41 100644
 --- a/include/linux/power/power_on_reason.h
 +++ b/include/linux/power/power_on_reason.h
-@@ -22,5 +22,7 @@
- #define POWER_ON_REASON_EXTERNAL "external reset"
- #define POWER_ON_REASON_KERNEL_PANIC "kernel panic"
+@@ -24,5 +24,10 @@
  #define POWER_ON_REASON_WATCHDOG_PRETIMEOUT "watchdog pretimeout"
-+#define POWER_ON_REASON_HARD_LOCKUP "hard lockup"
-+#define POWER_ON_REASON_SOFT_LOCKUP "soft lockup"
+ #define POWER_ON_REASON_HARD_LOCKUP "hard lockup"
+ #define POWER_ON_REASON_SOFT_LOCKUP "soft lockup"
++#define POWER_ON_REASON_REBOOT_BOOTLOADER "reboot to bootloader"
++#define POWER_ON_REASON_REBOOT_RECOVERY "reboot to recovery"
++#define POWER_ON_REASON_REBOOT_OTA "reboot for OTA update"
++#define POWER_ON_REASON_EDL "reboot to emergency download mode"
++#define POWER_ON_REASON_REBOOT_FACTORY_RESET "reboot to factory reset"
  
  #endif /* POWER_ON_REASON_H */
 diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index 6d5ecc6cdc00..45e64bcad37e 100644
+index 45e64bcad37e..5723852135f2 100644
 --- a/include/linux/reboot.h
 +++ b/include/linux/reboot.h
-@@ -246,6 +246,14 @@ extern void orderly_reboot(void);
-  * @PSCR_WATCHDOG_PRETIMEOUT: Recorded when a watchdog pretimeout fires, before
-  *  the pretimeout governor brings the system down.
+@@ -254,6 +254,21 @@ extern void orderly_reboot(void);
+  *	task) detected by the kernel's softlockup watchdog, before it
+  *	escalated to panic.
   *
-+ * @PSCR_KERNEL_WATCHDOG_HARDLOCKUP: Reset that followed a hard lockup detected
-+ *	by the kernel's NMI watchdog (kernel/watchdog.c), before it escalated to
-+ *	panic.
++ * @PSCR_BOOTLOADER: Userspace-requested reboot into the bootloader
++ *	(e.g. "reboot bootloader" / fastboot).
 + *
-+ * @PSCR_KERNEL_WATCHDOG_SOFTLOCKUP: Reset that followed a soft lockup (hung
-+ *	task) detected by the kernel's softlockup watchdog, before it
-+ *	escalated to panic.
++ * @PSCR_RECOVERY: Userspace-requested reboot into the recovery image
++ *	(e.g. "reboot recovery").
++ *
++ * @PSCR_OTA: Userspace-requested reboot to apply an OTA update
++ *	(e.g. "reboot ota-update").
++ *
++ * @PSCR_EDL: Userspace-requested reboot into Emergency Download Mode
++ *	(e.g. "reboot edl").
++ *
++ * @PSCR_FACTORY_RESET: Userspace-requested reboot to perform a factory
++ *	reset (e.g. "reboot factory-reset").
 + *
   * @PSCR_REASON_COUNT: Number of defined power state change reasons. This
   *	value is useful for range checking and potential future extensions
   *	while maintaining compatibility.
-@@ -271,6 +279,8 @@ enum psc_reason {
- 	PSCR_XTAL_FAIL,
- 	PSCR_KERNEL_PANIC,
+@@ -281,6 +296,11 @@ enum psc_reason {
  	PSCR_WATCHDOG_PRETIMEOUT,
-+	PSCR_KERNEL_WATCHDOG_HARDLOCKUP,
-+	PSCR_KERNEL_WATCHDOG_SOFTLOCKUP,
+ 	PSCR_KERNEL_WATCHDOG_HARDLOCKUP,
+ 	PSCR_KERNEL_WATCHDOG_SOFTLOCKUP,
++	PSCR_BOOTLOADER,
++	PSCR_RECOVERY,
++	PSCR_OTA,
++	PSCR_EDL,
++	PSCR_FACTORY_RESET,
  
  	/* Number of reasons */
  	PSCR_REASON_COUNT,
+@@ -291,6 +311,7 @@ enum psc_reason {
+ const char *psc_reason_to_str(enum psc_reason reason);
+ const char *psc_reason_to_token(enum psc_reason reason);
+ int psc_reason_from_token(const char *token, enum psc_reason *reason);
++enum psc_reason psc_reason_from_reboot_cmd(const char *cmd);
+ 
+ /**
+  * enum hw_protection_action - Hardware protection action
 diff --git a/kernel/reboot.c b/kernel/reboot.c
-index fad4ef9681a6..b748153d18cc 100644
+index b748153d18cc..73655bd2b02b 100644
 --- a/kernel/reboot.c
 +++ b/kernel/reboot.c
-@@ -1111,6 +1111,8 @@ static const struct psc_reason_desc psc_reason_descs[] = {
- 	[PSCR_XTAL_FAIL]	 = { "crystal-failure",	  POWER_ON_REASON_XTAL_FAIL },
- 	[PSCR_KERNEL_PANIC]	 = { "kernel-panic",	  POWER_ON_REASON_KERNEL_PANIC },
+@@ -1113,6 +1113,11 @@ static const struct psc_reason_desc psc_reason_descs[] = {
  	[PSCR_WATCHDOG_PRETIMEOUT] = { "watchdog-pretimeout", POWER_ON_REASON_WATCHDOG_PRETIMEOUT },
-+	[PSCR_KERNEL_WATCHDOG_HARDLOCKUP] = { "hardlockup",	  POWER_ON_REASON_HARD_LOCKUP },
-+	[PSCR_KERNEL_WATCHDOG_SOFTLOCKUP] = { "softlockup",	  POWER_ON_REASON_SOFT_LOCKUP },
+ 	[PSCR_KERNEL_WATCHDOG_HARDLOCKUP] = { "hardlockup",	  POWER_ON_REASON_HARD_LOCKUP },
+ 	[PSCR_KERNEL_WATCHDOG_SOFTLOCKUP] = { "softlockup",	  POWER_ON_REASON_SOFT_LOCKUP },
++	[PSCR_BOOTLOADER]	 = { "bootloader",	  POWER_ON_REASON_REBOOT_BOOTLOADER },
++	[PSCR_RECOVERY]		 = { "recovery",	  POWER_ON_REASON_REBOOT_RECOVERY },
++	[PSCR_OTA]		 = { "ota-update",	  POWER_ON_REASON_REBOOT_OTA },
++	[PSCR_EDL]		 = { "edl",		  POWER_ON_REASON_EDL },
++	[PSCR_FACTORY_RESET]	 = { "factory-reset",	  POWER_ON_REASON_REBOOT_FACTORY_RESET },
  };
  
  /**
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index e5134ad7b663..e05ae3cc583f 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -22,6 +22,7 @@
- #include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/nmi.h>
-+#include <linux/reboot.h>
- #include <linux/stop_machine.h>
- #include <linux/sysctl.h>
- #include <linux/tick.h>
-@@ -287,8 +288,10 @@ void watchdog_hardlockup_check(unsigned int cpu, struct pt_regs *regs)
- 	}
- 
- 	sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
--	if (hardlockup_panic)
-+	if (hardlockup_panic) {
-+		set_psc_reason(PSCR_KERNEL_WATCHDOG_HARDLOCKUP);
- 		nmi_panic(regs, "Hard LOCKUP");
-+	}
- 
- 	per_cpu(watchdog_hardlockup_warned, cpu) = true;
+@@ -1168,6 +1173,41 @@ int psc_reason_from_token(const char *token, enum psc_reason *reason)
  }
-@@ -903,8 +906,10 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 		sys_info(softlockup_si_mask & ~SYS_INFO_ALL_BT);
- 		thresh_count = duration / get_softlockup_thresh();
+ EXPORT_SYMBOL_GPL(psc_reason_from_token);
  
--		if (softlockup_panic && thresh_count >= softlockup_panic)
-+		if (softlockup_panic && thresh_count >= softlockup_panic) {
-+			set_psc_reason(PSCR_KERNEL_WATCHDOG_SOFTLOCKUP);
- 			panic("softlockup: hung tasks");
-+		}
- 	}
- 
- 	return HRTIMER_RESTART;
++/**
++ * psc_reason_from_reboot_cmd - Map a userspace reboot(2) command string to a
++ *				 power-state-change reason.
++ * @cmd: Command string passed via LINUX_REBOOT_CMD_RESTART2 (e.g.
++ *	 "bootloader", "recovery", "ota-update", "edl", "factory-reset"), or
++ *	 NULL.
++ *
++ * Return: The specific reason for a recognized command, or PSCR_SOFTWARE for
++ * an unrecognized or absent command.
++ */
++enum psc_reason psc_reason_from_reboot_cmd(const char *cmd)
++{
++	static const struct {
++		const char *cmd;
++		enum psc_reason reason;
++	} cmd_reasons[] = {
++		{ "bootloader", PSCR_BOOTLOADER },
++		{ "recovery",	PSCR_RECOVERY },
++		{ "ota-update", PSCR_OTA },
++		{ "edl",	PSCR_EDL },
++		{ "factory-reset", PSCR_FACTORY_RESET },
++	};
++	int i;
++
++	if (!cmd)
++		return PSCR_SOFTWARE;
++
++	for (i = 0; i < ARRAY_SIZE(cmd_reasons); i++)
++		if (!strcmp(cmd, cmd_reasons[i].cmd))
++			return cmd_reasons[i].reason;
++
++	return PSCR_SOFTWARE;
++}
++EXPORT_SYMBOL_GPL(psc_reason_from_reboot_cmd);
++
+ /**
+  * __hw_protection_trigger - Trigger an emergency system shutdown or reboot
+  *
 
 -- 
 2.34.1
