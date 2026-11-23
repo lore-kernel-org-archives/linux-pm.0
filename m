@@ -1,54 +1,98 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795451733;
-	b=2jzO/IaQP9Oi14WYTCt+swFXqPqf4zU1F7Swwc/etHcF34wxob7ylawxGN0/rZj/Km9T
-	 cZ+G70MqEMs82B+RLGXTO0Wa2RpINEVTm3Hd6tPdgr9IGpAG0851kNHKRR2V1r7DcnDsu
-	 q+5lgn3O0JbD41AX5C8enkI2yr05FmNhRlZ2xJGeU8yPgj4+IY9D8WGvdKPH8BXTrwEgf
-	 kpANOlc2xVDRkiXIIFBbDQ0heAqNK4DzinqIeiO9LLDSNRZFyHnBf2CqJ3IqlVYPtiRXb
-	 qiBOUFz17roQS0wavTkGElxZePgiuO3jn9lvnYXC3SUtzq8wVovoA0FHtIr2/C6cz7g==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795451733;
-	h=DMARC-Filter:DKIM-Signature:Received:Content-Type:Mime-Version:
-	 Subject:From:In-Reply-To:Date:Cc:Content-Transfer-Encoding:Message-Id:
-	 References:To:X-Mailer:X-ZohoMailClient;
-	bh=QonMcWfZhIMNw5CEeHP+f4vnHBs+VjAaV445fAEQw3U=;
-	b=1MrK3ZIDOOhMLE4fo6KwQoXUxTwJpVDG3YL2vf3NXno+d+KQF4yhmHB3R/UTyI67L69x
-	 sSu8O1PV6VHpzDI/zrzv7sgpZYnz4YVD3xpgfbjnJhzkEl11vV3eRei2q6jQGTToP/9Y4
-	 hb3Arwi61m3grLOj4cxnlKTmfHjA6lNUXopsphoqimuYpkIMuFhQHyYpEX+rR89QJU2TB
-	 taqAjZfn8qUAY84Noj4dCy3MZ0IOJUoAaUo3Vd6PvNXq8wpKzQuwPa0EBV7KT5//BrztR
-	 Nsu9zHqGt1yX4UqotHirslWI6I+AeRPoaXut80jkgdeIG5Yl5z8rnFzsVfUqmd2lVKQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=collabora.com;
-	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=GAI6E7T6;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=165.173.182.11
-Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.178
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795454372;
+	b=rELDEV7mRhCwBgUWNJIKljJH97oPMG9FZxsY9BLL/rzxmE2hg9/DLDvWUeC5EROWcr88
+	 hUsKo7bBjl2YGnw4/Xwy8f4nuQbWf5uwZXH1OHBEfV4x2e2ArPTSfBorwWbf+9Y5h5Cde
+	 +ssu9xqD7lreebHbrzpVSR/wTw5VyJdyV7gu9T+XiCXmLW2eiRaeNJqU8WoRqxBSAdTUc
+	 GQDZHyHdDQOGKlq2EFIAwAE3ZPkP+R1ZHiH6nhQ3mYg8VTTyDCVx/GtxuXGS+e/uFVZ/B
+	 WzAxUzRl7pkmRoRsjUYDNWAco4vic3JZ6kF4GFV77n1yWmLTcKzDgHj6XyFqbkF2R/g==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795454372;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=Pl5LlU8oba1tB9cYFDtFrGCDtd6q3xDmJZtY4vUlwMQ=;
+	b=rXDuO+wNnnTR507XzIwkJO+e2PXJ8MZebrqv/KlhLw3N5Ak4xuhz6i4hHYasZ+kw6ZNF
+	 DUfrJ5uvZDgQMJXLWF79XHuO9dwKZ2L2N/PNK7yKyFwL3s/8AynBLrwPwDxKHn2imogSo
+	 Bjqs507WfVTOmQxyI+909NOhmtF3uVZZLaYxx+ut6Pxp6IwUsbTo+R+MPgrY6hnG7cfac
+	 TIV8X5iuaDZtKsqnR8mm0x23MdAv3B83Ktke/1x83KiBTknQ/P4cLbbX8TBGF/WHjCwKi
+	 iIOTLeUkX4biRmw0i2ioWQCNpiu/oqwPYYjr/QMyPJd1/teYFJ2ZEju0QRtztH6yOZQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="kP3i/so6";
+	arc=none smtp.remote-ip=209.85.210.178
+Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 593C4606A31E;
-	Mon, 23 Nov 2026 16:35:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 593C4606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3985D606A31E
+	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 17:19:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3985D606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=GAI6E7T6
-ARC-Seal: i=1; a=rsa-sha256; t=1795451652; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=ZbOvI+mjMOJdnFUKfoizUppJ6Ex6hbrHj2jxYtGHugqpZ/j92pi6Tu8fPa6z+YesJmcS5LTOgGJXZUsQEQZeANA77QkFFntTa8oUCzlsIRNbUxNOQscyMFVdMuM9wp1aeymCBkDSvpK6lYGDi7Ry7l5QcSyo0GF5tP1Us9l4sho=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1795451652; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=QonMcWfZhIMNw5CEeHP+f4vnHBs+VjAaV445fAEQw3U=; 
-	b=eueo9JlUODZxmwySjUsVy3NbbUU3IYimCIEQg5PbyjbjMsD/n4RzU9wTVwSr13IHzmxhOyT9Dr/ukXJqbz6vbb7xT/EH+DjjWoI9wZWEnsaR5adGXRNq3fdI0PRVX9q86X6sV9j2TzQ2/MJsY3Jg68cMCskDUSgt8s1xS1AijdY=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
-	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=GAI6E7T6ob6Nh6q2zHxKPJSqCvgf5vpe25pUS58M/13XUUw2gND7vz4tmSwlpFi/h7R/lAgfsRj9i+/r7Totl7fqnIyBRHU7OcXoxH3I7xTnNpAO3NAWGfg3QFMRRlMi5Tc6rS84L8JVg1WvfeNHFhFhPe5TjibnvVfcQD9RHpQ=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=QonMcWfZhIMNw5CEeHP+f4vnHBs+VjAaV445fAEQw3U=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1795451645257569.0456820205015;
-	Mon, 23 Nov 2026 08:34:05 -0800 (PST)
-Content-Type: text/plain;
-	charset=utf-8
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=kP3i/so6
+Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-8b6b22be970so1341294b3a.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 09:19:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795454371; x=1796059171; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Pl5LlU8oba1tB9cYFDtFrGCDtd6q3xDmJZtY4vUlwMQ=;
+        b=kP3i/so6HH98uHbfHy+ALDtpP5nXVMLM+tkX6mX2FuuRG2PPFEXsbnhwy7f4NMgG7x
+         CLapE1dVyxNQ8t+4zs0kx/K+/3kRwXX3ylY85Dz5NmBXHYwcAzwiz6zVfabd3nK0545o
+         7gmyZ38HC0ocV/AUQgXuQmZVry0wRWSHGrDpQk2c/5O1NUoxKiiaTnADTiVIUBm2sbaz
+         +xofFwBJmmO3R8FBzZr9Cqdp8ginTinrei/cVKLvX/8cKvnvW2DvmarkTGGWqV5mfffL
+         +HFi6SFVtFC1lKD2Jb78hCG0d7qED13FzsWB9KAYn+l/KZOS/C3t0aoMrLDLNLjU0o2Y
+         Szxg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795454371; x=1796059171;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Pl5LlU8oba1tB9cYFDtFrGCDtd6q3xDmJZtY4vUlwMQ=;
+        b=T3TUD5sffrMl3zKmhZUg2Ii+hkt25Wtc/XzedQcqpQhC5rQfqNrDkK4inG77LsY1Ic
+         o5dlQ+VKAwvXhWZOd3aoS7hHRLvwLsQiwb8k6UVpwh92oo0IXihnQ/WmnmpDcqH/Lusd
+         wmFeMHDbktLVtMrwMA+MNqZYcqee+yAgfUQnKKPY3yNkavhJw2SHT7wp0icIwAIf7XGi
+         Qr9pTTrdW3pSvpOhOAIRmXd6Qs0CfqR6MFVC88U6mq8guPJjXD1mDZfcdhEluwylgajV
+         JfVux/hcQQUjxRemO6S1TFax7ZHwThcPD6TQGG6kVo9xGzxFZjx1C5nBGO40RaW2ifRY
+         7QOA==
+X-Forwarded-Encrypted: i=1; AL+hErEsU8hsCQ8ES85j0Tzr7aBxz0CrOqGPqbhLLmUIeDf8OHUN+fvuvCz71Clb0IiFLxmz1zUUTZqThA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8ymx/GLB/6br8ErIfPQNhaKLsTa8K+EqERB3KnkHk/izizf9j6
+	0CQwtw7NclG/t0JuLystcvmjJ4BZpCc8gqyE4BcEap+Hlg9WXGP/I0s=
+X-Gm-Gg: AZFdTZdEisdObgEBR8gbN0UqGzTqRRDJVGBpHsnLS/Ahjy3XkXq0cZ5Omf+dR6F0L4p
+	q4lXMiu1QHBM/MVLbvuHN0xYwY1qlNo7V+yWTPaM+8p3otrN/Q/BHF4i3qs2FzONH+WhBkGEh5x
+	nWqIu1zyH/gBmWmwoR7PeSd3fEinuF2e+1O60oZA93bSLHXxb8SpiyBrd2UzKgt3iEJbPxOWpPj
+	8AFJaWV9yIWVUo089XNAbCitxzDjP3vmnV5mDhMINngF1vx4YC7Bm84dgWgRRqC5OEvltgsV6TE
+	N2gjvIXBEEHevxEvSduVt1oY31aVVBjFjRMGvFSgNyatfa1raCCrgydalWVinAi97JX72dGxZoH
+	ybdkcjRJa3W0RSC870MWrg3LdCNHyE33Ulr21tE8DRk2NlDJk6mazEHQaQ4a1URVp6bxQGHToeR
+	EMRZH9l8VbPKuudWJdgE22Urv/ps4mmClWOxHBQDXWlvxtQSp2jGQwvs703sXiy+JNw06lk0sTL
+	Cghiw1x91w57TWXzC2SXv40Qlso/YwWFIijm11GMKHMjtb5IFZKkz3ZTZHJr80DUTdyfGqqjad+
+	ujdCkmzrI6aYNKbju/otIP4/vYhW7LNltK+VrGdbBK680WzcicUYUvLa64SYNQLiHX4Z
+X-Received: by 2002:a05:6a00:844:b0:88b:76e3:cd8a with SMTP id d2e1a72fcca58-8c87cb4bc4dmr11130870b3a.38.1795454371512;
+        Mon, 23 Nov 2026 09:19:31 -0800 (PST)
+Received: from localhost.localdomain ([2406:3003:2002:639c:7883:5066:4773:c572])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c873c1cf5bsm5985151b3a.52.2026.11.23.09.19.28
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Mon, 23 Nov 2026 09:19:31 -0800 (PST)
+From: Yige Jiang <yigejiang86@gmail.com>
+To: Ulf Hansson <ulfh@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>
+Cc: Yige Jiang <yigejiang86@gmail.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	linux-pm@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Sashiko <sashiko-bot@kernel.org>
+Subject: [PATCH] pmdomain: imx: gpcv2: Take a reference to each PGC node
+Date: Tue, 24 Nov 2026 01:19:23 +0800
+Message-ID: <confirmed-20261105-18-6a8421e1b241@gmail.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -57,156 +101,45 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.200.71.1.16\))
-Subject: Re: [PATCH v6 3/7] rust: clk: use the type-state pattern
-From: Daniel Almeida <daniel.almeida@collabora.com>
-In-Reply-To: <179519333138.3795820.61438010297111723.b4-review@b4>
-Date: Mon, 23 Nov 2026 13:33:47 -0300
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Danilo Krummrich <dakr@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>,
- David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>,
- Michal Wilczynski <m.wilczynski@samsung.com>,
- Drew Fustini <fustini@kernel.org>,
- Guo Ren <guoren@kernel.org>,
- Fu Wei <wefu@redhat.com>,
- =?utf-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
- Stephen Boyd <sboyd@kernel.org>,
- Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>,
- Miguel Ojeda <ojeda@kernel.org>,
- Boqun Feng <boqun@kernel.org>,
- Gary Guo <gary@garyguo.net>,
- =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>,
- Andreas Hindborg <a.hindborg@kernel.org>,
- Trevor Gross <tmgross@umich.edu>,
- Tamir Duberstein <tamird@kernel.org>,
- Alexandre Courbot <acourbot@nvidia.com>,
- linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- linux-riscv@lists.infradead.org,
- linux-pwm@vger.kernel.org,
- linux-clk@vger.kernel.org,
- rust-for-linux@vger.kernel.org,
- Boris Brezillon <boris.brezillon@collabora.com>,
- =?utf-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>,
- Maurice Hieronymus <mhi@mailbox.org>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <4FF31142-6624-4A90-9BE2-F654D896EF22@collabora.com>
-References: <20261013-clk-type-state-v6-0-a5e9977b3509@collabora.com>
- <20261013-clk-type-state-v6-3-a5e9977b3509@collabora.com>
- <179519333138.3795820.61438010297111723.b4-review@b4>
-To: Jerome Brunet <jbrunet@baylibre.com>
-X-Mailer: Apple Mail (2.3901.200.71.1.16)
-X-ZohoMailClient: External
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Hi Jerome,
+The child-node iterator owns the reference to each PGC node, but
+imx_gpcv2_probe() assigns the node to a newly allocated platform device
+without taking another reference. If platform_device_add() fails,
+platform_device_put() releases the node through platform_device_release(),
+and the iterator then drops the same reference again.
 
+Use platform_device_set_of_node() to give the child device its own node
+reference, paired with the put in platform_device_release().
 
-> On 20 Nov 2026, at 13:48, Jerome Brunet <jbrunet@baylibre.com> wrote:
->=20
->> clk.prepare();
->> clk.enable();
->> clk.enable();
->=20
-> This particular sequence is indeed allowed in C. I don't get why it =
-should not
-> be ? (in general and/or in rust)
->=20
-> If you dis-allow this in rust, the 2 sides drift apart, don't they ?
-> I mean they start behaving differently. I suppose this is not =
-something
-> desirable ?
+Fixes: 03aa12629fc4 ("soc: imx: Add GPCv2 power gating driver")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://lore.kernel.org/r/20260530004541.E04701F00898@smtp.kernel.org/
+Signed-off-by: Yige Jiang <yigejiang86@gmail.com>
+---
+AI assistance was used for analysis and patch preparation.
 
+Based on next-20261104 (8b7179210b22).
+Compile-tested: arm64, GCC 14.2.0, W=1, drivers/pmdomain/imx/gpcv2.o;
+baseline and patched objects built with no warnings.
+Static source review; no hardware, boot, or KASAN test was performed.
 
-The problem with the current API is that it does not enforce a proper
-order for the calls, i.e.: prepare() -> enable() -> disable() ->
-unprepare().
+ drivers/pmdomain/imx/gpcv2.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-For example, getting a clk and repeatedly disabling it is allowed:
+diff --git a/drivers/pmdomain/imx/gpcv2.c b/drivers/pmdomain/imx/gpcv2.c
+index 6a54ee734514645db7e0628bdddcf579d1f0d904..7b377bf0196491298e9e772b97d15a2bda9ff83a 100644
+--- a/drivers/pmdomain/imx/gpcv2.c
++++ b/drivers/pmdomain/imx/gpcv2.c
+@@ -1513,7 +1513,7 @@ static int imx_gpcv2_probe(struct platform_device *pdev)
+ 		domain->genpd.power_off = imx_pgc_power_down;
+ 
+ 		pd_pdev->dev.parent = dev;
+-		device_set_node(&pd_pdev->dev, of_fwnode_handle(np));
++		platform_device_set_of_node(pd_pdev, np);
+ 
+ 		ret = platform_device_add(pd_pdev);
+ 		if (ret) {
 
-while true {
-  clk.disable();
-}
-
-There is also a problem of balancing the refcounts. As you can see from
-the example above, it is trivial to have a decrement without a
-corresponding increment, or the other way around.
-
-What this series aims to do is use Rust's type system to address the two
-points above by enforcing a legal transition between states using a
-small FSM via this "typestate" technique. As a bonus, this also solves
-the balancing problem, because each state owns the appropriate count.
-
-With this series, the broken example above doesn=E2=80=99t even compile =
-anymore.
-
-Note that taking more than one count is still possible. Patch 4 adds
-guards for that: each enable_guard() does a clk_enable(), and the
-matching clk_disable() happens when that guard goes away. So the
-sequence you quoted can still be written. What you can no longer do is
-call disable() without having called enable() first, or forget to
-release the prepare/enabled counts you acquired.
-
-Notice that this doesn't, in and of itself, preclude the usage of the
-old API. Someone can add a new state that allows the old behavior, as a
-Clk<Unknown> or some other name, but if so, they should provide a user,
-and we should _really_ ensure that their usecase can't be adequately
-described by the safer API above.
-
-So no, I do not think it is a deviation from C, more like a safer
-veneer, because Rust makes it much easier for us to provide one.
-
-
-
->=20
->>=20
->> And nothing gets undone on drop().
->>=20
->> c) It does not let a user express the state of the clk through the
->> type system. For example, there is currently no way to encode that a =
-Clk is
->> enabled via the type system alone.
->>=20
->> Following the Regulator abstraction, switch this abstraction to use =
-the
->> type-state pattern instead. It solves both a) and b) by establishing =
-a
->> number of states and the valid ways to transition between them. It =
-also
->> automatically undoes any call to clk_get(), clk_prepare() and =
-clk_enable()
->> as applicable on drop(), so users do not have to do anything special
->> before Clk goes out of scope.
->=20
-> So the point the is automatically clean-up (as in disable()) clock =
-when they
-> go out of scope ? In C, the equivalent would be calling clk_put() with =
-a non
-> NULL enable/prepare count. We do complain loudly when this happen. I =
-don't
-> people should encouraged to not actively care for this.
->=20
-> --=20
-> Jerome
-
-Actually, the point would be to forbid this using the type system. By
-using the new types, the abstraction knows which counts it must
-release before calling clk_put.
-
-IOW, a Clk<Enabled> knows, on drop, that it must release one count of
-enable, and one count of prepare before clk_put is called. Clk<Prepared>
-knows it must release one count of prepare before clk_put is called, and
-Clk<Unprepared> can simply call clk_put directly. The type states make
-the situation you described unrepresentable in Rust.
-
-This is not new on the C side either: devm_clk_get_enabled() already
-runs clk_disable_unprepare() and clk_put() on its own when the device
-is unbound. Here the same happens when the value goes away.
-
-=E2=80=94 Daniel
-
+base-commit: 8b7179210b22f8e48a82c5ceacb9d56a9c4cfec4
