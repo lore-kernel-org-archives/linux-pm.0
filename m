@@ -1,111 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795459347;
-	b=RDQdTv7Bk7yd467CZwPFcjmedm1bEqHkKi7aerXCWigLH8oNMCWniqskti3VMVBLmg/d
-	 JQyu4OhZra7iIFvZw28flp2UruE4PpW8k9osRSPj2iBS51VWBWhi0HRMHFHrGB3VtDXaM
-	 eN6H/GnPlu/7kHt+JmlyhAkXJA2JsvE6kCCuz7hiYx4z3NFY9Vn9S8L2xEveaoKy7zBtF
-	 8k/Zwd4voDMv4DqJG17MVRKgSniZfETKIYZqxrUCb0RNQmeGnutivxkICMMAPFs3z4vLS
-	 52KTu+ixGwy1+6l8WILOjTGig7nwAbT4AA/haQQ3uROFx8C+JwljXgXG45p/UXMZQtA==
+	t=1795460024;
+	b=upfkhXBFyOPEByaIh6CmDzAXu4+l+hHIKjnc+eZyY2AZQvevsp2o0Fqakqf5CMhKgxn3
+	 GFwMcFnDVhgMUdEf7s1yvJVSChsE0MQ6YBDtU7ML3CR4lsLOGMSwiSoOrW7qE6u+ftPKA
+	 UVt8k1Sjr7IjCmOkalEOrwmv0LZjHxKe+WHza8retaa87OrumpSslfqfGOBxJxh9e2CGf
+	 YC8aCCSm0WQmuzf8tgXYd3O2oMDSSE1sEprYr7gXPNbJAWuC4kkeY4UzUBTVvKX9RyGgW
+	 VtlY3FRArgOIYJpXrH3n2n65BjDFAsgzPluw+uV+aij2w3kYZuDgeJS8U89jgHo/F/w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795459347;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=L2Y93dKIpsxu8PAQQHZSdaxuk248sFchZIYLxYLCnhI=;
-	b=26IBs4r+nPiRv92x8SDNm/5N4t+YYDY9NMIr4SYOQQ8iW37sygvZE886+WET8ffF6Zqv
-	 lDPYv7TShMCLd5clz2MzNEuxNn73Fh/RXPBRv4NePKYaaErS153D5mknTpDZip9xYo/JI
-	 t6oCSMN/ZUuSLyHqmi776xJAPrsHlBdPzYWrcQiwJGWfRLzKeO3BUxwmGVO3E9zX/94LK
-	 oH0w0/jkrMXlx3/F4aBAkmBG3NWOTOOuJ/mMMG4hHQ7EQ1A+H2uYRmk+EpIqel3e9bIPq
-	 CXLzQQexnlcba7hbfVqPkc989sJQmO7rU14jbIciHwy4AkpunWjcuIBC2wqOWaR1u1w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795460024;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=WdqrFA4uMZhpfSRMkoHMOlyWPOST+lnV86bO3jFjXcQ=;
+	b=Nzcrlcn0WlMS/24KGHLGupSL1XizCWMF8bXHzaCNew+iyNYDFoA+fCa7t5K+6QaXecZO
+	 JA62CPn8py8A5/Kw01Ay+Y5lwjSTNGeBg/eGagzBr+hlNO/dy+7bbt6dpzrsVtBLD0deD
+	 JV/gLoDveGtq2XlKLEvubgb0zsRVD/qO6zuIgBpO6B+zUXMf2Xra5IBd04Jp+HNNrdSUP
+	 u0pg3IHUcEE4V6bLqn0tBjlMgBH/WhHhHd2b7r4tg6W5YdqByjI0Xx5EIMYgBYN3p+jYn
+	 E1Pd/bLknaUOp3c9GleSDm8JEu8R7sZv6QXCsV0lBtJvENNejOKiMmBNTchiNf34XqA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QiJ3W1z8;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Et6422oq;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H0jZDblr;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51E8B606A339
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 18:42:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 51E8B606A339
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with UTF8SMTPS id 53F0F60A260D;
+	Mon, 23 Nov 2026 18:53:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QiJ3W1z8;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Et6422oq
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ANGH3vd1093811
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 18:42:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	L2Y93dKIpsxu8PAQQHZSdaxuk248sFchZIYLxYLCnhI=; b=QiJ3W1z8ipaC9yb8
-	z+jPkEFJl4FmS5tqfd3vTQH6B3QSy29PgKQRCRHd3WAeHcLDi5MSMBuwO+CvFEOW
-	35HUh3WXLHHKz1lKqXVZBGTbHkvhnTFV/R2OV7wSVKegsGThWRRmT1QV8UNF1jxo
-	Maq/haq3HHMtwjcUNEJL8aFwe3xEjjueD44rfOmI6gwkP7zOX9PIcn08hLhWixls
-	DGPb+Lk2yRu4vrBwnBpCFy8P1FZ4mqZ4uNsZA6aJe9XWwarO7rdpgbuYM1TZyzsq
-	JhgMQvm+MCafXx85m8OJT24e0OMD4q+ia2x2PHs1mvfpZcLvxeanC6tAsko85HDj
-	2ibgnA==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4ma0suty-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 18:42:26 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-9495f7e03b9so29392985a.2
-        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 10:42:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795459346; x=1796064146; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=L2Y93dKIpsxu8PAQQHZSdaxuk248sFchZIYLxYLCnhI=;
-        b=Et6422oq8Ece88AGKwqHCIDH9qsSn1FOQpoIE+wQhbUeikPSQa1HvQlbyeMjs/Cz/l
-         xp+9hwlVBQP9YhgeKV5KSnoA3KVEZq0PNuP3cJFeqAnwbsKhdZm5h6sBCIsbIWydPvHC
-         ry2JZNNtwHfuYRGuQuS9jAoHe5RO2oX1oxYZJa4EsafHb5VyA4Ly3C6l+Jq7pviFcEXb
-         6opB6XlXZOhKqMaKiffCQtKg3i7ZZ/AgSRfUeln5TUWpgg2htNf2lx24pyh7REwpUhmP
-         SCL1m/eea/urqKCpmN4321MjicrE8h1duDz0BSp0fK8zQjAMbULpuaVaEpNnSBf/ibTQ
-         GSXA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795459346; x=1796064146;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=L2Y93dKIpsxu8PAQQHZSdaxuk248sFchZIYLxYLCnhI=;
-        b=0pATKM2NdYCzLiTuxPdmi6gJbGjwoUtxlPlgifNJv/tUQswKduKuUMWmrD/a60ClEt
-         z96a1a+RdG2K2fqwxQ1uF502hnol5I7oQEkI4lp1cEZvZIzGcRXtBGbhJTu8+QuAuJFV
-         FaTMFJFUlcUH+7Exh2oKQkQyXm6RBVVI1N9pcdDLEdNs6pWpFQzZqtlsQryWorrPQfEG
-         +ZxaE/k5N54NG64iO0RUtJ2zkhGMGkZiokNgydCGLa6uQhDjJN54ECyCCd+ezQZ/VWxj
-         Q0tPnYP6zN5tYNDGfv1aGao6tswYR6pQReoDULKNAS3LUnMEYSbS8JxggMW5VbLOHC6w
-         hLpw==
-X-Forwarded-Encrypted: i=1; AL+hErGxE7GqCsT47WmaSU2Wf1RfgiDlRl4/92fV58BrJapqEhK2FkoFK9GIrZuYrsDrTanaFGogdvX72w==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/RwXfi9tqBcCDbAOubPNYPNhl5W+0ZLPbXoLPhRFPrv3bcaauP
-	K0zjsfphOTk2dYn9VEeK7VM21w0q5vzi2UcQRMcRGRmQCzLPlziF07awYNuDT25wL+5tBhKFpoU
-	uIw31aZSPMQOv+p0TVH+UcMNSdEJrhSFG7r5xWOgmY6zMXhoCWlhtzifIK6/Jkg==
-X-Gm-Gg: AZFdTZd4Lya3j0yhO1BP6rHDTitDKXLVCLpWZNNAeZVV4X+XoHNbele+GttLu25R2IW
-	qa4KOkitUy9sdy8gLfty1Qnyfi2pGZ29q+JncByUVQQ6p4+tR1w6rXiXOtWlxSxbY7MraD5QCnE
-	LqvXwzaXozxpgaGkS4lbg+VKdMPKxMqvEYnbIeZum+tdbo30OSRTMbh60ui1nvXfRugbHpSRLxT
-	LOOdmkwsactQksHfQWwtYPov7oLh77j8NqKc3PEvxnD1Vc8Yacej+MwjcWzj0IFJitM2PxM9/cf
-	VyHUxOTmiqdg+O7NceaAwBKk9IXRSAGoCE1XtcMHtRjQbqWKTEAhDp50v//C3+niT9C3pm63upM
-	Bv203ET+vZ8BaRrtZRZN9rqDwpkjv9QY04rOeql3EiVIfVX0J8+/XztPVtkzu3YalxVmnvrA=
-X-Received: by 2002:a05:620a:a78d:b0:945:c5b3:6356 with SMTP id af79cd13be357-949ba8aecbfmr2043697685a.2.1795459345408;
-        Mon, 23 Nov 2026 10:42:25 -0800 (PST)
-X-Received: by 2002:a05:620a:a78d:b0:945:c5b3:6356 with SMTP id af79cd13be357-949ba8aecbfmr2043694685a.2.1795459344926;
-        Mon, 23 Nov 2026 10:42:24 -0800 (PST)
-Received: from [192.168.226.72] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c513b00117dsm434564566b.80.2026.11.23.10.42.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 23 Nov 2026 10:42:24 -0800 (PST)
-Message-ID: <b11d2e6b-8802-4450-8eb1-7984034d5c4e@oss.qualcomm.com>
-Date: Mon, 23 Nov 2026 19:42:22 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H0jZDblr
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 9B2921F00ADF;
+	Mon, 23 Nov 2026 18:53:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795460024;
+	bh=WdqrFA4uMZhpfSRMkoHMOlyWPOST+lnV86bO3jFjXcQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=H0jZDblrgj/8Uj0P38G4u0vgtl/UQEubq9xMla+QYomELeA7br61lMP0RsFSj3LEm
+	 lwMNRaW2Y7006f/ZnPdCOb7G+6jRfn1P/JAdNPLpGNMyLDBx5h43t8OL1aFq23Wu7T
+	 wZWdbkzHKkPTbzymtBxjIDfKS0XW7zHzhqdhnAjpiCXzGAVtsI0hzSkNNCvTE/cCe/
+	 enlaqm7LBSbN61CGFmCjdOF85zwpPHiF8n0argJ+IcqAtEtAS+kInKlcX6ijm90a9d
+	 I/AU9opWj9KmQjoCl1rD/+KXjh+DBrc0+SE0kZBh8hmuYjKD0vuQyHIBNOC1jnVNUQ
+	 R4KJ602A+3kuw==
+Date: Mon, 23 Nov 2026 20:53:40 +0200
+From: Jarkko Sakkinen <jarkko@kernel.org>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+	Matthew Garrett <matthewg@nvidia.com>, keyrings@vger.kernel.org,
+	linux-integrity@vger.kernel.org, rafael@kernel.org,
+	linux-pm@vger.kernel.org, linux-efi@vger.kernel.org
+Subject: Re: [PATCH 01/17] tpm: Define a kernel-owned TPM NV index that can't
+ be modified by userland
+Message-ID: <awSLtAUT8KBcKvQI@kernel.org>
+References: <asqthz69ohnMVCye@srcf.ucam.org>
+ <059384e86fd256618498b9a7214b6421d38fdf1f.camel@HansenPartnership.com>
+ <astjpI65VOyU8xvI@srcf.ucam.org>
+ <f002fc613bf0bdcf895e5be02dfd2524b7608787.camel@HansenPartnership.com>
+ <asty4acE2B94t5q6@srcf.ucam.org>
+ <avnMl7fD156F1fx4@kernel.org>
+ <ba43d150febc8a85247d6c54f57db0835cb8f5de.camel@HansenPartnership.com>
+ <av3SvHN3UCzzvyY9@kernel.org>
+ <av3V7zfq5WhR9d44@kernel.org>
+ <av3WLT51SpyCmbG2@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -115,73 +68,47 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] interconnect: qcom: bcm-voter: Clear the ALC vote left
- by the bootloader
-To: Michael Auer <mick@yoxcu.de>, Georgi Djakov <djakov@kernel.org>
-Cc: Konrad Dybcio <konradybcio@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Mike Tipton <mike.tipton@oss.qualcomm.com>,
-        Ard Biesheuvel
- <ardb@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20261120122152.198114-1-mick@yoxcu.de>
- <6e30e65c-3fa7-409c-90da-2740f7bf0a24@yoxcu.de>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <6e30e65c-3fa7-409c-90da-2740f7bf0a24@yoxcu.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: rag9gVni_DbUwMbSa5SDVw0MwIcdhE9x
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDA3NCBTYWx0ZWRfXyL6EhNF7AqrD
- 9ulJXkOyUiKNHJg0vFswGIgxcyAwuc77ftQh/cDXcHgSiw6uikoC6Hvn2eMsAfVCtc6lexfLxyi
- X0F72XFf1vEcoh6a4vXQSI6w+thF/g8=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDA3NCBTYWx0ZWRfX28OLlh79ffLf
- 87YqoLWL16CftCItj8XleH4hjOVQIicHqSvf1V4agzoUI/nNiG/bIKHtYdqLjCC2sY1RQSfiPlw
- U5nd9QJCPFzL54Ul7tTBePePpgxOJl0v9pYrmLVIOA2qSoxl4R3h/nOssldUix73bPXvECOrq2t
- PYuumUJeoTqGwUTFZR0jrH6+y/YAJqSYoAMpIm/Ly3NoAmw3YhTPs/hBV8YrcClpXJQmpH1fpWZ
- H+QIUBsXv1TkOGhgLcjPjAr/HQ27s5klxNUPmUu6NjYIO6ipYrl1mplBNKf3eOOCNDjyNQh1XWF
- It3PmXabrrRYmdso//dwtBiSy3aLYUNZVpcgVoqtGFi5a6o2E4hTpsd85D7S4CObYeeH/arSeL3
- Bor8kEeyvimHlpukUjqKNwalzVmStgpSRba5xrVnit1emPmxANbuX/KZp82PhuV1zYci7Yzr5gD
- Rp9Mg+KQhNW6JzousSQ==
-X-Authority-Analysis: v=2.4 cv=Yr+a1IYX c=1 sm=1 tr=0 ts=6b048912 cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=BCpp76bnSYiX9KVaSk0A:9 a=QEXdDO2ut3YA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-ORIG-GUID: rag9gVni_DbUwMbSa5SDVw0MwIcdhE9x
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-23_04,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 adultscore=0 impostorscore=0 malwarescore=0 suspectscore=0
- clxscore=1015 phishscore=0 spamscore=0 priorityscore=1501 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230074
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <av3WLT51SpyCmbG2@kernel.org>
 
-On 11/20/26 10:41 PM, Michael Auer wrote:
-> Hi,
-> 
-> A sashiko review of this patch found that the wake and sleep writes
-> never reach the hardware. rpmh only caches them, the (0, 0) wake write
-> replaces the (12, 0) wake value from the active-only write, and
-> rpmh_flush() skips entries with equal sleep and wake values.
-> 
-> That matches the OnePlus 6: the rpmh cache has ALC at sleep 0 and
-> wake 0, and the APPS DRV vote read back after a night with 139
-> suspends is still 0x20030000, so (12, 0). What I tested is the
-> active-only (12, 0) vote alone, held through suspend, and with it the
-> SoC reaches CX collapse.
+On Wed, Nov 18, 2026 at 06:45:33PM +0200, Jarkko Sakkinen wrote:
+> On Wed, Nov 18, 2026 at 06:44:35PM +0200, Jarkko Sakkinen wrote:
+> > On Wed, Nov 18, 2026 at 06:30:56PM +0200, Jarkko Sakkinen wrote:
+> > > On Wed, Nov 18, 2026 at 11:06:55AM -0500, James Bottomley wrote:
+> > > > The better mechanisms to address this are probably:
+> > > > 
+> > > >    1. Detect that PCR5 has been disrupted (get the kernel to store the
+> > > >       on-boot value and check they match) and if so refuse signed
+> > > >       suspend to disk with a message (this is easy).
+> > > >    2. Capture the additional writes to PCR5 and store them as part of
+> > > >       the attestation so the resuming system can prove the current boot
+> > > >       value of PCR5 matches the attested one when the additional
+> > > >       extends are replayed (this is a bit more complex).
+> > > 
+> > > (2) is a great suggestion IMHO; did not cross my mind.
+> > > 
+> > > That approach would also help to debug any possible issues.
+> > > 
+> > > I think it also might make sense to drift away from kernel config flag
+> > > to kernel-command line parameter when it comes to pre-existing integrity
+> > > code. It's time consuming to test and improve right now.
+> > 
+> > The problem with it is probably the indefinite growth. I.e. despite the
+> > log won't likely be that large it has no theoretically maximum  number
+>                                            theoretical
 
-I was hoping you would test my suggestion before sending it out..
+Hey, what if this resolved with a combination of your suggestions:
 
-> Konrad, did you mean ALC to drop to (0, 0) in sleep? Then the wake
-> write has to go, so that rpmh_flush() programs both sets. I can test
-> that. If the active vote is enough, I would drop the wake and sleep
-> writes in v3, so the code does what was tested.
+1. Fixed amount of memory for storing event long entries. It does not
+   have to be huge in order to be unlikely to end up.
+2. However, if this does happen, kernel marks PCR5 as "distrupted",
+   and semantics go according to your first proposal.
 
-My agent suggests that changing this to use rpmh_write_batch() as
-these aren't cached and should achieve the desired outcome, please
-explore that
+I think this would be pretty good and totally doable approach.
 
-Konrad
+What do you think?
+
+Br, Jarkko
+
+
