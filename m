@@ -1,102 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.181
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795410811;
-	b=li9MloUI2gd69w38kIDEuVYfWdx3gbC4DPeiC90aFEFQ2fP+GVRhxF0/NdMcd35YEHle
-	 s9eV3O2VGOQzBz3BnuigruHdAAhD/HSI/MYinr0uLipHw7HuCo93+dkO1sLEWvSounxGB
-	 9H0CxC8r0QbZyaMptdK5YmMz530zrK3HvSTj0U/KF1FBNMApQvQTmZqq58St7l0ENlziH
-	 8d5rY9cWV37G4B+9I5wqnfyZLNNO/dn9ZH7fXNlJLtJSPot57rVNjVnI2V2rpiwSlRuJ/
-	 b7LXPyzvjsyUxSmNyk/ac4qWbSrZmvMjfiuIwYV2MJSoHVyysX9fWCZ+MKps0+9F6Sg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795410811;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=FUqLDQXnSJ5sC0anYruumGCX75FgOtK3GjAUXxEI5pY=;
-	b=g/AW8z8mqq54hTyudvekiGwnGun0oozskQKwzTjBru3I6UOhK9jC6x/ac1JdrC6l65in
-	 hkoNa6O8hhjyrBUnVILtJ0t+VnJFa2pzV6c3HmuIn7tAEPDS284xG65uGEyk0YuhzLmcY
-	 h2yfuv6lYUZNG9Y+mQh9nhVWmoq7qscREj6dd2ny8YbkfdvHXGgCV7hgeD6uC74hdM3op
-	 mg+d/SiTIqaZQxv8onSoaxQ982ok9BHciTvX+Tz1/3sHTiSDCrtbEZ69tBAau8DMyMkdF
-	 JqW6B8o/5HWvZD/DgzGV/yxREFxDUo7Dhlso89r5BsyeDVla1Bi2xOaVL/MOFq8LXbw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=mk5fTCH5;
-	arc=none smtp.remote-ip=74.125.82.181
-Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795411285;
+	b=3eQ3fG5ddWNs2VZgYXJhdbmHSzgbPZfwMeU3bCshlf3V7qG8rTUWzRkYUpLb3ydkF7ad
+	 mvr0lIACpZIsXUChg5Lm8DLnnlqNoVLVLJFzcsraUKzQy97M5ifsp8v51aoL9yPPMffp3
+	 f+SpVftVqy0I9IwLNauUck/T1JefIjFPxVwTAjH6rWTT3mI6zevMCIqKBZYIeXud6xlzF
+	 AbY5fC05/PlPh6HI7IH7ObTyToXbJ+dnPPxkzTY7upZBRSLn7mJiOtsedR1I0VW5NKYYd
+	 og6Ra34khkcFo+WaYws0aD++RTYLgb03uD3PkSgEKFPVsdGR34B6ycMA0yOJCPAIAUQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795411285;
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=6MKMgBrhvjk9Xwbl3K4fGK3hHbMYaFtBoCoxF//MXr4=;
+	b=wyyIfwQJxyNTUVmyC0s8dy6fgXr6+wFZFKFZgVjj3I1Qees4+f+UjywJgiQoAIK5/3Lv
+	 oL22cbiFzE64Rufd3xM8/z7Z0ACMA+REJOGqaBsfVE70wiA3lUwFle5tWkTmeOUynIoG4
+	 ZGJ4dHwWnUzW0s7sVO9NzGWwNqIninX6OS9xrxfb7fbGur/vbaW/RXX0cm6nUvO7rv9v5
+	 bbzzYOjC5pYD5ant7pC+lsq6THMQVLUpiS3Sh4J+RUAuUoyWrD9SFn7ZzYj6xB3z2I0Rw
+	 DvzXwpF5fCMvqYejwy7YH9kOPG0bh/OqAdKziEMcrTHQHO6PG1t5AQnHhYpXp/eyjJg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kOWeMhnH;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 570C4606A33E;
+	Mon, 23 Nov 2026 05:21:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kOWeMhnH
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1795411284;
+	b=0SV5DPPiG4Y0iImDHrPmcSBW1arzjfpEWVRKjOvRZubHQOeCGSaL44FgZPlfm/0Xcv1T
+	 nCRX8q2xHycweki7vGfCVtJGq/1XjVuiEMNVyr5X7LIRy/rG1Kp8eToPeOW9eZxynH1bM
+	 MvIFhHnvEuTaygEa5hqfkS9cZ918aqac1j6LxOVycF//BDXRxFDMuAGaXERhxOhevjEAA
+	 zqU4FdlbhcMQvnfjzCcfVqDs46S6CU1HMtTjOUODsU78NsZtSP/smJceH5NcLQVtVO9+m
+	 VvIx3wXhV18JQX+UXVtMe1z1qZvHp2Kr4JdwNXyNIgHSjbpC712Q908bhtF+0m/wrHw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1795411284;
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=6MKMgBrhvjk9Xwbl3K4fGK3hHbMYaFtBoCoxF//MXr4=;
+	b=oxhfZ4KmMUtMkK8dN9imV0Khd+urajOh7jSc3k25zHiQhAPwiCBIVkiOneY/8QwFiJOt
+	 FIYUiafWIwujwnX2cLNzdXZ9ZN1bB3d4bcznKk2p3b39DPjjCTH8hiZyHAQZW203AZp49
+	 NnXA9n+zt9LWKuyBNf0oFfzoaw1LoVwRmOdIu/NtCzBj7Qdr20CORCHjGRhJITyMzHQeT
+	 nS6tHrse1Oo/n4n3nvp09Z+zKeRkoSA7d4vtKsH8tAR2G3075y2cQRtsL4oWzcgO1UN1M
+	 Jd0N1S4lparJ8SzToqzQx2e9/9PNdKzLMdq9u9l1vYFirjRQXxxAQHSEJ1vgmwL+Pfw==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ADDE606A31A
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 05:13:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0ADDE606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=mk5fTCH5
-Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-380b40312e2so6987235eec.1
-        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 21:13:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1795410810; x=1796015610; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=FUqLDQXnSJ5sC0anYruumGCX75FgOtK3GjAUXxEI5pY=;
-        b=mk5fTCH5/Drpvpg5QA+hbvQxQGO+R7TnbSgiZZtAZn3UjKf0fRIzMRdHbfY+0Z/pzV
-         SFj3Kw/05Z5T3zteL4dQ0VFVhrHeunfl4aFYOTdsYaW1cqezniBoJltXc9uqwjaIXYK/
-         m4ulhxHyHhchDRpBwM3uN4iwkAKK18W91dyz8y6PGeWrEPSlTrFKd2zNVu2aVgL50tgl
-         JCCC0mmEwDF/WQV5c93GXNHNMR4Ok5vIc0u4eEGtcXFFbiIqj1Cfteu7FWFUJ2zwXmFx
-         YrCd3JG/Y4iMScDzrdibOKoC4naX9OAT/k/HiBpueuXtc583nX7bAAsjjuymNtTzQX2C
-         hzbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795410810; x=1796015610;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=FUqLDQXnSJ5sC0anYruumGCX75FgOtK3GjAUXxEI5pY=;
-        b=E9tIhNhyUPXMrDPu+wjY6TELCr+PV0MNHTQsnNlIvd9LsTXG+DI9xHo6QfCtJeWa4y
-         kHpf1OfF+Si8DBm3L0jJpUgJDcbVauz6SHswJNq7tVWBazysx60DQLHYd/o0s1wuHoWR
-         1nVfSljqWTHv7LUWbxerkLhK3jUHCFGBVf5f7QjMSsmxv2yQvtxMdP+FDW8Azp9MKLn/
-         dtJMNG5Cgy7Qww6WAPgP5MOps/x/bXVk5V9CO4OuMAFjgxscNTfyeykndzg3rvFugUIu
-         IiIfbtTitmiXWElqGgeE318ZO6NZvSZmBdEtglknCgigScSTF5M/S3AYh0tDwyLIPble
-         oSzg==
-X-Forwarded-Encrypted: i=1; AL+hErEyt2SyJdFzibJWGU+l363f5KkUupUrg6yvMD0Xxiz7pIcvzoVs0MvRwQBlXER0c290Ch9DCV1Taw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9hlPYj1/1R1fW5lGidG83OGDrJdtuz1x5z6MRgv5LFwCMT9YKk
-	pSCn4vQ5ER0iDMd97IeuR2kmSyN5B1+iyvYyK2wjTHfWEPKrhaXQTtXf5GMuqK4orK77cYtTuRb
-	VeKSy
-X-Gm-Gg: AZFdTZeH/+RJS/+B6nPX9Nb0SIItco1MVa+mLgRSGF7B/OMFsJWpk87TLOhgGaZ3M2m
-	yNNW4nuXvTMRnFiQ9yiuSc8rt3K0cd6OF7J21S7Sec6KUcObAEuS9sewki99Y1/7TUJ6gsMoaGV
-	QuOyxrJl4dlslHkvSxXQRG4cB8jZZAc+K4rwFkZYrpwF630s9qpRuoxD9MHaSYzmbpPEqs5uYFW
-	8p7nlZSd/Gg8Pm+aGQE1Yls9LmeVU4eBIq/vS796CCLXM1wBZNCf5kYbgdQ/GYZZU3YXQUuczn0
-	MykwZxTAuHziDkqsKv3xBWBHZn6WmZujSdE0pqPiqs/H37axoJKnn6ZXVa06eX8ZydUdmui/VIP
-	0e/7syu61naHFUSceECo1kFOYBlFeYPg9DEkA6799dHGGYrKpiUEyen7G/oMvSZ8JGR+SDF/tUR
-	HHSgbKBFSrd/GX5wxcN6Z5PwfcxbJjnK42WU1b9hOtxgFtPltZvHabgsiz1eWgkYfLO/KY1gYSe
-	7NJJuIwUrz8UyOpQ7m8xr+VYYYNRxoI32kD6TaPsceFDBO51KfE1FhroCdRGMSMF2wilBFLGmSK
-	SXUab6Xg4TamGnKDCETAhF8gXEpd+w==
-X-Received: by 2002:a05:7301:4710:b0:378:314:4042 with SMTP id 5a478bee46e88-385702587c5mr10487392eec.14.1795410782709;
-        Sun, 22 Nov 2026 21:13:02 -0800 (PST)
-Received: from localhost ([122.172.83.36])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385f68bc0adsm28221624eec.13.2026.11.22.21.13.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Nov 2026 21:13:01 -0800 (PST)
-Date: Mon, 23 Nov 2026 10:42:59 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: michael.reeves077@gmail.com
-Cc: Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>,
-	Neal Gompa <neal@gompa.dev>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Hector Martin <marcan@marcan.st>, asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/5] dt-bindings: cpufreq: apple,cluster-cpufreq: Add
- M3 family compatibles
-Message-ID: <awPLW-zURwW1dqZX@vireshk-B250M-D3H>
-References: <20261122-m3-cpufreq-opp-v2-0-3c19963f55ee@gmail.com>
- <20261122-m3-cpufreq-opp-v2-1-3c19963f55ee@gmail.com>
+	by smtp.kernel.org (Postfix) with ESMTPS id ECA341F000CA;
+	Mon, 23 Nov 2026 05:21:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795411284;
+	bh=6MKMgBrhvjk9Xwbl3K4fGK3hHbMYaFtBoCoxF//MXr4=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=kOWeMhnHWfvQ9j2F8N9QA7sbqvqo5UJ5qqUDyG6V2Vm+Uej8YmkxwcOhcfTkx1rSz
+	 jGCJBPEXcHd1CuFJi33gKTouBEHhuDnWAzLUHsA48g1zgoJdhtKi38/FkbAwI7mlZH
+	 MXzHn7LIKJZU5iR1V63PgV5dpQFLBvic8vJ2ZfkGp9W6Y7tA+uhK0QwDaPv2re7eN+
+	 W9tq7VViwzuaM25fShR6wSkxgKwoo+hvKen7ZP3dXe0Zw+f2fLDRKZvXp9/08oKa/z
+	 rbrwNsYi424gruJf2bD0a8pNurQrCwMEi8TRt0zsYRJvZL+0wkKck2nM2R5zPwT796
+	 hGhtCSxCtcdLg==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 4F7134C35E;
+	Mon, 23 Nov 2026 05:21:19 +0000 (UTC)
+From: Suyuan Wang via B4 Relay <devnull+shyckless.gmail.com@kernel.org>
+Subject: [PATCH v2 0/3] cpufreq: Fix leaks on probe error paths in three
+ drivers
+Date: Mon, 23 Nov 2026 05:21:17 +0000
+Message-Id: <20261123-cpufreq-leaks-v2-0-29277f2f0ddd@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -106,47 +84,54 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261122-m3-cpufreq-opp-v2-1-3c19963f55ee@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAE3NA2sC/yXMTQqDMBBA4avIrA3EUSp4ldJFfiZ2tFjNmFIQ7
+ 27U5bd4bwOhyCTQFRtE+rHwd8rAsgD3NlNPin02oMZHVWGt3JxCpEV9yIyidBO0QV+31lvIzRw
+ p8P/6PV+3JdmB3HpOYN8PSKQpOnEAAAA=
+X-Change-ID: 20261123-cpufreq-leaks-04f0a2d37bdb
+To: rafael@kernel.org, peter.griffin@linaro.org, viresh.kumar@linaro.org, 
+ krzk@kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linux-samsung-soc@vger.kernel.org, alim.akhtar@samsung.com, 
+ linux-pm@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795411278; l=1170;
+ i=shyckless@gmail.com; s=default; h=from:subject:message-id;
+ bh=QDauegO8UPnaZeDUw3mfjrBEpQxLHmQyKSmsmNN2bfA=;
+ b=ayTGpoX9eQGy3FWHBI19LxiV6yguDuVCy4e+367rDqPox/Zu/ZVmMZIe+SWSYsSL1Vo7ZYiPC
+ rR+YhWt8xFDBKed1TcCneLr4uVNNkNRPFUXgu7CCojH6+Bc/dNDs1L1
+X-Developer-Key: i=shyckless@gmail.com; a=ed25519;
+ pk=pMtccVGiWES3bV+7YBFuBclkvq2n2HBHQ5azaBrK2lY=
+X-Endpoint-Received: by B4 Relay for shyckless@gmail.com/default with
+ auth_id=1498
+X-Original-From: Suyuan Wang <shyckless@gmail.com>
+Reply-To: shyckless@gmail.com
 
-On 22-11-26, 00:18, Michael Reeves via B4 Relay wrote:
-> From: Michael Reeves <michael.reeves077@gmail.com>
-> 
-> Add compatible strings for the Apple M3 family cluster cpufreq
-> controllers:
-> 
-> - apple,t8122-cluster-cpufreq (M3)
-> - apple,t6030-cluster-cpufreq (M3 Pro)
-> - apple,t6031-cluster-cpufreq (M3 Max / M3 Ultra)
-> 
-> All three are compatible with the M2 (T8112) cluster cpufreq controller
-> and fall back to "apple,t8112-cluster-cpufreq".
-> 
-> Signed-off-by: Michael Reeves <michael.reeves077@gmail.com>
-> ---
->  .../devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml          | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml b/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
-> index b51913a81791..516216cb6ad6 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
-> +++ b/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
-> @@ -36,7 +36,11 @@ properties:
->            - const: apple,s5l8960x-cluster-cpufreq
->        - const: apple,s5l8960x-cluster-cpufreq
->        - items:
-> -          - const: apple,t6020-cluster-cpufreq
-> +          - enum:
-> +              - apple,t6020-cluster-cpufreq
-> +              - apple,t6030-cluster-cpufreq
-> +              - apple,t6031-cluster-cpufreq
-> +              - apple,t8122-cluster-cpufreq
->            - const: apple,t8112-cluster-cpufreq
->  
->    reg:
+Three small fixes for resources that are not released when a cpufreq
+driver fails to probe: the cpu clock in highbank, the three clocks in
+kirkwood (also on unbind), and the regulators and register mappings in
+s5pv210, and its reboot notifier, when cpufreq_register_driver() fails.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Found with a static analysis tool and checked by hand. Compile tested
+on arm (W=1, multi_v5 for kirkwood); I don't have the hardware.
 
--- 
-viresh
+Changes in v2:
+- 3/3: fix the Fixes tags. The regulator and reboot notifier leaks come
+  from e8b4c1986efb and fe7f1bcbff91, and e0e5b2b4f427 did not add a
+  leak (Zhongqiu Han). No code change.
+- 1/3, 2/3: unchanged.
+
+v1: https://lore.kernel.org/all/20261122-cpufreq-leaks-v1-0-96fc17ff7339@gmail.com/
+---
+Suyuan Wang (3):
+      cpufreq: highbank: Put cpu clock if clk notifier registration fails
+      cpufreq: kirkwood: Put clocks on error and in remove
+      cpufreq: s5pv210: Fix resource leaks on probe error paths
+
+ drivers/cpufreq/highbank-cpufreq.c |  1 +
+ drivers/cpufreq/kirkwood-cpufreq.c | 15 ++++++++++++---
+ drivers/cpufreq/s5pv210-cpufreq.c  | 12 +++++++++---
+ 3 files changed, 22 insertions(+), 6 deletions(-)
+
+
