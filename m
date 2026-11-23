@@ -1,53 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795431460;
-	b=OgAimWz1TO8kuVjwOr8l2leb1XcLQP7BSqkJfTXi+T96kRkqzNTGdy2ZiOeO6D+/jyUZ
-	 QaYkKUhAANIs/rvkJw1c2tAPEFJEaQNgx/0YB/Ut9kPTE/E9kU0/LNqsnytiRfQDRxP56
-	 GpVli/iL6y4d3YlGEWVv/pQXPhsSR9MM4Y8zIZzOx5i2BCpgxnoo4xLW+9DtBkmhAQBRn
-	 d7ku6ccQMelic+fcVf2AdtyPnGyyMSB6Fmr+4XG7/pBvbFS6C3+EOvLx4lrDc13htDS3y
-	 dF3GX7E3JxN7LReYqDeFFsGgK7tZVIWpUs4tPPzdUxJsWaM6LSeNsoq6yKIGcYSrxNQ==
+	t=1795431689;
+	b=nH58HBW0364YMlzy/gdwHo/vDnEf72unmxWPdKGbphxpUxRh8JXcThISBRwDOLQWhvTW
+	 +f9AVbZPN1OYbwFwmi4pv9TcBAoLdu8u95q6jVdNHaBG9nbji2sLzAMXzz1xAe5NbRtpV
+	 l4irhx6BcKWlL0J0okOkDuMshTeZBHyLy8B5Xqg/5sfop5/YMZFkeTy+xcTis2sTE3FS6
+	 PhdZfV1Tdh7+EocpiB6Kh8578y9I1tJxXut/ZMh7JUIA/si9W8mzqLteNaaNLA3l4B2sv
+	 GrBuHgJ3be58XP+X3VzCZ20Bsoew//cT+0UY4wrQ/Qc4VDJWT7Pumm8Ko6Tp2gctuuQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795431460;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795431689;
 	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
 	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
 	 In-Reply-To;
-	bh=ivDTVAtvWv3uwend5cm17scjqn/tl8MG+Jy9Smv3hpg=;
-	b=sVeCTfNr0D4yWNjsejikpwaWdwY05XgjqgRVMgc6KUoU/ds2XXf4I8pqArpSEK4ofkB1
-	 zto4wtpINqta/XOEfxIISltkNRvZmIvk/9BjKaS7RHbJvnNveyja4Ra6nKi+3O6gossIj
-	 CdeMGYgC0TdRp9wp8jMe7pd8hCTEZInaVdu9QUhaBdVjWN8hMnQFGiMfuuOSdI9c/Bolv
-	 hfUaXcqTjYkSjV5FuexmdU/VRsB9Z0PSSE4CtCbJX9T33KQA/iGV7+ZSdH/Q9m8087ZDy
-	 9heAi3o9rFxuB6gGHwaPXfVwPyT0t8laVJZXznvdXLdR8Yrh1BSdU2RmDpBN5JpdpeQ==
+	bh=9baLRy6PuRfKPu52T+JMh1Xvttd6fycEOeAlQX9Fbco=;
+	b=fem1bUY08vfv4XYcsibdS+WLp8xvy25EAv0iG9S7B0PkDiHsaw2F9JoBGE443xAIJQff
+	 WJPPFDUtoQff1P3pYo2o6uLNa1IVfgw/PA95wDZ6egF1a8d/xr2tIsI3XDbX0IM4Wpy+u
+	 BofPRLUa6sB5SMTjfs2EAJZmrVzqVR2xr4rTyMCMAJmbmpYGjpFtfrilt0H2jkLyrGgir
+	 LhLktZzvNFHg9cMTNK60I/mVhTF07+Q9lCWijNDu3SogJSMb2ibjezsuSKdUYeUR8l2GR
+	 daXpcIHmjMqQv2zsW8RofOd+MXca1s15n12EEoN2NRNQT6iM5WPCtAwjiHpmwwd535Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=ideasonboard.com;
 	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=f7lUuUcJ;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=b+c5zFzb;
 	arc=none smtp.remote-ip=213.167.242.64
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4046606A31A;
-	Mon, 23 Nov 2026 10:57:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B4046606A31A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B90E9606A31A;
+	Mon, 23 Nov 2026 11:01:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B90E9606A31A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=f7lUuUcJ
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=b+c5zFzb
 Received: from killaraus.ideasonboard.com (2001-14ba-7086-3000--a06.rev.dnainternet.fi [IPv6:2001:14ba:7086:3000::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 3F2F7177;
-	Mon, 23 Nov 2026 11:55:05 +0100 (CET)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 57521177;
+	Mon, 23 Nov 2026 11:58:54 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1795431305;
-	bh=AvO1/maww9n+YB0rxCd6DEtZ440NZzTfyaS445kaBfs=;
+	s=mail; t=1795431534;
+	bh=5hqJD3AbPoo6JiX/eE7N7lyp8uyKcnxG0dSWzKXr3MM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=f7lUuUcJy8Q8gJH5VYA7aaa3M4mV+ugeNvtqthpyxA3a4AgiBAKgrR8cfUcs7sB3R
-	 Yu7p3IW3qVICHH0IWvcnE2HVpP2F17VVllH1jdcP3qTvia02bPS5BPrLlS/F4DlC/6
-	 gwVVR6fFqqZQCgY++fQxDQBYg7PN7Ll+3GmNv//s=
-Date: Mon, 23 Nov 2026 12:57:36 +0200
+	b=b+c5zFzbG4eQfeQqPqWNPxMD4xLARc8Cvx7jjrTW2pOj8YnE/swkyBnJ+pU7lK1AP
+	 5wvaHjS/R5+S00YgJ/6j2uQ0wvIeoFItHBWbTZA5HE47z7ihGa3kSfr8/dO44UtQ9U
+	 9I0DPQMZgWjxRBR6FDI3VyiL+koobmUwWQuHXHG8=
+Date: Mon, 23 Nov 2026 13:01:25 +0200
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Marek Vasut <marek.vasut@mailbox.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
 	Brian Masney <bmasney+clk@redhat.com>,
 	Jerome Brunet <jbrunet+clk@baylibre.com>,
@@ -67,13 +66,11 @@ Cc: Marek Vasut <marek.vasut@mailbox.org>, Rob Herring <robh@kernel.org>,
 	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH v5 01/15] clk: renesas: r8a78000: Merge debug prints in
- r8a78000_clk_get()
-Message-ID: <20261123105736.GB3010398@killaraus.ideasonboard.com>
+Subject: Re: [PATCH v5 02/15] clk: renesas: r8a78000: Replace sentinel by
+ explicit ID map size
+Message-ID: <20261123110125.GC3010398@killaraus.ideasonboard.com>
 References: <cover.1795029012.git.geert+renesas@glider.be>
- <cee843b319c9eceba2339f14a134e305a2b05d7e.1795029012.git.geert+renesas@glider.be>
- <57d2cc58-15ac-434e-ab40-7a8a54d93a1f@mailbox.org>
- <CAMuHMdXXS4ZTxLBrZoNycHUzdUp9QsisfA7CcBPyAGw7zTuSoA@mail.gmail.com>
+ <bf9d3d694fc06f29819b6883610c0e86c2d0066e.1795029012.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -85,39 +82,145 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdXXS4ZTxLBrZoNycHUzdUp9QsisfA7CcBPyAGw7zTuSoA@mail.gmail.com>
+In-Reply-To: <bf9d3d694fc06f29819b6883610c0e86c2d0066e.1795029012.git.geert+renesas@glider.be>
 
-On Fri, Nov 20, 2026 at 08:56:42AM +0100, Geert Uytterhoeven wrote:
-> On Fri, 20 Nov 2026 at 06:28, Marek Vasut wrote:
-> > On 11/18/26 8:44 PM, Geert Uytterhoeven wrote:
-> > > The two debug prints in r8a78000_clk_get() are very similar.
-> > > Merge them into a single debug print.
-> > >
-> > > While at it, unwrap the (wrongly-indented) continuation of the
-> > > r8a78000_clk_get() function header, as it fits on a single line.
-> >
-> > It might be worth mentioning, that this now also uses
-> > clk_hw_get_name(hw) instead of map->fw_id .
+On Wed, Nov 18, 2026 at 08:44:50PM +0100, Geert Uytterhoeven wrote:
+> The use of a sentinel in the clock ID mapping array will become
+> cumbersome when the need arises to find out the actual number of
+> elements in the array.  Rework the mapping data structure to fix this,
+> also improving naming.  Add a CLK_ID_MAP() initialization macro for
+> brevity.
 > 
-> clk_hw_get_name(hw) was printed before; fw_id will still be printed
-> in get_hws() after PATCH 04/15.
-
-That's worth mentioning in the commit message. With that, the patch
-looks good to me.
+> While at it, drop the check for "!map" in clk_id_map_find(), as that
+> pointer can never be NULL.
+> 
+> Suggested-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
 Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
-> > [...]
-> >
-> > > -     dev_dbg(dev, "Mapping DT clock %u to fixed clock %u\n", id, map->fw_id);
-> > > -
-> > >       hw = priv->fixed_hws[map->fw_id];
-> > >
-> > > -     dev_dbg(dev, "clock %u is %s at %lu Hz\n", id, clk_hw_get_name(hw),
-> > > -             clk_hw_get_rate(hw));
-> > > +     dev_dbg(dev, "Mapping DT clock %u to %s at %lu Hz\n", id,
-> > > +             clk_hw_get_name(hw), clk_hw_get_rate(hw));
-> > [...]
+> ---
+> v5:
+>   - New.
+> ---
+>  drivers/clk/renesas/r8a78000-cpg.c | 45 +++++++++++++++++-------------
+>  1 file changed, 26 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
+> index 0e11ae139fbffd80..03fcd128d4293cfc 100644
+> --- a/drivers/clk/renesas/r8a78000-cpg.c
+> +++ b/drivers/clk/renesas/r8a78000-cpg.c
+> @@ -16,11 +16,21 @@
+>  
+>  #include <dt-bindings/clock/renesas,r8a78000-cpg.h>
+>  
+> -struct clk_map {
+> -	int dt_id;		/* DT binding clock ID or -1 sentinel */
+> +struct clk_id_map_entry {
+> +	u32 dt_id;		/* DT binding clock ID */
+>  	u32 fw_id;		/* FIXED_CLK() ID */
+>  };
+>  
+> +struct clk_id_map {
+> +	const struct clk_id_map_entry *entries;
+> +	unsigned int size;
+> +};
+> +
+> +#define CLK_ID_MAP(_entries) &(struct clk_id_map) {	\
+> +	.entries = _entries,				\
+> +	.size = ARRAY_SIZE(_entries),			\
+> +}
+> +
+>  enum fixed_clk {
+>  	FIXED_CLK_66M,
+>  	FIXED_CLK_133M,
+> @@ -40,23 +50,21 @@ static const unsigned long fixed_clk_rates[NUM_FIXED_CLKS] = {
+>   * struct r8a78000_cpg_priv - Clock Pulse Generator Private Data
+>   *
+>   * @dev: CPG device
+> - * @map: Mapping from DT clock IDs to fixed-rate clocks
+> + * @map: Mapping from DT clock IDs to fixed-rate clock IDs
+>   * @fixed_hws: Fixed rate clocks
+>   */
+>  struct r8a78000_cpg_priv {
+>  	struct device *dev;
+> -	const struct clk_map *map;
+> +	const struct clk_id_map *map;
+>  	struct clk_hw *fixed_hws[NUM_FIXED_CLKS];
+>  };
+>  
+> -static const struct clk_map *clk_map_find(const struct clk_map *map, u32 id)
+> +static const struct clk_id_map_entry *clk_id_map_find(const struct clk_id_map *map,
+> +						u32 dt_id)
+>  {
+> -	if (!map)
+> -		return NULL;
+> -
+> -	for (; map->dt_id >= 0; map++) {
+> -		if (map->dt_id == id)
+> -			return map;
+> +	for (unsigned int i = 0; i < map->size; i++) {
+> +		if (map->entries[i].dt_id == dt_id)
+> +			return &map->entries[i];
+>  	}
+>  
+>  	return NULL;
+> @@ -65,8 +73,8 @@ static const struct clk_map *clk_map_find(const struct clk_map *map, u32 id)
+>  static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec, void *data)
+>  {
+>  	struct r8a78000_cpg_priv *priv = data;
+> +	const struct clk_id_map_entry *entry;
+>  	struct device *dev = priv->dev;
+> -	const struct clk_map *map;
+>  	struct clk_hw *hw;
+>  	u32 id;
+>  
+> @@ -75,13 +83,13 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec, void *data)
+>  
+>  	id = spec->args[0];
+>  
+> -	map = clk_map_find(priv->map, id);
+> -	if (!map) {
+> +	entry = clk_id_map_find(priv->map, id);
+> +	if (!entry) {
+>  		dev_err(dev, "Unknown clock %u\n", id);
+>  		return ERR_PTR(-ENOENT);
+>  	}
+>  
+> -	hw = priv->fixed_hws[map->fw_id];
+> +	hw = priv->fixed_hws[entry->fw_id];
+>  
+>  	dev_dbg(dev, "Mapping DT clock %u to %s at %lu Hz\n", id,
+>  		clk_hw_get_name(hw), clk_hw_get_rate(hw));
+> @@ -116,7 +124,7 @@ static int r8a78000_cpg_probe(struct platform_device *pdev)
+>  {
+>  	struct device *dev = &pdev->dev;
+>  	struct r8a78000_cpg_priv *priv;
+> -	const struct clk_map *map;
+> +	const struct clk_id_map *map;
+>  	int ret;
+>  
+>  	map = of_device_get_match_data(dev);
+> @@ -137,17 +145,16 @@ static int r8a78000_cpg_probe(struct platform_device *pdev)
+>  	return devm_of_clk_add_hw_provider(dev, r8a78000_clk_get, priv);
+>  }
+>  
+> -static const struct clk_map r8a78000_cpg_default[] = {
+> +static const struct clk_id_map_entry r8a78000_cpg_default[] = {
+>  	{ R8A78000_CPG_SGASYNCD4_PERW_BUS,	FIXED_CLK(266M) },
+>  	{ R8A78000_CPG_SGASYNCD8_PERW_BUS,	FIXED_CLK(133M) },
+>  	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	FIXED_CLK(66M) },
+> -	{ -1 }
+>  };
+>  
+>  static const struct of_device_id r8a78000_cpg_match[] = {
+>  	{
+>  		.compatible = "renesas,r8a78000-cpg",
+> -		.data = &r8a78000_cpg_default,
+> +		.data = CLK_ID_MAP(r8a78000_cpg_default),
+>  	},
+>  	{ /* sentinel */ }
+>  };
 
 -- 
 Regards,
