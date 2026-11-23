@@ -1,76 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795433983;
-	b=reO4k3E18gVQh1HTkXr9EamM0vVMfKsDqYjl9h7rdXPLp08O5RQvSXmngQqnVPRM4h6w
-	 ySxRhXhSk8hUD2y9KhHn1XrfE/kQV7XxZFzDUYlOmYGs+JOfAj86kMdFRoLn8al1Qwm39
-	 kGxjG4+4+g+FaoofEKpzlnkngQSj3LxHFJk4bhiM08lAJ7VjJKy4YL4Xn34L4LwCKuxWB
-	 nCatMLbfVHpic8metFw4sOxdIRX416tMoXqxoucKVbmM85uAawiqGMALW4qG93JYqlp/I
-	 2AVbar1ismnuTV3/ekbI46CIGu0Z8Zuq04Q+R3p46ma5b+0Y/TIfuH9igBS1dv6rmXQ==
+	t=1795434316;
+	b=08wBPBvRrnYL+TFN5ENDpL/+FMZBoNJmsaeKZ8k0DA9akUeu4QfyQzgEsk44NzssqQjK
+	 ZKWlOsvYPdu436gHE4wFbcEstiEY7AJq29UiMjCYVlyy1FnY5KKNEixnBx9hYqj5M5Kei
+	 NrcKfjHpiBkpyNoAFrGKceTlYFkI4Sl6IjoXyMsk1iDIBHhT14x1KFL1lN8EOrUmNhUf6
+	 4506nvhSoEqAe/3S2c5IEvT+fMvTZcER6RYIpgE8IkcnAceKAdFNUVtB/wbhsembmDnLc
+	 TDWuIaQzb8dOvwMOGxkB4o3/0nog2xL8YxSJhagNBSxmEiXaSpnS9dv4b72NJYwpyFQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795433983;
-	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To;
-	bh=ERbB76zpet3DuApuKnLZM5P0t4NNQkDvueQ2YL5Mbns=;
-	b=NedKeFpvj3htSve6oiZXUJKnSlYseEhy59sE2Y+u9VSVBs9egbdaDifLZc4XcXBl6msr
-	 QEQTmgoz9JfRYENzv+UY1KXYVDhFdhEUSl8bjZ9UQOJ9aQL9PbRN5yXQAtAXrgOX167ot
-	 5wCplmoYo2+Xl0ddD9/NoD3RnJMbcjTOiD0d9epbi710jL62DzsNOBLaXy4VSJx0+TuSM
-	 fjqB8YO1magffDrmQlq5cbJ/mdR/gXDY8jl87mRAMGQZJOrI++tzMibnbkGMnozRXkIA8
-	 DGS+j8rhROyG4dVjxy0IT3JaCKoPTA6XBNGNNbgoG8ScHx4kXhuGKEGxwieTvmoEFWw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795434316;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To;
+	bh=O/TZUP+/cDgqPVePhYbaH1kfjdT/O9h7xEGK3jFSArc=;
+	b=cJcEzR5vJ/bpiqdkFjPAiLEDGDlTLJ3puwDPHa3rf97+0sA5p+Zw7/eyNtfRtcUKYFq3
+	 rLwSWHtDxuXUbNLf2vQ2ewUjTeY+3lyvcnm2RMdfvmtgqOh7cDfy33c2YGLfBSOX2Xyko
+	 9um/kvoBtJwMgRYaQrOJz+qR2xJI9eLtzI5Lpz2RikXN/ZUcLKKJTaT2AVdjKKzTK5X6J
+	 LvfM0UR+3HEqoOmWOT/8N3JEDljNhV8gzwurmngouWufuQxvkyFILp0zgKAEO4sItR9r6
+	 GofSJSKtQX3hoysNuN02T9bLW123fMYbgrBXIn8sig9SlB0hnY6SsEvbfxp7yuhyoXg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ideasonboard.com;
-	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=sAyxzm4R;
-	arc=none smtp.remote-ip=213.167.242.64
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="M/ov9Ghm";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3405606A31A;
-	Mon, 23 Nov 2026 11:39:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A3405606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E26D606A31A;
+	Mon, 23 Nov 2026 11:45:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=sAyxzm4R
-Received: from killaraus.ideasonboard.com (2001-14ba-7086-3000--a06.rev.dnainternet.fi [IPv6:2001:14ba:7086:3000::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 38C3B34;
-	Mon, 23 Nov 2026 12:37:09 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1795433829;
-	bh=d/fYOVW5pZ7TatqYKzHhPfuzuwLHZqwD4bIlohGjcyU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sAyxzm4R8p58eVBo/8lbZhtFx5M3sca61vhovfL37qG1VnayPd67mJfh4XuzgS+Rx
-	 Db8HBACnacnBJYoQDIQKvSWB7ggObdmtWwXfxA6yE5sK64Y8kZJIeTBFlp7DIA7zdH
-	 8L68N/UfI4413vqF5K4KxAzj4wdLKTFp2zfFCzKo=
-Date: Mon, 23 Nov 2026 13:39:40 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Paul Elder <paul.elder+renesas@ideasonboard.com>,
-	=?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH v5 13/15] pmdomain: renesas: r8a78000: Shrink IDs to 16
- bits
-Message-ID: <20261123113940.GJ3010398@killaraus.ideasonboard.com>
-References: <cover.1795029012.git.geert+renesas@glider.be>
- <72f8eae23faefaa169cff7a52cdbafce2cd50e1f.1795029012.git.geert+renesas@glider.be>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M/ov9Ghm
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39F361F000CF;
+	Mon, 23 Nov 2026 11:45:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795434315;
+	bh=O/TZUP+/cDgqPVePhYbaH1kfjdT/O9h7xEGK3jFSArc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=M/ov9Ghmefxn9L6wBnE5kr1N83AuM7y28ejF/4o2y1S+n+51U8mODk1l8ZntYty7s
+	 yMVF2INlVFW1eEwlL9+pPsSr9yYJDkaPrfXXdakbJW34QZBcUiKJMdbmOL4cYK3EAH
+	 wx+ncGycTn3JjvthFloibrAPyry3xrdbnVkxObqS59BXUQiUQzbXsK0hElMsWBq5Mj
+	 LxBkZLnTgU9s+fl9RH1taPEHwRHmTbWR6EUxg2oq+Cpr2g2i+HkTT7luDZk/2bb4Op
+	 AuRNkfXBmEA93Obu9Jh0na9n0l+cxfW2B0IBB9vNz9/N6mQazTWfigxiTqEXg6Lnnk
+	 UA9gqyk2iEoSA==
+Date: Mon, 23 Nov 2026 11:45:12 +0000
+From: Yixun Lan <dlan@kernel.org>
+To: sashiko-reviews@lists.linux.dev, Ulf Hansson <ulfh@kernel.org>
+Cc: linux-pm@vger.kernel.org, spacemit@lists.linux.dev,
+	devicetree@vger.kernel.org, robh@kernel.org, conor+dt@kernel.org
+Subject: Re: [PATCH v5 2/2] pmdomain: spacemit: Add power domain driver
+Message-ID: <20261123114512-GKC156439@kernel.org>
+References: <20261118-04-k3-pm-support-v5-0-42394acdf3e3@kernel.org>
+ <20261118-04-k3-pm-support-v5-2-42394acdf3e3@kernel.org>
+ <sashiko-outbox-222182@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,51 +61,137 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <72f8eae23faefaa169cff7a52cdbafce2cd50e1f.1795029012.git.geert+renesas@glider.be>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <sashiko-outbox-222182@kernel.org>
 
-On Wed, Nov 18, 2026 at 08:45:01PM +0100, Geert Uytterhoeven wrote:
-> Reduce table size by shrinking hardware module IDs from 32 to 16 bits,
-> which is still plenty.
-> 
-> While at it, use u32 to store of_phandle_args.args[1] in
-> r8a78000_mdlc_attach_dev().
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Hi All,
 
-Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-
-> ---
-> v5:
->   - New.
-> ---
->  drivers/pmdomain/renesas/r8a78000-mdlc.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+On 23:32 Wed 18 Nov     , sashiko-bot@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 2 potential
+> issues to consider:
+> - [High] pmdomain: spacemit: devres frees active domains when
+>   pm_genpd_remove() fails
+> - [Medium] pmdomain: spacemit: unpowered always-on domain in
+>   spacemit_pm_add_one_domain()
+> --
 > 
-> diff --git a/drivers/pmdomain/renesas/r8a78000-mdlc.c b/drivers/pmdomain/renesas/r8a78000-mdlc.c
-> index 6477abe64511e880..733bf68dab2ce6dc 100644
-> --- a/drivers/pmdomain/renesas/r8a78000-mdlc.c
-> +++ b/drivers/pmdomain/renesas/r8a78000-mdlc.c
-> @@ -17,7 +17,7 @@
->  #include <dt-bindings/power/renesas,r8a78000-mdlc.h>
->  
->  struct mod_id_map_entry {
-> -	u32 hw_id;		/* Hardware module ID */
-> +	u16 hw_id;		/* Hardware module ID */
->  };
->  
->  struct mod_id_map {
-> @@ -148,8 +148,8 @@ static int r8a78000_mdlc_attach_dev(struct generic_pm_domain *domain,
->  	struct device_node *np = dev->of_node;
->  	struct r8a78000_mdlc_priv *priv;
->  	struct of_phandle_args pd_spec;
-> -	unsigned int id;
->  	int ret, idx;
-> +	u32 id;
->  
->  	ret = of_parse_phandle_with_args(np, "power-domains",
->  					 "#power-domain-cells", 0, &pd_spec);
+> commit 3dbb7292ceae5fc8cd5471f6a58e884045deb2ec
+> Author: Yixun Lan <dlan@kernel.org>
+> 
+> pmdomain: spacemit: Add power domain driver
+> 
+> This commit adds a generic PM domain driver on the auxiliary bus for
+> SpacemiT K1 and K3 SoCs, supporting software and hardware power-on/off
+> sequences.
+> 
+> > diff --git a/drivers/pmdomain/spacemit/spacemit-pm-domains.c b/drivers/pmdomain/spacemit/spacemit-pm-domains.c
+> > new file mode 100644
+> > index 0000000000000..9d77d3f4c182b
+> > --- /dev/null
+> > +++ b/drivers/pmdomain/spacemit/spacemit-pm-domains.c
+> > @@ -0,0 +1,422 @@
+> 
+> [ ... ]
+> 
+> > +static int spacemit_pm_add_one_domain(struct spacemit_pmu *pmu, int id,
+> > +				      const struct spacemit_pm_domain_param *param)
+> > +{
+> > +	struct spacemit_pm_domain *pd;
+> > +	int ret;
+> > +
+> > +	pd = devm_kzalloc(pmu->dev, sizeof(*pd), GFP_KERNEL);
+> > +	if (!pd)
+> > +		return -ENOMEM;
+> > +
+> > +	pd->param           = param;
+> > +	pd->pmu             = pmu;
+> > +	pd->genpd.name      = param->name;
+> > +	pd->genpd.flags     = param->flags;
+> > +	pd->genpd.power_off = spacemit_pd_power_off;
+> > +	pd->genpd.power_on  = spacemit_pd_power_on;
+> > +
+> > +	ret = pm_genpd_init(&pd->genpd, NULL, spacemit_pm_is_off_state(pmu, pd));
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	pmu->domains[id] = &pd->genpd;
+> > +
+> > +	return 0;
+> > +}
+> 
+> [Severity: Medium]
+> Can pm_genpd_init() fail with -EINVAL for a GENPD_FLAG_ALWAYS_ON domain
+> such as K3_PMDOMAIN_AUDIO if it is powered off at boot?
+> 
+
+I've checked in U-Boot which before booting Linux,
+=> md.l 0xd42828f0 1
+d42828f0: 00000008
+which shows bit[3]=1, audio power domain already in 'on' state..
+
+So, K3 SoC should have no problem on this.
+
+> pm_genpd_init() requires always-on domains to already be powered on
+> (is_off == false) and rejects them with -EINVAL otherwise, aborting
+> spacemit_pm_domain_probe().  Also, because genpd never powers an
+> always-on domain off or on after initialization, the power control
+> parameters defined on K3_PMDOMAIN_AUDIO are unused unless
+> spacemit_pm_add_one_domain() powers the domain on before calling
+> pm_genpd_init() (note that spacemit_pd_power_on() logs with &domain->dev,
+> which is not initialized until pm_genpd_init(), so pmu->dev would need to
+> be used for logging).
+> 
+> > +
+> > +static void spacemit_pm_domain_cleanup(struct spacemit_pmu *pmu)
+> > +{
+> > +	struct spacemit_pm_domain *pd;
+> > +	int i, ret;
+> > +
+> > +	for (i = 0; i < pmu->genpd_data.num_domains; i++) {
+> > +		if (!pmu->domains[i])
+> > +			continue;
+> > +
+> > +		pd = to_spacemit_pd(pmu->domains[i]);
+> > +		ret = pm_genpd_remove(pmu->domains[i]);
+> > +		if (ret)
+> > +			dev_err(pmu->dev, "failed to remove domain %s: %d - state may be inconsistent\n",
+> > +				pd->param->name, ret);
+> > +	}
+> > +}
+> 
+> [ ... ]
+> 
+> > +static void spacemit_pm_domain_remove(struct auxiliary_device *adev)
+> > +{
+> > +	struct spacemit_pmu *pmu = auxiliary_get_drvdata(adev);
+> > +	struct device *dev = &adev->dev;
+> > +
+> > +	of_genpd_del_provider(dev->of_node);
+> > +	spacemit_pm_domain_cleanup(pmu);
+> > +}
+> 
+> [Severity: High]
+> As reported by Troy Mitchell on v3 [1], can unbinding the driver or
+> unloading the module while a consumer device is attached cause a
+> use-after-free on pd->genpd?
+> 
+I don't want to combine into this series, see cover letter or the link below
+https://lore.kernel.org/r/20261112-01-pm-device-link-v1-1-8932e0862378@kernel.org
+
+I'm trying to address in a separate patch
+
+> Because adev->dev shares the parent CCU device's of_node, fw_devlink
+> links consumers to the parent CCU platform device rather than adev->dev,
+> so unbinding spacemit_pm_domain_driver does not detach consumer devices
+> first.  When genpd->device_count > 0, pm_genpd_remove() fails with -EBUSY
+> and leaves pd->genpd linked in the global gpd_list and referenced by
+> consumers' dev->pm_domain pointers right before devres frees the
+> devm_kzalloc()-allocated struct spacemit_pm_domain.
+> 
+> [1] https://lore.kernel.org/r/DMQHSDTR177I.1HWHAF4FWTFQ5@linux.spacemit.com
+> 
+> -- 
+> Sashiko AI review · https://sashiko.dev/#/patchset/20261118-04-k3-pm-support-v5-0-42394acdf3e3@kernel.org?part=2
 
 -- 
-Regards,
-
-Laurent Pinchart
+Yixun Lan (dlan)
