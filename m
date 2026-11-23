@@ -1,113 +1,85 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.182
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795442189;
-	b=X4cRudveKTa2qUelJ9YhoDOayokqP+A/0lPzMKzrsGG5RqT4HlCsISocI2h+QVMASyUa
-	 hBJG8aIh6yQq9RGuk9kFe/2IEliqFNEqzfU6BG/T2n/Nwiogllr0xp/gFMdZDNFC20muZ
-	 r6QD6UaBhvohJEcpzSeExr1yUPP1XIkz0B1WxaV+uGB/D+AN9mnQufeCTpQgcoqZJKCfB
-	 dgLwTUuwazn2PKZ4IAAIygB1KLpd4X8RWCr39mONWRVLUKAGUgBq4X0PyVpjqn6VDviZ8
-	 iZEzb1cugLhgWb2n5Wy50lMhx/iFTycr1xLsz4DuwYMZzcCh2TL+vKqKxnX5tknKu5Q==
+	t=1795442486;
+	b=yEHV9vS33ajGzOOr+DbQlNN9hVwUNdrgk/1+NJtWYzYdsAjGtf71rKstgeTpw7hNKrCY
+	 w6pdk1Paz4QZ12mXp9DD2mhj28fcXt+b1b5Ktn44mVbpwnYMK3z26oinxryIY5ohaajis
+	 hKHMCmHM1G2Jbr8w64Hmiish88fn1cHD7zvQGGN9Vock5jFyrcaC7INZifVdNQ/KGUhzM
+	 8sZw/0cTQIN6N91YyuXawT/qwi5oGqJ7avsTVnqjrEy9vQmMw9ZsqFym3Tkrk0xET9h7u
+	 DC8blbY6HCv+1XkTqOjk7xj304sTXzq3Xjc37QjHBj29yNtHLP0G1rbEVapJkp3JFAQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795442189;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
-	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Proofpoint-ORIG-GUID:X-Authority-Analysis:X-Proofpoint-GUID:
-	 X-Proofpoint-Spam-Info:X-Proofpoint-Spam-Details-Enc:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=6muZlLM33J+DBa+9pVOmRUzmFBVv5+7rsnUWPmNF+7o=;
-	b=bxdfMN8K6wZwxJ/6V2zk2zP+4OXUwz4lQuHkhRfkvxn4RHjtaJtOqpYlDIkG0Fk7Ag9y
-	 +OzK1NcFrqoha/CU33mbl4JXu3CGayXkTx9YCNEYb8ioutLUIZ4U2MrYG+/pt8b4YwWef
-	 52Z4B9tI/6DcM0XLchJm8APsTRoc8E7UGZ9uAudJU5BN8ns5BOT/1CvMENZGseioqZ2n2
-	 kzhhdCVVGALCmBwnEAW14ds489jwphDMdEGq9FiAFQgD9oJfQRihyEdgeCLpCytuhU7/f
-	 df8niNqozMB0Rp/ui+Acqhb7uowVhJq+3ZF1bZ9XKtkJmW4u1e7sReEuKXSXocR+QAA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795442486;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:Subject:From:To:
+	 Cc:In-Reply-To:References:Date:Message-Id:X-Mailer;
+	bh=vG8DGIHiY7DMGeo+eA0u14jrv8r12vq2uH5/qp0e+4w=;
+	b=JHfzjjCb4gepSrpHxyHKPuamE6cthBgcSiGI3MWwHptoyCQyUGwtOlP8ChcBYq5Z/R9P
+	 jQUEzH+8yi5vuqqhySnS9rMX7UxFoDN7vcYPl3dF22B51jj1aUHFthyWVqrZ3WHm/+m+/
+	 qHYmBczPhZ8nLix92oylszOFepS40X38qxbxvRFO4IasNpVPXASpoUiL2oq5uuqLdvPaF
+	 RM9oxc3mtf4cOufz6QhBc7rXqlGQwNnCrpjD6VJwfT+UoKjHIeUXEp9SSjskctlq03JGd
+	 oqmijFEguTjfbqemEyb/1Ex7ZbOwI7zGOx8eHmV/2uATjQ0Izp+v2maZ9cTl/dTKBmg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=XU6bWoIR;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=PduUGB8g;
-	arc=none smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=none header.from=gourry.net;
+	spf=pass smtp.mailfrom=gourry.net;
+	dkim=pass header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=HvoqpFfv;
+	arc=none smtp.remote-ip=209.85.160.182
+Received: from mail-qt1-f182.google.com (mail-qt1-f182.google.com [209.85.160.182])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1214C60A3804
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 13:56:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1214C60A3804
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2F54606A31E
+	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 14:01:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F2F54606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gourry.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=XU6bWoIR;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=PduUGB8g
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ANDKtnB1974164
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 13:56:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	6muZlLM33J+DBa+9pVOmRUzmFBVv5+7rsnUWPmNF+7o=; b=XU6bWoIRNoP/hn/X
-	/1yyiYzYxgc+ZrU4eTUh67MIg+w7+VEbkPRbtAqBZi4gb2bkXZAMej6aDoqHoMNg
-	wNJmfgkORkyQghNOTxO1Bz7clI450BguHS6qRBPLhaZuPH133rUs6BTJl7CHPO3j
-	kD4HoxQKBSnPDUSQ5uw+TzkSlq6aCL70qLl9hSZhpkXUNKYagYNpaF9k6D0aXTYH
-	RkrniMdgILlRqrYxFMvqII9sRcblCjFR6ov+kHuZiJFpsq28FfEbVUb8KTq9jLJP
-	oDH88enNzRWcA60+zXhVFikQHrQ5OwlJuhNz3mhBVVSzdw4zQSrQCMRYhzQ8aPz2
-	y7pgHw==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4m7urkmh-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 13:56:28 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-9495c71055bso656658585a.2
-        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 05:56:28 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=HvoqpFfv
+Received: by mail-qt1-f182.google.com with SMTP id d75a77b69052e-5361e313e63so46370131cf.3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 06:01:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795442187; x=1796046987; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6muZlLM33J+DBa+9pVOmRUzmFBVv5+7rsnUWPmNF+7o=;
-        b=PduUGB8gi9U4YVrDNo4fys1U68+xUVSE9UgLVYPmSQD6FnMggjiyfOttyMb4toYkbT
-         WnVtV/yNsuGcUG6Rm4mxt/RGStPCsxFHOS4FcmTusmE7cZsTt3QuST/vpra6x0KxHeSR
-         lqpY1lSwNCg7mGyfHW7cxBHU2fXgx1RP0drFXKxQ5wNd6LNzLEWsBILp9FIiiKOSnd+D
-         mEPAoaLSPw7XqOzVnbCtIhsBbe2Mv1iYyeBsGe3JvRelldQJtQl4imYBU99YoFbu4zWk
-         HQHZuZVX0PaDmpI4ao91w9WRZXO7gzblnKMsUX7fyd6g9Ys6K6yE71IBAZxerzAXCyPc
-         nEUw==
+        d=gourry.net; s=google; t=1795442485; x=1796047285; darn=vger.kernel.org;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=vG8DGIHiY7DMGeo+eA0u14jrv8r12vq2uH5/qp0e+4w=;
+        b=HvoqpFfvQJEyD7yCLKdxLSgIAzaLXp3MuIOJlQD/xTNp3eiDg6Ra/gTk2UwtMg8a7r
+         51Fdi8rwbAEzrbgpfyQRcX6ocwx3JbZqs3lMtg+oSCOxztbX4sMSEqwzwBMMXIZhbH2z
+         +cWKiZlrDbUnOjK2Dc/xmxc6lhEP7P0zCv9fK8Q6R+LbGf8sSkVAJ3VI047utN/3Xvv4
+         E+aRxCbXLC4Q26EJEfMDphlos6jB6B2Elx2CW7JhFNTETwNm4m8/cfY28pwtDbaTGmPb
+         vBtJ7fUBmY372UX/XLhDP7oxTPwPWEyn4GbQKKsOdOJ00EB3fq5g2EwkvonKgUxXTVD5
+         DPmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795442187; x=1796046987;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1795442485; x=1796047285;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=6muZlLM33J+DBa+9pVOmRUzmFBVv5+7rsnUWPmNF+7o=;
-        b=zWT8O2ZXPkoIcd43llqswncrrFDL8rUy4eH8xdYCkHtLzlzBaNNMRPb7+3kOR/j+7a
-         NfrayQz5Gibzo9Qbr3M+wttzG7rXm43OQrYVSp5W3lSjnju7Wxtp4/1Cx3nuzs7B8e1w
-         hxgEXfRYF91FKedh72lrqAtmhXe9Jafgagb582Aezl5Qf0F1amN8UXhh3POiSERCXrau
-         UQ5l9/2mNe1g9+M+HW87piVvxED54CCttqABhz0/noiqp/b/Ufp4yDJi/dDbg0fkLty8
-         0DlQrF9k+3g31i/JYuVqAYY+qCKq0QOWDx3jAb031LnOHCB5+wUzWP6uFxqqRMtGcsTg
-         +Ycg==
-X-Forwarded-Encrypted: i=1; AL+hErESz/GVnVUl64nacBF41R5gPvdeJH97+QV9D1xeQI/3U7J4omSLiU1SesDDYzwDEhNC2GptDXHaWg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9soRzah28YRwHsZveK4qxN9qi9YK7eI5rurWfUlQ1wA5nDxfdF
-	Txry6dW/jRvMnmCeCFU0Cd0Oop8U9bYezTdGaGovUJ7gioc31vcBzptFjNHLzAo6+RFn2zXvaR5
-	/h3CBJ7B90Rfns5dgT06l2wWB8GVDfApUBouxrAHHikmyjOybyQCGZM9rQHE3Dw==
-X-Gm-Gg: AZFdTZde8X7ChsyDkjFYGUAbrctd18XMcLtCtF7/Y2zdDRAy4EonZMBC2RAP66iWdsZ
-	+hJwZVNhUTTkNxomVUaFhHuXUU150ghYbLZRH1+ex6uUxhB1wX+I8S1flxC/3jTnD/igVI/A0pW
-	X8k8MDCUyPoI/YUGrpnYLOfXf6wVLZWzKkOzaue8e+037TUnmxJ3H7tDugx1Zhw98/+eL2AeEZ8
-	32vhzR60AorlVt9/HjTCqBZ0LLZgp5hoWQnXf1UOYPpzUyrT9uUKmF6rnsaeZKY53G6wTmFlB8U
-	wnvLjoFr/kg5XmHgtP0tdrVj3PcOqpqI5E62Bx2sY39eSeCXHbSdW0gwMCJuoVzTaXZk8FJ52g1
-	SzZG/5c3HkNVSnbN5HklPenMJsJaJNCd+yEJj9412AQgHuGbuhmTGZvgn8I1WAP3PJuyBlS8Vqk
-	K/GpK24b/uGAYV8UEG2BSd7Nw9Str4684opNQIQ/ZLRlAGqRxioYpnYhWePiV1OvSpLXci6Znjy
-	iS5STXqLCjGXvmg8YSE43xvOzwA
-X-Received: by 2002:a05:620a:2995:b0:93c:7040:bf7b with SMTP id af79cd13be357-949ba827c54mr1899042685a.9.1795442187440;
-        Mon, 23 Nov 2026 05:56:27 -0800 (PST)
-X-Received: by 2002:a05:620a:2995:b0:93c:7040:bf7b with SMTP id af79cd13be357-949ba827c54mr1899036685a.9.1795442186934;
-        Mon, 23 Nov 2026 05:56:26 -0800 (PST)
-Received: from QCOM-eG0v1AUPpu.na.qualcomm.com ([2a01:e0a:830:450:6c6b:1e5a:79dd:a527])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab6c4353d6sm21724625f8f.56.2026.11.23.05.56.25
+        bh=vG8DGIHiY7DMGeo+eA0u14jrv8r12vq2uH5/qp0e+4w=;
+        b=hZ81IlpjbP0bgVhAGbpLVPhxNy5LkgAOl2jVZjhQRyEUIALUmE/ia8kj/KOMItOwnb
+         /vBy6ygoobm5nru0uA1n9ZN2FHIQAcIoAU/aKjEYYibKEyYkYrobpG1I4FkghRwH+0CL
+         ZftKK2YTa4Nub49rfXsGw0BVVoon1+etJ2sPsdNaEcGOXZEW9HlMM7py3MpBwdJ36lkf
+         ba036fVJTuCX0+cnL8cuxGbJZwCQ1uulXC/yecPGvLZiggJiyZUdWcLereek6vILvqoz
+         R1v0dVjFEKdOlQzadEz5SDTB7kF28lVhTrco2FypadaAvMF559nxvSDWDiH1aJslKAC2
+         3s9g==
+X-Forwarded-Encrypted: i=1; AL+hErGzIlf56HV4d4bBaPqYhp/o6DCavo9vOiQrkJAUAsUUTLC8VnbylFUisOWPDA1mJl3l0yWdd5OiTg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/qNgug0uY01aDltdx+tn2ZlM3ukIjiAOsXeAc61w1dpNxZWXwX
+	NibVsHESZ1kvL3LfNFwZ/+4dHdMOk/VCzqPsW8IdvrReUh2D8EFCUVcJyDiG6wAeBj4=
+X-Gm-Gg: AZFdTZdjYrteEjhOjveiF2mhAXqRCaWw1gQqTAwXZ4jZCTmrdi3FQVWDCO08Q+x0F8X
+	Yj/oGrFpg4G2oyvcshXjVi2ERsjyabLHUkUVfJxhq7zH23kWAPZsOjt7fjO+Y8AUjVn7c4Zv/MY
+	oGMzg+QpxmC7RbDIjfzln9BMjC2MMOBKjn3vc9rm36J3FLPqrwh1p50Jby3JDwor2q+HYthvlyP
+	KlwYfyCGMYOmRHDApC6cJdqDQ1N6Tyjc1Wy+Ib1GmKaJM6q+Z6orTCAudgSffVp7xNU/GwWrFyU
+	lVggzlI2lG88vZkNkI/hwhUWPdHlWhUXRUAh5F5s8x9zNvYElcqHol61vopKMxzus3l//qiEirg
+	Ul7Yp4hEoHfbyr7zEl+up8GFlqckhyuJ2ggWVgDKYUTCejJ+2KtwGq3avPcy3aDe5xFl9b1vOaD
+	Rd3keGGu19rxDDTOkv/Sldi0bkkLrcCB3BWOs05qYe4SMHfrx9FJ4iBED82oIuXRw6fDvIUKTHt
+	XvI1eEF9FQDpPjhuREUYIxiyEC7/154DjzvKH3CeSovhBZLI9AG2qBEtzuEIm6OI2+lSi5qGHfO
+	Ps31Fu2lOgnuz+VqxFJs+i/vfmsFjh+i7W70FugnA1zwRh2b7O3mSkPZyMCkwY/OgL6qxrC3nJS
+	z3//HPeY=
+X-Received: by 2002:a05:622a:8413:10b0:55d:8475:aafb with SMTP id d75a77b69052e-55d8475ad43mr113506371cf.71.1795442484804;
+        Mon, 23 Nov 2026 06:01:24 -0800 (PST)
+Received: from [192.168.50.231] (pool-71-191-145-202.washdc.fios.verizon.net. [71.191.145.202])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-55d788074desm99999281cf.7.2026.11.23.06.01.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Nov 2026 05:56:26 -0800 (PST)
-From: Loic Poulain <loic.poulain@oss.qualcomm.com>
-Date: Mon, 23 Nov 2026 14:56:15 +0100
-Subject: [PATCH v9 8/8] arm64: dts: qcom: monaco-arduino-monza: Add QCA2066
- M.2 WiFi/BT support
+        Mon, 23 Nov 2026 06:01:24 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -119,175 +91,140 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261123-monza-wireless-v9-8-450d7d764aea@oss.qualcomm.com>
-References: <20261123-monza-wireless-v9-0-450d7d764aea@oss.qualcomm.com>
-In-Reply-To: <20261123-monza-wireless-v9-0-450d7d764aea@oss.qualcomm.com>
-To: Manivannan Sadhasivam <mani@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Marcel Holtmann <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
-        Loic Poulain <loic.poulain@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Proofpoint-ORIG-GUID: iTGQYPWoj4dprYNABi-meLd7UKnxe6xw
-X-Authority-Analysis: v=2.4 cv=KurYSmWN c=1 sm=1 tr=0 ts=6b04460c cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
- a=VwQbUJbxAAAA:8 a=EzCDy3pf2FPqfMyO2-oA:9 a=QEXdDO2ut3YA:10
- a=PEH46H7Ffwr30OY-TuGO:22
-X-Proofpoint-GUID: iTGQYPWoj4dprYNABi-meLd7UKnxe6xw
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDA1NSBTYWx0ZWRfX+nvk1f6L0CZt
- qLpvxolIrTa+6lziJcXIWoq8hYdWk+O5Y5j6y1M4DAD3k+cRUzevTFIUmqdezEeNuWL+OIVWihP
- DKamU6Tu+QSvFLRCptbSK+SfVEr9ne0=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDA1NSBTYWx0ZWRfX75PJZklAZuWy
- 05F3OXEmUp9tKupyug5SJRxfaD07a5x+ssn8B7JzqAD1M451/kFYqKlzjOfj92g7n5EzDJchqFs
- kzUTP/GPhQhw7ViqeG6mme8U5O1ikO5jqbRDOVz51w77OqwfQI2XbS8CCpXKquTDh5bt+cbdAU5
- jVXqHZHQpOyiS57GjktkCqD2yY4dv2UIq2VYBOVrELc74EMjD4FsqvBY9GZC65DlDHBNRY9hDMW
- 5pl29mqA0WjjieFrvATsz0OB0dGYBkCHz4dWK1SdhELDpLlflcBNgdJEDjmNIRsW3lFOglkAT3c
- Feo9sQDcDeM02GSAnGGVvJbth9xivXEEVLqOpIXkG5nf9Ynxkzz1fR9wtYvvBwplaVsNacKFUtF
- JV8uZVVz9Eq7ICoPjUXq8Pa0ZNJzI3YEGfF40sCR7/z2ZEsV/RwAt7QlhVJl+KuKArkExz//FOh
- CdMhcFat/keaLXBQ1MA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-23_03,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 bulkscore=0 phishscore=0 spamscore=0
- malwarescore=0 adultscore=0 suspectscore=0 clxscore=1015 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230055
+Subject: Re: [PATCH 01/60] nodemask: add node-state iterators
+From: "Gregory Price (Meta)" <gourry@gourry.net>
+To: Yury Norov <ynorov@nvidia.com>
+Cc: gourry@gourry.net, Yury Norov <yury.norov@gmail.com>, 
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+ David Hildenbrand <david@kernel.org>, 
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+ Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, 
+ Andrew Morton <akpm@linux-foundation.org>, 
+ Oscar Salvador <osalvador@suse.de>, Johannes Weiner <hannes@cmpxchg.org>, 
+ Suren Baghdasaryan <surenb@google.com>, 
+ Brendan Jackman <brendan.jackman@linux.dev>, Zi Yan <ziy@nvidia.com>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Randy Dunlap <rdunlap@infradead.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Johan Hovold <johan@kernel.org>, Joshua Hahn <joshua.hahnjy@gmail.com>, 
+ Rakie Kim <rakie.kim@sk.com>, Ying Huang <ying.huang@linux.alibaba.com>, 
+ Matthew Brost <matthew.brost@intel.com>, Byungchul Park <byungchul@sk.com>, 
+ Alistair Popple <apopple@nvidia.com>, SJ Park <sj@kernel.org>, 
+ Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
+ Juri Lelli <juri.lelli@redhat.com>, 
+ Vincent Guittot <vincent.guittot@linaro.org>, 
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, 
+ Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, 
+ Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, 
+ K Prateek Nayak <kprateek.nayak@amd.com>, Kees Cook <kees@kernel.org>, 
+ Kairui Song <kasong@tencent.com>, Barry Song <baohua@kernel.org>, 
+ Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Michal Hocko <mhocko@kernel.org>, David Rientjes <rientjes@google.com>, 
+ Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
+ Dev Jain <dev.jain@arm.com>, Lance Yang <lance.yang@linux.dev>, 
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
+ Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>, 
+ Lorenzo Stoakes <ljs@kernel.org>, Pedro Falcato <pfalcato@suse.de>, 
+ Jann Horn <jannh@google.com>, Chris Li <chrisl@kernel.org>, 
+ Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
+ Youngjun Park <youngjun.park@lge.com>, 
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
+ Waiman Long <longman@redhat.com>, Ridong Chen <ridong.chen@linux.dev>, 
+ Tejun Heo <tj@kernel.org>, 
+ =?utf-8?q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>, 
+ Dan Williams <djbw@kernel.org>, Vishal Verma <vishal.l.verma@intel.com>, 
+ Dave Jiang <dave.jiang@intel.com>, 
+ Alison Schofield <alison.schofield@intel.com>, 
+ Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org, 
+ linux-mm@kvack.org, linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org, 
+ driver-core@lists.linux.dev, damon@lists.linux.dev, 
+ linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+ cgroups@vger.kernel.org, nvdimm@lists.linux.dev, 
+ linux-kselftest@vger.kernel.org
+In-Reply-To: <awMK9V6TbU9Xtzn9@yury>
+References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
+ <20261120-private_nodes_v6-v1-1-74f5f9a115c2@gourry.net>
+ <awMK9V6TbU9Xtzn9@yury>
+Date: Mon, 23 Nov 2026 09:01:22 -0500
+Message-Id: <179544248227.412063.16491857533875192357.b4-reply@b4>
+X-Mailer: b4 0.17-dev
 
-Add support for the QCA2066 (QCNFA765) WiFi/Bluetooth module on the
-Arduino VENTUNO Q board. The module is interfaced via LGA and is
-compatible with the M.2 Key E.
+On 2026-11-22 10:32 -0500, Yury Norov wrote:
+> On Fri, Nov 20, 2026 at 01:08:52PM -0500, Gregory Price via B4 Relay wrote:
+> > From: "Gregory Price (Meta)" <gourry@gourry.net>
+> > 
+> > Add first_node_state() and next_node_state(), so callers can walk any
+> > node state the way first_memory_node and next_memory_node walk N_MEMORY.
+> > 
+> > Add for_each_node_mask_state(), which iterates a nodemask intersected
+> > with a node state using the bitmap intersection helpers, without a
+> > temporary nodemask.
+> > 
+> > Signed-off-by: Gregory Price (Meta) <gourry@gourry.net>
+> > ---
+> >  include/linux/nodemask.h | 17 +++++++++++++++++
+> >  1 file changed, 17 insertions(+)
+> > 
+> > diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+> > index 607373bd83ee..90bdcffa42ea 100644
+> > --- a/include/linux/nodemask.h
+> > +++ b/include/linux/nodemask.h
+> > @@ -411,6 +411,11 @@ enum node_states {
+> >  
+> >  extern nodemask_t node_states[NR_NODE_STATES];
+> >  
+> > +/* Iterate the nodes in a mask that also belong to the specified state. */
+> > +#define for_each_node_mask_state(node, mask, state)			\
+> 
+> for_each_node_state_and? We've got for_each_node(), and we've got
+> for_each_node_state(), so let's figure out consistent naming.
+> 
+> Did you check the codebase for exsisting candidates for this helper?
+> 
 
-Add wireless-lga-connector node using pcie-m2-e-connector binding,
-connecting PCIe port 0 to the WiFi interface and UART10 port 3 to
-the Bluetooth interface.
+for_each_node_mask_and() would be more consistent, change just requires
+passing node_state[N_MEMORY_X] instead of just the node state bit.
 
-Add pcie@1,0 downstream port node with pciclass,0604 compatible so
-the pci-pwrctrl driver can acquire the power sequencer and enable
-the M.2 slot before PCIe enumeration.
+> > +	for_each_and_bit(node, nodes_addr(mask),			\
+> > +			 nodes_addr(node_states[state]), MAX_NUMNODES)
+> > +
+> 
+> Please use nr_node_ids instead of MAX_NUMNODES.
+> 
 
-Add nfa725b_default_state pinctrl for the W_DISABLE1/2 GPIOs
-(gpio56/gpio55) used by the power sequencer.
+I followed for_each_node_mask() which uses MAX_NUMANODES but let me
+look.
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/monaco-arduino-monza.dts | 64 +++++++++++++++++++++--
- 1 file changed, 60 insertions(+), 4 deletions(-)
+> >  #if MAX_NUMNODES > 1
+> >  static __always_inline int node_state(int node, enum node_states state)
+> >  {
+> > @@ -435,6 +440,12 @@ static __always_inline int num_node_state(enum node_states state)
+> >  #define for_each_node_state(__node, __state) \
+> >  	for_each_node_mask((__node), node_states[__state])
+> >  
+> > +#define first_node_state(state)	first_node(node_states[state])
+> > +static __always_inline unsigned int next_node_state(int nid, enum node_states state)
+> > +{
+> > +	return next_node(nid, node_states[state]);
+> > +}
+> 
+> At least the following {first,next}_{online,memory}_node must be
+> switched to the new helpers. Can you check through the rest of the
+> kernel to make sure all candidates of the proposed helpers are
+> converted?
+> 
 
-diff --git a/arch/arm64/boot/dts/qcom/monaco-arduino-monza.dts b/arch/arm64/boot/dts/qcom/monaco-arduino-monza.dts
-index 940a03732eefc49280b4182101cf3fb9ee951053..f24a87bd7cbf63bda803161f3659b0538a5ee35a 100644
---- a/arch/arm64/boot/dts/qcom/monaco-arduino-monza.dts
-+++ b/arch/arm64/boot/dts/qcom/monaco-arduino-monza.dts
-@@ -178,6 +178,40 @@ vreg_nvme: regulator-3p3-m2 {
- 		enable-active-high;
- 		startup-delay-us = <20000>;
- 	};
-+
-+	wireless-lga-connector {
-+		compatible = "qcom,pcie-m2-1418-lga-connector",
-+			     "pcie-m2-e-connector";
-+		vpcie3v3-supply = <&vdc_3v3>;
-+		vpcie1v8-supply = <&vdc_1v8>;
-+		w-disable1-gpios = <&tlmm 56 GPIO_ACTIVE_LOW>;
-+		w-disable2-gpios = <&tlmm 55 GPIO_ACTIVE_LOW>;
-+		pinctrl-0 = <&nfa725b_default_state>;
-+		pinctrl-names = "default";
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			/* WiFi/PCIe */
-+			port@0 {
-+				reg = <0>;
-+
-+				lga_pcie_ep: endpoint {
-+					remote-endpoint = <&pcie_ep>;
-+				};
-+			};
-+
-+			/* Bluetooth/UART */
-+			port@3 {
-+				reg = <3>;
-+
-+				lga_uart_ep: endpoint {
-+					remote-endpoint = <&uart10_ep>;
-+				};
-+			};
-+		};
-+	};
- };
- 
- &cci1 {
-@@ -541,6 +575,22 @@ pcie@0,0 {
- 		ranges;
- 		reg = <0x010000 0x00 0x00 0x00 0x00>;
- 
-+		pcie@1,0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			compatible = "pciclass,0604";
-+			bus-range = <0x00 0xff>;
-+			ranges;
-+			reg = <0x020800 0x00 0x00 0x00 0x00>;
-+
-+			port {
-+				pcie_ep: endpoint {
-+					remote-endpoint = <&lga_pcie_ep>;
-+				};
-+			};
-+		};
-+
- 		pcie@2,0 {
- 			#address-cells = <3>;
- 			#size-cells = <2>;
-@@ -694,6 +744,12 @@ max98091_default: max98091-default-state {
- 		bias-pull-up;
- 	};
- 
-+	nfa725b_default_state: nfa725b-default-state {
-+		pins = "gpio55", "gpio56";
-+		function = "gpio";
-+		bias-disable;
-+	};
-+
- 	pcie1_default_state: pcie1-default-state {
- 		wake-pins {
- 			pins = "gpio21";
-@@ -745,10 +801,10 @@ &uart7 {
- &uart10 {
- 	status = "okay";
- 
--	bluetooth: bluetooth {
--		compatible = "qcom,qca2066-bt";
--		enable-gpios = <&tlmm 55 GPIO_ACTIVE_HIGH>;
--		clocks = <&sleep_clk>;
-+	port {
-+		uart10_ep: endpoint {
-+			remote-endpoint = <&lga_uart_ep>;
-+		};
- 	};
- };
- 
+I originally intended to delete first/next_memory_node, to make
+usage of N_MEMORY a bit more obviously, but dropped it to save an
+extra patch or two.  I will probably add that back in.
+
+But yeah i can update these otherwise.
 
 -- 
-2.34.1
+~Gregory
 
