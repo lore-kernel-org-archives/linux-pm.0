@@ -1,78 +1,73 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=194.117.254.33
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795438454;
-	b=C24pPrf6IXGVQDyJKstaxdBF3dARcfpCOVfksWHH4o03/d8FuvZFuj3Tvj2wRfKJYEXl
-	 z68QiKplCg1ETwHX+0v08pe8i7MsXzsbkPvrcvp4oWCf/y90DPwaM63A4YomDwEOP5G5Q
-	 H+145qkJD0eLZOIvGJI7h+fYfGGgX/r6Nbo8bwMTqCLN9gjZb0XHNFkb2Isq6uvpspmNR
-	 9NKkvBObwPszLVxHnbQxzC7oVMul52uTLDD98y86eLrwHfizcW0iCdB5He4KhsOf4lqYG
-	 I0UUG6BBmIwwGn06Re0TI7+fbcunYRsz9j3sKoJwNQHA5SQ7oA3VfOynPSS0ImZNZpA==
+	t=1795438873;
+	b=w5py8WwYFZO/hvVe9XxsIwtTMmDbeiqETEahRehh8svEMIzrsbz5Fwas7iXAebSr9lYO
+	 GHBu+B8ANbenlPwjXUDDyWnfhBcZE+4blMqT52HphK+FmB53KRRAURGE+p3CS95EWQJzY
+	 DEr4FTz9hs7Y8Q+/60yi8c0JkqlmWgUlu2IzxQ/P+cPQfgjnWqd75GJuxOTDgpr7UPnS/
+	 cWGkeDe+NEdpO7npfdi3tRVWJ6Z1vFUrCapbULPQRyzLlN/6oiNBNLFcAQx8boJsuLZwf
+	 GGi3/hZPiX5lceX3EcICurSUNtotepzWOvBMvJWv7W2qMITyngSw5qIe0AYRguohw4g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795438454;
-	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To;
-	bh=AK9gZq1mzNYYir8TNaIUe4uUnYICwkK2Y+EuWc7ckdM=;
-	b=Vi1ldyKcVMsvylTVDEwzRegejsri8FbXuVi6XXhyVu25a8EwImGTzv2H0xK0t48X6zym
-	 hSDXytEwy36fgzQtuTKSL7QbC2UbqAL864TAzqFlY9xAooMJQMGsuCz/VvyLTOpjon6zd
-	 4QiseuF4DOmqWLTawHa06o8TNGmLz7ugVyZGHLNoV59X6VjqNHow0ReeEuznwBogdeRgf
-	 8nb0cWOXduZ0chxzEty5hImRGduPtFsTCakkwclBPbfqOztWDLniLF3Si41xa/MVS9pPe
-	 cUsU5hF+xmmRAyLqEa8gt1CK/FiZId3izMe8xTW31vFpKH10ZX6byHOH3O8F6oAneTw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795438873;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:X-UD-Smtp-Session:Date:
+	 From:To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=SsVRMPSyNzie31mooAWwpfLKTDZGyyCN3cZBedOe8C4=;
+	b=P8OfM9gCmdn/dRYJvuHmJW4grbDGF3ZSZrQNxT7j3M4m6c6XfDJgKkfOkJqXEWsDNOKV
+	 D9ZKJTuM385qKR2BH9qi4OF2MuSgWWP6HUpyjQYSK/DFFHqXyxfwjf0ZcDKHSwlmVJI1y
+	 JPH8b300miMuR+qPJO0h8J7VA3Bmwr1FxVGT/TNXjsYl2x2aJGPGzJ3AGYELigLxfZXBE
+	 aNjQTrl6NRU6YEuBgWqcq8kbLyHpNYJptA+03CBx6P8pLEFMjAk5Vsqembjww25zWb2qx
+	 +fW4epfJ4Ppe0pMVVpBqlByvVr+WsUPWlUp+m3fKIzRi4+Aer2EgsmFpQYbMmZD8iXw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ideasonboard.com;
-	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=AZIGKtbJ;
-	arc=none smtp.remote-ip=213.167.242.64
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	dmarc=none header.from=sang-engineering.com;
+	spf=pass smtp.mailfrom=sang-engineering.com;
+	dkim=pass header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=I4RCL8+l;
+	arc=none smtp.remote-ip=194.117.254.33
+Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24300606A31A;
-	Mon, 23 Nov 2026 12:54:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 24300606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4040606A32C
+	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 13:01:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C4040606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=AZIGKtbJ
-Received: from killaraus.ideasonboard.com (2001-14ba-7086-3000--a06.rev.dnainternet.fi [IPv6:2001:14ba:7086:3000::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 31A5E177;
-	Mon, 23 Nov 2026 13:51:39 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1795438299;
-	bh=WRMJuqFdJHPeKGISVHJw8r4oTogveJ42OLFSdKyGCc8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AZIGKtbJR6NkLXRom8BW/EhsnsC1Qtzflabo8Bbcd6MJhGpnl0G7O9/Nfw94CZnoM
-	 KK2Frc1pLjhhlJe1YrWwhiM0MzcAEmKh73qx4i+5jLEyo05m07KyNw26uLNjEdzMnt
-	 6U/AC2OPCb7Ic8d01t0cFQ49muIHRDjCsjQmSzZI=
-Date: Mon, 23 Nov 2026 14:54:10 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+	dkim=pass (2048-bit key, unprotected) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=I4RCL8+l
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	sang-engineering.com; h=date:from:to:cc:subject:message-id
+	:references:mime-version:content-type:in-reply-to; s=k1; bh=SsVR
+	MPSyNzie31mooAWwpfLKTDZGyyCN3cZBedOe8C4=; b=I4RCL8+lfqpMIAWTNiyl
+	Po3sM2dYYNnR0RVAbIEz75KzF2sOpEi0h7sIuXnka9qQIOHY6CY/PJ/feNrWrHrB
+	6bE64kbw20m/c+8Uj3Shwms/DmvhERv6+T2Di+nxPDn1iG72DHVAo07B7mttZGEk
+	+P26Y9LeYdoNC1jh+XZCwfj4cW0iB6iJdxdONZjGSIJTsLfP2lsc2WmoL/UGfZzq
+	I8cjXXUtgimzxmC5e05i1VIhO0oxnQJlMWpgW1ch+DOcHjqAMQkKBMeAE+CYz9pH
+	ZmQnveSzX5XVpsrjra98/SLTYFHxR77GV+xjhqMFLQOK9Ubg9ok1u8g3BlBr97zm
+	BQ==
+Received: (qmail 2731665 invoked from network); 23 Nov 2026 14:01:06 +0100
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 23 Nov 2026 14:01:06 +0100
+X-UD-Smtp-Session: l3s3148p1@vhjXL/FgUIgujnsu
+Date: Mon, 23 Nov 2026 14:01:06 +0100
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Andreas Kemnade <andreas@kemnade.info>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Paul Walmsley <paul@pwsan.com>, Stephen Boyd <sboyd@kernel.org>,
 	Brian Masney <bmasney+clk@redhat.com>,
 	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Paul Elder <paul.elder+renesas@ideasonboard.com>,
-	=?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH v5 05/15] clk: renesas: r8a78000: Add SCMI remapping
- support
-Message-ID: <20261123125410.GK3010398@killaraus.ideasonboard.com>
-References: <cover.1795029012.git.geert+renesas@glider.be>
- <e01baebc546ed6f1b71a0487a59cda73239ea7f1.1795029012.git.geert+renesas@glider.be>
- <20261123113619.GG3010398@killaraus.ideasonboard.com>
- <23ab561a-c5c5-41ff-a0f4-87a3f5ca2e49@app.fastmail.com>
+	Sandy Huang <hjc@rock-chips.com>,
+	Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>,
+	Andy Yan <andyshrk@163.com>, Ulf Hansson <ulfh@kernel.org>,
+	linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-rockchip@lists.infradead.org, linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/6] clk: Remove unused clk.dev
+Message-ID: <awQ5Ems-ZyYsWVRy@ninjato>
+References: <cover.1795094688.git.geert+renesas@glider.be>
+ <a896e5bdb29c7c6de39df9b28b11d55614f2ec2d.1795094688.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,67 +77,22 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <23ab561a-c5c5-41ff-a0f4-87a3f5ca2e49@app.fastmail.com>
+In-Reply-To: <a896e5bdb29c7c6de39df9b28b11d55614f2ec2d.1795094688.git.geert+renesas@glider.be>
 
-On Mon, Nov 23, 2026 at 01:34:06PM +0100, Geert Uytterhoeven wrote:
-> On Mon, Nov 23, 2026, at 12:36, Laurent Pinchart wrote:
-> > On Wed, Nov 18, 2026 at 08:44:53PM +0100, Geert Uytterhoeven wrote:
-> >> Extend the Clock Pulse Generator driver for R-Car X5H with SCMI support,
-> >> to remap DT clock IDs to abstractions (clocks) offered by the SCMI
-> >> firmware when running on a system with SCMI, and SCMI support is
-> >> enabled.  Take into account some peculiarities of the current SCMI
-> >> firmware implementations, and fall-back to fixed-rate clocks as
-> >> replacements for SCMI clocks that are not available.
-> >> Support for bus clocks used by serial, I2C, and SPI devices is included.
-> >> 
-> >> This lets us avoid putting SCMI IDs in DT, and allows us to use the same
-> >> hardware description in SoC DTS for systems with and without SCMI
-> >> firmware.
-> >> 
-> >> For now, it is assumed SCMI clock IDs are stable, and match SCP FW
-> >> SDKv4.31.0 and later.
-> >> 
-> >> Suggested-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
-> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> >> Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+On Thu, Nov 19, 2026 at 02:40:34PM +0100, Geert Uytterhoeven wrote:
+> This basically reverts commit efa850487a6b6742 ("clk: Inform the core
+> about consumer devices").
 > 
-> >> --- a/drivers/clk/renesas/r8a78000-cpg.c
-> >> +++ b/drivers/clk/renesas/r8a78000-cpg.c
+> This commit added a struct device pointer member to struct clk and a
+> parameter to clk_hw_create_clk(), but the new member was never used
+> beyond setting.
 > 
-> >> @@ -140,7 +182,35 @@ static struct clk_hw **get_hws(struct r8a78000_cpg_priv *priv)
-> >>  
-> >>  	for (unsigned int i = 0; i < map->size; i++) {
-> >>  		fw_id = map->entries[i].fw_id;
-> >> -		hws[i] = fixed_hws[fw_id];
-> >> +		if (fw_id >= FIXED_CLK_OFFSET) {
-> >> +			hws[i] = fixed_hws[fw_id - FIXED_CLK_OFFSET];
-> >> +			continue;
-> >> +		}
-> >> +
-> >> +		scmi_spec.np = scmi_clk_np;
-> >> +		scmi_spec.args_count = 1;
-> >> +		scmi_spec.args[0] = fw_id;
-> >> +
-> >> +		clk = of_clk_get_from_provider(&scmi_spec);
-> >> +		if (IS_ERR(clk))
-> >> +			return dev_err_cast_probe(dev, clk,
-> >> +				"Failed to get SCMI clock %u\n", fw_id);
-> >> +
-> >> +		hw = __clk_get_hw(clk);
-> >> +		clk_put(clk);
-> >
-> > Doesn't that leave the hw pointer possibly dangling, shouldn't you keep
-> > the reference to the clock ?
-> 
-> Only struct clk is reference-counted; struct clk_hw is not, and exists as
-> long as the clock provider hasn't unregistered it.
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-That's what I meant, what prevents clk_hw from being destroyed while you
-still hold a pointer ?
+Cool cleanup!
 
--- 
-Regards,
+Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-Laurent Pinchart
