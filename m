@@ -1,76 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795431689;
-	b=nH58HBW0364YMlzy/gdwHo/vDnEf72unmxWPdKGbphxpUxRh8JXcThISBRwDOLQWhvTW
-	 +f9AVbZPN1OYbwFwmi4pv9TcBAoLdu8u95q6jVdNHaBG9nbji2sLzAMXzz1xAe5NbRtpV
-	 l4irhx6BcKWlL0J0okOkDuMshTeZBHyLy8B5Xqg/5sfop5/YMZFkeTy+xcTis2sTE3FS6
-	 PhdZfV1Tdh7+EocpiB6Kh8578y9I1tJxXut/ZMh7JUIA/si9W8mzqLteNaaNLA3l4B2sv
-	 GrBuHgJ3be58XP+X3VzCZ20Bsoew//cT+0UY4wrQ/Qc4VDJWT7Pumm8Ko6Tp2gctuuQ==
+	t=1795432310;
+	b=oieNwx5TWEw7ReJWuRoI/AvlNLjzUarNy87O+YFaEPTauLWaqo/M4/5pgl3m8pHCmrua
+	 hfhmXndWQJMQAMa489iJimEEqh+6oJo1qvFstOkHhmUjAwuOsRhtIsSNI09aPqTA0L9CC
+	 V1n3LxxYsAqmcXKiSYAtmGEzdPY3dAHmy34qQ0MubR1xWoUf6YKR1gXnUDED1OaDmjczT
+	 lpKCulnOtIk086KvEUzjv92i11v5OGr2r2lUh4OqVzQvA0paS3jn2xF/w/ym2D+gviJy1
+	 Rq3t1/vCFW9WOcDX8bwK10oYuMahojAI2urAGmaIhCYovz8bJVSpJuJ5LyrxrkzYT4w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795431689;
-	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To;
-	bh=9baLRy6PuRfKPu52T+JMh1Xvttd6fycEOeAlQX9Fbco=;
-	b=fem1bUY08vfv4XYcsibdS+WLp8xvy25EAv0iG9S7B0PkDiHsaw2F9JoBGE443xAIJQff
-	 WJPPFDUtoQff1P3pYo2o6uLNa1IVfgw/PA95wDZ6egF1a8d/xr2tIsI3XDbX0IM4Wpy+u
-	 BofPRLUa6sB5SMTjfs2EAJZmrVzqVR2xr4rTyMCMAJmbmpYGjpFtfrilt0H2jkLyrGgir
-	 LhLktZzvNFHg9cMTNK60I/mVhTF07+Q9lCWijNDu3SogJSMb2ibjezsuSKdUYeUR8l2GR
-	 daXpcIHmjMqQv2zsW8RofOd+MXca1s15n12EEoN2NRNQT6iM5WPCtAwjiHpmwwd535Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795432310;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=ICMJa1FXDkLpeqDBKL+J43KXnXXLbTYi1fHx2l/sa/I=;
+	b=qGJRMs+Hw3EswiJ6oIQ73ueVsEjsNQv/sS2zRO8K2FmViMPkngNvi3brdZ4ju+jo6oGi
+	 pzPLC5JPNyIBomBV3IJtmtQknfs+HTynP3EJ4kZeyIZryYNXzYzWHrS25ohP+KdzNdFW9
+	 LQQ3WRscc4Va4mNtw9vwcB4OgfbV5qmzdmNBphLHJlMJ1aJ+6k7SPKRTkBve8VnwggSwi
+	 91lx2cFzOxYMq6Pc06WRUehQfJM7/z8rgkP2IrIdzF0drIoUHoncXi7FZIWJ5nR9B0w3q
+	 YCvlSd7lvCBEXSb/g2Ro67Wotu7XJgeWTY6gW1SORQ/u6P2oQAkA5SkAh7mpRlUZlFg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ideasonboard.com;
-	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=b+c5zFzb;
-	arc=none smtp.remote-ip=213.167.242.64
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QFozejRV;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B90E9606A31A;
-	Mon, 23 Nov 2026 11:01:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B90E9606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA8E5606A321;
+	Mon, 23 Nov 2026 11:11:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=b+c5zFzb
-Received: from killaraus.ideasonboard.com (2001-14ba-7086-3000--a06.rev.dnainternet.fi [IPv6:2001:14ba:7086:3000::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 57521177;
-	Mon, 23 Nov 2026 11:58:54 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1795431534;
-	bh=5hqJD3AbPoo6JiX/eE7N7lyp8uyKcnxG0dSWzKXr3MM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=b+c5zFzbG4eQfeQqPqWNPxMD4xLARc8Cvx7jjrTW2pOj8YnE/swkyBnJ+pU7lK1AP
-	 5wvaHjS/R5+S00YgJ/6j2uQ0wvIeoFItHBWbTZA5HE47z7ihGa3kSfr8/dO44UtQ9U
-	 9I0DPQMZgWjxRBR6FDI3VyiL+koobmUwWQuHXHG8=
-Date: Mon, 23 Nov 2026 13:01:25 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Paul Elder <paul.elder+renesas@ideasonboard.com>,
-	=?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH v5 02/15] clk: renesas: r8a78000: Replace sentinel by
- explicit ID map size
-Message-ID: <20261123110125.GC3010398@killaraus.ideasonboard.com>
-References: <cover.1795029012.git.geert+renesas@glider.be>
- <bf9d3d694fc06f29819b6883610c0e86c2d0066e.1795029012.git.geert+renesas@glider.be>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QFozejRV
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35B011F000C4;
+	Mon, 23 Nov 2026 11:11:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795432310;
+	bh=ICMJa1FXDkLpeqDBKL+J43KXnXXLbTYi1fHx2l/sa/I=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=QFozejRVYJDf+6Ka6Yqgp2wwhdOUwXrgWfgZzy69be+GIldHLaLHE6S2H5HQskd+g
+	 Hd/QGXwNRChubRjVCtMuZt8JUBw7OoRQmjdJzOnATgNeOs5bQ8hIPfMog23QSC4l2c
+	 m4gMMS7hFCbkSCqS2MMpsqY7x8V43UFIzU4umOXC7utNPtWGLVbaRnugVXJpJ4d7zD
+	 DSVGNmEmNIpn+ar/6xQexD1719DC9FXpBO7j+Sp3JF2b4oYnOIMa5uJuMRkYXVWWP/
+	 v2Z+DiLLAM6JWNNtmdPlj6Wdgjx9Z2QTu3EGR6vjActqeJwnzvBgwTDs8/aw9pM0BG
+	 Mv5jOjy4L5IYA==
+Date: Mon, 23 Nov 2026 12:11:46 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com
+Subject: Re: [RESEND PATCH 1/7] dt-bindings: power: st: add STM32MP PM domain
+ binding
+Message-ID: <20261123-pretty-strict-caracara-bfcaac@quoll>
+References: <20261116104054.94115-1-patrick.delaunay@foss.st.com>
+ <20261116114024.RESEND.1.If3d55e03486413ca40ac73f9bf07046e76a00f0a@changeid>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,147 +63,90 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <bf9d3d694fc06f29819b6883610c0e86c2d0066e.1795029012.git.geert+renesas@glider.be>
+In-Reply-To: <20261116114024.RESEND.1.If3d55e03486413ca40ac73f9bf07046e76a00f0a@changeid>
 
-On Wed, Nov 18, 2026 at 08:44:50PM +0100, Geert Uytterhoeven wrote:
-> The use of a sentinel in the clock ID mapping array will become
-> cumbersome when the need arises to find out the actual number of
-> elements in the array.  Rework the mapping data structure to fix this,
-> also improving naming.  Add a CLK_ID_MAP() initialization macro for
-> brevity.
+On Mon, Nov 16, 2026 at 11:40:26AM +0100, Patrick Delaunay wrote:
+> Add binding documentation for the power domains found on
+> STMicroelectronics STM32MP SoCs.
+
+A nit, subject: drop second/last, redundant "binding". The
+"dt-bindings" prefix is already stating that these are bindings.
+See also:
+https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/bindings/submitting-patches.rst#L23
+
 > 
-> While at it, drop the check for "!map" in clk_id_map_find(), as that
-> pointer can never be NULL.
-> 
-> Suggested-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-
+> Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
 > ---
-> v5:
->   - New.
-> ---
->  drivers/clk/renesas/r8a78000-cpg.c | 45 +++++++++++++++++-------------
->  1 file changed, 26 insertions(+), 19 deletions(-)
 > 
-> diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
-> index 0e11ae139fbffd80..03fcd128d4293cfc 100644
-> --- a/drivers/clk/renesas/r8a78000-cpg.c
-> +++ b/drivers/clk/renesas/r8a78000-cpg.c
-> @@ -16,11 +16,21 @@
->  
->  #include <dt-bindings/clock/renesas,r8a78000-cpg.h>
->  
-> -struct clk_map {
-> -	int dt_id;		/* DT binding clock ID or -1 sentinel */
-> +struct clk_id_map_entry {
-> +	u32 dt_id;		/* DT binding clock ID */
->  	u32 fw_id;		/* FIXED_CLK() ID */
->  };
->  
-> +struct clk_id_map {
-> +	const struct clk_id_map_entry *entries;
-> +	unsigned int size;
-> +};
+>  .../bindings/power/st,stm32mp-pm-domain.yaml  | 46 +++++++++++++++++++
+>  1 file changed, 46 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml b/Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml
+> new file mode 100644
+> index 000000000000..4ab477fb4499
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml
+> @@ -0,0 +1,46 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/power/st,stm32mp-pm-domain.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +#define CLK_ID_MAP(_entries) &(struct clk_id_map) {	\
-> +	.entries = _entries,				\
-> +	.size = ARRAY_SIZE(_entries),			\
-> +}
+> +title: STM32MP generic power domain
 > +
->  enum fixed_clk {
->  	FIXED_CLK_66M,
->  	FIXED_CLK_133M,
-> @@ -40,23 +50,21 @@ static const unsigned long fixed_clk_rates[NUM_FIXED_CLKS] = {
->   * struct r8a78000_cpg_priv - Clock Pulse Generator Private Data
->   *
->   * @dev: CPG device
-> - * @map: Mapping from DT clock IDs to fixed-rate clocks
-> + * @map: Mapping from DT clock IDs to fixed-rate clock IDs
->   * @fixed_hws: Fixed rate clocks
->   */
->  struct r8a78000_cpg_priv {
->  	struct device *dev;
-> -	const struct clk_map *map;
-> +	const struct clk_id_map *map;
->  	struct clk_hw *fixed_hws[NUM_FIXED_CLKS];
->  };
->  
-> -static const struct clk_map *clk_map_find(const struct clk_map *map, u32 id)
-> +static const struct clk_id_map_entry *clk_id_map_find(const struct clk_id_map *map,
-> +						u32 dt_id)
->  {
-> -	if (!map)
-> -		return NULL;
-> -
-> -	for (; map->dt_id >= 0; map++) {
-> -		if (map->dt_id == id)
-> -			return map;
-> +	for (unsigned int i = 0; i < map->size; i++) {
-> +		if (map->entries[i].dt_id == dt_id)
-> +			return &map->entries[i];
->  	}
->  
->  	return NULL;
-> @@ -65,8 +73,8 @@ static const struct clk_map *clk_map_find(const struct clk_map *map, u32 id)
->  static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec, void *data)
->  {
->  	struct r8a78000_cpg_priv *priv = data;
-> +	const struct clk_id_map_entry *entry;
->  	struct device *dev = priv->dev;
-> -	const struct clk_map *map;
->  	struct clk_hw *hw;
->  	u32 id;
->  
-> @@ -75,13 +83,13 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec, void *data)
->  
->  	id = spec->args[0];
->  
-> -	map = clk_map_find(priv->map, id);
-> -	if (!map) {
-> +	entry = clk_id_map_find(priv->map, id);
-> +	if (!entry) {
->  		dev_err(dev, "Unknown clock %u\n", id);
->  		return ERR_PTR(-ENOENT);
->  	}
->  
-> -	hw = priv->fixed_hws[map->fw_id];
-> +	hw = priv->fixed_hws[entry->fw_id];
->  
->  	dev_dbg(dev, "Mapping DT clock %u to %s at %lu Hz\n", id,
->  		clk_hw_get_name(hw), clk_hw_get_rate(hw));
-> @@ -116,7 +124,7 @@ static int r8a78000_cpg_probe(struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
->  	struct r8a78000_cpg_priv *priv;
-> -	const struct clk_map *map;
-> +	const struct clk_id_map *map;
->  	int ret;
->  
->  	map = of_device_get_match_data(dev);
-> @@ -137,17 +145,16 @@ static int r8a78000_cpg_probe(struct platform_device *pdev)
->  	return devm_of_clk_add_hw_provider(dev, r8a78000_clk_get, priv);
->  }
->  
-> -static const struct clk_map r8a78000_cpg_default[] = {
-> +static const struct clk_id_map_entry r8a78000_cpg_default[] = {
->  	{ R8A78000_CPG_SGASYNCD4_PERW_BUS,	FIXED_CLK(266M) },
->  	{ R8A78000_CPG_SGASYNCD8_PERW_BUS,	FIXED_CLK(133M) },
->  	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	FIXED_CLK(66M) },
-> -	{ -1 }
->  };
->  
->  static const struct of_device_id r8a78000_cpg_match[] = {
->  	{
->  		.compatible = "renesas,r8a78000-cpg",
-> -		.data = &r8a78000_cpg_default,
-> +		.data = CLK_ID_MAP(r8a78000_cpg_default),
->  	},
->  	{ /* sentinel */ }
->  };
+> +maintainers:
+> +  - Patrick Delaunay <patrick.delaunay@foss.st.com>
+> +
+> +allOf:
+> +  - $ref: /schemas/power/power-domain.yaml#
+> +
+> +description: |
+> +  The STM32MP SoCs contain a D1 domain which defines the devices assigned to
+> +  Cortex A cluster, the devices in this domain are functional only when this
+> +  cluster is not in low power modes (Stop modes) with clock OFF.
+> +
+> +  This PM domain node represents this dependency, based on PM framework and
+> +  without wake-up path support.
+> +
+> +properties:
+> +  compatible:
+> +    const: st,stm32mp-pm-domain
+> +
+> +  '#power-domain-cells':
+> +    const: 0
+> +
+> +  power-domains:
+> +    maxItems: 1
 
--- 
-Regards,
+I don't get the purpose of this binding. There are no resources here, so
+this looks like fake intermediary (meaning: non-controllable). Why the devices cannot reference
+final domain?
 
-Laurent Pinchart
+> +
+> +additionalProperties: false
+
+this goes after required block.
+
+> +
+> +required:
+> +  - compatible
+> +  - '#power-domain-cells'
+> +  - power-domains
+> +
+> +examples:
+> +  - |
+> +    power-domain-d1 {
+
+Node names should be generic. See also an explanation and list of
+examples (not exhaustive) in DT specification:
+https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
+If you cannot find a name matching your device, please check in kernel
+sources for similar cases or you can grow the spec (via pull request to
+DT spec repo).
+
+
+Best regards,
+Krzysztof
+
