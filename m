@@ -1,52 +1,53 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795429883;
-	b=GQhtkGuC51XDEwzEp/KBU0jjJ3VTMD2ULRV0mRbCWDZp0PZCDQFe7C3eBTtG9e4nVujf
-	 gKSCMvyNrNgJgLlcBpHxNQIW8LjlbdD6DnqqS1aU3wiZPqlRJjY86keaS9Fx93GdGQfxK
-	 7WOtdh3IqIFKbTSTyk1I696OGbxxCnV+zYAAZnKecu/w6t+0VLtgBmvS3o+D4uvaUQJPl
-	 d9pkeL+vLApQEWHA+AQDMkA3MpvLrb9vcMZ+ilQLufPhT3LC5zz64gFUr5TE8eob8Yyqt
-	 OtNG5YSDmMVqHamIPLAG4lsfdv8uFMVxgiQ7bx/Q4s8Hleeb7vosPobaLIDYpRCCylA==
+	t=1795430198;
+	b=hzekJHrmZns1DjTF/gZN1NbeS/RxcCaayBrpbJMCX4QYDVUHHufN0vVWTfvSkrnAj+do
+	 g790KDwXqmbnYRJggZhbaaBNx+u9IqQ8Lz9h0/qMy62382yV8pPJ4xpnFdCmanMIq/qoX
+	 8Qt6wzutfKR+Vw11/UA2QZmQgAAQ/kuJJGZ1OYJr93FfCIBAzd3u3ZX9+z1WCmM3aN8+D
+	 XmXAe2owCUa39IZ3A1S+W2hd/60XDZPZttEWgNNk3438A21EhunYBZLW93paOZtmyfCeb
+	 s2i381orFsuL+A8eWllQbN+0y3zMeDTGkBozy/uznHlsxM6nwxZlGcdT6oW2RX0gCxg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795429883;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795430198;
 	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
 	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
 	 Content-Transfer-Encoding:In-Reply-To;
-	bh=dtJzmPmb6Nwh3H1c2+/p4meqTnrmRahlnsNzxrgnr4E=;
-	b=TLY+GjRHlxagUNJ7BIaODLYSL5mKW1WYvW14E7qNHZsJmTn3uWDUurh6BUds6pDoKghq
-	 X6xHggbshoivvq3G/1Vkf8ib0CsGctlrXDrNuk8ou1R8jY3UeuaWVagNqAejy9/bsPPA2
-	 DynBm38t9K3EFDsBsrN5teePb5HiK+xdtMKgUz9zYEEk8sXxc7i2J5mdFXziCWb4yK+NI
-	 ab4dzQjFz3oB1/VWTni7XRdV5H30iNhIZj4bXcvbtXgBIfklgus91JD9rhUUgEpVltcj7
-	 Y20+DXwyqEmqL+LruTiKHBQSCBu2nKnDLRnnC9pas31zRwCiD8hSRQMOQhl1lHdDDcg==
+	bh=PcLcbUy9WLbB87302gRwaNmUCRa+6gKrWS43onZVWUM=;
+	b=RkvvQun+qFaWR9ow+NTuLY6PohM9Ds5oZi9Mzdlpn984jxuZ3n+n91bUfEalQV1GQAcA
+	 bAomRVgFVAvdnux5fEjQjCaxj8AO22kS+j40VcytlzTUbyEw8/KsSMOeaElRB7nQLAb/U
+	 UYboyhwOAaDHf9YzzCdNCuJQbidheicLhogAQ/V9RjXHvPfLqVdQ+SQCJ43XCnaV3baSB
+	 Zt5ptjcClnnSPA7YGxzXdR9yYfC5R293UJ8gfW/0i2mVvs8ZQ5v77VApLzEt0LZ85Oxkb
+	 1sN3NyFYXFDITCFBdJAaiMhtlwSc/2jiCBeRetzMQeWJ6+z/oKr7m0h4ck/oL6GKvjg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=ideasonboard.com;
 	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=lPaSgucv;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=mITrGh2T;
 	arc=none smtp.remote-ip=213.167.242.64
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA463606A31E;
-	Mon, 23 Nov 2026 10:31:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BA463606A31E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58482606A31E;
+	Mon, 23 Nov 2026 10:36:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 58482606A31E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=lPaSgucv
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=mITrGh2T
 Received: from killaraus.ideasonboard.com (2001-14ba-7086-3000--a06.rev.dnainternet.fi [IPv6:2001:14ba:7086:3000::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id D9147177;
-	Mon, 23 Nov 2026 11:28:47 +0100 (CET)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 834BE4B0;
+	Mon, 23 Nov 2026 11:34:02 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1795429728;
-	bh=cMRfZSn1zOLQm5L80O6XfrH/7riZ1+RqoSDv1oE/c8c=;
+	s=mail; t=1795430042;
+	bh=ccjAAMHgAJq89pSqUHBH89F3ZPD7R6QW9itkpi2hSf0=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=lPaSgucvraqmS/cC71JC3Ei53cGHPN+HUyDvxXoWVy+QFFN/qnYfeBjmabPu3bOet
-	 QMNcf4YJ1Tf276JlGoprDDcTe8bAObS/wlFYBZxJo3ZDn6BlYtdMiT552G5QnGEj0v
-	 0JySljw1GwHG8kxpwwUWMPpol7frkG3tOtVWkbVo=
-Date: Mon, 23 Nov 2026 12:31:18 +0200
+	b=mITrGh2T1FVa6dXh336gRFij/ePLSfcLwEekVfS1AxwaI7aqZ0bLgYy/lJEqruSUi
+	 FObd+PkgFTebQAZS8wBeD2K5FUZEdu7ymMqsxsBxmV4tRsWqYAeyJUQAp8z0+2dNCm
+	 P5/jt6wVW1mR4TlGRbHZb1csDC+J4CXxqUIxhxnA=
+Date: Mon, 23 Nov 2026 12:36:33 +0200
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 To: =?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
 	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
@@ -59,7 +60,6 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
 	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
 	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
 	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
 	Paul Elder <paul.elder+renesas@ideasonboard.com>,
 	Sudeep Holla <sudeep.holla@kernel.org>,
@@ -69,11 +69,13 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 Subject: Re: [PATCH v5 00/15] R-Car X5H Ironhide CPG/MDLC SCMI remapping
  support
-Message-ID: <20261123103118.GA2959742@killaraus.ideasonboard.com>
+Message-ID: <20261123103633.GB2959742@killaraus.ideasonboard.com>
 References: <cover.1795029012.git.geert+renesas@glider.be>
  <1e9c5ac3-d82b-4af9-9946-0302cadf7404@baylibre.com>
  <20261119234759.GB2324725@killaraus.ideasonboard.com>
  <19c3745a-6308-46ff-bb37-3acc88fe22e2@baylibre.com>
+ <awAqqg6F2Z1t55x2@ninjato>
+ <d94ad9ca-afdd-4301-a69c-0bbad5b334fa@baylibre.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -86,40 +88,67 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <19c3745a-6308-46ff-bb37-3acc88fe22e2@baylibre.com>
+In-Reply-To: <d94ad9ca-afdd-4301-a69c-0bbad5b334fa@baylibre.com>
 
-On Fri, Nov 20, 2026 at 11:29:49AM +0100, Clément Le Goffic wrote:
-> Hi Laurent,
+On Fri, Nov 20, 2026 at 03:33:11PM +0100, Clément Le Goffic wrote:
+> Hi Wolfram,
 > 
-> Thanks for your feedback !
+> Thank you for the rewording, it is clear
 > 
-> On 11/20/26 12:47 AM, Laurent Pinchart wrote:
-> > As far as I understand, the assumption impacts the mdlc and cpg drivers
-> > only, not their DT bindings. If (or rather, let's face it, when) a
-> > firmware revision later breaks the assumption, we will be able to handle
-> > it in those drivers without affecting DT.
+> On 11/20/26 12:10 PM, Wolfram Sang wrote:
+> > In the past, we wanted to support all kinds of firmware. Sadly, each new
+> > firmware introduced different IDs here and there. So, we came up with
+> > some stable IDs ourselves and mapped them to the IDs per firmware. This
+> > is a n:1-mapping of firmware IDs to our stable IDs.
+> 
+> Sure, that is part of firmware development.
+> I know several SDK versions exist, and supporting several of them is work for a vendor tree.
+> As Geert's cover says, "While upstream Linux must only support sufficiently mature firmware versions, vendor trees (e.g. renesas-lts) may still want to support development firmware versions".
+> Each SDK version can then have its own DT there.
+
+That's not how DT works. Please be gentle with Krzysztof and avoid
+increasing his blood pressure :-)
+
+> > The support for <n> firmware versions got serious opposition from
+> > upstream. We concluded that supporting only the latest firmware will
+> > make most controversial discussion points vanish. So, we now have a
+> > 1:1-mapping of (the latest) firmware IDs to our stable IDs.
+> 
+> Agreed, supporting several numbering upstream for the same chip only brings confusion.
+> But then, why can't that one mapping be one DT?
+> 
+> > I guess this is what Geert means with IDs becoming "stable". <n>
+> > firmware versions might return <n> IDs, but supporting only one firmware
+> > we get the same "stable" ID from it.
 > > 
-> > I don't like this remapping driver much, in the sense that I wish it
-> > wouldn't be needed, but it seems to me to be the best possible
-> > compromise given the instability introduced by SCMI.
+> > Sadly, of course, with the next firmware update, we still might get a
+> > different ID all the time. So, not stable in that regard and we still
+> > need the mapping :(
 > 
-> I don't think SCMI itself introduce instability.
-> It only defines the protocol, and each firmware choose its ids.
-> Could you tell me what you mean by instability?
+> When the firmware can be updated, I think an id change should be fixed there first.
+> That is what I would do in the open-source SCMI server firmware I am writing for this chip.
+> 
+> > Yes, this means the driver is then tied to a specific firmware version
+> > because it only has this mapping. Not nice for a user. But we didn't see
+> > another way moving things forward for now.
+> I think the DT is that other way.
+> With the SCMI ids in DT, only the DT is tied to a firmware version, not the drivers.
+> If a release that changes ids is already out, it needs a new DT, or a quirk for that one release when the DT cannot be updated.
 
-That's nitpicking. The protocol is useless without an implementation,
-and the protocol design leads to instability in the implementations.
+So you're proposing that, with any new firmware that introduces an ABI
+breakage, every single DTB on all boards in the wild get updated ? That
+just doesn't scale, sorry. Let's forget about that bad idea, and focus
+on finding a good solution.
 
-> For development firmware, Geert's cover leaves it to vendor trees:
+> The hardware stays described
+> The CPG and MDLC belong to the SCMI server, so the DT should mark them status = "reserved", and the consumers use the SCMI clock, power domain and reset providers.
 > 
-> > This list deliberately ignores ID instability and the need for SCMI
-> > quirks during development of the SCMI firmware.  While upstream Linux
-> > must only support sufficiently mature firmware versions, vendor trees
-> > (e.g. renesas-lts) may still want to support development firmware
-> > versions.
+> The Devicetree Specification v0.4 define "reserved" for this case (section 2.3.4, Table 2.4):
+> "Typically this is used for devices that are controlled by another software component, such as platform firmware."
 > 
-> For a resource that hangs the platform when Linux uses it, the SCMI server should deny Linux access to it.
-> Until the firmware is fixed, a quirk can cover it.
+> Zephyr also uses SCMI on this chip, and it already keeps the SCMI ids in its X5H DT
+> Juno and STM32MP15 handle their firmware differences the same way, with separate -scmi DT variants that simply include the board DT and an SCMI .dtsi.
+> If the number of variants grows, tools such as Lopper, which I mentioned before, can help manage them.
 
 -- 
 Regards,
