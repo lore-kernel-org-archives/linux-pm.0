@@ -1,178 +1,48 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.146
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795392084;
-	b=JZuhx2uU2ebWA7FdeNP00cnz8rwyM9wQN1Xf3ypz0RPEOd9wCaAl5PgSQ1MFe5l95wp2
-	 zoF2LzWcOifHboBnrE7HS6DB34y1RmXgQsaEWQtEaQyN1ZkoPd+EkjrK87Zv1wj36HeFY
-	 ikstrWBV3nhGjhWPfn+jmCB1t9T8t6gu8Je/Jh+k3zIxjwMejrWd/u54vENpW/uoE3xx4
-	 nFlvsICyQiO7uloHOSEDemT6s5W6r3nc8XxAO4olv51pp0HKlzdo+j5Iba9HV0PQ1LjlG
-	 HqPpg2mbLFmuBFmJnDesLfrV1aq9cn49Dlk3qjoU14TVc2ISpW3rETwsHQp03Ce1QuQ==
+	t=1795392122;
+	b=xmjLeP+t/K4EM+HbujxT4IgvCc+Aw6JCIkw8IURv4R7gpQ0PjiaScLxXfCveDf6XZngt
+	 oPwQmd4DjByzzDIkiyiL5dJJO/ZZfnJMB+qXlBQzuRa1IMaAvHEIZTpRfh1eXgBBrBVrx
+	 xEOCYebdTrhbbmFCDRXCOOXSzxukK7y4CnuGYldQYTnXBQA3gqskyrJl/d132zGzYysg4
+	 C6QbVdOtisXqId1DlG3PxcVoBAF3lj7K3l+hAmFo4c3v8o+dRqdrbtjG3ug6xhXuwKHfS
+	 lhZ+I3kS8qwob89zgyYgKxCSjQwlnrLNpfMtrcD8/wmijBCrIZiB0DbiWVLlvJ9Be8Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795392084;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
-	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
-	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
-	 Received:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Autocrypt:Content-Type:Content-Transfer-Encoding:User-Agent:
-	 MIME-Version;
-	bh=NsU8S25WYE8UtJMOtwZ8kYjXiSr0SQrEMevqcLIRN+I=;
-	b=xvLfXpHaGxYWwrppAC0HjlL07MPzfaFRADCdrA1s7tR6bF+hAfBiZ89wc1zwzqgwB+ff
-	 Qziy1B2ZUpTOk3MFSwRSU2uutU5HtNojRayPeSIYPshJHULuy0sjKQeM10gRxXMsSaE2B
-	 m26HrDIrHcmqMs4XNl7EMdEqI4rMTdZR4wu9myyzTUzI6IQWaokDy2OWykyukIKqADjcJ
-	 P0lZXMt5Yhg5NfGiPBFJC3NyRhvjk1O0axzl0rX2DDRE7eWKCcMPjkr5WBCN1B4bexfsZ
-	 9LwaT2XwBxhULnvEOiJhKbhhgYDb2XfjKN6YCpGDYmvw/naZPXfB2+ElwtCG1JNcilg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795392122;
+	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
+	 X-Mailer;
+	bh=sG5Qi9dXOWhftpPO+sBenJdV81nP+cvMKbc0g/NH5rQ=;
+	b=H/vGVuR0j3bvI1SCKNKYQ/A1EKQbBB9gfKkMBOmcdP6GAum0bGbe9DOgcZXvUa2WeJ0P
+	 C1ufcr8vLTAxZQO9v+3bV0n08wQsnzRdZvUKCHlWs2wbnXyykCZPe11vyTRSsbvqR06uV
+	 Dm6gUEDLyUNgqvA1mosfOGLjiJdsCbQtndmoLE8+agLJCs/hvExSRCz2y0nh8TUkmm2DV
+	 MXRWCgvm5sBKKQzlts/B/LIiMqDRzBdQwXb7Nhx0hILRhOOV4WfYZ3q61ZNAgD2QDJQ6G
+	 koEsQP28ldA0zpJEe2A8SY7bWC0bg4FF9wKtK/6bzMoQ1gc5ewz+R1NYUCNxCBuswHQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=themaw.net;
-	spf=pass smtp.mailfrom=themaw.net;
-	dkim=pass header.d=themaw.net header.i=@themaw.net header.a=rsa-sha256 header.s=fm2 header.b=pEABzcCq;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=PHxTBtS7;
-	arc=none smtp.remote-ip=202.12.124.146
-Received: from fout-b3-smtp.messagingengine.com (fout-b3-smtp.messagingengine.com [202.12.124.146])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="b5XBr/6D";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 716BA606A31E
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 00:01:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 716BA606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=themaw.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=themaw.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C76CA606A31A;
+	Mon, 23 Nov 2026 00:02:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=themaw.net header.i=@themaw.net header.a=rsa-sha256 header.s=fm2 header.b=pEABzcCq;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=PHxTBtS7
-Received: from phl-compute-11.internal (phl-compute-11.internal [10.202.2.51])
-	by mailfout.stl.internal (Postfix) with ESMTP id A5AC71D00404
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 19:01:22 -0500 (EST)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-11.internal (MEProxy); Sun, 22 Nov 2026 19:01:22 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=themaw.net; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1795392080;
-	 x=1795478480; bh=NsU8S25WYE8UtJMOtwZ8kYjXiSr0SQrEMevqcLIRN+I=; b=
-	pEABzcCqEMrWBZK/MGW+JXE1SF4llxtz6K0WFTaVf7lBeEST1WqKP4viBrZ+FBQ5
-	OoGbU3uFg71YRHlqR8nlpdyymtnqRmdpbd41v0R/RC/s9qAWmh/Sz6SK3Zyt1xu+
-	num0kOFdus1LCt/Qz6d3xKnamBs8dAL4YJTxcOpOA0jfBWvlDtyy+ijC9Am9NGl2
-	ftSbTtsQAx/mjsEwKene6BYZxbp1fCGySpSg737Ct1AXpKl8V7ExKaLqqHc4Vqhq
-	RZjBX2CqvTAni8Px6XSPGqoECwIRYa+XcSkcd1jCx1Q3VGwVKKiZszfL7CsOxA1y
-	AMxsopm0fZzR1pg1umfARA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795392080; x=
-	1795478480; bh=NsU8S25WYE8UtJMOtwZ8kYjXiSr0SQrEMevqcLIRN+I=; b=P
-	HxTBtS7+r1ZjM97+76OUoaYV4QECjjdf074151OScNkam4wyWMw8j3E0qeD0kngH
-	oRoUrx4hPN691Ms5uVPx5eIfJ46PZt829HkY/vtQ/hCZuPyRWX25MODy3oJhlvvI
-	JX+e+lUnjBvUZZUJ/pdOKLeZX/UevF4/zMZcCAef4MJzcsZ9wIGxkHly0wp1R8Na
-	lz7eEDYq9AErvlSnlKIJp3mx4wPTAsv/pWyutSnCn8dRmiUHb4mDXG+zU7a72x/g
-	GXoWAyp5PYfQ1JKHLoKq8tl0OZ7BWTvBIzGUcMvj3nb1kcjJZC8+IMJSoXGVD9Bd
-	U113JnCLN9HOyogYni2OA==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=themaw.net a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1795392080; d=themaw.net;
-	mf=PHJhdmVuQHRoZW1hdy5uZXQ+;
-	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm2:rsa-sha256:dDjUX4TjuEge/3gNiV6O0Ffr8l9iM6Wajcgx+acCrRT/hj0
-	lRhW8bfMwxWhGDx4DnNnNs6BXFbpNgV/skyf4rQ/8HIMkG/JrbpSrAMej+oqJVEU
-	869TIsm6brglkODIh0sCz3m+Af+DGQ31jaBHTO/83kb5a29EMOHlvFIx08Qqwwzu
-	p1j1UyXOvrJcAZafxtpKm6k5YlmUZTZya4yMnQfIQGoJCB+VD+UGpoWke//NZHVV
-	JhK0fCVLP97X89IZRuP7T4F7iT+CYkm09gBBtVtBXd23DD42hG5i1tkcERPUBkpy
-	KlBAoSBRG+S35Uv1uXPgd8e0QUpbBZ4x6Ehs4xQ==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=14;
-	hn=autocrypt,cc,content-transfer-encoding,content-type,date,
-	feedback-id,from,in-reply-to,message-id,mime-version,references,
-	subject,to,user-agent;
-Message-Instance: m=1; h=sha256:HN0TNUhNHfvQfbmlovvFKc8QDMVm8T2xc/uo0DLTnWI=:NsU8S25WYE8UtJMOtwZ8kYjXiSr0SQrEMevqcLIRN+I=;
-X-ME-Sender: <xms:T4IDa2XLxWFD_1spg5-d4KD5EBIuwEtwk8KQpqgezZR7TucnVBP54g>
-    <xme:T4IDax2QxpGipkCxQUxPTt3NEwdI3FZGydU08OYkWrQx0nkDbnTDMg6_GUaxzlGf0
-    6g4WVnoBpLNolXfskh1PLtNxTOL6vA4urFdObJlIU6hdKmk>
-X-ME-Received: <xmr:T4IDa9NeIJKFip508O05LD8faRHLrMvNmDEllOC291AfbCrVqG-FJ_PeJNIwUVejfjSZHmF942BuURT1qI6n2q9WxL6yjAvTfYXHsORfEpRzbqQqwLgQSWb1yw>
-X-ME-Proxy-Cause: dmFkZTF2FkGarwOb/nDN7Rnysdykp1lrHgw162faknfs/tNImeRS1gkhQZyov4XYlf7hh6
-    c0w6e1pKIosLehMvew8IDIOz9iRftFmwEj+qXLcWf8eTAxmoYs2SVWpz8dwwE5G0Ln/4g4
-    zl33SIR03GzRdXyl5LAq2UHl4cXkanTwnZwNcQ9JLiHVlVKkACqY5xHVnioqoGtpIldTm2
-    DBsnSvJlKm2QWxrXGHvb3w6PbRu5pwSQ8OkifTSLSaIJ5IgyVzeFJZ92MMq2lywVPtz1fJ
-    J2pSIsKEv0EUmNNG/HzUBNlvhcakynGTbkbsDRB+SXHpTmqScy7sdDQI+/eKwrsegUOkuB
-    mh/VtQHf/30vuifAFYZ56WRhoyZG9lG+3wuGCOZjIqkEu1pSPY5sESizWeA6KatDjnBFlt
-    Ffa7752mB1KSgxDwMi/NftI6rwPf2LbDPARKFx8/eBfIMSmKZwfTo2BpVsngpt8QngT16T
-    8pqeQDVPbtLxfn/L8pPFjo1zCif60Gsb67f8VnEP/sPzBW0TtOAALliGfXTohja5Q1MmLF
-    QmfkvwdMptjoerBR/S3xjsIKjNVaVvsP7KajkWGl3qXggNVlFmqW0vf1QT4KWG3/P/cEG2
-    OCR/UXIIk6y5+mvbxPSAAtnmbETRjq6nMxFY2HeU7iW2cwTVapdtkYuSTw/w
-X-ME-Proxy: <xmx:T4IDa03JTy7IBZf1kMGkujmlGI3FHLF_aNVGMOTKbkYwlWDkhiypdg>
-    <xmx:T4IDa00sHPPQ4tHxwuzUM79FLIJVsQ1GUfwxQkRWocxb8nvuLxKCKQ>
-    <xmx:T4IDa69Zy0sYW71SFqZyYU4mcjNSk67Y8fArtRS7NkD0AH5f-ImZYA>
-    <xmx:T4IDa4ZQkHD3cIhxf4LsW73cW0z9ikCHBxN5OESD4QelyGrII2s9GA>
-    <xmx:UIIDa-37mw4VmeqRzglfHBdLqZ2BeSRGXRDgVb9QViddTjnz74sKHdfC>
-Feedback-ID: i31e841b0:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 22 Nov 2026 19:01:13 -0500 (EST)
-Message-ID: <1f7bba7d478286814d5c5f00c3c14711698e95e4.camel@themaw.net>
-Subject: Re: [PATCH v4 0/2] kernfs, sysfs: refuse splice on /sys/power/resume
-From: Ian Kent <raven@themaw.net>
-To: Krystian Kaniewski <krystianmkaniewski@gmail.com>, Greg Kroah-Hartman	
- <gregkh@linuxfoundation.org>, Tejun Heo <tj@kernel.org>, "Rafael J.
- Wysocki"	 <rafael@kernel.org>
-Cc: Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>, Len
- Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, Jens Axboe
- <axboe@kernel.dk>,  Alexander Viro <viro@zeniv.linux.org.uk>, Christian
- Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
- autofs@vger.kernel.org, 	linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org, 
-	syzbot+002fb7b2d0bc53bf7e75@syzkaller.appspotmail.com
-Date: Mon, 23 Nov 2026 08:01:11 +0800
-In-Reply-To: <20261116133903.400202-1-krystianmkaniewski@gmail.com>
-References: <20261116133903.400202-1-krystianmkaniewski@gmail.com>
-Autocrypt: addr=raven@themaw.net; prefer-encrypt=mutual;
- keydata=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
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.62.1 (3.62.1-1.fc45app1) 
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b5XBr/6D
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 464CD1F000CA;
+	Mon, 23 Nov 2026 00:02:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795392122;
+	bh=sG5Qi9dXOWhftpPO+sBenJdV81nP+cvMKbc0g/NH5rQ=;
+	h=From:Date:Subject:To:Cc;
+	b=b5XBr/6DAg444uLQVeEdTC3BtLAc6IPb69bVk+H9PRKNwu0siv61yLGuvg1JN06bo
+	 K3z6cMlN4LAXzPsluC+yZNQiG3eV+ZZmN8zam4gHTzrKBqjC2Uc0jSfbzKT3cJOMAG
+	 +JUhcGnJ/eWD0i/oUEmYIItlwLt279H0okXS7fgw+q5AWeG86ewhdJyymM4LhJ+IxO
+	 W3EWNaQ6uzF7VvtXD8tL8nHDjfjE/StgVqHOLVGNBWLY3RAz255wDrwjelr2Iv+FpI
+	 Frjev43kJa+isAAMNx3yu0o7Avn1eJvI6bytpZLvwR1bhdb16hkHZxiP5E2gdrJZuP
+	 3Co8i7/NOBlyA==
+From: Linus Walleij <linusw@kernel.org>
+Date: Mon, 23 Nov 2026 01:01:58 +0100
+Subject: [PATCH v3] dmaengine: ste_dma40: Use power domain for LCLA SRAM
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -182,107 +52,593 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261123-ux500-dma40-powerdomain-v3-1-823bd3879d2c@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAA/4XNsQ6CMBCA4VdpbuZMr9hCmHwP41DoAY1CSVHEE
+ N7dwKSDcf2H719g5Oh5hEIsEHnyow89FCJNBFSt7RtG76AQoKQyRKTxMWsp0XX2KHEIT44udNb
+ 3SKm22phSpnUNiYAhcu3nXT5fEgGtH+8hvvbRRFv9b06EhM7mpWGyMs3M6cqx59shxAY2dFIfk
+ FK/IYWEuZVc1lWmy1x+Qeu6vgGFDmjYCAEAAA==
+X-Change-ID: 20261115-ux500-dma40-powerdomain-135a566b03ff
+To: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>, 
+ linux-pm@vger.kernel.org, Frank Li <Frank.li@oss.nxp.com>, 
+ Linus Walleij <linusw@kernel.org>
+X-Mailer: b4 0.16.0
 
-On Mon, 2026-11-16 at 14:39 +0100, Krystian Kaniewski wrote:
-> This series refuses splice on /sys/power/resume and gives writable
-> opens of that file separate lockdep classes, as Tejun suggested in
-> the
-> v1 discussion.
->=20
-> The reported cycle is assembled from two operations. Splice into an
-> ordinary writable kernfs file records pipe->mutex before of->mutex. A
-> normal write to /sys/power/resume records of->mutex before the autofs
-> pipe locks when resume_store() resolves a relative path.
->=20
-> Patch 1 adds SYSFS_NO_SPLICE and kernfs_ops->no_splice. Every open of
-> a
-> marked file refuses splice. Only writable opens use separate of-
-> >mutex
-> and seq_file lock classes, because only they can reach the store
-> callback which creates the reverse dependency.
->=20
-> Patch 2 marks /sys/power/resume. Normal reads and writes stay
-> unchanged,
-> including a write which resolves a relative path through autofs.
-> Rafael
-> acked it to go together with patch 1.
->=20
-> Other stores also look up paths. They remain outside this minimal
-> series
-> and can be marked in follow-up patches.
->=20
-> Tested on v7.4-rc1 with fresh builds of the exact base and the
-> patched
-> tree. The original C and syz reproducers report the lockdep cycle on
-> the
-> base and run without a lockdep report with the series. Splice and
-> sendfile from an O_RDONLY open of /sys/power/resume return EINVAL
-> with
-> the series, while read() still works. All 33 QEMU cases booted and
-> completed in both phases. The builds, W=3D1 checks and Coccinelle
-> checks
-> introduced no warning or report.
+Replace the LCLA ESRAM regulator with runtime PM of the SRAM device
+owning the ESRAM34 power domain.
 
-Just to complete the cycle (although a bit late) I appreciate the
-effort to come up with a way to resolve this without adversely
-affecting autofs.
+Use the existing LCLA SRAM phandle instead of the never-set
+use_esram_lcla flag and the obsolete named memory resource.
+The bool indicating if we use LCLA SRAM seems pointless, let's just
+check if it's NULL or not. Simpler.
 
-And while my knowledge of some of the areas these patches touch
-is not so good they look sound, as does the description, and it
-tries hard to clarify the case at hand.
+The old use_esram_lcla path was not used by any device tree, so removing
+it does not break compatibility with existing DTBs.
 
-So to the that extent:
-Acked-by: Ian Kent <raven@themaw.net>
+Acquire the SRAM runtime PM reference when allocating a DMA channel,
+before taking its spinlock, and release it when the channel is freed.
+Descriptor preparation can run under a client's spinlock, so it cannot
+synchronously resume the SRAM.
 
-Thanks
-Ian
+Acquiring a handle to the SRAM can fail and then we defer probe.
 
->=20
-> v4:
-> - Refuse splice for all opens of marked files (Tejun).
-> - Keep separate lockdep classes limited to writable opens.
-> - Add no-splice operations for read-only regular sysfs attributes.
-> - Keep Rafael's Acked-by on patch 2, whose code is unchanged.
->=20
-> v3:
-> - Rename SYSFS_LOOKUP and ->may_lookup to SYSFS_NO_SPLICE and
-> =C2=A0 ->no_splice (Tejun).
-> - Drop the mmap, prealloc and binary attribute checks (Tejun).
-> - Add Rafael's Acked-by to patch 2.
->=20
-> v2:
-> - Replace the v1 locking changes with per-attribute splice control.
-> - Preserve splice on read-only opens.
-> - Split both the open-file mutex and seq_file lock classes.
-> - Reject incompatible mmap and preallocated-buffer combinations.
-> - Reject SYSFS_LOOKUP on binary attributes.
-> - Rebase onto v7.4-rc1.
->=20
-> v3:
-> https://lore.kernel.org/r/cover.1794479968.git.krystianmkaniewski@gmail.c=
-om
-> v2:
-> https://lore.kernel.org/r/cover.1793715774.git.krystianmkaniewski@gmail.c=
-om
-> v1:
-> https://lore.kernel.org/r/cover.1792577179.git.krystianmkaniewski@gmail.c=
-om
->=20
-> Krystian Kaniewski (2):
-> =C2=A0 kernfs, sysfs: add SYSFS_NO_SPLICE to refuse splice
-> =C2=A0 PM: hibernate: refuse splice on /sys/power/resume
->=20
-> =C2=A0fs/kernfs/file.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | =
-51 ++++++++++++++++++++++++++++++++++++--
-> --
-> =C2=A0fs/sysfs/file.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 | 23 ++++++++++++++++++
-> =C2=A0fs/sysfs/group.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0 4 ++--
-> =C2=A0include/linux/kernfs.h=C2=A0=C2=A0 |=C2=A0 9 +++++++
-> =C2=A0include/linux/sysfs.h=C2=A0=C2=A0=C2=A0 | 22 ++++++++++++-----
-> =C2=A0kernel/power/hibernate.c |=C2=A0 3 ++-
-> =C2=A06 files changed, 99 insertions(+), 13 deletions(-)
->=20
->=20
-> base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+Since we can defer probe(), probe() and friends can't be tagged as
+__init anymore, and it's better like this anyway.
+
+Keep a stateless device link for system-sleep ordering without adding
+a runtime PM dependency to the IRQ-safe DMA controller.
+
+Suggested-by: Frank Li <Frank.li@oss.nxp.com>
+Signed-off-by: Linus Walleij <linusw@kernel.org>
+---
+The Ux500 genpd prerequisites have been merged into the powerdomain tree.
+Probably the fix sent earlier should be merged first:
+"dmaengine: ste_dma40: Keep prepared descriptors across termination"
+
+The SRAM driver will be patched separately.
+---
+Changes in v3:
+- Preserve deferred-probe reasons and avoid duplicate error messages.
+- Link to v2: https://patch.msgid.link/20261122-ux500-dma40-powerdomain-v2-1-8a0ebfc75b80@kernel.org
+
+Changes in v2:
+- Clarify that removing the unused legacy LCLA SRAM path does not break
+  compatibility with existing DTBs.
+- Link to v1: https://patch.msgid.link/20261115-ux500-dma40-powerdomain-v1-1-da8b6e1a0376@kernel.org
+---
+ drivers/dma/ste_dma40.c | 253 +++++++++++++++++++++++++++---------------------
+ 1 file changed, 142 insertions(+), 111 deletions(-)
+
+diff --git a/drivers/dma/ste_dma40.c b/drivers/dma/ste_dma40.c
+index f1cbc719c4f0..20803432eb0f 100644
+--- a/drivers/dma/ste_dma40.c
++++ b/drivers/dma/ste_dma40.c
+@@ -21,8 +21,8 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_dma.h>
++#include <linux/of_platform.h>
+ #include <linux/amba/bus.h>
+-#include <linux/regulator/consumer.h>
+ 
+ #include "dmaengine.h"
+ #include "ste_dma40.h"
+@@ -41,7 +41,6 @@
+  * certain use cases.
+  * @num_of_soft_lli_chans: The number of channels that needs to be configured
+  * to use SoftLLI.
+- * @use_esram_lcla: flag for mapping the lcla into esram region
+  * @num_of_memcpy_chans: The number of channels reserved for memcpy.
+  * @memcpy_channels: The event lines used for memcpy.
+  * @num_of_phy_chans: The number of physical channels implemented in HW.
+@@ -52,7 +51,6 @@ struct stedma40_platform_data {
+ 	int				 disabled_channels[STEDMA40_MAX_PHYS];
+ 	int				*soft_lli_chans;
+ 	int				 num_of_soft_lli_chans;
+-	bool				 use_esram_lcla;
+ 	int				 num_of_memcpy_chans;
+ 	u32				 memcpy_channels[D40_MEMCPY_MAX_CHANS];
+ 	int				 num_of_phy_chans;
+@@ -301,7 +299,7 @@ struct d40_reg_val {
+ 	unsigned int val;
+ };
+ 
+-static __initdata struct d40_reg_val dma_init_reg_v4a[] = {
++static struct d40_reg_val dma_init_reg_v4a[] = {
+ 	/* Clock every part of the DMA block from start */
+ 	{ .reg = D40_DREG_GCC,    .val = D40_DREG_GCC_ENABLE_ALL},
+ 
+@@ -319,7 +317,8 @@ static __initdata struct d40_reg_val dma_init_reg_v4a[] = {
+ 	{ .reg = D40_DREG_LCTIS2, .val = 0xFFFFFFFF},
+ 	{ .reg = D40_DREG_LCTIS3, .val = 0xFFFFFFFF}
+ };
+-static __initdata struct d40_reg_val dma_init_reg_v4b[] = {
++
++static struct d40_reg_val dma_init_reg_v4b[] = {
+ 	/* Clock every part of the DMA block from start */
+ 	{ .reg = D40_DREG_GCC,    .val = D40_DREG_GCC_ENABLE_ALL},
+ 
+@@ -413,6 +412,7 @@ struct d40_desc {
+  * struct d40_lcla_pool - LCLA pool settings and data.
+  *
+  * @base: The virtual address of LCLA. 18 bit aligned.
++ * @esram: I/O mapping when LCLA resides in SRAM instead of system memory.
+  * @dma_addr: DMA address, if mapped
+  * @base_unaligned: The original kmalloc pointer, if kmalloc is used.
+  * This pointer is only there for clean-up on error.
+@@ -423,6 +423,7 @@ struct d40_desc {
+  */
+ struct d40_lcla_pool {
+ 	void		*base;
++	void __iomem	*esram;
+ 	dma_addr_t	dma_addr;
+ 	void		*base_unaligned;
+ 	unsigned int	 alloc_order;
+@@ -578,7 +579,8 @@ struct d40_gen_dmac {
+  * to phy_chans entries.
+  * @plat_data: Pointer to provided platform_data which is the driver
+  * configuration.
+- * @lcpa_regulator: Pointer to hold the regulator for the esram bank for lcla.
++ * @lcla_dev: SRAM device for the ESRAM bank used by LCLA.
++ * @lcla_link: Device link to keep system PM ordered against LCLA.
+  * @phy_res: Vector containing all physical channels.
+  * @lcla_pool: lcla pool settings and data.
+  * @lcpa_base: The virtual mapped address of LCPA.
+@@ -613,7 +615,8 @@ struct d40_base {
+ 	struct d40_chan			**lookup_log_chans;
+ 	struct d40_chan			**lookup_phy_chans;
+ 	struct stedma40_platform_data	 *plat_data;
+-	struct regulator		 *lcpa_regulator;
++	struct device			 *lcla_dev;
++	struct device_link		 *lcla_link;
+ 	/* Physical half channels */
+ 	struct d40_phy_res		 *phy_res;
+ 	struct d40_lcla_pool		  lcla_pool;
+@@ -630,6 +633,25 @@ struct d40_base {
+ 	struct d40_chan			 phy_chans[];
+ };
+ 
++static int d40_lcla_runtime_get(struct d40_base *base)
++{
++	if (!base->lcla_dev)
++		return 0;
++
++	return pm_runtime_resume_and_get(base->lcla_dev);
++}
++
++static void d40_lcla_runtime_put(struct d40_base *base)
++{
++	if (base->lcla_dev)
++		pm_runtime_put(base->lcla_dev);
++}
++
++static void d40_transfer_runtime_put(struct d40_base *base)
++{
++	pm_runtime_put_autosuspend(base->dev);
++}
++
+ static bool chan_is_physical(struct d40_chan *chan)
+ {
+ 	return chan->log_num == D40_PHY_CHAN;
+@@ -859,7 +881,6 @@ static void d40_log_lli_to_lcxa(struct d40_chan *chan, struct d40_desc *desc)
+ 	bool cyclic = desc->cyclic;
+ 	int curr_lcla = -EINVAL;
+ 	int first_lcla = 0;
+-	bool use_esram_lcla = chan->base->plat_data->use_esram_lcla;
+ 	bool linkback;
+ 
+ 	/*
+@@ -912,7 +933,6 @@ static void d40_log_lli_to_lcxa(struct d40_chan *chan, struct d40_desc *desc)
+ 	for (; lli_current < lli_len; lli_current++) {
+ 		unsigned int lcla_offset = chan->phy_chan->num * 1024 +
+ 					   8 * curr_lcla * 2;
+-		struct d40_log_lli *lcla = pool->base + lcla_offset;
+ 		unsigned int flags = 0;
+ 		int next_lcla;
+ 
+@@ -936,16 +956,17 @@ static void d40_log_lli_to_lcxa(struct d40_chan *chan, struct d40_desc *desc)
+ 		 * One unused LCLA in the cyclic case if the very first
+ 		 * next_lcla fails...
+ 		 */
+-		d40_log_lli_lcla_write(lcla,
+-				       &lli->dst[lli_current],
+-				       &lli->src[lli_current],
+-				       next_lcla, flags);
+-
+-		/*
+-		 * Cache maintenance is not needed if lcla is
+-		 * mapped in esram
+-		 */
+-		if (!use_esram_lcla) {
++		if (pool->esram) {
++			/* LCPA and LCLA use the same four-word SRAM layout. */
++			d40_log_lli_lcpa_write(pool->esram + lcla_offset,
++					       &lli->dst[lli_current],
++					       &lli->src[lli_current],
++					       next_lcla, flags);
++		} else {
++			d40_log_lli_lcla_write(pool->base + lcla_offset,
++					       &lli->dst[lli_current],
++					       &lli->src[lli_current],
++					       next_lcla, flags);
+ 			dma_sync_single_range_for_device(chan->base->dev,
+ 						pool->dma_addr, lcla_offset,
+ 						2 * sizeof(struct d40_log_lli),
+@@ -1661,7 +1682,7 @@ static struct d40_desc *d40_queue_start(struct d40_chan *d40c)
+ 			d40_desc_done(d40c, d40d);
+ 			d40c->pending_tx++;
+ 			d40c->busy = false;
+-			pm_runtime_put_autosuspend(d40c->base->dev);
++			d40_transfer_runtime_put(d40c->base);
+ 			tasklet_schedule(&d40c->tasklet);
+ 			return ERR_PTR(err);
+ 		}
+@@ -1717,7 +1738,7 @@ static void dma_tc_handle(struct d40_chan *d40c)
+ 		if (d40_queue_start(d40c) == NULL) {
+ 			d40c->busy = false;
+ 
+-			pm_runtime_put_autosuspend(d40c->base->dev);
++			d40_transfer_runtime_put(d40c->base);
+ 		}
+ 	}
+ 
+@@ -2270,7 +2291,7 @@ static int d40_free_dma(struct d40_chan *d40c)
+ 		d40c->base->lookup_phy_chans[phy->num] = NULL;
+ 
+ 	if (d40c->busy)
+-		pm_runtime_put_autosuspend(d40c->base->dev);
++		d40_transfer_runtime_put(d40c->base);
+ 
+ 	d40c->busy = false;
+ 	d40c->phy_chan = NULL;
+@@ -2646,6 +2667,12 @@ static int d40_alloc_chan_resources(struct dma_chan *chan)
+ 	struct d40_chan *d40c =
+ 		container_of(chan, struct d40_chan, chan);
+ 	bool is_free_phy;
++
++	/* Preparation and submission may run with the client's spinlock held. */
++	err = d40_lcla_runtime_get(d40c->base);
++	if (err < 0)
++		return err;
++
+ 	spin_lock_irqsave(&d40c->lock, flags);
+ 
+ 	dma_cookie_init(chan);
+@@ -2703,6 +2730,8 @@ static int d40_alloc_chan_resources(struct dma_chan *chan)
+ 	pm_runtime_put_autosuspend(d40c->base->dev);
+  unlock:
+ 	spin_unlock_irqrestore(&d40c->lock, flags);
++	if (err < 0)
++		d40_lcla_runtime_put(d40c->base);
+ 	return err;
+ }
+ 
+@@ -2725,6 +2754,10 @@ static void d40_free_chan_resources(struct dma_chan *chan)
+ 	if (err)
+ 		chan_err(d40c, "Failed to free channel\n");
+ 	spin_unlock_irqrestore(&d40c->lock, flags);
++
++	/* Keep SRAM powered if stopping the channel failed. */
++	if (!d40c->phy_chan)
++		d40_lcla_runtime_put(d40c->base);
+ }
+ 
+ static struct dma_async_tx_descriptor *d40_prep_memcpy(struct dma_chan *chan,
+@@ -2877,7 +2910,7 @@ static int d40_terminate_all(struct dma_chan *chan)
+ 	 */
+ 	d40_term_all(d40c);
+ 	if (d40c->busy)
+-		pm_runtime_put_autosuspend(d40c->base->dev);
++		d40_transfer_runtime_put(d40c->base);
+ 	d40c->busy = false;
+ 
+ 	spin_unlock_irqrestore(&d40c->lock, flags);
+@@ -3047,9 +3080,9 @@ static int d40_set_runtime_config_write(struct dma_chan *chan,
+ 
+ /* Initialization functions */
+ 
+-static void __init d40_chan_init(struct d40_base *base, struct dma_device *dma,
+-				 struct d40_chan *chans, int offset,
+-				 int num_chans)
++static void d40_chan_init(struct d40_base *base, struct dma_device *dma,
++			  struct d40_chan *chans, int offset,
++			  int num_chans)
+ {
+ 	int i = 0;
+ 	struct d40_chan *d40c;
+@@ -3123,8 +3156,8 @@ static void d40_ops_init(struct d40_base *base, struct dma_device *dev)
+ 	dev->dev = base->dev;
+ }
+ 
+-static int __init d40_dmaengine_init(struct d40_base *base,
+-				     int num_reserved_chans)
++static int d40_dmaengine_init(struct d40_base *base,
++			      int num_reserved_chans)
+ {
+ 	int err ;
+ 
+@@ -3201,29 +3234,11 @@ static int __init d40_dmaengine_init(struct d40_base *base,
+ #ifdef CONFIG_PM_SLEEP
+ static int dma40_suspend(struct device *dev)
+ {
+-	struct d40_base *base = dev_get_drvdata(dev);
+-	int ret;
+-
+-	ret = pm_runtime_force_suspend(dev);
+-	if (ret)
+-		return ret;
+-
+-	if (base->lcpa_regulator)
+-		ret = regulator_disable(base->lcpa_regulator);
+-	return ret;
++	return pm_runtime_force_suspend(dev);
+ }
+ 
+ static int dma40_resume(struct device *dev)
+ {
+-	struct d40_base *base = dev_get_drvdata(dev);
+-	int ret = 0;
+-
+-	if (base->lcpa_regulator) {
+-		ret = regulator_enable(base->lcpa_regulator);
+-		if (ret)
+-			return ret;
+-	}
+-
+ 	return pm_runtime_force_resume(dev);
+ }
+ #endif
+@@ -3313,7 +3328,7 @@ static const struct dev_pm_ops dma40_pm_ops = {
+ 
+ /* Initialization functions. */
+ 
+-static int __init d40_phy_res_init(struct d40_base *base)
++static int d40_phy_res_init(struct d40_base *base)
+ {
+ 	int i;
+ 	int num_phy_chans_avail = 0;
+@@ -3405,8 +3420,8 @@ static void d40_drop_kmem_cache_action(void *d)
+ 	kmem_cache_destroy(desc_slab);
+ }
+ 
+-static int __init d40_hw_detect_init(struct platform_device *pdev,
+-				     struct d40_base **retbase)
++static int d40_hw_detect_init(struct platform_device *pdev,
++			      struct d40_base **retbase)
+ {
+ 	struct stedma40_platform_data *plat_data = dev_get_platdata(&pdev->dev);
+ 	struct device *dev = &pdev->dev;
+@@ -3425,7 +3440,7 @@ static int __init d40_hw_detect_init(struct platform_device *pdev,
+ 
+ 	clk = devm_clk_get_enabled(dev, NULL);
+ 	if (IS_ERR(clk))
+-		return PTR_ERR(clk);
++		return dev_err_probe(dev, PTR_ERR(clk), "Failed to enable DMA clock\n");
+ 
+ 	/* Get IO for DMAC base address */
+ 	virtbase = devm_platform_ioremap_resource_byname(pdev, "base");
+@@ -3592,7 +3607,7 @@ static int __init d40_hw_detect_init(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
+-static void __init d40_hw_init(struct d40_base *base)
++static void d40_hw_init(struct d40_base *base)
+ {
+ 
+ 	int i;
+@@ -3640,13 +3655,9 @@ static void __init d40_hw_init(struct d40_base *base)
+ 
+ 	/* Write which interrupt to clear */
+ 	writel(pcicr, base->virtbase + base->gen_dmac.interrupt_clear);
+-
+-	/* These are __initdata and cannot be accessed after init */
+-	base->gen_dmac.init_reg = NULL;
+-	base->gen_dmac.init_reg_size = 0;
+ }
+ 
+-static int __init d40_lcla_allocate(struct d40_base *base)
++static int d40_lcla_allocate(struct d40_base *base)
+ {
+ 	struct d40_lcla_pool *pool = &base->lcla_pool;
+ 	size_t lcla_size = SZ_1K * base->num_phy_chans;
+@@ -3728,8 +3739,7 @@ static int __init d40_lcla_allocate(struct d40_base *base)
+ 	return ret;
+ }
+ 
+-static int __init d40_of_probe(struct device *dev,
+-			       struct device_node *np)
++static int d40_of_probe(struct device *dev, struct device_node *np)
+ {
+ 	struct stedma40_platform_data *pdata;
+ 	int num_phy = 0, num_memcpy = 0, num_disabled = 0;
+@@ -3781,13 +3791,70 @@ static int __init d40_of_probe(struct device *dev,
+ 	return 0;
+ }
+ 
+-static int __init d40_probe(struct platform_device *pdev)
++static int d40_lcla_sram_setup(struct d40_base *base)
++{
++	struct device *dev = base->dev;
++	struct device_node *np, *parent;
++	struct platform_device *sram;
++	struct resource res;
++	bool ready;
++	int ret;
++
++	np = of_parse_phandle(dev->of_node, "sram", 1);
++	if (!np)
++		return 0;
++
++	ret = of_address_to_resource(np, 0, &res);
++	parent = of_get_parent(np);
++	of_node_put(np);
++	if (ret) {
++		of_node_put(parent);
++		return ret;
++	}
++	if (!parent)
++		return -EINVAL;
++
++	if (!IS_ALIGNED(res.start, LCLA_ALIGNMENT) ||
++	    resource_size(&res) < SZ_1K * base->num_phy_chans ||
++	    res.end > U32_MAX) {
++		of_node_put(parent);
++		return -EINVAL;
++	}
++
++	sram = of_find_device_by_node(parent);
++	of_node_put(parent);
++	if (!sram)
++		return -EPROBE_DEFER;
++	base->lcla_dev = &sram->dev;
++
++	device_lock(base->lcla_dev);
++	ready = device_is_bound(base->lcla_dev);
++	device_unlock(base->lcla_dev);
++	if (!ready)
++		return -EPROBE_DEFER;
++
++	base->lcla_link = device_link_add(dev, base->lcla_dev,
++					  DL_FLAG_STATELESS);
++	if (!base->lcla_link)
++		return -ENOMEM;
++
++	/* The SRAM driver owns the containing region. */
++	base->lcla_pool.esram = devm_ioremap(dev, res.start, resource_size(&res));
++	if (!base->lcla_pool.esram)
++		return -ENOMEM;
++
++	writel(res.start, base->virtbase + D40_DREG_LCLA);
++	dev_info(dev, "using LCLA SRAM at %pa\n", &res.start);
++
++	return 0;
++}
++
++static int d40_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct device_node *np_lcpa;
+ 	struct d40_base *base;
+-	struct resource *res;
+ 	struct resource res_lcpa;
+ 	void *dmaenginem_reg_group;
+ 	int num_reserved_chans;
+@@ -3844,26 +3911,12 @@ static int __init d40_probe(struct platform_device *pdev)
+ 		d40_err(dev, "Failed to ioremap LCPA region\n");
+ 		goto report_failure;
+ 	}
+-	/* If lcla has to be located in ESRAM we don't need to allocate */
+-	if (base->plat_data->use_esram_lcla) {
+-		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+-							"lcla_esram");
+-		if (!res) {
+-			ret = -ENOENT;
+-			d40_err(dev,
+-				"No \"lcla_esram\" memory resource\n");
+-			goto report_failure;
+-		}
+-		base->lcla_pool.base = devm_ioremap(dev, res->start,
+-						    resource_size(res));
+-		if (!base->lcla_pool.base) {
+-			ret = -ENOMEM;
+-			d40_err(dev, "Failed to ioremap LCLA region\n");
+-			goto report_failure;
+-		}
+-		writel(res->start, base->virtbase + D40_DREG_LCLA);
+-
+-	} else {
++	ret = d40_lcla_sram_setup(base);
++	if (ret) {
++		dev_err_probe(dev, ret, "Failed to set up LCLA SRAM\n");
++		goto destroy_cache;
++	}
++	if (!base->lcla_pool.esram) {
+ 		ret = d40_lcla_allocate(base);
+ 		if (ret) {
+ 			d40_err(dev, "Failed to allocate LCLA area\n");
+@@ -3879,26 +3932,6 @@ static int __init d40_probe(struct platform_device *pdev)
+ 		goto destroy_cache;
+ 	}
+ 
+-	if (base->plat_data->use_esram_lcla) {
+-
+-		base->lcpa_regulator = regulator_get(base->dev, "lcla_esram");
+-		if (IS_ERR(base->lcpa_regulator)) {
+-			d40_err(dev, "Failed to get lcpa_regulator\n");
+-			ret = PTR_ERR(base->lcpa_regulator);
+-			base->lcpa_regulator = NULL;
+-			goto destroy_cache;
+-		}
+-
+-		ret = regulator_enable(base->lcpa_regulator);
+-		if (ret) {
+-			d40_err(dev,
+-				"Failed to enable lcpa_regulator\n");
+-			regulator_put(base->lcpa_regulator);
+-			base->lcpa_regulator = NULL;
+-			goto destroy_cache;
+-		}
+-	}
+-
+ 	writel_relaxed(D40_DREG_GCC_ENABLE_ALL, base->virtbase + D40_DREG_GCC);
+ 
+ 	pm_runtime_irq_safe(base->dev);
+@@ -3954,21 +3987,17 @@ static int __init d40_probe(struct platform_device *pdev)
+ 		dma_unmap_single(base->dev, base->lcla_pool.dma_addr,
+ 				 SZ_1K * base->num_phy_chans,
+ 				 DMA_TO_DEVICE);
+-
+-	if (!base->plat_data->use_esram_lcla &&
+-	    !base->lcla_pool.base_unaligned && base->lcla_pool.base)
++	if (!base->lcla_pool.base_unaligned && base->lcla_pool.base)
+ 		free_pages((unsigned long)base->lcla_pool.base,
+ 			   base->lcla_pool.alloc_order);
+ 
+ 	kfree(base->lcla_pool.base_unaligned);
+-
+-	if (base->lcpa_regulator) {
+-		regulator_disable(base->lcpa_regulator);
+-		regulator_put(base->lcpa_regulator);
+-	}
++	if (base->lcla_link)
++		device_link_del(base->lcla_link);
++	if (base->lcla_dev)
++		put_device(base->lcla_dev);
+ 
+  report_failure:
+-	d40_err(dev, "probe failed\n");
+ 	return ret;
+ }
+ 
+@@ -3978,15 +4007,17 @@ static const struct of_device_id d40_match[] = {
+ };
+ 
+ static struct platform_driver d40_driver = {
++	.probe = d40_probe,
+ 	.driver = {
+ 		.name  = D40_NAME,
+ 		.pm = &dma40_pm_ops,
+ 		.of_match_table = d40_match,
++		.suppress_bind_attrs = true,
+ 	},
+ };
+ 
+ static int __init stedma40_init(void)
+ {
+-	return platform_driver_probe(&d40_driver, d40_probe);
++	return platform_driver_register(&d40_driver);
+ }
+ subsys_initcall(stedma40_init);
+
+---
+base-commit: becfc375b0ee95818c531ed43ecda26c90f7617a
+change-id: 20261115-ux500-dma40-powerdomain-135a566b03ff
+
+Best regards,
+--  
+Linus Walleij <linusw@kernel.org>
+
