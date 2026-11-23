@@ -1,57 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795432310;
-	b=oieNwx5TWEw7ReJWuRoI/AvlNLjzUarNy87O+YFaEPTauLWaqo/M4/5pgl3m8pHCmrua
-	 hfhmXndWQJMQAMa489iJimEEqh+6oJo1qvFstOkHhmUjAwuOsRhtIsSNI09aPqTA0L9CC
-	 V1n3LxxYsAqmcXKiSYAtmGEzdPY3dAHmy34qQ0MubR1xWoUf6YKR1gXnUDED1OaDmjczT
-	 lpKCulnOtIk086KvEUzjv92i11v5OGr2r2lUh4OqVzQvA0paS3jn2xF/w/ym2D+gviJy1
-	 Rq3t1/vCFW9WOcDX8bwK10oYuMahojAI2urAGmaIhCYovz8bJVSpJuJ5LyrxrkzYT4w==
+	t=1795432376;
+	b=z12CWnjWJ5CIqRNhBwJLMFMh9WxZRqbNhUVQNVe12PdulEiMtvTixpdlA+IK6MKDauiv
+	 zHfD9FlDyr1fw16XoYmUhLkvDE3BnWzt90gbBglY0B10IyXZqzAw1NF4XN5+85r6aC6Hk
+	 9OWL3rKc2tL1uiAraDNlsPRV7g0B09cG5XmxMQ7W9vCa8BZ3+EctEm4ZDO+/GXZUhmxJR
+	 oeQOLjP624lFwLTMN6w6Uu8TDgU68k4xzHnwGpEu+Nw+fu3qO+x7k+RXOklfgEuYoFxd+
+	 jzEHqaS1dpi3rnSsG1R+n3CVyMtbhtefx/CDDNbK5y9vslP0bJXrabjGzH5tT8ORgIA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795432310;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=ICMJa1FXDkLpeqDBKL+J43KXnXXLbTYi1fHx2l/sa/I=;
-	b=qGJRMs+Hw3EswiJ6oIQ73ueVsEjsNQv/sS2zRO8K2FmViMPkngNvi3brdZ4ju+jo6oGi
-	 pzPLC5JPNyIBomBV3IJtmtQknfs+HTynP3EJ4kZeyIZryYNXzYzWHrS25ohP+KdzNdFW9
-	 LQQ3WRscc4Va4mNtw9vwcB4OgfbV5qmzdmNBphLHJlMJ1aJ+6k7SPKRTkBve8VnwggSwi
-	 91lx2cFzOxYMq6Pc06WRUehQfJM7/z8rgkP2IrIdzF0drIoUHoncXi7FZIWJ5nR9B0w3q
-	 YCvlSd7lvCBEXSb/g2Ro67Wotu7XJgeWTY6gW1SORQ/u6P2oQAkA5SkAh7mpRlUZlFg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795432376;
+	h=DMARC-Filter:Received:DKIM-Signature:Date:From:To:Cc:Subject:
+	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
+	 In-Reply-To;
+	bh=Vh1LakTnS8qDnqTNZjFoXfkcl6LQaAAvrHhe/rYchqw=;
+	b=nsTRIncuZf64SqAwwo24s0GgW9E4e9v5/DPSuwoDPlJE2sWuSkqHx7slw+b0Au5L5iLx
+	 O4Ttksriz85OC5x5o4ukUzJe+MBTXm8kWRwI74Ot+E+B9ffcd3bNQNE9++H5ejYqTim5l
+	 DpgJif5PlmyRv+3D1UyQt179SWpku+QnaHTD75RCLS8qjbVN2SRjbDFhmCsM+opZHdj2c
+	 QaiMmxp4pX+Da26xaCnHBgp1F6HKi4VtGxGok/lGL1ImAonUPC9ingaYPaOwqRx5z7lx1
+	 x1nzTMWuH2ornF/XcKt81jJjGtCY8j7AEdCmPyRJxaSXPRmFqjPiy0AgBlvpZWg+ISA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QFozejRV;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=ideasonboard.com;
+	spf=pass smtp.mailfrom=ideasonboard.com;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=b8ohZFPH;
+	arc=none smtp.remote-ip=213.167.242.64
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA8E5606A321;
-	Mon, 23 Nov 2026 11:11:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37D46606A31A;
+	Mon, 23 Nov 2026 11:12:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 37D46606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QFozejRV
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35B011F000C4;
-	Mon, 23 Nov 2026 11:11:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795432310;
-	bh=ICMJa1FXDkLpeqDBKL+J43KXnXXLbTYi1fHx2l/sa/I=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=QFozejRVYJDf+6Ka6Yqgp2wwhdOUwXrgWfgZzy69be+GIldHLaLHE6S2H5HQskd+g
-	 Hd/QGXwNRChubRjVCtMuZt8JUBw7OoRQmjdJzOnATgNeOs5bQ8hIPfMog23QSC4l2c
-	 m4gMMS7hFCbkSCqS2MMpsqY7x8V43UFIzU4umOXC7utNPtWGLVbaRnugVXJpJ4d7zD
-	 DSVGNmEmNIpn+ar/6xQexD1719DC9FXpBO7j+Sp3JF2b4oYnOIMa5uJuMRkYXVWWP/
-	 v2Z+DiLLAM6JWNNtmdPlj6Wdgjx9Z2QTu3EGR6vjActqeJwnzvBgwTDs8/aw9pM0BG
-	 Mv5jOjy4L5IYA==
-Date: Mon, 23 Nov 2026 12:11:46 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Patrick Delaunay <patrick.delaunay@foss.st.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com
-Subject: Re: [RESEND PATCH 1/7] dt-bindings: power: st: add STM32MP PM domain
- binding
-Message-ID: <20261123-pretty-strict-caracara-bfcaac@quoll>
-References: <20261116104054.94115-1-patrick.delaunay@foss.st.com>
- <20261116114024.RESEND.1.If3d55e03486413ca40ac73f9bf07046e76a00f0a@changeid>
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=b8ohZFPH
+Received: from killaraus.ideasonboard.com (2001-14ba-7086-3000--a06.rev.dnainternet.fi [IPv6:2001:14ba:7086:3000::a06])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 9EF4473E;
+	Mon, 23 Nov 2026 12:10:21 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1795432221;
+	bh=upJhjegpWDQfOzFhkF7sS1wywVD1477rg/cPt2EFbLs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=b8ohZFPHnUSX4XJqicAsg661IvSd98c33Vb05UnAK9TiRMqcaPowe5BJrMrqgkqxf
+	 j7hfnKq0i+4mJtwPW6B2jp3XORvuBW7hnrDVkDAcqO+jd13VPuTTNQVgnS6gCF22B0
+	 x2MIbDW0Q6jhWRK0CK6Jysk0rD/2oZg61piQiK4A=
+Date: Mon, 23 Nov 2026 13:12:52 +0200
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Paul Elder <paul.elder+renesas@ideasonboard.com>,
+	=?utf-8?Q?Cl=C3=A9ment?= Le Goffic <clegoffic@baylibre.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v5 03/15] clk: renesas: r8a78000: Shrink IDs to 16 bits
+Message-ID: <20261123111252.GE3010398@killaraus.ideasonboard.com>
+References: <cover.1795029012.git.geert+renesas@glider.be>
+ <066c0c074865c2a8684f541c3513b8851f3b09a9.1795029012.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -63,90 +81,43 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261116114024.RESEND.1.If3d55e03486413ca40ac73f9bf07046e76a00f0a@changeid>
+In-Reply-To: <066c0c074865c2a8684f541c3513b8851f3b09a9.1795029012.git.geert+renesas@glider.be>
 
-On Mon, Nov 16, 2026 at 11:40:26AM +0100, Patrick Delaunay wrote:
-> Add binding documentation for the power domains found on
-> STMicroelectronics STM32MP SoCs.
+On Wed, Nov 18, 2026 at 08:44:51PM +0100, Geert Uytterhoeven wrote:
+> Reduce table size by shrinking DT and fixed-rate clock IDs from 32 to 16
+> bits, which is still plenty.
 
-A nit, subject: drop second/last, redundant "binding". The
-"dt-bindings" prefix is already stating that these are bindings.
-See also:
-https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/bindings/submitting-patches.rst#L23
+Until the day someone decides to use clock IDs higher than 65535 in the
+SCP firmware :-)
 
-> 
-> Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+
 > ---
+> v5:
+>   - New.
+> ---
+>  drivers/clk/renesas/r8a78000-cpg.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
->  .../bindings/power/st,stm32mp-pm-domain.yaml  | 46 +++++++++++++++++++
->  1 file changed, 46 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml b/Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml
-> new file mode 100644
-> index 000000000000..4ab477fb4499
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/st,stm32mp-pm-domain.yaml
-> @@ -0,0 +1,46 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/power/st,stm32mp-pm-domain.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: STM32MP generic power domain
-> +
-> +maintainers:
-> +  - Patrick Delaunay <patrick.delaunay@foss.st.com>
-> +
-> +allOf:
-> +  - $ref: /schemas/power/power-domain.yaml#
-> +
-> +description: |
-> +  The STM32MP SoCs contain a D1 domain which defines the devices assigned to
-> +  Cortex A cluster, the devices in this domain are functional only when this
-> +  cluster is not in low power modes (Stop modes) with clock OFF.
-> +
-> +  This PM domain node represents this dependency, based on PM framework and
-> +  without wake-up path support.
-> +
-> +properties:
-> +  compatible:
-> +    const: st,stm32mp-pm-domain
-> +
-> +  '#power-domain-cells':
-> +    const: 0
-> +
-> +  power-domains:
-> +    maxItems: 1
+> diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
+> index 03fcd128d4293cfc..236c638834703f95 100644
+> --- a/drivers/clk/renesas/r8a78000-cpg.c
+> +++ b/drivers/clk/renesas/r8a78000-cpg.c
+> @@ -17,8 +17,8 @@
+>  #include <dt-bindings/clock/renesas,r8a78000-cpg.h>
+>  
+>  struct clk_id_map_entry {
+> -	u32 dt_id;		/* DT binding clock ID */
+> -	u32 fw_id;		/* FIXED_CLK() ID */
+> +	u16 dt_id;		/* DT binding clock ID */
+> +	u16 fw_id;		/* FIXED_CLK() ID */
+>  };
+>  
+>  struct clk_id_map {
 
-I don't get the purpose of this binding. There are no resources here, so
-this looks like fake intermediary (meaning: non-controllable). Why the devices cannot reference
-final domain?
+-- 
+Regards,
 
-> +
-> +additionalProperties: false
-
-this goes after required block.
-
-> +
-> +required:
-> +  - compatible
-> +  - '#power-domain-cells'
-> +  - power-domains
-> +
-> +examples:
-> +  - |
-> +    power-domain-d1 {
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-If you cannot find a name matching your device, please check in kernel
-sources for similar cases or you can grow the spec (via pull request to
-DT spec repo).
-
-
-Best regards,
-Krzysztof
-
+Laurent Pinchart
