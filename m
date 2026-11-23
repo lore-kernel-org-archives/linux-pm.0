@@ -1,79 +1,95 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795411291;
-	b=CoEKN/xUYU2q7EBAMhgt1GbHP1IFGk6CGFfq+4jIA1r9QGOCRJkladahRScv1AnrLtmW
-	 Mhz497aP+nRi0xuBdSG1fUgfPYjUDCjG1hRELWDHfmE3dWtiTYoFCK3CKtw0rLxWUDshV
-	 gsi9Y9D0mwoiK6iXMscdPSaVZcYV8FIkDpEatGA9v4PFTCOia79WmMkmuoQCL+2sYKOe1
-	 doXEGUONi2zd5HlP6iJtgnn8ehlXB7ucAAz+1Q3+UmAVuW032m7mt3ILe1jSeVKqMGLts
-	 7gmzM6GWMah7ybY8vQfRXmYtXkbz29Fo1Wkm8VNnJDKPrYcN5u0tFcYwCT+Oee7GDKw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795411291;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
-	 In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=VCAHJAZ8lG0qePrCTaZNQY2oEqKkFnjfl6hdH6oURSQ=;
-	b=R1r26uRSZQEMEvAwr0uX8ve4Gpd574P7Ni8zrye58ciW9dxgS/22/gOZGsVJQnPotgxM
-	 dmM6iPpnACzFNPHhKa/hFxA78TCITxLmmtJVxhjZ19vhpfISLiGlzDnIH/AYVBe0zB1Ww
-	 sXdyvW2SUw8o44LL5Yvh62/0D7BCzAYlaYVPr9SnvXW58UsU6WDXScR2sqszOehTpQrhe
-	 f72QCPUgHMl3bUpEjE8kDrX6P2D2YyY/W9ey52kfthuSFaQ9jdvUnE4LDz5lSJKGlfbL6
-	 MtQc6sNt/pEeg0/7KcX35iSXhDczuSKTiN/EHPye9ZzM81GoAeh+HNMuZIb03wTFW4Q==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UCpy4COh;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E4DE606A32C;
-	Mon, 23 Nov 2026 05:21:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UCpy4COh
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795411291;
-	b=Ses+Jr/CnTaEt12tnbKRfUUY0i+lQvM2Pr8EsUswzEDa6WEcRHMSq6BBX3QOzSwX8xpw
-	 3J7dfKUFVuJJQ3CCQkLOajyBiNrLbeBl5uEWxmIvw2XTD/XWDYWTAfdkPYXBv2XkMgOMM
-	 52+c2WESCO5IA0IRy+R9opc8IzelW0NzadxZbdnHZa2e9R5tH3t5pzOhEaDOPUwCW//CR
-	 45kpFrcoONLhsvRkXLl9UMaTb4hn+KP1AtTxvaUuRuFnlbcNOT6AMcFPIfLRvfowzA4ct
-	 qV04E3b3dF0wS3loIH1aJ4hMvnJoq2xohUEubke6TEubz+BWEuQinCi3xaP2AWNOuQw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795411291;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
-	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=VCAHJAZ8lG0qePrCTaZNQY2oEqKkFnjfl6hdH6oURSQ=;
-	b=L0xZu4FByZmyQQSSNuQcz8V0wY0AiX493VaY+vHZVLj1Vs8FtxfDJNPW/wK4ANeov8+l
-	 XzJjynXLn/yfQDxEH+ez3rZwQriC0vQziha+4xkI18i4JXd1GH1/tqu4OWsI2GVdDH6XG
-	 iYebiHQitrZS0sY0FixuLc7OOkrC8Hjo9qCz5uFyhR2De/RgVTYT9DoXW837vUo/XKpUo
-	 XOGXljk2B77bJnJhvjCt6N5/lULQmAuQPk7XCtm4au+yy2XdcByx+J/GyK6sdipzcleUf
-	 fp6/U5KPN3QrNxJVQR9FgaxxCLiwpA481FiyT9YhcuTcdfjYnb0R0uAoDr2fxvvJTdw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.53
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795412095;
+	b=smvebM85Xd4wPa5zlsBGLLD6BLzZ+WlNehIXgCCt4y5WvLWDojWa28QqIJJt0qNt8zTE
+	 WZf4QqF1zIRcMaYsrlZCCNUXrCmkAZ8yKrMWDx1ZNgLBfbn/vs3SjU9ytETHMSU/9suem
+	 KVL24RnY+uqRTqgU3wCna8gUQL7ucJbaHAeVDqTck4o46eDxg+ztanG3ND76sG3qcqspw
+	 oP+GPk5rKtxq4bC5yUpYQ9Nte891/zGCL0K+YhCEZBa9aD+CjRfzqch75exGADO3NSngA
+	 yrfvUH19pfxzH1etxeGgGCIp8VVkJcohLq1OyW9ybQGQwV+yv2qmVg+gB9O4ywlMZHw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795412095;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=JW3ojJgWSSpYVKAj1rpR53Wt7zgOalc2QFQ9CWv61+4=;
+	b=dZgKqKMrv+atuASx4I2I2xZomcLE5nQi3C74fweMu7UPcqG8CvgD/qYyc5z3ew+8AnFl
+	 bfEm0fw+4aorNSizDCdS/hf+nRlv5p9D1d5BzWqAZtJ54vUk3JlMsxRdUyoRwiur4lxy9
+	 8iq+CzNz8IeNx4/Dzf71jlLfjo3rlsZhDDfqvd0Whgg1gtwHR0BhiaX+PIuw0wLvhFEFK
+	 Zya5VdKncblpNUai4T6rI4r4hq3+PIN47CZB3d8d+xhPQOlpN6R/5eWbC77e734eiX/Kh
+	 l5r00mVXxBlNxqr1HY6DOJhCLKclb8ZRLKwlytcLlnZoTSoEforXb34PkYgLPJPa4Rg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zRhWVqwP;
+	arc=none smtp.remote-ip=74.125.82.53
+Received: from mail-dl1-f53.google.com (mail-dl1-f53.google.com [74.125.82.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 22E8C1F000CF;
-	Mon, 23 Nov 2026 05:21:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795411291;
-	bh=VCAHJAZ8lG0qePrCTaZNQY2oEqKkFnjfl6hdH6oURSQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=UCpy4COhhyPYYlWblKOzUDckedsWxFzQzPHkDIAQIQvNkcsFDZlQZJXYTIT4AOwsG
-	 Cruvgwph8Bg1RTl+igoRycVD3zffJRfr4lvBXd6xsu9nCHm7g8WeYHxWfn9AfUn9on
-	 4wJZKdnEVCRDs0bDjo2L7+4xVcmugmumzhEseVUugDkTwz74/flU2/yRTY6laexPrj
-	 DN0ZTF5sGfHq/gQFROpnV6ZZ9mIWCThAUmu3euIx+Yj77zrColnW1Pc71Sbd7DdC9W
-	 JG0cJJHONU0zuWHDhWOBIygcWdzq1KXrY0VHe6KOTKQiaJhaDSvqsrLg6/EyoMosFF
-	 CzyfyBDfyFTdA==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id A65604C36D;
-	Mon, 23 Nov 2026 05:21:19 +0000 (UTC)
-From: Suyuan Wang via B4 Relay <devnull+shyckless.gmail.com@kernel.org>
-Date: Mon, 23 Nov 2026 05:21:20 +0000
-Subject: [PATCH v2 3/3] cpufreq: s5pv210: Fix resource leaks on probe error
- paths
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C99B0606A31F
+	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 05:34:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C99B0606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zRhWVqwP
+Received: by mail-dl1-f53.google.com with SMTP id a92af1059eb24-1b546061d58so6584479c88.1
+        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 21:34:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1795412094; x=1796016894; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=JW3ojJgWSSpYVKAj1rpR53Wt7zgOalc2QFQ9CWv61+4=;
+        b=zRhWVqwPzRdS/S3SNWc6pwEH2rZiRiN1XxRt0Y7KM5Q6Fi710yUMjd4YtxarNqt3OS
+         ktE28kOUcVycRnFnsqYdBhW3ccFDE1wODV3eL2dtbGGTHezxLtT2mi7jCscT+eRY0PxI
+         x39GN01oGijKwbCMqk7V5ytBwIuYGuF5Q+mleloxdbRncsb6FVZXYcIFIS+ldK3FiJ9q
+         5xrT4mwHcTPMx8s7k8COAd4eEHRNDdgFl7Hr35FkJfeH5vElDmse0ofxLKthcp+r6qVe
+         Vc1kU/gWiYRu3zVYp0PRZC6n63bq1EVi76ixJhkMxZ1tRdvtpV89u9DsHRRSFKuk2qS3
+         TpMA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795412094; x=1796016894;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=JW3ojJgWSSpYVKAj1rpR53Wt7zgOalc2QFQ9CWv61+4=;
+        b=KAzNlBVsYmvEIFxFkCsCvQN44WoDVM2u0sT8MFuGEu3zf2pY0JURJsTQHngs7Ldj8n
+         mrknJD0Q/tXIQtYMHQPFfU1IVAiAN5N+ZqYrv/VoldjQE3/1zezaPXiezO1BVuA0JbZf
+         ZKnfdENGrfZita7Wp4VYomiFlkDodk85OCQmRGfobfbfYplI/e8RgNho4wKpZv5Z8fUs
+         AN80Nurfy1n0kw4Ey0OGVOwC+3GyLhnQXlOJjJH85ehLgPDYb4iTWYdnvF4c/TugNreY
+         bqPHV7QV+yfHrgvCjCpeDa5rZrrXgDOFBLHsiqE+DT+zy0fLnLN4+qCuV3N0z0S3319s
+         6MLg==
+X-Forwarded-Encrypted: i=1; AL+hErGXnvQSXJ3njcvf2OYebmG37wt1F2QkZQlw957aMcJx+22Jp7X/GixgYV9lia3yfAQfAw45xH68yA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8xxVf8EPYqQCKkFsMuzrtbV4031A4Fr4p/P3B6ehfDHFK3U6ms
+	a+YR19SQs/padIyGi1xaNDghSJQZLXYwJX5zjMe0nbH0vP9ZwH+VbihfUQao6ACfeBI=
+X-Gm-Gg: AZFdTZdlx+F4IXnT0AXzoiqsH5mebAzu7pQ2SAyrmS9yUIImwEx7WsUqrmT7otOPHNh
+	lTc+I9hPIUqiABWwnG1B0YB1cmDDTEDXhzog7zuDJo3RX3dQ03VT7QLl7LXPaBajl/ukNdJZjuO
+	FDptS4fVFKRGaDOYuHNSm3FYtYp3fGlnFXBLFeRaM1q84+NpA9JhVWSGCOvb0uQPPz46hsSePd5
+	cDFDwoWRrCZjpkdI8pRyUhcFMkC8+izS19MDiHcJlDURgKTUhJOHgj6Xb13VxyZjy03X4Xyk5h9
+	sX3MbBb6/3upCwdhpx7UhkuZDlmRYXy7pXJEG8jd2sNmi3bzU//4r+kPqyjvZj+pN5KCel6BNWf
+	y/bNwMHNAvpTmgPXZ4qYjI3IZkvJ6zVu/OwdRRHV7Sfb0i3lRsZ1qqbS9Ck2wJp1h01Bc4pXRG+
+	RIEwNQdcv8HinJM891JXPBr9gZQUoxYnCxVsYa0cHXRbQb8zfsTFk2XBc4JEBLRTH3ruuCPm+3b
+	eudoe6uzdsJkPsJdluUSuA/2UfnSDMwoZ0hEGpQtL016u2lwrprqbxXGJy/twIzARlYygwHvp0Q
+	2jDGkP4Y6cvObeSZt5YD4Hd5Lljg0Q==
+X-Received: by 2002:a05:701a:ccd9:20b0:1b5:7351:955f with SMTP id a92af1059eb24-1b573519624mr2091488c88.27.1795412093505;
+        Sun, 22 Nov 2026 21:34:53 -0800 (PST)
+Received: from localhost ([122.172.83.36])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b5569bffd2sm23537896c88.0.2026.11.22.21.34.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Nov 2026 21:34:52 -0800 (PST)
+Date: Mon, 23 Nov 2026 11:04:50 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: shyckless@gmail.com
+Cc: rafael@kernel.org, peter.griffin@linaro.org, krzk@kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org, alim.akhtar@samsung.com,
+	linux-pm@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Subject: Re: [PATCH v2 0/3] cpufreq: Fix leaks on probe error paths in three
+ drivers
+Message-ID: <awPQeliuPmaBF8cG@vireshk-B250M-D3H>
+References: <20261123-cpufreq-leaks-v2-0-29277f2f0ddd@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,103 +99,40 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261123-cpufreq-leaks-v2-3-29277f2f0ddd@gmail.com>
-References: <20261123-cpufreq-leaks-v2-0-29277f2f0ddd@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20261123-cpufreq-leaks-v2-0-29277f2f0ddd@gmail.com>
-To: rafael@kernel.org, peter.griffin@linaro.org, viresh.kumar@linaro.org, 
- krzk@kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- linux-samsung-soc@vger.kernel.org, alim.akhtar@samsung.com, 
- linux-pm@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795411278; l=2668;
- i=shyckless@gmail.com; s=default; h=from:subject:message-id;
- bh=FvOlF8UNPCa6Xw/nvECVgrxkLK8Otjxui0GXRXiNPfI=;
- b=WIwqOW5wacTIg5maPfMnSat7qTxeqJQ5eiKOaWgfV0O+DsxXO/GkN0lQrdRtLIwKhLmkrdDbf
- jz/JTb0LVt0CzirEWV1U+/JX0KCzFhBgEIupei91H3GetPDeT0JfyAL
-X-Developer-Key: i=shyckless@gmail.com; a=ed25519;
- pk=pMtccVGiWES3bV+7YBFuBclkvq2n2HBHQ5azaBrK2lY=
-X-Endpoint-Received: by B4 Relay for shyckless@gmail.com/default with
- auth_id=1498
-X-Original-From: Suyuan Wang <shyckless@gmail.com>
-Reply-To: shyckless@gmail.com
 
-From: Suyuan Wang <stevewong@hust.edu.cn>
+On 23-11-26, 05:21, Suyuan Wang via B4 Relay wrote:
+> Three small fixes for resources that are not released when a cpufreq
+> driver fails to probe: the cpu clock in highbank, the three clocks in
+> kirkwood (also on unbind), and the regulators and register mappings in
+> s5pv210, and its reboot notifier, when cpufreq_register_driver() fails.
+> 
+> Found with a static analysis tool and checked by hand. Compile tested
+> on arm (W=1, multi_v5 for kirkwood); I don't have the hardware.
+> 
+> Changes in v2:
+> - 3/3: fix the Fixes tags. The regulator and reboot notifier leaks come
+>   from e8b4c1986efb and fe7f1bcbff91, and e0e5b2b4f427 did not add a
+>   leak (Zhongqiu Han). No code change.
+> - 1/3, 2/3: unchanged.
+> 
+> v1: https://lore.kernel.org/all/20261122-cpufreq-leaks-v1-0-96fc17ff7339@gmail.com/
+> ---
+> Suyuan Wang (3):
+>       cpufreq: highbank: Put cpu clock if clk notifier registration fails
+>       cpufreq: kirkwood: Put clocks on error and in remove
+>       cpufreq: s5pv210: Fix resource leaks on probe error paths
+> 
+>  drivers/cpufreq/highbank-cpufreq.c |  1 +
+>  drivers/cpufreq/kirkwood-cpufreq.c | 15 ++++++++++++---
+>  drivers/cpufreq/s5pv210-cpufreq.c  | 12 +++++++++---
+>  3 files changed, 22 insertions(+), 6 deletions(-)
 
-s5pv210_cpufreq_probe() returns the result of cpufreq_register_driver()
-directly:
-
-	register_reboot_notifier(&s5pv210_cpufreq_reboot_notifier);
-
-	return cpufreq_register_driver(&s5pv210_driver);
-
-If the registration fails, for example because s5pv210_cpu_init()
-fails, the resources taken by the probe itself are leaked: the two
-regulators and the clock and DMC register mappings. The reboot notifier
-also stays registered. (s5pv210_cpu_init() releases its own clocks on
-its error paths, and the cpufreq core tears down its own state.)
-
-Also, when a DMC node has a bad alias, the code jumps to err_clk_base
-and skips unmapping DMC registers that were already mapped for an
-earlier node.
-
-Unregister the reboot notifier and go through the existing unwind code
-when cpufreq_register_driver() fails, and jump to err_dmc on the alias
-error. The err_clk_base label has no users after this, so drop it.
-
-Found with a static analysis tool and checked by hand.
-
-Fixes: e8b4c1986efb ("[CPUFREQ] S5PV210: Add arm/int voltage control support")
-Fixes: fe7f1bcbff91 ("[CPUFREQ] S5PV210: Add reboot notifier to prevent system hang")
-Fixes: 6d4ed0f46af6 ("cpufreq: s5pv210: Make the driver multiplatform aware")
-Co-developed-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
-Signed-off-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
-Signed-off-by: Suyuan Wang <stevewong@hust.edu.cn>
----
- drivers/cpufreq/s5pv210-cpufreq.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index e64e84e1ee79..29b1c5d71a8b 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -634,7 +634,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- 		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
- 			dev_err(dev, "failed to get alias of dmc node '%pOFn'\n", dmc);
- 			result = id;
--			goto err_clk_base;
-+			goto err_dmc;
- 		}
- 
- 		dmc_base[id] = of_iomap(dmc, 0);
-@@ -655,7 +655,14 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- 
- 	register_reboot_notifier(&s5pv210_cpufreq_reboot_notifier);
- 
--	return cpufreq_register_driver(&s5pv210_driver);
-+	result = cpufreq_register_driver(&s5pv210_driver);
-+	if (result)
-+		goto err_reboot_notifier;
-+
-+	return 0;
-+
-+err_reboot_notifier:
-+	unregister_reboot_notifier(&s5pv210_cpufreq_reboot_notifier);
- 
- err_dmc:
- 	for (id = 0; id < ARRAY_SIZE(dmc_base); ++id)
-@@ -664,7 +671,6 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- 			dmc_base[id] = NULL;
- 		}
- 
--err_clk_base:
- 	iounmap(clk_base);
- 
- err_clock:
+While sending a new version, you need to add the tags you have
+received so far. Please resend with Reviewed by tags you have
+received.
 
 -- 
-2.34.1
-
-
+viresh
