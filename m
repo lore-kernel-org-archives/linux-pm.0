@@ -1,47 +1,85 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.154.119.183
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795472138;
-	b=o0eAZbvAHbl/FsT/iKK8I1W1xzwsCNyXF+BP0w1wHsI5pA/mGQxD9iizZMSOJK2G+h3r
-	 0ASTuUBZluU4OocUO+4ZQUH5fwyA2yd91SB3ftn5MIHFD6yYjlP1enqlGSC+1Btuz2R19
-	 ZSyVgtN5zGWxUz6h+AHWV9drzCPtuENQcXxeNDhUBqVlleENmDjL5xE8umOYZOWj58jBF
-	 qaYIeKKJztMVbCd+qMEEXR2a4qD2xa4RWFrckLqINs23Ew8LhDE6VMJrDKYa+lFlKqdma
-	 jHfJqEcTUzEuG0kvuUuzWeC+fFc0jxkwTw8CZGz0hFyw7B40SAIxXqtKbM51ZVeyJxg==
+	t=1795472509;
+	b=tmqzOAvdaMYW/z+C1XWWdFInnJ/Y1HMGBw6nVAw9yCl1t+u9wfPthl+jqZx4htP3kOWe
+	 qSYLQgBQLmNShSsOdIPJG5AVh1jaYprL9VvXYfUNGUZs8AVZZOgldCvOkurGZImqvXkg2
+	 PL+7mBOPxISVyJ3n2FLv73k8uwnN/cHLHXYKJjkZrOGchpbZwhu4ksC20FZwbntD+oIEq
+	 oxiv2WMpEz7P6IHhHxPOxLe0JCO2jR0wmz6uefltOPR8VgOvnMsRdA6rNfc6BZWWZ6kgo
+	 pdDQFLuePP+zysASA8DCWV9Gf/Il7S7WQl2YeAB12RGpcO+Lxs8EZ8HEU01RpOzuCPg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795472138;
-	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=zZOr86x6Nbcrswj0/CdPx/id2jV0MiHrJmrhX/el+Dk=;
-	b=0jTyjyfP9O1mXrCri60oej//HSMu0XvGP2CNIx9VRlghqZIeRLBfhm3AJKIDqTLoRQFq
-	 doxeIVudMzuiyLGuiBezLVl9sAzGoYPObIWME61ZcWtw4XY9GS+wFUCtx2ZbgSgbC0CC0
-	 zf8EzvBEW4bax+j2CBJpVlzv5aNV75Z6tdXevrSLqkOJkRsbZ96SeHJXVl3tAmwFRTsEo
-	 x5fBw1f9vtUYWKSzdcC4PaRT8z6ViMw38MhEaLy+DyXE86kwILy2ToiHP71Ud7aItBmEd
-	 ovJamY5BE64gFC9tCBGKT4GoJhZrx1KIyg9QPKZ0yXMBYte+kuzUsp/PRyMobUH415w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795472509;
+	h=DMARC-Filter:DKIM-Signature:Received:Date:From:To:Cc:Subject:
+	 Message-ID:Mail-Followup-To:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:User-Agent;
+	bh=M/dPNEWQK09q7JbjfKH7MJ1mwiktjZdxAxMD410YALQ=;
+	b=Alfk9rMm/yNWEaB6AaE8XfgPQhh+J5utkdQLX7ZE597RJguYDza3MyZXAFrsmTomzZF9
+	 QYadUCUQkHC1DW1MHep9pvQQoZDA6nZk6P6s8cYguzivINxlzhj+H6rq/ocD2JkXWdfdP
+	 ryr+8qN+YKkvIRoyCi+ncxMDTkZL/LaHpVBE2L5Vs/+YnuTkkVrV1fsrd1gGtzNVABoGw
+	 oncSGvvB8RlpW1HRmjwxTfKXQXyKo8hrlIqRo8xnJAI6acHXc8BJCg5jiHpbmFHrFsZto
+	 uQ75Ci2b2N46csNDzgKiSgiz4NDKOklqpD2qyrLs/oXopyxPbGvCrbBwDH2k/VbWuKg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IUfnCFTe;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=aurel32.net;
+	spf=pass smtp.mailfrom=aurel32.net;
+	dkim=pass header.d=aurel32.net header.i=@aurel32.net header.a=rsa-sha256 header.s=202004.hall header.b=y5Qgq2rg;
+	arc=none smtp.remote-ip=195.154.119.183
+Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A33D6606A322;
-	Mon, 23 Nov 2026 22:15:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8730606A32C;
+	Mon, 23 Nov 2026 22:21:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B8730606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IUfnCFTe
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71A6B1F000C0;
-	Mon, 23 Nov 2026 22:15:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795472138;
-	bh=zZOr86x6Nbcrswj0/CdPx/id2jV0MiHrJmrhX/el+Dk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=IUfnCFTe+dBvsPU7O06E2fZSVhth+KzFXsodtvncGuI0ZJrIUURRRNuTzOpaaXs8w
-	 Yx9tfQxFf0bhkud/FZpgu8M5GraijG/vUGk9+qgLWv+yC4PuuWis9FcdtnPM2p8/tG
-	 NklJrEq+wTwwduRL6DBLbHPZLz+aXeAy3qLhhsEFf9ixKzUsda7LHBGm13m+YJOsTj
-	 +gWPX2J9lF6u1D3o3sYOKIey0FJQdYR9Jjzcr3TUQ/YuUOZy6BswMLeTvEZxX29xaW
-	 Gu+Kppy1E9Sp1P5RVB5zVWQpcZkzx78goOMCIq4LogvU6xwyAC4c4KQGNxt064WKP0
-	 npRyr50ofJOxw==
-Message-ID: <356dfc79-1918-4024-b40a-57a8cb05418d@kernel.org>
-Date: Mon, 23 Nov 2026 23:15:19 +0100
+	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.a=rsa-sha256 header.s=202004.hall header.b=y5Qgq2rg
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
+	; s=202004.hall; h=In-Reply-To:Content-Type:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Content-Transfer-Encoding:From:Reply-To:
+	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
+	bh=M/dPNEWQK09q7JbjfKH7MJ1mwiktjZdxAxMD410YALQ=; b=y5Qgq2rgrcm/D3WJARApnsHXJK
+	RJM0D9qlkJNg2cvotSj9SwbQDeud8fkEHEP89lRYc98kuvvruXkqlV5gDg2g02fkTnHq6lBjWXjEr
+	p6uUh/NBcRdw1yZDa5iCsO2c2p4+BcKyeP31XJbbGL5iVndPP3Wqn4GvWOmp0aTtuuiFWUugxMy4U
+	DJ+wFIyxhkRnvTWBYd2+tg/G3TNixu8qZBlXQ0R+ONLT5E2sv5RzY//5ibbLjonYRSVKs8rg3Sbry
+	oIejOzjkztwW8oY622OO9f/IA7+VjvTjBf3L/vB9/g1MPg+NElI/gjnMEMObCtVSm9kcsKcTfctT/
+	hNMzM6iw==;
+Received: from authenticated user
+	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <aurelien@aurel32.net>)
+	id 1xVcPt-00000007bSR-3nqY;
+	Mon, 23 Nov 2026 23:21:41 +0100
+Date: Mon, 23 Nov 2026 23:21:39 +0100
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Anand Moon <linux.amoon@gmail.com>
+Cc: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Yixun Lan <dlan@kernel.org>,
+	Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@ventanamicro.com>,
+	"open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>,
+	"open list:RISC-V SPACEMIT SoC Support" <spacemit@lists.linux.dev>
+Subject: Re: [PATCH v2 2/3] riscv: sbi: Register SRST handlers with firmware
+ priority
+Message-ID: <awS8c3RFkv1D07dc@aurel32.net>
+Mail-Followup-To: Anand Moon <linux.amoon@gmail.com>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Yixun Lan <dlan@kernel.org>,
+	Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@ventanamicro.com>,
+	"open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>,
+	"open list:RISC-V SPACEMIT SoC Support" <spacemit@lists.linux.dev>
+References: <20261118104935.1716-1-linux.amoon@gmail.com>
+ <20261118104935.1716-2-linux.amoon@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -51,104 +89,120 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 13/16] dt-bindings: arm: qcom,ids: Add SoC ID for
- SXR2250P
-To: Stanislav Aleksandrov <lightofmysoul@gmail.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Robert Marko <robimarko@gmail.com>,
- Guru Das Srinagesh <linux@gurudas.dev>, Thomas Gleixner <tglx@kernel.org>,
- Radu Rendec <radu@rendec.net>, Lee Jones <lee@kernel.org>,
- Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
- "Joerg Roedel (AMD)" <joro@8bytes.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Wesley Cheng <wesley.cheng@oss.qualcomm.com>, Vinod Koul <vkoul@kernel.org>,
- Neil Armstrong <neil.armstrong@linaro.org>,
- Manivannan Sadhasivam <mani@kernel.org>,
- Alim Akhtar <alim.akhtar@samsung.com>, Bart Van Assche <bvanassche@acm.org>,
- Bean Huo <beanhuo@micron.com>, Stanley Jhu <stanleyjhu@google.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Amit Kucheria <amitk@kernel.org>,
- Thara Gopinath <thara.gopinath@gmail.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Georgi Djakov <djakov@kernel.org>,
- Sibi Sankar <sibi.sankar@oss.qualcomm.com>, Ulf Hansson <ulfh@kernel.org>,
- linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, mfd@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev,
- linux-usb@vger.kernel.org, linux-phy@lists.infradead.org,
- linux-scsi@vger.kernel.org, linux-crypto@vger.kernel.org,
- linux-pm@vger.kernel.org, Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-References: <20261116-halliday-dts-v2-0-2c92438c6c46@gmail.com>
- <20261116-halliday-dts-v2-13-2c92438c6c46@gmail.com>
- <20261123-pastel-barracuda-of-rain-bce8ac@quoll>
- <20261123211723.1065310-1-lightofmysoul@gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20261123211723.1065310-1-lightofmysoul@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261118104935.1716-2-linux.amoon@gmail.com>
+User-Agent: Mutt/2.4.1 (2026-07-04)
 
-On 23/11/2026 22:17, Stanislav Aleksandrov wrote:
-> On Mon, Nov 23, 2026 at 01:09:26PM +0100, Krzysztof Kozlowski wrote:
->> This should be rebased on my patch removing the IDs.
+On 2026-11-18 16:19, Anand Moon wrote:
+> The SBI System Reset (SRST) extension currently registers its poweroff
+> handler using register_platform_power_off(), which assigns it a lower
+> priority than the default PMIC poweroff handlers.
 > 
-> Thanks for review. I will rebase it, but I am not sure about
-> the order, could you please clarify?
+> On platforms where OpenSBI handles system poweroff, a PMIC handler may
+> run first and perform I2C-backed regmap operations in atomic context,
+> triggering invalid wait context and scheduling-while-atomic warnings.
 > 
-> 1. Should I wait for sending v3 until your patch is applied?
-> or
-> 2. Should I apply your patch locally and then send v3 based on it?
-> (but if something changes in your patch a v4 might be needed)
+> Register both SBI SRST restart and poweroff handlers using
+> register_sys_off_handler() with SYS_OFF_PRIO_FIRMWARE. This gives firmware
+> handlers precedence over default-priority PMIC handlers and avoids
+> board-specific workarounds in individual PMIC drivers.
+> 
+> Defer handler registration to a device initcall because sbi_init() runs
+> during early architecture initialization, before dynamic memory
+> allocation required by register_sys_off_handler() is available.
+> 
+> Preserve warm and cold reboot selection, retain the existing legacy
+> poweroff fallback, and report handler registration failures.
+> 
+> Cc: Troy Mitchell <troy.mitchell@linux.spacemit.com>
+> Cc: Aurelien Jarno <aurelien@aurel32.net>
+> Suggested-by: Aurelien Jarno <aurelien@aurel32.net>
+> Signed-off-by: Anand Moon <linux.amoon@gmail.com>
+> ---
+> New patch:
+>    Link: https://lore.kernel.org/all/20261110061429.2036-2-linux.amoon@gmail.com/
+> ---
+>  arch/riscv/kernel/sbi.c | 43 +++++++++++++++++++++++++++++++----------
+>  1 file changed, 33 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/riscv/kernel/sbi.c b/arch/riscv/kernel/sbi.c
+> index af1ccea222f1..ab6e5bf25411 100644
+> --- a/arch/riscv/kernel/sbi.c
+> +++ b/arch/riscv/kernel/sbi.c
+> @@ -512,23 +512,50 @@ static void sbi_srst_reset(unsigned long type, unsigned long reason)
+>  		__func__, type, reason);
+>  }
+>  
+> -static int sbi_srst_reboot(struct notifier_block *this,
+> -			   unsigned long mode, void *cmd)
+> +static int sbi_srst_reboot(struct sys_off_data *data)
+>  {
+> -	sbi_srst_reset((mode == REBOOT_WARM || mode == REBOOT_SOFT) ?
+> +	sbi_srst_reset((reboot_mode == REBOOT_WARM ||
+> +			reboot_mode == REBOOT_SOFT) ?
+>  		       SBI_SRST_RESET_TYPE_WARM_REBOOT :
+>  		       SBI_SRST_RESET_TYPE_COLD_REBOOT,
+>  		       SBI_SRST_RESET_REASON_NONE);
+> +
+>  	return NOTIFY_DONE;
+>  }
+>  
+> -static struct notifier_block sbi_srst_reboot_nb;
+> -
+> -static void sbi_srst_power_off(void)
+> +static int sbi_srst_power_off(struct sys_off_data *data)
+>  {
+>  	sbi_srst_reset(SBI_SRST_RESET_TYPE_SHUTDOWN,
+>  		       SBI_SRST_RESET_REASON_NONE);
+> +
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static int __init sbi_srst_sys_off_init(void)
+> +{
+> +	struct sys_off_handler *handler;
+> +
+> +	if (sbi_spec_version < sbi_mk_version(0, 3) ||
+> +	    !sbi_probe_extension(SBI_EXT_SRST))
+> +		return 0;
+> +
+> +	handler = register_sys_off_handler(SYS_OFF_MODE_RESTART,
+> +					   SYS_OFF_PRIO_FIRMWARE,
+> +					   sbi_srst_reboot, NULL);
+> +	if (IS_ERR(handler))
+> +		pr_warn("Failed to register SBI SRST restart handler: %ld\n",
+> +			PTR_ERR(handler));
+> +
+> +	handler = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
+> +					   SYS_OFF_PRIO_FIRMWARE,
+> +					   sbi_srst_power_off, NULL);
+> +	if (IS_ERR(handler))
+> +		pr_warn("Failed to register SBI SRST poweroff handler: %ld\n",
+> +			PTR_ERR(handler));
+> +
+> +	return 0;
+>  }
+> +device_initcall(sbi_srst_sys_off_init);
+>  
+>  /**
+>   * sbi_probe_extension() - Check if an SBI extension ID is supported or not.
+> @@ -677,11 +704,7 @@ void __init sbi_init(void)
+>  		if (sbi_spec_version >= sbi_mk_version(0, 3) &&
+>  		    sbi_probe_extension(SBI_EXT_SRST)) {
+>  			pr_info("SBI SRST extension detected\n");
+> -			register_platform_power_off(sbi_srst_power_off);
+>  			srst_power_off = true;
+> -			sbi_srst_reboot_nb.notifier_call = sbi_srst_reboot;
+> -			sbi_srst_reboot_nb.priority = 192;
+> -			register_restart_handler(&sbi_srst_reboot_nb);
+>  		}
+>  		if (sbi_spec_version >= sbi_mk_version(2, 0) &&
+>  		    sbi_probe_extension(SBI_EXT_DBCN) > 0) {
 
-I suggest rebasing on top of my set, so the (2).
+Reviewed-by: Aurelien Jarno <aurelien@aurel32.net>
+Tested-by: Aurelien Jarno <aurelien@aurel32.net>
 
-Best regards,
-Krzysztof
+-- 
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien@aurel32.net                     http://aurel32.net
