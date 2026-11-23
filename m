@@ -1,124 +1,157 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795450889;
-	b=493kaApeo08x5yQ1DMjtrxxOB/GmWfUM4TDfl/tMIo4N+36jiMPZaZRFlUKtb05R+xTi
-	 8ZixXI/InEtLzh/d2IKQFcz7aNTEUdazrIiVRGbIEr3HjzoiK08iEI51WIQ/FkTctuW2g
-	 kTQ1s8q7U0p1H5J9XNU62rVWhQbgsiYOiDLV1sdVtKbquIZDcyFLsNSiD2Mqkos/dIpxn
-	 ukU7EWpIjsK/JMxvaxUcOid8SiFuAGBbSdJbsYWnXXMkcWoS/7U6jbS34sqGULU7xhkPT
-	 6iX0IuNUzOttUmxOXuSZe91xyBlqHEIBLnSx/j6ypW5+n+0OfJqY0GKKgmXAYg3Qgew==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795450889;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:Content-Transfer-Encoding:X-Authority-Analysis:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=/NnFP+NSq0yyiHjtLtbCC56s3jL1Oe1DEEGxccAA6Kk=;
-	b=4ZdaE0rlk2tPBpU2tWAlAUuSXO4cgkkhLELJVs98U7QaHrAkOPbJswWWchioXc2sqgTm
-	 G5VstlYSqdsG+Gm7L95ureGq7mpp2toG8MRbS1FqK2AM3yqEX5pKkuQ2/sNPXYBI5OKdO
-	 AbKQ1Xv1xfF0Gx4Nmqm9Jekqph5SkD131+q/uT0fTwoGsxAdK6rdtdkKWkaa4oMSTMVrc
-	 muxqG2ChJYAoP+VMv4MJE+Fkbt7xxx32eUgFdoH9EVqSNQeBqMCAx9e+kcpMW7xxdd6kR
-	 yDh65ow5ZbLInphJK1dU0BGANWOsz3iOZJkPeE0YPOEXvYRaAiraBgox1AEJu22uIkw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=RClXlg3b;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=O2nA1LjA;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=2 smtp.remote-ip=40.107.130.40
+ARC-Seal: i=3; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795451566;
+	b=JlMTrgPWQ6JWe6uGHjjbSlImi6d3CSZP6YAcTT5MrJlQPH8U070mrS3HACl9zAOXIy4B
+	 EXNClekrBhpuwedoxy4ExS4GIE7h5obcw7bykF2XPiGspPerJuDqFkgFWNTo0BXt2SOAP
+	 bL50NvHzC3E28p4JBRqXF/twkB4kDX94lMYBNrqbuPjMzXTo4FihmIM1UcMe3bmvev/sd
+	 n/xA6BK8MbvKXJLTqn4hx/F5HPHrNYx8NbXlNelWmTOB0Lj7mo7FX1TQhM/RFJvrxetjX
+	 VXRhMBPLs/LFWc9WKTa6OoxYh99xaCJTPBxOrfWxtyW3D6zPH1Vm/k/2v56X6IZF3dQ==
+ARC-Message-Signature: i=3; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795451566;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:
+	 DKIM-Signature:Authentication-Results-Original:Received:Received:
+	 Message-ID:Date:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-ClientProxiedBy:MIME-Version:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:x-checkrecipientrouted:
+	 NoDisclaimer:X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam-Untrusted:
+	 X-Microsoft-Antispam-Message-Info-Original:
+	 X-Forefront-Antispam-Report-Untrusted:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:
+	 X-EOPAttributedMessage:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+	 X-MS-PublicTrafficType:X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=ukqc0yo5gEQ2tKvtY9Dgvfl7A+uDQRYxK9GV3vIi8YA=;
+	b=5EBRguRGPqBzlfz0pGdjVeZZHjwztusLrQL82FcYzxDWABo07+4x+nm6pWurcQbTci3I
+	 W6XhOKVVRjx6x11cAXddNdwawygR7L6JFVD0BV3YsgFiopsWuEMO7KSmAp/KE2Kcs9sAK
+	 fdgCHiFAryfWcL6nueRcYu7SmjrOC1ZCWX2I57LY+gnIGlnJ9HPFEBZOUXi4GOaRIVow7
+	 Dif9QFybqJAGXpinnL7yK9GGCY4rJ1F+XMTLkLHny/mkvftJ4AadTg6b5ZviBtapxRXpp
+	 mPgEvetniExFktUInD+1ZLWtvl56GgAaDjRyz+GK3WPZPSJ7qM937I5+ico/CjUpPZA==
+ARC-Authentication-Results: i=3; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=selector1 header.b=YENNAgAN;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=selector1 header.b=YENNAgAN;
+	arc=pass header.oldest-pass=2 smtp.remote-ip=40.107.130.40
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011040.outbound.protection.outlook.com [40.107.130.40])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31368606A31F
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 16:21:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 31368606A31F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74285606A321;
+	Mon, 23 Nov 2026 16:32:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 74285606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=RClXlg3b;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=O2nA1LjA
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ANGH5BH2340472
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 16:21:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	/NnFP+NSq0yyiHjtLtbCC56s3jL1Oe1DEEGxccAA6Kk=; b=RClXlg3bWSFVwFHL
-	QIIvMS4osiWGN6plNZ3HSiPYDwk15ExQT2v5rJk2V0p/KYwCTbk+5E/ggifEOVMx
-	0VCoGsGrILpuAIPnr6oaLHg2vAOcMH5jtYG04gNG5SMrFgRqAIvwKsIaWxfssHQ7
-	06BTXyxsS1ECvl1qEoKkVu4K3OFk0diTyq2HBMVpvObIIc7NSrWyufmYPo3t5ex3
-	2CvvJjAKatokjGr0b6B2EFfiVyVw/ArN1NPzw6FQzL5tTsrs/pY3Ke3MDuSypnxs
-	3VG5iH0OtjCFw33UpDHw7fsnMMohUbqeG00xpa1hwVanubq3qlrPgoSHh4gRtRhp
-	0gdbVg==
-Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4exx2hrp-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 16:21:28 +0000 (GMT)
-Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-cdb91e288d7so2830588a12.3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 08:21:28 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795450888; cv=none;
-        d=google.com; s=arc-20260327;
-        b=GQmHYApC1kRiMzInP5t3OJ0nUSYNlUF/kjfGvmywMNyviLB/r3A2MipAN8jccTSjAE
-         Q3jGYwPKj8IhXmIOklyf0X+pMsx6pjAaLjaKnJAJ3jQz4HiIRgzItyUoUst8G3HQrKWL
-         SbbeblDV/o3aUzUku6U6UMLlHxmWckX7GbTAqVih0zAkTYLd/BHx+YiskfmTZOiClqeo
-         wr0oKwPpNWX6ohSUhHbQ1pZmGfpnLKB0gJzXqGxppywHXJzViNRjm69Wi2MyuKgBARCv
-         LnSPEwW/RgyvRETxaVprlADl70RkJqrh/raCJVUMFth9Ssk8BwRP8/Hr/HekpK+k18Vi
-         qnbw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=/NnFP+NSq0yyiHjtLtbCC56s3jL1Oe1DEEGxccAA6Kk=;
-        fh=3KWIeNhRNAiwg0sBbti+a/EKXNx2URBRZDuWB29qs6k=;
-        b=Y1heuIoal1DQhaYuRyY1+gZDdHoi3y/Vsxw4pFfiE6fQ8ECBdiURL8Cme1+A4+iGzo
-         PC897rmufCTuGHxoHq0AniX5QX+PIELTplzUmoAOQlPhOGpP2jenavd80PPdfdw9T/LK
-         dsPIdZGUBWaPnFvIgM1sUih/sTOmeDMdNzCIdX4m3ZDLBTUqrCGv7/uxq8LRFFGaA52r
-         QqnaEIvBSKe7/wQYwexXvHlhj4NWgb55IuFWwFOMhdq+Gwm7oORO3KCO+ZwXlL1GEWDC
-         BUnue+rFZrklwuPirPzsrxUmhg/i5mn3vaACpTPgbfI/0rhyxfwOrntKbU/RL8LvIj2f
-         d0yw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795450888; x=1796055688; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=/NnFP+NSq0yyiHjtLtbCC56s3jL1Oe1DEEGxccAA6Kk=;
-        b=O2nA1LjA659hTozxTrpLI5fRtA4103sYk2ThZhvXEDjOPKawfOma/kqHkR3zwqU72i
-         lu6vYZrbCaQ7nFCPG4fy3BG1q7DNEbOQKsmmJM/LR8O9T0zOKtbFvjFNtg/8u0dJkQZ9
-         UO0oH6U8DXLKPm8sDKQxSH2s9ls5X8qCU3eGvjyXuvYvk0pRj8DN2QNQ7jJo7niLhmxN
-         4xmHIyAxg3jQUbgM6WaIREC/2JS8J9EhtDraMO+4ITkA0ty4WpcqnCidmtCrDFqJ0RIY
-         fHl5t/OZhCLA+lyANVKz30ye/mA59AJo3J6kmaTD90YbClfyspRBuGV1++YQ9EXlWEgs
-         vgPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795450888; x=1796055688;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=/NnFP+NSq0yyiHjtLtbCC56s3jL1Oe1DEEGxccAA6Kk=;
-        b=Nd6sKZ7ktsVfpRQ6w3ZC90iiToTP6ykP7e2vh/bnY4J52vBVadQ8r6MZhLF4YYlgXh
-         aDph1AeeE/H4nahDaHljZ7bsW4SVADhAQybR5mFl+TXVbuOGEb3I8nhvRUjBDcM+ww9p
-         t0ydHtfExL3bsa5+QaZl3qyXrczRA+cHl0fAaxloKuA822ljNuTc7WVPRd7hkE+Xyqj+
-         OScLYlrH4TEkgQloaImghc8JBVuObxIt0b5Lqcauj+F3CfWtOJlO21uQ3Y4qFog4NZph
-         0L+goqFyaMCkEayeZwNXXCXAw+b4ElmUp06QDhIChdWKMRVAOZD96yldHw6AAM/teRyD
-         Ropw==
-X-Forwarded-Encrypted: i=1; AL+hErFXmxdlvXvasgPjqmXR0+qfmFqvIwwXtBlAD5CKIkaxqZmhb8jsvyLvmVcS7Fi5FHpVjsUdz+RHYw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/O3Eu1e3voFwjYlYvgCwrT+xV+UfuHyXM1ju74iWgaXpwcMZLT
-	Y0HK9zCl/tw20sniNjmCraCaDEQoUQ/TyDG9+IsFZL7ldXVsFQSJoBTLOkDEWXSLxllU6jrOtA8
-	nLba9Ftw2HWa/9UrjBXxbrZPmdZyoBj6a2SpqmxNahBlWy90FtqPCpoys39THfP3Dmbl9UUrjqz
-	yTurhQeoW4PQdqGPLDzRujaLYvLKmrWbi74YEU
-X-Gm-Gg: AZFdTZdCms3AF/YFCOEs1pXv87pqUWTshkuebrMfelpCqipV/GnnpFg6Q2VZ2P3jczU
-	V3mGCiULl2aZgnixgFjiuYZTlR9LG9zx8/DgcO3oXSuuoY6hlai7PX0kGsyOWkpNO1YG6kFePAy
-	mNLG9FuP3IPB7yAp/iz1DWALpgVBCXPzIXhHVvEzkGqEqYJj+k6xveQGJzggOE2XgtXcyOGxAGs
-	ZC0Tx1ykVf6RdmJ
-X-Received: by 2002:a05:6a20:7c20:b0:3de:557e:5ea6 with SMTP id adf61e73a8af0-40283cbd05cmr5442947637.27.1795450887599;
-        Mon, 23 Nov 2026 08:21:27 -0800 (PST)
-X-Received: by 2002:a05:6a20:7c20:b0:3de:557e:5ea6 with SMTP id
- adf61e73a8af0-40283cbd05cmr5442928637.27.1795450887142; Mon, 23 Nov 2026
- 08:21:27 -0800 (PST)
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=selector1 header.b=YENNAgAN;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=selector1 header.b=YENNAgAN
+ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
+ b=Q0t8fIalQk0QruvLWzdngxX6i1X2eiCYmwlzOfJvMqcnJ8b6dUfwwhdCqNjgljBGeVAMISuLJpmyr4YmtIgsjy0TudoqAFBgom03Qo9z++Im78tgf4hAFs3W2s1Ywj18sQ9zNFsP4Z52Rw0A9DQMOGMYfQHaceesR/2SGJJRHcbmdQ9JK6M9jCqSYvvVh1UvPaeTY2xIIy+gczK9/xpam6EdOrcY78eMLEjUz5dk3Btxby6dDwEulZNSb2oglnOE30GOy3nWD7cskrmakLiSgYFS4vWJd6ILO86fFC9wRliLuoBy79cp1RS4uKRyS2lNJv8qgDS+0/Hi/yC2ldQArA==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ukqc0yo5gEQ2tKvtY9Dgvfl7A+uDQRYxK9GV3vIi8YA=;
+ b=ITEpwucdgvY67M/6BdSLWm0+ZD85Q2EDoAoSjb6eIxc8TbtKlGUfSEWcQHwctJ9O3dseQ/kUakxG3vTNhibfys9/S/0te68x8CteZfxdW3PyCSq4e2tBn4lUOXdVWhEtW5NRNU7brjYX7nxFhTmVhmaZX4wO6jqHo6kCg4rmOXuvrm5PnfFyLZ5A4rJ8uSh8bYOx1SCcPkfDVqnNk2lXzVrh0erUKDqZn86HoRrwBJK56FQf+7u9Qu6H+q38MUoHUpV5qcpWZnWc8IzuCIIZflJw+v4QYntgX7X4SwkeD+vAQx5dTPUN+XRVSOvSFV4wWgu9VpGGQi8Qige9xdJBPw==
+ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
+ 4.158.2.129) smtp.rcpttodomain=oss.qualcomm.com smtp.mailfrom=arm.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=arm.com;
+ dkim=pass (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
+ spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
+ dmarc=[1,1,header.from=arm.com])
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ukqc0yo5gEQ2tKvtY9Dgvfl7A+uDQRYxK9GV3vIi8YA=;
+ b=YENNAgANAn0nmpZPP1Dnl0qDS7Vrb9DdCb25HLn27mLcRCOBlMcpFZly4Ml4yPHvujoPESFPECu+7yIYKJjk0MSmFnZ9xZdfHk/rC726dIcPoLIPbrM0IOi4K5ZtjmbzwYzPjginqE4kCipYeWhp8FbH7WJukAFINXhpAOF2i+c=
+Received: from PR3P189CA0014.EURP189.PROD.OUTLOOK.COM (2603:10a6:102:52::19)
+ by DU0PR08MB7638.eurprd08.prod.outlook.com (2603:10a6:10:31f::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.14; Mon, 23 Nov
+ 2026 16:32:35 +0000
+Received: from ZR1PEPF0000E45E.eurprd04.prod.outlook.com
+ (2603:10a6:102:52:cafe::ae) by PR3P189CA0014.outlook.office365.com
+ (2603:10a6:102:52::19) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.639.14 via Frontend Transport; Mon,
+ 23 Nov 2026 16:32:33 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 4.158.2.129) smtp.mailfrom=arm.com; dkim=pass (signature was verified)
+ header.d=arm.com;dmarc=pass action=none header.from=arm.com;
+Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
+ 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
+ client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
+Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
+ ZR1PEPF0000E45E.mail.protection.outlook.com (10.167.241.54) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.639.5
+ via Frontend Transport; Mon, 23 Nov 2026 16:32:32 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=jk8SDaQeOsReVJYZM6tI3Z6aKkhnJ9u9zOQx08ozZUQYSsHO7SzWJOHx5+nUKB6ezbjfsM62DXGE+zynvhqjZ/xdBeG8a18vvfSyP7ODB4OjteOJrPhyGEHtYiCZ72m3FzbAFf8JD7Sh/iuCALF70G0qqGpxDomxlMhu3oFk1yGMUgz1aqTVxYZD4c9OnWhLH0sUd54e22+rLU/0w491wskO0ylSHXWYobcUTCElWP7aO0r+O3LOZuzJPX7/GSns7+ynl3tT89Ki9xl2I4ogCh1dH0LY/OJfhKcfhSVbbfX95+zCvie4jCwvFh4eKp/6s9vG8VizcQDGGuVw0PqjtA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ukqc0yo5gEQ2tKvtY9Dgvfl7A+uDQRYxK9GV3vIi8YA=;
+ b=JsjR3RE+ZYnDQOcpCZ6gxIGM/1UccFpf+aGWgpULEWV4OwGHJHVDycdTqJXfe4vKOUN02R/9J8A1ay0dgo/8Piq0+xhEhiyILahd3zQVutcxMNVoFSLrpeaWsaETqDXbuLc0LLmW3kZaihfKYvY1tQUZmjRlFdNmNcpqh9M7EGhtRZMWpjjVGWc2KcFnNR5bgMxQXSEj55fhl7YNnJFnYq5pLnDTm7c0nFlPhOVHpDIX8vQ4ZVvfalvvvWW5T+d63vxVjQPtpmvnQL8lJvTrbgjNSxzZBvLfKOlBoFtyAMlqxbaDrIXe0bQreQA8dANAEOmbdmUGBF8xBggCh0qNpQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
+ header.d=arm.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ukqc0yo5gEQ2tKvtY9Dgvfl7A+uDQRYxK9GV3vIi8YA=;
+ b=YENNAgANAn0nmpZPP1Dnl0qDS7Vrb9DdCb25HLn27mLcRCOBlMcpFZly4Ml4yPHvujoPESFPECu+7yIYKJjk0MSmFnZ9xZdfHk/rC726dIcPoLIPbrM0IOi4K5ZtjmbzwYzPjginqE4kCipYeWhp8FbH7WJukAFINXhpAOF2i+c=
+Authentication-Results-Original: mx.microsoft.com 1; dkim=none (message not
+ signed) header.d=none;dmarc=none action=none header.from=arm.com;
+Received: from BESPR08MB999898.eurprd08.prod.outlook.com
+ (2603:10a6:b10:109::23) by AM0PR08MB11829.eurprd08.prod.outlook.com
+ (2603:10a6:20b:744::11) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.14; Mon, 23 Nov
+ 2026 16:31:59 +0000
+Received: from BESPR08MB999898.eurprd08.prod.outlook.com
+ ([fe80::d62a:5300:bc89:9f62]) by BESPR08MB999898.eurprd08.prod.outlook.com
+ ([fe80::d62a:5300:bc89:9f62%6]) with mapi id 15.21.0639.012; Mon, 23 Nov 2026
+ 16:31:58 +0000
+Message-ID: <e78bdcde-9a06-47b9-afd7-e03ee10b395a@arm.com>
+Date: Mon, 23 Nov 2026 17:31:56 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to non-boost
+ freq on boost disable
+To: Ananthu C V <ananthu.cv@oss.qualcomm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Sudeep Holla <sudeep.holla@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+ Jie Zhan <zhanjie9@hisilicon.com>, linux-kernel@vger.kernel.org,
+ driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Oleg Keri <okerixx@gmail.com>
+References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
+ <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
+ <auhMD2-5FD4BqImG@vireshk-B250M-D3H>
+ <avRiWsxCEAuBouBZ@hu-anancv-blr.qualcomm.com>
+ <avwtsmp7Mqacbbtl@vireshk-B250M-D3H>
+ <av2aFWw3kh11U68A@hu-anancv-blr.qualcomm.com>
+ <av5_zDI4bg28H_6e@vireshk-B250M-D3H>
+ <6d6a84bf-29bd-47c7-9243-ab0b9e2d7f32@arm.com>
+ <awQT59OrWPyMzxtc@hu-anancv-blr.qualcomm.com>
+Content-Language: en-US
+From: Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <awQT59OrWPyMzxtc@hu-anancv-blr.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: LO4P123CA0171.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:18a::14) To BESPR08MB999898.eurprd08.prod.outlook.com
+ (2603:10a6:b10:109::23)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -128,118 +161,212 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1794615323.git.gahing@gahingwoo.com>
-In-Reply-To: <cover.1794615323.git.gahing@gahingwoo.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Mon, 23 Nov 2026 17:21:13 +0100
-X-Gm-Features: Aa3M54rrQb2REYtBcbw06BpA4JyTdY7S7pcOgeKDB2ZGguRFDoBBypEfHT-AJbA
-Message-ID: <CAPx+jO_F5T8zW3D9CNjH0W5pLLM9srGovUmqvVeWL2Z8dDDo+Q@mail.gmail.com>
-Subject: Re: [PATCH v17 0/3] pmdomain: rockchip: RK3576 NPU domain supply and
- settle delay
-To: Jiaxing Hu <gahing@gahingwoo.com>
-Cc: ulfh@kernel.org, heiko@sntech.de, finley.xiao@rock-chips.com,
-        shawn.lin@rock-chips.com, sebastian.reichel@collabora.com,
-        vlwwwwww@gmail.com, leonard@lausen.nl, abel.vesa@oss.qualcomm.com,
-        tomeu@tomeuvizoso.net, linux-pm@vger.kernel.org,
-        linux-rockchip@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=FKKOVOos c=1 sm=1 tr=0 ts=6b046808 cx=c_pps
- a=rz3CxIlbcmazkYymdCej/Q==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_K5XuSEh1TEqbUxoQ0s3:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=9GNsruGHAAAA:8
- a=NEAV23lmAAAA:8 a=HctJ1lBftkvV2UQOCVsA:9 a=QEXdDO2ut3YA:10
- a=bFCP_H2QrGi7Okbo017w:22 a=gf-oSkQAjqHFJRp-GQfY:22
-X-Proofpoint-ORIG-GUID: c7_Pco_9AmHRDyyHreblFo3R2PaGY_JF
-X-Proofpoint-GUID: c7_Pco_9AmHRDyyHreblFo3R2PaGY_JF
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDA2NSBTYWx0ZWRfX9HZLEzTVwBJo
- 8ciE7uwp3PdFbUKdfdYMfxxYg4gKrLibEyFUtBpxwjIBqngJzWMIQfxJ+f4o3UyyPM53wYc301L
- AA5MXvNeYabr2QCTGo0eiOuBax0Sc0o=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDA2NSBTYWx0ZWRfXzLVbivXPsVZ2
- SCsEgOaYKMCSylJa0MRrBVdCIyQljsl4C3kBWok8LbAi+898rrsn3k/PPgEqQHPBJtSntOxmeN3
- L6ZQQXhuIceSL8tQwH7LkJ6/ZOjW50uLC52CHnaMW+rxVbYRopPNSilzagozACbeFhIXjaG9IO7
- C7iBBpnkZlyRjXgaw1a4yezXQzvCNFD2UQmZqHIKWT069Ulklcwi5AJDyBCzCXMr0G50g9rKypQ
- JRIAZ3qN1lrn1YLVmBqui0FZPnFdBZ93B7ByXum4jq5zqfhnp1HVPWZgWl4C6uxDypL3e1tgUmc
- H/ODpgj0cwkMdk8Oow1uFd56ysFAl+aGa4mIJCbyfpF0YdknZnMLFIQSwRZ+JW9F0/qmOQEbN6k
- nwrtq9UGX1kLZYqZqVhiVOnsgTqP5nv/i+OSfBdqbxyEKL0Jf6R++C3PVMhlpDUCo09ygUqfNF1
- RaMeN3+tveuq+Pa+yfw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-23_04,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 bulkscore=0 priorityscore=1501 malwarescore=0
- lowpriorityscore=0 impostorscore=0 phishscore=0 suspectscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230065
-
-On Sat, Nov 14, 2026 at 4:05=E2=80=AFAM Jiaxing Hu <gahing@gahingwoo.com> w=
-rote:
->
-> This series fixes how the Rockchip power-domain driver initializes
-> domains that need a regulator, adds proper regulator handling for the
-> RK3576 NPU power domain, and adds a settle wait after power-on for some
-> RK3576 power domains.
->
-> These are the pmdomain patches of the RK3576 NPU series, split out and
-> rebased on Ulf's next, as Ulf asked after dropping v15 7, 9 and 10:
-> https://lore.kernel.org/all/CAPx+jO-KKvgRS0br-3QGh6Jt4efWJ+A6YoRZKFV_bcfB=
-+8sm6w@mail.gmail.com/
-
-Patch 1 applied for fixes and patch2 and patch3 for next, thanks!
-
-Kind regards
-Uffe
+X-MS-TrafficTypeDiagnostic:
+	BESPR08MB999898:EE_|AM0PR08MB11829:EE_|ZR1PEPF0000E45E:EE_|DU0PR08MB7638:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3236911b-70ef-4d33-5c22-08df497f5fca
+x-checkrecipientrouted: true
+NoDisclaimer: true
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted:
+ BCL:0;ARA:13230040|366016|7416014|376014|1800799024|23010399003|18002099003|22082099003|6133799003|56012099006|11063799006|5023799004|261009223327099003|261009223027099003|4143699003|261028144727099003|261026140227099003|261102123227099003|261022105027099003|261022075727099003|261021121427099003|261022115727099003|261026121527099003|261021135927099003|261009221727099003|261009221227099003|261009220027099003|10067099003;
+X-Microsoft-Antispam-Message-Info-Original:
+ lSwzFYjC6/8G3bi3zjvMTw7ujasEMazk8XGKJF8PwjdR4CI81g7OxDfnhB1VR6nrixW9FTXVuxVWs6CDDyATrul+3rPVH8WMJ8IIzNOywVWZJIoXTN8vAj+K3Q9AZRF8x3YpgXuVTh4jaxoSwoSBdLDJKAwfCZrSPKn5vm1mkw80hxI6i3FzX4o0GhQGrUE+quusYkKTKRO0btJnz97WajcCIcDOIVbHhnVBXnVYPCGNqUZUy7rBnK7mifmP98quDTH0q08ApTFqTtXhSihx/L9J6Wh3TswpTxji/tufwKTtzXyX1mga+qX6zKYW6+t06MUw1nx1PSF8Fn6rA/TsrO1bU+Vbe/GRsCtKpVcPKIjnGODIVhvA/dldUFCF+F+nv2mnhBllDI7KwW5E+az+zfc/yVuHDQKcsm7gAgCxvqxndcka6w0Px+LCKQQalHdfCVQr1qtV9zFDAF4lV4s4tp8+YAkmhj+Pv70qLANpseqgQ5cXM7cyw/W2+kIB/OQoc94ei/5I3XUquv5q4oXJ9+J6qoru7db7jtTxLBfayOzm7r9l4okDEVswYoid0aeo7cpXah2UVMpB87hPa6m7iKD+xWy9AlYiRvZcll8kxfEkrlSMDsT2geyLwsoXlxkY
+X-Forefront-Antispam-Report-Untrusted:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BESPR08MB999898.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(23010399003)(18002099003)(22082099003)(6133799003)(56012099006)(11063799006)(5023799004)(261009223327099003)(261009223027099003)(4143699003)(261028144727099003)(261026140227099003)(261102123227099003)(261022105027099003)(261022075727099003)(261021121427099003)(261022115727099003)(261026121527099003)(261021135927099003)(261009221727099003)(261009221227099003)(261009220027099003)(10067099003);DIR:OUT;SFP:1101;
+X-Exchange-RoutingPolicyChecked:
+ M73FCe0Rg9FWNgkDcqR04YSsvqVmn/UFL7TVP/1a+Bzqx9apR9+loNOMoHeloL7rrWZfD+Lf+hMeXMuX5Txs2EsNffKPr/jAyqXJT+PgH1SdL1Xa8g71OiAVzvM1XoFol2ACqPc/+9KCV1vncoj1r30vZatfFBP2mpQFsWIChyZexoHYqmqoVbhPrtBkkezKy6UzEk/JMahhJl6Eksy2FheghQie7pb5oJRHt/mrDUuIEGSJbOrUZlOKMVuKr00ucUDRIL4yc5DQ7P91W2z4Xcu0/dKglhSS+cjYtnY2tjv53YZUXfzY+gNMRdTyRWPvzDSafDj1y2kxnZ5X6SuXkw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR08MB11829
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+ ZR1PEPF0000E45E.eurprd04.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	d42df55f-d48b-4d57-9314-08df497f4b7c
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|14060799003|7416014|35042699022|1800799024|376014|36860700016|23010399003|82310400026|10067099003|261009220027099003|4143699003|11063799006|5023799004|56012099006|261021121427099003|261021135927099003|261022075727099003|261009223327099003|261009221727099003|261009221227099003|261009223027099003|261022105027099003|261022115727099003|261102123227099003|261026121527099003|261026140227099003|261028144727099003|18002099003|22082099003|6133799003|13003099007;
+X-Microsoft-Antispam-Message-Info:
+	XDUvKBpYHgQ1GyI4oSGHwiwcjG7Oe83kNcDgvvtKPMCOV9xiAeAKvcUvMM4DsfkzlZBcrId2dluKtahqvkwj8zde8siOPcFd+vQ/jUVV69bo5ZTSTCZXbx5dJ1kHgCrDbLQVaGZ8Fgo0IAHwcHrjY5OKTtaWQzJaAH0SfLefZsahjl5p/ys01KOQrsLeJ6V7eAqzKtULYz76vaO6NlufgUrBq3FJ6mToo1RzeBEdI9In7prGI6s9HeBfJZ93YfKXb/OGan6c2r7VUyYqQxc0NRd8PggXyHal4R9hIxtfFs4FWceSxE5u429f94ZOqZuw61YNdQwDwMAo9pI2TWTEQSBlyHHrdHoGNCwPYWR38AWZ+LVFj0+oHdANJBydDpFxXvEjQZZEFDh8qI/F7BBB/Hp0Sh6ag9DAeisk1g6LE4+NIRy83yrd3cA5hxJB6lnxqxVNMTBw5v59CI2pRDNYTFadpK7t/aevIDYXzVZvkQ4TzUXcG2ywtKs7PRwi82m2MoHW9magb9155c5IBD5nGuDv3IVgTaj8a+w2t0Sw2OyGDo83j4IIZrw8rSUFmIQQgPXtFRlREHpsxYitAv9BrgYZaQzl6qXT2qmIKjIwF+iaSEP6EdiG2k0sMbt0gasq6BwhN9c2zLQ2TXfjjBowRTsKBQ67/8HE4qjQfYcgQ1Y=
+X-Forefront-Antispam-Report:
+	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(14060799003)(7416014)(35042699022)(1800799024)(376014)(36860700016)(23010399003)(82310400026)(10067099003)(261009220027099003)(4143699003)(11063799006)(5023799004)(56012099006)(261021121427099003)(261021135927099003)(261022075727099003)(261009223327099003)(261009221727099003)(261009221227099003)(261009223027099003)(261022105027099003)(261022115727099003)(261102123227099003)(261026121527099003)(261026140227099003)(261028144727099003)(18002099003)(22082099003)(6133799003)(13003099007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	mvtW3YCV6TkILZFrfUThGJ0FH92e/4UT18gH02DQIr3g1Pfv/feAwGwPeTwKlAX+Md2NLUtVjbz/QDNv0vnfPloIxrod24L4X2zsXR/9BSIx39e0XaJIsx39N7rwyZBa8emmw5GGVgPnXpKRyzNM1edhnX8uPZ9yMtDsTbE82I0pacvhR5GOUj1SjEwjx31xtB4YstWE6iCo9epMKgQBhxuUC0QOp36c1ruEsNnp2zkXmQGw0FAZ3DRsuD1ZQTMW0XCVIB3qxvY1klSdPRD50gAmI6kXt+GLtVMq4dLP0YIedlwteBYQeAwBDxaEBSIx08QJeSxS3XoGyFXpF80xyMNJA+UGaDkp05GtldDM5pVCUowunZC0pbpKcf+GZah0JvvxGkPJ3JfYWAAVr3AyXUwMj0VR9tSxX4H7vKQjj19VfW1chjlKwbPqUu1k4MOC
+X-OriginatorOrg: arm.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Nov 2026 16:32:32.4897
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3236911b-70ef-4d33-5c22-08df497f5fca
+X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	ZR1PEPF0000E45E.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR08MB7638
 
 
+On 11/23/26 11:22, Ananthu C V wrote:
+> Hi Pierre,
 >
-> The accel/rocket and DT patches follow as their own v17:
-> https://lore.kernel.org/all/cover.1794615324.git.gahing@gahingwoo.com/
+> On Fri, Nov 20, 2026 at 01:08:01PM +0100, Pierre Gondois wrote:
+>> Hello Viresh, Ananthu:
+> [snip]
 >
-> Based on: Ulf's next (844a13010b0b)
+>> Sorry for the wall of text:
+>>
+>> cpuinfo.max_freq is used for various purposes. This patchset corrects
+>> some bugs, but ideally the usage of cpuinfo.max_freq should be clearer.
+>> cpuinfo.max_freq is used as:
+>>
+>> The max hardware freq.:
+>> - cpufreq_schedutil.c::get_capacity_ref_freq()
+>> - arch_topology.c::init_cpu_capacity_callback()
+>> - cpufreq.c::cpufreq_get_hw_max_freq()
+>> - intel_llc::cpu_max_MHz()
+>> - windfarm_cpufreq_clamp.c()::wf_cpufreq_clamp_init
+>>
+>> The max boost/non-boost freq. (i.e. without the user-set constraint):
+>> - processor_thermal.c::cpufreq_update_thermal_limit()
+>> - cpufreq_ondemand.c::od_update()
+>> - cpufreq.c::policy_set_boost()
+>> - cpufreq.c::cpufreq_update_pressure()
+>>
+>> cpuinfo.max_freq value depends on the presence/absence of boost. It is
+>> thus hard to know what the field actually contains, and:
+>> - PATCH 1 adds cpufreq_frequency_table_max() to get the actual boosted
+>>    max freq.
+>> - PATCH 2 allows to retrieve the actual non-boosted max freq.
+>> are trying to rationalize that.
+> Thanks, cpuinfo.max_freq not actually being very clear about what value it
+> contains is precisely one of the reasons why this approach was taken.
 >
-> Changes in v17:
+>> ------------
+>> The following frequencies:
+>> - max hardware (boosted) freq.
+>> - max non-boosted freq. (i.e. nominal freq.)
+>> are CPU/platform specific values that can be computed at init() and
+>> which will not change merely because boost is enabled or disabled
+>>
+>> The existing. set_boost() callback implementations are mostly
+>> retrieving these values to update cpuinfo.max_freq, but this could be
+>> done from the main framework if we stored these values (in cpuinfo for
+>> instance). Similar remark for cpufreq_frequency_table_cpuinfo().
+>>
+>> It seems there is a lot of code to re-compute/update these values even
+>> though they should not change. Computing them and storing them once
+>> should be possible I think.
+> Right, that makes more sense. My original idea was to not go trough separate
+> iterations when freq_table.c already does that, but it makes sense to just
+> keep it entirely seperate and avoid further calculations of the same. As you
+> said, the values should be constant anyway, and once calculated they should
+> stay the same.
 >
-> - Reorganized the series as Ulf asked, and split the fix for regulator
->   domain initialization from the RK3576 NPU regulator handling.
-> - Following Finley Xiao's (Rockchip) review of v16, the RK3576 delay is
->   now 15 us on NPUTOP and VOP only.
-> - Fixed the subdomains of a regulator domain being left in the wrong
->   state at probe, reported by Vladimir Bely (1/3).
-> - The RK3576 NPU power domain uses DOMAIN_RK3576_R, the same macro
->   Leonard Lausen's GPU patch added (2/3).
+>> ------------
+>> A. acpi-cpufreq driver
+>> 3c55e94c0ade "cpufreq: ACPI: Extend frequency tables to cover boost
+>> frequencies" added a synthetic entry in the freq. table to represent
+>> the max boosted freq. as read from CPPC. Entries in the freq. table are
+>> otherwise fetched from _PSS entries.
+>> 538b0188da46 "cpufreq: ACPI: Set cpuinfo.max_freq directly if max boost"
+>> is known removed the synthetic freq. which was added in the freq. table
+>> as it reported the synthetic freq. to userspace which was apparently
+>> confusing.
+>>
+>> PATCH 2 "cpufreq: fix policy max not returning to non-boost freq on
+>> boost disable" modifies cpufreq_frequency_table_cpuinfo() to handle
+>> this case, but maybe it would be easier to tag/flag the case where
+>> the max boosted freq. is not in the freq. table and handle this case
+>> separately. Doing the following for all drivers makes things
+>> complicated IMO.
+>> ```
+>> /*
+>>   * If the driver has set its own cpuinfo.max_freq above max_freq, leave
+>>   * it as is.
+>>   */
+>> if (policy->cpuinfo.max_freq < max_freq)
+>>    policy->cpuinfo.max_freq = max_freq;
+> I take it that (correct me if I am wrong) this generally means we don't
+> want to go implementing solutions for this in every driver and instead
+> should let the core itself handle this (which is what the current series
+> is trying to do)? A maintainer call on which route to go will definitely
+> help in focusing the attention there. ACK on simplifying the interaction
+> with cpufreq_frequency_table_cpuinfo().
+
+
+IMO yes, the condition above which seems to be only here for the
+acpi-cpufreq driver could be handled in the generic code in
+policy_set_boost(). The max available freq. could then be obtained
+with:
+unsigned long get_max_freq(struct cpufreq_policy *policy)
+{
+   return policy->boost_enabled ?
+            policy->cpuinfo.max_boost_freq :
+            policy->cpuinfo.max_base_freq;
+}
+instead of storing different values in policy->cpuinfo.max_freq,
+which seems to be made to describe a CPU capabilities.
+
+This would also allow to remove the responsibility to set
+cpuinfo.max_freq in the .set_boost() callbacks and factorize it.
+
+>> B. The new CPPC spec [1]
+>> The nominal freq. will be writeable in the future, so some additional
+>> synchronization will be required.
+>>
+>> ------------
+>> This patchset adds a cpuinfomax_base_freq field. Maybe we should also
+>> add a cpuinfo.max_boost_freq field to make it clearer when someone
+>> wants to get the max hardware freq. If we find a way to know when
+>> cpuinfo.max_boost_freq is a synthetic value, this would allow to
+>> solve [A].
+> The idea was exactly this when I went this route of calculating these
+> values separately. The previous revision was doing precisely this,
+> by adding a cpuinfo.max_table_freq field (fun fact, the initial name I
+> has was max_boost_freq itself, which I later changed to max_table_freq
+> because not everything is always boost capable :p). But the general
+> consensus was that, including the reviews from Rafael, we don't need a
+> new field added to track this value. And even for the max_base_freq
+> field the current revision is using, the general opinion seems to be
+> that we don't necessarily need such a field. Now, I am personally of the
+> opinion that adding these two fields (and calculating and storing them
+> once as you already mentioned) will make the calculations infinitely
+> simpler. What route should we really go?
+
+
+I also agree, but also Rafael pointed out that this could work without
+new fields [1]. Maybe there will be new elements in this thread
+and the direction will change (or not).
+
+[1] 
+https://lore.kernel.org/all/CAJZ5v0i_QYa-LcrK1U1VZjZZiJ3d-9hPbMdBbaGoqMds0BAU6w@mail.gmail.com/
+
 >
-> Testing:
+>> The new CPPC nominal freq. should always be lower than the initial
+>> ospm_nominal_freq field [1]. So an additional (struct freq_qos_request)
+>> for the nominal (i.e. max_base_freq) frequency might be nice to have
+>> aswell.
+> That sounds like a good enhancement, but I'd prefer to work on that later
+> once the current issues are solved, these are bugs causing some decent
+> damage afterall. But LMK if having that also is quite important at this
+> point.
 >
-> Tested on a Radxa ROCK 4D, with these patches and the rest of v17
-> backported to Armbian's 7.3 kernel:
+>> ------------
+>> Short summary:
+>> The patchset should fix the bugs, but IMO it is still not really clear
+>> which max freq. is stored cpuinfo.max_freq.
+>> I think we would benefit from also:
+>> - adding a cpuinfo.max_boost_freq
+>> - adding a (struct freq_qos_request) for the nominal freq.
+>> - use cpuinfo.max_[base|boost]_freq wherever needed, to simplify
+>>    the .set_boost() callbacks for instance.
+>>
+>> but this might be out of scope if the goal is just to fix the bugs.
+> Thanks a lot for being detailed, Pierre. The direction I have taken for
+> this series is exactly this, sans the additional qos request for the max
+> base freq. As you have pointed out, the current goal is to get at least
+> the bugs fixed. So having the maintainers make a call on what is the
+> direction we want to take in general will be a lot of help. What do you
+> all think, Viresh, Rafael, and Pierre?
 >
-> - With the NPU disabled in the DT, NPUTOP, NPU0 and NPU1 are switched
->   off and idled at probe on every boot (16 boots). Without 1/3, all 14
->   boots left them on, and one of them hung.
-> - With the NPU enabled, 30 NPU power-ups after a warm reboot and 30
->   after a cold power-on, with identical output and no SError.
->
-> Logs: https://github.com/gahingwoo/linux-rk3576-npu/tree/main/board-logs
->
-> Tag changes:
->
-> - 3/3 changes the delay values of the v16 patch and is organized
->   differently, so I've dropped Abel's and Heiko's Reviewed-by. Abel,
->   Heiko, could you take another look?
->
-> Jiaxing Hu (3):
->   pmdomain: rockchip: switch off the subdomains of a regulator domain at
->     probe
->   pmdomain: rockchip: manage the RK3576 NPU domain supply
->   pmdomain: rockchip: settle RK3576 NPUTOP and VOP after power-on
->
->  drivers/pmdomain/rockchip/pm-domains.c | 115 ++++++++++++++++++++++++---=
-------
->  1 file changed, 85 insertions(+), 30 deletions(-)
->
->
-> base-commit: 844a13010b0b93f8561ef2c088f843647d5e552d
-> --
-> 2.43.0
->
+> Best,
+> Ananthu
