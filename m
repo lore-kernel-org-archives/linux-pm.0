@@ -1,68 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=52.59.177.22
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.160.52
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795398306;
-	b=M99GYoU7ozK8SadYML9EyvUiKt5qZGuk0aFaU+xJ9I5bnfR9XEsH/BT3KxonjWWlLzIy
-	 y0FuhkbBk5SeJzJv/UhUMBvRc1L3gNgvyUK0uFjlB8y+cVPn3ELGytux+56B6IN4N+8g1
-	 5W4iPpIFBw7CDw6cvM+4A4PmRuHxgrzA8XJ7a/pCOyiXstOZQnmMSqMSimLgHEguF5aYz
-	 UPVUTldRANnqTh/P06P3nUeUjeFBy0yeHh7HknBBO7JZWUZgwL0daqLvcRpubhn6AmzL/
-	 2NzOpDFVyOiJQ8HVsTI3cuftOvmJAwbVV4JQW4yURlt1rui00qsYWaNzqbdj5JD06ow==
+	t=1795398640;
+	b=3Ovi5ivdqd0BZfavRh6RmiUQGCHzhVyrSL6iBxNph87G+3zDFZbwmxxGFzNfRcUH/E0o
+	 /j4y0dmZADSEO5uGCFky9nQPm1aGHQapwaEx395e5wvL5XoOKhHY2skwE01nUIng/nB03
+	 8JTRPHFkwTUGs96an7pGCQGA8vQprdf/adG0Xo84JavO9z6eUARBxMnD4dYmrSdZNZK1G
+	 sid1MSH3nvxoa5rToNioLc7cU5KRWFPlw+ovxN2Z9Jhzhta5PeD84JiYgdWwARXG/Ceqd
+	 2lq++Oighjk4YsEen72nSqDZW1nAoqNrbI9977neLO23Pg558tQO3O3+K+7OiX9MGfQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795398306;
-	h=DMARC-Filter:DKIM-Signature:X-QQ-mid:X-QQ-Originating-IP:Received:
-	 X-QQ-SSF:X-QQ-GoodBg:X-BIZMAIL-ID:EX-QQ-RecipientCnt:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-QQ-SENDSIZE:Feedback-ID:X-QQ-XMAILINFO:
-	 X-QQ-XMRINFO:X-QQ-RECHKSPAM;
-	bh=VU4I0UfBx0/SzkSaLn2PbLn8QOm5gaP54n8Sj6YBGow=;
-	b=M+svVBOfNH6qGsG39FpMP4tFG3Ht+7yZyhDpxGLBnIEUSgULndtlz2QuLNAHpvN/esH9
-	 dCIL4iJer1vnsckYslBTY1xpfKRlJc2/bYTDBOSFCgLS6AbzoHFdjy1tWKQ6cMJBPvMp3
-	 u18ftjNWmHOlAyZ2bZe8p/7zaDug2n3BLykhQ3Xxtb+y5qW7NbplQe18bwkhmytwIqhkS
-	 gFxd2hNPZroDkUsOurWFBdxVQFXGyY9fJ0ntRfu/cGabNuKNI1q4Tk5wD0B4k6uYuwPiF
-	 oU/4VJ6VD0c+LE85pxCe2bKZ809TFycTLO/eLLdBY9rUAZLa0lab71Y91/O8IHQ1t/w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795398640;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=veZxcNVuo2b3ptIF4Zf8vJr2Tg8zlMewCoNyj0061vg=;
+	b=brg9x6W9YV5VDRwxywTgCIOshHxnoWPsSUVKQALom31+YF9cdOTahN0b8txuD2T6tes3
+	 c/Zr6WNfv4sBCxzch9nCTC9xPix8WBLAApXQh9RPfv8bwv0PBpajFdqpC38aRFYTuvXtB
+	 LgVMPPK0zBy92d1cWNRAzvOIr7GOdiEX4iTJ6TDjCsRzp9DQJUvNC2JY8V4q5W8KxwXlt
+	 C4JBNsKeu5l0MCyUJ2UlArOl3XufswkeGdTFRGHNiRiEFScRR3r9f1KsIHOFJjdtw8Di4
+	 Tr1u/USiUHBKwy8q3llf8Sr9UZvBR/F2ZjbSEF8i+vZT5CsVujVggWS5BNZaNvMGc2g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=uniontech.com;
-	spf=pass smtp.mailfrom=uniontech.com;
-	dkim=pass header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=nqTGtaNk;
-	arc=none smtp.remote-ip=52.59.177.22
-Received: from smtpbgeu1.qq.com (smtpbgeu1.qq.com [52.59.177.22])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QjWoDyK4;
+	arc=none smtp.remote-ip=209.85.160.52
+Received: from mail-oa1-f52.google.com (mail-oa1-f52.google.com [209.85.160.52])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B6E7606A31A;
-	Mon, 23 Nov 2026 01:44:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9B6E7606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAB31606A31E
+	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 01:50:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BAB31606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=nqTGtaNk
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1795398281;
-	bh=VU4I0UfBx0/SzkSaLn2PbLn8QOm5gaP54n8Sj6YBGow=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=nqTGtaNkXbGbYiN3JPCHF3ndmLB5TOYICIoEoIRByceUPKL6bxx3Kp21N//VP8IFT
-	 c/r1rkpEg0nl3vsS2nvUsQBikMtEtb28fYVrXHti2e7nKG+3SlCvF8gywWKbimuTKV
-	 uXXfT2eyOiUxfMAksV55ydbM1bU4yDN+nZ16Rkwo=
-X-QQ-mid: zesmtpgz3t1795398276t8a79188d
-X-QQ-Originating-IP: RNm+elcpYHUW1IT/nKJuHct58YidW7PzxwWLjuRSKoM=
-Received: from PEC004119 ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 23 Nov 2026 09:44:34 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 8055298123164367588
-EX-QQ-RecipientCnt: 6
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: rafael@kernel.org
-Cc: pavel@kernel.org,
-	lenb@kernel.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QjWoDyK4
+Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-4adf4431ca0so534406fac.2
+        for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2026 17:50:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795398639; x=1796003439; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=veZxcNVuo2b3ptIF4Zf8vJr2Tg8zlMewCoNyj0061vg=;
+        b=QjWoDyK4MYWUM0oJVT+Wu8JPCgWODjsHYWS/9NkHJD5pLycFjxmmqYOKbIPNpL7SDm
+         25NsJoz6Qeeur2xybZT2Ew9puAApyxafkfes5NukfuGdAkrb47Ii9CJMUdfYww386Thc
+         WQTaprlI8IxrnJ1sbiooQyfYAohoTsz1FDDvvEr+za/xsYzfG3/Nny7tTjTK6fPU4se+
+         cexsM2cYBfDQvgEGR5F99CAZy0UlFeUI7IB5XQAu31+f7w0cz9rs4cAGfm8/XltDguv/
+         FBTdMS9t677xWD6VdoTJGkEWnoL2V6JA1WYL0xMNDFQozXvoaSNBCd6xDAy2vCGELD7a
+         YVoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795398639; x=1796003439;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=veZxcNVuo2b3ptIF4Zf8vJr2Tg8zlMewCoNyj0061vg=;
+        b=UHZGWuuyMGOmyPBEBcIKtnWC7/4tX/Poy03bT8RF2TCsRMqdSz3Vmo5elc6ttUeIS1
+         dMyuUxGWQO+lRf6L6OKaKjT7qTBNcZ8xpIukDRWPIg9DU6BuTzTnO52sP2fZoystZ+yD
+         0hmr9A+KWy1/wfiG99OeTqS71t1L+OQ+3QUrCLKu4Yvch/Ag3FaDmDMmtHbaQJp8lF79
+         8LpELZvOQkVRXSF54Qe6QS6olBci1Wl/QRCUSEsHXn5xmg+ILHsiXVNe8RHAmR3ShYZd
+         HUMWjElGanYAS/E+YGXxSVOWj4QH3D+YsgfPYqfRCxn6GTV+dTs/Hzic247FqMHvbIwJ
+         EMfg==
+X-Forwarded-Encrypted: i=1; AL+hErHLimSkf7cp9xbGFMQyF7BML8QRhA9xE5+JsthilzvdBY0le27ui3O8Ot5Dq9b6NPbDdCeikvFgKQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9luorfvcEIds/MflhJBm6gdaYwfm/oRIwtargM6qsXkzCwt3Vq
+	pTPkOqkgODNIFUkbZPSePMkKfpw7G5QrTp/X4ffqCpjL7E6YD7xTdzhxy6BUzQnu
+X-Gm-Gg: AZFdTZcnWNJCDfGcTfE3xApCFvWEhxFcu8ezp2WHFTodBnEbcvYPg2rGi74EmKBD7CG
+	OX9NURks+/gMrcHNI9IHEtyI7OgzxvxmROqvnj2/XwwEljvO/PhNSH+RV3ZePj1wpJqWp2wNR/Q
+	/5M5nFaoE44rlj6PPWZPnxkpDkX3+qqpwcNAxXz+h7n5tiAXx+ev5bRuDSAz/ixqNHpVO8gTP//
+	MDjrChGgzx5+bTf5KluFWW74JmalJz9aBvnp0bA2Fj+YcD/HxSkiPRHjaZszd++DZ9Ft9MtOfdq
+	SEsmZIVPVkyX4YTIjkKreiEAP48M8KmcoIy8qLeItfmQ32eZhWY2WbfOfmzwiIb/yRJUg/50KUs
+	1HVR/EuBIr6OOd6PTQkbVSggXzTndb7Bpky9qKczC2NSSRYaefAVFck3R9gEzbWJXenRaRKRRH3
+	EUe3DzyahDktBVaa3JtimfS4wX2qTMqahsHXX55wH7USSFYy1uISxOoczPzkhu5aMDFYAAQVlxt
+	mW2V3cAc3yPVD5Do+H62TAJt8zxG4HFWm4FUtFF0FXScYNG1nBggGdjJSrSj7XgYvhO2ikzsP6M
+	sWPuWxJzAgtrcy5weRtaek719lR7nw==
+X-Received: by 2002:a05:6870:810e:b0:4a7:8aff:348b with SMTP id 586e51a60fabf-4bc81ca0d2bmr9676309fac.16.1795398638564;
+        Sun, 22 Nov 2026 17:50:38 -0800 (PST)
+Received: from neuromancer ([75.28.21.198])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4bc5f7ae7dcsm9209484fac.8.2026.11.22.17.50.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Nov 2026 17:50:38 -0800 (PST)
+From: Chris Morgan <macroalpha82@gmail.com>
+To: linux-rockchip@lists.infradead.org
+Cc: devicetree@vger.kernel.org,
+	shawn.lin@rock-chips.com,
 	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Haowen Tu <tuhaowen@uniontech.com>
-Subject: [PATCH v2] PM: hibernate: Restore PM notifiers on snapshot open failure
-Date: Mon, 23 Nov 2026 09:44:31 +0800
-Message-ID: <7E32B0BA837D5BD3+20261123014431.1413620-1-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <CAJZ5v0j79Z35=G0j53UYxzY9T_vgpzhrMAWdejTfUZ=tYXLM8g@mail.gmail.com>
-References: <CAJZ5v0j79Z35=G0j53UYxzY9T_vgpzhrMAWdejTfUZ=tYXLM8g@mail.gmail.com>
+	heiko@sntech.de,
+	conor+dt@kernel.org,
+	krzk+dt@kernel.org,
+	robh@kernel.org,
+	sre@kernel.org,
+	t.schramm@manjaro.org,
+	xsf@rock-chips.com,
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: [PATCH V3 0/3] Add Cellwise CW2217
+Date: Sun, 22 Nov 2026 19:50:32 -0600
+Message-ID: <20261123015035.369192-1-macroalpha82@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -73,68 +104,49 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpgz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: NN51gi9eLBwa2oII7lNDPA8FmmwZ2HQlo5w6NGwXSgKtoZv0SUV+zTlE
-	Yf+WZLM12mkmKtp/Wuz7yrU5fG75VIZjWT4iI1y73RcZUG7P4uyGjleMfzlLRAMJ7YHhPOV
-	iOmNrjUb/vPXje+N6zjGHn8WVlzv6xfqz2W/k9PJXngPycSLUAPPoNYPJR8xEyYcxZlJiUh
-	Wg9Y1sryY/R/Kg4ApItgVuR8CTVGNIhrUZo1wCmr66Cy4xknmng2mkypLESa8ExS2fhH3PD
-	4LLGYF/9h25DPen34SgroTq8/eEIo+HKHYN117aYFEHgGuAngJwqwNFbkCbrW7g+EYF4inF
-	/lSnfWzHebAQPf+eeQn5FSo6phgpd9IgfZDZgCDfcz/1HBXwblvJQsAqM2tPYmwq+b+UKMz
-	0PcJactU7JKWNo3dzEvD2IaFfx3JcEigu3xhudDjXxy2tGKWMS7jvvOUw7Pzo0hbUWQ4C8D
-	6Gy8oDlQD0EaFZNMIqYA14rJaKCx52Sb0OovOzVZUxegusZh9BT7iUWgJIhW/lZp7v+bb9S
-	CGKR8X6bYK+g44vDrm4fy9lTbeaGJZm7VzQCqE0Ov+RfNjOiPaXZa+77t7n56j9945FXIGk
-	kfaSOP6fniQtuNMJOSAYBZNAWvVqODPbny420UKbGZ28lraZayA1IWAijwNMad8DXLabxjq
-	bg1a002U6ryQFV/k+0iaS7AFc6yKwPMMTPQvsnYnh+M1un9upzIQDZw24HMIuXpGOiEfdcq
-	a9aY1BsYFIMmmR04yZ2gBgWU4EfFBxooudzrIRtOvofqR7M6UKPhiKv47OPam+U1dqM5YhG
-	T8T+y7HY3lrrLTVjgkwWfawGeorppPfVoP5otpU/kcYos51nZkbN/R8myZKflMmz1x8Dpbs
-	o12vKRqLHXKpwFZ5bl3B9/VEUXgjBJIqCrSDd2QjcUS4gNpUyGl+gWTNXJQX5kQRK75z/UE
-	ie6J7uew8dKDl50rjf4E9KwRvIcogBANgmi7+KPkv8ui/Cj9thdnJpp94RAVsuC3jEZfttC
-	7P0FDZy/chK5oby9Yurc+YQlxoAKc=
-X-QQ-XMRINFO: NI4Ajvh11aEjEMj13RCX7UuhPEoou2bs1g==
-X-QQ-RECHKSPAM: 0
 
-Opening /dev/snapshot for writing calls the PM_RESTORE_PREPARE
-notifiers before allocating the basic memory bitmaps. If the allocation
-fails, snapshot_open() returns an error without sending PM_POST_RESTORE.
-The release callback is not called after a failed open, so it cannot undo
-the preparation either.
+From: Chris Morgan <macromorgan@hotmail.com>
 
-In particular, the firmware loader enables firmware caching during
-PM_RESTORE_PREPARE and relies on PM_POST_RESTORE to reset the cache state
-and schedule the cached firmware for release. An allocation failure can
-therefore leave firmware caching enabled after the restore attempt has
-already failed.
+Add the Cellwise CW2217 battery gauge driver. This driver is based on
+the sources used for Rockchip's Board Support package [1] but has
+been updated to use the regmap API and devm helpers.
 
-The robust notifier call only rolls back failures within the notifier
-chain. It does not cover a subsequent failure to allocate the bitmaps.
-Send PM_POST_RESTORE for that failure, after a successful prepare call,
-so that the notifiers can undo their preparation without being called
-twice when the prepare notification itself fails.
+[1] https://github.com/rockchip-linux/kernel/blob/develop-6.12/drivers/power/supply/cw221x_battery.c
 
-Fixes: 70d932985757 ("notifier: Fix broken error handling pattern")
-Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
----
-Changes in v2:
-- Use my full name in the author and Signed-off-by fields, as
-  requested by Rafael. No code changes.
+Changes Since V2:
+ - Fixed more bugs pointed out by Sashiko.
+ - Corrected an integer overflow condition when measuring current.
+ - Corrected logic for when we don't have a user specified battery
+   profile.
+ - Added power supply changed logic in the worker.
+ - Updated the Kconfig text to note support for the cw2215 and cw2218.
+ - Added a check to ensure polling interval cannot be below 250ms.
 
- kernel/power/user.c | 2 ++
- 1 file changed, 2 insertions(+)
+Changes Since V1:
+ - Added a default value for the shunt resistor in the binding
+   documentation, and updated the commit description to note that the
+   min and max for the battery profile is now per-compatible string.
+ - Fixed bugs pointed out by Sashiko bot, and corrected units for
+   temp and shunt resistor values.
+ - Corrected include pointed out by kernel test robot.
+ - Noted in the commit message the patch is based on original work by
+   Xu Shengfei at Rockchip. I did not list him as co-developed or
+   signed-off since I did not have his permission (yet) to do so,
+   but I have his authorship included in the file itself.
 
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 6e4f40e49319..e7e8016a4f1a 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -87,6 +87,8 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 		error = pm_notifier_call_chain_robust(PM_RESTORE_PREPARE, PM_POST_RESTORE);
- 		if (!error) {
- 			error = create_basic_memory_bitmaps();
-+			if (error)
-+				pm_notifier_call_chain(PM_POST_RESTORE);
- 			data->free_bitmaps = !error;
- 		}
- 	}
+Chris Morgan (3):
+  dt-bindings: power: cw2015: add cw2215, cw2217, and cw2218
+  power: supply: cw2217: Add support for Cellwise cw2217
+  arm64: dts: rockchip: Add Battery Gauge to Anbernic Vita-Pro
+
+ .../bindings/power/supply/cw2015_battery.yaml |  41 +-
+ .../rockchip/rk3576-anbernic-rg-vita-pro.dts  |  21 +-
+ drivers/power/supply/Kconfig                  |  11 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/cw2217_battery.c         | 878 ++++++++++++++++++
+ 5 files changed, 945 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/power/supply/cw2217_battery.c
+
 -- 
-2.50.1
+2.53.0
 
