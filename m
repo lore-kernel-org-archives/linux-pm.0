@@ -1,124 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795448490;
-	b=HpB5GYE5p4MB/mXZLW1+SkDUB9Jm3tBlsC03JKgqXZfK5fFHMJqoZI+/K4r0RxozWXcN
-	 /ArB7CLySdFHbVSlak6a/Tx8DGnHtur8HH48Bbng3DIZkKGNq+iDQmjMpfFFVIdk7AG7l
-	 7DWyTWSwoaN1x9XcqRhdlrCd/nh9j3Am1bAX+n0d9FER5XjqfTIDDOkw9TUe3hWU9IqiL
-	 R0l1qX/IGqjOax4O91hxImihAomVMDYT3CBfAoLYvawR2cNLuMAqgwspi89ANftIJs8DT
-	 O5DHekZsyuinBXyjyvWrk/ThCydMmK5dI6GFadNWMM0l7Q0D0hP0oydSYx8hmgIp+4A==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795448490;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:Content-Transfer-Encoding:X-Proofpoint-GUID:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=z3+fJWbbn5rdv4kmKoNvOMPabAV1A1JXWBTP9UFe4rc=;
-	b=WXbqj5sjdDrfpt42cVp0e8LCJ7yaj2KKKRJiLdTMiCGTvTW3qUV4rqvWE/7+HhOu3CyY
-	 H4IDrnQ6lpRkZd/aIS8LBLMqYNFUZ7oHZvRubKRajC8mYr9PBS8xVjh3KnUl6aTQTTqZ6
-	 uAGSS07N7xw3YAvhTIofIvrt0KN9N3AGfUuZE1LLyMprTiDYxHS2hrccpj6RT52NMIcUE
-	 IlJHyWInTNNDgRvNi11OqUk8gUKaLam/IGo3wn1a3IX3SHbj/CY4i73ZfVKxMNHsonYjX
-	 Zpt3357Le6MK4iVKToHyO1T1IM5ZcCLDncVmETJ522JBxXdFJR241e7yxKmQKdaP0Qg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=LwBhVoQf;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=YovjALme;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795448813;
+	b=Dcq6J2WKiaYA2P2zjueNx+sK7Zp7AEdXDsLV0htGY95ZGFJeSBnuEL4I7RpbJmrdwWpw
+	 WVva/wB2YsBUdkAmcpBSMFWO15qnJe93SAQ6BWql2zEIC/W5Wq0dUo7MHntVqeaCIWIra
+	 MFVFx2BYYeVGQlfyj1nZUMElbOQlXUTmzeaB6y+wbxlxpK0je+izNBHOg2+PzeOts7Rva
+	 1UTf+oqAUGorMI0P5wiBfJeVVObol2TIwIj4lPZYJdnRHoIdJKzmzs+DvHsY0oQRr0UgI
+	 sRWHZOXCQdQ3qfTdj9P9AB234T/uObZ8j5O5yUUd18kuAa+2vufSNDuZgu4PSK1g47A==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795448813;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:Autocrypt:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=Jco5N9HqUZU5bQiDb/7CVG3Xd5xNAy5U7XJ/rBLzfGA=;
+	b=miq1PPv/7RUl5K1Ln3iH3uzdQ4HnPAvxIVhnFIR//4SjWw07AuHVfCK+/Q8EGChp1Hrt
+	 dnx5EV+fnaQuse1oAgoHQTtZofrCfwrRsW2uKlGp8PmahakwDzP8MuYcHezeZImMVMPBc
+	 XXcpGA9uTThfAmlP4+fL34LUZ+LlDUyqyACsqn4sAjnsqtLlDJ3AzNf/LP31W6DqYdU9m
+	 xdXTyouFSegB9dMTYUUJZLixPaT3P1aw8UykKzx+ZitB/dJYgoZ9DWAlsqsT8PuUdAmTI
+	 lta/N3+apS+FcdEuIDP8taBQNRWUE7hQYW7neM9cstWKqEuSOYAr8Qoje0WhcWsMEgg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=baylibre.com;
+	spf=pass smtp.mailfrom=baylibre.com;
+	dkim=pass header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=fOacZBda;
+	arc=none smtp.remote-ip=209.85.128.42
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6902A606A33A
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 15:41:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6902A606A33A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BAAC606A31F
+	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 15:46:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1BAAC606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=LwBhVoQf;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=YovjALme
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ANDLRxp446153
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 15:41:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	z3+fJWbbn5rdv4kmKoNvOMPabAV1A1JXWBTP9UFe4rc=; b=LwBhVoQfmO7nyyPU
-	r5bsBeMa6Peu7P6rSM/a9L5o+d3aAwm+4L9YCl3loUnC0DfiFhNwZ/a4b/s264Db
-	/l1dcntdLgZqpVpzviRzEmUoVwx2ApQ/gfMm6JwtVOty0GQaO7/CxwIEtfNLtNYJ
-	mqfqciSqZ6nM7bUS+/p8Vxzie965+E+9T1cvkZFbdcabIOQbq+d78jZI6V28qdsf
-	8JBRvt5VNc6LnKIqF0Aw0HByxpbSTvy5flDEx3rLS9tiOTIpvFboh4K1yhSelgRs
-	DdhB/aLFETqykxZ9r+MSCwJ5/307y/WLdrR11vir7cXmBFoN7g7/dtW5vSIVOmbN
-	3T2CAg==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4g7424kx-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 15:41:29 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2ee04c49451so43669475ad.2
-        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 07:41:29 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795448488; cv=none;
-        d=google.com; s=arc-20260327;
-        b=fhbBpqrb5Nay8C+DRES4R/ZiGIWj72Ji2KbUajU4HAHB+B8wgVMpi8oI8cniCVKZ0l
-         CTkreycupeX0eSIwwGjaVDI3rxW6cC4tR79K+MEI+Ubkbwy9cHrB7xkG68ZgQJHWNYYb
-         122WHLquK15JP8jwul9mLOvGW/MEfJ3aciTHMkcSHfs2iFxVNNtLF1FXhg31+YMy0I6R
-         +cM4miMNfTI1St7FsLxMwQGblRq0YUMOs9ltcxwLmCnBjUNTuJqjlA4+xXBRKbajQynV
-         3st6EXnUjrqTffn4uUM/IzCyiO9IQN/19BNJ6hAVREVYpx6zgP1iZOvQChAw5b2Kyk7i
-         e2eQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=z3+fJWbbn5rdv4kmKoNvOMPabAV1A1JXWBTP9UFe4rc=;
-        fh=qYIvgGdQOgvBG8vBSkE2scrIBr4rmrDeWmTaDEn6bLg=;
-        b=nCHt0LOlCJTD1mlXjU4eu9G0RfxXT0cFFZFThuVR2YPa7Qpdh23mzqB39Ug/kjSj/F
-         woycw14VnO0xew+HzabXOEpXA1KvxvjZ1N9uSJ5p4n6sQhcNxOBbTMEja6Odc13sWi5J
-         s7yAz0rzKGOx+ebVZd4rNQIM1XUHIx4Sqqo8iDKtBG1G5RVvaZGA6INF86o67QAEttuz
-         x2RSIgHpBZ8zUi2l8++8tplwYOSEsFICfpIIhw65NQuZ/aUrgbjmt7iVoagrDYISzSy1
-         sKQaVBYOBEIWWntBJP0iubGSd7x3V/pIPdXi1KUHQqGZr2sO7C7h2a80j+V1w8vDTe8/
-         TYVA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=fOacZBda
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4a2000d5fb1so19511285e9.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 07:46:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795448488; x=1796053288; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=z3+fJWbbn5rdv4kmKoNvOMPabAV1A1JXWBTP9UFe4rc=;
-        b=YovjALmetAX7HUOPkKpItRhKgIqbfeFcf+ZiUwFRGY1xQ7dpkr140HcyL4r8Qhsbzj
-         +JCCN4If/g/IdAn18FqHETPDo12tZWm4kVD7j6RqnehnmQDMJf2cCcr0SzZBPA/hBWN4
-         PBdvBLxbzxylkiCgGm9VKsIOUBWlbLW55EqtM/1/Lt2cbqJTZ7TjKozu/kZrN5FZ69X6
-         y+niynSJGpNsOtwhfA0Cz9n+llN6xrfziqUW+eUEP5Dl225nyLUdsHWF17IIt1O53nGE
-         vkkaWLursvzCAiKzkofSIiVtcaJDu3BvmygfYoCykVOQPoeWOI3UXrUKSDGWoaKz18TP
-         +Ygg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795448488; x=1796053288;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=baylibre.com; s=google; t=1795448810; x=1796053610; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=z3+fJWbbn5rdv4kmKoNvOMPabAV1A1JXWBTP9UFe4rc=;
-        b=qG0y3S2WxuTPm0jtzmdByGymvyKB6Wid/oFcYh7TOKB1dBpsgG0NFmK2jrPEOfvR7B
-         /Nfyc+98ah/F7VkBGQtsvSh/eqh7VP7GP8zmyVTbsa58hofCcKSf4gYqu82HSBscOP+d
-         jCzJqtdiFDOFSSz99h//PO6COea7WGpdqY5sRZ/k5c4pSDH6IQLNRj+kyZLl9B+HyuYE
-         PZNNLxFC0xIAOqAPXlrmk3vJccErh4lez68iq/tc9n/6I5GVlULm+fg3Hfp8Q8510xyL
-         AthKaMWoWsrY2vjYVfTYGI5DUAET74k8UN7pbiLcBXZ97lI90BGMzKwdmsSeYicc5im1
-         tPFQ==
-X-Forwarded-Encrypted: i=1; AL+hErE+WibnogZbNQd55ubCCV0V5RyqMWKBIfNnw1YTJHcgXg9GG541pgcEThqn2nYQUhyTng2S4qMQZw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/5RrcjTMJar78NOlInZJ5wI7Zv6u5XOB0YXgd1SFGLxsSb5s24
-	pcKF04UlrZ5Fk5g2Ko59lQmltzZyHuH8o3iUl0mLM7hcQpc5F2clyhwetuIn9j9jLjEheTmJmIs
-	h111c3r3IAvUexqbFkq4rsUaaJUF3YpTqCtNKyxGO2T8VL/S+oHM7eN060PDuZ4ay/qSfGuweJB
-	t3IROysMoJdJ/X87DBNZmebCvnesO74hzXs21B
-X-Gm-Gg: AZFdTZfZF91yONXBeMOoXeOGyxqVr/0Fs1v1ltTDEC7a3lpNfxnpP5fcoBdHLu1Sh4B
-	PWSbeDk/iN3SULbht7KIATQtOdf8+ksCKAsaCg+SiFudAa7OMSLpWW4rKwfEco5D0xw81U+ksh0
-	UHjFt0Xx7K5lxAB4mSKDfAC6dZySzSVJTPB3dFd9W589IiJVBORM9qg2OPOMLKErLKBkCdYa3cT
-	aiVdizjgXouZifj
-X-Received: by 2002:a17:90b:4c07:b0:3b4:f92:ade7 with SMTP id 98e67ed59e1d1-3b41cb20eb8mr11284523a91.52.1795448488174;
-        Mon, 23 Nov 2026 07:41:28 -0800 (PST)
-X-Received: by 2002:a17:90b:4c07:b0:3b4:f92:ade7 with SMTP id
- 98e67ed59e1d1-3b41cb20eb8mr11284501a91.52.1795448487659; Mon, 23 Nov 2026
- 07:41:27 -0800 (PST)
+        bh=Jco5N9HqUZU5bQiDb/7CVG3Xd5xNAy5U7XJ/rBLzfGA=;
+        b=fOacZBda84BFoSkxXuiBVPLK/rTm6IN+e9Ek3paclKzsb1oUy9+exLA1ADv7ZABA8u
+         MR1nAkc8ZxaJ/NE0ubq28uS5lLu04ASAN1E81kIwboAxh6EjEAJa57Scn80l7VM9OWPD
+         3GcOQ3H75clVIMWmk8NCvi6ucqRuF620LaP6pKF9QKb+98kPRfVBrEXzXt5KK3O4n7A1
+         QznDfPcx3UK8HKVzDGk8rremjqB7GvcZ5W1R5HlnN404GpcH1NuKWwVPDhqHknlCM68L
+         p6xI23V9vBPx9u7bWGiiiQBxtEpJDgNrSjUnB6a4pv658iUwdKWUpqcRTdQ+obyduqN6
+         yhRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795448810; x=1796053610;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Jco5N9HqUZU5bQiDb/7CVG3Xd5xNAy5U7XJ/rBLzfGA=;
+        b=H+QkYvrfuryOdpKER1OKEGHR5dDrjCwmoAD2YLaaENVE4s/a2TZbR7D29o9hv7aDE8
+         kubMwRus/cIBZ7XA9/yusD3YxQl9AWD+HvoQHAgivQ4qWjqwsSSiPgUCFBWfZJcbuLy2
+         ddKqnK/3YDD7PJgXrvzhlrLTXOQe4+sS6OkkX3qfEt+arqipByD8uKESJuzabxgKrsQP
+         u2ILY7Zhg6XXYOLmOn3XJmM3PkgD37mKM4Cyp/nupEm6IFxkPuh81eg/gHqjIqSSIdlv
+         uddE9sLUR8e5nvvgoq6m3+jp4399/iTqwq3egOkOp85svHZDqS163Shd6OULpvCC8aii
+         7iZg==
+X-Forwarded-Encrypted: i=1; AL+hErEA5nyZtgeCkCevcf6EVNv90BEV5R5mwvHmVb+3lH/dqB9lSg4dIwa4KEQRj1A7R3I304jRjrz7nA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+8tENKehlXd6BC4AL3PnZCV3YO/epEf7XgplvFUUvokqudcvpj
+	JKysNA0Z2i+pHGkNtRlz801X1n3zd0oGedPyTkIHEgpndAsFx/vjTW5DrDLRvMYgqFA=
+X-Gm-Gg: AZFdTZfokmy/HMu3nETPLp7hUJdRPcthofbFEZdJRz9+jPrMfGmiIz/H2VIhos3w8lq
+	Z8XBwyO2gfmt6r3Zu0ZbWbTIog3pZ5ufJIt9uGKD2d22SAueLmvm+Ko+1a6weNxMdbHT9oSS0A6
+	rUrvY4+bgBS841RhKhP+SOJTeYpjadyIF7DdTd1BO08hkVZ1k5ipqJQ2jRvxOxehaa4V81vAKzk
+	+IhrB9VlxL3wDySoSGJbi2tqmNe1mmT8pLVnUAmF1O2/JpSNhLLNM5VB1DN+fMInqfOTDLYIYe/
+	GD1PIKtB54vn0LIN6dn7Fsz9VAzWl6v13ddg8BgZBW6wUvf03Qjw5vx1aKiWyE2VN+ROrClJVBS
+	GpNubY0lbifyACMRfCYoyK5qtKzTllct8gWMYVXGPGU7pT59ymnCKJyJTUVJJp0N974dorcSR8e
+	NjuJa8HOyLkpgvn9JGs+N8pt2wNkH9LAjlBy+fYaUL60EyUGXX6WN/f1iI1qSXVkh5uggUL+BJs
+	wvYNhT6csyGQXN6Hj4QPtxPcHQyd7oQBhsrxtSdWYy2IUsL/g+oSSRWxZz9LUTySvoG9rJmdq5q
+	IXAbfzNxQGi8bkJjKfM/VUd68zPfs58X5ztPgLKaOouD5T66WwDKeUCSLQ==
+X-Received: by 2002:a05:600c:670b:b0:4a6:30c3:1114 with SMTP id 5b1f17b1804b1-4bb88922df3mr229426595e9.12.1795448810466;
+        Mon, 23 Nov 2026 07:46:50 -0800 (PST)
+Received: from [192.168.1.62] (140.30.66.37.rev.sfr.net. [37.66.30.140])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb88442693sm312466955e9.1.2026.11.23.07.46.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 23 Nov 2026 07:46:50 -0800 (PST)
+Message-ID: <fc13a7a8-b825-400c-9ea0-ceb2670dc478@baylibre.com>
+Date: Mon, 23 Nov 2026 16:46:49 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -128,182 +92,81 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261105-logical-ruby-scorpion-29ba7b@sudeepholla> <tencent_E6852D1967C70433E84FE0F8C893BC8CFB0A@qq.com>
-In-Reply-To: <tencent_E6852D1967C70433E84FE0F8C893BC8CFB0A@qq.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Mon, 23 Nov 2026 16:41:16 +0100
-X-Gm-Features: Aa3M54qalvCcel9ratTxu4C81K9v20GE0i5zGvsWcpVJoqcRS7uaGYyVC0U3bsQ
-Message-ID: <CAPx+jO9gEkNsqhYiYZg6qqV9eVnCSw35za1aRytAFtMBSFoxCg@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: psci: Fix CPU PM domain state after failed
- runtime PM resume
-To: Kaiqian Zhu <362918296@qq.com>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        rafael@kernel.org, daniel.lezcano@kernel.org, christian.loehle@arm.com,
-        linux-pm@vger.kernel.org, Kaiqian Zhu <zhukaiqian@xiaomi.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-GUID: 1a4wlJ_MFwuu5SRY3v2W4atzBgk0VQaH
-X-Proofpoint-ORIG-GUID: 1a4wlJ_MFwuu5SRY3v2W4atzBgk0VQaH
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDA2MiBTYWx0ZWRfX8RQFq4vLDYf1
- UXM81RphpbGS7YNDg1CfMwgCs09CsmaG5u9ev2sgGtEE0x/gsvNMmm9RlDivJLcL75XB0ZLk0K6
- 8m9ujhwOZsrWtyX62MjulY5JbAgi5Zg=
-X-Authority-Analysis: v=2.4 cv=T/cZ3PKQ c=1 sm=1 tr=0 ts=6b045ea9 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=rJkE3RaqiGZ5pbrm-msn:22 a=VwQbUJbxAAAA:8 a=IeNN-m2dAAAA:8 a=dZbOZ2KzAAAA:8
- a=Lo64oJ-8JDPVp8O0Ss0A:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDA2MiBTYWx0ZWRfXx8mVDvegbVio
- cUNqqo88INm/ZK7Dp1EKknSP21x5CDQYaLQCbkeUwdLFaKis+YdRFVl8c+9bpHV5EoEk6kcC91L
- 2qxeiXyFJrv/OLYbcpYH6nMYAh7zEz0eGEsPjegi5Y7RpN4JqW8lubJ0BLjDUT38mon1pL7yYzA
- kq4PqS6u6QXMayHd3vL6U66PhL1Q/s60rF0uM7573WIlGS7NEqZu+s6Tlx+CzbHAl4J1fwtcmHM
- TSS2L9UvlHwBH6Ab14BwdeIyJc+wOeiQbd6Tx/iu6CvV/LeBKmArB3zmWlq3j4YFQUjSbDRf0i4
- hXbe3a2eahSN5YImYduJJQgX8tpyGCy2DaI8gD3tNPfxThTuNcUiDbzsZYCCTIwP32jl9drR65Q
- 5yFatUf1THVzk4WHaaooHRLDRBfuims8CtSc1Qu4xNgEf8Lhbs1aPK3riivTGdBuZ67mnHjOOFd
- imy8z9Dhw+hB7SJiSsw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-23_03,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 bulkscore=0 suspectscore=0 lowpriorityscore=0
- impostorscore=0 priorityscore=1501 adultscore=0 phishscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230062
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 00/15] R-Car X5H Ironhide CPG/MDLC SCMI remapping
+ support
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+ Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Marek Vasut <marek.vasut+renesas@mailbox.org>,
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ Paul Elder <paul.elder+renesas@ideasonboard.com>,
+ Sudeep Holla <sudeep.holla@kernel.org>,
+ Cristian Marussi <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org
+References: <cover.1795029012.git.geert+renesas@glider.be>
+ <1e9c5ac3-d82b-4af9-9946-0302cadf7404@baylibre.com>
+ <20261119234759.GB2324725@killaraus.ideasonboard.com>
+ <19c3745a-6308-46ff-bb37-3acc88fe22e2@baylibre.com>
+ <awAqqg6F2Z1t55x2@ninjato>
+ <d94ad9ca-afdd-4301-a69c-0bbad5b334fa@baylibre.com>
+ <20261123103633.GB2959742@killaraus.ideasonboard.com>
+Content-Language: en-US, fr
+From: =?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>
+Autocrypt: addr=clegoffic@baylibre.com; keydata=
+ xjMEafx9bxYJKwYBBAHaRw8BAQdAtc85GIwDXLz0rh9thWXC80Lji0otVDVncXT4qaS4j1fN
+ K0Nsw6ltZW50IExlIEdvZmZpYyA8Y2xlZ29mZmljQGJheWxpYnJlLmNvbT7ClgQTFgoAPhYh
+ BJjMiHuM4ZUwFqUPr36EW4KtCh6TBQJp/H1vAhsDBQkJZgGABQsJCAcCBhUKCQgLAgQWAgMB
+ Ah4BAheAAAoJEH6EW4KtCh6Tt+sA/jVC35rY1npFlOy7YnncTdrID8Qf855JA78IzXgvzpGp
+ AP9FkuuT80m66PP3DvgYX9kVnG17mSDKO0+v2W18v6ZgCM44BGn8fW8SCisGAQQBl1UBBQEB
+ B0DMwF4u//aQyzsFlO8rPJ/cqsAuPH80IeIA3HOEo5mlVgMBCAfCfgQYFgoAJhYhBJjMiHuM
+ 4ZUwFqUPr36EW4KtCh6TBQJp/H1vAhsMBQkJZgGAAAoJEH6EW4KtCh6TdSgBAMDS0MiWCivt
+ LjzZc9bs+P/xdXywUjDKq3lpQGJ6vZ0GAP9vI6DnN7vwVK6jt6/+0aBGkog5Ura9+WwRFEdM
+ vLfPDQ==
+In-Reply-To: <20261123103633.GB2959742@killaraus.ideasonboard.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu, Nov 5, 2026 at 6:05=E2=80=AFPM Kaiqian Zhu <362918296@qq.com> wrote=
-:
->
-> In PSCI OSI mode with the hierarchical CPU topology, a CPU can come
-> out of idle after dpm_suspend_late() has already disabled runtime PM
-> for its device. The idle exit then restores the cluster PM domain through
-> the runtime PM path, however, since the runtime PM is disabled, it
-> becomes a no-op and the domain stays powered off in software while
-> the CPU is running. The CPU then silently stops requesting the cluster/
-> system power level in CPU_SUSPEND.
->
-> The Race:
-> dpm_suspend_late() wakes all idle CPUs first and only then walks the
-> device list, disabling runtime PM per device as it goes:
->
->   dpm_suspend_late()
->     wake_up_all_idle_cpus()               <-- asynchronous cpu wakeup
->       device_suspend_late(dev, ...)
->         __pm_runtime_disable(dev,false)    <-- disable_depth++
->
-> wake_up_all_idle_cpus() only requests that the idle CPUs leave idle; it
-> does not wait for them. A CPU parked in a deep PSCI state can take a long
-> time to come back that its idle exit lands after the runtime disable:
->
->   CPU0: dpm_suspend_late()             CPUx: parked in idle
->   ------------------------------       ----------------------------
->   wake_up_all_idle_cpus()
->                                        powering ON
->   device_suspend_late(pd_dev)
->     __pm_runtime_disable(pd_dev)
->       disable_depth++
->                                        powered ON
->                                        __psci_enter_domain_idle_state()
->                                        pm_runtime_get_sync(pd_dev)
->                                        no-op: disable_depth > 0
->
-> genpd_runtime_resume() never runs and the domain stays OFF. The next
-> idle entry skips the genpd suspend as the state is already OFF.
->
-> Fix this by using the genpd interface when the runtime PM is disabled.
-> If the runtime resume failed to restore the domain, force it on by
-> calling the genpd suspend/resume pair directly.
->
-> Signed-off-by: Kaiqian Zhu <zhukaiqian@xiaomi.com>
-> ---
-> Resend note: No code changes. Resent only to remove the automatic
-> corporate email disclaimer footer from previous send.
-> Link: https://lore.kernel.org/r/20261021031709.42644-1-zhukaiqian@xiaomi.=
-com
-> Link: https://lore.kernel.org/all/20261105-logical-ruby-scorpion-29ba7b@s=
-udeepholla/
->
->  drivers/cpuidle/cpuidle-psci.c | 28 +++++++++++++++++++++++++---
->  1 file changed, 25 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psc=
-i.c
-> index b250d0dde760..5b56f279cc7e 100644
-> --- a/drivers/cpuidle/cpuidle-psci.c
-> +++ b/drivers/cpuidle/cpuidle-psci.c
-> @@ -70,14 +70,23 @@ static __cpuidle int __psci_enter_domain_idle_state(s=
-truct cpuidle_device *dev,
->         struct device *pd_dev =3D data->dev;
->         struct psci_cpuidle_domain_state *ds;
->         u32 state =3D states[idx];
-> +       bool use_genpd;
->         int ret;
->
->         ret =3D cpu_pm_enter();
->         if (ret)
->                 return -1;
->
-> +       /*
-> +        * The PM core disables runtime PM during a system-wide suspend, =
-which
-> +        * makes the pm_runtime_*() calls below no-ops.  The resume can t=
-hen
-> +        * no longer set the PM domains back ON, while the CPU is running=
-.
-> +        * Use the genpd interface directly whenever runtime PM is unavai=
-lable.
-> +        */
-> +       use_genpd =3D s2idle || !pm_runtime_enabled(pd_dev);
-> +
+Hi Laurent,
 
-I don't think this will work.
+On 11/23/26 11:36 AM, Laurent Pinchart wrote:
+>> I know several SDK versions exist, and supporting several of them is work for a vendor tree.
+>> As Geert's cover says, "While upstream Linux must only support sufficiently mature firmware versions, vendor trees (e.g. renesas-lts) may still want to support development firmware versions".
+>> Each SDK version can then have its own DT there.
+> 
+> That's not how DT works. Please be gentle with Krzysztof and avoid
+> increasing his blood pressure :-)
 
-pm_runtime_enabled() only provides a snapshot of the current state.
-For example, if it returned true above, runtime PM may become disabled
-at any point later on, causing problems with the calls to
-pm_runtime_put_sync_suspend() and pm_runtime_get_sync().
+These DTs would stay in the vendor tree, so they would not reach Krzysztof :-)
+Upstream would have one SCMI DT, as v5 has one table.
 
-We need another way to deal with this - and I am trying to convince
-myself in what direction we should take this. Please allow me a few
-more days to think about this.
+>> If a release that changes ids is already out, it needs a new DT, or a quirk for that one release when the DT cannot be updated.
+> 
+> So you're proposing that, with any new firmware that introduces an ABI
+> breakage, every single DTB on all boards in the wild get updated ? That
+> just doesn't scale, sorry. Let's forget about that bad idea, and focus
+> on finding a good solution.
+I think the v5 tables have the same problem.
+As Wolfram said, "the driver is then tied to a specific firmware version", so the same ABI breakage needs a new kernel on every board in the wild.
+Either way every board needs an update, so I think the fix belong in the firmware.
 
->         /* Do runtime PM to manage a hierarchical CPU toplogy. */
-> -       if (s2idle)
-> +       if (use_genpd)
->                 dev_pm_genpd_suspend(pd_dev);
->         else
->                 pm_runtime_put_sync_suspend(pd_dev);
-> @@ -90,11 +99,24 @@ static __cpuidle int __psci_enter_domain_idle_state(s=
-truct cpuidle_device *dev,
->         ret =3D psci_cpu_suspend_enter(state) ? -1 : idx;
->         trace_psci_domain_idle_exit(dev->cpu, state, s2idle);
->
-> -       if (s2idle)
-> +       if (use_genpd) {
->                 dev_pm_genpd_resume(pd_dev);
-> -       else
-> +       } else {
->                 pm_runtime_get_sync(pd_dev);
->
-> +               /*
-> +                * Whenever runtime PM is disabled while a CPU was idle (=
-in
-> +                * the system-wide suspend progress), the resume above be=
-came
-> +                * a no-op and the domain is still OFF.
-> +                * Force the genpd to update power state to ON, so that t=
-he next
-> +                * suspend can see the correct state.
-> +                */
-> +               if (!dev_pm_genpd_is_on(pd_dev)) {
-> +                       dev_pm_genpd_suspend(pd_dev);
-> +                       dev_pm_genpd_resume(pd_dev);
-> +               }
-> +       }
-> +
->         cpu_pm_exit();
->
->         /* Correct domain-idlestate statistics if we failed to enter. */
-> --
-> 2.53.0
+I also see technical weaknesses in the remapping:
+It adds a second layer of ids on top of the SCMI ids, so each new device needs entries in the kernel tables as well as its DT node.
+And Zephyr already uses the SCMI ids in its DT for this chip, without such a layer.
 
-Kind regards
-Uffe
+With the SDK DTs only in the vendor tree, what technical weakness do you see in the solution I proposed?
+I still think it is a good one ^^
+
+Best regards,
+Clément
