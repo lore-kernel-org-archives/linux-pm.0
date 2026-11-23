@@ -1,45 +1,45 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795435173;
-	b=QqrisjWTNEt0gT56PhoISAoxFkHXN9RkzgdP2Ck7e7zKjm4/QbDW4S4p5obRGCu7ssaF
-	 Q5dgiDpP//SwnxKHLaffPr9mtH1guOr7oOVVqhwBPUchwPhIHNFhRtexLPnY+DXeOGeZ2
-	 8DOrlSmOz8YovtmuYhsOiLyD6yfKlEU5vZ2cgR1UsBCu/AKLFZDSVDDZ7lYFmI41gYB4K
-	 3Rb06JrjSazp3vhvGBs1tR08QF6XDSnyK+RkexxtawuLQyA5xyhcYmpyLcY9HtaMjNX7K
-	 GH+MRrnB0JemBaqFvKpDRoWOITKXPd8lhNaCFfUYs4Gvsn+NtVwZk/uv8/MRBFp1rRg==
+	t=1795435603;
+	b=J5fGYflUNZOYgjZt5X7UuofJnThMX8TEUky6Bgm53lTkvy+ip7xr9iaAao9nn7G4XPm8
+	 JzkC25Yon6DXzyiTJ+11HtusG52UFZB4e0ncxGn0EyW/XMn/brJdml1JESU0R4QvNI3K3
+	 WMyFWDinhSyBi7GhE1dPFBjAh8ztqqy660OhwBL4JZvFGuNt4wUelFTCcvMrWBDOz3tDY
+	 khTJ7e2dKsKpy0a3rxqMg+SAJM7AFyh9CTJ3Mc/tOwpJ/cCdqnnBhG9Pd1eLmGVoINCqY
+	 +Gktchi2M6G3Be1FqEhwwfbLfdlSLGIbcbFaKOos4bl0AikEeHtmnGrPDtqlit2BdCw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795435173;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795435603;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=WMhEUhdeAFlSicfRRTfApEYeOqXkH8+a1r/iO3xzqW8=;
-	b=uzu1YWQxOoaee+ImEKMVxcz120ThxTGjgiWxH7erjaHkzn3qs4zPj54+xI0/+4L8/GVD
-	 yp5XPb0zdLGKp9REuxHH/bfCu93RgmhqkF91TWvmerPxp9k1/Fhm5+zc8WM1uFpgg8rn1
-	 OpZ5z/fOb4REEabRE3dsm+FJkCl+QYW91MRGWsfMizdffg+t+ospR+mrTrp5+jzHByUHh
-	 Ut1z+PPSMP+aF2D7jzah9rOwHv/1l0wFoV47T5S2OZh4sb8SFVJJOWJljQcFvQTaZg+uU
-	 19ZkmPC2elcxAmdKJ+b5KFT76r679EVSDb6vtHg5letPLqcf/c11NHfJtwCqKyKBFEA==
+	bh=YcMb+PLs/AWZj6CMeHYvkaPehmudD/DmEHA3ZbplGK4=;
+	b=TyUMIrcVF98PErYP0gtg35n+uR1oS8juxX4xi6YmmiJ+G78tboUQrP9g2Dz2cytb0T7C
+	 yriW5eHjLN27aI1V+/2/8ITCvG4wReFgmynXSEkzPSIQZ4pal0fuE72Ngb0wYAbLisz7i
+	 i/Wv/2uqYiGLGPdTzEAmLyDX6+BJVETTvCUHQBfj8GIwOfXhLMVo28yfG4HalgdxJ7Xci
+	 xWwbHcje13XXfeoPIqQZqyQV8gR6OaQRgl+fHmvbbs6FoskPudeuwuupcZcBirOYOy6lK
+	 uR7bR4tvEZkULYhnlvR2Mcv7QMA4SFOvvoqlwoP65jw7dy5f+dSEESYqnN88qAX4SgQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DS83tKDB;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ScqeuJIC;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65D3C606A331;
-	Mon, 23 Nov 2026 11:59:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3651606A327;
+	Mon, 23 Nov 2026 12:06:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DS83tKDB
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 079911F0093C;
-	Mon, 23 Nov 2026 11:59:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ScqeuJIC
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5EE861F000D0;
+	Mon, 23 Nov 2026 12:06:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795435172;
-	bh=WMhEUhdeAFlSicfRRTfApEYeOqXkH8+a1r/iO3xzqW8=;
+	s=k20260515; t=1795435603;
+	bh=YcMb+PLs/AWZj6CMeHYvkaPehmudD/DmEHA3ZbplGK4=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=DS83tKDBJxjSPlL2eC8e6Zvjmxbn/amPwEVsuRuoWVGcAj/+EuTDbKwA3bOW2fK70
-	 qBqGCvahuU92TARH+7Yl74So5W6LpyDqWxpOwWFjNdWqbZ0RZ6J8Xqhn+6fVP/fDdg
-	 HscngvhevobAt7D0L9U7FFGLfA7n2PvtC6zVqFGCYIZH5WLtvF9Uva9U/GqwZaqfcS
-	 FohksPgsAGr9DldrpFnzXVYBEpDHRxYQW6OZGv6tRoxN7iCOcJClOu9MzOjqDEiEPh
-	 XfFBcD1/Xa9k5mj8H/iGCbri3PqqTuWE1vCNN4+Yo540uCtM67NeFpj2/NDUr0nFCE
-	 GT33q2RHgqNTA==
-Date: Mon, 23 Nov 2026 12:59:30 +0100
+	b=ScqeuJICiSa3yA0PGnXYuPrVQpQGvFiqYra0ZrcRbjqbchIMnB2YmFxs4mOzXVt7L
+	 yY4P7wQAFA23kn7IQc5LBKacbRLjf/QsGRqCOdSTtaYlPhzAQZaxZ/MoqXGBRTqE63
+	 zQzwaIYPHLy7kt1cxhJuZvBfEK1WvWs/i2O5kZj7i347L4qlH6rZqXudyRE4N1jHUe
+	 yjudaXrmmJ1jAI52px/2ikKpC+qc/AUTaJN7t0Ag7TXUrHdFSJzTh8y74J+B+ebX0P
+	 G+eMQk0g44ctWuJOKzNAtU68QrzbujZN5/KyWR0h10mxKH8fC3xgoB5mt5nzHtcJIQ
+	 B75cTRP3G+ZWw==
+Date: Mon, 23 Nov 2026 13:06:40 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Stanislav Aleksandrov <lightofmysoul@gmail.com>
 Cc: Bjorn Andersson <andersson@kernel.org>, 
@@ -63,10 +63,11 @@ Cc: Bjorn Andersson <andersson@kernel.org>,
 	linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev, linux-usb@vger.kernel.org, 
 	linux-phy@lists.infradead.org, linux-scsi@vger.kernel.org, linux-crypto@vger.kernel.org, 
 	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 03/16] dt-bindings: mfd: qcom,tcsr: Add Halliday TCSR
-Message-ID: <20261123-bald-sparkling-vicugna-cde8af@quoll>
+Subject: Re: [PATCH v2 06/16] dt-bindings: phy: qcom,usb-snps-femto-v2: Add
+ Halliday HS PHY
+Message-ID: <20261123-azure-wolf-of-whirlwind-43caef@quoll>
 References: <20261116-halliday-dts-v2-0-2c92438c6c46@gmail.com>
- <20261116-halliday-dts-v2-3-2c92438c6c46@gmail.com>
+ <20261116-halliday-dts-v2-6-2c92438c6c46@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,17 +79,18 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261116-halliday-dts-v2-3-2c92438c6c46@gmail.com>
+In-Reply-To: <20261116-halliday-dts-v2-6-2c92438c6c46@gmail.com>
 
-On Mon, Nov 16, 2026 at 09:26:19PM +0000, Stanislav Aleksandrov wrote:
-> Document the TCSR block on the Qualcomm Halliday SoC.
+On Mon, Nov 16, 2026 at 09:26:22PM +0000, Stanislav Aleksandrov wrote:
+> Document the Synopsys femto USB high-speed PHY on the Qualcomm Halliday
+> SoC.
 > 
 > Signed-off-by: Stanislav Aleksandrov <lightofmysoul@gmail.com>
 > ---
->  Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml | 1 +
+>  Documentation/devicetree/bindings/phy/qcom,usb-snps-femto-v2.yaml | 1 +
 >  1 file changed, 1 insertion(+)
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
