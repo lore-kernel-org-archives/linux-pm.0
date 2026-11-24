@@ -1,75 +1,110 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.17.11
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795510249;
-	b=NemAGrH1LTGJi5dSttiDov99cIsPIq4G+4LNzO3QPA2UJYpsp2e0ts4Kk/kWqaDiQ4d9
-	 sNFD68q7HJ0DMLh+gkgjJFxAgevZN+C59Cg/9QkadiJFfWxRMX1ePbeuKrI5JMyQWLTUu
-	 hAC07wdelHW0+6R3u5o8c6WI6TAYDuXyRRTvwQt/4YQNWB4lPxTvsNsPyHWLaeQFzBPVI
-	 U8bjOvtyHQRjYpDHakOsiAFuXkrYeHOGHcyXr6SaATmIPQeD95RjNF/8kAQ9V1fgID7lP
-	 DJnJxNea/qTLDe8MVlYgPI6YJoRxwXindF+x6G4MGwQuOJ/tGJ1ZOC6W0EAWIibA2pg==
+	t=1795511055;
+	b=LFYDqzWorVT8nDmxUsQUbHDGNK8LhU4pwePKjIkPF/kO4f+R81M6TGq9+t2C/OXapmvT
+	 gfZUTXsixDP6pBycbPTqkzvoQ55kHwXRFlbLv1nELmG1lWRFOul7GLTPPyuvA8J7z9ZU2
+	 QBVLYpA20C6Tq9c4X5031tNX3AVDAoj/STgh5a4eE1NsT/ONuWivavMkL7Hqv/GxI2/Ka
+	 Lf1pJSiCmr56jBZKhdPBPn1FJUTbCZ71WW7GwWcOJ+Q8iie4NMwqq8omOPSdf0u9iq0rA
+	 Fs0wOvkrthcdb7Sf+5arh4buUIDhD41aa4uiybXAE9nqIoJDjRDtY3jjmjlv8txQPrA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795510249;
-	h=DMARC-Filter:DKIM2-Signature:Message-Instance:DKIM-Signature:
-	 X-UI-Sender-Class:Received:Message-ID:Date:MIME-Version:User-Agent:To:
-	 Content-Language:Cc:From:Subject:Content-Type:
-	 Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:UI-OutboundReport;
-	bh=8FUjrlp8DFnqvbeuktq9OdqLZ8OjRBLAv8DgXJswiD8=;
-	b=QPlgpjLN7/qYzIYx8zftZ82nCBtjytOXl72nWix/KXj1dpKlisDLD7zDwiK3CzCnMZZu
-	 ZltCH6+GOZLA2V/jtmULzYWMwtExYdSJTOwGUwuHH2gpElqj1Ir+0WGtXS7v554Fcn9JU
-	 zYNbzS4QYXGFJj279j6KU+0z2nKoKttVZhL/GMkdurngfJ8qde8xzo3WfW4nuIkwsCKkw
-	 Rp6qijywipWTUYdk0c9cVkt5mjyl6xvo63zMoH57z+AJp/c/eFf77Tmcs/9YXULic2MKx
-	 Uuuysa1SMnFdq3LGFSE4GbQwjXp/WM7kw93hFCxDOmK2Havsd+N1/Ky9ToRRA9GTbyA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795511055;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:Date:
+	 Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Proofpoint-Spam-Info:
+	 X-Authority-Analysis:X-Proofpoint-GUID:X-Proofpoint-Spam-Details-Enc:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=1UQBuNMToGONG9hy3Du+9qM2XSmErbNq29UGtfHTpFo=;
+	b=5tyqM5b/Wh5C/g+/A52WIi8UOebUjXTRX9Y3ujXOxJeid72lbQZqCZmQHQGi6KdWGGAo
+	 w2T45x/wRKGbvEG4UCgfB1iuQoQPT7PSYNYo2jgXcXaRjVlENSAIWGDXRVDSavKNS1uR9
+	 l9zRzlY3SZIddSqXI6JuZhLlMcRHB7PCK0g20wjpwl9JOERdwjNC516OMQuAdPpKm9Qka
+	 xZSoJ6YJD3PK4XN5Y/8w4kBf+QkZ9YznigscvqbL1j8Z75IGkg5trD7bPDwj/MlLpNDl1
+	 tTuznybQAXISl8cfwt6jNnsaaXu124zAJB5jrRTbvw+IYIeZlEmLwwrAKj6GE2NSQkw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=web.de;
-	spf=pass smtp.mailfrom=web.de;
-	dkim=pass header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=Q1lGulrP;
-	arc=none smtp.remote-ip=212.227.17.11
-Received: from mout.web.de (mout.web.de [212.227.17.11])
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pVeIuy08;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Z9UXAD8w;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3161E606A338
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 08:50:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3161E606A338
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71D5D606A31E
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 09:04:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 71D5D606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=Q1lGulrP
-DKIM2-Signature:  i=1; m=1; t=1795510246;
- mf=PE1hcmt1cy5FbGZyaW5nQHdlYi5kZT4=;
- rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
- d=web.de;
- s=s29768273:rsa-sha256:Aus3zXci4vztbcATDYVFdab2qs7Z
-   X3zwf9fMLTwKVDVuzr8oPc3ymOpVmdHWdP+ZVdZrPw60XtaD6pQG25Zap3UFgLK892sOu89W55d
-   y2z7y15cyTt3BqiXkdl5+C5aUtIYLyZgkMSTfFjrrjklf1aDDvU4g+pn/Tpwyel/EURcLKkMDiA
-   CNO46/AsajUA5xNBROxXwQY2WWonLsjP2002lo0BqUORRM+TNt55blPCN6WYeDEvPiCLn6C3qOo
-   6ZBI8tNTh9xXqcr2EvmukBUy83ji/SL1g0udrAlshxiP6Yq+J+OQbWHAeoNSxzbUI8nNMAmjBKR
-   a+Zvjj8x+TiWmw==;
-Message-Instance:  m=1;
- h=sha256:
-   nXGs1zQsJJwgkdled81yj9qqtmd5cno+mSGErXddBqY=:
-   xGcNkp1X4+UKP+X1hw4V/NvPLrgZ/zlkILAoya5XiMc=,
-  sha512:
-   fx5udn1NW2Man9Q5VLL6McAlheU9voLykmgV3eLQplc2aMdfu3R0htxqu+onmsa0DgpGQXRq4N+Y/UbHsVd5eQ==:
-   O8Hs5/G8xTiFKeuO2du6ttZFdf8wgOS1wEMK1QNhPP7ClwAorx4ULRmCn0b9F21HGfPyNB5VfMnIV0uoPzP/wg==;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1795510215; x=1796115015; i=markus.elfring@web.de;
-	bh=8FUjrlp8DFnqvbeuktq9OdqLZ8OjRBLAv8DgXJswiD8=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
-	 Subject:Content-Type:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=Q1lGulrPo5ot5LRDXpCtTLR2YiAxN81I7ykY/YvlJVuuhElwvD9LavU7rc+fzXHO
-	 UDKb0D5W8K8dFzqOKBV0quYqfOJfNYMHf/Y3gHb7FtOeePisyoKXcTIXiZK+qs0mz
-	 L71IlLNtc5c7nWIVuhhx5F+2EPtwLRoTDgPHYqpUbFA0ESXOuFF2GAXlJnZKW2etg
-	 wZv0MZWigCaDrdJcEm1EdnKhpszyb9ApH+lMNJxxyVWFj652wKnWikF646Y1wzuxj
-	 516ww2+vFr0tNHjTmtb7ebmmuuDl64ofrVsfHiW62SY/MipPg26+cUcnHijU2QKv3
-	 90v+72PNruhbaO4S5Q==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from client.hidden.invalid by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1Ma0Tu-1xzSAk2caq-00WfUs; Tue, 24
- Nov 2026 09:50:14 +0100
-Message-ID: <de6c1040-c4d1-4703-9932-b3b668801c72@web.de>
-Date: Tue, 24 Nov 2026 09:50:11 +0100
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pVeIuy08;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Z9UXAD8w
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AO8cMwl3225393
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 09:04:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=1UQBuNMToGONG9hy3Du+9q
+	M2XSmErbNq29UGtfHTpFo=; b=pVeIuy08qEr2oNoNSLP8pTCIZGYmmF6m2eOFCy
+	m57rGCXwzj+u5sUgM0dI/Gvf0/Czoxz6lEbF6ucvpCInNiQ11JWKPv1HzvWJj9aD
+	wOohjS4NWevM0K+cjWLfBPzyRl1cKfiPNuYhj8zyyY1Y5oLUD9FGmzbzmnv0/vKx
+	jAD4UiIDmaVnWx1mNXk1jEjiub7EZVoKrUoec+wF6OY/yoQpF8IbO6sSHW/bADvK
+	/Lo38n9kznB8Y1AMhj/wJnJPLwREn1qbuDfrxQLwf2yT9BwPJAXrfN7yKY0YphE3
+	zKw3IH2UoQsUY3ytwr03HpeWQW2Tw6xRilpfYdmvYBmvUfaQ==
+Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4x8f25dj-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 09:04:14 +0000 (GMT)
+Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-3869865a304so3304867eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 01:04:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795511054; x=1796115854; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=1UQBuNMToGONG9hy3Du+9qM2XSmErbNq29UGtfHTpFo=;
+        b=Z9UXAD8wve1UhhiCqSvEwMV97LY1f0MKtBzt6hCpyqJH0RbqLxmx1BlQxWJbMNmpM3
+         /eXdBzWgiIBnPsTYxv6DS/EOikExbMQPL6hZJihAgMHrpYBo2z5rK3NM1X/F+g/jKm66
+         o2QZ5sAmy7FEQTWgS0UZlgOnzISAGtGzyyEyDz2jiiWI1uEeKCaccSy/MjOf5yRoBuba
+         xNfipuOEfG9rASFg97eic8nOjGyjAx7SYj/gBTKKLd4E8b2OQOs9mooAHKq5GMLMwyjJ
+         89bRUgrIedV9Fgh7AAYDDd0G2pp98f9sNUcENDzBdH8CBMmXzPxMLAzlVcJ00tFGsqMQ
+         J1TQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795511054; x=1796115854;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=1UQBuNMToGONG9hy3Du+9qM2XSmErbNq29UGtfHTpFo=;
+        b=jrwwYjC2qEagZKQGvdGKPkRl5RySsZ4GH+7MSzI06gijAN3U7IOTVzW6V9/Nvqv25F
+         yJEz9hQEt4loUvAbpIajf4dJYUh/a/zIbckBxPjwrJaBLkpUzuf+/n6UvZHccCT4EKJM
+         rvpxnyJvNzShtGWLwNtI7LMvhvxBZnXfvnknP82e+LWW4SmyCl7YyDGGfuOXS/IGK4gh
+         fUTYvYQjMj1TC9Fe+cZzEQOxe2cdcZGlhbbbjz8wAImG172f4QGfuVRbQiIIl/j/32Aj
+         mMTqWCtg8KNsouk/hBsQazigWuxHeNGtk7uWsH2z4w4p/q0rGM7up5t3Vp31aHGaYrQZ
+         PCKQ==
+X-Forwarded-Encrypted: i=1; AL+hErF5Y/lVY2ZCzQlMaJ++YOT5j30PZ+Tsx38lCyKgQbvTx1MH8AbFNdLj/X/pXlt+SkFlq9JJ4vATLw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/YVfk3M042kazlrJqOkaKFDnWDnKzced3sSPoWhc3/6mdb8d8B
+	z0LkwhMmdMVPJtu387UBY2ro4+GXyYGiFTKPTgtBxf9cG4QKDBGsa73TWraz/2cZX2IBIwc2ifs
+	wNxHfgJo94bm2AjBat64AvLISu1fKXgn1IEk1UC6j7frLCBj4WFlTTEyKGs63dFuju5OSCg==
+X-Gm-Gg: AZFdTZe4MqXZqJlRNXIoqou+ry9yAE8mSiwOEF2uzbyJ2JXFsXuUf0D84aYrPK6nGqA
+	kyGFQwQoWz9pwq03RIEBD3HARpE9diXLiflc1LCErMZelWHkEFTHlzQvmkpqRqpBolF3abr7+6M
+	Xutp111dYVIFS5ytOke9svwVoxpPSAml9loprrzq5iLZMV7P1HOGCRtre9I/dnwbkmIxFBHxHa/
+	ZTfIcdnE9Wac6fN+UxhZcEj4zNoY0wmjKT5R1c8grSJZipGmV4zWkTYhKIaHV11eASJJxZezRYp
+	HzV3zeBkVNZy8bdk4t1hpJ7OFkGzTJWOneNFnrhnY8VOEtMCEKDdNHMkn60tTwaVBr96tOJQ110
+	C6teWuRoaGLe1vY23fzkInbeeYNNQS6aqMR4CJb+YHd6p7RMyYqTVX6CqwwcgLn7he199
+X-Received: by 2002:a05:693c:60d4:b0:360:5f7e:2eb9 with SMTP id 5a478bee46e88-3857111f65amr16288656eec.32.1795511053678;
+        Tue, 24 Nov 2026 01:04:13 -0800 (PST)
+X-Received: by 2002:a05:693c:60d4:b0:360:5f7e:2eb9 with SMTP id 5a478bee46e88-3857111f65amr16288619eec.32.1795511053078;
+        Tue, 24 Nov 2026 01:04:13 -0800 (PST)
+Received: from [10.213.109.130] ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385646633d0sm75516157eec.3.2026.11.24.01.04.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Nov 2026 01:04:12 -0800 (PST)
+From: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Date: Tue, 24 Nov 2026 14:33:49 +0530
+Subject: [PATCH v3] thermal: qcom-spmi-adc-tm5-gen3: move hardirq actions
+ into threaded handler
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -79,337 +114,201 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Claudiu Beznea <claudiu.beznea@tuxon.dev>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Sebastian Reichel <sre@kernel.org>
-Content-Language: en-GB, de-DE
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
- Florian Fainelli <f.fainelli@gmail.com>, Frank Li <Frank.Li@kernel.org>,
- Philipp Zabel <p.zabel@pengutronix.de>
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: [PATCH] power: reset: at91: Use devm_clk_get_enabled() in three probe
- functions
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:8jfZFG8Qt71bmrU3G0lLnAGH8HQ2x4GTqqjfWrY4amw+KI3OIXE
- 4uM23s8/9J6jlSRqPa6vjU0I9q/gAe5JmeP9gxBjD74l5TYAIK2pvdvMMz++QTjE2BKYET6
- hHG8mZ6uZVh1zhoQyjURLZDG8TulFQMn/n9m0TRMzvd4r+0jLAAu7bbdg3She2rcJIah8Ct
- eyPLyfLtKTfF2aYnc6VHA==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:5qpJgtpu8Kw=;Eaaog7QxJmjVnGmhnhhUZkGjlNX
- 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
- X4rKBBIlSmFx5SSYamiUqNeWJpw2cA=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261124-adctm5_gen3_hardirq_removal-v3-1-c7923e9a54c1@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAPRSBWsC/43N0Q6CIBQG4FdpXIcDUdSueo/WHMFJaSIJymrOd
+ w/tpovWOhdn+7d/3z8jD06DR4fdjBwE7bXtY2D7HZKt6BvAWsWMUpJyGg8LJUeT1w30rG6FU9o
+ NtQNjg+hwxguRsUIUJVAUhbuDq35s+un8zn663ECOK7k2Wu1H657bfKBr77+lQDHFOeOgcsJYx
+ eXRep8Mk+ikNSaJD62DIf0k2W8yjaQgspJZSUiV0S/ksiwv7TqkvjIBAAA=
+X-Change-ID: 20261111-adctm5_gen3_hardirq_removal-467a437a78e1
+To: Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kamal.wadhwa@oss.qualcomm.com,
+        Pankaj Patil <pankaj.patil@oss.qualcomm.com>,
+        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795511048; l=5207;
+ i=jishnu.prakash@oss.qualcomm.com; s=20251014; h=from:subject:message-id;
+ bh=Oow7SbHjlqlBkog7Fq729nsTBAo6RGjET/g3jAQ1r/I=;
+ b=4SjAUaKOLDBt5BAzga6Qw8+zDqlN2EiPL2NXOKUN2mZVWhJOrwzjDeNUlnD3agVp1vt9eizWw
+ hRvPfV7qcFlBDGJocCEqMc0GxhgutAAtPg3PD7ypDik4B8M9rJmw4y8
+X-Developer-Key: i=jishnu.prakash@oss.qualcomm.com; a=ed25519;
+ pk=g89pXdLVwRjdTeQ+uX1QzvBO346E3hQAc1N7fcTXgmk=
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDAzNCBTYWx0ZWRfX6yhfEwnsbpBZ
+ Hdb5H+lrok0TIlhyZAG3KrbGAqyZfY3/WbiUep9/Ib0MMoR0yMf6EN7PDRxrABKyElFGwWaQw+0
+ wPfdt95MDmS1xTRx4VTx7DfokL+MWQE=
+X-Authority-Analysis: v=2.4 cv=JbgpPkKV c=1 sm=1 tr=0 ts=6b05530e cx=c_pps
+ a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=bC-a23v3AAAA:8 a=2T0weqYnj29I6vGzhR4A:9
+ a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10 a=6Ab_bkdmUrQuMsNx7PHu:22
+ a=FO4_E8m0qiDe52t0p3_H:22
+X-Proofpoint-GUID: 9w6IOoS_Kf1ixyEO7bscmZLpW5mev0mm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDAzNCBTYWx0ZWRfX1NswJGb5AqMH
+ oS3BLYHtEpVo8VlaeAJ5lcvhMB31RC8J4Ctv/kgQiR+5vdWF0L0Kq0cLrb85McAl+9PUrqKwv9z
+ 1gBSon23ClVBYrxmrvYt2c+l847J+4qBcyrkALjhyB5ZLvoFk7xchI0TNQvKXDt0qSwxIBLRnJ4
+ 0div/uER5I/7vwSaZsekR9NRSV22mUbomd7UmI6hZNvc6035hu4FUis0Dqb94j9meIaLipI3Igq
+ xmE7rOwPnsHuCMJtkRiyhScR+ZrM0qWGS40QuXm/7eLxYAcA0UT2dtcYMYmzubZOJSnVAsDhw7v
+ KjckAmvSrmMjAkoS0fpbGJfOVrhxf0jaZMcfusfK+tGogu6WpS6PupKZk9NFR1GVqWMii359hqm
+ H0I+TF0cj+uXqOWOpdrqE6Ap2o5Cpw1p8LG7AeUopR/8XVUwRsRrfBbcQVqtFVBBpI9mjbHYVkU
+ CbrVGtj+rgVNDAXpjAA==
+X-Proofpoint-ORIG-GUID: 9w6IOoS_Kf1ixyEO7bscmZLpW5mev0mm
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-24_01,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 bulkscore=0 lowpriorityscore=0 malwarescore=0 spamscore=0
+ impostorscore=0 suspectscore=0 clxscore=1015 priorityscore=1501 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611240034
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 24 Nov 2026 09:23:44 +0100
+adc_tm5_probe() registers the ADC_TM interrupt with both a primary
+handler and thread function (adctm5_gen3_isr/adctm5_gen3_isr_thread)
+with IRQF_ONESHOT. The primary handler calls adc5_gen3_read(), which
+takes the SPMI regmap's lock (a regular, non-raw spinlock) from hardirq
+context. With CONFIG_PROVE_LOCKING enabled, this leads to a warning
+about an attempt to take a lock in an invalid wait context:
 
-* Reuse existing functionality from devm_clk_get_enabled() instead of
-  keeping duplicate source code.
+  swapper/0/0 is trying to lock:
+  ffff000b67201018
+  (qcom_spmi_pmic:259:(&spmi_regmap_config)->lock){....}-{3:3}, at:
+  regmap_lock_spinlock+0x20/0x40
+  other info that might help us debug this:
+  context-{2:2}
 
-* Delete a clk_disable_unprepare() call on error handling paths
-  and in the implementation of three remove functions.
+  Call trace:
+  regmap_lock_spinlock+0x20/0x40
+  regmap_raw_read+0x88/0x328
+  regmap_bulk_read+0x10c/0x340
+  adc5_gen3_read+0x38/0x50 [qcom_spmi_adc5_gen3]
+  adctm5_gen3_isr+0x90/0x130 [qcom_spmi_adc_tm5_gen3]
 
-* Omit the label =E2=80=9Cclk_disable=E2=80=9D.
+There is no requirement for any of the work done in the primary handler
+to run in hardirq context. Drop the primary handler and move all the
+actions in it to the threaded handler, which removes the invalid wait
+context warning.
 
-This issue was detected by using the Coccinelle software.
+Note that both handlers used a local variable to hold the index of the
+SDAM whose IRQ was triggered ('sdam_num' in the primary handler and
+'sdam_index' in the thread function). These are the same value under
+different names and 'sdam_index' is kept now, since the variable
+represents an index, not a count.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
- drivers/power/reset/at91-poweroff.c      | 20 +++----------------
- drivers/power/reset/at91-reset.c         | 17 +++-------------
- drivers/power/reset/at91-sama5d2_shdwc.c | 25 +++++-------------------
- 3 files changed, 11 insertions(+), 51 deletions(-)
+Reported-by: Pankaj Patil <pankaj.patil@oss.qualcomm.com>
+Closes: https://lore.kernel.org/all/1cb6d902-73f3-4d65-96f4-4b3c5217253c@oss.qualcomm.com/
+Fixes: 948ee3a74f35 ("thermal/drivers/qcom: add support for PMIC5 Gen3 ADC thermal monitoring")
+Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+---
+Changes in v3:
+- Updated commit message with right justification for using the variable
+  name 'sdam_index' and moved its declaration to separate line in
+  adctm5_gen3_isr_thread(), as suggested by Andy.
+- Link to v2: https://patch.msgid.link/20261113-adctm5_gen3_hardirq_removal-v2-1-a0c9c4800941@oss.qualcomm.com
 
-diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at9=
-1-poweroff.c
-index 7bc779055cf3..ffbaba309917 100644
-=2D-- a/drivers/power/reset/at91-poweroff.c
-+++ b/drivers/power/reset/at91-poweroff.c
-@@ -159,16 +159,10 @@ static int at91_poweroff_probe(struct platform_devic=
-e *pdev)
- 	if (IS_ERR(at91_shdwc.shdwc_base))
- 		return PTR_ERR(at91_shdwc.shdwc_base);
-=20
--	at91_shdwc.sclk =3D devm_clk_get(&pdev->dev, NULL);
-+	at91_shdwc.sclk =3D devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(at91_shdwc.sclk))
- 		return PTR_ERR(at91_shdwc.sclk);
-=20
--	ret =3D clk_prepare_enable(at91_shdwc.sclk);
--	if (ret) {
--		dev_err(&pdev->dev, "Could not enable slow clock\n");
--		return ret;
--	}
--
- 	at91_wakeup_status(pdev);
-=20
- 	if (pdev->dev.of_node)
-@@ -179,10 +173,8 @@ static int at91_poweroff_probe(struct platform_device=
- *pdev)
- 		at91_shdwc.mpddrc_base =3D of_iomap(np, 0);
- 		of_node_put(np);
-=20
--		if (!at91_shdwc.mpddrc_base) {
--			ret =3D -ENOMEM;
--			goto clk_disable;
--		}
-+		if (!at91_shdwc.mpddrc_base)
-+			return -ENOMEM;
-=20
- 		ddr_type =3D readl(at91_shdwc.mpddrc_base + AT91_DDRSDRC_MDR) &
- 				 AT91_DDRSDRC_MD;
-@@ -196,10 +188,6 @@ static int at91_poweroff_probe(struct platform_device=
- *pdev)
- 	pm_power_off =3D at91_poweroff;
-=20
- 	return 0;
--
--clk_disable:
--	clk_disable_unprepare(at91_shdwc.sclk);
--	return ret;
+Changes in v2:
+- Trimmed call stack and error lines and added clarification about sdam_index
+  in commit message, as suggested by Andy.
+- Link to v1: https://patch.msgid.link/20261111-adctm5_gen3_hardirq_removal-v1-1-536ed503396c@oss.qualcomm.com
+---
+ drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c | 42 +++++++--------------------
+ 1 file changed, 11 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
+index 910b241fa94d..9e9019f5009d 100644
+--- a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
++++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
+@@ -73,58 +73,39 @@ static int get_sdam_from_irq(struct adc_tm5_gen3_chip *adc_tm5, int irq)
+ 	return -ENOENT;
  }
-=20
- static void at91_poweroff_remove(struct platform_device *pdev)
-@@ -209,8 +197,6 @@ static void at91_poweroff_remove(struct platform_devic=
-e *pdev)
-=20
- 	if (at91_shdwc.mpddrc_base)
- 		iounmap(at91_shdwc.mpddrc_base);
--
--	clk_disable_unprepare(at91_shdwc.sclk);
- }
-=20
- static const struct of_device_id at91_poweroff_of_match[] =3D {
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-r=
-eset.c
-index a9ad43217f48..bcf77a5162f1 100644
-=2D-- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -374,21 +374,15 @@ static int at91_reset_probe(struct platform_device *=
-pdev)
- 	reset->nb.notifier_call =3D at91_reset;
- 	reset->nb.priority =3D 192;
-=20
--	reset->sclk =3D devm_clk_get(&pdev->dev, NULL);
-+	reset->sclk =3D devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(reset->sclk))
- 		return PTR_ERR(reset->sclk);
-=20
--	ret =3D clk_prepare_enable(reset->sclk);
--	if (ret) {
--		dev_err(&pdev->dev, "Could not enable slow clock\n");
--		return ret;
--	}
--
- 	platform_set_drvdata(pdev, reset);
-=20
- 	ret =3D at91_rcdev_init(reset, pdev);
+ 
+-static irqreturn_t adctm5_gen3_isr(int irq, void *dev_id)
++static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
+ {
+ 	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
+-	int ret, sdam_num;
+ 	u8 tm_status[2];
+ 	u8 status, val;
++	int sdam_index;
++	int ret;
+ 
+-	sdam_num = get_sdam_from_irq(adc_tm5, irq);
+-	if (sdam_num < 0)
++	sdam_index = get_sdam_from_irq(adc_tm5, irq);
++	if (sdam_index < 0)
+ 		return IRQ_NONE;
+ 
+-	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_STATUS1,
++	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_index, ADC5_GEN3_STATUS1,
+ 			     &status, sizeof(status));
  	if (ret)
--		goto disable_clk;
-+		return ret;
-=20
- 	if (of_device_is_compatible(pdev->dev.of_node, "microchip,sam9x60-rstc")=
-) {
- 		u32 val =3D readl(reset->rstc_base + AT91_RSTC_MR);
-@@ -399,7 +393,7 @@ static int at91_reset_probe(struct platform_device *pd=
-ev)
-=20
- 	ret =3D register_restart_handler(&reset->nb);
- 	if (ret)
--		goto disable_clk;
-+		return ret;
-=20
- 	ret =3D device_create_file(&pdev->dev, &dev_attr_power_on_reason);
- 	if (ret) {
-@@ -410,10 +404,6 @@ static int at91_reset_probe(struct platform_device *p=
-dev)
- 	dev_info(&pdev->dev, "Starting after %s\n", at91_reset_reason(reset));
-=20
- 	return 0;
+ 		return IRQ_NONE;
+ 
+ 	if (status & ADC5_GEN3_STATUS1_CONV_FAULT) {
+ 		val = ADC5_GEN3_CONV_ERR_CLR_REQ;
+-		adc5_gen3_status_clear(adc_tm5->dev_data, sdam_num,
++		adc5_gen3_status_clear(adc_tm5->dev_data, sdam_index,
+ 				       ADC5_GEN3_CONV_ERR_CLR, &val, 1);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+-	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_TM_HIGH_STS,
+-			     tm_status, sizeof(tm_status));
+-	if (ret)
+-		return IRQ_NONE;
 -
--disable_clk:
--	clk_disable_unprepare(reset->sclk);
--	return ret;
- }
-=20
- static void at91_reset_remove(struct platform_device *pdev)
-@@ -421,7 +411,6 @@ static void at91_reset_remove(struct platform_device *=
-pdev)
- 	struct at91_reset *reset =3D platform_get_drvdata(pdev);
-=20
- 	unregister_restart_handler(&reset->nb);
--	clk_disable_unprepare(reset->sclk);
- }
-=20
- static struct platform_driver at91_reset_driver =3D {
-diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/rese=
-t/at91-sama5d2_shdwc.c
-index 589599cca076..cab94ef5a8a0 100644
-=2D-- a/drivers/power/reset/at91-sama5d2_shdwc.c
-+++ b/drivers/power/reset/at91-sama5d2_shdwc.c
-@@ -357,33 +357,23 @@ static int at91_shdwc_probe(struct platform_device *=
-pdev)
- 	match =3D of_match_node(at91_shdwc_of_match, pdev->dev.of_node);
- 	at91_shdwc->rcfg =3D match->data;
-=20
--	at91_shdwc->sclk =3D devm_clk_get(&pdev->dev, NULL);
-+	at91_shdwc->sclk =3D devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(at91_shdwc->sclk))
- 		return PTR_ERR(at91_shdwc->sclk);
-=20
--	ret =3D clk_prepare_enable(at91_shdwc->sclk);
--	if (ret) {
--		dev_err(&pdev->dev, "Could not enable slow clock\n");
--		return ret;
--	}
+-	if (tm_status[0] || tm_status[1])
+-		return IRQ_WAKE_THREAD;
 -
- 	at91_wakeup_status(pdev);
-=20
- 	at91_shdwc_dt_configure(pdev);
-=20
- 	np =3D of_find_matching_node(NULL, at91_pmc_ids);
--	if (!np) {
--		ret =3D -ENODEV;
--		goto clk_disable;
--	}
-+	if (!np)
-+		return -ENODEV;
-=20
- 	at91_shdwc->pmc_base =3D of_iomap(np, 0);
- 	of_node_put(np);
-=20
--	if (!at91_shdwc->pmc_base) {
--		ret =3D -ENOMEM;
--		goto clk_disable;
--	}
-+	if (!at91_shdwc->pmc_base)
-+		return -ENOMEM;
-=20
- 	if (at91_shdwc->rcfg->ddrc.type_mask) {
- 		np =3D of_find_compatible_node(NULL, NULL,
-@@ -417,9 +407,6 @@ static int at91_shdwc_probe(struct platform_device *pd=
-ev)
-=20
- unmap:
- 	iounmap(at91_shdwc->pmc_base);
--clk_disable:
--	clk_disable_unprepare(at91_shdwc->sclk);
+-	return IRQ_NONE;
+-}
 -
- 	return ret;
- }
-=20
-@@ -437,8 +424,6 @@ static void at91_shdwc_remove(struct platform_device *=
-pdev)
- 	if (shdw->mpddrc_base)
- 		iounmap(shdw->mpddrc_base);
- 	iounmap(shdw->pmc_base);
+-static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
+-{
+-	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
+-	u8 tm_status[2];
+-	int sdam_index;
 -
--	clk_disable_unprepare(shdw->sclk);
- }
-=20
- static struct platform_driver at91_shdwc_driver =3D {
-=2D-=20
-2.56.1
+-	sdam_index = get_sdam_from_irq(adc_tm5, irq);
+-	if (sdam_index < 0)
+-		return IRQ_NONE;
+-
+ 	scoped_guard(adc5_gen3, adc_tm5) {
+-		int ret;
+-
+ 		ret = adc5_gen3_read(adc_tm5->dev_data, sdam_index, ADC5_GEN3_TM_HIGH_STS,
+ 				     tm_status, sizeof(tm_status));
+ 		if (ret)
+ 			return IRQ_NONE;
+ 
++		if (!(tm_status[0] || tm_status[1]))
++			return IRQ_NONE;
++
+ 		ret = adc5_gen3_status_clear(adc_tm5->dev_data, sdam_index,
+ 					     ADC5_GEN3_TM_HIGH_STS_CLR, tm_status,
+ 					     sizeof(tm_status));
+@@ -405,8 +386,7 @@ static int adc_tm5_probe(struct auxiliary_device *aux_dev,
+ 
+ 		ret = devm_request_threaded_irq(dev,
+ 						adc_tm5->dev_data->base[i].irq,
+-						adctm5_gen3_isr,
+-						adctm5_gen3_isr_thread,
++						NULL, adctm5_gen3_isr_thread,
+ 						irq_flags,
+ 						adc_tm5->dev_data->base[i].irq_name,
+ 						adc_tm5);
+
+---
+base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
+change-id: 20261111-adctm5_gen3_hardirq_removal-467a437a78e1
+
+Best regards,
+--  
+Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
 
