@@ -1,81 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.12
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795514003;
-	b=zPuO/OIfTOVcnh7BRDWqJZeMg/XMkZZK3eqsFKS9D85iYuW0jHVQZrpxBVKJW/7CGCFX
-	 Hnwk4l0I4KjkVZVwdUnjG5Cn6GCluF3YvJzI/0bwLRU0LC1Jsa6Ji9q0xjGPaVs5AX8uR
-	 /h/yEvq8H5dWq+u/5Kt9yxljbbPrb/NPU+ZqJllASCaNNsqdoilkdofGHxsGWR1NlXOcG
-	 axyBTpRBAfJhPR93ShJPpQTIi8i7b6wl/rnQ3FUa21M1IfaYzH5gAKaTI8/RqNeElVRea
-	 BUFhJ+tWwMHXmvtEAoHZT1TLmM3M761Bd9vawFVcSVdSgkNVWTgH4s3rFrshv/vOMIw==
+	t=1795514163;
+	b=PhYT4x48f056yifIh4K4+bygpfwXmEN719w6ZTU83uEDjftz7Qwa30zBioh1Elmpe1od
+	 rkrB1cVxvhY0i1GNNWwXSeZWCuE4/SQc+Bh6Drdmd69Ov6+3mJkgotEg5vHQ+h8YNsHxf
+	 3iJdhazsk9bQe7M0TvbBoMendjUDVYtcc0O42cKaZT6dHywW3djMYd8pRzz/AnR3UfwP9
+	 eE1an/OczCsO1uLQg/fbifiAv2Lnw/vd3KN7zDje4uN2Mvk6Ak1k1u7Wyitc/C2p54QUW
+	 j3pNL1eacTh9w+x5mxgKmiCa2JWQ6bvC9PheqDgyqa0MVPj/xBjyePRmw/AxIaeDb/g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795514003;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:Organization;
-	bh=G2B3PXz2d/f4bHwViboEiMQwxd1eDk0zUDSOpThlHwQ=;
-	b=jOqaVhmU1uxaqPBeQF5ifxkgI+p5h1uzcrwxfNsHe7NVj7oy94SanpBaOct1nbbhfrZi
-	 9mp2IThNEMqRGb54QnPNseDFso5JJhHLlzpihr+Rh1NJrQX7sMcew+b68INJJhplHZhXw
-	 j0NijBese/5EiWnqSVaERDCWdSC936WXwuQCmReax29JFMAVOHPNtXvOi8BUEpKkwMkbR
-	 uyWkoiRuMmTbGDn1RrnxJBz5e3xL2Kyd7xbqQRud2hWdSebwMX1FLFbP3/aNxtHaRnZew
-	 P1aFTXSPs8CYZyeIoora0DbbnWd2mzDC6FIfGkWjFsX25y7sySRnKtQ7u1NSYyuJUeA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795514163;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=HBwwx22gdCBZcO+HQC+OiG/e+KY/HmCfnI4aK0bezx0=;
+	b=LYdOBr/FJSe0QkzfLKey6kt15fLGy9ZZiRCte1i/LeqL+IAVR54quWeNel2oUmtJ2mh/
+	 VbeM/FIxfUFErsVnvYd4XYXCmZcOFh1vBn/nxlaMlFs3A9pOrXHhzh41T5rXC9MW8QU+w
+	 Ybap+qcG+YmzPiGJ816CuZK/nNoyjCtapzNpLD0OV+iL93XKTrJn8ZVF+45z0aBmbkwns
+	 cef6MeBz752+9v0rsJ9LDoziEJ3eLAmmLmHM1fkqIHbKcQLsb/+78hsKuOvNhYlRiQ+V3
+	 o7AKlWhW8FJF6YhcnWnLJHPxRaJ/nQ57feLNI+z+t81DreIoLMzb+SCnQu2GiSsW8Mw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jjzRmLqw;
-	arc=none smtp.remote-ip=192.198.163.12
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HgKvT66T;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29512606A327;
-	Tue, 24 Nov 2026 09:53:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 29512606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE7C3606A32A;
+	Tue, 24 Nov 2026 09:56:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jjzRmLqw
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795514002; x=1827050002;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=xYrsAl676k8RliagPA6F0EN4aMPgS7arcYwLsWYXJ08=;
-  b=jjzRmLqw/IQzI91m+Gm+SWUet5HFgDAzcfrn+Rdek8/3V1FmTUxvI8OM
-   L5cw17+kta7TpUDhMRosi2cTEZufVIt81hAEsVPScOe7FQHUjXcok8FHZ
-   SZj9javnLr5nwyVeIwe1ve6E+ZNLG1s1eNlEvC0+CPd4L4AetYJOz9Fxb
-   Lo21AiHg98SbtgcprZ+xiu5asTb6q1MDf1W5x53DTWOsRpMHv38QxRZ3r
-   8kEbJxLh+3lZi6WZuBkd1DU7zqNRGPleA/b4u1hb54BQcImllo8oRBbvo
-   SU+F0CMbYUvZRTbDeVpBFdJXO2LilJ4O0z56YiPfU36KmcMeEhYiqXxO5
-   w==;
-X-CSE-ConnectionGUID: N7cG9+wtSwKbCsgX1XBK7w==
-X-CSE-MsgGUID: tNjXEvPDRdavoM/FG5hp3w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11975"; a="4222876"
-X-IronPort-AV: E=Sophos;i="6.27,230,1787036400"; 
-   d="scan'208";a="4222876"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2026 01:53:21 -0800
-X-CSE-ConnectionGUID: jjZGfFuVSiavu0FDtMnGtg==
-X-CSE-MsgGUID: gnN+xDUAS4WteYVYL40Q0A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,230,1787036400"; 
-   d="scan'208";a="11404701"
-Received: from hrotuna-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.125])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2026 01:53:18 -0800
-Date: Tue, 24 Nov 2026 11:53:16 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kamal.wadhwa@oss.qualcomm.com,
-	Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-Subject: Re: [PATCH v3] thermal: qcom-spmi-adc-tm5-gen3: move hardirq actions
- into threaded handler
-Message-ID: <awVejPXcrT5k9n5j@ashevche-desk.local>
-References: <20261124-adctm5_gen3_hardirq_removal-v3-1-c7923e9a54c1@oss.qualcomm.com>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HgKvT66T
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86A121F000EB;
+	Tue, 24 Nov 2026 09:55:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795514162;
+	bh=HBwwx22gdCBZcO+HQC+OiG/e+KY/HmCfnI4aK0bezx0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=HgKvT66TjCdo1tP68cBTobK77WEZOs0plGQEzS8YDlxCl0uR4GpJeTTms4vjEJFEQ
+	 XFZ8XAhxZgOGNms6u9xuyZM1+WQ08J/xdo1Tz/4lIAeMmVdqSHwrtZZvNAQ9G5G0RQ
+	 4t1hrQnSv90AYxS0fS5KvUlb79gdT9DrVSpg9F9U+8Lrl9Dmkj7qlu0Yqp9eaPM33A
+	 3FvZljj58ni7EX2g3uu5n9L4k5aBGz4jov5y/cHJ3KdmqA4Mz3EhX0Gi5QBmObXkuu
+	 dIMimcxNuwFX473yI69Bde9fMfX32vg2bv3rJyreFKWU1WtTe5tVLu4QWh1wR6Iqqq
+	 QjidklHUqc3cw==
+Message-ID: <a5f859c1-0779-4ae1-88f0-bfa12268e09c@kernel.org>
+Date: Tue, 24 Nov 2026 10:55:57 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -85,56 +51,178 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261124-adctm5_gen3_hardirq_removal-v3-1-c7923e9a54c1@oss.qualcomm.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: power: supply: Add qcom,pm4125-charger
+ binding
+To: Raj Aryan <raj.aryan@oss.qualcomm.com>, Sebastian Reichel
+ <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Casey Connolly <casey.connolly@linaro.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+References: <20261124-smblite-charger-for-pm4125-v1-0-2132c9f0601f@oss.qualcomm.com>
+ <20261124-smblite-charger-for-pm4125-v1-1-2132c9f0601f@oss.qualcomm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20261124-smblite-charger-for-pm4125-v1-1-2132c9f0601f@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Nov 24, 2026 at 02:33:49PM +0530, Jishnu Prakash wrote:
-> adc_tm5_probe() registers the ADC_TM interrupt with both a primary
-> handler and thread function (adctm5_gen3_isr/adctm5_gen3_isr_thread)
-> with IRQF_ONESHOT. The primary handler calls adc5_gen3_read(), which
-> takes the SPMI regmap's lock (a regular, non-raw spinlock) from hardirq
-> context. With CONFIG_PROVE_LOCKING enabled, this leads to a warning
-> about an attempt to take a lock in an invalid wait context:
+On 24/11/2026 10:15, Raj Aryan wrote:
+> Add YAML devicetree binding for the Qualcomm SMBLite switch-mode
+
+YAML devicetree binding, you hit combo... Drop YAML.
+
+A nit, subject: drop second/last, redundant "bindings". The
+"dt-bindings" prefix is already stating that these are bindings.
+See also:
+https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/bindings/submitting-patches.rst#L23
+
+> battery charger found on the PM4125 PMIC.
 > 
->   swapper/0/0 is trying to lock:
->   ffff000b67201018
->   (qcom_spmi_pmic:259:(&spmi_regmap_config)->lock){....}-{3:3}, at:
->   regmap_lock_spinlock+0x20/0x40
->   other info that might help us debug this:
->   context-{2:2}
+> SMBLite is a reduced-feature charger IP sharing a common SPMI
+> interface with the SMB2 family (PMI8998, PM660) but using separate
+> SPMI peripheral bases for CHGR, DCDC, USB, MISC and BATIF blocks.
 > 
->   Call trace:
->   regmap_lock_spinlock+0x20/0x40
->   regmap_raw_read+0x88/0x328
->   regmap_bulk_read+0x10c/0x340
->   adc5_gen3_read+0x38/0x50 [qcom_spmi_adc5_gen3]
->   adctm5_gen3_isr+0x90/0x130 [qcom_spmi_adc_tm5_gen3]
+> The binding covers:
+
+Do not explain what the patch is doing. We can read the diff. Please
+read submitting patches or look at other commits to learn what is
+supposed to be here.
+
 > 
-> There is no requirement for any of the work done in the primary handler
-> to run in hardirq context. Drop the primary handler and move all the
-> actions in it to the threaded handler, which removes the invalid wait
-> context warning.
-> 
-> Note that both handlers used a local variable to hold the index of the
-> SDAM whose IRQ was triggered ('sdam_num' in the primary handler and
-> 'sdam_index' in the thread function). These are the same value under
-> different names and 'sdam_index' is kept now, since the variable
-> represents an index, not a count.
+>   - compatible string: qcom,pm4125-charger
+>   - reg property for the CHGR peripheral base address
+>   - Four interrupts: usb-plugin, bat-ov, wdog-bark and
+>     usbin-icl-change
+>   - Two IIO channels: usbin_v (USB input voltage via ADC5_USB_IN_V_16)
+>     and usbin_i (USB input current via ADC5_USB_IN_I)
+>   - Optional JEITA soft and hard threshold configuration as raw
+>     16-bit ADC comparator values written to BATIF ADC comparator
+>     registers
+>   - Optional monitored-battery phandle for battery parameters such
+>     as float voltage and charge termination current
 
-LGTM now,
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
+...
 
-> Reported-by: Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-> Closes: https://lore.kernel.org/all/1cb6d902-73f3-4d65-96f4-4b3c5217253c@oss.qualcomm.com/
+> +
+> +maintainers:
+> +  - Raj Aryan <raj.aryan@oss.qualcomm.com>
+> +  - Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> +
+> +description: |
+> +  The Qualcomm SMBLite is a switch-mode battery charger IP found on
+> +  the entry-level Qualcomm PM4125 PMIC. It exposes five separate
+> +  SPMI peripheral bases for CHGR, DCDC, USB, MISC and BATIF blocks and
+> +  supports USB input current limiting, JEITA temperature protection,
+> +  battery overvoltage detection and a hardware watchdog.
+> +
+> +properties:
+> +  compatible:
+> +    const: qcom,pm4125-charger
+> +
+> +  reg:
+> +    maxItems: 1
+> +    description: Base address of the CHGR SPMI peripheral (e.g. 0x1000).
 
-You should probably get a formal Tested-by from the reporter before going
-further.
+Drop description.
 
--- 
-With Best Regards,
-Andy Shevchenko
+> +
+> +  interrupts:
+> +    maxItems: 4
+> +
+> +  interrupt-names:
+> +    items:
+> +      - const: usb-plugin
+> +      - const: bat-ov
+> +      - const: wdog-bark
+> +      - const: usbin-icl-change
+> +
+> +  io-channels:
+> +    minItems: 1
+> +    maxItems: 2
+
+Why is this flexible?
+
+> +    description: |
+> +      IIO ADC channels used by the charger. usbin_v is the USB input
+> +      voltage channel (ADC5_USB_IN_V_16). usbin_i is the USB input
+> +      current channel (ADC5_USB_IN_I).
+> +
+> +  io-channel-names:
+> +    minItems: 1
+> +    items:
+> +      - const: usbin_v
+> +      - const: usbin_i
+> +
+> +  monitored-battery: true
+> +
+> +  qcom,jeita-soft-thresholds:
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> +    minItems: 2
+> +    maxItems: 2
+> +    description: |
+> +      JEITA soft temperature thresholds (COOL, WARM) as raw 16-bit ADC
+> +      comparator values written to the BATIF ADC comparator registers.
+> +      Example: <0x5314 0x25e3> for COOL=15°C, WARM=45°C.
+> +
+> +  qcom,jeita-hard-thresholds:
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> +    minItems: 2
+> +    maxItems: 2
+> +    description: |
+> +      JEITA hard temperature thresholds (COLD, HOT) as raw 16-bit ADC
+> +      comparator values written to the BATIF ADC comparator registers.
+> +      Example: <0x58cd 0x20b8> for COLD=0°C, HOT=60°C.
+
+Express temperatures with proper units.
 
 
+
+Best regards,
+Krzysztof
