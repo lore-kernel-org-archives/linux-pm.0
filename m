@@ -1,49 +1,63 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795539636;
-	b=KL/TJ5W8UyK4x5e/y786VoxaniRMGt73I7pncvTC3tTDPzvQF5G3v4aaSfVUqlh5JWy7
-	 N/esLKGiwP7uMLfjON3JFMOdO4uMyn/80QOIN7WILqvzgL+ZBi1XhcGygbdsjhr5LN1mj
-	 JUmnwxqtD0DTTDh5SXCDxo+ouzc8TZb9P0JJ8hnXlmiYMoJ7YPKnp6rbnLKQRU5xoieav
-	 zmNyK6ipuXb7nV8qIWKclPGI26qF/oBp3vmde5OSbQ5n/+PANVb80EGN0P3qHlQptr1In
-	 LooMjaS2IVbyCEmfufzfhlVL+0gdvvtft9VDBvTF613JvnUx+X48Nd1b1XbpSRoR/6Q==
+	t=1795539688;
+	b=D5hR98RlVIRRy2XyLBJeWCXQ+2kYKssBvmAzWEPsB0Q/LMBck9qmrXe8S+0zLhlaKLDR
+	 Yku4+8G2w26N+m8t7VMdWitueuNKhFdqYkqqMWG4W5ljlcKxbdxRh7YIRTkZFMupcFYPY
+	 JdKLgFyv7vBtLTwjn5dIZYfcrQ4SGHH+uyatmbN6i0qI3/LJkG+7mkiOPTc6F13q628qR
+	 QyC9b2+B7SN11dhOURLnM3rymx8g6UzxnRNXXaW4nK2OnE5lCQXL1rFAfywBIPLZ1jx/P
+	 lJMYON9GrDSFtuxOakzD5Rx63jydEqfs0groXKRJA5/irW58fKFcmTXbRs8tA7f1e4A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795539636;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:From:
-	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=0II4ljEDv0KUEOXTn1IfR+YqrPY597L6UYRDSKuHB+Y=;
-	b=z5X223NYU2MrIV7OfG0GlFV0lSBQSmIWqakD8+ADIFItpZZZCrSzozqxgH4XWEIL/hqQ
-	 ROokQmn/Rdcsbi251fvNt7cYSWYHego37afLEKaDSw3UD/Qz0TOliQlkws1sT+H44C+7a
-	 F9duxmNKP0slMOKAFKryrrIxxmBgbPvyiZ8j0noWPjylW2GPslOGLHK66qFZYQBksLRfk
-	 bmVigHGvxAjRROM7eARMdC1KR9Ngv4WyVT4zCYx8IEdpaD9XynhJpdn/3wwesQnzNurEy
-	 +2kGNbAkeuV+pYC46V2RiBY+GpxNwpLY5S62DYUL8FhT8+4yCV5LhHab1ohM8hVm5lw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795539688;
+	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
+	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key;
+	bh=IDzclnct8WA8a6C78MYePSDwkn2DldpsvUxqm75JnPg=;
+	b=MCgL30X5pJYLzBvSziGq2fbLt2zCp0TfjTk6pjPFE/axs0+YNH/8ycYWP8vMW784fY39
+	 z9xKQ/OdO1unYJfvZKv1N24ASw97RUSTdQQxd1SQ3PYsjhNROmULvNyGvrp/5atT87qN4
+	 yxsJcws8TI0M+/tbGKo7q4mvBXQ9OJ9Xu8ISxA7EYD5za8HIwFRDsWVy00J/tdQ7fHEYB
+	 qukAkt2duw/iOr9EzgGreUiMJDNiH5sV0bEG/NdTxOL8jOQJnaG/WYW7+0kl/J/5Xw4BB
+	 39cZeGPdbQN2m/gvy37+UcM2LSoSF8eTbx5bA2z8qAHCDOhE/y+7VUDflez8Fc8sbGQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Gri3ywFb;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E3E09606A32E
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 17:00:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E3E09606A32E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bd+0mX+b;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42417606A321;
+	Tue, 24 Nov 2026 17:01:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Gri3ywFb
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3ADFF339;
-	Tue, 24 Nov 2026 09:00:31 -0800 (PST)
-Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B60893F86C;
-	Tue, 24 Nov 2026 09:00:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1795539634; bh=z8lJkegZYqKQAhYH3KELOe4ZmkhKnWLIUsCGvv6e6b0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Gri3ywFb6diRQ/1inXrBODLn5+HfbiqgZrEtYtH5OIFleXzz7NfhPbLJqA5kJXMG0
-	 ivaGIl5DoCe3Phi1oADie/3IcidpAvWvZ8mK348FK1nqLEHJ/vZoF8CUgRuCxcDdC+
-	 TY0AWUaBpMoNftMAh9ag9otVAmaFl/UJRP8WFJZk=
-Message-ID: <090c12e4-2331-4d6f-be30-65303c5731d0@arm.com>
-Date: Tue, 24 Nov 2026 17:00:30 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bd+0mX+b
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3BD981F000C0;
+	Tue, 24 Nov 2026 17:01:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795539688;
+	bh=IDzclnct8WA8a6C78MYePSDwkn2DldpsvUxqm75JnPg=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=bd+0mX+bTVWMLTn4CQSE46+nfqgd0ABeNiCzAm0TxnwofXmJ0w5usxsHQ7qSOFKIi
+	 pEO0DMzttBu+4SkrXcjDFOzQmJJga2PNIxM+q06wR9BA+Ocedl5ODmEmkple1At4pA
+	 7ch5dTLl3RWrDRSnPZmogHayUFuAWBmy2kiRnQC19a7qyZOE2g3BMXGgt+vHNCXITq
+	 mFgo5Taxav0ADHcEsJbrveTLWlcm/tuo+tcEkbdO8+1s3dzH4vZcRpsBe7I0ywXDjr
+	 a+ok95WVND4sJaJ9QOrQkgS6T73TlyGAbexJNkpQDEOrql3j19NtYQmeryOA6bazjY
+	 Da2NpjC89U/hg==
+From: Mark Brown <broonie@kernel.org>
+To: Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, Brian Norris <briannorris@chromium.org>
+Cc: Cezary Rojewski <cezary.rojewski@intel.com>, 
+ Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
+ Bard Liao <yung-chuan.liao@linux.intel.com>, 
+ Daniel Baluta <daniel.baluta@nxp.com>, linux-pm@vger.kernel.org, 
+ linux-sound@vger.kernel.org, Srinivas Kandagatla <srini@kernel.org>, 
+ Vijendar Mukunda <Vijendar.Mukunda@amd.com>, 
+ Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
+ Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, 
+ linux-arm-msm@vger.kernel.org
+In-Reply-To: <20261112111937.RESEND.1.I5cd238b1d4516d4d6980565e0a4e1b83d9abce63@changeid>
+References: <20261112111937.RESEND.1.I5cd238b1d4516d4d6980565e0a4e1b83d9abce63@changeid>
+Subject: Re: [RESEND PATCH 1/3] ASoC: codecs: lpass: Discard
+ pm_runtime_put_autosuspend() return values
+Message-Id: <179552812780.264265.5289486114789888312.b4-ty@b4>
+Date: Tue, 24 Nov 2026 13:48:47 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,120 +67,50 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] PM: runtime: Eliminate __pm_runtime_put_autosuspend()
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux Driver Core Development <driver-core@lists.linux.dev>,
- Will Deacon <will@kernel.org>, "Joerg Roedel (AMD)" <joro@8bytes.org>,
- iommu@lists.linux.dev, Brian Norris <briannorris@chromium.org>,
- Sakari Ailus <sakari.ailus@linux.intel.com>,
- Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-References: <13014755.O9o76ZdvQC@rafael.j.wysocki>
-From: Robin Murphy <robin.murphy@arm.com>
-Content-Language: en-GB
-In-Reply-To: <13014755.O9o76ZdvQC@rafael.j.wysocki>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1423; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=OQ/VGJF3rBrOALX3r/NGNh5X7pkoGJ8oI9D2vpyqMPo=;
+ b=owGbwMvMwCWm/754w+YLFp2Mp9WSGLJZDz0+fmtOU+naSTd2xzFtnv7Dhs3/6aNaaXXPh4EqX
+ VPnqudO6ChlYRDjYpAVU2SJy+J+WV/yeg3fwYVtMHNYmUCGMHBxCsBELixgZFh8VmmtT9STiOnM
+ 8+ceDnC3WfVK59x3pmk1V/vkvqVHfuBhZPiouT2+xs029/6/+UvmSL3z1WKK3LA9/ZDAh889Sxp
+ naDICAA==
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
-On 24/11/2026 4:36 pm, Rafael J. Wysocki wrote:
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> 
-> There are two users of __pm_runtime_put_autosuspend(),
-> pm_runtime_put_autosuspend() and arm_smmu_rpm_put(), but
-> the latter duplicates the code from the former.
+On Thu, 12 Nov 2026 11:19:37 -0800, Brian Norris wrote:
+> ASoC: codecs: lpass: Discard pm_runtime_put_autosuspend() return values
 
-Aha, indeed it was only this way to minimise conflicts with Sakari's 
-original refactoring, since that led us to realise that we did actually 
-want the mark_last_busy behaviour here anyway[1]. Evidently it missed 
-anyone's to-do list to come back and clean it up post-merge - thanks for 
-finally sorting it!
+Applied to
 
-> Fold __pm_runtime_put_autosuspend() into pm_runtime_put_autosuspend()
-> and make arm_smmu_rpm_put() call the latter.
-> 
-> No intentional functional impact.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.5
 
-Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+Thanks!
 
-[1] https://lore.kernel.org/all/ZxpnFPsk2OBC8vqd@google.com/
+[1/3] ASoC: codecs: lpass: Discard pm_runtime_put_autosuspend() return values
+      https://git.kernel.org/broonie/sound/c/673701e1c6bb
+[2/3] ASoC: intel: atom: Discard pm_runtime_put_autosuspend() return value
+      https://git.kernel.org/broonie/sound/c/ed3284607d65
+[3/3] ASoC: SOF: Discard pm_runtime_put_autosuspend() return values
+      https://git.kernel.org/broonie/sound/c/cbe3a1192e7c
 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   Documentation/power/runtime_pm.rst    |    1 -
->   drivers/iommu/arm/arm-smmu/arm-smmu.c |    7 ++-----
->   include/linux/pm_runtime.h            |   26 +-------------------------
->   3 files changed, 3 insertions(+), 31 deletions(-)
-> 
-> --- a/Documentation/power/runtime_pm.rst
-> +++ b/Documentation/power/runtime_pm.rst
-> @@ -338,7 +338,6 @@ It is safe to execute the following help
->   - pm_runtime_put_noidle()
->   - pm_runtime_put()
->   - pm_runtime_put_autosuspend()
-> -- __pm_runtime_put_autosuspend()
->   - pm_runtime_enable()
->   - pm_suspend_ignore_children()
->   - pm_runtime_set_active()
-> --- a/drivers/iommu/arm/arm-smmu/arm-smmu.c
-> +++ b/drivers/iommu/arm/arm-smmu/arm-smmu.c
-> @@ -79,11 +79,8 @@ static inline int arm_smmu_rpm_get(struc
->   
->   static inline void arm_smmu_rpm_put(struct arm_smmu_device *smmu)
->   {
-> -	if (pm_runtime_enabled(smmu->dev)) {
-> -		pm_runtime_mark_last_busy(smmu->dev);
-> -		__pm_runtime_put_autosuspend(smmu->dev);
-> -
-> -	}
-> +	if (pm_runtime_enabled(smmu->dev))
-> +		pm_runtime_put_autosuspend(smmu->dev);
->   }
->   
->   static void arm_smmu_rpm_use_autosuspend(struct arm_smmu_device *smmu)
-> --- a/include/linux/pm_runtime.h
-> +++ b/include/linux/pm_runtime.h
-> @@ -588,30 +588,6 @@ static inline void pm_runtime_put(struct
->   }
->   
->   /**
-> - * __pm_runtime_put_autosuspend - Drop device usage counter and queue autosuspend if 0.
-> - * @dev: Target device.
-> - *
-> - * Decrement the runtime PM usage counter of @dev and if it turns out to be
-> - * equal to 0, queue up a work item for @dev like in pm_request_autosuspend().
-> - *
-> - * Return:
-> - * * %1: Success. Usage counter dropped to zero, but device was already suspended.
-> - * * %0: Success.
-> - * * %-EINVAL: Runtime PM error.
-> - * * %-EACCES: Runtime PM disabled.
-> - * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
-> - *   change ongoing.
-> - * * %-EBUSY: Runtime PM child_count non-zero.
-> - * * %-EPERM: Device PM QoS resume latency 0.
-> - * * %-EINPROGRESS: Suspend already in progress.
-> - * * %-ENOSYS: %CONFIG_PM not enabled.
-> - */
-> -static inline int __pm_runtime_put_autosuspend(struct device *dev)
-> -{
-> -	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
-> -}
-> -
-> -/**
->    * pm_runtime_put_autosuspend - Update the last access time, drop usage counter
->    * and request autosuspend.
->    * @dev: Target device.
-> @@ -635,7 +611,7 @@ static inline int __pm_runtime_put_autos
->   static inline int pm_runtime_put_autosuspend(struct device *dev)
->   {
->   	pm_runtime_mark_last_busy(dev);
-> -	return __pm_runtime_put_autosuspend(dev);
-> +	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
->   }
->   
->   DEFINE_GUARD(pm_runtime_noresume, struct device *,
-> 
-> 
-> 
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
 
