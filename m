@@ -1,103 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.52
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.174
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795547129;
-	b=g1xdCXgFs4dz0YK1tPa8V9b5ohXtYkIW/H9w3UAuiKBIQFMRAQgWcQlBVGExI+waPD7V
-	 sKNmEE9ghkYKhCmJ0HsL8twhIVcQPVW8RsDZVSPXEwtRcssw/nge8UU+borjqNh7rIGrV
-	 k1982kRACEX/I6D9faNNE/Z9foo6dv025ySniIg9Yw5QNNYaFtsz2nt4XtpyIJoAlWSGw
-	 4RQsr/54spEwBeafK460UIWdFA+9AibbBNTgJeWnWVfDbLRm6sn3rzwLifyiy3coSYWhE
-	 Tyn7fP+coeSV+0KLXavO/QJstyvUiOVhHiFrXzg/QCcaCOmTp+bZFFE4lsC35H6FZAw==
+	t=1795547632;
+	b=SzbvNuny4G//mLFmbljDDgxiAttkCEWmjTm72ozXmCRs+FU0j1EY0LEn6ttxzeLGRkoZ
+	 3vxUlnKGXHHPpxdtMPpGhvtrzVUHaY+Uec5mx0KGTc26NszRBhukuYGTom5BJGRe82seC
+	 L/ofewTJyPj8v4P/kt5anOrUh9V+mBcqOJugk7J/Ao00zzThqkZNeA/2OSX0TB7Q4iDs8
+	 pa71jz4c7G3XU6kytx6o3KeKRfHhq33bEgVrWCx9PTHMap3tCAGEgrPr+5QtJMvW0GbhH
+	 VzCQx1WxnsFLtXxXk1qnjpmnHqqPX1LOetQOsvM4XU1R+T8UH6sgKo848BGBTdWv2vA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795547129;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795547632;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=oRymF9g7Ou6E84Fcm6RvQE44N4Aj97+O2QyjNvisAjA=;
-	b=pYN2FoB9FyD7QLM7ZN2Ovt0pkRdC2fMDWPzMaWiOOdwo2TNBXK2Pzp7/N/hA1z3mp3CT
-	 Rq/5ex4chWAfKJUHaJPme5lM/8V0L47JGmWm37ix9ibjoLzO7dFStMNSv6LVAQ5GN6E9+
-	 BBn1gPl6vVmlv+UVx6LYB9JNPnWkNqIPUUFSXUkB/hJldh7KF0Fwh+ldy1UvTCZTHjPYc
-	 SrMFx1RFJODeLzMOrjEQvFAGl/syF6WpAbRSUZzhwW1VCG1oz3XUe8yaQL7M55ttvymOy
-	 pPrjO2IgGWYH4Ukadf3qZ8FJLncgtrvNqUYZqUdXIY1eUMvZ2Iyd+QcmN3f4bHg/iwQ==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=XeNdzIttNMTE0MJO+i5BOMI8/bNW8dsc8julRJQrMKc=;
+	b=LpTqpuRO04v6g7ji6qmnxBWbszNXAbNV62b7L47k77SHwWnM+9LjXl3A8edW2aTaxSDL
+	 6Aum7zisG06vzQ4bnLWYYm1+SQZrxU+Oe/JF+ejkeP1/VNMLq0KqsNeYicG+ET1MWZM9U
+	 PmCakiN9mxG1DXU6VN/Ad/XI8fYdKkYh9RSOuB03xryRkhF0GE1LVatPB5yek6anL6b+L
+	 VHB4SPKSGKMahmSY9kdtI3htgMpuQGEc4p1UJQG6oJ4AOoy3AL0bnUAIOdsbmzcmgkO5Q
+	 2OF3fr9ZTZytjmiUDjUHkkUGzUeEaHuJayyMc9q4cUfstx8q6lHRnvJqj7c7QfjyOyQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b="LaQ/DrsS";
-	arc=none smtp.remote-ip=74.125.82.52
-Received: from mail-dl1-f52.google.com (mail-dl1-f52.google.com [74.125.82.52])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=cLkts1ip;
+	arc=none smtp.remote-ip=209.85.167.174
+Received: from mail-oi1-f174.google.com (mail-oi1-f174.google.com [209.85.167.174])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FC80606A323
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 19:05:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7FC80606A323
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B6F3606A321
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 19:13:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9B6F3606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=LaQ/DrsS
-Received: by mail-dl1-f52.google.com with SMTP id a92af1059eb24-1b244fb7fffso4704570c88.1
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 11:05:28 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=cLkts1ip
+Received: by mail-oi1-f174.google.com with SMTP id 5614622812f47-57e4bd7fb1eso413053b6e.0
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 11:13:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1795547127; x=1796151927; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=oRymF9g7Ou6E84Fcm6RvQE44N4Aj97+O2QyjNvisAjA=;
-        b=LaQ/DrsSf/lTSKvebzDUDO0d/SHlG21H7sH+cy2n5Opuq5APd2coUYIy+qQpQcVw4R
-         0BV9TbeCVyo44f/hbGV92P3ImsMclWWCBp/vJiP8cse/parjod0QWq640h6Itmt7KGot
-         KhUQc+NJfF+SZ6jCEIuWmdYI0PlW4M6xWEVe8=
+        d=gmail.com; s=20260707; t=1795547630; x=1796152430; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=XeNdzIttNMTE0MJO+i5BOMI8/bNW8dsc8julRJQrMKc=;
+        b=cLkts1iprVLlgY9F+WAkIn7UyO2Lkr9VzsxUclyufbtEI1GTf/GdU9TUzrwfw+Q4jB
+         7jVIK4tVXYHUr28akTYoAfrdbRxIT1W8imb3q21ogLZ0/M3sV1pxyY6PQnfrfrdQ84KG
+         q8aGxP3bB2LY1Wc02OeJpAuqIazw3RisdacbYmW53Cuq6pjbB0SnJlfbzLeQUIwjWQlf
+         qewCLwXQvYcS4DIGZiEhmh7dCwUzVIgjiA7xOAvvPib1s/Js49jQR4TeRrMg/olqLArQ
+         fVrR2xwDIKBwYzx6NFBaQqagip/U7eBEUI64MZ6QGWxeZwVaOL0Yy/T5j9QjBqt4p/3+
+         cW+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795547127; x=1796151927;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=oRymF9g7Ou6E84Fcm6RvQE44N4Aj97+O2QyjNvisAjA=;
-        b=IlKccrDbiLiScM35BeBz4ifLHKGEQDGdlGCiTFOsQ2ugApY9Gr8S+HFgqZoA3GCXnf
-         wfCFRZah6DQCcNgZio28kM31Wjtr25b8IHFxKyxf0sntP9EBgHf+3DGRiqR6aVK7TH0e
-         Rb2N/xErej32HL0xvPTpHeCdWYh/yKdKMGedubJBwQ6Fi6LyyU0GTFXDByKVqiOovrF0
-         zBYgtLdWzxorjIFVqswu2JlRDnncIm2Y+5ositkKPzCqlVfNdjDRN9v3mrRKs2lJBKRo
-         Al7LoZAcfTktx/uAJTX25z5NBY9bVqahNjC9P29Td/vX15UCpf9HTdIhSkfOJ17I9CZc
-         3USQ==
-X-Forwarded-Encrypted: i=1; AL+hErFnFoKiqTMIyD1waR8Z7rHRapyNgBGjyYp+559hNYMQUm5efmJWzM0vBx8RcPIOBlimNInA9NaA0A==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8Sqr/EehwM1eZGLY5GXwBVRGYCDFeYhjOhzPIlUWEiyvWrYS3k
-	aAoQp1AjJTdpnVC94fijB4gM7LlhEAILaDL8He29RsgdtufK1BoO9tNOGNvveOgT3w==
-X-Gm-Gg: AZFdTZca5Ojxe45GZdamvreJ6LIZmHlSathj3CcXho6SsjakBcYV7F4Hdw4Sl3FwxoC
-	1TM+5wjdy3inmugdRlxZ7gGmRozk8dx2fRKoJloib2LCtWz8VXWlLiT41vS+V9GDPziySWBm7RG
-	isuuZJo7MOnAlxwVTbm7TgowrX8cEi1esJfxElYA4Q9vRSh1aRybpVAGiFWXFP789x3SYYvzRJQ
-	9SMGE+F6vyyXhkIRNBCUHoZSpt2z9bz3ibCWsswzzPKk7fROCnyX9On/1QhcvdYtqmaU8ArBBbT
-	3A6DVQZSf8z+sYGPvPeeoDzCEk5RvdKpi89sV9drU3Yb+puncLqiE5r4soHr1xIFay6+si3j8tv
-	9VIZZcBI03jA55G0ZgETUl+UR9iPZTD2tNDMRtUlZelteWC8naDeagT9K7Zc5QHq4V2kxCEzqfn
-	wIDyDKIeSFRsHYOrxNzIhzdzXF0EsYC/ji608/cSCXmLz9oz4Iqojq+YSdNvBwgr9MYifLGL3RA
-	VMOmOQNxaqayKibB9gXHW2h+wX9l3ZvjCdQU8A56qP81sTPnErQ4dsOy1Nr7sjleRjkVtZ9X8z3
-	seVxuQV44+Kjx00cfvrPx5nHtWQxOzilmKCTSi0ke5+j9qCvNJcb+ySlNBGJl5SCv1ch
-X-Received: by 2002:a05:7023:a41:b0:1b5:4b48:b9ee with SMTP id a92af1059eb24-1b5568c0ec9mr15438832c88.26.1795547127198;
-        Tue, 24 Nov 2026 11:05:27 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:ea9b:d8a3:ba44:2d0a])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3866f299d0bsm39337143eec.19.2026.11.24.11.05.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Nov 2026 11:05:26 -0800 (PST)
-Date: Tue, 24 Nov 2026 11:05:23 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: Peter Griffin <peter.griffin@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>, devicetree@vger.kernel.org,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>,
-	linux-arm-kernel@lists.infradead.org,
-	Mariano Marciello <mmarciello@google.com>,
-	Douglas Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org,
-	Jakub =?utf-8?B?R8WCb3dhY2tp?= <jglow@google.com>
-Subject: Re: [PATCH 3/9] soc: google: Add CPM over MailBox Array driver
-Message-ID: <awXf86suGgKeazZx@google.com>
-References: <20261026214359.3122870-1-briannorris@chromium.org>
- <20261026144346.3.I7bc547c83b7bf677a62670099f481a91ac737073@changeid>
- <CADrjBPqnRrFeYT9J6NGxy+Xzy1PTZEz+BMs1_u2md7Ra6xPPDQ@mail.gmail.com>
+        d=1e100.net; s=20260707; t=1795547630; x=1796152430;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=XeNdzIttNMTE0MJO+i5BOMI8/bNW8dsc8julRJQrMKc=;
+        b=uqPPW8Wb4jGX6xEMA83Sc9SWjVL9MNaNMSq8j17OZtl1MnCg/pG4fEkjSbOIHH0NKd
+         /yUSTUHNgnIbqemX3L8kB0M8coaOil34phjeWxq6XcxzVFU4NRQzNafRoY1uTpYHgY8V
+         vAQUsgnZWt54PxO5xAjLfL7uRGu6VDQQSeejHKg7uj0EH8CsJYbrTPG/fW7u4FRNBnkR
+         /kOaqO34SlciH2MXBQNhhHEktmCrkY7Xk/+horUiUahVs4F+trDk3F9o+KVBcOSF4ItY
+         NdCGjFG71MCVpPj2LVXPShUlDK4fIYrXWru21SgnYTE3LdbumEVj+/RjdeT6EsLoH8TG
+         rNJw==
+X-Forwarded-Encrypted: i=1; AL+hErFKPORwWMYQMHtv5dMBh+QIg57/a49QKbbmoVOm+1TJ029QqDEX9EO5J7Nfm79ruPlq6qsXNF1+JQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+tZIJrrrOzuQ09TTIzRWFkvHRVDq+/p/aOM5biF1HynuWTGfzV
+	EXrsMa5dGRbNostDN/2XLFn5ZU3ua/wOnN6BN3nH4hm8/s6bT65ke9FDoDwWtQ==
+X-Gm-Gg: AZFdTZeaqOZDuF43DPqHty5vhF2+SCEMPw1dBAsr0xFw4SVaVXno2B9hGw/ifHYVT3Q
+	FVwib56TiI7jV+SQajzmLBn29qArBrFOtFAGieLJY0VnPR5ySUzC9WHB/DjkMmKoCU32YYWm4d4
+	3VHh2QyjrpsC6ps47r5cvtMo4aALCaSk13jIyZ1KWF4VN/MxII1c+PYHrUS4+nrgbldMO97zpGw
+	uQbCG2221dnEyoB3R6GkJv+weggfL7+sIROx79t/hOK3TMY7+rNp/HrlUhsjnnMZK4Mk+NFBEmA
+	U27eJxv1RjQzeaw/HAVlthzHTBzYahZOH/qO3CysjYazmZlIHu5EkfKIMuM5JSbenjVs6v0kXQg
+	JI3YkKDUmaYnMp2nJJ5Vy96PTHV9nL5uetczV0EXsyWyDw1IL9LkDCCbBNDkwOANf5+LzALMdEL
+	gGmL8j5lXb8GYJSrTvqAMgHSNwpg2+uW72R0x94fp9E+LgqSBfbGhLGy4BkMxfqfmDvNWgdD0PI
+	IZ8o6iBFKkNW9FsKBs04EPoRi8dLKYh++P2UjI1Jq8N9zjyy+mCFiYWSm4KtsCAshDRmwOiHFe4
+	2xdxMaIpMaakw8zjxIRH3DLx02HxmfQ=
+X-Received: by 2002:a05:6808:c1d3:b0:572:f1d1:d6b0 with SMTP id 5614622812f47-57a0c9c5064mr14920907b6e.65.1795547630522;
+        Tue, 24 Nov 2026 11:13:50 -0800 (PST)
+Received: from neuromancer ([75.28.21.198])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-57a362575fbsm12774058b6e.17.2026.11.24.11.13.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Nov 2026 11:13:49 -0800 (PST)
+From: Chris Morgan <macroalpha82@gmail.com>
+To: linux-rockchip@lists.infradead.org
+Cc: devicetree@vger.kernel.org,
+	shawn.lin@rock-chips.com,
+	linux-pm@vger.kernel.org,
+	heiko@sntech.de,
+	conor+dt@kernel.org,
+	krzk+dt@kernel.org,
+	robh@kernel.org,
+	sre@kernel.org,
+	t.schramm@manjaro.org,
+	xsf@rock-chips.com,
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: [PATCH V4 0/3] Add Cellwise CW2217
+Date: Tue, 24 Nov 2026 13:13:43 -0600
+Message-ID: <20261124191346.434143-1-macroalpha82@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -107,259 +103,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CADrjBPqnRrFeYT9J6NGxy+Xzy1PTZEz+BMs1_u2md7Ra6xPPDQ@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Nov 24, 2026 at 12:28:24PM +0000, Peter Griffin wrote:
-> Hi Brian,
-> 
-> Thanks for your series; it's great to see more Laguna support being posted.
-> 
-> On Mon, 26 Oct 2026 at 21:45, Brian Norris <briannorris@chromium.org> wrote:
-> >
-> > The Central Power Manager (CPM) is a co-processor on the Google Tensor
-> > SoCs, as used on Pixel phones. CPM supports power-management and a
-> > number of other features.
-> >
-> > The Application Processor communicates with CPM over a pair of mailbox
-> > channels (the "MailBox Array" (MBA)). CPM provides clock, power-domain,
-> > reset, interrupt services, and more.
-> 
-> [..]
-> 
-> +++ b/drivers/soc/google/Kconfig
-> @@ -0,0 +1,13 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +
-> +config GOOGLE_CPM_MBA
-> +       tristate "Google Tensor CPM MailBox Array Interface"
-> +       depends on ARCH_GOOGLE || COMPILE_TEST
-> +       depends on MAILBOX
-> 
-> Should we also have "depends on OF"?
+From: Chris Morgan <macromorgan@hotmail.com>
 
-Why, precisely? It's not actually a compilation dependency (I tested),
-although it's needed at runtime. It doesn't seem like this is
-consistently done simply for runtime dependencies, and instead work has
-generally been done to ensure everything builds fine and fails closed
-without CONFIG_OF.
+Add the Cellwise CW2217 battery gauge driver. This driver is based on
+the sources used for Rockchip's Board Support package [1] but has
+been updated to use the regmap API and devm helpers.
 
-Anyway, it's a bit academic, since ARCH_GOOGLE (ARM64) selects OF.
+[1] https://github.com/rockchip-linux/kernel/blob/develop-6.12/drivers/power/supply/cw221x_battery.c
 
-> +       select AUXILIARY_BUS
-> +       help
-> +         Driver for interfacing with the Central Power Manager (CPM) MailBox
-> +         Array (MBA) found on Google Tensor SoCs. The driver provides APIs for
-> +         communication between the Application Processor and the CPM, and
-> +         is required by CPM client drivers such as clock, reset, power
-> +         domain, and more.
-> 
-> > diff --git a/drivers/soc/google/google-cpm-mba.c b/drivers/soc/google/google-cpm-mba.c
-> > new file mode 100644
-> > index 000000000000..629a071e202c
-> > --- /dev/null
-> > +++ b/drivers/soc/google/google-cpm-mba.c
-> > @@ -0,0 +1,964 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * Google MailBox Array (MBA) CPM Interface
-> > + *
-> > + * Copyright 2023-2026 Google LLC
-> > + */
-> > +
-> > +#include <linux/auxiliary_bus.h>
-> > +#include <linux/bitfield.h>
-> > +#include <linux/bits.h>
-> > +#include <linux/cleanup.h>
-> > +#include <linux/completion.h>
-> > +#include <linux/device.h>
-> > +#include <linux/jiffies.h>
-> > +#include <linux/kref.h>
-> > +#include <linux/list.h>
-> > +#include <linux/lockdep.h>
-> > +#include <linux/mailbox/goog-mba-message.h>
-> > +#include <linux/mailbox_client.h>
-> > +#include <linux/mailbox_controller.h>
-> > +#include <linux/module.h>
-> > +#include <linux/of.h>
-> > +#include <linux/of_platform.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/spinlock.h>
-> 
-> Missing `#include <linux/slab.h>` header here as later it calls
-> kfree(), kzalloc_obj().
-> This can cause "implicit declaration of function kfree / kzalloc_obj"
-> errors with COMPILE_TEST. Also similar issue in clk-cpm.c
+Changes Since V3:
+ - Two more small fixes requested by Sashiko, one trivial fix for the
+   to not always write CW2217_CONFIG_RESTART for the cw2217_active
+   method and a small fix for the regmap writeable/volatile ranges.
 
-Ack, will fix.
+Changes Since V2:
+ - Fixed more bugs pointed out by Sashiko.
+ - Corrected an integer overflow condition when measuring current.
+ - Corrected logic for when we don't have a user specified battery
+   profile.
+ - Added power supply changed logic in the worker.
+ - Updated the Kconfig text to note support for the cw2215 and cw2218.
+ - Added a check to ensure polling interval cannot be below 250ms.
 
-> > +
-> > +#include <soc/google/google-cpm-mba.h>
-> > +
-> > +#include "google-cpm-mba.h"
-> > +
-> 
-> [..]
-> > +static bool cpm_iface_is_valid_req(struct cpm_data *cpm,
-> > +                                  struct cpm_request *cpm_req)
-> > +{
-> > +       struct device *dev = cpm->dev;
-> > +
-> > +       if (!cpm_req) {
-> > +               dev_err(dev, "cpm_req is NULL\n");
-> > +               return false;
-> > +       }
-> > +
-> > +       if (!cpm_req->req_msg) {
-> > +               dev_err(dev, "cpm_req->req_msg is NULL\n");
-> > +               return false;
-> > +       }
-> > +
-> > +       if (cpm_req->msg_type > RESPONSE_MSG || cpm_req->msg_type < ONEWAY_MSG) {
-> > +               dev_err(dev, "Invalid msg_type: %d\n", cpm_req->msg_type);
-> > +               return false;
-> > +       }
-> 
-> Should cpm_req->dst_id also be range checked?
+Changes Since V1:
+ - Added a default value for the shunt resistor in the binding
+   documentation, and updated the commit description to note that the
+   min and max for the battery profile is now per-compatible string.
+ - Fixed bugs pointed out by Sashiko bot, and corrected units for
+   temp and shunt resistor values.
+ - Corrected include pointed out by kernel test robot.
+ - Noted in the commit message the patch is based on original work by
+   Xu Shengfei at Rockchip. I did not list him as co-developed or
+   signed-off since I did not have his permission (yet) to do so,
+   but I have his authorship included in the file itself.
 
-This will be refactored on v2, where dst_id will be u8 and so will
-always be in-bounds.
+Chris Morgan (3):
+  dt-bindings: power: cw2015: add cw2215, cw2217, and cw2218
+  power: supply: cw2217: Add support for Cellwise cw2217
+  arm64: dts: rockchip: Add Battery Gauge to Anbernic  Vita-Pro
 
-> > +
-> > +       if (cpm_is_request_msg(cpm_req) && !cpm_req->resp_msg) {
-> > +               dev_err(dev, "cpm_req->resp_msg is NULL when msg_type is REQUEST_MSG\n");
-> > +               return false;
-> > +       }
-> > +
-> > +       if (cpm_is_response_msg(cpm_req)) {
-> > +               if (!goog_mba_q_get_valid(&cpm_req->resp_context)) {
-> > +                       dev_err(dev, "Invalid valid bit in resp_context: %#x\n",
-> > +                               cpm_req->resp_context);
-> > +                       return false;
-> > +               }
-> > +
-> > +               if (!cpm_is_response_header(&cpm_req->resp_context)) {
-> > +                       dev_err(dev, "Invalid response type in resp_context: %#x\n",
-> > +                               cpm_req->resp_context);
-> > +                       return false;
-> > +               }
-> > +       }
-> > +
-> > +       return true;
-> > +}
-> > +
-> 
-> [..]
-> 
-> > +
-> > +static int cpm_init_q_mode_proto(struct cpm_data *cpm)
-> > +{
-> > +       struct cpm_payload msg_payload = {};
-> > +       struct cpm_request req = {
-> > +               .msg_type = ONEWAY_MSG,
-> > +               .req_msg = &msg_payload,
-> > +       };
-> > +
-> > +       return __cpm_send_message(cpm, &req, GOOG_MBA_Q_INIT_PROTO_VAL, 0);
-> 
-> Do we want this to have an infinite timeout? If the CPM firmware never
-> responds, it will hang the boot (as MAX_SCHEDULE_TIMEOUT doesn't arm a
-> timer).
-> I guess it is game over anyway if the CPM firmware is dead, but it
-> would be nice to log an error and return from probe()
+ .../bindings/power/supply/cw2015_battery.yaml |  41 +-
+ .../rockchip/rk3576-anbernic-rg-vita-pro.dts  |  21 +-
+ drivers/power/supply/Kconfig                  |  11 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/cw2217_battery.c         | 878 ++++++++++++++++++
+ 5 files changed, 945 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/power/supply/cw2217_battery.c
 
-Hmm, I suppose a timeout would be OK, although definitely fatal to any
-useful purpose of the system.
+-- 
+2.53.0
 
-> > +}
-> > +
-> > +static int cpm_init_q_mode(struct cpm_data *cpm)
-> > +{
-> > +       int ret;
-> > +
-> > +       ret = cpm_init_q_mode_proto(cpm);
-> > +       if (ret < 0)
-> > +               return ret;
-> > +
-> > +       cpm->seq_num = GOOG_MBA_Q_MIN_SEQ_VAL;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static void cpm_adev_release(struct device *dev)
-> > +{
-> > +       struct auxiliary_device *adev = to_auxiliary_dev(dev);
-> > +
-> > +       of_node_put(dev->of_node);
-> > +       kfree(adev);
-> > +}
-> > +
-> > +static void cpm_unregister_adev_action(void *data)
-> > +{
-> > +       struct auxiliary_device *adev = data;
-> > +
-> > +       auxiliary_device_delete(adev);
-> > +       auxiliary_device_uninit(adev);
-> > +}
-> > +
-> 
-> Can we use devm_auxiliary_device_create() instead of open coding these?
-
-Yes.
-
-I think this (and some planned subsequent changes) have morphed a bit
-over my development time, as there were some cases where we could not
-reuse the same of_node. But this current patch can use it, and I also
-think future changes will likely just use mfd / of_platform_populate()
-if they require subnodes, so my initial concern is probably invalid.
-
-> > +static int cpm_register_adev(struct cpm_data *cpm, const char *name)
-> > +{
-> > +       struct auxiliary_device *adev;
-> > +       int ret;
-> > +
-> > +       adev = kzalloc_obj(*adev, GFP_KERNEL);
-> > +       if (!adev)
-> > +               return -ENOMEM;
-> > +
-> > +       adev->name = name;
-> > +       adev->id = 0;
-> > +       adev->dev.parent = cpm->dev;
-> > +       adev->dev.release = cpm_adev_release;
-> > +       device_set_of_node_from_dev(&adev->dev, cpm->dev);
-> > +
-> > +       ret = auxiliary_device_init(adev);
-> > +       if (ret) {
-> > +               of_node_put(adev->dev.of_node);
-> > +               kfree(adev);
-> > +               return ret;
-> > +       }
-> > +
-> > +       ret = auxiliary_device_add(adev);
-> > +       if (ret) {
-> > +               auxiliary_device_uninit(adev);
-> > +               return ret;
-> > +       }
-> > +
-> > +       return devm_add_action_or_reset(cpm->dev, cpm_unregister_adev_action, adev);
-> > +}
-> > +
-> 
-> [..]
-> 
-> > +
-> > +MODULE_DESCRIPTION("Google MBA CPM interface");
-> > +MODULE_AUTHOR("Lucas Wei <lucaswei@google.com>");
-> 
-> I think you should add Lucas Wei's SoB tag to the patch as part of the DCO
-
-I keep going back and forth in my head on this one, since these drivers
-did indeed start from the same source with the professed MODULE_AUTHOR.
-But they've been massively rewritten, so they're similar in a sort of
-Ship of Theseus way.
-
-I suppose I'll retain the MODULE_AUTHOR() and update the SoB.
-
-Regards,
-Brian
