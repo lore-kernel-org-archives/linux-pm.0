@@ -1,112 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795522194;
-	b=uztFNj/3hC+59dzNFlNdYYaIfkmbp18IvYAK/AXJPD1mnTgbB9mlcB+1LU+YB6UnVePg
-	 5k89LQxVgRRiaqPaNVnfcy6zw4aWmmXeKZz7anS4LnUfWzHSzSR5cH2Cot61aev2SwC3q
-	 8PKqs1AFPwTvf9wyr5nX4T4GhYdYRemsP0QAWAhWSkjqoFrRKmN2BRBfNTisxqSEQ2Vj4
-	 YzEsehLjmTKwQWmfvDnTSFEz4T+joRWUt+q3HReRqUtQbx3m76jR94sw0BlpNOGaOvEk0
-	 ik87prfKYlL27V1HIhD0W9+0VLIb5BV3JKiy4MCS5nLAFf22VLftEslA7N0dwXiqbqg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795522194;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
-	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	bh=iIkF99BTPL7r+iEiIqkBD+caYW2P5DX3RwwpiusZ8xU=;
-	b=2wZHcZHoiV+L30FhIclmBSU/Gorb3qOWruzOG3TGsGzJUBkLB49BR5AAnP63mZuP4He8
-	 E4+6YqhTOytbayyodZIYVXJXsAYN7uAglDHjskMlBKskgQ0qDnY3d08S2NDf6OV9lWK7c
-	 zz7Eck4oasSjXhFVjjyF7uZ7cIxd+2iONmGDva4UORtyEnOM8ssfVO8Jvz2HOPDIdrsYr
-	 IRq2IzV5iBaUuJ2uh5TMDwRKQNs6dbeFz5ymMEF6CJcEkH6iWRJ/YHWFbpijDV0Rr45A3
-	 s9TT2CVsJLyRN6FwZuVFvu02LVIoOwovHtkrYcbg9dg2RZtFCkUWxN2LjQ8JKLQ5CYg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OpCIRcEh;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=QzgKLgDR;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.47
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795523318;
+	b=Ju5bZ6FkRgu+nhz2FTDsgIyp6DZeTjTvDyOq7C8Z+Tr4KotTQ4RKeK4gO3pAfAarBnpe
+	 9/XvEboczW2I5rs75z7OrVK8HjoHbG7c/1fdnsrvJfr4Le7qLwcFCWDaN9SecjEw1hUp1
+	 T7uQ6KPuo12Z0PNbOa8orgHsLRl/F6iZpkJvye/mgLVyabeuJukphJN3aJqzRDlbR1Mqt
+	 7u5646s8kOWeVWOQxZbx56iRuBGOwBvslZwZzW+s1iWYr3U3rgYEHBemMfxiLtPluI933
+	 x2pqtUyE6i7rPwQ3FmPrEhO0GzYAdvnhXyB7869d3EzZDkNWRGV21Y8yT+WzByo0Caw==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795523318;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Cc:Content-Type;
+	bh=bWdHkD13wMd/Xd77WjepXEVBI/YLkHIIzGDJnSOi/6c=;
+	b=uMZLzQscHW2r/+w2DWqh3sui3ZVkCbs12OLv99zALWRNSmlUTRCCmj640QXn6eEkh9gd
+	 MxI5cnpfhRzQwQoa5ERmDshDo4mGMlaMxeJgjf8uWRYQQOPMkeJqbWWdaRCy8VDez8hQj
+	 c9eY7tdwe0u9GB6Wx2+x+iIrNx2wLD1LiTxURwjGz/SXbFPD+7tdFfJTPXuWp1BPHqwAQ
+	 lL+fhlRlenZIKDsIneBjn0/UfqeXeiC3IVeMf8v5J9zuAXW3W48v1pEWhfG5FU5ARNnlr
+	 NxuLIVaY2tAJtopS2JF7WT1WQEKgPv30YolsiR7/Up70/sA4HUciRUh1vqIlY7+qsaQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b="RMx/Wp5n";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.47
+Received: from mail-ed1-f47.google.com (mail-ed1-f47.google.com [209.85.208.47])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB92B606A31E
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 12:09:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AB92B606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0222606A321
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 12:28:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A0222606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OpCIRcEh;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=QzgKLgDR
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AOAuh7v1291462
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 12:09:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	iIkF99BTPL7r+iEiIqkBD+caYW2P5DX3RwwpiusZ8xU=; b=OpCIRcEhtVa+MWGG
-	gwdV9KQhmzcqO+AsVLT/Jz4CvAJqNOmJp8UTdLXLYtDjBKRE0HU6Iozodxhk23GJ
-	lrESD/1PHtxsqpw3fLZ6raY8FB2DFvXg1ckXz+6Nr/8kEYdVLBNzFvVzIOuSqlix
-	tMw/ejXqYOOATgL540t3FIHkkzcZ6QOBKE1dbPW4J/T3falqZNyQXLl/7BLn0tsB
-	1ch5/uQOMyzpTKtAv0POxAsP7WD7ZWO9E8czbfxer9SA4ohR/MN9bYTepwEpf3eN
-	xc/ZqKrk33oX7IUz6cC0Rd4XB/XBdIBzNNC+II1C/x20dTsUSKW9OU2ls/SiOpMO
-	WE69JA==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4ukrbkgq-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 12:09:52 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2f0ac2d8225so13059715ad.3
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 04:09:52 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=RMx/Wp5n
+Received: by mail-ed1-f47.google.com with SMTP id 4fb4d7f45d1cf-6b86fcbd647so6979427a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 04:28:37 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795523316; cv=none;
+        d=google.com; s=arc-20260327;
+        b=epVuzdxHfTXLwhppugY86CmntjYXIQWclCZZqG6LHZGEEOiF3Z8hf6NZEb546FB2gY
+         Gtd0uGQGw6EUZyrZl71LzNYNgCZ5z0EqoKVdkrUc8rPMfhGssUNTwP4bib8J2FL4v34Z
+         RWTJma5n0Ws/lgqyxO80437XoLafHVAnGaT1mxLV5vwTfjSRsIqRFU+IfBMuYTjdw/vv
+         i6mHMhJWw22d6NZpISG35qN2pnFhCy+vRvY2CmMV5JZVU5oaKZCAsHM7VHrbuC128Lz9
+         vsHVqpV28PEOThd90d9ggBtWknPuwY+n9ZTOomFUYsoGBhILHaLMogT3EV27Ip7zukld
+         yqAw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=bWdHkD13wMd/Xd77WjepXEVBI/YLkHIIzGDJnSOi/6c=;
+        fh=aINnZL5mbiKYio2jbujwPkBvD/po2gRp2vJOaznJehY=;
+        b=iPrMzHWt2I0ldEDYemF8IVyI0Rcfxp0EwkxUvT39BUBwwX9NaDBYknN9qoGcAM3dGd
+         FqTWcyTCV/uCm6PspY3UhmeheZ/PnCTtgFOvygLBP/iQv9UofTFyctHgLJYI+slDzzXa
+         pi4dXDJuVsGPJ1dZhWc1lXmYlJ1JO5ElLhtc+Qp+g71LoK8r9Sc4vgfH4oSRiEG+rDSn
+         DCC33IXQzcKEfY2eRunA8lYws3CSVa5xmfM/lB+VTSsWbhAB8xg2pO8sHzUectJSdP5t
+         cHdB+i+NBF3MjpBFW32DwBgfe6cehN6JKB/HI7+2W9qPQ+nowCQHhI9a4VLEJCkJ4A4I
+         U+0A==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795522192; x=1796126992; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+        d=linaro.org; s=google; t=1795523316; x=1796128116; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=iIkF99BTPL7r+iEiIqkBD+caYW2P5DX3RwwpiusZ8xU=;
-        b=QzgKLgDRD60xYYZ1aOuwKAqWXm0VixwPce0rXi2YgawOEi+uDZIKYo4d1X0g0Q7EWq
-         HlSR1sbtcjkenVIvkPK5ZU1fUywmjQY4RG6hCwpxilgrQuA07/sBORrGnfV1Anu36qmL
-         KwUmzoAMaS6qPPho4LYVf9M8+XMJtszl45OvMewhW+uK09ydrSsXFOphgB3Pa4y7Hpip
-         4ZX0gJ49V9A/XgegRby6AHlhHX3lmAXoef0IzqHu20fK9Cejt/vlZbWT5yNS6lC6jzE4
-         yhXumbz5vXtre1qqOjdYhqPfmiYgCedWjQp+bTEYLHZc+yy3vVM3PS8ei0JVumBkgRAR
-         QkxA==
+        bh=bWdHkD13wMd/Xd77WjepXEVBI/YLkHIIzGDJnSOi/6c=;
+        b=RMx/Wp5nh2hga/5Ka4gbv6FcsmqZUMeY9mBxA7edn2B7jINKD4jjjzT8+5a9jbkxdD
+         IjJG9XwbrMOIYpZgI3NjsSHaVLzTGFArKhI8Zcyah9fdiHrrT5txVZl+RONOVd+wtcvO
+         wkfV29zyPlBX5wIPX/ngyUWhdiEV/njhJ+ahWe2OenTnL2qkZfoJnG/3nRi2PcAIL/bi
+         NlwjsRw9AfAGbmlWoo2czBvq3ouPopxR/bpZCe3EcduRzokf0haHFNnyie/VvgRElRJm
+         z/eoNlqQR0gfeyla2HNqaxw36496VoE1cCbPyZvWPUtxfvfgYmZ9HY/fhmcfrMSWkoR+
+         8Cow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795522192; x=1796126992;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=iIkF99BTPL7r+iEiIqkBD+caYW2P5DX3RwwpiusZ8xU=;
-        b=OGOSANfcngf9lEikolO8IgCOi95og0cVoyJQwB6tI5Uhu/edmn7KuXFE11H5MiFcXr
-         zBLEcgolMvbC6bBpDBaCz1VAUI1wvUGDFOaytXkCbSaKLT/TLxrqA18EhqqOwdk0jZD6
-         mKehYqy4w2BQg9sL0zUVjIYyLt3PeqIBpdgT/4bei96kxMP/TCdA8kIa9EXhXn7EHyNZ
-         1OxoH+qcO0EIVTnA7XsKLgBNpw2jtQNBA1jrNatWXPHR086FJyr77AwFTcjA1Rj4i0Nv
-         c8kTqMrqBYwY0ieZRpUy+ZyX86oPP3IXAFFj6TjOanrVXDnGyz3PfjSMWIxz8e5g3ttA
-         u55w==
-X-Forwarded-Encrypted: i=1; AL+hErEzcMtUMIUUP1kG2X038/bob/g+rGunI+4rJ5gEg5oYimdFY5lTkyxomVkMffzGO7/biWLWmp/Yaw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8K2zZPvP09+RVuhk8NE9jtgexHs5Lu6tBG18majLIf4AM20/1h
-	jpiEiqrIfMJrTYlbgxWS0DicwBBdVn1YPY1VZy6GXRN00NTtuo/0DV5L0Z4CxUvc+TLjFN6lmz4
-	ewIuVMFxpEKb+mV5JN3I61tGBHSPYNK55dDDbkr1w/1v26lUN0j0r92cFljBX0A==
-X-Gm-Gg: AZFdTZeBd1S3V+iR365J2K/lZbp/l2v/7763JOfEUsuBsby4RsqAm4v73lYKVnTNYzt
-	PEHU3I43obbH+yhWkE79U0bBtqYO93H6SPD0oVVYlqUtDHTMlBi8ddyiJrF4W/EW6PRxJJn6K4S
-	XYHaUp7b2ynAj32ino6E+il60wsLx5HP/Z/nmjPyHodfJ08y6GtTnL/d7zQg5KQcWwMNXJ64oUt
-	9nmKcbpW9W5fhO1eiv135WVJsuPrYZ8kHeQBXKb66IYvJTK6mE+clnjAW5YGYsvbfSSZ5OoGLgs
-	bdt/MbqSh0uq/TYRrLsjwkocgfCbfTykKa4rGAEophcvprle48hiRnHOjr+nOoZzYsXsaoftKbN
-	0dNoaihMT5uE3g95febaLXsVzEifTyw21EpbrXpNuqvOknMtglQQKtJkR+D1Er0pFjAZqSfMNUZ
-	1YN+p9razIAlC0udFWl6ExIhyTGjDvJYNQAV/KVwAgw0Rala8iQ6QqQ+ZZxoSXzzTN8A==
-X-Received: by 2002:a17:902:f645:b0:2ef:dc42:10a9 with SMTP id d9443c01a7336-2f03ef3d32dmr149717495ad.7.1795522192207;
-        Tue, 24 Nov 2026 04:09:52 -0800 (PST)
-X-Received: by 2002:a17:902:f645:b0:2ef:dc42:10a9 with SMTP id d9443c01a7336-2f03ef3d32dmr149717195ad.7.1795522191539;
-        Tue, 24 Nov 2026 04:09:51 -0800 (PST)
-Received: from [10.79.116.36] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f03f0c1a74sm70009675ad.12.2026.11.24.04.09.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Nov 2026 04:09:51 -0800 (PST)
-Message-ID: <8d6ab328-32f1-4ddf-bff6-05f7d58d3222@oss.qualcomm.com>
-Date: Tue, 24 Nov 2026 17:39:45 +0530
+        d=1e100.net; s=20260707; t=1795523316; x=1796128116;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=bWdHkD13wMd/Xd77WjepXEVBI/YLkHIIzGDJnSOi/6c=;
+        b=lpLX+LyM3qSLhZGOjuJyQ4lXgb2fVh6GhZzgbL7sZewis5aCeKZZ3tqavSsqCLcbYh
+         sdsyf12mawzsJa2Fwc+E4UwIYHGeRmJZ3rZk704mBEwzCe999qlQKxV94KgdLEJvc83f
+         NrF+v+kBo+WYoHkJQVAM0Wc88CFry/sE5XRBE/aMlKweu6Oiu8dXH8knL4ic28MXd1T8
+         IdeNbc3SE61X32tlK6WDBNpw2LolYqVBrvKF979PZNqZZSXI0yw0owXTsGvMp41HMiUc
+         fI+bKXcnD7Lv61qvai3bRAy2z0PobgkxQP/JdGTfUg6Qz89Wac4EmiTChzKhsGa8oSEt
+         5I1A==
+X-Forwarded-Encrypted: i=1; AL+hErFeJgCeQae79+dFwbQcoy3cWtj6szJdBLt1mERLKJlN5gqm/UEq4/s76pjsbIE6JvTzEDBWsHBkyg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8xkIiNxdbWWraXaB90t+jG7zJ66WxnhFDqjVzUVEr+knseyM8z
+	ziJDuLm19flAYo8a9wzCjBL7naq06sQjbfyuLPg28PlI/jFn0mIhctvrUHf15FjTPvGZNFk9d6E
+	cl4RpMa/28O41xsBJga8lPG1Bga4ZcZTqZdzcMErEBQ==
+X-Gm-Gg: AZFdTZeoL2c61PfUTXkRIuEsURn6HaaXwmKNx6nqf8K5iCKNIY/FXXAr/qOL3j9tYNK
+	H6RfSVb8oZApNXBicmMH8twLrLsuj+BA6VLFm+WSwIUPHREz67UJY6EWpzj6vnvAz/nOzpF/PTY
+	DgqWJyosmOizTIO8KgH/0SDkyz/Rbhf/jRq5iLbk65tf2mhrjSSMWYlknDNLTqNzgcUwD+8jxZj
+	mcczu94R+PwxKMbUphxyzm2T5FM+mNwZsMTErOZArrSPUpauM6NNLL7p2ZAfxqod3xdp+KRKpun
+	r4vdZl+q8EW5rTXLOdTKk8cKVR8YJxniTwUFK93xENp4RS6djDkDZ4IOVo4IM8LKeJEr42L2Rao
+	SvibsA9dFY79ui+qlxmhzKJimvgo1Tkj11dZLvAnzQLo1ZtCEXY8etGgYany6Kh/pt7o0/B8=
+X-Received: by 2002:a05:6402:1ed4:b0:6ba:6598:1392 with SMTP id
+ 4fb4d7f45d1cf-6ba6598149bmr7679171a12.8.1795523315933; Tue, 24 Nov 2026
+ 04:28:35 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,198 +103,246 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] thermal: qcom-spmi-adc-tm5-gen3: move hardirq actions
- into threaded handler
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kamal.wadhwa@oss.qualcomm.com
-References: <20261124-adctm5_gen3_hardirq_removal-v3-1-c7923e9a54c1@oss.qualcomm.com>
-Content-Language: en-US
-From: Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-In-Reply-To: <20261124-adctm5_gen3_hardirq_removal-v3-1-c7923e9a54c1@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDA0NyBTYWx0ZWRfX1zpceY0SoZgP
- T65bZhbjCOFh3wACusia4V22oDzKC0M2aaidR98KB1uj5yImrbITYT2FXZuw6fgbRNqSJO1wjMG
- dAQ93Z7RUTfa0sdkpzKycLunZl8BrtM=
-X-Proofpoint-ORIG-GUID: UP8tjmV6jCD6Cumm1yF9GcdjU6Y7ji1T
-X-Authority-Analysis: v=2.4 cv=M+rYuCws c=1 sm=1 tr=0 ts=6b057e90 cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=bC-a23v3AAAA:8 a=A5BwiOqi38MATOopfpEA:9
- a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10 a=1OuFwYUASf3TG4hYMiVC:22
- a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDA0NyBTYWx0ZWRfX3EVpZbtsyvMn
- 9Drh+0NGV38e48ahahDl/89YJoj5AQGTOzJCiQxMyL58RE6DgtTL4vvw8RqjEbn922AboawWpfP
- AnKX98TL2CgOgiDkVfZ2xtnvunAXGD+eugNFG0VQL4u1HsIvu71SD3UuZZDyM3pfj8xTUsXhhUO
- plGzfNR7xVBsIr9aEXA4NiwdILX65sPvDNnfMGbaLFvztVOO1G8Gc38rQkLr9d9cWTlCRft4WvR
- 3FMxEOImaSC0VTrziPgWt0YH7JVp6fo9W60LrXtF2ejUHLT89ZnCNE3mKJlJqKz9687xUDsWKsE
- aKOHhrHIqm1JyPdNskh6clPmxoSNlxQeGYbwGhLbimhwLtKLXjDp/HHQZgSvNEFOpmBM6huIZTu
- Ga3ArezEtW8RotqKCvHB43nrrFGJ2bgNY2OhG9dQFTPhPdK/YSxyZiQwrP2tC1SQI0zd5drbNME
- o0DIBHm/y0kZESGnsWA==
-X-Proofpoint-GUID: UP8tjmV6jCD6Cumm1yF9GcdjU6Y7ji1T
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-24_02,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 phishscore=0 spamscore=0 adultscore=0
- clxscore=1011 lowpriorityscore=0 malwarescore=0 impostorscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611240047
+References: <20261026214359.3122870-1-briannorris@chromium.org> <20261026144346.3.I7bc547c83b7bf677a62670099f481a91ac737073@changeid>
+In-Reply-To: <20261026144346.3.I7bc547c83b7bf677a62670099f481a91ac737073@changeid>
+From: Peter Griffin <peter.griffin@linaro.org>
+Date: Tue, 24 Nov 2026 12:28:24 +0000
+X-Gm-Features: Aa3M54o6_q2ze_X5WV0lDS-4k9Z9r9IbiOz5WhjT-SYs0fIiqKLT_L-3r-75L7Q
+Message-ID: <CADrjBPqnRrFeYT9J6NGxy+Xzy1PTZEz+BMs1_u2md7Ra6xPPDQ@mail.gmail.com>
+Subject: Re: [PATCH 3/9] soc: google: Add CPM over MailBox Array driver
+To: Brian Norris <briannorris@chromium.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
+	Thomas Gleixner <tglx@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, devicetree@vger.kernel.org, 
+	Tudor Ambarus <tudor.ambarus@linaro.org>, =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+	linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>, 
+	linux-arm-kernel@lists.infradead.org, 
+	Mariano Marciello <mmarciello@google.com>, Douglas Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org, 
+	=?UTF-8?Q?Jakub_G=C5=82owacki?= <jglow@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 11/24/2026 2:33 PM, Jishnu Prakash wrote:
-> adc_tm5_probe() registers the ADC_TM interrupt with both a primary
-> handler and thread function (adctm5_gen3_isr/adctm5_gen3_isr_thread)
-> with IRQF_ONESHOT. The primary handler calls adc5_gen3_read(), which
-> takes the SPMI regmap's lock (a regular, non-raw spinlock) from hardirq
-> context. With CONFIG_PROVE_LOCKING enabled, this leads to a warning
-> about an attempt to take a lock in an invalid wait context:
-> 
->   swapper/0/0 is trying to lock:
->   ffff000b67201018
->   (qcom_spmi_pmic:259:(&spmi_regmap_config)->lock){....}-{3:3}, at:
->   regmap_lock_spinlock+0x20/0x40
->   other info that might help us debug this:
->   context-{2:2}
-> 
->   Call trace:
->   regmap_lock_spinlock+0x20/0x40
->   regmap_raw_read+0x88/0x328
->   regmap_bulk_read+0x10c/0x340
->   adc5_gen3_read+0x38/0x50 [qcom_spmi_adc5_gen3]
->   adctm5_gen3_isr+0x90/0x130 [qcom_spmi_adc_tm5_gen3]
-> 
-> There is no requirement for any of the work done in the primary handler
-> to run in hardirq context. Drop the primary handler and move all the
-> actions in it to the threaded handler, which removes the invalid wait
-> context warning.
-> 
-> Note that both handlers used a local variable to hold the index of the
-> SDAM whose IRQ was triggered ('sdam_num' in the primary handler and
-> 'sdam_index' in the thread function). These are the same value under
-> different names and 'sdam_index' is kept now, since the variable
-> represents an index, not a count.
-> 
-> Reported-by: Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-> Closes: https://lore.kernel.org/all/1cb6d902-73f3-4d65-96f4-4b3c5217253c@oss.qualcomm.com/
-> Fixes: 948ee3a74f35 ("thermal/drivers/qcom: add support for PMIC5 Gen3 ADC thermal monitoring")
-> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-> ---
-> Changes in v3:
-> - Updated commit message with right justification for using the variable
->   name 'sdam_index' and moved its declaration to separate line in
->   adctm5_gen3_isr_thread(), as suggested by Andy.
-> - Link to v2: https://patch.msgid.link/20261113-adctm5_gen3_hardirq_removal-v2-1-a0c9c4800941@oss.qualcomm.com
-> 
-> Changes in v2:
-> - Trimmed call stack and error lines and added clarification about sdam_index
->   in commit message, as suggested by Andy.
-> - Link to v1: https://patch.msgid.link/20261111-adctm5_gen3_hardirq_removal-v1-1-536ed503396c@oss.qualcomm.com
-> ---
->  drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c | 42 +++++++--------------------
->  1 file changed, 11 insertions(+), 31 deletions(-)
-> 
-> diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> index 910b241fa94d..9e9019f5009d 100644
-> --- a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> +++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> @@ -73,58 +73,39 @@ static int get_sdam_from_irq(struct adc_tm5_gen3_chip *adc_tm5, int irq)
->  	return -ENOENT;
->  }
->  
-> -static irqreturn_t adctm5_gen3_isr(int irq, void *dev_id)
-> +static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
->  {
->  	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
-> -	int ret, sdam_num;
->  	u8 tm_status[2];
->  	u8 status, val;
-> +	int sdam_index;
-> +	int ret;
->  
-> -	sdam_num = get_sdam_from_irq(adc_tm5, irq);
-> -	if (sdam_num < 0)
-> +	sdam_index = get_sdam_from_irq(adc_tm5, irq);
-> +	if (sdam_index < 0)
->  		return IRQ_NONE;
->  
-> -	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_STATUS1,
-> +	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_index, ADC5_GEN3_STATUS1,
->  			     &status, sizeof(status));
->  	if (ret)
->  		return IRQ_NONE;
->  
->  	if (status & ADC5_GEN3_STATUS1_CONV_FAULT) {
->  		val = ADC5_GEN3_CONV_ERR_CLR_REQ;
-> -		adc5_gen3_status_clear(adc_tm5->dev_data, sdam_num,
-> +		adc5_gen3_status_clear(adc_tm5->dev_data, sdam_index,
->  				       ADC5_GEN3_CONV_ERR_CLR, &val, 1);
->  		return IRQ_HANDLED;
->  	}
->  
-> -	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_TM_HIGH_STS,
-> -			     tm_status, sizeof(tm_status));
-> -	if (ret)
-> -		return IRQ_NONE;
-> -
-> -	if (tm_status[0] || tm_status[1])
-> -		return IRQ_WAKE_THREAD;
-> -
-> -	return IRQ_NONE;
-> -}
-> -
-> -static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
-> -{
-> -	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
-> -	u8 tm_status[2];
-> -	int sdam_index;
-> -
-> -	sdam_index = get_sdam_from_irq(adc_tm5, irq);
-> -	if (sdam_index < 0)
-> -		return IRQ_NONE;
-> -
->  	scoped_guard(adc5_gen3, adc_tm5) {
-> -		int ret;
-> -
->  		ret = adc5_gen3_read(adc_tm5->dev_data, sdam_index, ADC5_GEN3_TM_HIGH_STS,
->  				     tm_status, sizeof(tm_status));
->  		if (ret)
->  			return IRQ_NONE;
->  
-> +		if (!(tm_status[0] || tm_status[1]))
-> +			return IRQ_NONE;
+Hi Brian,
+
+Thanks for your series; it's great to see more Laguna support being posted.
+
+On Mon, 26 Oct 2026 at 21:45, Brian Norris <briannorris@chromium.org> wrote:
+>
+> The Central Power Manager (CPM) is a co-processor on the Google Tensor
+> SoCs, as used on Pixel phones. CPM supports power-management and a
+> number of other features.
+>
+> The Application Processor communicates with CPM over a pair of mailbox
+> channels (the "MailBox Array" (MBA)). CPM provides clock, power-domain,
+> reset, interrupt services, and more.
+
+[..]
+
++++ b/drivers/soc/google/Kconfig
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++config GOOGLE_CPM_MBA
++       tristate "Google Tensor CPM MailBox Array Interface"
++       depends on ARCH_GOOGLE || COMPILE_TEST
++       depends on MAILBOX
+
+Should we also have "depends on OF"?
+
++       select AUXILIARY_BUS
++       help
++         Driver for interfacing with the Central Power Manager (CPM) MailBox
++         Array (MBA) found on Google Tensor SoCs. The driver provides APIs for
++         communication between the Application Processor and the CPM, and
++         is required by CPM client drivers such as clock, reset, power
++         domain, and more.
+
+> diff --git a/drivers/soc/google/google-cpm-mba.c b/drivers/soc/google/google-cpm-mba.c
+> new file mode 100644
+> index 000000000000..629a071e202c
+> --- /dev/null
+> +++ b/drivers/soc/google/google-cpm-mba.c
+> @@ -0,0 +1,964 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Google MailBox Array (MBA) CPM Interface
+> + *
+> + * Copyright 2023-2026 Google LLC
+> + */
 > +
->  		ret = adc5_gen3_status_clear(adc_tm5->dev_data, sdam_index,
->  					     ADC5_GEN3_TM_HIGH_STS_CLR, tm_status,
->  					     sizeof(tm_status));
-> @@ -405,8 +386,7 @@ static int adc_tm5_probe(struct auxiliary_device *aux_dev,
->  
->  		ret = devm_request_threaded_irq(dev,
->  						adc_tm5->dev_data->base[i].irq,
-> -						adctm5_gen3_isr,
-> -						adctm5_gen3_isr_thread,
-> +						NULL, adctm5_gen3_isr_thread,
->  						irq_flags,
->  						adc_tm5->dev_data->base[i].irq_name,
->  						adc_tm5);
-> 
-> ---
-> base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
-> change-id: 20261111-adctm5_gen3_hardirq_removal-467a437a78e1
-> 
-> Best regards,
-> --  
-> Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-> 
+> +#include <linux/auxiliary_bus.h>
+> +#include <linux/bitfield.h>
+> +#include <linux/bits.h>
+> +#include <linux/cleanup.h>
+> +#include <linux/completion.h>
+> +#include <linux/device.h>
+> +#include <linux/jiffies.h>
+> +#include <linux/kref.h>
+> +#include <linux/list.h>
+> +#include <linux/lockdep.h>
+> +#include <linux/mailbox/goog-mba-message.h>
+> +#include <linux/mailbox_client.h>
+> +#include <linux/mailbox_controller.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/spinlock.h>
 
-Tested on Glymur-CRD
-Tested-by: Pankaj Patil <pankaj.patil@oss.qualcomm.com>
+Missing `#include <linux/slab.h>` header here as later it calls
+kfree(), kzalloc_obj().
+This can cause "implicit declaration of function kfree / kzalloc_obj"
+errors with COMPILE_TEST. Also similar issue in clk-cpm.c
 
+> +
+> +#include <soc/google/google-cpm-mba.h>
+> +
+> +#include "google-cpm-mba.h"
+> +
+
+[..]
+> +static bool cpm_iface_is_valid_req(struct cpm_data *cpm,
+> +                                  struct cpm_request *cpm_req)
+> +{
+> +       struct device *dev = cpm->dev;
+> +
+> +       if (!cpm_req) {
+> +               dev_err(dev, "cpm_req is NULL\n");
+> +               return false;
+> +       }
+> +
+> +       if (!cpm_req->req_msg) {
+> +               dev_err(dev, "cpm_req->req_msg is NULL\n");
+> +               return false;
+> +       }
+> +
+> +       if (cpm_req->msg_type > RESPONSE_MSG || cpm_req->msg_type < ONEWAY_MSG) {
+> +               dev_err(dev, "Invalid msg_type: %d\n", cpm_req->msg_type);
+> +               return false;
+> +       }
+
+Should cpm_req->dst_id also be range checked?
+
+> +
+> +       if (cpm_is_request_msg(cpm_req) && !cpm_req->resp_msg) {
+> +               dev_err(dev, "cpm_req->resp_msg is NULL when msg_type is REQUEST_MSG\n");
+> +               return false;
+> +       }
+> +
+> +       if (cpm_is_response_msg(cpm_req)) {
+> +               if (!goog_mba_q_get_valid(&cpm_req->resp_context)) {
+> +                       dev_err(dev, "Invalid valid bit in resp_context: %#x\n",
+> +                               cpm_req->resp_context);
+> +                       return false;
+> +               }
+> +
+> +               if (!cpm_is_response_header(&cpm_req->resp_context)) {
+> +                       dev_err(dev, "Invalid response type in resp_context: %#x\n",
+> +                               cpm_req->resp_context);
+> +                       return false;
+> +               }
+> +       }
+> +
+> +       return true;
+> +}
+> +
+
+[..]
+
+> +
+> +static int cpm_init_q_mode_proto(struct cpm_data *cpm)
+> +{
+> +       struct cpm_payload msg_payload = {};
+> +       struct cpm_request req = {
+> +               .msg_type = ONEWAY_MSG,
+> +               .req_msg = &msg_payload,
+> +       };
+> +
+> +       return __cpm_send_message(cpm, &req, GOOG_MBA_Q_INIT_PROTO_VAL, 0);
+
+Do we want this to have an infinite timeout? If the CPM firmware never
+responds, it will hang the boot (as MAX_SCHEDULE_TIMEOUT doesn't arm a
+timer).
+I guess it is game over anyway if the CPM firmware is dead, but it
+would be nice to log an error and return from probe()
+
+
+> +}
+> +
+> +static int cpm_init_q_mode(struct cpm_data *cpm)
+> +{
+> +       int ret;
+> +
+> +       ret = cpm_init_q_mode_proto(cpm);
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       cpm->seq_num = GOOG_MBA_Q_MIN_SEQ_VAL;
+> +
+> +       return 0;
+> +}
+> +
+> +static void cpm_adev_release(struct device *dev)
+> +{
+> +       struct auxiliary_device *adev = to_auxiliary_dev(dev);
+> +
+> +       of_node_put(dev->of_node);
+> +       kfree(adev);
+> +}
+> +
+> +static void cpm_unregister_adev_action(void *data)
+> +{
+> +       struct auxiliary_device *adev = data;
+> +
+> +       auxiliary_device_delete(adev);
+> +       auxiliary_device_uninit(adev);
+> +}
+> +
+
+Can we use devm_auxiliary_device_create() instead of open coding these?
+
+> +static int cpm_register_adev(struct cpm_data *cpm, const char *name)
+> +{
+> +       struct auxiliary_device *adev;
+> +       int ret;
+> +
+> +       adev = kzalloc_obj(*adev, GFP_KERNEL);
+> +       if (!adev)
+> +               return -ENOMEM;
+> +
+> +       adev->name = name;
+> +       adev->id = 0;
+> +       adev->dev.parent = cpm->dev;
+> +       adev->dev.release = cpm_adev_release;
+> +       device_set_of_node_from_dev(&adev->dev, cpm->dev);
+> +
+> +       ret = auxiliary_device_init(adev);
+> +       if (ret) {
+> +               of_node_put(adev->dev.of_node);
+> +               kfree(adev);
+> +               return ret;
+> +       }
+> +
+> +       ret = auxiliary_device_add(adev);
+> +       if (ret) {
+> +               auxiliary_device_uninit(adev);
+> +               return ret;
+> +       }
+> +
+> +       return devm_add_action_or_reset(cpm->dev, cpm_unregister_adev_action, adev);
+> +}
+> +
+
+[..]
+
+> +
+> +MODULE_DESCRIPTION("Google MBA CPM interface");
+> +MODULE_AUTHOR("Lucas Wei <lucaswei@google.com>");
+
+I think you should add Lucas Wei's SoB tag to the patch as part of the DCO
+
+regards,
+
+Peter
