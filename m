@@ -1,63 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.7
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795539688;
-	b=D5hR98RlVIRRy2XyLBJeWCXQ+2kYKssBvmAzWEPsB0Q/LMBck9qmrXe8S+0zLhlaKLDR
-	 Yku4+8G2w26N+m8t7VMdWitueuNKhFdqYkqqMWG4W5ljlcKxbdxRh7YIRTkZFMupcFYPY
-	 JdKLgFyv7vBtLTwjn5dIZYfcrQ4SGHH+uyatmbN6i0qI3/LJkG+7mkiOPTc6F13q628qR
-	 QyC9b2+B7SN11dhOURLnM3rymx8g6UzxnRNXXaW4nK2OnE5lCQXL1rFAfywBIPLZ1jx/P
-	 lJMYON9GrDSFtuxOakzD5Rx63jydEqfs0groXKRJA5/irW58fKFcmTXbRs8tA7f1e4A==
+	t=1795540282;
+	b=4NOYy/xY0e0Vs32ADEzwnOkw7y1JA+kq8Z5868T/EZuG3gOfhz1k4lKRtE9Td7fi//Or
+	 Waj94voYquiFaLwRKrNyebntPV8UNzh6ZSG4xIS0wLWip6jkMYDPnkLzpu0Bxwtj5bxRV
+	 83KJnlByIdYkt2f2lgLCvsjGzMNFhRvFb9rLkL8OuG9jBZF1wZsxelqXMa71IUhZNm4go
+	 cObsjES6muM3ne2XiaWbWh9si5RLhs5+vN04c0mP2geaaqzytJsHdDhfw5zakpySHaG5v
+	 Byg0KZudXOe3JDRUKsY3yiavz2XniNx0oUsEn18dQn5DTnp6FNsNdodSmHV3S6FTpMA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795539688;
-	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
-	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=IDzclnct8WA8a6C78MYePSDwkn2DldpsvUxqm75JnPg=;
-	b=MCgL30X5pJYLzBvSziGq2fbLt2zCp0TfjTk6pjPFE/axs0+YNH/8ycYWP8vMW784fY39
-	 z9xKQ/OdO1unYJfvZKv1N24ASw97RUSTdQQxd1SQ3PYsjhNROmULvNyGvrp/5atT87qN4
-	 yxsJcws8TI0M+/tbGKo7q4mvBXQ9OJ9Xu8ISxA7EYD5za8HIwFRDsWVy00J/tdQ7fHEYB
-	 qukAkt2duw/iOr9EzgGreUiMJDNiH5sV0bEG/NdTxOL8jOQJnaG/WYW7+0kl/J/5Xw4BB
-	 39cZeGPdbQN2m/gvy37+UcM2LSoSF8eTbx5bA2z8qAHCDOhE/y+7VUDflez8Fc8sbGQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795540282;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:Organization;
+	bh=AKD/72/EfVRdxYFvWuN05kqniSg0DYqRy/9GFlTCCAc=;
+	b=eJaNTcau7l/WeZsyfoFPMoMWhMVarg/LQ1A2rzWf1W63c/P1w0+FjD+0kojWDCQzEDP6
+	 TILSubVWoGAPD1V5ohsu2hsLpkE11oEtQa6RZruqyXQsZixxLPNMcC5BCCGhmJ0+Mh0ia
+	 iseML6nI/+9lnFIbjXztuC8uyvaqiV9pyxxH60/Ddtxwj1yyfY2JqFtE94smOsXcHVM2g
+	 rTnP6z44cxqyO41zmNwc4zXTIH8RXSxd6m1fQoOzZPCHVxego370OlqtRysPr8IteNveH
+	 naHv2qRzr4qafHk5oJ9AlM8vaB14yv5C0uRn8GhiaPaY0Ql8coexQ+KtDDcTIzoiuiA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bd+0mX+b;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LW3wmbQv;
+	arc=none smtp.remote-ip=192.198.163.7
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42417606A321;
-	Tue, 24 Nov 2026 17:01:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 594AF606A6B0;
+	Tue, 24 Nov 2026 17:11:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 594AF606A6B0
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bd+0mX+b
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3BD981F000C0;
-	Tue, 24 Nov 2026 17:01:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795539688;
-	bh=IDzclnct8WA8a6C78MYePSDwkn2DldpsvUxqm75JnPg=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=bd+0mX+bTVWMLTn4CQSE46+nfqgd0ABeNiCzAm0TxnwofXmJ0w5usxsHQ7qSOFKIi
-	 pEO0DMzttBu+4SkrXcjDFOzQmJJga2PNIxM+q06wR9BA+Ocedl5ODmEmkple1At4pA
-	 7ch5dTLl3RWrDRSnPZmogHayUFuAWBmy2kiRnQC19a7qyZOE2g3BMXGgt+vHNCXITq
-	 mFgo5Taxav0ADHcEsJbrveTLWlcm/tuo+tcEkbdO8+1s3dzH4vZcRpsBe7I0ywXDjr
-	 a+ok95WVND4sJaJ9QOrQkgS6T73TlyGAbexJNkpQDEOrql3j19NtYQmeryOA6bazjY
-	 Da2NpjC89U/hg==
-From: Mark Brown <broonie@kernel.org>
-To: Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
- Takashi Iwai <tiwai@suse.com>, Brian Norris <briannorris@chromium.org>
-Cc: Cezary Rojewski <cezary.rojewski@intel.com>, 
- Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
- Bard Liao <yung-chuan.liao@linux.intel.com>, 
- Daniel Baluta <daniel.baluta@nxp.com>, linux-pm@vger.kernel.org, 
- linux-sound@vger.kernel.org, Srinivas Kandagatla <srini@kernel.org>, 
- Vijendar Mukunda <Vijendar.Mukunda@amd.com>, 
- Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
- Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, 
- linux-arm-msm@vger.kernel.org
-In-Reply-To: <20261112111937.RESEND.1.I5cd238b1d4516d4d6980565e0a4e1b83d9abce63@changeid>
-References: <20261112111937.RESEND.1.I5cd238b1d4516d4d6980565e0a4e1b83d9abce63@changeid>
-Subject: Re: [RESEND PATCH 1/3] ASoC: codecs: lpass: Discard
- pm_runtime_put_autosuspend() return values
-Message-Id: <179552812780.264265.5289486114789888312.b4-ty@b4>
-Date: Tue, 24 Nov 2026 13:48:47 +0000
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LW3wmbQv
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795540282; x=1827076282;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=yA96lTi5CFzU5JH9oySsecnxSF0r2q51zcGonMA8scM=;
+  b=LW3wmbQvXlAs0T9QcB0KxrU6iuLUfWDE3+tSyvTOXUYcEa/WOf3yQwGq
+   XddKCtNz46uPAbZq7DGA2k+w0VqbAIPC70vauN+bjkv+7ru4p97mpRl3N
+   pqvKS12ZTIhFURxq3MSERoOfMhMnRGGm4IFTD8oMxR00ENh6l+zPldbrI
+   z0OWajf51cbh0NLqi7ruPYu2KJEPe3Fdq544FriIeiyfClxfh4sCYJkcc
+   PVa1oftNwxLtjFER55hN+Vg1pAmT9Z/InEAqjlKHR6a1NmoMbxulrRnpq
+   HKIG/xnTEUZBF0c/Pc0IxGYZXx0HEqxujgqUY//dHIuhc4Cc2nPCm688f
+   A==;
+X-CSE-ConnectionGUID: gJWDMhgYSAenjZdYWI7GQA==
+X-CSE-MsgGUID: Qh+lqTFuS8WWhEZ4CAcoIg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11976"; a="4242793"
+X-IronPort-AV: E=Sophos;i="6.27,231,1787036400"; 
+   d="scan'208";a="4242793"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2026 09:07:43 -0800
+X-CSE-ConnectionGUID: xnenaHeCTvO9kEJmyVtN4A==
+X-CSE-MsgGUID: GzWpVI1PSmO1nlagCqVqvA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,231,1787036400"; 
+   d="scan'208";a="11812462"
+Received: from hrotuna-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.125])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2026 09:07:42 -0800
+Date: Tue, 24 Nov 2026 19:07:39 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>, Armin Wolf <w_armin@gmx.de>
+Subject: Re: [PATCH v1 1/5] ACPI: fan: Pass struct acpi_fan pointers to
+ functions
+Message-ID: <awXEW2ZrwF3z1mec@ashevche-desk.local>
+References: <3985766.kQq0lBPeGt@rafael.j.wysocki>
+ <9710131.CDJkKcVGEf@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,50 +80,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1423; i=broonie@kernel.org;
- h=from:subject:message-id; bh=OQ/VGJF3rBrOALX3r/NGNh5X7pkoGJ8oI9D2vpyqMPo=;
- b=owGbwMvMwCWm/754w+YLFp2Mp9WSGLJZDz0+fmtOU+naSTd2xzFtnv7Dhs3/6aNaaXXPh4EqX
- VPnqudO6ChlYRDjYpAVU2SJy+J+WV/yeg3fwYVtMHNYmUCGMHBxCsBELixgZFh8VmmtT9STiOnM
- 8+ceDnC3WfVK59x3pmk1V/vkvqVHfuBhZPiouT2+xs029/6/+UvmSL3z1WKK3LA9/ZDAh889Sxp
- naDICAA==
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9710131.CDJkKcVGEf@rafael.j.wysocki>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Thu, 12 Nov 2026 11:19:37 -0800, Brian Norris wrote:
-> ASoC: codecs: lpass: Discard pm_runtime_put_autosuspend() return values
+On Tue, Nov 24, 2026 at 04:46:10PM +0100, Rafael J. Wysocki wrote:
+> 
+> Pass a struct acpi_fan pointer as an argument to several functions in
+> the ACPI fan driver either instead of or in addition to a struct
+> acpi_device or a struct device pointer.
+> 
+> This allows acpi_driver_data() usage to be reduced and some other
+> simplifications to be made.
+> 
+> No intentional functional impact.
 
-Applied to
+Does it make sense to consistently put a acpi_fan to be always the first
+parameter?
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.5
+-- 
+With Best Regards,
+Andy Shevchenko
 
-Thanks!
-
-[1/3] ASoC: codecs: lpass: Discard pm_runtime_put_autosuspend() return values
-      https://git.kernel.org/broonie/sound/c/673701e1c6bb
-[2/3] ASoC: intel: atom: Discard pm_runtime_put_autosuspend() return value
-      https://git.kernel.org/broonie/sound/c/ed3284607d65
-[3/3] ASoC: SOF: Discard pm_runtime_put_autosuspend() return values
-      https://git.kernel.org/broonie/sound/c/cbe3a1192e7c
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
 
