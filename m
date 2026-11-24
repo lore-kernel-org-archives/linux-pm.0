@@ -1,94 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795543415;
-	b=HTMio03RBIhq+2X9CpJMJgAHwOj5nJoKKcy1CIfMmP8EVjhOjC4MegWsBEPtNv6k06HO
-	 9MJqquS3fLf5nauUig8gRx0Vppj2zudY5Rj5o9gTbN0DmVFRSCzKveoGCtaHxOJuQ072D
-	 zlQa19GbRNveiDaLrPztkFdwjYgVX3pvB02tlHFU/ARmSXvZ+9woe3ZYmPyfjIItbTh9l
-	 Gp5UqDM4+fLBxoVt5oPzNaaIQqTgZYGCk0Idw6RpcjsaoHckcpDXYtzoG87GSrXU1SSgT
-	 pKx0rjs+/B0KNDceHeO1wBxJ0RLDp+LO84DvYQBHz1XmiAcAFavYgk7rPoQJsihJgkA==
+	t=1795543994;
+	b=BOxluwVPlUWJTGbM7GJPyZTBcZMH7o3JmmI2Ctv45TCYBSTXbdLNT8QTgtCQpGLVL7Fl
+	 8fFdIgmK3DtRGUVCyzT9NNCsmPOzjT/uoTnGMpam7pzDQKJg5UNk/zkofO+pCrriQHWC+
+	 ypBsgTBp3TerNX87ZvTW0SnOT0GvbKVIxuOuOs2LWOAQIs4+xQEM8RLU9eMrdaSpIDiNP
+	 WfPiLnronbKxS2ZlDBDvYh1V5a3xdi9UsKQ0kssm1lC/NI8CseW+z6JOdDzM6g147R2B/
+	 dH7EztJNxRylGAsNOw1AKdLeJliWUKMjbdFuWnIts928U0+nC/1A0rUBwNLXEXn0R6Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795543415;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=NhTEfKWb6DbluRd1mldD3BYSLbGgDbbN8zaDAjpM6uw=;
-	b=EgJJS329o5tqgnqddkX/f2y4b6OowBJPaurdpo+xcoUQiCwp5bayb55CBYW8IsHbDy4R
-	 2MgHMToztdgr+FlgwuyMVffRXYmrzP0tLo49tfMyL+zfhNXRGDXgOkzxvqeTeovWh8KZj
-	 Z0eLKHtJ7RdSRmnZNNN6zcDpqa3hS1Dt39mkHmgTY98YTTqtPCp5HKytaGH7NMEINXLF1
-	 1c0c/Vyk/PHt4YcjVhmEc7tp0IsvOEsMVYbNnapCnx7WfMq3lYb/UjQFALfCQEG7zQyHH
-	 VysGDK9MKqt8PsSoxEjrENeR03mfx02uBqRtCKMkIycYElAGLy0kUOMb0+pZ0Cis+pA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795543994;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=gosVtrukTW/5/NEwvnr2FcIZlFj6gPLu6QFpdN7L/Gs=;
+	b=X6eljtAjZUNzAzm5B2OX+93VdecY28Y7gDWvwgVpES8wM9imG8Hy/FKevMO+Ep4O1C/r
+	 g2lg7dqxhwAITVHy1z35Y7jGTfLVmIhoL3DOtHarc6Py69kxtltYEmn1/tUd8ZIFKoDDe
+	 8foslOOOjPz7KuzxnSqgzUKUn8uoxdxCcc3XwC9lDX+7RygHgOCoHOTnqLkzC12z53x+Q
+	 WBBtS1yjlAA7IERpBsEIQeRIsFzT/5XvBIAK9s2gcw5D35W+haAZwq+szwGM8lagHHP5i
+	 AMqC9AatFaxjK5Di0Bx43pwdZnmPox4gDIF7JcxQoSJOwCd5sG4SnIOzVdl62bM0pFw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=GXt9pweE;
-	arc=none smtp.remote-ip=74.125.82.46
-Received: from mail-dl1-f46.google.com (mail-dl1-f46.google.com [74.125.82.46])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=czgyOFVX;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B31E3606A32C
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 18:03:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B31E3606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00340606A338
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 18:13:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=GXt9pweE
-Received: by mail-dl1-f46.google.com with SMTP id a92af1059eb24-1b50a4bd2f3so1865484c88.1
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 10:03:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1795543414; x=1796148214; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=NhTEfKWb6DbluRd1mldD3BYSLbGgDbbN8zaDAjpM6uw=;
-        b=GXt9pweEPAJJHo5VoQvosmFkJydGL3VA34kCHm/avM89lGpZmzCsuYk7R1FPu5xdza
-         QfhkJSmj6huQqj/YKAJOINZarD5ZfQw25Vs8Ll0jPx5mp/xrQNByp9LZVjCo2SYDCA3j
-         Q51JSF7KA0OGfARLL1AcqUPNJIUU/7bVZEjKQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795543414; x=1796148214;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=NhTEfKWb6DbluRd1mldD3BYSLbGgDbbN8zaDAjpM6uw=;
-        b=oTOhiISM33M2isL0b2Tmw0fRyPQJcXdNQHQPKIhmMcFcHjp5wmweP5KL++rIyI3Mqw
-         utqzPTSG7Uv8UqitNXTmgNm9iY/Mb4umt1imKQGestJUVup+u1vDD5JQWFXIkXYEIvGf
-         2R+E53kfY8GGaBGMTosxRvnirQ+H1Z3CJyCFwdJwUq0cEUd1dvnpibSK6nhctDW1snmQ
-         uEOaas7m2YC+6N9aEucK6GfmFlO8BHGmQx0Ha+Mk2X3CNQ+kRQ3BGaFAUvGY8Dm36I0e
-         ix/D+0CXhRs0JckBSSqu//Nr+m6l2L8OrhDSWHfNE2T5ieVBVLifIK36kZ68jfnD74CU
-         3hfQ==
-X-Gm-Message-State: APuU4Z/aS59Xai8z8IUzkecc8oBS4gVqkUIEqH6oW12iFVuwllVnpl7u
-	esQY2NlDVrNvPAIV8My5RYD82Vmw2ZJ6w99Na7ye9bxsBNRfQam8hSO5bS63kxqxuA==
-X-Gm-Gg: AZFdTZfBLrR1hCfKPumbjk4K8Ej5/01irR1t/x3cHrLlYHiDaXrIWGyaRXV5WavDuNp
-	1DQpTc6iZ1c8Nty3bWi2oBPskCr2E9kR/DdrzRbqb+YzZOxsxGHvGuZ/BWf0Rj73G7jsDoYv/vr
-	YIsJ0a83S2AoNt4P+hHA3TBE7yRDSK+8Tmc8BpHtqEVC7/U3ZkOqFAd1YS6m/rxqQgOK4iBb/wQ
-	qaEQ6yR6oCGwObbLEZJBIP+2dAKFIs6Inl8Rnxbf2rv1MhHLwwFenU95MSR0KOmb1v175e90Ghr
-	xA8RFEcD29HXpWorx/mTG7ntHsly/LlEQbPgDj6qg/+gPPobDv6KpqhdDc+NDFTrC/xCxx3C3mV
-	7SqVemV5l5jHfLXhhUGxCIVDNydioInMQeBCAxz7dn2r+ajAzh9ja1Bw6kBePZk9DRrK74G6J9q
-	Uk/k/UCjKY7ieLuJNLzrzJpqhYMuDG+vgp5fz3rRYZMGOa+XvEGfEqF7IO9Q8iICXHSHqXvzodK
-	nLrHiD6QsdeozAEKHPlXM0UWijYbjFDj7NnNQIe/7YQAvKrXd7OixIr+x2f2AQF8VtGIbnKHGta
-	1WJYBrb40MrNtU/yR004ngMfhsp5BeyH6aViVl3cJPnyaFi5L2qzq3KFbyCXIr+AxZlXD40FCRv
-	Hucpzfg0rYbhqiQ==
-X-Received: by 2002:a05:7023:a41:b0:1b2:649d:dc23 with SMTP id a92af1059eb24-1b556901b95mr16214334c88.35.1795543413661;
-        Tue, 24 Nov 2026 10:03:33 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:6ad2:8ba0:aedd:5a84])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-385666e99fdsm58381434eec.5.2026.11.24.10.03.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Nov 2026 10:03:33 -0800 (PST)
-Date: Tue, 24 Nov 2026 10:03:31 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-	Linux Driver Core Development <driver-core@lists.linux.dev>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	"Joerg Roedel (AMD)" <joro@8bytes.org>, iommu@lists.linux.dev,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
-	Prakash Gupta <prakash.gupta@oss.qualcomm.com>
-Subject: Re: [PATCH v1] PM: runtime: Eliminate __pm_runtime_put_autosuspend()
-Message-ID: <awXRc5mqhe6h6MGi@google.com>
-References: <13014755.O9o76ZdvQC@rafael.j.wysocki>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=czgyOFVX
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6749B1F000F0
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 18:13:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795543993;
+	bh=gosVtrukTW/5/NEwvnr2FcIZlFj6gPLu6QFpdN7L/Gs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=czgyOFVXclfyXfriwv3XxvHNWIroC8qMsR35/jKD+ahI52/ujZFB86IGAAjeoGvKg
+	 MTXBAI1pua4EA2V4ykmZJW8fAoZTgP1FuiApGAIdAUW5L4j3C7v4POs1/iv6H9j2Cz
+	 UM6XvkVa+XhsKZpyY1dN7eSt6Z/j1rIMn1Fecs9LS2bJ1BJSqcfDvG8jPhBoQzbDQp
+	 gRLAY1h4jaDNjHS+35zGpCgzMRhK96F/Ucs/9bNE7iQKWfJvSa3AoN5CDMMFVHd30t
+	 ASdgEQNacvhbSLwlKrn0OA0+rsoHaSrmOD9opwNJaD9dd2zJGGi410PdWIqEjuy/e0
+	 uk1/FxyEuZU8Q==
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-3ab30b3212aso37965251fa.0
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 10:13:13 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErETUEUyQjVydn7AGrWiC+pzG8FaBAxV3+5zoNW3hUUnK1LtrSs3cv4koO7W+fs5ibcKiT8oR2l5jg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8xLCSPKUmIZyDW0cmsN4qufaxINnXxfgpmO04u8jpbocg0HHA+
+	6r2/atqChRQ5i5jyzAJS+ovm28lFjdo4e+dX1Dzm+4HVYkO7rsrX44wtHgfnROpfb/wnmlG7l2N
+	4ml0Q+82hoZzjmgTNn4ierwNj013UmFY=
+X-Received: by 2002:a05:6512:23a0:b0:5c1:5c55:2d2d with SMTP id
+ 2adb3069b0e04-5c1bc7e68d2mr4651609e87.26.1795543991861; Tue, 24 Nov 2026
+ 10:13:11 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -98,25 +59,94 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <13014755.O9o76ZdvQC@rafael.j.wysocki>
+References: <3985766.kQq0lBPeGt@rafael.j.wysocki> <6217460.MhkbZ0Pkbq@rafael.j.wysocki>
+ <awXGWwlZo0QIFvxA@ashevche-desk.local>
+In-Reply-To: <awXGWwlZo0QIFvxA@ashevche-desk.local>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 24 Nov 2026 19:12:59 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0h=FeDNkUaa_25mUeXDLaVgg4YqD_JSwZPUBm9kT8qd1w@mail.gmail.com>
+X-Gm-Features: Aa3M54pKSNT-PvjuyC9UUyumgmnt6VFrhDVgupy6P4mQgFud7kbtJ99gVXNmMkk
+Message-ID: <CAJZ5v0h=FeDNkUaa_25mUeXDLaVgg4YqD_JSwZPUBm9kT8qd1w@mail.gmail.com>
+Subject: Re: [PATCH v1 2/5] ACPI: fan: Stop using driver_data pointer from
+ struct acpi_device
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
+	Linux PM <linux-pm@vger.kernel.org>, Armin Wolf <w_armin@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 24, 2026 at 05:36:41PM +0100, Rafael J. Wysocki wrote:
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> 
-> There are two users of __pm_runtime_put_autosuspend(),
-> pm_runtime_put_autosuspend() and arm_smmu_rpm_put(), but
-> the latter duplicates the code from the former.
-> 
-> Fold __pm_runtime_put_autosuspend() into pm_runtime_put_autosuspend()
-> and make arm_smmu_rpm_put() call the latter.
-> 
-> No intentional functional impact.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Nov 24, 2026 at 6:21=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Tue, Nov 24, 2026 at 04:47:12PM +0100, Rafael J. Wysocki wrote:
+> >
+> > Instead of using the driver_data pointer under struct acpi_device,
+> > make the ACPI fan driver use the driver data under the dev member of
+> > struct acpi_device and clean it up properly on driver removal and on
+> > probe failures.
+> >
+> > While at it, unify the code ordering of acpi_fan_delete_attributes()
+> > with the rollback path in acpi_fan_create_attributes().
+>
+> ...
+>
+> >  static ssize_t show_fine_grain_control(struct device *dev, struct devi=
+ce_attribute *attr, char *buf)
+> >  {
+> >       struct acpi_device *acpi_dev =3D container_of(dev, struct acpi_de=
+vice, dev);
+> > -     struct acpi_fan *fan =3D acpi_driver_data(acpi_dev);
+> > +     struct acpi_fan *fan =3D dev_get_drvdata(&acpi_dev->dev);
+>
+> I'm a bit lost. Is 'dev' parameter embedded into struct acpi_device
+> ('acpi_dev') and later we again come to it via dereferencing 'acpi_dev'?
+>
+> If so, why not use 'dev' directly?
 
-Ah, it's about time. I was thinking Prakash's patches would handle this
-semi-naturally eventually, but they seem to be stalling.
+Yeah, good point, it can be done.
 
-Reviewed-by: Brian Norris <briannorris@chromium.org>
+> >       return sysfs_emit(buf, "%d\n", fan->fif.fine_grain_ctrl);
+> >  }
+>
+> ...
+>
+> >  void acpi_fan_delete_attributes(struct acpi_fan *fan)
+> >  {
+> >       struct acpi_device *device =3D fan->adev;
+> > -     int i;
+> >
+> > -     sysfs_remove_file(&device->dev.kobj, &fan->fst_speed.attr);
+> > +     if (fan->acpi4) {
+>
+> > +             int i;
+> >
+>
+> While at it, ...
+>
+> > -     if (!fan->acpi4)
+> > -             return;
+> > +             for (i =3D 0; i < fan->fps_count; ++i)
+>
+> ...seems the local form can be used
+>
+>                 for (int i =3D 0; i < fan->fps_count; ++i)
+
+Yes, it can.
+
+> > +                     sysfs_remove_file(&device->dev.kobj, &fan->fps[i]=
+.dev_attr.attr);
+> >
+> > -     for (i =3D 0; i < fan->fps_count; ++i)
+> > -             sysfs_remove_file(&device->dev.kobj, &fan->fps[i].dev_att=
+r.attr);
+> > +             sysfs_remove_file(&device->dev.kobj, &fan->fine_grain_con=
+trol.attr);
+> > +             dev_set_drvdata(&device->dev, NULL);
+> > +     }
+> >
+> > -     sysfs_remove_file(&device->dev.kobj, &fan->fine_grain_control.att=
+r);
+> > +     sysfs_remove_file(&device->dev.kobj, &fan->fst_speed.attr);
+> >  }
+>
+> --
