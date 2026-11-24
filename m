@@ -1,60 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=115.124.30.130
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795490857;
-	b=pIo0Z9Z6dZZ+L8s7UzaRIVd3ZwUd2AsKmH4nka02ngAt4FZLnzam0QjE6sDKauWyISua
-	 YNfT1EAEhL1AxIeIMaBEN9aAMBN+KVSfZBCQ63x0193DufOApp9ffRBjdDXyt0dOzhZSh
-	 oWimSc24u/gBm6QhZVTZ0kDVMgKgnyUSAjy6gVyIzyCi6RENeLLjtJeralpsqilQELh4P
-	 8fTSbJ1T1WQqhWfe7UmtB3rVFbRFfXjfuATBUR6E3VhHDOHY2MFXIWq+WwFH/ds7stf12
-	 odtzKQP3kUxumhwRmALxDjrdOhwnQM2b5W1O0w7fShI1mrSec2G7UIONak901nDIfvQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795490857;
-	h=DMARC-Filter:DKIM-Signature:X-Alimail-AntiSpam:Received:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=vA/JkDlzEuqb+fY1HM/C6RlpWoROSycPr2A7ltH0xJA=;
-	b=IMSQOcOsEeQYv9TO+mGlR/aYrjdDVWvQpBdAZaWOSsfaLYU1jpXy+Wam+cceQnt2FFd9
-	 HsvRIjgRFrQW+oArMp7AKBA5fxa4WC2zeHlA+PggDTVdyPwZcWJZXYVpoENsojuo6Zm3H
-	 Y/3QtsS4Smorb7UUYj9ZJRmhCttaTo5HYK6ncJ5jk6e6Apzb5xKEmACi/8KbVOxV5w2+6
-	 sIJ4lKyZNfCZYZLpybu2lJbJi2BKUHn2Nq2I5sJ6PprVE5r4+/6f5z0e5R7R+OJvFEOl4
-	 YbxQtd3suMvylcDdgG0nHiPyWfEVhxCo7/mufQkhD4BrJb1lJ+W0NJ93TnqNnHLAILQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.alibaba.com;
-	spf=pass smtp.mailfrom=linux.alibaba.com;
-	dkim=pass header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Fb035xzO;
-	arc=none smtp.remote-ip=115.124.30.130
-Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.41
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795494050;
+	b=lM6pv/HVydAfiUX/eWUvgEb3GmWYjJFcW0b1NcYTSdR+J50d9rnT6Neo06ABnNzb8O4o
+	 FJi0mqCK6CeXatLmeFaetNn8t30bjjSirUQORTimJmhZI+hg3dMgE9ccKggyRoe0HpjKB
+	 e6V+ecFwDpGAEdU7vKJbl0E+JxtKFd1S48HL5mtYz3InNFF4Un7cIayCksO/qn21F6m5R
+	 Xqv/1IV/JLL4J6KUQJXpMW/muqltx2PAV77LnANtkM5iWlN/IHrMoqLZp7nOXj42tVR8C
+	 zexl0SNheBU1PZN9Zx2lXL27Fe4Z5/boYiKguWj4QNdKNHeGj2F6K+HIAujMjyD/hcQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795494050;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+	 Message-ID:Subject:To:Content-Type;
+	bh=Iwz99gTCxCIUCcRsgbRPplQdxHuMdIk+bgQDXj94h8k=;
+	b=uhY0ZMXyd08qB2J3Ig1PSYcp5GuPS5DVI+8PsOYlfb9LSMN5Xf0m2bOMGZEcAGFdiW4b
+	 S5UlCZDwb5ISpgSYbG6SPN64Khb6hjkgk2rZ0Yr67BiJCEo4hENlA9jve5NylI0YmenLT
+	 OWwJv8oxIPLirhDB4ahfBJo7Zm6vqQK9B4OMParIikVQrCyBqZQcMg5E57oLpm0SJNvar
+	 hdVN519fQzBymI5Ry6lxcyTziJtl4VzD6BxFnvGxNfaAiV0FdCNhV56HhQe6El5a4zHm6
+	 B2QygGx4ArHYOH1/Orl/ue5V8rnYTf6Is0nBaPZUqeYGoc42IUo68B9dDoxUqjBVlng==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LngA7yn+;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.41
+Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com [209.85.208.41])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51206606A32A;
-	Tue, 24 Nov 2026 03:27:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 51206606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E993606A321
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 04:20:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3E993606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Fb035xzO
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1795490848; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=vA/JkDlzEuqb+fY1HM/C6RlpWoROSycPr2A7ltH0xJA=;
-	b=Fb035xzOk5JE/KZaoJsWuGPPzm18+SJWdakWtyAiVoVOsFLExHucrGsrA8ktMoNIyRqK88n3eVD8WINnzYFqo1YxospUAG4NpzFgEfq32lWk7x3a77G/Zs8W+mX/1PI2YddaNzMK1NkLJdDxSkgrWfZDP35G8uG/EWtL266EwP8=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R921e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=qinyuntan@linux.alibaba.com;NM=1;PH=DS;RN=6;SR=0;TI=SMTPD_---0XFN2idj_1795490847;
-Received: from banye.tbsite.net(mailfrom:qinyuntan@linux.alibaba.com fp:SMTPD_---0XFN2idj_1795490847 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Tue, 24 Nov 2026 11:27:27 +0800
-From: Qinyun Tan <qinyuntan@linux.alibaba.com>
-To: lenb@kernel.org
-Cc: michael.hebenstreit@intel.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	xlpang@linux.alibaba.com,
-	Qinyun Tan <qinyuntan@linux.alibaba.com>
-Subject: [PATCH 3/3] tools/power turbostat: Fix --cpu summary description
-Date: Tue, 24 Nov 2026 11:27:23 +0800
-Message-ID: <20261124032723.157254-4-qinyuntan@linux.alibaba.com>
-X-Mailer: git-send-email 2.43.7
-In-Reply-To: <20261124032723.157254-1-qinyuntan@linux.alibaba.com>
-References: <20261124032723.157254-1-qinyuntan@linux.alibaba.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LngA7yn+
+Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-6ba12b00c76so4187301a12.0
+        for <linux-pm@vger.kernel.org>; Mon, 23 Nov 2026 20:20:48 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795494047; cv=none;
+        d=google.com; s=arc-20260327;
+        b=pOaqPK+SRTAoIJS5yCYNDdeTI46FSlz8rKHZ8Eo/Tg0X/pSg/qSgI4ixIC7J22uSbm
+         bMA2oogAyswQAUbHU9eKW9qFkh99Agm/Z7SCuX3cUpTtZTZD8nC14IDopWovee/Ba6Bx
+         4C/AiELrDlu2RbpFIoQhz3x0egyxQ06j390KpNzparMkVcP3Zct8+zVa2/MHJqCcFylz
+         l+uF4lTNF9AaK83JjkVJ9ebyi3el3HPQqBsjFX0MJWC8txFWiUB93/wpnAYlj8LBwIAC
+         fQc6V04haEXSfdsqePG56ViNko8MFhSOqGi+GjRql2YGO3qC8QhMzISCIDOd2dUcejxu
+         WyNQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=Iwz99gTCxCIUCcRsgbRPplQdxHuMdIk+bgQDXj94h8k=;
+        fh=L0GU8zPW8Fnn/zOti2OMPR4/BITwD2+wkZ45m7dUzqM=;
+        b=cOV43TZMBArzMvf7D/VJ7v+uTDfVGctlhRNczya3pRmwMDQGBd2Gx048K5myiwC14Y
+         sY8w4Z4NIt3KWWk/RyUibJ42koZovrz+R4nmkHdsWVL1jEtB82rmzoEWqmTfwCQa1K11
+         oKLXOVGYrwcuG3pevt8kIaNO1aIKTmBu4EnpL2arC5hiSsP1xQDDSW5alSRFhBFNXpl/
+         vMEUO6eCeY3q2newpOuJIJF80MZgC/sbdOEkqbp5GhE7E7b5dBlVFao+ui50N4ybao7d
+         pyy9B+7i1l8vaIQZAOIVo4H5pngU6FPl59agbvcxmBUd61eJhO3u5OHg6nlnqTejDzh3
+         Z56Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795494047; x=1796098847; darn=vger.kernel.org;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Iwz99gTCxCIUCcRsgbRPplQdxHuMdIk+bgQDXj94h8k=;
+        b=LngA7yn+TYj3oBq32jsDML3Wtm1oLrVRjkDolfkMT1Oz7Qj+6OuF3gfr65+3X4izA5
+         Y11HGSqlPp5/pQ8gk5fHZAUH95KMDhMm9TtyIWpaPzHIKc8uirsZmilPhpVqOO+DaHuY
+         2Y2wGIOE/s59Td8aJONIlq6OE+j+tHh2gzIglSCjjgBI4WKEooJvAEXqT4JksOKevaNP
+         37m32naJDe/zEuog+obxzxCI+SFVsDI26JPSx/HNztwYEMrKi34wXl/n2ghjLzxCC2Dj
+         qk5XXenBf3Qs41nOUSPrbXNUT+mfMB32+2o648Nw0cq4+CJaibNaJf5NbvFEjNyCuxdb
+         h5YQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795494047; x=1796098847;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Iwz99gTCxCIUCcRsgbRPplQdxHuMdIk+bgQDXj94h8k=;
+        b=VvoT7Jr8kH44KtJtZ5exiEwVluKBHyX9MMeRHMM4ThkFdILguggCBRM2DvRWWzoC4w
+         YSEao/a+Xc7mb1kMixoxxdVmZNL73ISI2j8q7FnsjAHLNCqxc3bA+CaLw5ByXAea2SFS
+         OIsXRzMYwDnfjy7n7bBSxcxKGELt6BNHpAIXLh87MNrexmS7ToOmONVQwjQmTraldRLZ
+         1D7I7J+rzTanPywlKIpBEgX0iSUqNxUAOsaWBvIX0si2f/OXa1ixXzQkAnWBsM4EoEZ8
+         B/bfi/fhDeYYOzKUGnuxV0zcg4wk5rXTuuSCxywqrUq2f2JiQgppfCk4om2oB8T/pSaE
+         1gvQ==
+X-Forwarded-Encrypted: i=1; AL+hErE/bKq6ulTgHUmDkV+AVTB2Y2Rkq85khk03E1mPvPmrC9jBmFJitY6na2YXIC+JfxMZuATII27bfQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/g4d5L5fVRaBe0lZZZNu3aOiHafp8cEWGpBYtEoWMdnvPlTjiu
+	V9mxWKB+4Y/HlFm+hVJLX1qVJkN3HwYLeQ06QtMlld9FBnbRPVm1S1j6fa5RgoOLN2oUm6ZNQVQ
+	WJMEh6OsOMA0UlX+BKUJ8Vq6kcDxe7Dg=
+X-Gm-Gg: AZFdTZfALKIyP8c86vRfi+wqyuPC9BXOdSC1TIK6cBaxKn81MwyTqM1TeptQVq+TI2i
+	9cMcmNbxc1AaZI9VvN48YsmukS7C9PDm81Y4+3ag4GQriaJ6gPTA46w21rz54YkBYQVNVvWnEFv
+	XOjBI21Teqypqyqy+0veFMhVF9D/BG0mwoeTPTQSO+IrtZDQll9qysDKcNqpjE9ATX/T0jrCWC3
+	9BTNx7he7NHz8NbiOsM2FX7W2guBf+IP2zPoGYG4UsKA4ASqHpnE9TqZo71RAHKjajknArIGhBf
+	4EdGcnSMixDA9SIHJ96ObFcdV4hT8AXOfz/NKlVBEKdZCobtNizHM2KoLdzasKyEbynk/qyMb/Q
+	AvJ9XNcyTQaqSyJALuokITfqy3g081eXQVR4=
+X-Received: by 2002:a05:6402:234a:b0:6ba:7762:3dc6 with SMTP id
+ 4fb4d7f45d1cf-6ba7762424cmr5526320a12.31.1795494047241; Mon, 23 Nov 2026
+ 20:20:47 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,43 +103,81 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20261118104935.1716-1-linux.amoon@gmail.com> <20261118104935.1716-3-linux.amoon@gmail.com>
+ <awS84s2FVdzy3j4Y@aurel32.net>
+In-Reply-To: <awS84s2FVdzy3j4Y@aurel32.net>
+From: Anand Moon <linux.amoon@gmail.com>
+Date: Tue, 24 Nov 2026 09:50:34 +0530
+X-Gm-Features: Aa3M54o2V3tALqDtTk5FmFGSg-XejOz73sQbTVaEuMBBmEBfiB2hu2jposXV5Ww
+Message-ID: <CANAwSgQXRojN2x4NypLajJ8tUf2cyNfdfFLnaOFPd1hXuOMkJA@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3] power: reset: Remove SpacemiT P1 reboot driver
+To: Anand Moon <linux.amoon@gmail.com>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Troy Mitchell <troy.mitchell@linux.spacemit.com>, 
+	Andi Shyti <andi.shyti@kernel.org>, Sebastian Reichel <sre@kernel.org>, Yixun Lan <dlan@kernel.org>, 
+	=?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@ventanamicro.com>, 
+	"open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, 
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>, 
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>, 
+	"open list:RISC-V SPACEMIT SoC Support" <spacemit@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
 
-The man page states that --cpu only filters output and that the summary
-always includes all CPUs. Numeric CPU selections also restrict counter
-collection and the summary, while core and package only filter displayed
-rows.
+Hi Aurelien,
 
-Correct the option and row descriptions to match this behavior.
+Thanks for your review comments.
 
-Fixes: 0fe375290137 ("tools/power/turbostat: Obey allowed CPUs for system summary")
-Signed-off-by: Qinyun Tan <qinyuntan@linux.alibaba.com>
----
- tools/power/x86/turbostat/turbostat.8 | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Tue, 24 Nov 2026 at 03:53, Aurelien Jarno <aurelien@aurel32.net> wrote:
+>
+> Hi Anand,
+>
+> On 2026-11-18 16:19, Anand Moon wrote:
+> > The SpacemiT P1 reboot driver uses I2C-backed regmap operations to
+> > request system shutdown and restart through the PMIC.
+> >
+> > The system-off handlers run in atomic context, where regmap operations
+> > may sleep. This can trigger invalid wait context and
+> > scheduling-while-atomic warnings during shutdown or restart.
+> >
+> > On SpacemiT K1 platforms, system poweroff and restart are handled by
+> > OpenSBI through the SBI System Reset (SRST) extension. The Linux PMIC
+> > reboot driver duplicates this firmware functionality and is no longer
+> > needed.
+> >
+> > Remove the driver along with its Kconfig and Makefile entries.
+> > The P1 MFD driver and its other functionality remain unaffected.
+> >
+> > Cc: Troy Mitchell <troy.mitchell@linux.spacemit.com>
+> > Cc: Aurelien Jarno <aurelien@aurel32.net>
+> > Signed-off-by: Anand Moon <linux.amoon@gmail.com>
+> > ---
+> > New patch
+> > ---
+> >  drivers/power/reset/Kconfig              |  9 ---
+> >  drivers/power/reset/Makefile             |  1 -
+> >  drivers/power/reset/spacemit-p1-reboot.c | 87 ------------------------
+> >  3 files changed, 97 deletions(-)
+> >  delete mode 100644 drivers/power/reset/spacemit-p1-reboot.c
+>
+> The patch is correct, but you might also want to remove the
+> spacemit-p1-reboot entry from drivers/mfd/simple-mfd-i2c.c.
+>
+> Anyway, while I support removing this driver on the long term, it might
+> be a bit early to remove it. Indeed, while the driver is available in
+> OpenSBI 1.9, using this version requires either patch the vendor U-Boot
+> or using the upstream U-Boot which still has some limitations (thanks
+> for your efforts improving it).
+>
+> At the end with your patch 2, keeping this driver a bit longer doesn't
+> hurt, as it is only used as a fallback if the SBI SRST extension is not
+> available.
+>
+Ok I have no issue keeping this as a fallback driver.
+> Regards
+> Aurelien
+>
+> --
+> Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+> aurelien@aurel32.net                     http://aurel32.net
 
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index c905198d0501..c2b86d20db95 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -92,7 +92,7 @@ name as necessary to disambiguate it from others is necessary.  Note that option
- 		'%x' hex identifier of the PMT MMIO region.
- .fi
- .PP
--\fB--cpu cpu-set\fP limit output to system summary plus the specified cpu-set.  If cpu-set is the string "core", then the system summary plus the first CPU in each core are printed -- eg. subsequent HT siblings are not printed.  Or if cpu-set is the string "package", then the system summary plus the first CPU in each package is printed.  Otherwise, the system summary plus the specified set of CPUs are printed.  The cpu-set is ordered from low to high, comma delimited with ".." and "-" permitted to denote a range. eg. 1,2,8,14..17,21-44  Multiple invocations of --cpu are OR'd together.
-+\fB--cpu cpu-set\fP select CPUs to monitor or limit the rows displayed.  If cpu-set is the string "core", then the system summary plus the first CPU in each core are printed -- eg. subsequent HT siblings are not printed.  Or if cpu-set is the string "package", then the system summary plus the first CPU in each package is printed.  Otherwise, counter collection, output and the system summary are restricted to the specified set of CPUs.  The cpu-set is ordered from low to high, comma delimited with ".." and "-" permitted to denote a range. eg. 1,2,8,14..17,21-44  Multiple invocations of --cpu are OR'd together.
- .PP
- \fB--hide column\fP do not show the specified built-in columns.  May be invoked multiple times, or with a comma-separated list of column names.
- .PP
-@@ -138,7 +138,7 @@ The \fBcommand\fP parameter forks \fBcommand\fP, and upon its exit,
- displays the statistics gathered since it was forked.
- .PP
- .SH ROW DESCRIPTIONS
--The system configuration dump (if --quiet is not used) is followed by statistics.  The first row of the statistics labels the content of each column (below).  The second row of statistics is the system summary line.  The system summary line has a '-' in the columns for the Package, Core, and CPU.  The contents of the system summary line depends on the type of column.  Columns that count items (eg. IRQ) show the sum across all CPUs in the system.  Columns that show a percentage show the average across all CPUs in the system.  Columns that dump raw MSR values simply show 0 in the summary.  After the system summary row, each row describes a specific Package/Core/CPU.  Note that if the --cpu parameter is used to limit which specific CPUs are displayed, turbostat will still collect statistics for all CPUs in the system and will still show the system summary for all CPUs in the system.
-+The system configuration dump (if --quiet is not used) is followed by statistics.  The first row of the statistics labels the content of each column (below).  The second row of statistics is the system summary line.  The system summary line has a '-' in the columns for the Package, Core, and CPU.  The contents of the system summary line depends on the type of column.  Columns that count items (eg. IRQ) show the sum across the monitored CPUs.  Columns that show a percentage show the average across the monitored CPUs.  Columns that dump raw MSR values simply show 0 in the summary.  After the system summary row, each row describes a specific Package/Core/CPU.  The system summary covers the CPUs being monitored; see --cpu for CPU selection.
- .SH COLUMN DESCRIPTIONS
- .PP
- \fBusec\fP For each CPU, the number of microseconds elapsed during counter collection, including thread migration -- if any.  This counter is disabled by default, and is enabled with "--enable usec", or --debug.  On the summary row, usec refers to the total elapsed time to snapshot the procfs/sysfs and collect the counters on all cpus.
--- 
-2.55.0
-
+Thanks
+-Anand
