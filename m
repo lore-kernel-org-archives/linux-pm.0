@@ -1,38 +1,120 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.47.186.116
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795516834;
-	b=SkSf8E1oozgdoZLX43LbEfMhOh6p2QVObDRjPOicd2aQ3x5xtXa/w1Dvg81v5qtOr6a+
-	 EDXFEQW8QnGlHrWTIcud9Cc1YI2Wuyzw/VcTs4LfqCL4AgusxFjE2sllv0QSSv8Bgrysr
-	 bUTRf+kwToUIjcrjJWWEPT5SHT0G95qvzQISTXfCIi+M9vo8j3lrN4KpJIKyC/1+y53GM
-	 OvhfEWpZ1g6dcgJk5JJXEDRt1CZvNU9TJtINupy4q1RMKtm/WMr+9cOefgWAqwC2dlaCp
-	 t91C1+o+HA757vHVX/vnllxU9+SnhQEXkAllf9534uVUaiTnZjL3awmoz+V+6iRSlGg==
+	t=1795517640;
+	b=bAccuY/VbYxJdLHS/0k95nSOcF/HUEAjFQ+kyrCli7Dv60HnVvdtzfOYtBFHGSmzJn0W
+	 9lMl6hGe6eQ5th7I9saZ4kNz71W007A+Heli1lEry5g8jdo0/s4K0qYk7jkqXUh2QjCCX
+	 YDdU78mTTHa9EJWAd2rWCct9+nBdwKIBa5T1xuT6Nv9FysMq8tAEqZ8rEek6wk5N4VjpY
+	 zU4UuEQekeZ/pmjz0OOctChgLuYeVT/d5Wja90fYTGkoiZSYnB7VrtnCLuY02FEX1hqR2
+	 /2RP49lDACeTV6EKOfYezpgWihQnmq9EblhORkzdW5m/lUBHsiMoKS+wZOYFKjtujGQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795516834;
-	h=DMARC-Filter:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
-	 X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=ugVpAzrKRIDwD3UvXW7zHcPMnBCkzuYJI8KmO/cIlDs=;
-	b=vm2kEiJStDG4MzTQ8yzv42zyl52zDYHUPdu4jTFVGKXoIol2lNgATx0c3r6ag3vLCHn6
-	 dqYy+Vnl9emHMqftZriU7Lh4m3LMJOWp9WLTEmHodDxpEMdY6l0Bhpq1wBYnsDtJO9095
-	 x2jAmdvmDlEtqawQNT8N/b1qdHTsCdKhYk8LV7uRTRfKbp1UetNP1m96QXNWMv3OwksXZ
-	 7CkgcrM+Dtpq/1xij3ST245Bmh34UajjCGD9xbaCYWL01CDyyNp9HESoo0Q+yDPr/LKIF
-	 5XK5V1u2s/sjBTBMqa8JZAQRaMevIhMi3GL4v9CKjwaNnMCY2BkygkQZbEJcokjdD/A==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795517640;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
+	 Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=ogWxQ2xxIGHDPlXg+kfuqpwZhrR4bqe8TvXeM9trYbs=;
+	b=s/bh8cAnHSdb7MCid2JsKsqSKapIbc7vqTQxGas69msV6axg+9IHWNDs8vTyUamZuv0X
+	 /nboaCfNSxjmfY3lrGykiKJuYj3xc2/oLkAeQpxFiGR9+vSP7FcMzIa3FkdRkISexxCYj
+	 N6IEZFNfxqVnwZlYCJBvr+dvLplucXhZIVggovqkDWqtQFVQC9fqWIQsSwyIYwr87J0L1
+	 yk1zgJGNEfuLk8zDTS8etpJegbhnopoIn5EDTHhMfdUCPiwWmX0HSNK7eabjmswu8nXoT
+	 KeBnS+PaU2ZOetfEJldKBopv4pfD9IKD/idFCGy28hNJVmpls2hU6yAhjU4W1HtEhUQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=krgm.moe;
-	spf=pass smtp.mailfrom=krgm.moe;
-	arc=none smtp.remote-ip=103.47.186.116
-Received: from krgm.moe (krgm.moe [103.47.186.116])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B6586606A687;
-	Tue, 24 Nov 2026 10:40:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B6586606A687
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=krgm.moe
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=krgm.moe
-Received: from [10.42.0.96] (unknown [114.242.206.180])
-	by krgm.moe (Postfix) with ESMTPSA id AE22677B7;
-	Tue, 24 Nov 2026 16:10:30 +0530 (IST)
-From: SignKirigami <prcups@krgm.moe>
-Date: Tue, 24 Nov 2026 18:39:39 +0800
-Subject: [PATCH 1/2] dt-bindings: interconnect: Add Qualcomm Netrani
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=HY9GENZp;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=AWV+PsMk;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11579606A332
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 10:53:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 11579606A332
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=HY9GENZp;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=AWV+PsMk
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AO8roiN1598148
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 10:53:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=ogWxQ2xxIGHDPlXg+kfuqpwZhrR4bqe8TvX
+	eM9trYbs=; b=HY9GENZpfyOEm1s+M0PgkFPKbE9Sp3wS5UzTT6TSh3wgMdPB7YM
+	RKWyXR2NXR5A4AZJpS1sNhSUYD2YVOzfqBKhYL5pmr/f48N6lMNZzp93rP9evGJT
+	cKYQMys67t8w5gxjIVcpCUu73SGTArJVQdESfDJrHpmLjGEWebKSyB3hNrQNO0Id
+	GIKt6VRdUhtDu150wbSbmsLG0d4YxJM9NfIjyheO/Z4CJdpcMfAUyPt36So4mda4
+	7vvCGs58LmalL7SjzcNAqJnqQ5ZYzIKUbBiwdLA6WTe1XEp9BDsdavOgqdjKGW3K
+	dq7AW06CCwhagdx9Ep3HzNkFhst7DYxGSrg==
+Received: from mail-dy1-f197.google.com (mail-dy1-f197.google.com [74.125.82.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4ukqk803-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 10:53:58 +0000 (GMT)
+Received: by mail-dy1-f197.google.com with SMTP id 5a478bee46e88-386177b0516so11619338eec.1
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 02:53:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795517638; x=1796122438; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ogWxQ2xxIGHDPlXg+kfuqpwZhrR4bqe8TvXeM9trYbs=;
+        b=AWV+PsMk4Ps5mPZ5xfEZ6nolvYNhtukoVqCIK6fFnmQvLX+I4s0Do/KB0v1NpSeEDa
+         qvcqac/tyw8ZmzWl7F0IWnSA1y9FKmYG2YpnsWtttwLKWO3Pj3Bv4peKBuikBahiDZld
+         iNvSudURfJs1KSeByC02flwOG/Z4qBIniXK4tiDGyvoeHxEm/g81RDPJk2SzOqaX0IXg
+         g3TYIoAnc1T43lS+ZUg2GGi8W+YLJzKQxsxlMR/I5CCyQYGPSZ5ctmXKNzWXUJ16DLOB
+         uC7jWL+rufnAXXpgfgFNliD8RDUJyrIhfkH2HQR+gM6GmqHEYGq4SYXITyp9NyxlejPr
+         jDaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795517638; x=1796122438;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ogWxQ2xxIGHDPlXg+kfuqpwZhrR4bqe8TvXeM9trYbs=;
+        b=0YoaIMMQosH92wxKTPULVVGcjZiufnWOXCEfeFsGFlWomfAbEd7a7Fgh8ubUsQthdk
+         z5Mz9ySljNzAPQigynFODtUaXrzgh/UNlN+bKaUABuP4AvmGzotar9pzlteAiQzJ9l6c
+         3zZjXMya8OYVSL7qGGgfl0RGjPSGPxwo/BwA/37GUh/lCuvJ6rzPOjo4mGpFOq7y/orA
+         MtodiUb5vnHYlGsya5wT2r7eZ3tAANP1h9jAoWDXGRvzMbZdLPsb9KRJQW9/7GXjVTtA
+         M5g6IKRB0BIYZXeumth4sWYCtZeTOzOsl6ujLNO0TG6ILXmmT/cZ35hCtXDW1907yfhA
+         rong==
+X-Forwarded-Encrypted: i=1; AL+hErEsajkuVkmKBoUGnrx5hnbRseXoM5w5il/bO4oZR9txXCdoiMxk0xY5Dzi8cBapjHnIBxdlCVBGqA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z90V/pUCPFGfW0m/v0Byslk8KZcYJPblC6E8BVgJnmR3JOa3iHc
+	nobCM86T757aTIsfsJdo2GgtOd9/Iq8eH19mar1tVXR45ztYtzSK17uj4en3z8kVZ93fPWO0p42
+	BDq6xaSyuUs3kWIGeQkLQBZZkDGg0tFeTO2xmR2JVoC07UwYL2nX0z1cu2s1BVA==
+X-Gm-Gg: AZFdTZdVsARdx29Y4/fRRtoh7Id4SXFKIOA1ay+fDvRfAzaJ36a0sYIBQTZI9iuFfeL
+	TdSHihmYR/yLOmnLCHT35d47iRYaFsWPA4Bb3AlmFlUVL4LiDsf6bSDrq+L5uYAtdv8lJenLX3l
+	iGjISo4eTE3nPHmJpfx2Rl3ushNdmmrE85JHdX2GnlP1kA7TgGgVX6TFDbxU4DE3fo74WaP/mBe
+	qMiaQ+/23RmNMzXfTrPu9q08v/RKv/tQhEaXkv/FlOLPZeU7NqX1L/a3cmPPdkQzsBF5q7xZPYs
+	rjLBDyYu4ghTkwOSxRE+cehY0bCINLDk+3NqG/Cs8X6c8/fmNJnPGg9O4PWddRXSuvxO0Duewit
+	IY/wEKkmudws6HCp2DS+D1o2DfhRIhZZk+J6rR8PGDP5VC3ipeSDQJArq58OMIyIU9drnWec7ao
+	ly5Le2cCa85U3G6JhlWrihSIli0ZWCYI5/ysKqrnXsmlWLq0viSg71c1o=
+X-Received: by 2002:a05:693c:20ce:20b0:37a:a9db:6bd2 with SMTP id 5a478bee46e88-3856e63b064mr16005452eec.11.1795517637486;
+        Tue, 24 Nov 2026 02:53:57 -0800 (PST)
+X-Received: by 2002:a05:693c:20ce:20b0:37a:a9db:6bd2 with SMTP id 5a478bee46e88-3856e63b064mr16005427eec.11.1795517636854;
+        Tue, 24 Nov 2026 02:53:56 -0800 (PST)
+Received: from hu-ymg-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38566cd46c5sm53796353eec.11.2026.11.24.02.53.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Nov 2026 02:53:56 -0800 (PST)
+From: Yadu M G <yadu.mg@oss.qualcomm.com>
+To: Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Subject: [PATCH] dt-bindings: thermal: Add Seca TSENS compatible
+Date: Tue, 24 Nov 2026 16:23:50 +0530
+Message-ID: <2d8b5fdcdff1f5d0df738d84773b0ed54159eee0.1795517630.git.yadu.mg@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -42,354 +124,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261124-netrani-interconnect-v1-v1-1-bb5efdb229cd@krgm.moe>
-References: <20261124-netrani-interconnect-v1-v1-0-bb5efdb229cd@krgm.moe>
-In-Reply-To: <20261124-netrani-interconnect-v1-v1-0-bb5efdb229cd@krgm.moe>
-To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=8553; i=prcups@krgm.moe;
- h=from:subject:message-id; bh=oKt7tT7DRJ0IB9qOrW6CoWfDmTULvCHP67hIDqEHK4Y=;
- b=owEBCQL2/ZANAwAIAV0dOJt2umJjAcsmYgBrBWl4H973MlilZiT8rDvMdhnUrKeN1YweM0QMj
- dZP60PWPESJAc8EAAEIADkWIQRSClJ2zjncUdNU0FFdHTibdrpiYwUCawVpeBsUgAAAAAAEAA5t
- YW51MiwyLjUrMS4xMiwwLDIACgkQXR04m3a6YmPXPgv/ci+6fht3usgBWqsdyKm9KdpaLSBnmf6
- uAY5c9TCa3bRA2agyFZRfjbpNvUg7OjBTm/CAsf8sV702kjXByTFSI6mCA6xUjPxYAhDa+IfI9V
- oFLmjtauAHagpU2eFY6ghuNVslyVAiI1aUgK6rcylDJ5ooXLbxqzsr8N/WTLZgpf21YmCkNBcM4
- yWJ7wKgh/b+o0egjOup12P75ygH5WeYdXewB26/GaSbsuxSuKi9mId4V/5yCesWhRwwtF5UBnIw
- CaCLulG9xV3zp0iTyDNoLzkLt/dnjkU1eBf1Uym4C6rih+PUYIAKZdWmmH1S+8oAp5kukGwadw0
- l5ADF3XTvSGGEhJDEAgzAhbwG7zdbXfwr7uvlsZV6bHDRtAQP2FxriTics/Dp/blHALuX2nNpjB
- A3RXOi+7TPnNiKKPtKGBpqI8b6Ur9g5LYU9RUuLXtUGss3pjtHIn4u13gz66csxhSzrTycz+AA9
- HgU1iUXtWNncz5FmkmOMiPuU/qKdFHS
-X-Developer-Key: i=prcups@krgm.moe; a=openpgp;
- fpr=520A5276CE39DC51D354D0515D1D389B76BA6263
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=Wu++otfv c=1 sm=1 tr=0 ts=6b056cc6 cx=c_pps
+ a=Uww141gWH0fZj/3QKPojxA==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=EUspDBNiAAAA:8
+ a=lHObh2IfMKzVuqTG74EA:9 a=PxkB5W3o20Ba91AHUih5:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDA0MiBTYWx0ZWRfX/n9GLUuCTS4s
+ DOTm6oFHcLChqwOxZqyNDe9TH9G3FJEvjtJoknXpZ/VKMB/sde2SAREwQcA7DIh4FhfJmje0oe7
+ LvvvcKWNJ0/fywRWaewW3mNyAkDB9RdligASQXxDMbJ4ak0t0FYVZBOEbz7eiYC91hS/et4jUfa
+ dZ9TxW2h1vNaWIJt9tVm2zGCCBSnPFgP7W2wM6urw+9gRiVNdyK6ZVn6wOqknK1fNyUL3wzE1Ed
+ hbM3LPPmJRS1ls2UWb1EMHRWWsc2pq/EYH7jrFfhgEy91ZMU9mXbgmWoDzKcLkH23zxl012Pb+S
+ ns8zPxQUB8PLewEfw2bw3Bxy8Qio0KSEyG7XWfpicJbl152bxe6DPMRQj7+P5BEo9PczTcOUqSn
+ THQ9A5JJ7gJ6L+DEyL13KSFUkbl0DMWUa8+8hoyoOktO7xSh6IUwAE04JMMfSH+bp5iG7i8NNKq
+ wHBal+xPH/Z7SKAzkKw==
+X-Proofpoint-GUID: 34zFhJIQM1IvRQiWDnjUcuwhm9yVjRBT
+X-Proofpoint-ORIG-GUID: 34zFhJIQM1IvRQiWDnjUcuwhm9yVjRBT
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDA0MiBTYWx0ZWRfX++JPqugjDxBa
+ aaZurDRuRxjJ6RzNYHefZLuzGma/NWb6rpaveW4vA+HccdrI+BXAR1PZm8es+U++Gen3ZY82FQP
+ tykKWCMQir5szh1++VQAADnNMsJJqc0=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-24_01,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 priorityscore=1501 impostorscore=0 spamscore=0 adultscore=0
+ lowpriorityscore=0 suspectscore=0 bulkscore=0 clxscore=1011 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611240042
 
-Describe the Netrani RPMh interconnect providers and their register
-access clocks.
+Add qcom,seca-tsens compatible string for the temperature sensor
+in Qualcomm Seca SoC.
 
-Signed-off-by: SignKirigami <prcups@krgm.moe>
+Signed-off-by: Yadu M G <yadu.mg@oss.qualcomm.com>
 ---
- .../bindings/interconnect/qcom,netrani-rpmh.yaml   | 131 ++++++++++++++++
- .../dt-bindings/interconnect/qcom,netrani-rpmh.h   | 169 +++++++++++++++++++++
- 2 files changed, 300 insertions(+)
+The Seca SoC device tree using this compatible will be posted as a
+separate series.
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,netrani-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,netrani-rpmh.yaml
-new file mode 100644
-index 0000000000000..b2d36cd632d82
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,netrani-rpmh.yaml
-@@ -0,0 +1,131 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interconnect/qcom,netrani-rpmh.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm RPMh Network-On-Chip Interconnect on Netrani
-+
-+maintainers:
-+  - SignKirigami <prcups@krgm.moe>
-+
-+description: |
-+  RPMh interconnect providers on Netrani (parrot) communicate bandwidth
-+  requests through Bus Clock Managers (BCMs) using the applications RSC.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - qcom,netrani-aggre1-noc
-+      - qcom,netrani-aggre2-noc
-+      - qcom,netrani-clk-virt
-+      - qcom,netrani-cnoc2
-+      - qcom,netrani-cnoc3
-+      - qcom,netrani-gem-noc
-+      - qcom,netrani-lpass-ag-noc
-+      - qcom,netrani-mc-virt
-+      - qcom,netrani-mmss-noc
-+      - qcom,netrani-nsp-noc
-+      - qcom,netrani-pcie-anoc
-+      - qcom,netrani-system-noc
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    minItems: 1
-+    maxItems: 2
-+
-+required:
-+  - compatible
-+
-+allOf:
-+  - $ref: qcom,rpmh-common.yaml#
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,netrani-clk-virt
-+              - qcom,netrani-mc-virt
-+    then:
-+      properties:
-+        reg: false
-+    else:
-+      required:
-+        - reg
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,netrani-pcie-anoc
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: PCIe AXI clock
-+            - description: PCIe ANOC AHB clock
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,netrani-aggre1-noc
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: USB3 primary AXI clock
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,netrani-aggre2-noc
-+    then:
-+      properties:
-+        clocks:
-+          items:
-+            - description: SDCC2 AHB clock
-+            - description: IPA RPMh BCM clock
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,netrani-aggre1-noc
-+              - qcom,netrani-aggre2-noc
-+              - qcom,netrani-pcie-anoc
-+    then:
-+      required:
-+        - clocks
-+    else:
-+      properties:
-+        clocks: false
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/qcom,netrani-gcc.h>
-+
-+    interconnect-0 {
-+        compatible = "qcom,netrani-clk-virt";
-+        #interconnect-cells = <1>;
-+        qcom,bcm-voters = <&apps_bcm_voter>;
-+    };
-+
-+    interconnect@16e0000 {
-+        compatible = "qcom,netrani-aggre1-noc";
-+        reg = <0x016e0000 0x1c080>;
-+        #interconnect-cells = <1>;
-+        clocks = <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>;
-+        qcom,bcm-voters = <&apps_bcm_voter>;
-+    };
-+...
-diff --git a/include/dt-bindings/interconnect/qcom,netrani-rpmh.h b/include/dt-bindings/interconnect/qcom,netrani-rpmh.h
-new file mode 100644
-index 0000000000000..d13573792ea92
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,netrani-rpmh.h
-@@ -0,0 +1,169 @@
-+/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-+/*
-+ * Copyright (c) 2021, The Linux Foundation. All rights reserved.
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_NETRANI_RPMH_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_NETRANI_RPMH_H
-+
-+/* AGGRE1 NOC */
-+#define MASTER_QSPI_0	0
-+#define MASTER_QUP_0	1
-+#define MASTER_A1NOC_CFG	2
-+#define MASTER_SDCC_1	3
-+#define MASTER_UFS_MEM	4
-+#define MASTER_USB3_0	5
-+#define SLAVE_A1NOC_SNOC	6
-+#define SLAVE_SERVICE_A1NOC	7
-+
-+/* AGGRE2 NOC */
-+#define MASTER_QDSS_BAM	0
-+#define MASTER_QUP_1	1
-+#define MASTER_A2NOC_CFG	2
-+#define MASTER_CNOC_A2NOC	3
-+#define MASTER_CRYPTO	4
-+#define MASTER_IPA	5
-+#define MASTER_QDSS_ETR	6
-+#define MASTER_QDSS_ETR_1	7
-+#define MASTER_SDCC_2	8
-+#define SLAVE_A2NOC_SNOC	9
-+#define SLAVE_SERVICE_A2NOC	10
-+
-+/* CLK VIRT */
-+#define MASTER_QUP_CORE_0	0
-+#define MASTER_QUP_CORE_1	1
-+#define SLAVE_QUP_CORE_0	2
-+#define SLAVE_QUP_CORE_1	3
-+
-+/* CNOC2 */
-+#define MASTER_CNOC3_CNOC2	0
-+#define MASTER_QDSS_DAP	1
-+#define SLAVE_AHB2PHY_SOUTH	2
-+#define SLAVE_AHB2PHY_NORTH	3
-+#define SLAVE_ANOC_THROTTLE_CFG	4
-+#define SLAVE_CAMERA_CFG	5
-+#define SLAVE_CLK_CTL	6
-+#define SLAVE_RBCPR_CX_CFG	7
-+#define SLAVE_RBCPR_MX_CFG	8
-+#define SLAVE_CRYPTO_0_CFG	9
-+#define SLAVE_CX_RDPM	10
-+#define SLAVE_DISPLAY_CFG	11
-+#define SLAVE_GFX3D_CFG	12
-+#define SLAVE_IMEM_CFG	13
-+#define SLAVE_IPA_CFG	14
-+#define SLAVE_IPC_ROUTER_CFG	15
-+#define SLAVE_LPASS	16
-+#define SLAVE_CNOC_MSS	17
-+#define SLAVE_MX_RDPM	18
-+#define SLAVE_PCIE_0_CFG	19
-+#define SLAVE_PDM	20
-+#define SLAVE_PIMEM_CFG	21
-+#define SLAVE_PMU_WRAPPER_CFG	22
-+#define SLAVE_PRNG	23
-+#define SLAVE_QSPI_0	24
-+#define SLAVE_QUP_0	25
-+#define SLAVE_QUP_1	26
-+#define SLAVE_SDC1	27
-+#define SLAVE_SDCC_2	28
-+#define SLAVE_TCSR	29
-+#define SLAVE_TLMM	30
-+#define SLAVE_UFS_MEM_CFG	31
-+#define SLAVE_USB3_0	32
-+#define SLAVE_VENUS_CFG	33
-+#define SLAVE_VSENSE_CTRL_CFG	34
-+#define SLAVE_A1NOC_CFG	35
-+#define SLAVE_A2NOC_CFG	36
-+#define SLAVE_CNOC2_CNOC3	37
-+#define SLAVE_CNOC_MNOC_CFG	38
-+#define SLAVE_PCIE_ANOC_CFG	39
-+#define SLAVE_SNOC_CFG	40
-+
-+/* CNOC3 */
-+#define MASTER_CNOC2_CNOC3	0
-+#define MASTER_GEM_NOC_CNOC	1
-+#define MASTER_GEM_NOC_PCIE_SNOC	2
-+#define SLAVE_AOSS	3
-+#define SLAVE_APPSS	4
-+#define SLAVE_CDSP_CFG	5
-+#define SLAVE_QDSS_CFG	6
-+#define SLAVE_TME_CFG	7
-+#define SLAVE_WLAN	8
-+#define SLAVE_CNOC3_CNOC2	9
-+#define SLAVE_CNOC_A2NOC	10
-+#define SLAVE_BOOT_IMEM	11
-+#define SLAVE_IMEM	12
-+#define SLAVE_PIMEM	13
-+#define SLAVE_PCIE_0	14
-+#define SLAVE_QDSS_STM	15
-+#define SLAVE_TCU	16
-+
-+/* GEM NOC */
-+#define MASTER_GPU_TCU	0
-+#define MASTER_SYS_TCU	1
-+#define MASTER_APPSS_PROC	2
-+#define MASTER_GFX3D	3
-+#define MASTER_MSS_PROC	4
-+#define MASTER_MNOC_HF_MEM_NOC	5
-+#define MASTER_MNOC_SF_MEM_NOC	6
-+#define MASTER_COMPUTE_NOC	7
-+#define MASTER_ANOC_PCIE_GEM_NOC	8
-+#define MASTER_SNOC_GC_MEM_NOC	9
-+#define MASTER_SNOC_SF_MEM_NOC	10
-+#define MASTER_WLAN_Q6	11
-+#define SLAVE_GEM_NOC_CNOC	12
-+#define SLAVE_LLCC	13
-+#define SLAVE_MEM_NOC_PCIE_SNOC	14
-+
-+/* LPASS AG NOC */
-+#define MASTER_CNOC_LPASS_AG_NOC	0
-+#define MASTER_LPASS_PROC	1
-+#define SLAVE_LPASS_CORE_CFG	2
-+#define SLAVE_LPASS_LPI_CFG	3
-+#define SLAVE_LPASS_MPU_CFG	4
-+#define SLAVE_LPASS_TOP_CFG	5
-+#define SLAVE_LPASS_SNOC	6
-+#define SLAVE_SERVICES_LPASS_AML_NOC	7
-+#define SLAVE_SERVICE_LPASS_AG_NOC	8
-+
-+/* MC VIRT */
-+#define MASTER_LLCC	0
-+#define SLAVE_EBI1	1
-+
-+/* MMSS NOC */
-+#define MASTER_CAMNOC_HF	0
-+#define MASTER_CAMNOC_ICP	1
-+#define MASTER_CAMNOC_SF	2
-+#define MASTER_MDP	3
-+#define MASTER_CNOC_MNOC_CFG	4
-+#define MASTER_VIDEO_P0	5
-+#define MASTER_VIDEO_PROC	6
-+#define SLAVE_MNOC_HF_MEM_NOC	7
-+#define SLAVE_MNOC_SF_MEM_NOC	8
-+#define SLAVE_SERVICE_MNOC	9
-+
-+/* NSP NOC */
-+#define MASTER_CDSP_NOC_CFG	0
-+#define MASTER_CDSP_PROC	1
-+#define SLAVE_CDSP_MEM_NOC	2
-+#define SLAVE_SERVICE_NSP_NOC	3
-+
-+/* PCIE ANOC */
-+#define MASTER_PCIE_ANOC_CFG	0
-+#define MASTER_PCIE_0	1
-+#define SLAVE_ANOC_PCIE_GEM_NOC	2
-+#define SLAVE_SERVICE_PCIE_ANOC	3
-+
-+/* SYSTEM NOC */
-+#define MASTER_GIC_AHB	0
-+#define MASTER_A1NOC_SNOC	1
-+#define MASTER_A2NOC_SNOC	2
-+#define MASTER_LPASS_ANOC	3
-+#define MASTER_SNOC_CFG	4
-+#define MASTER_PIMEM	5
-+#define MASTER_TME	6
-+#define MASTER_GIC	7
-+#define SLAVE_SNOC_GEM_NOC_GC	8
-+#define SLAVE_SNOC_GEM_NOC_SF	9
-+#define SLAVE_SERVICE_SNOC	10
-+
-+#endif
+This series was prepared with help from an AI coding assistant
+(Claude). It assisted with review on the device tree, bindings and
+driver (formatting and alignment fixes), rewording commit messages,
+and running the validation steps (checkpatch, dt_binding_check,
+dtbs_check and W=1 builds). All changes were reviewed and tested on the
+Seca Ride board.
+---
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index c78074fbcecf..a96f51feec87 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -78,6 +78,7 @@ properties:
+               - qcom,sdm630-tsens
+               - qcom,sdm670-tsens
+               - qcom,sdm845-tsens
++              - qcom,seca-tsens
+               - qcom,shikra-tsens
+               - qcom,sm6115-tsens
+               - qcom,sm6350-tsens
+
+base-commit: 3191063649dbf7c0d0b768e1f3655e4c5fc6edb5
 -- 
-2.56.0
+2.43.0
 
