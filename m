@@ -1,128 +1,62 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.146
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795526725;
-	b=K03g7xGTpnKuTw7SexRXA9/OxEElni4JQa0cSP7BAcKY/OF5YCsvoOV+JdZowV5Lif8r
-	 cShlNoL12a7LL64wmARCsCQrdmZpdJUo3fXD3ExEvf+IqyNzTJLLMDciLoQR6vikUH0md
-	 LNRAEDW9Fgi3RHb15YHQuVdNKsbD8ggLzbxEZqYVZmjKhlHKH1Ky49rp7Z+792wQRfUTY
-	 mv9p7n0f24n4Twy3adHN9frsGEA0M9kGKHs3OiWs96xCV4IFkAmyAM1yw2PEHxAk6u+WY
-	 5lOoEApkgZVVqPKD/hkEGR6Nt6JhdhQlwoW4fNa+c90UhgUQfMtIQthHtuVhnt6ueMA==
+	t=1795526890;
+	b=P68+qkeEFFM6/JQJxtCh9ZDqZ+LmSYbIhXKJTl29q5N6yJff1RLo8k79P5gdN/TVRKD7
+	 byucrpoLEHvMhv6XXS8QQa7QCMx5tXCy3B6MTX5WseJykRh4+J+LhW8OzAFVoSOE+muEL
+	 RquK8nEdscSFiA5NzDxSCG1TU14fVYXBolkKFc7xLRF/7+I9ydGnmdECt9WVkNJBj5Xk4
+	 wm9BON3Se2bxMc9JTSNkOSKUA7OH9cHddaWOFOsE8j/XVKHlIOydKpcYLOyOzfU8x6O21
+	 MeIQvr+HxWUhny5s3S3LBEMXzZ1E9M9RGXFq4DEFhL0R50opKPBm2R7jVODJjUqRaww==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795526725;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
-	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
-	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
-	 Received:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
-	 In-Reply-To;
-	bh=jdq4s1rM/+IIWlMrD0ixYWk6dj9CdCeQpp/eseYFAYg=;
-	b=mEASpir+tckzPl5D271wfaS57vY8LDiEi8GBT+P+qctHkxP2xj/zIRmx6EF/0veXW87N
-	 HWB4coAA5xrSrZEdBoByDsoI5eDnL/19Ql6pbiDmARjYT+QXr2toieJIpqlD8THrVcZ7p
-	 aJpAPeRPGmJh9KTHMQhvOZm1pgOSC1Ea8psW+vmhKxSET/hTsEMR9wEmWRJFVBuryYEs2
-	 bDjafI023O3vIAOimb0aaRWj5nkgCZ+nfiCd5FA/he4nzOYVa1MHayknJ8uqImNaG8J/B
-	 XVcR2/M5W6OlwAm9ldNPn3iTSqqMVZUoZ+8MNefwQry1L0kjGezDY6X3x13Jg1ie+PA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795526890;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:From:To:Cc:Subject:
+	 Date:Message-Id:X-Mailer:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=ETQq20MuksAGlwb3NO4DBAjWNREDGehauvLDnlkj6/s=;
+	b=rnoDC7Ydsm76DbhJHIdlKhbDI8QYGF2/gDQ1H0BFFdYs3oLyfJwBEqZJxDlyPPi4F+Kj
+	 WZgQXB6jmP2KKaiDhzCEAzKnwNSyxOUFYZ5j62I71mXw2aYnaGUI3/eO2Ss736Kw/vHSh
+	 UOFE2amdUkgBgReSschyjAzXM0oAU8TTzPYgYSO+oaHYcQqqNa1EPmGp6OMYNGjyikR5L
+	 6k95zInbrXoe+UN2+lEk51O94UP/r9EsEyWyptHRGAsfQv2H0MlgKLY5Xio0+Q+V4BbLr
+	 wcJFIg14wd3hKuqr2WkbeOlM9G37bqDs6zgRInnxPnGMQC2HRA4r8KGUChYDG0pPN0A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ragnatech.se;
-	spf=pass smtp.mailfrom=ragnatech.se;
-	dkim=pass header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b="S57i3/C2";
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=pyNczjJS;
-	arc=none smtp.remote-ip=103.168.172.146
-Received: from fout-a3-smtp.messagingengine.com (fout-a3-smtp.messagingengine.com [103.168.172.146])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9FF3606A322
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 13:25:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A9FF3606A322
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=exDRlvWF;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9F9C5606A31E;
+	Tue, 24 Nov 2026 13:28:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9F9C5606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=S57i3/C2;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=pyNczjJS
-Received: from phl-compute-11.internal (phl-compute-11.internal [10.202.2.51])
-	by mailfout.phl.internal (Postfix) with ESMTP id BB842EC0ADB
-	for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 08:25:23 -0500 (EST)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-11.internal (MEProxy); Tue, 24 Nov 2026 08:25:23 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
-	cc:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1795526723;
-	 x=1795613123; bh=jdq4s1rM/+IIWlMrD0ixYWk6dj9CdCeQpp/eseYFAYg=; b=
-	S57i3/C2hli5Y4g6kC5QTHF2UkmPKOrT+f+AfdQg/oRB+C2cTxSNAaBLUsqlbTMA
-	pS6rP/G9qneWeNGuyhoj/Mg7tFDa68kvewHWLP/GQ1LnoG+KfR1TV4SaaWrIab6z
-	18z7587oTQ6ZYL+W5ncADvZErgp3+XeHo//5Pnr9xr8/725xxpjcNEPJoaffLoXK
-	VpXyI7Ajb84WPM5R/2vEDhMaMgNw7tlDuxBPw3yT0uoMYEB80+CbsrRNBlMKQDlI
-	oznkrqfbL2YA+5R8YHEirq4oEC++TtIQcerovyiTVhpaR+u+uOGQJ2yIA3Ph7bcd
-	YlagbCe1cgXAb8N4CGXRNA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795526723; x=
-	1795613123; bh=jdq4s1rM/+IIWlMrD0ixYWk6dj9CdCeQpp/eseYFAYg=; b=p
-	yNczjJS8BaFOQ3JT8+5LhsFkwcLHW6Xgt0ROJ8bUgJyZD0ruTOgaMKd6X2jdjWhD
-	7sANQuowWaL+0Lt1lIt6gb+LY+UViX574qO3Y6TzuuDzStb3dt0lXh54w/T14pVT
-	VBm4tpiJGy6eAnK2ei9/ttI2uvmIO+IduQHwSXOFLOAcGkrjptpvBnkOYUjZokfo
-	/tJ67p5X/mmPX09Yxgt681Z/e/whpIXycrmZFgOhYf6hCWzlwDcq8r3A/E+itP+6
-	b7JCOILLHqEXpyI3xEXA1prmqlQvew+kHrTqq1BSlWGZyDUAvhvOWwXKP8a6Ie6s
-	mto3PgDW3igmIuvNW4O+g==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=ragnatech.se a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1795526723; d=ragnatech.se;
-	mf=PG5pa2xhcy5zb2Rlcmx1bmRAcmFnbmF0ZWNoLnNlPg==;
-	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm2:rsa-sha256:V0fCQ/kUZkY1UmypL2QEE9/cHqGeQUhjMu8+YkY9FV0pa0N
-	PwzUymNSNHmw6sEAs4CnLL4O/9a1KnwFDOt3MInPbsuYbUGuLM1WDM5VabABzwW2
-	r0lD2uIQyfwmbtXDOfvTzR5bMsv171N2/iE+/j2EPtHNmD3bIOyAXMp9Pkge/f9I
-	tWcSgEEoxCJUHz0aYr3BKe3H61zBn0XxBW4S0ogZJvQ4PB6wKnX9iUVYW/n3sMGE
-	OH8N73cQBI49rHZbK/Sf+EeLOKa867d4Fh+N49GMVz5wtkLVgU/qTg6Ph6WwRfLg
-	R1+BLaaUvgvvKXdT+/vs54WnPHDyzm/5bOzwkzg==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=13;
-	hn=cc,content-disposition,content-transfer-encoding,
-	content-type,date,feedback-id,from,in-reply-to,message-id,
-	mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:jNqAHpbPGF0RZ20YBwX2yaE3LGvWARrKs4sVphlURsg=:M+1RSArcSqZQME3jhwvP4dHhKFgkOIHh2mNiLMU/xOE=;
-X-ME-Sender: <xms:Q5AFa5wK6vmw-kZkTASCBAK6BeAVE34A7_x2kQYwZxqlKWXsyzhBbA>
-    <xme:Q5AFa_QjAZeQ_my4MEyNZaP7zopaKoSXKUgNIc0xdibgOceLc6Zd81ezBBpSdJfaV
-    VPsLjwnpgy4hdfSy2fQwj9HcuA7iJJOTS_4H_mXtpzanTmOejw4uQ01>
-X-ME-Received: <xmr:Q5AFa-LveaI2DwHdffgw5zO1Fbj8DF4t8p8Yk663eW39Ektnp2dzoT1Op0nRal8xFZjFRtLskBPL8ouHcTeQjONd45EXZZg>
-X-ME-Proxy-Cause: dmFkZTFySws+Sggi7EtN2kUyu9Nbs/Yyb1QeohUfHeH3cD3BRt4ruZaDl5/caqpX7JRW7U
-    M5pLLxqkHcGx3KPNeFriFAcbfFccXKJdjVW6M/1bl9TaM2FuRguFDjM2zn2Wotxce5VVjk
-    h/6Qzl+zs7DZAOivB+qoWX+Ud9xfEGfHqcOhnE6cS9htncwutIlb7gL5BwLKFqM/vpfiTI
-    g28xMvMtTYKNsoZ1SzGWyOc5zUxG4Rk5S3y+ztaP2XMEnHVE6Q4lq+H1orCPcOabpuss0G
-    VbBSfuIqMTid93ILgAfW/h61ZurU9InnjkHcYlqCAbGqfGCOXh1n7KxQvuF2EynOji8cLc
-    /vcuL+B4yKLkqqW7o44ILL7XP/wccvywMsYqdOD+bIRTLy1A9IyJExuzUlvQYqBJklaPX1
-    wfwPaFLBV8hCEiRtbT0pGy4AFCU91wDmO/XiXvCBtQg2dWIbR3i5dqDhccWIEkOY5U0Npm
-    fJ/D0mxUnJKKhZ6xroE22LhF3wzwK12fF6VviDr/z4HTmAFeXstX+zwUc3YMPPs6j5o9At
-    qYzdXBZfBj72Yn07b1hklOb+6UojMirZiG6PorjHVa6p8u4GIKABcBDtCaJygExVjB6dOK
-    idjf1i/mqIjE4jztnnIWHffB/8wXAb3ucSgM+y7967fuPh340fC40yTWfYQg
-X-ME-Proxy: <xmx:Q5AFa-U_Op78pb6Yv0MnYnzclr2JoMzmueud5FMPKUPkXP2E1vF46A>
-    <xmx:Q5AFa6S0y7oOX5XWLrHxKPqAGGPgYx_ORF9EcOuZeqKNfyqrJS5egg>
-    <xmx:Q5AFa-DHr65AYFeJ0IqosPiTHFes6vB7iL42Gaa_ED--0Cqqj-vh-A>
-    <xmx:Q5AFaxKeOchTCQnFP7u4FhWkmxBJKHjtVFYHqN9RuJt0WQ_EK_bhLQ>
-    <xmx:Q5AFa-h8RFp10GxAy7SBejdCssvN9U6tU6-qQmmNvJiBelG5ylMrNwWE>
-Feedback-ID: i80c9496c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 24 Nov 2026 08:25:22 -0500 (EST)
-Date: Tue, 24 Nov 2026 14:25:21 +0100
-From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-To: Yaohan Li <shunsheng1218@gmail.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Eduardo Valentin <edubezval@gmail.com>,
-	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] thermal/drivers/rcar_thermal: disable the work before
- masking the interrupt
-Message-ID: <20261124132521.GJ3898744@ragnatech.se>
-References: <20261119022903.1493494-1-shunsheng1218@gmail.com>
- <20261124022219.1834499-1-shunsheng1218@gmail.com>
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=exDRlvWF
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BEB1D339;
+	Tue, 24 Nov 2026 05:28:05 -0800 (PST)
+Received: from e127648.arm.com (unknown [10.57.71.117])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 37AE33F882;
+	Tue, 24 Nov 2026 05:28:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1795526888; bh=GVdatysqi0e4G0sd2VbmtUUpEO7i1Weoa/mvmiArCXg=;
+	h=From:To:Cc:Subject:Date:From;
+	b=exDRlvWFwL12WP1PWCwZb4SIgXR8PW54RjYkiT2ssv8RNvSJ5I/lPj+aOvJ4OtwFF
+	 GsBx43FBNNCF1WAj3E++bM78yR8XjOoND1nSKuehWreq0DRpai3tXTslpv4Bdgn7D3
+	 NvvHSNiGSSSHGLIrsqvQNr5f3DOUhv7jhedaHEfc=
+From: Christian Loehle <christian.loehle@arm.com>
+To: tudor.ambarus@linaro.org,
+	bzolnier@gmail.com
+Cc: krzk@kernel.org,
+	rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	lukasz.luba@arm.com,
+	linux-kernel@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCHv2] thermal: samsung: acpm-tmu: Fix spurious CPU throttling
+Date: Tue, 24 Nov 2026 13:27:56 +0000
+Message-Id: <20261124132756.1306906-1-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -132,174 +66,175 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261124022219.1834499-1-shunsheng1218@gmail.com>
 
-Hi Yaohan,
+acpm_tmu_set_trips() supplies two thresholds, but the ACPM command writes
+all eight slots, zero-filling the rest. On GS101, slot 7 limits CPU clocks
+independently of its interrupt mask. Setting it to 0 C limits all three
+clusters to about 200 MHz while cpufreq reports the requested frequencies.
+This was found through trial and error while tracking EAS regressions.
 
-Thanks for your work.
+Program slot 7 from the lowest active critical trip. Cache the low/high
+window and update the critical limit from set_trip_temp(), because the
+thermal core skips set_trips() when that window is unchanged.
 
-On 2026-11-24 10:22:19 +0800, Yaohan Li wrote:
-> rcar_thermal_remove() masks the interrupt sources and then cancels the
-> delayed work of each sensor.  rcar_thermal_irq() drops common->lock before
-> it walks the sensors and queues priv->work for those whose status changed,
-> so a handler that read the status before the mask was written can still
-> queue the work after cancel_delayed_work_sync() has returned.  The work
-> then runs after ->remove() has finished and devres has freed common, priv
-> and the thermal zone.
-> 
-> Waiting for the handler alone is not enough either: rcar_thermal_work()
-> re-enables its interrupt source once it has updated the temperature, so a
-> work that is still running when the removal starts undoes the mask that
-> ->remove() has just written.
-> 
-> Disable the work before the source is masked.  That makes the
-> queue_delayed_work() calls in rcar_thermal_irq() no-ops and guarantees
-> that the re-enable in rcar_thermal_work() has already happened, so the
-> mask that follows cannot be undone.
-> 
-> For the handler itself, synchronize_irq() is not enough on a shared line:
-> it waits for the invocation that is running, but the line stays registered
-> and another user of it can take the interrupt again afterwards, which calls
-> our handler once more - with the sensors and the zone already unregistered.
-> devm_free_irq() removes the handler from the shared descriptor first and
-> waits for the invocation that is in progress second, so after it returns
-> neither a running nor a new invocation can touch the driver state.
-> 
-> Every sensor that the removal walks has been through INIT_DELAYED_WORK()
-> before it is linked into common->head, so no uninitialised work is touched.
-> 
-> Fixes: 697ee786f15d ("thermal: rcar_thermal: Prevent doing work after unbind")
-> Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
-> 
-> ---
-> Prepared against v7.4-rc1-1969-g666539eecdf4.
-> 
-> Compile tested: arm64, aarch64-linux-gnu-gcc 11.4, CONFIG_RCAR_THERMAL=y.
-> 
-> The ordering was exercised by a controlled test on a KASAN kernel built from
-> this tree (x86_64, QEMU/KVM; 17 checks, all passing).  The test uses the real
-> delayed work, workqueue, wait and signal machinery and a simulated interrupt
-> line shared by two handlers (irq_sim):
-> 
->  - a work queued after cancel_delayed_work_sync() has returned is accepted
->    and runs; the same queue attempt after disable_delayed_work_sync() is
->    rejected and the work never runs;
->  - a work that is running when the mask is written re-enables its source
->    afterwards, so the mask is undone; disabling the work first and masking
->    afterwards leaves the mask in place;
->  - after synchronize_irq() returns, another user of the shared line raises
->    it again, our handler is invoked and queues the work, which then runs;
->    after devm_free_irq() the handler is not invoked again, while the other
->    user still receives the line.
-> 
-> The test re-implements this removal ordering rather than compiling the
-> driver, which would need a real platform device, MMIO and a thermal zone, so
-> rcar_thermal's own removal path was not executed.  No rcar hardware was
-> available and no race injection beyond those constructed interleavings was
-> run.
-> 
-> AI assistance: prepared with Claude (Anthropic) as a coding assistant; the
-> author reviewed the reasoning and takes responsibility for the content.
-> 
-> Changes in v3:
->  - Reword the RCAR_THERMAL_MAX_IRQ comment without referring to .nirqs.
->  - Declare the loop index in the for statement and make it unsigned.
->  - Reduce both comments in rcar_thermal_remove() to one line each.
->  - Explain in the commit message why a shared line needs devm_free_irq()
->    and not synchronize_irq(), and point at the test that exercises it.
-> 
-> Changes in v2:
->  - Drop the shutdown flag and the separate IRQ count.  Niklas asked for less
->    state, so the removal now disables the delayed work before the source is
->    masked and unregisters the shared IRQ instead of waiting for it once.
->  - Keep the interrupt numbers in an array whose unused slots stay negative.
-> ---
->  drivers/thermal/renesas/rcar_thermal.c | 26 ++++++++++++++++++++++++--
->  1 file changed, 24 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/renesas/rcar_thermal.c b/drivers/thermal/renesas/rcar_thermal.c
-> index af6d09a75bb6..374c953471e0 100644
-> --- a/drivers/thermal/renesas/rcar_thermal.c
-> +++ b/drivers/thermal/renesas/rcar_thermal.c
-> @@ -39,11 +39,15 @@
->  /* THSSR */
->  #define CTEMP	0x3f
->  
-> +/* Maximum number of interrupts supported by any of the chips */
-> +#define RCAR_THERMAL_MAX_IRQ	2
-> +
->  struct rcar_thermal_common {
->  	void __iomem *base;
->  	struct device *dev;
->  	struct list_head head;
->  	spinlock_t lock;
-> +	int irqs[RCAR_THERMAL_MAX_IRQ];
->  };
->  
->  struct rcar_thermal_chip {
-> @@ -377,9 +381,22 @@ static void rcar_thermal_remove(struct platform_device *pdev)
->  	struct device *dev = &pdev->dev;
->  	struct rcar_thermal_priv *priv;
->  
-> -	rcar_thermal_for_each_priv(priv, common) {
-> +	/* Drain the work before masking the source it can re-enable. */
-> +	rcar_thermal_for_each_priv(priv, common)
-> +		disable_delayed_work_sync(&priv->work);
-> +
-> +	rcar_thermal_for_each_priv(priv, common)
->  		rcar_thermal_irq_disable(priv);
-> -		cancel_delayed_work_sync(&priv->work);
-> +
-> +	/* Unregister shared IRQ handlers before releasing the zones. */
-> +	for (unsigned int i = 0; i < RCAR_THERMAL_MAX_IRQ; i++) {
-> +		if (common->irqs[i] < 0)
-> +			continue;
-> +		devm_free_irq(dev, common->irqs[i], common);
-> +		common->irqs[i] = -ENOENT;
-> +	}
+Suggested-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+Fixes: 50a2c5d4062a ("thermal/drivers/samsung: Add Exynos ACPM TMU driver GS101")
+Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+---
+Since v1:
+- Rebase onto linux-next, including Daniel’s queued ACPM TMU fixes.
+- Cache only low/high and look up the lowest active critical trip when programming. (Tudor)
+- Retain the requested window even if programming fails, matching the thermal core.
+- Handle critical-trip deactivation and zones without an active critical trip.
 
-I don't understand why this last loop with devm_free_irq() is needed.
+ drivers/thermal/samsung/acpm-tmu.c | 76 +++++++++++++++++++++++++++---
+ 1 file changed, 70 insertions(+), 6 deletions(-)
 
-First we disable drain and prevent any new work being scheduled on the 
-interrupt top-half with disable_delayed_work_sync(). Then we disable the 
-the interrupts with rcar_thermal_irq_disable(). So why do we need to 
-explicitly call devm_free_irq()?
+diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acpm-tmu.c
+index 4799ef518a7a..6923256af1f2 100644
+--- a/drivers/thermal/samsung/acpm-tmu.c
++++ b/drivers/thermal/samsung/acpm-tmu.c
+@@ -39,6 +39,10 @@
+ 
+ #define GS101_REG_INTPEND(i)		((i) * 0x50 + 0xf8)
+ 
++#define ACPM_TMU_NUM_THRESHOLDS		8
++/* Threshold 7 throttles the CPUs in hardware, regardless of the INTEN mask. */
++#define ACPM_TMU_HW_TRIP_THRESHOLD	7
++
+ enum {
+ 	P0_INTPEND,
+ 	P1_INTPEND,
+@@ -70,6 +74,9 @@ struct acpm_tmu_sensor {
+ 	struct acpm_tmu_priv *priv;
+ 	struct mutex lock; /* protects sensor state */
+ 	enum thermal_device_mode mode;
++	/* Last requested window, protected by the thermal zone lock */
++	int low;
++	int high;
+ 	bool enabled;
+ };
+ 
+@@ -228,7 +235,8 @@ static int acpm_tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+ }
+ 
+ static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+-				      u8 thresholds[2], u8 inten)
++				      u8 thresholds[ACPM_TMU_NUM_THRESHOLDS],
++				      u8 inten)
+ {
+ 	struct acpm_tmu_priv *priv = sensor->priv;
+ 	struct acpm_handle *handle = priv->handle;
+@@ -249,7 +257,7 @@ static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+ 	}
+ 
+ 	ret = ops->set_threshold(handle, mbox_chan_id, acpm_sensor_id,
+-				 thresholds, 2);
++				 thresholds, ACPM_TMU_NUM_THRESHOLDS);
+ 	if (!ret) {
+ 		ret = ops->set_interrupt_enable(handle, mbox_chan_id,
+ 						acpm_sensor_id, inten);
+@@ -267,15 +275,40 @@ static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+ 	return ret;
+ }
+ 
+-static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
++struct acpm_tmu_critical_trip {
++	const struct thermal_trip *updated;
++	int temperature;
++};
++
++static int acpm_tmu_get_crit_temp(struct thermal_trip *trip, void *arg)
++{
++	struct acpm_tmu_critical_trip *critical = arg;
++
++	if (trip->type == THERMAL_TRIP_CRITICAL && trip != critical->updated &&
++	    trip->temperature != THERMAL_TEMP_INVALID)
++		critical->temperature = min(critical->temperature, trip->temperature);
++
++	return 0;
++}
++
++static int acpm_tmu_program_thresholds(struct thermal_zone_device *tz,
++				       const struct thermal_trip *trip, int temp)
+ {
+ 	struct acpm_tmu_sensor *sensor = thermal_zone_device_priv(tz);
+-	struct acpm_tmu_priv *priv = sensor->priv;
+-	struct device *dev = priv->dev;
+-	u8 thresholds[2] = {};
++	struct device *dev = sensor->priv->dev;
++	struct acpm_tmu_critical_trip critical = { trip, INT_MAX };
++	u8 thresholds[ACPM_TMU_NUM_THRESHOLDS] = {};
++	int low = sensor->low, high = sensor->high;
+ 	u8 inten = 0;
+ 	int ret;
+ 
++	/* Exclude the trip being updated until the proposed value is considered. */
++	for_each_thermal_trip(tz, acpm_tmu_get_crit_temp, &critical);
++	if (temp != THERMAL_TEMP_INVALID)
++		critical.temperature = min(critical.temperature, temp);
++	thresholds[ACPM_TMU_HW_TRIP_THRESHOLD] =
++		clamp_val(critical.temperature / MILLIDEGREE_PER_DEGREE, 0, 255);
++
+ 	/* If a valid lower bound exists, set the threshold and enable its interrupt */
+ 	if (low > -INT_MAX) {
+ 		thresholds[0] = clamp_val(low / MILLIDEGREE_PER_DEGREE, 0, 255);
+@@ -299,6 +332,34 @@ static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
+ 	return ret;
+ }
+ 
++static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
++{
++	struct acpm_tmu_sensor *sensor = thermal_zone_device_priv(tz);
++
++	/* The core remembers this window even if programming fails. */
++	sensor->low = low;
++	sensor->high = high;
++
++	return acpm_tmu_program_thresholds(tz, NULL, INT_MAX);
++}
++
++static int acpm_tmu_set_trip_temp(struct thermal_zone_device *tz,
++				  const struct thermal_trip *trip, int temp)
++{
++	if (trip->type != THERMAL_TRIP_CRITICAL)
++		return 0;
++
++	if (temp != THERMAL_TEMP_INVALID &&
++	    (temp < 0 || temp > 255 * MILLIDEGREE_PER_DEGREE))
++		return -EINVAL;
++
++	/*
++	 * The core can skip .set_trips() when the window is unchanged and has
++	 * not committed trip->temperature yet. Substitute the proposed value.
++	 */
++	return acpm_tmu_program_thresholds(tz, trip, temp);
++}
++
+ static int acpm_tmu_change_mode(struct thermal_zone_device *tz,
+ 				enum thermal_device_mode mode)
+ {
+@@ -329,6 +390,7 @@ static const struct thermal_zone_device_ops acpm_tmu_sensor_ops = {
+ 	.change_mode = acpm_tmu_change_mode,
+ 	.get_temp = acpm_tmu_get_temp,
+ 	.set_trips = acpm_tmu_set_trips,
++	.set_trip_temp = acpm_tmu_set_trip_temp,
+ };
+ 
+ static bool acpm_tmu_clear_pending_irq(struct acpm_tmu_sensor *sensor)
+@@ -477,6 +539,8 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ 		mutex_init(&sensor->lock);
+ 		sensor->group = &data->sensor_groups[i];
+ 		sensor->priv = priv;
++		sensor->low = -INT_MAX;
++		sensor->high = INT_MAX;
+ 
+ 		tzd = devm_thermal_of_zone_register(dev, i, sensor,
+ 						    &acpm_tmu_sensor_ops);
 
-If it is to sync that we have no pending interrupts for the bottom half?  
-If so would it not be cleaner to add a call to sync the interrupts in 
-the loop calling rcar_thermal_irq_disable() ?
-
-> +
-> +	rcar_thermal_for_each_priv(priv, common) {
->  		if (priv->chip->use_of_thermal)
->  			thermal_remove_hwmon_sysfs(priv->zone);
->  		else
-> @@ -413,6 +430,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  	spin_lock_init(&common->lock);
->  	common->dev = dev;
->  
-> +	for (i = 0; i < RCAR_THERMAL_MAX_IRQ; i++)
-> +		common->irqs[i] = -ENOENT;
-> +
->  	pm_runtime_enable(dev);
->  	pm_runtime_get_sync(dev);
->  
-> @@ -449,6 +469,8 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  		if (ret)
->  			goto error_unregister;
->  
-> +		common->irqs[i] = irq;
-> +
->  		/* update ENR bits */
->  		if (chip->irq_per_ch)
->  			enr_bits |= 1 << i;
-> -- 
-> 2.34.1
-> 
-
+base-commit: e8017d29067fd1310a65c3494ce1a1b492adbac6
 -- 
-Kind Regards,
-Niklas Söderlund
+2.34.1
+
