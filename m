@@ -1,158 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.196.66
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795554024;
-	b=cpKjHB0HZgTGGzIO0wteh76OuP+jMGisX79BRCmMdm9eOj5F5u6r1nTbSJSeF2EJeUI8
-	 KA/xwWCu8PO9s8cvBWWbnypOdH0wusQe3y+WvZ0I3+BXY1jM7faiEYr5e0tyKSOS4mjMH
-	 K6pmhcy849mEjICXlXsuLh7vGJO1kbqPewxol9MAerCFydjVUDkwBBC7AOsSUh1RGNbfa
-	 lQoS8U1SsUD/TRjAx27LoJjN1pPN6gEiUw82xN3VS03OfzPAWQ2y2EnE6qOBPMYmg2egs
-	 M4805XwMgxmIVG1S7eLF+HjHsvVVK6ip+RhsreLtGoQgy0uSgKtUX2F4SRfLT8dOeFQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795554024;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:Content-Type:Content-Disposition:
-	 In-Reply-To:X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=jjv1mIIKh04y4Zd7iYGk4WPmgR8svfKmyDKnirK3Tdw=;
-	b=3BajkVaUQ1xoJkJtc9yjab1SQqqsU9FCdlqkzrRm29ugdqPt6WnyPO7Ok/fZ2txzHv/T
-	 qtby/Y1pLsiW6fO3fECPcTnyysZTfvA7Kg8myX2hq5Y7C1iS0IQiijpYbfVevO8MBQX69
-	 uTw6PDHOUxG2M47anPwdbaDoJAOtcm6ajQ4qb+iGc4wfktivnn9Zglc07EnvLt3qO1L0k
-	 ymr9SBljm+apxC+ggN/dFGw+7NxJovlFpf4p3oqC6fwarmyDEQU49fCyCM8mcYyLN96jn
-	 51Klp2YwZADum1hjpbBxV/1wTWi5Hy/fO611oyRQZmMOB0U5H/C3vGnIrswic07N+Tw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=nvidia.com;
-	spf=fail smtp.mailfrom=nvidia.com;
-	dkim=pass header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=s3l6xpxK;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=40.93.196.66
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013066.outbound.protection.outlook.com [40.93.196.66])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.15
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795556872;
+	b=0NFX2fiLYrW96mf9vQ6t2cYpqWI1IG7MGktH8ykKvupUH+FbolmFRmGTqiyBF4Qu3DFb
+	 nzr7pwNIXs8CkVxuGiBXPz8btLtxNeqEBT6du3Ii8GBrxw3u0lJDzMNJDozWCsl5OqOKc
+	 Ewo4zus2YDIkARdq/lZhQ3z/7ztcXqA+g+emQtYWwuejOhbKLjVxwWp5sCeh/5PJheA7O
+	 WWhAZDVbRQVuOhY0Kx1Kho/WBoGtpDliCyHLv8l/P4+aY+2cK2nDys9b9NqvuFfzl2Sbx
+	 9DpD8K3yRFhNdaVQmHdu7BFrHYZSKhqbn4yfYf8CwNn/iusJ1Zx1jQ69ISM7eSOMfwA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795556872;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To;
+	bh=FAusodFBrbI8G7AAMkwV4nh7h71Xni9RUPUyfFZl+Wk=;
+	b=TYvp/wYUFb91d39R1+9kCQX/89x+h9Cc/8c25svlk5YSQ+AIiJv+U+cG0X2wtU88/2MP
+	 qZ0LrZlhaLAAcboL+VJ9rojWf4MXOuS4+RBRTvPJSvK7O+uAasTa9gR6fqriMHZDf3YrV
+	 7GmEywDkRCxcelCImAry/8YrasuM30Hci9j0MmdL/AWqpwd+MwAgZ32ne760QaO1Kfy0H
+	 cNrahHzzCH2xyr6MXcnHCR1GL5doHLy5dYxFMp+NySGcF4aBQ3GzNetluEjCimoV7YwaI
+	 QTbN4tAOyvU3/qOAnHkkGTtqMia3O6i1GH538wib6YEKatjUlWklu4qWVAsePqirXpA==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=g75F1QQQ;
+	arc=none smtp.remote-ip=192.198.163.15
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0318606A32D;
-	Tue, 24 Nov 2026 21:00:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E0318606A32D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0816606A33B;
+	Tue, 24 Nov 2026 21:47:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F0816606A33B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=s3l6xpxK
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=wzA/PFwNEYjYE62OyeMNBApiaqqduK4V0Ev1iac1jZtoH43rkf9+gtjXfkyHxK1FcWGYnVPvs8O8+a+iNMfZpLiedmxE5Lkr50pYF1bZ1QTQOpkc+yj0YibUvpuPOf+X2S69o8KBgc5v/Xh8Z/sCHUc4WI6Ub+fLp5Cdq5Dgc+Dfq/w3s3tNzGxPWBsIzIAs1RNzeC3mgrCiimK7gOHgBq7qV+uiqPWKiwkH+i06naZcd6kl60xbc3gzWPaeqrC2MLzyQ1NNhLX7WrJD0ZChSYKXRia3Swo0Pb5RYFkrVHs20D5UFNEWBRdITKM7fSdTzGMS2XH2q22FBAux/8K+GA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=jjv1mIIKh04y4Zd7iYGk4WPmgR8svfKmyDKnirK3Tdw=;
- b=YQwppcOu7iMkg+OsEZ05kUkzpStC4NKsxmcJGLjWtB+rkAChL8O8xNd+Ut/MlfaYxLM4wD+ir8CrKh6M3HAGgofF7s3o76/lrsAOFzjaKAEvn5OoUDch/Pf996KQ8UqItFL90Vz+XRUF0KXEoxy9ZYvkB1QOEJWRWsJg6Gv6WhIespinTRUZBD3872Km3FTKq1iKv1nrz9FsprKGr9k04nlgWyI7nAj5rp+uch41VZTtrd+VehhxAvdi1EcqhjWN+v10vxFXLd+GPqITqss21askUl7UdTGUF3AFHgihMfJJKTmb/XY4K5WigASIburqiIsIKpQu0sV1KQ4c5ip7zw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=jjv1mIIKh04y4Zd7iYGk4WPmgR8svfKmyDKnirK3Tdw=;
- b=s3l6xpxKdMnMnkuz9VhhUc/A7JThxawOeRqHcd7Ixq0xbwJPnOdbmmtgUk0XpkxFycDyfsWCGCUrEx7QSAEQY1650XvNOUBogVd1AcW+3PYPM/ecQMh8WxRGRh/H+qzJfztlgYbORrlF1zizIw7LWMuIfoeBVHuvmByF8khzQ6iwiwY3j4RFiBq3xQTLJYaJQ8HX7e60BXhKG4JHLctBPVnzCry7h8xIW6VxCdGS6gKTw3TW4ulq3nJfkwAtWmMPUxhk8Kp3/ohh3Ou2cUHDtNPGXT0MjljKwAkYrr2q9VTEJc3TUZNh+5AAdE9z0b/q0ABhSWL89uBgT1TQ/FcasQ==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from SN6PR12MB2814.namprd12.prod.outlook.com (2603:10b6:805:72::33)
- by SA1PR12MB9245.namprd12.prod.outlook.com (2603:10b6:806:3a7::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.12; Tue, 24 Nov
- 2026 21:00:12 +0000
-Received: from SN6PR12MB2814.namprd12.prod.outlook.com
- ([fe80::9a18:413c:9702:8f59]) by SN6PR12MB2814.namprd12.prod.outlook.com
- ([fe80::9a18:413c:9702:8f59%6]) with mapi id 15.21.0639.012; Tue, 24 Nov 2026
- 21:00:12 +0000
-Date: Tue, 24 Nov 2026 16:00:10 -0500
-From: Yury Norov <ynorov@nvidia.com>
-To: "Gregory Price (Meta)" <gourry@gourry.net>
-Cc: Yury Norov <yury.norov@gmail.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	David Hildenbrand <david@kernel.org>,
-	"Liam R. Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Oscar Salvador <osalvador@suse.de>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Brendan Jackman <brendan.jackman@linux.dev>,
-	Zi Yan <ziy@nvidia.com>, Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Johan Hovold <johan@kernel.org>,
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
-	Ying Huang <ying.huang@linux.alibaba.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Byungchul Park <byungchul@sk.com>,
-	Alistair Popple <apopple@nvidia.com>, SJ Park <sj@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
-	Valentin Schneider <vschneid@redhat.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	Kees Cook <kees@kernel.org>, Kairui Song <kasong@tencent.com>,
-	Barry Song <baohua@kernel.org>, Qi Zheng <qi.zheng@linux.dev>,
-	Shakeel Butt <shakeel.butt@linux.dev>,
-	Axel Rasmussen <axelrasmussen@google.com>,
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
-	Baoquan He <baoquan.he@linux.dev>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Michal Hocko <mhocko@kernel.org>,
-	David Rientjes <rientjes@google.com>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Nico Pache <nico.pache@linux.dev>,
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
-	Lance Yang <lance.yang@linux.dev>,
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
-	Xu Xin <xu.xin@linux.dev>,
-	Chengming Zhou <chengming.zhou@linux.dev>,
-	Lorenzo Stoakes <ljs@kernel.org>, Pedro Falcato <pfalcato@suse.de>,
-	Jann Horn <jannh@google.com>, Chris Li <chrisl@kernel.org>,
-	Kemeng Shi <shikemeng@huaweicloud.com>,
-	Nhat Pham <nphamcs@gmail.com>,
-	Youngjun Park <youngjun.park@lge.com>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
-	Jan Kara <jack@suse.cz>, Waiman Long <longman@redhat.com>,
-	Ridong Chen <ridong.chen@linux.dev>, Tejun Heo <tj@kernel.org>,
-	Michal =?iso-8859-1?Q?Koutn=FD?= <mkoutny@suse.com>,
-	Dan Williams <djbw@kernel.org>,
-	Vishal Verma <vishal.l.verma@intel.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Alison Schofield <alison.schofield@intel.com>,
-	Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-cxl@vger.kernel.org,
-	linux-doc@vger.kernel.org, driver-core@lists.linux.dev,
-	damon@lists.linux.dev, linux-pm@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, cgroups@vger.kernel.org,
-	nvdimm@lists.linux.dev, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH 01/60] nodemask: add node-state iterators
-Message-ID: <awX62m6zlghC05jo@yury>
-References: <20261120-private_nodes_v6-v1-0-74f5f9a115c2@gourry.net>
- <20261120-private_nodes_v6-v1-1-74f5f9a115c2@gourry.net>
- <awMK9V6TbU9Xtzn9@yury>
- <179544248227.412063.16491857533875192357.b4-reply@b4>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <179544248227.412063.16491857533875192357.b4-reply@b4>
-X-ClientProxiedBy: BN9P220CA0004.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:408:13e::9) To SN6PR12MB2814.namprd12.prod.outlook.com
- (2603:10b6:805:72::33)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=g75F1QQQ
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795556871; x=1827092871;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=gQ5DGumkXVY5xtwGUpFVEiU5TLfOLBabHwPqzekY9qk=;
+  b=g75F1QQQ8dG3S5YEKdYcTl4HuxKU79AUqtmptshfitKoqUnpeElLqymB
+   3ZAtIk2S7NsRT8GUZK3zRu4SWL9HdSErXp+ApfHGfy64hq4Ak0chxPLwF
+   oUMSd9PF3RobZDPxcEssjnfI+/yYl2DLOZAMXsbawxeEMi2+gGoC9qqLK
+   XuXKj7TpCkc/3nSdoHFLfU2KV6aXfBWVV1Eit0wqRj3cBqpxFVJaSC9S4
+   z51wPiouHV+feaAL13sihXiSeyzghdxGkdKc8Is0gjTpz772RR1qVBSQ7
+   YZ39cR2MV2DSPY/rcvhK+0MKycNiKaKUtcDo1QsFfNexUQn6x+zsripNl
+   A==;
+X-CSE-ConnectionGUID: Zq2QFu/HSv2mf8QIKOOzLw==
+X-CSE-MsgGUID: bvCHmSRfT3GhQeyieU4khg==
+X-IronPort-AV: E=Sophos;i="6.27,231,1787036400"; 
+   d="scan'208";a="4355216"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2026 06:35:49 -0800
+X-CSE-ConnectionGUID: DBADT9mOR3GP8LyuPqes7g==
+X-CSE-MsgGUID: kCiXYfZ5SRyT++JDoxRa5A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,231,1787036400"; 
+   d="scan'208";a="11471491"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+  by orviesa003.jf.intel.com with ESMTP; 24 Nov 2026 06:35:46 -0800
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1xVrcU-00000001PTi-3CLa;
+	Tue, 24 Nov 2026 14:35:42 +0000
+Date: Tue, 24 Nov 2026 22:35:27 +0800
+From: kernel test robot <lkp@intel.com>
+To: Markus Elfring <Markus.Elfring@web.de>, linux-pm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Sebastian Reichel <sre@kernel.org>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	LKML <linux-kernel@vger.kernel.org>,
+	kernel-janitors@vger.kernel.org,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+	Florian Fainelli <f.fainelli@gmail.com>,
+	Frank Li <Frank.Li@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH] power: reset: at91: Use devm_clk_get_enabled() in three
+ probe functions
+Message-ID: <20261124222203.k0pVspdI-lkp@intel.com>
+References: <de6c1040-c4d1-4703-9932-b3b668801c72@web.de>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -162,81 +93,87 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN6PR12MB2814:EE_|SA1PR12MB9245:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9347f340-d6f3-4f83-827a-08df4a6dee49
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|10070799003|366016|23010399003|10067099003|56012099006|11063799006|4143699003|261021121427099003|261102123227099003|22082099003|6133799003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	fgkd3OzRnSAvoGcdjsAe3uNhI9s9Pbkslz2vW2/gxCqtyreRamJ2IEIGocp7bKFVCUUzwImeXhoOXqEjICUQZ+0VS3YTaggEXQ+ybQ71vhmLLKVAHIcqh7vW3BLVckhC53mQNhJWjauP3V6U2QyWEuY7pcYJYZYHEh6tBsgTO2gPGVhZE6FcRsF0hdhrhvbGE2v+5gZdQOPMy7R/owlf4rFWCDcN59R4js1v/nxYDlYZhWMnSkUlPY7K6oFxlWZLncFaOLvlSvzxtbL+odvJ+CzN7PdYy152kBxZRKzEK2HAWmlCg9XZJ4ArbJYWl/OtTPulx4FbMpR+DXT9ap9Pm5KGiLoE0FTmrWgeVLA2IccXTPWWS36bbEnkf6WLno8kipjQ0/w1PuGUYGwVX7oE3XBdjCwbtphnpnFaC1hBEMbxvgbefy3FWMdMOWhbKX2BbHoTrTOW18UtQrvLaRgYlFs599BEGbUANwRgljg+JObzxx1B4SoHLkmWY+OupVOvFDzeXxsvF2n4PwtbyhmZeeSi50RBU+SM4+ZQ0MWr4/8qDCm/L4J0KDSZvdZZIwxQKlx+xVtMUmSigligQmC8FgKSW3nAwKfQDf0VylGNB10clDcd4CtzmxKGDB0vWO8Gt46ur31yp68z5h7u8LHSw1yVzLOOuQ/Y/syaFKYKVxY=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR12MB2814.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(10070799003)(366016)(23010399003)(10067099003)(56012099006)(11063799006)(4143699003)(261021121427099003)(261102123227099003)(22082099003)(6133799003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?lyl85Xv3fhesIPLeycCkaFybRKJ34uQuDibWvKU5AY6uZlXfBQ65O1p7YvAG?=
- =?us-ascii?Q?PkyYgYLe7iNzqCCPgouRZrXlsuUaxZWn/pg6HOmqNZZj0h83jSf2cP/uxgIW?=
- =?us-ascii?Q?CCW86034F5qiPat10OCStCeS8Pmw+N9phXIdZscpIhYGYlmc7/TDqWPV0Xa4?=
- =?us-ascii?Q?Ay/4f0zLF5jAdeXsTenIkBeOiv/ut4olLduwNbNSJl2TTgPkzSaLYRWP0/kA?=
- =?us-ascii?Q?hOb4NZDxEi6vaq8bbwPoBI9R0MpPOM0atXpQ2M+DAgxNj9mdVesy1b4R3xRe?=
- =?us-ascii?Q?Q93KsVu0zUbKxGKE6Z7hvzWVFMEk+xor0nppHHmV6xIFev/WGys4uWD7DdAl?=
- =?us-ascii?Q?4lLNoiMxqHNl+RZ4FGZzc+OtiRRxYRPwT96Aw2QArtjLH5h/uxUFnIIzn7Rc?=
- =?us-ascii?Q?scJJqyETQUmL5ah4aV7Q7Vif//BGaeeQuwBWjQqU6LxkVh4jZ5RUb4YGMiQp?=
- =?us-ascii?Q?Kpln2LC+2ABGY2qgLKdT5kCqlbODnNbD8+nEuLEFMnciIOzh3yUFDoa7C5jc?=
- =?us-ascii?Q?DbTFnKCKtAhpZxEYRCtFWTGcVQToTwWKT7NrUoTCsfnMFK1pX6jEw3RRueha?=
- =?us-ascii?Q?X0svnLqYHz5u4LYrR0oWMcn+gzkF5Vp9HEZdkCFNhgg5Hl5wbxhFsjs358vH?=
- =?us-ascii?Q?qa8+l8k2v4d1TXGv1t+R0SYRN0be2/+/oSZrdEmtxqStWYay53nm/MsRb18n?=
- =?us-ascii?Q?p3/oYrKkxuORNlvDS8QItuWk2ajNrLlYz3Gvg5tspRPyk8lgeyuwV9xZ897M?=
- =?us-ascii?Q?ONO3Gai7AbbsN15couN2omI5YeVUCXtKU1aL1L37Ii36SnXZi2THlk9ceKZL?=
- =?us-ascii?Q?wvur6EzfSvWZt4kdtZc/6gpTjUd+e5q9obOzoC0KiNBfkqPBv9vkMl/Pf/7L?=
- =?us-ascii?Q?eepALf6IZ30Loo7UPUyyje+Gt7x6kAffBTxUYbjGI/4pPkW9oKaVKo8LibOY?=
- =?us-ascii?Q?Ln9jPBAk8ilf6MMeZTdGUTfWxInVn90V4LtpLM9AZkS8DOhYWukNSv3ldb7I?=
- =?us-ascii?Q?6J+sfvHqn7e/qWlxunjU+4HyyygCQjKApug2uTMwDKWrxOuYS1/XQA1hXkV8?=
- =?us-ascii?Q?V2qs7+i1zHykjxqKc2R4ptj5vKrXOzEWe+GPbHWVO51OnKW2NPxqlP57h21J?=
- =?us-ascii?Q?KwfHVSDevPLTvE1SX1qbbkUSAKl25oRpxc2rjZSmSmapwEbRdCItTwAN6x+1?=
- =?us-ascii?Q?Cq2dwAZf7jP4KgTbeBY98+CM6dFeDgbOE8EUlEoEDYxulnVaU79MJKpWXCD2?=
- =?us-ascii?Q?oGlYkVTbl/ElTR8Y4cEpDWh5BgInuYr31HXSrDr24oEmmd94wTUHBfxIo5KI?=
- =?us-ascii?Q?7Jf4N7tpUdAUl9rrJHcuTCDmOhualHiC7p8OoWo8rMouvSXKObFrQwvR3Ynj?=
- =?us-ascii?Q?twIRQ2At4jyhqolbnUbAOE+yka0pcYEqb3DSOk/oMzti9YviNMtNPN0Sw/m2?=
- =?us-ascii?Q?MTZo9pE4mgiuTUjJ+XIUGFN3oJ2RJuA1TJs/nrTDFzkpjhG5lq4ekFeR5M+n?=
- =?us-ascii?Q?dMFiskhcVUHefgqFrW2wcLDnqRKwqRSczA3CRily70aAWDXGN18AsPF1Txq3?=
- =?us-ascii?Q?Jy4PIWNhDR0XSDr8al9oxwjbG0vdvv6oMzF+Vn4GynRVnqILtthkDd7Fen7U?=
- =?us-ascii?Q?H9GRUbN5AMU5sNEtUickR07I0RbYVlUtBJV2eWldR/9CS/aOCqJoSv4P9JrX?=
- =?us-ascii?Q?7Y2jWpAs6jwzDijrncu+unJVOGm4mtQHgzjnGVq2SePKHry8SQgJq/rqXjpT?=
- =?us-ascii?Q?DgnIhSzHDbmmsMeba/3xSNfuhWNJ6TxcCs90NEspDOvzRA5+6TB8?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9347f340-d6f3-4f83-827a-08df4a6dee49
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR12MB2814.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Nov 2026 21:00:12.1844
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7d9nWnGlSsha9Mzyfzuo8O1ajjPwmA5+pwYtPFzuTfGiKubPpUn4hBTm3tooE3DqsNdJIJImecJef72UZzrs3g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB9245
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <de6c1040-c4d1-4703-9932-b3b668801c72@web.de>
 
-On Mon, Nov 23, 2026 at 09:01:22AM -0500, Gregory Price (Meta) wrote:
-> On 2026-11-22 10:32 -0500, Yury Norov wrote:
-> > On Fri, Nov 20, 2026 at 01:08:52PM -0500, Gregory Price via B4 Relay wrote:
-> > > From: "Gregory Price (Meta)" <gourry@gourry.net>
+Hi Markus,
 
-...
+kernel test robot noticed the following build warnings:
 
-> for_each_node_mask_and() would be more consistent, change just requires
-> passing node_state[N_MEMORY_X] instead of just the node state bit.
-> 
-> > > +	for_each_and_bit(node, nodes_addr(mask),			\
-> > > +			 nodes_addr(node_states[state]), MAX_NUMNODES)
-> > > +
-> > 
-> > Please use nr_node_ids instead of MAX_NUMNODES.
-> > 
-> 
-> I followed for_each_node_mask() which uses MAX_NUMANODES but let me
-> look.
+[auto build test WARNING on sre-power-supply/for-next]
+[also build test WARNING on amd-pstate/linux-next amd-pstate/bleeding-edge clk/clk-next soc/for-next nferre-at91/at91-next linus/master v7.4-rc4 next-20261123]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-This is my glitch - I have a series switching the codebase to the
-runtime nr_node_ids, but didn't merge it yet. So please continue using
-MAX_NUMNODES. I'll add you in CC for that series, so you'll be aware.
+url:    https://github.com/intel-lab-lkp/linux/commits/Markus-Elfring/power-reset-at91-Use-devm_clk_get_enabled-in-three-probe-functions/20261124-095011
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
+patch link:    https://lore.kernel.org/r/de6c1040-c4d1-4703-9932-b3b668801c72%40web.de
+patch subject: [PATCH] power: reset: at91: Use devm_clk_get_enabled() in three probe functions
+config: arm-defconfig (https://download.01.org/0day-ci/archive/20261124/20261124222203.k0pVspdI-lkp@intel.com/config)
+compiler: clang version 24.0.0git (https://github.com/llvm/llvm-project 2012344e5da8e03ea4b8283ecd6fad6e13f09d64)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261124/20261124222203.k0pVspdI-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/20261124222203.k0pVspdI-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/power/reset/at91-poweroff.c:156:6: warning: unused variable 'ret' [-Wunused-variable]
+     156 |         int ret;
+         |             ^~~
+   1 warning generated.
+
+
+vim +/ret +156 drivers/power/reset/at91-poweroff.c
+
+ae499f0fadaf28b Maxime Ripard     2014-07-03  151  
+099806de68b75a0 Uwe Kleine-König  2023-11-04  152  static int at91_poweroff_probe(struct platform_device *pdev)
+ae499f0fadaf28b Maxime Ripard     2014-07-03  153  {
+0b0408745e7ff24 Alexandre Belloni 2016-10-25  154  	struct device_node *np;
+0b0408745e7ff24 Alexandre Belloni 2016-10-25  155  	u32 ddr_type;
+064380a12e12412 Alexandre Belloni 2015-08-11 @156  	int ret;
+ae499f0fadaf28b Maxime Ripard     2014-07-03  157  
+0b64a0e53cc7875 Yangtao Li        2023-07-04  158  	at91_shdwc.shdwc_base = devm_platform_ioremap_resource(pdev, 0);
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  159  	if (IS_ERR(at91_shdwc.shdwc_base))
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  160  		return PTR_ERR(at91_shdwc.shdwc_base);
+ae499f0fadaf28b Maxime Ripard     2014-07-03  161  
+e51202a7ed9dff5 Markus Elfring    2026-11-24  162  	at91_shdwc.sclk = devm_clk_get_enabled(&pdev->dev, NULL);
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  163  	if (IS_ERR(at91_shdwc.sclk))
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  164  		return PTR_ERR(at91_shdwc.sclk);
+064380a12e12412 Alexandre Belloni 2015-08-11  165  
+062836db01f9826 Ladislav Michl    2018-03-16  166  	at91_wakeup_status(pdev);
+ae499f0fadaf28b Maxime Ripard     2014-07-03  167  
+ae499f0fadaf28b Maxime Ripard     2014-07-03  168  	if (pdev->dev.of_node)
+ae499f0fadaf28b Maxime Ripard     2014-07-03  169  		at91_poweroff_dt_set_wakeup_mode(pdev);
+ae499f0fadaf28b Maxime Ripard     2014-07-03  170  
+0b0408745e7ff24 Alexandre Belloni 2016-10-25  171  	np = of_find_compatible_node(NULL, NULL, "atmel,sama5d3-ddramc");
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  172  	if (np) {
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  173  		at91_shdwc.mpddrc_base = of_iomap(np, 0);
+0b0408745e7ff24 Alexandre Belloni 2016-10-25  174  		of_node_put(np);
+0b0408745e7ff24 Alexandre Belloni 2016-10-25  175  
+e51202a7ed9dff5 Markus Elfring    2026-11-24  176  		if (!at91_shdwc.mpddrc_base)
+e51202a7ed9dff5 Markus Elfring    2026-11-24  177  			return -ENOMEM;
+0b0408745e7ff24 Alexandre Belloni 2016-10-25  178  
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  179  		ddr_type = readl(at91_shdwc.mpddrc_base + AT91_DDRSDRC_MDR) &
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  180  				 AT91_DDRSDRC_MD;
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  181  		if (ddr_type != AT91_DDRSDRC_MD_LPDDR2 &&
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  182  		    ddr_type != AT91_DDRSDRC_MD_LPDDR3) {
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  183  			iounmap(at91_shdwc.mpddrc_base);
+caa6e150f8fbcf4 Claudiu Beznea    2018-12-06  184  			at91_shdwc.mpddrc_base = NULL;
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  185  		}
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  186  	}
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  187  
+996463fdb8cdec4 Claudiu Beznea    2018-11-05  188  	pm_power_off = at91_poweroff;
+0b0408745e7ff24 Alexandre Belloni 2016-10-25  189  
+ae499f0fadaf28b Maxime Ripard     2014-07-03  190  	return 0;
+ae499f0fadaf28b Maxime Ripard     2014-07-03  191  }
+ae499f0fadaf28b Maxime Ripard     2014-07-03  192  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
