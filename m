@@ -1,49 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795595172;
-	b=lHaf/+tzT6Sk6RaMFUjMa0Q6kEbRH83OaBxsESjKvJ3nMVQDS2y/0NgXTr1L0p5GNHgA
-	 JUGzojcAkhqXGjpiGvmw76TfnLJrG8muTb5yshjeoV/10nw/nUQbJ0PNYE3tEDyd5kjoh
-	 TIrGuZObbsnTb8c2fo7rgph+nQ02if0hwxbLaNmuP8oQTx4ImKhqBaRplkp1c/L9KDS+Q
-	 vMx5gp7d7pkZjjh3031FJpxcsfiD+X3ssFTDVsOD9y+GwMcTkOcxFxHcRlE9lkcvHMGD8
-	 DP8yzwK8bx+CQ6J0xs40vmJcwOo+AmU+K1anEB2z8gm7YtymhdFzelxGYow89IMUSCw==
+	t=1795595523;
+	b=zYr767cYyiKyimrUx1Lv48m0QgRNDpreVUg/Kk7mZipZnnY7zS47HnMZxp48KTCEoovK
+	 fGkY6WG37Two938Le4LccYrubnqnxZHQ52gAIbDgKeD1MHOCfk9n0t6mptmRLhuiLJ7fv
+	 NFLJQ7yi9+Z9JaT7wb9g5I6OEVTYnCxtljqdr8hjzv30tgYJObXHHO8zGenQO2BsIsdkF
+	 xcM3NUeDX7IH2VYMlqlBD/mMe9MT+e7+x+czLSgwzJrBR1VXYbOpJTCJhEY9QGK2L0kYW
+	 mWFlhE2mOfdJMj1S5hAwf6qOrjPflF56t//3ISL86+vFQf8xj8dqPARO4IPKDxJv1oQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795595172;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:From:
-	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=JkhOqWjoE3Q+BjDXMq8ste1yWf8Gndm7wkosFGmn9TY=;
-	b=xVtG2z6k/4/687Zp3PL8qhfehSJIqfufSH+IvYbU058lnruGbWUTBhLn4EutwdytASFq
-	 ZGsh+gztZW51If3CjqimQHZ9eDFajNV8FimoQJMq0TJk0ZuakS0pc54rEBt6U/Yr9QgpE
-	 XmEi+S6/vo8iPJvvNduai4OkFcLjy63BBE9lERZ1LtO2UGraKjRuBXaIfODRIZO2rCOFr
-	 s9Tq0uI9kbH6hu0+5EHwiItQ6XOGuayYrVx7RHXDI17aYCdCLpLN35PL2Ty4ZqPa5LE9F
-	 mwTZa15UiVsXfeRkOcjKP36Mg8KIT7EsttTOnFrG57IevZYvNlBUCERfHcjQYxJ/PRg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795595523;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:From:To:Cc:References:Content-Language:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=Xhprbp8vYgoK3W8l2CK0jpgqQyaq9WrszZ2gTi+N1FM=;
+	b=er/sJTAqe2xaQshcVchj3kCRVc0dOIiZoUY2Hl/qUsMP62UIYy9UsDwSz2t884Ywh9Bz
+	 Cteh0Afy95TidLz4HUM0U+F1eRqq1IbQ14a3ZBuYJbXrVmqGdU1UKErVX315dDb+Mbdl9
+	 UEDQceumdVpBa2POOUqlInldqrsfL4EfJfO4Kh+SE4oLUi/4Fm0FNqN4LPMSRyhJ+42x4
+	 9hm0St0Zm9qz1YRbjX0/fLwOARkm+NhEFAY16CE3VU9OkYcyWP1pMzqxMjvNj/iZ2LmRN
+	 hbifh1S5IEn+EupW1nsOkT4AZXi01VXwWE88m75YqweiB391bGESMir4DItIwBb++NQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=i0Iy827z;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B3FB1606A326;
-	Wed, 25 Nov 2026 08:26:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B3FB1606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=boAdVYoX;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76B38606A31E;
+	Wed, 25 Nov 2026 08:32:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=i0Iy827z
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DD71D14BF;
-	Wed, 25 Nov 2026 00:26:07 -0800 (PST)
-Received: from [10.57.72.178] (unknown [10.57.72.178])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DB62F3F86C;
-	Wed, 25 Nov 2026 00:26:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1795595170; bh=2sushVC0kbf5QBS5mCE2ZCkoDnbD9EMcF9gJb4NY3vk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=i0Iy827zQElVSRE1WZTvCP7nzk37SNygK4WpEPMEM5vWV00cZVz3RXAx5KrFPNDtg
-	 KDCY749HPcsEm2N2iAB09/n17iF+twdpfqsa5lriKibhXdk2bBKbkO/eE9rfbPNyr8
-	 HLccYr3CS2ExnkOLz1QNKqb4a53Yokss+m4A6qv8=
-Message-ID: <86b5a9f8-70f3-4a5f-b023-c9fb1a2faf83@arm.com>
-Date: Wed, 25 Nov 2026 08:26:04 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=boAdVYoX
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79B881F000C6;
+	Wed, 25 Nov 2026 08:31:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795595523;
+	bh=Xhprbp8vYgoK3W8l2CK0jpgqQyaq9WrszZ2gTi+N1FM=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=boAdVYoX6mzVRi523peA0iUwn//soWfCQzl+E94F2K/c/zZRfD3fiEix+n2i3hPES
+	 aXkQyPSDPAxStRt++4P0F7qi9974GWrBGgMaLskiSiUfb8g6C1RbBsYmcGREJtlpHG
+	 NJXGmZ8qL7Fx5S7hEjOUgoCZUSEQyQpJrNvQrwRoUq2nP8evB7moPrYoqosJBT1Ga1
+	 p2fzUN7xQq4fpTwW5jTr6PwuMFmdTlDfJzTxIDJ+9Gqy4xxwFmkxtbHYaRHtXHnVEu
+	 uq/4RbynOG/7r5eaVe7Ft98NQeb0m+cYS6NG6B41b/i9iobv4kYwL2JeyO2soXETeO
+	 l90JcBY8eo3Cg==
+Message-ID: <de65af39-3a9c-4b2e-bb82-2a84b8584731@kernel.org>
+Date: Wed, 25 Nov 2026 09:31:54 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -54,81 +52,149 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: schedutil: Run irq_work in hardirq context on
- PREEMPT_RT
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org,
- juri.lelli@redhat.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
- rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
- vschneid@redhat.com, kprateek.nayak@amd.com, bigeasy@linutronix.de,
- clrkwllms@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-rt-devel@lists.linux.dev
-References: <20261125080613.1138573-1-zhongqiu.han@oss.qualcomm.com>
-From: Christian Loehle <christian.loehle@arm.com>
+Subject: Re: [PATCH 2/9] dt-bindings: soc: google: Add Google Tensor CPM
+ binding
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Brian Norris <briannorris@chromium.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+ Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Thomas Gleixner <tglx@kernel.org>,
+ Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Peter Griffin <peter.griffin@linaro.org>, devicetree@vger.kernel.org,
+ Tudor Ambarus <tudor.ambarus@linaro.org>,
+ =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
+ linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>,
+ linux-arm-kernel@lists.infradead.org,
+ Mariano Marciello <mmarciello@google.com>,
+ Douglas Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org,
+ =?UTF-8?Q?Jakub_G=C5=82owacki?= <jglow@google.com>
+References: <20261026214359.3122870-1-briannorris@chromium.org>
+ <20261026144346.2.Ib692ddd35c1dbea1757d9b1db6c1c7e938fc4ea6@changeid>
+ <20261028-rapid-daffodil-rat-0adc6a@quoll> <aulIoq2oVjJ3DVzL@google.com>
+ <d4a430de-715a-4936-8adb-35ff57a52b5f@kernel.org>
+ <avZkfg6WMlMzOxpn@google.com>
+ <72ef7ef8-acc8-4ad5-9c09-76d9e944bf5c@kernel.org>
 Content-Language: en-US
-In-Reply-To: <20261125080613.1138573-1-zhongqiu.han@oss.qualcomm.com>
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <72ef7ef8-acc8-4ad5-9c09-76d9e944bf5c@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 11/25/26 08:06, Zhongqiu Han wrote:
-> On PREEMPT_RT, an irq_work not marked IRQ_WORK_HARD_IRQ runs in the
-> per-CPU irq_work/N thread at SCHED_FIFO priority 1. The schedutil slow
-> path queues its irq_work on the local CPU, so the wakeup of the
-> SCHED_DEADLINE sugov thread is delayed until no other RT or DL task is
-> runnable on that CPU.
+On 25/11/2026 08:07, Krzysztof Kozlowski wrote:
+> On 13/11/2026 02:14, Brian Norris wrote:
+>> Hi Krzysztof,
+>>
+>> On Thu, Nov 05, 2026 at 07:54:22PM +0100, Krzysztof Kozlowski wrote:
+>>> On 03/11/2026 03:36, Brian Norris wrote:
+>>>> On Wed, Oct 28, 2026 at 02:19:23PM +0100, Krzysztof Kozlowski wrote:
+>>>>> On Mon, Oct 26, 2026 at 02:43:40PM -0700, Brian Norris wrote:
+>>>>
+>>>>>> --- /dev/null
+>>>>>> +++ b/include/dt-bindings/interrupt-controller/irq-cpm-google.h
+>>>>>> @@ -0,0 +1,16 @@
+>>>>>> +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
+>>>>>> +/*
+>>>>>> + * This header provides constants for CPM IRQ.
+>>>>>> + *
+>>>>>> + * Copyright 2025-2026 Google LLC
+>>>>>> + *
+>>>>>> + */
+>>>>>> +#ifndef _DT_BINDINGS_INTERRUPT_CONTROLLER_IRQ_CPM_H
+>>>>>> +#define _DT_BINDINGS_INTERRUPT_CONTROLLER_IRQ_CPM_H
+>>>>>> +
+>>>>>> +#define CPM_IRQ_RTC_ALARM_NO			0
+>>>>>
+>>>>> Keep naming consistent. Clocks has _CLK suffix, so this should not use
+>>>>> prefix.
+>>>>>
+>>>>>
+>>>>>> +#define CPM_IRQ_AOC_MIN				7
+>>>>>
+>>>>> Anyway, ABI constants should be indexed from 0 and incremented by 1.
+>>>>
+>>>> What do you mean by this? Do I need to make up names for the
+>>>> unused IDs between 0 and 7? On an initial search, I don't believe they
+>>>> have any meaning at all. Does that mean I should make up some kind of
+>>>> "RESERVED_<N>" naming here?
+>>>
+>>> No, I meant CPM_IRQ_AOC_MIN is 1.
+>>>
+>>>>
+>>>> Between 7 and 156, these are just ... 150 different "service numbers"
+>>>> within the AOC (Always On Connectivity) subsystem. I can name them
+>>>> AOC_0, AOC_1, ... AOC_149 if that helps.
+>>>>
+>>>> Or are you suggesting that I pack the actual use cases (so, 0 and 7-157)
+>>>> into 0-151? I thought it was valuable to directly use the firmware
+>>>> indexing where possible; if I change those, then the indexing loses its
+>>>> inherent meaning, and we also have to add another layer of translation.
+>>>
+>>> We do not use hardware numbers as bindings and ABI, because that's
+>>> pointless - no benefits, only risks. Similarly you do not define GIC
+>>> interrupt numbers, pinctrl pin numbers, MMIO addresses as bindings. None
+>>> of these bind anything between DTS and software, so not a binding.
+>>
+>> OK, I see your point about the distinction between hardware numbers and
+>> bindings. So are firmware-protocol-defined numbers more like hardware
+>> numbers or bindings?
+>>
+>>> There are some exceptions like SCMI firmware, but that's not the case here.
+>>
+>> It's funny you mention that, because that's exactly what Jerome compared
+>> this to in the clk, reset, and pmdomain portions.
+>>
+>> These values are used literally in the firmware interface, so I'd
+>> consider them very similar to SCMI firmware protocol IDs (and, not that
 > 
-> Meanwhile work_in_progress stays set, so no new frequency update is
-> queued for any CPU of the policy: one busy RT task can freeze the
-> frequency of its whole policy.
-> 
-> sugov_irq_work() only calls kthread_queue_work(), which only takes raw
-> spinlocks and is safe in hard interrupt context on PREEMPT_RT, so mark
-> the irq_work IRQ_WORK_HARD_IRQ, as commit f8d958880933 ("srcu: Use
-> IRQ_WORK_INIT_HARD for srcu's irq_work") did for srcu.
-> 
-> Tested on a Qualcomm SM8850 board running PREEMPT_RT, with SCMI cpufreq
-> forced into the slow path. With a SCHED_FIFO 10 stress-ng worker on CPU1
-> (30% load, 50 ms slices, 15 runs of 5 s each), sugov_irq_work() now runs
-> within 15 us of irq_work_queue() instead of waiting for the RT burst to
-> end (up to 212 ms), and the policy frequency is no longer frozen. The
-> irq_work latency below is measured from irq_work_queue() to the entry of
-> sugov_irq_work(). The cost is that the kthread wakeup now runs in the
-> irq_work IPI handler, as it does on !PREEMPT_RT. In a separate cpufreq
-> stress test with cyclictest (SCHED_FIFO 90) on all CPUs, this raises the
-> average IRQ work IPI time from ~0.5 us to ~1.3 us, with no change in the
-> number of IPIs, and the cyclictest per-CPU worst case by ~2 us.
-> 
->   PREEMPT_RT                           before              after
->   ---------------------------------    -------------       ----------
->   irq_work latency on CPU1, max        130 - 212 ms        <= 14.5 us
->   policy0 frozen, total per 5 s run    0.57 - 1.25 s       none
->   cyclictest max, CPU1-5               13 - 16 us          14 - 18 us
-> 
-> On !PREEMPT_RT, cyclictest and IRQ work IPI duration are unchanged. No
-> lockdep or DEBUG_ATOMIC_SLEEP splat on either PREEMPT_RT or !PREEMPT_RT.
-> 
-> Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Sure, where is the source code of the firmware then?
 
-Missing a fixes tag then?
-FWIW
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+And if you do not have the source code, then not a binding, so you won't
+have case like:
+https://lore.kernel.org/all/20261124-qcom-adsp-shared-vmid-fixes-v1-1-f1a808dc41a5@mainlining.org/
 
-> ---
->  kernel/sched/cpufreq_schedutil.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 14405a614991..b2e9ac7e3517 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -726,7 +726,7 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
->  	else
->  		kthread_bind_mask(thread, policy->related_cpus);
->  
-> -	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
-> +	sg_policy->irq_work = IRQ_WORK_INIT_HARD(sugov_irq_work);
->  	mutex_init(&sg_policy->work_lock);
->  
->  	wake_up_process(thread);
-
+Best regards,
+Krzysztof
