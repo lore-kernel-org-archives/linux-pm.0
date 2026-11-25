@@ -1,111 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.176
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.49
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795634056;
-	b=UckXMzYUfjO045TwxCPvGyVxDRdSYDXWQRvk8I56TBinJUzn5NYvlB1PWcEyLYcsMRmt
-	 DhNVHOWZ7yi+A8E6/uS9X6ODzkhuTY+l3nGU3fnUEWU2zSwCkKk3oM0hsJDNz64aL2IBu
-	 D4G/PfiVuHHuNFJLMy5hw9BQuOjdfA1MhrMay10EKnzwEbY5RuVAhxfUEFWt0T6ExJvtU
-	 BQvcijSmIt3jRQikT6SxZeDBcqTa5pL0E2vYMCNWGiqvuxV5HXyrGbspKAFMbeH4PgnAf
-	 bMjk0m82ezAggSmaBeJPbh6ENYA9gc8XlecPvDg/opNLJ89+Aaq4dvvLzuF6G9Av34Q==
+	t=1795634138;
+	b=jlzHwbhdtEPCurTvmeEviOcs/CXFHOIdt83nfS8PyvCTKywlKa/Cmit4zukhYlNjjtja
+	 K9JwLx5hCovYcmaSb4VkPlWC6ej+8Fme4t8qJUNbdtGQ2BClIddCz0tUsCqqn8sIqRlAv
+	 Ra7Xm1q5mnQZsRvOkYNImFCHLKM9U6AZa1frbNzVgf394vvvfaNcOeqZQkI6X6OHYdlsP
+	 5Mq/JxYhcmZVSFBaZVjYFK0h5HVmmreCLsGlOS0lM5TAZ1XASFuC0rXwf9/hY9PCIfTyS
+	 v/7rcEe6A/JoBdGFvkZ8gOs91Tz5pjKHdLCmVRInTx9h0newAGnVnTrNExqyM/H/TQw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795634056;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795634138;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
 	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=2Mxaj7MSnWu+9ygVGHzFTKYO5aL6o7ueBK40srZALsk=;
-	b=PD4EHU5KImo4pqgyocQWtMiVgxFWv3qSCuLsB/cAuW7bPlg/00IHajiR/sLJ05aKQT+a
-	 BXxfgpLuDVfMu0YRCw7ogdGwBcLodMjakPBjth/LSge8YoIO1SYaHq8UcO53pBla7oprY
-	 PN15zH1mLwzE+qDQvBaFt7u9K7C2ZTqWVg1f4KFHc7umgi9Y4bv/xXLwMulBu2ZdYt4ot
-	 p9ItIV4k69mVXZMJ36Mwn+wahNEQcZlLQFbLD3DD157QTk//fl7QQeBrahegPJSO/fIqX
-	 poc+6Fx1j1TXpPohALh0RVP3/awC3r28/8Uce2rM0H2Ez+24ojYQDWiC+bVRKXKA91w==
+	bh=w3smB/TOMIsBOIa48IJ7JNzgUykCOEbYDqooopA7Cxs=;
+	b=XPAZ8Hg1js2Udc7ISZHGdcMJuf7fEzVvufwZwp4348axayPRhwrDuFnMgu3l+vly88A2
+	 nuFdCi7icaVJeAK6IVzF5W5BUla0wBXNb8pK7chulL/+SeDJZtfeu06wy/6JEUb8Q02bw
+	 U/PKb4HBWjSnY6NcBgeg91npsTmBhQj53VTZtDupaIv6tVG1VFjCHWG5s5MoTWJ/1iFG0
+	 qCEOTi0FQMi0toY5BLHKqdynSTvXe4ajGh87+A0QRNZ/+VDxfF0TLJfbpFiwBlUt12brN
+	 EsaeIH+X2yt4dPvCRYJJA2bHInmK6FyxvP70bxf4wS4SKmuX/05B1pPIATdMRSu0cMg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Tj6vBlbC;
-	arc=none smtp.remote-ip=209.85.215.176
-Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b="J/cEdMcm";
+	arc=none smtp.remote-ip=209.85.216.49
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC786606A321
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 19:14:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EC786606A321
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44AC0606A326
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 19:15:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 44AC0606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Tj6vBlbC
-Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-cde5a7d79b0so3127733a12.2
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 11:14:15 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=J/cEdMcm
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-3b0e0e65adbso2847104a91.3
+        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 11:15:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1795634055; x=1796238855; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1795634136; x=1796238936; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=2Mxaj7MSnWu+9ygVGHzFTKYO5aL6o7ueBK40srZALsk=;
-        b=Tj6vBlbC9JMlJyTasmd4zElLY4siTE7WVfPniodB3bH0eHFWeBlwnRZMfB0wF5TQMS
-         fhXDLtWSvkWe9uFiAJmuOCK6+HjuJ9xKxDg+RwgRonkVOZlmsUZCZaS0i60CjrA56heE
-         aecpd0h9ty6vp2bF83UJG/FJd+GKwHy+WoQv8=
+        bh=w3smB/TOMIsBOIa48IJ7JNzgUykCOEbYDqooopA7Cxs=;
+        b=J/cEdMcmtp+2QBOI+W5wC1ksFSU6UR/Rg0++bRhvnnolmKblQvpUOgNFOfb/3hudX+
+         eUkOsJ/am6h4GC4Bn0hOJ8627ql8V9kYo//d0DO+ryj3PTcZs9S+XwuTFOv/o0Wj1Ttl
+         E5f2RHDUbpfnFW09dz9qlN42BkCElDHFcMht4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795634055; x=1796238855;
+        d=1e100.net; s=20260707; t=1795634136; x=1796238936;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=2Mxaj7MSnWu+9ygVGHzFTKYO5aL6o7ueBK40srZALsk=;
-        b=y6fax/96jMQYchw4CQs44MkEQh+KhE9hjujnaYSQNx6hJb5i+IJhFmSF813v3TYSM5
-         UWsNngXxphD4CrCk8rdvTKoxjJPphpxhpvtpM8fcv1euqk0Y2HImNKk/TT7//c7yP8VG
-         JVdxPkhx8AjIFXNIaQ+zEwKBbxoqIZ1qfKgNcAtB3WedssK8zBcaTviGxIX9pKH59UjU
-         BtNExLmFfkUemUZWWxxUtFkqk0y16v6ac3k74HEmAKVlbdTvnEz5NIqUleKPtOHv1d0E
-         fDAk8Wm7IkJ50dB2OFpRrBsczm9rBF7jhABAfl+ua41M3zQ7YthTg0wzLvGy1DChWmje
-         cCyw==
-X-Forwarded-Encrypted: i=1; AL+hErGOwQGzmA3RwFkdIfPEavwEFBhCrqgq/czdT65pwBB2VCWSK/R5yXs09orSYKYFq/6PISL2Rf1ABA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8n9pkBHEAudF9Aw7GgsuyrEXSz2UIejhwJdlZ8GwnBgxPPTKU5
-	lylM0ZxGLqVh+MZz1m1xSSASv+OepGyosP0CrYeGiFvb6EySUd9ra/m6cE6TTQF4pw==
-X-Gm-Gg: AZFdTZf5l6gpuuR8LS5S+DH0LUkBFgIW/WWk74/h2+swuOHKFMh+M2h/qmTwJeHk4z9
-	RgUThduc9HG1OO2avcA0FwyBlWrIOpHKELGF54FgmRewHgZv/Kqym4fV2GDPo06ArlT8uq+YUK9
-	ZZf6W/ASfhaVxhwJlHqtJaezFjG6DFDl1HLOMH09EaWstCnUkXbKFmwvd6zOnRulskrZGuW8Yww
-	8lhL9w6LIbvg6cvKcvCahFu4laJ01gVloqsNrDk/ww/kTMw78d7gd/MY2zFUZDvw+vyy3FTZCPh
-	/cG8XHW12V56jGhgjExckt9Ja/olml+HLRNuJhT+8/ys0V8Wfm0RNCgufOU51Bkuq9I1X9PFus9
-	2alCttYLftHon5KAFqiZjWm9sz5pJH29bccR8JfnD0Ku/+zAhmkK4BIK1CoL10hBBkqVnJQ7rpz
-	gPFpZCO2MQ8Ts9D66BbaFYsB84zCEuFRVE3JvruesDtbp8M+F56Dmfck2Lk+3XjnZi7b/v4TFMr
-	R2fpt481Q3nu2vPcfVH5xBOcj/TApa6xhixmVzPIVFxHQ9iMZtv5CqLij76DuOeKDK9P/cQRGFQ
-	zCzNdOky10NH/C/pi96y1RfgzlUG1tMjzqgUYtjY6GGduKyW+QlQbRD4L5bSljwedAw=
-X-Received: by 2002:a17:90a:d607:b0:3a4:ad5c:d48a with SMTP id 98e67ed59e1d1-3b41c97c8acmr18800018a91.67.1795634055227;
-        Wed, 25 Nov 2026 11:14:15 -0800 (PST)
+        bh=w3smB/TOMIsBOIa48IJ7JNzgUykCOEbYDqooopA7Cxs=;
+        b=cJQj+1Ds6G44uqd2UpsLT7wirfO+ibwRfF0xdGX1FEcPwOJCrOkLiY0OTPeX6UXc21
+         ocHK6Wi7w+MD0DtncXgPzN3QoWQjTtQJ+SeWbFkXZSFhNGGt4gYPerllffWPTbjfwdQY
+         xbI/ssNrfVThNsGe3fcd/Pa92qeREyAUExWf9QN+1n/q8i9kYBVGIKlG31RFl8deQP3T
+         TH2of8qJ5SjNOy2MD2NHJM9DKkYRP/CYEBWmzJwdQUzNup/OrF9prXgjKX4Z1MkoINxJ
+         7e6WIUPtuw9vFnXOV8KGSbsZgmXFLzq7fygQ5wBTw9/GJphhzIE/75paeQH9GhNnzxUX
+         is4Q==
+X-Forwarded-Encrypted: i=1; AL+hErFg0634H4+cPMlwF/1+c3LkQSCBrf2Yp98CHuV7nMlRA00gNTfwy5IDbtfbIorXrYSh+SROALT49A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8qKyCQyCCkNNCv6urdccmEf+2jwDhzM04ZIYBvC+Th/jL8jB+S
+	OCBb2JWzWxatmBtAROU20ujYuyv85ySBCpanEs+6EKZ+y/lkhViIk3iMHtL5d2dxLA==
+X-Gm-Gg: AZFdTZea4xoD5ohhUn94v9rPvwV26KC430Af8bxt3y1Y4PjmzeTKpuy4XvYEX32ZqZH
+	7Udb/zBxUOKcpu3zAbc3jtvJnxGPepqlBVpU1FmJgPtT2WUBCyFrG6UpnVzTM9KP/Hzmh46wEyb
+	mi8VgxA2yFH0M0MkyxnUTgctXFcThee9fOYkijQ4GKmXY3UIev9QV5kALeglHcmGqh6h+Bsa+fU
+	e0Qgowvq20cc2kkbUvr2XVWHDbj9WRfBML5rjJMD13Xf4UUVCZnQl66Mw2uS8Equgo4rWROwhgu
+	BFWBDxvdpXFoLEpyKGD9UvntbqazmbjKbrrWC3SgkIiYRzkTyRKO4KVEx1ZrNrbuhgDA7KROM8j
+	qZIZAgdxwArFWeyoBtA+xsN36G9nxHk018RyW4vxusCSxGGQenFA7W2g85C18VGQgG8XsM0sCNt
+	amnbWSFgMWlEC65Wk0L2gBDYZzbL8vE4nxqA2KdbfE7B2H1Ds8GDI+r5yAfaYGhMm68s1cKmjTU
+	beYR3NIAR/N61sUd5iF9Mndm7UhxeoVD2qx4SUZu65sfd9lBiqlcqT4EJfjr8AJ9G60niODLBmo
+	0NjcholxORUVtJHvPqEz/QI20g8aR8dv/Zj3TI5kV03K1kkFZpsTjxgQmCiaWWlDW3A=
+X-Received: by 2002:a17:90b:442c:b0:3ac:a203:e0a1 with SMTP id 98e67ed59e1d1-3b41c92a902mr18354355a91.37.1795634136385;
+        Wed, 25 Nov 2026 11:15:36 -0800 (PST)
 Received: from localhost ([2a00:79e0:2e7c:8:d0a2:f616:6ba:a1ce])
-        by smtp.gmail.com with UTF8SMTPSA id 98e67ed59e1d1-3b40578dca0sm32183592a91.2.2026.11.25.11.14.13
+        by smtp.gmail.com with UTF8SMTPSA id 41be03b00d2f7-cde6d05782asm9164989a12.24.2026.11.25.11.15.34
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 25 Nov 2026 11:14:14 -0800 (PST)
-Date: Wed, 25 Nov 2026 11:14:12 -0800
+        Wed, 25 Nov 2026 11:15:35 -0800 (PST)
+Date: Wed, 25 Nov 2026 11:15:33 -0800
 From: Brian Norris <briannorris@chromium.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
+To: Philipp Zabel <p.zabel@pengutronix.de>
 Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
 	Brian Masney <bmasney+clk@redhat.com>,
 	Jerome Brunet <jbrunet+clk@baylibre.com>,
 	Thomas Gleixner <tglx@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
 	Peter Griffin <peter.griffin@linaro.org>,
-	devicetree@vger.kernel.org,
 	Tudor Ambarus <tudor.ambarus@linaro.org>,
 	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>,
-	linux-arm-kernel@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Radu Rendec <radu@rendec.net>,
+	Jakub =?utf-8?B?R8WCb3dhY2tp?= <jglow@google.com>,
+	linux-clk@vger.kernel.org, Douglas Anderson <dianders@chromium.org>,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
 	Mariano Marciello <mmarciello@google.com>,
-	Douglas Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org,
-	Jakub =?utf-8?B?R8WCb3dhY2tp?= <jglow@google.com>
-Subject: Re: [PATCH 2/9] dt-bindings: soc: google: Add Google Tensor CPM
- binding
-Message-ID: <awczhDk20JDpqKqQ@google.com>
-References: <20261026214359.3122870-1-briannorris@chromium.org>
- <20261026144346.2.Ib692ddd35c1dbea1757d9b1db6c1c7e938fc4ea6@changeid>
- <20261028-rapid-daffodil-rat-0adc6a@quoll>
- <aulIoq2oVjJ3DVzL@google.com>
- <d4a430de-715a-4936-8adb-35ff57a52b5f@kernel.org>
- <avZkfg6WMlMzOxpn@google.com>
- <72ef7ef8-acc8-4ad5-9c09-76d9e944bf5c@kernel.org>
- <de65af39-3a9c-4b2e-bb82-2a84b8584731@kernel.org>
+	google-soc@lists.linux.dev
+Subject: Re: [PATCH v2 5/9] reset: google: Add CPM reset driver
+Message-ID: <awcz1aP6xcL6G2t4@google.com>
+References: <20261125000349.3385325-1-briannorris@chromium.org>
+ <20261124160343.v2.5.I0b1ad34a718a9b5f667d2481041970ea45989dd3@changeid>
+ <f89e293688feb3f9bcdce0f1b6fed0ee424e5cd8.camel@pengutronix.de>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -117,124 +110,268 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <de65af39-3a9c-4b2e-bb82-2a84b8584731@kernel.org>
+In-Reply-To: <f89e293688feb3f9bcdce0f1b6fed0ee424e5cd8.camel@pengutronix.de>
 
-On Wed, Nov 25, 2026 at 09:31:54AM +0100, Krzysztof Kozlowski wrote:
-> On 25/11/2026 08:07, Krzysztof Kozlowski wrote:
-> > On 13/11/2026 02:14, Brian Norris wrote:
-> >> Hi Krzysztof,
-> >>
-> >> On Thu, Nov 05, 2026 at 07:54:22PM +0100, Krzysztof Kozlowski wrote:
-> >>> On 03/11/2026 03:36, Brian Norris wrote:
-> >>>> On Wed, Oct 28, 2026 at 02:19:23PM +0100, Krzysztof Kozlowski wrote:
-> >>>>> On Mon, Oct 26, 2026 at 02:43:40PM -0700, Brian Norris wrote:
-> >>>>
-> >>>>>> --- /dev/null
-> >>>>>> +++ b/include/dt-bindings/interrupt-controller/irq-cpm-google.h
-> >>>>>> @@ -0,0 +1,16 @@
-> >>>>>> +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-> >>>>>> +/*
-> >>>>>> + * This header provides constants for CPM IRQ.
-> >>>>>> + *
-> >>>>>> + * Copyright 2025-2026 Google LLC
-> >>>>>> + *
-> >>>>>> + */
-> >>>>>> +#ifndef _DT_BINDINGS_INTERRUPT_CONTROLLER_IRQ_CPM_H
-> >>>>>> +#define _DT_BINDINGS_INTERRUPT_CONTROLLER_IRQ_CPM_H
-> >>>>>> +
-> >>>>>> +#define CPM_IRQ_RTC_ALARM_NO			0
-> >>>>>
-> >>>>> Keep naming consistent. Clocks has _CLK suffix, so this should not use
-> >>>>> prefix.
-> >>>>>
-> >>>>>
-> >>>>>> +#define CPM_IRQ_AOC_MIN				7
-> >>>>>
-> >>>>> Anyway, ABI constants should be indexed from 0 and incremented by 1.
-> >>>>
-> >>>> What do you mean by this? Do I need to make up names for the
-> >>>> unused IDs between 0 and 7? On an initial search, I don't believe they
-> >>>> have any meaning at all. Does that mean I should make up some kind of
-> >>>> "RESERVED_<N>" naming here?
-> >>>
-> >>> No, I meant CPM_IRQ_AOC_MIN is 1.
-> >>>
-> >>>>
-> >>>> Between 7 and 156, these are just ... 150 different "service numbers"
-> >>>> within the AOC (Always On Connectivity) subsystem. I can name them
-> >>>> AOC_0, AOC_1, ... AOC_149 if that helps.
-> >>>>
-> >>>> Or are you suggesting that I pack the actual use cases (so, 0 and 7-157)
-> >>>> into 0-151? I thought it was valuable to directly use the firmware
-> >>>> indexing where possible; if I change those, then the indexing loses its
-> >>>> inherent meaning, and we also have to add another layer of translation.
-> >>>
-> >>> We do not use hardware numbers as bindings and ABI, because that's
-> >>> pointless - no benefits, only risks. Similarly you do not define GIC
-> >>> interrupt numbers, pinctrl pin numbers, MMIO addresses as bindings. None
-> >>> of these bind anything between DTS and software, so not a binding.
-> >>
-> >> OK, I see your point about the distinction between hardware numbers and
-> >> bindings. So are firmware-protocol-defined numbers more like hardware
-> >> numbers or bindings?
-
-I'm not sure if you answered this question. I'm inferring "hardware
-numbers".
-
-> >>> There are some exceptions like SCMI firmware, but that's not the case here.
-> >>
-> >> It's funny you mention that, because that's exactly what Jerome compared
-> >> this to in the clk, reset, and pmdomain portions.
-> >>
-> >> These values are used literally in the firmware interface, so I'd
-> >> consider them very similar to SCMI firmware protocol IDs (and, not that
+On Wed, Nov 25, 2026 at 09:48:04AM +0100, Philipp Zabel wrote:
+> On Di, 2026-11-24 at 16:03 -0800, Brian Norris wrote:
+> > Google Tensor SoCs (used on Pixel phones) manage many resources
+> > (including resets) using a Central Power Manager (CPM) co-processor. We
+> > communicate with CPM using mailboxes, abstracted in the
+> > devm_cpm_get_handle(), etc., API.
 > > 
-> > Sure, where is the source code of the firmware then?
+> > For posterity, I list a summary of changes made relative to the
+> > downstream Pixel driver:
+> > 
+> > * Switch to auxiliary bus, as a child of a CPM device
+> > 
+> > * Use devm more heavily
+> > 
+> > * Avoid representing each reset as its own Device Tree node.
+> > 
+> > Signed-off-by: Brian Norris <briannorris@chromium.org>
+> > ---
+> > 
+> > Changes in v2:
+> >  * Rename symbols from goog_cpm_rst_* to cpm_reset_*
+> >  * Moved shared protocol details to CPM driver
+> >  * Remove custom reset debugfs interface and .remove callback.
+> >  * Remove per-SoC table; we only need naive translation of firmware IDs
+> > 
+> >  drivers/reset/Kconfig            |   1 +
+> >  drivers/reset/Makefile           |   1 +
+> >  drivers/reset/google/Kconfig     |  11 +++
+> >  drivers/reset/google/Makefile    |   2 +
+> >  drivers/reset/google/reset-cpm.c | 154 +++++++++++++++++++++++++++++++
+> >  5 files changed, 169 insertions(+)
+> >  create mode 100644 drivers/reset/google/Kconfig
+> >  create mode 100644 drivers/reset/google/Makefile
+> >  create mode 100644 drivers/reset/google/reset-cpm.c
+> > 
+> > diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
+> > index 673bca1e594e..64c12b479b2c 100644
+> > --- a/drivers/reset/Kconfig
+> > +++ b/drivers/reset/Kconfig
+> > @@ -475,6 +475,7 @@ config RESET_ZYNQMP
+> >  	  This enables the reset controller driver for Xilinx ZynqMP SoCs.
+> >  
+> >  source "drivers/reset/amlogic/Kconfig"
+> > +source "drivers/reset/google/Kconfig"
+> >  source "drivers/reset/hisilicon/Kconfig"
+> >  source "drivers/reset/realtek/Kconfig"
+> >  source "drivers/reset/spacemit/Kconfig"
+> > diff --git a/drivers/reset/Makefile b/drivers/reset/Makefile
+> > index 2fe527a7be8e..a151fe63905e 100644
+> > --- a/drivers/reset/Makefile
+> > +++ b/drivers/reset/Makefile
+> > @@ -1,6 +1,7 @@
+> >  # SPDX-License-Identifier: GPL-2.0
+> >  obj-y += core.o
+> >  obj-y += amlogic/
+> > +obj-y += google/
+> >  obj-y += hisilicon/
+> >  obj-y += realtek/
+> >  obj-y += spacemit/
+> > diff --git a/drivers/reset/google/Kconfig b/drivers/reset/google/Kconfig
+> > new file mode 100644
+> > index 000000000000..38431b4f9001
+> > --- /dev/null
+> > +++ b/drivers/reset/google/Kconfig
+> > @@ -0,0 +1,11 @@
+> > +# SPDX-License-Identifier: GPL-2.0-only
+> > +config RESET_CPM
+> > +	tristate "Google CPM Reset Controller"
+> > +	depends on ARCH_GOOGLE || COMPILE_TEST
+> > +	depends on GOOGLE_CPM_MBA
+> > +	help
+> > +	  Driver support for reset controllers found on Google Tensor SoCs,
+> > +	  operating over the CPM mailbox interface. This allows peripheral
+> > +	  drivers to assert and deassert resets on LPCM hardware blocks.
+> > +
+> > +	  If unsure, say N.
+> > diff --git a/drivers/reset/google/Makefile b/drivers/reset/google/Makefile
+> > new file mode 100644
+> > index 000000000000..437c19459464
+> > --- /dev/null
+> > +++ b/drivers/reset/google/Makefile
+> > @@ -0,0 +1,2 @@
+> > +# SPDX-License-Identifier: GPL-2.0-only
+> > +obj-$(CONFIG_RESET_CPM) += reset-cpm.o
+> > diff --git a/drivers/reset/google/reset-cpm.c b/drivers/reset/google/reset-cpm.c
+> > new file mode 100644
+> > index 000000000000..ef0863f25cac
+> > --- /dev/null
+> > +++ b/drivers/reset/google/reset-cpm.c
+> > @@ -0,0 +1,154 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Device driver to control Google SoC LPCM resets via CPM.
+> > + * Copyright 2023-2026 Google LLC
+> > + */
+> > +
+> > +#include <linux/auxiliary_bus.h>
+> > +#include <linux/bitfield.h>
+> > +#include <linux/bits.h>
+> > +#include <linux/container_of.h>
+> > +#include <linux/dev_printk.h>
+> > +#include <linux/device.h>
+> > +#include <linux/err.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/gfp_types.h>
+> > +#include <linux/limits.h>
+> > +#include <linux/mod_devicetable.h>
+> 
+> Please include the specific <linux/device-id/*.h> that is needed
+> instead of all of <linux/mod_devicetable.h>.
 
-In case this is a non-rhetorical question: it's proprietary. I have
-access, but it's not open source.
+Ack.
 
-> And if you do not have the source code, then not a binding,
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/reset-controller.h>
+> > +#include <linux/types.h>
+> > +#include <soc/google/google-cpm-mba.h>
+> > +
+> > +#define ASSERT_OP_ID			0
+> > +#define DEASSERT_OP_ID			1
+> > +
+> > +#define CPM_RST_LPCM_ID_MASK		GENMASK(31, 16)
+> > +#define CPM_RST_ID_MASK			GENMASK(15, 0)
+> 
+> Why are these fields 16 bits wide when one line below it says:
 
-To be clear (I added some of this to your other recent reply too):
+Poor code evolution, as the bindings changed, and the field width became
+more explicit here. Sorry I missed this.
 
-1) in v2 I dropped LPCM IDs from include/dt-bindings/
-2) they're completely gone from the clock DTS (the indirection is in the
-   driver now)
-3) they remain in the DTS for resets, as naming documentation
+I'm thinking I'll shrink the above to 8 bits, and use FIELD_MAX(*_MASK)
+for validation instead of CPM_RST_ID_MAX.
 
-So agreed, not a "binding" (if my above "distinction" interpretation was
-correct). But the numbers still may be appropriate in the device tree.
+> > +/* Object fields are 8 bits */
+> > +#define CPM_RST_ID_MAX			U8_MAX
+> > +
+> > +static inline unsigned long to_rstc_idx(u32 lpcm_id, u32 rst_id)
+> > +{
+> > +	return FIELD_PREP(CPM_RST_LPCM_ID_MASK, lpcm_id) |
+> > +	       FIELD_PREP(CPM_RST_ID_MASK, rst_id);
+> > +}
+> > +
+> > +static inline u32 lpcm_from_idx(unsigned long idx)
+> > +{
+> > +	return FIELD_GET(CPM_RST_LPCM_ID_MASK, idx);
+> > +}
+> > +
+> > +static inline u32 rst_from_idx(unsigned long idx)
+> > +{
+> > +	return FIELD_GET(CPM_RST_ID_MASK, idx);
+> > +}
+> > +
+> > +struct cpm_reset_provider {
+> > +	struct reset_controller_dev rcdev;
+> > +	struct cpm_handle *cpm;
+> > +};
+> > +
+> > +static inline struct cpm_reset_provider *to_provider(struct reset_controller_dev *rcdev)
+> > +{
+> > +	return container_of(rcdev, struct cpm_reset_provider, rcdev);
+> > +}
+> > +
+> > +static int cpm_reset_send_lpcm(struct reset_controller_dev *rcdev,
+> > +			       unsigned long idx, u8 opcode)
+> > +{
+> > +	struct cpm_reset_provider *provider = to_provider(rcdev);
+> > +	const struct cpm_lpcm_message msg = {
+> > +		.cmd = LPCM_CMD_SET_RST,
+> > +		.opcode = opcode,
+> > +		.lpcm_id = lpcm_from_idx(idx),
+> > +		.obj_id = rst_from_idx(idx),
+> > +	};
+> > +
+> > +	return cpm_send_lpcm_message(provider->cpm, &msg);
+> > +}
+> > +
+> > +static int cpm_reset_assert(struct reset_controller_dev *rcdev,
+> > +			    unsigned long idx)
+> > +{
+> > +	return cpm_reset_send_lpcm(rcdev, idx, ASSERT_OP_ID);
+> > +}
+> > +
+> > +static int cpm_reset_deassert(struct reset_controller_dev *rcdev,
+> > +			      unsigned long idx)
+> > +{
+> > +	return cpm_reset_send_lpcm(rcdev, idx, DEASSERT_OP_ID);
+> > +}
+> > +
+> > +static const struct reset_control_ops cpm_reset_ops = {
+> > +	.assert = cpm_reset_assert,
+> > +	.deassert = cpm_reset_deassert,
+> > +};
+> > +
+> > +static int cpm_reset_of_xlate(struct reset_controller_dev *rcdev,
+> > +			      const struct of_phandle_args *reset_spec)
+> > +{
+> > +	u32 lpcm_id, rst_id;
+> > +
+> > +	if (reset_spec->args_count != 2)
+> > +		return -EINVAL;
+> > +
+> > +	lpcm_id = reset_spec->args[0];
+> > +	rst_id = reset_spec->args[1];
+> > +
+> > +	if (lpcm_id > CPM_RST_ID_MAX)
+> 
+> This looks a bit weird.
+> 
+> Maybe add a CPM_LPCM_ID_MAX, directly use U8_MAX here, or rename the
+> constant to not include RST_ID?
 
-And I don't understand where source code has anything to do with it. My
-understanding was that we treat firmware very similar to hardware --
-it's opaque, and has IDs that we can rely on, if they're part of the ABI
-we use to communicate with the remote firmware.
+How about these (with the masks made 8-bit as they should be)?
 
-(If those ABI IDs change arbitrarily, e.g., on vendor firmware updates,
-that seems like a problem regardless of whether it's mapped directly in
-the device tree or in the driver. And I accept that if Google makes such
-poor decisions, we live with the damage -- possibly including having to
-update device trees. I do not believe Google tends to make such breaking
-changes, as it causes difficulties even in a non-upstream-Linux context.)
+  FIELD_MAX(CPM_RST_LPCM_ID_MASK))
+  FIELD_MAX(CPM_RST_ID_MASK))
 
-> so you won't
-> have case like:
-> https://lore.kernel.org/all/20261124-qcom-adsp-shared-vmid-fixes-v1-1-f1a808dc41a5@mainlining.org/
+Or else maybe just U8_MAX.
 
-I'm not quite sure where that's relevant. To me, that's not much
-different than somebody reading the SoC datasheet wrong and getting the
-GIC interrupt number wrong. It's not really an argument about ABI
-breakage; it was just a simple mistake, where obviously the previous
-assignment never worked.
+> > +		return -EINVAL;
+> > +	if (rst_id > CPM_RST_ID_MAX)
+> > +		return -EINVAL;
+> > +
+> > +	return to_rstc_idx(lpcm_id, rst_id);
+> > +}
+> > +
+> > +static int cpm_reset_probe(struct auxiliary_device *auxdev,
+> > +			   const struct auxiliary_device_id *id)
+> > +{
+> > +	struct device *dev = &auxdev->dev;
+> > +	struct cpm_reset_provider *provider;
+> > +	int ret;
+> > +
+> > +	provider = devm_kzalloc(dev, sizeof(*provider), GFP_KERNEL);
+> 
+> devm_kzalloc_obj()
 
-It also has seems to have nothing to do with access to source code. One
-doesn't require a public data sheet for every driver either.
+Ack.
 
-Or are you simply concerned about putting such error-prone things in
-include/dt-bindings/ ? Because in v2, there are no such HW/FW-assigned
-identifiers in include/dt-bindings/ -- all FW numbers are either purely
-in DTS (simple mappings like IRQ and resets), or in per-SoC indirection
-tables in drivers (clock and pmdomain).
+> > +	if (!provider)
+> > +		return -ENOMEM;
+> > +
+> > +	provider->cpm = devm_cpm_get_handle(dev);
+> > +	if (IS_ERR(provider->cpm))
+> > +		return dev_err_probe(dev, PTR_ERR(provider->cpm),
+> > +				     "Failed to get CPM handle\n");
+> > +
+> > +	provider->rcdev.dev = dev;
+> > +	provider->rcdev.owner = THIS_MODULE;
+> > +	provider->rcdev.of_node = dev->of_node;
+> > +	provider->rcdev.ops = &cpm_reset_ops;
+> > +	provider->rcdev.of_reset_n_cells = 2;
+> > +	provider->rcdev.of_xlate = cpm_reset_of_xlate;
+> > +
+> > +	ret = devm_reset_controller_register(dev, &provider->rcdev);
+> > +	if (ret < 0) {
+> > +		dev_err(dev, "failed to register reset controller: %d\n", ret);
+> 
+> dev_err_probe()
 
+Ack.
+
+Regards,
 Brian
