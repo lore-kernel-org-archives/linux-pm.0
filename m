@@ -1,74 +1,70 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795607978;
-	b=ESyK8G3j55Xi5fc0pMj7rWNfkcD+bqS2HtFP5keC3/v32HsGaA3iRZgrZ7A6LzWBcRf4
-	 VmTSRky70Kip74vnaKwbIaHgtbzqns6A8lm6xCdz5oGgxBvnQ3ICUN936+aEzcRKfQcaS
-	 zHXtjmnnE+Wnx7hOC1+zDt1L+u469F9xu6JQpe+K23N0fdAhFtjPALGuOwvgoQhpWX11O
-	 swrjXOi4h3XVUaRg1bHiV6V0g1+naf6wgUGn0IdmVD3nMFv7rR2KdagkBVuTYK0ietbgc
-	 57l/gs/WXImZEQZFjyOZZCR67fzdrCeLuzlaJbgNZf/8bWAC/NqLZqXI1drsisiqg/Q==
+	t=1795607980;
+	b=qhCFAQAccFS83o2O9Wzkbxg09adNvZ3paESyHZdi7RX4ndWqdt5T9dADq42tGYlXedZt
+	 0ZeV/pHYcrnxKAE7vmFA3FL7+Dcvci/2UVWOQwvzE4zh2ofqaE4xwhfLdNLj4Mzl8DTeO
+	 cXcXoBMfoGb2anMCwsn0n+Ks77H3+BjNiBfUYssYyB1y623MV4rylSO8/UuwOfVIRTNMA
+	 8SRVta5zlWlkbdeY06pyDOFLOH0hJi/UMmNpLO528dtDX3YpBXUzHTcd4bA6lzijw8FYD
+	 qH8Q9A+rZ2ldPrmg6+ecbqnaNRNC2XpHPDu79L38B2+6dG204HrZP9P57r6zbyPjVMA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795607978;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795607980;
 	h=DMARC-Filter:Date:DKIM-Signature:DKIM-Signature:From:Sender:Reply-to:
-	 To:Subject:Cc:In-Reply-To:References:MIME-Version:Message-ID:Robot-ID:
-	 Robot-Unsubscribe:Precedence:Content-Type:Content-Transfer-Encoding;
-	bh=tUDXKEZr3U/WpszAacNXfkNI5EppIQaefq9e2ZA6Iog=;
-	b=OaoqzhhLC5KJdJ9G0hdXAqiEL4sEMZEuuZ2yQ+8OKgWWhPAnqr3euox00XlcmzrFDF8d
-	 qYQj1r83ov5HP9fuArqj44r6Auuax/RZz34GQ1W6uVsp0eIkqdyMGQehq+9uy+evaPu44
-	 FpQNGCXUd1KMD2njls/KfM1Ib5PnYK9MQbOuACd6NNeeWLU7u5BVqtGEBLVvjpfCbbuWk
-	 6JM/Xv8tZgO2VNOvwJF+OGyOtcqvOo+MJssycUqgoSNH58BOQxbw7tKqfFGqFeXYPhez6
-	 UGqo6IwuTCwVvDQhW6WNzCfvl0I4j4EHS9dr5wgUOYZrRr1Z3qyTAYqaJEhh7FCUlxA==
+	 To:Subject:Cc:MIME-Version:Message-ID:Robot-ID:Robot-Unsubscribe:
+	 Precedence:Content-Type:Content-Transfer-Encoding;
+	bh=5oR88g2j5EBkpKZbCi2+N24Tn8b57UoB/aAw39Y/Osc=;
+	b=wFMQ5h69oAg5M8zQnONUhxxKWnuC9mCfftzJ+ZG0RTVLATJwVHWHzR9SZ+DYMehryAEW
+	 6VVvRrB9isEGBWrlbITNQK1kKrHzQL+mCyrPg3iHnVNWRVSGDxmBGcbkC21kIqRGgdEb2
+	 /iy/Px4N8l0m05u9T3W3nWbEATO54lMRu0pqYGE4n1jPgDjUOlsPCWZ+KXHCMpXWrFjVE
+	 pKddDTx1gEAMJijcL1cmfooLczdnCN2gE+Z2+A6UCpXdpF5JcSatibFWXfPk35dUlb5rz
+	 TAB3emYyhTwbEBbmM4oH8ia2gB0c+sfE1KDm+Mhc0iznN/xXAmuc0eRnocZMQkIEwjQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linutronix.de;
 	spf=pass smtp.mailfrom=linutronix.de;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Q5Shyyav;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=F8QEQcYC;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uCgbEwAP;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jQ1GbRaa;
 	arc=none smtp.remote-ip=193.142.43.55
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E833606A323
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 11:59:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9E833606A323
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E1D3606A31E
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 11:59:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9E1D3606A31E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Q5Shyyav;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=F8QEQcYC
-Date: Wed, 25 Nov 2026 11:59:34 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uCgbEwAP;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jQ1GbRaa
+Date: Wed, 25 Nov 2026 11:59:36 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1795607976;
+	s=2020; t=1795607977;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=tUDXKEZr3U/WpszAacNXfkNI5EppIQaefq9e2ZA6Iog=;
-	b=Q5Shyyav1yo79fyBp9AwBKDNgYfWp02s0s4w2RiW4Y4vc/gzjq3KYIfFIBRQDzNXvToUDL
-	DpL5kMe1cW6ii60/Y3B0Cx22SiVmufF5rplW3ZBduor/yUrcWy/lzjYn2kS0szO5v6oDCg
-	+4Yt5qb/EXqZ60jZ79lR6AKn6FdmAmYa4Izbqo+dHT/BYZBfrCuO4/f7PSOt/J+hvA+35H
-	xuJKd9mlfHtGmjM01psegIjIHcEcK7Cl3UzXw9kNObXUfc/C22IjV+kWI/7Ha+JnUSQ1Ow
-	DyOdCWMyF81BPYIxYi+lPmEMI8Wnh7yrbLHOzNzbESy7nDMsVi87lt2cU8X7Sw==
+	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+	bh=5oR88g2j5EBkpKZbCi2+N24Tn8b57UoB/aAw39Y/Osc=;
+	b=uCgbEwAPROjfNr2HI6Pgx9YtdhTzwE6KQx8l5Ln0qaON9LD6mkYJ/CUgJHJ22eL/sMOEio
+	jHyHhuT5qM++q8Ac1zSha4jotdDG3Qg7qgWp2V9G2FaaYutR4kana5Ci3qmIClhnEXzLGD
+	d7aOKXMge/jUkuvlyA69kmdVZtwjn3lWHAFYBNZQ6AlBTFVmx4SO39/qdC0/pPTZ3ah9Js
+	FIvF73C+avBDjPJsYFBrscqUBBqjoQBly/Keou0qDR2pU0VgSONKsuzERyWcPi6tLdcwOf
+	/Y5QX7B//Zz9cEgVHdypthtlSDLIkssbCKpAe0RkeTW3ged4vl2+azLuUBDicQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1795607976;
+	s=2020e; t=1795607977;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=tUDXKEZr3U/WpszAacNXfkNI5EppIQaefq9e2ZA6Iog=;
-	b=F8QEQcYCJU+kjMXc1vraNfTTKmN+7iZ5ad2043+3sqPNZWNyiJ4dsT42jUFggq6M951oTZ
-	N3EPeLh8USPKoBBw==
-From: "thermal-bot for laixiangwu" <tip-bot2@linutronix.de>
+	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+	bh=5oR88g2j5EBkpKZbCi2+N24Tn8b57UoB/aAw39Y/Osc=;
+	b=jQ1GbRaa0vUhi+luMXImxz4ji+oKEXeQ5ES/TG9MtcCjVJciJrIRfKh9KEGFEY188t+u+S
+	frZjVvb39IsyqUDg==
+From: "thermal-bot for Artem Novak" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/linux-next] thermal/drivers/airoha: Fix device_node
- leak in en7581_thermal_probe()
-Cc: laixiangwu <laixiangwu@cmss.chinamobile.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>
-In-Reply-To: <20261030040732.1333-1-laixiangwu@cmss.chinamobile.com>
-References: <20261030040732.1333-1-laixiangwu@cmss.chinamobile.com>
+Subject: [thermal: thermal/linux-next] dt-bindings: timer: renesas,tmu: Add
+ SH7305 support
+Cc: Artem Novak <artem122novak@gmail.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ "Rob Herring (Arm)" <robh@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -78,7 +74,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <179560797475.92412.2338513002750950250.tip-bot2@tip-bot2>
+Message-ID: <179560797626.92412.167682692062922193.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -89,49 +85,48 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     854481c8dd2002e1bf2afa73ed3facf1997f42fa
+Commit-ID:     914531ed1994cc3c1f0ac57ae045fb294b231053
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//854481c8dd2002e1bf2afa73ed3facf1997f42fa
-Author:        laixiangwu <laixiangwu@cmss.chinamobile.com>
-AuthorDate:    Fri, 30 Oct 2026 12:07:32 +08:00
+git//914531ed1994cc3c1f0ac57ae045fb294b231053
+Author:        Artem Novak <artem122novak@gmail.com>
+AuthorDate:    Thu, 22 Oct 2026 20:09:32 -06:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Wed, 25 Nov 2026 12:53:14 +01:00
+CommitterDate: Wed, 25 Nov 2026 12:52:00 +01:00
 
-thermal/drivers/airoha: Fix device_node leak in en7581_thermal_probe()
+dt-bindings: timer: renesas,tmu: Add SH7305 support
 
-en7581_thermal_probe() obtains the "airoha,chip-scu" device node with
-of_parse_phandle(), which takes a reference on the node. If the
-subsequent syscon_node_to_regmap() call fails, probe() returns the
-error without dropping the reference, leaking the device node.
+Add the SH7305 compatible string to the Renesas TMU Device Tree
+binding.
 
-All the other paths in the function already release the node with
-of_node_put(chip_scu_np). Do the same on the failing regmap lookup.
+Exclude SH7305 from the mandatory resets property, following
+the convention used for older SuperH TMU implementations.
 
-Fixes: 42de37f40e1b ("thermal/drivers: Add support for Airoha EN7581 thermal =
-sensor")
-Signed-off-by: laixiangwu <laixiangwu@cmss.chinamobile.com>
+Signed-off-by: Artem Novak <artem122novak@gmail.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Link: https://patch.msgid.link/20261030040732.1333-1-laixiangwu@cmss.chinamob=
-ile.com
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- drivers/thermal/airoha_thermal.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/timer/renesas,tmu.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/thermal/airoha_thermal.c b/drivers/thermal/airoha_therma=
-l.c
-index 7c63a1b..b7062b3 100644
---- a/drivers/thermal/airoha_thermal.c
-+++ b/drivers/thermal/airoha_thermal.c
-@@ -572,8 +572,10 @@ static int en7581_thermal_probe(struct platform_device *=
-pdev,
- 		return -EINVAL;
+diff --git a/Documentation/devicetree/bindings/timer/renesas,tmu.yaml b/Docum=
+entation/devicetree/bindings/timer/renesas,tmu.yaml
+index b122959..263f60b 100644
+--- a/Documentation/devicetree/bindings/timer/renesas,tmu.yaml
++++ b/Documentation/devicetree/bindings/timer/renesas,tmu.yaml
+@@ -51,6 +51,7 @@ properties:
+           - renesas,tmu-r8a779f0 # R-Car S4-8
+           - renesas,tmu-r8a779g0 # R-Car V4H
+           - renesas,tmu-r8a779h0 # R-Car V4M
++          - renesas,tmu-sh7305   # SH7305
+       - const: renesas,tmu
 =20
- 	priv->chip_scu =3D syscon_node_to_regmap(chip_scu_np);
--	if (IS_ERR(priv->chip_scu))
-+	if (IS_ERR(priv->chip_scu)) {
-+		of_node_put(chip_scu_np);
- 		return PTR_ERR(priv->chip_scu);
-+	}
-=20
- 	for (i =3D 0; i < AIROHA_THERMAL_FIELD_MAX; i++) {
- 		struct regmap_field *field;
+   reg:
+@@ -110,6 +111,7 @@ if:
+             - renesas,tmu-r8a7740
+             - renesas,tmu-r8a7778
+             - renesas,tmu-r8a7779
++            - renesas,tmu-sh7305
+ then:
+   required:
+     - resets
