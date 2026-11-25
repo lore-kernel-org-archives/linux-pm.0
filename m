@@ -1,103 +1,100 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.170
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.178
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795575805;
-	b=QZ8stVXTW4Vwyk2uGFXupc2gnYZlsizrb0LJrVvIW3/b0zLFN4c3gcYuyO2PFunByKUg
-	 vkpXfEpmKNBmK5NIuZhguv+mXbK/IWFLcHVbZOPZBbkHXCalekNLlDq2qy64aWo91ItUm
-	 jBk1Is7OT7uNh7XRjp5cy6Eg2i9MVEalWtCBZ8SEo0u2sr3/vKCCQuxEnh3xTU2LtQolP
-	 +htYark59D7tGN7mPjlKcufm8zLEAhrL2+GF3c+HYiAAiw6UiXcHmGlrGkpB5VF68o5Um
-	 UW9SbJR9t0ZhVcpJgM+1kTn0HwhSZlXjWVBWoF5XvMKP6xQSdp/DBTqA11mbJugSRFg==
+	t=1795575816;
+	b=0VJVQW3YRGkvjjOHPEULaDyIMxKV14lK6pO66lG7wppKTwhqW6cn/952AxKd7h2YIy7L
+	 PXOgqI38Gp311zEx+eQ2nOG0YtxEwdCtl3hoSp/C6AR/0/MA0AYVEghdRFGJmFUHRVy8J
+	 LiB12BYw2u+twwzTSsXgeLmqwj8GQ2VenrCqEIu5KNWqcKSUiDAks6YtcimK3WuftXVcX
+	 wP7oVe/Zaqa6KHEVVZGxWJJpgup6BFvqwNGGJgywt61nj7pwnAn1IgqrfoziqUEjONdPJ
+	 tLZOkoD2QxWNv7c+BhHZQWhW83Er1CqK7ARy6xSJA1RDpJVBHjLJrcMw2y8wioVhUgg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795575805;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795575816;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:Content-Transfer-Encoding:MIME-Version;
-	bh=YqK2M/Yynv5vzFLqMgSa7NJZjQIGQnS1ueWuqR6kXUY=;
-	b=Kcxp915H3v94RKFLeMSNSxxka9EjoNOFmNM+tSlFAGYs0mfZoaL71RifnC2TOX/ZPZ5e
-	 01HEj6IkCns67q5vw4Tu0bhh+t7u7/ymZgoMHP9h5uRzkzkDkqthI63EmildshoXKZOgV
-	 rgrGemNL8RoZ1S/H5LhKUMfrCR938nLg0ZzLu6M/sLmbfvQcDnZXcRosnKOj+Q1mI0Qww
-	 yXD7yFq3SN1jIVk92iZy1dagRXVhNs86qDDt13x9DreIKG4L2Hqw4fseFKSsd2KtlNMi3
-	 G/lsMBjUGpOkBh8bJtFnAgnxXTn+s2S2x2YTkFpKa2B+7jWnLaXMxx3yyq0TakkTdXQ==
+	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=XvCX2nUztLlSyLc3rr2QnMaB+ZFYgpn3Aqh+iE3xR/0=;
+	b=muq49mMPnNbAhIKrELmrg+ggKvtLNttDKnS67KZFtLgrHTuqwNPg+ljmg4T2fTN6BqJB
+	 BQ6BHbRxWy7O6jtGkI7dZK1dS56fDmtSpwR1TlxhCOiuPCSC3jqySLY+5oAiX2lNp11qW
+	 GW/KXM9JjgzY+RBHzoRLz4TfZKy7GAY1osDDN1SFlgjJQTZj87weWlvNldfwQtflSedkM
+	 OXnpkn9QXzVJ5sbdugwrFtZf9tICDNZrBmrSONQ9qfDtdmaHDW31LjRFB5S0FmYu4jceR
+	 oLu7OTq+VCPKhD0T8Rv6NzIQLVKCPZC9+qRAssl9FY/V1e3fORjO23a4gDHM0YUN8Mw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ufNniQ5X;
-	arc=none smtp.remote-ip=74.125.82.170
-Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=K250yYr8;
+	arc=none smtp.remote-ip=74.125.82.178
+Received: from mail-dy1-f178.google.com (mail-dy1-f178.google.com [74.125.82.178])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1932B606A31E
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 03:03:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1932B606A31E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75F49606A321
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 03:03:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 75F49606A321
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ufNniQ5X
-Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-386c336eab8so1594801eec.0
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 19:03:24 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=K250yYr8
+Received: by mail-dy1-f178.google.com with SMTP id 5a478bee46e88-33fb4680717so13541260eec.1
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 19:03:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795575804; x=1796180604; darn=vger.kernel.org;
-        h=mime-version:content-transfer-encoding:content-type:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=YqK2M/Yynv5vzFLqMgSa7NJZjQIGQnS1ueWuqR6kXUY=;
-        b=ufNniQ5X9qByJ3a6jXn4U/XqEKMbII8PIg5Y2/CQlesuBwYx4husTAd+Vb3j9RQD2V
-         K3VsfOPA8L93SwWTwRhD3IDJXCUdlK18qecUSlnOoNfGy80TpuWlDlYr+vADnXcAbO0n
-         SlPBCTdoOUISCi/ZFW/KTmFLr039lWTEeTK7rPQkCDgQjlL8cdMvU6q/oJPnTKn48u2l
-         T2Q94Dwdb8q+LPnjwzbAdH1wxJv+HDrKTRYUlYN77GpbgSZfAe3BhXwvX1nqRW+IbPT5
-         nm31xPEUvr1lOm+K93PNB/2YXe5M3Nm54uctf+yiNZ0m97agP6DX302dJNxjXCoQ7XQP
-         0POQ==
+        d=gmail.com; s=20260707; t=1795575815; x=1796180615; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=XvCX2nUztLlSyLc3rr2QnMaB+ZFYgpn3Aqh+iE3xR/0=;
+        b=K250yYr8VhJKucuJrDdE4wC3EJVDYc1zcrQbeIN4v0mICSZKAv82YLJMJyMcVf4pQ+
+         ozSVuKGtwSecHV771Mhe50NcBaQQZENBac2oR5vMM/LZxeGYuzaOSnog5Tj79lmeQsz7
+         9qjf3SxFZ9RNtZH5lyYOaJlJyy8AK0vTbMS1dYO9Igdu7uxH7OJbnQM1mX/LUFG37Qko
+         b4jKkyQstOQBNRE1Lq3edVuQdu14Ey3MwtPYoSSfT92lPQk49HjDkvTIORwVGGi+hble
+         sq+yfQkFyB3n1lSMHHjh1GH280s+7aXlviiGCjXk+tzDK0LCC8jS1fYWayo+yXrbQibv
+         6OGQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795575804; x=1796180604;
-        h=mime-version:content-transfer-encoding:content-type:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=YqK2M/Yynv5vzFLqMgSa7NJZjQIGQnS1ueWuqR6kXUY=;
-        b=rVFEVjiBWToSukZyz+9vshEskmSkEAy73CGRYG2/BNo060VZ3tKjSzBTd9Z8MCaaEs
-         k7akzs/LFGURnJyJ70TMnqINCT6Xli5nagK3uxYZ6AlgphaSbP1zzvR0uVfBzjfyOOXV
-         TsUs/IiKV82yxkO7UNZ/VGYcZxmRNThHEaql6CYUUD+H1nFM5ny0ePV3a14R69qG3EJM
-         iwuTsNxUpOZPRxFBf1qMXmz1br7U1g1Y4gVnYWM2XqQfDjiVh2EimungnlF/TrWPhkXy
-         rU2niHs16a5fPPXwXEg58CymTBUHiwEwUI6jA/+Vs2IK7CLdv3yIr4ZnX/wfE4pNA3i4
-         9gxg==
-X-Forwarded-Encrypted: i=1; AL+hErEgfGsEd7CgGtIa8W4XFPd+Gsojmxa7+RkkgnPk96W4Xu1By+Pxxv5203W1W1qFrfSp6zS5id+tRg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/0KVxNzCcbwjG9waSBqJewRBGBuxI5P9LAAFvKp1m3+cEreM9d
-	VYezfAVDR38+ggoWybJX8EA2y5B9h60EB1LxmY3Mr5TSxe2ij+8Nw8bn
-X-Gm-Gg: AZFdTZcQz2GYmQqUW3axcyTseW3lRFhXVHmeRNfFlgsuVHSusy17HOAMsVN2/wAxt1n
-	AiG8wNHV7Myxc6yAhdDzNFQzH+Ny/VrADxjj+XRKKLKevWOr1Kaq1JM6y9ZOdC6TA2J6G+Qce7f
-	fIu+si5nU/tpctpSasEg/m/i2uRfQohmaS4ROmfgif+hYDTROFrZnz9NfT7pFWAYOafDxRaQjuD
-	HSf7naoN3NamHzHx8aFQ2mEM03NsuI1DLH1rM6e6r3C8cUWJOSf3IOmfebCs1GsxsgifpihYY1V
-	4nfrgl5657P3QZ+/kM6g3Vxk4qRiZZ+Y3cRdr/DQ+EQhSiGFPw9w2DPF274BXhuNG/8on3xCLjw
-	Q0NBpxHUBYKTRDUKQoO7kwIIo0r0ZhyWNf9DRmCTa1BGougZQmo3a1G1+ts7Jfp5nLdhKtExQNj
-	8ErKRRelS9Zp2QDBOLqM1l3rAwQ/nub1H5+QdI+ikK0CwlGkjRgK/3Yq3Bv5X5aBP/5t3FLQG3K
-	qQjZWJzskb7cNVU/QFGxf1HTEglpBxHV+pvCRb23+Kzewe8HwvPTMfdxajedsZXR5MxfTblrsYl
-	5NQpAEzoUl4cKeAAE3HejnUP2Z8f7qcStMP8KSYNE2nQ6wJSDPo8aVJouHrJL3Y8S+O6t1gCaor
-	Bj2cg6BtSBfMvCnaWkI4u/im7
-X-Received: by 2002:a05:7301:8616:b0:385:9424:5c08 with SMTP id 5a478bee46e88-38594245c66mr18684521eec.4.1795575803736;
-        Tue, 24 Nov 2026 19:03:23 -0800 (PST)
-Received: from [127.0.1.1] ([74.176.208.23])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38567cafec4sm55751171eec.26.2026.11.24.19.03.19
+        d=1e100.net; s=20260707; t=1795575815; x=1796180615;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=XvCX2nUztLlSyLc3rr2QnMaB+ZFYgpn3Aqh+iE3xR/0=;
+        b=BSfXheLsAuf1lG4+wTJ/kd/0riirNpUBik0ptdMT8y0xR7sxTb7lYOC7T9WqEGJ/VS
+         j5UpIuBZFI9beLMr2t0oXItGHMGUSxYXRvu+Rv/aI1PS+qyMuPcDwIXkHwxEU25AMnx5
+         Mk/I1MyWGeDHN/myK/ybR04YltFkqOb7fl55yng9UWDuwnHPXT4DCLTV5/wISdP1LEdZ
+         zkLx9xY2oNDN71D9TDLLivrpTuI/UCQnExmDi8YEmRbnesKTMTVEBHeEKxi+3uxWRRvA
+         gLy1ZBHKFteor1OdcTjoEgp+ovLcHKpOuOzSNIltUQLuFbqt6dKU/0B+n3QWdT1t3wDt
+         gCgg==
+X-Forwarded-Encrypted: i=1; AL+hErGBX0fjnPJAg8yF3RMtFEQGhTHP51+ZHqAwZHv4PdxaxeyJlIxQtzL03usnHZRyLPgYeIucgz2Ucg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9jeNOnq2qiveWjh+2gFfO5kw6Miec9dSjd7S4Yy4ZNWuBBw3Sn
+	13YN1EfCJh0MfHhNSwTekVBpLOtE+lWkoocv7jPu4zKayI0V5wFdS4Im
+X-Gm-Gg: AZFdTZeHiKRJbkoePOqWr00R3GWnVyfYkNbrPWp/A4mvbeFhGJlPzlcbuXIYu6VF1Tx
+	/H3pPqZLTHFY9NGLfiWfnKVDskxEdJ73uu42YsMGqpEj055LepWBasMrdMbgNIRy6UAu+uHh+YJ
+	sWrc3LuBnMz8lF/Tyvb7n4Ge5lWq+6xMzz09euZXOWdA+KpHi2WtqzVm//3TsKhOu614MwPkT5G
+	dthYvLIIEZOQeM1sBsUt6QfVwQJFg88+Rwnv46hFfF7sD2+ynOVU0xRLFK5P+bfn4mCCgiwX63a
+	KShMRHU67eFcL8bOAjM0gwNXtyYYH7Z8jqvrIP5O1n/vaEwf7Q3uS6E5frHEBWArT7KBjCOjAQS
+	ZB81eypYHl5/mzaiopINhPt/45mhOoPXrgfxxYBneEeGTW5iX8OfTryzxy94gmYby6owGCtFpVe
+	ivIR8c2Cn+3dcDwxNcuS54PDQ2ktxrmvFFEAF9LaS2lRoXAbYTVNXZ6tbGZ6OX1uM6LemFwTS0l
+	vJ2cQ+o+HJWScDurNsjLg/sQILBHgmgyCh+SOXnsEq101M3MNZ3HJZIMPyo6Aqvxtm6gXkOdLLb
+	2AqKwd3t3I0CIpdj97WZcMsTS8Fl6R1UfA+9oWVkSBJIrN9yAXIqPTvVYy8BQaqNbWPyviI+IWc
+	qDqlzw4aOL514TVUFvWtSEOSefbtddKNYt02dpJ/8NtyTwKELSdqE8K2G7ipYMZXxpnfW
+X-Received: by 2002:a05:7301:150b:b0:36d:a466:9d0b with SMTP id 5a478bee46e88-3856ef47c9dmr16503589eec.19.1795575814384;
+        Tue, 24 Nov 2026 19:03:34 -0800 (PST)
+Received: from lwq-server.tail118c18.ts.net ([74.176.208.23])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38566fdce48sm52243475eec.14.2026.11.24.19.03.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Nov 2026 19:03:23 -0800 (PST)
+        Tue, 24 Nov 2026 19:03:33 -0800 (PST)
 From: Yaohan Li <shunsheng1218@gmail.com>
-To: Niklas =?utf-8?q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: Rafael J. Wysocki <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Magnus Damm <magnus.damm@gmail.com>,
- linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3] thermal/drivers/rcar_thermal: disable the work before
- masking the interrupt
-Date: Wed, 25 Nov 2026 11:03:17 +0800
-Message-ID: <179557579759.953320.4240333903133893045@gmail.com>
-In-Reply-To: <20261124132521.GJ3898744@ragnatech.se>
-References: <20261118072321.1259639-1-shunsheng1218@gmail.com>
- <20261119022903.1493494-1-shunsheng1218@gmail.com>
- <20261124022219.1834499-1-shunsheng1218@gmail.com>
- <20261124132521.GJ3898744@ragnatech.se>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	linux-renesas-soc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v4 0/3] thermal: rcar_gen3: fix the interrupt handler lifetimes
+Date: Wed, 25 Nov 2026 11:03:24 +0800
+Message-Id: <20261125030327.953450-1-shunsheng1218@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261124095110.131258-1-shunsheng1218@gmail.com>
+References: <20261124095110.131258-1-shunsheng1218@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -107,33 +104,50 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Hi Niklas,
+This series fixes the order in which rcar_gen3_thermal_probe() and
+->remove() create and release the interrupt handlers and the thermal
+zones.
 
-Thanks for reviewing this.
+Patch 1 moves an existing check; it stands alone.
 
-The devm_free_irq() calls are intended to protect the lifetime of the
-sensor objects, rather than only to wait for an in-flight handler.
+Patch 2 releases the handlers from ->remove(), before the runtime PM
+reference is dropped and before devres unregisters the zones, and
+undoes a partial interrupt request instead of leaving the first handler
+behind.
 
-The driver requests its shared IRQs before allocating the individual
-sensor priv objects.  Because devres releases resources in reverse
-order, those objects can be freed before the managed IRQ handlers are
-released.
+Patch 3 requests the interrupts with IRQF_NO_AUTOEN, initialises every
+sensor before the request, and enables the interrupts and their sources
+only once all the thermal zones are registered.
 
-Even after the thermal interrupt sources are masked, another device
-sharing the IRQ line can trigger rcar_thermal_irq().  The handler still
-walks common->head and calls rcar_thermal_had_changed() for each sensor,
-even when the masked status is zero.
+The driver keeps its ->remove() callback and the existing polling
+fallback when an interrupt cannot be requested.
 
-Therefore, synchronize_irq() would wait for the current handler, but
-would not prevent a later invocation from accessing the freed sensor
-objects.
+Changes in v4:
+ - Split into three patches.
+ - Keep ->remove() and release the handlers explicitly instead of
+   handing the teardown to devres.
+ - Request the interrupts with IRQF_NO_AUTOEN and enable them after the
+   zones are registered.
 
-devm_free_irq() removes this driver's handler before the sensor objects
-can be freed, while leaving other users of the shared IRQ intact.
+Compile tested only: arm64, aarch64-linux-gnu-gcc 11.4,
+CONFIG_ARCH_RENESAS and CONFIG_RCAR_GEN3_THERMAL.  No R-Car board was
+available, so probe, the polling fallback, resume and teardown were not
+exercised on hardware.
 
-I agree that the commit message should distinguish this lifetime issue
-from the delayed-work race more clearly.
+AI assistance: prepared with Claude (Anthropic) as a coding assistant; the
+author reviewed the reasoning and takes responsibility for the content.
 
-Thanks,
-Yaohan
+Yaohan Li (3):
+  thermal: rcar_gen3: check for sensors before reading the fuses
+  thermal: rcar_gen3: release the interrupt handlers from ->remove()
+  thermal: rcar_gen3: do not enable the interrupts before the zones
+    exist
+
+ drivers/thermal/renesas/rcar_gen3_thermal.c | 96 +++++++++++++++------
+ 1 file changed, 72 insertions(+), 24 deletions(-)
+
+-- 
+2.34.1
+
