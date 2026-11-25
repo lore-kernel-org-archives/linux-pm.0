@@ -1,98 +1,106 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.180
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.66.56
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795608266;
-	b=ojM2uzSPK9jjuSSg9YU3BEkwrAkpXi44oqSDFhsfuZFSwR30XycUdqm89CXQZfqGt2Iq
-	 lUe4U2vZ9XZUjWhypGOWRdM6YqwcCYO6F6xNPsgSoIo+bTxo7cU4YG7GtUYsb8zVAM6tY
-	 KDF1uI18b2cKoOrZX7rTkj88Fo1jJDwXc73IOTizSdbG6WERTKFP9BN1+/iGq4Sy4D1LK
-	 Yf8GFqiKm8Y/naa7umnzvhljBzUREAaj7T7htdsuZmvYayu5YV6JO1AsaUjxZ/iPfNR0k
-	 umDuQLCNXBYCfJYdSImCulCRZeFDtiKWCNUN+w3T0f6DP7v0MrfDzPWpNzFNh1r8Kiw==
+	t=1795608636;
+	b=B19vt6SCJnE5XopfCSVag4/kdALc6cTK6S084r12sSucK761McxPSWmattKxdKardMZj
+	 +xIBXoVZiX0Oc/ezd0ifUzw9BbWMCyozP+Kzn8W7CA/QB3c5ZJaM3xuQ/BmpTMjzwtmRt
+	 fqawG0qkKJO6rU+wIAHW8T6H+Q09p+mPPpkSfQ+FtHJ4cbaZcjfyBW1ZkENSEm/MFjvdN
+	 0EqIclIRaiHi/lY/ZAIZuYpMQ6t0Yi4FQqjMcdYZPMSDGb87hNtjdz3uHQ8RL3bgHsSzq
+	 cFsU4r+lxSl7FMz8q2k3DekTOZ3817Oa+rZhupSTsHDrJXtK/5AEe1RWxHubLra8s/g==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795608266;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type;
-	bh=z+UkoMvvEaVTNil18OTBJI75hEZ+FMKT77tUTvdlmZY=;
-	b=an55E0WEHO8RxRPDMqYd30SEAMYlYXJ/P5Nygbs/IpV9+Fqo2XzKZ+pZW4+Xkjkc2JI2
-	 aB6Bcp4JR/HESC47iQJoubA4v8RTRS/M682RAoTYtlmZNBv3HvBsVY+UAv+mLeQ/1lRIh
-	 y9mc6HYoPLBQ3kKQFB6gYmN9WyKWTr1hYY0YZcT5Zi0w+YR/B0/q79N5tIgrBdijO8Wsr
-	 k8AYzLAy3Zaxca0kd9qBkgdBKcOkH1YYBV6BaAfc1m1xZtcQe36pctqURB0KUexsEEkQG
-	 PJ3uOKIVdGodB7rrnfZ6n4uw8IcpwXEBgdW7RnM40kdst5G/jSAlQE+ONQuJDGCxcPA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795608636;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 Content-Transfer-Encoding:Content-Type:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=q5+9ChIdKx8Au9fqttZifyIR4dVkSOON4tDmDlSBxaI=;
+	b=pTDiYBzA7jrgXznNrmkV9GqxD2j6n+pQzUlOafnNpndxbtAnSZkWarar7EcIo/ScdXM1
+	 mO3sU6WrgMKXyIuYtwAoK6ZenCdkoGD9DsVkkTwaS2lRR+u3q+a1xAJvjCNG+AUArePZp
+	 jGNKRnucgDG2Gz3BSfOv5jV8Rqt2audeTPlw8Qyz2F8AJzl7KfDBEAY12VmNa8SIJcvV7
+	 rVpZhRiYI73bBF2YI/nACsaW7VcaGjouUotjXYBjbvtwpnnkVODeS1orvSef4+xe9TfZD
+	 cHsYo5+nwR6Vc33rx8yegfjmC93p44TiHLknzu/U0hh/FJYTL07MiVxAsLhPHC0thPA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="v/lRLI/6";
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.128.180
-Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com [209.85.128.180])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=oss.nxp.com;
+	spf=pass smtp.mailfrom=oss.nxp.com;
+	dkim=pass header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Tr7qj6+i;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.66.56
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012056.outbound.protection.outlook.com [52.101.66.56])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95C91606A338
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 12:04:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 95C91606A338
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51C59606A336
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 12:10:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 51C59606A336
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=v/lRLI/6
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-8b335eeb340so49703917b3.0
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 04:04:25 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795608264; cv=none;
-        d=google.com; s=arc-20260327;
-        b=OOhuaxaWVDA6b/vIVUy4bIMYhMtCIr6lZ9Mfc+OdbjlIVtETxGSkufJmFZoQpHgJ/8
-         rDYUAE5aAVQRilzCtlNzw7vLA5S/jOtyvupBnrt3r3KIpPsPAH2kytoU350HBP5Nlvl8
-         gc1H2LjgLq5oBEoYQq7b9jHFH6QLZ2RjofqFHb6JNCdXKDv2916nBFh5KTftnw4dx3j5
-         BdNDM+7wMybahM6XvgC4OJZI4eHXao9oOrliabIAkjmfHFweb2D9PMxft4AnMUZqdlti
-         2gdkRl3oPfKqBCmNF/UNHLPuqsJjn+VMEvQJrYk4Mx277YcbPGxf5ROqWP2qOPvd1aY4
-         Xp5w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=z+UkoMvvEaVTNil18OTBJI75hEZ+FMKT77tUTvdlmZY=;
-        fh=TPPgEEftTLKIqL3IGY5CS1oYyVVkpcQkbLQe+KceSJQ=;
-        b=gcFY1bBmlyiXM7ioA2eCQfmSAT3yWTOGO7QxFOuZ4HGcZgosBrmeKiXni1SHRY8J38
-         1jBKDAUdvbioM9DFHpJXXjptvWsi4yIHyVN0yCjzAYgvMOEbieuS5sstLN3hs9WPGT2j
-         jMv2CVall6gQsWZ76ytm5mLNBrav94cFaidHVDmqkQqnUlQIUfDWaEIqKPHn+6Tq33lS
-         /hEslAhV/7W/67NHNlt8EyYMRvjkCTllOh+knR7hh5TbVrh2hMzMiyncqPH51/F+sY/D
-         qLkfS720BX0bOMX/oaF45FfFoEN/HTebN3iylL4n0kniSlyslg7Erw+i6ndTBNI7XwRi
-         AjVg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795608264; x=1796213064; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=z+UkoMvvEaVTNil18OTBJI75hEZ+FMKT77tUTvdlmZY=;
-        b=v/lRLI/6A8OQzRxCu/iTwg1iJgBq/xMj1Kawkk6QIgnAh6avbVuDxItK2xWpSTX6Ym
-         RW9+u8YoSgQtE0VKjwoo6jIevKDdLE67PlKdX+/eLOlh1FEzINMW1YQcJPSEjRwmNYoQ
-         DzXfPRO2b/F6SIsY1G+z57UPAOx2nm407QQagbJ0CbiD+WEhdOEnR9FHRmBuXqSHie3R
-         c92vMDkgOIBj0PArFc6b/i5dXsl05Ksfsx6an6qMFcIxg4ft7L8+3QB9jFlZgxo5rJh2
-         AyTPIRtdglgfvcJNDtWk7wXreSuWSPtzKCPFgNiqL6s7CTwyZX3lTxnlIfd2N/gmNLxZ
-         6Ihw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795608264; x=1796213064;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=z+UkoMvvEaVTNil18OTBJI75hEZ+FMKT77tUTvdlmZY=;
-        b=c1BiGFvbMNwfA+TxDq5S+TWNkwi3n8lADEKHOc5cMWsRsNH+GG8QKJZDuDYDSVZgqS
-         dk0pXsXgFsR6IdGNBG8UjdZgU6+9GgQWza0ueubYZDnL7SSVcTjGVrpqm9LLI9V0sFbA
-         HCXtg6vsiSi9hsOPyPDoPTcnsMh0u8x2iuXI3Rd1vgg093fkhk2DrK2j7AQGRlLeDgcc
-         tFMJrJ9j51YMwEK/hQd1MclINp74Nz8EwF70fYFMNECzBNoi8GMMyvKqtW4ADJRwyjYZ
-         R5c4i0rgSxiRRzu8EWjiSM2Yf9JY9LQzZts0EV5zP4qYGzmQl6jEjdTH2BSmD3fPBAww
-         NB7Q==
-X-Forwarded-Encrypted: i=1; AL+hErGxAtDOqlu8yWCvXLW2PaWGxPZEAe1uyOKknPVGQdbLDpSd+QDe1lh9v4Wt+ICSrEf5/00HzQcwQA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/yY/hRkFlIPLHWx0h1hcG5INOYYPmnu6ZRgULSc8Q/GNbKGy1M
-	75Qlzia0z13G0gbKxGD5C287oe68YCDw2k7CAsdonq+rpa+yGcLMDBH6BaY3NyeRfISCsrJmZf8
-	8lYGUYjF7xoIKUetr7Zk6NmuMA3PeBq4=
-X-Gm-Gg: AZFdTZftZXtyj57wYtZz+y8DJTkaWKefYBAHrwaiV8bfpBM+2HTKu3vbSwsKq74mEhS
-	aD19dxI47lTSOy0rLlQDIL18fSxYGXlifIMwbMFzy3iqX8Gk0DSR+l85JJPJ4zJ9LNxzJQ7bzEZ
-	KLhVjkqAIcTAuxgOkFf7UxgU1tmJnZZHMWAzwNFWRLZrtjxtFiQ8iOopS+B86NlYFbkvFAstFCN
-	Ee3UxsU+IlsTbrwMwjlcfQ8vN0x0T4lqtQkFgXK/dA8CVnF6NdZqZqIVuLE1s9Gk2s640M14nYT
-	hNbOsKsPMLXcbny71OTbMxrp9qv+7O7j2PZCd2ASTR/xGHzW82lYBKEdAPcu4bZsn8+m/65ui3w
-	oQB547FmpC5lw/1h+UkSPqGn6woEbaxrONMfPcHkynWxPV65fN/MoyqA6G2jMJL/IcDwRCMQ6pz
-	nTPM7xCUJiNXhzmmOcl2u8NFVTSsgu0tUT3O71QWn/
-X-Received: by 2002:a05:690c:b19:b0:8b3:47ec:b20a with SMTP id
- 00721157ae682-8b520475e0cmr66201927b3.43.1795608264600; Wed, 25 Nov 2026
- 04:04:24 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Tr7qj6+i
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=cEl9PI7OlIltPu/nFcne/7AX8ls6VpYGSznQetXHpFTJq4Fdxrm+9N0etFqNBpvpw6DIw8YJTE8h5rsORbUvWoUTl7t/PsUFHx7UFWzwX0BX8Rg1CBJXwSJgPVhaRcWs5FJGT2HP7h3zapgzoL0x3nQj8tbiW38fe2ScwQpdhbj7PZpWHjbaHfIbuxkZf9omwc1h3Kq/d+kMFl9imD96s2r27DXWSIaNve2nVqWHfhn5B5xWjIQb/WHrJ5zRhO5Y1bCQntzISwBjMnY/iVbn0aKEq4KEMWhli8YV7v0+86Npfy9YuS9nKmQChHm5A2cbGEmdFMy2voi4HBZ+3Nuqdg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=q5+9ChIdKx8Au9fqttZifyIR4dVkSOON4tDmDlSBxaI=;
+ b=DT/dXpqchgG+kR3qtHkoVzJZ8H31Rhk35jBBOgt3bctEUnPVi2zr+8XD3rhAQJerKt2FEx+B5AaQcetdh1Yolictm/SmB1dWEq/KbCXd40wX3al9O5GmMF/pLqm3aM+qS3NaZ8UvWVKlZiuwyF+LvWbb9pzsCBmqlVv36IO4f1MHEO1AWC2B4cyxiagrNiFM1hj6ZZuqbeHuVOdO/x4PrFgPw+X46VAV4fzkz1L4QSSZE61fiP99lSc73/wJdvIyON6gRDuT44/0Koq3Q+S/q53BhNDPJnE2JO/BTZQjQ7QXlWAMC1TQ0zxmRTozjd98UlBCP9evq6PNCNDhVtbJ8A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=q5+9ChIdKx8Au9fqttZifyIR4dVkSOON4tDmDlSBxaI=;
+ b=Tr7qj6+iQ1uAykglYmJD1ga3+ECUKrCkWYuZVOkM/T65l/iS41xLDxZF2IoVd6qsC2uAwrwH451Cq/UESlxcLFIur/zL45KFKPrrDIdaGH/enWMHnt9FzCmCCX3THrdGPSFv5F2EQDL0Saq50899O+0TvtJFbj/JIm4RL1uU0T4LZK/jcC+JgvVn8N2kuRm/vHvOrN4BbPK6Rf9u/UPP3zuwaoIXVPsA0tdRsc5Jf5ldRDHhrSt6UpJh+EYZwl7fjX7Im7djn0gCy3nKgiwBp2fMvMV2iaoM7XbXJn83+JeKFPfGZOMPG3SbvEJjaSswF1T68J85Q4dNHsWIa1LpGQ==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from AM8PR04MB7874.eurprd04.prod.outlook.com (2603:10a6:20b:24d::9)
+ by BR0PR04MB904472.eurprd04.prod.outlook.com (2603:10a6:2c8:67::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.14; Wed, 25 Nov
+ 2026 12:10:32 +0000
+Received: from AM8PR04MB7874.eurprd04.prod.outlook.com
+ ([fe80::ac38:1699:6f18:c5d9]) by AM8PR04MB7874.eurprd04.prod.outlook.com
+ ([fe80::ac38:1699:6f18:c5d9%5]) with mapi id 15.21.0639.012; Wed, 25 Nov 2026
+ 12:10:32 +0000
+From: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+To: Dario Binacchi <dario.binacchi@amarulasolutions.com>
+Cc: Peng Fan <peng.fan@oss.nxp.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Lucas Stach <l.stach@pengutronix.de>,
+	linux-amarula@amarulasolutions.com,
+	michael@amarulasolutions.com,
+	Peng Fan <peng.fan@nxp.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	Jacky Bai <ping.bai@nxp.com>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	bui duc phuc <phucduc.bui@gmail.com>,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 2/4] pmdomain: imx: gpcv2: Keep the domains left on by the bootloader
+Date: Wed, 25 Nov 2026 20:07:33 +0800
+Message-ID: <20261125120733.29433-1-peng.fan@oss.nxp.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20261122205136.138173-3-dario.binacchi@amarulasolutions.com>
+References:
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2P153CA0034.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:4:190::17) To AM8PR04MB7874.eurprd04.prod.outlook.com
+ (2603:10a6:20b:24d::9)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -102,66 +110,76 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-From: Marcel Moosbrugger <marcelmoosbrugger@gmail.com>
-Date: Wed, 25 Nov 2026 13:04:13 +0100
-X-Gm-Features: Aa3M54r2ba5mZUdoWmYri7uZbuEx-lFWMUQY_KR4UYOrncn3hD6_3rK1rzheKEQ
-Message-ID: <CABtUotOE+6AJpp9ewj3rDWRM=MdHOtcvqAhVmaZ+QAbZK4fSRg@mail.gmail.com>
-Subject: [BUG] intel_idle: Arrow Lake-H hard freezes, stopped by max_cstate=1
- but not =2
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM8PR04MB7874:EE_|BR0PR04MB904472:EE_
+X-MS-Office365-Filtering-Correlation-Id: b683a596-ef31-4882-8952-08df4aed1a17
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|19092799006|23010399003|22082099003|18002099003|261026121527099003|56012099006|261028144727099003|261022105027099003|10067099003|261026140227099003|11063799006;
+X-Microsoft-Antispam-Message-Info:
+	VbP4L86JwqTcdH+/r+ptptezIQjjTNONe2hjSceQFuAOT5avn1fYehrpD1lRzijZcYlxpIqdDPlD4/J0DC7l1ZVF0NmiO7Vj/F3H3GKaPV1Ho26s6DtYpolla39udNWAIyHr0iiWmdbVwsEW3SWBxRWjbBZanubdy/FJA0znvaxnsmVu+NBDIOMLSeD6aj5on0zQursQBSGtj0EIOb26piBwc8LUHj9jGV6RZbzNkj0+0deAVrJO9SrupHzYqBFdcy5vFGiAp3u+9MXQnt+EpzrkN9REmD5Ha+SHUjXbCvSwYsI1JVqFXkaH8JjzAgOwbFTd/B7k+b7X5sDlDaQRnB4EfPaedzqbdCJcDH//HMZUmN/WMpziYS2NUOELiGteD3t3EWPtl5Zu3EJA8I7lJeePS41TXb3NA9lJsQBT9JEBf9Wi7SziLkbuCMOgw3AjHma5tY243L4C/Ytf9OA3fT6IHlI8oOfoK0hNqt31jCDoAaSMKOedVf2GpI22OjM35PgJXBSj5C2ATSyX/eYhqH/FMVCxB4XF02ymwddDDUd7DL79FKEDuX1HoMWgewa95CQoiL16v99wohNh5f2hI6rjUQ4XARFm/g/pDQodqiigqTwJTEFpQmqf98t01bYDhxNirkVwprDP28j2ylWoSLX2w6DZF8mCgsmAst5Pifs=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7874.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(19092799006)(23010399003)(22082099003)(18002099003)(261026121527099003)(56012099006)(261028144727099003)(261022105027099003)(10067099003)(261026140227099003)(11063799006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?jMN84BbruXBSXAGR+mYrDJOUMOgME1uJGmnU04zRJ2vJ6mx5YhhJDrCAVqkF?=
+ =?us-ascii?Q?7ohnBE9bpPnJ8HuUjZ541/GIGFy44NMwdpf+paUvP7F0AKhrf8K5f1SigcDQ?=
+ =?us-ascii?Q?Rp5Wy01xRiGofevmvGB6XkemhsCAOiHcGzQQina+BBkCkfz6lWIjlmbOvTeg?=
+ =?us-ascii?Q?bUh2bWltZDndaYKg+kdAxkZ8hwqkm9q2MHy7fpZq/V13IVPcfpXthwcSv5WR?=
+ =?us-ascii?Q?kXwfhAT5ubbRmJLXVLzIfmHVgyJhsb0YfKhhcfpB02kWCOegL/7JA/YtlsYr?=
+ =?us-ascii?Q?ZPR8OXgNkwG7/Ry9tI13wZUjCwy4+FrvQMi3UXd1NgscT6ekulfDARi4GagI?=
+ =?us-ascii?Q?Ckyh2j6p3OuY7xCVJttDFa27eE+B9RQlmgS6xAsU/Tz0eyPrJIk4uHjLdL5K?=
+ =?us-ascii?Q?GhunwLTL2djTZ9YXYm6eD2hqVZBkkUy8S/c/ng8XlXOJxxtErCbN8d7wISB2?=
+ =?us-ascii?Q?ClvNCTL8h0t+L1hBlrnxjE/fLx4qbsUl73KCvcmJQKBjAh8QNGhSq8gQPncJ?=
+ =?us-ascii?Q?rpkg93mzcKl29OwCKiytKDSynXzM7h0rRwMOtX1edJiF4yEE9mr1/GMjZEbH?=
+ =?us-ascii?Q?T7yz71Vgqk1zFz6fNMHr4j39PRmDRXFRfy6j1yxwUbujo58F795pPDLHdHZ5?=
+ =?us-ascii?Q?krQpbSx3Ri/I2yQZwDdrE4z0jcrBEioRWCjdG+urYRZx4Edv7JtRS1UuIqqU?=
+ =?us-ascii?Q?wAUJq2uPGLWaxNvOYOSNxVd8IbVQgR7FcvfuQV0XuM+uB82JbX9THzQSGtAd?=
+ =?us-ascii?Q?C1t1JIuK74677X0MuLLnBLZb2enYngI2P2efEnraLSrTyvbTSbGO9RgE755+?=
+ =?us-ascii?Q?BLcOA+FprSiT2u+aEgPdjqzRnqEJiOTznUp6Opbgq8C4O1YnKP1HFSSncj5d?=
+ =?us-ascii?Q?oOgvu8HlJhRvjXe962UKqtpD/D8aKp6r83fIrSegndCWHEgbvbE4+oGgLAcp?=
+ =?us-ascii?Q?1A8P4UsfcHGYfqICbj8XKgmhl8cxVoIA4qzv+BBUDgtVTdnlfKA+MoKYXAuj?=
+ =?us-ascii?Q?O78MaXmOHbLtWrFnCwWrRMayq27g8VD0PgDAhVpNKw5qxizy8M7auhmegI/g?=
+ =?us-ascii?Q?i3DILFeAGBotiszQDJSHUT9Bdvh4TEaWa8lPcF6HmtULIUPgW58bmZebAQCA?=
+ =?us-ascii?Q?scvWj8V4wIbvl1zzedHoNIa8FU/AjxSHIJl7cfnxdJ/ybsjE9tq4nQImj+ap?=
+ =?us-ascii?Q?J4Ju2BKEyIqn8Tt4O7vxShnCqoARFPodsXbQnYJ21E2x3rQ2iZTp069bfc9e?=
+ =?us-ascii?Q?jZz0ybrKLojLNoxkMW+oWkKD2KyEVFtSre9vIbkNpplOEmE6qkWbzrJMb5la?=
+ =?us-ascii?Q?A+R5eApxAKaF/IzUQEr4RU30VLAq8DcGzqb64is7sbnU8JPL0WEW+hNGjm/e?=
+ =?us-ascii?Q?wlXR5v/hMiM07qBpj+5HJLpZu+/0NrKi+Ztl3EfH6I3J1LLdUsnj2jKx1ZZe?=
+ =?us-ascii?Q?oSw9aseDuWais49FWEqykRYJghYrG3cVydZ98964kyZhuqoQpmvbrQuJf4MN?=
+ =?us-ascii?Q?fv0h+BRbtQCO6f/oj4AKcgmcweWItuZ1F0jEl/6pxholnPkFERmFaPk60Ylf?=
+ =?us-ascii?Q?QN1SrZOPEtVkV1x5H/7bbbGQ+WMHFcWN1YLT6IDgnGggdoehudgV+KnCO4lG?=
+ =?us-ascii?Q?1gkYO/S8yr7aCprHNKeN3T9DGR5/Z3NJayE5ofXo0gjyu1gN4fo5RE9sUTDQ?=
+ =?us-ascii?Q?4YHb23XsU6fqbGuACWsoY62F98AqwikMXs0I1xYR1GFIUcFjs71FHC403Yjt?=
+ =?us-ascii?Q?BHgrcy65rH27kvvKHQcaQYkPBkTFmu+twDqN371mrEuFeAK/3O2W?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b683a596-ef31-4882-8952-08df4aed1a17
+X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7874.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Nov 2026 12:10:32.1730
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: MJSF6fqTB2SJ2bzhe5jg8lvXHpAy85HjTNACHcD6TM1AfAyV0SEzjvt8k7ja9GgKgQnKHg+0GK4ujpOCiRfbCVIiJ3518Y1vOUZDFw8JuCG6s5U2L/1RDQ9Pqf82LXjx
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BR0PR04MB904472
 
-Hello,
+On Sun, 22 Nov 2026 21:51:11 +0100 Dario Binacchi <dario.binacchi@amarulasolutions.com> wrote:
 
-Two Arrow Lake-H laptops (06-c5-02) from different vendors freeze hard;
-only the power button recovers them. On both, intel_idle.max_cstate=1
-stops it and =2 does not. Crashlogs, oopses, dmesg and config are in
-https://bugzilla.kernel.org/show_bug.cgi?id=221923. I am mailing because
-the evidence now points at C6.
+> The PGC domains are all registered as off, so a domain left on by the
+> bootloader, e.g. DISPMIX to show a splash screen, is powered up again
+> by its first consumer. On the i.MX8MN this turns the display off and
+> hangs the system.
+> 
+> The GPC does not report the power state of a domain, but the ADB400
+> bridge acknowledges the power-up handshake only while the domain is
+> powered. Use it to register as on the domains left on by the
+> bootloader.
+> 
+> Co-developed-by: Michael Trimarchi <michael@amarulasolutions.com>
+> Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+> Signed-off-by: Dario Binacchi <dario.binacchi@amarulasolutions.com>
+> 
 
-                 ASUS GU605CW (285H)          ThinkPad E14 Gen 7 (255H)
-  no cap         5 freezes in 34 h * (7.2.8)  9 freezes in about 51 h
-  max_cstate=2   froze after 79 h (7.1.9)     froze after 63 s
-  max_cstate=1   0 in 510 h awake             0 in 671 h uptime,
-                 (281 h of it *)              s2idle included
-
-  * on a Thunderbolt dock, where the ASUS freezes most. The ThinkPad
-    numbers are its owner's (comments 9 and 11 in the bug).
-
-intel_idle has no table for INTEL_ARROWLAKE_H, so both use _CST: C1_ACPI
-(MWAIT 0x00), C2_ACPI (0x21, a C6 substate) and C3_ACPI. =2 removes only
-C3_ACPI. So the freeze needs C6, or a package state reached through it,
-but not the deepest state. The freezes that left a CPU-side trace died on
-idle exit: corrupted per-CPU data on the ASUS (all 16 CPUs within 65 ms),
-a misread instruction byte and a misread exception target on the ThinkPad.
-
-Specification update 834774 rev 025 lists ARL036 ("Unpredictable System
-Behavior May Occur When C6 or Deeper Sleep States Are Used") and ARL037
-("A Core May Hang When Entering or Exiting C6 or Deeper Sleep States").
-Both are Fixed for H, seen by Intel only in synthetic tests, and may have
-a BIOS workaround. Both laptops froze on microcode 0x122, the latest.
-
-1. Are we hitting one of these? Which component and version has the fix,
-   so that owners can check their BIOS?
-
-2. If firmware with the fix is not out yet, would a quirk be acceptable,
-   like the Skylake-H one for C8/C9 (d70e28f57e14)? A narrower one than
-   all of C6 would be better. I can test C6 off on E-cores or P-cores
-   only, or any patch. On the dock a few days give an answer. The ThinkPad
-   owner offered to test too.
-
-Caveats: no reproducer, only rates, and no known good kernel. Neither
-kernel is vanilla: the ASUS runs Omarchy's (Arch) 7.2.15 with nvidia-open,
-the ThinkPad Ubuntu 7.0 with VirtualBox and no NVIDIA GPU. During the =1
-run I also moved from 7.2.8 and from BIOS 311 to 314, and kept the i915
-render GT out of RC6. Before any of that, the cap alone gave 116 h awake
-without a freeze.
-
-A correction: in September I wrote to platform-driver-x86 that the
-intel_idle angle was refuted [1]. That rested on =2 only and was wrong.
-
-Thanks,
-Marcel Moosbrugger
-
-[1] https://www.spinics.net/lists/platform-driver-x86/msg65594.html
+Reviewed-by: Peng Fan <peng.fan@nxp.com>
