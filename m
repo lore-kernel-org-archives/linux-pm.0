@@ -1,49 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795627686;
-	b=3XKWv39qNW3x2hZIRU9bMvgocF41xRhAtaHvPIHjmwGFbixoWybQyFdQxHbYbjUS4KKV
-	 /ZLa7HQhjF7yotUuqk3w6s1j7J8i0avwJgIpl5VZ9bZVTxfNnnHRRkEF/6Xj6WaNCPzzY
-	 oeay9Jc4aVf/emZjGKJwdV+inp1xI7fRL6kn3wiUsr/cIDFjb9tAlsUIlA/zHAVzeYjYT
-	 fArOVJVS1KRpgG8UTm6qos5UtQxYJuasYo3kqdHG+/ip48b+fYqgGyzyxVJTdOzbhR8bd
-	 L8uMV0Hl5R3VirEBZuaz5GTZqxnNlI2ZAX1evvveHVr1XR9ihYxrAfjJEyrE7hTtTkw==
+	t=1795627727;
+	b=mL79gFo3gri3ZodF18VKHqGF142LOBkrL5T92wkIRv/EReWhhzFJ5d6JbZzli2JgHhvy
+	 sV+I1ZxrWAR7LSPHurD9qfal6HtCVFciYTXTYA3GO1ro3XrKv4tXElvZacOWJ2oEmFZt3
+	 ycadNo89745Z22/caWp0y6QL/ldywQMwbMq676lMYq3i52sOrxHNe1r0tN1Gf2b4HNCj4
+	 4zmHDzInkOs3jlEL8/Ctox2ZLYL0xQTkS6QK8u1DRX0KCNRwIp2N0Ac25GUFdIejKkBG1
+	 0cRQ7HWjNnz0vnXTSFxHdy9PoVVVnSvWlPqTMk/okmBAA8sH4OiPFQ2Lx/TwrSQyasA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795627686;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:From:
-	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=VVkUIIQqS3MHyMZep+1422xStdzEt776xX6915io3O0=;
-	b=p0/oo6Pa3No/NkhYXcghRNs7Tcti9ZChWTsEP0RHF+vTmHP3Wr9JARESDpwW0/8+5vTL
-	 bZu9VyM753RheVX7/5Wo2ma4cnrbmyX0LdgCmPXfL9VV3ySWwFkAUzU42ouspST5vtB6w
-	 rgY52Hlcx22QFzzfpzTlbsYhcw66h4P7BUo5XzPnxs82/KQhB800LEbwQbjXqOqWX8y8f
-	 /DSK7amiNo2ZgnrL1S05DaciE45AVln/4kOfokD/ag864esZev43YGVKu+xTZJ/RkNmk1
-	 Ta86veChD76edgKjhmEiNDY3+UKJJrkWZbKzM+v56LukmunZmLQq9IpF24Dqi90FIJQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795627727;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding;
+	bh=/LRV8VwiQw6HtKDeOUJ0erKvwle+mKOkUqkP/Em9dWg=;
+	b=HogaEPr0FfCTbJ9qJ8WGhTCF/isbNsu2hLc+RUkFoyKYt/QGCnLuK74uaA/HaV5sGbsI
+	 W4ncQ+0G0R2Ae85R6FQCdX+bjXhkqTziDkfse6txMvgaJLHCVr8la/u2kLG2lZuK+Driy
+	 thp3LWVsDsVXiKXdTpK+r87ARu7FY4yG0k46n3vso30/8K0nlJSaC5WVS5pmQM5twjTsk
+	 d4SgEFpAhNP3X7XbgysArneipodglB0v1QVbBptYkmSoKRx0xi6VrUUJ9i+97pC4sZvH8
+	 XqXMoqrrL3923rXFc2Cukrvv2sXx7wuLzIHaFumCNg1AbfrALX5LNuRMn9+9nqG9S4A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arm.com;
-	spf=pass smtp.mailfrom=arm.com;
-	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=MnR2e2GM;
-	arc=none smtp.remote-ip=217.140.110.172
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 84B51606A327;
-	Wed, 25 Nov 2026 17:28:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 84B51606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UfRw1LEb;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC948606A31E;
+	Wed, 25 Nov 2026 17:28:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=MnR2e2GM
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 99AD8339;
-	Wed, 25 Nov 2026 09:28:02 -0800 (PST)
-Received: from [10.57.72.178] (unknown [10.57.72.178])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C14863F86F;
-	Wed, 25 Nov 2026 09:28:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1795627685; bh=4+YY4HcJ7LW9Jg+pxZvWjeqMKGEA1WZOWsfSTDcENK4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=MnR2e2GMIAu5C3Aque31T/xkApvRyHV7vZPrHLfwv12arzyFc8p+faBH2+HlNOn08
-	 Fh3gQBlQG9f92YFgd+0iBOfgH4E+nyPJDEE8qaFpn3HMFow1pZ7wIO2xiUOcCSTp62
-	 RIeyZaGa6bXDL1zjfqJzjQrqONyRa4pf0VEuZDUE=
-Message-ID: <7785bfed-3c70-49be-92bb-3e35d12df467@arm.com>
-Date: Wed, 25 Nov 2026 17:28:01 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UfRw1LEb
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A08AE1F000C4;
+	Wed, 25 Nov 2026 17:28:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795627727;
+	bh=/LRV8VwiQw6HtKDeOUJ0erKvwle+mKOkUqkP/Em9dWg=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=UfRw1LEbWfWo56ZwdZs6IKWItBDJ9KMIjJQ/3x0uUJ2wX2HG+FLlzRiVWjqLkBSqE
+	 L80rrYU9WSnmRL0QZ/Ld9FI4vi9M3zos044R83QWjpBzxOBUhX5LId+Tgk2URazbbs
+	 ufxNs0/heFFGuhH5XSe9XQLIw1kkom2zQAFnsVsYJj/u68V6Il6hZaD7Xlk1USbZnC
+	 fuEqDLEyQzPI4LHcs1RJFEHCnMOTd6+YKgtfsBm+cmE8axj6QnNcyWij4Wl4HEVSey
+	 x7A5ly8Rp2Eu8toPYBVxlgDCKvt5sQLwP54Qtb9QYqrnVwb5Q62opQhOCYXO7nKFVF
+	 pklJK2t/U5dSA==
+From: Miguel Ojeda <ojeda@kernel.org>
+To: mmyangfl@gmail.com
+Cc: fkan@apm.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	sre@kernel.org,
+	Aurelien Jarno <aurelien@aurel32.net>,
+	Anand Moon <linux.amoon@gmail.com>
+Subject: Re: [PATCH] power: reset: syscon-reboot: Use devm_register_sys_off_handler(RESTART)
+Date: Wed, 25 Nov 2026 18:28:37 +0100
+Message-ID: <20261125172837.29526-1-ojeda@kernel.org>
+In-Reply-To: <20261026092049.84858-1-mmyangfl@gmail.com>
+References: <20261026092049.84858-1-mmyangfl@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -53,67 +61,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCHv2] thermal: samsung: acpm-tmu: Fix spurious CPU throttling
-To: Tudor Ambarus <tudor.ambarus@linaro.org>, bzolnier@gmail.com
-Cc: krzk@kernel.org, rafael@kernel.org, daniel.lezcano@kernel.org,
- lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
- linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20261124132756.1306906-1-christian.loehle@arm.com>
- <2b369a93-d20b-4df7-b667-1775117e9470@linaro.org>
-From: Christian Loehle <christian.loehle@arm.com>
-Content-Language: en-US
-In-Reply-To: <2b369a93-d20b-4df7-b667-1775117e9470@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 11/25/26 15:10, Tudor Ambarus wrote:
-> Hi, Christian,
-> 
-> I tested and I confirm the CPU throttling.
-> 
-> The patch is looking good. I have a design question please.
-> 
-> On 11/24/26 3:27 PM, Christian Loehle wrote:
->> acpm_tmu_set_trips() supplies two thresholds, but the ACPM command writes
->> all eight slots, zero-filling the rest. On GS101, slot 7 limits CPU clocks
->> independently of its interrupt mask. Setting it to 0 C limits all three
->> clusters to about 200 MHz while cpufreq reports the requested frequencies.
->> This was found through trial and error while tracking EAS regressions.
->>
->> Program slot 7 from the lowest active critical trip. Cache the low/high
-> Do you think we shall program slot 7 from the hot trip rather than from
-> the critical one? If we keep the hardware throttle and linux shutdown at
-> the same temperature, the throttle only matters if linux fails to shut down.
-> 
-> As you already noticed, downstream programms slot 7 from the zone's last trip,
-> which is the hot trip (115 C), there's no critical trip defined in the zones.
-> I can't tell why downstream misses a critical trip and why the hot one is
-> in slot 7. But I guess it doesn't matter too much because in upstream,
-> the critical trip doesn't need a threshold slot of its own (we use the
-> low/high window in slots 0 and 1), so I think we could use the hot trip for
-> slot 7, even if there are critical trips defined.
+On Mon, 26 Oct 2026 17:20:47 +0800 David Yang <mmyangfl@gmail.com> wrote:
+>
+> +	err = devm_register_sys_off_handler(dev, SYS_OFF_MODE_RESTART,
+> +					    priority, syscon_restart_handle,
+> +					    ctx);
 
-Yup that makes sense, and if I had actually looked at the downstream before
-v1 I probably would've come up with the same thing, the actual policy of
-115C vs 105C I'm indifferent to, so will update.
-Thanks!
+In linux-next (next-20261123), booting riscv64 under QEMU, I am seeing:
 
-> 
->> window and update the critical limit from set_trip_temp(), because the
->> thermal core skips set_trips() when that window is unchanged.
->>
->> Suggested-by: Tudor Ambarus <tudor.ambarus@linaro.org>
-> thank you, but it's not needed, let's drop it, I commented only on the
-> implementation.
-> 
-> In case you're going to send a v3. I guess Daniel prefers the subject line
-> as "thermal/drivers/samsung/acpm-tmu:".
+    syscon-reboot reboot: can't register restart handler (err=-16)
+    syscon-reboot reboot: probe with driver syscon-reboot failed with error -16
 
-Ack
+My LLM says:
 
-> 
-> Cheers,
-> ta
-> 
+  The SBI SRST restart handler (`sbi_srst_reboot_nb`) is already registered
+  at priority 192, which is also the default one for this driver, and
+  `register_sys_off_handler()` only allows one handler per non-default
+  priority, unlike `register_restart_handler()`.
 
+  The following patch moves the SBI one to `SYS_OFF_PRIO_FIRMWARE`, and
+  with both patches on top of v7.4-rc4 the driver probes again:
+
+    https://lore.kernel.org/all/20261118104935.1716-2-linux.amoon@gmail.com/
+
+Cc'ing Anand and Aurelien.
+
+I hope that helps!
+
+Cheers,
+Miguel
