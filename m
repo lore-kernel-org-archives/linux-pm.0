@@ -1,104 +1,87 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.231.203
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795648350;
-	b=C65BXY5968J70ByA+5l1f8Tx3Fd8/Ey87JqBYkSZUM9h+ZuuajGe+rMtqyFkPIgAA95T
-	 CeeIsNMgUS8Ub3mAhYrTMUrKT4mNjgTxTDd7/wurVEOxayr2Ibab2JxkTQfwXsUzjMns7
-	 9VdOe2vgxFSlNbC0Foa/l5VWygx5JpHpjmx4pvWhg3eUdzObWz5p9wXBcs4renmyLMSxG
-	 z1mz2qNvhkAc9EEMJfa4Fk4ZjsWKZp+Vduy9VaNlhuyqqpILwd9cbCWn3v4rob4cKgRWS
-	 m6fDjsA3t3r1BCCHR1Nmghei8TPKgK4REz88IDdrLwGJWyuq4QrskkzQ0Onc81932NQ==
+	t=1795649021;
+	b=iMBQRHu+9ncouHIaIgxWtq6nxGPqBoS6Jbe1ZPWnLz5O2lG7cA5wKZtZFATPT4KrQXjh
+	 aA9oy+VMZbRfWTGtsuxIuf4eE8x5uRqvrjaReugwIApLvae6DTgYxe2lrVygQwJIWJMWa
+	 ThltDRIzCBt0ksmjhg+YZ4FELhTjkhM69IhvpADmdCS1SdpWbE678HxeNyfsapv5bn6iL
+	 6nBSCe0evKqJhnO4GefHGMU6n2cXd4B2JraVSJ828eeTTRYmkS1fts8sRRwEVnfNH6CJC
+	 gsz0HPW/avIKbqLBxygWBm05picuJrxySCdkRt3MWyW/vYoYOLgYSNMcR3H0CVXKRng==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795648350;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795649021;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=r+DhYJ93tfesWORfibIV1d9I4czZkNjxK3eLYv410RY=;
-	b=UVFhn4plGWx40tPWbaV82xEaglrWXvINm4UDr5YJ91/D93uRxrjDiKhjvDByMCIsQ1XZ
-	 O9obcL7Hn7rlZyCIr9JDI4l0kLmO1ru7R23gOLxXvDm3R8vVJSpUo9vtr2A+Lxh8KQ1xO
-	 p0GFASjvPnqL0XuEJNlUNDDo+MmBZ9+mlLGxPg0opPUHhLutwrIOR0IF6QVV+4fgYIVpK
-	 PhsrHvXAfD++7KL4Usai0iiECDJoHw30rbd37ygFu6Gxd1Rl3B1uqOwWQ4XIVGEaaorrL
-	 Y0eyhZjAZSclbn19er4fRKyvlh27SclNqLb4sy6ZH7fOdbBDOTMZLIvTM39LRSpvxtg==
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Date:Subject:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
+	 X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:
+	 X-Developer-Key;
+	bh=RwepV34j5nNPfrfrTOoxO68UcVdQ4nwsTdHGe5ShZEI=;
+	b=qDFX7wB6MCQ6Gv8Mo8FwYT2yGfTOpKF4rXcMoBBnIErPgCdUGicVsRsSzasw7WuOZEGS
+	 yDho3ScEACurOYyFag6ih8+hO7xdS43ICddhrzzM0Z+nreu81bZM1+KnOuTnY6on4jVq3
+	 jRQwv0eOs95DGLwrQ8Hb7Nb1ZU+APvI0qvYqWToEsrngkrUtd0LfyyKYwwRFA0MWKQtHF
+	 tAHNkSClLuXHt/7tL4qoM/b2/7mpN3cmSeaCPgd0keeGP79InVe/+Kjd4FZ1w6b4Rn4Y+
+	 sDY6dJGm4ZITYYEkPLJJZDmi1H9BLsGzsk9DWYflE4X1NQva5vo9RCJepcfuGdsaiJg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=baylibre.com;
-	spf=pass smtp.mailfrom=baylibre.com;
-	dkim=pass header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=P9+vfVMQ;
-	arc=none smtp.remote-ip=209.85.128.47
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=k4TtAVd0;
+	arc=none smtp.remote-ip=74.125.231.203
+Received: from mail-oi2-f11.google.com (mail-oi2-f11.google.com [74.125.231.203])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CA05606A33F
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 23:12:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2CA05606A33F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B86AA606A321
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 23:23:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B86AA606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=P9+vfVMQ
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4bb6886d30aso60659955e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 15:12:29 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=k4TtAVd0
+Received: by mail-oi2-f11.google.com with SMTP id 5614622812f47-56820670d00so2154094b6e.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 15:23:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1795648347; x=1796253147; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=r+DhYJ93tfesWORfibIV1d9I4czZkNjxK3eLYv410RY=;
-        b=P9+vfVMQuEA5tApB3Ym+P8H7sPqn9qUi+CwY7nhtWJ/GEq21N+YuwnNdE7iVGw20bZ
-         dgEYwQq4qLwfEZ5QGeH8wpnTY+9HTHRiTm9S56qrqXGzjRXUgjA6nZKHE5zoiuQgQ9DJ
-         JSSekzHetnM6g9vN0zXnQ9SBK8tneNkTvPOSOwv4DVq8lAoPP2Vxp3IGuLXSpx20hrEf
-         25UOybrnutUF1MB2Ba/f1r/iCHNGotD9Jq3BSyO415okFTxkzZRxdC2QjHIb3y+ysD7r
-         S+zqG6SBRdD5fnuotFWNOiQLCPVOer5mKJZbhI+TbAdKrBrt7pDlfptq3gjwKl/DUjbz
-         MVGg==
+        d=gmail.com; s=20260707; t=1795649020; x=1796253820; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=RwepV34j5nNPfrfrTOoxO68UcVdQ4nwsTdHGe5ShZEI=;
+        b=k4TtAVd0Q5yeT53kuCv2tVlWnh7TyZgeD7vMYoZbEGHgEFe5HK2S7Hl9ez0W15w8ep
+         eCOF/X4FRwK3lEeGPWNf6OE1jFA9Z6tpfG71FHX+++Ckk5ihwMtGuf4z3h4LzDxRgUdB
+         Mh5RbVda0NnYuq188GEAtRtOREIEcUBZ9Z/jvLFE7ame7Lno4ARV2MjM69lUj69NM5Br
+         oxsNe3eYjdFmGEF5uupC+JtWg11BOfqYLk2zqHhobq34DvNUyoyD8oK+/IZjF+ycHGXu
+         qDDo4A+xa2JiEqKsMPambU8FHltgC557iziezI0LIsaviEqu7TG1JuxigEx5GSx2HkVH
+         qriw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795648347; x=1796253147;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=r+DhYJ93tfesWORfibIV1d9I4czZkNjxK3eLYv410RY=;
-        b=1kPeaHqI5YPZaudtT9cOnLhWqm1vhvOn2i8MwKKroONJbQvjI7TGWigh/Jacxu53gv
-         6XQMYtzmwdSga7x8x9p7pPMPnWxvKJHjtZzyd4wGPoCmZYRGSnl3dlH0TqSDbKR/GB62
-         lLXacOKTBhNn7DfLFI/VZfnsgc05jNvqi7cGkHd0e0IMQaNXaoFU3oUTYrwaPW9MeoJC
-         2WJGi3/+Rr9PvKOK5FfAqe02jEAfyQM9OfmwoLKs2ds4GGNmXKkfYuepkuPPb4VwEXFL
-         Gel+L+jZvvAccSfgAtv6+N1YVJcqDP8QHiVw6DWzR4DIHwecvFdB8b6hxIk+YWmbSM/u
-         5G2w==
-X-Forwarded-Encrypted: i=1; AL+hErHihBmiEoyGQdkmtwOOcL8NN2CNsXhUSIKGOqs2C86rQuPg0t+uQGiV0LcscL+ZijF8OkNo2BDxCw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/zyi4aSsk0Dyfa06etlooj0rTgdegYPkbBIWGBOAf/Gdy01fjo
-	tv58Gc/FB6RO5dTsIeg2sQtorV5VEs6XNhPa5Uubla0ic+J5sifL+pKc2IJ/rWaUmIg=
-X-Gm-Gg: AZFdTZftIsjdutin+1GB/AQkljTrOWyGe9HxcrkK90KxKtH3ZI98iocUiHxxKKkEJgr
-	u+huDbXUBDilZlbL1Ibyo0poDA1jVekzToyukjyrAvWvX1yeJjOs5CunqKsrXIXv0WcOLCSPmvi
-	G50uur9aQu4+yiB1bGAhVvW/WlmhikjBvMqEczysCvKc+qNf6l3TfENhOudfGiaMYOATSRHfXqc
-	WbB4yKknom1EdlahV/3zIZ4jhbQiJbzFRNDxa3Z4KUGk7ZnjPrbef/tZNT6z2iwV1gzZUeWDw2G
-	3+eOS1lbv7CMUHkTSd5zaG6KgLK2oD++xg3mWIFXYRvDYsxXIlzheMhaT+E+RzTnaYvRcvAMhyQ
-	Y0OyIK3LkTKXBLzPrxfJDEr3pt5y1i56bhI8oEEhKHsB+4III3fePrzW/7M5t65wvtNWnrllrSZ
-	dd3LF+368auTO9PyJnst6R6s2jYw4V7gL4cGAG+Zw2QsixcQGn1/JI2zMfg3ovEZi7u0t3e49H+
-	QkiOuZ9mKGeIEvuwA/s1GDvlXdRWvdVU4T4xWr5RW1DRvayExiKFE03Eb686p3aZB/YAk0DZIQz
-	uu1c0e5TfIgyXHTybSZnxklEW8JiVQc+3qs=
-X-Received: by 2002:a05:600c:4f84:b0:4bb:8701:a2df with SMTP id 5b1f17b1804b1-4bb88809950mr395769935e9.17.1795648347566;
-        Wed, 25 Nov 2026 15:12:27 -0800 (PST)
-Received: from localhost ([2a02:8071:6e30:8500:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4bb8533579csm480759855e9.2.2026.11.25.15.12.26
+        d=1e100.net; s=20260707; t=1795649020; x=1796253820;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=RwepV34j5nNPfrfrTOoxO68UcVdQ4nwsTdHGe5ShZEI=;
+        b=Yx86Pc6IitDlV0DO8dika9c4nQ2OYgn11IUqyuTcZJ5XnkydwYpZYo1BAodcR8j1Yu
+         Rupvx1hv2p7CLKKRmxvN372is77pIde6mCw6LtZL7xDBG6kqG5FmkumcHh3oKaj/4zkE
+         41c004ByXkze7ssjzzNRl+xUiZhIDvattm24+Bi5bNy2pXXgZMY9s8tXsqt+gptlg3YK
+         e5oQGtyGQWOH4wWkLKiXTQxDC4/GIX7I7Ym7KR6Jtd5K1bnNndZ6o7Kzom9cvqx2SAvQ
+         EueQDGh+Bxvgm23dIkRO4X8ABz7p0XD12GLrOZtHSDCo1DXwPDOGZ416mPcJD8RE8mLj
+         NXCg==
+X-Gm-Message-State: APuU4Z8lxi2sS+k22fV5g0Buwyk4/B5AwhuGrS4pQGL5wzICiseMwuqV
+	ploEDx9CsbLWRxr3gnjlbTYPUSlD6nSQusCvVThKoffLcBO9vNwiwX7krSo1uZXYGn77nw==
+X-Gm-Gg: AZFdTZetmeocQktaW5gsyKsSQougHHU0iBomcWJ62cKP3Gppecxly4/EpInseHFhjhW
+	+YEDYCGoKubDYVingm8PjjB0h0fzN9rypX7BfAvFjyZK+gk8atimHFrl8+whsKAi57ii3we3RF1
+	Uk9wetG4i0q695OfjZcGW6kRfDVoA0z4zmCE/hQ436zkq/Zw/JJ+lX6DJCD1F62IwC/S/Cveda0
+	4OWYEjQJzwrnuwFpyybBhgfWGxE+66bvAGgpjbJ52vFY4zBJzbvarhacMFnHSrvXt02zfobCcdk
+	Pc6ZU/JlMtV6nytMw+4PXPEvMjEzqfQ/AA17vFk5lqURHxG+zzYbW2WNK3rK9kJ+ZDp4VdaESd0
+	c4sR1E8MLUFAKX9OCnMNvmFagZZkZyrxeUHzcwayMhLDW82Zf1sGwV9yu++PaLuaXaPgpWZbA+b
+	2s/WOH4tgan31htj/Co1FOz8UvcqW0DcZIuH7oBqRda9qMvw4KmKepzA+ZyO0bI8ASe4ZTFKR0G
+	6BJe9VSo7NdMq/8dmlfCrqJ/gkvGf05w/cDO4tyZGLborn3LvimvsniVeKx8snLK1uYazM0d5VB
+	hIoJLo2TxgNKR/SEA4J5DxdGrtbl0T5+Cj4=
+X-Received: by 2002:a05:6808:c2bd:b0:571:a186:d6a8 with SMTP id 5614622812f47-57a0a20acc0mr18248900b6e.17.1795649019601;
+        Wed, 25 Nov 2026 15:23:39 -0800 (PST)
+Received: from [192.168.0.98] ([50.26.120.197])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-57a35c5ac5dsm15369084b6e.15.2026.11.25.15.23.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Nov 2026 15:12:26 -0800 (PST)
-Date: Thu, 26 Nov 2026 00:12:25 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Brian Norris <briannorris@chromium.org>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Thomas Gleixner <tglx@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
-	Peter Griffin <peter.griffin@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, 
-	=?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>, 
-	Jakub =?utf-8?B?R8WCb3dhY2tp?= <jglow@google.com>, linux-clk@vger.kernel.org, 
-	Douglas Anderson <dianders@chromium.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Mariano Marciello <mmarciello@google.com>, google-soc@lists.linux.dev
-Subject: Re: [PATCH v2 5/9] reset: google: Add CPM reset driver
-Message-ID: <awdp3W7LWfQ3ZrIy@monoceros>
-References: <20261125000349.3385325-1-briannorris@chromium.org>
- <20261124160343.v2.5.I0b1ad34a718a9b5f667d2481041970ea45989dd3@changeid>
- <f89e293688feb3f9bcdce0f1b6fed0ee424e5cd8.camel@pengutronix.de>
- <awbJUwrBQw5TnowW@monoceros>
- <awc0sBl6q6A2Reaq@google.com>
+        Wed, 25 Nov 2026 15:23:38 -0800 (PST)
+From: Ryan Brue <ryanbrue.dev@gmail.com>
+Date: Wed, 25 Nov 2026 17:23:22 -0600
+Subject: [PATCH RESEND] power: supply: core: give each supply's epc_sem its
+ own lockdep class
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -108,72 +91,126 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="khx4cneo7r6erf2z"
-Content-Disposition: inline
-In-Reply-To: <awc0sBl6q6A2Reaq@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261125-power-supply-epc-lockdep-key-v1-1-c8a41b8a4470@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAA/33NvQ6CMBRA4Vdp7sw1vRAwMDnI6qCjYajlAg0/b
+ VpFCeHdTXB3Psn5VgjsDQcoxAqeZxOMnaAQFAnQnZpaRlNDISCWcUYkE3T2zR7Dy7lhQXYaB6v
+ 7mh32vGCsGpkqylOtNUQCnOfGfPb9Ha7lrbycoYoEdCY8rV92daa9/gCS/4GZkDDJH7VUcXJUm
+ T61ozLDQdsRqm3bvkglgnzQAAAA
+X-Change-ID: 20261103-power-supply-epc-lockdep-key-2af05a195ccc
+To: Sebastian Reichel <sre@kernel.org>, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ Hang Nan <2122295973@qq.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Ryan Brue <ryanbrue.dev@gmail.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795649016; l=4188;
+ i=ryanbrue.dev@gmail.com; s=20260906; h=from:subject:message-id;
+ bh=aHS9VlhwbSd4ISaj/nw4cXUIJavrqEgLKdMBe+KGpqo=;
+ b=FPlfiH8acOc2+ZC4ConFbGPH/aAReeCpfEAjvRtDpj6DPYrQcOW0W3sBWd1/pZUKK69/r6NZ9
+ hVTL0a/0vM/AgTCmKrhODIS5imfYu5uImchQTzMtfiT6hPvC/hzWNYw
+X-Developer-Key: i=ryanbrue.dev@gmail.com; a=ed25519;
+ pk=KsUvVaP//v/2q+ZBuacc7cLbsyEYn+AD71Sn28oZWKo=
 
+Since commit 9f7f7a859451 ("power_supply: serialize property access with
+unregister"), power_supply_get_property() takes the target supply's
+epc_sem for read. Every supply's epc_sem is initialised at the same site,
+so they all share one lockdep class.
 
---khx4cneo7r6erf2z
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2 5/9] reset: google: Add CPM reset driver
-MIME-Version: 1.0
+A driver that reads another supply while holding a lock that its
+get_property() callback also takes is then reported as a circular
+dependency, even though the two semaphores belong to different supplies.
+sc27xx_fgu_get_property() does this with data->lock and the charger, and
+a fuel gauge driver in preparation did the same with its charger:
 
-On Wed, Nov 25, 2026 at 11:19:12AM -0800, Brian Norris wrote:
-> On Wed, Nov 25, 2026 at 12:43:40PM +0100, Uwe Kleine-K=F6nig wrote:
-> > On Wed, Nov 25, 2026 at 09:48:04AM +0100, Philipp Zabel wrote:
-> > > > +#include <linux/mod_devicetable.h>
-> > >=20
-> > > Please include the specific <linux/device-id/*.h> that is needed
-> > > instead of all of <linux/mod_devicetable.h>.
-> >=20
-> > Or better still, rely on the bus headers to provide the needed
-> > *_device_id structures. (That is <linux/platform_device.h> provides
-> > of_device_id (for patch #2)
->=20
-> Only very indirectly:
->=20
->   <linux/platform_device.h>
->   -> <linux/device.h>
->     -> <linux/device/driver.h>
->       -> <linux/device-id/of.h>
->=20
-> > and <linux/auxiliary_bus.h> provides
-> > auxiliary_device_id and of_device_id (for patches #3 - #6)).
->=20
-> Also quite indirectly.
+  WARNING: possible circular locking dependency detected
+  kworker/2:1/60 is trying to acquire lock:
+   (mutex_#2){+.+.}-{4:4}, at: mt6397_battery_get_property+0x50/0x23c
+  but task is already holding lock:
+   (&psy->epc_sem){.+.+}-{4:4}, at: power_supply_get_property+0x34/0x80
 
-Yes, I already thought about making this more explicit. But this isn't
-my primary objective currently. It's safe to assume that the provider of
-struct platform_driver also provides of_device_id. While a forward
-declaration would be enough technically to define struct
-platform_driver, that is not sensible because most users of
-platform_driver also need the definition of of_device_id and there are
-too many drivers relying on that already.
+Lockdep then turns itself off for the rest of the boot.
 
-Well, but having said that, the thing that I consider important is that
-no new users of <linux/mod_devicetable.h> pop up. If you want to go for
-#including <linux/device-id/of.h> that's fine for me, too. (And similar
-for the other busses and *_device_id structs).
+Register a lockdep key for each supply, so that only a supply's own epc_sem
+is ordered against its own locks.
 
-Best regards
-Uwe
+Fixes: 9f7f7a859451 ("power_supply: serialize property access with unregister")
+Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+---
+Since v7.4-rc1 power_supply_get_property() takes the target supply's
+epc_sem, and every supply's epc_sem shares one lockdep class. A driver
+that reads another supply under a lock its own get_property() takes is
+then reported as a circular dependency, and lockdep switches itself off.
 
---khx4cneo7r6erf2z
-Content-Type: application/pgp-signature; name="signature.asc"
+Tested on an MT8173 tablet (Amazon Fire HD 10, 2017) with PROVE_LOCKING:
+the report came at boot with a fuel gauge that reads its charger under
+its own mutex, and doesn't come with this patch (debug_locks stays 1).
 
------BEGIN PGP SIGNATURE-----
+This is a resend of the 11-10 patch, now also to Sebastian's Collabora
+address, which I left off the first time. The code is unchanged, and it
+still applies to v7.4-rc4 and to the power-supply for-next branch.
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmsHa1YACgkQj4D7WH0S
-/k62MQf+OKGka4mPSwopQ0+gI2VWXrdB3QhqgUL8ffjUMb7jkBi86oA6YfcjNC/D
-8aZRTb/LZNPgl7ygdsKPEfFKlbKH1yCA+9gfN/aS+x6ykkZUKdn1Ha8m8ImuN87s
-ooG++TXgzYfljHdoCVeukZsRth0gqt+QTBWLDPPUCDzC543cmPPqIWNi0LXdgwuf
-OFve6MraHVKSLw0TVigzWyx0MYat5C1Y5gWVcsnmShhh1D18CrPfvFcu4dFot6Zj
-IsEZRk30Wuu42YCnSD1t+UeGc+VDD5hxC1JhUdvN7txOJr1NHKdNT11aByux9mPD
-ityFQTt/321OJci6adJV7NMgTYNlPg==
-=MU9a
------END PGP SIGNATURE-----
+This patch was developed with the help of an LLM coding assistant.
+---
+Changes in RESEND:
+- Added Sebastian's Collabora address; no code change.
+- Link to v1: https://lore.kernel.org/r/20261110-power-supply-epc-lockdep-key-v1-1-39bd0a237a6c@gmail.com
+---
+ drivers/power/supply/power_supply_core.c | 3 +++
+ include/linux/power_supply.h             | 3 +++
+ 2 files changed, 6 insertions(+)
 
---khx4cneo7r6erf2z--
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index de15314ef954..76bbe8772143 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -1662,6 +1662,7 @@ static void power_supply_dev_release(struct device *dev)
+ 	struct power_supply *psy = to_power_supply(dev);
+ 
+ 	dev_dbg(dev, "%s\n", __func__);
++	lockdep_unregister_key(&psy->epc_key);
+ 	kfree(psy);
+ }
+ 
+@@ -1765,6 +1766,7 @@ __power_supply_register(struct device *parent,
+ 	if (!psy)
+ 		return ERR_PTR(-ENOMEM);
+ 
++	lockdep_register_key(&psy->epc_key);
+ 	dev = &psy->dev;
+ 
+ 	device_initialize(dev);
+@@ -1810,6 +1812,7 @@ __power_supply_register(struct device *parent,
+ 
+ 	spin_lock_init(&psy->changed_lock);
+ 	init_rwsem(&psy->epc_sem);
++	lockdep_set_class(&psy->epc_sem, &psy->epc_key);
+ 	init_rwsem(&psy->extensions_sem);
+ 	INIT_LIST_HEAD(&psy->extensions);
+ 
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index cce61137aef4..3cfe2520862e 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -371,8 +371,11 @@ struct power_supply {
+ 	 * the callback is still using it.
+ 	 * Must not be shared with extensions_sem: callbacks may read their own
+ 	 * properties, which takes that one for read.
++	 * Each supply has its own lockdep class: a driver may read another
++	 * supply's properties while holding a lock its own callbacks take.
+ 	 */
+ 	struct rw_semaphore epc_sem;
++	struct lock_class_key epc_key;
+ 	struct rw_semaphore extensions_sem; /* protects "extensions" */
+ 	struct list_head extensions;
+ #ifdef CONFIG_THERMAL
+
+---
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+change-id: 20261103-power-supply-epc-lockdep-key-2af05a195ccc
+
+Best regards,
+-- 
+Ryan Brue <ryanbrue.dev@gmail.com>
+
