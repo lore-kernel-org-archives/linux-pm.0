@@ -1,52 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=194.117.254.33
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795640199;
-	b=AhZ41rorQfQFqfY7CIMHaMzGGeVl2sumi31TCIFQjXmvQGBn1pDJu5GyAtRlbxKbpY4O
-	 MeVZGFzp1qjm1vxhVlKo0OJAgCgDy5mq6O2l6tAkVCmRVSgrmcLuf5voFhJxhfypJ+T4T
-	 Rv2kF54Ot7ClwvnjtRYCAnf05oz1XOQxEUsaDSkPl9olWiZjxRjDb1UJy8utJebUYdTSf
-	 kgr4ZRa97YYxGcx5xAvYv2R8OasoIGMvUc1HBdOQm6h+VvABNXruBZ5nFbHFKdGPeDI8X
-	 hby9V+GAADdXWtcIJX4mRz/gCcqm3Xnto6Q656DbCFTWmJOjKoM31N1Bi6PN0LrUvRQ==
+	t=1795640340;
+	b=KtsgJLMmGvis4baMwptRR5Twiyh2CzAa40dwd3JY+XzhZeag+j8zZ6UBytoBGDKAR3RZ
+	 oujfC42+fjuW4p1h4hdfmeIcNvsquCUnQ9VA6s+xtOD8gGMu97kvmre67NgrGbtm8+atg
+	 sNauXwpHr09qKmmWpKn4MxasFcZfTGjogBYGjvVU+oJnAXaf4x3nYEHrrIWlt20kF8Ie7
+	 /rV8U8B/M0fxYuZ1pryiFKkGY4OtX7GoAVOhSYbO14V3PyN9U9EUDjVZuHGSERbj+4dNj
+	 Qs+ygLvCNwHeT3q8nuRf+h8FtPgpsj09SMm2EqbYyWEwcwdQ9a2hdhkdOWdrzP7QRLQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795640199;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795640340;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:X-UD-Smtp-Session:Date:
 	 From:To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To;
-	bh=1kRROKKosl/yXIFPGvtByySBNrtF9KbT7CipojNr2Ac=;
-	b=y5PU+Wnf9Nj381PaDrbP51+xZk7mHLdjzU5mX2cRvcsTJr3roVfE8oyFEl4RuJdbP9wo
-	 3sMJSkKZzvrCIbz8QELybogWRBLQUPO9Gv3yoAfipc0b8A/frGcWKgpQusUIcFL44kh4w
-	 EoRNN4vy44DbXPB5ktvirnbSIPUpu+3Byor7RrsUG2F+OTQ1pvTK1C9WrcJ/1/tcNNAmS
-	 onMwwAuBPXbUw9I6XlNvCsZAWYXytsQNzIzK/a3YQhbbiWMy2nsmaQYSIib0q8m1eYijR
-	 PK+XTcNZcLCh6O/C89rrmZqAKzjtYvzVdSTAZPhizAQh6k46/Vus8Q0mry9QE8D/8ww==
+	bh=Yi8HbY7avl9S/WCaQ0l/DLFnbsp+kW/rpAuDBKM+Wwk=;
+	b=LO9Vs37V5nQe0FKOMxpq505vZ7BM+qOOUugcNG7sqCKARML7bDaBeiC/Mk+GRMnGAfI+
+	 TqbJa+6B2HGuXlUl4an4rk4Vflm1dHlzbZRISfOacGa/EnWOEiDDMFsk8hN3sWc9HDenX
+	 wzQ68gCDZ9pTQnOdtsERMLI1wkesW7vbLtYsyAq2V5vq9daj8KAGDqYB6ePLRN5Jgb94e
+	 KGnGiefNnq5j+kROd+hW9XZQqyGz+cVLdmUJ/48A48kM1KWXxVpJ7m3e65IuajKn2MDDR
+	 dOvaTi+EHUezUO9n3XczmkrxkF/kOatUc3HxP9H0a13nC2lODn8GzqP+z+VCkCeIMDg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=none header.from=sang-engineering.com;
 	spf=pass smtp.mailfrom=sang-engineering.com;
-	dkim=pass header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=IC5AH4wH;
+	dkim=pass header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=Z16QyKYT;
 	arc=none smtp.remote-ip=194.117.254.33
 Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19849606A321
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 20:56:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 19849606A321
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52569606A326
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 20:58:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 52569606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=IC5AH4wH
+	dkim=pass (2048-bit key, unprotected) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=Z16QyKYT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	sang-engineering.com; h=date:from:to:cc:subject:message-id
-	:references:mime-version:content-type:in-reply-to; s=k1; bh=1kRR
-	OKKosl/yXIFPGvtByySBNrtF9KbT7CipojNr2Ac=; b=IC5AH4wH8ctwgU1Tad8s
-	xxEe94U8RhC8pxG9PqWsbXeD8GVt2Y+5Mvs31bENX9y38nSyIDNndU9Y1PG0a7NN
-	W+BuKm74LzsdGg6JApTSoC+1xeN6L07eXNsFtuL+Sij08GFgJ8UJumuydRlNXvxu
-	jM3vqfO2wWK8nSQKrAUPz730IdfB47eT8S8imuHjYRXMHCIItemfb0v/lCesvMz7
-	LJZSN3QJrAXQqhy1pqUb6z/kHft2RKTw7xem2GTTITZu3xnp8TApeA/ATHOUGM53
-	MbBSbQhwqERI4NeMSCtkHF8ddkv/OFIAFw+dYxneDk3fgbvDvYfaWtwnCdpMjPiV
-	uA==
-Received: (qmail 1132956 invoked from network); 25 Nov 2026 21:56:32 +0100
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 25 Nov 2026 21:56:32 +0100
-X-UD-Smtp-Session: l3s3148p1@ZOnQDyBhXuAujnvc
-Date: Wed, 25 Nov 2026 21:56:32 +0100
+	:references:mime-version:content-type:in-reply-to; s=k1; bh=Yi8H
+	bY7avl9S/WCaQ0l/DLFnbsp+kW/rpAuDBKM+Wwk=; b=Z16QyKYTJXiCk1GBl7qp
+	8OSv/TFvPsvbxjRerrVgd8aSkTHmaLr61YpEJktg9X+4ADStTJECdOT4ahpnz1Yc
+	7eU63v6K7T4fpS3/snmspxQ0itWHB7Pk7i9r1Xz58BeNI/EG9thweohVbkbxdSID
+	krbLBkJlkNs7VcbnIKLMyLV+ME40bAsEWG1Zf8QtMGZYdkzMt4DBzRujIN/4bS/h
+	309VFtXc8H6DFmzzhXSygyAjU1ebEHgczZW68rtq6ZYq2r13xwBTZstawhD9f+xz
+	WXQKTwNPHbWl2feGv18UhJwSAdk28vH5pmDnv4/tQoXzPaAY9JtVZ5WTw8o0biHF
+	+A==
+Received: (qmail 1133866 invoked from network); 25 Nov 2026 21:58:56 +0100
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 25 Nov 2026 21:58:56 +0100
+X-UD-Smtp-Session: l3s3148p1@MnZjGCBhIOoujnvc
+Date: Wed, 25 Nov 2026 21:58:56 +0100
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Aaro Koskinen <aaro.koskinen@iki.fi>,
@@ -64,11 +64,11 @@ Cc: Aaro Koskinen <aaro.koskinen@iki.fi>,
 	linux-rockchip@lists.infradead.org, linux-omap@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 3/6] clk: renesas: Convert to dev_clk_get_from_provider()
-Message-ID: <awdLgHC8WvGsgQAk@ninjato>
+Subject: Re: [PATCH 6/6] [RFC] pmdomain: renesas: r8a78000: Convert to
+ dev_clk_get_from_provider()
+Message-ID: <awdMEJReSkI-YEdo@ninjato>
 References: <cover.1795094688.git.geert+renesas@glider.be>
- <55d67b95c675924fb67d13ecbab47bb45c8af372.1795094688.git.geert+renesas@glider.be>
- <awQ6PXdLz88kI9wQ@ninjato>
+ <81de8a7aadf587377916763d24181c44b5d13775.1795094688.git.geert+renesas@glider.be>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -80,29 +80,24 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <awQ6PXdLz88kI9wQ@ninjato>
+In-Reply-To: <81de8a7aadf587377916763d24181c44b5d13775.1795094688.git.geert+renesas@glider.be>
 
-On Mon, Nov 23, 2026 at 02:06:05PM +0100, Wolfram Sang wrote:
-> On Thu, Nov 19, 2026 at 02:40:36PM +0100, Geert Uytterhoeven wrote:
-> > Renesas clock domain callbacks use of_clk_get_from_provider() to obtain
-> > clocks used for power management, so the latter show up as "deviceless"
-> > in the consumer column of the clk_summary file in debugfs.
-> > 
-> > Fix this by using dev_clk_get_from_provider() instead, letting us pass
-> > the consumer device, too.
-> > 
-> > Sample clk_summary change snippet on R-Car H1 Marzen:
-> >     - sata 1 1 0 62500000 0 0 50000 Y deviceless    of_clk_get_from_provider
-> >     + sata 1 1 0 62500000 0 0 50000 Y fc600000.sata dev_clk_get_from_provider
-> > 
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > ---
-> > Tested on R-Car H1 and H3.
+On Thu, Nov 19, 2026 at 02:40:39PM +0100, Geert Uytterhoeven wrote:
+> The R-Car X5H clock domain callback uses of_clk_get_from_provider() to
+> obtain clocks used for power management, so the latter show up as
+> "deviceless" in the consumer column of the clk_summary file in debugfs.
 > 
-> Tested on RZ/A1 (Genmai) and RZ/N1D (demo board).
+> Fix this by using dev_clk_get_from_provider() instead, letting us pass
+> the consumer device, too.
 > 
-> Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> Sample clk_summary change snippet on R-Car X5H Ironhide:
+>     - hscif0 1 1 0 0 0 0 50000 Y deviceless      dev_clk_get_from_provider
+>     + hscif0 1 1 0 0 0 0 50000 Y c0710000.serial dev_clk_get_from_provider
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-And now also on RZ/G3S (G3S SMARC) using the rzg2l driver.
+Works fine.
+
+Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
