@@ -1,80 +1,81 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.179
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795565183;
-	b=or7TYyYRRTFt5R4hc+G7XXuLnpqqn7vuG1fbpgFVNlC9YQ8Jk7nMI7Ah3yU3hQS6c0xu
-	 q1eODj2HUtBA6G/ol43X9kSzyPBQ+Saw/qehwR/q4dmIXyzMA22rW4VMMWHNN1xQ3hX35
-	 wd9NDe6TLWN48SjDSY/E1gNmypk9r+0oIHlNGNADKakEtfZdcQulIIdR7L2SybAkRAB2V
-	 67ivlWQYmOxzo3wgWLfOw5IhSDAhEsNmnyVUabPd7rvj+6qvt3dsuKWRt0MrC0+CTPoHr
-	 36KZicT7UutXkoelLKDCMGbTbjV1RN01HJZDEGBXCBsMe/vJH8smBBM+twvnvwyxf3g==
+	t=1795565186;
+	b=nbtYWTRuK+VPSh1R/zRJpMs8m8w2nJPW7nrBtuTjiGH9WNlz/QJaFROeBXnnWCiklP4b
+	 DZhev2Fag0KRnWQLSZxQ6sBXXDNPBrXngOL05/8a8v95k0iJg8pSlhaM34k+UFJVyeSYl
+	 owrRW4soHfyltSAOzJ6NmYTvWrYeb153ySEsa2UvrTJx4DU641wDT8TYj/Ee7ZiRjdM+9
+	 hZ2XE7zRzkym+/LiNXQrEVk0FUvW+c7wz6CgiZHwHhmYZ8lL+Hfb9kHdwvYgUJfIzahVR
+	 VKXtkAyL+wjLUeDNC42pNu1m9D22xbVauBK1ZVKEF47Ad7XRp7weLv527tmUGXzZjmQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795565183;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795565186;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=9xXqglDy8469GWjwyD/Y8sAmjDXXr4pfODnkEj3WbFo=;
-	b=zW662knmLUkuANQxtKINt7fC135fhtgzfmx/CmYTgr6MSgouW6zWxhsZ/XDL5qcIJCtZ
-	 fDV6HZEbPp38yoImcsh6DpMTv4ZmRC8jzO70lGR2FqzYDVgIA/WxMgJQReAHO+6K35PU4
-	 Vpn243pQeM84S60Ehtz1TjeS32Kwv221g94Wz1XYWpsA9oNlsPdZnUA2Un2uwxiP11BbY
-	 O2jRosp8tCQMRMytaVfv2QhLW9ieViXYMr3BuLkPV8h6qFnH1Y9uNDnCqkc9V3/rleyVD
-	 3JqPyGHbE7kbWKhAV5kzZqdU/C9nA6SUA/aGx0vWEJsJQWDX3TVv7hR2mdWl9GNT3Ig==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=CK2W4+wUnESJRPQMuOkNCLCi5VCZ9oTd0r3qBFZs0Ls=;
+	b=q80k7srswvTPRPkGB+IYNotUfiB+3ewbQi3O2cF/MoWz2Nvs25RW2atmZa7xmBsGrNjK
+	 ICEfSw3ILioGslqH158GHJZLQY5jbg8/XRQGhn0e/KLAcZILVpQMSoz6ncRCLKmxvbWDM
+	 YL5a2zjJGIyGwvr/6XuirtJU/jay4shQOPTq+WOZXNa2tSVpah7ym2z2qL6rDDWEEGg70
+	 CtDMog4eKlLilxGEdBssUeNapzeVniBJ/x85MYpuFuwBbFUHcdHqk/qbMumsy4y89riRB
+	 GzA9V2+OGETc6pKU14/bDzIFWmbsq0Is/n+YvgkXyMVzWfuK9fkEb+Gv7WAlDrHQ94g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=chromium.org;
 	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=T8zvkiBN;
-	arc=none smtp.remote-ip=74.125.82.179
-Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
+	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=M7PgpiVY;
+	arc=none smtp.remote-ip=74.125.82.173
+Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D27F606A31E
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 00:06:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8D27F606A31E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 395E6606A337
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 00:06:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 395E6606A337
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=T8zvkiBN
-Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-36a315ed211so6235610eec.0
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 16:06:22 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=M7PgpiVY
+Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-38692f62b22so5466074eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 16:06:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1795565182; x=1796169982; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=9xXqglDy8469GWjwyD/Y8sAmjDXXr4pfODnkEj3WbFo=;
-        b=T8zvkiBNnTVj09g2bMW/MfMqD5s07FroMKesBjxwmWRxv1cI4MTqJD0TG1EBUiCOjS
-         xp/SZQfEu9U1SC1TOEnLDTvl3uW4yaIrEddiD0f7t7Mtbrf48YpQYl+WkWpnXypvpRMF
-         7sF6dYPIkRLZuWRuXwJxEQvlrSuAPkief0SWU=
+        d=chromium.org; s=google; t=1795565184; x=1796169984; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=CK2W4+wUnESJRPQMuOkNCLCi5VCZ9oTd0r3qBFZs0Ls=;
+        b=M7PgpiVYnCtcZ3Alr1XGilrLJFcT1rPKExZ/YFlJcZoxQCneu7EcbuiqSHE/UZWqsb
+         qQxVnZKDTArRTY+ZbW4zMC4eHL9Jn0LgxVbmlj6S7KIRl/BxP3niB/MApn0Ps8Giq3xc
+         K9Zc+9cgkiuNK3t3ntMDdP+ROQ18ox38DMp1I=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795565182; x=1796169982;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=9xXqglDy8469GWjwyD/Y8sAmjDXXr4pfODnkEj3WbFo=;
-        b=UuhuB3rsAuTTTXuLnljH6xkpRWK4/eRi+/VHguLyICBWc4yhEXnLjDvmi31rhp6UMT
-         K0JetsV9odZCgr9WjqckXV/JsDOKvxs5phxG0VnEVJ94Rt2luQCFw2+vrNeeqtfzQLVj
-         xSGEvaCl6WOv9b3njM3Axo8dEx8XzGijOvVeBCAC6e7WBIn7Mh0nQTeNYwhcuoTdmGiT
-         hQN9cLEieZrZV6KPaNKD0+1XZ7Y1TKqMdYfl/a2ADnU9jQZ0VlJhZB4eUDABQm8wSXEq
-         uQrWWa5VHJKPEazuX7TMoDz1+pJWIz1hwr1NuUhkGZB5KzmWdm4FFGIZlsr4D+FSunQd
-         TFRw==
-X-Forwarded-Encrypted: i=1; AL+hErEYkMULzx9LPJOt1kaN7jZKLjO/ivYEXvn7EjBwygAbaa8c7ry+pFxjs506Wj8U9QqJkM5Tjw4afQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9Ab5jxM6WL3kf1BE2OBYZIBkz4RdQ/9si5ZcKiIbHw8apQ4uCf
-	E2YgvN7qXCwZAcYgUf1TKrO/U/AoSv3b1F/v/HPkxgM5FiD0stAowcyfckKtm9zIeg==
-X-Gm-Gg: AZFdTZfGJrxlYxqpJ+gNwKjfLWcXfE4I/M8qvTZ44hMMzgqqy+fti6mkoNZQmzkzBXF
-	6Ye56884IKvcYcp9i4+IF9S8jxHF0ltK5LgEV6ftgAyISRkHN4VqQobLU3z/gkTrNuI40AnmwKW
-	wfH2658OxZA2x/Lr9TcgQmjXizvWmo0+KL+SCectbeIVtJhzFmP4mbx01a3t7KujxMX34x1TD/0
-	VtGBy3lrkyWvPDYpTMV3YvmjYwK4saBMWF4xScqV6wq4ZdJl5Rfw83HkcrAMwMyoDay0FDtx8Jw
-	54Pu+hK5hdF5ed85EU/UCwRQZe0dqSx1xRT1fUWrMKFpv2GPA6s8iGBtA+EeAIXtRZUsfRKvffc
-	qz60nw6bvCe0DLxGDLJ5EyZwaHSsfkuGMT+0puFw2f6pS/c7HJQ3NLDf45mxx8rDcS/LtEuq7Gk
-	OOCu8lneHVLLd7rRvNe7n3V3mZ8AIkBzoJ5ZONaxqpS/vqWvNNqz7Mi7Fo0Ev5KXk9uoS/3Pe32
-	E+eBzUpFJKkNCIxU2fF3sE6hp/oMzfzqpTwsJFxxIwOE9/PN4eJnXY2VdjMp8MODQYdvY3Ykyjc
-	r8xdVflgaMstThXBJeDRMKBKCDSTW64iyuSov5R9gLe/oj5HM365KOPCCVA8XyN8NGUG
-X-Received: by 2002:a05:693c:880c:20b0:386:ab85:a011 with SMTP id 5a478bee46e88-386ab85a718mr8876110eec.27.1795565181421;
-        Tue, 24 Nov 2026 16:06:21 -0800 (PST)
+        d=1e100.net; s=20260707; t=1795565184; x=1796169984;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=CK2W4+wUnESJRPQMuOkNCLCi5VCZ9oTd0r3qBFZs0Ls=;
+        b=wLsmSdiS4PNdCd+AJxI3RGA5JiA2tQiRf7L++DYgvr3XaXJoHn82+41QoZ3OXFH3x3
+         hH1v688MdF+XsDLu7uWjwcrD8NMP2BTLiXD0XWujOVQtF3lC0z3gufLxxMioOHMSUdai
+         7KMN78Xkq8Y+puM7Sh59PMuX2SJVYozwlrpW5uhMsUBejhBXNfrz6wnnk56C+ya9jnu1
+         5dVRrmSg+jwy1duzQAFXG24pFsKiBkZxmMlpMkwIlZ9TNWl73LKX6Zlc/PTGYYL1+BwQ
+         ddnEGXbrMz7QYLbpVFff9Ovp9g14WhhxuHeklvptmrrhRJzBYGJhrIsudhi3+pZ1Rm1u
+         2ozQ==
+X-Forwarded-Encrypted: i=1; AL+hErGgH5bTnWvfZ7vC4bj4zXt3umxGX3NFPXoy58KvS9h6lKpjYV2KGOXcv0goXXYzJJSTDWoJYqEZ5g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+zgiIXEkM/Odv9/ghaqlqQ5S6OMGlhyHk3DaLnK+e4C4BdYDCN
+	HsZiRaLA1BZQBBtSakyKdkIbgs6thidjRT9NZfHgySb/Y/twxPmrnodbV2HPeyZquw==
+X-Gm-Gg: AZFdTZeItJ0H2rgNS/fC9Ex3VygHPc73tnmYSE5O8S1amADWlOHtGbBFyuRrzPQjGYK
+	1algkXpzNByoB50zr7JvTT2UbazoCYzfk0fGTScxczxEtBxYD9PWdnHYtMmdqr4awUR0ADJ3BOE
+	xNGdZUra+fb2VqI0UZ0Xb4X2OBUeAVeIRmTnGzDpmB57flsS0JjWdhzaWwIqNNif0H1fpdnCT35
+	uhLdH69JNxGk70Y96Eo2wICdccH493j9mBBchaZnb2gBM0UyOZPE//qPfCd5xEVxNydk9U88ooY
+	PFXpgB/7rvPwUnTqK431I2vTbE1mNOnX+aFQt7N8UXwLM/eqPPSvtP6kS3ctoXhu0HYZ9XMdhXR
+	xeH040cuUQgjYgKhR5QVP2HmHLzJlzHyBnQFeETTlowuhlFGy+9bm0PLbhU5jouExdQ/1dY1wHF
+	AzOLegG2jpGr56f/POWY2GRURzsT3mC6vp1eGkP/fpWTJPR08s25pOwoSVrWhVwZODDZ1CPLMwD
+	a9/Z0eSvX93qJL4pdEM2FWqxGX6CCfqLsrE4m6xoBuHvK0Aqwjn8JrWIRmCQR4dir0Ys1odd9C4
+	Y1OTQe7B535oTS9Dm9GCpFTBEzjnjCY8vVhXNv9i+lBaSFEIBLtA1XwXrpnhMRETjnIf+hkUVyt
+	KgPDqlj/svc48Rw==
+X-Received: by 2002:a05:7301:460f:b0:386:c850:1f25 with SMTP id 5a478bee46e88-386c8502211mr2425231eec.21.1795565184021;
+        Tue, 24 Nov 2026 16:06:24 -0800 (PST)
 Received: from localhost ([2a00:79e0:2e7c:8:ea9b:d8a3:ba44:2d0a])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1b556840494sm38314956c88.12.2026.11.24.16.06.19
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-38566fdce48sm51405808eec.14.2026.11.24.16.06.22
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Nov 2026 16:06:20 -0800 (PST)
+        Tue, 24 Nov 2026 16:06:23 -0800 (PST)
 From: Brian Norris <briannorris@chromium.org>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -97,11 +98,14 @@ Cc: Tudor Ambarus <tudor.ambarus@linaro.org>,
 	devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Mariano Marciello <mmarciello@google.com>,
-	google-soc@lists.linux.dev
-Subject: [PATCH v2 0/9] google: Add support for Laguna CPM
-Date: Tue, 24 Nov 2026 16:03:34 -0800
-Message-ID: <20261125000349.3385325-1-briannorris@chromium.org>
+	google-soc@lists.linux.dev,
+	Brian Norris <briannorris@chromium.org>
+Subject: [PATCH v2 1/9] dt-bindings: power: google: Add Google Tensor CPM
+Date: Tue, 24 Nov 2026 16:03:35 -0800
+Message-ID: <20261124160343.v2.1.Ib692ddd35c1dbea1757d9b1db6c1c7e938fc4ea6@changeid>
 X-Mailer: git-send-email 2.56.1.831.g720f3f5937-goog
+In-Reply-To: <20261125000349.3385325-1-briannorris@chromium.org>
+References: <20261125000349.3385325-1-briannorris@chromium.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -111,59 +115,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-
-== External Dependencies ==
-
-This series depends on the bindings and mailbox-payload-definitions from
-this series:
-
-  https://lore.kernel.org/all/20261023235408.3063350-1-dianders@chromium.org/
-  [PATCH v2 0/4] mailbox: Improve the mbox core then introduce the goog-mba driver
-
-So this series cannot be applied as-is yet. Based on past feedback, I
-expect the relevant dependencies shouldn't change much more before
-landing.
-
-== Internal Dependencies ==
-
-While this series includes drivers for several subsystems, I deemed it
-appropriate to keep together, because they're highly interdependent. For
-example, clk, reset, and pmdomain share many of the same protocol family
-details (CPM_COMMON_LPCM_SERVICE), and so it has proved useful to review
-them together, to determine sensible sharing and separation strategies.
-Additionally, none of pmdomain/clk/reset/irqchip (patches 3-6) build
-without patch 2, and clk/pmdomain depend on the binding macros from
-patch 1.
-
-== Merge Proposal ==
-
-Generally, Google Tensor SoC support should go through Peter Griffin's
-new Tensor SoC tree
-(git.kernel.org/pub/scm/linux/kernel/git/griffinp/linux.git), while
-clk, pmdomain, irqchip, and reset have their own subsystem trees.
-
-1) This series requires include/linux/mailbox/goog-mba-message.h from
-   the External Dependency "mailbox: goog-mba: Introduce the goog-mba
-   mailbox driver"
-
-   This should be up to the mailbox maintainer to provide an immutable
-   branch.
-
-2) Patches 1-2 should land in Peter's Tensor tree, with an immutable
-   branch for other submaintainers.
-
-3) Patches 3-6 are independent of each other, but depend on patches 1-2.
-   Subsystem maintainers should take these patches once the branch
-   exists for #2.
-
-4) Patches 7-9 should go through Peter's tree.
-
-Alternatively, if the process is slow enough, we may not need an
-immutable branch for #1.
-
-== Description ==
 
 The Central Power Manager (CPM) is a co-processor on the Google Tensor
 SoCs, as used on Pixel phones. CPM supports power-management and a
@@ -173,20 +125,51 @@ The Application Processor communicates with CPM over a pair of mailbox
 channels. CPM provides clock, power-domain, reset, and interrupt
 services.
 
-This series adds device tree bindings, DTS, and drivers to support CPM,
-and several of the basic services provided by CPM. These services are a
-minimal set needed to bootstrap many other components on the SoC --
-e.g., I have a working proof-of-concept PCIe driver running on top of
-this series + pinctrl (not included here). CPM provides some other
-components not yet included in this series (e.g., PMIC, RTC).
+Notable features of this binding:
 
-This series has been tested on a Pixel 10 Pro XL (a.k.a., Mustang) both
-as-is (plus the aforementioned mailbox patches), and also with minimal
-additional local patches to get other components running on top
-(pinctrl, PCIe, PMIC, RTC, USB), to prove out some more realistic use
-cases.
+ * Resets and interrupts have a naive mapping to their underlying
+   resource on the remote (firmware) end, so they directly utilize the
+   firmware indexing (LPCM ID + reset ID, #reset-cells = <2>; and
+   interrupt ID, #interrupt-cells = <1>)
 
-- Brian
+ * Clocks and power domains also map relatively directly to CPM firmware
+   IDs (LPCM ID and object ID), but they have a more complicated
+   hierarchy, non-uniform characteristics, and even covering multiple
+   service protocols (especially for power-domains). So these use a
+   1-cell identifier, leaving software to perform the DT-to-firmware
+   mapping.
+
+Notably, CPM manages other services that are not yet included in this
+binding -- some attached PMICs, an RTC, and more. For simplicity, we
+don't try to describe and support all features all at once.
+
+Because it may be useful both for reviewers familiar with the downstream
+Linux support for these devices, or for future developers looking at
+adapting/improving/adding further features later on, it's worth noting
+some major deviations from downstream bindings:
+
+ * CPM does not sit on the soc bus, and does not have any IO/reg region
+   of its own. The downstream bindings included some not-quite-related
+   hardware resources in the same "device", to aid doing some similar
+   things in the same driver. For instance, some power domains
+   (specifically, the GPU) are not managed by CPM, and instead are left
+   for direct-register-access. Such a domain should be described
+   separately, and not within the CPM node.
+
+ * Downstream bindings tended to describe every CPM-using service as its
+   own node, with a (fake) mailbox-phandle back to the CPM node. We try
+   as much as possible here to avoid separate nodes if we can help it.
+   And see the next point:
+
+ * Downstream bindings tended to describe every individual clock, reset,
+   and power-domain as their own sub-node, with various
+   software-describing properties as part of each node. These properties
+   are inherent to the SoC, however, so we avoid sub-nodes and instead
+   just provide appropriate #{clock,power-domain,reset}-cells, and leave
+   the per-{power-domain,clock} properties to the driver.
+
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+---
 
 Changes in v2:
  * Move bindings to power/, not soc/
@@ -198,111 +181,355 @@ Changes in v2:
  * Drop unneeded reset number dt-binding header (these were simply
    naming documentation; I move the macro definitions directly into the
    dts/ folder instead)
- * Flatten clock IDs to a single-cell binding, as the mappings are
-   complex; the mapping from clock to firmware-protocol is better done
-   in the driver
- * Move more protocol details from client drivers (reset, clock,
-   pmdomain) into core CPM driver
- * Simplify to a thin 'cpm_handle' for transmit-only clients
- * Support separate API to register a receive-enabled client
- * Move pmdomain per-SoC info from .h to .c file
- * Remove custom pmdomain debugfs 'state' (get/set on/off) file
- * Restructure pmdomain SoC tables for simplicity and readability
- * Simplify clock driver, to avoid memorizing rate tables and clock
-   topology that is owned by the remote CPM firmware
- * Drop clock .set_rate() for now
- * Cc new google-soc@lists.linux.dev mailing list (pending MAINTAINERS
-   update, separately)
- * Drop linux-samsung-soc@vger.kernel.org (this is historical, for
-   earlier Tensor SoCs based on Samsung designs)
- * Added Peter's Tested-by only for 1 patch; the rest have changed
-   quite a bit
+ * List properties in alphabetical order
+ * Flatten clock IDs to 1 cell
 
-Brian Norris (7):
-  dt-bindings: power: google: Add Google Tensor CPM
-  pmdomain: google: Add CPM power-domain driver
-  clk: google: Add CPM clock driver
-  reset: google: Add CPM reset driver
-  arm64: dts: google: Add Laguna CPM mailbox array
-  arm64: dts: google: Add Laguna CPM node
-  MAINTAINERS: Add entries for CPM drivers used on Tensor SoCs
-
-Jim Wylder (1):
-  irqchip/google-cpm: Add CPM IRQ driver
-
-Lucas Wei (1):
-  soc: google: Add CPM over MailBox Array driver
-
- .../bindings/power/google,lga-cpm.yaml        |  68 ++
- MAINTAINERS                                   |  10 +-
- arch/arm64/boot/dts/google/lga-cpm-reset.h    | 175 ++++
- arch/arm64/boot/dts/google/lga-lpcm.h         |  54 +
- arch/arm64/boot/dts/google/lga.dtsi           |  50 +
- drivers/clk/Kconfig                           |   1 +
- drivers/clk/Makefile                          |   1 +
- drivers/clk/google/Kconfig                    |  13 +
- drivers/clk/google/Makefile                   |   3 +
- drivers/clk/google/clk-cpm-internal.h         |  35 +
- drivers/clk/google/clk-cpm-lga.c              | 223 ++++
- drivers/clk/google/clk-cpm-lga.h              | 194 ++++
- drivers/clk/google/clk-cpm.c                  | 385 +++++++
- drivers/irqchip/Kconfig                       |  10 +
- drivers/irqchip/Makefile                      |   1 +
- drivers/irqchip/irq-google-cpm.c              | 131 +++
- drivers/pmdomain/Kconfig                      |   1 +
- drivers/pmdomain/Makefile                     |   1 +
- drivers/pmdomain/google/Kconfig               |  14 +
- drivers/pmdomain/google/Makefile              |   3 +
- drivers/pmdomain/google/cpm-power-lga.c       | 365 +++++++
- drivers/pmdomain/google/cpm-power-trace.h     |  80 ++
- drivers/pmdomain/google/cpm-power.c           | 458 +++++++++
- drivers/pmdomain/google/cpm-power.h           |  42 +
- drivers/reset/Kconfig                         |   1 +
- drivers/reset/Makefile                        |   1 +
- drivers/reset/google/Kconfig                  |  11 +
- drivers/reset/google/Makefile                 |   2 +
- drivers/reset/google/reset-cpm.c              | 154 +++
- drivers/soc/Kconfig                           |   1 +
- drivers/soc/Makefile                          |   1 +
- drivers/soc/google/Kconfig                    |  13 +
- drivers/soc/google/Makefile                   |   3 +
- drivers/soc/google/google-cpm-mba-trace.h     | 163 +++
- drivers/soc/google/google-cpm-mba.c           | 956 ++++++++++++++++++
- include/dt-bindings/clock/google,lga-cpm.h    | 173 ++++
- include/dt-bindings/power/google,lga-cpm.h    |  79 ++
- include/soc/google/cpm-service-ids.h          |  84 ++
- include/soc/google/google-cpm-mba.h           | 168 +++
- include/soc/google/lga-lpcm-ids.h             |  54 +
- 40 files changed, 4181 insertions(+), 1 deletion(-)
+ .../bindings/power/google,lga-cpm.yaml        |  68 +++++++
+ include/dt-bindings/clock/google,lga-cpm.h    | 173 ++++++++++++++++++
+ include/dt-bindings/power/google,lga-cpm.h    |  79 ++++++++
+ 3 files changed, 320 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/google,lga-cpm.yaml
- create mode 100644 arch/arm64/boot/dts/google/lga-cpm-reset.h
- create mode 100644 arch/arm64/boot/dts/google/lga-lpcm.h
- create mode 100644 drivers/clk/google/Kconfig
- create mode 100644 drivers/clk/google/Makefile
- create mode 100644 drivers/clk/google/clk-cpm-internal.h
- create mode 100644 drivers/clk/google/clk-cpm-lga.c
- create mode 100644 drivers/clk/google/clk-cpm-lga.h
- create mode 100644 drivers/clk/google/clk-cpm.c
- create mode 100644 drivers/irqchip/irq-google-cpm.c
- create mode 100644 drivers/pmdomain/google/Kconfig
- create mode 100644 drivers/pmdomain/google/Makefile
- create mode 100644 drivers/pmdomain/google/cpm-power-lga.c
- create mode 100644 drivers/pmdomain/google/cpm-power-trace.h
- create mode 100644 drivers/pmdomain/google/cpm-power.c
- create mode 100644 drivers/pmdomain/google/cpm-power.h
- create mode 100644 drivers/reset/google/Kconfig
- create mode 100644 drivers/reset/google/Makefile
- create mode 100644 drivers/reset/google/reset-cpm.c
- create mode 100644 drivers/soc/google/Kconfig
- create mode 100644 drivers/soc/google/Makefile
- create mode 100644 drivers/soc/google/google-cpm-mba-trace.h
- create mode 100644 drivers/soc/google/google-cpm-mba.c
  create mode 100644 include/dt-bindings/clock/google,lga-cpm.h
  create mode 100644 include/dt-bindings/power/google,lga-cpm.h
- create mode 100644 include/soc/google/cpm-service-ids.h
- create mode 100644 include/soc/google/google-cpm-mba.h
- create mode 100644 include/soc/google/lga-lpcm-ids.h
 
+diff --git a/Documentation/devicetree/bindings/power/google,lga-cpm.yaml b/Documentation/devicetree/bindings/power/google,lga-cpm.yaml
+new file mode 100644
+index 000000000000..a11b76df23fe
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/google,lga-cpm.yaml
+@@ -0,0 +1,68 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/google,lga-cpm.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Google Central Power Manager (CPM)
++
++maintainers:
++  - Brian Norris <briannorris@chromium.org>
++
++description:
++  The Central Power Manager (CPM) is an on-chip power management subsystem
++  found on Google Tensor SoCs. It has a variety of responsibilities, from DVFS
++  and power management to resets, PMIC control, and even RTC management. The
++  Application Processor communicates with CPM over a set of mailbox channels.
++
++properties:
++  compatible:
++    const: google,lga-cpm
++
++  '#clock-cells':
++    const: 1
++    description: See <dt-bindings/clock/google,lga-cpm.h> for clock IDs.
++
++  '#interrupt-cells':
++    const: 1
++    description: Interrupt identifiers are assigned by CPM firmware.
++
++  interrupt-controller: true
++
++  mboxes:
++    items:
++      - description: TX mailbox channel for sending requests to CPM
++      - description: RX mailbox channel for receiving responses from CPM
++
++  '#power-domain-cells':
++    const: 1
++    description: See <dt-bindings/power/google,lga-cpm.h> for power domain IDs.
++
++  '#reset-cells':
++    const: 2
++    description:
++      Each reset is specified by an LPCM ID (cell 1) and a reset ID (cell 2).
++      LPCM and reset IDs are assigned by CPM firmware.
++
++required:
++  - compatible
++  - '#clock-cells'
++  - '#interrupt-cells'
++  - interrupt-controller
++  - mboxes
++  - '#power-domain-cells'
++  - '#reset-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    power-controller {
++        compatible = "google,lga-cpm";
++        mboxes = <&cpm_ap_ns_req_mba>, <&cpm_ap_ns_resp_mba>;
++        #clock-cells = <1>;
++        #power-domain-cells = <1>;
++        #reset-cells = <2>;
++        #interrupt-cells = <1>;
++        interrupt-controller;
++    };
+diff --git a/include/dt-bindings/clock/google,lga-cpm.h b/include/dt-bindings/clock/google,lga-cpm.h
+new file mode 100644
+index 000000000000..a390297449d7
+--- /dev/null
++++ b/include/dt-bindings/clock/google,lga-cpm.h
+@@ -0,0 +1,173 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++
++#ifndef __DT_BINDINGS_CLOCK_GOOGLE_LGA_CPM_H
++#define __DT_BINDINGS_CLOCK_GOOGLE_LGA_CPM_H
++
++/* CPU */
++#define CLK_CPU_SSWRP_TSS		0
++
++/* DPU */
++#define CLK_DPU_DP0_PIX			1
++#define CLK_DPU_DP1_PIX			2
++#define CLK_DPU_DSI0_PIX		3
++#define CLK_DPU_DSI1_PIX		4
++#define CLK_DPU_DSI1_PHY		5
++
++/* GPCM */
++#define CLK_GPCM_DPU_PLL_DP		6
++#define CLK_GPCM_HSIO_N_PLL_DP		7
++
++/* HSIO_N */
++#define CLK_HSIO_N_USB			8
++#define CLK_HSIO_N_DP0			9
++#define CLK_HSIO_N_DP1			10
++#define CLK_HSIO_N_PHY_FW		11
++#define CLK_HSIO_N_USBDP_SUSPEND	12
++#define CLK_HSIO_N_USBC_NON_STICKY	13
++#define CLK_HSIO_N_USBC_STICKY		14
++#define CLK_HSIO_N_USB_DRD_BUS		15
++#define CLK_HSIO_N_USB_TOP_CSR		16
++#define CLK_HSIO_N_U2PHY_APB		17
++#define CLK_HSIO_N_USB2_PHY_RESET	18
++#define CLK_HSIO_N_USB3DP_PHY_RESET	19
++#define CLK_HSIO_N_EBU			20
++
++/* HSIO_S */
++#define CLK_HSIO_S_GPIO_REF_TCX0	21
++#define CLK_HSIO_S_SYS			22
++#define CLK_HSIO_S_UFS_CFG		23
++#define CLK_HSIO_S_PHY_FW		24
++#define CLK_HSIO_S_MPHY_REF_TCX0	25
++#define CLK_HSIO_S_AUX			26
++
++/* LSIO_E */
++#define CLK_LSIO_E_GPIO			27
++#define CLK_LSIO_E_SPMI			28
++#define CLK_LSIO_E_CLI7_CFG		29
++#define CLK_LSIO_E_CLI8_CFG		30
++#define CLK_LSIO_E_CLI9_CFG		31
++#define CLK_LSIO_E_CLI10_CFG		32
++#define CLK_LSIO_E_CLI11_CFG		33
++#define CLK_LSIO_E_CLI12_CFG		34
++#define CLK_LSIO_E_CLI13_CFG		35
++#define CLK_LSIO_E_CLI14_CFG		36
++#define CLK_LSIO_E_CLI7_SPI		37
++#define CLK_LSIO_E_CLI8_SPI		38
++#define CLK_LSIO_E_CLI9_SPI		39
++#define CLK_LSIO_E_CLI10_SPI		40
++#define CLK_LSIO_E_CLI11_SPI		41
++#define CLK_LSIO_E_CLI12_SPI		42
++#define CLK_LSIO_E_CLI13_SPI		43
++#define CLK_LSIO_E_CLI14_SPI		44
++#define CLK_LSIO_E_CLI7_I2C		45
++#define CLK_LSIO_E_CLI8_I2C		46
++#define CLK_LSIO_E_CLI9_I2C		47
++#define CLK_LSIO_E_CLI10_I2C		48
++#define CLK_LSIO_E_CLI11_I2C		49
++#define CLK_LSIO_E_CLI12_I2C		50
++#define CLK_LSIO_E_CLI13_I2C		51
++#define CLK_LSIO_E_CLI14_I2C		52
++#define CLK_LSIO_E_CLI7_UART		53
++#define CLK_LSIO_E_CLI8_UART		54
++#define CLK_LSIO_E_CLI9_UART		55
++#define CLK_LSIO_E_CLI10_UART		56
++#define CLK_LSIO_E_CLI11_UART		57
++#define CLK_LSIO_E_CLI12_UART		58
++#define CLK_LSIO_E_CLI13_UART		59
++#define CLK_LSIO_E_CLI14_UART		60
++#define CLK_LSIO_E_CLI7_I3C		61
++#define CLK_LSIO_E_CLI8_I3C		62
++#define CLK_LSIO_E_CLI9_I3C		63
++#define CLK_LSIO_E_CLI10_I3C		64
++#define CLK_LSIO_E_CLI11_I3C		65
++#define CLK_LSIO_E_CLI12_I3C		66
++#define CLK_LSIO_E_CLI13_I3C		67
++#define CLK_LSIO_E_CLI14_I3C		68
++
++/* LSIO_N */
++#define CLK_LSIO_N_GPIO			69
++#define CLK_LSIO_N_CLI15_CFG		70
++#define CLK_LSIO_N_CLI16_CFG		71
++#define CLK_LSIO_N_CLI15_I2C		72
++#define CLK_LSIO_N_CLI16_I2C		73
++#define CLK_LSIO_N_CLI15_UART		74
++#define CLK_LSIO_N_CLI16_UART		75
++#define CLK_LSIO_N_CLI15_SPI		76
++#define CLK_LSIO_N_CLI16_SPI		77
++#define CLK_LSIO_N_CLI15_I3C		78
++#define CLK_LSIO_N_CLI16_I3C		79
++#define CLK_LSIO_N_CLI_INT0_I2C		80
++#define CLK_LSIO_N_CLI_INT0_I3C		81
++#define CLK_LSIO_N_CLI_INT0_UART	82
++#define CLK_LSIO_N_CLI_INT0_SPI		83
++#define CLK_LSIO_N_CLI_INT0_CFG		84
++#define CLK_LSIO_N_CLI_INT1_I2C		85
++#define CLK_LSIO_N_CLI_INT1_I3C		86
++#define CLK_LSIO_N_CLI_INT1_UART	87
++#define CLK_LSIO_N_CLI_INT1_SPI		88
++#define CLK_LSIO_N_CLI_INT1_CFG		89
++#define CLK_LSIO_N_CLI_INT2_I2C		90
++#define CLK_LSIO_N_CLI_INT2_I3C		91
++#define CLK_LSIO_N_CLI_INT2_UART	92
++#define CLK_LSIO_N_CLI_INT2_SPI		93
++#define CLK_LSIO_N_CLI_INT2_CFG		94
++#define CLK_LSIO_N_CLI_INT3_I2C		95
++#define CLK_LSIO_N_CLI_INT3_I3C		96
++#define CLK_LSIO_N_CLI_INT3_UART	97
++#define CLK_LSIO_N_CLI_INT3_SPI		98
++#define CLK_LSIO_N_CLI_INT3_CFG		99
++#define CLK_LSIO_N_CLI_INT4_I2C		100
++#define CLK_LSIO_N_CLI_INT4_I3C		101
++#define CLK_LSIO_N_CLI_INT4_UART	102
++#define CLK_LSIO_N_CLI_INT4_SPI		103
++#define CLK_LSIO_N_CLI_INT4_CFG		104
++
++/* LSIO_S */
++#define CLK_LSIO_S_GPIO			105
++#define CLK_LSIO_S_MCLK0		106
++#define CLK_LSIO_S_MCLK1		107
++#define CLK_LSIO_S_MCLK2		108
++#define CLK_LSIO_S_MCLK3		109
++#define CLK_LSIO_S_MCLK4		110
++#define CLK_LSIO_S_MCLK5		111
++#define CLK_LSIO_S_MCLK6		112
++#define CLK_LSIO_S_MCLK7		113
++#define CLK_LSIO_S_PWM			114
++#define CLK_LSIO_S_PWM_CFG		115
++#define CLK_LSIO_S_CLI0_CFG		116
++#define CLK_LSIO_S_CLI1_CFG		117
++#define CLK_LSIO_S_CLI2_CFG		118
++#define CLK_LSIO_S_CLI3_CFG		119
++#define CLK_LSIO_S_CLI4_CFG		120
++#define CLK_LSIO_S_CLI5_CFG		121
++#define CLK_LSIO_S_CLI6_CFG		122
++#define CLK_LSIO_S_CLI0_SPI		123
++#define CLK_LSIO_S_CLI1_SPI		124
++#define CLK_LSIO_S_CLI2_SPI		125
++#define CLK_LSIO_S_CLI3_SPI		126
++#define CLK_LSIO_S_CLI4_SPI		127
++#define CLK_LSIO_S_CLI5_SPI		128
++#define CLK_LSIO_S_CLI6_SPI		129
++#define CLK_LSIO_S_CLI0_I2C		130
++#define CLK_LSIO_S_CLI1_I2C		131
++#define CLK_LSIO_S_CLI2_I2C		132
++#define CLK_LSIO_S_CLI3_I2C		133
++#define CLK_LSIO_S_CLI4_I2C		134
++#define CLK_LSIO_S_CLI5_I2C		135
++#define CLK_LSIO_S_CLI6_I2C		136
++#define CLK_LSIO_S_CLI0_UART		137
++#define CLK_LSIO_S_CLI1_UART		138
++#define CLK_LSIO_S_CLI2_UART		139
++#define CLK_LSIO_S_CLI3_UART		140
++#define CLK_LSIO_S_CLI4_UART		141
++#define CLK_LSIO_S_CLI5_UART		142
++#define CLK_LSIO_S_CLI6_UART		143
++#define CLK_LSIO_S_CLI0_I3C		144
++#define CLK_LSIO_S_CLI1_I3C		145
++#define CLK_LSIO_S_CLI2_I3C		146
++#define CLK_LSIO_S_CLI3_I3C		147
++#define CLK_LSIO_S_CLI4_I3C		148
++#define CLK_LSIO_S_CLI5_I3C		149
++#define CLK_LSIO_S_CLI6_I3C		150
++
++#endif /* __DT_BINDINGS_CLOCK_GOOGLE_LGA_CPM_H */
+diff --git a/include/dt-bindings/power/google,lga-cpm.h b/include/dt-bindings/power/google,lga-cpm.h
+new file mode 100644
+index 000000000000..b9c5037728f9
+--- /dev/null
++++ b/include/dt-bindings/power/google,lga-cpm.h
+@@ -0,0 +1,79 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++
++#ifndef __DT_BINDINGS_POWER_GOOGLE_LGA_CPM_H
++#define __DT_BINDINGS_POWER_GOOGLE_LGA_CPM_H
++
++/* AOC */
++#define PD_SSWRP_AOC		0
++#define PD_AOC_CORE		1
++
++/* AURORA */
++#define PD_SSWRP_AURORA		2
++
++/* CODEC_3P */
++#define PD_SSWRP_CODEC_3P	3
++
++/* DPU */
++#define PD_DPU_DP		4
++#define PD_SSWRP_DPU		5
++#define PD_DPU_FE0		6
++#define PD_DPU_FE1		7
++#define PD_DPU_DSI0		8
++#define PD_DPU_DSI1		9
++
++/* EH */
++#define PD_SSWRP_EH		10
++
++/* G2D */
++#define PD_SSWRP_G2D		11
++#define PD_G2D_CORE		12
++
++/* GPDMA */
++#define PD_SSWRP_GPDMA		13
++
++/* GPU */
++#define PD_SSWRP_GPU		14
++
++/* GSW */
++#define PD_SSWRP_GSW		15
++
++/* HSIO_N */
++#define PD_SSWRP_HSIO_N		16
++#define PD_HSIO_N_USB		17
++#define PD_HSIO_N_USB_PSW	18
++#define PD_HSIO_N_PCIE		19
++#define PD_HSIO_N_DP		20
++#define PD_HSIO_N_EBU		21
++#define PD_HSIO_N_EBU_CORE	22
++
++/* HSIO_S */
++#define PD_SSWRP_HSIO_S		23
++#define PD_HSIO_S_UFS_PREP	24
++#define PD_HSIO_S_UFS		25
++#define PD_HSIO_S_PCIE		26
++#define PD_HSIO_S_SD		27
++
++/* ISPBE */
++#define PD_SSWRP_ISPBE		28
++
++/* ISPFE */
++#define PD_SSWRP_ISPFE		29
++#define PD_ISPFE_PIPE		30
++#define PD_ISPFE_CSIS		31
++
++/* LSIO_E */
++#define PD_SSWRP_LSIO_E		32
++#define PD_LSIO_E_CLI_GPIO	33
++
++/* LSIO_N */
++#define PD_SSWRP_LSIO_N		34
++#define PD_LSIO_N_CLI_GPIO	35
++
++/* LSIO_S */
++#define PD_SSWRP_LSIO_S		36
++#define PD_LSIO_S_CLI_GPIO	37
++
++/* TPU */
++#define PD_SSWRP_TPU		38
++
++#endif /* __DT_BINDINGS_POWER_GOOGLE_LGA_CPM_H */
 -- 
 2.56.1.831.g720f3f5937-goog
 
