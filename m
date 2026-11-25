@@ -1,39 +1,39 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.47.186.116
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795621583;
-	b=Qgv95LkloKE+5X5IdXSWrSByl6mzCyewDErhYy9XBCqrn3aP4f81aIsW2ZHKmPgjTJg+
-	 mMEBGB65BDQxUCGoNzz9FmpKJmiBvNFtsjQs0z8Qaubt6gVXQr9awqbyq55kopc8ax3br
-	 HuydFI4ZWwfxfXvoV//2t3CZg/mEWAsM2Z0CfCbMsNNTY5+7vYSW061G0KVFNEquaUx/4
-	 5U6WHaPlf4BM5CqcNv9ZQGllAEaF00xwYXKD4ZOB6ti4yvrm/B5rw5Ov1JKJEf+mgiPwJ
-	 T42kx25cXmC2PjyPVtWAVC/D6v+8dLsBHR6rme/1x/V7dlv7QAeeVYrezVFR3a/kPWw==
+	t=1795621585;
+	b=xei4teS9rpREi99MXP79jRYvD+7RSj/1eQltHLztbGH6xwOsE6Hqte9whDLxarItDjIy
+	 NBL0zf77IJz2nuxST2ZXez9GY/nqTweYyzMuoiD0YEYW/lZGuq7+UbGrGAhW9LtOAgwLT
+	 dvrFXLTy2TZkv02LC4jP9AWfiOsQJJTNKhvkrQmblVzegwhae9bxsXLxmEqz2Pzt9EOvU
+	 YUfgpFG9uBuf1TfF4+A5YzK8s74g9zdllAeYM54iBtVyscvgzoYpqAW4+qaIcYkd3PniV
+	 nV6g844svwQTEuJDUpF/0+QpnA4E2z97arIbmeaFPvDGsPVsEIevNI2po7VQ/zADuwg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795621583;
-	h=DMARC-Filter:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=PDSkEKkks/d7MiM2y0tVB++OxFGGHwNllUbyOwZf0uk=;
-	b=SWg7zOm0rFRFfhgVie3OHMSiM2o3mI6+zHjIO3kENCIWVLzFF4R2tiGjL0BYzBjY0pIz
-	 QdJVpsEgr5RzuTeoM82MpmwcdPa7aFudb0s+AqGBAuHZn+7Utn8nLBRznky+DZqOQrQIl
-	 ojXoJijDmsBi8LBHfzOiBE1eKfMODytO46pzYUu4hb6uhXnhtOfdHpsjmX1fcW6e9ggXQ
-	 oYcB/rJyA6XZ/y1T3WmqozrUDwukk1RJGHBXR83Lyj12wNekCgdBOSiPH9fF2QJ+WxYsa
-	 LorsP3SoCBsWcIZqa/LeeXg0YDImsy6jGTJ9YFW9no0sN+Spq9L6Es+EZ9w7wtT2Dgg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795621585;
+	h=DMARC-Filter:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key;
+	bh=drBy3hL6KwxHBhNonmFa34I0uyR+LFO1bY6d8UYU1NI=;
+	b=yLg85TE/mTPgQ0BxqvYz9pvGw46Le0gVr58KYqlG7w8liF6cZElwOwfG9YCthCwir45o
+	 3aByLDi+bxkJVUcooioYxBBdH5rd7fnTVgmQf1Efcs3jCT3fywGRpkQm0yzAMnJuZpg3f
+	 5O4QIo+wDwwL8HzEzjs6doBK9xwAQAzpfrWCDGQc+MgbS7EDVPP2rnNGcPupruYpKRxD0
+	 x88n6WW45j7R3JEStwD/DtHiJ4ZtklXFIzkM+W8B9TJ200HJRhrqglq1wJpQjy0CV35oY
+	 5LxZfCN8q/Cq4RvnCFil5mOlROoCVUhbLvwuDVhxttpsuiiAqGicA8jaFH0ryn531fQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=krgm.moe;
 	spf=pass smtp.mailfrom=krgm.moe;
 	arc=none smtp.remote-ip=103.47.186.116
 Received: from krgm.moe (krgm.moe [103.47.186.116])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CC0BC606A323;
-	Wed, 25 Nov 2026 15:46:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CC0BC606A323
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 084DF606A327;
+	Wed, 25 Nov 2026 15:46:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 084DF606A327
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=krgm.moe
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=krgm.moe
 Received: from yuno-laptop.local (unknown [103.47.186.116])
-	by krgm.moe (Postfix) with ESMTPSA id EA80083B;
-	Wed, 25 Nov 2026 21:16:17 +0530 (IST)
+	by krgm.moe (Postfix) with ESMTPSA id 4DB28859;
+	Wed, 25 Nov 2026 21:16:22 +0530 (IST)
 From: SignKirigami <prcups@krgm.moe>
-Subject: [PATCH v3 0/2] Add Qualcomm Netrani RPMh interconnect support
-Date: Wed, 25 Nov 2026 23:45:46 +0800
-Message-Id: <20261125-netrani-interconnect-v2-v3-0-1136e2cc6e3e@krgm.moe>
+Date: Wed, 25 Nov 2026 23:45:47 +0800
+Subject: [PATCH v3 1/2] dt-bindings: interconnect: Add Qualcomm Netrani
+ RPMh interconnect
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -45,73 +45,299 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WNTQ6CMBCFr0JmbQ2dAqIr72FY8DPAaJiathIN4
- e4WPIDJ23zJ995bwJNj8nBJFnA0s2crEcwhgXasZSDFXWTAFAutMVdCwdXCiiWQa60ItUHNqMr
- OlBqxSHs0ENtPRz2/9+Vb9WP/au7R3uY2Y2QfrPvs1zNu3v+XmFRlVDdnLPNMm9P14YbpOFmCa
- l3XLyM/kgPPAAAA
-X-Change-ID: 20261125-netrani-interconnect-v2-8d3812260f23
+Message-Id: <20261125-netrani-interconnect-v2-v3-1-1136e2cc6e3e@krgm.moe>
+References: <20261125-netrani-interconnect-v2-v3-0-1136e2cc6e3e@krgm.moe>
+In-Reply-To: <20261125-netrani-interconnect-v2-v3-0-1136e2cc6e3e@krgm.moe>
 To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, SignKirigami <prcups@krgm.moe>
 Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2011; i=prcups@krgm.moe;
- h=from:subject:message-id; bh=AmDdxPLBAE97NVWXGljfY0cxcowZORedOia0sutb3VQ=;
- b=owEBCQL2/ZANAwAIAUNLJdlxtMKiAcsmYgBrBwLBxd15yk+LaeveyQe0sMlnAIMe5pv6eijWG
- fQxlnKb+cSJAc8EAAEIADkWIQQKI/ZJLAWGn9r1JLZDSyXZcbTCogUCawcCwRsUgAAAAAAEAA5t
- YW51MiwyLjUrMS4xMiwyLDIACgkQQ0sl2XG0wqJe3wv/R+RPHtBF3jbsAe0dARyAuQuX8mxSExI
- sRjPB2yOxEkRpZ8M+uScpnKl9hTNOSazZ5A6PT0GVJNbIKRD69joeVVYmfWxga1fLOsGT3KgfZz
- dkU85tgLFFyqc2KAuIAaFTtGMvwxjsPJ8XhAah6FdiXKlCD9EZTTQ6beBy6TjNyZ54+Ylb6IdoN
- zEORIDxAajwvsYpJBT58g11r8SS0e2tnxCv6wJ7t2RhrSEqhQBGfhOI1MNZsYf+1hPGLFSg5cRJ
- GIKlk/ELwGoSZu89zfESuaKZ9E2zX4/ZQaxPcz7vUjaYCarwed1h+ry+eSUHam2CLg+m1YWTWtG
- SzwRfbcNVt/WJH3go37n1Z5JYj8z1r6chr1Z5NyNTpnOmRh5felcdE+8Ga0UJ562CqfBHhRwToL
- pCpQYJQxmmVVr/0bLeebnLt3a/HDgT+2IcGDqhHkm2PXcqkSe+a+cATfbw1u/PDnXGA4XseDjBa
- LXLOsJAVQwdaffY/dwffalIqS1P4fkf
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7668; i=prcups@krgm.moe;
+ h=from:subject:message-id; bh=rqSdbwdG7muDa+HRQnpOeBGd01qZ7LvI9VtwR7gxD3I=;
+ b=owEBCQL2/ZANAwAIAUNLJdlxtMKiAcsmYgBrBwLKZkLSGrUkIeR3lANK8sX/+JMerYEYQItEP
+ gL+gqfxOjOJAc8EAAEIADkWIQQKI/ZJLAWGn9r1JLZDSyXZcbTCogUCawcCyhsUgAAAAAAEAA5t
+ YW51MiwyLjUrMS4xMiwyLDIACgkQQ0sl2XG0wqLs5wv/VaG4EjKPNgkR09n5YrKcR6IbcG4fFQB
+ 1+7gj8rTiu+fy4Wqh/0EPdwncX5BJF1Q15slVjlNpX7BOG8Vrud8PpIRZdCyik37iLyJK/Gh2Uj
+ lgKPkXRo9OyVOVx6+a9t7XA/6YwukNQVUsEsNBhwbuTzeOqtJ2UEn02QU7kT5QZ2UYS9hnmYShO
+ FqDh5vW4CD1GndiQhRRGTESFaqZsO/gNE5Y44m580H1M6t8Tv2W9Kw8l0EoDDvpADBWZdFD9l49
+ ZDZN7IfuLhTc06HHT3u1Eb7tkK5qKfFHFWWMXt/nfiRz6u3kZTLVdcZpBBZdDv5VcUEtL0tyANB
+ 6PVSMXEwvFn5GBb83FzR6ByvEe+m4UQ3rlmiZNYjvz+5ujjiNOgBC4+jJictJ/4LTrta3EqxuS9
+ hZGNp7dhGKOjse9D8wQEeLrQ+A15t6fX6oz+Y2QCb9F1RrIl0P+H9aTwITKUpsaY43f5CpM3Ndb
+ vXqlhaEAo17Hk171yU0yN4qUzoZ+f2Y
 X-Developer-Key: i=prcups@krgm.moe; a=openpgp;
  fpr=0A23F6492C05869FDAF524B6434B25D971B4C2A2
 
-Add the devicetree bindings, interconnect port-ID header, and RPMh provider
-driver for Qualcomm Netrani (SM7435). The series registers twelve interconnect
-providers and sends aggregate bandwidth votes through BCMs in the applications
-RSC.
+Document the twelve Netrani RPMh interconnect provider compatibles and add
+the interconnect port-ID header used by future DTS consumers. The master
+and slave IDs in that header form part of the devicetree ABI.
 
+Signed-off-by: SignKirigami <prcups@krgm.moe>
 ---
-Changes in v3:
-- Remove the ARM64 defconfig update. default ARCH_QCOM is sufficient for the
-  driver, and ARM64 defconfig changes are maintained through the SoC tree.
-- Drop the redundant "bindings" suffix from the dt-bindings patch subject.
+ .../bindings/interconnect/qcom,netrani-rpmh.yaml   |  77 ++++++++++
+ .../dt-bindings/interconnect/qcom,netrani-rpmh.h   | 169 +++++++++++++++++++++
+ 2 files changed, 246 insertions(+)
 
-Changes in v2:
-- Make the binding self-contained by replacing the undefined parrot codename
-  with Netrani (SM7435), using the standard RPMh description, and linking to
-  the interconnect port-ID header.
-- Document the new port-ID header as part of the devicetree ABI.
-- Remove provider clocks from the binding because this implementation votes
-  bandwidth only and does not access NoC registers or configure QoS.
-- Expand the driver changelog to explain the bandwidth-only design.
-- Add the ARM64/COMPILE_TEST dependency and default ARCH_QCOM.
-- Enable CONFIG_INTERCONNECT_QCOM_NETRANI in the ARM64 defconfig.
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,netrani-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,netrani-rpmh.yaml
+new file mode 100644
+index 000000000..8857d2a67
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom,netrani-rpmh.yaml
+@@ -0,0 +1,77 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/qcom,netrani-rpmh.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm RPMh Network-On-Chip Interconnect on Netrani
++
++maintainers:
++  - SignKirigami <prcups@krgm.moe>
++
++description: |
++  RPMh interconnect providers support system bandwidth requirements through
++  RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
++  able to communicate with the BCM through the Resource State Coordinator (RSC)
++  associated with each execution environment. Provider nodes must point to at
++  least one RPMh device child node pertaining to their RSC and each provider
++  can map to multiple RPMh resources.
++
++  See also: include/dt-bindings/interconnect/qcom,netrani-rpmh.h
++
++properties:
++  compatible:
++    enum:
++      - qcom,netrani-aggre1-noc
++      - qcom,netrani-aggre2-noc
++      - qcom,netrani-clk-virt
++      - qcom,netrani-cnoc2
++      - qcom,netrani-cnoc3
++      - qcom,netrani-gem-noc
++      - qcom,netrani-lpass-ag-noc
++      - qcom,netrani-mc-virt
++      - qcom,netrani-mmss-noc
++      - qcom,netrani-nsp-noc
++      - qcom,netrani-pcie-anoc
++      - qcom,netrani-system-noc
++
++  reg:
++    maxItems: 1
++
++required:
++  - compatible
++
++allOf:
++  - $ref: qcom,rpmh-common.yaml#
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,netrani-clk-virt
++              - qcom,netrani-mc-virt
++    then:
++      properties:
++        reg: false
++    else:
++      required:
++        - reg
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    interconnect-0 {
++        compatible = "qcom,netrani-clk-virt";
++        #interconnect-cells = <1>;
++        qcom,bcm-voters = <&apps_bcm_voter>;
++    };
++
++    interconnect@16e0000 {
++        compatible = "qcom,netrani-aggre1-noc";
++        reg = <0x016e0000 0x1c080>;
++        #interconnect-cells = <1>;
++        qcom,bcm-voters = <&apps_bcm_voter>;
++    };
++...
+diff --git a/include/dt-bindings/interconnect/qcom,netrani-rpmh.h b/include/dt-bindings/interconnect/qcom,netrani-rpmh.h
+new file mode 100644
+index 000000000..d13573792
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,netrani-rpmh.h
+@@ -0,0 +1,169 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Copyright (c) 2021, The Linux Foundation. All rights reserved.
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_NETRANI_RPMH_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_NETRANI_RPMH_H
++
++/* AGGRE1 NOC */
++#define MASTER_QSPI_0	0
++#define MASTER_QUP_0	1
++#define MASTER_A1NOC_CFG	2
++#define MASTER_SDCC_1	3
++#define MASTER_UFS_MEM	4
++#define MASTER_USB3_0	5
++#define SLAVE_A1NOC_SNOC	6
++#define SLAVE_SERVICE_A1NOC	7
++
++/* AGGRE2 NOC */
++#define MASTER_QDSS_BAM	0
++#define MASTER_QUP_1	1
++#define MASTER_A2NOC_CFG	2
++#define MASTER_CNOC_A2NOC	3
++#define MASTER_CRYPTO	4
++#define MASTER_IPA	5
++#define MASTER_QDSS_ETR	6
++#define MASTER_QDSS_ETR_1	7
++#define MASTER_SDCC_2	8
++#define SLAVE_A2NOC_SNOC	9
++#define SLAVE_SERVICE_A2NOC	10
++
++/* CLK VIRT */
++#define MASTER_QUP_CORE_0	0
++#define MASTER_QUP_CORE_1	1
++#define SLAVE_QUP_CORE_0	2
++#define SLAVE_QUP_CORE_1	3
++
++/* CNOC2 */
++#define MASTER_CNOC3_CNOC2	0
++#define MASTER_QDSS_DAP	1
++#define SLAVE_AHB2PHY_SOUTH	2
++#define SLAVE_AHB2PHY_NORTH	3
++#define SLAVE_ANOC_THROTTLE_CFG	4
++#define SLAVE_CAMERA_CFG	5
++#define SLAVE_CLK_CTL	6
++#define SLAVE_RBCPR_CX_CFG	7
++#define SLAVE_RBCPR_MX_CFG	8
++#define SLAVE_CRYPTO_0_CFG	9
++#define SLAVE_CX_RDPM	10
++#define SLAVE_DISPLAY_CFG	11
++#define SLAVE_GFX3D_CFG	12
++#define SLAVE_IMEM_CFG	13
++#define SLAVE_IPA_CFG	14
++#define SLAVE_IPC_ROUTER_CFG	15
++#define SLAVE_LPASS	16
++#define SLAVE_CNOC_MSS	17
++#define SLAVE_MX_RDPM	18
++#define SLAVE_PCIE_0_CFG	19
++#define SLAVE_PDM	20
++#define SLAVE_PIMEM_CFG	21
++#define SLAVE_PMU_WRAPPER_CFG	22
++#define SLAVE_PRNG	23
++#define SLAVE_QSPI_0	24
++#define SLAVE_QUP_0	25
++#define SLAVE_QUP_1	26
++#define SLAVE_SDC1	27
++#define SLAVE_SDCC_2	28
++#define SLAVE_TCSR	29
++#define SLAVE_TLMM	30
++#define SLAVE_UFS_MEM_CFG	31
++#define SLAVE_USB3_0	32
++#define SLAVE_VENUS_CFG	33
++#define SLAVE_VSENSE_CTRL_CFG	34
++#define SLAVE_A1NOC_CFG	35
++#define SLAVE_A2NOC_CFG	36
++#define SLAVE_CNOC2_CNOC3	37
++#define SLAVE_CNOC_MNOC_CFG	38
++#define SLAVE_PCIE_ANOC_CFG	39
++#define SLAVE_SNOC_CFG	40
++
++/* CNOC3 */
++#define MASTER_CNOC2_CNOC3	0
++#define MASTER_GEM_NOC_CNOC	1
++#define MASTER_GEM_NOC_PCIE_SNOC	2
++#define SLAVE_AOSS	3
++#define SLAVE_APPSS	4
++#define SLAVE_CDSP_CFG	5
++#define SLAVE_QDSS_CFG	6
++#define SLAVE_TME_CFG	7
++#define SLAVE_WLAN	8
++#define SLAVE_CNOC3_CNOC2	9
++#define SLAVE_CNOC_A2NOC	10
++#define SLAVE_BOOT_IMEM	11
++#define SLAVE_IMEM	12
++#define SLAVE_PIMEM	13
++#define SLAVE_PCIE_0	14
++#define SLAVE_QDSS_STM	15
++#define SLAVE_TCU	16
++
++/* GEM NOC */
++#define MASTER_GPU_TCU	0
++#define MASTER_SYS_TCU	1
++#define MASTER_APPSS_PROC	2
++#define MASTER_GFX3D	3
++#define MASTER_MSS_PROC	4
++#define MASTER_MNOC_HF_MEM_NOC	5
++#define MASTER_MNOC_SF_MEM_NOC	6
++#define MASTER_COMPUTE_NOC	7
++#define MASTER_ANOC_PCIE_GEM_NOC	8
++#define MASTER_SNOC_GC_MEM_NOC	9
++#define MASTER_SNOC_SF_MEM_NOC	10
++#define MASTER_WLAN_Q6	11
++#define SLAVE_GEM_NOC_CNOC	12
++#define SLAVE_LLCC	13
++#define SLAVE_MEM_NOC_PCIE_SNOC	14
++
++/* LPASS AG NOC */
++#define MASTER_CNOC_LPASS_AG_NOC	0
++#define MASTER_LPASS_PROC	1
++#define SLAVE_LPASS_CORE_CFG	2
++#define SLAVE_LPASS_LPI_CFG	3
++#define SLAVE_LPASS_MPU_CFG	4
++#define SLAVE_LPASS_TOP_CFG	5
++#define SLAVE_LPASS_SNOC	6
++#define SLAVE_SERVICES_LPASS_AML_NOC	7
++#define SLAVE_SERVICE_LPASS_AG_NOC	8
++
++/* MC VIRT */
++#define MASTER_LLCC	0
++#define SLAVE_EBI1	1
++
++/* MMSS NOC */
++#define MASTER_CAMNOC_HF	0
++#define MASTER_CAMNOC_ICP	1
++#define MASTER_CAMNOC_SF	2
++#define MASTER_MDP	3
++#define MASTER_CNOC_MNOC_CFG	4
++#define MASTER_VIDEO_P0	5
++#define MASTER_VIDEO_PROC	6
++#define SLAVE_MNOC_HF_MEM_NOC	7
++#define SLAVE_MNOC_SF_MEM_NOC	8
++#define SLAVE_SERVICE_MNOC	9
++
++/* NSP NOC */
++#define MASTER_CDSP_NOC_CFG	0
++#define MASTER_CDSP_PROC	1
++#define SLAVE_CDSP_MEM_NOC	2
++#define SLAVE_SERVICE_NSP_NOC	3
++
++/* PCIE ANOC */
++#define MASTER_PCIE_ANOC_CFG	0
++#define MASTER_PCIE_0	1
++#define SLAVE_ANOC_PCIE_GEM_NOC	2
++#define SLAVE_SERVICE_PCIE_ANOC	3
++
++/* SYSTEM NOC */
++#define MASTER_GIC_AHB	0
++#define MASTER_A1NOC_SNOC	1
++#define MASTER_A2NOC_SNOC	2
++#define MASTER_LPASS_ANOC	3
++#define MASTER_SNOC_CFG	4
++#define MASTER_PIMEM	5
++#define MASTER_TME	6
++#define MASTER_GIC	7
++#define SLAVE_SNOC_GEM_NOC_GC	8
++#define SLAVE_SNOC_GEM_NOC_SF	9
++#define SLAVE_SERVICE_SNOC	10
++
++#endif
 
-v2: https://patch.msgid.link/20261125-netrani-interconnect-v2-v2-0-4eab92854137@krgm.moe
-v1: https://lore.kernel.org/all/20261124-netrani-interconnect-v1-v1-0-bb5efdb229cd@krgm.moe
-
----
-SignKirigami (2):
-      dt-bindings: interconnect: Add Qualcomm Netrani RPMh interconnect
-      interconnect: qcom: Add Netrani RPMh interconnect support
-
- .../bindings/interconnect/qcom,netrani-rpmh.yaml   |   77 +
- drivers/interconnect/qcom/Kconfig                  |   13 +
- drivers/interconnect/qcom/Makefile                 |    2 +
- drivers/interconnect/qcom/netrani.c                | 1723 ++++++++++++++++++++
- .../dt-bindings/interconnect/qcom,netrani-rpmh.h   |  169 ++
- 5 files changed, 1984 insertions(+)
----
-base-commit: 3fd56a2833c22f62eb84297d0dbd47739632f1a0
-change-id: 20261125-netrani-interconnect-v2-8d3812260f23
-
-Best regards,
---  
-SignKirigami <prcups@krgm.moe>
+-- 
+2.56.0
 
