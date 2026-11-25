@@ -1,78 +1,111 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.169
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.142
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795618427;
-	b=tYoOtixwAduH/5ImCD4oEz6IOcGCM3OP3rj5tSs5bJgkv33VQ6WCWU8V1H52Lus1tIfP
-	 zYvF0SFueyuo5+HwalFM8MJTBqDliqkAXJMnFpa7Q3DgSCV4zUF/opZbria9AxwQ092H0
-	 UClwpxUQFBmeygl3ZZu6jtxf5LZIkE7gRb60ZWZPhsAo79nnKHWa9S6Y51yVyyoMkl8Ko
-	 r9d3wBoDv+ayGJ0hyRyFZoP/oeMtWhErNEq9qku/0Int2g5WSp3vXBBUX0x+t0+tQg2ji
-	 x8MUBSFq20P1yhR5eC5jVxjGp1mI7S7cBB4RykC2vNZMmC3obFd5ZXQihKZZYylhPLQ==
+	t=1795618547;
+	b=reFuJPMgciOqxo3X7V8REgz4MU25yiJ45MD74lYU+2tm6xHsdj+bPeqUbbPRMSen94w6
+	 xqa+KhJnbXaBXoBPkwg2oiwqv+ec8ol/O1rmErmjWYTfXVE7thO7GVSBn7XaHcZlBagAv
+	 /rzbeJFq+PNc+Pd3c/0L9SfGDsQ5PtB5vFFWbnOGG2BWJofDEWe2nB+HQLarzFUOT0rbv
+	 tbQt5tSLJ0/gJvsIdyurQdilLAYSOMlxjOHVDLYJnCnMisuiOsNSs6U/RMWck0GzCqKD8
+	 6fcUzzm+U/4uNJJHtKqbRF+crYohKtdc9xEBdEdM8Gk9g7x1SXR/HCbFuet9T5F0x+A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795618427;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Received:
-	 X-Forwarded-Encrypted:X-Received:MIME-Version:References:In-Reply-To:
-	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
-	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=qhCwXvAyXM1RHsJVCIWLLXEAUGswl0Dh6+s1SkrTVk0=;
-	b=kBrHVIaigUNbf5lZDdc7cIGBH5UCbv6E+wKuwgKB/kcQftRimxhKd3bNts5p4txRTwfT
-	 PSGfx9L5xXbJYA32s9cuqz+fd+1ZEJwYmEezi4PwrSS8znqOLxkPd1G4UAa/nMW9G8ntc
-	 MQXKJSgl39+W7E5ndAqCMeWukWdxEkfuSJ/3GKCgGyBwVmeTdXINYtdOtiRgk9loDsceE
-	 PMpQbq4FZ5gEh5UND/UwV1eefJL3z242qt5Hjnp3vsHvNzS/EsY01sBsBBgMiRZOLriDZ
-	 6dgm6XHomJpeX+B13mmLGIdw2vjwtx+pYO7jal6YnTL/1jM/zOoAS51tpHWm3NPv83g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795618547;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
+	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
+	 X-ME-Sender:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
+	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
+	 References:Subject:Content-Type:Content-Transfer-Encoding;
+	bh=ihp3wtDmkMTGAaetu4/3iNCVgzuqUfNtgCb+oDeL7S8=;
+	b=dnZ1YwL4ZKYhtynlrBMOCzb345wKLe3h0+SMIiDGgIXJlXVXRgfHOgJLce/yTwhJotTw
+	 abySs3sri/LZ8U1ZQ0WMkPWV0iGIp18qD/0ExiCJ9OD/6KntKjdw7hTMOrr8H/muyJyk1
+	 e2XSsQ7zKbOXOXnAlOpNrgZxN9/q7VZulPicPxS8OyFup3f2u60utYbNSFzMkykZEWJEg
+	 G0sPL7Vguz9BZnNH93yvdU5FRcFxMbbwzQNbGB2MFDJgO1QEU5+9feYQaXNeIzg/tcI40
+	 wU9tYGyBO0VNUHXmhrObYXSaVqDUE2wdBZHp0pAZCbjzTePp8p0VsuI61eoVGOUUL/w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.128.169
-Received: from mail-yw1-f169.google.com (mail-yw1-f169.google.com [209.85.128.169])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=glider.be;
+	spf=pass smtp.mailfrom=glider.be;
+	dkim=pass header.d=glider.be header.i=@glider.be header.a=rsa-sha256 header.s=fm1 header.b=JsywVhe8;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Ec6sJCLA;
+	arc=none smtp.remote-ip=103.168.172.142
+Received: from flow-a7-smtp.messagingengine.com (flow-a7-smtp.messagingengine.com [103.168.172.142])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D6CE606A331
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 14:53:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7D6CE606A331
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f169.google.com with SMTP id 00721157ae682-8b4dd5cb4f6so40561007b3.2
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 06:53:47 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795618426; x=1796223226;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=qhCwXvAyXM1RHsJVCIWLLXEAUGswl0Dh6+s1SkrTVk0=;
-        b=NRlO+KQpZmj89oFFo43gd5LSk2jYXn989BSbfW2H1sB3ZeL0SMF9byax0762xfS2De
-         g+rvBaIegp/p8fwD97wziIxb1E1K0jglrRqfyDu4i3Tubvn8Yj+H+H+vdhwp2iFeJo7d
-         pLZxWaMuZpgx9EG2QZYv7Sv/UYUbW6jdHejSr8WBhYCGlqx6RI9JxNYUAnKk2N/stVHf
-         PCcxoEYuWx/DzEMNEIsdE/7rxm/Ya5bPz+EjuYq0AeCuzSpxmQrIWdMitv4MtSYRwBFm
-         u+RSHuU3IEMw3QSGunYnBbplVf3wBjSdSDhBlKApJjBcYTKdK0f4hJYpukhAhpPUIFOO
-         reaA==
-X-Forwarded-Encrypted: i=1; AL+hErGjXAPea/m3PdCVKfvbSckr73/1avI0VmPIHQuPykj+TWlQ60VnCSIwJiFy1qqEUlBgoxj9eOKs0Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/6JWTcFtlPhfpss14d3iwqRDWgXy4DacyFgpfX7TaVXg8Rn5OC
-	rfl4LS5N2h3x7ix0iEAuJQCALcATn2zSIxAvsIFl/ZATTWOHQytaEmuqq9jXwbWJ
-X-Gm-Gg: AZFdTZc3koGODFrWrxoT3g6bpHEuNQPu+giLOff3/ynBNF+6lgqHwqUDoJbO6WV+Vy5
-	BV476G9WUTLT48ssYxMnQUEYjI1VreDrKQsZfFM0e234m8oIRzdgti1zMkr803GSonS++FHhUOx
-	2kpnTjnMCa8T8bH/QVcrjFoSIoUJZMoRMwAUuYZgezaxWsmMN1fB8Zs0kLC++lTuIAdcl/BbsV2
-	aKdFNshPdWtkm7q3rdnAy/3we1jj/wS1+8/5/3+nC9WbHrjXEwHxDko7S0V4wHDvIvDcWDfAHk9
-	aUVmuOPcnKjpMqZSHTXesIRAxsZDyCVldIZsytrZ8Frlaitz1pYfVjODCZgCSIpe3gqLKyHcxQh
-	Lczok/QafLVX6tSlrG98l8KFPzXf3/VZ6P8TDvhuPN3tF6gNVUK24BTkokGpzyfpqi4idFYhPKc
-	cLPrJkEELBHhFro8/JpT28TDBkj7fXwTZgwG3GjbsxXpMXpTzsxUSerqQQBEFOSXB10zzPitOA+
-	2x2qQreunRUTidxfFUkSBHH3jG4jkPz9gGaNbeTaYchhQqqMebt+zZkJ1+pt7NNzgNXZDWr7BwR
-	9bKGLLO4m7eJ9iF4OoispBxmkE+7YbekVbEyEH1XRpocXJ9ArcZrchs+QBBOq7Pzp8B7Bvs0+zc
-	iK4CH3IiuHAeY
-X-Received: by 2002:a05:690c:998c:b0:8b4:e2dc:3f2e with SMTP id 00721157ae682-8b5203299cdmr82151087b3.8.1795618426430;
-        Wed, 25 Nov 2026 06:53:46 -0800 (PST)
-Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com. [209.85.217.46])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b5203325adsm73110627b3.37.2026.11.25.06.53.46
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 25 Nov 2026 06:53:46 -0800 (PST)
-Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-7d6a6776719so3575923137.1
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 06:53:46 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErGjxH/CMxapW3stTDaPVTwM+xXe9WOFXXafPv3ZkULB4s+VS2urpsyAgcymDNafFrsd7yIi9EATuQ==@vger.kernel.org
-X-Received: by 2002:a05:6122:2192:b0:5ec:7589:f9e0 with SMTP id
- 71dfb90a1353d-5ee8af4a3d9mr11210352e0c.11.1795617963345; Wed, 25 Nov 2026
- 06:46:03 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 844D6606A326
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 14:55:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 844D6606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=glider.be
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=glider.be
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=glider.be header.i=@glider.be header.a=rsa-sha256 header.s=fm1 header.b=JsywVhe8;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Ec6sJCLA
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailflow.phl.internal (Postfix) with ESMTP id 77AE113810C3
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 09:55:46 -0500 (EST)
+Received: from ams-imap-13 ([10.64.2.33])
+  by ams-compute-02.internal (MEProxy); Wed, 25 Nov 2026 09:55:46 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=glider.be; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1795618533;
+	 x=1795622133; bh=ihp3wtDmkMTGAaetu4/3iNCVgzuqUfNtgCb+oDeL7S8=; b=
+	JsywVhe8Z6msiXukg3D4BiZ732DFAjfNCMHwHzxnhnhBgMcwgU+GmjfUyk3vHwIb
+	dnPjYeV+DomiaQQoGg8XA4H0NvMFY+ULfwU7j4F+2UDiV3xiYrCBufq3jcyjXGli
+	LyR1pL9PUjFPNZiXB4BlwTx9/HwMt05d0L8l9+TkyZsr+ehHJIdm5jwBBNSQ4dD8
+	hquQmK2u/y9doI3cmpYk7Pw/90LGLf+ljw29FM4veEmf3DLkmYiPOT+G62e61E70
+	rsfqsdOfbmjHFBXjGcXb1a3ZCuTCAjIKkpCKZHm+5/D43woHaBOQQbkXp3DPItG1
+	ixaUUWe0jER7et9/CnviZg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795618533; x=
+	1795622133; bh=ihp3wtDmkMTGAaetu4/3iNCVgzuqUfNtgCb+oDeL7S8=; b=E
+	c6sJCLAsS5CZTeUBZooY1RfNRE/6rS2TpBCi3VkzB4gFqE86MoKYg9wjo4IX8ebv
+	76FBCE8eW8v87j7BSnp44HKMfA5ZIwAYBX7lgAL95rpA0Bq4ZWctublqjPrYUVWb
+	0YPOKluO3J6UJRO232iCqVAQMWWflm4mo/Dw8R0ST8JSDChtp96RhSccKg+MS05n
+	zr/d+iWs5ZktorArmSn5k2N/8yRZiqROoKvozEFxHrI+klDIu5VaY9Zz9uzDzdkE
+	qCIRugDXwvp6YD1UlkNEdkSVWnwBX4ljMYI/L5raABWcPIeo7BStWqmcqJCC6xSX
+	bSJDcuMYBlCrWNAlQiSsQ==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=glider.be a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1795618533; d=glider.be;
+	mf=PGdlZXJ0K3JlbmVzYXNAZ2xpZGVyLmJlPg==;
+	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
+	s=fm1:rsa-sha256:oR47l7JMio1EJei6ehajROlN/HyLlZhI2SRlijbz40GZ820
+	yw1WfBzuVZSlnm9zNcIK67ipuyvVvo7+/dP9HOOTH8mAulfubJX/m4E8e8T9ciFW
+	1O8MulCEaHop9bFJigwEV7lOAGJrjEn4AYX1z9Rv6VBGBOW3E6cY+ndR4yOQOeQJ
+	EoThqUwAbsFsrV+wV+3a0OoVks7cnW6dM/rTibzBUGZ2v2S5qW+oTRa4t/Aoz7mM
+	VbdhgB4vfiB/qHQ7ZmezvBA/Qhqe7kUDVHv8uHaJt9GzVYnQLa+X00sEqDp6tktw
+	A/mm9i6yRrdGFC1/5Lf+VUeAC7wSViuJNfZcyJA==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=12;
+	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
+	from,in-reply-to,message-id,mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:p5nCobD0aQLEVrz3Sw59BQ/reMp4o7Mba51rKXTu4Zk=:U4fzLuColTqc2Fm/WG9dhOXdiUbyTB0EoMrPkmpF/B0=;
+X-ME-Sender: <xms:3fYGaxh0Qh2UmcYE57RPJOjUJS8sDznpR3fCerBHlB5m0yztX6Kmew>
+    <xme:3fYGaw3SR9suwAIPfPfiDHXeTSG_x8B-iQMYDvWJYQWS4HfQdrXCRUQw0Y6C4tGf9
+    zQxTJudPQOErByyOppWaPeSdzxvhlSwgjvmiEscSwfXAnDDQDfraqA>
+X-ME-Proxy-Cause: dmFkZTGr+aIK/sBnvv6jPg3xd7G+76d3IgptFWiBM5tdghM8Xxmntb6wSMertmAyYP1+eg
+    vWYCbQdJ+sgXA8MQ9ez36n56XLB1l8ZA9xk6sOafxmmT6o6yowsI7woRtL9bAPURiGXjmY
+    Lh5T7nV5kdhOf40AFO4+m4RbZ/Cf7QERSSc7UGa0cgKgo814SYq9P7vw0Ngb1s4ojoMQS9
+    QtE9F/R5UDkPWBS70zPa9kVPdG4sqykkdWwi3F9ont+5nKk7LGZPX5BveiRwLsst8riC4n
+    p9cJ3FeI2hyXye3+HC1vkcV+KlOIn/n8OCJqsE/3KxKegBxHR2P6BdQnCTBkb5+zr8NKlJ
+    RNzY//Duerw/4yWfLUBjUSYp4RGzobwaxqCSsXOuoYhPogmYFWNnIKHVAfDSXjryc3Wxbh
+    ElgR5vyhtLFlujNjHgoaacxKvq0lzSvTAcqZujWf7xYjHwUDHGmvJL0pGO6RSa9yxrI7+d
+    cYgImjtSaee2+g5E0QIeUmpvP6n9GtD3VySR88trc/CnqJ5HwLx3aa2Knrhqboyb6qfK0m
+    q7DJrNgfO1dQo2GdqiPV6zoq4B0e2nU/dV/iPiatb58VWe3M6N0SqI8yCGVy580quaV3OR
+    /ojsQtR6cmez2TSiPqzR8yb3V4mvIVY5RfxmEocCxTqGk6pZfylgEHR8Mklg
+X-ME-Proxy: <xmx:4fYGazI9zLvXeKmBljWMGIQO6rRtQMLhB4zcONOzYjQJ7UuoYVNogA>
+    <xmx:4fYGa4VNLHhYWXpDIFtbK4y_nLAnNE_AwE7Qz4WU7kTWUeJXmj11fg>
+    <xmx:4fYGa8Jp2akxx1yU0weow9kQlisGyj4CRDM-AgWR-cfCSL4YM6Z5Xg>
+    <xmx:4fYGa1zXud2Lave2wGYs6edoq9nTM6TJ_zsOiDa6f9HkNpkNNxvJ9w>
+    <xmx:5fYGa8SJ8sk6EzaG79H354qTHDhU-HZPENbehVRc9uO_FNKgCEP-KLxb>
+Feedback-ID: ia0f84a9e:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id B92D6F8009C; Wed, 25 Nov 2026 09:55:25 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -82,90 +115,92 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1795029012.git.geert+renesas@glider.be> <1e9c5ac3-d82b-4af9-9946-0302cadf7404@baylibre.com>
-In-Reply-To: <1e9c5ac3-d82b-4af9-9946-0302cadf7404@baylibre.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 25 Nov 2026 15:45:51 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdX2BEAK27P0Da7Nei=DLaHgTdi=FiC5ZMhVegNuGwM5_Q@mail.gmail.com>
-X-Gm-Features: Aa3M54o5mrxb1PGlHbFHaQn6zx-fZm6HZYf4SleH1VTd0nBeXxZvXoTTF6NrZag
-Message-ID: <CAMuHMdX2BEAK27P0Da7Nei=DLaHgTdi=FiC5ZMhVegNuGwM5_Q@mail.gmail.com>
+X-ThreadId: AwlvDh2-Hwo3
+Date: Wed, 25 Nov 2026 15:55:05 +0100
+From: "Geert Uytterhoeven" <geert+renesas@glider.be>
+To: =?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>,
+ "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>
+Cc: "Wolfram Sang" <wsa+renesas@sang-engineering.com>,
+ "Rob Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "Stephen Boyd" <sboyd@kernel.org>,
+ "Brian Masney" <bmasney+clk@redhat.com>,
+ "Jerome Brunet" <jbrunet+clk@baylibre.com>, "Ulf Hansson" <ulfh@kernel.org>,
+ "Philipp Zabel" <p.zabel@pengutronix.de>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ "Marek Vasut" <marek.vasut+renesas@mailbox.org>,
+ "Bartosz Golaszewski" <bartosz.golaszewski@oss.qualcomm.com>,
+ "Konrad Dybcio" <konrad.dybcio@oss.qualcomm.com>,
+ "Kevin Hilman" <khilman@baylibre.com>, "Vinod Koul" <vkoul@kernel.org>,
+ "Kuninori Morimoto" <kuninori.morimoto.gx@renesas.com>,
+ "Paul Elder" <paul.elder+renesas@ideasonboard.com>,
+ "Sudeep Holla" <sudeep.holla@kernel.org>,
+ "Cristian Marussi" <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org
+Message-Id: <9ae2cb61-a94f-46f0-876b-66142c99c4be@app.fastmail.com>
+In-Reply-To: <fc13a7a8-b825-400c-9ea0-ceb2670dc478@baylibre.com>
+References: <cover.1795029012.git.geert+renesas@glider.be>
+ <1e9c5ac3-d82b-4af9-9946-0302cadf7404@baylibre.com>
+ <20261119234759.GB2324725@killaraus.ideasonboard.com>
+ <19c3745a-6308-46ff-bb37-3acc88fe22e2@baylibre.com>
+ <awAqqg6F2Z1t55x2@ninjato>
+ <d94ad9ca-afdd-4301-a69c-0bbad5b334fa@baylibre.com>
+ <20261123103633.GB2959742@killaraus.ideasonboard.com>
+ <fc13a7a8-b825-400c-9ea0-ceb2670dc478@baylibre.com>
 Subject: Re: [PATCH v5 00/15] R-Car X5H Ironhide CPG/MDLC SCMI remapping support
-To: =?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>, 
-	Vinod Koul <vkoul@kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, 
-	Paul Elder <paul.elder+renesas@ideasonboard.com>, 
-	Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-Hi Cl=C3=A9ment,
+Hi Cl=C4=99ment,
 
-On Thu, 19 Nov 2026 at 15:47, Cl=C3=A9ment Le Goffic <clegoffic@baylibre.co=
-m> wrote:
-> On 11/18/26 8:44 PM, Geert Uytterhoeven wrote:
-> > TL;DR:
-> >
-> >     Describe hardware in DT, and perform mapping to abstractions offere=
-d
-> >     by SCMI in Linux.
+On Mon, Nov 23, 2026, at 16:46, Cl=C3=A9ment Le Goffic wrote:
+> On 11/23/26 11:36 AM, Laurent Pinchart wrote:
+>>> I know several SDK versions exist, and supporting several of them is=
+ work for a vendor tree.
+>>> As Geert's cover says, "While upstream Linux must only support suffi=
+ciently mature firmware versions, vendor trees (e.g. renesas-lts) may st=
+ill want to support development firmware versions".
+>>> Each SDK version can then have its own DT there.
+>>=20
+>> That's not how DT works. Please be gentle with Krzysztof and avoid
+>> increasing his blood pressure :-)
 >
-> A question on the approach
-> An SCMI variant DT could mark the CPG and MDLC status =3D "reserved" and =
-point the consumers at arm,scmi, while the U-Boot IPL keeps the hardware DT=
-.
+> These DTs would stay in the vendor tree, so they would not reach Krzys=
+ztof :-)
+> Upstream would have one SCMI DT, as v5 has one table.
 
-In theory, yes.
+So we can't upstream DT, until we have stable IDs for real?
 
-Status =3D "reserved" would work fine for a leaf device (e.g. a network
-interface), without further dependencies.
+> I also see technical weaknesses in the remapping:
+> It adds a second layer of ids on top of the SCMI ids, so each new=20
+> device needs entries in the kernel tables as well as its DT node.
 
-For core components like the CPG and MDLC its different, as every single
-module on the SoCs makes use of them.
+That's not unlike the case with real hardware provider drivers: when a
+new device needs a new clock, it needs to be added to the hardware
+driver.
 
-> Since v4, the series assumes the SCMI ids are stable:
->
-> >   - Remove dependencies by making assumptions and dropping disputed
-> >     items, to move this series forward:
-> >       - Assume all SCMI IDs are stable.
-> If they are, why not using them in the DT directly?
+And the remapping driver takes care of all other impedance mismatches
+between SCMI and the hardware, in a single spot, not distributed across
+all individual device drivers.
 
-Because:
-  1. They are not stable!
-     We only _assumed_ they are stable, so we could relax dependencies.
-     With that assumption, there is no longer a need for the (contented)
-     addition of scmi_get_base_info(), which would be needed to
-     distinguish among different firmware using e.g. different ID
-     spaces.
-     FTR, without scmi_get_base_info() we're at the same playing field
-     level as some other SoCs vendors that don't bump their version
-     numbers at all when making incompatible changes ;-)
+> And Zephyr already uses the SCMI ids in its DT for this chip, without=20
+> such a layer.
 
-  2. That can't work for now, due to limitations/deficiencies of the
-     current SCMI firmware specification and/or firmware implementation.
-
-  3. Last but not least, they are not hardware description.
+Zephyr has less complex software abstractions than Linux, and
+might not care about DT stability.
 
 Gr{oetje,eeting}s,
 
-                        Geert
+                                                Geert
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m=
+68k.org
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+In personal conversations with technical people, I call myself a hacker.=
+ But
+when I'm talking to journalists I just say "programmer" or something lik=
+e that.
+                                                            -- Linus Tor=
+valds
