@@ -1,75 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795627376;
-	b=1+VLPp53ROGYAfI2iPMnMIL+c/oNG+bERB/W7mYmmPFzayS6MFG0NsOlVWYoUPkWrfYQ
-	 0P2VMoVNwGdpGANqw0Iw8yj4zu3SmN1MYf9RxIFaEdyMShAvVr5mLH02djZjBxLWVKxy+
-	 m7Cc+uUp3Ail3nEusJHcKI9f5yO97B1XRFmOryGAT0uTSHtYOgmoZJU21yqB4AWtBWcMC
-	 6HdTvyz8b6V81icqu2sLay7XtllEpyrte4KiGSOXvopDzkzyxOHYnomFjxrYc9yADSVM8
-	 bCJ0RnXlTvo1Om4I0mILsJYotqdjaJPqXeYpcHUOUzartxbi75Y5ye8WH4uZn18VXag==
+	t=1795627686;
+	b=3XKWv39qNW3x2hZIRU9bMvgocF41xRhAtaHvPIHjmwGFbixoWybQyFdQxHbYbjUS4KKV
+	 /ZLa7HQhjF7yotUuqk3w6s1j7J8i0avwJgIpl5VZ9bZVTxfNnnHRRkEF/6Xj6WaNCPzzY
+	 oeay9Jc4aVf/emZjGKJwdV+inp1xI7fRL6kn3wiUsr/cIDFjb9tAlsUIlA/zHAVzeYjYT
+	 fArOVJVS1KRpgG8UTm6qos5UtQxYJuasYo3kqdHG+/ip48b+fYqgGyzyxVJTdOzbhR8bd
+	 L8uMV0Hl5R3VirEBZuaz5GTZqxnNlI2ZAX1evvveHVr1XR9ihYxrAfjJEyrE7hTtTkw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795627376;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:Organization;
-	bh=Gwp7COi8aH0WKS2vOklOD3qltSEOsEgVZ6Ai5R89emg=;
-	b=BDPSazVp3MVEqlidzT3kUOwQ5rWowpT4M2iXyIPBtaH0e3a/NJ9hyCNCTbcKdLNoyjd6
-	 aZdwXKQyMweUyHdqZRe0jh5bpgKYI6l0+0wli96OCSIdUH6P7GnslavgV53571tGvX1fJ
-	 Lc2VaiKv/JoElTSyo32TVC+FaH3xft2U0PBPB5FSVLY4s9PTBzm2lijud0IXfOU+aSKMh
-	 sO75ruzos10Mp2nyQA0+OKLlI9cGskrujzGdnzrKcW5q87BECYk2JEs0jJ2TcxqNkMr08
-	 h7J0f/2XOdLhGgHjaPoNvB+TgOzr99QT51wQxy9alQGPe4+xe6vZcwpplw4+bKAPt5g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795627686;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:From:
+	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=VVkUIIQqS3MHyMZep+1422xStdzEt776xX6915io3O0=;
+	b=p0/oo6Pa3No/NkhYXcghRNs7Tcti9ZChWTsEP0RHF+vTmHP3Wr9JARESDpwW0/8+5vTL
+	 bZu9VyM753RheVX7/5Wo2ma4cnrbmyX0LdgCmPXfL9VV3ySWwFkAUzU42ouspST5vtB6w
+	 rgY52Hlcx22QFzzfpzTlbsYhcw66h4P7BUo5XzPnxs82/KQhB800LEbwQbjXqOqWX8y8f
+	 /DSK7amiNo2ZgnrL1S05DaciE45AVln/4kOfokD/ag864esZev43YGVKu+xTZJ/RkNmk1
+	 Ta86veChD76edgKjhmEiNDY3+UKJJrkWZbKzM+v56LukmunZmLQq9IpF24Dqi90FIJQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.intel.com;
-	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gDpeDhd8;
-	arc=none smtp.remote-ip=192.198.163.14
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A1B5606A323;
-	Wed, 25 Nov 2026 17:22:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5A1B5606A323
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=MnR2e2GM;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 84B51606A327;
+	Wed, 25 Nov 2026 17:28:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 84B51606A327
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gDpeDhd8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795627376; x=1827163376;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=vwNOLE5dKieH7P65p0sz5Ql7CO+aAYr55/SBEEgUlc4=;
-  b=gDpeDhd8tzTSrde850S7c6QlGDkeLeRC3cGSHWah+K0yV5JXOYyti1DM
-   P56gy7zbZMxbRqn1UBIUlRVuHfuD9Bc6lyUw8Ip6MBn9bWWrLR4cCoMQW
-   1/LjuZX361yi/tAyAjo7z96zIZvUDUTQfA9BIqgSwoxgSdiOoMj3OtDXc
-   OtpiIITq9NbLHiDDSMmkqzEV6MgoSJDvW27SHQeDM2NgyWQDOiyc8zo6O
-   0DhExtvngf7t2J2GWBWy5SCm7MJ0yvtGfD138yAxlmOZcI8wU94lA1rpa
-   FDGw71Yfibe029AAPAwJViuup557ItgTS3u/FkkRUjYenEdxG1GnsKMeY
-   A==;
-X-CSE-ConnectionGUID: cFNUJ4ZvRtq+gm21tNBIxA==
-X-CSE-MsgGUID: HJ4VpjA2Q82F69qQ+DHing==
-X-IronPort-AV: E=McAfee;i="6800,10657,11977"; a="4455002"
-X-IronPort-AV: E=Sophos;i="6.27,233,1787036400"; 
-   d="scan'208";a="4455002"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2026 09:22:55 -0800
-X-CSE-ConnectionGUID: 8wpN/hBdSTqgZp/XfF47rg==
-X-CSE-MsgGUID: yj9tOweNRze8zDzR2Lh7rA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,233,1787036400"; 
-   d="scan'208";a="12508058"
-Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.244.73])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2026 09:22:53 -0800
-Date: Wed, 25 Nov 2026 19:22:51 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
-	Linux PM <linux-pm@vger.kernel.org>, Armin Wolf <w_armin@gmx.de>
-Subject: Re: [PATCH v2 3/5] ACPI: fan: Adjust driver removal code ordering
-Message-ID: <awcZa3sMlXv5bUBB@ashevche-desk.local>
-References: <2859850.mvXUDI8C0e@rafael.j.wysocki>
- <3445012.aeNJFYEL58@rafael.j.wysocki>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=MnR2e2GM
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 99AD8339;
+	Wed, 25 Nov 2026 09:28:02 -0800 (PST)
+Received: from [10.57.72.178] (unknown [10.57.72.178])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C14863F86F;
+	Wed, 25 Nov 2026 09:28:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1795627685; bh=4+YY4HcJ7LW9Jg+pxZvWjeqMKGEA1WZOWsfSTDcENK4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=MnR2e2GMIAu5C3Aque31T/xkApvRyHV7vZPrHLfwv12arzyFc8p+faBH2+HlNOn08
+	 Fh3gQBlQG9f92YFgd+0iBOfgH4E+nyPJDEE8qaFpn3HMFow1pZ7wIO2xiUOcCSTp62
+	 RIeyZaGa6bXDL1zjfqJzjQrqONyRa4pf0VEuZDUE=
+Message-ID: <7785bfed-3c70-49be-92bb-3e35d12df467@arm.com>
+Date: Wed, 25 Nov 2026 17:28:01 +0000
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -79,25 +53,67 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3445012.aeNJFYEL58@rafael.j.wysocki>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCHv2] thermal: samsung: acpm-tmu: Fix spurious CPU throttling
+To: Tudor Ambarus <tudor.ambarus@linaro.org>, bzolnier@gmail.com
+Cc: krzk@kernel.org, rafael@kernel.org, daniel.lezcano@kernel.org,
+ lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20261124132756.1306906-1-christian.loehle@arm.com>
+ <2b369a93-d20b-4df7-b667-1775117e9470@linaro.org>
+From: Christian Loehle <christian.loehle@arm.com>
+Content-Language: en-US
+In-Reply-To: <2b369a93-d20b-4df7-b667-1775117e9470@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 25, 2026 at 03:08:48PM +0100, Rafael J. Wysocki wrote:
+On 11/25/26 15:10, Tudor Ambarus wrote:
+> Hi, Christian,
 > 
-> Change the ordering of acpi_fan_remove() code so that it reflects the
-> ordering of the rollback path in acpi_fan_probe() where the sysfs
-> attributes are removed when the thermal class cooling device is not
-> there.
+> I tested and I confirm the CPU throttling.
 > 
-> No intentional functional impact.
+> The patch is looking good. I have a design question please.
+> 
+> On 11/24/26 3:27 PM, Christian Loehle wrote:
+>> acpm_tmu_set_trips() supplies two thresholds, but the ACPM command writes
+>> all eight slots, zero-filling the rest. On GS101, slot 7 limits CPU clocks
+>> independently of its interrupt mask. Setting it to 0 C limits all three
+>> clusters to about 200 MHz while cpufreq reports the requested frequencies.
+>> This was found through trial and error while tracking EAS regressions.
+>>
+>> Program slot 7 from the lowest active critical trip. Cache the low/high
+> Do you think we shall program slot 7 from the hot trip rather than from
+> the critical one? If we keep the hardware throttle and linux shutdown at
+> the same temperature, the throttle only matters if linux fails to shut down.
+> 
+> As you already noticed, downstream programms slot 7 from the zone's last trip,
+> which is the hot trip (115 C), there's no critical trip defined in the zones.
+> I can't tell why downstream misses a critical trip and why the hot one is
+> in slot 7. But I guess it doesn't matter too much because in upstream,
+> the critical trip doesn't need a threshold slot of its own (we use the
+> low/high window in slots 0 and 1), so I think we could use the hot trip for
+> slot 7, even if there are critical trips defined.
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Yup that makes sense, and if I had actually looked at the downstream before
+v1 I probably would've come up with the same thing, the actual policy of
+115C vs 105C I'm indifferent to, so will update.
+Thanks!
 
--- 
-With Best Regards,
-Andy Shevchenko
+> 
+>> window and update the critical limit from set_trip_temp(), because the
+>> thermal core skips set_trips() when that window is unchanged.
+>>
+>> Suggested-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+> thank you, but it's not needed, let's drop it, I commented only on the
+> implementation.
+> 
+> In case you're going to send a v3. I guess Daniel prefers the subject line
+> as "thermal/drivers/samsung/acpm-tmu:".
 
+Ack
+
+> 
+> Cheers,
+> ta
+> 
 
