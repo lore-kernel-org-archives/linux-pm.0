@@ -1,99 +1,125 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795596494;
-	b=ZalZu94eSFUec8DGUlKW4/ycRxq9RHVrVEurTYJRRnOTZ7x3u/m7rSrPIwOmEswq8nEW
-	 nC/Lolm4ms6rFZfP6veiATGuuVgMykvw5Bg97OcUNGSsBXcVuBL/OdKfwyCs7Dr1pTuV7
-	 4r4hMfQm58W0Z3pErFvnjGMWNmYVpUHTayBZgWGxyUSeLys+UehsmAu8mI72ZPCbZYTUt
-	 knu6a/6qJ5bLTztwUjxrJexqunc/g4Ab/57oTWd0hFBLQroZpUiV87S9E6xubO5mLAtwp
-	 H+kLNCdJLIfx7SjZnt4bUGfdv/hIZlYRWesbvY+DjbaGg1cjXlNsIBTTQoGEypkh5BA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795596494;
-	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Subject:From:To:Cc:
-	 Date:In-Reply-To:References:Content-Type:Content-Transfer-Encoding:
-	 User-Agent:MIME-Version;
-	bh=YkAdyXDhvxMbRBkp6QhLOEe1Q7AO6B3AXM55qEFp9lo=;
-	b=kjwd77O7yJ8nG9EwvqDoeJ8ti6K94CW2GLbWn1UlC2FSw2UHt12kVJPv3HrTgGWSzeS0
-	 ycF2CzxTy3lMJk3TrA427CDzWoHnnoEdAVxR9e3Y6J7MXDY3xrx9TY4Ne7fJMVvXe6mCS
-	 NEyp90Tq3VZtfePGG2TXk8q/bgNVEvCCw3bxv+UR4ZGFnwJ9/xzbGNXstJOTr0QX01okd
-	 /kssRJ+17lMzTiBWtFGXPAStAwuXhV6//oz6MJErhc2suUkbbRt0OMEZ9DuZcOFaVV+hF
-	 lJ42aXVZq4FLLJbj624/egtYaRjYbWCatLtnMNiBzbgCnNklGM9NOdnfCzUcl6/mFjA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=none header.from=pengutronix.de;
-	spf=pass smtp.mailfrom=pengutronix.de;
-	dkim=pass header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b=VxswUdnZ;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=185.203.200.13
-Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795598338;
+	b=usWrplSYBFnLzi27vqxkCcgncZMvIIJjQJ6jpS+Bp0AJX5c+LxF/n/zGy3GNgwEQ6ejw
+	 yBcJADtL6ciL2CnaAd3OKLexKBkJNjXkcUPCUY0DaV3+WZkkm63JjbSVRhUTJMj4JAV01
+	 h0RPpuAEbeGzq+4R++kPGcXIP0TX80AMCIEXrHgs9XuFBVrsIhtB+Hf+c/TtT9oIRda8m
+	 GNbQlaK5MpAvKhJNt3WS9W4ZE8d1kQr0fIZUY2FWlCu4dYEjcQtDTIbSMV4uOEfrt+25b
+	 nP4nGST8GqKDPUVfrNWlt45BVfrNplBeMzc2U1Oe24PhudNNHkPCiExYTLJtua1nU+w==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795598338;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Date:From:
+	 To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:Content-Transfer-Encoding:In-Reply-To:
+	 X-Proofpoint-Spam-Details-Enc:X-Authority-Analysis:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=jMbaKJz9g3EncUc8DUtHl36zo+oWHqVd7GDKw3y5cJs=;
+	b=vmKe25hhAaNf/72ZY+m3YPhDxtUa+OmxNnf9+dQuVy3NdIcKuaewMyYyMaDdfVQv3qMw
+	 xHkiroStmMkzbWf45taWMcEf0Xb0FOf8iNlaWZh9XZxtrFGmq8oqg4UTEIJ0tCmOikNXg
+	 lVY+zdlFuVF4yjZGcAC7DTv/Fygc2M5jw8WU/p12/V/BqTmt96fwiqoNGFpXrHgkfsjLF
+	 apLNnFAIPnj70GIK32tRzXDfet7Z9VvR/49uc7qxnP8cMFmu93Zg4WKZxI6mUl4B+Buxr
+	 aiwUOQm9j0JMhfsvT300U4o8oAGK+gGI5fJ5nZ7pJh9XGb8eRSSr7A00iduJL7x15yQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=GWgbSZ4T;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VRXEA7fw;
+	arc=none smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E035B606A331;
-	Wed, 25 Nov 2026 08:48:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E035B606A331
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85811606A691
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 09:18:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 85811606A691
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pengutronix.de header.i=@pengutronix.de header.a=rsa-sha256 header.s=20260414 header.b=VxswUdnZ
-Received: from [IPv6:2a0a:edc0:0:900:1d::4e] (lupine.office.stw.pengutronix.de [IPv6:2a0a:edc0:0:900:1d::4e])
-	(Authenticated sender: pza@pengutronix.de)
-	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id 07059205A40;
-	Wed, 25 Nov 2026 09:48:05 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
-	s=20260414; t=1795596485;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YkAdyXDhvxMbRBkp6QhLOEe1Q7AO6B3AXM55qEFp9lo=;
-	b=VxswUdnZ8zZxlG5K8v8LMwwD3+rEe0Ben6LtoW+UoWP0aSf4mODGbC1+uanTjtonl18p3W
-	whniGtoYwAF5KzvpUe2gZBJt3ZU44Vu39ddmIeJqI9Y4dIaHyVS+y31QGoDJI/Biuzdwsb
-	SDLuthBxcKO1JWAQTYa1ky4KtxZO/baqpcZBOy7ViitMUEN9SZaI08jVxuZ66Zr6knwB9/
-	ZR8f3+8TtaSpiWOzi/nIiUXRmkXbYnV0ZPJH/ciIa8QosV9ftqkNRe9oBg1acezhAx0umP
-	K9ABwbJMqnEylxGnPo/hb3UkHV4H8I0zSRsF2EsZudhvK5NJ7ZkXbIIANzoNZA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
-	s=20260414; t=1795596485;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YkAdyXDhvxMbRBkp6QhLOEe1Q7AO6B3AXM55qEFp9lo=;
-	b=a4BbdNpK5Zw/lp7YDH8eLh8iOa15oE+eZ6QafE1egvprRUdf7/2cieX+gnOZSWxWtCoQKh
-	PPibIQa3XuBva4Wp3Fe6zoUt0lUnHKbrTK7TvPyyrsJzQY1Z4Eovu1afqtrwho5jf0k0JT
-	D54qs4MgJULawdk4HDj55BJJIGyZ3QmnIjThpzxKJJ2qPBTxNvQWCbXOtw22V2uq3E/Cpk
-	vFzFAW6230132pBQ4025UWOClshecdmx6DTJYuP1vggU8V/APbtdM7fc4hD9VVzU+kQNMI
-	9BOa1k3FcR3iuTEWonnYr5kzGkIChYAltbk62SWF6GE/nZkLsJY08OH3dimOyg==
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=pza@pengutronix.de smtp.mailfrom=p.zabel@pengutronix.de
-ARC-Seal: i=1; s=20260414; d=pengutronix.de; t=1795596485; a=rsa-sha256;
-	cv=none;
-	b=DoQnf0dJy5UTJ4fHT2nESiGG6WRMGq5wR6/d479i6cQIHS8voXrBl+HUyJfpRWJdiJuIJK
-	WJig4zqFayZpMmRIWSM9ygk7ZFuVV0tQlF+AxlWjUyQ418pit3CEltkHKzhMxNL28Pv3Y+
-	PRkur0UQg9WEKJiyckDFQdZBc0rKsYXwrE9yokweU6WZDtNV8UJvcd4R/bOTXHpqFxFCTh
-	rMDohYDNKo/LX69L1sbsSwmn7fh6lgRJ1zuK2/UksJvYE9qOUd3UZT1TKgC8JA4z466B0e
-	CEWzw8PwfhIGAaqCXCOFYkdQ4luWMNWA+Kv9AKz3S/njkkx25fNg/kGhC9Q+7Q==
-Message-ID: <f89e293688feb3f9bcdce0f1b6fed0ee424e5cd8.camel@pengutronix.de>
-Subject: Re: [PATCH v2 5/9] reset: google: Add CPM reset driver
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: Brian Norris <briannorris@chromium.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski
-	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Stephen Boyd
-	 <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet
-	 <jbrunet+clk@baylibre.com>, Thomas Gleixner <tglx@kernel.org>, Ulf Hansson
-	 <ulfh@kernel.org>, Peter Griffin <peter.griffin@linaro.org>
-Cc: Tudor Ambarus <tudor.ambarus@linaro.org>, =?ISO-8859-1?Q?Andr=E9?=
- Draszik <andre.draszik@linaro.org>, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Radu Rendec <radu@rendec.net>, Jakub
- =?UTF-8?Q?G=C5=82owacki?=	 <jglow@google.com>, linux-clk@vger.kernel.org,
- Douglas Anderson	 <dianders@chromium.org>, devicetree@vger.kernel.org,
- linux-pm@vger.kernel.org,  Mariano Marciello <mmarciello@google.com>,
- google-soc@lists.linux.dev
-Date: Wed, 25 Nov 2026 09:48:04 +0100
-In-Reply-To: <20261124160343.v2.5.I0b1ad34a718a9b5f667d2481041970ea45989dd3@changeid>
-References: <20261125000349.3385325-1-briannorris@chromium.org>
-	 <20261124160343.v2.5.I0b1ad34a718a9b5f667d2481041970ea45989dd3@changeid>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=GWgbSZ4T;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VRXEA7fw
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AP68Xc0299998
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 09:18:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	jMbaKJz9g3EncUc8DUtHl36zo+oWHqVd7GDKw3y5cJs=; b=GWgbSZ4TNz9+5qMl
+	QkTo3W4EpXrRntBZDKsTi93htfjF1ObcWORNOizPjsspuh5silkP+R8pvJFUmcLk
+	KDDNGlRc6aDby0XHutQ2sMzeD38f6AcIvjeTNbDrMd6EaJ9EAgzDsBBaUepaothL
+	/6gLbWIWflflACvnfszeW1yZwp8nKJrqxmykGhh5LMP4Irh0Bxj7YdZKwmqUa9AL
+	hERoiizUvEr73p20tFBn572LC/Mmte2oRR9/l+0bwvg3McT9e0SOFpmOLZ3avStZ
+	gTHyeOZ+Dh+kuOZKXZnuzh28fgKhdsFM694WIRew4MevQU8d2UJ7DFPLB1aVnKWY
+	DhUVLw==
+Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j5n6rsvy4-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 09:18:56 +0000 (GMT)
+Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-3b41f4ca1bfso4388355a91.1
+        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 01:18:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795598336; x=1796203136; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=jMbaKJz9g3EncUc8DUtHl36zo+oWHqVd7GDKw3y5cJs=;
+        b=VRXEA7fwf+fBmdgY4/fleky8uFnW9VeuM1Rjp7nEti2NYI3/07V/N1UjDjFlPGC4/8
+         Uogn4h+Tx5oIzxcQZ/q9E5oZud/YkNkFITzKVU8l8U9g/LdBNhEa8eRlrqpcmoUI0L5A
+         eKi9cO4QZ2ti2NyiIYDSMEvs6EACG3uIJ3/cjTaw4Wl/6qEec7yZoT5vnkLG/we0LGhj
+         3tNJASX6r77Pizmb+EeZB+Nc6jTi2pYcG99ZF0adLfdqSs2XQJhblNfxQk2SgHWrjdfI
+         F8qvCGhhBdJsRzuybkP9bgrnvj6a695ShFlfZJ6y77LPs4/d3T/yD72j12l4P/UVm7po
+         o+gw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795598336; x=1796203136;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=jMbaKJz9g3EncUc8DUtHl36zo+oWHqVd7GDKw3y5cJs=;
+        b=fJFHvKQcovOydHc2IybBCRe9MeOH9CjjaLoTEIYnyzTJetV4SQBAH1+ti1nuefePAy
+         I6q9zk7qjavT+6SuR969n79817nwk9oaRXzw9+1VxT6MYG51DFMI+mRuyR+YRPPQaU5D
+         8aCIDrVfFhFzYJfGi80NUmQwWB+Oo1yZO6bbA3Xj6yJuwuX47j15qlngFn2aO9vaynRd
+         DQrL3jJ9XULgra+hRCxZShQl5+dzsXLxryA0Tbins97Zibrlr5IhNDXj3PsiiDe01T9k
+         lwFQHCR2uvLZRoVKRY7TSRcyXrUnUZV7i+T1totz+3AT+MNLusUeWFCUqDBLnyX3ZqOO
+         zE/g==
+X-Forwarded-Encrypted: i=1; AL+hErHAy+kJVJdlniW8hy/yEgJUpzRm+cNBlpwtK9jDTyxn4ngOt2uQw4kf2J7sWGMj2s12h/TwtnZ3ww==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8oFIx4qt0op7b0j8yCErMsRGOt7kok+uML3BinOm6/6WMK1mJc
+	asoapWXMscAXZhH8MBKDAPRSFgh5OGbHf6y3gBTKqPwM4GSMuaIt+lxRFuMr4LVTESVbQsACtHa
+	92qdbHXfCv6jWkDw2cNcYpCybkq+XDW8C1GVkJW6+8QAEE4Q8C0Ibv/W5i4ADJg==
+X-Gm-Gg: AZFdTZeJN6AtLu+KIG8SsP6ttuCyXeSW0e6ZYD1Le5lYjMi6NpmZg393zRgoe2S5bxc
+	PidNm9Ejqao48Fuou9luV5xK5pbtoTB73UFJ+NbtLuaAZjH+Cow0EMxHsFRj+pHWl8oUMsLLTEK
+	SK7Hx7PdQQpV3htb7HaUaCAPk4lKs1w5bBpmJB6acqGxp2z241lF4BhE1z0rpbRydXzrt1nGmjn
+	vrYw4/qQ6zS9m6Lmh/Jo+PmzpLoHNK5XqpNOFn3YskNYxsToNsOWDXyWaqufLQHhGbWNZyZy8gk
+	6TPgjoDPSlvmikzCkzufr3Q7/k+1nQUN9GjT5805FSZ9SlFxUeqH/Mp36m6BDi3Iw7PU1wL71nA
+	bjRdJmTQrMBduHQXKHAEaoQssFH6kesw18oCjKehXUSLPCaBiVFS/NSrc60ztF/kAN7HF3DN4PB
+	I=
+X-Received: by 2002:a17:90b:48d0:b0:3ae:521e:767f with SMTP id 98e67ed59e1d1-3b41c95fa1amr15029382a91.36.1795598335906;
+        Wed, 25 Nov 2026 01:18:55 -0800 (PST)
+X-Received: by 2002:a17:90b:48d0:b0:3ae:521e:767f with SMTP id 98e67ed59e1d1-3b41c95fa1amr15029358a91.36.1795598335425;
+        Wed, 25 Nov 2026 01:18:55 -0800 (PST)
+Received: from hu-raryan-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cde7f91c6f5sm6290687a12.27.2026.11.25.01.18.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Nov 2026 01:18:55 -0800 (PST)
+Date: Wed, 25 Nov 2026 14:48:49 +0530
+From: Raj Aryan <raj.aryan@oss.qualcomm.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Casey Connolly <casey.connolly@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+Subject: Re: [PATCH 1/2] dt-bindings: power: supply: Add qcom,pm4125-charger
+ binding
+Message-ID: <awan+SRMtZs6c9jQ@hu-raryan-hyd.qualcomm.com>
+References: <20261124-smblite-charger-for-pm4125-v1-0-2132c9f0601f@oss.qualcomm.com>
+ <20261124-smblite-charger-for-pm4125-v1-1-2132c9f0601f@oss.qualcomm.com>
+ <a5f859c1-0779-4ae1-88f0-bfa12268e09c@kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -103,251 +129,172 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a5f859c1-0779-4ae1-88f0-bfa12268e09c@kernel.org>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI1MDAzNiBTYWx0ZWRfX1kl+O4QxzA1q
+ 2/4mX92gkZGESafgrCVR/Rt0Q95+yrs1a0DEU3fjASdx0C2IVLPnY7el8K/irfQn1IRulU3Jhjn
+ ctLQFV+DOKXXIornuxbBwkX1UkWxviVZ/yqC753z+oy39Ai0Fptw613nWAXLpjOHYsyOoZrmzjh
+ CsHRc43qKqulrMFRcXzPf4d4oCZsXBhZGwqucx0CRJblPoa+aF3STxXPNsP/cG427xmNRE7tNkr
+ DtPir2S87PmBHZkGBPH34d4m/55VBorkqsFWxcYzxjY0Bb83aIrg4EEJc+iJKlp82QJOo02FdA3
+ s6IYMekQkyfqe8Mbeasr3HU6wGiIxAW8QeTTF3eUIHH815zT0ADIMdnRHnMTgp6ibc8uh/ETVDu
+ 8C05cXLygVZvqhv4L9Bp2wx1lHX5WDRl7YLWAUdphe6AQPhv7hIuLYYcqRAL0eyBK6lTKqeLsHS
+ ibDNtpk7dEULCri011A==
+X-Authority-Analysis: v=2.4 cv=Voa2kO2n c=1 sm=1 tr=0 ts=6b06a800 cx=c_pps
+ a=RP+M6JBNLl+fLTcSJhASfg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=P-IC7800AAAA:8 a=EUspDBNiAAAA:8 a=gAAQxgIGOAtfHdDX1gUA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=iS9zxrgQBfv6-_F4QbHw:22 a=d3PnA9EDa4IxuAV0gXij:22
+X-Proofpoint-GUID: LnitHLc0D4Chl0NUJ4EpS9mgiapPyiG6
+X-Proofpoint-ORIG-GUID: LnitHLc0D4Chl0NUJ4EpS9mgiapPyiG6
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI1MDAzNiBTYWx0ZWRfX6CaExaeyuvQZ
+ nSwzj7THLqNQ8SWx8YMie7SHB0TkMKChKXFMDoAZNq0fifeZgOh7su50ZdGApDFdyXj3iehjsKj
+ uk7DUOkK69Z136vkhrjax64gawGYu3A=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-25_02,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 malwarescore=0 clxscore=1015 bulkscore=0 lowpriorityscore=0
+ adultscore=0 spamscore=0 priorityscore=1501 suspectscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611250036
 
-On Di, 2026-11-24 at 16:03 -0800, Brian Norris wrote:
-> Google Tensor SoCs (used on Pixel phones) manage many resources
-> (including resets) using a Central Power Manager (CPM) co-processor. We
-> communicate with CPM using mailboxes, abstracted in the
-> devm_cpm_get_handle(), etc., API.
->=20
-> For posterity, I list a summary of changes made relative to the
-> downstream Pixel driver:
->=20
-> * Switch to auxiliary bus, as a child of a CPM device
->=20
-> * Use devm more heavily
->=20
-> * Avoid representing each reset as its own Device Tree node.
->=20
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> ---
->=20
-> Changes in v2:
->  * Rename symbols from goog_cpm_rst_* to cpm_reset_*
->  * Moved shared protocol details to CPM driver
->  * Remove custom reset debugfs interface and .remove callback.
->  * Remove per-SoC table; we only need naive translation of firmware IDs
->=20
->  drivers/reset/Kconfig            |   1 +
->  drivers/reset/Makefile           |   1 +
->  drivers/reset/google/Kconfig     |  11 +++
->  drivers/reset/google/Makefile    |   2 +
->  drivers/reset/google/reset-cpm.c | 154 +++++++++++++++++++++++++++++++
->  5 files changed, 169 insertions(+)
->  create mode 100644 drivers/reset/google/Kconfig
->  create mode 100644 drivers/reset/google/Makefile
->  create mode 100644 drivers/reset/google/reset-cpm.c
->=20
-> diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
-> index 673bca1e594e..64c12b479b2c 100644
-> --- a/drivers/reset/Kconfig
-> +++ b/drivers/reset/Kconfig
-> @@ -475,6 +475,7 @@ config RESET_ZYNQMP
->  	  This enables the reset controller driver for Xilinx ZynqMP SoCs.
-> =20
->  source "drivers/reset/amlogic/Kconfig"
-> +source "drivers/reset/google/Kconfig"
->  source "drivers/reset/hisilicon/Kconfig"
->  source "drivers/reset/realtek/Kconfig"
->  source "drivers/reset/spacemit/Kconfig"
-> diff --git a/drivers/reset/Makefile b/drivers/reset/Makefile
-> index 2fe527a7be8e..a151fe63905e 100644
-> --- a/drivers/reset/Makefile
-> +++ b/drivers/reset/Makefile
-> @@ -1,6 +1,7 @@
->  # SPDX-License-Identifier: GPL-2.0
->  obj-y +=3D core.o
->  obj-y +=3D amlogic/
-> +obj-y +=3D google/
->  obj-y +=3D hisilicon/
->  obj-y +=3D realtek/
->  obj-y +=3D spacemit/
-> diff --git a/drivers/reset/google/Kconfig b/drivers/reset/google/Kconfig
-> new file mode 100644
-> index 000000000000..38431b4f9001
-> --- /dev/null
-> +++ b/drivers/reset/google/Kconfig
-> @@ -0,0 +1,11 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +config RESET_CPM
-> +	tristate "Google CPM Reset Controller"
-> +	depends on ARCH_GOOGLE || COMPILE_TEST
-> +	depends on GOOGLE_CPM_MBA
-> +	help
-> +	  Driver support for reset controllers found on Google Tensor SoCs,
-> +	  operating over the CPM mailbox interface. This allows peripheral
-> +	  drivers to assert and deassert resets on LPCM hardware blocks.
-> +
-> +	  If unsure, say N.
-> diff --git a/drivers/reset/google/Makefile b/drivers/reset/google/Makefil=
-e
-> new file mode 100644
-> index 000000000000..437c19459464
-> --- /dev/null
-> +++ b/drivers/reset/google/Makefile
-> @@ -0,0 +1,2 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +obj-$(CONFIG_RESET_CPM) +=3D reset-cpm.o
-> diff --git a/drivers/reset/google/reset-cpm.c b/drivers/reset/google/rese=
-t-cpm.c
-> new file mode 100644
-> index 000000000000..ef0863f25cac
-> --- /dev/null
-> +++ b/drivers/reset/google/reset-cpm.c
-> @@ -0,0 +1,154 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Device driver to control Google SoC LPCM resets via CPM.
-> + * Copyright 2023-2026 Google LLC
-> + */
-> +
-> +#include <linux/auxiliary_bus.h>
-> +#include <linux/bitfield.h>
-> +#include <linux/bits.h>
-> +#include <linux/container_of.h>
-> +#include <linux/dev_printk.h>
-> +#include <linux/device.h>
-> +#include <linux/err.h>
-> +#include <linux/errno.h>
-> +#include <linux/gfp_types.h>
-> +#include <linux/limits.h>
-> +#include <linux/mod_devicetable.h>
+On Tue, Nov 24, 2026 at 10:55:57AM +0100, Krzysztof Kozlowski wrote:
+> On 24/11/2026 10:15, Raj Aryan wrote:
+> > Add YAML devicetree binding for the Qualcomm SMBLite switch-mode
+> 
+> YAML devicetree binding, you hit combo... Drop YAML.
+>
 
-Please include the specific <linux/device-id/*.h> that is needed
-instead of all of <linux/mod_devicetable.h>.
+ACK.
 
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/reset-controller.h>
-> +#include <linux/types.h>
-> +#include <soc/google/google-cpm-mba.h>
-> +
-> +#define ASSERT_OP_ID			0
-> +#define DEASSERT_OP_ID			1
-> +
-> +#define CPM_RST_LPCM_ID_MASK		GENMASK(31, 16)
-> +#define CPM_RST_ID_MASK			GENMASK(15, 0)
+> A nit, subject: drop second/last, redundant "bindings". The
+> "dt-bindings" prefix is already stating that these are bindings.
+> See also:
+> https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/bindings/submitting-patches.rst#L23
+> 
 
-Why are these fields 16 bits wide when one line below it says:
+ACK.
 
-> +/* Object fields are 8 bits */
-> +#define CPM_RST_ID_MAX			U8_MAX
-> +
-> +static inline unsigned long to_rstc_idx(u32 lpcm_id, u32 rst_id)
-> +{
-> +	return FIELD_PREP(CPM_RST_LPCM_ID_MASK, lpcm_id) |
-> +	       FIELD_PREP(CPM_RST_ID_MASK, rst_id);
-> +}
-> +
-> +static inline u32 lpcm_from_idx(unsigned long idx)
-> +{
-> +	return FIELD_GET(CPM_RST_LPCM_ID_MASK, idx);
-> +}
-> +
-> +static inline u32 rst_from_idx(unsigned long idx)
-> +{
-> +	return FIELD_GET(CPM_RST_ID_MASK, idx);
-> +}
-> +
-> +struct cpm_reset_provider {
-> +	struct reset_controller_dev rcdev;
-> +	struct cpm_handle *cpm;
-> +};
-> +
-> +static inline struct cpm_reset_provider *to_provider(struct reset_contro=
-ller_dev *rcdev)
-> +{
-> +	return container_of(rcdev, struct cpm_reset_provider, rcdev);
-> +}
-> +
-> +static int cpm_reset_send_lpcm(struct reset_controller_dev *rcdev,
-> +			       unsigned long idx, u8 opcode)
-> +{
-> +	struct cpm_reset_provider *provider =3D to_provider(rcdev);
-> +	const struct cpm_lpcm_message msg =3D {
-> +		.cmd =3D LPCM_CMD_SET_RST,
-> +		.opcode =3D opcode,
-> +		.lpcm_id =3D lpcm_from_idx(idx),
-> +		.obj_id =3D rst_from_idx(idx),
-> +	};
-> +
-> +	return cpm_send_lpcm_message(provider->cpm, &msg);
-> +}
-> +
-> +static int cpm_reset_assert(struct reset_controller_dev *rcdev,
-> +			    unsigned long idx)
-> +{
-> +	return cpm_reset_send_lpcm(rcdev, idx, ASSERT_OP_ID);
-> +}
-> +
-> +static int cpm_reset_deassert(struct reset_controller_dev *rcdev,
-> +			      unsigned long idx)
-> +{
-> +	return cpm_reset_send_lpcm(rcdev, idx, DEASSERT_OP_ID);
-> +}
-> +
-> +static const struct reset_control_ops cpm_reset_ops =3D {
-> +	.assert =3D cpm_reset_assert,
-> +	.deassert =3D cpm_reset_deassert,
-> +};
-> +
-> +static int cpm_reset_of_xlate(struct reset_controller_dev *rcdev,
-> +			      const struct of_phandle_args *reset_spec)
-> +{
-> +	u32 lpcm_id, rst_id;
-> +
-> +	if (reset_spec->args_count !=3D 2)
-> +		return -EINVAL;
-> +
-> +	lpcm_id =3D reset_spec->args[0];
-> +	rst_id =3D reset_spec->args[1];
-> +
-> +	if (lpcm_id > CPM_RST_ID_MAX)
+> > battery charger found on the PM4125 PMIC.
+> > 
+> > SMBLite is a reduced-feature charger IP sharing a common SPMI
+> > interface with the SMB2 family (PMI8998, PM660) but using separate
+> > SPMI peripheral bases for CHGR, DCDC, USB, MISC and BATIF blocks.
+> > 
+> > The binding covers:
+> 
+> Do not explain what the patch is doing. We can read the diff. Please
+> read submitting patches or look at other commits to learn what is
+> supposed to be here.
+> 
 
-This looks a bit weird.
+I apologise sincerly. I will correct this in V2.
 
-Maybe add a CPM_LPCM_ID_MAX, directly use U8_MAX here, or rename the
-constant to not include RST_ID?
+> > 
+> >   - compatible string: qcom,pm4125-charger
+> >   - reg property for the CHGR peripheral base address
+> >   - Four interrupts: usb-plugin, bat-ov, wdog-bark and
+> >     usbin-icl-change
+> >   - Two IIO channels: usbin_v (USB input voltage via ADC5_USB_IN_V_16)
+> >     and usbin_i (USB input current via ADC5_USB_IN_I)
+> >   - Optional JEITA soft and hard threshold configuration as raw
+> >     16-bit ADC comparator values written to BATIF ADC comparator
+> >     registers
+> >   - Optional monitored-battery phandle for battery parameters such
+> >     as float voltage and charge termination current
+> 
+> ...
+> 
+> > +
+> > +maintainers:
+> > +  - Raj Aryan <raj.aryan@oss.qualcomm.com>
+> > +  - Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> > +
+> > +description: |
+> > +  The Qualcomm SMBLite is a switch-mode battery charger IP found on
+> > +  the entry-level Qualcomm PM4125 PMIC. It exposes five separate
+> > +  SPMI peripheral bases for CHGR, DCDC, USB, MISC and BATIF blocks and
+> > +  supports USB input current limiting, JEITA temperature protection,
+> > +  battery overvoltage detection and a hardware watchdog.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    const: qcom,pm4125-charger
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +    description: Base address of the CHGR SPMI peripheral (e.g. 0x1000).
+> 
+> Drop description.
+> 
 
-> +		return -EINVAL;
-> +	if (rst_id > CPM_RST_ID_MAX)
-> +		return -EINVAL;
-> +
-> +	return to_rstc_idx(lpcm_id, rst_id);
-> +}
-> +
-> +static int cpm_reset_probe(struct auxiliary_device *auxdev,
-> +			   const struct auxiliary_device_id *id)
-> +{
-> +	struct device *dev =3D &auxdev->dev;
-> +	struct cpm_reset_provider *provider;
-> +	int ret;
-> +
-> +	provider =3D devm_kzalloc(dev, sizeof(*provider), GFP_KERNEL);
+ACK.
 
-devm_kzalloc_obj()
+> > +
+> > +  interrupts:
+> > +    maxItems: 4
+> > +
+> > +  interrupt-names:
+> > +    items:
+> > +      - const: usb-plugin
+> > +      - const: bat-ov
+> > +      - const: wdog-bark
+> > +      - const: usbin-icl-change
+> > +
+> > +  io-channels:
+> > +    minItems: 1
+> > +    maxItems: 2
+> 
+> Why is this flexible?
+>
 
-> +	if (!provider)
-> +		return -ENOMEM;
-> +
-> +	provider->cpm =3D devm_cpm_get_handle(dev);
-> +	if (IS_ERR(provider->cpm))
-> +		return dev_err_probe(dev, PTR_ERR(provider->cpm),
-> +				     "Failed to get CPM handle\n");
-> +
-> +	provider->rcdev.dev =3D dev;
-> +	provider->rcdev.owner =3D THIS_MODULE;
-> +	provider->rcdev.of_node =3D dev->of_node;
-> +	provider->rcdev.ops =3D &cpm_reset_ops;
-> +	provider->rcdev.of_reset_n_cells =3D 2;
-> +	provider->rcdev.of_xlate =3D cpm_reset_of_xlate;
-> +
-> +	ret =3D devm_reset_controller_register(dev, &provider->rcdev);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to register reset controller: %d\n", ret);
+I  made io-channels flexible to allow an optional usbin_i channel. The
+shared driver requires that channel for SMB2, but PM4125 uses SMBLite,
+which doesn’t request it. Since this binding is PM4125-specific, I will drop it.
 
-dev_err_probe()
+> > +    description: |
+> > +      IIO ADC channels used by the charger. usbin_v is the USB input
+> > +      voltage channel (ADC5_USB_IN_V_16). usbin_i is the USB input
+> > +      current channel (ADC5_USB_IN_I).
+> > +
+> > +  io-channel-names:
+> > +    minItems: 1
+> > +    items:
+> > +      - const: usbin_v
+> > +      - const: usbin_i
+> > +
+> > +  monitored-battery: true
+> > +
+> > +  qcom,jeita-soft-thresholds:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> > +    minItems: 2
+> > +    maxItems: 2
+> > +    description: |
+> > +      JEITA soft temperature thresholds (COOL, WARM) as raw 16-bit ADC
+> > +      comparator values written to the BATIF ADC comparator registers.
+> > +      Example: <0x5314 0x25e3> for COOL=15°C, WARM=45°C.
+> > +
+> > +  qcom,jeita-hard-thresholds:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> > +    minItems: 2
+> > +    maxItems: 2
+> > +    description: |
+> > +      JEITA hard temperature thresholds (COLD, HOT) as raw 16-bit ADC
+> > +      comparator values written to the BATIF ADC comparator registers.
+> > +      Example: <0x58cd 0x20b8> for COLD=0°C, HOT=60°C.
+> 
+> Express temperatures with proper units.
+>
 
+ACK.
 
-regards
-Philipp
+> 
+> 
+> Best regards,
+> Krzysztof
+
+Thanks & Regards
+Raj Aryan
