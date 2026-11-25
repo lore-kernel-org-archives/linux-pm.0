@@ -1,55 +1,57 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795615888;
-	b=AjTueENATU29KBE6jk6nrk57uczx+/P5A2CotEKho16bdBq6lSWKzEX8UFxqrUhFgWLf
-	 5rk8PyN3wVaRdOViFOlMmwcjlIeiftjTLFRsihWYMqXvCBfvYaX0uYcM/4WNzQf8hCKtV
-	 wRRz+bm+gfu5xH3SC8IYGfDDbiF5y3QZOQMOCkArcx6Dy9BGU72pcXBRYoBbPdacnIUOh
-	 d0aF9VqsfjDeys0g2baod/N3PPyhh+J5HqfPGe16EyVWsf/iCHNSWwv5DG7yI96+XO6AJ
-	 Z5IGggqTiz3aSTORLZxbsU6oeotqCmBkTf4K5znzar288ZdL2IQzYhFlBcNZf9g8/jA==
+	t=1795616459;
+	b=W0qZfQdydhLdXLMLZbSNZOxy0nBJfzi9MryTHZ2HIu5sYrGdEgpCPAZOtiaaEf3LhLlh
+	 g2RXYwV8czL1SFbauIZgB5tQLyc4xQGPkEfJ62pkeX8aD+qAuoldIkfRGwHA7zJm88tCz
+	 JhctlrPQxio78HgExAdVQ95hTvTcw0y+dV43V9oTU5GxOrGyZBvEB0CcFxGfyyT/twGJ2
+	 XwN9NtklAnZoSmqmJbQdpSGtweNUxzSnafZAzbHx2r8IX8ZTzgsRmPiIr1NkKu1Z5XiZm
+	 6igRbbHmtElr1yz8q4X+jLrGVq2mEtOAqF6atoDFcgOSUiBjXiPay3qhe2x4kDy5cpQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795615888;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795616459;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 Organization:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:Content-Type;
-	bh=5LTZv+bwpoyuP1pqldXGa5UL3Vf1nadNaj7jfDABTus=;
-	b=OjjQ7WkTAVaMBl46TwcUndMj3SoKEJOy2LnHSGhOClRXdCJdogOZ3xvJh2c4NCEhRquk
-	 tpKiUU0gdAT/fgfnHP3Dv35qr1EqsxumRdiHDFdrb3/T/2zdC3XrFipx+xf+CjILtz062
-	 WtwGHT5FEf68tr7UdP/CxShDJ3xMgUxnt9qEcxXlBgDbCOoDfyqKDm0Y19shpaBqHavGn
-	 lV6xXj0JyUYb5jA+a+yH37Bql2Ibao1xuEjgxxVZ5FXg3XVOn1vBpr15jC1NAEz6p7qmz
-	 L5ixmnWFFFwAGdhZMq+4XTPPg7Vp8UdvKx5LyVFNuSfdaaWikFfhWzuxPrWHraDc+Tg==
+	bh=T1xr5pi6h8Ns+FnI2LVdDxVM3EdKw4pPNmVRy23EAnc=;
+	b=M85jyLkqQQMH+ou2qg1/Ua7QKA+gNCe0NgjhPGTQlgxL7MQbkeRSvd94zrbZxXPJUTml
+	 S6t21zf6snr46aKbm/ah5VtFDgUI5wT22cCN2bXUukoNEG/bp3m7kC2HlJCBX90if61Pb
+	 rTaWHQKYoij4jvu0lmHX1MTD4E1P6uDsj8eF9e6ZyyaLAoH32RIrvv4jxRPl6gRXmD0x8
+	 QXllx4LW1hNzVcSCTq1p1rpByXvjnpmyb9ow/KBP/Qg5wKiJvpWeQxMr3UFg+1CdNlq/9
+	 IbSrMtM2lmbIQQvNqMTJ1QWxmCyfJVkXVQjXC5pUzN3xYBed+8y6kME+0xQS0L1+yyQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oF8Z35eQ;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="mCkAk/Gd";
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5804606A327;
-	Wed, 25 Nov 2026 14:11:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7227606A31E;
+	Wed, 25 Nov 2026 14:20:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oF8Z35eQ
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E52B41F000C6;
-	Wed, 25 Nov 2026 14:11:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mCkAk/Gd
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B91F11F000F2;
+	Wed, 25 Nov 2026 14:20:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795615888;
-	bh=5LTZv+bwpoyuP1pqldXGa5UL3Vf1nadNaj7jfDABTus=;
+	s=k20260515; t=1795616458;
+	bh=T1xr5pi6h8Ns+FnI2LVdDxVM3EdKw4pPNmVRy23EAnc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=oF8Z35eQpr8bVupdw9xYAvH96iln09vy43wPe5sZdyOdC7+afMiIXAMUEZV/2t5Xo
-	 LxB5EMbzmcCLAwhCH6FYSrVoKLdfcX9XSX5QaBHAE8VtKfWis9Av2A3UsZOVemxg0w
-	 xFKK4b707J3mJEIjU6eVMu4UcH6a/tOCGFO7xu2gUDQjueAPcnWn+VvFLX2tCsltmc
-	 0cAkZQ1AHEkOSiEV/ZJnQDI9q2uXdnUJLcQfel9RZTnYRJSIAkOgtCcLaVxoI6lCjn
-	 DUa1L1WgX1l3PYyj6c2oVOtbyUZrb/ZXa3vDDe9p8WQM01WYUiDDM2qpZciZ1LTqfZ
-	 5PNrRaMYMf9Qw==
+	b=mCkAk/GdNxPIZ7HgmankZAjGXPQHG3U0Lh3V+ungzZGHTB8/Eod+rcP8tdiajBYDw
+	 H7Ffx3VYIxjdNZOMjor+dpWGpfbWLaMFf6M+CGw56uwOaUyRnoQ2vvetjwE8JzEJsg
+	 DeaFA6IQWaaezZugJl7RSdlaCLhIBGRUZ0S6Eft7H15sM5BOPIIwXaP3wy7c0PYHKZ
+	 japPd7fGDaGHkXQllgsL2yVKVjwdZKEMpQXfRxqMOofq60WZAMk4srHd42oKXRHJDF
+	 4ouw+jaLXCCQsXfcrzdRSnFCBL6a0FlxSjWAWzjtQ6Se3KJzTx3VtHjG0UCaeLgZoE
+	 UhthAtBk8NfHg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Armin Wolf <w_armin@gmx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 1/5] ACPI: fan: Pass struct acpi_fan pointers to functions
-Date: Wed, 25 Nov 2026 15:07:24 +0100
-Message-ID: <1976174.tdWV9SEqCh@rafael.j.wysocki>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>
+Subject:
+ [PATCH v1 3/3] intel_idle: Allow ACPI _CST to be preferred to ACPI _LPI
+Date: Wed, 25 Nov 2026 15:20:27 +0100
+Message-ID: <2080993.usQuhbGJ8B@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
-In-Reply-To: <2859850.mvXUDI8C0e@rafael.j.wysocki>
-References: <2859850.mvXUDI8C0e@rafael.j.wysocki>
+In-Reply-To: <3986546.kQq0lBPeGt@rafael.j.wysocki>
+References: <3986546.kQq0lBPeGt@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -64,237 +66,96 @@ Content-Type: text/plain; charset="utf-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Pass a struct acpi_fan pointer as an argument to several functions in
-the ACPI fan driver either instead of or in addition to a struct
-acpi_device or a struct device pointer.
+Add a new module parameter called "prefer_cst" to intel_idle for making
+it prefer _CST for building the idle state list when using ACPI, even
+if _LPI (preferred by default) is available.
 
-This allows acpi_driver_data() usage to be reduced and some other
-simplifications to be made.
+This may be useful for diagnostics during platform bringup and as a
+fallback mechanism on platforms with broken ACPI _LPI and functional
+ACPI _CST.
 
-No intentional functional impact.
+Update the documentation accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Armin Wolf <W_Armin@gmx.de>
 ---
+ Documentation/admin-guide/pm/intel_idle.rst | 15 ++++++++++-----
+ drivers/idle/intel_idle.c                   | 15 +++++++++------
+ 2 files changed, 19 insertions(+), 11 deletions(-)
 
-v1 -> v2:
-   * Pass acpi_fan as the first argument to functions (Andy)
-   * Add R-by from Armin (thanks!)
-
----
- drivers/acpi/fan.h      |  4 ++--
- drivers/acpi/fan_attr.c |  8 ++++----
- drivers/acpi/fan_core.c | 42 ++++++++++++++++++-----------------------
- 3 files changed, 24 insertions(+), 30 deletions(-)
-
-diff --git a/drivers/acpi/fan.h b/drivers/acpi/fan.h
-index 3faa247af514..66dbcc138ddd 100644
---- a/drivers/acpi/fan.h
-+++ b/drivers/acpi/fan.h
-@@ -101,8 +101,8 @@ static inline bool acpi_fan_power_valid(u64 power)
- }
+diff --git a/Documentation/admin-guide/pm/intel_idle.rst b/Documentation/admin-guide/pm/intel_idle.rst
+index d1a6251790b8..8092807d446b 100644
+--- a/Documentation/admin-guide/pm/intel_idle.rst
++++ b/Documentation/admin-guide/pm/intel_idle.rst
+@@ -94,7 +94,9 @@ objects representing the CPUs in the system and ``_LPI`` processing produces a
+ non-empty list of valid idle states, it will be used.  Otherwise, ``_CST`` will
+ be used so long as it is present under at least one of the ACPI objects
+ representing the CPUs in the system and it returns a non-empty list of valid
+-idle states.  In either case, since the ``CPUIdle`` subsystem expects that the
++idle states.  [There is a module parameter that can be used to tell the driver
++to prefer ``_CST`` to ``_LPI`` and reverse the order in which they are tried.]
++In either case, since the ``CPUIdle`` subsystem expects that the
+ list of idle states supplied by the driver will be suitable for all of the CPUs
+ handled by it and ``intel_idle`` is registered as the ``CPUIdle`` driver for all
+ of the CPUs in the system, ``intel_idle`` looks for the first CPU where the
+@@ -223,10 +225,10 @@ even if they have been enumerated (see :ref:`cpu-pm-qos` in
+ Documentation/admin-guide/pm/cpuidle.rst).
+ Setting ``max_cstate`` to 0 causes the ``intel_idle`` initialization to fail.
  
- int acpi_fan_get_fst(acpi_handle handle, struct acpi_fan_fst *fst);
--int acpi_fan_create_attributes(struct acpi_device *device);
--void acpi_fan_delete_attributes(struct acpi_device *device);
-+int acpi_fan_create_attributes(struct acpi_fan *fan);
-+void acpi_fan_delete_attributes(struct acpi_fan *fan);
+-The ``no_acpi``, ``use_acpi`` and ``no_native`` module parameters are
+-recognized by ``intel_idle`` if the kernel has been configured with ACPI
+-support.  In the case that ACPI is not configured these flags have no impact
+-on functionality.
++The ``no_acpi``, ``use_acpi``, ``no_native``, and ``prefer_cst`` module
++parameters are recognized by ``intel_idle`` if the kernel has been configured
++with ACPI support.  If ACPI is not configured, these flags have no impact on
++functionality.
  
- #if IS_REACHABLE(CONFIG_HWMON)
- int devm_acpi_fan_create_hwmon(struct device *dev);
-diff --git a/drivers/acpi/fan_attr.c b/drivers/acpi/fan_attr.c
-index 9b7fa52f3c2a..5b43b7bb0ab4 100644
---- a/drivers/acpi/fan_attr.c
-+++ b/drivers/acpi/fan_attr.c
-@@ -70,9 +70,9 @@ static ssize_t show_fine_grain_control(struct device *dev, struct device_attribu
- 	return sysfs_emit(buf, "%d\n", fan->fif.fine_grain_ctrl);
- }
+ ``no_acpi`` - Do not use ACPI at all.  Only native mode is available, no
+ ACPI mode.
+@@ -237,6 +239,9 @@ C-states on/off status in native mode.
+ ``no_native`` - Work only in ACPI mode, no native mode available (ignore
+ all custom tables).
  
--int acpi_fan_create_attributes(struct acpi_device *device)
-+int acpi_fan_create_attributes(struct acpi_fan *fan)
++``prefer_cst`` - When using ACPI, prefer idle states coming from ``_CST`` to
++idle states coming from ``_LPI`` (which is preferred by default).
++
+ The value of the ``states_off`` module parameter (0 by default) represents a
+ list of idle states to be disabled by default in the form of a bitmask.
+ 
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index fc0aea26db50..3c07469586f7 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -1779,6 +1779,10 @@ static bool no_native __read_mostly; /* No effect if no_acpi is set. */
+ module_param_named(no_native, no_native, bool, 0444);
+ MODULE_PARM_DESC(no_native, "Ignore cpu specific (native) idle states in lieu of ACPI idle states");
+ 
++static bool prefer_cst __read_mostly; /* No effect if no_acpi is set. */
++module_param(prefer_cst, bool, 0444);
++MODULE_PARM_DESC(prefer_cst, "Prefer ACPI _CST idle states to ACPI _LPI idle states");
++
+ static struct acpi_processor_power acpi_state_table __initdata;
+ static bool acpi_lpi_available __initdata;
+ 
+@@ -1855,13 +1859,12 @@ static bool __init intel_idle_acpi_extract_cst_cstates(void)
+ 
+ static bool __init intel_idle_acpi_extract_cstates(void)
  {
--	struct acpi_fan *fan = acpi_driver_data(device);
-+	struct acpi_device *device = fan->adev;
- 	int i, status;
+-	if (intel_idle_acpi_extract_lpi_cstates())
+-		return true;
++	if (prefer_cst)
++		return intel_idle_acpi_extract_cst_cstates() ||
++			intel_idle_acpi_extract_lpi_cstates();
  
- 	/* _FST is present if we are here */
-@@ -127,9 +127,9 @@ int acpi_fan_create_attributes(struct acpi_device *device)
- 	return status;
+-	if (intel_idle_acpi_extract_cst_cstates())
+-		return true;
+-
+-	return false;
++	return intel_idle_acpi_extract_lpi_cstates() ||
++		intel_idle_acpi_extract_cst_cstates();
  }
  
--void acpi_fan_delete_attributes(struct acpi_device *device)
-+void acpi_fan_delete_attributes(struct acpi_fan *fan)
- {
--	struct acpi_fan *fan = acpi_driver_data(device);
-+	struct acpi_device *device = fan->adev;
- 	int i;
- 
- 	sysfs_remove_file(&device->dev.kobj, &fan->fst_speed.attr);
-diff --git a/drivers/acpi/fan_core.c b/drivers/acpi/fan_core.c
-index 4324ff5d9c4c..9b4b57614d66 100644
---- a/drivers/acpi/fan_core.c
-+++ b/drivers/acpi/fan_core.c
-@@ -222,10 +222,9 @@ static const struct thermal_cooling_device_ops fan_cooling_ops = {
-  * --------------------------------------------------------------------------
- */
- 
--static int acpi_fan_get_fif(struct acpi_device *device)
-+static int acpi_fan_get_fif(struct acpi_fan *fan, struct acpi_device *device)
- {
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
--	struct acpi_fan *fan = acpi_driver_data(device);
- 	struct acpi_buffer format = { sizeof("NNNN"), "NNNN" };
- 	u64 fields[4];
- 	struct acpi_buffer fif = { sizeof(fields), fields };
-@@ -269,9 +268,9 @@ static int acpi_fan_speed_cmp(const void *a, const void *b)
- 	return fps1->speed - fps2->speed;
- }
- 
--static int acpi_fan_get_fps(struct device *dev, struct acpi_device *device)
-+static int acpi_fan_get_fps(struct acpi_fan *fan, struct device *dev,
-+			    struct acpi_device *device)
- {
--	struct acpi_fan *fan = acpi_driver_data(device);
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
- 	acpi_status status;
- 	int i;
-@@ -310,7 +309,7 @@ static int acpi_fan_get_fps(struct device *dev, struct acpi_device *device)
- 	return 0;
- }
- 
--static int acpi_fan_dsm_init(struct device *dev)
-+static int acpi_fan_dsm_init(struct acpi_fan *fan, struct device *dev)
- {
- 	union acpi_object dummy = {
- 		.package = {
-@@ -319,7 +318,6 @@ static int acpi_fan_dsm_init(struct device *dev)
- 			.elements = NULL,
- 		},
- 	};
--	struct acpi_fan *fan = dev_get_drvdata(dev);
- 	acpi_handle fan_handle = fan->adev->handle;
- 
- 	if (!acpi_check_dsm(fan_handle, &acpi_fan_microsoft_guid, 0,
-@@ -344,7 +342,7 @@ static int acpi_fan_dsm_init(struct device *dev)
- 	return 0;
- }
- 
--static int acpi_fan_dsm_set_trip_points(struct device *dev, u64 upper, u64 lower)
-+static int acpi_fan_dsm_set_trip_points(struct acpi_fan *fan, u64 upper, u64 lower)
- {
- 	union acpi_object args[2] = {
- 		{
-@@ -360,7 +358,6 @@ static int acpi_fan_dsm_set_trip_points(struct device *dev, u64 upper, u64 lower
- 			},
- 		},
- 	};
--	struct acpi_fan *fan = dev_get_drvdata(dev);
- 	union acpi_object in = {
- 		.package = {
- 			.type = ACPI_TYPE_PACKAGE,
-@@ -377,9 +374,8 @@ static int acpi_fan_dsm_set_trip_points(struct device *dev, u64 upper, u64 lower
- 	return 0;
- }
- 
--static int acpi_fan_dsm_start(struct device *dev)
-+static int acpi_fan_dsm_start(struct acpi_fan *fan)
- {
--	struct acpi_fan *fan = dev_get_drvdata(dev);
- 	int ret;
- 
- 	if (!fan->fan_trip_granularity)
-@@ -401,11 +397,11 @@ static int acpi_fan_dsm_start(struct device *dev)
- 	 * overlap, meaning that the current fan speed needs to be outside at
- 	 * least one range.
- 	 */
--	ret = acpi_fan_dsm_set_trip_points(dev, fan->fan_trip_granularity, 0);
-+	ret = acpi_fan_dsm_set_trip_points(fan, fan->fan_trip_granularity, 0);
- 	if (ret < 0)
- 		return ret;
- 
--	return acpi_fan_dsm_set_trip_points(dev, fan->fan_trip_granularity * 3,
-+	return acpi_fan_dsm_set_trip_points(fan, fan->fan_trip_granularity * 3,
- 					    fan->fan_trip_granularity * 2);
- }
- 
-@@ -431,7 +427,7 @@ static int acpi_fan_dsm_update_trips_points(struct device *dev, struct acpi_fan_
- 		lower = rounddown((u32)fst->speed - min_trip_distance, fan->fan_trip_granularity);
- 	}
- 
--	return acpi_fan_dsm_set_trip_points(dev, upper, lower);
-+	return acpi_fan_dsm_set_trip_points(fan, upper, lower);
- }
- 
- static void acpi_fan_notify_handler(acpi_handle handle, u32 event, void *context)
-@@ -493,17 +489,17 @@ static int acpi_fan_probe(struct platform_device *pdev)
- 	}
- 
- 	if (fan->acpi4) {
--		result = acpi_fan_get_fif(device);
-+		result = acpi_fan_get_fif(fan, device);
- 		if (result)
- 			return result;
- 
--		result = acpi_fan_get_fps(&pdev->dev, device);
-+		result = acpi_fan_get_fps(fan, &pdev->dev, device);
- 		if (result)
- 			return result;
- 	}
- 
- 	if (fan->has_fst) {
--		result = acpi_fan_dsm_init(&pdev->dev);
-+		result = acpi_fan_dsm_init(fan, &pdev->dev);
- 		if (result)
- 			return result;
- 
-@@ -518,13 +514,13 @@ static int acpi_fan_probe(struct platform_device *pdev)
- 		if (result)
- 			return result;
- 
--		result = acpi_fan_dsm_start(&pdev->dev);
-+		result = acpi_fan_dsm_start(fan);
- 		if (result) {
- 			dev_err(&pdev->dev, "Failed to start Microsoft fan extensions\n");
- 			return result;
- 		}
- 
--		result = acpi_fan_create_attributes(device);
-+		result = acpi_fan_create_attributes(fan);
- 		if (result)
- 			return result;
- 	}
-@@ -556,7 +552,7 @@ static int acpi_fan_probe(struct platform_device *pdev)
- 
- err_end:
- 	if (fan->has_fst)
--		acpi_fan_delete_attributes(device);
-+		acpi_fan_delete_attributes(fan);
- 
- 	return result;
- }
-@@ -565,11 +561,9 @@ static void acpi_fan_remove(struct platform_device *pdev)
- {
- 	struct acpi_fan *fan = platform_get_drvdata(pdev);
- 
--	if (fan->has_fst) {
--		struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
-+	if (fan->has_fst)
-+		acpi_fan_delete_attributes(fan);
- 
--		acpi_fan_delete_attributes(device);
--	}
- 	thermal_cooling_device_unregister(fan->cdev);
- }
- 
-@@ -591,7 +585,7 @@ static int acpi_fan_resume(struct device *dev)
- 	int result;
- 
- 	if (fan->has_fst) {
--		result = acpi_fan_dsm_start(dev);
-+		result = acpi_fan_dsm_start(fan);
- 		if (result)
- 			dev_err(dev, "Failed to start Microsoft fan extensions: %d\n", result);
- 	}
+ static bool __init intel_idle_acpi_probe(void)
 -- 
 2.51.0
 
