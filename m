@@ -1,88 +1,128 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.148
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795578289;
-	b=jIiIWn3f/1YxaApGvN7O1solItHINetVs/S7iXyw+hr3nqJIGYKJlZ8EbwaNcLjR7by3
-	 u3WAtcHii0MHLwixake79UyCIy1EO/6RQ+Htmhcs+ajX6DocC/gK6p9SHfNb5NtJ4oX+5
-	 Rusz7e6VChBoAYLXexz3lhhSDA0cb5eUuuO5a/vCbTz181dNOUZ8zYYV5fz3kSIWNcjaw
-	 3nbkF6jTvJieQS4nRFUDpn1npquchSBV0k4ipoYpCm8sMqZTxFDbEMXeN5+SjS7TI9Xt3
-	 cIm/Qv1FTKF1XXaCxwEo65x/mLylqzew7ubenE1FiXDIc52cFaybUxm1uz5g/7f5QjA==
+	t=1795586676;
+	b=sKrDsNpzTi5haUQJBXHFK9LZPg5xS6trI6/w+PauNq6nm0euoG6Vl1iiLEAKBZ5QacIO
+	 GS3bHIZ8qJ5QeT4vGlvTFUzdyXKbeKWtadLZ/FnUqKXIBRLwgg9G+Na0d/YoKTOyP/6ua
+	 X+h5tut9FQTPD7xvrRDQfYdk/Cq4FFl5OcY/SAM05phanjVb4KSn3oEKncNqCVTAbqRhl
+	 +oXx7fKeE41QrQzPVIVQqow+zC0ZTbycqyqColjWEn4DZnF8cuyBg4w9jgFgKwZVZLm5p
+	 AzdN5u1dK472yXuJb5GCJgZ02iSuixrvMInK61gNqRb0zk2e+gz8km3wmD/HU0OnA2Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795578289;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key;
-	bh=3nxeX5fqNfCLdw/UUkrahupQU703GTtxV5TKMFh27NI=;
-	b=Pzh6SytsQqa+iFVGuie/U35l/uKU6RC2T352BToJN0GPqGyogewha9Z8ouNMj9uoYj3E
-	 x6eu4/KDG9lvzsjkDuwJ6RWHHbKbB60tQ8MucspaxxQ0s7tMjGwgkgkCn7YcVn1YpD9MS
-	 Jl/X8utBXa+NbHwUZM/sxW6lu4gANgtkKpZMxa7gqK8WX7AJh09E9PWf83jhTLQFS5tFS
-	 JedoheazL9crLMY70v0xtH3cWumT5mhDCCgTiYQlBVXIQmXN8OndZzpIA1Q9qrcoguZ5x
-	 5097UfX7GV5C1SJYvhxMUcDEzGKVMmQmO7/16C8Q/PWzZJqZtimxulRrEpfguB5Yp6Q==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795586676;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
+	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
+	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
+	 Received:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
+	 In-Reply-To;
+	bh=7Epil4PtGZfPz4YyI8mpzVy50A9b9V+tgSilC5wwwPc=;
+	b=aIPKU6Rp2xjULU1hbyUaiYQmfTPcr6qdmyK6eTXOCMtZlvWXdMT431Kvthg6XWPq234O
+	 oewwXOINru5AKenUQBqF8jsIUFqdhhdLL/sc6FMaXi4XFBf8UZvjGMdCr86ifroLxWe2n
+	 W/y9F0TZR0iVG5zpLf3sMHnR81s45y+wasB2JcfiLzl80gB1bIla6Mf51zolSNfg3Kg7O
+	 svjAQCxiz+3N6Komvt4ryIsQMtND28mx8xmUcMEQWRR0FLx2+j8RRyupTzsBfidZTGvds
+	 PG+VD71cfNYHkNbAZGNxasRgxtz+LfUFfOy+ZTglj8d2/H1nHSTx3v/RL4s9yYnj+LQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=m9mE7ksw;
-	arc=none smtp.remote-ip=209.85.128.47
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=ragnatech.se;
+	spf=pass smtp.mailfrom=ragnatech.se;
+	dkim=pass header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=pAsySB0t;
+	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=JiWIx2VG;
+	arc=none smtp.remote-ip=202.12.124.148
+Received: from fout-b5-smtp.messagingengine.com (fout-b5-smtp.messagingengine.com [202.12.124.148])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 646C7606A685
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 03:44:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 646C7606A685
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16652606A31E
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 06:04:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 16652606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=m9mE7ksw
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4bb64ef5a00so41908715e9.3
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2026 19:44:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795578288; x=1796183088; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=3nxeX5fqNfCLdw/UUkrahupQU703GTtxV5TKMFh27NI=;
-        b=m9mE7kswJgAahuyQAdmdaTTFku7J2ShkF3Wf2qphKl5PSymG9TAbtfdzB/Y+G0secg
-         dg8zzYlCM1iunFs9G7rDHb6Du9xR4yCd8+WIMrjEtNBzPzR0lovelpzAH5CEjT4HcV7g
-         P5zBGvYwH5meeljXwKs04V/OO5DUHbfFCyxxoI3hHEKWxDN5DBtNOu3afI8VxACOd4Mo
-         Pqa568/D8PLP7jxUNxttBGbcYBI8PBWcjjg/UjwvLA+Zovo+91RVNg+EQGtEf1fyOr7+
-         vzeJc1y9l7LsQ/ZEOQuCfygx41BjtIrhb3/emqMq1tPAGCAlXeWOwpXW67eCKga1uGvV
-         3P2w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795578288; x=1796183088;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3nxeX5fqNfCLdw/UUkrahupQU703GTtxV5TKMFh27NI=;
-        b=DdVz6V/3cwc5CqRFB1jBEDZ6SUuljPfzniHSriuR47Yg54cvmqP3hrPRwg8NVstCCN
-         l8AN+nmGKgcdXIMj0bMlJ5nbGDNnk2GkErPZQOqXvkoELN9xWENoB2X3+PuYfkh02vEM
-         /zPl0l6ML/9cE4HjPxMFtnpe9LGADFAFEdqhqjHLn3M4UV04saIHyl9GiimOlvakg/oX
-         JraXCB27vN4zpTBv0BxozfHA9dvs3EP7w01/nQL+a+qMHASv251vNNyVcDLAedNKuoCZ
-         OR4+1VyPWYznzhMUFZTPLGiz5MyaYjbrFRYH5y35Xxz2nA481bR1TIeTWlYOgPHjryE+
-         r2QQ==
-X-Forwarded-Encrypted: i=1; AL+hErHxVgn82gig8X/EEXZBhh7IKGpJ1MJmoMnhPIAUru8vE/cOYBcdvjF6qobxvHasgzD8PSqHTT8sSw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9Fx+k2d3iTkATHDRh658HnBFwVRHQOTdS06WHTKvcsU/J1o9cI
-	u9YOVcnGJoIIPgrqECyZaqD+rBUm1wtXUxx1f/A7DrDn5nxFFS0fOTyX
-X-Gm-Gg: AZFdTZca1Ixlo5JAgn5rcIxeHQc7Do84fttBBy4PP4oEjPsi8uwy8WnQF5LhOacxHeG
-	Md89JVF72Maf5kdvQdZyg/uYqzna31W+PXmYa04hvR5yUwmB/v95Y9GpFCuvc65uKVXJfpTLJ7D
-	Qt2i0RjQVYwcomh8GPM2niNRHeyUyFvNd+XRloz30lSykISVeMezj7o5WneofswTCRQ1hJpcB82
-	CrjAeXNzrOlaSDG6fcfoyOdUTtAQ648lxH0R+ZgvbWBxdYbsmkjgEWoZpu+QjJuIK1voBkU4gTv
-	45mPBJnTGsW7NkD4BOeNvErt1ZOSrtSZv7Wh9iG9UFkM4jmIMumvDBmKV2L9t11Tj9Fk13Ky6es
-	wTj7ASv5oxV+IA9WKFzR5+hObaezxTkz1zs67cVPYt/NbraVTNifUr8qtRfFV/5p/4nHU2LkkKp
-	tGYxWVJPtzLuU19ECJta5xXnDrnPR5EJ8insfyeGzRIYstHol4K53eJWRkgoRwY222+liEvAT59
-	qk/iwEjgr4eAZMKihUuxFRAUiB8WInFovHstdnwLdCQHy4YPlxpSIs0jo4RzkOm3susjrGyb7UD
-	sw75kmMfA5nNerJ8uTUl+OwIDU3ewqvCkVGOPg==
-X-Received: by 2002:a05:600c:828e:b0:4a1:cd83:b23e with SMTP id 5b1f17b1804b1-4bb88786ddemr305977335e9.0.1795578287800;
-        Tue, 24 Nov 2026 19:44:47 -0800 (PST)
-Received: from [10.32.31.239] ([212.58.121.92])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb88402ce9sm391107925e9.0.2026.11.24.19.44.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Nov 2026 19:44:47 -0800 (PST)
-From: Stanislav Aleksandrov <lightofmysoul@gmail.com>
-Date: Wed, 25 Nov 2026 03:43:10 +0000
-Subject: [PATCH v3 14/14] arm64: dts: qcom: Add Samsung Galaxy XR
+	dkim=pass (2048-bit key, unprotected) header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=pAsySB0t;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=JiWIx2VG
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailfout.stl.internal (Postfix) with ESMTP id 3EEC01D00637
+	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 01:04:34 -0500 (EST)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-02.internal (MEProxy); Wed, 25 Nov 2026 01:04:34 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1795586673;
+	 x=1795673073; bh=7Epil4PtGZfPz4YyI8mpzVy50A9b9V+tgSilC5wwwPc=; b=
+	pAsySB0tpM9qAYqkBdTKiGTG5K5FPkntlkCmYB5YAvB8FAWaUkuUoHlkraoZEiW4
+	Aej7i0bElhBbLgeutkC7Ww8c0F5SzHiE+jh753QxazdoqtMLa+qPSSm7suHgQbW9
+	vBehedOlTDUK6Amtjf4lXmOI1uxsBh+9ki1OV8PtIs5QQlJ4fAfOgnKOqB3QOjp2
+	Rxoc6nrlVvmHJ5ze5Ek79Olauij+4F/ANRwESJOXLowZ4Mpuh6wJLCiamdMFdJv6
+	ifsaZoHjIR3Cgb89AXl4wb6oZ+McfyJwtVnnWpK/bkFvgLouhcSHwuEhX4cOJ8tz
+	S62/kFmN2EUNYZeTkcdbQg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795586673; x=
+	1795673073; bh=7Epil4PtGZfPz4YyI8mpzVy50A9b9V+tgSilC5wwwPc=; b=J
+	iWIx2VGAIAluj3NNhn71fnJrX8214XLtmV0izi5w1M9soCnM3GlWvqWEGTQ/WEPS
+	agT00CG9Py/cGagYEopeSroTtg5EKe3vMptGq3Za34ASXtdh78qyk1AiDciGpyTe
+	GsGJAulV63U/vatwjw2MeacKtXkM3gBtdixwiw36KuTDpGKVz4FRKULANeKhlCiw
+	cLATpoDFK0t3ZDAnmmM3SqGvyrbC7dQfgUd8Xa7QhQ/LgB6K9ttpVC0PbP1zDsg6
+	a/KXiHOLuoWomQikbr0oT8IMqaJ2/TrSafm3y/TdLw8kjy4WoHYJIYs521XndIl6
+	qOUAwhEPpBf+SuDUyqHag==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=ragnatech.se a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1795586673; d=ragnatech.se;
+	mf=PG5pa2xhcy5zb2Rlcmx1bmRAcmFnbmF0ZWNoLnNlPg==;
+	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
+	s=fm2:rsa-sha256:Ggtl5WyhBLPez8+5CetmbbI9OJmweZB/xM5gjWgeKT1JVxS
+	hoS2Sf5GQde4luFm6emOal3feKD5CaSDx19Gr/Ih4utn2P3AhcIoHqiQ0ukEzbip
+	a20FwpN6+le9+vjk1mQFfdZ6xYH/fKa3gHAWbv8XUW1hOLnOCikShBP/QNqR9eFE
+	BimKWKrgRPpPo4J4APDs/iiNngsWp70xvKWXGoB/f0crLVtXa3xyp42SHE/Lgpto
+	nkkXGRLsFx0p6l+mce88yFDlUDkxe2BZ16f/fNhd86PIFwmPSDw6ToBS7dTN7vfs
+	QG/QQX/5lxONvO+rmb/nieasMF8Xw1OuhrngZdw==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=13;
+	hn=cc,content-disposition,content-transfer-encoding,
+	content-type,date,feedback-id,from,in-reply-to,message-id,
+	mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:y5PHGR4qiwNyE/UjmfbhM1rqkhy9QZJ0Q87ERQMI+gQ=:oX+79zdqtahGJCAA1wRCQbzUqooIPwfe5lkZzxhoaIs=;
+X-ME-Sender: <xms:cHoGa0Gf-Q9kbrJom9WdNChY2r6BbWDuKrzjdBBgrZI6Blu-RvxG5Q>
+    <xme:cHoGa9zq6lGfPr2zsvkYgKLkqsGxCSQFTy8u0ea5bk3vgSCWCXsST8OPhOy6POx4u
+    fcercS2JvvCsiX8qeCybIdUh8IN9_RlRnsphlwrD-vUuwAcuF18hoKc>
+X-ME-Received: <xmr:cHoGa-2j3gO5Aepz2LAmKaZoLCYH7xZq38g0ptDC0CuGs0FxCndACBV0HPofwZuXB9nHUYiBEACEnoMbcagUg8eKjv8VTs4>
+X-ME-Proxy-Cause: dmFkZTEjh66Usaj5wCBteC9/n4m04jt0OikNODyhj1mehMTaaXXPWYm5BLZA7iGopWBR2r
+    J5pvMD5mm4CxopDCZANuUbNvm5CeL8Cc6JLNHw1RQ0vbTQQV7t01z5rK0lyq372hvuTaFO
+    pLsHWHVmkjop8PpWoUrl0Ox81vWGF+itC7WntgdlDt8bLEXRQLGJzVicpzBao8dy2NEv6u
+    vEYGFIEJmncGMYi9KgdZmQM7rGakjLMqciIZlpJgtUrYguZZV9W7aajMEdnTMgzH3BXP0R
+    ThKlif/jrP1jIudQcB00ZoR/0F695gmgIOyXTjfm4YVbLa/jNIjdD1CDAXjneGY5Vt+8Ui
+    W6OJLG5Tnm4xV/iI5fdZTn1B1aGf5HNy1unNX98k8intATyi0ArJalgsXMAeyRQSiCnpUc
+    RFeFDy1hbps9YRNZW9BrtpMCNNd5VpCtbcqXoUfcuaTePjBzHot+RoX96CDdJBqN/WNsls
+    UI66e3GnwB2I6dXIjkfiBQ4rwmTTm0dg0n1S2Bjx8uFjs8icl5NpkOmOvUtMJUH0eAeE1C
+    R4E/YRDmb0l2ejUj0tiGwlTUwwYQetFKqRAes69e66CMOQSNy7Fu4CDr/w8HoMPNhQE3jJ
+    9MyhurgTVpapRbQWd1DXJ0ni1QnNMsVa9I3vl9Qx8GbYTDhQN20dTuHPNBRw
+X-ME-Proxy: <xmx:cHoGa9qgWslgZFVmaYlGPdxdWm_E1XNcKqgnIfYp0KtJh6hjxv0yOQ>
+    <xmx:cHoGa7WRuPB4GTlKBLHRFVHLAmVKPy1aBRwlcCMcn-GvWgKjs4wPLw>
+    <xmx:cHoGa2qpz8ooNNkaSewkI1KVJEQGqeDTOojfts4uZx94niUqpjogpA>
+    <xmx:cHoGayA2dmL23rNtK3hSQ2hM8oRxHTOK1OluZeXWxnHxBsH2ziYLRg>
+    <xmx:cXoGayOjIobTuNxChOtlEY00vY_hmLtoZ0iJ1tA9SsCJae4qmYbvbv70>
+Feedback-ID: i80c9496c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 25 Nov 2026 01:04:32 -0500 (EST)
+Date: Wed, 25 Nov 2026 07:04:29 +0100
+From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+To: Yaohan Li <shunsheng1218@gmail.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/3] thermal: rcar_gen3: check for sensors before
+ reading the fuses
+Message-ID: <20261125060429.GK3898744@ragnatech.se>
+References: <20261124095110.131258-1-shunsheng1218@gmail.com>
+ <20261125030327.953450-1-shunsheng1218@gmail.com>
+ <20261125030327.953450-2-shunsheng1218@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -92,296 +132,79 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261125-halliday-dts-v3-14-5c8311c0b70b@gmail.com>
-References: <20261125-halliday-dts-v3-0-5c8311c0b70b@gmail.com>
-In-Reply-To: <20261125-halliday-dts-v3-0-5c8311c0b70b@gmail.com>
-To: Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Robert Marko <robimarko@gmail.com>, 
- Guru Das Srinagesh <linux@gurudas.dev>, Thomas Gleixner <tglx@kernel.org>, 
- Radu Rendec <radu@rendec.net>, Will Deacon <will@kernel.org>, 
- Robin Murphy <robin.murphy@arm.com>, "Joerg Roedel (AMD)" <joro@8bytes.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Wesley Cheng <wesley.cheng@oss.qualcomm.com>, Vinod Koul <vkoul@kernel.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>, 
- Manivannan Sadhasivam <mani@kernel.org>, 
- Alim Akhtar <alim.akhtar@samsung.com>, Bart Van Assche <bvanassche@acm.org>, 
- Bean Huo <beanhuo@micron.com>, Stanley Jhu <stanleyjhu@google.com>, 
- Herbert Xu <herbert@gondor.apana.org.au>, 
- "David S. Miller" <davem@davemloft.net>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Amit Kucheria <amitk@kernel.org>, 
- Thara Gopinath <thara.gopinath@gmail.com>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Georgi Djakov <djakov@kernel.org>, 
- Sibi Sankar <sibi.sankar@oss.qualcomm.com>, Ulf Hansson <ulfh@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- iommu@lists.linux.dev, linux-usb@vger.kernel.org, 
- linux-phy@lists.infradead.org, linux-scsi@vger.kernel.org, 
- linux-crypto@vger.kernel.org, linux-pm@vger.kernel.org, 
- Stanislav Aleksandrov <lightofmysoul@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795578204; l=6344;
- i=lightofmysoul@gmail.com; s=20261108; h=from:subject:message-id;
- bh=J16F+LOV4xOLJKpXNlxuuVfLT5wyADCOLJyk9obMJT0=;
- b=PEXF6q1I8sRIJCohqx06WvHQuPTLzuLyBeD6cY5N7N6skOFIiPri6EvLlDF37bvdfxBVIUgp4
- G7fgrNDXJRdDhQgHPVISSjEOOM2shUDSUWAelq0kjpvjUbN5W3WEyrc
-X-Developer-Key: i=lightofmysoul@gmail.com; a=ed25519;
- pk=jeRUlfmkhE53CJPoeIIXgu7rTE0ybDRH0HQrEwbydzg=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20261125030327.953450-2-shunsheng1218@gmail.com>
 
-Add the device tree for the Samsung Galaxy XR headset, which is based on
-the Qualcomm Halliday SoC (SXR2250P).
+Hi Yaohan,
 
-Supported so far: the PMICs and their regulators, the power and volume
-down keys, USB in high-speed peripheral mode and UFS storage.
+On 2026-11-25 11:03:25 +0800, Yaohan Li wrote:
+> rcar_gen3_thermal_read_fuses() dereferences tscs[0], but the check that
+> rejects a device without sensor resources comes after the thermal zones
+> have been registered.  Move the check up, so that a device exposing no
+> memory resource is rejected before the fuse reader touches tscs[0].
 
-Signed-off-by: Stanislav Aleksandrov <lightofmysoul@gmail.com>
----
- arch/arm64/boot/dts/qcom/Makefile                  |   1 +
- .../boot/dts/qcom/halliday-samsung-xrvst2.dts      | 218 +++++++++++++++++++++
- 2 files changed, 219 insertions(+)
+This commit message makes little sens, how about:
 
-diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
-index 19310879349d..3e4682e42cf9 100644
---- a/arch/arm64/boot/dts/qcom/Makefile
-+++ b/arch/arm64/boot/dts/qcom/Makefile
-@@ -26,6 +26,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= glymur-hp-elitebook-x-g2q.dtb
- dtb-$(CONFIG_ARCH_QCOM)	+= glymur-lenovo-yoga-slim7x.dtb
- dtb-$(CONFIG_ARCH_QCOM)	+= glymur-qcb.dtb
- dtb-$(CONFIG_ARCH_QCOM)	+= glymur-sip-crd.dtb
-+dtb-$(CONFIG_ARCH_QCOM)	+= halliday-samsung-xrvst2.dtb
- dtb-$(CONFIG_ARCH_QCOM)	+= hamoa-advantech-som-db5830.dtb
- 
- hamoa-advantech-som-db5830-el2-dtbs	:= hamoa-advantech-som-db5830.dtb x1-el2.dtbo
-diff --git a/arch/arm64/boot/dts/qcom/halliday-samsung-xrvst2.dts b/arch/arm64/boot/dts/qcom/halliday-samsung-xrvst2.dts
-new file mode 100644
-index 000000000000..6fcc1aaafd59
---- /dev/null
-+++ b/arch/arm64/boot/dts/qcom/halliday-samsung-xrvst2.dts
-@@ -0,0 +1,218 @@
-+// SPDX-License-Identifier: BSD-3-Clause
-+/*
-+ * Copyright (c) 2026, Stanislav Aleksandrov <lightofmysoul@gmail.com>
-+ */
-+
-+/dts-v1/;
-+
-+#define PMK8550VE_SID 5
-+
-+#include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/input/input.h>
-+#include <dt-bindings/regulator/qcom,rpmh-regulator.h>
-+
-+#include "halliday.dtsi"
-+#include "pm7550.dtsi"
-+#include "pm8550ve.dtsi"
-+#include "pm8550vs.dtsi"
-+#include "pmk8550.dtsi"
-+
-+/delete-node/ &adsp_mem;
-+/delete-node/ &cdsp_mem;
-+/delete-node/ &video_mem;
-+
-+/ {
-+	model = "Samsung Galaxy XR";
-+	compatible = "samsung,xrvst2", "qcom,halliday";
-+	chassis-type = "headset";
-+
-+	reserved-memory {
-+		video_mem: video-region@87c00000 {
-+			reg = <0x0 0x87c00000 0x0 0x700000>;
-+			no-map;
-+		};
-+
-+		adsp_mem: adsp-region@88300000 {
-+			reg = <0x0 0x88300000 0x0 0x3400000>;
-+			no-map;
-+		};
-+
-+		cdsp_mem: cdsp-region@8b700000 {
-+			reg = <0x0 0x8b700000 0x0 0xf00000>;
-+			no-map;
-+		};
-+
-+		sec_xbl_ramdump_mem: sec-xbl-ramdump-region@a7d00000 {
-+			reg = <0x0 0xa7d00000 0x0 0x300000>;
-+			no-map;
-+		};
-+
-+		uh_heap_mem: uh-heap-region@b0200000 {
-+			reg = <0x0 0xb0200000 0x0 0x40000>;
-+			no-map;
-+		};
-+
-+		uh_guest_mem: uh-guest-region@b1000000 {
-+			reg = <0x0 0xb1000000 0x0 0x1e00000>;
-+			no-map;
-+		};
-+
-+		splash_mem: splash-region@bfc00000 {
-+			reg = <0x0 0xbfc00000 0x0 0x7e90000>;
-+			no-map;
-+		};
-+
-+		sec_debug_pool_mem: sec-debug-pool-region@800100000 {
-+			reg = <0x8 0x00100000 0x0 0xff000>;
-+			no-map;
-+		};
-+
-+		sec_debug_log_mem: sec-debug-log-region@8001ff000 {
-+			reg = <0x8 0x001ff000 0x0 0x901000>;
-+			no-map;
-+		};
-+	};
-+};
-+
-+&apps_rsc {
-+	regulators-0 {
-+		compatible = "qcom,pm7550-rpmh-regulators";
-+		qcom,pmic-id = "b";
-+
-+		vreg_l1b_0p912: ldo1 {
-+			regulator-name = "vreg_l1b_0p912";
-+			regulator-min-microvolt = <912000>;
-+			regulator-max-microvolt = <912000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+
-+		vreg_l3b_1p2: ldo3 {
-+			regulator-name = "vreg_l3b_1p2";
-+			regulator-min-microvolt = <1200000>;
-+			regulator-max-microvolt = <1200000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+
-+		vreg_l10b_1p8: ldo10 {
-+			regulator-name = "vreg_l10b_1p8";
-+			regulator-min-microvolt = <1800000>;
-+			regulator-max-microvolt = <1800000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+
-+		vreg_l13b_2p504: ldo13 {
-+			regulator-name = "vreg_l13b_2p504";
-+			regulator-min-microvolt = <2504000>;
-+			regulator-max-microvolt = <2504000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+
-+		vreg_l15b_3p072: ldo15 {
-+			regulator-name = "vreg_l15b_3p072";
-+			regulator-min-microvolt = <3072000>;
-+			regulator-max-microvolt = <3072000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+	};
-+
-+	regulators-1 {
-+		compatible = "qcom,pm8550vs-rpmh-regulators";
-+		qcom,pmic-id = "c";
-+
-+		vreg_l2c_1p2: ldo2 {
-+			regulator-name = "vreg_l2c_1p2";
-+			regulator-min-microvolt = <1200000>;
-+			regulator-max-microvolt = <1200000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+	};
-+
-+	regulators-2 {
-+		compatible = "qcom,pm8550vs-rpmh-regulators";
-+		qcom,pmic-id = "d";
-+
-+		vreg_l1d_0p88: ldo1 {
-+			regulator-name = "vreg_l1d_0p88";
-+			regulator-min-microvolt = <880000>;
-+			regulator-max-microvolt = <880000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+	};
-+
-+	regulators-3 {
-+		compatible = "qcom,pm8550ve-rpmh-regulators";
-+		qcom,pmic-id = "f";
-+
-+		vreg_l2f_0p88: ldo2 {
-+			regulator-name = "vreg_l2f_0p88";
-+			regulator-min-microvolt = <880000>;
-+			regulator-max-microvolt = <880000>;
-+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-+		};
-+	};
-+};
-+
-+&gcc {
-+	vdda-refgen-0p9-supply = <&vreg_l2f_0p88>;
-+	vdda-refgen-1p2-supply = <&vreg_l2c_1p2>;
-+};
-+
-+&pm8550vs_c {
-+	status = "okay";
-+};
-+
-+&pm8550vs_d {
-+	status = "okay";
-+};
-+
-+&pon_pwrkey {
-+	status = "okay";
-+};
-+
-+&pon_resin {
-+	linux,code = <KEY_VOLUMEDOWN>;
-+
-+	status = "okay";
-+};
-+
-+&sleep_clk {
-+	clock-frequency = <32764>;
-+};
-+
-+&ufs_mem_hc {
-+	reset-gpios = <&tlmm 224 GPIO_ACTIVE_LOW>;
-+
-+	vcc-supply = <&vreg_l13b_2p504>;
-+	vcc-max-microamp = <1300000>;
-+	vccq-supply = <&vreg_l3b_1p2>;
-+	vccq-max-microamp = <1200000>;
-+
-+	status = "okay";
-+};
-+
-+&ufs_mem_phy {
-+	vdda-phy-supply = <&vreg_l2f_0p88>;
-+	vdda-pll-supply = <&vreg_l2c_1p2>;
-+
-+	status = "okay";
-+};
-+
-+&usb_1 {
-+	dr_mode = "peripheral";
-+	maximum-speed = "high-speed";
-+	qcom,select-utmi-as-pipe-clk;
-+
-+	status = "okay";
-+};
-+
-+&usb_1_hsphy {
-+	vdda-pll-supply = <&vreg_l1d_0p88>;
-+	vdda18-supply = <&vreg_l10b_1p8>;
-+	vdda33-supply = <&vreg_l15b_3p072>;
-+
-+	status = "okay";
-+};
-+
-+&xo_board {
-+	clock-frequency = <76800000>;
-+};
+When checking if a device have the thermal calibration fuses set in 
+rcar_gen3_thermal_read_fuses() the first TSC is used to read the THSCP 
+register. This read is done even if no TSCs are initialized and if so 
+will lead to a null pointer dereference.
+
+Fix this my checking that we have at least on TSC initialized directly 
+after probing each TSC. Before adding thermal calibration fuses support 
+this was geared against that each loop was over priv->num_tscs but that 
+assumption is not true for rcar_gen3_thermal_read_fuses().
+
+Fixes: c3131bd5586d ("thermal: rcar_gen3_thermal: Read calibration from hardware
+
+> 
+> Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
+> 
+> ---
+> Prepared against v7.4-rc1-1969-g666539eecdf4.
+> 
+> Compile tested only: arm64, aarch64-linux-gnu-gcc 11.4,
+> CONFIG_ARCH_RENESAS and CONFIG_RCAR_GEN3_THERMAL.
+> 
+> AI assistance: prepared with Claude (Anthropic) as a coding assistant; the
+> author reviewed the reasoning and takes responsibility for the content.
+> ---
+>  drivers/thermal/renesas/rcar_gen3_thermal.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
+> index 9c64cbc2ee67..a96f02d4a8ad 100644
+> --- a/drivers/thermal/renesas/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
+> @@ -557,6 +557,10 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	priv->num_tscs = i;
+> +	if (!priv->num_tscs) {
+> +		ret = -ENODEV;
+> +		goto error_unregister;
+> +	}
+>  
+>  	if (!rcar_gen3_thermal_read_fuses(priv))
+>  		dev_info(dev, "No calibration values fused, fallback to driver values\n");
+> @@ -588,11 +592,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  		dev_info(dev, "Sensor %u: Loaded\n", i);
+>  	}
+>  
+> -	if (!priv->num_tscs) {
+> -		ret = -ENODEV;
+> -		goto error_unregister;
+> -	}
+> -
+>  	return 0;
+>  
+>  error_unregister:
+> -- 
+> 2.34.1
+> 
 
 -- 
-2.55.0
-
+Kind Regards,
+Niklas Söderlund
