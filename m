@@ -1,106 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.62.35
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795627294;
-	b=dmtg7IUfQH8a/R5tzfmntfeVHrJ16PLEM/UNdjUCRyVOLJrOLva59IX58CLI3g9EDwtl
-	 hx3bBLjc9hd6mQZlLAZlnSwG0TmLJStgK70Gsm8YMFsG8ThI/mPj713jfDr9nTUj8KTo8
-	 l5vb6TJ+RNzgH3Jev+uPWAB7+/53f4Fm7rZ48Ls5SHSfffCbtja8f8UZTaggTwrU/kSdn
-	 wsCXV8V6VOxNt/GTvpdKtm0LJbSdvMx7zqwoRYqs6WWfJk2OHEWUKkU/1rpzK1FZ4sREC
-	 PWilQCRgkmMpffD4IzL1OqyvsSy0Y/kyr861lUkMFpOqmt7vg530rXRXW2L+XS5qAaA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795627294;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:
-	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
-	 From:To:CC:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding:Content-Type:X-Originating-IP:
-	 X-ClientProxiedBy:X-EOPAttributedMessage:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=T7/Ndim6esUPJAnvpwRukcqFj7pdfQRsiTyJVVPPwPs=;
-	b=kDanYdPeyIN8Z2fAUITLwA4nHVID29UCRRyXuCP/pxFzUTvcuhGGL8yq87RUa8zKz9mM
-	 nCsJbt/YOj3mCYgIMwhXIqJMMhXc2kCb0FRj1M9B8ckHq5N0/sNu8+7mQx/8aXnY9iUXk
-	 M0MsZc7cCs110w/DRx7E8PVesFAuCXo+HF8vY3fjaY7bfFwZyv5Dx9HjIMEeY736RE0A4
-	 iFGf0CMISbAEldKNZlJUxirtL5M8Uq8SQJ6GJNCIEGvBxZ/WMMz+BvAWdIU9xu/liDPe7
-	 v6NyqycVmYCPBFoeaJUK+jysqpnevYnVDtDIx10bMbbKzoPZ1X15rfv6YBpwpa+nrRA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amd.com;
-	spf=fail smtp.mailfrom=amd.com;
-	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=LskjDRsH;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.62.35
-Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011035.outbound.protection.outlook.com [52.101.62.35])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.14
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795627376;
+	b=1+VLPp53ROGYAfI2iPMnMIL+c/oNG+bERB/W7mYmmPFzayS6MFG0NsOlVWYoUPkWrfYQ
+	 0P2VMoVNwGdpGANqw0Iw8yj4zu3SmN1MYf9RxIFaEdyMShAvVr5mLH02djZjBxLWVKxy+
+	 m7Cc+uUp3Ail3nEusJHcKI9f5yO97B1XRFmOryGAT0uTSHtYOgmoZJU21yqB4AWtBWcMC
+	 6HdTvyz8b6V81icqu2sLay7XtllEpyrte4KiGSOXvopDzkzyxOHYnomFjxrYc9yADSVM8
+	 bCJ0RnXlTvo1Om4I0mILsJYotqdjaJPqXeYpcHUOUzartxbi75Y5ye8WH4uZn18VXag==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795627376;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:Organization;
+	bh=Gwp7COi8aH0WKS2vOklOD3qltSEOsEgVZ6Ai5R89emg=;
+	b=BDPSazVp3MVEqlidzT3kUOwQ5rWowpT4M2iXyIPBtaH0e3a/NJ9hyCNCTbcKdLNoyjd6
+	 aZdwXKQyMweUyHdqZRe0jh5bpgKYI6l0+0wli96OCSIdUH6P7GnslavgV53571tGvX1fJ
+	 Lc2VaiKv/JoElTSyo32TVC+FaH3xft2U0PBPB5FSVLY4s9PTBzm2lijud0IXfOU+aSKMh
+	 sO75ruzos10Mp2nyQA0+OKLlI9cGskrujzGdnzrKcW5q87BECYk2JEs0jJ2TcxqNkMr08
+	 h7J0f/2XOdLhGgHjaPoNvB+TgOzr99QT51wQxy9alQGPe4+xe6vZcwpplw4+bKAPt5g==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gDpeDhd8;
+	arc=none smtp.remote-ip=192.198.163.14
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 705CA606A323;
-	Wed, 25 Nov 2026 17:21:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 705CA606A323
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A1B5606A323;
+	Wed, 25 Nov 2026 17:22:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5A1B5606A323
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=LskjDRsH
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=l6X8QWt/zpn8FVcAQW8EnzfnUXQ9for8uTieUZtW0QiLafjNWDnGDR9QUXIK8M94Kprlgu3nsJFd+rFS3Y8IrcWKYnYCZW80gRGgwdQ7WTQ7uK8+i7neNcYkssSBFW8N33hAlA1OFVokJc12foq4fV9IGI4wCQWwmvA/OgWvGaIz+JpbkdR6h85+QFQgJJdEgWN6tDlaOyUdh/EJxaDA6/goBvKFaWfXhJ/L1Q9hnFYT/LhW/seXRMtzIQ5P1PeLWlLxD7Ns/+f2FmQxxK4oF9cOPclwKAqKrGt9Se4lXCu5UydR0PMvG8S0SX6ntP7hMd8cn4vedvJmSWn1Gsx95w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=T7/Ndim6esUPJAnvpwRukcqFj7pdfQRsiTyJVVPPwPs=;
- b=RtfhiZMoVQxru9CCBbs8deCEAYHbu8W3qohRKkGJBF+BzL2+FvKSplt7ILrC4aQPD6LxR2Ib0dUu7qfNQEC1XWrpbOsbI3fEqK13tOGJwt481Z6s5byWBpAgD7Lx76t7Id4c9e8TS76UJJ09Sa/KMEN6/JswsgjoZcO5SgaRvgwNmMoYBtOdkAmjmmQNJ6fXsSQ+cdNDTiP68cMxQkiU+A0X3gmViKiwSqahHBLMCoWVLHI+vQ7mX7FWpYkdxDW9ZYFL4494WMKAkMwreSbcNHPAMnhFGeAsbsvtvQDVbup2hHUPNqGE0rDKXqe28YZaoAeMBHVUjZZCuZe2fhZN1g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=T7/Ndim6esUPJAnvpwRukcqFj7pdfQRsiTyJVVPPwPs=;
- b=LskjDRsHcpLnPz4Ppq32SFgam+OjHSrjKTKvQ8NKdj7FoR8MroA4PK33Qhpn3jx6WYYNbJ1nrwfMPKtJj8SsNhuzXlVoEnlqEkKw0diy7Vax0vfhv0nwRnXJtDxNe2CrnRuWLmNZZIKxjyDzpImM99GsAE41t9VEd5CkVJ562f8=
-Received: from CY5PR16CA0003.namprd16.prod.outlook.com (2603:10b6:930:10::7)
- by SA1PR12MB8918.namprd12.prod.outlook.com (2603:10b6:806:386::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.662.6; Wed, 25 Nov
- 2026 17:21:02 +0000
-Received: from CY7PEPF000000F0.namprd05.prod.outlook.com
- (2603:10b6:930:10:cafe::97) by CY5PR16CA0003.outlook.office365.com
- (2603:10b6:930:10::7) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.662.7 via Frontend Transport; Wed, 25
- Nov 2026 17:21:01 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- CY7PEPF000000F0.mail.protection.outlook.com (10.167.247.148) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.662.3 via Frontend Transport; Wed, 25 Nov 2026 17:21:01 +0000
-Received: from airavat.amd.com (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.57; Wed, 25 Nov
- 2026 11:20:57 -0600
-From: Vishal Badole <Vishal.Badole@amd.com>
-To: <ray.huang@amd.com>, <mario.limonciello@amd.com>, <rafael@kernel.org>,
-	<viresh.kumar@linaro.org>, <perry.yuan@amd.com>, <kprateek.nayak@amd.com>,
-	<hansg@kernel.org>, <ilpo.jarvinen@linux.intel.com>,
-	<platform-driver-x86@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-CC: Krishnamoorthi M <krishnamoorthi.m@amd.com>, Vishal Badole
-	<Vishal.Badole@amd.com>
-Subject: [PATCH v2 3/3] platform/x86/amd: hfi: Stand down when amd-pstate CAS is active
-Date: Wed, 25 Nov 2026 22:50:31 +0530
-Message-ID: <20261125172031.741740-4-Vishal.Badole@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20261125172031.741740-1-Vishal.Badole@amd.com>
-References: <20261125172031.741740-1-Vishal.Badole@amd.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gDpeDhd8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795627376; x=1827163376;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=vwNOLE5dKieH7P65p0sz5Ql7CO+aAYr55/SBEEgUlc4=;
+  b=gDpeDhd8tzTSrde850S7c6QlGDkeLeRC3cGSHWah+K0yV5JXOYyti1DM
+   P56gy7zbZMxbRqn1UBIUlRVuHfuD9Bc6lyUw8Ip6MBn9bWWrLR4cCoMQW
+   1/LjuZX361yi/tAyAjo7z96zIZvUDUTQfA9BIqgSwoxgSdiOoMj3OtDXc
+   OtpiIITq9NbLHiDDSMmkqzEV6MgoSJDvW27SHQeDM2NgyWQDOiyc8zo6O
+   0DhExtvngf7t2J2GWBWy5SCm7MJ0yvtGfD138yAxlmOZcI8wU94lA1rpa
+   FDGw71Yfibe029AAPAwJViuup557ItgTS3u/FkkRUjYenEdxG1GnsKMeY
+   A==;
+X-CSE-ConnectionGUID: cFNUJ4ZvRtq+gm21tNBIxA==
+X-CSE-MsgGUID: HJ4VpjA2Q82F69qQ+DHing==
+X-IronPort-AV: E=McAfee;i="6800,10657,11977"; a="4455002"
+X-IronPort-AV: E=Sophos;i="6.27,233,1787036400"; 
+   d="scan'208";a="4455002"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2026 09:22:55 -0800
+X-CSE-ConnectionGUID: 8wpN/hBdSTqgZp/XfF47rg==
+X-CSE-MsgGUID: yj9tOweNRze8zDzR2Lh7rA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,233,1787036400"; 
+   d="scan'208";a="12508058"
+Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.244.73])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2026 09:22:53 -0800
+Date: Wed, 25 Nov 2026 19:22:51 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>, Armin Wolf <w_armin@gmx.de>
+Subject: Re: [PATCH v2 3/5] ACPI: fan: Adjust driver removal code ordering
+Message-ID: <awcZa3sMlXv5bUBB@ashevche-desk.local>
+References: <2859850.mvXUDI8C0e@rafael.j.wysocki>
+ <3445012.aeNJFYEL58@rafael.j.wysocki>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -110,90 +79,25 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: satlexmb08.amd.com (10.181.42.217) To satlexmb07.amd.com
- (10.181.42.216)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY7PEPF000000F0:EE_|SA1PR12MB8918:EE_
-X-MS-Office365-Filtering-Correlation-Id: 80c541f2-34ee-4634-8819-08df4b187a7a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700016|23010399003|1800799024|376014|261026140227099003|261022105027099003|10067099003|261026121527099003|261022075727099003|261021123027099003|261102123227099003|261021121427099003|261028144727099003|261009223027099003|6133799003|921020|22082099003|18002099003|56012099006|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	Q3JeHsyrfSM511Mr8+SXqRZYZIHb11S5o8hk4OlaPS3Ot9dz4xiHiLAsfkY3Gjge49GMCJj8HUEQB28OWP0/loexwDSULXK92zHk5PAb7OK7yR2UjbJzUpI8YCFHTVu3iLzwIFT/hdAjtr0yQm49qY/vP6//mga5I0nd7rjzVs341sAYVLCbxzp9xgY5w1N5lr5YMrczZ3rBZLwU3mSRrE+fTYfWNNQmGPI3SznKO3gZ9D2891HapXaORiikxUhhZrUFXwEcR+bmcb8+779XlvcoP6f8QTfjbk1fIYM0tnamJmWT+2NuS/2NkRSIBcdqxrBvkfOAXt5qS4pYofNqbOiewCZe8WSNRA0T7fWEEjjcZLHZsiojwigUhvCuLyOU/lCq3Z+TrD9W9Z1FsznNr0eXmT4k9CFlO/J3WMpnfHRBXGLnsOQibnGxFGu2SEk+ypYLfZo1GdETyCkTjE9jwQ2sZ/+xajRdHJJswXQBiUZu7pInbHHJ5dZVlklaAcS8iH2lospzr6oVCEZFoU3qzgJYxQ8k6Dj9Y3A4pJ1S20zVhDKATrgA8fCGDPC9je/F1+C4YrYfx6ACQ5pWmS0MHrhSSwAoQv3HBPuV4c8/RT6ksz0+fIBq31SWALlz+dSlfvA9v4VubBcMoewCLBt31h0fxG+7erif3AugNFZpSKwxt22sUqf8rTCKoB3v6BYSALIfcADHhI4NPlxEVRRG6D5REOZFqfCTym1sAFwlOFqDhd6Y9RjuHW6HXufrYtlk
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(23010399003)(1800799024)(376014)(261026140227099003)(261022105027099003)(10067099003)(261026121527099003)(261022075727099003)(261021123027099003)(261102123227099003)(261021121427099003)(261028144727099003)(261009223027099003)(6133799003)(921020)(22082099003)(18002099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	O5Ah+jpuQyQUVPcrrPPYPYrOT5mFdmhhAthg+iqZBB22seETDTE8MmxnHiXuUalr0yfvb1JspyLSZdF9Covoj/aObWrjDzGYP1qRKZljmgjAykWismxEkrIaMTG/VfLfFdT1FdgPInbcceC6bZQB5N8dB/KFXzM7VEtYpD6wW3Ypy1Tab9xqtTOwtAp8e/j1SXPqTsVe19SLWc8QkfIw1Ctb6r4qP1O9T0teVVh/61oauQecAx7YDdRIxi/mjqwtI4/n4xwVH2Novo3narCk+sGH+c7aurqhXMBNORLFZD5Hr2wOHhmkkzedsoaRgfB/FZgCLwuxEL+iWgcGtpnwy9fntJkGAEFgT2HY21R7V3TzsOCXJdvEGG2c+vxG6rF/fAM4FJnmptjQhYIwrXT5j+hiQgSWC+I7EIifTP+kg06c41sSJe7EnfSOqlC6OodI
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Nov 2026 17:21:01.4969
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 80c541f2-34ee-4634-8819-08df4b187a7a
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	CY7PEPF000000F0.namprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8918
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3445012.aeNJFYEL58@rafael.j.wysocki>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-From: Krishnamoorthi M <krishnamoorthi.m@amd.com>
+On Wed, Nov 25, 2026 at 03:08:48PM +0100, Rafael J. Wysocki wrote:
+> 
+> Change the ordering of acpi_fan_remove() code so that it reflects the
+> ordering of the rollback path in acpi_fan_probe() where the sysfs
+> attributes are removed when the thermal class cooling device is not
+> there.
+> 
+> No intentional functional impact.
 
-When amd-pstate CAS is active, it takes ownership of per-CPU capacity
-values that the scheduler uses to distinguish performance and efficiency
-cores. amd-hfi manages the same scheduler state through its ranking
-mechanism. Running both simultaneously would cause them to overwrite
-each other's settings, leading to unpredictable task placement on hybrid
-platforms.
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Avoid loading amd-hfi if CAS is enabled. Defer HFI driver initialization
-to a late initcall so amd-pstate completes initialization before HFI
-checks whether CAS is active.
-
-Signed-off-by: Krishnamoorthi M <krishnamoorthi.m@amd.com>
-Signed-off-by: Vishal Badole <Vishal.Badole@amd.com>
----
- drivers/platform/x86/amd/hfi/hfi.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/platform/x86/amd/hfi/hfi.c b/drivers/platform/x86/amd/hfi/hfi.c
-index 86a7f4332c35a..73e53203a838c 100644
---- a/drivers/platform/x86/amd/hfi/hfi.c
-+++ b/drivers/platform/x86/amd/hfi/hfi.c
-@@ -27,6 +27,7 @@
- #include <linux/topology.h>
- #include <linux/workqueue.h>
- 
-+#include <asm/amd/amd-pstate.h>
- #include <asm/cpu_device_id.h>
- 
- #include <acpi/pcc.h>
-@@ -536,6 +537,12 @@ static int __init amd_hfi_init(void)
- 	    !cpu_feature_enabled(X86_FEATURE_AMD_WORKLOAD_CLASS))
- 		return -ENODEV;
- 
-+	/* amd-pstate CAS owns heterogeneous core scheduling when enabled. */
-+	if (amd_pstate_cas_active()) {
-+		pr_debug("amd-pstate CAS is active, not loading amd-hfi\n");
-+		return -ENODEV;
-+	}
-+
- 	ret = platform_driver_register(&amd_hfi_driver);
- 	if (ret)
- 		pr_err("failed to register HFI driver\n");
-@@ -547,7 +554,7 @@ static __exit void amd_hfi_exit(void)
- {
- 	platform_driver_unregister(&amd_hfi_driver);
- }
--module_init(amd_hfi_init);
-+late_initcall(amd_hfi_init);
- module_exit(amd_hfi_exit);
- 
- MODULE_LICENSE("GPL");
 -- 
-2.34.1
+With Best Regards,
+Andy Shevchenko
+
 
