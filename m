@@ -1,84 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.16
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795727873;
-	b=XqFPDGbpIgKTr2h6d1rquv+7UHPuTcNe90eF7j47bOEsxd+jUob11tkKqCGnf6ZXzNqe
-	 /Iw0NakOjOU1BypFl1Y1G3eWLNYyzODiXJGSb4+UEWSPMIeOUyy+U7EtvSOhQE3iv7DCi
-	 GoQHmn6h3HKrZCB9AkkUc4iKzA4ISF3+DzDrE2/zt0SSyllie9ZN3kJSHaFguRNNtFVwi
-	 tx/M+SE6oFfgFyvNPgwVcoxG8R1mNryrOyCpaiiwaqWjj0r8MDzJA4dt3xXke5m3Hks0C
-	 4CHyneCrQs/wy0PQP7ESuW0SdebUVoWHD1U7uvZMbZqdVPysyw8YP7Yu3VlEpMrsjOg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795727873;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Message-ID:
-	 Subject:From:To:Cc:Date:In-Reply-To:References:Content-Type:
-	 Content-Transfer-Encoding:User-Agent:MIME-Version;
-	bh=gN2XDNegO1EaVvcRRYCrugnJruYcbJVxCnaIB303O6E=;
-	b=LSLBRj7ctUgoPizRMgqWslNaoUpqCfUHgVT4bjchnoUKOo8w3kzNqMkJG4vrbdxHloHi
-	 1dgv+/k5ShekdJ4ZOR1QYh9xsu2tm4ivIBpCpKrfsa1UkqsdFdkxc7uI6lW8NQNwDk7Ur
-	 EWHuG8y6FMhf9bHRhE/S/MBlTBRAf1IgUt1+TVAnF8K/HiNDH3uaiC5bIgXkVRkgdCvjB
-	 +43FN7QQmpGs0z/8+Isv+TcVUeq8bQrwgznmBo17F1LUXzFZ7dKP6JMt7KdUXIgVTSwUy
-	 CEaWL+KoVHsXzQCxn++s+FSLQ1xqYw6wb9MO5YmgFF6DnIKzYm8juvgfV+jY/WIjjgA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.intel.com;
-	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nmuX7w8f;
-	arc=none smtp.remote-ip=192.198.163.16
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.53
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795732365;
+	b=Kw0ODLk90M87wYvgwqvxYp3c0pQjwhOtE6qtEGe7rok4FkMaGY9wLJDe86XylF09gglK
+	 nqccjLceHqBZ1+NtFKAfLDbkXfNcVlE33vZuKozuuh/ueILHTLfrmNS9MXwjXiy9O+jfC
+	 w0cFk3Bf9U/p63wXOi3YIsQqw6ELYqyIcmUgnnUTz4r0sbSn4VHxFOwvanJ1rVPmUbO1x
+	 d7wUH/bUuR1zlvsTDfGudpnBOCrceIcSLifsd509xGcJ7ocgpC0z/nABFJg+7r/zjakaR
+	 v6v2OIvuXIzX1VBl37od3HK+pgkJV8d6I9sG5WZngteyf/NP2RpoUReYRK0ZnDu5rbg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795732365;
+	h=DMARC-Filter:X-RZG-CLASS-ID:DKIM-Signature:DKIM-Signature:X-RZG-AUTH:
+	 Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:
+	 References:MIME-Version:Content-Transfer-Encoding:Content-Type;
+	bh=YLRX0OaUNZ3WcezBtVDRtDl3s5/0FwtcLnvobcev8Cc=;
+	b=ayVsbCjpxqMmxF1/cNhpoTpBrRDiXPrLGtY6M5dEbLHK24JsUyFaF6FqnNCxQfNayZi7
+	 ZX3lB7S0StGcNCKZRNucJJPWamxdEfuGSrxkzpfuMau12MqU2JFG4bsHHGLH3KR2bGP0z
+	 66lhBo8wikm6Cvh45d7fs95mpdu+jZY3fptNkfQ0O2Ldjzr3QvUo4FKzbKODaUp2K2c9z
+	 XCLTBhSijCU6R7tpGqirSZNWRN62jztxrRk15haqUrPp3rY/q59a31EXJxHzooCMBPZ0/
+	 /hhGmyOYjZh7wIJHROLiBRYwXhwfnPb5c6tUKuuGTcDL31OXtEllc6Hoq6aFQiLrODg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=iokpp.de;
+	spf=none smtp.mailfrom=iokpp.de;
+	dkim=pass header.d=iokpp.de header.i=@iokpp.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=LuSLgd4m;
+	dkim=pass header.d=iokpp.de header.i=@iokpp.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b="4xfwx/gY";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.53
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.53])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70361606A31C;
-	Thu, 26 Nov 2026 21:17:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 70361606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13CBD606A31C;
+	Thu, 26 Nov 2026 22:32:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 13CBD606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=iokpp.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nmuX7w8f
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795727873; x=1827263873;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=XB88xni1EX2fIeNGWIw6yOZSQAn5vLw9/RUjEeoJ3/g=;
-  b=nmuX7w8fa/65PkYsSY76Hg+H3Dz+fUxmqp+4hdA5Gy1QjXDd+F6l57aa
-   j/W7UL00OXPBCQxDnRJ5wtC8ZLTpl59FUOEH8xxTv0fVsndbWSlFPA0jW
-   BVZfMKKoblvmeM/7UI8us43CIaqQKvGAJSUwKAYv1QITRSX1ySN5sGdbY
-   ICfl5NzUNLqAcTzcHgnK6ASDvSocdYOQitS8lqO9ALAq+q6PmiX0DgC/S
-   j2wOCtlUjJLW0pUFwJinUBpl5U5tH4effgMwsMllZ+8tDpiCwLmr7Tsty
-   bvOneCvc1CDslfG/laKruAHO+Gxa5hA64Cs7F+522yDooZY1ztoDhb0Zx
-   A==;
-X-CSE-ConnectionGUID: ZQORvdtPQD2ZgogS3CMCLQ==
-X-CSE-MsgGUID: cWc47RfKRjGsQRuQHRrkYA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11978"; a="4659271"
-X-IronPort-AV: E=Sophos;i="6.27,235,1787036400"; 
-   d="scan'208";a="4659271"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Nov 2026 13:17:52 -0800
-X-CSE-ConnectionGUID: Bpx7luiwSiGuvM+axbZzoA==
-X-CSE-MsgGUID: IR1zQp5VQcm8H6+jxG635A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,235,1787036400"; 
-   d="scan'208";a="12282093"
-Received: from linux.intel.com ([10.54.29.200])
-  by orviesa002.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Nov 2026 13:17:52 -0800
-Received: from [10.245.245.29] (abityuts-desk1.ger.corp.intel.com [10.245.245.29])
-	by linux.intel.com (Postfix) with ESMTP id 9505420B8CD1;
-	Thu, 26 Nov 2026 13:17:48 -0800 (PST)
-Message-ID: <3659d5f94d83b71df4040f8516000e9be9a9c1b5.camel@linux.intel.com>
-Subject: Re: [PATCH v1 3/3] intel_idle: Allow ACPI _CST to be preferred to
- ACPI _LPI
-From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM
- <linux-pm@vger.kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Zhang Rui
- <rui.zhang@intel.com>,  Len Brown <lenb@kernel.org>
-Date: Thu, 26 Nov 2026 23:17:46 +0200
-In-Reply-To: <2080993.usQuhbGJ8B@rafael.j.wysocki>
-References: <3986546.kQq0lBPeGt@rafael.j.wysocki>
-	 <2080993.usQuhbGJ8B@rafael.j.wysocki>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-3.fc44) 
+	dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=LuSLgd4m;
+	dkim=pass header.d=iokpp.de header.i=@iokpp.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=4xfwx/gY
+ARC-Seal: i=1; a=rsa-sha256; t=1795732359; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=f+FvmR0vJ8clx1Nl1XG30F0bgb2yWTzgpS8AW00jD5BFsklDPZPiVMWQ/dBkd+s1kt
+    cWg/HgalvcB0DzDRBePW9QSkiC8UjHldig5ptP4FP23xYn/phgP2lv7O7j8bfPEF27tj
+    xuoAI+9wb6qFLHaiLloBqXTeDkD5mZ28h2HMONUWGaTQcfYxXHVGtj5OoKwdTsfjbjye
+    +NT2H5fbOwpUDXAikxw4D+uu0hCH9HK3qg2W4sYyWjPWxQaPMvBOuoXR484+MJkOlGOm
+    kFH/twA4js7jBj9Qf22rzyCkHf1S5MVtqYHlyiGYaKOcLmsIYvYIshiJK4QHomh3KesU
+    kChQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1795732359;
+    s=strato-dkim-0002; d=strato.com;
+    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
+    From:Subject:Sender;
+    bh=YLRX0OaUNZ3WcezBtVDRtDl3s5/0FwtcLnvobcev8Cc=;
+    b=KtJXYabVqbldq4crKNokmAUZmS4mIpuj3+TrUoSmLwBkvZVa5UYfPJDge5ScQ7+dgk
+    bdoZXT9bswmTgPmIDQuQe2Zo3A3NDYmxxhyz8OYQya8uT0CKwNa1JzwtplvmKZmMtzYJ
+    Uvq/4mmzmBd8PHRtr2+1KGXUxxm2BzQsWaG9SifqfVkfM1DVYNWeBMEVu8iFAPwNbCD8
+    eSBWJ9MXsiIMU04vtPrkbRCKARKpao/G+ERaEgGiHP1kT8Tqh0dL/SmoSgzCl0mtorA0
+    wfvypfa9dNlhYahfa/4zw+URnqY/g1Cl3VGw7eaCy7Jk3WR/tXglfb4G/rGvBsjUaLYJ
+    n9/w==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1795732359;
+    s=strato-dkim-0002; d=iokpp.de;
+    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
+    From:Subject:Sender;
+    bh=YLRX0OaUNZ3WcezBtVDRtDl3s5/0FwtcLnvobcev8Cc=;
+    b=LuSLgd4mE7BGTR+TsGusU/Y+SD3vSwcXJc3397jpsp9mX/M6mlC2NGdH0z1qK+EWY5
+    ldqyLJIM3Q+wcl/p4qoxxs8Fvo3YQaqLaJ1MZfubJa+TRvDYAzdGt65ZL9pkc8N6+jxW
+    f1baJYbO7YDbwhCJ4uY8hVCCvXInU2y+cDx6bKn9gQ8tsU9wHyvSXwYxJB6or4gdI9Kw
+    U5deY9JapSGpAZoOCCzgaU2a3WVclzSXfgF9/usvkiZqgc8rqGPyKLFweEBFcBPIVcZw
+    HeRJ8QQ86QSk+jsf2gdskMcHJE7ME1cC5oXYykUgzbJFenkRYM3jvJYr2H/H2c8xiti0
+    bhyg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1795732359;
+    s=strato-dkim-0003; d=iokpp.de;
+    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
+    From:Subject:Sender;
+    bh=YLRX0OaUNZ3WcezBtVDRtDl3s5/0FwtcLnvobcev8Cc=;
+    b=4xfwx/gYLYYBmtx+BTQC8glqkZ4WzaLbxnpakgl6EZxVDZdubtYG2BSLKFDG34QuQb
+    tJInF47jR1v/n2jKxSCQ==
+X-RZG-AUTH: ":LmkFe0i9dN8c2t4QQyGBB/NDXvjDB6pBSfNuhhDSDt3O256fJ4HnWXON1RP16IHIszTD3hB2bKri1qswmSmZySpVjD67C0o="
+Received: from Munilab01-lab.speedport.ip
+    by smtp.strato.de (RZmta 55.6.3 AUTH)
+    with ESMTPSA id z831ad2AQMWdfOl
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Thu, 26 Nov 2026 23:32:39 +0100 (CET)
+From: Bean Huo <beanhuo@iokpp.de>
+To: Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Bean Huo <beanhuo@micron.com>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Avri Altman <avri.altman@sandisk.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org
+Subject: [PATCH v3 1/2] PM / devfreq: Fall back to previous_freq when get_cur_freq() fails
+Date: Thu, 26 Nov 2026 23:32:24 +0100
+Message-Id: <20261126223225.2257410-2-beanhuo@iokpp.de>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261126223225.2257410-1-beanhuo@iokpp.de>
+References: <20261126223225.2257410-1-beanhuo@iokpp.de>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -88,50 +108,70 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
 
-All patches look good to me, there is only doc nitpicks below.
+From: Bean Huo <beanhuo@micron.com>
 
-Reviewed-by: Artem Bityutskiy <artem.bityutskiy@intel.com>
+devfreq_set_target() calls the optional ->get_cur_freq() callback to get
+the frequency that is passed as freqs.old to the DEVFREQ_PRECHANGE and
+DEVFREQ_POSTCHANGE notifiers, but it does not check the return value. If
+the callback fails without setting @freq, cur_freq is never assigned, and
+an uninitialized stack value is passed to the notifiers.
 
-So my nitpick is to make it crystal clear this option is not about
-never trying _LPI, it is about trying _CST first (reversing the
-default).
+hisi_uncore_get_cur_freq() can hit this. It returns -ENODEV without
+setting @freq when its PCC channel is missing. On the mailbox error path
+it sets @freq to 0 instead, so that the core does not read a random
+value.
 
-On Wed, 2026-11-25 at 15:20 +0100, Rafael J. Wysocki wrote:
-> +``prefer_cst`` - When using ACPI, prefer idle states coming from ``_CST`=
-` to
-> +idle states coming from ``_LPI`` (which is preferred by default).
+The other two callers, cur_freq_show() and devfreq_monitor_resume(),
+already check the return value and use devfreq->previous_freq when the
+callback fails. Do the same in devfreq_set_target(). Read the frequency
+into a local variable first, so that a value the callback writes before
+it fails is not used either.
 
-``prefer_cst`` - When using ACPI, try ``_CST`` first and fall back to
-``_LPI`` only if ``_CST`` does not provide usable idle states (by
-default, ``_LPI`` is tried first and ``_CST`` is the fallback).
+This does not seem to cause a visible problem today. The passive governor
+is the only DEVFREQ_TRANSITION_NOTIFIER user in the tree, and it only
+reads freqs.new. So this patch is not marked for stable.
 
-> +
->  The value of the ``states_off`` module parameter (0 by default) represen=
-ts a
->  list of idle states to be disabled by default in the form of a bitmask.
-> =20
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index fc0aea26db50..3c07469586f7 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -1779,6 +1779,10 @@ static bool no_native __read_mostly; /* No effect =
-if no_acpi is set. */
->  module_param_named(no_native, no_native, bool, 0444);
->  MODULE_PARM_DESC(no_native, "Ignore cpu specific (native) idle states in=
- lieu of ACPI idle states");
-> =20
-> +static bool prefer_cst __read_mostly; /* No effect if no_acpi is set. */
-> +module_param(prefer_cst, bool, 0444);
-> +MODULE_PARM_DESC(prefer_cst, "Prefer ACPI _CST idle states to ACPI _LPI =
-idle states");
+Fixes: 0fe3a66410a3 ("PM / devfreq: Add new DEVFREQ_TRANSITION_NOTIFIER notifier")
+Signed-off-by: Bean Huo <beanhuo@micron.com>
+Reviewed-by: Avri Altman <avri.altman@sandisk.com>
+Reviewed-by: Jie Zhan <zhanjie9@hisilicon.com>
+---
+Changes since v2:
+- Do not call ->get_cur_freq() inside the if condition, as Chanwoo
+  suggested. No change in behavior.
+- Add Reviewed-by from Jie Zhan.
 
-May be even something like this
+ drivers/devfreq/devfreq.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-MODULE_PARM_DESC(prefer_cst, "Try ACPI _CST before ACPI _LPI (default:=C2=
-=A0"
-                             "_LPI first)");
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 82dd9a43dc62..7546ed720dcb 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -345,13 +345,15 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+ 			      u32 flags)
+ {
+ 	struct devfreq_freqs freqs;
+-	unsigned long cur_freq;
++	unsigned long cur_freq = devfreq->previous_freq;
++	unsigned long freq;
+ 	int err = 0;
+ 
+-	if (devfreq->profile->get_cur_freq)
+-		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+-	else
+-		cur_freq = devfreq->previous_freq;
++	if (devfreq->profile->get_cur_freq) {
++		err = devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq);
++		if (!err)
++			cur_freq = freq;
++	}
+ 
+ 	freqs.old = cur_freq;
+ 	freqs.new = new_freq;
+-- 
+2.34.1
 
-But this is very minor, your call.
-
-Artem.
