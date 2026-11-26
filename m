@@ -1,82 +1,82 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.176
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.170
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795724561;
-	b=0qCA92qvPTsTFRr83eCJvBydsBC4mEu0AGZTgbPS1aSWeKx0nOMjeHOxXeKtrIn0mkYn
-	 /L7TS1B4WiNxeEYl1XfHYjVnARcEDKyQYRYrRi3JJ07dCIkbCh6v1VtXcCLyFgYsZpl6u
-	 hSbt4CnFtPgQxTmrNe6oHr3ClyioiOcOgy+66VWbPqIeMT4OshQafZXfo+Cst/ZLC3VrY
-	 zofQcJ0Lmi1mAcb3kCLDuDcRIYMh+UI2XZKbmJNLqGyCsqBS5EuC8hqFTfMSRSpPLlxvZ
-	 dUL4UipfLeRRFfKOqgIghX172TWvqTyQ28McIwQfYksrvInt2+OQgKO6mp54msP1wOw==
+	t=1795724570;
+	b=p+VT3xUGv8BSRIJdmGrFqIHuxgqUPCzNTvlhkPg9zunplS2H6/db5eJ4c+bpKI4FHusy
+	 0wj+rX8kir3u+Op3NM7KKjWSpzcUUBQsEX7Td5FmKsXci15QOKajh2RAbhyJVYks9OBZB
+	 XZbklhSKqh9b/gRM37aUGUqVcSHd+zdmoEuyQPfR9NlZdlefVF/IZAuYvAj6pVV9065Hq
+	 u9+A162YOqfvkrb0xyW3QRWcvBn27++eLRcf9AA3qcR8M5FuP7mgWJ4Y/bSIVWLUP4zyt
+	 yM55v5MXNG54KIL2XrpdplWxzTU8pw8UmvEtI9mE+yN0gn9KQ6aCI3vIUOVIn7R6RJw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795724561;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795724570;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
 	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=eu/jciqpUTlRe4UepQQoT19Cl8pPa4jSIfjdhVO2wYA=;
-	b=trMOqUbkOHDk5m2tZ1tclUwHCIokR+FZ5StJFShVzEYm/p4Sd3U1vIdrjPglNUwdL5Tc
-	 YKFznisnmHgzZnPobW3/O2jbvA3uqpgAbekoG+d2HGPQZwhiIRrfWMvjcrb37vlBJPePS
-	 NuQ0nmKKZmDNVpgtGG13H9+SBLD7xzilga4N8AN6NyWiME9Slf3a1Gtj/NBa+RUl3OHDa
-	 CaF+2BHdy+C0kxrc/2/mv2Cg3XVnY1CXHJ2sBn7GOwQ3uBOuzrvAWibPcgYJ4FxHhVOkq
-	 Q3/Ym5z8I594SZA+8ba6cQPOMKZ5mRlkFc+3Ao+mtKWCpDExUA2a+If74A4JaIMZ2MA==
+	bh=Fhxain2YywlROt+HsQVshfCTTw3zRWPxa3M7ADWOYi0=;
+	b=p31o3yLJP0kMFtzCmG5grktXClLmfCvOY2rsERObYhwA9SSff5PTVm5qWJAekwoD/n2P
+	 6k9lE66UiVTlp4/Wf+rzWUo/0Fe5ST+Ybba+YSPG7qV9NlwOWUraKX8SKmBdHqBp70sE7
+	 PyNkuo63nS1D1PSqxDhkrxYEp111RUKFXwbw3/5Q3VcavPZq6YHeu9TEqDGUsWX1pea4W
+	 DrJ1G8pJkzcYfeSsaZjdSuQISDhLFy5A6ug6oyDOsgsUBB7ku8g2uDW3nxbHy52LQ2GaM
+	 XJhVf8KHqBRRnRHgDVXxFj/bGdtQ1D3W9iDY+Lu7xQW0lgm19S3u5l5wPukuZucR0lA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=R3KXAmT9;
-	arc=none smtp.remote-ip=74.125.82.176
-Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qHAKQB2H;
+	arc=none smtp.remote-ip=74.125.82.170
+Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C69EE606A321
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 20:22:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C69EE606A321
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99616606A326
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 20:22:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 99616606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=R3KXAmT9
-Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-38699cf08dfso9084124eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:22:40 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qHAKQB2H
+Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-386c4d2e2ccso5190043eec.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:22:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795724560; x=1796329360; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1795724570; x=1796329370; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=eu/jciqpUTlRe4UepQQoT19Cl8pPa4jSIfjdhVO2wYA=;
-        b=R3KXAmT9MsktSm5oNUEI4ygpv5v1XVS/vi9lc8iHNhY4ZI1ic5crzZvzIQfgCZMVjH
-         SVH4oZoYzmUCLkiYFRpDtzHKUuYLa7KGYLlDsb81PguIWL2tXypudSIzDgdcREB6q75I
-         ygHHGMS0ShlgT4gZglPyOfmTBGxx3wf5lqP5BZdIaPcMYeKTtOZmIbEknjZxKCXHIT98
-         QvtnX8MPuZ4hM2LOI0m/V4D0IKphG6eYbZNxcp6a3HtizQTxzceuXktUkGcUuM6Qq0RE
-         eTudZ7gq01uKpWKdMAskvMKT1CxDWBO0eTIyctI6cBjT1o0KJuHAD32g60ILy8UOhT3P
-         TGyw==
+        bh=Fhxain2YywlROt+HsQVshfCTTw3zRWPxa3M7ADWOYi0=;
+        b=qHAKQB2HDfISnUsEFEbYagPwsl+S3v0RYK+puj45EP3eG5kE8GRsK+2F0lSwdyevX4
+         OFa55Iwh5ihYdrd5TbbnUdUYg7pf/5fVtKDD30NVWkYb7TjQlR9s+xAOzsU8UvP24+CV
+         nXPZbbrGXcx7jjJO7JYfuzwn/pciXu+x5n8rCu7eSCtFGTujCEkPNoP5EInByyCG4ztl
+         IOYOooKC5V6VITGnLxm1KpGljbR7CZqnaZ/xX30cyMY5T1XyZIcMYdiVMU0i2aT7dyf8
+         0xS9RdGIcrNzvty8ebPh8ou1xYs8j/oNjCUmosR9DqM/4zmIgpztGpKytM2pF4P063dT
+         A5ZQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795724560; x=1796329360;
+        d=1e100.net; s=20260707; t=1795724570; x=1796329370;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=eu/jciqpUTlRe4UepQQoT19Cl8pPa4jSIfjdhVO2wYA=;
-        b=r7rq/eGan0LPFVkMWF403mysPQA5ILBQ6GU1fr26pLhQfd1Up1EOjKLv8EX11WEzLa
-         zQVgxsPDGvWLII7Bk4w+net4FgF4JECxuy8/TC1omLSfC2lqdkbo48e0/vj1Th1LZWxi
-         XLogIZlopW3QVjhKV0vu4um+niGD6YeMHajtbg9syM9NRw6DbNU0DTecJwXjMqJRXfzs
-         zEVPZncmqnk/f1W4nRmXb0i3y/rQBjrpLwRb/lcuiS/rvaS2pjzhBr/yPAIv7ENJoNnz
-         CGd9qr5padPKqVldCeGg9cSP2sP/Cb/JWzQKtE7CLKgfk9oSUWMdu8sNsMNbLRougrYf
-         aToA==
-X-Gm-Message-State: APuU4Z8TnnaAsOqOLACNf12xkTKNgQA2tb5Pq1xjLefUIHiBx0kvXp+X
-	wO4ZevRhsgH0gy71vxDhkwbhoJY4XrZbLIwVEtyqto/ortNvVDc+tMf+
-X-Gm-Gg: AZFdTZed5hKDygdRutr0fH1Cigv9REThsSoF+e0/ZbJXMgPean8yMoxmSNdK4/UFe3n
-	r3lhIa0VdSHQB8LvijyZVFKJCgFTQBHT2mMEjyann6p1AfbYS4QMInL6orKxEkeU7YaBc9fG1hf
-	lxIhaUEMXQbhxOYSP2faEUwrNihL35X8J+fmOsHEbymIxXgFPedC43YMyFtnHiL5swZB7wV40dK
-	5voX6fHHSsIwP+tc4Ab9BFUb63f/9HKJB/W/VMbaCEKIt8jVz8QDRqBpELQDtK4NGWH5UJlLmDC
-	mD2w5kfSFXDvHTBOPZwPH8nOLQYIVLGc9B/YDMKIYHgWg1DmkCxw2P1QdNbQKINv4LUKhZ30S4l
-	YAZ7+aeCRdFS4F10C4u337IBVobd9PHppr/RDI9D4EnjTB/Bqw9lyzK0Tbdybz6I1eVVrBstx+V
-	lfYB1D8ttoi1Tpk4V4WMVurP1vmaEo8TFVnxG0iwHsmbOWJ6iJ4qIEMCW3pyhpb3YyOagCiXWWx
-	WEmHyjm77V0A6EsEshhgZeTCOLhhVhXoQ/34lIHIUFLrCbO58Pkaeyf/Aqsyxy/Ydjem21idKIc
-	uexfXoCaGkYcSkmk9eLZeKv+LIV2kbusX0XiDdf1/yUwzCYGKOSjVokyByunIKY0i3tsbQ==
-X-Received: by 2002:a05:693c:880e:20b0:386:b26b:d67a with SMTP id 5a478bee46e88-386b26be80fmr13019351eec.12.1795724559778;
-        Thu, 26 Nov 2026 12:22:39 -0800 (PST)
+        bh=Fhxain2YywlROt+HsQVshfCTTw3zRWPxa3M7ADWOYi0=;
+        b=aVJ31S0PgT3OJoysrBcpgPhdRTaJNTKiZK6VIdr2ckykxcH2UdXDifUhEywQgWpYiI
+         9LmGxjF/fqVP6dfslUKk4LBagOmUEQ+fjLsCCM7HfgLeI2mpAJEcFssfiFh+5mbggtgP
+         b8Qg1ha47EvMoLSp4N3Ty0lydH84wYPBQR85KmG1DPJjrjOTkAbQl9MKRHpJGdcw/Zkk
+         QoelUYgdoyX3EAmWSoPHAMGG3tyHEm0xWbPmy9KHNee29bpOWkY01usWKIgXl+QJ+a1y
+         hubkNqNDobKUz4VEFu8x8xUuOWAsAu6inT+IncMxYohLStEDCo67e16+oQQgrPeLNit1
+         bgaA==
+X-Gm-Message-State: APuU4Z9tb/IhBKGGVWvWMcuZKCl4jhOnWBof35jX1mn1lE4lExq1fCLE
+	g0DYVkBXvtfCaouEDdFK+i3Q3L+yLttM8ljFqAmu8vfMux5cQrAs94oS
+X-Gm-Gg: AZFdTZfH02FqZAiMz6UYXlfNqcWb9R5pmQnmah/iwj/SBe3hOR6JcfXMzwu8HkELRs2
+	c4V0LF3oZGvclQrNzGptqM0STqpDSJqs1O/6u/8RLYkrAGos6dM0D5uK80MsbUkR/jyYeUlSWZZ
+	1XspGHE6Cjry1UiGKeMSuaHQjPp0vgrVpK9/zP92K7UpnSmJmaOdER2YiVOI8OaFlif3PUE8dsN
+	eVOZk2/Lt6hyi+BfzhXcpTI1D31Twxhym02RdScv4Bhl6F6LAfew3iLHtcl4BVnFPSfyAqKbVFZ
+	los6LQbVoIkq0NmAc/adYo2hJIw9OSC37ovVkEM+PFYBxa6eHPEhDHUutO9XhNAnwmyl9z93rOe
+	GxQyLbRjQ7GjPC1HrC1FEFIkATU5GDrfekFquP3yHSS7AA5GfDjNEGdrcghFHEN6fBLgA3wSyiX
+	bmypmUb75Sr4lDAnfwuHSR8Sf5P1ASjB/zqoDdkB4JDBNuGMOEQDpQNqcx0PjpMs7LiQAvUCTYQ
+	8yNeCiile7EMYUA8Dmvt8ZonkEtOFX+XRvVBAr4Z9JEqviri5fbisyndZSjYuNhuMtzQjjbfqFX
+	I20roZOhLf0UbPlvV4gNJ/iXownKMC1VFry6gl+yE7qfA0BPWjV48lOk6e+CEKYL8EATZQ==
+X-Received: by 2002:a05:693c:8209:b0:36a:4a68:84e5 with SMTP id 5a478bee46e88-3856f14bcfbmr23765269eec.8.1795724569620;
+        Thu, 26 Nov 2026 12:22:49 -0800 (PST)
 Received: from mrprachoday.bbrouter ([2402:a00:402:9f97:e752:d178:849f:9d04])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385d2b93dd9sm73987372eec.24.2026.11.26.12.22.36
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385d2b93dd9sm73987372eec.24.2026.11.26.12.22.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Nov 2026 12:22:39 -0800 (PST)
+        Thu, 26 Nov 2026 12:22:49 -0800 (PST)
 From: Prachoday Sutar <prachodaysutar7@gmail.com>
 To: sre@kernel.org,
 	robh@kernel.org,
@@ -87,9 +87,9 @@ To: sre@kernel.org,
 Cc: linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	Prachoday Sutar <prachodaysutar7@gmail.com>
-Subject: [PATCH v2 1/2] dt-bindings: power: supply: bq27xxx: Add BQ27Z558
-Date: Fri, 27 Nov 2026 01:49:58 +0530
-Message-ID: <20261126201959.28743-2-prachodaysutar7@gmail.com>
+Subject: [PATCH v2 2/2] power: supply: bq27xxx: Add BQ27Z558 I2C device ID
+Date: Fri, 27 Nov 2026 01:49:59 +0530
+Message-ID: <20261126201959.28743-3-prachodaysutar7@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261126201959.28743-1-prachodaysutar7@gmail.com>
 References: <20261126201959.28743-1-prachodaysutar7@gmail.com>
@@ -104,100 +104,35 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The TI BQ27Z558 is a single-cell fuel gauge documented in the same
-Technical Reference Manual as the BQ27Z561-R2 (SLUUC54). It uses the
-same standard command set and register layout as the BQ27Z561.
+The BQ27Z558 is register compatible with the BQ27Z561 and is described
+in DT with "ti,bq27z561" as a fallback compatible.
 
-Add a compatible for the BQ27Z558 with "ti,bq27z561" as the fallback.
+When an I2C client is instantiated from DT, its name is taken from the
+first compatible string, so the client is named "bq27z558".
+bq27xxx_battery_i2c_probe() gets the chip type from
+i2c_client_get_device_id(), which matches on the client name. Without
+a matching entry in the I2C ID table it returns NULL, and probe then
+dereferences it.
+
+Add a "bq27z558" entry to the I2C ID table that maps to BQ27Z561.
 
 Signed-off-by: Prachoday Sutar <prachodaysutar7@gmail.com>
 ---
- .../bindings/power/supply/bq27xxx.yaml        | 72 ++++++++++---------
- 1 file changed, 38 insertions(+), 34 deletions(-)
+ drivers/power/supply/bq27xxx_battery_i2c.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
-index be0f1f729..28b04732e 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
-@@ -18,40 +18,44 @@ description: |
- 
- properties:
-   compatible:
--    enum:
--      - ti,bq27200
--      - ti,bq27210
--      - ti,bq27500 # deprecated, use revision specific property below
--      - ti,bq27510 # deprecated, use revision specific property below
--      - ti,bq27520 # deprecated, use revision specific property below
--      - ti,bq27500-1
--      - ti,bq27510g1
--      - ti,bq27510g2
--      - ti,bq27510g3
--      - ti,bq27520g1
--      - ti,bq27520g2
--      - ti,bq27520g3
--      - ti,bq27520g4
--      - ti,bq27521
--      - ti,bq27530
--      - ti,bq27531
--      - ti,bq27541
--      - ti,bq27542
--      - ti,bq27546
--      - ti,bq27742
--      - ti,bq27545
--      - ti,bq27411
--      - ti,bq27421
--      - ti,bq27425
--      - ti,bq27426
--      - ti,bq27441
--      - ti,bq27621
--      - ti,bq27z561
--      - ti,bq27z746
--      - ti,bq28z610
--      - ti,bq28z620
--      - ti,bq34z100
--      - ti,bq78z100
-+    oneOf:
-+      - enum:
-+          - ti,bq27200
-+          - ti,bq27210
-+          - ti,bq27500 # deprecated, use revision specific property below
-+          - ti,bq27510 # deprecated, use revision specific property below
-+          - ti,bq27520 # deprecated, use revision specific property below
-+          - ti,bq27500-1
-+          - ti,bq27510g1
-+          - ti,bq27510g2
-+          - ti,bq27510g3
-+          - ti,bq27520g1
-+          - ti,bq27520g2
-+          - ti,bq27520g3
-+          - ti,bq27520g4
-+          - ti,bq27521
-+          - ti,bq27530
-+          - ti,bq27531
-+          - ti,bq27541
-+          - ti,bq27542
-+          - ti,bq27546
-+          - ti,bq27742
-+          - ti,bq27545
-+          - ti,bq27411
-+          - ti,bq27421
-+          - ti,bq27425
-+          - ti,bq27426
-+          - ti,bq27441
-+          - ti,bq27621
-+          - ti,bq27z561
-+          - ti,bq27z746
-+          - ti,bq28z610
-+          - ti,bq28z620
-+          - ti,bq34z100
-+          - ti,bq78z100
-+      - items:
-+          - const: ti,bq27z558
-+          - const: ti,bq27z561
- 
-   reg:
-     maxItems: 1
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index bd1d5d046..6c0cea193 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -252,6 +252,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+ 	{ .name = "bq27426", .driver_data = BQ27426 },
+ 	{ .name = "bq27441", .driver_data = BQ27441 },
+ 	{ .name = "bq27621", .driver_data = BQ27621 },
++	{ .name = "bq27z558", .driver_data = BQ27Z561 },
+ 	{ .name = "bq27z561", .driver_data = BQ27Z561 },
+ 	{ .name = "bq27z746", .driver_data = BQ27Z746 },
+ 	{ .name = "bq28z610", .driver_data = BQ28Z610 },
 -- 
 2.53.0
 
