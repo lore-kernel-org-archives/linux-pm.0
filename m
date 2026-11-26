@@ -1,127 +1,123 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=202.12.124.159
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795694292;
-	b=XypewqKj8QBz6KdotZLp/H/0YD9DM7Gjp1+8x4afWDmha2Ki14eE/EC5R89R1lTdWpE7
-	 wlwK1oKdh1UEInrVHjwelb07rraT5vjnfNrMyuAD+7vLlHdRusw86RA4HDr+7sFcjiKg7
-	 CVrTfu+R70gC842DB+p1287GqkQKp6cn8heYsjbOo0YmMwGjcfIRpEsj/LCUxi14xqCje
-	 x4s6briHHqm5aiglSMucKkSywvH5IlUUcB4fR7p+d5Ao8YQnK7PpM0M5qRf8yfo2jQ/1D
-	 GVr3LduXuh/KA0fvgO2HK0nQo1b16mWa6fCbnvAnitvdmzJU8GdteqBCTw6JymX9XOQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795694292;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
-	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
-	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
-	 Received:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:Content-Transfer-Encoding:
-	 In-Reply-To;
-	bh=iQW6r4UZTY8RpdKAaydRLhL6rNwNReecY11ijRbcSM8=;
-	b=yfAm0m+He3xepDJhuN/x2xoOyenIUeR/pDtvodLL4zpm28psx6BV62w+/XwVMsQR37ve
-	 +RWYcKrS/NiDwKCv0tiGppMz/BWL0GJ3YUSLXva4OyT0q1g+s4uGJ6Wkxf2BQLijzv3Zq
-	 rm09NR/vQrXGUDzgOs9pAquT6hOLKHIoe9Y2qWwxp91eevdv3yD0rUOkek9tBx0A7UIdx
-	 isAfTJrYukLRvD/6TyBVcAa/eCPNOYuSqngCikN7t1VJkB9BdMRbu7o23+LIb7dtXNPJE
-	 xYjGOn1d5YwVIEiJXRYFWezVc9xcUljAfOd06GnDHl7QPdVLUVrOQULSemsfft/tq2g==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ragnatech.se;
-	spf=pass smtp.mailfrom=ragnatech.se;
-	dkim=pass header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=rB43Zaxv;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=yvrwvHgC;
-	arc=none smtp.remote-ip=202.12.124.159
-Received: from fhigh-b8-smtp.messagingengine.com (fhigh-b8-smtp.messagingengine.com [202.12.124.159])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795694671;
+	b=upH318YnhLst0W7AOvSGDe0EHjegDxuLecA/Zu0LB1S761PV9XIA7XlHKb2QbjR5url8
+	 v/jqRhHDlPj7etNR5B5cJeGye9xz6SVJ7KBeN60885GqUxdm4iR+yHT/g9RVxy7VCYMRq
+	 26lPAGPLbU9KB9UHmppkamBVO5SlngQqc+tdGazZA/BkGoYCYoAYb2XnNc0a6qfiO0iWu
+	 r55em2NH6R+tC17w9cku2HHkN7WnLJfs2I+M3rJ4Q3KW/4wwbP+eTAXxl0fyZFm5SKL1U
+	 Cx4Uv3d/r2/4/zeBOikFB4dekTFBQTgMDVi6IonYGG0+1EcsllQJyAvhlvy/dWLx9vA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795694671;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
+	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Cc:Content-Type:Content-Transfer-Encoding:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=jC5fbmrjeahgJSQY/yuWAzz2qq3dYpFpTS3cMwzVOs8=;
+	b=hLrkkXbdCFuK4GI+OE94YMNbzJCz3jx7KlkYFWeJs0RIf5fzFt4lTrfsyCmggQOyG5gn
+	 3dOjQt8C/hH5MB7Ua48YRvKFsrKwHM0K6uzCdFL8ww529synsKtYAxrWH3mSTgLBUSgJX
+	 B3i0UMU8FYxyK5pmQWpgDeOOueIkJnWVO0Dz6dkayy9NpgOo4KiqQksX9eJU9p7lWWnzw
+	 ipEHCs46/3v4MsBKarrGY5FHxDNENTRfi9iNS8MRoo36aeYjD0T4aij6dF6WTSHQ8lJaA
+	 +ZJWzdaIK5B99PkksET54uJvG2zHUd3R7bJBNC2K+1blFW1rKWhPBOcQypUabO1e0ig==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Nb75Bhnk;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=GaNd2MvI;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24F5B606A327
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 11:58:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 24F5B606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B844606A332
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:04:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6B844606A332
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ragnatech.se header.i=@ragnatech.se header.a=rsa-sha256 header.s=fm2 header.b=rB43Zaxv;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=yvrwvHgC
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 82C7C7A04BA
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 06:58:10 -0500 (EST)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-01.internal (MEProxy); Thu, 26 Nov 2026 06:58:10 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
-	cc:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1795694289;
-	 x=1795780689; bh=iQW6r4UZTY8RpdKAaydRLhL6rNwNReecY11ijRbcSM8=; b=
-	rB43ZaxvN/3HgZ8FbOy1U6R3eAa5IrAJpM/neOE3gx4jtTWpsQBq9ZLw2MFy3fku
-	ZPpoAn2CIiNnFT7N74BOeFt54LWh/B40cjsvSVkxt7Rqb3zM/rPnYByC+w1c+kV7
-	c+QCijLbAGZMyAQvHBZFOo6wmzG81nOoGOyULDd7okquEaH9slR1yRClLeyJiCHG
-	6IvVH+6x0sCkFco0IvMdU744UGqDGf+2TGtT28rwifbBHOEp0fPcE3aeXj7nnnZO
-	p39RwbtSWs2RUDqP8nBGMrZYBAO9mM1eL+Y3b3CznkjcjP2LOH8U1ExV3pRqDVzp
-	lH9knkD/yGmHRUmfbSZRtg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795694289; x=
-	1795780689; bh=iQW6r4UZTY8RpdKAaydRLhL6rNwNReecY11ijRbcSM8=; b=y
-	vrwvHgC5/EY9XWL1dg5aS3G4wjt+0Et+Yu3sweiQjS580uPot8jPTRmzWEP7/nyD
-	zurIw3uF50KtkDuSJElKqKp1obA3/mcSGWnMS/fyO6nDQSsjPc1pbc2LT+Zs0w8D
-	X7sJWDZihF7dJni7qXOPzBo2PnhN7jV8uPKK+dBTLAjmosSYMhKdww7635tXH5wY
-	pS/WH50kUeJvWHYJXGyiWnUNAdSroe6k2KEx/u/PPQfWDG5qAHzt47jWHKdd8W4E
-	iQ9oKtKsCoxB5nCs4bL+DyMzFKgPsHPFQjO9vmFS8YfqNrU3Kw1vtdo/vK2ZmflF
-	w+R+jXEBL9KEnFc1UC6kw==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=ragnatech.se a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1795694289; d=ragnatech.se;
-	mf=PG5pa2xhcy5zb2Rlcmx1bmRAcmFnbmF0ZWNoLnNlPg==;
-	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm2:rsa-sha256:R+OfpzHrRXuub8+GDB+yC2lRVmdp58mSl1neE5kEennOHgM
-	VaQ5Vllx0ccBlHZVjaDrGXFP3ltrRytIFgvTcgI6I794ZE6hvZOFsftA199hOziZ
-	AuXUqkgtB9l4mY6B6n6PbmwJMT5v+EJ/L60GB+/1M6WQ34J1JsHHX/nf0Z2zkL27
-	Cv2GT2rMtjnUpTKZKOuZZvIhHGmSlVutQK7l0wHGJ+QUe/YhsW5aTPI+JPXA2uSu
-	0bh/sMIgm6L/Y2nNDwdEz9tVYwcJ59+P2v1HrDf4KhNFrORfO80eXXqWBcI5yt2D
-	0vTOKPABO7bUQc/qPvbzUUaL5ct5jlqyTzvHZZQ==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=13;
-	hn=cc,content-disposition,content-transfer-encoding,
-	content-type,date,feedback-id,from,in-reply-to,message-id,
-	mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:2QmgQCQCZxf2l3/728nfKWATWfWOTsCmwjr04Ag9cL8=:dOEAWIeel+AGrymSiWHAvMAANVKg8O2dcbt2sPHjXo4=;
-X-ME-Sender: <xms:0R4IaxR3bCbMBGseP_7AR5XWWLPBAo7_HmhfHWNizGjPAW-nZIit6A>
-    <xme:0R4Ia3WSZmVHUfVnjbuNnJ7zI1W2_ZWhtN6lktefLj1SVOmbZOEARnYhEFr-cFSRo
-    AiJwR2mwz96Af2fhuxcpv5WPzyebNKaCGCPwKpKCGpHLBr1iN8ikVpQ>
-X-ME-Received: <xmr:0R4Ia7Syw0HPNvtDBo7o9Ns2ly-yLFIggogZoy0J8nUIJ7pebhJyV5KyrnKCCEMjK4vTj2AiINaUX569VF76-rWsvzx6QYI>
-X-ME-Proxy-Cause: dmFkZTG0bzJWOKv9yAufAK3CGuu/qiL0R3alEF/1g2C8PJgS0X4PnevIcCPjHhGpa6E705
-    ZaVlr9a8PgKzmK9Ar+OmBXZAH/YgQuRCNV8BiqmRNKpOsx9IqdYpcSbG7OhPJoFFzEzV/2
-    5MJumn6yLU+YrRYcbpNl50I9KN4eYyOr5aytFZV9po+zEGoPHH5XOPi4Obi69tS7yc4lyA
-    JBISblMZet6xqQZsslT04gsniVLOSeB/+jEyKqFAZJhGTKB0IfJiRWZlKcCWG7L6J7C7vf
-    eVLdpoPwk04hSooAr6Bq9O9Mwg66kXw3+bStaO16huDMmlw0jRRBBpAecwKt60HRPocxWq
-    WXOix8zG0psqQY29AN5J4wjKC4o8ZAVKOl0h/5YMPoVKpFrQAkGl7UbwReZ3itG/1HFqDG
-    ds1Mz8HgaVOysi9aLRHuyBdePZgH0uoXJ98g0OdcxODl9O0CgawYkiLiK8d1//6Xrf3vYn
-    JZQN82b7y4Aj9zubA2sL5EQA81IOduiu7feL8OuHAxcmjL4C82Gt/gFgAb0dgn9jwVsBiu
-    RBwGfugHhm0vEPH+Vkj2AXYin20YmAUiqitd0RX5WkF7zsZOcCAyrfbk+0GdrQYkO0SR0w
-    tFLTgmUYYCaYBovWwIaK2i2rGvvmguKDiD9tptslI3zoGeC7jFxxvAAFWIlw
-X-ME-Proxy: <xmx:0R4Ia_3PRdkR0PKMpn2hgeBVO7tPY2nTwBq4-evdI_91udFYlKsutw>
-    <xmx:0R4Ia7e08Lr6TTbBacEQffQTfrvY-Fl4AzLI8KfEnydg4gcEy61o4w>
-    <xmx:0R4Ia3PTj_5XfyhyDHgNMZhBS01gHJLAAcnQS5zRaLclzy41d7lntg>
-    <xmx:0R4Ia_XC-tb5sJa5uK-RI24ZKm3npYYwNpjteunQtiWrvIi-tW-F1Q>
-    <xmx:0R4Ia4ltjkTHPzRZqSo0zg_7r1pBDATWqZjRi7ksEwinTN1aXYHS_SZ0>
-Feedback-ID: i80c9496c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 26 Nov 2026 06:58:08 -0500 (EST)
-Date: Thu, 26 Nov 2026 12:58:06 +0100
-From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-To: Yaohan Li <shunsheng1218@gmail.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5] thermal: rcar_gen3: check for sensors before reading
- the fuses
-Message-ID: <20261126115806.GN3898744@ragnatech.se>
-References: <20261125060429.GK3898744@ragnatech.se>
- <20261126013626.2168810-1-shunsheng1218@gmail.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Nb75Bhnk;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=GaNd2MvI
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AQBVvhY633459
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:04:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	jC5fbmrjeahgJSQY/yuWAzz2qq3dYpFpTS3cMwzVOs8=; b=Nb75BhnkD+24lshd
+	TN3D1/aSnF7vHIpkHWwHrM1kKC6YkQu6oDHCxehUDM21hbKbjJyKXraJpSLvlXam
+	gnP48d6B48IUH8DyGbf9NtPmsHJPfx1s+Xvo5g4i/6YSn7IKpv0RiuFj1u1B9HCJ
+	nrsS14m61D4eNFRt/O9DQMyuIHBNkyiU42V3jRVb+6Xe3JU1uiB2RiZqWOkGZ5t3
+	rUyoTCQJYk9dWVXIeVjI5rchYL8/hXkY9Ti0nM78XMS0H/uKHppIWpJQhPXEUnny
+	GUDcDdJMJSAEmIBUWh+5vuzpXWLnzh/Y4mOkufX6bT7G9X80VxDZf+8DGg53esvd
+	P3Nrtg==
+Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j6gne0xs6-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:04:29 +0000 (GMT)
+Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-3adeba76cadso4716153a91.1
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 04:04:29 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795694668; cv=none;
+        d=google.com; s=arc-20260327;
+        b=PR/nDwN972X8/ED8ey4rh71THiV91s/vVk3rxoTeI7Q8eS3Ck/LTOUu/4PmfFisUGx
+         6RePcZcbbQ/Nz0fB7Nr+smPiRrQxa2XXfI+X4jgqzJgJe9XhL4D8MBxWtidQ6/BIdVou
+         evlfxfHA5zQ8dJrIzsSaR4zMPwcJRXwEqoIz04n4ez8cjD4rb+oSQWnDNvObPsCguFpD
+         Jc1IcQShrYqkf5q2l4RK8/xg+kNUHpIUSe8ZWkZvYHwAg8Pkj93DjV57yzYpzyT4pf4d
+         q0ZjzCra8UPxAXr5fpKR/Ek7Dk4rtLNSP5E1szRRsd5H9N2FyN4eUPvSMg4DrTazO/t+
+         Aa2g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=jC5fbmrjeahgJSQY/yuWAzz2qq3dYpFpTS3cMwzVOs8=;
+        fh=LGQHuCu/tOqpF1gUgaLxmMCuGJX4lTML/pHEbhxBVrg=;
+        b=d/D0U1jKzJULU6zbuKm98vvm6q7dAu6eAN2FRgcfCntKow+gnuQ+tOC+JZdkehf7rN
+         IXaCcpGpN8Z3oWla+bAmE5DNnldtSrdepSqMeWqDvGMrRDuUPQ1PvtBoi8Iz+ScarDv9
+         kD/beu/H7CTF8gRXS4TTqXoVEEAiblx974xUqfUbe6VT7etGR2Clgmn4K9EJQolDckRD
+         XYOacJlMVR605Yhv0eFvQSTSLFwP7wOZKy4YO2I7Mqt4HbFEfkBWVddZuSOUH7abbEUP
+         1AQ8/objtNIBOF+sNQlRry3WZdQxLAqGq5DoOhOrp9sg0PO++94Rp9nChMDWvcicSZYS
+         cE1A==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795694668; x=1796299468; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=jC5fbmrjeahgJSQY/yuWAzz2qq3dYpFpTS3cMwzVOs8=;
+        b=GaNd2MvIaPG7AmQun4uTXBxkBy7LI3XHtmyJf35B+ZeG4OAxV+v9ESvUk9sTSkOWt2
+         Ira1/WbIXEdvbOBd5LCw25+9DONxfO9Uq6aY64SuG73hVCvQa98fOqSUMoBV7nST9HP3
+         TDwSsvgPcjvrlySj/YBKZvvIqwuINcR2RVgFt+ItJI3VJvSYh0qftrP4WkH3dgbyklOf
+         srUl/1GpVJMbRJxxBf8lsDeYmC7l1JmuXbyUP43uHvZqazM4BDpifA3Hdt9UD3+j81Dd
+         8pbAa6QFX8yXukXmFBvAQTbBZ9Bj4bY7+UsG1Go9GXJKFy1Pf5wB+HlQISIau3fIj/FZ
+         MFPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795694668; x=1796299468;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=jC5fbmrjeahgJSQY/yuWAzz2qq3dYpFpTS3cMwzVOs8=;
+        b=fdhRWxx6xskxFWkbeN9+rlthXXVlPuG/Gbnn1iNeTx/9rAZKE1jR4rV0T+8sjPfJCg
+         jgHzOnS96iV5Gc+JSueOA1FBzQd9Nee0RfwISdH3Qkv6c+eJ+aluPrjg5kvHgZekqOdI
+         xlqSfhXt5KPySxTvhBZHWdtVQhQDbhonTWKCoZ/4XsI8kteVrKvvU7vsDIYwFhX4Hxa4
+         mzzub3YDAVwIpFtpYqTU1UnqyX/0XhGmyI7B6rI9/17RKwkQVloOwdapk9JfKzLVSF6z
+         P/++xCWroCd1DRjz1X/pXtfmrr/7NBu3nMYzZjyshaIfRRZlcAr2VoeIT340yUgqEjCn
+         /bZA==
+X-Forwarded-Encrypted: i=1; AL+hErFKH2Tr2vXEvHBeYlSKV7HN8LRqPatmhtFBfM6FFPNJOlAIAgKY/g/CzlncwakqkaRjWWWLKw+DIg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9VmFGXuBbtMWOChg6S9exWP3AC9+E9t9FNLIHKVxVDAEei/BOk
+	14Cfp8W0dd4b5SqVCPr80RoVa5Gn96G1oVuL4Z+jHp4WX1wKBDmIRcKPbPrSOMPnBt8WuLTho8y
+	UaUMbzoJ8DWuJdUxpAzpi+XN0SPrAikmDQUUxMZcUEF4Czh6GvVcL3NmweqCX12lWy5bwXKpULc
+	nu+2Y4QLW8wCQBlmF43MgKqqeOesnveHM3F46u
+X-Gm-Gg: AZFdTZco0SPjvF5n+EGzG1QLw4JaS/8zeSkllfboC6wFeQzvriHMFVo3rEDwvgBo6Nm
+	ms2/LqPNTSaETKHhkcHrP/tivM1Sd7KgoDWxr1Wakq1fFBMhMTElffUmlNEmM91csP4lYFmJxkU
+	zq2PZlUToM84ZpXOacQ/nWHsOiGRoKeOTGtT879fhF8MJdW9RU3XeolwfnuQ==
+X-Received: by 2002:a17:90b:2f8f:b0:3b0:9bfa:72b1 with SMTP id 98e67ed59e1d1-3b41c942d13mr20572882a91.49.1795694667851;
+        Thu, 26 Nov 2026 04:04:27 -0800 (PST)
+X-Received: by 2002:a17:90b:2f8f:b0:3b0:9bfa:72b1 with SMTP id
+ 98e67ed59e1d1-3b41c942d13mr20572850a91.49.1795694667362; Thu, 26 Nov 2026
+ 04:04:27 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -131,87 +127,154 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261126013626.2168810-1-shunsheng1218@gmail.com>
+References: <20261123-meson-drm-create-hdmitx-phy-v4-0-3fb94f5534ca@aliel.fr> <20261123-meson-drm-create-hdmitx-phy-v4-6-3fb94f5534ca@aliel.fr>
+In-Reply-To: <20261123-meson-drm-create-hdmitx-phy-v4-6-3fb94f5534ca@aliel.fr>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Thu, 26 Nov 2026 13:04:16 +0100
+X-Gm-Features: Aa3M54pnB9NhEO6Ylxt6lEzs1c2Wp_th_l5IvL7KXYy5McWsZMXy_VANhdE7X6Q
+Message-ID: <CAPx+jO_K+sEwm4CCBUdYz0FzJuYNhKizy4VDpQ=Ystm1aPxbZg@mail.gmail.com>
+Subject: Re: [PATCH v4 06/11] pmdomain: amlogic: meson-ee-pwrc: power up
+ memories for boot-enabled domains
+To: linux-kernel-dev@aliel.fr
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        Vinod Koul <vkoul@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+        Ulf Hansson <ulfh@kernel.org>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-phy@lists.infradead.org, dri-devel@lists.freedesktop.org,
+        linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Authority-Analysis: v=2.4 cv=XpVvqlF9 c=1 sm=1 tr=0 ts=6b08204d cx=c_pps
+ a=RP+M6JBNLl+fLTcSJhASfg==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=3WHJM1ZQz_JShphwDgj5:22 a=VwQbUJbxAAAA:8 a=zH7TnIvAWWhA1n-d4cAA:9
+ a=QEXdDO2ut3YA:10 a=iS9zxrgQBfv6-_F4QbHw:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI2MDA0NiBTYWx0ZWRfX3iAhDe7SWwwv
+ BcWSUDCXvPDPDFHjgFBN1iC+pvEPifDCMbZRCpDl+5o4ut0EMSTp//UMhRFFhp6DNO00TqNg9OD
+ H++ULbdRRor/SVeur9Uzr6HERUSJ6jmORpOR4LHye0CfQrRPIajVrmz4qSHFoDfAI7iraOGSt0t
+ ejoyApc38vKGdC2A8fjynvr1/mUMZTw0Aw+0+1NTFjX0/tlsbqcGicmJtKJEkTtvywaeNAgNwXo
+ 2NwWRyK4uETfSg3YP7dYnwdTeltu4HREGnOGCk4mK4cydfm67eB/+qQHK25SMHL67pojwwnFITM
+ lMVzS+GpXpjLo8HHGCHI8J0KQihz4JHjqI4ZSQUrSgy7IaY3lkfyBOaG7sek0XCWAcpCSDqiyy1
+ 17DNnyMEUFWMUoGHSg/qI/megO49r0DjWcs+bbybdhiQkKHBK01Pof7qne4Yz2gv51y/a16F+Zs
+ TN5ERpPoFyG3SYKICsg==
+X-Proofpoint-GUID: 6ccTCVmOgK4NoUizAAYNJAWr8Elchtle
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI2MDA0NiBTYWx0ZWRfX6gxggaEogZbn
+ MhAWkSDZyI32f3Kw1gq1fEGzk5iZioYNBEyQchWlI8zywRpURKEbdG1MnogIASBXOqYhigASCGc
+ SH4YH1j3TSxyzo0ihc2rMBhGrI5NbCs=
+X-Proofpoint-ORIG-GUID: 6ccTCVmOgK4NoUizAAYNJAWr8Elchtle
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-26_03,2026-11-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0 malwarescore=0
+ spamscore=0 impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611260046
 
-Hi Yaohan,
+On Mon, Nov 23, 2026 at 8:38=E2=80=AFPM Ronald Claveau via B4 Relay
+<devnull+linux-kernel-dev.aliel.fr@kernel.org> wrote:
+>
+> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+>
+> When a power domain is found already powered on at probe time (typically
+> the VPU domain left enabled by the bootloader), the driver registers the
+> genpd in the ON state with GENPD_FLAG_ALWAYS_ON and never calls
+> meson_ee_pwrc_on(). As a result, the memory power-down bits of the domain
+> are not touched.
+>
+> pwrc_ee_is_powered_off() only checks the top-level sleep bit, so a
+> bootloader that enabled the VPU without waking every memory block
+> leaves those memories powered down, and nothing in the genpd framework
+> will wake them since pm_runtime_resume_and_get() is a no-op for an
+> always-on domain.
+>
+> This is a preparatory change: a following patch drops the explicit
+> HHI_MEM_PD_REG0 write from the meson_dw_hdmi driver, which relies on the
+> power domain to power the HDMITX memory.
 
-Thanks for your work and persistence.
+A question, is the target to drop the GENPD_FLAG_ALWAYS_ON bit for
+these PM domains, once the consumer drivers have received proper
+support for runtime PM?
 
-On 2026-11-26 09:36:26 +0800, Yaohan Li wrote:
-> rcar_gen3_thermal_read_fuses() reads the THSCP register through the
-> first TSC. If the device has no TSC resources, priv->tscs[0] is NULL,
-> and the read causes a NULL pointer dereference.
-> 
-> Before hardware calibration support was added, leaving the
-> !priv->num_tscs check at the end of probe was safe because TSCs were
-> only accessed inside loops over the discovered sensors.
-> rcar_gen3_thermal_read_fuses() introduced an unconditional access to
-> priv->tscs[0] before that check.
-> 
-> Move the existing zero-TSC check right after discovering the sensors,
-> before reading the calibration fuses.
-> 
-> Fixes: c3131bd5586d ("thermal: rcar_gen3_thermal: Read calibration from hardware")
-> Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
+In any case, this looks good to me! Do you want me to apply this via
+my pmdomain tree?
 
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Kind regards
+Uffe
 
+>
+> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 > ---
-> Changes since v4 (split out from the withdrawn 3-patch series):
->   - Split out as a standalone single patch per Niklas Söderlund's feedback
->     (<20261125060429.GK3898744@ragnatech.se>,
->      <20261125113106.GM3898744@ragnatech.se>).
->   - Rewrote the commit message and added the Fixes tag per Niklas's review.
->   - No functional code change relative to v4 patch 1/3.
-> 
-> Testing:
->   Compile tested only (no Renesas R-Car Gen3 hardware): arm64
->   (aarch64-linux-gnu-gcc, CONFIG_ARCH_RENESAS=y, CONFIG_RCAR_GEN3_THERMAL=y,
->   W=1, 0 warnings) against 666539eecdf4.
-> 
-> AI assistance:
->   AI tools assisted with initial static analysis and commit/patch drafting;
->   the author manually reviewed the probe/remove paths, verified commit
->   c3131bd5586d, ran the arm64 compile check, and takes full responsibility
->   for the patch.
-> 
->  drivers/thermal/renesas/rcar_gen3_thermal.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
-> index 9c64cbc2ee670..a96f02d4a8adf 100644
-> --- a/drivers/thermal/renesas/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
-> @@ -557,6 +557,10 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  	}
->  
->  	priv->num_tscs = i;
-> +	if (!priv->num_tscs) {
-> +		ret = -ENODEV;
-> +		goto error_unregister;
-> +	}
->  
->  	if (!rcar_gen3_thermal_read_fuses(priv))
->  		dev_info(dev, "No calibration values fused, fallback to driver values\n");
-> @@ -588,11 +592,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  		dev_info(dev, "Sensor %u: Loaded\n", i);
->  	}
->  
-> -	if (!priv->num_tscs) {
-> -		ret = -ENODEV;
-> -		goto error_unregister;
-> -	}
-> -
->  	return 0;
->  
->  error_unregister:
-> -- 
-> 2.34.1
-> 
-
--- 
-Kind Regards,
-Niklas Söderlund
+>  drivers/pmdomain/amlogic/meson-ee-pwrc.c | 19 ++++++++++++++-----
+>  1 file changed, 14 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/pmdomain/amlogic/meson-ee-pwrc.c b/drivers/pmdomain/=
+amlogic/meson-ee-pwrc.c
+> index 338f70d77bf0..b3ae5cd7bea8 100644
+> --- a/drivers/pmdomain/amlogic/meson-ee-pwrc.c
+> +++ b/drivers/pmdomain/amlogic/meson-ee-pwrc.c
+> @@ -392,11 +392,21 @@ static int meson_ee_pwrc_off(struct generic_pm_doma=
+in *domain)
+>         return 0;
+>  }
+>
+> +static void meson_ee_pwrc_mem_power_up(struct meson_ee_pwrc_domain *dom)
+> +{
+> +       int i;
+> +
+> +       for (i =3D 0; i < dom->desc.mem_pd_count; i++)
+> +               regmap_update_bits(dom->pwrc->regmap_hhi,
+> +                                  dom->desc.mem_pd[i].reg,
+> +                                  dom->desc.mem_pd[i].mask, 0);
+> +}
+> +
+>  static int meson_ee_pwrc_on(struct generic_pm_domain *domain)
+>  {
+>         struct meson_ee_pwrc_domain *pwrc_domain =3D
+>                 container_of(domain, struct meson_ee_pwrc_domain, base);
+> -       int i, ret;
+> +       int ret;
+>
+>         if (pwrc_domain->desc.top_pd)
+>                 regmap_update_bits(pwrc_domain->pwrc->regmap_ao,
+> @@ -404,10 +414,7 @@ static int meson_ee_pwrc_on(struct generic_pm_domain=
+ *domain)
+>                                    pwrc_domain->desc.top_pd->sleep_mask, =
+0);
+>         udelay(20);
+>
+> -       for (i =3D 0 ; i < pwrc_domain->desc.mem_pd_count ; ++i)
+> -               regmap_update_bits(pwrc_domain->pwrc->regmap_hhi,
+> -                                  pwrc_domain->desc.mem_pd[i].reg,
+> -                                  pwrc_domain->desc.mem_pd[i].mask, 0);
+> +       meson_ee_pwrc_mem_power_up(pwrc_domain);
+>
+>         udelay(20);
+>
+> @@ -478,6 +485,8 @@ static int meson_ee_pwrc_init_domain(struct platform_=
+device *pdev,
+>           * prepare/enable counters won't be in sync.
+>           */
+>         if (dom->num_clks && dom->desc.is_powered_off && !dom->desc.is_po=
+wered_off(dom)) {
+> +               meson_ee_pwrc_mem_power_up(dom);
+> +
+>                 ret =3D clk_bulk_prepare_enable(dom->num_clks, dom->clks)=
+;
+>                 if (ret)
+>                         return ret;
+>
+> --
+> 2.56.1
+>
+>
