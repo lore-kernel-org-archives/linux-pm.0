@@ -1,86 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795700954;
-	b=1DHbvvLlHTLpfFkEzEwAOXnSf/2WZRg7ujc+dYWHJrx3d6UTJ7giiKXPvRFfErIhbzI3
-	 NrYxkk1Ix/cF4+3SGz67B1MmNHMRy2yz+XxYpMJcyDgBARlLJMiW9/xBiCEdARtBM+yeZ
-	 WIo8QGQHC/w6JkZeV22fZA/csmfTFQTMPAP4IAEfKF7eGXia2i1hY3ZE/5yt9IVdP/IkB
-	 t7PtRRYASUTYIM297/yiRiWIBc1Hh9TxQO5sGaBfKjO7zDWaJC/9FS/ARj4FaP0dXcFJ+
-	 A977Cl7nh4DXm4N4sDZbYjs0Lj884V5kUnRJVXOMk5idG3aUbZwNgaNnnJH/Eb3JxwQ==
+	t=1795701860;
+	b=khbvUPqSYlUH5/GYSBPV3lZfssvNtiomEP9c7E64Lj/zuw3GbnAyof+FDeyGltvSCvzo
+	 r+vYX2LTqLjBIIbi+Zb6wkNKAud+3jR71rpOUQU+LvksSTPnVAN9fr/b1EydtoiOEmyWQ
+	 HbCt126sFxRz7NmWiW2ZlHR+ML63IXWc3NSAb+HmAW6Mne8ZeX6QoGhYAgIutmYAeJwLq
+	 sbTk1M+USrVvIbASq1/sTUiYkDU3znpUWhFvDah27+VbKdJdSxpDx0Bn634L9lI3c++Tt
+	 vPDPb2JHTlcYLMeY/v1/d+5NA+HTsO9dKnMTaIVdrEzwTIuFJtTJtcZEqlY8mWExyWA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795700954;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Message-ID:Date:
-	 MIME-Version:User-Agent:Reply-To:Subject:Content-Language:To:Cc:
-	 References:From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=abQVRWaWyiTm6hUoXCzZ1KjvGKpnnRPAgTgJRVUoJB8=;
-	b=o0Xpzov9fzhCkjJ9xj+ngaLVzKIdn1QQl+vDC/gF9flxvuu7x5fsj+LvPHaupwApjD+z
-	 GSQ/6x9wS+ELPcdvFA242RDi7Np4/n4ILki6T2wrANt7TGlxhvFcEwLMBgK12LIxB9da9
-	 5scAV5s5OS9NBjaHvrhVR/xjjz2d/GpUFVYeXHRVyD2PjMRh6cWvMnCna/xjcYr98cFUU
-	 MD6PJeeoW2EGTddD+5YvKPjMpnIron20nPMpQTh2nV+MnRXD2BWz5KJ/uRoxG32390XTO
-	 P+m09ALGqraaJKAsruyGjwF17tiN5F3JD0GARfUCW96p/zmSe+2v48toMlELPEpTtvA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795701860;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=rkVPkoIKtVL3KsDay5yKt/di5ff4WQS5XpCVScQ0NDw=;
+	b=JAVK3AY4HTf9TOkSCzUG+CqPESL99KMHVREW/013gnXO2w0p48mKX1utccZxLQdJUhjf
+	 USu4SCCvnbI8s/tksP67/4vrjhIAC0eyhtz1VNZqqh7uW6v06UzvwPQZQ12VWCXIykl2P
+	 kDwMlGmJq3VgIEJ/PL9/CrRCmBEB6TwZ3ouznYi4Hl2TF5y4nlhvR4reX7D8EhVhu+Nl/
+	 VcAOy9KBVWjOSFS27cwvq+8MlsJlrm417obGhvxVTwChOoPJ1+H5XWI8s7LAvlHsmQ0MB
+	 mP6nW21eINo1BA0kHAqMYNWxTSelvXh0A1c7hlg/LpqDUyzT0+qMonXqW6iz01WZ73Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Wy74fzNf;
-	arc=none smtp.remote-ip=74.125.82.172
-Received: from mail-dy1-f172.google.com (mail-dy1-f172.google.com [74.125.82.172])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BK+0elR4;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E24E8606A326
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 13:49:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E24E8606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A27D606A336
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 14:04:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Wy74fzNf
-Received: by mail-dy1-f172.google.com with SMTP id 5a478bee46e88-38190551625so13644059eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 05:49:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795700953; x=1796305753; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from:references
-         :cc:to:content-language:subject:reply-to:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=abQVRWaWyiTm6hUoXCzZ1KjvGKpnnRPAgTgJRVUoJB8=;
-        b=Wy74fzNfYiiW/ZD4Ae02UZl4OkxY7noXb+FIksDvlC8uepBGgoECpni3coEXewvBoG
-         Ykyn5fkHj0u1sdpAiRVTBGfJB5qlpTmuleoEwUNliIzgJxznnnnjgPkI3WURudl3ahI9
-         2vtNF6qSxzdYn7E1A0/q+CsHSEk+uagEsNm8ORCsHEtGk9dBxsyOQrVkglBiTr0UHPXm
-         M/ohxrRe1K5zCfmmf+cpLiNU/RRcBt39EjBS4AbeT35D2KYvnqBx4vf7jGdpCf0kDqlM
-         ar9FgO1SDUzel0JoopDrG+HMvRC0Vy6BJ1UshUBySKqzfyE5kT7/4L83M2k7uq2piVLS
-         bpdw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795700953; x=1796305753;
-        h=content-transfer-encoding:content-type:in-reply-to:from:references
-         :cc:to:content-language:subject:reply-to:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=abQVRWaWyiTm6hUoXCzZ1KjvGKpnnRPAgTgJRVUoJB8=;
-        b=Lt8u245/ayytIJQ8eFD18Qy5Pg+Bxiy72BywMWLFHVV3MYSYOsEdLcAN797Q62Xkuc
-         8+4b/HTzo8QCyWsHZRPWSo+X4eMrOFUu/C/TOBAEL9d4KpLgDPcz+prXr6D1/vplElec
-         sjofK/pHDqT1Q4I/yHTvQX+AVueUdrsNI6Wm20NXdYMV76W4mL8VzQR4Aj6Gn1Z+KjBD
-         8hQN9XHLCa/qfhiVVaSgdGb82c1bJSTpb1f2n5QrXG8el20EJDDOh0pxO7OmF4LI+L/q
-         ut36AdILHXMZaOhYmKpjKKSIQiR0rtY1dK8neTaYBBjB4CpAxy0larhPf81o1Pqz2QUv
-         maQA==
-X-Gm-Message-State: APuU4Z9zGPghZgbg5K5X7Bz6WGgHhtuG0c6YLrlmAgX5J2KY6kV0Ooue
-	Iuxesrc1UoCmbu5UJIsGycsLeBAym5DY3z+45aL/deCSklnga0OGAnmX
-X-Gm-Gg: AZFdTZeBhGW0GFbNYfO269cQoeMBedx6GNtnu0SB8noH9V3qm7sa7rHF4Yj/gijVySW
-	78VpQFXA+M0xVYOqQglbl6PL7IAmV8rsIS4DXy7j3X5QOUyNosT+1sZBLqIcPbvN3gqOrnFD2ID
-	o3zbPBPRjCYPdVuAzxXQ1HZMmlNQN+xQBs0YPi7z/eHRV8AFtK+ZejR0iT2jxPTYzLlH0OGw4G4
-	ry+M4lPylPF96UO3Prz63SnrSydKogPUxQAVlYNRhJ5wZLxkmqXyz2Q5VZusock4Z5xhUWGn6fP
-	aWaWRqipDUrGoEko0D+Vbnt9NCol9nUdLBsbo7ZKRQR//CddU/lm0CCJaBDvjSAqhl0Yl5Ij00q
-	wi/DzdeZt0sXc+jWVVHtyWS20yY+7ReQBqRVudBNTxP6ifxZZGFf/A0bmarsBEt0pntv6586d5P
-	tbGi1o6ozl+rCt95Mi/ZZpqPbqDPnxRh/LCeuVBCaCza+u3E64V3XUW4z3SKqB2m8BQVvso2NUe
-	9pef6R9hBZKcb9Vwg8itbeqzOfnt4THMGrozbWX7JTtj1LXIVa0lyUuOCEiYpCOog0PKv6nnfC8
-	lGC6rCDobne+RM/ARF9feV0Zs2t57qOlIztDU5yEzb2CLyK4nFXcLLDlrW21/GjYlGk0
-X-Received: by 2002:a05:7300:2301:b0:385:4c54:3c8c with SMTP id 5a478bee46e88-3856c0c9403mr30927525eec.1.1795700952814;
-        Thu, 26 Nov 2026 05:49:12 -0800 (PST)
-Received: from [192.168.35.43] ([218.50.238.131])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385677c371esm63023504eec.23.2026.11.26.05.49.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 26 Nov 2026 05:49:11 -0800 (PST)
-Message-ID: <b9eba3d4-c3c7-495a-ba45-34f993ccac1c@gmail.com>
-Date: Thu, 26 Nov 2026 22:49:08 +0900
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BK+0elR4
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A395F1F000EE
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 14:04:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795701859;
+	bh=rkVPkoIKtVL3KsDay5yKt/di5ff4WQS5XpCVScQ0NDw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=BK+0elR4ncH6RHUdxP2nsBerr3JVEgT9Xz+obAflkM0oCL4miVBmTJenqlajm7puk
+	 W6VHv0ETN2jaW+KTTDcqC8CSISs4ML/Be/lXo6YgrYBYEJ2Ld1lJPZdG8b7TKvF6K0
+	 prmtmHXU1PpJ0l/Nb752MU72a87PbYUIoXqOLa4NnlkSrMeVYujHIBLTFa26EIe+zQ
+	 Isfju4K6XqJSPzKiXh6UeSuBLm+Duy9+Rq4qupDCtb6bdcHzZXa34JzTD4kjs9v/I3
+	 awsvTAnmf5iElaiCrm9GRpdFk5h3q9uPIioR9flGqAWpCJQ1RDWlKA3F+0Eh62J+Rm
+	 EbYv3RcrTTUQA==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5c26207ee6eso3677376e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 06:04:19 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErE8B9GDThVL1mAxNyvkk/82vDvCrLqfApQWqM86ib9u6xjJess6gtk2cYPv60PZcjtnEb4aqtrAmA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9nTCM8xwb3Lik5Bmpkz6lhC4tgMOVH+ZZtsD6kEeutRJOd64In
+	0VsPQHCBajOexaUND1VaBHU/1VW42lOXiIg0RUFgExcoqwEZr+YZyibNX35mYiX0tlN10lSZVxS
+	b5WYhd3pSJzWImKvqFn4uXD3KPSczgSQ=
+X-Received: by 2002:a05:6512:3a86:b0:5be:590e:ea76 with SMTP id
+ 2adb3069b0e04-5c1bc680e86mr6945117e87.6.1795701857945; Thu, 26 Nov 2026
+ 06:04:17 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -90,74 +59,133 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Reply-To: chanwoo@kernel.org
-Subject: Re: [PATCH v3 1/2] PM / devfreq: Resume at the frequency from before
- suspend
-Content-Language: ko
-To: aiyengar1990@gmail.com, MyungJoo Ham <myungjoo.ham@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Boris Brezillon <boris.brezillon@collabora.com>,
- Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>,
- Jonas Karlman <jonas@kwiboo.se>, Dong Aisheng <aisheng.dong@nxp.com>
-References: <20261119-devfreq-suspend-sync-v3-0-ef19fbf94d83@gmail.com>
- <20261119-devfreq-suspend-sync-v3-1-ef19fbf94d83@gmail.com>
-From: Chanwoo Choi <cwchoi00@gmail.com>
-In-Reply-To: <20261119-devfreq-suspend-sync-v3-1-ef19fbf94d83@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <4779892.LvFx2qVVIh@rafael.j.wysocki> <14142601.uLZWGnKmhe@rafael.j.wysocki>
+ <aweO20KV0XzcPBeF@google.com>
+In-Reply-To: <aweO20KV0XzcPBeF@google.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 26 Nov 2026 15:04:04 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0g05_8vJMRYSpN+y+rYB+Ou5dCq0EkPo3L+9um_6kkQgA@mail.gmail.com>
+X-Gm-Features: Aa3M54oVymIXtrXskni02qesn3ZJ8JowzWnUlTgabuwCWOumAywQaIh72ciXGpE
+Message-ID: <CAJZ5v0g05_8vJMRYSpN+y+rYB+Ou5dCq0EkPo3L+9um_6kkQgA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/4] PM: runtime: Add memory barrier before reading last_busy
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, Sakari Ailus <sakari.ailus@linux.intel.com>, 
+	Ulf Hansson <ulf.hansson@oss.qualcomm.com>, 
+	Linux Driver Core Development <driver-core@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 11/20/2026 6:16 AM, Arun Iyengar via B4 Relay wrote:
-> From: Arun Iyengar <aiyengar1990@gmail.com>
-> 
-> Since commit 62453f1ba5d5 ("PM / devfreq: Use more accurate returned
-> new_freq as resume_freq"), devfreq_set_target() records the frequency it
-> sets as resume_freq, so the suspend transition in
-> devfreq_suspend_device() overwrites it with the suspend frequency. The
-> device then resumes at its suspend frequency and stays there until the
-> governor's next update; with runtime PM (e.g. lima on RK3528) that is
-> after every idle period.
-> 
-> Keep the frequency from before the suspend transition as resume_freq.
-> 
-> Fixes: 62453f1ba5d5 ("PM / devfreq: Use more accurate returned new_freq as resume_freq")
-> Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
-> ---
->  drivers/devfreq/devfreq.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index f25304bca37f..795a01d012ec 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -1144,6 +1144,7 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
->   */
->  int devfreq_suspend_device(struct devfreq *devfreq)
->  {
-> +	unsigned long resume_freq;
->  	int ret;
->  
->  	if (!devfreq)
-> @@ -1161,7 +1162,10 @@ int devfreq_suspend_device(struct devfreq *devfreq)
->  
->  	if (devfreq->suspend_freq) {
->  		mutex_lock(&devfreq->lock);
-> +		/* devfreq_set_target() overwrites resume_freq; keep the pre-suspend one */
-> +		resume_freq = devfreq->previous_freq;
->  		ret = devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
-> +		devfreq->resume_freq = resume_freq;
->  		mutex_unlock(&devfreq->lock);
->  		if (ret)
->  			return ret;
-> 
+On Thu, Nov 26, 2026 at 2:44=E2=80=AFAM Brian Norris <briannorris@chromium.=
+org> wrote:
+>
+> On Tue, Nov 24, 2026 at 04:31:51PM +0100, Rafael J. Wysocki wrote:
+> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> >
+> > The users of pm_runtime_put_sync_autosuspend() and
+> > pm_runtime_put_autosuspend() can expect that the autosuspend delay of
+> > the device will be respected after calling one of them because they
+> > both invoke pm_runtime_mark_last_busy() upfront.  However, that may not
+> > happen due to a leftover autosuspend timer running when the last_busy
+> > update takes place, in which case rpm_suspend() triggered by the timer
+> > may run in parallel with the lockless last_busy update.
+> >
+> > Namely, the last_busy access in pm_runtime_autosuspend_expiration()
+> > called by rpm_suspend() may be reordered before the initial read of the
+> > device's runtime PM usage counter in rpm_suspend(), and if last_busy
+> > gets updated between those two reads, the update will be missed and the
+> > device may be suspended right away.
+> >
+> > To prevent that from occurring, add a read memory barrier before the
+> > last_busy read in pm_runtime_autosuspend_expiration() along with a
+> > comment explaining the reason for adding it.
+> >
+> > Fixes: b3db492e8335 ("PM: runtime: Mark last busy stamp in pm_runtime_p=
+ut_autosuspend()")
+> > Fixes: e24e0630b5ba ("PM: runtime: Mark last busy stamp in pm_runtime_p=
+ut_sync_autosuspend()")
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> If you're into this sort of thing:
+>
+> Reported-by: Brian Norris <briannorris@chromium.org>
+> Closes: https://lore.kernel.org/all/awC0tcqgq2KvCyxO@google.com/
 
-Looks good to me. 
-I'll add Cc: stable@vger.kernel.org and wrap the comment line when applying.
+OK
 
-Applied it. Thanks.
--- 
-Best Regards,
-Chanwoo Choi
-Principal Engineer, Samsung Electronics
+> and
+>
+> Reviewed-by: Brian Norris <briannorris@chromium.org>
+
+Thanks!
+
+> > ---
+> >
+> > New patch in v2, based on
+> >
+> > https://web.git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git=
+/commit/?h=3Dlinux-next&id=3D26236a3e8803f7e1ace104020d7f006edb220116
+> >
+> > ---
+> >  drivers/base/power/runtime.c | 7 +++++++
+> >  1 file changed, 7 insertions(+)
+> >
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.=
+c
+> > index 0b15c718c1bb..c295acf6a718 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -186,6 +186,13 @@ u64 pm_runtime_autosuspend_expiration(struct devic=
+e *dev)
+> >       if (autosuspend_delay < 0)
+> >               return 0;
+> >
+> > +     /*
+> > +      * Prevent last_busy updates occurring before the rpm_drop_usage_=
+count()
+> > +      * invocations in __pm_runtime_idle() and __pm_runtime_suspend() =
+from
+> > +      * being missed if the last_busy access below gets reordered befo=
+re the
+> > +      * initial usage counter check in rpm_suspend().
+>
+> super-nit / feel free to ignore: it's a bit odd to write this comment
+> covering super-precise details of function calls, and then immediately
+> rewrite it in patch 2.
+
+Well, say "stable" picks up this one without the next one (which is
+entirely possible).
+
+And the time spent on writing it has already been sacrificed so to speak.
+
+> I think it might make for a better long-lasting comment if we just write
+> in terms of "last_busy update" and "lockless usage-count decrement".
+> Then we don't have to update it every time these things move around and
+> get patched.
+>
+> Sample:
+>
+>         /*
+>          * Ensure ordering between the initial usage counter check in
+>          * rpm_suspend() and this last_busy access, to avoid missing
+>          * any last_busy update performed before the last lockless usage
+>          * count decrement.
+>          */
+>
+>
+> But again, that's a bit nitpicky.
+>
+> I'll try to look at the rest next week.
+
+Thank you!
+
+I'll queue this series up in the meantime because it has been reviewed
+by Ulf and Sashiko has no concerns, but if you find anything needing a
+fix in it, please let me know.  Tags would be appreciated too. ;-)
+
+> > +      */
+> > +     smp_rmb();
+> >       expires  =3D READ_ONCE(dev->power.last_busy);
+> >       expires +=3D (u64)autosuspend_delay * NSEC_PER_MSEC;
+> >       if (expires > ktime_get_mono_fast_ns())
+> > --
