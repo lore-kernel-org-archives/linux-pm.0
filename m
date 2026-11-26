@@ -1,89 +1,123 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.46
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795695323;
-	b=MpC1W6JMRRpy/YjT5e4oC0Y3M18vvpBE1HcM1ZYpAkFsaHzDJBa6rir7Zp9r94gz3ZH3
-	 KflSV7+S2tz1FUrMktKi1oUvAqAXCUsxX+fNn/XsoftgkOX/V045uEsmicwCrasvQY4Bz
-	 TXMLa6TTE+Bb1N4kolwprayRbIaBn7tSQ3ds3VmTlWBgCmFijwllF7vI/P8PKSE8LaaaB
-	 QhjgDYvLjfa1pkV3P+nODL6DwJGBGINx0FjjdqQNFBo9VawHm/b3WskokkcQ1mQIxNwOA
-	 U1/380DrIvzupMHc3zOz4jMYv47c7slrkhLHg416hdgM4w0N7eQiBvg0pKGQ+DHj4FA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795695323;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
-	 Content-Language:From:Autocrypt:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=N7R2bspuSN2vTU9KXTd+Gs5ucj/LrOjxnprdX2nps1A=;
-	b=VOK4BiZLXdjEGabWLqSJhrLB0FsA4MPJct+wLbFyiqp6tg5LwMb5TAhS/xjoa5ouF6LR
-	 00VoCJSqMl3Fgt+XlhW7sgRBzFC+RAuqRmCh4CJePgsHgm6kQUV/e7gVKR+mxPaRxUb3B
-	 m1+bQKrncg8MHF57ojyb8xzJqb0y4hXDcHtru6XgKCUolc+W+dvcJfVqA8H8PH+LXRspq
-	 6jVoXd65dNew/18mq45NaYkghOM79tqK5JHrTc/nilUeu/v0bsnAf8JYcLDNKHczUNC0b
-	 hrSSGuUAmoDK+x2sEYCnP2AWnl6J0lQSK2a2ryephHCBc8m6iIOyb+VQ+nI93exI7pw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=baylibre.com;
-	spf=pass smtp.mailfrom=baylibre.com;
-	dkim=pass header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=FwRjmudW;
-	arc=none smtp.remote-ip=209.85.128.46
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795695994;
+	b=UbbwIPaK/OPTPyCYKt2woKED+VR6tNzO7LH/4e0H1nWYXoAt88t8oBbwoSzu+lxQAO27
+	 e3uO4jCEuNd0H5+7pzOonggn19lMTM+qOnjrjyxd7FRiS1egG+a7fHzIoZpe6H1j2Wefi
+	 8hw6BqzlnLNHBxv1ZW3hwAOYB0hTIWWD/KvnDeb2ixTjhS2Mu3Z6aNqidnMEZ7XSOIZX1
+	 8igZvEUg14WtWfRmT77I4xfnylFzB7X8EEQQoirvKqaLrQHk/Lr4KWy3aKjtiCgIgbKxS
+	 aYKeiqQTZg+fKPMc82hSd82yhtpkWFoertwcPPtZMGlc/IXJkN4YqiCiNJ+sXaY6x3Q==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795695994;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:MIME-Version:
+	 References:In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Cc:Content-Type:Content-Transfer-Encoding:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=FDf27xnjIY0MGgU9QPmFgOgG3Aq3X7unXOSGnQEZ3Zw=;
+	b=5ERXChzpAI81ez6WpGJigWfP/mslB9jbiot993PEPN8mJR4+z1EH2mZ2+ZSwPQwQgl6C
+	 eVM1CmXEGdcNLtcrP0knP0Ud9SBhgqTF+4hq/yE3PC4Tc1bKYb3jmTk83HccrYDKJBd5c
+	 RidIOPNVyymYSuVIatq+qalxdcSatfMUQrLZXmwOEm2GzZQUUg8olAC1SfXd8+ivoSVV0
+	 Tv3HXF9UIPqYui4g439917Rp7m0pxJWPTJpCUHnDc78+ObyPYOP0gO0WjkCJRcWEm5gUT
+	 Sz5uarlB1+rHnDIoghsy2cFyF1QZFBP01ZxvcNRXh8NCjWqk7xhHFYVYL+Q9BZeFIbw==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=V5kd7NJz;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=g+ocJyGF;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3745606A326
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:15:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D3745606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C220606A31C
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:26:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5C220606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=FwRjmudW
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4bb6ba3b244so70877545e9.3
-        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 04:15:22 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=V5kd7NJz;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=g+ocJyGF
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AQBVQso4128637
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:26:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	FDf27xnjIY0MGgU9QPmFgOgG3Aq3X7unXOSGnQEZ3Zw=; b=V5kd7NJzOdG1BKDx
+	I5/IfSAIdzSsX2fnwQfRC8Ib6pN0PhViZABr3i8j+TcXy2/+4RuObh7mTfOUhyBG
+	lpUcGwqLuHO6d1ShDhOgyP3m1JOqUkcsIyKwckbHs5JsWkzmwIaoAuS5fukPfORQ
+	w1QHpcgzG2F9OJzhtLyY0Fo6IYUyGolDMPM9ratJxnB/4aiLTx+vieyBzrm+iZl+
+	Um8lBMbrSAUrJcXlqBT8dFm7EvfP13qLnlz5lJsmEFHC5xK25A53GmprtuxoziDA
+	Ayopt8q9+tqRTSMPhN08ghhqxJ4nbGuYPxHLR1WxPoIA+gzzdxAq4iBhkiTgGX9r
+	qJ1DPQ==
+Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j62vauwbx-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 12:26:32 +0000 (GMT)
+Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-cd5fd34fee0so3754350a12.3
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 04:26:32 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795695992; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Vkp2SazbnqRnp+lmdOOYHHuLUmc+U2GlwGylPH0TmDTnqs15619Fttu592yuv7mbYx
+         M5+6YX+Nhpnik5GCi55JuKN5lKSnRyw+LofOM01oODflZ7/xLFITZdiIoeBBQFUiSSQl
+         1FBjHPolrfhhw3y+ReqXOO2yai9i/E5nbJ/vJyqK3plhFCiBRC/vSK27zYk9YqKWy6hY
+         8nLUwHhgLLwsLGSF2EsFVy8/3YOkB/OVFrF7StCuOxD+LE+Jw72CGHqJ2MmNSM19MC0D
+         KModv/a2SgvpF46SoqJ1EpzhBUylRHtTpOp8zRIOlZJ98HC5IEJ8R8U3CpDl2LUgrkl0
+         ZO4A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=FDf27xnjIY0MGgU9QPmFgOgG3Aq3X7unXOSGnQEZ3Zw=;
+        fh=6H5JXBLOlGMTbbD+nuqghKke5gNfMUAHJkCJALVhw5c=;
+        b=L/4HbogEUXSgRAK1cFNB900GISdHdYgqTUK9l9lae2wgsCzEq0Wx/+8uZV5Xz34+AY
+         v5k4qzKBPGdjVdwI0+G9QaBw7VTibHxPnlbjccI4zftFclNtmXSQw/jm2Z7NoyX7igCp
+         WMISjcAityYQrDEWJArhjr2BgWIHEXCEAnMD026HH6+xWkgs/5kZo+kOqHjQOS2W9dxx
+         p0N2WCq1YC3vvSgd+EvkrDiVMVDZ2xojVDWS/RRpY6lgWLvO8uolRhyUAr97MJ6sENal
+         p07Iy/GldStBPX9YKFjZXMBChMsOLyYC3VwYBEVy0JjzHCJC/E/upRo80afKm0VXtLc1
+         NF4g==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1795695321; x=1796300121; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=N7R2bspuSN2vTU9KXTd+Gs5ucj/LrOjxnprdX2nps1A=;
-        b=FwRjmudWL65oLgTj/u0S7HQX4RFS3WnOCzEmmUj60oHwEXRK/tuKkJNusyKZlWK1M9
-         Q3OWtaUEnyPQMKwdLfw/GSnHVTtxYsSTBID0lVsgQ+7Q7IR1flV5EeGHRZeXIv4a3g0u
-         Qa23F7gHKt5tLT3NTo5Ox0mgBBDrx/nxvTvTh+tjKsv4tzk67N/YeWXxxPfyt6pWUUBg
-         2Dfyjmgf30+RljnWLlu996rmkIJJykXjPdfyAG1Qt2Ml1kKCIByWel5t5wtqUFcyDadF
-         30t/r9Humb2RC7ljW6BOWSF5sZaZnLBTgR0GHu82jg405d1/psWuDQyX3zYU4ZDWOxL9
-         2czQ==
+        d=oss.qualcomm.com; s=google; t=1795695992; x=1796300792; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=FDf27xnjIY0MGgU9QPmFgOgG3Aq3X7unXOSGnQEZ3Zw=;
+        b=g+ocJyGFVTu8eBHgZFId5jdSnE75WTLkbYTjZxMpSC8b9yn7yMJVvlmNY5aWbMYjPH
+         gCSai4xZPAh8jjECllikGL0834enf1UlPow78Ji8xnJyCY+O3F0tG33B9Kka3VQth7YF
+         379WfQ6CnJMnMOczL9+9zP5RkGNqscyJt7pEiGnfASQEV7GT2AFRrI20O4+gc5TLPkCj
+         pBOghpY33JLnJDRfmkXSJcUeldvJoqIRBeP1gh/SydIwTQ7lyLOgh2+WBDkXFGBpTdHx
+         exoS34UlhBgnCbb9fwnhjek/GYQRxPPbxz88lmmOCjKrlk9wxJk41ucVcKqFqLKnWoDd
+         24EA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795695321; x=1796300121;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=N7R2bspuSN2vTU9KXTd+Gs5ucj/LrOjxnprdX2nps1A=;
-        b=I0KbMWFlVqBKtLKZUM8U0UoHgxRew7+RQojHuFwkW8CLdKaEqVYuvxkvlcHz00kf2n
-         E5HLl5ZOQg/Gti/EDD2wEp42lxyC1mJAtnfZB2QUcITcZL4UN6lmCV3OzmN7V6g9HQWK
-         6wV+sr4+M701zQV4QfetU7U/Y78b15zBITQ4mBUzk7VbsFOQQCf5VMlN/Vrayn5fZ6cl
-         kPY7q5D30cv1JCXp2xBM7tmBkl6GI/qYXZUrhcRgWrXifaeLDtv/3LJMEF03BPz/fJ3g
-         CrkB6p2iwEx0i1zRnmoQffvhgrWblEYh++KK9AHk+CpCs+xHnkcrvDwYeuowoVZRjVIx
-         NqkA==
-X-Forwarded-Encrypted: i=1; AL+hErEXh07oGTKKXjOBZDoLOXxopdAJL7bnuvw6PavJSpcdYN29ldNdzMB6T8pURbjtYI2dgur2lufYmA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8R1wkZzKPzwZYCAOHcgtpcp8PnH3IPQhiMPv0l0XNZPMd/PmZq
-	rWVslYRyRe2fZPF+/VpOretFDZwItheE1vSudieSq1M3upk3NF3bZfdinVPq60SMR3A=
-X-Gm-Gg: AZFdTZdrNVYTliU1ShrBmlhRtV3fk2mWJjNjPmEhM5Ay/TkFgQeUvoZ65ecN88XngU9
-	QTv/ESfWCi/eYFeNqEJZ2BSGg7KCqMMpr6CgG6UgRj4CrsuEIZqba71W0h1Xovix2bOZOa5DH4E
-	3CGKGfGaZxAfcoqsuAney8g9BghdBguP57LhuiArY3n2DIwziWeKCls+nYJIxlB8tcALRxqsd/N
-	5gxpBUtUvtIv/bqNrbKYuWixd8wVF8soPCYSpntV5nUBTRF5JX4dyq8Ompx8osnwYUbIDPKpgu4
-	VPSRu/S64yP8H1alnizJDdm7ucPIXRZiDnIfEeex6OHxDGku43YgXQzD6X+oCchPkJYd0kC+ydS
-	FkcQtL5cd2SaCtFUhI6Lj1FBYB1DLwG1HUqFzTBWAZHUbQQTkAGoeaioJH+U7+XbB9y7HPAw5D8
-	7xy0nFPuHER6kvWSzIlwUdKR30Y9Tm/5wqYZr7brSMIJRltXEg0n7y/4YA7nyMkgLgx8ucWWVQR
-	xrMEJDtRBUPRHu1Z5i0zV9D0aNtGVs9k2oFZbv+gqVhMfeydqRHZ0b45BViEvjz8AT9MbavfET7
-	nrKxzPge72IwA0wn5Wyu6yYjYVJhunT8LpOMSzAVREnGkSLvngTm5TGr3i3rqONT9L29TJspIxS
-	CZ6AhDO/C+TGV152PhTj3BIa/xOPBe7NgJuI4MqsWW1R+cUlLlTxCB9u7qplY85tEfg==
-X-Received: by 2002:a05:600c:3b91:b0:4bb:7e4e:de53 with SMTP id 5b1f17b1804b1-4bb8881059bmr507224745e9.12.1795695320857;
-        Thu, 26 Nov 2026 04:15:20 -0800 (PST)
-Received: from ?IPV6:2a02:842a:9b20:d01:a06b:e180:2ea9:f6eb? (2a02-842a-9b20-0d01-a06b-e180-2ea9-f6eb.rev.sfr.net. [2a02:842a:9b20:d01:a06b:e180:2ea9:f6eb])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb906c089dsm349451575e9.1.2026.11.26.04.15.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 26 Nov 2026 04:15:20 -0800 (PST)
-Message-ID: <bc5f0035-08ba-4813-9bda-9b2ba68f3680@baylibre.com>
-Date: Thu, 26 Nov 2026 13:15:18 +0100
+        d=1e100.net; s=20260707; t=1795695992; x=1796300792;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=FDf27xnjIY0MGgU9QPmFgOgG3Aq3X7unXOSGnQEZ3Zw=;
+        b=oKJyhfn9PTYMQcTaDqabhZq74N6OV5Ckkux+s7W+0ChqN6oVWH52p0eM9d6wQYWrgH
+         vbPo3a208vcMQXzSELVl4nDrN5vEy+4dz+r8EAl25jKbsvhiGDikFjEZ5FCT+ygMiw7z
+         2YfHLWvgL6l8puclqBPJXN1j8YxORLNhSyT5+7pLhh/6Ov9zopLSwteA0cNQyBfiu0r8
+         irtOSabZaJR2cNzUiyh6mEPwCfaMoMgMzCPapglgiO5bjTgkFEY9w5ZGIBeHBtBm82m8
+         HM/c2YyC0UKyUQxE4VMyiCtiW2aGR/3FCWpLtFonY6+TLsP/e1ux+6NRf+Lu+wbMhzoT
+         ebiw==
+X-Forwarded-Encrypted: i=1; AL+hErFA0TGNzBQUi1VRaqMI1jjBEt9sizsjKwe/pt/brXomlXXDpTknI6Wifn39LX16ZVn6glz/wc9MSw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9Wpe/xZhsTM2QVavWcqqZzHkASDt5wRcMG2bQDGp2Jp3HTeuZI
+	hJGufIabTu9U+OuprZxAcVyKr+5eKTx+QlbbSc2aCTUSvPTEm4dUVLG7NvSBL2HqZwMJEZX/D/F
+	CuVnJVA94zUjXnosDU9+vTqP/hmz+q/gM8tZqd2//4fQORhoLHXHB7H0sXX0i/owpcMk9MxBUaD
+	YghNpQ7P0pWuCRrBVGj+iUOmQCyY8L/CuC8JA+
+X-Gm-Gg: AZFdTZc8In2qpkCCsvyejITTIJX+HM6kKUbCREXhWw0FZ/SC7tVAV7VJhpKZG6up3kp
+	lbIIYSOOBTugif89uXLmeFH5f5078pZNr5xqy7mLdAD8MRK23WZxNpIwYVBDhGLWDBf0/Wlairb
+	tNKAsSawZavG+ry6bVv3rAawbvzomT/m6sjcbwgts0sMsutnDkuOqJoz3s9Q==
+X-Received: by 2002:a17:90b:2d8a:b0:3a4:6f38:f2a2 with SMTP id 98e67ed59e1d1-3b41c92ce58mr20258233a91.25.1795695991812;
+        Thu, 26 Nov 2026 04:26:31 -0800 (PST)
+X-Received: by 2002:a17:90b:2d8a:b0:3a4:6f38:f2a2 with SMTP id
+ 98e67ed59e1d1-3b41c92ce58mr20258182a91.25.1795695991298; Thu, 26 Nov 2026
+ 04:26:31 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -93,163 +127,199 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 00/15] R-Car X5H Ironhide CPG/MDLC SCMI remapping
- support
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
- Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>,
- Philipp Zabel <p.zabel@pengutronix.de>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Marek Vasut <marek.vasut+renesas@mailbox.org>,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
- Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- Paul Elder <paul.elder+renesas@ideasonboard.com>,
- Sudeep Holla <sudeep.holla@kernel.org>,
- Cristian Marussi <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-renesas-soc@vger.kernel.org
-References: <cover.1795029012.git.geert+renesas@glider.be>
- <1e9c5ac3-d82b-4af9-9946-0302cadf7404@baylibre.com>
- <20261119234759.GB2324725@killaraus.ideasonboard.com>
- <19c3745a-6308-46ff-bb37-3acc88fe22e2@baylibre.com>
- <awAqqg6F2Z1t55x2@ninjato>
- <d94ad9ca-afdd-4301-a69c-0bbad5b334fa@baylibre.com>
- <20261123103633.GB2959742@killaraus.ideasonboard.com>
- <fc13a7a8-b825-400c-9ea0-ceb2670dc478@baylibre.com>
- <20261123160550.GA3050935@killaraus.ideasonboard.com>
- <27796cff-eef5-46ce-8079-93a0a8d40db5@baylibre.com>
- <20261125221502.GD3581@killaraus.ideasonboard.com>
-Content-Language: en-US, fr
-From: =?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>
-Autocrypt: addr=clegoffic@baylibre.com; keydata=
- xjMEafx9bxYJKwYBBAHaRw8BAQdAtc85GIwDXLz0rh9thWXC80Lji0otVDVncXT4qaS4j1fN
- K0Nsw6ltZW50IExlIEdvZmZpYyA8Y2xlZ29mZmljQGJheWxpYnJlLmNvbT7ClgQTFgoAPhYh
- BJjMiHuM4ZUwFqUPr36EW4KtCh6TBQJp/H1vAhsDBQkJZgGABQsJCAcCBhUKCQgLAgQWAgMB
- Ah4BAheAAAoJEH6EW4KtCh6Tt+sA/jVC35rY1npFlOy7YnncTdrID8Qf855JA78IzXgvzpGp
- AP9FkuuT80m66PP3DvgYX9kVnG17mSDKO0+v2W18v6ZgCM44BGn8fW8SCisGAQQBl1UBBQEB
- B0DMwF4u//aQyzsFlO8rPJ/cqsAuPH80IeIA3HOEo5mlVgMBCAfCfgQYFgoAJhYhBJjMiHuM
- 4ZUwFqUPr36EW4KtCh6TBQJp/H1vAhsMBQkJZgGAAAoJEH6EW4KtCh6TdSgBAMDS0MiWCivt
- LjzZc9bs+P/xdXywUjDKq3lpQGJ6vZ0GAP9vI6DnN7vwVK6jt6/+0aBGkog5Ura9+WwRFEdM
- vLfPDQ==
-In-Reply-To: <20261125221502.GD3581@killaraus.ideasonboard.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20261120-zx29usb-v1-0-b0433258e51b@gmail.com> <20261120-zx29usb-v1-3-b0433258e51b@gmail.com>
+In-Reply-To: <20261120-zx29usb-v1-3-b0433258e51b@gmail.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Thu, 26 Nov 2026 13:26:20 +0100
+X-Gm-Features: Aa3M54oSOwHoQYSn0V3AtuTR48SOSoC8DE5fzBMGlfQpwJvg-qreLFgHRZWsWfc
+Message-ID: <CAPx+jO_zuvcNnBWqUKJHJ246xEDb=FbN6FYKcrN+p6ERmjg2tQ@mail.gmail.com>
+Subject: Re: [PATCH 3/6] pmdomain: zte: Add a zx297520v3 power domain driver
+To: =?UTF-8?Q?Stefan_D=C3=B6singer?= <stefandoesinger@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>, Lee Jones <lee@kernel.org>,
+        Ulf Hansson <ulfh@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Agustin Santiago Isasmendi <isasmendi.agus@gmail.com>,
+        Navid Ghahremani <ghahramani.navid@gmail.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, mfd@lists.linux.dev,
+        linux-pm@vger.kernel.org, linux-phy@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI2MDA0OCBTYWx0ZWRfX+AfkdyH5C3uM
+ KC8gW35tC3ZQdPUhpSLi3+cnzCj4wQ8aYBcYOjNtfP2Y923Yo6zGnA/Hg9i/Tm87C8i3dNw8QtQ
+ gv7F5FHnzGY9knsrrBrmpQraP3ZXzkM=
+X-Proofpoint-ORIG-GUID: eHi-4UrDVJ8xt6tp65gMFAQS3pOvXKaf
+X-Proofpoint-GUID: eHi-4UrDVJ8xt6tp65gMFAQS3pOvXKaf
+X-Authority-Analysis: v=2.4 cv=QZPzLcbv c=1 sm=1 tr=0 ts=6b082578 cx=c_pps
+ a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=eoimf2acIAo5FJnRuUoq:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8
+ a=kvRnqJp7QHj-O9gkUQ0A:9 a=QEXdDO2ut3YA:10 a=3WC7DwWrALyhR5TkjVHa:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI2MDA0OCBTYWx0ZWRfX4Vkq1V6Ux8Vv
+ cWjSRRxSOsH4LN5IDEHBzFpDSieGizGfTx1qB/ZPVwYNWzHi/CI/xiGqtucwdj9HQ9wQ15xecM6
+ sKrGxcRBtLgyR/qN3Ky9kOkRn6Zifd45H/sN361MpkfhjUm9znGOPodkdtBagB8T4+AELOjYz9e
+ TMTLIrmH3XHr9eDmNVQJLRuWlP/780jJY0sp5BxZSCt8c+mwobRwMQP2OZKDcEgC+NF2SeQRnXi
+ 4WYnWoiEQTLiMCbzz4jge/OQTsVP1LvqMUx68PoQBWwRe3hUrmrI3kEfhYN9UVSv3132smzQJF8
+ DwxucDCS2wEJ2u0V9KMCGrnYzLbEjY1khkjF9R44m16UwWeXKW6b6+rP3DcIuU5f2Xm3scncjI+
+ kvPXdwMFAO1895bqNDLPgy3oBb28ZuKgaYYfHuquGRcTFaTmVFhdCS2rSD9BNYAt1MXgCHgV4pE
+ JGyO40SeOSfRd8NxcCA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-26_03,2026-11-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 lowpriorityscore=0 bulkscore=0 phishscore=0
+ adultscore=0 malwarescore=0 impostorscore=0 spamscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611260048
 
-Hi Geert, Laurent,
-
-Thanks to both of you for the answers, I reply to all of them here.
-
-On 11/25/26 3:45 PM, Geert Uytterhoeven wrote:
-> Status = "reserved" would work fine for a leaf device (e.g. a network
-> interface), without further dependencies.
+On Fri, Nov 20, 2026 at 8:21=E2=80=AFPM Stefan D=C3=B6singer
+<stefandoesinger@gmail.com> wrote:
 >
-> For core components like the CPG and MDLC its different, as every single
-> module on the SoCs makes use of them.
-
-Right, an SCMI DT changes every producer and consumer node, and they would change again with each firmware version that changes its ids. If I were to do it, I would handle those changes in a downstream tree, as SCMI does not seem designed for several firmware versions with different ids on the same chip.
-
->   1. They are not stable!
->      We only _assumed_ they are stable, so we could relax dependencies.
->      With that assumption, there is no longer a need for the (contented)
->      addition of scmi_get_base_info(), which would be needed to
->      distinguish among different firmware using e.g. different ID
->      spaces.
-
-I think this is the real problem, and it is not specific to X5H. Ideally the SCMI firmware keeps its ids stable, and to me it should even be mandatory.
-
->   2. That can't work for now, due to limitations/deficiencies of the
->      current SCMI firmware specification and/or firmware implementation.
-
-Which ones? Can't we work on improving it?
-
->   3. Last but not least, they are not hardware description.
-
-They are firmware ids, and the arm,scmi binding is made for them.
-
-On 11/25/26 3:52 PM, Geert Uytterhoeven wrote:
-> This only focuses on the IDs, not on different abstractions offered by
-> SCMI.
+> This controller has bits for USB, HSIC, EDCP (a cryptographic engine)
+> and GSM. Not all of them work the way one might expect (see comments in
+> the code), but they are there and can be set.
 >
-> The latter leads to the need for changes in (many) DT bindings and
-> drivers, to support the same hardware blocks that are already supported
-> without SCMI in the same and/or older SoCs.  How many different DT
-> binding variants, with corresponding more complex handling in drivers,
-> are you willing to support for the same hardware block?
-> The remapping driver takes care of this in a single place, avoiding DT
-> binding and driver changes all over the tree.
+> Signed-off-by: Stefan D=C3=B6singer <stefandoesinger@gmail.com>
+>
+> ---
+>
+> For now this driver can only enable and disable the USB controller. I
+> expect more LTE related power switches will be added later, but I don't
+> want to commit to how I expose GSM and EDCP in the bindings just yet.
+> ---
+>  MAINTAINERS                                 |   1 +
+>  drivers/pmdomain/Kconfig                    |   1 +
+>  drivers/pmdomain/Makefile                   |   1 +
+>  drivers/pmdomain/zte/Kconfig                |  15 ++
+>  drivers/pmdomain/zte/Makefile               |   2 +
+>  drivers/pmdomain/zte/zx297520v3-pm-domain.c | 286 ++++++++++++++++++++++=
+++++++
+>  6 files changed, 306 insertions(+)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index ab8797b8d0a5..e394e0044f1f 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4038,6 +4038,7 @@ F:        arch/arm/boot/dts/zte/
+>  F:     arch/arm/mach-zte/
+>  F:     drivers/clk/zte/
+>  F:     drivers/mfd/zte-zx297520v3-crm.c
+> +F:     drivers/pmdomain/zte/
+>  F:     include/dt-bindings/clock/zte,zx297520v3-clk.h
+>  F:     include/dt-bindings/phy/zte,zx297520v3-topcrm.h
+>  F:     include/dt-bindings/reset/zte,zx297520v3-reset.h
+> diff --git a/drivers/pmdomain/Kconfig b/drivers/pmdomain/Kconfig
+> index 5341dff669be..d5050c22f064 100644
+> --- a/drivers/pmdomain/Kconfig
+> +++ b/drivers/pmdomain/Kconfig
+> @@ -21,5 +21,6 @@ source "drivers/pmdomain/tegra/Kconfig"
+>  source "drivers/pmdomain/thead/Kconfig"
+>  source "drivers/pmdomain/ti/Kconfig"
+>  source "drivers/pmdomain/xilinx/Kconfig"
+> +source "drivers/pmdomain/zte/Kconfig"
+>
+>  endmenu
+> diff --git a/drivers/pmdomain/Makefile b/drivers/pmdomain/Makefile
+> index d7aee13ae571..cc3cc7b3d1c2 100644
+> --- a/drivers/pmdomain/Makefile
+> +++ b/drivers/pmdomain/Makefile
+> @@ -19,4 +19,5 @@ obj-y                                 +=3D tegra/
+>  obj-y                                  +=3D thead/
+>  obj-y                                  +=3D ti/
+>  obj-y                                  +=3D xilinx/
+> +obj-y                                  +=3D zte/
+>  obj-y                                  +=3D core.o governor.o
+> diff --git a/drivers/pmdomain/zte/Kconfig b/drivers/pmdomain/zte/Kconfig
+> new file mode 100644
+> index 000000000000..cc329d085e5a
+> --- /dev/null
+> +++ b/drivers/pmdomain/zte/Kconfig
+> @@ -0,0 +1,15 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> +
+> +config ZTE_ZX297520V3_PM_DOMAIN
+> +       tristate "ZTE zx297520v3 pm domain"
+> +       depends on HAS_IOMEM
+> +       depends on PM
+> +       depends on MFD_ZTE_ZX297520V3_CRM || COMPILE_TEST
+> +       default SOC_ZX297520V3
+> +       select PM_GENERIC_DOMAINS
+> +       select MFD_SYSCON
+> +       help
+> +         Say y to enable the power domain driver for ZTE zx297520v3 boar=
+ds.
+> +         This driver is necessary to enable the USB hardware found on th=
+is
+> +         board. Say y or m if you are building a kernel for a zx297520v3=
+ based
+> +         device and plan to use its USB capabilities.
+> diff --git a/drivers/pmdomain/zte/Makefile b/drivers/pmdomain/zte/Makefil=
+e
+> new file mode 100644
+> index 000000000000..8a4185f48ff3
+> --- /dev/null
+> +++ b/drivers/pmdomain/zte/Makefile
+> @@ -0,0 +1,2 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> +obj-$(CONFIG_ZTE_ZX297520V3_PM_DOMAIN) +=3D zx297520v3-pm-domain.o
+> diff --git a/drivers/pmdomain/zte/zx297520v3-pm-domain.c b/drivers/pmdoma=
+in/zte/zx297520v3-pm-domain.c
+> new file mode 100644
+> index 000000000000..3df4cd5f1b22
+> --- /dev/null
+> +++ b/drivers/pmdomain/zte/zx297520v3-pm-domain.c
+> @@ -0,0 +1,286 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Copyright (C) 2026 Stefan D=C3=B6singer
+> + *
+> + * This driver controls power domain registers found on the ZTE zx297520=
+v3 board. The USB and GSM
+> + * controllers are controlled from here.
+> + */
+> +
+> +#include <linux/delay.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/regmap.h>
+> +
 
-Agreed, the ids are only one part. But most of the other differences on X5H come from the firmware (missing clocks, zero rates, reserved resets) or from the missing clock domain in SCMI, so I would rather fix them in the firmware and in the specification.
+[...]
 
-On 11/25/26 3:55 PM, Geert Uytterhoeven wrote:
-> So we can't upstream DT, until we have stable IDs for real?
+> +
+> +static int zx29_pd_attach_dev(struct generic_pm_domain *domain, struct d=
+evice *dev)
+> +{
+> +       /* The DT link to the consumer targets the (MFD) parent, which do=
+esn't prevent unbinding the
+> +        * this driver or removing the module. Either would leave the con=
+sumer with a dangling
+> +        * reference.
+> +        */
+> +       if (!device_link_add(dev, &domain->dev, DL_FLAG_AUTOREMOVE_CONSUM=
+ER))
+> +               return -ENOMEM;
 
-Yes, that would be my take, to avoid glue code based on the firmware version.
+This doesn't belong in this particular driver, but rather in the genpd
+core. In fact, we have a proposed patch [1] that is being discussed;
+but the bigger question is if we need genpd provider drivers to be
+removable at all.
 
-To me, development firmware is the SDK, made for development, and a released firmware is the one that has been fully tested, where no new resource or missing id is discovered anymore. As you wrote to Wolfram, "We are still discovering missing SCMI IDs for some resource", so I think the X5H firmware is still in development.
+What is your use case for this?
 
-I was also always told not to upstream something that is not mature enough, as your cover letter says for the firmware. So why is it important to upstream the DT before the firmware is mature?
+[...]
 
-On 11/25/26 11:15 PM, Laurent Pinchart wrote:
-> It's not a matter of "in development". Software is always in
-> development. Don't get me wrong, I agree that we should minimize
-> breaking changes in SCMI firmware, but we can't avoid them, or even
-> minimize them enough, without a QA cost that nobody seems willing to
-> pay. Where's the stable SCP firmware for X5H ?
+Otherwise this looks good to me!
 
-Linux is always in development too, and it still keeps its userspace ABI stable. I think a firmware can do the same with its ids: keeping them stable is not a QA cost, it is a rule when adding resources, append only and never renumber.
+Kind regards
+Uffe
 
-The open-source SCP firmware I am developing for X5H is public here: https://git.gitlab.arm.com/clegoffic/SCP-firmware/-/tree/renesas
-
-For the SDK firmware, Geert's v5 cover says one table covers SDK 4.31 and later, tested with 4.36 and 4.39, so the ids v5 uses have not changed since 4.31.
-
-Personally, I also don't like to see version numbers of firmware that is neither upstream nor public in an open-source project like the Linux kernel.
-
-On 11/25/26 3:55 PM, Geert Uytterhoeven wrote:
-> Zephyr has less complex software abstractions than Linux, and
-> might not care about DT stability.
-
-Yes, we are lucky on this one :-D
-
-On 11/25/26 3:56 PM, Geert Uytterhoeven wrote:
-> I understand that can work on servers with N CPU cores, N network
-> interfaces, and N storage controllers, where you run multiple
-> virtual instances using the same DTB describing e.g. a single CPU core,
-> network interface, and storage controller.
-> But not on an embedded platform with complex I/O...
-
-To me, X5H is an Arm platform like another, not a special case. NXP's automotive S32G, which also has complex I/O, already uses SCMI ids in its mainline DT. That is why I would rather handle the firmware versions with the SCMI quirk framework, the same way for every platform, than with a special case for each SoC.
-
-On 11/25/26 11:15 PM, Laurent Pinchart wrote:
-> We have two options to deal with that: either we handle that instability
-> in every leaf driver, or we handle it in a central place. The latter
-> seems a much better solution to me.
-
-Agreed on a central place rather than every leaf driver. Where we differ is which central place: I think it is the SCMI framework, with its quirk framework, rather than one remapping driver per SoC. A hardware revision is handled by the driver of that hardware, but SCMI is the same protocol on every SoC, so its firmware versions are better handled once in the SCMI stack.
-
-Anyway, I know I am going against the common view here, and maybe I live in an idealistic world. I truly think that one SCMI platform should have only one SCMI firmware version, but somehow several exist here. Do you know why the old SDK firmware versions are not simply fixed and updated?
-
-In general, different SoC vendors seem to face the same issue, so perhaps it comes from the software development process around SCMI servers. That may be worth stating somewhere, or even directly in the SCMI specification, for example that a released SCMI firmware keeps its ids stable.
-
-As long as old firmware versions are not fixed, it changes how the SCMI Linux framework has to think about the product development lifecycle: how can we handle several SCMI server versions without a set of device trees and without dependencies inside the drivers?
-
-My first idea was an upstream interface in the SCMI framework, used by tables maintained downstream. But that does not hold, as an upstream interface needs an upstream user, and I am not in favor of adding one for this.
-
-So I would rather keep a set of atomic patches downstream, one per firmware version, built on the SCMI quirk framework, so they stay easy to rebase and maintain. This way upstream carries no development firmware, no extra device trees and no version-specific code.
-
-This would also follow the comment in drivers/clk/clk-scmi-oem.c: "impl_ver-specific behavior should be considered a bug and handled via SCMI Quirk framework".
-
-> The way to go in my opinion is minimizing firmware breakages *and*
-> having a remapping driver. Those are not mutually exclusive.
-
-Agreed, they are not. We only disagree on where the remapping should live.
-
-Best regards,
-Clément
+[1]
+https://lore.kernel.org/all/20261112-01-pm-device-link-v1-1-8932e0862378@ke=
+rnel.org/
